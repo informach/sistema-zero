@@ -1,0 +1,12 @@
+{
+  "name": "sistemazero",
+  "version": "1.0.0",
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "dev:tui": "bun run --watch packages/tui/src/index.tsx",
+    "build:tui": "bun run --filter @sistemazero/tui build",
+    "link:tui": "bun run build:tui && cd packages/tui && bun link",
+    "dev:payments": "bun run --filter @sistemazero/payments dev",
+    "test:payments": "bun run --filter @sistemazero/payments test"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "@sistemazero/tui",
+  "module": "src/index.tsx",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "sistemazero": "./bin/sistemazero"
+  },
+  "scripts": {
+    "dev": "bun run --watch src/index.tsx",
+    "build": "bun build src/index.tsx --outdir dist --target bun"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/react": "^19.2.15"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@opentui/core": "^0.3.0",
+    "@opentui/react": "^0.3.0",
+    "react": "^19.2.6"
+  }
+}
