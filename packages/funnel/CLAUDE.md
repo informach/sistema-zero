@@ -152,3 +152,20 @@ Biome 2.4 tem suporte parcial a `.astro`. Os overrides ficam no **`biome.json` d
 `*.tsx` relaxa a11y (espelha a TUI), `*.astro` desliga `noUnused*` (falsos positivos com imports
 usados no template), `*.css` desliga `noImportantStyles`; `!**/.astro` exclui os tipos gerados.
 O typecheck de `.astro` é o `astro check`.
+
+## Gotcha: ilhas React não hidratam (`jsxDEV is not a function`)
+
+**Sintoma:** uma ilha React quebra na hidratação com `Uncaught TypeError: jsxDEV is not a function`
+(ou simplesmente "as opções/o componente pararam de aparecer, antes apareciam"). Afeta **todas** as
+ilhas, não só uma.
+
+**Causa:** o pre-bundle de deps do Vite (`node_modules/.vite/deps`) ficou otimizado em **modo
+production**, onde o React entrega `jsxDEV = void 0` de propósito (em prod usa-se `jsx`, não `jsxDEV`).
+Mas em dev o `@vitejs/plugin-react` transforma as ilhas chamando `jsxDEV(...)`. O Vite chaveia esse
+cache por hash de lockfile/config — **não** por `NODE_ENV` — então uma única otimização rodada com
+`NODE_ENV=production` (um shell com a var setada, etc.) envenena o cache e ele **não** se regenera
+sozinho ao voltar pro dev.
+
+**Fix:** `bun run dev:clean` (limpa `.vite`/`.astro` e sobe o dev → Vite re-otimiza em modo dev).
+E **não** rode `bun run dev` com `NODE_ENV=production` no shell. O `NODE_ENV=development` no `.env` é
+legítimo (consumido por `src/lib/env.ts` p/ `secureCookie`) — não é a causa.

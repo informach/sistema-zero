@@ -6,6 +6,7 @@
   "private": true,
   "scripts": {
     "dev": "astro dev --port 4321 --host",
+    "dev:clean": "rimraf node_modules/.vite .astro && astro dev --port 4321 --host",
     "start": "bun ./dist/server/entry.mjs",
     "build": "astro build",
     "preview": "astro preview",
@@ -39,7 +40,8 @@
     "@types/bun": "latest",
     "@types/react": "^19.2.15",
     "@types/react-dom": "^19.2.3",
-    "drizzle-kit": "^0.31.5"
+    "drizzle-kit": "^0.31.5",
+    "rimraf": "^6.0.1"
   },
   "peerDependencies": {
     "typescript": "^5"
