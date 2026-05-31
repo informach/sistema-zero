@@ -16,7 +16,15 @@ function readCookie(cookieHeader: string | null, name: string): string | undefin
   for (const part of cookieHeader.split(';')) {
     const eq = part.indexOf('=')
     if (eq === -1) continue
-    if (part.slice(0, eq).trim() === name) return decodeURIComponent(part.slice(eq + 1).trim())
+    if (part.slice(0, eq).trim() === name) {
+      const raw = part.slice(eq + 1).trim()
+      // Cookie malformado (ex.: `%zz`) não deve virar 500 — trata como ausência.
+      try {
+        return decodeURIComponent(raw)
+      } catch {
+        return raw
+      }
+    }
   }
   return undefined
 }

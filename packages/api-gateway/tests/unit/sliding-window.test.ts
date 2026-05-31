@@ -29,6 +29,27 @@ describe('sliding-window store', () => {
     await store.slidingWindowRefund('k')
     expect((await store.slidingWindow('k', 1000, 2)).count).toBe(2)
   })
+
+  test('refund com token de janela antiga NÃO credita a janela nova (pós-rollover)', async () => {
+    const store = createInMemoryStore()
+    // 1º hit ancora a janela em t=10 → resetMs = 10 + 1000 = 1010.
+    const hit = await store.slidingWindow('k', 1000, 10)
+    expect(hit.resetMs).toBe(1010)
+    // Rola para a janela seguinte (t=1500) e conta 1 nela (curr=1).
+    await store.slidingWindow('k', 1000, 1500)
+    // Refund tardio carregando o resetMs da janela ANTIGA → no-op (janela diferente).
+    await store.slidingWindowRefund('k', hit.resetMs)
+    // O curr da janela nova segue intacto: este hit em t=1600 vê curr=2 (count ≥ 2).
+    expect((await store.slidingWindow('k', 1000, 1600)).count).toBeGreaterThanOrEqual(2)
+  })
+
+  test('refund com o resetMs da janela ATUAL debita normalmente', async () => {
+    const store = createInMemoryStore()
+    const hit = await store.slidingWindow('k', 1000, 0)
+    await store.slidingWindow('k', 1000, 1)
+    await store.slidingWindowRefund('k', hit.resetMs) // mesma janela → debita
+    expect((await store.slidingWindow('k', 1000, 2)).count).toBe(2)
+  })
 })
 
 describe('rate limiter (sliding)', () => {

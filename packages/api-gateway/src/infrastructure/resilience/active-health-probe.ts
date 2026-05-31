@@ -13,6 +13,7 @@ export interface ProbeTarget {
  */
 export class ActiveHealthProbe {
   private timer: ReturnType<typeof setInterval> | undefined
+  private probing = false
 
   constructor(
     private readonly targets: readonly ProbeTarget[],
@@ -23,17 +24,24 @@ export class ActiveHealthProbe {
   ) {}
 
   start(): void {
-    if (this.targets.length === 0) return
+    if (this.targets.length === 0 || this.timer) return // idempotente (não vaza timer)
     this.timer = setInterval(() => void this.probeAll(), this.intervalMs)
     this.timer.unref?.()
   }
 
   stop(): void {
     if (this.timer) clearInterval(this.timer)
+    this.timer = undefined
   }
 
   private async probeAll(): Promise<void> {
-    await Promise.all(this.targets.map((t) => this.probe(t)))
+    if (this.probing) return // evita rodadas sobrepostas (não pressiona upstream doente)
+    this.probing = true
+    try {
+      await Promise.allSettled(this.targets.map((t) => this.probe(t)))
+    } finally {
+      this.probing = false
+    }
   }
 
   private async probe(t: ProbeTarget): Promise<void> {

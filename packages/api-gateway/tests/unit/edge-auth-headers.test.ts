@@ -46,7 +46,11 @@ describe('request-transform stage: credenciais de borda', () => {
     const ctx = makeContext({
       method: 'POST',
       body: '{}',
-      headers: { 'x-consumer-id': 'client', 'x-signature': 't=1,v1=dead', authorization: 'Bearer leak' },
+      headers: {
+        'x-consumer-id': 'client',
+        'x-signature': 't=1,v1=dead',
+        authorization: 'Bearer leak',
+      },
     })
     ctx.route = routeMatch({ upstreamAuth: 'resign' })
     const stage = createRequestTransformStage({

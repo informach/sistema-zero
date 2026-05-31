@@ -5,6 +5,8 @@ export interface JwtStrategyOptions {
   jwksUrl: string
   issuer?: string
   audience?: string
+  /** Algoritmos aceitos (pin). Default: ['RS256']. Restringe a alg-confusion/downgrade. */
+  algorithms?: readonly string[]
 }
 
 function extractScopes(payload: JWTPayload): string[] | undefined {
@@ -20,6 +22,8 @@ function extractScopes(payload: JWTPayload): string[] | undefined {
  */
 export function createJwtStrategy(opts: JwtStrategyOptions): AuthStrategy {
   const jwks = createRemoteJWKSet(new URL(opts.jwksUrl))
+  const algorithms =
+    opts.algorithms && opts.algorithms.length > 0 ? [...opts.algorithms] : ['RS256']
   return {
     name: 'jwt',
     async authenticate(ctx) {
@@ -29,14 +33,25 @@ export function createJwtStrategy(opts: JwtStrategyOptions): AuthStrategy {
       if (!token) return { ok: 'skip' }
       try {
         const { payload } = await jwtVerify(token, jwks, {
+          algorithms,
           ...(opts.issuer ? { issuer: opts.issuer } : {}),
           ...(opts.audience ? { audience: opts.audience } : {}),
         })
+        // Um token sem `sub` não tem identidade — rejeita (não colapsa para 'unknown',
+        // o que mesclaria chamadores distintos na mesma chave de rate-limit/auditoria).
+        if (typeof payload.sub !== 'string' || payload.sub.length === 0) {
+          return {
+            ok: false,
+            status: 401,
+            code: 'INVALID_TOKEN',
+            message: 'Token JWT sem subject (sub)',
+          }
+        }
         return {
           ok: true,
           principal: {
             kind: 'jwt',
-            subject: payload.sub ?? 'unknown',
+            subject: payload.sub,
             claims: payload as Record<string, unknown>,
             scopes: extractScopes(payload),
           },

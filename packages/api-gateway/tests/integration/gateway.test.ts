@@ -118,7 +118,9 @@ describe('gateway (integração via app.handle)', () => {
 
   test('HMAC: sem assinatura → 401; assinatura válida → 200', async () => {
     const hmacConfig: GatewayConfigInput = {
-      consumers: [{ id: 'sys-a', hmacSecret: 'secret-a', allowedCidrs: ['203.0.113.0/24'] }],
+      consumers: [
+        { id: 'sys-a', hmacSecret: 'secret-a-at-least-16', allowedCidrs: ['203.0.113.0/24'] },
+      ],
       services: {
         echo: { name: 'echo', upstreamGroups: { default: [{ url: 'http://up', id: 'a' }] } },
       },
@@ -140,7 +142,7 @@ describe('gateway (integração via app.handle)', () => {
 
     const body = '{}'
     const ts = Math.floor(Date.now() / 1000)
-    const sig = signHmac('secret-a', body, ts)
+    const sig = signHmac('secret-a-at-least-16', body, ts)
     const ok = await app.handle(
       req('/secure', {
         method: 'POST',

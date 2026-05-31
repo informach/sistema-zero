@@ -13,6 +13,7 @@ import { fakeForwarder } from '../helpers'
 let jwks: ReturnType<typeof Bun.serve>
 let app: Application
 let signToken: (claims?: Record<string, unknown>) => Promise<string>
+let signNoSub: () => Promise<string>
 
 beforeAll(async () => {
   const { publicKey, privateKey } = await generateKeyPair('RS256', { extractable: true })
@@ -32,6 +33,14 @@ beforeAll(async () => {
       .setIssuer('https://issuer.test')
       .setAudience('sistema-zero')
       .setSubject('user-123')
+      .setExpirationTime('5m')
+      .sign(privateKey)
+  // Token válido em tudo MENOS o subject (sem `sub`).
+  signNoSub = () =>
+    new SignJWT({ scope: 'payments:read' })
+      .setProtectedHeader({ alg: 'RS256', kid: 'test-key' })
+      .setIssuer('https://issuer.test')
+      .setAudience('sistema-zero')
       .setExpirationTime('5m')
       .sign(privateKey)
 
@@ -82,6 +91,14 @@ describe('JWT auth (JWKS real)', () => {
       new Request('http://gw.local/protected', { headers: { authorization: `Bearer ${token}` } }),
     )
     expect(res.status).toBe(200)
+  })
+
+  test('token sem subject (sub) → 401', async () => {
+    const token = await signNoSub()
+    const res = await app.handle(
+      new Request('http://gw.local/protected', { headers: { authorization: `Bearer ${token}` } }),
+    )
+    expect(res.status).toBe(401)
   })
 
   test('issuer errado → 401', async () => {

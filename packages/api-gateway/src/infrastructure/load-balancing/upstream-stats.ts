@@ -24,10 +24,9 @@ export class UpstreamStats implements UpstreamStatsView {
 
   end(id: string, latencyMs: number): void {
     this.inFlightMap.set(id, Math.max(0, this.inFlight(id) - 1))
+    // Amostra de latência nunca negativa (defesa contra clock não-monotônico do chamador).
+    const sample = Math.max(0, latencyMs)
     const prev = this.ewma.get(id)
-    this.ewma.set(
-      id,
-      prev === undefined ? latencyMs : this.alpha * latencyMs + (1 - this.alpha) * prev,
-    )
+    this.ewma.set(id, prev === undefined ? sample : this.alpha * sample + (1 - this.alpha) * prev)
   }
 }

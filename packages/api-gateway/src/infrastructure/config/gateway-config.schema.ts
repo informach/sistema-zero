@@ -47,6 +47,12 @@ export const rateLimitRuleSchema = z.object({
   by: z.enum(['principal', 'ip']).default('principal'),
 })
 
+export const stickyConfigSchema = z.object({
+  // Origem da chave de afinidade: IP do cliente, principal autenticado ou um header.
+  by: z.enum(['ip', 'principal', 'header']).default('ip'),
+  header: z.string().optional(), // obrigatório quando by='header'
+})
+
 export const corsConfigSchema = z
   .object({
     origins: z.array(z.string()).optional(), // strings exatas, regex `/.../` ou '*'
@@ -90,6 +96,7 @@ export const routeConfigSchema = z.object({
   timeoutMs: z.number().int().positive().optional(),
   retries: z.number().int().nonnegative().optional(),
   lb: lbStrategy.optional(),
+  sticky: stickyConfigSchema.optional(),
   stripPrefix: z.boolean().default(false),
   rewritePrefix: z.string().optional(),
   versions: z.array(versionMappingSchema).optional(),
@@ -133,6 +140,7 @@ export type CircuitBreakerConfig = z.infer<typeof circuitBreakerConfigSchema>
 export type RetryPolicyConfig = z.infer<typeof retryPolicyConfigSchema>
 export type RouteAuthPolicy = z.infer<typeof authPolicySchema>
 export type RateLimitRule = z.infer<typeof rateLimitRuleSchema>
+export type StickyConfig = z.infer<typeof stickyConfigSchema>
 export type CorsConfig = z.infer<typeof corsConfigSchema>
 export type TransformRef = z.infer<typeof transformRefSchema>
 export type VersionMapping = z.infer<typeof versionMappingSchema>

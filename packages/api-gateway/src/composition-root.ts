@@ -106,7 +106,7 @@ export async function createApplication(
   const transformersByRoute = new Map<string, Transformer[]>()
   for (const route of config.routes) {
     const lbName = route.lb ?? config.services[route.service]?.loadBalancer ?? 'round-robin'
-    lbByRoute.set(route.id, createLoadBalancer(lbName))
+    lbByRoute.set(route.id, createLoadBalancer(lbName, Boolean(route.sticky)))
     transformersByRoute.set(
       route.id,
       buildTransformers(route.transforms, defaultTransformerRegistry),
@@ -124,6 +124,7 @@ export async function createApplication(
       jwksUrl: env.JWT_JWKS_URL,
       issuer: env.JWT_ISSUER,
       audience: env.JWT_AUDIENCE,
+      algorithms: env.JWT_ALGORITHMS,
     })
   }
   const authChain = createAuthChain(strategies)

@@ -10,7 +10,7 @@ export interface RateDecision {
 
 export interface RateLimiter {
   check(key: string, max: number, windowMs: number): Promise<RateDecision>
-  refund(key: string): Promise<void>
+  refund(key: string, windowResetMs?: number): Promise<void>
 }
 
 /**
@@ -27,8 +27,8 @@ export function createRateLimiter(store: GatewayStore): RateLimiter {
       const retryAfterSeconds = allowed ? 0 : Math.max(1, Math.ceil((resetMs - Date.now()) / 1000))
       return { allowed, limit: max, remaining, retryAfterSeconds, resetMs }
     },
-    async refund(key) {
-      await store.slidingWindowRefund(key)
+    async refund(key, windowResetMs) {
+      await store.slidingWindowRefund(key, windowResetMs)
     },
   }
 }

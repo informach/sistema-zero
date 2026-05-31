@@ -51,6 +51,16 @@ const EnvSchema = z
     JWT_ISSUER: z.string().optional(),
     JWT_AUDIENCE: z.string().optional(),
     JWT_JWKS_URL: z.string().optional(),
+    // Algoritmos aceitos (CSV). Pin contra alg-confusion/downgrade. Default: RS256.
+    JWT_ALGORITHMS: z
+      .string()
+      .optional()
+      .transform((v) =>
+        v
+          ?.split(',')
+          .map((s) => s.trim())
+          .filter(Boolean),
+      ),
     JWT_CACHE_TTL_MS: z.coerce.number().int().positive().default(300_000),
     SESSION_TTL_SECONDS: z.coerce.number().int().positive().default(3_600),
 

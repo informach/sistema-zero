@@ -3,10 +3,22 @@ import type {
   UpstreamTarget,
 } from '../../../domain/load-balancing/load-balancer.port'
 import { resolveVersionMapping } from '../../../domain/versioning/version'
-import type { ServiceConfig } from '../../../infrastructure/config/gateway-config.schema'
+import type {
+  ServiceConfig,
+  StickyConfig,
+} from '../../../infrastructure/config/gateway-config.schema'
 import { sanitizeRequestHeaders } from '../../../infrastructure/proxy/header-rules'
 import type { ProxyEngine } from '../../../infrastructure/proxy/proxy-engine'
-import type { Stage } from '../stage.port'
+import type { GatewayContext, Stage } from '../stage.port'
+
+/** Deriva a chave de afinidade (sticky) conforme a config da rota. */
+function stickyKeyFor(sticky: StickyConfig | undefined, ctx: GatewayContext): string | undefined {
+  if (!sticky) return undefined
+  if (sticky.by === 'principal') return ctx.principal?.subject ?? ctx.clientIp
+  if (sticky.by === 'header')
+    return sticky.header ? (ctx.request.headers.get(sticky.header) ?? undefined) : undefined
+  return ctx.clientIp
+}
 
 export interface ProxyStageDeps {
   engine: ProxyEngine
@@ -47,6 +59,7 @@ export function createProxyStage(deps: ProxyStageDeps): Stage {
         serviceId: route.service,
         targets,
         lb: deps.getLoadBalancer(route.id),
+        stickyKey: stickyKeyFor(route.sticky, ctx),
         method: ctx.method,
         path: ctx.upstreamPath,
         headers,
@@ -58,6 +71,7 @@ export function createProxyStage(deps: ProxyStageDeps): Stage {
           maxRetries: route.retries ?? service.retry.maxRetries,
           baseDelayMs: service.retry.baseDelayMs,
           maxDelayMs: service.retry.maxDelayMs,
+          perTryTimeoutMs: service.retry.perTryTimeoutMs,
           budgetMs: service.retry.budgetMs,
         },
         requestId: ctx.requestId,

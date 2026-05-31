@@ -20,9 +20,12 @@ export class WeightedLoadBalancer implements LoadBalancer {
     let best: UpstreamTarget | undefined
     let bestCurrent = Number.NEGATIVE_INFINITY
     for (const t of targets) {
-      const cur = (this.current.get(t.id) ?? 0) + t.weight
+      // Peso saneado: trata 0/negativo como 1 (o schema já exige positivo, mas o
+      // tipo de domínio é `number` — não confie cegamente, evita SWRR degenerado).
+      const weight = t.weight > 0 ? t.weight : 1
+      const cur = (this.current.get(t.id) ?? 0) + weight
       this.current.set(t.id, cur)
-      total += t.weight
+      total += weight
       if (cur > bestCurrent) {
         bestCurrent = cur
         best = t

@@ -28,7 +28,7 @@ export function createFinalizeStage(rateLimiter: RateLimiter, metrics?: MetricsR
 
       const status = ctx.response?.status ?? 500
       if (ctx.rateLimit && status >= 500) {
-        await rateLimiter.refund(ctx.rateLimit.key)
+        await rateLimiter.refund(ctx.rateLimit.key, ctx.rateLimit.resetMs)
       }
 
       const latencyMs = Date.now() - ctx.startedAt

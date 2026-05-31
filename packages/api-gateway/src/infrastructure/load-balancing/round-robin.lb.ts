@@ -13,7 +13,9 @@ export class RoundRobinLoadBalancer implements LoadBalancer {
     const targets = ctx.healthy
     if (targets.length === 0) return undefined
     const idx = this.cursor % targets.length
-    this.cursor = (this.cursor + 1) % 1_000_000
+    // Mantém o cursor pequeno sem introduzir viés (o `% N` periódico de um teto que
+    // não é múltiplo de N desbalanceava); reinicia em múltiplos do tamanho do pool.
+    this.cursor = idx + 1 >= targets.length ? 0 : this.cursor + 1
     return targets[idx]
   }
 }

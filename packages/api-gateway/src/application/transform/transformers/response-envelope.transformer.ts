@@ -18,10 +18,17 @@ export function responseEnvelopeTransformer(_options: Record<string, unknown>): 
         .catch(() => undefined)
       if (data === undefined) return
       const body = res.ok ? { ok: true, data } : data
+      // Recalcula o framing: o corpo mudou de tamanho/forma. Headers obsoletos do
+      // upstream (content-length do corpo antigo, content-encoding) corromperiam a
+      // resposta — remova-os e deixe o runtime recomputar.
+      const headers = new Headers(res.headers)
+      headers.delete('content-length')
+      headers.delete('content-encoding')
+      headers.set('content-type', 'application/json')
       ctx.response = new Response(JSON.stringify(body), {
         status: res.status,
         statusText: res.statusText,
-        headers: res.headers,
+        headers,
       })
     },
   }

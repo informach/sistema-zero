@@ -25,7 +25,8 @@ export class InMemoryHealthRegistry implements HealthRegistry {
   }
 
   isHealthy(id: string): boolean {
-    return this.entry(id).healthy
+    // Leitura PURA (não cria entrada): chamada no hot path a cada tentativa.
+    return this.state.get(id)?.healthy ?? true
   }
 
   recordSuccess(id: string): void {

@@ -52,6 +52,47 @@ describe('load balancers', () => {
     expect(p1).toBe(p2)
   })
 
+  test('sticky (HRW): remover um alvo só remapeia as sessões que estavam nele', () => {
+    const lb = new StickyLoadBalancer(new RoundRobinLoadBalancer())
+    const stats = new UpstreamStats()
+    const all: UpstreamTarget[] = ['a', 'b', 'c', 'd'].map((id) => ({
+      id,
+      baseUrl: `http://${id}`,
+      weight: 1,
+    }))
+    const keys = Array.from({ length: 400 }, (_, i) => `user-${i}`)
+    const before = new Map(keys.map((k) => [k, lb.pick({ healthy: all, stickyKey: k, stats })?.id]))
+
+    const without = all.filter((t) => t.id !== 'c')
+    let movedFromC = 0
+    let movedOthers = 0
+    for (const k of keys) {
+      const after = lb.pick({ healthy: without, stickyKey: k, stats })?.id
+      if (before.get(k) === 'c') movedFromC++
+      else if (after !== before.get(k)) movedOthers++
+    }
+    // HRW: nenhuma sessão que NÃO estava em 'c' migra (modulo-rehash migraria ~todas).
+    expect(movedOthers).toBe(0)
+    expect(movedFromC).toBeGreaterThan(0)
+  })
+
+  test('sticky (HRW): distribui as chaves por todos os alvos', () => {
+    const lb = new StickyLoadBalancer(new RoundRobinLoadBalancer())
+    const stats = new UpstreamStats()
+    const three: UpstreamTarget[] = ['a', 'b', 'c'].map((id) => ({
+      id,
+      baseUrl: `http://${id}`,
+      weight: 1,
+    }))
+    const counts = new Map<string, number>()
+    for (let i = 0; i < 300; i++) {
+      const id = lb.pick({ healthy: three, stickyKey: `k-${i}`, stats })?.id
+      if (id) counts.set(id, (counts.get(id) ?? 0) + 1)
+    }
+    expect(counts.size).toBe(3)
+    for (const id of ['a', 'b', 'c']) expect(counts.get(id) ?? 0).toBeGreaterThan(0)
+  })
+
   test('factory + pool vazio → undefined', () => {
     const lb = createLoadBalancer('round-robin')
     const stats = new UpstreamStats()

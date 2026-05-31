@@ -1,8 +1,5 @@
 import type { Logger } from '@sistemazero/core/logging'
-import type {
-  LoadBalancer,
-  UpstreamTarget,
-} from '../../domain/load-balancing/load-balancer.port'
+import type { LoadBalancer, UpstreamTarget } from '../../domain/load-balancing/load-balancer.port'
 import type { Forwarder } from '../../domain/proxy/forwarder.port'
 import type { CircuitBreaker } from '../../domain/resilience/circuit-breaker.port'
 import type { HealthRegistry } from '../../domain/resilience/health.port'
@@ -24,7 +21,14 @@ export interface ProxyInput {
   body: RequestInit['body']
   stickyKey?: string
   timeoutMs: number
-  retry: { maxRetries: number; baseDelayMs: number; maxDelayMs: number; budgetMs?: number }
+  retry: {
+    maxRetries: number
+    baseDelayMs: number
+    maxDelayMs: number
+    /** Timeout por tentativa; default = `timeoutMs`. Capado pelo budget restante. */
+    perTryTimeoutMs?: number
+    budgetMs?: number
+  }
   requestId: string
 }
 
@@ -69,10 +73,23 @@ export class ProxyEngine {
     const bodyRetryable = body == null || typeof body === 'string'
     const maxAttempts = isIdempotent(method) && bodyRetryable ? retry.maxRetries + 1 : 1
     const start = Date.now()
+    // Timeout por tentativa: explícito (perTryTimeoutMs) ou o timeout do serviço.
+    const perTry = retry.perTryTimeoutMs ?? timeoutMs
     let lastError: UpstreamErrorKind = 'bad_gateway'
     let lastTargetId: string | undefined
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      // Capa o timeout desta tentativa pelo budget restante → a latência ponta-a-ponta
+      // fica limitada por budgetMs (não só os sleeps de backoff).
+      const attemptTimeout =
+        retry.budgetMs !== undefined
+          ? Math.min(perTry, retry.budgetMs - (Date.now() - start))
+          : perTry
+      if (attemptTimeout <= 0) {
+        lastError = 'timeout'
+        break
+      }
+
       const healthy = targets.filter((t) => this.deps.health.isHealthy(t.id))
       const pool = healthy.length > 0 ? healthy : targets // fail-open se todos ejetados
       const target = lb.pick({ healthy: pool, stickyKey, stats: this.deps.stats })
@@ -95,9 +112,10 @@ export class ProxyEngine {
       }
 
       const ctrl = new AbortController()
-      const to = setTimeout(() => ctrl.abort(), timeoutMs)
+      const to = setTimeout(() => ctrl.abort(), attemptTimeout)
       to.unref?.()
-      const t0 = Date.now()
+      // Relógio MONOTÔNICO para medir latência (imune a ajustes de NTP/wall-clock).
+      const t0 = performance.now()
       this.deps.stats.begin(target.id)
       try {
         const upstream = await this.deps.forwarder.forward({
@@ -108,7 +126,7 @@ export class ProxyEngine {
           body,
           signal: ctrl.signal,
         })
-        this.deps.stats.end(target.id, Date.now() - t0)
+        this.deps.stats.end(target.id, performance.now() - t0)
         const ok = upstream.status < 500
         if (ok) this.deps.health.recordSuccess(target.id)
         else this.deps.health.recordFailure(target.id)
@@ -129,10 +147,11 @@ export class ProxyEngine {
           }
         }
         // Sucesso (ou erro não-retentável): repassa a resposta streamada, com idle
-        // timeout no CORPO (o timeout de conexão cobre só os headers).
+        // timeout no CORPO (o timeout de conexão cobre só os headers). Usa `perTry`
+        // (não o valor capado por budget — o corpo já está fluindo, não é retry).
         const stream =
-          upstream.body && timeoutMs > 0
-            ? idleTimeoutStream(upstream.body, timeoutMs, () => ctrl.abort())
+          upstream.body && perTry > 0
+            ? idleTimeoutStream(upstream.body, perTry, () => ctrl.abort())
             : upstream.body
         const response = new Response(stream, {
           status: upstream.status,
@@ -141,7 +160,7 @@ export class ProxyEngine {
         })
         return { response, targetId: target.id, attempts: attempt + 1 }
       } catch {
-        this.deps.stats.end(target.id, Date.now() - t0)
+        this.deps.stats.end(target.id, performance.now() - t0)
         this.deps.health.recordFailure(target.id)
         await this.deps.breaker.onResult(serviceId, target.id, false, decision.token)
         lastError = ctrl.signal.aborted ? 'timeout' : 'connect'
