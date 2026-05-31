@@ -1,0 +1,164 @@
+# @sistemazero/api-gateway — Guia do Agente
+
+> API Gateway do monorepo `sistema-zero`: roteamento/proxy, auth plugável, rate limiting, load balancing, CORS, transformação e observabilidade.
+> **Stack:** Bun + TypeScript + Elysia + Zod + jose. **Arquitetura:** Hexagonal (Ports & Adapters) + Chain of Responsibility no caminho da requisição.
+> **Design:** config-driven (uma config declarativa) e **stateless** (todo estado mutável atrás de uma porta) → N réplicas sem líder.
+
+---
+
+## 1. Visão geral & contexto
+
+O gateway é a **borda** do sistema. Ele NÃO tem lógica de negócio: recebe a requisição do cliente, aplica políticas (auth, rate limit, CORS, transforms) e encaminha (proxy) para o upstream certo, com resiliência (LB, circuit breaker, health, retry).
+
+Hoje ele é o **BFF de pagamentos do funil** (`@sistemazero/funnel`):
+1. O funil autentica-se no gateway por **HMAC de borda** (consumer `funnel`).
+2. O gateway **re-assina** a chamada ao `payments` como seu próprio consumer (`upstreamAuth: 'resign'`) → o segredo do payments vive SÓ no gateway; o funil nunca fala com o payments.
+3. O webhook `payment.paid` (payments → gateway → funil): o gateway **valida a assinatura** (`verify-webhook`), injeta um token interno e reescreve o path.
+
+Adicionar/expor um serviço = **editar `gateway.config.ts`**, não código.
+
+---
+
+## 2. Comandos essenciais (rode de dentro de `packages/api-gateway`)
+
+| Ação | Comando |
+| --- | --- |
+| Dev (watch) | `bun run dev` |
+| Start | `bun run start` |
+| Rodar testes | `bun test` (rode com **sandbox off** — ver Gotchas) |
+| Typecheck | `bun run typecheck` (ou, da raiz: `bun run --filter '@sistemazero/api-gateway' typecheck`) |
+| Lint (Biome) | `bun run check` |
+| Lint + fix | `bun run check:fix` |
+
+> ⚠️ **Não** use `bun x tsc` direto: ele baixa um TypeScript global errado. Use o script `typecheck`, que resolve o `tsc` do workspace. **Sempre** rode `typecheck` + `bun test` antes de concluir uma mudança.
+
+---
+
+## 3. Arquitetura & camadas (Hexagonal)
+
+```
+src/
+├── domain/           # Núcleo: PORTAS (interfaces) + tipos puros. Sem deps externas.
+│   ├── ports/        #   GatewayStore (estado compartilhado)
+│   ├── routing/      #   literais base (HttpMethod, LbStrategy, AuthKind) + RouteMatch
+│   ├── load-balancing/ resilience/ proxy/ versioning/
+├── application/      # Casos de uso: pipeline (CoR), auth chain, rate limiter, transforms.
+├── infrastructure/   # Adapters concretos: store (memory/redis), proxy (fetch), LB, breaker,
+│                     #   health, config (env + schema Zod), routing, upstream (resign).
+└── interfaces/       # Entrada: Elysia app (gateway-plugin), health/metrics routes, error-handler.
+```
+
+**Regra de ouro (dependências apontam para dentro):** `interfaces → application → domain` e `infrastructure → (implementa portas de) domain`. O domínio NUNCA importa de infra/app.
+
+**Composição:** `composition-root.ts` é uma **fábrica pura** (sem container de DI) que instancia e conecta tudo. Entrypoint `index.ts`: `loadEnv → createApplication → start`, com SIGINT/SIGTERM, watchdog de shutdown e **graceful drain** (`SHUTDOWN_DRAIN_MS`: `/readyz` vira 503 antes de parar).
+
+---
+
+## 4. Design distintivo (leia antes de mexer)
+
+### 4.1 Pipeline = Chain of Responsibility (não middleware do Elysia)
+
+O Elysia tem um único catch-all `.all('/*')` que monta o `GatewayContext` e roda um **`Stage[]` explícito**. Escolhemos isso (em vez de registro por-rota no Elysia) porque as rotas são dinâmicas e o repo bane anotar `: Elysia` em retornos.
+
+**Ordem dos stages** (a 1ª `Response` curto-circuita):
+```
+route-resolve → cors → auth → rate-limit → request-transform → proxy (terminal)
+```
+**Finalizers (SEMPRE rodam, mesmo em curto-circuito/exceção):**
+```
+response-transform → finalize
+```
+- `finalize` injeta `X-Request-Id` + headers `RateLimit-*`, **refunda** o contador em 5xx (não pune o cliente por falha do upstream), registra métricas e emite o **access log** (`gateway.access`).
+- Uma exceção inesperada num stage vira **500** e os finalizers ainda rodam (log/métricas/refund nunca são pulados). Um finalizer que lança não derruba a resposta.
+
+### 4.2 Stateless via `GatewayStore` (a porta mais importante)
+
+Todo estado mutável compartilhado (rate limit, cache de sessão/JWKS, estado do circuit breaker) fica atrás de **uma** porta `GatewayStore`. Dois adapters:
+- **in-memory** (dev/single-replica) — default.
+- **redis** (escala) — `STATE_BACKEND=redis` + `REDIS_URL`. Usa o **`RedisClient` NATIVO do Bun** (não ioredis) e Lua atômico via `send('EVAL', [...])`.
+
+Métodos: `slidingWindow` / `slidingWindowRefund(key, windowResetMs?)` (rate limit), `increment` (gate de tentativa do breaker), `recordOutcome(key, ok, windowMs)` (contadores total+fail do breaker, **atômico**), `get/set/del`, `reset`, `init/kill`.
+
+### 4.3 Resiliência (`ProxyEngine` orquestra)
+
+`LB → circuit breaker → timeout por tentativa → forward (stream) → health/stats/breaker → retry`.
+- **LB:** `round-robin` / `least-connections` / `weighted` (SWRR do Nginx) / `p2c-ewma`, + decorator **sticky** (rendezvous/HRW hashing — só ~1/N das sessões remapeiam quando um alvo entra/sai). Ligado por rota via `sticky: { by, header? }`.
+- **Health:** probe ativo periódico + registro passivo (ejeta após N falhas consecutivas, fail-open). `isHealthy` é leitura pura (hot path).
+- **Circuit breaker:** estado no store (TTL) + cache local ~250ms. `closed → open → half-open → closed/open`. Half-open libera **uma** tentativa via gate atômico (`increment`, vence quem fizer `count===1`, vale entre réplicas) com **token único por tentativa**. **Fail-open** em qualquer erro do store.
+- **Retry:** SÓ métodos idempotentes (GET/HEAD/PUT/DELETE), nunca POST, e nunca com corpo em stream. Full jitter; `perTryTimeoutMs` capado pelo `budgetMs` restante (latência ponta-a-ponta limitada). Latência medida com `performance.now()` (monotônico).
+
+### 4.4 Proxy é streaming (zero-copy)
+
+`onParse` devolve o stream do corpo → o Elysia NÃO consome → o proxy encaminha intacto via `fetch` (`duplex: 'half'`, `redirect: 'manual'`). O teto do corpo é o **`maxRequestBodySize` do Bun.serve** (413 automático) — **nunca** por pipe do stream de entrada (ver Gotcha ⑥). O corpo da RESPOSTA pode ser piped com segurança (`idleTimeoutStream`).
+
+### 4.5 Auth plugável (Strategy + Chain)
+
+Por rota: `any`/`all` sobre `hmac` (core `verifyHmacSignature` + IP CIDR + consumer registry da config), `session` (token opaco no store), `jwt` (jose, JWKS remoto). JWT/session estão **dormentes** (sem IdP ainda). Em rotas `resign`, o gateway re-assina a chamada de saída como consumer do upstream.
+
+### 4.6 Padrões GoF presentes
+Proxy, Facade (`route-registry` + `gateway-plugin` + `gateway.config.ts`), Decorator (transforms, sticky), Chain of Responsibility (pipeline), Strategy (auth + LB).
+
+---
+
+## 5. Configuração
+
+- **`gateway.config.ts`** (`export default`): config declarativa (services, routes, consumers, cors, versionHeaders). Validada por Zod no boot (**fail-fast**). Origem alternativa: `GATEWAY_CONFIG_JSON` (inline) ou `GATEWAY_CONFIG_PATH`.
+- **`src/infrastructure/config/gateway-config.schema.ts`**: fonte única dos tipos (os tipos de domínio/app importam os inferidos como `import type`).
+- **`src/infrastructure/config/env.ts`**: env vars (Zod, fail-fast). Veja `.env.example`.
+- **`load-gateway-config.ts` → `validateReferences`**: validações cruzadas (route-ids únicos, serviço/grupo existem, jwt→JWKS, resign→creds, **tipo de transform conhecido**, **valor de `header-inject` não vazio**).
+
+**Segredos** (`hmacSecret` ≥ 16 chars, validado no boot): defina em prod `FUNNEL_HMAC_SECRET`, `GATEWAY_CONSUMER_ID`/`GATEWAY_HMAC_SECRET`, `FUNNEL_INTERNAL_TOKEN`. Vazio/curto **falha no boot** (evita auth com chave efetivamente vazia).
+
+---
+
+## 6. Convenções de código
+
+- **Imports:** alias de pacote (`@sistemazero/core/...`) + relativos dentro do pacote. `import type` para tipos.
+- **Tipos:** sem `any`; prefira `unknown` + narrowing. Não anote `: Elysia` em retornos (regra do repo).
+- **Validação:** toda entrada externa (env, config, body, headers) passa por **Zod**, fail-fast.
+- **Imutabilidade:** `readonly` em portas/DTOs; estado mutável só no `GatewayContext` (por requisição) e atrás do `GatewayStore`.
+- **Nomes:** arquivos `kebab-case`; classes `PascalCase`; funções/vars `camelCase`.
+- **Stateless:** NUNCA guarde estado de requisição em variável de módulo/instância de adapter — vai para o `GatewayStore` (senão quebra multi-réplica).
+- **Segurança de borda:** credenciais do cliente (`authorization`, `cookie`, `x-session-token`, `x-consumer-id`, `x-signature`) são removidas antes do proxy (exceto `upstreamAuth: 'passthrough'`).
+
+---
+
+## 7. Gotchas (aprendido na marra)
+
+1. **jose é v6** (não v5): `createRemoteJWKSet`, `jwtVerify`. JWT pina `algorithms` (default `['RS256']`) e rejeita token sem `sub`.
+2. **zod v4:** schemas de objeto com defaults aninhados usam `.prefault({})`, **não** `.default({})`.
+3. **Em testes use `Bun.sleep`**, não o `sleep` do app — o do app é `unref()`'d (pra não segurar o shutdown) e um timer unref'd trava sob `bun test`.
+4. **Sandbox bloqueia `bun test` multi-arquivo** (trava sem output num prompt de permissão) — rode com sandbox desabilitado.
+5. **`Application.stop()` guarda em `app.server`** (o `stop()` do Elysia lança se nunca houve `listen` — acontece nos testes via `app.handle`).
+6. **NUNCA pipe o corpo da REQUISIÇÃO** (stream de entrada do Bun.serve) por um `TransformStream`. Sob latência do store (Redis), o pipe interno do Bun lança `TypeError` como `unhandledRejection` e o `index.ts` derruba o processo (só no caminho Redis, 1 erro por POST). Teto do corpo = `maxRequestBodySize`. O corpo da RESPOSTA PODE ser piped (`pipeTo(...).catch()`, nunca `pipeThrough`).
+7. **ioredis quebra sob Bun** (TypeError de socket) → use o `RedisClient` nativo do Bun.
+8. **`bun x tsc`** baixa um TS global errado → use `bun run typecheck` (de dentro do pacote) ou `bun run --filter '@sistemazero/api-gateway' typecheck` (da raiz).
+9. **Logging:** o stage `finalize` emite `gateway.access` (info) por requisição (requestId, traceId, method, path, route, service, version, principal, target, attempts, status, latencyMs) — SEMPRE, mesmo em 4xx/5xx/timeout. Não é middleware do Elysia, é finalizer da CoR.
+
+---
+
+## 8. Pontos em aberto (não feitos — decisão de design pendente)
+
+- **Anti-replay HMAC/webhook por nonce:** hoje é só janela de tempo (`toleranceSeconds`); replay possível dentro da janela. Precisa de store de assinatura de uso único.
+- **Webhook assina só o corpo:** `x-event-type`/`x-delivery-id` ficam fora da assinatura (adulteráveis).
+- **Rate-limit spoofável** se `TRUST_PROXY`/`TRUSTED_PROXY_HOPS` estiverem mal configurados atrás de PaaS.
+- **LB cross-réplica:** least-connections/p2c/sticky são **por réplica** (sem coordenação entre réplicas) — trade-off documentado.
+
+---
+
+## 9. Deploy
+
+- Serviço Railway separado via **`packages/api-gateway/railway.json`** (NÃO repontar o `railway.json` da raiz, que é do payments). Dockerfile `oven/bun:1`, build context = raiz do repo.
+- Para escala: `STATE_BACKEND=redis` + `REDIS_URL` (provisione um Redis). Alcance o payments via `PAYMENTS_URL` (ex.: `http://payments.railway.internal:3001`).
+- Liveness `/health` (sempre 200 se de pé), readiness `/readyz` (503 se store fora, sem upstream saudável, ou em drain). `/metrics` (JSON ou `?format=prom`) — sem auth, exponha só na rede interna.
+
+---
+
+## 10. Checklist antes de finalizar uma tarefa
+
+- [ ] `bun run --filter '@sistemazero/api-gateway' typecheck` limpo.
+- [ ] `bun test` verde (sandbox off).
+- [ ] `bun run check` (Biome) limpo.
+- [ ] Sem `any` novo; entradas validadas com Zod; sem `: Elysia` em retornos.
+- [ ] Estado mutável novo foi para o `GatewayStore` (não variável de módulo) — continua stateless?
+- [ ] Mudou contrato de porta/config/comando? Atualizou este `CLAUDE.md`.
