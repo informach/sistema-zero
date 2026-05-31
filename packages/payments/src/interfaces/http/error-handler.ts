@@ -1,4 +1,5 @@
 import { DomainError } from '@sistemazero/core/errors'
+import type { ErrorEnvelope } from '@sistemazero/core/http'
 import {
   envelope,
   ForbiddenError,
@@ -6,7 +7,6 @@ import {
   TooManyRequestsError,
   UnauthorizedError,
 } from '@sistemazero/core/http'
-import type { ErrorEnvelope } from '@sistemazero/core/http'
 import type { Logger } from '@sistemazero/core/logging'
 import { EfiGatewayError } from '../../infrastructure/gateways/efi/efi.errors'
 
@@ -33,8 +33,10 @@ export function buildErrorResponse(input: {
 }): { status: number; body: ErrorEnvelope } {
   const { error, code } = input
 
-  if (error instanceof UnauthorizedError) return { status: 401, body: envelope('UNAUTHORIZED', error.message) }
-  if (error instanceof ForbiddenError) return { status: 403, body: envelope('FORBIDDEN', error.message) }
+  if (error instanceof UnauthorizedError)
+    return { status: 401, body: envelope('UNAUTHORIZED', error.message) }
+  if (error instanceof ForbiddenError)
+    return { status: 403, body: envelope('FORBIDDEN', error.message) }
   if (error instanceof TooManyRequestsError) {
     return { status: 429, body: envelope('TOO_MANY_REQUESTS', error.message) }
   }
@@ -47,19 +49,30 @@ export function buildErrorResponse(input: {
   }
 
   if (error instanceof EfiGatewayError) {
-    input.logger.error('gateway.error', { message: error.message, providerCode: error.providerCode })
-    return { status: 502, body: envelope('PROVIDER_ERROR', 'Falha ao comunicar com o provedor de pagamento') }
+    input.logger.error('gateway.error', {
+      message: error.message,
+      providerCode: error.providerCode,
+    })
+    return {
+      status: 502,
+      body: envelope('PROVIDER_ERROR', 'Falha ao comunicar com o provedor de pagamento'),
+    }
   }
 
   // Códigos internos do Elysia (validação de schema, parse, rota inexistente).
   if (code === 'VALIDATION') {
     return {
       status: 400,
-      body: envelope('VALIDATION_ERROR', error instanceof Error ? error.message : 'Requisição inválida'),
+      body: envelope(
+        'VALIDATION_ERROR',
+        error instanceof Error ? error.message : 'Requisição inválida',
+      ),
     }
   }
-  if (code === 'PARSE') return { status: 400, body: envelope('PARSE_ERROR', 'Corpo da requisição inválido') }
-  if (code === 'NOT_FOUND') return { status: 404, body: envelope('NOT_FOUND', 'Recurso não encontrado') }
+  if (code === 'PARSE')
+    return { status: 400, body: envelope('PARSE_ERROR', 'Corpo da requisição inválido') }
+  if (code === 'NOT_FOUND')
+    return { status: 404, body: envelope('NOT_FOUND', 'Recurso não encontrado') }
 
   input.logger.error('unhandled.error', {
     message: error instanceof Error ? error.message : String(error),

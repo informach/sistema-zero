@@ -1,5 +1,5 @@
-import { Entity } from './entity'
 import type { DomainEvent } from './domain-event'
+import { Entity } from './entity'
 
 /**
  * Raiz de agregado: fronteira de consistência transacional. Acumula eventos de

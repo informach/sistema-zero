@@ -1,7 +1,7 @@
 import type { Consumer, ConsumerRepository } from '../../domain/ports/consumer-repository.port'
+import type { Logger } from '../../infrastructure/logging/logger'
 import { verifyHmacSignature } from '../../infrastructure/security/hmac'
 import { ipMatchesAny } from '../../infrastructure/security/ip'
-import type { Logger } from '../../infrastructure/logging/logger'
 import { ForbiddenError, UnauthorizedError } from './errors'
 import { getRawBody } from './raw-body'
 

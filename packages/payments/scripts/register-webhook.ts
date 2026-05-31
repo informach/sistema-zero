@@ -19,7 +19,9 @@ import { readArg } from './args'
  */
 const url = readArg('url', 'WEBHOOK_URL')
 if (!url) {
-  console.error('❌ Informe a URL base: --url https://<dominio>/webhooks/efi (a Efí acrescenta /pix)')
+  console.error(
+    '❌ Informe a URL base: --url https://<dominio>/webhooks/efi (a Efí acrescenta /pix)',
+  )
   process.exit(1)
 }
 

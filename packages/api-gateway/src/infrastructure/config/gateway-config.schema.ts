@@ -92,9 +92,16 @@ export const serviceConfigSchema = z.object({
   name: z.string(),
   upstreamGroups: z.record(z.string(), z.array(upstreamConfigSchema).min(1)),
   loadBalancer: lbStrategy.default('round-robin'),
-  circuitBreaker: circuitBreakerConfigSchema.default({}),
-  retry: retryPolicyConfigSchema.default({}),
+  circuitBreaker: circuitBreakerConfigSchema.prefault({}),
+  retry: retryPolicyConfigSchema.prefault({}),
   timeoutMs: z.number().int().positive().default(15_000),
+})
+
+export const consumerConfigSchema = z.object({
+  id: z.string(),
+  hmacSecret: z.string(),
+  allowedCidrs: z.array(z.string()).default(['0.0.0.0/0']),
+  isActive: z.boolean().default(true),
 })
 
 export const gatewayConfigSchema = z.object({
@@ -104,8 +111,10 @@ export const gatewayConfigSchema = z.object({
       accept: z.string().default('accept-version'),
       explicit: z.string().default('x-api-version'),
     })
-    .default({}),
+    .prefault({}),
   cors: corsConfigSchema.optional(), // CORS global default
+  // Consumidores HMAC do gateway (clientes sistema-a-sistema). Estático via config.
+  consumers: z.array(consumerConfigSchema).default([]),
   services: z.record(z.string(), serviceConfigSchema),
   routes: z.array(routeConfigSchema),
 })
@@ -120,5 +129,6 @@ export type TransformRef = z.infer<typeof transformRefSchema>
 export type VersionMapping = z.infer<typeof versionMappingSchema>
 export type RouteConfig = z.infer<typeof routeConfigSchema>
 export type ServiceConfig = z.infer<typeof serviceConfigSchema>
+export type ConsumerConfig = z.infer<typeof consumerConfigSchema>
 export type GatewayConfig = z.infer<typeof gatewayConfigSchema>
 export type GatewayConfigInput = z.input<typeof gatewayConfigSchema>

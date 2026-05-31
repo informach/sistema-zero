@@ -33,7 +33,11 @@ const EnvSchema = z
     TRUSTED_PROXY_HOPS: z.coerce.number().int().positive().default(1),
 
     // Teto do corpo (bytes). 1 MB — maior que o payments pois aqui é streamado.
-    MAX_REQUEST_BODY_BYTES: z.coerce.number().int().positive().default(1024 * 1024),
+    MAX_REQUEST_BODY_BYTES: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(1024 * 1024),
 
     // Defaults de proxy (sobrescrevíveis por serviço/rota na config).
     DEFAULT_TIMEOUT_MS: z.coerce.number().int().positive().default(15_000),

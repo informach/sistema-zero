@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, test } from 'bun:test'
+import { registerPaymentEventHandlers } from '../../src/application/event-handlers/payment-event-handlers'
 import { GetPaymentService } from '../../src/application/get-payment/get-payment.service'
 import type { ProcessPaymentCommand } from '../../src/application/process-payment/process-payment.command'
 import { ProcessPaymentService } from '../../src/application/process-payment/process-payment.service'
 import { InProcessEventPublisher } from '../../src/infrastructure/events/in-process-event-publisher'
-import { registerPaymentEventHandlers } from '../../src/application/event-handlers/payment-event-handlers'
 import { ReconciliationWorker } from '../../src/infrastructure/workers/reconciliation-worker'
 import {
   FakePixGateway,
@@ -37,7 +37,12 @@ describe('ReconciliationWorker', () => {
       repo,
       gateway,
       new InMemoryIdempotencyStore(),
-      { pixKey: 'pix@loja.com', idempotencyTtlSeconds: 3600, idempotencyInFlightTtlSeconds: 120, asyncChargeCreation: false },
+      {
+        pixKey: 'pix@loja.com',
+        idempotencyTtlSeconds: 3600,
+        idempotencyInFlightTtlSeconds: 120,
+        asyncChargeCreation: false,
+      },
       silentLogger,
     )
     const view = await service.execute(command)
@@ -45,7 +50,11 @@ describe('ReconciliationWorker', () => {
   })
 
   const newWorker = () =>
-    new ReconciliationWorker(repo, gateway, silentLogger, { intervalMs: 1000, batchSize: 10, staleAfterMs: 0 })
+    new ReconciliationWorker(repo, gateway, silentLogger, {
+      intervalMs: 1000,
+      batchSize: 10,
+      staleAfterMs: 0,
+    })
 
   test('confirma pagamentos cuja cobrança já está paga na Efí (webhook perdido)', async () => {
     gateway.chargeStatus = 'PAID'

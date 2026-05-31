@@ -38,7 +38,12 @@ describe('HandleProviderWebhookService (Pix)', () => {
       repo,
       gateway,
       new InMemoryIdempotencyStore(),
-      { pixKey: 'pix@loja.com', idempotencyTtlSeconds: 3600, idempotencyInFlightTtlSeconds: 120, asyncChargeCreation: false },
+      {
+        pixKey: 'pix@loja.com',
+        idempotencyTtlSeconds: 3600,
+        idempotencyInFlightTtlSeconds: 120,
+        asyncChargeCreation: false,
+      },
       silentLogger,
     )
     const view = await process.execute(command)

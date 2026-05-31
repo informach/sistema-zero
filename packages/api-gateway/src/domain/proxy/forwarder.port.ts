@@ -7,7 +7,7 @@ export interface ForwardRequest {
   readonly target: UpstreamTarget
   readonly path: string // caminho + querystring no upstream
   readonly headers: Headers
-  readonly body: BodyInit | null // stream (sem buffer) ou string (quando re-assinado/transformado)
+  readonly body: RequestInit['body'] // stream (sem buffer) ou string (quando re-assinado/transformado)
   readonly signal: AbortSignal
 }
 

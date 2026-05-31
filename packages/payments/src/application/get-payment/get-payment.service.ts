@@ -1,6 +1,6 @@
-import type { PaymentRepository } from '../../domain/ports/payment-repository.port'
 import { PaymentNotFoundError } from '../../domain/payment/payment.errors'
-import { toPaymentView, type PaymentView } from '../mappers/payment-view'
+import type { PaymentRepository } from '../../domain/ports/payment-repository.port'
+import { type PaymentView, toPaymentView } from '../mappers/payment-view'
 
 /** Caso de uso de consulta de um pagamento pelo identificador. */
 export class GetPaymentService {

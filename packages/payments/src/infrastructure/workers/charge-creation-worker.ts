@@ -66,7 +66,9 @@ export class ChargeCreationWorker {
       const concurrency = Math.max(1, this.options.concurrency ?? 1)
       for (let i = 0; i < claimed.length; i += concurrency) {
         const slice = claimed.slice(i, i + concurrency)
-        await Promise.all(slice.map(({ payment, attempts }) => this.createCharge(payment, attempts)))
+        await Promise.all(
+          slice.map(({ payment, attempts }) => this.createCharge(payment, attempts)),
+        )
       }
     } catch (error) {
       this.logger.error('charge.worker.tick_failed', {

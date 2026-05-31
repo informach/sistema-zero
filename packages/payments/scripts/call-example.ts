@@ -65,9 +65,13 @@ async function getPayment(id: string): Promise<{ httpStatus: number; view: Payme
 
 const TERMINAL = ['PAID', 'FAILED', 'EXPIRED', 'CANCELED']
 
-console.log(`→ POST ${baseUrl}/payments  (consumer=${consumerId}, valor=R$ ${(amountInCents / 100).toFixed(2)})`)
+console.log(
+  `→ POST ${baseUrl}/payments  (consumer=${consumerId}, valor=R$ ${(amountInCents / 100).toFixed(2)})`,
+)
 const { httpStatus, view } = await createPayment()
-console.log(`← HTTP ${httpStatus}  status=${view.status}  pix=${view.pix ? 'sim' : 'não'}  id=${view.id}`)
+console.log(
+  `← HTTP ${httpStatus}  status=${view.status}  pix=${view.pix ? 'sim' : 'não'}  id=${view.id}`,
+)
 
 if (view.pix?.copiaECola) {
   console.log('\n✅ Cobrança Pix criada (síncrono)! Copia-e-cola:')
@@ -80,7 +84,9 @@ if (view.pix?.copiaECola) {
   for (let i = 1; i <= 15 && !done; i++) {
     await Bun.sleep(1000)
     const polled = await getPayment(view.id)
-    console.log(`  [${i}] HTTP ${polled.httpStatus}  status=${polled.view.status}  pix=${polled.view.pix ? 'sim' : 'não'}`)
+    console.log(
+      `  [${i}] HTTP ${polled.httpStatus}  status=${polled.view.status}  pix=${polled.view.pix ? 'sim' : 'não'}`,
+    )
     if (polled.view.pix?.copiaECola) {
       console.log('\n✅ QR disponível (criado pelo worker)! Copia-e-cola:')
       console.log(polled.view.pix.copiaECola)
@@ -90,7 +96,10 @@ if (view.pix?.copiaECola) {
       done = true
     }
   }
-  if (!done) console.log('\n⚠️ Tempo esgotado — o worker ainda não criou a cobrança (veja os logs do servidor).')
+  if (!done)
+    console.log(
+      '\n⚠️ Tempo esgotado — o worker ainda não criou a cobrança (veja os logs do servidor).',
+    )
 } else if (httpStatus === 202) {
   console.log('\nℹ️ Aceito (assíncrono). Rode com --poll para acompanhar até o QR aparecer.')
 }

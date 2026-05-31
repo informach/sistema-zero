@@ -29,7 +29,12 @@ describe('Modo assíncrono + ChargeCreationWorker', () => {
       repo,
       gateway,
       new InMemoryIdempotencyStore(),
-      { pixKey: 'pix@loja.com', idempotencyTtlSeconds: 3600, idempotencyInFlightTtlSeconds: 120, asyncChargeCreation: true },
+      {
+        pixKey: 'pix@loja.com',
+        idempotencyTtlSeconds: 3600,
+        idempotencyInFlightTtlSeconds: 120,
+        asyncChargeCreation: true,
+      },
       silentLogger,
     )
   })

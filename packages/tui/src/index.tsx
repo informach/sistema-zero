@@ -1,10 +1,10 @@
-import { createCliRenderer } from "@opentui/core";
-import { createRoot } from "@opentui/react";
-import { Header } from "./components/header";
-import { InputBar } from "./components/input-bar";
-import { KeyboardLayerProvider } from "./providers/keyboard-layer";
-import { ThemeProvider } from "./providers/theme";
-import { ToastProvider } from "./providers/toast";
+import { createCliRenderer } from '@opentui/core'
+import { createRoot } from '@opentui/react'
+import { Header } from './components/header'
+import { InputBar } from './components/input-bar'
+import { KeyboardLayerProvider } from './providers/keyboard-layer'
+import { ThemeProvider } from './providers/theme'
+import { ToastProvider } from './providers/toast'
 
 function App() {
   return (
@@ -27,11 +27,11 @@ function App() {
         </KeyboardLayerProvider>
       </ToastProvider>
     </ThemeProvider>
-  );
+  )
 }
 
 const renderer = await createCliRenderer({
   targetFps: 60,
   exitOnCtrlC: false,
-});
-createRoot(renderer).render(<App />);
+})
+createRoot(renderer).render(<App />)

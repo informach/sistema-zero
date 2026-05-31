@@ -35,7 +35,8 @@ function ipMatches(ip: string, rule: string): boolean {
   const rangeInt = ipToBigInt(range, ruleIsV6)
   if (ipInt === null || rangeInt === null) return false
 
-  const mask = bits === 0 ? 0n : (~0n << BigInt(totalBits - bits)) & ((1n << BigInt(totalBits)) - 1n)
+  const mask =
+    bits === 0 ? 0n : (~0n << BigInt(totalBits - bits)) & ((1n << BigInt(totalBits)) - 1n)
   return (ipInt & mask) === (rangeInt & mask)
 }
 

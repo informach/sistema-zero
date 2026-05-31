@@ -46,8 +46,24 @@ describe('HMAC', () => {
   })
 
   test('rejeita header ausente ou malformado', () => {
-    expect(verifyHmacSignature({ secret, body, signatureHeader: undefined, nowSeconds: now, toleranceSeconds: 300 }).valid).toBe(false)
-    expect(verifyHmacSignature({ secret, body, signatureHeader: 'lixo', nowSeconds: now, toleranceSeconds: 300 }).valid).toBe(false)
+    expect(
+      verifyHmacSignature({
+        secret,
+        body,
+        signatureHeader: undefined,
+        nowSeconds: now,
+        toleranceSeconds: 300,
+      }).valid,
+    ).toBe(false)
+    expect(
+      verifyHmacSignature({
+        secret,
+        body,
+        signatureHeader: 'lixo',
+        nowSeconds: now,
+        toleranceSeconds: 300,
+      }).valid,
+    ).toBe(false)
   })
 
   test('rejeita v1 com hex inválido como malformado', () => {
@@ -67,11 +83,23 @@ describe('HMAC', () => {
     const idemKey = 'idem-12345678'
     const header = `t=${now},v1=${signHmac(secret, `${idemKey}.${body}`, now)}`
     expect(
-      verifyHmacSignature({ secret, body: `${idemKey}.${body}`, signatureHeader: header, nowSeconds: now, toleranceSeconds: 300 }).valid,
+      verifyHmacSignature({
+        secret,
+        body: `${idemKey}.${body}`,
+        signatureHeader: header,
+        nowSeconds: now,
+        toleranceSeconds: 300,
+      }).valid,
     ).toBe(true)
     // Mesma assinatura com OUTRA chave → mensagem diferente → inválida (anti-replay com troca de chave).
     expect(
-      verifyHmacSignature({ secret, body: `outra-chave.${body}`, signatureHeader: header, nowSeconds: now, toleranceSeconds: 300 }).valid,
+      verifyHmacSignature({
+        secret,
+        body: `outra-chave.${body}`,
+        signatureHeader: header,
+        nowSeconds: now,
+        toleranceSeconds: 300,
+      }).valid,
     ).toBe(false)
   })
 })

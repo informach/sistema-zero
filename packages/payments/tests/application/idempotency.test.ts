@@ -34,7 +34,12 @@ describe('Idempotência (escopo por consumidor + estados)', () => {
       repo,
       gateway,
       store,
-      { pixKey: 'pix@loja.com', idempotencyTtlSeconds: 3600, idempotencyInFlightTtlSeconds: 120, asyncChargeCreation: false },
+      {
+        pixKey: 'pix@loja.com',
+        idempotencyTtlSeconds: 3600,
+        idempotencyInFlightTtlSeconds: 120,
+        asyncChargeCreation: false,
+      },
       silentLogger,
     )
   })
@@ -55,13 +60,23 @@ describe('Idempotência (escopo por consumidor + estados)', () => {
 
   test('reserva IN_FLIGHT em andamento → 409 in-flight', async () => {
     // Simula uma request anterior que reservou e ainda não concluiu.
-    await store.reserve({ consumerId: 'sys-a', key: cmd.idempotencyKey, requestHash: 'hash-A', inFlightTtlSeconds: 120 })
+    await store.reserve({
+      consumerId: 'sys-a',
+      key: cmd.idempotencyKey,
+      requestHash: 'hash-A',
+      inFlightTtlSeconds: 120,
+    })
     await expect(service.execute(cmd)).rejects.toBeInstanceOf(IdempotencyInFlightError)
     expect(gateway.createdCount).toBe(0)
   })
 
   test('reserva IN_FLIGHT expirada (crash) é reciclada → processa normalmente', async () => {
-    await store.reserve({ consumerId: 'sys-a', key: cmd.idempotencyKey, requestHash: 'hash-A', inFlightTtlSeconds: 120 })
+    await store.reserve({
+      consumerId: 'sys-a',
+      key: cmd.idempotencyKey,
+      requestHash: 'hash-A',
+      inFlightTtlSeconds: 120,
+    })
     store.clockSkewMs = 121_000 // avança além do TTL curto
     const view = await service.execute(cmd)
     expect(view.status).toBe('PENDING')

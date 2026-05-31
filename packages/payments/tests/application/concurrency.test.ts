@@ -27,7 +27,12 @@ describe('Concorrência otimista (version)', () => {
       repo,
       new FakePixGateway(),
       new InMemoryIdempotencyStore(),
-      { pixKey: 'pix@loja.com', idempotencyTtlSeconds: 3600, idempotencyInFlightTtlSeconds: 120, asyncChargeCreation: false },
+      {
+        pixKey: 'pix@loja.com',
+        idempotencyTtlSeconds: 3600,
+        idempotencyInFlightTtlSeconds: 120,
+        asyncChargeCreation: false,
+      },
       silentLogger,
     )
     paymentId = (await service.execute(command)).id

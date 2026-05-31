@@ -1,8 +1,15 @@
 {
   "name": "sistemazero",
   "version": "1.0.0",
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
+    "format": "biome format --write .",
+    "lint": "biome lint .",
+    "check": "biome check .",
+    "check:fix": "biome check --write .",
+    "ci": "biome ci .",
     "dev:tui": "bun run --watch packages/tui/src/index.tsx",
     "build:tui": "bun run --filter @sistemazero/tui build",
     "link:tui": "bun run build:tui && cd packages/tui && bun link",
@@ -10,5 +17,8 @@
     "test:payments": "bun run --filter @sistemazero/payments test",
     "dev:gateway": "bun run --filter @sistemazero/api-gateway dev",
     "test:gateway": "bun run --filter @sistemazero/api-gateway test"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.4.16"
   }
 }

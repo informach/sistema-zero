@@ -1,0 +1,5 @@
+{
+  // Extensão oficial do Biome — formatação/lint/organize-imports integrados ao editor.
+  // O VS Code sugere instalar ao abrir o workspace.
+  "recommendations": ["biomejs.biome"]
+}

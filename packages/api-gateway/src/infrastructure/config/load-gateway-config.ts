@@ -54,7 +54,9 @@ function validateReferences(config: GatewayConfig, env: Env): void {
     for (const v of route.versions ?? []) {
       const group = v.upstreamGroup ?? route.upstreamGroup
       if (!service.upstreamGroups[group]) {
-        problems.push(`rota "${route.id}" versão "${v.version}": upstreamGroup "${group}" inexistente`)
+        problems.push(
+          `rota "${route.id}" versão "${v.version}": upstreamGroup "${group}" inexistente`,
+        )
       }
     }
     if (route.auth !== 'public' && route.auth.strategies.includes('jwt')) usesJwt = true
@@ -65,10 +67,14 @@ function validateReferences(config: GatewayConfig, env: Env): void {
     problems.push('alguma rota usa auth "jwt" mas JWT_JWKS_URL não está definido')
   }
   if (usesResign && !(env.GATEWAY_CONSUMER_ID?.trim() && env.GATEWAY_HMAC_SECRET?.trim())) {
-    problems.push('alguma rota usa upstreamAuth="resign" mas GATEWAY_CONSUMER_ID/GATEWAY_HMAC_SECRET ausentes')
+    problems.push(
+      'alguma rota usa upstreamAuth="resign" mas GATEWAY_CONSUMER_ID/GATEWAY_HMAC_SECRET ausentes',
+    )
   }
 
   if (problems.length > 0) {
-    throw new Error(`Config do gateway inconsistente:\n${problems.map((p) => `  - ${p}`).join('\n')}`)
+    throw new Error(
+      `Config do gateway inconsistente:\n${problems.map((p) => `  - ${p}`).join('\n')}`,
+    )
   }
 }

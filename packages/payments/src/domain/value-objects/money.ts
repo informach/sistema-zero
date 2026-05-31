@@ -1,5 +1,5 @@
-import { ValueObject } from '../shared/value-object'
 import { ValidationError } from '../shared/errors'
+import { ValueObject } from '../shared/value-object'
 
 export type Currency = 'BRL'
 

@@ -36,7 +36,12 @@ describe('ProcessPaymentService (Pix)', () => {
       repo,
       gateway,
       idempotency,
-      { pixKey: 'pix@loja.com', idempotencyTtlSeconds: 3600, idempotencyInFlightTtlSeconds: 120, asyncChargeCreation: false },
+      {
+        pixKey: 'pix@loja.com',
+        idempotencyTtlSeconds: 3600,
+        idempotencyInFlightTtlSeconds: 120,
+        asyncChargeCreation: false,
+      },
       silentLogger,
     )
   })
@@ -68,9 +73,9 @@ describe('ProcessPaymentService (Pix)', () => {
   })
 
   test('método ainda não suportado libera a reserva de idempotência', async () => {
-    await expect(
-      service.execute({ ...baseCommand, method: 'BOLETO' }),
-    ).rejects.toBeInstanceOf(UnsupportedPaymentMethodError)
+    await expect(service.execute({ ...baseCommand, method: 'BOLETO' })).rejects.toBeInstanceOf(
+      UnsupportedPaymentMethodError,
+    )
 
     // Reserva liberada → uma nova tentativa (corrigida) não fica presa em conflito.
     const retry = await service.execute({ ...baseCommand, method: 'PIX' })

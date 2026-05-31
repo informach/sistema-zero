@@ -1,0 +1,18 @@
+{
+  // Formata ao salvar e, no save, aplica os fixes seguros do Biome e organiza os imports.
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports.biome": "explicit",
+    "quickfix.biome": "explicit"
+  },
+
+  // Biome como formatador padrão apenas para as linguagens que ele suporta
+  // (as demais mantêm seus próprios formatadores). Ele respeita o biome.json
+  // da raiz — inclusive os ignores (migrations, bun.lock, .gitignore via vcs).
+  "[javascript]": { "editor.defaultFormatter": "biomejs.biome" },
+  "[javascriptreact]": { "editor.defaultFormatter": "biomejs.biome" },
+  "[typescript]": { "editor.defaultFormatter": "biomejs.biome" },
+  "[typescriptreact]": { "editor.defaultFormatter": "biomejs.biome" },
+  "[json]": { "editor.defaultFormatter": "biomejs.biome" },
+  "[jsonc]": { "editor.defaultFormatter": "biomejs.biome" }
+}

@@ -6,5 +6,5 @@ export function Header() {
         <ascii-font font="tiny" text="Zero" />
       </box>
     </box>
-  );
-};
+  )
+}

@@ -1,17 +1,30 @@
 import { describe, expect, test } from 'bun:test'
+import { Money } from '../../src/domain/value-objects/money'
 import type { EfiClient } from '../../src/infrastructure/gateways/efi/efi.client'
 import { EfiGatewayError } from '../../src/infrastructure/gateways/efi/efi.errors'
 import { EfiPaymentGateway } from '../../src/infrastructure/gateways/efi/efi.gateway'
-import { Money } from '../../src/domain/value-objects/money'
 
 const PAYMENT_ID = 'c73280a9-7ddd-457a-82c3-d65283171237'
 const TXID = 'c73280a97ddd457a82c3d65283171237'
 
 function mockClient(over: Partial<EfiClient>): EfiClient {
   return {
-    createCharge: async () => ({ txid: TXID, loc: { id: 1 }, pixCopiaECola: '00020101-COPIA-E-COLA', calendario: { expiracao: 3600, criacao: '2026-01-01T00:00:00Z' } }),
-    detailCharge: async () => ({ txid: TXID, loc: { id: 1 }, pixCopiaECola: '00020101-COPIA-E-COLA', calendario: { expiracao: 3600, criacao: '2026-01-01T00:00:00Z' } }),
-    generateQrCode: async () => ({ qrcode: '00020101-QR', imagemQrcode: 'data:image/png;base64,QQ==' }),
+    createCharge: async () => ({
+      txid: TXID,
+      loc: { id: 1 },
+      pixCopiaECola: '00020101-COPIA-E-COLA',
+      calendario: { expiracao: 3600, criacao: '2026-01-01T00:00:00Z' },
+    }),
+    detailCharge: async () => ({
+      txid: TXID,
+      loc: { id: 1 },
+      pixCopiaECola: '00020101-COPIA-E-COLA',
+      calendario: { expiracao: 3600, criacao: '2026-01-01T00:00:00Z' },
+    }),
+    generateQrCode: async () => ({
+      qrcode: '00020101-QR',
+      imagemQrcode: 'data:image/png;base64,QQ==',
+    }),
     ...over,
   } as unknown as EfiClient
 }
@@ -39,11 +52,21 @@ describe('EfiPaymentGateway.createPixCharge', () => {
       mockClient({
         createCharge: (async () => {
           putCalls++
-          throw new EfiGatewayError('Campo txid informado já foi utilizado', 'txid_duplicado', undefined, 409)
+          throw new EfiGatewayError(
+            'Campo txid informado já foi utilizado',
+            'txid_duplicado',
+            undefined,
+            409,
+          )
         }) as EfiClient['createCharge'],
         detailCharge: (async () => {
           detailCalls++
-          return { txid: TXID, loc: { id: 1 }, pixCopiaECola: '00020101-EXISTENTE', calendario: { expiracao: 3600 } }
+          return {
+            txid: TXID,
+            loc: { id: 1 },
+            pixCopiaECola: '00020101-EXISTENTE',
+            calendario: { expiracao: 3600 },
+          }
         }) as EfiClient['detailCharge'],
       }),
     )
@@ -68,7 +91,10 @@ describe('EfiPaymentGateway.createPixCharge', () => {
   test('cobrança sem copia-e-cola falha alto (não persiste sucesso sem código pagável)', async () => {
     const gw = new EfiPaymentGateway(
       mockClient({
-        createCharge: (async () => ({ txid: TXID, calendario: { expiracao: 3600 } })) as EfiClient['createCharge'],
+        createCharge: (async () => ({
+          txid: TXID,
+          calendario: { expiracao: 3600 },
+        })) as EfiClient['createCharge'],
         generateQrCode: (async () => ({})) as EfiClient['generateQrCode'],
       }),
     )

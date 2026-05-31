@@ -1,6 +1,9 @@
 import { and, asc, eq, inArray, isNotNull, isNull, lt, or, sql } from 'drizzle-orm'
-import type { ClaimedCharge, PaymentRepository } from '../../../domain/ports/payment-repository.port'
 import { PaymentAggregate, type PaymentSnapshot } from '../../../domain/payment/payment.aggregate'
+import type {
+  ClaimedCharge,
+  PaymentRepository,
+} from '../../../domain/ports/payment-repository.port'
 import type { Currency } from '../../../domain/value-objects/money'
 import { PG_CHANNELS } from './channels'
 import { ConcurrencyConflictError } from './concurrency.error'

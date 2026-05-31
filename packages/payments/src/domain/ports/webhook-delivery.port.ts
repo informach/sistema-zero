@@ -33,6 +33,12 @@ export interface WebhookDeliveryRepository {
   claimDue(limit: number, leaseMs: number): Promise<WebhookDelivery[]>
 
   markSucceeded(id: string, statusCode: number): Promise<void>
-  reschedule(id: string, attempts: number, nextAttemptAt: Date, error: string, statusCode?: number): Promise<void>
+  reschedule(
+    id: string,
+    attempts: number,
+    nextAttemptAt: Date,
+    error: string,
+    statusCode?: number,
+  ): Promise<void>
   markDead(id: string, error: string): Promise<void>
 }

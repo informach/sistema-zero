@@ -1,5 +1,5 @@
-import { ValueObject } from '../shared/value-object'
 import { ValidationError } from '../shared/errors'
+import { ValueObject } from '../shared/value-object'
 import { Document } from './document'
 
 export interface Address {

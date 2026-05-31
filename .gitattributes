@@ -1,0 +1,11 @@
+# Normaliza o fim de linha para LF em todo o repo (elimina o ruído de CRLF no
+# Windows e alinha com o `lineEnding: "lf"` do Biome).
+* text=auto eol=lf
+
+# Lockfile e binários: não normalizar.
+bun.lock -text
+*.png binary
+*.jpg binary
+*.ico binary
+*.p12 binary
+*.pfx binary

@@ -74,7 +74,10 @@ export class WebhookDeliveryWorker {
     if (this.running) return
     this.running = true
     try {
-      const due = await this.deliveries.claimDue(this.options.batchSize, this.options.leaseMs ?? 30_000)
+      const due = await this.deliveries.claimDue(
+        this.options.batchSize,
+        this.options.leaseMs ?? 30_000,
+      )
       // Processa em paralelo (limitado) p/ o lote terminar dentro do lease e não
       // ter entregas re-reivindicadas por outra réplica (entrega duplicada).
       const concurrency = Math.max(1, this.options.concurrency ?? 5)
@@ -97,7 +100,11 @@ export class WebhookDeliveryWorker {
       return
     }
 
-    const body = JSON.stringify({ id: delivery.id, event: delivery.eventName, data: delivery.payload })
+    const body = JSON.stringify({
+      id: delivery.id,
+      event: delivery.eventName,
+      data: delivery.payload,
+    })
     const ts = Math.floor(Date.now() / 1000)
     const signature = `t=${ts},v1=${signHmac(consumer.hmacSecret, body, ts)}`
 

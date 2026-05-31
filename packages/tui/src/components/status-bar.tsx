@@ -1,4 +1,4 @@
-import { TextAttributes } from "@opentui/core";
+import { TextAttributes } from '@opentui/core'
 
 export function StatusBar() {
   return (
@@ -9,5 +9,5 @@ export function StatusBar() {
       </text>
       <text>opus-4-6</text>
     </box>
-  );
+  )
 }

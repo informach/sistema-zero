@@ -41,7 +41,10 @@ export class DrizzleWebhookInbox implements WebhookInbox {
       .select({ processedAt: webhookEvents.processedAt })
       .from(webhookEvents)
       .where(
-        and(eq(webhookEvents.provider, input.provider), eq(webhookEvents.providerEventId, input.eventId)),
+        and(
+          eq(webhookEvents.provider, input.provider),
+          eq(webhookEvents.providerEventId, input.eventId),
+        ),
       )
       .limit(1)
 
@@ -53,8 +56,6 @@ export class DrizzleWebhookInbox implements WebhookInbox {
     await this.db
       .update(webhookEvents)
       .set({ processedAt: new Date() })
-      .where(
-        and(eq(webhookEvents.provider, provider), eq(webhookEvents.providerEventId, eventId)),
-      )
+      .where(and(eq(webhookEvents.provider, provider), eq(webhookEvents.providerEventId, eventId)))
   }
 }

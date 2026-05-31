@@ -58,10 +58,7 @@ export class DrizzleOutboxRepository implements OutboxRepository {
               .where(eq(outbox.id, row.id))
             dead++
           } else {
-            await tx
-              .update(outbox)
-              .set({ attemptCount: attempts })
-              .where(eq(outbox.id, row.id))
+            await tx.update(outbox).set({ attemptCount: attempts }).where(eq(outbox.id, row.id))
             failed++
           }
         }

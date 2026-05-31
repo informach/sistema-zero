@@ -16,7 +16,11 @@ const AddressSchema = t.Object({
  */
 export const ProcessPaymentBody = t.Object({
   // Máximo ~R$ 10.000.000,00 — teto de sanidade contra valores absurdos.
-  amountInCents: t.Integer({ minimum: 1, maximum: 1_000_000_000, description: 'Valor em centavos' }),
+  amountInCents: t.Integer({
+    minimum: 1,
+    maximum: 1_000_000_000,
+    description: 'Valor em centavos',
+  }),
   method: t.Union([t.Literal('PIX'), t.Literal('BOLETO'), t.Literal('CREDIT_CARD')]),
   description: t.Optional(t.String({ maxLength: 200 })),
   payerMessage: t.Optional(t.String({ maxLength: 140 })),

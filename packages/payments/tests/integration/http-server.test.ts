@@ -67,7 +67,12 @@ function buildApp(opts: BuildOpts = {}) {
       silentLogger,
     ),
     getPayment: new GetPaymentService(repo),
-    handleWebhook: new HandleProviderWebhookService(repo, gateway, new InMemoryWebhookInbox(), silentLogger),
+    handleWebhook: new HandleProviderWebhookService(
+      repo,
+      gateway,
+      new InMemoryWebhookInbox(),
+      silentLogger,
+    ),
     getMetrics: async () => ({
       outboxPending: 0,
       outboxDead: 0,
@@ -91,7 +96,12 @@ function postHeaders(
   body: string,
   opts: { consumerId?: string; secret?: string; key?: string; xff?: string } = {},
 ) {
-  const { consumerId = 'sys-a', secret = 'secret-a', key = 'idem-12345678', xff = '203.0.113.10' } = opts
+  const {
+    consumerId = 'sys-a',
+    secret = 'secret-a',
+    key = 'idem-12345678',
+    xff = '203.0.113.10',
+  } = opts
   // Mensagem canônica: com key → "<key>.<body>"; sem key → "<body>".
   const headers: Record<string, string> = {
     'content-type': 'application/json',
@@ -134,7 +144,11 @@ describe('HTTP server', () => {
   test('POST /payments autenticado cria cobrança Pix → 201', async () => {
     const { app } = buildApp()
     const res = await app.handle(
-      new Request('http://localhost/payments', { method: 'POST', headers: postHeaders(PIX_BODY), body: PIX_BODY }),
+      new Request('http://localhost/payments', {
+        method: 'POST',
+        headers: postHeaders(PIX_BODY),
+        body: PIX_BODY,
+      }),
     )
     expect(res.status).toBe(201)
     const json = (await res.json()) as { status: string; pix?: { copiaECola: string } }
@@ -146,7 +160,9 @@ describe('HTTP server', () => {
     const { app } = buildApp()
     const headers = postHeaders(PIX_BODY)
     headers['x-signature'] = 't=1700000000,v1=deadbeef'
-    const res = await app.handle(new Request('http://localhost/payments', { method: 'POST', headers, body: PIX_BODY }))
+    const res = await app.handle(
+      new Request('http://localhost/payments', { method: 'POST', headers, body: PIX_BODY }),
+    )
     expect(res.status).toBe(401)
   })
 
@@ -165,7 +181,11 @@ describe('HTTP server', () => {
   test('modo assíncrono → 202 sem pix', async () => {
     const { app } = buildApp({ async: true })
     const res = await app.handle(
-      new Request('http://localhost/payments', { method: 'POST', headers: postHeaders(PIX_BODY), body: PIX_BODY }),
+      new Request('http://localhost/payments', {
+        method: 'POST',
+        headers: postHeaders(PIX_BODY),
+        body: PIX_BODY,
+      }),
     )
     expect(res.status).toBe(202)
     const json = (await res.json()) as { status: string; pix?: unknown }
@@ -176,8 +196,12 @@ describe('HTTP server', () => {
     const { app } = buildApp({ rateLimit: 1 })
     const h1 = postHeaders(PIX_BODY, { key: 'idem-aaaaaaaa' })
     const h2 = postHeaders(PIX_BODY, { key: 'idem-bbbbbbbb' })
-    const r1 = await app.handle(new Request('http://localhost/payments', { method: 'POST', headers: h1, body: PIX_BODY }))
-    const r2 = await app.handle(new Request('http://localhost/payments', { method: 'POST', headers: h2, body: PIX_BODY }))
+    const r1 = await app.handle(
+      new Request('http://localhost/payments', { method: 'POST', headers: h1, body: PIX_BODY }),
+    )
+    const r2 = await app.handle(
+      new Request('http://localhost/payments', { method: 'POST', headers: h2, body: PIX_BODY }),
+    )
     expect(r1.status).toBe(201)
     expect(r2.status).toBe(429)
     expect(r2.headers.get('retry-after')).toBeTruthy()
@@ -187,10 +211,18 @@ describe('HTTP server', () => {
     const { app } = buildApp()
     const body2 = JSON.stringify({ amountInCents: 2000, method: 'PIX' })
     const r1 = await app.handle(
-      new Request('http://localhost/payments', { method: 'POST', headers: postHeaders(PIX_BODY, { key: 'idem-dup-001' }), body: PIX_BODY }),
+      new Request('http://localhost/payments', {
+        method: 'POST',
+        headers: postHeaders(PIX_BODY, { key: 'idem-dup-001' }),
+        body: PIX_BODY,
+      }),
     )
     const r2 = await app.handle(
-      new Request('http://localhost/payments', { method: 'POST', headers: postHeaders(body2, { key: 'idem-dup-001' }), body: body2 }),
+      new Request('http://localhost/payments', {
+        method: 'POST',
+        headers: postHeaders(body2, { key: 'idem-dup-001' }),
+        body: body2,
+      }),
     )
     expect(r1.status).toBe(201)
     expect(r2.status).toBe(409)
@@ -199,7 +231,9 @@ describe('HTTP server', () => {
   test('Idempotency-Key ausente → 400', async () => {
     const { app } = buildApp()
     const headers = postHeaders(PIX_BODY, { key: '' }) // sem idempotency-key (assina só o body)
-    const res = await app.handle(new Request('http://localhost/payments', { method: 'POST', headers, body: PIX_BODY }))
+    const res = await app.handle(
+      new Request('http://localhost/payments', { method: 'POST', headers, body: PIX_BODY }),
+    )
     expect(res.status).toBe(400)
   })
 
@@ -207,7 +241,11 @@ describe('HTTP server', () => {
     const { app } = buildApp({ maxBodyBytes: 100 })
     const big = JSON.stringify({ amountInCents: 1000, method: 'PIX', description: 'x'.repeat(500) })
     const res = await app.handle(
-      new Request('http://localhost/payments', { method: 'POST', headers: postHeaders(big), body: big }),
+      new Request('http://localhost/payments', {
+        method: 'POST',
+        headers: postHeaders(big),
+        body: big,
+      }),
     )
     expect(res.status).toBe(413)
   })
@@ -215,17 +253,25 @@ describe('HTTP server', () => {
   test('GET /payments/:id é escopado por consumidor (sem IDOR)', async () => {
     const { app } = buildApp()
     const created = await app.handle(
-      new Request('http://localhost/payments', { method: 'POST', headers: postHeaders(PIX_BODY), body: PIX_BODY }),
+      new Request('http://localhost/payments', {
+        method: 'POST',
+        headers: postHeaders(PIX_BODY),
+        body: PIX_BODY,
+      }),
     )
     const { id } = (await created.json()) as { id: string }
 
     // dono (sys-a) → 200
-    const own = await app.handle(new Request(`http://localhost/payments/${id}`, { headers: getHeaders() }))
+    const own = await app.handle(
+      new Request(`http://localhost/payments/${id}`, { headers: getHeaders() }),
+    )
     expect(own.status).toBe(200)
 
     // outro consumidor (sys-b) → 404 (não revela o pagamento alheio)
     const other = await app.handle(
-      new Request(`http://localhost/payments/${id}`, { headers: getHeaders({ consumerId: 'sys-b', secret: 'secret-b' }) }),
+      new Request(`http://localhost/payments/${id}`, {
+        headers: getHeaders({ consumerId: 'sys-b', secret: 'secret-b' }),
+      }),
     )
     expect(other.status).toBe(404)
   })

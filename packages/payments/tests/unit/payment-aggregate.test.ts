@@ -1,6 +1,10 @@
 import { describe, expect, test } from 'bun:test'
 import { PaymentAggregate } from '../../src/domain/payment/payment.aggregate'
-import { canTransition, isTerminal, PaymentStatus } from '../../src/domain/payment/payment.status'
+import {
+  canTransition,
+  isTerminal,
+  type PaymentStatus,
+} from '../../src/domain/payment/payment.status'
 import { InvalidStateTransitionError } from '../../src/domain/shared/errors'
 import { IdempotencyKey } from '../../src/domain/value-objects/idempotency-key'
 import { Money } from '../../src/domain/value-objects/money'

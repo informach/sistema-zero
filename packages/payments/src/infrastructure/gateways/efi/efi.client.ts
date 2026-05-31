@@ -62,7 +62,9 @@ export class EfiClient {
   }
 
   private async fetchToken(): Promise<string> {
-    const basic = Buffer.from(`${this.config.clientId}:${this.config.clientSecret}`).toString('base64')
+    const basic = Buffer.from(`${this.config.clientId}:${this.config.clientSecret}`).toString(
+      'base64',
+    )
     // A autenticação (client_credentials) é idempotente → pode ser repetida com segurança.
     const json = await this.withRetry('autenticação', true, async () => {
       const init: BunFetchInit = {
@@ -105,11 +107,17 @@ export class EfiClient {
         tls: this.tls,
       })
 
-      let res = await this.fetchWithTimeout(`${this.baseUrl}${path}`, buildInit(await this.authorize()))
+      let res = await this.fetchWithTimeout(
+        `${this.baseUrl}${path}`,
+        buildInit(await this.authorize()),
+      )
       // Token revogado/expirado fora da janela de skew → reautentica uma vez.
       if (res.status === 401) {
         this.token = null
-        res = await this.fetchWithTimeout(`${this.baseUrl}${path}`, buildInit(await this.authorize()))
+        res = await this.fetchWithTimeout(
+          `${this.baseUrl}${path}`,
+          buildInit(await this.authorize()),
+        )
       }
       if (!res.ok) throw await this.toError(res, `${method} ${path}`)
       if (res.status === 204) return undefined as T
@@ -129,7 +137,11 @@ export class EfiClient {
   }
 
   /** Executa `fn` com retry+backoff exponencial (com jitter) em erros transitórios. */
-  private async withRetry<T>(context: string, idempotent: boolean, fn: () => Promise<T>): Promise<T> {
+  private async withRetry<T>(
+    context: string,
+    idempotent: boolean,
+    fn: () => Promise<T>,
+  ): Promise<T> {
     let lastError: unknown
     for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
       try {
@@ -139,7 +151,8 @@ export class EfiClient {
         // Não repetir chamadas não-idempotentes: a 1ª pode ter tido efeito mesmo
         // com resposta perdida (ex.: cobrança/chave criada → duplicaria).
         if (!idempotent || attempt === this.maxRetries || !this.isRetryable(error)) break
-        const delay = Math.min(this.retryBaseMs * 2 ** attempt, 2000) + Math.floor(Math.random() * 100)
+        const delay =
+          Math.min(this.retryBaseMs * 2 ** attempt, 2000) + Math.floor(Math.random() * 100)
         await Bun.sleep(delay)
       }
     }
@@ -168,7 +181,12 @@ export class EfiClient {
     }
     const d = detail ?? {}
     const message = String(
-      d['mensagem'] ?? d['detail'] ?? d['error_description'] ?? d['title'] ?? d['nome'] ?? `HTTP ${res.status}`,
+      d['mensagem'] ??
+        d['detail'] ??
+        d['error_description'] ??
+        d['title'] ??
+        d['nome'] ??
+        `HTTP ${res.status}`,
     )
     const code = d['nome'] ?? d['error'] ?? d['type']
     return new EfiGatewayError(
@@ -199,7 +217,11 @@ export class EfiClient {
     return this.request('GET', `/v2/loc/${locationId}/qrcode`)
   }
 
-  configWebhook(chave: string, webhookUrl: string, opts: { skipMtls?: boolean } = {}): Promise<any> {
+  configWebhook(
+    chave: string,
+    webhookUrl: string,
+    opts: { skipMtls?: boolean } = {},
+  ): Promise<any> {
     return this.request('PUT', `/v2/webhook/${chave}`, {
       body: { webhookUrl },
       headers: opts.skipMtls ? { 'x-skip-mtls-checking': 'true' } : undefined,

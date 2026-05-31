@@ -13,9 +13,9 @@ import {
   uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core'
-import type { CardData } from '../../../domain/value-objects/payment-method'
-import type { Address } from '../../../domain/value-objects/customer'
 import type { PixQrCode } from '../../../domain/payment/payment.aggregate'
+import type { Address } from '../../../domain/value-objects/customer'
+import type { CardData } from '../../../domain/value-objects/payment-method'
 
 // View de cliente persistida (sem dados sensíveis de cartão).
 export interface CustomerJson {
@@ -46,10 +46,7 @@ export const consumers = pgTable('consumers', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   hmacSecret: text('hmac_secret').notNull(),
-  allowedCidrs: text('allowed_cidrs')
-    .array()
-    .notNull()
-    .default(sql`ARRAY[]::text[]`),
+  allowedCidrs: text('allowed_cidrs').array().notNull().default(sql`ARRAY[]::text[]`),
   // URL para receber os webhooks de saída (notificação de pagamento). Opcional.
   webhookUrl: text('webhook_url'),
   isActive: boolean('is_active').notNull().default(true),

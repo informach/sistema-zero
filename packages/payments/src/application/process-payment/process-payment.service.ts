@@ -1,19 +1,19 @@
-import type { IdempotencyStore } from '../../domain/ports/idempotency-store.port'
-import type { PaymentGateway } from '../../domain/ports/payment-gateway.port'
-import type { PaymentRepository } from '../../domain/ports/payment-repository.port'
 import { PaymentAggregate } from '../../domain/payment/payment.aggregate'
 import {
   IdempotencyConflictError,
   IdempotencyInFlightError,
   UnsupportedPaymentMethodError,
 } from '../../domain/payment/payment.errors'
+import type { IdempotencyStore } from '../../domain/ports/idempotency-store.port'
+import type { PaymentGateway } from '../../domain/ports/payment-gateway.port'
+import type { PaymentRepository } from '../../domain/ports/payment-repository.port'
 import { ValidationError } from '../../domain/shared/errors'
 import { Customer } from '../../domain/value-objects/customer'
 import { IdempotencyKey } from '../../domain/value-objects/idempotency-key'
 import { Money } from '../../domain/value-objects/money'
 import { PaymentMethod } from '../../domain/value-objects/payment-method'
 import type { Logger } from '../../infrastructure/logging/logger'
-import { toPaymentView, type PaymentView } from '../mappers/payment-view'
+import { type PaymentView, toPaymentView } from '../mappers/payment-view'
 import type { ProcessPaymentCommand } from './process-payment.command'
 
 export interface ProcessPaymentConfig {

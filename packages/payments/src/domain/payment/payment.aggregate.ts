@@ -1,10 +1,13 @@
 import { AggregateRoot } from '../shared/aggregate-root'
 import { InvalidStateTransitionError, ValidationError } from '../shared/errors'
-import { Money, type Currency } from '../value-objects/money'
-import { PaymentMethod, type CardData, type PaymentMethodType } from '../value-objects/payment-method'
-import { Customer, type Address } from '../value-objects/customer'
-import { IdempotencyKey } from '../value-objects/idempotency-key'
-import { PaymentStatus, canTransition } from './payment.status'
+import { type Address, Customer } from '../value-objects/customer'
+import type { IdempotencyKey } from '../value-objects/idempotency-key'
+import { type Currency, Money } from '../value-objects/money'
+import {
+  type CardData,
+  PaymentMethod,
+  type PaymentMethodType,
+} from '../value-objects/payment-method'
 import {
   PaymentAuthorizedEvent,
   PaymentCreatedEvent,
@@ -13,6 +16,7 @@ import {
   PaymentPaidEvent,
   PaymentRefundedEvent,
 } from './payment.events'
+import { canTransition, PaymentStatus } from './payment.status'
 
 /** Dados do QR Code Pix retornados pelo provedor. */
 export interface PixQrCode {
@@ -112,26 +116,30 @@ export class PaymentAggregate extends AggregateRoot<string> {
     const id = input.id ?? crypto.randomUUID()
     const now = new Date()
 
-    const payment = new PaymentAggregate(id, {
-      version: 0,
-      consumerId: input.consumerId,
-      amount: input.amount,
-      method: input.method,
-      status: PaymentStatus.PENDING,
-      provider: 'EFI',
-      idempotencyKey: input.idempotencyKey.value,
-      providerPaymentId: null,
-      txid: null,
-      pixQrCode: null,
-      customer: input.customer ?? null,
-      description: input.description ?? null,
-      metadata: input.metadata ?? {},
-      failureReason: null,
-      createdAt: now,
-      updatedAt: now,
-      paidAt: null,
-      expiresAt: null,
-    }, true)
+    const payment = new PaymentAggregate(
+      id,
+      {
+        version: 0,
+        consumerId: input.consumerId,
+        amount: input.amount,
+        method: input.method,
+        status: PaymentStatus.PENDING,
+        provider: 'EFI',
+        idempotencyKey: input.idempotencyKey.value,
+        providerPaymentId: null,
+        txid: null,
+        pixQrCode: null,
+        customer: input.customer ?? null,
+        description: input.description ?? null,
+        metadata: input.metadata ?? {},
+        failureReason: null,
+        createdAt: now,
+        updatedAt: now,
+        paidAt: null,
+        expiresAt: null,
+      },
+      true,
+    )
 
     payment.addEvent(
       new PaymentCreatedEvent(id, {
@@ -157,26 +165,30 @@ export class PaymentAggregate extends AggregateRoot<string> {
           : PaymentMethod.pix()
     const customer = snapshot.customer ? Customer.create(snapshot.customer) : null
 
-    return new PaymentAggregate(snapshot.id, {
-      version: snapshot.version,
-      consumerId: snapshot.consumerId,
-      amount,
-      method,
-      status: snapshot.status,
-      provider: snapshot.provider,
-      idempotencyKey: snapshot.idempotencyKey,
-      providerPaymentId: snapshot.providerPaymentId,
-      txid: snapshot.txid,
-      pixQrCode: snapshot.pixQrCode,
-      customer,
-      description: snapshot.description,
-      metadata: snapshot.metadata,
-      failureReason: snapshot.failureReason,
-      createdAt: snapshot.createdAt,
-      updatedAt: snapshot.updatedAt,
-      paidAt: snapshot.paidAt,
-      expiresAt: snapshot.expiresAt,
-    }, false)
+    return new PaymentAggregate(
+      snapshot.id,
+      {
+        version: snapshot.version,
+        consumerId: snapshot.consumerId,
+        amount,
+        method,
+        status: snapshot.status,
+        provider: snapshot.provider,
+        idempotencyKey: snapshot.idempotencyKey,
+        providerPaymentId: snapshot.providerPaymentId,
+        txid: snapshot.txid,
+        pixQrCode: snapshot.pixQrCode,
+        customer,
+        description: snapshot.description,
+        metadata: snapshot.metadata,
+        failureReason: snapshot.failureReason,
+        createdAt: snapshot.createdAt,
+        updatedAt: snapshot.updatedAt,
+        paidAt: snapshot.paidAt,
+        expiresAt: snapshot.expiresAt,
+      },
+      false,
+    )
   }
 
   // ── Comandos (transições de estado) ──────────────────────────────────────
@@ -242,9 +254,7 @@ export class PaymentAggregate extends AggregateRoot<string> {
 
   private transitionTo(target: PaymentStatus): void {
     if (!canTransition(this.state.status, target)) {
-      throw new InvalidStateTransitionError(
-        `Transição inválida: ${this.state.status} → ${target}`,
-      )
+      throw new InvalidStateTransitionError(`Transição inválida: ${this.state.status} → ${target}`)
     }
     this.state.status = target
     this.touch()

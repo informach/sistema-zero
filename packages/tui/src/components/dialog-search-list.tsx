@@ -1,21 +1,21 @@
-import { useCallback, useRef, useState, type ReactNode } from "react";
-import { TextAttributes, type InputRenderable, type ScrollBoxRenderable } from "@opentui/core";
-import { useKeyboard } from "@opentui/react";
-import { useKeyboardLayer } from "../providers/keyboard-layer";
-import { useTheme } from "../providers/theme";
+import { type InputRenderable, type ScrollBoxRenderable, TextAttributes } from '@opentui/core'
+import { useKeyboard } from '@opentui/react'
+import { type ReactNode, useCallback, useRef, useState } from 'react'
+import { useKeyboardLayer } from '../providers/keyboard-layer'
+import { useTheme } from '../providers/theme'
 
-const MAX_VISIBLE_ITEMS = 6;
+const MAX_VISIBLE_ITEMS = 6
 
 type DialogSearchListProps<T> = {
-  items: T[];
-  onSelect: (item: T) => void;
-  onHighlight?: (item: T) => void;
-  filterFn: (item: T, query: string) => boolean;
-  renderItem: (item: T, isSelected: boolean) => ReactNode;
-  getKey: (item: T) => string;
-  placeholder?: string;
-  emptyText?: string;
-};
+  items: T[]
+  onSelect: (item: T) => void
+  onHighlight?: (item: T) => void
+  filterFn: (item: T, query: string) => boolean
+  renderItem: (item: T, isSelected: boolean) => ReactNode
+  getKey: (item: T) => string
+  placeholder?: string
+  emptyText?: string
+}
 
 export function DialogSearchList<T>({
   items,
@@ -24,68 +24,67 @@ export function DialogSearchList<T>({
   filterFn,
   renderItem,
   getKey,
-  placeholder = "Search",
-  emptyText = "No results",
+  placeholder = 'Search',
+  emptyText = 'No results',
 }: DialogSearchListProps<T>) {
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const [searchValue, setSearchValue] = useState("");
-  const inputRef = useRef<InputRenderable>(null);
-  const scrollRef = useRef<ScrollBoxRenderable>(null);
-  const { isTopLayer } = useKeyboardLayer();
-  const { colors } = useTheme();
+  const [selectedIndex, setSelectedIndex] = useState(0)
+  const [searchValue, setSearchValue] = useState('')
+  const inputRef = useRef<InputRenderable>(null)
+  const scrollRef = useRef<ScrollBoxRenderable>(null)
+  const { isTopLayer } = useKeyboardLayer()
+  const { colors } = useTheme()
 
   const handleContentChange = useCallback(() => {
-    const text = inputRef.current?.value ?? "";
-    setSearchValue(text);
-    setSelectedIndex(0);
+    const text = inputRef.current?.value ?? ''
+    setSearchValue(text)
+    setSelectedIndex(0)
 
-    const scrollbox = scrollRef.current;
+    const scrollbox = scrollRef.current
     if (scrollbox) {
-      scrollbox.scrollTo(0);
+      scrollbox.scrollTo(0)
     }
-  }, []);
-    
-  const filtered = searchValue 
-    ? items.filter((item) => filterFn(item, searchValue)) : items;
+  }, [])
 
-  const visibleHeight = Math.min(filtered.length, MAX_VISIBLE_ITEMS);
+  const filtered = searchValue ? items.filter((item) => filterFn(item, searchValue)) : items
+
+  const visibleHeight = Math.min(filtered.length, MAX_VISIBLE_ITEMS)
 
   useKeyboard((key) => {
-    if (!isTopLayer("dialog")) return;
+    if (!isTopLayer('dialog')) return
 
-    if (key.name === "return" || key.name === "enter") {
-      const item = filtered[selectedIndex];
+    if (key.name === 'return' || key.name === 'enter') {
+      const item = filtered[selectedIndex]
       if (item) {
-        onSelect(item);
+        onSelect(item)
       }
-    } else if (key.name === "up") {
+    } else if (key.name === 'up') {
       setSelectedIndex((i) => {
-        const newIndex = Math.max(0, i - 1);
-        const sb = scrollRef.current;
+        const newIndex = Math.max(0, i - 1)
+        const sb = scrollRef.current
         if (sb && newIndex < sb.scrollTop) {
-          sb.scrollTo(newIndex);
+          sb.scrollTo(newIndex)
         }
-        const item = filtered[newIndex];
-        if (item && onHighlight) onHighlight(item);
-        return newIndex;
-      });
-    } else if (key.name === "down") {
+        const item = filtered[newIndex]
+        if (item && onHighlight) onHighlight(item)
+        return newIndex
+      })
+    } else if (key.name === 'down') {
       setSelectedIndex((i) => {
-        const newIndex = Math.min(filtered.length - 1, i + 1);
-        const sb = scrollRef.current;
+        const newIndex = Math.min(filtered.length - 1, i + 1)
+        const sb = scrollRef.current
         if (sb) {
-          const viewportHeight = sb.viewport.height;
-          const visibleEnd = sb.scrollTop + viewportHeight - 1;
+          const viewportHeight = sb.viewport.height
+          const visibleEnd = sb.scrollTop + viewportHeight - 1
           if (newIndex > visibleEnd) {
-            sb.scrollTo(newIndex - viewportHeight + 1);
+            sb.scrollTo(newIndex - viewportHeight + 1)
           }
         }
-        const item = filtered[newIndex];
-        if (item && onHighlight) onHighlight(item);
-        return newIndex;
-      });
+        const item = filtered[newIndex]
+        if (item && onHighlight) onHighlight(item)
+        return newIndex
+      })
     }
-  });
+  })
 
   return (
     <box flexDirection="column" gap={1}>
@@ -96,13 +95,11 @@ export function DialogSearchList<T>({
         onContentChange={handleContentChange}
       />
       {filtered.length === 0 ? (
-        <text attributes={TextAttributes.DIM}>
-          {emptyText}
-        </text>
+        <text attributes={TextAttributes.DIM}>{emptyText}</text>
       ) : (
         <scrollbox ref={scrollRef} height={visibleHeight}>
           {filtered.map((item, i) => {
-            const isSelected = i === selectedIndex;
+            const isSelected = i === selectedIndex
             return (
               <box
                 key={getKey(item)}
@@ -111,8 +108,8 @@ export function DialogSearchList<T>({
                 overflow="hidden"
                 backgroundColor={isSelected ? colors.selection : undefined}
                 onMouseMove={() => {
-                  setSelectedIndex(i);
-                  if (onHighlight) onHighlight(item);
+                  setSelectedIndex(i)
+                  if (onHighlight) onHighlight(item)
                 }}
                 onMouseDown={() => onSelect(item)}
               >
@@ -123,5 +120,5 @@ export function DialogSearchList<T>({
         </scrollbox>
       )}
     </box>
-  );
-};
+  )
+}

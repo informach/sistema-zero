@@ -47,10 +47,7 @@ export class DrizzleIdempotencyStore implements IdempotencyStore {
       .select()
       .from(idempotencyKeys)
       .where(
-        and(
-          eq(idempotencyKeys.consumerId, input.consumerId),
-          eq(idempotencyKeys.key, input.key),
-        ),
+        and(eq(idempotencyKeys.consumerId, input.consumerId), eq(idempotencyKeys.key, input.key)),
       )
       .limit(1)
 
@@ -103,10 +100,7 @@ export class DrizzleIdempotencyStore implements IdempotencyStore {
         expiresAt: new Date(Date.now() + input.ttlSeconds * 1000),
       })
       .where(
-        and(
-          eq(idempotencyKeys.consumerId, input.consumerId),
-          eq(idempotencyKeys.key, input.key),
-        ),
+        and(eq(idempotencyKeys.consumerId, input.consumerId), eq(idempotencyKeys.key, input.key)),
       )
   }
 

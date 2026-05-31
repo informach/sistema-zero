@@ -5,7 +5,7 @@ import type { ProcessPaymentService } from '../../../application/process-payment
 import { ValidationError } from '../../../domain/shared/errors'
 import { sha256Hex } from '../../../infrastructure/security/hash'
 import type { InMemoryRateLimiter } from '../../../infrastructure/security/rate-limiter'
-import { authenticateConsumer, type AuthDeps } from '../auth'
+import { type AuthDeps, authenticateConsumer } from '../auth'
 import { ProcessPaymentBody } from '../dtos'
 import { PayloadTooLargeError, TooManyRequestsError } from '../errors'
 import { getRawBody, isOversizeBody } from '../raw-body'

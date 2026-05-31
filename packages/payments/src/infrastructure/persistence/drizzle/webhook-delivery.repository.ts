@@ -31,7 +31,11 @@ export class DrizzleWebhookDeliveryRepository implements WebhookDeliveryReposito
       })
       // Idempotente: republicação do mesmo evento não duplica a entrega.
       .onConflictDoNothing({
-        target: [webhookDeliveries.consumerId, webhookDeliveries.eventName, webhookDeliveries.dedupKey],
+        target: [
+          webhookDeliveries.consumerId,
+          webhookDeliveries.eventName,
+          webhookDeliveries.dedupKey,
+        ],
       })
       .returning({ id: webhookDeliveries.id })
 
@@ -47,7 +51,9 @@ export class DrizzleWebhookDeliveryRepository implements WebhookDeliveryReposito
       const locked = await tx
         .select({ id: webhookDeliveries.id })
         .from(webhookDeliveries)
-        .where(and(eq(webhookDeliveries.status, 'PENDING'), lte(webhookDeliveries.nextAttemptAt, now)))
+        .where(
+          and(eq(webhookDeliveries.status, 'PENDING'), lte(webhookDeliveries.nextAttemptAt, now)),
+        )
         .orderBy(asc(webhookDeliveries.nextAttemptAt))
         .limit(limit)
         .for('update', { skipLocked: true })
@@ -61,7 +67,10 @@ export class DrizzleWebhookDeliveryRepository implements WebhookDeliveryReposito
         .set({ nextAttemptAt: lease, updatedAt: now })
         .where(inArray(webhookDeliveries.id, ids))
 
-      const rows = await tx.select().from(webhookDeliveries).where(inArray(webhookDeliveries.id, ids))
+      const rows = await tx
+        .select()
+        .from(webhookDeliveries)
+        .where(inArray(webhookDeliveries.id, ids))
       return rows.map((row) => ({
         id: row.id,
         consumerId: row.consumerId,

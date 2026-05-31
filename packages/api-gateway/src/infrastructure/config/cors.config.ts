@@ -1,4 +1,4 @@
-import { cors } from '@elysiajs/cors'
+import type { cors } from '@elysiajs/cors'
 import type { CorsConfig } from './gateway-config.schema'
 
 type CorsPluginOptions = NonNullable<Parameters<typeof cors>[0]>

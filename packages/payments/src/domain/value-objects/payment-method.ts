@@ -1,5 +1,5 @@
-import { ValueObject } from '../shared/value-object'
 import { ValidationError } from '../shared/errors'
+import { ValueObject } from '../shared/value-object'
 
 export type PaymentMethodType = 'PIX' | 'BOLETO' | 'CREDIT_CARD'
 
@@ -14,10 +14,7 @@ export interface CardData {
   installments: number
 }
 
-type Variant =
-  | { type: 'PIX' }
-  | { type: 'BOLETO' }
-  | { type: 'CREDIT_CARD'; card: CardData }
+type Variant = { type: 'PIX' } | { type: 'BOLETO' } | { type: 'CREDIT_CARD'; card: CardData }
 
 /**
  * Forma de pagamento como união discriminada. O método `match` força o
@@ -50,11 +47,7 @@ export class PaymentMethod extends ValueObject<{ variant: Variant }> {
     return this.props.variant.type
   }
 
-  match<R>(handlers: {
-    pix: () => R
-    boleto: () => R
-    creditCard: (card: CardData) => R
-  }): R {
+  match<R>(handlers: { pix: () => R; boleto: () => R; creditCard: (card: CardData) => R }): R {
     const variant = this.props.variant
     switch (variant.type) {
       case 'PIX':
