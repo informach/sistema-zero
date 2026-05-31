@@ -156,7 +156,7 @@ Proxy, Facade (`route-registry` + `gateway-plugin` + `gateway.config.ts`), Decor
 
 ## 10. Checklist antes de finalizar uma tarefa
 
-- [ ] `bun run --filter '@sistemazero/api-gateway' typecheck` limpo.
+- [ ] `bun run typecheck` limpo.
 - [ ] `bun test` verde (sandbox off).
 - [ ] `bun run check` (Biome) limpo.
 - [ ] Sem `any` novo; entradas validadas com Zod; sem `: Elysia` em retornos.
