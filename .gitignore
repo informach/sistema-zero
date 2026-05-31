@@ -6,6 +6,9 @@ out
 dist
 *.tgz
 
+# Astro (tipos gerados)
+.astro/
+
 # code coverage
 coverage
 *.lcov

@@ -15,7 +15,9 @@ function toOriginMatcher(value: string): string | RegExp | boolean {
 
 /** Monta as opções do plugin `@elysiajs/cors` a partir da config (global ou de rota). */
 export function buildCorsPluginOptions(cfg?: CorsConfig): CorsPluginOptions {
-  if (!cfg) return { origin: true, credentials: true }
+  // Sem config: reflete qualquer origem mas SEM credenciais. Refletir origem
+  // arbitrária COM credentials é proibido (qualquer site faria leitura autenticada).
+  if (!cfg) return { origin: true, credentials: false }
 
   let origin: OriginMatcher = true
   if (cfg.origins && cfg.origins.length > 0) {

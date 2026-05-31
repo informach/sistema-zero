@@ -16,7 +16,12 @@
     "dev:payments": "bun run --filter @sistemazero/payments dev",
     "test:payments": "bun run --filter @sistemazero/payments test",
     "dev:gateway": "bun run --filter @sistemazero/api-gateway dev",
-    "test:gateway": "bun run --filter @sistemazero/api-gateway test"
+    "test:gateway": "bun run --filter @sistemazero/api-gateway test",
+    "dev:funnel": "bun run --filter @sistemazero/funnel dev",
+    "build:funnel": "bun run --filter @sistemazero/funnel build",
+    "test:funnel": "bun run --filter @sistemazero/funnel test",
+    "db:funnel:generate": "bun run --filter @sistemazero/funnel db:generate",
+    "db:funnel:migrate": "bun run --filter @sistemazero/funnel db:migrate"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.16"

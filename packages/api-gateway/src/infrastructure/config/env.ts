@@ -67,8 +67,19 @@ const EnvSchema = z
     CB_MIN_THROUGHPUT: z.coerce.number().int().positive().default(20),
     CB_COOLDOWN_MS: z.coerce.number().int().positive().default(10_000),
 
+    // Drain gracioso: no SIGTERM, /readyz vira 503 por este tempo (o LB para de
+    // rotear) antes de parar o servidor. 0 = sem espera (dev/local).
+    SHUTDOWN_DRAIN_MS: z.coerce.number().int().nonnegative().default(0),
+
     // URL do upstream payments (lida pelo gateway.config.ts).
     PAYMENTS_URL: z.string().default('http://localhost:3001'),
+
+    // Funil (@sistemazero/funnel) como upstream + cliente HMAC de borda (BFF de
+    // pagamentos). Lidas pelo gateway.config.ts.
+    FUNNEL_URL: z.string().default('http://localhost:4321'),
+    FUNNEL_HMAC_SECRET: z.string().optional(),
+    FUNNEL_INTERNAL_TOKEN: z.string().optional(),
+    FUNNEL_ALLOWED_CIDRS: z.string().optional(),
   })
   .refine((e) => e.STATE_BACKEND !== 'redis' || Boolean(e.REDIS_URL?.trim()), {
     message: 'REDIS_URL é obrigatória quando STATE_BACKEND=redis',

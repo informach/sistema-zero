@@ -28,9 +28,9 @@ export function parseRequestedVersion(
     return { version: firstSegment.toLowerCase(), fromPath: true }
   }
   const explicit = headers.get(vh.explicit)
-  if (explicit && explicit.trim()) return { version: normalizeVersion(explicit), fromPath: false }
+  if (explicit?.trim()) return { version: normalizeVersion(explicit), fromPath: false }
   const accept = headers.get(vh.accept)
-  if (accept && accept.trim()) return { version: normalizeVersion(accept), fromPath: false }
+  if (accept?.trim()) return { version: normalizeVersion(accept), fromPath: false }
   return { version: defaultVersion, fromPath: false }
 }
 

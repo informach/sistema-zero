@@ -12,7 +12,7 @@ const authStrategyKind = z.enum(AUTH_STRATEGY_KINDS)
 
 export const upstreamConfigSchema = z.object({
   id: z.string().optional(), // se ausente, derivado da url
-  url: z.string(), // base URL, ex.: http://payments.railway.internal:3001
+  url: z.string().url(), // base URL, ex.: http://payments.railway.internal:3001
   weight: z.number().int().positive().default(1),
   healthCheckPath: z.string().default('/health'),
 })
@@ -47,14 +47,21 @@ export const rateLimitRuleSchema = z.object({
   by: z.enum(['principal', 'ip']).default('principal'),
 })
 
-export const corsConfigSchema = z.object({
-  origins: z.array(z.string()).optional(), // strings exatas, regex `/.../` ou '*'
-  methods: z.array(httpMethod).optional(),
-  allowedHeaders: z.array(z.string()).optional(),
-  exposeHeaders: z.array(z.string()).optional(),
-  credentials: z.boolean().optional(),
-  maxAge: z.number().int().nonnegative().optional(),
-})
+export const corsConfigSchema = z
+  .object({
+    origins: z.array(z.string()).optional(), // strings exatas, regex `/.../` ou '*'
+    methods: z.array(httpMethod).optional(),
+    allowedHeaders: z.array(z.string()).optional(),
+    exposeHeaders: z.array(z.string()).optional(),
+    credentials: z.boolean().optional(),
+    maxAge: z.number().int().nonnegative().optional(),
+  })
+  // Refletir qualquer origem (`*` ou sem allowlist) COM credentials é proibido pela
+  // spec de CORS e perigoso. Force uma allowlist explícita quando credentials=true.
+  .refine((c) => !(c.credentials === true && (!c.origins?.length || c.origins.includes('*'))), {
+    message: 'credentials=true exige uma allowlist de origins explícita (sem "*")',
+    path: ['credentials'],
+  })
 
 export const transformRefSchema = z.union([
   z.string(),
@@ -99,7 +106,9 @@ export const serviceConfigSchema = z.object({
 
 export const consumerConfigSchema = z.object({
   id: z.string(),
-  hmacSecret: z.string(),
+  // Segredo HMAC do consumer. Mínimo de 16 chars: impede que um env ausente
+  // (default '') suba com auth efetivamente desabilitada (assinatura com chave vazia).
+  hmacSecret: z.string().min(16, 'hmacSecret deve ter ao menos 16 caracteres'),
   allowedCidrs: z.array(z.string()).default(['0.0.0.0/0']),
   isActive: z.boolean().default(true),
 })
