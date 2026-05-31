@@ -1,0 +1,197 @@
+---
+import CtaButton from '../components/CtaButton.astro'
+import Footer from '../components/Footer.astro'
+import Header from '../components/Header.astro'
+import ImageSlot from '../components/ImageSlot.astro'
+import PriceTag from '../components/PriceTag.astro'
+import ProductJsonLd from '../components/seo/ProductJsonLd.astro'
+import { CTA, PRODUTO } from '../content/copy'
+import { SALES } from '../content/sales-sections'
+import PreCheckoutModal from '../islands/PreCheckoutModal'
+import BaseLayout from '../layouts/BaseLayout.astro'
+
+export const prerender = true
+
+const description =
+  'Um guia direto para tirar sua ideia do papel com IA sem virar refém dela. Aprenda a comandar a IA com o método Z.E.R.O.'
+const ofertaUrl = new URL('/oferta', Astro.site ?? Astro.url).toString()
+---
+
+<BaseLayout title={`${PRODUTO.nome} — Pare de pedir código no escuro`} description={description}>
+  <ProductJsonLd
+    slot="head"
+    name={PRODUTO.nome}
+    description={description}
+    price="37.00"
+    url={ofertaUrl}
+    image="/img/sales-hero.webp"
+  />
+  <Header />
+
+  <main class="mx-auto max-w-3xl px-4">
+    <!-- Seção 1 — Topo -->
+    <section class="py-12">
+      <ImageSlot src="/img/sales-hero.webp" alt="No Comando da IA" ratio="16 / 9" class="mb-8" />
+      <h1 class="text-3xl font-bold leading-tight sm:text-4xl">{SALES.s1.titulo}</h1>
+      {SALES.s1.paragrafos.map((p) => <p class="mt-5 text-lg leading-relaxed text-muted">{p}</p>)}
+      <div class="mt-8 flex flex-col items-start gap-4">
+        <PriceTag />
+        <CtaButton label={CTA.principal} class="w-full sm:w-auto" />
+      </div>
+    </section>
+
+    <!-- Seção 2 — Para quem é -->
+    <section class="border-t border-line/60 py-12">
+      <h2 class="text-2xl font-bold">{SALES.s2.titulo}</h2>
+      {SALES.s2.paragrafos.map((p) => <p class="mt-4 text-lg leading-relaxed text-muted">{p}</p>)}
+      <p class="mt-6 font-semibold text-ink">{SALES.s2.introLista}</p>
+      <ul class="mt-3 flex flex-col gap-2">
+        {
+          SALES.s2.bullets.map((b) => (
+            <li class="flex gap-3 text-muted">
+              <span class="text-lime">✓</span>
+              <span>{b}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <!-- Seção 3 — A armadilha -->
+    <section class="border-t border-line/60 py-12">
+      <h2 class="text-2xl font-bold">{SALES.s3.titulo}</h2>
+      {SALES.s3.paragrafos.map((p) => <p class="mt-4 text-lg leading-relaxed text-muted">{p}</p>)}
+    </section>
+
+    <!-- Seção 4 — Antes e depois -->
+    <section class="border-t border-line/60 py-12">
+      <h2 class="text-2xl font-bold">{SALES.s4.titulo}</h2>
+      <div class="mt-6 overflow-hidden rounded-xl border border-line">
+        <div class="grid grid-cols-2 bg-card-2 text-sm font-bold">
+          <div class="border-r border-line px-4 py-3 text-muted">{SALES.s4.cabecalho.antes}</div>
+          <div class="px-4 py-3 text-lime">{SALES.s4.cabecalho.depois}</div>
+        </div>
+        {
+          SALES.s4.linhas.map(([antes, depois]) => (
+            <div class="grid grid-cols-2 border-t border-line text-sm">
+              <div class="border-r border-line px-4 py-3 text-muted">{antes}</div>
+              <div class="px-4 py-3 text-ink">{depois}</div>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- Seção 5 — Método Z.E.R.O. -->
+    <section class="border-t border-line/60 py-12">
+      <h2 class="text-2xl font-bold">{SALES.s5.titulo}</h2>
+      <div class="mt-6 flex flex-col gap-4">
+        {
+          SALES.s5.metodo.map((m) => (
+            <div class="card flex gap-4 p-5">
+              <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-lime text-xl font-bold text-[#0b0f14]">
+                {m.letra}
+              </span>
+              <div>
+                <p class="font-bold text-ink">{m.titulo}</p>
+                <p class="mt-1 text-muted">{m.texto}</p>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- Seção 6 — O que você recebe -->
+    <section class="border-t border-line/60 py-12">
+      <h2 class="text-2xl font-bold">{SALES.s6.titulo}</h2>
+      <p class="mt-4 text-lg leading-relaxed text-muted">{SALES.s6.ebook}</p>
+      <p class="mt-6 font-semibold text-ink">{SALES.s6.kitTitulo}</p>
+      <ul class="mt-3 flex flex-col gap-2">
+        {
+          SALES.s6.kit.map((item) => (
+            <li class="flex gap-3 text-muted">
+              <span class="text-cyan">▸</span>
+              <span>{item}</span>
+            </li>
+          ))
+        }
+      </ul>
+      <div class="mt-8"><CtaButton label={CTA.principal} class="w-full sm:w-auto" /></div>
+    </section>
+
+    <!-- Seção 7 — O resultado final -->
+    <section class="border-t border-line/60 py-12">
+      <h2 class="text-2xl font-bold">{SALES.s7.titulo}</h2>
+      {SALES.s7.paragrafos.map((p) => <p class="mt-4 text-lg leading-relaxed text-muted">{p}</p>)}
+      <div class="mt-8"><CtaButton label={CTA.principal} class="w-full sm:w-auto" /></div>
+    </section>
+
+    <!-- Seção 8 — Bônus -->
+    <section class="border-t border-line/60 py-12">
+      <h2 class="text-2xl font-bold">{SALES.s8.titulo}</h2>
+      <div class="mt-6 grid gap-4 sm:grid-cols-2">
+        {
+          SALES.s8.bonus.map((b) => (
+            <div class="card p-5">
+              <p class="font-bold text-lime">{b.titulo}</p>
+              <p class="mt-2 text-muted">{b.texto}</p>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- Seção 9 — O que não é -->
+    <section class="border-t border-line/60 py-12">
+      <h2 class="text-2xl font-bold">{SALES.s9.titulo}</h2>
+      {SALES.s9.paragrafos.map((p) => <p class="mt-4 text-lg leading-relaxed text-muted">{p}</p>)}
+    </section>
+
+    <!-- Seção 10 — Por que agora -->
+    <section class="border-t border-line/60 py-12">
+      <h2 class="text-2xl font-bold">{SALES.s10.titulo}</h2>
+      {SALES.s10.paragrafos.map((p) => <p class="mt-4 text-lg leading-relaxed text-muted">{p}</p>)}
+    </section>
+
+    <!-- Seção 11 — Quem criou -->
+    <section class="border-t border-line/60 py-12">
+      <h2 class="text-2xl font-bold">{SALES.s11.titulo}</h2>
+      {SALES.s11.paragrafos.map((p) => <p class="mt-4 text-lg leading-relaxed text-muted">{p}</p>)}
+      <p class="mt-6 font-semibold text-ink">{SALES.s11.legendaPrints}</p>
+      <div class="mt-3 grid gap-4 sm:grid-cols-2">
+        {SALES.s11.prints.map((img) => <ImageSlot src={img.src} alt={img.alt} ratio="4 / 3" />)}
+      </div>
+      <p class="mt-6 font-semibold text-ink">{SALES.s11.legendaDepoimentos}</p>
+      <div class="mt-3 grid gap-4">
+        {SALES.s11.depoimentos.map((img) => <ImageSlot src={img.src} alt={img.alt} ratio="16 / 9" />)}
+      </div>
+    </section>
+
+    <!-- Seção 12 — Garantia -->
+    <section class="border-t border-line/60 py-12">
+      <h2 class="text-2xl font-bold">{SALES.s12.titulo}</h2>
+      {SALES.s12.paragrafos.map((p) => <p class="mt-4 text-lg leading-relaxed text-muted">{p}</p>)}
+      <div class="mt-8"><CtaButton label={CTA.comecar} class="w-full sm:w-auto" /></div>
+    </section>
+
+    <!-- Seção 13 — FAQ -->
+    <section class="border-t border-line/60 py-12">
+      <h2 class="text-2xl font-bold">{SALES.s13.titulo}</h2>
+      <div class="mt-6 flex flex-col gap-3">
+        {
+          SALES.s13.faq.map((item) => (
+            <details class="card px-5 py-4">
+              <summary class="cursor-pointer font-semibold text-ink">{item.pergunta}</summary>
+              <p class="mt-3 text-muted">{item.resposta}</p>
+            </details>
+          ))
+        }
+      </div>
+      <div class="mt-8"><CtaButton label={CTA.principal} class="w-full sm:w-auto" /></div>
+    </section>
+  </main>
+
+  <Footer />
+  <PreCheckoutModal client:idle />
+</BaseLayout>

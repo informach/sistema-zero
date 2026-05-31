@@ -1,0 +1,51 @@
+---
+import '@fontsource/inter/latin-400.css'
+import '@fontsource/inter/latin-600.css'
+import '@fontsource/inter/latin-700.css'
+import '../styles/global.css'
+
+interface Props {
+  title: string
+  description?: string
+  noindex?: boolean
+  canonical?: string
+  ogImage?: string
+}
+
+const {
+  title,
+  description = 'Descubra o que trava as suas ideias quando você tenta criar com IA.',
+  noindex = false,
+  canonical,
+  ogImage,
+} = Astro.props
+
+const canonicalUrl = canonical ?? new URL(Astro.url.pathname, Astro.site ?? Astro.url).toString()
+---
+
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <slot name="head" />
+  </head>
+  <body class="min-h-screen bg-bg text-ink antialiased">
+    <slot />
+  </body>
+</html>

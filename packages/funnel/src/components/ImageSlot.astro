@@ -1,0 +1,29 @@
+---
+// Imagem resiliente: mostra um placeholder (alt) atrás; quando o arquivo existe
+// em /img/..., ele cobre o placeholder. Se faltar (404), o placeholder permanece
+// e o build nunca quebra (o usuário fornece os arquivos depois).
+interface Props {
+  src: string
+  alt: string
+  ratio?: string
+  class?: string
+}
+const { src, alt, ratio = '16 / 9', class: klass = '' } = Astro.props
+---
+
+<div
+  class={`relative overflow-hidden rounded-xl border border-line bg-card-2 ${klass}`}
+  style={`aspect-ratio:${ratio}`}
+>
+  <span class="absolute inset-0 flex items-center justify-center p-4 text-center text-sm text-muted">
+    {alt}
+  </span>
+  <img
+    src={src}
+    alt={alt}
+    loading="lazy"
+    decoding="async"
+    class="relative h-full w-full object-cover"
+    onerror="this.style.display='none'"
+  />
+</div>

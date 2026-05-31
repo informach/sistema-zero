@@ -1,0 +1,47 @@
+{
+  "name": "@sistemazero/funnel",
+  "version": "0.1.0",
+  "description": "Funil de vendas (landing + quiz + checkout Pix) do produto No Comando da IA — Astro 6 + ilhas React no Bun. BFF de pagamentos é o api-gateway.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev --port 4321 --host",
+    "start": "bun ./dist/server/entry.mjs",
+    "build": "astro build",
+    "preview": "astro preview",
+    "typecheck": "astro check",
+    "test": "bun test",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "check": "biome check .",
+    "check:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "lint": "biome lint ."
+  },
+  "dependencies": {
+    "@astrojs/node": "^10.1.2",
+    "@astrojs/react": "^5.0.6",
+    "@astrojs/sitemap": "^3.7.3",
+    "@fontsource/inter": "^5.2.8",
+    "@sistemazero/core": "workspace:*",
+    "@tailwindcss/vite": "^4.3.0",
+    "astro": "^6.4.2",
+    "drizzle-orm": "^0.44.5",
+    "postgres": "^3.4.7",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "tailwindcss": "^4.3.0",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.9",
+    "@types/bun": "latest",
+    "@types/react": "^19.2.15",
+    "@types/react-dom": "^19.2.3",
+    "drizzle-kit": "^0.31.5"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}

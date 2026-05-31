@@ -1,0 +1,333 @@
+{
+  "id": "0c4fa060-db75-4e27-b20f-96cca0b01caf",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "funil.funnel_events": {
+      "name": "funnel_events",
+      "schema": "funil",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "lead_id": {
+          "name": "lead_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "event_name": {
+          "name": "event_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "step": {
+          "name": "step",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "funnel_events_lead_idx": {
+          "name": "funnel_events_lead_idx",
+          "columns": [
+            {
+              "expression": "lead_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "funnel_events_name_idx": {
+          "name": "funnel_events_name_idx",
+          "columns": [
+            {
+              "expression": "event_name",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "funnel_events_lead_id_leads_id_fk": {
+          "name": "funnel_events_lead_id_leads_id_fk",
+          "tableFrom": "funnel_events",
+          "tableTo": "leads",
+          "schemaTo": "funil",
+          "columnsFrom": [
+            "lead_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "funil.leads": {
+      "name": "leads",
+      "schema": "funil",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "nome": {
+          "name": "nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "telefone": {
+          "name": "telefone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "segmento": {
+          "name": "segmento",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "gasto_terceiros": {
+          "name": "gasto_terceiros",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "forma_de_criar": {
+          "name": "forma_de_criar",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ja_quebrou": {
+          "name": "ja_quebrou",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "nivel_refem": {
+          "name": "nivel_refem",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "horas_retrabalho": {
+          "name": "horas_retrabalho",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "valor_hora": {
+          "name": "valor_hora",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "custo_mensal": {
+          "name": "custo_mensal",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "peso_principal": {
+          "name": "peso_principal",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "visualizacao": {
+          "name": "visualizacao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "o_que_falta": {
+          "name": "o_que_falta",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mudanca_desejada": {
+          "name": "mudanca_desejada",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_step": {
+          "name": "last_step",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'entrou_landing'"
+        },
+        "payment_id": {
+          "name": "payment_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "paid_at": {
+          "name": "paid_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "leads_email_idx": {
+          "name": "leads_email_idx",
+          "columns": [
+            {
+              "expression": "email",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "leads_segmento_idx": {
+          "name": "leads_segmento_idx",
+          "columns": [
+            {
+              "expression": "segmento",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "leads_created_idx": {
+          "name": "leads_created_idx",
+          "columns": [
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "funil.processed_webhooks": {
+      "name": "processed_webhooks",
+      "schema": "funil",
+      "columns": {
+        "delivery_id": {
+          "name": "delivery_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "payment_id": {
+          "name": "payment_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "processed_at": {
+          "name": "processed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {
+    "funil": "funil"
+  },
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

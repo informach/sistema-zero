@@ -1,0 +1,11 @@
+---
+interface Props {
+  label: string
+  class?: string
+}
+const { label, class: klass = '' } = Astro.props
+---
+
+<button type="button" data-checkout-cta class={`btn btn-primary text-base ${klass}`}>
+  {label}
+</button>

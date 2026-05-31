@@ -1,0 +1,13 @@
+---
+import { PRODUTO } from '../content/copy'
+
+interface Props {
+  class?: string
+}
+const { class: klass = '' } = Astro.props
+---
+
+<div class={`inline-flex items-baseline gap-2 ${klass}`}>
+  <span class="text-sm text-muted">por apenas</span>
+  <span class="text-4xl font-bold text-lime">{PRODUTO.precoLabel}</span>
+</div>

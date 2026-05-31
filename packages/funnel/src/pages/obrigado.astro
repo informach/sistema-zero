@@ -1,0 +1,22 @@
+---
+import Footer from '../components/Footer.astro'
+import Header from '../components/Header.astro'
+import BaseLayout from '../layouts/BaseLayout.astro'
+
+export const prerender = true
+---
+
+<BaseLayout title="Compra confirmada — No Comando da IA" noindex={true}>
+  <Header />
+  <main class="mx-auto max-w-xl px-4 py-20 text-center">
+    <div class="text-5xl">✅</div>
+    <h1 class="mt-4 text-3xl font-bold">Pagamento confirmado!</h1>
+    <p class="mt-4 text-lg leading-relaxed text-muted">
+      Obrigado por assumir o comando. Você vai receber o acesso ao
+      <strong class="text-ink">No Comando da IA</strong> e ao kit prático no seu e-mail em instantes.
+    </p>
+    <p class="mt-2 text-muted">Se não encontrar, confira a caixa de spam ou promoções.</p>
+    <a href="/oferta" class="btn btn-ghost mt-8">Voltar à página</a>
+  </main>
+  <Footer />
+</BaseLayout>
