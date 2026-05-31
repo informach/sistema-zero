@@ -13,6 +13,25 @@ const HOP_BY_HOP = new Set([
   'upgrade',
 ])
 
+/**
+ * Credenciais de BORDA (cliente → gateway): consumidas pelo gateway e que NÃO
+ * devem vazar para o upstream. Em rotas `resign`, o gateway re-injeta as suas
+ * próprias (`x-consumer-id`/`x-signature`). Não inclui `idempotency-key` (legítimo
+ * de repassar). Removidas exceto em rotas `upstreamAuth: 'passthrough'` explícitas.
+ */
+export const EDGE_AUTH_HEADERS = new Set([
+  'authorization',
+  'cookie',
+  'x-session-token',
+  'x-consumer-id',
+  'x-signature',
+])
+
+/** Remove as credenciais de borda dos headers de saída (antes do proxy/resign). */
+export function stripEdgeAuthHeaders(headers: Headers): void {
+  for (const name of EDGE_AUTH_HEADERS) headers.delete(name)
+}
+
 export interface ForwardHeaderContext {
   clientIp: string
   proto: string

@@ -91,7 +91,14 @@ export function createRedisStore(url: string): GatewayStore {
     },
     async get<T>(key: string): Promise<T | null> {
       const v = await client.get(key)
-      return v == null ? null : (JSON.parse(v) as T)
+      if (v == null) return null
+      // Valor corrompido / escrito por outro componente: trate como ausência em
+      // vez de propagar um throw de parse (que viraria 500/crash no chamador).
+      try {
+        return JSON.parse(v) as T
+      } catch {
+        return null
+      }
     },
     async set<T>(key: string, value: T, ttlMs: number) {
       await client.send('SET', [key, JSON.stringify(value), 'PX', String(ttlMs)])

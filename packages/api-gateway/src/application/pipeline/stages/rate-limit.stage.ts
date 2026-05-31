@@ -25,7 +25,19 @@ export function createRateLimitStage(deps: RateLimitDeps): Stage {
       const identity = by === 'ip' ? ctx.clientIp : (ctx.principal?.subject ?? ctx.clientIp)
       const key = `rl:${ctx.route.route.id}:${identity}`
 
-      const decision = await deps.rateLimiter.check(key, max, windowMs)
+      let decision: Awaited<ReturnType<typeof deps.rateLimiter.check>>
+      try {
+        decision = await deps.rateLimiter.check(key, max, windowMs)
+      } catch (error) {
+        // Store indisponível (ex.: Redis fora): FAIL-OPEN. Um soluço de infra não
+        // pode derrubar toda a API com 500 — libera e registra para alerta.
+        ctx.logger.warn('gateway.rate_limit_unavailable', {
+          requestId: ctx.requestId,
+          route: ctx.route.route.id,
+          error: error instanceof Error ? error.message : String(error),
+        })
+        return undefined
+      }
       ctx.rateLimit = {
         key,
         limit: decision.limit,
