@@ -7,6 +7,8 @@
     "build:tui": "bun run --filter @sistemazero/tui build",
     "link:tui": "bun run build:tui && cd packages/tui && bun link",
     "dev:payments": "bun run --filter @sistemazero/payments dev",
-    "test:payments": "bun run --filter @sistemazero/payments test"
+    "test:payments": "bun run --filter @sistemazero/payments test",
+    "dev:gateway": "bun run --filter @sistemazero/api-gateway dev",
+    "test:gateway": "bun run --filter @sistemazero/api-gateway test"
   }
 }

@@ -1,1 +1,47 @@
+# dependencies (bun install)
 node_modules
+
+# output
+out
+dist
+*.tgz
+
+# code coverage
+coverage
+*.lcov
+
+# logs
+logs
+*.log
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# dotenv environment variable files
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
+# certificados e segredos (NUNCA commitar — Efí P12/PEM, chaves)
+certs/
+**/certs/
+secrets/
+**/secrets/
+*.p12
+*.pfx
+*.pem
+*.key
+
+# caches
+.eslintcache
+.cache
+*.tsbuildinfo
+
+# IntelliJ based IDEs
+.idea
+
+# Finder (MacOS) folder config
+.DS_Store
+
+# Claude Code (config local + biblioteca de skills — tooling, não código do projeto)
+.claude/

@@ -1,0 +1,104 @@
+import { swagger } from '@elysiajs/swagger'
+import { Elysia } from 'elysia'
+import type { GetPaymentService } from '../../application/get-payment/get-payment.service'
+import type { HandleProviderWebhookService } from '../../application/handle-provider-webhook/handle-provider-webhook.service'
+import type { ProcessPaymentService } from '../../application/process-payment/process-payment.service'
+import type { ConsumerRepository } from '../../domain/ports/consumer-repository.port'
+import type { Env } from '../../infrastructure/config/env'
+import type { Logger } from '../../infrastructure/logging/logger'
+import type { MetricsSnapshot } from '../../infrastructure/persistence/drizzle/metrics.repository'
+import type { InMemoryRateLimiter } from '../../infrastructure/security/rate-limiter'
+import { buildErrorResponse } from './error-handler'
+import { TooManyRequestsError } from './errors'
+import { markOversizeBody, storeRawBody } from './raw-body'
+import { healthRoutes } from './routes/health.routes'
+import { metricsRoutes } from './routes/metrics.routes'
+import { paymentsRoutes } from './routes/payments.routes'
+import { webhooksRoutes } from './routes/webhooks.routes'
+
+export interface HttpDeps {
+  env: Env
+  logger: Logger
+  consumers: ConsumerRepository
+  rateLimiter: InMemoryRateLimiter
+  processPayment: ProcessPaymentService
+  getPayment: GetPaymentService
+  handleWebhook: HandleProviderWebhookService
+  getMetrics: () => Promise<MetricsSnapshot>
+}
+
+/**
+ * Monta a aplicação Elysia: parser de corpo bruto (necessário para HMAC e
+ * idempotência), tratamento central de erros, Swagger/OpenAPI e as rotas.
+ */
+export function createServer(deps: HttpDeps) {
+  return (
+    new Elysia()
+      // Captura o corpo bruto p/ HMAC/idempotência e MARCA corpos acima do teto
+      // (anti-DoS). Não lança aqui: o Elysia não preserva erros tipados no onParse
+      // (viram PARSE/400). A marca é consumida nas rotas via `enforceBodyLimit`.
+      .onParse({ as: 'global' }, async ({ request, contentType }) => {
+        const maxBytes = deps.env.MAX_REQUEST_BODY_BYTES
+        const declared = Number(request.headers.get('content-length') ?? '0')
+        if (Number.isFinite(declared) && declared > maxBytes) {
+          markOversizeBody(request) // evita até bufferizar o corpo
+          return undefined
+        }
+        if (contentType?.includes('application/json')) {
+          const text = await request.text()
+          // Rede de segurança caso o Content-Length minta/esteja ausente.
+          if (Buffer.byteLength(text, 'utf8') > maxBytes) {
+            markOversizeBody(request)
+            return {}
+          }
+          storeRawBody(request, text)
+          return text.length > 0 ? JSON.parse(text) : {}
+        }
+        return undefined
+      })
+      .onError({ as: 'global' }, ({ code, error, set }) => {
+        if (error instanceof TooManyRequestsError && error.retryAfterSeconds) {
+          set.headers['retry-after'] = String(error.retryAfterSeconds)
+        }
+        const { status, body } = buildErrorResponse({ code, error, logger: deps.logger })
+        set.status = status
+        return body
+      })
+      .use(
+        swagger({
+          path: '/swagger',
+          documentation: {
+            info: {
+              title: 'Sistema Zero — Payments API',
+              version: '0.1.0',
+              description:
+                'Serviço de pagamentos (Pix/boleto/cartão) via Efí. Requer X-Consumer-Id + X-Signature (HMAC) e IP autorizado.',
+            },
+          },
+        }),
+      )
+      .use(healthRoutes())
+      .use(metricsRoutes(deps.getMetrics))
+      .use(
+        webhooksRoutes({
+          handleWebhook: deps.handleWebhook,
+          logger: deps.logger,
+          webhookSecret: deps.env.EFI_WEBHOOK_SECRET,
+        }),
+      )
+      .use(
+        paymentsRoutes({
+          auth: {
+            consumers: deps.consumers,
+            logger: deps.logger,
+            trustProxy: deps.env.TRUST_PROXY,
+            trustedProxyHops: deps.env.TRUSTED_PROXY_HOPS,
+            hmacToleranceSeconds: deps.env.HMAC_TOLERANCE_SECONDS,
+          },
+          rateLimiter: deps.rateLimiter,
+          processPayment: deps.processPayment,
+          getPayment: deps.getPayment,
+        }),
+      )
+  )
+}

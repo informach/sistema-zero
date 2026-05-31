@@ -1,0 +1,26 @@
+{
+  "name": "@sistemazero/core",
+  "version": "0.1.0",
+  "description": "Utilidades compartilhadas do monorepo sistema-zero (security, logging, errors, result, http) — sem dependência de framework.",
+  "type": "module",
+  "private": true,
+  "module": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./security": "./src/security/index.ts",
+    "./logging": "./src/logging/index.ts",
+    "./errors": "./src/errors/index.ts",
+    "./result": "./src/result/index.ts",
+    "./http": "./src/http/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
