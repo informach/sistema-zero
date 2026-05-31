@@ -1,5 +1,6 @@
 import { registerPaymentEventHandlers } from './application/event-handlers/payment-event-handlers'
 import { GetPaymentService } from './application/get-payment/get-payment.service'
+import { HandleBoletoNotificationService } from './application/handle-boleto-notification/handle-boleto-notification.service'
 import { HandleProviderWebhookService } from './application/handle-provider-webhook/handle-provider-webhook.service'
 import { ProcessPaymentService } from './application/process-payment/process-payment.service'
 import type { Env } from './infrastructure/config/env'
@@ -7,6 +8,7 @@ import { InProcessEventPublisher } from './infrastructure/events/in-process-even
 import { loadEfiCertificate } from './infrastructure/gateways/efi/certificate'
 import { EfiClient } from './infrastructure/gateways/efi/efi.client'
 import { EfiPaymentGateway } from './infrastructure/gateways/efi/efi.gateway'
+import { EfiCobrancasClient } from './infrastructure/gateways/efi/efi-cobrancas.client'
 import { createLogger, type Logger } from './infrastructure/logging/logger'
 import { OutboxPoller } from './infrastructure/outbox/outbox-poller'
 import { PG_CHANNELS } from './infrastructure/persistence/drizzle/channels'
@@ -65,6 +67,7 @@ export function createApplication(env: Env): Application {
   const efiCert = loadEfiCertificate({
     path: env.EFI_CERTIFICATE_PATH,
     base64: env.EFI_CERTIFICATE_BASE64,
+    password: env.EFI_CERTIFICATE_PASSWORD,
   })
   const efiClient = new EfiClient({
     clientId: env.EFI_CLIENT_ID,
@@ -74,7 +77,20 @@ export function createApplication(env: Env): Application {
     sandbox: env.EFI_SANDBOX,
     requestTimeoutMs: env.EFI_REQUEST_TIMEOUT_MS,
   })
-  const gateway = new EfiPaymentGateway(efiClient)
+  // Cliente da API Cobranças (boleto): SEM certificado/mTLS. O `efiCert` acima é
+  // exclusivo do Pix — não é passado aqui (o construtor não tem cert/key).
+  const cobrancasClient = new EfiCobrancasClient({
+    clientId: env.EFI_COBRANCAS_CLIENT_ID ?? env.EFI_CLIENT_ID,
+    clientSecret: env.EFI_COBRANCAS_CLIENT_SECRET ?? env.EFI_CLIENT_SECRET,
+    sandbox: env.EFI_SANDBOX,
+    requestTimeoutMs: env.EFI_REQUEST_TIMEOUT_MS,
+  })
+  const gateway = new EfiPaymentGateway(efiClient, cobrancasClient, {
+    expiresDays: env.EFI_BOLETO_DEFAULT_EXPIRES_DAYS,
+    fine: env.EFI_BOLETO_FINE,
+    interest: env.EFI_BOLETO_INTEREST,
+    notificationUrl: env.EFI_BOLETO_NOTIFICATION_URL,
+  })
 
   // Eventos + outbox poller
   const publisher = new InProcessEventPublisher(logger)
@@ -122,11 +138,18 @@ export function createApplication(env: Env): Application {
       idempotencyTtlSeconds: IDEMPOTENCY_TTL_SECONDS,
       idempotencyInFlightTtlSeconds: IDEMPOTENCY_IN_FLIGHT_TTL_SECONDS,
       asyncChargeCreation: env.ASYNC_CHARGE_CREATION,
+      boletoDefaultExpiresDays: env.EFI_BOLETO_DEFAULT_EXPIRES_DAYS,
     },
     logger,
   )
   const getPayment = new GetPaymentService(payments)
   const handleWebhook = new HandleProviderWebhookService(payments, gateway, webhookInbox, logger)
+  const handleBoletoNotification = new HandleBoletoNotificationService(
+    payments,
+    gateway,
+    webhookInbox,
+    logger,
+  )
 
   // Borda HTTP
   const server = createServer({
@@ -137,6 +160,7 @@ export function createApplication(env: Env): Application {
     processPayment,
     getPayment,
     handleWebhook,
+    handleBoletoNotification,
     getMetrics: () => metrics.getMetrics(),
   })
 
@@ -154,13 +178,35 @@ export function createApplication(env: Env): Application {
         await notifications.listen(PG_CHANNELS.outbox, () => outboxPoller.wake())
         await notifications.listen(PG_CHANNELS.webhookDeliveries, () => webhookWorker.wake())
       }
-      // Limpeza periódica de chaves de idempotência expiradas (fora do hot path).
+      // Limpeza periódica (fora do hot path): chaves de idempotência expiradas +
+      // retenção das tabelas append-only (outbox/webhook_events/webhook_deliveries)
+      // para não crescerem sem limite.
       cleanupTimer = setInterval(() => {
         void idempotency.cleanupExpired().catch((error) =>
           logger.error('idempotency.cleanup.failed', {
             error: error instanceof Error ? error.message : String(error),
           }),
         )
+        const cutoff = new Date(Date.now() - env.RETENTION_DAYS * 24 * 60 * 60 * 1000)
+        void Promise.all([
+          outboxRepo.cleanup(cutoff),
+          webhookInbox.cleanup(cutoff),
+          webhookDeliveries.cleanup(cutoff),
+        ])
+          .then(([outboxRows, webhookEventRows, deliveryRows]) => {
+            if (outboxRows + webhookEventRows + deliveryRows > 0) {
+              logger.info('retention.cleaned', {
+                outbox: outboxRows,
+                webhookEvents: webhookEventRows,
+                deliveries: deliveryRows,
+              })
+            }
+          })
+          .catch((error) =>
+            logger.error('retention.cleanup.failed', {
+              error: error instanceof Error ? error.message : String(error),
+            }),
+          )
       }, env.IDEMPOTENCY_CLEANUP_INTERVAL_MS)
       server.listen(env.PORT)
       logger.info('http.listening', { port: env.PORT })

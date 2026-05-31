@@ -17,17 +17,30 @@ export interface EfiCertificate {
  * O PEM é usado no `tls` do `fetch` nativo do Bun para fazer o mTLS com a Efí —
  * o SDK oficial (baseado em `.p12`/pfx) não funciona sob o Bun.
  */
-export function loadEfiCertificate(opts: { path?: string; base64?: string }): EfiCertificate {
+export function loadEfiCertificate(opts: {
+  path?: string
+  base64?: string
+  password?: string
+}): EfiCertificate {
   const buffer = readCertificateBytes(opts)
   const asText = buffer.toString('utf8')
 
-  // Já é PEM? O Bun aceita o mesmo conteúdo PEM em `cert` e `key`.
+  // Já é PEM? O Bun aceita o mesmo conteúdo PEM em `cert` e `key` — mas o blob
+  // PRECISA conter o certificado E a chave privada, senão o mTLS quebra só em
+  // runtime (sem sinal no boot). Falha alto agora se faltar alguma metade.
   if (asText.includes('-----BEGIN')) {
+    const hasCert = asText.includes('-----BEGIN CERTIFICATE-----')
+    const hasKey = /-----BEGIN (?:RSA |EC )?PRIVATE KEY-----/.test(asText)
+    if (!hasCert || !hasKey) {
+      throw new Error(
+        'PEM da Efí incompleto: precisa conter o certificado (-----BEGIN CERTIFICATE-----) E a chave privada (-----BEGIN PRIVATE KEY-----)',
+      )
+    }
     return { cert: asText, key: asText }
   }
 
   // Caso contrário, trata como P12/PFX (binário) e converte.
-  return convertP12ToPem(buffer)
+  return convertP12ToPem(buffer, opts.password ?? '')
 }
 
 function readCertificateBytes(opts: { path?: string; base64?: string }): Buffer {
@@ -43,7 +56,15 @@ function readCertificateBytes(opts: { path?: string; base64?: string }): Buffer 
 function convertP12ToPem(buffer: Buffer, password = ''): EfiCertificate {
   const der = forge.util.createBuffer(buffer.toString('binary'))
   const asn1 = forge.asn1.fromDer(der)
-  const p12 = forge.pkcs12.pkcs12FromAsn1(asn1, false, password)
+  let p12: forge.pkcs12.Pkcs12Pfx
+  try {
+    p12 = forge.pkcs12.pkcs12FromAsn1(asn1, false, password)
+  } catch (error) {
+    // Erro mais comum: P12 protegido por senha sem EFI_CERTIFICATE_PASSWORD.
+    throw new Error(
+      `Falha ao ler o P12 da Efí (${error instanceof Error ? error.message : String(error)}). Se o arquivo tiver senha, defina EFI_CERTIFICATE_PASSWORD.`,
+    )
+  }
 
   const key = extractPrivateKeyPem(p12)
   const cert = extractCertificatesPem(p12)

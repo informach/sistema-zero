@@ -19,9 +19,8 @@ export function toEfiGatewayError(error: unknown): EfiGatewayError {
   if (error instanceof EfiGatewayError) return error
 
   const e = error as Record<string, unknown> | null
-  const providerCode = e?.['nome'] ?? e?.['error'] ?? e?.['code']
-  const message =
-    e?.['mensagem'] ?? e?.['error_description'] ?? e?.['message'] ?? 'Erro ao comunicar com a Efí'
+  const providerCode = e?.nome ?? e?.error ?? e?.code
+  const message = e?.mensagem ?? e?.error_description ?? e?.message ?? 'Erro ao comunicar com a Efí'
 
   return new EfiGatewayError(
     String(message),

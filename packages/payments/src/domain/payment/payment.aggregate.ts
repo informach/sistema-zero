@@ -25,6 +25,28 @@ export interface PixQrCode {
   locationId?: string
 }
 
+/** Dados do boleto retornados pelo provedor (linha digitável, código de barras, PDF). */
+export interface BoletoDetails {
+  barcode: string
+  digitableLine: string
+  pdfUrl: string
+}
+
+/**
+ * Parâmetros da cobrança de boleto informados na requisição. Persistidos no
+ * agregado para que a criação **assíncrona** (ChargeCreationWorker) consiga
+ * emitir o boleto depois, com os mesmos dados (vencimento, multa/juros, etc.).
+ */
+export interface BoletoRequest {
+  /** Vencimento já resolvido (YYYY-MM-DD) no momento da requisição. */
+  dueDate: string
+  fine?: number
+  interest?: number
+  discount?: number
+  message?: string
+  daysToWriteOff?: number
+}
+
 interface CustomerSnapshot {
   name: string
   email: string
@@ -49,6 +71,8 @@ export interface PaymentSnapshot {
   providerPaymentId: string | null
   txid: string | null
   pixQrCode: PixQrCode | null
+  boleto: BoletoDetails | null
+  boletoRequest: BoletoRequest | null
   customer: CustomerSnapshot | null
   description: string | null
   metadata: Record<string, unknown>
@@ -70,6 +94,8 @@ interface PaymentState {
   providerPaymentId: string | null
   txid: string | null
   pixQrCode: PixQrCode | null
+  boleto: BoletoDetails | null
+  boletoRequest: BoletoRequest | null
   customer: Customer | null
   description: string | null
   metadata: Record<string, unknown>
@@ -105,6 +131,8 @@ export class PaymentAggregate extends AggregateRoot<string> {
     customer?: Customer
     description?: string
     metadata?: Record<string, unknown>
+    /** Parâmetros do boleto (persistidos p/ criação assíncrona). */
+    boletoRequest?: BoletoRequest
   }): PaymentAggregate {
     if (!input.amount.isPositive()) {
       throw new ValidationError('Valor do pagamento deve ser positivo')
@@ -129,6 +157,8 @@ export class PaymentAggregate extends AggregateRoot<string> {
         providerPaymentId: null,
         txid: null,
         pixQrCode: null,
+        boleto: null,
+        boletoRequest: input.boletoRequest ?? null,
         customer: input.customer ?? null,
         description: input.description ?? null,
         metadata: input.metadata ?? {},
@@ -178,6 +208,8 @@ export class PaymentAggregate extends AggregateRoot<string> {
         providerPaymentId: snapshot.providerPaymentId,
         txid: snapshot.txid,
         pixQrCode: snapshot.pixQrCode,
+        boleto: snapshot.boleto,
+        boletoRequest: snapshot.boletoRequest,
         customer,
         description: snapshot.description,
         metadata: snapshot.metadata,
@@ -201,6 +233,7 @@ export class PaymentAggregate extends AggregateRoot<string> {
     providerPaymentId: string
     txid?: string
     pixQrCode?: PixQrCode
+    boleto?: BoletoDetails
     expiresAt?: Date
   }): void {
     if (this.state.status !== PaymentStatus.PENDING) {
@@ -211,6 +244,7 @@ export class PaymentAggregate extends AggregateRoot<string> {
     this.state.providerPaymentId = input.providerPaymentId
     if (input.txid !== undefined) this.state.txid = input.txid
     if (input.pixQrCode !== undefined) this.state.pixQrCode = input.pixQrCode
+    if (input.boleto !== undefined) this.state.boleto = input.boleto
     if (input.expiresAt !== undefined) this.state.expiresAt = input.expiresAt
     this.touch()
   }
@@ -225,7 +259,9 @@ export class PaymentAggregate extends AggregateRoot<string> {
     // Idempotente: se já está pago, não reprocessa nem reemite evento.
     if (this.state.status === PaymentStatus.PAID) return
     this.transitionTo(PaymentStatus.PAID)
-    this.state.paidAt = paidAt ?? new Date()
+    // Defesa em profundidade: um `Date` inválido (timestamp garbage do provedor)
+    // faria `toISOString()` abaixo lançar e travaria a confirmação. Cai para "agora".
+    this.state.paidAt = paidAt && !Number.isNaN(paidAt.getTime()) ? paidAt : new Date()
     this.addEvent(
       new PaymentPaidEvent(this.id, {
         consumerId: this.state.consumerId,
@@ -244,12 +280,12 @@ export class PaymentAggregate extends AggregateRoot<string> {
 
   markExpired(): void {
     this.transitionTo(PaymentStatus.EXPIRED)
-    this.addEvent(new PaymentExpiredEvent(this.id))
+    this.addEvent(new PaymentExpiredEvent(this.id, { consumerId: this.state.consumerId }))
   }
 
   refund(): void {
     this.transitionTo(PaymentStatus.REFUNDED)
-    this.addEvent(new PaymentRefundedEvent(this.id))
+    this.addEvent(new PaymentRefundedEvent(this.id, { consumerId: this.state.consumerId }))
   }
 
   private transitionTo(target: PaymentStatus): void {
@@ -312,6 +348,14 @@ export class PaymentAggregate extends AggregateRoot<string> {
     return this.state.pixQrCode
   }
 
+  get boleto(): BoletoDetails | null {
+    return this.state.boleto
+  }
+
+  get boletoRequest(): BoletoRequest | null {
+    return this.state.boletoRequest
+  }
+
   get customer(): Customer | null {
     return this.state.customer
   }
@@ -367,6 +411,8 @@ export class PaymentAggregate extends AggregateRoot<string> {
       providerPaymentId: this.state.providerPaymentId,
       txid: this.state.txid,
       pixQrCode: this.state.pixQrCode,
+      boleto: this.state.boleto,
+      boletoRequest: this.state.boletoRequest,
       customer,
       description: this.state.description,
       metadata: this.state.metadata,

@@ -42,6 +42,19 @@ export const ProcessPaymentBody = t.Object({
       installments: t.Integer({ minimum: 1, maximum: 12 }),
     }),
   ),
+  // Parâmetros específicos de boleto (API Cobranças). O pagador completo
+  // (customer + endereço) é exigido na camada de aplicação para BOLETO.
+  boleto: t.Optional(
+    t.Object({
+      dueDate: t.Optional(t.String({ pattern: '^\\d{4}-\\d{2}-\\d{2}$' })),
+      expiresInDays: t.Optional(t.Integer({ minimum: 1, maximum: 365 })),
+      fine: t.Optional(t.Integer({ minimum: 0, maximum: 10_000 })),
+      interest: t.Optional(t.Integer({ minimum: 0, maximum: 10_000 })),
+      discount: t.Optional(t.Integer({ minimum: 0, maximum: 1_000_000_000 })),
+      message: t.Optional(t.String({ maxLength: 400 })),
+      daysToWriteOff: t.Optional(t.Integer({ minimum: 0, maximum: 120 })),
+    }),
+  ),
   // Limita a quantidade de chaves de metadata (a soma do corpo ainda é limitada
   // pelo teto global de tamanho do corpo no onParse).
   metadata: t.Optional(t.Record(t.String({ maxLength: 64 }), t.Unknown(), { maxProperties: 50 })),

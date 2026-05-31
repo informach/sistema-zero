@@ -74,15 +74,30 @@ export class PaymentFailedEvent extends DomainEvent {
 export class PaymentExpiredEvent extends DomainEvent {
   readonly eventName = 'payment.expired'
 
+  constructor(
+    aggregateId: string,
+    private readonly data: { consumerId: string },
+  ) {
+    super(aggregateId)
+  }
+
   toPayload(): Record<string, unknown> {
-    return { paymentId: this.aggregateId }
+    // `consumerId` é obrigatório p/ o pipeline de webhook de saída rotear ao dono.
+    return { paymentId: this.aggregateId, ...this.data }
   }
 }
 
 export class PaymentRefundedEvent extends DomainEvent {
   readonly eventName = 'payment.refunded'
 
+  constructor(
+    aggregateId: string,
+    private readonly data: { consumerId: string },
+  ) {
+    super(aggregateId)
+  }
+
   toPayload(): Record<string, unknown> {
-    return { paymentId: this.aggregateId }
+    return { paymentId: this.aggregateId, ...this.data }
   }
 }

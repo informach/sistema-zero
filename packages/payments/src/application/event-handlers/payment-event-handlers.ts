@@ -15,7 +15,7 @@ export function registerPaymentEventHandlers(
   logger: Logger,
 ): EventPublisher {
   const enqueueDelivery = async (message: OutboxMessage) => {
-    const consumerId = message.payload['consumerId']
+    const consumerId = message.payload.consumerId
     if (typeof consumerId === 'string') {
       await deliveries.enqueue({
         consumerId,
@@ -36,8 +36,13 @@ export function registerPaymentEventHandlers(
       logger.warn('handler.payment_failed', { aggregateId: message.aggregateId })
       await enqueueDelivery(message)
     })
-    .on('payment.expired', (message) => {
+    .on('payment.expired', async (message) => {
       logger.info('handler.payment_expired', { aggregateId: message.aggregateId })
+      await enqueueDelivery(message)
+    })
+    .on('payment.refunded', async (message) => {
+      logger.info('handler.payment_refunded', { aggregateId: message.aggregateId })
+      await enqueueDelivery(message)
     })
 
   return publisher

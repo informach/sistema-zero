@@ -1,4 +1,4 @@
-import { asc, eq } from 'drizzle-orm'
+import { and, asc, eq, lt, ne } from 'drizzle-orm'
 import type { OutboxMessage, OutboxRepository } from '../../../domain/ports/outbox.port'
 import type { Database } from './db'
 import { outbox } from './schema'
@@ -66,5 +66,18 @@ export class DrizzleOutboxRepository implements OutboxRepository {
 
       return { published, failed, dead }
     })
+  }
+
+  /**
+   * Retenção: remove eventos já terminais (PUBLISHED/DEAD) mais antigos que
+   * `olderThan`. PENDING nunca é tocado. Roda num job periódico (fora do hot path)
+   * para a tabela não crescer sem limite. Retorna quantas linhas foram removidas.
+   */
+  async cleanup(olderThan: Date): Promise<number> {
+    const deleted = await this.db
+      .delete(outbox)
+      .where(and(ne(outbox.status, 'PENDING'), lt(outbox.createdAt, olderThan)))
+      .returning({ id: outbox.id })
+    return deleted.length
   }
 }

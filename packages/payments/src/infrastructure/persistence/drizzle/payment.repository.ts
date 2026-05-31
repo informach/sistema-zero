@@ -46,6 +46,8 @@ export class DrizzlePaymentRepository implements PaymentRepository {
             txid: values.txid,
             card: values.card,
             pixQrCode: values.pixQrCode,
+            boleto: values.boleto,
+            boletoRequest: values.boletoRequest,
             customer: values.customer,
             description: values.description,
             metadata: values.metadata,
@@ -111,7 +113,7 @@ export class DrizzlePaymentRepository implements PaymentRepository {
     return row ? PaymentAggregate.restore(rowToSnapshot(row)) : null
   }
 
-  async claimPendingPixCharges(limit: number, staleAfterMs: number): Promise<ClaimedCharge[]> {
+  async claimPendingCharges(limit: number, staleAfterMs: number): Promise<ClaimedCharge[]> {
     const staleThreshold = new Date(Date.now() - staleAfterMs)
 
     return this.db.transaction(async (tx) => {
@@ -120,7 +122,7 @@ export class DrizzlePaymentRepository implements PaymentRepository {
         .from(payments)
         .where(
           and(
-            eq(payments.method, 'PIX'),
+            inArray(payments.method, ['PIX', 'BOLETO']),
             eq(payments.status, 'PENDING'),
             isNull(payments.providerPaymentId),
             or(isNull(payments.chargeClaimedAt), lt(payments.chargeClaimedAt, staleThreshold)),
@@ -154,7 +156,7 @@ export class DrizzlePaymentRepository implements PaymentRepository {
       .where(
         and(
           eq(payments.status, 'PENDING'),
-          eq(payments.method, 'PIX'),
+          inArray(payments.method, ['PIX', 'BOLETO']),
           isNotNull(payments.providerPaymentId),
           lt(payments.updatedAt, threshold),
         ),
@@ -180,6 +182,8 @@ function snapshotToRow(snap: PaymentSnapshot): typeof payments.$inferInsert {
     idempotencyKey: snap.idempotencyKey,
     card: snap.card,
     pixQrCode: snap.pixQrCode,
+    boleto: snap.boleto,
+    boletoRequest: snap.boletoRequest,
     customer: snap.customer,
     description: snap.description,
     metadata: snap.metadata,
@@ -206,6 +210,8 @@ function rowToSnapshot(row: PaymentRow): PaymentSnapshot {
     providerPaymentId: row.providerPaymentId,
     txid: row.txid,
     pixQrCode: row.pixQrCode ?? null,
+    boleto: row.boleto ?? null,
+    boletoRequest: row.boletoRequest ?? null,
     customer: row.customer ?? null,
     description: row.description,
     metadata: row.metadata,

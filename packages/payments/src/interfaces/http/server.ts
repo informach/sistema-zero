@@ -1,6 +1,7 @@
 import { swagger } from '@elysiajs/swagger'
 import { Elysia } from 'elysia'
 import type { GetPaymentService } from '../../application/get-payment/get-payment.service'
+import type { HandleBoletoNotificationService } from '../../application/handle-boleto-notification/handle-boleto-notification.service'
 import type { HandleProviderWebhookService } from '../../application/handle-provider-webhook/handle-provider-webhook.service'
 import type { ProcessPaymentService } from '../../application/process-payment/process-payment.service'
 import type { ConsumerRepository } from '../../domain/ports/consumer-repository.port'
@@ -24,6 +25,7 @@ export interface HttpDeps {
   processPayment: ProcessPaymentService
   getPayment: GetPaymentService
   handleWebhook: HandleProviderWebhookService
+  handleBoletoNotification: HandleBoletoNotificationService
   getMetrics: () => Promise<MetricsSnapshot>
 }
 
@@ -32,73 +34,84 @@ export interface HttpDeps {
  * idempotência), tratamento central de erros, Swagger/OpenAPI e as rotas.
  */
 export function createServer(deps: HttpDeps) {
-  return (
-    new Elysia()
-      // Captura o corpo bruto p/ HMAC/idempotência e MARCA corpos acima do teto
-      // (anti-DoS). Não lança aqui: o Elysia não preserva erros tipados no onParse
-      // (viram PARSE/400). A marca é consumida nas rotas via `enforceBodyLimit`.
-      .onParse({ as: 'global' }, async ({ request, contentType }) => {
-        const maxBytes = deps.env.MAX_REQUEST_BODY_BYTES
-        const declared = Number(request.headers.get('content-length') ?? '0')
-        if (Number.isFinite(declared) && declared > maxBytes) {
-          markOversizeBody(request) // evita até bufferizar o corpo
-          return undefined
-        }
-        if (contentType?.includes('application/json')) {
-          const text = await request.text()
-          // Rede de segurança caso o Content-Length minta/esteja ausente.
-          if (Buffer.byteLength(text, 'utf8') > maxBytes) {
-            markOversizeBody(request)
-            return {}
-          }
-          storeRawBody(request, text)
-          return text.length > 0 ? JSON.parse(text) : {}
-        }
+  const app = new Elysia({
+    // Teto de corpo no nível do Bun (rejeita no socket ANTES de bufferizar) —
+    // defesa em profundidade junto da checagem por bytes do onParse (que cobre o
+    // caso de Content-Length ausente/mentiroso no `app.handle` dos testes).
+    serve: { maxRequestBodySize: deps.env.MAX_REQUEST_BODY_BYTES },
+  })
+    // Captura o corpo bruto p/ HMAC/idempotência e MARCA corpos acima do teto
+    // (anti-DoS). Não lança aqui: o Elysia não preserva erros tipados no onParse
+    // (viram PARSE/400). A marca é consumida nas rotas via `enforceBodyLimit`.
+    .onParse({ as: 'global' }, async ({ request, contentType }) => {
+      const maxBytes = deps.env.MAX_REQUEST_BODY_BYTES
+      const declared = Number(request.headers.get('content-length') ?? '0')
+      if (Number.isFinite(declared) && declared > maxBytes) {
+        markOversizeBody(request) // evita até bufferizar o corpo
         return undefined
-      })
-      .onError({ as: 'global' }, ({ code, error, set }) => {
-        if (error instanceof TooManyRequestsError && error.retryAfterSeconds) {
-          set.headers['retry-after'] = String(error.retryAfterSeconds)
+      }
+      if (contentType?.includes('application/json')) {
+        const text = await request.text()
+        // Rede de segurança caso o Content-Length minta/esteja ausente.
+        if (Buffer.byteLength(text, 'utf8') > maxBytes) {
+          markOversizeBody(request)
+          return {}
         }
-        const { status, body } = buildErrorResponse({ code, error, logger: deps.logger })
-        set.status = status
-        return body
-      })
-      .use(
-        swagger({
-          path: '/swagger',
-          documentation: {
-            info: {
-              title: 'Sistema Zero — Payments API',
-              version: '0.1.0',
-              description:
-                'Serviço de pagamentos (Pix/boleto/cartão) via Efí. Requer X-Consumer-Id + X-Signature (HMAC) e IP autorizado.',
-            },
+        storeRawBody(request, text)
+        return text.length > 0 ? JSON.parse(text) : {}
+      }
+      return undefined
+    })
+    .onError({ as: 'global' }, ({ code, error, set }) => {
+      if (error instanceof TooManyRequestsError && error.retryAfterSeconds) {
+        set.headers['retry-after'] = String(error.retryAfterSeconds)
+      }
+      const { status, body } = buildErrorResponse({ code, error, logger: deps.logger })
+      set.status = status
+      return body
+    })
+
+  // Swagger/OpenAPI só FORA de produção: não expõe o mapa de rotas nem o esquema
+  // de autenticação de um serviço de pagamentos a quem apenas alcança a porta HTTP.
+  if (deps.env.NODE_ENV !== 'production') {
+    app.use(
+      swagger({
+        path: '/swagger',
+        documentation: {
+          info: {
+            title: 'Sistema Zero — Payments API',
+            version: '0.1.0',
+            description:
+              'Serviço de pagamentos (Pix/boleto/cartão) via Efí. Requer X-Consumer-Id + X-Signature (HMAC) e IP autorizado.',
           },
-        }),
-      )
-      .use(healthRoutes())
-      .use(metricsRoutes(deps.getMetrics))
-      .use(
-        webhooksRoutes({
-          handleWebhook: deps.handleWebhook,
+        },
+      }),
+    )
+  }
+
+  return app
+    .use(healthRoutes())
+    .use(metricsRoutes(deps.getMetrics))
+    .use(
+      webhooksRoutes({
+        handleWebhook: deps.handleWebhook,
+        handleBoletoNotification: deps.handleBoletoNotification,
+        logger: deps.logger,
+        webhookSecret: deps.env.EFI_WEBHOOK_SECRET,
+      }),
+    )
+    .use(
+      paymentsRoutes({
+        auth: {
+          consumers: deps.consumers,
           logger: deps.logger,
-          webhookSecret: deps.env.EFI_WEBHOOK_SECRET,
-        }),
-      )
-      .use(
-        paymentsRoutes({
-          auth: {
-            consumers: deps.consumers,
-            logger: deps.logger,
-            trustProxy: deps.env.TRUST_PROXY,
-            trustedProxyHops: deps.env.TRUSTED_PROXY_HOPS,
-            hmacToleranceSeconds: deps.env.HMAC_TOLERANCE_SECONDS,
-          },
-          rateLimiter: deps.rateLimiter,
-          processPayment: deps.processPayment,
-          getPayment: deps.getPayment,
-        }),
-      )
-  )
+          trustProxy: deps.env.TRUST_PROXY,
+          trustedProxyHops: deps.env.TRUSTED_PROXY_HOPS,
+          hmacToleranceSeconds: deps.env.HMAC_TOLERANCE_SECONDS,
+        },
+        rateLimiter: deps.rateLimiter,
+        processPayment: deps.processPayment,
+        getPayment: deps.getPayment,
+      }),
+    )
 }

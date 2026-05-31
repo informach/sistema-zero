@@ -6,10 +6,10 @@ Serviço de pagamentos/checkout consumido por outros sistemas internos. Processa
 Arquitetura: **DDD + Hexagonal (Ports & Adapters)**, SOLID, Clean Code. Foco em
 performance, escala e segurança.
 
-> Estado atual: scaffold completo + **fatia vertical de Pix** funcionando
-> ponta-a-ponta (criar cobrança → webhook de confirmação → evento de domínio).
-> Boleto, cartão e recorrência têm os _ports_/contratos prontos; os _adapters_
-> são o próximo passo.
+> Estado atual: scaffold completo + **fatias verticais de Pix e boleto**
+> funcionando ponta-a-ponta (criar cobrança → webhook/notificação de confirmação →
+> evento de domínio), nos modos síncrono e assíncrono. Cartão e recorrência têm os
+> _ports_/contratos prontos; os _adapters_ são o próximo passo.
 
 ## Camadas
 
@@ -46,7 +46,8 @@ bun run db:migrate    # aplica no banco
 bun run dev           # ou, na raiz: bun run dev:payments
 ```
 
-- API docs (OpenAPI/Swagger): `GET /swagger`
+- API docs (OpenAPI/Swagger): `GET /swagger` — **apenas fora de produção**
+  (`NODE_ENV != production`); em produção não é montado (não expõe o mapa de rotas).
 - Health: `GET /health`
 
 ## Autenticação service-to-service
@@ -94,8 +95,10 @@ Componentes de escala/resiliência: outbox transacional + pollers com
 `PG_LISTEN_ENABLED=false` atrás de PgBouncer transaction pooling); idempotência
 **escopada por consumidor** com concorrência otimista (coluna `version`) evitando
 lost-update/eventos duplicados; rate limit por consumidor (429); dead-letter no
-outbox (`OUTBOX_MAX_ATTEMPTS`); reconciliação (rede de segurança p/ webhooks
-perdidos) e `GET /metrics` (lag de outbox/fila/dead-letter). O teto de throughput
+outbox (`OUTBOX_MAX_ATTEMPTS`); **retenção periódica** das tabelas append-only
+(`outbox`/`webhook_events`/`webhook_deliveries` terminais > `RETENTION_DAYS`);
+reconciliação (rede de segurança p/ webhooks perdidos) e `GET /metrics` (lag de
+outbox/fila/dead-letter). O teto de throughput
 é a **API da Efí** — daí o modo assíncrono + retry/backoff. Em escala, use um
 **pooler** de Postgres (`DATABASE_POOL_MAX` × réplicas não pode estourar o
 `max_connections`; o `LISTEN` usa +1 conexão dedicada por instância).
@@ -103,15 +106,25 @@ perdidos) e `GET /metrics` (lag de outbox/fila/dead-letter). O teto de throughpu
 ## Segurança
 
 - Nunca armazenamos PAN de cartão — apenas token + `last4` + bandeira (tokenização Efí).
-- Pix exige certificado P12 da Efí (carregado no boot a partir de `EFI_CERTIFICATE_PATH`).
+- Pix exige certificado P12 da Efí (carregado no boot de `EFI_CERTIFICATE_PATH` ou
+  `EFI_CERTIFICATE_BASE64`; senha opcional em `EFI_CERTIFICATE_PASSWORD`).
 - Webhooks de entrada são deduplicados (o token de dedupe só é consumido após
   sucesso → falha no meio reprocessa), processados com **isolamento por item**, e a
-  cobrança é **re-consultada** na Efí — conferindo inclusive o **valor pago** —
-  antes de confirmar. Opcionalmente exigem `?token=` (`EFI_WEBHOOK_SECRET`).
+  cobrança é **re-consultada** na Efí — conferindo inclusive o **valor pago** (no
+  boleto, o **principal**, ignorando multa/juros) — antes de confirmar. Divergência
+  de valor não confirma, loga (alertável) e para de reprocessar. Opcionalmente
+  exigem `?token=` (`EFI_WEBHOOK_SECRET`).
 - Idempotência via `Idempotency-Key` **por consumidor** para `POST /payments`
-  (retries não duplicam cobrança; reservas presas por crash expiram por TTL curto).
-- Assinatura HMAC liga a `Idempotency-Key`; limite de corpo (anti-DoS); o
-  contêiner roda como usuário **não-root**; segredos/certs ficam fora do git e da imagem.
+  (retries não duplicam cobrança). A reserva tem _fencing_ por `reservationId` (uma
+  request zumbi reciclada não sobrescreve a reserva viva) e só é liberada na falha
+  **se nenhuma cobrança/persistência ocorreu**; reservas presas por crash expiram por
+  TTL curto.
+- Atrás de proxy, a resolução do IP via `X-Forwarded-For` **falha fechada**: se a
+  cadeia for mais curta que `TRUSTED_PROXY_HOPS`, usa o IP do socket (não a entrada
+  controlada pelo cliente) — sem bypass da allowlist.
+- Assinatura HMAC liga a `Idempotency-Key`; limite de corpo (anti-DoS, também no
+  socket via `maxRequestBodySize` do Bun); o contêiner roda como usuário **não-root**;
+  segredos/certs ficam fora do git e da imagem.
 
 ## Deploy (Railway)
 
@@ -124,9 +137,11 @@ O deploy usa `Dockerfile` (raiz: `packages/payments/Dockerfile`) + `railway.json
    (obrigatório — Railway fica atrás de proxy, usa `X-Forwarded-For`) e
    `TRUSTED_PROXY_HOPS` = nº de proxies confiáveis na frente (Railway sozinho → 1;
    com Cloudflare na frente → 2), `EFI_CLIENT_ID`, `EFI_CLIENT_SECRET`,
-   `EFI_SANDBOX`, `EFI_PIX_KEY`, o **certificado em base64** em
-   `EFI_CERTIFICATE_BASE64` (não há upload de arquivo) e, opcionalmente,
-   `EFI_WEBHOOK_SECRET` (token no webhook de entrada).
+   **`EFI_SANDBOX=false`** (em produção é obrigatório — o boot **falha** se ficar
+   `true`), `EFI_PIX_KEY`, o **certificado em base64** em `EFI_CERTIFICATE_BASE64`
+   (não há upload de arquivo; senha do P12, se houver, em `EFI_CERTIFICATE_PASSWORD`)
+   e, opcionalmente, `EFI_WEBHOOK_SECRET` (token no webhook de entrada — **omita para
+   desabilitar; string vazia não é aceita**).
 3. O `railway.json` roda as migrations no **pre-deploy** (`db:migrate`) e sobe
    com `start`. Gere/commite as migrations antes: `bun run db:generate`.
 4. **Domínio**: Settings → Networking → Generate Domain.
@@ -148,9 +163,10 @@ O deploy usa `Dockerfile` (raiz: `packages/payments/Dockerfile`) + `railway.json
 
 ## Próximos passos
 
-Adapters de boleto (`/v1/charge/one-step`) e cartão (tokenização + `/charges`),
-recorrência (assinaturas + Pix Automático) e integração com o futuro serviço de
-produtos/ofertas (o campo `metadata` do pagamento já acomoda a origem).
+Adapter de **cartão** (tokenização + `/charges`), **recorrência** (assinaturas +
+Pix Automático) e integração com o futuro serviço de produtos/ofertas (o campo
+`metadata` do pagamento já acomoda a origem). Boleto (`/v1/charge/one-step`) já está
+implementado (síncrono + assíncrono + reconciliação + notificação por token).
 
 Para escala/operação, considere ainda: rate limit/idempotência distribuídos
 (Redis) para limite global preciso entre réplicas, e dashboards/alertas sobre o

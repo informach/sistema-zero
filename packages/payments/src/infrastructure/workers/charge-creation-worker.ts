@@ -1,3 +1,4 @@
+import { buildBoletoChargeInput } from '../../application/process-payment/boleto-charge-input'
 import type { PaymentGateway } from '../../domain/ports/payment-gateway.port'
 import type { PaymentRepository } from '../../domain/ports/payment-repository.port'
 import type { Logger } from '../logging/logger'
@@ -15,10 +16,18 @@ export interface ChargeCreationWorkerOptions {
 }
 
 /**
- * Worker do modo assíncrono: cria as cobranças Pix na Efí para os pagamentos
- * aceitos via `POST /payments` (status PENDING, ainda sem cobrança). O `claim`
- * (SKIP LOCKED) limita o lote por ciclo → **suaviza o burst** contra o rate
- * limit da Efí. Após `maxAttempts` falhas, o pagamento vira FAILED.
+ * Worker do modo assíncrono: cria as cobranças na Efí (Pix ou boleto) para os
+ * pagamentos aceitos via `POST /payments` (status PENDING, ainda sem cobrança).
+ * O `claim` (SKIP LOCKED) limita o lote por ciclo → **suaviza o burst** contra o
+ * rate limit da Efí. Após `maxAttempts` falhas, o pagamento vira FAILED.
+ *
+ * ⚠️ Invariante de duplicação (boleto): o `POST /charge/one-step` NÃO é idempotente
+ * no provedor. O lease (`staleAfterMs`) garante que outra réplica só re-reivindique
+ * um pagamento DEPOIS que o detentor original já parou de trabalhar nele — por isso
+ * `CHARGE_CLAIM_STALE_MS` é validado no boot como >= 2× `EFI_REQUEST_TIMEOUT_MS`
+ * (ver `env.ts`). Resíduo irredutível: se a Efí processar o POST mas a resposta se
+ * perder (timeout), o boleto existe e uma re-tentativa cria um 2º — `metadata.custom_id`
+ * carimba o `paymentId` em toda cobrança para reconciliação/auditoria manual.
  */
 export class ChargeCreationWorker {
   private timer: ReturnType<typeof setInterval> | null = null
@@ -58,7 +67,7 @@ export class ChargeCreationWorker {
     if (this.running) return
     this.running = true
     try {
-      const claimed = await this.payments.claimPendingPixCharges(
+      const claimed = await this.payments.claimPendingCharges(
         this.options.batchSize,
         this.options.staleAfterMs ?? 60_000,
       )
@@ -80,30 +89,49 @@ export class ChargeCreationWorker {
   }
 
   private async createCharge(
-    payment: Awaited<ReturnType<PaymentRepository['claimPendingPixCharges']>>[number]['payment'],
+    payment: Awaited<ReturnType<PaymentRepository['claimPendingCharges']>>[number]['payment'],
     attempts: number,
   ): Promise<void> {
     try {
-      const charge = await this.gateway.createPixCharge({
-        paymentId: payment.id,
-        amount: payment.amount,
-        pixKey: this.options.pixKey,
-        description: payment.description ?? undefined,
-        expiresInSeconds: this.options.defaultExpiresInSeconds,
-        idempotencyKey: payment.idempotencyKey,
-      })
-      payment.registerProviderCharge({
-        providerPaymentId: charge.providerPaymentId,
-        txid: charge.txid,
-        pixQrCode: {
-          copiaECola: charge.copiaECola,
-          imagemQrcodeBase64: charge.imagemQrcodeBase64,
-          locationId: charge.locationId,
-        },
-        expiresAt: charge.expiresAt,
-      })
+      if (payment.method.type === 'PIX') {
+        const charge = await this.gateway.createPixCharge({
+          paymentId: payment.id,
+          amount: payment.amount,
+          pixKey: this.options.pixKey,
+          description: payment.description ?? undefined,
+          expiresInSeconds: this.options.defaultExpiresInSeconds,
+          idempotencyKey: payment.idempotencyKey,
+        })
+        payment.registerProviderCharge({
+          providerPaymentId: charge.providerPaymentId,
+          txid: charge.txid,
+          pixQrCode: {
+            copiaECola: charge.copiaECola,
+            imagemQrcodeBase64: charge.imagemQrcodeBase64,
+            locationId: charge.locationId,
+          },
+          expiresAt: charge.expiresAt,
+        })
+      } else if (payment.method.type === 'BOLETO') {
+        const charge = await this.gateway.createBoletoCharge(buildBoletoChargeInput(payment))
+        payment.registerProviderCharge({
+          providerPaymentId: charge.providerPaymentId,
+          boleto: {
+            barcode: charge.barcode,
+            digitableLine: charge.digitableLine,
+            pdfUrl: charge.pdfUrl,
+          },
+          expiresAt: charge.expiresAt,
+        })
+      } else {
+        throw new Error(`Método sem criação assíncrona suportada: ${payment.method.type}`)
+      }
       await this.payments.save(payment)
-      this.logger.info('charge.created_async', { paymentId: payment.id, txid: charge.txid })
+      this.logger.info('charge.created_async', {
+        paymentId: payment.id,
+        method: payment.method.type,
+        providerPaymentId: payment.providerPaymentId,
+      })
     } catch (error) {
       this.logger.error('charge.creation_failed', {
         paymentId: payment.id,
@@ -111,9 +139,19 @@ export class ChargeCreationWorker {
         error: error instanceof Error ? error.message : String(error),
       })
       if (attempts >= this.options.maxAttempts) {
-        payment.markFailed('Falha ao criar cobrança no provedor após várias tentativas')
-        await this.payments.save(payment)
-        this.logger.warn('charge.giving_up', { paymentId: payment.id, attempts })
+        try {
+          payment.markFailed('Falha ao criar cobrança no provedor após várias tentativas')
+          await this.payments.save(payment)
+          this.logger.warn('charge.giving_up', { paymentId: payment.id, attempts })
+        } catch (failError) {
+          // `createCharge` NÃO pode lançar: senão o erro escapa do Promise.all e
+          // aborta as cobranças irmãs do mesmo lote. Um ConcurrencyConflict aqui
+          // significa que outro writer venceu (ex.: webhook marcou PAID) — ok.
+          this.logger.error('charge.mark_failed_failed', {
+            paymentId: payment.id,
+            error: failError instanceof Error ? failError.message : String(failError),
+          })
+        }
       }
     }
   }

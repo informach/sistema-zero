@@ -39,6 +39,7 @@ describe('Idempotência (escopo por consumidor + estados)', () => {
         idempotencyTtlSeconds: 3600,
         idempotencyInFlightTtlSeconds: 120,
         asyncChargeCreation: false,
+        boletoDefaultExpiresDays: 3,
       },
       silentLogger,
     )
@@ -81,6 +82,62 @@ describe('Idempotência (escopo por consumidor + estados)', () => {
     const view = await service.execute(cmd)
     expect(view.status).toBe('PENDING')
     expect(gateway.createdCount).toBe(1)
+  })
+
+  test('fencing: um complete zumbi não sobrescreve a reserva reciclada por outra request', async () => {
+    // Request A reserva.
+    const a = await store.reserve({
+      consumerId: 'sys-a',
+      key: 'fence-key',
+      requestHash: 'hash-A',
+      inFlightTtlSeconds: 120,
+    })
+    expect(a.kind).toBe('acquired')
+
+    // A reserva de A expira (crash) e a request B recicla → nova reservationId.
+    store.clockSkewMs = 121_000
+    const b = await store.reserve({
+      consumerId: 'sys-a',
+      key: 'fence-key',
+      requestHash: 'hash-A',
+      inFlightTtlSeconds: 120,
+    })
+    expect(b.kind).toBe('acquired')
+
+    // A (zumbi) conclui com a SUA reservationId antiga → deve ser no-op (fencing).
+    if (a.kind === 'acquired') {
+      await store.complete({
+        consumerId: 'sys-a',
+        key: 'fence-key',
+        reservationId: a.reservationId,
+        responseStatus: 201,
+        responseBody: { stale: true },
+        ttlSeconds: 3600,
+      })
+    }
+    // B conclui com a sua reservationId → vence.
+    if (b.kind === 'acquired') {
+      await store.complete({
+        consumerId: 'sys-a',
+        key: 'fence-key',
+        reservationId: b.reservationId,
+        responseStatus: 201,
+        responseBody: { fresh: true },
+        ttlSeconds: 3600,
+      })
+    }
+
+    const replay = await store.reserve({
+      consumerId: 'sys-a',
+      key: 'fence-key',
+      requestHash: 'hash-A',
+      inFlightTtlSeconds: 120,
+    })
+    expect(replay.kind).toBe('existing')
+    if (replay.kind === 'existing') {
+      // A resposta cacheada é a de B (não a do zumbi A).
+      expect(replay.record.responseBody).toEqual({ fresh: true })
+    }
   })
 
   test('isolamento entre consumidores: mesma chave, consumidores diferentes não colidem', async () => {

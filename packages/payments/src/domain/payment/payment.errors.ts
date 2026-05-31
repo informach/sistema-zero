@@ -38,3 +38,15 @@ export class UnsupportedPaymentMethodError extends DomainError {
     super(`Forma de pagamento ainda não suportada: ${method}`)
   }
 }
+
+/**
+ * Boleto exige um pagador completo (nome, documento, e-mail, telefone e
+ * endereço) — diferente do Pix, em que esses dados são opcionais.
+ */
+export class BoletoDataIncompleteError extends DomainError {
+  readonly code = 'BOLETO_DATA_INCOMPLETE'
+
+  constructor(missing: string) {
+    super(`Dados obrigatórios do boleto ausentes ou inválidos: ${missing}`)
+  }
+}

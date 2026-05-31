@@ -13,7 +13,11 @@ import {
   uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core'
-import type { PixQrCode } from '../../../domain/payment/payment.aggregate'
+import type {
+  BoletoDetails,
+  BoletoRequest,
+  PixQrCode,
+} from '../../../domain/payment/payment.aggregate'
 import type { Address } from '../../../domain/value-objects/customer'
 import type { CardData } from '../../../domain/value-objects/payment-method'
 
@@ -71,6 +75,10 @@ export const payments = pgTable(
     // Apenas dados seguros de cartão (token + bandeira + last4). NUNCA o PAN.
     card: jsonb('card').$type<CardData>(),
     pixQrCode: jsonb('pix_qr_code').$type<PixQrCode>(),
+    // Boleto: dados retornados pelo provedor (linha digitável, código de barras, PDF).
+    boleto: jsonb('boleto').$type<BoletoDetails>(),
+    // Boleto: params da requisição (vencimento, multa/juros) p/ criação assíncrona.
+    boletoRequest: jsonb('boleto_request').$type<BoletoRequest>(),
     customer: jsonb('customer').$type<CustomerJson>(),
     description: text('description'),
     metadata: jsonb('metadata').$type<Record<string, unknown>>().notNull().default({}),
@@ -110,6 +118,11 @@ export const idempotencyKeys = pgTable(
     consumerId: text('consumer_id').notNull(),
     key: text('key').notNull(),
     requestHash: text('request_hash').notNull(),
+    // Token do dono da reserva (fencing): complete/release só afetam a reserva que
+    // os criou → uma request zumbi (cuja reserva IN_FLIGHT expirou e foi reciclada
+    // por outra) não sobrescreve/apaga a reserva viva do novo dono. Nulo apenas em
+    // linhas anteriores à migração que adicionou a coluna.
+    reservationId: text('reservation_id'),
     state: idempotencyStateEnum('state').notNull(),
     responseStatus: integer('response_status'),
     responseBody: jsonb('response_body'),

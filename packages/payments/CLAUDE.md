@@ -81,21 +81,37 @@ tests/               # unit/ · application/ · integration/ · fakes/
 4. **Nunca confie no webhook.** `HandleProviderWebhookService` **re-consulta a
    cobrança na Efí** (`getPixCharge`) antes de marcar como pago, confere o **valor**
    contra o cobrado, e deduplica via `webhook_events` (o token só é consumido em
-   `markProcessed` → falha no meio NÃO descarta a reentrega). Cada item é isolado
+   `markProcessed` → falha no meio NÃO descarta a reentrega). **Mismatch de valor**
+   é determinístico → consome o dedupe (`markProcessed`) p/ não reprocessar a cada
+   reentrega; loga ERROR (alertável) e o pagamento fica PENDING (revisão manual). No
+   **boleto** o valor conferido é o **principal** (`parseDetailCharge` lê os itens/`value`,
+   NÃO o `total`, que num boleto pago em atraso inclui multa/juros). Cada item é isolado
    (try/catch por item). O endpoint não tem auth de consumidor (vem da Efí); se
    `EFI_WEBHOOK_SECRET` estiver definido, exige `?token=<segredo>` (defesa extra).
 
-5. **Idempotência (escopada por consumidor).** `POST /payments` reserva a
-   `(consumerId, Idempotency-Key)` antes de trabalhar; libera em falha; conclui em
-   sucesso (cacheando a resposta). Mesma chave + payload diferente → 409. Reservas
-   `IN_FLIGHT` presas (crash) expiram por um TTL curto e são recicladas. A chave é
-   **por consumidor** → dois consumidores podem usar o mesmo valor sem colidir.
+5. **Idempotência (escopada por consumidor, com _fencing_).** `POST /payments`
+   reserva a `(consumerId, Idempotency-Key)` antes de trabalhar e só **libera na
+   falha SE nenhum efeito colateral ocorreu** (cobrança no provedor / persistência);
+   caso contrário deixa `IN_FLIGHT` para o TTL reciclar — senão um retry geraria novo
+   `paymentId`/`txid` e **cobraria de novo** (vale p/ Pix também, não só boleto).
+   Conclui em sucesso (cacheando a resposta). Mesma chave + payload diferente → 409.
+   `reserve` retorna `ReserveResult` (`{kind:'acquired',reservationId}` |
+   `{kind:'existing',record}`); `complete`/`release` **exigem o `reservationId`** +
+   `state='IN_FLIGHT'` → uma request zumbi (reserva já reciclada por outra) **não
+   sobrescreve/apaga** a reserva viva. Reservas presas (crash) expiram por TTL curto
+   e são recicladas. A chave é **por consumidor** → dois consumidores podem usar o
+   mesmo valor sem colidir.
 
 8. **Cobrança Pix é idempotente no provedor.** Criamos via `PUT /v2/cob/{txid}`
    com `txid` **determinístico** (derivado do `paymentId`), não `POST /v2/cob`
    (txid gerado pela Efí). Assim, retry/reprocessamento do MESMO pagamento aponta
    para a MESMA cobrança — não duplica. O cliente Efí também só repete (retry)
-   chamadas idempotentes (GET/PUT/token), nunca POST que cria recurso.
+   chamadas idempotentes (GET/PUT/token), nunca POST que cria recurso. **Boleto é o
+   oposto:** `POST /charge/one-step` **NÃO é idempotente** (gera novo `charge_id`).
+   Por isso o POST nunca é re-tentado **e** o lease do worker é validado no boot como
+   `CHARGE_CLAIM_STALE_MS >= 2× EFI_REQUEST_TIMEOUT_MS` (uma réplica só re-reivindica
+   depois que a outra já parou). Resíduo irredutível (resposta perdida pós-criação) é
+   rastreável por `metadata.custom_id = paymentId`.
 
 9. **Concorrência otimista.** `payments.version` + `save` com `UPDATE ... WHERE
    version = ?` evita lost-update e eventos duplicados quando dois writers
@@ -106,7 +122,9 @@ tests/               # unit/ · application/ · integration/ · fakes/
 
 7. **Certificados são segredo.** `certs/`, `secrets/`, `*.p12`, `*.pem` estão no
    `.gitignore`/`.dockerignore`. Não commite. No Railway o cert vai em
-   `EFI_CERTIFICATE_BASE64` (base64 do `.p12`).
+   `EFI_CERTIFICATE_BASE64` (base64 do `.p12`). P12 protegido por senha →
+   `EFI_CERTIFICATE_PASSWORD`. Se fornecer PEM já convertido, ele precisa conter
+   **o certificado E a chave privada** (o boot falha alto se faltar metade).
 
 ## Escala, modos e workers
 
@@ -134,13 +152,17 @@ tests/               # unit/ · application/ · integration/ · fakes/
   (rede de segurança p/ webhooks perdidos). `markPaid` é idempotente.
 - `WebhookDeliveryWorker` — entrega os webhooks de saída (`webhook_deliveries`)
   aos consumidores, assinados (HMAC), com retry/backoff; **at-least-once** (o
-  consumidor deve deduplicar). Fila alimentada por `registerPaymentEventHandlers`
-  em `payment.paid`/`payment.failed` (precisa de `consumers.webhook_url`).
+  consumidor deve deduplicar). `claimDue` incrementa `attempts` NO claim (crash no
+  meio conta como tentativa → eventualmente DEAD, sem re-entrega infinita). Fila
+  alimentada por `registerPaymentEventHandlers` em `payment.paid`/`payment.failed`/
+  `payment.expired`/`payment.refunded` (precisa de `consumers.webhook_url`).
 
 **Outros:** rate limit por consumidor (`RATE_LIMIT_PER_MINUTE` → 429 + `Retry-After`,
-em memória/por instância — troque por Redis p/ limite global); limpeza de
-idempotência em job periódico (fora do hot path); pool do Postgres em
-`DATABASE_POOL_MAX`; `GET /metrics` expõe lag (outbox/charge/deliveries).
+em memória/por instância — troque por Redis p/ limite global); **job periódico de
+limpeza** (fora do hot path): idempotência expirada + **retenção** das tabelas
+append-only (`outbox`/`webhook_events`/`webhook_deliveries` terminais mais antigos
+que `RETENTION_DAYS`); pool do Postgres em `DATABASE_POOL_MAX`; `GET /metrics` expõe
+lag (outbox/charge/deliveries).
 
 **Escala horizontal:** stateless → várias réplicas OK. Os pollers/claims usam
 `FOR UPDATE SKIP LOCKED`, então rodar em N instâncias é seguro. Cuidado com
@@ -163,7 +185,9 @@ idempotência em job periódico (fora do hot path); pool do Postgres em
 Consumidor cadastrado em `consumers` (`id`, `hmac_secret`, `allowed_cidrs`,
 `is_active`). Cada requisição protegida precisa de:
 - IP de origem dentro de um CIDR permitido (`TRUST_PROXY=true` atrás de proxy →
-  usa `X-Forwarded-For`);
+  usa `X-Forwarded-For`, pegando a `TRUSTED_PROXY_HOPS`-ésima entrada a partir da
+  direita; **fail-closed**: cadeia mais curta que os hops → usa o IP do socket,
+  nunca a entrada controlada pelo cliente);
 - `X-Consumer-Id`;
 - `X-Signature: t=<unix_ts>,v1=<hmac_sha256_hex>` onde a mensagem assinada é
   `"<ts>.<idempotencyKey>.<corpo_bruto>"` quando há `Idempotency-Key` (POST), ou
@@ -174,8 +198,9 @@ Consumidor cadastrado em `consumers` (`id`, `hmac_secret`, `allowed_cidrs`,
 
 1. Adicione o método ao port `PaymentGateway` e implemente em `EfiClient` +
    `EfiPaymentGateway`.
-2. `ProcessPaymentService.buildMethod` já cria os `PaymentMethod`; hoje ele lança
-   `UnsupportedPaymentMethodError` para não-PIX — habilite o novo método lá.
+2. `ProcessPaymentService.buildMethod` já cria os `PaymentMethod`; hoje o caso de
+   uso processa PIX e boleto e lança `UnsupportedPaymentMethodError` para cartão —
+   habilite o novo método lá.
 3. Reaproveite agregado/outbox/idempotência. Adicione testes em `tests/`.
 
 ## Dev local
@@ -191,4 +216,9 @@ Consumidor cadastrado em `consumers` (`id`, `hmac_secret`, `allowed_cidrs`,
 
 `Dockerfile` (oven/bun) + `railway.json` na raiz do repo (builder DOCKERFILE,
 `preDeployCommand = db:migrate`). Variáveis chave: `DATABASE_URL`,
-`TRUST_PROXY=true`, `EFI_*` e `EFI_CERTIFICATE_BASE64`. Detalhes no `README.md`.
+`TRUST_PROXY=true`, `EFI_*` e `EFI_CERTIFICATE_BASE64`. **Em produção o boot exige
+`EFI_SANDBOX=false`** (refine fail-fast — evita apontar pro sandbox sem querer) e
+`NODE_ENV=production` (desliga o Swagger e o log debug/pretty). `EFI_WEBHOOK_SECRET`
+não pode ser string vazia (omita p/ desabilitar). Migrations geradas/commitadas via
+`db:generate` (a última adicionou `idempotency_keys.reservation_id`). Detalhes no
+`README.md`.

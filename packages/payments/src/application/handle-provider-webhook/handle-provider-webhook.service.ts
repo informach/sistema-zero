@@ -86,12 +86,16 @@ export class HandleProviderWebhookService {
 
     // Defesa em profundidade: o valor pago tem que bater com o valor cobrado.
     if (charge.amountInCents !== payment.amount.amountInCents) {
+      // Mismatch é determinístico (a re-consulta é a fonte da verdade) → consome o
+      // dedupe para NÃO reprocessar a cada reentrega. O log ERROR é o sinal
+      // alertável; o pagamento fica PENDING (precisa de revisão manual).
       this.logger.error('webhook.amount_mismatch', {
         paymentId: payment.id,
         txid: item.txid,
         expected: payment.amount.amountInCents.toString(),
         got: charge.amountInCents.toString(),
       })
+      await this.inbox.markProcessed(this.gateway.provider, eventId)
       return
     }
 

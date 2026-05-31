@@ -140,7 +140,9 @@ export class WebhookDeliveryWorker {
       }
       throw new Error(`HTTP ${res.status}`)
     } catch (error) {
-      const attempts = delivery.attempts + 1
+      // `attempts` já foi incrementado atomicamente em claimDue (conta o crash no
+      // meio do processamento) → usamos o valor como veio, sem +1.
+      const attempts = delivery.attempts
       const message = error instanceof Error ? error.message : String(error)
       if (attempts >= this.options.maxAttempts) {
         await this.deliveries.markDead(delivery.id, message)

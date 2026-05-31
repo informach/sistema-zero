@@ -4,8 +4,11 @@
  */
 export interface WebhookInbox {
   /**
-   * Registra o evento se ainda não existir. Retorna `true` se é novo (deve ser
-   * processado) ou `false` se já foi recebido antes (ignorar — duplicado).
+   * Registra o evento (dedupe) e diz se ele DEVE ser processado. Retorna `true`
+   * tanto quando é novo quanto quando já foi registrado mas AINDA NÃO processado
+   * (`markProcessed` não rodou — ex.: falha no meio). Retorna `false` apenas se já
+   * foi processado com sucesso (duplicado real). O token só é "consumido" em
+   * `markProcessed` → uma falha no meio NÃO descarta as reentregas seguintes.
    */
   registerIfNew(input: {
     provider: string

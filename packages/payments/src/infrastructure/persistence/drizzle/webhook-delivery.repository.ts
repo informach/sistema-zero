@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray, lte, sql } from 'drizzle-orm'
+import { and, asc, eq, inArray, lt, lte, sql } from 'drizzle-orm'
 import type {
   WebhookDelivery,
   WebhookDeliveryRepository,
@@ -62,9 +62,18 @@ export class DrizzleWebhookDeliveryRepository implements WebhookDeliveryReposito
 
       const ids = locked.map((r) => r.id)
       const lease = new Date(now.getTime() + leaseMs)
+      // Incrementa `attempts` ATOMICAMENTE no claim (espelha claimPendingCharges):
+      // se o worker morrer (OOM/SIGKILL) entre o claim e o reschedule/markDead, a
+      // re-reivindicação pós-lease conta como nova tentativa → o teto `maxAttempts`
+      // é respeitado e a mensagem-veneno acaba em DEAD, em vez de re-entregar para
+      // sempre com o mesmo contador.
       await tx
         .update(webhookDeliveries)
-        .set({ nextAttemptAt: lease, updatedAt: now })
+        .set({
+          nextAttemptAt: lease,
+          updatedAt: now,
+          attempts: sql`${webhookDeliveries.attempts} + 1`,
+        })
         .where(inArray(webhookDeliveries.id, ids))
 
       const rows = await tx
@@ -76,7 +85,7 @@ export class DrizzleWebhookDeliveryRepository implements WebhookDeliveryReposito
         consumerId: row.consumerId,
         eventName: row.eventName,
         payload: row.payload,
-        attempts: row.attempts,
+        attempts: row.attempts, // já pós-incremento
       }))
     })
   }
@@ -113,5 +122,22 @@ export class DrizzleWebhookDeliveryRepository implements WebhookDeliveryReposito
       .update(webhookDeliveries)
       .set({ status: 'DEAD', lastError: error.slice(0, 500), updatedAt: new Date() })
       .where(eq(webhookDeliveries.id, id))
+  }
+
+  /**
+   * Retenção: remove entregas já terminais (SUCCEEDED/DEAD) mais antigas que
+   * `olderThan`. PENDING nunca é tocado. Retorna quantas linhas foram removidas.
+   */
+  async cleanup(olderThan: Date): Promise<number> {
+    const deleted = await this.db
+      .delete(webhookDeliveries)
+      .where(
+        and(
+          inArray(webhookDeliveries.status, ['SUCCEEDED', 'DEAD']),
+          lt(webhookDeliveries.updatedAt, olderThan),
+        ),
+      )
+      .returning({ id: webhookDeliveries.id })
+    return deleted.length
   }
 }

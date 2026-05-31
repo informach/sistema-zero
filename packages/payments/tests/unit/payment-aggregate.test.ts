@@ -64,6 +64,30 @@ describe('PaymentAggregate', () => {
     expect(restored.metadata).toEqual({ orderId: 'order-1' })
   })
 
+  test('boleto: registerProviderCharge anexa o boleto e mantém PENDING', () => {
+    const payment = PaymentAggregate.create({
+      consumerId: 'sys-a',
+      amount: Money.fromCents(5000),
+      method: PaymentMethod.boleto(),
+      idempotencyKey: IdempotencyKey.create('idem-boleto-1'),
+      boletoRequest: { dueDate: '2026-06-10', fine: 200 },
+    })
+    payment.registerProviderCharge({
+      providerPaymentId: '12345',
+      boleto: { barcode: '3419...', digitableLine: '34191.7900...', pdfUrl: 'https://x/b.pdf' },
+      expiresAt: new Date('2026-06-10T00:00:00Z'),
+    })
+    expect(payment.status).toBe('PENDING')
+    expect(payment.providerPaymentId).toBe('12345')
+    expect(payment.boleto?.digitableLine).toBe('34191.7900...')
+
+    // snapshot/restore preserva boleto + boletoRequest
+    const restored = PaymentAggregate.restore(payment.toSnapshot())
+    expect(restored.boleto?.barcode).toBe('3419...')
+    expect(restored.boletoRequest?.dueDate).toBe('2026-06-10')
+    expect(restored.boletoRequest?.fine).toBe(200)
+  })
+
   test('rejeita valor não-positivo na criação', () => {
     expect(() =>
       PaymentAggregate.create({

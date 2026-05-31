@@ -34,6 +34,7 @@ describe('Modo assíncrono + ChargeCreationWorker', () => {
         idempotencyTtlSeconds: 3600,
         idempotencyInFlightTtlSeconds: 120,
         asyncChargeCreation: true,
+        boletoDefaultExpiresDays: 3,
       },
       silentLogger,
     )
@@ -62,6 +63,44 @@ describe('Modo assíncrono + ChargeCreationWorker', () => {
     const updated = await repo.findById(view.id)
     expect(updated?.txid).not.toBeNull()
     expect(updated?.pixQrCode?.copiaECola).toContain('PIX-FAKE')
+  })
+
+  test('worker cria o boleto assíncrono depois (linha digitável aparece)', async () => {
+    const boletoCmd: ProcessPaymentCommand = {
+      consumerId: 'sys-a',
+      idempotencyKey: 'idem-async-boleto',
+      requestHash: 'hash-B',
+      amountInCents: 5000,
+      method: 'BOLETO',
+      customer: {
+        name: 'João da Silva',
+        email: 'joao@example.com',
+        document: '52998224725',
+        phone: '11999998888',
+        address: {
+          street: 'Rua A',
+          number: '100',
+          neighborhood: 'Centro',
+          zipcode: '01001000',
+          city: 'São Paulo',
+          state: 'SP',
+        },
+      },
+    }
+    const view = await asyncService.execute(boletoCmd)
+    expect(view.boleto).toBeUndefined()
+
+    const worker = new ChargeCreationWorker(repo, gateway, silentLogger, {
+      intervalMs: 1000,
+      batchSize: 10,
+      maxAttempts: 5,
+      pixKey: 'pix@loja.com',
+    })
+    await worker.tick()
+
+    expect(gateway.boletoCreatedCount).toBe(1)
+    const updated = await repo.findById(view.id)
+    expect(updated?.boleto?.digitableLine).toBeDefined()
   })
 
   test('após maxAttempts falhando, o pagamento vira FAILED', async () => {

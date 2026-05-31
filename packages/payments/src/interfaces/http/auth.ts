@@ -46,7 +46,11 @@ function resolveClientIp(ctx: AuthContext, trustProxy: boolean, trustedProxyHops
   const hops = Math.max(1, trustedProxyHops)
   // Ex.: "<cliente>, <proxyN>, ... , <proxy1>" com hops=1 → última entrada.
   const idx = chain.length - hops
-  return chain[idx] ?? chain[0] ?? socketIp
+  // Fail-closed: se a cadeia é mais curta que o nº de hops confiáveis (cadeia
+  // forjada/curta), NÃO caia para chain[0] — a entrada mais à esquerda é
+  // controlada pelo cliente e burlaria a allowlist. Usa o IP do socket (não-forjável).
+  if (idx < 0) return socketIp
+  return chain[idx] ?? socketIp
 }
 
 /**

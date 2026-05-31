@@ -17,6 +17,12 @@ export interface PaymentView {
     imagemQrcodeBase64?: string
     expiresAt: string | null
   }
+  boleto?: {
+    barcode: string
+    digitableLine: string
+    pdfUrl: string
+    expiresAt: string | null
+  }
   metadata: Record<string, unknown>
   createdAt: string
   paidAt: string | null
@@ -42,6 +48,16 @@ export function toPaymentView(payment: PaymentAggregate): PaymentView {
       txid: payment.txid,
       copiaECola: qr.copiaECola,
       imagemQrcodeBase64: qr.imagemQrcodeBase64,
+      expiresAt: payment.expiresAt ? payment.expiresAt.toISOString() : null,
+    }
+  }
+
+  const boleto = payment.boleto
+  if (payment.method.type === 'BOLETO' && payment.providerPaymentId && boleto) {
+    view.boleto = {
+      barcode: boleto.barcode,
+      digitableLine: boleto.digitableLine,
+      pdfUrl: boleto.pdfUrl,
       expiresAt: payment.expiresAt ? payment.expiresAt.toISOString() : null,
     }
   }

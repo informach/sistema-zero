@@ -181,14 +181,9 @@ export class EfiClient {
     }
     const d = detail ?? {}
     const message = String(
-      d['mensagem'] ??
-        d['detail'] ??
-        d['error_description'] ??
-        d['title'] ??
-        d['nome'] ??
-        `HTTP ${res.status}`,
+      d.mensagem ?? d.detail ?? d.error_description ?? d.title ?? d.nome ?? `HTTP ${res.status}`,
     )
-    const code = d['nome'] ?? d['error'] ?? d['type']
+    const code = d.nome ?? d.error ?? d.type
     return new EfiGatewayError(
       `Efí [${context}]: ${message}`,
       code != null ? String(code) : String(res.status),

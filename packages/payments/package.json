@@ -16,6 +16,7 @@
     "db:seed": "bun run scripts/seed-consumer.ts",
     "webhook:register": "bun run scripts/register-webhook.ts",
     "pix:key": "bun run scripts/create-pix-key.ts",
+    "boleto:create": "bun run scripts/create-boleto.ts",
     "call-example": "bun run scripts/call-example.ts",
     "check": "biome check .",
     "check:fix": "biome check --write .",

@@ -25,11 +25,11 @@ export interface PaymentRepository {
 
   /**
    * Reivindica (claim) um lote de pagamentos PENDING aguardando criação de
-   * cobrança no provedor (modo assíncrono). Seguro para múltiplas instâncias via
-   * `FOR UPDATE SKIP LOCKED`; incrementa o contador de tentativas e marca o claim
-   * (claims expirados após `staleAfterMs` voltam à fila).
+   * cobrança no provedor (modo assíncrono — Pix ou boleto). Seguro para múltiplas
+   * instâncias via `FOR UPDATE SKIP LOCKED`; incrementa o contador de tentativas e
+   * marca o claim (claims expirados após `staleAfterMs` voltam à fila).
    */
-  claimPendingPixCharges(limit: number, staleAfterMs: number): Promise<ClaimedCharge[]>
+  claimPendingCharges(limit: number, staleAfterMs: number): Promise<ClaimedCharge[]>
 
   /**
    * Pagamentos PENDING com cobrança já criada, mas sem confirmação há mais de

@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm'
+import { and, eq, isNotNull, lt } from 'drizzle-orm'
 import type { WebhookInbox } from '../../../domain/ports/webhook-inbox.port'
 import type { Database } from './db'
 import { webhookEvents } from './schema'
@@ -57,5 +57,17 @@ export class DrizzleWebhookInbox implements WebhookInbox {
       .update(webhookEvents)
       .set({ processedAt: new Date() })
       .where(and(eq(webhookEvents.provider, provider), eq(webhookEvents.providerEventId, eventId)))
+  }
+
+  /**
+   * Retenção: remove eventos já processados mais antigos que `olderThan`. Linhas
+   * não processadas (reprocessáveis) nunca são tocadas. Retorna quantas removeu.
+   */
+  async cleanup(olderThan: Date): Promise<number> {
+    const deleted = await this.db
+      .delete(webhookEvents)
+      .where(and(isNotNull(webhookEvents.processedAt), lt(webhookEvents.processedAt, olderThan)))
+      .returning({ id: webhookEvents.id })
+    return deleted.length
   }
 }

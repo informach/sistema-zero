@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { GetPaymentService } from '../../src/application/get-payment/get-payment.service'
+import { HandleBoletoNotificationService } from '../../src/application/handle-boleto-notification/handle-boleto-notification.service'
 import { HandleProviderWebhookService } from '../../src/application/handle-provider-webhook/handle-provider-webhook.service'
 import { ProcessPaymentService } from '../../src/application/process-payment/process-payment.service'
 import type { Env } from '../../src/infrastructure/config/env'
@@ -20,6 +21,7 @@ interface BuildOpts {
   rateLimit?: number
   allowedCidrsA?: string[]
   maxBodyBytes?: number
+  trustedProxyHops?: number
 }
 
 function buildApp(opts: BuildOpts = {}) {
@@ -43,7 +45,7 @@ function buildApp(opts: BuildOpts = {}) {
 
   const env = {
     TRUST_PROXY: true,
-    TRUSTED_PROXY_HOPS: 1,
+    TRUSTED_PROXY_HOPS: opts.trustedProxyHops ?? 1,
     HMAC_TOLERANCE_SECONDS: 300,
     MAX_REQUEST_BODY_BYTES: opts.maxBodyBytes ?? 64 * 1024,
     EFI_WEBHOOK_SECRET: undefined,
@@ -63,11 +65,18 @@ function buildApp(opts: BuildOpts = {}) {
         idempotencyTtlSeconds: 3600,
         idempotencyInFlightTtlSeconds: 120,
         asyncChargeCreation: opts.async ?? false,
+        boletoDefaultExpiresDays: 3,
       },
       silentLogger,
     ),
     getPayment: new GetPaymentService(repo),
     handleWebhook: new HandleProviderWebhookService(
+      repo,
+      gateway,
+      new InMemoryWebhookInbox(),
+      silentLogger,
+    ),
+    handleBoletoNotification: new HandleBoletoNotificationService(
       repo,
       gateway,
       new InMemoryWebhookInbox(),
@@ -120,6 +129,25 @@ function getHeaders(opts: { consumerId?: string; secret?: string; xff?: string }
 }
 
 const PIX_BODY = JSON.stringify({ amountInCents: 1000, method: 'PIX', description: 'Pedido' })
+
+const BOLETO_BODY = JSON.stringify({
+  amountInCents: 5000,
+  method: 'BOLETO',
+  customer: {
+    name: 'João da Silva',
+    email: 'joao@example.com',
+    document: '52998224725',
+    phone: '11999998888',
+    address: {
+      street: 'Rua A',
+      number: '100',
+      neighborhood: 'Centro',
+      zipcode: '01001000',
+      city: 'São Paulo',
+      state: 'SP',
+    },
+  },
+})
 
 describe('HTTP server', () => {
   test('GET /health responde 200', async () => {
@@ -250,6 +278,30 @@ describe('HTTP server', () => {
     expect(res.status).toBe(413)
   })
 
+  test('X-Forwarded-For mais curto que os hops confiáveis → fail-closed (não confia no cliente)', async () => {
+    // hops=2, mas o cliente envia só UMA entrada no XFF (forjada). Com a correção
+    // fail-closed, essa entrada (controlada pelo cliente) NÃO é usada — cai no IP
+    // do socket, que não casa a allowlist → 403 (sem bypass).
+    const { app } = buildApp({ allowedCidrsA: ['203.0.113.10/32'], trustedProxyHops: 2 })
+    const res = await app.handle(
+      new Request('http://localhost/payments', {
+        method: 'POST',
+        headers: postHeaders(PIX_BODY, { xff: '203.0.113.10' }),
+        body: PIX_BODY,
+      }),
+    )
+    expect(res.status).toBe(403)
+  })
+
+  test('GET /payments/:id com id não-UUID → 400 (validação), não 500', async () => {
+    const { app } = buildApp()
+    const res = await app.handle(
+      new Request('http://localhost/payments/not-a-uuid', { headers: getHeaders() }),
+    )
+    // O importante: 4xx limpo (validação) em vez de 500 da coluna `uuid` do Postgres.
+    expect(res.status).toBe(400)
+  })
+
   test('GET /payments/:id é escopado por consumidor (sem IDOR)', async () => {
     const { app } = buildApp()
     const created = await app.handle(
@@ -274,5 +326,79 @@ describe('HTTP server', () => {
       }),
     )
     expect(other.status).toBe(404)
+  })
+
+  test('POST /payments autenticado cria boleto → 201 com linha digitável', async () => {
+    const { app } = buildApp()
+    const res = await app.handle(
+      new Request('http://localhost/payments', {
+        method: 'POST',
+        headers: postHeaders(BOLETO_BODY),
+        body: BOLETO_BODY,
+      }),
+    )
+    expect(res.status).toBe(201)
+    const json = (await res.json()) as {
+      status: string
+      boleto?: { digitableLine: string; pdfUrl: string }
+      pix?: unknown
+    }
+    expect(json.status).toBe('PENDING')
+    expect(json.boleto?.digitableLine).toBeDefined()
+    expect(json.boleto?.pdfUrl).toBeDefined()
+    expect(json.pix).toBeUndefined()
+  })
+
+  test('POST /payments BOLETO sem pagador → 422', async () => {
+    const { app } = buildApp()
+    const body = JSON.stringify({ amountInCents: 5000, method: 'BOLETO' })
+    const res = await app.handle(
+      new Request('http://localhost/payments', {
+        method: 'POST',
+        headers: postHeaders(body),
+        body,
+      }),
+    )
+    expect(res.status).toBe(422)
+  })
+
+  test('modo assíncrono boleto → 202 sem boleto', async () => {
+    const { app } = buildApp({ async: true })
+    const res = await app.handle(
+      new Request('http://localhost/payments', {
+        method: 'POST',
+        headers: postHeaders(BOLETO_BODY),
+        body: BOLETO_BODY,
+      }),
+    )
+    expect(res.status).toBe(202)
+    const json = (await res.json()) as { boleto?: unknown }
+    expect(json.boleto).toBeUndefined()
+  })
+
+  test('POST /webhooks/efi/cobrancas confirma o boleto pago', async () => {
+    const { app, repo, gateway } = buildApp()
+    const created = await app.handle(
+      new Request('http://localhost/payments', {
+        method: 'POST',
+        headers: postHeaders(BOLETO_BODY),
+        body: BOLETO_BODY,
+      }),
+    )
+    const { id } = (await created.json()) as { id: string }
+    const chargeId = (await repo.findById(id))!.providerPaymentId as string
+    gateway.notificationChargeIds = [chargeId]
+    gateway.boletoStatus = 'PAID'
+
+    const notifBody = JSON.stringify({ notification: 'token-abc' })
+    const res = await app.handle(
+      new Request('http://localhost/webhooks/efi/cobrancas', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: notifBody,
+      }),
+    )
+    expect(res.status).toBe(200)
+    expect((await repo.findById(id))!.status).toBe('PAID')
   })
 })

@@ -40,10 +40,29 @@ const EnvSchema = z
     // (preferível em PaaS como Railway, que não têm upload de arquivo persistente).
     EFI_CERTIFICATE_PATH: z.string().optional(),
     EFI_CERTIFICATE_BASE64: z.string().optional(),
+    // Senha do P12 da Efí (quando o arquivo for protegido). Ausente = sem senha.
+    EFI_CERTIFICATE_PASSWORD: z.string().optional(),
     EFI_PIX_KEY: z.string().min(1, 'EFI_PIX_KEY é obrigatória'),
-    EFI_WEBHOOK_SECRET: z.string().optional(),
+    // String vazia desabilitaria silenciosamente o token de webhook (defesa extra).
+    // Para desligar, deixe a variável AUSENTE — não vazia.
+    EFI_WEBHOOK_SECRET: z
+      .string()
+      .min(1, 'EFI_WEBHOOK_SECRET não pode ser vazia; remova a variável para desabilitar')
+      .optional(),
     // Timeout por requisição HTTP à Efí (ms) — aborta sockets pendurados (mTLS/Bun).
     EFI_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(15_000),
+
+    // Boleto (API Cobranças — SEM certificado/mTLS). Por padrão reusa as
+    // credenciais do Pix (a mesma aplicação Efí pode ter os dois escopos);
+    // os overrides abaixo só são necessários para uma aplicação separada.
+    EFI_COBRANCAS_CLIENT_ID: z.string().optional(),
+    EFI_COBRANCAS_CLIENT_SECRET: z.string().optional(),
+    EFI_BOLETO_DEFAULT_EXPIRES_DAYS: z.coerce.number().int().positive().default(3),
+    // URL pública que a Efí chama na mudança de status do boleto (metadata.notification_url).
+    EFI_BOLETO_NOTIFICATION_URL: z.string().url().optional(),
+    // Multa/juros padrão (% em centavos, ex.: 200 = 2,00%) aplicados quando não vierem na request.
+    EFI_BOLETO_FINE: z.coerce.number().int().nonnegative().optional(),
+    EFI_BOLETO_INTEREST: z.coerce.number().int().nonnegative().optional(),
 
     OUTBOX_POLL_INTERVAL_MS: z.coerce.number().int().positive().default(2000),
     OUTBOX_BATCH_SIZE: z.coerce.number().int().positive().default(100),
@@ -57,6 +76,10 @@ const EnvSchema = z
     // poll periódico continua processando normalmente.
     PG_LISTEN_ENABLED: optionalBool(true),
     IDEMPOTENCY_CLEANUP_INTERVAL_MS: z.coerce.number().int().positive().default(300_000),
+    // Retenção: idade (dias) a partir da qual linhas terminais (outbox publicado/dead,
+    // webhooks processados, entregas concluídas/dead) são removidas — evita crescimento
+    // ilimitado. Roda no mesmo job periódico da limpeza de idempotência.
+    RETENTION_DAYS: z.coerce.number().int().positive().default(30),
     RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(600),
 
     // Criação de cobrança assíncrona (opt-in para picos de lançamento)
@@ -82,6 +105,23 @@ const EnvSchema = z
   .refine((e) => Boolean(e.EFI_CERTIFICATE_PATH?.trim() || e.EFI_CERTIFICATE_BASE64?.trim()), {
     message: 'Defina EFI_CERTIFICATE_PATH ou EFI_CERTIFICATE_BASE64 (certificado P12 da Efí)',
     path: ['EFI_CERTIFICATE_PATH'],
+  })
+  // O lease do worker de cobrança DEVE ser folgadamente maior que o timeout de uma
+  // requisição à Efí. Senão uma réplica re-reivindica o pagamento enquanto outra
+  // ainda está dentro do POST → como o boleto NÃO é idempotente no provedor, isso
+  // gera uma cobrança DUPLICADA. Com lease >= 2× timeout, o detentor original já
+  // abortou (ou concluiu) antes que outra réplica possa reivindicar.
+  .refine((e) => e.CHARGE_CLAIM_STALE_MS >= e.EFI_REQUEST_TIMEOUT_MS * 2, {
+    message:
+      'CHARGE_CLAIM_STALE_MS deve ser >= 2× EFI_REQUEST_TIMEOUT_MS (evita re-reivindicar uma cobrança em andamento → boleto duplicado)',
+    path: ['CHARGE_CLAIM_STALE_MS'],
+  })
+  // Guard de produção: a flag de sandbox DEVE ser explicitamente desligada em
+  // produção — senão um deploy aponta silenciosamente para o sandbox da Efí
+  // (cobranças que nunca liquidam). Fail-fast no boot.
+  .refine((e) => !(e.NODE_ENV === 'production' && e.EFI_SANDBOX), {
+    message: 'Em produção defina EFI_SANDBOX=false explicitamente (cobranças reais).',
+    path: ['EFI_SANDBOX'],
   })
 
 export type Env = z.infer<typeof EnvSchema>

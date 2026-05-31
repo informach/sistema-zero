@@ -1,8 +1,5 @@
 import { and, eq, lt } from 'drizzle-orm'
-import type {
-  IdempotencyRecord,
-  IdempotencyStore,
-} from '../../../domain/ports/idempotency-store.port'
+import type { IdempotencyStore, ReserveResult } from '../../../domain/ports/idempotency-store.port'
 import type { Database } from './db'
 import { idempotencyKeys } from './schema'
 
@@ -24,10 +21,11 @@ export class DrizzleIdempotencyStore implements IdempotencyStore {
     key: string
     requestHash: string
     inFlightTtlSeconds: number
-  }): Promise<IdempotencyRecord | null> {
+  }): Promise<ReserveResult> {
     // A limpeza de chaves expiradas roda num job periódico (cleanupExpired),
     // não aqui — para não adicionar uma escrita a cada request sob pico.
     const expiresAt = new Date(Date.now() + input.inFlightTtlSeconds * 1000)
+    const reservationId = crypto.randomUUID()
 
     const inserted = await this.db
       .insert(idempotencyKeys)
@@ -35,13 +33,14 @@ export class DrizzleIdempotencyStore implements IdempotencyStore {
         consumerId: input.consumerId,
         key: input.key,
         requestHash: input.requestHash,
+        reservationId,
         state: 'IN_FLIGHT',
         expiresAt,
       })
       .onConflictDoNothing({ target: [idempotencyKeys.consumerId, idempotencyKeys.key] })
       .returning({ key: idempotencyKeys.key })
 
-    if (inserted.length > 0) return null // reservou agora
+    if (inserted.length > 0) return { kind: 'acquired', reservationId } // reservou agora
 
     const [existing] = await this.db
       .select()
@@ -74,18 +73,22 @@ export class DrizzleIdempotencyStore implements IdempotencyStore {
     }
 
     return {
-      consumerId: existing.consumerId,
-      key: existing.key,
-      requestHash: existing.requestHash,
-      state: existing.state,
-      responseStatus: existing.responseStatus,
-      responseBody: existing.responseBody,
+      kind: 'existing',
+      record: {
+        consumerId: existing.consumerId,
+        key: existing.key,
+        requestHash: existing.requestHash,
+        state: existing.state,
+        responseStatus: existing.responseStatus,
+        responseBody: existing.responseBody,
+      },
     }
   }
 
   async complete(input: {
     consumerId: string
     key: string
+    reservationId: string
     responseStatus: number
     responseBody: unknown
     ttlSeconds: number
@@ -99,15 +102,31 @@ export class DrizzleIdempotencyStore implements IdempotencyStore {
         // Estende para a janela longa de replay idempotente.
         expiresAt: new Date(Date.now() + input.ttlSeconds * 1000),
       })
+      // Fencing: só conclui a reserva que ESTA request criou e que ainda está
+      // IN_FLIGHT — um complete zumbi (reserva já reciclada por outra) é no-op.
       .where(
-        and(eq(idempotencyKeys.consumerId, input.consumerId), eq(idempotencyKeys.key, input.key)),
+        and(
+          eq(idempotencyKeys.consumerId, input.consumerId),
+          eq(idempotencyKeys.key, input.key),
+          eq(idempotencyKeys.reservationId, input.reservationId),
+          eq(idempotencyKeys.state, 'IN_FLIGHT'),
+        ),
       )
   }
 
-  async release(consumerId: string, key: string): Promise<void> {
+  async release(consumerId: string, key: string, reservationId: string): Promise<void> {
+    // Fencing: só remove a própria reserva IN_FLIGHT — nunca uma já COMPLETED nem
+    // a reserva reciclada de outra request.
     await this.db
       .delete(idempotencyKeys)
-      .where(and(eq(idempotencyKeys.consumerId, consumerId), eq(idempotencyKeys.key, key)))
+      .where(
+        and(
+          eq(idempotencyKeys.consumerId, consumerId),
+          eq(idempotencyKeys.key, key),
+          eq(idempotencyKeys.reservationId, reservationId),
+          eq(idempotencyKeys.state, 'IN_FLIGHT'),
+        ),
+      )
   }
 
   async cleanupExpired(): Promise<void> {

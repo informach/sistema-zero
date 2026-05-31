@@ -42,6 +42,7 @@ describe('ReconciliationWorker', () => {
         idempotencyTtlSeconds: 3600,
         idempotencyInFlightTtlSeconds: 120,
         asyncChargeCreation: false,
+        boletoDefaultExpiresDays: 3,
       },
       silentLogger,
     )

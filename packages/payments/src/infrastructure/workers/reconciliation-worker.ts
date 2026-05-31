@@ -1,4 +1,5 @@
-import type { PaymentGateway } from '../../domain/ports/payment-gateway.port'
+import type { PaymentAggregate } from '../../domain/payment/payment.aggregate'
+import type { PaymentGateway, ProviderCharge } from '../../domain/ports/payment-gateway.port'
 import type { PaymentRepository } from '../../domain/ports/payment-repository.port'
 import type { Logger } from '../logging/logger'
 
@@ -55,9 +56,9 @@ export class ReconciliationWorker {
         this.options.staleAfterMs ?? 120_000,
       )
       for (const payment of stale) {
-        if (!payment.txid) continue
         try {
-          const charge = await this.gateway.getPixCharge(payment.txid)
+          const charge = await this.consult(payment)
+          if (!charge) continue
           if (charge.status === 'PAID') {
             // Defesa em profundidade: o valor pago tem que bater com o cobrado.
             if (charge.amountInCents !== payment.amount.amountInCents) {
@@ -90,5 +91,18 @@ export class ReconciliationWorker {
     } finally {
       this.running = false
     }
+  }
+
+  /** Re-consulta a cobrança na Efí conforme o método (Pix por txid; boleto por charge_id). */
+  private consult(payment: PaymentAggregate): Promise<ProviderCharge | null> {
+    if (payment.method.type === 'PIX') {
+      return payment.txid ? this.gateway.getPixCharge(payment.txid) : Promise.resolve(null)
+    }
+    if (payment.method.type === 'BOLETO') {
+      return payment.providerPaymentId
+        ? this.gateway.getBoletoCharge(payment.providerPaymentId)
+        : Promise.resolve(null)
+    }
+    return Promise.resolve(null)
   }
 }

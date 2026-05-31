@@ -1,4 +1,4 @@
-import { Elysia } from 'elysia'
+import { Elysia, t } from 'elysia'
 import type { GetPaymentService } from '../../../application/get-payment/get-payment.service'
 import type { ProcessPaymentCommand } from '../../../application/process-payment/process-payment.command'
 import type { ProcessPaymentService } from '../../../application/process-payment/process-payment.service'
@@ -47,16 +47,26 @@ export function paymentsRoutes(deps: PaymentsRoutesDeps) {
           expiresInSeconds: body.expiresInSeconds,
           customer: body.customer,
           card: body.card,
+          boleto: body.boleto,
           metadata: body.metadata,
         }
 
         const view = await deps.processPayment.execute(command)
-        // 201 quando a cobrança já saiu (modo síncrono, tem QR);
+        // 201 quando a cobrança já saiu (modo síncrono, tem QR/boleto);
         // 202 quando foi só aceita e o worker vai criar a cobrança (modo assíncrono).
-        set.status = view.pix ? 201 : 202
+        set.status = view.pix || view.boleto ? 201 : 202
         return view
       },
       { body: ProcessPaymentBody },
     )
-    .get('/:id', ({ params, consumer }) => deps.getPayment.execute(consumer.id, params.id))
+    .get('/:id', ({ params, consumer }) => deps.getPayment.execute(consumer.id, params.id), {
+      // Valida o formato UUID (via pattern, garantidamente checado): um id
+      // malformado iria à coluna `uuid` do Postgres e viraria 500 (poluindo
+      // métricas) em vez de um 4xx limpo.
+      params: t.Object({
+        id: t.String({
+          pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
+        }),
+      }),
+    })
 }

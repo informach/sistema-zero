@@ -96,7 +96,8 @@ describe('WebhookDeliveryWorker', () => {
 
   test('falha (HTTP 500) com tentativas restantes → reschedule com backoff e statusCode', async () => {
     mockFetch(500)
-    const repo = new StubDeliveryRepo([delivery({ attempts: 0 })])
+    // attempts já vem incrementado pelo claimDue (1ª tentativa = 1).
+    const repo = new StubDeliveryRepo([delivery({ attempts: 1 })])
     const worker = new WebhookDeliveryWorker(repo, consumers, silentLogger, {
       intervalMs: 1000,
       batchSize: 10,
@@ -118,7 +119,7 @@ describe('WebhookDeliveryWorker', () => {
 
   test('backoff cresce com o nº de tentativas', async () => {
     mockFetch(500)
-    const repo = new StubDeliveryRepo([delivery({ attempts: 3 })]) // já com 3 falhas
+    const repo = new StubDeliveryRepo([delivery({ attempts: 4 })]) // 4ª tentativa (pós-claim)
     const worker = new WebhookDeliveryWorker(repo, consumers, silentLogger, {
       intervalMs: 1000,
       batchSize: 10,
@@ -136,7 +137,8 @@ describe('WebhookDeliveryWorker', () => {
 
   test('falha na última tentativa → markDead', async () => {
     mockFetch(500)
-    const repo = new StubDeliveryRepo([delivery({ attempts: 4 })])
+    // attempts pós-claim == maxAttempts → estoura o teto e vira DEAD.
+    const repo = new StubDeliveryRepo([delivery({ attempts: 5 })])
     const worker = new WebhookDeliveryWorker(repo, consumers, silentLogger, {
       intervalMs: 1000,
       batchSize: 10,

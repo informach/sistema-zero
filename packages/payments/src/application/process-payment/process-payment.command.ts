@@ -29,5 +29,19 @@ export interface ProcessPaymentCommand {
     last4: string
     installments: number
   }
+  /** Parâmetros específicos de boleto (API Cobranças). */
+  boleto?: {
+    /** Vencimento explícito (YYYY-MM-DD); tem prioridade sobre `expiresInDays`. */
+    dueDate?: string
+    /** Dias até o vencimento (default: EFI_BOLETO_DEFAULT_EXPIRES_DAYS). */
+    expiresInDays?: number
+    /** Multa (% em centavos). */
+    fine?: number
+    /** Juros ao mês (% em centavos). */
+    interest?: number
+    discount?: number
+    message?: string
+    daysToWriteOff?: number
+  }
   metadata?: Record<string, unknown>
 }
