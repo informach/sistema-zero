@@ -227,9 +227,7 @@ export interface PaymentGateway {
    * A Efí passa a cobrar o cartão guardado a cada ciclo e notifica por token —
    * não há cobrança recorrente disparada por nós. PAN nunca trafega aqui.
    */
-  createCardSubscription(
-    input: CreateCardSubscriptionInput,
-  ): Promise<CreateCardSubscriptionOutput>
+  createCardSubscription(input: CreateCardSubscriptionInput): Promise<CreateCardSubscriptionOutput>
 
   /** Re-consulta o estado da assinatura no provedor (reconciliação/cancelamento). */
   getSubscription(providerSubscriptionId: string): Promise<ProviderSubscription>

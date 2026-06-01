@@ -2,8 +2,8 @@ import type { PaymentGateway } from '../../domain/ports/payment-gateway.port'
 import type { PaymentRepository } from '../../domain/ports/payment-repository.port'
 import type { SubscriptionRepository } from '../../domain/ports/subscription-repository.port'
 import type { WebhookInbox } from '../../domain/ports/webhook-inbox.port'
-import { ConcurrencyConflictError } from '../../infrastructure/persistence/drizzle/concurrency.error'
 import type { Logger } from '../../infrastructure/logging/logger'
+import { ConcurrencyConflictError } from '../../infrastructure/persistence/drizzle/concurrency.error'
 import { buildCyclePayment } from '../subscription/cycle-payment'
 
 /**

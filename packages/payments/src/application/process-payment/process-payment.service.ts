@@ -293,6 +293,10 @@ export class ProcessPaymentService {
       creditCard: (c) => c,
     })
     if (!card) throw new CardDataIncompleteError('card')
+    // `CardData.token` é opcional (ciclos de assinatura não o têm), mas cobrança
+    // avulsa SEMPRE exige o token — `PaymentMethod.creditCard` já garante; guarda
+    // aqui também estreita o tipo para a chamada do gateway.
+    if (!card.token) throw new CardDataIncompleteError('card.token')
 
     const payment = PaymentAggregate.create({
       consumerId: command.consumerId,

@@ -68,8 +68,16 @@ export const ProcessPaymentBody = t.Object({
  * aplicação (→ 422). `card` (sem parcelas — cada ciclo é uma cobrança) é obrigatório.
  */
 export const CreateSubscriptionBody = t.Object({
-  amountInCents: t.Integer({ minimum: 1, maximum: 1_000_000_000, description: 'Valor por ciclo, em centavos' }),
-  intervalMonths: t.Integer({ minimum: 1, maximum: 60, description: 'Intervalo entre cobranças, em meses' }),
+  amountInCents: t.Integer({
+    minimum: 1,
+    maximum: 1_000_000_000,
+    description: 'Valor por ciclo, em centavos',
+  }),
+  intervalMonths: t.Integer({
+    minimum: 1,
+    maximum: 60,
+    description: 'Intervalo entre cobranças, em meses',
+  }),
   // null = ilimitada; ausente também = ilimitada.
   repeats: t.Optional(t.Union([t.Integer({ minimum: 1, maximum: 120 }), t.Null()])),
   description: t.Optional(t.String({ maxLength: 200 })),

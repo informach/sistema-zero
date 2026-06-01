@@ -3,7 +3,11 @@ import { EfiGatewayError } from '../../src/infrastructure/gateways/efi/efi.error
 import {
   centsToBigInt,
   mapCobrancasStatus,
+  mapSubscriptionStatus,
+  parseCreatePlanResponse,
+  parseCreateSubscriptionResponse,
   parseNotification,
+  parseNotificationEntries,
   parseOneStepResponse,
 } from '../../src/infrastructure/gateways/efi/efi-cobrancas.mapper'
 
@@ -95,5 +99,59 @@ describe('efi-cobrancas.mapper', () => {
       ],
     })
     expect(ids.sort()).toEqual(['10', '11'])
+  })
+
+  test('mapSubscriptionStatus traduz os status da assinatura', () => {
+    expect(mapSubscriptionStatus('active')).toBe('ACTIVE')
+    expect(mapSubscriptionStatus('canceled')).toBe('CANCELED')
+    expect(mapSubscriptionStatus('expired')).toBe('EXPIRED')
+    expect(mapSubscriptionStatus('finished')).toBe('EXPIRED')
+    expect(mapSubscriptionStatus('new')).toBe('PENDING')
+    expect(mapSubscriptionStatus(undefined)).toBe('PENDING')
+  })
+
+  test('parseCreatePlanResponse extrai plan_id (e lança sem ele)', () => {
+    expect(parseCreatePlanResponse({ data: { plan_id: 77 } }).planId).toBe('77')
+    expect(() => parseCreatePlanResponse({ data: {} })).toThrow(EfiGatewayError)
+  })
+
+  test('parseCreateSubscriptionResponse extrai subscription_id, status e 1ª cobrança', () => {
+    const parsed = parseCreateSubscriptionResponse({
+      data: {
+        subscription_id: 500,
+        status: 'active',
+        charge: { charge_id: 900, status: 'approved' },
+      },
+    })
+    expect(parsed.subscriptionId).toBe('500')
+    expect(parsed.status).toBe('ACTIVE')
+    expect(parsed.firstChargeId).toBe('900')
+    expect(parsed.firstChargeStatus).toBe('PAID')
+  })
+
+  test('parseCreateSubscriptionResponse sem 1ª cobrança → firstCharge undefined', () => {
+    const parsed = parseCreateSubscriptionResponse({ data: { subscription_id: 1, status: 'new' } })
+    expect(parsed.subscriptionId).toBe('1')
+    expect(parsed.status).toBe('PENDING')
+    expect(parsed.firstChargeId).toBeUndefined()
+  })
+
+  test('parseCreateSubscriptionResponse lança sem subscription_id', () => {
+    expect(() => parseCreateSubscriptionResponse({ data: { status: 'active' } })).toThrow(
+      EfiGatewayError,
+    )
+  })
+
+  test('parseNotificationEntries separa ciclos de assinatura de cobranças avulsas', () => {
+    const entries = parseNotificationEntries({
+      data: [
+        { identifiers: { charge_id: 10, subscription_id: 500 } },
+        { identifiers: { charge_id: 11 } },
+        { identifiers: { charge_id: 10, subscription_id: 500 } }, // duplicado
+      ],
+    })
+    expect(entries).toHaveLength(2)
+    expect(entries).toContainEqual({ chargeId: '10', subscriptionId: '500' })
+    expect(entries).toContainEqual({ chargeId: '11', subscriptionId: undefined })
   })
 })

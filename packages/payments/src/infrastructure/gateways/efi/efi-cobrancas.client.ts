@@ -154,10 +154,7 @@ export class EfiCobrancasClient {
    * `POST /plan/:planId/subscription/one-step` — cria a assinatura + 1ª cobrança.
    * NÃO idempotente (subscription_id gerado pela Efí) → o POST nunca é re-tentado.
    */
-  createOneStepSubscription(
-    planId: number | string,
-    body: Record<string, unknown>,
-  ): Promise<any> {
+  createOneStepSubscription(planId: number | string, body: Record<string, unknown>): Promise<any> {
     return this.request('POST', `/plan/${planId}/subscription/one-step`, {
       body,
       idempotent: false,

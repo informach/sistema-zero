@@ -24,8 +24,8 @@ src/
 │   ├── shared/         # AggregateRoot, Entity, ValueObject, DomainEvent, Result, DomainError
 │   ├── value-objects/  # money, document (CPF/CNPJ), customer, idempotency-key, payment-method
 │   ├── payment/        # payment.aggregate (máquina de estados) + status/events/errors
-│   ├── subscription/   # SKELETON de recorrência
-│   └── ports/          # interfaces: payment-gateway, *-repository, outbox, idempotency-store, webhook-inbox
+│   ├── subscription/   # subscription.aggregate (recorrência via cartão) + status/events/errors
+│   └── ports/          # interfaces: payment-gateway, *-repository, subscription-plan-registry, outbox, idempotency-store, webhook-inbox
 ├── application/     # casos de uso: process-payment, get-payment, handle-provider-webhook
 │   ├── event-handlers/ · mappers/payment-view
 ├── infrastructure/  # adapters (implementam os ports)
@@ -198,10 +198,29 @@ Consumidor cadastrado em `consumers` (`id`, `hmac_secret`, `allowed_cidrs`,
 
 1. Adicione o método ao port `PaymentGateway` e implemente em `EfiClient` +
    `EfiPaymentGateway`.
-2. `ProcessPaymentService.buildMethod` já cria os `PaymentMethod`; hoje o caso de
-   uso processa PIX e boleto e lança `UnsupportedPaymentMethodError` para cartão —
-   habilite o novo método lá.
+2. `ProcessPaymentService.buildMethod` já cria os `PaymentMethod`; o caso de uso
+   processa PIX, boleto e cartão. Para um método novo, habilite lá.
 3. Reaproveite agregado/outbox/idempotência. Adicione testes em `tests/`.
+
+### Recorrência (assinaturas de cartão — DONE)
+
+Efí **Cobranças "Assinaturas"**: a Efí gerencia a recorrência (cria-se plano +
+assinatura 1x e ela cobra o cartão guardado a cada ciclo, notificando pelo MESMO
+token model do boleto/cartão) — **não há worker/scheduler de cobrança nosso**.
+- Agregado `SubscriptionAggregate` (PENDING→ACTIVE→CANCELED/EXPIRED); ports
+  `subscription-repository` + `subscription-plan-registry`; serviços
+  `create/cancel/get-subscription`; rotas `POST/GET/DELETE /subscriptions`.
+- **Cada ciclo é uma linha em `payments`** (CREDIT_CARD com `subscription_id`) →
+  reaproveita `payment.paid`/outbox/webhook-delivery. `idempotencyKey` sintética
+  `sub:<subId>:charge:<chargeId>`.
+- Planos são **reutilizáveis** (tabela `subscription_plans`, chave
+  `(provider, intervalMonths, repeats_key=repeats??-1)`, get-or-create via ON CONFLICT).
+- Notificação: `HandleBoletoNotificationService` resolve o token 1x e despacha
+  entradas com `subscriptionId` → `HandleSubscriptionNotificationService.handleCycle`.
+  Um ciclo FALHO **não** cancela a assinatura (a Efí pode retentar).
+- ⚠️ NÃO sandbox-verificado (precisa de `payment_token` de browser). Confirme os
+  shapes via `bun run subscription:create --token <token> [--detail] [--cancel]`.
+- **Pix Automático** (recorrência Pix nativa) é um esforço separado, ainda pendente.
 
 ## Dev local
 

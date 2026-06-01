@@ -174,9 +174,7 @@ export const subscriptionPlans = pgTable(
     name: text('name').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [
-    uniqueIndex('subscription_plans_key_uq').on(t.provider, t.intervalMonths, t.repeatsKey),
-  ],
+  (t) => [uniqueIndex('subscription_plans_key_uq').on(t.provider, t.intervalMonths, t.repeatsKey)],
 )
 
 /**

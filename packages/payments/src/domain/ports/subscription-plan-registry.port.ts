@@ -6,11 +6,7 @@
  */
 export interface SubscriptionPlanRegistry {
   /** Retorna o `plan_id` já mapeado para (provider, intervalMonths, repeats), ou null. */
-  find(
-    provider: string,
-    intervalMonths: number,
-    repeats: number | null,
-  ): Promise<string | null>
+  find(provider: string, intervalMonths: number, repeats: number | null): Promise<string | null>
 
   /**
    * Persiste o mapeamento (INSERT ... ON CONFLICT DO NOTHING) e retorna o

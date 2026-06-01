@@ -1,7 +1,11 @@
 import { describe, expect, test } from 'bun:test'
+import { CancelSubscriptionService } from '../../src/application/cancel-subscription/cancel-subscription.service'
+import { CreateSubscriptionService } from '../../src/application/create-subscription/create-subscription.service'
 import { GetPaymentService } from '../../src/application/get-payment/get-payment.service'
+import { GetSubscriptionService } from '../../src/application/get-subscription/get-subscription.service'
 import { HandleBoletoNotificationService } from '../../src/application/handle-boleto-notification/handle-boleto-notification.service'
 import { HandleProviderWebhookService } from '../../src/application/handle-provider-webhook/handle-provider-webhook.service'
+import { HandleSubscriptionNotificationService } from '../../src/application/handle-subscription-notification/handle-subscription-notification.service'
 import { ProcessPaymentService } from '../../src/application/process-payment/process-payment.service'
 import type { Env } from '../../src/infrastructure/config/env'
 import { signHmac } from '../../src/infrastructure/security/hmac'
@@ -12,6 +16,8 @@ import {
   InMemoryConsumerRepository,
   InMemoryIdempotencyStore,
   InMemoryPaymentRepository,
+  InMemorySubscriptionPlanRegistry,
+  InMemorySubscriptionRepository,
   InMemoryWebhookInbox,
   silentLogger,
 } from '../fakes/in-memory'
@@ -26,6 +32,8 @@ interface BuildOpts {
 
 function buildApp(opts: BuildOpts = {}) {
   const repo = new InMemoryPaymentRepository()
+  const subscriptionRepo = new InMemorySubscriptionRepository()
+  const planRegistry = new InMemorySubscriptionPlanRegistry()
   const gateway = new FakePixGateway()
   const consumers = new InMemoryConsumerRepository()
     .add({
@@ -70,6 +78,17 @@ function buildApp(opts: BuildOpts = {}) {
       silentLogger,
     ),
     getPayment: new GetPaymentService(repo),
+    createSubscription: new CreateSubscriptionService(
+      subscriptionRepo,
+      repo,
+      planRegistry,
+      gateway,
+      new InMemoryIdempotencyStore(),
+      { idempotencyTtlSeconds: 3600, idempotencyInFlightTtlSeconds: 120 },
+      silentLogger,
+    ),
+    getSubscription: new GetSubscriptionService(subscriptionRepo),
+    cancelSubscription: new CancelSubscriptionService(subscriptionRepo, gateway, silentLogger),
     handleWebhook: new HandleProviderWebhookService(
       repo,
       gateway,
@@ -81,6 +100,13 @@ function buildApp(opts: BuildOpts = {}) {
       gateway,
       new InMemoryWebhookInbox(),
       silentLogger,
+      new HandleSubscriptionNotificationService(
+        subscriptionRepo,
+        repo,
+        gateway,
+        new InMemoryWebhookInbox(),
+        silentLogger,
+      ),
     ),
     getMetrics: async () => ({
       outboxPending: 0,
@@ -91,7 +117,7 @@ function buildApp(opts: BuildOpts = {}) {
     }),
   })
 
-  return { app, repo, gateway }
+  return { app, repo, subscriptionRepo, gateway }
 }
 
 const now = () => Math.floor(Date.now() / 1000)
@@ -153,6 +179,27 @@ const CARD_BODY = JSON.stringify({
   amountInCents: 3700,
   method: 'CREDIT_CARD',
   card: { token: 'paytok-abc', brand: 'visa', last4: '4242', installments: 3 },
+  customer: {
+    name: 'João da Silva',
+    email: 'joao@example.com',
+    document: '52998224725',
+    phone: '11999998888',
+    birth: '1990-05-10',
+    address: {
+      street: 'Rua A',
+      number: '100',
+      neighborhood: 'Centro',
+      zipcode: '01001000',
+      city: 'São Paulo',
+      state: 'SP',
+    },
+  },
+})
+
+const SUB_BODY = JSON.stringify({
+  amountInCents: 1000,
+  intervalMonths: 1,
+  card: { token: 'paytok-abc', brand: 'visa', last4: '4242' },
   customer: {
     name: 'João da Silva',
     email: 'joao@example.com',
@@ -520,5 +567,144 @@ describe('HTTP server', () => {
     )
     expect(res.status).toBe(200)
     expect((await repo.findById(id))!.status).toBe('PAID')
+  })
+
+  test('POST /subscriptions autenticado cria assinatura → 201 com cartão, sem token', async () => {
+    const { app } = buildApp()
+    const res = await app.handle(
+      new Request('http://localhost/subscriptions', {
+        method: 'POST',
+        headers: postHeaders(SUB_BODY, { key: 'idem-sub-aaaa' }),
+        body: SUB_BODY,
+      }),
+    )
+    expect(res.status).toBe(201)
+    const json = (await res.json()) as {
+      id: string
+      status: string
+      card?: { brand: string; last4: string; token?: string }
+      intervalMonths: number
+    }
+    expect(json.status).toBe('ACTIVE')
+    expect(json.card).toEqual({ brand: 'visa', last4: '4242' })
+    expect((json.card as { token?: string }).token).toBeUndefined()
+    expect(json.intervalMonths).toBe(1)
+  })
+
+  test('POST /subscriptions sem data de nascimento → 422', async () => {
+    const { app } = buildApp()
+    const body = JSON.stringify({
+      amountInCents: 1000,
+      intervalMonths: 1,
+      card: { token: 'paytok-abc', brand: 'visa', last4: '4242' },
+      customer: {
+        name: 'João da Silva',
+        email: 'joao@example.com',
+        document: '52998224725',
+        phone: '11999998888',
+        address: {
+          street: 'Rua A',
+          number: '100',
+          neighborhood: 'Centro',
+          zipcode: '01001000',
+          city: 'São Paulo',
+          state: 'SP',
+        },
+      },
+    })
+    const res = await app.handle(
+      new Request('http://localhost/subscriptions', {
+        method: 'POST',
+        headers: postHeaders(body, { key: 'idem-sub-bbbb' }),
+        body,
+      }),
+    )
+    expect(res.status).toBe(422)
+  })
+
+  test('GET /subscriptions/:id é escopado por consumidor (sem IDOR)', async () => {
+    const { app } = buildApp()
+    const created = await app.handle(
+      new Request('http://localhost/subscriptions', {
+        method: 'POST',
+        headers: postHeaders(SUB_BODY, { key: 'idem-sub-cccc' }),
+        body: SUB_BODY,
+      }),
+    )
+    const { id } = (await created.json()) as { id: string }
+
+    const own = await app.handle(
+      new Request(`http://localhost/subscriptions/${id}`, { headers: getHeaders() }),
+    )
+    expect(own.status).toBe(200)
+
+    const other = await app.handle(
+      new Request(`http://localhost/subscriptions/${id}`, {
+        headers: getHeaders({ consumerId: 'sys-b', secret: 'secret-b' }),
+      }),
+    )
+    expect(other.status).toBe(404)
+  })
+
+  test('DELETE /subscriptions/:id cancela', async () => {
+    const { app, gateway } = buildApp()
+    const created = await app.handle(
+      new Request('http://localhost/subscriptions', {
+        method: 'POST',
+        headers: postHeaders(SUB_BODY, { key: 'idem-sub-dddd' }),
+        body: SUB_BODY,
+      }),
+    )
+    const { id, providerSubscriptionId } = (await created.json()) as {
+      id: string
+      providerSubscriptionId: string
+    }
+
+    const res = await app.handle(
+      new Request(`http://localhost/subscriptions/${id}`, {
+        method: 'DELETE',
+        headers: getHeaders(),
+      }),
+    )
+    expect(res.status).toBe(200)
+    const json = (await res.json()) as { status: string }
+    expect(json.status).toBe('CANCELED')
+    expect(gateway.canceledSubscriptionIds).toContain(providerSubscriptionId)
+  })
+
+  test('webhook de assinatura cria o pagamento de um ciclo recorrente', async () => {
+    const { app, repo, subscriptionRepo, gateway } = buildApp()
+    // Sem 1ª cobrança na criação → o webhook cria o ciclo.
+    gateway.firstChargeStatus = undefined
+    gateway.subscriptionStatus = 'PENDING'
+    const created = await app.handle(
+      new Request('http://localhost/subscriptions', {
+        method: 'POST',
+        headers: postHeaders(SUB_BODY, { key: 'idem-sub-eeee' }),
+        body: SUB_BODY,
+      }),
+    )
+    const { id, providerSubscriptionId } = (await created.json()) as {
+      id: string
+      providerSubscriptionId: string
+    }
+
+    gateway.cardStatus = 'PAID'
+    gateway.notificationEntries = [
+      { chargeId: 'cycle-http-1', subscriptionId: providerSubscriptionId },
+    ]
+    const res = await app.handle(
+      new Request('http://localhost/webhooks/efi/cobrancas', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ notification: 'token-sub' }),
+      }),
+    )
+    expect(res.status).toBe(200)
+
+    const cycle = await repo.findByProviderPaymentId('EFI', 'cycle-http-1')
+    expect(cycle?.status).toBe('PAID')
+    expect(cycle?.subscriptionId).toBe(id)
+    expect((await subscriptionRepo.findById(id))?.status).toBe('ACTIVE')
   })
 })

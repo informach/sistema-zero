@@ -18,6 +18,7 @@
     "pix:key": "bun run scripts/create-pix-key.ts",
     "boleto:create": "bun run scripts/create-boleto.ts",
     "card:create": "bun run scripts/create-card.ts",
+    "subscription:create": "bun run scripts/create-subscription.ts",
     "call-example": "bun run scripts/call-example.ts",
     "check": "biome check .",
     "check:fix": "biome check --write .",

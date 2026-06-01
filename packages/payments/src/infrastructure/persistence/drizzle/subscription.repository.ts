@@ -43,9 +43,7 @@ export class DrizzleSubscriptionRepository implements SubscriptionRepository {
             canceledAt: values.canceledAt,
             updatedAt: values.updatedAt,
           })
-          .where(
-            and(eq(subscriptions.id, snap.id), eq(subscriptions.version, snap.version)),
-          )
+          .where(and(eq(subscriptions.id, snap.id), eq(subscriptions.version, snap.version)))
           .returning({ id: subscriptions.id })
 
         if (updated.length === 0) throw new ConcurrencyConflictError(snap.id)

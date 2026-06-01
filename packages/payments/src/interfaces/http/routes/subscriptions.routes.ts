@@ -19,8 +19,7 @@ export interface SubscriptionsRoutesDeps {
   cancelSubscription: CancelSubscriptionService
 }
 
-const UUID_PATTERN =
-  '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+const UUID_PATTERN = '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
 
 /**
  * Rotas de assinatura. Mesmo `derive` de autenticação das rotas de pagamento
@@ -61,11 +60,9 @@ export function subscriptionsRoutes(deps: SubscriptionsRoutesDeps) {
       },
       { body: CreateSubscriptionBody },
     )
-    .get(
-      '/:id',
-      ({ params, consumer }) => deps.getSubscription.execute(consumer.id, params.id),
-      { params: t.Object({ id: t.String({ pattern: UUID_PATTERN }) }) },
-    )
+    .get('/:id', ({ params, consumer }) => deps.getSubscription.execute(consumer.id, params.id), {
+      params: t.Object({ id: t.String({ pattern: UUID_PATTERN }) }),
+    })
     .delete(
       '/:id',
       ({ params, consumer }) => deps.cancelSubscription.execute(consumer.id, params.id),
