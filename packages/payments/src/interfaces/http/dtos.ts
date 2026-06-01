@@ -61,3 +61,32 @@ export const ProcessPaymentBody = t.Object({
   // pelo teto global de tamanho do corpo no onParse).
   metadata: t.Optional(t.Record(t.String({ maxLength: 64 }), t.Unknown(), { maxProperties: 50 })),
 })
+
+/**
+ * Corpo de `POST /subscriptions` (assinatura de cartão, recorrência). O pagador
+ * completo (documento + telefone + nascimento + endereço) é exigido na camada de
+ * aplicação (→ 422). `card` (sem parcelas — cada ciclo é uma cobrança) é obrigatório.
+ */
+export const CreateSubscriptionBody = t.Object({
+  amountInCents: t.Integer({ minimum: 1, maximum: 1_000_000_000, description: 'Valor por ciclo, em centavos' }),
+  intervalMonths: t.Integer({ minimum: 1, maximum: 60, description: 'Intervalo entre cobranças, em meses' }),
+  // null = ilimitada; ausente também = ilimitada.
+  repeats: t.Optional(t.Union([t.Integer({ minimum: 1, maximum: 120 }), t.Null()])),
+  description: t.Optional(t.String({ maxLength: 200 })),
+  customer: t.Optional(
+    t.Object({
+      name: t.String({ minLength: 1, maxLength: 200 }),
+      email: t.String({ minLength: 3, maxLength: 320, pattern: '^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$' }),
+      document: t.String({ minLength: 11, maxLength: 18 }),
+      phone: t.Optional(t.String({ maxLength: 20 })),
+      address: t.Optional(AddressSchema),
+      birth: t.Optional(t.String({ pattern: '^\\d{4}-\\d{2}-\\d{2}$' })),
+    }),
+  ),
+  card: t.Object({
+    token: t.String({ minLength: 1, maxLength: 255 }),
+    brand: t.String({ minLength: 1, maxLength: 40 }),
+    last4: t.String({ minLength: 4, maxLength: 4 }),
+  }),
+  metadata: t.Optional(t.Record(t.String({ maxLength: 64 }), t.Unknown(), { maxProperties: 50 })),
+})

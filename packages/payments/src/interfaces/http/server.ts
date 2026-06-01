@@ -1,6 +1,9 @@
 import { swagger } from '@elysiajs/swagger'
 import { Elysia } from 'elysia'
+import type { CancelSubscriptionService } from '../../application/cancel-subscription/cancel-subscription.service'
+import type { CreateSubscriptionService } from '../../application/create-subscription/create-subscription.service'
 import type { GetPaymentService } from '../../application/get-payment/get-payment.service'
+import type { GetSubscriptionService } from '../../application/get-subscription/get-subscription.service'
 import type { HandleBoletoNotificationService } from '../../application/handle-boleto-notification/handle-boleto-notification.service'
 import type { HandleProviderWebhookService } from '../../application/handle-provider-webhook/handle-provider-webhook.service'
 import type { ProcessPaymentService } from '../../application/process-payment/process-payment.service'
@@ -15,6 +18,7 @@ import { markOversizeBody, storeRawBody } from './raw-body'
 import { healthRoutes } from './routes/health.routes'
 import { metricsRoutes } from './routes/metrics.routes'
 import { paymentsRoutes } from './routes/payments.routes'
+import { subscriptionsRoutes } from './routes/subscriptions.routes'
 import { webhooksRoutes } from './routes/webhooks.routes'
 
 export interface HttpDeps {
@@ -24,6 +28,9 @@ export interface HttpDeps {
   rateLimiter: InMemoryRateLimiter
   processPayment: ProcessPaymentService
   getPayment: GetPaymentService
+  createSubscription: CreateSubscriptionService
+  getSubscription: GetSubscriptionService
+  cancelSubscription: CancelSubscriptionService
   handleWebhook: HandleProviderWebhookService
   handleBoletoNotification: HandleBoletoNotificationService
   getMetrics: () => Promise<MetricsSnapshot>
@@ -112,6 +119,21 @@ export function createServer(deps: HttpDeps) {
         rateLimiter: deps.rateLimiter,
         processPayment: deps.processPayment,
         getPayment: deps.getPayment,
+      }),
+    )
+    .use(
+      subscriptionsRoutes({
+        auth: {
+          consumers: deps.consumers,
+          logger: deps.logger,
+          trustProxy: deps.env.TRUST_PROXY,
+          trustedProxyHops: deps.env.TRUSTED_PROXY_HOPS,
+          hmacToleranceSeconds: deps.env.HMAC_TOLERANCE_SECONDS,
+        },
+        rateLimiter: deps.rateLimiter,
+        createSubscription: deps.createSubscription,
+        getSubscription: deps.getSubscription,
+        cancelSubscription: deps.cancelSubscription,
       }),
     )
 }

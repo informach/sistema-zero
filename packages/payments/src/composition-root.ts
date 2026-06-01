@@ -1,7 +1,11 @@
+import { CancelSubscriptionService } from './application/cancel-subscription/cancel-subscription.service'
+import { CreateSubscriptionService } from './application/create-subscription/create-subscription.service'
 import { registerPaymentEventHandlers } from './application/event-handlers/payment-event-handlers'
 import { GetPaymentService } from './application/get-payment/get-payment.service'
+import { GetSubscriptionService } from './application/get-subscription/get-subscription.service'
 import { HandleBoletoNotificationService } from './application/handle-boleto-notification/handle-boleto-notification.service'
 import { HandleProviderWebhookService } from './application/handle-provider-webhook/handle-provider-webhook.service'
+import { HandleSubscriptionNotificationService } from './application/handle-subscription-notification/handle-subscription-notification.service'
 import { ProcessPaymentService } from './application/process-payment/process-payment.service'
 import type { Env } from './infrastructure/config/env'
 import { InProcessEventPublisher } from './infrastructure/events/in-process-event-publisher'
@@ -18,6 +22,8 @@ import { DrizzleIdempotencyStore } from './infrastructure/persistence/drizzle/id
 import { DrizzleMetricsRepository } from './infrastructure/persistence/drizzle/metrics.repository'
 import { DrizzleOutboxRepository } from './infrastructure/persistence/drizzle/outbox.repository'
 import { DrizzlePaymentRepository } from './infrastructure/persistence/drizzle/payment.repository'
+import { DrizzleSubscriptionPlanRegistry } from './infrastructure/persistence/drizzle/subscription-plan-registry.repository'
+import { DrizzleSubscriptionRepository } from './infrastructure/persistence/drizzle/subscription.repository'
 import { PgNotificationListener } from './infrastructure/persistence/drizzle/pg-notification-listener'
 import { DrizzleWebhookDeliveryRepository } from './infrastructure/persistence/drizzle/webhook-delivery.repository'
 import { DrizzleWebhookInbox } from './infrastructure/persistence/drizzle/webhook-inbox.repository'
@@ -56,6 +62,8 @@ export function createApplication(env: Env): Application {
 
   // Adapters de persistência
   const payments = new DrizzlePaymentRepository(db)
+  const subscriptions = new DrizzleSubscriptionRepository(db)
+  const planRegistry = new DrizzleSubscriptionPlanRegistry(db)
   const idempotency = new DrizzleIdempotencyStore(db)
   const outboxRepo = new DrizzleOutboxRepository(db)
   const consumers = new DrizzleConsumerRepository(db)
@@ -143,12 +151,36 @@ export function createApplication(env: Env): Application {
     logger,
   )
   const getPayment = new GetPaymentService(payments)
+  const createSubscription = new CreateSubscriptionService(
+    subscriptions,
+    payments,
+    planRegistry,
+    gateway,
+    idempotency,
+    {
+      idempotencyTtlSeconds: IDEMPOTENCY_TTL_SECONDS,
+      idempotencyInFlightTtlSeconds: IDEMPOTENCY_IN_FLIGHT_TTL_SECONDS,
+    },
+    logger,
+  )
+  const getSubscription = new GetSubscriptionService(subscriptions)
+  const cancelSubscription = new CancelSubscriptionService(subscriptions, gateway, logger)
   const handleWebhook = new HandleProviderWebhookService(payments, gateway, webhookInbox, logger)
+  const handleSubscriptionNotification = new HandleSubscriptionNotificationService(
+    subscriptions,
+    payments,
+    gateway,
+    webhookInbox,
+    logger,
+  )
+  // O handler de Cobranças resolve o token uma vez e despacha ciclos de assinatura
+  // ao handler recorrente (5º argumento) — cobranças avulsas seguem o caminho normal.
   const handleBoletoNotification = new HandleBoletoNotificationService(
     payments,
     gateway,
     webhookInbox,
     logger,
+    handleSubscriptionNotification,
   )
 
   // Borda HTTP
@@ -159,6 +191,9 @@ export function createApplication(env: Env): Application {
     rateLimiter,
     processPayment,
     getPayment,
+    createSubscription,
+    getSubscription,
+    cancelSubscription,
     handleWebhook,
     handleBoletoNotification,
     getMetrics: () => metrics.getMetrics(),
