@@ -1,3 +1,4 @@
+import { redactHeaders } from '../../../infrastructure/proxy/header-rules'
 import type { RateLimiter } from '../../rate-limit/rate-limiter'
 import type { Stage } from '../stage.port'
 
@@ -9,9 +10,14 @@ export interface MetricsRecorder {
 /**
  * Finalizer: injeta X-Request-Id e headers RateLimit-*, refunda o contador em
  * respostas 5xx (não penaliza o cliente por falha do upstream), registra métricas
- * e emite o access log.
+ * e emite o access log. Com `debugHeaders` (ligado quando `LOG_LEVEL=debug`),
+ * loga também os headers de request/upstream/response com os sensíveis redigidos.
  */
-export function createFinalizeStage(rateLimiter: RateLimiter, metrics?: MetricsRecorder): Stage {
+export function createFinalizeStage(
+  rateLimiter: RateLimiter,
+  metrics?: MetricsRecorder,
+  debugHeaders = false,
+): Stage {
   return {
     name: 'finalize',
     async run(ctx) {
@@ -34,7 +40,10 @@ export function createFinalizeStage(rateLimiter: RateLimiter, metrics?: MetricsR
       const latencyMs = Date.now() - ctx.startedAt
       metrics?.record(status, latencyMs)
 
-      ctx.logger.info('gateway.access', {
+      // 5xx aflora em queries `level>=error`; 4xx fica em `info` (evita spam de
+      // `warn` sob ataque/429). O detalhe do erro está nos eventos dedicados.
+      const level = status >= 500 ? 'error' : 'info'
+      ctx.logger[level]('gateway.access', {
         requestId: ctx.requestId,
         traceId: ctx.traceId,
         method: ctx.method,
@@ -43,11 +52,22 @@ export function createFinalizeStage(rateLimiter: RateLimiter, metrics?: MetricsR
         service: ctx.route?.route.service,
         version: ctx.requestedVersion,
         principal: ctx.principal?.subject,
+        clientIp: ctx.clientIp,
+        userAgent: ctx.request.headers.get('user-agent') ?? undefined,
         target: ctx.upstreamTarget,
         attempts: ctx.attempts,
         status,
         latencyMs,
       })
+
+      if (debugHeaders) {
+        ctx.logger.debug('gateway.headers', {
+          requestId: ctx.requestId,
+          request: redactHeaders(ctx.request.headers),
+          upstream: redactHeaders(ctx.upstreamHeaders),
+          response: ctx.response ? redactHeaders(ctx.response.headers) : undefined,
+        })
+      }
       return undefined
     },
   }

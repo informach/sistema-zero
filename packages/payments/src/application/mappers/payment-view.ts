@@ -23,6 +23,12 @@ export interface PaymentView {
     pdfUrl: string
     expiresAt: string | null
   }
+  /** Dados seguros do cartão (NUNCA o token/PAN — só bandeira/últimos dígitos/parcelas). */
+  card?: {
+    brand: string
+    last4: string
+    installments: number
+  }
   metadata: Record<string, unknown>
   createdAt: string
   paidAt: string | null
@@ -59,6 +65,16 @@ export function toPaymentView(payment: PaymentAggregate): PaymentView {
       digitableLine: boleto.digitableLine,
       pdfUrl: boleto.pdfUrl,
       expiresAt: payment.expiresAt ? payment.expiresAt.toISOString() : null,
+    }
+  }
+
+  const card = payment.card
+  if (payment.method.type === 'CREDIT_CARD' && payment.providerPaymentId && card) {
+    // Nunca expõe o token — só dados não sensíveis para a UI/recibo.
+    view.card = {
+      brand: card.brand,
+      last4: card.last4,
+      installments: card.installments,
     }
   }
 

@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { createPipeline } from '../../src/application/pipeline/pipeline'
 import type { Stage } from '../../src/application/pipeline/stage.port'
-import { makeContext } from '../helpers'
+import { makeContext, recordingLogger } from '../helpers'
 
 const stage = (name: string, run: Stage['run']): Stage => ({ name, run })
 
@@ -54,5 +54,24 @@ describe('pipeline (CoR)', () => {
     const res = await p.run(makeContext())
     expect(res.status).toBe(500)
     expect(finalizerRan).toBe(true)
+  })
+
+  test('exceção é logada com stack trace (serializeError)', async () => {
+    const rec = recordingLogger()
+    const p = createPipeline(
+      [
+        stage('boom', () => {
+          throw new Error('falha com stack')
+        }),
+      ],
+      [],
+    )
+    await p.run(makeContext({ logger: rec.logger }))
+
+    const logged = rec.entries.find((e) => e.message === 'pipeline.stage_failed')
+    expect(logged?.level).toBe('error')
+    const err = logged?.context?.error as { message: string; stack?: string }
+    expect(err.message).toBe('falha com stack')
+    expect(err.stack).toContain('falha com stack')
   })
 })

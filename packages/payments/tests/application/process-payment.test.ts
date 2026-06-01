@@ -3,8 +3,8 @@ import type { ProcessPaymentCommand } from '../../src/application/process-paymen
 import { ProcessPaymentService } from '../../src/application/process-payment/process-payment.service'
 import {
   BoletoDataIncompleteError,
+  CardDataIncompleteError,
   IdempotencyConflictError,
-  UnsupportedPaymentMethodError,
 } from '../../src/domain/payment/payment.errors'
 import {
   FakePixGateway,
@@ -74,13 +74,28 @@ describe('ProcessPaymentService (Pix)', () => {
     ).rejects.toBeInstanceOf(IdempotencyConflictError)
   })
 
-  test('método ainda não suportado (cartão) libera a reserva de idempotência', async () => {
+  test('falha de validação (cartão sem nascimento) libera a reserva de idempotência', async () => {
     const card = { token: 'tok-1', brand: 'visa', last4: '4242', installments: 1 }
+    const customer = {
+      name: 'João da Silva',
+      email: 'joao@example.com',
+      document: '52998224725',
+      phone: '11999998888',
+      address: {
+        street: 'Rua A',
+        number: '100',
+        neighborhood: 'Centro',
+        zipcode: '01001000',
+        city: 'São Paulo',
+        state: 'SP',
+      },
+    }
     await expect(
-      service.execute({ ...baseCommand, method: 'CREDIT_CARD', card }),
-    ).rejects.toBeInstanceOf(UnsupportedPaymentMethodError)
+      service.execute({ ...baseCommand, method: 'CREDIT_CARD', card, customer }),
+    ).rejects.toBeInstanceOf(CardDataIncompleteError)
 
-    // Reserva liberada → uma nova tentativa (corrigida) não fica presa em conflito.
+    // Falhou ANTES de qualquer efeito colateral (validação) → reserva liberada →
+    // uma nova tentativa (corrigida) não fica presa em conflito.
     const retry = await service.execute({ ...baseCommand, method: 'PIX' })
     expect(retry.status).toBe('PENDING')
   })
@@ -182,5 +197,119 @@ describe('ProcessPaymentService (Boleto)', () => {
     expect(view.status).toBe('PENDING')
     expect(view.boleto).toBeUndefined()
     expect(gateway.boletoCreatedCount).toBe(0)
+  })
+})
+
+describe('ProcessPaymentService (Cartão)', () => {
+  let repo: InMemoryPaymentRepository
+  let gateway: FakePixGateway
+  let idempotency: InMemoryIdempotencyStore
+  let service: ProcessPaymentService
+
+  const baseCard: ProcessPaymentCommand = {
+    consumerId: 'sys-a',
+    idempotencyKey: 'idem-card-001',
+    requestHash: 'hash-C',
+    amountInCents: 3700,
+    method: 'CREDIT_CARD',
+    card: { token: 'paytok-abc', brand: 'visa', last4: '4242', installments: 3 },
+    customer: {
+      name: 'João da Silva',
+      email: 'joao@example.com',
+      document: '52998224725',
+      phone: '11999998888',
+      birth: '1990-05-10',
+      address: {
+        street: 'Rua A',
+        number: '100',
+        neighborhood: 'Centro',
+        zipcode: '01001000',
+        city: 'São Paulo',
+        state: 'SP',
+      },
+    },
+  }
+
+  const buildService = (asyncChargeCreation: boolean) =>
+    new ProcessPaymentService(
+      repo,
+      gateway,
+      idempotency,
+      {
+        pixKey: 'pix@loja.com',
+        idempotencyTtlSeconds: 3600,
+        idempotencyInFlightTtlSeconds: 120,
+        asyncChargeCreation,
+        boletoDefaultExpiresDays: 3,
+      },
+      silentLogger,
+    )
+
+  beforeEach(() => {
+    repo = new InMemoryPaymentRepository()
+    gateway = new FakePixGateway()
+    idempotency = new InMemoryIdempotencyStore()
+    service = buildService(false)
+  })
+
+  test('cobra o cartão de forma síncrona → PAID, com view.card e sem pix/boleto', async () => {
+    const view = await service.execute(baseCard)
+
+    expect(view.status).toBe('PAID')
+    expect(view.method).toBe('CREDIT_CARD')
+    expect(view.card).toEqual({ brand: 'visa', last4: '4242', installments: 3 })
+    expect(view.pix).toBeUndefined()
+    expect(view.boleto).toBeUndefined()
+    expect(gateway.cardCreatedCount).toBe(1)
+    expect(repo.outbox.some((e) => e.eventName === 'payment.created')).toBe(true)
+    expect(repo.outbox.some((e) => e.eventName === 'payment.paid')).toBe(true)
+  })
+
+  test('cartão recusado (unpaid) → FAILED', async () => {
+    gateway.cardStatus = 'FAILED'
+    const view = await service.execute(baseCard)
+
+    expect(view.status).toBe('FAILED')
+    expect(gateway.cardCreatedCount).toBe(1)
+  })
+
+  test('cartão em análise (waiting) → permanece PENDING', async () => {
+    gateway.cardStatus = 'PENDING'
+    const view = await service.execute(baseCard)
+
+    expect(view.status).toBe('PENDING')
+    expect(view.card).toBeDefined()
+  })
+
+  test('é idempotente: mesma chave+payload não cobra de novo', async () => {
+    const first = await service.execute(baseCard)
+    const second = await service.execute(baseCard)
+
+    expect(second.id).toBe(first.id)
+    expect(gateway.cardCreatedCount).toBe(1)
+  })
+
+  test('IGNORA o modo assíncrono: cartão é sempre cobrado na request', async () => {
+    const asyncService = buildService(true)
+    const view = await asyncService.execute(baseCard)
+
+    expect(view.status).toBe('PAID')
+    expect(view.card).toBeDefined()
+    expect(gateway.cardCreatedCount).toBe(1)
+  })
+
+  test('rejeita cartão sem data de nascimento', async () => {
+    const { birth: _drop, ...customer } = baseCard.customer!
+    await expect(service.execute({ ...baseCard, customer })).rejects.toBeInstanceOf(
+      CardDataIncompleteError,
+    )
+    expect(gateway.cardCreatedCount).toBe(0)
+  })
+
+  test('rejeita cartão sem endereço de cobrança', async () => {
+    const { address: _drop, ...customer } = baseCard.customer!
+    await expect(service.execute({ ...baseCard, customer })).rejects.toBeInstanceOf(
+      CardDataIncompleteError,
+    )
   })
 })

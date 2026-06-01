@@ -1,8 +1,19 @@
-import { useEffect, useRef, useState } from 'react'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
+import { type Ref, useEffect, useId, useRef, useState } from 'react'
 import { apiPost } from '../lib/api-fetch'
+import { ContactSchema, fieldErrors } from '../lib/contact-schema'
 
-const inputClass =
-  'w-full rounded-xl border border-line bg-card px-4 py-3 text-ink outline-none focus:border-cyan'
+type Errors = Partial<Record<'nome' | 'email' | 'telefone', string>>
+
+/** Máscara pt-BR: "(11) 99999-9999" (aceita fixo de 10 dígitos também). */
+function formatTelefone(value: string): string {
+  const d = value.replace(/\D/g, '').slice(0, 11)
+  if (d.length === 0) return ''
+  if (d.length <= 2) return `(${d}`
+  if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`
+  if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`
+  return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`
+}
 
 export default function PreCheckoutModal() {
   const [open, setOpen] = useState(false)
@@ -10,9 +21,12 @@ export default function PreCheckoutModal() {
   const [email, setEmail] = useState('')
   const [telefone, setTelefone] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const [erro, setErro] = useState<string | null>(null)
+  const [errors, setErrors] = useState<Errors>({})
+  const [erroGeral, setErroGeral] = useState<string | null>(null)
   const firstFieldRef = useRef<HTMLInputElement>(null)
   const lastFocusedRef = useRef<HTMLElement | null>(null)
+  const reduce = useReducedMotion()
+  const uid = useId()
 
   // Garante o lead (mesmo p/ quem cai direto na oferta) e marca viu_pagina_vendas.
   useEffect(() => {
@@ -44,103 +58,223 @@ export default function PreCheckoutModal() {
     }
     if (open) {
       document.addEventListener('keydown', onKey)
-      firstFieldRef.current?.focus() // move o foco para o diálogo ao abrir
-    } else {
-      lastFocusedRef.current?.focus() // devolve o foco ao gatilho ao fechar
+      // Aguarda o frame de montagem do diálogo p/ mover o foco.
+      const t = setTimeout(() => firstFieldRef.current?.focus(), 30)
+      return () => {
+        document.removeEventListener('keydown', onKey)
+        clearTimeout(t)
+      }
     }
-    return () => document.removeEventListener('keydown', onKey)
+    lastFocusedRef.current?.focus()
+    return undefined
   }, [open])
 
   async function enviar() {
     if (submitting) return
-    if (!nome.trim() || !email.trim() || telefone.trim().length < 8) {
-      setErro('Preencha nome, e-mail e telefone.')
+    // Validação no app (Zod) — sem depender do navegador (form é noValidate).
+    const parsed = ContactSchema.safeParse({ nome, email, telefone })
+    if (!parsed.success) {
+      setErrors(fieldErrors(parsed.error) as Errors)
+      setErroGeral(null)
       return
     }
+    setErrors({})
     setSubmitting(true)
-    setErro(null)
+    setErroGeral(null)
     try {
-      await apiPost('/api/contact', { nome, email, telefone })
+      await apiPost('/api/contact', parsed.data)
       window.location.href = '/checkout'
     } catch {
-      setErro('Não foi possível continuar. Confira os dados e tente novamente.')
+      setErroGeral('Não foi possível continuar. Confira os dados e tente novamente.')
       setSubmitting(false)
     }
   }
 
-  if (!open) return null
+  const overlayAnim = reduce
+    ? { initial: false as const, animate: {}, exit: {} }
+    : { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 } }
+  const dialogAnim = reduce
+    ? { initial: false as const, animate: {}, exit: {} }
+    : {
+        initial: { opacity: 0, y: 24, scale: 0.97 },
+        animate: { opacity: 1, y: 0, scale: 1 },
+        exit: { opacity: 0, y: 16, scale: 0.98 },
+      }
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label="Pré-checkout"
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 sm:items-center sm:p-4"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) setOpen(false)
-      }}
-    >
-      <div className="card w-full max-w-md rounded-t-2xl p-6 sm:rounded-2xl">
-        <div className="flex items-start justify-between gap-4">
-          <h2 className="text-xl font-bold text-ink">Falta pouco!</h2>
-          <button
-            type="button"
-            onClick={() => setOpen(false)}
-            aria-label="Fechar"
-            className="text-muted transition hover:text-ink"
-          >
-            ✕
-          </button>
-        </div>
-        <p className="mt-1 text-sm text-muted">Preencha para ir ao pagamento seguro.</p>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            void enviar()
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          key="overlay"
+          {...overlayAnim}
+          transition={{ duration: reduce ? 0 : 0.2 }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={`${uid}-title`}
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center sm:p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setOpen(false)
           }}
-          className="mt-5 flex flex-col gap-3"
         >
-          <input
-            ref={firstFieldRef}
-            className={inputClass}
-            placeholder="Seu nome"
-            aria-label="Seu nome"
-            autoComplete="name"
-            value={nome}
-            onChange={(e) => setNome(e.target.value)}
-          />
-          <input
-            className={inputClass}
-            type="email"
-            placeholder="Seu melhor e-mail"
-            aria-label="Seu melhor e-mail"
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <input
-            className={inputClass}
-            type="tel"
-            inputMode="tel"
-            placeholder="WhatsApp com DDD"
-            aria-label="WhatsApp com DDD"
-            autoComplete="tel"
-            value={telefone}
-            onChange={(e) => setTelefone(e.target.value)}
-          />
-          {erro && <p className="text-sm text-red-400">{erro}</p>}
-          <button
-            type="submit"
-            disabled={submitting}
-            className="btn btn-primary mt-2 disabled:opacity-50"
+          <motion.div
+            key="dialog"
+            {...dialogAnim}
+            transition={{ duration: reduce ? 0 : 0.26, ease: [0.22, 1, 0.36, 1] }}
+            className="card w-full max-w-md rounded-t-2xl border-line/80 bg-card-2 p-6 shadow-2xl shadow-black/50 sm:rounded-2xl sm:p-7"
           >
-            {submitting ? 'Aguarde…' : 'Ir para o pagamento — R$ 37'}
-          </button>
-          <p className="text-center text-xs text-muted">
-            Pagamento via Pix, com garantia de 7 dias.
-          </p>
-        </form>
-      </div>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 id={`${uid}-title`} className="text-xl font-bold text-ink">
+                  Falta um passo
+                </h2>
+                <p className="mt-1 text-sm text-muted">
+                  Confirme seus dados para acessar o checkout seguro.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                aria-label="Fechar"
+                className="-mr-1 -mt-1 rounded-lg p-1 text-muted transition hover:text-ink"
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <path
+                    d="M5 5l10 10M15 5L5 15"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <form
+              noValidate
+              onSubmit={(e) => {
+                e.preventDefault()
+                void enviar()
+              }}
+              className="mt-6 flex flex-col gap-4"
+            >
+              <Field
+                id={`${uid}-nome`}
+                label="Nome"
+                placeholder="Seu nome completo"
+                autoComplete="name"
+                inputRef={firstFieldRef}
+                value={nome}
+                error={errors.nome}
+                onChange={(v) => {
+                  setNome(v)
+                  if (errors.nome) setErrors((p) => ({ ...p, nome: undefined }))
+                }}
+              />
+              <Field
+                id={`${uid}-email`}
+                label="E-mail"
+                type="email"
+                inputMode="email"
+                placeholder="voce@email.com"
+                autoComplete="email"
+                value={email}
+                error={errors.email}
+                onChange={(v) => {
+                  setEmail(v)
+                  if (errors.email) setErrors((p) => ({ ...p, email: undefined }))
+                }}
+              />
+              <Field
+                id={`${uid}-telefone`}
+                label="Telefone"
+                type="tel"
+                inputMode="tel"
+                placeholder="(11) 99999-9999"
+                autoComplete="tel"
+                value={telefone}
+                error={errors.telefone}
+                onChange={(v) => {
+                  setTelefone(formatTelefone(v))
+                  if (errors.telefone) setErrors((p) => ({ ...p, telefone: undefined }))
+                }}
+              />
+
+              {erroGeral && <p className="text-sm text-red-400">{erroGeral}</p>}
+
+              <button
+                type="submit"
+                disabled={submitting}
+                className="btn btn-primary mt-1 disabled:opacity-50"
+              >
+                {submitting ? 'Aguarde…' : 'Ir para o checkout →'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="text-center text-sm text-muted transition hover:text-ink"
+              >
+                Cancelar
+              </button>
+              <p className="text-center text-xs text-muted">
+                Pagamento via Pix, com garantia de 7 dias.
+              </p>
+            </form>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+}
+
+interface FieldProps {
+  id: string
+  label: string
+  placeholder: string
+  value: string
+  error?: string
+  onChange: (value: string) => void
+  type?: string
+  inputMode?: 'text' | 'email' | 'tel'
+  autoComplete?: string
+  inputRef?: Ref<HTMLInputElement>
+}
+
+function Field({
+  id,
+  label,
+  placeholder,
+  value,
+  error,
+  onChange,
+  type = 'text',
+  inputMode,
+  autoComplete,
+  inputRef,
+}: FieldProps) {
+  return (
+    <div>
+      <label htmlFor={id} className="mb-1.5 block text-sm font-semibold text-ink">
+        {label}
+      </label>
+      <input
+        ref={inputRef}
+        id={id}
+        type={type}
+        inputMode={inputMode}
+        autoComplete={autoComplete}
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? `${id}-err` : undefined}
+        className={`w-full rounded-xl border bg-card px-4 py-3 text-ink outline-none transition placeholder:text-muted/60 focus:border-cyan ${
+          error ? 'border-red-400/70' : 'border-line'
+        }`}
+      />
+      {error && (
+        <p id={`${id}-err`} className="mt-1.5 text-sm text-red-400">
+          {error}
+        </p>
+      )}
     </div>
   )
 }

@@ -41,6 +41,12 @@ export const paymentStatusEnum = pgEnum('payment_status', [
 ])
 
 export const paymentMethodEnum = pgEnum('payment_method', ['PIX', 'BOLETO', 'CREDIT_CARD'])
+export const subscriptionStatusEnum = pgEnum('subscription_status', [
+  'PENDING',
+  'ACTIVE',
+  'CANCELED',
+  'EXPIRED',
+])
 export const outboxStatusEnum = pgEnum('outbox_status', ['PENDING', 'PUBLISHED', 'DEAD'])
 export const idempotencyStateEnum = pgEnum('idempotency_state', ['IN_FLIGHT', 'COMPLETED'])
 export const deliveryStatusEnum = pgEnum('delivery_status', ['PENDING', 'SUCCEEDED', 'DEAD'])
@@ -83,6 +89,8 @@ export const payments = pgTable(
     description: text('description'),
     metadata: jsonb('metadata').$type<Record<string, unknown>>().notNull().default({}),
     failureReason: text('failure_reason'),
+    // Assinatura-pai quando o pagamento é um ciclo recorrente (senão null).
+    subscriptionId: uuid('subscription_id'),
     // Modo assíncrono: controle do worker que cria a cobrança no provedor.
     chargeAttempts: integer('charge_attempts').notNull().default(0),
     chargeClaimedAt: timestamp('charge_claimed_at', { withTimezone: true }),
@@ -104,6 +112,70 @@ export const payments = pgTable(
     index('payments_reconcile_idx')
       .on(t.updatedAt)
       .where(sql`status = 'PENDING' AND provider_payment_id IS NOT NULL`),
+    // Listar os ciclos de uma assinatura.
+    index('payments_subscription_idx').on(t.subscriptionId),
+  ],
+)
+
+/** Assinaturas (recorrência via cartão, gerenciada pela Efí). */
+export const subscriptions = pgTable(
+  'subscriptions',
+  {
+    id: uuid('id').primaryKey(),
+    version: integer('version').notNull().default(0),
+    consumerId: text('consumer_id').notNull(),
+    status: subscriptionStatusEnum('status').notNull(),
+    provider: text('provider').notNull(),
+    providerSubscriptionId: text('provider_subscription_id'),
+    // plan_id da Efí (reutilizável; mapeado em subscription_plans).
+    providerPlanId: text('provider_plan_id').notNull(),
+    intervalMonths: integer('interval_months').notNull(),
+    // null = ilimitado.
+    repeats: integer('repeats'),
+    amountInCents: bigint('amount_in_cents', { mode: 'bigint' }).notNull(),
+    currency: text('currency').notNull(),
+    // Apenas dados seguros do cartão (bandeira + last4). NUNCA token/PAN.
+    card: jsonb('card').$type<{ brand: string; last4: string }>().notNull(),
+    customer: jsonb('customer').$type<CustomerJson>(),
+    idempotencyKey: text('idempotency_key').notNull(),
+    cyclesCompleted: integer('cycles_completed').notNull().default(0),
+    // Último charge_id contabilizado (torna recordCharge idempotente).
+    lastChargeId: text('last_charge_id'),
+    lastChargeAt: timestamp('last_charge_at', { withTimezone: true }),
+    description: text('description'),
+    metadata: jsonb('metadata').$type<Record<string, unknown>>().notNull().default({}),
+    canceledAt: timestamp('canceled_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('subscriptions_consumer_idem_uq').on(t.consumerId, t.idempotencyKey),
+    index('subscriptions_provider_sub_idx').on(t.provider, t.providerSubscriptionId),
+    index('subscriptions_status_idx').on(t.status),
+  ],
+)
+
+/**
+ * Mapeamento de planos de recorrência reutilizáveis na Efí, chaveado por
+ * (provider, intervalMonths, repeats). `repeatsKey` materializa `repeats ?? -1`
+ * para um índice único determinístico (NULLs são distintos em UNIQUE no Postgres,
+ * o que furaria a deduplicação de "ilimitado").
+ */
+export const subscriptionPlans = pgTable(
+  'subscription_plans',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    provider: text('provider').notNull(),
+    intervalMonths: integer('interval_months').notNull(),
+    repeats: integer('repeats'),
+    /** repeats ?? -1 — normaliza "ilimitado" para uma única linha reutilizável. */
+    repeatsKey: integer('repeats_key').notNull(),
+    providerPlanId: text('provider_plan_id').notNull(),
+    name: text('name').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex('subscription_plans_key_uq').on(t.provider, t.intervalMonths, t.repeatsKey),
   ],
 )
 
@@ -194,6 +266,8 @@ export const webhookDeliveries = pgTable(
 export const schema = {
   consumers,
   payments,
+  subscriptions,
+  subscriptionPlans,
   idempotencyKeys,
   outbox,
   webhookEvents,

@@ -17,6 +17,7 @@
     "webhook:register": "bun run scripts/register-webhook.ts",
     "pix:key": "bun run scripts/create-pix-key.ts",
     "boleto:create": "bun run scripts/create-boleto.ts",
+    "card:create": "bun run scripts/create-card.ts",
     "call-example": "bun run scripts/call-example.ts",
     "check": "biome check .",
     "check:fix": "biome check --write .",

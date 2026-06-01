@@ -156,7 +156,9 @@ export class DrizzlePaymentRepository implements PaymentRepository {
       .where(
         and(
           eq(payments.status, 'PENDING'),
-          inArray(payments.method, ['PIX', 'BOLETO']),
+          // Cartão entra aqui (não em claimPendingCharges): cobrado de forma
+          // síncrona, mas um `waiting` (em análise) precisa ser reconciliado.
+          inArray(payments.method, ['PIX', 'BOLETO', 'CREDIT_CARD']),
           isNotNull(payments.providerPaymentId),
           lt(payments.updatedAt, threshold),
         ),
@@ -188,6 +190,7 @@ function snapshotToRow(snap: PaymentSnapshot): typeof payments.$inferInsert {
     description: snap.description,
     metadata: snap.metadata,
     failureReason: snap.failureReason,
+    subscriptionId: snap.subscriptionId,
     createdAt: snap.createdAt,
     updatedAt: snap.updatedAt,
     paidAt: snap.paidAt,
@@ -216,6 +219,7 @@ function rowToSnapshot(row: PaymentRow): PaymentSnapshot {
     description: row.description,
     metadata: row.metadata,
     failureReason: row.failureReason,
+    subscriptionId: row.subscriptionId ?? null,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
     paidAt: row.paidAt,

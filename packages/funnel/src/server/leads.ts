@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { LEAD_KEYS, type LeadKey } from '../content/quiz-config'
 import type { FunnelRepo, Lead, LeadUpdate } from '../db/repo'
+import { ContactSchema } from '../lib/contact-schema'
 import { json, jsonError, safeJson } from '../lib/http'
 import { getLeadId, leadCookie } from '../lib/lead-session'
 import { calcCustoMensalCents } from '../lib/result-text'
@@ -60,16 +61,6 @@ const PatchBody = z.object({
 const EventBody = z.object({
   eventName: z.string().min(1).max(64),
   step: z.string().max(64).optional(),
-})
-
-const ContactBody = z.object({
-  nome: z.string().trim().min(1).max(200),
-  email: z
-    .string()
-    .trim()
-    .max(320)
-    .regex(/^[^@\s]+@[^@\s]+\.[^@\s]+$/, 'E-mail inválido'),
-  telefone: z.string().trim().min(8).max(20),
 })
 
 /** Respostas do quiz no formato do produto (snake_case) — usado pelo resume do quiz. */
@@ -167,7 +158,7 @@ export async function recordEvent(request: Request, deps: LeadDeps): Promise<Res
 export async function saveContact(request: Request, deps: LeadDeps): Promise<Response> {
   const id = getLeadId(request)
   if (!id) return jsonError('Sem lead na sessão.', 401, 'NO_LEAD')
-  const parsed = ContactBody.safeParse(await safeJson(request))
+  const parsed = ContactSchema.safeParse(await safeJson(request))
   if (!parsed.success) return jsonError('Dados inválidos.', 400, 'BAD_REQUEST')
   const lead = await deps.repo.getLead(id)
   if (!lead) return jsonError('Lead não encontrado.', 404, 'NOT_FOUND')

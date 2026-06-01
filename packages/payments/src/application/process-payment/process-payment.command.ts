@@ -22,6 +22,8 @@ export interface ProcessPaymentCommand {
     document: string
     phone?: string
     address?: Address
+    /** Data de nascimento (YYYY-MM-DD). Exigida pela Efí no cartão de crédito. */
+    birth?: string
   }
   card?: {
     token: string

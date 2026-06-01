@@ -1,5 +1,5 @@
 import { type ErrorEnvelope, envelope } from '@sistemazero/core/http'
-import type { Logger } from '@sistemazero/core/logging'
+import { type Logger, serializeError } from '@sistemazero/core/logging'
 
 /**
  * Traduz erros INESPERADOS (lançados fora do pipeline) e códigos internos do
@@ -27,8 +27,6 @@ export function buildGatewayErrorResponse(input: {
   if (code === 'PARSE')
     return { status: 400, body: envelope('PARSE_ERROR', 'Corpo da requisição inválido') }
 
-  input.logger.error('gateway.unhandled', {
-    message: error instanceof Error ? error.message : String(error),
-  })
+  input.logger.error('gateway.unhandled', { error: serializeError(error) })
   return { status: 500, body: envelope('INTERNAL_ERROR', 'Erro interno do gateway') }
 }

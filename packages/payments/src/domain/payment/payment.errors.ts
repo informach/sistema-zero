@@ -50,3 +50,15 @@ export class BoletoDataIncompleteError extends DomainError {
     super(`Dados obrigatórios do boleto ausentes ou inválidos: ${missing}`)
   }
 }
+
+/**
+ * Cartão exige pagador com documento, e-mail, telefone, data de nascimento e
+ * endereço de cobrança (a Efí rejeita a cobrança sem esses dados).
+ */
+export class CardDataIncompleteError extends DomainError {
+  readonly code = 'CARD_DATA_INCOMPLETE'
+
+  constructor(missing: string) {
+    super(`Dados obrigatórios do cartão ausentes ou inválidos: ${missing}`)
+  }
+}

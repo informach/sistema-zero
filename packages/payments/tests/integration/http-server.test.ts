@@ -149,6 +149,27 @@ const BOLETO_BODY = JSON.stringify({
   },
 })
 
+const CARD_BODY = JSON.stringify({
+  amountInCents: 3700,
+  method: 'CREDIT_CARD',
+  card: { token: 'paytok-abc', brand: 'visa', last4: '4242', installments: 3 },
+  customer: {
+    name: 'João da Silva',
+    email: 'joao@example.com',
+    document: '52998224725',
+    phone: '11999998888',
+    birth: '1990-05-10',
+    address: {
+      street: 'Rua A',
+      number: '100',
+      neighborhood: 'Centro',
+      zipcode: '01001000',
+      city: 'São Paulo',
+      state: 'SP',
+    },
+  },
+})
+
 describe('HTTP server', () => {
   test('GET /health responde 200', async () => {
     const { app } = buildApp()
@@ -391,6 +412,105 @@ describe('HTTP server', () => {
     gateway.boletoStatus = 'PAID'
 
     const notifBody = JSON.stringify({ notification: 'token-abc' })
+    const res = await app.handle(
+      new Request('http://localhost/webhooks/efi/cobrancas', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: notifBody,
+      }),
+    )
+    expect(res.status).toBe(200)
+    expect((await repo.findById(id))!.status).toBe('PAID')
+  })
+
+  test('POST /payments autenticado cobra cartão → 201 com dados do cartão, sem pix/boleto', async () => {
+    const { app } = buildApp()
+    const res = await app.handle(
+      new Request('http://localhost/payments', {
+        method: 'POST',
+        headers: postHeaders(CARD_BODY),
+        body: CARD_BODY,
+      }),
+    )
+    expect(res.status).toBe(201)
+    const json = (await res.json()) as {
+      status: string
+      card?: { brand: string; last4: string; installments: number }
+      pix?: unknown
+      boleto?: unknown
+    }
+    expect(json.status).toBe('PAID')
+    expect(json.card).toEqual({ brand: 'visa', last4: '4242', installments: 3 })
+    expect(json.pix).toBeUndefined()
+    expect(json.boleto).toBeUndefined()
+  })
+
+  test('cartão IGNORA o modo assíncrono → 201 (cobrado na request, não 202)', async () => {
+    const { app } = buildApp({ async: true })
+    const res = await app.handle(
+      new Request('http://localhost/payments', {
+        method: 'POST',
+        headers: postHeaders(CARD_BODY),
+        body: CARD_BODY,
+      }),
+    )
+    expect(res.status).toBe(201)
+    const json = (await res.json()) as { status: string; card?: unknown }
+    expect(json.status).toBe('PAID')
+    expect(json.card).toBeDefined()
+  })
+
+  test('POST /payments CARTÃO sem data de nascimento → 422', async () => {
+    const { app } = buildApp()
+    const body = JSON.stringify({
+      amountInCents: 3700,
+      method: 'CREDIT_CARD',
+      card: { token: 'paytok-abc', brand: 'visa', last4: '4242', installments: 1 },
+      customer: {
+        name: 'João da Silva',
+        email: 'joao@example.com',
+        document: '52998224725',
+        phone: '11999998888',
+        address: {
+          street: 'Rua A',
+          number: '100',
+          neighborhood: 'Centro',
+          zipcode: '01001000',
+          city: 'São Paulo',
+          state: 'SP',
+        },
+      },
+    })
+    const res = await app.handle(
+      new Request('http://localhost/payments', {
+        method: 'POST',
+        headers: postHeaders(body),
+        body,
+      }),
+    )
+    expect(res.status).toBe(422)
+  })
+
+  test('POST /webhooks/efi/cobrancas confirma um cartão em análise (waiting) que vira pago', async () => {
+    const { app, repo, gateway } = buildApp()
+    // Cartão criado "em análise" → permanece PENDING com a cobrança registrada.
+    gateway.cardStatus = 'PENDING'
+    const created = await app.handle(
+      new Request('http://localhost/payments', {
+        method: 'POST',
+        headers: postHeaders(CARD_BODY),
+        body: CARD_BODY,
+      }),
+    )
+    expect(created.status).toBe(201)
+    const { id } = (await created.json()) as { id: string }
+    expect((await repo.findById(id))!.status).toBe('PENDING')
+
+    const chargeId = (await repo.findById(id))!.providerPaymentId as string
+    gateway.notificationChargeIds = [chargeId]
+    gateway.cardStatus = 'PAID'
+
+    const notifBody = JSON.stringify({ notification: 'token-card' })
     const res = await app.handle(
       new Request('http://localhost/webhooks/efi/cobrancas', {
         method: 'POST',

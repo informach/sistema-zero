@@ -6,8 +6,9 @@ Orientações para agentes trabalhando **dentro deste package**. Para setup loca
 ## O que é
 
 Funil de vendas do ebook **No Comando da IA** (R$ 37):
-`landing + quiz (P1)` → `quiz P2..P10` → `resultado personalizado` → `página de vendas` →
+`quiz (10 perguntas em /quiz)` → `resultado personalizado` → `página de vendas` →
 `modal pré-checkout` → `checkout Pix` → `/obrigado` · + painel `/admin`.
+`/` redireciona (302) para `/quiz` — a P1 (com imagens) é o primeiro passo da própria ilha do quiz.
 
 **Stack:** Astro 6 (`output: 'server'` + `@astrojs/node` standalone, roda no Bun) · ilhas **React 19**
 só onde há interação · **Drizzle + postgres.js** (schema `funil` no Postgres compartilhado com o
@@ -96,9 +97,10 @@ retry do gateway ser descartado.
 
 ## Renderização (prerender split)
 
-- **Estáticas (`prerender = true`):** `index` (landing+P1), `oferta`, `quiz` (shell; a ilha busca
-  dados), `obrigado`. Servidas como HTML estático.
-- **SSR (`prerender = false`):** `resultado`, `checkout`, `admin`, **todas** `/api/*`, `health`.
+- **Estáticas (`prerender = true`):** `oferta`, `quiz` (shell; a ilha do quiz busca/cria o lead e
+  roda as 10 perguntas), `obrigado`. Servidas como HTML estático.
+- **SSR (`prerender = false`):** `index` (redirect 302 → `/quiz`), `resultado`, `checkout`, `admin`,
+  `admin/login`, **todas** `/api/*`, `health`.
   Páginas com dados do lead setam `cache-control: no-store` e redirecionam se faltar cookie/contato.
 
 ## Segurança
@@ -112,8 +114,12 @@ retry do gateway ser descartado.
     do gateway/CDN. Mantenha o limite generoso (o quiz faz ~12 PATCH por sessão).
   - A CSP usa `'unsafe-inline'` em script/style — necessário p/ hidratação do Astro, JSON-LD inline
     (`ProductJsonLd`) e o `onerror` do `ImageSlot`. Ao adicionar inline scripts, lembre disso.
-- **Admin** (`/admin`, `/api/admin/*`): **HTTP Basic** (`lib/basic-auth.ts`, comparação timing-safe
-  via `lib/safe-equal.ts`). Só é seguro sob HTTPS — garanta TLS em prod.
+- **Admin** (`/admin`, `/api/admin/*`): **login in-app** com cookie de sessão assinado
+  (`lib/admin-session.ts`: HMAC via `core.signHmac` + `lib/safe-equal`; TTL 12h; HttpOnly/SameSite=Lax;
+  `Secure` em prod). `/admin` sem sessão → redireciona p/ `/admin/login` (ilha `AdminLogin`: valida com
+  Zod e `POST /api/admin/login`); `/api/admin/*` sem sessão → 401. Credenciais em `ADMIN_USER`/
+  `ADMIN_PASSWORD` (comparação timing-safe); o cookie é assinado com `ADMIN_SESSION_SECRET`. Logout:
+  `POST /api/admin/logout` (botão "Sair" no painel). Só seguro sob HTTPS — garanta TLS em prod.
 - **Não importar `middleware.ts` em testes** (`bun test` não resolve o módulo virtual
   `astro:middleware`). Teste a lógica isolada (ex.: `lib/rate-limit.ts`).
 
@@ -127,7 +133,7 @@ retry do gateway ser descartado.
 | Checkout sem e-mail (sem contato p/ entregar) | 409 | `NO_CONTACT` |
 | Rate limit | 429 | `RATE_LIMITED` |
 | Falha no gateway | 502 | `GATEWAY_ERROR` |
-| Admin sem/again credencial | 401 + `WWW-Authenticate` | — |
+| Admin sem sessão / login inválido (`/admin/*`) | 401 | `UNAUTHORIZED` |
 
 ## Banco (schema `funil`)
 

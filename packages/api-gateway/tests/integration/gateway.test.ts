@@ -5,7 +5,8 @@ import { loadEnv } from '../../src/infrastructure/config/env'
 import type { GatewayConfigInput } from '../../src/infrastructure/config/gateway-config.schema'
 import { fakeForwarder } from '../helpers'
 
-const env = () => loadEnv({ TRUST_PROXY: 'true', TRUSTED_PROXY_HOPS: '1' })
+const env = (overrides: Record<string, string> = {}) =>
+  loadEnv({ TRUST_PROXY: 'true', TRUSTED_PROXY_HOPS: '1', ...overrides })
 
 /** Requisição com IP de cliente via X-Forwarded-For (TRUST_PROXY=true). */
 function req(path: string, init: RequestInit = {}): Request {
@@ -40,8 +41,12 @@ const baseConfig: GatewayConfigInput = {
 async function buildApp(
   config: GatewayConfigInput,
   forward = (() => new Response('ok')) as Parameters<typeof fakeForwarder>[0],
+  envOverrides: Record<string, string> = {},
 ): Promise<Application> {
-  return createApplication(env(), { rawConfig: config, forwarder: fakeForwarder(forward) })
+  return createApplication(env(envOverrides), {
+    rawConfig: config,
+    forwarder: fakeForwarder(forward),
+  })
 }
 
 describe('gateway (integração via app.handle)', () => {
@@ -82,7 +87,7 @@ describe('gateway (integração via app.handle)', () => {
     expect((await app.handle(req('/nope'))).status).toBe(404)
   })
 
-  test('rate limit: 3ª no mesmo IP → 429 + Retry-After', async () => {
+  test('rate limit: 3ª no mesmo IP → 429 + Retry-After + headers RateLimit-*', async () => {
     const app = await buildApp(baseConfig)
     const post = () =>
       app.handle(
@@ -92,11 +97,34 @@ describe('gateway (integração via app.handle)', () => {
           headers: { 'content-type': 'application/json' },
         }),
       )
+
+    const first = await post()
+    expect(first.status).toBe(200)
+    expect(first.headers.get('ratelimit-limit')).toBe('2')
+    expect(first.headers.get('ratelimit-remaining')).toBe('1')
+    expect(first.headers.get('ratelimit-reset')).toBeTruthy()
+
     expect((await post()).status).toBe(200)
-    expect((await post()).status).toBe(200)
+
     const third = await post()
     expect(third.status).toBe(429)
     expect(third.headers.get('retry-after')).toBeTruthy()
+    // O 429 também carrega os headers RateLimit-* (ctx.rateLimit setado antes do deny).
+    expect(third.headers.get('ratelimit-limit')).toBe('2')
+    expect(third.headers.get('ratelimit-remaining')).toBe('0')
+  })
+
+  test('safety-net global por IP: muitas requisições anônimas → 429 global', async () => {
+    const app = await buildApp(baseConfig, () => new Response('ok'), {
+      GLOBAL_RATE_LIMIT_PER_MINUTE: '3',
+    })
+    const get = (i: number) => app.handle(req(`/echo/${i}`))
+    expect((await get(1)).status).toBe(200)
+    expect((await get(2)).status).toBe(200)
+    expect((await get(3)).status).toBe(200)
+    const blocked = await get(4)
+    expect(blocked.status).toBe(429)
+    expect(blocked.headers.get('retry-after')).toBeTruthy()
   })
 
   test('CORS preflight respondido no edge (não toca upstream)', async () => {

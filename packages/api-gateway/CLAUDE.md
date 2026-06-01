@@ -62,8 +62,9 @@ O Elysia tem um único catch-all `.all('/*')` que monta o `GatewayContext` e rod
 
 **Ordem dos stages** (a 1ª `Response` curto-circuita):
 ```
-route-resolve → cors → auth → rate-limit → request-transform → proxy (terminal)
+route-resolve → cors → auth → global-rate-limit → rate-limit → request-transform → proxy (terminal)
 ```
+(`global-rate-limit` roda **após** o auth — por isso isenta `principal`s — e só entra na cadeia quando `GLOBAL_RATE_LIMIT_PER_MINUTE > 0`.)
 **Finalizers (SEMPRE rodam, mesmo em curto-circuito/exceção):**
 ```
 response-transform → finalize
@@ -133,7 +134,7 @@ Proxy, Facade (`route-registry` + `gateway-plugin` + `gateway.config.ts`), Decor
 6. **NUNCA pipe o corpo da REQUISIÇÃO** (stream de entrada do Bun.serve) por um `TransformStream`. Sob latência do store (Redis), o pipe interno do Bun lança `TypeError` como `unhandledRejection` e o `index.ts` derruba o processo (só no caminho Redis, 1 erro por POST). Teto do corpo = `maxRequestBodySize`. O corpo da RESPOSTA PODE ser piped (`pipeTo(...).catch()`, nunca `pipeThrough`).
 7. **ioredis quebra sob Bun** (TypeError de socket) → use o `RedisClient` nativo do Bun.
 8. **`bun x tsc`** baixa um TS global errado → use `bun run typecheck` (de dentro do pacote) ou `bun run --filter '@sistemazero/api-gateway' typecheck` (da raiz).
-9. **Logging:** o stage `finalize` emite `gateway.access` (info) por requisição (requestId, traceId, method, path, route, service, version, principal, target, attempts, status, latencyMs) — SEMPRE, mesmo em 4xx/5xx/timeout. Não é middleware do Elysia, é finalizer da CoR.
+9. **Logging:** o stage `finalize` emite `gateway.access` por requisição (requestId, traceId, method, path, route, service, version, principal, **clientIp**, **userAgent**, target, attempts, status, latencyMs) — SEMPRE, mesmo em 4xx/5xx/timeout. Não é middleware do Elysia, é finalizer da CoR. **Nível por status:** 5xx → `error` (aflora em queries `level>=error`); 2xx–4xx → `info` (4xx fica em info de propósito, evita spam de `warn` sob ataque/429). Com `LOG_LEVEL=debug`, emite também `gateway.headers` com os headers de req/upstream/resp **redigidos** (`redactHeaders` mascara `SENSITIVE_LOG_HEADERS` → `[REDACTED]`). Erros inesperados (`pipeline.stage_failed`/`finalizer_failed`, `gateway.unhandled`, crashes do `index.ts`) logam `error: serializeError(e)` (do core) → **inclui stack trace** (aninhado, nunca espalhado: o campo `message` colidiria com o do evento). Warns operacionais (`proxy.*`, `gateway.rate_limit_unavailable`) seguem só com `reason`/`message`.
 
 ---
 
@@ -141,8 +142,9 @@ Proxy, Facade (`route-registry` + `gateway-plugin` + `gateway.config.ts`), Decor
 
 - **Anti-replay HMAC/webhook por nonce:** hoje é só janela de tempo (`toleranceSeconds`); replay possível dentro da janela. Precisa de store de assinatura de uso único.
 - **Webhook assina só o corpo:** `x-event-type`/`x-delivery-id` ficam fora da assinatura (adulteráveis).
-- **Rate-limit spoofável** se `TRUST_PROXY`/`TRUSTED_PROXY_HOPS` estiverem mal configurados atrás de PaaS.
+- **Rate-limit spoofável** se `TRUST_PROXY`/`TRUSTED_PROXY_HOPS` estiverem mal configurados atrás de PaaS. (Mitigado em parte pelo **safety-net global por IP** — `global-rate-limit.stage`, ligado por `GLOBAL_RATE_LIMIT_PER_MINUTE` — que limita flood anônimo agregado por IP através de TODAS as rotas; **isenta `principal`s autenticados** (não estrangula o funil, IP único de egress) e por isso roda após o auth e **não cobre 404s pré-rota** nem floods de auth-fail, que dependem de proteção na borda/PaaS.)
 - **LB cross-réplica:** least-connections/p2c/sticky são **por réplica** (sem coordenação entre réplicas) — trade-off documentado.
+- **Observabilidade do fail-open:** quando o store de rate limit cai (fail-open libera), além do `warn` `gateway.rate_limit_unavailable` há a métrica `gateway_rate_limit_fail_open_total` em `/metrics` — alerte nela (fail-open silencioso = limites efetivamente desligados).
 
 ---
 

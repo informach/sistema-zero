@@ -140,4 +140,35 @@ export class EfiCobrancasClient {
   getNotification(token: string): Promise<any> {
     return this.request('GET', `/notification/${token}`)
   }
+
+  // ── Assinaturas (recorrência) ─────────────────────────────────────────────
+  // Rotas conforme o SDK oficial `sdk-node-apis-efi` (endpoints Cobranças).
+  // Confirme os nomes de campo da resposta no sandbox via `bun run subscription:create`.
+
+  /** `POST /plan` — cria um plano de recorrência. NÃO idempotente (plan_id gerado pela Efí). */
+  createPlan(body: Record<string, unknown>): Promise<any> {
+    return this.request('POST', '/plan', { body, idempotent: false })
+  }
+
+  /**
+   * `POST /plan/:planId/subscription/one-step` — cria a assinatura + 1ª cobrança.
+   * NÃO idempotente (subscription_id gerado pela Efí) → o POST nunca é re-tentado.
+   */
+  createOneStepSubscription(
+    planId: number | string,
+    body: Record<string, unknown>,
+  ): Promise<any> {
+    return this.request('POST', `/plan/${planId}/subscription/one-step`, {
+      body,
+      idempotent: false,
+    })
+  }
+
+  detailSubscription(subscriptionId: number | string): Promise<any> {
+    return this.request('GET', `/subscription/${subscriptionId}`)
+  }
+
+  cancelSubscription(subscriptionId: number | string): Promise<any> {
+    return this.request('PUT', `/subscription/${subscriptionId}/cancel`, { idempotent: true })
+  }
 }

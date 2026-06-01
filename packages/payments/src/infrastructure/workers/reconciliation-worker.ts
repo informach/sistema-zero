@@ -93,7 +93,7 @@ export class ReconciliationWorker {
     }
   }
 
-  /** Re-consulta a cobrança na Efí conforme o método (Pix por txid; boleto por charge_id). */
+  /** Re-consulta a cobrança na Efí conforme o método (Pix por txid; boleto/cartão por charge_id). */
   private consult(payment: PaymentAggregate): Promise<ProviderCharge | null> {
     if (payment.method.type === 'PIX') {
       return payment.txid ? this.gateway.getPixCharge(payment.txid) : Promise.resolve(null)
@@ -101,6 +101,12 @@ export class ReconciliationWorker {
     if (payment.method.type === 'BOLETO') {
       return payment.providerPaymentId
         ? this.gateway.getBoletoCharge(payment.providerPaymentId)
+        : Promise.resolve(null)
+    }
+    if (payment.method.type === 'CREDIT_CARD') {
+      // Cartão-aware (`approved` → PAID): usa getCardCharge, não getBoletoCharge.
+      return payment.providerPaymentId
+        ? this.gateway.getCardCharge(payment.providerPaymentId)
         : Promise.resolve(null)
     }
     return Promise.resolve(null)

@@ -3,6 +3,7 @@ import { Money } from '../../src/domain/value-objects/money'
 import type { EfiClient } from '../../src/infrastructure/gateways/efi/efi.client'
 import { EfiGatewayError } from '../../src/infrastructure/gateways/efi/efi.errors'
 import { EfiPaymentGateway } from '../../src/infrastructure/gateways/efi/efi.gateway'
+import type { EfiCobrancasClient } from '../../src/infrastructure/gateways/efi/efi-cobrancas.client'
 
 const PAYMENT_ID = 'c73280a9-7ddd-457a-82c3-d65283171237'
 const TXID = 'c73280a97ddd457a82c3d65283171237'
@@ -99,5 +100,101 @@ describe('EfiPaymentGateway.createPixCharge', () => {
       }),
     )
     await expect(gw.createPixCharge(input)).rejects.toBeInstanceOf(EfiGatewayError)
+  })
+})
+
+function mockCobrancas(over: Partial<EfiCobrancasClient>): EfiCobrancasClient {
+  return {
+    createOneStepCharge: async () => ({
+      data: { charge_id: 777, status: 'approved', total: 3700, installments: 3 },
+    }),
+    detailCharge: async () => ({ data: { charge_id: 777, status: 'approved', total: 3700 } }),
+    getNotification: async () => ({}),
+    cancelCharge: async () => ({}),
+    ...over,
+  } as unknown as EfiCobrancasClient
+}
+
+const cardInput = {
+  paymentId: PAYMENT_ID,
+  amount: Money.fromCents(3700),
+  installments: 3,
+  paymentToken: 'paytok-abc',
+  customer: {
+    name: 'João da Silva',
+    cpf: '52998224725',
+    email: 'joao@example.com',
+    phone: '11999998888',
+    birth: '1990-05-10',
+  },
+  billingAddress: {
+    street: 'Rua A',
+    number: '100',
+    neighborhood: 'Centro',
+    zipcode: '01001000',
+    city: 'São Paulo',
+    state: 'SP',
+  },
+  idempotencyKey: 'idem-card',
+}
+
+describe('EfiPaymentGateway.createCardCharge', () => {
+  test('approved → PAID, retorna charge_id e parcelas', async () => {
+    const gw = new EfiPaymentGateway(mockClient({}), mockCobrancas({}))
+    const out = await gw.createCardCharge(cardInput)
+    expect(out.providerPaymentId).toBe('777')
+    expect(out.status).toBe('PAID')
+    expect(out.installments).toBe(3)
+    expect(out.totalInCents).toBe(3700n)
+  })
+
+  test('unpaid → FAILED', async () => {
+    const gw = new EfiPaymentGateway(
+      mockClient({}),
+      mockCobrancas({
+        createOneStepCharge: (async () => ({
+          data: { charge_id: 1, status: 'unpaid', total: 3700 },
+        })) as EfiCobrancasClient['createOneStepCharge'],
+      }),
+    )
+    const out = await gw.createCardCharge(cardInput)
+    expect(out.status).toBe('FAILED')
+  })
+
+  test('waiting → PENDING', async () => {
+    const gw = new EfiPaymentGateway(
+      mockClient({}),
+      mockCobrancas({
+        createOneStepCharge: (async () => ({
+          data: { charge_id: 2, status: 'waiting', total: 3700 },
+        })) as EfiCobrancasClient['createOneStepCharge'],
+      }),
+    )
+    const out = await gw.createCardCharge(cardInput)
+    expect(out.status).toBe('PENDING')
+  })
+
+  test('resposta sem charge_id falha alto', async () => {
+    const gw = new EfiPaymentGateway(
+      mockClient({}),
+      mockCobrancas({
+        createOneStepCharge: (async () => ({
+          data: { status: 'approved', total: 3700 },
+        })) as EfiCobrancasClient['createOneStepCharge'],
+      }),
+    )
+    await expect(gw.createCardCharge(cardInput)).rejects.toBeInstanceOf(EfiGatewayError)
+  })
+
+  test('getCardCharge re-consulta e mapeia approved→PAID (cartão-aware)', async () => {
+    const gw = new EfiPaymentGateway(mockClient({}), mockCobrancas({}))
+    const out = await gw.getCardCharge('777')
+    expect(out.status).toBe('PAID')
+    expect(out.amountInCents).toBe(3700n)
+  })
+
+  test('sem cliente Cobranças configurado → erro claro', async () => {
+    const gw = new EfiPaymentGateway(mockClient({}))
+    await expect(gw.createCardCharge(cardInput)).rejects.toBeInstanceOf(EfiGatewayError)
   })
 })

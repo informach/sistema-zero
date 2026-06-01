@@ -1,11 +1,18 @@
 import type {
   CreateBoletoChargeInput,
   CreateBoletoChargeOutput,
+  CreateCardChargeInput,
+  CreateCardChargeOutput,
+  CreateCardSubscriptionInput,
+  CreateCardSubscriptionOutput,
   CreatePixChargeInput,
   CreatePixChargeOutput,
+  CreatePlanInput,
+  CreatePlanOutput,
   PaymentGateway,
   ProviderCharge,
   ProviderNotification,
+  ProviderSubscription,
 } from '../../../domain/ports/payment-gateway.port'
 import type { EfiClient } from './efi.client'
 import { EfiGatewayError, toEfiGatewayError } from './efi.errors'
@@ -13,9 +20,15 @@ import { mapCobStatus, reaisStringToCents } from './efi.mapper'
 import type { EfiCobrancasClient } from './efi-cobrancas.client'
 import {
   type ParsedBoletoCharge,
+  parseCardDetailCharge,
+  parseCreatePlanResponse,
+  parseCreateSubscriptionResponse,
   parseDetailCharge,
   parseNotification,
+  parseNotificationEntries,
+  parseOneStepCardResponse,
   parseOneStepResponse,
+  parseSubscriptionDetail,
 } from './efi-cobrancas.mapper'
 
 /** Defaults aplicados às cobranças de boleto quando não vierem na requisição. */
@@ -172,16 +185,204 @@ export class EfiPaymentGateway implements PaymentGateway {
     const client = this.requireCobrancas()
     try {
       const raw = await client.getNotification(token)
-      return { chargeIds: parseNotification(raw) }
+      // `entries` carrega a assinatura-pai (ciclos recorrentes); `chargeIds` mantém
+      // a semântica antiga (compat. boleto/cartão avulso).
+      return { chargeIds: parseNotification(raw), entries: parseNotificationEntries(raw) }
     } catch (error) {
       throw toEfiGatewayError(error)
+    }
+  }
+
+  // ── Cartão de crédito (API Cobranças, one-step) ───────────────────────────
+
+  async createCardCharge(input: CreateCardChargeInput): Promise<CreateCardChargeOutput> {
+    const client = this.requireCobrancas()
+    try {
+      // ⚠️ Como o boleto, `POST /charge/one-step` NÃO é idempotente (gera um
+      // charge_id novo a cada chamada) → o client não re-tenta o POST. A
+      // idempotência vem das camadas acima (idempotency store + fencing). Além
+      // disso o cartão é SEMPRE síncrono (o `payment_token` é de vida curta), então
+      // não há worker assíncrono nem janela de re-claim como no boleto.
+      const created = await client.createOneStepCharge(this.buildCardOneStepBody(input))
+      const parsed = parseOneStepCardResponse(created)
+      return {
+        providerPaymentId: parsed.chargeId,
+        status: parsed.status,
+        installments: parsed.installments ?? input.installments,
+        totalInCents: parsed.totalInCents,
+      }
+    } catch (error) {
+      throw toEfiGatewayError(error)
+    }
+  }
+
+  async getCardCharge(providerId: string): Promise<ProviderCharge> {
+    const client = this.requireCobrancas()
+    try {
+      const raw = await client.detailCharge(providerId)
+      return parseCardDetailCharge(raw, providerId)
+    } catch (error) {
+      throw toEfiGatewayError(error)
+    }
+  }
+
+  // ── Assinaturas (recorrência via cartão, API Cobranças) ───────────────────
+
+  async createPlan(input: CreatePlanInput): Promise<CreatePlanOutput> {
+    const client = this.requireCobrancas()
+    try {
+      const created = await client.createPlan({
+        name: input.name,
+        interval: input.intervalMonths,
+        // `null` = ilimitado (a Efí aceita repeats nulo).
+        repeats: input.repeats,
+      })
+      return parseCreatePlanResponse(created)
+    } catch (error) {
+      throw toEfiGatewayError(error)
+    }
+  }
+
+  async createCardSubscription(
+    input: CreateCardSubscriptionInput,
+  ): Promise<CreateCardSubscriptionOutput> {
+    const client = this.requireCobrancas()
+    try {
+      // ⚠️ POST não idempotente (subscription_id gerado pela Efí) → o client não
+      // re-tenta. A idempotência vem da camada acima (idempotency store + fencing):
+      // um retry NÃO deve criar uma 2ª assinatura (cobraria de novo a cada ciclo).
+      const created = await client.createOneStepSubscription(
+        input.planId,
+        this.buildSubscriptionOneStepBody(input),
+      )
+      const parsed = parseCreateSubscriptionResponse(created)
+      return {
+        providerSubscriptionId: parsed.subscriptionId,
+        status: parsed.status,
+        firstChargeId: parsed.firstChargeId,
+        firstChargeStatus: parsed.firstChargeStatus,
+      }
+    } catch (error) {
+      throw toEfiGatewayError(error)
+    }
+  }
+
+  async getSubscription(providerSubscriptionId: string): Promise<ProviderSubscription> {
+    const client = this.requireCobrancas()
+    try {
+      const raw = await client.detailSubscription(providerSubscriptionId)
+      return parseSubscriptionDetail(raw, providerSubscriptionId)
+    } catch (error) {
+      throw toEfiGatewayError(error)
+    }
+  }
+
+  async cancelSubscription(providerSubscriptionId: string): Promise<void> {
+    const client = this.requireCobrancas()
+    try {
+      await client.cancelSubscription(providerSubscriptionId)
+    } catch (error) {
+      throw toEfiGatewayError(error)
+    }
+  }
+
+  /**
+   * Corpo do `POST /plan/:id/subscription/one-step` (cartão). Igual ao one-step de
+   * cartão avulso (`buildCardOneStepBody`), mas SEM `installments` — cada ciclo é
+   * uma cobrança única. `metadata.custom_id` = nosso subscriptionId (rastreio).
+   */
+  private buildSubscriptionOneStepBody(
+    input: CreateCardSubscriptionInput,
+  ): Record<string, unknown> {
+    const addr = input.billingAddress
+    const billingAddress: Record<string, unknown> = {
+      street: addr.street,
+      number: addr.number,
+      neighborhood: addr.neighborhood,
+      zipcode: addr.zipcode.replace(/\D/g, ''),
+      city: addr.city,
+      state: addr.state,
+      ...(addr.complement ? { complement: addr.complement } : {}),
+    }
+
+    const creditCard: Record<string, unknown> = {
+      payment_token: input.paymentToken,
+      billing_address: billingAddress,
+      customer: {
+        name: input.customer.name,
+        email: input.customer.email,
+        cpf: input.customer.cpf.replace(/\D/g, ''),
+        birth: input.customer.birth,
+        phone_number: input.customer.phone.replace(/\D/g, ''),
+      },
+    }
+
+    const metadata: Record<string, unknown> = { custom_id: input.subscriptionId }
+    if (this.boletoDefaults.notificationUrl) {
+      metadata.notification_url = this.boletoDefaults.notificationUrl
+    }
+
+    return {
+      items: [
+        {
+          name: input.itemName?.slice(0, 255) || 'Assinatura',
+          value: Number(input.amount.amountInCents),
+          amount: 1,
+        },
+      ],
+      payment: { credit_card: creditCard },
+      metadata,
+    }
+  }
+
+  /** Monta o corpo do `POST /charge/one-step` para cartão (`payment.credit_card`). */
+  private buildCardOneStepBody(input: CreateCardChargeInput): Record<string, unknown> {
+    const addr = input.billingAddress
+    const billingAddress: Record<string, unknown> = {
+      street: addr.street,
+      number: addr.number,
+      neighborhood: addr.neighborhood,
+      zipcode: addr.zipcode.replace(/\D/g, ''),
+      city: addr.city,
+      state: addr.state,
+      ...(addr.complement ? { complement: addr.complement } : {}),
+    }
+
+    const creditCard: Record<string, unknown> = {
+      installments: input.installments,
+      payment_token: input.paymentToken,
+      billing_address: billingAddress,
+      customer: {
+        name: input.customer.name,
+        email: input.customer.email,
+        cpf: input.customer.cpf.replace(/\D/g, ''),
+        birth: input.customer.birth,
+        phone_number: input.customer.phone.replace(/\D/g, ''),
+      },
+    }
+
+    const metadata: Record<string, unknown> = { custom_id: input.paymentId }
+    if (this.boletoDefaults.notificationUrl) {
+      metadata.notification_url = this.boletoDefaults.notificationUrl
+    }
+
+    return {
+      items: [
+        {
+          name: input.description?.slice(0, 255) || 'Pagamento',
+          value: Number(input.amount.amountInCents),
+          amount: 1,
+        },
+      ],
+      payment: { credit_card: creditCard },
+      metadata,
     }
   }
 
   private requireCobrancas(): EfiCobrancasClient {
     if (!this.cobrancas) {
       throw new EfiGatewayError(
-        'Boleto não configurado: EfiCobrancasClient ausente (defina as credenciais Cobranças)',
+        'Cobranças (boleto/cartão) não configurado: EfiCobrancasClient ausente (defina as credenciais Cobranças)',
       )
     }
     return this.cobrancas

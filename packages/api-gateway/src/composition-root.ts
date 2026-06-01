@@ -7,6 +7,7 @@ import { createPipeline, type Pipeline } from './application/pipeline/pipeline'
 import { createAuthStage } from './application/pipeline/stages/auth.stage'
 import { createCorsStage } from './application/pipeline/stages/cors.stage'
 import { createFinalizeStage } from './application/pipeline/stages/finalize.stage'
+import { createGlobalRateLimitStage } from './application/pipeline/stages/global-rate-limit.stage'
 import { createProxyStage } from './application/pipeline/stages/proxy.stage'
 import { createRateLimitStage } from './application/pipeline/stages/rate-limit.stage'
 import { createRequestTransformStage } from './application/pipeline/stages/request-transform.stage'
@@ -159,10 +160,23 @@ export async function createApplication(
     }),
     createCorsStage(),
     createAuthStage(authChain),
+    // Safety-net global por IP (só tráfego anônimo) — antes do limite por-rota.
+    // Habilitado só quando configurado (>0); roda após o auth para isentar principals.
+    ...(env.GLOBAL_RATE_LIMIT_PER_MINUTE > 0
+      ? [
+          createGlobalRateLimitStage({
+            rateLimiter,
+            max: env.GLOBAL_RATE_LIMIT_PER_MINUTE,
+            windowMs: env.GLOBAL_RATE_LIMIT_WINDOW_MS,
+            metrics,
+          }),
+        ]
+      : []),
     createRateLimitStage({
       rateLimiter,
       defaultMax: env.RATE_LIMIT_PER_MINUTE,
       defaultWindowMs: env.RATE_LIMIT_WINDOW_MS,
+      metrics,
     }),
     createRequestTransformStage({ getTransformers, resigner }),
     createProxyStage({
@@ -175,7 +189,7 @@ export async function createApplication(
   ]
   const finalizers = [
     createResponseTransformStage({ getTransformers }),
-    createFinalizeStage(rateLimiter, metrics),
+    createFinalizeStage(rateLimiter, metrics, env.LOG_LEVEL === 'debug'),
   ]
   const pipeline: Pipeline = createPipeline(stages, finalizers)
 

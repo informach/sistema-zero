@@ -52,9 +52,10 @@ export function paymentsRoutes(deps: PaymentsRoutesDeps) {
         }
 
         const view = await deps.processPayment.execute(command)
-        // 201 quando a cobrança já saiu (modo síncrono, tem QR/boleto);
+        // 201 quando a cobrança já saiu (modo síncrono, tem QR/boleto/cartão);
         // 202 quando foi só aceita e o worker vai criar a cobrança (modo assíncrono).
-        set.status = view.pix || view.boleto ? 201 : 202
+        // Cartão é sempre síncrono → sempre 201.
+        set.status = view.pix || view.boleto || view.card ? 201 : 202
         return view
       },
       { body: ProcessPaymentBody },

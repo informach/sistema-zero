@@ -24,6 +24,8 @@ const EnvSchema = z.object({
 
   ADMIN_USER: z.string().min(1, 'ADMIN_USER é obrigatória'),
   ADMIN_PASSWORD: z.string().min(1, 'ADMIN_PASSWORD é obrigatória'),
+  // Segredo que assina o cookie de sessão do admin (login in-app). ≥16 chars.
+  ADMIN_SESSION_SECRET: z.string().min(16, 'ADMIN_SESSION_SECRET é obrigatória (≥16 chars)'),
 })
 
 export type Env = z.infer<typeof EnvSchema>

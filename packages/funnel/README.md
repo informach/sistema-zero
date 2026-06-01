@@ -1,7 +1,8 @@
 # @sistemazero/funnel
 
-Funil de vendas do produto **No Comando da IA** (ebook, R$ 37): landing + quiz de 10 perguntas →
-resultado personalizado → página de vendas → modal de pré-checkout → checkout (Pix) → painel admin.
+Funil de vendas do produto **No Comando da IA** (ebook, R$ 37): quiz de 10 perguntas (em `/quiz`;
+`/` redireciona) → resultado personalizado → página de vendas → modal de pré-checkout →
+checkout (Pix) → painel admin (login in-app).
 
 - **Stack**: Astro 6 (`output: server` + `@astrojs/node` standalone, no Bun), ilhas **React 19**
   só onde há interação, **Drizzle + postgres.js** (schema `funil`), **Tailwind CSS v4**, **Zod**.
@@ -42,6 +43,13 @@ resultado personalizado → página de vendas → modal de pré-checkout → che
 5. Suba os três: `bun run dev:payments` (:3001), `bun run dev:gateway` (:3000),
    `bun run dev:funnel` (:4321).
 
+## Admin (`/admin`)
+
+Login **in-app** em `/admin/login` (sem o popup de HTTP Basic do navegador). No `.env`:
+`ADMIN_USER`, `ADMIN_PASSWORD` e `ADMIN_SESSION_SECRET` (≥16 chars — assina o cookie de sessão
+HttpOnly, TTL 12h). `/admin` sem sessão redireciona p/ o login; o botão "Sair" encerra a sessão.
+Garanta HTTPS em produção (o cookie vai com `Secure`).
+
 ## Imagens (fornecidas pelo usuário)
 
 Coloque os arquivos em `public/img/` com estes nomes (referenciados por URL, então o
@@ -49,10 +57,10 @@ build nunca quebra se faltarem — aparece um placeholder até você adicioná-l
 
 | Arquivo (`public/img/…`) | Onde aparece |
 |---|---|
-| `q1-card-a.webp` | Quiz P1, opção A (criador, notebook) |
-| `q1-card-b.webp` | Quiz P1, opção B (empreendedora) |
-| `q1-card-c.webp` | Quiz P1, opção C (dono de pequeno negócio) |
-| `q1-card-d.webp` | Quiz P1, opção D (profissional de marketing) |
+| `q1-card-a.jpg` | Quiz P1, opção A (criador, notebook) |
+| `q1-card-b.jpg` | Quiz P1, opção B (empreendedora) |
+| `q1-card-c.jpg` | Quiz P1, opção C (dono de pequeno negócio) |
+| `q1-card-d.jpg` | Quiz P1, opção D (profissional de marketing) |
 | `sales-hero.webp` | Página de vendas, topo |
 | `print-cozya.webp` | Seção "Quem criou" (Cozya) |
 | `print-agenda-da-turma.webp` | Seção "Quem criou" (Agenda da Turma) |

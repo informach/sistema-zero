@@ -47,6 +47,12 @@ const EnvSchema = z
     RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(600),
     RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
 
+    // Safety-net GLOBAL por IP, sobre TODAS as rotas (só tráfego anônimo — clientes
+    // autenticados são isentos). Teto alto = não atrapalha uso normal, corta flood.
+    // 0 desabilita o stage. Ver global-rate-limit.stage.ts.
+    GLOBAL_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().nonnegative().default(1200),
+    GLOBAL_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
+
     // Auth JWT/sessão (dormente até existir um emissor; obrigatório por rota validado no loader da config).
     JWT_ISSUER: z.string().optional(),
     JWT_AUDIENCE: z.string().optional(),

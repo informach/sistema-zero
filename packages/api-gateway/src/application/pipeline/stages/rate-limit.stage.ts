@@ -2,10 +2,16 @@ import type { RateLimiter } from '../../rate-limit/rate-limiter'
 import { errorResponse } from '../responses'
 import type { Stage } from '../stage.port'
 
+/** Sinal alertável de fail-open (estruturalmente satisfeito pela MetricsRegistry). */
+export interface RateLimitMetrics {
+  recordRateLimitFailOpen(): void
+}
+
 export interface RateLimitDeps {
   rateLimiter: RateLimiter
   defaultMax: number
   defaultWindowMs: number
+  metrics?: RateLimitMetrics
 }
 
 /**
@@ -30,7 +36,8 @@ export function createRateLimitStage(deps: RateLimitDeps): Stage {
         decision = await deps.rateLimiter.check(key, max, windowMs)
       } catch (error) {
         // Store indisponível (ex.: Redis fora): FAIL-OPEN. Um soluço de infra não
-        // pode derrubar toda a API com 500 — libera e registra para alerta.
+        // pode derrubar toda a API com 500 — libera, registra e conta para alerta.
+        deps.metrics?.recordRateLimitFailOpen()
         ctx.logger.warn('gateway.rate_limit_unavailable', {
           requestId: ctx.requestId,
           route: ctx.route.route.id,

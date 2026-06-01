@@ -1,4 +1,8 @@
-import type { ProviderChargeStatus } from '../../../domain/ports/payment-gateway.port'
+import type {
+  ProviderChargeStatus,
+  ProviderNotificationEntry,
+  ProviderSubscriptionStatus,
+} from '../../../domain/ports/payment-gateway.port'
 import { EfiGatewayError } from './efi.errors'
 
 /**
@@ -22,6 +26,30 @@ export function mapCobrancasStatus(status: string | undefined): ProviderChargeSt
     case 'refunded':
       return 'REFUNDED'
     default:
+      return 'PENDING'
+  }
+}
+
+/**
+ * Mapeia o status de uma cobrança de CARTÃO (one-step) da API Cobranças. Difere
+ * do boleto (`mapCobrancasStatus`): aqui `approved` (transação aprovada e
+ * capturada no fluxo one-step) é **PAID**; `unpaid` (recusada) é FAILED;
+ * `waiting` (em análise) é PENDING.
+ */
+export function mapCardStatus(status: string | undefined): ProviderChargeStatus {
+  switch (status) {
+    case 'approved':
+    case 'paid':
+    case 'settled':
+      return 'PAID'
+    case 'unpaid':
+    case 'canceled':
+    case 'contested':
+      return 'FAILED'
+    case 'refunded':
+      return 'REFUNDED'
+    default:
+      // new/waiting/identified/link → ainda pendente.
       return 'PENDING'
   }
 }
@@ -148,25 +176,182 @@ export function parseDetailCharge(
   }
 }
 
+export interface ParsedCardCharge {
+  chargeId: string
+  status: ProviderChargeStatus
+  installments?: number
+  totalInCents: bigint
+}
+
+/**
+ * Parser da resposta de criação one-step de CARTÃO (`POST /charge/one-step` com
+ * `payment.credit_card`). A resposta é síncrona: `data.status` já indica
+ * approved/unpaid/waiting. Falha alto se faltar `charge_id`.
+ */
+export function parseOneStepCardResponse(raw: any): ParsedCardCharge {
+  const data = dataOf(raw)
+  const chargeId = data?.charge_id ?? data?.id
+  if (chargeId == null) {
+    throw new EfiGatewayError('Efí Cobranças não retornou charge_id na criação do cartão')
+  }
+  const installments = data?.installments != null ? Number(data.installments) : undefined
+  return {
+    chargeId: String(chargeId),
+    status: mapCardStatus(data?.status),
+    installments:
+      installments !== undefined && Number.isFinite(installments) ? installments : undefined,
+    totalInCents: centsToBigInt(data?.total),
+  }
+}
+
+/**
+ * Extrai status + paidAt do `GET /charge/:id` de CARTÃO (re-consulta para
+ * reconciliação/notificação). Igual a `parseDetailCharge`, mas cartão-aware:
+ * usa `mapCardStatus` (onde `approved` é PAID), não `mapCobrancasStatus`.
+ */
+export function parseCardDetailCharge(
+  raw: any,
+  fallbackId: string,
+): {
+  providerPaymentId: string
+  status: ProviderChargeStatus
+  amountInCents: bigint
+  paidAt?: Date
+} {
+  const data = dataOf(raw)
+  const history = Array.isArray(data?.history) ? data.history : []
+  const paidEntry = [...history]
+    .reverse()
+    .find((h: any) => h?.status === 'approved' || h?.status === 'paid' || h?.status === 'settled')
+  const paidAtRaw = data?.paid_at ?? paidEntry?.created_at ?? paidEntry?.date
+  return {
+    providerPaymentId: String(data?.charge_id ?? data?.id ?? fallbackId),
+    status: mapCardStatus(data?.status),
+    amountInCents: principalInCents(data),
+    paidAt: parseProviderDate(paidAtRaw),
+  }
+}
+
+/** Normaliza a lista de eventos de um `GET /notification/:token` (tolera variações). */
+function notificationList(raw: any): any[] {
+  const data = raw?.data ?? raw
+  return Array.isArray(data) ? data : Array.isArray(data?.notifications) ? data.notifications : []
+}
+
 /**
  * Extrai os `charge_id` afetados de um `GET /notification/:token`. A resposta é
  * um histórico de eventos; cada um aponta uma cobrança via `identifiers.charge_id`
- * (formato a confirmar no sandbox — toleramos variações).
+ * (formato a confirmar no sandbox — toleramos variações). Mantido para o caminho
+ * de boleto/cartão avulso; ciclos de assinatura usam `parseNotificationEntries`.
  */
 export function parseNotification(raw: any): string[] {
-  const data = raw?.data ?? raw
-  const list = Array.isArray(data)
-    ? data
-    : Array.isArray(data?.notifications)
-      ? data.notifications
-      : []
   const ids = new Set<string>()
-  for (const entry of list) {
-    // Apenas `charge_id` — NÃO `subscription_id` (namespace distinto): um id de
-    // assinatura consultado como charge_id bateria no endpoint errado. Eventos de
-    // assinatura/carnê serão roteados à parte quando o slice recorrente existir.
+  for (const entry of notificationList(raw)) {
     const id = entry?.identifiers?.charge_id ?? entry?.charge_id
     if (id != null) ids.add(String(id))
   }
   return [...ids]
+}
+
+/**
+ * Extrai as entradas (cobrança + assinatura-pai, quando houver) de um
+ * `GET /notification/:token`. Um ciclo de assinatura traz `identifiers.charge_id`
+ * **e** `identifiers.subscription_id`; cobrança avulsa traz só `charge_id`. O
+ * handler usa `subscriptionId` para rotear ao caminho recorrente. Defensivo:
+ * confirme os nomes exatos no sandbox.
+ */
+export function parseNotificationEntries(raw: any): ProviderNotificationEntry[] {
+  const seen = new Set<string>()
+  const entries: ProviderNotificationEntry[] = []
+  for (const entry of notificationList(raw)) {
+    const chargeId = entry?.identifiers?.charge_id ?? entry?.charge_id
+    if (chargeId == null) continue
+    const subscriptionRaw =
+      entry?.identifiers?.subscription_id ?? entry?.subscription_id ?? undefined
+    const subscriptionId = subscriptionRaw != null ? String(subscriptionRaw) : undefined
+    // Dedup por (charge, subscription) — o mesmo par pode repetir no histórico.
+    const key = `${chargeId}:${subscriptionId ?? ''}`
+    if (seen.has(key)) continue
+    seen.add(key)
+    entries.push({ chargeId: String(chargeId), subscriptionId })
+  }
+  return entries
+}
+
+/**
+ * Mapeia o status de uma ASSINATURA da Efí para o nosso vocabulário.
+ * active → ACTIVE; canceled → CANCELED; expired/finished/ended → EXPIRED;
+ * new/created/waiting → PENDING.
+ */
+export function mapSubscriptionStatus(status: string | undefined): ProviderSubscriptionStatus {
+  switch (status) {
+    case 'active':
+      return 'ACTIVE'
+    case 'canceled':
+    case 'cancelled':
+      return 'CANCELED'
+    case 'expired':
+    case 'finished':
+    case 'ended':
+      return 'EXPIRED'
+    default:
+      return 'PENDING'
+  }
+}
+
+/** Parser da resposta de `POST /plan`. Falha alto se faltar `plan_id`. */
+export function parseCreatePlanResponse(raw: any): { planId: string } {
+  const data = dataOf(raw)
+  const planId = data?.plan_id ?? data?.id
+  if (planId == null) {
+    throw new EfiGatewayError('Efí Cobranças não retornou plan_id na criação do plano')
+  }
+  return { planId: String(planId) }
+}
+
+export interface ParsedSubscription {
+  subscriptionId: string
+  status: ProviderSubscriptionStatus
+  firstChargeId?: string
+  firstChargeStatus?: ProviderChargeStatus
+}
+
+/**
+ * Parser da resposta de criação one-step de ASSINATURA. Extrai `subscription_id`,
+ * o status da assinatura e — quando exposta — a 1ª cobrança (charge_id + status).
+ * Defensivo quanto ao formato (a confirmar no sandbox). Falha alto sem `subscription_id`.
+ */
+export function parseCreateSubscriptionResponse(raw: any): ParsedSubscription {
+  const data = dataOf(raw)
+  const subscriptionId = data?.subscription_id ?? data?.id
+  if (subscriptionId == null) {
+    throw new EfiGatewayError(
+      'Efí Cobranças não retornou subscription_id na criação da assinatura',
+    )
+  }
+  // A 1ª cobrança pode vir aninhada em `charge`/`first_execution`, ou no topo.
+  const charge = data?.charge ?? data?.first_execution ?? {}
+  const firstChargeRaw = charge?.charge_id ?? charge?.id ?? data?.charge_id
+  const firstChargeStatusRaw = charge?.status ?? (firstChargeRaw != null ? data?.status : undefined)
+  return {
+    subscriptionId: String(subscriptionId),
+    status: mapSubscriptionStatus(data?.status),
+    firstChargeId: firstChargeRaw != null ? String(firstChargeRaw) : undefined,
+    firstChargeStatus:
+      firstChargeRaw != null && firstChargeStatusRaw != null
+        ? mapCardStatus(firstChargeStatusRaw)
+        : undefined,
+  }
+}
+
+/** Extrai status + id do `GET /subscription/:id` (reconciliação/cancelamento). */
+export function parseSubscriptionDetail(
+  raw: any,
+  fallbackId: string,
+): { providerSubscriptionId: string; status: ProviderSubscriptionStatus } {
+  const data = dataOf(raw)
+  return {
+    providerSubscriptionId: String(data?.subscription_id ?? data?.id ?? fallbackId),
+    status: mapSubscriptionStatus(data?.status),
+  }
 }

@@ -1,5 +1,5 @@
-// Definição tipada do quiz (fonte única para a landing P1 e o restante do quiz).
-// 10 perguntas no total: P1 (segmento) aparece na landing; P2..P10 na tela /quiz.
+// Definição tipada do quiz (fonte única). As 10 perguntas rodam todas na tela
+// /quiz (a P1, com imagens, é o primeiro passo; `/` redireciona para /quiz).
 // Copy em pt-BR, verbatim do briefing. `last_step` vai de quiz_pergunta_1..10.
 
 export const LEAD_KEYS = [
@@ -98,22 +98,22 @@ export const QUIZ_STEPS: QuizStep[] = [
       {
         value: 'A',
         label: 'Tenho uma ideia parada há meses e não sei como tirar do papel',
-        image: '/img/q1-card-a.webp',
+        image: '/img/q1-card-a.jpg',
       },
       {
         value: 'B',
         label: 'Já criei algo com IA, mas quebra ou trava e eu não sei resolver',
-        image: '/img/q1-card-b.webp',
+        image: '/img/q1-card-b.jpg',
       },
       {
         value: 'C',
         label: 'Dependo de freelancer ou da IA pra cada ajuste, e isso me incomoda',
-        image: '/img/q1-card-c.webp',
+        image: '/img/q1-card-c.jpg',
       },
       {
         value: 'D',
         label: 'Crio com IA, mas tenho a sensação de estar fazendo errado sem perceber',
-        image: '/img/q1-card-d.webp',
+        image: '/img/q1-card-d.jpg',
       },
     ],
   },
@@ -244,6 +244,3 @@ export const QUIZ_STEPS: QuizStep[] = [
 ]
 
 export const TOTAL_PERGUNTAS = QUIZ_STEPS.length
-export const PERGUNTA_1 = QUIZ_STEPS[0] as MultiplaEscolhaStep
-/** Perguntas exibidas na tela /quiz (P2..P10). */
-export const QUIZ_STEPS_RESTANTES = QUIZ_STEPS.slice(1)

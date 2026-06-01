@@ -32,6 +32,8 @@ export const ProcessPaymentBody = t.Object({
       document: t.String({ minLength: 11, maxLength: 18 }),
       phone: t.Optional(t.String({ maxLength: 20 })),
       address: t.Optional(AddressSchema),
+      // Exigido pela Efí no cartão de crédito; obrigatoriedade aplicada na camada de aplicação.
+      birth: t.Optional(t.String({ pattern: '^\\d{4}-\\d{2}-\\d{2}$' })),
     }),
   ),
   card: t.Optional(

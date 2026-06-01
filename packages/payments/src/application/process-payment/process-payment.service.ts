@@ -1,6 +1,7 @@
 import { type BoletoRequest, PaymentAggregate } from '../../domain/payment/payment.aggregate'
 import {
   BoletoDataIncompleteError,
+  CardDataIncompleteError,
   IdempotencyConflictError,
   IdempotencyInFlightError,
   UnsupportedPaymentMethodError,
@@ -41,8 +42,8 @@ export interface ProcessPaymentConfig {
  * Caso de uso central: processa uma solicitação de pagamento de forma
  * idempotente. Orquestra domínio + provedor + persistência transacional.
  *
- * Pix e boleto são processados ponta-a-ponta (síncrono ou assíncrono); cartão
- * ainda retorna `UnsupportedPaymentMethodError` até seu adapter ser adicionado.
+ * Pix e boleto são processados ponta-a-ponta (síncrono ou assíncrono); cartão é
+ * processado SEMPRE de forma síncrona (o `payment_token` é de vida curta).
  */
 export class ProcessPaymentService {
   constructor(
@@ -84,8 +85,8 @@ export class ProcessPaymentService {
         consumerId: command.consumerId,
         key: command.idempotencyKey,
         reservationId,
-        // 201 quando a cobrança já saiu (tem QR/boleto); 202 quando só aceita (modo async).
-        responseStatus: view.pix || view.boleto ? 201 : 202,
+        // 201 quando a cobrança já saiu (tem QR/boleto/cartão); 202 quando só aceita (modo async).
+        responseStatus: view.pix || view.boleto || view.card ? 201 : 202,
         responseBody: view,
         ttlSeconds: this.config.idempotencyTtlSeconds,
       })
@@ -127,6 +128,15 @@ export class ProcessPaymentService {
         return this.processPix(command, amount, method, idempotencyKey, customer, sideEffects)
       case 'BOLETO':
         return this.processBoleto(command, amount, method, idempotencyKey, customer, sideEffects)
+      case 'CREDIT_CARD':
+        return this.processCreditCard(
+          command,
+          amount,
+          method,
+          idempotencyKey,
+          customer,
+          sideEffects,
+        )
       default:
         throw new UnsupportedPaymentMethodError(method.type)
     }
@@ -256,6 +266,83 @@ export class ProcessPaymentService {
       consumerId: payment.consumerId,
       method: payment.method.type,
       providerPaymentId: payment.providerPaymentId,
+    })
+
+    return toPaymentView(payment)
+  }
+
+  private async processCreditCard(
+    command: ProcessPaymentCommand,
+    amount: Money,
+    method: PaymentMethod,
+    idempotencyKey: IdempotencyKey,
+    customer: Customer | undefined,
+    sideEffects: { committed: boolean },
+  ): Promise<PaymentView> {
+    // Cartão exige pagador completo + nascimento + endereço de cobrança (a Efí
+    // rejeita sem esses dados). Validamos AGORA, antes de qualquer efeito colateral.
+    if (!customer) throw new CardDataIncompleteError('customer')
+    if (!customer.phone) throw new CardDataIncompleteError('customer.phone')
+    if (!customer.address) throw new CardDataIncompleteError('customer.address')
+    const birth = command.customer?.birth
+    if (!birth) throw new CardDataIncompleteError('customer.birth')
+    // `buildMethod` já garante o cartão para CREDIT_CARD; extraímos do VO (fonte da verdade).
+    const card = method.match({
+      pix: () => undefined,
+      boleto: () => undefined,
+      creditCard: (c) => c,
+    })
+    if (!card) throw new CardDataIncompleteError('card')
+
+    const payment = PaymentAggregate.create({
+      consumerId: command.consumerId,
+      amount,
+      method,
+      idempotencyKey,
+      customer,
+      description: command.description,
+      metadata: command.metadata,
+    })
+
+    // Cartão é SEMPRE síncrono: o `payment_token` é de vida curta e o POST não é
+    // idempotente — deferir ao ChargeCreationWorker arriscaria token expirado /
+    // cobrança duplicada. Por isso IGNORAMOS `config.asyncChargeCreation` aqui.
+    sideEffects.committed = true
+    const charge = await this.gateway.createCardCharge({
+      paymentId: payment.id,
+      amount,
+      installments: card.installments,
+      paymentToken: card.token,
+      customer: {
+        name: customer.name,
+        cpf: customer.document.value,
+        email: customer.email,
+        phone: customer.phone,
+        birth,
+      },
+      billingAddress: customer.address,
+      description: command.description,
+      idempotencyKey: command.idempotencyKey,
+    })
+
+    payment.registerProviderCharge({ providerPaymentId: charge.providerPaymentId })
+
+    // A resposta one-step já é (quase sempre) terminal: approved→PAID, unpaid→FAILED.
+    // `waiting` permanece PENDING e é fechado pela reconciliação/notificação.
+    if (charge.status === 'PAID') {
+      payment.markPaid()
+    } else if (charge.status === 'FAILED') {
+      payment.markFailed('Cartão recusado pelo provedor')
+    }
+
+    await this.payments.save(payment)
+
+    this.logger.info('payment.created', {
+      paymentId: payment.id,
+      consumerId: payment.consumerId,
+      method: payment.method.type,
+      providerPaymentId: payment.providerPaymentId,
+      status: payment.status,
     })
 
     return toPaymentView(payment)

@@ -1,28 +1,21 @@
 ---
-import { PRODUTO } from '../../content/copy'
 import AdminDashboard from '../../islands/admin/AdminDashboard'
 import BaseLayout from '../../layouts/BaseLayout.astro'
-import { basicAuthChallenge, checkBasicAuth } from '../../lib/basic-auth'
+import { verifyAdminSession } from '../../lib/admin-session'
 import { getDeps } from '../../server/deps'
 
 export const prerender = false
 
 Astro.response.headers.set('cache-control', 'no-store')
 
+// Sessão por cookie assinado (login in-app). Sem sessão → tela de login.
 const { env } = getDeps()
-const challenge = checkBasicAuth(Astro.request, env.ADMIN_USER, env.ADMIN_PASSWORD)
-  ? null
-  : basicAuthChallenge()
-if (challenge) return challenge
+if (!verifyAdminSession(Astro.request, env.ADMIN_SESSION_SECRET)) {
+  return Astro.redirect('/admin/login')
+}
 ---
 
 <BaseLayout title="Admin — No Comando da IA" noindex={true}>
-  <header class="border-b border-line">
-    <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-      <span class="font-bold text-lime">{PRODUTO.nome}</span>
-      <span class="text-sm text-muted">Painel administrativo</span>
-    </div>
-  </header>
   <main class="mx-auto max-w-6xl px-4 py-8">
     <AdminDashboard client:load />
   </main>

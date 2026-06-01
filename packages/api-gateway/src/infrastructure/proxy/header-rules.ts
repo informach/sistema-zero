@@ -32,6 +32,30 @@ export function stripEdgeAuthHeaders(headers: Headers): void {
   for (const name of EDGE_AUTH_HEADERS) headers.delete(name)
 }
 
+/**
+ * Headers que NUNCA devem aparecer em log (mesmo no debug de headers). Base nas
+ * credenciais de borda + cookies de resposta e outros portadores de segredo.
+ */
+export const SENSITIVE_LOG_HEADERS = new Set([
+  ...EDGE_AUTH_HEADERS,
+  'set-cookie',
+  'proxy-authorization',
+  'x-api-key',
+])
+
+/**
+ * Materializa os headers como objeto logável, com os sensíveis mascarados como
+ * `[REDACTED]` (preserva a presença do header sem vazar o valor). Usado só no
+ * debug opt-in de headers (`LOG_LEVEL=debug`).
+ */
+export function redactHeaders(headers: Headers): Record<string, string> {
+  const out: Record<string, string> = {}
+  headers.forEach((value, key) => {
+    out[key] = SENSITIVE_LOG_HEADERS.has(key.toLowerCase()) ? '[REDACTED]' : value
+  })
+  return out
+}
+
 export interface ForwardHeaderContext {
   clientIp: string
   proto: string

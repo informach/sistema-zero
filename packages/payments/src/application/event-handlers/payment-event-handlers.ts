@@ -44,6 +44,22 @@ export function registerPaymentEventHandlers(
       logger.info('handler.payment_refunded', { aggregateId: message.aggregateId })
       await enqueueDelivery(message)
     })
+    // Eventos de ciclo de vida da assinatura. A cobrança de DINHEIRO de cada ciclo
+    // já é notificada pelo `payment.paid` do pagamento-ciclo, então NÃO enfileiramos
+    // `subscription.charge_paid` (redundante). Cada evento abaixo dispara uma vez por
+    // assinatura → `dedupKey = aggregateId` (subscriptionId) é suficiente.
+    .on('subscription.activated', async (message) => {
+      logger.info('handler.subscription_activated', { aggregateId: message.aggregateId })
+      await enqueueDelivery(message)
+    })
+    .on('subscription.canceled', async (message) => {
+      logger.info('handler.subscription_canceled', { aggregateId: message.aggregateId })
+      await enqueueDelivery(message)
+    })
+    .on('subscription.expired', async (message) => {
+      logger.info('handler.subscription_expired', { aggregateId: message.aggregateId })
+      await enqueueDelivery(message)
+    })
 
   return publisher
 }

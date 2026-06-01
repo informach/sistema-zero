@@ -1,9 +1,9 @@
 ---
 import CtaButton from '../components/CtaButton.astro'
 import Footer from '../components/Footer.astro'
-import Header from '../components/Header.astro'
 import ImageSlot from '../components/ImageSlot.astro'
-import PriceTag from '../components/PriceTag.astro'
+import SectionHeading from '../components/SectionHeading.astro'
+import StickyCta from '../components/StickyCta.astro'
 import ProductJsonLd from '../components/seo/ProductJsonLd.astro'
 import { CTA, PRODUTO } from '../content/copy'
 import { SALES } from '../content/sales-sections'
@@ -15,6 +15,7 @@ export const prerender = true
 const description =
   'Um guia direto para tirar sua ideia do papel com IA sem virar refém dela. Aprenda a comandar a IA com o método Z.E.R.O.'
 const ofertaUrl = new URL('/oferta', Astro.site ?? Astro.url).toString()
+const trust = ['Garantia de 7 dias', 'Pagamento via Pix', 'Acesso imediato']
 ---
 
 <BaseLayout title={`${PRODUTO.nome} — Pare de pedir código no escuro`} description={description}>
@@ -26,172 +27,422 @@ const ofertaUrl = new URL('/oferta', Astro.site ?? Astro.url).toString()
     url={ofertaUrl}
     image="/img/sales-hero.webp"
   />
-  <Header />
 
-  <main class="mx-auto max-w-3xl px-4">
-    <!-- Seção 1 — Topo -->
-    <section class="py-12">
-      <ImageSlot src="/img/sales-hero.webp" alt="No Comando da IA" ratio="16 / 9" class="mb-8" />
-      <h1 class="text-3xl font-bold leading-tight sm:text-4xl">{SALES.s1.titulo}</h1>
-      {SALES.s1.paragrafos.map((p) => <p class="mt-5 text-lg leading-relaxed text-muted">{p}</p>)}
-      <div class="mt-8 flex flex-col items-start gap-4">
-        <PriceTag />
-        <CtaButton label={CTA.principal} class="w-full sm:w-auto" />
-      </div>
-    </section>
+  <!-- Sem header: a página de oferta tem apenas footer. -->
+  <div class="relative overflow-x-clip">
+    <!-- Atmosfera de fundo -->
+    <div
+      aria-hidden="true"
+      class="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[680px] bg-[radial-gradient(ellipse_70%_60%_at_50%_-10%,rgba(196,240,66,0.12),transparent_62%)]"
+    >
+    </div>
 
-    <!-- Seção 2 — Para quem é -->
-    <section class="border-t border-line/60 py-12">
-      <h2 class="text-2xl font-bold">{SALES.s2.titulo}</h2>
-      {SALES.s2.paragrafos.map((p) => <p class="mt-4 text-lg leading-relaxed text-muted">{p}</p>)}
-      <p class="mt-6 font-semibold text-ink">{SALES.s2.introLista}</p>
-      <ul class="mt-3 flex flex-col gap-2">
+    <main>
+      <!-- ── Seção 1 — Hero ─────────────────────────────────────────────── -->
+      <section class="mx-auto max-w-3xl px-4 pb-14 pt-14 sm:pt-20">
+        <p
+          class="inline-flex items-center gap-2 rounded-full border border-line/70 bg-card/50 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-cyan"
+        >
+          <span class="h-1.5 w-1.5 rounded-full bg-cyan"></span>
+          Ebook + kit prático
+        </p>
+
+        <h1 class="mt-5 text-balance text-3xl font-extrabold leading-[1.08] sm:text-[2.75rem]">
+          {SALES.s1.titulo}
+        </h1>
+
         {
-          SALES.s2.bullets.map((b) => (
-            <li class="flex gap-3 text-muted">
-              <span class="text-lime">✓</span>
-              <span>{b}</span>
-            </li>
+          SALES.s1.paragrafos.map((p) => (
+            <p class="mt-5 text-lg leading-relaxed text-muted">{p}</p>
           ))
         }
-      </ul>
-    </section>
 
-    <!-- Seção 3 — A armadilha -->
-    <section class="border-t border-line/60 py-12">
-      <h2 class="text-2xl font-bold">{SALES.s3.titulo}</h2>
-      {SALES.s3.paragrafos.map((p) => <p class="mt-4 text-lg leading-relaxed text-muted">{p}</p>)}
-    </section>
-
-    <!-- Seção 4 — Antes e depois -->
-    <section class="border-t border-line/60 py-12">
-      <h2 class="text-2xl font-bold">{SALES.s4.titulo}</h2>
-      <div class="mt-6 overflow-hidden rounded-xl border border-line">
-        <div class="grid grid-cols-2 bg-card-2 text-sm font-bold">
-          <div class="border-r border-line px-4 py-3 text-muted">{SALES.s4.cabecalho.antes}</div>
-          <div class="px-4 py-3 text-lime">{SALES.s4.cabecalho.depois}</div>
+        <div class="relative mt-9">
+          <div
+            aria-hidden="true"
+            class="absolute -inset-1.5 -z-10 rounded-3xl bg-gradient-to-r from-lime/25 via-cyan/15 to-lime/25 opacity-70 blur-2xl"
+          >
+          </div>
+          <ImageSlot src="/img/sales-hero.webp" alt="No Comando da IA" ratio="16 / 9" />
         </div>
-        {
-          SALES.s4.linhas.map(([antes, depois]) => (
-            <div class="grid grid-cols-2 border-t border-line text-sm">
-              <div class="border-r border-line px-4 py-3 text-muted">{antes}</div>
-              <div class="px-4 py-3 text-ink">{depois}</div>
+
+        <div
+          class="mt-9 flex flex-col gap-5 rounded-2xl border border-line bg-card-2/50 p-6 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <div>
+            <div class="flex items-baseline gap-2">
+              <span class="text-sm text-muted">por apenas</span>
+              <span class="text-5xl font-extrabold text-lime">{PRODUTO.precoLabel}</span>
             </div>
+            <p class="mt-1 text-sm text-muted">Pagamento único · acesso imediato</p>
+          </div>
+          <CtaButton label={CTA.principal} class="w-full sm:w-auto" />
+        </div>
+
+        <ul class="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted">
+          {
+            trust.map((t) => (
+              <li class="inline-flex items-center gap-1.5">
+                <svg
+                  class="h-4 w-4 text-lime"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M4 10.5l3.5 3.5L16 6"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                {t}
+              </li>
+            ))
+          }
+        </ul>
+        <div id="cta-sentinel" class="h-px w-full" aria-hidden="true"></div>
+      </section>
+
+      <!-- ── Seção 2 — Para quem é ──────────────────────────────────────── -->
+      <section class="mx-auto max-w-3xl border-t border-line/50 px-4 py-12 sm:py-16">
+        <SectionHeading title={SALES.s2.titulo} />
+        {
+          SALES.s2.paragrafos.map((p) => (
+            <p class="mt-4 text-lg leading-relaxed text-muted">{p}</p>
           ))
         }
-      </div>
-    </section>
+        <p class="mt-6 font-semibold text-ink">{SALES.s2.introLista}</p>
+        <ul class="mt-4 grid gap-3 sm:grid-cols-2">
+          {
+            SALES.s2.bullets.map((b) => (
+              <li class="card flex items-start gap-3 p-4 text-muted">
+                <svg
+                  class="mt-0.5 h-5 w-5 shrink-0 text-lime"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M4 10.5l3.5 3.5L16 6"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                <span>{b}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
 
-    <!-- Seção 5 — Método Z.E.R.O. -->
-    <section class="border-t border-line/60 py-12">
-      <h2 class="text-2xl font-bold">{SALES.s5.titulo}</h2>
-      <div class="mt-6 flex flex-col gap-4">
-        {
-          SALES.s5.metodo.map((m) => (
-            <div class="card flex gap-4 p-5">
-              <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-lime text-xl font-bold text-[#0b0f14]">
-                {m.letra}
-              </span>
-              <div>
-                <p class="font-bold text-ink">{m.titulo}</p>
-                <p class="mt-1 text-muted">{m.texto}</p>
+      <!-- ── Seção 3 — A armadilha ──────────────────────────────────────── -->
+      <section class="mx-auto max-w-3xl border-t border-line/50 px-4 py-12 sm:py-16">
+        <SectionHeading title={SALES.s3.titulo} />
+        <div
+          class="mt-6 rounded-2xl border-l-4 border-lime/70 bg-card/50 p-6 sm:p-7"
+        >
+          {
+            SALES.s3.paragrafos.map((p) => (
+              <p class="text-lg leading-relaxed text-muted [&:not(:first-child)]:mt-4">{p}</p>
+            ))
+          }
+        </div>
+      </section>
+
+      <!-- ── Seção 4 — Antes e depois ───────────────────────────────────── -->
+      <section class="mx-auto max-w-3xl border-t border-line/50 px-4 py-12 sm:py-16">
+        <SectionHeading title={SALES.s4.titulo} />
+        <div class="mt-6 grid gap-4 sm:grid-cols-2">
+          <div class="card border-line/70 bg-card/50 p-5">
+            <p class="mb-4 text-sm font-bold uppercase tracking-[0.14em] text-muted">
+              {SALES.s4.cabecalho.antes}
+            </p>
+            <ul class="flex flex-col gap-3">
+              {
+                SALES.s4.linhas.map(([antes]) => (
+                  <li class="flex items-start gap-2.5 text-sm leading-relaxed text-muted">
+                    <svg
+                      class="mt-0.5 h-5 w-5 shrink-0 text-red-400/70"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M6 6l8 8M14 6l-8 8"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                      />
+                    </svg>
+                    <span>{antes}</span>
+                  </li>
+                ))
+              }
+            </ul>
+          </div>
+          <div class="card border-lime/40 bg-lime/5 p-5">
+            <p class="mb-4 text-sm font-bold uppercase tracking-[0.14em] text-lime">
+              {SALES.s4.cabecalho.depois}
+            </p>
+            <ul class="flex flex-col gap-3">
+              {
+                SALES.s4.linhas.map(([, depois]) => (
+                  <li class="flex items-start gap-2.5 text-sm leading-relaxed text-ink">
+                    <svg
+                      class="mt-0.5 h-5 w-5 shrink-0 text-lime"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M4 10.5l3.5 3.5L16 6"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                    <span>{depois}</span>
+                  </li>
+                ))
+              }
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Seção 5 — Método Z.E.R.O. ──────────────────────────────────── -->
+      <section class="mx-auto max-w-3xl border-t border-line/50 px-4 py-12 sm:py-16">
+        <SectionHeading title={SALES.s5.titulo} />
+        <div class="mt-6 flex flex-col gap-4">
+          {
+            SALES.s5.metodo.map((m) => (
+              <div class="card flex gap-4 p-5 transition hover:border-lime/50">
+                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-lime to-lime-strong text-2xl font-extrabold text-[#0b0f14] shadow-lg shadow-lime/10">
+                  {m.letra}
+                </span>
+                <div>
+                  <p class="font-bold text-ink">{m.titulo}</p>
+                  <p class="mt-1 leading-relaxed text-muted">{m.texto}</p>
+                </div>
               </div>
-            </div>
-          ))
-        }
-      </div>
-    </section>
+            ))
+          }
+        </div>
+      </section>
 
-    <!-- Seção 6 — O que você recebe -->
-    <section class="border-t border-line/60 py-12">
-      <h2 class="text-2xl font-bold">{SALES.s6.titulo}</h2>
-      <p class="mt-4 text-lg leading-relaxed text-muted">{SALES.s6.ebook}</p>
-      <p class="mt-6 font-semibold text-ink">{SALES.s6.kitTitulo}</p>
-      <ul class="mt-3 flex flex-col gap-2">
+      <!-- ── Seção 6 — O que você recebe ────────────────────────────────── -->
+      <section class="mx-auto max-w-3xl border-t border-line/50 px-4 py-12 sm:py-16">
+        <SectionHeading title={SALES.s6.titulo} />
+        <div class="mt-6 flex items-start gap-4 rounded-2xl border border-lime/30 bg-card-2/50 p-6">
+          <svg
+            class="mt-0.5 h-7 w-7 shrink-0 text-lime"
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M4 5.5A1.5 1.5 0 015.5 4H11v15.5l-.8-.5a4 4 0 00-2.2-.66H5.5A1.5 1.5 0 014 16.84V5.5z"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linejoin="round"></path>
+            <path
+              d="M20 5.5A1.5 1.5 0 0018.5 4H13v15.5l.8-.5a4 4 0 012.2-.66h2.5A1.5 1.5 0 0020 16.84V5.5z"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linejoin="round"></path>
+          </svg>
+          <p class="text-lg leading-relaxed text-ink">{SALES.s6.ebook}</p>
+        </div>
+        <p class="mt-6 font-semibold text-ink">{SALES.s6.kitTitulo}</p>
+        <div class="mt-3 grid gap-3 sm:grid-cols-2">
+          {
+            SALES.s6.kit.map((item) => (
+              <div class="card flex items-center gap-3 p-4">
+                <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-cyan/15 text-cyan">
+                  <svg class="h-4 w-4" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <path
+                      d="M4 10.5l3.5 3.5L16 6"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </span>
+                <span class="text-ink">{item}</span>
+              </div>
+            ))
+          }
+        </div>
+        <div class="mt-8"><CtaButton label={CTA.principal} class="w-full sm:w-auto" /></div>
+      </section>
+
+      <!-- ── Seção 7 — O resultado final ────────────────────────────────── -->
+      <section class="mx-auto max-w-3xl border-t border-line/50 px-4 py-12 sm:py-16">
+        <SectionHeading title={SALES.s7.titulo} />
         {
-          SALES.s6.kit.map((item) => (
-            <li class="flex gap-3 text-muted">
-              <span class="text-cyan">▸</span>
-              <span>{item}</span>
-            </li>
+          SALES.s7.paragrafos.map((p) => (
+            <p class="mt-4 text-lg leading-relaxed text-muted">{p}</p>
           ))
         }
-      </ul>
-      <div class="mt-8"><CtaButton label={CTA.principal} class="w-full sm:w-auto" /></div>
-    </section>
+        <div class="mt-8"><CtaButton label={CTA.principal} class="w-full sm:w-auto" /></div>
+      </section>
 
-    <!-- Seção 7 — O resultado final -->
-    <section class="border-t border-line/60 py-12">
-      <h2 class="text-2xl font-bold">{SALES.s7.titulo}</h2>
-      {SALES.s7.paragrafos.map((p) => <p class="mt-4 text-lg leading-relaxed text-muted">{p}</p>)}
-      <div class="mt-8"><CtaButton label={CTA.principal} class="w-full sm:w-auto" /></div>
-    </section>
+      <!-- ── Seção 8 — Bônus ────────────────────────────────────────────── -->
+      <section class="mx-auto max-w-3xl border-t border-line/50 px-4 py-12 sm:py-16">
+        <SectionHeading title={SALES.s8.titulo} />
+        <div class="mt-6 grid gap-4 sm:grid-cols-2">
+          {
+            SALES.s8.bonus.map((b) => (
+              <div class="card relative overflow-hidden p-6">
+                <span
+                  aria-hidden="true"
+                  class="absolute right-0 top-0 rounded-bl-xl bg-lime/15 px-3 py-1 text-xs font-bold uppercase tracking-wide text-lime"
+                >
+                  Bônus
+                </span>
+                <p class="pr-16 font-bold text-lime">{b.titulo}</p>
+                <p class="mt-2 leading-relaxed text-muted">{b.texto}</p>
+              </div>
+            ))
+          }
+        </div>
+      </section>
 
-    <!-- Seção 8 — Bônus -->
-    <section class="border-t border-line/60 py-12">
-      <h2 class="text-2xl font-bold">{SALES.s8.titulo}</h2>
-      <div class="mt-6 grid gap-4 sm:grid-cols-2">
+      <!-- ── Seção 9 — O que não é ──────────────────────────────────────── -->
+      <section class="mx-auto max-w-3xl border-t border-line/50 px-4 py-12 sm:py-16">
+        <SectionHeading title={SALES.s9.titulo} />
+        <div class="mt-6 rounded-2xl border border-line bg-card/40 p-6 sm:p-7">
+          {
+            SALES.s9.paragrafos.map((p) => (
+              <p class="text-lg leading-relaxed text-muted [&:not(:first-child)]:mt-4">{p}</p>
+            ))
+          }
+        </div>
+      </section>
+
+      <!-- ── Seção 10 — Por que agora ───────────────────────────────────── -->
+      <section class="mx-auto max-w-3xl border-t border-line/50 px-4 py-12 sm:py-16">
+        <SectionHeading title={SALES.s10.titulo} />
         {
-          SALES.s8.bonus.map((b) => (
-            <div class="card p-5">
-              <p class="font-bold text-lime">{b.titulo}</p>
-              <p class="mt-2 text-muted">{b.texto}</p>
-            </div>
+          SALES.s10.paragrafos.map((p) => (
+            <p class="mt-4 text-lg leading-relaxed text-muted">{p}</p>
           ))
         }
-      </div>
-    </section>
+      </section>
 
-    <!-- Seção 9 — O que não é -->
-    <section class="border-t border-line/60 py-12">
-      <h2 class="text-2xl font-bold">{SALES.s9.titulo}</h2>
-      {SALES.s9.paragrafos.map((p) => <p class="mt-4 text-lg leading-relaxed text-muted">{p}</p>)}
-    </section>
-
-    <!-- Seção 10 — Por que agora -->
-    <section class="border-t border-line/60 py-12">
-      <h2 class="text-2xl font-bold">{SALES.s10.titulo}</h2>
-      {SALES.s10.paragrafos.map((p) => <p class="mt-4 text-lg leading-relaxed text-muted">{p}</p>)}
-    </section>
-
-    <!-- Seção 11 — Quem criou -->
-    <section class="border-t border-line/60 py-12">
-      <h2 class="text-2xl font-bold">{SALES.s11.titulo}</h2>
-      {SALES.s11.paragrafos.map((p) => <p class="mt-4 text-lg leading-relaxed text-muted">{p}</p>)}
-      <p class="mt-6 font-semibold text-ink">{SALES.s11.legendaPrints}</p>
-      <div class="mt-3 grid gap-4 sm:grid-cols-2">
-        {SALES.s11.prints.map((img) => <ImageSlot src={img.src} alt={img.alt} ratio="4 / 3" />)}
-      </div>
-      <p class="mt-6 font-semibold text-ink">{SALES.s11.legendaDepoimentos}</p>
-      <div class="mt-3 grid gap-4">
-        {SALES.s11.depoimentos.map((img) => <ImageSlot src={img.src} alt={img.alt} ratio="16 / 9" />)}
-      </div>
-    </section>
-
-    <!-- Seção 12 — Garantia -->
-    <section class="border-t border-line/60 py-12">
-      <h2 class="text-2xl font-bold">{SALES.s12.titulo}</h2>
-      {SALES.s12.paragrafos.map((p) => <p class="mt-4 text-lg leading-relaxed text-muted">{p}</p>)}
-      <div class="mt-8"><CtaButton label={CTA.comecar} class="w-full sm:w-auto" /></div>
-    </section>
-
-    <!-- Seção 13 — FAQ -->
-    <section class="border-t border-line/60 py-12">
-      <h2 class="text-2xl font-bold">{SALES.s13.titulo}</h2>
-      <div class="mt-6 flex flex-col gap-3">
+      <!-- ── Seção 11 — Quem criou ──────────────────────────────────────── -->
+      <section class="mx-auto max-w-3xl border-t border-line/50 px-4 py-12 sm:py-16">
+        <SectionHeading title={SALES.s11.titulo} />
         {
-          SALES.s13.faq.map((item) => (
-            <details class="card px-5 py-4">
-              <summary class="cursor-pointer font-semibold text-ink">{item.pergunta}</summary>
-              <p class="mt-3 text-muted">{item.resposta}</p>
-            </details>
+          SALES.s11.paragrafos.map((p) => (
+            <p class="mt-4 text-lg leading-relaxed text-muted">{p}</p>
           ))
         }
-      </div>
-      <div class="mt-8"><CtaButton label={CTA.principal} class="w-full sm:w-auto" /></div>
-    </section>
-  </main>
+        <p class="mt-7 font-semibold text-ink">{SALES.s11.legendaPrints}</p>
+        <div class="mt-3 grid gap-4 sm:grid-cols-2">
+          {SALES.s11.prints.map((img) => <ImageSlot src={img.src} alt={img.alt} ratio="4 / 3" />)}
+        </div>
+        <p class="mt-7 font-semibold text-ink">{SALES.s11.legendaDepoimentos}</p>
+        <div class="mt-3 grid gap-4">
+          {
+            SALES.s11.depoimentos.map((img) => (
+              <ImageSlot src={img.src} alt={img.alt} ratio="16 / 9" />
+            ))
+          }
+        </div>
+      </section>
+
+      <!-- ── Seção 12 — Garantia ────────────────────────────────────────── -->
+      <section class="mx-auto max-w-3xl border-t border-line/50 px-4 py-12 sm:py-16">
+        <div
+          class="card flex flex-col gap-5 border-lime/30 bg-gradient-to-b from-lime/10 to-transparent p-7 sm:flex-row sm:items-center"
+        >
+          <span
+            class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-lime/15 text-lime"
+          >
+            <svg class="h-9 w-9" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M12 3l7 3v5c0 4.6-3 7.7-7 9-4-1.3-7-4.4-7-9V6l7-3z"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linejoin="round"></path>
+              <path
+                d="M9 12l2 2 4-4"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"></path>
+            </svg>
+          </span>
+          <div>
+            <h2 class="text-2xl font-bold text-ink">{SALES.s12.titulo}</h2>
+            {
+              SALES.s12.paragrafos.map((p) => (
+                <p class="mt-2 leading-relaxed text-muted">{p}</p>
+              ))
+            }
+          </div>
+        </div>
+        <div class="mt-8"><CtaButton label={CTA.comecar} class="w-full sm:w-auto" /></div>
+      </section>
+
+      <!-- ── Seção 13 — FAQ ─────────────────────────────────────────────── -->
+      <section class="mx-auto max-w-3xl border-t border-line/50 px-4 py-12 sm:py-16">
+        <SectionHeading title={SALES.s13.titulo} />
+        <div class="mt-6 flex flex-col gap-3">
+          {
+            SALES.s13.faq.map((item) => (
+              <details class="card group px-5 py-4 transition hover:border-line">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold text-ink [&::-webkit-details-marker]:hidden">
+                  {item.pergunta}
+                  <svg
+                    class="h-5 w-5 shrink-0 text-muted transition-transform duration-200 group-[[open]]:rotate-180"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M5 8l5 5 5-5"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </summary>
+                <p class="mt-3 leading-relaxed text-muted">{item.resposta}</p>
+              </details>
+            ))
+          }
+        </div>
+      </section>
+
+      <!-- ── CTA final ──────────────────────────────────────────────────── -->
+      <section class="mx-auto max-w-3xl px-4 pb-24 pt-4">
+        <div
+          class="card border-lime/30 bg-gradient-to-b from-card-2/70 to-card/20 p-8 text-center"
+        >
+          <p class="text-sm font-bold uppercase tracking-[0.18em] text-cyan">{PRODUTO.nome}</p>
+          <div class="mt-3 flex items-baseline justify-center gap-2">
+            <span class="text-sm text-muted">por apenas</span>
+            <span class="text-5xl font-extrabold text-lime">{PRODUTO.precoLabel}</span>
+          </div>
+          <p class="mt-1 text-sm text-muted">Pagamento único via Pix · garantia de 7 dias</p>
+          <div class="mt-6 flex justify-center">
+            <CtaButton label={CTA.principal} class="w-full sm:w-auto" />
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
 
   <Footer />
+  <StickyCta />
   <PreCheckoutModal client:idle />
 </BaseLayout>

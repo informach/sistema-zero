@@ -77,6 +77,8 @@ export interface PaymentSnapshot {
   description: string | null
   metadata: Record<string, unknown>
   failureReason: string | null
+  /** Assinatura-pai quando este pagamento é um ciclo recorrente (senão null). */
+  subscriptionId: string | null
   createdAt: Date
   updatedAt: Date
   paidAt: Date | null
@@ -100,6 +102,7 @@ interface PaymentState {
   description: string | null
   metadata: Record<string, unknown>
   failureReason: string | null
+  subscriptionId: string | null
   createdAt: Date
   updatedAt: Date
   paidAt: Date | null
@@ -133,6 +136,8 @@ export class PaymentAggregate extends AggregateRoot<string> {
     metadata?: Record<string, unknown>
     /** Parâmetros do boleto (persistidos p/ criação assíncrona). */
     boletoRequest?: BoletoRequest
+    /** Assinatura-pai quando este pagamento é um ciclo recorrente. */
+    subscriptionId?: string
   }): PaymentAggregate {
     if (!input.amount.isPositive()) {
       throw new ValidationError('Valor do pagamento deve ser positivo')
@@ -163,6 +168,7 @@ export class PaymentAggregate extends AggregateRoot<string> {
         description: input.description ?? null,
         metadata: input.metadata ?? {},
         failureReason: null,
+        subscriptionId: input.subscriptionId ?? null,
         createdAt: now,
         updatedAt: now,
         paidAt: null,
@@ -189,7 +195,11 @@ export class PaymentAggregate extends AggregateRoot<string> {
     const amount = Money.fromCents(snapshot.amountInCents, snapshot.currency)
     const method =
       snapshot.methodType === 'CREDIT_CARD' && snapshot.card
-        ? PaymentMethod.creditCard(snapshot.card)
+        ? // Ciclo de assinatura é persistido sem token (a Efí guarda o cartão) →
+          // reidrata via `recurringCard`; cartão avulso mantém o token via `creditCard`.
+          snapshot.card.token
+          ? PaymentMethod.creditCard(snapshot.card)
+          : PaymentMethod.recurringCard(snapshot.card)
         : snapshot.methodType === 'BOLETO'
           ? PaymentMethod.boleto()
           : PaymentMethod.pix()
@@ -214,6 +224,7 @@ export class PaymentAggregate extends AggregateRoot<string> {
         description: snapshot.description,
         metadata: snapshot.metadata,
         failureReason: snapshot.failureReason,
+        subscriptionId: snapshot.subscriptionId,
         createdAt: snapshot.createdAt,
         updatedAt: snapshot.updatedAt,
         paidAt: snapshot.paidAt,
@@ -352,6 +363,15 @@ export class PaymentAggregate extends AggregateRoot<string> {
     return this.state.boleto
   }
 
+  /** Dados seguros do cartão (token/bandeira/last4/parcelas) ou null se não for cartão. */
+  get card(): CardData | null {
+    return this.state.method.match<CardData | null>({
+      pix: () => null,
+      boleto: () => null,
+      creditCard: (c) => c,
+    })
+  }
+
   get boletoRequest(): BoletoRequest | null {
     return this.state.boletoRequest
   }
@@ -366,6 +386,11 @@ export class PaymentAggregate extends AggregateRoot<string> {
 
   get metadata(): Record<string, unknown> {
     return this.state.metadata
+  }
+
+  /** Id da assinatura-pai quando este pagamento é um ciclo recorrente (senão null). */
+  get subscriptionId(): string | null {
+    return this.state.subscriptionId
   }
 
   get createdAt(): Date {
@@ -417,6 +442,7 @@ export class PaymentAggregate extends AggregateRoot<string> {
       description: this.state.description,
       metadata: this.state.metadata,
       failureReason: this.state.failureReason,
+      subscriptionId: this.state.subscriptionId,
       createdAt: this.state.createdAt,
       updatedAt: this.state.updatedAt,
       paidAt: this.state.paidAt,

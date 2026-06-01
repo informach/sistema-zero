@@ -1,0 +1,15 @@
+---
+// Cabeçalho de seção da página de vendas: barra de acento lime→cyan + título.
+interface Props {
+  title: string
+  class?: string
+}
+const { title, class: klass = '' } = Astro.props
+---
+
+<div class={`flex items-center gap-3 ${klass}`}>
+  <span
+    class="h-7 w-1.5 shrink-0 rounded-full bg-gradient-to-b from-lime to-cyan"
+    aria-hidden="true"></span>
+  <h2 class="text-2xl font-bold leading-tight text-ink sm:text-3xl">{title}</h2>
+</div>

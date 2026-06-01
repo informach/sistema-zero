@@ -1,4 +1,5 @@
 import { envelope } from '@sistemazero/core/http'
+import { serializeError } from '@sistemazero/core/logging'
 import type { GatewayContext, Stage } from './stage.port'
 
 export interface Pipeline {
@@ -30,7 +31,7 @@ export function createPipeline(stages: readonly Stage[], finalizers: readonly St
         ctx.logger.error('pipeline.stage_failed', {
           requestId: ctx.requestId,
           route: ctx.route?.route.id,
-          error: error instanceof Error ? error.message : String(error),
+          error: serializeError(error),
         })
         ctx.response = new Response(
           JSON.stringify(envelope('INTERNAL_ERROR', 'Erro interno do gateway')),
@@ -58,7 +59,7 @@ export function createPipeline(stages: readonly Stage[], finalizers: readonly St
           ctx.logger.error('pipeline.finalizer_failed', {
             stage: finalizer.name,
             requestId: ctx.requestId,
-            error: error instanceof Error ? error.message : String(error),
+            error: serializeError(error),
           })
         }
       }
