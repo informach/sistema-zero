@@ -18,6 +18,16 @@ export interface EntitlementRepository {
   ): Promise<EntitlementAggregate | null>
   /** Todas as matrículas ATIVAS do aluno (qualquer tipo). */
   listActiveByUser(userId: string, now: Date): Promise<EntitlementAggregate[]>
-  /** Matrículas ligadas a uma assinatura (para revogar/expirar no cancelamento). */
-  findBySubscriptionId(subscriptionId: string): Promise<EntitlementAggregate[]>
+  /**
+   * Revoga (corte imediato) TODAS as matrículas da assinatura num único UPDATE
+   * atômico — sem load-mutate-save por linha (evita lost-update sob concorrência
+   * com um grant de renovação). Idempotente: não toca em quem já está `revoked`.
+   * Retorna o nº de linhas afetadas.
+   */
+  revokeBySubscriptionId(subscriptionId: string, now: Date): Promise<number>
+  /**
+   * Expira (fim natural) TODAS as matrículas da assinatura num único UPDATE
+   * atômico. Idempotente: não rebaixa `revoked` nem reexpira `expired`.
+   */
+  expireBySubscriptionId(subscriptionId: string, now: Date): Promise<number>
 }

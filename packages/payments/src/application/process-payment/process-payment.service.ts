@@ -279,13 +279,12 @@ export class ProcessPaymentService {
     customer: Customer | undefined,
     sideEffects: { committed: boolean },
   ): Promise<PaymentView> {
-    // Cartão exige pagador (nome/doc/telefone) + nascimento. O endereço de cobrança
-    // é OPCIONAL — a Efí aceita cartão sem `billing_address` (reduz fricção em
-    // produto de baixo valor); quando ausente, o adapter simplesmente não o envia.
+    // Cartão exige pagador (nome/doc/telefone). Nascimento e endereço de cobrança
+    // são OPCIONAIS — a Efí aceita cartão sem `birth` nem `billing_address` (reduz
+    // fricção em produto de baixo valor); quando ausentes, o adapter não os envia.
     if (!customer) throw new CardDataIncompleteError('customer')
     if (!customer.phone) throw new CardDataIncompleteError('customer.phone')
     const birth = command.customer?.birth
-    if (!birth) throw new CardDataIncompleteError('customer.birth')
     // `buildMethod` já garante o cartão para CREDIT_CARD; extraímos do VO (fonte da verdade).
     const card = method.match({
       pix: () => undefined,
@@ -322,7 +321,7 @@ export class ProcessPaymentService {
         cpf: customer.document.value,
         email: customer.email,
         phone: customer.phone,
-        birth,
+        ...(birth ? { birth } : {}),
       },
       billingAddress: customer.address,
       description: command.description,

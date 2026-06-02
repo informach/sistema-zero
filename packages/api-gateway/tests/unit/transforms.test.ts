@@ -18,6 +18,15 @@ describe('transformers (Decorator)', () => {
     expect(ctx.upstreamHeaders.get('x-gateway-principal')).toBe('sys-a')
   })
 
+  test('header-inject SOBRESCREVE valor forjado pelo cliente (anti-spoof do token interno)', async () => {
+    // Cliente tenta forjar o token interno; o header-inject do gateway o substitui.
+    const ctx = makeContext({ headers: { 'x-internal-token': 'forjado-pelo-cliente' } })
+    await headerInjectTransformer({
+      headers: { 'x-internal-token': 'segredo-real-do-gateway' },
+    }).transformRequest?.(ctx)
+    expect(ctx.upstreamHeaders.get('x-internal-token')).toBe('segredo-real-do-gateway')
+  })
+
   test('header-strip remove headers', async () => {
     const ctx = makeContext({ headers: { 'x-secret': 'shh' } })
     await headerStripTransformer({ headers: ['x-secret'] }).transformRequest?.(ctx)

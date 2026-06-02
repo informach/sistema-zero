@@ -27,16 +27,20 @@ export class ListMyCoursesService {
     }
     if (byCourseRef.size === 0) return []
 
-    const courses = await this.courses.findPublishedCoursesBySlugs([...byCourseRef.keys()])
+    const courses = await this.courses.findAccessibleCoursesBySlugs([...byCourseRef.keys()])
+    // Contagens em LOTE (2 queries) em vez de 2 por curso (evita N+1).
+    const courseIds = courses.map((c) => c.id)
+    const [totals, completed] = await Promise.all([
+      this.courses.countLessonsByCourseIds(courseIds),
+      this.progress.countCompletedByCourseIds(userId, courseIds),
+    ])
+
     const views: MyCourseView[] = []
     for (const course of courses) {
       const entitlement = byCourseRef.get(course.slug)
       if (!entitlement) continue
-      const [total, completed] = await Promise.all([
-        this.courses.countLessons(course.id),
-        this.progress.countCompleted(userId, course.id),
-      ])
-      views.push(toMyCourseView(course, entitlement, computeProgress(completed, total)))
+      const progress = computeProgress(completed.get(course.id) ?? 0, totals.get(course.id) ?? 0)
+      views.push(toMyCourseView(course, entitlement, progress))
     }
     return views
   }

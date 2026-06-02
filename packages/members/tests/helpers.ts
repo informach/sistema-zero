@@ -8,6 +8,7 @@ import { GrantEntitlementService } from '../src/application/grant-entitlement/gr
 import { ListMyCoursesService } from '../src/application/list-my-courses/list-my-courses.service'
 import { MarkLessonCompleteService } from '../src/application/mark-lesson-complete/mark-lesson-complete.service'
 import { RevokeEntitlementService } from '../src/application/revoke-entitlement/revoke-entitlement.service'
+import type { CourseStatus } from '../src/domain/course/course'
 import { EntitlementAggregate } from '../src/domain/entitlement/entitlement.aggregate'
 import type { ResolvedOffer } from '../src/domain/ports/catalog-gateway.port'
 import type { Env } from '../src/infrastructure/config/env'
@@ -23,7 +24,7 @@ import {
 
 export const WEBHOOK_SECRET = 'test-gateway-secret-0123456789ab'
 
-export function buildApp(opts: { now?: Date } = {}) {
+export function buildApp(opts: { now?: Date; internalToken?: string } = {}) {
   const clockRef = { now: opts.now ?? new Date('2026-06-02T12:00:00.000Z') }
   const clock = () => clockRef.now
 
@@ -54,6 +55,7 @@ export function buildApp(opts: { now?: Date } = {}) {
       getLesson: new GetLessonService(checkAccess, courses, progress),
       markComplete: new MarkLessonCompleteService(checkAccess, courses, progress, clock),
       getProgress: new GetCourseProgressService(checkAccess, courses, progress),
+      internalToken: opts.internalToken,
     },
     webhooks: {
       grant,
@@ -70,7 +72,11 @@ export function buildApp(opts: { now?: Date } = {}) {
 }
 
 /** Curso de exemplo: 1 módulo, 2 aulas (a 1ª composta com 3 blocos + 1 anexo). */
-export function seedSampleCourse(courses: InMemoryCourseRepository, slug = 'curso-demo') {
+export function seedSampleCourse(
+  courses: InMemoryCourseRepository,
+  slug = 'curso-demo',
+  status: CourseStatus = 'published',
+) {
   const now = new Date('2026-06-01T00:00:00.000Z')
   const courseId = randomUUID()
   const moduleId = randomUUID()
@@ -83,7 +89,7 @@ export function seedSampleCourse(courses: InMemoryCourseRepository, slug = 'curs
     subtitle: null,
     description: null,
     coverImageUrl: null,
-    status: 'published',
+    status,
     createdAt: now,
     updatedAt: now,
   })
@@ -141,12 +147,23 @@ export function seedSampleCourse(courses: InMemoryCourseRepository, slug = 'curs
   return { courseId, slug, moduleId, lessonIds: [lesson1, lesson2] as const }
 }
 
-/** Concede uma matrícula vitalícia diretamente (sem passar pelo webhook). */
+/**
+ * Concede uma matrícula diretamente (sem passar pelo webhook). Vitalícia por
+ * padrão; passe `expiresAt`/`subscriptionId` para semear uma assinatura.
+ */
 export function grantLifetime(
   entitlements: InMemoryEntitlementRepository,
-  opts: { userId: string; courseRef: string; now?: Date },
+  opts: {
+    userId: string
+    courseRef: string
+    now?: Date
+    expiresAt?: Date | null
+    subscriptionId?: string
+    key?: string
+  },
 ): EntitlementAggregate {
   const now = opts.now ?? new Date('2026-06-01T00:00:00.000Z')
+  const subscriptionId = opts.subscriptionId ?? null
   const e = EntitlementAggregate.grant({
     id: randomUUID(),
     userId: opts.userId,
@@ -167,11 +184,12 @@ export function grantLifetime(
       fulfillment: { accessType: 'course', courseRef: opts.courseRef },
       resolvedAt: now.toISOString(),
     },
-    sourceKind: 'manual',
-    sourceId: 'seed',
+    sourceKind: subscriptionId ? 'subscription' : 'manual',
+    sourceId: subscriptionId ?? 'seed',
+    subscriptionId,
     grantedAt: now,
-    expiresAt: null,
-    idempotencyKey: `manual:${opts.userId}:${opts.courseRef}`,
+    expiresAt: opts.expiresAt ?? null,
+    idempotencyKey: opts.key ?? `manual:${opts.userId}:${opts.courseRef}`,
   })
   entitlements.seed(e)
   return e

@@ -64,7 +64,6 @@ export default function CardCheckout({
   const [expYear, setExpYear] = useState('')
   const [cvv, setCvv] = useState('')
   const [cpf, setCpf] = useState('')
-  const [birth, setBirth] = useState('')
   const [installments, setInstallments] = useState(1)
 
   const [brand, setBrand] = useState<string | null>(null)
@@ -134,7 +133,6 @@ export default function CardCheckout({
       expirationYear: expYear,
       cvv,
       cpf,
-      birth,
       installments,
     })
     if (!parsed.success) {
@@ -186,7 +184,6 @@ export default function CardCheckout({
         couponCode,
         customer: {
           document: cpfDigits,
-          birth: parsed.data.birth,
         },
       }
       const r = await apiPost<ChargeResp>('/api/checkout/card', body)
@@ -286,25 +283,15 @@ export default function CardCheckout({
           )}
         </select>
       </Field>
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="CPF do titular" error={errors.cpf}>
-          <input
-            className={inputClass}
-            inputMode="numeric"
-            placeholder="000.000.000-00"
-            value={cpf}
-            onChange={(e) => setCpf(maskCpf(e.target.value))}
-          />
-        </Field>
-        <Field label="Nascimento (AAAA-MM-DD)" error={errors.birth}>
-          <input
-            className={inputClass}
-            placeholder="1990-01-31"
-            value={birth}
-            onChange={(e) => setBirth(e.target.value)}
-          />
-        </Field>
-      </div>
+      <Field label="CPF do titular" error={errors.cpf}>
+        <input
+          className={inputClass}
+          inputMode="numeric"
+          placeholder="000.000.000-00"
+          value={cpf}
+          onChange={(e) => setCpf(maskCpf(e.target.value))}
+        />
+      </Field>
       {erro && <p className="text-center text-sm text-red-400">{erro}</p>}
       <button type="submit" disabled={processing} className="btn btn-primary disabled:opacity-60">
         {processing ? 'Processando…' : `Pagar ${brl(priceCents)}`}

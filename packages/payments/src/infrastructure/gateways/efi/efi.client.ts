@@ -49,6 +49,16 @@ export class EfiClient {
     this.requestTimeoutMs = config.requestTimeoutMs ?? 15_000
   }
 
+  /**
+   * Pré-aquece o token OAuth (mTLS + client_credentials). O 1º handshake mTLS sob
+   * Bun é caro (~15s observados no cold-start) — chamar isto no boot tira esse
+   * custo do caminho da 1ª cobrança (que senão estoura o `requestTimeoutMs` → 502).
+   * Best-effort: relança o erro para o chamador logar; não deve travar o boot.
+   */
+  async warmUp(): Promise<void> {
+    await this.authorize()
+  }
+
   private async authorize(): Promise<string> {
     const now = Date.now()
     if (this.token && this.token.expiresAt > now + 60_000) return this.token.value

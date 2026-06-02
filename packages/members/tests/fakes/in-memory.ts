@@ -1,12 +1,13 @@
 import type { Logger } from '@sistemazero/core/logging'
-import type {
-  Course,
-  Lesson,
-  LessonAttachment,
-  LessonBlock,
-  LessonWithContent,
-  Module,
-  ModuleWithLessons,
+import {
+  type Course,
+  isCourseAccessible,
+  type Lesson,
+  type LessonAttachment,
+  type LessonBlock,
+  type LessonWithContent,
+  type Module,
+  type ModuleWithLessons,
 } from '../../src/domain/course/course'
 import {
   EntitlementAggregate,
@@ -33,6 +34,13 @@ function isActive(s: EntitlementState, now: Date): boolean {
   return s.status === 'active' && (s.expiresAt === null || s.expiresAt.getTime() > now.getTime())
 }
 
+/** Vitalícia (expiresAt nulo) > validade mais distante. Espelha a ordenação do SQL. */
+function isStrongerState(a: EntitlementState, b: EntitlementState): boolean {
+  if (a.expiresAt === null) return true
+  if (b.expiresAt === null) return false
+  return a.expiresAt.getTime() > b.expiresAt.getTime()
+}
+
 export class InMemoryEntitlementRepository implements EntitlementRepository {
   readonly byId = new Map<string, EntitlementState>()
 
@@ -45,8 +53,16 @@ export class InMemoryEntitlementRepository implements EntitlementRepository {
 
   async save(e: EntitlementAggregate): Promise<boolean> {
     const s = e.toSnapshot()
-    for (const existing of this.byId.values()) {
-      if (existing.idempotencyKey === s.idempotencyKey) return false
+    // Espelha os DOIS índices únicos do schema: idempotency_key E
+    // (user_id, product_id, source_kind, source_id). Conflito em qualquer → no-op.
+    for (const x of this.byId.values()) {
+      const dup =
+        x.idempotencyKey === s.idempotencyKey ||
+        (x.userId === s.userId &&
+          x.productId === s.productId &&
+          x.sourceKind === s.sourceKind &&
+          x.sourceId === s.sourceId)
+      if (dup) return false
     }
     this.byId.set(s.id, cloneState(s))
     return true
@@ -65,12 +81,13 @@ export class InMemoryEntitlementRepository implements EntitlementRepository {
     courseRef: string,
     now: Date,
   ): Promise<EntitlementAggregate | null> {
+    let strongest: EntitlementState | null = null
     for (const s of this.byId.values()) {
       if (s.userId === userId && s.courseRef === courseRef && isActive(s, now)) {
-        return EntitlementAggregate.restore(cloneState(s))
+        if (!strongest || isStrongerState(s, strongest)) strongest = s
       }
     }
-    return null
+    return strongest ? EntitlementAggregate.restore(cloneState(strongest)) : null
   }
 
   async listActiveByUser(userId: string, now: Date): Promise<EntitlementAggregate[]> {
@@ -79,10 +96,32 @@ export class InMemoryEntitlementRepository implements EntitlementRepository {
       .map((s) => EntitlementAggregate.restore(cloneState(s)))
   }
 
-  async findBySubscriptionId(subscriptionId: string): Promise<EntitlementAggregate[]> {
-    return [...this.byId.values()]
-      .filter((s) => s.subscriptionId === subscriptionId)
-      .map((s) => EntitlementAggregate.restore(cloneState(s)))
+  async revokeBySubscriptionId(subscriptionId: string, now: Date): Promise<number> {
+    let affected = 0
+    for (const s of this.byId.values()) {
+      if (s.subscriptionId === subscriptionId && s.status !== 'revoked') {
+        this.byId.set(s.id, {
+          ...s,
+          status: 'revoked',
+          revokedAt: now,
+          updatedAt: now,
+          version: s.version + 1,
+        })
+        affected += 1
+      }
+    }
+    return affected
+  }
+
+  async expireBySubscriptionId(subscriptionId: string, now: Date): Promise<number> {
+    let affected = 0
+    for (const s of this.byId.values()) {
+      if (s.subscriptionId === subscriptionId && s.status !== 'revoked' && s.status !== 'expired') {
+        this.byId.set(s.id, { ...s, status: 'expired', updatedAt: now, version: s.version + 1 })
+        affected += 1
+      }
+    }
+    return affected
   }
 
   seed(e: EntitlementAggregate): void {
@@ -110,9 +149,9 @@ export class InMemoryCourseRepository implements CourseRepository {
     return this.lessons.find((l) => l.id === lessonId) ?? null
   }
 
-  async findPublishedCoursesBySlugs(slugs: string[]): Promise<Course[]> {
+  async findAccessibleCoursesBySlugs(slugs: string[]): Promise<Course[]> {
     const set = new Set(slugs)
-    return this.courses.filter((c) => set.has(c.slug) && c.status === 'published')
+    return this.courses.filter((c) => set.has(c.slug) && isCourseAccessible(c.status))
   }
 
   async findOutline(courseId: string): Promise<ModuleWithLessons[]> {
@@ -144,6 +183,15 @@ export class InMemoryCourseRepository implements CourseRepository {
   async countLessons(courseId: string): Promise<number> {
     return this.lessons.filter((l) => l.courseId === courseId).length
   }
+
+  async countLessonsByCourseIds(courseIds: string[]): Promise<Map<string, number>> {
+    const set = new Set(courseIds)
+    const out = new Map<string, number>()
+    for (const l of this.lessons) {
+      if (set.has(l.courseId)) out.set(l.courseId, (out.get(l.courseId) ?? 0) + 1)
+    }
+    return out
+  }
 }
 
 interface Completion {
@@ -163,6 +211,20 @@ export class InMemoryProgressRepository implements ProgressRepository {
 
   async countCompleted(userId: string, courseId: string): Promise<number> {
     return this.completions.filter((c) => c.userId === userId && c.courseId === courseId).length
+  }
+
+  async countCompletedByCourseIds(
+    userId: string,
+    courseIds: string[],
+  ): Promise<Map<string, number>> {
+    const set = new Set(courseIds)
+    const out = new Map<string, number>()
+    for (const c of this.completions) {
+      if (c.userId === userId && set.has(c.courseId)) {
+        out.set(c.courseId, (out.get(c.courseId) ?? 0) + 1)
+      }
+    }
+    return out
   }
 
   async listCompletedLessonIds(userId: string, courseId: string): Promise<string[]> {

@@ -1,7 +1,7 @@
 // Schemas de checkout (cartão/boleto) — client-safe: importa APENAS `zod`, sem
 // env nem server. Fonte única de verdade usada pelas ilhas (validação no browser)
 // e pelos handlers `startBoleto`/`startCard` (validação no servidor). Espelha o
-// DTO do payments (`AddressSchema`, customer.document/birth, card).
+// DTO do payments (`AddressSchema`, customer.document, card).
 
 import { z } from 'zod'
 
@@ -53,11 +53,6 @@ export const AddressSchema = z.object({
   complement: z.string().trim().max(120, 'Complemento muito longo.').optional(),
 })
 
-const BirthSchema = z
-  .string()
-  .trim()
-  .regex(/^\d{4}-\d{2}-\d{2}$/, 'Data de nascimento inválida (AAAA-MM-DD).')
-
 /** Cupom de desconto (opcional) aplicado no checkout. */
 export const CouponCodeSchema = z.string().trim().max(60).optional()
 
@@ -96,7 +91,6 @@ export const CardFormSchema = z.object({
     .trim()
     .regex(/^\d{3,4}$/, 'CVV inválido.'),
   cpf: CpfSchema,
-  birth: BirthSchema,
   installments: z.coerce.number().int().min(1).max(12),
   // Endereço de cobrança OPCIONAL — a Efí aceita cartão sem billing_address.
   address: AddressSchema.optional(),
@@ -119,7 +113,6 @@ export const CardChargeSchema = z.object({
   couponCode: CouponCodeSchema,
   customer: z.object({
     document: CpfSchema,
-    birth: BirthSchema,
     // Endereço de cobrança OPCIONAL — a Efí aceita cartão sem billing_address.
     address: AddressSchema.optional(),
   }),

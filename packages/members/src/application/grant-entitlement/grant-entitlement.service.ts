@@ -27,6 +27,10 @@ export interface GrantEntitlementDeps {
 }
 
 export interface GrantResult {
+  /** `false` = a oferta NÃO foi resolvida no catálogo (404). O chamador deve tratar
+   * como falha retryável (não como sucesso), para auto-curar uma corrida (grant antes
+   * da oferta existir) e aflorar uma divergência de slug permanente. */
+  offerFound: boolean
   granted: number
   itemsResolved: number
 }
@@ -46,7 +50,7 @@ export class GrantEntitlementService {
         offerRef: cmd.offerRef,
         userId: cmd.userId,
       })
-      return { granted: 0, itemsResolved: 0 }
+      return { offerFound: false, granted: 0, itemsResolved: 0 }
     }
 
     let granted = 0
@@ -75,7 +79,7 @@ export class GrantEntitlementService {
       itemsResolved: offer.items.length,
       granted,
     })
-    return { granted, itemsResolved: offer.items.length }
+    return { offerFound: true, granted, itemsResolved: offer.items.length }
   }
 
   /** Compra única → matrícula VITALÍCIA (`expiresAt = null`). Idempotente por pagamento+produto. */
@@ -143,10 +147,14 @@ export class GrantEntitlementService {
   }
 }
 
-/** Fim do ciclo da assinatura + carência. Dia exato não é crítico (a carência absorve). */
+/**
+ * Fim do ciclo da assinatura + carência. Em UTC (determinístico, independente do
+ * timezone do servidor). Dia exato não é crítico (a carência absorve o rollover de
+ * fim de mês — ex.: 31/jan + 1 mês cai em mar via overflow do `setUTCMonth`).
+ */
 export function computeExpiry(grantedAt: Date, intervalMonths: number, graceDays: number): Date {
   const d = new Date(grantedAt.getTime())
-  d.setMonth(d.getMonth() + intervalMonths)
-  d.setDate(d.getDate() + graceDays)
+  d.setUTCMonth(d.getUTCMonth() + intervalMonths)
+  d.setUTCDate(d.getUTCDate() + graceDays)
   return d
 }

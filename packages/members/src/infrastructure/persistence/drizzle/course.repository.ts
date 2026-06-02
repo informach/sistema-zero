@@ -8,6 +8,7 @@ import type {
   Module,
   ModuleWithLessons,
 } from '../../../domain/course/course'
+import { ACCESSIBLE_COURSE_STATUSES } from '../../../domain/course/course'
 import type { CourseRepository } from '../../../domain/ports/course-repository.port'
 import type { Database } from './db'
 import { courses, lessonAttachments, lessonBlocks, lessons, modules } from './schema'
@@ -88,12 +89,14 @@ export class DrizzleCourseRepository implements CourseRepository {
     return row ? toLesson(row) : null
   }
 
-  async findPublishedCoursesBySlugs(slugs: string[]): Promise<Course[]> {
+  async findAccessibleCoursesBySlugs(slugs: string[]): Promise<Course[]> {
     if (slugs.length === 0) return []
     const rows = await this.db
       .select()
       .from(courses)
-      .where(and(inArray(courses.slug, slugs), eq(courses.status, 'published')))
+      .where(
+        and(inArray(courses.slug, slugs), inArray(courses.status, [...ACCESSIBLE_COURSE_STATUSES])),
+      )
     return rows.map(toCourse)
   }
 
@@ -147,5 +150,15 @@ export class DrizzleCourseRepository implements CourseRepository {
       .from(lessons)
       .where(eq(lessons.courseId, courseId))
     return row?.c ?? 0
+  }
+
+  async countLessonsByCourseIds(courseIds: string[]): Promise<Map<string, number>> {
+    if (courseIds.length === 0) return new Map()
+    const rows = await this.db
+      .select({ courseId: lessons.courseId, c: count() })
+      .from(lessons)
+      .where(inArray(lessons.courseId, courseIds))
+      .groupBy(lessons.courseId)
+    return new Map(rows.map((r) => [r.courseId, r.c]))
   }
 }

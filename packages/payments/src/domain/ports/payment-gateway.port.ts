@@ -91,8 +91,9 @@ export interface CardCustomer {
   cpf: string
   email: string
   phone: string
-  /** Data de nascimento (YYYY-MM-DD), exigida pela Efí no cartão. */
-  birth: string
+  /** Data de nascimento (YYYY-MM-DD). OPCIONAL: a Efí não a exige no cartão one-step
+   *  (só name/cpf/email/phone_number). Quando ausente, o adapter não envia o campo. */
+  birth?: string
 }
 
 export interface CreateCardChargeInput {

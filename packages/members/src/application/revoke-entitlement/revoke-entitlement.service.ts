@@ -15,32 +15,23 @@ export interface RevokeEntitlementDeps {
 export class RevokeEntitlementService {
   constructor(private readonly deps: RevokeEntitlementDeps) {}
 
-  /** Cancelamento → corte imediato (status `revoked`). */
+  /** Cancelamento → corte imediato (status `revoked`). UPDATE atômico, sem race. */
   async cancel(subscriptionId: string): Promise<{ affected: number }> {
-    return this.apply(subscriptionId, 'cancel')
+    const affected = await this.deps.entitlements.revokeBySubscriptionId(
+      subscriptionId,
+      this.deps.clock(),
+    )
+    this.deps.logger?.info('subscription.cancel', { subscriptionId, affected })
+    return { affected }
   }
 
-  /** Expiração natural (status `expired`). */
+  /** Expiração natural (status `expired`). UPDATE atômico, sem race. */
   async expire(subscriptionId: string): Promise<{ affected: number }> {
-    return this.apply(subscriptionId, 'expire')
-  }
-
-  private async apply(
-    subscriptionId: string,
-    op: 'cancel' | 'expire',
-  ): Promise<{ affected: number }> {
-    const list = await this.deps.entitlements.findBySubscriptionId(subscriptionId)
-    const now = this.deps.clock()
-    let affected = 0
-    for (const entitlement of list) {
-      const alreadyDone =
-        op === 'cancel' ? entitlement.status === 'revoked' : entitlement.status === 'expired'
-      if (alreadyDone) continue
-      if (op === 'cancel') entitlement.revoke(now)
-      else entitlement.expire(now)
-      if (await this.deps.entitlements.update(entitlement)) affected += 1
-    }
-    this.deps.logger?.info(`subscription.${op}`, { subscriptionId, affected })
+    const affected = await this.deps.entitlements.expireBySubscriptionId(
+      subscriptionId,
+      this.deps.clock(),
+    )
+    this.deps.logger?.info('subscription.expire', { subscriptionId, affected })
     return { affected }
   }
 }

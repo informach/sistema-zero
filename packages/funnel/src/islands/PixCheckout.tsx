@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { apiGet, apiPost } from '../lib/api-fetch'
 
 interface Pix {
@@ -26,10 +26,10 @@ export default function PixCheckout({ couponCode }: { couponCode?: string }) {
   const [expirado, setExpirado] = useState(false)
   const lastCoupon = useRef<string | null | undefined>(null)
 
-  // Cria a cobrança Pix; recria quando o cupom muda (a cobrança Pix tem valor fixo).
-  useEffect(() => {
-    if (lastCoupon.current === couponCode) return
-    lastCoupon.current = couponCode
+  // Cria (ou recria) a cobrança Pix. Reutilizado pelo efeito (mudança de cupom) e
+  // pelo botão "Tentar de novo" — a 1ª chamada pós-restart pode ser lenta (cold
+  // start da Efí) e, se estourar o timeout, o retry já pega o token aquecido.
+  const createPix = useCallback(() => {
     setPix(null)
     setPaymentId(null)
     setErro(null)
@@ -39,8 +39,15 @@ export default function PixCheckout({ couponCode }: { couponCode?: string }) {
         setPaymentId(r.paymentId)
         if (r.pix) setPix(r.pix)
       })
-      .catch(() => setErro('Não foi possível gerar o Pix. Recarregue a página e tente de novo.'))
+      .catch(() => setErro('Não foi possível gerar o Pix. Tente novamente.'))
   }, [couponCode])
+
+  // Recria quando o cupom muda (a cobrança Pix tem valor fixo).
+  useEffect(() => {
+    if (lastCoupon.current === couponCode) return
+    lastCoupon.current = couponCode
+    createPix()
+  }, [couponCode, createPix])
 
   // Polling do status (UX/fallback; o webhook é a reconciliação durável).
   // Para de checar quando o Pix expira ou após 15 min (evita polling infinito).
@@ -80,7 +87,15 @@ export default function PixCheckout({ couponCode }: { couponCode?: string }) {
     }
   }
 
-  if (erro) return <p className="py-6 text-center text-red-400">{erro}</p>
+  if (erro)
+    return (
+      <div className="py-6 text-center">
+        <p className="text-red-400">{erro}</p>
+        <button type="button" onClick={createPix} className="btn btn-primary mt-4">
+          Tentar de novo
+        </button>
+      </div>
+    )
   if (expirado)
     return (
       <div className="py-6 text-center">

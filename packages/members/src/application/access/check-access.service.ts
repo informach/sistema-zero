@@ -1,4 +1,4 @@
-import type { Course } from '../../domain/course/course'
+import { type Course, isCourseAccessible } from '../../domain/course/course'
 import { CourseNotFoundError } from '../../domain/course/course.errors'
 import type { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
 import { AccessDeniedError } from '../../domain/entitlement/entitlement.errors'
@@ -34,7 +34,9 @@ export class CheckAccessService {
   }
 
   private async assert(userId: string, course: Course | null): Promise<CourseAccess> {
-    if (course?.status !== 'published') throw new CourseNotFoundError()
+    // `published` ou `archived` concedem acesso a quem já tem matrícula; `draft`
+    // (ou inexistente) → 404 (não vaza a existência de curso não publicado).
+    if (!course || !isCourseAccessible(course.status)) throw new CourseNotFoundError()
     const entitlement = await this.entitlements.findActiveByUserAndCourseRef(
       userId,
       course.slug,

@@ -95,6 +95,12 @@ Browser → funil `/api/checkout/*` (mesma origem) → `gateway-client` assina *
 O webhook **processa antes** de registrar o `delivery_id`, para que uma falha transitória não faça o
 retry do gateway ser descartado.
 
+**Concessão na área de membros (`grantMembers`):** roda DEPOIS do registro do comprador, em
+**três caminhos** (espelhando o `fulfill`): webhook (`payment.paid` → 502 `GRANT_RETRY` se falhar →
+gateway re-entrega) e **best-effort** no polling do Pix (`pixStatus`) e no cartão síncrono PAID
+(`startCard`) — via `server/members-grant.ts` (`makeGrantMembers`). Idempotente do lado do members
+(chave da matrícula), então reentregar/retentar é seguro; o webhook é o backstop durável.
+
 ## Renderização (prerender split)
 
 - **Estáticas (`prerender = true`):** `oferta`, `quiz` (shell; a ilha do quiz busca/cria o lead e

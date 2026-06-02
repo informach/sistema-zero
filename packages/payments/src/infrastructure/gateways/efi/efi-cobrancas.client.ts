@@ -37,6 +37,11 @@ export class EfiCobrancasClient {
     this.requestTimeoutMs = config.requestTimeoutMs ?? 15_000
   }
 
+  /** Pré-aquece o token OAuth (cartão/boleto via API Cobranças). Ver `EfiClient.warmUp`. */
+  async warmUp(): Promise<void> {
+    await this.authorize()
+  }
+
   private async authorize(): Promise<string> {
     const now = Date.now()
     if (this.token && this.token.expiresAt > now + 30_000) return this.token.value

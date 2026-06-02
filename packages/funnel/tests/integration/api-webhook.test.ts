@@ -1,10 +1,12 @@
 import { describe, expect, test } from 'bun:test'
 import { makeFulfill } from '../../src/server/fulfillment'
+import { makeGrantMembers } from '../../src/server/members-grant'
 import { handlePaymentWebhook } from '../../src/server/webhook'
 import { createFakeRepo } from '../fakes/fake-db'
 import { createFakeGateway } from '../fakes/fake-gateway'
 
 const TOKEN = 'token-interno-do-gateway'
+const OFFER = 'no-comando-da-ia'
 
 function req(
   body: unknown,
@@ -25,7 +27,12 @@ function deps(
   repo: ReturnType<typeof createFakeRepo>['repo'],
   gw: ReturnType<typeof createFakeGateway>,
 ) {
-  return { repo, internalToken: TOKEN, fulfill: makeFulfill({ repo, gateway: gw.gateway }) }
+  return {
+    repo,
+    internalToken: TOKEN,
+    fulfill: makeFulfill({ repo, gateway: gw.gateway }),
+    grantMembers: makeGrantMembers({ gateway: gw.gateway, offerRef: OFFER }),
+  }
 }
 
 describe('POST /api/webhooks/payments', () => {
@@ -66,6 +73,51 @@ describe('POST /api/webhooks/payments', () => {
     expect(gw.calls.register[0]?.input.email).toBe('ana@example.com')
     expect(leads.get(id)?.buyerRegisteredAt).not.toBeNull()
     expect(leads.get(id)?.buyerUserId).toBe('user-1')
+  })
+
+  test('payment.paid concede acesso na área de membros DEPOIS do registro', async () => {
+    const { repo, leads } = createFakeRepo()
+    const gw = createFakeGateway()
+    const { id } = await repo.createLead()
+    await repo.updateLead(id, { nome: 'Ana', email: 'ana@example.com', telefone: '11999998888' })
+    await repo.setPayment(id, 'pay-1')
+
+    const res = await handlePaymentWebhook(
+      req(
+        { id: 'd1', event: 'payment.paid', data: { paymentId: 'pay-1' } },
+        { token: TOKEN, deliveryId: 'd1' },
+      ),
+      deps(repo, gw),
+    )
+    expect(res.status).toBe(200)
+    // Concedido com o userId recém-registrado + o pagamento + a oferta vendida.
+    expect(gw.calls.grant).toHaveLength(1)
+    expect(gw.calls.grant[0]?.input).toMatchObject({
+      userId: leads.get(id)?.buyerUserId,
+      paymentId: 'pay-1',
+      offerRef: OFFER,
+    })
+  })
+
+  test('falha na concessão → 502 GRANT_RETRY e NÃO marca a entrega (gateway re-entrega)', async () => {
+    const { repo, leads } = createFakeRepo()
+    const gw = createFakeGateway()
+    gw.setGrantStatus(502)
+    const { id } = await repo.createLead()
+    await repo.updateLead(id, { nome: 'Ivo', email: 'ivo@example.com', telefone: '11900001111' })
+    await repo.setPayment(id, 'pay-1')
+
+    const res = await handlePaymentWebhook(
+      req(
+        { id: 'd1', event: 'payment.paid', data: { paymentId: 'pay-1' } },
+        { token: TOKEN, deliveryId: 'd1' },
+      ),
+      deps(repo, gw),
+    )
+    expect(res.status).toBe(502)
+    // Registro já concluído (não se repete no retry); concessão fica retryável.
+    expect(leads.get(id)?.buyerRegisteredAt).not.toBeNull()
+    expect(await repo.isWebhookProcessed('d1')).toBe(false)
   })
 
   test('e-mail já cadastrado (409) é sucesso: registra sem duplicar', async () => {

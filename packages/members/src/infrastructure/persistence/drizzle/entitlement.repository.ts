@@ -1,4 +1,4 @@
-import { and, eq, gt, isNull, or } from 'drizzle-orm'
+import { and, desc, eq, gt, isNull, ne, notInArray, or, sql } from 'drizzle-orm'
 import { EntitlementAggregate } from '../../../domain/entitlement/entitlement.aggregate'
 import type { EntitlementRepository } from '../../../domain/ports/entitlement-repository.port'
 import type { Database } from './db'
@@ -76,7 +76,10 @@ export class DrizzleEntitlementRepository implements EntitlementRepository {
         createdAt: s.createdAt,
         updatedAt: s.updatedAt,
       })
-      .onConflictDoNothing({ target: entitlements.idempotencyKey })
+      // Sem alvo: cobre QUALQUER índice único (idempotency_key E
+      // user_product_source) — um conflito em qualquer um vira no-op (false), não
+      // exceção. Defesa contra um caminho futuro que derive a idempotencyKey diferente.
+      .onConflictDoNothing()
       .returning({ id: entitlements.id })
     return inserted.length > 0
   }
@@ -102,10 +105,14 @@ export class DrizzleEntitlementRepository implements EntitlementRepository {
     courseRef: string,
     now: Date,
   ): Promise<EntitlementAggregate | null> {
+    // Pode haver mais de uma matrícula ativa para o mesmo curso (ex.: vitalícia +
+    // assinatura). Escolhe a "mais forte": vitalícia (expiresAt nulo) primeiro,
+    // senão a de validade mais distante — para o detalhe exibir o acesso correto.
     const [row] = await this.db
       .select()
       .from(entitlements)
       .where(and(activePredicate(userId, now), eq(entitlements.courseRef, courseRef)))
+      .orderBy(sql`${entitlements.expiresAt} is null desc`, desc(entitlements.expiresAt))
       .limit(1)
     return row ? fromRow(row) : null
   }
@@ -115,11 +122,33 @@ export class DrizzleEntitlementRepository implements EntitlementRepository {
     return rows.map(fromRow)
   }
 
-  async findBySubscriptionId(subscriptionId: string): Promise<EntitlementAggregate[]> {
-    const rows = await this.db
-      .select()
-      .from(entitlements)
-      .where(eq(entitlements.subscriptionId, subscriptionId))
-    return rows.map(fromRow)
+  async revokeBySubscriptionId(subscriptionId: string, now: Date): Promise<number> {
+    const updated = await this.db
+      .update(entitlements)
+      .set({
+        status: 'revoked',
+        revokedAt: now,
+        updatedAt: now,
+        version: sql`${entitlements.version} + 1`,
+      })
+      .where(
+        and(eq(entitlements.subscriptionId, subscriptionId), ne(entitlements.status, 'revoked')),
+      )
+      .returning({ id: entitlements.id })
+    return updated.length
+  }
+
+  async expireBySubscriptionId(subscriptionId: string, now: Date): Promise<number> {
+    const updated = await this.db
+      .update(entitlements)
+      .set({ status: 'expired', updatedAt: now, version: sql`${entitlements.version} + 1` })
+      .where(
+        and(
+          eq(entitlements.subscriptionId, subscriptionId),
+          notInArray(entitlements.status, ['revoked', 'expired']),
+        ),
+      )
+      .returning({ id: entitlements.id })
+    return updated.length
   }
 }

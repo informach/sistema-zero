@@ -23,6 +23,12 @@ export interface CheckoutDeps {
    * não exigir mudança em chamadas/testes antigos.
    */
   fulfill?: (lead: Lead) => Promise<void>
+  /**
+   * Concede o acesso na área de membros após o registro. Best-effort nos caminhos
+   * de polling/cartão (o webhook é o backstop durável) — roda DEPOIS do `fulfill`
+   * (relê o lead p/ o `buyer_user_id` recém-gravado). Idempotente do lado do members.
+   */
+  grantMembers?: (lead: Lead) => Promise<void>
 }
 
 interface PixData {
@@ -230,7 +236,6 @@ export async function startCard(request: Request, deps: CheckoutDeps): Promise<R
       phone: lead.telefone.replace(/\D/g, ''),
       // Endereço é opcional no cartão (a Efí aceita sem) — só envia se coletado.
       ...(c.customer.address ? { address: cleanAddress(c.customer.address) } : {}),
-      birth: c.customer.birth,
     },
     card: { token: c.token, brand: c.brand, last4: c.last4, installments: c.installments },
     metadata: leadMetadata(lead, deps.productSku, charge),
@@ -251,23 +256,35 @@ export async function startCard(request: Request, deps: CheckoutDeps): Promise<R
       // Cartão é síncrono → registra o uso do cupom só na transição p/ pago (exactly-once).
       await redeemCouponBestEffort(deps.gateway, charge.couponCode)
     }
-    await runFulfill(lead.id, deps)
+    await runPostPayment(lead.id, deps)
   }
 
   return json({ paymentId: view.id, status: view.status, card: view.card ?? null })
 }
 
 /**
- * Registra o comprador (best-effort): relê o lead já pago e chama `fulfill`. Erros
- * são engolidos de propósito — o webhook re-tenta o registro de forma durável.
+ * Pós-pagamento (best-effort): registra o comprador e DEPOIS concede o acesso na
+ * área de membros. Cada etapa é independente e tem os erros engolidos de propósito
+ * — o webhook `payment.paid` é o backstop durável de AMBOS (registro idempotente
+ * por e-mail; concessão idempotente pela chave da matrícula). A concessão relê o
+ * lead para pegar o `buyer_user_id` que o `fulfill` acabou de gravar.
  */
-async function runFulfill(leadId: string, deps: CheckoutDeps): Promise<void> {
-  if (!deps.fulfill) return
-  try {
-    const fresh = await deps.repo.getLead(leadId)
-    if (fresh) await deps.fulfill(fresh)
-  } catch {
-    /* o webhook é o backstop durável do registro */
+async function runPostPayment(leadId: string, deps: CheckoutDeps): Promise<void> {
+  if (deps.fulfill) {
+    try {
+      const fresh = await deps.repo.getLead(leadId)
+      if (fresh) await deps.fulfill(fresh)
+    } catch {
+      /* o webhook é o backstop durável do registro */
+    }
+  }
+  if (deps.grantMembers) {
+    try {
+      const registered = await deps.repo.getLead(leadId)
+      if (registered?.buyerUserId) await deps.grantMembers(registered)
+    } catch {
+      /* o webhook é o backstop durável da concessão */
+    }
   }
 }
 
@@ -295,7 +312,7 @@ export async function pixStatus(
       // Registra o uso do cupom só na transição p/ pago (exactly-once via markPaid).
       await redeemCouponBestEffort(deps.gateway, lead.couponCode)
     }
-    await runFulfill(lead.id, deps)
+    await runPostPayment(lead.id, deps)
   }
 
   return json({

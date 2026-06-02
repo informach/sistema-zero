@@ -23,7 +23,10 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    Entitlements + "pedido imutável" do e-commerce.
 2. **Checagem de acesso = leitura LOCAL** (`status='active' AND (expiresAt IS NULL OR
    expiresAt > now)`). Sem chamar ninguém no caminho quente. Vitalício → `expiresAt`
-   null; assinatura → `expiresAt` estendido a cada ciclo + carência.
+   null; assinatura → `expiresAt` estendido a cada ciclo + carência. Curso **`archived`
+   mantém o acesso** de quem já tem matrícula (só `draft` bloqueia) — `isCourseAccessible`.
+   Havendo >1 matrícula ativa p/ o mesmo curso, o detalhe escolhe a **mais forte**
+   (vitalícia > validade mais distante).
 3. **Snapshot congelado no grant**: resolve no catálogo o que a oferta dá direito e
    **grava** (offer/product/sku/fulfillment/courseRef) na matrícula. Mudar a oferta
    depois NÃO altera quem já comprou.
@@ -88,11 +91,25 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
 ```
 
 - **Webhooks de entrada** verificam HMAC sobre o corpo BRUTO com `GATEWAY_HMAC_SECRET`
-  (= segredo de resign do gateway), header `x-signature: t=,v1=`. Dedupe por
+  (= segredo de resign do gateway), header `x-signature: t=,v1=`. HMAC é checado no
+  hook `transform` (**antes** da validação do corpo → 401 antes de 422). Dedupe por
   `x-delivery-id` (tabela `processed_webhooks`). Falha de concessão → o funil devolve
   502 e o gateway re-entrega (members é idempotente pela `idempotencyKey`).
+- **Grant de oferta não resolvida** (catálogo 404) → `/webhooks/grant` devolve **502 e
+  NÃO marca a entrega** (auto-cura uma corrida; uma divergência de slug permanente
+  aflora como falhas repetidas em vez de sumir). `granted:0` por idempotência (já
+  concedido) continua sendo **200** (sucesso) — o sinal é `offerFound`, não a contagem.
+- **API do aluno = defesa em profundidade**: o gateway injeta `x-internal-token`
+  (`header-inject`, sobrescreve qualquer valor do cliente) e o members o exige nas
+  rotas do aluno (`INTERNAL_API_TOKEN`, ver §env). Vazio em dev (sem gateway);
+  **OBRIGATÓRIO em produção** (boot falha sem ele). É o que torna o `x-auth-user-id`
+  confiável (só vale se passou pelo gateway). Webhooks NÃO usam (já têm HMAC).
 - **Catálogo** é chamado DIRETO (S2S, `CATALOG_BASE_URL`), fora do caminho quente — a
   rota de entitlements é pública de leitura.
+- Cancelar/expirar assinatura é um **UPDATE atômico set-based** por `subscription_id`
+  (sem load-mutate-save por linha → sem lost-update sob corrida com renovação).
+- `processed_webhooks` tem `pruneProcessedBefore(date)` (retenção; chamar por cron —
+  não roda no caminho quente).
 
 ## Convenções
 

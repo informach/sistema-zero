@@ -24,7 +24,16 @@ export interface WebhooksRoutesDeps {
  * DEPOIS do sucesso → falha transitória continua retryável.
  */
 export function webhooksRoutes(deps: WebhooksRoutesDeps) {
-  const verify = (request: Request, headers: Record<string, string | undefined>) => {
+  // HMAC verificado no `transform` (roda ANTES da validação do corpo) → uma
+  // requisição sem assinatura válida nunca chega à validação/handler (401 antes
+  // de 422; nada de side-effect antes da autenticação). 413 tem precedência.
+  const verify = ({
+    request,
+    headers,
+  }: {
+    request: Request
+    headers: Record<string, string | undefined>
+  }) => {
     if (isOversizeBody(request)) throw new PayloadTooLargeError()
     assertWebhookSignature({
       secret: deps.webhookSecret,
@@ -35,10 +44,10 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
   }
 
   return new Elysia({ prefix: '/members/webhooks' })
+    .onTransform(verify)
     .post(
       '/grant',
-      async ({ request, headers, body }) => {
-        verify(request, headers)
+      async ({ headers, body, set }) => {
         const deliveryId = headers['x-delivery-id'] ?? null
         if (deliveryId && (await deps.processed.isProcessed(deliveryId))) {
           return { ok: true, deduped: true }
@@ -56,6 +65,15 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
           subscription: body.subscription ?? null,
         })
 
+        // Oferta não resolvida no catálogo (404) → 502 SEM marcar a entrega: o
+        // gateway/funil re-entrega (auto-cura uma corrida; uma divergência de slug
+        // permanente aflora como falhas repetidas em vez de sumir silenciosamente).
+        if (!result.offerFound) {
+          deps.logger.warn('grant.offer_unresolved', { offerRef: body.offerRef })
+          set.status = 502
+          return { ok: false, error: 'OFFER_UNRESOLVED' }
+        }
+
         if (deliveryId) await deps.processed.markProcessed(deliveryId, 'grant')
         return { ok: true, granted: result.granted }
       },
@@ -63,8 +81,7 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
     )
     .post(
       '/subscription',
-      async ({ request, headers, body }) => {
-        verify(request, headers)
+      async ({ headers, body }) => {
         const deliveryId = headers['x-delivery-id'] ?? null
         if (deliveryId && (await deps.processed.isProcessed(deliveryId))) {
           return { ok: true, deduped: true }

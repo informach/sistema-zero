@@ -17,6 +17,19 @@ const PAYMENTS_URL = process.env.PAYMENTS_URL ?? 'http://localhost:3001'
 const AUTH_URL = process.env.AUTH_URL ?? 'http://localhost:3002'
 const CATALOG_URL = process.env.CATALOG_URL ?? 'http://localhost:3003'
 const MEMBERS_URL = process.env.MEMBERS_URL ?? 'http://localhost:3004'
+// Token interno injetado nas rotas do ALUNO (members) como defesa em profundidade:
+// prova ao members que a chamada veio do gateway (o `x-auth-user-id` confiável só
+// vale se passou por aqui). DEVE bater com o INTERNAL_API_TOKEN do members.
+const MEMBERS_INTERNAL_TOKEN = process.env.MEMBERS_INTERNAL_TOKEN ?? ''
+// Só injeta quando configurado (header-inject vazio falha no boot); vazio em dev.
+const membersInternalTransforms = MEMBERS_INTERNAL_TOKEN
+  ? [
+      {
+        type: 'header-inject' as const,
+        options: { headers: { 'x-internal-token': MEMBERS_INTERNAL_TOKEN } },
+      },
+    ]
+  : []
 const FUNNEL_URL = process.env.FUNNEL_URL ?? 'http://localhost:4321'
 const FUNNEL_HMAC_SECRET = process.env.FUNNEL_HMAC_SECRET ?? ''
 const FUNNEL_INTERNAL_TOKEN = process.env.FUNNEL_INTERNAL_TOKEN ?? ''
@@ -305,6 +318,7 @@ const config: GatewayConfigInput = {
       service: 'members',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
     {
@@ -314,6 +328,7 @@ const config: GatewayConfigInput = {
       service: 'members',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
       rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
     },
     {
@@ -323,6 +338,7 @@ const config: GatewayConfigInput = {
       service: 'members',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
       rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
     },
     {
@@ -332,6 +348,7 @@ const config: GatewayConfigInput = {
       service: 'members',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
       rateLimit: { max: 600, windowMs: 60_000, by: 'principal' },
     },
     {
@@ -341,6 +358,7 @@ const config: GatewayConfigInput = {
       service: 'members',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
       rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
     },
     // Concessão/assinatura (funil → gateway → members): HMAC de borda do funil +

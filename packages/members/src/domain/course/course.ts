@@ -8,6 +8,17 @@ import type { LessonBlockContent, LessonBlockKind } from './lesson-block'
 export const COURSE_STATUSES = ['draft', 'published', 'archived'] as const
 export type CourseStatus = (typeof COURSE_STATUSES)[number]
 
+/**
+ * Status que concedem acesso a quem já tem matrícula: `published` (à venda) ou
+ * `archived` (retirado da venda, mas quem comprou mantém o acesso — padrão LMS).
+ * `draft` nunca concede acesso. Descoberta/venda usa só `published`; consumo usa isto.
+ */
+export const ACCESSIBLE_COURSE_STATUSES = ['published', 'archived'] as const
+
+export function isCourseAccessible(status: CourseStatus): boolean {
+  return (ACCESSIBLE_COURSE_STATUSES as readonly CourseStatus[]).includes(status)
+}
+
 export interface Course {
   id: string
   slug: string

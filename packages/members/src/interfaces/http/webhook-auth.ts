@@ -6,6 +6,12 @@ import { verifyHmacSignature } from '@sistemazero/core/security'
  * chamada do funil como consumer `gateway`). A mensagem canônica é o corpo BRUTO
  * (sem Idempotency-Key — o funil não envia nas chamadas de concessão). Header
  * `x-signature: t=<ts>,v1=<hex>`. Lança 401 se inválida/expirada (anti-replay).
+ *
+ * NOTA (limitação herdada do gateway): o `x-delivery-id` NÃO faz parte da mensagem
+ * assinada (o gateway assina só o corpo). Um replay com novo delivery-id passaria o
+ * HMAC e não seria deduplicado — porém o grant/revoke são IDEMPOTENTES (chave da
+ * matrícula / subscriptionId), então re-executar é inócuo. Anti-replay por nonce
+ * está em aberto no gateway (ver api-gateway §8).
  */
 export function assertWebhookSignature(input: {
   secret: string

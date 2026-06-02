@@ -245,6 +245,25 @@ export function createApplication(env: Env): Application {
       }, env.IDEMPOTENCY_CLEANUP_INTERVAL_MS)
       server.listen(env.PORT)
       logger.info('http.listening', { port: env.PORT })
+      // Pré-aquece os tokens OAuth da Efí (best-effort, fora do caminho da request).
+      // O 1º handshake mTLS do Pix é caro (~15s no cold-start) e, sem isto, a 1ª
+      // cobrança pós-restart estoura o timeout → 502 no funil. Não bloqueia o boot.
+      void efiClient
+        .warmUp()
+        .then(() => logger.info('efi.pix.token.warmed'))
+        .catch((error) =>
+          logger.warn('efi.pix.warmup.failed', {
+            error: error instanceof Error ? error.message : String(error),
+          }),
+        )
+      void cobrancasClient
+        .warmUp()
+        .then(() => logger.info('efi.cobrancas.token.warmed'))
+        .catch((error) =>
+          logger.warn('efi.cobrancas.warmup.failed', {
+            error: error instanceof Error ? error.message : String(error),
+          }),
+        )
     },
     async stop() {
       if (cleanupTimer) clearInterval(cleanupTimer)

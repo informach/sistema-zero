@@ -118,7 +118,9 @@ Proxy, Facade (`route-registry` + `gateway-plugin` + `gateway.config.ts`), Decor
 - **`src/infrastructure/config/env.ts`**: env vars (Zod, fail-fast). Veja `.env.example`.
 - **`load-gateway-config.ts` → `validateReferences`**: validações cruzadas (route-ids únicos, serviço/grupo existem, jwt→JWKS, resign→creds, **tipo de transform conhecido**, **valor de `header-inject` não vazio**).
 
-**Segredos** (`hmacSecret` ≥ 16 chars, validado no boot): defina em prod `FUNNEL_HMAC_SECRET`, `GATEWAY_CONSUMER_ID`/`GATEWAY_HMAC_SECRET`, `FUNNEL_INTERNAL_TOKEN`. Vazio/curto **falha no boot** (evita auth com chave efetivamente vazia).
+**Segredos** (`hmacSecret` ≥ 16 chars, validado no boot): defina em prod `FUNNEL_HMAC_SECRET`, `GATEWAY_CONSUMER_ID`/`GATEWAY_HMAC_SECRET`, `FUNNEL_INTERNAL_TOKEN`, `MEMBERS_INTERNAL_TOKEN`. Vazio/curto **falha no boot** (evita auth com chave efetivamente vazia).
+
+**`MEMBERS_INTERNAL_TOKEN`** (defesa em profundidade da área de membros): quando setado, o gateway injeta `x-internal-token` (via `header-inject`, **sobrescreve** qualquer valor do cliente) nas rotas do **aluno** (`members-*`, não nos webhooks que já têm HMAC), e o members o exige (`INTERNAL_API_TOKEN`, MESMO valor). Vazio → injeção desligada (só dev). É o que prova ao members que o `x-auth-user-id` veio do gateway. Em `gateway.config.ts` a injeção é condicional (array vazio quando não setado, p/ não falhar o boot do header-inject).
 
 ---
 

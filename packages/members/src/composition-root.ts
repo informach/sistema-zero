@@ -67,7 +67,14 @@ export async function createApplication(env: Env): Promise<Application> {
   const server = createServer({
     env,
     logger,
-    members: { listMyCourses, getMyCourse, getLesson, markComplete, getProgress },
+    members: {
+      listMyCourses,
+      getMyCourse,
+      getLesson,
+      markComplete,
+      getProgress,
+      internalToken: env.INTERNAL_API_TOKEN,
+    },
     webhooks: {
       grant,
       revoke,

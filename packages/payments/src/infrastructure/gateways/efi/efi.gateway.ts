@@ -305,16 +305,18 @@ export class EfiPaymentGateway implements PaymentGateway {
       ...(addr.complement ? { complement: addr.complement } : {}),
     }
 
+    const customer: Record<string, unknown> = {
+      name: input.customer.name,
+      email: input.customer.email,
+      cpf: input.customer.cpf.replace(/\D/g, ''),
+      phone_number: input.customer.phone.replace(/\D/g, ''),
+    }
+    // `birth` é OPCIONAL na Efí — só envia quando coletado.
+    if (input.customer.birth) customer.birth = input.customer.birth
     const creditCard: Record<string, unknown> = {
       payment_token: input.paymentToken,
       billing_address: billingAddress,
-      customer: {
-        name: input.customer.name,
-        email: input.customer.email,
-        cpf: input.customer.cpf.replace(/\D/g, ''),
-        birth: input.customer.birth,
-        phone_number: input.customer.phone.replace(/\D/g, ''),
-      },
+      customer,
     }
 
     const metadata: Record<string, unknown> = { custom_id: input.subscriptionId }
@@ -337,16 +339,18 @@ export class EfiPaymentGateway implements PaymentGateway {
 
   /** Monta o corpo do `POST /charge/one-step` para cartão (`payment.credit_card`). */
   private buildCardOneStepBody(input: CreateCardChargeInput): Record<string, unknown> {
+    const customer: Record<string, unknown> = {
+      name: input.customer.name,
+      email: input.customer.email,
+      cpf: input.customer.cpf.replace(/\D/g, ''),
+      phone_number: input.customer.phone.replace(/\D/g, ''),
+    }
+    // `birth` é OPCIONAL na Efí — só envia quando o checkout coletou.
+    if (input.customer.birth) customer.birth = input.customer.birth
     const creditCard: Record<string, unknown> = {
       installments: input.installments,
       payment_token: input.paymentToken,
-      customer: {
-        name: input.customer.name,
-        email: input.customer.email,
-        cpf: input.customer.cpf.replace(/\D/g, ''),
-        birth: input.customer.birth,
-        phone_number: input.customer.phone.replace(/\D/g, ''),
-      },
+      customer,
     }
 
     // `billing_address` é OPCIONAL na Efí — só envia quando o checkout coletou.

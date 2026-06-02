@@ -7,7 +7,7 @@ import {
   TooManyRequestsError,
   UnauthorizedError,
 } from '@sistemazero/core/http'
-import type { Logger } from '@sistemazero/core/logging'
+import { type Logger, serializeError } from '@sistemazero/core/logging'
 
 export type { ErrorEnvelope }
 
@@ -56,8 +56,8 @@ export function buildErrorResponse(input: {
   if (code === 'NOT_FOUND')
     return { status: 404, body: envelope('NOT_FOUND', 'Recurso não encontrado') }
 
-  input.logger.error('unhandled.error', {
-    message: error instanceof Error ? error.message : String(error),
-  })
+  // Erro inesperado: loga com stack (serializeError, aninhado em `error:` — nunca
+  // espalhado, colidiria com `message` do evento), espelhando o gateway/auth.
+  input.logger.error('unhandled.error', { error: serializeError(error) })
   return { status: 500, body: envelope('INTERNAL_ERROR', 'Erro interno') }
 }

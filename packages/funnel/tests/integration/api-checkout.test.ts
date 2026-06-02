@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { LEAD_COOKIE } from '../../src/lib/lead-session'
 import { pixStatus, startBoleto, startCard, startPix } from '../../src/server/checkout'
 import { makeFulfill } from '../../src/server/fulfillment'
+import { makeGrantMembers } from '../../src/server/members-grant'
 import { createFakeRepo } from '../fakes/fake-db'
 import { createFakeGateway } from '../fakes/fake-gateway'
 
@@ -27,6 +28,7 @@ function deps(
     productName: 'No Comando da IA',
     productSku: 'no-comando-da-ia',
     fulfill: makeFulfill({ repo, gateway: gw.gateway }),
+    grantMembers: makeGrantMembers({ gateway: gw.gateway, offerRef: 'no-comando-da-ia' }),
   }
 }
 
@@ -145,6 +147,12 @@ describe('GET /api/checkout/:paymentId', () => {
     expect(leads.get(id)?.paidAt).not.toBeNull()
     expect(events.some((e) => e.eventName === 'pagamento_confirmado')).toBe(true)
     expect(leads.get(id)?.buyerRegisteredAt).not.toBeNull()
+    // Concede o acesso na área de membros (best-effort) após o registro.
+    expect(gw.calls.grant).toHaveLength(1)
+    expect(gw.calls.grant[0]?.input).toMatchObject({
+      userId: leads.get(id)?.buyerUserId,
+      paymentId: 'pay-1',
+    })
   })
 
   test('404 quando o paymentId não pertence ao lead', async () => {
@@ -230,9 +238,15 @@ describe('POST /api/checkout/card', () => {
     expect(leads.get(id)?.paidAt).not.toBeNull()
     expect(events.some((e) => e.step === 'checkout_card')).toBe(true)
     expect(leads.get(id)?.buyerRegisteredAt).not.toBeNull()
+    // Concede o acesso na área de membros (best-effort) após o registro.
+    expect(gw.calls.grant).toHaveLength(1)
+    expect(gw.calls.grant[0]?.input).toMatchObject({
+      userId: leads.get(id)?.buyerUserId,
+      paymentId: 'pay-1',
+    })
   })
 
-  test('cartão recusado (FAILED): não marca pago, não registra', async () => {
+  test('cartão recusado (FAILED): não marca pago, não registra, não concede', async () => {
     const { repo, leads, id } = await paidLead()
     const gw = createFakeGateway()
     gw.setStatus('FAILED')
@@ -241,6 +255,7 @@ describe('POST /api/checkout/card', () => {
     expect(((await res.json()) as { status: string }).status).toBe('FAILED')
     expect(leads.get(id)?.paidAt).toBeNull()
     expect(leads.get(id)?.buyerRegisteredAt).toBeNull()
+    expect(gw.calls.grant).toHaveLength(0)
   })
 
   test('nova tentativa usa attemptId diferente (chave de idempotência distinta)', async () => {

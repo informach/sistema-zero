@@ -298,12 +298,12 @@ describe('ProcessPaymentService (Cartão)', () => {
     expect(gateway.cardCreatedCount).toBe(1)
   })
 
-  test('rejeita cartão sem data de nascimento', async () => {
+  test('aceita cartão SEM data de nascimento (a Efí não exige birth no one-step)', async () => {
     const { birth: _drop, ...customer } = baseCard.customer!
-    await expect(service.execute({ ...baseCard, customer })).rejects.toBeInstanceOf(
-      CardDataIncompleteError,
-    )
-    expect(gateway.cardCreatedCount).toBe(0)
+    const view = await service.execute({ ...baseCard, customer })
+    expect(view.status).toBe('PAID')
+    expect(view.card).toBeDefined()
+    expect(gateway.cardCreatedCount).toBe(1)
   })
 
   test('aceita cartão SEM endereço de cobrança (a Efí não exige billing_address)', async () => {

@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm'
+import { eq, lt } from 'drizzle-orm'
 import type { ProcessedWebhookRepository } from '../../../domain/ports/processed-webhook-repository.port'
 import type { Database } from './db'
 import { processedWebhooks } from './schema'
@@ -20,5 +20,19 @@ export class DrizzleProcessedWebhookRepository implements ProcessedWebhookReposi
       .insert(processedWebhooks)
       .values({ deliveryId, eventName })
       .onConflictDoNothing({ target: processedWebhooks.deliveryId })
+  }
+
+  /**
+   * Retenção: apaga registros de dedupe anteriores a `before` (chamado por um
+   * cron/script de manutenção — NÃO no caminho quente). Seguro: a janela de
+   * tolerância do HMAC é de minutos; reprocessar uma entrega muito antiga seria
+   * idempotente de qualquer forma (chave da matrícula). Retorna nº de linhas.
+   */
+  async pruneProcessedBefore(before: Date): Promise<number> {
+    const deleted = await this.db
+      .delete(processedWebhooks)
+      .where(lt(processedWebhooks.processedAt, before))
+      .returning({ id: processedWebhooks.deliveryId })
+    return deleted.length
   }
 }

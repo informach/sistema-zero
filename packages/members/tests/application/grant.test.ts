@@ -97,7 +97,7 @@ describe('GrantEntitlementService', () => {
     expect(list[0]?.toSnapshot().snapshot.name).toBe('Nome Original')
   })
 
-  test('oferta inexistente → granted 0 (sem lançar)', async () => {
+  test('oferta inexistente → offerFound false, granted 0 (sem lançar)', async () => {
     const { grant } = setup()
     const result = await grant.execute({
       userId: 'u1',
@@ -105,6 +105,7 @@ describe('GrantEntitlementService', () => {
       paymentId: 'pay1',
       grantedAt: T('2026-06-01'),
     })
+    expect(result.offerFound).toBe(false)
     expect(result.granted).toBe(0)
   })
 
@@ -126,5 +127,28 @@ describe('GrantEntitlementService', () => {
     const result = await revoke.cancel('sub1')
     expect(result.affected).toBe(1)
     expect(await entitlements.listActiveByUser('u1', T('2026-06-10'))).toHaveLength(0)
+    // Idempotente: re-cancelar não afeta linhas já revogadas.
+    expect((await revoke.cancel('sub1')).affected).toBe(0)
+  })
+
+  test('expiração natural marca expired (idempotente; não rebaixa revoked)', async () => {
+    const { catalog, entitlements, grant } = setup()
+    catalog.set('offer-sub', offerWithCourse('offer-sub', 'curso-demo'))
+    await grant.execute({
+      userId: 'u1',
+      offerRef: 'offer-sub',
+      paymentId: 'pay1',
+      grantedAt: T('2026-06-01'),
+      subscription: { subscriptionId: 'sub1', intervalMonths: 1 },
+    })
+    const revoke = new RevokeEntitlementService({
+      entitlements,
+      clock: () => T('2026-08-01'),
+      logger: silentLogger,
+    })
+    expect((await revoke.expire('sub1')).affected).toBe(1)
+    expect((await revoke.expire('sub1')).affected).toBe(0)
+    // Já expirada: um cancelamento ainda a revoga (transição válida).
+    expect((await revoke.cancel('sub1')).affected).toBe(1)
   })
 })

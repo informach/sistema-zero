@@ -3,7 +3,12 @@ import type { GatewayClient } from '../lib/gateway-client'
 
 export interface GrantMembersDeps {
   gateway: GatewayClient
-  /** Slug/id da oferta vendida (a área de membros resolve o que ela concede). */
+  /**
+   * Slug/id da oferta vendida (a área de membros resolve o que ela concede). Hoje é
+   * o slug ÚNICO do env (`CATALOG_OFFER_SLUG`) — premissa de oferta única. Quando o
+   * funil vender mais de uma oferta, derive isto da oferta efetivamente comprada
+   * (ex.: gravar o `offerId`/slug no lead no checkout) em vez do env estático.
+   */
   offerRef: string
   log?: (msg: string, meta?: Record<string, unknown>) => void
 }
