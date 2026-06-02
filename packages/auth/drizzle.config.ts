@@ -8,10 +8,13 @@ export default defineConfig({
   schema: './src/infrastructure/persistence/drizzle/schema.ts',
   out: './src/infrastructure/persistence/drizzle/migrations',
   casing: 'snake_case',
-  // Só gera/inspeciona o schema `auth` (dados deste package). O journal de
-  // migrations do drizzle-kit fica no schema `drizzle` padrão (forward-only,
-  // por-pasta, baseado em hash → conviver com payments/funnel é seguro).
+  // Só gera/inspeciona o schema `auth` (dados deste package).
   schemaFilter: ['auth'],
+  // Journal PRÓPRIO por pacote: o drizzle-kit deduplica por `created_at` numa única
+  // tabela; se os 3 pacotes compartilham `drizzle.__drizzle_migrations`, a migration
+  // de um pacote pode ficar "abaixo da marca d'água" de outro e ser PULADA. Uma
+  // tabela por pacote (no schema `drizzle`) isola os journals.
+  migrations: { table: 'auth_migrations' },
   dbCredentials: {
     url: process.env.DATABASE_URL ?? '',
   },

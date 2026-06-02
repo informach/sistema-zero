@@ -226,10 +226,16 @@ token model do boleto/cartão) — **não há worker/scheduler de cobrança noss
 
 Um **único Postgres compartilhado** (`sistemazero`), com **um schema por bounded
 context**: `payments` (este package, via `pgSchema('payments')` + `schemaFilter`),
-`funil` ([[funnel]]) e `auth` (identidade). O journal do drizzle-kit fica no schema
-`drizzle` (por-pasta, por-hash → as migrations dos 3 serviços coexistem no mesmo
-banco). Cada serviço roda seu próprio `db:migrate` (cada migration cria o seu
-`CREATE SCHEMA`); não há FK cross-schema, então a ordem não importa.
+`funil` ([[funnel]]) e `auth` (identidade). Cada serviço roda seu próprio
+`db:migrate` (cada migration cria o seu `CREATE SCHEMA`); não há FK cross-schema,
+então a ordem não importa.
+
+⚠️ **Journal de migrations POR PACOTE** (`migrations: { table: '<pkg>_migrations' }`
+em cada `drizzle.config.ts`, todas no schema `drizzle`). NÃO compartilhe a tabela
+`__drizzle_migrations` entre pacotes: o drizzle-kit deduplica por `created_at` (a
+marca d'água da última migration aplicada), então um journal compartilhado faz a
+migration de um pacote — gerada "mais cedo" — ser **PULADA em silêncio** ("applied
+successfully" sem rodar). Foi exatamente o que aconteceu com auth/funnel antes do fix.
 
 > Histórico: o payments já viveu no schema `public` do banco `payments`. Foi
 > padronizado — banco renomeado p/ `sistemazero` e tabelas movidas p/ o schema

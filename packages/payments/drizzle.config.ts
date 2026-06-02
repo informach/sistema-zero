@@ -8,9 +8,11 @@ export default defineConfig({
   out: './src/infrastructure/persistence/drizzle/migrations',
   casing: 'snake_case',
   // O schema usa `pgSchema('payments')` → só gera/inspeciona o schema `payments`
-  // (dados deste package) no Postgres compartilhado `sistemazero`. O journal do
-  // drizzle-kit fica no schema `drizzle` (por-pasta, por-hash → coexiste com funil/auth).
+  // (dados deste package) no Postgres compartilhado `sistemazero`.
   schemaFilter: ['payments'],
+  // Journal PRÓPRIO por pacote (no schema `drizzle`): evita que a dedupe por
+  // `created_at` de um journal compartilhado PULE a migration de outro pacote.
+  migrations: { table: 'payments_migrations' },
   dbCredentials: {
     url: process.env.DATABASE_URL ?? '',
   },

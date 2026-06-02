@@ -9,10 +9,11 @@ export default defineConfig({
   schema: './src/db/schema.ts',
   out: './src/db/migrations',
   casing: 'snake_case',
-  // Só gera/inspeciona o schema `funil` (dados deste package). O journal de
-  // migrations do drizzle-kit fica no schema `drizzle` padrão (forward-only,
-  // por-pasta, baseado em hash → conviver com o do payments é seguro).
+  // Só gera/inspeciona o schema `funil` (dados deste package).
   schemaFilter: ['funil'],
+  // Journal PRÓPRIO por pacote (no schema `drizzle`): evita que a dedupe por
+  // `created_at` de um journal compartilhado PULE a migration de outro pacote.
+  migrations: { table: 'funil_migrations' },
   dbCredentials: {
     url: process.env.DATABASE_URL ?? '',
   },

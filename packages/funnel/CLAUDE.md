@@ -142,7 +142,9 @@ serviço (`payments`/`funil`/`auth`). Este package é dono do schema `funil`
 (`pgSchema('funil')` + `schemaFilter:['funil']`). Tabelas: `leads`
 (1 linha/lead, enriquecida a cada resposta; centavos em colunas `integer`), `funnel_events`
 (analytics; conversão por etapa usa `count(distinct lead_id)`), `processed_webhooks` (dedupe).
-Migrations forward-only por `drizzle-kit`; o journal coexiste com payments/auth no schema `drizzle`.
+Migrations forward-only por `drizzle-kit`, com **journal próprio por pacote**
+(`migrations: { table: 'funil_migrations' }`) no schema `drizzle` — NÃO compartilhe
+`__drizzle_migrations` entre pacotes (a dedupe por `created_at` pularia migrations).
 
 > Centavos em `integer` (int4, máx ~2,1e9): os tetos do `VALUE_SCHEMA` garantem que nenhum valor —
 > nem o produto `horas×valor×4` — estoure int4. Se um dia precisar de valores maiores, migre as
