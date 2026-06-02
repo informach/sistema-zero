@@ -23,7 +23,7 @@ function deps(
   return {
     repo,
     gateway: gw.gateway,
-    productPriceCents: 3700,
+    offerSlug: 'no-comando-da-ia',
     productName: 'No Comando da IA',
     productSku: 'no-comando-da-ia',
     fulfill: makeFulfill({ repo, gateway: gw.gateway }),
@@ -78,6 +78,48 @@ describe('POST /api/checkout/pix', () => {
     const gw = createFakeGateway()
     const res = await startPix(req('POST'), deps(repo, gw))
     expect(res.status).toBe(401)
+  })
+
+  test('aplica cupom: cobra o valor final, registra offerId/cupom e persiste no lead', async () => {
+    const { repo, leads } = createFakeRepo()
+    const gw = createFakeGateway()
+    gw.addCoupon('PROMO10', 1000) // R$10 de desconto
+    const { id } = await repo.createLead()
+    await repo.updateLead(id, { nome: 'Ana', email: 'ana@example.com', telefone: '11999998888' })
+    const res = await startPix(
+      req('POST', cookieFor(id), { couponCode: 'promo10' }),
+      deps(repo, gw),
+    )
+    expect(res.status).toBe(200)
+    const input = gw.calls.create[0]?.input as {
+      amountInCents: number
+      metadata: { offerId: string; couponCode: string }
+    }
+    expect(input.amountInCents).toBe(2700)
+    expect(input.metadata.offerId).toBe('offer-1')
+    expect(input.metadata.couponCode).toBe('PROMO10')
+    expect(leads.get(id)?.couponCode).toBe('PROMO10')
+  })
+
+  test('cupom inválido → 422 e não cria cobrança', async () => {
+    const { repo } = createFakeRepo()
+    const gw = createFakeGateway()
+    const { id } = await repo.createLead()
+    await repo.updateLead(id, { nome: 'Ana', email: 'ana@example.com', telefone: '11999998888' })
+    const res = await startPix(req('POST', cookieFor(id), { couponCode: 'NOPE' }), deps(repo, gw))
+    expect(res.status).toBe(422)
+    expect(gw.calls.create).toHaveLength(0)
+  })
+
+  test('registra o uso do cupom só na confirmação (polling)', async () => {
+    const { repo, id } = await paidLead()
+    const gw = createFakeGateway()
+    gw.addCoupon('PROMO10', 1000)
+    await startPix(req('POST', cookieFor(id), { couponCode: 'promo10' }), deps(repo, gw))
+    expect(gw.calls.redeem).toHaveLength(0) // ainda não pago
+    gw.setStatus('PAID')
+    await pixStatus(req('GET', cookieFor(id)), 'pay-1', deps(repo, gw))
+    expect(gw.calls.redeem).toContain('PROMO10')
   })
 
   test('409 quando o lead ainda não tem e-mail (sem contato para entregar o ebook)', async () => {

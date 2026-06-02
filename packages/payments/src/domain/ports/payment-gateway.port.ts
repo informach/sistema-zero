@@ -103,8 +103,12 @@ export interface CreateCardChargeInput {
   /** Token de pagamento gerado no browser (PCI) — de vida curta. */
   paymentToken: string
   customer: CardCustomer
-  /** Endereço de cobrança do cartão. */
-  billingAddress: Address
+  /**
+   * Endereço de cobrança do cartão. OPCIONAL: a Efí aceita cartão sem
+   * `billing_address` (útil p/ reduzir fricção em produtos de baixo valor). Quando
+   * ausente, o adapter simplesmente não envia o campo.
+   */
+  billingAddress?: Address
   description?: string
   idempotencyKey: string
 }

@@ -36,6 +36,9 @@ export const leads = funil.table(
     // Progresso / pagamento.
     lastStep: text('last_step').notNull().default('entrou_landing'),
     paymentId: uuid('payment_id'),
+    // Cupom aplicado no checkout (catálogo). Persistido p/ registrar o uso (redeem)
+    // na confirmação do pagamento (pix/boleto confirmam fora da tela).
+    couponCode: text('coupon_code'),
     paidAt: timestamp('paid_at', { withTimezone: true }),
 
     // Comprador registrado no IdP (@sistemazero/auth) após o pagamento confirmado.

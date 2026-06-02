@@ -8,11 +8,13 @@ import {
 import type { GatewayClient } from '../lib/gateway-client'
 import { json, jsonError, safeJson } from '../lib/http'
 import { getLeadId } from '../lib/lead-session'
+import { quotePreview, readCouponCode, redeemCouponBestEffort, resolveCharge } from './catalog'
 
 export interface CheckoutDeps {
   repo: FunnelRepo
   gateway: GatewayClient
-  productPriceCents: number
+  /** Slug da oferta ativa no catálogo (fonte do preço autoritativo). */
+  offerSlug: string
   productName: string
   productSku: string
   /**
@@ -64,9 +66,31 @@ function cleanAddress(a: AddressFormInput): Record<string, string> {
   return out
 }
 
-/** Metadata comum das cobranças (rastreia origem/lead no payments e no recibo). */
-function leadMetadata(lead: Lead, sku: string): Record<string, unknown> {
-  return { leadId: lead.id, sku, nome: lead.nome, email: lead.email, telefone: lead.telefone }
+/** Metadata comum das cobranças (rastreia origem/lead/oferta no payments e no recibo). */
+function leadMetadata(
+  lead: Lead,
+  sku: string,
+  charge: { offerId: string; couponCode: string | null },
+): Record<string, unknown> {
+  const meta: Record<string, unknown> = {
+    leadId: lead.id,
+    sku,
+    offerId: charge.offerId,
+    nome: lead.nome,
+    email: lead.email,
+    telefone: lead.telefone,
+  }
+  if (charge.couponCode) meta.couponCode = charge.couponCode
+  return meta
+}
+
+/** Persiste o cupom aplicado no lead (p/ registrar o uso na confirmação). */
+async function persistCoupon(
+  deps: CheckoutDeps,
+  leadId: string,
+  couponCode: string | null,
+): Promise<void> {
+  if (couponCode) await deps.repo.updateLead(leadId, { couponCode })
 }
 
 /** POST /api/checkout/pix — cria a cobrança Pix via gateway (BFF) e devolve o QR. */
@@ -80,14 +104,20 @@ export async function startPix(request: Request, deps: CheckoutDeps): Promise<Re
   // O modal de pré-checkout (/oferta) coleta nome/e-mail/telefone antes daqui.
   if (!lead.email) return jsonError('Finalize seus dados antes de pagar.', 409, 'NO_CONTACT')
 
+  // Preço AUTORITATIVO (catálogo) + cupom opcional do corpo.
+  const couponCode = readCouponCode(await safeJson(request))
+  const charge = await resolveCharge(deps.gateway, deps.offerSlug, couponCode)
+  if (!charge.ok) return jsonError(charge.message, charge.status, charge.code)
+  await persistCoupon(deps, lead.id, charge.couponCode)
+
   // Idempotência determinística por lead → retry aponta p/ a MESMA cobrança Pix.
   const idempotencyKey = `funil-${lead.id}`
   const input = {
-    amountInCents: deps.productPriceCents,
+    amountInCents: charge.amountInCents,
     method: 'PIX',
     description: `${deps.productName} (ebook)`,
     payerMessage: 'Pagamento do ebook No Comando da IA',
-    metadata: leadMetadata(lead, deps.productSku),
+    metadata: leadMetadata(lead, deps.productSku, charge),
   }
 
   const { status, body } = await deps.gateway.createPayment(input, idempotencyKey)
@@ -126,9 +156,13 @@ export async function startBoleto(request: Request, deps: CheckoutDeps): Promise
   }
   const form = parsed.data
 
+  const charge = await resolveCharge(deps.gateway, deps.offerSlug, form.couponCode)
+  if (!charge.ok) return jsonError(charge.message, charge.status, charge.code)
+  await persistCoupon(deps, lead.id, charge.couponCode)
+
   const idempotencyKey = `funil-${lead.id}-boleto`
   const input = {
-    amountInCents: deps.productPriceCents,
+    amountInCents: charge.amountInCents,
     method: 'BOLETO',
     description: `${deps.productName} (ebook)`,
     customer: {
@@ -139,7 +173,7 @@ export async function startBoleto(request: Request, deps: CheckoutDeps): Promise
       address: cleanAddress(form.address),
     },
     boleto: { expiresInDays: 3, message: `Pagamento do ebook ${deps.productName}` },
-    metadata: leadMetadata(lead, deps.productSku),
+    metadata: leadMetadata(lead, deps.productSku, charge),
   }
 
   const { status, body } = await deps.gateway.createPayment(input, idempotencyKey)
@@ -179,10 +213,14 @@ export async function startCard(request: Request, deps: CheckoutDeps): Promise<R
   }
   const c = parsed.data
 
+  const charge = await resolveCharge(deps.gateway, deps.offerSlug, c.couponCode)
+  if (!charge.ok) return jsonError(charge.message, charge.status, charge.code)
+  await persistCoupon(deps, lead.id, charge.couponCode)
+
   // Nonce por tentativa → cartão recusado pode re-tentar sem replay da resposta.
   const idempotencyKey = `funil-${lead.id}-card-${c.attemptId}`
   const input = {
-    amountInCents: deps.productPriceCents,
+    amountInCents: charge.amountInCents,
     method: 'CREDIT_CARD',
     description: `${deps.productName} (ebook)`,
     customer: {
@@ -190,11 +228,12 @@ export async function startCard(request: Request, deps: CheckoutDeps): Promise<R
       email: lead.email,
       document: c.customer.document.replace(/\D/g, ''),
       phone: lead.telefone.replace(/\D/g, ''),
-      address: cleanAddress(c.customer.address),
+      // Endereço é opcional no cartão (a Efí aceita sem) — só envia se coletado.
+      ...(c.customer.address ? { address: cleanAddress(c.customer.address) } : {}),
       birth: c.customer.birth,
     },
     card: { token: c.token, brand: c.brand, last4: c.last4, installments: c.installments },
-    metadata: leadMetadata(lead, deps.productSku),
+    metadata: leadMetadata(lead, deps.productSku, charge),
   }
 
   const { status, body } = await deps.gateway.createPayment(input, idempotencyKey)
@@ -207,7 +246,11 @@ export async function startCard(request: Request, deps: CheckoutDeps): Promise<R
 
   if (view.status === 'PAID') {
     const newlyPaid = await deps.repo.markPaid(lead.id, new Date())
-    if (newlyPaid) await deps.repo.insertEvent(lead.id, 'pagamento_confirmado', 'checkout_card')
+    if (newlyPaid) {
+      await deps.repo.insertEvent(lead.id, 'pagamento_confirmado', 'checkout_card')
+      // Cartão é síncrono → registra o uso do cupom só na transição p/ pago (exactly-once).
+      await redeemCouponBestEffort(deps.gateway, charge.couponCode)
+    }
     await runFulfill(lead.id, deps)
   }
 
@@ -247,7 +290,11 @@ export async function pixStatus(
 
   if (view.status === 'PAID') {
     const newlyPaid = await deps.repo.markPaid(lead.id, new Date())
-    if (newlyPaid) await deps.repo.insertEvent(lead.id, 'pagamento_confirmado', 'checkout_polling')
+    if (newlyPaid) {
+      await deps.repo.insertEvent(lead.id, 'pagamento_confirmado', 'checkout_polling')
+      // Registra o uso do cupom só na transição p/ pago (exactly-once via markPaid).
+      await redeemCouponBestEffort(deps.gateway, lead.couponCode)
+    }
     await runFulfill(lead.id, deps)
   }
 
@@ -258,4 +305,22 @@ export async function pixStatus(
     boleto: view.boleto ?? null,
     card: view.card ?? null,
   })
+}
+
+/**
+ * POST /api/checkout/quote — valida um cupom contra a oferta ativa e devolve o
+ * preço/desconto/total (preview para a UI). Cupom inválido → 200 com `ok:false`
+ * + mensagem (a UI mantém o preço cheio). Catálogo fora → 502.
+ */
+export async function quoteCheckout(
+  request: Request,
+  deps: Pick<CheckoutDeps, 'gateway' | 'offerSlug'>,
+): Promise<Response> {
+  const couponCode = readCouponCode(await safeJson(request))
+  const result = await quotePreview(deps.gateway, deps.offerSlug, couponCode)
+  if ('error' in result) {
+    const code = result.status === 409 ? 'OFFER_UNAVAILABLE' : 'CATALOG_ERROR'
+    return jsonError(result.error, result.status, code)
+  }
+  return json(result.preview)
 }

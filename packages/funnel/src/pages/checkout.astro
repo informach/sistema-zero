@@ -4,6 +4,8 @@ import { PRODUTO } from '../content/copy'
 import CheckoutTabs from '../islands/CheckoutTabs'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { getLeadId } from '../lib/lead-session'
+import { formatBRLFromCents2 } from '../lib/money'
+import { getActiveOffer } from '../server/catalog'
 import { getDeps } from '../server/deps'
 
 export const prerender = false
@@ -15,10 +17,16 @@ if (!leadId) return Astro.redirect('/')
 
 // Sem contato (e-mail) não há como entregar o ebook → volta para a oferta,
 // onde o modal de pré-checkout coleta nome/e-mail/telefone.
-const { repo, env } = getDeps()
+const { repo, env, gateway } = getDeps()
 const lead = await repo.getLead(leadId)
 if (!lead) return Astro.redirect('/')
 if (!lead.email) return Astro.redirect('/oferta')
+
+// Preço/nome vêm do catálogo (fonte da verdade); fallback p/ rótulos do env se fora.
+const offer = await getActiveOffer(gateway, env.CATALOG_OFFER_SLUG)
+const priceCents = offer?.priceCents ?? env.PRODUCT_PRICE_CENTS
+const productName = offer?.productName || PRODUTO.nome
+const priceLabel = formatBRLFromCents2(priceCents)
 ---
 
 <BaseLayout title="Pagamento — No Comando da IA" noindex={true}>
@@ -26,10 +34,10 @@ if (!lead.email) return Astro.redirect('/oferta')
   <main class="mx-auto max-w-md px-4 py-12">
     <h1 class="text-2xl font-bold">Finalize sua compra</h1>
     <p class="mt-1 text-muted">
-      {PRODUTO.nome} — <span class="font-bold text-lime">{PRODUTO.precoLabel}</span>
+      {productName} — <span class="font-bold text-lime">{priceLabel}</span>
     </p>
     <div class="card mt-6 p-6">
-      <CheckoutTabs client:load email={lead.email} priceCents={env.PRODUCT_PRICE_CENTS} />
+      <CheckoutTabs client:load email={lead.email} priceCents={priceCents} />
     </div>
     <p class="mt-4 text-center text-xs text-muted">
       Pagamento processado com segurança. Garantia de 7 dias.

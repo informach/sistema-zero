@@ -1,0 +1,151 @@
+import { and, asc, count, eq, inArray } from 'drizzle-orm'
+import type {
+  Course,
+  Lesson,
+  LessonAttachment,
+  LessonBlock,
+  LessonWithContent,
+  Module,
+  ModuleWithLessons,
+} from '../../../domain/course/course'
+import type { CourseRepository } from '../../../domain/ports/course-repository.port'
+import type { Database } from './db'
+import { courses, lessonAttachments, lessonBlocks, lessons, modules } from './schema'
+
+function toCourse(row: typeof courses.$inferSelect): Course {
+  return {
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    subtitle: row.subtitle,
+    description: row.description,
+    coverImageUrl: row.coverImageUrl,
+    status: row.status,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  }
+}
+
+function toModule(row: typeof modules.$inferSelect): Module {
+  return {
+    id: row.id,
+    courseId: row.courseId,
+    title: row.title,
+    summary: row.summary,
+    sortOrder: row.sortOrder,
+  }
+}
+
+function toLesson(row: typeof lessons.$inferSelect): Lesson {
+  return {
+    id: row.id,
+    moduleId: row.moduleId,
+    courseId: row.courseId,
+    slug: row.slug,
+    title: row.title,
+    sortOrder: row.sortOrder,
+    estimatedMinutes: row.estimatedMinutes,
+  }
+}
+
+function toBlock(row: typeof lessonBlocks.$inferSelect): LessonBlock {
+  return {
+    id: row.id,
+    lessonId: row.lessonId,
+    kind: row.kind,
+    sortOrder: row.sortOrder,
+    content: row.content,
+  }
+}
+
+function toAttachment(row: typeof lessonAttachments.$inferSelect): LessonAttachment {
+  return {
+    id: row.id,
+    lessonId: row.lessonId,
+    label: row.label,
+    url: row.url,
+    fileType: row.fileType,
+    sizeBytes: row.sizeBytes,
+    sortOrder: row.sortOrder,
+  }
+}
+
+export class DrizzleCourseRepository implements CourseRepository {
+  constructor(private readonly db: Database) {}
+
+  async findCourseBySlug(slug: string): Promise<Course | null> {
+    const [row] = await this.db.select().from(courses).where(eq(courses.slug, slug)).limit(1)
+    return row ? toCourse(row) : null
+  }
+
+  async findCourseById(id: string): Promise<Course | null> {
+    const [row] = await this.db.select().from(courses).where(eq(courses.id, id)).limit(1)
+    return row ? toCourse(row) : null
+  }
+
+  async findLesson(lessonId: string): Promise<Lesson | null> {
+    const [row] = await this.db.select().from(lessons).where(eq(lessons.id, lessonId)).limit(1)
+    return row ? toLesson(row) : null
+  }
+
+  async findPublishedCoursesBySlugs(slugs: string[]): Promise<Course[]> {
+    if (slugs.length === 0) return []
+    const rows = await this.db
+      .select()
+      .from(courses)
+      .where(and(inArray(courses.slug, slugs), eq(courses.status, 'published')))
+    return rows.map(toCourse)
+  }
+
+  async findOutline(courseId: string): Promise<ModuleWithLessons[]> {
+    const [mods, less] = await Promise.all([
+      this.db
+        .select()
+        .from(modules)
+        .where(eq(modules.courseId, courseId))
+        .orderBy(asc(modules.sortOrder)),
+      this.db
+        .select()
+        .from(lessons)
+        .where(eq(lessons.courseId, courseId))
+        .orderBy(asc(lessons.sortOrder)),
+    ])
+    const byModule = new Map<string, Lesson[]>()
+    for (const l of less) {
+      const arr = byModule.get(l.moduleId) ?? []
+      arr.push(toLesson(l))
+      byModule.set(l.moduleId, arr)
+    }
+    return mods.map((m) => ({ ...toModule(m), lessons: byModule.get(m.id) ?? [] }))
+  }
+
+  async findLessonWithContent(lessonId: string): Promise<LessonWithContent | null> {
+    const [lesson] = await this.db.select().from(lessons).where(eq(lessons.id, lessonId)).limit(1)
+    if (!lesson) return null
+    const [blocks, attachments] = await Promise.all([
+      this.db
+        .select()
+        .from(lessonBlocks)
+        .where(eq(lessonBlocks.lessonId, lessonId))
+        .orderBy(asc(lessonBlocks.sortOrder)),
+      this.db
+        .select()
+        .from(lessonAttachments)
+        .where(eq(lessonAttachments.lessonId, lessonId))
+        .orderBy(asc(lessonAttachments.sortOrder)),
+    ])
+    return {
+      ...toLesson(lesson),
+      blocks: blocks.map(toBlock),
+      attachments: attachments.map(toAttachment),
+    }
+  }
+
+  async countLessons(courseId: string): Promise<number> {
+    const [row] = await this.db
+      .select({ c: count() })
+      .from(lessons)
+      .where(eq(lessons.courseId, courseId))
+    return row?.c ?? 0
+  }
+}

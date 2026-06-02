@@ -10,7 +10,7 @@ export const GET: APIRoute = ({ request, params }) => {
   return pixStatus(request, params.paymentId ?? '', {
     repo,
     gateway,
-    productPriceCents: env.PRODUCT_PRICE_CENTS,
+    offerSlug: env.CATALOG_OFFER_SLUG,
     productName: env.PRODUCT_NAME,
     productSku: env.PRODUCT_SKU,
     fulfill: makeFulfill({ repo, gateway }),

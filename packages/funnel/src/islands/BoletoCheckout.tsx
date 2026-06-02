@@ -24,7 +24,13 @@ interface StatusResp {
   status: string
 }
 
-export default function BoletoCheckout({ email }: { email: string }) {
+export default function BoletoCheckout({
+  email,
+  couponCode,
+}: {
+  email: string
+  couponCode?: string
+}) {
   const [cpf, setCpf] = useState('')
   const [address, setAddress] = useState<AddressValue>(emptyAddress)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -43,6 +49,7 @@ export default function BoletoCheckout({ email }: { email: string }) {
     const payload = {
       cpf,
       address: { ...address, complement: address.complement || undefined },
+      couponCode,
     }
     const parsed = BoletoFormSchema.safeParse(payload)
     if (!parsed.success) {

@@ -58,10 +58,14 @@ const BirthSchema = z
   .trim()
   .regex(/^\d{4}-\d{2}-\d{2}$/, 'Data de nascimento inválida (AAAA-MM-DD).')
 
+/** Cupom de desconto (opcional) aplicado no checkout. */
+export const CouponCodeSchema = z.string().trim().max(60).optional()
+
 /** Form do boleto (browser) E corpo de `POST /api/checkout/boleto` (servidor). */
 export const BoletoFormSchema = z.object({
   cpf: CpfSchema,
   address: AddressSchema,
+  couponCode: CouponCodeSchema,
 })
 
 /**
@@ -94,7 +98,8 @@ export const CardFormSchema = z.object({
   cpf: CpfSchema,
   birth: BirthSchema,
   installments: z.coerce.number().int().min(1).max(12),
-  address: AddressSchema,
+  // Endereço de cobrança OPCIONAL — a Efí aceita cartão sem billing_address.
+  address: AddressSchema.optional(),
 })
 
 /**
@@ -111,10 +116,12 @@ export const CardChargeSchema = z.object({
     .regex(/^\d{4}$/, 'last4 inválido.'),
   installments: z.coerce.number().int().min(1).max(12),
   attemptId: z.string().trim().min(1).max(64),
+  couponCode: CouponCodeSchema,
   customer: z.object({
     document: CpfSchema,
     birth: BirthSchema,
-    address: AddressSchema,
+    // Endereço de cobrança OPCIONAL — a Efí aceita cartão sem billing_address.
+    address: AddressSchema.optional(),
   }),
 })
 

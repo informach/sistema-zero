@@ -2,12 +2,17 @@ import type { FunnelRepo, Lead } from '../db/repo'
 import { json, jsonError } from '../lib/http'
 import { safeEqual } from '../lib/safe-equal'
 import { FulfillmentRetryError } from './fulfillment'
+import { GrantRetryError } from './members-grant'
 
 export interface WebhookDeps {
   repo: FunnelRepo
   internalToken: string
   /** Registra o comprador no IdP após confirmar o pagamento. */
   fulfill: (lead: Lead) => Promise<void>
+  /** Registra o uso do cupom (best-effort) na confirmação. Opcional (no-op em testes). */
+  redeemCoupon?: (couponCode: string | null) => Promise<void>
+  /** Concede o acesso na área de membros (após o registro do comprador). Opcional. */
+  grantMembers?: (lead: Lead) => Promise<void>
 }
 
 /**
@@ -45,7 +50,11 @@ export async function handlePaymentWebhook(request: Request, deps: WebhookDeps):
     const lead = await deps.repo.findLeadByPayment(paymentId)
     if (lead) {
       const newlyPaid = await deps.repo.markPaid(lead.id, new Date())
-      if (newlyPaid) await deps.repo.insertEvent(lead.id, 'pagamento_confirmado', 'webhook')
+      if (newlyPaid) {
+        await deps.repo.insertEvent(lead.id, 'pagamento_confirmado', 'webhook')
+        // Registra o uso do cupom só na transição p/ pago (exactly-once via markPaid).
+        if (deps.redeemCoupon) await deps.redeemCoupon(lead.couponCode)
+      }
 
       // Registra o comprador no IdP (auth). Falha transitória → devolve 502 e NÃO
       // marca a entrega como processada, para o gateway re-entregar (recuperação
@@ -60,6 +69,23 @@ export async function handlePaymentWebhook(request: Request, deps: WebhookDeps):
             return jsonError('Registro do comprador pendente; reentregar.', 502, 'FULFILL_RETRY')
           }
           throw err
+        }
+      }
+
+      // Concede o acesso na área de membros. Roda DEPOIS do registro (relê o lead p/
+      // pegar o `buyer_user_id` recém-gravado). Falha → 502 sem marcar a entrega como
+      // processada → o gateway re-entrega e a concessão (idempotente) é retentada.
+      if (deps.grantMembers) {
+        const registered = await deps.repo.getLead(lead.id)
+        if (registered?.buyerUserId) {
+          try {
+            await deps.grantMembers(registered)
+          } catch (err) {
+            if (err instanceof GrantRetryError) {
+              return jsonError('Concessão de acesso pendente; reentregar.', 502, 'GRANT_RETRY')
+            }
+            throw err
+          }
         }
       }
     }

@@ -279,11 +279,11 @@ export class ProcessPaymentService {
     customer: Customer | undefined,
     sideEffects: { committed: boolean },
   ): Promise<PaymentView> {
-    // Cartão exige pagador completo + nascimento + endereço de cobrança (a Efí
-    // rejeita sem esses dados). Validamos AGORA, antes de qualquer efeito colateral.
+    // Cartão exige pagador (nome/doc/telefone) + nascimento. O endereço de cobrança
+    // é OPCIONAL — a Efí aceita cartão sem `billing_address` (reduz fricção em
+    // produto de baixo valor); quando ausente, o adapter simplesmente não o envia.
     if (!customer) throw new CardDataIncompleteError('customer')
     if (!customer.phone) throw new CardDataIncompleteError('customer.phone')
-    if (!customer.address) throw new CardDataIncompleteError('customer.address')
     const birth = command.customer?.birth
     if (!birth) throw new CardDataIncompleteError('customer.birth')
     // `buildMethod` já garante o cartão para CREDIT_CARD; extraímos do VO (fonte da verdade).

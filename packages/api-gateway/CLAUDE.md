@@ -15,6 +15,8 @@ Hoje ele é o **BFF de pagamentos do funil** (`@sistemazero/funnel`):
 2. O gateway **re-assina** a chamada ao `payments` como seu próprio consumer (`upstreamAuth: 'resign'`) → o segredo do payments vive SÓ no gateway; o funil nunca fala com o payments.
 3. O webhook `payment.paid` (payments → gateway → funil): o gateway **valida a assinatura** (`verify-webhook`), injeta um token interno e reescreve o path.
 
+Também é o **ponto de verificação/autorização de usuários**: roteia `/auth/*` para o **[@sistemazero/auth](../auth)** (IdP), verifica os JWT que ele emite (HS256/RS256), resolve o usuário das claims, aplica **RBAC** por rota e injeta `X-Auth-User-*` confiável ao upstream (ver §4.5).
+
 Adicionar/expor um serviço = **editar `gateway.config.ts`**, não código.
 
 ---

@@ -91,7 +91,7 @@ export class StoreCircuitBreaker implements CircuitBreaker {
         // Resultado de uma tentativa de half-open: só age se for a tentativa ATUAL
         // (token confere) — um resultado atrasado de tentativa antiga é ignorado.
         const st = await this.readState(key)
-        if (!st || st.state !== 'half-open' || st.trialToken !== token) return
+        if (st?.state !== 'half-open' || st.trialToken !== token) return
         if (ok) {
           await this.store.reset(key)
           await this.store.reset(this.countsKey(serviceId, upstreamId))

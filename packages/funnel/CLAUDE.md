@@ -179,3 +179,23 @@ sozinho ao voltar pro dev.
 **Fix:** `bun run dev:clean` (limpa `.vite`/`.astro` e sobe o dev → Vite re-otimiza em modo dev).
 E **não** rode `bun run dev` com `NODE_ENV=production` no shell. O `NODE_ENV=development` no `.env` é
 legítimo (consumido por `src/lib/env.ts` p/ `secureCookie`) — não é a causa.
+
+## Gotcha: ilha não hidrata com `504 (Outdated Optimize Dep)`
+
+**Sintoma:** uma ilha **lazy** (`client:idle` ou carregada por `import()` dinâmico) não hidrata; o
+console mostra `504 (Outdated Optimize Dep)` numa dep (ex.: `zod.js`) **+** `Failed to fetch
+dynamically imported module: .../src/islands/<Ilha>.tsx`. Diferente do gotcha do `jsxDEV` acima,
+costuma afetar **uma** ilha (a lazy) e some sozinho num restart — só pra voltar depois.
+
+**Causa:** no cold-start o scanner do Vite só pré-bundla as deps que alcança a partir dos entry
+points. Ilhas `client:idle`/`import()` são entry points carregados **tarde**; quando finalmente
+hidratam e puxam uma dep que não foi pré-bundlada, o Vite a descobre na hora, **re-otimiza** e troca
+o hash dos chunks — as requisições em voo do hash antigo viram **504 Outdated Optimize Dep** e o
+import dinâmico da ilha falha. Deps assim no funil: `zod` (via `contact-schema`/`checkout-schema`/
+`admin-schema`, usadas por `PreCheckoutModal client:idle` e abas do checkout), `motion/react` e
+`payment-token-efi` (`import('payment-token-efi')` em `CardCheckout`).
+
+**Fix:** já estão listadas em `vite.optimizeDeps.include` no `astro.config.mjs` (força o pré-bundle
+no cold-start). Ao adicionar uma **nova** dep de terceiros consumida só por ilha lazy/import
+dinâmico, inclua-a ali também. Um restart simples basta (mudar `optimizeDeps` muda o config-hash →
+re-otimização automática).

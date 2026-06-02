@@ -10,7 +10,7 @@ export const POST: APIRoute = ({ request }) => {
   return startCard(request, {
     repo,
     gateway,
-    productPriceCents: env.PRODUCT_PRICE_CENTS,
+    offerSlug: env.CATALOG_OFFER_SLUG,
     productName: env.PRODUCT_NAME,
     productSku: env.PRODUCT_SKU,
     fulfill: makeFulfill({ repo, gateway }),

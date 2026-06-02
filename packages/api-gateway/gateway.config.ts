@@ -15,6 +15,8 @@ import type { GatewayConfigInput } from './src/infrastructure/config/gateway-con
  */
 const PAYMENTS_URL = process.env.PAYMENTS_URL ?? 'http://localhost:3001'
 const AUTH_URL = process.env.AUTH_URL ?? 'http://localhost:3002'
+const CATALOG_URL = process.env.CATALOG_URL ?? 'http://localhost:3003'
+const MEMBERS_URL = process.env.MEMBERS_URL ?? 'http://localhost:3004'
 const FUNNEL_URL = process.env.FUNNEL_URL ?? 'http://localhost:4321'
 const FUNNEL_HMAC_SECRET = process.env.FUNNEL_HMAC_SECRET ?? ''
 const FUNNEL_INTERNAL_TOKEN = process.env.FUNNEL_INTERNAL_TOKEN ?? ''
@@ -69,6 +71,22 @@ const config: GatewayConfigInput = {
       },
       ...sharedResilience,
     },
+    // Catálogo: produtos, combos e ofertas (fonte da verdade comercial) + entitlements.
+    catalog: {
+      name: 'catalog',
+      upstreamGroups: {
+        default: [{ url: CATALOG_URL, healthCheckPath: '/health' }],
+      },
+      ...sharedResilience,
+    },
+    // Área de membros: matrícula/entitlement, cursos e progresso (consumo do aluno).
+    members: {
+      name: 'members',
+      upstreamGroups: {
+        default: [{ url: MEMBERS_URL, healthCheckPath: '/health' }],
+      },
+      ...sharedResilience,
+    },
   },
   routes: [
     // Funil → gateway (HMAC de borda) → payments (gateway re-assina).
@@ -79,6 +97,10 @@ const config: GatewayConfigInput = {
       service: 'payments',
       auth: { required: true, mode: 'any', strategies: ['hmac'] },
       upstreamAuth: 'resign',
+      // Criação síncrona de cobrança chama a Efí (mTLS + OAuth + cob + QR). No 1º
+      // checkout pós-restart (cache frio) isso pode passar dos 15s do default →
+      // 504/502. Damos folga aqui (o payments tem seu próprio timeout/retry interno).
+      timeoutMs: 35_000,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
     {
@@ -166,6 +188,180 @@ const config: GatewayConfigInput = {
       service: 'auth',
       auth: 'public',
       rateLimit: { max: 120, windowMs: 60_000, by: 'ip' },
+    },
+
+    // ── Catálogo (@sistemazero/catalog) ──────────────────────────────────────
+    // LEITURA pública (dados de marketing, não sensíveis) — o funil consome via
+    // gateway. ESCRITA exige JWT do auth + RBAC (admin/staff): o gateway verifica
+    // o token, resolve o usuário e injeta X-Auth-* (o catálogo confere o role como
+    // defesa em profundidade). `:slug` é só placeholder de match — o path real
+    // (slug OU id) é repassado intacto ao upstream.
+    {
+      id: 'catalog-offer-get',
+      methods: ['GET'],
+      pathPattern: '/catalog/offers/:slug',
+      service: 'catalog',
+      auth: 'public',
+      upstreamAuth: 'passthrough',
+      rateLimit: { max: 600, windowMs: 60_000, by: 'ip' },
+    },
+    // `GET /catalog/offers/:slug/entitlements` NÃO é exposto aqui de propósito: ele
+    // devolve o `fulfillment` completo (asset url/ref, courseRef) e seria leitura
+    // pública. Quem consome é a área de membros, S2S na rede interna (CATALOG_URL),
+    // fora do gateway. Se um dia precisar via gateway, exponha como `auth: hmac`.
+    {
+      id: 'catalog-product-get',
+      methods: ['GET'],
+      pathPattern: '/catalog/products/:slug',
+      service: 'catalog',
+      auth: 'public',
+      upstreamAuth: 'passthrough',
+      rateLimit: { max: 600, windowMs: 60_000, by: 'ip' },
+    },
+    {
+      id: 'catalog-products-write',
+      methods: ['POST'],
+      pathPattern: '/catalog/products',
+      service: 'catalog',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'catalog-product-update',
+      methods: ['PATCH'],
+      pathPattern: '/catalog/products/:slug',
+      service: 'catalog',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'catalog-offers-write',
+      methods: ['POST'],
+      pathPattern: '/catalog/offers',
+      service: 'catalog',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'catalog-offer-update',
+      methods: ['PATCH'],
+      pathPattern: '/catalog/offers/:slug',
+      service: 'catalog',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+    },
+    // Cotação com cupom (checkout): pública + rate limit por IP (mitiga brute-force de código).
+    {
+      id: 'catalog-offer-quote',
+      methods: ['POST'],
+      pathPattern: '/catalog/offers/:slug/quote',
+      service: 'catalog',
+      auth: 'public',
+      upstreamAuth: 'passthrough',
+      rateLimit: { max: 120, windowMs: 60_000, by: 'ip' },
+    },
+    // Cadastro/edição de cupons (admin via JWT + RBAC).
+    {
+      id: 'catalog-coupons-write',
+      methods: ['POST'],
+      pathPattern: '/catalog/coupons',
+      service: 'catalog',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'catalog-coupon-update',
+      methods: ['PATCH'],
+      pathPattern: '/catalog/coupons/:id',
+      service: 'catalog',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+    },
+    // Resgate de uso do cupom (funil, na confirmação do pagamento): HMAC de borda do funil.
+    {
+      id: 'catalog-coupon-redeem',
+      methods: ['POST'],
+      pathPattern: '/catalog/coupons/:id/redeem',
+      service: 'catalog',
+      auth: { required: true, mode: 'any', strategies: ['hmac'] },
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+
+    // ── Área de membros (@sistemazero/members) ───────────────────────────────
+    // Consumo do ALUNO: JWT do auth obrigatório (gateway verifica, resolve o
+    // usuário e injeta X-Auth-User-* ao upstream); `authorize.statuses:['active']`
+    // garante só conta ativa. `:slug`/`:lessonId` são placeholders — o path real
+    // é repassado intacto.
+    {
+      id: 'members-my-courses',
+      methods: ['GET'],
+      pathPattern: '/members/courses',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'members-course-detail',
+      methods: ['GET'],
+      pathPattern: '/members/courses/:slug',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'members-course-progress',
+      methods: ['GET'],
+      pathPattern: '/members/courses/:slug/progress',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'members-lesson-detail',
+      methods: ['GET'],
+      pathPattern: '/members/courses/:slug/lessons/:lessonId',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      rateLimit: { max: 600, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'members-lesson-complete',
+      methods: ['POST'],
+      pathPattern: '/members/lessons/:lessonId/complete',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
+    // Concessão/assinatura (funil → gateway → members): HMAC de borda do funil +
+    // o gateway re-assina como consumer `gateway` (members verifica com GATEWAY_HMAC_SECRET).
+    {
+      id: 'members-webhook-grant',
+      methods: ['POST'],
+      pathPattern: '/members/webhooks/grant',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['hmac'] },
+      upstreamAuth: 'resign',
+      rateLimit: { max: 600, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'members-webhook-subscription',
+      methods: ['POST'],
+      pathPattern: '/members/webhooks/subscription',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['hmac'] },
+      upstreamAuth: 'resign',
+      rateLimit: { max: 600, windowMs: 60_000, by: 'principal' },
     },
 
     // ── Exemplo: rota de negócio protegida por JWT + RBAC ────────────────────

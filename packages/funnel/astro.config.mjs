@@ -24,6 +24,13 @@ export default defineConfig({
   ],
   vite: {
     plugins: [tailwindcss()],
+    // Pré-bundla deps que só são alcançadas por ilhas lazy (client:idle) ou import
+    // dinâmico — senão o Vite as descobre "tarde", re-otimiza no meio da sessão e
+    // devolve 504 "Outdated Optimize Dep" no chunk em voo (a ilha não hidrata).
+    // Ver o gotcha "504 (Outdated Optimize Dep)" no CLAUDE.md.
+    optimizeDeps: {
+      include: ['zod', 'motion/react', 'payment-token-efi'],
+    },
   },
   server: { port: 4321, host: true },
 })

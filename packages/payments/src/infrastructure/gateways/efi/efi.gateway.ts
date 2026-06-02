@@ -337,21 +337,9 @@ export class EfiPaymentGateway implements PaymentGateway {
 
   /** Monta o corpo do `POST /charge/one-step` para cartão (`payment.credit_card`). */
   private buildCardOneStepBody(input: CreateCardChargeInput): Record<string, unknown> {
-    const addr = input.billingAddress
-    const billingAddress: Record<string, unknown> = {
-      street: addr.street,
-      number: addr.number,
-      neighborhood: addr.neighborhood,
-      zipcode: addr.zipcode.replace(/\D/g, ''),
-      city: addr.city,
-      state: addr.state,
-      ...(addr.complement ? { complement: addr.complement } : {}),
-    }
-
     const creditCard: Record<string, unknown> = {
       installments: input.installments,
       payment_token: input.paymentToken,
-      billing_address: billingAddress,
       customer: {
         name: input.customer.name,
         email: input.customer.email,
@@ -359,6 +347,20 @@ export class EfiPaymentGateway implements PaymentGateway {
         birth: input.customer.birth,
         phone_number: input.customer.phone.replace(/\D/g, ''),
       },
+    }
+
+    // `billing_address` é OPCIONAL na Efí — só envia quando o checkout coletou.
+    const addr = input.billingAddress
+    if (addr) {
+      creditCard.billing_address = {
+        street: addr.street,
+        number: addr.number,
+        neighborhood: addr.neighborhood,
+        zipcode: addr.zipcode.replace(/\D/g, ''),
+        city: addr.city,
+        state: addr.state,
+        ...(addr.complement ? { complement: addr.complement } : {}),
+      }
     }
 
     const metadata: Record<string, unknown> = { custom_id: input.paymentId }

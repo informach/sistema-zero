@@ -18,6 +18,10 @@ const EnvSchema = z.object({
 
   FUNNEL_INTERNAL_TOKEN: z.string().min(1, 'FUNNEL_INTERNAL_TOKEN é obrigatória'),
 
+  // Fonte da verdade do preço/inclusões: o catálogo (@sistemazero/catalog) via gateway.
+  // `CATALOG_OFFER_SLUG` é a OFERTA ativa que o funil vende; o preço autoritativo vem da
+  // cotação dessa oferta. PRODUCT_* abaixo viram apenas rótulos de descrição/fallback.
+  CATALOG_OFFER_SLUG: z.string().default('no-comando-da-ia'),
   PRODUCT_PRICE_CENTS: z.coerce.number().int().positive().default(3700),
   PRODUCT_SKU: z.string().default('no-comando-da-ia'),
   PRODUCT_NAME: z.string().default('No Comando da IA'),

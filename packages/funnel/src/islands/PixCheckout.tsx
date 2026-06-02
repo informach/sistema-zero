@@ -18,25 +18,29 @@ interface StatusResp {
   pix: Pix | null
 }
 
-export default function PixCheckout() {
+export default function PixCheckout({ couponCode }: { couponCode?: string }) {
   const [pix, setPix] = useState<Pix | null>(null)
   const [paymentId, setPaymentId] = useState<string | null>(null)
   const [erro, setErro] = useState<string | null>(null)
   const [copiado, setCopiado] = useState(false)
   const [expirado, setExpirado] = useState(false)
-  const started = useRef(false)
+  const lastCoupon = useRef<string | null | undefined>(null)
 
-  // Cria a cobrança Pix uma única vez.
+  // Cria a cobrança Pix; recria quando o cupom muda (a cobrança Pix tem valor fixo).
   useEffect(() => {
-    if (started.current) return
-    started.current = true
-    apiPost<StartResp>('/api/checkout/pix')
+    if (lastCoupon.current === couponCode) return
+    lastCoupon.current = couponCode
+    setPix(null)
+    setPaymentId(null)
+    setErro(null)
+    setExpirado(false)
+    apiPost<StartResp>('/api/checkout/pix', couponCode ? { couponCode } : undefined)
       .then((r) => {
         setPaymentId(r.paymentId)
         if (r.pix) setPix(r.pix)
       })
       .catch(() => setErro('Não foi possível gerar o Pix. Recarregue a página e tente de novo.'))
-  }, [])
+  }, [couponCode])
 
   // Polling do status (UX/fallback; o webhook é a reconciliação durável).
   // Para de checar quando o Pix expira ou após 15 min (evita polling infinito).
@@ -99,7 +103,14 @@ export default function PixCheckout() {
       </p>
       {pix.imagemQrcodeBase64 && (
         <img
-          src={`data:image/png;base64,${pix.imagemQrcodeBase64}`}
+          // A Efí já devolve `imagemQrcode` como data-URI completo
+          // (`data:image/png;base64,…`); só prefixa se vier base64 cru, senão o
+          // prefixo duplica e o src vira inválido (net::ERR_INVALID_URL).
+          src={
+            pix.imagemQrcodeBase64.startsWith('data:')
+              ? pix.imagemQrcodeBase64
+              : `data:image/png;base64,${pix.imagemQrcodeBase64}`
+          }
           alt="QR Code do Pix"
           width={220}
           height={220}

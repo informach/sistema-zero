@@ -306,10 +306,11 @@ describe('ProcessPaymentService (Cartão)', () => {
     expect(gateway.cardCreatedCount).toBe(0)
   })
 
-  test('rejeita cartão sem endereço de cobrança', async () => {
+  test('aceita cartão SEM endereço de cobrança (a Efí não exige billing_address)', async () => {
     const { address: _drop, ...customer } = baseCard.customer!
-    await expect(service.execute({ ...baseCard, customer })).rejects.toBeInstanceOf(
-      CardDataIncompleteError,
-    )
+    const view = await service.execute({ ...baseCard, customer })
+    expect(view.status).toBe('PAID')
+    expect(view.card).toBeDefined()
+    expect(gateway.cardCreatedCount).toBe(1)
   })
 })

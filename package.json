@@ -21,11 +21,21 @@
     "test:auth": "bun run --filter @sistemazero/auth test",
     "db:auth:generate": "bun run --filter @sistemazero/auth db:generate",
     "db:auth:migrate": "bun run --filter @sistemazero/auth db:migrate",
+    "dev:catalog": "bun run --filter @sistemazero/catalog dev",
+    "test:catalog": "bun run --filter @sistemazero/catalog test",
+    "db:catalog:generate": "bun run --filter @sistemazero/catalog db:generate",
+    "db:catalog:migrate": "bun run --filter @sistemazero/catalog db:migrate",
+    "db:catalog:seed": "bun run --filter @sistemazero/catalog db:seed",
     "dev:funnel": "bun run --filter @sistemazero/funnel dev",
     "build:funnel": "bun run --filter @sistemazero/funnel build",
     "test:funnel": "bun run --filter @sistemazero/funnel test",
     "db:funnel:generate": "bun run --filter @sistemazero/funnel db:generate",
-    "db:funnel:migrate": "bun run --filter @sistemazero/funnel db:migrate"
+    "db:funnel:migrate": "bun run --filter @sistemazero/funnel db:migrate",
+    "dev:members": "bun run --filter @sistemazero/members dev",
+    "test:members": "bun run --filter @sistemazero/members test",
+    "db:members:generate": "bun run --filter @sistemazero/members db:generate",
+    "db:members:migrate": "bun run --filter @sistemazero/members db:migrate",
+    "db:members:seed": "bun run --filter @sistemazero/members db:seed"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.16"

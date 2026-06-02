@@ -20,6 +20,7 @@ function baseLead(id: string): Lead {
     mudancaDesejada: null,
     lastStep: 'entrou_landing',
     paymentId: null,
+    couponCode: null,
     paidAt: null,
     buyerUserId: null,
     buyerRegisteredAt: null,

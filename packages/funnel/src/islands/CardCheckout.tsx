@@ -1,13 +1,7 @@
 import { useEffect, useState } from 'react'
 import { apiGet, apiPost } from '../lib/api-fetch'
 import { CardFormSchema, pathErrors } from '../lib/checkout-schema'
-import {
-  AddressFields,
-  type AddressValue,
-  emptyAddress,
-  Field,
-  inputClass,
-} from './checkout-fields'
+import { Field, inputClass } from './checkout-fields'
 
 /** Opção de parcela (subset do `Installment` do payment-token-efi que usamos). */
 interface InstallmentOption {
@@ -39,7 +33,31 @@ async function loadEfi() {
   return (await import('payment-token-efi')).default
 }
 
-export default function CardCheckout({ priceCents }: { priceCents: number }) {
+/** Só dígitos, com teto de tamanho (impede letras/símbolos no campo). */
+function onlyDigits(v: string, max: number): string {
+  return v.replace(/\D/g, '').slice(0, max)
+}
+/** Máscara do cartão: dígitos agrupados de 4 em 4 (máx 19) → "4242 4242 4242 4242". */
+function maskCardNumber(v: string): string {
+  const d = v.replace(/\D/g, '').slice(0, 19)
+  return d.replace(/(.{4})/g, '$1 ').trim()
+}
+/** Máscara de CPF: "000.000.000-00". */
+function maskCpf(v: string): string {
+  const d = v.replace(/\D/g, '').slice(0, 11)
+  if (d.length > 9) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`
+  if (d.length > 6) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6)}`
+  if (d.length > 3) return `${d.slice(0, 3)}.${d.slice(3)}`
+  return d
+}
+
+export default function CardCheckout({
+  priceCents,
+  couponCode,
+}: {
+  priceCents: number
+  couponCode?: string
+}) {
   const [number, setNumber] = useState('')
   const [holderName, setHolderName] = useState('')
   const [expMonth, setExpMonth] = useState('')
@@ -48,7 +66,6 @@ export default function CardCheckout({ priceCents }: { priceCents: number }) {
   const [cpf, setCpf] = useState('')
   const [birth, setBirth] = useState('')
   const [installments, setInstallments] = useState(1)
-  const [address, setAddress] = useState<AddressValue>(emptyAddress)
 
   const [brand, setBrand] = useState<string | null>(null)
   const [installmentsList, setInstallmentsList] = useState<InstallmentOption[] | null>(null)
@@ -56,10 +73,6 @@ export default function CardCheckout({ priceCents }: { priceCents: number }) {
   const [processing, setProcessing] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
   const [paymentId, setPaymentId] = useState<string | null>(null)
-
-  function onAddress(key: keyof AddressValue, v: string) {
-    setAddress((a) => ({ ...a, [key]: v }))
-  }
 
   // Ao sair do campo do número: detecta a bandeira e busca as parcelas na Efí.
   async function loadInstallments() {
@@ -123,7 +136,6 @@ export default function CardCheckout({ priceCents }: { priceCents: number }) {
       cpf,
       birth,
       installments,
-      address: { ...address, complement: address.complement || undefined },
     })
     if (!parsed.success) {
       setErrors(pathErrors(parsed.error))
@@ -132,7 +144,7 @@ export default function CardCheckout({ priceCents }: { priceCents: number }) {
     setErrors({})
 
     if (!EFI_ACCOUNT) {
-      setErro('Pagamento por cartão indisponível no momento. Use Pix ou boleto.')
+      setErro('Pagamento por cartão indisponível no momento. Use Pix.')
       return
     }
 
@@ -171,10 +183,10 @@ export default function CardCheckout({ priceCents }: { priceCents: number }) {
         last4: digits.slice(-4),
         installments: parsed.data.installments,
         attemptId: crypto.randomUUID(),
+        couponCode,
         customer: {
           document: cpfDigits,
           birth: parsed.data.birth,
-          address: { ...address, complement: address.complement || undefined },
         },
       }
       const r = await apiPost<ChargeResp>('/api/checkout/card', body)
@@ -210,7 +222,7 @@ export default function CardCheckout({ priceCents }: { priceCents: number }) {
           autoComplete="cc-number"
           placeholder="0000 0000 0000 0000"
           value={number}
-          onChange={(e) => setNumber(e.target.value)}
+          onChange={(e) => setNumber(maskCardNumber(e.target.value))}
           onBlur={loadInstallments}
         />
       </Field>
@@ -231,7 +243,7 @@ export default function CardCheckout({ priceCents }: { priceCents: number }) {
             placeholder="05"
             maxLength={2}
             value={expMonth}
-            onChange={(e) => setExpMonth(e.target.value)}
+            onChange={(e) => setExpMonth(onlyDigits(e.target.value, 2))}
           />
         </Field>
         <Field label="Ano (AAAA)" error={errors.expirationYear}>
@@ -242,7 +254,7 @@ export default function CardCheckout({ priceCents }: { priceCents: number }) {
             placeholder="2030"
             maxLength={4}
             value={expYear}
-            onChange={(e) => setExpYear(e.target.value)}
+            onChange={(e) => setExpYear(onlyDigits(e.target.value, 4))}
           />
         </Field>
         <Field label="CVV" error={errors.cvv}>
@@ -252,7 +264,7 @@ export default function CardCheckout({ priceCents }: { priceCents: number }) {
             autoComplete="cc-csc"
             maxLength={4}
             value={cvv}
-            onChange={(e) => setCvv(e.target.value)}
+            onChange={(e) => setCvv(onlyDigits(e.target.value, 4))}
           />
         </Field>
       </div>
@@ -281,7 +293,7 @@ export default function CardCheckout({ priceCents }: { priceCents: number }) {
             inputMode="numeric"
             placeholder="000.000.000-00"
             value={cpf}
-            onChange={(e) => setCpf(e.target.value)}
+            onChange={(e) => setCpf(maskCpf(e.target.value))}
           />
         </Field>
         <Field label="Nascimento (AAAA-MM-DD)" error={errors.birth}>
@@ -293,8 +305,6 @@ export default function CardCheckout({ priceCents }: { priceCents: number }) {
           />
         </Field>
       </div>
-      <p className="text-sm text-muted">Endereço de cobrança</p>
-      <AddressFields value={address} errors={errors} onChange={onAddress} />
       {erro && <p className="text-center text-sm text-red-400">{erro}</p>}
       <button type="submit" disabled={processing} className="btn btn-primary disabled:opacity-60">
         {processing ? 'Processando…' : `Pagar ${brl(priceCents)}`}

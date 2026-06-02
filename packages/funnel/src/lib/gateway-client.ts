@@ -28,6 +28,17 @@ export interface RegisterBuyerInput {
   source?: string
 }
 
+/** Corpo de `POST /members/webhooks/grant` (gateway → @sistemazero/members). */
+export interface GrantMembersInput {
+  userId: string
+  /** Slug ou id da oferta no catálogo (a área de membros resolve o que ela dá direito). */
+  offerRef: string
+  paymentId: string
+  /** ISO-8601 (opcional; a área de membros usa "agora" se ausente). */
+  paidAt?: string
+  subscription?: { subscriptionId: string; intervalMonths: number | null }
+}
+
 async function readBody(res: Response): Promise<unknown> {
   try {
     return await res.json()
@@ -73,6 +84,42 @@ export function createGatewayClient(opts: GatewayClientOptions) {
       return { status: res.status, body: await readBody(res) }
     },
 
+    /** GET /catalog/offers/:slug (via gateway → catalog). Rota pública (leitura de marketing). */
+    async getOffer(slug: string): Promise<GatewayResult> {
+      const res = await doFetch(`${opts.baseUrl}/catalog/offers/${encodeURIComponent(slug)}`, {
+        method: 'GET',
+        headers: buildHeaders(''),
+      })
+      return { status: res.status, body: await readBody(res) }
+    },
+
+    /** POST /catalog/offers/:slug/quote — preço autoritativo com cupom opcional. Rota pública. */
+    async quoteOffer(slug: string, couponCode?: string): Promise<GatewayResult> {
+      const rawBody = JSON.stringify(couponCode ? { couponCode } : {})
+      const res = await doFetch(
+        `${opts.baseUrl}/catalog/offers/${encodeURIComponent(slug)}/quote`,
+        {
+          method: 'POST',
+          headers: buildHeaders(rawBody),
+          body: rawBody,
+        },
+      )
+      return { status: res.status, body: await readBody(res) }
+    },
+
+    /**
+     * POST /catalog/coupons/:code/redeem — registra um uso do cupom (na confirmação do
+     * pagamento). A rota exige HMAC de borda do funil (por isso assina o corpo).
+     */
+    async redeemCoupon(code: string): Promise<GatewayResult> {
+      const rawBody = '{}'
+      const res = await doFetch(
+        `${opts.baseUrl}/catalog/coupons/${encodeURIComponent(code)}/redeem`,
+        { method: 'POST', headers: buildHeaders(rawBody), body: rawBody },
+      )
+      return { status: res.status, body: await readBody(res) }
+    },
+
     /**
      * POST /auth/register (gateway → @sistemazero/auth). Cadastra o comprador
      * como usuário (role `customer`). NÃO assina HMAC de borda: a rota `/auth/*`
@@ -85,6 +132,22 @@ export function createGatewayClient(opts: GatewayClientOptions) {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(input),
+      })
+      return { status: res.status, body: await readBody(res) }
+    },
+
+    /**
+     * POST /members/webhooks/grant (gateway → @sistemazero/members). Concede o
+     * acesso (matrícula) ao comprador. Assina HMAC de borda (consumer `funnel`); o
+     * gateway re-assina como `gateway` e a área de membros verifica. Sem
+     * Idempotency-Key — a concessão é idempotente pela chave derivada do pagamento.
+     */
+    async grantMembersAccess(input: GrantMembersInput): Promise<GatewayResult> {
+      const rawBody = JSON.stringify(input)
+      const res = await doFetch(`${opts.baseUrl}/members/webhooks/grant`, {
+        method: 'POST',
+        headers: buildHeaders(rawBody),
+        body: rawBody,
       })
       return { status: res.status, body: await readBody(res) }
     },
