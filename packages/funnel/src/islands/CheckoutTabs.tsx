@@ -17,7 +17,15 @@ interface QuoteResp {
 
 // `email` é mantido no contrato (o checkout.astro passa) mas não é mais usado aqui
 // desde que o boleto saiu do checkout — fica para um eventual retorno do método.
-export default function CheckoutTabs({ priceCents }: { email: string; priceCents: number }) {
+// `allowCoupon` vem da oferta (catálogo): produtos de entrada não exibem cupom.
+export default function CheckoutTabs({
+  priceCents,
+  allowCoupon = false,
+}: {
+  email: string
+  priceCents: number
+  allowCoupon?: boolean
+}) {
   const [tab, setTab] = useState<Tab>('pix')
   const [couponInput, setCouponInput] = useState('')
   const [appliedCode, setAppliedCode] = useState<string | null>(null)
@@ -60,51 +68,53 @@ export default function CheckoutTabs({ priceCents }: { email: string; priceCents
 
   return (
     <div>
-      {/* Cupom de desconto */}
-      <div className="mb-5">
-        <label htmlFor="coupon" className="mb-1 block text-sm text-muted">
-          Cupom de desconto
-        </label>
-        <div className="flex gap-2">
-          <input
-            id="coupon"
-            className="w-full rounded-xl border border-line bg-card px-3 py-2 text-sm text-ink uppercase"
-            placeholder="Ex.: PROMO10"
-            value={couponInput}
-            disabled={appliedCode !== null}
-            onChange={(e) => setCouponInput(e.target.value)}
-          />
-          {appliedCode ? (
-            <button
-              type="button"
-              onClick={removeCoupon}
-              className="shrink-0 rounded-xl border border-line px-4 py-2 text-sm font-semibold text-muted"
-            >
-              Remover
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => void applyCoupon()}
-              disabled={applying || !couponInput.trim()}
-              className="btn btn-primary shrink-0 px-4 py-2 text-sm disabled:opacity-60"
-            >
-              {applying ? '...' : 'Aplicar'}
-            </button>
+      {/* Cupom de desconto — só nas ofertas que o habilitam (catálogo). */}
+      {allowCoupon && (
+        <div className="mb-5">
+          <label htmlFor="coupon" className="mb-1 block text-sm text-muted">
+            Cupom de desconto
+          </label>
+          <div className="flex gap-2">
+            <input
+              id="coupon"
+              className="w-full rounded-xl border border-line bg-card px-3 py-2 text-sm text-ink uppercase"
+              placeholder="Ex.: PROMO10"
+              value={couponInput}
+              disabled={appliedCode !== null}
+              onChange={(e) => setCouponInput(e.target.value)}
+            />
+            {appliedCode ? (
+              <button
+                type="button"
+                onClick={removeCoupon}
+                className="shrink-0 rounded-xl border border-line px-4 py-2 text-sm font-semibold text-muted"
+              >
+                Remover
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => void applyCoupon()}
+                disabled={applying || !couponInput.trim()}
+                className="btn btn-primary shrink-0 px-4 py-2 text-sm disabled:opacity-60"
+              >
+                {applying ? '...' : 'Aplicar'}
+              </button>
+            )}
+          </div>
+          {couponMsg && (
+            <p className={`mt-1 text-sm ${appliedCode ? 'text-lime' : 'text-red-400'}`}>
+              {couponMsg}
+            </p>
+          )}
+          {appliedCode && (
+            <p className="mt-2 text-sm text-muted">
+              Total: <span className="font-bold text-lime">{formatBRLFromCents2(finalCents)}</span>{' '}
+              <span className="text-xs line-through">{formatBRLFromCents2(priceCents)}</span>
+            </p>
           )}
         </div>
-        {couponMsg && (
-          <p className={`mt-1 text-sm ${appliedCode ? 'text-lime' : 'text-red-400'}`}>
-            {couponMsg}
-          </p>
-        )}
-        {appliedCode && (
-          <p className="mt-2 text-sm text-muted">
-            Total: <span className="font-bold text-lime">{formatBRLFromCents2(finalCents)}</span>{' '}
-            <span className="text-xs line-through">{formatBRLFromCents2(priceCents)}</span>
-          </p>
-        )}
-      </div>
+      )}
 
       <div className="mb-6 grid grid-cols-2 gap-2" role="tablist">
         <TabButton active={tab === 'pix'} onClick={() => setTab('pix')} label="Pix" />

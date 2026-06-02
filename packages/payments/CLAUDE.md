@@ -1,5 +1,15 @@
 # CLAUDE.md — @sistemazero/payments
 
+> **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**
+> (`resolve-library-id` → `query-docs`) para toda lib/framework/API/CLI (Elysia, Drizzle, Zod, jose,
+> Bun, SDKs de pagamento, etc.) — não confie só na memória; APIs mudam. Para **pesquisa, exploração e
+> entender padrões**, use o **MCP do Octocode** em repositórios GitHub relevantes. Faça certo e
+> atualizado — não "de cabeça".
+>
+> **💳 Efí Pay (provedor de pagamentos):** SEMPRE consulte também a documentação oficial ATUALIZADA da
+> Efí antes de mexer em qualquer integração (Pix/boleto/cartão/assinaturas/credenciais/webhooks):
+> **https://dev.efipay.com.br/docs/api-pix/credenciais/** (e as seções relacionadas da mesma doc).
+
 Guia operacional para trabalhar neste package. Leia antes de editar.
 
 ## O que é
@@ -8,10 +18,13 @@ Microserviço de **pagamentos/checkout** consumido por outros sistemas internos
 (apenas IPs/URLs autorizados). Processa **Pix, boleto e cartão** (avulso e
 recorrente) via **Efí Pay**. Runtime: **Bun**. Linguagem: **TypeScript (ESM)**.
 
-> Estado atual: scaffold completo + **fatia vertical de Pix funcionando ponta a
-> ponta** (criar cobrança → webhook → evento `payment.paid`), validada criando
-> uma cobrança real no sandbox (txid + copia-e-cola + QR). Boleto, cartão e
-> recorrência têm os _ports_ prontos; faltam os _adapters_.
+> Estado atual: **Pix e boleto** funcionando ponta a ponta (criar cobrança →
+> webhook/notificação → evento `payment.paid`), validados com cobrança real no
+> sandbox. **Cartão** (avulso) e **assinaturas de cartão** (recorrência via
+> Cobranças Efí) também implementados — domínio + aplicação + rotas
+> (`POST/GET/DELETE /subscriptions`); as assinaturas ainda **não** foram
+> verificadas em sandbox (exigem `payment_token` de browser). **Pix Automático**
+> (recorrência Pix nativa) é o próximo passo.
 
 ## Arquitetura (DDD + Hexagonal)
 
@@ -53,6 +66,9 @@ tests/               # unit/ · application/ · integration/ · fakes/
 | `bun run db:migrate` | aplica migrations |
 | `bun run db:seed --id <id> --cidrs "ip/32,..." [--webhook-url <url>]` | cadastra/atualiza um consumidor (imprime o HMAC secret); `--webhook-url` define o destino dos webhooks de saída |
 | `bun run pix:key` | cria/lista chave Pix aleatória (EVP) na Efí |
+| `bun run boleto:create` | cria uma cobrança de boleto no sandbox (teste) |
+| `bun run card:create --token <payment_token>` | cria uma cobrança de cartão avulso no sandbox (teste) |
+| `bun run subscription:create --token <payment_token> [--detail] [--cancel]` | cria/consulta/cancela uma assinatura de cartão (sandbox) |
 | `bun run webhook:register --url https://<dominio>/webhooks/efi` | registra o webhook (skip mTLS por padrão) |
 | `bun run call-example` | cliente de teste: assina (HMAC) e dispara `POST /payments` |
 
@@ -194,7 +210,7 @@ Consumidor cadastrado em `consumers` (`id`, `hmac_secret`, `allowed_cidrs`,
   `"<ts>.<corpo_bruto>"` sem ela (GET). Incluir a chave na assinatura impede
   replay com troca de `Idempotency-Key`. Tolerância de timestamp anti-replay.
 
-## Como estender (boleto / cartão / recorrência)
+## Como estender (adicionar um novo método de pagamento)
 
 1. Adicione o método ao port `PaymentGateway` e implemente em `EfiClient` +
    `EfiPaymentGateway`.

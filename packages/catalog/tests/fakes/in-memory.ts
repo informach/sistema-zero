@@ -7,6 +7,7 @@ import {
 import { OfferAggregate, type OfferSnapshot } from '../../src/domain/offer/offer.aggregate'
 import { DuplicateOfferError } from '../../src/domain/offer/offer.errors'
 import type { CouponRepository } from '../../src/domain/ports/coupon-repository.port'
+import type { ListQuery, Page } from '../../src/domain/ports/list'
 import type { OfferRepository } from '../../src/domain/ports/offer-repository.port'
 import type { ProductRepository } from '../../src/domain/ports/product-repository.port'
 import { ProductAggregate, type ProductSnapshot } from '../../src/domain/product/product.aggregate'
@@ -37,6 +38,17 @@ export class InMemoryProductRepository implements ProductRepository {
       if (s.sku === normalized) return ProductAggregate.restore(clone(s))
     }
     return null
+  }
+
+  async list(query: ListQuery): Promise<Page<ProductAggregate>> {
+    const all = [...this.store.values()]
+      .filter((s) => !query.status || s.status === query.status)
+      .filter((s) => matchQ(query.q, s.name, s.slug, s.sku))
+      .sort(byCreatedAtDesc)
+    const items = all
+      .slice(query.offset, query.offset + query.limit)
+      .map((s) => ProductAggregate.restore(clone(s)))
+    return { items, total: all.length }
   }
 
   async findNodesByIds(ids: string[]): Promise<EntitlementNode[]> {
@@ -107,6 +119,18 @@ export class InMemoryOfferRepository implements OfferRepository {
     return out
   }
 
+  async list(query: ListQuery & { productId?: string }): Promise<Page<OfferAggregate>> {
+    const all = [...this.store.values()]
+      .filter((s) => !query.status || s.status === query.status)
+      .filter((s) => !query.productId || s.productId === query.productId)
+      .filter((s) => matchQ(query.q, s.name, s.slug, s.code))
+      .sort(byCreatedAtDesc)
+    const items = all
+      .slice(query.offset, query.offset + query.limit)
+      .map((s) => OfferAggregate.restore(clone(s)))
+    return { items, total: all.length }
+  }
+
   async create(offer: OfferAggregate): Promise<void> {
     const s = offer.toSnapshot()
     for (const existing of this.store.values()) {
@@ -145,6 +169,17 @@ export class InMemoryCouponRepository implements CouponRepository {
     return null
   }
 
+  async list(query: ListQuery): Promise<Page<CouponAggregate>> {
+    const all = [...this.store.values()]
+      .filter((s) => !query.status || s.status === query.status)
+      .filter((s) => matchQ(query.q, s.code))
+      .sort(byCreatedAtDesc)
+    const items = all
+      .slice(query.offset, query.offset + query.limit)
+      .map((s) => CouponAggregate.restore(clone(s)))
+    return { items, total: all.length }
+  }
+
   async create(coupon: CouponAggregate): Promise<void> {
     const s = coupon.toSnapshot()
     for (const existing of this.store.values()) {
@@ -178,4 +213,14 @@ export class InMemoryCouponRepository implements CouponRepository {
 
 function clone<T>(value: T): T {
   return structuredClone(value)
+}
+
+function matchQ(q: string | undefined, ...fields: string[]): boolean {
+  if (!q) return true
+  const needle = q.trim().toLowerCase()
+  return fields.some((f) => f.toLowerCase().includes(needle))
+}
+
+function byCreatedAtDesc(a: { createdAt: Date }, b: { createdAt: Date }): number {
+  return b.createdAt.getTime() - a.createdAt.getTime()
 }

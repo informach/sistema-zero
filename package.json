@@ -40,7 +40,11 @@
     "test:members": "bun run --filter @sistemazero/members test",
     "db:members:generate": "bun run --filter @sistemazero/members db:generate",
     "db:members:migrate": "bun run --filter @sistemazero/members db:migrate",
-    "db:members:seed": "bun run --filter @sistemazero/members db:seed"
+    "db:members:seed": "bun run --filter @sistemazero/members db:seed",
+    "dev:admin": "bun run --filter @sistemazero/admin dev",
+    "build:admin": "bun run --filter @sistemazero/admin build",
+    "start:admin": "bun run --filter @sistemazero/admin start",
+    "typecheck:admin": "bun run --filter @sistemazero/admin typecheck"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.16"

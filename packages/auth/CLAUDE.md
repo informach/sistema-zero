@@ -1,5 +1,10 @@
 # CLAUDE.md — @sistemazero/auth
 
+> **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**
+> (`resolve-library-id` → `query-docs`) para toda lib/framework/API/CLI (Elysia, Drizzle, Zod, jose,
+> Bun, etc.) — não confie só na memória; APIs mudam. Para **pesquisa, exploração e entender padrões**,
+> use o **MCP do Octocode** em repositórios GitHub relevantes. Faça certo e atualizado — não "de cabeça".
+
 Guia operacional para trabalhar neste package. Leia antes de editar.
 
 ## O que é
@@ -44,7 +49,7 @@ src/
 | `bun run typecheck` | `tsc --noEmit` |
 | `bun test` | testes (rode com **sandbox off** — gotcha do monorepo) |
 | `bun run db:generate` / `db:migrate` | migrations (Drizzle) |
-| `bun run db:seed --email <e> --password <p> [--first <n>] [--last <s>] [--role admin]` | cria/atualiza usuário |
+| `bun run db:seed --email <e> --password <p> [--first <n>] [--last <s>] [--role admin\|staff\|superadmin\|customer]` | cria/atualiza usuário |
 | `bun run check` / `check:fix` | Biome |
 
 **Sempre** rode `typecheck` + `bun test` antes de concluir.

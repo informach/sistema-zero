@@ -6,10 +6,12 @@ Serviço de pagamentos/checkout consumido por outros sistemas internos. Processa
 Arquitetura: **DDD + Hexagonal (Ports & Adapters)**, SOLID, Clean Code. Foco em
 performance, escala e segurança.
 
-> Estado atual: scaffold completo + **fatias verticais de Pix e boleto**
-> funcionando ponta-a-ponta (criar cobrança → webhook/notificação de confirmação →
-> evento de domínio), nos modos síncrono e assíncrono. Cartão e recorrência têm os
-> _ports_/contratos prontos; os _adapters_ são o próximo passo.
+> Estado atual: **Pix e boleto** funcionando ponta-a-ponta (criar cobrança →
+> webhook/notificação de confirmação → evento de domínio), nos modos síncrono e
+> assíncrono. **Cartão** (avulso) e **assinaturas de cartão** (recorrência via
+> Cobranças Efí) também implementados — domínio + aplicação + rotas
+> `POST/GET/DELETE /subscriptions`; as assinaturas ainda não foram verificadas em
+> sandbox. **Pix Automático** (recorrência Pix nativa) é o próximo passo.
 
 ## Camadas
 
@@ -163,10 +165,12 @@ O deploy usa `Dockerfile` (raiz: `packages/payments/Dockerfile`) + `railway.json
 
 ## Próximos passos
 
-Adapter de **cartão** (tokenização + `/charges`), **recorrência** (assinaturas +
-Pix Automático) e integração com o futuro serviço de produtos/ofertas (o campo
-`metadata` do pagamento já acomoda a origem). Boleto (`/v1/charge/one-step`) já está
-implementado (síncrono + assíncrono + reconciliação + notificação por token).
+**Pix Automático** (recorrência Pix nativa) e o sandbox-check das assinaturas de
+cartão (exigem `payment_token` de browser). Cartão avulso, assinaturas de cartão e
+boleto (`/v1/charge/one-step`) já estão implementados (síncrono + assíncrono +
+reconciliação + notificação por token). O serviço de catálogo (produtos/ofertas) já
+existe (`@sistemazero/catalog`); o campo `metadata` do pagamento acomoda a origem
+(ex.: `offerId`, enviado pelo funil).
 
 Para escala/operação, considere ainda: rate limit/idempotência distribuídos
 (Redis) para limite global preciso entre réplicas, e dashboards/alertas sobre o

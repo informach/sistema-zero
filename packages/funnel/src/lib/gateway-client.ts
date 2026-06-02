@@ -28,6 +28,26 @@ export interface RegisterBuyerInput {
   source?: string
 }
 
+/** Usuário retornado pelo auth (`/auth/login` e `/auth/me`). Sem `passwordHash`. */
+export interface AuthUser {
+  id?: string
+  email: string
+  firstName: string
+  lastName: string
+  role: string
+  status: string
+  phone?: string
+}
+
+/** Tokens emitidos pelo auth (access JWT + refresh opaco). */
+export interface AuthTokens {
+  accessToken: string
+  refreshToken: string
+  tokenType: string
+  expiresIn: number
+  refreshExpiresIn: number
+}
+
 /** Corpo de `POST /members/webhooks/grant` (gateway → @sistemazero/members). */
 export interface GrantMembersInput {
   userId: string
@@ -132,6 +152,49 @@ export function createGatewayClient(opts: GatewayClientOptions) {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(input),
+      })
+      return { status: res.status, body: await readBody(res) }
+    },
+
+    /**
+     * Login do ADMIN no IdP (`POST /auth/login` → `{ user, tokens }`). Rota pública
+     * + passthrough no gateway (sem HMAC de borda — o IdP é a autoridade). O funil
+     * guarda os tokens em cookies HttpOnly e valida via `getMe`.
+     */
+    async loginAuth(email: string, password: string): Promise<GatewayResult> {
+      const res = await doFetch(`${opts.baseUrl}/auth/login`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      })
+      return { status: res.status, body: await readBody(res) }
+    },
+
+    /** `GET /auth/me` com Bearer — valida o access token e devolve `{ user }` (ou 401). */
+    async getMe(accessToken: string): Promise<GatewayResult> {
+      const res = await doFetch(`${opts.baseUrl}/auth/me`, {
+        method: 'GET',
+        headers: { authorization: `Bearer ${accessToken}` },
+      })
+      return { status: res.status, body: await readBody(res) }
+    },
+
+    /** `POST /auth/refresh` → `{ tokens }` (rotação no auth). 401 se o refresh não vale. */
+    async refreshAuth(refreshToken: string): Promise<GatewayResult> {
+      const res = await doFetch(`${opts.baseUrl}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ refreshToken }),
+      })
+      return { status: res.status, body: await readBody(res) }
+    },
+
+    /** `POST /auth/logout` — revoga o refresh token (encerra a sessão no auth). */
+    async logoutAuth(refreshToken: string): Promise<GatewayResult> {
+      const res = await doFetch(`${opts.baseUrl}/auth/logout`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ refreshToken }),
       })
       return { status: res.status, body: await readBody(res) }
     },

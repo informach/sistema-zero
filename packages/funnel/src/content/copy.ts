@@ -26,8 +26,9 @@ export const QUIZ_UI = {
   progresso: (atual: number, total: number) => `Pergunta ${atual} de ${total}`,
 }
 
-// CTAs da página de vendas (todos abrem o modal de pré-checkout).
+// CTAs da página de vendas (todos abrem o modal de pré-checkout). O preço é
+// injetado pela página (vem do catálogo) para não duplicar/desatualizar o valor.
 export const CTA = {
-  principal: 'Quero assumir o comando da IA — R$ 37',
-  comecar: 'Quero começar no comando — R$ 37',
+  principal: (preco: string) => `Quero assumir o comando da IA — ${preco}`,
+  comecar: (preco: string) => `Quero começar no comando — ${preco}`,
 }

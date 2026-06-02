@@ -5,11 +5,14 @@ Faz roteamento/proxy, autenticação plugável (HMAC, JWT, sessão), rate limiti
 balancing, CORS e transformação de requisições — tudo dirigido por uma **config
 declarativa** e de forma **stateless** (pronto para escalar em N réplicas).
 
-> **Estado atual:** **BFF de pagamentos do funil** (HMAC de borda + re-assina ao
-> `payments`) **e** ponto de verificação/autorização de usuários. A auth **JWT está
-> ligada**: o gateway verifica tokens do **[@sistemazero/auth](../auth)** (HS256
-> e/ou RS256 via JWKS), resolve o usuário das claims, aplica **RBAC** por rota
-> (`authorize`) e injeta `X-Auth-User-*` confiável ao upstream. Sessão opaca segue
+> **Estado atual:** borda de **5 serviços** — roteia para `payments`, `auth`,
+> `catalog`, `members` e `funnel`. É o **BFF de pagamentos do funil** (HMAC de borda +
+> re-assina ao `payments`) e o **ponto de verificação/autorização**: a auth **JWT está
+> ligada** (verifica tokens do **[@sistemazero/auth](../auth)** em HS256 e/ou RS256 via
+> JWKS, resolve o usuário das claims, aplica **RBAC** por rota `authorize` e injeta
+> `X-Auth-User-*` confiável ao upstream). Também roteia o **catálogo** (leitura pública
+> + escrita admin) e a **área de membros** (API do aluno + webhooks de concessão/
+> assinatura, com `x-internal-token` injetado nas rotas do aluno). Sessão opaca segue
 > pronta porém dormente.
 
 ## O que ele faz
@@ -81,14 +84,14 @@ principais:
 | `STATE_BACKEND` | `memory` (1 réplica) ou `redis` (escala) |
 | `REDIS_URL` | obrigatória quando `STATE_BACKEND=redis` |
 | `TRUST_PROXY` / `TRUSTED_PROXY_HOPS` | resolução do IP do cliente atrás de proxy/LB |
-| `PAYMENTS_URL` / `FUNNEL_URL` | URLs dos upstreams (lidas pela `gateway.config.ts`) |
+| `PAYMENTS_URL` / `AUTH_URL` / `CATALOG_URL` / `MEMBERS_URL` / `FUNNEL_URL` | URLs dos upstreams (lidas pela `gateway.config.ts`) |
 | `GATEWAY_CONSUMER_ID` / `GATEWAY_HMAC_SECRET` | credenciais do gateway para re-assinar ao upstream (`resign`) |
 | `FUNNEL_HMAC_SECRET` | segredo HMAC de borda do consumidor `funnel` |
 | `FUNNEL_INTERNAL_TOKEN` | token interno injetado ao repassar o webhook |
 | `RATE_LIMIT_*` | rate limit global default |
 | `JWT_HS256_SECRET` | segredo HS256 compartilhado com o `auth` (verifica tokens HS256 sem JWKS) |
 | `JWT_JWKS_URL` / `JWT_ISSUER` / `JWT_AUDIENCE` / `JWT_ALGORITHMS` | auth JWT via JWKS (RS256). Aponte p/ `<auth>/auth/.well-known/jwks.json` |
-| `AUTH_URL` | URL do serviço de identidade `@sistemazero/auth` (lida pela `gateway.config.ts`) |
+| `MEMBERS_INTERNAL_TOKEN` | token interno injetado nas rotas do aluno (members) — = `INTERNAL_API_TOKEN` do members (prova que a chamada veio do gateway; vazio = só dev) |
 
 > ⚠️ Segredos HMAC precisam de **≥ 16 caracteres** — um valor vazio/curto **falha
 > no boot** (evita auth com chave efetivamente vazia).

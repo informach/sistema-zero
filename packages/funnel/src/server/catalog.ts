@@ -17,6 +17,8 @@ export interface CatalogOfferView {
   guaranteeDays: number | null
   installmentsMax: number | null
   productName: string
+  /** Opt-in (de `offer.content.allowsCoupon`): se o checkout deve exibir o cupom. */
+  allowsCoupon: boolean
   includes: { name: string; isPrimary: boolean }[]
 }
 
@@ -166,6 +168,7 @@ function mapOffer(body: unknown): CatalogOfferView | null {
   const o = body as Record<string, unknown>
   if (typeof o.id !== 'string' || typeof o.priceCents !== 'number') return null
   const product = (o.product ?? {}) as Record<string, unknown>
+  const content = (o.content ?? {}) as Record<string, unknown>
   const includesRaw = Array.isArray(o.includes) ? (o.includes as Record<string, unknown>[]) : []
   return {
     offerId: o.id,
@@ -177,6 +180,7 @@ function mapOffer(body: unknown): CatalogOfferView | null {
     guaranteeDays: typeof o.guaranteeDays === 'number' ? o.guaranteeDays : null,
     installmentsMax: typeof o.installmentsMax === 'number' ? o.installmentsMax : null,
     productName: typeof product.name === 'string' ? product.name : '',
+    allowsCoupon: content.allowsCoupon === true,
     includes: includesRaw.map((i) => ({
       name: typeof i.name === 'string' ? i.name : '',
       isPrimary: i.isPrimary === true,

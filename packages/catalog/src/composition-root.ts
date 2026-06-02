@@ -4,6 +4,9 @@ import { CreateOfferService } from './application/create-offer/create-offer.serv
 import { CreateProductService } from './application/create-product/create-product.service'
 import { GetOfferService } from './application/get-offer/get-offer.service'
 import { GetProductService } from './application/get-product/get-product.service'
+import { ListCouponsService } from './application/list-coupons/list-coupons.service'
+import { ListOffersService } from './application/list-offers/list-offers.service'
+import { ListProductsService } from './application/list-products/list-products.service'
 import { QuoteOfferService } from './application/quote-offer/quote-offer.service'
 import { RedeemCouponService } from './application/redeem-coupon/redeem-coupon.service'
 import { ResolveOfferEntitlementsService } from './application/resolve-offer-entitlements/resolve-offer-entitlements.service'
@@ -47,6 +50,9 @@ export function createApplication(env: Env): Application {
   const resolver = new ResolveOfferEntitlementsService(products)
   const getOffer = new GetOfferService(offers, products, resolver)
   const getProduct = new GetProductService(products)
+  const listProducts = new ListProductsService(products)
+  const listOffers = new ListOffersService(offers, products)
+  const listCoupons = new ListCouponsService(coupons)
   const quoteOffer = new QuoteOfferService(offers, coupons)
   const redeemCoupon = new RedeemCouponService(coupons, logger)
   const createProduct = new CreateProductService(products, logger)
@@ -61,6 +67,9 @@ export function createApplication(env: Env): Application {
     logger,
     getOffer,
     getProduct,
+    listProducts,
+    listOffers,
+    listCoupons,
     quoteOffer,
     redeemCoupon,
     createProduct,

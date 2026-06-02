@@ -25,11 +25,10 @@ const EnvSchema = z.object({
   PRODUCT_PRICE_CENTS: z.coerce.number().int().positive().default(3700),
   PRODUCT_SKU: z.string().default('no-comando-da-ia'),
   PRODUCT_NAME: z.string().default('No Comando da IA'),
-
-  ADMIN_USER: z.string().min(1, 'ADMIN_USER é obrigatória'),
-  ADMIN_PASSWORD: z.string().min(1, 'ADMIN_PASSWORD é obrigatória'),
-  // Segredo que assina o cookie de sessão do admin (login in-app). ≥16 chars.
-  ADMIN_SESSION_SECRET: z.string().min(16, 'ADMIN_SESSION_SECRET é obrigatória (≥16 chars)'),
+  // Admin: a sessão agora é o JWT do auth (IdP) guardado em cookie HttpOnly e
+  // validado via gateway `/auth/me` — o funil não guarda credencial/segredo de admin.
+  // Crie o usuário admin no auth: `bun run --filter @sistemazero/auth db:seed
+  // --email <e> --password <p> --role admin`.
 })
 
 export type Env = z.infer<typeof EnvSchema>

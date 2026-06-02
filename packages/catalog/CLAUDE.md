@@ -1,17 +1,22 @@
 # CLAUDE.md — @sistemazero/catalog
 
+> **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**
+> (`resolve-library-id` → `query-docs`) para toda lib/framework/API/CLI (Elysia, Drizzle, Zod, jose,
+> Bun, etc.) — não confie só na memória; APIs mudam. Para **pesquisa, exploração e entender padrões**,
+> use o **MCP do Octocode** em repositórios GitHub relevantes. Faça certo e atualizado — não "de cabeça".
+
 Guia operacional para trabalhar neste package. Leia antes de editar.
 
 ## O que é
 
 **Serviço de catálogo**: a **fonte da verdade comercial e de fulfillment** do monorepo. Cadastra
 **produtos**, **combos** e **ofertas**, e **resolve entitlements** (dado uma oferta, o conjunto exato de
-produtos entregáveis). É consumido pelo **funil** (preço + "o que está incluído") e, no futuro, pela
-**área de membros** (liberar exatamente o que a oferta incluía). Runtime: **Bun**. Linguagem: **TS (ESM)**.
+produtos entregáveis). É consumido pelo **funil** (preço + "o que está incluído") e pela
+**área de membros** (resolve, no grant, exatamente o que a oferta incluía). Runtime: **Bun**. Linguagem: **TS (ESM)**.
 
-> Estado: **slice completo e testado** (produtos/combos/ofertas + leitura pública + escrita admin +
-> resolução de entitlements). 33 testes verdes. Migration `0000_*` aplicada no Postgres compartilhado
-> (cria o **schema `catalog`**). Seed do produto atual (No Comando da IA, R$37) disponível.
+> Estado: **slice completo e testado** (produtos/combos/ofertas + cupons + leitura pública +
+> escrita admin + resolução de entitlements). Migrations `0000`/`0001` aplicadas no Postgres
+> compartilhado (cria o **schema `catalog`**). Seed do produto atual (No Comando da IA, R$37) disponível.
 
 ## Modelo (decisões de design — leia antes de mexer)
 
@@ -96,6 +101,12 @@ validade, mínimo e limite de usos. `POST/PATCH /catalog/coupons` (admin). `POST
 **Escrita (admin):** `POST/PATCH /catalog/products` e `/catalog/offers`. O RBAC real é do **gateway**
 (JWT + `authorize.roles: [superadmin,admin,staff]`); o serviço confere os headers `X-Auth-User-Role`/
 `X-Auth-User-Status` (anti-spoof, injetados pelo gateway) como **defesa em profundidade** (`REQUIRE_ADMIN`).
+
+**Leitura admin (listagens paginadas — painel `@sistemazero/admin`):** `GET /catalog/admin/{products,offers,coupons}`
+(`?q&status&limit&offset`; offers aceita `?productId`). Mesmo gating (JWT+RBAC no gateway, `requireAdmin`
+defesa em profundidade). Caminho `/catalog/admin/*` é **distinto** das leituras públicas `/:slug` p/ gating
+inequívoco no gateway. Serviços `List{Products,Offers,Coupons}Service`; repos ganharam `list(query)` (batch
+dos filhos p/ evitar N+1). Ofertas listadas trazem o nome do produto principal (sem resolver entitlements).
 
 DTOs em **TypeBox**; erros de domínio → status no `error-handler` (PRODUCT_NOT_FOUND→404,
 DUPLICATE_*→409, CONCURRENCY_CONFLICT→409, INVALID_STATE_TRANSITION→409, OFFER_NOT_AVAILABLE→409,

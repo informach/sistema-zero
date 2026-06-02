@@ -296,6 +296,35 @@ const config: GatewayConfigInput = {
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
       rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
     },
+    // LEITURA admin (listagens paginadas p/ o painel @sistemazero/admin): JWT + RBAC.
+    // Caminho `/catalog/admin/*` distinto das leituras públicas `/:slug`.
+    {
+      id: 'catalog-admin-products-list',
+      methods: ['GET'],
+      pathPattern: '/catalog/admin/products',
+      service: 'catalog',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'catalog-admin-offers-list',
+      methods: ['GET'],
+      pathPattern: '/catalog/admin/offers',
+      service: 'catalog',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'catalog-admin-coupons-list',
+      methods: ['GET'],
+      pathPattern: '/catalog/admin/coupons',
+      service: 'catalog',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
     // Resgate de uso do cupom (funil, na confirmação do pagamento): HMAC de borda do funil.
     {
       id: 'catalog-coupon-redeem',

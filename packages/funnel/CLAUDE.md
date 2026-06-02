@@ -1,5 +1,15 @@
 # CLAUDE.md — `@sistemazero/funnel`
 
+> **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**
+> (`resolve-library-id` → `query-docs`) para toda lib/framework/API/CLI (Astro, React, Tailwind,
+> Drizzle, Zod, Bun, etc.) — não confie só na memória; APIs mudam. Para **pesquisa, exploração e
+> entender padrões**, use o **MCP do Octocode** em repositórios GitHub relevantes. Faça certo e
+> atualizado — não "de cabeça".
+>
+> **💳 Efí Pay (provedor de pagamentos):** o checkout do funil usa a Efí (via gateway→payments). SEMPRE
+> consulte também a documentação oficial ATUALIZADA da Efí antes de mexer em pagamento/tokenização de
+> cartão/credenciais: **https://dev.efipay.com.br/docs/api-pix/credenciais/** (e seções relacionadas).
+
 Orientações para agentes trabalhando **dentro deste package**. Para setup local ponta a ponta
 (subir payments + gateway + funil, seed de consumer, imagens), veja o `README.md`.
 
@@ -7,7 +17,7 @@ Orientações para agentes trabalhando **dentro deste package**. Para setup loca
 
 Funil de vendas do ebook **No Comando da IA** (R$ 37):
 `quiz (10 perguntas em /quiz)` → `resultado personalizado` → `página de vendas` →
-`modal pré-checkout` → `checkout Pix` → `/obrigado` · + painel `/admin`.
+`modal pré-checkout` → `checkout (Pix / cartão / boleto)` → `/obrigado` · + painel `/admin`.
 `/` redireciona (302) para `/quiz` — a P1 (com imagens) é o primeiro passo da própria ilha do quiz.
 
 **Stack:** Astro 6 (`output: 'server'` + `@astrojs/node` standalone, roda no Bun) · ilhas **React 19**
@@ -38,7 +48,8 @@ e chamam o handler. Isso mantém tudo testável com fakes, sem subir Astro/Postg
 ```
 src/
   pages/api/**      Rotas finas (APIRoute). prerender=false. Sem lógica de negócio.
-  server/*.ts       Handlers puros + deps interfaces (checkout, leads, webhook, admin).
+  server/*.ts       Handlers puros + deps interfaces (checkout, leads, webhook, admin,
+                    catalog [preço/cupom via gateway], members-grant [matrícula], fulfillment [registro do comprador]).
   server/deps.ts    getDeps(): singleton {repo, env, gateway} (reusa o pool do Postgres).
   db/
     schema.ts       pgSchema('funil'): leads, funnel_events, processed_webhooks.
@@ -120,12 +131,16 @@ gateway re-entrega) e **best-effort** no polling do Pix (`pixStatus`) e no cart�
     do gateway/CDN. Mantenha o limite generoso (o quiz faz ~12 PATCH por sessão).
   - A CSP usa `'unsafe-inline'` em script/style — necessário p/ hidratação do Astro, JSON-LD inline
     (`ProductJsonLd`) e o `onerror` do `ImageSlot`. Ao adicionar inline scripts, lembre disso.
-- **Admin** (`/admin`, `/api/admin/*`): **login in-app** com cookie de sessão assinado
-  (`lib/admin-session.ts`: HMAC via `core.signHmac` + `lib/safe-equal`; TTL 12h; HttpOnly/SameSite=Lax;
-  `Secure` em prod). `/admin` sem sessão → redireciona p/ `/admin/login` (ilha `AdminLogin`: valida com
-  Zod e `POST /api/admin/login`); `/api/admin/*` sem sessão → 401. Credenciais em `ADMIN_USER`/
-  `ADMIN_PASSWORD` (comparação timing-safe); o cookie é assinado com `ADMIN_SESSION_SECRET`. Logout:
-  `POST /api/admin/logout` (botão "Sair" no painel). Só seguro sob HTTPS — garanta TLS em prod.
+- **Admin** (`/admin`, `/api/admin/*`): login com **usuário REAL do auth (IdP)** via gateway
+  (`lib/admin-auth.ts`). `POST /api/admin/login` (ilha `AdminLogin`, e-mail+senha validados com Zod)
+  chama o gateway `POST /auth/login`; só `role ∈ {admin, superadmin}` + `status: active` entra (senão
+  403). Os tokens (access+refresh) viram cookies **HttpOnly** `admin_access`/`admin_refresh`
+  (`SameSite=Lax`, `Secure` em prod). Cada request valida via gateway `GET /auth/me` (`resolveAdmin`); se
+  o access expira, troca o refresh por um par novo (rotação no auth) e reseta os cookies. `/admin` sem
+  sessão → redireciona p/ `/admin/login`; `/api/admin/*` sem sessão → 401. Logout: `POST /api/admin/logout`
+  revoga o refresh no auth e limpa os cookies. **O funil não guarda credencial/segredo de admin** — crie
+  o admin no auth (`bun run --filter @sistemazero/auth db:seed --email <e> --password <p> --role admin`).
+  Só seguro sob HTTPS.
 - **Não importar `middleware.ts` em testes** (`bun test` não resolve o módulo virtual
   `astro:middleware`). Teste a lógica isolada (ex.: `lib/rate-limit.ts`).
 

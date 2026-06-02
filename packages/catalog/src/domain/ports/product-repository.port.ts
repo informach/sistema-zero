@@ -1,5 +1,6 @@
 import type { ProductAggregate } from '../product/product.aggregate'
 import type { EntitlementNode } from '../services/resolve-entitlements'
+import type { ListQuery, Page } from './list'
 
 /**
  * Porta de persistência de produtos. Consultas retornam `null` quando não existe.
@@ -9,6 +10,8 @@ export interface ProductRepository {
   findById(id: string): Promise<ProductAggregate | null>
   findBySlug(slug: string): Promise<ProductAggregate | null>
   findBySku(sku: string): Promise<ProductAggregate | null>
+  /** Lista produtos paginados (admin), filtro opcional por status/busca. */
+  list(query: ListQuery): Promise<Page<ProductAggregate>>
   /** Carrega os nós (produto + componentes) dos ids dados — para a expansão de combos. */
   findNodesByIds(ids: string[]): Promise<EntitlementNode[]>
   /**

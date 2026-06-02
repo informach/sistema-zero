@@ -74,13 +74,12 @@ describe('ProcessPaymentService (Pix)', () => {
     ).rejects.toBeInstanceOf(IdempotencyConflictError)
   })
 
-  test('falha de validação (cartão sem nascimento) libera a reserva de idempotência', async () => {
+  test('falha de validação (cartão sem telefone) libera a reserva de idempotência', async () => {
     const card = { token: 'tok-1', brand: 'visa', last4: '4242', installments: 1 }
     const customer = {
       name: 'João da Silva',
       email: 'joao@example.com',
       document: '52998224725',
-      phone: '11999998888',
       address: {
         street: 'Rua A',
         number: '100',

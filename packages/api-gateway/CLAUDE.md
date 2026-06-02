@@ -1,5 +1,11 @@
 # @sistemazero/api-gateway — Guia do Agente
 
+> **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**
+> (`resolve-library-id` → `query-docs`) para toda lib/framework/API/CLI (Elysia, jose, Zod, Bun,
+> ioredis/RedisClient, etc.) — não confie só na memória; APIs mudam. Para **pesquisa, exploração e
+> entender padrões**, use o **MCP do Octocode** em repositórios GitHub relevantes. Faça certo e
+> atualizado — não "de cabeça".
+
 > API Gateway do monorepo `sistema-zero`: roteamento/proxy, auth plugável, rate limiting, load balancing, CORS, transformação e observabilidade.
 > **Stack:** Bun + TypeScript + Elysia + Zod + jose. **Arquitetura:** Hexagonal (Ports & Adapters) + Chain of Responsibility no caminho da requisição.
 > **Design:** config-driven (uma config declarativa) e **stateless** (todo estado mutável atrás de uma porta) → N réplicas sem líder.
@@ -16,6 +22,8 @@ Hoje ele é o **BFF de pagamentos do funil** (`@sistemazero/funnel`):
 3. O webhook `payment.paid` (payments → gateway → funil): o gateway **valida a assinatura** (`verify-webhook`), injeta um token interno e reescreve o path.
 
 Também é o **ponto de verificação/autorização de usuários**: roteia `/auth/*` para o **[@sistemazero/auth](../auth)** (IdP), verifica os JWT que ele emite (HS256/RS256), resolve o usuário das claims, aplica **RBAC** por rota e injeta `X-Auth-User-*` confiável ao upstream (ver §4.5).
+
+E roteia mais dois upstreams: o **catálogo** (`@sistemazero/catalog`: leitura pública de ofertas/produtos + `quote`/`redeem` de cupom por HMAC + escrita admin por JWT/RBAC) e a **área de membros** (`@sistemazero/members`: API do aluno — com `x-internal-token` injetado (`MEMBERS_INTERNAL_TOKEN`) como defesa em profundidade — + webhooks de concessão/assinatura por HMAC `resign`).
 
 Adicionar/expor um serviço = **editar `gateway.config.ts`**, não código.
 

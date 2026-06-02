@@ -51,10 +51,10 @@ bun run --filter @sistemazero/auth dev   # escuta em :3002
 
 ## Variáveis de ambiente
 
-Veja [`.env.example`](./.env.example). Principais: `DATABASE_URL`, `JWT_ALG`,
-`JWT_HS256_SECRET` (≥32 chars) **ou** `JWT_PRIVATE_KEY`, `JWT_ISSUER`,
+Veja [`.env.example`](./.env.example). Principais: `DATABASE_URL`, `DATABASE_POOL_MAX`,
+`JWT_ALG`, `JWT_HS256_SECRET` (≥32 chars) **ou** `JWT_PRIVATE_KEY`, `JWT_ISSUER`,
 `JWT_AUDIENCE`, `ACCESS_TOKEN_TTL_SECONDS`, `REFRESH_TOKEN_TTL_DAYS`,
-`PASSWORD_MIN_LENGTH`.
+`PASSWORD_MIN_LENGTH`, `TRUST_PROXY`/`TRUSTED_PROXY_HOPS`, `MAX_REQUEST_BODY_BYTES`.
 
 ## Comandos
 
@@ -64,7 +64,7 @@ Veja [`.env.example`](./.env.example). Principais: `DATABASE_URL`, `JWT_ALG`,
 | `bun run typecheck` | `tsc --noEmit` |
 | `bun test` | testes (unit + integração via `app.handle`) |
 | `bun run db:generate` / `db:migrate` | migrations (Drizzle) |
-| `bun run db:seed --email <e> --password <p> [--role admin]` | cria/atualiza um usuário |
+| `bun run db:seed --email <e> --password <p> [--first <n>] [--last <s>] [--role admin\|staff\|superadmin\|customer]` | cria/atualiza um usuário |
 | `bun run check` / `check:fix` | Biome |
 
 ## Deploy

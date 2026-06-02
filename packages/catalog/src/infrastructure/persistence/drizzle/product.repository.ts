@@ -1,4 +1,5 @@
-import { and, eq, inArray } from 'drizzle-orm'
+import { and, count, desc, eq, ilike, inArray, or, type SQL } from 'drizzle-orm'
+import type { ListQuery, Page } from '../../../domain/ports/list'
 import type { ProductRepository } from '../../../domain/ports/product-repository.port'
 import {
   ProductAggregate,
@@ -38,6 +39,35 @@ export class DrizzleProductRepository implements ProductRepository {
     const normalized = sku.trim().toLowerCase()
     const [row] = await this.db.select().from(products).where(eq(products.sku, normalized)).limit(1)
     return row ? this.hydrate(row) : null
+  }
+
+  async list(query: ListQuery): Promise<Page<ProductAggregate>> {
+    const where = buildFilter(query)
+    const countRows = await this.db.select({ value: count() }).from(products).where(where)
+    const total = countRows[0]?.value ?? 0
+    if (total === 0) return { items: [], total: 0 }
+    const rows = await this.db
+      .select()
+      .from(products)
+      .where(where)
+      .orderBy(desc(products.createdAt))
+      .limit(query.limit)
+      .offset(query.offset)
+    if (rows.length === 0) return { items: [], total }
+    const componentRows = await this.db
+      .select()
+      .from(productComponents)
+      .where(
+        inArray(
+          productComponents.productId,
+          rows.map((r) => r.id),
+        ),
+      )
+    const byProduct = groupComponents(componentRows)
+    const items = rows.map((row) =>
+      ProductAggregate.restore(toSnapshot(row, byProduct.get(row.id) ?? [])),
+    )
+    return { items, total }
   }
 
   async findNodesByIds(ids: string[]): Promise<EntitlementNode[]> {
@@ -120,6 +150,21 @@ export class DrizzleProductRepository implements ProductRepository {
       .where(eq(productComponents.productId, row.id))
     return ProductAggregate.restore(toSnapshot(row, componentRows))
   }
+}
+
+function buildFilter(query: ListQuery): SQL | undefined {
+  const conditions: SQL[] = []
+  if (query.status) conditions.push(eq(products.status, query.status as ProductRow['status']))
+  if (query.q) {
+    const like = `%${query.q.trim()}%`
+    const match = or(
+      ilike(products.name, like),
+      ilike(products.slug, like),
+      ilike(products.sku, like),
+    )
+    if (match) conditions.push(match)
+  }
+  return conditions.length > 0 ? and(...conditions) : undefined
 }
 
 function toRow(s: ProductSnapshot) {

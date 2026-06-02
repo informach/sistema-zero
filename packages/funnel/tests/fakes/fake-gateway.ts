@@ -1,4 +1,10 @@
-import type { GatewayClient, GatewayResult, RegisterBuyerInput } from '../../src/lib/gateway-client'
+import type {
+  AuthTokens,
+  AuthUser,
+  GatewayClient,
+  GatewayResult,
+  RegisterBuyerInput,
+} from '../../src/lib/gateway-client'
 
 interface FakePix {
   txid: string
@@ -27,7 +33,11 @@ export interface FakeGatewayState {
     quote: Array<{ slug: string; couponCode?: string }>
     redeem: string[]
     grant: Array<{ input: unknown }>
+    login: Array<{ email: string }>
+    logout: string[]
   }
+  /** Tokens válidos do auth falso (use p/ montar os cookies `admin_access`/`admin_refresh`). */
+  auth: { access: string; refresh: string; password: string; email: string }
   /** Status HTTP devolvido por grantMembersAccess (default 200). */
   setGrantStatus: (status: number) => void
   setStatus: (status: string) => void
@@ -37,6 +47,8 @@ export interface FakeGatewayState {
   setOfferPrice: (priceCents: number) => void
   /** Cadastra um cupom de desconto FIXO (centavos) reconhecido pelo quote. */
   addCoupon: (code: string, discountCents: number) => void
+  /** Sobrescreve o usuário do auth falso (ex.: role `customer` p/ testar 403). */
+  setAuthUser: (patch: Partial<AuthUser>) => void
 }
 
 /** Gateway falso em memória (não verifica HMAC; usado nos testes de checkout). */
@@ -63,12 +75,38 @@ export function createFakeGateway(): FakeGatewayState {
     quote: [],
     redeem: [],
     grant: [],
+    login: [],
+    logout: [],
   }
   let registerStatus = 201
   let registerBody: unknown = { user: { id: 'user-1' } }
   let grantStatus = 200
   let offerPriceCents = 3700
   const coupons = new Map<string, number>() // code (UPPER) → discountCents
+
+  // ── Auth falso (IdP) — login/me/refresh/logout do admin ──────────────────
+  const AUTH_PASSWORD = 'segredo'
+  const VALID_ACCESS = 'fake-access-token'
+  const VALID_REFRESH = 'fake-refresh-token'
+  let authUser: AuthUser = {
+    id: 'u-admin',
+    email: 'admin@sistemazero.dev',
+    firstName: 'Admin',
+    lastName: 'User',
+    role: 'admin',
+    status: 'active',
+  }
+  const authTokens: AuthTokens = {
+    accessToken: VALID_ACCESS,
+    refreshToken: VALID_REFRESH,
+    tokenType: 'Bearer',
+    expiresIn: 900,
+    refreshExpiresIn: 1_209_600,
+  }
+  const unauthorized = (): GatewayResult => ({
+    status: 401,
+    body: { error: { code: 'INVALID_CREDENTIALS', message: 'Não autenticado' } },
+  })
 
   function bodyForMethod(method: string): Record<string, unknown> {
     const base: Record<string, unknown> = { id: view.id, status: view.status, paidAt: view.paidAt }
@@ -153,11 +191,37 @@ export function createFakeGateway(): FakeGatewayState {
       calls.grant.push({ input })
       return { status: grantStatus, body: { ok: true, granted: 1 } }
     },
+    async loginAuth(email, password): Promise<GatewayResult> {
+      calls.login.push({ email })
+      if (email !== authUser.email || password !== AUTH_PASSWORD) return unauthorized()
+      return { status: 200, body: { user: authUser, tokens: authTokens } }
+    },
+    async getMe(accessToken): Promise<GatewayResult> {
+      if (accessToken !== VALID_ACCESS) return unauthorized()
+      return { status: 200, body: { user: authUser } }
+    },
+    async refreshAuth(refreshToken): Promise<GatewayResult> {
+      if (refreshToken !== VALID_REFRESH) return unauthorized()
+      return { status: 200, body: { tokens: authTokens } }
+    },
+    async logoutAuth(refreshToken): Promise<GatewayResult> {
+      calls.logout.push(refreshToken)
+      return { status: 200, body: { ok: true } }
+    },
   }
 
   return {
     gateway,
     calls,
+    auth: {
+      access: VALID_ACCESS,
+      refresh: VALID_REFRESH,
+      password: AUTH_PASSWORD,
+      email: authUser.email,
+    },
+    setAuthUser: (patch: Partial<AuthUser>) => {
+      authUser = { ...authUser, ...patch }
+    },
     setStatus: (status: string) => {
       view.status = status
       if (status === 'PAID') view.paidAt = new Date().toISOString()

@@ -1,0 +1,261 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-link: var(--link);
+  --color-link-hover: var(--link-hover);
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+/* ============================================================
+   SISTEMA ZERO — LIGHT MODE (cyan-first, off-white quente)
+   ============================================================ */
+:root {
+  --brand-lime: oklch(0.875 0.215 122);
+  --brand-cyan: oklch(0.84 0.13 192);
+
+  --background: oklch(0.985 0.004 100);
+  --foreground: oklch(0.105 0.01 265);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.105 0.01 265);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.105 0.01 265);
+
+  --primary: oklch(0.52 0.14 200);
+  --primary-foreground: oklch(1 0 0);
+
+  --link: oklch(0.44 0.14 210);
+  --link-hover: oklch(0.38 0.15 210);
+
+  --secondary: oklch(0.955 0.004 255);
+  --secondary-foreground: oklch(0.145 0.01 265);
+
+  --muted: oklch(0.955 0.004 255);
+  --muted-foreground: oklch(0.5 0.01 255);
+
+  --accent: oklch(0.62 0.18 135);
+  --accent-foreground: oklch(1 0 0);
+
+  --destructive: oklch(0.55 0.22 27);
+  --destructive-foreground: oklch(1 0 0);
+
+  --border: oklch(0.9 0.005 255);
+  --input: oklch(0.92 0.005 255);
+  --ring: oklch(0.52 0.14 200);
+
+  --chart-1: oklch(0.52 0.14 200);
+  --chart-2: oklch(0.62 0.18 135);
+  --chart-3: oklch(0.58 0.16 170);
+  --chart-4: oklch(0.55 0.22 27);
+  --chart-5: oklch(0.5 0.01 255);
+
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+    monospace;
+
+  --radius: 0.5rem;
+
+  /* Signature meta-tokens (gradiente CTA, hot badge). */
+  --sz-primary: oklch(0.52 0.14 200);
+  --sz-primary-fg: oklch(1 0 0);
+  --sz-accent: oklch(0.62 0.18 135);
+  --sz-hot: oklch(0.55 0.22 27);
+  --sz-hot-tint: oklch(0.55 0.22 27 / 0.1);
+  --sz-gradient: linear-gradient(90deg, oklch(0.42 0.22 140), oklch(0.44 0.14 210));
+}
+
+/* ============================================================
+   SISTEMA ZERO — DARK MODE (#0D1117, neon lime/cyan)
+   ============================================================ */
+.dark {
+  --background: oklch(0.103 0.01 265);
+  --foreground: oklch(0.975 0.003 255);
+
+  --card: oklch(0.14 0.01 265);
+  --card-foreground: oklch(0.975 0.003 255);
+  --popover: oklch(0.17 0.01 265);
+  --popover-foreground: oklch(0.975 0.003 255);
+
+  --primary: var(--brand-lime);
+  --primary-foreground: oklch(0.103 0.01 265);
+
+  --link: oklch(0.875 0.215 122);
+  --link-hover: oklch(0.92 0.2 125);
+
+  --secondary: oklch(0.185 0.01 265);
+  --secondary-foreground: oklch(0.975 0.003 255);
+
+  --muted: oklch(0.185 0.01 265);
+  --muted-foreground: oklch(0.6 0.012 235);
+
+  --accent: oklch(0.21 0.01 265);
+  --accent-foreground: oklch(0.84 0.13 192);
+
+  --destructive: oklch(0.64 0.215 27);
+  --destructive-foreground: oklch(0.975 0.003 255);
+
+  --border: oklch(0.21 0.01 265);
+  --input: oklch(0.23 0.01 265);
+  --ring: oklch(0.875 0.215 122);
+
+  --chart-1: oklch(0.875 0.215 122);
+  --chart-2: oklch(0.84 0.13 192);
+  --chart-3: oklch(0.858 0.172 157);
+  --chart-4: oklch(0.64 0.215 27);
+  --chart-5: oklch(0.6 0.012 235);
+
+  --sz-primary: oklch(0.875 0.215 122);
+  --sz-primary-fg: oklch(0.103 0.01 265);
+  --sz-accent: oklch(0.84 0.13 192);
+  --sz-hot: oklch(0.704 0.191 22);
+  --sz-hot-tint: oklch(0.704 0.191 22 / 0.15);
+  --sz-gradient: linear-gradient(90deg, oklch(0.875 0.215 122), oklch(0.84 0.13 192));
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    --font-sans:
+      var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+      "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono:
+      var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+      "Liberation Mono", "Courier New", monospace;
+    font-family: var(--font-sans);
+    @apply bg-background text-foreground;
+  }
+  a[href],
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+  button:disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+}
+
+/* ============================================================
+   UTILITÁRIOS DE MARCA — Sistema Zero
+   ============================================================ */
+.brand-gradient-text {
+  background: linear-gradient(90deg, var(--brand-lime), var(--brand-cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Promove o Button variant="default" a CTA gradiente. */
+button.bg-primary.text-primary-foreground,
+a.bg-primary.text-primary-foreground {
+  background-image: var(--sz-gradient);
+  background-color: transparent;
+  color: var(--sz-primary-fg);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    filter 0.15s ease;
+}
+button.bg-primary.text-primary-foreground:hover:not(:disabled),
+a.bg-primary.text-primary-foreground:hover:not([aria-disabled="true"]) {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow: 0 6px 16px color-mix(in oklch, var(--sz-primary) 30%, transparent);
+}
+
+.dark .brand-glow {
+  box-shadow:
+    0 0 12px color-mix(in oklch, var(--brand-lime) 35%, transparent),
+    0 0 24px color-mix(in oklch, var(--brand-lime) 15%, transparent);
+}
+
+/* Modal — backdrop + entrada */
+@keyframes sz-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes sz-zoom-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+.sz-overlay {
+  animation: sz-fade-in 0.15s ease;
+}
+.sz-modal {
+  animation: sz-zoom-in 0.15s ease;
+}
+
+/* Scrollbar discreta */
+.scrollbar-subtle {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+.scrollbar-subtle:hover {
+  scrollbar-color: color-mix(in oklch, var(--foreground) 18%, transparent) transparent;
+}
+.scrollbar-subtle::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.scrollbar-subtle::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 9999px;
+}
+.scrollbar-subtle:hover::-webkit-scrollbar-thumb {
+  background: color-mix(in oklch, var(--foreground) 18%, transparent);
+}
+
+/* Toast — contraste garantido em ambos os modos */
+[data-sonner-toast] {
+  background: var(--popover) !important;
+  color: var(--popover-foreground) !important;
+  border: 1px solid var(--border) !important;
+}

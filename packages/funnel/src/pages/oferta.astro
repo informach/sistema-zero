@@ -5,12 +5,26 @@ import ImageSlot from '../components/ImageSlot.astro'
 import SectionHeading from '../components/SectionHeading.astro'
 import StickyCta from '../components/StickyCta.astro'
 import ProductJsonLd from '../components/seo/ProductJsonLd.astro'
-import { CTA, PRODUTO } from '../content/copy'
+import { CTA } from '../content/copy'
 import { SALES } from '../content/sales-sections'
 import PreCheckoutModal from '../islands/PreCheckoutModal'
 import BaseLayout from '../layouts/BaseLayout.astro'
+import { formatBRLFromCents2 } from '../lib/money'
+import { getActiveOffer } from '../server/catalog'
+import { getDeps } from '../server/deps'
 
-export const prerender = true
+// SSR (não prerender): nome/preço vêm do catálogo em runtime. Marketing sem dado
+// por-usuário → cacheável na borda; reflete mudança de preço da oferta em ~1min.
+export const prerender = false
+
+const { env, gateway } = getDeps()
+const offer = await getActiveOffer(gateway, env.CATALOG_OFFER_SLUG)
+const productName = offer?.productName || env.PRODUCT_NAME
+const priceCents = offer?.priceCents ?? env.PRODUCT_PRICE_CENTS
+const priceLabel = formatBRLFromCents2(priceCents)
+const priceReais = (priceCents / 100).toFixed(2)
+
+Astro.response.headers.set('cache-control', 'public, max-age=60, stale-while-revalidate=300')
 
 const description =
   'Um guia direto para tirar sua ideia do papel com IA sem virar refém dela. Aprenda a comandar a IA com o método Z.E.R.O.'
@@ -18,12 +32,12 @@ const ofertaUrl = new URL('/oferta', Astro.site ?? Astro.url).toString()
 const trust = ['Garantia de 7 dias', 'Pagamento via Pix', 'Acesso imediato']
 ---
 
-<BaseLayout title={`${PRODUTO.nome} — Pare de pedir código no escuro`} description={description}>
+<BaseLayout title={`${productName} — Pare de pedir código no escuro`} description={description}>
   <ProductJsonLd
     slot="head"
-    name={PRODUTO.nome}
+    name={productName}
     description={description}
-    price="37.00"
+    price={priceReais}
     url={ofertaUrl}
     image="/img/sales-hero.webp"
   />
@@ -72,11 +86,11 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix', 'Acesso imediato']
           <div>
             <div class="flex items-baseline gap-2">
               <span class="text-sm text-muted">por apenas</span>
-              <span class="text-5xl font-extrabold text-lime">{PRODUTO.precoLabel}</span>
+              <span class="text-5xl font-extrabold text-lime">{priceLabel}</span>
             </div>
             <p class="mt-1 text-sm text-muted">Pagamento único · acesso imediato</p>
           </div>
-          <CtaButton label={CTA.principal} class="w-full sm:w-auto" />
+          <CtaButton label={CTA.principal(priceLabel)} class="w-full sm:w-auto" />
         </div>
 
         <ul class="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted">
@@ -279,7 +293,7 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix', 'Acesso imediato']
             ))
           }
         </div>
-        <div class="mt-8"><CtaButton label={CTA.principal} class="w-full sm:w-auto" /></div>
+        <div class="mt-8"><CtaButton label={CTA.principal(priceLabel)} class="w-full sm:w-auto" /></div>
       </section>
 
       <!-- ── Seção 7 — O resultado final ────────────────────────────────── -->
@@ -290,7 +304,7 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix', 'Acesso imediato']
             <p class="mt-4 text-lg leading-relaxed text-muted">{p}</p>
           ))
         }
-        <div class="mt-8"><CtaButton label={CTA.principal} class="w-full sm:w-auto" /></div>
+        <div class="mt-8"><CtaButton label={CTA.principal(priceLabel)} class="w-full sm:w-auto" /></div>
       </section>
 
       <!-- ── Seção 8 — Bônus ────────────────────────────────────────────── -->
@@ -389,7 +403,7 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix', 'Acesso imediato']
             }
           </div>
         </div>
-        <div class="mt-8"><CtaButton label={CTA.comecar} class="w-full sm:w-auto" /></div>
+        <div class="mt-8"><CtaButton label={CTA.comecar(priceLabel)} class="w-full sm:w-auto" /></div>
       </section>
 
       <!-- ── Seção 13 — FAQ ─────────────────────────────────────────────── -->
@@ -428,14 +442,14 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix', 'Acesso imediato']
         <div
           class="card border-lime/30 bg-gradient-to-b from-card-2/70 to-card/20 p-8 text-center"
         >
-          <p class="text-sm font-bold uppercase tracking-[0.18em] text-cyan">{PRODUTO.nome}</p>
+          <p class="text-sm font-bold uppercase tracking-[0.18em] text-cyan">{productName}</p>
           <div class="mt-3 flex items-baseline justify-center gap-2">
             <span class="text-sm text-muted">por apenas</span>
-            <span class="text-5xl font-extrabold text-lime">{PRODUTO.precoLabel}</span>
+            <span class="text-5xl font-extrabold text-lime">{priceLabel}</span>
           </div>
           <p class="mt-1 text-sm text-muted">Pagamento único via Pix · garantia de 7 dias</p>
           <div class="mt-6 flex justify-center">
-            <CtaButton label={CTA.principal} class="w-full sm:w-auto" />
+            <CtaButton label={CTA.principal(priceLabel)} class="w-full sm:w-auto" />
           </div>
         </div>
       </section>
@@ -443,6 +457,6 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix', 'Acesso imediato']
   </div>
 
   <Footer />
-  <StickyCta />
+  <StickyCta productName={productName} priceLabel={priceLabel} />
   <PreCheckoutModal client:idle />
 </BaseLayout>

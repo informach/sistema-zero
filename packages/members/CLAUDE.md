@@ -1,5 +1,10 @@
 # CLAUDE.md — @sistemazero/members
 
+> **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**
+> (`resolve-library-id` → `query-docs`) para toda lib/framework/API/CLI (Elysia, Drizzle, Zod, jose,
+> Bun, etc.) — não confie só na memória; APIs mudam. Para **pesquisa, exploração e entender padrões**,
+> use o **MCP do Octocode** em repositórios GitHub relevantes. Faça certo e atualizado — não "de cabeça".
+
 Guia operacional para trabalhar neste package. Leia antes de editar.
 
 ## O que é
@@ -13,7 +18,8 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > Estado: **Fatia 1 feita e testada** (22 testes). Motor de acesso (grant/revoke
 > por webhook + checagem) + consumo do aluno (meus cursos, curso, aula com blocos,
 > marcar concluída, progresso). Migration `0000_vengeful_the_stranger` (cria o
-> schema `members`). **NÃO** aplicada num Postgres real ainda. Conteúdo entra por seed.
+> schema `members`) — **aplicada** no Postgres compartilhado (`sistemazero`, :5433; as
+> 8 tabelas existem). Conteúdo entra por seed.
 
 ## Conceito central (decisões travadas com o usuário)
 

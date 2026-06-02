@@ -31,6 +31,9 @@ comum e **um único Postgres** (um schema por serviço).
   resolve o usuário das claims, aplica **RBAC** por rota e repassa identidade
   confiável (`X-Auth-User-*`) ao upstream. Não tem banco (stateless; Redis opcional).
 - O **auth** é o emissor de identidade (IdP); o gateway verifica os tokens dele.
+- **catalog** (3003) e **members** (3004) também ficam atrás do gateway: o catálogo é a
+  fonte de preço/inclusões (consumido pelo funil); a área de membros materializa o acesso
+  do aluno (matrícula concedida por webhook pós-pagamento).
 
 ## Pacotes
 
@@ -40,7 +43,8 @@ comum e **um único Postgres** (um schema por serviço).
 | [`@sistemazero/payments`](packages/payments) | 3001 | Pagamentos (Pix/boleto/cartão + assinaturas) via **Efí Pay** — DDD/Hexagonal |
 | [`@sistemazero/auth`](packages/auth) | 3002 | Identidade (IdP): registro/login + emissão de JWT (access/refresh), RBAC |
 | [`@sistemazero/catalog`](packages/catalog) | 3003 | Catálogo: produtos, combos e ofertas (fonte da verdade comercial) + entitlements — DDD/Hexagonal |
-| [`@sistemazero/funnel`](packages/funnel) | 4321 | Funil de vendas (Astro 6 + ilhas React): quiz → vendas → checkout → admin |
+| [`@sistemazero/members`](packages/members) | 3004 | Área de membros: matrícula/entitlement + cursos/aulas (blocos polimórficos) + progresso — DDD/Hexagonal |
+| [`@sistemazero/funnel`](packages/funnel) | 4321 | Funil de vendas (Astro 6 + ilhas React): quiz → vendas → checkout (Pix/cartão/boleto) → admin |
 | [`@sistemazero/core`](packages/core) | — | Lib compartilhada (security/logging/errors/result/http), sem framework |
 | [`@sistemazero/tui`](packages/tui) | — | UI de terminal (React + OpenTUI) |
 
@@ -50,7 +54,7 @@ comum e **um único Postgres** (um schema por serviço).
 isolado por `pgSchema` no Drizzle:
 
 - `payments` → schema `payments` · `funnel` → schema `funil` · `auth` → schema `auth` ·
-  `catalog` → schema `catalog`.
+  `catalog` → schema `catalog` · `members` → schema `members`.
 - O gateway/core/tui **não** têm banco.
 - Cada serviço tem **journal de migrations próprio** (`<serviço>_migrations` no schema
   `drizzle`) — NÃO compartilhe `__drizzle_migrations` entre pacotes (a dedupe por
@@ -66,6 +70,7 @@ bun run --filter @sistemazero/payments db:migrate
 bun run --filter @sistemazero/funnel   db:migrate
 bun run --filter @sistemazero/auth     db:migrate
 bun run --filter @sistemazero/catalog  db:migrate   # depois: db:seed (produto + oferta atuais)
+bun run --filter @sistemazero/members  db:migrate   # depois: db:seed (curso de exemplo)
 ```
 
 ## Setup
@@ -77,15 +82,33 @@ bun install                       # instala o workspace inteiro
 
 Segredos que precisam **bater entre serviços** (ver os `.env.example`):
 `JWT_HS256_SECRET` (auth = gateway), `FUNNEL_HMAC_SECRET`/`FUNNEL_INTERNAL_TOKEN`
-(funnel = gateway), `GATEWAY_HMAC_SECRET` (gateway = consumer `gateway` no payments).
+(funnel = gateway), `GATEWAY_HMAC_SECRET` (gateway = consumer `gateway` no payments **e**
+= verificação de webhook no members), `MEMBERS_INTERNAL_TOKEN` (gateway) = `INTERNAL_API_TOKEN`
+(members).
+
+## Subir tudo (dev)
+
+Para o dia a dia, o **orquestrador** (`scripts/dev.ts`) sobe todos os serviços de uma vez
+em background — em vez de um terminal por serviço:
+
+```bash
+bun run dev:up         # sobe gateway/payments/auth/catalog/members/funnel (background) + preflight
+bun run dev:status     # o que está de pé (pid/porta/escutando)
+bun run dev:logs auth  # acompanha o log de um serviço (logs/<serviço>.log)
+bun run dev:restart    # reinicia todos (ou um: dev:restart payments)
+bun run dev:down       # para todos
+```
+
+Aceita subconjunto (`bun run dev:up auth payments`). Só para ambiente local.
 
 ## Comandos (raiz)
 
 | Comando | O quê |
 |---|---|
-| `bun run dev:gateway` / `dev:payments` / `dev:auth` / `dev:catalog` / `dev:funnel` | sobe cada serviço |
-| `bun run test:gateway` / `test:payments` / `test:auth` / `test:catalog` / `test:funnel` | testes por serviço |
-| `bun run db:auth:migrate` / `db:funnel:migrate` / `db:catalog:migrate` / `db:catalog:seed` | migrations + seed (atalhos) |
+| `bun run dev:up` / `dev:down` / `dev:restart` / `dev:status` / `dev:logs <svc>` | orquestrador de dev (sobe/para/reinicia tudo em background) |
+| `bun run dev:gateway` / `dev:payments` / `dev:auth` / `dev:catalog` / `dev:members` / `dev:funnel` | sobe cada serviço |
+| `bun run test:gateway` / `test:payments` / `test:auth` / `test:catalog` / `test:members` / `test:funnel` | testes por serviço |
+| `bun run db:auth:migrate` / `db:funnel:migrate` / `db:catalog:migrate` / `db:members:migrate` / `db:catalog:seed` / `db:members:seed` | migrations + seed (atalhos) |
 | `bun run check` / `check:fix` | Biome (lint + format) no monorepo |
 
 > Typecheck/testes por pacote: `bun run --filter <nome> typecheck` / `test`

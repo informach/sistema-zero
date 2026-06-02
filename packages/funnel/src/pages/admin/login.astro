@@ -1,16 +1,19 @@
 ---
 import AdminLogin from '../../islands/admin/AdminLogin'
 import BaseLayout from '../../layouts/BaseLayout.astro'
-import { verifyAdminSession } from '../../lib/admin-session'
+import { resolveAdmin } from '../../lib/admin-auth'
 import { getDeps } from '../../server/deps'
 
 export const prerender = false
 
 Astro.response.headers.set('cache-control', 'no-store')
 
-// Já logado? Vai direto pro painel.
-const { env } = getDeps()
-if (verifyAdminSession(Astro.request, env.ADMIN_SESSION_SECRET)) {
+// Já logado (sessão admin válida no auth)? Vai direto pro painel.
+const { gateway, env } = getDeps()
+const auth = await resolveAdmin(Astro.request, gateway, env.NODE_ENV === 'production')
+if (auth) {
+  if (auth.setCookies)
+    for (const c of auth.setCookies) Astro.response.headers.append('set-cookie', c)
   return Astro.redirect('/admin')
 }
 ---

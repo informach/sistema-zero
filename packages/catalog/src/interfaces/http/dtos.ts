@@ -57,6 +57,8 @@ const OfferContentSchema = t.Object({
   badge: t.Optional(t.String({ maxLength: 80 })),
   ctaLabel: t.Optional(t.String({ maxLength: 80 })),
   highlight: t.Optional(t.String({ maxLength: 200 })),
+  // Opt-in: exibe o campo de cupom no checkout do funil. Ausente/false → escondido.
+  allowsCoupon: t.Optional(t.Boolean()),
 })
 
 const OfferItemSchema = t.Object({
@@ -67,6 +69,37 @@ const OfferItemSchema = t.Object({
 const SKU = t.String({ minLength: 1, maxLength: 80 })
 const SLUG = t.String({ minLength: 1, maxLength: 140 })
 const NAME = t.String({ minLength: 1, maxLength: 200 })
+
+// ── Query de listagem admin (paginação + filtros). `t.Numeric` coage a string da
+// query para número; o handler ainda capa o `limit` (defesa). ──
+const LIST_Q = t.Optional(t.String({ minLength: 1, maxLength: 120 }))
+const LIST_LIMIT = t.Optional(t.Numeric({ minimum: 1, maximum: 100 }))
+const LIST_OFFSET = t.Optional(t.Numeric({ minimum: 0, maximum: 1_000_000 }))
+
+/** Query de `GET /catalog/admin/products`. */
+export const ListProductsQuery = t.Object({
+  q: LIST_Q,
+  status: t.Optional(productStatusSchema),
+  limit: LIST_LIMIT,
+  offset: LIST_OFFSET,
+})
+
+/** Query de `GET /catalog/admin/offers`. */
+export const ListOffersQuery = t.Object({
+  q: LIST_Q,
+  status: t.Optional(offerStatusSchema),
+  productId: t.Optional(t.String({ minLength: 1, maxLength: 64 })),
+  limit: LIST_LIMIT,
+  offset: LIST_OFFSET,
+})
+
+/** Query de `GET /catalog/admin/coupons`. */
+export const ListCouponsQuery = t.Object({
+  q: LIST_Q,
+  status: t.Optional(couponStatusSchema),
+  limit: LIST_LIMIT,
+  offset: LIST_OFFSET,
+})
 
 /** Corpo de `POST /catalog/products`. */
 export const CreateProductBody = t.Object({

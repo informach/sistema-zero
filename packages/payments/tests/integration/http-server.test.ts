@@ -507,7 +507,7 @@ describe('HTTP server', () => {
     expect(json.card).toBeDefined()
   })
 
-  test('POST /payments CARTÃO sem data de nascimento → 422', async () => {
+  test('POST /payments CARTÃO sem data de nascimento → 201 (birth é opcional na Efí)', async () => {
     const { app } = buildApp()
     const body = JSON.stringify({
       amountInCents: 3700,
@@ -535,7 +535,9 @@ describe('HTTP server', () => {
         body,
       }),
     )
-    expect(res.status).toBe(422)
+    expect(res.status).toBe(201)
+    const json = (await res.json()) as { status: string }
+    expect(json.status).toBe('PAID')
   })
 
   test('POST /webhooks/efi/cobrancas confirma um cartão em análise (waiting) que vira pago', async () => {

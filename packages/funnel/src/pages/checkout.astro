@@ -37,7 +37,12 @@ const priceLabel = formatBRLFromCents2(priceCents)
       {productName} — <span class="font-bold text-lime">{priceLabel}</span>
     </p>
     <div class="card mt-6 p-6">
-      <CheckoutTabs client:load email={lead.email} priceCents={priceCents} />
+      <CheckoutTabs
+        client:load
+        email={lead.email}
+        priceCents={priceCents}
+        allowCoupon={offer?.allowsCoupon === true}
+      />
     </div>
     <p class="mt-4 text-center text-xs text-muted">
       Pagamento processado com segurança. Garantia de 7 dias.

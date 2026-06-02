@@ -18,6 +18,12 @@ export interface OfferContent {
   badge?: string
   ctaLabel?: string
   highlight?: string
+  /**
+   * Habilita o campo de cupom no checkout do funil (opt-in). Ausente/`false` →
+   * o funil NÃO exibe o cupom (ex.: produto de entrada de baixo valor, onde não
+   * faz sentido). Defina `true` nas ofertas que aceitam cupom.
+   */
+  allowsCoupon?: boolean
 }
 
 /** Estado serializável da oferta (ida/volta ao banco). */

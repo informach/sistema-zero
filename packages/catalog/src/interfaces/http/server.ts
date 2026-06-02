@@ -7,6 +7,9 @@ import type { CreateOfferService } from '../../application/create-offer/create-o
 import type { CreateProductService } from '../../application/create-product/create-product.service'
 import type { GetOfferService } from '../../application/get-offer/get-offer.service'
 import type { GetProductService } from '../../application/get-product/get-product.service'
+import type { ListCouponsService } from '../../application/list-coupons/list-coupons.service'
+import type { ListOffersService } from '../../application/list-offers/list-offers.service'
+import type { ListProductsService } from '../../application/list-products/list-products.service'
 import type { QuoteOfferService } from '../../application/quote-offer/quote-offer.service'
 import type { RedeemCouponService } from '../../application/redeem-coupon/redeem-coupon.service'
 import type { UpdateCouponService } from '../../application/update-coupon/update-coupon.service'
@@ -16,6 +19,7 @@ import type { Env } from '../../infrastructure/config/env'
 import { buildErrorResponse } from './error-handler'
 import { isOversizeBody, markOversizeBody } from './raw-body'
 import { adminRoutes } from './routes/admin.routes'
+import { adminReadRoutes } from './routes/admin-read.routes'
 import { catalogRoutes } from './routes/catalog.routes'
 import { healthRoutes } from './routes/health.routes'
 
@@ -24,6 +28,9 @@ export interface HttpDeps {
   logger: Logger
   getOffer: GetOfferService
   getProduct: GetProductService
+  listProducts: ListProductsService
+  listOffers: ListOffersService
+  listCoupons: ListCouponsService
   quoteOffer: QuoteOfferService
   redeemCoupon: RedeemCouponService
   createProduct: CreateProductService
@@ -108,6 +115,14 @@ export function createServer(deps: HttpDeps) {
         updateOffer: deps.updateOffer,
         createCoupon: deps.createCoupon,
         updateCoupon: deps.updateCoupon,
+      }),
+    )
+    .use(
+      adminReadRoutes({
+        requireAdminEnabled: deps.env.REQUIRE_ADMIN,
+        listProducts: deps.listProducts,
+        listOffers: deps.listOffers,
+        listCoupons: deps.listCoupons,
       }),
     )
 }

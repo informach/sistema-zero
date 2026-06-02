@@ -5,6 +5,9 @@ import { CreateOfferService } from '../../src/application/create-offer/create-of
 import { CreateProductService } from '../../src/application/create-product/create-product.service'
 import { GetOfferService } from '../../src/application/get-offer/get-offer.service'
 import { GetProductService } from '../../src/application/get-product/get-product.service'
+import { ListCouponsService } from '../../src/application/list-coupons/list-coupons.service'
+import { ListOffersService } from '../../src/application/list-offers/list-offers.service'
+import { ListProductsService } from '../../src/application/list-products/list-products.service'
 import { QuoteOfferService } from '../../src/application/quote-offer/quote-offer.service'
 import { RedeemCouponService } from '../../src/application/redeem-coupon/redeem-coupon.service'
 import { ResolveOfferEntitlementsService } from '../../src/application/resolve-offer-entitlements/resolve-offer-entitlements.service'
@@ -37,6 +40,9 @@ function build() {
   const updateOffer = new UpdateOfferService(offers, products, resolver, logger)
   const getOffer = new GetOfferService(offers, products, resolver)
   const getProduct = new GetProductService(products)
+  const listProducts = new ListProductsService(products)
+  const listOffers = new ListOffersService(offers, products)
+  const listCoupons = new ListCouponsService(coupons)
   const quoteOffer = new QuoteOfferService(offers, coupons)
   const redeemCoupon = new RedeemCouponService(coupons, logger)
   const createCoupon = new CreateCouponService(coupons, offers, logger)
@@ -46,6 +52,9 @@ function build() {
     logger,
     getOffer,
     getProduct,
+    listProducts,
+    listOffers,
+    listCoupons,
     quoteOffer,
     redeemCoupon,
     createProduct,
@@ -285,6 +294,114 @@ describe('catalog HTTP', () => {
       expect((await second.json()) as { error: { code: string } }).toMatchObject({
         error: { code: 'COUPON_EXHAUSTED' },
       })
+    })
+  })
+
+  describe('leitura admin (listagens paginadas)', () => {
+    async function seed(built: ReturnType<typeof build>) {
+      const p1 = await built.createProduct.execute({
+        sku: 'curso-ia',
+        slug: 'curso-ia',
+        name: 'Curso de IA',
+        kind: 'course',
+        status: 'active',
+      })
+      await built.createProduct.execute({
+        sku: 'ebook-ia',
+        slug: 'ebook-ia',
+        name: 'Ebook de IA',
+        kind: 'ebook',
+        status: 'draft',
+      })
+      await built.createOffer.execute({
+        productId: p1.id,
+        code: 'curso-of',
+        slug: 'curso-of',
+        name: 'Oferta do curso',
+        priceCents: 19700,
+        status: 'active',
+      })
+      await built.app.handle(
+        req('POST', '/catalog/coupons', {
+          headers: ADMIN,
+          body: { code: 'BLACK', type: 'percent', percentOff: 50, appliesToAll: true },
+        }),
+      )
+      return p1
+    }
+
+    it('GET /catalog/admin/products sem role → 401', async () => {
+      const res = await build().app.handle(req('GET', '/catalog/admin/products'))
+      expect(res.status).toBe(401)
+    })
+
+    it('GET /catalog/admin/products (admin) lista paginado', async () => {
+      const built = build()
+      await seed(built)
+      const res = await built.app.handle(req('GET', '/catalog/admin/products', { headers: ADMIN }))
+      expect(res.status).toBe(200)
+      const page = (await res.json()) as {
+        items: { slug: string; status: string }[]
+        total: number
+        limit: number
+        offset: number
+      }
+      expect(page.total).toBe(2)
+      expect(page.items.length).toBe(2)
+      expect(page.limit).toBe(20)
+    })
+
+    it('GET /catalog/admin/products?status=active filtra', async () => {
+      const built = build()
+      await seed(built)
+      const res = await built.app.handle(
+        req('GET', '/catalog/admin/products?status=active', { headers: ADMIN }),
+      )
+      const page = (await res.json()) as { items: { slug: string }[]; total: number }
+      expect(page.total).toBe(1)
+      expect(page.items[0]?.slug).toBe('curso-ia')
+    })
+
+    it('GET /catalog/admin/products?q=ebook busca por nome/slug', async () => {
+      const built = build()
+      await seed(built)
+      const res = await built.app.handle(
+        req('GET', '/catalog/admin/products?q=ebook', { headers: ADMIN }),
+      )
+      const page = (await res.json()) as { items: { slug: string }[]; total: number }
+      expect(page.total).toBe(1)
+      expect(page.items[0]?.slug).toBe('ebook-ia')
+    })
+
+    it('GET /catalog/admin/offers anexa o nome do produto', async () => {
+      const built = build()
+      const p1 = await seed(built)
+      const res = await built.app.handle(req('GET', '/catalog/admin/offers', { headers: ADMIN }))
+      expect(res.status).toBe(200)
+      const page = (await res.json()) as {
+        items: { productId: string; productName: string | null; isAvailable: boolean }[]
+        total: number
+      }
+      expect(page.total).toBe(1)
+      expect(page.items[0]?.productId).toBe(p1.id)
+      expect(page.items[0]?.productName).toBe('Curso de IA')
+      expect(page.items[0]?.isAvailable).toBe(true)
+    })
+
+    it('GET /catalog/admin/coupons lista cupons (role customer → 403)', async () => {
+      const built = build()
+      await seed(built)
+      const ok = await built.app.handle(req('GET', '/catalog/admin/coupons', { headers: ADMIN }))
+      const page = (await ok.json()) as { items: { code: string }[]; total: number }
+      expect(page.total).toBe(1)
+      expect(page.items[0]?.code).toBe('BLACK')
+
+      const denied = await built.app.handle(
+        req('GET', '/catalog/admin/coupons', {
+          headers: { 'x-auth-user-role': 'customer', 'x-auth-user-status': 'active' },
+        }),
+      )
+      expect(denied.status).toBe(403)
     })
   })
 

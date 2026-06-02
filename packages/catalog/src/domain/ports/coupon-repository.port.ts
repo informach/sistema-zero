@@ -1,4 +1,5 @@
 import type { CouponAggregate } from '../coupon/coupon.aggregate'
+import type { ListQuery, Page } from './list'
 
 /**
  * Porta de persistência de cupons. Consultas retornam `null` quando não existe.
@@ -7,6 +8,8 @@ import type { CouponAggregate } from '../coupon/coupon.aggregate'
 export interface CouponRepository {
   findById(id: string): Promise<CouponAggregate | null>
   findByCode(code: string): Promise<CouponAggregate | null>
+  /** Lista cupons paginados (admin), filtro opcional por status/busca. */
+  list(query: ListQuery): Promise<Page<CouponAggregate>>
   /** Insere um cupom (+ escopo). Em violação de unicidade (code) lança `DuplicateCouponError`. */
   create(coupon: CouponAggregate): Promise<void>
   /** Atualiza um cupom (+ escopo) com concorrência otimista. */

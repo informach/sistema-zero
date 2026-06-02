@@ -1,18 +1,21 @@
 ---
 import AdminDashboard from '../../islands/admin/AdminDashboard'
 import BaseLayout from '../../layouts/BaseLayout.astro'
-import { verifyAdminSession } from '../../lib/admin-session'
+import { resolveAdmin } from '../../lib/admin-auth'
 import { getDeps } from '../../server/deps'
 
 export const prerender = false
 
 Astro.response.headers.set('cache-control', 'no-store')
 
-// Sessão por cookie assinado (login in-app). Sem sessão → tela de login.
-const { env } = getDeps()
-if (!verifyAdminSession(Astro.request, env.ADMIN_SESSION_SECRET)) {
+// Sessão validada no auth (IdP) via gateway. Sem sessão admin → tela de login.
+const { gateway, env } = getDeps()
+const auth = await resolveAdmin(Astro.request, gateway, env.NODE_ENV === 'production')
+if (!auth) {
   return Astro.redirect('/admin/login')
 }
+// Renovou o token no meio? Repassa os novos cookies ao browser.
+if (auth.setCookies) for (const c of auth.setCookies) Astro.response.headers.append('set-cookie', c)
 ---
 
 <BaseLayout title="Admin — No Comando da IA" noindex={true}>
