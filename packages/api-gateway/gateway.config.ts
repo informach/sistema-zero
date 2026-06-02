@@ -14,6 +14,7 @@ import type { GatewayConfigInput } from './src/infrastructure/config/gateway-con
  *    um token interno e encaminha ao funil em /api/webhooks/payments.
  */
 const PAYMENTS_URL = process.env.PAYMENTS_URL ?? 'http://localhost:3001'
+const AUTH_URL = process.env.AUTH_URL ?? 'http://localhost:3002'
 const FUNNEL_URL = process.env.FUNNEL_URL ?? 'http://localhost:4321'
 const FUNNEL_HMAC_SECRET = process.env.FUNNEL_HMAC_SECRET ?? ''
 const FUNNEL_INTERNAL_TOKEN = process.env.FUNNEL_INTERNAL_TOKEN ?? ''
@@ -60,6 +61,14 @@ const config: GatewayConfigInput = {
       },
       ...sharedResilience,
     },
+    // Serviço de identidade (IdP): registro/login + emissão de JWT.
+    auth: {
+      name: 'auth',
+      upstreamGroups: {
+        default: [{ url: AUTH_URL, healthCheckPath: '/health' }],
+      },
+      ...sharedResilience,
+    },
   },
   routes: [
     // Funil → gateway (HMAC de borda) → payments (gateway re-assina).
@@ -99,6 +108,78 @@ const config: GatewayConfigInput = {
         { type: 'path-rewrite', options: { addPrefix: '/api' } },
       ],
     },
+
+    // ── Identidade (@sistemazero/auth) ──────────────────────────────────────
+    // O IdP é a autoridade da sua própria auth: o gateway só ROTEIA (+ rate limit
+    // por IP contra brute-force) e repassa o corpo/headers (`passthrough` mantém o
+    // Authorization do /me chegando ao serviço). Cadastro/login são públicos.
+    {
+      id: 'auth-register',
+      methods: ['POST'],
+      pathPattern: '/auth/register',
+      service: 'auth',
+      auth: 'public',
+      upstreamAuth: 'passthrough',
+      rateLimit: { max: 20, windowMs: 60_000, by: 'ip' },
+    },
+    {
+      id: 'auth-login',
+      methods: ['POST'],
+      pathPattern: '/auth/login',
+      service: 'auth',
+      auth: 'public',
+      upstreamAuth: 'passthrough',
+      rateLimit: { max: 20, windowMs: 60_000, by: 'ip' },
+    },
+    {
+      id: 'auth-refresh',
+      methods: ['POST'],
+      pathPattern: '/auth/refresh',
+      service: 'auth',
+      auth: 'public',
+      upstreamAuth: 'passthrough',
+      rateLimit: { max: 60, windowMs: 60_000, by: 'ip' },
+    },
+    {
+      id: 'auth-logout',
+      methods: ['POST'],
+      pathPattern: '/auth/logout',
+      service: 'auth',
+      auth: 'public',
+      upstreamAuth: 'passthrough',
+      rateLimit: { max: 60, windowMs: 60_000, by: 'ip' },
+    },
+    {
+      id: 'auth-me',
+      methods: ['GET'],
+      pathPattern: '/auth/me',
+      service: 'auth',
+      auth: 'public',
+      // passthrough: o Authorization (Bearer) precisa chegar ao auth, que o verifica.
+      upstreamAuth: 'passthrough',
+      rateLimit: { max: 120, windowMs: 60_000, by: 'ip' },
+    },
+    {
+      id: 'auth-jwks',
+      methods: ['GET'],
+      pathPattern: '/auth/.well-known/jwks.json',
+      service: 'auth',
+      auth: 'public',
+      rateLimit: { max: 120, windowMs: 60_000, by: 'ip' },
+    },
+
+    // ── Exemplo: rota de negócio protegida por JWT + RBAC ────────────────────
+    // O gateway VERIFICA o token do auth (configure JWT_HS256_SECRET — mesmo segredo
+    // do auth — ou JWT_JWKS_URL=<auth>/auth/.well-known/jwks.json + JWT_ISSUER/AUDIENCE),
+    // resolve o usuário das claims, aplica o RBAC e injeta X-Auth-* ao upstream.
+    // {
+    //   id: 'admin-area',
+    //   methods: ['GET', 'POST'],
+    //   pathPattern: '/admin/*',
+    //   service: '<algum-serviço>',
+    //   auth: { required: true, mode: 'any', strategies: ['jwt'] },
+    //   authorize: { roles: ['admin', 'staff'], statuses: ['active'] },
+    // },
   ],
 }
 

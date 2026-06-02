@@ -33,11 +33,59 @@ export function stripEdgeAuthHeaders(headers: Headers): void {
 }
 
 /**
+ * Headers de IDENTIDADE confiável (gateway → upstream). O cliente NUNCA os define;
+ * o gateway os REMOVE da entrada (anti-spoof) e injeta os valores resolvidos do
+ * token verificado. O upstream pode confiar neles (vêm só do gateway, na rede interna).
+ */
+export const IDENTITY_HEADERS = {
+  id: 'x-auth-user-id',
+  email: 'x-auth-user-email',
+  name: 'x-auth-user-name',
+  role: 'x-auth-user-role',
+  status: 'x-auth-user-status',
+  phone: 'x-auth-user-phone',
+  signupSource: 'x-auth-user-source',
+} as const
+
+const IDENTITY_HEADER_NAMES = Object.values(IDENTITY_HEADERS)
+
+/** Identidade resolvida a injetar (subset estrutural de AuthenticatedUser). */
+export interface IdentityHeaderInput {
+  id: string
+  email: string
+  firstName: string
+  lastName: string
+  role: string
+  status: string
+  phone?: string
+  signupSource?: string
+}
+
+/** Remove quaisquer headers de identidade da entrada (anti-spoof do cliente). */
+export function stripIdentityHeaders(headers: Headers): void {
+  for (const name of IDENTITY_HEADER_NAMES) headers.delete(name)
+}
+
+/** Injeta a identidade confiável resolvida nos headers de saída (após o strip). */
+export function injectIdentityHeaders(headers: Headers, user: IdentityHeaderInput): void {
+  stripIdentityHeaders(headers)
+  headers.set(IDENTITY_HEADERS.id, user.id)
+  headers.set(IDENTITY_HEADERS.email, user.email)
+  headers.set(IDENTITY_HEADERS.name, `${user.firstName} ${user.lastName}`.trim())
+  headers.set(IDENTITY_HEADERS.role, user.role)
+  headers.set(IDENTITY_HEADERS.status, user.status)
+  if (user.phone) headers.set(IDENTITY_HEADERS.phone, user.phone)
+  if (user.signupSource) headers.set(IDENTITY_HEADERS.signupSource, user.signupSource)
+}
+
+/**
  * Headers que NUNCA devem aparecer em log (mesmo no debug de headers). Base nas
- * credenciais de borda + cookies de resposta e outros portadores de segredo.
+ * credenciais de borda + cookies de resposta, segredos e os headers de identidade
+ * (contêm PII como e-mail).
  */
 export const SENSITIVE_LOG_HEADERS = new Set([
   ...EDGE_AUTH_HEADERS,
+  ...IDENTITY_HEADER_NAMES,
   'set-cookie',
   'proxy-authorization',
   'x-api-key',

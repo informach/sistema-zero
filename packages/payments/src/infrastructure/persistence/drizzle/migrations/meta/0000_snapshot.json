@@ -1,12 +1,12 @@
 {
-  "id": "3fa4252e-c121-4e1b-ba9e-d799f8348265",
+  "id": "92ad7885-761b-42a4-be05-348cc767912a",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.consumers": {
+    "payments.consumers": {
       "name": "consumers",
-      "schema": "",
+      "schema": "payments",
       "columns": {
         "id": {
           "name": "id",
@@ -33,6 +33,12 @@
           "notNull": true,
           "default": "ARRAY[]::text[]"
         },
+        "webhook_url": {
+          "name": "webhook_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "is_active": {
           "name": "is_active",
           "type": "boolean",
@@ -56,14 +62,20 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.idempotency_keys": {
+    "payments.idempotency_keys": {
       "name": "idempotency_keys",
-      "schema": "",
+      "schema": "payments",
       "columns": {
+        "consumer_id": {
+          "name": "consumer_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "key": {
           "name": "key",
           "type": "text",
-          "primaryKey": true,
+          "primaryKey": false,
           "notNull": true
         },
         "request_hash": {
@@ -72,10 +84,16 @@
           "primaryKey": false,
           "notNull": true
         },
+        "reservation_id": {
+          "name": "reservation_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "state": {
           "name": "state",
           "type": "idempotency_state",
-          "typeSchema": "public",
+          "typeSchema": "payments",
           "primaryKey": false,
           "notNull": true
         },
@@ -123,15 +141,23 @@
         }
       },
       "foreignKeys": {},
-      "compositePrimaryKeys": {},
+      "compositePrimaryKeys": {
+        "idempotency_keys_consumer_id_key_pk": {
+          "name": "idempotency_keys_consumer_id_key_pk",
+          "columns": [
+            "consumer_id",
+            "key"
+          ]
+        }
+      },
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.outbox": {
+    "payments.outbox": {
       "name": "outbox",
-      "schema": "",
+      "schema": "payments",
       "columns": {
         "id": {
           "name": "id",
@@ -161,7 +187,7 @@
         "status": {
           "name": "status",
           "type": "outbox_status",
-          "typeSchema": "public",
+          "typeSchema": "payments",
           "primaryKey": false,
           "notNull": true,
           "default": "'PENDING'"
@@ -217,15 +243,22 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.payments": {
+    "payments.payments": {
       "name": "payments",
-      "schema": "",
+      "schema": "payments",
       "columns": {
         "id": {
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
           "notNull": true
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
         },
         "consumer_id": {
           "name": "consumer_id",
@@ -236,14 +269,14 @@
         "status": {
           "name": "status",
           "type": "payment_status",
-          "typeSchema": "public",
+          "typeSchema": "payments",
           "primaryKey": false,
           "notNull": true
         },
         "method": {
           "name": "method",
           "type": "payment_method",
-          "typeSchema": "public",
+          "typeSchema": "payments",
           "primaryKey": false,
           "notNull": true
         },
@@ -295,6 +328,18 @@
           "primaryKey": false,
           "notNull": false
         },
+        "boleto": {
+          "name": "boleto",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "boleto_request": {
+          "name": "boleto_request",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
         "customer": {
           "name": "customer",
           "type": "jsonb",
@@ -317,6 +362,25 @@
         "failure_reason": {
           "name": "failure_reason",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "subscription_id": {
+          "name": "subscription_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "charge_attempts": {
+          "name": "charge_attempts",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "charge_claimed_at": {
+          "name": "charge_claimed_at",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -417,6 +481,53 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "payments_pending_charge_idx": {
+          "name": "payments_pending_charge_idx",
+          "columns": [
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "provider_payment_id IS NULL AND status = 'PENDING'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "payments_reconcile_idx": {
+          "name": "payments_reconcile_idx",
+          "columns": [
+            {
+              "expression": "updated_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "status = 'PENDING' AND provider_payment_id IS NOT NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "payments_subscription_idx": {
+          "name": "payments_subscription_idx",
+          "columns": [
+            {
+              "expression": "subscription_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {},
@@ -426,9 +537,448 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.webhook_events": {
+    "payments.subscription_plans": {
+      "name": "subscription_plans",
+      "schema": "payments",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "provider": {
+          "name": "provider",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "interval_months": {
+          "name": "interval_months",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "repeats": {
+          "name": "repeats",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "repeats_key": {
+          "name": "repeats_key",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider_plan_id": {
+          "name": "provider_plan_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "subscription_plans_key_uq": {
+          "name": "subscription_plans_key_uq",
+          "columns": [
+            {
+              "expression": "provider",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "interval_months",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "repeats_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "payments.subscriptions": {
+      "name": "subscriptions",
+      "schema": "payments",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "consumer_id": {
+          "name": "consumer_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "subscription_status",
+          "typeSchema": "payments",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider": {
+          "name": "provider",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider_subscription_id": {
+          "name": "provider_subscription_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "provider_plan_id": {
+          "name": "provider_plan_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "interval_months": {
+          "name": "interval_months",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "repeats": {
+          "name": "repeats",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "amount_in_cents": {
+          "name": "amount_in_cents",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "currency": {
+          "name": "currency",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "card": {
+          "name": "card",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "customer": {
+          "name": "customer",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "idempotency_key": {
+          "name": "idempotency_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cycles_completed": {
+          "name": "cycles_completed",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "last_charge_id": {
+          "name": "last_charge_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_charge_at": {
+          "name": "last_charge_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "canceled_at": {
+          "name": "canceled_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "subscriptions_consumer_idem_uq": {
+          "name": "subscriptions_consumer_idem_uq",
+          "columns": [
+            {
+              "expression": "consumer_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "idempotency_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "subscriptions_provider_sub_idx": {
+          "name": "subscriptions_provider_sub_idx",
+          "columns": [
+            {
+              "expression": "provider",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "provider_subscription_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "subscriptions_status_idx": {
+          "name": "subscriptions_status_idx",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "payments.webhook_deliveries": {
+      "name": "webhook_deliveries",
+      "schema": "payments",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "consumer_id": {
+          "name": "consumer_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "event_name": {
+          "name": "event_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dedup_key": {
+          "name": "dedup_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "payload": {
+          "name": "payload",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "delivery_status",
+          "typeSchema": "payments",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'PENDING'"
+        },
+        "attempts": {
+          "name": "attempts",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "next_attempt_at": {
+          "name": "next_attempt_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "last_status_code": {
+          "name": "last_status_code",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_error": {
+          "name": "last_error",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "webhook_deliveries_due_idx": {
+          "name": "webhook_deliveries_due_idx",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "next_attempt_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "webhook_deliveries_dedup_uq": {
+          "name": "webhook_deliveries_dedup_uq",
+          "columns": [
+            {
+              "expression": "consumer_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "event_name",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "dedup_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "payments.webhook_events": {
       "name": "webhook_events",
-      "schema": "",
+      "schema": "payments",
       "columns": {
         "id": {
           "name": "id",
@@ -507,34 +1057,44 @@
     }
   },
   "enums": {
-    "public.idempotency_state": {
+    "payments.delivery_status": {
+      "name": "delivery_status",
+      "schema": "payments",
+      "values": [
+        "PENDING",
+        "SUCCEEDED",
+        "DEAD"
+      ]
+    },
+    "payments.idempotency_state": {
       "name": "idempotency_state",
-      "schema": "public",
+      "schema": "payments",
       "values": [
         "IN_FLIGHT",
         "COMPLETED"
       ]
     },
-    "public.outbox_status": {
+    "payments.outbox_status": {
       "name": "outbox_status",
-      "schema": "public",
+      "schema": "payments",
       "values": [
         "PENDING",
-        "PUBLISHED"
+        "PUBLISHED",
+        "DEAD"
       ]
     },
-    "public.payment_method": {
+    "payments.payment_method": {
       "name": "payment_method",
-      "schema": "public",
+      "schema": "payments",
       "values": [
         "PIX",
         "BOLETO",
         "CREDIT_CARD"
       ]
     },
-    "public.payment_status": {
+    "payments.payment_status": {
       "name": "payment_status",
-      "schema": "public",
+      "schema": "payments",
       "values": [
         "PENDING",
         "AUTHORIZED",
@@ -544,9 +1104,21 @@
         "CANCELED",
         "REFUNDED"
       ]
+    },
+    "payments.subscription_status": {
+      "name": "subscription_status",
+      "schema": "payments",
+      "values": [
+        "PENDING",
+        "ACTIVE",
+        "CANCELED",
+        "EXPIRED"
+      ]
     }
   },
-  "schemas": {},
+  "schemas": {
+    "payments": "payments"
+  },
   "sequences": {},
   "roles": {},
   "policies": {},

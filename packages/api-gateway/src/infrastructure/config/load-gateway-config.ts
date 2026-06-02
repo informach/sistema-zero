@@ -84,8 +84,10 @@ function validateReferences(
     if (route.upstreamAuth === 'resign') usesResign = true
   }
 
-  if (usesJwt && !env.JWT_JWKS_URL?.trim()) {
-    problems.push('alguma rota usa auth "jwt" mas JWT_JWKS_URL não está definido')
+  if (usesJwt && !env.JWT_JWKS_URL?.trim() && !env.JWT_HS256_SECRET?.trim()) {
+    problems.push(
+      'alguma rota usa auth "jwt" mas nem JWT_JWKS_URL (RS256) nem JWT_HS256_SECRET (HS256) estão definidos',
+    )
   }
   if (usesResign && !(env.GATEWAY_CONSUMER_ID?.trim() && env.GATEWAY_HMAC_SECRET?.trim())) {
     problems.push(

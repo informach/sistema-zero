@@ -5,50 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1780229904646,
-      "tag": "0000_init",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1780245355801,
-      "tag": "0001_async_charge",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1780245752082,
-      "tag": "0002_webhook_deliveries",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1780250385223,
-      "tag": "0003_review_hardening",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1780258684601,
-      "tag": "0004_short_absorbing_man",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1780265626684,
-      "tag": "0005_open_vengeance",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1780305547361,
-      "tag": "0006_workable_fantastic_four",
+      "when": 1780360354282,
+      "tag": "0000_far_ego",
       "breakpoints": true
     }
   ]

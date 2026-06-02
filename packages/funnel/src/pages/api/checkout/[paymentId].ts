@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro'
 import { pixStatus } from '../../../server/checkout'
 import { getDeps } from '../../../server/deps'
+import { makeFulfill } from '../../../server/fulfillment'
 
 export const prerender = false
 
@@ -12,5 +13,6 @@ export const GET: APIRoute = ({ request, params }) => {
     productPriceCents: env.PRODUCT_PRICE_CENTS,
     productName: env.PRODUCT_NAME,
     productSku: env.PRODUCT_SKU,
+    fulfill: makeFulfill({ repo, gateway }),
   })
 }

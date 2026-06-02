@@ -222,10 +222,23 @@ token model do boleto/cartão) — **não há worker/scheduler de cobrança noss
   shapes via `bun run subscription:create --token <token> [--detail] [--cancel]`.
 - **Pix Automático** (recorrência Pix nativa) é um esforço separado, ainda pendente.
 
+## Banco — PADRÃO DO MONOREPO (1 Postgres, 1 schema por serviço)
+
+Um **único Postgres compartilhado** (`sistemazero`), com **um schema por bounded
+context**: `payments` (este package, via `pgSchema('payments')` + `schemaFilter`),
+`funil` ([[funnel]]) e `auth` (identidade). O journal do drizzle-kit fica no schema
+`drizzle` (por-pasta, por-hash → as migrations dos 3 serviços coexistem no mesmo
+banco). Cada serviço roda seu próprio `db:migrate` (cada migration cria o seu
+`CREATE SCHEMA`); não há FK cross-schema, então a ordem não importa.
+
+> Histórico: o payments já viveu no schema `public` do banco `payments`. Foi
+> padronizado — banco renomeado p/ `sistemazero` e tabelas movidas p/ o schema
+> `payments` (migrations regeneradas; era pré-lançamento, sem dados a preservar).
+
 ## Dev local
 
 - Postgres via Docker na **porta 5433** (a 5432 costuma estar ocupada por outro
-  projeto). `.env`: `DATABASE_URL=...localhost:5433/payments`.
+  projeto). `.env`: `DATABASE_URL=...localhost:5433/sistemazero` (banco compartilhado).
 - Variáveis: copie de `.env.example`. `EFI_SANDBOX=true` para homologação.
 - Teste sandbox: cobranças de **R$0,01 a R$10,00** são as usadas em homologação.
 - O webhook precisa de URL pública (Efí não alcança `localhost`) → teste após o

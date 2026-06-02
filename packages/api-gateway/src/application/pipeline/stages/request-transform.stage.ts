@@ -1,4 +1,8 @@
-import { stripEdgeAuthHeaders } from '../../../infrastructure/proxy/header-rules'
+import {
+  injectIdentityHeaders,
+  stripEdgeAuthHeaders,
+  stripIdentityHeaders,
+} from '../../../infrastructure/proxy/header-rules'
 import type { Resigner } from '../../../infrastructure/upstream/resign.transformer'
 import { applyRequestTransformers } from '../../transform/transform-chain'
 import type { Transformer } from '../../transform/transformer.port'
@@ -20,6 +24,8 @@ export function createRequestTransformStage(deps: RequestTransformDeps): Stage {
     name: 'request-transform',
     async run(ctx) {
       if (!ctx.route) return undefined
+      // Anti-spoof: o cliente NUNCA define os headers de identidade — sempre removidos.
+      stripIdentityHeaders(ctx.upstreamHeaders)
       if (ctx.route.route.upstreamAuth !== 'passthrough') {
         stripEdgeAuthHeaders(ctx.upstreamHeaders)
       }
@@ -31,6 +37,8 @@ export function createRequestTransformStage(deps: RequestTransformDeps): Stage {
           await deps.resigner.resign(ctx)
         }
       }
+      // Repassa a identidade confiável resolvida (claims do JWT) ao upstream.
+      if (ctx.user) injectIdentityHeaders(ctx.upstreamHeaders, ctx.user)
       return undefined
     },
   }

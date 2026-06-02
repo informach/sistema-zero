@@ -37,6 +37,12 @@ export const leads = funil.table(
     lastStep: text('last_step').notNull().default('entrou_landing'),
     paymentId: uuid('payment_id'),
     paidAt: timestamp('paid_at', { withTimezone: true }),
+
+    // Comprador registrado no IdP (@sistemazero/auth) após o pagamento confirmado.
+    // Desacoplado de `paidAt` → registro é retryável (elegível: paidAt set & registered null).
+    buyerUserId: text('buyer_user_id'),
+    buyerRegisteredAt: timestamp('buyer_registered_at', { withTimezone: true }),
+
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },

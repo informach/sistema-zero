@@ -18,6 +18,16 @@ export interface GatewayResult<T = unknown> {
   body: T
 }
 
+/** Corpo de `POST /auth/register` (gateway → @sistemazero/auth). */
+export interface RegisterBuyerInput {
+  email: string
+  password: string
+  firstName: string
+  lastName: string
+  phone?: string
+  source?: string
+}
+
 async function readBody(res: Response): Promise<unknown> {
   try {
     return await res.json()
@@ -59,6 +69,22 @@ export function createGatewayClient(opts: GatewayClientOptions) {
       const res = await doFetch(`${opts.baseUrl}/payments/${encodeURIComponent(paymentId)}`, {
         method: 'GET',
         headers: buildHeaders(''),
+      })
+      return { status: res.status, body: await readBody(res) }
+    },
+
+    /**
+     * POST /auth/register (gateway → @sistemazero/auth). Cadastra o comprador
+     * como usuário (role `customer`). NÃO assina HMAC de borda: a rota `/auth/*`
+     * é pública + passthrough no gateway (o IdP é a autoridade da própria auth;
+     * o gateway só roteia + rate-limit por IP). A idempotência por e-mail é do
+     * próprio auth: e-mail já cadastrado → 409 (tratado como sucesso pelo chamador).
+     */
+    async registerBuyer(input: RegisterBuyerInput): Promise<GatewayResult> {
+      const res = await doFetch(`${opts.baseUrl}/auth/register`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(input),
       })
       return { status: res.status, body: await readBody(res) }
     },

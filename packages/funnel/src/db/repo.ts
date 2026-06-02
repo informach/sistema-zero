@@ -22,6 +22,12 @@ export interface FunnelRepo {
   setPayment(id: string, paymentId: string): Promise<void>
   /** Marca pago se ainda não estava; retorna true se ESTA chamada foi a que pagou. */
   markPaid(id: string, paidAt: Date): Promise<boolean>
+  /**
+   * Marca o comprador como registrado no IdP (auth). Idempotente: só grava se
+   * `buyer_registered_at` ainda for nulo (guarda contra corrida webhook × polling).
+   * `buyerUserId` pode ser null (ex.: e-mail já existia → 409, sem id retornado).
+   */
+  setBuyerRegistration(id: string, buyerUserId: string | null, at: Date): Promise<void>
   findLeadByPayment(paymentId: string): Promise<Lead | null>
   insertEvent(leadId: string, eventName: string, step?: string | null): Promise<void>
   listLeads(limit: number, offset: number): Promise<Lead[]>
@@ -63,6 +69,13 @@ export function createFunnelRepo(db: Database): FunnelRepo {
         .where(sql`${leads.id} = ${id} and ${leads.paidAt} is null`)
         .returning({ id: leads.id })
       return rows.length > 0
+    },
+
+    async setBuyerRegistration(id, buyerUserId, at) {
+      await db
+        .update(leads)
+        .set({ buyerUserId, buyerRegisteredAt: at, updatedAt: new Date() })
+        .where(sql`${leads.id} = ${id} and ${leads.buyerRegisteredAt} is null`)
     },
 
     async findLeadByPayment(paymentId) {

@@ -53,10 +53,13 @@ const EnvSchema = z
     GLOBAL_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().nonnegative().default(1200),
     GLOBAL_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
 
-    // Auth JWT/sessão (dormente até existir um emissor; obrigatório por rota validado no loader da config).
+    // Auth JWT/sessão. A `jwt` strategy liga quando JWT_JWKS_URL e/ou JWT_HS256_SECRET
+    // existem (validado por rota no loader da config). O emissor é o @sistemazero/auth.
     JWT_ISSUER: z.string().optional(),
     JWT_AUDIENCE: z.string().optional(),
     JWT_JWKS_URL: z.string().optional(),
+    // Segredo HS256 compartilhado com o emissor (auth) — verifica tokens HS256 sem JWKS.
+    JWT_HS256_SECRET: z.string().optional(),
     // Algoritmos aceitos (CSV). Pin contra alg-confusion/downgrade. Default: RS256.
     JWT_ALGORITHMS: z
       .string()
@@ -89,6 +92,9 @@ const EnvSchema = z
 
     // URL do upstream payments (lida pelo gateway.config.ts).
     PAYMENTS_URL: z.string().default('http://localhost:3001'),
+
+    // URL do serviço de identidade (@sistemazero/auth) — lida pelo gateway.config.ts.
+    AUTH_URL: z.string().default('http://localhost:3002'),
 
     // Funil (@sistemazero/funnel) como upstream + cliente HMAC de borda (BFF de
     // pagamentos). Lidas pelo gateway.config.ts.

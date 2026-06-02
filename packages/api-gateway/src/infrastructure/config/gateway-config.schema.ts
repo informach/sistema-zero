@@ -41,6 +41,18 @@ export const authPolicySchema = z.union([
   }),
 ])
 
+/**
+ * Política de autorização (RBAC) por rota. Aplicada após a autenticação sobre o
+ * usuário resolvido. Campos omitidos = sem restrição naquele eixo (mas a presença
+ * do bloco `authorize` já exige um usuário autenticado e ativo).
+ */
+export const authorizePolicySchema = z.object({
+  roles: z.array(z.string()).optional(),
+  // Status de conta permitidos. Default (quando omitido): apenas `active`.
+  statuses: z.array(z.string()).optional(),
+  scopes: z.array(z.string()).optional(),
+})
+
 export const rateLimitRuleSchema = z.object({
   max: z.number().int().positive(),
   windowMs: z.number().int().positive().default(60_000),
@@ -89,6 +101,7 @@ export const routeConfigSchema = z.object({
   service: z.string(),
   upstreamGroup: z.string().default('default'),
   auth: authPolicySchema.default('public'),
+  authorize: authorizePolicySchema.optional(),
   upstreamAuth: z.enum(['passthrough', 'resign']).optional(),
   rateLimit: rateLimitRuleSchema.optional(),
   cors: corsConfigSchema.optional(),
@@ -139,6 +152,7 @@ export type UpstreamConfig = z.infer<typeof upstreamConfigSchema>
 export type CircuitBreakerConfig = z.infer<typeof circuitBreakerConfigSchema>
 export type RetryPolicyConfig = z.infer<typeof retryPolicyConfigSchema>
 export type RouteAuthPolicy = z.infer<typeof authPolicySchema>
+export type AuthorizePolicy = z.infer<typeof authorizePolicySchema>
 export type RateLimitRule = z.infer<typeof rateLimitRuleSchema>
 export type StickyConfig = z.infer<typeof stickyConfigSchema>
 export type CorsConfig = z.infer<typeof corsConfigSchema>

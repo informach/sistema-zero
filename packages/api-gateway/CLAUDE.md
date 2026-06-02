@@ -62,9 +62,9 @@ O Elysia tem um único catch-all `.all('/*')` que monta o `GatewayContext` e rod
 
 **Ordem dos stages** (a 1ª `Response` curto-circuita):
 ```
-route-resolve → cors → auth → global-rate-limit → rate-limit → request-transform → proxy (terminal)
+route-resolve → cors → auth → user-resolution → authorization → global-rate-limit → rate-limit → request-transform → proxy (terminal)
 ```
-(`global-rate-limit` roda **após** o auth — por isso isenta `principal`s — e só entra na cadeia quando `GLOBAL_RATE_LIMIT_PER_MINUTE > 0`.)
+(`user-resolution` resolve `ctx.user` das claims do JWT; `authorization` aplica o RBAC por rota. `global-rate-limit` roda **após** o auth — por isso isenta `principal`s — e só entra na cadeia quando `GLOBAL_RATE_LIMIT_PER_MINUTE > 0`.)
 **Finalizers (SEMPRE rodam, mesmo em curto-circuito/exceção):**
 ```
 response-transform → finalize
@@ -92,9 +92,17 @@ Métodos: `slidingWindow` / `slidingWindowRefund(key, windowResetMs?)` (rate lim
 
 `onParse` devolve o stream do corpo → o Elysia NÃO consome → o proxy encaminha intacto via `fetch` (`duplex: 'half'`, `redirect: 'manual'`). O teto do corpo é o **`maxRequestBodySize` do Bun.serve** (413 automático) — **nunca** por pipe do stream de entrada (ver Gotcha ⑥). O corpo da RESPOSTA pode ser piped com segurança (`idleTimeoutStream`).
 
-### 4.5 Auth plugável (Strategy + Chain)
+### 4.5 Auth plugável (Strategy + Chain) + Autorização (RBAC)
 
-Por rota: `any`/`all` sobre `hmac` (core `verifyHmacSignature` + IP CIDR + consumer registry da config), `session` (token opaco no store), `jwt` (jose, JWKS remoto). JWT/session estão **dormentes** (sem IdP ainda). Em rotas `resign`, o gateway re-assina a chamada de saída como consumer do upstream.
+**Autenticação** por rota: `any`/`all` sobre `hmac` (core `verifyHmacSignature` + IP CIDR + consumer registry da config), `session` (token opaco no store), `jwt` (jose). Em rotas `resign`, o gateway re-assina a chamada de saída como consumer do upstream.
+
+**JWT (LIGADO)** — o emissor é o **[@sistemazero/auth](../auth)**. A `jwt.strategy` verifica **HS256** (segredo compartilhado `JWT_HS256_SECRET`) **e/ou RS256 via JWKS** (`JWT_JWKS_URL`); a chave é escolhida pelo `alg` do token e os algoritmos são **pinados**. A strategy liga quando `JWT_JWKS_URL` OU `JWT_HS256_SECRET` existe.
+
+**Resolução de usuário** (`user-resolution.stage` + `createClaimsUserResolver`): lê a identidade das claims do JWT verificado → `ctx.user` = `{id,email,firstName,lastName,role,status,phone?,signupSource?}` ou nada (HMAC = sistema-a-sistema, sem usuário; claims faltando → não resolve). Stateless (sem consultar o `auth` no caminho quente).
+
+**Autorização / RBAC** (`authorization.stage`): a rota pode declarar `authorize: { roles?, statuses?, scopes? }`. A presença do bloco exige um **usuário resolvido** (senão 401); `status` deve estar em `statuses` (default `['active']`); `roles`/`scopes` (se definidos) precisam casar (senão 403). Rotas sem `authorize` só exigem autenticação.
+
+**Identidade confiável ao upstream:** o `request-transform.stage` injeta `X-Auth-User-*` (id/email/name/role/status/phone/source) a partir de `ctx.user` e **remove** quaisquer `X-Auth-*` de entrada (anti-spoof). O upstream confia neles (vêm só do gateway). As rotas `/auth/*` são públicas + `passthrough` (o IdP cuida da própria auth; o `/me` precisa do Bearer chegando ao upstream).
 
 ### 4.6 Padrões GoF presentes
 Proxy, Facade (`route-registry` + `gateway-plugin` + `gateway.config.ts`), Decorator (transforms, sticky), Chain of Responsibility (pipeline), Strategy (auth + LB).

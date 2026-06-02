@@ -1,0 +1,44 @@
+import { DomainError } from '@sistemazero/core/errors'
+
+/** E-mail já cadastrado (conflito de unicidade no registro). → 409 */
+export class EmailAlreadyInUseError extends DomainError {
+  readonly code = 'EMAIL_ALREADY_IN_USE'
+  constructor() {
+    super('E-mail já cadastrado')
+  }
+}
+
+/**
+ * Credenciais inválidas no login. Mensagem GENÉRICA de propósito: não revela se
+ * foi o e-mail (inexistente) ou a senha (errada) — evita enumeração de contas. → 401
+ */
+export class InvalidCredentialsError extends DomainError {
+  readonly code = 'INVALID_CREDENTIALS'
+  constructor() {
+    super('Credenciais inválidas')
+  }
+}
+
+/** Usuário não encontrado (resolução por id). → 404 */
+export class UserNotFoundError extends DomainError {
+  readonly code = 'USER_NOT_FOUND'
+  constructor() {
+    super('Usuário não encontrado')
+  }
+}
+
+/** Conta não está ativa (pendente/suspensa/bloqueada). → 403 */
+export class UserNotActiveError extends DomainError {
+  readonly code = 'USER_NOT_ACTIVE'
+  constructor(message = 'Conta inativa') {
+    super(message)
+  }
+}
+
+/** Refresh token ausente, inválido, expirado ou revogado. → 401 */
+export class InvalidRefreshTokenError extends DomainError {
+  readonly code = 'INVALID_REFRESH_TOKEN'
+  constructor() {
+    super('Refresh token inválido ou expirado')
+  }
+}

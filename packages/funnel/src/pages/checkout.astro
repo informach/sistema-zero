@@ -15,7 +15,7 @@ if (!leadId) return Astro.redirect('/')
 
 // Sem contato (e-mail) não há como entregar o ebook → volta para a oferta,
 // onde o modal de pré-checkout coleta nome/e-mail/telefone.
-const { repo } = getDeps()
+const { repo, env } = getDeps()
 const lead = await repo.getLead(leadId)
 if (!lead) return Astro.redirect('/')
 if (!lead.email) return Astro.redirect('/oferta')
@@ -29,7 +29,7 @@ if (!lead.email) return Astro.redirect('/oferta')
       {PRODUTO.nome} — <span class="font-bold text-lime">{PRODUTO.precoLabel}</span>
     </p>
     <div class="card mt-6 p-6">
-      <CheckoutTabs client:load />
+      <CheckoutTabs client:load email={lead.email} priceCents={env.PRODUCT_PRICE_CENTS} />
     </div>
     <p class="mt-4 text-center text-xs text-muted">
       Pagamento processado com segurança. Garantia de 7 dias.

@@ -2,6 +2,7 @@ import type { Logger } from '@sistemazero/core/logging'
 import type { HttpMethod } from '../../domain/routing/route'
 import type { RouteMatch } from '../../domain/routing/route-match'
 import type { Principal } from '../auth/auth-strategy.port'
+import type { AuthenticatedUser } from '../auth/authenticated-user'
 
 /** Info de rate limit acumulada para os headers de resposta e o refund. */
 export interface RateLimitContext {
@@ -35,6 +36,8 @@ export interface GatewayContext {
 
   // Autenticação
   principal?: Principal
+  // Usuário resolvido (claims do JWT) — `{id,email,firstName,lastName,role,status,...}`.
+  user?: AuthenticatedUser
 
   // Requisição de saída (mutável por transforms/resign antes do proxy)
   upstreamPath: string

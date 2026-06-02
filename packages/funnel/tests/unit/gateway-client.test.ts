@@ -73,4 +73,39 @@ describe('createGatewayClient (assinatura HMAC de borda)', () => {
     })
     expect(verdict.valid).toBe(true)
   })
+
+  test('registerBuyer faz POST /auth/register em JSON, SEM HMAC (rota pública do gateway)', async () => {
+    let captured: { url: string; init: RequestInit } | undefined
+    const fetchImpl = (async (url: string, init: RequestInit) => {
+      captured = { url, init }
+      return new Response(JSON.stringify({ user: { id: 'u1' } }), {
+        status: 201,
+        headers: { 'content-type': 'application/json' },
+      })
+    }) as unknown as typeof fetch
+
+    const gw = createGatewayClient({
+      baseUrl: 'http://gateway',
+      consumerId: 'funnel',
+      hmacSecret: SECRET,
+      fetchImpl,
+    })
+
+    const res = await gw.registerBuyer({
+      email: 'ana@example.com',
+      password: 'senha-temporaria-1234',
+      firstName: 'Ana',
+      lastName: 'Souza',
+      source: 'funnel',
+    })
+    expect(res.status).toBe(201)
+    expect((res.body as { user: { id: string } }).user.id).toBe('u1')
+
+    const headers = captured?.init.headers as Record<string, string>
+    expect(captured?.url).toBe('http://gateway/auth/register')
+    expect(headers['content-type']).toBe('application/json')
+    // Rota pública: o funil NÃO assina HMAC de borda no registro.
+    expect(headers['x-signature']).toBeUndefined()
+    expect(headers['x-consumer-id']).toBeUndefined()
+  })
 })

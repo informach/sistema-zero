@@ -137,10 +137,12 @@ retry do gateway ser descartado.
 
 ## Banco (schema `funil`)
 
-Compartilha o **mesmo Postgres** do payments; isolado por `pgSchema('funil')`. Tabelas: `leads`
+**Padrão do monorepo:** 1 Postgres compartilhado (`sistemazero`) com 1 schema por
+serviço (`payments`/`funil`/`auth`). Este package é dono do schema `funil`
+(`pgSchema('funil')` + `schemaFilter:['funil']`). Tabelas: `leads`
 (1 linha/lead, enriquecida a cada resposta; centavos em colunas `integer`), `funnel_events`
 (analytics; conversão por etapa usa `count(distinct lead_id)`), `processed_webhooks` (dedupe).
-Migrations forward-only por `drizzle-kit`; o journal coexiste com o do payments no schema `drizzle`.
+Migrations forward-only por `drizzle-kit`; o journal coexiste com payments/auth no schema `drizzle`.
 
 > Centavos em `integer` (int4, máx ~2,1e9): os tetos do `VALUE_SCHEMA` garantem que nenhum valor —
 > nem o produto `horas×valor×4` — estoure int4. Se um dia precisar de valores maiores, migre as

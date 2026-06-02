@@ -1,6 +1,8 @@
 import { describe, expect, test } from 'bun:test'
+import { makeFulfill } from '../../src/server/fulfillment'
 import { handlePaymentWebhook } from '../../src/server/webhook'
 import { createFakeRepo } from '../fakes/fake-db'
+import { createFakeGateway } from '../fakes/fake-gateway'
 
 const TOKEN = 'token-interno-do-gateway'
 
@@ -19,19 +21,33 @@ function req(
   })
 }
 
+function deps(
+  repo: ReturnType<typeof createFakeRepo>['repo'],
+  gw: ReturnType<typeof createFakeGateway>,
+) {
+  return { repo, internalToken: TOKEN, fulfill: makeFulfill({ repo, gateway: gw.gateway }) }
+}
+
 describe('POST /api/webhooks/payments', () => {
   test('401 com token interno inválido', async () => {
     const { repo } = createFakeRepo()
+    const gw = createFakeGateway()
     const res = await handlePaymentWebhook(
       req({ event: 'payment.paid', data: { paymentId: 'pay-1' } }, { token: 'errado' }),
-      { repo, internalToken: TOKEN },
+      deps(repo, gw),
     )
     expect(res.status).toBe(401)
   })
 
-  test('payment.paid marca o lead como pago + evento pagamento_confirmado', async () => {
+  test('payment.paid marca o lead como pago + registra o comprador no IdP', async () => {
     const { repo, leads, events } = createFakeRepo()
+    const gw = createFakeGateway()
     const { id } = await repo.createLead()
+    await repo.updateLead(id, {
+      nome: 'Ana Souza',
+      email: 'ana@example.com',
+      telefone: '11999998888',
+    })
     await repo.setPayment(id, 'pay-1')
 
     const res = await handlePaymentWebhook(
@@ -39,16 +55,65 @@ describe('POST /api/webhooks/payments', () => {
         { id: 'd1', event: 'payment.paid', data: { paymentId: 'pay-1' } },
         { token: TOKEN, deliveryId: 'd1', event: 'payment.paid' },
       ),
-      { repo, internalToken: TOKEN },
+      deps(repo, gw),
     )
     expect(res.status).toBe(200)
     expect(leads.get(id)?.paidAt).not.toBeNull()
     expect(events.filter((e) => e.eventName === 'pagamento_confirmado')).toHaveLength(1)
+
+    // Comprador registrado via gateway → auth (201 default → guarda o user id).
+    expect(gw.calls.register).toHaveLength(1)
+    expect(gw.calls.register[0]?.input.email).toBe('ana@example.com')
+    expect(leads.get(id)?.buyerRegisteredAt).not.toBeNull()
+    expect(leads.get(id)?.buyerUserId).toBe('user-1')
+  })
+
+  test('e-mail já cadastrado (409) é sucesso: registra sem duplicar', async () => {
+    const { repo, leads } = createFakeRepo()
+    const gw = createFakeGateway()
+    gw.setRegisterStatus(409, { error: { code: 'EMAIL_ALREADY_IN_USE' } })
+    const { id } = await repo.createLead()
+    await repo.updateLead(id, { nome: 'Bia', email: 'bia@example.com', telefone: '11988887777' })
+    await repo.setPayment(id, 'pay-1')
+
+    const res = await handlePaymentWebhook(
+      req(
+        { id: 'd1', event: 'payment.paid', data: { paymentId: 'pay-1' } },
+        { token: TOKEN, deliveryId: 'd1' },
+      ),
+      deps(repo, gw),
+    )
+    expect(res.status).toBe(200)
+    expect(leads.get(id)?.buyerRegisteredAt).not.toBeNull()
+    expect(leads.get(id)?.buyerUserId).toBeNull()
+  })
+
+  test('falha transitória no registro → 502 e NÃO marca a entrega (gateway re-entrega)', async () => {
+    const { repo, leads } = createFakeRepo()
+    const gw = createFakeGateway()
+    gw.setRegisterStatus(500, { error: { code: 'INTERNAL' } })
+    const { id } = await repo.createLead()
+    await repo.updateLead(id, { nome: 'Caio', email: 'caio@example.com', telefone: '11977776666' })
+    await repo.setPayment(id, 'pay-1')
+
+    const res = await handlePaymentWebhook(
+      req(
+        { id: 'd1', event: 'payment.paid', data: { paymentId: 'pay-1' } },
+        { token: TOKEN, deliveryId: 'd1' },
+      ),
+      deps(repo, gw),
+    )
+    expect(res.status).toBe(502)
+    expect(leads.get(id)?.paidAt).not.toBeNull() // markPaid já rodou (idempotente)
+    expect(leads.get(id)?.buyerRegisteredAt).toBeNull() // ainda não registrado
+    expect(await repo.isWebhookProcessed('d1')).toBe(false) // não deduplica → retry possível
   })
 
   test('entregas com delivery-ids diferentes (mesmo pagamento) confirmam só uma vez', async () => {
     const { repo, leads, events } = createFakeRepo()
+    const gw = createFakeGateway()
     const { id } = await repo.createLead()
+    await repo.updateLead(id, { nome: 'Dani', email: 'dani@example.com', telefone: '11966665555' })
     await repo.setPayment(id, 'pay-1')
     const make = (deliveryId: string) =>
       handlePaymentWebhook(
@@ -56,17 +121,21 @@ describe('POST /api/webhooks/payments', () => {
           { id: deliveryId, event: 'payment.paid', data: { paymentId: 'pay-1' } },
           { token: TOKEN, deliveryId },
         ),
-        { repo, internalToken: TOKEN },
+        deps(repo, gw),
       )
     await make('d1')
     await make('d2') // retry do gateway com outro id → markPaid idempotente
     expect(leads.get(id)?.paidAt).not.toBeNull()
     expect(events.filter((e) => e.eventName === 'pagamento_confirmado')).toHaveLength(1)
+    // Registro idempotente: a 2ª entrega não registra de novo (buyer_registered_at já set).
+    expect(gw.calls.register).toHaveLength(1)
   })
 
   test('entrega duplicada (mesmo x-delivery-id) não escreve de novo', async () => {
     const { repo, events } = createFakeRepo()
+    const gw = createFakeGateway()
     const { id } = await repo.createLead()
+    await repo.updateLead(id, { nome: 'Edu', email: 'edu@example.com', telefone: '11955554444' })
     await repo.setPayment(id, 'pay-1')
     const make = () =>
       handlePaymentWebhook(
@@ -74,7 +143,7 @@ describe('POST /api/webhooks/payments', () => {
           { id: 'd1', event: 'payment.paid', data: { paymentId: 'pay-1' } },
           { token: TOKEN, deliveryId: 'd1' },
         ),
-        { repo, internalToken: TOKEN },
+        deps(repo, gw),
       )
     await make()
     const second = await make()

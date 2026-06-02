@@ -1,0 +1,92 @@
+import { type JWTPayload, jwtVerify, SignJWT } from 'jose'
+import type { AccessTokenClaims, TokenIssuer } from '../../domain/ports/token-issuer.port'
+import type { UserAggregate } from '../../domain/user/user.aggregate'
+import type { SigningMaterial } from './keys'
+
+export interface JoseTokenIssuerOptions {
+  signing: SigningMaterial
+  issuer: string
+  audience: string
+  accessTtlSeconds: number
+}
+
+/**
+ * Emissor de access tokens com `jose`. Embute a identidade nas claims (o gateway
+ * resolve o usuário direto do token verificado) e PINA o algoritmo na verificação
+ * (anti alg-confusion). HS256 ou RS256 conforme o material de assinatura.
+ */
+export function createJoseTokenIssuer(opts: JoseTokenIssuerOptions): TokenIssuer {
+  const { signing, issuer, audience, accessTtlSeconds } = opts
+
+  return {
+    async issueAccessToken(user: UserAggregate) {
+      const nowSeconds = Math.floor(Date.now() / 1000)
+      const claims: Record<string, unknown> = {
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+        status: user.status,
+        typ: 'access',
+      }
+      if (user.phone) claims.phone = user.phone
+      if (user.signupSource) claims.signupSource = user.signupSource
+
+      const header: { alg: string; kid?: string } = { alg: signing.alg }
+      if (signing.kid) header.kid = signing.kid
+
+      const token = await new SignJWT(claims)
+        .setProtectedHeader(header)
+        .setSubject(user.id)
+        .setIssuer(issuer)
+        .setAudience(audience)
+        .setIssuedAt(nowSeconds)
+        .setExpirationTime(nowSeconds + accessTtlSeconds)
+        .sign(signing.signKey)
+
+      return { token, expiresInSeconds: accessTtlSeconds }
+    },
+
+    async verifyAccessToken(token: string): Promise<AccessTokenClaims | null> {
+      try {
+        const { payload } = await jwtVerify(token, signing.verifyKey, {
+          algorithms: [signing.alg],
+          issuer,
+          audience,
+        })
+        return toClaims(payload)
+      } catch {
+        return null
+      }
+    },
+
+    jwks() {
+      return signing.jwks
+    },
+  }
+}
+
+function asString(value: unknown): string | undefined {
+  return typeof value === 'string' && value.length > 0 ? value : undefined
+}
+
+function toClaims(payload: JWTPayload): AccessTokenClaims | null {
+  const sub = asString(payload.sub)
+  const email = asString(payload.email)
+  const firstName = asString(payload.firstName)
+  const lastName = asString(payload.lastName)
+  const role = asString(payload.role)
+  const status = asString(payload.status)
+  if (!sub || !email || !firstName || !lastName || !role || !status) return null
+
+  return {
+    sub,
+    email,
+    firstName,
+    lastName,
+    role,
+    status,
+    phone: asString(payload.phone),
+    signupSource: asString(payload.signupSource),
+  }
+}

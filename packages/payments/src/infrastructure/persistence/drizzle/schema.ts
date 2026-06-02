@@ -5,8 +5,7 @@ import {
   index,
   integer,
   jsonb,
-  pgEnum,
-  pgTable,
+  pgSchema,
   primaryKey,
   text,
   timestamp,
@@ -21,6 +20,11 @@ import type {
 import type { Address } from '../../../domain/value-objects/customer'
 import type { CardData } from '../../../domain/value-objects/payment-method'
 
+// Este package compartilha o Postgres `sistemazero` do monorepo, mas é dono do
+// schema `payments` (isolamento por `pgSchema`). Todo o DDL gerado fica em `payments.*`.
+// (`paymentsSchema` p/ não colidir com a tabela `payments` abaixo.)
+export const paymentsSchema = pgSchema('payments')
+
 // View de cliente persistida (sem dados sensíveis de cartão).
 export interface CustomerJson {
   name: string
@@ -30,7 +34,7 @@ export interface CustomerJson {
   address?: Address
 }
 
-export const paymentStatusEnum = pgEnum('payment_status', [
+export const paymentStatusEnum = paymentsSchema.enum('payment_status', [
   'PENDING',
   'AUTHORIZED',
   'PAID',
@@ -40,19 +44,34 @@ export const paymentStatusEnum = pgEnum('payment_status', [
   'REFUNDED',
 ])
 
-export const paymentMethodEnum = pgEnum('payment_method', ['PIX', 'BOLETO', 'CREDIT_CARD'])
-export const subscriptionStatusEnum = pgEnum('subscription_status', [
+export const paymentMethodEnum = paymentsSchema.enum('payment_method', [
+  'PIX',
+  'BOLETO',
+  'CREDIT_CARD',
+])
+export const subscriptionStatusEnum = paymentsSchema.enum('subscription_status', [
   'PENDING',
   'ACTIVE',
   'CANCELED',
   'EXPIRED',
 ])
-export const outboxStatusEnum = pgEnum('outbox_status', ['PENDING', 'PUBLISHED', 'DEAD'])
-export const idempotencyStateEnum = pgEnum('idempotency_state', ['IN_FLIGHT', 'COMPLETED'])
-export const deliveryStatusEnum = pgEnum('delivery_status', ['PENDING', 'SUCCEEDED', 'DEAD'])
+export const outboxStatusEnum = paymentsSchema.enum('outbox_status', [
+  'PENDING',
+  'PUBLISHED',
+  'DEAD',
+])
+export const idempotencyStateEnum = paymentsSchema.enum('idempotency_state', [
+  'IN_FLIGHT',
+  'COMPLETED',
+])
+export const deliveryStatusEnum = paymentsSchema.enum('delivery_status', [
+  'PENDING',
+  'SUCCEEDED',
+  'DEAD',
+])
 
 /** Sistemas consumidores autorizados (IP allowlist + segredo HMAC). */
-export const consumers = pgTable('consumers', {
+export const consumers = paymentsSchema.table('consumers', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   hmacSecret: text('hmac_secret').notNull(),
@@ -63,7 +82,7 @@ export const consumers = pgTable('consumers', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })
 
-export const payments = pgTable(
+export const payments = paymentsSchema.table(
   'payments',
   {
     id: uuid('id').primaryKey(),
@@ -118,7 +137,7 @@ export const payments = pgTable(
 )
 
 /** Assinaturas (recorrência via cartão, gerenciada pela Efí). */
-export const subscriptions = pgTable(
+export const subscriptions = paymentsSchema.table(
   'subscriptions',
   {
     id: uuid('id').primaryKey(),
@@ -161,7 +180,7 @@ export const subscriptions = pgTable(
  * para um índice único determinístico (NULLs são distintos em UNIQUE no Postgres,
  * o que furaria a deduplicação de "ilimitado").
  */
-export const subscriptionPlans = pgTable(
+export const subscriptionPlans = paymentsSchema.table(
   'subscription_plans',
   {
     id: uuid('id').primaryKey().defaultRandom(),
@@ -182,7 +201,7 @@ export const subscriptionPlans = pgTable(
  * consumidor** (PK composta) — `Idempotency-Key` é escolhida pelo cliente, então
  * dois consumidores podem usar o mesmo valor sem colidir nem vazar respostas.
  */
-export const idempotencyKeys = pgTable(
+export const idempotencyKeys = paymentsSchema.table(
   'idempotency_keys',
   {
     consumerId: text('consumer_id').notNull(),
@@ -206,7 +225,7 @@ export const idempotencyKeys = pgTable(
 )
 
 /** Outbox transacional: eventos de domínio gravados junto do agregado. */
-export const outbox = pgTable(
+export const outbox = paymentsSchema.table(
   'outbox',
   {
     id: uuid('id').primaryKey().defaultRandom(),
@@ -222,7 +241,7 @@ export const outbox = pgTable(
 )
 
 /** Webhooks recebidos (dedupe + auditoria). */
-export const webhookEvents = pgTable(
+export const webhookEvents = paymentsSchema.table(
   'webhook_events',
   {
     id: uuid('id').primaryKey().defaultRandom(),
@@ -237,7 +256,7 @@ export const webhookEvents = pgTable(
 )
 
 /** Fila de entrega de webhooks de saída para os consumidores (at-least-once + retry). */
-export const webhookDeliveries = pgTable(
+export const webhookDeliveries = paymentsSchema.table(
   'webhook_deliveries',
   {
     id: uuid('id').primaryKey().defaultRandom(),

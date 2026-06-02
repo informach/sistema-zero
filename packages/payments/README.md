@@ -34,13 +34,13 @@ cp .env.example .env   # e preencha (credenciais Efí + DATABASE_URL)
 # 2. Dependências (na raiz do monorepo)
 bun install
 
-# 3. Banco (PostgreSQL). Exemplo com Docker:
+# 3. Banco (PostgreSQL) — UM Postgres compartilhado por todo o monorepo
+#    (`sistemazero`); cada serviço é dono do seu schema (payments/funil/auth).
 docker run -d --name pg-payments -e POSTGRES_PASSWORD=postgres \
-  -e POSTGRES_DB=payments -p 5432:5432 postgres:16
+  -e POSTGRES_DB=sistemazero -p 5433:5432 postgres:16
 
-# 4. Migrations
-bun run db:generate   # gera SQL a partir do schema
-bun run db:migrate    # aplica no banco
+# 4. Migrations (cria o schema `payments` no banco compartilhado)
+bun run db:migrate    # aplica as migrations (db:generate só ao mudar o schema)
 
 # 5. Subir o serviço
 bun run dev           # ou, na raiz: bun run dev:payments

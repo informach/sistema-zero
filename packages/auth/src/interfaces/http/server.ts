@@ -1,0 +1,88 @@
+import { swagger } from '@elysiajs/swagger'
+import type { Logger } from '@sistemazero/core/logging'
+import { Elysia } from 'elysia'
+import type { GetMeService } from '../../application/get-me/get-me.service'
+import type { LoginService } from '../../application/login/login.service'
+import type { LogoutService } from '../../application/logout/logout.service'
+import type { RefreshService } from '../../application/refresh/refresh.service'
+import type { RegisterService } from '../../application/register/register.service'
+import type { TokenIssuer } from '../../domain/ports/token-issuer.port'
+import type { Env } from '../../infrastructure/config/env'
+import { buildErrorResponse } from './error-handler'
+import { markOversizeBody } from './raw-body'
+import { authRoutes } from './routes/auth.routes'
+import { healthRoutes } from './routes/health.routes'
+
+export interface HttpDeps {
+  env: Env
+  logger: Logger
+  tokenIssuer: TokenIssuer
+  register: RegisterService
+  login: LoginService
+  refresh: RefreshService
+  logout: LogoutService
+  getMe: GetMeService
+}
+
+/**
+ * Monta a aplicação Elysia do serviço de identidade: limite de corpo (anti-DoS),
+ * tratamento central de erros, Swagger (fora de produção) e as rotas.
+ */
+export function createServer(deps: HttpDeps) {
+  const app = new Elysia({
+    serve: { maxRequestBodySize: deps.env.MAX_REQUEST_BODY_BYTES },
+  })
+    .onParse({ as: 'global' }, async ({ request, contentType }) => {
+      const maxBytes = deps.env.MAX_REQUEST_BODY_BYTES
+      const declared = Number(request.headers.get('content-length') ?? '0')
+      if (Number.isFinite(declared) && declared > maxBytes) {
+        markOversizeBody(request)
+        return undefined
+      }
+      if (contentType?.includes('application/json')) {
+        const text = await request.text()
+        // Rede de segurança caso o Content-Length minta/esteja ausente.
+        if (Buffer.byteLength(text, 'utf8') > maxBytes) {
+          markOversizeBody(request)
+          return {}
+        }
+        return text.length > 0 ? JSON.parse(text) : {}
+      }
+      return undefined
+    })
+    .onError({ as: 'global' }, ({ code, error, set }) => {
+      const { status, body } = buildErrorResponse({ code, error, logger: deps.logger })
+      set.status = status
+      return body
+    })
+
+  // Swagger só FORA de produção (não expõe o mapa de rotas/esquema de auth).
+  if (deps.env.NODE_ENV !== 'production') {
+    app.use(
+      swagger({
+        path: '/swagger',
+        documentation: {
+          info: {
+            title: 'Sistema Zero — Auth API',
+            version: '0.1.0',
+            description:
+              'Serviço de identidade: registro/login, emissão de JWT (access + refresh) e JWKS.',
+          },
+        },
+      }),
+    )
+  }
+
+  return app.use(healthRoutes()).use(
+    authRoutes({
+      trustProxy: deps.env.TRUST_PROXY,
+      trustedProxyHops: deps.env.TRUSTED_PROXY_HOPS,
+      tokenIssuer: deps.tokenIssuer,
+      register: deps.register,
+      login: deps.login,
+      refresh: deps.refresh,
+      logout: deps.logout,
+      getMe: deps.getMe,
+    }),
+  )
+}

@@ -1,10 +1,12 @@
 import { createLogger, type Logger } from '@sistemazero/core/logging'
 import { type AuthStrategyMap, createAuthChain } from './application/auth/auth-chain'
+import { createClaimsUserResolver } from './application/auth/claims-user-resolver'
 import { createHmacStrategy } from './application/auth/hmac.strategy'
 import { createJwtStrategy } from './application/auth/jwt.strategy'
 import { createSessionStrategy } from './application/auth/session.strategy'
 import { createPipeline, type Pipeline } from './application/pipeline/pipeline'
 import { createAuthStage } from './application/pipeline/stages/auth.stage'
+import { createAuthorizationStage } from './application/pipeline/stages/authorization.stage'
 import { createCorsStage } from './application/pipeline/stages/cors.stage'
 import { createFinalizeStage } from './application/pipeline/stages/finalize.stage'
 import { createGlobalRateLimitStage } from './application/pipeline/stages/global-rate-limit.stage'
@@ -13,6 +15,7 @@ import { createRateLimitStage } from './application/pipeline/stages/rate-limit.s
 import { createRequestTransformStage } from './application/pipeline/stages/request-transform.stage'
 import { createResponseTransformStage } from './application/pipeline/stages/response-transform.stage'
 import { createRouteResolveStage } from './application/pipeline/stages/route-resolve.stage'
+import { createUserResolutionStage } from './application/pipeline/stages/user-resolution.stage'
 import { createRateLimiter } from './application/rate-limit/rate-limiter'
 import { buildTransformers } from './application/transform/transform-chain'
 import type { Transformer } from './application/transform/transformer.port'
@@ -120,15 +123,18 @@ export async function createApplication(
     hmac: createHmacStrategy({ consumers, toleranceSeconds: env.HMAC_TOLERANCE_SECONDS }),
     session: createSessionStrategy(store),
   }
-  if (env.JWT_JWKS_URL) {
+  if (env.JWT_JWKS_URL || env.JWT_HS256_SECRET) {
     strategies.jwt = createJwtStrategy({
       jwksUrl: env.JWT_JWKS_URL,
+      hs256Secret: env.JWT_HS256_SECRET,
       issuer: env.JWT_ISSUER,
       audience: env.JWT_AUDIENCE,
       algorithms: env.JWT_ALGORITHMS,
     })
   }
   const authChain = createAuthChain(strategies)
+  // Resolve o usuário a partir das claims do JWT verificado (stateless).
+  const userResolver = createClaimsUserResolver()
 
   let resigner: Resigner | undefined
   if (env.GATEWAY_CONSUMER_ID && env.GATEWAY_HMAC_SECRET) {
@@ -160,6 +166,9 @@ export async function createApplication(
     }),
     createCorsStage(),
     createAuthStage(authChain),
+    // Resolve o usuário (claims → ctx.user) e aplica RBAC (role/status/scope) por rota.
+    createUserResolutionStage(userResolver),
+    createAuthorizationStage(),
     // Safety-net global por IP (só tráfego anônimo) — antes do limite por-rota.
     // Habilitado só quando configurado (>0); roda após o auth para isentar principals.
     ...(env.GLOBAL_RATE_LIMIT_PER_MINUTE > 0

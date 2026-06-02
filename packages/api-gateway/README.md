@@ -5,10 +5,12 @@ Faz roteamento/proxy, autenticação plugável (HMAC, JWT, sessão), rate limiti
 balancing, CORS e transformação de requisições — tudo dirigido por uma **config
 declarativa** e de forma **stateless** (pronto para escalar em N réplicas).
 
-> **Estado atual:** em produção como **BFF de pagamentos do funil**. O funil
-> autentica-se por HMAC de borda, o gateway re-assina a chamada ao `payments` e
-> repassa o webhook de pagamento ao funil. JWT e sessão estão prontos, porém
-> _dormentes_ (aguardando um emissor de identidade).
+> **Estado atual:** **BFF de pagamentos do funil** (HMAC de borda + re-assina ao
+> `payments`) **e** ponto de verificação/autorização de usuários. A auth **JWT está
+> ligada**: o gateway verifica tokens do **[@sistemazero/auth](../auth)** (HS256
+> e/ou RS256 via JWKS), resolve o usuário das claims, aplica **RBAC** por rota
+> (`authorize`) e injeta `X-Auth-User-*` confiável ao upstream. Sessão opaca segue
+> pronta porém dormente.
 
 ## O que ele faz
 
@@ -84,7 +86,9 @@ principais:
 | `FUNNEL_HMAC_SECRET` | segredo HMAC de borda do consumidor `funnel` |
 | `FUNNEL_INTERNAL_TOKEN` | token interno injetado ao repassar o webhook |
 | `RATE_LIMIT_*` | rate limit global default |
-| `JWT_JWKS_URL` / `JWT_ISSUER` / `JWT_AUDIENCE` / `JWT_ALGORITHMS` | auth JWT (dormente até existir um emissor) |
+| `JWT_HS256_SECRET` | segredo HS256 compartilhado com o `auth` (verifica tokens HS256 sem JWKS) |
+| `JWT_JWKS_URL` / `JWT_ISSUER` / `JWT_AUDIENCE` / `JWT_ALGORITHMS` | auth JWT via JWKS (RS256). Aponte p/ `<auth>/auth/.well-known/jwks.json` |
+| `AUTH_URL` | URL do serviço de identidade `@sistemazero/auth` (lida pela `gateway.config.ts`) |
 
 > ⚠️ Segredos HMAC precisam de **≥ 16 caracteres** — um valor vazio/curto **falha
 > no boot** (evita auth com chave efetivamente vazia).

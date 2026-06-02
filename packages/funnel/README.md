@@ -26,8 +26,8 @@ checkout (Pix) → painel admin (login in-app).
 
 ## Setup local (ponta a ponta com Pix)
 
-1. Copie `.env.example` → `.env` e preencha. O Postgres é o **mesmo** do payments
-   (`localhost:5433/payments`); este package cria/usa o schema `funil`.
+1. Copie `.env.example` → `.env` e preencha. O Postgres é o **banco compartilhado**
+   do monorepo (`localhost:5433/sistemazero`); este package cria/usa o schema `funil`.
 2. `bun run db:migrate` (cria `funil.leads` e `funil.funnel_events`).
 3. No `payments`, cadastre o **gateway** como consumer (o gateway é quem assina p/ o payments):
    ```

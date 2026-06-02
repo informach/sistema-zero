@@ -1,10 +1,13 @@
-import type { FunnelRepo } from '../db/repo'
+import type { FunnelRepo, Lead } from '../db/repo'
 import { json, jsonError } from '../lib/http'
 import { safeEqual } from '../lib/safe-equal'
+import { FulfillmentRetryError } from './fulfillment'
 
 export interface WebhookDeps {
   repo: FunnelRepo
   internalToken: string
+  /** Registra o comprador no IdP após confirmar o pagamento. */
+  fulfill: (lead: Lead) => Promise<void>
 }
 
 /**
@@ -43,6 +46,22 @@ export async function handlePaymentWebhook(request: Request, deps: WebhookDeps):
     if (lead) {
       const newlyPaid = await deps.repo.markPaid(lead.id, new Date())
       if (newlyPaid) await deps.repo.insertEvent(lead.id, 'pagamento_confirmado', 'webhook')
+
+      // Registra o comprador no IdP (auth). Falha transitória → devolve 502 e NÃO
+      // marca a entrega como processada, para o gateway re-entregar (recuperação
+      // durável, inclusive p/ boleto, que não tem polling de tela). markPaid é
+      // idempotente, então reprocessar a reentrega é seguro.
+      const fresh = await deps.repo.getLead(lead.id)
+      if (fresh) {
+        try {
+          await deps.fulfill(fresh)
+        } catch (err) {
+          if (err instanceof FulfillmentRetryError) {
+            return jsonError('Registro do comprador pendente; reentregar.', 502, 'FULFILL_RETRY')
+          }
+          throw err
+        }
+      }
     }
   }
 
