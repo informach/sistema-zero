@@ -198,7 +198,7 @@ function snapshotToRow(snap: PaymentSnapshot): typeof payments.$inferInsert {
   }
 }
 
-function rowToSnapshot(row: PaymentRow): PaymentSnapshot {
+export function rowToSnapshot(row: PaymentRow): PaymentSnapshot {
   return {
     id: row.id,
     version: row.version,

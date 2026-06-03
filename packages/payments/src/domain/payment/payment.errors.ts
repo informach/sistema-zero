@@ -62,3 +62,24 @@ export class CardDataIncompleteError extends DomainError {
     super(`Dados obrigatórios do cartão ausentes ou inválidos: ${missing}`)
   }
 }
+
+/** Só um pagamento PAID pode ser estornado (Pix/cartão). */
+export class PaymentNotRefundableError extends DomainError {
+  readonly code = 'PAYMENT_NOT_REFUNDABLE'
+
+  constructor(status: string) {
+    super(`Só é possível estornar um pagamento pago; status atual: ${status}`)
+  }
+}
+
+/**
+ * Estorno não suportado para este método/estado: boleto não tem estorno
+ * programático na Efí, e Pix/cartão exigem o identificador do provedor.
+ */
+export class RefundNotSupportedError extends DomainError {
+  readonly code = 'REFUND_NOT_SUPPORTED'
+
+  constructor(reason: string) {
+    super(`Estorno não suportado: ${reason}`)
+  }
+}

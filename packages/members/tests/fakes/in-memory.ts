@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import type { Logger } from '@sistemazero/core/logging'
 import {
   type Course,
@@ -9,13 +10,28 @@ import {
   type Module,
   type ModuleWithLessons,
 } from '../../src/domain/course/course'
+import { DuplicateSlugError } from '../../src/domain/course/course.errors'
+import type { LessonBlockContent, LessonBlockKind } from '../../src/domain/course/lesson-block'
 import {
   EntitlementAggregate,
   type EntitlementState,
 } from '../../src/domain/entitlement/entitlement.aggregate'
 import type { CatalogGateway, ResolvedOffer } from '../../src/domain/ports/catalog-gateway.port'
+import type {
+  AttachmentFields,
+  ContentAdminRepository,
+  CourseFields,
+  LessonFields,
+  ListCoursesAdminFilter,
+  ModuleFields,
+} from '../../src/domain/ports/content-admin-repository.port'
 import type { CourseRepository } from '../../src/domain/ports/course-repository.port'
-import type { EntitlementRepository } from '../../src/domain/ports/entitlement-repository.port'
+import type {
+  EntitlementRepository,
+  ListMembersFilter,
+  ListMembersResult,
+  MemberSummary,
+} from '../../src/domain/ports/entitlement-repository.port'
 import type { ProcessedWebhookRepository } from '../../src/domain/ports/processed-webhook-repository.port'
 import type { ProgressRepository } from '../../src/domain/ports/progress-repository.port'
 
@@ -49,6 +65,11 @@ export class InMemoryEntitlementRepository implements EntitlementRepository {
       if (s.idempotencyKey === key) return EntitlementAggregate.restore(cloneState(s))
     }
     return null
+  }
+
+  async findById(id: string): Promise<EntitlementAggregate | null> {
+    const s = this.byId.get(id)
+    return s ? EntitlementAggregate.restore(cloneState(s)) : null
   }
 
   async save(e: EntitlementAggregate): Promise<boolean> {
@@ -96,6 +117,60 @@ export class InMemoryEntitlementRepository implements EntitlementRepository {
       .map((s) => EntitlementAggregate.restore(cloneState(s)))
   }
 
+  async listByUserId(userId: string): Promise<EntitlementAggregate[]> {
+    return [...this.byId.values()]
+      .filter((s) => s.userId === userId)
+      .sort((a, b) => b.grantedAt.getTime() - a.grantedAt.getTime())
+      .map((s) => EntitlementAggregate.restore(cloneState(s)))
+  }
+
+  /** Mirror do SQL: agrupa por user_id, filtra membership por HAVING, ordena/pagina. */
+  async listMembers(filter: ListMembersFilter, now: Date): Promise<ListMembersResult> {
+    const groups = new Map<string, EntitlementState[]>()
+    for (const s of this.byId.values()) {
+      const arr = groups.get(s.userId) ?? []
+      arr.push(s)
+      groups.set(s.userId, arr)
+    }
+
+    const summaries: MemberSummary[] = []
+    for (const [userId, rows] of groups) {
+      if (filter.status === 'active' && !rows.some((r) => isActive(r, now))) continue
+      if (
+        filter.status &&
+        filter.status !== 'active' &&
+        !rows.some((r) => r.status === filter.status)
+      )
+        continue
+      if (filter.courseRef && !rows.some((r) => r.courseRef === filter.courseRef)) continue
+
+      const lastGrantedAt = rows.reduce((a, b) =>
+        a.grantedAt.getTime() >= b.grantedAt.getTime() ? a : b,
+      ).grantedAt
+      const courseRefs = [
+        ...new Set(rows.map((r) => r.courseRef).filter((c): c is string => c !== null)),
+      ]
+      summaries.push({
+        userId,
+        totalCount: rows.length,
+        activeCount: rows.filter((r) => isActive(r, now)).length,
+        lastGrantedAt,
+        courseRefs,
+      })
+    }
+
+    summaries.sort((a, b) => {
+      const d = b.lastGrantedAt.getTime() - a.lastGrantedAt.getTime()
+      if (d !== 0) return d
+      return a.userId < b.userId ? -1 : a.userId > b.userId ? 1 : 0
+    })
+
+    return {
+      items: summaries.slice(filter.offset, filter.offset + filter.limit),
+      total: summaries.length,
+    }
+  }
+
   async revokeBySubscriptionId(subscriptionId: string, now: Date): Promise<number> {
     let affected = 0
     for (const s of this.byId.values()) {
@@ -130,7 +205,7 @@ export class InMemoryEntitlementRepository implements EntitlementRepository {
   }
 }
 
-export class InMemoryCourseRepository implements CourseRepository {
+export class InMemoryCourseRepository implements CourseRepository, ContentAdminRepository {
   courses: Course[] = []
   modules: Module[] = []
   lessons: Lesson[] = []
@@ -152,6 +227,11 @@ export class InMemoryCourseRepository implements CourseRepository {
   async findAccessibleCoursesBySlugs(slugs: string[]): Promise<Course[]> {
     const set = new Set(slugs)
     return this.courses.filter((c) => set.has(c.slug) && isCourseAccessible(c.status))
+  }
+
+  async findCoursesBySlugs(slugs: string[]): Promise<Course[]> {
+    const set = new Set(slugs)
+    return this.courses.filter((c) => set.has(c.slug))
   }
 
   async findOutline(courseId: string): Promise<ModuleWithLessons[]> {
@@ -191,6 +271,230 @@ export class InMemoryCourseRepository implements CourseRepository {
       if (set.has(l.courseId)) out.set(l.courseId, (out.get(l.courseId) ?? 0) + 1)
     }
     return out
+  }
+
+  // ── ContentAdminRepository (autoria) — opera nos MESMOS arrays acima ──────
+  async listCoursesAdmin(
+    filter: ListCoursesAdminFilter,
+  ): Promise<{ items: Course[]; total: number }> {
+    let all = [...this.courses]
+    const q = filter.q?.trim().toLowerCase()
+    if (q) {
+      all = all.filter((c) => c.title.toLowerCase().includes(q) || c.slug.toLowerCase().includes(q))
+    }
+    if (filter.status) all = all.filter((c) => c.status === filter.status)
+    all.sort((a, b) => a.title.localeCompare(b.title))
+    return { items: all.slice(filter.offset, filter.offset + filter.limit), total: all.length }
+  }
+
+  async createCourse(fields: CourseFields): Promise<Course> {
+    if (this.courses.some((c) => c.slug === fields.slug)) throw new DuplicateSlugError()
+    const now = new Date()
+    const course: Course = { id: randomUUID(), ...fields, createdAt: now, updatedAt: now }
+    this.courses.push(course)
+    return course
+  }
+
+  async updateCourse(course: Course): Promise<boolean> {
+    const idx = this.courses.findIndex((c) => c.id === course.id)
+    if (idx === -1) return false
+    if (this.courses.some((c) => c.id !== course.id && c.slug === course.slug)) {
+      throw new DuplicateSlugError()
+    }
+    this.courses[idx] = { ...course, updatedAt: new Date() }
+    return true
+  }
+
+  async deleteCourse(id: string): Promise<boolean> {
+    if (!this.courses.some((c) => c.id === id)) return false
+    const lessonIds = new Set(this.lessons.filter((l) => l.courseId === id).map((l) => l.id))
+    this.courses = this.courses.filter((c) => c.id !== id)
+    this.modules = this.modules.filter((m) => m.courseId !== id)
+    this.lessons = this.lessons.filter((l) => l.courseId !== id)
+    this.blocks = this.blocks.filter((b) => !lessonIds.has(b.lessonId))
+    this.attachments = this.attachments.filter((a) => !lessonIds.has(a.lessonId))
+    return true
+  }
+
+  async findModuleById(id: string): Promise<Module | null> {
+    return this.modules.find((m) => m.id === id) ?? null
+  }
+
+  async createModule(courseId: string, fields: ModuleFields): Promise<Module> {
+    const sortOrder = this.modules
+      .filter((m) => m.courseId === courseId)
+      .reduce((mx, m) => Math.max(mx, m.sortOrder + 1), 0)
+    const mod: Module = { id: randomUUID(), courseId, ...fields, sortOrder }
+    this.modules.push(mod)
+    return mod
+  }
+
+  async updateModule(id: string, fields: ModuleFields): Promise<Module | null> {
+    const m = this.modules.find((x) => x.id === id)
+    if (!m) return null
+    m.title = fields.title
+    m.summary = fields.summary
+    return m
+  }
+
+  async deleteModule(id: string): Promise<boolean> {
+    if (!this.modules.some((m) => m.id === id)) return false
+    const lessonIds = new Set(this.lessons.filter((l) => l.moduleId === id).map((l) => l.id))
+    this.modules = this.modules.filter((m) => m.id !== id)
+    this.lessons = this.lessons.filter((l) => l.moduleId !== id)
+    this.blocks = this.blocks.filter((b) => !lessonIds.has(b.lessonId))
+    this.attachments = this.attachments.filter((a) => !lessonIds.has(a.lessonId))
+    return true
+  }
+
+  async listModuleIds(courseId: string): Promise<string[]> {
+    return this.modules
+      .filter((m) => m.courseId === courseId)
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map((m) => m.id)
+  }
+
+  async reorderModules(_courseId: string, orderedIds: string[]): Promise<void> {
+    orderedIds.forEach((id, i) => {
+      const m = this.modules.find((x) => x.id === id)
+      if (m) m.sortOrder = i
+    })
+  }
+
+  async findLessonById(id: string): Promise<Lesson | null> {
+    return this.lessons.find((l) => l.id === id) ?? null
+  }
+
+  async createLesson(moduleId: string, courseId: string, fields: LessonFields): Promise<Lesson> {
+    if (this.lessons.some((l) => l.courseId === courseId && l.slug === fields.slug)) {
+      throw new DuplicateSlugError()
+    }
+    const sortOrder = this.lessons
+      .filter((l) => l.moduleId === moduleId)
+      .reduce((mx, l) => Math.max(mx, l.sortOrder + 1), 0)
+    const lesson: Lesson = { id: randomUUID(), moduleId, courseId, ...fields, sortOrder }
+    this.lessons.push(lesson)
+    return lesson
+  }
+
+  async updateLesson(id: string, fields: LessonFields): Promise<Lesson | null> {
+    const l = this.lessons.find((x) => x.id === id)
+    if (!l) return null
+    if (
+      this.lessons.some((x) => x.id !== id && x.courseId === l.courseId && x.slug === fields.slug)
+    ) {
+      throw new DuplicateSlugError()
+    }
+    l.slug = fields.slug
+    l.title = fields.title
+    l.estimatedMinutes = fields.estimatedMinutes
+    return l
+  }
+
+  async deleteLesson(id: string): Promise<boolean> {
+    if (!this.lessons.some((l) => l.id === id)) return false
+    this.lessons = this.lessons.filter((l) => l.id !== id)
+    this.blocks = this.blocks.filter((b) => b.lessonId !== id)
+    this.attachments = this.attachments.filter((a) => a.lessonId !== id)
+    return true
+  }
+
+  async listLessonIds(moduleId: string): Promise<string[]> {
+    return this.lessons
+      .filter((l) => l.moduleId === moduleId)
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map((l) => l.id)
+  }
+
+  async reorderLessons(_moduleId: string, orderedIds: string[]): Promise<void> {
+    orderedIds.forEach((id, i) => {
+      const l = this.lessons.find((x) => x.id === id)
+      if (l) l.sortOrder = i
+    })
+  }
+
+  async createBlock(
+    lessonId: string,
+    kind: LessonBlockKind,
+    content: LessonBlockContent,
+  ): Promise<LessonBlock> {
+    const sortOrder = this.blocks
+      .filter((b) => b.lessonId === lessonId)
+      .reduce((mx, b) => Math.max(mx, b.sortOrder + 1), 0)
+    const block: LessonBlock = { id: randomUUID(), lessonId, kind, sortOrder, content }
+    this.blocks.push(block)
+    return block
+  }
+
+  async updateBlock(
+    id: string,
+    kind: LessonBlockKind,
+    content: LessonBlockContent,
+  ): Promise<LessonBlock | null> {
+    const b = this.blocks.find((x) => x.id === id)
+    if (!b) return null
+    b.kind = kind
+    b.content = content
+    return b
+  }
+
+  async deleteBlock(id: string): Promise<boolean> {
+    const exists = this.blocks.some((b) => b.id === id)
+    this.blocks = this.blocks.filter((b) => b.id !== id)
+    return exists
+  }
+
+  async listBlockIds(lessonId: string): Promise<string[]> {
+    return this.blocks
+      .filter((b) => b.lessonId === lessonId)
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map((b) => b.id)
+  }
+
+  async reorderBlocks(_lessonId: string, orderedIds: string[]): Promise<void> {
+    orderedIds.forEach((id, i) => {
+      const b = this.blocks.find((x) => x.id === id)
+      if (b) b.sortOrder = i
+    })
+  }
+
+  async createAttachment(lessonId: string, fields: AttachmentFields): Promise<LessonAttachment> {
+    const sortOrder = this.attachments
+      .filter((a) => a.lessonId === lessonId)
+      .reduce((mx, a) => Math.max(mx, a.sortOrder + 1), 0)
+    const att: LessonAttachment = { id: randomUUID(), lessonId, ...fields, sortOrder }
+    this.attachments.push(att)
+    return att
+  }
+
+  async updateAttachment(id: string, fields: AttachmentFields): Promise<LessonAttachment | null> {
+    const a = this.attachments.find((x) => x.id === id)
+    if (!a) return null
+    a.label = fields.label
+    a.url = fields.url
+    a.fileType = fields.fileType
+    a.sizeBytes = fields.sizeBytes
+    return a
+  }
+
+  async deleteAttachment(id: string): Promise<boolean> {
+    const exists = this.attachments.some((a) => a.id === id)
+    this.attachments = this.attachments.filter((a) => a.id !== id)
+    return exists
+  }
+
+  async listAttachmentIds(lessonId: string): Promise<string[]> {
+    return this.attachments
+      .filter((a) => a.lessonId === lessonId)
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map((a) => a.id)
+  }
+
+  async reorderAttachments(_lessonId: string, orderedIds: string[]): Promise<void> {
+    orderedIds.forEach((id, i) => {
+      const a = this.attachments.find((x) => x.id === id)
+      if (a) a.sortOrder = i
+    })
   }
 }
 

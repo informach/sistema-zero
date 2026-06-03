@@ -1,4 +1,4 @@
-import { and, desc, eq, ilike, or, type SQL, sql } from 'drizzle-orm'
+import { and, desc, eq, ilike, inArray, or, type SQL, sql } from 'drizzle-orm'
 import type { ListUsersFilter, UserRepository } from '../../../domain/ports/user-repository.port'
 import { UserAggregate, type UserSnapshot } from '../../../domain/user/user.aggregate'
 import { EmailAlreadyInUseError } from '../../../domain/user/user.errors'
@@ -41,6 +41,12 @@ export class DrizzleUserRepository implements UserRepository {
       users: rows.map((row) => UserAggregate.restore(toSnapshot(row))),
       total: counted?.count ?? 0,
     }
+  }
+
+  async listByIds(ids: string[]): Promise<UserAggregate[]> {
+    if (ids.length === 0) return []
+    const rows = await this.db.select().from(users).where(inArray(users.id, ids))
+    return rows.map((row) => UserAggregate.restore(toSnapshot(row)))
   }
 
   async update(user: UserAggregate, expectedVersion: number): Promise<boolean> {

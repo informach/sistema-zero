@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { BatchGetUsersService } from '../../src/application/admin/batch-get-users/batch-get-users.service'
 import { GetUserService } from '../../src/application/admin/get-user/get-user.service'
 import { ListUsersService } from '../../src/application/admin/list-users/list-users.service'
 import { UpdateUserService } from '../../src/application/admin/update-user/update-user.service'
@@ -42,6 +43,7 @@ function buildApp() {
   const listUsers = new ListUsersService(users)
   const getUser = new GetUserService(users)
   const updateUser = new UpdateUserService(users, refreshTokens, silentLogger)
+  const batchGetUsers = new BatchGetUsersService(users)
 
   const env = {
     MAX_REQUEST_BODY_BYTES: 16 * 1024,
@@ -62,6 +64,7 @@ function buildApp() {
     listUsers,
     getUser,
     updateUser,
+    batchGetUsers,
   })
   return { app, users, refreshTokens, tokenIssuer }
 }
@@ -414,5 +417,25 @@ describe('Auth admin routes (/auth/admin/users)', () => {
       ),
     )
     expect(res.status).toBe(404)
+  })
+
+  test('POST /auth/admin/users/batch hidrata por ids (ignora inexistentes); sem id → 401', async () => {
+    const { app, users } = buildApp()
+    const id1 = seedUser(users, { email: 'a@example.com' })
+    const id2 = seedUser(users, { email: 'b@example.com' })
+
+    expect((await app.handle(post('/auth/admin/users/batch', { ids: [id1] }))).status).toBe(401)
+
+    const res = await app.handle(
+      post(
+        '/auth/admin/users/batch',
+        { ids: [id1, id2, crypto.randomUUID()] },
+        actorHeaders('staff'),
+      ),
+    )
+    expect(res.status).toBe(200)
+    const json = (await res.json()) as { users: UserView[] }
+    expect(json.users).toHaveLength(2)
+    expect(json.users.map((u) => u.email).sort()).toEqual(['a@example.com', 'b@example.com'])
   })
 })

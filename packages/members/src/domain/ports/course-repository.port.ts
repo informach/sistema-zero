@@ -8,6 +8,8 @@ export interface CourseRepository {
   findLesson(lessonId: string): Promise<Lesson | null>
   /** Cursos ACESSÍVEIS (published ou archived) por slugs — para montar "meus cursos". */
   findAccessibleCoursesBySlugs(slugs: string[]): Promise<Course[]>
+  /** Cursos por slugs, QUALQUER status (admin: progresso/detalhe inclui draft/archived). */
+  findCoursesBySlugs(slugs: string[]): Promise<Course[]>
   /** Módulos do curso, cada um com suas aulas resumidas (sem o conteúdo dos blocos). */
   findOutline(courseId: string): Promise<ModuleWithLessons[]>
   /** Aula com o conteúdo completo (blocos ordenados + anexos). */

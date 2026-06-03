@@ -1,0 +1,90 @@
+import { Elysia } from 'elysia'
+import type { GetMemberDetailService } from '../../../application/get-member-detail/get-member-detail.service'
+import type {
+  GrantManualCommand,
+  GrantManualEntitlementService,
+} from '../../../application/grant-manual-entitlement/grant-manual-entitlement.service'
+import type { ListMembersService } from '../../../application/list-members/list-members.service'
+import type { ManageEntitlementService } from '../../../application/manage-entitlement/manage-entitlement.service'
+import { InvalidEntitlementCommandError } from '../../../domain/entitlement/entitlement.errors'
+import { requireAdmin } from '../auth'
+import { GrantEntitlementBody, ListMembersQuery, ManageEntitlementBody } from '../dtos'
+
+const DEFAULT_LIMIT = 20
+const MAX_LIMIT = 100
+
+export interface AdminRoutesDeps {
+  requireAdminEnabled: boolean
+  listMembers: ListMembersService
+  getMemberDetail: GetMemberDetailService
+  grantManual: GrantManualEntitlementService
+  manageEntitlement: ManageEntitlementService
+}
+
+/**
+ * Rotas ADMIN da área de membros (gestão de acesso pelo painel). O RBAC real é do
+ * gateway (JWT + role); aqui `requireAdmin` confere os headers `X-Auth-User-*`
+ * (defesa em profundidade). Caminho `/members/admin/*` distinto da API do aluno
+ * (`/members/courses…`) p/ gating inequívoco — e SEM o token interno (igual ao catálogo).
+ */
+export function adminRoutes(deps: AdminRoutesDeps) {
+  return new Elysia({ prefix: '/members/admin' })
+    .get(
+      '/members',
+      async ({ query, headers }) => {
+        requireAdmin(headers, deps.requireAdminEnabled)
+        return deps.listMembers.execute({
+          status: query.status,
+          courseRef: query.courseRef,
+          limit: clampLimit(query.limit),
+          offset: query.offset ?? 0,
+        })
+      },
+      { query: ListMembersQuery },
+    )
+    .get('/members/:userId', async ({ params, headers }) => {
+      requireAdmin(headers, deps.requireAdminEnabled)
+      return deps.getMemberDetail.execute(params.userId)
+    })
+    .post(
+      '/entitlements',
+      async ({ body, headers, set }) => {
+        requireAdmin(headers, deps.requireAdminEnabled)
+        const expiresAt = parseDate(body.expiresAt)
+        const cmd: GrantManualCommand =
+          body.mode === 'offer'
+            ? { mode: 'offer', userId: body.userId, offerRef: body.offerRef, expiresAt }
+            : { mode: 'course', userId: body.userId, courseRef: body.courseRef, expiresAt }
+        const result = await deps.grantManual.execute(cmd)
+        set.status = 201
+        return result
+      },
+      { body: GrantEntitlementBody },
+    )
+    .patch(
+      '/entitlements/:id',
+      async ({ body, params, headers }) => {
+        requireAdmin(headers, deps.requireAdminEnabled)
+        return deps.manageEntitlement.execute({
+          id: params.id,
+          action: body.action,
+          expiresAt: parseDate(body.expiresAt) ?? undefined,
+        })
+      },
+      { body: ManageEntitlementBody },
+    )
+}
+
+function clampLimit(limit: number | undefined): number {
+  if (limit === undefined) return DEFAULT_LIMIT
+  return Math.min(Math.max(1, limit), MAX_LIMIT)
+}
+
+/** ISO-8601 → Date. `null`/ausente → `null`. Inválida → 400 (VALIDATION_ERROR). */
+function parseDate(value: string | null | undefined): Date | null {
+  if (!value) return null
+  const d = new Date(value)
+  if (Number.isNaN(d.getTime()))
+    throw new InvalidEntitlementCommandError('Data inválida (expiresAt)')
+  return d
+}

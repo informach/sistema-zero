@@ -1,17 +1,19 @@
 import { ForbiddenError, UnauthorizedError } from '@sistemazero/core/http'
 import { Elysia } from 'elysia'
+import type { BatchGetUsersService } from '../../../application/admin/batch-get-users/batch-get-users.service'
 import type { GetUserService } from '../../../application/admin/get-user/get-user.service'
 import type { ListUsersService } from '../../../application/admin/list-users/list-users.service'
 import type { UpdateUserService } from '../../../application/admin/update-user/update-user.service'
 import { UserNotFoundError } from '../../../domain/user/user.errors'
 import type { UserRole } from '../../../domain/user/user.role'
 import { type GatewayActor, resolveGatewayActor } from '../auth'
-import { ListUsersQuery, UpdateUserBody } from '../dtos'
+import { BatchGetUsersBody, ListUsersQuery, UpdateUserBody } from '../dtos'
 
 export interface AdminRoutesDeps {
   listUsers: ListUsersService
   getUser: GetUserService
   updateUser: UpdateUserService
+  batchGetUsers: BatchGetUsersService
 }
 
 // Papéis aceitos por operação (re-checagem na borda; o gateway já barra antes).
@@ -40,6 +42,14 @@ export function adminRoutes(deps: AdminRoutesDeps) {
         })
       },
       { query: ListUsersQuery },
+    )
+    .post(
+      '/users/batch',
+      async ({ headers, body }) => {
+        requireActor(headers, READ_ROLES)
+        return deps.batchGetUsers.execute(body.ids)
+      },
+      { body: BatchGetUsersBody },
     )
     .get('/users/:id', async ({ headers, params }) => {
       requireActor(headers, READ_ROLES)

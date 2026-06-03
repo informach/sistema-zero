@@ -95,9 +95,12 @@ src/
   rotas `/auth/*` no gateway são **públicas + `passthrough`** (o IdP cuida da própria
   auth; o `/me` precisa do Bearer passando direto).
 - **Rotas admin `/auth/admin/users*`** (gestão de usuários pelo painel) são a
-  EXCEÇÃO: o gateway as protege com **JWT + RBAC** (`GET` listar/detalhe →
-  superadmin/admin/staff; `PATCH` editar → superadmin/admin) e injeta `X-Auth-User-*`
-  (NÃO `passthrough`). O serviço lê o ator desses headers (`resolveGatewayActor`),
+  EXCEÇÃO: o gateway as protege com **JWT + RBAC** (`GET` listar/detalhe + `POST
+  .../batch` hidratação em lote por ids → superadmin/admin/staff; `PATCH` editar →
+  superadmin/admin) e injeta `X-Auth-User-*` (NÃO `passthrough`). O `batch`
+  (`BatchGetUsersService` + `UserRepository.listByIds`, ≤100 ids) hidrata identidade
+  p/ a área de membros (que lista `userId`s) — evita N+1. O serviço lê o ator desses
+  headers (`resolveGatewayActor`),
   re-checa papel/status (defesa em profundidade) e aplica os GUARDS hierárquicos:
   ninguém altera o próprio papel/status; `admin` não toca/promove a admin/superadmin;
   suspender/bloquear revoga as sessões do alvo. Concorrência otimista por `version`.

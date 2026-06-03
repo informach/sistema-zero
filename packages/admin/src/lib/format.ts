@@ -3,6 +3,15 @@ export function formatCents(cents: number, currency = 'BRL'): string {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency }).format(cents / 100)
 }
 
+/**
+ * Formata centavos vindos como STRING (bigint serializado do @sistemazero/payments)
+ * em BRL. `Number()` é seguro para valores reais (bem abaixo de MAX_SAFE_INTEGER).
+ */
+export function formatCentsStr(value: string | number, currency = 'BRL'): string {
+  const cents = typeof value === 'number' ? value : Number(value)
+  return formatCents(Number.isFinite(cents) ? cents : 0, currency)
+}
+
 /** Converte um valor em reais (string "37,00" / "37.00" / number) para centavos inteiros. */
 export function reaisToCents(value: string | number): number {
   if (typeof value === 'number') return Math.round(value * 100)

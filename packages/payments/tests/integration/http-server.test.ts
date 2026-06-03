@@ -1,12 +1,21 @@
 import { describe, expect, test } from 'bun:test'
 import { CancelSubscriptionService } from '../../src/application/cancel-subscription/cancel-subscription.service'
 import { CreateSubscriptionService } from '../../src/application/create-subscription/create-subscription.service'
+import { GetAdminPaymentService } from '../../src/application/get-admin-payment/get-admin-payment.service'
+import { GetAdminSubscriptionService } from '../../src/application/get-admin-subscription/get-admin-subscription.service'
 import { GetPaymentService } from '../../src/application/get-payment/get-payment.service'
 import { GetSubscriptionService } from '../../src/application/get-subscription/get-subscription.service'
 import { HandleBoletoNotificationService } from '../../src/application/handle-boleto-notification/handle-boleto-notification.service'
 import { HandleProviderWebhookService } from '../../src/application/handle-provider-webhook/handle-provider-webhook.service'
 import { HandleSubscriptionNotificationService } from '../../src/application/handle-subscription-notification/handle-subscription-notification.service'
+import { ListPaymentsService } from '../../src/application/list-payments/list-payments.service'
+import { ListSubscriptionsService } from '../../src/application/list-subscriptions/list-subscriptions.service'
+import { GetPaymentsOpsService } from '../../src/application/payments-ops/get-payments-ops.service'
+import { GetPaymentsStatsService } from '../../src/application/payments-stats/get-payments-stats.service'
 import { ProcessPaymentService } from '../../src/application/process-payment/process-payment.service'
+import { RefundPaymentService } from '../../src/application/refund-payment/refund-payment.service'
+import type { PaymentAdminReadRepository } from '../../src/domain/ports/payment-admin-read.port'
+import type { SubscriptionAdminReadRepository } from '../../src/domain/ports/subscription-admin-read.port'
 import type { Env } from '../../src/infrastructure/config/env'
 import { signHmac } from '../../src/infrastructure/security/hmac'
 import { InMemoryRateLimiter } from '../../src/infrastructure/security/rate-limiter'
@@ -28,6 +37,8 @@ interface BuildOpts {
   allowedCidrsA?: string[]
   maxBodyBytes?: number
   trustedProxyHops?: number
+  /** Liga a checagem `requireAdmin` nas rotas `/payments/admin/*`. */
+  requireAdmin?: boolean
 }
 
 function buildApp(opts: BuildOpts = {}) {
@@ -58,6 +69,30 @@ function buildApp(opts: BuildOpts = {}) {
     MAX_REQUEST_BODY_BYTES: opts.maxBodyBytes ?? 64 * 1024,
     EFI_WEBHOOK_SECRET: undefined,
   } as unknown as Env
+
+  // Stubs de leitura admin (estas integrações não exercem dados de listagem).
+  const paymentsAdminRead: PaymentAdminReadRepository = {
+    list: async () => ({ items: [], total: 0 }),
+    stats: async () => ({
+      totalCount: 0,
+      paidCount: 0,
+      paidAmountInCents: '0',
+      refundedAmountInCents: '0',
+      byStatus: [],
+      byMethod: [],
+    }),
+    ops: async () => ({
+      outboxPending: 0,
+      outboxDead: 0,
+      paymentsAwaitingCharge: 0,
+      webhookDeliveriesPending: 0,
+      webhookDeliveriesDead: 0,
+      reconcilePending: 0,
+    }),
+  }
+  const subscriptionsAdminRead: SubscriptionAdminReadRepository = {
+    list: async () => ({ items: [], total: 0 }),
+  }
 
   const app = createServer({
     env,
@@ -115,6 +150,14 @@ function buildApp(opts: BuildOpts = {}) {
       webhookDeliveriesPending: 0,
       webhookDeliveriesDead: 0,
     }),
+    requireAdminEnabled: opts.requireAdmin ?? false,
+    listPayments: new ListPaymentsService(paymentsAdminRead),
+    getAdminPayment: new GetAdminPaymentService(repo),
+    listSubscriptions: new ListSubscriptionsService(subscriptionsAdminRead),
+    getAdminSubscription: new GetAdminSubscriptionService(subscriptionRepo),
+    getPaymentsStats: new GetPaymentsStatsService(paymentsAdminRead),
+    getPaymentsOps: new GetPaymentsOpsService(paymentsAdminRead),
+    refundPayment: new RefundPaymentService(repo, gateway, silentLogger),
   })
 
   return { app, repo, subscriptionRepo, gateway }
@@ -708,5 +751,119 @@ describe('HTTP server', () => {
     expect(cycle?.status).toBe('PAID')
     expect(cycle?.subscriptionId).toBe(id)
     expect((await subscriptionRepo.findById(id))?.status).toBe('ACTIVE')
+  })
+})
+
+/** Headers `X-Auth-User-*` que o gateway injeta (anti-spoof) para as rotas admin. */
+function adminHeaders(role = 'admin', status = 'active'): Record<string, string> {
+  return { 'x-auth-user-role': role, 'x-auth-user-status': status }
+}
+
+describe('Rotas admin (/payments/admin/*)', () => {
+  test('GET /payments/admin/payments sem requireAdmin → 200 (envelope paginado)', async () => {
+    const { app } = buildApp()
+    const res = await app.handle(new Request('http://localhost/payments/admin/payments'))
+    expect(res.status).toBe(200)
+    expect(await res.json()).toMatchObject({ items: [], total: 0, limit: 20, offset: 0 })
+  })
+
+  test('requireAdmin ligado: sem headers → 401', async () => {
+    const { app } = buildApp({ requireAdmin: true })
+    const res = await app.handle(new Request('http://localhost/payments/admin/payments'))
+    expect(res.status).toBe(401)
+  })
+
+  test('requireAdmin ligado: role não-admin → 403', async () => {
+    const { app } = buildApp({ requireAdmin: true })
+    const res = await app.handle(
+      new Request('http://localhost/payments/admin/payments', { headers: adminHeaders('member') }),
+    )
+    expect(res.status).toBe(403)
+  })
+
+  test('requireAdmin ligado: conta inativa → 403', async () => {
+    const { app } = buildApp({ requireAdmin: true })
+    const res = await app.handle(
+      new Request('http://localhost/payments/admin/payments', {
+        headers: adminHeaders('admin', 'suspended'),
+      }),
+    )
+    expect(res.status).toBe(403)
+  })
+
+  test('requireAdmin ligado: admin ativo → 200', async () => {
+    const { app } = buildApp({ requireAdmin: true })
+    const res = await app.handle(
+      new Request('http://localhost/payments/admin/payments', { headers: adminHeaders() }),
+    )
+    expect(res.status).toBe(200)
+  })
+
+  test('GET /payments/admin/payments/:id com UUID malformado → 400 (não 500)', async () => {
+    const { app } = buildApp()
+    const res = await app.handle(new Request('http://localhost/payments/admin/payments/nao-uuid'))
+    expect(res.status).toBe(400)
+  })
+
+  test('GET /payments/admin/payments/:id inexistente → 404', async () => {
+    const { app } = buildApp()
+    const res = await app.handle(
+      new Request('http://localhost/payments/admin/payments/00000000-0000-0000-0000-000000000000'),
+    )
+    expect(res.status).toBe(404)
+  })
+
+  test('GET /payments/admin/stats → 200', async () => {
+    const { app } = buildApp()
+    const res = await app.handle(new Request('http://localhost/payments/admin/stats'))
+    expect(res.status).toBe(200)
+    expect(await res.json()).toMatchObject({ totalCount: 0, paidCount: 0 })
+  })
+
+  test('GET /payments/admin/ops → 200', async () => {
+    const { app } = buildApp()
+    const res = await app.handle(new Request('http://localhost/payments/admin/ops'))
+    expect(res.status).toBe(200)
+    expect(await res.json()).toMatchObject({ outboxPending: 0, reconcilePending: 0 })
+  })
+
+  test('GET /payments/admin/subscriptions → 200 (envelope paginado)', async () => {
+    const { app } = buildApp()
+    const res = await app.handle(new Request('http://localhost/payments/admin/subscriptions'))
+    expect(res.status).toBe(200)
+    expect(await res.json()).toMatchObject({ items: [], total: 0 })
+  })
+
+  test('POST /payments/admin/payments/:id/refund inexistente → 404', async () => {
+    const { app } = buildApp()
+    const res = await app.handle(
+      new Request(
+        'http://localhost/payments/admin/payments/00000000-0000-0000-0000-000000000000/refund',
+        { method: 'POST' },
+      ),
+    )
+    expect(res.status).toBe(404)
+  })
+
+  test('POST refund: requireAdmin ligado sem headers → 401', async () => {
+    const { app } = buildApp({ requireAdmin: true })
+    const res = await app.handle(
+      new Request(
+        'http://localhost/payments/admin/payments/00000000-0000-0000-0000-000000000000/refund',
+        { method: 'POST' },
+      ),
+    )
+    expect(res.status).toBe(401)
+  })
+
+  test('DELETE /payments/admin/subscriptions/:id inexistente → 404', async () => {
+    const { app } = buildApp()
+    const res = await app.handle(
+      new Request(
+        'http://localhost/payments/admin/subscriptions/00000000-0000-0000-0000-000000000000',
+        { method: 'DELETE' },
+      ),
+    )
+    expect(res.status).toBe(404)
   })
 })

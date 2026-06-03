@@ -1,12 +1,19 @@
 import { CancelSubscriptionService } from './application/cancel-subscription/cancel-subscription.service'
 import { CreateSubscriptionService } from './application/create-subscription/create-subscription.service'
 import { registerPaymentEventHandlers } from './application/event-handlers/payment-event-handlers'
+import { GetAdminPaymentService } from './application/get-admin-payment/get-admin-payment.service'
+import { GetAdminSubscriptionService } from './application/get-admin-subscription/get-admin-subscription.service'
 import { GetPaymentService } from './application/get-payment/get-payment.service'
 import { GetSubscriptionService } from './application/get-subscription/get-subscription.service'
 import { HandleBoletoNotificationService } from './application/handle-boleto-notification/handle-boleto-notification.service'
 import { HandleProviderWebhookService } from './application/handle-provider-webhook/handle-provider-webhook.service'
 import { HandleSubscriptionNotificationService } from './application/handle-subscription-notification/handle-subscription-notification.service'
+import { ListPaymentsService } from './application/list-payments/list-payments.service'
+import { ListSubscriptionsService } from './application/list-subscriptions/list-subscriptions.service'
+import { GetPaymentsOpsService } from './application/payments-ops/get-payments-ops.service'
+import { GetPaymentsStatsService } from './application/payments-stats/get-payments-stats.service'
 import { ProcessPaymentService } from './application/process-payment/process-payment.service'
+import { RefundPaymentService } from './application/refund-payment/refund-payment.service'
 import type { Env } from './infrastructure/config/env'
 import { InProcessEventPublisher } from './infrastructure/events/in-process-event-publisher'
 import { loadEfiCertificate } from './infrastructure/gateways/efi/certificate'
@@ -22,8 +29,10 @@ import { DrizzleIdempotencyStore } from './infrastructure/persistence/drizzle/id
 import { DrizzleMetricsRepository } from './infrastructure/persistence/drizzle/metrics.repository'
 import { DrizzleOutboxRepository } from './infrastructure/persistence/drizzle/outbox.repository'
 import { DrizzlePaymentRepository } from './infrastructure/persistence/drizzle/payment.repository'
+import { DrizzlePaymentAdminReadRepository } from './infrastructure/persistence/drizzle/payment-admin-read.repository'
 import { PgNotificationListener } from './infrastructure/persistence/drizzle/pg-notification-listener'
 import { DrizzleSubscriptionRepository } from './infrastructure/persistence/drizzle/subscription.repository'
+import { DrizzleSubscriptionAdminReadRepository } from './infrastructure/persistence/drizzle/subscription-admin-read.repository'
 import { DrizzleSubscriptionPlanRegistry } from './infrastructure/persistence/drizzle/subscription-plan-registry.repository'
 import { DrizzleWebhookDeliveryRepository } from './infrastructure/persistence/drizzle/webhook-delivery.repository'
 import { DrizzleWebhookInbox } from './infrastructure/persistence/drizzle/webhook-inbox.repository'
@@ -70,6 +79,9 @@ export function createApplication(env: Env): Application {
   const webhookInbox = new DrizzleWebhookInbox(db)
   const webhookDeliveries = new DrizzleWebhookDeliveryRepository(db)
   const metrics = new DrizzleMetricsRepository(db)
+  // Leitura admin (cross-consumer): SELECTs paginados + agregações p/ o painel.
+  const paymentsAdminRead = new DrizzlePaymentAdminReadRepository(db)
+  const subscriptionsAdminRead = new DrizzleSubscriptionAdminReadRepository(db)
 
   // Adapter do provedor (Efí)
   const efiCert = loadEfiCertificate({
@@ -183,6 +195,15 @@ export function createApplication(env: Env): Application {
     handleSubscriptionNotification,
   )
 
+  // Casos de uso de leitura admin (painel @sistemazero/admin)
+  const listPayments = new ListPaymentsService(paymentsAdminRead)
+  const getAdminPayment = new GetAdminPaymentService(payments)
+  const listSubscriptions = new ListSubscriptionsService(subscriptionsAdminRead)
+  const getAdminSubscription = new GetAdminSubscriptionService(subscriptions)
+  const getPaymentsStats = new GetPaymentsStatsService(paymentsAdminRead)
+  const getPaymentsOps = new GetPaymentsOpsService(paymentsAdminRead)
+  const refundPayment = new RefundPaymentService(payments, gateway, logger)
+
   // Borda HTTP
   const server = createServer({
     env,
@@ -197,6 +218,14 @@ export function createApplication(env: Env): Application {
     handleWebhook,
     handleBoletoNotification,
     getMetrics: () => metrics.getMetrics(),
+    requireAdminEnabled: env.REQUIRE_ADMIN,
+    listPayments,
+    getAdminPayment,
+    listSubscriptions,
+    getAdminSubscription,
+    getPaymentsStats,
+    getPaymentsOps,
+    refundPayment,
   })
 
   let cleanupTimer: ReturnType<typeof setInterval> | null = null

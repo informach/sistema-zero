@@ -1,5 +1,19 @@
 import { z } from 'zod'
 
+/**
+ * Booleano a partir de string de ambiente, com default. Aceita `true/false/1/0`
+ * (case-insensitive); valores inválidos FALHAM no boot.
+ */
+const BOOL_VALUES = new Set(['true', 'false', '1', '0'])
+const optionalBool = (def: boolean) =>
+  z
+    .string()
+    .optional()
+    .refine((v) => v === undefined || BOOL_VALUES.has(v.toLowerCase()), {
+      message: "deve ser 'true', 'false', '1' ou '0'",
+    })
+    .transform((v) => (v === undefined ? def : v.toLowerCase() === 'true' || v === '1'))
+
 const EnvSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
@@ -33,6 +47,11 @@ const EnvSchema = z
 
     // Carência (dias) somada ao fim do ciclo da assinatura ao calcular `expiresAt`.
     SUBSCRIPTION_GRACE_DAYS: z.coerce.number().int().nonnegative().default(3),
+
+    // RBAC das rotas admin (`/members/admin/*`). O gateway aplica o RBAC real (JWT +
+    // role); o serviço confere os headers X-Auth-User-* (defesa em profundidade).
+    // Em dev, fora do gateway, pode-se desligar a checagem.
+    REQUIRE_ADMIN: optionalBool(true),
   })
   .refine((env) => env.NODE_ENV !== 'production' || Boolean(env.INTERNAL_API_TOKEN), {
     message:

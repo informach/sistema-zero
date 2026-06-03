@@ -98,3 +98,62 @@ export const CreateSubscriptionBody = t.Object({
   }),
   metadata: t.Optional(t.Record(t.String({ maxLength: 64 }), t.Unknown(), { maxProperties: 50 })),
 })
+
+// ── Admin (painel @sistemazero/admin): leitura paginada + filtros. `t.Numeric`
+// coage a string da query para número; o handler ainda capa o `limit` (defesa).
+// As datas chegam como string ISO e são parseadas no handler (guarda contra NaN). ──
+const PAYMENT_STATUS = t.Union([
+  t.Literal('PENDING'),
+  t.Literal('AUTHORIZED'),
+  t.Literal('PAID'),
+  t.Literal('FAILED'),
+  t.Literal('EXPIRED'),
+  t.Literal('CANCELED'),
+  t.Literal('REFUNDED'),
+])
+const PAYMENT_METHOD = t.Union([t.Literal('PIX'), t.Literal('BOLETO'), t.Literal('CREDIT_CARD')])
+const SUBSCRIPTION_STATUS = t.Union([
+  t.Literal('PENDING'),
+  t.Literal('ACTIVE'),
+  t.Literal('CANCELED'),
+  t.Literal('EXPIRED'),
+])
+const ADMIN_Q = t.Optional(t.String({ minLength: 1, maxLength: 120 }))
+const ADMIN_CONSUMER = t.Optional(t.String({ minLength: 1, maxLength: 120 }))
+const ADMIN_LIMIT = t.Optional(t.Numeric({ minimum: 1, maximum: 100 }))
+const ADMIN_OFFSET = t.Optional(t.Numeric({ minimum: 0, maximum: 1_000_000 }))
+const ADMIN_DATE = t.Optional(t.String({ minLength: 1, maxLength: 40 }))
+
+/** Query de `GET /payments/admin/payments`. */
+export const ListPaymentsQuery = t.Object({
+  q: ADMIN_Q,
+  status: t.Optional(PAYMENT_STATUS),
+  method: t.Optional(PAYMENT_METHOD),
+  consumerId: ADMIN_CONSUMER,
+  from: ADMIN_DATE,
+  to: ADMIN_DATE,
+  limit: ADMIN_LIMIT,
+  offset: ADMIN_OFFSET,
+})
+
+/** Query de `GET /payments/admin/subscriptions`. */
+export const ListSubscriptionsQuery = t.Object({
+  q: ADMIN_Q,
+  status: t.Optional(SUBSCRIPTION_STATUS),
+  consumerId: ADMIN_CONSUMER,
+  limit: ADMIN_LIMIT,
+  offset: ADMIN_OFFSET,
+})
+
+/** Query de `GET /payments/admin/stats`. */
+export const PaymentsStatsQuery = t.Object({
+  from: ADMIN_DATE,
+  to: ADMIN_DATE,
+})
+
+/** Param `:id` (UUID) das rotas admin — valida o formato p/ não virar 500 na coluna uuid. */
+export const AdminIdParam = t.Object({
+  id: t.String({
+    pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
+  }),
+})

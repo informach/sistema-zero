@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: any */
 import type {
   ProviderChargeStatus,
   ProviderNotificationEntry,

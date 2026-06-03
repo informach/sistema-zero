@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: any */
 import { EfiGatewayError } from './efi.errors'
 
 /** `RequestInit` + a extensão `tls` do Bun (certificado de cliente para mTLS). */
@@ -216,6 +217,19 @@ export class EfiClient {
 
   detailCharge(txid: string): Promise<any> {
     return this.request('GET', `/v2/cob/${txid}`)
+  }
+
+  /**
+   * Solicita a devolução (estorno) de um Pix recebido —
+   * `PUT /v2/pix/{e2eId}/devolucao/{id}`. PUT idempotente: reenviar o MESMO `id`
+   * (determinístico, derivado do pagamento) não cria uma 2ª devolução. `body` =
+   * `{ valor: "10.00" }` (devolução total = valor original).
+   */
+  refundPix(e2eId: string, devolutionId: string, body: Record<string, unknown>): Promise<any> {
+    return this.request('PUT', `/v2/pix/${e2eId}/devolucao/${devolutionId}`, {
+      body,
+      idempotent: true,
+    })
   }
 
   generateQrCode(locationId: number | string): Promise<any> {

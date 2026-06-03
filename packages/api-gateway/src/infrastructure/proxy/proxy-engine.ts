@@ -149,9 +149,14 @@ export class ProxyEngine {
         // Sucesso (ou erro não-retentável): repassa a resposta streamada, com idle
         // timeout no CORPO (o timeout de conexão cobre só os headers). Usa `perTry`
         // (não o valor capado por budget — o corpo já está fluindo, não é retry).
+        // `Response.body` é tipado `ReadableStream<any>` (Bun) — cast só de tipo p/
+        // o `Uint8Array` esperado (a variância de `pipeThrough` impede a atribuição
+        // direta nas libs novas de TS); sem efeito em runtime.
         const stream =
           upstream.body && perTry > 0
-            ? idleTimeoutStream(upstream.body, perTry, () => ctrl.abort())
+            ? idleTimeoutStream(upstream.body as ReadableStream<Uint8Array>, perTry, () =>
+                ctrl.abort(),
+              )
             : upstream.body
         const response = new Response(stream, {
           status: upstream.status,

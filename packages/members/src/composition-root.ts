@@ -1,15 +1,27 @@
 import { randomUUID } from 'node:crypto'
 import { createLogger, type Logger } from '@sistemazero/core/logging'
 import { CheckAccessService } from './application/access/check-access.service'
+import {
+  AttachmentAdminService,
+  BlockAdminService,
+  CourseAdminService,
+  LessonAdminService,
+  ModuleAdminService,
+} from './application/content-admin/content-admin.service'
 import { GetCourseProgressService } from './application/get-course-progress/get-course-progress.service'
 import { GetLessonService } from './application/get-lesson/get-lesson.service'
+import { GetMemberDetailService } from './application/get-member-detail/get-member-detail.service'
 import { GetMyCourseService } from './application/get-my-course/get-my-course.service'
 import { GrantEntitlementService } from './application/grant-entitlement/grant-entitlement.service'
+import { GrantManualEntitlementService } from './application/grant-manual-entitlement/grant-manual-entitlement.service'
+import { ListMembersService } from './application/list-members/list-members.service'
 import { ListMyCoursesService } from './application/list-my-courses/list-my-courses.service'
+import { ManageEntitlementService } from './application/manage-entitlement/manage-entitlement.service'
 import { MarkLessonCompleteService } from './application/mark-lesson-complete/mark-lesson-complete.service'
 import { RevokeEntitlementService } from './application/revoke-entitlement/revoke-entitlement.service'
 import type { Env } from './infrastructure/config/env'
 import { createCatalogHttpGateway } from './infrastructure/gateways/catalog-http.gateway'
+import { DrizzleContentAdminRepository } from './infrastructure/persistence/drizzle/content-admin.repository'
 import { DrizzleCourseRepository } from './infrastructure/persistence/drizzle/course.repository'
 import { createDbConnection, type DbConnection } from './infrastructure/persistence/drizzle/db'
 import { DrizzleEntitlementRepository } from './infrastructure/persistence/drizzle/entitlement.repository'
@@ -41,6 +53,7 @@ export async function createApplication(env: Env): Promise<Application> {
 
   // Adapters
   const courses = new DrizzleCourseRepository(db)
+  const content = new DrizzleContentAdminRepository(db)
   const entitlements = new DrizzleEntitlementRepository(db)
   const progress = new DrizzleProgressRepository(db)
   const processed = new DrizzleProcessedWebhookRepository(db)
@@ -64,6 +77,26 @@ export async function createApplication(env: Env): Promise<Application> {
   })
   const revoke = new RevokeEntitlementService({ entitlements, clock, logger })
 
+  // Autoria de conteúdo (painel)
+  const courseAdmin = new CourseAdminService(content, courses)
+  const moduleAdmin = new ModuleAdminService(content, courses)
+  const lessonAdmin = new LessonAdminService(content, courses)
+  const blockAdmin = new BlockAdminService(content)
+  const attachmentAdmin = new AttachmentAdminService(content)
+
+  // Gestão admin (painel)
+  const listMembers = new ListMembersService(entitlements, clock)
+  const getMemberDetail = new GetMemberDetailService(entitlements, courses, progress)
+  const grantManual = new GrantManualEntitlementService({
+    catalog,
+    courses,
+    entitlements,
+    newId: () => randomUUID(),
+    clock,
+    logger,
+  })
+  const manageEntitlement = new ManageEntitlementService(entitlements, clock)
+
   const server = createServer({
     env,
     logger,
@@ -83,6 +116,21 @@ export async function createApplication(env: Env): Promise<Application> {
       toleranceSeconds: env.HMAC_TOLERANCE_SECONDS,
       now: clock,
       logger,
+    },
+    admin: {
+      requireAdminEnabled: env.REQUIRE_ADMIN,
+      listMembers,
+      getMemberDetail,
+      grantManual,
+      manageEntitlement,
+    },
+    content: {
+      requireAdminEnabled: env.REQUIRE_ADMIN,
+      courses: courseAdmin,
+      modules: moduleAdmin,
+      lessons: lessonAdmin,
+      blocks: blockAdmin,
+      attachments: attachmentAdmin,
     },
   })
 

@@ -24,3 +24,16 @@ export function updateUser(
 ): Promise<GatewayResponse<{ user: UserView }>> {
   return gatewayFetch(`/auth/admin/users/${encodeURIComponent(id)}`, { method: 'PATCH', body })
 }
+
+/** Detalhe de um usuário (admin): `GET /auth/admin/users/:id`. */
+export function getUser(id: string): Promise<GatewayResponse<{ user: UserView }>> {
+  return gatewayFetch(`/auth/admin/users/${encodeURIComponent(id)}`)
+}
+
+/**
+ * Hidratação de identidade em LOTE: `POST /auth/admin/users/batch` (≤100 ids).
+ * Usada pela área de membros (lista userIds, precisa de nome/email) — evita N+1.
+ */
+export function batchGetUsers(ids: string[]): Promise<GatewayResponse<{ users: UserView[] }>> {
+  return gatewayFetch('/auth/admin/users/batch', { method: 'POST', body: { ids } })
+}

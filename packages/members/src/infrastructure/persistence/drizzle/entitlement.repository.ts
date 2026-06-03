@@ -1,6 +1,10 @@
-import { and, desc, eq, gt, isNull, ne, notInArray, or, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, gt, isNull, ne, notInArray, or, type SQL, sql } from 'drizzle-orm'
 import { EntitlementAggregate } from '../../../domain/entitlement/entitlement.aggregate'
-import type { EntitlementRepository } from '../../../domain/ports/entitlement-repository.port'
+import type {
+  EntitlementRepository,
+  ListMembersFilter,
+  ListMembersResult,
+} from '../../../domain/ports/entitlement-repository.port'
 import type { Database } from './db'
 import { entitlements } from './schema'
 
@@ -48,6 +52,11 @@ export class DrizzleEntitlementRepository implements EntitlementRepository {
       .from(entitlements)
       .where(eq(entitlements.idempotencyKey, idempotencyKey))
       .limit(1)
+    return row ? fromRow(row) : null
+  }
+
+  async findById(id: string): Promise<EntitlementAggregate | null> {
+    const [row] = await this.db.select().from(entitlements).where(eq(entitlements.id, id)).limit(1)
     return row ? fromRow(row) : null
   }
 
@@ -120,6 +129,71 @@ export class DrizzleEntitlementRepository implements EntitlementRepository {
   async listActiveByUser(userId: string, now: Date): Promise<EntitlementAggregate[]> {
     const rows = await this.db.select().from(entitlements).where(activePredicate(userId, now))
     return rows.map(fromRow)
+  }
+
+  async listByUserId(userId: string): Promise<EntitlementAggregate[]> {
+    const rows = await this.db
+      .select()
+      .from(entitlements)
+      .where(eq(entitlements.userId, userId))
+      .orderBy(desc(entitlements.grantedAt))
+    return rows.map(fromRow)
+  }
+
+  async listMembers(filter: ListMembersFilter, now: Date): Promise<ListMembersResult> {
+    // Predicado "ativo agora" reusado p/ `activeCount` e p/ o filtro de status='active'.
+    const activeFilter = sql`${entitlements.status} = 'active' and (${entitlements.expiresAt} is null or ${entitlements.expiresAt} > ${now})`
+
+    // Membership (HAVING): mantém o grupo se ele tem ≥1 matrícula que casa o filtro.
+    // As contagens do sumário continuam sobre o conjunto TODO do membro (não filtrado).
+    const having: SQL[] = []
+    if (filter.status === 'active') {
+      having.push(sql`count(*) filter (where ${activeFilter}) > 0`)
+    } else if (filter.status) {
+      having.push(sql`count(*) filter (where ${entitlements.status}::text = ${filter.status}) > 0`)
+    }
+    if (filter.courseRef) {
+      having.push(sql`count(*) filter (where ${entitlements.courseRef} = ${filter.courseRef}) > 0`)
+    }
+    // Todo grupo tem ≥1 linha → `count(*) > 0` é no-op (quando não há filtro).
+    const havingCond = having.length > 0 ? and(...having) : sql`count(*) > 0`
+
+    const rows = await this.db
+      .select({
+        userId: entitlements.userId,
+        totalCount: sql<number>`count(*)::int`,
+        activeCount: sql<number>`count(*) filter (where ${activeFilter})::int`,
+        lastGrantedAt: sql<Date>`max(${entitlements.grantedAt})`,
+        courseRefs: sql<
+          string[]
+        >`coalesce(array_agg(distinct ${entitlements.courseRef}) filter (where ${entitlements.courseRef} is not null), '{}')`,
+      })
+      .from(entitlements)
+      .groupBy(entitlements.userId)
+      .having(havingCond)
+      .orderBy(sql`max(${entitlements.grantedAt}) desc`, asc(entitlements.userId))
+      .limit(filter.limit)
+      .offset(filter.offset)
+
+    // Total = nº de GRUPOS que passam no filtro (subquery — não conta linhas).
+    const grouped = this.db
+      .select({ userId: entitlements.userId })
+      .from(entitlements)
+      .groupBy(entitlements.userId)
+      .having(havingCond)
+      .as('grouped')
+    const [totalRow] = await this.db.select({ total: sql<number>`count(*)::int` }).from(grouped)
+
+    return {
+      items: rows.map((r) => ({
+        userId: r.userId,
+        totalCount: r.totalCount,
+        activeCount: r.activeCount,
+        lastGrantedAt: new Date(r.lastGrantedAt),
+        courseRefs: r.courseRefs ?? [],
+      })),
+      total: totalRow?.total ?? 0,
+    }
   }
 
   async revokeBySubscriptionId(subscriptionId: string, now: Date): Promise<number> {

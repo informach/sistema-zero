@@ -17,8 +17,13 @@ Front-end **Next.js 16 (App Router) + React 19 + Tailwind v4**; o back-end é um
 
 > Estado: **Fatia 1 — Catálogo** (produtos/ofertas/cupons: listar/criar/editar) + **Fatia 2 —
 > Usuários** (listar com busca/filtros + editar status/papel/perfil, guards hierárquicos e
-> concorrência otimista). Login via IdP (`@sistemazero/auth`) com JWT/RBAC. Pagamentos/Membros são
-> placeholders "em breve" até suas fatias.
+> concorrência otimista) + **Fatia Pagamentos** (transações + assinaturas: listar/filtrar/detalhe +
+> **estornar**/**cancelar**, stats e saúde de webhooks/operações) + **Fatia Membros** (abas
+> Alunos|Cursos — **Alunos**: listar + detalhe com matrículas/progresso + conceder manual
+> (oferta/curso) + revogar/expirar/estender, identidade hidratada do auth via batch; **Cursos**:
+> autoria — CRUD de cursos + editor de módulos/aulas (reordenar via ↑↓) + editor de blocos
+> polimórficos (texto/vídeo/imagem/áudio/quiz/embed) e anexos). Login via IdP
+> (`@sistemazero/auth`) com JWT/RBAC.
 
 ## Arquitetura (o padrão central — preserve-o)
 
@@ -45,6 +50,7 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
    importe `env`/`server/*` de um Client Component (vaza p/ o bundle). Client fala só com `/api/*`.
 3. **Tokens em cookie HttpOnly** (`sz_admin_*`), `SameSite=Lax`, `Secure` em prod. Nunca exponha ao JS.
 4. **Dinheiro em centavos** (inteiro). Conversão só na borda (`src/lib/format.ts`: `formatCents`/`reaisToCents`).
+   O **payments** serializa valores como **string** (bigint) → use `formatCentsStr` (faz `Number()`).
 5. **Cookies só se escrevem** em Route Handlers/Server Actions (limitação do Next). Refresh mora lá.
 
 ## Estrutura
@@ -58,11 +64,13 @@ src/
       page.tsx            Painel (overview cards via /api/catalog/*?limit=1)
       catalogo/{produtos,ofertas,cupons}/  page.tsx + *-client.tsx (tabela + dialog CRUD)
       usuarios/             page.tsx (passa o operador p/ gating) + users-client.tsx (tabela + dialog edição)
-      {pagamentos,membros}/                placeholders "em breve"
+      pagamentos/{transacoes,assinaturas,operacoes}/  page.tsx + *-client.tsx (lista/detalhe + estorno/cancelar; index redireciona p/ transacoes)
+      membros/             (conforme a fatia de membros)
     api/
       admin/{login,logout}/route.ts · admin/users/route.ts (+ [id]/route.ts p/ PATCH)
       catalog/{products,offers,coupons}/route.ts (+ [id]/route.ts p/ PATCH)
-  server/   session.ts · gateway.ts · catalog.ts · users.ts   (server-only)
+      payments/{transactions,subscriptions,stats,ops}/… (GET; [id] GET, [id]/refund POST, subscriptions/[id] DELETE)
+  server/   session.ts · gateway.ts · catalog.ts · users.ts · payments.ts   (server-only)
   lib/      env.ts (server-only) · types.ts · format.ts · cn.ts · api.ts (client fetch)
   components/ ui/* (button/card/input/table/dialog/badge/select/…) · admin/* (topbar/header/tabs/…)
   proxy.ts              (ex-middleware; convenção Next 16, runtime nodejs)
@@ -72,12 +80,21 @@ src/
 
 | Comando | O quê |
 |---------|-------|
-| `bun run dev` | Next dev server :3005 |
-| `bun run build` / `start` | build + produção |
+| `bun run dev` | Next dev server :3005 (**Turbopack** — ok, não pré-renderiza) |
+| `bun run build` / `start` | build (**`next build --webpack`**) + produção |
 | `bun run typecheck` | `tsc --noEmit` |
 | `bun run check` / `check:fix` | Biome |
 
 Da raiz: `bun run dev:admin`, `bun run build:admin`, `bun run start:admin`.
+
+> ⚠️ **Build = webpack + React pinada 19.1.0** (não `^19.2`). É um workaround de um **bug do
+> Next 16.x** (`useContext null` no prerender ESTÁTICO das páginas internas `/_global-error` e
+> `/_not-found` — **não-determinístico**, página varia a cada build; afeta Turbopack E webpack
+> com React 19.2). Só a combinação **React 19.1.0 + `--webpack`** passa de forma estável (3/3
+> builds limpos). O `dev` segue em Turbopack (não pré-renderiza → não dispara o bug). Reverter
+> quando o Next corrigir (issues vercel/next.js #84994/#85668/#86178). Há também um
+> `app/global-error.tsx` autocontido (boundary global sem Providers). O funil mantém React 19.2.x
+> (apps isolados; o workspace instala as duas).
 
 ## Env (`.env.example`)
 
@@ -102,6 +119,26 @@ Da raiz: `bun run dev:admin`, `bun run build:admin`, `bun run start:admin`.
   `PATCH /auth/admin/users/:id` `{ role?, status?, firstName?, lastName?, phone?, version? }` → `{ user }`.
   Edição com `version` (concorrência otimista → 409 se defasada). Guards de papel/status são do `auth`
   (o client só faz gating de UX por `currentUser.role`).
+- Pagamentos (via gateway, JWT+RBAC): `GET /payments/admin/payments` (`?q&status&method&consumerId&from&to&limit&offset`)
+  → `Paginated<PaymentView>`; `GET /payments/admin/payments/:id`; `GET /payments/admin/subscriptions`
+  (`?q&status&consumerId&limit&offset`) → `Paginated<SubscriptionView>`; `GET /payments/admin/subscriptions/:id`;
+  `GET /payments/admin/stats` (`?from&to`) → `PaymentStats`; `GET /payments/admin/ops` → `PaymentOps`;
+  **`POST /payments/admin/payments/:id/refund`** (estorno Pix/cartão) → `PaymentView`;
+  **`DELETE /payments/admin/subscriptions/:id`** (cancela) → `SubscriptionView`. Valores em **string**
+  (bigint, centavos) → `formatCentsStr`. Adapter em `src/server/payments.ts`; views em `src/lib/types.ts`.
+- Membros (via gateway, JWT+RBAC): `GET /members/admin/members` (`?status&courseRef&limit&offset`) →
+  `Paginated<MemberSummaryView>`; `GET /members/admin/members/:userId` → matrículas + progresso;
+  `POST /members/admin/entitlements` (`{mode:'offer'|'course', userId, offerRef|courseRef, expiresAt?}`) →
+  concessão manual; `PATCH /members/admin/entitlements/:id` (`{action:'revoke'|'expire'|'extend', expiresAt?}`).
+  O **BFF agrega**: o handler `GET /api/members` hidrata nome/email do auth via
+  `POST /auth/admin/users/batch` (`server/users.ts`: `batchGetUsers`/`getUser`). Adapter em
+  `src/server/members.ts`; views em `src/lib/types.ts`.
+- Membros — Autoria (via gateway, JWT+RBAC): `GET/POST /members/admin/courses`,
+  `GET/PATCH/DELETE /members/admin/courses/:id` (GET = árvore curso+módulos+aulas); módulos/aulas
+  via `…/modules`, `…/lessons` (+ `…/reorder`); blocos/anexos via `…/lessons/:id/blocks|attachments`
+  (+ `…/reorder`) e `PATCH/DELETE /members/admin/{blocks,attachments}/:id`. Conteúdo de bloco é
+  união por `kind`. Páginas em `app/admin/membros/cursos/*` (lista + editor de curso + editor de aula
+  com formulários por tipo de bloco). Adapter em `src/server/members.ts`; views em `src/lib/types.ts`.
 
 ## Checklist antes de finalizar
 

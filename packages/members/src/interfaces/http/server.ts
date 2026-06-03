@@ -4,6 +4,8 @@ import { Elysia } from 'elysia'
 import type { Env } from '../../infrastructure/config/env'
 import { buildErrorResponse } from './error-handler'
 import { markOversizeBody, setRawBody } from './raw-body'
+import { type AdminRoutesDeps, adminRoutes } from './routes/admin.routes'
+import { type ContentRoutesDeps, contentRoutes } from './routes/content.routes'
 import { healthRoutes } from './routes/health.routes'
 import { type MembersRoutesDeps, membersRoutes } from './routes/members.routes'
 import { type WebhooksRoutesDeps, webhooksRoutes } from './routes/webhooks.routes'
@@ -13,6 +15,8 @@ export interface HttpDeps {
   logger: Logger
   members: MembersRoutesDeps
   webhooks: WebhooksRoutesDeps
+  admin: AdminRoutesDeps
+  content: ContentRoutesDeps
 }
 
 /**
@@ -64,5 +68,10 @@ export function createServer(deps: HttpDeps) {
     )
   }
 
-  return app.use(healthRoutes()).use(membersRoutes(deps.members)).use(webhooksRoutes(deps.webhooks))
+  return app
+    .use(healthRoutes())
+    .use(membersRoutes(deps.members))
+    .use(webhooksRoutes(deps.webhooks))
+    .use(adminRoutes(deps.admin))
+    .use(contentRoutes(deps.content))
 }

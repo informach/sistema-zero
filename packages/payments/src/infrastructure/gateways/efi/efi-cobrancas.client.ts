@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: any */
 import { fetchWithTimeout, responseToEfiError, withRetry } from './http'
 
 export interface EfiCobrancasClientConfig {
@@ -139,6 +140,15 @@ export class EfiCobrancasClient {
 
   cancelCharge(chargeId: number | string): Promise<any> {
     return this.request('PUT', `/charge/${chargeId}/cancel`, { idempotent: true })
+  }
+
+  /**
+   * `POST /charge/card/:id/refund` — estorna uma cobrança de CARTÃO já paga
+   * (`amount` em centavos; omitido = total). NÃO idempotente (POST): não re-tenta
+   * em falha transitória (a idempotência vem da camada de aplicação).
+   */
+  refundCardCharge(chargeId: number | string, body: Record<string, unknown>): Promise<any> {
+    return this.request('POST', `/charge/card/${chargeId}/refund`, { body, idempotent: false })
   }
 
   /** A Efí POSTa um TOKEN ao `notification_url`; aqui buscamos o histórico de status. */

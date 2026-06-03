@@ -133,7 +133,7 @@ function snapshotToRow(snap: SubscriptionSnapshot): typeof subscriptions.$inferI
   }
 }
 
-function rowToSnapshot(row: SubscriptionRow): SubscriptionSnapshot {
+export function rowToSnapshot(row: SubscriptionRow): SubscriptionSnapshot {
   return {
     id: row.id,
     version: row.version,

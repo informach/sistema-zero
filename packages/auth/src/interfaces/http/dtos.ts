@@ -46,6 +46,11 @@ export const ListUsersQuery = t.Object({
   offset: t.Optional(t.Numeric({ minimum: 0 })),
 })
 
+/** Corpo de `POST /auth/admin/users/batch` — hidratação de identidade em lote (≤100 ids). */
+export const BatchGetUsersBody = t.Object({
+  ids: t.Array(t.String({ minLength: 1, maxLength: 64 }), { minItems: 1, maxItems: 100 }),
+})
+
 /** Corpo de `PATCH /auth/admin/users/:id`. Todos os campos são opcionais (edição parcial). */
 export const UpdateUserBody = t.Object({
   role: t.Optional(roleLiteral),

@@ -72,6 +72,13 @@ export class InMemoryUserRepository implements UserRepository {
     return { users: page.map((u) => UserAggregate.restore(u.toSnapshot())), total: all.length }
   }
 
+  async listByIds(ids: string[]): Promise<UserAggregate[]> {
+    const want = new Set(ids)
+    return [...this.byId.values()]
+      .filter((u) => want.has(u.id))
+      .map((u) => UserAggregate.restore(u.toSnapshot()))
+  }
+
   async update(user: UserAggregate, expectedVersion: number): Promise<boolean> {
     const existing = this.byId.get(user.id)
     if (!existing || existing.version !== expectedVersion) return false

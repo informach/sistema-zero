@@ -1,10 +1,5 @@
-import { ComingSoon } from '@/components/admin/coming-soon'
+import { redirect } from 'next/navigation'
 
-export default function PagamentosPage() {
-  return (
-    <ComingSoon
-      title="Pagamentos"
-      description="Liste, busque e gerencie pagamentos e assinaturas (estorno/cancelamento)."
-    />
-  )
+export default function PagamentosIndex() {
+  redirect('/admin/pagamentos/transacoes')
 }

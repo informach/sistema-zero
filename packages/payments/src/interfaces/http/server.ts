@@ -2,11 +2,18 @@ import { swagger } from '@elysiajs/swagger'
 import { Elysia } from 'elysia'
 import type { CancelSubscriptionService } from '../../application/cancel-subscription/cancel-subscription.service'
 import type { CreateSubscriptionService } from '../../application/create-subscription/create-subscription.service'
+import type { GetAdminPaymentService } from '../../application/get-admin-payment/get-admin-payment.service'
+import type { GetAdminSubscriptionService } from '../../application/get-admin-subscription/get-admin-subscription.service'
 import type { GetPaymentService } from '../../application/get-payment/get-payment.service'
 import type { GetSubscriptionService } from '../../application/get-subscription/get-subscription.service'
 import type { HandleBoletoNotificationService } from '../../application/handle-boleto-notification/handle-boleto-notification.service'
 import type { HandleProviderWebhookService } from '../../application/handle-provider-webhook/handle-provider-webhook.service'
+import type { ListPaymentsService } from '../../application/list-payments/list-payments.service'
+import type { ListSubscriptionsService } from '../../application/list-subscriptions/list-subscriptions.service'
+import type { GetPaymentsOpsService } from '../../application/payments-ops/get-payments-ops.service'
+import type { GetPaymentsStatsService } from '../../application/payments-stats/get-payments-stats.service'
 import type { ProcessPaymentService } from '../../application/process-payment/process-payment.service'
+import type { RefundPaymentService } from '../../application/refund-payment/refund-payment.service'
 import type { ConsumerRepository } from '../../domain/ports/consumer-repository.port'
 import type { Env } from '../../infrastructure/config/env'
 import type { Logger } from '../../infrastructure/logging/logger'
@@ -15,6 +22,7 @@ import type { InMemoryRateLimiter } from '../../infrastructure/security/rate-lim
 import { buildErrorResponse } from './error-handler'
 import { TooManyRequestsError } from './errors'
 import { markOversizeBody, storeRawBody } from './raw-body'
+import { adminRoutes } from './routes/admin.routes'
 import { healthRoutes } from './routes/health.routes'
 import { metricsRoutes } from './routes/metrics.routes'
 import { paymentsRoutes } from './routes/payments.routes'
@@ -34,6 +42,15 @@ export interface HttpDeps {
   handleWebhook: HandleProviderWebhookService
   handleBoletoNotification: HandleBoletoNotificationService
   getMetrics: () => Promise<MetricsSnapshot>
+  // Leitura admin (painel @sistemazero/admin) — RBAC no gateway + `requireAdmin` aqui.
+  requireAdminEnabled: boolean
+  listPayments: ListPaymentsService
+  getAdminPayment: GetAdminPaymentService
+  listSubscriptions: ListSubscriptionsService
+  getAdminSubscription: GetAdminSubscriptionService
+  getPaymentsStats: GetPaymentsStatsService
+  getPaymentsOps: GetPaymentsOpsService
+  refundPayment: RefundPaymentService
 }
 
 /**
@@ -133,6 +150,19 @@ export function createServer(deps: HttpDeps) {
         rateLimiter: deps.rateLimiter,
         createSubscription: deps.createSubscription,
         getSubscription: deps.getSubscription,
+        cancelSubscription: deps.cancelSubscription,
+      }),
+    )
+    .use(
+      adminRoutes({
+        requireAdminEnabled: deps.requireAdminEnabled,
+        listPayments: deps.listPayments,
+        getPayment: deps.getAdminPayment,
+        listSubscriptions: deps.listSubscriptions,
+        getSubscription: deps.getAdminSubscription,
+        getStats: deps.getPaymentsStats,
+        getOps: deps.getPaymentsOps,
+        refundPayment: deps.refundPayment,
         cancelSubscription: deps.cancelSubscription,
       }),
     )

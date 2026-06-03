@@ -210,6 +210,31 @@ Consumidor cadastrado em `consumers` (`id`, `hmac_secret`, `allowed_cidrs`,
   `"<ts>.<corpo_bruto>"` sem ela (GET). Incluir a chave na assinatura impede
   replay com troca de `Idempotency-Key`. Tolerância de timestamp anti-replay.
 
+## Admin (painel @sistemazero/admin)
+
+Rotas de **leitura + ações** para o dono operar, sob `/payments/admin/*` (caminho
+distinto das rotas consumer `/payments`,`/payments/:id` — ≥3 segmentos, sem colisão).
+O RBAC REAL é do **gateway** (JWT + `authorize.roles:[superadmin,admin,staff]`); o
+serviço confere os headers `X-Auth-User-*` injetados (`requireAdmin` em
+`interfaces/http/admin-auth.ts`, **defesa em profundidade**, ligada por `REQUIRE_ADMIN`,
+default `true`). Estas rotas **NÃO** usam auth de consumidor (HMAC) nem `resign` no
+gateway. São cross-consumer (o painel enxerga todos).
+
+- **Leitura:** `GET /payments/admin/payments` (`?q&status&method&consumerId&from&to&limit&offset`),
+  `GET /payments/admin/payments/:id`, `GET /payments/admin/subscriptions` (`?q&status&consumerId&limit&offset`),
+  `GET /payments/admin/subscriptions/:id`, `GET /payments/admin/stats` (`?from&to` → receita/contagens),
+  `GET /payments/admin/ops` (lag de outbox/entregas/reconciliação). Ports de leitura
+  dedicados (`*-admin-read.port` + `Drizzle*AdminReadRepository`) — **separados** do
+  hot-path de escrita; devolvem agregados (a app mapeia via `toAdminPaymentView`/`toSubscriptionView`).
+- **Ações:** `POST /payments/admin/payments/:id/refund` (estorno) e
+  `DELETE /payments/admin/subscriptions/:id` (cancela, `CancelSubscriptionService.executeAdmin`).
+- **Estorno (`RefundPaymentService`):** só `PAID`; **Pix** (devolução `PUT /v2/pix/:e2eId/devolucao/:id`,
+  e2eId resolvido do detalhe do cob) e **cartão** (`POST /v1/charge/card/:id/refund`); **boleto não
+  tem estorno programático** (→ `REFUND_NOT_SUPPORTED`). Idempotente (já `REFUNDED` → no-op);
+  marca via `PaymentAggregate.refund({providerRefundId,refundedAt})` (grava em `metadata`, **sem
+  coluna nova**) e emite `payment.refunded` (outbox → entrega ao consumidor revogar acesso).
+  Novos métodos no port/adapter: `refundPixCharge`/`refundCardCharge`.
+
 ## Como estender (adicionar um novo método de pagamento)
 
 1. Adicione o método ao port `PaymentGateway` e implemente em `EfiClient` +

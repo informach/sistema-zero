@@ -45,6 +45,22 @@ export interface ProviderCharge {
   amountInCents: bigint
 }
 
+/** Estorno de Pix (devolução): resolve o e2eId a partir do txid e devolve o valor. */
+export interface RefundPixInput {
+  /** txid da cobrança Pix (o adapter busca o e2eId do Pix recebido). */
+  txid: string
+  /** Valor a devolver (estorno total = valor original). */
+  amount: Money
+}
+
+/** Resultado de um estorno (Pix devolução ou cartão refund). */
+export interface RefundResult {
+  /** Id da devolução/estorno no provedor (Pix: id da devolução; cartão: o charge). */
+  providerRefundId: string
+  /** Status reportado pelo provedor (ex.: EM_PROCESSAMENTO / processing). */
+  status: string
+}
+
 /** Pagador do boleto (a Efí exige documento + endereço completos). */
 export interface BoletoCustomer {
   name: string
@@ -215,6 +231,19 @@ export interface PaymentGateway {
 
   /** Re-consulta a cobrança de cartão pelo charge_id (reconciliação/notificação). */
   getCardCharge(providerId: string): Promise<ProviderCharge>
+
+  /**
+   * Estorna (devolve) um Pix pago — `PUT /v2/pix/:e2eId/devolucao/:id`. O adapter
+   * resolve o `e2eId` do Pix recebido a partir do `txid`. Idempotente no provedor
+   * (id de devolução determinístico). Devolução total = valor original.
+   */
+  refundPixCharge(input: RefundPixInput): Promise<RefundResult>
+
+  /**
+   * Estorna uma cobrança de cartão paga — `POST /v1/charge/card/:id/refund`
+   * (valor total quando `amount` omitido). A cobrança deve estar `paid`.
+   */
+  refundCardCharge(providerPaymentId: string, amount: Money): Promise<RefundResult>
 
   /**
    * Resolve um token de notificação da Efí (Cobranças) na fonte, retornando as

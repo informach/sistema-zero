@@ -1,6 +1,7 @@
 import { swagger } from '@elysiajs/swagger'
 import type { Logger } from '@sistemazero/core/logging'
 import { Elysia } from 'elysia'
+import type { BatchGetUsersService } from '../../application/admin/batch-get-users/batch-get-users.service'
 import type { GetUserService } from '../../application/admin/get-user/get-user.service'
 import type { ListUsersService } from '../../application/admin/list-users/list-users.service'
 import type { UpdateUserService } from '../../application/admin/update-user/update-user.service'
@@ -29,6 +30,7 @@ export interface HttpDeps {
   listUsers: ListUsersService
   getUser: GetUserService
   updateUser: UpdateUserService
+  batchGetUsers: BatchGetUsersService
 }
 
 /**
@@ -99,6 +101,7 @@ export function createServer(deps: HttpDeps) {
         listUsers: deps.listUsers,
         getUser: deps.getUser,
         updateUser: deps.updateUser,
+        batchGetUsers: deps.batchGetUsers,
       }),
     )
 }

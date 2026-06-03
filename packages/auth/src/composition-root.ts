@@ -1,4 +1,5 @@
 import { createLogger, type Logger } from '@sistemazero/core/logging'
+import { BatchGetUsersService } from './application/admin/batch-get-users/batch-get-users.service'
 import { GetUserService } from './application/admin/get-user/get-user.service'
 import { ListUsersService } from './application/admin/list-users/list-users.service'
 import { UpdateUserService } from './application/admin/update-user/update-user.service'
@@ -75,6 +76,7 @@ export async function createApplication(env: Env): Promise<Application> {
   const listUsers = new ListUsersService(users)
   const getUser = new GetUserService(users)
   const updateUser = new UpdateUserService(users, refreshTokens, logger)
+  const batchGetUsers = new BatchGetUsersService(users)
 
   const server = createServer({
     env,
@@ -88,6 +90,7 @@ export async function createApplication(env: Env): Promise<Application> {
     listUsers,
     getUser,
     updateUser,
+    batchGetUsers,
   })
 
   return {

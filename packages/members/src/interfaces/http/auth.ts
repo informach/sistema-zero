@@ -1,5 +1,28 @@
 import { timingSafeEqual } from 'node:crypto'
-import { UnauthorizedError } from '@sistemazero/core/http'
+import { ForbiddenError, UnauthorizedError } from '@sistemazero/core/http'
+
+/**
+ * Papéis com acesso ao painel admin. O RBAC REAL é do gateway (JWT + `authorize.roles`);
+ * aqui conferimos os headers `X-Auth-User-*` confiáveis injetados pelo gateway — defesa
+ * em profundidade (o serviço nunca deve ser exposto direto, só atrás do gateway).
+ */
+const ADMIN_ROLES = new Set(['superadmin', 'admin', 'staff'])
+
+/**
+ * Garante que a requisição vem de um admin/staff ativo. Desligada (`requireAdminEnabled=false`,
+ * dev fora do gateway) → passa direto. Espelha o `requireAdmin` do catálogo.
+ */
+export function requireAdmin(
+  headers: Record<string, string | undefined>,
+  requireAdminEnabled: boolean,
+): void {
+  if (!requireAdminEnabled) return
+  const role = headers['x-auth-user-role']
+  if (!role) throw new UnauthorizedError('Autenticação necessária')
+  const status = headers['x-auth-user-status']
+  if (status && status !== 'active') throw new ForbiddenError('Conta inativa')
+  if (!ADMIN_ROLES.has(role)) throw new ForbiddenError('Permissão insuficiente')
+}
 
 /**
  * Identidade confiável do aluno. O gateway VERIFICA o JWT e injeta `x-auth-user-id`

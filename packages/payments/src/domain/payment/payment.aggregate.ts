@@ -294,8 +294,19 @@ export class PaymentAggregate extends AggregateRoot<string> {
     this.addEvent(new PaymentExpiredEvent(this.id, { consumerId: this.state.consumerId }))
   }
 
-  refund(): void {
+  /**
+   * Marca como estornado (PAID → REFUNDED). Opcionalmente registra os dados do
+   * estorno em `metadata` (id da devolução no provedor + data) — sem coluna nova.
+   */
+  refund(info?: { providerRefundId?: string; refundedAt?: Date }): void {
     this.transitionTo(PaymentStatus.REFUNDED)
+    if (info?.providerRefundId || info?.refundedAt) {
+      this.state.metadata = {
+        ...this.state.metadata,
+        ...(info.refundedAt ? { refundedAt: info.refundedAt.toISOString() } : {}),
+        ...(info.providerRefundId ? { providerRefundId: info.providerRefundId } : {}),
+      }
+    }
     this.addEvent(new PaymentRefundedEvent(this.id, { consumerId: this.state.consumerId }))
   }
 

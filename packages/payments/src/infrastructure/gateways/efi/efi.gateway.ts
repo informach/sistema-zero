@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: any */
 import type {
   CreateBoletoChargeInput,
   CreateBoletoChargeOutput,
@@ -13,7 +14,10 @@ import type {
   ProviderCharge,
   ProviderNotification,
   ProviderSubscription,
+  RefundPixInput,
+  RefundResult,
 } from '../../../domain/ports/payment-gateway.port'
+import type { Money } from '../../../domain/value-objects/money'
 import type { EfiClient } from './efi.client'
 import { EfiGatewayError, toEfiGatewayError } from './efi.errors'
 import { mapCobStatus, reaisStringToCents } from './efi.mapper'
@@ -221,6 +225,51 @@ export class EfiPaymentGateway implements PaymentGateway {
     try {
       const raw = await client.detailCharge(providerId)
       return parseCardDetailCharge(raw, providerId)
+    } catch (error) {
+      throw toEfiGatewayError(error)
+    }
+  }
+
+  // ── Estornos ──────────────────────────────────────────────────────────────
+
+  async refundPixCharge(input: RefundPixInput): Promise<RefundResult> {
+    try {
+      // O `e2eId` (id do Pix recebido) não é persistido — buscamos no detalhe da
+      // cobrança (`cob.pix[].endToEndId`). Sem Pix recebido → não há o que devolver.
+      const cob = await this.client.detailCharge(input.txid)
+      const firstPix = Array.isArray(cob?.pix) ? cob.pix[0] : undefined
+      const e2eId = firstPix?.endToEndId ? String(firstPix.endToEndId) : undefined
+      if (!e2eId) {
+        throw new EfiGatewayError(
+          `Pix ${input.txid} sem endToEndId (nenhum Pix recebido) — nada a devolver`,
+        )
+      }
+      // Id de devolução determinístico (= txid) → PUT idempotente: reprocessar o
+      // mesmo estorno não cria uma 2ª devolução.
+      const resp = await this.client.refundPix(e2eId, input.txid, {
+        valor: input.amount.toReais().toFixed(2),
+      })
+      return {
+        providerRefundId: String(resp?.id ?? resp?.rtrId ?? input.txid),
+        status: String(resp?.status ?? 'EM_PROCESSAMENTO'),
+      }
+    } catch (error) {
+      throw toEfiGatewayError(error)
+    }
+  }
+
+  async refundCardCharge(providerPaymentId: string, amount: Money): Promise<RefundResult> {
+    const client = this.requireCobrancas()
+    try {
+      // `amount` em centavos (estorno total = valor original). A resposta da Efí
+      // não traz id próprio de estorno → referenciamos o charge.
+      const resp = await client.refundCardCharge(providerPaymentId, {
+        amount: Number(amount.amountInCents),
+      })
+      return {
+        providerRefundId: String(resp?.data?.charge_id ?? providerPaymentId),
+        status: String(resp?.message ?? resp?.data?.status ?? 'PROCESSING'),
+      }
     } catch (error) {
       throw toEfiGatewayError(error)
     }

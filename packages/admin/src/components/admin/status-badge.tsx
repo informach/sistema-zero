@@ -10,6 +10,19 @@ const LABELS: Record<string, string> = {
   pending: 'Pendente',
   suspended: 'Suspenso',
   blocked: 'Bloqueado',
+  // Status de matrícula (@sistemazero/members).
+  revoked: 'Revogada',
+  expired: 'Expirada',
+  // Status de pagamento (@sistemazero/payments — UPPERCASE).
+  PENDING: 'Pendente',
+  AUTHORIZED: 'Autorizado',
+  PAID: 'Pago',
+  FAILED: 'Falhou',
+  EXPIRED: 'Expirado',
+  CANCELED: 'Cancelado',
+  REFUNDED: 'Estornado',
+  // Status de assinatura.
+  ACTIVE: 'Ativa',
 }
 
 const VARIANT: Record<string, 'success' | 'muted' | 'destructive' | 'default' | 'outline'> = {
@@ -21,6 +34,18 @@ const VARIANT: Record<string, 'success' | 'muted' | 'destructive' | 'default' | 
   pending: 'outline',
   suspended: 'default',
   blocked: 'destructive',
+  // Matrícula (@sistemazero/members).
+  revoked: 'destructive',
+  expired: 'muted',
+  // Pagamentos / assinaturas.
+  PENDING: 'outline',
+  AUTHORIZED: 'default',
+  PAID: 'success',
+  FAILED: 'destructive',
+  EXPIRED: 'muted',
+  CANCELED: 'muted',
+  REFUNDED: 'default',
+  ACTIVE: 'success',
 }
 
 export function StatusBadge({ status }: { status: string }) {

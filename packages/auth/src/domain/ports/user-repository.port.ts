@@ -26,6 +26,8 @@ export interface UserRepository {
   create(user: UserAggregate): Promise<void>
   /** Listagem admin paginada + total de registros que casam o filtro. */
   list(filter: ListUsersFilter): Promise<{ users: UserAggregate[]; total: number }>
+  /** Busca em LOTE por ids (hidratação de identidade no painel). Ids ausentes são omitidos. */
+  listByIds(ids: string[]): Promise<UserAggregate[]>
   /**
    * Persiste alterações com concorrência otimista: só grava se a `version` no
    * banco ainda for `expectedVersion`. Retorna `false` quando nenhuma linha casou

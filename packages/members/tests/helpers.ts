@@ -1,11 +1,22 @@
 import { randomUUID } from 'node:crypto'
 import { signHmac } from '@sistemazero/core/security'
 import { CheckAccessService } from '../src/application/access/check-access.service'
+import {
+  AttachmentAdminService,
+  BlockAdminService,
+  CourseAdminService,
+  LessonAdminService,
+  ModuleAdminService,
+} from '../src/application/content-admin/content-admin.service'
 import { GetCourseProgressService } from '../src/application/get-course-progress/get-course-progress.service'
 import { GetLessonService } from '../src/application/get-lesson/get-lesson.service'
+import { GetMemberDetailService } from '../src/application/get-member-detail/get-member-detail.service'
 import { GetMyCourseService } from '../src/application/get-my-course/get-my-course.service'
 import { GrantEntitlementService } from '../src/application/grant-entitlement/grant-entitlement.service'
+import { GrantManualEntitlementService } from '../src/application/grant-manual-entitlement/grant-manual-entitlement.service'
+import { ListMembersService } from '../src/application/list-members/list-members.service'
 import { ListMyCoursesService } from '../src/application/list-my-courses/list-my-courses.service'
+import { ManageEntitlementService } from '../src/application/manage-entitlement/manage-entitlement.service'
 import { MarkLessonCompleteService } from '../src/application/mark-lesson-complete/mark-lesson-complete.service'
 import { RevokeEntitlementService } from '../src/application/revoke-entitlement/revoke-entitlement.service'
 import type { CourseStatus } from '../src/domain/course/course'
@@ -24,7 +35,9 @@ import {
 
 export const WEBHOOK_SECRET = 'test-gateway-secret-0123456789ab'
 
-export function buildApp(opts: { now?: Date; internalToken?: string } = {}) {
+export function buildApp(
+  opts: { now?: Date; internalToken?: string; requireAdmin?: boolean } = {},
+) {
   const clockRef = { now: opts.now ?? new Date('2026-06-02T12:00:00.000Z') }
   const clock = () => clockRef.now
 
@@ -65,6 +78,29 @@ export function buildApp(opts: { now?: Date; internalToken?: string } = {}) {
       toleranceSeconds: 300,
       now: clock,
       logger: silentLogger,
+    },
+    admin: {
+      requireAdminEnabled: opts.requireAdmin ?? false,
+      listMembers: new ListMembersService(entitlements, clock),
+      getMemberDetail: new GetMemberDetailService(entitlements, courses, progress),
+      grantManual: new GrantManualEntitlementService({
+        catalog,
+        courses,
+        entitlements,
+        newId: () => randomUUID(),
+        clock,
+        logger: silentLogger,
+      }),
+      manageEntitlement: new ManageEntitlementService(entitlements, clock),
+    },
+    content: {
+      requireAdminEnabled: opts.requireAdmin ?? false,
+      // O fake InMemoryCourseRepository implementa CourseRepository E ContentAdminRepository.
+      courses: new CourseAdminService(courses, courses),
+      modules: new ModuleAdminService(courses, courses),
+      lessons: new LessonAdminService(courses, courses),
+      blocks: new BlockAdminService(courses),
+      attachments: new AttachmentAdminService(courses),
     },
   })
 

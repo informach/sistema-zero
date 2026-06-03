@@ -15,11 +15,12 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 (cursos → módulos → aulas polimórficas/compostas + conclusão por aluno). Runtime:
 **Bun**. Linguagem: **TS (ESM)**. Porta **3004**.
 
-> Estado: **Fatia 1 feita e testada** (22 testes). Motor de acesso (grant/revoke
-> por webhook + checagem) + consumo do aluno (meus cursos, curso, aula com blocos,
-> marcar concluída, progresso). Migration `0000_vengeful_the_stranger` (cria o
-> schema `members`) — **aplicada** no Postgres compartilhado (`sistemazero`, :5433; as
-> 8 tabelas existem). Conteúdo entra por seed.
+> Estado: **Fatia 1 feita e testada** (motor de acesso por webhook + consumo do aluno)
+> + **gestão de acesso admin** (listar membros, detalhe, conceder manual, revogar/
+> expirar/estender) + **autoria de conteúdo admin** (CRUD de cursos/módulos/aulas/blocos/
+> anexos + reordenação) — **50 testes**. Migration `0000_vengeful_the_stranger` (cria o
+> schema `members`) — **aplicada** no Postgres compartilhado (`sistemazero`, :5433; as 8
+> tabelas existem). Autoria NÃO precisou de migration (colunas já existiam).
 
 ## Conceito central (decisões travadas com o usuário)
 
@@ -117,6 +118,51 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
 - `processed_webhooks` tem `pruneProcessedBefore(date)` (retenção; chamar por cron —
   não roda no caminho quente).
 
+## Admin (painel `@sistemazero/admin`)
+
+Gestão de acesso pelo operador. Caminho `/members/admin/*` (distinto da API do aluno;
+**sem** `x-internal-token` — segue o padrão do catálogo). RBAC real no gateway
+(LEITURA → superadmin/admin/staff; ESCRITA → superadmin/admin); o serviço confere os
+headers `X-Auth-User-*` via `requireAdmin` (defesa em profundidade, `env.REQUIRE_ADMIN`,
+default `true`). Rotas em `interfaces/http/routes/admin.routes.ts`:
+
+- `GET /members/admin/members` (`?status&courseRef&limit&offset`) → membros distintos
+  (1 linha = 1 usuário com matrícula) com sumário (`activeCount/totalCount`, cursos,
+  último grant). Identidade (nome/email) **não** vive aqui — o BFF hidrata do auth
+  (`POST /auth/admin/users/batch`). `total` = nº de GRUPOS (subquery sobre o `GROUP BY`,
+  nunca contar linhas); ordenação `max(granted_at) desc, user_id` (paginação estável).
+- `GET /members/admin/members/:userId` → todas as matrículas (qualquer status) + progresso
+  por curso. Usa `findCoursesBySlugs` (SEM filtro de status → admin vê draft/archived).
+- `POST /members/admin/entitlements` (body `{mode:'offer',offerRef}` | `{mode:'course',courseRef}`,
+  + `userId`, `expiresAt?`) → concessão MANUAL. Reusa o agregado (`sourceKind:'manual'`,
+  `sourceId:'manual'`, key `manual:${userId}:${productId}`; curso usa `productId=course.id`),
+  NÃO o motor de webhook. Idempotente; re-conceder ATIVA devolve a existente; revogada/
+  expirada → 409 (use estender). `GrantManualEntitlementService`.
+- `PATCH /members/admin/entitlements/:id` (body `{action:'revoke'|'expire'|'extend', expiresAt?}`)
+  → carrega por id, aplica a transição no agregado, persiste com concorrência otimista
+  (conflito → 409). `ManageEntitlementService`. Erros novos: `ENTITLEMENT_CONFLICT`→409,
+  `OFFER_NOT_FOUND`→404.
+
+**Autoria de conteúdo** (`interfaces/http/routes/content.routes.ts`, prefixo `/members/admin`,
+coexiste com `admin.routes`). Porta de escrita SEPARADA (`ContentAdminRepository` +
+`DrizzleContentAdminRepository`) do `CourseRepository` (leitura do aluno); o fake in-memory
+implementa as DUAS sobre os mesmos arrays. 5 serviços (`content-admin/content-admin.service.ts`):
+`CourseAdminService`/`Module…`/`Lesson…`/`Block…`/`AttachmentAdminService`. Endpoints:
+- Cursos: `GET /courses` (lista, qualquer status), `POST /courses`, `GET /courses/:id` (ÁRVORE
+  = curso + módulos + aulas), `PATCH/DELETE /courses/:id`. `delete` poda `lesson_completions`.
+- Módulos: `POST /courses/:courseId/modules`, `PATCH/DELETE /modules/:id`,
+  `POST /courses/:courseId/modules/reorder`.
+- Aulas: `POST /modules/:moduleId/lessons`, `PATCH/DELETE /lessons/:id`,
+  `GET /lessons/:id/content` (blocos + anexos, p/ o editor), `POST /modules/:moduleId/lessons/reorder`.
+- Blocos: `POST /lessons/:lessonId/blocks`, `PATCH/DELETE /blocks/:id`, `…/blocks/reorder`.
+  Conteúdo = **união discriminada por `kind`** (DTO TypeBox `LessonBlockContentSchema`).
+- Anexos: `POST /lessons/:lessonId/attachments`, `PATCH/DELETE /attachments/:id`, `…/attachments/reorder`.
+
+Slug duplicado (curso global, aula por curso) → 23505 → `DUPLICATE_SLUG`(409). Reordenar exige os
+ids EXATOS dos filhos atuais (senão 400). Cursos têm `version` (concorrência otimista, last-write-wins
+na prática — sem version do cliente); módulos/aulas/blocos/anexos não têm version. Erros novos:
+`CONTENT_NOT_FOUND`→404, `DUPLICATE_SLUG`→409, `CONCURRENCY_CONFLICT`→409.
+
 ## Convenções
 
 - `verbatimModuleSyntax: true` → `import type` para tipos. Imports relativos sem extensão.
@@ -138,7 +184,7 @@ entre pacotes (a dedupe por `created_at` pularia migrations). A migration faz
 
 ## Pendente (fatias seguintes)
 
-- Admin de autoria (CRUD de cursos/módulos/aulas) — hoje conteúdo é por seed.
+- Upload de assets (vídeo/imagem/anexo) — hoje a autoria só guarda URLs (sem storage próprio).
 - Feature de comunidade (fórum/feed) — hoje só modelada como kind/accessType.
 - Concessão p/ comprador RECORRENTE (auth 409 não devolve userId; precisa lookup por e-mail).
 - Drip/`fulfillment.release`; "acesso até o fim do período" no cancelamento (hoje corta na hora).

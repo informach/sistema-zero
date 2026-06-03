@@ -30,6 +30,10 @@ const EnvSchema = z
       .int()
       .positive()
       .default(64 * 1024),
+    // Rotas admin (`/payments/admin/*`): confere os headers `X-Auth-User-*` que o
+    // gateway injeta (defesa em profundidade). Seguro por default; só desligue
+    // (`false`) em dev quando bater no serviço SEM passar pelo gateway.
+    REQUIRE_ADMIN: optionalBool(true),
 
     DATABASE_URL: z.string().min(1, 'DATABASE_URL é obrigatória'),
 
