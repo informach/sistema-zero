@@ -18,7 +18,7 @@ export interface NavItem {
 
 export const NAV_ITEMS: NavItem[] = [
   { label: 'Painel', href: '/admin', icon: LayoutDashboard },
-  { label: 'Usuários', href: '/admin/usuarios', icon: Users, soon: true },
+  { label: 'Usuários', href: '/admin/usuarios', icon: Users },
   { label: 'Pagamentos', href: '/admin/pagamentos', icon: CreditCard, soon: true },
   { label: 'Catálogo', href: '/admin/catalogo/produtos', icon: Package, match: '/admin/catalogo' },
   { label: 'Membros', href: '/admin/membros', icon: GraduationCap, soon: true },

@@ -202,6 +202,39 @@ const config: GatewayConfigInput = {
       auth: 'public',
       rateLimit: { max: 120, windowMs: 60_000, by: 'ip' },
     },
+    // GESTÃO admin de usuários (painel @sistemazero/admin): JWT + RBAC, espelhando o
+    // admin do catálogo. Caminho `/auth/admin/*` distinto das rotas públicas de
+    // identidade acima. NÃO é `passthrough`: o gateway verifica o token, tira o
+    // Bearer e injeta X-Auth-User-* confiável — o `auth` lê o ator daí, re-checa o
+    // papel (defesa em profundidade) e aplica os guards hierárquicos. Leitura aceita
+    // staff; a edição (PATCH) afina para superadmin/admin (o auth ainda barra admin↛admin).
+    {
+      id: 'auth-admin-users-list',
+      methods: ['GET'],
+      pathPattern: '/auth/admin/users',
+      service: 'auth',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'auth-admin-user-get',
+      methods: ['GET'],
+      pathPattern: '/auth/admin/users/:id',
+      service: 'auth',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'auth-admin-user-update',
+      methods: ['PATCH'],
+      pathPattern: '/auth/admin/users/:id',
+      service: 'auth',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+    },
 
     // ── Catálogo (@sistemazero/catalog) ──────────────────────────────────────
     // LEITURA pública (dados de marketing, não sensíveis) — o funil consome via

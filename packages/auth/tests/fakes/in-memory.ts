@@ -5,7 +5,7 @@ import type {
   RefreshTokenRecord,
   RefreshTokenRepository,
 } from '../../src/domain/ports/refresh-token-repository.port'
-import type { UserRepository } from '../../src/domain/ports/user-repository.port'
+import type { ListUsersFilter, UserRepository } from '../../src/domain/ports/user-repository.port'
 import { UserAggregate } from '../../src/domain/user/user.aggregate'
 import { EmailAlreadyInUseError } from '../../src/domain/user/user.errors'
 
@@ -54,6 +54,31 @@ export class InMemoryUserRepository implements UserRepository {
     this.byId.set(user.id, UserAggregate.restore(user.toSnapshot()))
   }
 
+  async list(filter: ListUsersFilter): Promise<{ users: UserAggregate[]; total: number }> {
+    let all = [...this.byId.values()]
+    const q = filter.q?.trim().toLowerCase()
+    if (q) {
+      all = all.filter(
+        (u) =>
+          u.email.toLowerCase().includes(q) ||
+          u.firstName.toLowerCase().includes(q) ||
+          u.lastName.toLowerCase().includes(q),
+      )
+    }
+    if (filter.role) all = all.filter((u) => u.role === filter.role)
+    if (filter.status) all = all.filter((u) => u.status === filter.status)
+    all.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    const page = all.slice(filter.offset, filter.offset + filter.limit)
+    return { users: page.map((u) => UserAggregate.restore(u.toSnapshot())), total: all.length }
+  }
+
+  async update(user: UserAggregate, expectedVersion: number): Promise<boolean> {
+    const existing = this.byId.get(user.id)
+    if (!existing || existing.version !== expectedVersion) return false
+    this.byId.set(user.id, UserAggregate.restore(user.toSnapshot()))
+    return true
+  }
+
   /** Helper de teste: insere um agregado diretamente (ex.: usuário suspenso). */
   seed(user: UserAggregate): void {
     this.byId.set(user.id, UserAggregate.restore(user.toSnapshot()))
@@ -99,6 +124,12 @@ export class InMemoryRefreshTokenRepository implements RefreshTokenRepository {
   async revokeFamily(familyId: string): Promise<void> {
     for (const record of this.byId.values()) {
       if (record.familyId === familyId) record.revokedAt = new Date()
+    }
+  }
+
+  async revokeAllForUser(userId: string): Promise<void> {
+    for (const record of this.byId.values()) {
+      if (record.userId === userId && record.revokedAt === null) record.revokedAt = new Date()
     }
   }
 }

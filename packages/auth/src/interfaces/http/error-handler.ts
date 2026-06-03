@@ -19,6 +19,7 @@ const DOMAIN_STATUS: Record<string, number> = {
   USER_NOT_FOUND: 404,
   USER_NOT_ACTIVE: 403,
   INVALID_REFRESH_TOKEN: 401,
+  VERSION_CONFLICT: 409,
 }
 
 /**

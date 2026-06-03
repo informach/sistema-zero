@@ -54,6 +54,10 @@ interface UserProps {
  * responsabilidade da infra). Identidade = `id` (uuid).
  */
 export class UserAggregate extends AggregateRoot<string> {
+  // Marca se houve mutação nesta instância (carregada por edição). Garante que a
+  // `version` suba UMA vez por edição, mesmo alterando vários campos.
+  private dirty = false
+
   private constructor(
     id: string,
     private readonly props: UserProps,
@@ -144,6 +148,71 @@ export class UserAggregate extends AggregateRoot<string> {
   /** Só contas ativas podem obter/renovar tokens. */
   isActive(): boolean {
     return this.props.status === 'active'
+  }
+
+  /**
+   * Altera o papel (RBAC). No-op se igual. Bumpa a `version` (concorrência
+   * otimista) e o `updatedAt`. A AUTORIZAÇÃO (quem pode promover a quê) é decisão
+   * da camada de aplicação — o agregado só aplica a mudança.
+   */
+  changeRole(newRole: UserRole, now: Date = new Date()): void {
+    if (this.props.role === newRole) return
+    this.props.role = newRole
+    this.touch(now)
+  }
+
+  /** Altera o status da conta (moderação). No-op se igual. Bumpa `version`/`updatedAt`. */
+  changeStatus(newStatus: UserStatus, now: Date = new Date()): void {
+    if (this.props.status === newStatus) return
+    this.props.status = newStatus
+    this.touch(now)
+  }
+
+  /**
+   * Atualiza campos de perfil (nome/telefone). Só campos definidos são
+   * considerados; nome em branco é ignorado. Bumpa `version`/`updatedAt` apenas se
+   * algo de fato mudou.
+   */
+  updateProfile(
+    changes: { firstName?: string; lastName?: string; phone?: string | null },
+    now: Date = new Date(),
+  ): void {
+    let changed = false
+    if (changes.firstName !== undefined) {
+      const next = changes.firstName.trim()
+      if (next.length > 0 && next !== this.props.firstName) {
+        this.props.firstName = next
+        changed = true
+      }
+    }
+    if (changes.lastName !== undefined) {
+      const next = changes.lastName.trim()
+      if (next.length > 0 && next !== this.props.lastName) {
+        this.props.lastName = next
+        changed = true
+      }
+    }
+    if (changes.phone !== undefined) {
+      const next = normalizeOptional(changes.phone)
+      if (next !== this.props.phone) {
+        this.props.phone = next
+        changed = true
+      }
+    }
+    if (changed) this.touch(now)
+  }
+
+  /**
+   * Marca a edição: bumpa a `version` UMA vez (na primeira mutação desta instância)
+   * e atualiza `updatedAt`. Alterar papel + status + perfil numa só edição sobe a
+   * versão em 1 (semântica convencional de concorrência otimista).
+   */
+  private touch(now: Date): void {
+    if (!this.dirty) {
+      this.dirty = true
+      this.props.version += 1
+    }
+    this.props.updatedAt = now
   }
 }
 

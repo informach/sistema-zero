@@ -67,4 +67,57 @@ describe('UserAggregate', () => {
     expect(restored.toSnapshot()).toEqual(snapshot)
     expect(restored.isActive()).toBe(false)
   })
+
+  describe('mutators admin (bumpam version/updatedAt)', () => {
+    function customer() {
+      const past = new Date('2020-01-01T00:00:00Z')
+      return UserAggregate.restore({
+        id: crypto.randomUUID(),
+        version: 3,
+        email: 'c@ex.com',
+        passwordHash: 'h',
+        firstName: 'Ana',
+        lastName: 'Lima',
+        role: 'customer',
+        status: 'active',
+        phone: null,
+        signupSource: null,
+        createdAt: past,
+        updatedAt: past,
+      })
+    }
+
+    test('changeRole muda papel e bumpa version', () => {
+      const u = customer()
+      const now = new Date()
+      u.changeRole('staff', now)
+      expect(u.role).toBe('staff')
+      expect(u.version).toBe(4)
+      expect(u.updatedAt).toBe(now)
+    })
+
+    test('changeRole para o mesmo papel é no-op (não bumpa)', () => {
+      const u = customer()
+      u.changeRole('customer')
+      expect(u.version).toBe(3)
+    })
+
+    test('changeStatus muda status e bumpa version', () => {
+      const u = customer()
+      u.changeStatus('blocked')
+      expect(u.status).toBe('blocked')
+      expect(u.version).toBe(4)
+      expect(u.isActive()).toBe(false)
+    })
+
+    test('updateProfile só bumpa quando algo muda; ignora nome em branco e undefined', () => {
+      const u = customer()
+      u.updateProfile({ firstName: undefined, lastName: '   ' })
+      expect(u.version).toBe(3) // nada mudou
+      u.updateProfile({ firstName: 'Ana Paula', phone: '+5511' })
+      expect(u.firstName).toBe('Ana Paula')
+      expect(u.phone).toBe('+5511')
+      expect(u.version).toBe(4)
+    })
+  })
 })

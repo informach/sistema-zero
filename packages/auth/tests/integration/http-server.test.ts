@@ -1,4 +1,7 @@
 import { describe, expect, test } from 'bun:test'
+import { GetUserService } from '../../src/application/admin/get-user/get-user.service'
+import { ListUsersService } from '../../src/application/admin/list-users/list-users.service'
+import { UpdateUserService } from '../../src/application/admin/update-user/update-user.service'
 import { GetMeService } from '../../src/application/get-me/get-me.service'
 import { LoginService } from '../../src/application/login/login.service'
 import { LogoutService } from '../../src/application/logout/logout.service'
@@ -6,6 +9,8 @@ import { RefreshService } from '../../src/application/refresh/refresh.service'
 import { RegisterService } from '../../src/application/register/register.service'
 import { AuthTokenService } from '../../src/application/tokens/auth-token.service'
 import { UserAggregate } from '../../src/domain/user/user.aggregate'
+import type { UserRole } from '../../src/domain/user/user.role'
+import type { UserStatus } from '../../src/domain/user/user.status'
 import { Email } from '../../src/domain/value-objects/email'
 import type { Env } from '../../src/infrastructure/config/env'
 import { createServer } from '../../src/interfaces/http/server'
@@ -34,6 +39,9 @@ function buildApp() {
   const refresh = new RefreshService(users, refreshTokens, authTokens, silentLogger)
   const logout = new LogoutService(refreshTokens)
   const getMe = new GetMeService(users)
+  const listUsers = new ListUsersService(users)
+  const getUser = new GetUserService(users)
+  const updateUser = new UpdateUserService(users, refreshTokens, silentLogger)
 
   const env = {
     MAX_REQUEST_BODY_BYTES: 16 * 1024,
@@ -51,6 +59,9 @@ function buildApp() {
     refresh,
     logout,
     getMe,
+    listUsers,
+    getUser,
+    updateUser,
   })
   return { app, users, refreshTokens, tokenIssuer }
 }
@@ -268,5 +279,140 @@ describe('Auth HTTP server', () => {
     const res = await app.handle(new Request('http://localhost/auth/.well-known/jwks.json'))
     expect(res.status).toBe(200)
     expect(await res.json()).toEqual({ keys: [] })
+  })
+})
+
+describe('Auth admin routes (/auth/admin/users)', () => {
+  const now = new Date()
+
+  function seedUser(
+    users: InMemoryUserRepository,
+    over: Partial<{
+      id: string
+      email: string
+      firstName: string
+      role: UserRole
+      status: UserStatus
+      version: number
+    }> = {},
+  ): string {
+    const id = over.id ?? crypto.randomUUID()
+    users.seed(
+      UserAggregate.restore({
+        id,
+        version: over.version ?? 0,
+        email: over.email ?? `u-${id}@example.com`,
+        passwordHash: 'hashed:x',
+        firstName: over.firstName ?? 'First',
+        lastName: 'Last',
+        role: over.role ?? 'customer',
+        status: over.status ?? 'active',
+        phone: null,
+        signupSource: null,
+        createdAt: now,
+        updatedAt: now,
+      }),
+    )
+    return id
+  }
+
+  // Simula o gateway: injeta os headers X-Auth-User-* (confiáveis na borda do auth).
+  function actorHeaders(role: string): Record<string, string> {
+    return {
+      'x-auth-user-id': crypto.randomUUID(),
+      'x-auth-user-role': role,
+      'x-auth-user-status': 'active',
+    }
+  }
+
+  function getReq(path: string, headers: Record<string, string> = {}) {
+    return new Request(`http://localhost${path}`, { headers })
+  }
+  function patchReq(path: string, body: unknown, headers: Record<string, string> = {}) {
+    return new Request(`http://localhost${path}`, {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json', ...headers },
+      body: JSON.stringify(body),
+    })
+  }
+
+  test('GET /auth/admin/users sem identidade do gateway → 401', async () => {
+    const { app } = buildApp()
+    expect((await app.handle(getReq('/auth/admin/users'))).status).toBe(401)
+  })
+
+  test('GET /auth/admin/users como customer → 403', async () => {
+    const { app } = buildApp()
+    const res = await app.handle(getReq('/auth/admin/users', actorHeaders('customer')))
+    expect(res.status).toBe(403)
+  })
+
+  test('GET /auth/admin/users como staff → 200 (leitura permitida)', async () => {
+    const { app, users } = buildApp()
+    seedUser(users, { role: 'customer' })
+    const res = await app.handle(getReq('/auth/admin/users', actorHeaders('staff')))
+    expect(res.status).toBe(200)
+    const json = (await res.json()) as { items: UserView[]; total: number }
+    expect(json.total).toBeGreaterThanOrEqual(1)
+  })
+
+  test('PATCH como staff → 403 (escrita exige admin/superadmin)', async () => {
+    const { app, users } = buildApp()
+    const id = seedUser(users, { role: 'customer' })
+    const res = await app.handle(
+      patchReq(`/auth/admin/users/${id}`, { status: 'suspended' }, actorHeaders('staff')),
+    )
+    expect(res.status).toBe(403)
+  })
+
+  test('PATCH admin edita customer → 200 + view atualizada', async () => {
+    const { app, users } = buildApp()
+    const id = seedUser(users, { role: 'customer', status: 'active' })
+    const res = await app.handle(
+      patchReq(
+        `/auth/admin/users/${id}`,
+        { status: 'blocked', firstName: 'Bloqueado' },
+        actorHeaders('admin'),
+      ),
+    )
+    expect(res.status).toBe(200)
+    const { user } = (await res.json()) as { user: UserView & { version: number } }
+    expect(user.status).toBe('blocked')
+    expect(user.firstName).toBe('Bloqueado')
+    expect(user.version).toBe(1)
+  })
+
+  test('PATCH admin promovendo a admin → 403 (guard hierárquico)', async () => {
+    const { app, users } = buildApp()
+    const id = seedUser(users, { role: 'customer' })
+    const res = await app.handle(
+      patchReq(`/auth/admin/users/${id}`, { role: 'admin' }, actorHeaders('admin')),
+    )
+    expect(res.status).toBe(403)
+  })
+
+  test('PATCH com version defasada → 409', async () => {
+    const { app, users } = buildApp()
+    const id = seedUser(users, { role: 'customer', version: 5 })
+    const res = await app.handle(
+      patchReq(
+        `/auth/admin/users/${id}`,
+        { status: 'suspended', version: 4 },
+        actorHeaders('admin'),
+      ),
+    )
+    expect(res.status).toBe(409)
+  })
+
+  test('PATCH alvo inexistente → 404', async () => {
+    const { app } = buildApp()
+    const res = await app.handle(
+      patchReq(
+        `/auth/admin/users/${crypto.randomUUID()}`,
+        { status: 'suspended' },
+        actorHeaders('admin'),
+      ),
+    )
+    expect(res.status).toBe(404)
   })
 })

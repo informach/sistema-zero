@@ -42,3 +42,14 @@ export class InvalidRefreshTokenError extends DomainError {
     super('Refresh token inválido ou expirado')
   }
 }
+
+/**
+ * Conflito de concorrência otimista: a `version` esperada não bateu com a do
+ * banco (alguém editou o usuário em paralelo). A borda re-lê e tenta de novo. → 409
+ */
+export class VersionConflictError extends DomainError {
+  readonly code = 'VERSION_CONFLICT'
+  constructor() {
+    super('Registro alterado por outra operação; recarregue e tente de novo')
+  }
+}

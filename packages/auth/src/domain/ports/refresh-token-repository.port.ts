@@ -33,4 +33,9 @@ export interface RefreshTokenRepository {
   revoke(id: string): Promise<void>
   /** Revoga TODA a família (reuse-detection / logout global). */
   revokeFamily(familyId: string): Promise<void>
+  /**
+   * Revoga TODAS as sessões ativas de um usuário (moderação: suspender/bloquear
+   * → derruba os refresh tokens vigentes para que não renovem). Idempotente.
+   */
+  revokeAllForUser(userId: string): Promise<void>
 }

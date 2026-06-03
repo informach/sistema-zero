@@ -30,13 +30,14 @@ src/
 │   ├── value-objects/  # email (normaliza+valida), password-policy
 │   └── ports/          # user-repository, password-hasher, token-issuer, refresh-token-repository
 ├── application/     # casos de uso: register, login, refresh, logout, get-me
+│   ├── admin/          # gestão de usuários pelo painel: list-users, get-user, update-user
 │   ├── tokens/         # auth-token.service (emite access+refresh, rotação)
-│   └── mappers/        # user-view (o contrato público; SEM passwordHash)
+│   └── mappers/        # user-view (público; SEM passwordHash) + admin-user-view (admin)
 ├── infrastructure/
 │   ├── config/env      # Zod fail-fast
 │   ├── persistence/drizzle/  # schema (users, refresh_tokens), db, repositórios, migrations
 │   └── security/       # bun-password-hasher (argon2id), jose-token-issuer, keys (HS256/RS256+JWKS)
-├── interfaces/http/ # Elysia: server, routes/auth.routes, dtos (TypeBox), auth (bearer/ip), error-handler
+├── interfaces/http/ # Elysia: server, routes/{auth,admin}.routes, dtos (TypeBox), auth (bearer/ip + resolveGatewayActor), error-handler
 ├── composition-root.ts  # injeção de dependências (ÚNICO lugar que instancia adapters) — ASSÍNCRONA
 └── index.ts             # loadEnv → createApplication → start (+ sinais)
 ```
@@ -93,6 +94,13 @@ src/
   `X-Auth-User-*` confiável ao upstream (e remove os de entrada — anti-spoof). As
   rotas `/auth/*` no gateway são **públicas + `passthrough`** (o IdP cuida da própria
   auth; o `/me` precisa do Bearer passando direto).
+- **Rotas admin `/auth/admin/users*`** (gestão de usuários pelo painel) são a
+  EXCEÇÃO: o gateway as protege com **JWT + RBAC** (`GET` listar/detalhe →
+  superadmin/admin/staff; `PATCH` editar → superadmin/admin) e injeta `X-Auth-User-*`
+  (NÃO `passthrough`). O serviço lê o ator desses headers (`resolveGatewayActor`),
+  re-checa papel/status (defesa em profundidade) e aplica os GUARDS hierárquicos:
+  ninguém altera o próprio papel/status; `admin` não toca/promove a admin/superadmin;
+  suspender/bloquear revoga as sessões do alvo. Concorrência otimista por `version`.
 
 ## Dev local
 
@@ -108,9 +116,10 @@ src/
 
 ## Pontos em aberto (futuro)
 
-Verificação de e-mail (status `pending`) · reset/forgot password · 2FA · admin CRUD
-de usuários · lockout por conta · migrar o login admin hardcoded do funil p/ usar o
-`auth` · cookies httpOnly p/ o refresh no browser.
+Verificação de e-mail (status `pending`) · reset/forgot password · 2FA · **criação**
+de usuário pelo admin (a moderação — listar/editar status/papel/perfil via
+`/auth/admin/users*` — já existe) · lockout por conta · migrar o login admin
+hardcoded do funil p/ usar o `auth` · cookies httpOnly p/ o refresh no browser.
 
 ## Checklist antes de finalizar
 

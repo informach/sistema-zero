@@ -6,14 +6,21 @@ const LABELS: Record<string, string> = {
   paused: 'Pausado',
   archived: 'Arquivado',
   inactive: 'Inativo',
+  // Status de usuário (@sistemazero/auth).
+  pending: 'Pendente',
+  suspended: 'Suspenso',
+  blocked: 'Bloqueado',
 }
 
-const VARIANT: Record<string, 'success' | 'muted' | 'destructive' | 'default'> = {
+const VARIANT: Record<string, 'success' | 'muted' | 'destructive' | 'default' | 'outline'> = {
   active: 'success',
   draft: 'muted',
   paused: 'default',
   archived: 'destructive',
   inactive: 'muted',
+  pending: 'outline',
+  suspended: 'default',
+  blocked: 'destructive',
 }
 
 export function StatusBadge({ status }: { status: string }) {

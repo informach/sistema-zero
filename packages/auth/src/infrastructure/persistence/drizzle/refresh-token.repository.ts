@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm'
+import { and, eq, isNull } from 'drizzle-orm'
 import type {
   CreateRefreshTokenInput,
   RefreshTokenRecord,
@@ -54,6 +54,14 @@ export class DrizzleRefreshTokenRepository implements RefreshTokenRepository {
       .update(refreshTokens)
       .set({ revokedAt: new Date() })
       .where(eq(refreshTokens.familyId, familyId))
+  }
+
+  async revokeAllForUser(userId: string): Promise<void> {
+    // Só os ainda vigentes (revokedAt IS NULL) — usa o índice `refresh_tokens_user_idx`.
+    await this.db
+      .update(refreshTokens)
+      .set({ revokedAt: new Date() })
+      .where(and(eq(refreshTokens.userId, userId), isNull(refreshTokens.revokedAt)))
   }
 }
 

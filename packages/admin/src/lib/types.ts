@@ -28,6 +28,33 @@ export interface Paginated<T> {
   offset: number
 }
 
+// ── Usuários (espelha o admin-user-view do @sistemazero/auth) ──
+
+/** Papéis de usuário (RBAC) — todos os do IdP, p/ os selects de edição/filtro. */
+export const USER_ROLES = ['superadmin', 'admin', 'staff', 'customer'] as const
+export type UserRole = (typeof USER_ROLES)[number]
+
+/** Estados de conta — `active` autentica; `suspended`/`blocked` para moderação. */
+export const USER_STATUSES = ['active', 'pending', 'suspended', 'blocked'] as const
+export type UserStatus = (typeof USER_STATUSES)[number]
+
+/** Papéis privilegiados: só `superadmin` os gerencia/concede (espelha o guard do auth). */
+export const PRIVILEGED_ROLES: readonly string[] = ['superadmin', 'admin']
+
+export interface UserView {
+  id: string
+  email: string
+  firstName: string
+  lastName: string
+  role: string
+  status: string
+  phone: string | null
+  signupSource: string | null
+  version: number
+  createdAt: string
+  updatedAt: string
+}
+
 // ── Catálogo (espelha os mappers do @sistemazero/catalog) ──
 
 export type ProductStatus = 'draft' | 'active' | 'archived'

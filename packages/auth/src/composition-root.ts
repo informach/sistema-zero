@@ -1,4 +1,7 @@
 import { createLogger, type Logger } from '@sistemazero/core/logging'
+import { GetUserService } from './application/admin/get-user/get-user.service'
+import { ListUsersService } from './application/admin/list-users/list-users.service'
+import { UpdateUserService } from './application/admin/update-user/update-user.service'
 import { GetMeService } from './application/get-me/get-me.service'
 import { LoginService } from './application/login/login.service'
 import { LogoutService } from './application/logout/logout.service'
@@ -68,6 +71,10 @@ export async function createApplication(env: Env): Promise<Application> {
   const refresh = new RefreshService(users, refreshTokens, authTokens, logger)
   const logout = new LogoutService(refreshTokens)
   const getMe = new GetMeService(users)
+  // Casos de uso do painel admin (gestão de usuários).
+  const listUsers = new ListUsersService(users)
+  const getUser = new GetUserService(users)
+  const updateUser = new UpdateUserService(users, refreshTokens, logger)
 
   const server = createServer({
     env,
@@ -78,6 +85,9 @@ export async function createApplication(env: Env): Promise<Application> {
     refresh,
     logout,
     getMe,
+    listUsers,
+    getUser,
+    updateUser,
   })
 
   return {

@@ -15,8 +15,9 @@ Front-end **Next.js 16 (App Router) + React 19 + Tailwind v4**; o back-end é um
 **chama o API Gateway** (NUNCA os serviços direto). Espelha o design do projeto de referência
 `comunidade-sistema-zero` (tokens OKLch dual light/dark, Base UI-like + lucide + sonner). Porta **3005**.
 
-> Estado: **Fatia 1 — Catálogo ponta a ponta** (produtos/ofertas/cupons: listar/criar/editar).
-> Login via IdP (`@sistemazero/auth`) com JWT/RBAC. Demais áreas (Usuários/Pagamentos/Membros) são
+> Estado: **Fatia 1 — Catálogo** (produtos/ofertas/cupons: listar/criar/editar) + **Fatia 2 —
+> Usuários** (listar com busca/filtros + editar status/papel/perfil, guards hierárquicos e
+> concorrência otimista). Login via IdP (`@sistemazero/auth`) com JWT/RBAC. Pagamentos/Membros são
 > placeholders "em breve" até suas fatias.
 
 ## Arquitetura (o padrão central — preserve-o)
@@ -56,11 +57,12 @@ src/
     admin/                Shell autenticado (layout gate) + páginas
       page.tsx            Painel (overview cards via /api/catalog/*?limit=1)
       catalogo/{produtos,ofertas,cupons}/  page.tsx + *-client.tsx (tabela + dialog CRUD)
-      {usuarios,pagamentos,membros}/        placeholders "em breve"
+      usuarios/             page.tsx (passa o operador p/ gating) + users-client.tsx (tabela + dialog edição)
+      {pagamentos,membros}/                placeholders "em breve"
     api/
-      admin/{login,logout}/route.ts
+      admin/{login,logout}/route.ts · admin/users/route.ts (+ [id]/route.ts p/ PATCH)
       catalog/{products,offers,coupons}/route.ts (+ [id]/route.ts p/ PATCH)
-  server/   session.ts · gateway.ts · catalog.ts   (server-only)
+  server/   session.ts · gateway.ts · catalog.ts · users.ts   (server-only)
   lib/      env.ts (server-only) · types.ts · format.ts · cn.ts · api.ts (client fetch)
   components/ ui/* (button/card/input/table/dialog/badge/select/…) · admin/* (topbar/header/tabs/…)
   proxy.ts              (ex-middleware; convenção Next 16, runtime nodejs)
@@ -96,6 +98,10 @@ Da raiz: `bun run dev:admin`, `bun run build:admin`, `bun run start:admin`.
   refreshExpiresIn } }`; `POST /auth/refresh` `{ refreshToken }` → `{ tokens }`.
 - Catálogo (via gateway, JWT+RBAC): `GET /catalog/admin/{products,offers,coupons}` (`?q&status&limit&offset`,
   offers `?productId`), `POST/PATCH /catalog/{products,offers,coupons}`. Views espelhadas em `src/lib/types.ts`.
+- Usuários (via gateway, JWT+RBAC): `GET /auth/admin/users` (`?q&role&status&limit&offset`) → `Paginated<UserView>`;
+  `PATCH /auth/admin/users/:id` `{ role?, status?, firstName?, lastName?, phone?, version? }` → `{ user }`.
+  Edição com `version` (concorrência otimista → 409 se defasada). Guards de papel/status são do `auth`
+  (o client só faz gating de UX por `currentUser.role`).
 
 ## Checklist antes de finalizar
 

@@ -1,6 +1,9 @@
 import { swagger } from '@elysiajs/swagger'
 import type { Logger } from '@sistemazero/core/logging'
 import { Elysia } from 'elysia'
+import type { GetUserService } from '../../application/admin/get-user/get-user.service'
+import type { ListUsersService } from '../../application/admin/list-users/list-users.service'
+import type { UpdateUserService } from '../../application/admin/update-user/update-user.service'
 import type { GetMeService } from '../../application/get-me/get-me.service'
 import type { LoginService } from '../../application/login/login.service'
 import type { LogoutService } from '../../application/logout/logout.service'
@@ -10,6 +13,7 @@ import type { TokenIssuer } from '../../domain/ports/token-issuer.port'
 import type { Env } from '../../infrastructure/config/env'
 import { buildErrorResponse } from './error-handler'
 import { markOversizeBody } from './raw-body'
+import { adminRoutes } from './routes/admin.routes'
 import { authRoutes } from './routes/auth.routes'
 import { healthRoutes } from './routes/health.routes'
 
@@ -22,6 +26,9 @@ export interface HttpDeps {
   refresh: RefreshService
   logout: LogoutService
   getMe: GetMeService
+  listUsers: ListUsersService
+  getUser: GetUserService
+  updateUser: UpdateUserService
 }
 
 /**
@@ -73,16 +80,25 @@ export function createServer(deps: HttpDeps) {
     )
   }
 
-  return app.use(healthRoutes()).use(
-    authRoutes({
-      trustProxy: deps.env.TRUST_PROXY,
-      trustedProxyHops: deps.env.TRUSTED_PROXY_HOPS,
-      tokenIssuer: deps.tokenIssuer,
-      register: deps.register,
-      login: deps.login,
-      refresh: deps.refresh,
-      logout: deps.logout,
-      getMe: deps.getMe,
-    }),
-  )
+  return app
+    .use(healthRoutes())
+    .use(
+      authRoutes({
+        trustProxy: deps.env.TRUST_PROXY,
+        trustedProxyHops: deps.env.TRUSTED_PROXY_HOPS,
+        tokenIssuer: deps.tokenIssuer,
+        register: deps.register,
+        login: deps.login,
+        refresh: deps.refresh,
+        logout: deps.logout,
+        getMe: deps.getMe,
+      }),
+    )
+    .use(
+      adminRoutes({
+        listUsers: deps.listUsers,
+        getUser: deps.getUser,
+        updateUser: deps.updateUser,
+      }),
+    )
 }

@@ -1,15 +1,25 @@
 'use client'
 
-import { CreditCard, Package, TicketPercent } from 'lucide-react'
+import { CreditCard, Package, TicketPercent, Users } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { OverviewCard } from '@/components/admin/overview-card'
 import { apiGet } from '@/lib/api'
 import type { Paginated } from '@/lib/types'
 
-type Totals = { products: number | null; offers: number | null; coupons: number | null }
+type Totals = {
+  users: number | null
+  products: number | null
+  offers: number | null
+  coupons: number | null
+}
 
 export function DashboardCards() {
-  const [totals, setTotals] = useState<Totals>({ products: null, offers: null, coupons: null })
+  const [totals, setTotals] = useState<Totals>({
+    users: null,
+    products: null,
+    offers: null,
+    coupons: null,
+  })
 
   useEffect(() => {
     let alive = true
@@ -22,12 +32,13 @@ export function DashboardCards() {
           return null
         }
       }
-      const [products, offers, coupons] = await Promise.all([
+      const [users, products, offers, coupons] = await Promise.all([
+        fetchTotal('/api/admin/users'),
         fetchTotal('/api/catalog/products'),
         fetchTotal('/api/catalog/offers'),
         fetchTotal('/api/catalog/coupons'),
       ])
-      if (alive) setTotals({ products, offers, coupons })
+      if (alive) setTotals({ users, products, offers, coupons })
     }
     load()
     return () => {
@@ -38,7 +49,13 @@ export function DashboardCards() {
   const fmt = (n: number | null) => (n === null ? '—' : String(n))
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <OverviewCard
+        title="Usuários"
+        value={fmt(totals.users)}
+        icon={Users}
+        description="Contas cadastradas"
+      />
       <OverviewCard
         title="Produtos"
         value={fmt(totals.products)}
