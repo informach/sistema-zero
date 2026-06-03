@@ -30,6 +30,19 @@ const membersInternalTransforms = MEMBERS_INTERNAL_TOKEN
       },
     ]
   : []
+// Mensageria (@sistemazero/messaging): envio S2S de e-mail/WhatsApp por template.
+// O gateway injeta o x-internal-token nas rotas de envio (defesa em profundidade,
+// igual ao members). DEVE bater com o MESSAGING_INTERNAL_TOKEN do serviço.
+const MESSAGING_URL = process.env.MESSAGING_URL ?? 'http://localhost:3006'
+const MESSAGING_INTERNAL_TOKEN = process.env.MESSAGING_INTERNAL_TOKEN ?? ''
+const messagingInternalTransforms = MESSAGING_INTERNAL_TOKEN
+  ? [
+      {
+        type: 'header-inject' as const,
+        options: { headers: { 'x-internal-token': MESSAGING_INTERNAL_TOKEN } },
+      },
+    ]
+  : []
 const FUNNEL_URL = process.env.FUNNEL_URL ?? 'http://localhost:4321'
 const FUNNEL_HMAC_SECRET = process.env.FUNNEL_HMAC_SECRET ?? ''
 const FUNNEL_INTERNAL_TOKEN = process.env.FUNNEL_INTERNAL_TOKEN ?? ''
@@ -97,6 +110,14 @@ const config: GatewayConfigInput = {
       name: 'members',
       upstreamGroups: {
         default: [{ url: MEMBERS_URL, healthCheckPath: '/health' }],
+      },
+      ...sharedResilience,
+    },
+    // Mensageria: envio transacional de e-mail (SendGrid) e WhatsApp (Evolution).
+    messaging: {
+      name: 'messaging',
+      upstreamGroups: {
+        default: [{ url: MESSAGING_URL, healthCheckPath: '/health' }],
       },
       ...sharedResilience,
     },
@@ -646,6 +667,68 @@ const config: GatewayConfigInput = {
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+
+    // ── Mensageria (@sistemazero/messaging) ─────────────────────────────────
+    // Envio S2S (backend → gateway por HMAC de borda → messaging). O gateway injeta
+    // o `x-internal-token` (defesa em profundidade, como o members); SEM `resign`.
+    {
+      id: 'messaging-send',
+      methods: ['POST'],
+      pathPattern: '/messaging/send',
+      service: 'messaging',
+      auth: { required: true, mode: 'any', strategies: ['hmac'] },
+      transforms: messagingInternalTransforms,
+      rateLimit: { max: 600, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'messaging-message-get',
+      methods: ['GET'],
+      pathPattern: '/messaging/messages/:id',
+      service: 'messaging',
+      auth: { required: true, mode: 'any', strategies: ['hmac'] },
+      transforms: messagingInternalTransforms,
+      rateLimit: { max: 600, windowMs: 60_000, by: 'principal' },
+    },
+    // Admin (painel): JWT + RBAC. `/messaging/admin/*` distinto das rotas S2S acima.
+    // LEITURA (GET) → superadmin/admin/staff; ESCRITA → superadmin/admin. Wildcard
+    // `/*` casa todos os subpaths (templates/senders/whatsapp-instances/messages).
+    {
+      id: 'messaging-admin-read',
+      methods: ['GET'],
+      pathPattern: '/messaging/admin/*',
+      service: 'messaging',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'messaging-admin-write',
+      methods: ['POST', 'PATCH', 'DELETE'],
+      pathPattern: '/messaging/admin/*',
+      service: 'messaging',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    // Webhooks de STATUS (provedores → gateway → messaging). Públicos: o serviço
+    // valida a assinatura ECDSA (SendGrid) / o `?token=` (Evolution). O corpo é
+    // repassado intacto (a assinatura é sobre o corpo bruto).
+    {
+      id: 'messaging-webhook-sendgrid',
+      methods: ['POST'],
+      pathPattern: '/messaging/webhooks/sendgrid',
+      service: 'messaging',
+      auth: 'public',
+      rateLimit: { max: 600, windowMs: 60_000, by: 'ip' },
+    },
+    {
+      id: 'messaging-webhook-evolution',
+      methods: ['POST'],
+      pathPattern: '/messaging/webhooks/evolution',
+      service: 'messaging',
+      auth: 'public',
+      rateLimit: { max: 600, windowMs: 60_000, by: 'ip' },
     },
 
     // ── Exemplo: rota de negócio protegida por JWT + RBAC ────────────────────

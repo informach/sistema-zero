@@ -13,7 +13,7 @@
  *   bun run dev:status                    mostra o que está de pé
  *   bun run dev:logs      <serviço> [--once]   acompanha o log de um serviço
  *
- * Serviços válidos: gateway, payments, auth, catalog, members, funnel, admin
+ * Serviços válidos: gateway, payments, auth, catalog, members, messaging, funnel, admin
  */
 
 import { spawn, spawnSync } from 'node:child_process'
@@ -37,6 +37,8 @@ const SERVICES: ServiceDef[] = [
   { name: 'auth', dir: 'auth', script: 'dev:auth', port: 3002 },
   { name: 'catalog', dir: 'catalog', script: 'dev:catalog', port: 3003 },
   { name: 'members', dir: 'members', script: 'dev:members', port: 3004 },
+  // Mensageria: e-mail (SendGrid) + WhatsApp (Evolution) com templates.
+  { name: 'messaging', dir: 'messaging', script: 'dev:messaging', port: 3006 },
   { name: 'funnel', dir: 'funnel', script: 'dev:funnel', port: 4321 },
   // Painel admin (Next.js). Não usa banco próprio — é um BFF que chama o gateway.
   { name: 'admin', dir: 'admin', script: 'dev:admin', port: 3005 },

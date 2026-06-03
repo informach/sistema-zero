@@ -1,0 +1,40 @@
+{
+  "name": "@sistemazero/messaging",
+  "version": "0.1.0",
+  "description": "Serviço de mensageria transacional (e-mail via SendGrid, WhatsApp via Evolution API) com templates — DDD + Hexagonal",
+  "type": "module",
+  "private": true,
+  "module": "src/index.ts",
+  "scripts": {
+    "dev": "bun run --watch src/index.ts",
+    "start": "bun run src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "templates:seed": "bun run scripts/seed-templates.ts",
+    "evolution:create-instance": "bun run scripts/create-instance.ts",
+    "webhooks:register": "bun run scripts/register-webhooks.ts",
+    "send:test": "bun run scripts/send-test.ts",
+    "check": "biome check .",
+    "check:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "lint": "biome lint ."
+  },
+  "dependencies": {
+    "@elysiajs/swagger": "^1.3.1",
+    "@sistemazero/core": "workspace:*",
+    "drizzle-orm": "^0.44.5",
+    "elysia": "^1.4.9",
+    "postgres": "^3.4.7",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "drizzle-kit": "^0.31.5"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}

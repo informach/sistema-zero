@@ -44,7 +44,11 @@
     "dev:admin": "bun run --filter @sistemazero/admin dev",
     "build:admin": "bun run --filter @sistemazero/admin build",
     "start:admin": "bun run --filter @sistemazero/admin start",
-    "typecheck:admin": "bun run --filter @sistemazero/admin typecheck"
+    "typecheck:admin": "bun run --filter @sistemazero/admin typecheck",
+    "dev:messaging": "bun run --filter @sistemazero/messaging dev",
+    "test:messaging": "bun run --filter @sistemazero/messaging test",
+    "db:messaging:generate": "bun run --filter @sistemazero/messaging db:generate",
+    "db:messaging:migrate": "bun run --filter @sistemazero/messaging db:migrate"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.16"

@@ -1,0 +1,215 @@
+import { beforeEach, describe, expect, it } from 'bun:test'
+import { adminHeaders, buildApp, get, postJson } from '../helpers'
+
+type App = ReturnType<typeof buildApp>['app']
+
+async function seedEmailTemplate(app: App): Promise<void> {
+  await app.handle(
+    postJson('/messaging/admin/templates', {
+      key: 'welcome',
+      channel: 'email',
+      name: 'Boas-vindas',
+      subject: 'Bem-vindo, {{nome}}',
+      body: '<p>Olá {{nome}}, sua senha: {{senha}}</p>',
+      variables: ['nome', 'senha'],
+    }),
+  )
+}
+
+async function seedDefaultSender(app: App): Promise<void> {
+  await app.handle(
+    postJson('/messaging/admin/senders', {
+      fromEmail: 'no-reply@sistemazero.com',
+      fromName: 'Sistema Zero',
+      isDefault: true,
+    }),
+  )
+}
+
+describe('POST /messaging/send (e-mail)', () => {
+  let ctx: ReturnType<typeof buildApp>
+  beforeEach(async () => {
+    ctx = buildApp()
+    await seedEmailTemplate(ctx.app)
+  })
+
+  it('falha com 422 quando não há remetente default', async () => {
+    const res = await ctx.app.handle(
+      postJson('/messaging/send', {
+        channel: 'email',
+        templateKey: 'welcome',
+        recipient: { name: 'Helena', email: 'helena@example.com' },
+        variables: { nome: 'Helena', senha: 'abc' },
+      }),
+    )
+    expect(res.status).toBe(422)
+    const body = (await res.json()) as { error: { code: string } }
+    expect(body.error.code).toBe('NO_SENDER_AVAILABLE')
+  })
+
+  it('enfileira (202) com template + remetente e persiste a mensagem', async () => {
+    await seedDefaultSender(ctx.app)
+    const res = await ctx.app.handle(
+      postJson('/messaging/send', {
+        channel: 'email',
+        templateKey: 'welcome',
+        recipient: { name: 'Helena', email: 'helena@example.com' },
+        variables: { nome: 'Helena', senha: 'abc' },
+      }),
+    )
+    expect(res.status).toBe(202)
+    const body = (await res.json()) as { id: string; status: string }
+    expect(body.status).toBe('QUEUED')
+
+    const stored = ctx.messages.store.get(body.id)
+    expect(stored?.state.renderedSubject).toBe('Bem-vindo, Helena')
+    expect(stored?.state.renderedBody).toContain('sua senha: abc')
+    // outbox capturou o evento de enfileiramento
+    expect(ctx.messages.events.map((e) => e.eventName)).toContain('message.queued')
+  })
+
+  it('404 quando o template não existe', async () => {
+    await seedDefaultSender(ctx.app)
+    const res = await ctx.app.handle(
+      postJson('/messaging/send', {
+        channel: 'email',
+        templateKey: 'inexistente',
+        recipient: { name: 'A', email: 'a@b.com' },
+      }),
+    )
+    expect(res.status).toBe(404)
+  })
+
+  it('400 quando falta variável obrigatória', async () => {
+    await seedDefaultSender(ctx.app)
+    const res = await ctx.app.handle(
+      postJson('/messaging/send', {
+        channel: 'email',
+        templateKey: 'welcome',
+        recipient: { name: 'A', email: 'a@b.com' },
+        variables: { nome: 'A' }, // falta 'senha'
+      }),
+    )
+    expect(res.status).toBe(400)
+    const body = (await res.json()) as { error: { code: string } }
+    expect(body.error.code).toBe('MISSING_TEMPLATE_VARIABLE')
+  })
+
+  it('idempotência: mesma Idempotency-Key não duplica', async () => {
+    await seedDefaultSender(ctx.app)
+    const payload = {
+      channel: 'email',
+      templateKey: 'welcome',
+      recipient: { name: 'Helena', email: 'helena@example.com' },
+      variables: { nome: 'Helena', senha: 'abc' },
+    }
+    const headers = { 'x-consumer-id': 'funnel', 'idempotency-key': 'k-1' }
+    const r1 = await ctx.app.handle(postJson('/messaging/send', payload, headers))
+    const r2 = await ctx.app.handle(postJson('/messaging/send', payload, headers))
+    const b1 = (await r1.json()) as { id: string }
+    const b2 = (await r2.json()) as { id: string }
+    expect(b1.id).toBe(b2.id)
+    expect(ctx.messages.store.size).toBe(1)
+  })
+
+  it('409 quando o destinatário está suprimido', async () => {
+    await seedDefaultSender(ctx.app)
+    await ctx.suppressions.add('email', 'helena@example.com', 'hard_bounce')
+    const res = await ctx.app.handle(
+      postJson('/messaging/send', {
+        channel: 'email',
+        templateKey: 'welcome',
+        recipient: { name: 'Helena', email: 'helena@example.com' },
+        variables: { nome: 'Helena', senha: 'abc' },
+      }),
+    )
+    expect(res.status).toBe(409)
+  })
+})
+
+describe('GET /messaging/messages/:id', () => {
+  it('200 para mensagem existente, 404 para inexistente', async () => {
+    const ctx = buildApp()
+    await seedEmailTemplate(ctx.app)
+    await seedDefaultSender(ctx.app)
+    const created = (await (
+      await ctx.app.handle(
+        postJson('/messaging/send', {
+          channel: 'email',
+          templateKey: 'welcome',
+          recipient: { name: 'Helena', email: 'helena@example.com' },
+          variables: { nome: 'Helena', senha: 'abc' },
+        }),
+      )
+    ).json()) as { id: string }
+
+    const ok = await ctx.app.handle(get(`/messaging/messages/${created.id}`))
+    expect(ok.status).toBe(200)
+    const notFound = await ctx.app.handle(get('/messaging/messages/nope'))
+    expect(notFound.status).toBe(404)
+  })
+})
+
+describe('WhatsApp send', () => {
+  it('enfileira mensagem de whatsapp (sem remetente)', async () => {
+    const ctx = buildApp()
+    await ctx.app.handle(
+      postJson('/messaging/admin/templates', {
+        key: 'welcome',
+        channel: 'whatsapp',
+        name: 'Boas-vindas WA',
+        body: 'Olá {{nome}}! Acesse {{link}}',
+        variables: ['nome', 'link'],
+      }),
+    )
+    const res = await ctx.app.handle(
+      postJson('/messaging/send', {
+        channel: 'whatsapp',
+        templateKey: 'welcome',
+        recipient: { name: 'Zé', phone: '5511999999999' },
+        variables: { nome: 'Zé', link: 'https://x.com' },
+      }),
+    )
+    expect(res.status).toBe(202)
+    const body = (await res.json()) as { id: string; status: string }
+    const stored = ctx.messages.store.get(body.id)
+    expect(stored?.channel).toBe('whatsapp')
+    expect(stored?.state.renderedBody).toBe('Olá Zé! Acesse https://x.com')
+  })
+})
+
+describe('Auth', () => {
+  it('admin: 401 sem headers, 200 com role admin (requireAdmin ligado)', async () => {
+    const ctx = buildApp({ requireAdmin: true })
+    const denied = await ctx.app.handle(
+      postJson('/messaging/admin/templates', {
+        key: 'k',
+        channel: 'whatsapp',
+        name: 'N',
+        body: 'B',
+      }),
+    )
+    expect(denied.status).toBe(401)
+
+    const ok = await ctx.app.handle(
+      postJson(
+        '/messaging/admin/templates',
+        { key: 'k', channel: 'whatsapp', name: 'N', body: 'B' },
+        adminHeaders,
+      ),
+    )
+    expect(ok.status).toBe(200)
+  })
+
+  it('send: 401 sem x-internal-token quando configurado', async () => {
+    const ctx = buildApp({ internalToken: 'secret' })
+    const res = await ctx.app.handle(
+      postJson('/messaging/send', {
+        channel: 'whatsapp',
+        templateKey: 'welcome',
+        recipient: { name: 'Zé', phone: '5511999999999' },
+      }),
+    )
+    expect(res.status).toBe(401)
+  })
+})
