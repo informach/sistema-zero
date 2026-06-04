@@ -142,7 +142,9 @@ export class DrizzleEntitlementRepository implements EntitlementRepository {
 
   async listMembers(filter: ListMembersFilter, now: Date): Promise<ListMembersResult> {
     // Predicado "ativo agora" reusado p/ `activeCount` e p/ o filtro de status='active'.
-    const activeFilter = sql`${entitlements.status} = 'active' and (${entitlements.expiresAt} is null or ${entitlements.expiresAt} > ${now})`
+    // ⚠️ Em fragmento `sql` cru o Drizzle NÃO aplica o mapper da coluna: um Date
+    // viraria `toString()` JS (inparseável no PG → 500). Passe ISO + cast.
+    const activeFilter = sql`${entitlements.status} = 'active' and (${entitlements.expiresAt} is null or ${entitlements.expiresAt} > ${now.toISOString()}::timestamptz)`
 
     // Membership (HAVING): mantém o grupo se ele tem ≥1 matrícula que casa o filtro.
     // As contagens do sumário continuam sobre o conjunto TODO do membro (não filtrado).

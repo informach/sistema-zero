@@ -41,6 +41,7 @@ export function MembersClient() {
   const [status, setStatus] = useState('')
   const [courseRef, setCourseRef] = useState('')
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -51,7 +52,9 @@ export function MembersClient() {
       const page = await apiGet<Paginated<MemberRow>>(`/api/members?${params}`)
       setItems(page.items)
       setTotal(page.total)
+      setError(false)
     } catch (err) {
+      setError(true)
       toast.error((err as ApiError).message ?? 'Falha ao carregar membros.')
     } finally {
       setLoading(false)
@@ -122,6 +125,12 @@ export function MembersClient() {
               <TableRow>
                 <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
                   <Spinner className="mx-auto" />
+                </TableCell>
+              </TableRow>
+            ) : error ? (
+              <TableRow>
+                <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
+                  Não foi possível carregar os membros. Tente novamente.
                 </TableCell>
               </TableRow>
             ) : items.length === 0 ? (

@@ -25,7 +25,14 @@ export async function GET(req: Request) {
 
   const page = body as Paginated<MemberSummaryView> | null
   if (status !== 200 || !page || !Array.isArray(page.items)) {
-    return NextResponse.json(body, { status })
+    // Falha upstream (members/gateway) pode vir com body fora do envelope
+    // `{ error: { code, message } }` que o client espera — normaliza p/ a UI
+    // mostrar mensagem amigável em vez do genérico "Algo deu errado.".
+    const envelope = body as { error?: { code?: string; message?: string } } | null
+    const normalized = envelope?.error?.message
+      ? body
+      : { error: { code: 'UPSTREAM_ERROR', message: 'Não foi possível carregar os membros.' } }
+    return NextResponse.json(normalized, { status: status === 200 ? 502 : status })
   }
 
   const ids = page.items.map((m) => m.userId)
