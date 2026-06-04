@@ -51,18 +51,25 @@ export class EfiClient {
   }
 
   /**
-   * Pré-aquece o token OAuth (mTLS + client_credentials). O 1º handshake mTLS sob
-   * Bun é caro (~15s observados no cold-start) — chamar isto no boot tira esse
-   * custo do caminho da 1ª cobrança (que senão estoura o `requestTimeoutMs` → 502).
-   * Best-effort: relança o erro para o chamador logar; não deve travar o boot.
+   * Pré-aquece o token OAuth (mTLS + client_credentials). O handshake mTLS sob
+   * Bun é caro num processo frio/ocioso (~15-16s observados) — chamar isto no boot
+   * E periodicamente tira esse custo do caminho da cobrança (que senão estoura o
+   * `requestTimeoutMs` → 502 no funil). Best-effort: relança o erro para o
+   * chamador logar; não deve travar o boot.
+   *
+   * @param minTtlMs renova se o token não sobreviver a essa janela (default 60s —
+   * o mesmo skew do hot path). O re-warm periódico passa `intervalo + margem`
+   * para garantir que o token SEMPRE chegue vivo ao próximo tick (token Pix vive
+   * 1h; um tick aos 45min com o default seria no-op e deixaria a renovação cara
+   * cair dentro de uma request de checkout).
    */
-  async warmUp(): Promise<void> {
-    await this.authorize()
+  async warmUp(minTtlMs = 60_000): Promise<void> {
+    await this.authorize(minTtlMs)
   }
 
-  private async authorize(): Promise<string> {
+  private async authorize(minTtlMs = 60_000): Promise<string> {
     const now = Date.now()
-    if (this.token && this.token.expiresAt > now + 60_000) return this.token.value
+    if (this.token && this.token.expiresAt > now + minTtlMs) return this.token.value
 
     // Single-flight: requests concorrentes compartilham a mesma busca de token.
     if (this.authInFlight) return this.authInFlight

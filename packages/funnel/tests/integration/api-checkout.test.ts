@@ -20,6 +20,7 @@ const ADDRESS = {
 function deps(
   repo: ReturnType<typeof createFakeRepo>['repo'],
   gw: ReturnType<typeof createFakeGateway>,
+  log?: (msg: string, meta?: Record<string, unknown>) => void,
 ) {
   return {
     repo,
@@ -29,6 +30,7 @@ function deps(
     productSku: 'no-comando-da-ia',
     fulfill: makeFulfill({ repo, gateway: gw.gateway }),
     grantMembers: makeGrantMembers({ gateway: gw.gateway, offerRef: 'no-comando-da-ia' }),
+    log,
   }
 }
 
@@ -134,6 +136,52 @@ describe('POST /api/checkout/pix', () => {
     expect(res.status).toBe(409)
     expect(gw.calls.create).toHaveLength(0)
   })
+
+  test('falha do provedor → 502 GATEWAY_ERROR + LOGA o erro real; não grava payment', async () => {
+    const { repo, leads, events, id } = await paidLead()
+    const gw = createFakeGateway()
+    gw.setCreateResult(502, { error: { code: 'PROVIDER_ERROR', message: 'Efí indisponível' } })
+    const logged: Array<{ msg: string; meta?: Record<string, unknown> }> = []
+    const res = await startPix(
+      req('POST', cookieFor(id)),
+      deps(repo, gw, (msg, meta) => logged.push({ msg, meta })),
+    )
+    expect(res.status).toBe(502)
+    expect(((await res.json()) as { error: { code: string } }).error.code).toBe('GATEWAY_ERROR')
+    // O erro real (status+code+message do payments) é logado — antes era engolido.
+    expect(logged).toEqual([
+      {
+        msg: 'checkout.pix.gateway_error',
+        meta: { leadId: id, status: 502, code: 'PROVIDER_ERROR', message: 'Efí indisponível' },
+      },
+    ])
+    expect(leads.get(id)?.paymentId).toBeNull()
+    expect(events.some((e) => e.eventName === 'pagamento_iniciado')).toBe(false)
+  })
+
+  test('409 IDEMPOTENCY_IN_FLIGHT (cobrança ainda em criação) → 409 PAYMENT_IN_PROGRESS', async () => {
+    const { repo, id } = await paidLead()
+    const gw = createFakeGateway()
+    gw.setCreateResult(409, {
+      error: { code: 'IDEMPOTENCY_IN_FLIGHT', message: 'Operação em andamento' },
+    })
+    const res = await startPix(req('POST', cookieFor(id)), deps(repo, gw))
+    expect(res.status).toBe(409)
+    const body = (await res.json()) as { error: { code: string; message: string } }
+    expect(body.error.code).toBe('PAYMENT_IN_PROGRESS')
+    expect(body.error.message).toContain('aguarde')
+  })
+
+  test('409 IDEMPOTENCY_CONFLICT NÃO vira "aguarde" — continua 502 (erro de payload)', async () => {
+    const { repo, id } = await paidLead()
+    const gw = createFakeGateway()
+    gw.setCreateResult(409, {
+      error: { code: 'IDEMPOTENCY_CONFLICT', message: 'Payload diferente' },
+    })
+    const res = await startPix(req('POST', cookieFor(id)), deps(repo, gw))
+    expect(res.status).toBe(502)
+    expect(((await res.json()) as { error: { code: string } }).error.code).toBe('GATEWAY_ERROR')
+  })
 })
 
 describe('GET /api/checkout/:paymentId', () => {
@@ -211,6 +259,29 @@ describe('POST /api/checkout/boleto', () => {
     )
     expect(res.status).toBe(409)
   })
+
+  test('409 IDEMPOTENCY_IN_FLIGHT → 409 PAYMENT_IN_PROGRESS; 502 loga o evento do boleto', async () => {
+    const { repo, id } = await paidLead()
+    const gw = createFakeGateway()
+    gw.setCreateResult(409, { error: { code: 'IDEMPOTENCY_IN_FLIGHT', message: 'Em andamento' } })
+    const inFlight = await startBoleto(
+      req('POST', cookieFor(id), { cpf: CPF, address: ADDRESS }),
+      deps(repo, gw),
+    )
+    expect(inFlight.status).toBe(409)
+    expect(((await inFlight.json()) as { error: { code: string } }).error.code).toBe(
+      'PAYMENT_IN_PROGRESS',
+    )
+
+    gw.setCreateResult(502, { error: { code: 'PROVIDER_ERROR', message: 'Efí fora' } })
+    const logged: string[] = []
+    const failed = await startBoleto(
+      req('POST', cookieFor(id), { cpf: CPF, address: ADDRESS }),
+      deps(repo, gw, (msg) => logged.push(msg)),
+    )
+    expect(failed.status).toBe(502)
+    expect(logged).toEqual(['checkout.boleto.gateway_error'])
+  })
 })
 
 describe('POST /api/checkout/card', () => {
@@ -268,5 +339,20 @@ describe('POST /api/checkout/card', () => {
     await startCard(req('POST', cookieFor(id), cardBody('att-2')), deps(repo, gw))
     expect(gw.calls.create[0]?.idempotencyKey).toBe(`funil-${id}-card-att-1`)
     expect(gw.calls.create[1]?.idempotencyKey).toBe(`funil-${id}-card-att-2`)
+  })
+
+  test('falha do provedor → 502 + loga o evento do cartão; não marca pago nem concede', async () => {
+    const { repo, leads, id } = await paidLead()
+    const gw = createFakeGateway()
+    gw.setCreateResult(502, { error: { code: 'PROVIDER_ERROR', message: 'Efí fora' } })
+    const logged: string[] = []
+    const res = await startCard(
+      req('POST', cookieFor(id), cardBody()),
+      deps(repo, gw, (msg) => logged.push(msg)),
+    )
+    expect(res.status).toBe(502)
+    expect(logged).toEqual(['checkout.card.gateway_error'])
+    expect(leads.get(id)?.paidAt).toBeNull()
+    expect(gw.calls.grant).toHaveLength(0)
   })
 })

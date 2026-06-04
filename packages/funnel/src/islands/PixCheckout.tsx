@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { apiGet, apiPost } from '../lib/api-fetch'
+import { ApiError, apiGet, apiPost } from '../lib/api-fetch'
 
 interface Pix {
   txid: string
@@ -18,29 +18,80 @@ interface StatusResp {
   pix: Pix | null
 }
 
+// Falha genérica (timeout/502): re-tenta sozinho ANTES de pintar erro — a 1ª
+// chamada com a Efí fria pode estourar o timeout e o retry já pega o token quente.
+const GENERIC_RETRIES = 2
+const GENERIC_RETRY_DELAY_MS = 4_000
+// 409 PAYMENT_IN_PROGRESS (cobrança ainda em criação no payments — reserva de
+// idempotência viva, expira em ≤60s): "aguarde" + retry, não é erro.
+const IN_PROGRESS_MAX_CYCLES = 8
+const IN_PROGRESS_RETRY_DELAY_MS = 7_000
+
 export default function PixCheckout({ couponCode }: { couponCode?: string }) {
   const [pix, setPix] = useState<Pix | null>(null)
   const [paymentId, setPaymentId] = useState<string | null>(null)
   const [erro, setErro] = useState<string | null>(null)
+  const [aguardando, setAguardando] = useState(false)
   const [copiado, setCopiado] = useState(false)
   const [expirado, setExpirado] = useState(false)
   const lastCoupon = useRef<string | null | undefined>(null)
+  const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const genericAttempts = useRef(0)
+  const inProgressCycles = useRef(0)
 
-  // Cria (ou recria) a cobrança Pix. Reutilizado pelo efeito (mudança de cupom) e
-  // pelo botão "Tentar de novo" — a 1ª chamada pós-restart pode ser lenta (cold
-  // start da Efí) e, se estourar o timeout, o retry já pega o token aquecido.
+  const clearRetryTimer = useCallback(() => {
+    if (retryTimer.current) {
+      clearTimeout(retryTimer.current)
+      retryTimer.current = null
+    }
+  }, [])
+
+  // Uma tentativa de criação; em falha agenda o próprio retry (auto-retry com
+  // teto). O budget de "aguarde" (409) é separado do de falha genérica.
+  const requestPix = useCallback(
+    function attempt() {
+      apiPost<StartResp>('/api/checkout/pix', couponCode ? { couponCode } : undefined)
+        .then((r) => {
+          genericAttempts.current = 0
+          inProgressCycles.current = 0
+          setAguardando(false)
+          setPaymentId(r.paymentId)
+          if (r.pix) setPix(r.pix)
+        })
+        .catch((e) => {
+          const inProgress =
+            e instanceof ApiError && e.status === 409 && e.code === 'PAYMENT_IN_PROGRESS'
+          if (inProgress && inProgressCycles.current < IN_PROGRESS_MAX_CYCLES) {
+            inProgressCycles.current += 1
+            setAguardando(true)
+            retryTimer.current = setTimeout(attempt, IN_PROGRESS_RETRY_DELAY_MS)
+            return
+          }
+          if (!inProgress && genericAttempts.current < GENERIC_RETRIES) {
+            genericAttempts.current += 1
+            retryTimer.current = setTimeout(attempt, GENERIC_RETRY_DELAY_MS)
+            return
+          }
+          setAguardando(false)
+          setErro('Não foi possível gerar o Pix. Tente novamente.')
+        })
+    },
+    [couponCode],
+  )
+
+  // Cria (ou recria) a cobrança Pix do zero: usado pelo efeito (mudança de cupom)
+  // e pelo botão "Tentar de novo" — reseta os budgets de retry.
   const createPix = useCallback(() => {
+    clearRetryTimer()
+    genericAttempts.current = 0
+    inProgressCycles.current = 0
     setPix(null)
     setPaymentId(null)
     setErro(null)
+    setAguardando(false)
     setExpirado(false)
-    apiPost<StartResp>('/api/checkout/pix', couponCode ? { couponCode } : undefined)
-      .then((r) => {
-        setPaymentId(r.paymentId)
-        if (r.pix) setPix(r.pix)
-      })
-      .catch(() => setErro('Não foi possível gerar o Pix. Tente novamente.'))
-  }, [couponCode])
+    requestPix()
+  }, [requestPix, clearRetryTimer])
 
   // Recria quando o cupom muda (a cobrança Pix tem valor fixo).
   useEffect(() => {
@@ -48,6 +99,9 @@ export default function PixCheckout({ couponCode }: { couponCode?: string }) {
     lastCoupon.current = couponCode
     createPix()
   }, [couponCode, createPix])
+
+  // Cancela retries pendentes no unmount (troca de aba do checkout, navegação).
+  useEffect(() => clearRetryTimer, [clearRetryTimer])
 
   // Polling do status (UX/fallback; o webhook é a reconciliação durável).
   // Para de checar quando o Pix expira ou após 15 min (evita polling infinito).
@@ -109,7 +163,14 @@ export default function PixCheckout({ couponCode }: { couponCode?: string }) {
         </button>
       </div>
     )
-  if (!pix) return <p className="py-10 text-center text-muted">Gerando seu Pix…</p>
+  if (!pix)
+    return (
+      <p className="py-10 text-center text-muted">
+        {aguardando
+          ? 'Seu Pix ainda está sendo gerado, só mais alguns segundos…'
+          : 'Gerando seu Pix…'}
+      </p>
+    )
 
   return (
     <div className="flex flex-col items-center gap-5">

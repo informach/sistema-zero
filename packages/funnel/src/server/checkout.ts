@@ -29,6 +29,12 @@ export interface CheckoutDeps {
    * (relê o lead p/ o `buyer_user_id` recém-gravado). Idempotente do lado do members.
    */
   grantMembers?: (lead: Lead) => Promise<void>
+  /**
+   * Log de diagnóstico (status+code+message do gateway em falha de pagamento —
+   * antes o 502 genérico engolia o erro real). Opcional p/ não exigir mudança em
+   * chamadas/testes antigos; injetado pela rota (handler permanece puro).
+   */
+  log?: (msg: string, meta?: Record<string, unknown>) => void
 }
 
 interface PixData {
@@ -90,6 +96,33 @@ function leadMetadata(
   return meta
 }
 
+/** Extrai o envelope de erro do gateway/payments (`{ error: { code, message } }`). */
+function gatewayError(body: unknown): { code?: string; message?: string } {
+  const e = (body as { error?: { code?: string; message?: string } } | null)?.error
+  return { code: e?.code, message: e?.message }
+}
+
+/**
+ * Falha na criação do pagamento via gateway: LOGA o erro real (status/code/message
+ * — antes era engolido pelo 502 genérico) e distingue a cobrança ainda em
+ * processamento (`409 IDEMPOTENCY_IN_FLIGHT` do payments — ex.: retry logo após um
+ * timeout da Efí, enquanto a reserva de idempotência não expira) do erro genérico:
+ * a UI orienta "aguarde" + re-tenta sozinha em vez de pintar erro.
+ */
+function paymentCreateError(
+  deps: CheckoutDeps,
+  ctx: { event: string; leadId: string; waitMessage: string; failMessage: string },
+  status: number,
+  body: unknown,
+): Response {
+  const { code, message } = gatewayError(body)
+  deps.log?.(ctx.event, { leadId: ctx.leadId, status, code, message })
+  if (status === 409 && code === 'IDEMPOTENCY_IN_FLIGHT') {
+    return jsonError(ctx.waitMessage, 409, 'PAYMENT_IN_PROGRESS')
+  }
+  return jsonError(ctx.failMessage, 502, 'GATEWAY_ERROR')
+}
+
 /**
  * Persiste o contexto do checkout no lead: a OFERTA vendida (`offerRef`, p/ a
  * concessão de acesso usar a oferta certa em vez do env estático) + o cupom
@@ -134,7 +167,17 @@ export async function startPix(request: Request, deps: CheckoutDeps): Promise<Re
 
   const { status, body } = await deps.gateway.createPayment(input, idempotencyKey)
   if (status !== 201 && status !== 202) {
-    return jsonError('Não foi possível criar o pagamento.', 502, 'GATEWAY_ERROR')
+    return paymentCreateError(
+      deps,
+      {
+        event: 'checkout.pix.gateway_error',
+        leadId: lead.id,
+        waitMessage: 'Já estamos gerando seu Pix, aguarde alguns segundos.',
+        failMessage: 'Não foi possível criar o pagamento.',
+      },
+      status,
+      body,
+    )
   }
   const view = body as PaymentView
   await deps.repo.setPayment(lead.id, view.id)
@@ -190,7 +233,17 @@ export async function startBoleto(request: Request, deps: CheckoutDeps): Promise
 
   const { status, body } = await deps.gateway.createPayment(input, idempotencyKey)
   if (status !== 201 && status !== 202) {
-    return jsonError('Não foi possível gerar o boleto.', 502, 'GATEWAY_ERROR')
+    return paymentCreateError(
+      deps,
+      {
+        event: 'checkout.boleto.gateway_error',
+        leadId: lead.id,
+        waitMessage: 'Já estamos gerando seu boleto, aguarde alguns segundos.',
+        failMessage: 'Não foi possível gerar o boleto.',
+      },
+      status,
+      body,
+    )
   }
   const view = body as PaymentView
   await deps.repo.setPayment(lead.id, view.id)
@@ -249,7 +302,17 @@ export async function startCard(request: Request, deps: CheckoutDeps): Promise<R
 
   const { status, body } = await deps.gateway.createPayment(input, idempotencyKey)
   if (status !== 201 && status !== 202) {
-    return jsonError('Não foi possível processar o cartão.', 502, 'GATEWAY_ERROR')
+    return paymentCreateError(
+      deps,
+      {
+        event: 'checkout.card.gateway_error',
+        leadId: lead.id,
+        waitMessage: 'Seu pagamento já está sendo processado, aguarde alguns segundos.',
+        failMessage: 'Não foi possível processar o cartão.',
+      },
+      status,
+      body,
+    )
   }
   const view = body as PaymentView
   await deps.repo.setPayment(lead.id, view.id)
@@ -308,7 +371,11 @@ export async function pixStatus(
   }
 
   const { status, body } = await deps.gateway.getPayment(paymentId)
-  if (status !== 200) return jsonError('Falha ao consultar o pagamento.', 502, 'GATEWAY_ERROR')
+  if (status !== 200) {
+    const { code, message } = gatewayError(body)
+    deps.log?.('checkout.status.gateway_error', { leadId: lead.id, status, code, message })
+    return jsonError('Falha ao consultar o pagamento.', 502, 'GATEWAY_ERROR')
+  }
   const view = body as PaymentView
 
   if (view.status === 'PAID') {

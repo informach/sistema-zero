@@ -71,6 +71,25 @@ describe('Idempotência (escopo por consumidor + estados)', () => {
     expect(gateway.createdCount).toBe(0)
   })
 
+  test('falha na Efí deixa IN_FLIGHT (lockout do retry imediato); pós-TTL o retry recria', async () => {
+    gateway.failCreate = true
+    await expect(service.execute(cmd)).rejects.toThrow('falha simulada na criação da cobrança')
+
+    // Retry imediato com a MESMA chave: a reserva fica IN_FLIGHT de propósito (a
+    // cobrança PODE ter sido criada no provedor com a resposta perdida) → 409.
+    // É este lockout que o funil mapeia p/ 409 PAYMENT_IN_PROGRESS ("aguarde").
+    gateway.failCreate = false
+    await expect(service.execute(cmd)).rejects.toBeInstanceOf(IdempotencyInFlightError)
+    expect(gateway.createdCount).toBe(0)
+
+    // Expirado o TTL curto, a reserva é reciclada → o retry processa normalmente.
+    // (Contrato que permite encurtar o TTL p/ 60s sem prender o comprador.)
+    store.clockSkewMs = 121_000
+    const view = await service.execute(cmd)
+    expect(view.status).toBe('PENDING')
+    expect(gateway.createdCount).toBe(1)
+  })
+
   test('reserva IN_FLIGHT expirada (crash) é reciclada → processa normalmente', async () => {
     await store.reserve({
       consumerId: 'sys-a',

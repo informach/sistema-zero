@@ -54,7 +54,9 @@ const EnvSchema = z
       .min(1, 'EFI_WEBHOOK_SECRET não pode ser vazia; remova a variável para desabilitar')
       .optional(),
     // Timeout por requisição HTTP à Efí (ms) — aborta sockets pendurados (mTLS/Bun).
-    EFI_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(15_000),
+    // Default 20s: o handshake mTLS frio leva ~15-16s sob Bun (15s abortava a
+    // request no fim do handshake → PIX 502). Mantenha < timeout do gateway (35s).
+    EFI_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(20_000),
 
     // Boleto (API Cobranças — SEM certificado/mTLS). Por padrão reusa as
     // credenciais do Pix (a mesma aplicação Efí pode ter os dois escopos);

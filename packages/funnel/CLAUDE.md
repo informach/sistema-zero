@@ -161,6 +161,7 @@ gateway re-entrega) e **best-effort** no polling do Pix (`pixStatus`) e no cart�
 | Cookie presente mas lead inexistente | 404 | `NOT_FOUND` |
 | Payload/valor inválido | 400 | `BAD_REQUEST` |
 | Checkout sem e-mail (sem contato p/ entregar) | 409 | `NO_CONTACT` |
+| Cobrança ainda em criação (retry durante a reserva de idempotência do payments) | 409 | `PAYMENT_IN_PROGRESS` |
 | Rate limit | 429 | `RATE_LIMITED` |
 | Falha no gateway | 502 | `GATEWAY_ERROR` |
 | Admin sem sessão / login inválido (`/admin/*`) | 401 | `UNAUTHORIZED` |

@@ -47,8 +47,24 @@ import { WebhookDeliveryWorker } from './infrastructure/workers/webhook-delivery
 import { createServer } from './interfaces/http/server'
 
 const IDEMPOTENCY_TTL_SECONDS = 24 * 60 * 60
-/** TTL curto da reserva em andamento (recicla reservas presas por crash). */
-const IDEMPOTENCY_IN_FLIGHT_TTL_SECONDS = 120
+/**
+ * TTL curto da reserva em andamento (recicla reservas presas por crash). É também
+ * o LOCKOUT do retry do cliente após uma falha com efeito colateral (ex.: timeout
+ * na Efí): 60s reduz esse lockout (era 120s) mantendo folga sobre o budget do
+ * gateway (35s, POST não re-tentado). NÃO baixar de ~40s: a perna Efí no pior caso
+ * (4 tentativas × timeout + backoff) pode passar de 45s — a reserva expirar com a
+ * request original VIVA permite outra reserva → novo paymentId/txid → risco de
+ * cobrança duplicada (o fencing por reservationId protege o registro, não a 2ª
+ * cobrança no provedor).
+ */
+const IDEMPOTENCY_IN_FLIGHT_TTL_SECONDS = 60
+/**
+ * Re-aquecimento periódico do token OAuth do Pix (token vive 1h; mTLS frio custa
+ * ~15-16s sob Bun). Passa `intervalo + margem` ao `warmUp` p/ SEMPRE renovar fora
+ * do hot path. Só o client Pix: o da API Cobranças não usa mTLS (re-auth barata)
+ * e o token dele vive ~600s (re-warm de 45min não o manteria vivo de toda forma).
+ */
+const EFI_TOKEN_REWARM_INTERVAL_MS = 45 * 60 * 1000
 
 export interface Application {
   logger: Logger
@@ -243,6 +259,7 @@ export function createApplication(env: Env): Application {
   })
 
   let cleanupTimer: ReturnType<typeof setInterval> | null = null
+  let rewarmTimer: ReturnType<typeof setInterval> | null = null
 
   return {
     logger,
@@ -307,9 +324,22 @@ export function createApplication(env: Env): Application {
             error: error instanceof Error ? error.message : String(error),
           }),
         )
+      // Re-warm periódico do token Pix: sem isto, o 1º checkout após >1h do boot
+      // paga a re-autenticação mTLS (~15-16s) DENTRO da request → timeout → 502.
+      rewarmTimer = setInterval(() => {
+        void efiClient
+          .warmUp(EFI_TOKEN_REWARM_INTERVAL_MS + 60_000)
+          .then(() => logger.debug('efi.pix.token.rewarmed'))
+          .catch((error) =>
+            logger.warn('efi.pix.rewarm.failed', {
+              error: error instanceof Error ? error.message : String(error),
+            }),
+          )
+      }, EFI_TOKEN_REWARM_INTERVAL_MS)
     },
     async stop() {
       if (cleanupTimer) clearInterval(cleanupTimer)
+      if (rewarmTimer) clearInterval(rewarmTimer)
       // 1) Para de aceitar novas requisições e de receber notificações.
       await server.stop()
       await notifications.stop()

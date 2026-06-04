@@ -44,6 +44,8 @@ export interface FakeGatewayState {
   /** Status HTTP devolvido por grantMembersAccess (default 200). */
   setGrantStatus: (status: number) => void
   setStatus: (status: string) => void
+  /** Sobrescreve a resposta de createPayment (default 201 + view do método). */
+  setCreateResult: (status: number, body?: unknown) => void
   /** Status HTTP + corpo devolvidos por ensureBuyer (default 201 + `{userId,created:true}`). */
   setEnsureBuyerStatus: (status: number, body?: unknown) => void
   /** Preço da oferta ativa (default 3700). */
@@ -90,6 +92,7 @@ export function createFakeGateway(): FakeGatewayState {
   let ensureBuyerStatus = 201
   let ensureBuyerBody: unknown = { userId: 'user-1', created: true }
   let grantStatus = 200
+  let createResult: { status: number; body: unknown } | null = null
   let passwordTokenStatus = 201
   let sendMessageStatus = 202
   let offerPriceCents = 3700
@@ -130,6 +133,7 @@ export function createFakeGateway(): FakeGatewayState {
   const gateway: GatewayClient = {
     async createPayment(input, idempotencyKey): Promise<GatewayResult> {
       calls.create.push({ input, idempotencyKey })
+      if (createResult) return createResult
       const method = (input as { method?: string }).method ?? 'PIX'
       return { status: 201, body: bodyForMethod(method) }
     },
@@ -260,6 +264,9 @@ export function createFakeGateway(): FakeGatewayState {
     },
     setGrantStatus: (status: number) => {
       grantStatus = status
+    },
+    setCreateResult: (status: number, body?: unknown) => {
+      createResult = { status, body: body ?? null }
     },
     setOfferPrice: (priceCents: number) => {
       offerPriceCents = priceCents

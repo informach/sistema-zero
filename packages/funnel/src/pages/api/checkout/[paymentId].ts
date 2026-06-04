@@ -7,14 +7,15 @@ import { makeGrantMembers } from '../../../server/members-grant'
 export const prerender = false
 
 export const GET: APIRoute = ({ request, params }) => {
-  const { repo, gateway, env } = getDeps()
+  const { repo, gateway, env, log } = getDeps()
   return pixStatus(request, params.paymentId ?? '', {
     repo,
     gateway,
     offerSlug: env.CATALOG_OFFER_SLUG,
     productName: env.PRODUCT_NAME,
     productSku: env.PRODUCT_SKU,
-    fulfill: makeFulfill({ repo, gateway }),
-    grantMembers: makeGrantMembers({ gateway, offerRef: env.CATALOG_OFFER_SLUG }),
+    fulfill: makeFulfill({ repo, gateway, log }),
+    grantMembers: makeGrantMembers({ gateway, offerRef: env.CATALOG_OFFER_SLUG, log }),
+    log,
   })
 }

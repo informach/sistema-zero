@@ -7,6 +7,8 @@ export interface Deps {
   repo: FunnelRepo
   env: Env
   gateway: GatewayClient
+  /** Log de diagnóstico (stderr) p/ os handlers que aceitam `log?:` via deps. */
+  log: (msg: string, meta?: Record<string, unknown>) => void
 }
 
 let cached: Deps | undefined
@@ -24,6 +26,7 @@ export function getDeps(): Deps {
         consumerId: env.FUNNEL_CONSUMER_ID,
         hmacSecret: env.FUNNEL_HMAC_SECRET,
       }),
+      log: (msg, meta) => console.error(msg, meta ?? ''),
     }
   }
   return cached
