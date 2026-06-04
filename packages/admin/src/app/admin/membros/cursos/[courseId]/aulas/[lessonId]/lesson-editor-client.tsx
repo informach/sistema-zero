@@ -15,6 +15,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { useSortableItem } from '@/components/dnd/use-sortable-item'
+import { RichTextEditor } from '@/components/editor/rich-text-editor'
 import { FileUploader } from '@/components/media/file-uploader'
 import { ImageUploader } from '@/components/media/image-uploader'
 import { VideoThumbnailUploader } from '@/components/media/video-thumbnail-uploader'
@@ -469,12 +470,10 @@ export function LessonEditorClient({
           </Field>
 
           {blockForm.kind === 'rich_text' ? (
-            <Field label="Markdown" htmlFor="bmd">
-              <Textarea
-                id="bmd"
-                rows={6}
-                value={blockForm.markdown}
-                onChange={(e) => setBlockForm((f) => ({ ...f, markdown: e.target.value }))}
+            <Field label="Conteúdo" hint="Salvo como markdown — renderiza igual na área do aluno.">
+              <RichTextEditor
+                content={blockForm.markdown}
+                onChange={(markdown) => setBlockForm((f) => ({ ...f, markdown }))}
               />
             </Field>
           ) : null}

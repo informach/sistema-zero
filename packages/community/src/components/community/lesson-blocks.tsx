@@ -67,11 +67,13 @@ function RichText({ content }: { content: RichTextBlock }) {
   return <div className="lesson-prose">{renderMarkdown(markdown)}</div>
 }
 
-/** Conversor mínimo de markdown → React (headings/listas/código/negrito/links). */
+/** Conversor mínimo de markdown → React (headings/listas/citações/código/inline). */
 function renderMarkdown(md: string): React.ReactNode[] {
   const out: React.ReactNode[] = []
   const lines = md.replace(/\r\n/g, '\n').split('\n')
   let list: string[] = []
+  let olist: string[] = []
+  let quote: string[] = []
   let code: string[] | null = null
   let key = 0
 
@@ -86,6 +88,38 @@ function renderMarkdown(md: string): React.ReactNode[] {
       </ul>,
     )
     list = []
+  }
+
+  const flushOlist = () => {
+    if (olist.length === 0) return
+    out.push(
+      <ol key={`o-${key++}`}>
+        {olist.map((item, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: lista estática derivada do markdown
+          <li key={i}>{renderInline(item)}</li>
+        ))}
+      </ol>,
+    )
+    olist = []
+  }
+
+  const flushQuote = () => {
+    if (quote.length === 0) return
+    out.push(
+      <blockquote key={`q-${key++}`}>
+        {quote.map((item, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: lista estática derivada do markdown
+          <p key={i}>{renderInline(item)}</p>
+        ))}
+      </blockquote>,
+    )
+    quote = []
+  }
+
+  const flushBlocks = () => {
+    flushList()
+    flushOlist()
+    flushQuote()
   }
 
   for (const line of lines) {
@@ -103,13 +137,13 @@ function renderMarkdown(md: string): React.ReactNode[] {
       continue
     }
     if (line.trimStart().startsWith('```')) {
-      flushList()
+      flushBlocks()
       code = []
       continue
     }
     const heading = line.match(/^(#{1,3})\s+(.*)$/)
     if (heading?.[1] && heading[2] !== undefined) {
-      flushList()
+      flushBlocks()
       const text = renderInline(heading[2])
       if (heading[1].length === 1) out.push(<h1 key={`h-${key++}`}>{text}</h1>)
       else if (heading[1].length === 2) out.push(<h2 key={`h-${key++}`}>{text}</h2>)
@@ -118,13 +152,29 @@ function renderMarkdown(md: string): React.ReactNode[] {
     }
     const bullet = line.match(/^\s*[-*]\s+(.*)$/)
     if (bullet?.[1] !== undefined) {
+      flushOlist()
+      flushQuote()
       list.push(bullet[1])
       continue
     }
-    flushList()
+    const ordered = line.match(/^\s*\d+[.)]\s+(.*)$/)
+    if (ordered?.[1] !== undefined) {
+      flushList()
+      flushQuote()
+      olist.push(ordered[1])
+      continue
+    }
+    const quoted = line.match(/^\s*>\s?(.*)$/)
+    if (quoted?.[1] !== undefined) {
+      flushList()
+      flushOlist()
+      if (quoted[1].trim().length > 0) quote.push(quoted[1])
+      continue
+    }
+    flushBlocks()
     if (line.trim().length > 0) out.push(<p key={`p-${key++}`}>{renderInline(line)}</p>)
   }
-  flushList()
+  flushBlocks()
   if (code !== null)
     out.push(
       <pre key={`c-${key++}`}>
@@ -134,10 +184,10 @@ function renderMarkdown(md: string): React.ReactNode[] {
   return out
 }
 
-/** Inline: **negrito**, `código` e [links](url) — só http(s) nos links. */
+/** Inline: **negrito**, *itálico* ou _itálico_, `código` e [links](url) — só http(s) nos links. */
 function renderInline(text: string): React.ReactNode[] {
   const parts: React.ReactNode[] = []
-  const pattern = /(\*\*[^*]+\*\*|`[^`]+`|\[[^\]]+\]\(https?:\/\/[^\s)]+\))/g
+  const pattern = /(\*\*[^*]+\*\*|\*[^*]+\*|_[^_]+_|`[^`]+`|\[[^\]]+\]\(https?:\/\/[^\s)]+\))/g
   let last = 0
   let key = 0
   for (const match of text.matchAll(pattern)) {
@@ -146,6 +196,8 @@ function renderInline(text: string): React.ReactNode[] {
     const token = match[0]
     if (token.startsWith('**')) {
       parts.push(<strong key={`b-${key++}`}>{token.slice(2, -2)}</strong>)
+    } else if (token.startsWith('*') || token.startsWith('_')) {
+      parts.push(<em key={`e-${key++}`}>{token.slice(1, -1)}</em>)
     } else if (token.startsWith('`')) {
       parts.push(<code key={`i-${key++}`}>{token.slice(1, -1)}</code>)
     } else {
