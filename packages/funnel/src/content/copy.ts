@@ -13,7 +13,7 @@ export const LANDING = {
 }
 
 export const RESULTADO = {
-  titulo: 'O que trava você não é falta de ideia. É falta de critério pra comandar a IA.',
+  titulo: 'Ideia você tem. O que falta é o critério pra comandar a IA.',
   paragrafoFinal:
     'A boa notícia é que a distância entre criar no escuro e criar no comando é menor do que parece, e ficou mais curta com a própria IA ajudando no caminho. Existe um material direto, de uma leitura, feito pra te dar esse critério e te tirar da posição de refém.',
   cta: 'Ver como assumir o comando',
@@ -26,9 +26,9 @@ export const QUIZ_UI = {
   progresso: (atual: number, total: number) => `Pergunta ${atual} de ${total}`,
 }
 
-// CTAs da página de vendas (todos abrem o modal de pré-checkout). O preço é
-// injetado pela página (vem do catálogo) para não duplicar/desatualizar o valor.
+// CTAs da página de vendas (todos abrem o modal de pré-checkout). Sem preço no
+// label: o preço já aparece ao lado dos botões e espalhado pela página.
 export const CTA = {
-  principal: (preco: string) => `Quero assumir o comando da IA — ${preco}`,
-  comecar: (preco: string) => `Quero começar no comando — ${preco}`,
+  principal: 'Quero assumir o comando da IA',
+  comecar: 'Quero começar no comando',
 }

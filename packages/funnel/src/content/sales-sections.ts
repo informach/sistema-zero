@@ -1,4 +1,4 @@
-// Conteúdo da página de vendas (13 seções, ordem exata) — verbatim, pt-BR.
+// Conteúdo da página de vendas (15 seções, ordem exata; 5B e 9B intercaladas) — verbatim, pt-BR.
 
 export interface MetodoItem {
   letra: string
@@ -6,6 +6,10 @@ export interface MetodoItem {
   texto: string
 }
 export interface BonusItem {
+  titulo: string
+  texto: string
+}
+export interface ExemploItem {
   titulo: string
   texto: string
 }
@@ -19,7 +23,7 @@ export const SALES = {
     titulo: 'Pare de pedir código no escuro. Comece a construir com clareza.',
     paragrafos: [
       'A IA consegue escrever rápido. Mas quando você não entende o que ela está fazendo, cada resposta bonita pode virar um problema escondido. Um erro que você não sabe corrigir. Uma mudança que quebra outra parte. Um dado exposto sem você perceber. Um sistema que parecia pronto, mas desanda quando sai do exemplo do tutorial.',
-      'No Comando da IA é um guia direto para quem quer tirar uma ideia do papel usando inteligência artificial, mas não quer virar refém dela. Você não precisa virar programador profissional. Mas precisa entender o mínimo para saber pedir, avaliar e conduzir. Porque quem entende a base, comanda. Quem não entende, copia, cola e torce.',
+      'Dá pra tirar uma ideia do papel usando inteligência artificial sem virar refém dela. Você não precisa virar programador profissional, mas precisa entender o mínimo para saber pedir, avaliar e conduzir. Porque quem entende a base, comanda. Quem não entende, copia, cola e torce.',
     ],
   },
   s2: {
@@ -95,6 +99,50 @@ export const SALES = {
       },
     ] as MetodoItem[],
   },
+  s5b: {
+    titulo: 'O que dá para criar já nos primeiros passos',
+    paragrafos: [
+      'Você não precisa começar criando um aplicativo enorme, cheio de login, pagamento, banco de dados e mil integrações. O primeiro passo é aprender a tirar uma ideia do campo da imaginação e transformar em algo simples, claro e funcional.',
+      'No Nível 1, você começa com pequenos aplicativos e ferramentas que podem ser criados com a ajuda da IA, começando do zero. São projetos simples, feitos para você entender a lógica por trás: o que a pessoa vê, o que ela informa, o que o sistema calcula, qual regra ele segue e qual resultado ele entrega.',
+    ],
+    introExemplos: 'Alguns exemplos do que cabe nesse começo:',
+    exemplos: [
+      {
+        titulo: 'Quiz ou diagnóstico interativo',
+        texto: 'ferramenta para seu público responder perguntas e receber um resultado.',
+      },
+      {
+        titulo: 'Página simples de apresentação ou captura',
+        texto:
+          'mostrar uma ideia, um serviço, uma oferta, uma lista de espera ou um material gratuito.',
+      },
+      {
+        titulo: 'Calculadora personalizada',
+        texto: 'resolve uma conta chata do seu dia a dia, do seu trabalho ou do seu nicho.',
+      },
+      {
+        titulo: 'Checklist ou planner interativo',
+        texto:
+          'um passo a passo para organizar um processo, acompanhar tarefas ou guiar uma decisão.',
+      },
+      {
+        titulo: 'Catálogo simples',
+        texto: 'vitrine digital para produtos, serviços, aulas, pacotes, cardápios ou soluções.',
+      },
+      {
+        titulo: 'Automação básica de tarefa repetitiva',
+        texto:
+          'organizar informações, gerar textos, classificar respostas ou acelerar algo manual.',
+      },
+      {
+        titulo: 'Joguinho simples para aprender criando',
+        texto:
+          'projeto pequeno e visual, usado como laboratório para entender lógica, telas, regras e funcionamento.',
+      },
+    ] as ExemploItem[],
+    fechamento:
+      'São projetos do tamanho certo pra começar, os seus primeiros projetos de pé. Pequenos o suficiente para você entender do começo ao fim. Concretos o suficiente para deixar de ser só uma ideia solta. E importantes o suficiente para você perceber: "eu consigo criar com a IA quando entendo o que estou pedindo."',
+  },
   s6: {
     titulo: 'O que você recebe',
     ebook:
@@ -132,6 +180,25 @@ export const SALES = {
     paragrafos: [
       'Não é um curso completo de programação. Não é uma promessa de criar um sistema robusto em uma tarde. Não é um atalho mágico para ignorar fundamentos. É o primeiro passo, feito para sistemas simples (nível 1). Aqui você aprende os dois primeiros movimentos do Z.E.R.O.: Zerar a confusão e Esboçar o sistema. Rodar e operar sistemas maiores são os próximos degraus do Sistema Zero.',
     ],
+  },
+  s9b: {
+    titulo: 'Para onde essa habilidade pode te levar',
+    paragrafos: [
+      'Aprender a criar com a IA não para no primeiro projeto. O No Comando da IA é o primeiro passo. Ele não existe para prometer que você vai sair criando sistemas complexos da noite para o dia. Ele existe para abrir sua cabeça, organizar seu raciocínio e te mostrar como uma ideia começa a virar sistema: tela, fluxo, dados, regras, ações, validações e resultado.',
+      'Quanto mais você entende os fundamentos do desenvolvimento de sistemas, melhor você conduz a IA. Você deixa de pedir no escuro, deixa de aceitar qualquer resposta bonita e começa a perceber o que faz sentido, o que está incompleto e o que precisa ser ajustado.',
+    ],
+    introLista: 'Com essa habilidade, você pode começar a:',
+    bullets: [
+      'Tirar do papel uma ideia que vive há meses na sua cabeça, saindo do "como seria" para ver funcionando.',
+      'Criar protótipos antes de investir alto, montando uma primeira versão para validar o caminho.',
+      'Montar a base de um negócio digital com mais autonomia, entendendo telas, fluxos e regras em vez de depender de respostas soltas da IA.',
+      'Criar ferramentas para resolver problemas do seu próprio trabalho e economizar tempo.',
+      'Perceber que uma solução para um problema seu também resolve o problema de outras pessoas.',
+      'Criar para outras pessoas no futuro: com mais estudo e prática, essa habilidade pode virar uma frente de trabalho.',
+      'Conversar melhor com a IA e avaliar o que ela entrega, identificando quando ela inventou, exagerou ou deixou algo de fora.',
+    ],
+    fechamento:
+      'Este produto é o começo da escada. Primeiro, você aprende a sair do pedido solto e entrar no comando. Depois, se quiser, pode aprofundar nos fundamentos do desenvolvimento de sistemas e avançar para projetos mais completos. O quanto você vai avançar é decisão sua. Mas tudo começa aqui: aprendendo a pensar com clareza antes de pedir para a IA criar.',
   },
   s10: {
     titulo: 'Por que isso importa agora',

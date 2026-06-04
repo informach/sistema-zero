@@ -3,7 +3,6 @@ import CtaButton from '../components/CtaButton.astro'
 import Footer from '../components/Footer.astro'
 import ImageSlot from '../components/ImageSlot.astro'
 import SectionHeading from '../components/SectionHeading.astro'
-import StickyCta from '../components/StickyCta.astro'
 import ProductJsonLd from '../components/seo/ProductJsonLd.astro'
 import { CTA } from '../content/copy'
 import { SALES } from '../content/sales-sections'
@@ -90,7 +89,7 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix', 'Acesso imediato']
             </div>
             <p class="mt-1 text-sm text-muted">Pagamento único · acesso imediato</p>
           </div>
-          <CtaButton label={CTA.principal(priceLabel)} class="w-full sm:w-auto" />
+          <CtaButton label={CTA.principal} class="w-full sm:w-auto" />
         </div>
 
         <ul class="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted">
@@ -116,7 +115,6 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix', 'Acesso imediato']
             ))
           }
         </ul>
-        <div id="cta-sentinel" class="h-px w-full" aria-hidden="true"></div>
       </section>
 
       <!-- ── Seção 2 — Para quem é ──────────────────────────────────────── -->
@@ -249,6 +247,43 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix', 'Acesso imediato']
         </div>
       </section>
 
+      <!-- ── Seção 5B — Primeiros passos ────────────────────────────────── -->
+      <section class="mx-auto max-w-3xl border-t border-line/50 px-4 py-12 sm:py-16">
+        <SectionHeading title={SALES.s5b.titulo} />
+        {
+          SALES.s5b.paragrafos.map((p) => (
+            <p class="mt-4 text-lg leading-relaxed text-muted">{p}</p>
+          ))
+        }
+        <p class="mt-6 font-semibold text-ink">{SALES.s5b.introExemplos}</p>
+        <div class="mt-3 grid gap-3 sm:grid-cols-2">
+          {
+            SALES.s5b.exemplos.map((e) => (
+              <div class="card flex items-start gap-3 p-5 transition hover:border-cyan/40">
+                <span class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-cyan/15 text-cyan">
+                  <svg class="h-4 w-4" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <path
+                      d="M4 10.5l3.5 3.5L16 6"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </span>
+                <div>
+                  <p class="font-bold text-ink">{e.titulo}</p>
+                  <p class="mt-1 leading-relaxed text-muted">{e.texto}</p>
+                </div>
+              </div>
+            ))
+          }
+        </div>
+        <div class="mt-6 rounded-2xl border-l-4 border-lime/70 bg-card/50 p-6 sm:p-7">
+          <p class="text-lg leading-relaxed text-ink">{SALES.s5b.fechamento}</p>
+        </div>
+      </section>
+
       <!-- ── Seção 6 — O que você recebe ────────────────────────────────── -->
       <section class="mx-auto max-w-3xl border-t border-line/50 px-4 py-12 sm:py-16">
         <SectionHeading title={SALES.s6.titulo} />
@@ -293,7 +328,7 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix', 'Acesso imediato']
             ))
           }
         </div>
-        <div class="mt-8"><CtaButton label={CTA.principal(priceLabel)} class="w-full sm:w-auto" /></div>
+        <div class="mt-8"><CtaButton label={CTA.principal} class="w-full sm:w-auto" /></div>
       </section>
 
       <!-- ── Seção 7 — O resultado final ────────────────────────────────── -->
@@ -304,7 +339,7 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix', 'Acesso imediato']
             <p class="mt-4 text-lg leading-relaxed text-muted">{p}</p>
           ))
         }
-        <div class="mt-8"><CtaButton label={CTA.principal(priceLabel)} class="w-full sm:w-auto" /></div>
+        <div class="mt-8"><CtaButton label={CTA.principal} class="w-full sm:w-auto" /></div>
       </section>
 
       <!-- ── Seção 8 — Bônus ────────────────────────────────────────────── -->
@@ -338,6 +373,41 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix', 'Acesso imediato']
             ))
           }
         </div>
+      </section>
+
+      <!-- ── Seção 9B — Para onde te leva ───────────────────────────────── -->
+      <section class="mx-auto max-w-3xl border-t border-line/50 px-4 py-12 sm:py-16">
+        <SectionHeading title={SALES.s9b.titulo} />
+        {
+          SALES.s9b.paragrafos.map((p) => (
+            <p class="mt-4 text-lg leading-relaxed text-muted">{p}</p>
+          ))
+        }
+        <p class="mt-6 font-semibold text-ink">{SALES.s9b.introLista}</p>
+        <ul class="mt-4 grid gap-3 sm:grid-cols-2">
+          {
+            SALES.s9b.bullets.map((b) => (
+              <li class="card flex items-start gap-3 p-4 text-muted">
+                <svg
+                  class="mt-0.5 h-5 w-5 shrink-0 text-lime"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M4 10.5l3.5 3.5L16 6"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                <span>{b}</span>
+              </li>
+            ))
+          }
+        </ul>
+        <p class="mt-6 text-lg leading-relaxed text-ink">{SALES.s9b.fechamento}</p>
       </section>
 
       <!-- ── Seção 10 — Por que agora ───────────────────────────────────── -->
@@ -403,7 +473,7 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix', 'Acesso imediato']
             }
           </div>
         </div>
-        <div class="mt-8"><CtaButton label={CTA.comecar(priceLabel)} class="w-full sm:w-auto" /></div>
+        <div class="mt-8"><CtaButton label={CTA.comecar} class="w-full sm:w-auto" /></div>
       </section>
 
       <!-- ── Seção 13 — FAQ ─────────────────────────────────────────────── -->
@@ -449,7 +519,7 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix', 'Acesso imediato']
           </div>
           <p class="mt-1 text-sm text-muted">Pagamento único via Pix · garantia de 7 dias</p>
           <div class="mt-6 flex justify-center">
-            <CtaButton label={CTA.principal(priceLabel)} class="w-full sm:w-auto" />
+            <CtaButton label={CTA.principal} class="w-full sm:w-auto" />
           </div>
         </div>
       </section>
@@ -457,6 +527,5 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix', 'Acesso imediato']
   </div>
 
   <Footer />
-  <StickyCta productName={productName} priceLabel={priceLabel} />
   <PreCheckoutModal client:idle />
 </BaseLayout>
