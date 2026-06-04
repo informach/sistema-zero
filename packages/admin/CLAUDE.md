@@ -13,7 +13,10 @@ Guia operacional do **painel administrativo** (full-stack). Leia antes de editar
 Painel para o dono operar a plataforma: **usuários, pagamentos, produtos, ofertas, cupons e membros**.
 Front-end **Next.js 16 (App Router) + React 19 + Tailwind v4**; o back-end é um **BFF agregador** que
 **chama o API Gateway** (NUNCA os serviços direto). Espelha o design do projeto de referência
-`comunidade-sistema-zero` (tokens OKLch dual light/dark, Base UI-like + lucide + sonner). Porta **3005**.
+`comunidade-sistema-zero` (tokens OKLch dual light/dark, Base UI-like + lucide + sonner; **logo
+dual-theme** `public/logo_dark.svg`⇄`logo_white.svg` na topbar/login — `dark:block`/`dark:hidden` —
+e **favicon** completo: `src/app/favicon.ico` + PNGs 16/32/192/512 + apple-touch via
+`metadata.icons`, mesmos assets do community). Porta **3005**.
 
 > Estado: **Fatia 1 — Catálogo** (produtos/ofertas/cupons: listar/criar/editar) + **Fatia 2 —
 > Usuários** (listar com busca/filtros + **criar via convite por e-mail** + editar
@@ -25,8 +28,17 @@ Front-end **Next.js 16 (App Router) + React 19 + Tailwind v4**; o back-end é um
 > aviso de estorno fora da garantia) + **Fatia Membros** (abas
 > Alunos|Cursos — **Alunos**: listar + detalhe com matrículas/progresso + conceder manual
 > (oferta/curso) + revogar/expirar/estender, identidade hidratada do auth via batch; **Cursos**:
-> autoria — CRUD de cursos + editor de módulos/aulas (reordenar via ↑↓) + editor de blocos
-> polimórficos (texto/vídeo/imagem/áudio/quiz/embed) e anexos) + **Painel "Gestão de vendas"**
+> autoria — CRUD de cursos + editor de módulos/aulas com **drag-and-drop** (dnd-kit clássico:
+> core 6.3 + sortable 10; hook `components/dnd/use-sortable-item.ts`; reorder otimista →
+> endpoints `/reorder`, erro→toast+reload) + módulos **colapsáveis** com contador "X de Y aulas
+> publicadas · N min" + **publicação por aula** (switch no dialog — aula nova nasce RASCUNHO —,
+> badge Publicada/Rascunho; publicar curso sem aula publicada → 409 `NO_PUBLISHED_LESSON` no
+> toast) + editor de blocos polimórficos (texto/vídeo/imagem/áudio/quiz/embed) e anexos, ambos
+> com DnD; bloco **rich_text usa TipTap** (`components/editor/rich-text-editor{,.impl}.tsx` —
+> saída MARKDOWN via tiptap-markdown, `dynamic ssr:false` + `immediatelyRender:false` +
+> `shouldRerenderOnTransaction:true`; estilos `.rich-text-content` no globals.css) e bloco
+> **quiz usa builder visual** (`aulas/[lessonId]/quiz-builder.tsx` — perguntas/opções/corretas/
+> nota de corte, `validateQuiz` espelha o members; sem JSON cru)) + **Painel "Gestão de vendas"**
 > (estilo Hotmart: filtros produto/período **7/30/90 dias + 6/12 meses**, cards
 > líquido/transações/cancelamentos com tooltip, gráfico Recharts colapsável — série densa via BFF,
 > **agregada por semana >90d / mês >270d** com `granularity`/`periodEnd`) + **cadastros inteligentes**
@@ -71,6 +83,9 @@ conteúdo dos blocos do members (lixo órfão no R2 é dívida documentada; sem 
 - `POST /api/media/videos/ticket` (`{filename,sizeBytes,mimeType}` ≤5GB mp4/mov/webm) → Vimeo
   `POST /me/videos` approach tus + privacy `view=disable, embed=whitelist` (+ domínios da env) →
   `{vimeoVideoId,uploadLink,embedUrl}`. O vídeo sobe DIRETO do browser (tus-js-client, chunk 128MB).
+  Pós-ticket, o vídeo é movido p/ a pasta `VIMEO_FOLDER_ID` (best-effort, como a whitelist —
+  `PUT /me/projects/{id}/videos/{id}`): dev = "Testes" (29469881) · prod = "Comunidade Sistema
+  Zero" (29469887); env ausente = sem pasta.
 - `GET /api/media/videos/:id/status` → reconcilia transcode on-demand (sem webhook; polling do
   editor a ~5s/cap 10min) → `{status: processing|ready|failed, durationSeconds, embedUrl, captions?}`.
   Quando ready, baixa o VTT do Vimeo (link assinado, **EXPIRA**) e **re-hospeda no R2**
@@ -85,7 +100,8 @@ community NÃO mudaram (`captions: {lang,url}[]` já existia no DTO; CSP do comm
 `src/components/media/*` (image-uploader c/ fallback de URL manual, file-uploader, video-uploader +
 use-video-upload, video-thumbnail-uploader, vimeo-preview). `next.config.ts` tem
 `serverExternalPackages: ['sharp']` (binário nativo). Envs OPCIONAIS (R2_*, VIMEO_*) — ausentes →
-503 `MEDIA_NOT_CONFIGURED` amigável, nunca quebra o boot.
+503 `MEDIA_NOT_CONFIGURED` amigável, nunca quebra o boot. Buckets R2: dev = `testes` (público via
+r2.dev), prod = `comunidade-sistema-zero` (`cdn.sistemazero.com.br`).
 
 ## Invariantes (NÃO quebrar)
 
@@ -217,8 +233,11 @@ Da raiz: `bun run dev:admin`, `bun run build:admin`, `bun run start:admin`.
   `GET/PATCH/DELETE /members/admin/courses/:id` (GET = árvore curso+módulos+aulas); módulos/aulas
   via `…/modules`, `…/lessons` (+ `…/reorder`); blocos/anexos via `…/lessons/:id/blocks|attachments`
   (+ `…/reorder`) e `PATCH/DELETE /members/admin/{blocks,attachments}/:id`. Conteúdo de bloco é
-  união por `kind`. Páginas em `app/admin/membros/cursos/*` (lista + editor de curso + editor de aula
-  com formulários por tipo de bloco). Adapter em `src/server/members.ts`; views em `src/lib/types.ts`.
+  união por `kind`. Body de aula aceita **`isPublished`** (ausente → `false`: aula nova nasce
+  RASCUNHO; `LessonView` devolve a flag); publicar curso `published` sem aula publicada → **409
+  `NO_PUBLISHED_LESSON`**. Páginas em `app/admin/membros/cursos/*` (lista + editor de curso + editor
+  de aula com formulários por tipo de bloco). Adapter em `src/server/members.ts`; views em
+  `src/lib/types.ts`.
 
 ## Checklist antes de finalizar
 
