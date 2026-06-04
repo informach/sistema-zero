@@ -41,6 +41,7 @@ const toCourse = (r: CourseRow): Course => ({
   description: r.description,
   coverImageUrl: r.coverImageUrl,
   status: r.status,
+  metadata: r.metadata ?? null,
   createdAt: r.createdAt,
   updatedAt: r.updatedAt,
 })

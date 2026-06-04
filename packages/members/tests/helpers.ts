@@ -14,12 +14,14 @@ import { GetMemberDetailService } from '../src/application/get-member-detail/get
 import { GetMyCourseService } from '../src/application/get-my-course/get-my-course.service'
 import { GrantEntitlementService } from '../src/application/grant-entitlement/grant-entitlement.service'
 import { GrantManualEntitlementService } from '../src/application/grant-manual-entitlement/grant-manual-entitlement.service'
+import { ListCatalogService } from '../src/application/list-catalog/list-catalog.service'
 import { ListMembersService } from '../src/application/list-members/list-members.service'
 import { ListMyCoursesService } from '../src/application/list-my-courses/list-my-courses.service'
 import { ManageEntitlementService } from '../src/application/manage-entitlement/manage-entitlement.service'
 import { MarkLessonCompleteService } from '../src/application/mark-lesson-complete/mark-lesson-complete.service'
 import { RevokeEntitlementService } from '../src/application/revoke-entitlement/revoke-entitlement.service'
 import { SaveVideoPositionService } from '../src/application/save-video-position/save-video-position.service'
+import { SubmitQuizAttemptService } from '../src/application/submit-quiz-attempt/submit-quiz-attempt.service'
 import type { CourseStatus } from '../src/domain/course/course'
 import { EntitlementAggregate } from '../src/domain/entitlement/entitlement.aggregate'
 import type { ResolvedOffer } from '../src/domain/ports/catalog-gateway.port'
@@ -31,6 +33,7 @@ import {
   InMemoryEntitlementRepository,
   InMemoryProcessedWebhookRepository,
   InMemoryProgressRepository,
+  InMemoryQuizAttemptRepository,
   InMemoryVideoPositionRepository,
   silentLogger,
 } from './fakes/in-memory'
@@ -47,6 +50,7 @@ export function buildApp(
   const courses = new InMemoryCourseRepository()
   const progress = new InMemoryProgressRepository()
   const positions = new InMemoryVideoPositionRepository()
+  const quizAttempts = new InMemoryQuizAttemptRepository()
   const processed = new InMemoryProcessedWebhookRepository()
   const catalog = new FakeCatalogGateway()
 
@@ -67,11 +71,32 @@ export function buildApp(
     logger: silentLogger,
     members: {
       listMyCourses: new ListMyCoursesService(entitlements, courses, progress, positions, clock),
+      listCatalog: new ListCatalogService(courses, entitlements, clock),
       getMyCourse: new GetMyCourseService(checkAccess, courses, progress, positions),
-      getLesson: new GetLessonService(checkAccess, courses, progress, positions),
-      markComplete: new MarkLessonCompleteService(checkAccess, courses, progress, clock),
+      getLesson: new GetLessonService(
+        checkAccess,
+        courses,
+        progress,
+        positions,
+        quizAttempts,
+        clock,
+      ),
+      markComplete: new MarkLessonCompleteService(
+        checkAccess,
+        courses,
+        progress,
+        quizAttempts,
+        clock,
+      ),
       getProgress: new GetCourseProgressService(checkAccess, courses, progress),
       savePosition: new SaveVideoPositionService(checkAccess, courses, positions, clock),
+      submitQuiz: new SubmitQuizAttemptService(
+        checkAccess,
+        courses,
+        quizAttempts,
+        () => randomUUID(),
+        clock,
+      ),
       internalToken: opts.internalToken,
     },
     webhooks: {
@@ -108,7 +133,17 @@ export function buildApp(
     },
   })
 
-  return { app, entitlements, courses, progress, positions, processed, catalog, clockRef }
+  return {
+    app,
+    entitlements,
+    courses,
+    progress,
+    positions,
+    quizAttempts,
+    processed,
+    catalog,
+    clockRef,
+  }
 }
 
 /** Curso de exemplo: 1 módulo, 2 aulas (a 1ª composta com 3 blocos + 1 anexo). */
@@ -130,6 +165,7 @@ export function seedSampleCourse(
     description: null,
     coverImageUrl: null,
     status,
+    metadata: null,
     createdAt: now,
     updatedAt: now,
   })

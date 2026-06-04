@@ -10,6 +10,8 @@ export interface CourseRepository {
   findAccessibleCoursesBySlugs(slugs: string[]): Promise<Course[]>
   /** Cursos por slugs, QUALQUER status (admin: progresso/detalhe inclui draft/archived). */
   findCoursesBySlugs(slugs: string[]): Promise<Course[]>
+  /** TODOS os cursos `published` (catálogo/descoberta), ordenados por título. */
+  listPublishedCourses(): Promise<Course[]>
   /** Módulos do curso, cada um com suas aulas resumidas (sem o conteúdo dos blocos). */
   findOutline(courseId: string): Promise<ModuleWithLessons[]>
   /** Aula com o conteúdo completo (blocos ordenados + anexos). */

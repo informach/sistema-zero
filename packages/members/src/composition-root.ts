@@ -14,12 +14,14 @@ import { GetMemberDetailService } from './application/get-member-detail/get-memb
 import { GetMyCourseService } from './application/get-my-course/get-my-course.service'
 import { GrantEntitlementService } from './application/grant-entitlement/grant-entitlement.service'
 import { GrantManualEntitlementService } from './application/grant-manual-entitlement/grant-manual-entitlement.service'
+import { ListCatalogService } from './application/list-catalog/list-catalog.service'
 import { ListMembersService } from './application/list-members/list-members.service'
 import { ListMyCoursesService } from './application/list-my-courses/list-my-courses.service'
 import { ManageEntitlementService } from './application/manage-entitlement/manage-entitlement.service'
 import { MarkLessonCompleteService } from './application/mark-lesson-complete/mark-lesson-complete.service'
 import { RevokeEntitlementService } from './application/revoke-entitlement/revoke-entitlement.service'
 import { SaveVideoPositionService } from './application/save-video-position/save-video-position.service'
+import { SubmitQuizAttemptService } from './application/submit-quiz-attempt/submit-quiz-attempt.service'
 import type { Env } from './infrastructure/config/env'
 import { createCatalogHttpGateway } from './infrastructure/gateways/catalog-http.gateway'
 import { DrizzleContentAdminRepository } from './infrastructure/persistence/drizzle/content-admin.repository'
@@ -28,6 +30,7 @@ import { createDbConnection, type DbConnection } from './infrastructure/persiste
 import { DrizzleEntitlementRepository } from './infrastructure/persistence/drizzle/entitlement.repository'
 import { DrizzleProcessedWebhookRepository } from './infrastructure/persistence/drizzle/processed-webhook.repository'
 import { DrizzleProgressRepository } from './infrastructure/persistence/drizzle/progress.repository'
+import { DrizzleQuizAttemptRepository } from './infrastructure/persistence/drizzle/quiz-attempt.repository'
 import { DrizzleVideoPositionRepository } from './infrastructure/persistence/drizzle/video-position.repository'
 import { createServer } from './interfaces/http/server'
 
@@ -59,17 +62,39 @@ export async function createApplication(env: Env): Promise<Application> {
   const entitlements = new DrizzleEntitlementRepository(db)
   const progress = new DrizzleProgressRepository(db)
   const positions = new DrizzleVideoPositionRepository(db)
+  const quizAttempts = new DrizzleQuizAttemptRepository(db)
   const processed = new DrizzleProcessedWebhookRepository(db)
   const catalog = createCatalogHttpGateway({ baseUrl: env.CATALOG_BASE_URL })
 
   // Casos de uso do aluno
   const checkAccess = new CheckAccessService(courses, entitlements, clock)
   const listMyCourses = new ListMyCoursesService(entitlements, courses, progress, positions, clock)
+  const listCatalog = new ListCatalogService(courses, entitlements, clock)
   const getMyCourse = new GetMyCourseService(checkAccess, courses, progress, positions)
-  const getLesson = new GetLessonService(checkAccess, courses, progress, positions)
-  const markComplete = new MarkLessonCompleteService(checkAccess, courses, progress, clock)
+  const getLesson = new GetLessonService(
+    checkAccess,
+    courses,
+    progress,
+    positions,
+    quizAttempts,
+    clock,
+  )
+  const markComplete = new MarkLessonCompleteService(
+    checkAccess,
+    courses,
+    progress,
+    quizAttempts,
+    clock,
+  )
   const getProgress = new GetCourseProgressService(checkAccess, courses, progress)
   const savePosition = new SaveVideoPositionService(checkAccess, courses, positions, clock)
+  const submitQuiz = new SubmitQuizAttemptService(
+    checkAccess,
+    courses,
+    quizAttempts,
+    () => randomUUID(),
+    clock,
+  )
 
   // Motor de acesso (webhooks)
   const grant = new GrantEntitlementService({
@@ -106,11 +131,13 @@ export async function createApplication(env: Env): Promise<Application> {
     logger,
     members: {
       listMyCourses,
+      listCatalog,
       getMyCourse,
       getLesson,
       markComplete,
       getProgress,
       savePosition,
+      submitQuiz,
       internalToken: env.INTERNAL_API_TOKEN,
     },
     webhooks: {

@@ -1,4 +1,5 @@
 import type { Course, LessonWithContent, ModuleWithLessons } from '../../domain/course/course'
+import { toMemberFacingQuizContent } from '../../domain/course/quiz'
 import type { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
 import type { CourseProgress } from '../../domain/progress/progress'
 
@@ -49,6 +50,32 @@ export function toMyCourseView(
     access: toAccessView(entitlement),
     progress,
     continueLessonId,
+  }
+}
+
+/**
+ * Card do catálogo "Todos os cursos" (descoberta/venda): todo curso `published`
+ * com a flag de acesso do aluno. Sem progresso (isso é da home/detalhe).
+ */
+export interface CatalogCourseView {
+  courseSlug: string
+  title: string
+  subtitle: string | null
+  coverImageUrl: string | null
+  hasAccess: boolean
+  /** URL da página de vendas (funil) — de `course.metadata.salesPageUrl`; `null` se não setada. */
+  salesPageUrl: string | null
+}
+
+export function toCatalogCourseView(course: Course, hasAccess: boolean): CatalogCourseView {
+  const raw = course.metadata?.salesPageUrl
+  return {
+    courseSlug: course.slug,
+    title: course.title,
+    subtitle: course.subtitle,
+    coverImageUrl: course.coverImageUrl,
+    hasAccess,
+    salesPageUrl: typeof raw === 'string' && raw.length > 0 ? raw : null,
   }
 }
 
@@ -116,11 +143,22 @@ export function toCourseDetailView(
   }
 }
 
+/** Estado das tentativas do aluno num bloco de quiz (derivado do histórico). */
+export interface QuizStateView {
+  lastScore: number | null
+  passed: boolean
+  attemptsCount: number
+  /** ISO; não-nulo só durante o cooldown após reprovar. */
+  retryAvailableAt: string | null
+}
+
 export interface LessonBlockView {
   id: string
   kind: string
   sortOrder: number
   content: unknown
+  /** Presente só em blocos de quiz. */
+  quizState?: QuizStateView | null
 }
 
 export interface LessonAttachmentView {
@@ -151,6 +189,7 @@ export function toLessonDetailView(
   courseSlug: string,
   completed: boolean,
   positionSeconds: number | null,
+  quizStates: Map<string, QuizStateView> = new Map(),
 ): LessonDetailView {
   return {
     id: lesson.id,
@@ -161,12 +200,25 @@ export function toLessonDetailView(
     estimatedMinutes: lesson.estimatedMinutes,
     completed,
     positionSeconds,
-    blocks: lesson.blocks.map((b) => ({
-      id: b.id,
-      kind: b.kind,
-      sortOrder: b.sortOrder,
-      content: b.content,
-    })),
+    blocks: lesson.blocks.map((b) => {
+      // Quiz: NUNCA envia o gabarito (correctChoiceIds/explanation) ao aluno —
+      // a projeção member-facing remove e anexa o estado das tentativas.
+      if (b.content.kind === 'quiz') {
+        return {
+          id: b.id,
+          kind: b.kind,
+          sortOrder: b.sortOrder,
+          content: toMemberFacingQuizContent(b.content),
+          quizState: quizStates.get(b.id) ?? {
+            lastScore: null,
+            passed: false,
+            attemptsCount: 0,
+            retryAvailableAt: null,
+          },
+        }
+      }
+      return { id: b.id, kind: b.kind, sortOrder: b.sortOrder, content: b.content }
+    }),
     attachments: lesson.attachments.map((a) => ({
       id: a.id,
       label: a.label,

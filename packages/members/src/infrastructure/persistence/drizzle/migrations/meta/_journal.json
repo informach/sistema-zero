@@ -15,6 +15,13 @@
       "when": 1780591269741,
       "tag": "0001_numerous_red_hulk",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1780592109246,
+      "tag": "0002_wide_matthew_murdock",
+      "breakpoints": true
     }
   ]
 }

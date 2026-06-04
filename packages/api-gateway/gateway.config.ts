@@ -679,6 +679,17 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
+    // Catálogo "Todos os cursos" (published + flag hasAccess do aluno).
+    {
+      id: 'members-catalog',
+      methods: ['GET'],
+      pathPattern: '/members/catalog',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
     {
       id: 'members-course-detail',
       methods: ['GET'],
@@ -729,6 +740,17 @@ const config: GatewayConfigInput = {
       authorize: { statuses: ['active'] },
       transforms: membersInternalTransforms,
       rateLimit: { max: 600, windowMs: 60_000, by: 'principal' },
+    },
+    // Submit de quiz (score no servidor; cooldown reforçado no members) — moderado.
+    {
+      id: 'members-quiz-attempt',
+      methods: ['POST'],
+      pathPattern: '/members/lessons/:lessonId/blocks/:blockId/quiz-attempts',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
     },
     // Concessão/assinatura (funil → gateway → members): HMAC de borda do funil +
     // o gateway re-assina como consumer `gateway` (members verifica com GATEWAY_HMAC_SECRET).

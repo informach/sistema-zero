@@ -22,6 +22,7 @@ function toCourse(row: typeof courses.$inferSelect): Course {
     description: row.description,
     coverImageUrl: row.coverImageUrl,
     status: row.status,
+    metadata: row.metadata ?? null,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   }
@@ -103,6 +104,15 @@ export class DrizzleCourseRepository implements CourseRepository {
   async findCoursesBySlugs(slugs: string[]): Promise<Course[]> {
     if (slugs.length === 0) return []
     const rows = await this.db.select().from(courses).where(inArray(courses.slug, slugs))
+    return rows.map(toCourse)
+  }
+
+  async listPublishedCourses(): Promise<Course[]> {
+    const rows = await this.db
+      .select()
+      .from(courses)
+      .where(eq(courses.status, 'published'))
+      .orderBy(asc(courses.title))
     return rows.map(toCourse)
   }
 

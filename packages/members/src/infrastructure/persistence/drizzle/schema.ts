@@ -1,4 +1,5 @@
 import {
+  boolean,
   index,
   integer,
   jsonb,
@@ -9,6 +10,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core'
 import type { LessonBlockContent } from '../../../domain/course/lesson-block'
+import type { QuizAnswers } from '../../../domain/course/quiz'
 import type { EntitlementSnapshot } from '../../../domain/entitlement/entitlement-snapshot'
 
 // Compartilha o MESMO Postgres do payments/auth/catalog/funnel, mas é dono do
@@ -189,6 +191,33 @@ export const lessonCompletions = members.table(
   ],
 )
 
+// ── Tentativas de quiz (histórico; score calculado NO SERVIDOR) ─────────────
+// Sem UNIQUE: cada submit é uma linha. O estado derivado (última nota, cooldown,
+// já aprovou) é agregado por (user_id, block_id) ordenado por created_at.
+export const quizAttempts = members.table(
+  'quiz_attempts',
+  {
+    id: uuid('id').primaryKey(),
+    userId: uuid('user_id').notNull(),
+    lessonId: uuid('lesson_id')
+      .notNull()
+      .references(() => lessons.id, { onDelete: 'cascade' }),
+    blockId: uuid('block_id')
+      .notNull()
+      .references(() => lessonBlocks.id, { onDelete: 'cascade' }),
+    courseId: uuid('course_id')
+      .notNull()
+      .references(() => courses.id, { onDelete: 'cascade' }),
+    /** 0–100, inteiro. */
+    score: integer('score').notNull(),
+    passed: boolean('passed').notNull(),
+    /** questionId → choiceIds marcados (auditoria/correção). */
+    answers: jsonb('answers').$type<QuizAnswers>().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [index('quiz_attempts_user_block_idx').on(t.userId, t.blockId, t.createdAt)],
+)
+
 // ── Posição de reprodução / última aula acessada (1 linha por aluno+aula) ───
 // `positionSeconds` = retomar o vídeo de onde parou; `updatedAt` = last-accessed
 // do curso (alimenta o "continuar de onde parou" no detalhe do curso).
@@ -228,6 +257,7 @@ export const schema = {
   entitlements,
   lessonCompletions,
   lessonProgress,
+  quizAttempts,
   processedWebhooks,
 }
 

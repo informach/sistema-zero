@@ -28,6 +28,18 @@ export const VideoPositionBody = t.Object({
   positionSeconds: t.Integer({ minimum: 0, maximum: 100_000 }),
 })
 
+/**
+ * Corpo de `POST /members/lessons/:lessonId/blocks/:blockId/quiz-attempts`:
+ * questionId → choiceIds marcados. Score é calculado NO SERVIDOR.
+ */
+export const QuizAttemptBody = t.Object({
+  answers: t.Record(
+    t.String({ minLength: 1, maxLength: 64 }),
+    t.Array(t.String({ minLength: 1, maxLength: 64 }), { maxItems: 20 }),
+    { maxProperties: 100 },
+  ),
+})
+
 // ── Admin (painel `@sistemazero/admin`) ─────────────────────────────────────
 
 const ENTITLEMENT_STATUS = t.Union([

@@ -27,6 +27,8 @@ export interface Course {
   description: string | null
   coverImageUrl: string | null
   status: CourseStatus
+  /** Extras livres (ex.: `salesPageUrl` — URL da página de vendas no funil). */
+  metadata: Record<string, unknown> | null
   createdAt: Date
   updatedAt: Date
 }

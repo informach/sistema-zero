@@ -42,3 +42,27 @@ export class CourseConflictError extends DomainError {
     super(message)
   }
 }
+
+/** Bloco de quiz inexistente (ou o bloco não é um quiz). → 404. */
+export class QuizBlockNotFoundError extends DomainError {
+  readonly code = 'QUIZ_BLOCK_NOT_FOUND'
+  constructor(message = 'Quiz não encontrado') {
+    super(message)
+  }
+}
+
+/** Retry do quiz dentro do cooldown após reprovar. → 429. */
+export class QuizCooldownError extends DomainError {
+  readonly code = 'QUIZ_COOLDOWN'
+  constructor(readonly retryAvailableAt: Date) {
+    super(`Aguarde para refazer o quiz (disponível em ${retryAvailableAt.toISOString()})`)
+  }
+}
+
+/** Aula tem quiz com nota de corte ainda não aprovado — conclusão bloqueada. → 409. */
+export class QuizGateNotPassedError extends DomainError {
+  readonly code = 'QUIZ_GATE_NOT_PASSED'
+  constructor(message = 'Conclua o quiz da aula com a nota mínima para finalizá-la') {
+    super(message)
+  }
+}

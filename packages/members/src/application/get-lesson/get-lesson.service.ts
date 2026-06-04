@@ -1,9 +1,11 @@
 import { LessonNotFoundError } from '../../domain/course/course.errors'
+import { computeRetryAvailableAt } from '../../domain/course/quiz'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
+import type { QuizAttemptRepository } from '../../domain/ports/quiz-attempt-repository.port'
 import type { VideoPositionRepository } from '../../domain/ports/video-position-repository.port'
 import type { CheckAccessService } from '../access/check-access.service'
-import { type LessonDetailView, toLessonDetailView } from '../mappers/views'
+import { type LessonDetailView, type QuizStateView, toLessonDetailView } from '../mappers/views'
 
 /** Detalhe da aula com o conteúdo COMPLETO (blocos + anexos) — exige acesso ativo. */
 export class GetLessonService {
@@ -12,16 +14,39 @@ export class GetLessonService {
     private readonly courses: CourseRepository,
     private readonly progress: ProgressRepository,
     private readonly positions: VideoPositionRepository,
+    private readonly quizAttempts: QuizAttemptRepository,
+    private readonly clock: () => Date,
   ) {}
 
   async execute(userId: string, courseSlug: string, lessonId: string): Promise<LessonDetailView> {
     const { course } = await this.checkAccess.requireBySlug(userId, courseSlug)
     const lesson = await this.courses.findLessonWithContent(lessonId)
     if (!lesson || lesson.courseId !== course.id) throw new LessonNotFoundError()
-    const [completedIds, positionSeconds] = await Promise.all([
+
+    const quizBlockIds = lesson.blocks.filter((b) => b.content.kind === 'quiz').map((b) => b.id)
+    const [completedIds, positionSeconds, summaries] = await Promise.all([
       this.progress.listCompletedLessonIds(userId, course.id),
       this.positions.findPosition(userId, lessonId),
+      this.quizAttempts.summarizeByBlockIds(userId, quizBlockIds),
     ])
-    return toLessonDetailView(lesson, course.slug, completedIds.includes(lessonId), positionSeconds)
+
+    const now = this.clock()
+    const quizStates = new Map<string, QuizStateView>()
+    for (const [blockId, s] of summaries) {
+      quizStates.set(blockId, {
+        lastScore: s.lastScore,
+        passed: s.everPassed,
+        attemptsCount: s.attemptsCount,
+        retryAvailableAt: computeRetryAvailableAt(s, now)?.toISOString() ?? null,
+      })
+    }
+
+    return toLessonDetailView(
+      lesson,
+      course.slug,
+      completedIds.includes(lessonId),
+      positionSeconds,
+      quizStates,
+    )
   }
 }

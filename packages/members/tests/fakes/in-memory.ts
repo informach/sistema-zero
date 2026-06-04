@@ -12,6 +12,7 @@ import {
 } from '../../src/domain/course/course'
 import { DuplicateSlugError } from '../../src/domain/course/course.errors'
 import type { LessonBlockContent, LessonBlockKind } from '../../src/domain/course/lesson-block'
+import type { QuizAttemptSummary } from '../../src/domain/course/quiz'
 import {
   EntitlementAggregate,
   type EntitlementState,
@@ -34,6 +35,10 @@ import type {
 } from '../../src/domain/ports/entitlement-repository.port'
 import type { ProcessedWebhookRepository } from '../../src/domain/ports/processed-webhook-repository.port'
 import type { ProgressRepository } from '../../src/domain/ports/progress-repository.port'
+import type {
+  QuizAttemptRecord,
+  QuizAttemptRepository,
+} from '../../src/domain/ports/quiz-attempt-repository.port'
 import type { VideoPositionRepository } from '../../src/domain/ports/video-position-repository.port'
 
 export const silentLogger: Logger = {
@@ -235,6 +240,12 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     return this.courses.filter((c) => set.has(c.slug))
   }
 
+  async listPublishedCourses(): Promise<Course[]> {
+    return this.courses
+      .filter((c) => c.status === 'published')
+      .sort((a, b) => a.title.localeCompare(b.title))
+  }
+
   async findOutline(courseId: string): Promise<ModuleWithLessons[]> {
     return this.modules
       .filter((m) => m.courseId === courseId)
@@ -291,7 +302,13 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
   async createCourse(fields: CourseFields): Promise<Course> {
     if (this.courses.some((c) => c.slug === fields.slug)) throw new DuplicateSlugError()
     const now = new Date()
-    const course: Course = { id: randomUUID(), ...fields, createdAt: now, updatedAt: now }
+    const course: Course = {
+      id: randomUUID(),
+      ...fields,
+      metadata: null,
+      createdAt: now,
+      updatedAt: now,
+    }
     this.courses.push(course)
     return course
   }
@@ -589,6 +606,42 @@ export class InMemoryVideoPositionRepository implements VideoPositionRepository 
     for (const courseId of courseIds) {
       const lessonId = await this.lastAccessedLessonId(userId, courseId)
       if (lessonId) out.set(courseId, lessonId)
+    }
+    return out
+  }
+}
+
+export class InMemoryQuizAttemptRepository implements QuizAttemptRepository {
+  readonly attempts: QuizAttemptRecord[] = []
+
+  async save(attempt: QuizAttemptRecord): Promise<void> {
+    this.attempts.push({ ...attempt, answers: { ...attempt.answers } })
+  }
+
+  /** Mirror do SQL: agrega o histórico por bloco (mais recente = última tentativa). */
+  async summarizeByBlockIds(
+    userId: string,
+    blockIds: string[],
+  ): Promise<Map<string, QuizAttemptSummary>> {
+    const set = new Set(blockIds)
+    const out = new Map<string, QuizAttemptSummary>()
+    const sorted = [...this.attempts]
+      .filter((a) => a.userId === userId && set.has(a.blockId))
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    for (const a of sorted) {
+      const existing = out.get(a.blockId)
+      if (!existing) {
+        out.set(a.blockId, {
+          attemptsCount: 1,
+          lastScore: a.score,
+          lastPassed: a.passed,
+          lastAttemptAt: a.createdAt,
+          everPassed: a.passed,
+        })
+        continue
+      }
+      existing.attemptsCount += 1
+      existing.everPassed = existing.everPassed || a.passed
     }
     return out
   }
