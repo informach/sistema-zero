@@ -2,7 +2,9 @@
 
 Funil de vendas do produto **No Comando da IA** (ebook, R$ 37): quiz de 10 perguntas (em `/quiz`;
 `/` redireciona) → resultado personalizado → página de vendas → modal de pré-checkout →
-checkout (**Pix, cartão e boleto**) → painel admin (login via auth/IdP).
+checkout estilo Hotmart (**Pix e cartão** na UI; boleto segue disponível só pela API) → painel
+admin (login via auth/IdP). Rodapé institucional com links para `/politica-de-privacidade` e
+`/termos-de-uso`.
 
 - **Stack**: Astro 6 (`output: server` + `@astrojs/node` standalone, no Bun), ilhas **React 19**
   só onde há interação, **Drizzle + postgres.js** (schema `funil`), **Tailwind CSS v4**, **Zod**.
@@ -91,15 +93,34 @@ Para trocar uma imagem, basta substituir o arquivo mantendo o nome (e o aspecto:
 hero/recebe/quem-criou são 16:9, bônus/prints são 4:3, capa é retrato A4).
 Os favicons (`favicon.ico` + PNGs 16/32 + `apple-touch-icon.png`) são os mesmos do admin.
 
-## Cartão e boleto
+## Checkout (Pix e cartão)
 
-Os três métodos estão ligados (`/api/checkout/{pix,card,boleto}`):
-- **Pix** — QR/copia-e-cola; confirma por polling + webhook.
+O checkout (estilo Hotmart) exige os **Dados pessoais** (e-mail + confirmação + nome + CPF) antes
+de qualquer cobrança — eles vão no corpo de `/api/checkout/{pix,card}`, atualizam o lead e viram o
+`customer` da cobrança. Os três métodos seguem ligados na API (`/api/checkout/{pix,card,boleto}`):
+- **Pix** — gerado **só por clique** em "Gerar código Pix" (botão desabilitado até os dados
+  validarem); o CPF/nome vão como `devedor` da cob na Efí. QR/copia-e-cola; confirma por
+  polling + webhook.
 - **Cartão** — tokenização no browser (`payment-token-efi`,
   `EfiPay.CreditCard…getPaymentToken()` com `PUBLIC_EFI_ACCOUNT_IDENTIFIER`); o server nunca toca
-  PAN/CVV. Resposta síncrona (PAID/recusado).
-- **Boleto** — código de barras; confirma por webhook (compensação).
+  PAN/CVV; o CPF do titular é o dos Dados pessoais. Resposta síncrona (PAID/recusado).
+- **Boleto** — fora da UI; a rota segue funcional (código de barras; confirma por webhook).
 
 O preço é **autoritativo do catálogo**: `/api/checkout/quote` cota a oferta (+ cupom opcional) via
 gateway. Após o pagamento, o comprador é registrado no `auth` e recebe a matrícula na **área de
 membros** (`grantMembers`, idempotente; o webhook é o backstop durável).
+
+### Testando cartão no sandbox da Efí
+
+Qualquer número **Luhn-válido** funciona; o **último dígito** simula o resultado:
+
+| Final | Resultado | Exemplo (Visa, Luhn-válido) |
+|---|---|---|
+| 1 | Recusado — "Dados do cartão inválidos" | `4485 7856 0000 0071` |
+| 2 | Recusado — "não autorizada por motivos de segurança" | `4485 7856 0000 0022` |
+| 3 | Recusado — "tente novamente mais tarde" | `4485 7856 0000 0063` |
+| outro | **Aprovado** | `4485 7856 7429 0087` |
+
+Validade: qualquer data futura · CVV: 3 dígitos (4 p/ Amex) · CPF (Dados pessoais): use um
+válido, ex. `529.982.247-25`. Exige `PUBLIC_EFI_SANDBOX=true` e adblock desligado (fingerprint
+da ClearSale). Pix em sandbox: a cob é criada de verdade, mas o QR não compensa sozinho.

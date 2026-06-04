@@ -323,6 +323,9 @@ successfully" sem rodar). Foi exatamente o que aconteceu com auth/funnel antes d
   projeto). `.env`: `DATABASE_URL=...localhost:5433/sistemazero` (banco compartilhado).
 - Variáveis: copie de `.env.example`. `EFI_SANDBOX=true` para homologação.
 - Teste sandbox: cobranças de **R$0,01 a R$10,00** são as usadas em homologação.
+- **Cartão em sandbox:** qualquer número **Luhn-válido**; o **último dígito** simula o resultado
+  (1 = dados inválidos · 2 = recusa de segurança · 3 = tente mais tarde · resto = **aprovado**;
+  ex. aprovado: visa `4485785674290087`). Validade futura + CVV de 3-4 dígitos quaisquer.
 - O webhook precisa de URL pública (Efí não alcança `localhost`) → teste após o
   deploy ou via túnel.
 

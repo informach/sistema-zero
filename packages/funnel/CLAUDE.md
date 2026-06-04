@@ -17,7 +17,8 @@ Orientações para agentes trabalhando **dentro deste package**. Para setup loca
 
 Funil de vendas do ebook **No Comando da IA** (R$ 37):
 `quiz (10 perguntas em /quiz)` → `resultado personalizado` → `página de vendas` →
-`modal pré-checkout` → `checkout (Pix / cartão / boleto)` → `/obrigado` · + painel `/admin`.
+`modal pré-checkout` → `checkout estilo Hotmart (Pix / cartão na UI; boleto só pela API)` →
+`/obrigado` · + páginas legais (`/politica-de-privacidade`, `/termos-de-uso`) · + painel `/admin`.
 `/` redireciona (302) para `/quiz` — a P1 (com imagens) é o primeiro passo da própria ilha do quiz.
 
 **Stack:** Astro 6 (`output: 'server'` + `@astrojs/node` standalone, roda no Bun) · ilhas **React 19**
