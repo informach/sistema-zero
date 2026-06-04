@@ -83,7 +83,8 @@ src/
 ├── application/      # grant/revoke-entitlement, access/check-access, list-my-courses,
 │   │                 #   list-catalog (todos os published + hasAccess), get-my-course,
 │   │                 #   get-lesson, mark-lesson-complete, get-course-progress,
-│   │                 #   save-course-rating/get-course-rating (classificação do curso)
+│   │                 #   save-course-rating/get-course-rating (classificação do curso),
+│   │                 #   get-attachment-download/get-ebook-download (resolve p/ o BFF)
 │   └── mappers/         # views.ts (DTOs de saída + Date→ISO)
 ├── infrastructure/
 │   ├── config/env       # Zod fail-fast

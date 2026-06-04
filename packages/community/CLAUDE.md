@@ -259,7 +259,11 @@ Da raiz: `bun run dev:community`, `build:community`, `typecheck:community`.
   HTML (acessíveis), inclinação leve por drag (OrbitControls restrito), flutuação idle.
   **Orientação DE FRENTE** (ajustes 04/06/2026): folha não virada = rotação 0 (livro fechado
   mostra a CAPA pro leitor), virada = −π; verso da última folha sem página = **contracapa
-  escura** (`BACK_COVER_COLOR`). **Legibilidade**: `Canvas flat` (SEM tone mapping — ACES lavava
+  escura** (`BACK_COVER_COLOR`). **Empilhamento (gotcha)**: a fórmula `(page − number)·d` da
+  técnica de referência INVERTE a pilha esquerda (a capa cobria a página atual a partir de ~3
+  folhas viradas) — cada pilha desce na ordem certa (recém-virada por cima), o topo esquerdo
+  fica 2 gaps acima do direito (folha em virada nunca colide com o novo topo direito; pilhas
+  não se sobrepõem em x) e `SHEET_GAP = 1.4×espessura` (faces coplanares = z-fighting). **Legibilidade**: `Canvas flat` (SEM tone mapping — ACES lavava
   o contraste do texto), texturas 1536px + `anisotropy 16`, luz ambiente dominante. **Tela
   cheia** no container (Fullscreen API, mesmo padrão do `vimeo-player`; em fullscreen o
   `aspect-video` vira `h-full` e o **zoom por scroll LIGA** — fora dela ficaria sequestrando o

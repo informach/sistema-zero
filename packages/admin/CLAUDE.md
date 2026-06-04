@@ -118,8 +118,10 @@ conteúdo dos blocos do members (lixo órfão no R2 é dívida documentada; sem 
 (o renderer do community extrai o id por regex `vimeo\.com\/...` — id cru NÃO funciona); members e
 community NÃO mudaram (`captions: {lang,url}[]` já existia no DTO; CSP do community já libera
 `player.vimeo.com`). Server-only: `src/server/{r2,vimeo,image-optimizer,media}.ts`. Componentes:
-`src/components/media/*` (image-uploader c/ fallback de URL manual, file-uploader, video-uploader +
-use-video-upload, video-thumbnail-uploader, vimeo-preview). `next.config.ts` tem
+`src/components/media/*` (image-uploader — fallback de URL manual opcional via `allowManualUrl`,
+`false` no bloco de imagem; file-uploader; **audio-uploader** — bucket público + duração auto;
+video-uploader + use-video-upload; video-thumbnail-uploader — só Vimeo, sem `onPoster`;
+vimeo-preview). `next.config.ts` tem
 `serverExternalPackages: ['sharp']` (binário nativo). Envs OPCIONAIS (R2_*, VIMEO_*) — ausentes →
 503 `MEDIA_NOT_CONFIGURED` amigável, nunca quebra o boot. Buckets R2: dev = `testes` (público via
 r2.dev), prod = `comunidade-sistema-zero` (`cdn.sistemazero.com.br`); **anexos** vão para o bucket
