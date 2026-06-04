@@ -63,10 +63,12 @@ bun run --filter @sistemazero/auth db:seed --email voce@exemplo.com --password "
 `/admin` sem sessão redireciona p/ o login; o botão "Sair" revoga o refresh no auth e encerra a sessão.
 Garanta HTTPS em produção (os cookies vão com `Secure`).
 
-## Imagens (fornecidas pelo usuário)
+## Imagens
 
-Coloque os arquivos em `public/img/` com estes nomes (referenciados por URL, então o
-build nunca quebra se faltarem — aparece um placeholder até você adicioná-los):
+Todas as imagens vivem em `public/img/` e são referenciadas por URL (o build nunca quebra
+se faltarem — o `ImageSlot` mostra um placeholder com a legenda até o arquivo existir).
+Desde o redesign da oferta (jun/2026) todos os arquivos abaixo estão versionados no repo
+(WebP otimizado, ≤1600px de largura, gerados com sharp a partir do design):
 
 | Arquivo (`public/img/…`) | Onde aparece |
 |---|---|
@@ -74,13 +76,17 @@ build nunca quebra se faltarem — aparece um placeholder até você adicioná-l
 | `q1-card-b.jpg` | Quiz P1, opção B (empreendedora) |
 | `q1-card-c.jpg` | Quiz P1, opção C (dono de pequeno negócio) |
 | `q1-card-d.jpg` | Quiz P1, opção D (profissional de marketing) |
-| `sales-hero.webp` | Página de vendas, topo |
-| `print-cozya.webp` | Seção "Quem criou" (Cozya) |
-| `print-agenda-da-turma.webp` | Seção "Quem criou" (Agenda da Turma) |
-| `depoimento-1.webp` | Seção "Quem criou" (depoimento) |
+| `sales-hero.webp` | Oferta, hero |
+| `recebe-ebook-kit.webp` | Oferta, "O que você recebe" (ebook + kit) |
+| `recebe-anexos.webp` | Oferta, "O que você recebe" (anexos do kit) |
+| `bonus-1.webp` | Oferta, card do Bônus 1 (mini-glossário) |
+| `bonus-2.webp` | Oferta, card do Bônus 2 (10 sinais) |
+| `quem-criou.webp` | Oferta, "Quem criou" (foto da Helena e do Júlio) |
+| `print-agenda-da-turma.webp` | Oferta, "Quem criou" (Agenda da Turma) |
+| `print-cozya.webp` | Oferta, "Quem criou" (Cozya) |
 
-As fotos do quiz (P1) e o hero usam fundo/`<img>` resiliente; os prints de produto e
-depoimentos usam o componente `ImageSlot` (placeholder com legenda até o arquivo existir).
+Para trocar uma imagem, basta substituir o arquivo mantendo o nome (e o aspecto:
+hero/recebe/quem-criou são 16:9, bônus/prints são 4:3).
 
 ## Cartão e boleto
 

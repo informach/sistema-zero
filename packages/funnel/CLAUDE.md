@@ -123,11 +123,13 @@ gateway re-entrega) e **best-effort** no polling do Pix (`pixStatus`) e no cart�
 
 ## Renderização (prerender split)
 
-- **Estáticas (`prerender = true`):** `oferta`, `quiz` (shell; a ilha do quiz busca/cria o lead e
+- **Estáticas (`prerender = true`):** `quiz` (shell; a ilha do quiz busca/cria o lead e
   roda as 10 perguntas), `obrigado`. Servidas como HTML estático.
-- **SSR (`prerender = false`):** `index` (redirect 302 → `/quiz`), `resultado`, `checkout`, `admin`,
-  `admin/login`, **todas** `/api/*`, `health`.
-  Páginas com dados do lead setam `cache-control: no-store` e redirecionam se faltar cookie/contato.
+- **SSR (`prerender = false`):** `index` (redirect 302 → `/quiz`), `oferta` (nome/preço vêm do
+  catálogo em runtime; sem dado por-usuário → `cache-control: public, max-age=60,
+  stale-while-revalidate=300`), `resultado`, `checkout`, `admin`, `admin/login`, **todas** `/api/*`,
+  `health`. Páginas com dados do lead setam `cache-control: no-store` e redirecionam se faltar
+  cookie/contato.
 
 ## Segurança
 
