@@ -60,6 +60,7 @@ describe('UserAggregate', () => {
       status: 'suspended' as const,
       phone: '+55',
       signupSource: 'admin',
+      avatarUrl: 'https://cdn.example.com/a.webp',
       createdAt: now,
       updatedAt: now,
     }
@@ -82,6 +83,7 @@ describe('UserAggregate', () => {
         status: 'active',
         phone: null,
         signupSource: null,
+        avatarUrl: null,
         createdAt: past,
         updatedAt: past,
       })
@@ -118,6 +120,23 @@ describe('UserAggregate', () => {
       expect(u.firstName).toBe('Ana Paula')
       expect(u.phone).toBe('+5511')
       expect(u.version).toBe(4)
+    })
+
+    test('updateProfile seta/limpa avatarUrl e preserva passwordHash', () => {
+      const u = customer()
+      u.updateProfile({ avatarUrl: 'https://cdn.example.com/a.webp' })
+      expect(u.avatarUrl).toBe('https://cdn.example.com/a.webp')
+      expect(u.version).toBe(4)
+      expect(u.passwordHash).toBe('h') // update de avatar não toca a senha
+
+      // Mesmo valor → no-op (não bumpa de novo).
+      u.updateProfile({ avatarUrl: 'https://cdn.example.com/a.webp' })
+      expect(u.version).toBe(4)
+
+      // `null` (e string em branco) limpam a foto.
+      u.updateProfile({ avatarUrl: null })
+      expect(u.avatarUrl).toBeNull()
+      expect(u.version).toBe(4) // mesma edição (dirty) — version sobe 1x por instância
     })
   })
 })

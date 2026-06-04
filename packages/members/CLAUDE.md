@@ -57,7 +57,8 @@ src/
 │   ├── progress/        # computeProgress (puro)
 │   └── ports/           # entitlement/course/progress/processed-webhook repos + catalog-gateway
 ├── application/      # grant/revoke-entitlement, access/check-access, list-my-courses,
-│   │                 #   get-my-course, get-lesson, mark-lesson-complete, get-course-progress
+│   │                 #   list-catalog (todos os published + hasAccess), get-my-course,
+│   │                 #   get-lesson, mark-lesson-complete, get-course-progress
 │   └── mappers/         # views.ts (DTOs de saída + Date→ISO)
 ├── infrastructure/
 │   ├── config/env       # Zod fail-fast
@@ -114,6 +115,12 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   confiável (só vale se passou pelo gateway). Webhooks NÃO usam (já têm HMAC).
 - **Catálogo** é chamado DIRETO (S2S, `CATALOG_BASE_URL`), fora do caminho quente — a
   rota de entitlements é pública de leitura.
+- **`GET /members/catalog`** (rota do aluno, JWT + `x-internal-token`): "Todos os
+  cursos" — TODO curso `published` (ordenado por título) com `hasAccess` (matrícula
+  ativa de curso do `x-auth-user-id`) e `salesPageUrl` (de `course.metadata.salesPageUrl`,
+  string não-vazia; senão `null` → o community cai no fallback `FUNNEL_URL`). Sem
+  progresso (catálogo é descoberta/venda). `ListCatalogService` (2 queries, sem N+1).
+  O `metadata` ainda NÃO é editável pelos DTOs admin (setar via seed/SQL; fatia futura).
 - Cancelar/expirar assinatura é um **UPDATE atômico set-based** por `subscription_id`
   (sem load-mutate-save por linha → sem lost-update sob corrida com renovação).
 - `processed_webhooks` tem `pruneProcessedBefore(date)` (retenção; chamar por cron —

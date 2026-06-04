@@ -26,6 +26,7 @@ function makeUser(overrides: Partial<UserSnapshot> = {}): UserAggregate {
     status: 'active',
     phone: null,
     signupSource: null,
+    avatarUrl: null,
     createdAt: created,
     updatedAt: created,
     ...overrides,

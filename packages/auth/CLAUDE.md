@@ -16,8 +16,9 @@ usuário das claims e autoriza por rota). Runtime: **Bun**. Linguagem: **TS (ESM
 
 > Estado: **slices completos e testados** (registro/login/refresh/logout/me + JWKS;
 > admin de usuários; reset/definição de senha + self-service de perfil + rotas
-> internas S2S), 62+ testes passando. Migrations `0000_*` (schema `auth`) e
-> `0001_*` (`password_reset_tokens`) **aplicadas** no Postgres compartilhado local.
+> internas S2S), 80 testes passando. Migrations `0000_*` (schema `auth`),
+> `0001_*` (`password_reset_tokens`), `0002_*` (`otp_codes`) e `0003_*`
+> (`users.avatar_url`) **aplicadas** no Postgres compartilhado local.
 
 ## Arquitetura (DDD + Hexagonal)
 
@@ -99,10 +100,13 @@ src/
    e-mail**: SEMPRE devolve `{ userId, created }` (201 criou / 200 reaproveitou) — é
    o que destrava o COMPRADOR RECORRENTE (que no `register` recebia 409 e ficava sem
    `userId`, logo sem concessão de acesso). NÃO emite tokens (S2S, sem sessão).
-9. **Self-service (`/me`):** `PATCH /auth/me` edita nome/telefone (**e-mail NÃO** —
-   é o vínculo com as compras no payments; troca futura exigirá verificação) e
-   `POST /auth/me/password` troca a senha exigindo a atual; ambos revogam nada/todas
-   as sessões respectivamente (troca de senha → re-login).
+9. **Self-service (`/me`):** `PATCH /auth/me` edita nome/telefone/**foto**
+   (`avatarUrl` — URL pública; o UPLOAD é do app cliente, ex.: community → R2;
+   `null` remove; flui agregado → coluna `avatar_url` → `UserView.avatarUrl`,
+   **fora das claims do JWT** — o front busca fresco via `GET /auth/me`). E-MAIL
+   NÃO é editável (vínculo com as compras no payments; troca futura exigirá
+   verificação). `POST /auth/me/password` troca a senha exigindo a atual; ambos
+   revogam nada/todas as sessões respectivamente (troca de senha → re-login).
 
 ## Integração com o gateway
 
