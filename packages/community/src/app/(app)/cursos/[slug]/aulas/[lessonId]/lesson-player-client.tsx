@@ -194,8 +194,9 @@ export function LessonPlayer({ course, lesson, prevHref, nextHref, viewerEmail }
                   .sort((a, b) => a.sortOrder - b.sortOrder)
                   .map((file) => (
                     <li key={file.id}>
+                      {/* Rota autenticada: aplica a marca d'água (e-mail do aluno) no download. */}
                       <a
-                        href={file.url}
+                        href={`/api/cursos/${encodeURIComponent(course.slug)}/aulas/${encodeURIComponent(lesson.id)}/anexos/${encodeURIComponent(file.id)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-interactive transition-colors hover:bg-muted/60 hover:text-interactive-hover"

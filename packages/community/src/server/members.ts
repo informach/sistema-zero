@@ -1,5 +1,6 @@
 import 'server-only'
 import type {
+  AttachmentDownloadView,
   CatalogCourseView,
   CourseDetailView,
   LessonDetailView,
@@ -30,6 +31,20 @@ export function getLesson(
   lessonId: string,
 ): Promise<GatewayResponse<LessonDetailView>> {
   return gatewayFetch(`/members/courses/${enc(slug)}/lessons/${enc(lessonId)}`)
+}
+
+/**
+ * Resolve a localização REAL de um anexo (matrícula garantida pelo members).
+ * SÓ para a rota de download — a `storageRef` nunca deve chegar ao browser.
+ */
+export function resolveAttachment(
+  slug: string,
+  lessonId: string,
+  attachmentId: string,
+): Promise<GatewayResponse<AttachmentDownloadView>> {
+  return gatewayFetch(
+    `/members/courses/${enc(slug)}/lessons/${enc(lessonId)}/attachments/${enc(attachmentId)}/resolve`,
+  )
 }
 
 /** Marca a aula como concluída (idempotente no members). */

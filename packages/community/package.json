@@ -8,13 +8,15 @@
     "build": "next build",
     "start": "next start -p 3007",
     "typecheck": "tsc --noEmit",
+    "test": "bun test",
     "check": "biome check .",
     "check:fix": "biome check --write ."
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1032.0",
-    "@vimeo/player": "^2.30.4",
+    "@cantoo/pdf-lib": "^2.7.1",
     "@sistemazero/ui": "workspace:*",
+    "@vimeo/player": "^2.30.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "geist": "^1.6.1",
@@ -32,6 +34,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.0",
+    "@types/bun": "^1.3.14",
     "@types/node": "^22.10.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",

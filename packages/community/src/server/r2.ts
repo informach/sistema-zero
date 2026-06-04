@@ -1,5 +1,10 @@
 import 'server-only'
-import { PutObjectCommand, type PutObjectCommandInput, S3Client } from '@aws-sdk/client-s3'
+import {
+  GetObjectCommand,
+  PutObjectCommand,
+  type PutObjectCommandInput,
+  S3Client,
+} from '@aws-sdk/client-s3'
 import { getEnv } from '@/lib/env'
 
 // Espelha o @sistemazero/admin (src/server/r2.ts) — mesmo bucket R2, prefixo próprio.
@@ -41,9 +46,44 @@ function requireR2Config(): R2Config {
   }
 }
 
+/** Bucket PRIVADO (materiais didáticos) — sem URL pública; leitura só via S3 API. */
+interface R2PrivateConfig {
+  accountId: string
+  accessKeyId: string
+  secretAccessKey: string
+  bucket: string
+}
+
+/** Config do bucket privado ou erro amigável (mesmas credenciais; bucket próprio). */
+function requirePrivateR2Config(): R2PrivateConfig {
+  const env = getEnv()
+  if (
+    !env.R2_ACCOUNT_ID ||
+    !env.R2_ACCESS_KEY_ID ||
+    !env.R2_SECRET_ACCESS_KEY ||
+    !env.R2_PRIVATE_BUCKET
+  ) {
+    throw new MediaNotConfiguredError(
+      'Download indisponível: configure R2_ACCOUNT_ID/R2_ACCESS_KEY_ID/R2_SECRET_ACCESS_KEY/R2_PRIVATE_BUCKET.',
+    )
+  }
+  return {
+    accountId: env.R2_ACCOUNT_ID,
+    accessKeyId: env.R2_ACCESS_KEY_ID,
+    secretAccessKey: env.R2_SECRET_ACCESS_KEY,
+    bucket: env.R2_PRIVATE_BUCKET,
+  }
+}
+
 let cachedClient: S3Client | null = null
 
-function getClient(cfg: R2Config): S3Client {
+// O client S3 é por CONTA (endpoint+credenciais) — o bucket é parâmetro do comando,
+// então público e privado compartilham a mesma instância cacheada.
+function getClient(cfg: {
+  accountId: string
+  accessKeyId: string
+  secretAccessKey: string
+}): S3Client {
   if (cachedClient) return cachedClient
   cachedClient = new S3Client({
     region: 'auto',
@@ -82,4 +122,26 @@ export async function r2PutObject(input: R2PutObjectInput): Promise<{ key: strin
     throw new Error('Falha ao enviar o arquivo para o armazenamento.')
   }
   return { key, url: `${cfg.publicBaseUrl}/${key}` }
+}
+
+/**
+ * Baixa um objeto do bucket PRIVADO (materiais didáticos) para a rota autenticada
+ * de download — onde a marca d'água com o e-mail do aluno é aplicada.
+ */
+export async function r2GetObjectPrivate(
+  key: string,
+): Promise<{ body: Buffer; contentType: string }> {
+  const cfg = requirePrivateR2Config()
+  const normalized = normalizeKey(key)
+  try {
+    const res = await getClient(cfg).send(
+      new GetObjectCommand({ Bucket: cfg.bucket, Key: normalized }),
+    )
+    if (!res.Body) throw new Error('Objeto sem corpo')
+    const body = Buffer.from(await res.Body.transformToByteArray())
+    return { body, contentType: res.ContentType ?? 'application/octet-stream' }
+  } catch (error) {
+    console.error('[r2] getObjectPrivate falhou', { key: normalized, error })
+    throw new Error('Falha ao buscar o arquivo no armazenamento.')
+  }
 }

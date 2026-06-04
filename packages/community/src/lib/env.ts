@@ -19,6 +19,9 @@ const EnvSchema = z.object({
   R2_SECRET_ACCESS_KEY: z.string().optional(),
   R2_BUCKET: z.string().optional(),
   R2_PUBLIC_URL: z.string().url().optional(),
+  // Bucket PRIVADO (materiais didáticos) — leitura p/ a rota de download com marca
+  // d'água. Sem URL pública; mesmas credenciais R2. Ausente → download responde 503.
+  R2_PRIVATE_BUCKET: z.string().optional(),
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
 })
 

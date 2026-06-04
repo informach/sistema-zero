@@ -117,7 +117,12 @@ src/
   server/   session.ts · gateway.ts · auth.ts · members.ts · payments.ts
             r2.ts · image-optimizer.ts · media.ts (avatar→R2; exceção consciente)   (server-only)
   lib/      env.ts (server-only) · types.ts (views do ALUNO) · user-display.ts · format.ts · cn.ts · api.ts
-  components/ ui/* (copiados do admin + password-input) · community/* (topnav/user-menu/user-avatar/cards/blocos)
+  components/ community/* (topnav/user-menu/user-avatar/cards/blocos)
+            ⚠️ Primitivos de UI (button/input/card/dialog/password-input/…) vivem no
+            **`@sistemazero/ui`** (packages/ui, compartilhado com o admin) — importe
+            `@sistemazero/ui/<componente>`; NÃO recrie botões/controles ad-hoc (foi a causa do
+            quiz fora do tema). Requisitos: `transpilePackages: ['@sistemazero/ui']` no
+            next.config + `@source "../../../ui/src"` no globals.css.
   proxy.ts                (ex-middleware; convenção Next 16, runtime nodejs)
 ```
 

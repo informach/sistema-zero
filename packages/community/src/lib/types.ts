@@ -201,13 +201,28 @@ export interface LessonBlockView {
   quizState?: QuizStateView | null
 }
 
+/**
+ * Anexo SEM `url` — a localização real nunca chega ao browser; o download é
+ * pela rota autenticada `/api/cursos/:slug/aulas/:lessonId/anexos/:id` (marca d'água).
+ */
 export interface LessonAttachmentView {
   id: string
   label: string
-  url: string
   fileType: string | null
   sizeBytes: number | null
   sortOrder: number
+}
+
+/**
+ * `GET …/attachments/:id/resolve` (server↔server, SÓ o BFF consome): localização
+ * real do anexo. NUNCA repassar `storageRef` ao browser.
+ */
+export interface AttachmentDownloadView {
+  label: string
+  fileType: string | null
+  sizeBytes: number | null
+  /** `r2priv:<key>` (bucket privado) ou URL http(s) externa/legada. */
+  storageRef: string
 }
 
 /** `GET /members/courses/:slug/lessons/:lessonId` (busca por ID, não slug). */
