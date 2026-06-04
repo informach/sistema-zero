@@ -1,0 +1,192 @@
+'use client'
+
+import { Plus, Trash2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Field } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import type { QuizQuestion } from '@/lib/types'
+
+export interface QuizValue {
+  questions: QuizQuestion[]
+  passingScore?: number
+}
+
+/**
+ * Primeiro erro de validação do quiz (ou `null` se ok). Espelha o que o members
+ * exige: ≥1 pergunta; por pergunta, prompt, ≥2 opções (com texto) e ≥1 correta.
+ */
+export function validateQuiz(quiz: QuizValue): string | null {
+  if (quiz.questions.length === 0) return 'Adicione ao menos uma pergunta ao quiz.'
+  for (const [i, q] of quiz.questions.entries()) {
+    const n = i + 1
+    if (!q.prompt.trim()) return `Pergunta ${n}: informe o enunciado.`
+    if (q.choices.length < 2) return `Pergunta ${n}: adicione ao menos 2 opções.`
+    if (q.choices.some((c) => !c.label.trim())) return `Pergunta ${n}: há opção sem texto.`
+    if (q.correctChoiceIds.length === 0) return `Pergunta ${n}: marque ao menos 1 opção correta.`
+  }
+  return null
+}
+
+function newChoice(): { id: string; label: string } {
+  return { id: crypto.randomUUID(), label: '' }
+}
+
+function newQuestion(): QuizQuestion {
+  return {
+    id: crypto.randomUUID(),
+    prompt: '',
+    choices: [newChoice(), newChoice()],
+    correctChoiceIds: [],
+  }
+}
+
+/** Form estruturado do bloco quiz — gera o MESMO `QuizBlock` que o textarea de JSON gerava. */
+export function QuizBuilder({
+  value,
+  onChange,
+}: {
+  value: QuizValue
+  onChange: (value: QuizValue) => void
+}) {
+  function patchQuestion(id: string, patch: Partial<QuizQuestion>) {
+    onChange({
+      ...value,
+      questions: value.questions.map((q) => (q.id === id ? { ...q, ...patch } : q)),
+    })
+  }
+
+  function removeQuestion(id: string) {
+    onChange({ ...value, questions: value.questions.filter((q) => q.id !== id) })
+  }
+
+  function patchChoice(q: QuizQuestion, choiceId: string, label: string) {
+    patchQuestion(q.id, {
+      choices: q.choices.map((c) => (c.id === choiceId ? { ...c, label } : c)),
+    })
+  }
+
+  function toggleCorrect(q: QuizQuestion, choiceId: string) {
+    const correct = q.correctChoiceIds.includes(choiceId)
+      ? q.correctChoiceIds.filter((id) => id !== choiceId)
+      : [...q.correctChoiceIds, choiceId]
+    patchQuestion(q.id, { correctChoiceIds: correct })
+  }
+
+  function removeChoice(q: QuizQuestion, choiceId: string) {
+    patchQuestion(q.id, {
+      choices: q.choices.filter((c) => c.id !== choiceId),
+      correctChoiceIds: q.correctChoiceIds.filter((id) => id !== choiceId),
+    })
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      <Field
+        label="Nota de corte (%)"
+        htmlFor="qb-passing"
+        hint="Com nota: o aluno precisa aprovar para concluir a aula. Vazio: quiz de fixação (não trava)."
+      >
+        <Input
+          id="qb-passing"
+          type="number"
+          min={0}
+          max={100}
+          className="max-w-32"
+          value={value.passingScore ?? ''}
+          onChange={(e) => {
+            const raw = e.target.value.trim()
+            onChange({ ...value, passingScore: raw === '' ? undefined : Number(raw) })
+          }}
+        />
+      </Field>
+
+      {value.questions.length === 0 ? (
+        <p className="rounded-lg border border-dashed border-border py-4 text-center text-sm text-muted-foreground">
+          Nenhuma pergunta ainda.
+        </p>
+      ) : (
+        value.questions.map((q, qi) => (
+          <div key={q.id} className="space-y-3 rounded-lg border border-border p-3">
+            <div className="flex items-start justify-between gap-2">
+              <span className="text-xs font-semibold text-muted-foreground">Pergunta {qi + 1}</span>
+              <Button variant="ghost" size="icon" onClick={() => removeQuestion(q.id)}>
+                <Trash2 className="size-4" />
+              </Button>
+            </div>
+            <Field label="Enunciado" htmlFor={`qb-prompt-${q.id}`}>
+              <Input
+                id={`qb-prompt-${q.id}`}
+                value={q.prompt}
+                onChange={(e) => patchQuestion(q.id, { prompt: e.target.value })}
+              />
+            </Field>
+
+            <div className="space-y-2">
+              <span className="text-xs font-medium text-muted-foreground">
+                Opções (marque as corretas)
+              </span>
+              {q.choices.map((c) => (
+                <div key={c.id} className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    className="size-4 shrink-0 accent-primary"
+                    aria-label="Opção correta"
+                    checked={q.correctChoiceIds.includes(c.id)}
+                    onChange={() => toggleCorrect(q, c.id)}
+                  />
+                  <Input
+                    value={c.label}
+                    placeholder="Texto da opção"
+                    onChange={(e) => patchChoice(q, c.id, e.target.value)}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    disabled={q.choices.length <= 2}
+                    onClick={() => removeChoice(q, c.id)}
+                  >
+                    <Trash2 className="size-4" />
+                  </Button>
+                </div>
+              ))}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => patchQuestion(q.id, { choices: [...q.choices, newChoice()] })}
+              >
+                <Plus className="size-4" /> Opção
+              </Button>
+            </div>
+
+            <Field
+              label="Explicação"
+              htmlFor={`qb-expl-${q.id}`}
+              hint="Opcional — o aluno vê após responder."
+            >
+              <Textarea
+                id={`qb-expl-${q.id}`}
+                rows={2}
+                value={q.explanation ?? ''}
+                onChange={(e) =>
+                  patchQuestion(q.id, {
+                    explanation: e.target.value.trim() ? e.target.value : undefined,
+                  })
+                }
+              />
+            </Field>
+          </div>
+        ))
+      )}
+
+      <Button
+        variant="outline"
+        size="sm"
+        className="self-start"
+        onClick={() => onChange({ ...value, questions: [...value.questions, newQuestion()] })}
+      >
+        <Plus className="size-4" /> Adicionar pergunta
+      </Button>
+    </div>
+  )
+}

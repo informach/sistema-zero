@@ -37,6 +37,7 @@ import {
   type LessonBlockKind,
   type LessonContentView,
 } from '@/lib/types'
+import { QuizBuilder, type QuizValue, validateQuiz } from './quiz-builder'
 
 const KIND_LABELS: Record<string, string> = {
   rich_text: 'Texto',
@@ -60,7 +61,7 @@ interface BlockForm {
   caption: string
   embedType: string
   height: string
-  quizJson: string
+  quiz: QuizValue
   /** Legendas/transcrição do vídeo (preenchidas pelo uploader Vimeo). */
   captions: { lang: string; url: string }[]
 }
@@ -78,14 +79,14 @@ const EMPTY_BLOCK: BlockForm = {
   caption: '',
   embedType: 'iframe',
   height: '',
-  quizJson: '{\n  "questions": [],\n  "passingScore": 70\n}',
+  quiz: { questions: [], passingScore: 70 },
   captions: [],
 }
 
 const num = (s: string): number | undefined => (s.trim() ? Number(s) : undefined)
 const opt = (s: string): string | undefined => (s.trim() ? s.trim() : undefined)
 
-/** Monta o conteúdo do bloco a partir do form (ou lança em quiz JSON inválido). */
+/** Monta o conteúdo do bloco a partir do form. */
 function buildContent(f: BlockForm): LessonBlockContent {
   const dur = num(f.durationSeconds)
   const height = num(f.height)
@@ -122,18 +123,12 @@ function buildContent(f: BlockForm): LessonBlockContent {
         ...(opt(f.html) ? { html: f.html } : {}),
         ...(height != null ? { height } : {}),
       }
-    default: {
-      // quiz — JSON.parse pode lançar (tratado em saveBlock).
-      const parsed = JSON.parse(f.quizJson)
-      const questions = Array.isArray(parsed?.questions) ? parsed.questions : []
-      const passingScore =
-        typeof parsed?.passingScore === 'number' ? parsed.passingScore : undefined
+    default:
       return {
         kind: 'quiz',
-        questions,
-        ...(passingScore != null ? { passingScore } : {}),
-      } as LessonBlockContent
-    }
+        questions: f.quiz.questions,
+        ...(f.quiz.passingScore != null ? { passingScore: f.quiz.passingScore } : {}),
+      }
   }
 }
 
@@ -238,22 +233,23 @@ export function LessonEditorClient({
       caption: c.kind === 'image' ? (c.caption ?? '') : '',
       embedType: c.kind === 'embed' ? c.embedType : 'iframe',
       height: c.kind === 'embed' && c.height != null ? String(c.height) : '',
-      quizJson:
+      quiz:
         c.kind === 'quiz'
-          ? JSON.stringify({ questions: c.questions, passingScore: c.passingScore }, null, 2)
-          : EMPTY_BLOCK.quizJson,
+          ? { questions: c.questions, passingScore: c.passingScore }
+          : EMPTY_BLOCK.quiz,
       captions: c.kind === 'video' ? (c.captions ?? []) : [],
     })
     setBlockOpen(true)
   }
   async function saveBlock() {
-    let content: LessonBlockContent
-    try {
-      content = buildContent(blockForm)
-    } catch {
-      toast.error('JSON do quiz inválido.')
-      return
+    if (blockForm.kind === 'quiz') {
+      const error = validateQuiz(blockForm.quiz)
+      if (error) {
+        toast.error(error)
+        return
+      }
     }
+    const content = buildContent(blockForm)
     await run(async () => {
       if (editingBlock)
         await apiSend(`/api/members/blocks/${editingBlock.id}`, 'PATCH', { content })
@@ -666,15 +662,10 @@ export function LessonEditorClient({
           ) : null}
 
           {blockForm.kind === 'quiz' ? (
-            <Field label="Quiz (JSON)" htmlFor="bquiz" hint="{ questions: [...], passingScore? }">
-              <Textarea
-                id="bquiz"
-                rows={10}
-                className="font-mono text-xs"
-                value={blockForm.quizJson}
-                onChange={(e) => setBlockForm((f) => ({ ...f, quizJson: e.target.value }))}
-              />
-            </Field>
+            <QuizBuilder
+              value={blockForm.quiz}
+              onChange={(quiz) => setBlockForm((f) => ({ ...f, quiz }))}
+            />
           ) : null}
         </div>
       </Dialog>
