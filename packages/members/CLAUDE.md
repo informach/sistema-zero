@@ -72,10 +72,12 @@ src/
 │   ├── course/          # course (tipos de leitura) + lesson-block (união) + errors
 │   ├── entitlement/     # entitlement.aggregate (máquina de estados) + status/snapshot/fulfillment/errors
 │   ├── progress/        # computeProgress (puro)
-│   └── ports/           # entitlement/course/progress/processed-webhook repos + catalog-gateway
+│   ├── rating/          # course-rating (chaves de feedback + isValidRatingHalf)
+│   └── ports/           # entitlement/course/progress/course-rating/processed-webhook repos + catalog-gateway
 ├── application/      # grant/revoke-entitlement, access/check-access, list-my-courses,
 │   │                 #   list-catalog (todos os published + hasAccess), get-my-course,
-│   │                 #   get-lesson, mark-lesson-complete, get-course-progress
+│   │                 #   get-lesson, mark-lesson-complete, get-course-progress,
+│   │                 #   save-course-rating/get-course-rating (classificação do curso)
 │   └── mappers/         # views.ts (DTOs de saída + Date→ISO)
 ├── infrastructure/
 │   ├── config/env       # Zod fail-fast
@@ -262,6 +264,8 @@ migration `0004`), `processed_webhooks`.
 - `course_progress` materializado; fan-out direto payments→members (hoje passa pelo funil).
 - `metadata.salesPageUrl` editável pelo admin (hoje os DTOs de autoria não tocam `metadata`;
   setar via seed/SQL).
+- Visualização das classificações do curso (listagem no admin e/ou média de estrelas no
+  catálogo) — esta fatia SÓ coleta/guarda (`course_ratings`), decisão do usuário 04/06/2026.
 
 ## Checklist antes de finalizar
 

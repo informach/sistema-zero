@@ -113,7 +113,8 @@ src/
       page.tsx              / (HOME) — grid "Meus cursos" (CourseCard + .sz-progress)
       cursos/               /cursos "Todos os cursos" (catálogo c/ lock → página de vendas)
       cursos/[slug]/        Módulos/aulas + "continuar de onde parei"
-      cursos/[slug]/aulas/[lessonId]/  Player (blocos + anexos + concluir + prev/next + outline)
+      cursos/[slug]/aulas/[lessonId]/  Player (blocos + anexos + concluir + prev/next + outline
+                                       + classificação do curso na sidebar — ver Contratos)
       perfil/               Foto (upload R2) + editar nome/telefone + trocar senha (e-mail IMUTÁVEL)
       compras/              Tabela paginada + dialog de detalhe
     api/
@@ -130,7 +131,7 @@ src/
             r2.ts · image-optimizer.ts · media.ts (avatar→R2; exceção consciente)
             watermark.ts (PDF pdf-lib + imagem sharp/SVG — puro, testado)   (server-only)
   lib/      env.ts (server-only) · types.ts (views do ALUNO) · user-display.ts · format.ts · cn.ts · api.ts
-  components/ community/* (topnav/user-menu/user-avatar/cards/blocos)
+  components/ community/* (topnav/user-menu/user-avatar/cards/blocos/course-rating-flow)
             ⚠️ Primitivos de UI (button/input/card/dialog/password-input/…) vivem no
             **`@sistemazero/ui`** (packages/ui, compartilhado com o admin) — importe
             `@sistemazero/ui/<componente>`; NÃO recrie botões/controles ad-hoc (foi a causa do
@@ -166,8 +167,9 @@ Da raiz: `bun run dev:community`, `build:community`, `typecheck:community`.
 - `GATEWAY_URL` (default `http://localhost:3000`).
 - `JWT_HS256_SECRET` — **MESMO** do `@sistemazero/auth` e do gateway.
 - `JWT_ISSUER`/`JWT_AUDIENCE` opcionais.
-- `FUNNEL_URL` opcional — fallback da página de vendas em `/cursos` (curso sem
-  `metadata.salesPageUrl`); sem ela e sem metadata, o card bloqueado fica não-clicável.
+- `FUNNEL_URL` opcional — fallback da página de vendas (curso sem `metadata.salesPageUrl`):
+  em `/cursos` (sem ela e sem metadata, o card bloqueado fica não-clicável) e na modal
+  Compartilhar da classificação do curso (sem URL, o botão Compartilhar é ocultado).
 - `R2_ACCOUNT_ID`/`R2_ACCESS_KEY_ID`/`R2_SECRET_ACCESS_KEY`/`R2_BUCKET`/`R2_PUBLIC_URL`
   opcionais — upload de avatar (ausentes → 503 amigável; mesmo bucket do admin: dev = `testes`
   com `R2_PUBLIC_URL` r2.dev · prod = `comunidade-sistema-zero` com `cdn.sistemazero.com.br`).
