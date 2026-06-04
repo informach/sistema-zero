@@ -8,6 +8,8 @@ export interface MetodoItem {
 export interface BonusItem {
   titulo: string
   texto: string
+  img: string
+  imgAlt: string
 }
 export interface ExemploItem {
   titulo: string
@@ -167,11 +169,15 @@ export const SALES = {
       {
         titulo: 'Bônus 1. Mini-glossário "O básico que a IA espera que você saiba"',
         texto: 'tela, fluxo, dado, regra, deploy, prompt, sistema, interface, em palavras simples.',
+        img: '/img/bonus-1.webp',
+        imgAlt: 'Mini-glossário "O básico que a IA espera que você saiba" em vários dispositivos',
       },
       {
         titulo: 'Bônus 2. 10 sinais de que você está virando refém da IA',
         texto:
           'um raio-x rápido para identificar se você usa a IA como ferramenta ou já depende dela para pensar por você.',
+        img: '/img/bonus-2.webp',
+        imgAlt: 'Guia "10 sinais de que você está virando refém da IA" em vários dispositivos',
       },
     ] as BonusItem[],
   },
@@ -211,13 +217,20 @@ export const SALES = {
     paragrafos: [
       'Somos Helena e Júlio, o Casal Sistema Zero. Dois desenvolvedores formados em Sistemas de Informação, com mais de 10 anos criando sistemas em empresas como Banco do Brasil, Tractebel e InCeres. Também criamos nossos próprios produtos digitais, como o Cozya e o Agenda da Turma, além de jogos e projetos com nossos filhos. Quando a IA virou febre, vimos muita gente boa cair na mesma armadilha: o tutorial que funciona, o projeto próprio que quebra, o código que ninguém entende. Atravessamos essa onda de outro jeito porque tínhamos fundamento, e organizamos esse jeito de pensar no método Z.E.R.O.',
     ],
+    foto: { src: '/img/quem-criou.webp', alt: 'Helena e Júlio, o Casal Sistema Zero' },
     legendaPrints: 'Sistemas criados com esse pensamento:',
     prints: [
-      { src: '/img/print-cozya.webp', alt: 'Print do Cozya' },
-      { src: '/img/print-agenda-da-turma.webp', alt: 'Print do Agenda da Turma' },
+      {
+        src: '/img/print-agenda-da-turma.webp',
+        alt: 'Print do Agenda da Turma',
+        legenda: 'Agenda da turma: um organizador de tarefas escolares.',
+      },
+      {
+        src: '/img/print-cozya.webp',
+        alt: 'Print do Cozya',
+        legenda: 'Cozya: um organizador de receitas.',
+      },
     ],
-    legendaDepoimentos: 'O que os primeiros leitores estão dizendo:',
-    depoimentos: [{ src: '/img/depoimento-1.webp', alt: 'Depoimento de leitor' }],
   },
   s12: {
     titulo: 'Garantia',

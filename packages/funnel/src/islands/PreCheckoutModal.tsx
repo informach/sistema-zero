@@ -215,7 +215,7 @@ export default function PreCheckoutModal() {
                 Cancelar
               </button>
               <p className="text-center text-xs text-muted">
-                Pagamento via Pix, com garantia de 7 dias.
+                Pagamento via Pix ou cartão de crédito, com garantia de 7 dias.
               </p>
             </form>
           </motion.div>
