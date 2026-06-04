@@ -22,8 +22,12 @@ Front-end **Next.js 16 (App Router) + React 19 + Tailwind v4**; o back-end é um
 > Alunos|Cursos — **Alunos**: listar + detalhe com matrículas/progresso + conceder manual
 > (oferta/curso) + revogar/expirar/estender, identidade hidratada do auth via batch; **Cursos**:
 > autoria — CRUD de cursos + editor de módulos/aulas (reordenar via ↑↓) + editor de blocos
-> polimórficos (texto/vídeo/imagem/áudio/quiz/embed) e anexos). Login via IdP
-> (`@sistemazero/auth`) com JWT/RBAC.
+> polimórficos (texto/vídeo/imagem/áudio/quiz/embed) e anexos) + **Painel "Gestão de vendas"**
+> (estilo Hotmart: filtros produto/período, cards líquido/transações/cancelamentos com tooltip,
+> gráfico de linha diário Recharts colapsável — série densa via BFF) + **cadastros inteligentes**
+> (SKU/slug/code auto-gerados com dirty-flag, tooltips `Field.tooltip`, cupom com multi-select de
+> ofertas, produto em PÁGINA dedicada com editores de combo e fulfillment, oferta com bônus/itens).
+> Login via IdP (`@sistemazero/auth`) com JWT/RBAC.
 
 ## Arquitetura (o padrão central — preserve-o)
 
@@ -61,20 +65,37 @@ src/
     layout.tsx            Root (Geist fonts, Providers: next-themes + Toaster)
     login/                Página + form (client) de login
     admin/                Shell autenticado (layout gate) + páginas
-      page.tsx            Painel (overview cards via /api/catalog/*?limit=1)
-      catalogo/{produtos,ofertas,cupons}/  page.tsx + *-client.tsx (tabela + dialog CRUD)
+      page.tsx            Painel: overview cards (dashboard-cards.tsx, SEM card de receita) +
+                          "Gestão de vendas" (sales-panel.tsx + sales-chart.tsx — Recharts client)
+      catalogo/{ofertas,cupons}/  page.tsx + *-client.tsx (tabela + dialog CRUD; oferta com
+                          slug/code AUTO-gerados de produto+preço+modo e editor de bônus;
+                          cupom com multi-select de ofertas quando appliesToAll=false)
+      catalogo/produtos/  listagem (links, sem dialog) + PÁGINA dedicada de form:
+                          novo/page.tsx · [id]/page.tsx · product-form-client.tsx
+                          (SKU/slug auto do nome + ComponentsEditor se kind=bundle + FulfillmentEditor)
       usuarios/             page.tsx (passa o operador p/ gating) + users-client.tsx (tabela + dialog edição)
       pagamentos/{transacoes,assinaturas,operacoes}/  page.tsx + *-client.tsx (lista/detalhe + estorno/cancelar; index redireciona p/ transacoes)
-      membros/             (conforme a fatia de membros)
+      membros/             (conforme a fatia de membros; curso com slug auto do título)
     api/
       admin/{login,logout}/route.ts · admin/users/route.ts (+ [id]/route.ts p/ PATCH)
-      catalog/{products,offers,coupons}/route.ts (+ [id]/route.ts p/ PATCH)
+      catalog/{products,offers,coupons}/route.ts (+ [id]/route.ts — products tem GET-one + PATCH)
       payments/{transactions,subscriptions,stats,ops}/… (GET; [id] GET, [id]/refund POST, subscriptions/[id] DELETE)
+      payments/stats/daily/route.ts (série diária do painel; ?from&to&productId)
   server/   session.ts · gateway.ts · catalog.ts · users.ts · payments.ts   (server-only)
+            payments.ts: getDailyPaymentsStats DENSIFICA a série (dias civis BRT, zeros, totals
+            via BigInt) e resolve productId→offerIds no catálogo antes de chamar o payments
   lib/      env.ts (server-only) · types.ts · format.ts · cn.ts · api.ts (client fetch)
-  components/ ui/* (button/card/input/table/dialog/badge/select/…) · admin/* (topbar/header/tabs/…)
+            slug.ts (slugify/skuify/offerSlugSuggestion/offerCodeSuggestion — kebab MINÚSCULO,
+            espelha os VOs do catalog: Sku lowercase!; autogeração usa dirty-flag por campo)
+  components/ ui/* (button/card/input/table/dialog/badge/select/info-tooltip/…; Field aceita `tooltip`)
+            catalog/* (offers-multi-select · components-editor · offer-items-editor ·
+            fulfillment-editor — courseRef = SLUG do curso do members) · admin/* (topbar/header/tabs/…)
   proxy.ts              (ex-middleware; convenção Next 16, runtime nodejs)
 ```
+
+> ⚠️ Drizzle (visto no payments, vale de lição aqui): em fragmento `sql` cru o Drizzle NÃO aplica o
+> mapper da coluna — `Date` vira `toString()` JS e quebra no PG; passe `.toISOString()`.
+> PATCH do catálogo SUBSTITUI coleções (components/items/offerIds) → os forms enviam o estado completo.
 
 ## Comandos (de dentro de `packages/admin`)
 
@@ -114,7 +135,9 @@ Da raiz: `bun run dev:admin`, `bun run build:admin`, `bun run start:admin`.
 - Auth: `POST /auth/login` → `{ user: UserView, tokens: { accessToken, refreshToken, expiresIn,
   refreshExpiresIn } }`; `POST /auth/refresh` `{ refreshToken }` → `{ tokens }`.
 - Catálogo (via gateway, JWT+RBAC): `GET /catalog/admin/{products,offers,coupons}` (`?q&status&limit&offset`,
-  offers `?productId`), `POST/PATCH /catalog/{products,offers,coupons}`. Views espelhadas em `src/lib/types.ts`.
+  offers `?productId`; offers trazem `items` crus p/ o editor de bônus), `GET /catalog/admin/products/:id`
+  (GET-one da página de edição — view completa com `fulfillment`/`components`),
+  `POST/PATCH /catalog/{products,offers,coupons}`. Views espelhadas em `src/lib/types.ts`.
 - Usuários (via gateway, JWT+RBAC): `GET /auth/admin/users` (`?q&role&status&limit&offset`) → `Paginated<UserView>`;
   `PATCH /auth/admin/users/:id` `{ role?, status?, firstName?, lastName?, phone?, version? }` → `{ user }`.
   Edição com `version` (concorrência otimista → 409 se defasada). Guards de papel/status são do `auth`
@@ -122,7 +145,9 @@ Da raiz: `bun run dev:admin`, `bun run build:admin`, `bun run start:admin`.
 - Pagamentos (via gateway, JWT+RBAC): `GET /payments/admin/payments` (`?q&status&method&consumerId&from&to&limit&offset`)
   → `Paginated<PaymentView>`; `GET /payments/admin/payments/:id`; `GET /payments/admin/subscriptions`
   (`?q&status&consumerId&limit&offset`) → `Paginated<SubscriptionView>`; `GET /payments/admin/subscriptions/:id`;
-  `GET /payments/admin/stats` (`?from&to`) → `PaymentStats`; `GET /payments/admin/ops` → `PaymentOps`;
+  `GET /payments/admin/stats` (`?from&to`) → `PaymentStats`;
+  `GET /payments/admin/stats/daily` (`?from&to&offerIds` CSV) → série diária ESPARSA (o BFF densifica
+  → `DailyPaymentStats` com `days` densos + `totals`); `GET /payments/admin/ops` → `PaymentOps`;
   **`POST /payments/admin/payments/:id/refund`** (estorno Pix/cartão) → `PaymentView`;
   **`DELETE /payments/admin/subscriptions/:id`** (cancela) → `SubscriptionView`. Valores em **string**
   (bigint, centavos) → `formatCentsStr`. Adapter em `src/server/payments.ts`; views em `src/lib/types.ts`.
