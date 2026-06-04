@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { MembersTabs } from '@/components/admin/members-tabs'
 import { StatusBadge } from '@/components/admin/status-badge'
+import { ImageUploader } from '@/components/media/image-uploader'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Dialog } from '@/components/ui/dialog'
@@ -341,11 +342,16 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
               onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
             />
           </Field>
-          <Field label="Imagem de capa (URL)" htmlFor="cover" hint="Opcional.">
-            <Input
-              id="cover"
+          <Field
+            label="Imagem de capa"
+            htmlFor="cover"
+            hint="Opcional. Envie um arquivo ou cole uma URL."
+          >
+            <ImageUploader
+              inputId="cover"
+              scope="course"
               value={form.coverImageUrl}
-              onChange={(e) => setForm((f) => ({ ...f, coverImageUrl: e.target.value }))}
+              onChange={(url) => setForm((f) => ({ ...f, coverImageUrl: url }))}
             />
           </Field>
         </div>

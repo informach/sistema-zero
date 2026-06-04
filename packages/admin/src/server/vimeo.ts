@@ -1,0 +1,209 @@
+import 'server-only'
+import { getEnv } from '@/lib/env'
+import { MediaNotConfiguredError } from './r2'
+
+const VIMEO_API_BASE = 'https://api.vimeo.com'
+const VIMEO_ACCEPT = 'application/vnd.vimeo.*+json;version=3.4'
+
+function requireAccessToken(): string {
+  const token = getEnv().VIMEO_ACCESS_TOKEN
+  if (!token) {
+    throw new MediaNotConfiguredError('Upload de vídeo indisponível: configure VIMEO_ACCESS_TOKEN.')
+  }
+  return token
+}
+
+/** Domínios autorizados a embedar (privacy whitelist) — CSV da env, normalizado. */
+export function getWhitelistDomains(): string[] {
+  const raw = getEnv().VIMEO_WHITELIST_DOMAINS ?? ''
+  return raw
+    .split(',')
+    .map((domain) =>
+      domain
+        .trim()
+        .replace(/^https?:\/\//, '')
+        .replace(/\/.*$/, ''),
+    )
+    .filter(Boolean)
+}
+
+async function vimeoFetch<T>(
+  path: string,
+  init: RequestInit = {},
+  options: { skipJsonParse?: boolean } = {},
+): Promise<T> {
+  const headers = new Headers(init.headers)
+  headers.set('Authorization', `Bearer ${requireAccessToken()}`)
+  headers.set('Accept', VIMEO_ACCEPT)
+  if (init.body && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json')
+
+  const response = await fetch(`${VIMEO_API_BASE}${path}`, { ...init, headers })
+  if (!response.ok) {
+    const body = await response.text().catch(() => '')
+    throw new Error(
+      `Vimeo API ${init.method ?? 'GET'} ${path} falhou (${response.status}): ${body.slice(0, 300)}`,
+    )
+  }
+  if (options.skipJsonParse || response.status === 204) return undefined as T
+  return (await response.json()) as T
+}
+
+export function parseVimeoIdFromUri(uri: string): string {
+  const match = uri.match(/\/videos\/(\d+)/)
+  if (!match) throw new Error(`URI de vídeo Vimeo inválida: ${uri}`)
+  return match[1] as string
+}
+
+function parsePlaybackHash(url: string | null | undefined): string | null {
+  if (!url) return null
+  try {
+    return new URL(url).searchParams.get('h')
+  } catch {
+    return null
+  }
+}
+
+function buildEmbedUrl(videoId: string, hash: string | null): string {
+  return hash
+    ? `https://player.vimeo.com/video/${videoId}?h=${hash}`
+    : `https://player.vimeo.com/video/${videoId}`
+}
+
+export interface VimeoUploadTicket {
+  vimeoVideoId: string
+  uri: string
+  uploadLink: string
+  /** URL de embed (com `?h=` quando privado) — é o `src` salvo no bloco de vídeo. */
+  embedUrl: string
+}
+
+interface VimeoCreateVideoResponse {
+  uri: string
+  player_embed_url?: string
+  upload?: { upload_link: string }
+}
+
+export interface VimeoTextTrack {
+  uri: string
+  active: boolean
+  type: string
+  language: string
+  name?: string
+  link: string
+}
+
+interface VimeoVideoGetResponse {
+  uri: string
+  status: string
+  duration: number | null
+  player_embed_url?: string
+}
+
+/**
+ * Cria o "ticket" de upload TUS (o browser sobe o arquivo DIRETO p/ o Vimeo).
+ * Privacidade: view=disable + embed=whitelist + sem download — o vídeo só toca
+ * embedado nos domínios autorizados.
+ */
+export async function createUploadTicket(input: {
+  sizeBytes: number
+  name: string
+}): Promise<VimeoUploadTicket> {
+  const response = await vimeoFetch<VimeoCreateVideoResponse>('/me/videos', {
+    method: 'POST',
+    body: JSON.stringify({
+      upload: { approach: 'tus', size: String(input.sizeBytes) },
+      name: input.name,
+      privacy: { view: 'disable', embed: 'whitelist', download: false },
+    }),
+  })
+  if (!response?.uri || !response.upload?.upload_link) {
+    throw new Error('Resposta do Vimeo sem uri/upload_link')
+  }
+  const vimeoVideoId = parseVimeoIdFromUri(response.uri)
+  const hash = parsePlaybackHash(response.player_embed_url)
+  return {
+    vimeoVideoId,
+    uri: response.uri,
+    uploadLink: response.upload.upload_link,
+    embedUrl: response.player_embed_url ?? buildEmbedUrl(vimeoVideoId, hash),
+  }
+}
+
+/** Garante a whitelist de domínios de embed do vídeo. */
+export async function applyPrivacy(vimeoVideoId: string, domains: string[]): Promise<void> {
+  await vimeoFetch(`/videos/${vimeoVideoId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ privacy: { view: 'disable', embed: 'whitelist', download: false } }),
+  })
+  for (const domain of domains) {
+    await vimeoFetch(
+      `/videos/${vimeoVideoId}/privacy/domains/${encodeURIComponent(domain)}`,
+      { method: 'PUT' },
+      { skipJsonParse: true },
+    )
+  }
+}
+
+/** Estado de transcode + metadados do vídeo (status Vimeo cru: available/transcoding/…). */
+export async function getVideo(vimeoVideoId: string): Promise<{
+  status: string
+  duration: number | null
+  embedUrl: string
+}> {
+  const response = await vimeoFetch<VimeoVideoGetResponse>(
+    `/videos/${vimeoVideoId}?fields=uri,status,duration,player_embed_url`,
+  )
+  const hash = parsePlaybackHash(response.player_embed_url)
+  return {
+    status: response.status,
+    duration: response.duration ?? null,
+    embedUrl: response.player_embed_url ?? buildEmbedUrl(vimeoVideoId, hash),
+  }
+}
+
+export async function listTextTracks(vimeoVideoId: string): Promise<VimeoTextTrack[]> {
+  const response = await vimeoFetch<{ data: VimeoTextTrack[] }>(
+    `/videos/${vimeoVideoId}/texttracks`,
+  )
+  return response.data ?? []
+}
+
+/** Baixa o VTT do track (o `link` do Vimeo é assinado/temporário — re-hospede!). */
+export async function getTextTrackVtt(link: string): Promise<string> {
+  const response = await fetch(link)
+  if (!response.ok) throw new Error(`Falha ao baixar o VTT (${response.status})`)
+  return await response.text()
+}
+
+/** Sobe a capa custom do vídeo (POST /pictures cria o slot + PUT envia os bytes). */
+export async function uploadVideoThumbnail(
+  vimeoVideoId: string,
+  imageBytes: ArrayBuffer,
+  mimeType: 'image/jpeg' | 'image/png',
+): Promise<void> {
+  const picture = await vimeoFetch<{ uri: string; link: string }>(
+    `/videos/${vimeoVideoId}/pictures`,
+    { method: 'POST', body: JSON.stringify({ active: true }) },
+  )
+  if (!picture?.link) throw new Error('Resposta do Vimeo sem o link de upload da capa')
+
+  const uploadResponse = await fetch(picture.link, {
+    method: 'PUT',
+    headers: { 'Content-Type': mimeType },
+    body: imageBytes,
+  })
+  if (!uploadResponse.ok) {
+    const body = await uploadResponse.text().catch(() => '')
+    throw new Error(`PUT da capa no Vimeo falhou (${uploadResponse.status}): ${body.slice(0, 300)}`)
+  }
+}
+
+/** Apaga o vídeo no Vimeo (404 = já não existe → ok). */
+export async function deleteVideo(vimeoVideoId: string): Promise<void> {
+  try {
+    await vimeoFetch(`/videos/${vimeoVideoId}`, { method: 'DELETE' }, { skipJsonParse: true })
+  } catch (error) {
+    if (error instanceof Error && /\(404\)/.test(error.message)) return
+    throw error
+  }
+}

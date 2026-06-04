@@ -16,18 +16,26 @@ Front-end **Next.js 16 (App Router) + React 19 + Tailwind v4**; o back-end é um
 `comunidade-sistema-zero` (tokens OKLch dual light/dark, Base UI-like + lucide + sonner). Porta **3005**.
 
 > Estado: **Fatia 1 — Catálogo** (produtos/ofertas/cupons: listar/criar/editar) + **Fatia 2 —
-> Usuários** (listar com busca/filtros + editar status/papel/perfil, guards hierárquicos e
-> concorrência otimista) + **Fatia Pagamentos** (transações + assinaturas: listar/filtrar/detalhe +
-> **estornar**/**cancelar**, stats e saúde de webhooks/operações) + **Fatia Membros** (abas
+> Usuários** (listar com busca/filtros + **criar via convite por e-mail** + editar
+> status/papel/perfil, guards hierárquicos e concorrência otimista; ações por linha **Conceder
+> acesso** — `GrantAccessDialog` compartilhado com pickers de oferta/curso + presets de validade —
+> e **Matrículas**) + **Fatia Pagamentos** (transações + assinaturas: listar/filtrar/detalhe +
+> **estornar**/**cancelar**, stats e saúde de webhooks/operações; detalhe exibe a **garantia** da
+> oferta comprada — resolvida no BFF de `metadata.offerId` → `guaranteeDays` do catálogo — com
+> aviso de estorno fora da garantia) + **Fatia Membros** (abas
 > Alunos|Cursos — **Alunos**: listar + detalhe com matrículas/progresso + conceder manual
 > (oferta/curso) + revogar/expirar/estender, identidade hidratada do auth via batch; **Cursos**:
 > autoria — CRUD de cursos + editor de módulos/aulas (reordenar via ↑↓) + editor de blocos
 > polimórficos (texto/vídeo/imagem/áudio/quiz/embed) e anexos) + **Painel "Gestão de vendas"**
-> (estilo Hotmart: filtros produto/período, cards líquido/transações/cancelamentos com tooltip,
-> gráfico de linha diário Recharts colapsável — série densa via BFF) + **cadastros inteligentes**
+> (estilo Hotmart: filtros produto/período **7/30/90 dias + 6/12 meses**, cards
+> líquido/transações/cancelamentos com tooltip, gráfico Recharts colapsável — série densa via BFF,
+> **agregada por semana >90d / mês >270d** com `granularity`/`periodEnd`) + **cadastros inteligentes**
 > (SKU/slug/code auto-gerados com dirty-flag, tooltips `Field.tooltip`, cupom com multi-select de
-> ofertas, produto em PÁGINA dedicada com editores de combo e fulfillment, oferta com bônus/itens).
-> Login via IdP (`@sistemazero/auth`) com JWT/RBAC.
+> ofertas, produto em PÁGINA dedicada com editores de combo e fulfillment, oferta com bônus/itens) +
+> **Fatia Mídia** (upload de imagens/anexos → Cloudflare R2 com sharp→WebP; vídeos → Vimeo via TUS
+> direto do browser + capa + transcrição re-hospedada no R2 — ver §Mídia).
+> Login via IdP (`@sistemazero/auth`) com JWT/RBAC. Badges usam tokens `--success/--success-foreground`
+> (contraste AA no light; `bg-success/15 text-success-foreground`).
 
 ## Arquitetura (o padrão central — preserve-o)
 
@@ -47,9 +55,43 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
 - **Gate de UI:** `src/proxy.ts` (convenção `proxy` do Next 16, ex-`middleware`) bloqueia `/admin/*` sem cookie de refresh (redirect `/login`);
   `app/admin/layout.tsx` faz a checagem real (assinatura + role) e mostra "acesso negado" se preciso.
 
+## Mídia (`/api/media/*` — R2 + Vimeo)
+
+Upload nos cadastros de curso/aula (capa, blocos imagem/áudio, anexos, vídeo). **Estas rotas NÃO
+passam pelo gateway** (falam com provedores EXTERNOS — não viola o invariante 1, que é sobre
+serviços internos) → **todo handler exige `requireMediaSession()`** (sessão + role superadmin/admin;
+`src/server/media.ts`). O matcher do `proxy.ts` **exclui `api/media`** (o proxy buffeia o corpo a
+~10MB e estrangularia multipart). Fatia **stateless**: sem tabela de assets — URLs/IDs vivem no
+conteúdo dos blocos do members (lixo órfão no R2 é dívida documentada; sem GC nesta fatia).
+
+- `POST /api/media/images` (multipart ≤5MB png/jpg/webp; `scope=course|block`) → sharp→WebP →
+  R2 `admin/{courses,blocks}/<uuid>.webp` → `{url,width,height,sizeBytes}`.
+- `POST /api/media/files` (multipart ≤50MB, allowlist pdf/zip/office/txt/csv/imagem/áudio) →
+  R2 `admin/attachments/*` c/ Content-Disposition → `{url,fileType,sizeBytes}`.
+- `POST /api/media/videos/ticket` (`{filename,sizeBytes,mimeType}` ≤5GB mp4/mov/webm) → Vimeo
+  `POST /me/videos` approach tus + privacy `view=disable, embed=whitelist` (+ domínios da env) →
+  `{vimeoVideoId,uploadLink,embedUrl}`. O vídeo sobe DIRETO do browser (tus-js-client, chunk 128MB).
+- `GET /api/media/videos/:id/status` → reconcilia transcode on-demand (sem webhook; polling do
+  editor a ~5s/cap 10min) → `{status: processing|ready|failed, durationSeconds, embedUrl, captions?}`.
+  Quando ready, baixa o VTT do Vimeo (link assinado, **EXPIRA**) e **re-hospeda no R2**
+  (`admin/captions/<id>-<lang>.vtt`) → `captions[].url` estável p/ o bloco do members.
+- `POST /api/media/videos/:id/thumbnail` (multipart jpg/png ≤5MB) → Vimeo pictures + poster WebP
+  no R2 → `{posterUrl}`.
+
+**Decisões load-bearing:** `src` do bloco vídeo = **embed URL** `player.vimeo.com/video/<id>?h=…`
+(o renderer do community extrai o id por regex `vimeo\.com\/...` — id cru NÃO funciona); members e
+community NÃO mudaram (`captions: {lang,url}[]` já existia no DTO; CSP do community já libera
+`player.vimeo.com`). Server-only: `src/server/{r2,vimeo,image-optimizer,media}.ts`. Componentes:
+`src/components/media/*` (image-uploader c/ fallback de URL manual, file-uploader, video-uploader +
+use-video-upload, video-thumbnail-uploader, vimeo-preview). `next.config.ts` tem
+`serverExternalPackages: ['sharp']` (binário nativo). Envs OPCIONAIS (R2_*, VIMEO_*) — ausentes →
+503 `MEDIA_NOT_CONFIGURED` amigável, nunca quebra o boot.
+
 ## Invariantes (NÃO quebrar)
 
 1. **O admin nunca chama os serviços direto** — tudo via gateway (`src/server/gateway.ts`).
+   Exceção CONSCIENTE: `/api/media/*` fala com R2/Vimeo (provedores externos) e por isso tem
+   guard de sessão próprio (ver §Mídia).
 2. **Segredos só no servidor.** `src/lib/env.ts` é `server-only`; `src/server/*` idem. **Nunca**
    importe `env`/`server/*` de um Client Component (vaza p/ o bundle). Client fala só com `/api/*`.
 3. **Tokens em cookie HttpOnly** (`sz_admin_*`), `SameSite=Lax`, `Secure` em prod. Nunca exponha ao JS.
@@ -139,15 +181,28 @@ Da raiz: `bun run dev:admin`, `bun run build:admin`, `bun run start:admin`.
   (GET-one da página de edição — view completa com `fulfillment`/`components`),
   `POST/PATCH /catalog/{products,offers,coupons}`. Views espelhadas em `src/lib/types.ts`.
 - Usuários (via gateway, JWT+RBAC): `GET /auth/admin/users` (`?q&role&status&limit&offset`) → `Paginated<UserView>`;
+  **`POST /auth/admin/users`** `{ email, firstName, lastName, phone?, role }` → `{ user, inviteSent }`
+  (criação pelo painel, fluxo CONVITE: o auth gera senha aleatória e envia o e-mail `welcome` com link de
+  definição de senha; `inviteSent:false` = conta criada mas e-mail falhou → toast de aviso);
   `PATCH /auth/admin/users/:id` `{ role?, status?, firstName?, lastName?, phone?, version? }` → `{ user }`.
   Edição com `version` (concorrência otimista → 409 se defasada). Guards de papel/status são do `auth`
   (o client só faz gating de UX por `currentUser.role`).
+  A lista de usuários também tem ações **"Conceder acesso"** (cortesia/teste — abre o
+  `GrantAccessDialog` compartilhado em `components/admin/grant-access-dialog.tsx`, com pickers de
+  oferta/curso + presets de validade 7/30/90 dias/vitalício/data, POST `/api/members/entitlements`)
+  e **"Matrículas"** (link p/ `/admin/membros/[userId]`). O member-detail usa o MESMO dialog.
 - Pagamentos (via gateway, JWT+RBAC): `GET /payments/admin/payments` (`?q&status&method&consumerId&from&to&limit&offset`)
   → `Paginated<PaymentView>`; `GET /payments/admin/payments/:id`; `GET /payments/admin/subscriptions`
   (`?q&status&consumerId&limit&offset`) → `Paginated<SubscriptionView>`; `GET /payments/admin/subscriptions/:id`;
   `GET /payments/admin/stats` (`?from&to`) → `PaymentStats`;
   `GET /payments/admin/stats/daily` (`?from&to&offerIds` CSV) → série diária ESPARSA (o BFF densifica
-  → `DailyPaymentStats` com `days` densos + `totals`); `GET /payments/admin/ops` → `PaymentOps`;
+  → `DailyPaymentStats` com `days` densos + `totals` + `granularity`; janelas >90d/>270d são
+  AGREGADAS no BFF em semana/mês — `day` = início do bucket, `periodEnd` = último dia, somas em
+  BigInt); `GET /payments/admin/ops` → `PaymentOps`;
+  As rotas BFF de transações (`/api/payments/transactions[/:id]`) ENRIQUECEM cada linha com
+  `guarantee` (`PaymentRow`): `metadata.offerId` → `guaranteeDays` da oferta (1 chamada
+  `listOffers limit:100`, best-effort → `null` se catálogo indisponível/sem oferta) + cálculo
+  `paidAt + dias` (`until/daysLeft/expired`);
   **`POST /payments/admin/payments/:id/refund`** (estorno Pix/cartão) → `PaymentView`;
   **`DELETE /payments/admin/subscriptions/:id`** (cancela) → `SubscriptionView`. Valores em **string**
   (bigint, centavos) → `formatCentsStr`. Adapter em `src/server/payments.ts`; views em `src/lib/types.ts`.

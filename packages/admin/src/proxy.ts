@@ -26,5 +26,7 @@ function withSecurityHeaders(res: NextResponse): NextResponse {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  // `api/media` fica FORA do matcher: o proxy buffeia o corpo (limite ~10MB) e
+  // estrangularia uploads multipart; essas rotas têm guard de sessão próprio.
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|api/media).*)'],
 }

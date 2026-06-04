@@ -5,6 +5,10 @@ import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
+import { FileUploader } from '@/components/media/file-uploader'
+import { ImageUploader } from '@/components/media/image-uploader'
+import { VideoThumbnailUploader } from '@/components/media/video-thumbnail-uploader'
+import { VideoUploader } from '@/components/media/video-uploader'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -59,6 +63,8 @@ interface BlockForm {
   embedType: string
   height: string
   quizJson: string
+  /** Legendas/transcrição do vídeo (preenchidas pelo uploader Vimeo). */
+  captions: { lang: string; url: string }[]
 }
 
 const EMPTY_BLOCK: BlockForm = {
@@ -75,6 +81,7 @@ const EMPTY_BLOCK: BlockForm = {
   embedType: 'iframe',
   height: '',
   quizJson: '{\n  "questions": [],\n  "passingScore": 70\n}',
+  captions: [],
 }
 
 const num = (s: string): number | undefined => (s.trim() ? Number(s) : undefined)
@@ -98,6 +105,7 @@ function buildContent(f: BlockForm): LessonBlockContent {
         src: f.src.trim(),
         ...(opt(f.posterUrl) ? { posterUrl: f.posterUrl.trim() } : {}),
         ...(dur != null ? { durationSeconds: dur } : {}),
+        ...(f.captions.length > 0 ? { captions: f.captions } : {}),
       }
     case 'image':
       return {
@@ -233,6 +241,7 @@ export function LessonEditorClient({
         c.kind === 'quiz'
           ? JSON.stringify({ questions: c.questions, passingScore: c.passingScore }, null, 2)
           : EMPTY_BLOCK.quizJson,
+      captions: c.kind === 'video' ? (c.captions ?? []) : [],
     })
     setBlockOpen(true)
   }
@@ -485,6 +494,25 @@ export function LessonEditorClient({
                   />
                 </Field>
               </div>
+              {blockForm.provider === 'vimeo' ? (
+                <Field
+                  label="Vídeo (Vimeo)"
+                  hint="Sobe direto pro Vimeo (resumável) e preenche URL/duração/transcrição."
+                >
+                  <VideoUploader
+                    currentSrc={blockForm.src || undefined}
+                    onReady={(v) =>
+                      setBlockForm((f) => ({
+                        ...f,
+                        src: v.embedUrl,
+                        durationSeconds:
+                          v.durationSeconds != null ? String(v.durationSeconds) : f.durationSeconds,
+                        captions: v.captions.length > 0 ? v.captions : f.captions,
+                      }))
+                    }
+                  />
+                </Field>
+              ) : null}
               <Field label="URL/ID do vídeo" htmlFor="bsrc">
                 <Input
                   id="bsrc"
@@ -492,6 +520,17 @@ export function LessonEditorClient({
                   onChange={(e) => setBlockForm((f) => ({ ...f, src: e.target.value }))}
                 />
               </Field>
+              {blockForm.provider === 'vimeo' &&
+              /vimeo\.com\/(?:video\/)?\d{6,12}/.test(blockForm.src) ? (
+                <Field label="Capa do vídeo" hint="Troca a capa no Vimeo e preenche o poster.">
+                  <VideoThumbnailUploader
+                    videoId={
+                      blockForm.src.match(/vimeo\.com\/(?:video\/)?(\d{6,12})/)?.[1] as string
+                    }
+                    onPoster={(posterUrl) => setBlockForm((f) => ({ ...f, posterUrl }))}
+                  />
+                </Field>
+              ) : null}
               <Field label="Poster (URL)" htmlFor="bposter" hint="Opcional.">
                 <Input
                   id="bposter"
@@ -499,16 +538,23 @@ export function LessonEditorClient({
                   onChange={(e) => setBlockForm((f) => ({ ...f, posterUrl: e.target.value }))}
                 />
               </Field>
+              {blockForm.captions.length > 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  Transcrição: {blockForm.captions.map((c) => c.lang).join(', ')} (legenda salva no
+                  bloco)
+                </p>
+              ) : null}
             </>
           ) : null}
 
           {blockForm.kind === 'image' ? (
             <>
-              <Field label="URL da imagem" htmlFor="bimg">
-                <Input
-                  id="bimg"
+              <Field label="Imagem" htmlFor="bimg" hint="Envie um arquivo ou cole uma URL.">
+                <ImageUploader
+                  inputId="bimg"
+                  scope="block"
                   value={blockForm.url}
-                  onChange={(e) => setBlockForm((f) => ({ ...f, url: e.target.value }))}
+                  onChange={(url) => setBlockForm((f) => ({ ...f, url }))}
                 />
               </Field>
               <div className="grid gap-4 sm:grid-cols-2">
@@ -532,6 +578,13 @@ export function LessonEditorClient({
 
           {blockForm.kind === 'audio' ? (
             <>
+              <Field label="Áudio" hint="Envie um arquivo (MP3/M4A/OGG/WAV) ou cole a URL abaixo.">
+                <FileUploader
+                  accept="audio/*"
+                  label="Clique para enviar o áudio (até 50 MB)"
+                  onUploaded={({ url, sizeBytes: _sz }) => setBlockForm((f) => ({ ...f, url }))}
+                />
+              </Field>
               <Field label="URL do áudio" htmlFor="baud">
                 <Input
                   id="baud"
@@ -626,6 +679,22 @@ export function LessonEditorClient({
         }
       >
         <div className="flex flex-col gap-4">
+          <Field
+            label="Arquivo"
+            hint="Envie o arquivo (preenche URL/tipo/tamanho) ou informe a URL."
+          >
+            <FileUploader
+              onUploaded={({ url, fileType, sizeBytes, filename }) =>
+                setAttForm((f) => ({
+                  ...f,
+                  url,
+                  fileType,
+                  sizeBytes: String(sizeBytes),
+                  label: f.label.trim() ? f.label : filename,
+                }))
+              }
+            />
+          </Field>
           <Field label="Rótulo" htmlFor="alabel">
             <Input
               id="alabel"

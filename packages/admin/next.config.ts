@@ -4,6 +4,8 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   // O painel é um BFF: nunca exponha segredos ao bundle do cliente.
   // Variáveis sem prefixo NEXT_PUBLIC_ ficam só no servidor.
+  // sharp é binário nativo (.node) — não deixe o bundler tentar empacotá-lo.
+  serverExternalPackages: ['sharp'],
 }
 
 export default nextConfig

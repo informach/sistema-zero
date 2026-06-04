@@ -11,6 +11,18 @@ const EnvSchema = z.object({
   JWT_ISSUER: z.string().optional(),
   JWT_AUDIENCE: z.string().optional(),
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+
+  // ── Upload de mídia (opcionais: sem eles a feature responde "indisponível",
+  //    não derruba o boot — os adapters validam presença com erro amigável) ──
+  // Cloudflare R2 (imagens/anexos/legendas VTT).
+  R2_ACCOUNT_ID: z.string().optional(),
+  R2_ACCESS_KEY_ID: z.string().optional(),
+  R2_SECRET_ACCESS_KEY: z.string().optional(),
+  R2_BUCKET: z.string().optional(),
+  R2_PUBLIC_URL: z.string().url().optional(),
+  // Vimeo (vídeos das aulas: upload TUS + capa + transcrição).
+  VIMEO_ACCESS_TOKEN: z.string().optional(),
+  VIMEO_WHITELIST_DOMAINS: z.string().optional(),
 })
 
 export type Env = z.infer<typeof EnvSchema>
