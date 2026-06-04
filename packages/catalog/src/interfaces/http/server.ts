@@ -121,6 +121,7 @@ export function createServer(deps: HttpDeps) {
       adminReadRoutes({
         requireAdminEnabled: deps.env.REQUIRE_ADMIN,
         listProducts: deps.listProducts,
+        getProduct: deps.getProduct,
         listOffers: deps.listOffers,
         listCoupons: deps.listCoupons,
       }),

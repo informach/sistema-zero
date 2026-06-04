@@ -6,9 +6,11 @@ import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { CatalogTabs } from '@/components/admin/catalog-tabs'
 import { StatusBadge } from '@/components/admin/status-badge'
+import { type OfferOption, OffersMultiSelect } from '@/components/catalog/offers-multi-select'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Dialog } from '@/components/ui/dialog'
+import { InfoTooltip } from '@/components/ui/info-tooltip'
 import { Input } from '@/components/ui/input'
 import { Field } from '@/components/ui/label'
 import { Pagination } from '@/components/ui/pagination'
@@ -24,7 +26,7 @@ import {
 } from '@/components/ui/table'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { formatCents, reaisToCents } from '@/lib/format'
-import type { CouponView, Paginated } from '@/lib/types'
+import type { CouponView, OfferListItem, Paginated } from '@/lib/types'
 
 const LIMIT = 20
 const COUPON_STATUSES = ['active', 'inactive', 'archived']
@@ -35,6 +37,7 @@ interface FormState {
   percentOff: string
   amount: string
   appliesToAll: boolean
+  offerIds: string[]
   maxRedemptions: string
   status: string
 }
@@ -45,6 +48,7 @@ const EMPTY_FORM: FormState = {
   percentOff: '',
   amount: '',
   appliesToAll: true,
+  offerIds: [],
   maxRedemptions: '',
   status: 'active',
 }
@@ -66,6 +70,29 @@ export function CouponsClient() {
   const [editing, setEditing] = useState<CouponView | null>(null)
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
+
+  // Ofertas p/ o multi-select de escopo (carregadas 1x, sob demanda do dialog).
+  const [offerOptions, setOfferOptions] = useState<OfferOption[] | null>(null)
+  const [offersLoading, setOffersLoading] = useState(false)
+
+  async function ensureOfferOptions() {
+    if (offerOptions !== null || offersLoading) return
+    setOffersLoading(true)
+    try {
+      const page = await apiGet<Paginated<OfferListItem>>('/api/catalog/offers?limit=100')
+      setOfferOptions(
+        page.items.map((o) => ({
+          id: o.id,
+          label: o.productName ? `${o.name} — ${o.productName}` : o.name,
+        })),
+      )
+    } catch {
+      setOfferOptions([])
+      toast.error('Não foi possível carregar as ofertas.')
+    } finally {
+      setOffersLoading(false)
+    }
+  }
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -91,6 +118,7 @@ export function CouponsClient() {
   function openCreate() {
     setEditing(null)
     setForm(EMPTY_FORM)
+    void ensureOfferOptions()
     setOpen(true)
   }
 
@@ -102,19 +130,27 @@ export function CouponsClient() {
       percentOff: c.percentOff != null ? String(c.percentOff) : '',
       amount: c.amountOffCents != null ? (c.amountOffCents / 100).toFixed(2) : '',
       appliesToAll: c.appliesToAll,
+      offerIds: c.offerIds,
       maxRedemptions: c.maxRedemptions != null ? String(c.maxRedemptions) : '',
       status: c.status,
     })
+    void ensureOfferOptions()
     setOpen(true)
   }
 
   async function save() {
+    if (!form.appliesToAll && form.offerIds.length === 0) {
+      toast.error('Escolha ao menos uma oferta (ou marque "vale para todas").')
+      return
+    }
     setSaving(true)
     try {
       if (editing) {
         await apiSend(`/api/catalog/coupons/${editing.id}`, 'PATCH', {
           status: form.status,
           appliesToAll: form.appliesToAll,
+          // PATCH substitui a coleção — envia o escopo completo escolhido.
+          offerIds: form.appliesToAll ? [] : form.offerIds,
           maxRedemptions: optInt(form.maxRedemptions),
         })
         toast.success('Cupom atualizado.')
@@ -128,6 +164,7 @@ export function CouponsClient() {
           code: form.code.trim(),
           type: form.type,
           appliesToAll: form.appliesToAll,
+          ...(form.appliesToAll ? {} : { offerIds: form.offerIds }),
           status: form.status,
           ...(optInt(form.maxRedemptions) ? { maxRedemptions: optInt(form.maxRedemptions) } : {}),
         }
@@ -286,7 +323,11 @@ export function CouponsClient() {
             </p>
           ) : (
             <>
-              <Field label="Código" htmlFor="code">
+              <Field
+                label="Código"
+                htmlFor="code"
+                tooltip="O que o cliente digita no checkout para ganhar o desconto (ex.: PROMO10). Não muda depois de criado."
+              >
                 <Input
                   id="code"
                   value={form.code}
@@ -295,7 +336,11 @@ export function CouponsClient() {
                 />
               </Field>
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Tipo" htmlFor="type">
+                <Field
+                  label="Tipo"
+                  htmlFor="type"
+                  tooltip="Percentual desconta uma fração do preço; valor fixo desconta um montante em reais. Não muda depois de criado."
+                >
                   <Select
                     id="type"
                     value={form.type}
@@ -330,7 +375,11 @@ export function CouponsClient() {
             </>
           )}
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Máx. usos (opcional)" htmlFor="maxRedemptions">
+            <Field
+              label="Máx. usos (opcional)"
+              htmlFor="maxRedemptions"
+              tooltip="Limite total de resgates do cupom. Vazio = ilimitado."
+            >
               <Input
                 id="maxRedemptions"
                 inputMode="numeric"
@@ -360,7 +409,21 @@ export function CouponsClient() {
               className="size-4 accent-[color:var(--primary)]"
             />
             Vale para todas as ofertas ativas
+            <InfoTooltip text="Marcado: o cupom funciona em qualquer oferta ativa. Desmarcado: escolha abaixo em quais ofertas ele vale." />
           </label>
+          {!form.appliesToAll ? (
+            <Field
+              label="Ofertas em que o cupom vale"
+              tooltip="O cupom só será aceito no checkout destas ofertas."
+            >
+              <OffersMultiSelect
+                options={offerOptions ?? []}
+                value={form.offerIds}
+                onChange={(offerIds) => setForm((f) => ({ ...f, offerIds }))}
+                loading={offersLoading}
+              />
+            </Field>
+          ) : null}
         </div>
       </Dialog>
     </div>

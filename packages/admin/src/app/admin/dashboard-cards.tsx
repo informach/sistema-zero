@@ -1,18 +1,16 @@
 'use client'
 
-import { Banknote, CreditCard, Package, TicketPercent, Users } from 'lucide-react'
+import { CreditCard, Package, TicketPercent, Users } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { OverviewCard } from '@/components/admin/overview-card'
 import { apiGet } from '@/lib/api'
-import { formatCentsStr } from '@/lib/format'
-import type { Paginated, PaymentStats } from '@/lib/types'
+import type { Paginated } from '@/lib/types'
 
 type Totals = {
   users: number | null
   products: number | null
   offers: number | null
   coupons: number | null
-  revenue: string | null
 }
 
 export function DashboardCards() {
@@ -21,7 +19,6 @@ export function DashboardCards() {
     products: null,
     offers: null,
     coupons: null,
-    revenue: null,
   })
 
   useEffect(() => {
@@ -35,22 +32,13 @@ export function DashboardCards() {
           return null
         }
       }
-      const fetchRevenue = async () => {
-        try {
-          const stats = await apiGet<PaymentStats>('/api/payments/stats')
-          return stats.paidAmountInCents
-        } catch {
-          return null
-        }
-      }
-      const [users, products, offers, coupons, revenue] = await Promise.all([
+      const [users, products, offers, coupons] = await Promise.all([
         fetchTotal('/api/admin/users'),
         fetchTotal('/api/catalog/products'),
         fetchTotal('/api/catalog/offers'),
         fetchTotal('/api/catalog/coupons'),
-        fetchRevenue(),
       ])
-      if (alive) setTotals({ users, products, offers, coupons, revenue })
+      if (alive) setTotals({ users, products, offers, coupons })
     }
     load()
     return () => {
@@ -62,12 +50,6 @@ export function DashboardCards() {
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <OverviewCard
-        title="Receita (paga)"
-        value={totals.revenue === null ? '—' : formatCentsStr(totals.revenue)}
-        icon={Banknote}
-        description="Pagamentos confirmados"
-      />
       <OverviewCard
         title="Usuários"
         value={fmt(totals.users)}

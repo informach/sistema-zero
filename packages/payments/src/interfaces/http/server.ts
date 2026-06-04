@@ -13,6 +13,7 @@ import type { ListMyPaymentsService } from '../../application/list-my-payments/l
 import type { ListPaymentsService } from '../../application/list-payments/list-payments.service'
 import type { ListSubscriptionsService } from '../../application/list-subscriptions/list-subscriptions.service'
 import type { GetPaymentsOpsService } from '../../application/payments-ops/get-payments-ops.service'
+import type { GetDailyPaymentsStatsService } from '../../application/payments-stats/get-daily-payments-stats.service'
 import type { GetPaymentsStatsService } from '../../application/payments-stats/get-payments-stats.service'
 import type { ProcessPaymentService } from '../../application/process-payment/process-payment.service'
 import type { RefundPaymentService } from '../../application/refund-payment/refund-payment.service'
@@ -52,6 +53,7 @@ export interface HttpDeps {
   listSubscriptions: ListSubscriptionsService
   getAdminSubscription: GetAdminSubscriptionService
   getPaymentsStats: GetPaymentsStatsService
+  getDailyPaymentsStats: GetDailyPaymentsStatsService
   getPaymentsOps: GetPaymentsOpsService
   refundPayment: RefundPaymentService
   // Self-service do comprador ("minhas compras", app community) — JWT no gateway.
@@ -173,6 +175,7 @@ export function createServer(deps: HttpDeps) {
         listSubscriptions: deps.listSubscriptions,
         getSubscription: deps.getAdminSubscription,
         getStats: deps.getPaymentsStats,
+        getDailyStats: deps.getDailyPaymentsStats,
         getOps: deps.getPaymentsOps,
         refundPayment: deps.refundPayment,
         cancelSubscription: deps.cancelSubscription,

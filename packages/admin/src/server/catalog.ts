@@ -18,6 +18,9 @@ function listQuery(p: ListParams): Record<string, string | number | undefined> {
 export function listProducts(p: ListParams): Promise<GatewayResponse<Paginated<ProductView>>> {
   return gatewayFetch('/catalog/admin/products', { query: listQuery(p) })
 }
+export function getProduct(id: string): Promise<GatewayResponse<ProductView>> {
+  return gatewayFetch(`/catalog/admin/products/${encodeURIComponent(id)}`)
+}
 export function createProduct(body: unknown): Promise<GatewayResponse<ProductView>> {
   return gatewayFetch('/catalog/products', { method: 'POST', body })
 }

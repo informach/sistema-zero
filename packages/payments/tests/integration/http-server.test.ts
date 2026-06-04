@@ -13,6 +13,7 @@ import { ListMyPaymentsService } from '../../src/application/list-my-payments/li
 import { ListPaymentsService } from '../../src/application/list-payments/list-payments.service'
 import { ListSubscriptionsService } from '../../src/application/list-subscriptions/list-subscriptions.service'
 import { GetPaymentsOpsService } from '../../src/application/payments-ops/get-payments-ops.service'
+import { GetDailyPaymentsStatsService } from '../../src/application/payments-stats/get-daily-payments-stats.service'
 import { GetPaymentsStatsService } from '../../src/application/payments-stats/get-payments-stats.service'
 import { ProcessPaymentService } from '../../src/application/process-payment/process-payment.service'
 import { RefundPaymentService } from '../../src/application/refund-payment/refund-payment.service'
@@ -83,6 +84,21 @@ function buildApp(opts: BuildOpts = {}) {
       refundedAmountInCents: '0',
       byStatus: [],
       byMethod: [],
+    }),
+    // Ecoa a janela recebida (verifica o parse de from/to na rota) + 1 bucket fixo.
+    statsDaily: async (range) => ({
+      from: range.from.toISOString(),
+      to: range.to.toISOString(),
+      days: [
+        {
+          day: '2026-06-01',
+          grossAmountInCents: '9700',
+          refundedAmountInCents: '0',
+          netAmountInCents: '9700',
+          transactions: 2,
+          cancellations: 0,
+        },
+      ],
     }),
     ops: async () => ({
       outboxPending: 0,
@@ -176,6 +192,7 @@ function buildApp(opts: BuildOpts = {}) {
     listSubscriptions: new ListSubscriptionsService(subscriptionsAdminRead),
     getAdminSubscription: new GetAdminSubscriptionService(subscriptionRepo),
     getPaymentsStats: new GetPaymentsStatsService(paymentsAdminRead),
+    getDailyPaymentsStats: new GetDailyPaymentsStatsService(paymentsAdminRead),
     getPaymentsOps: new GetPaymentsOpsService(paymentsAdminRead),
     refundPayment: new RefundPaymentService(repo, gateway, silentLogger),
     listMyPayments: new ListMyPaymentsService(paymentsMyRead),
@@ -840,6 +857,44 @@ describe('Rotas admin (/payments/admin/*)', () => {
     const res = await app.handle(new Request('http://localhost/payments/admin/stats'))
     expect(res.status).toBe(200)
     expect(await res.json()).toMatchObject({ totalCount: 0, paidCount: 0 })
+  })
+
+  test('GET /payments/admin/stats/daily → 200 (janela explícita ecoada + buckets)', async () => {
+    const { app } = buildApp()
+    const res = await app.handle(
+      new Request(
+        'http://localhost/payments/admin/stats/daily?from=2026-06-01T00:00:00.000Z&to=2026-06-03T00:00:00.000Z',
+      ),
+    )
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as {
+      from: string
+      to: string
+      days: { day: string; netAmountInCents: string; transactions: number }[]
+    }
+    expect(body.from).toBe('2026-06-01T00:00:00.000Z')
+    expect(body.to).toBe('2026-06-03T00:00:00.000Z')
+    expect(body.days.length).toBe(1)
+    expect(body.days[0]).toMatchObject({
+      day: '2026-06-01',
+      netAmountInCents: '9700',
+      transactions: 2,
+    })
+  })
+
+  test('GET /payments/admin/stats/daily sem from/to → 200 (default últimos 30 dias)', async () => {
+    const { app } = buildApp()
+    const res = await app.handle(new Request('http://localhost/payments/admin/stats/daily'))
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as { from: string; to: string }
+    const windowMs = new Date(body.to).getTime() - new Date(body.from).getTime()
+    expect(windowMs).toBe(30 * 24 * 60 * 60 * 1000)
+  })
+
+  test('requireAdmin ligado: stats/daily sem headers → 401', async () => {
+    const { app } = buildApp({ requireAdmin: true })
+    const res = await app.handle(new Request('http://localhost/payments/admin/stats/daily'))
+    expect(res.status).toBe(401)
   })
 
   test('GET /payments/admin/ops → 200', async () => {

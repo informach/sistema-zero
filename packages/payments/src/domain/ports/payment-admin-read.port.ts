@@ -52,6 +52,39 @@ export interface PaymentStats {
   byMethod: PaymentMethodBucket[]
 }
 
+/** Janela da série diária (obrigatória — o chamador define defaults). */
+export interface PaymentDailyRange {
+  from: Date
+  to: Date
+  /** Restringe às vendas destas ofertas (`metadata->>'offerId'`, vindo do funil). */
+  offerIds?: string[]
+}
+
+/** Bucket de um dia civil (fuso do relatório) da série de vendas. */
+export interface PaymentDailyBucket {
+  /** Dia civil em `America/Sao_Paulo` (YYYY-MM-DD). */
+  day: string
+  /** Recebido no dia: soma dos pagamentos CONFIRMADOS naquele dia (`paid_at`),
+   *  mesmo que estornados depois — o estorno desconta no dia em que ocorreu. */
+  grossAmountInCents: string
+  /** Estornado no dia (REFUNDED por dia do estorno: `metadata.refundedAt`). */
+  refundedAmountInCents: string
+  /** Líquido = recebido − estornado. Pode ser NEGATIVO (estorno de venda antiga). */
+  netAmountInCents: string
+  /** Cobranças criadas no dia (qualquer status — volume de entrada). */
+  transactions: number
+  /** Estornos no dia (contagem dos REFUNDED). */
+  cancellations: number
+}
+
+/** Série temporal diária p/ o gráfico "Gestão de vendas" (buckets esparsos —
+ *  dias sem movimento não aparecem; o BFF densifica). */
+export interface PaymentDailyStats {
+  from: string
+  to: string
+  days: PaymentDailyBucket[]
+}
+
 /** Saúde das filas/lag (mesmos contadores do /metrics + fila de reconciliação). */
 export interface PaymentOpsSnapshot {
   outboxPending: number
@@ -66,5 +99,6 @@ export interface PaymentOpsSnapshot {
 export interface PaymentAdminReadRepository {
   list(filters: AdminPaymentListFilters): Promise<{ items: PaymentAggregate[]; total: number }>
   stats(range: PaymentStatsRange): Promise<PaymentStats>
+  statsDaily(range: PaymentDailyRange): Promise<PaymentDailyStats>
   ops(): Promise<PaymentOpsSnapshot>
 }

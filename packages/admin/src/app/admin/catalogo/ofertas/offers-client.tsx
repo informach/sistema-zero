@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { CatalogTabs } from '@/components/admin/catalog-tabs'
 import { StatusBadge } from '@/components/admin/status-badge'
+import { type OfferItemDraft, OfferItemsEditor } from '@/components/catalog/offer-items-editor'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -25,11 +26,16 @@ import {
 } from '@/components/ui/table'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { formatCents, reaisToCents } from '@/lib/format'
+import { offerCodeSuggestion, offerSlugSuggestion } from '@/lib/slug'
 import type { OfferListItem, Paginated, ProductView } from '@/lib/types'
 
 const LIMIT = 20
 const OFFER_STATUSES = ['draft', 'active', 'paused', 'archived']
-const PRICING_MODES = ['one_time', 'subscription']
+const PRICING_MODES = ['one_time', 'subscription'] as const
+const PRICING_MODE_LABELS: Record<string, string> = {
+  one_time: 'À vista (pagamento único)',
+  subscription: 'Assinatura (recorrente)',
+}
 
 interface FormState {
   productId: string
@@ -42,6 +48,7 @@ interface FormState {
   installmentsMax: string
   guaranteeDays: string
   status: string
+  items: OfferItemDraft[]
 }
 
 const EMPTY_FORM: FormState = {
@@ -55,6 +62,7 @@ const EMPTY_FORM: FormState = {
   installmentsMax: '',
   guaranteeDays: '',
   status: 'draft',
+  items: [],
 }
 
 function optInt(v: string): number | null {
@@ -75,6 +83,26 @@ export function OffersClient() {
   const [editing, setEditing] = useState<OfferListItem | null>(null)
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
+  // Auto-geração de slug/code a partir de produto + preço + modo (só na criação).
+  // Edição manual do campo (dirty) desliga a regeneração daquele campo.
+  const [slugDirty, setSlugDirty] = useState(false)
+  const [codeDirty, setCodeDirty] = useState(false)
+
+  /** Recalcula slug/code sugeridos sobre um form já atualizado (criação). */
+  function withSuggestions(f: FormState, dirty = { slug: slugDirty, code: codeDirty }): FormState {
+    const product = products.find((p) => p.id === f.productId)
+    if (!product) return f
+    const input = {
+      productName: product.name,
+      priceCents: reaisToCents(f.price),
+      mode: f.pricingMode === 'subscription' ? ('subscription' as const) : ('one_time' as const),
+    }
+    return {
+      ...f,
+      ...(dirty.slug ? {} : { slug: offerSlugSuggestion(input) }),
+      ...(dirty.code ? {} : { code: offerCodeSuggestion(input) }),
+    }
+  }
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -106,12 +134,21 @@ export function OffersClient() {
 
   function openCreate() {
     setEditing(null)
-    setForm({ ...EMPTY_FORM, productId: products[0]?.id ?? '' })
+    setSlugDirty(false)
+    setCodeDirty(false)
+    setForm(
+      withSuggestions(
+        { ...EMPTY_FORM, productId: products[0]?.id ?? '' },
+        { slug: false, code: false },
+      ),
+    )
     setOpen(true)
   }
 
   function openEdit(o: OfferListItem) {
     setEditing(o)
+    setSlugDirty(true)
+    setCodeDirty(true)
     setForm({
       productId: o.productId,
       code: o.code,
@@ -123,6 +160,11 @@ export function OffersClient() {
       installmentsMax: o.installmentsMax != null ? String(o.installmentsMax) : '',
       guaranteeDays: o.guaranteeDays != null ? String(o.guaranteeDays) : '',
       status: o.status,
+      items: [...o.items]
+        .sort((a, b) => a.sortOrder - b.sortOrder)
+        .map((it) => ({
+          productId: it.productId,
+        })),
     })
     setOpen(true)
   }
@@ -140,6 +182,8 @@ export function OffersClient() {
     const compareAtCents = form.compareAt.trim() ? reaisToCents(form.compareAt) : null
     setSaving(true)
     try {
+      // PATCH substitui a coleção de itens — envia sempre o estado completo do editor.
+      const items = form.items.map((it, i) => ({ productId: it.productId, sortOrder: i }))
       if (editing) {
         await apiSend(`/api/catalog/offers/${editing.id}`, 'PATCH', {
           name: form.name,
@@ -149,6 +193,7 @@ export function OffersClient() {
           installmentsMax: optInt(form.installmentsMax),
           guaranteeDays: optInt(form.guaranteeDays),
           status: form.status,
+          items,
         })
         toast.success('Oferta atualizada.')
       } else {
@@ -165,6 +210,7 @@ export function OffersClient() {
             : {}),
           ...(optInt(form.guaranteeDays) ? { guaranteeDays: optInt(form.guaranteeDays) } : {}),
           status: form.status,
+          ...(items.length ? { items } : {}),
         })
         toast.success('Oferta criada.')
       }
@@ -297,39 +343,31 @@ export function OffersClient() {
       >
         <div className="flex flex-col gap-4">
           {!editing ? (
-            <>
-              <Field label="Produto" htmlFor="productId">
-                <Select
-                  id="productId"
-                  value={form.productId}
-                  onChange={(e) => setForm((f) => ({ ...f, productId: e.target.value }))}
-                >
-                  {products.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name} ({p.sku})
-                    </option>
-                  ))}
-                </Select>
-              </Field>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Code" htmlFor="code">
-                  <Input
-                    id="code"
-                    value={form.code}
-                    onChange={(e) => setForm((f) => ({ ...f, code: e.target.value }))}
-                  />
-                </Field>
-                <Field label="Slug" htmlFor="oslug">
-                  <Input
-                    id="oslug"
-                    value={form.slug}
-                    onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
-                  />
-                </Field>
-              </div>
-            </>
+            <Field
+              label="Produto"
+              htmlFor="productId"
+              tooltip="O produto que esta oferta vende. Slug e code são gerados a partir dele + preço + modo."
+            >
+              <Select
+                id="productId"
+                value={form.productId}
+                onChange={(e) =>
+                  setForm((f) => withSuggestions({ ...f, productId: e.target.value }))
+                }
+              >
+                {products.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name} ({p.sku})
+                  </option>
+                ))}
+              </Select>
+            </Field>
           ) : null}
-          <Field label="Nome" htmlFor="oname">
+          <Field
+            label="Nome"
+            htmlFor="oname"
+            tooltip="Título da oferta exibido no painel e no funil (ex.: 'Oferta de lançamento')."
+          >
             <Input
               id="oname"
               value={form.name}
@@ -337,16 +375,24 @@ export function OffersClient() {
             />
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Preço (R$)" htmlFor="price">
+            <Field
+              label="Preço (R$)"
+              htmlFor="price"
+              tooltip="Preço cobrado no checkout. É o valor autoritativo desta oferta."
+            >
               <Input
                 id="price"
                 inputMode="decimal"
                 placeholder="37,00"
                 value={form.price}
-                onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
+                onChange={(e) => setForm((f) => withSuggestions({ ...f, price: e.target.value }))}
               />
             </Field>
-            <Field label='Preço "de" (R$, opcional)' htmlFor="compareAt">
+            <Field
+              label='Preço "de" (R$, opcional)'
+              htmlFor="compareAt"
+              tooltip="Preço cheio exibido riscado ao lado do preço real, para mostrar o desconto."
+            >
               <Input
                 id="compareAt"
                 inputMode="decimal"
@@ -356,21 +402,63 @@ export function OffersClient() {
               />
             </Field>
           </div>
+          {!editing ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field
+                label="Slug"
+                htmlFor="oslug"
+                tooltip="Parte do link público de checkout (ex.: /ofertas/no-comando-da-ia-97-a-vista). Gerado de produto + preço + modo; edite antes de salvar se quiser outro. Não muda depois de criado."
+              >
+                <Input
+                  id="oslug"
+                  value={form.slug}
+                  onChange={(e) => {
+                    setSlugDirty(true)
+                    setForm((f) => ({ ...f, slug: e.target.value }))
+                  }}
+                />
+              </Field>
+              <Field
+                label="Code"
+                htmlFor="code"
+                tooltip="Identificador interno e estável da oferta (relatórios/integrações) — não aparece para o cliente. Gerado automaticamente; não muda depois de criado."
+              >
+                <Input
+                  id="code"
+                  value={form.code}
+                  onChange={(e) => {
+                    setCodeDirty(true)
+                    setForm((f) => ({ ...f, code: e.target.value }))
+                  }}
+                />
+              </Field>
+            </div>
+          ) : null}
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Modo" htmlFor="pricingMode">
+            <Field
+              label="Modo"
+              htmlFor="pricingMode"
+              tooltip="À vista: pagamento único. Assinatura: cobrança recorrente no cartão."
+            >
               <Select
                 id="pricingMode"
                 value={form.pricingMode}
-                onChange={(e) => setForm((f) => ({ ...f, pricingMode: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => withSuggestions({ ...f, pricingMode: e.target.value }))
+                }
               >
                 {PRICING_MODES.map((m) => (
                   <option key={m} value={m}>
-                    {m}
+                    {PRICING_MODE_LABELS[m] ?? m}
                   </option>
                 ))}
               </Select>
             </Field>
-            <Field label="Status" htmlFor="ostatus">
+            <Field
+              label="Status"
+              htmlFor="ostatus"
+              tooltip="draft: não vende ainda. active: à venda. paused: venda suspensa. archived: encerrada (sem volta)."
+            >
               <Select
                 id="ostatus"
                 value={form.status}
@@ -385,7 +473,11 @@ export function OffersClient() {
             </Field>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Máx. parcelas (opcional)" htmlFor="installments">
+            <Field
+              label="Máx. parcelas (opcional)"
+              htmlFor="installments"
+              tooltip="Máximo de parcelas no cartão. Vazio = padrão do checkout."
+            >
               <Input
                 id="installments"
                 inputMode="numeric"
@@ -393,7 +485,11 @@ export function OffersClient() {
                 onChange={(e) => setForm((f) => ({ ...f, installmentsMax: e.target.value }))}
               />
             </Field>
-            <Field label="Garantia (dias, opcional)" htmlFor="guarantee">
+            <Field
+              label="Garantia (dias, opcional)"
+              htmlFor="guarantee"
+              tooltip="Dias de garantia/reembolso prometidos na página de venda."
+            >
               <Input
                 id="guarantee"
                 inputMode="numeric"
@@ -402,6 +498,17 @@ export function OffersClient() {
               />
             </Field>
           </div>
+          <Field
+            label="Bônus / Itens extras"
+            tooltip="Produtos entregues junto com o principal, só nesta oferta (ex.: planilha bônus). Quem compra recebe acesso a tudo."
+          >
+            <OfferItemsEditor
+              products={products}
+              value={form.items}
+              onChange={(items) => setForm((f) => ({ ...f, items }))}
+              mainProductId={form.productId}
+            />
+          </Field>
         </div>
       </Dialog>
     </div>

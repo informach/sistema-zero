@@ -249,6 +249,42 @@ export type ProductKind =
 export type PricingMode = 'one_time' | 'subscription'
 export type CouponType = 'percent' | 'fixed'
 
+// Fulfillment (entrega/acesso): espelha `domain/product/fulfillment.ts` do catalog.
+// É o que a área de membros usa p/ liberar o acesso após a compra.
+export type AccessType = 'download' | 'course' | 'community' | 'external' | 'none'
+export type ReleaseMode = 'immediate' | 'days_after_purchase' | 'fixed_date'
+
+export interface FulfillmentAsset {
+  /** Rótulo exibível ao aluno (ex.: "Ebook (PDF)"). */
+  label: string
+  url?: string
+  /** Referência opaca a um ativo (ex.: id no storage). */
+  ref?: string
+}
+
+export interface ReleaseRule {
+  mode: ReleaseMode
+  /** Dias após a compra (quando `mode = days_after_purchase`). */
+  days?: number
+  /** Data fixa ISO-8601 (quando `mode = fixed_date`). */
+  date?: string
+}
+
+export interface FulfillmentSpec {
+  accessType: AccessType
+  assets?: FulfillmentAsset[]
+  /** SLUG do curso na área de membros (não o id). */
+  courseRef?: string
+  release?: ReleaseRule
+}
+
+/** Componente de um combo (produto `kind=bundle`). */
+export interface ProductComponentView {
+  productId: string
+  sortOrder: number
+  isPrimary: boolean
+}
+
 export interface ProductView {
   id: string
   version: number
@@ -260,8 +296,17 @@ export interface ProductView {
   sellable: boolean
   description: string | null
   currency: string
+  fulfillment: FulfillmentSpec | null
+  metadata: Record<string, unknown> | null
+  components: ProductComponentView[]
   createdAt: string
   updatedAt: string
+}
+
+/** Item extra (bônus) concedido pela oferta além do produto principal. */
+export interface OfferItemView {
+  productId: string
+  sortOrder: number
 }
 
 export interface OfferListItem {
@@ -282,6 +327,7 @@ export interface OfferListItem {
   isAvailable: boolean
   productId: string
   productName: string | null
+  items: OfferItemView[]
   createdAt: string
   updatedAt: string
 }
@@ -406,4 +452,36 @@ export interface PaymentOps {
   webhookDeliveriesPending: number
   webhookDeliveriesDead: number
   reconcilePending: number
+}
+
+// ── Série diária do painel "Gestão de vendas" ──
+
+/** Bucket de um dia civil (America/Sao_Paulo). Valores em centavos como STRING. */
+export interface DailyPaymentBucket {
+  /** YYYY-MM-DD. */
+  day: string
+  /** Recebido no dia (pagamentos confirmados naquele dia, mesmo que estornados depois). */
+  grossAmountInCents: string
+  /** Estornado no dia. */
+  refundedAmountInCents: string
+  /** Líquido = recebido − estornado. Pode ser NEGATIVO. */
+  netAmountInCents: string
+  /** Cobranças criadas no dia (qualquer status). */
+  transactions: number
+  /** Estornos no dia. */
+  cancellations: number
+}
+
+/** Série DENSA (o BFF preenche dias sem movimento com zeros) + totais do período. */
+export interface DailyPaymentStats {
+  from: string
+  to: string
+  days: DailyPaymentBucket[]
+  totals: {
+    netAmountInCents: string
+    grossAmountInCents: string
+    refundedAmountInCents: string
+    transactions: number
+    cancellations: number
+  }
 }

@@ -151,6 +151,14 @@ export const PaymentsStatsQuery = t.Object({
   to: ADMIN_DATE,
 })
 
+/** Query de `GET /payments/admin/stats/daily` (série diária do painel de vendas). */
+export const PaymentsDailyStatsQuery = t.Object({
+  from: ADMIN_DATE,
+  to: ADMIN_DATE,
+  /** UUIDs de ofertas separados por vírgula (filtro por produto, resolvido no BFF). */
+  offerIds: t.Optional(t.String({ minLength: 1, maxLength: 4000 })),
+})
+
 /** Param `:id` (UUID) das rotas admin — valida o formato p/ não virar 500 na coluna uuid. */
 export const AdminIdParam = t.Object({
   id: t.String({

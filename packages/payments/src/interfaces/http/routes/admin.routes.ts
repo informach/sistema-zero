@@ -5,6 +5,7 @@ import type { GetAdminSubscriptionService } from '../../../application/get-admin
 import type { ListPaymentsService } from '../../../application/list-payments/list-payments.service'
 import type { ListSubscriptionsService } from '../../../application/list-subscriptions/list-subscriptions.service'
 import type { GetPaymentsOpsService } from '../../../application/payments-ops/get-payments-ops.service'
+import type { GetDailyPaymentsStatsService } from '../../../application/payments-stats/get-daily-payments-stats.service'
 import type { GetPaymentsStatsService } from '../../../application/payments-stats/get-payments-stats.service'
 import type { RefundPaymentService } from '../../../application/refund-payment/refund-payment.service'
 import { requireAdmin } from '../admin-auth'
@@ -12,6 +13,7 @@ import {
   AdminIdParam,
   ListPaymentsQuery,
   ListSubscriptionsQuery,
+  PaymentsDailyStatsQuery,
   PaymentsStatsQuery,
 } from '../dtos'
 
@@ -26,6 +28,7 @@ export interface AdminRoutesDeps {
   listSubscriptions: ListSubscriptionsService
   getSubscription: GetAdminSubscriptionService
   getStats: GetPaymentsStatsService
+  getDailyStats: GetDailyPaymentsStatsService
   getOps: GetPaymentsOpsService
   // Escrita admin
   refundPayment: RefundPaymentService
@@ -96,6 +99,25 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           return deps.getStats.execute({ from: parseDate(query.from), to: parseDate(query.to) })
         },
         { query: PaymentsStatsQuery },
+      )
+      .get(
+        '/stats/daily',
+        async ({ query, headers }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          // Janela default: últimos 30 dias (o BFF normalmente manda explícito).
+          const to = parseDate(query.to) ?? new Date()
+          const from = parseDate(query.from) ?? new Date(to.getTime() - 30 * 24 * 60 * 60 * 1000)
+          const offerIds = query.offerIds
+            ?.split(',')
+            .map((id) => id.trim())
+            .filter(Boolean)
+          return deps.getDailyStats.execute({
+            from,
+            to,
+            ...(offerIds?.length ? { offerIds } : {}),
+          })
+        },
+        { query: PaymentsDailyStatsQuery },
       )
       .get('/ops', async ({ headers }) => {
         requireAdmin(headers, deps.requireAdminEnabled)

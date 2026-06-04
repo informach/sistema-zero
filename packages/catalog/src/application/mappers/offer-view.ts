@@ -32,7 +32,9 @@ export interface OfferView {
 /**
  * Item de oferta para LISTAGEM admin: campos comerciais + produto principal
  * (id/nome), SEM resolver os entitlements inclusos (caro). `productName` é
- * anexado pelo serviço de listagem via batch lookup.
+ * anexado pelo serviço de listagem via batch lookup. `items` (extras/bônus da
+ * oferta) vêm CRUS do agregado — o painel precisa deles p/ editar sem apagar
+ * (o PATCH substitui a coleção inteira).
  */
 export interface OfferListItemView {
   id: string
@@ -52,6 +54,7 @@ export interface OfferListItemView {
   isAvailable: boolean
   productId: string
   productName: string | null
+  items: { productId: string; sortOrder: number }[]
   createdAt: string
   updatedAt: string
 }
@@ -79,6 +82,7 @@ export function toOfferListItem(
     isAvailable: offer.isAvailable(now),
     productId: offer.productId,
     productName,
+    items: offer.items.map((item) => ({ productId: item.productId, sortOrder: item.sortOrder })),
     createdAt: offer.createdAt.toISOString(),
     updatedAt: offer.updatedAt.toISOString(),
   }

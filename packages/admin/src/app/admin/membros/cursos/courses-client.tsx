@@ -26,6 +26,7 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { formatDate } from '@/lib/format'
+import { slugify } from '@/lib/slug'
 import { COURSE_STATUSES, type CourseView, type Paginated } from '@/lib/types'
 
 const LIMIT = 20
@@ -62,6 +63,9 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
   const [editing, setEditing] = useState<CourseView | null>(null)
   const [form, setForm] = useState<FormState>(EMPTY)
   const [saving, setSaving] = useState(false)
+  // Auto-geração do slug a partir do título (só na criação): para quando o
+  // usuário edita o slug manualmente (dirty), p/ não sobrescrever a escolha dele.
+  const [slugDirty, setSlugDirty] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -87,10 +91,12 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
   function openCreate() {
     setEditing(null)
     setForm(EMPTY)
+    setSlugDirty(false)
     setOpen(true)
   }
   function openEdit(c: CourseView) {
     setEditing(c)
+    setSlugDirty(true)
     setForm({
       slug: c.slug,
       title: c.title,
@@ -274,12 +280,37 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
         }
       >
         <div className="flex flex-col gap-4">
+          <Field
+            label="Título"
+            htmlFor="title"
+            hint="O slug é gerado automaticamente a partir dele."
+          >
+            <Input
+              id="title"
+              value={form.title}
+              onChange={(e) => {
+                const title = e.target.value
+                setForm((f) => ({
+                  ...f,
+                  title,
+                  ...(!editing && !slugDirty ? { slug: slugify(title) } : {}),
+                }))
+              }}
+            />
+          </Field>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Slug" htmlFor="slug" hint="minúsculas-com-hifens">
+            <Field
+              label="Slug"
+              htmlFor="slug"
+              tooltip="Identificador do curso na URL e nas matrículas (minúsculas-com-hifens). Preenchido sozinho a partir do título; edite antes de salvar se quiser outro."
+            >
               <Input
                 id="slug"
                 value={form.slug}
-                onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
+                onChange={(e) => {
+                  setSlugDirty(true)
+                  setForm((f) => ({ ...f, slug: e.target.value }))
+                }}
               />
             </Field>
             <Field label="Status" htmlFor="cstatus">
@@ -296,13 +327,6 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
               </Select>
             </Field>
           </div>
-          <Field label="Título" htmlFor="title">
-            <Input
-              id="title"
-              value={form.title}
-              onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-            />
-          </Field>
           <Field label="Subtítulo" htmlFor="subtitle" hint="Opcional.">
             <Input
               id="subtitle"

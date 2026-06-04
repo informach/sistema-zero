@@ -13,6 +13,7 @@ import { ListMyPaymentsService } from './application/list-my-payments/list-my-pa
 import { ListPaymentsService } from './application/list-payments/list-payments.service'
 import { ListSubscriptionsService } from './application/list-subscriptions/list-subscriptions.service'
 import { GetPaymentsOpsService } from './application/payments-ops/get-payments-ops.service'
+import { GetDailyPaymentsStatsService } from './application/payments-stats/get-daily-payments-stats.service'
 import { GetPaymentsStatsService } from './application/payments-stats/get-payments-stats.service'
 import { ProcessPaymentService } from './application/process-payment/process-payment.service'
 import { RefundPaymentService } from './application/refund-payment/refund-payment.service'
@@ -204,6 +205,7 @@ export function createApplication(env: Env): Application {
   const listSubscriptions = new ListSubscriptionsService(subscriptionsAdminRead)
   const getAdminSubscription = new GetAdminSubscriptionService(subscriptions)
   const getPaymentsStats = new GetPaymentsStatsService(paymentsAdminRead)
+  const getDailyPaymentsStats = new GetDailyPaymentsStatsService(paymentsAdminRead)
   const getPaymentsOps = new GetPaymentsOpsService(paymentsAdminRead)
   const refundPayment = new RefundPaymentService(payments, gateway, logger)
 
@@ -233,6 +235,7 @@ export function createApplication(env: Env): Application {
     listSubscriptions,
     getAdminSubscription,
     getPaymentsStats,
+    getDailyPaymentsStats,
     getPaymentsOps,
     refundPayment,
     listMyPayments,

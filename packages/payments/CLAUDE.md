@@ -223,6 +223,11 @@ gateway. São cross-consumer (o painel enxerga todos).
 - **Leitura:** `GET /payments/admin/payments` (`?q&status&method&consumerId&from&to&limit&offset`),
   `GET /payments/admin/payments/:id`, `GET /payments/admin/subscriptions` (`?q&status&consumerId&limit&offset`),
   `GET /payments/admin/subscriptions/:id`, `GET /payments/admin/stats` (`?from&to` → receita/contagens),
+  `GET /payments/admin/stats/daily` (`?from&to&offerIds` → série diária do painel "Gestão de vendas":
+  buckets esparsos por dia civil em `America/Sao_Paulo` com líquido/recebido/estornado/transações/
+  estornos; "recebido" agrupa por `paid_at` e INCLUI linhas hoje REFUNDED — o estorno desconta no
+  dia em que ocorreu, via `metadata.refundedAt`/`updated_at`; `offerIds` = CSV de UUIDs, filtra
+  `metadata->>'offerId'`; o BFF do admin densifica os dias vazios),
   `GET /payments/admin/ops` (lag de outbox/entregas/reconciliação). Ports de leitura
   dedicados (`*-admin-read.port` + `Drizzle*AdminReadRepository`) — **separados** do
   hot-path de escrita; devolvem agregados (a app mapeia via `toAdminPaymentView`/`toSubscriptionView`).

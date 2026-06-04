@@ -1,6 +1,7 @@
 import { AdminHeader } from '@/components/admin/admin-header'
 import { getSession } from '@/server/session'
 import { DashboardCards } from './dashboard-cards'
+import { SalesPanel } from './sales-panel'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,6 +16,7 @@ export default async function PainelPage() {
         description="Visão geral da plataforma. Gerencie catálogo, usuários, pagamentos e membros."
       />
       <DashboardCards />
+      <SalesPanel />
     </div>
   )
 }

@@ -306,7 +306,7 @@ describe('catalog HTTP', () => {
         kind: 'course',
         status: 'active',
       })
-      await built.createProduct.execute({
+      const p2 = await built.createProduct.execute({
         sku: 'ebook-ia',
         slug: 'ebook-ia',
         name: 'Ebook de IA',
@@ -320,6 +320,7 @@ describe('catalog HTTP', () => {
         name: 'Oferta do curso',
         priceCents: 19700,
         status: 'active',
+        items: [{ productId: p2.id }],
       })
       await built.app.handle(
         req('POST', '/catalog/coupons', {
@@ -327,7 +328,7 @@ describe('catalog HTTP', () => {
           body: { code: 'BLACK', type: 'percent', percentOff: 50, appliesToAll: true },
         }),
       )
-      return p1
+      return { p1, p2 }
     }
 
     it('GET /catalog/admin/products sem role → 401', async () => {
@@ -373,19 +374,66 @@ describe('catalog HTTP', () => {
       expect(page.items[0]?.slug).toBe('ebook-ia')
     })
 
-    it('GET /catalog/admin/offers anexa o nome do produto', async () => {
+    it('GET /catalog/admin/offers anexa o nome do produto e os itens extras', async () => {
       const built = build()
-      const p1 = await seed(built)
+      const { p1, p2 } = await seed(built)
       const res = await built.app.handle(req('GET', '/catalog/admin/offers', { headers: ADMIN }))
       expect(res.status).toBe(200)
       const page = (await res.json()) as {
-        items: { productId: string; productName: string | null; isAvailable: boolean }[]
+        items: {
+          productId: string
+          productName: string | null
+          isAvailable: boolean
+          items: { productId: string; sortOrder: number }[]
+        }[]
         total: number
       }
       expect(page.total).toBe(1)
       expect(page.items[0]?.productId).toBe(p1.id)
       expect(page.items[0]?.productName).toBe('Curso de IA')
       expect(page.items[0]?.isAvailable).toBe(true)
+      // O painel edita a oferta enviando a coleção inteira — a view PRECISA dos itens.
+      expect(page.items[0]?.items).toEqual([{ productId: p2.id, sortOrder: 0 }])
+    })
+
+    it('GET /catalog/admin/products/:id devolve a view completa (fulfillment/components)', async () => {
+      const built = build()
+      const { p1 } = await seed(built)
+      const res = await built.app.handle(
+        req('GET', `/catalog/admin/products/${p1.id}`, { headers: ADMIN }),
+      )
+      expect(res.status).toBe(200)
+      const view = (await res.json()) as {
+        id: string
+        slug: string
+        components: unknown[]
+        fulfillment: unknown
+      }
+      expect(view.id).toBe(p1.id)
+      expect(view.slug).toBe('curso-ia')
+      expect(Array.isArray(view.components)).toBe(true)
+    })
+
+    it('GET /catalog/admin/products/:id inexistente ou malformado → 404', async () => {
+      const built = build()
+      await seed(built)
+      const missing = await built.app.handle(
+        req('GET', '/catalog/admin/products/00000000-0000-0000-0000-000000000000', {
+          headers: ADMIN,
+        }),
+      )
+      expect(missing.status).toBe(404)
+      const malformed = await built.app.handle(
+        req('GET', '/catalog/admin/products/nao-uuid', { headers: ADMIN }),
+      )
+      expect(malformed.status).toBe(404)
+    })
+
+    it('GET /catalog/admin/products/:id sem role → 401', async () => {
+      const built = build()
+      const { p1 } = await seed(built)
+      const res = await built.app.handle(req('GET', `/catalog/admin/products/${p1.id}`))
+      expect(res.status).toBe(401)
     })
 
     it('GET /catalog/admin/coupons lista cupons (role customer → 403)', async () => {

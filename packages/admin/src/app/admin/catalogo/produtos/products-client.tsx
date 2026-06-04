@@ -1,16 +1,15 @@
 'use client'
 
 import { Pencil, Plus, Search } from 'lucide-react'
+import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { CatalogTabs } from '@/components/admin/catalog-tabs'
 import { StatusBadge } from '@/components/admin/status-badge'
-import { Button } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Dialog } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { Field } from '@/components/ui/label'
 import { Pagination } from '@/components/ui/pagination'
 import { Select } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
@@ -22,32 +21,21 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Textarea } from '@/components/ui/textarea'
-import { type ApiError, apiGet, apiSend } from '@/lib/api'
+import { type ApiError, apiGet } from '@/lib/api'
 import type { Paginated, ProductView } from '@/lib/types'
 
 const LIMIT = 20
-const KINDS = ['ebook', 'course', 'template_kit', 'community', 'service', 'bundle', 'other']
 const PRODUCT_STATUSES = ['draft', 'active', 'archived']
 
-interface FormState {
-  sku: string
-  slug: string
-  name: string
-  kind: string
-  status: string
-  description: string
-  sellable: boolean
-}
-
-const EMPTY_FORM: FormState = {
-  sku: '',
-  slug: '',
-  name: '',
-  kind: 'ebook',
-  status: 'draft',
-  description: '',
-  sellable: true,
+/** Rótulos PT-BR dos tipos de produto. */
+const KIND_LABELS: Record<string, string> = {
+  ebook: 'Ebook',
+  course: 'Curso',
+  template_kit: 'Kit de templates',
+  community: 'Comunidade',
+  service: 'Serviço',
+  bundle: 'Combo',
+  other: 'Outro',
 }
 
 export function ProductsClient() {
@@ -57,11 +45,6 @@ export function ProductsClient() {
   const [q, setQ] = useState('')
   const [status, setStatus] = useState('')
   const [loading, setLoading] = useState(true)
-
-  const [open, setOpen] = useState(false)
-  const [editing, setEditing] = useState<ProductView | null>(null)
-  const [form, setForm] = useState<FormState>(EMPTY_FORM)
-  const [saving, setSaving] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -85,72 +68,15 @@ export function ProductsClient() {
     return () => clearTimeout(t)
   }, [load])
 
-  function openCreate() {
-    setEditing(null)
-    setForm(EMPTY_FORM)
-    setOpen(true)
-  }
-
-  function openEdit(p: ProductView) {
-    setEditing(p)
-    setForm({
-      sku: p.sku,
-      slug: p.slug,
-      name: p.name,
-      kind: p.kind,
-      status: p.status,
-      description: p.description ?? '',
-      sellable: p.sellable,
-    })
-    setOpen(true)
-  }
-
-  async function save() {
-    if (!form.name.trim() || (!editing && (!form.sku.trim() || !form.slug.trim()))) {
-      toast.error('Preencha SKU, slug e nome.')
-      return
-    }
-    setSaving(true)
-    try {
-      if (editing) {
-        await apiSend(`/api/catalog/products/${editing.id}`, 'PATCH', {
-          name: form.name,
-          kind: form.kind,
-          status: form.status,
-          sellable: form.sellable,
-          description: form.description.trim() ? form.description : null,
-        })
-        toast.success('Produto atualizado.')
-      } else {
-        await apiSend('/api/catalog/products', 'POST', {
-          sku: form.sku,
-          slug: form.slug,
-          name: form.name,
-          kind: form.kind,
-          status: form.status,
-          sellable: form.sellable,
-          ...(form.description.trim() ? { description: form.description } : {}),
-        })
-        toast.success('Produto criado.')
-      }
-      setOpen(false)
-      await load()
-    } catch (err) {
-      toast.error((err as ApiError).message ?? 'Não foi possível salvar.')
-    } finally {
-      setSaving(false)
-    }
-  }
-
   return (
     <div className="space-y-6">
       <AdminHeader
         title="Catálogo"
         description="Produtos, ofertas e cupons da plataforma."
         action={
-          <Button onClick={openCreate}>
+          <Link href="/admin/catalogo/produtos/novo" className={buttonVariants()}>
             <Plus className="size-4" /> Novo produto
-          </Button>
+          </Link>
         }
       />
       <CatalogTabs />
@@ -217,14 +143,19 @@ export function ProductsClient() {
                     <div className="text-xs text-muted-foreground">{p.slug}</div>
                   </TableCell>
                   <TableCell className="font-mono text-xs">{p.sku}</TableCell>
-                  <TableCell className="text-muted-foreground">{p.kind}</TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {KIND_LABELS[p.kind] ?? p.kind}
+                  </TableCell>
                   <TableCell>
                     <StatusBadge status={p.status} />
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" onClick={() => openEdit(p)}>
+                    <Link
+                      href={`/admin/catalogo/produtos/${p.id}`}
+                      className={buttonVariants({ variant: 'ghost', size: 'sm' })}
+                    >
                       <Pencil className="size-4" /> Editar
-                    </Button>
+                    </Link>
                   </TableCell>
                 </TableRow>
               ))
@@ -234,105 +165,6 @@ export function ProductsClient() {
       </Card>
 
       <Pagination total={total} limit={LIMIT} offset={offset} onChange={setOffset} />
-
-      <Dialog
-        open={open}
-        onClose={() => setOpen(false)}
-        title={editing ? 'Editar produto' : 'Novo produto'}
-        description={editing ? editing.name : 'Cadastre um produto no catálogo.'}
-        footer={
-          <>
-            <Button variant="outline" onClick={() => setOpen(false)} disabled={saving}>
-              Cancelar
-            </Button>
-            <Button onClick={save} disabled={saving}>
-              {saving ? <Spinner /> : null}
-              Salvar
-            </Button>
-          </>
-        }
-      >
-        <div className="flex flex-col gap-4">
-          {!editing ? (
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="SKU" htmlFor="sku">
-                <Input
-                  id="sku"
-                  value={form.sku}
-                  onChange={(e) => setForm((f) => ({ ...f, sku: e.target.value }))}
-                />
-              </Field>
-              <Field label="Slug" htmlFor="slug">
-                <Input
-                  id="slug"
-                  value={form.slug}
-                  onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
-                />
-              </Field>
-            </div>
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-2 text-xs text-muted-foreground">
-              <div>
-                SKU: <span className="font-mono">{form.sku}</span>
-              </div>
-              <div>
-                Slug: <span className="font-mono">{form.slug}</span>
-              </div>
-            </div>
-          )}
-          <Field label="Nome" htmlFor="name">
-            <Input
-              id="name"
-              value={form.name}
-              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-            />
-          </Field>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Tipo" htmlFor="kind">
-              <Select
-                id="kind"
-                value={form.kind}
-                onChange={(e) => setForm((f) => ({ ...f, kind: e.target.value }))}
-              >
-                {KINDS.map((k) => (
-                  <option key={k} value={k}>
-                    {k}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-            <Field label="Status" htmlFor="pstatus">
-              <Select
-                id="pstatus"
-                value={form.status}
-                onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}
-              >
-                {PRODUCT_STATUSES.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-          </div>
-          <Field label="Descrição" htmlFor="desc">
-            <Textarea
-              id="desc"
-              value={form.description}
-              onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-            />
-          </Field>
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={form.sellable}
-              onChange={(e) => setForm((f) => ({ ...f, sellable: e.target.checked }))}
-              className="size-4 accent-[color:var(--primary)]"
-            />
-            Vendável (pode ser vendido sozinho)
-          </label>
-        </div>
-      </Dialog>
     </div>
   )
 }

@@ -103,10 +103,13 @@ validade, mínimo e limite de usos. `POST/PATCH /catalog/coupons` (admin). `POST
 `X-Auth-User-Status` (anti-spoof, injetados pelo gateway) como **defesa em profundidade** (`REQUIRE_ADMIN`).
 
 **Leitura admin (listagens paginadas — painel `@sistemazero/admin`):** `GET /catalog/admin/{products,offers,coupons}`
-(`?q&status&limit&offset`; offers aceita `?productId`). Mesmo gating (JWT+RBAC no gateway, `requireAdmin`
-defesa em profundidade). Caminho `/catalog/admin/*` é **distinto** das leituras públicas `/:slug` p/ gating
-inequívoco no gateway. Serviços `List{Products,Offers,Coupons}Service`; repos ganharam `list(query)` (batch
-dos filhos p/ evitar N+1). Ofertas listadas trazem o nome do produto principal (sem resolver entitlements).
+(`?q&status&limit&offset`; offers aceita `?productId`) + `GET /catalog/admin/products/:id` (GET-one da página
+de edição do painel — `ProductView` completa com `fulfillment`/`components`; non-UUID → 404 direto). Mesmo
+gating (JWT+RBAC no gateway, `requireAdmin` defesa em profundidade). Caminho `/catalog/admin/*` é **distinto**
+das leituras públicas `/:slug` p/ gating inequívoco no gateway. Serviços `List{Products,Offers,Coupons}Service`;
+repos ganharam `list(query)` (batch dos filhos p/ evitar N+1). Ofertas listadas trazem o nome do produto
+principal (sem resolver entitlements) **e os `items` crus** (extras/bônus — o painel precisa deles p/ editar
+sem apagar, já que o PATCH substitui a coleção inteira).
 
 DTOs em **TypeBox**; erros de domínio → status no `error-handler` (PRODUCT_NOT_FOUND→404,
 DUPLICATE_*→409, CONCURRENCY_CONFLICT→409, INVALID_STATE_TRANSITION→409, OFFER_NOT_AVAILABLE→409,
