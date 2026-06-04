@@ -42,7 +42,7 @@
     "db:members:migrate": "bun run --filter @sistemazero/members db:migrate",
     "db:members:seed": "bun run --filter @sistemazero/members db:seed",
     "dev:admin": "bun run --filter @sistemazero/admin dev",
-    "build:admin": "bun run --filter @sistemazero/admin build",
+    "build:admin": "cd packages/admin && bun run build",
     "start:admin": "bun run --filter @sistemazero/admin start",
     "typecheck:admin": "bun run --filter @sistemazero/admin typecheck",
     "dev:messaging": "bun run --filter @sistemazero/messaging dev",
@@ -50,7 +50,7 @@
     "db:messaging:generate": "bun run --filter @sistemazero/messaging db:generate",
     "db:messaging:migrate": "bun run --filter @sistemazero/messaging db:migrate",
     "dev:community": "bun run --filter @sistemazero/community dev",
-    "build:community": "bun run --filter @sistemazero/community build",
+    "build:community": "cd packages/community && bun run build",
     "start:community": "bun run --filter @sistemazero/community start",
     "typecheck:community": "bun run --filter @sistemazero/community typecheck"
   },

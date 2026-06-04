@@ -88,16 +88,21 @@ src/
 | Comando | O quê |
 |---------|-------|
 | `bun run dev` | Next dev server :3007 (Turbopack) |
-| `bun run build` / `start` | build (**`next build --webpack`**) + produção |
+| `bun run build` / `start` | build (**`next build`** — Turbopack) + produção |
 | `bun run typecheck` | `tsc --noEmit` |
 | `bun run check` / `check:fix` | Biome |
 
 Da raiz: `bun run dev:community`, `build:community`, `typecheck:community`.
 
-> ⚠️ **Build = webpack + React pinada 19.1.0** (não `^19.2`) — mesmo workaround do admin para o bug
-> de prerender do Next 16.x (`useContext null` em `/_global-error`/`/_not-found`, não-determinístico).
-> Há um `app/global-error.tsx` autocontido. Reverter quando o Next corrigir
-> (vercel/next.js #84994/#85668/#86178).
+> ⚠️ **Build = `next build` (Turbopack) + React `^19.2.4` + Next `^16.1.6`** — alinhado ao projeto de
+> referência `comunidade-sistema-zero` (builda limpo nesse combo). Havia o bug do Next 16
+> (`useContext null` no prerender estático de `/_global-error`//_not-found): a causa REAL **não** era
+> versão/builder — era rodar o build via **`bun run --filter` a partir da RAIZ** do monorepo. O `next`
+> hasteado na raiz e seus **workers de static-export** resolviam o React de forma inconsistente
+> (dispatcher nulo). **Fix:** os scripts da raiz (`build:community`/`build:admin`) rodam **package-local**
+> (`cd packages/<app> && bun run build`), NÃO `--filter`. Builda limpo de forma determinística (12/12).
+> NÃO há `global-error.tsx` custom (usa o default do Next, como a referência); `app/not-found.tsx` é
+> página normal. (Issues: vercel/next.js #84994/#85668/#86178.)
 
 ## Env (`.env.example`)
 
