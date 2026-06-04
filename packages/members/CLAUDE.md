@@ -9,7 +9,8 @@ Guia operacional para trabalhar neste package. Leia antes de editar.
 
 ## O que é
 
-**Área de membros** (só back-end/API; um front-end único consome via api-gateway).
+**Área de membros** (só back-end/API; o front-end do aluno é o
+**[@sistemazero/community](../community)**, que consome via api-gateway).
 Dois bounded contexts no mesmo serviço: **acesso** (matrícula/entitlement — visão
 materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 (cursos → módulos → aulas polimórficas/compostas + conclusão por aluno). Runtime:

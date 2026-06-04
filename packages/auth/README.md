@@ -18,6 +18,15 @@ usuário e aplica autorização na borda.
   **reuse-detection** (apresentar um refresh já usado revoga a família inteira).
 - **`GET /auth/me`**: resolve o usuário do access token — **`null` se não existir**,
   senão a view `{ id, email, firstName, lastName, role, status, phone?, signupSource? }`.
+- **Reset/definição de senha**: `POST /auth/forgot-password` (SEMPRE 200 —
+  anti-enumeração; envia e-mail via gateway → messaging) e
+  `POST /auth/reset-password` (token single-use, sha256 no banco, TTL 60 min;
+  troca a senha e **revoga todas as sessões**). Mesmo mecanismo serve o **1º acesso
+  pós-compra** (o funil pede o token via rota interna S2S e envia o link de boas-vindas).
+- **Self-service de perfil**: `PATCH /auth/me` (nome/telefone — **e-mail não**) e
+  `POST /auth/me/password` (troca logado, exige a senha atual; revoga as sessões).
+- **Admin de usuários** (`/auth/admin/users*`, p/ o painel): listar/detalhe/batch +
+  editar papel/status/perfil com guards hierárquicos e concorrência otimista.
 - **JWKS** (`GET /auth/.well-known/jwks.json`): chave pública (RS256) p/ o gateway
   verificar sem segurar a chave privada.
 
@@ -55,6 +64,9 @@ Veja [`.env.example`](./.env.example). Principais: `DATABASE_URL`, `DATABASE_POO
 `JWT_ALG`, `JWT_HS256_SECRET` (≥32 chars) **ou** `JWT_PRIVATE_KEY`, `JWT_ISSUER`,
 `JWT_AUDIENCE`, `ACCESS_TOKEN_TTL_SECONDS`, `REFRESH_TOKEN_TTL_DAYS`,
 `PASSWORD_MIN_LENGTH`, `TRUST_PROXY`/`TRUSTED_PROXY_HOPS`, `MAX_REQUEST_BODY_BYTES`.
+Reset de senha/e-mail: `RESET_TOKEN_TTL_MINUTES`, `COMMUNITY_URL` (base dos links),
+`GATEWAY_URL` + `AUTH_HMAC_SECRET` (envio via gateway → messaging; sem eles o envio
+é no-op) e `AUTH_INTERNAL_TOKEN` (rotas internas S2S, injetado pelo gateway).
 
 ## Comandos
 

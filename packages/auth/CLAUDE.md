@@ -14,9 +14,10 @@ Guia operacional para trabalhar neste package. Leia antes de editar.
 **[@sistemazero/api-gateway](../api-gateway)** verifica (o gateway resolve o
 usuário das claims e autoriza por rota). Runtime: **Bun**. Linguagem: **TS (ESM)**.
 
-> Estado: **slice completo e testado** (registro/login/refresh/logout/me + JWKS),
-> 26 testes passando. Migration `0000_*` gerada (cria o **schema `auth`** no
-> Postgres compartilhado). Ainda NÃO aplicada contra um Postgres real local.
+> Estado: **slices completos e testados** (registro/login/refresh/logout/me + JWKS;
+> admin de usuários; reset/definição de senha + self-service de perfil + rotas
+> internas S2S), 62+ testes passando. Migrations `0000_*` (schema `auth`) e
+> `0001_*` (`password_reset_tokens`) **aplicadas** no Postgres compartilhado local.
 
 ## Arquitetura (DDD + Hexagonal)
 
@@ -134,10 +135,10 @@ src/
 
 ## Pontos em aberto (futuro)
 
-Verificação de e-mail (status `pending`) · reset/forgot password · 2FA · **criação**
-de usuário pelo admin (a moderação — listar/editar status/papel/perfil via
-`/auth/admin/users*` — já existe) · lockout por conta · migrar o login admin
-hardcoded do funil p/ usar o `auth` · cookies httpOnly p/ o refresh no browser.
+Verificação de e-mail (status `pending`) · troca de e-mail com verificação (hoje o
+e-mail é IMUTÁVEL no self-service — vínculo com as compras) · 2FA · **criação** de
+usuário pelo admin (a moderação — listar/editar status/papel/perfil via
+`/auth/admin/users*` — já existe) · lockout por conta.
 
 ## Checklist antes de finalizar
 

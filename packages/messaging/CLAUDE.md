@@ -72,7 +72,7 @@ tests/    unit/ (render, pacing, message, send-worker, sendgrid-webhook) · inte
 | `bun run typecheck` | `tsc --noEmit` |
 | `bun test` | testes (**sandbox off** — gotcha do monorepo) |
 | `bun run db:generate` / `db:migrate` | migrations (Drizzle; cria o schema `messaging`) |
-| `bun run templates:seed` | popula templates `welcome` (e-mail + whatsapp) |
+| `bun run templates:seed` | popula templates `welcome` (e-mail + whatsapp) + `password-reset` (e-mail) |
 | `bun run evolution:create-instance <name> <phone>` | cria instância na Evolution (QR) + registra no banco |
 | `bun run webhooks:register <name> <url>` | aponta o webhook da instância p/ o nosso endpoint |
 | `bun run send:test <email\|whatsapp> <templateKey> <contato>` | dispara um envio de teste |
@@ -138,9 +138,12 @@ carga se distribui e os envios ficam escalonados (cada lane com seu próprio `ne
 
 ## Pontos em aberto (futuro)
 
-- **Integração com a compra** (funil → `POST /messaging/send` boas-vindas + acesso no `payment.paid`):
-  resolver as **credenciais** (hoje a senha temp é gerada e descartada no funil → ideal: o `auth`
-  emitir um **link de definir senha / magic-link**).
+- ~~Integração com a compra~~ **FEITA (jun/2026):** o funil envia o `welcome` no `payment.paid`
+  com o link de **definir senha** (o `auth` emite o token via `POST /auth/internal/password-tokens`;
+  link aponta p/ o app `@sistemazero/community` `/redefinir-senha?token=...`). O `auth` também envia
+  o `password-reset` no "esqueci minha senha". Ambos chegam aqui via gateway (HMAC consumers
+  `funnel`/`auth` + `x-internal-token`). **Falta p/ e-mails saírem de fato:** `SENDGRID_API_KEY`
+  real + remetente default cadastrado (`POST /messaging/admin/senders`).
 - UI no painel `@sistemazero/admin` (templates/remetentes/números/log de mensagens).
 - Quiet hours por timezone, automação de aquecimento, métricas `/metrics` (lag de fila), rotação de
   remetentes de e-mail por reputação.

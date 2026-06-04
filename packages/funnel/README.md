@@ -40,11 +40,14 @@ checkout (Pix) → painel admin (login in-app).
 4. Gere `FUNNEL_HMAC_SECRET` e `FUNNEL_INTERNAL_TOKEN` e configure-os **iguais** no `.env` do
    funil e do gateway (o gateway precisa de `consumers[{id:'funnel',hmacSecret:FUNNEL_HMAC_SECRET}]`
    e injeta `FUNNEL_INTERNAL_TOKEN` no webhook).
-5. Suba os serviços (da raiz). **Tudo de uma vez:** `bun run dev:up` (orquestrador — sobe
-   gateway/payments/auth/catalog/members/funnel em background; `dev:down`/`dev:status` para
-   parar/inspecionar). Ou individualmente: `bun run dev:payments` (:3001),
-   `bun run dev:gateway` (:3000), `bun run dev:auth` (:3002), `bun run dev:catalog` (:3003),
-   `bun run dev:members` (:3004), `bun run dev:funnel` (:4321).
+5. Para o e-mail de boas-vindas pós-compra (link de definir senha no app do aluno),
+   configure `COMMUNITY_URL` (default `http://localhost:3007`) — e, no gateway/auth,
+   `AUTH_HMAC_SECRET`/`AUTH_INTERNAL_TOKEN` (ver os `.env.example` de lá).
+6. Suba os serviços (da raiz). **Tudo de uma vez:** `bun run dev:up` (orquestrador — sobe
+   gateway/payments/auth/catalog/members/messaging/funnel/admin/community em background;
+   `dev:down`/`dev:status` para parar/inspecionar). Ou individualmente: `bun run dev:payments`
+   (:3001), `bun run dev:gateway` (:3000), `bun run dev:auth` (:3002), `bun run dev:catalog`
+   (:3003), `bun run dev:members` (:3004), `bun run dev:funnel` (:4321).
 
 ## Admin (`/admin`)
 
