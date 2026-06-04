@@ -41,7 +41,9 @@ e **favicon** completo: `src/app/favicon.ico` + PNGs 16/32/192/512 + apple-touch
 > `AudioUploader` (bucket público + duração auto), interativo = **só HTML** (CodeMirror 6 —
 > `components/editor/html-code-editor{,.impl}.tsx`, `@uiw/react-codemirror`+`@codemirror/lang-html`,
 > dynamic ssr:false, tema via next-themes; renderiza iframe sandbox 16:9 no aluno) e **ebook** =
-> PDF via `FileUploader` (bucket privado, `r2priv:`) + título → livro 3D no community; bloco
+> PDF via `FileUploader` (bucket privado, `r2priv:`, ≤100MB) + título → livro 3D no community;
+> o upload do PDF do e-book também cria AUTOMATICAMENTE o anexo da aula (material p/ download,
+> `addEbookAttachment` com dedupe por URL; trocar o PDF deixa o material antigo — excluir manual); bloco
 > **rich_text usa TipTap** (`components/editor/rich-text-editor{,.impl}.tsx` —
 > saída MARKDOWN via tiptap-markdown, `dynamic ssr:false` + `immediatelyRender:false` +
 > `shouldRerenderOnTransaction:true`; estilos `.rich-text-content` no globals.css) e bloco
