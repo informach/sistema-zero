@@ -4,6 +4,7 @@ import {
   integer,
   jsonb,
   pgSchema,
+  smallint,
   text,
   timestamp,
   uniqueIndex,
@@ -12,6 +13,7 @@ import {
 import type { LessonBlockContent } from '../../../domain/course/lesson-block'
 import type { QuizAnswers } from '../../../domain/course/quiz'
 import type { EntitlementSnapshot } from '../../../domain/entitlement/entitlement-snapshot'
+import type { CourseFeedbackAnswers } from '../../../domain/rating/course-rating'
 
 // Compartilha o MESMO Postgres do payments/auth/catalog/funnel, mas é dono do
 // schema `members` (isolamento por `pgSchema`). Todo o DDL gerado fica em `members.*`.
@@ -244,6 +246,26 @@ export const lessonProgress = members.table(
   ],
 )
 
+// ── Classificação do curso pelo aluno (1 linha por aluno+curso, upsert) ─────
+// `rating_half` = nota×2 (inteiro 2..10 → 1.0..5.0 em passos de 0.5) — evita
+// float/numeric-string. Cada passo do fluxo da UI persiste o estado acumulado.
+export const courseRatings = members.table(
+  'course_ratings',
+  {
+    id: uuid('id').primaryKey(),
+    userId: uuid('user_id').notNull(),
+    courseId: uuid('course_id')
+      .notNull()
+      .references(() => courses.id, { onDelete: 'cascade' }),
+    ratingHalf: smallint('rating_half').notNull(),
+    comment: text('comment'),
+    feedbackAnswers: jsonb('feedback_answers').$type<CourseFeedbackAnswers>(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [uniqueIndex('course_ratings_user_course_uq').on(t.userId, t.courseId)],
+)
+
 // ── Deduplicação de webhooks de entrada ─────────────────────────────────────
 export const processedWebhooks = members.table('processed_webhooks', {
   deliveryId: text('delivery_id').primaryKey(),
@@ -261,6 +283,7 @@ export const schema = {
   lessonCompletions,
   lessonProgress,
   quizAttempts,
+  courseRatings,
   processedWebhooks,
 }
 

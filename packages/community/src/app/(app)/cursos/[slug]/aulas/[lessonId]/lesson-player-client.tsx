@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { CourseRatingFlow, type RatingViewer } from '@/components/community/course-rating-flow'
 import { LessonBlocks } from '@/components/community/lesson-blocks'
 import {
   type LessonPlayerContextValue,
@@ -25,12 +26,24 @@ interface Props {
   nextHref: string | null
   /** E-mail do aluno (sessão) — watermark do player de vídeo. */
   viewerEmail: string | null
+  /** Identidade exibida no agradecimento do rating (avatar + nome). */
+  viewer: RatingViewer
+  /** Página de vendas do curso (salesPageUrl ?? FUNNEL_URL) — modal Compartilhar. */
+  shareUrl: string | null
 }
 
 /** Persistência da posição: salva no máximo a cada N segundos durante o playback. */
 const POSITION_SAVE_INTERVAL_MS = 12_000
 
-export function LessonPlayer({ course, lesson, prevHref, nextHref, viewerEmail }: Props) {
+export function LessonPlayer({
+  course,
+  lesson,
+  prevHref,
+  nextHref,
+  viewerEmail,
+  viewer,
+  shareUrl,
+}: Props) {
   const router = useRouter()
   const [completing, setCompleting] = useState(false)
   const courseHref = `/cursos/${encodeURIComponent(course.slug)}`
@@ -261,6 +274,13 @@ export function LessonPlayer({ course, lesson, prevHref, nextHref, viewerEmail }
                 <ProgressBar value={course.progress.percent} className="flex-1" />
                 <span className="sz-display text-xs">{course.progress.percent}%</span>
               </div>
+              {/* Classificação do curso: o link some quando myRating != null. */}
+              <CourseRatingFlow
+                courseSlug={course.slug}
+                initialRating={course.myRating}
+                shareUrl={shareUrl}
+                viewer={viewer}
+              />
             </div>
             <nav className="scrollbar-subtle max-h-[28rem] overflow-y-auto">
               {course.modules.map((module) => (

@@ -28,6 +28,49 @@ export const VideoPositionBody = t.Object({
   positionSeconds: t.Integer({ minimum: 0, maximum: 100_000 }),
 })
 
+/** Nota do curso: 1–5 em passos de 0.5 (a rota converte ×2 → `ratingHalf`). */
+const RATING_VALUE = t.Union([
+  t.Literal(1),
+  t.Literal(1.5),
+  t.Literal(2),
+  t.Literal(2.5),
+  t.Literal(3),
+  t.Literal(3.5),
+  t.Literal(4),
+  t.Literal(4.5),
+  t.Literal(5),
+])
+
+const FEEDBACK_ANSWER = t.Union([t.Literal('yes'), t.Literal('no'), t.Literal('unsure')])
+
+/**
+ * Corpo de `PUT /members/courses/:slug/rating` — cada passo do fluxo manda o
+ * estado ACUMULADO (a nota está sempre presente; comment/feedback são opcionais).
+ * Chaves de feedback espelham `COURSE_FEEDBACK_QUESTION_KEYS` (domain/rating).
+ * Chave desconhecida é REMOVIDA pelo `normalize` default do Elysia (exact
+ * mirror, não rejeita); VALOR inválido continua dando 400.
+ */
+export const CourseRatingBody = t.Object({
+  rating: RATING_VALUE,
+  comment: t.Optional(t.Union([t.String({ maxLength: 5000 }), t.Null()])),
+  feedbackAnswers: t.Optional(
+    t.Union([
+      t.Object(
+        {
+          importantInfo: t.Optional(FEEDBACK_ANSWER),
+          clearExplanations: t.Optional(FEEDBACK_ANSWER),
+          engagingInstructor: t.Optional(FEEDBACK_ANSWER),
+          enoughPractice: t.Optional(FEEDBACK_ANSWER),
+          meetsExpectations: t.Optional(FEEDBACK_ANSWER),
+          knowledgeable: t.Optional(FEEDBACK_ANSWER),
+        },
+        { additionalProperties: false },
+      ),
+      t.Null(),
+    ]),
+  ),
+})
+
 /**
  * Corpo de `POST /members/lessons/:lessonId/blocks/:blockId/quiz-attempts`:
  * questionId → choiceIds marcados. Score é calculado NO SERVIDOR.

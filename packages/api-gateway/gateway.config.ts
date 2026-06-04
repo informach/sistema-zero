@@ -753,6 +753,28 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 600, windowMs: 60_000, by: 'principal' },
     },
+    // Classificação do curso (estilo Udemy): GET = estado do aluno; PUT = upsert
+    // incremental (cada passo do fluxo de modais persiste o estado acumulado).
+    {
+      id: 'members-course-rating-get',
+      methods: ['GET'],
+      pathPattern: '/members/courses/:slug/rating',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'members-course-rating-put',
+      methods: ['PUT'],
+      pathPattern: '/members/courses/:slug/rating',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
     // Submit de quiz (score no servidor; cooldown reforçado no members) — moderado.
     {
       id: 'members-quiz-attempt',

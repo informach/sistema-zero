@@ -38,8 +38,12 @@ tema). O design espelha o projeto de referência `C:\Users\tocha\projects\comuni
 ## Componentes
 
 badge (variant `success` usa tokens `--success/*`) · button (+`buttonVariants` p/ Links) · card ·
-dialog · info-tooltip · input · label (`Field` com `tooltip?`) · pagination · password-input ·
-progress · select · spinner · switch · table · textarea · `cn` (clsx + tailwind-merge).
+dialog (props opcionais `titleAlign: 'left'|'center'` e `onBack` — fluxos multi-passo estilo
+Udemy; X/Voltar são absolutos no header) · info-tooltip · input · label (`Field` com `tooltip?`) ·
+pagination · password-input · progress · select · spinner · star-rating (display + input com MEIA
+estrela 1–5: radios nativos sr-only sobre as metades — 1ª estrela é alvo inteiro —, hover preview,
+âmbar `fill-amber-400`; sem `onChange` = read-only) · switch · table · textarea · `cn`
+(clsx + tailwind-merge).
 
 ## Comandos
 

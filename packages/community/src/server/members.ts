@@ -3,6 +3,8 @@ import type {
   AttachmentDownloadView,
   CatalogCourseView,
   CourseDetailView,
+  CourseFeedbackAnswers,
+  CourseRatingView,
   LessonDetailView,
   MyCourseView,
 } from '@/lib/types'
@@ -62,6 +64,21 @@ export function saveVideoPosition(
     method: 'PUT',
     body: { positionSeconds },
   })
+}
+
+/**
+ * Salva a classificação do curso (upsert; 1 por aluno+curso). Cada passo do
+ * fluxo de modais manda o estado ACUMULADO (a nota está sempre presente).
+ */
+export function saveCourseRating(
+  slug: string,
+  body: {
+    rating: number
+    comment?: string | null
+    feedbackAnswers?: CourseFeedbackAnswers | null
+  },
+): Promise<GatewayResponse<CourseRatingView>> {
+  return gatewayFetch(`/members/courses/${enc(slug)}/rating`, { method: 'PUT', body })
 }
 
 /** Submete o quiz (score no servidor; correções/gabarito só na resposta). */

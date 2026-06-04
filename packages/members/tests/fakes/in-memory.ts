@@ -26,6 +26,10 @@ import type {
   ListCoursesAdminFilter,
   ModuleFields,
 } from '../../src/domain/ports/content-admin-repository.port'
+import type {
+  CourseRatingRepository,
+  CourseRatingUpsert,
+} from '../../src/domain/ports/course-rating-repository.port'
 import type { CourseRepository } from '../../src/domain/ports/course-repository.port'
 import type {
   EntitlementRepository,
@@ -40,6 +44,7 @@ import type {
   QuizAttemptRepository,
 } from '../../src/domain/ports/quiz-attempt-repository.port'
 import type { VideoPositionRepository } from '../../src/domain/ports/video-position-repository.port'
+import type { CourseRating } from '../../src/domain/rating/course-rating'
 
 export const silentLogger: Logger = {
   debug() {},
@@ -627,6 +632,38 @@ export class InMemoryVideoPositionRepository implements VideoPositionRepository 
       if (lessonId) out.set(courseId, lessonId)
     }
     return out
+  }
+}
+
+export class InMemoryCourseRatingRepository implements CourseRatingRepository {
+  readonly rows: CourseRating[] = []
+
+  async find(userId: string, courseId: string): Promise<CourseRating | null> {
+    return this.rows.find((r) => r.userId === userId && r.courseId === courseId) ?? null
+  }
+
+  async upsert(
+    userId: string,
+    courseId: string,
+    fields: CourseRatingUpsert,
+    now: Date,
+  ): Promise<CourseRating> {
+    const existing = this.rows.find((r) => r.userId === userId && r.courseId === courseId)
+    if (existing) {
+      // Overwrite puro (ver port): `createdAt` preservado, `updatedAt` avança.
+      Object.assign(existing, fields, { updatedAt: now })
+      return existing
+    }
+    const row: CourseRating = {
+      id: randomUUID(),
+      userId,
+      courseId,
+      ...fields,
+      createdAt: now,
+      updatedAt: now,
+    }
+    this.rows.push(row)
+    return row
   }
 }
 

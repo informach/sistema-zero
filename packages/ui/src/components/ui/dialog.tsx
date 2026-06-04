@@ -4,7 +4,11 @@ import { X } from 'lucide-react'
 import { useEffect } from 'react'
 import { cn } from '../../lib/cn'
 
-/** Modal controlado e leve (sem dep externa): overlay + card, fecha no Esc/backdrop. */
+/**
+ * Modal controlado e leve (sem dep externa): overlay + card, fecha no Esc/backdrop.
+ * `titleAlign: 'center'` + `onBack` servem fluxos multi-passo (título centralizado
+ * com link "Voltar" no canto esquerdo — estilo Udemy).
+ */
 export function Dialog({
   open,
   onClose,
@@ -13,6 +17,8 @@ export function Dialog({
   children,
   footer,
   className,
+  titleAlign = 'left',
+  onBack,
 }: {
   open: boolean
   onClose: () => void
@@ -21,6 +27,10 @@ export function Dialog({
   children: React.ReactNode
   footer?: React.ReactNode
   className?: string
+  /** Alinhamento do título no header (default `left`). */
+  titleAlign?: 'left' | 'center'
+  /** Presente → renderiza o link "Voltar" no canto esquerdo do header. */
+  onBack?: () => void
 }) {
   useEffect(() => {
     if (!open) return
@@ -53,14 +63,28 @@ export function Dialog({
         aria-modal="true"
         aria-label={title}
       >
-        <div className="flex items-start justify-between gap-4 border-b border-border p-5">
-          <div className="flex flex-col gap-1">
+        <div className="relative border-b border-border p-5">
+          {onBack ? (
+            <button
+              onClick={onBack}
+              className="absolute left-5 top-5 text-sm font-medium text-primary hover:underline"
+            >
+              Voltar
+            </button>
+          ) : null}
+          <div
+            className={cn(
+              'flex flex-col gap-1',
+              titleAlign === 'center' ? 'items-center px-14 text-center' : 'pr-8',
+              titleAlign === 'left' && onBack && 'pl-14',
+            )}
+          >
             <h2 className="text-lg font-semibold leading-none">{title}</h2>
             {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
           </div>
           <button
             onClick={onClose}
-            className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="absolute right-4 top-4 rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             aria-label="Fechar"
           >
             <X className="size-4" />

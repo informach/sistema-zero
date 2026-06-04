@@ -10,6 +10,7 @@ import {
 } from '../src/application/content-admin/content-admin.service'
 import { GetAttachmentDownloadService } from '../src/application/get-attachment-download/get-attachment-download.service'
 import { GetCourseProgressService } from '../src/application/get-course-progress/get-course-progress.service'
+import { GetCourseRatingService } from '../src/application/get-course-rating/get-course-rating.service'
 import { GetLessonService } from '../src/application/get-lesson/get-lesson.service'
 import { GetMemberDetailService } from '../src/application/get-member-detail/get-member-detail.service'
 import { GetMyCourseService } from '../src/application/get-my-course/get-my-course.service'
@@ -21,6 +22,7 @@ import { ListMyCoursesService } from '../src/application/list-my-courses/list-my
 import { ManageEntitlementService } from '../src/application/manage-entitlement/manage-entitlement.service'
 import { MarkLessonCompleteService } from '../src/application/mark-lesson-complete/mark-lesson-complete.service'
 import { RevokeEntitlementService } from '../src/application/revoke-entitlement/revoke-entitlement.service'
+import { SaveCourseRatingService } from '../src/application/save-course-rating/save-course-rating.service'
 import { SaveVideoPositionService } from '../src/application/save-video-position/save-video-position.service'
 import { SubmitQuizAttemptService } from '../src/application/submit-quiz-attempt/submit-quiz-attempt.service'
 import type { CourseStatus } from '../src/domain/course/course'
@@ -30,6 +32,7 @@ import type { Env } from '../src/infrastructure/config/env'
 import { createServer } from '../src/interfaces/http/server'
 import {
   FakeCatalogGateway,
+  InMemoryCourseRatingRepository,
   InMemoryCourseRepository,
   InMemoryEntitlementRepository,
   InMemoryProcessedWebhookRepository,
@@ -52,6 +55,7 @@ export function buildApp(
   const progress = new InMemoryProgressRepository()
   const positions = new InMemoryVideoPositionRepository()
   const quizAttempts = new InMemoryQuizAttemptRepository()
+  const ratings = new InMemoryCourseRatingRepository()
   const processed = new InMemoryProcessedWebhookRepository()
   const catalog = new FakeCatalogGateway()
 
@@ -73,7 +77,7 @@ export function buildApp(
     members: {
       listMyCourses: new ListMyCoursesService(entitlements, courses, progress, positions, clock),
       listCatalog: new ListCatalogService(courses, entitlements, clock),
-      getMyCourse: new GetMyCourseService(checkAccess, courses, progress, positions),
+      getMyCourse: new GetMyCourseService(checkAccess, courses, progress, positions, ratings),
       getLesson: new GetLessonService(
         checkAccess,
         courses,
@@ -92,6 +96,8 @@ export function buildApp(
       ),
       getProgress: new GetCourseProgressService(checkAccess, courses, progress),
       savePosition: new SaveVideoPositionService(checkAccess, courses, positions, clock),
+      getCourseRating: new GetCourseRatingService(checkAccess, ratings),
+      saveCourseRating: new SaveCourseRatingService(checkAccess, ratings, clock),
       submitQuiz: new SubmitQuizAttemptService(
         checkAccess,
         courses,
@@ -142,6 +148,7 @@ export function buildApp(
     progress,
     positions,
     quizAttempts,
+    ratings,
     processed,
     catalog,
     clockRef,

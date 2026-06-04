@@ -21,8 +21,8 @@ Gateway** (NUNCA os serviços direto). Design/tema portado do projeto de referê
 > acesso pós-compra —, home na RAIZ `/` com grid de cursos, `/cursos` "Todos os cursos" com lock →
 > página de vendas, curso com módulos/aulas, player de aula com blocos polimórficos + anexos
 > (download autenticado com **marca d'água do e-mail do aluno** em PDF/imagem — bucket R2 privado) +
-> concluir + navegação, perfil com upload de avatar, compras). A COMUNIDADE (feed/fórum/etc.) é
-> fatia futura.
+> concluir + navegação, perfil com upload de avatar, compras, **classificação do curso** —
+> fluxo Udemy de 5 modais, ver Contratos). A COMUNIDADE (feed/fórum/etc.) é fatia futura.
 >
 > **Header (espelha a referência):** logo à esquerda (`w-[130px] md:w-[150px]`), menu CENTRALIZADO
 > (Início `/` + Todos os cursos `/cursos` — `nav.ts`), avatar à direita. Compras/Perfil/Mudar tema/
@@ -122,6 +122,7 @@ src/
       me/avatar/route.ts    POST multipart → sharp→WebP → R2 → PATCH /auth/me
       cursos/[slug]/aulas/[lessonId]/anexos/[attachmentId]/route.ts
                             GET download de material c/ MARCA D'ÁGUA do aluno (R2 privado)
+      members/courses/[slug]/rating/route.ts   PUT classificação do curso (Zod espelha o TypeBox)
       members/lessons/[lessonId]/{complete,position}/route.ts
       members/lessons/[lessonId]/blocks/[blockId]/quiz-attempts/route.ts
       payments/my/route.ts
@@ -216,6 +217,19 @@ Da raiz: `bun run dev:community`, `build:community`, `typecheck:community`.
   SÓ aqui; 429 `QUIZ_COOLDOWN` por 5min após reprovar — a UI mostra countdown MM:SS).
   Navegação prev/next é DERIVADA do outline (a API não fornece). Views em `src/lib/types.ts`
   (espelham `members/src/application/mappers/views.ts` — NÃO os tipos admin).
+- **Classificação do curso (estilo Udemy)**: o detalhe do curso traz `myRating`
+  (`CourseRatingView {rating 1..5 passo 0.5, comment, feedbackAnswers, …} | null`) e
+  `salesPageUrl`. Na página da aula, link **"Deixe uma classificação"** na sidebar (abaixo do
+  progresso) — renderizado SÓ com `myRating === null`; assim que a nota é salva o link some
+  (sem edição posterior nesta fatia). Fluxo de 5 modais (`course-rating-flow.tsx`, Dialog do
+  ui com `titleAlign='center'` + `onBack`): (1) estrelas com MEIA estrela (`StarRating` do
+  `@sistemazero/ui` — clicar já persiste) → (2) frase pela nota + textarea → (3) 6 perguntas
+  Sim/Não/Não sei opcionais (Pular) → (4) agradecimento (UserAvatar + nome + nota + comentário)
+  → (5) compartilhar: input readonly com `shareUrl` (`salesPageUrl ?? FUNNEL_URL`, resolvido
+  NO SERVIDOR pela page) + Copiar (clipboard + fallback execCommand + toast). CADA passo faz
+  `PUT /api/members/courses/:slug/rating` com o estado ACUMULADO (fechar no meio não perde
+  nada; gateway → `PUT /members/courses/:slug/rating`). "Salvar e sair"/fechar →
+  `router.refresh()`. A page passa `viewer` (nome da session + avatar de `getMeReadonly`).
 - **Player Vimeo** (`vimeo-player.tsx` + `@vimeo/player`, bundle local — postMessage com o
   iframe; a CSP `frame-src player.vimeo.com` já cobre, sem mudança no proxy): watermark com o
   e-mail do aluno, fullscreen custom no CONTAINER (mantém o watermark em tela cheia), retoma

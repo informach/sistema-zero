@@ -1,15 +1,17 @@
 import { Elysia } from 'elysia'
 import type { GetAttachmentDownloadService } from '../../../application/get-attachment-download/get-attachment-download.service'
 import type { GetCourseProgressService } from '../../../application/get-course-progress/get-course-progress.service'
+import type { GetCourseRatingService } from '../../../application/get-course-rating/get-course-rating.service'
 import type { GetLessonService } from '../../../application/get-lesson/get-lesson.service'
 import type { GetMyCourseService } from '../../../application/get-my-course/get-my-course.service'
 import type { ListCatalogService } from '../../../application/list-catalog/list-catalog.service'
 import type { ListMyCoursesService } from '../../../application/list-my-courses/list-my-courses.service'
 import type { MarkLessonCompleteService } from '../../../application/mark-lesson-complete/mark-lesson-complete.service'
+import type { SaveCourseRatingService } from '../../../application/save-course-rating/save-course-rating.service'
 import type { SaveVideoPositionService } from '../../../application/save-video-position/save-video-position.service'
 import type { SubmitQuizAttemptService } from '../../../application/submit-quiz-attempt/submit-quiz-attempt.service'
 import { assertInternalCaller, resolveUserId } from '../auth'
-import { QuizAttemptBody, VideoPositionBody } from '../dtos'
+import { CourseRatingBody, QuizAttemptBody, VideoPositionBody } from '../dtos'
 
 export interface MembersRoutesDeps {
   listMyCourses: ListMyCoursesService
@@ -21,6 +23,8 @@ export interface MembersRoutesDeps {
   getProgress: GetCourseProgressService
   savePosition: SaveVideoPositionService
   submitQuiz: SubmitQuizAttemptService
+  getCourseRating: GetCourseRatingService
+  saveCourseRating: SaveCourseRatingService
   /** Token interno do gateway (defesa em profundidade). Vazio em dev → checagem desligada. */
   internalToken?: string
 }
@@ -54,6 +58,24 @@ export function membersRoutes(deps: MembersRoutesDeps) {
         const userId = resolveUserId(headers)
         return deps.getProgress.execute(userId, params.slug)
       })
+      // Classificação do curso (1 por aluno+curso; ver SaveCourseRatingService).
+      .get('/courses/:slug/rating', async ({ headers, params }) => {
+        const userId = resolveUserId(headers)
+        return { rating: await deps.getCourseRating.execute(userId, params.slug) }
+      })
+      .put(
+        '/courses/:slug/rating',
+        async ({ headers, params, body }) => {
+          const userId = resolveUserId(headers)
+          return deps.saveCourseRating.execute(userId, params.slug, {
+            // Conversão nota↔ratingHalf SÓ aqui (entrada) e no mapper (saída).
+            ratingHalf: body.rating * 2,
+            comment: body.comment ?? null,
+            feedbackAnswers: body.feedbackAnswers ?? null,
+          })
+        },
+        { body: CourseRatingBody },
+      )
       .get('/courses/:slug/lessons/:lessonId', async ({ headers, params }) => {
         const userId = resolveUserId(headers)
         return deps.getLesson.execute(userId, params.slug, params.lessonId)

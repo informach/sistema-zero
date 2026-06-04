@@ -22,9 +22,11 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > anexos + reordenação) + **posição de vídeo/continuar de onde parou** + **quiz validado
 > no servidor** + **catálogo "Todos os cursos"** + **publicação por aula**
 > (`lessons.is_published` + guard de publicação do curso) + **resolução de download de
-> anexo** (rota `/resolve`; view do aluno SEM url) — **93 testes**. Migrations `0000`
-> (schema `members`), `0001` (`lesson_progress`), `0002` (`quiz_attempts`) e `0003`
-> (`lessons.is_published`) — **aplicadas** no Postgres compartilhado (`sistemazero`, :5433).
+> anexo** (rota `/resolve`; view do aluno SEM url) + **classificação do curso**
+> (`course_ratings`, estilo Udemy — ver rota abaixo) — **101 testes**. Migrations `0000`
+> (schema `members`), `0001` (`lesson_progress`), `0002` (`quiz_attempts`), `0003`
+> (`lessons.is_published`) e `0004` (`course_ratings`) — **aplicadas** no Postgres
+> compartilhado (`sistemazero`, :5433).
 
 ## Conceito central (decisões travadas com o usuário)
 
@@ -148,6 +150,19 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   retry < 5min após reprovar; 404 `QUIZ_BLOCK_NOT_FOUND` se o bloco não é quiz. O
   `POST /complete` devolve 409 `QUIZ_GATE_NOT_PASSED` se houver quiz com `passingScore`
   sem aprovação.
+- **`GET|PUT /members/courses/:slug/rating`** (aluno): classificação do curso estilo Udemy —
+  1 linha por (aluno, curso), tabela `course_ratings`. PUT = upsert com **overwrite puro**:
+  cada passo do fluxo de modais do community manda o estado ACUMULADO — body
+  `{rating: 1..5 passo 0.5 (union de literais TypeBox), comment?: ≤5000|null,
+  feedbackAnswers?: {6 chaves fixas: 'yes'|'no'|'unsure'}|null}`. A nota é armazenada como
+  `rating_half` = nota×2 (smallint 2..10; conversão SÓ na rota/entrada e no mapper/saída).
+  Chave de feedback desconhecida é REMOVIDA pelo `normalize` default do Elysia (exact mirror);
+  valor inválido → 400. GET devolve `{rating: CourseRatingView|null}`. Guard: matrícula ativa
+  (`requireBySlug` — 403 sem matrícula, 404 draft). O detalhe do curso
+  (`GET /members/courses/:slug`) devolve `myRating` (a UI esconde o link "Deixe uma
+  classificação" quando não-nulo) e `salesPageUrl` (mesma lógica do catálogo — modal
+  Compartilhar). `SaveCourseRatingService`/`GetCourseRatingService` +
+  `CourseRatingRepository` (port) + `DrizzleCourseRatingRepository`.
 - **`GET /members/courses/:slug/lessons/:lessonId/attachments/:attachmentId/resolve`** (aluno,
   mas consumida SÓ pelo SERVIDOR do community/BFF): devolve a localização REAL do anexo —
   `AttachmentDownloadView {label, fileType, sizeBytes, storageRef}` onde `storageRef` é
@@ -233,7 +248,8 @@ entre pacotes (a dedupe por `created_at` pularia migrations). A migration faz
 `CREATE SCHEMA "members"`. Tabelas: `courses`, `modules`, `lessons`, `lesson_blocks`,
 `lesson_attachments`, `entitlements`, `lesson_completions`, `lesson_progress` (posição
 de vídeo/last-accessed — migration `0001`), `quiz_attempts` (histórico de quiz —
-migration `0002`), `processed_webhooks`.
+migration `0002`), `course_ratings` (classificação do curso, UNIQUE user+course —
+migration `0004`), `processed_webhooks`.
 
 ## Pendente (fatias seguintes)
 

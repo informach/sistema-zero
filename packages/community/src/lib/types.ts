@@ -93,6 +93,30 @@ export interface ModuleOutlineView {
   lessons: LessonOutlineView[]
 }
 
+// ── Classificação do curso (estilo Udemy) ───────────────────────────────────
+/** Chaves das perguntas fixas do passo opcional — espelham o members (domain/rating). */
+export type CourseFeedbackQuestionKey =
+  | 'importantInfo'
+  | 'clearExplanations'
+  | 'engagingInstructor'
+  | 'enoughPractice'
+  | 'meetsExpectations'
+  | 'knowledgeable'
+
+export type CourseFeedbackAnswer = 'yes' | 'no' | 'unsure'
+
+export type CourseFeedbackAnswers = Partial<Record<CourseFeedbackQuestionKey, CourseFeedbackAnswer>>
+
+/** Classificação que ESTE aluno deu ao curso (`PUT /members/courses/:slug/rating`). */
+export interface CourseRatingView {
+  /** 1–5 em passos de 0.5. */
+  rating: number
+  comment: string | null
+  feedbackAnswers: CourseFeedbackAnswers | null
+  createdAt: string
+  updatedAt: string
+}
+
 /** `GET /members/courses/:slug` — detalhe com módulos/aulas (outline). */
 export interface CourseDetailView {
   slug: string
@@ -104,6 +128,10 @@ export interface CourseDetailView {
   progress: CourseProgressView
   /** Aula-alvo do "Continuar de onde parei" (última acessada > 1ª não concluída > 1ª). */
   continueLessonId: string | null
+  /** Classificação deste aluno — `null` se ainda não classificou (mostra o link). */
+  myRating: CourseRatingView | null
+  /** URL da página de vendas (compartilhar); `null` → fallback FUNNEL_URL no server. */
+  salesPageUrl: string | null
   modules: ModuleOutlineView[]
 }
 

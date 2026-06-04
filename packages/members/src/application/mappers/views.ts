@@ -2,6 +2,7 @@ import type { Course, LessonWithContent, ModuleWithLessons } from '../../domain/
 import { toMemberFacingQuizContent } from '../../domain/course/quiz'
 import type { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
 import type { CourseProgress } from '../../domain/progress/progress'
+import type { CourseFeedbackAnswers, CourseRating } from '../../domain/rating/course-rating'
 
 /** Acesso do aluno àquele curso (snapshot da matrícula ativa). */
 export interface AccessView {
@@ -68,14 +69,38 @@ export interface CatalogCourseView {
 }
 
 export function toCatalogCourseView(course: Course, hasAccess: boolean): CatalogCourseView {
-  const raw = course.metadata?.salesPageUrl
   return {
     courseSlug: course.slug,
     title: course.title,
     subtitle: course.subtitle,
     coverImageUrl: course.coverImageUrl,
     hasAccess,
-    salesPageUrl: typeof raw === 'string' && raw.length > 0 ? raw : null,
+    salesPageUrl: resolveSalesPageUrl(course),
+  }
+}
+
+/** URL da página de vendas (funil) — `metadata.salesPageUrl` string não-vazia, senão `null`. */
+function resolveSalesPageUrl(course: Course): string | null {
+  const raw = course.metadata?.salesPageUrl
+  return typeof raw === 'string' && raw.length > 0 ? raw : null
+}
+
+/** Classificação do curso feita pelo aluno (nota 1–5 em passos de 0.5). */
+export interface CourseRatingView {
+  rating: number
+  comment: string | null
+  feedbackAnswers: CourseFeedbackAnswers | null
+  createdAt: string
+  updatedAt: string
+}
+
+export function toCourseRatingView(r: CourseRating): CourseRatingView {
+  return {
+    rating: r.ratingHalf / 2,
+    comment: r.comment,
+    feedbackAnswers: r.feedbackAnswers,
+    createdAt: r.createdAt.toISOString(),
+    updatedAt: r.updatedAt.toISOString(),
   }
 }
 
@@ -106,6 +131,10 @@ export interface CourseDetailView {
   progress: CourseProgressView
   /** Aula-alvo do CTA "Continuar de onde parou" (ver `resolveContinueLesson`). */
   continueLessonId: string | null
+  /** Classificação que ESTE aluno deu ao curso — `null` se ainda não classificou. */
+  myRating: CourseRatingView | null
+  /** URL da página de vendas (compartilhar) — `metadata.salesPageUrl`; `null` se não setada. */
+  salesPageUrl: string | null
   modules: ModuleOutlineView[]
 }
 
@@ -116,6 +145,7 @@ export function toCourseDetailView(
   entitlement: EntitlementAggregate,
   progress: CourseProgressView,
   continueLessonId: string | null,
+  myRating: CourseRating | null,
 ): CourseDetailView {
   return {
     slug: course.slug,
@@ -126,6 +156,8 @@ export function toCourseDetailView(
     access: toAccessView(entitlement),
     progress,
     continueLessonId,
+    myRating: myRating ? toCourseRatingView(myRating) : null,
+    salesPageUrl: resolveSalesPageUrl(course),
     modules: modules.map((m) => ({
       id: m.id,
       title: m.title,
