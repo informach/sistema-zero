@@ -21,7 +21,8 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > expirar/estender) + **autoria de conteúdo admin** (CRUD de cursos/módulos/aulas/blocos/
 > anexos + reordenação) + **posição de vídeo/continuar de onde parou** + **quiz validado
 > no servidor** + **catálogo "Todos os cursos"** + **publicação por aula**
-> (`lessons.is_published` + guard de publicação do curso) — **88 testes**. Migrations `0000`
+> (`lessons.is_published` + guard de publicação do curso) + **resolução de download de
+> anexo** (rota `/resolve`; view do aluno SEM url) — **93 testes**. Migrations `0000`
 > (schema `members`), `0001` (`lesson_progress`), `0002` (`quiz_attempts`) e `0003`
 > (`lessons.is_published`) — **aplicadas** no Postgres compartilhado (`sistemazero`, :5433).
 
@@ -147,6 +148,14 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   retry < 5min após reprovar; 404 `QUIZ_BLOCK_NOT_FOUND` se o bloco não é quiz. O
   `POST /complete` devolve 409 `QUIZ_GATE_NOT_PASSED` se houver quiz com `passingScore`
   sem aprovação.
+- **`GET /members/courses/:slug/lessons/:lessonId/attachments/:attachmentId/resolve`** (aluno,
+  mas consumida SÓ pelo SERVIDOR do community/BFF): devolve a localização REAL do anexo —
+  `AttachmentDownloadView {label, fileType, sizeBytes, storageRef}` onde `storageRef` é
+  `r2priv:<key>` (bucket R2 privado) ou URL http(s) externa/legada. Mesma régua do GET da aula
+  (matrícula ativa + aula publicada + anexo pertencer à aula; `ATTACHMENT_NOT_FOUND`→404).
+  **A `LessonAttachmentView` member-facing NÃO traz `url`** — a referência nunca chega ao
+  browser; o community baixa do bucket privado e aplica a marca d'água (e-mail do aluno)
+  antes de servir. `GetAttachmentDownloadService`.
 - Cancelar/expirar assinatura é um **UPDATE atômico set-based** por `subscription_id`
   (sem load-mutate-save por linha → sem lost-update sob corrida com renovação).
 - `processed_webhooks` tem `pruneProcessedBefore(date)` (retenção; chamar por cron —

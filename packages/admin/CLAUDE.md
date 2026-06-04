@@ -79,7 +79,12 @@ conteúdo dos blocos do members (lixo órfão no R2 é dívida documentada; sem 
 - `POST /api/media/images` (multipart ≤5MB png/jpg/webp; `scope=course|block`) → sharp→WebP →
   R2 `admin/{courses,blocks}/<uuid>.webp` → `{url,width,height,sizeBytes}`.
 - `POST /api/media/files` (multipart ≤50MB, allowlist pdf/zip/office/txt/csv/imagem/áudio) →
-  R2 `admin/attachments/*` c/ Content-Disposition → `{url,fileType,sizeBytes}`.
+  bucket R2 **PRIVADO** (`R2_PRIVATE_BUCKET`, sem URL pública) `admin/attachments/*` →
+  `{url,fileType,sizeBytes}` onde **`url` = referência `r2priv:<key>`** (NÃO navegável). O aluno
+  baixa pela rota autenticada do community, que resolve a key, aplica a **marca d'água com o
+  e-mail do aluno** (PDF: rodapé em todas as páginas; imagem: selo no canto) e seta o
+  Content-Disposition. URL http(s) colada manualmente no dialog de anexo segue suportada
+  (o community faz redirect — sem marca).
 - `POST /api/media/videos/ticket` (`{filename,sizeBytes,mimeType}` ≤5GB mp4/mov/webm) → Vimeo
   `POST /me/videos` approach tus + privacy `view=disable, embed=whitelist` (+ domínios da env) →
   `{vimeoVideoId,uploadLink,embedUrl}`. O vídeo sobe DIRETO do browser (tus-js-client, chunk 128MB).
@@ -101,7 +106,9 @@ community NÃO mudaram (`captions: {lang,url}[]` já existia no DTO; CSP do comm
 use-video-upload, video-thumbnail-uploader, vimeo-preview). `next.config.ts` tem
 `serverExternalPackages: ['sharp']` (binário nativo). Envs OPCIONAIS (R2_*, VIMEO_*) — ausentes →
 503 `MEDIA_NOT_CONFIGURED` amigável, nunca quebra o boot. Buckets R2: dev = `testes` (público via
-r2.dev), prod = `comunidade-sistema-zero` (`cdn.sistemazero.com.br`).
+r2.dev), prod = `comunidade-sistema-zero` (`cdn.sistemazero.com.br`); **anexos** vão para o bucket
+PRIVADO `R2_PRIVATE_BUCKET` (dev = `testes-privado` · prod = `comunidade-sistema-zero-privado`,
+SEM acesso público — mesmas credenciais).
 
 ## Invariantes (NÃO quebrar)
 

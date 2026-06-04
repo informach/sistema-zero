@@ -19,7 +19,8 @@ Gateway** (NUNCA os serviços direto). Design/tema portado do projeto de referê
 
 > Estado: **MVP da área do aluno** (login/logout, esqueci/definir senha — mesma página serve o 1º
 > acesso pós-compra —, home na RAIZ `/` com grid de cursos, `/cursos` "Todos os cursos" com lock →
-> página de vendas, curso com módulos/aulas, player de aula com blocos polimórficos + anexos +
+> página de vendas, curso com módulos/aulas, player de aula com blocos polimórficos + anexos
+> (download autenticado com **marca d'água do e-mail do aluno** em PDF/imagem — bucket R2 privado) +
 > concluir + navegação, perfil com upload de avatar, compras). A COMUNIDADE (feed/fórum/etc.) é
 > fatia futura.
 >
@@ -77,7 +78,15 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
    conta ATIVA, sem exigência de role). Pipeline: multipart ≤5MB png/jpg/webp → sharp→WebP 512×512
    (`image-optimizer.ts`, preset `avatar`) → R2 `community/avatars/<userId>/<uuid>.webp` (`r2.ts`)
    → `PATCH /auth/me { avatarUrl }` via gateway. Envs R2_* ausentes → 503 `MEDIA_NOT_CONFIGURED`
-   amigável. `next.config.ts` tem `serverExternalPackages: ['sharp']`.
+   amigável. `next.config.ts` tem `serverExternalPackages: ['sharp']`. Mesma exceção:
+   **`GET /api/cursos/:slug/aulas/:lessonId/anexos/:attachmentId`** (download de material) LÊ do
+   bucket R2 **PRIVADO** (`R2_PRIVATE_BUCKET`, `r2GetObjectPrivate`) — mas a AUTORIZAÇÃO real
+   (matrícula + aula publicada) vem do members via gateway (rota `/resolve`), que devolve a
+   `storageRef` (`r2priv:<key>` ou URL externa→302). PDF/imagem ganham **marca d'água com o
+   e-mail do aluno** (`server/watermark.ts`: pdf-lib rodapé em todas as páginas · sharp selo SVG
+   no canto, GIF animado via tile por frame; falha → serve o original + warn); demais formatos
+   passam sem marca. Resposta: `Content-Disposition: attachment` (label + extensão da key) e
+   `Cache-Control: private, no-store` (conteúdo é POR aluno). A `storageRef` NUNCA vai ao browser.
 2. **Segredos só no servidor.** `src/lib/env.ts` é `server-only`; `src/server/*` idem. **Nunca**
    importe `env`/`server/*` de um Client Component. Client fala só com `/api/*` (`src/lib/api.ts`).
 3. **Tokens em cookie HttpOnly** (`sz_member_*`), `SameSite=Lax`, `Secure` em prod.
@@ -111,11 +120,14 @@ src/
       auth/{login,logout,forgot-password,reset-password,me,me/password}/route.ts
       auth/{otp/request,otp/verify,password/reset-otp}/route.ts   (login/reset por código)
       me/avatar/route.ts    POST multipart → sharp→WebP → R2 → PATCH /auth/me
+      cursos/[slug]/aulas/[lessonId]/anexos/[attachmentId]/route.ts
+                            GET download de material c/ MARCA D'ÁGUA do aluno (R2 privado)
       members/lessons/[lessonId]/{complete,position}/route.ts
       members/lessons/[lessonId]/blocks/[blockId]/quiz-attempts/route.ts
       payments/my/route.ts
   server/   session.ts · gateway.ts · auth.ts · members.ts · payments.ts
-            r2.ts · image-optimizer.ts · media.ts (avatar→R2; exceção consciente)   (server-only)
+            r2.ts · image-optimizer.ts · media.ts (avatar→R2; exceção consciente)
+            watermark.ts (PDF pdf-lib + imagem sharp/SVG — puro, testado)   (server-only)
   lib/      env.ts (server-only) · types.ts (views do ALUNO) · user-display.ts · format.ts · cn.ts · api.ts
   components/ community/* (topnav/user-menu/user-avatar/cards/blocos)
             ⚠️ Primitivos de UI (button/input/card/dialog/password-input/…) vivem no
@@ -133,6 +145,7 @@ src/
 | `bun run dev` | Next dev server :3007 (Turbopack) |
 | `bun run build` / `start` | build (**`next build`** — Turbopack) + produção |
 | `bun run typecheck` | `tsc --noEmit` |
+| `bun test` | testes (watermark — rode com **sandbox off**, gotcha do monorepo) |
 | `bun run check` / `check:fix` | Biome |
 
 Da raiz: `bun run dev:community`, `build:community`, `typecheck:community`.
@@ -157,6 +170,9 @@ Da raiz: `bun run dev:community`, `build:community`, `typecheck:community`.
 - `R2_ACCOUNT_ID`/`R2_ACCESS_KEY_ID`/`R2_SECRET_ACCESS_KEY`/`R2_BUCKET`/`R2_PUBLIC_URL`
   opcionais — upload de avatar (ausentes → 503 amigável; mesmo bucket do admin: dev = `testes`
   com `R2_PUBLIC_URL` r2.dev · prod = `comunidade-sistema-zero` com `cdn.sistemazero.com.br`).
+- `R2_PRIVATE_BUCKET` opcional — leitura dos materiais didáticos p/ o download com marca d'água
+  (mesmas credenciais; SEM acesso público: dev = `testes-privado` · prod =
+  `comunidade-sistema-zero-privado`; ausente → download responde 503).
 
 ## Setup local (e2e)
 
@@ -184,7 +200,10 @@ Da raiz: `bun run dev:community`, `build:community`, `typecheck:community`.
   (módulos+outline + `continueLessonId`: última aula acessada > 1ª não concluída > 1ª);
   `GET /members/courses/:slug/lessons/:lessonId` → `LessonDetailView` (**busca por ID**, blocos
   `kind: rich_text|video|image|audio|quiz|embed` + anexos + `positionSeconds`; bloco quiz vem
-  **SEM gabarito** e com `quizState`); `POST /members/lessons/:lessonId/complete` (→ **409
+  **SEM gabarito** e com `quizState`; **anexo vem SEM `url`** — o download é pela rota BFF
+  `/api/cursos/:slug/aulas/:lessonId/anexos/:id`, que resolve a localização real via
+  `GET …/attachments/:attachmentId/resolve` → `AttachmentDownloadView{storageRef}` e aplica a
+  marca d'água — ver invariante 1); `POST /members/lessons/:lessonId/complete` (→ **409
   `QUIZ_GATE_NOT_PASSED`** se houver quiz com `passingScore` não aprovado — a UI desabilita o
   botão e silencia o auto-complete); `PUT /members/courses/:slug/lessons/:lessonId/position`
   `{positionSeconds}` (BFF expõe como `POST /api/members/lessons/:id/position` com
