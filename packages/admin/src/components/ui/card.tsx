@@ -1,7 +1,8 @@
 import type * as React from 'react'
 import { cn } from '@/lib/cn'
 
-export function Card({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+// `ComponentProps<'div'>` inclui `ref` (React 19: ref é prop normal — itens dnd-kit precisam).
+export function Card({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       className={cn(

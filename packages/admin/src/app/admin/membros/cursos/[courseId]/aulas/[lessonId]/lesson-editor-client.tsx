@@ -1,10 +1,20 @@
 'use client'
 
-import { ArrowLeft, ChevronDown, ChevronUp, Pencil, Plus } from 'lucide-react'
+import {
+  closestCenter,
+  DndContext,
+  type DragEndEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core'
+import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { ArrowLeft, GripVertical, Pencil, Plus } from 'lucide-react'
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
+import { useSortableItem } from '@/components/dnd/use-sortable-item'
 import { FileUploader } from '@/components/media/file-uploader'
 import { ImageUploader } from '@/components/media/image-uploader'
 import { VideoThumbnailUploader } from '@/components/media/video-thumbnail-uploader'
@@ -35,18 +45,6 @@ const KIND_LABELS: Record<string, string> = {
   audio: 'Áudio',
   quiz: 'Quiz',
   embed: 'Interativo',
-}
-
-function orderAfterMove<T extends { id: string }>(
-  items: T[],
-  i: number,
-  dir: -1 | 1,
-): string[] | null {
-  const t = i + dir
-  if (t < 0 || t >= items.length) return null
-  const ids = items.map((x) => x.id)
-  ;[ids[i], ids[t]] = [ids[t] as string, ids[i] as string]
-  return ids
 }
 
 interface BlockForm {
@@ -183,6 +181,9 @@ export function LessonEditorClient({
   const [editingAtt, setEditingAtt] = useState<AttachmentView | null>(null)
   const [attForm, setAttForm] = useState({ label: '', url: '', fileType: '', sizeBytes: '' })
 
+  // Arrastar só após 5px (deixa o clique nos botões do card livre).
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
+
   const load = useCallback(async () => {
     setLoading(true)
     try {
@@ -264,12 +265,42 @@ export function LessonEditorClient({
     if (!window.confirm('Excluir este bloco?')) return
     void run(() => apiSend(`/api/members/blocks/${b.id}`, 'DELETE'), 'Bloco excluído.')
   }
-  function moveBlock(i: number, dir: -1 | 1) {
-    if (!lesson) return
-    const order = orderAfterMove(lesson.blocks, i, dir)
-    if (!order) return
-    void run(() =>
-      apiSend(`/api/members/lessons/${lessonId}/blocks/reorder`, 'POST', { orderedIds: order }),
+
+  // ── Reordenação (drag-and-drop, otimista; falhou → toast + reload) ─────────
+  async function persistOrder(url: string, orderedIds: string[]) {
+    try {
+      await apiSend(url, 'POST', { orderedIds })
+    } catch (err) {
+      toast.error((err as ApiError).message ?? 'Falha ao reordenar.')
+      await load()
+    }
+  }
+
+  function handleBlockDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!lesson || !over || active.id === over.id) return
+    const oldIdx = lesson.blocks.findIndex((b) => b.id === active.id)
+    const newIdx = lesson.blocks.findIndex((b) => b.id === over.id)
+    if (oldIdx === -1 || newIdx === -1) return
+    const blocks = arrayMove(lesson.blocks, oldIdx, newIdx)
+    setLesson({ ...lesson, blocks })
+    void persistOrder(
+      `/api/members/lessons/${lessonId}/blocks/reorder`,
+      blocks.map((b) => b.id),
+    )
+  }
+
+  function handleAttachmentDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!lesson || !over || active.id === over.id) return
+    const oldIdx = lesson.attachments.findIndex((a) => a.id === active.id)
+    const newIdx = lesson.attachments.findIndex((a) => a.id === over.id)
+    if (oldIdx === -1 || newIdx === -1) return
+    const attachments = arrayMove(lesson.attachments, oldIdx, newIdx)
+    setLesson({ ...lesson, attachments })
+    void persistOrder(
+      `/api/members/lessons/${lessonId}/attachments/reorder`,
+      attachments.map((a) => a.id),
     )
   }
 
@@ -347,42 +378,26 @@ export function LessonEditorClient({
                 Nenhum bloco. Adicione texto, vídeo, imagem, quiz ou conteúdo interativo.
               </Card>
             ) : (
-              lesson.blocks.map((b, i) => (
-                <Card key={b.id} className="flex items-center justify-between gap-3 p-3">
-                  <div className="flex min-w-0 items-center gap-3">
-                    <Badge variant="outline">{KIND_LABELS[b.kind] ?? b.kind}</Badge>
-                    <span className="truncate text-sm text-muted-foreground">
-                      {blockSummary(b)}
-                    </span>
-                  </div>
-                  {canWrite ? (
-                    <div className="flex shrink-0 items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        disabled={busy || i === 0}
-                        onClick={() => moveBlock(i, -1)}
-                      >
-                        <ChevronUp className="size-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        disabled={busy || i === lesson.blocks.length - 1}
-                        onClick={() => moveBlock(i, 1)}
-                      >
-                        <ChevronDown className="size-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => openEditBlock(b)}>
-                        <Pencil className="size-4" /> Editar
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => deleteBlock(b)}>
-                        Excluir
-                      </Button>
-                    </div>
-                  ) : null}
-                </Card>
-              ))
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleBlockDragEnd}
+              >
+                <SortableContext
+                  items={lesson.blocks.map((b) => b.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {lesson.blocks.map((b) => (
+                    <SortableBlockItem
+                      key={b.id}
+                      block={b}
+                      canWrite={canWrite}
+                      onEdit={() => openEditBlock(b)}
+                      onDelete={() => deleteBlock(b)}
+                    />
+                  ))}
+                </SortableContext>
+              </DndContext>
             )}
           </div>
 
@@ -398,24 +413,26 @@ export function LessonEditorClient({
             {lesson.attachments.length === 0 ? (
               <Card className="py-6 text-center text-sm text-muted-foreground">Nenhum anexo.</Card>
             ) : (
-              lesson.attachments.map((a) => (
-                <Card key={a.id} className="flex items-center justify-between gap-3 p-3">
-                  <div className="min-w-0">
-                    <div className="truncate text-sm font-medium">{a.label}</div>
-                    <div className="truncate text-xs text-muted-foreground">{a.url}</div>
-                  </div>
-                  {canWrite ? (
-                    <div className="flex shrink-0 items-center gap-1">
-                      <Button variant="ghost" size="sm" onClick={() => openEditAtt(a)}>
-                        <Pencil className="size-4" /> Editar
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => deleteAtt(a)}>
-                        Excluir
-                      </Button>
-                    </div>
-                  ) : null}
-                </Card>
-              ))
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleAttachmentDragEnd}
+              >
+                <SortableContext
+                  items={lesson.attachments.map((a) => a.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {lesson.attachments.map((a) => (
+                    <SortableAttachmentItem
+                      key={a.id}
+                      attachment={a}
+                      canWrite={canWrite}
+                      onEdit={() => openEditAtt(a)}
+                      onDelete={() => deleteAtt(a)}
+                    />
+                  ))}
+                </SortableContext>
+              </DndContext>
             )}
           </div>
         </>
@@ -730,5 +747,97 @@ export function LessonEditorClient({
         </div>
       </Dialog>
     </div>
+  )
+}
+
+// ── Bloco arrastável (card com handle, tipo e resumo) ────────────────────────
+function SortableBlockItem({
+  block,
+  canWrite,
+  onEdit,
+  onDelete,
+}: {
+  block: BlockView
+  canWrite: boolean
+  onEdit: () => void
+  onDelete: () => void
+}) {
+  const { attributes, listeners, setNodeRef, style } = useSortableItem(block.id)
+
+  return (
+    <Card ref={setNodeRef} style={style} className="flex items-center justify-between gap-3 p-3">
+      <div className="flex min-w-0 items-center gap-3">
+        {canWrite ? (
+          <button
+            type="button"
+            className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing"
+            aria-label="Arrastar bloco"
+            {...attributes}
+            {...listeners}
+          >
+            <GripVertical className="size-4" />
+          </button>
+        ) : null}
+        <Badge variant="outline">{KIND_LABELS[block.kind] ?? block.kind}</Badge>
+        <span className="truncate text-sm text-muted-foreground">{blockSummary(block)}</span>
+      </div>
+      {canWrite ? (
+        <div className="flex shrink-0 items-center gap-1">
+          <Button variant="ghost" size="sm" onClick={onEdit}>
+            <Pencil className="size-4" /> Editar
+          </Button>
+          <Button variant="ghost" size="sm" onClick={onDelete}>
+            Excluir
+          </Button>
+        </div>
+      ) : null}
+    </Card>
+  )
+}
+
+// ── Anexo arrastável (card com handle, rótulo e URL) ─────────────────────────
+function SortableAttachmentItem({
+  attachment,
+  canWrite,
+  onEdit,
+  onDelete,
+}: {
+  attachment: AttachmentView
+  canWrite: boolean
+  onEdit: () => void
+  onDelete: () => void
+}) {
+  const { attributes, listeners, setNodeRef, style } = useSortableItem(attachment.id)
+
+  return (
+    <Card ref={setNodeRef} style={style} className="flex items-center justify-between gap-3 p-3">
+      <div className="flex min-w-0 items-center gap-3">
+        {canWrite ? (
+          <button
+            type="button"
+            className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing"
+            aria-label="Arrastar anexo"
+            {...attributes}
+            {...listeners}
+          >
+            <GripVertical className="size-4" />
+          </button>
+        ) : null}
+        <div className="min-w-0">
+          <div className="truncate text-sm font-medium">{attachment.label}</div>
+          <div className="truncate text-xs text-muted-foreground">{attachment.url}</div>
+        </div>
+      </div>
+      {canWrite ? (
+        <div className="flex shrink-0 items-center gap-1">
+          <Button variant="ghost" size="sm" onClick={onEdit}>
+            <Pencil className="size-4" /> Editar
+          </Button>
+          <Button variant="ghost" size="sm" onClick={onDelete}>
+            Excluir
+          </Button>
+        </div>
+      ) : null}
+    </Card>
   )
 }

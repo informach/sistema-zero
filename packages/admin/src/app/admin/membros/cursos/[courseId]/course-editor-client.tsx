@@ -1,10 +1,28 @@
 'use client'
 
-import { ArrowLeft, ChevronDown, ChevronUp, Pencil, Plus, SquarePen } from 'lucide-react'
+import {
+  closestCenter,
+  DndContext,
+  type DragEndEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core'
+import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import {
+  ArrowLeft,
+  ChevronDown,
+  ChevronRight,
+  GripVertical,
+  Pencil,
+  Plus,
+  SquarePen,
+} from 'lucide-react'
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
+import { useSortableItem } from '@/components/dnd/use-sortable-item'
 import { Badge } from '@/components/ui/badge'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -20,19 +38,6 @@ import type { CourseTreeView, LessonView, ModuleView } from '@/lib/types'
 type Tree = CourseTreeView
 type TreeModule = Tree['modules'][number]
 
-/** Move o item `index` na direção `dir` e devolve a nova ordem de ids (ou null se não move). */
-function movedOrder<T extends { id: string }>(
-  items: T[],
-  index: number,
-  dir: -1 | 1,
-): string[] | null {
-  const target = index + dir
-  if (target < 0 || target >= items.length) return null
-  const ids = items.map((i) => i.id)
-  ;[ids[index], ids[target]] = [ids[target] as string, ids[index] as string]
-  return ids
-}
-
 export function CourseEditorClient({
   courseId,
   currentRole,
@@ -45,6 +50,8 @@ export function CourseEditorClient({
   const [tree, setTree] = useState<Tree | null>(null)
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
+  // Módulos COLAPSADOS (default = tudo expandido).
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
 
   const [moduleOpen, setModuleOpen] = useState(false)
   const [editingModule, setEditingModule] = useState<ModuleView | null>(null)
@@ -59,6 +66,9 @@ export function CourseEditorClient({
     estimatedMinutes: '',
     isPublished: false,
   })
+
+  // Arrastar só após 5px (deixa o clique nos botões do card livre).
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -88,6 +98,56 @@ export function CourseEditorClient({
     }
   }
 
+  function toggleCollapsed(moduleId: string) {
+    setCollapsed((prev) => {
+      const next = new Set(prev)
+      if (next.has(moduleId)) next.delete(moduleId)
+      else next.add(moduleId)
+      return next
+    })
+  }
+
+  // ── Reordenação (drag-and-drop, otimista; falhou → toast + reload) ─────────
+  async function persistOrder(url: string, orderedIds: string[]) {
+    try {
+      await apiSend(url, 'POST', { orderedIds })
+    } catch (err) {
+      toast.error((err as ApiError).message ?? 'Falha ao reordenar.')
+      await load()
+    }
+  }
+
+  function handleModuleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!tree || !over || active.id === over.id) return
+    const oldIdx = tree.modules.findIndex((m) => m.id === active.id)
+    const newIdx = tree.modules.findIndex((m) => m.id === over.id)
+    if (oldIdx === -1 || newIdx === -1) return
+    const reordered = arrayMove(tree.modules, oldIdx, newIdx)
+    setTree({ ...tree, modules: reordered })
+    void persistOrder(
+      `/api/members/courses/${courseId}/modules/reorder`,
+      reordered.map((m) => m.id),
+    )
+  }
+
+  function handleLessonDragEnd(mod: TreeModule, event: DragEndEvent) {
+    const { active, over } = event
+    if (!tree || !over || active.id === over.id) return
+    const oldIdx = mod.lessons.findIndex((l) => l.id === active.id)
+    const newIdx = mod.lessons.findIndex((l) => l.id === over.id)
+    if (oldIdx === -1 || newIdx === -1) return
+    const lessons = arrayMove(mod.lessons, oldIdx, newIdx)
+    setTree({
+      ...tree,
+      modules: tree.modules.map((m) => (m.id === mod.id ? { ...m, lessons } : m)),
+    })
+    void persistOrder(
+      `/api/members/modules/${mod.id}/lessons/reorder`,
+      lessons.map((l) => l.id),
+    )
+  }
+
   // ── Módulos ──
   function openCreateModule() {
     setEditingModule(null)
@@ -114,14 +174,6 @@ export function CourseEditorClient({
   function deleteModule(m: ModuleView) {
     if (!window.confirm(`Excluir o módulo "${m.title}" e suas aulas?`)) return
     void run(() => apiSend(`/api/members/modules/${m.id}`, 'DELETE'), 'Módulo excluído.')
-  }
-  function moveModule(index: number, dir: -1 | 1) {
-    if (!tree) return
-    const order = movedOrder(tree.modules, index, dir)
-    if (!order) return
-    void run(() =>
-      apiSend(`/api/members/courses/${courseId}/modules/reorder`, 'POST', { orderedIds: order }),
-    )
   }
 
   // ── Aulas ──
@@ -165,13 +217,6 @@ export function CourseEditorClient({
     if (!window.confirm(`Excluir a aula "${l.title}"?`)) return
     void run(() => apiSend(`/api/members/lessons/${l.id}`, 'DELETE'), 'Aula excluída.')
   }
-  function moveLesson(mod: TreeModule, index: number, dir: -1 | 1) {
-    const order = movedOrder(mod.lessons, index, dir)
-    if (!order) return
-    void run(() =>
-      apiSend(`/api/members/modules/${mod.id}/lessons/reorder`, 'POST', { orderedIds: order }),
-    )
-  }
 
   return (
     <div className="space-y-6">
@@ -205,125 +250,35 @@ export function CourseEditorClient({
           Nenhum módulo ainda. Crie o primeiro módulo para começar.
         </Card>
       ) : (
-        <div className="space-y-4">
-          {tree.modules.map((mod, mi) => (
-            <Card key={mod.id} className="p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="font-semibold">{mod.title}</div>
-                  {mod.summary ? (
-                    <div className="text-sm text-muted-foreground">{mod.summary}</div>
-                  ) : null}
-                  <div className="mt-0.5 text-xs text-muted-foreground">
-                    {mod.lessons.filter((l) => l.isPublished).length} de {mod.lessons.length}{' '}
-                    {mod.lessons.length === 1 ? 'aula publicada' : 'aulas publicadas'}
-                    {(() => {
-                      const min = mod.lessons.reduce((s, l) => s + (l.estimatedMinutes ?? 0), 0)
-                      return min > 0 ? ` · ${min} min` : ''
-                    })()}
-                  </div>
-                </div>
-                {canWrite ? (
-                  <div className="flex shrink-0 items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      disabled={busy || mi === 0}
-                      onClick={() => moveModule(mi, -1)}
-                    >
-                      <ChevronUp className="size-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      disabled={busy || mi === tree.modules.length - 1}
-                      onClick={() => moveModule(mi, 1)}
-                    >
-                      <ChevronDown className="size-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => openEditModule(mod)}>
-                      <Pencil className="size-4" /> Editar
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => deleteModule(mod)}>
-                      Excluir
-                    </Button>
-                  </div>
-                ) : null}
-              </div>
-
-              <div className="mt-3 divide-y divide-border border-t border-border">
-                {mod.lessons.length === 0 ? (
-                  <div className="py-3 text-sm text-muted-foreground">Nenhuma aula.</div>
-                ) : (
-                  mod.lessons.map((lesson, li) => (
-                    <div key={lesson.id} className="flex items-center justify-between gap-3 py-2">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="truncate text-sm font-medium">{lesson.title}</span>
-                          <Badge variant={lesson.isPublished ? 'success' : 'muted'}>
-                            {lesson.isPublished ? 'Publicada' : 'Rascunho'}
-                          </Badge>
-                        </div>
-                        <div className="truncate text-xs text-muted-foreground">
-                          {lesson.slug}
-                          {lesson.estimatedMinutes != null
-                            ? ` · ${lesson.estimatedMinutes} min`
-                            : ''}
-                        </div>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-1">
-                        <Link
-                          href={`/admin/membros/cursos/${courseId}/aulas/${lesson.id}`}
-                          className={buttonVariants({ variant: 'ghost', size: 'sm' })}
-                        >
-                          <SquarePen className="size-4" /> Conteúdo
-                        </Link>
-                        {canWrite ? (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              disabled={busy || li === 0}
-                              onClick={() => moveLesson(mod, li, -1)}
-                            >
-                              <ChevronUp className="size-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              disabled={busy || li === mod.lessons.length - 1}
-                              onClick={() => moveLesson(mod, li, 1)}
-                            >
-                              <ChevronDown className="size-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => openEditLesson(lesson)}
-                            >
-                              <Pencil className="size-4" /> Editar
-                            </Button>
-                            <Button variant="ghost" size="sm" onClick={() => deleteLesson(lesson)}>
-                              Excluir
-                            </Button>
-                          </>
-                        ) : null}
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              {canWrite ? (
-                <div className="mt-2">
-                  <Button variant="outline" size="sm" onClick={() => openCreateLesson(mod.id)}>
-                    <Plus className="size-4" /> Nova aula
-                  </Button>
-                </div>
-              ) : null}
-            </Card>
-          ))}
-        </div>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleModuleDragEnd}
+        >
+          <SortableContext
+            items={tree.modules.map((m) => m.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="space-y-4">
+              {tree.modules.map((mod) => (
+                <SortableModuleItem
+                  key={mod.id}
+                  mod={mod}
+                  courseId={courseId}
+                  canWrite={canWrite}
+                  expanded={!collapsed.has(mod.id)}
+                  onToggle={() => toggleCollapsed(mod.id)}
+                  onEditModule={() => openEditModule(mod)}
+                  onDeleteModule={() => deleteModule(mod)}
+                  onCreateLesson={() => openCreateLesson(mod.id)}
+                  onEditLesson={openEditLesson}
+                  onDeleteLesson={deleteLesson}
+                  onLessonDragEnd={(e) => handleLessonDragEnd(mod, e)}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
       )}
 
       <Dialog
@@ -417,6 +372,199 @@ export function CourseEditorClient({
           </div>
         </div>
       </Dialog>
+    </div>
+  )
+}
+
+// ── Módulo arrastável (card colapsável com contadores e DnD aninhado de aulas) ──
+function SortableModuleItem({
+  mod,
+  courseId,
+  canWrite,
+  expanded,
+  onToggle,
+  onEditModule,
+  onDeleteModule,
+  onCreateLesson,
+  onEditLesson,
+  onDeleteLesson,
+  onLessonDragEnd,
+}: {
+  mod: TreeModule
+  courseId: string
+  canWrite: boolean
+  expanded: boolean
+  onToggle: () => void
+  onEditModule: () => void
+  onDeleteModule: () => void
+  onCreateLesson: () => void
+  onEditLesson: (l: LessonView) => void
+  onDeleteLesson: (l: LessonView) => void
+  onLessonDragEnd: (event: DragEndEvent) => void
+}) {
+  const { attributes, listeners, setNodeRef, style } = useSortableItem(mod.id)
+  const lessonSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+  )
+
+  const published = mod.lessons.filter((l) => l.isPublished).length
+  const totalMinutes = mod.lessons.reduce((s, l) => s + (l.estimatedMinutes ?? 0), 0)
+
+  return (
+    <Card ref={setNodeRef} style={style} className="p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-start gap-1">
+          {canWrite ? (
+            <button
+              type="button"
+              className="mt-0.5 cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing"
+              aria-label="Arrastar módulo"
+              {...attributes}
+              {...listeners}
+            >
+              <GripVertical className="size-4" />
+            </button>
+          ) : null}
+          <button
+            type="button"
+            className="mt-0.5 text-muted-foreground hover:text-foreground"
+            aria-label={expanded ? 'Colapsar módulo' : 'Expandir módulo'}
+            onClick={onToggle}
+          >
+            {expanded ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
+          </button>
+          <div className="min-w-0">
+            <div className="font-semibold">{mod.title}</div>
+            {mod.summary ? (
+              <div className="text-sm text-muted-foreground">{mod.summary}</div>
+            ) : null}
+            <div className="mt-0.5 text-xs text-muted-foreground">
+              {published} de {mod.lessons.length}{' '}
+              {mod.lessons.length === 1 ? 'aula publicada' : 'aulas publicadas'}
+              {totalMinutes > 0 ? ` · ${totalMinutes} min` : ''}
+            </div>
+          </div>
+        </div>
+        {canWrite ? (
+          <div className="flex shrink-0 items-center gap-1">
+            <Button variant="ghost" size="sm" onClick={onEditModule}>
+              <Pencil className="size-4" /> Editar
+            </Button>
+            <Button variant="ghost" size="sm" onClick={onDeleteModule}>
+              Excluir
+            </Button>
+          </div>
+        ) : null}
+      </div>
+
+      {expanded ? (
+        <>
+          <div className="mt-3 divide-y divide-border border-t border-border">
+            {mod.lessons.length === 0 ? (
+              <div className="py-3 text-sm text-muted-foreground">Nenhuma aula.</div>
+            ) : (
+              <DndContext
+                sensors={lessonSensors}
+                collisionDetection={closestCenter}
+                onDragEnd={onLessonDragEnd}
+              >
+                <SortableContext
+                  items={mod.lessons.map((l) => l.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {mod.lessons.map((lesson) => (
+                    <SortableLessonItem
+                      key={lesson.id}
+                      lesson={lesson}
+                      courseId={courseId}
+                      canWrite={canWrite}
+                      onEdit={() => onEditLesson(lesson)}
+                      onDelete={() => onDeleteLesson(lesson)}
+                    />
+                  ))}
+                </SortableContext>
+              </DndContext>
+            )}
+          </div>
+
+          {canWrite ? (
+            <div className="mt-2">
+              <Button variant="outline" size="sm" onClick={onCreateLesson}>
+                <Plus className="size-4" /> Nova aula
+              </Button>
+            </div>
+          ) : null}
+        </>
+      ) : null}
+    </Card>
+  )
+}
+
+// ── Aula arrastável (linha com handle, badge de publicação e ações) ──────────
+function SortableLessonItem({
+  lesson,
+  courseId,
+  canWrite,
+  onEdit,
+  onDelete,
+}: {
+  lesson: LessonView
+  courseId: string
+  canWrite: boolean
+  onEdit: () => void
+  onDelete: () => void
+}) {
+  const { attributes, listeners, setNodeRef, style } = useSortableItem(lesson.id)
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center justify-between gap-3 bg-background py-2"
+    >
+      <div className="flex min-w-0 items-center gap-2">
+        {canWrite ? (
+          <button
+            type="button"
+            className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing"
+            aria-label="Arrastar aula"
+            {...attributes}
+            {...listeners}
+          >
+            <GripVertical className="size-4" />
+          </button>
+        ) : null}
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="truncate text-sm font-medium">{lesson.title}</span>
+            <Badge variant={lesson.isPublished ? 'success' : 'muted'}>
+              {lesson.isPublished ? 'Publicada' : 'Rascunho'}
+            </Badge>
+          </div>
+          <div className="truncate text-xs text-muted-foreground">
+            {lesson.slug}
+            {lesson.estimatedMinutes != null ? ` · ${lesson.estimatedMinutes} min` : ''}
+          </div>
+        </div>
+      </div>
+      <div className="flex shrink-0 items-center gap-1">
+        <Link
+          href={`/admin/membros/cursos/${courseId}/aulas/${lesson.id}`}
+          className={buttonVariants({ variant: 'ghost', size: 'sm' })}
+        >
+          <SquarePen className="size-4" /> Conteúdo
+        </Link>
+        {canWrite ? (
+          <>
+            <Button variant="ghost" size="sm" onClick={onEdit}>
+              <Pencil className="size-4" /> Editar
+            </Button>
+            <Button variant="ghost" size="sm" onClick={onDelete}>
+              Excluir
+            </Button>
+          </>
+        ) : null}
+      </div>
     </div>
   )
 }
