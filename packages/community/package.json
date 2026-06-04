@@ -14,6 +14,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1032.0",
     "@vimeo/player": "^2.30.4",
+    "@sistemazero/ui": "workspace:*",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "geist": "^1.6.1",

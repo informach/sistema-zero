@@ -9,6 +9,15 @@ import {
   useSensors,
 } from '@dnd-kit/core'
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { Badge } from '@sistemazero/ui/badge'
+import { Button, buttonVariants } from '@sistemazero/ui/button'
+import { Card } from '@sistemazero/ui/card'
+import { Dialog } from '@sistemazero/ui/dialog'
+import { Input } from '@sistemazero/ui/input'
+import { Field } from '@sistemazero/ui/label'
+import { Spinner } from '@sistemazero/ui/spinner'
+import { Switch } from '@sistemazero/ui/switch'
+import { Textarea } from '@sistemazero/ui/textarea'
 import {
   ArrowLeft,
   ChevronDown,
@@ -23,15 +32,6 @@ import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { useSortableItem } from '@/components/dnd/use-sortable-item'
-import { Badge } from '@/components/ui/badge'
-import { Button, buttonVariants } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { Dialog } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Field } from '@/components/ui/label'
-import { Spinner } from '@/components/ui/spinner'
-import { Switch } from '@/components/ui/switch'
-import { Textarea } from '@/components/ui/textarea'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import type { CourseTreeView, LessonView, ModuleView } from '@/lib/types'
 

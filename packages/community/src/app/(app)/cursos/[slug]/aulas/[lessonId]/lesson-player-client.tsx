@@ -1,5 +1,8 @@
 'use client'
 
+import { Button, buttonVariants } from '@sistemazero/ui/button'
+import { Card } from '@sistemazero/ui/card'
+import { Spinner } from '@sistemazero/ui/spinner'
 import { ArrowLeft, ArrowRight, CheckCircle2, ChevronLeft, Circle, Download } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -11,9 +14,6 @@ import {
   LessonPlayerProvider,
 } from '@/components/community/lesson-player-context'
 import { ProgressBar } from '@/components/community/progress-bar'
-import { Button, buttonVariants } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { Spinner } from '@/components/ui/spinner'
 import { type ApiError, apiSend } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import type { CourseDetailView, LessonDetailView, QuizBlock } from '@/lib/types'

@@ -1,6 +1,6 @@
 'use client'
 
-import { cn } from '@/lib/cn'
+import { cn } from '../../lib/cn'
 
 /** Toggle booleano acessível (role=switch) seguindo os tokens do design system. */
 export function Switch({

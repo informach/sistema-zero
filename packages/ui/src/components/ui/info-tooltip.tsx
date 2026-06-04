@@ -1,5 +1,5 @@
 import { Info } from 'lucide-react'
-import { cn } from '@/lib/cn'
+import { cn } from '../../lib/cn'
 
 /**
  * Tooltip leve (CSS puro, sem libs): ícone "i" que revela a explicação no

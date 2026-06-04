@@ -1,15 +1,15 @@
 'use client'
 
+import { Button } from '@sistemazero/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@sistemazero/ui/card'
+import { Input } from '@sistemazero/ui/input'
+import { Field } from '@sistemazero/ui/label'
+import { Spinner } from '@sistemazero/ui/spinner'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { z } from 'zod'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Field } from '@/components/ui/label'
-import { Spinner } from '@/components/ui/spinner'
 
 const Schema = z.object({
   email: z.string().email('E-mail inválido'),

@@ -1,9 +1,9 @@
 'use client'
 
+import { Button } from '@sistemazero/ui/button'
+import { Progress } from '@sistemazero/ui/progress'
 import { CheckCircle2, Clapperboard, Loader2, RefreshCw } from 'lucide-react'
 import { useRef } from 'react'
-import { Button } from '@/components/ui/button'
-import { Progress } from '@/components/ui/progress'
 import { type ReadyVideo, useVideoUpload } from './use-video-upload'
 import { VimeoPreview } from './vimeo-preview'
 

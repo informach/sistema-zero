@@ -1,5 +1,6 @@
 'use client'
 
+import { Button } from '@sistemazero/ui/button'
 import { EditorContent, type Editor as TiptapEditor, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import {
@@ -17,7 +18,6 @@ import {
 } from 'lucide-react'
 import { useEffect } from 'react'
 import { Markdown } from 'tiptap-markdown'
-import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/cn'
 
 /** O tiptap-markdown (tipado p/ TipTap v2) não aumenta o `Storage` do v3 — cast estreito. */

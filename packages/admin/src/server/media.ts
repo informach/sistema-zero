@@ -1,11 +1,13 @@
 import 'server-only'
 import { randomUUID } from 'node:crypto'
 import { NextResponse } from 'next/server'
+import { getEnv } from '@/lib/env'
 import type { SessionUser } from '@/lib/types'
 import { type ImagePreset, optimizeImage } from './image-optimizer'
 import { MediaNotConfiguredError, r2PutObject } from './r2'
 import { getSession } from './session'
 import {
+  addVideoToFolder,
   applyPrivacy,
   createUploadTicket,
   getTextTrackVtt,
@@ -151,7 +153,7 @@ export async function storeGenericFile(file: File): Promise<StoredFile> {
 
 // ── Vídeo (Vimeo TUS + status + transcrição + capa) ─────────────────────────
 
-/** Cria o ticket TUS e aplica a whitelist de embed (best-effort, não trava o upload). */
+/** Cria o ticket TUS e aplica whitelist de embed + pasta (best-effort, não travam o upload). */
 export async function createVideoTicket(input: {
   filename: string
   sizeBytes: number
@@ -167,6 +169,18 @@ export async function createVideoTicket(input: {
     } catch (error) {
       console.error('[media] applyPrivacy falhou (whitelist pendente)', {
         vimeoVideoId: ticket.vimeoVideoId,
+        error,
+      })
+    }
+  }
+  const folderId = getEnv().VIMEO_FOLDER_ID
+  if (folderId) {
+    try {
+      await addVideoToFolder(ticket.vimeoVideoId, folderId)
+    } catch (error) {
+      console.error('[media] addVideoToFolder falhou (vídeo fica fora da pasta)', {
+        vimeoVideoId: ticket.vimeoVideoId,
+        folderId,
         error,
       })
     }

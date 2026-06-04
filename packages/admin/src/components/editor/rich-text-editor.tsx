@@ -1,7 +1,7 @@
 'use client'
 
+import { Spinner } from '@sistemazero/ui/spinner'
 import dynamic from 'next/dynamic'
-import { Spinner } from '@/components/ui/spinner'
 
 /**
  * Wrapper do editor TipTap: `dynamic({ ssr: false })` mantém o TipTap (~200KB)

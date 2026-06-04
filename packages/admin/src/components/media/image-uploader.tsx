@@ -1,10 +1,10 @@
 'use client'
 
+import { Button } from '@sistemazero/ui/button'
+import { Input } from '@sistemazero/ui/input'
 import { ImagePlus, Loader2, X } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { type ApiError, apiUpload } from '@/lib/api'
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024

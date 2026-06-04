@@ -1,8 +1,8 @@
 'use client'
 
+import { Button } from '@sistemazero/ui/button'
+import { Select } from '@sistemazero/ui/select'
 import { ChevronDown, ChevronUp, Plus, X } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Select } from '@/components/ui/select'
 import type { ProductView } from '@/lib/types'
 import { moveItem } from './product-picker-list'
 

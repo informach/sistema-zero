@@ -2,7 +2,7 @@
 
 import { X } from 'lucide-react'
 import { useEffect } from 'react'
-import { cn } from '@/lib/cn'
+import { cn } from '../../lib/cn'
 
 /** Modal controlado e leve (sem dep externa): overlay + card, fecha no Esc/backdrop. */
 export function Dialog({

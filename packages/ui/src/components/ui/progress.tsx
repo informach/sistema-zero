@@ -1,4 +1,4 @@
-import { cn } from '@/lib/cn'
+import { cn } from '../../lib/cn'
 
 /** Barra de progresso minimalista (0–1). */
 export function Progress({ value, className }: { value: number; className?: string }) {

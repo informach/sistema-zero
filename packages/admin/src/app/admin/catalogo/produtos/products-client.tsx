@@ -1,18 +1,11 @@
 'use client'
 
-import { Pencil, Plus, Search } from 'lucide-react'
-import Link from 'next/link'
-import { useCallback, useEffect, useState } from 'react'
-import { toast } from 'sonner'
-import { AdminHeader } from '@/components/admin/admin-header'
-import { CatalogTabs } from '@/components/admin/catalog-tabs'
-import { StatusBadge } from '@/components/admin/status-badge'
-import { buttonVariants } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Pagination } from '@/components/ui/pagination'
-import { Select } from '@/components/ui/select'
-import { Spinner } from '@/components/ui/spinner'
+import { buttonVariants } from '@sistemazero/ui/button'
+import { Card } from '@sistemazero/ui/card'
+import { Input } from '@sistemazero/ui/input'
+import { Pagination } from '@sistemazero/ui/pagination'
+import { Select } from '@sistemazero/ui/select'
+import { Spinner } from '@sistemazero/ui/spinner'
 import {
   Table,
   TableBody,
@@ -20,7 +13,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
+} from '@sistemazero/ui/table'
+import { Pencil, Plus, Search } from 'lucide-react'
+import Link from 'next/link'
+import { useCallback, useEffect, useState } from 'react'
+import { toast } from 'sonner'
+import { AdminHeader } from '@/components/admin/admin-header'
+import { CatalogTabs } from '@/components/admin/catalog-tabs'
+import { StatusBadge } from '@/components/admin/status-badge'
 import { type ApiError, apiGet } from '@/lib/api'
 import type { Paginated, ProductView } from '@/lib/types'
 

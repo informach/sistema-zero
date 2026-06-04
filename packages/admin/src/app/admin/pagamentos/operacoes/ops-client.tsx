@@ -1,13 +1,13 @@
 'use client'
 
+import { Button } from '@sistemazero/ui/button'
+import { Spinner } from '@sistemazero/ui/spinner'
 import { AlertTriangle, RefreshCw } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { OverviewCard } from '@/components/admin/overview-card'
 import { PaymentsTabs } from '@/components/admin/payments-tabs'
-import { Button } from '@/components/ui/button'
-import { Spinner } from '@/components/ui/spinner'
 import { type ApiError, apiGet } from '@/lib/api'
 import type { PaymentOps } from '@/lib/types'
 

@@ -1,6 +1,6 @@
+import { Card } from '@sistemazero/ui/card'
 import { BookOpen, Lock, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
-import { Card } from '@/components/ui/card'
 import type { CatalogCourseView } from '@/lib/types'
 
 interface CatalogCourseCardProps {

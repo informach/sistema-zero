@@ -6,6 +6,8 @@ const nextConfig: NextConfig = {
   // Variáveis sem prefixo NEXT_PUBLIC_ ficam só no servidor.
   // sharp é binário nativo (upload de avatar) — não deixar o bundler tocar nele.
   serverExternalPackages: ['sharp'],
+  // Pacote workspace com TS cru (componentes compartilhados) — transpilar junto.
+  transpilePackages: ['@sistemazero/ui'],
 }
 
 export default nextConfig

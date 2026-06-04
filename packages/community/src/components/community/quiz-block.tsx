@@ -1,10 +1,10 @@
 'use client'
 
+import { Button } from '@sistemazero/ui/button'
+import { Card } from '@sistemazero/ui/card'
+import { Spinner } from '@sistemazero/ui/spinner'
 import { CheckCircle2, Timer, Trophy, XCircle } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { Spinner } from '@/components/ui/spinner'
 import { type ApiError, apiSend } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import type { QuizAttemptResultView, QuizBlock, QuizStateView } from '@/lib/types'
@@ -103,10 +103,12 @@ export function QuizBlockView({ blockId, content, quizState }: Props) {
               return (
                 <label
                   key={choice.id}
+                  // Visual da referência (LessonExperience): opção elevada sobre o card
+                  // (bg-background + shadow-sm) e radio na cor do tema (accent-primary).
                   className={cn(
-                    'flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors',
+                    'flex items-center gap-3 rounded-lg border bg-background px-4 py-3 text-sm shadow-sm transition-colors',
                     formDisabled ? 'cursor-default' : 'cursor-pointer',
-                    selected ? 'border-ring bg-muted/60' : 'border-border',
+                    selected ? 'border-ring' : 'border-border',
                     !formDisabled && !selected && 'hover:bg-muted/40',
                     showCorrection && isCorrectChoice && 'border-accent dark:border-primary',
                     showCorrection && selected && !isCorrectChoice && 'border-destructive',
@@ -119,9 +121,9 @@ export function QuizBlockView({ blockId, content, quizState }: Props) {
                     checked={selected}
                     disabled={formDisabled}
                     onChange={() => setAnswers((a) => ({ ...a, [q.id]: choice.id }))}
-                    className="accent-current"
+                    className="size-4 shrink-0 accent-primary"
                   />
-                  <span className="flex-1">{choice.label}</span>
+                  <span className="flex-1 leading-5 text-foreground">{choice.label}</span>
                   {showCorrection && isCorrectChoice ? (
                     <CheckCircle2 className="size-4 text-accent dark:text-primary" />
                   ) : null}

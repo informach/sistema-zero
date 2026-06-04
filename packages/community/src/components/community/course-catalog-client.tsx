@@ -1,7 +1,7 @@
 'use client'
 
+import { Button } from '@sistemazero/ui/button'
 import { SearchX } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import type { CatalogCourseView } from '@/lib/types'
 import { useCatalogFilters } from '@/lib/use-catalog-filters'
 import { CatalogCourseCard } from './catalog-course-card'

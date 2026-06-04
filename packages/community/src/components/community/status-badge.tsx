@@ -1,4 +1,4 @@
-import { Badge } from '@/components/ui/badge'
+import { Badge } from '@sistemazero/ui/badge'
 
 const LABELS: Record<string, string> = {
   active: 'Ativo',

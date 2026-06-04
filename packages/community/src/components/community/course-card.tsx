@@ -1,6 +1,6 @@
+import { Card } from '@sistemazero/ui/card'
 import { BookOpen } from 'lucide-react'
 import Link from 'next/link'
-import { Card } from '@/components/ui/card'
 import type { MyCourseView } from '@/lib/types'
 import { ProgressBar } from './progress-bar'
 

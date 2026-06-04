@@ -1,6 +1,6 @@
 import { ChevronDown } from 'lucide-react'
 import type * as React from 'react'
-import { cn } from '@/lib/cn'
+import { cn } from '../../lib/cn'
 
 /** Select nativo estilizado (suficiente p/ enums do catálogo). */
 export function Select({

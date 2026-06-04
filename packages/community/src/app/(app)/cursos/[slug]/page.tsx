@@ -1,8 +1,8 @@
+import { Card } from '@sistemazero/ui/card'
 import { CheckCircle2, Circle, Clock, PlayCircle } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ProgressBar } from '@/components/community/progress-bar'
-import { Card } from '@/components/ui/card'
 import type { CourseDetailView, LessonOutlineView } from '@/lib/types'
 import { getMyCourse } from '@/server/members'
 

@@ -1,4 +1,6 @@
 @import "tailwindcss";
+/* Componentes compartilhados (@sistemazero/ui) — o scanner precisa ver as classes deles. */
+@source "../../../ui/src";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -19,6 +21,8 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -79,6 +83,10 @@
 
   --destructive: oklch(0.55 0.22 27);
   --destructive-foreground: oklch(1 0 0);
+
+  /* Sucesso (badge `success` do @sistemazero/ui) — verde escuro AA no light (igual ao admin). */
+  --success: oklch(0.45 0.13 150);
+  --success-foreground: oklch(0.4 0.13 150);
 
   --border: oklch(0.9 0.005 255);
   --input: oklch(0.92 0.005 255);
@@ -143,6 +151,10 @@
 
   --destructive: oklch(0.64 0.215 27);
   --destructive-foreground: oklch(0.975 0.003 255);
+
+  /* Sucesso no dark: bg-accent/15 + fg ciano (igual ao admin). */
+  --success: oklch(0.21 0.01 265);
+  --success-foreground: oklch(0.84 0.13 192);
 
   --border: oklch(0.21 0.01 265);
   --input: oklch(0.23 0.01 265);

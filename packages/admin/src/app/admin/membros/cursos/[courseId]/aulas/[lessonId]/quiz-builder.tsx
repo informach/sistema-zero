@@ -1,10 +1,10 @@
 'use client'
 
+import { Button } from '@sistemazero/ui/button'
+import { Input } from '@sistemazero/ui/input'
+import { Field } from '@sistemazero/ui/label'
+import { Textarea } from '@sistemazero/ui/textarea'
 import { Plus, Trash2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Field } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import type { QuizQuestion } from '@/lib/types'
 
 export interface QuizValue {

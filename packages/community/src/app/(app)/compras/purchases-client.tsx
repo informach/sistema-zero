@@ -1,13 +1,9 @@
 'use client'
 
-import { Receipt } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
-import { toast } from 'sonner'
-import { StatusBadge } from '@/components/community/status-badge'
-import { Card } from '@/components/ui/card'
-import { Dialog } from '@/components/ui/dialog'
-import { Pagination } from '@/components/ui/pagination'
-import { Spinner } from '@/components/ui/spinner'
+import { Card } from '@sistemazero/ui/card'
+import { Dialog } from '@sistemazero/ui/dialog'
+import { Pagination } from '@sistemazero/ui/pagination'
+import { Spinner } from '@sistemazero/ui/spinner'
 import {
   Table,
   TableBody,
@@ -15,7 +11,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
+} from '@sistemazero/ui/table'
+import { Receipt } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
+import { toast } from 'sonner'
+import { StatusBadge } from '@/components/community/status-badge'
 import { apiGet } from '@/lib/api'
 import { formatCentsStr, formatDate } from '@/lib/format'
 import { PAYMENT_METHOD_LABELS, type Paginated, type PaymentView } from '@/lib/types'

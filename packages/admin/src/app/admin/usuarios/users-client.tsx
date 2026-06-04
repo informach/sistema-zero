@@ -1,21 +1,14 @@
 'use client'
 
-import { GraduationCap, KeyRound, Pencil, Plus, Search } from 'lucide-react'
-import Link from 'next/link'
-import { useCallback, useEffect, useState } from 'react'
-import { toast } from 'sonner'
-import { AdminHeader } from '@/components/admin/admin-header'
-import { GrantAccessDialog } from '@/components/admin/grant-access-dialog'
-import { StatusBadge } from '@/components/admin/status-badge'
-import { Badge } from '@/components/ui/badge'
-import { Button, buttonVariants } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { Dialog } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Field } from '@/components/ui/label'
-import { Pagination } from '@/components/ui/pagination'
-import { Select } from '@/components/ui/select'
-import { Spinner } from '@/components/ui/spinner'
+import { Badge } from '@sistemazero/ui/badge'
+import { Button, buttonVariants } from '@sistemazero/ui/button'
+import { Card } from '@sistemazero/ui/card'
+import { Dialog } from '@sistemazero/ui/dialog'
+import { Input } from '@sistemazero/ui/input'
+import { Field } from '@sistemazero/ui/label'
+import { Pagination } from '@sistemazero/ui/pagination'
+import { Select } from '@sistemazero/ui/select'
+import { Spinner } from '@sistemazero/ui/spinner'
 import {
   Table,
   TableBody,
@@ -23,7 +16,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
+} from '@sistemazero/ui/table'
+import { GraduationCap, KeyRound, Pencil, Plus, Search } from 'lucide-react'
+import Link from 'next/link'
+import { useCallback, useEffect, useState } from 'react'
+import { toast } from 'sonner'
+import { AdminHeader } from '@/components/admin/admin-header'
+import { GrantAccessDialog } from '@/components/admin/grant-access-dialog'
+import { StatusBadge } from '@/components/admin/status-badge'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { formatDate } from '@/lib/format'
 import {

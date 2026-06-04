@@ -1,17 +1,11 @@
 'use client'
 
-import { ChevronRight, Search } from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import { useCallback, useEffect, useState } from 'react'
-import { toast } from 'sonner'
-import { AdminHeader } from '@/components/admin/admin-header'
-import { MembersTabs } from '@/components/admin/members-tabs'
-import { Badge } from '@/components/ui/badge'
-import { Card } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Pagination } from '@/components/ui/pagination'
-import { Select } from '@/components/ui/select'
-import { Spinner } from '@/components/ui/spinner'
+import { Badge } from '@sistemazero/ui/badge'
+import { Card } from '@sistemazero/ui/card'
+import { Input } from '@sistemazero/ui/input'
+import { Pagination } from '@sistemazero/ui/pagination'
+import { Select } from '@sistemazero/ui/select'
+import { Spinner } from '@sistemazero/ui/spinner'
 import {
   Table,
   TableBody,
@@ -19,7 +13,13 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
+} from '@sistemazero/ui/table'
+import { ChevronRight, Search } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { useCallback, useEffect, useState } from 'react'
+import { toast } from 'sonner'
+import { AdminHeader } from '@/components/admin/admin-header'
+import { MembersTabs } from '@/components/admin/members-tabs'
 import { type ApiError, apiGet } from '@/lib/api'
 import { formatDate } from '@/lib/format'
 import { ENTITLEMENT_STATUSES, type MemberRow, type Paginated } from '@/lib/types'

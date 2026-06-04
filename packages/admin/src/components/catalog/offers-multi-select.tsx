@@ -1,9 +1,9 @@
 'use client'
 
+import { Input } from '@sistemazero/ui/input'
+import { Spinner } from '@sistemazero/ui/spinner'
 import { Search } from 'lucide-react'
 import { useState } from 'react'
-import { Input } from '@/components/ui/input'
-import { Spinner } from '@/components/ui/spinner'
 
 export interface OfferOption {
   id: string
