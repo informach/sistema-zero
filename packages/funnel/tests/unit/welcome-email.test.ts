@@ -6,10 +6,10 @@ import { createFakeGateway } from '../fakes/fake-gateway'
 
 const COMMUNITY_URL = 'http://localhost:3007'
 
-/** Lead pago + registrado (comprador NOVO) pronto p/ receber o welcome. */
+/** Lead pago + registrado (comprador NOVO por padrão) pronto p/ receber o welcome. */
 async function registeredLead(
   repo: ReturnType<typeof createFakeRepo>['repo'],
-  over: { userId?: string | null } = {},
+  over: { isNew?: boolean; userId?: string } = {},
 ): Promise<Lead> {
   const { id } = await repo.createLead()
   await repo.updateLead(id, {
@@ -19,11 +19,7 @@ async function registeredLead(
   })
   await repo.setPayment(id, 'pay-1')
   await repo.markPaid(id, new Date())
-  await repo.setBuyerRegistration(
-    id,
-    over.userId === undefined ? 'user-1' : over.userId,
-    new Date(),
-  )
+  await repo.setBuyerRegistration(id, over.userId ?? 'user-1', over.isNew ?? true, new Date())
   const lead = await repo.getLead(id)
   if (!lead) throw new Error('lead não encontrado')
   return lead
@@ -48,10 +44,10 @@ describe('makeSendWelcome (e-mail de 1º acesso)', () => {
     expect(sent?.idempotencyKey).toBe(`welcome-${lead.id}`)
   })
 
-  test('comprador RECORRENTE (sem buyerUserId) → não envia (já tem credenciais)', async () => {
+  test('comprador RECORRENTE (is_new=false) → não envia (já tem credenciais)', async () => {
     const { repo } = createFakeRepo()
     const gw = createFakeGateway()
-    const lead = await registeredLead(repo, { userId: null })
+    const lead = await registeredLead(repo, { isNew: false, userId: 'user-existing' })
 
     await makeSendWelcome({ gateway: gw.gateway, communityUrl: COMMUNITY_URL })(lead)
 

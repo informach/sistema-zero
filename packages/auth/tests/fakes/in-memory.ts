@@ -1,5 +1,11 @@
 import type { Logger } from '@sistemazero/core/logging'
 import type { MessagingClient, SendEmailInput } from '../../src/domain/ports/messaging-client.port'
+import type {
+  CreateOtpCodeInput,
+  OtpCodeRecord,
+  OtpCodeRepository,
+  OtpPurpose,
+} from '../../src/domain/ports/otp-code-repository.port'
 import type { PasswordHasher } from '../../src/domain/ports/password-hasher.port'
 import type {
   CreatePasswordResetTokenInput,
@@ -177,6 +183,55 @@ export class InMemoryPasswordResetTokenRepository implements PasswordResetTokenR
     for (const record of this.byId.values()) {
       if (record.userId === userId && record.consumedAt === null) record.consumedAt = at
     }
+  }
+}
+
+/** Repositório de códigos OTP em memória (uso único + tentativas). */
+export class InMemoryOtpCodeRepository implements OtpCodeRepository {
+  readonly byId = new Map<string, OtpCodeRecord>()
+
+  async create(input: CreateOtpCodeInput): Promise<void> {
+    this.byId.set(input.id, {
+      id: input.id,
+      userId: input.userId,
+      purpose: input.purpose,
+      codeHash: input.codeHash,
+      expiresAt: input.expiresAt,
+      consumedAt: null,
+      attempts: 0,
+    })
+  }
+
+  async findActive(userId: string, purpose: OtpPurpose, now: Date): Promise<OtpCodeRecord | null> {
+    const active = [...this.byId.values()].filter(
+      (r) =>
+        r.userId === userId &&
+        r.purpose === purpose &&
+        r.consumedAt === null &&
+        r.expiresAt.getTime() > now.getTime(),
+    )
+    // O mais recente (espelha `orderBy createdAt desc` do adapter).
+    return active.length > 0 ? { ...active[active.length - 1]! } : null
+  }
+
+  async consume(id: string, at: Date): Promise<void> {
+    const record = this.byId.get(id)
+    if (record && record.consumedAt === null) record.consumedAt = at
+  }
+
+  async consumeAllForUser(userId: string, purpose: OtpPurpose, at: Date): Promise<void> {
+    for (const record of this.byId.values()) {
+      if (record.userId === userId && record.purpose === purpose && record.consumedAt === null) {
+        record.consumedAt = at
+      }
+    }
+  }
+
+  async incrementAttempts(id: string): Promise<number> {
+    const record = this.byId.get(id)
+    if (!record) return 0
+    record.attempts += 1
+    return record.attempts
   }
 }
 

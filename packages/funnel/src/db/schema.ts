@@ -1,4 +1,4 @@
-import { index, integer, pgSchema, text, timestamp, uuid } from 'drizzle-orm/pg-core'
+import { boolean, index, integer, pgSchema, text, timestamp, uuid } from 'drizzle-orm/pg-core'
 
 // Este package compartilha o MESMO Postgres do payments, mas é dono do schema
 // `funil` (isolamento por `pgSchema`). O DDL gerado fica todo em `funil.*`.
@@ -39,11 +39,19 @@ export const leads = funil.table(
     // Cupom aplicado no checkout (catálogo). Persistido p/ registrar o uso (redeem)
     // na confirmação do pagamento (pix/boleto confirmam fora da tela).
     couponCode: text('coupon_code'),
+    // Oferta efetivamente comprada (slug do catálogo), gravada no checkout. A
+    // concessão de acesso usa ela (com fallback no env) em vez de assumir oferta
+    // única → fundação p/ vender mais de um produto (ex.: upsell de assinatura).
+    offerRef: text('offer_ref'),
     paidAt: timestamp('paid_at', { withTimezone: true }),
 
     // Comprador registrado no IdP (@sistemazero/auth) após o pagamento confirmado.
     // Desacoplado de `paidAt` → registro é retryável (elegível: paidAt set & registered null).
+    // `ensure-buyer` SEMPRE devolve um `buyer_user_id` (novo OU recorrente).
     buyerUserId: text('buyer_user_id'),
+    // True só p/ comprador NOVO (recém-criado no IdP) → recebe o e-mail de boas-vindas
+    // com o magic-link de 1º acesso. Recorrente (false) já tem credenciais.
+    buyerIsNew: boolean('buyer_is_new'),
     buyerRegisteredAt: timestamp('buyer_registered_at', { withTimezone: true }),
 
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),

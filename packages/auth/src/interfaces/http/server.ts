@@ -5,11 +5,15 @@ import type { BatchGetUsersService } from '../../application/admin/batch-get-use
 import type { GetUserService } from '../../application/admin/get-user/get-user.service'
 import type { ListUsersService } from '../../application/admin/list-users/list-users.service'
 import type { UpdateUserService } from '../../application/admin/update-user/update-user.service'
+import type { EnsureBuyerService } from '../../application/ensure-buyer/ensure-buyer.service'
 import type { GetMeService } from '../../application/get-me/get-me.service'
 import type { LoginService } from '../../application/login/login.service'
 import type { LogoutService } from '../../application/logout/logout.service'
 import type { ChangeMyPasswordService } from '../../application/me/change-password.service'
 import type { UpdateProfileService } from '../../application/me/update-profile.service'
+import type { RequestOtpService } from '../../application/otp/request-otp.service'
+import type { ResetPasswordWithOtpService } from '../../application/otp/reset-password-otp.service'
+import type { VerifyOtpService } from '../../application/otp/verify-otp.service'
 import type { CreatePasswordTokenService } from '../../application/password-reset/create-password-token.service'
 import type { ForgotPasswordService } from '../../application/password-reset/forgot-password.service'
 import type { ResetPasswordService } from '../../application/password-reset/reset-password.service'
@@ -35,9 +39,13 @@ export interface HttpDeps {
   getMe: GetMeService
   forgotPassword: ForgotPasswordService
   resetPassword: ResetPasswordService
+  requestOtp: RequestOtpService
+  verifyOtp: VerifyOtpService
+  resetPasswordWithOtp: ResetPasswordWithOtpService
   updateProfile: UpdateProfileService
   changeMyPassword: ChangeMyPasswordService
   createPasswordToken: CreatePasswordTokenService
+  ensureBuyer: EnsureBuyerService
   listUsers: ListUsersService
   getUser: GetUserService
   updateUser: UpdateUserService
@@ -107,6 +115,9 @@ export function createServer(deps: HttpDeps) {
         getMe: deps.getMe,
         forgotPassword: deps.forgotPassword,
         resetPassword: deps.resetPassword,
+        requestOtp: deps.requestOtp,
+        verifyOtp: deps.verifyOtp,
+        resetPasswordWithOtp: deps.resetPasswordWithOtp,
         updateProfile: deps.updateProfile,
         changeMyPassword: deps.changeMyPassword,
       }),
@@ -114,6 +125,7 @@ export function createServer(deps: HttpDeps) {
     .use(
       internalRoutes({
         createPasswordToken: deps.createPasswordToken,
+        ensureBuyer: deps.ensureBuyer,
         internalToken: deps.env.AUTH_INTERNAL_TOKEN,
       }),
     )

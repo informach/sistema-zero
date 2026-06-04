@@ -102,6 +102,21 @@ export async function loginRequest(
   return { status: res.status, body: await readJson(res) }
 }
 
+/** Login por OTP (rota pública do gateway → auth). Verifica o código e devolve tokens. */
+export async function verifyOtpRequest(
+  email: string,
+  code: string,
+): Promise<GatewayResponse<{ user?: { role: string }; tokens?: AuthTokens; error?: unknown }>> {
+  const env = getEnv()
+  const res = await fetch(new URL('/auth/otp/verify', env.GATEWAY_URL), {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ email, code }),
+    cache: 'no-store',
+  })
+  return { status: res.status, body: await readJson(res) }
+}
+
 /** Logout (revoga o refresh no auth). Best-effort. */
 export async function logoutRequest(refreshToken: string): Promise<void> {
   const env = getEnv()

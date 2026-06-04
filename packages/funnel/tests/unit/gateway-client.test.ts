@@ -74,11 +74,11 @@ describe('createGatewayClient (assinatura HMAC de borda)', () => {
     expect(verdict.valid).toBe(true)
   })
 
-  test('registerBuyer faz POST /auth/register em JSON, SEM HMAC (rota pública do gateway)', async () => {
+  test('ensureBuyer faz POST /auth/internal/ensure-buyer COM HMAC de borda (rota S2S)', async () => {
     let captured: { url: string; init: RequestInit } | undefined
     const fetchImpl = (async (url: string, init: RequestInit) => {
       captured = { url, init }
-      return new Response(JSON.stringify({ user: { id: 'u1' } }), {
+      return new Response(JSON.stringify({ userId: 'u1', created: true }), {
         status: 201,
         headers: { 'content-type': 'application/json' },
       })
@@ -91,7 +91,7 @@ describe('createGatewayClient (assinatura HMAC de borda)', () => {
       fetchImpl,
     })
 
-    const res = await gw.registerBuyer({
+    const res = await gw.ensureBuyer({
       email: 'ana@example.com',
       password: 'senha-temporaria-1234',
       firstName: 'Ana',
@@ -99,13 +99,24 @@ describe('createGatewayClient (assinatura HMAC de borda)', () => {
       source: 'funnel',
     })
     expect(res.status).toBe(201)
-    expect((res.body as { user: { id: string } }).user.id).toBe('u1')
+    expect(res.body as { userId: string; created: boolean }).toEqual({
+      userId: 'u1',
+      created: true,
+    })
 
     const headers = captured?.init.headers as Record<string, string>
-    expect(captured?.url).toBe('http://gateway/auth/register')
-    expect(headers['content-type']).toBe('application/json')
-    // Rota pública: o funil NÃO assina HMAC de borda no registro.
-    expect(headers['x-signature']).toBeUndefined()
-    expect(headers['x-consumer-id']).toBeUndefined()
+    const rawBody = captured?.init.body as string
+    expect(captured?.url).toBe('http://gateway/auth/internal/ensure-buyer')
+    expect(headers['x-consumer-id']).toBe('funnel')
+    // Rota interna S2S: o funil assina HMAC de borda (corpo sem idempotency-key).
+    expect(headers['idempotency-key']).toBeUndefined()
+    const verdict = verifyHmacSignature({
+      secret: SECRET,
+      body: rawBody,
+      signatureHeader: headers['x-signature'],
+      nowSeconds: Math.floor(Date.now() / 1000),
+      toleranceSeconds: 300,
+    })
+    expect(verdict.valid).toBe(true)
   })
 })

@@ -4,10 +4,9 @@ import type { GatewayClient } from '../lib/gateway-client'
 export interface GrantMembersDeps {
   gateway: GatewayClient
   /**
-   * Slug/id da oferta vendida (a área de membros resolve o que ela concede). Hoje é
-   * o slug ÚNICO do env (`CATALOG_OFFER_SLUG`) — premissa de oferta única. Quando o
-   * funil vender mais de uma oferta, derive isto da oferta efetivamente comprada
-   * (ex.: gravar o `offerId`/slug no lead no checkout) em vez do env estático.
+   * Slug/id da oferta — usado como FALLBACK quando o lead não tem `offer_ref`
+   * gravado (leads antigos / caminhos sem checkout). A oferta efetivamente comprada
+   * vem do `lead.offerRef` (gravado no checkout) → suporta vender mais de uma oferta.
    */
   offerRef: string
   log?: (msg: string, meta?: Record<string, unknown>) => void
@@ -32,7 +31,8 @@ export function makeGrantMembers(deps: GrantMembersDeps): (lead: Lead) => Promis
     if (!lead.buyerUserId || !lead.paymentId) return
     const { status } = await deps.gateway.grantMembersAccess({
       userId: lead.buyerUserId,
-      offerRef: deps.offerRef,
+      // Oferta efetivamente comprada (gravada no checkout); env é só fallback.
+      offerRef: lead.offerRef ?? deps.offerRef,
       paymentId: lead.paymentId,
       paidAt: lead.paidAt ? lead.paidAt.toISOString() : undefined,
     })

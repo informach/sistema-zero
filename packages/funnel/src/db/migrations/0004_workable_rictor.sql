@@ -1,0 +1,1 @@
+ALTER TABLE "funil"."leads" ADD COLUMN "offer_ref" text;

@@ -56,12 +56,12 @@ describe('normalizePhone', () => {
 })
 
 describe('fulfillPaidLead', () => {
-  test('201 → grava buyer_user_id + registra; envia o input correto', async () => {
+  test('201 (novo) → grava buyer_user_id + is_new=true; envia o input correto', async () => {
     const { leads, gw, id, lead, deps } = await setup()
     await fulfillPaidLead(lead, deps)
 
-    expect(gw.calls.register).toHaveLength(1)
-    const input = gw.calls.register[0]!.input
+    expect(gw.calls.ensureBuyer).toHaveLength(1)
+    const input = gw.calls.ensureBuyer[0]!.input
     expect(input.email).toBe('ana@example.com')
     expect(input.firstName).toBe('Ana')
     expect(input.lastName).toBe('Souza')
@@ -71,20 +71,36 @@ describe('fulfillPaidLead', () => {
 
     const after = leads.get(id)!
     expect(after.buyerUserId).toBe('user-1')
+    expect(after.buyerIsNew).toBe(true)
     expect(after.buyerRegisteredAt).toEqual(PAID_AT)
   })
 
-  test('409 (e-mail já existe) → registra sem user id (idempotente)', async () => {
+  test('200 (recorrente, e-mail já existe) → grava o userId existente + is_new=false', async () => {
     const { leads, gw, id, lead, deps } = await setup()
-    gw.setRegisterStatus(409, { error: { code: 'EMAIL_ALREADY_IN_USE' } })
+    gw.setEnsureBuyerStatus(200, { userId: 'user-existing', created: false })
     await fulfillPaidLead(lead, deps)
-    expect(leads.get(id)!.buyerRegisteredAt).toEqual(PAID_AT)
-    expect(leads.get(id)!.buyerUserId).toBeNull()
+    const after = leads.get(id)!
+    expect(after.buyerRegisteredAt).toEqual(PAID_AT)
+    expect(after.buyerUserId).toBe('user-existing') // ← antes ficava null (acesso quebrado)
+    expect(after.buyerIsNew).toBe(false)
+  })
+
+  test('200 sem userId → lança FulfillmentRetryError (resposta inesperada, retryável)', async () => {
+    const { leads, gw, id, lead, deps } = await setup()
+    gw.setEnsureBuyerStatus(200, { created: false })
+    let thrown: unknown
+    try {
+      await fulfillPaidLead(lead, deps)
+    } catch (e) {
+      thrown = e
+    }
+    expect(thrown).toBeInstanceOf(FulfillmentRetryError)
+    expect(leads.get(id)!.buyerRegisteredAt).toBeNull()
   })
 
   test('5xx → lança FulfillmentRetryError e NÃO registra', async () => {
     const { leads, gw, id, lead, deps } = await setup()
-    gw.setRegisterStatus(503, { error: { code: 'UNAVAILABLE' } })
+    gw.setEnsureBuyerStatus(503, { error: { code: 'UNAVAILABLE' } })
     let thrown: unknown
     try {
       await fulfillPaidLead(lead, deps)
@@ -99,20 +115,20 @@ describe('fulfillPaidLead', () => {
     const { gw, lead, deps } = await setup()
     lead.buyerRegisteredAt = new Date()
     await fulfillPaidLead(lead, deps)
-    expect(gw.calls.register).toHaveLength(0)
+    expect(gw.calls.ensureBuyer).toHaveLength(0)
   })
 
   test('sem e-mail → no-op', async () => {
     const { gw, lead, deps } = await setup({ email: null })
     lead.email = null
     await fulfillPaidLead(lead, deps)
-    expect(gw.calls.register).toHaveLength(0)
+    expect(gw.calls.ensureBuyer).toHaveLength(0)
   })
 
   test('não pago → no-op', async () => {
     const { gw, lead, deps } = await setup()
     lead.paidAt = null
     await fulfillPaidLead(lead, deps)
-    expect(gw.calls.register).toHaveLength(0)
+    expect(gw.calls.ensureBuyer).toHaveLength(0)
   })
 })

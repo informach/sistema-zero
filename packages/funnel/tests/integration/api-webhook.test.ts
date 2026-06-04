@@ -70,9 +70,9 @@ describe('POST /api/webhooks/payments', () => {
     expect(leads.get(id)?.paidAt).not.toBeNull()
     expect(events.filter((e) => e.eventName === 'pagamento_confirmado')).toHaveLength(1)
 
-    // Comprador registrado via gateway → auth (201 default → guarda o user id).
-    expect(gw.calls.register).toHaveLength(1)
-    expect(gw.calls.register[0]?.input.email).toBe('ana@example.com')
+    // Comprador garantido via gateway → auth (201 default → guarda o user id).
+    expect(gw.calls.ensureBuyer).toHaveLength(1)
+    expect(gw.calls.ensureBuyer[0]?.input.email).toBe('ana@example.com')
     expect(leads.get(id)?.buyerRegisteredAt).not.toBeNull()
     expect(leads.get(id)?.buyerUserId).toBe('user-1')
   })
@@ -101,6 +101,33 @@ describe('POST /api/webhooks/payments', () => {
     })
   })
 
+  test('a concessão usa a oferta gravada no lead (offer_ref), não o fallback do env', async () => {
+    const { repo, leads } = createFakeRepo()
+    const gw = createFakeGateway()
+    const { id } = await repo.createLead()
+    await repo.updateLead(id, {
+      nome: 'Noa',
+      email: 'noa@example.com',
+      telefone: '11922223333',
+      offerRef: 'plano-assinatura-pro', // oferta diferente do fallback OFFER
+    })
+    await repo.setPayment(id, 'pay-1')
+
+    const res = await handlePaymentWebhook(
+      req(
+        { id: 'd1', event: 'payment.paid', data: { paymentId: 'pay-1' } },
+        { token: TOKEN, deliveryId: 'd1' },
+      ),
+      deps(repo, gw),
+    )
+    expect(res.status).toBe(200)
+    expect(gw.calls.grant).toHaveLength(1)
+    expect(gw.calls.grant[0]?.input).toMatchObject({
+      userId: leads.get(id)?.buyerUserId,
+      offerRef: 'plano-assinatura-pro',
+    })
+  })
+
   test('falha na concessão → 502 GRANT_RETRY e NÃO marca a entrega (gateway re-entrega)', async () => {
     const { repo, leads } = createFakeRepo()
     const gw = createFakeGateway()
@@ -122,10 +149,11 @@ describe('POST /api/webhooks/payments', () => {
     expect(await repo.isWebhookProcessed('d1')).toBe(false)
   })
 
-  test('e-mail já cadastrado (409) é sucesso: registra sem duplicar', async () => {
+  test('comprador RECORRENTE (e-mail já existe) → recebe o userId e o acesso é concedido', async () => {
     const { repo, leads } = createFakeRepo()
     const gw = createFakeGateway()
-    gw.setRegisterStatus(409, { error: { code: 'EMAIL_ALREADY_IN_USE' } })
+    // ensure-buyer reaproveita o usuário existente (200, created:false).
+    gw.setEnsureBuyerStatus(200, { userId: 'user-existing', created: false })
     const { id } = await repo.createLead()
     await repo.updateLead(id, { nome: 'Bia', email: 'bia@example.com', telefone: '11988887777' })
     await repo.setPayment(id, 'pay-1')
@@ -135,17 +163,26 @@ describe('POST /api/webhooks/payments', () => {
         { id: 'd1', event: 'payment.paid', data: { paymentId: 'pay-1' } },
         { token: TOKEN, deliveryId: 'd1' },
       ),
-      deps(repo, gw),
+      {
+        ...deps(repo, gw),
+        sendWelcome: makeSendWelcome({ gateway: gw.gateway, communityUrl: COMMUNITY_URL }),
+      },
     )
     expect(res.status).toBe(200)
     expect(leads.get(id)?.buyerRegisteredAt).not.toBeNull()
-    expect(leads.get(id)?.buyerUserId).toBeNull()
+    // O FIX: recorrente agora tem userId → o grant roda (antes ficava null e era pulado).
+    expect(leads.get(id)?.buyerUserId).toBe('user-existing')
+    expect(leads.get(id)?.buyerIsNew).toBe(false)
+    expect(gw.calls.grant).toHaveLength(1)
+    expect(gw.calls.grant[0]?.input).toMatchObject({ userId: 'user-existing', paymentId: 'pay-1' })
+    // Recorrente NÃO recebe o e-mail de boas-vindas (já tem credenciais).
+    expect(gw.calls.messages).toHaveLength(0)
   })
 
   test('falha transitória no registro → 502 e NÃO marca a entrega (gateway re-entrega)', async () => {
     const { repo, leads } = createFakeRepo()
     const gw = createFakeGateway()
-    gw.setRegisterStatus(500, { error: { code: 'INTERNAL' } })
+    gw.setEnsureBuyerStatus(500, { error: { code: 'INTERNAL' } })
     const { id } = await repo.createLead()
     await repo.updateLead(id, { nome: 'Caio', email: 'caio@example.com', telefone: '11977776666' })
     await repo.setPayment(id, 'pay-1')
@@ -182,7 +219,7 @@ describe('POST /api/webhooks/payments', () => {
     expect(leads.get(id)?.paidAt).not.toBeNull()
     expect(events.filter((e) => e.eventName === 'pagamento_confirmado')).toHaveLength(1)
     // Registro idempotente: a 2ª entrega não registra de novo (buyer_registered_at já set).
-    expect(gw.calls.register).toHaveLength(1)
+    expect(gw.calls.ensureBuyer).toHaveLength(1)
   })
 
   test('payment.paid dispara o welcome (token + e-mail) após o grant', async () => {

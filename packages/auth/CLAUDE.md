@@ -95,6 +95,10 @@ src/
    `POST /auth/internal/password-tokens` (S2S; HMAC do funil no gateway +
    `x-internal-token` = `AUTH_INTERNAL_TOKEN`) emite o token do **1º acesso
    pós-compra** — o funil monta o link e envia o e-mail `welcome`.
+   `POST /auth/internal/ensure-buyer` (mesma proteção S2S) é **create-or-get por
+   e-mail**: SEMPRE devolve `{ userId, created }` (201 criou / 200 reaproveitou) — é
+   o que destrava o COMPRADOR RECORRENTE (que no `register` recebia 409 e ficava sem
+   `userId`, logo sem concessão de acesso). NÃO emite tokens (S2S, sem sessão).
 9. **Self-service (`/me`):** `PATCH /auth/me` edita nome/telefone (**e-mail NÃO** —
    é o vínculo com as compras no payments; troca futura exigirá verificação) e
    `POST /auth/me/password` troca a senha exigindo a atual; ambos revogam nada/todas

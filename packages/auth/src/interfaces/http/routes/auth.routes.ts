@@ -5,6 +5,9 @@ import type { LoginService } from '../../../application/login/login.service'
 import type { LogoutService } from '../../../application/logout/logout.service'
 import type { ChangeMyPasswordService } from '../../../application/me/change-password.service'
 import type { UpdateProfileService } from '../../../application/me/update-profile.service'
+import type { RequestOtpService } from '../../../application/otp/request-otp.service'
+import type { ResetPasswordWithOtpService } from '../../../application/otp/reset-password-otp.service'
+import type { VerifyOtpService } from '../../../application/otp/verify-otp.service'
 import type { ForgotPasswordService } from '../../../application/password-reset/forgot-password.service'
 import type { ResetPasswordService } from '../../../application/password-reset/reset-password.service'
 import type { RefreshService } from '../../../application/refresh/refresh.service'
@@ -18,8 +21,11 @@ import {
   LogoutBody,
   RefreshBody,
   RegisterBody,
+  RequestOtpBody,
   ResetPasswordBody,
+  ResetPasswordOtpBody,
   UpdateMeBody,
+  VerifyOtpBody,
 } from '../dtos'
 import { PayloadTooLargeError } from '../errors'
 import { isOversizeBody } from '../raw-body'
@@ -35,6 +41,9 @@ export interface AuthRoutesDeps {
   getMe: GetMeService
   forgotPassword: ForgotPasswordService
   resetPassword: ResetPasswordService
+  requestOtp: RequestOtpService
+  verifyOtp: VerifyOtpService
+  resetPasswordWithOtp: ResetPasswordWithOtpService
   updateProfile: UpdateProfileService
   changeMyPassword: ChangeMyPasswordService
 }
@@ -121,6 +130,42 @@ export function authRoutes(deps: AuthRoutesDeps) {
         return deps.resetPassword.execute({ token: body.token, newPassword: body.newPassword })
       },
       { body: ResetPasswordBody },
+    )
+    .post(
+      '/otp/request',
+      async ({ body, request }) => {
+        if (isOversizeBody(request)) throw new PayloadTooLargeError()
+        // SEMPRE 200, exista a conta ou não (anti-enumeração). O e-mail é best-effort.
+        await deps.requestOtp.execute({ email: body.email, purpose: body.purpose })
+        return { ok: true }
+      },
+      { body: RequestOtpBody },
+    )
+    .post(
+      '/otp/verify',
+      async ({ body, request, server, headers }) => {
+        if (isOversizeBody(request)) throw new PayloadTooLargeError()
+        // Login por código → mesmo retorno do `/auth/login` (`{ user, tokens }`).
+        return deps.verifyOtp.execute({
+          email: body.email,
+          code: body.code,
+          userAgent: headers['user-agent'] ?? null,
+          ip: clientIp({ request, server, headers }),
+        })
+      },
+      { body: VerifyOtpBody },
+    )
+    .post(
+      '/password/reset-otp',
+      async ({ body, request }) => {
+        if (isOversizeBody(request)) throw new PayloadTooLargeError()
+        return deps.resetPasswordWithOtp.execute({
+          email: body.email,
+          code: body.code,
+          newPassword: body.newPassword,
+        })
+      },
+      { body: ResetPasswordOtpBody },
     )
     .get('/me', async ({ headers }) => {
       const token = extractBearer(headers.authorization)

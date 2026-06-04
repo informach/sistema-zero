@@ -30,7 +30,7 @@ export interface FakeGatewayState {
   calls: {
     create: Array<{ input: unknown; idempotencyKey: string }>
     get: string[]
-    register: Array<{ input: RegisterBuyerInput }>
+    ensureBuyer: Array<{ input: RegisterBuyerInput }>
     quote: Array<{ slug: string; couponCode?: string }>
     redeem: string[]
     grant: Array<{ input: unknown }>
@@ -44,8 +44,8 @@ export interface FakeGatewayState {
   /** Status HTTP devolvido por grantMembersAccess (default 200). */
   setGrantStatus: (status: number) => void
   setStatus: (status: string) => void
-  /** Status HTTP devolvido por registerBuyer (default 201). */
-  setRegisterStatus: (status: number, body?: unknown) => void
+  /** Status HTTP + corpo devolvidos por ensureBuyer (default 201 + `{userId,created:true}`). */
+  setEnsureBuyerStatus: (status: number, body?: unknown) => void
   /** Preço da oferta ativa (default 3700). */
   setOfferPrice: (priceCents: number) => void
   /** Cadastra um cupom de desconto FIXO (centavos) reconhecido pelo quote. */
@@ -78,7 +78,7 @@ export function createFakeGateway(): FakeGatewayState {
   const calls: FakeGatewayState['calls'] = {
     create: [],
     get: [],
-    register: [],
+    ensureBuyer: [],
     quote: [],
     redeem: [],
     grant: [],
@@ -87,8 +87,8 @@ export function createFakeGateway(): FakeGatewayState {
     passwordTokens: [],
     messages: [],
   }
-  let registerStatus = 201
-  let registerBody: unknown = { user: { id: 'user-1' } }
+  let ensureBuyerStatus = 201
+  let ensureBuyerBody: unknown = { userId: 'user-1', created: true }
   let grantStatus = 200
   let passwordTokenStatus = 201
   let sendMessageStatus = 202
@@ -194,9 +194,9 @@ export function createFakeGateway(): FakeGatewayState {
       calls.redeem.push(code)
       return { status: 200, body: { ok: true } }
     },
-    async registerBuyer(input): Promise<GatewayResult> {
-      calls.register.push({ input })
-      return { status: registerStatus, body: registerBody }
+    async ensureBuyer(input): Promise<GatewayResult> {
+      calls.ensureBuyer.push({ input })
+      return { status: ensureBuyerStatus, body: ensureBuyerBody }
     },
     async grantMembersAccess(input): Promise<GatewayResult> {
       calls.grant.push({ input })
@@ -254,9 +254,9 @@ export function createFakeGateway(): FakeGatewayState {
       view.status = status
       if (status === 'PAID') view.paidAt = new Date().toISOString()
     },
-    setRegisterStatus: (status: number, body?: unknown) => {
-      registerStatus = status
-      if (body !== undefined) registerBody = body
+    setEnsureBuyerStatus: (status: number, body?: unknown) => {
+      ensureBuyerStatus = status
+      if (body !== undefined) ensureBuyerBody = body
     },
     setGrantStatus: (status: number) => {
       grantStatus = status

@@ -18,7 +18,7 @@ export interface GatewayResult<T = unknown> {
   body: T
 }
 
-/** Corpo de `POST /auth/register` (gateway → @sistemazero/auth). */
+/** Corpo de `POST /auth/internal/ensure-buyer` (gateway → @sistemazero/auth). */
 export interface RegisterBuyerInput {
   email: string
   password: string
@@ -26,6 +26,16 @@ export interface RegisterBuyerInput {
   lastName: string
   phone?: string
   source?: string
+}
+
+/**
+ * Resposta de `POST /auth/internal/ensure-buyer`. SEMPRE traz o `userId` (novo OU
+ * existente). `created` distingue o comprador NOVO (recebe o e-mail de boas-vindas)
+ * do RECORRENTE (já tem credenciais).
+ */
+export interface EnsureBuyerResult {
+  userId: string
+  created: boolean
 }
 
 /** Usuário retornado pelo auth (`/auth/login` e `/auth/me`). Sem `passwordHash`. */
@@ -155,17 +165,19 @@ export function createGatewayClient(opts: GatewayClientOptions) {
     },
 
     /**
-     * POST /auth/register (gateway → @sistemazero/auth). Cadastra o comprador
-     * como usuário (role `customer`). NÃO assina HMAC de borda: a rota `/auth/*`
-     * é pública + passthrough no gateway (o IdP é a autoridade da própria auth;
-     * o gateway só roteia + rate-limit por IP). A idempotência por e-mail é do
-     * próprio auth: e-mail já cadastrado → 409 (tratado como sucesso pelo chamador).
+     * POST /auth/internal/ensure-buyer (gateway → @sistemazero/auth). Garante o
+     * usuário do comprador (cria se novo, reaproveita se já existe) e SEMPRE devolve
+     * o `userId` — é o que destrava a concessão de acesso ao comprador RECORRENTE
+     * (que antes recebia 409 no `register` e ficava sem `userId`). Rota interna S2S:
+     * assina HMAC de borda (consumer `funnel`); o gateway injeta o token interno do
+     * auth. 201 quando criou, 200 quando reaproveitou. Idempotente por e-mail.
      */
-    async registerBuyer(input: RegisterBuyerInput): Promise<GatewayResult> {
-      const res = await doFetch(`${opts.baseUrl}/auth/register`, {
+    async ensureBuyer(input: RegisterBuyerInput): Promise<GatewayResult> {
+      const rawBody = JSON.stringify(input)
+      const res = await doFetch(`${opts.baseUrl}/auth/internal/ensure-buyer`, {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(input),
+        headers: buildHeaders(rawBody),
+        body: rawBody,
       })
       return { status: res.status, body: await readBody(res) }
     },

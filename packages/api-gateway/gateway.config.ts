@@ -227,6 +227,17 @@ const config: GatewayConfigInput = {
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
+    // Série diária do painel "Gestão de vendas". Rota PRÓPRIA: o matcher exige
+    // igualdade de nº de segmentos (sem prefix matching), então `/stats` não cobre.
+    {
+      id: 'payments-admin-stats-daily',
+      methods: ['GET'],
+      pathPattern: '/payments/admin/stats/daily',
+      service: 'payments',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
     {
       id: 'payments-admin-ops',
       methods: ['GET'],
@@ -369,6 +380,38 @@ const config: GatewayConfigInput = {
       upstreamAuth: 'passthrough',
       rateLimit: { max: 20, windowMs: 60_000, by: 'ip' },
     },
+    // OTP: pede um código por e-mail. Rate limit AGRESSIVO por IP (anti-enumeração/
+    // spam de e-mail); o auth responde SEMPRE 200.
+    {
+      id: 'auth-otp-request',
+      methods: ['POST'],
+      pathPattern: '/auth/otp/request',
+      service: 'auth',
+      auth: 'public',
+      upstreamAuth: 'passthrough',
+      rateLimit: { max: 5, windowMs: 60_000, by: 'ip' },
+    },
+    // OTP: verifica o código e loga (passwordless). Limite por IP cobre o brute-force
+    // do código (o auth também trava por tentativas no código).
+    {
+      id: 'auth-otp-verify',
+      methods: ['POST'],
+      pathPattern: '/auth/otp/verify',
+      service: 'auth',
+      auth: 'public',
+      upstreamAuth: 'passthrough',
+      rateLimit: { max: 20, windowMs: 60_000, by: 'ip' },
+    },
+    // Recuperação de senha por OTP (consome o código + define a nova senha).
+    {
+      id: 'auth-password-reset-otp',
+      methods: ['POST'],
+      pathPattern: '/auth/password/reset-otp',
+      service: 'auth',
+      auth: 'public',
+      upstreamAuth: 'passthrough',
+      rateLimit: { max: 20, windowMs: 60_000, by: 'ip' },
+    },
     // Self-service de perfil (app community): o Bearer chega ao auth (passthrough),
     // que o verifica e edita o PRÓPRIO usuário (nome/telefone — e-mail não).
     {
@@ -397,6 +440,18 @@ const config: GatewayConfigInput = {
       id: 'auth-internal-password-token',
       methods: ['POST'],
       pathPattern: '/auth/internal/password-tokens',
+      service: 'auth',
+      auth: { required: true, mode: 'any', strategies: ['hmac'] },
+      transforms: authInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    // Garante o usuário do comprador (novo/recorrente) no pós-pagamento e devolve o
+    // `userId` — destrava a concessão ao comprador recorrente. Mesma proteção S2S do
+    // password-token (HMAC do funil + injeção do `x-internal-token`). SEM `resign`.
+    {
+      id: 'auth-internal-ensure-buyer',
+      methods: ['POST'],
+      pathPattern: '/auth/internal/ensure-buyer',
       service: 'auth',
       auth: { required: true, mode: 'any', strategies: ['hmac'] },
       transforms: authInternalTransforms,
@@ -558,6 +613,16 @@ const config: GatewayConfigInput = {
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    // GET-one de produto (página de edição do painel: deep-link/refresh).
+    {
+      id: 'catalog-admin-product-get',
+      methods: ['GET'],
+      pathPattern: '/catalog/admin/products/:id',
+      service: 'catalog',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
     },
     {
       id: 'catalog-admin-offers-list',

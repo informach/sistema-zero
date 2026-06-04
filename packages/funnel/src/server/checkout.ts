@@ -1,4 +1,4 @@
-import type { FunnelRepo, Lead } from '../db/repo'
+import type { FunnelRepo, Lead, LeadUpdate } from '../db/repo'
 import {
   type AddressFormInput,
   BoletoFormSchema,
@@ -90,13 +90,19 @@ function leadMetadata(
   return meta
 }
 
-/** Persiste o cupom aplicado no lead (p/ registrar o uso na confirmação). */
-async function persistCoupon(
+/**
+ * Persiste o contexto do checkout no lead: a OFERTA vendida (`offerRef`, p/ a
+ * concessão de acesso usar a oferta certa em vez do env estático) + o cupom
+ * aplicado (p/ registrar o uso na confirmação). Roda nos 3 métodos de pagamento.
+ */
+async function persistCheckoutContext(
   deps: CheckoutDeps,
   leadId: string,
   couponCode: string | null,
 ): Promise<void> {
-  if (couponCode) await deps.repo.updateLead(leadId, { couponCode })
+  const set: LeadUpdate = { offerRef: deps.offerSlug }
+  if (couponCode) set.couponCode = couponCode
+  await deps.repo.updateLead(leadId, set)
 }
 
 /** POST /api/checkout/pix — cria a cobrança Pix via gateway (BFF) e devolve o QR. */
@@ -114,7 +120,7 @@ export async function startPix(request: Request, deps: CheckoutDeps): Promise<Re
   const couponCode = readCouponCode(await safeJson(request))
   const charge = await resolveCharge(deps.gateway, deps.offerSlug, couponCode)
   if (!charge.ok) return jsonError(charge.message, charge.status, charge.code)
-  await persistCoupon(deps, lead.id, charge.couponCode)
+  await persistCheckoutContext(deps, lead.id, charge.couponCode)
 
   // Idempotência determinística por lead → retry aponta p/ a MESMA cobrança Pix.
   const idempotencyKey = `funil-${lead.id}`
@@ -164,7 +170,7 @@ export async function startBoleto(request: Request, deps: CheckoutDeps): Promise
 
   const charge = await resolveCharge(deps.gateway, deps.offerSlug, form.couponCode)
   if (!charge.ok) return jsonError(charge.message, charge.status, charge.code)
-  await persistCoupon(deps, lead.id, charge.couponCode)
+  await persistCheckoutContext(deps, lead.id, charge.couponCode)
 
   const idempotencyKey = `funil-${lead.id}-boleto`
   const input = {
@@ -221,7 +227,7 @@ export async function startCard(request: Request, deps: CheckoutDeps): Promise<R
 
   const charge = await resolveCharge(deps.gateway, deps.offerSlug, c.couponCode)
   if (!charge.ok) return jsonError(charge.message, charge.status, charge.code)
-  await persistCoupon(deps, lead.id, charge.couponCode)
+  await persistCheckoutContext(deps, lead.id, charge.couponCode)
 
   // Nonce por tentativa → cartão recusado pode re-tentar sem replay da resposta.
   const idempotencyKey = `funil-${lead.id}-card-${c.attemptId}`

@@ -3,11 +3,15 @@ import { BatchGetUsersService } from './application/admin/batch-get-users/batch-
 import { GetUserService } from './application/admin/get-user/get-user.service'
 import { ListUsersService } from './application/admin/list-users/list-users.service'
 import { UpdateUserService } from './application/admin/update-user/update-user.service'
+import { EnsureBuyerService } from './application/ensure-buyer/ensure-buyer.service'
 import { GetMeService } from './application/get-me/get-me.service'
 import { LoginService } from './application/login/login.service'
 import { LogoutService } from './application/logout/logout.service'
 import { ChangeMyPasswordService } from './application/me/change-password.service'
 import { UpdateProfileService } from './application/me/update-profile.service'
+import { RequestOtpService } from './application/otp/request-otp.service'
+import { ResetPasswordWithOtpService } from './application/otp/reset-password-otp.service'
+import { VerifyOtpService } from './application/otp/verify-otp.service'
 import { CreatePasswordTokenService } from './application/password-reset/create-password-token.service'
 import { ForgotPasswordService } from './application/password-reset/forgot-password.service'
 import { ResetPasswordService } from './application/password-reset/reset-password.service'
@@ -20,6 +24,7 @@ import {
   createNullMessagingClient,
 } from './infrastructure/messaging/gateway-messaging-client'
 import { createDbConnection, type DbConnection } from './infrastructure/persistence/drizzle/db'
+import { DrizzleOtpCodeRepository } from './infrastructure/persistence/drizzle/otp-code.repository'
 import { DrizzlePasswordResetTokenRepository } from './infrastructure/persistence/drizzle/password-reset-token.repository'
 import { DrizzleRefreshTokenRepository } from './infrastructure/persistence/drizzle/refresh-token.repository'
 import { DrizzleUserRepository } from './infrastructure/persistence/drizzle/user.repository'
@@ -54,6 +59,7 @@ export async function createApplication(env: Env): Promise<Application> {
   const users = new DrizzleUserRepository(db)
   const refreshTokens = new DrizzleRefreshTokenRepository(db)
   const passwordResetTokens = new DrizzlePasswordResetTokenRepository(db)
+  const otpCodes = new DrizzleOtpCodeRepository(db)
   const hasher = createBunPasswordHasher()
 
   // E-mail via gateway → messaging (HMAC). Sem config completa → no-op (best-effort).
@@ -90,6 +96,13 @@ export async function createApplication(env: Env): Promise<Application> {
     logger,
   )
   const login = new LoginService(users, hasher, authTokens, { dummyHash })
+  // Garante o usuário do comprador (novo/recorrente) no fluxo S2S pós-pagamento.
+  const ensureBuyer = new EnsureBuyerService(
+    users,
+    hasher,
+    { passwordMinLength: env.PASSWORD_MIN_LENGTH },
+    logger,
+  )
   const refresh = new RefreshService(users, refreshTokens, authTokens, logger)
   const logout = new LogoutService(refreshTokens)
   const getMe = new GetMeService(users)
@@ -110,6 +123,27 @@ export async function createApplication(env: Env): Promise<Application> {
     hasher,
     {
       passwordMinLength: env.PASSWORD_MIN_LENGTH,
+    },
+  )
+  // OTP: login passwordless + recuperação de senha por código.
+  const requestOtp = new RequestOtpService(
+    users,
+    otpCodes,
+    messaging,
+    { ttlMinutes: env.OTP_TTL_MINUTES },
+    logger,
+  )
+  const verifyOtp = new VerifyOtpService(users, otpCodes, authTokens, {
+    maxAttempts: env.OTP_MAX_ATTEMPTS,
+  })
+  const resetPasswordWithOtp = new ResetPasswordWithOtpService(
+    users,
+    otpCodes,
+    refreshTokens,
+    hasher,
+    {
+      passwordMinLength: env.PASSWORD_MIN_LENGTH,
+      maxAttempts: env.OTP_MAX_ATTEMPTS,
     },
   )
   const updateProfile = new UpdateProfileService(users)
@@ -133,9 +167,13 @@ export async function createApplication(env: Env): Promise<Application> {
     getMe,
     forgotPassword,
     resetPassword,
+    requestOtp,
+    verifyOtp,
+    resetPasswordWithOtp,
     updateProfile,
     changeMyPassword,
     createPasswordToken,
+    ensureBuyer,
     listUsers,
     getUser,
     updateUser,

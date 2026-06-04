@@ -42,3 +42,20 @@ export function forgotPassword(email: string): Promise<GatewayResponse> {
 export function resetPassword(token: string, newPassword: string): Promise<GatewayResponse> {
   return publicPost('/auth/reset-password', { token, newPassword })
 }
+
+/** Pede um código OTP (login passwordless ou recuperação de senha). Sempre 200 (anti-enum). */
+export function requestOtp(
+  email: string,
+  purpose: 'sign_in' | 'password_reset',
+): Promise<GatewayResponse> {
+  return publicPost('/auth/otp/request', { email, purpose })
+}
+
+/** Redefine a senha consumindo um código OTP de recuperação. */
+export function resetPasswordWithOtp(
+  email: string,
+  code: string,
+  newPassword: string,
+): Promise<GatewayResponse> {
+  return publicPost('/auth/password/reset-otp', { email, code, newPassword })
+}

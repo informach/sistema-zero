@@ -48,6 +48,9 @@ const EnvSchema = z
 
     // Reset/definição de senha
     RESET_TOKEN_TTL_MINUTES: z.coerce.number().int().positive().default(60),
+    // OTP (login passwordless + recuperação de senha por código).
+    OTP_TTL_MINUTES: z.coerce.number().int().positive().default(10),
+    OTP_MAX_ATTEMPTS: z.coerce.number().int().positive().default(5),
     // Base dos links de e-mail (app community): `${COMMUNITY_URL}/redefinir-senha?token=...`.
     COMMUNITY_URL: z.string().url().default('http://localhost:3007'),
     // Token interno injetado pelo gateway nas rotas `/auth/internal/*` (defesa em

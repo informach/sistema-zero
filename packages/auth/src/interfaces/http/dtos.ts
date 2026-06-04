@@ -47,6 +47,27 @@ export const ResetPasswordBody = t.Object({
   newPassword: t.String({ minLength: 1, maxLength: 200 }),
 })
 
+const otpPurposeLiteral = t.Union([t.Literal('sign_in'), t.Literal('password_reset')])
+
+/** Corpo de `POST /auth/otp/request` (pede um código por e-mail). Resposta é SEMPRE 200. */
+export const RequestOtpBody = t.Object({
+  email: t.String({ minLength: 3, maxLength: 320, pattern: EMAIL_PATTERN }),
+  purpose: otpPurposeLiteral,
+})
+
+/** Corpo de `POST /auth/otp/verify` (login por código → tokens). */
+export const VerifyOtpBody = t.Object({
+  email: t.String({ minLength: 3, maxLength: 320, pattern: EMAIL_PATTERN }),
+  code: t.String({ minLength: 4, maxLength: 12 }),
+})
+
+/** Corpo de `POST /auth/password/reset-otp` (redefinir senha por código). */
+export const ResetPasswordOtpBody = t.Object({
+  email: t.String({ minLength: 3, maxLength: 320, pattern: EMAIL_PATTERN }),
+  code: t.String({ minLength: 4, maxLength: 12 }),
+  newPassword: t.String({ minLength: 1, maxLength: 200 }),
+})
+
 /** Corpo de `PATCH /auth/me` (self-service). E-mail NÃO é editável aqui. */
 export const UpdateMeBody = t.Object({
   firstName: t.Optional(t.String({ minLength: 1, maxLength: 100 })),
@@ -63,6 +84,20 @@ export const ChangeMyPasswordBody = t.Object({
 /** Corpo de `POST /auth/internal/password-tokens` (S2S: funil → link de 1º acesso). */
 export const CreatePasswordTokenBody = t.Object({
   email: t.String({ minLength: 3, maxLength: 320, pattern: EMAIL_PATTERN }),
+})
+
+/**
+ * Corpo de `POST /auth/internal/ensure-buyer` (S2S: funil pós-pagamento). Mesmo
+ * shape do registro; `password` é a senha "dummy" usada só na criação (a real vem
+ * pelo magic-link). Idempotente por e-mail → sempre devolve um `userId`.
+ */
+export const EnsureBuyerBody = t.Object({
+  email: t.String({ minLength: 3, maxLength: 320, pattern: EMAIL_PATTERN }),
+  password: t.String({ minLength: 1, maxLength: 200 }),
+  firstName: t.String({ minLength: 1, maxLength: 100 }),
+  lastName: t.String({ minLength: 1, maxLength: 100 }),
+  phone: t.Optional(t.String({ maxLength: 20 })),
+  source: t.Optional(t.String({ maxLength: 40 })),
 })
 
 /** Query de `GET /auth/admin/users` (listagem paginada do painel). */

@@ -11,6 +11,7 @@ export const userStatusEnum = auth.enum('user_status', [
   'suspended',
   'blocked',
 ])
+export const otpPurposeEnum = auth.enum('otp_purpose', ['sign_in', 'password_reset'])
 
 /** Usuários (identidade). A senha é guardada apenas como hash argon2id. */
 export const users = auth.table(
@@ -83,8 +84,30 @@ export const passwordResetTokens = auth.table(
   ],
 )
 
+/**
+ * Códigos OTP de uso único (login passwordless + recuperação de senha por código).
+ * Guarda só o `codeHash` (sha256) — nunca os 6 dígitos. Single-use (`consumedAt`)
+ * com expiração curta; `attempts` trava a adivinhação online. Um código ativo por
+ * (usuário, finalidade): emitir um novo consome os pendentes daquela finalidade.
+ */
+export const otpCodes = auth.table(
+  'otp_codes',
+  {
+    id: uuid('id').primaryKey(),
+    userId: uuid('user_id').notNull(),
+    purpose: otpPurposeEnum('purpose').notNull(),
+    codeHash: text('code_hash').notNull(),
+    attempts: integer('attempts').notNull().default(0),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    consumedAt: timestamp('consumed_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('otp_codes_user_purpose_idx').on(t.userId, t.purpose)],
+)
+
 export const schema = {
   users,
   refreshTokens,
   passwordResetTokens,
+  otpCodes,
 }

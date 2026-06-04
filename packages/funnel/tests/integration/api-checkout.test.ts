@@ -101,6 +101,8 @@ describe('POST /api/checkout/pix', () => {
     expect(input.metadata.offerId).toBe('offer-1')
     expect(input.metadata.couponCode).toBe('PROMO10')
     expect(leads.get(id)?.couponCode).toBe('PROMO10')
+    // O checkout grava a oferta vendida no lead (fundação multi-oferta).
+    expect(leads.get(id)?.offerRef).toBe('no-comando-da-ia')
   })
 
   test('cupom inválido → 422 e não cria cobrança', async () => {

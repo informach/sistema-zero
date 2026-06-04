@@ -35,6 +35,21 @@ const seeds = [
     body: '<p>Olá {{nome}},</p><p>Para definir ou redefinir sua senha, acesse: <a href="{{link}}">{{link}}</a></p><p>O link expira em 1 hora e só pode ser usado uma vez. Se você não solicitou, ignore este e-mail.</p>',
     variables: ['nome', 'link'],
   },
+  {
+    key: 'otp',
+    channel: 'email' as const,
+    name: 'Código de acesso (e-mail)',
+    subject: 'Seu código de acesso: {{codigo}}',
+    body: '<p>Olá {{nome}},</p><p>Seu código de acesso é <strong>{{codigo}}</strong>.</p><p>Ele expira em alguns minutos e só pode ser usado uma vez. Se você não solicitou, ignore este e-mail.</p>',
+    variables: ['nome', 'codigo'],
+  },
+  {
+    key: 'otp',
+    channel: 'whatsapp' as const,
+    name: 'Código de acesso (WhatsApp)',
+    body: 'Olá {{nome}}! Seu código de acesso é {{codigo}} (expira em alguns minutos).',
+    variables: ['nome', 'codigo'],
+  },
 ]
 
 for (const seed of seeds) {

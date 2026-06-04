@@ -11,16 +11,16 @@ export interface WelcomeEmailDeps {
 
 /**
  * E-mail de boas-vindas pós-compra com o link de DEFINIR a senha (1º acesso ao
- * app community). Roda após fulfill+grant, SÓ para comprador NOVO (`buyerUserId`
- * setado — o recorrente já tem credenciais; mandar um link de redefinição seria
- * confuso). BEST-EFFORT deliberado: qualquer falha é logada e NUNCA lança — o
- * e-mail não é crítico para a concessão do acesso (o aluno tem o "esqueci minha
- * senha" como fallback), então não força reentrega do webhook. Idempotente no
- * replay: `Idempotency-Key: welcome-<leadId>` (o messaging deduplica).
+ * app community). Roda após fulfill+grant, SÓ para comprador NOVO (`buyerIsNew` —
+ * recém-criado no IdP; o recorrente já tem credenciais, mandar um link de
+ * redefinição seria confuso). BEST-EFFORT deliberado: qualquer falha é logada e
+ * NUNCA lança — o e-mail não é crítico para a concessão do acesso (o aluno tem o
+ * "esqueci minha senha" como fallback), então não força reentrega do webhook.
+ * Idempotente no replay: `Idempotency-Key: welcome-<leadId>` (o messaging deduplica).
  */
 export function makeSendWelcome(deps: WelcomeEmailDeps): (lead: Lead) => Promise<void> {
   return async (lead: Lead) => {
-    if (!lead.buyerUserId || !lead.email) return
+    if (!lead.buyerIsNew || !lead.email) return
     try {
       const tokenRes = await deps.gateway.createPasswordToken(lead.email)
       const token = readToken(tokenRes.body)

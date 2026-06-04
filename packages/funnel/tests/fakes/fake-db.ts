@@ -21,8 +21,10 @@ function baseLead(id: string): Lead {
     lastStep: 'entrou_landing',
     paymentId: null,
     couponCode: null,
+    offerRef: null,
     paidAt: null,
     buyerUserId: null,
+    buyerIsNew: null,
     buyerRegisteredAt: null,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -68,10 +70,11 @@ export function createFakeRepo(): FakeRepoState {
       }
       return false
     },
-    async setBuyerRegistration(id, buyerUserId, at) {
+    async setBuyerRegistration(id, buyerUserId, isNew, at) {
       const lead = leads.get(id)
       if (lead && lead.buyerRegisteredAt == null) {
         lead.buyerUserId = buyerUserId
+        lead.buyerIsNew = isNew
         lead.buyerRegisteredAt = at
       }
     },

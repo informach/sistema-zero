@@ -3,11 +3,15 @@ import { BatchGetUsersService } from '../../src/application/admin/batch-get-user
 import { GetUserService } from '../../src/application/admin/get-user/get-user.service'
 import { ListUsersService } from '../../src/application/admin/list-users/list-users.service'
 import { UpdateUserService } from '../../src/application/admin/update-user/update-user.service'
+import { EnsureBuyerService } from '../../src/application/ensure-buyer/ensure-buyer.service'
 import { GetMeService } from '../../src/application/get-me/get-me.service'
 import { LoginService } from '../../src/application/login/login.service'
 import { LogoutService } from '../../src/application/logout/logout.service'
 import { ChangeMyPasswordService } from '../../src/application/me/change-password.service'
 import { UpdateProfileService } from '../../src/application/me/update-profile.service'
+import { RequestOtpService } from '../../src/application/otp/request-otp.service'
+import { ResetPasswordWithOtpService } from '../../src/application/otp/reset-password-otp.service'
+import { VerifyOtpService } from '../../src/application/otp/verify-otp.service'
 import { CreatePasswordTokenService } from '../../src/application/password-reset/create-password-token.service'
 import { ForgotPasswordService } from '../../src/application/password-reset/forgot-password.service'
 import { ResetPasswordService } from '../../src/application/password-reset/reset-password.service'
@@ -23,6 +27,7 @@ import { createServer } from '../../src/interfaces/http/server'
 import {
   FakeMessagingClient,
   fakeHasher,
+  InMemoryOtpCodeRepository,
   InMemoryPasswordResetTokenRepository,
   InMemoryRefreshTokenRepository,
   InMemoryUserRepository,
@@ -37,6 +42,7 @@ function buildApp() {
   const users = new InMemoryUserRepository()
   const refreshTokens = new InMemoryRefreshTokenRepository()
   const resetTokens = new InMemoryPasswordResetTokenRepository()
+  const otpCodes = new InMemoryOtpCodeRepository()
   const messaging = new FakeMessagingClient()
   const tokenIssuer = testTokenIssuer()
   const authTokens = new AuthTokenService(tokenIssuer, refreshTokens, { refreshTtlDays: 30 })
@@ -55,6 +61,27 @@ function buildApp() {
   const createPasswordToken = new CreatePasswordTokenService(users, resetTokens, {
     ttlMinutes: 60,
   })
+  const ensureBuyer = new EnsureBuyerService(
+    users,
+    fakeHasher,
+    { passwordMinLength: 10 },
+    silentLogger,
+  )
+  const requestOtp = new RequestOtpService(
+    users,
+    otpCodes,
+    messaging,
+    { ttlMinutes: 10 },
+    silentLogger,
+  )
+  const verifyOtp = new VerifyOtpService(users, otpCodes, authTokens, { maxAttempts: 5 })
+  const resetPasswordWithOtp = new ResetPasswordWithOtpService(
+    users,
+    otpCodes,
+    refreshTokens,
+    fakeHasher,
+    { passwordMinLength: 10, maxAttempts: 5 },
+  )
   const forgotPassword = new ForgotPasswordService(
     createPasswordToken,
     messaging,
@@ -92,15 +119,19 @@ function buildApp() {
     getMe,
     forgotPassword,
     resetPassword,
+    requestOtp,
+    verifyOtp,
+    resetPasswordWithOtp,
     updateProfile,
     changeMyPassword,
     createPasswordToken,
+    ensureBuyer,
     listUsers,
     getUser,
     updateUser,
     batchGetUsers,
   })
-  return { app, users, refreshTokens, resetTokens, messaging, tokenIssuer }
+  return { app, users, refreshTokens, resetTokens, otpCodes, messaging, tokenIssuer }
 }
 
 const REGISTER_BODY = {
@@ -585,6 +616,181 @@ describe('Password reset + perfil self-service', () => {
         )
       ).status,
     ).toBe(200)
+  })
+
+  const ENSURE_BODY = {
+    email: 'comprador@example.com',
+    password: 'senha-dummy-do-funil-1234',
+    firstName: 'Carlos',
+    lastName: 'Lima',
+    source: 'funnel',
+  }
+
+  test('POST /auth/internal/ensure-buyer exige o token interno', async () => {
+    const { app } = buildApp()
+    expect((await app.handle(post('/auth/internal/ensure-buyer', ENSURE_BODY))).status).toBe(401)
+    expect(
+      (
+        await app.handle(
+          post('/auth/internal/ensure-buyer', ENSURE_BODY, { 'x-internal-token': 'errado' }),
+        )
+      ).status,
+    ).toBe(401)
+  })
+
+  test('POST /auth/internal/ensure-buyer cria (201) e é idempotente (200 com o MESMO userId)', async () => {
+    const { app } = buildApp()
+
+    // 1ª chamada: comprador novo → 201 + created:true + userId.
+    const first = await app.handle(
+      post('/auth/internal/ensure-buyer', ENSURE_BODY, { 'x-internal-token': INTERNAL_TOKEN }),
+    )
+    expect(first.status).toBe(201)
+    const created = (await first.json()) as { userId: string; created: boolean }
+    expect(created.created).toBe(true)
+    expect(created.userId.length).toBeGreaterThan(0)
+
+    // 2ª chamada (comprador RECORRENTE, mesmo e-mail) → 200 + created:false + MESMO userId.
+    const second = await app.handle(
+      post('/auth/internal/ensure-buyer', ENSURE_BODY, { 'x-internal-token': INTERNAL_TOKEN }),
+    )
+    expect(second.status).toBe(200)
+    const reused = (await second.json()) as { userId: string; created: boolean }
+    expect(reused.created).toBe(false)
+    expect(reused.userId).toBe(created.userId)
+  })
+
+  test('ensure-buyer reaproveita um usuário pré-existente (e-mail já cadastrado via /auth/register)', async () => {
+    const { app } = buildApp()
+    const reg = await app.handle(post('/auth/register', REGISTER_BODY))
+    const { user } = (await reg.json()) as { user: { id: string } }
+
+    const res = await app.handle(
+      post(
+        '/auth/internal/ensure-buyer',
+        { ...ENSURE_BODY, email: REGISTER_BODY.email },
+        { 'x-internal-token': INTERNAL_TOKEN },
+      ),
+    )
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as { userId: string; created: boolean }
+    expect(body.created).toBe(false)
+    expect(body.userId).toBe(user.id)
+  })
+})
+
+describe('Auth OTP (login passwordless + recuperação por código)', () => {
+  type FakeMessaging = ReturnType<typeof buildApp>['messaging']
+  type App = ReturnType<typeof buildApp>['app']
+
+  /** Pede um OTP e extrai o código de 6 dígitos do envio capturado pelo messaging fake. */
+  async function requestCode(
+    app: App,
+    messaging: FakeMessaging,
+    email: string,
+    purpose: 'sign_in' | 'password_reset',
+  ): Promise<string | undefined> {
+    const before = messaging.sent.length
+    const res = await app.handle(post('/auth/otp/request', { email, purpose }))
+    expect(res.status).toBe(200)
+    const sent = messaging.sent.slice(before).find((s) => s.templateKey === 'otp')
+    return sent?.variables.codigo
+  }
+
+  test('login por OTP: pede o código, verifica e emite tokens', async () => {
+    const { app, messaging } = buildApp()
+    await app.handle(post('/auth/register', REGISTER_BODY))
+
+    const code = await requestCode(app, messaging, 'maria@example.com', 'sign_in')
+    expect(code).toMatch(/^\d{6}$/)
+
+    const res = await app.handle(post('/auth/otp/verify', { email: 'maria@example.com', code }))
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as { user: UserView; tokens: Tokens }
+    expect(body.user.email).toBe('maria@example.com')
+    expect(body.tokens.accessToken.length).toBeGreaterThan(0)
+    expect(body.tokens.refreshToken.length).toBeGreaterThan(0)
+  })
+
+  test('código de uso único: o mesmo código não loga duas vezes', async () => {
+    const { app, messaging } = buildApp()
+    await app.handle(post('/auth/register', REGISTER_BODY))
+    const code = await requestCode(app, messaging, 'maria@example.com', 'sign_in')
+
+    expect(
+      (await app.handle(post('/auth/otp/verify', { email: 'maria@example.com', code }))).status,
+    ).toBe(200)
+    // Reuso → 401 (consumido).
+    expect(
+      (await app.handle(post('/auth/otp/verify', { email: 'maria@example.com', code }))).status,
+    ).toBe(401)
+  })
+
+  test('código errado → 401; trava após o teto de tentativas (código certo deixa de valer)', async () => {
+    const { app, messaging } = buildApp()
+    await app.handle(post('/auth/register', REGISTER_BODY))
+    const code = await requestCode(app, messaging, 'maria@example.com', 'sign_in')
+
+    for (let i = 0; i < 5; i++) {
+      const res = await app.handle(
+        post('/auth/otp/verify', { email: 'maria@example.com', code: '000000' }),
+      )
+      expect(res.status).toBe(401)
+    }
+    // Esgotou as tentativas → o código original também não vale mais.
+    expect(
+      (await app.handle(post('/auth/otp/verify', { email: 'maria@example.com', code }))).status,
+    ).toBe(401)
+  })
+
+  test('anti-enumeração: pedir OTP p/ e-mail inexistente → 200 e NÃO envia nada', async () => {
+    const { app, messaging } = buildApp()
+    const before = messaging.sent.length
+    const res = await app.handle(
+      post('/auth/otp/request', { email: 'ghost@example.com', purpose: 'sign_in' }),
+    )
+    expect(res.status).toBe(200)
+    expect(messaging.sent.slice(before)).toHaveLength(0)
+  })
+
+  test('recuperação por OTP: redefine a senha e o login passa com a nova', async () => {
+    const { app, messaging } = buildApp()
+    await app.handle(post('/auth/register', REGISTER_BODY))
+    const code = await requestCode(app, messaging, 'maria@example.com', 'password_reset')
+
+    const reset = await app.handle(
+      post('/auth/password/reset-otp', {
+        email: 'maria@example.com',
+        code,
+        newPassword: 'nova-senha-por-otp-9999',
+      }),
+    )
+    expect(reset.status).toBe(200)
+
+    expect(
+      (
+        await app.handle(
+          post('/auth/login', { email: 'maria@example.com', password: 'nova-senha-por-otp-9999' }),
+        )
+      ).status,
+    ).toBe(200)
+    // A senha antiga não vale mais.
+    expect((await app.handle(post('/auth/login', REGISTER_BODY))).status).toBe(401)
+  })
+
+  test('OTP de sign_in não serve p/ reset (finalidades isoladas)', async () => {
+    const { app, messaging } = buildApp()
+    await app.handle(post('/auth/register', REGISTER_BODY))
+    const code = await requestCode(app, messaging, 'maria@example.com', 'sign_in')
+
+    const res = await app.handle(
+      post('/auth/password/reset-otp', {
+        email: 'maria@example.com',
+        code,
+        newPassword: 'tentando-com-codigo-de-login',
+      }),
+    )
+    expect(res.status).toBe(401)
   })
 })
 

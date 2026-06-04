@@ -3,12 +3,13 @@ import type { FunnelRepo, Lead } from '../db/repo'
 import type { GatewayClient, RegisterBuyerInput } from '../lib/gateway-client'
 
 /**
- * Pós-pagamento: registra o lead PAGO como comprador (usuário) no IdP
- * (@sistemazero/auth) através do gateway. Mantido puro (tudo via `deps`): sem
- * `crypto`/`Date`/IO escondidos — a factory `makeFulfill` injeta os reais.
+ * Pós-pagamento: garante o lead PAGO como comprador (usuário) no IdP
+ * (@sistemazero/auth) via gateway (`ensure-buyer`, S2S). Mantido puro (tudo via
+ * `deps`): sem `crypto`/`Date`/IO escondidos — a factory `makeFulfill` injeta os reais.
  *
- * Entrega das credenciais (senha temporária / link de acesso) é follow-up: a
- * senha é gerada e enviada ao auth, mas NÃO é entregue ao comprador aqui, e
+ * `ensure-buyer` SEMPRE devolve um `userId` (novo OU recorrente) → a concessão de
+ * acesso na área de membros roda inclusive para o comprador recorrente. A senha
+ * "dummy" gerada só é usada quando o usuário é CRIADO (a real vem pelo magic-link);
  * NUNCA é persistida no funil.
  */
 export interface FulfillmentDeps {
@@ -28,16 +29,14 @@ export class FulfillmentRetryError extends Error {
   }
 }
 
-const EMAIL_EXISTS_CODE = 'EMAIL_ALREADY_IN_USE'
-
 /**
- * Registra o comprador (idempotente). Pré-condições: lead pago, ainda não
+ * Garante o comprador no IdP (idempotente). Pré-condições: lead pago, ainda não
  * registrado e com e-mail. Resultado:
- *  - 201 → grava `buyer_user_id` + `buyer_registered_at`.
- *  - 409 (e-mail já existe) → sucesso de negócio: reaproveita o usuário existente
- *    e fecha o registro (sem `buyer_user_id`).
- *  - qualquer outro status → lança `FulfillmentRetryError` (deixa retryável: o
- *    webhook não marca a entrega como processada e o gateway re-entrega).
+ *  - 200/201 → grava `buyer_user_id` (sempre presente) + `buyer_is_new` (`created`)
+ *    + `buyer_registered_at`. 201 = criado (novo); 200 = reaproveitado (recorrente).
+ *  - qualquer outro status (ou resposta sem `userId`) → lança `FulfillmentRetryError`
+ *    (deixa retryável: o webhook não marca a entrega como processada e o gateway
+ *    re-entrega). `ensure-buyer` é idempotente, então reprocessar é seguro.
  */
 export async function fulfillPaidLead(lead: Lead, deps: FulfillmentDeps): Promise<void> {
   if (!lead.paidAt) return
@@ -55,20 +54,16 @@ export async function fulfillPaidLead(lead: Lead, deps: FulfillmentDeps): Promis
   const phone = normalizePhone(lead.telefone)
   if (phone) input.phone = phone
 
-  const { status, body } = await deps.gateway.registerBuyer(input)
+  const { status, body } = await deps.gateway.ensureBuyer(input)
+  const userId = readUserId(body)
 
-  if (status === 201) {
-    const userId = readUserId(body)
-    await deps.repo.setBuyerRegistration(lead.id, userId, deps.now())
-    deps.log?.('fulfill.registered', { leadId: lead.id, userId })
+  if ((status === 200 || status === 201) && userId) {
+    const created = readCreated(body)
+    await deps.repo.setBuyerRegistration(lead.id, userId, created, deps.now())
+    deps.log?.('fulfill.ensured', { leadId: lead.id, userId, created })
     return
   }
-  if (status === 409 || readErrorCode(body) === EMAIL_EXISTS_CODE) {
-    await deps.repo.setBuyerRegistration(lead.id, null, deps.now())
-    deps.log?.('fulfill.already_registered', { leadId: lead.id })
-    return
-  }
-  deps.log?.('fulfill.register_failed', { leadId: lead.id, status })
+  deps.log?.('fulfill.ensure_failed', { leadId: lead.id, status })
   throw new FulfillmentRetryError(status)
 }
 
@@ -92,26 +87,20 @@ export function normalizePhone(tel: string | null): string | undefined {
   return digits.length > 0 ? digits : undefined
 }
 
+/** Lê `userId` da resposta de `ensure-buyer` (`{ userId, created }`). */
 function readUserId(body: unknown): string | null {
-  if (body && typeof body === 'object' && 'user' in body) {
-    const user = (body as { user?: unknown }).user
-    if (user && typeof user === 'object' && 'id' in user) {
-      const id = (user as { id?: unknown }).id
-      if (typeof id === 'string') return id
-    }
+  if (body && typeof body === 'object' && 'userId' in body) {
+    const id = (body as { userId?: unknown }).userId
+    if (typeof id === 'string' && id.length > 0) return id
   }
   return null
 }
 
-function readErrorCode(body: unknown): string | null {
-  if (body && typeof body === 'object' && 'error' in body) {
-    const err = (body as { error?: unknown }).error
-    if (err && typeof err === 'object' && 'code' in err) {
-      const code = (err as { code?: unknown }).code
-      if (typeof code === 'string') return code
-    }
-  }
-  return null
+/** Lê `created` (comprador novo) da resposta de `ensure-buyer`. */
+function readCreated(body: unknown): boolean {
+  return Boolean(
+    body && typeof body === 'object' && (body as { created?: unknown }).created === true,
+  )
 }
 
 /** Senha temporária forte: ~24 chars base64url (>10, <200, sem espaços). */

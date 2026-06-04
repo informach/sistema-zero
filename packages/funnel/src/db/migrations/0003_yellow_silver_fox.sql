@@ -1,0 +1,1 @@
+ALTER TABLE "funil"."leads" ADD COLUMN "buyer_is_new" boolean;

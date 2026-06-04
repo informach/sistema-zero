@@ -25,9 +25,15 @@ export interface FunnelRepo {
   /**
    * Marca o comprador como registrado no IdP (auth). Idempotente: só grava se
    * `buyer_registered_at` ainda for nulo (guarda contra corrida webhook × polling).
-   * `buyerUserId` pode ser null (ex.: e-mail já existia → 409, sem id retornado).
+   * `ensure-buyer` SEMPRE devolve um `buyerUserId`; `isNew` distingue o comprador
+   * novo (recebe boas-vindas) do recorrente (já tem credenciais).
    */
-  setBuyerRegistration(id: string, buyerUserId: string | null, at: Date): Promise<void>
+  setBuyerRegistration(
+    id: string,
+    buyerUserId: string | null,
+    isNew: boolean,
+    at: Date,
+  ): Promise<void>
   findLeadByPayment(paymentId: string): Promise<Lead | null>
   insertEvent(leadId: string, eventName: string, step?: string | null): Promise<void>
   listLeads(limit: number, offset: number): Promise<Lead[]>
@@ -71,10 +77,10 @@ export function createFunnelRepo(db: Database): FunnelRepo {
       return rows.length > 0
     },
 
-    async setBuyerRegistration(id, buyerUserId, at) {
+    async setBuyerRegistration(id, buyerUserId, isNew, at) {
       await db
         .update(leads)
-        .set({ buyerUserId, buyerRegisteredAt: at, updatedAt: new Date() })
+        .set({ buyerUserId, buyerIsNew: isNew, buyerRegisteredAt: at, updatedAt: new Date() })
         .where(sql`${leads.id} = ${id} and ${leads.buyerRegisteredAt} is null`)
     },
 

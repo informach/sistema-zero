@@ -22,6 +22,20 @@
       "when": 1780426527366,
       "tag": "0002_previous_toad",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1780572160000,
+      "tag": "0003_yellow_silver_fox",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1780572400071,
+      "tag": "0004_workable_rictor",
+      "breakpoints": true
     }
   ]
 }
