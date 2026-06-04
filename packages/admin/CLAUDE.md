@@ -145,9 +145,14 @@ src/
   lib/      env.ts (server-only) · types.ts · format.ts · cn.ts · api.ts (client fetch)
             slug.ts (slugify/skuify/offerSlugSuggestion/offerCodeSuggestion — kebab MINÚSCULO,
             espelha os VOs do catalog: Sku lowercase!; autogeração usa dirty-flag por campo)
-  components/ ui/* (button/card/input/table/dialog/badge/select/info-tooltip/…; Field aceita `tooltip`)
-            catalog/* (offers-multi-select · components-editor · offer-items-editor ·
+  components/ catalog/* (offers-multi-select · components-editor · offer-items-editor ·
             fulfillment-editor — courseRef = SLUG do curso do members) · admin/* (topbar/header/tabs/…)
+            ⚠️ Primitivos de UI (button/card/input/table/dialog/badge/select/info-tooltip/…) vivem
+            no **`@sistemazero/ui`** (packages/ui, compartilhado com o community) — importe
+            `@sistemazero/ui/<componente>`; NÃO recrie cópias locais. O Button espelha as classes
+            do projeto de referência (contraste por tema vem delas). Requisitos no app:
+            `transpilePackages: ['@sistemazero/ui']` no next.config + `@source "../../../ui/src"`
+            no globals.css (Tailwind v4 só gera classes que o scanner vê).
   proxy.ts              (ex-middleware; convenção Next 16, runtime nodejs)
 ```
 
