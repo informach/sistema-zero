@@ -22,6 +22,14 @@ export class AttachmentNotFoundError extends DomainError {
   }
 }
 
+/** Bloco e-book inexistente na aula (ou o bloco não é um e-book). → 404. */
+export class EbookBlockNotFoundError extends DomainError {
+  readonly code = 'EBOOK_BLOCK_NOT_FOUND'
+  constructor(message = 'E-book não encontrado') {
+    super(message)
+  }
+}
+
 /** Módulo/bloco/anexo não encontrado (autoria). → 404. */
 export class ContentNotFoundError extends DomainError {
   readonly code = 'CONTENT_NOT_FOUND'

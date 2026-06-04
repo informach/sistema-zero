@@ -72,6 +72,7 @@ describe('Members HTTP — consumo do aluno', () => {
       'rich_text',
       'video',
       'embed',
+      'ebook',
     ])
     expect(lessonBody.attachments).toHaveLength(1)
   })

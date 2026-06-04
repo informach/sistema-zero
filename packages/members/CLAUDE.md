@@ -23,10 +23,12 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > no servidor** + **catálogo "Todos os cursos"** + **publicação por aula**
 > (`lessons.is_published` + guard de publicação do curso) + **resolução de download de
 > anexo** (rota `/resolve`; view do aluno SEM url) + **classificação do curso**
-> (`course_ratings`, estilo Udemy — ver rota abaixo) — **101 testes**. Migrations `0000`
-> (schema `members`), `0001` (`lesson_progress`), `0002` (`quiz_attempts`), `0003`
-> (`lessons.is_published`) e `0004` (`course_ratings`) — **aplicadas** no Postgres
-> compartilhado (`sistemazero`, :5433).
+> (`course_ratings`, estilo Udemy — ver rota abaixo) + **bloco e-book** (kind `ebook`:
+> PDF privado que vira livro 3D no community; view do aluno SEM url + rota
+> `/ebook/resolve`) — **108 testes**. Migrations `0000` (schema `members`), `0001`
+> (`lesson_progress`), `0002` (`quiz_attempts`), `0003` (`lessons.is_published`), `0004`
+> (`course_ratings`) e `0005` (enum `lesson_block_kind` + `'ebook'`) — **aplicadas** no
+> Postgres compartilhado (`sistemazero`, :5433).
 
 ## Conceito central (decisões travadas com o usuário)
 
@@ -48,8 +50,12 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 5. **Convenção**: `entitlement.courseRef === course.slug` (e === `fulfillment.courseRef`
    do produto no catálogo). É o elo oferta→curso.
 6. **Aula = lista ordenada de BLOCOS** (`lesson_blocks`, união discriminada por
-   `kind`: rich_text/video/image/audio/quiz/embed). Aula composta (vídeo + interativo
-   + texto) = vários blocos. Comunidade só modelada (feature é fatia seguinte).
+   `kind`: rich_text/video/image/audio/quiz/embed/ebook). Aula composta (vídeo +
+   interativo + texto) = vários blocos. Comunidade só modelada (feature é fatia
+   seguinte). **Autoria v3 (06/2026):** `embed` aceita SÓ `{html, sandbox?}` no DTO
+   (sempre iframe sandbox no front; `embedType`/`src`/`height` são legado tolerado no
+   TYPE mas rejeitado na escrita); `ebook` = `{url: 'r2priv:<key>', title?}` — PDF no
+   bucket R2 privado que o community renderiza como livro 3D com marca d'água.
 7. **Quiz é corrigido NO SERVIDOR** (`quiz_attempts` guarda o histórico; score 0–100 por
    conjunto EXATO de choices). O GET da aula **NUNCA envia o gabarito** — a projeção
    member-facing (`toMemberFacingQuizContent`) remove `correctChoiceIds`/`explanation`
@@ -173,6 +179,12 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   **A `LessonAttachmentView` member-facing NÃO traz `url`** — a referência nunca chega ao
   browser; o community baixa do bucket privado e aplica a marca d'água (e-mail do aluno)
   antes de servir. `GetAttachmentDownloadService`.
+- **`GET /members/courses/:slug/lessons/:lessonId/blocks/:blockId/ebook/resolve`** (aluno,
+  consumida SÓ pelo SERVIDOR do community/BFF): devolve a localização REAL do PDF do bloco
+  e-book — `EbookDownloadView {title, storageRef}`. Mesma régua do resolve de anexo
+  (matrícula ativa + aula publicada + bloco da aula com `kind:'ebook'`;
+  `EBOOK_BLOCK_NOT_FOUND`→404). A view member-facing do bloco `ebook` sai **SEM `url`**
+  (só `{kind, title?}`). `GetEbookDownloadService`.
 - Cancelar/expirar assinatura é um **UPDATE atômico set-based** por `subscription_id`
   (sem load-mutate-save por linha → sem lost-update sob corrida com renovação).
 - `processed_webhooks` tem `pruneProcessedBefore(date)` (retenção; chamar por cron —

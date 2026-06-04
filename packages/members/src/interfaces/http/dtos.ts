@@ -227,18 +227,18 @@ const QuizBlockSchema = t.Object({
   ),
   passingScore: t.Optional(t.Number({ minimum: 0, maximum: 100 })),
 })
+// Autoria v3: interativo é SEMPRE iframe sandbox com HTML (embedType/src/height
+// viraram legado — só existem em blocos antigos, nunca em escrita nova).
 const EmbedBlockSchema = t.Object({
   kind: t.Literal('embed'),
-  embedType: t.Union([
-    t.Literal('three_js'),
-    t.Literal('iframe'),
-    t.Literal('codepen'),
-    t.Literal('custom'),
-  ]),
-  src: t.Optional(t.String({ maxLength: 2000 })),
-  html: t.Optional(t.String({ maxLength: 200_000 })),
+  html: t.String({ minLength: 1, maxLength: 200_000 }),
   sandbox: t.Optional(t.String({ maxLength: 200 })),
-  height: t.Optional(t.Number({ minimum: 0, maximum: 10_000 })),
+})
+/** PDF no bucket R2 privado (`r2priv:<key>`) — vira livro 3D no front do aluno. */
+const EbookBlockSchema = t.Object({
+  kind: t.Literal('ebook'),
+  url: t.String({ minLength: 1, maxLength: 2000 }),
+  title: t.Optional(t.String({ maxLength: 300 })),
 })
 
 export const LessonBlockContentSchema = t.Union([
@@ -248,6 +248,7 @@ export const LessonBlockContentSchema = t.Union([
   AudioBlockSchema,
   QuizBlockSchema,
   EmbedBlockSchema,
+  EbookBlockSchema,
 ])
 
 /** Corpo de `POST/PATCH /members/admin/...blocks`. */

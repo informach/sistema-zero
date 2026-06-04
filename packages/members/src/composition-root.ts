@@ -11,6 +11,7 @@ import {
 import { GetAttachmentDownloadService } from './application/get-attachment-download/get-attachment-download.service'
 import { GetCourseProgressService } from './application/get-course-progress/get-course-progress.service'
 import { GetCourseRatingService } from './application/get-course-rating/get-course-rating.service'
+import { GetEbookDownloadService } from './application/get-ebook-download/get-ebook-download.service'
 import { GetLessonService } from './application/get-lesson/get-lesson.service'
 import { GetMemberDetailService } from './application/get-member-detail/get-member-detail.service'
 import { GetMyCourseService } from './application/get-my-course/get-my-course.service'
@@ -85,6 +86,7 @@ export async function createApplication(env: Env): Promise<Application> {
     clock,
   )
   const resolveAttachment = new GetAttachmentDownloadService(checkAccess, courses)
+  const resolveEbook = new GetEbookDownloadService(checkAccess, courses)
   const markComplete = new MarkLessonCompleteService(
     checkAccess,
     courses,
@@ -143,6 +145,7 @@ export async function createApplication(env: Env): Promise<Application> {
       getMyCourse,
       getLesson,
       resolveAttachment,
+      resolveEbook,
       markComplete,
       getProgress,
       savePosition,

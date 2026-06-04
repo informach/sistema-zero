@@ -11,6 +11,7 @@ import {
 import { GetAttachmentDownloadService } from '../src/application/get-attachment-download/get-attachment-download.service'
 import { GetCourseProgressService } from '../src/application/get-course-progress/get-course-progress.service'
 import { GetCourseRatingService } from '../src/application/get-course-rating/get-course-rating.service'
+import { GetEbookDownloadService } from '../src/application/get-ebook-download/get-ebook-download.service'
 import { GetLessonService } from '../src/application/get-lesson/get-lesson.service'
 import { GetMemberDetailService } from '../src/application/get-member-detail/get-member-detail.service'
 import { GetMyCourseService } from '../src/application/get-my-course/get-my-course.service'
@@ -87,6 +88,7 @@ export function buildApp(
         clock,
       ),
       resolveAttachment: new GetAttachmentDownloadService(checkAccess, courses),
+      resolveEbook: new GetEbookDownloadService(checkAccess, courses),
       markComplete: new MarkLessonCompleteService(
         checkAccess,
         courses,
@@ -155,7 +157,7 @@ export function buildApp(
   }
 }
 
-/** Curso de exemplo: 1 módulo, 2 aulas (a 1ª composta com 3 blocos + 1 anexo). */
+/** Curso de exemplo: 1 módulo, 2 aulas (a 1ª composta com 4 blocos + 1 anexo). */
 export function seedSampleCourse(
   courses: InMemoryCourseRepository,
   slug = 'curso-demo',
@@ -166,6 +168,7 @@ export function seedSampleCourse(
   const moduleId = randomUUID()
   const lesson1 = randomUUID()
   const lesson2 = randomUUID()
+  const ebookBlockId = randomUUID()
   courses.courses.push({
     id: courseId,
     slug,
@@ -221,6 +224,13 @@ export function seedSampleCourse(
       sortOrder: 2,
       content: { kind: 'embed', embedType: 'three_js', html: '<canvas></canvas>' },
     },
+    {
+      id: ebookBlockId,
+      lessonId: lesson1,
+      kind: 'ebook',
+      sortOrder: 3,
+      content: { kind: 'ebook', url: 'r2priv:admin/attachments/ebook-demo.pdf', title: 'Guia' },
+    },
   )
   courses.attachments.push({
     id: randomUUID(),
@@ -231,7 +241,7 @@ export function seedSampleCourse(
     sizeBytes: null,
     sortOrder: 0,
   })
-  return { courseId, slug, moduleId, lessonIds: [lesson1, lesson2] as const }
+  return { courseId, slug, moduleId, lessonIds: [lesson1, lesson2] as const, ebookBlockId }
 }
 
 /**

@@ -2,6 +2,7 @@ import { Elysia } from 'elysia'
 import type { GetAttachmentDownloadService } from '../../../application/get-attachment-download/get-attachment-download.service'
 import type { GetCourseProgressService } from '../../../application/get-course-progress/get-course-progress.service'
 import type { GetCourseRatingService } from '../../../application/get-course-rating/get-course-rating.service'
+import type { GetEbookDownloadService } from '../../../application/get-ebook-download/get-ebook-download.service'
 import type { GetLessonService } from '../../../application/get-lesson/get-lesson.service'
 import type { GetMyCourseService } from '../../../application/get-my-course/get-my-course.service'
 import type { ListCatalogService } from '../../../application/list-catalog/list-catalog.service'
@@ -19,6 +20,7 @@ export interface MembersRoutesDeps {
   getMyCourse: GetMyCourseService
   getLesson: GetLessonService
   resolveAttachment: GetAttachmentDownloadService
+  resolveEbook: GetEbookDownloadService
   markComplete: MarkLessonCompleteService
   getProgress: GetCourseProgressService
   savePosition: SaveVideoPositionService
@@ -92,6 +94,15 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             params.lessonId,
             params.attachmentId,
           )
+        },
+      )
+      // Resolução do PDF do bloco e-book (mesmo perfil do resolve de anexo:
+      // consumida SÓ pelo servidor do community; storageRef nunca vai ao browser).
+      .get(
+        '/courses/:slug/lessons/:lessonId/blocks/:blockId/ebook/resolve',
+        async ({ headers, params }) => {
+          const userId = resolveUserId(headers)
+          return deps.resolveEbook.execute(userId, params.slug, params.lessonId, params.blockId)
         },
       )
       .post('/lessons/:lessonId/complete', async ({ headers, params }) => {

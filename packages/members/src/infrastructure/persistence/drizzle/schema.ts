@@ -29,6 +29,7 @@ export const lessonBlockKindEnum = members.enum('lesson_block_kind', [
   'audio',
   'quiz',
   'embed',
+  'ebook',
 ])
 export const accessTypeEnum = members.enum('access_type', [
   'download',

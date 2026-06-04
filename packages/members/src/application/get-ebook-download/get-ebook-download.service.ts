@@ -1,0 +1,39 @@
+import { EbookBlockNotFoundError, LessonNotFoundError } from '../../domain/course/course.errors'
+import type { CourseRepository } from '../../domain/ports/course-repository.port'
+import type { CheckAccessService } from '../access/check-access.service'
+import type { EbookDownloadView } from '../mappers/views'
+
+/**
+ * Resolve a localização REAL do PDF de um bloco e-book (`storageRef`) para o BFF
+ * do community servir o livro 3D com marca d'água. Mesma régua de acesso do GET
+ * da aula: matrícula ativa + aula publicada do curso. A resposta NUNCA deve ser
+ * repassada ao browser — só o servidor do community a consome.
+ */
+export class GetEbookDownloadService {
+  constructor(
+    private readonly checkAccess: CheckAccessService,
+    private readonly courses: CourseRepository,
+  ) {}
+
+  async execute(
+    userId: string,
+    courseSlug: string,
+    lessonId: string,
+    blockId: string,
+  ): Promise<EbookDownloadView> {
+    const { course } = await this.checkAccess.requireBySlug(userId, courseSlug)
+    const lesson = await this.courses.findLessonWithContent(lessonId)
+    // Aula rascunho é invisível ao aluno (mesmo por URL direta) → 404.
+    if (!lesson || lesson.courseId !== course.id || !lesson.isPublished) {
+      throw new LessonNotFoundError()
+    }
+
+    const block = lesson.blocks.find((b) => b.id === blockId)
+    if (block?.content.kind !== 'ebook') throw new EbookBlockNotFoundError()
+
+    return {
+      title: block.content.title ?? null,
+      storageRef: block.content.url,
+    }
+  }
+}

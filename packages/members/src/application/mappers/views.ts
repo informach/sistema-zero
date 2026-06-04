@@ -215,6 +215,13 @@ export interface AttachmentDownloadView {
   storageRef: string
 }
 
+/** Resolução do PDF do bloco e-book (server↔server, BFF do community). */
+export interface EbookDownloadView {
+  title: string | null
+  /** `r2priv:<key>` (bucket privado) ou URL http(s) externa/legada. */
+  storageRef: string
+}
+
 export interface LessonDetailView {
   id: string
   slug: string
@@ -261,6 +268,12 @@ export function toLessonDetailView(
             retryAvailableAt: null,
           },
         }
+      }
+      // E-book: a localização real do PDF (`r2priv:<key>`) nunca chega ao browser —
+      // o community resolve via rota própria e serve com marca d'água (igual anexo).
+      if (b.content.kind === 'ebook') {
+        const { url: _url, ...memberFacing } = b.content
+        return { id: b.id, kind: b.kind, sortOrder: b.sortOrder, content: memberFacing }
       }
       return { id: b.id, kind: b.kind, sortOrder: b.sortOrder, content: b.content }
     }),

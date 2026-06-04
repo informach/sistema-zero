@@ -1,0 +1,1 @@
+ALTER TYPE "members"."lesson_block_kind" ADD VALUE 'ebook';

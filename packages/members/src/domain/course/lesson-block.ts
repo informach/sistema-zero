@@ -4,7 +4,15 @@
  * bloco é uma união discriminada por `kind` — tipável e validável individualmente.
  * O modelo de blocos é o que viabiliza conteúdo composto (impossível com 1 payload).
  */
-export const LESSON_BLOCK_KINDS = ['rich_text', 'video', 'image', 'audio', 'quiz', 'embed'] as const
+export const LESSON_BLOCK_KINDS = [
+  'rich_text',
+  'video',
+  'image',
+  'audio',
+  'quiz',
+  'embed',
+  'ebook',
+] as const
 
 export type LessonBlockKind = (typeof LESSON_BLOCK_KINDS)[number]
 
@@ -68,16 +76,32 @@ export interface QuizBlock {
   passingScore?: number
 }
 
-export type EmbedType = 'three_js' | 'iframe' | 'codepen' | 'custom'
-
-/** Conteúdo interativo (three.js / iframe / codepen / custom). */
+/**
+ * Conteúdo interativo: HTML que roda SEMPRE em iframe sandbox no front do aluno.
+ * A autoria v3 grava só `{html, sandbox?}`; `embedType`/`src`/`height` são legado
+ * (blocos antigos podem tê-los — o renderer ignora).
+ */
 export interface EmbedBlock {
   kind: 'embed'
-  embedType: EmbedType
-  src?: string
   html?: string
   sandbox?: string
+  /** @deprecated legado da autoria v2 */
+  embedType?: string
+  /** @deprecated legado da autoria v2 */
+  src?: string
+  /** @deprecated legado da autoria v2 */
   height?: number
+}
+
+/**
+ * E-book (PDF) renderizado como livro 3D interativo no front do aluno.
+ * `url` é `r2priv:<key>` (bucket privado) — a view member-facing NÃO a expõe;
+ * o community resolve via rota própria e serve com marca d'água.
+ */
+export interface EbookBlock {
+  kind: 'ebook'
+  url: string
+  title?: string
 }
 
 /** União discriminada por `kind` — o conteúdo guardado na coluna `lesson_blocks.content`. */
@@ -88,3 +112,4 @@ export type LessonBlockContent =
   | AudioBlock
   | QuizBlock
   | EmbedBlock
+  | EbookBlock

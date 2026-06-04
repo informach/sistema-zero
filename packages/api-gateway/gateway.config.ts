@@ -732,6 +732,18 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
+    // Resolução do PDF do bloco e-book (livro 3D) — mesmo perfil do resolve de
+    // anexo: consumida SÓ pelo servidor do community; storageRef nunca vai ao browser.
+    {
+      id: 'members-block-ebook-resolve',
+      methods: ['GET'],
+      pathPattern: '/members/courses/:slug/lessons/:lessonId/blocks/:blockId/ebook/resolve',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
     {
       id: 'members-lesson-complete',
       methods: ['POST'],

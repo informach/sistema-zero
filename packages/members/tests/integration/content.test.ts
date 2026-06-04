@@ -138,6 +138,26 @@ describe('Members HTTP — autoria: árvore de conteúdo', () => {
     expect(bad.status).toBe(400)
   })
 
+  test('bloco embed v3 (só html) e bloco ebook → 201; embed sem html → 400', async () => {
+    const { app } = buildApp()
+    const { lesson } = await seedTree(app)
+
+    const embed = await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+      content: { kind: 'embed', html: '<canvas id="demo"></canvas>' },
+    })
+    expect(embed.status).toBe(201)
+
+    const ebook = await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+      content: { kind: 'ebook', url: 'r2priv:admin/attachments/livro.pdf', title: 'Livro' },
+    })
+    expect(ebook.status).toBe(201)
+
+    const noHtml = await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+      content: { kind: 'embed' },
+    })
+    expect(noHtml.status).toBe(400)
+  })
+
   test('excluir módulo remove as aulas em cascata', async () => {
     const { app } = buildApp()
     const { course, mod, lesson } = await seedTree(app)
