@@ -8,6 +8,7 @@ import {
   LessonAdminService,
   ModuleAdminService,
 } from './application/content-admin/content-admin.service'
+import { GetAttachmentDownloadService } from './application/get-attachment-download/get-attachment-download.service'
 import { GetCourseProgressService } from './application/get-course-progress/get-course-progress.service'
 import { GetLessonService } from './application/get-lesson/get-lesson.service'
 import { GetMemberDetailService } from './application/get-member-detail/get-member-detail.service'
@@ -79,6 +80,7 @@ export async function createApplication(env: Env): Promise<Application> {
     quizAttempts,
     clock,
   )
+  const resolveAttachment = new GetAttachmentDownloadService(checkAccess, courses)
   const markComplete = new MarkLessonCompleteService(
     checkAccess,
     courses,
@@ -134,6 +136,7 @@ export async function createApplication(env: Env): Promise<Application> {
       listCatalog,
       getMyCourse,
       getLesson,
+      resolveAttachment,
       markComplete,
       getProgress,
       savePosition,

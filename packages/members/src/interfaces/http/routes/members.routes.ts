@@ -1,4 +1,5 @@
 import { Elysia } from 'elysia'
+import type { GetAttachmentDownloadService } from '../../../application/get-attachment-download/get-attachment-download.service'
 import type { GetCourseProgressService } from '../../../application/get-course-progress/get-course-progress.service'
 import type { GetLessonService } from '../../../application/get-lesson/get-lesson.service'
 import type { GetMyCourseService } from '../../../application/get-my-course/get-my-course.service'
@@ -15,6 +16,7 @@ export interface MembersRoutesDeps {
   listCatalog: ListCatalogService
   getMyCourse: GetMyCourseService
   getLesson: GetLessonService
+  resolveAttachment: GetAttachmentDownloadService
   markComplete: MarkLessonCompleteService
   getProgress: GetCourseProgressService
   savePosition: SaveVideoPositionService
@@ -56,6 +58,20 @@ export function membersRoutes(deps: MembersRoutesDeps) {
         const userId = resolveUserId(headers)
         return deps.getLesson.execute(userId, params.slug, params.lessonId)
       })
+      // Resolução de download de anexo (consumida SÓ pelo servidor do community —
+      // a `storageRef` devolvida nunca deve ser repassada ao browser).
+      .get(
+        '/courses/:slug/lessons/:lessonId/attachments/:attachmentId/resolve',
+        async ({ headers, params }) => {
+          const userId = resolveUserId(headers)
+          return deps.resolveAttachment.execute(
+            userId,
+            params.slug,
+            params.lessonId,
+            params.attachmentId,
+          )
+        },
+      )
       .post('/lessons/:lessonId/complete', async ({ headers, params }) => {
         const userId = resolveUserId(headers)
         return deps.markComplete.execute(userId, params.lessonId)

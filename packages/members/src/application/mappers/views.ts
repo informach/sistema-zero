@@ -161,13 +161,26 @@ export interface LessonBlockView {
   quizState?: QuizStateView | null
 }
 
+/**
+ * Anexo na visão do ALUNO — SEM `url`: a localização real (key do bucket privado
+ * ou link externo) nunca chega ao browser. O download é pela rota autenticada do
+ * community (que resolve via `AttachmentDownloadView` e aplica a marca d'água).
+ */
 export interface LessonAttachmentView {
   id: string
   label: string
-  url: string
   fileType: string | null
   sizeBytes: number | null
   sortOrder: number
+}
+
+/** Resolução de download (server↔server, BFF do community): localização real do anexo. */
+export interface AttachmentDownloadView {
+  label: string
+  fileType: string | null
+  sizeBytes: number | null
+  /** `r2priv:<key>` (bucket privado) ou URL http(s) externa/legada. */
+  storageRef: string
 }
 
 export interface LessonDetailView {
@@ -222,7 +235,6 @@ export function toLessonDetailView(
     attachments: lesson.attachments.map((a) => ({
       id: a.id,
       label: a.label,
-      url: a.url,
       fileType: a.fileType,
       sizeBytes: a.sizeBytes,
       sortOrder: a.sortOrder,

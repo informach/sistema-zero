@@ -14,6 +14,14 @@ export class LessonNotFoundError extends DomainError {
   }
 }
 
+/** Anexo inexistente na aula (rota de download do aluno). → 404. */
+export class AttachmentNotFoundError extends DomainError {
+  readonly code = 'ATTACHMENT_NOT_FOUND'
+  constructor(message = 'Material não encontrado') {
+    super(message)
+  }
+}
+
 /** Módulo/bloco/anexo não encontrado (autoria). → 404. */
 export class ContentNotFoundError extends DomainError {
   readonly code = 'CONTENT_NOT_FOUND'

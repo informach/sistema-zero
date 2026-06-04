@@ -720,6 +720,18 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 600, windowMs: 60_000, by: 'principal' },
     },
+    // Resolução de download de anexo (devolve a localização real do arquivo) —
+    // consumida SÓ pelo servidor do community; a storageRef nunca chega ao browser.
+    {
+      id: 'members-attachment-resolve',
+      methods: ['GET'],
+      pathPattern: '/members/courses/:slug/lessons/:lessonId/attachments/:attachmentId/resolve',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
     {
       id: 'members-lesson-complete',
       methods: ['POST'],

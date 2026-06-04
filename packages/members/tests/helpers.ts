@@ -8,6 +8,7 @@ import {
   LessonAdminService,
   ModuleAdminService,
 } from '../src/application/content-admin/content-admin.service'
+import { GetAttachmentDownloadService } from '../src/application/get-attachment-download/get-attachment-download.service'
 import { GetCourseProgressService } from '../src/application/get-course-progress/get-course-progress.service'
 import { GetLessonService } from '../src/application/get-lesson/get-lesson.service'
 import { GetMemberDetailService } from '../src/application/get-member-detail/get-member-detail.service'
@@ -81,6 +82,7 @@ export function buildApp(
         quizAttempts,
         clock,
       ),
+      resolveAttachment: new GetAttachmentDownloadService(checkAccess, courses),
       markComplete: new MarkLessonCompleteService(
         checkAccess,
         courses,
