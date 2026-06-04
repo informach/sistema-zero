@@ -164,8 +164,10 @@ export default function CardCheckout({
       setInstallmentsList(list)
       // Mantém a parcela escolhida se ainda existir na lista nova; senão, 1x.
       setInstallments((cur) => (list?.some((i) => i.installment === cur) ? cur : 1))
-    } catch {
+    } catch (e) {
       // Falha na consulta de parcelas NÃO trava o pagamento — cai no fallback 1x.
+      // Loga p/ diagnóstico (a Efí devolve {code, error, error_description} — sem dado sensível).
+      console.error('[checkout/cartão] consulta de parcelas falhou:', e)
       if (reqIdRef.current === myId) setInstallmentsList(null)
     } finally {
       if (reqIdRef.current === myId) setLoadingInstallments(false)
@@ -294,7 +296,10 @@ export default function CardCheckout({
         return
       }
       setPaymentId(r.paymentId) // PENDING → poll curto
-    } catch {
+    } catch (e) {
+      // Loga o erro real p/ diagnóstico (tokenização da Efí lança {code, error,
+      // error_description}; o apiPost lança em não-2xx) — sem dado sensível.
+      console.error('[checkout/cartão] pagamento falhou:', e)
       setErro('Não foi possível processar o cartão. Confira os dados e tente novamente.')
     } finally {
       setProcessing(false)
