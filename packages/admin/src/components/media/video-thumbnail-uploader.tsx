@@ -6,16 +6,11 @@ import { toast } from 'sonner'
 import { type ApiError, apiUpload } from '@/lib/api'
 
 /**
- * Capa custom do vídeo Vimeo: envia JPG/PNG via BFF (Vimeo pictures) e devolve
- * `posterUrl` estável no R2 p/ o campo poster do bloco.
+ * Capa custom do vídeo Vimeo: envia JPG/PNG via BFF direto pro Vimeo (pictures
+ * API). O player do aluno usa a capa do próprio Vimeo — sem cópia no R2 nem
+ * campo poster no bloco (autoria v3).
  */
-export function VideoThumbnailUploader({
-  videoId,
-  onPoster,
-}: {
-  videoId: string
-  onPoster: (posterUrl: string) => void
-}) {
+export function VideoThumbnailUploader({ videoId }: { videoId: string }) {
   const fileRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
   const [done, setDone] = useState(false)
@@ -25,11 +20,7 @@ export function VideoThumbnailUploader({
     try {
       const form = new FormData()
       form.set('file', file)
-      const { posterUrl } = await apiUpload<{ posterUrl: string }>(
-        `/api/media/videos/${videoId}/thumbnail`,
-        form,
-      )
-      onPoster(posterUrl)
+      await apiUpload<{ ok: true }>(`/api/media/videos/${videoId}/thumbnail`, form)
       setDone(true)
       toast.success('Capa enviada — o Vimeo pode levar alguns minutos para aplicá-la.')
     } catch (err) {

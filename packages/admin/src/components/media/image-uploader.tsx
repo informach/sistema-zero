@@ -12,20 +12,24 @@ const ACCEPTED = 'image/png,image/jpeg,image/webp'
 
 /**
  * Uploader de imagem (capa de curso / bloco): clique → otimiza (WebP) → R2 →
- * preenche o campo com a URL pública. Mantém o fallback de URL manual (campo
- * continua editável) — colar uma URL externa também funciona.
+ * preenche o campo com a URL pública. O fallback de URL manual é opcional
+ * (`allowManualUrl`): a capa de curso mantém; o bloco de imagem é upload-only
+ * (autoria v3 — sem campo de URL).
  */
 export function ImageUploader({
   value,
   onChange,
   scope,
   inputId,
+  allowManualUrl = true,
 }: {
   value: string
   onChange: (url: string) => void
   scope: 'course' | 'block'
   /** id p/ o htmlFor do Field externo (aponta p/ o input de URL manual). */
   inputId?: string
+  /** `false` esconde o input de URL manual (upload é o único caminho). */
+  allowManualUrl?: boolean
 }) {
   const fileRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
@@ -98,12 +102,14 @@ export function ImageUploader({
         </button>
       )}
 
-      <Input
-        id={inputId}
-        placeholder="…ou cole uma URL de imagem"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-      />
+      {allowManualUrl ? (
+        <Input
+          id={inputId}
+          placeholder="…ou cole uma URL de imagem"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      ) : null}
     </div>
   )
 }

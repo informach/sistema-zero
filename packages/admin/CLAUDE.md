@@ -33,8 +33,16 @@ e **favicon** completo: `src/app/favicon.ico` + PNGs 16/32/192/512 + apple-touch
 > endpoints `/reorder`, erro→toast+reload) + módulos **colapsáveis** com contador "X de Y aulas
 > publicadas · N min" + **publicação por aula** (switch no dialog — aula nova nasce RASCUNHO —,
 > badge Publicada/Rascunho; publicar curso sem aula publicada → 409 `NO_PUBLISHED_LESSON` no
-> toast) + editor de blocos polimórficos (texto/vídeo/imagem/áudio/quiz/embed) e anexos, ambos
-> com DnD; bloco **rich_text usa TipTap** (`components/editor/rich-text-editor{,.impl}.tsx` —
+> toast) + editor de blocos polimórficos (texto/vídeo/imagem/áudio/quiz/embed/**ebook**) e anexos,
+> ambos com DnD; **autoria v3 (06/2026): upload é o ÚNICO caminho** — imagem upload-only
+> (`ImageUploader allowManualUrl={false}`; capa de curso mantém URL manual), vídeo **só Vimeo**
+> (sem select de provider/URL/duração manual — o uploader TUS preenche src/duração/transcrição;
+> `BlockForm.provider` interno preserva blocos legados youtube/file na edição), áudio via
+> `AudioUploader` (bucket público + duração auto), interativo = **só HTML** (CodeMirror 6 —
+> `components/editor/html-code-editor{,.impl}.tsx`, `@uiw/react-codemirror`+`@codemirror/lang-html`,
+> dynamic ssr:false, tema via next-themes; renderiza iframe sandbox 16:9 no aluno) e **ebook** =
+> PDF via `FileUploader` (bucket privado, `r2priv:`) + título → livro 3D no community; bloco
+> **rich_text usa TipTap** (`components/editor/rich-text-editor{,.impl}.tsx` —
 > saída MARKDOWN via tiptap-markdown, `dynamic ssr:false` + `immediatelyRender:false` +
 > `shouldRerenderOnTransaction:true`; estilos `.rich-text-content` no globals.css) e bloco
 > **quiz usa builder visual** (`aulas/[lessonId]/quiz-builder.tsx` — perguntas/opções/corretas/
@@ -78,6 +86,11 @@ conteúdo dos blocos do members (lixo órfão no R2 é dívida documentada; sem 
 
 - `POST /api/media/images` (multipart ≤5MB png/jpg/webp; `scope=course|block`) → sharp→WebP →
   R2 `admin/{courses,blocks}/<uuid>.webp` → `{url,width,height,sizeBytes}`.
+- `POST /api/media/audio` (multipart ≤50MB mp3/m4a/ogg/wav) → bucket R2 **PÚBLICO**
+  `admin/audio/<uuid>.<ext>` (sem transformação) → `{url,fileType,sizeBytes}`. Áudio de aula é
+  PÚBLICO de propósito: o `<audio>` do aluno toca a URL direto (bucket privado quebraria a
+  reprodução — bug da v2, corrigido na autoria v3). A **duração é detectada no client**
+  (`AudioUploader`: object URL + `loadedmetadata`) e salva no bloco — sem campo manual.
 - `POST /api/media/files` (multipart ≤50MB, allowlist pdf/zip/office/txt/csv/imagem/áudio) →
   bucket R2 **PRIVADO** (`R2_PRIVATE_BUCKET`, sem URL pública) `admin/attachments/*` →
   `{url,fileType,sizeBytes}` onde **`url` = referência `r2priv:<key>`** (NÃO navegável). O aluno
@@ -95,8 +108,9 @@ conteúdo dos blocos do members (lixo órfão no R2 é dívida documentada; sem 
   editor a ~5s/cap 10min) → `{status: processing|ready|failed, durationSeconds, embedUrl, captions?}`.
   Quando ready, baixa o VTT do Vimeo (link assinado, **EXPIRA**) e **re-hospeda no R2**
   (`admin/captions/<id>-<lang>.vtt`) → `captions[].url` estável p/ o bloco do members.
-- `POST /api/media/videos/:id/thumbnail` (multipart jpg/png ≤5MB) → Vimeo pictures + poster WebP
-  no R2 → `{posterUrl}`.
+- `POST /api/media/videos/:id/thumbnail` (multipart jpg/png ≤5MB) → **SÓ Vimeo pictures** →
+  `{ok:true}`. O player do aluno usa a capa do próprio Vimeo; a cópia WebP no R2 + `posterUrl`
+  da v2 foram removidas (decisão do usuário: capa direto no Vimeo, sem R2).
 
 **Decisões load-bearing:** `src` do bloco vídeo = **embed URL** `player.vimeo.com/video/<id>?h=…`
 (o renderer do community extrai o id por regex `vimeo\.com\/...` — id cru NÃO funciona); members e

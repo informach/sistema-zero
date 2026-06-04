@@ -17,14 +17,15 @@ import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
 import { Select } from '@sistemazero/ui/select'
 import { Spinner } from '@sistemazero/ui/spinner'
-import { Textarea } from '@sistemazero/ui/textarea'
 import { ArrowLeft, GripVertical, Pencil, Plus } from 'lucide-react'
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { useSortableItem } from '@/components/dnd/use-sortable-item'
+import { HtmlCodeEditor } from '@/components/editor/html-code-editor'
 import { RichTextEditor } from '@/components/editor/rich-text-editor'
+import { AudioUploader } from '@/components/media/audio-uploader'
 import { FileUploader } from '@/components/media/file-uploader'
 import { ImageUploader } from '@/components/media/image-uploader'
 import { VideoThumbnailUploader } from '@/components/media/video-thumbnail-uploader'
@@ -47,24 +48,32 @@ const KIND_LABELS: Record<string, string> = {
   audio: 'Áudio',
   quiz: 'Quiz',
   embed: 'Interativo',
+  ebook: 'E-book (livro 3D)',
 }
 
 interface BlockForm {
   kind: LessonBlockKind
   markdown: string
   html: string
+  /** Embed URL do vídeo (preenchida pelo uploader Vimeo — sem campo manual). */
   src: string
+  /** URL da imagem/áudio (preenchida pelos uploaders — sem campo manual). */
   url: string
+  /**
+   * Provider do vídeo — SEM UI (autoria v3 = Vimeo). Preservado na edição p/
+   * não corromper blocos legados (youtube/file) ao salvar sem trocar o vídeo.
+   */
   provider: string
-  posterUrl: string
+  /** Duração (s) AUTO-detectada (Vimeo no vídeo; loadedmetadata no áudio). */
   durationSeconds: string
   alt: string
   caption: string
-  embedType: string
-  height: string
   quiz: QuizValue
   /** Legendas/transcrição do vídeo (preenchidas pelo uploader Vimeo). */
   captions: { lang: string; url: string }[]
+  /** E-book: referência `r2priv:<key>` do PDF + título opcional. */
+  pdfUrl: string
+  title: string
 }
 
 const EMPTY_BLOCK: BlockForm = {
@@ -73,15 +82,14 @@ const EMPTY_BLOCK: BlockForm = {
   html: '',
   src: '',
   url: '',
-  provider: 'youtube',
-  posterUrl: '',
+  provider: 'vimeo',
   durationSeconds: '',
   alt: '',
   caption: '',
-  embedType: 'iframe',
-  height: '',
   quiz: { questions: [], passingScore: 70 },
   captions: [],
+  pdfUrl: '',
+  title: '',
 }
 
 const num = (s: string): number | undefined => (s.trim() ? Number(s) : undefined)
@@ -90,7 +98,6 @@ const opt = (s: string): string | undefined => (s.trim() ? s.trim() : undefined)
 /** Monta o conteúdo do bloco a partir do form. */
 function buildContent(f: BlockForm): LessonBlockContent {
   const dur = num(f.durationSeconds)
-  const height = num(f.height)
   switch (f.kind) {
     case 'rich_text':
       return {
@@ -103,7 +110,6 @@ function buildContent(f: BlockForm): LessonBlockContent {
         kind: 'video',
         provider: f.provider as 'mux' | 'youtube' | 'vimeo' | 'file',
         src: f.src.trim(),
-        ...(opt(f.posterUrl) ? { posterUrl: f.posterUrl.trim() } : {}),
         ...(dur != null ? { durationSeconds: dur } : {}),
         ...(f.captions.length > 0 ? { captions: f.captions } : {}),
       }
@@ -117,12 +123,13 @@ function buildContent(f: BlockForm): LessonBlockContent {
     case 'audio':
       return { kind: 'audio', url: f.url.trim(), ...(dur != null ? { durationSeconds: dur } : {}) }
     case 'embed':
+      // Autoria v3: interativo = só HTML (sempre iframe sandbox 16:9 no aluno).
+      return { kind: 'embed', html: f.html }
+    case 'ebook':
       return {
-        kind: 'embed',
-        embedType: f.embedType as 'three_js' | 'iframe' | 'codepen' | 'custom',
-        ...(opt(f.src) ? { src: f.src.trim() } : {}),
-        ...(opt(f.html) ? { html: f.html } : {}),
-        ...(height != null ? { height } : {}),
+        kind: 'ebook',
+        url: f.pdfUrl.trim(),
+        ...(opt(f.title) ? { title: f.title.trim() } : {}),
       }
     default:
       return {
@@ -130,6 +137,24 @@ function buildContent(f: BlockForm): LessonBlockContent {
         questions: f.quiz.questions,
         ...(f.quiz.passingScore != null ? { passingScore: f.quiz.passingScore } : {}),
       }
+  }
+}
+
+/** Campo obrigatório faltando → mensagem amigável (null = válido). */
+function validateBlock(f: BlockForm): string | null {
+  switch (f.kind) {
+    case 'video':
+      return f.src.trim() ? null : 'Envie o vídeo antes de salvar.'
+    case 'image':
+      return f.url.trim() ? null : 'Envie a imagem antes de salvar.'
+    case 'audio':
+      return f.url.trim() ? null : 'Envie o áudio antes de salvar.'
+    case 'embed':
+      return f.html.trim() ? null : 'Escreva o HTML do conteúdo interativo.'
+    case 'ebook':
+      return f.pdfUrl.trim() ? null : 'Envie o PDF do e-book antes de salvar.'
+    default:
+      return null
   }
 }
 
@@ -146,7 +171,9 @@ function blockSummary(b: BlockView): string {
     case 'audio':
       return c.url
     case 'embed':
-      return `${c.embedType}${c.src ? `: ${c.src}` : ''}`
+      return c.html ? 'HTML interativo (iframe sandbox)' : (c.src ?? '—')
+    case 'ebook':
+      return c.title ?? c.url
     case 'quiz':
       return `${c.questions.length} pergunta(s)`
     default:
@@ -222,23 +249,23 @@ export function LessonEditorClient({
       kind: c.kind,
       markdown: c.kind === 'rich_text' ? (c.markdown ?? '') : '',
       html: c.kind === 'rich_text' ? (c.html ?? '') : c.kind === 'embed' ? (c.html ?? '') : '',
-      src: c.kind === 'video' || c.kind === 'embed' ? (c.src ?? '') : '',
+      src: c.kind === 'video' ? c.src : '',
       url: c.kind === 'image' || c.kind === 'audio' ? c.url : '',
-      provider: c.kind === 'video' ? c.provider : 'youtube',
-      posterUrl: c.kind === 'video' ? (c.posterUrl ?? '') : '',
+      // Preserva o provider legado (youtube/file) — salvar sem trocar o vídeo não corrompe.
+      provider: c.kind === 'video' ? c.provider : 'vimeo',
       durationSeconds:
         (c.kind === 'video' || c.kind === 'audio') && c.durationSeconds != null
           ? String(c.durationSeconds)
           : '',
       alt: c.kind === 'image' ? (c.alt ?? '') : '',
       caption: c.kind === 'image' ? (c.caption ?? '') : '',
-      embedType: c.kind === 'embed' ? c.embedType : 'iframe',
-      height: c.kind === 'embed' && c.height != null ? String(c.height) : '',
       quiz:
         c.kind === 'quiz'
           ? { questions: c.questions, passingScore: c.passingScore }
           : EMPTY_BLOCK.quiz,
       captions: c.kind === 'video' ? (c.captions ?? []) : [],
+      pdfUrl: c.kind === 'ebook' ? c.url : '',
+      title: c.kind === 'ebook' ? (c.title ?? '') : '',
     })
     setBlockOpen(true)
   }
@@ -249,6 +276,11 @@ export function LessonEditorClient({
         toast.error(error)
         return
       }
+    }
+    const missing = validateBlock(blockForm)
+    if (missing) {
+      toast.error(missing)
+      return
     }
     const content = buildContent(blockForm)
     await run(async () => {
@@ -480,80 +512,45 @@ export function LessonEditorClient({
 
           {blockForm.kind === 'video' ? (
             <>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Provedor" htmlFor="bprov">
-                  <Select
-                    id="bprov"
-                    value={blockForm.provider}
-                    onChange={(e) => setBlockForm((f) => ({ ...f, provider: e.target.value }))}
-                  >
-                    {['youtube', 'vimeo', 'mux', 'file'].map((p) => (
-                      <option key={p} value={p}>
-                        {p}
-                      </option>
-                    ))}
-                  </Select>
-                </Field>
-                <Field label="Duração (s)" htmlFor="bdur" hint="Opcional.">
-                  <Input
-                    id="bdur"
-                    type="number"
-                    min={0}
-                    value={blockForm.durationSeconds}
-                    onChange={(e) =>
-                      setBlockForm((f) => ({ ...f, durationSeconds: e.target.value }))
-                    }
-                  />
-                </Field>
-              </div>
-              {blockForm.provider === 'vimeo' ? (
-                <Field
-                  label="Vídeo (Vimeo)"
-                  hint="Sobe direto pro Vimeo (resumável) e preenche URL/duração/transcrição."
-                >
-                  <VideoUploader
-                    currentSrc={blockForm.src || undefined}
-                    onReady={(v) =>
-                      setBlockForm((f) => ({
-                        ...f,
-                        src: v.embedUrl,
-                        durationSeconds:
-                          v.durationSeconds != null ? String(v.durationSeconds) : f.durationSeconds,
-                        captions: v.captions.length > 0 ? v.captions : f.captions,
-                      }))
-                    }
-                  />
-                </Field>
-              ) : null}
-              <Field label="URL/ID do vídeo" htmlFor="bsrc">
-                <Input
-                  id="bsrc"
-                  value={blockForm.src}
-                  onChange={(e) => setBlockForm((f) => ({ ...f, src: e.target.value }))}
+              <Field
+                label="Vídeo (Vimeo)"
+                hint="Sobe direto pro Vimeo (resumável); duração e transcrição entram sozinhas."
+              >
+                <VideoUploader
+                  currentSrc={blockForm.src || undefined}
+                  onReady={(v) =>
+                    setBlockForm((f) => ({
+                      ...f,
+                      provider: 'vimeo',
+                      src: v.embedUrl,
+                      durationSeconds:
+                        v.durationSeconds != null ? String(v.durationSeconds) : f.durationSeconds,
+                      captions: v.captions.length > 0 ? v.captions : f.captions,
+                    }))
+                  }
                 />
               </Field>
-              {blockForm.provider === 'vimeo' &&
-              /vimeo\.com\/(?:video\/)?\d{6,12}/.test(blockForm.src) ? (
-                <Field label="Capa do vídeo" hint="Troca a capa no Vimeo e preenche o poster.">
+              {/vimeo\.com\/(?:video\/)?\d{6,12}/.test(blockForm.src) ? (
+                <Field
+                  label="Capa do vídeo"
+                  hint="Envia direto pro Vimeo (o player usa essa capa)."
+                >
                   <VideoThumbnailUploader
                     videoId={
                       blockForm.src.match(/vimeo\.com\/(?:video\/)?(\d{6,12})/)?.[1] as string
                     }
-                    onPoster={(posterUrl) => setBlockForm((f) => ({ ...f, posterUrl }))}
                   />
                 </Field>
               ) : null}
-              <Field label="Poster (URL)" htmlFor="bposter" hint="Opcional.">
-                <Input
-                  id="bposter"
-                  value={blockForm.posterUrl}
-                  onChange={(e) => setBlockForm((f) => ({ ...f, posterUrl: e.target.value }))}
-                />
-              </Field>
-              {blockForm.captions.length > 0 ? (
+              {blockForm.durationSeconds || blockForm.captions.length > 0 ? (
                 <p className="text-xs text-muted-foreground">
-                  Transcrição: {blockForm.captions.map((c) => c.lang).join(', ')} (legenda salva no
-                  bloco)
+                  {blockForm.durationSeconds
+                    ? `Duração: ${blockForm.durationSeconds}s (automática do Vimeo)`
+                    : null}
+                  {blockForm.durationSeconds && blockForm.captions.length > 0 ? ' · ' : null}
+                  {blockForm.captions.length > 0
+                    ? `Transcrição: ${blockForm.captions.map((c) => c.lang).join(', ')}`
+                    : null}
                 </p>
               ) : null}
             </>
@@ -561,10 +558,10 @@ export function LessonEditorClient({
 
           {blockForm.kind === 'image' ? (
             <>
-              <Field label="Imagem" htmlFor="bimg" hint="Envie um arquivo ou cole uma URL.">
+              <Field label="Imagem" hint="Otimizada (WebP) e hospedada no R2 automaticamente.">
                 <ImageUploader
-                  inputId="bimg"
                   scope="block"
+                  allowManualUrl={false}
                   value={blockForm.url}
                   onChange={(url) => setBlockForm((f) => ({ ...f, url }))}
                 />
@@ -590,71 +587,67 @@ export function LessonEditorClient({
 
           {blockForm.kind === 'audio' ? (
             <>
-              <Field label="Áudio" hint="Envie um arquivo (MP3/M4A/OGG/WAV) ou cole a URL abaixo.">
-                <FileUploader
-                  accept="audio/*"
-                  label="Clique para enviar o áudio (até 50 MB)"
-                  onUploaded={({ url, sizeBytes: _sz }) => setBlockForm((f) => ({ ...f, url }))}
+              <Field label="Áudio" hint="Hospedado no R2; a duração é detectada do arquivo.">
+                <AudioUploader
+                  value={blockForm.url || undefined}
+                  onUploaded={({ url, durationSeconds }) =>
+                    setBlockForm((f) => ({
+                      ...f,
+                      url,
+                      durationSeconds:
+                        durationSeconds != null ? String(durationSeconds) : f.durationSeconds,
+                    }))
+                  }
                 />
               </Field>
-              <Field label="URL do áudio" htmlFor="baud">
-                <Input
-                  id="baud"
-                  value={blockForm.url}
-                  onChange={(e) => setBlockForm((f) => ({ ...f, url: e.target.value }))}
-                />
-              </Field>
-              <Field label="Duração (s)" htmlFor="badur" hint="Opcional.">
-                <Input
-                  id="badur"
-                  type="number"
-                  min={0}
-                  value={blockForm.durationSeconds}
-                  onChange={(e) => setBlockForm((f) => ({ ...f, durationSeconds: e.target.value }))}
-                />
-              </Field>
+              {blockForm.durationSeconds ? (
+                <p className="text-xs text-muted-foreground">
+                  Duração: {blockForm.durationSeconds}s (automática do arquivo)
+                </p>
+              ) : null}
             </>
           ) : null}
 
           {blockForm.kind === 'embed' ? (
+            <Field
+              label="HTML"
+              hint="Roda em iframe sandbox na área do aluno — largura total, proporção 16:9."
+            >
+              <HtmlCodeEditor
+                value={blockForm.html}
+                onChange={(html) => setBlockForm((f) => ({ ...f, html }))}
+              />
+            </Field>
+          ) : null}
+
+          {blockForm.kind === 'ebook' ? (
             <>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Tipo" htmlFor="betype">
-                  <Select
-                    id="betype"
-                    value={blockForm.embedType}
-                    onChange={(e) => setBlockForm((f) => ({ ...f, embedType: e.target.value }))}
-                  >
-                    {['iframe', 'three_js', 'codepen', 'custom'].map((t) => (
-                      <option key={t} value={t}>
-                        {t}
-                      </option>
-                    ))}
-                  </Select>
-                </Field>
-                <Field label="Altura (px)" htmlFor="bh" hint="Opcional.">
-                  <Input
-                    id="bh"
-                    type="number"
-                    min={0}
-                    value={blockForm.height}
-                    onChange={(e) => setBlockForm((f) => ({ ...f, height: e.target.value }))}
-                  />
-                </Field>
-              </div>
-              <Field label="URL (src)" htmlFor="besrc" hint="Para iframe/codepen.">
-                <Input
-                  id="besrc"
-                  value={blockForm.src}
-                  onChange={(e) => setBlockForm((f) => ({ ...f, src: e.target.value }))}
+              <Field
+                label="E-book (PDF)"
+                hint="Bucket privado; o aluno vê como livro 3D interativo com marca d'água."
+              >
+                <FileUploader
+                  accept="application/pdf,.pdf"
+                  label="Clique para enviar o PDF do e-book (até 50 MB)"
+                  onUploaded={({ url, filename }) =>
+                    setBlockForm((f) => ({
+                      ...f,
+                      pdfUrl: url,
+                      title: f.title.trim() ? f.title : filename.replace(/\.pdf$/i, ''),
+                    }))
+                  }
                 />
               </Field>
-              <Field label="HTML" htmlFor="behtml" hint="Para conteúdo custom/three.js.">
-                <Textarea
-                  id="behtml"
-                  rows={4}
-                  value={blockForm.html}
-                  onChange={(e) => setBlockForm((f) => ({ ...f, html: e.target.value }))}
+              {blockForm.pdfUrl ? (
+                <p className="truncate text-xs text-muted-foreground">
+                  PDF enviado: {blockForm.pdfUrl}
+                </p>
+              ) : null}
+              <Field label="Título" htmlFor="btitle" hint="Opcional — aparece junto ao livro.">
+                <Input
+                  id="btitle"
+                  value={blockForm.title}
+                  onChange={(e) => setBlockForm((f) => ({ ...f, title: e.target.value }))}
                 />
               </Field>
             </>

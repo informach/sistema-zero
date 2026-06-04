@@ -445,6 +445,13 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
   margin: 1em 0;
   color: var(--muted-foreground);
 }
+/* O espaçamento entre blocos vem do gap do container — sem margens vazando nas bordas */
+.lesson-prose > :first-child {
+  margin-top: 0;
+}
+.lesson-prose > :last-child {
+  margin-bottom: 0;
+}
 
 /* Modal — backdrop + entrada */
 @keyframes sz-fade-in {

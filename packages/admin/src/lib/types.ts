@@ -154,7 +154,15 @@ export interface CourseTreeView extends CourseView {
 }
 
 // Blocos: união discriminada por `kind` (espelha o domínio do members).
-export const LESSON_BLOCK_KINDS = ['rich_text', 'video', 'image', 'audio', 'quiz', 'embed'] as const
+export const LESSON_BLOCK_KINDS = [
+  'rich_text',
+  'video',
+  'image',
+  'audio',
+  'quiz',
+  'embed',
+  'ebook',
+] as const
 export type LessonBlockKind = (typeof LESSON_BLOCK_KINDS)[number]
 
 export interface RichTextBlock {
@@ -194,13 +202,24 @@ export interface QuizBlock {
   questions: QuizQuestion[]
   passingScore?: number
 }
+/** Interativo v3: SEMPRE iframe sandbox com HTML (embedType/src/height = legado). */
 export interface EmbedBlock {
   kind: 'embed'
-  embedType: 'three_js' | 'iframe' | 'codepen' | 'custom'
-  src?: string
   html?: string
   sandbox?: string
+  /** @deprecated legado da autoria v2 */
+  embedType?: string
+  /** @deprecated legado da autoria v2 */
+  src?: string
+  /** @deprecated legado da autoria v2 */
   height?: number
+}
+/** E-book (PDF no bucket R2 privado) → livro 3D na área do aluno. */
+export interface EbookBlock {
+  kind: 'ebook'
+  /** Referência `r2priv:<key>` (não navegável). */
+  url: string
+  title?: string
 }
 export type LessonBlockContent =
   | RichTextBlock
@@ -209,6 +228,7 @@ export type LessonBlockContent =
   | AudioBlock
   | QuizBlock
   | EmbedBlock
+  | EbookBlock
 
 export interface BlockView {
   id: string

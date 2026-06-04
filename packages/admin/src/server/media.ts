@@ -47,6 +47,14 @@ export const FILE_MIME_TYPES = new Set([
   'audio/ogg',
   'audio/wav',
 ])
+/** Áudio de aula (bloco de áudio): vai pro bucket PÚBLICO — o aluno toca direto. */
+export const AUDIO_MIME_TYPES = new Set([
+  'audio/mpeg',
+  'audio/mp4',
+  'audio/x-m4a',
+  'audio/ogg',
+  'audio/wav',
+])
 
 // ── Guard de sessão ─────────────────────────────────────────────────────────
 
@@ -153,6 +161,34 @@ export async function storeGenericFile(file: File): Promise<StoredFile> {
   })
   return {
     url: `r2priv:${key}`,
+    fileType: file.type || 'application/octet-stream',
+    sizeBytes: body.byteLength,
+  }
+}
+
+// ── Áudio de aula (R2 PÚBLICO) ──────────────────────────────────────────────
+
+export interface StoredAudio {
+  /** URL pública (o `<audio>` do aluno toca direto, com seek/range do CDN). */
+  url: string
+  fileType: string
+  sizeBytes: number
+}
+
+/**
+ * Armazena o áudio do bloco de aula no bucket PÚBLICO (sem transformação — o
+ * arquivo já vem comprimido). Diferente dos anexos: o player do aluno consome a
+ * URL direto, então bucket privado quebraria a reprodução.
+ */
+export async function storeAudioFile(file: File): Promise<StoredAudio> {
+  const body = Buffer.from(await file.arrayBuffer())
+  const { url } = await r2PutObject({
+    key: `admin/audio/${randomUUID()}.${safeExtension(file.name)}`,
+    body,
+    contentType: file.type || 'application/octet-stream',
+  })
+  return {
+    url,
     fileType: file.type || 'application/octet-stream',
     sizeBytes: body.byteLength,
   }
@@ -272,20 +308,13 @@ export async function getVideoStatus(vimeoVideoId: string): Promise<VideoStatus>
   return result
 }
 
-/** Sobe a capa custom no Vimeo e devolve um `posterUrl` estável no R2. */
-export async function storeVideoThumbnail(
-  vimeoVideoId: string,
-  file: File,
-): Promise<{ posterUrl: string }> {
+/**
+ * Sobe a capa custom direto no Vimeo (pictures API) — o player do aluno usa a
+ * capa do próprio Vimeo; não guardamos cópia no R2 (decisão da autoria v3).
+ */
+export async function storeVideoThumbnail(vimeoVideoId: string, file: File): Promise<{ ok: true }> {
   const bytes = await file.arrayBuffer()
   const mime = file.type === 'image/png' ? 'image/png' : 'image/jpeg'
   await uploadVideoThumbnail(vimeoVideoId, bytes, mime)
-  // Otimiza e guarda também no R2 → poster imediato no bloco (o Vimeo demora a processar).
-  const optimized = await optimizeImage(bytes, 'course-thumb')
-  const { url } = await r2PutObject({
-    key: `admin/posters/${vimeoVideoId}-${randomUUID()}.webp`,
-    body: optimized.buffer,
-    contentType: optimized.contentType,
-  })
-  return { posterUrl: url }
+  return { ok: true }
 }

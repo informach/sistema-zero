@@ -9,8 +9,8 @@ import {
 const THUMB_MIME_TYPES = new Set(['image/jpeg', 'image/png'])
 
 /**
- * Capa custom do vídeo: sobe a imagem ao Vimeo (pictures) e devolve um
- * `posterUrl` estável no R2 p/ o campo poster do bloco.
+ * Capa custom do vídeo: sobe a imagem direto ao Vimeo (pictures API). O player
+ * do aluno usa a capa do próprio Vimeo — sem cópia no R2 (autoria v3).
  */
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await requireMediaSession()
