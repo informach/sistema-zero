@@ -48,7 +48,11 @@
     "dev:messaging": "bun run --filter @sistemazero/messaging dev",
     "test:messaging": "bun run --filter @sistemazero/messaging test",
     "db:messaging:generate": "bun run --filter @sistemazero/messaging db:generate",
-    "db:messaging:migrate": "bun run --filter @sistemazero/messaging db:migrate"
+    "db:messaging:migrate": "bun run --filter @sistemazero/messaging db:migrate",
+    "dev:community": "bun run --filter @sistemazero/community dev",
+    "build:community": "bun run --filter @sistemazero/community build",
+    "start:community": "bun run --filter @sistemazero/community start",
+    "typecheck:community": "bun run --filter @sistemazero/community typecheck"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.16"

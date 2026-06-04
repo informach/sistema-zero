@@ -131,6 +131,37 @@
       }
     },
     {
+      "includes": ["packages/community/**/*.tsx"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "noStaticElementInteractions": "off",
+            "useKeyWithClickEvents": "off",
+            "useSemanticElements": "off",
+            "noSvgWithoutTitle": "off",
+            "useButtonType": "off",
+            "noLabelWithoutControl": "off"
+          },
+          "correctness": {
+            "useExhaustiveDependencies": "warn"
+          },
+          "performance": {
+            "noImgElement": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["packages/community/**/*.css"],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noImportantStyles": "off"
+          }
+        }
+      }
+    },
+    {
       "includes": ["packages/funnel/**/*.astro"],
       "linter": {
         "rules": {
