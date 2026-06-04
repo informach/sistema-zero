@@ -81,6 +81,10 @@ tests/               # unit/ · application/ · integration/ · fakes/
    chamada. Usamos um **cliente nativo** (`infrastructure/gateways/efi/efi.client.ts`)
    com `fetch` + `tls: { cert, key }` (PEM). O `.p12` é convertido em PEM na
    memória no boot por `node-forge` (`certificate.ts`). **Não reintroduza o SDK.**
+   **Efí FRIA é cara** (mTLS + OAuth ~15-16s sob Bun → era a causa dos 502 do 1º
+   Pix): o boot faz `warmUp()` dos clients (best-effort) e um **re-warm periódico
+   do token Pix** (`EFI_TOKEN_REWARM_INTERVAL_MS` = 45min; só o Pix — o da API
+   Cobranças não usa mTLS e o token vive ~600s). Ver `composition-root.ts`.
 
 2. **Corpo bruto (raw body) é sagrado.** A assinatura HMAC e o hash de
    idempotência usam o texto EXATO do corpo. Ele é capturado no `onParse`
@@ -111,6 +115,11 @@ tests/               # unit/ · application/ · integration/ · fakes/
    caso contrário deixa `IN_FLIGHT` para o TTL reciclar — senão um retry geraria novo
    `paymentId`/`txid` e **cobraria de novo** (vale p/ Pix também, não só boleto).
    Conclui em sucesso (cacheando a resposta). Mesma chave + payload diferente → 409.
+   Retry da MESMA chave com reserva `IN_FLIGHT` viva → **409 `IDEMPOTENCY_IN_FLIGHT`**
+   (o funil traduz p/ `PAYMENT_IN_PROGRESS` "aguarde" + auto-retry no PixCheckout).
+   O TTL da reserva (`IDEMPOTENCY_IN_FLIGHT_TTL_SECONDS` = 60s) é também o LOCKOUT
+   pós-falha-com-efeito; **não baixar de ~40s** (a perna Efí no pior caso passa de
+   45s — reserva expirar com a request original viva = risco de cobrança duplicada).
    `reserve` retorna `ReserveResult` (`{kind:'acquired',reservationId}` |
    `{kind:'existing',record}`); `complete`/`release` **exigem o `reservationId`** +
    `state='IN_FLIGHT'` → uma request zumbi (reserva já reciclada por outra) **não

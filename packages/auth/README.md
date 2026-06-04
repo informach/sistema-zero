@@ -17,13 +17,18 @@ usuário e aplica autorização na borda.
   `phone`/`signupSource`); refresh longo, opaco, **rotacionado** com
   **reuse-detection** (apresentar um refresh já usado revoga a família inteira).
 - **`GET /auth/me`**: resolve o usuário do access token — **`null` se não existir**,
-  senão a view `{ id, email, firstName, lastName, role, status, phone?, signupSource? }`.
+  senão a view `{ id, email, firstName, lastName, role, status, phone?, signupSource?, avatarUrl? }`.
 - **Reset/definição de senha**: `POST /auth/forgot-password` (SEMPRE 200 —
   anti-enumeração; envia e-mail via gateway → messaging) e
   `POST /auth/reset-password` (token single-use, sha256 no banco, TTL 60 min;
   troca a senha e **revoga todas as sessões**). Mesmo mecanismo serve o **1º acesso
   pós-compra** (o funil pede o token via rota interna S2S e envia o link de boas-vindas).
-- **Self-service de perfil**: `PATCH /auth/me` (nome/telefone — **e-mail não**) e
+- **OTP por e-mail**: `POST /auth/otp/request` (sempre 200, anti-enumeração; envia o
+  código via messaging), `POST /auth/otp/verify` (login passwordless → tokens) e
+  `POST /auth/password/reset-otp` (recuperação por código; revoga todas as sessões).
+  Código só como sha256, single-use, TTL curto, tentativas limitadas.
+- **Self-service de perfil**: `PATCH /auth/me` (nome/telefone/avatarUrl — **e-mail
+  não**; o upload da foto é do app cliente, o auth guarda só a URL) e
   `POST /auth/me/password` (troca logado, exige a senha atual; revoga as sessões).
 - **Admin de usuários** (`/auth/admin/users*`, p/ o painel): listar/detalhe/batch +
   editar papel/status/perfil com guards hierárquicos e concorrência otimista.

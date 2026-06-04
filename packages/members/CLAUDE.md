@@ -228,12 +228,15 @@ migration `0002`), `processed_webhooks`.
 
 ## Pendente (fatias seguintes)
 
-- Upload de assets (vídeo/imagem/anexo) — hoje a autoria só guarda URLs (sem storage próprio).
+- ~~Upload de assets~~ **resolvido fora daqui**: o painel admin sobe p/ R2/Vimeo (`/api/media/*`)
+  e a autoria do members segue guardando só URLs (sem storage próprio — por design).
 - Feature de comunidade (fórum/feed) — hoje só modelada como kind/accessType.
-- Concessão p/ comprador RECORRENTE (auth 409 não devolve userId; precisa lookup por e-mail).
+- ~~Concessão p/ comprador RECORRENTE~~ **RESOLVIDA**: o funil usa `POST /auth/internal/ensure-buyer`
+  (create-or-get por e-mail → SEMPRE devolve `userId`) antes do grant.
 - Drip/`fulfillment.release`; "acesso até o fim do período" no cancelamento (hoje corta na hora).
 - `course_progress` materializado; fan-out direto payments→members (hoje passa pelo funil).
-- Aplicar a migration num Postgres real + e2e ponta-a-ponta.
+- `metadata.salesPageUrl` editável pelo admin (hoje os DTOs de autoria não tocam `metadata`;
+  setar via seed/SQL).
 
 ## Checklist antes de finalizar
 

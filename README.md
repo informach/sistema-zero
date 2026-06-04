@@ -31,7 +31,8 @@ Gateway. Cada serviço é um pacote em `packages/*`, deployável de forma indepe
   resolve o usuário das claims, aplica **RBAC** por rota e repassa identidade
   confiável (`X-Auth-User-*`) ao upstream. Não tem banco (stateless; Redis opcional).
 - O **auth** é o emissor de identidade (IdP); o gateway verifica os tokens dele.
-  Também cuida do reset/definição de senha (tokens single-use por e-mail).
+  Também cuida do reset/definição de senha (tokens single-use por e-mail) e do
+  **OTP por código** (login passwordless + recuperação de senha).
 - **catalog** é a fonte de preço/inclusões (consumido pelo funil); **members**
   materializa o acesso do aluno (matrícula concedida por webhook pós-pagamento) e
   serve os cursos/aulas; **payments** expõe também "minhas compras" ao aluno
@@ -48,7 +49,7 @@ Gateway. Cada serviço é um pacote em `packages/*`, deployável de forma indepe
 | [`@sistemazero/members`](packages/members) | 3004 | Área de membros: matrícula/entitlement + cursos/aulas (blocos polimórficos) + progresso — DDD/Hexagonal |
 | [`@sistemazero/admin`](packages/admin) | 3005 | Painel admin (Next.js 16, BFF via gateway): catálogo, usuários, pagamentos, membros |
 | [`@sistemazero/messaging`](packages/messaging) | 3006 | Mensageria transacional: e-mail (SendGrid) + WhatsApp (Evolution), templates no banco — DDD/Hexagonal |
-| [`@sistemazero/community`](packages/community) | 3007 | Área do aluno (Next.js 16, BFF via gateway): login/reset de senha, cursos/player, perfil, compras |
+| [`@sistemazero/community`](packages/community) | 3007 | Área do aluno (Next.js 16, BFF via gateway): login (senha/OTP), cursos/player, catálogo "todos os cursos", perfil c/ foto, compras |
 | [`@sistemazero/funnel`](packages/funnel) | 4321 | Funil de vendas (Astro 6 + ilhas React): quiz → vendas → checkout (Pix/cartão/boleto) → admin |
 | [`@sistemazero/core`](packages/core) | — | Lib compartilhada (security/logging/errors/result/http), sem framework |
 | [`@sistemazero/tui`](packages/tui) | — | UI de terminal (React + OpenTUI) |
@@ -76,7 +77,7 @@ bun run --filter @sistemazero/funnel    db:migrate
 bun run --filter @sistemazero/auth      db:migrate
 bun run --filter @sistemazero/catalog   db:migrate   # depois: db:seed (produto + oferta atuais)
 bun run --filter @sistemazero/members   db:migrate   # depois: db:seed (curso de exemplo)
-bun run --filter @sistemazero/messaging db:migrate   # depois: templates:seed (welcome + password-reset)
+bun run --filter @sistemazero/messaging db:migrate   # depois: templates:seed (welcome + password-reset + otp)
 ```
 
 ## Setup

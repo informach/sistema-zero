@@ -61,10 +61,13 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
 - **Gate de UI:** `src/proxy.ts` bloqueia `/` (exato) e `/cursos|/perfil|/compras` sem cookie de
   refresh (redirect `/login`); o layout do grupo `(app)` faz a checagem real. A CSP do proxy tem
   **`frame-src` allowlist** (youtube-nocookie + player.vimeo) p/ o player de aulas.
-- **Senha:** `/esqueci-senha` → `POST /auth/forgot-password` (sempre 200, anti-enumeração);
-  `/redefinir-senha?token=` → `POST /auth/reset-password` — serve o RESET e o **1º acesso
-  pós-compra** (o funil envia o e-mail `welcome` com esse link). Trocar senha logado revoga TODAS
-  as sessões → o handler limpa os cookies e a UI manda re-logar.
+- **Senha/OTP:** `/esqueci-senha` = recuperação por CÓDIGO (OTP por e-mail, 2 passos:
+  `POST /auth/otp/request {purpose:'password_reset'}` — sempre 200, anti-enumeração — e
+  `POST /auth/password/reset-otp` com código + senha nova). O login também tem modo **OTP
+  passwordless** (`login-form.tsx`: `otp/request {purpose:'sign_in'}` → `otp/verify` → tokens).
+  `/redefinir-senha?token=` → `POST /auth/reset-password` — reset por LINK, serve o **1º acesso
+  pós-compra** (o funil envia o e-mail `welcome` com esse link). Trocar/redefinir senha revoga
+  TODAS as sessões → o handler limpa os cookies e a UI manda re-logar.
 
 ## Invariantes (NÃO quebrar)
 
@@ -82,7 +85,10 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
 5. **Blocos de aula = conteúdo de terceiros.** NUNCA interpole `src` cru em iframe — extraia o ID e
    monte a URL canônica (`youtube-nocookie.com/embed/<id>`, `player.vimeo.com/video/<id>`); HTML de
    embed roda SÓ em `iframe sandbox` SEM `allow-same-origin` (`lesson-blocks.tsx`). `rich_text`
-   renderiza `markdown` com conversor próprio controlado (sem HTML cru).
+   renderiza `markdown` com conversor próprio controlado (sem HTML cru) — tokens suportados:
+   headings 1-3, listas `-`/`*` e numeradas `1.`, citação `> `, código inline/fenced, negrito,
+   itálico (`*x*`/`_x_`) e links http(s). É o ALVO do editor TipTap do admin (saída markdown) —
+   token novo na toolbar de lá exige suporte aqui.
 6. **Capas/imagens de curso usam `<img>`** (URLs externas arbitrárias da autoria — evita configurar
    `images.remotePatterns` por domínio). `noImgElement` está off no biome p/ este package.
 
@@ -103,8 +109,10 @@ src/
       compras/              Tabela paginada + dialog de detalhe
     api/
       auth/{login,logout,forgot-password,reset-password,me,me/password}/route.ts
+      auth/{otp/request,otp/verify,password/reset-otp}/route.ts   (login/reset por código)
       me/avatar/route.ts    POST multipart → sharp→WebP → R2 → PATCH /auth/me
-      members/lessons/[lessonId]/complete/route.ts
+      members/lessons/[lessonId]/{complete,position}/route.ts
+      members/lessons/[lessonId]/blocks/[blockId]/quiz-attempts/route.ts
       payments/my/route.ts
   server/   session.ts · gateway.ts · auth.ts · members.ts · payments.ts
             r2.ts · image-optimizer.ts · media.ts (avatar→R2; exceção consciente)   (server-only)
@@ -142,7 +150,8 @@ Da raiz: `bun run dev:community`, `build:community`, `typecheck:community`.
 - `FUNNEL_URL` opcional — fallback da página de vendas em `/cursos` (curso sem
   `metadata.salesPageUrl`); sem ela e sem metadata, o card bloqueado fica não-clicável.
 - `R2_ACCOUNT_ID`/`R2_ACCESS_KEY_ID`/`R2_SECRET_ACCESS_KEY`/`R2_BUCKET`/`R2_PUBLIC_URL`
-  opcionais — upload de avatar (ausentes → 503 amigável; mesmo bucket do admin).
+  opcionais — upload de avatar (ausentes → 503 amigável; mesmo bucket do admin: dev = `testes`
+  com `R2_PUBLIC_URL` r2.dev · prod = `comunidade-sistema-zero` com `cdn.sistemazero.com.br`).
 
 ## Setup local (e2e)
 
@@ -157,7 +166,9 @@ Da raiz: `bun run dev:community`, `build:community`, `typecheck:community`.
 ## Contratos consumidos (via gateway)
 
 - Auth: `POST /auth/login|refresh|logout`, `GET /auth/me`, `POST /auth/forgot-password` (5/min/IP),
-  `POST /auth/reset-password`, `PATCH /auth/me` `{firstName?,lastName?,phone?,avatarUrl?}` (SEM
+  `POST /auth/reset-password`, `POST /auth/otp/request` `{email, purpose}` (5/min/IP, sempre 200),
+  `POST /auth/otp/verify` `{email, code}` (→ tokens), `POST /auth/password/reset-otp`
+  `{email, code, newPassword}`, `PATCH /auth/me` `{firstName?,lastName?,phone?,avatarUrl?}` (SEM
   e-mail; `avatarUrl` setado pelo handler do upload), `POST /auth/me/password`
   `{currentPassword,newPassword}` (revoga todas as sessões).
 - Members (JWT + x-internal-token injetados pelo gateway): `GET /members/courses` →

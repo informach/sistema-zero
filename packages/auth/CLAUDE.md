@@ -15,10 +15,11 @@ Guia operacional para trabalhar neste package. Leia antes de editar.
 usuário das claims e autoriza por rota). Runtime: **Bun**. Linguagem: **TS (ESM)**.
 
 > Estado: **slices completos e testados** (registro/login/refresh/logout/me + JWKS;
-> admin de usuários; reset/definição de senha + self-service de perfil + rotas
-> internas S2S), 80 testes passando. Migrations `0000_*` (schema `auth`),
-> `0001_*` (`password_reset_tokens`), `0002_*` (`otp_codes`) e `0003_*`
-> (`users.avatar_url`) **aplicadas** no Postgres compartilhado local.
+> admin de usuários; reset/definição de senha + **OTP por e-mail** — login passwordless
+> e recuperação por código — + self-service de perfil c/ avatar + rotas internas S2S),
+> 80 testes passando. Migrations `0000_*` (schema `auth`), `0001_*`
+> (`password_reset_tokens`), `0002_*` (`otp_codes`) e `0003_*` (`users.avatar_url`)
+> **aplicadas** no Postgres compartilhado local.
 
 ## Arquitetura (DDD + Hexagonal)
 
@@ -107,6 +108,16 @@ src/
    NÃO é editável (vínculo com as compras no payments; troca futura exigirá
    verificação). `POST /auth/me/password` troca a senha exigindo a atual; ambos
    revogam nada/todas as sessões respectivamente (troca de senha → re-login).
+10. **OTP por e-mail (`otp_codes`):** código guardado **só como sha256**, single-use
+    (`consumed_at`), TTL `OTP_TTL_MINUTES` (10); brute-force travado por `attempts`
+    (`OTP_MAX_ATTEMPTS`, 5 — estourou → consome o código). Um código ativo por
+    (usuário, finalidade): pedir outro consome os pendentes daquela finalidade.
+    `POST /auth/otp/request` `{email, purpose: 'sign_in'|'password_reset'}` responde
+    **SEMPRE 200** (anti-enumeração) e envia o template `otp` via gateway→messaging
+    (o código CRU só trafega ao messaging — nunca é persistido); `POST /auth/otp/verify`
+    = login passwordless (→ tokens); `POST /auth/password/reset-otp` consome o código,
+    define a senha nova e **revoga TODAS as sessões**. É o fluxo do `/esqueci-senha`
+    do community (o reset por LINK do item 8 continua p/ o 1º acesso pós-compra).
 
 ## Integração com o gateway
 

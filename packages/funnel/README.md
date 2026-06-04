@@ -2,7 +2,7 @@
 
 Funil de vendas do produto **No Comando da IA** (ebook, R$ 37): quiz de 10 perguntas (em `/quiz`;
 `/` redireciona) → resultado personalizado → página de vendas → modal de pré-checkout →
-checkout (Pix) → painel admin (login in-app).
+checkout (**Pix, cartão e boleto**) → painel admin (login via auth/IdP).
 
 - **Stack**: Astro 6 (`output: server` + `@astrojs/node` standalone, no Bun), ilhas **React 19**
   só onde há interação, **Drizzle + postgres.js** (schema `funil`), **Tailwind CSS v4**, **Zod**.
