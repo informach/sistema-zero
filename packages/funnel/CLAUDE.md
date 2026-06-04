@@ -140,6 +140,13 @@ gateway re-entrega) e **best-effort** no polling do Pix (`pixStatus`) e no cart�
     do gateway/CDN. Mantenha o limite generoso (o quiz faz ~12 PATCH por sessão).
   - A CSP usa `'unsafe-inline'` em script/style — necessário p/ hidratação do Astro, JSON-LD inline
     (`ProductJsonLd`) e o `onerror` do `ImageSlot`. Ao adicionar inline scripts, lembre disso.
+  - A CSP também libera as origens do **checkout de cartão** (`payment-token-efi`): API de cobranças
+    da Efí (`cobrancas[-h].api.efipay.com.br` em `connect-src`), tokenizer (`tokenizer.sejaefi.com.br`
+    em `connect-src`) e fingerprint antifraude da ClearSale (`device.clearsale.com.br` em
+    `script-src`/`connect-src`/`img-src`; `web.fpcs-monitor.com.br` em `connect-src`/`img-src`).
+    Sem isso a tokenização falha e o `isScriptBlocked()` acusa "adblock" à toa. Se a Efí mudar de
+    endpoints numa atualização da lib, re-extraia as URLs do bundle
+    (`rg -o 'https://[a-z0-9.-]+' node_modules/payment-token-efi/dist/payment-token-efi-esm.min.js`).
 - **Admin** (`/admin`, `/api/admin/*`): login com **usuário REAL do auth (IdP)** via gateway
   (`lib/admin-auth.ts`). `POST /api/admin/login` (ilha `AdminLogin`, e-mail+senha validados com Zod)
   chama o gateway `POST /auth/login`; só `role ∈ {admin, superadmin}` + `status: active` entra (senão

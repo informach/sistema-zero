@@ -10,13 +10,21 @@ const RATE_LIMITED = /^\/api\/(leads|events|contact|checkout)(\/|$)/
 const RATE_LIMIT = 240 // requisições…
 const RATE_WINDOW_MS = 60_000 // …por minuto, por IP (generoso: o quiz faz ~12 PATCH)
 
+// Origens do checkout de cartão (payment-token-efi v3 — tokenização no browser):
+// API de cobranças da Efí (produção + sandbox/homolog., installments/pubkey),
+// tokenizer (salt/card) e fingerprint antifraude da ClearSale (fp.js + pixels).
+// Sem elas a CSP bloqueia a tokenização e o isScriptBlocked() acusa "adblock" à toa.
+const EFI_API = 'https://cobrancas.api.efipay.com.br https://cobrancas-h.api.efipay.com.br'
+const EFI_TOKENIZER = 'https://tokenizer.sejaefi.com.br'
+const EFI_FINGERPRINT = 'https://device.clearsale.com.br https://web.fpcs-monitor.com.br'
+
 const CSP = [
   "default-src 'self'",
-  "img-src 'self' data:", // QR do Pix vem como data:image/png;base64
+  `img-src 'self' data: ${EFI_FINGERPRINT}`, // QR do Pix vem como data:image/png;base64 + pixels fp.png
   "font-src 'self' data:",
   "style-src 'self' 'unsafe-inline'", // estilos inline do Astro/Tailwind + style={}
-  "script-src 'self' 'unsafe-inline'", // hidratação + JSON-LD inline + onerror da imagem
-  "connect-src 'self'",
+  "script-src 'self' 'unsafe-inline' https://device.clearsale.com.br", // hidratação + JSON-LD inline + onerror da imagem + fp.js
+  `connect-src 'self' ${EFI_API} ${EFI_TOKENIZER} ${EFI_FINGERPRINT}`,
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
