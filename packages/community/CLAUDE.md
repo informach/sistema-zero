@@ -250,13 +250,20 @@ Da raiz: `bun run dev:community`, `build:community`, `typecheck:community`.
 - **E-book / livro 3D** (`components/community/ebook/*`): bloco `ebook` renderiza o PDF como
   livro 3D interativo — folhas com dobra real (SkinnedMesh + cadeia de bones por folha, damp por
   frame; frente da folha i = página 2i+1, verso = 2i+2), virar por clique na página ou botões
-  HTML (acessíveis), rotação leve por drag (OrbitControls com ângulos restritos), flutuação idle.
-  Texturas via pdf.js (worker do próprio bundle — CSP tem `worker-src 'self' blob:`), janela
-  lazy folha±2 com `texture.dispose()` (PDF grande não estoura GPU), ~1280px de largura por
-  página. O PDF chega da rota BFF já com a **marca d'água do aluno** (mesma pipeline dos anexos)
-  → a marca aparece nas próprias páginas do livro. Deps: `three` (+`transpilePackages`),
-  `@react-three/fiber@9` (React 19), `@react-three/drei@10`, `pdfjs-dist@6` — TUDO atrás de
-  `dynamic ssr:false` (só entra no bundle quando a aula tem bloco e-book).
+  HTML (acessíveis), inclinação leve por drag (OrbitControls restrito), flutuação idle.
+  **Orientação DE FRENTE** (ajustes 04/06/2026): folha não virada = rotação 0 (livro fechado
+  mostra a CAPA pro leitor), virada = −π; verso da última folha sem página = **contracapa
+  escura** (`BACK_COVER_COLOR`). **Legibilidade**: `Canvas flat` (SEM tone mapping — ACES lavava
+  o contraste do texto), texturas 1536px + `anisotropy 16`, luz ambiente dominante. **Tela
+  cheia** no container (Fullscreen API, mesmo padrão do `vimeo-player`; em fullscreen o
+  `aspect-video` vira `h-full` e o **zoom por scroll LIGA** — fora dela ficaria sequestrando o
+  scroll da página). Fundo = gradiente radial calmo (azul-escuro). Texturas via pdf.js (worker
+  do próprio bundle — CSP tem `worker-src 'self' blob:`), janela lazy folha±2 com
+  `texture.dispose()` (keep ±3; PDF grande não estoura GPU). O PDF chega da rota BFF já com a
+  **marca d'água do aluno** (mesma pipeline dos anexos) → a marca aparece nas próprias páginas
+  do livro. Deps: `three` (+`transpilePackages`), `@react-three/fiber@9` (React 19),
+  `@react-three/drei@10`, `pdfjs-dist@6` — TUDO atrás de `dynamic ssr:false` (só entra no
+  bundle quando a aula tem bloco e-book).
 - **Player Vimeo** (`vimeo-player.tsx` + `@vimeo/player`, bundle local — postMessage com o
   iframe; a CSP `frame-src player.vimeo.com` já cobre, sem mudança no proxy): watermark com o
   e-mail do aluno, fullscreen custom no CONTAINER (mantém o watermark em tela cheia), retoma

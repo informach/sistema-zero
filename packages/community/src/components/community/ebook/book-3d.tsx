@@ -20,11 +20,13 @@ const SEGMENTS = 24
 /** Velocidade do damp exponencial (quanto maior, mais rápida a virada). */
 const EASE_LAMBDA = 5
 /** Curvatura de repouso das páginas abertas (leve arco de papel). */
-const REST_CURL = 0.09
+const REST_CURL = 0.07
 /** Curvatura extra enquanto a folha está virando (dobra viajante). */
 const TURN_CURL = 0.18
 /** Duração aproximada da dobra de virada (ms). */
 const TURN_MS = 600
+/** Contracapa (lado de fora do livro fechado no fim) — tom escuro do tema. */
+const BACK_COVER_COLOR = '#15181e'
 
 /** Geometria compartilhada por todas as folhas (skinIndex/skinWeight ao longo de X). */
 function createPageGeometry(height: number): THREE.BoxGeometry {
@@ -67,6 +69,9 @@ interface SheetProps {
 }
 
 function Sheet({ number, totalSheets, page, geometry, front, back, onFlip }: SheetProps) {
+  // Verso da ÚLTIMA folha = lado de fora do livro fechado no fim (contracapa):
+  // sem página do PDF ali (total ímpar), pinta com o tom escuro do tema.
+  const isBackCover = number === totalSheets - 1
   const groupRef = useRef<THREE.Group>(null)
   const [hovered, setHovered] = useState(false)
   useCursor(hovered)
@@ -88,9 +93,9 @@ function Sheet({ number, totalSheets, page, geometry, front, back, onFlip }: She
     frontMat.color.set(front ? 'white' : '#e8e4da')
     frontMat.needsUpdate = true
     backMat.map = back
-    backMat.color.set(back ? 'white' : '#e8e4da')
+    backMat.color.set(back ? 'white' : isBackCover ? BACK_COVER_COLOR : '#e8e4da')
     backMat.needsUpdate = true
-  }, [front, back, frontMat, backMat])
+  }, [front, back, frontMat, backMat, isBackCover])
 
   // SkinnedMesh manual: cadeia de bones da lombada à borda externa da folha.
   const mesh = useMemo(() => {
@@ -133,10 +138,11 @@ function Sheet({ number, totalSheets, page, geometry, front, back, onFlip }: She
     const turnBump = Math.sin(t * Math.PI)
 
     const bookClosed = page === 0 || page === totalSheets
-    // Ângulo-alvo da folha inteira: direita (fechada) ↔ esquerda (virada),
-    // com um leque sutil por folha para o miolo não ser um plano único.
-    const fan = bookClosed ? 0 : (number - page + 0.5) * 0.012
-    const rootTarget = (turned ? -1 : 1) * (Math.PI / 2) + fan
+    // Ângulo-alvo da folha inteira, DE FRENTE pro leitor: não virada = 0 (página
+    // à direita, face pra câmera — livro fechado mostra a CAPA), virada = -π
+    // (deita à esquerda, verso pra câmera). Leque sutil por folha no miolo.
+    const fan = bookClosed ? 0 : (number - page + 0.5) * 0.01
+    const rootTarget = (turned ? -Math.PI : 0) + fan
 
     const bones = mesh.skeleton.bones
     for (let i = 0; i < bones.length; i++) {
@@ -199,8 +205,8 @@ export function Book3D({ pdf, page, onFlip }: Book3DProps) {
   useFrame((state) => {
     if (!groupRef.current) return
     const t = state.clock.elapsedTime
-    groupRef.current.rotation.z = Math.sin(t * 0.4) * 0.01
-    groupRef.current.position.y = Math.sin(t * 0.6) * 0.012
+    groupRef.current.rotation.z = Math.sin(t * 0.4) * 0.006
+    groupRef.current.position.y = Math.sin(t * 0.6) * 0.01
   })
 
   // Livro fechado fica centralizado; aberto, a lombada vai ao centro.
@@ -213,7 +219,9 @@ export function Book3D({ pdf, page, onFlip }: Book3DProps) {
   })
 
   return (
-    <group ref={groupRef} rotation-x={-Math.PI / 12}>
+    // Inclinação MÍNIMA: o livro abre praticamente de frente (legibilidade);
+    // o aluno inclina mais se quiser via drag (OrbitControls).
+    <group ref={groupRef} rotation-x={-0.06}>
       <group ref={innerRef}>
         {Array.from({ length: totalSheets }, (_, i) => {
           // pdf.version na key NÃO — as texturas mudam por prop (getTexture).

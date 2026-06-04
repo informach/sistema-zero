@@ -3,12 +3,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 
-/** Largura-alvo das texturas (px) — legível no livro sem estourar a memória. */
-const TEXTURE_WIDTH = 1280
+/** Largura-alvo das texturas (px) — legível (inclusive em tela cheia) sem estourar a memória. */
+const TEXTURE_WIDTH = 1536
 /** Folhas (sheets) ao redor da atual com textura garantida. */
 const RENDER_WINDOW = 2
 /** Folhas além das quais a textura é descartada (evita thrash no limiar). */
-const KEEP_WINDOW = 4
+const KEEP_WINDOW = 3
 
 type PdfStatus = 'loading' | 'ready' | 'error'
 
@@ -108,7 +108,8 @@ export function usePdfPages(pdfUrl: string): PdfPages {
         if (disposedRef.current) return
         const tex = new THREE.CanvasTexture(canvas)
         tex.colorSpace = THREE.SRGBColorSpace
-        tex.anisotropy = 4
+        // Texto fica legível mesmo com a página levemente inclinada (driver clampa no máx. da GPU).
+        tex.anisotropy = 16
         texturesRef.current.set(num, tex)
         changed = true
         setVersion((v) => v + 1) // textura nova → materiais re-aplicam o map
