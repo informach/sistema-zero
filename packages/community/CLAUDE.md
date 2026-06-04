@@ -43,8 +43,21 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
   `sz_member_refresh` (opaco) em cookies **HttpOnly**.
 - **Sessão (`src/server/session.ts`):** `getSession()` verifica o access JWT (HS256, MESMO
   `JWT_HS256_SECRET` do auth/gateway). Cookies `sz_member_*` (≠ `sz_admin_*` do painel).
-- **Refresh (`src/server/gateway.ts`):** `gatewayFetch` em 401 chama `/auth/refresh`, regrava os
-  cookies e re-tenta UMA vez. **Só** roda em Route Handlers/Server Actions.
+- **Refresh — DOIS caminhos, UMA rotação (`src/server/refresh.ts`):** `refreshTokens()` faz a
+  chamada `/auth/refresh` com **single-flight + cache 60s por refresh token** — obrigatório:
+  requisições concorrentes (prefetch + navegação, proxy + handler) apresentando o MESMO refresh
+  duas vezes disparariam a reuse-detection do auth e revogariam a família (logout). Estado em
+  memória de módulo (community é single-réplica pré-MVP). Quem rotaciona:
+  1. **`src/proxy.ts`** (caminho de PÁGINA): access com `exp` vencido (decodeJwt, folga 30s) →
+     rotaciona ANTES do render, reescreve o cookie da request (`NextResponse.next({request})`)
+     e grava na response. Páginas/layouts são Server Components e **NÃO podem escrever cookies**
+     (`cookies().set()` LANÇA) — o proxy é o único lugar do caminho de página que pode.
+     Refresh `invalid` → limpa cookies + `/login`; gateway fora (`unavailable`) → segue degradado.
+  2. **`gatewayFetch`** (Route Handlers/Server Actions): em 401 rotaciona e re-tenta UMA vez;
+     a escrita de cookie é try/catch (em RSC engole — o single-flight garante que a próxima
+     request, ainda com o cookie antigo, receba os MESMOS tokens).
+  Para dados em Server Component use **`gatewayFetchReadonly`/`getMeReadonly`** quando um 401
+  puder ser degradado (ex.: avatar do header) — nunca tenta refresh nem toca cookies.
 - **Gate de UI:** `src/proxy.ts` bloqueia `/` (exato) e `/cursos|/perfil|/compras` sem cookie de
   refresh (redirect `/login`); o layout do grupo `(app)` faz a checagem real. A CSP do proxy tem
   **`frame-src` allowlist** (youtube-nocookie + player.vimeo) p/ o player de aulas.

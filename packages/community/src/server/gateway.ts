@@ -1,5 +1,6 @@
 import 'server-only'
 import { getEnv } from '@/lib/env'
+import { refreshTokens } from './refresh'
 import {
   type AuthTokens,
   clearSessionCookies,
@@ -45,28 +46,33 @@ async function readJson<T>(res: Response): Promise<T> {
   }
 }
 
-/** Rotação de tokens (gateway → auth /refresh). Regrava os cookies; null se falhar. */
+/**
+ * Rotação de tokens (gateway → auth /refresh) via `refreshTokens` (single-flight —
+ * compartilha a rotação com o proxy e com chamadas concorrentes). Regrava os
+ * cookies quando possível; em Server Component a escrita LANÇA ("Cookies can only
+ * be modified in a Server Action or Route Handler") → engole e segue com o token
+ * novo só nesta request (o cache do single-flight garante que a PRÓXIMA request,
+ * ainda com o cookie antigo, receba os MESMOS tokens — sem revogar a família).
+ */
 async function tryRefresh(): Promise<string | null> {
   const refreshToken = await getRefreshToken()
   if (!refreshToken) return null
-  const env = getEnv()
-  const res = await fetch(new URL('/auth/refresh', env.GATEWAY_URL), {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ refreshToken }),
-    cache: 'no-store',
-  })
-  if (!res.ok) {
-    await clearSessionCookies()
+  const result = await refreshTokens(refreshToken)
+  if (result === 'unavailable') return null
+  if (result === 'invalid') {
+    try {
+      await clearSessionCookies()
+    } catch {
+      // Server Component: sem escrita de cookie — o proxy limpa na próxima request.
+    }
     return null
   }
-  const data = await readJson<{ tokens?: AuthTokens }>(res)
-  if (!data?.tokens?.accessToken) {
-    await clearSessionCookies()
-    return null
+  try {
+    await setSessionCookies(result)
+  } catch {
+    // Server Component: idem — o proxy persiste os cookies na próxima request.
   }
-  await setSessionCookies(data.tokens)
-  return data.tokens.accessToken
+  return result.accessToken
 }
 
 /**
@@ -84,6 +90,21 @@ export async function gatewayFetch<T = unknown>(
     const renewed = await tryRefresh()
     if (renewed) res = await rawFetch(path, opts, renewed)
   }
+  return { status: res.status, body: await readJson<T>(res) }
+}
+
+/**
+ * Variante SOMENTE-LEITURA p/ Server Components (layouts/pages): NÃO tenta refresh
+ * nem toca cookies (o Next proíbe escrita fora de Route Handler/Server Action —
+ * `cookies().set()` lança). Access expirado → devolve o 401 cru e o caller usa um
+ * fallback; a rotação real acontece na próxima chamada `/api/*` do client.
+ */
+export async function gatewayFetchReadonly<T = unknown>(
+  path: string,
+  opts: CallOpts = {},
+): Promise<GatewayResponse<T>> {
+  const access = await getAccessToken()
+  const res = await rawFetch(path, opts, access)
   return { status: res.status, body: await readJson<T>(res) }
 }
 

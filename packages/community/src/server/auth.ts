@@ -1,11 +1,19 @@
 import 'server-only'
 import { getEnv } from '@/lib/env'
 import type { UserView } from '@/lib/types'
-import { type GatewayResponse, gatewayFetch } from './gateway'
+import { type GatewayResponse, gatewayFetch, gatewayFetchReadonly } from './gateway'
 
 /** Usuário fresco do banco (traz `phone`, que pode não estar nas claims). */
 export function getMe(): Promise<GatewayResponse<{ user: UserView }>> {
   return gatewayFetch('/auth/me')
+}
+
+/**
+ * Usuário fresco SEM refresh/escrita de cookie — único seguro em Server
+ * Components (layout/page). Access expirado → 401 (caller usa fallback).
+ */
+export function getMeReadonly(): Promise<GatewayResponse<{ user: UserView }>> {
+  return gatewayFetchReadonly('/auth/me')
 }
 
 export function updateMe(body: {
