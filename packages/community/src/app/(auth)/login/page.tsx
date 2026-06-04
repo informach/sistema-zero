@@ -6,6 +6,6 @@ export const dynamic = 'force-dynamic'
 
 export default async function LoginPage() {
   const user = await getSession()
-  if (user) redirect('/home')
+  if (user) redirect('/')
   return <LoginForm />
 }

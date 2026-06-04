@@ -12,6 +12,8 @@
     "check:fix": "biome check --write ."
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1032.0",
+    "@vimeo/player": "^2.30.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "geist": "^1.6.1",
@@ -22,6 +24,7 @@
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "server-only": "^0.0.1",
+    "sharp": "^0.34.5",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
     "zod": "^4.1.12"

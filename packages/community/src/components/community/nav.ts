@@ -1,4 +1,4 @@
-import { Home, Receipt, User } from 'lucide-react'
+import { GraduationCap, Home } from 'lucide-react'
 
 export interface NavItem {
   href: string
@@ -8,9 +8,12 @@ export interface NavItem {
   match?: string
 }
 
-/** Navegação principal do aluno. Cursos vivem na home (grid "Meus cursos"). */
+/**
+ * Navegação principal do aluno (centralizada no header). Compras/Perfil vivem
+ * no menu do avatar. `/cursos` (catálogo) e `/cursos/[slug]` (detalhe) acendem
+ * "Todos os cursos"; a home (grid "Meus cursos") acende "Início".
+ */
 export const NAV_ITEMS: NavItem[] = [
-  { href: '/home', label: 'Início', icon: Home, match: '/cursos' },
-  { href: '/compras', label: 'Compras', icon: Receipt },
-  { href: '/perfil', label: 'Perfil', icon: User },
+  { href: '/', label: 'Início', icon: Home },
+  { href: '/cursos', label: 'Todos os cursos', icon: GraduationCap, match: '/cursos' },
 ]

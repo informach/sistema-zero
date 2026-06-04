@@ -1,9 +1,11 @@
 'use client'
 
+import { Camera } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import { UserAvatar } from '@/components/community/user-avatar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -12,6 +14,9 @@ import { PasswordInput } from '@/components/ui/password-input'
 import { Spinner } from '@/components/ui/spinner'
 import { apiSend } from '@/lib/api'
 import type { UserView } from '@/lib/types'
+
+const AVATAR_MIME_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp'])
+const AVATAR_MAX_BYTES = 5 * 1024 * 1024 // 5MB (mesma régua do servidor)
 
 const ProfileSchema = z.object({
   firstName: z.string().min(1, 'Informe o nome').max(100),
@@ -33,9 +38,95 @@ const PasswordSchema = z
 export function ProfileClient({ user }: { user: UserView }) {
   return (
     <div className="flex flex-col gap-6">
+      <AvatarForm user={user} />
       <ProfileForm user={user} />
       <PasswordForm />
     </div>
+  )
+}
+
+function AvatarForm({ user }: { user: UserView }) {
+  const router = useRouter()
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [preview, setPreview] = useState<string | null>(null)
+  const [uploading, setUploading] = useState(false)
+
+  async function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = '' // permite re-selecionar o mesmo arquivo
+    if (!file) return
+    if (!AVATAR_MIME_TYPES.has(file.type)) {
+      toast.error('Formato inválido. Use PNG, JPG ou WebP.')
+      return
+    }
+    if (file.size > AVATAR_MAX_BYTES) {
+      toast.error('A foto deve ter no máximo 5MB.')
+      return
+    }
+
+    const localUrl = URL.createObjectURL(file)
+    setPreview(localUrl)
+    setUploading(true)
+    try {
+      const form = new FormData()
+      form.set('file', file)
+      const res = await fetch('/api/me/avatar', { method: 'POST', body: form })
+      const data = (await res.json().catch(() => null)) as {
+        url?: string
+        error?: { message?: string }
+      } | null
+      if (!res.ok) {
+        setPreview(null)
+        toast.error(data?.error?.message ?? 'Não foi possível enviar a foto.')
+        return
+      }
+      toast.success('Foto de perfil atualizada!')
+      router.refresh()
+    } catch {
+      setPreview(null)
+      toast.error('Falha de rede. Tente novamente.')
+    } finally {
+      setUploading(false)
+      URL.revokeObjectURL(localUrl)
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Foto de perfil</CardTitle>
+        <CardDescription>
+          Aparece no menu e na comunidade. PNG, JPG ou WebP de até 5MB.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-center gap-5">
+          <UserAvatar
+            avatarUrl={preview ?? user.avatarUrl}
+            firstName={user.firstName}
+            lastName={user.lastName}
+            email={user.email}
+            size="xl"
+          />
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            className="hidden"
+            onChange={onFileChange}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            disabled={uploading}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {uploading ? <Spinner /> : <Camera className="size-4" />}
+            Trocar foto
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   )
 }
 

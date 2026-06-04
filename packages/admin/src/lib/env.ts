@@ -23,6 +23,8 @@ const EnvSchema = z.object({
   // Vimeo (vídeos das aulas: upload TUS + capa + transcrição).
   VIMEO_ACCESS_TOKEN: z.string().optional(),
   VIMEO_WHITELIST_DOMAINS: z.string().optional(),
+  // Pasta (project) do Vimeo onde os vídeos entram: dev=Testes, prod=Comunidade Sistema Zero.
+  VIMEO_FOLDER_ID: z.string().optional(),
 })
 
 export type Env = z.infer<typeof EnvSchema>

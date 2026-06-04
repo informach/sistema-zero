@@ -1,13 +1,18 @@
+'use client'
+
 import type {
   AudioBlock,
   EmbedBlock,
   ImageBlock,
   LessonBlockView,
   QuizBlock,
+  QuizStateView,
   RichTextBlock,
   VideoBlock,
 } from '@/lib/types'
+import { useLessonPlayer } from './lesson-player-context'
 import { QuizBlockView } from './quiz-block'
+import { VimeoPlayer } from './vimeo-player'
 
 /**
  * Renderer dos blocos de aula (união discriminada por `kind`). O `content` chega
@@ -41,7 +46,13 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
     case 'audio':
       return <Audio content={content as unknown as AudioBlock} />
     case 'quiz':
-      return <QuizBlockView content={content as unknown as QuizBlock} />
+      return (
+        <QuizBlockView
+          blockId={block.id}
+          content={content as unknown as QuizBlock}
+          quizState={(block.quizState as QuizStateView | null | undefined) ?? null}
+        />
+      )
     case 'embed':
       return <Embed content={content as unknown as EmbedBlock} />
     default:
@@ -188,17 +199,7 @@ function Video({ content }: { content: VideoBlock }) {
   if (content.provider === 'vimeo') {
     const id = vimeoId(content.src)
     if (!id) return <UnsupportedBlock label="Vídeo indisponível" />
-    return (
-      <div className="aspect-video w-full overflow-hidden rounded-lg border border-border bg-black">
-        <iframe
-          src={`https://player.vimeo.com/video/${id}`}
-          title="Vídeo da aula"
-          allow="autoplay; fullscreen; picture-in-picture"
-          allowFullScreen
-          className="h-full w-full"
-        />
-      </div>
-    )
+    return <VimeoLessonVideo vimeoId={id} />
   }
   // `file`/`mux` (URL direta de vídeo) → player nativo.
   return (
@@ -211,6 +212,25 @@ function Video({ content }: { content: VideoBlock }) {
       <source src={content.src} />
       <track kind="captions" />
     </video>
+  )
+}
+
+/**
+ * Vimeo com o player rico (SDK): watermark do aluno, fullscreen custom, retomar
+ * posição e auto-conclusão por % assistido — tudo vindo do LessonPlayerContext
+ * (fora do player degrada para o embed sem callbacks).
+ */
+function VimeoLessonVideo({ vimeoId }: { vimeoId: string }) {
+  const player = useLessonPlayer()
+  return (
+    <VimeoPlayer
+      vimeoId={vimeoId}
+      watermark={player?.viewerEmail ?? null}
+      initialPositionSeconds={player?.initialPositionSeconds ?? null}
+      onProgress={player?.onVideoProgress}
+      onFlush={player?.onVideoFlush}
+      onReachedThreshold={player?.onVideoReachedThreshold}
+    />
   )
 }
 

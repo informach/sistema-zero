@@ -12,6 +12,7 @@ export function updateMe(body: {
   firstName?: string
   lastName?: string
   phone?: string | null
+  avatarUrl?: string | null
 }): Promise<GatewayResponse<{ user: UserView }>> {
   return gatewayFetch('/auth/me', { method: 'PATCH', body })
 }

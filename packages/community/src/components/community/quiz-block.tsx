@@ -1,35 +1,95 @@
 'use client'
 
-import { CheckCircle2, XCircle } from 'lucide-react'
-import { useState } from 'react'
+import { CheckCircle2, Timer, Trophy, XCircle } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { Spinner } from '@/components/ui/spinner'
+import { type ApiError, apiSend } from '@/lib/api'
 import { cn } from '@/lib/cn'
-import type { QuizBlock } from '@/lib/types'
+import type { QuizAttemptResultView, QuizBlock, QuizStateView } from '@/lib/types'
+import { useLessonPlayer } from './lesson-player-context'
+
+interface Props {
+  blockId: string
+  content: QuizBlock
+  /** Estado das tentativas vindo do GET da aula (hidrata score/cooldown). */
+  quizState: QuizStateView | null
+}
 
 /**
- * Quiz interativo client-side: o aluno marca as respostas e confere o gabarito
- * localmente (o members não tem endpoint de submissão de quiz nesta fase — a
- * conclusão da aula continua sendo o botão "Concluir aula").
+ * Quiz validado NO SERVIDOR: o GET da aula não traz gabarito; o submit devolve
+ * score + correções/explicações. Reprovou → cooldown de 5 min com countdown
+ * regressivo (espelha o legado). Quiz com `passingScore` bloqueia o "Concluir
+ * aula" até aprovar (o gate é do backend — aqui só refletimos o estado).
  */
-export function QuizBlockView({ content }: { content: QuizBlock }) {
+export function QuizBlockView({ blockId, content, quizState }: Props) {
+  const player = useLessonPlayer()
   const [answers, setAnswers] = useState<Record<string, string>>({})
-  const [checked, setChecked] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [result, setResult] = useState<QuizAttemptResultView | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   const questions = content.questions ?? []
+  const passed = result?.passed ?? quizState?.passed ?? false
+  const lastScore = result?.score ?? quizState?.lastScore ?? null
+  const passingScore = result?.passingScore ?? content.passingScore ?? 100
+  const retryAvailableAt = result?.retryAvailableAt ?? quizState?.retryAvailableAt ?? null
+  const cooldownLeft = useCooldown(passed ? null : retryAvailableAt)
+
+  // Correções por questão (só existem após um submit nesta visita).
+  const corrections = useMemo(() => {
+    const map = new Map<string, QuizAttemptResultView['questions'][number]>()
+    for (const q of result?.questions ?? []) map.set(q.questionId, q)
+    return map
+  }, [result])
+
   if (questions.length === 0) return null
 
-  const correctCount = questions.filter((q) =>
-    q.correctChoiceIds.includes(answers[q.id] ?? ''),
-  ).length
   const allAnswered = questions.every((q) => answers[q.id])
+  const formDisabled = submitting || passed || cooldownLeft !== null
+
+  async function submit() {
+    setSubmitting(true)
+    setError(null)
+    try {
+      const body = Object.fromEntries(questions.map((q) => [q.id, [answers[q.id] ?? '']]))
+      const res = await apiSend<QuizAttemptResultView>(
+        `/api/members/lessons/${encodeURIComponent(player?.lessonId ?? '')}/blocks/${encodeURIComponent(blockId)}/quiz-attempts`,
+        'POST',
+        { answers: body },
+      )
+      setResult(res)
+      if (res.passed) {
+        // Aprovado destrava o "Concluir aula" (gate do backend) → re-render da página.
+        player?.refreshAfterQuiz?.()
+      }
+    } catch (err) {
+      const apiErr = err as ApiError
+      setError(
+        apiErr?.code === 'QUIZ_COOLDOWN'
+          ? 'Aguarde o tempo de espera para refazer o quiz.'
+          : 'Não foi possível enviar as respostas. Tente de novo.',
+      )
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   return (
     <Card className="flex flex-col gap-5 p-5">
-      <h3 className="sz-display text-base">Teste seus conhecimentos</h3>
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="sz-display text-base">Teste seus conhecimentos</h3>
+        {content.passingScore != null ? (
+          <span className="text-xs text-muted-foreground">
+            Nota mínima: <span className="sz-display">{passingScore}%</span>
+          </span>
+        ) : null}
+      </div>
+
       {questions.map((q, qi) => {
         const chosen = answers[q.id]
-        const correct = checked && q.correctChoiceIds.includes(chosen ?? '')
+        const correction = corrections.get(q.id)
         return (
           <fieldset key={q.id} className="flex flex-col gap-2">
             <legend className="text-sm font-medium">
@@ -37,66 +97,121 @@ export function QuizBlockView({ content }: { content: QuizBlock }) {
             </legend>
             {q.choices.map((choice) => {
               const selected = chosen === choice.id
-              const isCorrectChoice = q.correctChoiceIds.includes(choice.id)
+              // Pós-submit: destaca a escolha do aluno (certa/errada) e o gabarito.
+              const isCorrectChoice = correction?.correctChoiceIds.includes(choice.id) ?? false
+              const showCorrection = correction !== undefined
               return (
                 <label
                   key={choice.id}
                   className={cn(
-                    'flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors',
-                    selected ? 'border-ring bg-muted/60' : 'border-border hover:bg-muted/40',
-                    checked && selected && isCorrectChoice && 'border-accent dark:border-primary',
-                    checked && selected && !isCorrectChoice && 'border-destructive',
+                    'flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors',
+                    formDisabled ? 'cursor-default' : 'cursor-pointer',
+                    selected ? 'border-ring bg-muted/60' : 'border-border',
+                    !formDisabled && !selected && 'hover:bg-muted/40',
+                    showCorrection && isCorrectChoice && 'border-accent dark:border-primary',
+                    showCorrection && selected && !isCorrectChoice && 'border-destructive',
                   )}
                 >
                   <input
                     type="radio"
-                    name={q.id}
+                    name={`${blockId}-${q.id}`}
                     value={choice.id}
                     checked={selected}
-                    disabled={checked}
+                    disabled={formDisabled}
                     onChange={() => setAnswers((a) => ({ ...a, [q.id]: choice.id }))}
                     className="accent-current"
                   />
-                  <span className="flex-1">{choice.text}</span>
-                  {checked && selected ? (
-                    isCorrectChoice ? (
-                      <CheckCircle2 className="size-4 text-accent dark:text-primary" />
-                    ) : (
-                      <XCircle className="size-4 text-destructive" />
-                    )
+                  <span className="flex-1">{choice.label}</span>
+                  {showCorrection && isCorrectChoice ? (
+                    <CheckCircle2 className="size-4 text-accent dark:text-primary" />
+                  ) : null}
+                  {showCorrection && selected && !isCorrectChoice ? (
+                    <XCircle className="size-4 text-destructive" />
                   ) : null}
                 </label>
               )
             })}
-            {checked && !correct && q.explanation ? (
+            {correction && !correction.correct && correction.explanation ? (
               <p className="rounded-lg bg-muted/60 px-3 py-2 text-xs text-muted-foreground">
-                {q.explanation}
+                {correction.explanation}
               </p>
             ) : null}
           </fieldset>
         )
       })}
-      {checked ? (
-        <div className="flex items-center justify-between">
-          <p className="text-sm">
-            Você acertou <span className="sz-display-grad">{correctCount}</span> de{' '}
-            {questions.length}.
+
+      {error ? <p className="text-sm text-destructive">{error}</p> : null}
+
+      {passed ? (
+        <p className="inline-flex items-center gap-2 text-sm text-accent dark:text-primary">
+          <Trophy className="size-4" />
+          Quiz concluído{lastScore !== null ? ` com ${lastScore}%` : ''}!
+        </p>
+      ) : cooldownLeft !== null ? (
+        <div className="flex flex-col gap-2">
+          {lastScore !== null ? (
+            <p className="text-sm">
+              Você fez <span className="sz-display-grad">{lastScore}%</span>. Para concluir, alcance{' '}
+              {passingScore}%.
+            </p>
+          ) : null}
+          <p className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+            <Timer className="size-4" />
+            Você poderá refazer o quiz em {cooldownLeft}.
           </p>
-          <Button
-            variant="outline"
-            onClick={() => {
-              setChecked(false)
-              setAnswers({})
-            }}
-          >
-            Tentar de novo
-          </Button>
         </div>
       ) : (
-        <Button onClick={() => setChecked(true)} disabled={!allAnswered} className="self-start">
-          Verificar respostas
-        </Button>
+        <div className="flex flex-wrap items-center gap-3">
+          <Button onClick={submit} disabled={!allAnswered || submitting} className="self-start">
+            {submitting ? <Spinner /> : null}
+            {submitting ? 'Enviando respostas...' : 'Enviar quiz'}
+          </Button>
+          {lastScore !== null && result === null ? (
+            <p className="text-sm text-muted-foreground">
+              Última tentativa: <span className="sz-display">{lastScore}%</span>
+            </p>
+          ) : null}
+          {result && !result.passed ? (
+            <p className="text-sm">
+              Você fez <span className="sz-display-grad">{result.score}%</span>. Para concluir,
+              alcance {passingScore}%.
+            </p>
+          ) : null}
+        </div>
       )}
     </Card>
   )
+}
+
+/**
+ * Countdown MM:SS até `retryAvailableAt` (tick de 1s). `null` = sem cooldown.
+ * O primeiro cálculo roda dentro do effect (não no render) — evita divergência
+ * de hidratação SSR/client com `Date.now()`.
+ */
+function useCooldown(retryAvailableAt: string | null): string | null {
+  const [left, setLeft] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!retryAvailableAt) {
+      setLeft(null)
+      return
+    }
+    const target = new Date(retryAvailableAt).getTime()
+    const tick = () => {
+      const ms = target - Date.now()
+      setLeft(ms > 0 ? formatCountdown(ms) : null)
+    }
+    tick()
+    const interval = setInterval(tick, 1_000)
+    return () => clearInterval(interval)
+  }, [retryAvailableAt])
+
+  return left
+}
+
+function formatCountdown(ms: number): string {
+  const total = Math.ceil(ms / 1_000)
+  const minutes = Math.floor(total / 60)
+  const seconds = total % 60
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
 }

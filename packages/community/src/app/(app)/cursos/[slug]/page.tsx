@@ -8,9 +8,16 @@ import { getMyCourse } from '@/server/members'
 
 export const dynamic = 'force-dynamic'
 
-/** Primeira aula não concluída (ou a primeira de todas) — o "continuar de onde parei". */
+/**
+ * Aula-alvo do "continuar de onde parei": o backend manda `continueLessonId`
+ * (última acessada > 1ª não concluída > 1ª); fallback local se vier nulo.
+ */
 function nextLesson(course: CourseDetailView): LessonOutlineView | null {
   const all = course.modules.flatMap((m) => m.lessons)
+  if (course.continueLessonId) {
+    const target = all.find((l) => l.id === course.continueLessonId)
+    if (target) return target
+  }
   return all.find((l) => !l.completed) ?? all[0] ?? null
 }
 

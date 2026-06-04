@@ -144,6 +144,15 @@ export async function applyPrivacy(vimeoVideoId: string, domains: string[]): Pro
   }
 }
 
+/** Move o vídeo p/ a pasta (project) do Vimeo — PUT /me/projects/{id}/videos/{id} (204). */
+export async function addVideoToFolder(vimeoVideoId: string, folderId: string): Promise<void> {
+  await vimeoFetch(
+    `/me/projects/${encodeURIComponent(folderId)}/videos/${vimeoVideoId}`,
+    { method: 'PUT' },
+    { skipJsonParse: true },
+  )
+}
+
 /** Estado de transcode + metadados do vídeo (status Vimeo cru: available/transcoding/…). */
 export async function getVideo(vimeoVideoId: string): Promise<{
   status: string

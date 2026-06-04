@@ -2,8 +2,10 @@ import { type NextRequest, NextResponse } from 'next/server'
 
 const REFRESH_COOKIE = 'sz_member_refresh'
 
-/** Prefixos da área logada do aluno (gate real = layout do grupo `(app)`). */
-const PROTECTED_PREFIXES = ['/home', '/cursos', '/perfil', '/compras']
+/** Prefixos da área logada do aluno (gate real = layout do grupo `(app)`). A
+ * HOME é a própria raiz `/` (sem rota `/home` — diferente da referência, que
+ * era um monolito com landing na raiz). */
+const PROTECTED_PREFIXES = ['/cursos', '/perfil', '/compras']
 
 /**
  * Fast-path: bloqueia a área logada sem cookie de sessão (a checagem REAL de
@@ -12,7 +14,9 @@ const PROTECTED_PREFIXES = ['/home', '/cursos', '/perfil', '/compras']
  */
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl
-  const isProtected = PROTECTED_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`))
+  const isProtected =
+    pathname === '/' ||
+    PROTECTED_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`))
   if (isProtected && !req.cookies.has(REFRESH_COOKIE)) {
     const url = req.nextUrl.clone()
     url.pathname = '/login'

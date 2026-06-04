@@ -36,7 +36,7 @@ export function LoginForm() {
   const [loading, setLoading] = useState(false)
 
   function goHome() {
-    router.replace('/home')
+    router.replace('/')
     router.refresh()
   }
 

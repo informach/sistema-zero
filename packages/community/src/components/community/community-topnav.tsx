@@ -4,15 +4,16 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/cn'
-import type { SessionUser } from '@/lib/types'
+import type { SessionUserWithAvatar } from '@/lib/types'
 import { NAV_ITEMS } from './nav'
-import { ThemeToggle } from './theme-toggle'
 import { UserMenu } from './user-menu'
 
-export function CommunityTopnav({ user }: { user: SessionUser }) {
+export function CommunityTopnav({ user }: { user: SessionUserWithAvatar }) {
   const pathname = usePathname()
 
   function isActive(href: string, match?: string): boolean {
+    // Raiz só acende em match exato (todo path começa com '/').
+    if (href === '/') return pathname === '/'
     if (pathname === href || pathname.startsWith(`${href}/`)) return true
     if (match) return pathname === match || pathname.startsWith(`${match}/`)
     return false
@@ -20,14 +21,14 @@ export function CommunityTopnav({ user }: { user: SessionUser }) {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur">
-      <div className="flex h-14 items-center gap-4 px-4 md:px-6">
-        <Link href="/home" className="flex items-center" aria-label="Início">
+      <div className="relative flex h-14 items-center justify-between gap-4 px-4 md:px-6">
+        <Link href="/" className="flex shrink-0 items-center" aria-label="Início">
           <Image
             src="/logo_dark.svg"
             width={515}
             height={75}
             alt="Comunidade Sistema Zero"
-            className="hidden h-6 w-auto dark:block"
+            className="hidden h-auto w-[130px] md:w-[150px] dark:block"
             priority
           />
           <Image
@@ -35,12 +36,13 @@ export function CommunityTopnav({ user }: { user: SessionUser }) {
             width={515}
             height={72}
             alt="Comunidade Sistema Zero"
-            className="block h-6 w-auto dark:hidden"
+            className="block h-auto w-[130px] md:w-[150px] dark:hidden"
             priority
           />
         </Link>
 
-        <nav className="ml-2 hidden items-center gap-1 md:flex">
+        {/* Menu principal CENTRALIZADO (como na referência) */}
+        <nav className="-translate-x-1/2 absolute left-1/2 hidden items-center gap-1 md:flex">
           {NAV_ITEMS.map((item) => {
             const active = isActive(item.href, item.match)
             const Icon = item.icon
@@ -49,7 +51,7 @@ export function CommunityTopnav({ user }: { user: SessionUser }) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  'flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm transition-colors',
+                  'flex items-center gap-2 rounded-lg px-4 py-2 text-sm transition-colors',
                   active
                     ? 'bg-muted font-semibold text-foreground'
                     : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
@@ -62,8 +64,7 @@ export function CommunityTopnav({ user }: { user: SessionUser }) {
           })}
         </nav>
 
-        <div className="ml-auto flex items-center gap-1">
-          <ThemeToggle />
+        <div className="flex shrink-0 items-center">
           <UserMenu user={user} />
         </div>
       </div>

@@ -1,13 +1,20 @@
 import { redirect } from 'next/navigation'
 import { CommunityTopnav } from '@/components/community/community-topnav'
+import { getMe } from '@/server/auth'
 import { getSession } from '@/server/session'
 
 export const dynamic = 'force-dynamic'
 
 /** Shell autenticado do aluno: sessão obrigatória (qualquer conta ativa). */
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const user = await getSession()
-  if (!user) redirect('/login')
+  const session = await getSession()
+  if (!session) redirect('/login')
+
+  // Avatar não vive nas claims do JWT → hidrata fresco do auth (best-effort:
+  // se o gateway falhar, o header cai no fallback de iniciais).
+  const me = await getMe()
+  const avatarUrl = me.status === 200 ? (me.body?.user?.avatarUrl ?? null) : null
+  const user = { ...session, avatarUrl }
 
   return (
     <div className="flex min-h-screen flex-col bg-background">

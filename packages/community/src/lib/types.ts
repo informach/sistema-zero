@@ -15,7 +15,12 @@ export interface SessionUser {
   status: string
 }
 
-/** UserView do auth (GET /auth/me — traz phone, que pode não estar nas claims). */
+/** Sessão + avatar fresco (claims não carregam foto — o layout hidrata via GET /auth/me). */
+export interface SessionUserWithAvatar extends SessionUser {
+  avatarUrl: string | null
+}
+
+/** UserView do auth (GET /auth/me — traz phone/avatar, que não estão nas claims). */
 export interface UserView {
   id: string
   email: string
@@ -25,6 +30,7 @@ export interface UserView {
   status: string
   phone?: string
   signupSource?: string
+  avatarUrl?: string
 }
 
 // ── Members (área do aluno) ─────────────────────────────────────────────────
@@ -44,6 +50,20 @@ export interface CourseProgressView extends CourseProgress {
   lastCompletedAt: string | null
 }
 
+/**
+ * Item de `GET /members/catalog` → `{ courses: CatalogCourseView[] }` —
+ * "Todos os cursos" da plataforma com a flag de acesso do aluno.
+ */
+export interface CatalogCourseView {
+  courseSlug: string
+  title: string
+  subtitle: string | null
+  coverImageUrl: string | null
+  hasAccess: boolean
+  /** URL da página de vendas (funil); `null` → fallback FUNNEL_URL no server. */
+  salesPageUrl: string | null
+}
+
 /** Item de `GET /members/courses` → `{ courses: MyCourseView[] }`. */
 export interface MyCourseView {
   courseSlug: string
@@ -52,6 +72,8 @@ export interface MyCourseView {
   coverImageUrl: string | null
   access: AccessView
   progress: CourseProgress
+  /** Última aula acessada (posição de vídeo) — atalho do card; `null` se nunca acessou. */
+  continueLessonId: string | null
 }
 
 export interface LessonOutlineView {
@@ -80,6 +102,8 @@ export interface CourseDetailView {
   coverImageUrl: string | null
   access: AccessView
   progress: CourseProgressView
+  /** Aula-alvo do "Continuar de onde parei" (última acessada > 1ª não concluída > 1ª). */
+  continueLessonId: string | null
   modules: ModuleOutlineView[]
 }
 
@@ -109,17 +133,20 @@ export interface AudioBlock {
   url: string
   durationSeconds?: number
 }
+/**
+ * Quiz member-facing: o GET da aula NÃO traz gabarito (`correctChoiceIds`/
+ * `explanation` só chegam na RESPOSTA do submit — `QuizAttemptResultView`).
+ */
 export interface QuizQuestion {
   id: string
   prompt: string
-  choices: { id: string; text: string }[]
-  correctChoiceIds: string[]
-  explanation?: string
+  choices: { id: string; label: string }[]
 }
 export interface QuizBlock {
   kind: 'quiz'
   questions: QuizQuestion[]
-  passingScore?: number
+  /** Nota de corte que BLOQUEIA a conclusão da aula; `null` = quiz de fixação. */
+  passingScore?: number | null
 }
 export interface EmbedBlock {
   kind: 'embed'
@@ -137,12 +164,41 @@ export type LessonBlockContent =
   | QuizBlock
   | EmbedBlock
 
+/** Estado das tentativas do aluno num bloco de quiz (vem no GET da aula). */
+export interface QuizStateView {
+  lastScore: number | null
+  passed: boolean
+  attemptsCount: number
+  /** ISO; não-nulo só durante o cooldown de retry após reprovar. */
+  retryAvailableAt: string | null
+}
+
+/** Correção por questão — devolvida SÓ pelo submit do quiz. */
+export interface QuizQuestionResultView {
+  questionId: string
+  correct: boolean
+  correctChoiceIds: string[]
+  explanation: string | null
+}
+
+/** `POST /members/lessons/:lessonId/blocks/:blockId/quiz-attempts`. */
+export interface QuizAttemptResultView {
+  score: number
+  passed: boolean
+  passingScore: number
+  attemptsCount: number
+  retryAvailableAt: string | null
+  questions: QuizQuestionResultView[]
+}
+
 /** Bloco como chega da API (`content` é `unknown` na borda — narrowing por `kind`). */
 export interface LessonBlockView {
   id: string
   kind: string
   sortOrder: number
   content: unknown
+  /** Presente só em blocos de quiz. */
+  quizState?: QuizStateView | null
 }
 
 export interface LessonAttachmentView {
@@ -163,6 +219,8 @@ export interface LessonDetailView {
   courseSlug: string
   estimatedMinutes: number | null
   completed: boolean
+  /** Posição de reprodução salva (segundos) — `null` se nunca assistiu. */
+  positionSeconds: number | null
   blocks: LessonBlockView[]
   attachments: LessonAttachmentView[]
 }

@@ -11,15 +11,24 @@ Guia operacional da **área do aluno / comunidade** (full-stack). Leia antes de 
 ## O que é
 
 App que o **aluno** acessa: login/recuperação de senha, **meus cursos** (consumo do "No Comando da
-IA" via members — módulos, aulas em blocos, progresso), **perfil** (nome/telefone + trocar senha) e
-**minhas compras**. Front-end **Next.js 16 (App Router) + React 19 + Tailwind v4**; o back-end é um
-**BFF** que **chama o API Gateway** (NUNCA os serviços direto). Design/tema portado do projeto de
-referência `comunidade-sistema-zero` (tokens OKLch dual light/dark + utilities `sz-*`). Porta **3007**.
+IA" via members — módulos, aulas em blocos, progresso), **todos os cursos** (`/cursos` — catálogo
+com cadeado), **perfil** (nome/telefone/**foto** + trocar senha) e **minhas compras**. Front-end
+**Next.js 16 (App Router) + React 19 + Tailwind v4**; o back-end é um **BFF** que **chama o API
+Gateway** (NUNCA os serviços direto). Design/tema portado do projeto de referência
+`comunidade-sistema-zero` (tokens OKLch dual light/dark + utilities `sz-*`). Porta **3007**.
 
 > Estado: **MVP da área do aluno** (login/logout, esqueci/definir senha — mesma página serve o 1º
-> acesso pós-compra —, home com grid de cursos, curso com módulos/aulas, player de aula com blocos
-> polimórficos + anexos + concluir + navegação, perfil, compras). A COMUNIDADE (feed/fórum/etc.) é
+> acesso pós-compra —, home na RAIZ `/` com grid de cursos, `/cursos` "Todos os cursos" com lock →
+> página de vendas, curso com módulos/aulas, player de aula com blocos polimórficos + anexos +
+> concluir + navegação, perfil com upload de avatar, compras). A COMUNIDADE (feed/fórum/etc.) é
 > fatia futura.
+>
+> **Header (espelha a referência):** logo à esquerda (`w-[130px] md:w-[150px]`), menu CENTRALIZADO
+> (Início `/` + Todos os cursos `/cursos` — `nav.ts`), avatar à direita. Compras/Perfil/Mudar tema/
+> Sair vivem no **menu do avatar** (`user-menu.tsx`: cabeçalho com `UserAvatar` + nome + e-mail;
+> regras de exibição em `lib/user-display.ts` — nome → handle do e-mail → "Membro"/"M"). NÃO existe
+> rota `/home` (a referência era monolito com landing na raiz; aqui a home É a raiz). O layout do
+> grupo `(app)` hidrata `avatarUrl` fresco via `getMe()` (claims não carregam foto).
 
 ## Arquitetura (o padrão central — preserve-o; espelha o @sistemazero/admin)
 
@@ -36,8 +45,8 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
   `JWT_HS256_SECRET` do auth/gateway). Cookies `sz_member_*` (≠ `sz_admin_*` do painel).
 - **Refresh (`src/server/gateway.ts`):** `gatewayFetch` em 401 chama `/auth/refresh`, regrava os
   cookies e re-tenta UMA vez. **Só** roda em Route Handlers/Server Actions.
-- **Gate de UI:** `src/proxy.ts` bloqueia `/home|/cursos|/perfil|/compras` sem cookie de refresh
-  (redirect `/login`); o layout do grupo `(app)` faz a checagem real. A CSP do proxy tem
+- **Gate de UI:** `src/proxy.ts` bloqueia `/` (exato) e `/cursos|/perfil|/compras` sem cookie de
+  refresh (redirect `/login`); o layout do grupo `(app)` faz a checagem real. A CSP do proxy tem
   **`frame-src` allowlist** (youtube-nocookie + player.vimeo) p/ o player de aulas.
 - **Senha:** `/esqueci-senha` → `POST /auth/forgot-password` (sempre 200, anti-enumeração);
   `/redefinir-senha?token=` → `POST /auth/reset-password` — serve o RESET e o **1º acesso
@@ -47,6 +56,12 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
 ## Invariantes (NÃO quebrar)
 
 1. **O community nunca chama os serviços direto** — tudo via gateway (`src/server/gateway.ts`).
+   Exceção CONSCIENTE (igual ao admin): `/api/me/avatar` fala com o **R2** (provedor externo) e por
+   isso tem guard de sessão próprio (`requireUploadSession` em `src/server/media.ts` — qualquer
+   conta ATIVA, sem exigência de role). Pipeline: multipart ≤5MB png/jpg/webp → sharp→WebP 512×512
+   (`image-optimizer.ts`, preset `avatar`) → R2 `community/avatars/<userId>/<uuid>.webp` (`r2.ts`)
+   → `PATCH /auth/me { avatarUrl }` via gateway. Envs R2_* ausentes → 503 `MEDIA_NOT_CONFIGURED`
+   amigável. `next.config.ts` tem `serverExternalPackages: ['sharp']`.
 2. **Segredos só no servidor.** `src/lib/env.ts` é `server-only`; `src/server/*` idem. **Nunca**
    importe `env`/`server/*` de um Client Component. Client fala só com `/api/*` (`src/lib/api.ts`).
 3. **Tokens em cookie HttpOnly** (`sz_member_*`), `SameSite=Lax`, `Secure` em prod.
@@ -64,22 +79,24 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
 src/
   app/
     layout.tsx              Root (Geist fonts, Providers: next-themes + Toaster)
-    page.tsx                / → redirect /home ou /login
     (auth)/                 Grupo público (AuthSplitShell: form + imagem da comunidade)
       login/ · esqueci-senha/ · redefinir-senha/   (page + *-form.tsx client)
-    (app)/                  Grupo logado (layout gate + CommunityTopnav)
-      home/                 Grid "Meus cursos" (CourseCard + .sz-progress)
+    (app)/                  Grupo logado (layout gate + avatar fresco + CommunityTopnav)
+      page.tsx              / (HOME) — grid "Meus cursos" (CourseCard + .sz-progress)
+      cursos/               /cursos "Todos os cursos" (catálogo c/ lock → página de vendas)
       cursos/[slug]/        Módulos/aulas + "continuar de onde parei"
       cursos/[slug]/aulas/[lessonId]/  Player (blocos + anexos + concluir + prev/next + outline)
-      perfil/               Editar nome/telefone + trocar senha (e-mail é IMUTÁVEL)
+      perfil/               Foto (upload R2) + editar nome/telefone + trocar senha (e-mail IMUTÁVEL)
       compras/              Tabela paginada + dialog de detalhe
     api/
       auth/{login,logout,forgot-password,reset-password,me,me/password}/route.ts
+      me/avatar/route.ts    POST multipart → sharp→WebP → R2 → PATCH /auth/me
       members/lessons/[lessonId]/complete/route.ts
       payments/my/route.ts
-  server/   session.ts · gateway.ts · auth.ts · members.ts · payments.ts   (server-only)
-  lib/      env.ts (server-only) · types.ts (views do ALUNO) · format.ts · cn.ts · api.ts
-  components/ ui/* (copiados do admin + password-input) · community/* (topnav/user-menu/cards/blocos)
+  server/   session.ts · gateway.ts · auth.ts · members.ts · payments.ts
+            r2.ts · image-optimizer.ts · media.ts (avatar→R2; exceção consciente)   (server-only)
+  lib/      env.ts (server-only) · types.ts (views do ALUNO) · user-display.ts · format.ts · cn.ts · api.ts
+  components/ ui/* (copiados do admin + password-input) · community/* (topnav/user-menu/user-avatar/cards/blocos)
   proxy.ts                (ex-middleware; convenção Next 16, runtime nodejs)
 ```
 
@@ -109,6 +126,10 @@ Da raiz: `bun run dev:community`, `build:community`, `typecheck:community`.
 - `GATEWAY_URL` (default `http://localhost:3000`).
 - `JWT_HS256_SECRET` — **MESMO** do `@sistemazero/auth` e do gateway.
 - `JWT_ISSUER`/`JWT_AUDIENCE` opcionais.
+- `FUNNEL_URL` opcional — fallback da página de vendas em `/cursos` (curso sem
+  `metadata.salesPageUrl`); sem ela e sem metadata, o card bloqueado fica não-clicável.
+- `R2_ACCOUNT_ID`/`R2_ACCESS_KEY_ID`/`R2_SECRET_ACCESS_KEY`/`R2_BUCKET`/`R2_PUBLIC_URL`
+  opcionais — upload de avatar (ausentes → 503 amigável; mesmo bucket do admin).
 
 ## Setup local (e2e)
 
@@ -123,10 +144,13 @@ Da raiz: `bun run dev:community`, `build:community`, `typecheck:community`.
 ## Contratos consumidos (via gateway)
 
 - Auth: `POST /auth/login|refresh|logout`, `GET /auth/me`, `POST /auth/forgot-password` (5/min/IP),
-  `POST /auth/reset-password`, `PATCH /auth/me` `{firstName?,lastName?,phone?}` (SEM e-mail),
-  `POST /auth/me/password` `{currentPassword,newPassword}` (revoga todas as sessões).
+  `POST /auth/reset-password`, `PATCH /auth/me` `{firstName?,lastName?,phone?,avatarUrl?}` (SEM
+  e-mail; `avatarUrl` setado pelo handler do upload), `POST /auth/me/password`
+  `{currentPassword,newPassword}` (revoga todas as sessões).
 - Members (JWT + x-internal-token injetados pelo gateway): `GET /members/courses` →
-  `{courses: MyCourseView[]}`; `GET /members/courses/:slug` → `CourseDetailView` (módulos+outline);
+  `{courses: MyCourseView[]}`; `GET /members/catalog` → `{courses: CatalogCourseView[]}` ("Todos os
+  cursos": published + `hasAccess` + `salesPageUrl` — a página `/cursos` resolve
+  `salesPageUrl ?? FUNNEL_URL` no server); `GET /members/courses/:slug` → `CourseDetailView` (módulos+outline);
   `GET /members/courses/:slug/lessons/:lessonId` → `LessonDetailView` (**busca por ID**, blocos
   `kind: rich_text|video|image|audio|quiz|embed` + anexos); `POST /members/lessons/:lessonId/complete`.
   Navegação prev/next é DERIVADA do outline (a API não fornece). Views em `src/lib/types.ts`
