@@ -2,6 +2,7 @@ import type { EntitlementAggregate } from '../../domain/entitlement/entitlement.
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { EntitlementRepository } from '../../domain/ports/entitlement-repository.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
+import type { VideoPositionRepository } from '../../domain/ports/video-position-repository.port'
 import { computeProgress } from '../../domain/progress/progress'
 import { type MyCourseView, toMyCourseView } from '../mappers/views'
 
@@ -11,6 +12,7 @@ export class ListMyCoursesService {
     private readonly entitlements: EntitlementRepository,
     private readonly courses: CourseRepository,
     private readonly progress: ProgressRepository,
+    private readonly positions: VideoPositionRepository,
     private readonly clock: () => Date,
   ) {}
 
@@ -28,11 +30,12 @@ export class ListMyCoursesService {
     if (byCourseRef.size === 0) return []
 
     const courses = await this.courses.findAccessibleCoursesBySlugs([...byCourseRef.keys()])
-    // Contagens em LOTE (2 queries) em vez de 2 por curso (evita N+1).
+    // Contagens em LOTE (3 queries) em vez de 3 por curso (evita N+1).
     const courseIds = courses.map((c) => c.id)
-    const [totals, completed] = await Promise.all([
+    const [totals, completed, lastAccessed] = await Promise.all([
       this.courses.countLessonsByCourseIds(courseIds),
       this.progress.countCompletedByCourseIds(userId, courseIds),
+      this.positions.lastAccessedByCourseIds(userId, courseIds),
     ])
 
     const views: MyCourseView[] = []
@@ -40,7 +43,7 @@ export class ListMyCoursesService {
       const entitlement = byCourseRef.get(course.slug)
       if (!entitlement) continue
       const progress = computeProgress(completed.get(course.id) ?? 0, totals.get(course.id) ?? 0)
-      views.push(toMyCourseView(course, entitlement, progress))
+      views.push(toMyCourseView(course, entitlement, progress, lastAccessed.get(course.id) ?? null))
     }
     return views
   }

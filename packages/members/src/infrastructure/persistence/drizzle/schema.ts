@@ -189,6 +189,29 @@ export const lessonCompletions = members.table(
   ],
 )
 
+// ── Posição de reprodução / última aula acessada (1 linha por aluno+aula) ───
+// `positionSeconds` = retomar o vídeo de onde parou; `updatedAt` = last-accessed
+// do curso (alimenta o "continuar de onde parou" no detalhe do curso).
+export const lessonProgress = members.table(
+  'lesson_progress',
+  {
+    id: uuid('id').primaryKey(),
+    userId: uuid('user_id').notNull(),
+    lessonId: uuid('lesson_id')
+      .notNull()
+      .references(() => lessons.id, { onDelete: 'cascade' }),
+    courseId: uuid('course_id')
+      .notNull()
+      .references(() => courses.id, { onDelete: 'cascade' }),
+    positionSeconds: integer('position_seconds').notNull().default(0),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('lesson_progress_user_lesson_uq').on(t.userId, t.lessonId),
+    index('lesson_progress_user_course_updated_idx').on(t.userId, t.courseId, t.updatedAt),
+  ],
+)
+
 // ── Deduplicação de webhooks de entrada ─────────────────────────────────────
 export const processedWebhooks = members.table('processed_webhooks', {
   deliveryId: text('delivery_id').primaryKey(),
@@ -204,6 +227,7 @@ export const schema = {
   lessonAttachments,
   entitlements,
   lessonCompletions,
+  lessonProgress,
   processedWebhooks,
 }
 

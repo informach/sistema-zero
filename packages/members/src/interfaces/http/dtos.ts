@@ -23,6 +23,11 @@ export const SubscriptionWebhookBody = t.Object({
   subscriptionId: t.String({ minLength: 1, maxLength: 100 }),
 })
 
+/** Corpo de `PUT /members/courses/:slug/lessons/:lessonId/position` (throttled no client). */
+export const VideoPositionBody = t.Object({
+  positionSeconds: t.Integer({ minimum: 0, maximum: 100_000 }),
+})
+
 // ── Admin (painel `@sistemazero/admin`) ─────────────────────────────────────
 
 const ENTITLEMENT_STATUS = t.Union([

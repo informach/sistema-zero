@@ -19,6 +19,7 @@ import { ListMyCoursesService } from './application/list-my-courses/list-my-cour
 import { ManageEntitlementService } from './application/manage-entitlement/manage-entitlement.service'
 import { MarkLessonCompleteService } from './application/mark-lesson-complete/mark-lesson-complete.service'
 import { RevokeEntitlementService } from './application/revoke-entitlement/revoke-entitlement.service'
+import { SaveVideoPositionService } from './application/save-video-position/save-video-position.service'
 import type { Env } from './infrastructure/config/env'
 import { createCatalogHttpGateway } from './infrastructure/gateways/catalog-http.gateway'
 import { DrizzleContentAdminRepository } from './infrastructure/persistence/drizzle/content-admin.repository'
@@ -27,6 +28,7 @@ import { createDbConnection, type DbConnection } from './infrastructure/persiste
 import { DrizzleEntitlementRepository } from './infrastructure/persistence/drizzle/entitlement.repository'
 import { DrizzleProcessedWebhookRepository } from './infrastructure/persistence/drizzle/processed-webhook.repository'
 import { DrizzleProgressRepository } from './infrastructure/persistence/drizzle/progress.repository'
+import { DrizzleVideoPositionRepository } from './infrastructure/persistence/drizzle/video-position.repository'
 import { createServer } from './interfaces/http/server'
 
 export interface Application {
@@ -56,16 +58,18 @@ export async function createApplication(env: Env): Promise<Application> {
   const content = new DrizzleContentAdminRepository(db)
   const entitlements = new DrizzleEntitlementRepository(db)
   const progress = new DrizzleProgressRepository(db)
+  const positions = new DrizzleVideoPositionRepository(db)
   const processed = new DrizzleProcessedWebhookRepository(db)
   const catalog = createCatalogHttpGateway({ baseUrl: env.CATALOG_BASE_URL })
 
   // Casos de uso do aluno
   const checkAccess = new CheckAccessService(courses, entitlements, clock)
-  const listMyCourses = new ListMyCoursesService(entitlements, courses, progress, clock)
-  const getMyCourse = new GetMyCourseService(checkAccess, courses, progress)
-  const getLesson = new GetLessonService(checkAccess, courses, progress)
+  const listMyCourses = new ListMyCoursesService(entitlements, courses, progress, positions, clock)
+  const getMyCourse = new GetMyCourseService(checkAccess, courses, progress, positions)
+  const getLesson = new GetLessonService(checkAccess, courses, progress, positions)
   const markComplete = new MarkLessonCompleteService(checkAccess, courses, progress, clock)
   const getProgress = new GetCourseProgressService(checkAccess, courses, progress)
+  const savePosition = new SaveVideoPositionService(checkAccess, courses, positions, clock)
 
   // Motor de acesso (webhooks)
   const grant = new GrantEntitlementService({
@@ -106,6 +110,7 @@ export async function createApplication(env: Env): Promise<Application> {
       getLesson,
       markComplete,
       getProgress,
+      savePosition,
       internalToken: env.INTERNAL_API_TOKEN,
     },
     webhooks: {

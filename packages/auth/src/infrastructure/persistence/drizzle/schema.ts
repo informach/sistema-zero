@@ -31,6 +31,8 @@ export const users = auth.table(
     phone: text('phone'),
     // Origem do cadastro (app/canal: funnel/web/mobile/admin).
     signupSource: text('signup_source'),
+    // URL pública da foto de perfil (upload feito pelo app cliente; ex.: R2).
+    avatarUrl: text('avatar_url'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },

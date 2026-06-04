@@ -34,7 +34,4 @@ export class OfferNotFoundError extends DomainError {
 /** Comando de gestão de matrícula inválido (ex.: estender sem validade). → 400. */
 export class InvalidEntitlementCommandError extends DomainError {
   readonly code = 'VALIDATION_ERROR'
-  constructor(message: string) {
-    super(message)
-  }
 }

@@ -31,12 +31,15 @@ export interface MyCourseView {
   coverImageUrl: string | null
   access: AccessView
   progress: CourseProgress
+  /** Última aula acessada (posição de vídeo) — atalho do card; `null` se nunca acessou. */
+  continueLessonId: string | null
 }
 
 export function toMyCourseView(
   course: Course,
   entitlement: EntitlementAggregate,
   progress: CourseProgress,
+  continueLessonId: string | null,
 ): MyCourseView {
   return {
     courseSlug: course.slug,
@@ -45,6 +48,7 @@ export function toMyCourseView(
     coverImageUrl: course.coverImageUrl,
     access: toAccessView(entitlement),
     progress,
+    continueLessonId,
   }
 }
 
@@ -73,6 +77,8 @@ export interface CourseDetailView {
   coverImageUrl: string | null
   access: AccessView
   progress: CourseProgressView
+  /** Aula-alvo do CTA "Continuar de onde parou" (ver `resolveContinueLesson`). */
+  continueLessonId: string | null
   modules: ModuleOutlineView[]
 }
 
@@ -82,6 +88,7 @@ export function toCourseDetailView(
   completedLessonIds: Set<string>,
   entitlement: EntitlementAggregate,
   progress: CourseProgressView,
+  continueLessonId: string | null,
 ): CourseDetailView {
   return {
     slug: course.slug,
@@ -91,6 +98,7 @@ export function toCourseDetailView(
     coverImageUrl: course.coverImageUrl,
     access: toAccessView(entitlement),
     progress,
+    continueLessonId,
     modules: modules.map((m) => ({
       id: m.id,
       title: m.title,
@@ -132,6 +140,8 @@ export interface LessonDetailView {
   courseSlug: string
   estimatedMinutes: number | null
   completed: boolean
+  /** Posição de reprodução salva (segundos) — `null` se nunca assistiu. */
+  positionSeconds: number | null
   blocks: LessonBlockView[]
   attachments: LessonAttachmentView[]
 }
@@ -140,6 +150,7 @@ export function toLessonDetailView(
   lesson: LessonWithContent,
   courseSlug: string,
   completed: boolean,
+  positionSeconds: number | null,
 ): LessonDetailView {
   return {
     id: lesson.id,
@@ -149,6 +160,7 @@ export function toLessonDetailView(
     courseSlug,
     estimatedMinutes: lesson.estimatedMinutes,
     completed,
+    positionSeconds,
     blocks: lesson.blocks.map((b) => ({
       id: b.id,
       kind: b.kind,

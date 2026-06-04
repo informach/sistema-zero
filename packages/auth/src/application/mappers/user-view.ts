@@ -2,7 +2,7 @@ import type { UserAggregate } from '../../domain/user/user.aggregate'
 
 /**
  * View pública do usuário — o CONTRATO retornado pela camada de identidade.
- * NUNCA inclui `passwordHash`. `phone`/`signupSource` são opcionais.
+ * NUNCA inclui `passwordHash`. `phone`/`signupSource`/`avatarUrl` são opcionais.
  */
 export interface UserView {
   id: string
@@ -13,6 +13,7 @@ export interface UserView {
   status: string
   phone?: string
   signupSource?: string
+  avatarUrl?: string
 }
 
 export function toUserView(user: UserAggregate): UserView {
@@ -26,5 +27,6 @@ export function toUserView(user: UserAggregate): UserView {
   }
   if (user.phone) view.phone = user.phone
   if (user.signupSource) view.signupSource = user.signupSource
+  if (user.avatarUrl) view.avatarUrl = user.avatarUrl
   return view
 }

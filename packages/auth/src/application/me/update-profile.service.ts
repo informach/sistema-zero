@@ -7,10 +7,11 @@ export interface UpdateProfileCommand {
   firstName?: string
   lastName?: string
   phone?: string | null
+  avatarUrl?: string | null
 }
 
 /**
- * Self-service de perfil (`PATCH /auth/me`): o usuário edita nome/telefone.
+ * Self-service de perfil (`PATCH /auth/me`): o usuário edita nome/telefone/foto.
  * E-MAIL NÃO é editável aqui (é o vínculo com as compras no payments; troca de
  * e-mail é fluxo futuro com verificação). Papel/status são só do admin.
  */
@@ -26,6 +27,7 @@ export class UpdateProfileService {
       firstName: command.firstName,
       lastName: command.lastName,
       phone: command.phone,
+      avatarUrl: command.avatarUrl,
     })
 
     // No-op (nada mudou) não toca o banco.

@@ -719,6 +719,17 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
     },
+    // Posição do vídeo (throttled no client, mas chega com frequência) — teto alto.
+    {
+      id: 'members-video-position',
+      methods: ['PUT'],
+      pathPattern: '/members/courses/:slug/lessons/:lessonId/position',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 600, windowMs: 60_000, by: 'principal' },
+    },
     // Concessão/assinatura (funil → gateway → members): HMAC de borda do funil +
     // o gateway re-assina como consumer `gateway` (members verifica com GATEWAY_HMAC_SECRET).
     {

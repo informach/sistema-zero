@@ -187,6 +187,7 @@ export function authRoutes(deps: AuthRoutesDeps) {
           firstName: body.firstName,
           lastName: body.lastName,
           phone: body.phone,
+          avatarUrl: body.avatarUrl,
         })
         return { user }
       },

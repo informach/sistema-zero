@@ -33,9 +33,6 @@ export class DuplicateSlugError extends DomainError {
 /** Comando de autoria inválido (ex.: reordenar com ids que não batem). → 400. */
 export class InvalidContentCommandError extends DomainError {
   readonly code = 'VALIDATION_ERROR'
-  constructor(message: string) {
-    super(message)
-  }
 }
 
 /** Edição de curso perdeu a corrida (version mudou no banco). → 409. */

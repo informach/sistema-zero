@@ -34,6 +34,7 @@ import type {
 } from '../../src/domain/ports/entitlement-repository.port'
 import type { ProcessedWebhookRepository } from '../../src/domain/ports/processed-webhook-repository.port'
 import type { ProgressRepository } from '../../src/domain/ports/progress-repository.port'
+import type { VideoPositionRepository } from '../../src/domain/ports/video-position-repository.port'
 
 export const silentLogger: Logger = {
   debug() {},
@@ -542,6 +543,54 @@ export class InMemoryProgressRepository implements ProgressRepository {
     if (cs.length === 0) return null
     return cs.reduce((a, b) => (a.completedAt.getTime() >= b.completedAt.getTime() ? a : b))
       .completedAt
+  }
+}
+
+interface PositionRow {
+  userId: string
+  lessonId: string
+  courseId: string
+  positionSeconds: number
+  updatedAt: Date
+}
+
+export class InMemoryVideoPositionRepository implements VideoPositionRepository {
+  readonly rows: PositionRow[] = []
+
+  async upsert(
+    userId: string,
+    lessonId: string,
+    courseId: string,
+    positionSeconds: number,
+    now: Date,
+  ): Promise<void> {
+    const existing = this.rows.find((r) => r.userId === userId && r.lessonId === lessonId)
+    if (existing) {
+      existing.positionSeconds = positionSeconds
+      existing.updatedAt = now
+      return
+    }
+    this.rows.push({ userId, lessonId, courseId, positionSeconds, updatedAt: now })
+  }
+
+  async findPosition(userId: string, lessonId: string): Promise<number | null> {
+    const row = this.rows.find((r) => r.userId === userId && r.lessonId === lessonId)
+    return row?.positionSeconds ?? null
+  }
+
+  async lastAccessedLessonId(userId: string, courseId: string): Promise<string | null> {
+    const rows = this.rows.filter((r) => r.userId === userId && r.courseId === courseId)
+    if (rows.length === 0) return null
+    return rows.reduce((a, b) => (a.updatedAt.getTime() >= b.updatedAt.getTime() ? a : b)).lessonId
+  }
+
+  async lastAccessedByCourseIds(userId: string, courseIds: string[]): Promise<Map<string, string>> {
+    const out = new Map<string, string>()
+    for (const courseId of courseIds) {
+      const lessonId = await this.lastAccessedLessonId(userId, courseId)
+      if (lessonId) out.set(courseId, lessonId)
+    }
+    return out
   }
 }
 

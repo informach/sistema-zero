@@ -15,6 +15,7 @@ export interface UserSnapshot {
   status: UserStatus
   phone: string | null
   signupSource: string | null
+  avatarUrl: string | null
   version: number
   createdAt: Date
   updatedAt: Date
@@ -32,6 +33,8 @@ export interface RegisterUserInput {
   phone?: string | null
   /** Opcional: origem do cadastro (app/canal: `funnel`/`web`/`mobile`/`admin`). */
   signupSource?: string | null
+  /** Opcional: URL pública da foto de perfil. */
+  avatarUrl?: string | null
   now?: Date
 }
 
@@ -44,6 +47,7 @@ interface UserProps {
   status: UserStatus
   phone: string | null
   signupSource: string | null
+  avatarUrl: string | null
   version: number
   createdAt: Date
   updatedAt: Date
@@ -77,6 +81,7 @@ export class UserAggregate extends AggregateRoot<string> {
       status: input.status ?? DEFAULT_STATUS,
       phone: normalizeOptional(input.phone),
       signupSource: normalizeOptional(input.signupSource),
+      avatarUrl: normalizeOptional(input.avatarUrl),
       version: 0,
       createdAt: now,
       updatedAt: now,
@@ -98,6 +103,7 @@ export class UserAggregate extends AggregateRoot<string> {
       status: snapshot.status,
       phone: snapshot.phone,
       signupSource: snapshot.signupSource,
+      avatarUrl: snapshot.avatarUrl,
       version: snapshot.version,
       createdAt: snapshot.createdAt,
       updatedAt: snapshot.updatedAt,
@@ -135,6 +141,9 @@ export class UserAggregate extends AggregateRoot<string> {
   get signupSource(): string | null {
     return this.props.signupSource
   }
+  get avatarUrl(): string | null {
+    return this.props.avatarUrl
+  }
   get version(): number {
     return this.props.version
   }
@@ -169,12 +178,17 @@ export class UserAggregate extends AggregateRoot<string> {
   }
 
   /**
-   * Atualiza campos de perfil (nome/telefone). Só campos definidos são
+   * Atualiza campos de perfil (nome/telefone/foto). Só campos definidos são
    * considerados; nome em branco é ignorado. Bumpa `version`/`updatedAt` apenas se
    * algo de fato mudou.
    */
   updateProfile(
-    changes: { firstName?: string; lastName?: string; phone?: string | null },
+    changes: {
+      firstName?: string
+      lastName?: string
+      phone?: string | null
+      avatarUrl?: string | null
+    },
     now: Date = new Date(),
   ): void {
     let changed = false
@@ -196,6 +210,13 @@ export class UserAggregate extends AggregateRoot<string> {
       const next = normalizeOptional(changes.phone)
       if (next !== this.props.phone) {
         this.props.phone = next
+        changed = true
+      }
+    }
+    if (changes.avatarUrl !== undefined) {
+      const next = normalizeOptional(changes.avatarUrl)
+      if (next !== this.props.avatarUrl) {
+        this.props.avatarUrl = next
         changed = true
       }
     }

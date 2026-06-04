@@ -19,6 +19,7 @@ import { ListMyCoursesService } from '../src/application/list-my-courses/list-my
 import { ManageEntitlementService } from '../src/application/manage-entitlement/manage-entitlement.service'
 import { MarkLessonCompleteService } from '../src/application/mark-lesson-complete/mark-lesson-complete.service'
 import { RevokeEntitlementService } from '../src/application/revoke-entitlement/revoke-entitlement.service'
+import { SaveVideoPositionService } from '../src/application/save-video-position/save-video-position.service'
 import type { CourseStatus } from '../src/domain/course/course'
 import { EntitlementAggregate } from '../src/domain/entitlement/entitlement.aggregate'
 import type { ResolvedOffer } from '../src/domain/ports/catalog-gateway.port'
@@ -30,6 +31,7 @@ import {
   InMemoryEntitlementRepository,
   InMemoryProcessedWebhookRepository,
   InMemoryProgressRepository,
+  InMemoryVideoPositionRepository,
   silentLogger,
 } from './fakes/in-memory'
 
@@ -44,6 +46,7 @@ export function buildApp(
   const entitlements = new InMemoryEntitlementRepository()
   const courses = new InMemoryCourseRepository()
   const progress = new InMemoryProgressRepository()
+  const positions = new InMemoryVideoPositionRepository()
   const processed = new InMemoryProcessedWebhookRepository()
   const catalog = new FakeCatalogGateway()
 
@@ -63,11 +66,12 @@ export function buildApp(
     env,
     logger: silentLogger,
     members: {
-      listMyCourses: new ListMyCoursesService(entitlements, courses, progress, clock),
-      getMyCourse: new GetMyCourseService(checkAccess, courses, progress),
-      getLesson: new GetLessonService(checkAccess, courses, progress),
+      listMyCourses: new ListMyCoursesService(entitlements, courses, progress, positions, clock),
+      getMyCourse: new GetMyCourseService(checkAccess, courses, progress, positions),
+      getLesson: new GetLessonService(checkAccess, courses, progress, positions),
       markComplete: new MarkLessonCompleteService(checkAccess, courses, progress, clock),
       getProgress: new GetCourseProgressService(checkAccess, courses, progress),
+      savePosition: new SaveVideoPositionService(checkAccess, courses, positions, clock),
       internalToken: opts.internalToken,
     },
     webhooks: {
@@ -104,7 +108,7 @@ export function buildApp(
     },
   })
 
-  return { app, entitlements, courses, progress, processed, catalog, clockRef }
+  return { app, entitlements, courses, progress, positions, processed, catalog, clockRef }
 }
 
 /** Curso de exemplo: 1 módulo, 2 aulas (a 1ª composta com 3 blocos + 1 anexo). */

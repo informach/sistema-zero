@@ -4,7 +4,9 @@ import type { GetLessonService } from '../../../application/get-lesson/get-lesso
 import type { GetMyCourseService } from '../../../application/get-my-course/get-my-course.service'
 import type { ListMyCoursesService } from '../../../application/list-my-courses/list-my-courses.service'
 import type { MarkLessonCompleteService } from '../../../application/mark-lesson-complete/mark-lesson-complete.service'
+import type { SaveVideoPositionService } from '../../../application/save-video-position/save-video-position.service'
 import { assertInternalCaller, resolveUserId } from '../auth'
+import { VideoPositionBody } from '../dtos'
 
 export interface MembersRoutesDeps {
   listMyCourses: ListMyCoursesService
@@ -12,6 +14,7 @@ export interface MembersRoutesDeps {
   getLesson: GetLessonService
   markComplete: MarkLessonCompleteService
   getProgress: GetCourseProgressService
+  savePosition: SaveVideoPositionService
   /** Token interno do gateway (defesa em profundidade). Vazio em dev → checagem desligada. */
   internalToken?: string
 }
@@ -47,4 +50,12 @@ export function membersRoutes(deps: MembersRoutesDeps) {
       const userId = resolveUserId(headers)
       return deps.markComplete.execute(userId, params.lessonId)
     })
+    .put(
+      '/courses/:slug/lessons/:lessonId/position',
+      async ({ headers, params, body }) => {
+        const userId = resolveUserId(headers)
+        return deps.savePosition.execute(userId, params.slug, params.lessonId, body.positionSeconds)
+      },
+      { body: VideoPositionBody },
+    )
 }

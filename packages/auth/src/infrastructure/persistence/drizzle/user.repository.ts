@@ -63,6 +63,7 @@ export class DrizzleUserRepository implements UserRepository {
         role: s.role,
         status: s.status,
         phone: s.phone,
+        avatarUrl: s.avatarUrl,
         updatedAt: s.updatedAt,
       })
       .where(and(eq(users.id, s.id), eq(users.version, expectedVersion)))
@@ -84,6 +85,7 @@ export class DrizzleUserRepository implements UserRepository {
         status: s.status,
         phone: s.phone,
         signupSource: s.signupSource,
+        avatarUrl: s.avatarUrl,
         createdAt: s.createdAt,
         updatedAt: s.updatedAt,
       })
@@ -125,6 +127,7 @@ function toSnapshot(row: UserRow): UserSnapshot {
     status: row.status,
     phone: row.phone,
     signupSource: row.signupSource,
+    avatarUrl: row.avatarUrl,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   }

@@ -73,6 +73,8 @@ export const UpdateMeBody = t.Object({
   firstName: t.Optional(t.String({ minLength: 1, maxLength: 100 })),
   lastName: t.Optional(t.String({ minLength: 1, maxLength: 100 })),
   phone: t.Optional(t.Union([t.String({ maxLength: 20 }), t.Null()])),
+  // URL pública da foto de perfil (o upload é do app cliente; `null` remove).
+  avatarUrl: t.Optional(t.Union([t.String({ maxLength: 2000 }), t.Null()])),
 })
 
 /** Corpo de `POST /auth/me/password` (troca logado; exige a senha atual). */
