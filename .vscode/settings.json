@@ -2,8 +2,7 @@
   // Formata ao salvar e, no save, aplica os fixes seguros do Biome e organiza os imports.
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
-    "source.organizeImports.biome": "explicit",
-    "quickfix.biome": "explicit"
+    "source.fixAll.biome": "explicit"
   },
 
   // Biome como formatador padrão apenas para as linguagens que ele suporta
