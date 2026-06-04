@@ -19,9 +19,10 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > Estado: **Fatia 1 feita e testada** (motor de acesso por webhook + consumo do aluno)
 > + **gestão de acesso admin** (listar membros, detalhe, conceder manual, revogar/
 > expirar/estender) + **autoria de conteúdo admin** (CRUD de cursos/módulos/aulas/blocos/
-> anexos + reordenação) — **50 testes**. Migration `0000_vengeful_the_stranger` (cria o
-> schema `members`) — **aplicada** no Postgres compartilhado (`sistemazero`, :5433; as 8
-> tabelas existem). Autoria NÃO precisou de migration (colunas já existiam).
+> anexos + reordenação) + **posição de vídeo/continuar de onde parou** + **quiz validado
+> no servidor** + **catálogo "Todos os cursos"** — **83 testes**. Migrations `0000` (schema
+> `members`), `0001` (`lesson_progress`) e `0002` (`quiz_attempts`) — **aplicadas** no
+> Postgres compartilhado (`sistemazero`, :5433).
 
 ## Conceito central (decisões travadas com o usuário)
 
@@ -45,6 +46,18 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 6. **Aula = lista ordenada de BLOCOS** (`lesson_blocks`, união discriminada por
    `kind`: rich_text/video/image/audio/quiz/embed). Aula composta (vídeo + interativo
    + texto) = vários blocos. Comunidade só modelada (feature é fatia seguinte).
+7. **Quiz é corrigido NO SERVIDOR** (`quiz_attempts` guarda o histórico; score 0–100 por
+   conjunto EXATO de choices). O GET da aula **NUNCA envia o gabarito** — a projeção
+   member-facing (`toMemberFacingQuizContent`) remove `correctChoiceIds`/`explanation`
+   e anexa `quizState` (lastScore/passed/attemptsCount/retryAvailableAt); correções/
+   explicações só chegam na RESPOSTA do submit. Reprovou → **cooldown de 5 min**
+   (`QUIZ_COOLDOWN`→429). Quiz **com `passingScore`** bloqueia o complete da aula até
+   aprovar (`QUIZ_GATE_NOT_PASSED`→409); SEM `passingScore` é fixação (não bloqueia);
+   aula já concluída nunca regride. Aprovado uma vez = destravado para sempre.
+8. **Posição de vídeo + last-accessed** (`lesson_progress`, 1 linha por aluno+aula,
+   upsert): `positionSeconds` retoma o vídeo de onde parou; `updatedAt` alimenta o
+   `continueLessonId` (prioridade: última acessada não concluída > 1ª não concluída >
+   1ª aula — `resolveContinueLesson`, puro) devolvido no detalhe e em "meus cursos".
 
 ## Arquitetura (DDD + Hexagonal — espelha auth/catalog)
 
@@ -121,6 +134,18 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   string não-vazia; senão `null` → o community cai no fallback `FUNNEL_URL`). Sem
   progresso (catálogo é descoberta/venda). `ListCatalogService` (2 queries, sem N+1).
   O `metadata` ainda NÃO é editável pelos DTOs admin (setar via seed/SQL; fatia futura).
+- **`PUT /members/courses/:slug/lessons/:lessonId/position`** (aluno): salva a posição
+  do vídeo — body `{positionSeconds: int 0..100000}` (TypeBox), valida matrícula + aula
+  pertencer ao curso; upsert em `lesson_progress`. Devolve `{lessonId, positionSeconds,
+  updatedAt}`. O GET da aula devolve `positionSeconds` e o detalhe/lista devolvem
+  `continueLessonId`.
+- **`POST /members/lessons/:lessonId/blocks/:blockId/quiz-attempts`** (aluno): corrige
+  o quiz no servidor — body `{answers: {questionId: choiceIds[]}}`. Resposta:
+  `{score, passed, passingScore, attemptsCount, retryAvailableAt, questions:[{questionId,
+  correct, correctChoiceIds, explanation}]}` (gabarito SÓ aqui). 429 `QUIZ_COOLDOWN` no
+  retry < 5min após reprovar; 404 `QUIZ_BLOCK_NOT_FOUND` se o bloco não é quiz. O
+  `POST /complete` devolve 409 `QUIZ_GATE_NOT_PASSED` se houver quiz com `passingScore`
+  sem aprovação.
 - Cancelar/expirar assinatura é um **UPDATE atômico set-based** por `subscription_id`
   (sem load-mutate-save por linha → sem lost-update sob corrida com renovação).
 - `processed_webhooks` tem `pruneProcessedBefore(date)` (retenção; chamar por cron —
@@ -188,7 +213,9 @@ na prática — sem version do cliente); módulos/aulas/blocos/anexos não têm 
 (`migrations: { table: 'members_migrations' }`) — NÃO compartilhe `__drizzle_migrations`
 entre pacotes (a dedupe por `created_at` pularia migrations). A migration faz
 `CREATE SCHEMA "members"`. Tabelas: `courses`, `modules`, `lessons`, `lesson_blocks`,
-`lesson_attachments`, `entitlements`, `lesson_completions`, `processed_webhooks`.
+`lesson_attachments`, `entitlements`, `lesson_completions`, `lesson_progress` (posição
+de vídeo/last-accessed — migration `0001`), `quiz_attempts` (histórico de quiz —
+migration `0002`), `processed_webhooks`.
 
 ## Pendente (fatias seguintes)
 

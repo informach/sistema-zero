@@ -148,13 +148,31 @@ Da raiz: `bun run dev:community`, `build:community`, `typecheck:community`.
   e-mail; `avatarUrl` setado pelo handler do upload), `POST /auth/me/password`
   `{currentPassword,newPassword}` (revoga todas as sessões).
 - Members (JWT + x-internal-token injetados pelo gateway): `GET /members/courses` →
-  `{courses: MyCourseView[]}`; `GET /members/catalog` → `{courses: CatalogCourseView[]}` ("Todos os
-  cursos": published + `hasAccess` + `salesPageUrl` — a página `/cursos` resolve
-  `salesPageUrl ?? FUNNEL_URL` no server); `GET /members/courses/:slug` → `CourseDetailView` (módulos+outline);
+  `{courses: MyCourseView[]}` (+`continueLessonId`); `GET /members/catalog` →
+  `{courses: CatalogCourseView[]}` ("Todos os cursos": published + `hasAccess` + `salesPageUrl` —
+  a página `/cursos` resolve `salesPageUrl ?? FUNNEL_URL` no server e filtra/busca client-side
+  com estado na URL `?q=&acesso=&ordem=`); `GET /members/courses/:slug` → `CourseDetailView`
+  (módulos+outline + `continueLessonId`: última aula acessada > 1ª não concluída > 1ª);
   `GET /members/courses/:slug/lessons/:lessonId` → `LessonDetailView` (**busca por ID**, blocos
-  `kind: rich_text|video|image|audio|quiz|embed` + anexos); `POST /members/lessons/:lessonId/complete`.
+  `kind: rich_text|video|image|audio|quiz|embed` + anexos + `positionSeconds`; bloco quiz vem
+  **SEM gabarito** e com `quizState`); `POST /members/lessons/:lessonId/complete` (→ **409
+  `QUIZ_GATE_NOT_PASSED`** se houver quiz com `passingScore` não aprovado — a UI desabilita o
+  botão e silencia o auto-complete); `PUT /members/courses/:slug/lessons/:lessonId/position`
+  `{positionSeconds}` (BFF expõe como `POST /api/members/lessons/:id/position` com
+  `{courseSlug, positionSeconds}` — POST porque `sendBeacon` não faz PUT; parse tolerante a
+  text/plain); `POST /members/lessons/:lessonId/blocks/:blockId/quiz-attempts` `{answers}` →
+  `{score, passed, passingScore, retryAvailableAt, questions[correções+explicações]}` (gabarito
+  SÓ aqui; 429 `QUIZ_COOLDOWN` por 5min após reprovar — a UI mostra countdown MM:SS).
   Navegação prev/next é DERIVADA do outline (a API não fornece). Views em `src/lib/types.ts`
   (espelham `members/src/application/mappers/views.ts` — NÃO os tipos admin).
+- **Player Vimeo** (`vimeo-player.tsx` + `@vimeo/player`, bundle local — postMessage com o
+  iframe; a CSP `frame-src player.vimeo.com` já cobre, sem mudança no proxy): watermark com o
+  e-mail do aluno, fullscreen custom no CONTAINER (mantém o watermark em tela cheia), retoma
+  `positionSeconds` salvo (`setCurrentTime` no ready, ignora RangeError) e auto-conclui a ~90%
+  assistido (uma vez). A posição persiste com throttle de ~12s + flush em pause/ended +
+  `sendBeacon` em visibilitychange/pagehide/unmount (`lesson-player-client.tsx`). Os blocos
+  recebem tudo via `LessonPlayerContext` (sem prop-drilling); YouTube/file seguem com embed
+  simples. `player.destroy()` no cleanup (remove o iframe; o React só desmonta o container).
 - Payments: `GET /payments/my` (`?limit&offset`) → `Paginated<PaymentView>` (PÚBLICA, sem dados do
   cliente; o backend filtra pelo e-mail das claims); `GET /payments/my/:id`. Valores em **string**
   (centavos) → `formatCentsStr`.
