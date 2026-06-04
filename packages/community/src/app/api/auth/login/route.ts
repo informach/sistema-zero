@@ -24,6 +24,14 @@ export async function POST(req: Request) {
   if (status === 403) {
     return NextResponse.json({ error: { code: 'INACTIVE' } }, { status: 403 })
   }
+  // NÃO mascarar erro de upstream como credencial inválida (já atrapalhou diagnóstico):
+  // 429 = rate-limit do gateway (20/min/IP); 5xx = gateway/auth indisponível.
+  if (status === 429) {
+    return NextResponse.json({ error: { code: 'TOO_MANY_ATTEMPTS' } }, { status: 429 })
+  }
+  if (status >= 500) {
+    return NextResponse.json({ error: { code: 'SERVICE_UNAVAILABLE' } }, { status: 503 })
+  }
   if (status !== 200 || !body?.tokens || !body?.user) {
     return NextResponse.json({ error: { code: 'INVALID_CREDENTIALS' } }, { status: 401 })
   }
