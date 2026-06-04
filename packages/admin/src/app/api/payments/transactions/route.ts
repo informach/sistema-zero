@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { listPayments } from '@/server/payments'
+import { listPaymentsWithGuarantee } from '@/server/payments'
 
 function num(value: string | null): number | undefined {
   if (!value) return undefined
@@ -9,7 +9,7 @@ function num(value: string | null): number | undefined {
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
-  const { status, body } = await listPayments({
+  const { status, body } = await listPaymentsWithGuarantee({
     q: searchParams.get('q') ?? undefined,
     status: searchParams.get('status') ?? undefined,
     method: searchParams.get('method') ?? undefined,

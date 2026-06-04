@@ -1,12 +1,13 @@
 'use client'
 
-import { Banknote, CreditCard, RotateCcw, Search, Undo2 } from 'lucide-react'
+import { Banknote, CreditCard, RotateCcw, Search, ShieldCheck, Undo2 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { OverviewCard } from '@/components/admin/overview-card'
 import { PaymentsTabs } from '@/components/admin/payments-tabs'
 import { StatusBadge } from '@/components/admin/status-badge'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Dialog } from '@/components/ui/dialog'
@@ -30,8 +31,8 @@ import {
   PAYMENT_METHODS,
   PAYMENT_STATUSES,
   type Paginated,
+  type PaymentRow,
   type PaymentStats,
-  type PaymentView,
 } from '@/lib/types'
 
 const LIMIT = 20
@@ -41,12 +42,34 @@ function methodLabel(method: string): string {
 }
 
 /** Estorno disponível só para Pix/cartão pagos (boleto não tem estorno programático). */
-function canRefund(p: PaymentView): boolean {
+function canRefund(p: PaymentRow): boolean {
   return p.status === 'PAID' && (p.method === 'PIX' || p.method === 'CREDIT_CARD')
 }
 
+/** "DD/MM" curto p/ o fim da garantia (formatDate completo fica longo na linha). */
+function shortDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+}
+
+/** Badge do estado da garantia (apoia a decisão de estorno). */
+function GuaranteeBadge({ payment: p }: { payment: PaymentRow }) {
+  if (!p.guarantee) {
+    return p.paidAt ? <Badge variant="muted">Sem garantia definida</Badge> : <span>—</span>
+  }
+  if (p.guarantee.expired) {
+    return <Badge variant="muted">Garantia expirada em {shortDate(p.guarantee.until)}</Badge>
+  }
+  return (
+    <Badge variant="success">
+      <ShieldCheck className="size-3" />
+      Em garantia até {shortDate(p.guarantee.until)} ({p.guarantee.daysLeft}{' '}
+      {p.guarantee.daysLeft === 1 ? 'dia restante' : 'dias restantes'})
+    </Badge>
+  )
+}
+
 export function TransactionsClient() {
-  const [items, setItems] = useState<PaymentView[]>([])
+  const [items, setItems] = useState<PaymentRow[]>([])
   const [total, setTotal] = useState(0)
   const [offset, setOffset] = useState(0)
   const [q, setQ] = useState('')
@@ -57,7 +80,7 @@ export function TransactionsClient() {
   const [loading, setLoading] = useState(true)
 
   const [stats, setStats] = useState<PaymentStats | null>(null)
-  const [selected, setSelected] = useState<PaymentView | null>(null)
+  const [selected, setSelected] = useState<PaymentRow | null>(null)
   const [confirmingRefund, setConfirmingRefund] = useState(false)
   const [refunding, setRefunding] = useState(false)
 
@@ -70,7 +93,7 @@ export function TransactionsClient() {
       if (method) params.set('method', method)
       if (from) params.set('from', from)
       if (to) params.set('to', to)
-      const page = await apiGet<Paginated<PaymentView>>(`/api/payments/transactions?${params}`)
+      const page = await apiGet<Paginated<PaymentRow>>(`/api/payments/transactions?${params}`)
       setItems(page.items)
       setTotal(page.total)
     } catch (err) {
@@ -100,7 +123,7 @@ export function TransactionsClient() {
     loadStats()
   }, [loadStats])
 
-  function openDetail(p: PaymentView) {
+  function openDetail(p: PaymentRow) {
     setSelected(p)
     setConfirmingRefund(false)
   }
@@ -109,12 +132,13 @@ export function TransactionsClient() {
     if (!selected) return
     setRefunding(true)
     try {
-      const updated = await apiSend<PaymentView>(
+      const updated = await apiSend<PaymentRow>(
         `/api/payments/transactions/${selected.id}/refund`,
         'POST',
       )
       toast.success('Estorno solicitado.')
-      setSelected(updated)
+      // A rota de refund devolve a view crua (sem `guarantee`) — preserva a resolvida.
+      setSelected({ ...updated, guarantee: updated.guarantee ?? selected.guarantee })
       setConfirmingRefund(false)
       await Promise.all([load(), loadStats()])
     } catch (err) {
@@ -259,7 +283,15 @@ export function TransactionsClient() {
                     {formatCentsStr(p.amountInCents, p.currency)}
                   </TableCell>
                   <TableCell>
-                    <StatusBadge status={p.status} />
+                    <span className="inline-flex items-center gap-1.5">
+                      <StatusBadge status={p.status} />
+                      {p.guarantee && !p.guarantee.expired ? (
+                        <ShieldCheck
+                          className="size-3.5 text-success-foreground"
+                          aria-label={`Em garantia até ${shortDate(p.guarantee.until)}`}
+                        />
+                      ) : null}
+                    </span>
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">
                     {formatDate(p.createdAt)}
@@ -280,25 +312,35 @@ export function TransactionsClient() {
         description={selected ? methodLabel(selected.method) : undefined}
         footer={
           selected && canRefund(selected) ? (
-            confirmingRefund ? (
-              <>
-                <Button
-                  variant="outline"
-                  onClick={() => setConfirmingRefund(false)}
-                  disabled={refunding}
-                >
-                  Não
-                </Button>
-                <Button variant="destructive" onClick={doRefund} disabled={refunding}>
-                  {refunding ? <Spinner /> : <RotateCcw className="size-4" />}
-                  Confirmar estorno
-                </Button>
-              </>
-            ) : (
-              <Button variant="destructive" onClick={() => setConfirmingRefund(true)}>
-                <Undo2 className="size-4" /> Estornar
-              </Button>
-            )
+            <div className="flex w-full flex-col gap-2">
+              {selected.guarantee?.expired ? (
+                <p className="text-right text-xs text-destructive">
+                  Estorno fora do período de garantia (encerrou em{' '}
+                  {formatDate(selected.guarantee.until)}).
+                </p>
+              ) : null}
+              <div className="flex justify-end gap-2">
+                {confirmingRefund ? (
+                  <>
+                    <Button
+                      variant="outline"
+                      onClick={() => setConfirmingRefund(false)}
+                      disabled={refunding}
+                    >
+                      Não
+                    </Button>
+                    <Button variant="destructive" onClick={doRefund} disabled={refunding}>
+                      {refunding ? <Spinner /> : <RotateCcw className="size-4" />}
+                      Confirmar estorno
+                    </Button>
+                  </>
+                ) : (
+                  <Button variant="destructive" onClick={() => setConfirmingRefund(true)}>
+                    <Undo2 className="size-4" /> Estornar
+                  </Button>
+                )}
+              </div>
+            </div>
           ) : null
         }
       >
@@ -317,7 +359,7 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
   )
 }
 
-function PaymentDetail({ payment: p }: { payment: PaymentView }) {
+function PaymentDetail({ payment: p }: { payment: PaymentRow }) {
   return (
     <div className="flex flex-col gap-4 text-sm">
       <div>
@@ -349,6 +391,7 @@ function PaymentDetail({ payment: p }: { payment: PaymentView }) {
       <div className="rounded-lg border border-border p-3">
         <Row label="Criado" value={formatDate(p.createdAt)} />
         <Row label="Pago" value={formatDate(p.paidAt)} />
+        {p.paidAt ? <Row label="Garantia" value={<GuaranteeBadge payment={p} />} /> : null}
         <Row label="Expira" value={formatDate(p.expiresAt)} />
         <Row label="Atualizado" value={formatDate(p.updatedAt)} />
         {p.refundedAt ? <Row label="Estornado" value={formatDate(p.refundedAt)} /> : null}

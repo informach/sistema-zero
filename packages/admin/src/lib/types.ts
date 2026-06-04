@@ -408,6 +408,22 @@ export interface PaymentView {
   providerRefundId: string | null
 }
 
+/** Janela de garantia da oferta comprada (resolvida no BFF: metadata.offerId → catálogo). */
+export interface PaymentGuarantee {
+  /** ISO-8601 — fim da garantia (paidAt + guaranteeDays). */
+  until: string
+  /** Dias restantes (ceil; 0 quando `expired`). */
+  daysLeft: number
+  expired: boolean
+  /** Janela configurada na oferta (p/ exibir "X dias"). */
+  guaranteeDays: number
+}
+
+/** Linha de transação enriquecida pelo BFF (garantia é best-effort → null se indisponível). */
+export interface PaymentRow extends PaymentView {
+  guarantee: PaymentGuarantee | null
+}
+
 export interface SubscriptionView {
   id: string
   consumerId: string
@@ -458,8 +474,10 @@ export interface PaymentOps {
 
 /** Bucket de um dia civil (America/Sao_Paulo). Valores em centavos como STRING. */
 export interface DailyPaymentBucket {
-  /** YYYY-MM-DD. */
+  /** YYYY-MM-DD — início do bucket (dia, semana ou mês conforme `granularity`). */
   day: string
+  /** YYYY-MM-DD — último dia coberto pelo bucket (presente só quando agregado). */
+  periodEnd?: string
   /** Recebido no dia (pagamentos confirmados naquele dia, mesmo que estornados depois). */
   grossAmountInCents: string
   /** Estornado no dia. */
@@ -472,10 +490,15 @@ export interface DailyPaymentBucket {
   cancellations: number
 }
 
+/** Granularidade dos buckets da série (janelas longas são agregadas no BFF). */
+export type SalesGranularity = 'day' | 'week' | 'month'
+
 /** Série DENSA (o BFF preenche dias sem movimento com zeros) + totais do período. */
 export interface DailyPaymentStats {
   from: string
   to: string
+  /** day p/ janelas ≤90 dias; week p/ ≤270; month acima. */
+  granularity: SalesGranularity
   days: DailyPaymentBucket[]
   totals: {
     netAmountInCents: string

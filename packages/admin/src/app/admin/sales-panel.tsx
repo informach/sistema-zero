@@ -17,6 +17,8 @@ const PERIODS = [
   { value: '7', label: 'Últimos 7 dias' },
   { value: '30', label: 'Últimos 30 dias' },
   { value: '90', label: 'Últimos 90 dias' },
+  { value: '180', label: 'Últimos 6 meses' },
+  { value: '365', label: 'Últimos 12 meses' },
 ] as const
 
 const TOOLTIPS = {
@@ -155,7 +157,11 @@ export function SalesPanel() {
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="flex items-center gap-2 text-sm font-medium">
                 <ChartLine className="size-4 text-muted-foreground" />
-                Desempenho diário de vendas
+                {data?.granularity === 'month'
+                  ? 'Desempenho mensal de vendas'
+                  : data?.granularity === 'week'
+                    ? 'Desempenho semanal de vendas'
+                    : 'Desempenho diário de vendas'}
               </CardTitle>
               <Button variant="ghost" size="sm" onClick={() => setChartOpen((v) => !v)}>
                 {chartOpen ? (
@@ -176,7 +182,7 @@ export function SalesPanel() {
                     <Spinner />
                   </div>
                 ) : (
-                  <SalesChart days={data.days} />
+                  <SalesChart days={data.days} granularity={data.granularity} />
                 )}
               </CardContent>
             ) : null}

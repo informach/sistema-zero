@@ -11,7 +11,7 @@ import {
   YAxis,
 } from 'recharts'
 import { formatCents } from '@/lib/format'
-import type { DailyPaymentBucket } from '@/lib/types'
+import type { DailyPaymentBucket, SalesGranularity } from '@/lib/types'
 
 // Cores fixas (dark-safe), estilo Hotmart: líquido verde, estornos vermelho,
 // transações azul. Grid/eixos em cinza neutro p/ funcionar nos dois temas.
@@ -22,6 +22,8 @@ const COLOR_NEUTRAL = '#888888'
 
 interface ChartPoint {
   day: string
+  /** Último dia coberto pelo bucket (só em séries agregadas). */
+  periodEnd?: string
   /** Faturamento líquido em REAIS (p/ o eixo monetário). */
   net: number
   cancellations: number
@@ -34,6 +36,39 @@ function shortDay(day: string): string {
   return `${d}/${m}`
 }
 
+const MONTHS_PT = [
+  'jan',
+  'fev',
+  'mar',
+  'abr',
+  'mai',
+  'jun',
+  'jul',
+  'ago',
+  'set',
+  'out',
+  'nov',
+  'dez',
+]
+
+/** Rótulo do tick conforme a granularidade: dia/semana "dd/MM"; mês "jan/26". */
+function formatTick(day: string, granularity: SalesGranularity): string {
+  if (granularity === 'month') {
+    const [y, m] = day.split('-')
+    return `${MONTHS_PT[Number(m) - 1] ?? m}/${(y ?? '').slice(2)}`
+  }
+  return shortDay(day)
+}
+
+/** Rótulo do tooltip: bucket agregado mostra o intervalo coberto. */
+function tooltipLabel(point: ChartPoint | undefined, label: string, g: SalesGranularity): string {
+  if (g === 'month') return formatTick(label, g)
+  if (g === 'week' && point?.periodEnd && point.periodEnd !== label) {
+    return `${shortDay(label)} – ${shortDay(point.periodEnd)}`
+  }
+  return shortDay(label)
+}
+
 const SERIES_LABELS: Record<string, string> = {
   net: 'Faturamento líquido',
   cancellations: 'Cancelamentos',
@@ -44,16 +79,23 @@ function ChartTooltip({
   active,
   payload,
   label,
+  granularity,
 }: {
   active?: boolean
-  payload?: { dataKey?: string | number; value?: number | string; color?: string }[]
+  payload?: {
+    dataKey?: string | number
+    value?: number | string
+    color?: string
+    payload?: ChartPoint
+  }[]
   label?: string | number
+  granularity: SalesGranularity
 }) {
   if (!active || !payload?.length) return null
   return (
     <div className="rounded-md border border-border bg-card px-3 py-2 text-xs shadow-md">
       <p className="mb-1 font-medium text-card-foreground">
-        {typeof label === 'string' ? shortDay(label) : label}
+        {typeof label === 'string' ? tooltipLabel(payload[0]?.payload, label, granularity) : label}
       </p>
       {payload.map((entry) => {
         const key = String(entry.dataKey)
@@ -73,10 +115,17 @@ function ChartTooltip({
   )
 }
 
-/** Gráfico de linha diário: líquido (R$, eixo esq.) × contagens (eixo dir.). */
-export function SalesChart({ days }: { days: DailyPaymentBucket[] }) {
+/** Gráfico de linha: líquido (R$, eixo esq.) × contagens (eixo dir.). */
+export function SalesChart({
+  days,
+  granularity = 'day',
+}: {
+  days: DailyPaymentBucket[]
+  granularity?: SalesGranularity
+}) {
   const data: ChartPoint[] = days.map((b) => ({
     day: b.day,
+    periodEnd: b.periodEnd,
     net: Number(b.netAmountInCents) / 100,
     cancellations: b.cancellations,
     transactions: b.transactions,
@@ -88,7 +137,7 @@ export function SalesChart({ days }: { days: DailyPaymentBucket[] }) {
         <CartesianGrid stroke={COLOR_NEUTRAL} strokeOpacity={0.2} strokeDasharray="4 4" />
         <XAxis
           dataKey="day"
-          tickFormatter={shortDay}
+          tickFormatter={(v: string) => formatTick(v, granularity)}
           tick={{ fill: COLOR_NEUTRAL, fontSize: 11 }}
           tickLine={false}
           axisLine={{ stroke: COLOR_NEUTRAL, strokeOpacity: 0.4 }}
@@ -111,7 +160,7 @@ export function SalesChart({ days }: { days: DailyPaymentBucket[] }) {
           axisLine={false}
           width={40}
         />
-        <Tooltip content={<ChartTooltip />} />
+        <Tooltip content={<ChartTooltip granularity={granularity} />} />
         <Legend
           formatter={(value: string) => (
             <span className="text-xs text-muted-foreground">{SERIES_LABELS[value] ?? value}</span>
