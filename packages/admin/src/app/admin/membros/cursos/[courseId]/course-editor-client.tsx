@@ -5,12 +5,14 @@ import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
+import { Badge } from '@/components/ui/badge'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Dialog } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Field } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
+import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import type { CourseTreeView, LessonView, ModuleView } from '@/lib/types'
@@ -51,7 +53,12 @@ export function CourseEditorClient({
   const [lessonOpen, setLessonOpen] = useState(false)
   const [editingLesson, setEditingLesson] = useState<LessonView | null>(null)
   const [lessonModuleId, setLessonModuleId] = useState<string>('')
-  const [lessonForm, setLessonForm] = useState({ slug: '', title: '', estimatedMinutes: '' })
+  const [lessonForm, setLessonForm] = useState({
+    slug: '',
+    title: '',
+    estimatedMinutes: '',
+    isPublished: false,
+  })
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -121,7 +128,8 @@ export function CourseEditorClient({
   function openCreateLesson(moduleId: string) {
     setEditingLesson(null)
     setLessonModuleId(moduleId)
-    setLessonForm({ slug: '', title: '', estimatedMinutes: '' })
+    // Aula nova nasce RASCUNHO — o autor publica quando o conteúdo estiver pronto.
+    setLessonForm({ slug: '', title: '', estimatedMinutes: '', isPublished: false })
     setLessonOpen(true)
   }
   function openEditLesson(l: LessonView) {
@@ -131,6 +139,7 @@ export function CourseEditorClient({
       slug: l.slug,
       title: l.title,
       estimatedMinutes: l.estimatedMinutes === null ? '' : String(l.estimatedMinutes),
+      isPublished: l.isPublished,
     })
     setLessonOpen(true)
   }
@@ -144,6 +153,7 @@ export function CourseEditorClient({
       slug: lessonForm.slug.trim(),
       title: lessonForm.title.trim(),
       estimatedMinutes: mins ? Number(mins) : null,
+      isPublished: lessonForm.isPublished,
     }
     await run(async () => {
       if (editingLesson) await apiSend(`/api/members/lessons/${editingLesson.id}`, 'PATCH', payload)
@@ -204,6 +214,14 @@ export function CourseEditorClient({
                   {mod.summary ? (
                     <div className="text-sm text-muted-foreground">{mod.summary}</div>
                   ) : null}
+                  <div className="mt-0.5 text-xs text-muted-foreground">
+                    {mod.lessons.filter((l) => l.isPublished).length} de {mod.lessons.length}{' '}
+                    {mod.lessons.length === 1 ? 'aula publicada' : 'aulas publicadas'}
+                    {(() => {
+                      const min = mod.lessons.reduce((s, l) => s + (l.estimatedMinutes ?? 0), 0)
+                      return min > 0 ? ` · ${min} min` : ''
+                    })()}
+                  </div>
                 </div>
                 {canWrite ? (
                   <div className="flex shrink-0 items-center gap-1">
@@ -240,7 +258,12 @@ export function CourseEditorClient({
                   mod.lessons.map((lesson, li) => (
                     <div key={lesson.id} className="flex items-center justify-between gap-3 py-2">
                       <div className="min-w-0">
-                        <div className="truncate text-sm font-medium">{lesson.title}</div>
+                        <div className="flex items-center gap-2">
+                          <span className="truncate text-sm font-medium">{lesson.title}</span>
+                          <Badge variant={lesson.isPublished ? 'success' : 'muted'}>
+                            {lesson.isPublished ? 'Publicada' : 'Rascunho'}
+                          </Badge>
+                        </div>
                         <div className="truncate text-xs text-muted-foreground">
                           {lesson.slug}
                           {lesson.estimatedMinutes != null
@@ -379,6 +402,19 @@ export function CourseEditorClient({
               onChange={(e) => setLessonForm((f) => ({ ...f, title: e.target.value }))}
             />
           </Field>
+          <div className="flex items-center justify-between rounded-lg border border-border px-3 py-2.5">
+            <div>
+              <div className="text-sm font-medium">Aula publicada</div>
+              <div className="text-xs text-muted-foreground">
+                Rascunho fica invisível para o aluno até você publicar.
+              </div>
+            </div>
+            <Switch
+              checked={lessonForm.isPublished}
+              onCheckedChange={(v) => setLessonForm((f) => ({ ...f, isPublished: v }))}
+              disabled={busy}
+            />
+          </div>
         </div>
       </Dialog>
     </div>

@@ -151,6 +151,47 @@ describe('Members HTTP — consumo do aluno', () => {
     expect(body.error.code).toBe('ACCESS_DENIED')
     expect(body.blocks).toBeUndefined()
   })
+
+  test('aula rascunho é invisível ao aluno: some do outline, 404 por URL, progresso conta só publicadas', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const course = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
+    // Despublica a 2ª aula (vira rascunho de autoria).
+    const [published, draft] = course.lessonIds
+    const draftLesson = courses.lessons.find((l) => l.id === draft)
+    if (draftLesson) draftLesson.isPublished = false
+
+    // Outline do aluno só mostra a publicada.
+    const detail = await readJson(await get(app, `/members/courses/${course.slug}`, authHeaders()))
+    expect(detail.modules[0].lessons.map((l: { id: string }) => l.id)).toEqual([published])
+
+    // Acesso direto por URL → 404 (GET, complete e posição de vídeo).
+    expect(
+      (await get(app, `/members/courses/${course.slug}/lessons/${draft}`, authHeaders())).status,
+    ).toBe(404)
+    const complete = await app.handle(
+      new Request(`http://localhost/members/lessons/${draft}/complete`, {
+        method: 'POST',
+        headers: authHeaders(),
+      }),
+    )
+    expect(complete.status).toBe(404)
+
+    // Denominador do progresso = só publicadas: concluir a única publicada → 100%.
+    const done = await app.handle(
+      new Request(`http://localhost/members/lessons/${published}/complete`, {
+        method: 'POST',
+        headers: authHeaders(),
+      }),
+    )
+    expect(await readJson(done)).toMatchObject({
+      completedLessons: 1,
+      totalLessons: 1,
+      percent: 100,
+    })
+    const list = await readJson(await get(app, '/members/courses', authHeaders()))
+    expect(list.courses[0].progress.percent).toBe(100)
+  })
 })
 
 describe('Members HTTP — webhooks', () => {

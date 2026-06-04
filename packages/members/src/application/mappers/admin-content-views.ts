@@ -62,6 +62,7 @@ export interface LessonView {
   title: string
   sortOrder: number
   estimatedMinutes: number | null
+  isPublished: boolean
 }
 
 export function toLessonView(l: Lesson): LessonView {
@@ -73,6 +74,7 @@ export function toLessonView(l: Lesson): LessonView {
     title: l.title,
     sortOrder: l.sortOrder,
     estimatedMinutes: l.estimatedMinutes,
+    isPublished: l.isPublished,
   }
 }
 

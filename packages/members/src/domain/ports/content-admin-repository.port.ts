@@ -28,6 +28,7 @@ export interface LessonFields {
   slug: string
   title: string
   estimatedMinutes: number | null
+  isPublished: boolean
 }
 
 export interface AttachmentFields {
@@ -57,6 +58,8 @@ export interface ContentAdminRepository {
   /** `UPDATE ... WHERE id = ? AND version = ?` → `false` se conflito. 23505 → DuplicateSlugError. */
   updateCourse(course: Course): Promise<boolean>
   deleteCourse(id: string): Promise<boolean>
+  /** Aulas publicadas do curso (guard: publicar curso exige ≥1 aula publicada). */
+  countPublishedLessons(courseId: string): Promise<number>
 
   // ── Módulos ──
   findModuleById(id: string): Promise<Module | null>

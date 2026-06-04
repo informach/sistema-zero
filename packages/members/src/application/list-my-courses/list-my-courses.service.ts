@@ -33,7 +33,7 @@ export class ListMyCoursesService {
     // Contagens em LOTE (3 queries) em vez de 3 por curso (evita N+1).
     const courseIds = courses.map((c) => c.id)
     const [totals, completed, lastAccessed] = await Promise.all([
-      this.courses.countLessonsByCourseIds(courseIds),
+      this.courses.countPublishedLessonsByCourseIds(courseIds),
       this.progress.countCompletedByCourseIds(userId, courseIds),
       this.positions.lastAccessedByCourseIds(userId, courseIds),
     ])

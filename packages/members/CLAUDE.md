@@ -20,9 +20,10 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > + **gestão de acesso admin** (listar membros, detalhe, conceder manual, revogar/
 > expirar/estender) + **autoria de conteúdo admin** (CRUD de cursos/módulos/aulas/blocos/
 > anexos + reordenação) + **posição de vídeo/continuar de onde parou** + **quiz validado
-> no servidor** + **catálogo "Todos os cursos"** — **83 testes**. Migrations `0000` (schema
-> `members`), `0001` (`lesson_progress`) e `0002` (`quiz_attempts`) — **aplicadas** no
-> Postgres compartilhado (`sistemazero`, :5433).
+> no servidor** + **catálogo "Todos os cursos"** + **publicação por aula**
+> (`lessons.is_published` + guard de publicação do curso) — **88 testes**. Migrations `0000`
+> (schema `members`), `0001` (`lesson_progress`), `0002` (`quiz_attempts`) e `0003`
+> (`lessons.is_published`) — **aplicadas** no Postgres compartilhado (`sistemazero`, :5433).
 
 ## Conceito central (decisões travadas com o usuário)
 
@@ -195,6 +196,14 @@ Slug duplicado (curso global, aula por curso) → 23505 → `DUPLICATE_SLUG`(409
 ids EXATOS dos filhos atuais (senão 400). Cursos têm `version` (concorrência otimista, last-write-wins
 na prática — sem version do cliente); módulos/aulas/blocos/anexos não têm version. Erros novos:
 `CONTENT_NOT_FOUND`→404, `DUPLICATE_SLUG`→409, `CONCURRENCY_CONFLICT`→409.
+
+**Publicação por aula** (`lessons.is_published`, migration `0003`): `LessonBody` aceita
+`isPublished` opcional — **ausente → `false`** (aula nova nasce RASCUNHO; aulas pré-existentes
+foram backfilled `true` pelo default do DDL). Guard: criar/publicar curso com `status:'published'`
+exige **≥1 aula publicada** → `NO_PUBLISHED_LESSON`(409). Visão do ALUNO filtra rascunhos em tudo:
+outline (`findOutline(..., {publishedOnly:true})`), GET da aula/complete/posição de vídeo/quiz-attempt
+→ 404 em aula rascunho, e o denominador do progresso usa `countPublishedLessons*` (só publicadas).
+O ADMIN vê tudo (árvore com rascunhos; `countLessons` no member-detail é o total real).
 
 ## Convenções
 

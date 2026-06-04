@@ -178,6 +178,7 @@ export function seedSampleCourse(
     title: 'Aula composta',
     sortOrder: 0,
     estimatedMinutes: 5,
+    isPublished: true,
   })
   courses.lessons.push({
     id: lesson2,
@@ -187,6 +188,7 @@ export function seedSampleCourse(
     title: 'Aula 2',
     sortOrder: 1,
     estimatedMinutes: 7,
+    isPublished: true,
   })
   courses.blocks.push(
     {

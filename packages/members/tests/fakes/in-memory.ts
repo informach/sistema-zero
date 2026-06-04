@@ -246,14 +246,17 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
       .sort((a, b) => a.title.localeCompare(b.title))
   }
 
-  async findOutline(courseId: string): Promise<ModuleWithLessons[]> {
+  async findOutline(
+    courseId: string,
+    opts?: { publishedOnly?: boolean },
+  ): Promise<ModuleWithLessons[]> {
     return this.modules
       .filter((m) => m.courseId === courseId)
       .sort((a, b) => a.sortOrder - b.sortOrder)
       .map((m) => ({
         ...m,
         lessons: this.lessons
-          .filter((l) => l.moduleId === m.id)
+          .filter((l) => l.moduleId === m.id && (!opts?.publishedOnly || l.isPublished))
           .sort((a, b) => a.sortOrder - b.sortOrder),
       }))
   }
@@ -276,11 +279,26 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     return this.lessons.filter((l) => l.courseId === courseId).length
   }
 
+  async countPublishedLessons(courseId: string): Promise<number> {
+    return this.lessons.filter((l) => l.courseId === courseId && l.isPublished).length
+  }
+
   async countLessonsByCourseIds(courseIds: string[]): Promise<Map<string, number>> {
     const set = new Set(courseIds)
     const out = new Map<string, number>()
     for (const l of this.lessons) {
       if (set.has(l.courseId)) out.set(l.courseId, (out.get(l.courseId) ?? 0) + 1)
+    }
+    return out
+  }
+
+  async countPublishedLessonsByCourseIds(courseIds: string[]): Promise<Map<string, number>> {
+    const set = new Set(courseIds)
+    const out = new Map<string, number>()
+    for (const l of this.lessons) {
+      if (set.has(l.courseId) && l.isPublished) {
+        out.set(l.courseId, (out.get(l.courseId) ?? 0) + 1)
+      }
     }
     return out
   }
@@ -406,6 +424,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     l.slug = fields.slug
     l.title = fields.title
     l.estimatedMinutes = fields.estimatedMinutes
+    l.isPublished = fields.isPublished
     return l
   }
 

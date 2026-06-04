@@ -53,7 +53,6 @@ describe('Members HTTP — autoria: cursos', () => {
     const patched = await send(app, `/members/admin/courses/${created.id}`, 'PATCH', {
       ...COURSE,
       title: 'Curso Editado',
-      status: 'published',
     })
     expect(patched.status).toBe(200)
     expect((await readJson(patched)).title).toBe('Curso Editado')
@@ -147,6 +146,86 @@ describe('Members HTTP — autoria: árvore de conteúdo', () => {
     const tree = await readJson(await get(app, `/members/admin/courses/${course.id}`))
     expect(tree.modules).toHaveLength(0)
     expect((await get(app, `/members/admin/lessons/${lesson.id}/content`)).status).toBe(404)
+  })
+})
+
+describe('Members HTTP — autoria: publicação por aula', () => {
+  async function seedDraftTree(app: App) {
+    const course = await createCourse(app)
+    const mod = await readJson(
+      await send(app, `/members/admin/courses/${course.id}/modules`, 'POST', {
+        title: 'Módulo 1',
+        summary: null,
+      }),
+    )
+    const lesson = await readJson(
+      await send(app, `/members/admin/modules/${mod.id}/lessons`, 'POST', {
+        slug: 'aula-1',
+        title: 'Aula 1',
+        estimatedMinutes: 5,
+      }),
+    )
+    return { course, mod, lesson }
+  }
+
+  test('aula nova nasce rascunho; PATCH com isPublished publica', async () => {
+    const { app } = buildApp()
+    const { lesson } = await seedDraftTree(app)
+    expect(lesson.isPublished).toBe(false)
+
+    const patched = await readJson(
+      await send(app, `/members/admin/lessons/${lesson.id}`, 'PATCH', {
+        slug: 'aula-1',
+        title: 'Aula 1',
+        estimatedMinutes: 5,
+        isPublished: true,
+      }),
+    )
+    expect(patched.isPublished).toBe(true)
+  })
+
+  test('criar curso já published → 409 NO_PUBLISHED_LESSON (nasce sem aulas)', async () => {
+    const { app } = buildApp()
+    const res = await send(app, '/members/admin/courses', 'POST', {
+      ...COURSE,
+      status: 'published',
+    })
+    expect(res.status).toBe(409)
+    expect((await readJson(res)).error.code).toBe('NO_PUBLISHED_LESSON')
+  })
+
+  test('publicar curso sem aula publicada → 409; com ≥1 publicada → 200', async () => {
+    const { app } = buildApp()
+    const { course, lesson } = await seedDraftTree(app)
+
+    const blocked = await send(app, `/members/admin/courses/${course.id}`, 'PATCH', {
+      ...COURSE,
+      status: 'published',
+    })
+    expect(blocked.status).toBe(409)
+    expect((await readJson(blocked)).error.code).toBe('NO_PUBLISHED_LESSON')
+
+    await send(app, `/members/admin/lessons/${lesson.id}`, 'PATCH', {
+      slug: 'aula-1',
+      title: 'Aula 1',
+      estimatedMinutes: 5,
+      isPublished: true,
+    })
+    const ok = await send(app, `/members/admin/courses/${course.id}`, 'PATCH', {
+      ...COURSE,
+      status: 'published',
+    })
+    expect(ok.status).toBe(200)
+    expect((await readJson(ok)).status).toBe('published')
+  })
+
+  test('árvore do admin mostra aulas rascunho (visão de autoria)', async () => {
+    const { app } = buildApp()
+    const { course, lesson } = await seedDraftTree(app)
+    const tree = await readJson(await get(app, `/members/admin/courses/${course.id}`))
+    expect(tree.modules[0].lessons).toHaveLength(1)
+    expect(tree.modules[0].lessons[0].id).toBe(lesson.id)
+    expect(tree.modules[0].lessons[0].isPublished).toBe(false)
   })
 })
 

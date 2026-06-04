@@ -22,6 +22,13 @@
       "when": 1780592109246,
       "tag": "0002_wide_matthew_murdock",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1780594443630,
+      "tag": "0003_curved_mandrill",
+      "breakpoints": true
     }
   ]
 }

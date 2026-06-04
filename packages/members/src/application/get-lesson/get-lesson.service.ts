@@ -21,7 +21,10 @@ export class GetLessonService {
   async execute(userId: string, courseSlug: string, lessonId: string): Promise<LessonDetailView> {
     const { course } = await this.checkAccess.requireBySlug(userId, courseSlug)
     const lesson = await this.courses.findLessonWithContent(lessonId)
-    if (!lesson || lesson.courseId !== course.id) throw new LessonNotFoundError()
+    // Aula rascunho é invisível ao aluno (mesmo por URL direta) → 404.
+    if (!lesson || lesson.courseId !== course.id || !lesson.isPublished) {
+      throw new LessonNotFoundError()
+    }
 
     const quizBlockIds = lesson.blocks.filter((b) => b.content.kind === 'quiz').map((b) => b.id)
     const [completedIds, positionSeconds, summaries] = await Promise.all([

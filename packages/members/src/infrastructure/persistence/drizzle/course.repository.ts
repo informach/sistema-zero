@@ -47,6 +47,7 @@ function toLesson(row: typeof lessons.$inferSelect): Lesson {
     title: row.title,
     sortOrder: row.sortOrder,
     estimatedMinutes: row.estimatedMinutes,
+    isPublished: row.isPublished,
   }
 }
 
@@ -116,18 +117,20 @@ export class DrizzleCourseRepository implements CourseRepository {
     return rows.map(toCourse)
   }
 
-  async findOutline(courseId: string): Promise<ModuleWithLessons[]> {
+  async findOutline(
+    courseId: string,
+    opts?: { publishedOnly?: boolean },
+  ): Promise<ModuleWithLessons[]> {
+    const lessonWhere = opts?.publishedOnly
+      ? and(eq(lessons.courseId, courseId), eq(lessons.isPublished, true))
+      : eq(lessons.courseId, courseId)
     const [mods, less] = await Promise.all([
       this.db
         .select()
         .from(modules)
         .where(eq(modules.courseId, courseId))
         .orderBy(asc(modules.sortOrder)),
-      this.db
-        .select()
-        .from(lessons)
-        .where(eq(lessons.courseId, courseId))
-        .orderBy(asc(lessons.sortOrder)),
+      this.db.select().from(lessons).where(lessonWhere).orderBy(asc(lessons.sortOrder)),
     ])
     const byModule = new Map<string, Lesson[]>()
     for (const l of less) {
@@ -168,12 +171,30 @@ export class DrizzleCourseRepository implements CourseRepository {
     return row?.c ?? 0
   }
 
+  async countPublishedLessons(courseId: string): Promise<number> {
+    const [row] = await this.db
+      .select({ c: count() })
+      .from(lessons)
+      .where(and(eq(lessons.courseId, courseId), eq(lessons.isPublished, true)))
+    return row?.c ?? 0
+  }
+
   async countLessonsByCourseIds(courseIds: string[]): Promise<Map<string, number>> {
     if (courseIds.length === 0) return new Map()
     const rows = await this.db
       .select({ courseId: lessons.courseId, c: count() })
       .from(lessons)
       .where(inArray(lessons.courseId, courseIds))
+      .groupBy(lessons.courseId)
+    return new Map(rows.map((r) => [r.courseId, r.c]))
+  }
+
+  async countPublishedLessonsByCourseIds(courseIds: string[]): Promise<Map<string, number>> {
+    if (courseIds.length === 0) return new Map()
+    const rows = await this.db
+      .select({ courseId: lessons.courseId, c: count() })
+      .from(lessons)
+      .where(and(inArray(lessons.courseId, courseIds), eq(lessons.isPublished, true)))
       .groupBy(lessons.courseId)
     return new Map(rows.map((r) => [r.courseId, r.c]))
   }

@@ -35,6 +35,14 @@ export class InvalidContentCommandError extends DomainError {
   readonly code = 'VALIDATION_ERROR'
 }
 
+/** Publicar curso sem nenhuma aula publicada. → 409. */
+export class NoPublishedLessonError extends DomainError {
+  readonly code = 'NO_PUBLISHED_LESSON'
+  constructor(message = 'Publique ao menos uma aula antes de publicar o curso') {
+    super(message)
+  }
+}
+
 /** Edição de curso perdeu a corrida (version mudou no banco). → 409. */
 export class CourseConflictError extends DomainError {
   readonly code = 'CONCURRENCY_CONFLICT'

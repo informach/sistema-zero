@@ -58,6 +58,7 @@ const lessonFields = (b: LessonInput): LessonFields => ({
   slug: b.slug,
   title: b.title,
   estimatedMinutes: b.estimatedMinutes ?? null,
+  isPublished: b.isPublished ?? false,
 })
 const attachmentFields = (b: AttachmentInput): AttachmentFields => ({
   label: b.label,

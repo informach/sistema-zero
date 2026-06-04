@@ -29,7 +29,10 @@ export class SaveVideoPositionService {
   ): Promise<VideoPositionView> {
     const { course } = await this.checkAccess.requireBySlug(userId, courseSlug)
     const lesson = await this.courses.findLesson(lessonId)
-    if (!lesson || lesson.courseId !== course.id) throw new LessonNotFoundError()
+    // Aula rascunho é invisível ao aluno → não aceita posição de vídeo.
+    if (!lesson || lesson.courseId !== course.id || !lesson.isPublished) {
+      throw new LessonNotFoundError()
+    }
 
     const now = this.clock()
     await this.positions.upsert(userId, lessonId, course.id, positionSeconds, now)

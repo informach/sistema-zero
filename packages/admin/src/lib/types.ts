@@ -145,6 +145,7 @@ export interface LessonView {
   title: string
   sortOrder: number
   estimatedMinutes: number | null
+  isPublished: boolean
 }
 
 /** Árvore do curso (editor): curso + módulos (ordenados) + aulas (resumidas). */

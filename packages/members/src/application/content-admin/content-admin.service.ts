@@ -4,6 +4,7 @@ import {
   CourseNotFoundError,
   InvalidContentCommandError,
   LessonNotFoundError,
+  NoPublishedLessonError,
 } from '../../domain/course/course.errors'
 import type { LessonBlockContent } from '../../domain/course/lesson-block'
 import type {
@@ -63,6 +64,8 @@ export class CourseAdminService {
   }
 
   async create(fields: CourseFields): Promise<CourseView> {
+    // Curso novo nasce sem aulas → nunca pode nascer `published`.
+    if (fields.status === 'published') throw new NoPublishedLessonError()
     return toCourseView(await this.content.createCourse(fields))
   }
 
@@ -76,6 +79,10 @@ export class CourseAdminService {
   async update(id: string, fields: CourseFields): Promise<CourseView> {
     const existing = await this.courses.findCourseById(id)
     if (!existing) throw new CourseNotFoundError()
+    // Guard: curso `published` exige ≥1 aula publicada (visível ao aluno).
+    if (fields.status === 'published' && (await this.content.countPublishedLessons(id)) === 0) {
+      throw new NoPublishedLessonError()
+    }
     const ok = await this.content.updateCourse({ ...existing, ...fields })
     if (!ok) throw new CourseConflictError()
     const fresh = await this.courses.findCourseById(id)

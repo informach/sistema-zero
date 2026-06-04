@@ -60,6 +60,7 @@ const toLesson = (r: LessonRow): Lesson => ({
   title: r.title,
   sortOrder: r.sortOrder,
   estimatedMinutes: r.estimatedMinutes,
+  isPublished: r.isPublished,
 })
 const toBlock = (r: BlockRow): LessonBlock => ({
   id: r.id,
@@ -176,6 +177,14 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
     return row ? row.version : null
   }
 
+  async countPublishedLessons(courseId: string): Promise<number> {
+    const [row] = await this.db
+      .select({ c: count() })
+      .from(lessons)
+      .where(and(eq(lessons.courseId, courseId), eq(lessons.isPublished, true)))
+    return row?.c ?? 0
+  }
+
   async deleteCourse(id: string): Promise<boolean> {
     return this.db.transaction(async (tx) => {
       await tx.delete(lessonCompletions).where(eq(lessonCompletions.courseId, id))
@@ -281,6 +290,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
       title: fields.title,
       sortOrder,
       estimatedMinutes: fields.estimatedMinutes,
+      isPublished: fields.isPublished,
       createdAt: now,
       updatedAt: now,
     }
@@ -303,6 +313,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
           slug: fields.slug,
           title: fields.title,
           estimatedMinutes: fields.estimatedMinutes,
+          isPublished: fields.isPublished,
           updatedAt: new Date(),
         })
         .where(eq(lessons.id, id))

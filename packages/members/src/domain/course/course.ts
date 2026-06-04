@@ -49,6 +49,8 @@ export interface Lesson {
   title: string
   sortOrder: number
   estimatedMinutes: number | null
+  /** Aula rascunho (`false`) é invisível ao aluno; só o admin a vê/edita. */
+  isPublished: boolean
 }
 
 export interface LessonBlock {

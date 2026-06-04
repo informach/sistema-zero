@@ -97,6 +97,9 @@ export const lessons = members.table(
     title: text('title').notNull(),
     sortOrder: integer('sort_order').notNull().default(0),
     estimatedMinutes: integer('estimated_minutes'),
+    // Default true = backfill das aulas já em produção (continuam visíveis).
+    // A API admin sempre manda o valor explícito (aula NOVA nasce rascunho).
+    isPublished: boolean('is_published').notNull().default(true),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },

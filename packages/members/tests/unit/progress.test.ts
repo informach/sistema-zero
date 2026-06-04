@@ -30,6 +30,7 @@ describe('resolveContinueLesson', () => {
     title: id,
     sortOrder,
     estimatedMinutes: null,
+    isPublished: true,
   })
   const outline: ModuleWithLessons[] = [
     {

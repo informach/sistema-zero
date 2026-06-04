@@ -117,6 +117,8 @@ export const LessonBody = t.Object({
   slug: SLUG,
   title: TITLE,
   estimatedMinutes: t.Optional(t.Union([t.Integer({ minimum: 0, maximum: 100_000 }), t.Null()])),
+  /** Ausente → `false` (aula nova nasce RASCUNHO; o admin publica quando pronta). */
+  isPublished: t.Optional(t.Boolean()),
 })
 
 export const AttachmentBody = t.Object({

@@ -16,10 +16,11 @@ export class GetMyCourseService {
 
   async execute(userId: string, courseSlug: string): Promise<CourseDetailView> {
     const { course, entitlement } = await this.checkAccess.requireBySlug(userId, courseSlug)
+    // Aluno só vê aulas PUBLICADAS — outline e denominador do progresso idem.
     const [outline, completedIds, total, last, lastAccessed] = await Promise.all([
-      this.courses.findOutline(course.id),
+      this.courses.findOutline(course.id, { publishedOnly: true }),
       this.progress.listCompletedLessonIds(userId, course.id),
-      this.courses.countLessons(course.id),
+      this.courses.countPublishedLessons(course.id),
       this.progress.lastCompletedAt(userId, course.id),
       this.positions.lastAccessedLessonId(userId, course.id),
     ])
