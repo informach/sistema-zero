@@ -7,7 +7,8 @@ const nextConfig: NextConfig = {
   // sharp é binário nativo (upload de avatar) — não deixar o bundler tocar nele.
   serverExternalPackages: ['sharp'],
   // Pacote workspace com TS cru (componentes compartilhados) — transpilar junto.
-  transpilePackages: ['@sistemazero/ui'],
+  // three: recomendação oficial do react-three-fiber p/ Next 13.1+ (livro 3D do e-book).
+  transpilePackages: ['@sistemazero/ui', 'three'],
 }
 
 export default nextConfig

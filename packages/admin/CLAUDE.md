@@ -91,7 +91,7 @@ conteúdo dos blocos do members (lixo órfão no R2 é dívida documentada; sem 
   PÚBLICO de propósito: o `<audio>` do aluno toca a URL direto (bucket privado quebraria a
   reprodução — bug da v2, corrigido na autoria v3). A **duração é detectada no client**
   (`AudioUploader`: object URL + `loadedmetadata`) e salva no bloco — sem campo manual.
-- `POST /api/media/files` (multipart ≤50MB, allowlist pdf/zip/office/txt/csv/imagem/áudio) →
+- `POST /api/media/files` (multipart ≤100MB, allowlist pdf/zip/office/txt/csv/imagem/áudio) →
   bucket R2 **PRIVADO** (`R2_PRIVATE_BUCKET`, sem URL pública) `admin/attachments/*` →
   `{url,fileType,sizeBytes}` onde **`url` = referência `r2priv:<key>`** (NÃO navegável). O aluno
   baixa pela rota autenticada do community, que resolve a key, aplica a **marca d'água com o

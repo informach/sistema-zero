@@ -89,9 +89,11 @@ function withSecurityHeaders(res: NextResponse): NextResponse {
   res.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
   // O player de aulas embute vídeo de terceiros: allowlist estrita de frames
   // (YouTube nocookie + Vimeo). Sem `frame-src` os iframes seriam bloqueados.
+  // `worker-src`: o pdf.js do livro 3D roda num Web Worker do próprio bundle
+  // (explícito p/ não quebrar se um dia entrar default-src).
   res.headers.set(
     'Content-Security-Policy',
-    "frame-src 'self' https://www.youtube-nocookie.com https://player.vimeo.com; object-src 'none'",
+    "frame-src 'self' https://www.youtube-nocookie.com https://player.vimeo.com; worker-src 'self' blob:; object-src 'none'",
   )
   return res
 }

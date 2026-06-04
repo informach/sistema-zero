@@ -9,7 +9,7 @@ import {
 
 /**
  * Upload de ARQUIVO genérico (anexos de aula / áudio): multipart `file` → R2 com
- * Content-Disposition de download. Allowlist de MIME + limite de 50 MB. Guard de
+ * Content-Disposition de download. Allowlist de MIME + limite de 100 MB. Guard de
  * sessão obrigatório (rota fora do gateway).
  */
 export async function POST(req: Request) {
@@ -38,7 +38,7 @@ export async function POST(req: Request) {
     }
     if (file.size > MAX_FILE_BYTES) {
       return NextResponse.json(
-        { error: { code: 'VALIDATION_ERROR', message: 'Arquivo excede o limite de 50 MB.' } },
+        { error: { code: 'VALIDATION_ERROR', message: 'Arquivo excede o limite de 100 MB.' } },
         { status: 400 },
       )
     }

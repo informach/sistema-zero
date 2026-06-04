@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import {
   AUDIO_MIME_TYPES,
-  MAX_FILE_BYTES,
+  MAX_AUDIO_BYTES,
   mediaErrorResponse,
   requireMediaSession,
   storeAudioFile,
@@ -36,7 +36,7 @@ export async function POST(req: Request) {
         { status: 400 },
       )
     }
-    if (file.size > MAX_FILE_BYTES) {
+    if (file.size > MAX_AUDIO_BYTES) {
       return NextResponse.json(
         { error: { code: 'VALIDATION_ERROR', message: 'Áudio excede o limite de 50 MB.' } },
         { status: 400 },

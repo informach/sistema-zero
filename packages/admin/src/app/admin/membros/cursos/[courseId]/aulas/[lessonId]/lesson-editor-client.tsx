@@ -26,7 +26,7 @@ import { useSortableItem } from '@/components/dnd/use-sortable-item'
 import { HtmlCodeEditor } from '@/components/editor/html-code-editor'
 import { RichTextEditor } from '@/components/editor/rich-text-editor'
 import { AudioUploader } from '@/components/media/audio-uploader'
-import { FileUploader } from '@/components/media/file-uploader'
+import { FileUploader, type UploadedFile } from '@/components/media/file-uploader'
 import { ImageUploader } from '@/components/media/image-uploader'
 import { VideoThumbnailUploader } from '@/components/media/video-thumbnail-uploader'
 import { VideoUploader } from '@/components/media/video-uploader'
@@ -371,6 +371,23 @@ export function LessonEditorClient({
     void run(() => apiSend(`/api/members/attachments/${a.id}`, 'DELETE'), 'Anexo excluído.')
   }
 
+  /** E-book: além do bloco (livro 3D), o PDF entra nos materiais da aula p/ download. */
+  async function addEbookAttachment(file: UploadedFile) {
+    if (lesson?.attachments.some((a) => a.url === file.url)) return
+    try {
+      await apiSend(`/api/members/lessons/${lessonId}/attachments`, 'POST', {
+        label: file.filename.replace(/\.pdf$/i, ''),
+        url: file.url,
+        fileType: file.fileType || 'pdf',
+        sizeBytes: file.sizeBytes ?? null,
+      })
+      await load()
+      toast.success('E-book adicionado aos materiais da aula.')
+    } catch (err) {
+      toast.error((err as ApiError).message ?? 'Falha ao adicionar o e-book aos materiais.')
+    }
+  }
+
   return (
     <div className="space-y-6">
       <Link
@@ -624,18 +641,19 @@ export function LessonEditorClient({
             <>
               <Field
                 label="E-book (PDF)"
-                hint="Bucket privado; o aluno vê como livro 3D interativo com marca d'água."
+                hint="Bucket privado; o aluno vê como livro 3D interativo com marca d'água. O PDF também entra automaticamente nos materiais da aula para download."
               >
                 <FileUploader
                   accept="application/pdf,.pdf"
-                  label="Clique para enviar o PDF do e-book (até 50 MB)"
-                  onUploaded={({ url, filename }) =>
+                  label="Clique para enviar o PDF do e-book (até 100 MB)"
+                  onUploaded={(file) => {
                     setBlockForm((f) => ({
                       ...f,
-                      pdfUrl: url,
-                      title: f.title.trim() ? f.title : filename.replace(/\.pdf$/i, ''),
+                      pdfUrl: file.url,
+                      title: f.title.trim() ? f.title : file.filename.replace(/\.pdf$/i, ''),
                     }))
-                  }
+                    void addEbookAttachment(file)
+                  }}
                 />
               </Field>
               {blockForm.pdfUrl ? (

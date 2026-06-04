@@ -22,7 +22,9 @@ Gateway** (NUNCA os serviços direto). Design/tema portado do projeto de referê
 > página de vendas, curso com módulos/aulas, player de aula com blocos polimórficos + anexos
 > (download autenticado com **marca d'água do e-mail do aluno** em PDF/imagem — bucket R2 privado) +
 > concluir + navegação, perfil com upload de avatar, compras, **classificação do curso** —
-> fluxo Udemy de 5 modais, ver Contratos). A COMUNIDADE (feed/fórum/etc.) é fatia futura.
+> fluxo Udemy de 5 modais, ver Contratos — e **bloco e-book = LIVRO 3D interativo**
+> (react-three-fiber + pdf.js; PDF privado com marca d'água, ver §E-book)). A COMUNIDADE
+> (feed/fórum/etc.) é fatia futura.
 >
 > **Header (espelha a referência):** logo à esquerda (`w-[130px] md:w-[150px]`), menu CENTRALIZADO
 > (Início `/` + Todos os cursos `/cursos` — `nav.ts`), avatar à direita. Compras/Perfil/Mudar tema/
@@ -93,7 +95,9 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
 4. **Dinheiro em centavos**; o payments serializa como **string** (bigint) → `formatCentsStr`.
 5. **Blocos de aula = conteúdo de terceiros.** NUNCA interpole `src` cru em iframe — extraia o ID e
    monte a URL canônica (`youtube-nocookie.com/embed/<id>`, `player.vimeo.com/video/<id>`); HTML de
-   embed roda SÓ em `iframe sandbox` SEM `allow-same-origin` (`lesson-blocks.tsx`). `rich_text`
+   embed roda SÓ em `iframe sandbox` SEM `allow-same-origin` (`lesson-blocks.tsx`). **Embed v3:**
+   sempre `srcDoc` em largura total + `aspect-video` (16:9) — `embedType`/`src`/`height` são
+   legado ignorado (bloco antigo só-src → "não suportado"). `rich_text`
    renderiza `markdown` com conversor próprio controlado (sem HTML cru) — tokens suportados:
    headings 1-3, listas `-`/`*` e numeradas `1.`, citação `> `, código inline/fenced, negrito,
    itálico (`*x*`/`_x_`) e links http(s). É o ALVO do editor TipTap do admin (saída markdown) —
@@ -123,6 +127,8 @@ src/
       me/avatar/route.ts    POST multipart → sharp→WebP → R2 → PATCH /auth/me
       cursos/[slug]/aulas/[lessonId]/anexos/[attachmentId]/route.ts
                             GET download de material c/ MARCA D'ÁGUA do aluno (R2 privado)
+      cursos/[slug]/aulas/[lessonId]/blocos/[blockId]/ebook/route.ts
+                            GET PDF do bloco e-book c/ MARCA D'ÁGUA, INLINE (livro 3D consome)
       members/courses/[slug]/rating/route.ts   PUT classificação do curso (Zod espelha o TypeBox)
       members/lessons/[lessonId]/{complete,position}/route.ts
       members/lessons/[lessonId]/blocks/[blockId]/quiz-attempts/route.ts
@@ -132,6 +138,12 @@ src/
             watermark.ts (PDF pdf-lib + imagem sharp/SVG — puro, testado)   (server-only)
   lib/      env.ts (server-only) · types.ts (views do ALUNO) · user-display.ts · format.ts · cn.ts · api.ts
   components/ community/* (topnav/user-menu/user-avatar/cards/blocos/course-rating-flow)
+            community/ebook/* — LIVRO 3D do bloco e-book: ebook-block.tsx (resolve URL via
+            LessonPlayerContext + dynamic ssr:false) → ebook-book.impl.tsx (Canvas r3f +
+            OrbitControls restrito + botões/label) + book-3d.tsx (folhas = BoxGeometry
+            segmentado + SkinnedMesh/bones, dobra com damp por frame; técnica própria) +
+            use-pdf-pages.ts (pdf.js → CanvasTexture, janela folha±2 c/ dispose; worker via
+            new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url), singleton)
             ⚠️ Primitivos de UI (button/input/card/dialog/password-input/…) vivem no
             **`@sistemazero/ui`** (packages/ui, compartilhado com o admin) — importe
             `@sistemazero/ui/<componente>`; NÃO recrie botões/controles ad-hoc (foi a causa do
@@ -205,11 +217,14 @@ Da raiz: `bun run dev:community`, `build:community`, `typecheck:community`.
   com estado na URL `?q=&acesso=&ordem=`); `GET /members/courses/:slug` → `CourseDetailView`
   (módulos+outline + `continueLessonId`: última aula acessada > 1ª não concluída > 1ª);
   `GET /members/courses/:slug/lessons/:lessonId` → `LessonDetailView` (**busca por ID**, blocos
-  `kind: rich_text|video|image|audio|quiz|embed` + anexos + `positionSeconds`; bloco quiz vem
+  `kind: rich_text|video|image|audio|quiz|embed|ebook` + anexos + `positionSeconds`; bloco quiz vem
   **SEM gabarito** e com `quizState`; **anexo vem SEM `url`** — o download é pela rota BFF
   `/api/cursos/:slug/aulas/:lessonId/anexos/:id`, que resolve a localização real via
   `GET …/attachments/:attachmentId/resolve` → `AttachmentDownloadView{storageRef}` e aplica a
-  marca d'água — ver invariante 1); `POST /members/lessons/:lessonId/complete` (→ **409
+  marca d'água — ver invariante 1; **bloco `ebook` também vem SEM `url`** — o livro 3D busca o PDF
+  pela rota BFF `/api/cursos/:slug/aulas/:lessonId/blocos/:blockId/ebook`, que resolve via
+  `GET …/blocks/:blockId/ebook/resolve` → `EbookDownloadView{title,storageRef}`, aplica a MESMA
+  marca d'água de PDF e serve INLINE com `private, no-store`); `POST /members/lessons/:lessonId/complete` (→ **409
   `QUIZ_GATE_NOT_PASSED`** se houver quiz com `passingScore` não aprovado — a UI desabilita o
   botão e silencia o auto-complete); `PUT /members/courses/:slug/lessons/:lessonId/position`
   `{positionSeconds}` (BFF expõe como `POST /api/members/lessons/:id/position` com
@@ -232,6 +247,16 @@ Da raiz: `bun run dev:community`, `build:community`, `typecheck:community`.
   `PUT /api/members/courses/:slug/rating` com o estado ACUMULADO (fechar no meio não perde
   nada; gateway → `PUT /members/courses/:slug/rating`). "Salvar e sair"/fechar →
   `router.refresh()`. A page passa `viewer` (nome da session + avatar de `getMeReadonly`).
+- **E-book / livro 3D** (`components/community/ebook/*`): bloco `ebook` renderiza o PDF como
+  livro 3D interativo — folhas com dobra real (SkinnedMesh + cadeia de bones por folha, damp por
+  frame; frente da folha i = página 2i+1, verso = 2i+2), virar por clique na página ou botões
+  HTML (acessíveis), rotação leve por drag (OrbitControls com ângulos restritos), flutuação idle.
+  Texturas via pdf.js (worker do próprio bundle — CSP tem `worker-src 'self' blob:`), janela
+  lazy folha±2 com `texture.dispose()` (PDF grande não estoura GPU), ~1280px de largura por
+  página. O PDF chega da rota BFF já com a **marca d'água do aluno** (mesma pipeline dos anexos)
+  → a marca aparece nas próprias páginas do livro. Deps: `three` (+`transpilePackages`),
+  `@react-three/fiber@9` (React 19), `@react-three/drei@10`, `pdfjs-dist@6` — TUDO atrás de
+  `dynamic ssr:false` (só entra no bundle quando a aula tem bloco e-book).
 - **Player Vimeo** (`vimeo-player.tsx` + `@vimeo/player`, bundle local — postMessage com o
   iframe; a CSP `frame-src player.vimeo.com` já cobre, sem mudança no proxy): watermark com o
   e-mail do aluno, fullscreen custom no CONTAINER (mantém o watermark em tela cheia), retoma

@@ -5,6 +5,7 @@ import type {
   CourseDetailView,
   CourseFeedbackAnswers,
   CourseRatingView,
+  EbookDownloadView,
   LessonDetailView,
   MyCourseView,
 } from '@/lib/types'
@@ -46,6 +47,20 @@ export function resolveAttachment(
 ): Promise<GatewayResponse<AttachmentDownloadView>> {
   return gatewayFetch(
     `/members/courses/${enc(slug)}/lessons/${enc(lessonId)}/attachments/${enc(attachmentId)}/resolve`,
+  )
+}
+
+/**
+ * Resolve a localização REAL do PDF do bloco e-book (matrícula garantida pelo
+ * members). SÓ para a rota do livro 3D — a `storageRef` nunca chega ao browser.
+ */
+export function resolveEbook(
+  slug: string,
+  lessonId: string,
+  blockId: string,
+): Promise<GatewayResponse<EbookDownloadView>> {
+  return gatewayFetch(
+    `/members/courses/${enc(slug)}/lessons/${enc(lessonId)}/blocks/${enc(blockId)}/ebook/resolve`,
   )
 }
 

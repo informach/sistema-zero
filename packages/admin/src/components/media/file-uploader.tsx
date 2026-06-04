@@ -5,7 +5,7 @@ import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { type ApiError, apiUpload } from '@/lib/api'
 
-const MAX_FILE_BYTES = 50 * 1024 * 1024
+const MAX_FILE_BYTES = 100 * 1024 * 1024
 
 export interface UploadedFile {
   url: string
@@ -21,7 +21,7 @@ export interface UploadedFile {
 export function FileUploader({
   onUploaded,
   accept,
-  label = 'Clique para enviar um arquivo (até 50 MB)',
+  label = 'Clique para enviar um arquivo (até 100 MB)',
 }: {
   onUploaded: (file: UploadedFile) => void
   /** accept do input (ex.: 'audio/*'); default = allowlist do servidor. */
@@ -33,7 +33,7 @@ export function FileUploader({
 
   async function upload(file: File) {
     if (file.size > MAX_FILE_BYTES) {
-      toast.error('Arquivo excede o limite de 50 MB.')
+      toast.error('Arquivo excede o limite de 100 MB.')
       return
     }
     setUploading(true)

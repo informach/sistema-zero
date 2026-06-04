@@ -176,13 +176,29 @@ export interface QuizBlock {
   /** Nota de corte que BLOQUEIA a conclusão da aula; `null` = quiz de fixação. */
   passingScore?: number | null
 }
+/**
+ * Interativo v3: HTML que roda SEMPRE em iframe sandbox 16:9 (largura total).
+ * `embedType`/`src`/`height` são legado da autoria v2 (renderer ignora).
+ */
 export interface EmbedBlock {
   kind: 'embed'
-  embedType: 'three_js' | 'iframe' | 'codepen' | 'custom'
-  src?: string
   html?: string
   sandbox?: string
+  /** @deprecated legado da autoria v2 */
+  embedType?: string
+  /** @deprecated legado da autoria v2 */
+  src?: string
+  /** @deprecated legado da autoria v2 */
   height?: number
+}
+/**
+ * E-book member-facing: SEM `url` (a localização real do PDF nunca chega ao
+ * browser) — o livro 3D busca o PDF pela rota autenticada do BFF, que aplica a
+ * marca d'água do aluno.
+ */
+export interface EbookBlock {
+  kind: 'ebook'
+  title?: string
 }
 export type LessonBlockContent =
   | RichTextBlock
@@ -191,6 +207,7 @@ export type LessonBlockContent =
   | AudioBlock
   | QuizBlock
   | EmbedBlock
+  | EbookBlock
 
 /** Estado das tentativas do aluno num bloco de quiz (vem no GET da aula). */
 export interface QuizStateView {
@@ -249,6 +266,16 @@ export interface AttachmentDownloadView {
   label: string
   fileType: string | null
   sizeBytes: number | null
+  /** `r2priv:<key>` (bucket privado) ou URL http(s) externa/legada. */
+  storageRef: string
+}
+
+/**
+ * `GET …/blocks/:blockId/ebook/resolve` (server↔server, SÓ o BFF consome):
+ * localização real do PDF do e-book. NUNCA repassar `storageRef` ao browser.
+ */
+export interface EbookDownloadView {
+  title: string | null
   /** `r2priv:<key>` (bucket privado) ou URL http(s) externa/legada. */
   storageRef: string
 }

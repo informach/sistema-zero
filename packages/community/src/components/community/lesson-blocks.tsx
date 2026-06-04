@@ -2,6 +2,7 @@
 
 import type {
   AudioBlock,
+  EbookBlock,
   EmbedBlock,
   ImageBlock,
   LessonBlockView,
@@ -10,6 +11,7 @@ import type {
   RichTextBlock,
   VideoBlock,
 } from '@/lib/types'
+import { EbookBlockView } from './ebook/ebook-block'
 import { useLessonPlayer } from './lesson-player-context'
 import { QuizBlockView } from './quiz-block'
 import { VimeoPlayer } from './vimeo-player'
@@ -55,6 +57,8 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
       )
     case 'embed':
       return <Embed content={content as unknown as EmbedBlock} />
+    case 'ebook':
+      return <EbookBlockView blockId={block.id} content={content as unknown as EbookBlock} />
     default:
       return null
   }
@@ -314,32 +318,18 @@ function Audio({ content }: { content: AudioBlock }) {
 }
 
 // ── embed: html roda APENAS em iframe sandbox (sem allow-same-origin) ─────────
+// Autoria v3: sempre largura total em 16:9 (sem altura/URL configuráveis).
+// Bloco legado só-src (sem html) → "não suportado" (recriar na autoria v3).
 function Embed({ content }: { content: EmbedBlock }) {
-  const height = content.height && content.height > 0 ? content.height : 480
-  if (content.html) {
-    return (
-      <iframe
-        srcDoc={content.html}
-        title="Conteúdo interativo"
-        sandbox="allow-scripts"
-        style={{ height }}
-        className="w-full rounded-lg border border-border bg-black"
-      />
-    )
-  }
-  // `src` externo: a CSP do app (frame-src) decide o que pode carregar.
-  if (content.src && /^https:\/\//.test(content.src)) {
-    return (
-      <iframe
-        src={content.src}
-        title="Conteúdo incorporado"
-        sandbox={content.sandbox ?? 'allow-scripts'}
-        style={{ height }}
-        className="w-full rounded-lg border border-border"
-      />
-    )
-  }
-  return <UnsupportedBlock label="Conteúdo interativo não suportado" />
+  if (!content.html) return <UnsupportedBlock label="Conteúdo interativo não suportado" />
+  return (
+    <iframe
+      srcDoc={content.html}
+      title="Conteúdo interativo"
+      sandbox="allow-scripts"
+      className="aspect-video w-full rounded-lg border border-border bg-black"
+    />
+  )
 }
 
 function UnsupportedBlock({ label }: { label: string }) {

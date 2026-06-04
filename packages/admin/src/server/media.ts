@@ -21,7 +21,8 @@ import {
 // ── Limites/validações ──────────────────────────────────────────────────────
 
 export const MAX_IMAGE_BYTES = 5 * 1024 * 1024 // 5MB
-export const MAX_FILE_BYTES = 50 * 1024 * 1024 // 50MB (anexos/áudio)
+export const MAX_FILE_BYTES = 100 * 1024 * 1024 // 100MB (anexos/e-book)
+export const MAX_AUDIO_BYTES = 50 * 1024 * 1024 // 50MB (áudio de aula)
 export const MAX_VIDEO_BYTES = 5 * 1024 * 1024 * 1024 // 5GB (Vimeo)
 
 export const IMAGE_MIME_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp'])
