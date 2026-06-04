@@ -22,6 +22,14 @@ interface R2Config {
   publicBaseUrl: string
 }
 
+/** Bucket PRIVADO (materiais didáticos) — sem URL pública; leitura só via S3 API. */
+interface R2PrivateConfig {
+  accountId: string
+  accessKeyId: string
+  secretAccessKey: string
+  bucket: string
+}
+
 /** Config completa ou erro amigável (as envs são opcionais no schema). */
 function requireR2Config(): R2Config {
   const env = getEnv()
@@ -45,9 +53,36 @@ function requireR2Config(): R2Config {
   }
 }
 
+/** Config do bucket privado ou erro amigável (mesmas credenciais; bucket próprio). */
+function requirePrivateR2Config(): R2PrivateConfig {
+  const env = getEnv()
+  if (
+    !env.R2_ACCOUNT_ID ||
+    !env.R2_ACCESS_KEY_ID ||
+    !env.R2_SECRET_ACCESS_KEY ||
+    !env.R2_PRIVATE_BUCKET
+  ) {
+    throw new MediaNotConfiguredError(
+      'Upload indisponível: configure R2_ACCOUNT_ID/R2_ACCESS_KEY_ID/R2_SECRET_ACCESS_KEY/R2_PRIVATE_BUCKET.',
+    )
+  }
+  return {
+    accountId: env.R2_ACCOUNT_ID,
+    accessKeyId: env.R2_ACCESS_KEY_ID,
+    secretAccessKey: env.R2_SECRET_ACCESS_KEY,
+    bucket: env.R2_PRIVATE_BUCKET,
+  }
+}
+
 let cachedClient: S3Client | null = null
 
-function getClient(cfg: R2Config): S3Client {
+// O client S3 é por CONTA (endpoint+credenciais) — o bucket é parâmetro do comando,
+// então público e privado compartilham a mesma instância cacheada.
+function getClient(cfg: {
+  accountId: string
+  accessKeyId: string
+  secretAccessKey: string
+}): S3Client {
   if (cachedClient) return cachedClient
   cachedClient = new S3Client({
     region: 'auto',
@@ -88,6 +123,35 @@ export async function r2PutObject(input: R2PutObjectInput): Promise<{ key: strin
     throw new Error('Falha ao enviar o arquivo para o armazenamento.')
   }
   return { key, url: r2PublicUrl(key) }
+}
+
+export interface R2PutObjectPrivateInput {
+  key: string
+  body: Buffer | Uint8Array
+  contentType: string
+}
+
+/**
+ * Sobe um objeto no bucket PRIVADO (materiais didáticos). Devolve só a key —
+ * NUNCA existe URL pública; o download é servido pelo community (com marca d'água).
+ */
+export async function r2PutObjectPrivate(input: R2PutObjectPrivateInput): Promise<{ key: string }> {
+  const cfg = requirePrivateR2Config()
+  const key = normalizeKey(input.key)
+  try {
+    await getClient(cfg).send(
+      new PutObjectCommand({
+        Bucket: cfg.bucket,
+        Key: key,
+        Body: input.body,
+        ContentType: input.contentType,
+      }),
+    )
+  } catch (error) {
+    console.error('[r2] putObjectPrivate falhou', { key, error })
+    throw new Error('Falha ao enviar o arquivo para o armazenamento.')
+  }
+  return { key }
 }
 
 export async function r2DeleteObject(key: string): Promise<void> {

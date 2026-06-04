@@ -20,6 +20,8 @@ const EnvSchema = z.object({
   R2_SECRET_ACCESS_KEY: z.string().optional(),
   R2_BUCKET: z.string().optional(),
   R2_PUBLIC_URL: z.string().url().optional(),
+  // Bucket PRIVADO (materiais didáticos/anexos) — sem URL pública; mesmas credenciais.
+  R2_PRIVATE_BUCKET: z.string().optional(),
   // Vimeo (vídeos das aulas: upload TUS + capa + transcrição).
   VIMEO_ACCESS_TOKEN: z.string().optional(),
   VIMEO_WHITELIST_DOMAINS: z.string().optional(),

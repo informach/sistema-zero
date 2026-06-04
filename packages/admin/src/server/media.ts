@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server'
 import { getEnv } from '@/lib/env'
 import type { SessionUser } from '@/lib/types'
 import { type ImagePreset, optimizeImage } from './image-optimizer'
-import { MediaNotConfiguredError, r2PutObject } from './r2'
+import { MediaNotConfiguredError, r2PutObject, r2PutObjectPrivate } from './r2'
 import { getSession } from './session'
 import {
   addVideoToFolder,
@@ -133,22 +133,29 @@ function sanitizeFilename(filename: string): string {
 }
 
 export interface StoredFile {
+  /** Referência `r2priv:<key>` (bucket PRIVADO) — não é uma URL navegável. */
   url: string
   fileType: string
   sizeBytes: number
 }
 
-/** Armazena um anexo/áudio no R2 (download com o nome original sanitizado). */
+/**
+ * Armazena um anexo/áudio no bucket R2 PRIVADO. A "url" devolvida é a referência
+ * `r2priv:<key>` que o community resolve na rota autenticada de download (onde a
+ * marca d'água com o e-mail do aluno e o Content-Disposition são aplicados).
+ */
 export async function storeGenericFile(file: File): Promise<StoredFile> {
   const body = Buffer.from(await file.arrayBuffer())
-  const safeName = sanitizeFilename(file.name)
-  const { url } = await r2PutObject({
+  const { key } = await r2PutObjectPrivate({
     key: `admin/attachments/${randomUUID()}.${safeExtension(file.name)}`,
     body,
     contentType: file.type || 'application/octet-stream',
-    contentDisposition: `attachment; filename="${safeName}"`,
   })
-  return { url, fileType: file.type || 'application/octet-stream', sizeBytes: body.byteLength }
+  return {
+    url: `r2priv:${key}`,
+    fileType: file.type || 'application/octet-stream',
+    sizeBytes: body.byteLength,
+  }
 }
 
 // ── Vídeo (Vimeo TUS + status + transcrição + capa) ─────────────────────────
