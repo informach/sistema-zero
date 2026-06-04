@@ -185,8 +185,9 @@ export function LessonPlayer({
     <LessonPlayerProvider value={playerContext}>
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
         {/* Conteúdo principal */}
-        <div className="flex min-w-0 flex-1 flex-col gap-5">
-          <div>
+        <div className="flex min-w-0 flex-1 flex-col gap-6">
+          {/* mb-2: título → 1º bloco fica um pouco maior que o gap entre blocos */}
+          <div className="mb-2">
             <Link
               href={courseHref}
               className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
@@ -266,7 +267,8 @@ export function LessonPlayer({
         </div>
 
         {/* Outline do curso (sidebar) */}
-        <aside className="w-full shrink-0 lg:sticky lg:top-20 lg:w-72">
+        {/* lg:mt-7 alinha o topo do card com o título da aula (breadcrumb 20px + mt-2 do h1) */}
+        <aside className="w-full shrink-0 lg:sticky lg:top-20 lg:mt-7 lg:w-72">
           <Card className="overflow-hidden p-0">
             <div className="border-b border-border px-4 py-3">
               <p className="text-sm font-semibold">{course.title}</p>
