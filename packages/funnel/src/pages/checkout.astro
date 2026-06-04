@@ -1,9 +1,10 @@
 ---
-import Header from '../components/Header.astro'
+import Footer from '../components/Footer.astro'
 import { PRODUTO } from '../content/copy'
-import CheckoutTabs from '../islands/CheckoutTabs'
+import CheckoutForm from '../islands/CheckoutForm'
 import BaseLayout from '../layouts/BaseLayout.astro'
-import { getLeadId } from '../lib/lead-session'
+import { ContactSchema } from '../lib/contact-schema'
+import { getLeadId, leadCookie } from '../lib/lead-session'
 import { formatBRLFromCents2 } from '../lib/money'
 import { getActiveOffer } from '../server/catalog'
 import { getDeps } from '../server/deps'
@@ -12,15 +13,45 @@ export const prerender = false
 
 Astro.response.headers.set('cache-control', 'no-store')
 
-const leadId = getLeadId(Astro.request)
-if (!leadId) return Astro.redirect('/')
-
-// Sem contato (e-mail) não há como entregar o ebook → volta para a oferta,
-// onde o modal de pré-checkout coleta nome/e-mail/telefone.
 const { repo, env, gateway } = getDeps()
-const lead = await repo.getLead(leadId)
-if (!lead) return Astro.redirect('/')
-if (!lead.email) return Astro.redirect('/oferta')
+
+// Lead da sessão; sem cookie, cria um novo na hora (o contato pode vir nos query
+// params do pré-checkout — assim um cookie perdido não derruba a compra).
+let leadId = getLeadId(Astro.request)
+let lead = leadId ? await repo.getLead(leadId) : null
+if (!lead) {
+  const created = await repo.createLead()
+  leadId = created.id
+  Astro.response.headers.append('set-cookie', leadCookie(leadId, env.NODE_ENV === 'production'))
+  lead = await repo.getLead(leadId)
+}
+
+// Prefill: lead (banco) com fallback nos query params (?nome&email&telefone) que
+// o modal de pré-checkout anexa à URL. Se os params trazem um contato válido e o
+// lead ainda não tem, persiste já (recupera telefone p/ o cartão, por exemplo).
+const sp = Astro.url.searchParams
+const fromQuery = {
+  nome: sp.get('nome')?.trim() ?? '',
+  email: sp.get('email')?.trim() ?? '',
+  telefone: sp.get('telefone')?.trim() ?? '',
+}
+if (lead && !lead.email) {
+  const parsed = ContactSchema.safeParse(fromQuery)
+  if (parsed.success) {
+    await repo.updateLead(lead.id, parsed.data)
+    lead = { ...lead, ...parsed.data }
+  }
+}
+
+const initialContact = {
+  nome: lead?.nome ?? fromQuery.nome,
+  email: lead?.email ?? fromQuery.email,
+  cpf: lead?.document ?? '',
+}
+
+// Sem e-mail não há para quem entregar o ebook → volta para a oferta, onde o
+// modal de pré-checkout coleta nome/e-mail/telefone.
+if (!initialContact.email) return Astro.redirect('/oferta')
 
 // Preço/nome vêm do catálogo (fonte da verdade); fallback p/ rótulos do env se fora.
 const offer = await getActiveOffer(gateway, env.CATALOG_OFFER_SLUG)
@@ -30,22 +61,40 @@ const priceLabel = formatBRLFromCents2(priceCents)
 ---
 
 <BaseLayout title="Pagamento — No Comando da IA" noindex={true}>
-  <Header />
-  <main class="mx-auto max-w-md px-4 py-12">
-    <h1 class="text-2xl font-bold">Finalize sua compra</h1>
-    <p class="mt-1 text-muted">
-      {productName} — <span class="font-bold text-lime">{priceLabel}</span>
-    </p>
-    <div class="card mt-6 p-6">
-      <CheckoutTabs
+  <!-- Sem header: o checkout abre direto no card do produto (estilo Hotmart). -->
+  <main class="mx-auto max-w-xl px-4 py-10 sm:py-12">
+    <!-- ── Produto ─────────────────────────────────────────────────────── -->
+    <div class="flex items-center gap-4 rounded-2xl border border-line/70 bg-card/50 p-4 sm:p-5">
+      <img
+        src="/img/produto-capa.webp"
+        alt={`Capa do ebook ${productName}`}
+        width="480"
+        height="679"
+        class="w-16 shrink-0 rounded-lg border border-line/60 sm:w-20"
+        decoding="async"
+      />
+      <div>
+        <h1 class="text-lg font-bold leading-snug text-ink">{productName}</h1>
+        <p class="mt-0.5 text-sm text-muted">Helena e Júlio · Sistema Zero</p>
+        <p class="mt-1.5 text-xl font-extrabold text-lime">{priceLabel}</p>
+        <p class="text-xs text-muted">Pagamento único · acesso imediato</p>
+      </div>
+    </div>
+
+    <!-- ── Dados pessoais + forma de pagamento (ilha) ──────────────────── -->
+    <div class="mt-6">
+      <CheckoutForm
         client:load
-        email={lead.email}
+        initialContact={initialContact}
         priceCents={priceCents}
         allowCoupon={offer?.allowsCoupon === true}
       />
     </div>
-    <p class="mt-4 text-center text-xs text-muted">
+
+    <p class="mt-6 text-center text-xs text-muted">
       Pagamento processado com segurança. Garantia de 7 dias.
     </p>
   </main>
+
+  <Footer />
 </BaseLayout>

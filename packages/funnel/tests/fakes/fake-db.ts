@@ -6,6 +6,7 @@ function baseLead(id: string): Lead {
     nome: null,
     email: null,
     telefone: null,
+    document: null,
     segmento: null,
     gastoTerceiros: null,
     formaDeCriar: null,

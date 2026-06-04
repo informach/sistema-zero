@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ApiError, apiGet, apiPost } from '../lib/api-fetch'
+import type { CheckoutContactInput } from '../lib/checkout-schema'
 
 interface Pix {
   txid: string
@@ -27,14 +28,28 @@ const GENERIC_RETRY_DELAY_MS = 4_000
 const IN_PROGRESS_MAX_CYCLES = 8
 const IN_PROGRESS_RETRY_DELAY_MS = 7_000
 
-export default function PixCheckout({ couponCode }: { couponCode?: string }) {
+/**
+ * Painel do Pix. O QR NÃO é gerado automaticamente: o usuário clica em "Gerar
+ * código Pix" (desabilitado até os dados pessoais estarem válidos) — assim a
+ * cobrança vai à Efí com nome/e-mail/CPF e não criamos transação à toa (ex.:
+ * quem decide pagar no cartão). Depois do clique, mantém a máquina de estados
+ * de sempre: auto-retry, "aguarde" no 409, polling do status e expiração.
+ */
+export default function PixCheckout({
+  contact,
+  couponCode,
+}: {
+  contact: CheckoutContactInput | null
+  couponCode?: string
+}) {
+  const [started, setStarted] = useState(false)
   const [pix, setPix] = useState<Pix | null>(null)
   const [paymentId, setPaymentId] = useState<string | null>(null)
   const [erro, setErro] = useState<string | null>(null)
   const [aguardando, setAguardando] = useState(false)
   const [copiado, setCopiado] = useState(false)
   const [expirado, setExpirado] = useState(false)
-  const lastCoupon = useRef<string | null | undefined>(null)
+  const lastCoupon = useRef<string | null | undefined>(couponCode)
   const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const genericAttempts = useRef(0)
   const inProgressCycles = useRef(0)
@@ -50,7 +65,11 @@ export default function PixCheckout({ couponCode }: { couponCode?: string }) {
   // teto). O budget de "aguarde" (409) é separado do de falha genérica.
   const requestPix = useCallback(
     function attempt() {
-      apiPost<StartResp>('/api/checkout/pix', couponCode ? { couponCode } : undefined)
+      if (!contact) return
+      apiPost<StartResp>('/api/checkout/pix', {
+        contact,
+        ...(couponCode ? { couponCode } : {}),
+      })
         .then((r) => {
           genericAttempts.current = 0
           inProgressCycles.current = 0
@@ -76,15 +95,16 @@ export default function PixCheckout({ couponCode }: { couponCode?: string }) {
           setErro('Não foi possível gerar o Pix. Tente novamente.')
         })
     },
-    [couponCode],
+    [couponCode, contact],
   )
 
-  // Cria (ou recria) a cobrança Pix do zero: usado pelo efeito (mudança de cupom)
-  // e pelo botão "Tentar de novo" — reseta os budgets de retry.
+  // Gera (ou re-gera) a cobrança Pix do zero: usado pelo botão "Gerar código
+  // Pix" e pelo "Tentar de novo" — reseta os budgets de retry.
   const createPix = useCallback(() => {
     clearRetryTimer()
     genericAttempts.current = 0
     inProgressCycles.current = 0
+    setStarted(true)
     setPix(null)
     setPaymentId(null)
     setErro(null)
@@ -93,14 +113,22 @@ export default function PixCheckout({ couponCode }: { couponCode?: string }) {
     requestPix()
   }, [requestPix, clearRetryTimer])
 
-  // Recria quando o cupom muda (a cobrança Pix tem valor fixo).
+  // Cupom mudou (o valor da cobrança muda): volta ao estado inicial para o
+  // usuário gerar de novo — NUNCA regenera sozinho.
   useEffect(() => {
     if (lastCoupon.current === couponCode) return
     lastCoupon.current = couponCode
-    createPix()
-  }, [couponCode, createPix])
+    if (!started) return
+    clearRetryTimer()
+    setStarted(false)
+    setPix(null)
+    setPaymentId(null)
+    setErro(null)
+    setAguardando(false)
+    setExpirado(false)
+  }, [couponCode, started, clearRetryTimer])
 
-  // Cancela retries pendentes no unmount (troca de aba do checkout, navegação).
+  // Cancela retries pendentes no unmount (troca de método, navegação).
   useEffect(() => clearRetryTimer, [clearRetryTimer])
 
   // Polling do status (UX/fallback; o webhook é a reconciliação durável).
@@ -163,6 +191,58 @@ export default function PixCheckout({ couponCode }: { couponCode?: string }) {
         </button>
       </div>
     )
+
+  // Estado inicial: explica o Pix e só gera o código por clique explícito.
+  if (!started)
+    return (
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
+        <div className="flex flex-1 flex-col gap-4">
+          <ul className="flex flex-col gap-3 text-sm leading-relaxed text-muted">
+            <PixBullet>
+              Aprovação na hora: o acesso é liberado assim que o pagamento confirmar.
+            </PixBullet>
+            <PixBullet>Escaneie o QR Code ou copie o código e pague no app do seu banco.</PixBullet>
+          </ul>
+          <button
+            type="button"
+            onClick={createPix}
+            disabled={!contact}
+            className="btn btn-primary disabled:opacity-60"
+          >
+            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M4 4h6v6H4V4zm10 0h6v6h-6V4zM4 14h6v6H4v-6zm10 3h3m3 0v3m-6 0h3m3-6h-3m-3 0v3"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            Gerar código Pix
+          </button>
+          {!contact && (
+            <p className="text-xs text-muted">
+              Preencha seus dados pessoais acima para gerar o código.
+            </p>
+          )}
+        </div>
+        <div
+          aria-hidden="true"
+          className="hidden h-36 w-36 shrink-0 items-center justify-center self-center rounded-xl border border-line/60 bg-card/40 text-line sm:flex"
+        >
+          <svg className="h-20 w-20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M4 4h6v6H4V4zm10 0h6v6h-6V4zM4 14h6v6H4v-6zm10 3h3m3 0v3m-6 0h3m3-6h-3m-3 0v3"
+              stroke="currentColor"
+              strokeWidth="1.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </div>
+      </div>
+    )
+
   if (!pix)
     return (
       <p className="py-10 text-center text-muted">
@@ -216,5 +296,27 @@ export default function PixCheckout({ couponCode }: { couponCode?: string }) {
         Aguardando pagamento… a tela atualiza sozinha.
       </p>
     </div>
+  )
+}
+
+function PixBullet({ children }: { children: React.ReactNode }) {
+  return (
+    <li className="flex items-start gap-2.5">
+      <svg
+        className="mt-0.5 h-4 w-4 shrink-0 text-lime"
+        viewBox="0 0 20 20"
+        fill="none"
+        aria-hidden="true"
+      >
+        <path
+          d="M4 10.5l3.5 3.5L16 6"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+      <span>{children}</span>
+    </li>
   )
 }

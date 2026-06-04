@@ -20,6 +20,15 @@ export interface CreatePixChargeInput {
   payerMessage?: string
   /** Tempo de expiração da cobrança imediata, em segundos. */
   expiresInSeconds?: number
+  /**
+   * Pagador (opcional — a cob da Efí aceita `devedor` com nome + CPF/CNPJ).
+   * Quando presente, o adapter envia `devedor` e a Efí valida o documento.
+   */
+  customer?: {
+    name: string
+    /** Apenas dígitos: CPF (11) ou CNPJ (14). */
+    document: string
+  }
   idempotencyKey: string
 }
 

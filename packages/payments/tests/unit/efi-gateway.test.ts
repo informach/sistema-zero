@@ -78,6 +78,69 @@ describe('EfiPaymentGateway.createPixCharge', () => {
     expect(detailCalls).toBe(1) // buscou a existente em vez de falhar
   })
 
+  test('com customer → envia devedor {cpf, nome} (CPF = 11 dígitos, sem máscara)', async () => {
+    let sentBody: Record<string, unknown> | undefined
+    const gw = new EfiPaymentGateway(
+      mockClient({
+        createCharge: (async (_txid: string, body: Record<string, unknown>) => {
+          sentBody = body
+          return {
+            txid: TXID,
+            loc: { id: 1 },
+            pixCopiaECola: '00020101-COPIA-E-COLA',
+            calendario: { expiracao: 3600 },
+          }
+        }) as EfiClient['createCharge'],
+      }),
+    )
+    await gw.createPixCharge({
+      ...input,
+      customer: { name: 'João da Silva', document: '529.982.247-25' },
+    })
+    expect(sentBody?.devedor).toEqual({ cpf: '52998224725', nome: 'João da Silva' })
+  })
+
+  test('com customer CNPJ (14 dígitos) → devedor usa a chave cnpj', async () => {
+    let sentBody: Record<string, unknown> | undefined
+    const gw = new EfiPaymentGateway(
+      mockClient({
+        createCharge: (async (_txid: string, body: Record<string, unknown>) => {
+          sentBody = body
+          return {
+            txid: TXID,
+            loc: { id: 1 },
+            pixCopiaECola: '00020101-COPIA-E-COLA',
+            calendario: { expiracao: 3600 },
+          }
+        }) as EfiClient['createCharge'],
+      }),
+    )
+    await gw.createPixCharge({
+      ...input,
+      customer: { name: 'Empresa de Serviços SA', document: '12.345.678/0001-95' },
+    })
+    expect(sentBody?.devedor).toEqual({ cnpj: '12345678000195', nome: 'Empresa de Serviços SA' })
+  })
+
+  test('sem customer → body NÃO tem devedor (comportamento anterior preservado)', async () => {
+    let sentBody: Record<string, unknown> | undefined
+    const gw = new EfiPaymentGateway(
+      mockClient({
+        createCharge: (async (_txid: string, body: Record<string, unknown>) => {
+          sentBody = body
+          return {
+            txid: TXID,
+            loc: { id: 1 },
+            pixCopiaECola: '00020101-COPIA-E-COLA',
+            calendario: { expiracao: 3600 },
+          }
+        }) as EfiClient['createCharge'],
+      }),
+    )
+    await gw.createPixCharge(input)
+    expect(sentBody && 'devedor' in sentBody).toBe(false)
+  })
+
   test('erro não relacionado a txid propaga', async () => {
     const gw = new EfiPaymentGateway(
       mockClient({

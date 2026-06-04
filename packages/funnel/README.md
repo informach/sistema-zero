@@ -84,9 +84,12 @@ Desde o redesign da oferta (jun/2026) todos os arquivos abaixo estão versionado
 | `quem-criou.webp` | Oferta, "Quem criou" (foto da Helena e do Júlio) |
 | `print-agenda-da-turma.webp` | Oferta, "Quem criou" (Agenda da Turma) |
 | `print-cozya.webp` | Oferta, "Quem criou" (Cozya) |
+| `produto-capa.webp` | Checkout, miniatura da capa do ebook |
+| `logo-sistema-zero.svg` | Rodapé (logo, copiado do admin) |
 
 Para trocar uma imagem, basta substituir o arquivo mantendo o nome (e o aspecto:
-hero/recebe/quem-criou são 16:9, bônus/prints são 4:3).
+hero/recebe/quem-criou são 16:9, bônus/prints são 4:3, capa é retrato A4).
+Os favicons (`favicon.ico` + PNGs 16/32 + `apple-touch-icon.png`) são os mesmos do admin.
 
 ## Cartão e boleto
 

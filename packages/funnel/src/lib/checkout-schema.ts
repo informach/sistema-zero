@@ -1,10 +1,11 @@
-// Schemas de checkout (cartão/boleto) — client-safe: importa APENAS `zod`, sem
-// env nem server. Fonte única de verdade usada pelas ilhas (validação no browser)
-// e pelos handlers `startBoleto`/`startCard` (validação no servidor). Espelha o
-// DTO do payments (`AddressSchema`, customer.document, card).
+// Schemas de checkout (Pix/cartão/boleto) — client-safe: importa APENAS `zod`,
+// sem env nem server. Fonte única de verdade usada pelas ilhas (validação no
+// browser) e pelos handlers `startPix`/`startCard`/`startBoleto` (validação no
+// servidor). Espelha o DTO do payments (`AddressSchema`, customer, card).
 
 import { z } from 'zod'
 import { CARD_BRANDS, luhnCheck } from './card-utils'
+import { ContactSchema } from './contact-schema'
 
 // Reexporta o achatador de erros do contato (mesma utilidade nos forms de checkout).
 export { fieldErrors } from './contact-schema'
@@ -57,6 +58,28 @@ export const AddressSchema = z.object({
 /** Cupom de desconto (opcional) aplicado no checkout. */
 export const CouponCodeSchema = z.string().trim().max(60).optional()
 
+/**
+ * Dados pessoais do checkout ("Dados pessoais", estilo Hotmart): compartilhados
+ * entre Pix e cartão. Vão no corpo de `POST /api/checkout/{pix,card}` — o handler
+ * atualiza o lead e monta o `customer` da cobrança (Pix vira `devedor` na Efí).
+ * A CONFIRMAÇÃO de e-mail é validação só do browser (não vai ao servidor).
+ */
+export const CheckoutContactSchema = z.object({
+  nome: ContactSchema.shape.nome,
+  email: ContactSchema.shape.email,
+  cpf: CpfSchema,
+})
+
+/**
+ * Corpo de `POST /api/checkout/pix`. O Pix NÃO é gerado sem os dados pessoais
+ * completos (regra do produto: enviar nome/e-mail/CPF à Efí e não criar
+ * transação à toa) — o botão "Gerar código Pix" só habilita com tudo válido.
+ */
+export const PixChargeSchema = z.object({
+  contact: CheckoutContactSchema,
+  couponCode: CouponCodeSchema,
+})
+
 /** Form do boleto (browser) E corpo de `POST /api/checkout/boleto` (servidor). */
 export const BoletoFormSchema = z.object({
   cpf: CpfSchema,
@@ -98,7 +121,6 @@ export const CardFormSchema = z.object({
     .string()
     .trim()
     .regex(/^\d{3,4}$/, 'CVV inválido.'),
-  cpf: CpfSchema,
   installments: z.coerce.number().int().min(1).max(12),
   // Endereço de cobrança OPCIONAL — a Efí aceita cartão sem billing_address.
   address: AddressSchema.optional(),
@@ -119,14 +141,15 @@ export const CardChargeSchema = z.object({
   installments: z.coerce.number().int().min(1).max(12),
   attemptId: z.string().trim().min(1).max(64),
   couponCode: CouponCodeSchema,
-  customer: z.object({
-    document: CpfSchema,
-    // Endereço de cobrança OPCIONAL — a Efí aceita cartão sem billing_address.
-    address: AddressSchema.optional(),
-  }),
+  // Dados pessoais compartilhados (CPF veio do form de cartão p/ cá no redesign).
+  contact: CheckoutContactSchema,
+  // Endereço de cobrança OPCIONAL — a Efí aceita cartão sem billing_address.
+  address: AddressSchema.optional(),
 })
 
 export type AddressFormInput = z.infer<typeof AddressSchema>
 export type BoletoFormInput = z.infer<typeof BoletoFormSchema>
 export type CardFormInput = z.infer<typeof CardFormSchema>
 export type CardChargeInput = z.infer<typeof CardChargeSchema>
+export type CheckoutContactInput = z.infer<typeof CheckoutContactSchema>
+export type PixChargeInput = z.infer<typeof PixChargeSchema>

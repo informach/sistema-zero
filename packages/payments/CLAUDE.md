@@ -127,6 +127,11 @@ tests/               # unit/ · application/ · integration/ · fakes/
    e são recicladas. A chave é **por consumidor** → dois consumidores podem usar o
    mesmo valor sem colidir.
 
+10. **Pix aceita `devedor` opcional.** Quando o consumidor envia `customer` num pagamento PIX
+   (`name`+`document`), o adapter monta `devedor: { cpf|cnpj, nome }` na cob (chave escolhida pelo
+   tamanho do documento: 11 = cpf, 14 = cnpj; a Efí valida os dígitos). Sem `customer`, a cob vai
+   sem devedor (comportamento anterior). O funil envia os dados pessoais do checkout por aqui.
+
 8. **Cobrança Pix é idempotente no provedor.** Criamos via `PUT /v2/cob/{txid}`
    com `txid` **determinístico** (derivado do `paymentId`), não `POST /v2/cob`
    (txid gerado pela Efí). Assim, retry/reprocessamento do MESMO pagamento aponta

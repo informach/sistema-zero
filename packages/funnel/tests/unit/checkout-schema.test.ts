@@ -1,8 +1,15 @@
 import { describe, expect, test } from 'bun:test'
-import { CardChargeSchema, CardFormSchema } from '../../src/lib/checkout-schema'
+import {
+  CardChargeSchema,
+  CardFormSchema,
+  CheckoutContactSchema,
+  PixChargeSchema,
+} from '../../src/lib/checkout-schema'
 
 // CPF de teste com dígitos verificadores válidos (gerado pelo algoritmo mod 11).
 const VALID_CPF = '529.982.247-25'
+
+const validContact = { nome: 'Fulano de Tal', email: 'fulano@example.com', cpf: VALID_CPF }
 
 const validForm = {
   number: '4242 4242 4242 4242',
@@ -10,7 +17,6 @@ const validForm = {
   expirationMonth: '12',
   expirationYear: '2030',
   cvv: '123',
-  cpf: VALID_CPF,
   installments: 1,
 }
 
@@ -52,13 +58,39 @@ describe('CardFormSchema', () => {
     expect(CardFormSchema.safeParse({ ...validForm, cvv: '12a' }).success).toBe(false)
   })
 
-  test('rejeita CPF inválido', () => {
-    expect(CardFormSchema.safeParse({ ...validForm, cpf: '111.111.111-11' }).success).toBe(false)
-  })
-
   test('rejeita parcelas fora de 1..12', () => {
     expect(CardFormSchema.safeParse({ ...validForm, installments: 0 }).success).toBe(false)
     expect(CardFormSchema.safeParse({ ...validForm, installments: 13 }).success).toBe(false)
+  })
+})
+
+describe('CheckoutContactSchema (dados pessoais compartilhados)', () => {
+  test('aceita contato válido', () => {
+    expect(CheckoutContactSchema.safeParse(validContact).success).toBe(true)
+  })
+
+  test('rejeita CPF inválido', () => {
+    expect(
+      CheckoutContactSchema.safeParse({ ...validContact, cpf: '111.111.111-11' }).success,
+    ).toBe(false)
+  })
+
+  test('rejeita e-mail/nome inválidos', () => {
+    expect(CheckoutContactSchema.safeParse({ ...validContact, email: 'foo' }).success).toBe(false)
+    expect(CheckoutContactSchema.safeParse({ ...validContact, nome: 'X' }).success).toBe(false)
+  })
+})
+
+describe('PixChargeSchema (corpo do POST /api/checkout/pix)', () => {
+  test('exige contact (Pix não é gerado sem os dados pessoais)', () => {
+    expect(PixChargeSchema.safeParse({}).success).toBe(false)
+    expect(PixChargeSchema.safeParse({ contact: validContact }).success).toBe(true)
+  })
+
+  test('cupom é opcional', () => {
+    expect(
+      PixChargeSchema.safeParse({ contact: validContact, couponCode: 'PROMO10' }).success,
+    ).toBe(true)
   })
 })
 
@@ -68,7 +100,7 @@ const validCharge = {
   last4: '4242',
   installments: 3,
   attemptId: 'attempt-1',
-  customer: { document: VALID_CPF },
+  contact: validContact,
 }
 
 describe('CardChargeSchema', () => {

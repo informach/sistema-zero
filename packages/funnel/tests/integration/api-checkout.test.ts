@@ -1,6 +1,12 @@
 import { describe, expect, test } from 'bun:test'
 import { LEAD_COOKIE } from '../../src/lib/lead-session'
-import { pixStatus, startBoleto, startCard, startPix } from '../../src/server/checkout'
+import {
+  pixContentFingerprint,
+  pixStatus,
+  startBoleto,
+  startCard,
+  startPix,
+} from '../../src/server/checkout'
 import { makeFulfill } from '../../src/server/fulfillment'
 import { makeGrantMembers } from '../../src/server/members-grant'
 import { createFakeRepo } from '../fakes/fake-db'
@@ -8,6 +14,9 @@ import { createFakeGateway } from '../fakes/fake-gateway'
 
 // CPF válido (dígitos verificadores) para os forms de boleto/cartão.
 const CPF = '52998224725'
+// Dados pessoais do checkout (corpo de pix/cartão) — o handler atualiza o lead
+// e monta o `customer` da cobrança a partir deles.
+const CONTACT = { nome: 'Ana Souza', email: 'ana@example.com', cpf: '529.982.247-25' }
 const ADDRESS = {
   street: 'Rua das Flores',
   number: '100',
@@ -63,16 +72,36 @@ describe('POST /api/checkout/pix', () => {
     const gw = createFakeGateway()
     const { id } = await repo.createLead()
     await repo.updateLead(id, { nome: 'Ana', email: 'ana@example.com', telefone: '11999998888' })
-    const res = await startPix(req('POST', cookieFor(id)), deps(repo, gw))
+    const res = await startPix(req('POST', cookieFor(id), { contact: CONTACT }), deps(repo, gw))
     expect(res.status).toBe(200)
     const body = (await res.json()) as { paymentId: string; pix: { copiaECola: string } | null }
     expect(body.paymentId).toBe('pay-1')
     expect(body.pix?.copiaECola).toContain('br.gov.bcb.pix')
 
     expect(gw.calls.create).toHaveLength(1)
-    expect(gw.calls.create[0]?.idempotencyKey).toBe(`funil-${id}`)
-    expect((gw.calls.create[0]?.input as { amountInCents: number }).amountInCents).toBe(3700)
+    // Chave determinística por lead+conteúdo: mesmos dados → MESMA cobrança.
+    const fp = await pixContentFingerprint({
+      amountInCents: 3700,
+      couponCode: null,
+      contact: CONTACT,
+    })
+    expect(gw.calls.create[0]?.idempotencyKey).toBe(`funil-${id}-${fp}`)
+    const input = gw.calls.create[0]?.input as {
+      amountInCents: number
+      customer: { name: string; email: string; document: string; phone?: string }
+    }
+    expect(input.amountInCents).toBe(3700)
+    // Dados pessoais viram o `customer` da cobrança (devedor do Pix na Efí).
+    expect(input.customer).toEqual({
+      name: 'Ana Souza',
+      email: 'ana@example.com',
+      document: CPF,
+      phone: '11999998888',
+    })
 
+    // O lead é atualizado com o contato enviado (incl. CPF sem máscara).
+    expect(leads.get(id)?.nome).toBe('Ana Souza')
+    expect(leads.get(id)?.document).toBe(CPF)
     expect(leads.get(id)?.paymentId).toBe('pay-1')
     expect(events.some((e) => e.eventName === 'pagamento_iniciado')).toBe(true)
   })
@@ -91,7 +120,7 @@ describe('POST /api/checkout/pix', () => {
     const { id } = await repo.createLead()
     await repo.updateLead(id, { nome: 'Ana', email: 'ana@example.com', telefone: '11999998888' })
     const res = await startPix(
-      req('POST', cookieFor(id), { couponCode: 'promo10' }),
+      req('POST', cookieFor(id), { contact: CONTACT, couponCode: 'promo10' }),
       deps(repo, gw),
     )
     expect(res.status).toBe(200)
@@ -112,7 +141,10 @@ describe('POST /api/checkout/pix', () => {
     const gw = createFakeGateway()
     const { id } = await repo.createLead()
     await repo.updateLead(id, { nome: 'Ana', email: 'ana@example.com', telefone: '11999998888' })
-    const res = await startPix(req('POST', cookieFor(id), { couponCode: 'NOPE' }), deps(repo, gw))
+    const res = await startPix(
+      req('POST', cookieFor(id), { contact: CONTACT, couponCode: 'NOPE' }),
+      deps(repo, gw),
+    )
     expect(res.status).toBe(422)
     expect(gw.calls.create).toHaveLength(0)
   })
@@ -121,19 +153,52 @@ describe('POST /api/checkout/pix', () => {
     const { repo, id } = await paidLead()
     const gw = createFakeGateway()
     gw.addCoupon('PROMO10', 1000)
-    await startPix(req('POST', cookieFor(id), { couponCode: 'promo10' }), deps(repo, gw))
+    await startPix(
+      req('POST', cookieFor(id), { contact: CONTACT, couponCode: 'promo10' }),
+      deps(repo, gw),
+    )
     expect(gw.calls.redeem).toHaveLength(0) // ainda não pago
     gw.setStatus('PAID')
     await pixStatus(req('GET', cookieFor(id)), 'pay-1', deps(repo, gw))
     expect(gw.calls.redeem).toContain('PROMO10')
   })
 
-  test('409 quando o lead ainda não tem e-mail (sem contato para entregar o ebook)', async () => {
+  test('400 sem os dados pessoais no corpo (Pix não é gerado sem contato)', async () => {
     const { repo } = createFakeRepo()
     const gw = createFakeGateway()
     const { id } = await repo.createLead()
     const res = await startPix(req('POST', cookieFor(id)), deps(repo, gw))
-    expect(res.status).toBe(409)
+    expect(res.status).toBe(400)
+    expect(gw.calls.create).toHaveLength(0)
+  })
+
+  test('idempotência por conteúdo: mesmos dados → mesma chave; dados diferentes → chave nova', async () => {
+    const { repo, id } = await paidLead()
+    const gw = createFakeGateway()
+    await startPix(req('POST', cookieFor(id), { contact: CONTACT }), deps(repo, gw))
+    await startPix(req('POST', cookieFor(id), { contact: CONTACT }), deps(repo, gw))
+    expect(gw.calls.create[0]?.idempotencyKey).toBe(gw.calls.create[1]?.idempotencyKey)
+
+    // CPF corrigido (outro CPF válido) → payload muda → chave NOVA (cobrança nova,
+    // em vez de 409 IDEMPOTENCY_CONFLICT no payments).
+    await startPix(
+      req('POST', cookieFor(id), { contact: { ...CONTACT, cpf: '111.444.777-35' } }),
+      deps(repo, gw),
+    )
+    expect(gw.calls.create[2]?.idempotencyKey).not.toBe(gw.calls.create[0]?.idempotencyKey)
+    expect(gw.calls.create[2]?.idempotencyKey).toMatch(new RegExp(`^funil-${id}-[0-9a-f]{12}$`))
+  })
+
+  test('400 com CPF inválido nos dados pessoais (validação no servidor)', async () => {
+    const { repo, id } = await paidLead()
+    const gw = createFakeGateway()
+    const res = await startPix(
+      req('POST', cookieFor(id), { contact: { ...CONTACT, cpf: '111.111.111-11' } }),
+      deps(repo, gw),
+    )
+    expect(res.status).toBe(400)
+    const body = (await res.json()) as { fields: Record<string, string> }
+    expect(body.fields['contact.cpf']).toBe('CPF inválido.')
     expect(gw.calls.create).toHaveLength(0)
   })
 
@@ -143,7 +208,7 @@ describe('POST /api/checkout/pix', () => {
     gw.setCreateResult(502, { error: { code: 'PROVIDER_ERROR', message: 'Efí indisponível' } })
     const logged: Array<{ msg: string; meta?: Record<string, unknown> }> = []
     const res = await startPix(
-      req('POST', cookieFor(id)),
+      req('POST', cookieFor(id), { contact: CONTACT }),
       deps(repo, gw, (msg, meta) => logged.push({ msg, meta })),
     )
     expect(res.status).toBe(502)
@@ -165,7 +230,7 @@ describe('POST /api/checkout/pix', () => {
     gw.setCreateResult(409, {
       error: { code: 'IDEMPOTENCY_IN_FLIGHT', message: 'Operação em andamento' },
     })
-    const res = await startPix(req('POST', cookieFor(id)), deps(repo, gw))
+    const res = await startPix(req('POST', cookieFor(id), { contact: CONTACT }), deps(repo, gw))
     expect(res.status).toBe(409)
     const body = (await res.json()) as { error: { code: string; message: string } }
     expect(body.error.code).toBe('PAYMENT_IN_PROGRESS')
@@ -178,7 +243,7 @@ describe('POST /api/checkout/pix', () => {
     gw.setCreateResult(409, {
       error: { code: 'IDEMPOTENCY_CONFLICT', message: 'Payload diferente' },
     })
-    const res = await startPix(req('POST', cookieFor(id)), deps(repo, gw))
+    const res = await startPix(req('POST', cookieFor(id), { contact: CONTACT }), deps(repo, gw))
     expect(res.status).toBe(502)
     expect(((await res.json()) as { error: { code: string } }).error.code).toBe('GATEWAY_ERROR')
   })
@@ -188,7 +253,7 @@ describe('GET /api/checkout/:paymentId', () => {
   test('marca o lead como pago e registra o comprador quando o gateway retorna PAID', async () => {
     const { repo, leads, events, id } = await paidLead()
     const gw = createFakeGateway()
-    await startPix(req('POST', cookieFor(id)), deps(repo, gw))
+    await startPix(req('POST', cookieFor(id), { contact: CONTACT }), deps(repo, gw))
 
     gw.setStatus('PAID')
     const res = await pixStatus(req('GET', cookieFor(id)), 'pay-1', deps(repo, gw))
@@ -292,7 +357,8 @@ describe('POST /api/checkout/card', () => {
       last4: '0087',
       installments: 1,
       attemptId,
-      customer: { document: CPF, birth: '1990-01-31', address: ADDRESS },
+      contact: CONTACT,
+      address: ADDRESS,
     }
   }
 
@@ -307,7 +373,18 @@ describe('POST /api/checkout/card', () => {
     expect(body.card?.last4).toBe('0087')
 
     expect(gw.calls.create[0]?.idempotencyKey).toBe(`funil-${id}-card-att-1`)
-    expect((gw.calls.create[0]?.input as { method: string }).method).toBe('CREDIT_CARD')
+    const input = gw.calls.create[0]?.input as {
+      method: string
+      customer: { name: string; document: string; phone: string }
+    }
+    expect(input.method).toBe('CREDIT_CARD')
+    // Dados pessoais compartilhados viram o customer do cartão (CPF sem máscara).
+    expect(input.customer).toMatchObject({
+      name: 'Ana Souza',
+      document: CPF,
+      phone: '11999998888',
+    })
+    expect(leads.get(id)?.document).toBe(CPF)
     expect(leads.get(id)?.paidAt).not.toBeNull()
     expect(events.some((e) => e.step === 'checkout_card')).toBe(true)
     expect(leads.get(id)?.buyerRegisteredAt).not.toBeNull()

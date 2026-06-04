@@ -3,7 +3,10 @@ import {
   type AddressFormInput,
   BoletoFormSchema,
   CardChargeSchema,
+  type CheckoutContactInput,
   fieldErrors,
+  PixChargeSchema,
+  pathErrors,
 } from '../lib/checkout-schema'
 import type { GatewayClient } from '../lib/gateway-client'
 import { json, jsonError, safeJson } from '../lib/http'
@@ -138,30 +141,99 @@ async function persistCheckoutContext(
   await deps.repo.updateLead(leadId, set)
 }
 
-/** POST /api/checkout/pix — cria a cobrança Pix via gateway (BFF) e devolve o QR. */
+/**
+ * Persiste os "Dados pessoais" do checkout no lead (nome/e-mail/CPF — fonte de
+ * verdade do que foi enviado à Efí) e devolve o lead mesclado, para a cobrança
+ * e a metadata usarem o contato FRESCO em vez do estado anterior do banco.
+ */
+async function applyContact(
+  deps: CheckoutDeps,
+  lead: Lead,
+  contact: CheckoutContactInput,
+): Promise<Lead> {
+  const document = contact.cpf.replace(/\D/g, '')
+  await deps.repo.updateLead(lead.id, { nome: contact.nome, email: contact.email, document })
+  return { ...lead, nome: contact.nome, email: contact.email, document }
+}
+
+/** Resposta 400 com os erros de validação achatados por caminho (`contact.cpf`…). */
+function invalidBody(error: Parameters<typeof pathErrors>[0]): Response {
+  return json(
+    { error: { code: 'BAD_REQUEST', message: 'Dados inválidos.' }, fields: pathErrors(error) },
+    400,
+  )
+}
+
+/**
+ * Fingerprint (12 hex) do CONTEÚDO da cobrança Pix p/ compor a Idempotency-Key.
+ * O payments rejeita a MESMA chave com payload diferente (409 IDEMPOTENCY_CONFLICT)
+ * — antes, mudar cupom/dados pessoais no mesmo lead travava o Pix p/ sempre.
+ * Com o fingerprint: payload idêntico → mesma chave → MESMA cobrança (retry não
+ * duplica transação); payload diferente → chave nova → cobrança nova (a antiga
+ * só expira). Campos: valor + cupom + dados pessoais (o que muda o payload).
+ */
+export async function pixContentFingerprint(input: {
+  amountInCents: number
+  couponCode: string | null
+  contact: CheckoutContactInput
+}): Promise<string> {
+  const canonical = [
+    input.amountInCents,
+    input.couponCode ?? '',
+    input.contact.nome,
+    input.contact.email,
+    input.contact.cpf.replace(/\D/g, ''),
+  ].join('|')
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(canonical))
+  return [...new Uint8Array(digest)]
+    .slice(0, 6)
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('')
+}
+
+/**
+ * POST /api/checkout/pix — cria a cobrança Pix via gateway (BFF) e devolve o QR.
+ * O corpo EXIGE os "Dados pessoais" (nome/e-mail/CPF): eles atualizam o lead e
+ * viram o `customer` da cobrança (devedor da cob na Efí). O QR só é gerado por
+ * clique explícito no checkout (nunca automático).
+ */
 export async function startPix(request: Request, deps: CheckoutDeps): Promise<Response> {
   const leadId = getLeadId(request)
   if (!leadId) return jsonError('Sem lead na sessão.', 401, 'NO_LEAD')
-  const lead = await deps.repo.getLead(leadId)
+  let lead = await deps.repo.getLead(leadId)
   if (!lead) return jsonError('Lead não encontrado.', 404, 'NOT_FOUND')
 
-  // O ebook é entregue por e-mail: sem contato, não há para quem entregar.
-  // O modal de pré-checkout (/oferta) coleta nome/e-mail/telefone antes daqui.
-  if (!lead.email) return jsonError('Finalize seus dados antes de pagar.', 409, 'NO_CONTACT')
+  const parsed = PixChargeSchema.safeParse(await safeJson(request))
+  if (!parsed.success) return invalidBody(parsed.error)
+  const c = parsed.data
+  lead = await applyContact(deps, lead, c.contact)
 
   // Preço AUTORITATIVO (catálogo) + cupom opcional do corpo.
-  const couponCode = readCouponCode(await safeJson(request))
-  const charge = await resolveCharge(deps.gateway, deps.offerSlug, couponCode)
+  const charge = await resolveCharge(deps.gateway, deps.offerSlug, c.couponCode)
   if (!charge.ok) return jsonError(charge.message, charge.status, charge.code)
   await persistCheckoutContext(deps, lead.id, charge.couponCode)
 
-  // Idempotência determinística por lead → retry aponta p/ a MESMA cobrança Pix.
-  const idempotencyKey = `funil-${lead.id}`
+  // Idempotência determinística por lead+CONTEÚDO → retry com os mesmos dados
+  // aponta p/ a MESMA cobrança Pix (não duplica transação); dados diferentes
+  // (cupom novo, CPF corrigido) geram cobrança nova em vez de 409 CONFLICT.
+  const fingerprint = await pixContentFingerprint({
+    amountInCents: charge.amountInCents,
+    couponCode: charge.couponCode,
+    contact: c.contact,
+  })
+  const idempotencyKey = `funil-${lead.id}-${fingerprint}`
   const input = {
     amountInCents: charge.amountInCents,
     method: 'PIX',
     description: `${deps.productName} (ebook)`,
     payerMessage: 'Pagamento do ebook No Comando da IA',
+    customer: {
+      name: c.contact.nome,
+      email: c.contact.email,
+      document: c.contact.cpf.replace(/\D/g, ''),
+      // Telefone vem do pré-checkout (não é coletado de novo aqui); opcional no Pix.
+      ...(lead.telefone ? { phone: lead.telefone.replace(/\D/g, '') } : {}),
+    },
     metadata: leadMetadata(lead, deps.productSku, charge),
   }
 
@@ -261,22 +333,15 @@ export async function startBoleto(request: Request, deps: CheckoutDeps): Promise
 export async function startCard(request: Request, deps: CheckoutDeps): Promise<Response> {
   const leadId = getLeadId(request)
   if (!leadId) return jsonError('Sem lead na sessão.', 401, 'NO_LEAD')
-  const lead = await deps.repo.getLead(leadId)
+  let lead = await deps.repo.getLead(leadId)
   if (!lead) return jsonError('Lead não encontrado.', 404, 'NOT_FOUND')
-  if (!lead.email) return jsonError('Finalize seus dados antes de pagar.', 409, 'NO_CONTACT')
   if (!lead.telefone) return jsonError('Telefone é obrigatório para cartão.', 409, 'NO_CONTACT')
+  const phoneDigits = lead.telefone.replace(/\D/g, '')
 
   const parsed = CardChargeSchema.safeParse(await safeJson(request))
-  if (!parsed.success) {
-    return json(
-      {
-        error: { code: 'BAD_REQUEST', message: 'Dados inválidos.' },
-        fields: fieldErrors(parsed.error),
-      },
-      400,
-    )
-  }
+  if (!parsed.success) return invalidBody(parsed.error)
   const c = parsed.data
+  lead = await applyContact(deps, lead, c.contact)
 
   const charge = await resolveCharge(deps.gateway, deps.offerSlug, c.couponCode)
   if (!charge.ok) return jsonError(charge.message, charge.status, charge.code)
@@ -289,12 +354,12 @@ export async function startCard(request: Request, deps: CheckoutDeps): Promise<R
     method: 'CREDIT_CARD',
     description: `${deps.productName} (ebook)`,
     customer: {
-      name: lead.nome ?? 'Cliente',
-      email: lead.email,
-      document: c.customer.document.replace(/\D/g, ''),
-      phone: lead.telefone.replace(/\D/g, ''),
+      name: c.contact.nome,
+      email: c.contact.email,
+      document: c.contact.cpf.replace(/\D/g, ''),
+      phone: phoneDigits,
       // Endereço é opcional no cartão (a Efí aceita sem) — só envia se coletado.
-      ...(c.customer.address ? { address: cleanAddress(c.customer.address) } : {}),
+      ...(c.address ? { address: cleanAddress(c.address) } : {}),
     },
     card: { token: c.token, brand: c.brand, last4: c.last4, installments: c.installments },
     metadata: leadMetadata(lead, deps.productSku, charge),

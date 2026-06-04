@@ -14,10 +14,11 @@ export const leads = funil.table(
   {
     id: uuid('id').primaryKey().defaultRandom(),
 
-    // Contato (preenchido no pré-checkout).
+    // Contato (preenchido no pré-checkout; CPF nos dados pessoais do checkout).
     nome: text('nome'),
     email: text('email'),
     telefone: text('telefone'),
+    document: text('document'), // CPF sem máscara (devedor do Pix / titular do cartão)
 
     // 12 chaves do quiz (parciais até o lead concluir).
     segmento: text('segmento'), // A | B | C | D

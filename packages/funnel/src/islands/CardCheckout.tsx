@@ -8,11 +8,10 @@ import {
   cvvLengthFor,
   isExpiryInFuture,
   maskCardNumber,
-  maskCpf,
   normalizeBrand,
   onlyDigits,
 } from '../lib/card-utils'
-import { CardFormSchema, pathErrors } from '../lib/checkout-schema'
+import { CardFormSchema, type CheckoutContactInput, pathErrors } from '../lib/checkout-schema'
 import { Field, inputClass } from './checkout-fields'
 
 /** Opção de parcela (subset do `Installment` do payment-token-efi que usamos). */
@@ -49,10 +48,14 @@ async function loadEfi() {
   return (await import('payment-token-efi')).default
 }
 
+// O CPF do titular vem dos "Dados pessoais" compartilhados do checkout (prop
+// `contact`) — o form do cartão não o coleta mais.
 export default function CardCheckout({
+  contact,
   priceCents,
   couponCode,
 }: {
+  contact: CheckoutContactInput | null
   priceCents: number
   couponCode?: string
 }) {
@@ -61,7 +64,6 @@ export default function CardCheckout({
   const [expMonth, setExpMonth] = useState('')
   const [expYear, setExpYear] = useState('')
   const [cvv, setCvv] = useState('')
-  const [cpf, setCpf] = useState('')
   const [installments, setInstallments] = useState(1)
 
   const [brand, setBrand] = useState<CardBrand | null>(null)
@@ -202,13 +204,18 @@ export default function CardCheckout({
 
   async function submit() {
     setErro(null)
+    // Os dados pessoais (e-mail/nome/CPF) são o gate do pagamento — sem eles o
+    // botão fica desabilitado; o guard cobre estados intermediários.
+    if (!contact) {
+      setErro('Preencha seus dados pessoais acima para pagar com cartão.')
+      return
+    }
     const parsed = CardFormSchema.safeParse({
       number,
       holderName,
       expirationMonth: expMonth,
       expirationYear: expYear,
       cvv,
-      cpf,
       installments,
     })
     if (!parsed.success) {
@@ -255,7 +262,7 @@ export default function CardCheckout({
         setErrors({ cvv: `O CVV deste cartão deve ter ${cvvLengthFor(cardBrand)} dígitos.` })
         return
       }
-      const cpfDigits = parsed.data.cpf.replace(/\D/g, '')
+      const cpfDigits = contact.cpf.replace(/\D/g, '')
       const tok = await EfiPay.CreditCard.setAccount(EFI_ACCOUNT)
         .setEnvironment(EFI_ENV)
         .setCreditCardData({
@@ -282,9 +289,7 @@ export default function CardCheckout({
         installments: parsed.data.installments,
         attemptId: crypto.randomUUID(),
         couponCode,
-        customer: {
-          document: cpfDigits,
-        },
+        contact,
       }
       const r = await apiPost<ChargeResp>('/api/checkout/card', body)
       if (r.status === 'PAID') {
@@ -398,23 +403,19 @@ export default function CardCheckout({
           <span className="mt-1 block text-xs text-muted">Consultando parcelas…</span>
         )}
       </Field>
-      <Field label="CPF do titular" error={errors.cpf}>
-        <input
-          className={inputClass}
-          inputMode="numeric"
-          placeholder="000.000.000-00"
-          value={cpf}
-          onChange={(e) => setCpf(maskCpf(e.target.value))}
-        />
-      </Field>
       {erro && <p className="text-center text-sm text-red-400">{erro}</p>}
       <button
         type="submit"
-        disabled={processing || scriptBlocked}
+        disabled={processing || scriptBlocked || !contact}
         className="btn btn-primary disabled:opacity-60"
       >
         {processing ? 'Processando…' : `Pagar ${brl(priceCents)}`}
       </button>
+      {!contact && (
+        <p className="text-center text-xs text-muted">
+          Preencha seus dados pessoais acima para pagar com cartão.
+        </p>
+      )}
       <p className="text-center text-xs text-muted">
         Seus dados do cartão são enviados com segurança direto ao processador (Efí). Não passam pelo
         nosso servidor.

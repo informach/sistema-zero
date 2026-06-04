@@ -59,6 +59,28 @@ describe('ProcessPaymentService (Pix)', () => {
     expect(repo.outbox.some((e) => e.eventName === 'payment.created')).toBe(true)
   })
 
+  test('Pix com customer → repassa nome/documento normalizado ao gateway (devedor)', async () => {
+    const view = await service.execute({
+      ...baseCommand,
+      customer: {
+        name: 'João da Silva',
+        email: 'joao@example.com',
+        document: '529.982.247-25',
+      },
+    })
+
+    expect(view.status).toBe('PENDING')
+    expect(gateway.lastPixInput?.customer).toEqual({
+      name: 'João da Silva',
+      document: '52998224725',
+    })
+  })
+
+  test('Pix sem customer → gateway não recebe devedor (compat preservada)', async () => {
+    await service.execute(baseCommand)
+    expect(gateway.lastPixInput?.customer).toBeUndefined()
+  })
+
   test('é idempotente: mesma chave+payload não cobra de novo', async () => {
     const first = await service.execute(baseCommand)
     const second = await service.execute(baseCommand)

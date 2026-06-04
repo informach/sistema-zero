@@ -1,9 +1,59 @@
 ---
+// Rodapé institucional: logo à esquerda, "Recursos" (links legais) à direita,
+// botão voltar-ao-topo e linha de copyright com os dados da empresa.
 const ano = new Date().getFullYear()
 ---
 
 <footer class="mt-16 border-t border-line">
-  <div class="mx-auto max-w-5xl px-4 py-8 text-center text-sm text-muted">
-    © {ano} Sistema Zero · No Comando da IA
+  <div class="mx-auto max-w-5xl px-4 py-10">
+    <div class="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
+      <a href="/oferta" class="inline-flex" aria-label="No Comando da IA — Sistema Zero">
+        <img
+          src="/img/logo-sistema-zero.svg"
+          alt="Sistema Zero"
+          class="h-4 w-auto sm:h-5"
+          loading="lazy"
+          decoding="async"
+        />
+      </a>
+
+      <div class="flex items-start gap-8">
+        <nav aria-label="Recursos">
+          <p class="text-sm font-bold text-ink">Recursos</p>
+          <ul class="mt-3 flex flex-col gap-2 text-sm">
+            <li>
+              <a href="/politica-de-privacidade" class="text-muted transition hover:text-lime">
+                Política de Privacidade
+              </a>
+            </li>
+            <li>
+              <a href="/termos-de-uso" class="text-muted transition hover:text-lime">
+                Termos de Uso
+              </a>
+            </li>
+          </ul>
+        </nav>
+
+        <a
+          href="#topo"
+          aria-label="Voltar ao topo"
+          class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-line bg-card text-ink transition hover:border-lime hover:text-lime"
+        >
+          <svg class="h-5 w-5" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path
+              d="M10 16V4m0 0L4.5 9.5M10 4l5.5 5.5"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"></path>
+          </svg>
+        </a>
+      </div>
+    </div>
+
+    <p class="mt-10 text-xs leading-relaxed text-muted">
+      © {ano} Informach — Núcleo de Aprendizagem Ltda. · CNPJ 43.588.758/0001-03 · Todos os
+      direitos reservados. · No Comando da IA
+    </p>
   </div>
 </footer>

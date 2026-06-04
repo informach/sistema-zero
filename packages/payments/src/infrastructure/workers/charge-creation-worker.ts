@@ -100,6 +100,15 @@ export class ChargeCreationWorker {
           pixKey: this.options.pixKey,
           description: payment.description ?? undefined,
           expiresInSeconds: this.options.defaultExpiresInSeconds,
+          // Devedor opcional da cob — paridade com o caminho síncrono.
+          ...(payment.customer
+            ? {
+                customer: {
+                  name: payment.customer.name,
+                  document: payment.customer.document.value,
+                },
+              }
+            : {}),
           idempotencyKey: payment.idempotencyKey,
         })
         payment.registerProviderCharge({

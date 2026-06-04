@@ -93,7 +93,23 @@ Browser → funil `/api/checkout/*` (mesma origem) → `gateway-client` assina *
 **Canônicos HMAC** — `core.signHmac(secret, msg, ts)` assina `"<ts>.<msg>"`; header `x-signature: t=<ts>,v1=<hex>`:
 - POST com Idempotency-Key: `msg = "<idempotencyKey>.<rawBody>"`.
 - GET (corpo vazio): `msg = ""` → assina `"<ts>."`.
-- Idempotency-Key determinística por lead: **`funil-<leadId>`** (retry aponta p/ a MESMA cobrança).
+- Idempotency-Key do Pix: **`funil-<leadId>-<fingerprint12>`** — determinística por lead+CONTEÚDO
+  (`pixContentFingerprint`: valor+cupom+dados pessoais). Retry com os MESMOS dados → MESMA cobrança
+  (não duplica transação); dados diferentes (cupom novo, CPF corrigido) → chave nova → cobrança
+  nova, em vez de 409 IDEMPOTENCY_CONFLICT (que travava o Pix do lead p/ sempre). Boleto:
+  `funil-<leadId>-boleto`; cartão: `funil-<leadId>-card-<attemptId>` (nonce por tentativa).
+
+**Checkout (estilo Hotmart, 06/2026):** card do produto (capa + nome + autor + preço) → **"Dados
+pessoais"** (e-mail + confirmação [só client] + nome + CPF, pré-populados do lead com fallback nos
+**query params** `?nome&email&telefone` que o `PreCheckoutModal` anexa ao redirect — sobrevive a
+refresh/cookie perdido; `checkout.astro` cria lead novo no SSR se faltar cookie e persiste o contato
+dos params) → formas de pagamento como **radio-cards** (Pix default + cartão; boleto fora da UI). O
+corpo de `POST /api/checkout/{pix,card}` EXIGE `contact {nome,email,cpf}` (`CheckoutContactSchema`):
+o handler atualiza o lead (`document` = CPF sem máscara) e monta o `customer` da cobrança — no Pix
+vira o `devedor` da cob na Efí. **O Pix NÃO gera QR automático**: botão "Gerar código Pix"
+desabilitado até o contato validar (motivos: enviar dados completos à Efí + não criar transação à
+toa); depois do clique vale a máquina de estados de sempre (auto-retry, 409 "aguarde", polling,
+expiração 15min). O cartão usa o MESMO CPF compartilhado (o form não o coleta mais).
 
 **Confirmação de pagamento (duas vias):**
 - **Polling** (`PixCheckout` → `GET /api/checkout/:id` via gateway) — UX/fallback.
@@ -124,7 +140,9 @@ gateway re-entrega) e **best-effort** no polling do Pix (`pixStatus`) e no cart�
 ## Renderização (prerender split)
 
 - **Estáticas (`prerender = true`):** `quiz` (shell; a ilha do quiz busca/cria o lead e
-  roda as 10 perguntas), `obrigado`. Servidas como HTML estático.
+  roda as 10 perguntas), `obrigado`, `politica-de-privacidade` e `termos-de-uso` (conteúdo em
+  `content/legal.ts`; links no Footer novo — logo Sistema Zero + Recursos + voltar-ao-topo +
+  copyright Informach/CNPJ). Servidas como HTML estático.
 - **SSR (`prerender = false`):** `index` (redirect 302 → `/quiz`), `oferta` (nome/preço vêm do
   catálogo em runtime; sem dado por-usuário → `cache-control: public, max-age=60,
   stale-while-revalidate=300`), `resultado`, `checkout`, `admin`, `admin/login`, **todas** `/api/*`,
@@ -180,7 +198,8 @@ gateway re-entrega) e **best-effort** no polling do Pix (`pixStatus`) e no cart�
 **Padrão do monorepo:** 1 Postgres compartilhado (`sistemazero`) com 1 schema por
 serviço (`payments`/`funil`/`auth`). Este package é dono do schema `funil`
 (`pgSchema('funil')` + `schemaFilter:['funil']`). Tabelas: `leads`
-(1 linha/lead, enriquecida a cada resposta; centavos em colunas `integer`), `funnel_events`
+(1 linha/lead, enriquecida a cada resposta; centavos em colunas `integer`; `document` = CPF sem
+máscara coletado nos dados pessoais do checkout), `funnel_events`
 (analytics; conversão por etapa usa `count(distinct lead_id)`), `processed_webhooks` (dedupe).
 Migrations forward-only por `drizzle-kit`, com **journal próprio por pacote**
 (`migrations: { table: 'funil_migrations' }`) no schema `drizzle` — NÃO compartilhe

@@ -177,6 +177,8 @@ export class ProcessPaymentService {
       description: command.description,
       payerMessage: command.payerMessage,
       expiresInSeconds: command.expiresInSeconds,
+      // Devedor opcional da cob (nome + CPF/CNPJ normalizado pelo VO Document).
+      ...(customer ? { customer: { name: customer.name, document: customer.document.value } } : {}),
       idempotencyKey: command.idempotencyKey,
     })
 

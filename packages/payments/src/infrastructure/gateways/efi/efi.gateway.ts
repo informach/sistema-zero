@@ -90,6 +90,15 @@ export class EfiPaymentGateway implements PaymentGateway {
     }
     const message = input.payerMessage ?? input.description
     if (message) body.solicitacaoPagador = message.slice(0, 140)
+    // Devedor opcional (nome + CPF/CNPJ) — a Efí valida o documento. CPF e CNPJ
+    // são mutuamente exclusivos no schema da cob; distinguimos pelo tamanho.
+    if (input.customer) {
+      const digits = input.customer.document.replace(/\D/g, '')
+      body.devedor = {
+        [digits.length === 14 ? 'cnpj' : 'cpf']: digits,
+        nome: input.customer.name,
+      }
+    }
 
     try {
       // PUT /v2/cob/{txid} — txid determinístico.

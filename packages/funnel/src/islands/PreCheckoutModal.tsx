@@ -83,7 +83,14 @@ export default function PreCheckoutModal() {
     setErroGeral(null)
     try {
       await apiPost('/api/contact', parsed.data)
-      window.location.href = '/checkout'
+      // Contato também vai na URL: se o cookie do lead se perder (ou a página for
+      // recarregada num contexto novo), o checkout ainda pré-popula e recupera.
+      const q = new URLSearchParams({
+        nome: parsed.data.nome,
+        email: parsed.data.email,
+        telefone: parsed.data.telefone,
+      })
+      window.location.href = `/checkout?${q.toString()}`
     } catch {
       setErroGeral('Não foi possível continuar. Confira os dados e tente novamente.')
       setSubmitting(false)
