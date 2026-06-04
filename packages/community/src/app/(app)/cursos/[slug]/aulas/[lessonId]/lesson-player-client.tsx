@@ -3,12 +3,13 @@
 import { Button, buttonVariants } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Spinner } from '@sistemazero/ui/spinner'
-import { ArrowLeft, ArrowRight, CheckCircle2, ChevronLeft, Circle, Download } from 'lucide-react'
+import { ArrowLeft, ArrowRight, CheckCircle2, ChevronLeft, Circle } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { CourseRatingFlow, type RatingViewer } from '@/components/community/course-rating-flow'
+import { LessonAttachments } from '@/components/community/lesson-attachments'
 import { LessonBlocks } from '@/components/community/lesson-blocks'
 import {
   type LessonPlayerContextValue,
@@ -201,32 +202,11 @@ export function LessonPlayer({
           <LessonBlocks blocks={lesson.blocks} />
 
           {lesson.attachments.length > 0 ? (
-            <Card className="flex flex-col gap-2 p-4">
-              <h2 className="text-sm font-semibold">Materiais da aula</h2>
-              <ul className="flex flex-col gap-1">
-                {[...lesson.attachments]
-                  .sort((a, b) => a.sortOrder - b.sortOrder)
-                  .map((file) => (
-                    <li key={file.id}>
-                      {/* Rota autenticada: aplica a marca d'água (e-mail do aluno) no download. */}
-                      <a
-                        href={`/api/cursos/${encodeURIComponent(course.slug)}/aulas/${encodeURIComponent(lesson.id)}/anexos/${encodeURIComponent(file.id)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-interactive transition-colors hover:bg-muted/60 hover:text-interactive-hover"
-                      >
-                        <Download className="size-4" />
-                        {file.label}
-                        {file.fileType ? (
-                          <span className="text-xs uppercase text-muted-foreground">
-                            {file.fileType}
-                          </span>
-                        ) : null}
-                      </a>
-                    </li>
-                  ))}
-              </ul>
-            </Card>
+            <LessonAttachments
+              courseSlug={course.slug}
+              lessonId={lesson.id}
+              attachments={lesson.attachments}
+            />
           ) : null}
 
           {/* Ações: concluir + navegação */}

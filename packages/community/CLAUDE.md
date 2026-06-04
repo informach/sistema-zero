@@ -126,7 +126,13 @@ src/
       auth/{otp/request,otp/verify,password/reset-otp}/route.ts   (login/reset por código)
       me/avatar/route.ts    POST multipart → sharp→WebP → R2 → PATCH /auth/me
       cursos/[slug]/aulas/[lessonId]/anexos/[attachmentId]/route.ts
-                            GET download de material c/ MARCA D'ÁGUA do aluno (R2 privado)
+                            GET download de material c/ MARCA D'ÁGUA do aluno (R2 privado).
+                            UI: lesson-attachments.tsx baixa via fetch NA MESMA página
+                            (spinner por item + lista desabilitada; a marca d'água demora
+                            segundos — target=_blank deixava uma guia em branco "morta");
+                            blob → âncora programática c/ filename do Content-Disposition;
+                            anexo EXTERNO (302 cross-origin) → fetch falha no CORS →
+                            fallback window.open
       cursos/[slug]/aulas/[lessonId]/blocos/[blockId]/ebook/route.ts
                             GET PDF do bloco e-book c/ MARCA D'ÁGUA, INLINE (livro 3D consome)
       members/courses/[slug]/rating/route.ts   PUT classificação do curso (Zod espelha o TypeBox)
