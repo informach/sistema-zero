@@ -4,6 +4,7 @@
 // DTO do payments (`AddressSchema`, customer.document, card).
 
 import { z } from 'zod'
+import { CARD_BRANDS, luhnCheck } from './card-utils'
 
 // Reexporta o achatador de erros do contato (mesma utilidade nos forms de checkout).
 export { fieldErrors } from './contact-schema'
@@ -66,13 +67,20 @@ export const BoletoFormSchema = z.object({
 /**
  * Form do cartão NO BROWSER. Os dados sensíveis (PAN/cvv/validade) são validados
  * só aqui e tokenizados via `payment-token-efi` — NUNCA são enviados ao servidor.
+ * As regras que dependem da BANDEIRA (comprimento exato do PAN, CVV 3×4) e de
+ * `now` (validade no passado) ficam no componente — o schema não as conhece.
  */
 export const CardFormSchema = z.object({
   number: z
     .string()
     .trim()
     .transform((v) => v.replace(/\s+/g, ''))
-    .pipe(z.string().regex(/^\d{13,19}$/, 'Número do cartão inválido.')),
+    .pipe(
+      z
+        .string()
+        .regex(/^\d{13,19}$/, 'Número do cartão inválido.')
+        .refine(luhnCheck, 'Número do cartão inválido.'),
+    ),
   holderName: z
     .string()
     .trim()
@@ -103,7 +111,7 @@ export const CardFormSchema = z.object({
  */
 export const CardChargeSchema = z.object({
   token: z.string().trim().min(1).max(255),
-  brand: z.string().trim().min(1).max(40),
+  brand: z.enum(CARD_BRANDS, { error: 'Bandeira do cartão inválida.' }),
   last4: z
     .string()
     .trim()

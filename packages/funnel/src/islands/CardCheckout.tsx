@@ -1,5 +1,17 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { apiGet, apiPost } from '../lib/api-fetch'
+import {
+  brandLabel,
+  type CardBrand,
+  cardLengthFor,
+  cardPlaceholder,
+  cvvLengthFor,
+  isExpiryInFuture,
+  maskCardNumber,
+  maskCpf,
+  normalizeBrand,
+  onlyDigits,
+} from '../lib/card-utils'
 import { CardFormSchema, pathErrors } from '../lib/checkout-schema'
 import { Field, inputClass } from './checkout-fields'
 
@@ -15,6 +27,10 @@ interface InstallmentOption {
 const EFI_ACCOUNT = String(import.meta.env.PUBLIC_EFI_ACCOUNT_IDENTIFIER ?? '')
 const EFI_ENV: 'sandbox' | 'production' =
   import.meta.env.PUBLIC_EFI_SANDBOX === 'false' ? 'production' : 'sandbox'
+
+// Fluxo oficial da Efí (payment-token-efi): isScriptBlocked() no load →
+// verifyCardBrand() DURANTE a digitação → getInstallments() com a bandeira →
+// getPaymentToken() no submit → cobrança one-step no backend (via gateway).
 
 interface ChargeResp {
   paymentId: string
@@ -33,24 +49,6 @@ async function loadEfi() {
   return (await import('payment-token-efi')).default
 }
 
-/** Só dígitos, com teto de tamanho (impede letras/símbolos no campo). */
-function onlyDigits(v: string, max: number): string {
-  return v.replace(/\D/g, '').slice(0, max)
-}
-/** Máscara do cartão: dígitos agrupados de 4 em 4 (máx 19) → "4242 4242 4242 4242". */
-function maskCardNumber(v: string): string {
-  const d = v.replace(/\D/g, '').slice(0, 19)
-  return d.replace(/(.{4})/g, '$1 ').trim()
-}
-/** Máscara de CPF: "000.000.000-00". */
-function maskCpf(v: string): string {
-  const d = v.replace(/\D/g, '').slice(0, 11)
-  if (d.length > 9) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`
-  if (d.length > 6) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6)}`
-  if (d.length > 3) return `${d.slice(0, 3)}.${d.slice(3)}`
-  return d
-}
-
 export default function CardCheckout({
   priceCents,
   couponCode,
@@ -66,35 +64,111 @@ export default function CardCheckout({
   const [cpf, setCpf] = useState('')
   const [installments, setInstallments] = useState(1)
 
-  const [brand, setBrand] = useState<string | null>(null)
+  const [brand, setBrand] = useState<CardBrand | null>(null)
   const [installmentsList, setInstallmentsList] = useState<InstallmentOption[] | null>(null)
+  const [loadingInstallments, setLoadingInstallments] = useState(false)
+  const [scriptBlocked, setScriptBlocked] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [processing, setProcessing] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
   const [paymentId, setPaymentId] = useState<string | null>(null)
 
-  // Ao sair do campo do número: detecta a bandeira e busca as parcelas na Efí.
-  async function loadInstallments() {
-    const digits = number.replace(/\D/g, '')
-    if (digits.length < 13 || !EFI_ACCOUNT) return
+  // Corrida: só a consulta mais recente pode aplicar estado (o SDK da Efí não
+  // expõe AbortController, então o controle é por id monotônico).
+  const reqIdRef = useRef(0)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // No mount: detecta adblock bloqueando o script de fingerprint da Efí
+  // (passo recomendado pela doc — sem ele a tokenização falha no submit).
+  useEffect(() => {
+    if (!EFI_ACCOUNT) return
+    let alive = true
+    loadEfi()
+      .then((EfiPay) => EfiPay.CreditCard.isScriptBlocked())
+      .then((blocked) => {
+        if (alive) setScriptBlocked(blocked)
+      })
+      .catch(() => {
+        /* não confirmou bloqueio → segue habilitado */
+      })
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  // Quando a bandeira muda, reclampa PAN e CVV (ex.: amex tem 15 dígitos e CVV 4).
+  useEffect(() => {
+    setNumber((prev) => maskCardNumber(prev, brand))
+    setCvv((prev) => prev.slice(0, cvvLengthFor(brand)))
+  }, [brand])
+
+  // Cleanup no unmount: cancela o debounce e invalida respostas em voo.
+  useEffect(
+    () => () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+      reqIdRef.current++
+    },
+    [],
+  )
+
+  // Digitação do número: mascara ciente da bandeira e agenda a detecção (fluxo
+  // da doc da Efí: identificar bandeira → consultar parcelas, ainda na digitação).
+  function onNumberChange(raw: string) {
+    const rawDigits = raw.replace(/\D/g, '')
+    const prevDigits = number.replace(/\D/g, '')
+    // Se o BIN (6 primeiros dígitos) mudou, a bandeira conhecida não vale mais —
+    // mascara como desconhecida p/ não cortar dígitos de um cartão colado por cima.
+    const sameBin = rawDigits.slice(0, 6) === prevDigits.slice(0, 6)
+    const effectiveBrand = sameBin ? brand : null
+    setNumber(maskCardNumber(raw, effectiveBrand))
+    if (!sameBin) {
+      setBrand(null)
+      setInstallmentsList(null)
+      setInstallments(1)
+    }
+    scheduleBrandDetection(onlyDigits(raw, cardLengthFor(effectiveBrand)))
+  }
+
+  function scheduleBrandDetection(digits: string) {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    if (digits.length < 6 || !EFI_ACCOUNT) {
+      reqIdRef.current++ // invalida consultas em voo
+      setBrand(null)
+      setInstallmentsList(null)
+      setInstallments(1)
+      return
+    }
+    debounceRef.current = setTimeout(() => void detectBrandAndInstallments(digits), 400)
+  }
+
+  async function detectBrandAndInstallments(digits: string) {
+    const myId = ++reqIdRef.current
     try {
       const EfiPay = await loadEfi()
-      const b = await EfiPay.CreditCard.setCardNumber(digits).verifyCardBrand()
-      if (!b || b === 'undefined' || b === 'unsupported') {
-        setBrand(null)
+      const b = normalizeBrand(await EfiPay.CreditCard.setCardNumber(digits).verifyCardBrand())
+      if (reqIdRef.current !== myId) return // resposta obsoleta — descarta
+      setBrand(b)
+      if (!b) {
         setInstallmentsList(null)
+        setInstallments(1)
         return
       }
-      setBrand(b)
+      setLoadingInstallments(true)
       const res = await EfiPay.CreditCard.setAccount(EFI_ACCOUNT)
         .setEnvironment(EFI_ENV)
         .setBrand(b)
         .setTotal(priceCents)
         .getInstallments()
-      setInstallmentsList('installments' in res ? res.installments : null)
+      if (reqIdRef.current !== myId) return
+      const list = 'installments' in res ? res.installments : null
+      setInstallmentsList(list)
+      // Mantém a parcela escolhida se ainda existir na lista nova; senão, 1x.
+      setInstallments((cur) => (list?.some((i) => i.installment === cur) ? cur : 1))
     } catch {
-      setBrand(null)
-      setInstallmentsList(null)
+      // Falha na consulta de parcelas NÃO trava o pagamento — cai no fallback 1x.
+      if (reqIdRef.current === myId) setInstallmentsList(null)
+    } finally {
+      if (reqIdRef.current === myId) setLoadingInstallments(false)
     }
   }
 
@@ -139,10 +213,19 @@ export default function CardCheckout({
       setErrors(pathErrors(parsed.error))
       return
     }
+    // Regras que o schema não conhece: validade no passado (depende de `now`).
+    if (!isExpiryInFuture(parsed.data.expirationMonth, parsed.data.expirationYear, new Date())) {
+      setErrors({ expirationMonth: 'Cartão vencido.' })
+      return
+    }
     setErrors({})
 
     if (!EFI_ACCOUNT) {
       setErro('Pagamento por cartão indisponível no momento. Use Pix.')
+      return
+    }
+    if (scriptBlocked) {
+      setErro('Desative o bloqueador de anúncios para pagar com cartão, ou use Pix.')
       return
     }
 
@@ -150,9 +233,24 @@ export default function CardCheckout({
     try {
       const EfiPay = await loadEfi()
       const digits = parsed.data.number
-      const cardBrand = brand ?? (await EfiPay.CreditCard.setCardNumber(digits).verifyCardBrand())
-      if (!cardBrand || cardBrand === 'undefined' || cardBrand === 'unsupported') {
+      // SEMPRE re-verifica a bandeira dos dígitos atuais — o estado `brand`
+      // pode estar velho se o número foi editado depois da última detecção.
+      const cardBrand = normalizeBrand(
+        await EfiPay.CreditCard.setCardNumber(digits).verifyCardBrand(),
+      )
+      if (!cardBrand) {
         setErro('Cartão não suportado. Confira o número.')
+        return
+      }
+      // Coerência com a bandeira (o schema só valida formato genérico).
+      if (digits.length !== cardLengthFor(cardBrand)) {
+        setErrors({
+          number: `O número deste cartão deve ter ${cardLengthFor(cardBrand)} dígitos.`,
+        })
+        return
+      }
+      if (parsed.data.cvv.length !== cvvLengthFor(cardBrand)) {
+        setErrors({ cvv: `O CVV deste cartão deve ter ${cvvLengthFor(cardBrand)} dígitos.` })
         return
       }
       const cpfDigits = parsed.data.cpf.replace(/\D/g, '')
@@ -212,16 +310,25 @@ export default function CardCheckout({
       noValidate
       className="flex flex-col gap-4"
     >
+      {scriptBlocked && (
+        <p className="rounded-xl border border-red-400/40 bg-red-400/10 px-3 py-2 text-sm text-red-300">
+          Detectamos um bloqueador de anúncios (adblock). Ele impede a verificação de segurança da
+          operadora do cartão — desative-o para pagar com cartão, ou pague com Pix.
+        </p>
+      )}
       <Field label="Número do cartão" error={errors.number}>
         <input
           className={inputClass}
           inputMode="numeric"
           autoComplete="cc-number"
-          placeholder="0000 0000 0000 0000"
+          placeholder={cardPlaceholder(brand)}
+          maxLength={brand === 'amex' ? 17 : 19}
           value={number}
-          onChange={(e) => setNumber(maskCardNumber(e.target.value))}
-          onBlur={loadInstallments}
+          onChange={(e) => onNumberChange(e.target.value)}
         />
+        {brand && (
+          <span className="mt-1 block text-xs text-muted">Bandeira: {brandLabel(brand)}</span>
+        )}
       </Field>
       <Field label="Nome impresso no cartão" error={errors.holderName}>
         <input
@@ -259,9 +366,9 @@ export default function CardCheckout({
             className={inputClass}
             inputMode="numeric"
             autoComplete="cc-csc"
-            maxLength={4}
+            maxLength={cvvLengthFor(brand)}
             value={cvv}
-            onChange={(e) => setCvv(onlyDigits(e.target.value, 4))}
+            onChange={(e) => setCvv(onlyDigits(e.target.value, cvvLengthFor(brand)))}
           />
         </Field>
       </div>
@@ -282,6 +389,9 @@ export default function CardCheckout({
             <option value={1}>1x de {brl(priceCents)}</option>
           )}
         </select>
+        {loadingInstallments && (
+          <span className="mt-1 block text-xs text-muted">Consultando parcelas…</span>
+        )}
       </Field>
       <Field label="CPF do titular" error={errors.cpf}>
         <input
@@ -293,7 +403,11 @@ export default function CardCheckout({
         />
       </Field>
       {erro && <p className="text-center text-sm text-red-400">{erro}</p>}
-      <button type="submit" disabled={processing} className="btn btn-primary disabled:opacity-60">
+      <button
+        type="submit"
+        disabled={processing || scriptBlocked}
+        className="btn btn-primary disabled:opacity-60"
+      >
         {processing ? 'Processando…' : `Pagar ${brl(priceCents)}`}
       </button>
       <p className="text-center text-xs text-muted">
