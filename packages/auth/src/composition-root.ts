@@ -1,5 +1,6 @@
 import { createLogger, type Logger } from '@sistemazero/core/logging'
 import { BatchGetUsersService } from './application/admin/batch-get-users/batch-get-users.service'
+import { CreateUserService } from './application/admin/create-user/create-user.service'
 import { GetUserService } from './application/admin/get-user/get-user.service'
 import { ListUsersService } from './application/admin/list-users/list-users.service'
 import { UpdateUserService } from './application/admin/update-user/update-user.service'
@@ -153,6 +154,15 @@ export async function createApplication(env: Env): Promise<Application> {
   // Casos de uso do painel admin (gestão de usuários).
   const listUsers = new ListUsersService(users)
   const getUser = new GetUserService(users)
+  // Criação pelo painel (fluxo convite: senha aleatória + e-mail de definição).
+  const createUser = new CreateUserService(
+    users,
+    hasher,
+    createPasswordToken,
+    messaging,
+    { communityUrl: env.COMMUNITY_URL },
+    logger,
+  )
   const updateUser = new UpdateUserService(users, refreshTokens, logger)
   const batchGetUsers = new BatchGetUsersService(users)
 
@@ -176,6 +186,7 @@ export async function createApplication(env: Env): Promise<Application> {
     ensureBuyer,
     listUsers,
     getUser,
+    createUser,
     updateUser,
     batchGetUsers,
   })

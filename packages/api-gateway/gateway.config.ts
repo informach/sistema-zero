@@ -480,6 +480,18 @@ const config: GatewayConfigInput = {
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
+    // Criação pelo painel (fluxo CONVITE: senha aleatória + e-mail de definição).
+    // Mesmo path literal do list — o matcher distingue pelo MÉTODO. Escrita →
+    // superadmin/admin (o auth ainda barra admin criando admin/superadmin).
+    {
+      id: 'auth-admin-user-create',
+      methods: ['POST'],
+      pathPattern: '/auth/admin/users',
+      service: 'auth',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+    },
     {
       id: 'auth-admin-user-get',
       methods: ['GET'],

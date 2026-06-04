@@ -1,12 +1,14 @@
 'use client'
 
-import { Pencil, Search } from 'lucide-react'
+import { GraduationCap, KeyRound, Pencil, Plus, Search } from 'lucide-react'
+import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
+import { GrantAccessDialog } from '@/components/admin/grant-access-dialog'
 import { StatusBadge } from '@/components/admin/status-badge'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Dialog } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
@@ -54,6 +56,22 @@ interface FormState {
   status: string
 }
 
+interface CreateFormState {
+  firstName: string
+  lastName: string
+  email: string
+  phone: string
+  role: string
+}
+
+const EMPTY_CREATE: CreateFormState = {
+  firstName: '',
+  lastName: '',
+  email: '',
+  phone: '',
+  role: 'customer',
+}
+
 export function UsersClient({ currentUser }: { currentUser: { id: string; role: string } }) {
   const [items, setItems] = useState<UserView[]>([])
   const [total, setTotal] = useState(0)
@@ -73,6 +91,12 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
     status: 'active',
   })
   const [saving, setSaving] = useState(false)
+
+  const [createOpen, setCreateOpen] = useState(false)
+  const [createForm, setCreateForm] = useState<CreateFormState>(EMPTY_CREATE)
+  const [creating, setCreating] = useState(false)
+
+  const [grantUserId, setGrantUserId] = useState<string | null>(null)
 
   const isSuper = currentUser.role === 'superadmin'
   const isAdmin = currentUser.role === 'admin'
@@ -158,6 +182,44 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
     }
   }
 
+  async function create() {
+    if (!createForm.firstName.trim() || !createForm.lastName.trim() || !createForm.email.trim()) {
+      toast.error('Preencha nome, sobrenome e e-mail.')
+      return
+    }
+    setCreating(true)
+    try {
+      const res = await apiSend<{ user: UserView; inviteSent: boolean }>(
+        '/api/admin/users',
+        'POST',
+        {
+          email: createForm.email.trim(),
+          firstName: createForm.firstName.trim(),
+          lastName: createForm.lastName.trim(),
+          phone: createForm.phone.trim() ? createForm.phone.trim() : null,
+          role: createForm.role,
+        },
+      )
+      if (res.inviteSent) {
+        toast.success('Usuário criado. Convite enviado por e-mail.')
+      } else {
+        toast.warning(
+          'Usuário criado, mas o convite NÃO foi enviado — peça para usar "esqueci minha senha".',
+        )
+      }
+      setCreateOpen(false)
+      setCreateForm(EMPTY_CREATE)
+      await load()
+    } catch (err) {
+      const e = err as ApiError
+      toast.error(
+        e.status === 409 ? 'E-mail já cadastrado.' : (e.message ?? 'Não foi possível criar.'),
+      )
+    } finally {
+      setCreating(false)
+    }
+  }
+
   const isSelf = editing?.id === currentUser.id
 
   return (
@@ -165,6 +227,13 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
       <AdminHeader
         title="Usuários"
         description="Gerencie contas, papéis e status (suspender/bloquear) da base."
+        action={
+          canWrite ? (
+            <Button onClick={() => setCreateOpen(true)}>
+              <Plus className="size-4" /> Novo usuário
+            </Button>
+          ) : undefined
+        }
       />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -256,13 +325,30 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
                   </TableCell>
                   <TableCell className="text-muted-foreground">{formatDate(u.createdAt)}</TableCell>
                   <TableCell className="text-right">
-                    {canEdit(u) ? (
-                      <Button variant="ghost" size="sm" onClick={() => openEdit(u)}>
-                        <Pencil className="size-4" /> Editar
-                      </Button>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">—</span>
-                    )}
+                    <div className="flex justify-end gap-1">
+                      {canWrite ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          title="Conceder acesso a conteúdo (cortesia/teste)"
+                          onClick={() => setGrantUserId(u.id)}
+                        >
+                          <KeyRound className="size-4" /> Conceder acesso
+                        </Button>
+                      ) : null}
+                      <Link
+                        href={`/admin/membros/${u.id}`}
+                        title="Ver matrículas do usuário"
+                        className={buttonVariants({ variant: 'ghost', size: 'sm' })}
+                      >
+                        <GraduationCap className="size-4" /> Matrículas
+                      </Link>
+                      {canEdit(u) ? (
+                        <Button variant="ghost" size="sm" onClick={() => openEdit(u)}>
+                          <Pencil className="size-4" /> Editar
+                        </Button>
+                      ) : null}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
@@ -359,6 +445,79 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
           ) : null}
         </div>
       </Dialog>
+
+      <Dialog
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        title="Novo usuário"
+        description="Convite por e-mail: a pessoa recebe um link para definir a própria senha."
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setCreateOpen(false)} disabled={creating}>
+              Cancelar
+            </Button>
+            <Button onClick={create} disabled={creating}>
+              {creating ? <Spinner /> : null}
+              Criar e enviar convite
+            </Button>
+          </>
+        }
+      >
+        <div className="flex flex-col gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Nome" htmlFor="c-firstName">
+              <Input
+                id="c-firstName"
+                value={createForm.firstName}
+                onChange={(e) => setCreateForm((f) => ({ ...f, firstName: e.target.value }))}
+              />
+            </Field>
+            <Field label="Sobrenome" htmlFor="c-lastName">
+              <Input
+                id="c-lastName"
+                value={createForm.lastName}
+                onChange={(e) => setCreateForm((f) => ({ ...f, lastName: e.target.value }))}
+              />
+            </Field>
+          </div>
+          <Field label="E-mail" htmlFor="c-email" hint="Destino do convite de definição de senha.">
+            <Input
+              id="c-email"
+              type="email"
+              value={createForm.email}
+              onChange={(e) => setCreateForm((f) => ({ ...f, email: e.target.value }))}
+            />
+          </Field>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Telefone" htmlFor="c-phone" hint="Opcional.">
+              <Input
+                id="c-phone"
+                value={createForm.phone}
+                onChange={(e) => setCreateForm((f) => ({ ...f, phone: e.target.value }))}
+              />
+            </Field>
+            <Field label="Papel" htmlFor="c-role">
+              <Select
+                id="c-role"
+                value={createForm.role}
+                onChange={(e) => setCreateForm((f) => ({ ...f, role: e.target.value }))}
+              >
+                {assignableRoles.map((r) => (
+                  <option key={r} value={r}>
+                    {ROLE_LABELS[r]}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+          </div>
+        </div>
+      </Dialog>
+
+      <GrantAccessDialog
+        open={grantUserId !== null}
+        userId={grantUserId ?? ''}
+        onClose={() => setGrantUserId(null)}
+      />
     </div>
   )
 }

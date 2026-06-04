@@ -5,13 +5,13 @@ import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
+import { GrantAccessDialog } from '@/components/admin/grant-access-dialog'
 import { StatusBadge } from '@/components/admin/status-badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Dialog } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Field } from '@/components/ui/label'
-import { Select } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
 import {
   Table,
@@ -31,14 +31,6 @@ const SOURCE_LABELS: Record<string, string> = {
   manual: 'Manual',
 }
 
-interface GrantForm {
-  mode: 'offer' | 'course'
-  ref: string
-  expiresAt: string
-}
-
-const EMPTY_GRANT: GrantForm = { mode: 'course', ref: '', expiresAt: '' }
-
 export function MemberDetailClient({
   userId,
   currentRole,
@@ -52,8 +44,6 @@ export function MemberDetailClient({
   const [loading, setLoading] = useState(true)
 
   const [grantOpen, setGrantOpen] = useState(false)
-  const [grantForm, setGrantForm] = useState<GrantForm>(EMPTY_GRANT)
-  const [saving, setSaving] = useState(false)
 
   const [extendOpen, setExtendOpen] = useState(false)
   const [extendTarget, setExtendTarget] = useState<AdminEntitlementView | null>(null)
@@ -80,33 +70,6 @@ export function MemberDetailClient({
     if (!date) return null
     const d = new Date(date)
     return Number.isNaN(d.getTime()) ? null : d.toISOString()
-  }
-
-  async function grant() {
-    const ref = grantForm.ref.trim()
-    if (!ref) {
-      toast.error(
-        grantForm.mode === 'offer' ? 'Informe o slug/id da oferta.' : 'Informe o slug do curso.',
-      )
-      return
-    }
-    setSaving(true)
-    try {
-      const expiresAt = isoOrNull(grantForm.expiresAt)
-      const body =
-        grantForm.mode === 'offer'
-          ? { mode: 'offer', userId, offerRef: ref, expiresAt }
-          : { mode: 'course', userId, courseRef: ref, expiresAt }
-      await apiSend('/api/members/entitlements', 'POST', body)
-      toast.success('Acesso concedido.')
-      setGrantOpen(false)
-      setGrantForm(EMPTY_GRANT)
-      await load()
-    } catch (err) {
-      toast.error((err as ApiError).message ?? 'Não foi possível conceder o acesso.')
-    } finally {
-      setSaving(false)
-    }
   }
 
   async function manage(id: string, action: 'revoke' | 'expire' | 'extend', expiresAt?: string) {
@@ -286,56 +249,12 @@ export function MemberDetailClient({
         </>
       )}
 
-      <Dialog
+      <GrantAccessDialog
         open={grantOpen}
+        userId={userId}
         onClose={() => setGrantOpen(false)}
-        title="Conceder acesso manual"
-        description="Cortesia/suporte. Por oferta (resolve no catálogo) ou direto por curso."
-        footer={
-          <>
-            <Button variant="outline" onClick={() => setGrantOpen(false)} disabled={saving}>
-              Cancelar
-            </Button>
-            <Button onClick={grant} disabled={saving}>
-              {saving ? <Spinner /> : null}
-              Conceder
-            </Button>
-          </>
-        }
-      >
-        <div className="flex flex-col gap-4">
-          <Field label="Modo" htmlFor="mode">
-            <Select
-              id="mode"
-              value={grantForm.mode}
-              onChange={(e) =>
-                setGrantForm((f) => ({ ...f, mode: e.target.value as GrantForm['mode'] }))
-              }
-            >
-              <option value="course">Por curso (slug)</option>
-              <option value="offer">Por oferta do catálogo</option>
-            </Select>
-          </Field>
-          <Field
-            label={grantForm.mode === 'offer' ? 'Oferta (slug ou id)' : 'Curso (slug)'}
-            htmlFor="ref"
-          >
-            <Input
-              id="ref"
-              value={grantForm.ref}
-              onChange={(e) => setGrantForm((f) => ({ ...f, ref: e.target.value }))}
-            />
-          </Field>
-          <Field label="Validade" htmlFor="exp" hint="Opcional. Vazio = acesso vitalício.">
-            <Input
-              id="exp"
-              type="date"
-              value={grantForm.expiresAt}
-              onChange={(e) => setGrantForm((f) => ({ ...f, expiresAt: e.target.value }))}
-            />
-          </Field>
-        </div>
-      </Dialog>
+        onGranted={load}
+      />
 
       <Dialog
         open={extendOpen}

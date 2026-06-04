@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { listUsers } from '@/server/users'
+import { createUser, listUsers } from '@/server/users'
 
 function num(value: string | null): number | undefined {
   if (!value) return undefined
@@ -16,5 +16,11 @@ export async function GET(req: Request) {
     limit: num(searchParams.get('limit')),
     offset: num(searchParams.get('offset')),
   })
+  return NextResponse.json(body, { status })
+}
+
+export async function POST(req: Request) {
+  const json = await req.json().catch(() => null)
+  const { status, body } = await createUser(json)
   return NextResponse.json(body, { status })
 }

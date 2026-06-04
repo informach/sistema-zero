@@ -17,6 +17,17 @@ export function listUsers(p: ListUsersParams): Promise<GatewayResponse<Paginated
   })
 }
 
+/**
+ * Cria um usuário pelo painel (fluxo CONVITE — sem senha; o auth gera uma aleatória
+ * e envia o e-mail de definição): `POST /auth/admin/users`. `inviteSent: false`
+ * sinaliza que a conta foi criada mas o e-mail falhou (reenvie via "esqueci a senha").
+ */
+export function createUser(
+  body: unknown,
+): Promise<GatewayResponse<{ user: UserView; inviteSent: boolean }>> {
+  return gatewayFetch('/auth/admin/users', { method: 'POST', body })
+}
+
 /** Edita status/papel/perfil de um usuário (admin): `PATCH /auth/admin/users/:id`. */
 export function updateUser(
   id: string,

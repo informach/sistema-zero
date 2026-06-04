@@ -115,6 +115,18 @@ export const BatchGetUsersBody = t.Object({
   ids: t.Array(t.String({ minLength: 1, maxLength: 64 }), { minItems: 1, maxItems: 100 }),
 })
 
+/**
+ * Corpo de `POST /auth/admin/users` (criação pelo painel — fluxo CONVITE).
+ * SEM senha: o serviço gera uma aleatória e envia o e-mail de definição.
+ */
+export const CreateUserBody = t.Object({
+  email: t.String({ minLength: 3, maxLength: 320, pattern: EMAIL_PATTERN }),
+  firstName: t.String({ minLength: 1, maxLength: 100 }),
+  lastName: t.String({ minLength: 1, maxLength: 100 }),
+  phone: t.Optional(t.Union([t.String({ maxLength: 20 }), t.Null()])),
+  role: roleLiteral,
+})
+
 /** Corpo de `PATCH /auth/admin/users/:id`. Todos os campos são opcionais (edição parcial). */
 export const UpdateUserBody = t.Object({
   role: t.Optional(roleLiteral),

@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { BatchGetUsersService } from '../../src/application/admin/batch-get-users/batch-get-users.service'
+import { CreateUserService } from '../../src/application/admin/create-user/create-user.service'
 import { GetUserService } from '../../src/application/admin/get-user/get-user.service'
 import { ListUsersService } from '../../src/application/admin/list-users/list-users.service'
 import { UpdateUserService } from '../../src/application/admin/update-user/update-user.service'
@@ -97,6 +98,14 @@ function buildApp() {
   })
   const listUsers = new ListUsersService(users)
   const getUser = new GetUserService(users)
+  const createUser = new CreateUserService(
+    users,
+    fakeHasher,
+    createPasswordToken,
+    messaging,
+    { communityUrl: COMMUNITY_URL },
+    silentLogger,
+  )
   const updateUser = new UpdateUserService(users, refreshTokens, silentLogger)
   const batchGetUsers = new BatchGetUsersService(users)
 
@@ -128,6 +137,7 @@ function buildApp() {
     ensureBuyer,
     listUsers,
     getUser,
+    createUser,
     updateUser,
     batchGetUsers,
   })

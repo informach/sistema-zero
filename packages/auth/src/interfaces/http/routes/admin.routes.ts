@@ -1,17 +1,19 @@
 import { ForbiddenError, UnauthorizedError } from '@sistemazero/core/http'
 import { Elysia } from 'elysia'
 import type { BatchGetUsersService } from '../../../application/admin/batch-get-users/batch-get-users.service'
+import type { CreateUserService } from '../../../application/admin/create-user/create-user.service'
 import type { GetUserService } from '../../../application/admin/get-user/get-user.service'
 import type { ListUsersService } from '../../../application/admin/list-users/list-users.service'
 import type { UpdateUserService } from '../../../application/admin/update-user/update-user.service'
 import { UserNotFoundError } from '../../../domain/user/user.errors'
 import type { UserRole } from '../../../domain/user/user.role'
 import { type GatewayActor, resolveGatewayActor } from '../auth'
-import { BatchGetUsersBody, ListUsersQuery, UpdateUserBody } from '../dtos'
+import { BatchGetUsersBody, CreateUserBody, ListUsersQuery, UpdateUserBody } from '../dtos'
 
 export interface AdminRoutesDeps {
   listUsers: ListUsersService
   getUser: GetUserService
+  createUser: CreateUserService
   updateUser: UpdateUserService
   batchGetUsers: BatchGetUsersService
 }
@@ -42,6 +44,23 @@ export function adminRoutes(deps: AdminRoutesDeps) {
         })
       },
       { query: ListUsersQuery },
+    )
+    .post(
+      '/users',
+      async ({ headers, body, set }) => {
+        const actor = requireActor(headers, WRITE_ROLES)
+        const result = await deps.createUser.execute({
+          actor: { id: actor.id, role: actor.role },
+          email: body.email,
+          firstName: body.firstName,
+          lastName: body.lastName,
+          phone: body.phone,
+          role: body.role,
+        })
+        set.status = 201
+        return result
+      },
+      { body: CreateUserBody },
     )
     .post(
       '/users/batch',

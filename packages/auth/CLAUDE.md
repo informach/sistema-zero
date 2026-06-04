@@ -116,14 +116,22 @@ src/
   auth; o `/me` precisa do Bearer passando direto).
 - **Rotas admin `/auth/admin/users*`** (gestão de usuários pelo painel) são a
   EXCEÇÃO: o gateway as protege com **JWT + RBAC** (`GET` listar/detalhe + `POST
-  .../batch` hidratação em lote por ids → superadmin/admin/staff; `PATCH` editar →
-  superadmin/admin) e injeta `X-Auth-User-*` (NÃO `passthrough`). O `batch`
-  (`BatchGetUsersService` + `UserRepository.listByIds`, ≤100 ids) hidrata identidade
+  .../batch` hidratação em lote por ids → superadmin/admin/staff; `POST /auth/admin/users`
+  criar + `PATCH` editar → superadmin/admin) e injeta `X-Auth-User-*` (NÃO `passthrough`).
+  O `batch` (`BatchGetUsersService` + `UserRepository.listByIds`, ≤100 ids) hidrata identidade
   p/ a área de membros (que lista `userId`s) — evita N+1. O serviço lê o ator desses
   headers (`resolveGatewayActor`),
   re-checa papel/status (defesa em profundidade) e aplica os GUARDS hierárquicos:
   ninguém altera o próprio papel/status; `admin` não toca/promove a admin/superadmin;
   suspender/bloquear revoga as sessões do alvo. Concorrência otimista por `version`.
+- **Criação pelo painel (`POST /auth/admin/users`, fluxo CONVITE):**
+  `CreateUserService` cria a conta **`active`** com **senha aleatória** de 32 bytes
+  hasheada (impossível de usar; `active` é obrigatório — o token de senha exige
+  `isActive()`), `signupSource: 'admin'`, e envia o e-mail **`welcome`** (mesmo
+  template do 1º acesso pós-compra) com link `${COMMUNITY_URL}/redefinir-senha?token=...`
+  — envio **best-effort** (falha NÃO desfaz a criação; resposta `{ user, inviteSent }`
+  sinaliza). Guards: `admin` só cria staff/customer; `superadmin` qualquer papel.
+  E-mail duplicado → 409.
 
 ## Dev local
 
@@ -140,9 +148,7 @@ src/
 ## Pontos em aberto (futuro)
 
 Verificação de e-mail (status `pending`) · troca de e-mail com verificação (hoje o
-e-mail é IMUTÁVEL no self-service — vínculo com as compras) · 2FA · **criação** de
-usuário pelo admin (a moderação — listar/editar status/papel/perfil via
-`/auth/admin/users*` — já existe) · lockout por conta.
+e-mail é IMUTÁVEL no self-service — vínculo com as compras) · 2FA · lockout por conta.
 
 ## Checklist antes de finalizar
 
