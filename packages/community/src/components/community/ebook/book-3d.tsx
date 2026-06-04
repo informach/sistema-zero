@@ -27,6 +27,9 @@ const TURN_CURL = 0.18
 const TURN_MS = 600
 /** Contracapa (lado de fora do livro fechado no fim) — tom escuro do tema. */
 const BACK_COVER_COLOR = '#15181e'
+/** Espaçamento entre folhas na pilha — MAIOR que a espessura (faces exatamente
+ * coladas tremem por z-fighting). */
+const SHEET_GAP = PAGE_DEPTH * 1.4
 
 /** Geometria compartilhada por todas as folhas (skinIndex/skinWeight ao longo de X). */
 function createPageGeometry(height: number): THREE.BoxGeometry {
@@ -163,8 +166,14 @@ function Sheet({ number, totalSheets, page, geometry, front, back, onFlip }: She
     }
   })
 
-  // Empilhamento: folhas não viradas descem (z-) na ordem; viradas sobem.
-  const z = -number * PAGE_DEPTH + page * PAGE_DEPTH
+  // Empilhamento: cada pilha desce (z−) conforme a folha afunda nela; à
+  // esquerda (viradas) a mais RECENTE (number = page−1) fica POR CIMA — a
+  // fórmula antiga `(page − number) · d` invertia a pilha esquerda (a capa
+  // cobria a página atual a partir de ~3 folhas viradas). O topo esquerdo fica
+  // 2 gaps ACIMA do direito: a folha em virada nunca colide com o novo topo
+  // direito (as pilhas não se sobrepõem em x, o degrau na lombada é invisível).
+  // `SHEET_GAP > espessura` deixa respiro entre faces (coplanares = z-fighting).
+  const z = (turned ? number - page + 3 : page - number) * SHEET_GAP
 
   return (
     <group
