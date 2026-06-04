@@ -52,7 +52,8 @@
     "dev:community": "bun run --filter @sistemazero/community dev",
     "build:community": "cd packages/community && bun run build",
     "start:community": "bun run --filter @sistemazero/community start",
-    "typecheck:community": "bun run --filter @sistemazero/community typecheck"
+    "typecheck:community": "bun run --filter @sistemazero/community typecheck",
+    "test:community": "bun run --filter @sistemazero/community test"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.16"

@@ -183,6 +183,9 @@ Da raiz: `bun run dev:community`, `build:community`, `typecheck:community`.
    <senha> --role customer` e matrícula:
    `bun run db:members:seed --grant-user <userId>` (curso "No Comando da IA").
 4. `bun run dev:community` → `http://localhost:3007` → login → home → curso → aula.
+5. Materiais c/ marca d'água: exige `R2_*` + `R2_PRIVATE_BUCKET=testes-privado` no `.env`
+   (bucket já criado na Cloudflare, 04/06/2026; o MESMO de `R2_PRIVATE_BUCKET` do admin —
+   admin escreve, community lê; `packages/admin/scripts/verify-private-bucket.ts` valida o acesso).
 
 ## Contratos consumidos (via gateway)
 
@@ -227,7 +230,7 @@ Da raiz: `bun run dev:community`, `build:community`, `typecheck:community`.
 
 ## Checklist antes de finalizar
 
-- [ ] `bun run typecheck` limpo · `bun run check` (Biome) limpo · `bun run build` passa.
+- [ ] `bun run typecheck` limpo · `bun test` verde (sandbox off) · `bun run check` (Biome) limpo · `bun run build` passa.
 - [ ] Nenhum `server/*`/`env` importado por Client Component. Sem `any` novo.
 - [ ] Bloco de aula novo? Renderer seguro (sem `src` cru em iframe; sandbox sem allow-same-origin).
 - [ ] Novo endpoint do gateway? Atualizou `src/server/*` + tipos + este `CLAUDE.md`.

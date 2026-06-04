@@ -49,7 +49,7 @@ Gateway. Cada serviço é um pacote em `packages/*`, deployável de forma indepe
 | [`@sistemazero/members`](packages/members) | 3004 | Área de membros: matrícula/entitlement + cursos/aulas (blocos polimórficos) + progresso — DDD/Hexagonal |
 | [`@sistemazero/admin`](packages/admin) | 3005 | Painel admin (Next.js 16, BFF via gateway): catálogo, usuários, pagamentos, membros |
 | [`@sistemazero/messaging`](packages/messaging) | 3006 | Mensageria transacional: e-mail (SendGrid) + WhatsApp (Evolution), templates no banco — DDD/Hexagonal |
-| [`@sistemazero/community`](packages/community) | 3007 | Área do aluno (Next.js 16, BFF via gateway): login (senha/OTP), cursos/player, catálogo "todos os cursos", perfil c/ foto, compras |
+| [`@sistemazero/community`](packages/community) | 3007 | Área do aluno (Next.js 16, BFF via gateway): login (senha/OTP), cursos/player, catálogo "todos os cursos", materiais c/ marca d'água do aluno, perfil c/ foto, compras |
 | [`@sistemazero/funnel`](packages/funnel) | 4321 | Funil de vendas (Astro 6 + ilhas React): quiz → vendas → checkout (Pix/cartão/boleto) → admin |
 | [`@sistemazero/core`](packages/core) | — | Lib compartilhada (security/logging/errors/result/http), sem framework |
 | [`@sistemazero/tui`](packages/tui) | — | UI de terminal (React + OpenTUI) |
@@ -94,6 +94,10 @@ Segredos que precisam **bater entre serviços** (ver os `.env.example`):
 `MEMBERS_INTERNAL_TOKEN` (gateway) = `INTERNAL_API_TOKEN` (members),
 `MESSAGING_INTERNAL_TOKEN` (gateway = messaging) e `AUTH_HMAC_SECRET`/
 `AUTH_INTERNAL_TOKEN` (auth = gateway — e-mail de reset + rotas internas S2S).
+Config que precisa **bater entre admin e community**: as envs `R2_*` (mesmo R2),
+incluindo `R2_PRIVATE_BUCKET` (bucket **privado** dos materiais didáticos — o admin
+escreve, o community lê e serve com marca d'água do aluno; dev `testes-privado` ·
+prod `comunidade-sistema-zero-privado`).
 
 ## Subir tudo (dev)
 
@@ -116,7 +120,7 @@ Aceita subconjunto (`bun run dev:up auth payments`). Só para ambiente local.
 |---|---|
 | `bun run dev:up` / `dev:down` / `dev:restart` / `dev:status` / `dev:logs <svc>` | orquestrador de dev (sobe/para/reinicia tudo em background) |
 | `bun run dev:gateway` / `dev:payments` / `dev:auth` / `dev:catalog` / `dev:members` / `dev:messaging` / `dev:funnel` / `dev:admin` / `dev:community` | sobe cada serviço |
-| `bun run test:gateway` / `test:payments` / `test:auth` / `test:catalog` / `test:members` / `test:messaging` / `test:funnel` | testes por serviço |
+| `bun run test:gateway` / `test:payments` / `test:auth` / `test:catalog` / `test:members` / `test:messaging` / `test:funnel` / `test:community` | testes por serviço |
 | `bun run build:admin` / `build:community` / `build:funnel` · `typecheck:admin` / `typecheck:community` | build/typecheck dos frontends |
 | `bun run db:auth:migrate` / `db:funnel:migrate` / `db:catalog:migrate` / `db:members:migrate` / `db:messaging:migrate` / `db:catalog:seed` / `db:members:seed` | migrations + seed (atalhos) |
 | `bun run check` / `check:fix` | Biome (lint + format) no monorepo |

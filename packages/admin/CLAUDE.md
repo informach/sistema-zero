@@ -108,7 +108,11 @@ use-video-upload, video-thumbnail-uploader, vimeo-preview). `next.config.ts` tem
 503 `MEDIA_NOT_CONFIGURED` amigável, nunca quebra o boot. Buckets R2: dev = `testes` (público via
 r2.dev), prod = `comunidade-sistema-zero` (`cdn.sistemazero.com.br`); **anexos** vão para o bucket
 PRIVADO `R2_PRIVATE_BUCKET` (dev = `testes-privado` · prod = `comunidade-sistema-zero-privado`,
-SEM acesso público — mesmas credenciais).
+SEM acesso público — mesmas credenciais; criados via wrangler em 04/06/2026, o MESMO token S3
+acessa os quatro). `scripts/verify-private-bucket.ts` (`bun scripts/verify-private-bucket.ts`)
+valida put/get/delete no bucket privado com as envs do `.env` — útil ao configurar um host novo.
+⚠️ Pendente em PROD: `R2_PRIVATE_BUCKET=comunidade-sistema-zero-privado` nas envs dos hosts do
+admin E do community.
 
 ## Invariantes (NÃO quebrar)
 
