@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -66,8 +67,29 @@ export function LoginForm() {
   return (
     <Card className="w-full max-w-sm">
       <CardHeader>
-        <CardTitle className="brand-gradient-text text-xl">Sistema Zero — Admin</CardTitle>
-        <CardDescription>Entre com sua conta de administrador.</CardDescription>
+        {/* Logo dual-theme (mesmos SVGs da referência/community): dark ⇄ light */}
+        <div className="flex justify-center pb-1">
+          <Image
+            src="/logo_dark.svg"
+            width={515}
+            height={75}
+            alt="Sistema Zero"
+            className="hidden h-auto w-[220px] max-w-full dark:block"
+            priority
+          />
+          <Image
+            src="/logo_white.svg"
+            width={515}
+            height={72}
+            alt="Sistema Zero"
+            className="block h-auto w-[220px] max-w-full dark:hidden"
+            priority
+          />
+        </div>
+        <CardTitle className="sr-only">Sistema Zero — Admin</CardTitle>
+        <CardDescription className="text-center">
+          Entre com sua conta de administrador.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
