@@ -2,11 +2,13 @@ import { describe, expect, test } from 'bun:test'
 import { makeFulfill } from '../../src/server/fulfillment'
 import { makeGrantMembers } from '../../src/server/members-grant'
 import { handlePaymentWebhook } from '../../src/server/webhook'
+import { makeSendWelcome } from '../../src/server/welcome-email'
 import { createFakeRepo } from '../fakes/fake-db'
 import { createFakeGateway } from '../fakes/fake-gateway'
 
 const TOKEN = 'token-interno-do-gateway'
 const OFFER = 'no-comando-da-ia'
+const COMMUNITY_URL = 'http://localhost:3007'
 
 function req(
   body: unknown,
@@ -181,6 +183,55 @@ describe('POST /api/webhooks/payments', () => {
     expect(events.filter((e) => e.eventName === 'pagamento_confirmado')).toHaveLength(1)
     // Registro idempotente: a 2ª entrega não registra de novo (buyer_registered_at já set).
     expect(gw.calls.register).toHaveLength(1)
+  })
+
+  test('payment.paid dispara o welcome (token + e-mail) após o grant', async () => {
+    const { repo, leads } = createFakeRepo()
+    const gw = createFakeGateway()
+    const { id } = await repo.createLead()
+    await repo.updateLead(id, {
+      nome: 'Lia Reis',
+      email: 'lia@example.com',
+      telefone: '11944443333',
+    })
+    await repo.setPayment(id, 'pay-1')
+
+    const res = await handlePaymentWebhook(
+      req(
+        { id: 'd1', event: 'payment.paid', data: { paymentId: 'pay-1' } },
+        { token: TOKEN, deliveryId: 'd1' },
+      ),
+      {
+        ...deps(repo, gw),
+        sendWelcome: makeSendWelcome({ gateway: gw.gateway, communityUrl: COMMUNITY_URL }),
+      },
+    )
+    expect(res.status).toBe(200)
+    expect(gw.calls.passwordTokens).toEqual(['lia@example.com'])
+    expect(gw.calls.messages).toHaveLength(1)
+    expect(gw.calls.messages[0]?.idempotencyKey).toBe(`welcome-${leads.get(id)?.id}`)
+  })
+
+  test('falha no welcome NÃO muda o 200 do webhook (best-effort) e a entrega é marcada', async () => {
+    const { repo } = createFakeRepo()
+    const gw = createFakeGateway()
+    gw.setSendMessageStatus(502)
+    const { id } = await repo.createLead()
+    await repo.updateLead(id, { nome: 'Gil', email: 'gil@example.com', telefone: '11933332222' })
+    await repo.setPayment(id, 'pay-1')
+
+    const res = await handlePaymentWebhook(
+      req(
+        { id: 'd1', event: 'payment.paid', data: { paymentId: 'pay-1' } },
+        { token: TOKEN, deliveryId: 'd1' },
+      ),
+      {
+        ...deps(repo, gw),
+        sendWelcome: makeSendWelcome({ gateway: gw.gateway, communityUrl: COMMUNITY_URL }),
+      },
+    )
+    expect(res.status).toBe(200)
+    expect(await repo.isWebhookProcessed('d1')).toBe(true)
   })
 
   test('entrega duplicada (mesmo x-delivery-id) não escreve de novo', async () => {

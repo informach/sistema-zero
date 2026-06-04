@@ -13,6 +13,8 @@ export interface WebhookDeps {
   redeemCoupon?: (couponCode: string | null) => Promise<void>
   /** Concede o acesso na área de membros (após o registro do comprador). Opcional. */
   grantMembers?: (lead: Lead) => Promise<void>
+  /** E-mail de boas-vindas + link de definir senha (best-effort; NUNCA lança). Opcional. */
+  sendWelcome?: (lead: Lead) => Promise<void>
 }
 
 /**
@@ -75,16 +77,30 @@ export async function handlePaymentWebhook(request: Request, deps: WebhookDeps):
       // Concede o acesso na área de membros. Roda DEPOIS do registro (relê o lead p/
       // pegar o `buyer_user_id` recém-gravado). Falha → 502 sem marcar a entrega como
       // processada → o gateway re-entrega e a concessão (idempotente) é retentada.
-      if (deps.grantMembers) {
+      if (deps.grantMembers || deps.sendWelcome) {
         const registered = await deps.repo.getLead(lead.id)
         if (registered?.buyerUserId) {
-          try {
-            await deps.grantMembers(registered)
-          } catch (err) {
-            if (err instanceof GrantRetryError) {
-              return jsonError('Concessão de acesso pendente; reentregar.', 502, 'GRANT_RETRY')
+          if (deps.grantMembers) {
+            try {
+              await deps.grantMembers(registered)
+            } catch (err) {
+              if (err instanceof GrantRetryError) {
+                return jsonError('Concessão de acesso pendente; reentregar.', 502, 'GRANT_RETRY')
+              }
+              throw err
             }
-            throw err
+          }
+
+          // Boas-vindas + link de definir senha (1º acesso ao app community).
+          // BEST-EFFORT: o handler já engole falhas (e o cinto extra aqui garante
+          // que o e-mail NUNCA muda o status do webhook); idempotente no replay
+          // via Idempotency-Key `welcome-<leadId>` (o messaging deduplica).
+          if (deps.sendWelcome) {
+            try {
+              await deps.sendWelcome(registered)
+            } catch {
+              // nunca propaga — e-mail não é crítico (fallback: "esqueci minha senha")
+            }
           }
         }
       }

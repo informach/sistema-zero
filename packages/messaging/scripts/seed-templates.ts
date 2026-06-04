@@ -27,6 +27,14 @@ const seeds = [
     body: 'Olá {{nome}}! 👋 Seu acesso: {{link}}',
     variables: ['nome', 'link'],
   },
+  {
+    key: 'password-reset',
+    channel: 'email' as const,
+    name: 'Redefinição de senha (e-mail)',
+    subject: 'Redefina sua senha',
+    body: '<p>Olá {{nome}},</p><p>Para definir ou redefinir sua senha, acesse: <a href="{{link}}">{{link}}</a></p><p>O link expira em 1 hora e só pode ser usado uma vez. Se você não solicitou, ignore este e-mail.</p>',
+    variables: ['nome', 'link'],
+  },
 ]
 
 for (const seed of seeds) {

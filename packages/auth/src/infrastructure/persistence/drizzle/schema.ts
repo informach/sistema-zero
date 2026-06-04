@@ -62,7 +62,29 @@ export const refreshTokens = auth.table(
   ],
 )
 
+/**
+ * Tokens de redefinição/definição de senha (forgot-password + 1º acesso pós-compra).
+ * Guarda só o `tokenHash` (sha256) — nunca o valor cru. Single-use (`consumedAt`)
+ * com expiração curta; gerar um token novo consome os pendentes do usuário.
+ */
+export const passwordResetTokens = auth.table(
+  'password_reset_tokens',
+  {
+    id: uuid('id').primaryKey(),
+    userId: uuid('user_id').notNull(),
+    tokenHash: text('token_hash').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    consumedAt: timestamp('consumed_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex('password_reset_tokens_hash_uq').on(t.tokenHash),
+    index('password_reset_tokens_user_idx').on(t.userId),
+  ],
+)
+
 export const schema = {
   users,
   refreshTokens,
+  passwordResetTokens,
 }

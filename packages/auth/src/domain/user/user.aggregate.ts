@@ -203,6 +203,15 @@ export class UserAggregate extends AggregateRoot<string> {
   }
 
   /**
+   * Troca a senha (reset por token ou troca logado). `newHash` já vem hasheado
+   * pela infra (o agregado nunca vê texto puro). Bumpa `version`/`updatedAt`.
+   */
+  changePassword(newHash: string, now: Date = new Date()): void {
+    this.props.passwordHash = newHash
+    this.touch(now)
+  }
+
+  /**
    * Marca a edição: bumpa a `version` UMA vez (na primeira mutação desta instância)
    * e atualiza `updatedAt`. Alterar papel + status + perfil numa só edição sobe a
    * versão em 1 (semântica convencional de concorrência otimista).

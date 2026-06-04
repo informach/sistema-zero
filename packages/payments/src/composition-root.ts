@@ -3,11 +3,13 @@ import { CreateSubscriptionService } from './application/create-subscription/cre
 import { registerPaymentEventHandlers } from './application/event-handlers/payment-event-handlers'
 import { GetAdminPaymentService } from './application/get-admin-payment/get-admin-payment.service'
 import { GetAdminSubscriptionService } from './application/get-admin-subscription/get-admin-subscription.service'
+import { GetMyPaymentService } from './application/get-my-payment/get-my-payment.service'
 import { GetPaymentService } from './application/get-payment/get-payment.service'
 import { GetSubscriptionService } from './application/get-subscription/get-subscription.service'
 import { HandleBoletoNotificationService } from './application/handle-boleto-notification/handle-boleto-notification.service'
 import { HandleProviderWebhookService } from './application/handle-provider-webhook/handle-provider-webhook.service'
 import { HandleSubscriptionNotificationService } from './application/handle-subscription-notification/handle-subscription-notification.service'
+import { ListMyPaymentsService } from './application/list-my-payments/list-my-payments.service'
 import { ListPaymentsService } from './application/list-payments/list-payments.service'
 import { ListSubscriptionsService } from './application/list-subscriptions/list-subscriptions.service'
 import { GetPaymentsOpsService } from './application/payments-ops/get-payments-ops.service'
@@ -30,6 +32,7 @@ import { DrizzleMetricsRepository } from './infrastructure/persistence/drizzle/m
 import { DrizzleOutboxRepository } from './infrastructure/persistence/drizzle/outbox.repository'
 import { DrizzlePaymentRepository } from './infrastructure/persistence/drizzle/payment.repository'
 import { DrizzlePaymentAdminReadRepository } from './infrastructure/persistence/drizzle/payment-admin-read.repository'
+import { DrizzlePaymentMyReadRepository } from './infrastructure/persistence/drizzle/payment-my-read.repository'
 import { PgNotificationListener } from './infrastructure/persistence/drizzle/pg-notification-listener'
 import { DrizzleSubscriptionRepository } from './infrastructure/persistence/drizzle/subscription.repository'
 import { DrizzleSubscriptionAdminReadRepository } from './infrastructure/persistence/drizzle/subscription-admin-read.repository'
@@ -204,6 +207,12 @@ export function createApplication(env: Env): Application {
   const getPaymentsOps = new GetPaymentsOpsService(paymentsAdminRead)
   const refundPayment = new RefundPaymentService(payments, gateway, logger)
 
+  // "Minhas compras" (self-service do comprador — app community). Leitura escopada
+  // pelo e-mail das claims (X-Auth-User-Email injetado pelo gateway).
+  const paymentsMyRead = new DrizzlePaymentMyReadRepository(db)
+  const listMyPayments = new ListMyPaymentsService(paymentsMyRead)
+  const getMyPayment = new GetMyPaymentService(paymentsMyRead)
+
   // Borda HTTP
   const server = createServer({
     env,
@@ -226,6 +235,8 @@ export function createApplication(env: Env): Application {
     getPaymentsStats,
     getPaymentsOps,
     refundPayment,
+    listMyPayments,
+    getMyPayment,
   })
 
   let cleanupTimer: ReturnType<typeof setInterval> | null = null

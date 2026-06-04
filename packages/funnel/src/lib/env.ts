@@ -18,6 +18,10 @@ const EnvSchema = z.object({
 
   FUNNEL_INTERNAL_TOKEN: z.string().min(1, 'FUNNEL_INTERNAL_TOKEN é obrigatória'),
 
+  // Base do app do aluno (@sistemazero/community) — usada p/ montar o link de
+  // definir senha no e-mail de boas-vindas pós-compra.
+  COMMUNITY_URL: z.string().min(1).default('http://localhost:3007'),
+
   // Fonte da verdade do preço/inclusões: o catálogo (@sistemazero/catalog) via gateway.
   // `CATALOG_OFFER_SLUG` é a OFERTA ativa que o funil vende; o preço autoritativo vem da
   // cotação dessa oferta. PRODUCT_* abaixo viram apenas rótulos de descrição/fallback.

@@ -83,6 +83,21 @@ src/
 7. **Opcionais `phone`/`signupSource`:** fluem do DTO de registro → agregado →
    colunas nullable → claims do token → `user-view`. `signupSource` = app/canal do
    cadastro (funnel/web/mobile/admin).
+8. **Reset/definição de senha (`password_reset_tokens`):** token opaco (32 bytes),
+   guardado **só como sha256**, single-use (`consumed_at`), TTL `RESET_TOKEN_TTL_MINUTES`
+   (60); emitir um novo **consome os pendentes** (1 token vivo/usuário).
+   `POST /auth/forgot-password` responde **SEMPRE 200** (anti-enumeração) e envia o
+   e-mail `password-reset` via **gateway → messaging** (HMAC de borda, consumer `auth`
+   — `GATEWAY_URL`+`AUTH_HMAC_SECRET`; sem eles o envio é no-op) com link
+   `${COMMUNITY_URL}/redefinir-senha?token=...` — envio **best-effort** (falha só loga).
+   `POST /auth/reset-password` troca a senha e **revoga TODAS as sessões**.
+   `POST /auth/internal/password-tokens` (S2S; HMAC do funil no gateway +
+   `x-internal-token` = `AUTH_INTERNAL_TOKEN`) emite o token do **1º acesso
+   pós-compra** — o funil monta o link e envia o e-mail `welcome`.
+9. **Self-service (`/me`):** `PATCH /auth/me` edita nome/telefone (**e-mail NÃO** —
+   é o vínculo com as compras no payments; troca futura exigirá verificação) e
+   `POST /auth/me/password` troca a senha exigindo a atual; ambos revogam nada/todas
+   as sessões respectivamente (troca de senha → re-login).
 
 ## Integração com o gateway
 

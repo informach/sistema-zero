@@ -1,5 +1,11 @@
 import type { Logger } from '@sistemazero/core/logging'
+import type { MessagingClient, SendEmailInput } from '../../src/domain/ports/messaging-client.port'
 import type { PasswordHasher } from '../../src/domain/ports/password-hasher.port'
+import type {
+  CreatePasswordResetTokenInput,
+  PasswordResetTokenRecord,
+  PasswordResetTokenRepository,
+} from '../../src/domain/ports/password-reset-token-repository.port'
 import type {
   CreateRefreshTokenInput,
   RefreshTokenRecord,
@@ -138,5 +144,52 @@ export class InMemoryRefreshTokenRepository implements RefreshTokenRepository {
     for (const record of this.byId.values()) {
       if (record.userId === userId && record.revokedAt === null) record.revokedAt = new Date()
     }
+  }
+}
+
+/** Repositório de tokens de redefinição de senha em memória. */
+export class InMemoryPasswordResetTokenRepository implements PasswordResetTokenRepository {
+  readonly byId = new Map<string, PasswordResetTokenRecord>()
+
+  async create(input: CreatePasswordResetTokenInput): Promise<void> {
+    this.byId.set(input.id, {
+      id: input.id,
+      userId: input.userId,
+      tokenHash: input.tokenHash,
+      expiresAt: input.expiresAt,
+      consumedAt: null,
+    })
+  }
+
+  async findByHash(tokenHash: string): Promise<PasswordResetTokenRecord | null> {
+    for (const record of this.byId.values()) {
+      if (record.tokenHash === tokenHash) return { ...record }
+    }
+    return null
+  }
+
+  async consume(id: string, at: Date): Promise<void> {
+    const record = this.byId.get(id)
+    if (record && record.consumedAt === null) record.consumedAt = at
+  }
+
+  async consumeAllForUser(userId: string, at: Date): Promise<void> {
+    for (const record of this.byId.values()) {
+      if (record.userId === userId && record.consumedAt === null) record.consumedAt = at
+    }
+  }
+}
+
+/** Cliente de mensageria fake: coleta os envios (assert no teste) e pode falhar sob demanda. */
+export class FakeMessagingClient implements MessagingClient {
+  readonly sent: SendEmailInput[] = []
+  failNext = false
+
+  async sendEmail(input: SendEmailInput): Promise<void> {
+    if (this.failNext) {
+      this.failNext = false
+      throw new Error('messaging indisponível (fake)')
+    }
+    this.sent.push(input)
   }
 }

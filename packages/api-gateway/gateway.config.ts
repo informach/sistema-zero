@@ -50,6 +50,24 @@ const FUNNEL_ALLOWED_CIDRS = (process.env.FUNNEL_ALLOWED_CIDRS ?? '0.0.0.0/0,::/
   .split(',')
   .map((c) => c.trim())
   .filter(Boolean)
+// O auth como consumer HMAC de borda (para chamar /messaging/send — e-mail de
+// reset de senha). Espelha o funnel. DEVE bater com o AUTH_HMAC_SECRET do auth.
+const AUTH_HMAC_SECRET = process.env.AUTH_HMAC_SECRET ?? ''
+const AUTH_ALLOWED_CIDRS = (process.env.AUTH_ALLOWED_CIDRS ?? '0.0.0.0/0,::/0')
+  .split(',')
+  .map((c) => c.trim())
+  .filter(Boolean)
+// Token interno injetado nas rotas S2S do auth (/auth/internal/*) como defesa em
+// profundidade (igual ao members/messaging). DEVE bater com o AUTH_INTERNAL_TOKEN do auth.
+const AUTH_INTERNAL_TOKEN = process.env.AUTH_INTERNAL_TOKEN ?? ''
+const authInternalTransforms = AUTH_INTERNAL_TOKEN
+  ? [
+      {
+        type: 'header-inject' as const,
+        options: { headers: { 'x-internal-token': AUTH_INTERNAL_TOKEN } },
+      },
+    ]
+  : []
 
 const sharedResilience = {
   loadBalancer: 'round-robin' as const,
@@ -70,6 +88,18 @@ const config: GatewayConfigInput = {
       hmacSecret: FUNNEL_HMAC_SECRET,
       allowedCidrs: FUNNEL_ALLOWED_CIDRS,
     },
+    // O auth como cliente HMAC de borda (envio de e-mail via /messaging/send).
+    // Condicional: sem AUTH_HMAC_SECRET o consumer não existe (o boot exige ≥16
+    // chars) — e o auth, sem o segredo, usa o cliente no-op de qualquer forma.
+    ...(AUTH_HMAC_SECRET
+      ? [
+          {
+            id: 'auth',
+            hmacSecret: AUTH_HMAC_SECRET,
+            allowedCidrs: AUTH_ALLOWED_CIDRS,
+          },
+        ]
+      : []),
   ],
   services: {
     payments: {
@@ -226,6 +256,29 @@ const config: GatewayConfigInput = {
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
       rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
     },
+    // ── Minhas compras (app community — self-service do COMPRADOR) ──────────
+    // JWT obrigatório (qualquer conta ativa, inclusive `customer` — sem `roles`).
+    // O gateway injeta X-Auth-User-* (inclui o e-mail) e o payments filtra as
+    // compras por `customer->>'email'` = e-mail das claims. O literal `my` vence
+    // o param `:id` na especificidade do matcher (não colide com a rota HMAC).
+    {
+      id: 'payments-my-list',
+      methods: ['GET'],
+      pathPattern: '/payments/my',
+      service: 'payments',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'payments-my-get',
+      methods: ['GET'],
+      pathPattern: '/payments/my/:id',
+      service: 'payments',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
     // payments → gateway → funil. O gateway valida a assinatura do webhook
     // (verify-webhook), injeta o token interno e reescreve o path para /api/...
     {
@@ -294,6 +347,60 @@ const config: GatewayConfigInput = {
       // passthrough: o Authorization (Bearer) precisa chegar ao auth, que o verifica.
       upstreamAuth: 'passthrough',
       rateLimit: { max: 120, windowMs: 60_000, by: 'ip' },
+    },
+    // "Esqueci minha senha": rate limit AGRESSIVO por IP (anti-enumeração/spam de
+    // e-mail). O auth responde SEMPRE 200; o e-mail é enviado via messaging.
+    {
+      id: 'auth-forgot-password',
+      methods: ['POST'],
+      pathPattern: '/auth/forgot-password',
+      service: 'auth',
+      auth: 'public',
+      upstreamAuth: 'passthrough',
+      rateLimit: { max: 5, windowMs: 60_000, by: 'ip' },
+    },
+    // Redefinição/definição de senha por token single-use (reset + 1º acesso).
+    {
+      id: 'auth-reset-password',
+      methods: ['POST'],
+      pathPattern: '/auth/reset-password',
+      service: 'auth',
+      auth: 'public',
+      upstreamAuth: 'passthrough',
+      rateLimit: { max: 20, windowMs: 60_000, by: 'ip' },
+    },
+    // Self-service de perfil (app community): o Bearer chega ao auth (passthrough),
+    // que o verifica e edita o PRÓPRIO usuário (nome/telefone — e-mail não).
+    {
+      id: 'auth-me-update',
+      methods: ['PATCH'],
+      pathPattern: '/auth/me',
+      service: 'auth',
+      auth: 'public',
+      upstreamAuth: 'passthrough',
+      rateLimit: { max: 30, windowMs: 60_000, by: 'ip' },
+    },
+    // Troca de senha logado (exige a senha atual; revoga as sessões no auth).
+    {
+      id: 'auth-me-password',
+      methods: ['POST'],
+      pathPattern: '/auth/me/password',
+      service: 'auth',
+      auth: 'public',
+      upstreamAuth: 'passthrough',
+      rateLimit: { max: 10, windowMs: 60_000, by: 'ip' },
+    },
+    // Token de DEFINIÇÃO de senha do 1º acesso pós-compra (S2S: funil → auth).
+    // HMAC de borda (consumer `funnel`) + injeção do token interno do auth
+    // (defesa em profundidade, igual ao members/messaging). SEM `resign`.
+    {
+      id: 'auth-internal-password-token',
+      methods: ['POST'],
+      pathPattern: '/auth/internal/password-tokens',
+      service: 'auth',
+      auth: { required: true, mode: 'any', strategies: ['hmac'] },
+      transforms: authInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
     {
       id: 'auth-jwks',

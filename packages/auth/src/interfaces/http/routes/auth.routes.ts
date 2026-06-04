@@ -3,11 +3,24 @@ import { Elysia } from 'elysia'
 import type { GetMeService } from '../../../application/get-me/get-me.service'
 import type { LoginService } from '../../../application/login/login.service'
 import type { LogoutService } from '../../../application/logout/logout.service'
+import type { ChangeMyPasswordService } from '../../../application/me/change-password.service'
+import type { UpdateProfileService } from '../../../application/me/update-profile.service'
+import type { ForgotPasswordService } from '../../../application/password-reset/forgot-password.service'
+import type { ResetPasswordService } from '../../../application/password-reset/reset-password.service'
 import type { RefreshService } from '../../../application/refresh/refresh.service'
 import type { RegisterService } from '../../../application/register/register.service'
 import type { TokenIssuer } from '../../../domain/ports/token-issuer.port'
 import { type AuthContext, extractBearer, resolveClientIp } from '../auth'
-import { LoginBody, LogoutBody, RefreshBody, RegisterBody } from '../dtos'
+import {
+  ChangeMyPasswordBody,
+  ForgotPasswordBody,
+  LoginBody,
+  LogoutBody,
+  RefreshBody,
+  RegisterBody,
+  ResetPasswordBody,
+  UpdateMeBody,
+} from '../dtos'
 import { PayloadTooLargeError } from '../errors'
 import { isOversizeBody } from '../raw-body'
 
@@ -20,6 +33,10 @@ export interface AuthRoutesDeps {
   refresh: RefreshService
   logout: LogoutService
   getMe: GetMeService
+  forgotPassword: ForgotPasswordService
+  resetPassword: ResetPasswordService
+  updateProfile: UpdateProfileService
+  changeMyPassword: ChangeMyPasswordService
 }
 
 /**
@@ -87,6 +104,24 @@ export function authRoutes(deps: AuthRoutesDeps) {
       },
       { body: LogoutBody },
     )
+    .post(
+      '/forgot-password',
+      async ({ body, request }) => {
+        if (isOversizeBody(request)) throw new PayloadTooLargeError()
+        // SEMPRE 200, exista a conta ou não (anti-enumeração). O e-mail é best-effort.
+        await deps.forgotPassword.execute({ email: body.email })
+        return { ok: true }
+      },
+      { body: ForgotPasswordBody },
+    )
+    .post(
+      '/reset-password',
+      async ({ body, request }) => {
+        if (isOversizeBody(request)) throw new PayloadTooLargeError()
+        return deps.resetPassword.execute({ token: body.token, newPassword: body.newPassword })
+      },
+      { body: ResetPasswordBody },
+    )
     .get('/me', async ({ headers }) => {
       const token = extractBearer(headers.authorization)
       if (!token) throw new UnauthorizedError('Token de acesso ausente')
@@ -97,9 +132,46 @@ export function authRoutes(deps: AuthRoutesDeps) {
       if (!user) throw new UnauthorizedError('Usuário não encontrado')
       return { user }
     })
+    .patch(
+      '/me',
+      async ({ body, headers, request }) => {
+        if (isOversizeBody(request)) throw new PayloadTooLargeError()
+        const claims = await requireBearer(headers.authorization, deps.tokenIssuer)
+        const user = await deps.updateProfile.execute({
+          userId: claims.sub,
+          firstName: body.firstName,
+          lastName: body.lastName,
+          phone: body.phone,
+        })
+        return { user }
+      },
+      { body: UpdateMeBody },
+    )
+    .post(
+      '/me/password',
+      async ({ body, headers, request }) => {
+        if (isOversizeBody(request)) throw new PayloadTooLargeError()
+        const claims = await requireBearer(headers.authorization, deps.tokenIssuer)
+        return deps.changeMyPassword.execute({
+          userId: claims.sub,
+          currentPassword: body.currentPassword,
+          newPassword: body.newPassword,
+        })
+      },
+      { body: ChangeMyPasswordBody },
+    )
     .get('/.well-known/jwks.json', ({ set }) => {
       // Cacheável; a rotação de chave troca o `kid`.
       set.headers['cache-control'] = 'public, max-age=300'
       return deps.tokenIssuer.jwks()
     })
+}
+
+/** Exige um Bearer válido e devolve as claims (rotas self-service /me*). */
+async function requireBearer(header: string | undefined, tokenIssuer: TokenIssuer) {
+  const token = extractBearer(header)
+  if (!token) throw new UnauthorizedError('Token de acesso ausente')
+  const claims = await tokenIssuer.verifyAccessToken(token)
+  if (!claims) throw new UnauthorizedError('Token inválido ou expirado')
+  return claims
 }

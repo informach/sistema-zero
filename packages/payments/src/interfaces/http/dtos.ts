@@ -157,3 +157,9 @@ export const AdminIdParam = t.Object({
     pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
   }),
 })
+
+/** Query de `GET /payments/my` ("minhas compras" — self-service do comprador). */
+export const MyPaymentsQuery = t.Object({
+  limit: ADMIN_LIMIT,
+  offset: ADMIN_OFFSET,
+})

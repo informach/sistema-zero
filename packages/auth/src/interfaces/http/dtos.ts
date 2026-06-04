@@ -36,6 +36,35 @@ export const LogoutBody = t.Object({
   allSessions: t.Optional(t.Boolean()),
 })
 
+/** Corpo de `POST /auth/forgot-password`. Resposta é SEMPRE 200 (anti-enumeração). */
+export const ForgotPasswordBody = t.Object({
+  email: t.String({ minLength: 3, maxLength: 320, pattern: EMAIL_PATTERN }),
+})
+
+/** Corpo de `POST /auth/reset-password` (token single-use do e-mail). */
+export const ResetPasswordBody = t.Object({
+  token: t.String({ minLength: 10, maxLength: 512 }),
+  newPassword: t.String({ minLength: 1, maxLength: 200 }),
+})
+
+/** Corpo de `PATCH /auth/me` (self-service). E-mail NÃO é editável aqui. */
+export const UpdateMeBody = t.Object({
+  firstName: t.Optional(t.String({ minLength: 1, maxLength: 100 })),
+  lastName: t.Optional(t.String({ minLength: 1, maxLength: 100 })),
+  phone: t.Optional(t.Union([t.String({ maxLength: 20 }), t.Null()])),
+})
+
+/** Corpo de `POST /auth/me/password` (troca logado; exige a senha atual). */
+export const ChangeMyPasswordBody = t.Object({
+  currentPassword: t.String({ minLength: 1, maxLength: 200 }),
+  newPassword: t.String({ minLength: 1, maxLength: 200 }),
+})
+
+/** Corpo de `POST /auth/internal/password-tokens` (S2S: funil → link de 1º acesso). */
+export const CreatePasswordTokenBody = t.Object({
+  email: t.String({ minLength: 3, maxLength: 320, pattern: EMAIL_PATTERN }),
+})
+
 /** Query de `GET /auth/admin/users` (listagem paginada do painel). */
 export const ListUsersQuery = t.Object({
   q: t.Optional(t.String({ maxLength: 320 })),

@@ -1,0 +1,1 @@
+CREATE INDEX "payments_customer_email_idx" ON "payments"."payments" USING btree (lower(("customer" ->> 'email')));

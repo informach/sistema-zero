@@ -9,12 +9,25 @@ const registry = new RouteRegistry([
   r({ id: 'get', methods: ['GET'], pathPattern: '/payments/:id' }),
   r({ id: 'health', methods: ['GET'], pathPattern: '/payments/health' }),
   r({ id: 'list', methods: ['GET', 'POST'], pathPattern: '/payments' }),
+  r({ id: 'my-list', methods: ['GET'], pathPattern: '/payments/my' }),
+  r({ id: 'my-get', methods: ['GET'], pathPattern: '/payments/my/:id' }),
   r({ id: 'wild', methods: ['GET'], pathPattern: '/files/*' }),
 ])
 
 describe('RouteRegistry', () => {
   test('rota estática vence param (longest-prefix/specificity)', () => {
     expect(registry.resolve('GET', '/payments/health', 'v1')?.route.id).toBe('health')
+  })
+
+  test('/payments/my (JWT) NÃO cai na rota HMAC /payments/:id', () => {
+    // Crítico p/ o app community: literal `my` vence o param `:id`; sem isso a
+    // lista de compras exigiria assinatura HMAC (quebra o self-service).
+    expect(registry.resolve('GET', '/payments/my', 'v1')?.route.id).toBe('my-list')
+    const detail = registry.resolve('GET', '/payments/my/abc-123', 'v1')
+    expect(detail?.route.id).toBe('my-get')
+    expect(detail?.params.id).toBe('abc-123')
+    // Ids comuns continuam caindo na rota consumer.
+    expect(registry.resolve('GET', '/payments/uuid-qualquer', 'v1')?.route.id).toBe('get')
   })
 
   test('captura params', () => {

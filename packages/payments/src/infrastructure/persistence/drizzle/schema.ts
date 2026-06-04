@@ -133,6 +133,9 @@ export const payments = paymentsSchema.table(
       .where(sql`status = 'PENDING' AND provider_payment_id IS NOT NULL`),
     // Listar os ciclos de uma assinatura.
     index('payments_subscription_idx').on(t.subscriptionId),
+    // "Minhas compras" (self-service do comprador, app community): filtro por
+    // e-mail do `customer` (jsonb). Consulte SEMPRE com lower() p/ casar o índice.
+    index('payments_customer_email_idx').on(sql`lower((${t.customer} ->> 'email'))`),
   ],
 )
 

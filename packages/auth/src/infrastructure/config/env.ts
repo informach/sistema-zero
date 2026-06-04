@@ -45,6 +45,20 @@ const EnvSchema = z
     JWT_KID: z.string().min(1).default('auth-key-1'),
 
     PASSWORD_MIN_LENGTH: z.coerce.number().int().min(8).default(10),
+
+    // Reset/definição de senha
+    RESET_TOKEN_TTL_MINUTES: z.coerce.number().int().positive().default(60),
+    // Base dos links de e-mail (app community): `${COMMUNITY_URL}/redefinir-senha?token=...`.
+    COMMUNITY_URL: z.string().url().default('http://localhost:3007'),
+    // Token interno injetado pelo gateway nas rotas `/auth/internal/*` (defesa em
+    // profundidade). Vazio/ausente = checagem desligada (dev).
+    AUTH_INTERNAL_TOKEN: z.string().optional(),
+
+    // Envio de e-mail via gateway → messaging (HMAC de borda, consumer `auth`).
+    // Sem GATEWAY_URL + AUTH_HMAC_SECRET, o cliente vira no-op (envio desligado).
+    GATEWAY_URL: z.string().url().optional(),
+    AUTH_CONSUMER_ID: z.string().min(1).default('auth'),
+    AUTH_HMAC_SECRET: z.string().min(16).optional(),
   })
   // HS256 exige um segredo forte (≥ 32 chars) — um segredo curto/ausente derrubaria
   // toda a garantia de autenticidade dos tokens. Fail-fast no boot.

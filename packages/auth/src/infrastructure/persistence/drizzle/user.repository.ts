@@ -55,6 +55,9 @@ export class DrizzleUserRepository implements UserRepository {
       .update(users)
       .set({
         version: s.version,
+        // passwordHash PRECISA estar aqui: reset/troca de senha persistem por este
+        // update (sem ele a troca "passa" mas a senha antiga continua valendo).
+        passwordHash: s.passwordHash,
         firstName: s.firstName,
         lastName: s.lastName,
         role: s.role,

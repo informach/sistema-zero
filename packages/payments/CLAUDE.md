@@ -235,6 +235,22 @@ gateway. São cross-consumer (o painel enxerga todos).
   coluna nova**) e emite `payment.refunded` (outbox → entrega ao consumidor revogar acesso).
   Novos métodos no port/adapter: `refundPixCharge`/`refundCardCharge`.
 
+## Minhas compras (app @sistemazero/community — self-service do comprador)
+
+Rotas de leitura sob `/payments/my*` para o COMPRADOR ver as próprias compras
+(`GET /payments/my` paginada + `GET /payments/my/:id`). A auth real é do **gateway**
+(JWT + `authorize.statuses:['active']`, **sem roles** — qualquer conta ativa); o
+serviço lê o e-mail de `X-Auth-User-Email` (`requireBuyer` em
+`interfaces/http/my-auth.ts`, defesa em profundidade). TODA consulta é **escopada
+por `lower(customer->>'email')`** (índice de expressão `payments_customer_email_idx`)
+— id de outro comprador → 404 (anti-IDOR). Port de leitura dedicado
+(`payment-my-read.port` + `DrizzlePaymentMyReadRepository`), fora do hot-path;
+resposta usa a `PaymentView` PÚBLICA (sem customer/provider/failureReason).
+O vínculo compra↔conta é o E-MAIL (o fulfillment do funil registra o comprador no
+auth com o mesmo e-mail do checkout; o perfil self-service do auth NÃO permite
+trocar e-mail). O literal `/payments/my` vence o param `/payments/:id` tanto no
+matcher do gateway quanto no Elysia (coberto por testes nos dois lados).
+
 ## Como estender (adicionar um novo método de pagamento)
 
 1. Adicione o método ao port `PaymentGateway` e implemente em `EfiClient` +

@@ -6,6 +6,11 @@ import { UpdateUserService } from '../../src/application/admin/update-user/updat
 import { GetMeService } from '../../src/application/get-me/get-me.service'
 import { LoginService } from '../../src/application/login/login.service'
 import { LogoutService } from '../../src/application/logout/logout.service'
+import { ChangeMyPasswordService } from '../../src/application/me/change-password.service'
+import { UpdateProfileService } from '../../src/application/me/update-profile.service'
+import { CreatePasswordTokenService } from '../../src/application/password-reset/create-password-token.service'
+import { ForgotPasswordService } from '../../src/application/password-reset/forgot-password.service'
+import { ResetPasswordService } from '../../src/application/password-reset/reset-password.service'
 import { RefreshService } from '../../src/application/refresh/refresh.service'
 import { RegisterService } from '../../src/application/register/register.service'
 import { AuthTokenService } from '../../src/application/tokens/auth-token.service'
@@ -16,16 +21,23 @@ import { Email } from '../../src/domain/value-objects/email'
 import type { Env } from '../../src/infrastructure/config/env'
 import { createServer } from '../../src/interfaces/http/server'
 import {
+  FakeMessagingClient,
   fakeHasher,
+  InMemoryPasswordResetTokenRepository,
   InMemoryRefreshTokenRepository,
   InMemoryUserRepository,
   silentLogger,
 } from '../fakes/in-memory'
 import { testTokenIssuer } from '../helpers'
 
+const COMMUNITY_URL = 'http://localhost:3007'
+const INTERNAL_TOKEN = 'internal-token-de-teste'
+
 function buildApp() {
   const users = new InMemoryUserRepository()
   const refreshTokens = new InMemoryRefreshTokenRepository()
+  const resetTokens = new InMemoryPasswordResetTokenRepository()
+  const messaging = new FakeMessagingClient()
   const tokenIssuer = testTokenIssuer()
   const authTokens = new AuthTokenService(tokenIssuer, refreshTokens, { refreshTtlDays: 30 })
 
@@ -40,6 +52,22 @@ function buildApp() {
   const refresh = new RefreshService(users, refreshTokens, authTokens, silentLogger)
   const logout = new LogoutService(refreshTokens)
   const getMe = new GetMeService(users)
+  const createPasswordToken = new CreatePasswordTokenService(users, resetTokens, {
+    ttlMinutes: 60,
+  })
+  const forgotPassword = new ForgotPasswordService(
+    createPasswordToken,
+    messaging,
+    { communityUrl: COMMUNITY_URL },
+    silentLogger,
+  )
+  const resetPassword = new ResetPasswordService(users, resetTokens, refreshTokens, fakeHasher, {
+    passwordMinLength: 10,
+  })
+  const updateProfile = new UpdateProfileService(users)
+  const changeMyPassword = new ChangeMyPasswordService(users, refreshTokens, fakeHasher, {
+    passwordMinLength: 10,
+  })
   const listUsers = new ListUsersService(users)
   const getUser = new GetUserService(users)
   const updateUser = new UpdateUserService(users, refreshTokens, silentLogger)
@@ -50,6 +78,7 @@ function buildApp() {
     NODE_ENV: 'test',
     TRUST_PROXY: false,
     TRUSTED_PROXY_HOPS: 1,
+    AUTH_INTERNAL_TOKEN: INTERNAL_TOKEN,
   } as unknown as Env
 
   const app = createServer({
@@ -61,12 +90,17 @@ function buildApp() {
     refresh,
     logout,
     getMe,
+    forgotPassword,
+    resetPassword,
+    updateProfile,
+    changeMyPassword,
+    createPasswordToken,
     listUsers,
     getUser,
     updateUser,
     batchGetUsers,
   })
-  return { app, users, refreshTokens, tokenIssuer }
+  return { app, users, refreshTokens, resetTokens, messaging, tokenIssuer }
 }
 
 const REGISTER_BODY = {
@@ -282,6 +316,275 @@ describe('Auth HTTP server', () => {
     const res = await app.handle(new Request('http://localhost/auth/.well-known/jwks.json'))
     expect(res.status).toBe(200)
     expect(await res.json()).toEqual({ keys: [] })
+  })
+})
+
+describe('Password reset + perfil self-service', () => {
+  /** Extrai o token cru do link enviado no e-mail (fake messaging). */
+  function tokenFromEmail(messaging: FakeMessagingClient): string {
+    const link = messaging.sent.at(-1)?.variables.link ?? ''
+    return new URL(link).searchParams.get('token') ?? ''
+  }
+
+  test('forgot-password com conta ativa → 200 + e-mail com link do community', async () => {
+    const { app, messaging } = buildApp()
+    await app.handle(post('/auth/register', REGISTER_BODY))
+    const res = await app.handle(post('/auth/forgot-password', { email: 'maria@example.com' }))
+    expect(res.status).toBe(200)
+    expect(messaging.sent).toHaveLength(1)
+    const sent = messaging.sent[0]
+    expect(sent?.templateKey).toBe('password-reset')
+    expect(sent?.recipient.email).toBe('maria@example.com')
+    expect(sent?.variables.link).toStartWith(`${COMMUNITY_URL}/redefinir-senha?token=`)
+  })
+
+  test('forgot-password com e-mail inexistente → 200 SEM envio (anti-enumeração)', async () => {
+    const { app, messaging } = buildApp()
+    const res = await app.handle(post('/auth/forgot-password', { email: 'ghost@example.com' }))
+    expect(res.status).toBe(200)
+    expect(messaging.sent).toHaveLength(0)
+  })
+
+  test('forgot-password com messaging fora do ar → 200 mesmo assim (best-effort)', async () => {
+    const { app, messaging } = buildApp()
+    await app.handle(post('/auth/register', REGISTER_BODY))
+    messaging.failNext = true
+    const res = await app.handle(post('/auth/forgot-password', { email: 'maria@example.com' }))
+    expect(res.status).toBe(200)
+  })
+
+  test('reset-password troca a senha, revoga sessões e consome o token', async () => {
+    const { app, messaging } = buildApp()
+    const reg = (await (await app.handle(post('/auth/register', REGISTER_BODY))).json()) as {
+      tokens: Tokens
+    }
+    await app.handle(post('/auth/forgot-password', { email: 'maria@example.com' }))
+    const token = tokenFromEmail(messaging)
+    expect(token.length).toBeGreaterThan(10)
+
+    const res = await app.handle(
+      post('/auth/reset-password', { token, newPassword: 'nova-senha-super-secreta' }),
+    )
+    expect(res.status).toBe(200)
+
+    // Senha antiga não vale mais; a nova vale.
+    const oldLogin = await app.handle(
+      post('/auth/login', { email: 'maria@example.com', password: 'senha-super-secreta' }),
+    )
+    expect(oldLogin.status).toBe(401)
+    const newLogin = await app.handle(
+      post('/auth/login', { email: 'maria@example.com', password: 'nova-senha-super-secreta' }),
+    )
+    expect(newLogin.status).toBe(200)
+
+    // Sessões antigas revogadas (refresh emitido no registro não renova mais).
+    const refresh = await app.handle(
+      post('/auth/refresh', { refreshToken: reg.tokens.refreshToken }),
+    )
+    expect(refresh.status).toBe(401)
+
+    // Token é single-use.
+    const reuse = await app.handle(
+      post('/auth/reset-password', { token, newPassword: 'outra-senha-super-secreta' }),
+    )
+    expect(reuse.status).toBe(401)
+  })
+
+  test('reset-password com token desconhecido → 401; senha curta → 400', async () => {
+    const { app, messaging } = buildApp()
+    await app.handle(post('/auth/register', REGISTER_BODY))
+    expect(
+      (
+        await app.handle(
+          post('/auth/reset-password', {
+            token: 'token-inexistente-xyz',
+            newPassword: 'nova-senha-super',
+          }),
+        )
+      ).status,
+    ).toBe(401)
+
+    await app.handle(post('/auth/forgot-password', { email: 'maria@example.com' }))
+    const token = tokenFromEmail(messaging)
+    expect(
+      (await app.handle(post('/auth/reset-password', { token, newPassword: 'curta' }))).status,
+    ).toBe(400)
+  })
+
+  test('reset-password com token expirado → 401', async () => {
+    const { app, messaging, resetTokens } = buildApp()
+    await app.handle(post('/auth/register', REGISTER_BODY))
+    await app.handle(post('/auth/forgot-password', { email: 'maria@example.com' }))
+    const token = tokenFromEmail(messaging)
+    for (const record of resetTokens.byId.values()) record.expiresAt = new Date(Date.now() - 1000)
+    const res = await app.handle(
+      post('/auth/reset-password', { token, newPassword: 'nova-senha-super-secreta' }),
+    )
+    expect(res.status).toBe(401)
+  })
+
+  test('novo forgot-password invalida o token anterior (1 token vivo)', async () => {
+    const { app, messaging } = buildApp()
+    await app.handle(post('/auth/register', REGISTER_BODY))
+    await app.handle(post('/auth/forgot-password', { email: 'maria@example.com' }))
+    const first = tokenFromEmail(messaging)
+    await app.handle(post('/auth/forgot-password', { email: 'maria@example.com' }))
+    const second = tokenFromEmail(messaging)
+    expect(second).not.toBe(first)
+
+    expect(
+      (
+        await app.handle(
+          post('/auth/reset-password', { token: first, newPassword: 'nova-senha-super-secreta' }),
+        )
+      ).status,
+    ).toBe(401)
+    expect(
+      (
+        await app.handle(
+          post('/auth/reset-password', { token: second, newPassword: 'nova-senha-super-secreta' }),
+        )
+      ).status,
+    ).toBe(200)
+  })
+
+  test('PATCH /auth/me edita nome/telefone (sem e-mail); sem Bearer → 401', async () => {
+    const { app } = buildApp()
+    const reg = (await (await app.handle(post('/auth/register', REGISTER_BODY))).json()) as {
+      tokens: Tokens
+    }
+    expect(
+      (
+        await app.handle(
+          new Request('http://localhost/auth/me', {
+            method: 'PATCH',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ firstName: 'Hack' }),
+          }),
+        )
+      ).status,
+    ).toBe(401)
+
+    const res = await app.handle(
+      new Request('http://localhost/auth/me', {
+        method: 'PATCH',
+        headers: {
+          'content-type': 'application/json',
+          authorization: `Bearer ${reg.tokens.accessToken}`,
+        },
+        body: JSON.stringify({ firstName: 'Mariana', phone: '+5511888887777' }),
+      }),
+    )
+    expect(res.status).toBe(200)
+    const { user } = (await res.json()) as { user: UserView }
+    expect(user.firstName).toBe('Mariana')
+    expect(user.phone).toBe('+5511888887777')
+    // E-mail intocado (não é editável no self-service).
+    expect(user.email).toBe('maria@example.com')
+  })
+
+  test('POST /auth/me/password exige a senha atual e revoga sessões', async () => {
+    const { app } = buildApp()
+    const reg = (await (await app.handle(post('/auth/register', REGISTER_BODY))).json()) as {
+      tokens: Tokens
+    }
+    const auth = { authorization: `Bearer ${reg.tokens.accessToken}` }
+
+    // Senha atual errada → 401.
+    expect(
+      (
+        await app.handle(
+          post(
+            '/auth/me/password',
+            { currentPassword: 'senha-errada-123', newPassword: 'nova-senha-super-secreta' },
+            auth,
+          ),
+        )
+      ).status,
+    ).toBe(401)
+
+    // Sucesso → sessões revogadas + login só com a nova.
+    const res = await app.handle(
+      post(
+        '/auth/me/password',
+        { currentPassword: 'senha-super-secreta', newPassword: 'nova-senha-super-secreta' },
+        auth,
+      ),
+    )
+    expect(res.status).toBe(200)
+    expect(
+      (await app.handle(post('/auth/refresh', { refreshToken: reg.tokens.refreshToken }))).status,
+    ).toBe(401)
+    expect(
+      (
+        await app.handle(
+          post('/auth/login', { email: 'maria@example.com', password: 'nova-senha-super-secreta' }),
+        )
+      ).status,
+    ).toBe(200)
+  })
+
+  test('POST /auth/internal/password-tokens exige o token interno e emite token utilizável', async () => {
+    const { app } = buildApp()
+    await app.handle(post('/auth/register', REGISTER_BODY))
+
+    // Sem/errado x-internal-token → 401.
+    expect(
+      (await app.handle(post('/auth/internal/password-tokens', { email: 'maria@example.com' })))
+        .status,
+    ).toBe(401)
+    expect(
+      (
+        await app.handle(
+          post(
+            '/auth/internal/password-tokens',
+            { email: 'maria@example.com' },
+            { 'x-internal-token': 'token-errado' },
+          ),
+        )
+      ).status,
+    ).toBe(401)
+
+    // E-mail inexistente → 404 (S2S).
+    expect(
+      (
+        await app.handle(
+          post(
+            '/auth/internal/password-tokens',
+            { email: 'ghost@example.com' },
+            { 'x-internal-token': INTERNAL_TOKEN },
+          ),
+        )
+      ).status,
+    ).toBe(404)
+
+    // Sucesso → 201 + token que redefine a senha (1º acesso pós-compra).
+    const res = await app.handle(
+      post(
+        '/auth/internal/password-tokens',
+        { email: 'maria@example.com' },
+        { 'x-internal-token': INTERNAL_TOKEN },
+      ),
+    )
+    expect(res.status).toBe(201)
+    const { token, expiresAt } = (await res.json()) as { token: string; expiresAt: string }
+    expect(token.length).toBeGreaterThan(10)
+    expect(new Date(expiresAt).getTime()).toBeGreaterThan(Date.now())
+
+    const reset = await app.handle(
+      post('/auth/reset-password', { token, newPassword: 'senha-definida-no-1o-acesso' }),
+    )
+    expect(reset.status).toBe(200)
+    expect(
+      (
+        await app.handle(
+          post('/auth/login', {
+            email: 'maria@example.com',
+            password: 'senha-definida-no-1o-acesso',
+          }),
+        )
+      ).status,
+    ).toBe(200)
   })
 })
 

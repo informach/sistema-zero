@@ -6,11 +6,21 @@ import { UpdateUserService } from './application/admin/update-user/update-user.s
 import { GetMeService } from './application/get-me/get-me.service'
 import { LoginService } from './application/login/login.service'
 import { LogoutService } from './application/logout/logout.service'
+import { ChangeMyPasswordService } from './application/me/change-password.service'
+import { UpdateProfileService } from './application/me/update-profile.service'
+import { CreatePasswordTokenService } from './application/password-reset/create-password-token.service'
+import { ForgotPasswordService } from './application/password-reset/forgot-password.service'
+import { ResetPasswordService } from './application/password-reset/reset-password.service'
 import { RefreshService } from './application/refresh/refresh.service'
 import { RegisterService } from './application/register/register.service'
 import { AuthTokenService } from './application/tokens/auth-token.service'
 import type { Env } from './infrastructure/config/env'
+import {
+  createGatewayMessagingClient,
+  createNullMessagingClient,
+} from './infrastructure/messaging/gateway-messaging-client'
 import { createDbConnection, type DbConnection } from './infrastructure/persistence/drizzle/db'
+import { DrizzlePasswordResetTokenRepository } from './infrastructure/persistence/drizzle/password-reset-token.repository'
 import { DrizzleRefreshTokenRepository } from './infrastructure/persistence/drizzle/refresh-token.repository'
 import { DrizzleUserRepository } from './infrastructure/persistence/drizzle/user.repository'
 import { createBunPasswordHasher } from './infrastructure/security/bun-password-hasher'
@@ -43,7 +53,18 @@ export async function createApplication(env: Env): Promise<Application> {
   // Adapters
   const users = new DrizzleUserRepository(db)
   const refreshTokens = new DrizzleRefreshTokenRepository(db)
+  const passwordResetTokens = new DrizzlePasswordResetTokenRepository(db)
   const hasher = createBunPasswordHasher()
+
+  // E-mail via gateway → messaging (HMAC). Sem config completa → no-op (best-effort).
+  const messaging =
+    env.GATEWAY_URL && env.AUTH_HMAC_SECRET
+      ? createGatewayMessagingClient({
+          gatewayUrl: env.GATEWAY_URL,
+          consumerId: env.AUTH_CONSUMER_ID,
+          hmacSecret: env.AUTH_HMAC_SECRET,
+        })
+      : createNullMessagingClient(logger)
 
   const signing = await loadSigningMaterial(env, logger)
   const tokenIssuer = createJoseTokenIssuer({
@@ -72,6 +93,29 @@ export async function createApplication(env: Env): Promise<Application> {
   const refresh = new RefreshService(users, refreshTokens, authTokens, logger)
   const logout = new LogoutService(refreshTokens)
   const getMe = new GetMeService(users)
+  // Reset/definição de senha + self-service de perfil.
+  const createPasswordToken = new CreatePasswordTokenService(users, passwordResetTokens, {
+    ttlMinutes: env.RESET_TOKEN_TTL_MINUTES,
+  })
+  const forgotPassword = new ForgotPasswordService(
+    createPasswordToken,
+    messaging,
+    { communityUrl: env.COMMUNITY_URL },
+    logger,
+  )
+  const resetPassword = new ResetPasswordService(
+    users,
+    passwordResetTokens,
+    refreshTokens,
+    hasher,
+    {
+      passwordMinLength: env.PASSWORD_MIN_LENGTH,
+    },
+  )
+  const updateProfile = new UpdateProfileService(users)
+  const changeMyPassword = new ChangeMyPasswordService(users, refreshTokens, hasher, {
+    passwordMinLength: env.PASSWORD_MIN_LENGTH,
+  })
   // Casos de uso do painel admin (gestão de usuários).
   const listUsers = new ListUsersService(users)
   const getUser = new GetUserService(users)
@@ -87,6 +131,11 @@ export async function createApplication(env: Env): Promise<Application> {
     refresh,
     logout,
     getMe,
+    forgotPassword,
+    resetPassword,
+    updateProfile,
+    changeMyPassword,
+    createPasswordToken,
     listUsers,
     getUser,
     updateUser,

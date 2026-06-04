@@ -4,6 +4,7 @@ import type {
   GatewayClient,
   GatewayResult,
   RegisterBuyerInput,
+  SendMessageInput,
 } from '../../src/lib/gateway-client'
 
 interface FakePix {
@@ -35,6 +36,8 @@ export interface FakeGatewayState {
     grant: Array<{ input: unknown }>
     login: Array<{ email: string }>
     logout: string[]
+    passwordTokens: string[]
+    messages: Array<{ input: SendMessageInput; idempotencyKey: string }>
   }
   /** Tokens válidos do auth falso (use p/ montar os cookies `admin_access`/`admin_refresh`). */
   auth: { access: string; refresh: string; password: string; email: string }
@@ -49,6 +52,10 @@ export interface FakeGatewayState {
   addCoupon: (code: string, discountCents: number) => void
   /** Sobrescreve o usuário do auth falso (ex.: role `customer` p/ testar 403). */
   setAuthUser: (patch: Partial<AuthUser>) => void
+  /** Status devolvido por createPasswordToken (default 201). */
+  setPasswordTokenStatus: (status: number) => void
+  /** Status devolvido por sendMessage (default 202). */
+  setSendMessageStatus: (status: number) => void
 }
 
 /** Gateway falso em memória (não verifica HMAC; usado nos testes de checkout). */
@@ -77,10 +84,14 @@ export function createFakeGateway(): FakeGatewayState {
     grant: [],
     login: [],
     logout: [],
+    passwordTokens: [],
+    messages: [],
   }
   let registerStatus = 201
   let registerBody: unknown = { user: { id: 'user-1' } }
   let grantStatus = 200
+  let passwordTokenStatus = 201
+  let sendMessageStatus = 202
   let offerPriceCents = 3700
   const coupons = new Map<string, number>() // code (UPPER) → discountCents
 
@@ -208,6 +219,23 @@ export function createFakeGateway(): FakeGatewayState {
       calls.logout.push(refreshToken)
       return { status: 200, body: { ok: true } }
     },
+    async createPasswordToken(email): Promise<GatewayResult> {
+      calls.passwordTokens.push(email)
+      if (passwordTokenStatus !== 201) {
+        return { status: passwordTokenStatus, body: { error: { code: 'USER_NOT_FOUND' } } }
+      }
+      return {
+        status: 201,
+        body: { token: 'fake-pw-token', expiresAt: new Date(Date.now() + 3_600_000).toISOString() },
+      }
+    },
+    async sendMessage(input, idempotencyKey): Promise<GatewayResult> {
+      calls.messages.push({ input, idempotencyKey })
+      if (sendMessageStatus !== 202) {
+        return { status: sendMessageStatus, body: { error: { code: 'PROVIDER_ERROR' } } }
+      }
+      return { status: 202, body: { messageId: 'msg-1', status: 'QUEUED' } }
+    },
   }
 
   return {
@@ -238,6 +266,12 @@ export function createFakeGateway(): FakeGatewayState {
     },
     addCoupon: (code: string, discountCents: number) => {
       coupons.set(code.toUpperCase(), discountCents)
+    },
+    setPasswordTokenStatus: (status: number) => {
+      passwordTokenStatus = status
+    },
+    setSendMessageStatus: (status: number) => {
+      sendMessageStatus = status
     },
   }
 }

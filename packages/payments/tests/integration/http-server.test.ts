@@ -3,11 +3,13 @@ import { CancelSubscriptionService } from '../../src/application/cancel-subscrip
 import { CreateSubscriptionService } from '../../src/application/create-subscription/create-subscription.service'
 import { GetAdminPaymentService } from '../../src/application/get-admin-payment/get-admin-payment.service'
 import { GetAdminSubscriptionService } from '../../src/application/get-admin-subscription/get-admin-subscription.service'
+import { GetMyPaymentService } from '../../src/application/get-my-payment/get-my-payment.service'
 import { GetPaymentService } from '../../src/application/get-payment/get-payment.service'
 import { GetSubscriptionService } from '../../src/application/get-subscription/get-subscription.service'
 import { HandleBoletoNotificationService } from '../../src/application/handle-boleto-notification/handle-boleto-notification.service'
 import { HandleProviderWebhookService } from '../../src/application/handle-provider-webhook/handle-provider-webhook.service'
 import { HandleSubscriptionNotificationService } from '../../src/application/handle-subscription-notification/handle-subscription-notification.service'
+import { ListMyPaymentsService } from '../../src/application/list-my-payments/list-my-payments.service'
 import { ListPaymentsService } from '../../src/application/list-payments/list-payments.service'
 import { ListSubscriptionsService } from '../../src/application/list-subscriptions/list-subscriptions.service'
 import { GetPaymentsOpsService } from '../../src/application/payments-ops/get-payments-ops.service'
@@ -15,6 +17,7 @@ import { GetPaymentsStatsService } from '../../src/application/payments-stats/ge
 import { ProcessPaymentService } from '../../src/application/process-payment/process-payment.service'
 import { RefundPaymentService } from '../../src/application/refund-payment/refund-payment.service'
 import type { PaymentAdminReadRepository } from '../../src/domain/ports/payment-admin-read.port'
+import type { PaymentMyReadRepository } from '../../src/domain/ports/payment-my-read.port'
 import type { SubscriptionAdminReadRepository } from '../../src/domain/ports/subscription-admin-read.port'
 import type { Env } from '../../src/infrastructure/config/env'
 import { signHmac } from '../../src/infrastructure/security/hmac'
@@ -94,6 +97,23 @@ function buildApp(opts: BuildOpts = {}) {
     list: async () => ({ items: [], total: 0 }),
   }
 
+  // Leitura "minhas compras" sobre o repositório em memória (espelha o adapter
+  // real: escopo SEMPRE por e-mail do customer; id alheio → null).
+  const emailOf = (p: { toSnapshot(): { customer?: { email: string } | null } }) =>
+    p.toSnapshot().customer?.email?.toLowerCase() ?? null
+  const paymentsMyRead: PaymentMyReadRepository = {
+    async listByEmail({ email, limit, offset }) {
+      const all = [...repo.byId.values()]
+        .filter((p) => emailOf(p) === email.toLowerCase())
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      return { items: all.slice(offset, offset + limit), total: all.length }
+    },
+    async findByEmailAndId(email, id) {
+      const p = repo.byId.get(id)
+      return p && emailOf(p) === email.toLowerCase() ? p : null
+    },
+  }
+
   const app = createServer({
     env,
     logger: silentLogger,
@@ -158,6 +178,8 @@ function buildApp(opts: BuildOpts = {}) {
     getPaymentsStats: new GetPaymentsStatsService(paymentsAdminRead),
     getPaymentsOps: new GetPaymentsOpsService(paymentsAdminRead),
     refundPayment: new RefundPaymentService(repo, gateway, silentLogger),
+    listMyPayments: new ListMyPaymentsService(paymentsMyRead),
+    getMyPayment: new GetMyPaymentService(paymentsMyRead),
   })
 
   return { app, repo, subscriptionRepo, gateway }
@@ -865,5 +887,97 @@ describe('Rotas admin (/payments/admin/*)', () => {
       ),
     )
     expect(res.status).toBe(404)
+  })
+})
+
+describe('Minhas compras (/payments/my — self-service do comprador)', () => {
+  /** Cria um boleto via API (popula `customer.email`) e devolve o id. */
+  async function createBoletoFor(
+    app: ReturnType<typeof buildApp>['app'],
+    email: string,
+    key: string,
+  ): Promise<string> {
+    const body = JSON.stringify({
+      ...JSON.parse(BOLETO_BODY),
+      customer: { ...JSON.parse(BOLETO_BODY).customer, email },
+    })
+    const res = await app.handle(
+      new Request('http://localhost/payments', {
+        method: 'POST',
+        headers: postHeaders(body, { key }),
+        body,
+      }),
+    )
+    expect(res.status).toBe(201)
+    const json = (await res.json()) as { id: string }
+    return json.id
+  }
+
+  test('sem X-Auth-User-Email → 401 (e NÃO cai na rota HMAC /payments/:id)', async () => {
+    const { app } = buildApp()
+    const res = await app.handle(new Request('http://localhost/payments/my'))
+    expect(res.status).toBe(401)
+    const json = (await res.json()) as { error: { code: string } }
+    // 401 do requireBuyer (autenticação necessária), não o da auth de consumer.
+    expect(json.error.code).toBe('UNAUTHORIZED')
+  })
+
+  test('lista SÓ as compras do e-mail das claims (sem vazar de outros)', async () => {
+    const { app } = buildApp()
+    const mine = await createBoletoFor(app, 'aluno@example.com', 'idem-my-1')
+    await createBoletoFor(app, 'outra@example.com', 'idem-my-2')
+
+    const res = await app.handle(
+      new Request('http://localhost/payments/my', {
+        headers: { 'x-auth-user-email': 'Aluno@Example.com' }, // case-insensitive
+      }),
+    )
+    expect(res.status).toBe(200)
+    const json = (await res.json()) as {
+      items: Array<Record<string, unknown>>
+      total: number
+    }
+    expect(json.total).toBe(1)
+    expect(json.items[0]?.id).toBe(mine)
+    // PaymentView pública: sem dados do cliente/provedor (≠ AdminPaymentView).
+    expect(json.items[0]?.customer).toBeUndefined()
+    expect(json.items[0]?.provider).toBeUndefined()
+  })
+
+  test('detalhe de compra alheia → 404 (anti-IDOR); a própria → 200', async () => {
+    const { app } = buildApp()
+    const mine = await createBoletoFor(app, 'aluno@example.com', 'idem-my-3')
+    const other = await createBoletoFor(app, 'outra@example.com', 'idem-my-4')
+    const headers = { 'x-auth-user-email': 'aluno@example.com' }
+
+    const stranger = await app.handle(
+      new Request(`http://localhost/payments/my/${other}`, { headers }),
+    )
+    expect(stranger.status).toBe(404)
+
+    const own = await app.handle(new Request(`http://localhost/payments/my/${mine}`, { headers }))
+    expect(own.status).toBe(200)
+    const json = (await own.json()) as { id: string; boleto?: { digitableLine: string } }
+    expect(json.id).toBe(mine)
+    expect(json.boleto?.digitableLine).toBeDefined()
+  })
+
+  test('paginação (limit/offset) e UUID malformado → 400', async () => {
+    const { app } = buildApp()
+    await createBoletoFor(app, 'aluno@example.com', 'idem-my-5')
+    await createBoletoFor(app, 'aluno@example.com', 'idem-my-6')
+    const headers = { 'x-auth-user-email': 'aluno@example.com' }
+
+    const page = await app.handle(
+      new Request('http://localhost/payments/my?limit=1&offset=1', { headers }),
+    )
+    expect(page.status).toBe(200)
+    const json = (await page.json()) as { items: unknown[]; total: number; limit: number }
+    expect(json.total).toBe(2)
+    expect(json.items).toHaveLength(1)
+    expect(json.limit).toBe(1)
+
+    const bad = await app.handle(new Request('http://localhost/payments/my/nao-uuid', { headers }))
+    expect(bad.status).toBe(400)
   })
 })

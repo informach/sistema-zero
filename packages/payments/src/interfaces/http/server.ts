@@ -4,10 +4,12 @@ import type { CancelSubscriptionService } from '../../application/cancel-subscri
 import type { CreateSubscriptionService } from '../../application/create-subscription/create-subscription.service'
 import type { GetAdminPaymentService } from '../../application/get-admin-payment/get-admin-payment.service'
 import type { GetAdminSubscriptionService } from '../../application/get-admin-subscription/get-admin-subscription.service'
+import type { GetMyPaymentService } from '../../application/get-my-payment/get-my-payment.service'
 import type { GetPaymentService } from '../../application/get-payment/get-payment.service'
 import type { GetSubscriptionService } from '../../application/get-subscription/get-subscription.service'
 import type { HandleBoletoNotificationService } from '../../application/handle-boleto-notification/handle-boleto-notification.service'
 import type { HandleProviderWebhookService } from '../../application/handle-provider-webhook/handle-provider-webhook.service'
+import type { ListMyPaymentsService } from '../../application/list-my-payments/list-my-payments.service'
 import type { ListPaymentsService } from '../../application/list-payments/list-payments.service'
 import type { ListSubscriptionsService } from '../../application/list-subscriptions/list-subscriptions.service'
 import type { GetPaymentsOpsService } from '../../application/payments-ops/get-payments-ops.service'
@@ -25,6 +27,7 @@ import { markOversizeBody, storeRawBody } from './raw-body'
 import { adminRoutes } from './routes/admin.routes'
 import { healthRoutes } from './routes/health.routes'
 import { metricsRoutes } from './routes/metrics.routes'
+import { myRoutes } from './routes/my.routes'
 import { paymentsRoutes } from './routes/payments.routes'
 import { subscriptionsRoutes } from './routes/subscriptions.routes'
 import { webhooksRoutes } from './routes/webhooks.routes'
@@ -51,6 +54,9 @@ export interface HttpDeps {
   getPaymentsStats: GetPaymentsStatsService
   getPaymentsOps: GetPaymentsOpsService
   refundPayment: RefundPaymentService
+  // Self-service do comprador ("minhas compras", app community) — JWT no gateway.
+  listMyPayments: ListMyPaymentsService
+  getMyPayment: GetMyPaymentService
 }
 
 /**
@@ -151,6 +157,12 @@ export function createServer(deps: HttpDeps) {
         createSubscription: deps.createSubscription,
         getSubscription: deps.getSubscription,
         cancelSubscription: deps.cancelSubscription,
+      }),
+    )
+    .use(
+      myRoutes({
+        listMyPayments: deps.listMyPayments,
+        getMyPayment: deps.getMyPayment,
       }),
     )
     .use(

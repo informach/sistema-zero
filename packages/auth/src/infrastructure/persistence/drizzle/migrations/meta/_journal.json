@@ -8,6 +8,13 @@
       "when": 1780359805138,
       "tag": "0000_solid_sleepwalker",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1780568004386,
+      "tag": "0001_long_johnny_storm",
+      "breakpoints": true
     }
   ]
 }

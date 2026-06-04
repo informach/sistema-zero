@@ -112,6 +112,15 @@ gateway re-entrega) e **best-effort** no polling do Pix (`pixStatus`) e no cart�
 (`startCard`) — via `server/members-grant.ts` (`makeGrantMembers`). Idempotente do lado do members
 (chave da matrícula), então reentregar/retentar é seguro; o webhook é o backstop durável.
 
+**E-mail de boas-vindas / 1º acesso (`sendWelcome`):** roda no webhook DEPOIS de fulfill+grant,
+**só p/ comprador NOVO** (`buyerUserId` setado — o recorrente já tem credenciais). Via
+`server/welcome-email.ts` (`makeSendWelcome`): pede o token de definição de senha ao auth
+(`POST /auth/internal/password-tokens`, HMAC via gateway), monta o link
+`${COMMUNITY_URL}/redefinir-senha?token=...` e enfileira o template `welcome` no messaging
+(`POST /messaging/send`, `Idempotency-Key: welcome-<leadId>` → reentrega NÃO duplica).
+**BEST-EFFORT deliberado:** falha só loga e NUNCA muda o status do webhook (fallback do aluno =
+"esqueci minha senha"). Env: `COMMUNITY_URL`.
+
 ## Renderização (prerender split)
 
 - **Estáticas (`prerender = true`):** `oferta`, `quiz` (shell; a ilha do quiz busca/cria o lead e

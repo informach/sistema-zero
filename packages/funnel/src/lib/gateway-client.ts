@@ -48,6 +48,20 @@ export interface AuthTokens {
   refreshExpiresIn: number
 }
 
+/** Resposta de `POST /auth/internal/password-tokens` (token de 1º acesso). */
+export interface PasswordTokenResult {
+  token: string
+  expiresAt: string
+}
+
+/** Corpo de `POST /messaging/send` (gateway → @sistemazero/messaging). */
+export interface SendMessageInput {
+  channel: 'email' | 'whatsapp'
+  templateKey: string
+  recipient: { name: string; email?: string; phone?: string }
+  variables?: Record<string, string>
+}
+
 /** Corpo de `POST /members/webhooks/grant` (gateway → @sistemazero/members). */
 export interface GrantMembersInput {
   userId: string
@@ -210,6 +224,38 @@ export function createGatewayClient(opts: GatewayClientOptions) {
       const res = await doFetch(`${opts.baseUrl}/members/webhooks/grant`, {
         method: 'POST',
         headers: buildHeaders(rawBody),
+        body: rawBody,
+      })
+      return { status: res.status, body: await readBody(res) }
+    },
+
+    /**
+     * POST /auth/internal/password-tokens (gateway → @sistemazero/auth). Emite o
+     * token de DEFINIÇÃO de senha do 1º acesso pós-compra (o funil monta o link
+     * `${COMMUNITY_URL}/redefinir-senha?token=...` e envia o e-mail de boas-vindas).
+     * HMAC de borda (consumer `funnel`); o gateway injeta o token interno do auth.
+     * O token cru só trafega S2S — nunca é persistido no funil.
+     */
+    async createPasswordToken(email: string): Promise<GatewayResult> {
+      const rawBody = JSON.stringify({ email })
+      const res = await doFetch(`${opts.baseUrl}/auth/internal/password-tokens`, {
+        method: 'POST',
+        headers: buildHeaders(rawBody),
+        body: rawBody,
+      })
+      return { status: res.status, body: await readBody(res) }
+    },
+
+    /**
+     * POST /messaging/send (gateway → @sistemazero/messaging). Enfileira um envio
+     * transacional (202). HMAC de borda + `Idempotency-Key` (o messaging deduplica
+     * por consumer+chave → reentrega de webhook NÃO duplica o e-mail).
+     */
+    async sendMessage(input: SendMessageInput, idempotencyKey: string): Promise<GatewayResult> {
+      const rawBody = JSON.stringify(input)
+      const res = await doFetch(`${opts.baseUrl}/messaging/send`, {
+        method: 'POST',
+        headers: buildHeaders(rawBody, idempotencyKey),
         body: rawBody,
       })
       return { status: res.status, body: await readBody(res) }

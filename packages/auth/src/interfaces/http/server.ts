@@ -8,6 +8,11 @@ import type { UpdateUserService } from '../../application/admin/update-user/upda
 import type { GetMeService } from '../../application/get-me/get-me.service'
 import type { LoginService } from '../../application/login/login.service'
 import type { LogoutService } from '../../application/logout/logout.service'
+import type { ChangeMyPasswordService } from '../../application/me/change-password.service'
+import type { UpdateProfileService } from '../../application/me/update-profile.service'
+import type { CreatePasswordTokenService } from '../../application/password-reset/create-password-token.service'
+import type { ForgotPasswordService } from '../../application/password-reset/forgot-password.service'
+import type { ResetPasswordService } from '../../application/password-reset/reset-password.service'
 import type { RefreshService } from '../../application/refresh/refresh.service'
 import type { RegisterService } from '../../application/register/register.service'
 import type { TokenIssuer } from '../../domain/ports/token-issuer.port'
@@ -17,6 +22,7 @@ import { markOversizeBody } from './raw-body'
 import { adminRoutes } from './routes/admin.routes'
 import { authRoutes } from './routes/auth.routes'
 import { healthRoutes } from './routes/health.routes'
+import { internalRoutes } from './routes/internal.routes'
 
 export interface HttpDeps {
   env: Env
@@ -27,6 +33,11 @@ export interface HttpDeps {
   refresh: RefreshService
   logout: LogoutService
   getMe: GetMeService
+  forgotPassword: ForgotPasswordService
+  resetPassword: ResetPasswordService
+  updateProfile: UpdateProfileService
+  changeMyPassword: ChangeMyPasswordService
+  createPasswordToken: CreatePasswordTokenService
   listUsers: ListUsersService
   getUser: GetUserService
   updateUser: UpdateUserService
@@ -94,6 +105,16 @@ export function createServer(deps: HttpDeps) {
         refresh: deps.refresh,
         logout: deps.logout,
         getMe: deps.getMe,
+        forgotPassword: deps.forgotPassword,
+        resetPassword: deps.resetPassword,
+        updateProfile: deps.updateProfile,
+        changeMyPassword: deps.changeMyPassword,
+      }),
+    )
+    .use(
+      internalRoutes({
+        createPasswordToken: deps.createPasswordToken,
+        internalToken: deps.env.AUTH_INTERNAL_TOKEN,
       }),
     )
     .use(
