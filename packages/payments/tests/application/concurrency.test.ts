@@ -1,11 +1,15 @@
 import { beforeEach, describe, expect, test } from 'bun:test'
 import type { ProcessPaymentCommand } from '../../src/application/process-payment/process-payment.command'
 import { ProcessPaymentService } from '../../src/application/process-payment/process-payment.service'
+import { SubscriptionAggregate } from '../../src/domain/subscription/subscription.aggregate'
+import { IdempotencyKey } from '../../src/domain/value-objects/idempotency-key'
+import { Money } from '../../src/domain/value-objects/money'
 import { ConcurrencyConflictError } from '../../src/infrastructure/persistence/drizzle/concurrency.error'
 import {
   FakePixGateway,
   InMemoryIdempotencyStore,
   InMemoryPaymentRepository,
+  InMemorySubscriptionRepository,
   silentLogger,
 } from '../fakes/in-memory'
 
@@ -66,5 +70,51 @@ describe('Concorrência otimista (version)', () => {
 
     const paidEvents = repo.outbox.filter((e) => e.eventName === 'payment.paid')
     expect(paidEvents).toHaveLength(1)
+  })
+})
+
+describe('Concorrência otimista — ASSINATURAS (version)', () => {
+  let subs: InMemorySubscriptionRepository
+  let subscriptionId: string
+
+  beforeEach(async () => {
+    subs = new InMemorySubscriptionRepository()
+    const sub = SubscriptionAggregate.create({
+      consumerId: 'sys-a',
+      amount: Money.fromCents(1000),
+      card: { brand: 'visa', last4: '4242' },
+      providerPlanId: 'plan-1',
+      intervalMonths: 1,
+      idempotencyKey: IdempotencyKey.create('idem-sub-conc-1'),
+    })
+    await subs.save(sub)
+    subscriptionId = sub.id
+  })
+
+  test('dois ciclos/notificações defasados: o segundo save conflita', async () => {
+    const a = await subs.findById(subscriptionId)
+    const b = await subs.findById(subscriptionId)
+
+    a!.activate()
+    await subs.save(a!) // vence
+
+    b!.activate()
+    await expect(subs.save(b!)).rejects.toBeInstanceOf(ConcurrencyConflictError)
+  })
+
+  test('apenas UM evento subscription.activated é emitido na corrida', async () => {
+    const a = await subs.findById(subscriptionId)
+    const b = await subs.findById(subscriptionId)
+
+    a!.activate()
+    await subs.save(a!)
+
+    b!.activate()
+    await subs.save(b!).catch(() => {
+      /* conflito esperado — o outro venceu */
+    })
+
+    const activated = subs.outbox.filter((e) => e.eventName === 'subscription.activated')
+    expect(activated).toHaveLength(1)
   })
 })

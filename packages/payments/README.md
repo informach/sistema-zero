@@ -105,6 +105,15 @@ outbox/fila/dead-letter). O teto de throughput
 **pooler** de Postgres (`DATABASE_POOL_MAX` × réplicas não pode estourar o
 `max_connections`; o `LISTEN` usa +1 conexão dedicada por instância).
 
+Chamadas à Efí têm **timeout por tentativa** (`EFI_REQUEST_TIMEOUT_MS`, 20s) e um
+**budget total da operação** (`EFI_TOTAL_RETRY_BUDGET_MS`, 30s) que limita
+tentativas + backoff somados — só chamadas idempotentes (GET/PUT/token) são
+re-tentadas, e nunca além do budget. O boot **valida** que o budget cabe numa
+tentativa inteira e que o TTL da reserva de idempotência
+(`IDEMPOTENCY_IN_FLIGHT_TTL_SECONDS`, 60s) cobre o budget com 10s de folga —
+reserva expirar com a request original viva reabriria a janela de cobrança
+duplicada.
+
 ## Segurança
 
 - Nunca armazenamos PAN de cartão — apenas token + `last4` + bandeira (tokenização Efí).
@@ -112,15 +121,23 @@ outbox/fila/dead-letter). O teto de throughput
   `EFI_CERTIFICATE_BASE64`; senha opcional em `EFI_CERTIFICATE_PASSWORD`).
 - Webhooks de entrada são deduplicados (o token de dedupe só é consumido após
   sucesso → falha no meio reprocessa), processados com **isolamento por item**, e a
-  cobrança é **re-consultada** na Efí — conferindo inclusive o **valor pago** (no
-  boleto, o **principal**, ignorando multa/juros) — antes de confirmar. Divergência
-  de valor não confirma, loga (alertável) e para de reprocessar. Opcionalmente
-  exigem `?token=` (`EFI_WEBHOOK_SECRET`).
+  cobrança é **re-consultada** na Efí — conferindo o **valor efetivamente pago**
+  (Pix: `pix[].valor`, que pode divergir do cobrado; boleto: o **principal**,
+  ignorando multa/juros) — antes de confirmar. Divergência de valor não confirma,
+  loga (alertável) e para de reprocessar. Opcionalmente exigem `?token=` ou header
+  `x-webhook-token` (`EFI_WEBHOOK_SECRET`, comparação timing-safe).
 - Idempotência via `Idempotency-Key` **por consumidor** para `POST /payments`
   (retries não duplicam cobrança). A reserva tem _fencing_ por `reservationId` (uma
   request zumbi reciclada não sobrescreve a reserva viva) e só é liberada na falha
   **se nenhuma cobrança/persistência ocorreu**; reservas presas por crash expiram por
-  TTL curto.
+  TTL curto (`IDEMPOTENCY_IN_FLIGHT_TTL_SECONDS`, validado no boot contra o budget
+  de retry da Efí). `payments.txid` tem **UNIQUE parcial** no banco (1 txid = 1
+  pagamento por construção).
+- **Estorno** (admin): o refund de **cartão não é idempotente na Efí** (chamadas
+  repetidas podem duplicar a devolução), então o serviço faz um **claim otimista**
+  (bump de `version`) antes de chamar o provedor — estornos concorrentes
+  (duplo-clique) disputam o claim e só o vencedor chama a Efí; o perdedor recebe
+  `409 REFUND_IN_PROGRESS` (ou a view atual, se o vencedor já concluiu).
 - Atrás de proxy, a resolução do IP via `X-Forwarded-For` **falha fechada**: se a
   cadeia for mais curta que `TRUSTED_PROXY_HOPS`, usa o IP do socket (não a entrada
   controlada pelo cliente) — sem bypass da allowlist.
@@ -143,7 +160,10 @@ O deploy usa `Dockerfile` (raiz: `packages/payments/Dockerfile`) + `railway.json
    `true`), `EFI_PIX_KEY`, o **certificado em base64** em `EFI_CERTIFICATE_BASE64`
    (não há upload de arquivo; senha do P12, se houver, em `EFI_CERTIFICATE_PASSWORD`)
    e, opcionalmente, `EFI_WEBHOOK_SECRET` (token no webhook de entrada — **omita para
-   desabilitar; string vazia não é aceita**).
+   desabilitar; string vazia não é aceita**). As demais alavancas (timeouts/budget
+   de retry da Efí, TTL de idempotência, retenção, `REQUIRE_ADMIN`, workers) têm
+   defaults seguros e estão documentadas no `.env.example`; o boot valida as
+   combinações perigosas (fail-fast).
 3. O `railway.json` roda as migrations no **pre-deploy** (`db:migrate`) e sobe
    com `start`. Gere/commite as migrations antes: `bun run db:generate`.
 4. **Domínio**: Settings → Networking → Generate Domain.

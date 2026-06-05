@@ -43,6 +43,8 @@ interface BuildOpts {
   trustedProxyHops?: number
   /** Liga a checagem `requireAdmin` nas rotas `/payments/admin/*`. */
   requireAdmin?: boolean
+  /** Define `EFI_WEBHOOK_SECRET` (gate `?token=`/`x-webhook-token` dos webhooks). */
+  webhookSecret?: string
 }
 
 function buildApp(opts: BuildOpts = {}) {
@@ -71,7 +73,7 @@ function buildApp(opts: BuildOpts = {}) {
     TRUSTED_PROXY_HOPS: opts.trustedProxyHops ?? 1,
     HMAC_TOLERANCE_SECONDS: 300,
     MAX_REQUEST_BODY_BYTES: opts.maxBodyBytes ?? 64 * 1024,
-    EFI_WEBHOOK_SECRET: undefined,
+    EFI_WEBHOOK_SECRET: opts.webhookSecret,
   } as unknown as Env
 
   // Stubs de leitura admin (estas integrações não exercem dados de listagem).
@@ -344,6 +346,32 @@ describe('HTTP server', () => {
     expect(res.status).toBe(401)
   })
 
+  test('assinatura VÁLIDA mas com timestamp fora da tolerância (replay velho) → 401', async () => {
+    const { app } = buildApp()
+    // Assinatura criptograficamente correta, porém assinada 10min atrás
+    // (tolerância: 300s) — anti-replay rejeita ANTES de comparar o HMAC.
+    const oldTs = now() - 600
+    const headers = postHeaders(PIX_BODY)
+    headers['x-signature'] =
+      `t=${oldTs},v1=${signHmac('secret-a', `idem-12345678.${PIX_BODY}`, oldTs)}`
+    const res = await app.handle(
+      new Request('http://localhost/payments', { method: 'POST', headers, body: PIX_BODY }),
+    )
+    expect(res.status).toBe(401)
+  })
+
+  test('replay trocando a Idempotency-Key (assinatura de outra chave) → 401', async () => {
+    const { app } = buildApp()
+    // A mensagem assinada inclui a Idempotency-Key ("<key>.<body>"); reusar a
+    // assinatura com OUTRA chave (forçaria novo pagamento) não pode passar.
+    const headers = postHeaders(PIX_BODY) // assina "idem-12345678.<body>"
+    headers['idempotency-key'] = 'idem-OUTRA-CHAVE'
+    const res = await app.handle(
+      new Request('http://localhost/payments', { method: 'POST', headers, body: PIX_BODY }),
+    )
+    expect(res.status).toBe(401)
+  })
+
   test('IP fora da allowlist → 403', async () => {
     const { app } = buildApp({ allowedCidrsA: ['10.0.0.0/8'] })
     const res = await app.handle(
@@ -550,6 +578,56 @@ describe('HTTP server', () => {
     )
     expect(res.status).toBe(200)
     expect((await repo.findById(id))!.status).toBe('PAID')
+  })
+
+  describe('EFI_WEBHOOK_SECRET (gate dos webhooks de entrada)', () => {
+    const SECRET = 'segredo-webhook-forte'
+    const pixHook = (url: string, headers: Record<string, string> = {}) =>
+      new Request(url, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', ...headers },
+        body: JSON.stringify({ pix: [] }),
+      })
+
+    test('sem token → 401', async () => {
+      const { app } = buildApp({ webhookSecret: SECRET })
+      const res = await app.handle(pixHook('http://localhost/webhooks/efi/pix'))
+      expect(res.status).toBe(401)
+    })
+
+    test('token errado → 401 (também no /cobrancas)', async () => {
+      const { app } = buildApp({ webhookSecret: SECRET })
+      const pix = await app.handle(pixHook('http://localhost/webhooks/efi/pix?token=errado'))
+      expect(pix.status).toBe(401)
+      const cob = await app.handle(
+        new Request('http://localhost/webhooks/efi/cobrancas?token=errado', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ notification: 'tok' }),
+        }),
+      )
+      expect(cob.status).toBe(401)
+    })
+
+    test('?token= correto → 200', async () => {
+      const { app } = buildApp({ webhookSecret: SECRET })
+      const res = await app.handle(pixHook(`http://localhost/webhooks/efi/pix?token=${SECRET}`))
+      expect(res.status).toBe(200)
+    })
+
+    test('header x-webhook-token correto → 200', async () => {
+      const { app } = buildApp({ webhookSecret: SECRET })
+      const res = await app.handle(
+        pixHook('http://localhost/webhooks/efi/pix', { 'x-webhook-token': SECRET }),
+      )
+      expect(res.status).toBe(200)
+    })
+
+    test('sem segredo configurado, webhook segue aberto (comportamento legado)', async () => {
+      const { app } = buildApp()
+      const res = await app.handle(pixHook('http://localhost/webhooks/efi/pix'))
+      expect(res.status).toBe(200)
+    })
   })
 
   test('POST /payments autenticado cobra cartão → 201 com dados do cartão, sem pix/boleto', async () => {
@@ -830,12 +908,48 @@ describe('Rotas admin (/payments/admin/*)', () => {
     expect(res.status).toBe(403)
   })
 
+  test('requireAdmin ligado: role admin mas SEM header de status → 401 (fail-closed)', async () => {
+    const { app } = buildApp({ requireAdmin: true })
+    // O gateway sempre injeta status junto com role; ausência = não passou pelo
+    // gateway. "Ausente" não pode equivaler a "ativo".
+    const res = await app.handle(
+      new Request('http://localhost/payments/admin/payments', {
+        headers: { 'x-auth-user-role': 'admin' },
+      }),
+    )
+    expect(res.status).toBe(401)
+  })
+
   test('requireAdmin ligado: admin ativo → 200', async () => {
     const { app } = buildApp({ requireAdmin: true })
     const res = await app.handle(
       new Request('http://localhost/payments/admin/payments', { headers: adminHeaders() }),
     )
     expect(res.status).toBe(200)
+  })
+
+  test('requireAdmin ligado: TODAS as rotas admin passam o gate com admin ativo', async () => {
+    const { app } = buildApp({ requireAdmin: true })
+    const ID = '00000000-0000-0000-0000-000000000000'
+    // [rota, método, status esperado] — 200 = stub vazio; 404 = id inexistente
+    // (mas JÁ passou pela auth — sem o gate seria 401).
+    const cases: [string, string, number][] = [
+      ['/payments/admin/payments', 'GET', 200],
+      [`/payments/admin/payments/${ID}`, 'GET', 404],
+      ['/payments/admin/subscriptions', 'GET', 200],
+      [`/payments/admin/subscriptions/${ID}`, 'GET', 404],
+      ['/payments/admin/stats', 'GET', 200],
+      ['/payments/admin/stats/daily', 'GET', 200],
+      ['/payments/admin/ops', 'GET', 200],
+      [`/payments/admin/payments/${ID}/refund`, 'POST', 404],
+      [`/payments/admin/subscriptions/${ID}`, 'DELETE', 404],
+    ]
+    for (const [path, method, expected] of cases) {
+      const res = await app.handle(
+        new Request(`http://localhost${path}`, { method, headers: adminHeaders() }),
+      )
+      expect(`${method} ${path} → ${res.status}`).toBe(`${method} ${path} → ${expected}`)
+    }
   })
 
   test('GET /payments/admin/payments/:id com UUID malformado → 400 (não 500)', async () => {

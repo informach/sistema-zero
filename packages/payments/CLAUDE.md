@@ -85,6 +85,12 @@ tests/               # unit/ · application/ · integration/ · fakes/
    Pix): o boot faz `warmUp()` dos clients (best-effort) e um **re-warm periódico
    do token Pix** (`EFI_TOKEN_REWARM_INTERVAL_MS` = 45min; só o Pix — o da API
    Cobranças não usa mTLS e o token vive ~600s). Ver `composition-root.ts`.
+   **Budget TOTAL de retry** (`EFI_TOTAL_RETRY_BUDGET_MS` = 30s): o timeout
+   (`EFI_REQUEST_TIMEOUT_MS` = 20s) é POR TENTATIVA — sem o budget, o pior caso
+   de uma chamada idempotente re-tentada era (3+1)×20s + backoff ≈ 86s, acima do
+   timeout do gateway (35s) E do TTL de idempotência. O `withRetry` (`http.ts`)
+   só re-tenta se a próxima tentativa couber INTEIRA no budget; a 1ª tentativa
+   sempre roda. O boot valida `budget >= timeout` e `TTL*1000 >= budget + 10s`.
 
 2. **Corpo bruto (raw body) é sagrado.** A assinatura HMAC e o hash de
    idempotência usam o texto EXATO do corpo. Ele é capturado no `onParse`
@@ -99,9 +105,11 @@ tests/               # unit/ · application/ · integration/ · fakes/
    lentas (HTTP) vão para a fila `webhook_deliveries`, não para dentro do outbox.
 
 4. **Nunca confie no webhook.** `HandleProviderWebhookService` **re-consulta a
-   cobrança na Efí** (`getPixCharge`) antes de marcar como pago, confere o **valor**
-   contra o cobrado, e deduplica via `webhook_events` (o token só é consumido em
-   `markProcessed` → falha no meio NÃO descarta a reentrega). **Mismatch de valor**
+   cobrança na Efí** (`getPixCharge`) antes de marcar como pago, confere o **valor
+   efetivamente PAGO** contra o cobrado (`getPixCharge` lê `pix[].valor` — o
+   exemplo oficial da Efí mostra pago ≠ original; fallback no `valor.original`
+   enquanto não há pagamento), e deduplica via `webhook_events` (o token só é
+   consumido em `markProcessed` → falha no meio NÃO descarta a reentrega). **Mismatch de valor**
    é determinístico → consome o dedupe (`markProcessed`) p/ não reprocessar a cada
    reentrega; loga ERROR (alertável) e o pagamento fica PENDING (revisão manual). No
    **boleto** o valor conferido é o **principal** (`parseDetailCharge` lê os itens/`value`,
@@ -117,9 +125,11 @@ tests/               # unit/ · application/ · integration/ · fakes/
    Conclui em sucesso (cacheando a resposta). Mesma chave + payload diferente → 409.
    Retry da MESMA chave com reserva `IN_FLIGHT` viva → **409 `IDEMPOTENCY_IN_FLIGHT`**
    (o funil traduz p/ `PAYMENT_IN_PROGRESS` "aguarde" + auto-retry no PixCheckout).
-   O TTL da reserva (`IDEMPOTENCY_IN_FLIGHT_TTL_SECONDS` = 60s) é também o LOCKOUT
-   pós-falha-com-efeito; **não baixar de ~40s** (a perna Efí no pior caso passa de
-   45s — reserva expirar com a request original viva = risco de cobrança duplicada).
+   O TTL da reserva (`IDEMPOTENCY_IN_FLIGHT_TTL_SECONDS`, env, default 60s) é
+   também o LOCKOUT pós-falha-com-efeito. A perna Efí agora é LIMITADA por
+   `EFI_TOTAL_RETRY_BUDGET_MS` (30s) e o boot EXIGE `TTL*1000 >= budget + 10s`
+   (refine) — a reserva expirar com a request original viva = novo paymentId/txid
+   = risco de cobrança duplicada, então a invariante é validada, não convenção.
    `reserve` retorna `ReserveResult` (`{kind:'acquired',reservationId}` |
    `{kind:'existing',record}`); `complete`/`release` **exigem o `reservationId`** +
    `state='IN_FLIGHT'` → uma request zumbi (reserva já reciclada por outra) **não
@@ -146,7 +156,15 @@ tests/               # unit/ · application/ · integration/ · fakes/
 9. **Concorrência otimista.** `payments.version` + `save` com `UPDATE ... WHERE
    version = ?` evita lost-update e eventos duplicados quando dois writers
    (reconciliação × webhook, ou réplicas) tocam o mesmo pagamento. Conflito →
-   `ConcurrencyConflictError` (o worker/handler trata como "o outro venceu").
+   `ConcurrencyConflictError` (o worker/handler trata como "o outro venceu";
+   a reconciliação loga `reconcile.lost_race` em INFO — não é alarme). O `save`
+   NÃO atualiza a `version` da instância em memória: para gravar de novo o mesmo
+   agregado, **recarregue** (`findById`) antes (ver `RefundPaymentService`).
+   `markPaid`/`markFailed`/`markExpired` são idempotentes no agregado (re-marcar
+   estado terminal já alcançado = no-op, sem evento duplicado). O `restore` NÃO
+   revalida CPF/e-mail (`Customer.restore` — endurecer validação não pode tornar
+   registro antigo ilegível) e falha ALTO num CREDIT_CARD persistido sem `card`
+   (sem fallback silencioso p/ PIX). `payments.txid` tem UNIQUE parcial no banco.
 
 6. **PCI.** Nunca persista o PAN do cartão — só `token` + `last4` + bandeira.
 
@@ -231,7 +249,9 @@ distinto das rotas consumer `/payments`,`/payments/:id` — ≥3 segmentos, sem 
 O RBAC REAL é do **gateway** (JWT + `authorize.roles:[superadmin,admin,staff]`); o
 serviço confere os headers `X-Auth-User-*` injetados (`requireAdmin` em
 `interfaces/http/admin-auth.ts`, **defesa em profundidade**, ligada por `REQUIRE_ADMIN`,
-default `true`). Estas rotas **NÃO** usam auth de consumidor (HMAC) nem `resign` no
+default `true`). **Fail-closed**: exige role E status PRESENTES (o gateway sempre
+injeta os dois; header de status ausente = não passou pelo gateway → 401) e
+`status === 'active'` (senão 403) — "ausente" nunca equivale a "ativo". Estas rotas **NÃO** usam auth de consumidor (HMAC) nem `resign` no
 gateway. São cross-consumer (o painel enxerga todos).
 
 - **Leitura:** `GET /payments/admin/payments` (`?q&status&method&consumerId&from&to&limit&offset`),
@@ -252,7 +272,12 @@ gateway. São cross-consumer (o painel enxerga todos).
   tem estorno programático** (→ `REFUND_NOT_SUPPORTED`). Idempotente (já `REFUNDED` → no-op);
   marca via `PaymentAggregate.refund({providerRefundId,refundedAt})` (grava em `metadata`, **sem
   coluna nova**) e emite `payment.refunded` (outbox → entrega ao consumidor revogar acesso).
-  Novos métodos no port/adapter: `refundPixCharge`/`refundCardCharge`.
+  Métodos no port/adapter: `refundPixCharge`/`refundCardCharge`.
+  ⚠️ **O refund de cartão NÃO é idempotente na Efí** (doc oficial: chamadas repetidas podem
+  duplicar a devolução). Por isso o serviço faz um **claim otimista** (save que incrementa a
+  `version`) ANTES de chamar o provedor: estornos concorrentes (duplo-clique) disputam o UPDATE
+  e só o vencedor chama a Efí; o perdedor recebe **409 `REFUND_IN_PROGRESS`** (ou a view, se o
+  vencedor já concluiu). Pix é idempotente no provedor (id de devolução determinístico).
 
 ## Minhas compras (app @sistemazero/community — self-service do comprador)
 
@@ -337,5 +362,5 @@ successfully" sem rodar). Foi exatamente o que aconteceu com auth/funnel antes d
 `EFI_SANDBOX=false`** (refine fail-fast — evita apontar pro sandbox sem querer) e
 `NODE_ENV=production` (desliga o Swagger e o log debug/pretty). `EFI_WEBHOOK_SECRET`
 não pode ser string vazia (omita p/ desabilitar). Migrations geradas/commitadas via
-`db:generate` (a última adicionou `idempotency_keys.reservation_id`). Detalhes no
-`README.md`.
+`db:generate` (a última, `0002`, trocou o índice de `payments.txid` por uma **UNIQUE
+parcial** `payments_txid_uq WHERE txid IS NOT NULL`). Detalhes no `README.md`.
