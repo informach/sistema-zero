@@ -18,17 +18,23 @@ export class GetMyCourseService {
 
   async execute(userId: string, courseSlug: string): Promise<CourseDetailView> {
     const { course, entitlement } = await this.checkAccess.requireBySlug(userId, courseSlug)
-    // Aluno só vê aulas PUBLICADAS — outline e denominador do progresso idem.
-    const [outline, completedIds, total, last, lastAccessed, myRating] = await Promise.all([
+    // Aluno só vê aulas PUBLICADAS — outline e progresso idem.
+    const [outline, completedIds, last, lastAccessed, myRating] = await Promise.all([
       this.courses.findOutline(course.id, { publishedOnly: true }),
       this.progress.listCompletedLessonIds(userId, course.id),
-      this.courses.countPublishedLessons(course.id),
       this.progress.lastCompletedAt(userId, course.id),
       this.positions.lastAccessedLessonId(userId, course.id),
       this.ratings.find(userId, course.id),
     ])
     const completedSet = new Set(completedIds)
-    const progressView = toCourseProgressView(computeProgress(completedIds.length, total), last)
+    // Numerador e denominador derivados do MESMO outline publicado: conclusões de
+    // aulas hoje despublicadas não contam (e não infla o percentual).
+    const publishedLessonIds = outline.flatMap((m) => m.lessons.map((l) => l.id))
+    const completedPublished = publishedLessonIds.filter((id) => completedSet.has(id)).length
+    const progressView = toCourseProgressView(
+      computeProgress(completedPublished, publishedLessonIds.length),
+      last,
+    )
     const continueLessonId = resolveContinueLesson(outline, completedSet, lastAccessed)
     return toCourseDetailView(
       course,

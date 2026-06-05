@@ -26,7 +26,12 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > (`course_ratings`, estilo Udemy — ver rota abaixo) + **bloco e-book** (kind `ebook`:
 > PDF privado que vira livro 3D no community; view do aluno SEM url + rota
 > `/ebook/resolve`) + **chave-mestra `all_courses`** (06/2026: 1 matrícula cobre TODOS
-> os cursos publicados, atuais e futuros — ver Conceito central) — **115 testes**.
+> os cursos publicados, atuais e futuros — ver Conceito central) + **full review
+> 06/2026 com todos os achados corrigidos** (prod-readiness `HOST ::`/`/readyz`/cron
+> de retenção/timeout do catálogo; retry da extensão de assinatura; progresso sem
+> conclusões de aulas despublicadas; token interno também no admin; guards de
+> "última aula publicada"; reativação via extend; oferta vazia → 502; validações
+> de quiz/sandbox; cooldown atômico) — **131 testes**.
 > Migrations `0000` (schema `members`), `0001` (`lesson_progress`), `0002`
 > (`quiz_attempts`), `0003` (`lessons.is_published`), `0004` (`course_ratings`), `0005`
 > (enum `lesson_block_kind` + `'ebook'`) e `0006` (enum `access_type` + `'all_courses'`)
@@ -145,17 +150,28 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   validação do corpo → 401 antes de 422). Dedupe por `x-delivery-id` (tabela
   `processed_webhooks`). Falha de concessão → o funil devolve
   502 e o gateway re-entrega (members é idempotente pela `idempotencyKey`).
-- **Grant de oferta não resolvida** (catálogo 404) → `/webhooks/grant` devolve **502 e
-  NÃO marca a entrega** (auto-cura uma corrida; uma divergência de slug permanente
-  aflora como falhas repetidas em vez de sumir). `granted:0` por idempotência (já
-  concedido) continua sendo **200** (sucesso) — o sinal é `offerFound`, não a contagem.
-- **API do aluno = defesa em profundidade**: o gateway injeta `x-internal-token`
-  (`header-inject`, sobrescreve qualquer valor do cliente) e o members o exige nas
-  rotas do aluno (`INTERNAL_API_TOKEN`, ver §env). Vazio em dev (sem gateway);
-  **OBRIGATÓRIO em produção** (boot falha sem ele). É o que torna o `x-auth-user-id`
-  confiável (só vale se passou pelo gateway). Webhooks NÃO usam (já têm HMAC).
+- **Grant de oferta não resolvida** (catálogo 404) → `/webhooks/grant` devolve **502
+  `OFFER_UNRESOLVED` e NÃO marca a entrega** (auto-cura uma corrida; uma divergência
+  de slug permanente aflora como falhas repetidas em vez de sumir). Oferta resolvida
+  **sem nenhum item** (drift de contrato — itens malformados são descartados COM LOG
+  no parse do gateway do catálogo) → **502 `OFFER_EMPTY`**, mesma régua. `granted:0`
+  por idempotência (já concedido) continua sendo **200** (sucesso) — o sinal é
+  `offerFound`/`itemsResolved`, não a contagem.
+- **Extensão de assinatura re-tenta sob conflito otimista** (até 3×, recarregando a
+  matrícula): sem isso, a renovação que perdesse a corrida p/ um cancel/ação admin
+  respondia 200 e a extensão do ciclo se perdia de vez. Conflito persistente → lança
+  (5xx → re-entrega). Reentrega do mesmo ciclo (validade já cobre o alvo) = no-op.
+- **API do aluno E rotas admin = defesa em profundidade**: o gateway injeta
+  `x-internal-token` (`header-inject`, sobrescreve qualquer valor do cliente) e o
+  members o exige nas rotas do aluno **e em `/members/admin/*`** (06/2026 — sem ele,
+  qualquer processo que alcançasse o members direto na rede interna forjaria um admin
+  via `X-Auth-User-*`) (`INTERNAL_API_TOKEN`, ver §env). Vazio em dev (sem gateway);
+  **OBRIGATÓRIO em produção** (boot falha sem ele). É o que torna o
+  `x-auth-user-id`/`X-Auth-User-*` confiáveis (só valem se passaram pelo gateway).
+  Webhooks NÃO usam (já têm HMAC).
 - **Catálogo** é chamado DIRETO (S2S, `CATALOG_BASE_URL`), fora do caminho quente — a
-  rota de entitlements é pública de leitura.
+  rota de entitlements é pública de leitura. **Timeout por chamada**
+  (`CATALOG_REQUEST_TIMEOUT_MS`, default 10s) — catálogo travado não pendura o webhook.
 - **`GET /members/catalog`** (rota do aluno, JWT + `x-internal-token`): "Todos os
   cursos" — TODO curso `published` (ordenado por título) com `hasAccess` (matrícula
   ativa de curso do `x-auth-user-id`) e `salesPageUrl` (de `course.metadata.salesPageUrl`,
@@ -206,16 +222,30 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   (só `{kind, title?}`). `GetEbookDownloadService`.
 - Cancelar/expirar assinatura é um **UPDATE atômico set-based** por `subscription_id`
   (sem load-mutate-save por linha → sem lost-update sob corrida com renovação).
-- `processed_webhooks` tem `pruneProcessedBefore(date)` (retenção; chamar por cron —
-  não roda no caminho quente).
+- **Retenção de `processed_webhooks` roda SOZINHA** (06/2026): `setInterval` no
+  composition-root (`RETENTION_CLEANUP_INTERVAL_MS`, default 6h) chama
+  `pruneProcessedBefore(now - PROCESSED_WEBHOOKS_RETENTION_DAYS)` gateado por
+  **advisory xact-lock** (chave `30792292938117747` = 'members' ASCII int8 — o espaço
+  é GLOBAL ao banco compartilhado, não colida com a do payments) → só 1 réplica
+  limpa por ciclo. Fora do hot path.
+- **Liveness/readiness**: `/health` (estático) + **`/readyz`** (probe `select 1` no
+  banco; 503 sem ele) — aponte o healthcheck do Railway para `/readyz`. Bind
+  **dual-stack `::`** (env `HOST`) — obrigatório p/ `members.railway.internal`
+  (private networking é IPv6). Espelha o payments.
+- **Cooldown do quiz é atômico** (06/2026): além da pré-checagem (429 com
+  `retryAvailableAt`), o `save` da tentativa re-checa o cooldown DENTRO de uma
+  transação serializada por (aluno, bloco) via `pg_advisory_xact_lock(hashtextextended)`
+  — dois submits simultâneos não furam a janela (o perdedor leva 429 sem gravar).
 
 ## Admin (painel `@sistemazero/admin`)
 
-Gestão de acesso pelo operador. Caminho `/members/admin/*` (distinto da API do aluno;
-**sem** `x-internal-token` — segue o padrão do catálogo). RBAC real no gateway
-(LEITURA → superadmin/admin/staff; ESCRITA → superadmin/admin); o serviço confere os
-headers `X-Auth-User-*` via `requireAdmin` (defesa em profundidade, `env.REQUIRE_ADMIN`,
-default `true`). Rotas em `interfaces/http/routes/admin.routes.ts`:
+Gestão de acesso pelo operador. Caminho `/members/admin/*` (distinto da API do aluno).
+RBAC real no gateway (LEITURA → superadmin/admin/staff; ESCRITA → superadmin/admin); o
+serviço confere os headers `X-Auth-User-*` via `requireAdmin` (defesa em profundidade,
+`env.REQUIRE_ADMIN`, default `true`) **e exige o `x-internal-token`** (06/2026 — o
+gateway injeta via `membersInternalTransforms`; sem ele os `X-Auth-User-*` seriam
+forjáveis por quem alcançasse o serviço direto). Rotas em
+`interfaces/http/routes/admin.routes.ts`:
 
 - `GET /members/admin/members` (`?status&courseRef&limit&offset`) → membros distintos
   (1 linha = 1 usuário com matrícula) com sumário (`activeCount/totalCount`, cursos,
@@ -233,8 +263,11 @@ default `true`). Rotas em `interfaces/http/routes/admin.routes.ts`:
   existente; revogada/expirada → 409 (use estender). `GrantManualEntitlementService`.
 - `PATCH /members/admin/entitlements/:id` (body `{action:'revoke'|'expire'|'extend', expiresAt?}`)
   → carrega por id, aplica a transição no agregado, persiste com concorrência otimista
-  (conflito → 409). `ManageEntitlementService`. Erros novos: `ENTITLEMENT_CONFLICT`→409,
-  `OFFER_NOT_FOUND`→404.
+  (conflito → 409). **`extend` numa REVOGADA reativa** (`reactivate`: status→active,
+  revokedAt→null, validade = a enviada) — é o caminho "use estender" documentado acima;
+  o `extendTo` do ciclo de assinatura segue NUNCA ressuscitando `revoked`.
+  `ManageEntitlementService`. Erros novos: `ENTITLEMENT_CONFLICT`→409,
+  `OFFER_NOT_FOUND`→404. Oferta resolvida sem itens no grant manual → 400.
 
 **Autoria de conteúdo** (`interfaces/http/routes/content.routes.ts`, prefixo `/members/admin`,
 coexiste com `admin.routes`). Porta de escrita SEPARADA (`ContentAdminRepository` +
@@ -249,6 +282,12 @@ implementa as DUAS sobre os mesmos arrays. 5 serviços (`content-admin/content-a
   `GET /lessons/:id/content` (blocos + anexos, p/ o editor), `POST /modules/:moduleId/lessons/reorder`.
 - Blocos: `POST /lessons/:lessonId/blocks`, `PATCH/DELETE /blocks/:id`, `…/blocks/reorder`.
   Conteúdo = **união discriminada por `kind`** (DTO TypeBox `LessonBlockContentSchema`).
+  **Quiz é validado semanticamente** na escrita (`validateQuizAuthoring`, 06/2026):
+  ids únicos, ≥2 alternativas/questão, ≥1 correta e toda correta ∈ alternativas → 400;
+  quiz SEM questões segue aceito (rascunho do builder). **`sandbox` do embed é
+  allowlist** (`allow-scripts|forms|modals|popups|pointer-lock|downloads|presentation|
+  orientation-lock`) — `allow-same-origin`/top-navigation → 400 (srcDoc na origin do
+  community = XSS). `sortOrder` dos creates é `max+1` DENTRO do INSERT (+RETURNING).
 - Anexos: `POST /lessons/:lessonId/attachments`, `PATCH/DELETE /attachments/:id`, `…/attachments/reorder`.
 
 Slug duplicado (curso global, aula por curso) → 23505 → `DUPLICATE_SLUG`(409). Reordenar exige os
@@ -259,10 +298,14 @@ na prática — sem version do cliente); módulos/aulas/blocos/anexos não têm 
 **Publicação por aula** (`lessons.is_published`, migration `0003`): `LessonBody` aceita
 `isPublished` opcional — **ausente → `false`** (aula nova nasce RASCUNHO; aulas pré-existentes
 foram backfilled `true` pelo default do DDL). Guard: criar/publicar curso com `status:'published'`
-exige **≥1 aula publicada** → `NO_PUBLISHED_LESSON`(409). Visão do ALUNO filtra rascunhos em tudo:
-outline (`findOutline(..., {publishedOnly:true})`), GET da aula/complete/posição de vídeo/quiz-attempt
-→ 404 em aula rascunho, e o denominador do progresso usa `countPublishedLessons*` (só publicadas).
-O ADMIN vê tudo (árvore com rascunhos; `countLessons` no member-detail é o total real).
+exige **≥1 aula publicada** → `NO_PUBLISHED_LESSON`(409) — e o invariante vale **pelo avesso**
+(06/2026): despublicar/excluir a ÚLTIMA aula publicada, ou excluir o módulo com as últimas,
+num curso `published` → 409 (`countPublishedLessons` com `excludeLessonId/excludeModuleId`).
+Visão do ALUNO filtra rascunhos em tudo: outline (`findOutline(..., {publishedOnly:true})`),
+GET da aula/complete/posição de vídeo/quiz-attempt → 404 em aula rascunho, e o progresso usa
+numerador E denominador sobre publicadas (`countCompletedPublished*` × `countPublishedLessons*`
+— conclusão de aula DEPOIS despublicada não conta/infla; o detalhe deriva ambos do outline).
+O ADMIN vê tudo (árvore com rascunhos; `countLessons`/`countCompleted` cruas no member-detail).
 
 ## Convenções
 

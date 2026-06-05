@@ -6,13 +6,15 @@ import { buildErrorResponse } from './error-handler'
 import { markOversizeBody, setRawBody } from './raw-body'
 import { type AdminRoutesDeps, adminRoutes } from './routes/admin.routes'
 import { type ContentRoutesDeps, contentRoutes } from './routes/content.routes'
-import { healthRoutes } from './routes/health.routes'
+import { healthRoutes, type ReadinessProbe } from './routes/health.routes'
 import { type MembersRoutesDeps, membersRoutes } from './routes/members.routes'
 import { type WebhooksRoutesDeps, webhooksRoutes } from './routes/webhooks.routes'
 
 export interface HttpDeps {
   env: Env
   logger: Logger
+  /** Probe de readiness (`/readyz`): banco alcançável. */
+  readiness: ReadinessProbe
   members: MembersRoutesDeps
   webhooks: WebhooksRoutesDeps
   admin: AdminRoutesDeps
@@ -69,7 +71,7 @@ export function createServer(deps: HttpDeps) {
   }
 
   return app
-    .use(healthRoutes())
+    .use(healthRoutes(deps.readiness))
     .use(membersRoutes(deps.members))
     .use(webhooksRoutes(deps.webhooks))
     .use(adminRoutes(deps.admin))

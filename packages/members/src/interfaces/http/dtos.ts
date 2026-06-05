@@ -238,10 +238,20 @@ const QuizBlockSchema = t.Object({
 })
 // Autoria v3: interativo é SEMPRE iframe sandbox com HTML (embedType/src/height
 // viraram legado — só existem em blocos antigos, nunca em escrita nova).
+// `sandbox` aceita SÓ tokens seguros: `allow-same-origin` faria o srcDoc rodar na
+// ORIGIN do community (HTML do bloco vira XSS no app do aluno); top-navigation e
+// popups-to-escape-sandbox furam o isolamento. Allowlist > blocklist.
+const SAFE_SANDBOX_TOKEN =
+  'allow-(?:scripts|forms|modals|popups|pointer-lock|downloads|presentation|orientation-lock)'
 const EmbedBlockSchema = t.Object({
   kind: t.Literal('embed'),
   html: t.String({ minLength: 1, maxLength: 200_000 }),
-  sandbox: t.Optional(t.String({ maxLength: 200 })),
+  sandbox: t.Optional(
+    t.String({
+      maxLength: 200,
+      pattern: `^${SAFE_SANDBOX_TOKEN}(?: ${SAFE_SANDBOX_TOKEN})*$`,
+    }),
+  ),
 })
 /** PDF no bucket R2 privado (`r2priv:<key>`) — vira livro 3D no front do aluno. */
 const EbookBlockSchema = t.Object({

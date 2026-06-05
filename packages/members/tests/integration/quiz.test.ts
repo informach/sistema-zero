@@ -145,6 +145,24 @@ describe('Quiz server-side', () => {
     expect(await readJson(retry)).toMatchObject({ passed: true, attemptsCount: 2 })
   })
 
+  test('corrida de submits simultâneos: o guard atômico do save barra o perdedor (429)', async () => {
+    const { app, courses, entitlements, quizAttempts } = buildApp()
+    const course = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
+    const blockId = seedQuizBlock(courses, course.lessonIds[0], { passingScore: 100 })
+
+    // Simula a corrida check-then-act: a pré-checagem passou (sem cooldown), mas
+    // o save com guard perde para um submit concorrente que reprovou primeiro.
+    const originalSave = quizAttempts.save.bind(quizAttempts)
+    quizAttempts.save = async () => false
+    const lost = await submit(app, course.lessonIds[0], blockId, { q1: ['a'], q2: ['a'] })
+    expect(lost.status).toBe(429)
+    expect((await readJson(lost)).error.code).toBe('QUIZ_COOLDOWN')
+    quizAttempts.save = originalSave
+    // Nada foi gravado pelo perdedor.
+    expect(quizAttempts.attempts).toHaveLength(0)
+  })
+
   test('gate: complete 409 sem quiz aprovado; após aprovar → 200', async () => {
     const { app, courses, entitlements, clockRef } = buildApp()
     const course = seedSampleCourse(courses)

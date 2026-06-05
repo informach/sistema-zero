@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray } from 'drizzle-orm'
+import { and, desc, eq, inArray, sql } from 'drizzle-orm'
 import type { QuizAttemptSummary } from '../../../domain/course/quiz'
 import type {
   QuizAttemptRecord,
@@ -10,8 +10,37 @@ import { quizAttempts } from './schema'
 export class DrizzleQuizAttemptRepository implements QuizAttemptRepository {
   constructor(private readonly db: Database) {}
 
-  async save(attempt: QuizAttemptRecord): Promise<void> {
-    await this.db.insert(quizAttempts).values(attempt)
+  async save(attempt: QuizAttemptRecord, guard?: { cooldownMs: number }): Promise<boolean> {
+    if (!guard) {
+      await this.db.insert(quizAttempts).values(attempt)
+      return true
+    }
+    // Fecha a corrida check-then-act de dois submits simultâneos: o advisory
+    // xact-lock serializa por (aluno, bloco) — escopo mínimo, não trava outros
+    // alunos — e o cooldown é RE-checado dentro da seção crítica. O lock solta
+    // sozinho no commit/rollback.
+    return this.db.transaction(async (tx) => {
+      await tx.execute(
+        sql`select pg_advisory_xact_lock(hashtextextended(${`${attempt.userId}:${attempt.blockId}`}, 0))`,
+      )
+      const rows = await tx
+        .select({ passed: quizAttempts.passed, createdAt: quizAttempts.createdAt })
+        .from(quizAttempts)
+        .where(
+          and(eq(quizAttempts.userId, attempt.userId), eq(quizAttempts.blockId, attempt.blockId)),
+        )
+        .orderBy(desc(quizAttempts.createdAt))
+      const last = rows[0]
+      const everPassed = rows.some((r) => r.passed)
+      const blocked =
+        last !== undefined &&
+        !everPassed &&
+        !last.passed &&
+        last.createdAt.getTime() + guard.cooldownMs > attempt.createdAt.getTime()
+      if (blocked) return false
+      await tx.insert(quizAttempts).values(attempt)
+      return true
+    })
   }
 
   async summarizeByBlockIds(

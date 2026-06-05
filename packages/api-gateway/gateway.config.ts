@@ -821,9 +821,10 @@ const config: GatewayConfigInput = {
 
     // ── Área de membros — Admin (painel `@sistemazero/admin`) ────────────────
     // Gestão de acesso pelo operador. JWT + RBAC no gateway (LEITURA → superadmin/
-    // admin/staff; ESCRITA → superadmin/admin). SEM `membersInternalTransforms`: o
-    // token interno é só da API do aluno; aqui o members confia no `requireAdmin`
-    // sobre os X-Auth-User-* injetados (defesa em profundidade, igual ao catálogo).
+    // admin/staff; ESCRITA → superadmin/admin). COM `membersInternalTransforms`
+    // (06/2026): o members exige o `x-internal-token` também no admin — os
+    // X-Auth-User-* só são confiáveis se a chamada passou pelo gateway; sem o
+    // token, qualquer processo na rede interna forjaria um admin chamando direto.
     {
       id: 'members-admin-members-list',
       methods: ['GET'],
@@ -831,6 +832,7 @@ const config: GatewayConfigInput = {
       service: 'members',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
     {
@@ -840,6 +842,7 @@ const config: GatewayConfigInput = {
       service: 'members',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
       rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
     },
     {
@@ -849,6 +852,7 @@ const config: GatewayConfigInput = {
       service: 'members',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
       rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
     },
     {
@@ -858,6 +862,7 @@ const config: GatewayConfigInput = {
       service: 'members',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
       rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
     },
 
@@ -867,7 +872,8 @@ const config: GatewayConfigInput = {
     // path — INCLUSIVE o próprio `/courses` (wildcard com cauda vazia) — e como rotas
     // mais longas ganham na especificidade, cobrem também a lista/criação (sem precisar
     // de rotas exatas separadas). O gateway repassa o path intacto; o members roteia com
-    // precisão. `requireAdmin` confere os X-Auth-User-* (defesa em profundidade), SEM token interno.
+    // precisão. `requireAdmin` confere os X-Auth-User-* + `x-internal-token` injetado
+    // (defesa em profundidade — ver comentário do bloco admin acima).
     {
       id: 'members-admin-courses-read',
       methods: ['GET'],
@@ -875,6 +881,7 @@ const config: GatewayConfigInput = {
       service: 'members',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
       rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
     },
     {
@@ -884,6 +891,7 @@ const config: GatewayConfigInput = {
       service: 'members',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
     {
@@ -893,6 +901,7 @@ const config: GatewayConfigInput = {
       service: 'members',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
     {
@@ -902,6 +911,7 @@ const config: GatewayConfigInput = {
       service: 'members',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
       rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
     },
     {
@@ -911,6 +921,7 @@ const config: GatewayConfigInput = {
       service: 'members',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
     {
@@ -920,6 +931,7 @@ const config: GatewayConfigInput = {
       service: 'members',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
     {
@@ -929,6 +941,7 @@ const config: GatewayConfigInput = {
       service: 'members',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
 

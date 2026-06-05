@@ -123,8 +123,7 @@ export class GrantEntitlementService {
     const existing = await this.deps.entitlements.findByIdempotencyKey(idempotencyKey)
     if (existing) {
       if (!expiresAt) return false
-      existing.extendTo(expiresAt, cmd.grantedAt)
-      return this.deps.entitlements.update(existing)
+      return this.extendWithRetry(existing, expiresAt, cmd.grantedAt, idempotencyKey)
     }
 
     const entitlement = EntitlementAggregate.grant({
@@ -145,7 +144,40 @@ export class GrantEntitlementService {
     })
     return this.deps.entitlements.save(entitlement)
   }
+
+  /**
+   * Estende a validade re-tentando sob conflito otimista (renovação concorrendo
+   * com cancel/ação admin). Sem o retry, o `update` perdedor fazia o webhook
+   * responder 200 e a EXTENSÃO deste ciclo se perdia de vez (sem re-entrega).
+   * Esgotou as tentativas → lança (500 → o gateway re-entrega). `false` = no-op
+   * legítimo (revogada, ou a validade vigente já cobre o alvo).
+   */
+  private async extendWithRetry(
+    first: EntitlementAggregate,
+    expiresAt: Date,
+    now: Date,
+    idempotencyKey: string,
+  ): Promise<boolean> {
+    let current: EntitlementAggregate | null = first
+    for (let attempt = 0; attempt < EXTEND_MAX_ATTEMPTS && current; attempt++) {
+      const before = current.toSnapshot()
+      current.extendTo(expiresAt, now)
+      const after = current.toSnapshot()
+      const changed =
+        after.status !== before.status ||
+        (after.expiresAt?.getTime() ?? null) !== (before.expiresAt?.getTime() ?? null)
+      if (!changed) return false
+      if (await this.deps.entitlements.update(current)) return true
+      this.deps.logger?.warn('grant.extend_conflict', { idempotencyKey, attempt })
+      current = await this.deps.entitlements.findByIdempotencyKey(idempotencyKey)
+    }
+    if (!current) return false // a linha sumiu (não deveria) — nada a estender
+    throw new Error(`conflito persistente ao estender a matrícula (${idempotencyKey})`)
+  }
 }
+
+/** Tentativas de extensão sob conflito otimista antes de desistir (→ re-entrega). */
+const EXTEND_MAX_ATTEMPTS = 3
 
 /**
  * Fim do ciclo da assinatura + carência. Em UTC (determinístico, independente do

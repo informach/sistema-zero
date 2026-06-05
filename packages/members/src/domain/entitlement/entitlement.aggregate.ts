@@ -102,6 +102,19 @@ export class EntitlementAggregate {
     this.state.updatedAt = now
   }
 
+  /**
+   * Reativação ADMIN explícita: reverte `revoked`/`expired` para `active` com a
+   * validade dada (`null` = vitalícia). Transição exclusiva da gestão manual — o
+   * ciclo de assinatura usa `extendTo`, que NUNCA ressuscita `revoked`
+   * (cancelamento vence renovação reentregue).
+   */
+  reactivate(expiresAt: Date | null, now: Date): void {
+    this.state.status = 'active'
+    this.state.revokedAt = null
+    this.state.expiresAt = expiresAt
+    this.state.updatedAt = now
+  }
+
   /** Cancela o acesso imediatamente (cancelamento de assinatura). Idempotente. */
   revoke(now: Date): void {
     if (this.state.status === 'revoked') return

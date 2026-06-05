@@ -274,6 +274,26 @@ describe('Members HTTP — admin: gestão de matrícula', () => {
     expect(res.status).toBe(404)
     expect((await readJson(res)).error.code).toBe('ENTITLEMENT_NOT_FOUND')
   })
+
+  test('estender uma REVOGADA reativa (caminho documentado de recuperação)', async () => {
+    const { app, courses } = buildApp()
+    const course = seedSampleCourse(courses, 'curso-x')
+    const ent = await grantOne(app, course.slug)
+
+    await send(app, `/members/admin/entitlements/${ent.id}`, 'PATCH', { action: 'revoke' })
+
+    // Antes era um no-op silencioso (extendTo nunca toca revoked) — o fluxo
+    // "revogada? use estender" do grant manual ficava quebrado.
+    const res = await send(app, `/members/admin/entitlements/${ent.id}`, 'PATCH', {
+      action: 'extend',
+      expiresAt: '2027-01-01T00:00:00.000Z',
+    })
+    expect(res.status).toBe(200)
+    const body = await readJson(res)
+    expect(body.status).toBe('active')
+    expect(body.expiresAt).toBe('2027-01-01T00:00:00.000Z')
+    expect(body.revokedAt).toBeNull()
+  })
 })
 
 describe('Members HTTP — admin: RBAC (defesa em profundidade)', () => {
@@ -284,5 +304,21 @@ describe('Members HTTP — admin: RBAC (defesa em profundidade)', () => {
       (await get(app, '/members/admin/members', { 'x-auth-user-role': 'customer' })).status,
     ).toBe(403)
     expect((await get(app, '/members/admin/members', adminHeaders)).status).toBe(200)
+  })
+
+  test('token interno também nas rotas admin: ausente/errado → 401; correto → 200', async () => {
+    const TOKEN = 'token-interno-gateway-0123456789'
+    const { app } = buildApp({ internalToken: TOKEN, requireAdmin: true })
+    // Headers de admin forjados NÃO bastam sem o token do gateway — é o que
+    // impede um processo na rede interna de virar admin chamando direto.
+    expect((await get(app, '/members/admin/members', adminHeaders)).status).toBe(401)
+    expect(
+      (await get(app, '/members/admin/members', { ...adminHeaders, 'x-internal-token': 'errado' }))
+        .status,
+    ).toBe(401)
+    expect(
+      (await get(app, '/members/admin/members', { ...adminHeaders, 'x-internal-token': TOKEN }))
+        .status,
+    ).toBe(200)
   })
 })

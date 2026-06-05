@@ -49,6 +49,36 @@ export function gradeQuizAttempt(block: QuizBlock, answers: QuizAnswers): QuizGr
   return { score, passed: score >= passingScore, passingScore, questions }
 }
 
+/**
+ * Coerência estrutural do quiz na AUTORIA (defesa além do shape do TypeBox):
+ * ids únicos, ≥2 alternativas por questão, ≥1 correta e toda correta existindo
+ * nas alternativas — um gabarito órfão tornaria a questão impossível de acertar.
+ * Quiz SEM questões é permitido (rascunho em construção no builder).
+ * Retorna a mensagem do problema, ou `null` se válido.
+ */
+export function validateQuizAuthoring(block: QuizBlock): string | null {
+  const questionIds = new Set<string>()
+  for (const q of block.questions) {
+    if (questionIds.has(q.id)) return `Questão com id duplicado: ${q.id}`
+    questionIds.add(q.id)
+    if (q.choices.length < 2) return 'Cada questão precisa de pelo menos 2 alternativas'
+    const choiceIds = new Set<string>()
+    for (const c of q.choices) {
+      if (choiceIds.has(c.id)) return `Alternativa com id duplicado na questão ${q.id}`
+      choiceIds.add(c.id)
+    }
+    if (q.correctChoiceIds.length === 0) {
+      return `A questão ${q.id} precisa de ao menos uma alternativa correta`
+    }
+    for (const id of q.correctChoiceIds) {
+      if (!choiceIds.has(id)) {
+        return `A questão ${q.id} marca como correta uma alternativa inexistente (${id})`
+      }
+    }
+  }
+  return null
+}
+
 /** Resumo das tentativas de um aluno num bloco de quiz (derivado do histórico). */
 export interface QuizAttemptSummary {
   attemptsCount: number

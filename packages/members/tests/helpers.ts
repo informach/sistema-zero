@@ -46,14 +46,21 @@ import {
 export const WEBHOOK_SECRET = 'test-gateway-secret-0123456789ab'
 
 export function buildApp(
-  opts: { now?: Date; internalToken?: string; requireAdmin?: boolean } = {},
+  opts: {
+    now?: Date
+    internalToken?: string
+    requireAdmin?: boolean
+    /** Probe do /readyz (default: pronto). */
+    readiness?: () => Promise<{ ready: boolean; checks: Record<string, string> }>
+  } = {},
 ) {
   const clockRef = { now: opts.now ?? new Date('2026-06-02T12:00:00.000Z') }
   const clock = () => clockRef.now
 
   const entitlements = new InMemoryEntitlementRepository()
   const courses = new InMemoryCourseRepository()
-  const progress = new InMemoryProgressRepository()
+  // O fake de progresso enxerga as aulas p/ espelhar o join das contagens `*Published`.
+  const progress = new InMemoryProgressRepository(courses)
   const positions = new InMemoryVideoPositionRepository()
   const quizAttempts = new InMemoryQuizAttemptRepository()
   const ratings = new InMemoryCourseRatingRepository()
@@ -75,6 +82,7 @@ export function buildApp(
   const app = createServer({
     env,
     logger: silentLogger,
+    readiness: opts.readiness ?? (async () => ({ ready: true, checks: { db: 'ok' } })),
     members: {
       listMyCourses: new ListMyCoursesService(entitlements, courses, progress, positions, clock),
       listCatalog: new ListCatalogService(courses, entitlements, clock),
@@ -120,6 +128,7 @@ export function buildApp(
     },
     admin: {
       requireAdminEnabled: opts.requireAdmin ?? false,
+      internalToken: opts.internalToken,
       listMembers: new ListMembersService(entitlements, clock),
       getMemberDetail: new GetMemberDetailService(entitlements, courses, progress),
       grantManual: new GrantManualEntitlementService({
@@ -134,6 +143,7 @@ export function buildApp(
     },
     content: {
       requireAdminEnabled: opts.requireAdmin ?? false,
+      internalToken: opts.internalToken,
       // O fake InMemoryCourseRepository implementa CourseRepository E ContentAdminRepository.
       courses: new CourseAdminService(courses, courses),
       modules: new ModuleAdminService(courses, courses),

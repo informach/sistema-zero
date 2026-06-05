@@ -14,9 +14,11 @@ export class GetCourseProgressService {
 
   async execute(userId: string, courseSlug: string): Promise<CourseProgressView> {
     const { course } = await this.checkAccess.requireBySlug(userId, courseSlug)
+    // Numerador e denominador sobre o MESMO conjunto (aulas publicadas) — uma
+    // conclusão de aula hoje despublicada não conta (senão o percentual infla).
     const [total, completed, last] = await Promise.all([
       this.courses.countPublishedLessons(course.id),
-      this.progress.countCompleted(userId, course.id),
+      this.progress.countCompletedPublished(userId, course.id),
       this.progress.lastCompletedAt(userId, course.id),
     ])
     return toCourseProgressView(computeProgress(completed, total), last)

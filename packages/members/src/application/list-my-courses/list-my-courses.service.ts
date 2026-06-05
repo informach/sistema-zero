@@ -52,11 +52,12 @@ export class ListMyCoursesService {
       }
     }
 
-    // Contagens em LOTE (3 queries) em vez de 3 por curso (evita N+1).
+    // Contagens em LOTE (3 queries) em vez de 3 por curso (evita N+1). Numerador
+    // e denominador sobre o MESMO conjunto (aulas publicadas) — sem inflar.
     const courseIds = courses.map((c) => c.id)
     const [totals, completed, lastAccessed] = await Promise.all([
       this.courses.countPublishedLessonsByCourseIds(courseIds),
-      this.progress.countCompletedByCourseIds(userId, courseIds),
+      this.progress.countCompletedPublishedByCourseIds(userId, courseIds),
       this.positions.lastAccessedByCourseIds(userId, courseIds),
     ])
 

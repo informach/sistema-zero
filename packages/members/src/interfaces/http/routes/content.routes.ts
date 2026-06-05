@@ -14,7 +14,7 @@ import type {
   LessonFields,
   ModuleFields,
 } from '../../../domain/ports/content-admin-repository.port'
-import { requireAdmin } from '../auth'
+import { assertInternalCaller, requireAdmin } from '../auth'
 import {
   AttachmentBody,
   BlockBody,
@@ -30,6 +30,8 @@ const MAX_LIMIT = 100
 
 export interface ContentRoutesDeps {
   requireAdminEnabled: boolean
+  /** Token interno do gateway (defesa em profundidade). Vazio em dev → checagem desligada. */
+  internalToken?: string
   courses: CourseAdminService
   modules: ModuleAdminService
   lessons: LessonAdminService
@@ -75,8 +77,9 @@ function clampLimit(limit: number | undefined): number {
 
 /**
  * Rotas ADMIN de AUTORIA de conteúdo (cursos → módulos → aulas → blocos/anexos).
- * Mesmo gating do resto do admin (`requireAdmin`; RBAC real no gateway). Prefixo
- * `/members/admin` (coexiste com `admin.routes` de gestão de acesso — paths distintos).
+ * Mesmo gating do resto do admin (`requireAdmin` + `x-internal-token`; RBAC real
+ * no gateway). Prefixo `/members/admin` (coexiste com `admin.routes` de gestão de
+ * acesso — paths distintos).
  */
 export function contentRoutes(deps: ContentRoutesDeps) {
   const guard = (headers: Record<string, string | undefined>) =>
@@ -84,6 +87,9 @@ export function contentRoutes(deps: ContentRoutesDeps) {
 
   return (
     new Elysia({ prefix: '/members/admin' })
+      .onBeforeHandle(({ headers }) =>
+        assertInternalCaller(headers['x-internal-token'], deps.internalToken),
+      )
       // ── Cursos ──
       .get(
         '/courses',

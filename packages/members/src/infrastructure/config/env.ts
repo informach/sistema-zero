@@ -18,6 +18,10 @@ const EnvSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
     PORT: z.coerce.number().int().positive().default(3004),
+    // Endereço de bind. `::` (default) é dual-stack (IPv4 + IPv6) — obrigatório
+    // para o private networking do Railway (`members.railway.internal` resolve
+    // IPv6; um bind `0.0.0.0` fica inalcançável). Espelha o payments.
+    HOST: z.string().min(1).default('::'),
     // Conteúdo de aula (blocos) pode ser maior que um login — 64 KB.
     MAX_REQUEST_BODY_BYTES: z.coerce
       .number()
@@ -30,6 +34,9 @@ const EnvSchema = z
 
     // Catálogo (S2S direto na rede interna; rota de entitlements é pública de leitura).
     CATALOG_BASE_URL: z.string().url().default('http://localhost:3003'),
+    // Timeout por chamada ao catálogo (resolve da oferta no grant). Sem ele, um
+    // catálogo travado penduraria o handler do webhook (conexões acumulando).
+    CATALOG_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
 
     // Verificação dos webhooks de entrada. O gateway re-assina (resign) a chamada do
     // funil como consumer `gateway` usando ESTE segredo (= GATEWAY_HMAC_SECRET do gateway).
@@ -47,6 +54,17 @@ const EnvSchema = z
 
     // Carência (dias) somada ao fim do ciclo da assinatura ao calcular `expiresAt`.
     SUBSCRIPTION_GRACE_DAYS: z.coerce.number().int().nonnegative().default(3),
+
+    // Retenção do dedupe de webhooks (`processed_webhooks`): linhas mais antigas
+    // que isto são apagadas pelo ciclo periódico de limpeza (fora do hot path;
+    // advisory lock garante 1 réplica por ciclo). Reprocessar entrega antiga é
+    // inócuo (grant/revoke idempotentes) — a tabela só não pode crescer sem fim.
+    PROCESSED_WEBHOOKS_RETENTION_DAYS: z.coerce.number().int().positive().default(30),
+    RETENTION_CLEANUP_INTERVAL_MS: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(6 * 60 * 60 * 1000),
 
     // RBAC das rotas admin (`/members/admin/*`). O gateway aplica o RBAC real (JWT +
     // role); o serviço confere os headers X-Auth-User-* (defesa em profundidade).

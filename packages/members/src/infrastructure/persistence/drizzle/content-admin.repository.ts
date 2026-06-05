@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { and, asc, count, eq, inArray, type SQL, sql } from 'drizzle-orm'
+import { and, asc, count, eq, inArray, ne, type SQL, sql } from 'drizzle-orm'
 import type {
   Course,
   Lesson,
@@ -79,13 +79,19 @@ const toAttachment = (r: AttachmentRow): LessonAttachment => ({
   sortOrder: r.sortOrder,
 })
 
+/**
+ * 23505 = unique_violation. O drizzle-orm (≥ 0.44) ENVELOPA o erro do driver em
+ * `DrizzleQueryError`, com o `PostgresError` original em `cause` — checar só o
+ * topo deixava a corrida de slug duplicado virar 500 em vez de 409 (mesmo gotcha
+ * pego no auth contra Postgres real). Caminha a cadeia de `cause` (com teto).
+ */
 function isUniqueViolation(error: unknown): boolean {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'code' in error &&
-    (error as { code: unknown }).code === '23505'
-  )
+  let current: unknown = error
+  for (let depth = 0; depth < 5 && typeof current === 'object' && current !== null; depth++) {
+    if ((current as { code?: unknown }).code === '23505') return true
+    current = (current as { cause?: unknown }).cause
+  }
+  return false
 }
 
 export class DrizzleContentAdminRepository implements ContentAdminRepository {
@@ -98,7 +104,9 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
     const clauses: SQL[] = []
     const q = filter.q?.trim()
     if (q) {
-      const like = `%${q}%`
+      // Escapa os curingas do LIKE (`%`/`_`) e o próprio escape (`\`) — um `q`
+      // com `%` viraria match-tudo (busca literal, não padrão).
+      const like = `%${q.replace(/[\\%_]/g, '\\$&')}%`
       const m = sql`(${courses.title} ilike ${like} or ${courses.slug} ilike ${like})`
       clauses.push(m)
     }
@@ -179,11 +187,17 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
     return row ? row.version : null
   }
 
-  async countPublishedLessons(courseId: string): Promise<number> {
+  async countPublishedLessons(
+    courseId: string,
+    opts?: { excludeLessonId?: string; excludeModuleId?: string },
+  ): Promise<number> {
+    const clauses: SQL[] = [eq(lessons.courseId, courseId), eq(lessons.isPublished, true)]
+    if (opts?.excludeLessonId) clauses.push(ne(lessons.id, opts.excludeLessonId))
+    if (opts?.excludeModuleId) clauses.push(ne(lessons.moduleId, opts.excludeModuleId))
     const [row] = await this.db
       .select({ c: count() })
       .from(lessons)
-      .where(and(eq(lessons.courseId, courseId), eq(lessons.isPublished, true)))
+      .where(and(...clauses))
     return row?.c ?? 0
   }
 
@@ -206,22 +220,22 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
 
   async createModule(courseId: string, fields: ModuleFields): Promise<Module> {
     const now = new Date()
-    const [agg] = await this.db
-      .select({ next: sql<number>`coalesce(max(${modules.sortOrder}), -1) + 1` })
-      .from(modules)
-      .where(eq(modules.courseId, courseId))
-    const sortOrder = agg?.next ?? 0
-    const row = {
-      id: randomUUID(),
-      courseId,
-      title: fields.title,
-      summary: fields.summary,
-      sortOrder,
-      createdAt: now,
-      updatedAt: now,
-    }
-    await this.db.insert(modules).values(row)
-    return toModule(row as ModuleRow)
+    // `max+1` computado DENTRO do INSERT (1 statement) — sem o gap ler-depois-inserir
+    // entre requests concorrentes. O RETURNING devolve o sortOrder real.
+    const [row] = await this.db
+      .insert(modules)
+      .values({
+        id: randomUUID(),
+        courseId,
+        title: fields.title,
+        summary: fields.summary,
+        sortOrder: sql`coalesce((select max(${modules.sortOrder}) + 1 from ${modules} where ${modules.courseId} = ${courseId}), 0)`,
+        createdAt: now,
+        updatedAt: now,
+      })
+      .returning()
+    if (!row) throw new Error('insert de módulo não retornou a linha')
+    return toModule(row)
   }
 
   async updateModule(id: string, fields: ModuleFields): Promise<Module | null> {
@@ -279,32 +293,31 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
 
   async createLesson(moduleId: string, courseId: string, fields: LessonFields): Promise<Lesson> {
     const now = new Date()
-    const [agg] = await this.db
-      .select({ next: sql<number>`coalesce(max(${lessons.sortOrder}), -1) + 1` })
-      .from(lessons)
-      .where(eq(lessons.moduleId, moduleId))
-    const sortOrder = agg?.next ?? 0
-    const row = {
-      id: randomUUID(),
-      moduleId,
-      courseId,
-      slug: fields.slug,
-      title: fields.title,
-      sortOrder,
-      estimatedMinutes: fields.estimatedMinutes,
-      isPublished: fields.isPublished,
-      createdAt: now,
-      updatedAt: now,
-    }
     try {
-      await this.db.insert(lessons).values(row)
+      // `max+1` dentro do INSERT (1 statement) + RETURNING — ver createModule.
+      const [row] = await this.db
+        .insert(lessons)
+        .values({
+          id: randomUUID(),
+          moduleId,
+          courseId,
+          slug: fields.slug,
+          title: fields.title,
+          sortOrder: sql`coalesce((select max(${lessons.sortOrder}) + 1 from ${lessons} where ${lessons.moduleId} = ${moduleId}), 0)`,
+          estimatedMinutes: fields.estimatedMinutes,
+          isPublished: fields.isPublished,
+          createdAt: now,
+          updatedAt: now,
+        })
+        .returning()
+      if (!row) throw new Error('insert de aula não retornou a linha')
+      return toLesson(row)
     } catch (error) {
       if (isUniqueViolation(error)) {
         throw new DuplicateSlugError('Já existe uma aula com esse slug neste curso')
       }
       throw error
     }
-    return toLesson(row as LessonRow)
   }
 
   async updateLesson(id: string, fields: LessonFields): Promise<Lesson | null> {
@@ -366,14 +379,19 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
     kind: LessonBlockKind,
     content: LessonBlockContent,
   ): Promise<LessonBlock> {
-    const [agg] = await this.db
-      .select({ next: sql<number>`coalesce(max(${lessonBlocks.sortOrder}), -1) + 1` })
-      .from(lessonBlocks)
-      .where(eq(lessonBlocks.lessonId, lessonId))
-    const sortOrder = agg?.next ?? 0
-    const row = { id: randomUUID(), lessonId, kind, sortOrder, content }
-    await this.db.insert(lessonBlocks).values(row)
-    return toBlock(row as BlockRow)
+    // `max+1` dentro do INSERT (1 statement) + RETURNING — ver createModule.
+    const [row] = await this.db
+      .insert(lessonBlocks)
+      .values({
+        id: randomUUID(),
+        lessonId,
+        kind,
+        sortOrder: sql`coalesce((select max(${lessonBlocks.sortOrder}) + 1 from ${lessonBlocks} where ${lessonBlocks.lessonId} = ${lessonId}), 0)`,
+        content,
+      })
+      .returning()
+    if (!row) throw new Error('insert de bloco não retornou a linha')
+    return toBlock(row)
   }
 
   async updateBlock(
@@ -421,22 +439,21 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
 
   // ── Anexos ──────────────────────────────────────────────────────────────
   async createAttachment(lessonId: string, fields: AttachmentFields): Promise<LessonAttachment> {
-    const [agg] = await this.db
-      .select({ next: sql<number>`coalesce(max(${lessonAttachments.sortOrder}), -1) + 1` })
-      .from(lessonAttachments)
-      .where(eq(lessonAttachments.lessonId, lessonId))
-    const sortOrder = agg?.next ?? 0
-    const row = {
-      id: randomUUID(),
-      lessonId,
-      label: fields.label,
-      url: fields.url,
-      fileType: fields.fileType,
-      sizeBytes: fields.sizeBytes,
-      sortOrder,
-    }
-    await this.db.insert(lessonAttachments).values(row)
-    return toAttachment(row as AttachmentRow)
+    // `max+1` dentro do INSERT (1 statement) + RETURNING — ver createModule.
+    const [row] = await this.db
+      .insert(lessonAttachments)
+      .values({
+        id: randomUUID(),
+        lessonId,
+        label: fields.label,
+        url: fields.url,
+        fileType: fields.fileType,
+        sizeBytes: fields.sizeBytes,
+        sortOrder: sql`coalesce((select max(${lessonAttachments.sortOrder}) + 1 from ${lessonAttachments} where ${lessonAttachments.lessonId} = ${lessonId}), 0)`,
+      })
+      .returning()
+    if (!row) throw new Error('insert de anexo não retornou a linha')
+    return toAttachment(row)
   }
 
   async updateAttachment(id: string, fields: AttachmentFields): Promise<LessonAttachment | null> {

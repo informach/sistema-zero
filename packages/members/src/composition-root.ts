@@ -46,6 +46,14 @@ export interface Application {
 }
 
 /**
+ * Chave do advisory lock do ciclo de limpeza/retenção ('members' em ASCII int8;
+ * string + cast ::bigint — o driver não tipa BigInt como parâmetro). O espaço de
+ * advisory locks é GLOBAL ao banco compartilhado do monorepo — precisa ser única
+ * entre os serviços (a do payments é 8103081227979411315).
+ */
+const RETENTION_ADVISORY_LOCK_KEY = '30792292938117747'
+
+/**
  * Raiz de composição (injeção de dependências). ÚNICO lugar que instancia adapters
  * concretos e os pluga nos ports.
  */
@@ -70,7 +78,11 @@ export async function createApplication(env: Env): Promise<Application> {
   const quizAttempts = new DrizzleQuizAttemptRepository(db)
   const ratings = new DrizzleCourseRatingRepository(db)
   const processed = new DrizzleProcessedWebhookRepository(db)
-  const catalog = createCatalogHttpGateway({ baseUrl: env.CATALOG_BASE_URL })
+  const catalog = createCatalogHttpGateway({
+    baseUrl: env.CATALOG_BASE_URL,
+    timeoutMs: env.CATALOG_REQUEST_TIMEOUT_MS,
+    logger,
+  })
 
   // Casos de uso do aluno
   const checkAccess = new CheckAccessService(courses, entitlements, clock)
@@ -136,9 +148,23 @@ export async function createApplication(env: Env): Promise<Application> {
   })
   const manageEntitlement = new ManageEntitlementService(entitlements, clock)
 
+  // Readiness (`/readyz`, healthcheck do Railway): a réplica só é promovida
+  // quando o banco responde — sem isto o redeploy promove uma réplica que ainda
+  // não fala com o Postgres e o gateway vê 5xx.
+  const readiness = async () => {
+    const checks: Record<string, string> = { db: 'ok' }
+    try {
+      await connection.sql`select 1`
+    } catch {
+      checks.db = 'error'
+    }
+    return { ready: checks.db === 'ok', checks }
+  }
+
   const server = createServer({
     env,
     logger,
+    readiness,
     members: {
       listMyCourses,
       listCatalog,
@@ -165,6 +191,7 @@ export async function createApplication(env: Env): Promise<Application> {
     },
     admin: {
       requireAdminEnabled: env.REQUIRE_ADMIN,
+      internalToken: env.INTERNAL_API_TOKEN,
       listMembers,
       getMemberDetail,
       grantManual,
@@ -172,6 +199,7 @@ export async function createApplication(env: Env): Promise<Application> {
     },
     content: {
       requireAdminEnabled: env.REQUIRE_ADMIN,
+      internalToken: env.INTERNAL_API_TOKEN,
       courses: courseAdmin,
       modules: moduleAdmin,
       lessons: lessonAdmin,
@@ -180,13 +208,40 @@ export async function createApplication(env: Env): Promise<Application> {
     },
   })
 
+  let cleanupTimer: ReturnType<typeof setInterval> | null = null
+
+  // Retenção do dedupe de webhooks (fora do hot path): apaga `processed_webhooks`
+  // antigos para a tabela não crescer sem limite. O advisory lock garante que SÓ
+  // UMA réplica executa o ciclo (xact-lock → solta sozinho no commit/crash).
+  const runRetentionCycle = async () => {
+    await connection.sql.begin(async (gate) => {
+      const [row] = await gate`
+        select pg_try_advisory_xact_lock(${RETENTION_ADVISORY_LOCK_KEY}::bigint) as locked
+      `
+      if (!row?.locked) return // outra réplica está limpando neste ciclo
+      const cutoff = new Date(Date.now() - env.PROCESSED_WEBHOOKS_RETENTION_DAYS * 86_400_000)
+      const pruned = await processed.pruneProcessedBefore(cutoff)
+      if (pruned > 0) logger.info('retention.pruned', { processedWebhooks: pruned })
+    })
+  }
+
   return {
     logger,
     async start() {
-      server.listen(env.PORT)
-      logger.info('http.listening', { port: env.PORT })
+      cleanupTimer = setInterval(() => {
+        void runRetentionCycle().catch((error) =>
+          logger.error('retention.cleanup.failed', {
+            error: error instanceof Error ? error.message : String(error),
+          }),
+        )
+      }, env.RETENTION_CLEANUP_INTERVAL_MS)
+      // `::` = dual-stack (IPv4+IPv6) — necessário p/ o private networking do
+      // Railway (`members.railway.internal` resolve IPv6).
+      server.listen({ port: env.PORT, hostname: env.HOST })
+      logger.info('http.listening', { port: env.PORT, host: env.HOST })
     },
     async stop() {
+      if (cleanupTimer) clearInterval(cleanupTimer)
       await server.stop()
       await connection.close()
       logger.info('app.stopped')

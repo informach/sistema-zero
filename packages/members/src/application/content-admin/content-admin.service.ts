@@ -7,6 +7,7 @@ import {
   NoPublishedLessonError,
 } from '../../domain/course/course.errors'
 import type { LessonBlockContent } from '../../domain/course/lesson-block'
+import { validateQuizAuthoring } from '../../domain/course/quiz'
 import type {
   AttachmentFields,
   ContentAdminRepository,
@@ -137,6 +138,22 @@ export class ModuleAdminService {
   }
 
   async remove(id: string): Promise<{ ok: true }> {
+    const mod = await this.content.findModuleById(id)
+    if (!mod) throw new ContentNotFoundError('Módulo não encontrado')
+    // Guard simétrico ao de publicar o curso: excluir o módulo que contém as
+    // ÚLTIMAS aulas publicadas de um curso `published` o deixaria à venda vazio.
+    const course = await this.courses.findCourseById(mod.courseId)
+    if (course?.status === 'published') {
+      const remaining = await this.content.countPublishedLessons(mod.courseId, {
+        excludeModuleId: id,
+      })
+      const total = await this.content.countPublishedLessons(mod.courseId)
+      if (remaining === 0 && total > 0) {
+        throw new NoPublishedLessonError(
+          'Este módulo contém as últimas aulas publicadas — despublique o curso antes de excluí-lo',
+        )
+      }
+    }
     if (!(await this.content.deleteModule(id)))
       throw new ContentNotFoundError('Módulo não encontrado')
     return { ok: true }
@@ -163,14 +180,40 @@ export class LessonAdminService {
   }
 
   async update(id: string, fields: LessonFields): Promise<LessonView> {
+    const existing = await this.content.findLessonById(id)
+    if (!existing) throw new LessonNotFoundError()
+    // Despublicar a ÚLTIMA aula publicada de um curso `published` o deixaria à
+    // venda vazio — o mesmo invariante do guard de publicar o curso, pelo avesso.
+    if (existing.isPublished && !fields.isPublished) {
+      await this.assertNotLastPublished(existing.courseId, id)
+    }
     const updated = await this.content.updateLesson(id, fields)
     if (!updated) throw new LessonNotFoundError()
     return toLessonView(updated)
   }
 
   async remove(id: string): Promise<{ ok: true }> {
+    const existing = await this.content.findLessonById(id)
+    if (!existing) throw new LessonNotFoundError()
+    if (existing.isPublished) {
+      await this.assertNotLastPublished(existing.courseId, id)
+    }
     if (!(await this.content.deleteLesson(id))) throw new LessonNotFoundError()
     return { ok: true }
+  }
+
+  /** Lança se remover/despublicar `lessonId` zerar as aulas publicadas de um curso `published`. */
+  private async assertNotLastPublished(courseId: string, lessonId: string): Promise<void> {
+    const course = await this.courses.findCourseById(courseId)
+    if (course?.status !== 'published') return
+    const remaining = await this.content.countPublishedLessons(courseId, {
+      excludeLessonId: lessonId,
+    })
+    if (remaining === 0) {
+      throw new NoPublishedLessonError(
+        'Esta é a última aula publicada — despublique o curso antes de removê-la',
+      )
+    }
   }
 
   async reorder(moduleId: string, orderedIds: string[]): Promise<{ ok: true }> {
@@ -187,15 +230,25 @@ export class LessonAdminService {
 }
 
 // ── Blocos ──────────────────────────────────────────────────────────────────
+
+/** Coerência semântica do bloco (além do shape TypeBox). Quiz incoerente → 400. */
+function assertBlockCoherent(content: LessonBlockContent): void {
+  if (content.kind !== 'quiz') return
+  const problem = validateQuizAuthoring(content)
+  if (problem) throw new InvalidContentCommandError(problem)
+}
+
 export class BlockAdminService {
   constructor(private readonly content: ContentAdminRepository) {}
 
   async create(lessonId: string, content: LessonBlockContent): Promise<BlockView> {
+    assertBlockCoherent(content)
     if (!(await this.content.findLessonById(lessonId))) throw new LessonNotFoundError()
     return toBlockView(await this.content.createBlock(lessonId, content.kind, content))
   }
 
   async update(id: string, content: LessonBlockContent): Promise<BlockView> {
+    assertBlockCoherent(content)
     const updated = await this.content.updateBlock(id, content.kind, content)
     if (!updated) throw new ContentNotFoundError('Bloco não encontrado')
     return toBlockView(updated)

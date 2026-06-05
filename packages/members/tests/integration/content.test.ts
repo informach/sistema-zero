@@ -185,6 +185,81 @@ describe('Members HTTP — autoria: árvore de conteúdo', () => {
     expect(noHtml.status).toBe(400)
   })
 
+  test('embed sandbox: tokens seguros → 201; allow-same-origin (escapa do iframe) → 400', async () => {
+    const { app } = buildApp()
+    const { lesson } = await seedTree(app)
+
+    const safe = await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+      content: { kind: 'embed', html: '<canvas></canvas>', sandbox: 'allow-scripts allow-forms' },
+    })
+    expect(safe.status).toBe(201)
+
+    // `allow-same-origin` num srcDoc roda o HTML na ORIGIN do community → XSS.
+    const sameOrigin = await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+      content: {
+        kind: 'embed',
+        html: '<canvas></canvas>',
+        sandbox: 'allow-scripts allow-same-origin',
+      },
+    })
+    expect(sameOrigin.status).toBe(400)
+
+    const topNav = await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+      content: { kind: 'embed', html: '<canvas></canvas>', sandbox: 'allow-top-navigation' },
+    })
+    expect(topNav.status).toBe(400)
+  })
+
+  test('quiz incoerente → 400 (correta inexistente, <2 alternativas, sem correta); válido → 201', async () => {
+    const { app } = buildApp()
+    const { lesson } = await seedTree(app)
+    const choices = [
+      { id: 'a', label: 'A' },
+      { id: 'b', label: 'B' },
+    ]
+
+    // Gabarito apontando para alternativa que não existe → questão impossível.
+    const orphan = await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+      content: {
+        kind: 'quiz',
+        questions: [{ id: 'q1', prompt: 'P?', choices, correctChoiceIds: ['z'] }],
+      },
+    })
+    expect(orphan.status).toBe(400)
+
+    const oneChoice = await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+      content: {
+        kind: 'quiz',
+        questions: [
+          { id: 'q1', prompt: 'P?', choices: [{ id: 'a', label: 'A' }], correctChoiceIds: ['a'] },
+        ],
+      },
+    })
+    expect(oneChoice.status).toBe(400)
+
+    const noCorrect = await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+      content: {
+        kind: 'quiz',
+        questions: [{ id: 'q1', prompt: 'P?', choices, correctChoiceIds: [] }],
+      },
+    })
+    expect(noCorrect.status).toBe(400)
+
+    const ok = await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+      content: {
+        kind: 'quiz',
+        questions: [{ id: 'q1', prompt: 'P?', choices, correctChoiceIds: ['b'] }],
+      },
+    })
+    expect(ok.status).toBe(201)
+
+    // Quiz sem questões segue permitido (rascunho em construção no builder).
+    const empty = await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+      content: { kind: 'quiz', questions: [] },
+    })
+    expect(empty.status).toBe(201)
+  })
+
   test('excluir módulo remove as aulas em cascata', async () => {
     const { app } = buildApp()
     const { course, mod, lesson } = await seedTree(app)
@@ -273,6 +348,86 @@ describe('Members HTTP — autoria: publicação por aula', () => {
     expect(tree.modules[0].lessons).toHaveLength(1)
     expect(tree.modules[0].lessons[0].id).toBe(lesson.id)
     expect(tree.modules[0].lessons[0].isPublished).toBe(false)
+  })
+
+  /** Curso PUBLICADO com 1 aula publicada (o cenário dos guards "por baixo"). */
+  async function seedPublishedTree(app: App) {
+    const { course, mod, lesson } = await seedDraftTree(app)
+    await send(app, `/members/admin/lessons/${lesson.id}`, 'PATCH', {
+      slug: 'aula-1',
+      title: 'Aula 1',
+      estimatedMinutes: 5,
+      isPublished: true,
+    })
+    await send(app, `/members/admin/courses/${course.id}`, 'PATCH', {
+      ...COURSE,
+      status: 'published',
+    })
+    return { course, mod, lesson }
+  }
+
+  test('despublicar a ÚLTIMA aula publicada de curso published → 409 (invariante por baixo)', async () => {
+    const { app } = buildApp()
+    const { lesson } = await seedPublishedTree(app)
+
+    const blocked = await send(app, `/members/admin/lessons/${lesson.id}`, 'PATCH', {
+      slug: 'aula-1',
+      title: 'Aula 1',
+      estimatedMinutes: 5,
+      isPublished: false,
+    })
+    expect(blocked.status).toBe(409)
+    expect((await readJson(blocked)).error.code).toBe('NO_PUBLISHED_LESSON')
+  })
+
+  test('excluir a ÚLTIMA aula publicada → 409; com outra publicada → 200', async () => {
+    const { app } = buildApp()
+    const { mod, lesson } = await seedPublishedTree(app)
+
+    const blocked = await send(app, `/members/admin/lessons/${lesson.id}`, 'DELETE')
+    expect(blocked.status).toBe(409)
+    expect((await readJson(blocked)).error.code).toBe('NO_PUBLISHED_LESSON')
+
+    // Com uma 2ª aula publicada, a exclusão passa (sobra ≥1).
+    await send(app, `/members/admin/modules/${mod.id}/lessons`, 'POST', {
+      slug: 'aula-2',
+      title: 'Aula 2',
+      estimatedMinutes: null,
+      isPublished: true,
+    })
+    expect((await send(app, `/members/admin/lessons/${lesson.id}`, 'DELETE')).status).toBe(200)
+  })
+
+  test('excluir o módulo com as ÚLTIMAS aulas publicadas → 409; curso draft → 200', async () => {
+    const { app } = buildApp()
+    const { course, mod } = await seedPublishedTree(app)
+
+    const blocked = await send(app, `/members/admin/modules/${mod.id}`, 'DELETE')
+    expect(blocked.status).toBe(409)
+    expect((await readJson(blocked)).error.code).toBe('NO_PUBLISHED_LESSON')
+
+    // Curso despublicado → módulo pode sair livremente.
+    await send(app, `/members/admin/courses/${course.id}`, 'PATCH', { ...COURSE, status: 'draft' })
+    expect((await send(app, `/members/admin/modules/${mod.id}`, 'DELETE')).status).toBe(200)
+  })
+
+  test('despublicar aula de curso DRAFT segue livre (guard só vale para published)', async () => {
+    const { app } = buildApp()
+    const { lesson } = await seedDraftTree(app)
+    await send(app, `/members/admin/lessons/${lesson.id}`, 'PATCH', {
+      slug: 'aula-1',
+      title: 'Aula 1',
+      estimatedMinutes: 5,
+      isPublished: true,
+    })
+    const ok = await send(app, `/members/admin/lessons/${lesson.id}`, 'PATCH', {
+      slug: 'aula-1',
+      title: 'Aula 1',
+      estimatedMinutes: 5,
+      isPublished: false,
+    })
+    expect(ok.status).toBe(200)
+    expect((await readJson(ok)).isPublished).toBe(false)
   })
 })
 

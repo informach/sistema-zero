@@ -7,7 +7,7 @@ import type {
 import type { ListMembersService } from '../../../application/list-members/list-members.service'
 import type { ManageEntitlementService } from '../../../application/manage-entitlement/manage-entitlement.service'
 import { InvalidEntitlementCommandError } from '../../../domain/entitlement/entitlement.errors'
-import { requireAdmin } from '../auth'
+import { assertInternalCaller, requireAdmin } from '../auth'
 import { GrantEntitlementBody, ListMembersQuery, ManageEntitlementBody } from '../dtos'
 
 const DEFAULT_LIMIT = 20
@@ -15,6 +15,8 @@ const MAX_LIMIT = 100
 
 export interface AdminRoutesDeps {
   requireAdminEnabled: boolean
+  /** Token interno do gateway (defesa em profundidade). Vazio em dev → checagem desligada. */
+  internalToken?: string
   listMembers: ListMembersService
   getMemberDetail: GetMemberDetailService
   grantManual: GrantManualEntitlementService
@@ -25,10 +27,16 @@ export interface AdminRoutesDeps {
  * Rotas ADMIN da área de membros (gestão de acesso pelo painel). O RBAC real é do
  * gateway (JWT + role); aqui `requireAdmin` confere os headers `X-Auth-User-*`
  * (defesa em profundidade). Caminho `/members/admin/*` distinto da API do aluno
- * (`/members/courses…`) p/ gating inequívoco — e SEM o token interno (igual ao catálogo).
+ * (`/members/courses…`) p/ gating inequívoco. Também exige o `x-internal-token`
+ * (header-inject do gateway): os X-Auth-User-* só são confiáveis se a chamada
+ * passou pelo gateway — sem o token, qualquer processo que alcance o members
+ * direto na rede interna forjaria um admin.
  */
 export function adminRoutes(deps: AdminRoutesDeps) {
   return new Elysia({ prefix: '/members/admin' })
+    .onBeforeHandle(({ headers }) =>
+      assertInternalCaller(headers['x-internal-token'], deps.internalToken),
+    )
     .get(
       '/members',
       async ({ query, headers }) => {

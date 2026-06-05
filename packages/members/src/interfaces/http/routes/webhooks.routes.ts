@@ -76,6 +76,16 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
           return { ok: false, error: 'OFFER_UNRESOLVED' }
         }
 
+        // Oferta resolvida mas SEM nenhum item (drift de contrato — itens
+        // malformados são descartados no parse do gateway do catálogo): marcar a
+        // entrega aqui deixaria o comprador sem acesso em silêncio. 502 → re-entrega
+        // (a falha repetida é o alarme).
+        if (result.itemsResolved === 0) {
+          deps.logger.error('grant.offer_empty', { offerRef: body.offerRef })
+          set.status = 502
+          return { ok: false, error: 'OFFER_EMPTY' }
+        }
+
         if (deliveryId) await deps.processed.markProcessed(deliveryId, 'grant')
         return { ok: true, granted: result.granted }
       },

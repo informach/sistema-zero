@@ -59,17 +59,30 @@ export class SubmitQuizAttemptService {
     if (blockedUntil) throw new QuizCooldownError(blockedUntil)
 
     const grade = gradeQuizAttempt(block.content, answers)
-    await this.attempts.save({
-      id: this.newId(),
-      userId,
-      lessonId,
-      blockId,
-      courseId: lesson.courseId,
-      score: grade.score,
-      passed: grade.passed,
-      answers,
-      createdAt: now,
-    })
+    // O `guard` re-checa o cooldown ATOMICAMENTE no repositório (serializado por
+    // aluno+bloco) — a pré-checagem acima é só o caminho rápido; sob dois submits
+    // simultâneos, um deles perde aqui e leva o mesmo 429.
+    const saved = await this.attempts.save(
+      {
+        id: this.newId(),
+        userId,
+        lessonId,
+        blockId,
+        courseId: lesson.courseId,
+        score: grade.score,
+        passed: grade.passed,
+        answers,
+        createdAt: now,
+      },
+      { cooldownMs: QUIZ_RETRY_COOLDOWN_MS },
+    )
+    if (!saved) {
+      const fresh = (await this.attempts.summarizeByBlockIds(userId, [blockId])).get(blockId)
+      throw new QuizCooldownError(
+        computeRetryAvailableAt(fresh ?? null, now) ??
+          new Date(now.getTime() + QUIZ_RETRY_COOLDOWN_MS),
+      )
+    }
 
     return {
       score: grade.score,

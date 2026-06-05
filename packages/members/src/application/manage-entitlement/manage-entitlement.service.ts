@@ -17,7 +17,10 @@ export interface ManageEntitlementCommand {
 
 /**
  * Gestão admin de uma matrícula específica: revogar (corte imediato), expirar (fim
- * natural) ou estender a validade. Carrega por id, aplica a transição no agregado e
+ * natural) ou estender a validade. `extend` numa matrícula REVOGADA reativa
+ * explicitamente (`reactivate`) — é o caminho documentado de recuperação ("use
+ * estender"); antes era um no-op silencioso (o `extendTo` nunca toca `revoked`,
+ * regra do ciclo de assinatura). Carrega por id, aplica a transição no agregado e
  * persiste com concorrência otimista (`version`). Re-lê p/ devolver a versão atual.
  */
 export class ManageEntitlementService {
@@ -42,7 +45,8 @@ export class ManageEntitlementService {
         if (!cmd.expiresAt) {
           throw new InvalidEntitlementCommandError('A ação "extend" exige expiresAt')
         }
-        entitlement.extendTo(cmd.expiresAt, now)
+        if (entitlement.status === 'revoked') entitlement.reactivate(cmd.expiresAt, now)
+        else entitlement.extendTo(cmd.expiresAt, now)
         break
     }
 

@@ -60,8 +60,15 @@ export interface ContentAdminRepository {
   /** `UPDATE ... WHERE id = ? AND version = ?` → `false` se conflito. 23505 → DuplicateSlugError. */
   updateCourse(course: Course): Promise<boolean>
   deleteCourse(id: string): Promise<boolean>
-  /** Aulas publicadas do curso (guard: publicar curso exige ≥1 aula publicada). */
-  countPublishedLessons(courseId: string): Promise<number>
+  /**
+   * Aulas publicadas do curso (guard: curso `published` exige ≥1 aula publicada).
+   * As exclusões respondem "quantas SOBRAM se eu tirar esta aula/este módulo" —
+   * usadas pelos guards de despublicar/excluir a última aula publicada.
+   */
+  countPublishedLessons(
+    courseId: string,
+    opts?: { excludeLessonId?: string; excludeModuleId?: string },
+  ): Promise<number>
 
   // ── Módulos ──
   findModuleById(id: string): Promise<Module | null>

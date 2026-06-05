@@ -80,6 +80,84 @@ describe('GrantEntitlementService', () => {
     expect(expected2.getTime()).toBeGreaterThan(expected1.getTime())
   })
 
+  test('renovação re-tenta sob conflito otimista e NÃO perde a extensão', async () => {
+    const { catalog, entitlements, grant } = setup()
+    catalog.set('offer-sub', offerWithCourse('offer-sub', 'curso-demo'))
+    await grant.execute({
+      userId: 'u1',
+      offerRef: 'offer-sub',
+      paymentId: 'pay1',
+      grantedAt: T('2026-06-01T00:00:00Z'),
+      subscription: { subscriptionId: 'sub1', intervalMonths: 1 },
+    })
+
+    // O 1º update do 2º ciclo PERDE a corrida (simula cancel/admin concorrente
+    // bumpando a version); o retry recarrega e aplica.
+    const originalUpdate = entitlements.update.bind(entitlements)
+    let failures = 1
+    entitlements.update = async (e) => {
+      if (failures > 0) {
+        failures -= 1
+        return false
+      }
+      return originalUpdate(e)
+    }
+
+    const result = await grant.execute({
+      userId: 'u1',
+      offerRef: 'offer-sub',
+      paymentId: 'pay2',
+      grantedAt: T('2026-07-01T00:00:00Z'),
+      subscription: { subscriptionId: 'sub1', intervalMonths: 1 },
+    })
+    expect(result.granted).toBe(1)
+    const [ent] = await entitlements.listActiveByUser('u1', T('2026-07-15'))
+    expect(ent?.expiresAt?.getTime()).toBe(computeExpiry(T('2026-07-01T00:00:00Z'), 1, 3).getTime())
+  })
+
+  test('conflito PERSISTENTE na extensão → lança (webhook 5xx → re-entrega)', async () => {
+    const { catalog, entitlements, grant } = setup()
+    catalog.set('offer-sub', offerWithCourse('offer-sub', 'curso-demo'))
+    await grant.execute({
+      userId: 'u1',
+      offerRef: 'offer-sub',
+      paymentId: 'pay1',
+      grantedAt: T('2026-06-01T00:00:00Z'),
+      subscription: { subscriptionId: 'sub1', intervalMonths: 1 },
+    })
+
+    entitlements.update = async () => false // sempre perde
+    let thrown: unknown = null
+    try {
+      await grant.execute({
+        userId: 'u1',
+        offerRef: 'offer-sub',
+        paymentId: 'pay2',
+        grantedAt: T('2026-07-01T00:00:00Z'),
+        subscription: { subscriptionId: 'sub1', intervalMonths: 1 },
+      })
+    } catch (error) {
+      thrown = error
+    }
+    expect(thrown).toBeInstanceOf(Error)
+  })
+
+  test('reentrega do MESMO ciclo é no-op (validade já cobre o alvo → granted 0)', async () => {
+    const { catalog, entitlements, grant } = setup()
+    catalog.set('offer-sub', offerWithCourse('offer-sub', 'curso-demo'))
+    const cycle = {
+      userId: 'u1',
+      offerRef: 'offer-sub',
+      paymentId: 'pay1',
+      grantedAt: T('2026-06-01T00:00:00Z'),
+      subscription: { subscriptionId: 'sub1', intervalMonths: 1 },
+    }
+    await grant.execute(cycle)
+    const replay = await grant.execute(cycle)
+    expect(replay.granted).toBe(0)
+    expect(entitlements.byId.size).toBe(1)
+  })
+
   test('snapshot congelado: alterar a oferta depois não muda a matrícula', async () => {
     const { catalog, entitlements, grant } = setup()
     const offer = offerWithCourse('offer-x', 'curso-demo')

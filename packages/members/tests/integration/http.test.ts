@@ -15,6 +15,23 @@ const readJson = (res: Response): Promise<any> => res.json()
 const get = (app: App, path: string, headers: Record<string, string>) =>
   app.handle(new Request(`http://localhost${path}`, { headers }))
 
+describe('Members HTTP — health/readiness', () => {
+  test('/health responde sempre; /readyz segue o probe (503 com banco fora)', async () => {
+    const ok = buildApp()
+    expect((await ok.app.handle(new Request('http://localhost/health'))).status).toBe(200)
+    const ready = await ok.app.handle(new Request('http://localhost/readyz'))
+    expect(ready.status).toBe(200)
+    expect(await readJson(ready)).toMatchObject({ status: 'ready', checks: { db: 'ok' } })
+
+    const down = buildApp({
+      readiness: async () => ({ ready: false, checks: { db: 'error' } }),
+    })
+    const notReady = await down.app.handle(new Request('http://localhost/readyz'))
+    expect(notReady.status).toBe(503)
+    expect((await readJson(notReady)).status).toBe('unavailable')
+  })
+})
+
 describe('Members HTTP — consumo do aluno', () => {
   test('sem identidade (x-auth-user-id) → 401', async () => {
     const { app } = buildApp()
@@ -193,6 +210,46 @@ describe('Members HTTP — consumo do aluno', () => {
     const list = await readJson(await get(app, '/members/courses', authHeaders()))
     expect(list.courses[0].progress.percent).toBe(100)
   })
+
+  test('conclusão de aula DEPOIS despublicada não infla o progresso', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const course = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
+    const [l1, l2] = course.lessonIds
+
+    // Conclui SÓ a aula 1 e o admin a despublica em seguida.
+    await app.handle(
+      new Request(`http://localhost/members/lessons/${l1}/complete`, {
+        method: 'POST',
+        headers: authHeaders(),
+      }),
+    )
+    const lesson1 = courses.lessons.find((l) => l.id === l1)
+    if (lesson1) lesson1.isPublished = false
+
+    // Antes do fix: numerador contava a conclusão da despublicada e o curso
+    // aparecia 100% sem o aluno ter feito a única aula visível (l2).
+    const progress = await readJson(
+      await get(app, `/members/courses/${course.slug}/progress`, authHeaders()),
+    )
+    expect(progress).toMatchObject({ completedLessons: 0, totalLessons: 1, percent: 0 })
+
+    const detail = await readJson(await get(app, `/members/courses/${course.slug}`, authHeaders()))
+    expect(detail.progress.percent).toBe(0)
+    const list = await readJson(await get(app, '/members/courses', authHeaders()))
+    expect(list.courses[0].progress).toMatchObject({ completedLessons: 0, totalLessons: 1 })
+
+    // Concluir a aula 2 (a única publicada) → 100% de novo, sobre o conjunto visível.
+    const done = await readJson(
+      await app.handle(
+        new Request(`http://localhost/members/lessons/${l2}/complete`, {
+          method: 'POST',
+          headers: authHeaders(),
+        }),
+      ),
+    )
+    expect(done).toMatchObject({ completedLessons: 1, totalLessons: 1, percent: 100 })
+  })
 })
 
 describe('Members HTTP — webhooks', () => {
@@ -240,6 +297,24 @@ describe('Members HTTP — webhooks', () => {
     expect((await readJson(res)).error).toBe('OFFER_UNRESOLVED')
     // A entrega NÃO foi marcada → uma reentrega será reprocessada (e não deduplicada).
     expect(await processed.isProcessed('d-unresolved')).toBe(false)
+  })
+
+  test('grant de oferta resolvida SEM itens → 502 OFFER_EMPTY e NÃO deduplica', async () => {
+    const { app, processed, catalog } = buildApp()
+    // Drift de contrato: a oferta existe mas nenhum item sobreviveu ao parse.
+    catalog.set('offer-vazia', { offerId: 'o1', offerSlug: 'offer-vazia', items: [] })
+    const body = JSON.stringify({ userId: USER, offerRef: 'offer-vazia', paymentId: 'pay-1' })
+    const res = await app.handle(
+      new Request('http://localhost/members/webhooks/grant', {
+        method: 'POST',
+        headers: signedWebhookHeaders('/members/webhooks/grant', body, 'd-empty'),
+        body,
+      }),
+    )
+    expect(res.status).toBe(502)
+    expect((await readJson(res)).error).toBe('OFFER_EMPTY')
+    // Sem marcar a entrega: a falha repetida na re-entrega é o alarme.
+    expect(await processed.isProcessed('d-empty')).toBe(false)
   })
 
   test('grant com assinatura inválida → 401', async () => {

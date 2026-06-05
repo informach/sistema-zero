@@ -286,8 +286,17 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     return this.lessons.filter((l) => l.courseId === courseId).length
   }
 
-  async countPublishedLessons(courseId: string): Promise<number> {
-    return this.lessons.filter((l) => l.courseId === courseId && l.isPublished).length
+  async countPublishedLessons(
+    courseId: string,
+    opts?: { excludeLessonId?: string; excludeModuleId?: string },
+  ): Promise<number> {
+    return this.lessons.filter(
+      (l) =>
+        l.courseId === courseId &&
+        l.isPublished &&
+        l.id !== opts?.excludeLessonId &&
+        l.moduleId !== opts?.excludeModuleId,
+    ).length
   }
 
   async countLessonsByCourseIds(courseIds: string[]): Promise<Map<string, number>> {
@@ -554,6 +563,9 @@ interface Completion {
 export class InMemoryProgressRepository implements ProgressRepository {
   readonly completions: Completion[] = []
 
+  /** `lessonSource` espelha o join com `lessons.is_published` das contagens `*Published`. */
+  constructor(private readonly lessonSource?: { lessons: Lesson[] }) {}
+
   async markComplete(userId: string, lessonId: string, courseId: string, now: Date): Promise<void> {
     if (this.completions.some((c) => c.userId === userId && c.lessonId === lessonId)) return
     this.completions.push({ userId, lessonId, courseId, completedAt: now })
@@ -571,6 +583,32 @@ export class InMemoryProgressRepository implements ProgressRepository {
     const out = new Map<string, number>()
     for (const c of this.completions) {
       if (c.userId === userId && set.has(c.courseId)) {
+        out.set(c.courseId, (out.get(c.courseId) ?? 0) + 1)
+      }
+    }
+    return out
+  }
+
+  /** Mirror do SQL: inner join com lessons publicadas. Sem source = tudo publicado. */
+  private isPublished(lessonId: string): boolean {
+    if (!this.lessonSource) return true
+    return this.lessonSource.lessons.some((l) => l.id === lessonId && l.isPublished)
+  }
+
+  async countCompletedPublished(userId: string, courseId: string): Promise<number> {
+    return this.completions.filter(
+      (c) => c.userId === userId && c.courseId === courseId && this.isPublished(c.lessonId),
+    ).length
+  }
+
+  async countCompletedPublishedByCourseIds(
+    userId: string,
+    courseIds: string[],
+  ): Promise<Map<string, number>> {
+    const set = new Set(courseIds)
+    const out = new Map<string, number>()
+    for (const c of this.completions) {
+      if (c.userId === userId && set.has(c.courseId) && this.isPublished(c.lessonId)) {
         out.set(c.courseId, (out.get(c.courseId) ?? 0) + 1)
       }
     }
@@ -674,8 +712,25 @@ export class InMemoryCourseRatingRepository implements CourseRatingRepository {
 export class InMemoryQuizAttemptRepository implements QuizAttemptRepository {
   readonly attempts: QuizAttemptRecord[] = []
 
-  async save(attempt: QuizAttemptRecord): Promise<void> {
+  /** Mirror do SQL: com `guard`, re-checa o cooldown antes de gravar (atômico aqui — single-thread). */
+  async save(attempt: QuizAttemptRecord, guard?: { cooldownMs: number }): Promise<boolean> {
+    if (guard) {
+      const mine = this.attempts
+        .filter((a) => a.userId === attempt.userId && a.blockId === attempt.blockId)
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      const last = mine[0]
+      const everPassed = mine.some((a) => a.passed)
+      if (
+        last &&
+        !everPassed &&
+        !last.passed &&
+        last.createdAt.getTime() + guard.cooldownMs > attempt.createdAt.getTime()
+      ) {
+        return false
+      }
+    }
     this.attempts.push({ ...attempt, answers: { ...attempt.answers } })
+    return true
   }
 
   /** Mirror do SQL: agrega o histórico por bloco (mais recente = última tentativa). */

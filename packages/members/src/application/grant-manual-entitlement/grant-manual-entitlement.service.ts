@@ -3,6 +3,7 @@ import { CourseNotFoundError } from '../../domain/course/course.errors'
 import { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
 import {
   EntitlementConflictError,
+  InvalidEntitlementCommandError,
   OfferNotFoundError,
 } from '../../domain/entitlement/entitlement.errors'
 import type { EntitlementSnapshot } from '../../domain/entitlement/entitlement-snapshot'
@@ -85,6 +86,13 @@ export class GrantManualEntitlementService {
   ): Promise<GrantManualResult> {
     const offer = await this.deps.catalog.resolveOfferEntitlements(offerRef)
     if (!offer) throw new OfferNotFoundError()
+    // Oferta sem nenhum item resolvível (drift de contrato no catálogo) — o admin
+    // precisa ver o erro, não um 201 vazio que parece sucesso.
+    if (offer.items.length === 0) {
+      throw new InvalidEntitlementCommandError(
+        'A oferta foi resolvida mas não entrega nenhum item — verifique o catálogo',
+      )
+    }
 
     const granted: AdminEntitlementView[] = []
     for (const item of offer.items) {

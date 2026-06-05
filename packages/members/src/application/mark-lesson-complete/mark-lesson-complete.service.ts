@@ -41,9 +41,10 @@ export class MarkLessonCompleteService {
 
     await this.progress.markComplete(userId, lessonId, lesson.courseId, this.clock())
 
+    // Numerador e denominador sobre o MESMO conjunto (aulas publicadas).
     const [total, completed, last] = await Promise.all([
       this.courses.countPublishedLessons(course.id),
-      this.progress.countCompleted(userId, course.id),
+      this.progress.countCompletedPublished(userId, course.id),
       this.progress.lastCompletedAt(userId, course.id),
     ])
     return toCourseProgressView(computeProgress(completed, total), last)
