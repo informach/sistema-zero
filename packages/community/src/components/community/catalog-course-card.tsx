@@ -77,9 +77,9 @@ export function CatalogCourseCard({ course, salesUrl }: CatalogCourseCardProps) 
     )
   }
   if (salesUrl) {
-    // Página de vendas é EXTERNA (funil) → <a> simples.
+    // Página de vendas é EXTERNA (funil) → <a> em NOVA aba (aluno não sai da plataforma).
     return (
-      <a href={salesUrl} className="group block h-full">
+      <a href={salesUrl} target="_blank" rel="noopener noreferrer" className="group block h-full">
         {body}
       </a>
     )

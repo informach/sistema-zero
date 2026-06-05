@@ -188,6 +188,7 @@ Da raiz: `bun run dev:community`, `build:community`, `typecheck:community`.
 - `FUNNEL_URL` opcional — fallback da página de vendas (curso sem `metadata.salesPageUrl`):
   em `/cursos` (sem ela e sem metadata, o card bloqueado fica não-clicável) e na modal
   Compartilhar da classificação do curso (sem URL, o botão Compartilhar é ocultado).
+  Dev = `http://localhost:4321` (funil local); prod = domínio real do funil.
 - `R2_ACCOUNT_ID`/`R2_ACCESS_KEY_ID`/`R2_SECRET_ACCESS_KEY`/`R2_BUCKET`/`R2_PUBLIC_URL`
   opcionais — upload de avatar (ausentes → 503 amigável; mesmo bucket do admin: dev = `testes`
   com `R2_PUBLIC_URL` r2.dev · prod = `comunidade-sistema-zero` com `cdn.sistemazero.com.br`).
@@ -219,8 +220,9 @@ Da raiz: `bun run dev:community`, `build:community`, `typecheck:community`.
 - Members (JWT + x-internal-token injetados pelo gateway): `GET /members/courses` →
   `{courses: MyCourseView[]}` (+`continueLessonId`); `GET /members/catalog` →
   `{courses: CatalogCourseView[]}` ("Todos os cursos": published + `hasAccess` + `salesPageUrl` —
-  a página `/cursos` resolve `salesPageUrl ?? FUNNEL_URL` no server e filtra/busca client-side
-  com estado na URL `?q=&acesso=&ordem=`); `GET /members/courses/:slug` → `CourseDetailView`
+  a página `/cursos` resolve `salesPageUrl ?? FUNNEL_URL` no server, o card bloqueado abre a
+  página de vendas em **NOVA aba** (`target="_blank" rel="noopener noreferrer"`) e filtra/busca
+  client-side com estado na URL `?q=&acesso=&ordem=`); `GET /members/courses/:slug` → `CourseDetailView`
   (módulos+outline + `continueLessonId`: última aula acessada > 1ª não concluída > 1ª);
   `GET /members/courses/:slug/lessons/:lessonId` → `LessonDetailView` (**busca por ID**, blocos
   `kind: rich_text|video|image|audio|quiz|embed|ebook` + anexos + `positionSeconds`; bloco quiz vem
