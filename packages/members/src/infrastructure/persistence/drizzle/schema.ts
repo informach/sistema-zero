@@ -270,11 +270,17 @@ export const courseRatings = members.table(
 )
 
 // ── Deduplicação de webhooks de entrada ─────────────────────────────────────
-export const processedWebhooks = members.table('processed_webhooks', {
-  deliveryId: text('delivery_id').primaryKey(),
-  eventName: text('event_name').notNull(),
-  processedAt: timestamp('processed_at', { withTimezone: true }).notNull().defaultNow(),
-})
+export const processedWebhooks = members.table(
+  'processed_webhooks',
+  {
+    deliveryId: text('delivery_id').primaryKey(),
+    eventName: text('event_name').notNull(),
+    processedAt: timestamp('processed_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  // Cobre o prune da retenção (`processed_at < cutoff`) — sem ele cada ciclo
+  // faria seq scan da tabela inteira no banco compartilhado.
+  (t) => [index('processed_webhooks_processed_at_idx').on(t.processedAt)],
+)
 
 export const schema = {
   courses,

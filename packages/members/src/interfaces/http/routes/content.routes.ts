@@ -19,9 +19,13 @@ import {
   AttachmentBody,
   BlockBody,
   CourseBody,
+  CourseIdParams,
+  IdParams,
   LessonBody,
+  LessonIdParams,
   ListCoursesQuery,
   ModuleBody,
+  ModuleIdParams,
   ReorderBody,
 } from '../dtos'
 
@@ -113,22 +117,30 @@ export function contentRoutes(deps: ContentRoutesDeps) {
         },
         { body: CourseBody },
       )
-      .get('/courses/:id', async ({ params, headers }) => {
-        guard(headers)
-        return deps.courses.get(params.id)
-      })
+      .get(
+        '/courses/:id',
+        async ({ params, headers }) => {
+          guard(headers)
+          return deps.courses.get(params.id)
+        },
+        { params: IdParams },
+      )
       .patch(
         '/courses/:id',
         async ({ params, body, headers }) => {
           guard(headers)
           return deps.courses.update(params.id, courseFields(body))
         },
-        { body: CourseBody },
+        { body: CourseBody, params: IdParams },
       )
-      .delete('/courses/:id', async ({ params, headers }) => {
-        guard(headers)
-        return deps.courses.remove(params.id)
-      })
+      .delete(
+        '/courses/:id',
+        async ({ params, headers }) => {
+          guard(headers)
+          return deps.courses.remove(params.id)
+        },
+        { params: IdParams },
+      )
       // ── Módulos ──
       .post(
         '/courses/:courseId/modules',
@@ -137,7 +149,7 @@ export function contentRoutes(deps: ContentRoutesDeps) {
           set.status = 201
           return deps.modules.create(params.courseId, moduleFields(body))
         },
-        { body: ModuleBody },
+        { body: ModuleBody, params: CourseIdParams },
       )
       .post(
         '/courses/:courseId/modules/reorder',
@@ -145,7 +157,7 @@ export function contentRoutes(deps: ContentRoutesDeps) {
           guard(headers)
           return deps.modules.reorder(params.courseId, body.orderedIds)
         },
-        { body: ReorderBody },
+        { body: ReorderBody, params: CourseIdParams },
       )
       .patch(
         '/modules/:id',
@@ -153,12 +165,16 @@ export function contentRoutes(deps: ContentRoutesDeps) {
           guard(headers)
           return deps.modules.update(params.id, moduleFields(body))
         },
-        { body: ModuleBody },
+        { body: ModuleBody, params: IdParams },
       )
-      .delete('/modules/:id', async ({ params, headers }) => {
-        guard(headers)
-        return deps.modules.remove(params.id)
-      })
+      .delete(
+        '/modules/:id',
+        async ({ params, headers }) => {
+          guard(headers)
+          return deps.modules.remove(params.id)
+        },
+        { params: IdParams },
+      )
       // ── Aulas ──
       .post(
         '/modules/:moduleId/lessons',
@@ -167,7 +183,7 @@ export function contentRoutes(deps: ContentRoutesDeps) {
           set.status = 201
           return deps.lessons.create(params.moduleId, lessonFields(body))
         },
-        { body: LessonBody },
+        { body: LessonBody, params: ModuleIdParams },
       )
       .post(
         '/modules/:moduleId/lessons/reorder',
@@ -175,24 +191,32 @@ export function contentRoutes(deps: ContentRoutesDeps) {
           guard(headers)
           return deps.lessons.reorder(params.moduleId, body.orderedIds)
         },
-        { body: ReorderBody },
+        { body: ReorderBody, params: ModuleIdParams },
       )
-      .get('/lessons/:id/content', async ({ params, headers }) => {
-        guard(headers)
-        return deps.lessons.getContent(params.id)
-      })
+      .get(
+        '/lessons/:id/content',
+        async ({ params, headers }) => {
+          guard(headers)
+          return deps.lessons.getContent(params.id)
+        },
+        { params: IdParams },
+      )
       .patch(
         '/lessons/:id',
         async ({ params, body, headers }) => {
           guard(headers)
           return deps.lessons.update(params.id, lessonFields(body))
         },
-        { body: LessonBody },
+        { body: LessonBody, params: IdParams },
       )
-      .delete('/lessons/:id', async ({ params, headers }) => {
-        guard(headers)
-        return deps.lessons.remove(params.id)
-      })
+      .delete(
+        '/lessons/:id',
+        async ({ params, headers }) => {
+          guard(headers)
+          return deps.lessons.remove(params.id)
+        },
+        { params: IdParams },
+      )
       // ── Blocos ──
       .post(
         '/lessons/:lessonId/blocks',
@@ -201,7 +225,7 @@ export function contentRoutes(deps: ContentRoutesDeps) {
           set.status = 201
           return deps.blocks.create(params.lessonId, body.content as LessonBlockContent)
         },
-        { body: BlockBody },
+        { body: BlockBody, params: LessonIdParams },
       )
       .post(
         '/lessons/:lessonId/blocks/reorder',
@@ -209,7 +233,7 @@ export function contentRoutes(deps: ContentRoutesDeps) {
           guard(headers)
           return deps.blocks.reorder(params.lessonId, body.orderedIds)
         },
-        { body: ReorderBody },
+        { body: ReorderBody, params: LessonIdParams },
       )
       .patch(
         '/blocks/:id',
@@ -217,12 +241,16 @@ export function contentRoutes(deps: ContentRoutesDeps) {
           guard(headers)
           return deps.blocks.update(params.id, body.content as LessonBlockContent)
         },
-        { body: BlockBody },
+        { body: BlockBody, params: IdParams },
       )
-      .delete('/blocks/:id', async ({ params, headers }) => {
-        guard(headers)
-        return deps.blocks.remove(params.id)
-      })
+      .delete(
+        '/blocks/:id',
+        async ({ params, headers }) => {
+          guard(headers)
+          return deps.blocks.remove(params.id)
+        },
+        { params: IdParams },
+      )
       // ── Anexos ──
       .post(
         '/lessons/:lessonId/attachments',
@@ -231,7 +259,7 @@ export function contentRoutes(deps: ContentRoutesDeps) {
           set.status = 201
           return deps.attachments.create(params.lessonId, attachmentFields(body))
         },
-        { body: AttachmentBody },
+        { body: AttachmentBody, params: LessonIdParams },
       )
       .post(
         '/lessons/:lessonId/attachments/reorder',
@@ -239,7 +267,7 @@ export function contentRoutes(deps: ContentRoutesDeps) {
           guard(headers)
           return deps.attachments.reorder(params.lessonId, body.orderedIds)
         },
-        { body: ReorderBody },
+        { body: ReorderBody, params: LessonIdParams },
       )
       .patch(
         '/attachments/:id',
@@ -247,11 +275,15 @@ export function contentRoutes(deps: ContentRoutesDeps) {
           guard(headers)
           return deps.attachments.update(params.id, attachmentFields(body))
         },
-        { body: AttachmentBody },
+        { body: AttachmentBody, params: IdParams },
       )
-      .delete('/attachments/:id', async ({ params, headers }) => {
-        guard(headers)
-        return deps.attachments.remove(params.id)
-      })
+      .delete(
+        '/attachments/:id',
+        async ({ params, headers }) => {
+          guard(headers)
+          return deps.attachments.remove(params.id)
+        },
+        { params: IdParams },
+      )
   )
 }

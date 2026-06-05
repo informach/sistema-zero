@@ -12,7 +12,16 @@ import type { SaveCourseRatingService } from '../../../application/save-course-r
 import type { SaveVideoPositionService } from '../../../application/save-video-position/save-video-position.service'
 import type { SubmitQuizAttemptService } from '../../../application/submit-quiz-attempt/submit-quiz-attempt.service'
 import { assertInternalCaller, resolveUserId } from '../auth'
-import { CourseRatingBody, QuizAttemptBody, VideoPositionBody } from '../dtos'
+import {
+  AttachmentResolveParams,
+  CourseRatingBody,
+  EbookResolveParams,
+  LessonIdParams,
+  QuizAttemptBody,
+  QuizAttemptParams,
+  SlugLessonParams,
+  VideoPositionBody,
+} from '../dtos'
 
 export interface MembersRoutesDeps {
   listMyCourses: ListMyCoursesService
@@ -78,10 +87,14 @@ export function membersRoutes(deps: MembersRoutesDeps) {
         },
         { body: CourseRatingBody },
       )
-      .get('/courses/:slug/lessons/:lessonId', async ({ headers, params }) => {
-        const userId = resolveUserId(headers)
-        return deps.getLesson.execute(userId, params.slug, params.lessonId)
-      })
+      .get(
+        '/courses/:slug/lessons/:lessonId',
+        async ({ headers, params }) => {
+          const userId = resolveUserId(headers)
+          return deps.getLesson.execute(userId, params.slug, params.lessonId)
+        },
+        { params: SlugLessonParams },
+      )
       // Resolução de download de anexo (consumida SÓ pelo servidor do community —
       // a `storageRef` devolvida nunca deve ser repassada ao browser).
       .get(
@@ -95,6 +108,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             params.attachmentId,
           )
         },
+        { params: AttachmentResolveParams },
       )
       // Resolução do PDF do bloco e-book (mesmo perfil do resolve de anexo:
       // consumida SÓ pelo servidor do community; storageRef nunca vai ao browser).
@@ -104,11 +118,16 @@ export function membersRoutes(deps: MembersRoutesDeps) {
           const userId = resolveUserId(headers)
           return deps.resolveEbook.execute(userId, params.slug, params.lessonId, params.blockId)
         },
+        { params: EbookResolveParams },
       )
-      .post('/lessons/:lessonId/complete', async ({ headers, params }) => {
-        const userId = resolveUserId(headers)
-        return deps.markComplete.execute(userId, params.lessonId)
-      })
+      .post(
+        '/lessons/:lessonId/complete',
+        async ({ headers, params }) => {
+          const userId = resolveUserId(headers)
+          return deps.markComplete.execute(userId, params.lessonId)
+        },
+        { params: LessonIdParams },
+      )
       .put(
         '/courses/:slug/lessons/:lessonId/position',
         async ({ headers, params, body }) => {
@@ -120,7 +139,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             body.positionSeconds,
           )
         },
-        { body: VideoPositionBody },
+        { body: VideoPositionBody, params: SlugLessonParams },
       )
       // Submete o quiz: score no servidor; gabarito SÓ na resposta (nunca no GET).
       .post(
@@ -129,7 +148,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
           const userId = resolveUserId(headers)
           return deps.submitQuiz.execute(userId, params.lessonId, params.blockId, body.answers)
         },
-        { body: QuizAttemptBody },
+        { body: QuizAttemptBody, params: QuizAttemptParams },
       )
   )
 }

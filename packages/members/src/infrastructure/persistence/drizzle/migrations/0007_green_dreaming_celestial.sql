@@ -1,0 +1,1 @@
+CREATE INDEX "processed_webhooks_processed_at_idx" ON "members"."processed_webhooks" USING btree ("processed_at");

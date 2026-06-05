@@ -50,6 +50,13 @@
       "when": 1780655281476,
       "tag": "0006_first_sebastian_shaw",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1780689317475,
+      "tag": "0007_green_dreaming_celestial",
+      "breakpoints": true
     }
   ]
 }

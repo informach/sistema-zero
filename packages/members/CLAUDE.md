@@ -31,10 +31,17 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > de retenção/timeout do catálogo; retry da extensão de assinatura; progresso sem
 > conclusões de aulas despublicadas; token interno também no admin; guards de
 > "última aula publicada"; reativação via extend; oferta vazia → 502; validações
-> de quiz/sandbox; cooldown atômico) — **131 testes**.
+> de quiz/sandbox; cooldown atômico) + **2º full review (prod-readiness, 06/2026) com
+> TODOS os achados implementados** (Dockerfile + railway.json — preDeploy `db:migrate`
+> APENAS, o seed é de DEV e não vai a prod; índice `processed_at` + prune em LOTES;
+> **uuid validado nas bordas** — params TypeBox + `userId` dos webhooks/grant manual,
+> id lixo → 400 e nunca 22P02→500; URLs do admin exigem `http(s)` —
+> `r2priv:` permitido em anexo/ebook — barrando `javascript:` na borda; cap de 200
+> chars no `x-delivery-id`) — **139 testes**.
 > Migrations `0000` (schema `members`), `0001` (`lesson_progress`), `0002`
 > (`quiz_attempts`), `0003` (`lessons.is_published`), `0004` (`course_ratings`), `0005`
-> (enum `lesson_block_kind` + `'ebook'`) e `0006` (enum `access_type` + `'all_courses'`)
+> (enum `lesson_block_kind` + `'ebook'`), `0006` (enum `access_type` + `'all_courses'`)
+> e `0007` (índice `processed_webhooks_processed_at_idx`)
 > — **aplicadas** no Postgres compartilhado (`sistemazero`, :5433).
 
 ## Conceito central (decisões travadas com o usuário)
@@ -330,6 +337,26 @@ entre pacotes (a dedupe por `created_at` pularia migrations). A migration faz
 de vídeo/last-accessed — migration `0001`), `quiz_attempts` (histórico de quiz —
 migration `0002`), `course_ratings` (classificação do curso, UNIQUE user+course —
 migration `0004`), `processed_webhooks`.
+
+## Deploy (Railway)
+
+Serviço próprio no projeto `sistema-zero` via **`packages/members/railway.json`** (config-as-code:
+Dockerfile `oven/bun:1` com build context = RAIZ do repo, watchPatterns members/core/lockfile,
+healthcheck **`/readyz`**). `preDeployCommand` roda **`db:migrate` APENAS** — diferente do catalog
+(`db:deploy` = migrate+seed): o seed do members (`scripts/seed-course.ts`) é **conteúdo de exemplo
+de DEV** (curso demo com vídeo/anexos placeholder) e **NÃO pode rodar em produção**; o curso real é
+autorado pelo painel admin. **SEM domínio público por design** — members só é alcançado pelo gateway
+e recebe webhooks re-assinados por ele via private networking (`members.railway.internal:3004`).
+
+Envs de prod: `NODE_ENV=production` (liga os refines fail-closed), `PORT=3004`,
+`DATABASE_URL=${{Postgres.DATABASE_URL}}`, `GATEWAY_HMAC_SECRET` (= o do gateway; obrigatório
+SEMPRE — boot falha sem ele), `INTERNAL_API_TOKEN` (= `MEMBERS_INTERNAL_TOKEN` do gateway;
+obrigatório em prod), `CATALOG_INTERNAL_TOKEN` (= `INTERNAL_API_TOKEN` do catalog =
+`CATALOG_INTERNAL_TOKEN` do gateway — 1 token, 3 hosts; obrigatório em prod) e
+**`CATALOG_BASE_URL=http://catalog.railway.internal:3003`** (⚠️ o default é `localhost:3003` —
+esquecer esta env quebra o grant em runtime, não no boot). No GATEWAY: `MEMBERS_URL=
+http://members.railway.internal:3004` + `MEMBERS_INTERNAL_TOKEN`. Ler tokens dos irmãos com
+`railway variables --kv`.
 
 ## Pendente (fatias seguintes)
 

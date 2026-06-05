@@ -4,9 +4,24 @@ import { Elysia } from 'elysia'
 import type { GrantEntitlementService } from '../../../application/grant-entitlement/grant-entitlement.service'
 import type { RevokeEntitlementService } from '../../../application/revoke-entitlement/revoke-entitlement.service'
 import type { ProcessedWebhookRepository } from '../../../domain/ports/processed-webhook-repository.port'
+import { ValidationError } from '../../../domain/shared/errors'
 import { GrantWebhookBody, SubscriptionWebhookBody } from '../dtos'
 import { getRawBody, isOversizeBody } from '../raw-body'
 import { assertWebhookSignature } from '../webhook-auth'
+
+/**
+ * `x-delivery-id` vira PK `text` em `processed_webhooks` — só é alcançável após
+ * o HMAC, mas um id anômalo não deve virar linha gigante (gateway honesto manda
+ * ids curtos). Acima do teto → 400 (truncar criaria colisão de dedupe).
+ */
+const MAX_DELIVERY_ID_LENGTH = 200
+function resolveDeliveryId(headers: Record<string, string | undefined>): string | null {
+  const id = headers['x-delivery-id']
+  if (!id) return null
+  if (id.length > MAX_DELIVERY_ID_LENGTH)
+    throw new ValidationError(`x-delivery-id excede ${MAX_DELIVERY_ID_LENGTH} caracteres`)
+  return id
+}
 
 export interface WebhooksRoutesDeps {
   grant: GrantEntitlementService
@@ -50,7 +65,7 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
     .post(
       '/grant',
       async ({ headers, body, set }) => {
-        const deliveryId = headers['x-delivery-id'] ?? null
+        const deliveryId = resolveDeliveryId(headers)
         if (deliveryId && (await deps.processed.isProcessed(deliveryId))) {
           return { ok: true, deduped: true }
         }
@@ -94,7 +109,7 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
     .post(
       '/subscription',
       async ({ headers, body }) => {
-        const deliveryId = headers['x-delivery-id'] ?? null
+        const deliveryId = resolveDeliveryId(headers)
         if (deliveryId && (await deps.processed.isProcessed(deliveryId))) {
           return { ok: true, deduped: true }
         }

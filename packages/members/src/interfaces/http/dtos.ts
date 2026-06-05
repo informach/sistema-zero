@@ -1,11 +1,32 @@
 import { t } from 'elysia'
 
+// Ids que vão a colunas `uuid` validam o FORMATO na borda — um id lixo chegaria
+// ao Postgres como 22P02 e viraria 500 INTERNAL_ERROR (padrão do catalog).
+const UUID_PATTERN = '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+const UUID = t.String({ pattern: UUID_PATTERN })
+
+// ── Params de rota com ids uuid (Elysia valida ANTES do handler → 400) ──────
+export const IdParams = t.Object({ id: UUID })
+export const UserIdParams = t.Object({ userId: UUID })
+export const CourseIdParams = t.Object({ courseId: UUID })
+export const ModuleIdParams = t.Object({ moduleId: UUID })
+export const LessonIdParams = t.Object({ lessonId: UUID })
+export const SlugLessonParams = t.Object({ slug: t.String(), lessonId: UUID })
+export const AttachmentResolveParams = t.Object({
+  slug: t.String(),
+  lessonId: UUID,
+  attachmentId: UUID,
+})
+export const EbookResolveParams = t.Object({ slug: t.String(), lessonId: UUID, blockId: UUID })
+export const QuizAttemptParams = t.Object({ lessonId: UUID, blockId: UUID })
+
 /**
  * Corpo de `POST /members/webhooks/grant` — concessão de acesso (funil → gateway →
  * members). `subscription` presente = acesso por assinatura; ausente = compra única.
+ * `userId` vem do auth (ensure-buyer) e é sempre uuid — formato validado na borda.
  */
 export const GrantWebhookBody = t.Object({
-  userId: t.String({ minLength: 1, maxLength: 64 }),
+  userId: UUID,
   offerRef: t.String({ minLength: 1, maxLength: 200 }),
   paymentId: t.String({ minLength: 1, maxLength: 100 }),
   paidAt: t.Optional(t.String({ maxLength: 40 })),
@@ -100,7 +121,8 @@ export const ListMembersQuery = t.Object({
   offset: t.Optional(t.Numeric({ minimum: 0, maximum: 1_000_000 })),
 })
 
-const USER_ID = t.String({ minLength: 1, maxLength: 64 })
+// `userId` do grant manual vai à coluna uuid `entitlements.user_id`.
+const USER_ID = UUID
 const EXPIRES_AT = t.Optional(t.Union([t.String({ maxLength: 40 }), t.Null()]))
 
 /**
@@ -140,7 +162,15 @@ const COURSE_STATUS = t.Union([t.Literal('draft'), t.Literal('published'), t.Lit
 const SLUG = t.String({ minLength: 1, maxLength: 200, pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$' })
 const TITLE = t.String({ minLength: 1, maxLength: 300 })
 const NULLABLE_TEXT = t.Optional(t.Union([t.String({ maxLength: 20_000 }), t.Null()]))
-const NULLABLE_URL = t.Optional(t.Union([t.String({ maxLength: 2000 }), t.Null()]))
+// URLs escritas pelo admin exigem esquema http(s) — sem isto um `javascript:`
+// chegaria intacto ao browser do aluno via views member-facing (o painel já
+// valida; aqui é defesa em profundidade na borda do serviço).
+const HTTP_URL_PATTERN = '^https?://'
+// Mídia que pode viver no bucket R2 PRIVADO: URL http(s) OU `r2priv:<key>`.
+const MEDIA_REF_PATTERN = '^(?:https?://|r2priv:).'
+const NULLABLE_URL = t.Optional(
+  t.Union([t.String({ maxLength: 2000, pattern: HTTP_URL_PATTERN }), t.Null()]),
+)
 
 /** Corpo de `POST/PATCH /members/admin/courses[/:id]`. */
 export const CourseBody = t.Object({
@@ -175,7 +205,8 @@ export const LessonBody = t.Object({
 
 export const AttachmentBody = t.Object({
   label: t.String({ minLength: 1, maxLength: 200 }),
-  url: t.String({ minLength: 1, maxLength: 2000 }),
+  // `r2priv:<key>` (bucket privado, caminho padrão) ou URL http(s) externa/legada.
+  url: t.String({ minLength: 1, maxLength: 2000, pattern: MEDIA_REF_PATTERN }),
   fileType: t.Optional(t.Union([t.String({ maxLength: 100 }), t.Null()])),
   sizeBytes: t.Optional(t.Union([t.Integer({ minimum: 0 }), t.Null()])),
 })
@@ -200,22 +231,27 @@ const VideoBlockSchema = t.Object({
     t.Literal('vimeo'),
     t.Literal('file'),
   ]),
-  src: t.String({ minLength: 1, maxLength: 2000 }),
-  posterUrl: t.Optional(t.String({ maxLength: 2000 })),
+  src: t.String({ minLength: 1, maxLength: 2000, pattern: HTTP_URL_PATTERN }),
+  posterUrl: t.Optional(t.String({ maxLength: 2000, pattern: HTTP_URL_PATTERN })),
   durationSeconds: t.Optional(t.Number({ minimum: 0 })),
   captions: t.Optional(
-    t.Array(t.Object({ lang: t.String({ maxLength: 20 }), url: t.String({ maxLength: 2000 }) })),
+    t.Array(
+      t.Object({
+        lang: t.String({ maxLength: 20 }),
+        url: t.String({ maxLength: 2000, pattern: HTTP_URL_PATTERN }),
+      }),
+    ),
   ),
 })
 const ImageBlockSchema = t.Object({
   kind: t.Literal('image'),
-  url: t.String({ minLength: 1, maxLength: 2000 }),
+  url: t.String({ minLength: 1, maxLength: 2000, pattern: HTTP_URL_PATTERN }),
   alt: t.Optional(t.String({ maxLength: 500 })),
   caption: t.Optional(t.String({ maxLength: 500 })),
 })
 const AudioBlockSchema = t.Object({
   kind: t.Literal('audio'),
-  url: t.String({ minLength: 1, maxLength: 2000 }),
+  url: t.String({ minLength: 1, maxLength: 2000, pattern: HTTP_URL_PATTERN }),
   durationSeconds: t.Optional(t.Number({ minimum: 0 })),
 })
 const QuizBlockSchema = t.Object({
@@ -256,7 +292,7 @@ const EmbedBlockSchema = t.Object({
 /** PDF no bucket R2 privado (`r2priv:<key>`) — vira livro 3D no front do aluno. */
 const EbookBlockSchema = t.Object({
   kind: t.Literal('ebook'),
-  url: t.String({ minLength: 1, maxLength: 2000 }),
+  url: t.String({ minLength: 1, maxLength: 2000, pattern: MEDIA_REF_PATTERN }),
   title: t.Optional(t.String({ maxLength: 300 })),
 })
 

@@ -8,7 +8,13 @@ import type { ListMembersService } from '../../../application/list-members/list-
 import type { ManageEntitlementService } from '../../../application/manage-entitlement/manage-entitlement.service'
 import { InvalidEntitlementCommandError } from '../../../domain/entitlement/entitlement.errors'
 import { assertInternalCaller, requireAdmin } from '../auth'
-import { GrantEntitlementBody, ListMembersQuery, ManageEntitlementBody } from '../dtos'
+import {
+  GrantEntitlementBody,
+  IdParams,
+  ListMembersQuery,
+  ManageEntitlementBody,
+  UserIdParams,
+} from '../dtos'
 
 const DEFAULT_LIMIT = 20
 const MAX_LIMIT = 100
@@ -50,10 +56,14 @@ export function adminRoutes(deps: AdminRoutesDeps) {
       },
       { query: ListMembersQuery },
     )
-    .get('/members/:userId', async ({ params, headers }) => {
-      requireAdmin(headers, deps.requireAdminEnabled)
-      return deps.getMemberDetail.execute(params.userId)
-    })
+    .get(
+      '/members/:userId',
+      async ({ params, headers }) => {
+        requireAdmin(headers, deps.requireAdminEnabled)
+        return deps.getMemberDetail.execute(params.userId)
+      },
+      { params: UserIdParams },
+    )
     .post(
       '/entitlements',
       async ({ body, headers, set }) => {
@@ -81,7 +91,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           expiresAt: parseDate(body.expiresAt) ?? undefined,
         })
       },
-      { body: ManageEntitlementBody },
+      { body: ManageEntitlementBody, params: IdParams },
     )
 }
 
