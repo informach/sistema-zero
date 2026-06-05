@@ -16,9 +16,18 @@ import { loadEnv } from '../src/infrastructure/config/env'
 import { createDbConnection } from '../src/infrastructure/persistence/drizzle/db'
 import { DrizzleTemplateRepository } from '../src/infrastructure/persistence/drizzle/template.repository'
 
+// Logo "light": tinta escura sobre um backing da MESMA cor do fundo da página
+// (#fbfaf7) baked na PNG — INVISÍVEL no tema claro (logo "pura"); no dark
+// FORÇADO do Gmail (que inverte cores mas não recolore imagens) o backing claro
+// permanece e mantém a tinta legível.
 const LOGO_URL =
   process.env.EMAIL_LOGO_URL ??
-  'https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/email/logo-sistema-zero.png'
+  'https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/email/logo-sistema-zero-light.png'
+// Logo de texto CLARO (transparente): usada no swap do dark mode DESENHADO
+// (clientes que respeitam prefers-color-scheme: Apple Mail/Samsung/Outlook iOS+2019).
+const LOGO_DARK_URL =
+  process.env.EMAIL_LOGO_DARK_URL ??
+  'https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/email/logo-sistema-zero-dark.png'
 
 // ── Paleta da marca (hex ≈ tokens oklch do community/admin) ───────────────────
 const INK = '#0d1117' // foreground / tinta da logo
@@ -32,6 +41,19 @@ const CYAN = '#42e5e0' // brand-cyan (início do gradiente CTA)
 const LIME = '#bfea00' // brand-lime (fim do gradiente CTA)
 const FONT = "-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif"
 
+// ── Tema DARK desenhado (hex ≈ tokens `.dark` do community) ───────────────────
+// Só vale nos clientes que respeitam `prefers-color-scheme` (Apple Mail, Samsung,
+// Outlook iOS/2019+). O Gmail IGNORA o media query e inverte cores por conta
+// própria — p/ ele a defesa é a logo-chip e uma paleta que inverte sem quebrar.
+const D_PAGE = '#05070b' // background dark
+const D_CARD = '#0d1117' // card dark
+const D_TEXT = '#d3d8dd' // corpo
+const D_BRIGHT = '#f5f7f9' // títulos/código
+const D_MUTED = '#7a8286' // muted-foreground dark
+const D_BORDER = '#262c36' // bordas/divisores
+const D_BOX = '#161b22' // caixa do código OTP
+const D_LINK = LIME // link no dark = brand-lime (token --link do community dark)
+
 // ── Blocos reutilizáveis (e-mail-safe: tabelas + CSS inline) ──────────────────
 
 /** Botão "à prova de bala": tabela + bgcolor sólido (Outlook) + gradiente da marca. */
@@ -39,7 +61,7 @@ function ctaButton(label: string, href: string): string {
   return `
 <table role="presentation" border="0" cellpadding="0" cellspacing="0" align="center" style="margin:28px auto;">
   <tr>
-    <td align="center" bgcolor="${CYAN}" style="border-radius:10px;background:${CYAN};background-image:linear-gradient(90deg,${CYAN},${LIME});">
+    <td align="center" bgcolor="${CYAN}" class="btn" style="border-radius:10px;background:${CYAN};background-image:linear-gradient(90deg,${CYAN},${LIME});">
       <a href="${href}" target="_blank" style="display:inline-block;padding:15px 40px;font-family:${FONT};font-size:16px;line-height:20px;font-weight:700;color:${INK};text-decoration:none;border-radius:10px;">${label}</a>
     </td>
   </tr>
@@ -49,11 +71,11 @@ function ctaButton(label: string, href: string): string {
 /** Linha de fallback do CTA (clientes que bloqueiam botão/imagens). */
 function fallbackLink(href: string): string {
   return `
-<p style="margin:0 0 8px;font-family:${FONT};font-size:13px;line-height:20px;color:${MUTED};">
+<p class="mut" style="margin:0 0 8px;font-family:${FONT};font-size:13px;line-height:20px;color:${MUTED};">
   Se o botão não funcionar, copie e cole este endereço no navegador:
 </p>
 <p style="margin:0;font-family:${FONT};font-size:13px;line-height:20px;word-break:break-all;">
-  <a href="${href}" target="_blank" style="color:${LINK};text-decoration:underline;">${href}</a>
+  <a href="${href}" target="_blank" class="lnk" style="color:${LINK};text-decoration:underline;">${href}</a>
 </p>`
 }
 
@@ -62,8 +84,8 @@ function codeBox(code: string): string {
   return `
 <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin:28px 0;">
   <tr>
-    <td align="center" bgcolor="${BOX_BG}" style="background:${BOX_BG};border:1px solid ${BORDER};border-radius:12px;padding:24px 16px;">
-      <span style="font-family:'Courier New',Courier,monospace;font-size:34px;line-height:40px;font-weight:700;letter-spacing:8px;color:${INK};">${code}</span>
+    <td align="center" bgcolor="${BOX_BG}" class="codebox" style="background:${BOX_BG};border:1px solid ${BORDER};border-radius:12px;padding:24px 16px;">
+      <span class="code" style="font-family:'Courier New',Courier,monospace;font-size:34px;line-height:40px;font-weight:700;letter-spacing:8px;color:${INK};">${code}</span>
     </td>
   </tr>
 </table>`
@@ -79,40 +101,70 @@ interface EmailLayoutInput {
   footerNote: string
 }
 
-/** Layout base: página 600px, card branco com logo, miolo e rodapé institucional. */
+/**
+ * Layout base: página 600px, card branco com logo, miolo e rodapé institucional.
+ *
+ * Dark mode (duas camadas):
+ *  1. Gmail/inversão FORÇADA (ignora media query): a logo é o "chip" com fundo
+ *     branco baked na PNG (imagens não são recoloridas) e a paleta clara inverte
+ *     sem quebrar (texto escuro→claro, fundos claros→escuros).
+ *  2. Clientes com dark de VERDADE (Apple Mail, Samsung, Outlook iOS/2019+):
+ *     `prefers-color-scheme: dark` aplica o tema dark do community (com
+ *     `!important` p/ vencer os estilos inline) e troca o chip pela logo de
+ *     texto claro (transparente).
+ */
 function emailLayout(input: EmailLayoutInput): string {
   return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="color-scheme" content="light">
+  <meta name="color-scheme" content="light dark">
+  <meta name="supported-color-schemes" content="light dark">
   <title>Sistema Zero</title>
+  <style>
+    :root { color-scheme: light dark; supported-color-schemes: light dark; }
+    @media (prefers-color-scheme: dark) {
+      body, .page { background: ${D_PAGE} !important; }
+      .card { background: ${D_CARD} !important; border-color: ${D_BORDER} !important; }
+      .ttl, .code { color: ${D_BRIGHT} !important; }
+      .txt { color: ${D_TEXT} !important; }
+      .mut { color: ${D_MUTED} !important; }
+      .dvd { border-top-color: ${D_BORDER} !important; }
+      .codebox { background: ${D_BOX} !important; border-color: ${D_BORDER} !important; }
+      .lnk { color: ${D_LINK} !important; }
+      /* Gradiente invertido no dark (lime→cyan), como no community. */
+      .btn { background: ${LIME} !important; background-image: linear-gradient(90deg, ${LIME}, ${CYAN}) !important; }
+      .logo-light { display: none !important; }
+      .logo-dark { display: block !important; }
+    }
+  </style>
 </head>
-<body style="margin:0;padding:0;background:${PAGE_BG};">
+<body class="page" style="margin:0;padding:0;background:${PAGE_BG};">
   <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">${input.preheader}&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;</div>
-  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="${PAGE_BG}" style="background:${PAGE_BG};">
+  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="${PAGE_BG}" class="page" style="background:${PAGE_BG};">
     <tr>
       <td align="center" style="padding:32px 16px;">
         <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="600" style="width:600px;max-width:100%;">
-          <!-- Logo -->
+          <!-- Logo: chip (default/Gmail) + texto claro (só no dark desenhado) -->
           <tr>
             <td align="center" style="padding:0 0 24px;">
-              <img src="${LOGO_URL}" width="232" alt="Sistema Zero" style="display:block;width:232px;max-width:70%;height:auto;border:0;">
+              <img src="${LOGO_URL}" width="268" alt="Sistema Zero" class="logo-light" style="display:block;width:268px;max-width:80%;height:auto;border:0;">
+              <img src="${LOGO_DARK_URL}" width="240" alt="Sistema Zero" class="logo-dark" style="display:none;width:240px;max-width:72%;height:auto;border:0;mso-hide:all;">
             </td>
           </tr>
           <!-- Card -->
           <tr>
-            <td bgcolor="#ffffff" style="background:#ffffff;border:1px solid ${BORDER};border-radius:14px;padding:40px 40px 32px;">
-              <h1 style="margin:0 0 16px;font-family:${FONT};font-size:22px;line-height:30px;font-weight:700;color:${INK};">${input.title}</h1>
+            <td bgcolor="#ffffff" class="card" style="background:#ffffff;border:1px solid ${BORDER};border-radius:14px;padding:40px 40px 32px;">
+              <h1 class="ttl" style="margin:0 0 16px;font-family:${FONT};font-size:22px;line-height:30px;font-weight:700;color:${INK};">${input.title}</h1>
               ${input.content}
             </td>
           </tr>
           <!-- Rodapé -->
           <tr>
             <td align="center" style="padding:24px 24px 0;">
-              <p style="margin:0 0 6px;font-family:${FONT};font-size:12px;line-height:18px;color:${MUTED};">${input.footerNote}</p>
-              <p style="margin:0;font-family:${FONT};font-size:12px;line-height:18px;color:${MUTED};">Sistema Zero · Mensagem automática — não é necessário responder.</p>
+              <p class="mut" style="margin:0 0 6px;font-family:${FONT};font-size:12px;line-height:18px;color:${MUTED};">${input.footerNote}</p>
+              <p class="mut" style="margin:0;font-family:${FONT};font-size:12px;line-height:18px;color:${MUTED};">Sistema Zero · Mensagem automática — não é necessário responder.</p>
             </td>
           </tr>
         </table>
@@ -124,10 +176,10 @@ function emailLayout(input: EmailLayoutInput): string {
 }
 
 const p = (html: string) =>
-  `<p style="margin:0 0 16px;font-family:${FONT};font-size:15px;line-height:24px;color:${TEXT};">${html}</p>`
+  `<p class="txt" style="margin:0 0 16px;font-family:${FONT};font-size:15px;line-height:24px;color:${TEXT};">${html}</p>`
 const small = (html: string) =>
-  `<p style="margin:0 0 8px;font-family:${FONT};font-size:13px;line-height:20px;color:${MUTED};">${html}</p>`
-const divider = `<hr style="border:0;border-top:1px solid ${BORDER};margin:28px 0 20px;">`
+  `<p class="mut" style="margin:0 0 8px;font-family:${FONT};font-size:13px;line-height:20px;color:${MUTED};">${html}</p>`
+const divider = `<hr class="dvd" style="border:0;border-top:1px solid ${BORDER};margin:28px 0 20px;">`
 
 // ── Templates ─────────────────────────────────────────────────────────────────
 
