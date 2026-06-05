@@ -26,4 +26,12 @@ export interface PasswordResetTokenRepository {
   consume(id: string, at: Date): Promise<void>
   /** Consome TODOS os tokens vigentes do usuário (emissão de um novo). Idempotente. */
   consumeAllForUser(userId: string, at: Date): Promise<void>
+  /**
+   * Quando foi a ÚLTIMA emissão (consumida ou não) do usuário — base do cooldown
+   * anti-spam do forgot-password (`null` = nunca emitiu). Olha TODAS as linhas:
+   * cada emissão consome os pendentes, então só o ativo não serviria de âncora.
+   */
+  lastIssuedAt(userId: string): Promise<Date | null>
+  /** Apaga tokens expirados antes de `before` (purga periódica). Retorna o nº removido. */
+  deleteExpired(before: Date): Promise<number>
 }

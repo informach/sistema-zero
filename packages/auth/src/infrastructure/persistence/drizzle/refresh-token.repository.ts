@@ -1,4 +1,4 @@
-import { and, eq, isNull } from 'drizzle-orm'
+import { and, eq, isNull, lt } from 'drizzle-orm'
 import type {
   CreateRefreshTokenInput,
   RefreshTokenRecord,
@@ -34,12 +34,23 @@ export class DrizzleRefreshTokenRepository implements RefreshTokenRepository {
     return row ? toRecord(row) : null
   }
 
-  async markRotated(id: string, rotatedAt: Date): Promise<void> {
-    // Rotacionar = consumir: marca rotatedAt E revokedAt (não pode mais ser usado).
-    await this.db
+  async claimForRotation(id: string, rotatedAt: Date): Promise<boolean> {
+    // Claim ATÔMICO: o WHERE só casa se o token ainda estiver vigente — duas
+    // rotações concorrentes disputam o UPDATE e só uma leva a linha (a outra
+    // recebe `false` e é tratada como reuso). Rotacionar = consumir: marca
+    // rotatedAt E revokedAt (não pode mais ser usado).
+    const claimed = await this.db
       .update(refreshTokens)
       .set({ rotatedAt, revokedAt: rotatedAt })
-      .where(eq(refreshTokens.id, id))
+      .where(
+        and(
+          eq(refreshTokens.id, id),
+          isNull(refreshTokens.rotatedAt),
+          isNull(refreshTokens.revokedAt),
+        ),
+      )
+      .returning({ id: refreshTokens.id })
+    return claimed.length === 1
   }
 
   async revoke(id: string): Promise<void> {
@@ -62,6 +73,14 @@ export class DrizzleRefreshTokenRepository implements RefreshTokenRepository {
       .update(refreshTokens)
       .set({ revokedAt: new Date() })
       .where(and(eq(refreshTokens.userId, userId), isNull(refreshTokens.revokedAt)))
+  }
+
+  async deleteExpired(before: Date): Promise<number> {
+    const deleted = await this.db
+      .delete(refreshTokens)
+      .where(lt(refreshTokens.expiresAt, before))
+      .returning({ id: refreshTokens.id })
+    return deleted.length
   }
 }
 

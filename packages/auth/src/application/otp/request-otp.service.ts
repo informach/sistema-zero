@@ -9,14 +9,20 @@ import { generateOtpCode } from './otp-code'
 
 export interface RequestOtpOptions {
   ttlMinutes: number
+  /** Mínimo de segundos entre emissões por (usuário, finalidade). 0 desliga. */
+  cooldownSeconds: number
 }
 
 /**
  * Emite um código OTP (6 dígitos) por e-mail. SEMPRE conclui em sucesso
  * (anti-enumeração — a rota responde 200 exista a conta ou não). Conta
  * inexistente/inativa → no-op silencioso. Um código ativo por (usuário, finalidade):
- * emitir um novo consome os pendentes. Envio best-effort (falha só loga; o usuário
- * pode re-pedir). O código CRU só trafega para o messaging — nunca é persistido.
+ * emitir um novo consome os pendentes — por isso o COOLDOWN por conta (o rate
+ * limit do gateway é por IP; IPs distribuídos poderiam bombardear o inbox de uma
+ * vítima E invalidar o código legítimo a cada pedido). Envio best-effort (falha
+ * só loga; o usuário pode re-pedir). O código CRU só trafega para o messaging —
+ * nunca é persistido (nem em forma derivável: a idempotencyKey vem do uuid do
+ * registro, NUNCA do código — sha256 de 6 dígitos é reversível por força bruta).
  */
 export class RequestOtpService {
   constructor(
@@ -38,12 +44,19 @@ export class RequestOtpService {
     if (!user?.isActive()) return
 
     const now = new Date()
+    // Cooldown por conta: pedido dentro da janela → no-op silencioso (mesma
+    // resposta 200; não consome o código vigente nem envia outro e-mail).
+    if (this.opts.cooldownSeconds > 0) {
+      const last = await this.otpCodes.lastIssuedAt(user.id, command.purpose)
+      if (last && now.getTime() - last.getTime() < this.opts.cooldownSeconds * 1000) return
+    }
     await this.otpCodes.consumeAllForUser(user.id, command.purpose, now)
 
     const code = generateOtpCode()
+    const recordId = randomUUID()
     const expiresAt = new Date(now.getTime() + this.opts.ttlMinutes * 60_000)
     await this.otpCodes.create({
-      id: randomUUID(),
+      id: recordId,
       userId: user.id,
       purpose: command.purpose,
       codeHash: sha256Hex(code),
@@ -55,8 +68,10 @@ export class RequestOtpService {
         templateKey: 'otp',
         recipient: { name: user.firstName, email: user.email },
         variables: { nome: user.firstName, codigo: code },
-        // Idempotência por código emitido (re-tentativas do mesmo envio não duplicam).
-        idempotencyKey: `otp-${sha256Hex(code).slice(0, 24)}`,
+        // Idempotência pelo uuid do REGISTRO (re-tentativas do mesmo envio não
+        // duplicam). NUNCA derive do código: sha256 de um espaço de 10^6 é
+        // enumerável offline — a chave persistida no messaging viraria o código.
+        idempotencyKey: `otp-${recordId}`,
       })
     } catch (error) {
       this.logger.error('otp.email_failed', {

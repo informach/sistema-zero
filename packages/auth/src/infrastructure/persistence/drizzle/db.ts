@@ -4,8 +4,12 @@ import { schema } from './schema'
 
 export type Database = PostgresJsDatabase<typeof schema>
 
+/** Cliente postgres.js cru — probe do `/readyz` e gate transacional da purga. */
+export type PgClient = ReturnType<typeof postgres>
+
 export interface DbConnection {
   db: Database
+  sql: PgClient
   close: () => Promise<void>
 }
 
@@ -41,6 +45,7 @@ export function createDbConnection(
 
   return {
     db,
+    sql: client,
     close: () => client.end({ timeout: 5 }),
   }
 }

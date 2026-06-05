@@ -22,6 +22,9 @@ export interface IssuedPasswordToken {
  * Retorna `null` quando o e-mail não existe ou a conta não está ativa (o chamador
  * decide o que fazer — o forgot-password silencia, o endpoint interno responde 404).
  * Emitir um novo token consome os pendentes (1 token vivo por usuário).
+ * `cooldownSeconds` (OPT-IN, só o forgot-password público) impõe um mínimo entre
+ * emissões por conta — os fluxos S2S/convite chamam SEM cooldown (o funil precisa
+ * do token na hora do fulfillment).
  */
 export class CreatePasswordTokenService {
   constructor(
@@ -30,12 +33,23 @@ export class CreatePasswordTokenService {
     private readonly opts: CreatePasswordTokenOptions,
   ) {}
 
-  async execute(command: { email: string; now?: Date }): Promise<IssuedPasswordToken | null> {
+  async execute(command: {
+    email: string
+    now?: Date
+    cooldownSeconds?: number
+  }): Promise<IssuedPasswordToken | null> {
     const email = Email.create(command.email)
     const user = await this.users.findByEmail(email.value)
     if (!user || !user.isActive()) return null
 
     const now = command.now ?? new Date()
+    // Cooldown por conta: emissão dentro da janela → null (o forgot-password
+    // silencia — não consome o token vigente nem dispara outro e-mail).
+    const cooldownSeconds = command.cooldownSeconds ?? 0
+    if (cooldownSeconds > 0) {
+      const last = await this.tokens.lastIssuedAt(user.id)
+      if (last && now.getTime() - last.getTime() < cooldownSeconds * 1000) return null
+    }
     await this.tokens.consumeAllForUser(user.id, now)
 
     const token = randomBytes(32).toString('base64url')

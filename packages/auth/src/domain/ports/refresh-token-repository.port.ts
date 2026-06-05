@@ -27,8 +27,15 @@ export interface CreateRefreshTokenInput {
 export interface RefreshTokenRepository {
   create(input: CreateRefreshTokenInput): Promise<void>
   findByHash(tokenHash: string): Promise<RefreshTokenRecord | null>
-  /** Marca como rotacionado (consumido por um /refresh bem-sucedido). */
-  markRotated(id: string, rotatedAt: Date): Promise<void>
+  /**
+   * Reivindica o token para rotação de forma ATÔMICA: só consome (marca
+   * `rotatedAt`+`revokedAt`) se ele ainda estiver vigente. Retorna `false` quando
+   * outra requisição já o consumiu/revogou — dois `/refresh` concorrentes com o
+   * MESMO token disputam aqui e só um vence (o perdedor é tratado como REUSO).
+   * Um check-then-act não-atômico deixaria ambos passarem, contornando a
+   * reuse-detection para sempre.
+   */
+  claimForRotation(id: string, rotatedAt: Date): Promise<boolean>
   /** Revoga um token específico (logout). */
   revoke(id: string): Promise<void>
   /** Revoga TODA a família (reuse-detection / logout global). */
@@ -38,4 +45,11 @@ export interface RefreshTokenRepository {
    * → derruba os refresh tokens vigentes para que não renovem). Idempotente.
    */
   revokeAllForUser(userId: string): Promise<void>
+  /**
+   * Apaga tokens cuja expiração passou antes de `before` (purga periódica —
+   * a tabela cresce a cada login/rotação). Retorna o nº de linhas removidas.
+   * O cutoff deve incluir uma FOLGA além do `expiresAt` (manter tokens
+   * recém-expirados preserva a detecção tardia de reuso enquanto importa).
+   */
+  deleteExpired(before: Date): Promise<number>
 }

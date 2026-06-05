@@ -26,12 +26,14 @@ import { buildErrorResponse } from './error-handler'
 import { markOversizeBody } from './raw-body'
 import { adminRoutes } from './routes/admin.routes'
 import { authRoutes } from './routes/auth.routes'
-import { healthRoutes } from './routes/health.routes'
+import { healthRoutes, type ReadinessProbe } from './routes/health.routes'
 import { internalRoutes } from './routes/internal.routes'
 
 export interface HttpDeps {
   env: Env
   logger: Logger
+  /** Probe do `/readyz` (banco alcançável) — montado no composition-root. */
+  readiness: ReadinessProbe
   tokenIssuer: TokenIssuer
   register: RegisterService
   login: LoginService
@@ -104,7 +106,7 @@ export function createServer(deps: HttpDeps) {
   }
 
   return app
-    .use(healthRoutes())
+    .use(healthRoutes(deps.readiness))
     .use(
       authRoutes({
         trustProxy: deps.env.TRUST_PROXY,

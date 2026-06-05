@@ -93,6 +93,7 @@ export function authRoutes(deps: AuthRoutesDeps) {
     .post(
       '/refresh',
       async ({ body, request, server, headers }) => {
+        if (isOversizeBody(request)) throw new PayloadTooLargeError()
         const tokens = await deps.refresh.execute({
           refreshToken: body.refreshToken,
           userAgent: headers['user-agent'] ?? null,
@@ -104,7 +105,8 @@ export function authRoutes(deps: AuthRoutesDeps) {
     )
     .post(
       '/logout',
-      async ({ body }) => {
+      async ({ body, request }) => {
+        if (isOversizeBody(request)) throw new PayloadTooLargeError()
         await deps.logout.execute({
           refreshToken: body.refreshToken,
           allSessions: body.allSessions,

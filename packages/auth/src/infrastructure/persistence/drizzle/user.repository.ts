@@ -102,7 +102,9 @@ function buildListWhere(filter: ListUsersFilter): SQL | undefined {
   const clauses: SQL[] = []
   const q = filter.q?.trim()
   if (q) {
-    const like = `%${q}%`
+    // `q` é busca LITERAL: escapa os curingas do LIKE (\, %, _) para que
+    // "100%" não vire padrão (wildcard injection no ILIKE).
+    const like = `%${q.replace(/[\\%_]/g, '\\$&')}%`
     const match = or(
       ilike(users.email, like),
       ilike(users.firstName, like),
@@ -133,11 +135,17 @@ function toSnapshot(row: UserRow): UserSnapshot {
   }
 }
 
+/**
+ * 23505 = unique_violation. O drizzle-orm (≥ 0.44) ENVELOPA o erro do driver em
+ * `DrizzleQueryError`, com o `PostgresError` original em `cause` — checar só o
+ * topo deixava a corrida de cadastro virar 500 em vez de 409 (pego pelo teste
+ * contra Postgres real em `tests/db`). Caminha a cadeia de `cause` (com teto).
+ */
 function isUniqueViolation(error: unknown): boolean {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'code' in error &&
-    (error as { code: unknown }).code === '23505'
-  )
+  let current: unknown = error
+  for (let depth = 0; depth < 5 && typeof current === 'object' && current !== null; depth++) {
+    if ((current as { code?: unknown }).code === '23505') return true
+    current = (current as { cause?: unknown }).cause
+  }
+  return false
 }

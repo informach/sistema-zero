@@ -39,7 +39,13 @@ import { testTokenIssuer } from '../helpers'
 const COMMUNITY_URL = 'http://localhost:3007'
 const INTERNAL_TOKEN = 'internal-token-de-teste'
 
-function buildApp() {
+function buildApp(
+  opts: { otpCooldownSeconds?: number; resetCooldownSeconds?: number; ready?: boolean } = {},
+) {
+  // Cooldowns DESLIGADOS por default: os fluxos da suíte fazem pedidos em rajada
+  // (ex.: dois forgot-password seguidos). Os testes de cooldown ligam via opts.
+  const otpCooldownSeconds = opts.otpCooldownSeconds ?? 0
+  const resetCooldownSeconds = opts.resetCooldownSeconds ?? 0
   const users = new InMemoryUserRepository()
   const refreshTokens = new InMemoryRefreshTokenRepository()
   const resetTokens = new InMemoryPasswordResetTokenRepository()
@@ -72,7 +78,7 @@ function buildApp() {
     users,
     otpCodes,
     messaging,
-    { ttlMinutes: 10 },
+    { ttlMinutes: 10, cooldownSeconds: otpCooldownSeconds },
     silentLogger,
   )
   const verifyOtp = new VerifyOtpService(users, otpCodes, authTokens, { maxAttempts: 5 })
@@ -86,7 +92,7 @@ function buildApp() {
   const forgotPassword = new ForgotPasswordService(
     createPasswordToken,
     messaging,
-    { communityUrl: COMMUNITY_URL },
+    { communityUrl: COMMUNITY_URL, cooldownSeconds: resetCooldownSeconds },
     silentLogger,
   )
   const resetPassword = new ResetPasswordService(users, resetTokens, refreshTokens, fakeHasher, {
@@ -120,6 +126,10 @@ function buildApp() {
   const app = createServer({
     env,
     logger: silentLogger,
+    readiness: async () => {
+      const ready = opts.ready ?? true
+      return { ready, checks: { db: ready ? 'ok' : 'error' } }
+    },
     tokenIssuer,
     register,
     login,
@@ -958,5 +968,122 @@ describe('Auth admin routes (/auth/admin/users)', () => {
     const json = (await res.json()) as { users: UserView[] }
     expect(json.users).toHaveLength(2)
     expect(json.users.map((u) => u.email).sort()).toEqual(['a@example.com', 'b@example.com'])
+  })
+
+  test(':id que não é uuid → 400 na borda (não 500 do banco)', async () => {
+    const { app } = buildApp()
+    expect(
+      (await app.handle(getReq('/auth/admin/users/not-a-uuid', actorHeaders('staff')))).status,
+    ).toBe(400)
+    expect(
+      (
+        await app.handle(
+          patchReq('/auth/admin/users/not-a-uuid', { status: 'suspended' }, actorHeaders('admin')),
+        )
+      ).status,
+    ).toBe(400)
+    expect(
+      (
+        await app.handle(
+          post('/auth/admin/users/batch', { ids: ['not-a-uuid'] }, actorHeaders('staff')),
+        )
+      ).status,
+    ).toBe(400)
+  })
+})
+
+describe('Correções do full review (readyz / cooldown / 413)', () => {
+  test('GET /readyz → 200 quando pronto; 503 quando o banco falha', async () => {
+    const ok = buildApp()
+    const readyRes = await ok.app.handle(new Request('http://localhost/readyz'))
+    expect(readyRes.status).toBe(200)
+    expect(((await readyRes.json()) as { checks: { db: string } }).checks.db).toBe('ok')
+
+    const down = buildApp({ ready: false })
+    const downRes = await down.app.handle(new Request('http://localhost/readyz'))
+    expect(downRes.status).toBe(503)
+  })
+
+  test('idempotencyKey do OTP vem do uuid do REGISTRO, nunca do código', async () => {
+    const { app, messaging, otpCodes } = buildApp()
+    await app.handle(post('/auth/register', REGISTER_BODY))
+    await app.handle(post('/auth/otp/request', { email: 'maria@example.com', purpose: 'sign_in' }))
+
+    const sent = messaging.sent.find((s) => s.templateKey === 'otp')
+    expect(sent).toBeDefined()
+    const [recordId] = [...otpCodes.byId.keys()]
+    expect(sent?.idempotencyKey).toBe(`otp-${recordId}`)
+    // E o uuid não é derivável do código (a chave antiga era sha256(código) truncado).
+    expect(sent?.idempotencyKey).toMatch(/^otp-[0-9a-f]{8}-[0-9a-f-]{27}$/)
+  })
+
+  test('cooldown do OTP: re-pedido dentro da janela é no-op (não invalida o código vigente)', async () => {
+    const { app, messaging, otpCodes } = buildApp({ otpCooldownSeconds: 60 })
+    await app.handle(post('/auth/register', REGISTER_BODY))
+
+    const first = await app.handle(
+      post('/auth/otp/request', { email: 'maria@example.com', purpose: 'sign_in' }),
+    )
+    expect(first.status).toBe(200)
+    const code = messaging.sent.find((s) => s.templateKey === 'otp')?.variables.codigo
+
+    // Dentro da janela: 200 (anti-enumeração) mas SEM novo e-mail nem novo código.
+    const second = await app.handle(
+      post('/auth/otp/request', { email: 'maria@example.com', purpose: 'sign_in' }),
+    )
+    expect(second.status).toBe(200)
+    expect(messaging.sent.filter((s) => s.templateKey === 'otp')).toHaveLength(1)
+
+    // O código original continua valendo (não foi consumido pelo re-pedido).
+    expect(
+      (await app.handle(post('/auth/otp/verify', { email: 'maria@example.com', code }))).status,
+    ).toBe(200)
+
+    // Janela vencida → novo pedido emite de novo.
+    for (const [id, at] of otpCodes.issuedAt) {
+      otpCodes.issuedAt.set(id, new Date(at.getTime() - 61_000))
+    }
+    await app.handle(post('/auth/otp/request', { email: 'maria@example.com', purpose: 'sign_in' }))
+    expect(messaging.sent.filter((s) => s.templateKey === 'otp')).toHaveLength(2)
+  })
+
+  test('cooldown do forgot-password: re-pedido na janela não re-envia nem invalida o token', async () => {
+    const { app, messaging } = buildApp({ resetCooldownSeconds: 60 })
+    await app.handle(post('/auth/register', REGISTER_BODY))
+
+    expect(
+      (await app.handle(post('/auth/forgot-password', { email: 'maria@example.com' }))).status,
+    ).toBe(200)
+    const link = messaging.sent.find((s) => s.templateKey === 'password-reset')?.variables.link
+    const token = new URL(String(link)).searchParams.get('token')
+
+    expect(
+      (await app.handle(post('/auth/forgot-password', { email: 'maria@example.com' }))).status,
+    ).toBe(200)
+    expect(messaging.sent.filter((s) => s.templateKey === 'password-reset')).toHaveLength(1)
+
+    // O token do 1º e-mail continua utilizável (o re-pedido não o consumiu).
+    const reset = await app.handle(
+      post('/auth/reset-password', { token, newPassword: 'senha-nova-pos-cooldown-1' }),
+    )
+    expect(reset.status).toBe(200)
+  })
+
+  test('corpo acima do limite em /refresh e /logout → 413', async () => {
+    const { app } = buildApp()
+    const oversize = (path: string) => {
+      const body = JSON.stringify({ refreshToken: 'x', junk: 'A'.repeat(20_000) })
+      return new Request(`http://localhost${path}`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          // O onParse decide pelo Content-Length declarado (como numa request real).
+          'content-length': String(Buffer.byteLength(body, 'utf8')),
+        },
+        body,
+      })
+    }
+    expect((await app.handle(oversize('/auth/refresh'))).status).toBe(413)
+    expect((await app.handle(oversize('/auth/logout'))).status).toBe(413)
   })
 })

@@ -1,4 +1,4 @@
-import { and, eq, isNull } from 'drizzle-orm'
+import { and, desc, eq, isNull, lt } from 'drizzle-orm'
 import type {
   CreatePasswordResetTokenInput,
   PasswordResetTokenRecord,
@@ -44,6 +44,25 @@ export class DrizzlePasswordResetTokenRepository implements PasswordResetTokenRe
       .update(passwordResetTokens)
       .set({ consumedAt: at })
       .where(and(eq(passwordResetTokens.userId, userId), isNull(passwordResetTokens.consumedAt)))
+  }
+
+  async lastIssuedAt(userId: string): Promise<Date | null> {
+    // Todas as linhas (consumidas ou não) — usa o índice `password_reset_tokens_user_idx`.
+    const [row] = await this.db
+      .select({ createdAt: passwordResetTokens.createdAt })
+      .from(passwordResetTokens)
+      .where(eq(passwordResetTokens.userId, userId))
+      .orderBy(desc(passwordResetTokens.createdAt))
+      .limit(1)
+    return row?.createdAt ?? null
+  }
+
+  async deleteExpired(before: Date): Promise<number> {
+    const deleted = await this.db
+      .delete(passwordResetTokens)
+      .where(lt(passwordResetTokens.expiresAt, before))
+      .returning({ id: passwordResetTokens.id })
+    return deleted.length
   }
 }
 

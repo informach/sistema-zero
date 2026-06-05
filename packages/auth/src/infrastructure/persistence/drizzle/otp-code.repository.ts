@@ -1,4 +1,4 @@
-import { and, desc, eq, gt, isNull, sql } from 'drizzle-orm'
+import { and, desc, eq, gt, isNull, lt, sql } from 'drizzle-orm'
 import type {
   CreateOtpCodeInput,
   OtpCodeRecord,
@@ -68,6 +68,25 @@ export class DrizzleOtpCodeRepository implements OtpCodeRepository {
       .where(eq(otpCodes.id, id))
       .returning({ attempts: otpCodes.attempts })
     return row?.attempts ?? 0
+  }
+
+  async lastIssuedAt(userId: string, purpose: OtpPurpose): Promise<Date | null> {
+    // Todas as linhas (consumidas ou não) — usa o índice `otp_codes_user_purpose_idx`.
+    const [row] = await this.db
+      .select({ createdAt: otpCodes.createdAt })
+      .from(otpCodes)
+      .where(and(eq(otpCodes.userId, userId), eq(otpCodes.purpose, purpose)))
+      .orderBy(desc(otpCodes.createdAt))
+      .limit(1)
+    return row?.createdAt ?? null
+  }
+
+  async deleteExpired(before: Date): Promise<number> {
+    const deleted = await this.db
+      .delete(otpCodes)
+      .where(lt(otpCodes.expiresAt, before))
+      .returning({ id: otpCodes.id })
+    return deleted.length
   }
 }
 

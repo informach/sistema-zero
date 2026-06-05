@@ -30,8 +30,8 @@ export class RefreshService {
     const record = await this.refreshTokens.findByHash(sha256Hex(presented))
     if (!record) throw new InvalidRefreshTokenError()
 
-    // Reuse-detection: um token já consumido (rotacionado) ou revogado reaparecendo
-    // indica vazamento → revoga a família inteira e nega.
+    // Reuse-detection (fast-path): um token já consumido (rotacionado) ou revogado
+    // reaparecendo indica vazamento → revoga a família inteira e nega.
     if (record.rotatedAt || record.revokedAt) {
       await this.refreshTokens.revokeFamily(record.familyId)
       this.logger.warn('auth.refresh.reuse_detected', {
@@ -47,8 +47,20 @@ export class RefreshService {
     if (!user) throw new InvalidRefreshTokenError()
     if (!user.isActive()) throw new UserNotActiveError()
 
-    // Rotaciona: consome o token atual e emite um novo na MESMA família.
-    await this.refreshTokens.markRotated(record.id, new Date())
+    // Rotaciona com claim ATÔMICO: consome o token atual e emite um novo na MESMA
+    // família. Perder o claim = outra requisição rotacionou este token entre o
+    // findByHash e aqui — semanticamente é REUSO (o fast-path acima não enxerga a
+    // corrida), então recebe o mesmo tratamento: revoga a família e nega.
+    const claimed = await this.refreshTokens.claimForRotation(record.id, new Date())
+    if (!claimed) {
+      await this.refreshTokens.revokeFamily(record.familyId)
+      this.logger.warn('auth.refresh.reuse_detected', {
+        userId: record.userId,
+        familyId: record.familyId,
+        race: true,
+      })
+      throw new InvalidRefreshTokenError()
+    }
     return this.tokens.rotate(user, record.familyId, {
       userAgent: command.userAgent,
       ip: command.ip,

@@ -36,4 +36,12 @@ export interface OtpCodeRepository {
   consumeAllForUser(userId: string, purpose: OtpPurpose, at: Date): Promise<void>
   /** Incrementa o contador de tentativas e devolve o novo total. */
   incrementAttempts(id: string): Promise<number>
+  /**
+   * Quando foi a ÚLTIMA emissão (consumida ou não) do usuário p/ a finalidade —
+   * base do cooldown anti-spam (`null` = nunca emitiu). Olha TODAS as linhas:
+   * cada pedido consome os pendentes, então só o ativo não serviria de âncora.
+   */
+  lastIssuedAt(userId: string, purpose: OtpPurpose): Promise<Date | null>
+  /** Apaga códigos expirados antes de `before` (purga periódica). Retorna o nº removido. */
+  deleteExpired(before: Date): Promise<number>
 }

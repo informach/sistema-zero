@@ -3,6 +3,9 @@ import { USER_ROLES } from '../../domain/user/user.role'
 import { USER_STATUSES } from '../../domain/user/user.status'
 
 const EMAIL_PATTERN = '^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$'
+// Ids de usuário são uuid. Validar na borda evita que um `:id` arbitrário chegue
+// ao Postgres e estoure 22P02 (invalid input syntax for type uuid) → 500.
+const UUID_PATTERN = '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
 
 // Uniões de literais derivadas dos enums de domínio (fonte única da verdade).
 const roleLiteral = t.Union(USER_ROLES.map((r) => t.Literal(r)))
@@ -112,9 +115,14 @@ export const ListUsersQuery = t.Object({
   offset: t.Optional(t.Numeric({ minimum: 0 })),
 })
 
+/** Params das rotas admin `/auth/admin/users/:id` (uuid — 400 na borda, não 500 no banco). */
+export const UserIdParams = t.Object({
+  id: t.String({ pattern: UUID_PATTERN }),
+})
+
 /** Corpo de `POST /auth/admin/users/batch` — hidratação de identidade em lote (≤100 ids). */
 export const BatchGetUsersBody = t.Object({
-  ids: t.Array(t.String({ minLength: 1, maxLength: 64 }), { minItems: 1, maxItems: 100 }),
+  ids: t.Array(t.String({ pattern: UUID_PATTERN }), { minItems: 1, maxItems: 100 }),
 })
 
 /**

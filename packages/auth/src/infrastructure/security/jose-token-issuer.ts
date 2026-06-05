@@ -71,6 +71,10 @@ function asString(value: unknown): string | undefined {
 }
 
 function toClaims(payload: JWTPayload): AccessTokenClaims | null {
+  // Pina o TIPO do token: só `typ: 'access'` vale como access token. Hoje é o
+  // único JWT emitido, mas qualquer tipo futuro (ex.: verificação de e-mail)
+  // assinado pela mesma chave NÃO pode ser replayado como access token.
+  if (payload['typ'] !== 'access') return null
   const sub = asString(payload.sub)
   const email = asString(payload.email)
   const firstName = asString(payload.firstName)

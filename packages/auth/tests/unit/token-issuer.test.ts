@@ -1,11 +1,11 @@
 import { describe, expect, test } from 'bun:test'
-import { importJWK, jwtVerify } from 'jose'
+import { importJWK, jwtVerify, SignJWT } from 'jose'
 import { UserAggregate } from '../../src/domain/user/user.aggregate'
 import { Email } from '../../src/domain/value-objects/email'
 import type { Env } from '../../src/infrastructure/config/env'
 import { createJoseTokenIssuer } from '../../src/infrastructure/security/jose-token-issuer'
 import { loadSigningMaterial } from '../../src/infrastructure/security/keys'
-import { hs256Signing, TEST_AUDIENCE, TEST_ISSUER } from '../helpers'
+import { hs256Signing, TEST_AUDIENCE, TEST_HS256_SECRET, TEST_ISSUER } from '../helpers'
 
 function makeUser() {
   return UserAggregate.register({
@@ -49,6 +49,37 @@ describe('TokenIssuer (HS256)', () => {
 
   test('lixo → null', async () => {
     expect(await issuer.verifyAccessToken('not.a.jwt')).toBeNull()
+  })
+
+  test('typ pinado: JWT da MESMA chave sem typ access → null (anti confusão de tipos)', async () => {
+    // Simula um token futuro (ex.: verificação de e-mail) assinado pela mesma
+    // chave/iss/aud, mas com outro `typ` — NÃO pode valer como access token.
+    const secret = new TextEncoder().encode(TEST_HS256_SECRET)
+    const baseClaims = {
+      email: 'joao@example.com',
+      firstName: 'João',
+      lastName: 'Souza',
+      role: 'customer',
+      status: 'active',
+    }
+    const sign = (claims: Record<string, unknown>) =>
+      new SignJWT(claims)
+        .setProtectedHeader({ alg: 'HS256' })
+        .setSubject(crypto.randomUUID())
+        .setIssuer(TEST_ISSUER)
+        .setAudience(TEST_AUDIENCE)
+        .setIssuedAt()
+        .setExpirationTime('15m')
+        .sign(secret)
+
+    const semTyp = await sign(baseClaims)
+    expect(await issuer.verifyAccessToken(semTyp)).toBeNull()
+
+    const typErrado = await sign({ ...baseClaims, typ: 'email_verification' })
+    expect(await issuer.verifyAccessToken(typErrado)).toBeNull()
+
+    const typCerto = await sign({ ...baseClaims, typ: 'access' })
+    expect((await issuer.verifyAccessToken(typCerto))?.email).toBe('joao@example.com')
   })
 
   test('jwks vazio em HS256', () => {

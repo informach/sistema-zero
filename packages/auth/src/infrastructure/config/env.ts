@@ -18,6 +18,10 @@ const EnvSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
     PORT: z.coerce.number().int().positive().default(3002),
+    // Endereço de bind. `::` (default) é dual-stack (IPv4 + IPv6) — obrigatório
+    // para o private networking do Railway (`auth.railway.internal` resolve IPv6;
+    // um bind `0.0.0.0` fica inalcançável). Igual ao payments.
+    HOST: z.string().min(1).default('::'),
     // Teto do corpo da requisição (bytes) — cadastros/login são pequenos. 16 KB.
     MAX_REQUEST_BODY_BYTES: z.coerce
       .number()
@@ -48,9 +52,17 @@ const EnvSchema = z
 
     // Reset/definição de senha
     RESET_TOKEN_TTL_MINUTES: z.coerce.number().int().positive().default(60),
+    // Cooldown POR CONTA entre pedidos de reset público (`/auth/forgot-password`).
+    // O rate limit do gateway é por IP — IPs distribuídos ainda conseguiriam
+    // bombardear o inbox de UMA vítima e invalidar o token legítimo a cada pedido.
+    // 0 desliga. NÃO se aplica aos fluxos S2S/convite (sem throttle).
+    RESET_REQUEST_COOLDOWN_SECONDS: z.coerce.number().int().min(0).default(60),
     // OTP (login passwordless + recuperação de senha por código).
     OTP_TTL_MINUTES: z.coerce.number().int().positive().default(10),
     OTP_MAX_ATTEMPTS: z.coerce.number().int().positive().default(5),
+    // Cooldown POR CONTA entre pedidos de código (`/auth/otp/request`) — mesma
+    // lógica do RESET_REQUEST_COOLDOWN_SECONDS. 0 desliga.
+    OTP_REQUEST_COOLDOWN_SECONDS: z.coerce.number().int().min(0).default(60),
     // Base dos links de e-mail (app community): `${COMMUNITY_URL}/redefinir-senha?token=...`.
     COMMUNITY_URL: z.string().url().default('http://localhost:3007'),
     // Token interno injetado pelo gateway nas rotas `/auth/internal/*` (defesa em
@@ -79,6 +91,16 @@ const EnvSchema = z
       path: ['JWT_PRIVATE_KEY'],
     },
   )
+  // Produção exige o token interno: sem ele a checagem das rotas S2S
+  // (`/auth/internal/*`) fica DESLIGADA (fail-open) — se o serviço estiver
+  // alcançável fora do gateway, `/auth/internal/password-tokens` emite token de
+  // definição de senha para QUALQUER e-mail (account takeover). Fail-fast no boot
+  // (o gateway precisa do MESMO valor em AUTH_INTERNAL_TOKEN para injetá-lo).
+  .refine((e) => e.NODE_ENV !== 'production' || (e.AUTH_INTERNAL_TOKEN?.length ?? 0) >= 16, {
+    message:
+      'AUTH_INTERNAL_TOKEN é obrigatório em produção (≥ 16 caracteres) — sem ele as rotas /auth/internal/* ficam sem a defesa em profundidade',
+    path: ['AUTH_INTERNAL_TOKEN'],
+  })
 
 export type Env = z.infer<typeof EnvSchema>
 

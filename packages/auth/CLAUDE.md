@@ -17,9 +17,12 @@ usuário das claims e autoriza por rota). Runtime: **Bun**. Linguagem: **TS (ESM
 > Estado: **slices completos e testados** (registro/login/refresh/logout/me + JWKS;
 > admin de usuários; reset/definição de senha + **OTP por e-mail** — login passwordless
 > e recuperação por código — + self-service de perfil c/ avatar + rotas internas S2S),
-> 80 testes passando. Migrations `0000_*` (schema `auth`), `0001_*`
-> (`password_reset_tokens`), `0002_*` (`otp_codes`) e `0003_*` (`users.avatar_url`)
-> **aplicadas** no Postgres compartilhado local.
+> 101 testes passando (incl. `tests/db/` contra Postgres real — pulados sem banco).
+> **1º full review (2026-06-05) com TODOS os achados implementados** (rotação
+> atômica, fail-closed em prod, readyz/bind, purga, cooldowns — ver "Decisões").
+> Migrations `0000_*` (schema `auth`), `0001_*` (`password_reset_tokens`), `0002_*`
+> (`otp_codes`) e `0003_*` (`users.avatar_url`) **aplicadas** no Postgres
+> compartilhado local.
 
 ## Arquitetura (DDD + Hexagonal)
 
@@ -51,7 +54,7 @@ src/
 |---------|-------|
 | `bun run dev` / `start` | servidor (watch / produção), porta 3002 |
 | `bun run typecheck` | `tsc --noEmit` |
-| `bun test` | testes (rode com **sandbox off** — gotcha do monorepo) |
+| `bun test` | testes (rode com **sandbox off** — gotcha do monorepo). Inclui `tests/db/` contra Postgres REAL (banco dedicado `sistemazero_test` na :5433, criado pelo próprio teste; sem banco → PULADOS, suite segue verde) |
 | `bun run db:generate` / `db:migrate` | migrations (Drizzle) |
 | `bun run db:seed --email <e> --password <p> [--first <n>] [--last <s>] [--role admin\|staff\|superadmin\|customer]` | cria/atualiza usuário |
 | `bun run check` / `check:fix` | Biome |
@@ -68,9 +71,13 @@ src/
    **genérico** ("credenciais inválidas") + verifica um hash "isca" quando o e-mail
    não existe (anti-enumeração por timing).
 3. **Refresh token:** valor opaco (32 bytes), guardado **só como sha256**. Rotação
-   em cada `/refresh` (marca `rotated_at`+`revoked_at`). **Reuse-detection:**
-   apresentar um refresh já rotacionado/revogado → revoga a **família** (`family_id`)
-   inteira (mitiga roubo). Logout revoga o token (ou a família).
+   em cada `/refresh` via **claim ATÔMICO** (`claimForRotation`: `UPDATE ... WHERE
+   rotated_at IS NULL AND revoked_at IS NULL RETURNING` — dois `/refresh`
+   concorrentes com o MESMO token disputam e só um vence; o perdedor é tratado
+   como REUSO). **Reuse-detection:** apresentar um refresh já rotacionado/revogado
+   (ou perder o claim) → revoga a **família** (`family_id`) inteira (mitiga roubo).
+   Logout revoga o token (ou a família). NÃO troque o claim por check-then-act:
+   a corrida contornaria a reuse-detection para sempre (achado A1 do full review).
 4. **Tokens (jose v6):** access JWT carrega `sub,email,firstName,lastName,role,status`
    (+ `phone`/`signupSource` opcionais). `JWT_ALG` = HS256 (segredo, default) ou
    RS256 (chave privada + JWKS público). O `verifyAccessToken` PINA o `alg` e valida
@@ -81,8 +88,18 @@ src/
    e-mail (futuro).
 6. **HTTP:** corpo validado por **TypeBox** (`t`, como o payments); erros de domínio
    → status no `error-handler` (EMAIL_ALREADY_IN_USE→409, INVALID_CREDENTIALS→401,
-   USER_NOT_ACTIVE→403, etc.). `composition-root` é **async** (carrega chaves +
-   hash isca no boot) → `index.ts` faz `await createApplication(env)`.
+   USER_NOT_ACTIVE→403, etc.). Params `:id` das rotas admin e os `ids` do batch
+   validam **uuid por pattern** (400 na borda, não 22P02→500 no banco).
+   `composition-root` é **async** (carrega chaves + hash isca no boot) →
+   `index.ts` faz `await createApplication(env)`. `verifyAccessToken` PINA também
+   o **`typ: 'access'`** (JWT futuro de outro tipo assinado pela mesma chave não
+   vale como access token). Bind em `HOST` (default `::`, dual-stack — IPv6 do
+   private networking do Railway); `/health` = liveness, **`/readyz`** = readiness
+   com probe de banco (healthcheck do Railway, como o payments).
+   **Purga periódica** (composition-root, a cada 6h + boot, advisory lock
+   `pg_try_advisory_xact_lock` próprio — chave `1635430504`, espaço GLOBAL ao
+   banco compartilhado): apaga refresh/reset/otp expirados há > 7 dias (folga
+   preserva a detecção tardia de reuso enquanto importa).
 7. **Opcionais `phone`/`signupSource`:** fluem do DTO de registro → agregado →
    colunas nullable → claims do token → `user-view`. `signupSource` = app/canal do
    cadastro (funnel/web/mobile/admin).
@@ -95,8 +112,14 @@ src/
    `${COMMUNITY_URL}/redefinir-senha?token=...` — envio **best-effort** (falha só loga).
    `POST /auth/reset-password` troca a senha e **revoga TODAS as sessões**.
    `POST /auth/internal/password-tokens` (S2S; HMAC do funil no gateway +
-   `x-internal-token` = `AUTH_INTERNAL_TOKEN`) emite o token do **1º acesso
-   pós-compra** — o funil monta o link e envia o e-mail `welcome`.
+   `x-internal-token` = `AUTH_INTERNAL_TOKEN` — **OBRIGATÓRIO em produção**, ≥ 16
+   chars, fail-fast no boot; sem ele a checagem fica fail-open) emite o token do
+   **1º acesso pós-compra** — o funil monta o link e envia o e-mail `welcome`.
+   O forgot-password público tem **cooldown POR CONTA**
+   (`RESET_REQUEST_COOLDOWN_SECONDS`, 60; 0 desliga): re-pedido na janela é no-op
+   silencioso (não re-envia nem invalida o token vigente — fecha spam de inbox /
+   DoS do token legítimo por IPs distribuídos; o limit do gateway é só por IP).
+   Os fluxos S2S/convite chamam o `CreatePasswordTokenService` SEM cooldown.
    `POST /auth/internal/ensure-buyer` (mesma proteção S2S) é **create-or-get por
    e-mail**: SEMPRE devolve `{ userId, created }` (201 criou / 200 reaproveitou) — é
    o que destrava o COMPRADOR RECORRENTE (que no `register` recebia 409 e ficava sem
@@ -114,10 +137,24 @@ src/
     (usuário, finalidade): pedir outro consome os pendentes daquela finalidade.
     `POST /auth/otp/request` `{email, purpose: 'sign_in'|'password_reset'}` responde
     **SEMPRE 200** (anti-enumeração) e envia o template `otp` via gateway→messaging
-    (o código CRU só trafega ao messaging — nunca é persistido); `POST /auth/otp/verify`
-    = login passwordless (→ tokens); `POST /auth/password/reset-otp` consome o código,
-    define a senha nova e **revoga TODAS as sessões**. É o fluxo do `/esqueci-senha`
-    do community (o reset por LINK do item 8 continua p/ o 1º acesso pós-compra).
+    (o código CRU só trafega ao messaging — nunca é persistido; a `idempotencyKey`
+    do envio vem do **uuid do registro** (`otp-<uuid>`), NUNCA do código — sha256 de
+    um espaço de 10^6 é reversível por força bruta, viraria o código persistido no
+    outbox do messaging). Cooldown POR CONTA (`OTP_REQUEST_COOLDOWN_SECONDS`, 60;
+    0 desliga): re-pedido na janela = no-op silencioso (não re-envia nem invalida o
+    código vigente). `POST /auth/otp/verify` = login passwordless (→ tokens);
+    `POST /auth/password/reset-otp` consome o código, define a senha nova e
+    **revoga TODAS as sessões**. É o fluxo do `/esqueci-senha` do community (o
+    reset por LINK do item 8 continua p/ o 1º acesso pós-compra).
+
+11. **⚠️ Gotcha do drizzle ≥ 0.44 (vale p/ o monorepo):** erros do driver chegam
+    ENVELOPADOS em `DrizzleQueryError` — o `PostgresError` original (com
+    `code: '23505'` etc.) fica em **`error.cause`**. Checar `code` só no topo
+    NUNCA casa (a corrida de cadastro virava 500 em vez de 409 — pego pelo
+    `tests/db/`). O `isUniqueViolation` do `user.repository` caminha a cadeia de
+    `cause`; siga esse padrão em qualquer mapeamento novo de erro do Postgres.
+    A busca `q` da listagem admin **escapa `%`/`_`/`\`** antes do ILIKE (busca
+    literal, não padrão).
 
 ## Integração com o gateway
 

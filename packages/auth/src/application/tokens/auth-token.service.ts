@@ -45,11 +45,6 @@ export class AuthTokenService {
     return this.issue(user, familyId, ctx)
   }
 
-  /** Hash determinístico (sha256) usado para localizar/guardar o refresh token. */
-  hashRefreshToken(token: string): string {
-    return sha256Hex(token)
-  }
-
   private async issue(
     user: UserAggregate,
     familyId: string,

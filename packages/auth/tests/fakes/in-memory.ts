@@ -127,12 +127,13 @@ export class InMemoryRefreshTokenRepository implements RefreshTokenRepository {
     return null
   }
 
-  async markRotated(id: string, rotatedAt: Date): Promise<void> {
+  async claimForRotation(id: string, rotatedAt: Date): Promise<boolean> {
     const record = this.byId.get(id)
-    if (record) {
-      record.rotatedAt = rotatedAt
-      record.revokedAt = rotatedAt
-    }
+    // Espelha o claim atômico do adapter: só consome se ainda vigente.
+    if (!record || record.rotatedAt !== null || record.revokedAt !== null) return false
+    record.rotatedAt = rotatedAt
+    record.revokedAt = rotatedAt
+    return true
   }
 
   async revoke(id: string): Promise<void> {
@@ -151,11 +152,24 @@ export class InMemoryRefreshTokenRepository implements RefreshTokenRepository {
       if (record.userId === userId && record.revokedAt === null) record.revokedAt = new Date()
     }
   }
+
+  async deleteExpired(before: Date): Promise<number> {
+    let deleted = 0
+    for (const [id, record] of this.byId) {
+      if (record.expiresAt.getTime() < before.getTime()) {
+        this.byId.delete(id)
+        deleted += 1
+      }
+    }
+    return deleted
+  }
 }
 
 /** Repositório de tokens de redefinição de senha em memória. */
 export class InMemoryPasswordResetTokenRepository implements PasswordResetTokenRepository {
   readonly byId = new Map<string, PasswordResetTokenRecord>()
+  /** Momento de emissão por id (espelha o `created_at` do adapter; mutável p/ testes de cooldown). */
+  readonly issuedAt = new Map<string, Date>()
 
   async create(input: CreatePasswordResetTokenInput): Promise<void> {
     this.byId.set(input.id, {
@@ -165,6 +179,7 @@ export class InMemoryPasswordResetTokenRepository implements PasswordResetTokenR
       expiresAt: input.expiresAt,
       consumedAt: null,
     })
+    this.issuedAt.set(input.id, new Date())
   }
 
   async findByHash(tokenHash: string): Promise<PasswordResetTokenRecord | null> {
@@ -184,11 +199,35 @@ export class InMemoryPasswordResetTokenRepository implements PasswordResetTokenR
       if (record.userId === userId && record.consumedAt === null) record.consumedAt = at
     }
   }
+
+  async lastIssuedAt(userId: string): Promise<Date | null> {
+    let last: Date | null = null
+    for (const record of this.byId.values()) {
+      if (record.userId !== userId) continue
+      const at = this.issuedAt.get(record.id)
+      if (at && (!last || at.getTime() > last.getTime())) last = at
+    }
+    return last
+  }
+
+  async deleteExpired(before: Date): Promise<number> {
+    let deleted = 0
+    for (const [id, record] of this.byId) {
+      if (record.expiresAt.getTime() < before.getTime()) {
+        this.byId.delete(id)
+        this.issuedAt.delete(id)
+        deleted += 1
+      }
+    }
+    return deleted
+  }
 }
 
 /** Repositório de códigos OTP em memória (uso único + tentativas). */
 export class InMemoryOtpCodeRepository implements OtpCodeRepository {
   readonly byId = new Map<string, OtpCodeRecord>()
+  /** Momento de emissão por id (espelha o `created_at` do adapter; mutável p/ testes de cooldown). */
+  readonly issuedAt = new Map<string, Date>()
 
   async create(input: CreateOtpCodeInput): Promise<void> {
     this.byId.set(input.id, {
@@ -200,6 +239,7 @@ export class InMemoryOtpCodeRepository implements OtpCodeRepository {
       consumedAt: null,
       attempts: 0,
     })
+    this.issuedAt.set(input.id, new Date())
   }
 
   async findActive(userId: string, purpose: OtpPurpose, now: Date): Promise<OtpCodeRecord | null> {
@@ -232,6 +272,28 @@ export class InMemoryOtpCodeRepository implements OtpCodeRepository {
     if (!record) return 0
     record.attempts += 1
     return record.attempts
+  }
+
+  async lastIssuedAt(userId: string, purpose: OtpPurpose): Promise<Date | null> {
+    let last: Date | null = null
+    for (const record of this.byId.values()) {
+      if (record.userId !== userId || record.purpose !== purpose) continue
+      const at = this.issuedAt.get(record.id)
+      if (at && (!last || at.getTime() > last.getTime())) last = at
+    }
+    return last
+  }
+
+  async deleteExpired(before: Date): Promise<number> {
+    let deleted = 0
+    for (const [id, record] of this.byId) {
+      if (record.expiresAt.getTime() < before.getTime()) {
+        this.byId.delete(id)
+        this.issuedAt.delete(id)
+        deleted += 1
+      }
+    }
+    return deleted
   }
 }
 

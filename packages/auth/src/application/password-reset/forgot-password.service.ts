@@ -6,6 +6,11 @@ import type { CreatePasswordTokenService } from './create-password-token.service
 export interface ForgotPasswordOptions {
   /** Base do link de redefinição (app community): `${communityUrl}/redefinir-senha?token=...`. */
   communityUrl: string
+  /**
+   * Mínimo de segundos entre emissões por conta (anti spam de inbox/invalidação
+   * do token legítimo por IPs distribuídos — o limit do gateway é por IP). 0 desliga.
+   */
+  cooldownSeconds: number
 }
 
 /**
@@ -25,7 +30,10 @@ export class ForgotPasswordService {
   async execute(command: { email: string }): Promise<void> {
     let issued: Awaited<ReturnType<CreatePasswordTokenService['execute']>> = null
     try {
-      issued = await this.createToken.execute({ email: command.email })
+      issued = await this.createToken.execute({
+        email: command.email,
+        cooldownSeconds: this.opts.cooldownSeconds,
+      })
     } catch {
       // E-mail malformado etc. — silencia (mesma resposta de sucesso, anti-enumeração).
       return

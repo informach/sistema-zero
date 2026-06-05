@@ -41,6 +41,22 @@ export interface Application {
 }
 
 /**
+ * Chave do advisory lock do ciclo de purga de tokens ('auth' em ASCII int8;
+ * string + cast ::bigint — o driver não tipa BigInt como parâmetro). O espaço de
+ * advisory locks é GLOBAL ao banco compartilhado do monorepo — a constante
+ * precisa ser única entre os serviços (o payments usa 8103081227979411315).
+ */
+const PURGE_ADVISORY_LOCK_KEY = '1635430504'
+/** Intervalo entre ciclos de purga (fora do hot path; 1 réplica por ciclo). */
+const PURGE_INTERVAL_MS = 6 * 60 * 60 * 1000
+/**
+ * Folga além do `expiresAt` antes de apagar. Refresh tokens recém-expirados
+ * ainda servem à detecção tardia de reuso (token roubado apresentado depois);
+ * após a folga não há mais o que detectar — o token nem verificaria.
+ */
+const PURGE_GRACE_MS = 7 * 24 * 60 * 60 * 1000
+
+/**
  * Raiz de composição (injeção de dependências). ÚNICO lugar onde adapters
  * concretos são instanciados e plugados nos ports. É assíncrona porque o material
  * de assinatura (chaves JWT) e o hash "isca" do login são resolvidos no boot.
@@ -114,7 +130,10 @@ export async function createApplication(env: Env): Promise<Application> {
   const forgotPassword = new ForgotPasswordService(
     createPasswordToken,
     messaging,
-    { communityUrl: env.COMMUNITY_URL },
+    {
+      communityUrl: env.COMMUNITY_URL,
+      cooldownSeconds: env.RESET_REQUEST_COOLDOWN_SECONDS,
+    },
     logger,
   )
   const resetPassword = new ResetPasswordService(
@@ -131,7 +150,10 @@ export async function createApplication(env: Env): Promise<Application> {
     users,
     otpCodes,
     messaging,
-    { ttlMinutes: env.OTP_TTL_MINUTES },
+    {
+      ttlMinutes: env.OTP_TTL_MINUTES,
+      cooldownSeconds: env.OTP_REQUEST_COOLDOWN_SECONDS,
+    },
     logger,
   )
   const verifyOtp = new VerifyOtpService(users, otpCodes, authTokens, {
@@ -166,9 +188,22 @@ export async function createApplication(env: Env): Promise<Application> {
   const updateUser = new UpdateUserService(users, refreshTokens, logger)
   const batchGetUsers = new BatchGetUsersService(users)
 
+  // Readiness (`/readyz`, healthcheck do Railway): a réplica só é promovida
+  // quando o banco responde (sem banco não há login/refresh — não recebe tráfego).
+  const readiness = async () => {
+    const checks: Record<string, string> = { db: 'ok' }
+    try {
+      await connection.sql`select 1`
+    } catch {
+      checks.db = 'error'
+    }
+    return { ready: checks.db === 'ok', checks }
+  }
+
   const server = createServer({
     env,
     logger,
+    readiness,
     tokenIssuer,
     register,
     login,
@@ -191,13 +226,50 @@ export async function createApplication(env: Env): Promise<Application> {
     batchGetUsers,
   })
 
+  // Purga periódica (fora do hot path): refresh tokens, tokens de reset e códigos
+  // OTP expirados há mais que a folga — as três tabelas crescem a cada
+  // login/rotação/pedido e nada mais as limpa. O advisory lock garante que SÓ UMA
+  // réplica executa o ciclo (xact-lock → solta sozinho no commit/crash).
+  const runPurgeCycle = async () => {
+    await connection.sql.begin(async (gate) => {
+      const [row] = await gate`
+        select pg_try_advisory_xact_lock(${PURGE_ADVISORY_LOCK_KEY}::bigint) as locked
+      `
+      if (!row?.['locked']) return // outra réplica está purgando neste ciclo
+      const cutoff = new Date(Date.now() - PURGE_GRACE_MS)
+      const [refresh, reset, otp] = await Promise.all([
+        refreshTokens.deleteExpired(cutoff),
+        passwordResetTokens.deleteExpired(cutoff),
+        otpCodes.deleteExpired(cutoff),
+      ])
+      if (refresh + reset + otp > 0) {
+        logger.info('tokens.purged', { refresh, reset, otp })
+      }
+    })
+  }
+
+  let purgeTimer: ReturnType<typeof setInterval> | null = null
+
   return {
     logger,
     async start() {
-      server.listen(env.PORT)
-      logger.info('http.listening', { port: env.PORT, alg: signing.alg })
+      const purgeSafely = () =>
+        runPurgeCycle().catch((error) =>
+          logger.error('tokens.purge.failed', {
+            error: error instanceof Error ? error.message : String(error),
+          }),
+        )
+      // Um ciclo no boot (deploys mais frequentes que o intervalo não deixam a
+      // purga órfã) + intervalo. O advisory lock segura a concorrência entre réplicas.
+      void purgeSafely()
+      purgeTimer = setInterval(() => void purgeSafely(), PURGE_INTERVAL_MS)
+      // `::` = dual-stack (IPv4+IPv6) — necessário p/ o private networking do
+      // Railway (`auth.railway.internal` resolve IPv6).
+      server.listen({ port: env.PORT, hostname: env.HOST })
+      logger.info('http.listening', { port: env.PORT, host: env.HOST, alg: signing.alg })
     },
     async stop() {
+      if (purgeTimer) clearInterval(purgeTimer)
       await server.stop()
       await connection.close()
       logger.info('app.stopped')

@@ -8,7 +8,15 @@ import type { UpdateUserService } from '../../../application/admin/update-user/u
 import { UserNotFoundError } from '../../../domain/user/user.errors'
 import type { UserRole } from '../../../domain/user/user.role'
 import { type GatewayActor, resolveGatewayActor } from '../auth'
-import { BatchGetUsersBody, CreateUserBody, ListUsersQuery, UpdateUserBody } from '../dtos'
+import {
+  BatchGetUsersBody,
+  CreateUserBody,
+  ListUsersQuery,
+  UpdateUserBody,
+  UserIdParams,
+} from '../dtos'
+import { PayloadTooLargeError } from '../errors'
+import { isOversizeBody } from '../raw-body'
 
 export interface AdminRoutesDeps {
   listUsers: ListUsersService
@@ -47,7 +55,8 @@ export function adminRoutes(deps: AdminRoutesDeps) {
     )
     .post(
       '/users',
-      async ({ headers, body, set }) => {
+      async ({ headers, body, request, set }) => {
+        if (isOversizeBody(request)) throw new PayloadTooLargeError()
         const actor = requireActor(headers, WRITE_ROLES)
         const result = await deps.createUser.execute({
           actor: { id: actor.id, role: actor.role },
@@ -64,21 +73,27 @@ export function adminRoutes(deps: AdminRoutesDeps) {
     )
     .post(
       '/users/batch',
-      async ({ headers, body }) => {
+      async ({ headers, body, request }) => {
+        if (isOversizeBody(request)) throw new PayloadTooLargeError()
         requireActor(headers, READ_ROLES)
         return deps.batchGetUsers.execute(body.ids)
       },
       { body: BatchGetUsersBody },
     )
-    .get('/users/:id', async ({ headers, params }) => {
-      requireActor(headers, READ_ROLES)
-      const user = await deps.getUser.execute(params.id)
-      if (!user) throw new UserNotFoundError()
-      return { user }
-    })
+    .get(
+      '/users/:id',
+      async ({ headers, params }) => {
+        requireActor(headers, READ_ROLES)
+        const user = await deps.getUser.execute(params.id)
+        if (!user) throw new UserNotFoundError()
+        return { user }
+      },
+      { params: UserIdParams },
+    )
     .patch(
       '/users/:id',
-      async ({ headers, params, body }) => {
+      async ({ headers, params, body, request }) => {
+        if (isOversizeBody(request)) throw new PayloadTooLargeError()
         const actor = requireActor(headers, WRITE_ROLES)
         const user = await deps.updateUser.execute({
           targetId: params.id,
@@ -94,7 +109,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
         })
         return { user }
       },
-      { body: UpdateUserBody },
+      { body: UpdateUserBody, params: UserIdParams },
     )
 }
 
