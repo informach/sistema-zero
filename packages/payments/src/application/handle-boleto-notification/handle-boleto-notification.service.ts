@@ -120,6 +120,23 @@ export class HandleBoletoNotificationService {
           expected: payment.amount.amountInCents.toString(),
           got: charge.amountInCents.toString(),
         })
+        // Flag durável (contador no /metrics + revisão no admin). Best-effort:
+        // o consumo do dedupe não pode depender do save (mismatch determinístico).
+        try {
+          if (
+            payment.flagAmountMismatch({
+              expectedInCents: payment.amount.amountInCents,
+              paidInCents: charge.amountInCents,
+            })
+          ) {
+            await this.payments.save(payment)
+          }
+        } catch (error) {
+          this.logger.warn('cobrancas.notification.amount_mismatch_flag_failed', {
+            paymentId: payment.id,
+            error: error instanceof Error ? error.message : String(error),
+          })
+        }
         await this.inbox.markProcessed(this.gateway.provider, eventId)
         return
       }

@@ -163,47 +163,69 @@ duplicada.
 - Atrás de proxy, a resolução do IP via `X-Forwarded-For` **falha fechada**: se a
   cadeia for mais curta que `TRUSTED_PROXY_HOPS`, usa o IP do socket (não a entrada
   controlada pelo cliente) — sem bypass da allowlist.
-- Assinatura HMAC liga a `Idempotency-Key`; limite de corpo (anti-DoS, também no
-  socket via `maxRequestBodySize` do Bun); o contêiner roda como usuário **não-root**;
+- Assinatura HMAC liga **método + path + `Idempotency-Key`** à mensagem assinada
+  (`"<ts>.<MÉTODO>.<path>[.<idem>].<corpo>"`) — sem replay cross-endpoint (ex.:
+  GET→DELETE) nem troca de chave; limite de corpo (anti-DoS, também no socket via
+  `maxRequestBodySize` do Bun); o contêiner roda como usuário **não-root**;
   segredos/certs ficam fora do git e da imagem.
 
 ## Deploy (Railway)
 
 O deploy usa `Dockerfile` (raiz: `packages/payments/Dockerfile`) + `railway.json`
-(na raiz do repo). Passo a passo:
+(na raiz do repo — os demais serviços têm o seu em `packages/*/railway.json`).
+O healthcheck aponta para **`/readyz`** (readiness: banco respondendo + warm-up
+da Efí concluído) — a réplica nova só recebe tráfego com a Efí quente (sem isso
+o redeploy reintroduzia o 502 do 1º Pix frio). Passo a passo:
 
 1. **PostgreSQL**: adicione o plugin no projeto Railway e referencie
    `DATABASE_URL = ${{Postgres.DATABASE_URL}}` no serviço.
-2. **Variáveis** no serviço: `NODE_ENV=production`, `TRUST_PROXY=true`
-   (obrigatório — Railway fica atrás de proxy, usa `X-Forwarded-For`) e
-   `TRUSTED_PROXY_HOPS` = nº de proxies confiáveis na frente (Railway sozinho → 1;
-   com Cloudflare na frente → 2), `EFI_CLIENT_ID`, `EFI_CLIENT_SECRET`,
-   **`EFI_SANDBOX=false`** (em produção é obrigatório — o boot **falha** se ficar
-   `true`), `EFI_PIX_KEY`, o **certificado em base64** em `EFI_CERTIFICATE_BASE64`
-   (não há upload de arquivo; senha do P12, se houver, em `EFI_CERTIFICATE_PASSWORD`)
-   e, opcionalmente, `EFI_WEBHOOK_SECRET` (token no webhook de entrada — **omita para
-   desabilitar; string vazia não é aceita**). As demais alavancas (timeouts/budget
-   de retry da Efí, TTL de idempotência, retenção, `REQUIRE_ADMIN`, workers) têm
-   defaults seguros e estão documentadas no `.env.example`; o boot valida as
-   combinações perigosas (fail-fast).
+2. **Variáveis** no serviço: `NODE_ENV=production`, `EFI_CLIENT_ID`,
+   `EFI_CLIENT_SECRET`, **`EFI_SANDBOX=false`** (obrigatório em produção — o boot
+   **falha** se ficar `true`), `EFI_PIX_KEY`, o **certificado em base64** em
+   `EFI_CERTIFICATE_BASE64` (não há upload de arquivo; senha do P12, se houver,
+   em `EFI_CERTIFICATE_PASSWORD`), **`EFI_WEBHOOK_SECRET`** (obrigatório em
+   produção — gate dos webhooks públicos) e **`METRICS_TOKEN`** (obrigatório em
+   produção, ≥16 chars — protege o `GET /metrics` no ingress público).
+   `TRUST_PROXY`: depende da topologia (ver `.env.example`) — gateway via
+   **private networking** (recomendado) → `TRUST_PROXY=false` (IP do socket =
+   IP privado do gateway); gateway via domínio público → `TRUST_PROXY=true` +
+   `TRUSTED_PROXY_HOPS=1`. As demais alavancas têm defaults seguros e estão
+   documentadas no `.env.example`; o boot valida as combinações perigosas.
 3. O `railway.json` roda as migrations no **pre-deploy** (`db:migrate`) e sobe
    com `start`. Gere/commite as migrations antes: `bun run db:generate`.
-4. **Domínio**: Settings → Networking → Generate Domain.
+   ⚠️ **Disciplina de migrations (expand-then-contract):** o pre-deploy roda com
+   a réplica ANTIGA ainda servindo tráfego — toda migration precisa ser
+   compatível com o código N-1 (adicionar antes de usar; nunca DROP/rename no
+   mesmo deploy que para de usar). Índice em tabela grande → `CREATE INDEX
+   CONCURRENTLY` em migration custom (não cabe em transação).
+4. **Rede**: gere o domínio público (Settings → Networking → Generate Domain) —
+   necessário porque a **Efí chama o webhook direto neste serviço** (o gateway
+   não proxeia `/webhooks/efi`). O gateway alcança o payments pela rede privada:
+   `PAYMENTS_URL=http://payments.railway.internal:<PORT>` no serviço do gateway
+   (o bind é dual-stack `::` por default — env `HOST`).
 5. **Consumidor** (sem ele toda chamada é 401):
    ```bash
-   DATABASE_URL=... bun run db:seed --id sistema-checkout \
-     --cidrs "<ip-de-saida-do-consumidor>/32" \
-     --webhook-url https://sistema-checkout.com/webhooks/pagamentos   # opcional (push)
-   # imprime o HMAC secret — configure no sistema consumidor
+   DATABASE_URL=... bun run db:seed --id gateway \
+     --cidrs "fd00::/8" \
+     --webhook-url https://<consumidor>/webhooks/pagamentos   # opcional (push)
+   # imprime o HMAC secret — configure no gateway (resign)
+   # private networking → CIDR privado (fd00::/8) ou o IP observado nos logs;
+   # via domínio público → IP de egress público do gateway.
    ```
 6. **Webhook** Pix (senão o pagamento fica eterno `PENDING`):
    ```bash
-   bun run webhook:register --url https://<seu-dominio>/webhooks/efi
+   bun run webhook:register --url "https://<seu-dominio>/webhooks/efi?token=<EFI_WEBHOOK_SECRET>"
    # a Efí acrescenta /pix → chama /webhooks/efi/pix
    # usa validateMtls=false (skip mTLS) por padrão, necessário atrás de proxy
    ```
-7. Valide em homologação (`EFI_SANDBOX=true`) e só então troque credenciais +
-   certificado + `EFI_SANDBOX=false` para produção (re-registre o webhook).
+7. Valide em homologação (`EFI_SANDBOX=true`, `NODE_ENV` ≠ production) e só
+   então troque credenciais + certificado + `EFI_SANDBOX=false` para produção
+   (re-registre o webhook). Smoke: `/health`, `/readyz`, um Pix de valor mínimo
+   ponta a ponta (cobrança → webhook → `payment.paid`).
+8. **Monitoramento**: alerte sobre `GET /metrics` (com o token) —
+   `outboxOldestPendingAgeSeconds`/`webhookDeliveriesOldestPendingAgeSeconds`
+   (> 60s = poller parado), `*Dead` (> 0 = entregas mortas) e
+   `amountMismatchPending` (> 0 = divergência de valor pago — revisão manual).
 
 ## Próximos passos
 

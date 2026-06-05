@@ -91,9 +91,13 @@ cubra com teste usando os fakes.
 Browser → funil `/api/checkout/*` (mesma origem) → `gateway-client` assina **edge-HMAC** (consumer
 `funnel`, `FUNNEL_HMAC_SECRET`) → gateway `POST /payments` (re-assina como consumer `gateway`).
 
-**Canônicos HMAC** — `core.signHmac(secret, msg, ts)` assina `"<ts>.<msg>"`; header `x-signature: t=<ts>,v1=<hex>`:
-- POST com Idempotency-Key: `msg = "<idempotencyKey>.<rawBody>"`.
-- GET (corpo vazio): `msg = ""` → assina `"<ts>."`.
+**Canônicos HMAC** — `core.signHmac(secret, msg, ts)` assina `"<ts>.<msg>"` com
+`msg = canonicalHmacMessage({method, path, idempotencyKey?, body})` (06/2026: método+path
+amarrados → sem replay cross-endpoint); header `x-signature: t=<ts>,v1=<hex>`:
+- POST com Idempotency-Key: `msg = "POST.<path>.<idempotencyKey>.<rawBody>"`.
+- GET (corpo vazio): `msg = "GET.<path>."`.
+- O `path` assinado = pathname SEM query, o MESMO usado na URL (o gateway verifica
+  com o pathname que recebe — construa o path uma vez e use nos dois lugares).
 - Idempotency-Key do Pix: **`funil-<leadId>-<fingerprint12>`** — determinística por lead+CONTEÚDO
   (`pixContentFingerprint`: valor+cupom+dados pessoais). Retry com os MESMOS dados → MESMA cobrança
   (não duplica transação); dados diferentes (cupom novo, CPF corrigido) → chave nova → cobrança

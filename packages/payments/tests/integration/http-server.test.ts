@@ -45,6 +45,12 @@ interface BuildOpts {
   requireAdmin?: boolean
   /** Define `EFI_WEBHOOK_SECRET` (gate `?token=`/`x-webhook-token` dos webhooks). */
   webhookSecret?: string
+  /** Teto global das rotas de webhook (req/min). */
+  webhookRateLimit?: number
+  /** Define `METRICS_TOKEN` (gate do GET /metrics). */
+  metricsToken?: string
+  /** Resultado do probe de readiness (`/readyz`). Default: pronto. */
+  readiness?: () => Promise<{ ready: boolean; checks: Record<string, string> }>
 }
 
 function buildApp(opts: BuildOpts = {}) {
@@ -74,6 +80,7 @@ function buildApp(opts: BuildOpts = {}) {
     HMAC_TOLERANCE_SECONDS: 300,
     MAX_REQUEST_BODY_BYTES: opts.maxBodyBytes ?? 64 * 1024,
     EFI_WEBHOOK_SECRET: opts.webhookSecret,
+    METRICS_TOKEN: opts.metricsToken,
   } as unknown as Env
 
   // Stubs de leitura admin (estas integrações não exercem dados de listagem).
@@ -109,6 +116,9 @@ function buildApp(opts: BuildOpts = {}) {
       webhookDeliveriesPending: 0,
       webhookDeliveriesDead: 0,
       reconcilePending: 0,
+      outboxOldestPendingAgeSeconds: null,
+      webhookDeliveriesOldestPendingAgeSeconds: null,
+      amountMismatchPending: 0,
     }),
   }
   const subscriptionsAdminRead: SubscriptionAdminReadRepository = {
@@ -137,6 +147,8 @@ function buildApp(opts: BuildOpts = {}) {
     logger: silentLogger,
     consumers,
     rateLimiter: new InMemoryRateLimiter(opts.rateLimit ?? 1000),
+    webhookRateLimiter: new InMemoryRateLimiter(opts.webhookRateLimit ?? 1000),
+    readiness: opts.readiness ?? (async () => ({ ready: true, checks: { db: 'ok' } })),
     processPayment: new ProcessPaymentService(
       repo,
       gateway,
@@ -187,6 +199,9 @@ function buildApp(opts: BuildOpts = {}) {
       paymentsAwaitingCharge: 0,
       webhookDeliveriesPending: 0,
       webhookDeliveriesDead: 0,
+      outboxOldestPendingAgeSeconds: null,
+      webhookDeliveriesOldestPendingAgeSeconds: null,
+      amountMismatchPending: 0,
     }),
     requireAdminEnabled: opts.requireAdmin ?? false,
     listPayments: new ListPaymentsService(paymentsAdminRead),
@@ -210,32 +225,50 @@ function sig(secret: string, msg: string): string {
   return `t=${t},v1=${signHmac(secret, msg, t)}`
 }
 
-/** Headers de POST /payments: assina "<idempotencyKey>.<body>". */
+/** Mensagem canônica do consumer auth: "<MÉTODO>.<path>[.<key>].<body>". */
+function canonical(method: string, path: string, body: string, key?: string): string {
+  const head = `${method}.${path}`
+  return key ? `${head}.${key}.${body}` : `${head}.${body}`
+}
+
+/** Headers de POST (default /payments): assina "POST.<path>.<idempotencyKey>.<body>". */
 function postHeaders(
   body: string,
-  opts: { consumerId?: string; secret?: string; key?: string; xff?: string } = {},
+  opts: { consumerId?: string; secret?: string; key?: string; xff?: string; path?: string } = {},
 ) {
   const {
     consumerId = 'sys-a',
     secret = 'secret-a',
     key = 'idem-12345678',
     xff = '203.0.113.10',
+    path = '/payments',
   } = opts
-  // Mensagem canônica: com key → "<key>.<body>"; sem key → "<body>".
   const headers: Record<string, string> = {
     'content-type': 'application/json',
     'x-consumer-id': consumerId,
     'x-forwarded-for': xff,
-    'x-signature': sig(secret, key ? `${key}.${body}` : body),
+    'x-signature': sig(secret, canonical('POST', path, body, key || undefined)),
   }
   if (key) headers['idempotency-key'] = key
   return headers
 }
 
-/** Headers de GET (corpo vazio, sem idempotency-key). */
-function getHeaders(opts: { consumerId?: string; secret?: string; xff?: string } = {}) {
-  const { consumerId = 'sys-a', secret = 'secret-a', xff = '203.0.113.10' } = opts
-  return { 'x-consumer-id': consumerId, 'x-forwarded-for': xff, 'x-signature': sig(secret, '') }
+/** Headers de leitura/DELETE (corpo vazio, sem idempotency-key) — assina "<MÉTODO>.<path>.". */
+function getHeaders(
+  opts: { consumerId?: string; secret?: string; xff?: string; path?: string; method?: string } = {},
+) {
+  const {
+    consumerId = 'sys-a',
+    secret = 'secret-a',
+    xff = '203.0.113.10',
+    path = '/payments',
+    method = 'GET',
+  } = opts
+  return {
+    'x-consumer-id': consumerId,
+    'x-forwarded-for': xff,
+    'x-signature': sig(secret, canonical(method, path, '')),
+  }
 }
 
 const PIX_BODY = JSON.stringify({ amountInCents: 1000, method: 'PIX', description: 'Pedido' })
@@ -309,6 +342,84 @@ describe('HTTP server', () => {
     expect(await res.json()).toMatchObject({ status: 'ok', service: 'payments' })
   })
 
+  test('GET /readyz pronto → 200; não-pronto → 503 (healthcheck do Railway)', async () => {
+    const ready = buildApp()
+    const ok = await ready.app.handle(new Request('http://localhost/readyz'))
+    expect(ok.status).toBe(200)
+    expect(await ok.json()).toMatchObject({ status: 'ready' })
+
+    // Warm-up da Efí ainda pendente → a réplica NÃO pode receber tráfego (o 1º
+    // Pix pagaria o handshake mTLS frio dentro da request → 502 no funil).
+    const warming = buildApp({
+      readiness: async () => ({ ready: false, checks: { db: 'ok', efiWarmup: 'pending' } }),
+    })
+    const notReady = await warming.app.handle(new Request('http://localhost/readyz'))
+    expect(notReady.status).toBe(503)
+    expect(await notReady.json()).toMatchObject({
+      status: 'unavailable',
+      checks: { efiWarmup: 'pending' },
+    })
+  })
+
+  describe('METRICS_TOKEN (gate do GET /metrics)', () => {
+    const TOKEN = 'token-metrics-16chars'
+
+    test('com token configurado: sem credencial → 401; errada → 401', async () => {
+      const { app } = buildApp({ metricsToken: TOKEN })
+      const bare = await app.handle(new Request('http://localhost/metrics'))
+      expect(bare.status).toBe(401)
+      const wrong = await app.handle(
+        new Request('http://localhost/metrics', { headers: { 'x-metrics-token': 'errado' } }),
+      )
+      expect(wrong.status).toBe(401)
+    })
+
+    test('x-metrics-token ou Bearer corretos → 200', async () => {
+      const { app } = buildApp({ metricsToken: TOKEN })
+      const viaHeader = await app.handle(
+        new Request('http://localhost/metrics', { headers: { 'x-metrics-token': TOKEN } }),
+      )
+      expect(viaHeader.status).toBe(200)
+      const viaBearer = await app.handle(
+        new Request('http://localhost/metrics', { headers: { authorization: `Bearer ${TOKEN}` } }),
+      )
+      expect(viaBearer.status).toBe(200)
+      expect(await viaBearer.json()).toMatchObject({ outboxPending: 0 })
+    })
+
+    test('sem token configurado (dev), /metrics segue aberto', async () => {
+      const { app } = buildApp()
+      const res = await app.handle(new Request('http://localhost/metrics'))
+      expect(res.status).toBe(200)
+    })
+  })
+
+  test('webhooks têm rate limit global → 429 com Retry-After (backpressure)', async () => {
+    const { app } = buildApp({ webhookRateLimit: 2 })
+    const hook = () =>
+      app.handle(
+        new Request('http://localhost/webhooks/efi/pix', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ pix: [] }),
+        }),
+      )
+    expect((await hook()).status).toBe(200)
+    expect((await hook()).status).toBe(200)
+    const limited = await hook()
+    expect(limited.status).toBe(429)
+    expect(limited.headers.get('retry-after')).toBeTruthy()
+    // O limite é compartilhado entre as rotas de webhook (chave global única).
+    const cobrancas = await app.handle(
+      new Request('http://localhost/webhooks/efi/cobrancas', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({}),
+      }),
+    )
+    expect(cobrancas.status).toBe(429)
+  })
+
   test('POST /payments sem autenticação → 401', async () => {
     const { app } = buildApp()
     const res = await app.handle(
@@ -353,7 +464,7 @@ describe('HTTP server', () => {
     const oldTs = now() - 600
     const headers = postHeaders(PIX_BODY)
     headers['x-signature'] =
-      `t=${oldTs},v1=${signHmac('secret-a', `idem-12345678.${PIX_BODY}`, oldTs)}`
+      `t=${oldTs},v1=${signHmac('secret-a', `POST./payments.idem-12345678.${PIX_BODY}`, oldTs)}`
     const res = await app.handle(
       new Request('http://localhost/payments', { method: 'POST', headers, body: PIX_BODY }),
     )
@@ -364,7 +475,7 @@ describe('HTTP server', () => {
     const { app } = buildApp()
     // A mensagem assinada inclui a Idempotency-Key ("<key>.<body>"); reusar a
     // assinatura com OUTRA chave (forçaria novo pagamento) não pode passar.
-    const headers = postHeaders(PIX_BODY) // assina "idem-12345678.<body>"
+    const headers = postHeaders(PIX_BODY) // assina "POST./payments.idem-12345678.<body>"
     headers['idempotency-key'] = 'idem-OUTRA-CHAVE'
     const res = await app.handle(
       new Request('http://localhost/payments', { method: 'POST', headers, body: PIX_BODY }),
@@ -474,7 +585,9 @@ describe('HTTP server', () => {
   test('GET /payments/:id com id não-UUID → 400 (validação), não 500', async () => {
     const { app } = buildApp()
     const res = await app.handle(
-      new Request('http://localhost/payments/not-a-uuid', { headers: getHeaders() }),
+      new Request('http://localhost/payments/not-a-uuid', {
+        headers: getHeaders({ path: '/payments/not-a-uuid' }),
+      }),
     )
     // O importante: 4xx limpo (validação) em vez de 500 da coluna `uuid` do Postgres.
     expect(res.status).toBe(400)
@@ -493,14 +606,16 @@ describe('HTTP server', () => {
 
     // dono (sys-a) → 200
     const own = await app.handle(
-      new Request(`http://localhost/payments/${id}`, { headers: getHeaders() }),
+      new Request(`http://localhost/payments/${id}`, {
+        headers: getHeaders({ path: `/payments/${id}` }),
+      }),
     )
     expect(own.status).toBe(200)
 
     // outro consumidor (sys-b) → 404 (não revela o pagamento alheio)
     const other = await app.handle(
       new Request(`http://localhost/payments/${id}`, {
-        headers: getHeaders({ consumerId: 'sys-b', secret: 'secret-b' }),
+        headers: getHeaders({ consumerId: 'sys-b', secret: 'secret-b', path: `/payments/${id}` }),
       }),
     )
     expect(other.status).toBe(404)
@@ -736,7 +851,7 @@ describe('HTTP server', () => {
     const res = await app.handle(
       new Request('http://localhost/subscriptions', {
         method: 'POST',
-        headers: postHeaders(SUB_BODY, { key: 'idem-sub-aaaa' }),
+        headers: postHeaders(SUB_BODY, { key: 'idem-sub-aaaa', path: '/subscriptions' }),
         body: SUB_BODY,
       }),
     )
@@ -777,7 +892,7 @@ describe('HTTP server', () => {
     const res = await app.handle(
       new Request('http://localhost/subscriptions', {
         method: 'POST',
-        headers: postHeaders(body, { key: 'idem-sub-bbbb' }),
+        headers: postHeaders(body, { key: 'idem-sub-bbbb', path: '/subscriptions' }),
         body,
       }),
     )
@@ -789,20 +904,26 @@ describe('HTTP server', () => {
     const created = await app.handle(
       new Request('http://localhost/subscriptions', {
         method: 'POST',
-        headers: postHeaders(SUB_BODY, { key: 'idem-sub-cccc' }),
+        headers: postHeaders(SUB_BODY, { key: 'idem-sub-cccc', path: '/subscriptions' }),
         body: SUB_BODY,
       }),
     )
     const { id } = (await created.json()) as { id: string }
 
     const own = await app.handle(
-      new Request(`http://localhost/subscriptions/${id}`, { headers: getHeaders() }),
+      new Request(`http://localhost/subscriptions/${id}`, {
+        headers: getHeaders({ path: `/subscriptions/${id}` }),
+      }),
     )
     expect(own.status).toBe(200)
 
     const other = await app.handle(
       new Request(`http://localhost/subscriptions/${id}`, {
-        headers: getHeaders({ consumerId: 'sys-b', secret: 'secret-b' }),
+        headers: getHeaders({
+          consumerId: 'sys-b',
+          secret: 'secret-b',
+          path: `/subscriptions/${id}`,
+        }),
       }),
     )
     expect(other.status).toBe(404)
@@ -813,7 +934,7 @@ describe('HTTP server', () => {
     const created = await app.handle(
       new Request('http://localhost/subscriptions', {
         method: 'POST',
-        headers: postHeaders(SUB_BODY, { key: 'idem-sub-dddd' }),
+        headers: postHeaders(SUB_BODY, { key: 'idem-sub-dddd', path: '/subscriptions' }),
         body: SUB_BODY,
       }),
     )
@@ -825,13 +946,41 @@ describe('HTTP server', () => {
     const res = await app.handle(
       new Request(`http://localhost/subscriptions/${id}`, {
         method: 'DELETE',
-        headers: getHeaders(),
+        // A assinatura amarra o MÉTODO: a de um GET não vale num DELETE.
+        headers: getHeaders({ method: 'DELETE', path: `/subscriptions/${id}` }),
       }),
     )
     expect(res.status).toBe(200)
     const json = (await res.json()) as { status: string }
     expect(json.status).toBe('CANCELED')
     expect(gateway.canceledSubscriptionIds).toContain(providerSubscriptionId)
+  })
+
+  test('replay cross-endpoint: assinatura de GET NÃO vale num DELETE (método+path na mensagem)', async () => {
+    const { app } = buildApp()
+    const created = await app.handle(
+      new Request('http://localhost/subscriptions', {
+        method: 'POST',
+        headers: postHeaders(SUB_BODY, { key: 'idem-sub-replay', path: '/subscriptions' }),
+        body: SUB_BODY,
+      }),
+    )
+    const { id } = (await created.json()) as { id: string }
+
+    // Assinatura legítima de um GET (corpo vazio) na mesma janela de tolerância…
+    const getSig = getHeaders({ path: `/subscriptions/${id}` })
+    const getRes = await app.handle(
+      new Request(`http://localhost/subscriptions/${id}`, { headers: getSig }),
+    )
+    expect(getRes.status).toBe(200)
+
+    // …replayada num DELETE do MESMO path (corpo igualmente vazio) → 401.
+    // Antes do binding método+path, as duas mensagens eram idênticas e o replay
+    // CANCELARIA a assinatura.
+    const replay = await app.handle(
+      new Request(`http://localhost/subscriptions/${id}`, { method: 'DELETE', headers: getSig }),
+    )
+    expect(replay.status).toBe(401)
   })
 
   test('webhook de assinatura cria o pagamento de um ciclo recorrente', async () => {
@@ -842,7 +991,7 @@ describe('HTTP server', () => {
     const created = await app.handle(
       new Request('http://localhost/subscriptions', {
         method: 'POST',
-        headers: postHeaders(SUB_BODY, { key: 'idem-sub-eeee' }),
+        headers: postHeaders(SUB_BODY, { key: 'idem-sub-eeee', path: '/subscriptions' }),
         body: SUB_BODY,
       }),
     )

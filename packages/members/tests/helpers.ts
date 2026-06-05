@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { signHmac } from '@sistemazero/core/security'
+import { canonicalHmacMessage, signHmac } from '@sistemazero/core/security'
 import { CheckAccessService } from '../src/application/access/check-access.service'
 import {
   AttachmentAdminService,
@@ -369,10 +369,19 @@ export function offerWithCourse(offerSlug: string, courseRef: string): ResolvedO
   }
 }
 
-/** Headers assinados (HMAC de borda do gateway) para um webhook de entrada. */
-export function signedWebhookHeaders(rawBody: string, deliveryId?: string): Record<string, string> {
+/** Headers assinados (HMAC resign do gateway) para um webhook de entrada.
+ *  Mensagem canônica: "POST.<path>.<corpo>" (método+path = anti replay cross-endpoint). */
+export function signedWebhookHeaders(
+  path: string,
+  rawBody: string,
+  deliveryId?: string,
+): Record<string, string> {
   const ts = Math.floor(Date.now() / 1000)
-  const sig = signHmac(WEBHOOK_SECRET, rawBody, ts)
+  const sig = signHmac(
+    WEBHOOK_SECRET,
+    canonicalHmacMessage({ method: 'POST', path, body: rawBody }),
+    ts,
+  )
   const headers: Record<string, string> = {
     'content-type': 'application/json',
     'x-signature': `t=${ts},v1=${sig}`,

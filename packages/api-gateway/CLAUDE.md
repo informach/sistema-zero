@@ -110,7 +110,7 @@ Métodos: `slidingWindow` / `slidingWindowRefund(key, windowResetMs?)` (rate lim
 
 ### 4.5 Auth plugável (Strategy + Chain) + Autorização (RBAC)
 
-**Autenticação** por rota: `any`/`all` sobre `hmac` (core `verifyHmacSignature` + IP CIDR + consumer registry da config), `session` (token opaco no store), `jwt` (jose). Em rotas `resign`, o gateway re-assina a chamada de saída como consumer do upstream.
+**Autenticação** por rota: `any`/`all` sobre `hmac` (core `verifyHmacSignature` + IP CIDR + consumer registry da config), `session` (token opaco no store), `jwt` (jose). Mensagem canônica do HMAC (06/2026): `"<MÉTODO>.<path>.<idem>.<corpo>"` via `canonicalHmacMessage` do core — método+path amarrados impedem replay cross-endpoint (GET→DELETE de corpo vazio); o verificador usa `ctx.url.pathname` (o path que o CONSUMIDOR chamou no gateway). Em rotas `resign`, o gateway re-assina a chamada de saída como consumer do upstream — assinando o **`ctx.upstreamPath` FINAL sem query** (o resign roda DEPOIS dos path-rewrites no request-transform stage), que é exatamente o pathname que o upstream verifica. ⚠️ O `verify-webhook` (entregas do payments) continua assinando/verificando SÓ o corpo — contrato público com consumidores.
 
 **JWT (LIGADO)** — o emissor é o **[@sistemazero/auth](../auth)**. A `jwt.strategy` verifica **HS256** (segredo compartilhado `JWT_HS256_SECRET`) **e/ou RS256 via JWKS** (`JWT_JWKS_URL`); a chave é escolhida pelo `alg` do token e os algoritmos são **pinados**. A strategy liga quando `JWT_JWKS_URL` OU `JWT_HS256_SECRET` existe.
 
@@ -166,7 +166,7 @@ Proxy, Facade (`route-registry` + `gateway-plugin` + `gateway.config.ts`), Decor
 
 ## 8. Pontos em aberto (não feitos — decisão de design pendente)
 
-- **Anti-replay HMAC/webhook por nonce:** hoje é só janela de tempo (`toleranceSeconds`); replay possível dentro da janela. Precisa de store de assinatura de uso único.
+- **Anti-replay HMAC/webhook por nonce:** hoje é só janela de tempo (`toleranceSeconds`); replay do MESMO método+path possível dentro da janela (o replay cross-endpoint foi fechado em 06/2026 — método+path entram na mensagem canônica). Precisa de store de assinatura de uso único.
 - **Webhook assina só o corpo:** `x-event-type`/`x-delivery-id` ficam fora da assinatura (adulteráveis).
 - **Rate-limit spoofável** se `TRUST_PROXY`/`TRUSTED_PROXY_HOPS` estiverem mal configurados atrás de PaaS. (Mitigado em parte pelo **safety-net global por IP** — `global-rate-limit.stage`, ligado por `GLOBAL_RATE_LIMIT_PER_MINUTE` — que limita flood anônimo agregado por IP através de TODAS as rotas; **isenta `principal`s autenticados** (não estrangula o funil, IP único de egress) e por isso roda após o auth e **não cobre 404s pré-rota** nem floods de auth-fail, que dependem de proteção na borda/PaaS.)
 - **LB cross-réplica:** least-connections/p2c/sticky são **por réplica** (sem coordenação entre réplicas) — trade-off documentado.

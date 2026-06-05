@@ -17,6 +17,7 @@ secrets
 *.pfx
 *.pem
 *.key
+**/tests
 .claude
 .idea
 .DS_Store

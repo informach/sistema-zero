@@ -1,11 +1,11 @@
 import { describe, expect, test } from 'bun:test'
-import { verifyHmacSignature } from '@sistemazero/core/security'
+import { canonicalHmacMessage, verifyHmacSignature } from '@sistemazero/core/security'
 import { createGatewayClient } from '../../src/lib/gateway-client'
 
 const SECRET = 'segredo-de-borda-do-funil'
 
 describe('createGatewayClient (assinatura HMAC de borda)', () => {
-  test('POST assina o canônico "<ts>.<idempotencyKey>.<corpo>" que o gateway verifica', async () => {
+  test('POST assina o canônico "<ts>.POST.<path>.<idempotencyKey>.<corpo>" que o gateway verifica', async () => {
     let captured: { url: string; init: RequestInit } | undefined
     const fetchImpl = (async (url: string, init: RequestInit) => {
       captured = { url, init }
@@ -34,7 +34,12 @@ describe('createGatewayClient (assinatura HMAC de borda)', () => {
 
     const verdict = verifyHmacSignature({
       secret: SECRET,
-      body: `${idem}.${rawBody}`,
+      body: canonicalHmacMessage({
+        method: 'POST',
+        path: '/payments',
+        idempotencyKey: idem,
+        body: rawBody,
+      }),
       signatureHeader: headers['x-signature'],
       nowSeconds: Math.floor(Date.now() / 1000),
       toleranceSeconds: 300,
@@ -42,7 +47,7 @@ describe('createGatewayClient (assinatura HMAC de borda)', () => {
     expect(verdict.valid).toBe(true)
   })
 
-  test('GET assina o corpo vazio "<ts>." (sem idempotency-key)', async () => {
+  test('GET assina "<ts>.GET.<path>." (corpo vazio, sem idempotency-key)', async () => {
     let captured: { url: string; init: RequestInit } | undefined
     const fetchImpl = (async (url: string, init: RequestInit) => {
       captured = { url, init }
@@ -66,7 +71,7 @@ describe('createGatewayClient (assinatura HMAC de borda)', () => {
 
     const verdict = verifyHmacSignature({
       secret: SECRET,
-      body: '',
+      body: canonicalHmacMessage({ method: 'GET', path: '/payments/pay-9', body: '' }),
       signatureHeader: headers['x-signature'],
       nowSeconds: Math.floor(Date.now() / 1000),
       toleranceSeconds: 300,
@@ -112,7 +117,11 @@ describe('createGatewayClient (assinatura HMAC de borda)', () => {
     expect(headers['idempotency-key']).toBeUndefined()
     const verdict = verifyHmacSignature({
       secret: SECRET,
-      body: rawBody,
+      body: canonicalHmacMessage({
+        method: 'POST',
+        path: '/auth/internal/ensure-buyer',
+        body: rawBody,
+      }),
       signatureHeader: headers['x-signature'],
       nowSeconds: Math.floor(Date.now() / 1000),
       toleranceSeconds: 300,

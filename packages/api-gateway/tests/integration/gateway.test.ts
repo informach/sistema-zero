@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { signHmac } from '@sistemazero/core/security'
+import { canonicalHmacMessage, signHmac } from '@sistemazero/core/security'
 import { type Application, createApplication } from '../../src/composition-root'
 import { loadEnv } from '../../src/infrastructure/config/env'
 import type { GatewayConfigInput } from '../../src/infrastructure/config/gateway-config.schema'
@@ -170,7 +170,12 @@ describe('gateway (integração via app.handle)', () => {
 
     const body = '{}'
     const ts = Math.floor(Date.now() / 1000)
-    const sig = signHmac('secret-a-at-least-16', body, ts)
+    // Mensagem canônica amarra método+path (anti replay cross-endpoint).
+    const sig = signHmac(
+      'secret-a-at-least-16',
+      canonicalHmacMessage({ method: 'POST', path: '/secure', body }),
+      ts,
+    )
     const ok = await app.handle(
       req('/secure', {
         method: 'POST',

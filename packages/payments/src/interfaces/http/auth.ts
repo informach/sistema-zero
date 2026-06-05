@@ -1,3 +1,4 @@
+import { canonicalHmacMessage } from '@sistemazero/core/security'
 import type { Consumer, ConsumerRepository } from '../../domain/ports/consumer-repository.port'
 import type { Logger } from '../../infrastructure/logging/logger'
 import { verifyHmacSignature } from '../../infrastructure/security/hmac'
@@ -72,12 +73,18 @@ export async function authenticateConsumer(deps: AuthDeps, ctx: AuthContext): Pr
     throw new ForbiddenError('IP de origem não autorizado')
   }
 
-  // A `Idempotency-Key` entra na mensagem assinada (quando presente) para que um
-  // replay não possa trocar a chave mantendo a assinatura válida → cada chave
-  // gera uma cobrança distinta. Mensagem canônica: "<idempotencyKey>.<corpo>".
+  // Mensagem canônica: "<MÉTODO>.<path>.<idempotencyKey>.<corpo>" (sem a chave:
+  // "<MÉTODO>.<path>.<corpo>"). A `Idempotency-Key` entra para que um replay não
+  // possa trocar a chave mantendo a assinatura; método+path impedem replay
+  // cross-endpoint (ex.: GET→DELETE de corpo vazio na MESMA janela de tolerância).
   const idempotencyKey = ctx.headers['idempotency-key']
   const rawBody = getRawBody(ctx.request)
-  const signedMessage = idempotencyKey ? `${idempotencyKey}.${rawBody}` : rawBody
+  const signedMessage = canonicalHmacMessage({
+    method: ctx.request.method,
+    path: new URL(ctx.request.url).pathname,
+    idempotencyKey,
+    body: rawBody,
+  })
 
   const result = verifyHmacSignature({
     secret: consumer.hmacSecret,

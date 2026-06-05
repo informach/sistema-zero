@@ -1,11 +1,12 @@
 import type { Logger } from '@sistemazero/core/logging'
-import { signHmac } from '@sistemazero/core/security'
+import { canonicalHmacMessage, signHmac } from '@sistemazero/core/security'
 import type { MessagingClient, SendEmailInput } from '../../domain/ports/messaging-client.port'
 
 // Cliente do auth → api-gateway → @sistemazero/messaging. Assina por HMAC de
-// borda exatamente como o funil (mensagem canônica "<idempotencyKey>.<corpo>" no
-// POST com Idempotency-Key); o gateway injeta o `x-internal-token` do messaging.
-// O auth NUNCA fala com o messaging direto (o token interno é segredo do gateway).
+// borda exatamente como o funil (mensagem canônica
+// "<MÉTODO>.<path>.<idempotencyKey>.<corpo>" no POST com Idempotency-Key); o
+// gateway injeta o `x-internal-token` do messaging. O auth NUNCA fala com o
+// messaging direto (o token interno é segredo do gateway).
 
 export interface GatewayMessagingClientOptions {
   gatewayUrl: string
@@ -27,8 +28,15 @@ export function createGatewayMessagingClient(opts: GatewayMessagingClientOptions
         variables: input.variables,
       })
       const ts = Math.floor(Date.now() / 1000)
-      const signature = signHmac(opts.hmacSecret, `${input.idempotencyKey}.${rawBody}`, ts)
-      const res = await doFetch(`${opts.gatewayUrl}/messaging/send`, {
+      const path = '/messaging/send'
+      const message = canonicalHmacMessage({
+        method: 'POST',
+        path,
+        idempotencyKey: input.idempotencyKey,
+        body: rawBody,
+      })
+      const signature = signHmac(opts.hmacSecret, message, ts)
+      const res = await doFetch(`${opts.gatewayUrl}${path}`, {
         method: 'POST',
         headers: {
           'content-type': 'application/json',

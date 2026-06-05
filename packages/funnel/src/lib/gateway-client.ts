@@ -1,9 +1,10 @@
-import { signHmac } from '@sistemazero/core/security'
+import { canonicalHmacMessage, signHmac } from '@sistemazero/core/security'
 
 // Cliente do funil → api-gateway (BFF). Assina por HMAC de borda exatamente como
-// o gateway espera (mensagem canônica "<ts>.<idempotencyKey>.<corpo>" no POST com
-// Idempotency-Key, ou "<ts>.<corpo>" sem ela). O gateway re-assina p/ o payments.
-// O funil NUNCA fala com o payments direto.
+// o gateway espera (mensagem canônica "<ts>.<MÉTODO>.<path>.<idempotencyKey>.<corpo>"
+// no POST com Idempotency-Key, ou "<ts>.<MÉTODO>.<path>.<corpo>" sem ela — o
+// método+path amarrados impedem replay cross-endpoint). O gateway re-assina p/ o
+// payments. O funil NUNCA fala com o payments direto.
 
 export interface GatewayClientOptions {
   baseUrl: string
@@ -94,9 +95,16 @@ async function readBody(res: Response): Promise<unknown> {
 export function createGatewayClient(opts: GatewayClientOptions) {
   const doFetch = opts.fetchImpl ?? fetch
 
-  function buildHeaders(rawBody: string, idempotencyKey?: string): Record<string, string> {
+  function buildHeaders(
+    method: string,
+    path: string,
+    rawBody: string,
+    idempotencyKey?: string,
+  ): Record<string, string> {
     const ts = Math.floor(Date.now() / 1000)
-    const message = idempotencyKey ? `${idempotencyKey}.${rawBody}` : rawBody
+    // O path assinado é o MESMO usado na URL (pathname, sem query) — o gateway
+    // verifica com o pathname que recebe na requisição.
+    const message = canonicalHmacMessage({ method, path, idempotencyKey, body: rawBody })
     const signature = signHmac(opts.hmacSecret, message, ts)
     const headers: Record<string, string> = {
       'content-type': 'application/json',
@@ -111,28 +119,31 @@ export function createGatewayClient(opts: GatewayClientOptions) {
     /** POST /payments (via gateway → payments). idempotencyKey determinístico por lead. */
     async createPayment(input: unknown, idempotencyKey: string): Promise<GatewayResult> {
       const rawBody = JSON.stringify(input)
-      const res = await doFetch(`${opts.baseUrl}/payments`, {
+      const path = '/payments'
+      const res = await doFetch(`${opts.baseUrl}${path}`, {
         method: 'POST',
-        headers: buildHeaders(rawBody, idempotencyKey),
+        headers: buildHeaders('POST', path, rawBody, idempotencyKey),
         body: rawBody,
       })
       return { status: res.status, body: await readBody(res) }
     },
 
-    /** GET /payments/:id (corpo vazio → assina "<ts>."). */
+    /** GET /payments/:id (corpo vazio → assina "<ts>.GET.<path>."). */
     async getPayment(paymentId: string): Promise<GatewayResult> {
-      const res = await doFetch(`${opts.baseUrl}/payments/${encodeURIComponent(paymentId)}`, {
+      const path = `/payments/${encodeURIComponent(paymentId)}`
+      const res = await doFetch(`${opts.baseUrl}${path}`, {
         method: 'GET',
-        headers: buildHeaders(''),
+        headers: buildHeaders('GET', path, ''),
       })
       return { status: res.status, body: await readBody(res) }
     },
 
     /** GET /catalog/offers/:slug (via gateway → catalog). Rota pública (leitura de marketing). */
     async getOffer(slug: string): Promise<GatewayResult> {
-      const res = await doFetch(`${opts.baseUrl}/catalog/offers/${encodeURIComponent(slug)}`, {
+      const path = `/catalog/offers/${encodeURIComponent(slug)}`
+      const res = await doFetch(`${opts.baseUrl}${path}`, {
         method: 'GET',
-        headers: buildHeaders(''),
+        headers: buildHeaders('GET', path, ''),
       })
       return { status: res.status, body: await readBody(res) }
     },
@@ -140,14 +151,12 @@ export function createGatewayClient(opts: GatewayClientOptions) {
     /** POST /catalog/offers/:slug/quote — preço autoritativo com cupom opcional. Rota pública. */
     async quoteOffer(slug: string, couponCode?: string): Promise<GatewayResult> {
       const rawBody = JSON.stringify(couponCode ? { couponCode } : {})
-      const res = await doFetch(
-        `${opts.baseUrl}/catalog/offers/${encodeURIComponent(slug)}/quote`,
-        {
-          method: 'POST',
-          headers: buildHeaders(rawBody),
-          body: rawBody,
-        },
-      )
+      const path = `/catalog/offers/${encodeURIComponent(slug)}/quote`
+      const res = await doFetch(`${opts.baseUrl}${path}`, {
+        method: 'POST',
+        headers: buildHeaders('POST', path, rawBody),
+        body: rawBody,
+      })
       return { status: res.status, body: await readBody(res) }
     },
 
@@ -157,10 +166,12 @@ export function createGatewayClient(opts: GatewayClientOptions) {
      */
     async redeemCoupon(code: string): Promise<GatewayResult> {
       const rawBody = '{}'
-      const res = await doFetch(
-        `${opts.baseUrl}/catalog/coupons/${encodeURIComponent(code)}/redeem`,
-        { method: 'POST', headers: buildHeaders(rawBody), body: rawBody },
-      )
+      const path = `/catalog/coupons/${encodeURIComponent(code)}/redeem`
+      const res = await doFetch(`${opts.baseUrl}${path}`, {
+        method: 'POST',
+        headers: buildHeaders('POST', path, rawBody),
+        body: rawBody,
+      })
       return { status: res.status, body: await readBody(res) }
     },
 
@@ -174,9 +185,10 @@ export function createGatewayClient(opts: GatewayClientOptions) {
      */
     async ensureBuyer(input: RegisterBuyerInput): Promise<GatewayResult> {
       const rawBody = JSON.stringify(input)
-      const res = await doFetch(`${opts.baseUrl}/auth/internal/ensure-buyer`, {
+      const path = '/auth/internal/ensure-buyer'
+      const res = await doFetch(`${opts.baseUrl}${path}`, {
         method: 'POST',
-        headers: buildHeaders(rawBody),
+        headers: buildHeaders('POST', path, rawBody),
         body: rawBody,
       })
       return { status: res.status, body: await readBody(res) }
@@ -233,9 +245,10 @@ export function createGatewayClient(opts: GatewayClientOptions) {
      */
     async grantMembersAccess(input: GrantMembersInput): Promise<GatewayResult> {
       const rawBody = JSON.stringify(input)
-      const res = await doFetch(`${opts.baseUrl}/members/webhooks/grant`, {
+      const path = '/members/webhooks/grant'
+      const res = await doFetch(`${opts.baseUrl}${path}`, {
         method: 'POST',
-        headers: buildHeaders(rawBody),
+        headers: buildHeaders('POST', path, rawBody),
         body: rawBody,
       })
       return { status: res.status, body: await readBody(res) }
@@ -250,9 +263,10 @@ export function createGatewayClient(opts: GatewayClientOptions) {
      */
     async createPasswordToken(email: string): Promise<GatewayResult> {
       const rawBody = JSON.stringify({ email })
-      const res = await doFetch(`${opts.baseUrl}/auth/internal/password-tokens`, {
+      const path = '/auth/internal/password-tokens'
+      const res = await doFetch(`${opts.baseUrl}${path}`, {
         method: 'POST',
-        headers: buildHeaders(rawBody),
+        headers: buildHeaders('POST', path, rawBody),
         body: rawBody,
       })
       return { status: res.status, body: await readBody(res) }
@@ -265,9 +279,10 @@ export function createGatewayClient(opts: GatewayClientOptions) {
      */
     async sendMessage(input: SendMessageInput, idempotencyKey: string): Promise<GatewayResult> {
       const rawBody = JSON.stringify(input)
-      const res = await doFetch(`${opts.baseUrl}/messaging/send`, {
+      const path = '/messaging/send'
+      const res = await doFetch(`${opts.baseUrl}${path}`, {
         method: 'POST',
-        headers: buildHeaders(rawBody, idempotencyKey),
+        headers: buildHeaders('POST', path, rawBody, idempotencyKey),
         body: rawBody,
       })
       return { status: res.status, body: await readBody(res) }

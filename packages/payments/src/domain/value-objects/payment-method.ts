@@ -61,6 +61,21 @@ export class PaymentMethod extends ValueObject<{ variant: Variant }> {
     })
   }
 
+  /**
+   * Cartão REIDRATADO do banco: sem exigir token (o `payment_token` da Efí é
+   * single-use, consumido na cobrança, e NÃO é persistido — guardar segredo
+   * derivado de cartão sem necessidade só ampliaria o raio de um vazamento de
+   * banco), mas preservando as parcelas originais (≠ `recurringCard`, que é
+   * sempre 1). Aceita também linhas legadas que ainda têm token persistido.
+   */
+  static storedCard(card: CardData): PaymentMethod {
+    if (!/^\d{4}$/.test(card.last4)) throw new ValidationError('last4 inválido')
+    if (!Number.isInteger(card.installments) || card.installments < 1) {
+      throw new ValidationError('Número de parcelas inválido')
+    }
+    return new PaymentMethod({ type: 'CREDIT_CARD', card })
+  }
+
   get type(): PaymentMethodType {
     return this.props.variant.type
   }

@@ -85,6 +85,26 @@ describe('HandleProviderWebhookService (Pix)', () => {
     await webhook.execute({ items: [{ txid, endToEndId: 'E2E-MM' }] })
 
     expect((await getPayment.execute('sys-a', paymentId)).status).toBe('PENDING')
+    // Flag DURÁVEL p/ revisão manual: alimenta o contador amountMismatchPending
+    // do /metrics//ops e aparece no detalhe do pagamento no admin.
+    const payment = await repo.findById(paymentId)
+    expect(payment?.metadata['amountMismatch']).toMatchObject({
+      expected: '1000',
+      got: '999',
+    })
+    // Sem evento: o pagamento não confirmou nada.
+    expect(repo.outbox.some((e) => e.eventName === 'payment.paid')).toBe(false)
+  })
+
+  test('flag de mismatch é idempotente (reprocessar não re-salva nem muda o `at`)', async () => {
+    gateway.chargeStatus = 'PAID'
+    gateway.overrideAmountInCents = 999n
+    await webhook.execute({ items: [{ txid, endToEndId: 'E2E-MM-1' }] })
+    const first = (await repo.findById(paymentId))?.metadata['amountMismatch']
+    // Nova notificação (outro eventId) do MESMO mismatch → no-op no flag.
+    await webhook.execute({ items: [{ txid, endToEndId: 'E2E-MM-2' }] })
+    const second = (await repo.findById(paymentId))?.metadata['amountMismatch']
+    expect(second).toEqual(first)
   })
 
   test('evento não-pago não consome o dedupe: reentrega quando vira pago reprocessa', async () => {

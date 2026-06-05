@@ -1,3 +1,4 @@
+import { canonicalHmacMessage } from '@sistemazero/core/security'
 import { signHmac } from '../src/infrastructure/security/hmac'
 import { hasFlag, readArg } from './args'
 
@@ -26,13 +27,14 @@ interface PaymentView {
 }
 
 /**
- * Assina a mensagem canônica `"<ts>.<msg>"`, onde `msg` é `"<idempotencyKey>.<body>"`
- * quando há Idempotency-Key (POST) ou apenas `<body>` (GET, corpo vazio). Incluir
- * a chave na assinatura impede replay com troca de Idempotency-Key.
+ * Assina a mensagem canônica `"<ts>.<MÉTODO>.<path>.<msg>"`, onde `msg` é
+ * `"<idempotencyKey>.<body>"` quando há Idempotency-Key (POST) ou apenas `<body>`
+ * (GET, corpo vazio). A chave impede replay trocando a Idempotency-Key;
+ * método+path impedem replay cross-endpoint.
  */
-function sign(body: string, idempotencyKey?: string): string {
+function sign(method: string, path: string, body: string, idempotencyKey?: string): string {
   const ts = Math.floor(Date.now() / 1000)
-  const msg = idempotencyKey ? `${idempotencyKey}.${body}` : body
+  const msg = canonicalHmacMessage({ method, path, idempotencyKey, body })
   return `t=${ts},v1=${signHmac(secret as string, msg, ts)}`
 }
 
@@ -49,7 +51,7 @@ async function createPayment(): Promise<{ httpStatus: number; view: PaymentView 
       'content-type': 'application/json',
       'x-consumer-id': consumerId,
       'idempotency-key': idempotencyKey,
-      'x-signature': sign(body, idempotencyKey),
+      'x-signature': sign('POST', '/payments', body, idempotencyKey),
     },
     body,
   })
@@ -58,7 +60,8 @@ async function createPayment(): Promise<{ httpStatus: number; view: PaymentView 
 
 async function getPayment(id: string): Promise<{ httpStatus: number; view: PaymentView }> {
   const res = await fetch(`${baseUrl}/payments/${id}`, {
-    headers: { 'x-consumer-id': consumerId, 'x-signature': sign('') }, // GET → corpo vazio
+    // GET → corpo vazio (assina "<ts>.GET.<path>.")
+    headers: { 'x-consumer-id': consumerId, 'x-signature': sign('GET', `/payments/${id}`, '') },
   })
   return { httpStatus: res.status, view: (await res.json()) as PaymentView }
 }

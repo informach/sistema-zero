@@ -67,7 +67,9 @@ export class DrizzleWebhookDeliveryRepository implements WebhookDeliveryReposito
       // re-reivindicação pós-lease conta como nova tentativa → o teto `maxAttempts`
       // é respeitado e a mensagem-veneno acaba em DEAD, em vez de re-entregar para
       // sempre com o mesmo contador.
-      await tx
+      // UPDATE ... RETURNING: linhas pós-incremento na mesma round-trip (sem
+      // SELECT extra dentro da transação com lock).
+      const rows = await tx
         .update(webhookDeliveries)
         .set({
           nextAttemptAt: lease,
@@ -75,11 +77,7 @@ export class DrizzleWebhookDeliveryRepository implements WebhookDeliveryReposito
           attempts: sql`${webhookDeliveries.attempts} + 1`,
         })
         .where(inArray(webhookDeliveries.id, ids))
-
-      const rows = await tx
-        .select()
-        .from(webhookDeliveries)
-        .where(inArray(webhookDeliveries.id, ids))
+        .returning()
       return rows.map((row) => ({
         id: row.id,
         consumerId: row.consumerId,

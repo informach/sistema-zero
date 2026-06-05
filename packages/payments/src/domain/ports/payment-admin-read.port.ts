@@ -94,6 +94,15 @@ export interface PaymentOpsSnapshot {
   webhookDeliveriesDead: number
   /** PENDING com cobrança já criada aguardando confirmação (fila de reconciliação). */
   reconcilePending: number
+  /** Idade (s) do item PENDING mais antigo do outbox — null sem backlog. Alerte
+   *  na IDADE, não na contagem: 5 itens parados há 1h é pior que 500 de 2s
+   *  (pega um poller morto na hora). */
+  outboxOldestPendingAgeSeconds: number | null
+  /** Idade (s) da entrega PENDING mais antiga — null sem backlog. */
+  webhookDeliveriesOldestPendingAgeSeconds: number | null
+  /** PENDING com divergência de valor pago (metadata.amountMismatch) — revisão
+   *  manual pendente. Sinal de fraude/erro: alerte em > 0. */
+  amountMismatchPending: number
 }
 
 export interface PaymentAdminReadRepository {

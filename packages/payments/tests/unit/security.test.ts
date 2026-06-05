@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { canonicalHmacMessage } from '@sistemazero/core/security'
 import { signHmac, verifyHmacSignature } from '../../src/infrastructure/security/hmac'
 import { ipMatchesAny } from '../../src/infrastructure/security/ip'
 
@@ -76,6 +77,19 @@ describe('HMAC', () => {
     })
     expect(r.valid).toBe(false)
     expect(r.reason).toBe('malformed_header')
+  })
+
+  test('mensagem canônica amarra método+path (anti replay cross-endpoint)', () => {
+    // GET e DELETE do MESMO path com corpo vazio: antes do binding as mensagens
+    // eram idênticas (replay de leitura virava cancelamento).
+    const get = canonicalHmacMessage({ method: 'get', path: '/subscriptions/abc', body: '' })
+    const del = canonicalHmacMessage({ method: 'DELETE', path: '/subscriptions/abc', body: '' })
+    expect(get).toBe('GET./subscriptions/abc.') // método normalizado p/ maiúsculas
+    expect(get).not.toBe(del)
+    // Paths diferentes também divergem; com Idempotency-Key ela entra na mensagem.
+    expect(
+      canonicalHmacMessage({ method: 'POST', path: '/payments', idempotencyKey: 'k1', body: '{}' }),
+    ).toBe('POST./payments.k1.{}')
   })
 
   test('binding da Idempotency-Key: a chave faz parte da mensagem assinada', () => {

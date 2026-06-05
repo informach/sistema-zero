@@ -95,6 +95,24 @@ export class HandleProviderWebhookService {
         expected: payment.amount.amountInCents.toString(),
         got: charge.amountInCents.toString(),
       })
+      // Flag durável (metadata.amountMismatch → contador no /metrics + detalhe no
+      // admin). Best-effort: uma corrida no save não pode impedir o consumo do
+      // dedupe (o mismatch é determinístico — reprocessar não muda nada).
+      try {
+        if (
+          payment.flagAmountMismatch({
+            expectedInCents: payment.amount.amountInCents,
+            paidInCents: charge.amountInCents,
+          })
+        ) {
+          await this.payments.save(payment)
+        }
+      } catch (error) {
+        this.logger.warn('webhook.amount_mismatch_flag_failed', {
+          paymentId: payment.id,
+          error: error instanceof Error ? error.message : String(error),
+        })
+      }
       await this.inbox.markProcessed(this.gateway.provider, eventId)
       return
     }

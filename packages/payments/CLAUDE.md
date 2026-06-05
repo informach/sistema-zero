@@ -177,7 +177,10 @@ tests/               # unit/ · application/ · integration/ · fakes/
    registro antigo ilegível) e falha ALTO num CREDIT_CARD persistido sem `card`
    (sem fallback silencioso p/ PIX). `payments.txid` tem UNIQUE parcial no banco.
 
-6. **PCI.** Nunca persista o PAN do cartão — só `token` + `last4` + bandeira.
+6. **PCI.** Nunca persista o PAN do cartão. O `payment_token` da Efí também **NÃO
+   é persistido** (single-use, consumido na cobrança — `snapshotToRow` faz o strip;
+   restore via `PaymentMethod.storedCard`, que preserva parcelas e tolera linhas
+   legadas com token). No banco ficam só `brand` + `last4` + `installments`.
 
 7. **Certificados são segredo.** `certs/`, `secrets/`, `*.p12`, `*.pem` estão no
    `.gitignore`/`.dockerignore`. Não commite. No Railway o cert vai em
@@ -217,11 +220,23 @@ tests/               # unit/ · application/ · integration/ · fakes/
   `payment.expired`/`payment.refunded` (precisa de `consumers.webhook_url`).
 
 **Outros:** rate limit por consumidor (`RATE_LIMIT_PER_MINUTE` → 429 + `Retry-After`,
-em memória/por instância — troque por Redis p/ limite global); **job periódico de
-limpeza** (fora do hot path): idempotência expirada + **retenção** das tabelas
-append-only (`outbox`/`webhook_events`/`webhook_deliveries` terminais mais antigos
-que `RETENTION_DAYS`); pool do Postgres em `DATABASE_POOL_MAX`; `GET /metrics` expõe
-lag (outbox/charge/deliveries).
+em memória/por instância — troque por Redis p/ limite global) + rate limit **GLOBAL
+dos webhooks** (`WEBHOOK_RATE_LIMIT_PER_MINUTE`, chave única — backpressure, a auth é
+o `EFI_WEBHOOK_SECRET`); **job periódico de limpeza** (fora do hot path): idempotência
+expirada + **retenção** das tabelas append-only (`outbox`/`webhook_events`/
+`webhook_deliveries` terminais mais antigos que `RETENTION_DAYS`) — gateado por
+**advisory lock** (`pg_try_advisory_xact_lock`, só UMA réplica limpa por ciclo; a
+chave é global ao banco compartilhado, não reutilize a constante); pool do Postgres
+em `DATABASE_POOL_MAX` (default 20); **consumer cacheado** (TTL 30s,
+`CachingConsumerRepository` — desativar um consumer vale em ≤30s; só cacheia
+acertos); `GET /metrics` (TOKEN obrigatório em prod — `METRICS_TOKEN`, header
+`x-metrics-token`/Bearer) expõe lag + **idade do backlog**
+(`*OldestPendingAgeSeconds` — alerte na idade, pega poller morto) +
+`amountMismatchPending` (divergência de valor pago → flag durável
+`metadata.amountMismatch` via `flagAmountMismatch`, idempotente; setado pelo
+webhook Pix, notificação Cobranças e reconciliação). **Access log** (`http.access`):
+1 linha/request com o `X-Request-Id` do gateway (correlação), método, path, status
+e latência; pula `/health`,`/readyz`,`/metrics`.
 
 **Escala horizontal:** stateless → várias réplicas OK. Os pollers/claims usam
 `FOR UPDATE SKIP LOCKED`, então rodar em N instâncias é seguro. Cuidado com
@@ -246,12 +261,16 @@ Consumidor cadastrado em `consumers` (`id`, `hmac_secret`, `allowed_cidrs`,
 - IP de origem dentro de um CIDR permitido (`TRUST_PROXY=true` atrás de proxy →
   usa `X-Forwarded-For`, pegando a `TRUSTED_PROXY_HOPS`-ésima entrada a partir da
   direita; **fail-closed**: cadeia mais curta que os hops → usa o IP do socket,
-  nunca a entrada controlada pelo cliente);
+  nunca a entrada controlada pelo cliente; via private networking → `false`);
 - `X-Consumer-Id`;
 - `X-Signature: t=<unix_ts>,v1=<hmac_sha256_hex>` onde a mensagem assinada é
-  `"<ts>.<idempotencyKey>.<corpo_bruto>"` quando há `Idempotency-Key` (POST), ou
-  `"<ts>.<corpo_bruto>"` sem ela (GET). Incluir a chave na assinatura impede
-  replay com troca de `Idempotency-Key`. Tolerância de timestamp anti-replay.
+  `"<ts>.<MÉTODO>.<path>.<idempotencyKey>.<corpo_bruto>"` quando há
+  `Idempotency-Key` (POST), ou `"<ts>.<MÉTODO>.<path>.<corpo_bruto>"` sem ela
+  (`canonicalHmacMessage` do core; path = pathname SEM query). A chave na
+  assinatura impede replay trocando a `Idempotency-Key`; **método+path impedem
+  replay cross-endpoint** (a assinatura de um GET de corpo vazio valia num DELETE
+  do mesmo recurso). Tolerância de timestamp anti-replay. ⚠️ Os webhooks de SAÍDA
+  (entregas aos consumidores) continuam assinando SÓ o corpo — contrato público.
 
 ## Admin (painel @sistemazero/admin)
 
@@ -369,10 +388,19 @@ successfully" sem rodar). Foi exatamente o que aconteceu com auth/funnel antes d
 ## Deploy (Railway)
 
 `Dockerfile` (oven/bun) + `railway.json` na raiz do repo (builder DOCKERFILE,
-`preDeployCommand = db:migrate`). Variáveis chave: `DATABASE_URL`,
-`TRUST_PROXY=true`, `EFI_*` e `EFI_CERTIFICATE_BASE64`. **Em produção o boot exige
-`EFI_SANDBOX=false`** (refine fail-fast — evita apontar pro sandbox sem querer) e
-`NODE_ENV=production` (desliga o Swagger e o log debug/pretty). `EFI_WEBHOOK_SECRET`
-não pode ser string vazia (omita p/ desabilitar). Migrations geradas/commitadas via
-`db:generate` (a última, `0002`, trocou o índice de `payments.txid` por uma **UNIQUE
-parcial** `payments_txid_uq WHERE txid IS NOT NULL`). Detalhes no `README.md`.
+`preDeployCommand = db:migrate`, **`healthcheckPath = /readyz`** — readiness =
+banco OK + warm-up da Efí concluído; sem isso o redeploy promove a réplica fria e
+o 1º Pix paga o mTLS de ~15s na request). Bind **dual-stack `::`** (env `HOST`)
+— obrigatório p/ `payments.railway.internal` (private networking é IPv6). **Em
+produção o boot exige** (refines fail-fast): `EFI_SANDBOX=false`,
+**`EFI_WEBHOOK_SECRET`** (webhook é público; sem segredo = amplificação não
+autenticada) e **`METRICS_TOKEN`** (≥16 chars; /metrics fica em ingress público).
+`TRUST_PROXY` depende da topologia (ver `.env.example`): gateway via private
+networking → `false` (socket IP = gateway; allowlist fd00::/8); via domínio
+público → `true` + `HOPS=1`. ⚠️ **Migrations expand-then-contract** (o pre-deploy
+roda com a réplica velha viva; índice em tabela grande → `CONCURRENTLY` custom).
+Migrations geradas/commitadas via `db:generate` — `0002` = UNIQUE parcial do txid;
+**`0003`** = `CREATE EXTENSION pg_trgm` (editada à mão) + índices trgm GIN da
+busca `q` do admin (4 em payments, 3 em subscriptions — as expressões dos índices
+DEVEM casar com o `buildWhere`) + `created_at` (payments/subscriptions) +
+`paid_at` parcial. Detalhes no `README.md`.

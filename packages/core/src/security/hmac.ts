@@ -9,6 +9,31 @@ export function signHmac(secret: string, body: string, timestampSeconds: number)
   return createHmac('sha256', secret).update(`${timestampSeconds}.${body}`).digest('hex')
 }
 
+/**
+ * Mensagem canônica da autenticação consumer (requisições S2S):
+ * `"<MÉTODO>.<path>.<idempotencyKey>.<corpo>"` (sem a chave:
+ * `"<MÉTODO>.<path>.<corpo>"`). Amarrar método+path à assinatura impede o replay
+ * cross-endpoint dentro da janela de tolerância — ex.: a assinatura de um
+ * `GET /subscriptions/:id` (corpo vazio) reusada num `DELETE /subscriptions/:id`
+ * (também vazio) cancelaria a assinatura. `path` = pathname SEM query string
+ * (assine o path EXATO que o verificador enxerga — pós-rewrite, forma encoded).
+ *
+ * ⚠️ Usada APENAS na autenticação de consumidor. Os webhooks de SAÍDA
+ * (entregas aos consumidores) continuam assinando só o corpo — é contrato
+ * público com o receptor.
+ */
+export function canonicalHmacMessage(input: {
+  method: string
+  path: string
+  idempotencyKey?: string | null
+  body: string
+}): string {
+  const head = `${input.method.toUpperCase()}.${input.path}`
+  return input.idempotencyKey
+    ? `${head}.${input.idempotencyKey}.${input.body}`
+    : `${head}.${input.body}`
+}
+
 export interface HmacVerifyResult {
   valid: boolean
   reason?: 'malformed_header' | 'expired' | 'mismatch'

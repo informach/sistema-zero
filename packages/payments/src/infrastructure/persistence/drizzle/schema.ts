@@ -159,6 +159,26 @@ export const payments = paymentsSchema.table(
     // "Minhas compras" (self-service do comprador, app community): filtro por
     // e-mail do `customer` (jsonb). Consulte SEMPRE com lower() p/ casar o índice.
     index('payments_customer_email_idx').on(sql`lower((${t.customer} ->> 'email'))`),
+    // Sort default das listas (admin + /my: ORDER BY created_at DESC) e janela
+    // das agregações por criação — sem ele a lista vira full sort na tabela toda.
+    index('payments_created_at_idx').on(t.createdAt),
+    // Janela do "recebido" no stats/daily (agrupa por paid_at). Parcial: só
+    // linhas confirmadas têm paid_at.
+    index('payments_paid_at_idx').on(t.paidAt).where(sql`paid_at IS NOT NULL`),
+    // Busca livre `q` do admin (ILIKE '%…%' em 4 colunas via OR): trigram GIN
+    // (pg_trgm — a extensão é criada na migration) torna cada ramo indexável e o
+    // OR vira BitmapOr; sem isso cada tecla digitada no painel = seq scan duplo
+    // (lista + count). As expressões DEVEM casar EXATAS com as do buildWhere.
+    index('payments_txid_trgm_idx').using('gin', t.txid.op('gin_trgm_ops')),
+    index('payments_provider_payment_trgm_idx').using(
+      'gin',
+      t.providerPaymentId.op('gin_trgm_ops'),
+    ),
+    index('payments_id_text_trgm_idx').using('gin', sql`(${t.id}::text) gin_trgm_ops`),
+    index('payments_customer_email_trgm_idx').using(
+      'gin',
+      sql`(${t.customer} ->> 'email') gin_trgm_ops`,
+    ),
   ],
 )
 
@@ -197,6 +217,18 @@ export const subscriptions = paymentsSchema.table(
     uniqueIndex('subscriptions_consumer_idem_uq').on(t.consumerId, t.idempotencyKey),
     index('subscriptions_provider_sub_idx').on(t.provider, t.providerSubscriptionId),
     index('subscriptions_status_idx').on(t.status),
+    // Sort default da lista admin (ORDER BY created_at DESC).
+    index('subscriptions_created_at_idx').on(t.createdAt),
+    // Busca livre `q` do admin (ver payments_*_trgm_idx).
+    index('subscriptions_provider_sub_trgm_idx').using(
+      'gin',
+      t.providerSubscriptionId.op('gin_trgm_ops'),
+    ),
+    index('subscriptions_id_text_trgm_idx').using('gin', sql`(${t.id}::text) gin_trgm_ops`),
+    index('subscriptions_customer_email_trgm_idx').using(
+      'gin',
+      sql`(${t.customer} ->> 'email') gin_trgm_ops`,
+    ),
   ],
 )
 

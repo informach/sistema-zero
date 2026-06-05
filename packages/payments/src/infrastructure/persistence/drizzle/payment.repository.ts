@@ -135,12 +135,13 @@ export class DrizzlePaymentRepository implements PaymentRepository {
       if (locked.length === 0) return []
 
       const ids = locked.map((r) => r.id)
-      await tx
+      // UPDATE ... RETURNING devolve as linhas pós-incremento na MESMA round-trip
+      // — sem SELECT extra dentro da transação com lock (janela menor sob burst).
+      const rows = await tx
         .update(payments)
         .set({ chargeClaimedAt: new Date(), chargeAttempts: sql`${payments.chargeAttempts} + 1` })
         .where(inArray(payments.id, ids))
-
-      const rows = await tx.select().from(payments).where(inArray(payments.id, ids))
+        .returning()
       return rows.map((row) => ({
         payment: PaymentAggregate.restore(rowToSnapshot(row)),
         attempts: row.chargeAttempts,
@@ -169,7 +170,7 @@ export class DrizzlePaymentRepository implements PaymentRepository {
   }
 }
 
-function snapshotToRow(snap: PaymentSnapshot): typeof payments.$inferInsert {
+export function snapshotToRow(snap: PaymentSnapshot): typeof payments.$inferInsert {
   return {
     id: snap.id,
     version: snap.version,
@@ -182,7 +183,12 @@ function snapshotToRow(snap: PaymentSnapshot): typeof payments.$inferInsert {
     providerPaymentId: snap.providerPaymentId,
     txid: snap.txid,
     idempotencyKey: snap.idempotencyKey,
-    card: snap.card,
+    // NUNCA persiste o `token` (payment_token da Efí): é single-use, já foi
+    // consumido na cobrança e nada o lê de volta — guardá-lo só ampliaria o
+    // raio de um vazamento de banco. Persistimos apenas brand/last4/parcelas.
+    card: snap.card
+      ? { brand: snap.card.brand, last4: snap.card.last4, installments: snap.card.installments }
+      : snap.card,
     pixQrCode: snap.pixQrCode,
     boleto: snap.boleto,
     boletoRequest: snap.boletoRequest,

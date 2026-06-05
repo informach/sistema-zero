@@ -19,6 +19,10 @@ const EnvSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
     PORT: z.coerce.number().int().positive().default(3001),
+    // Endereço de bind. `::` (default) é dual-stack (IPv4 + IPv6) — obrigatório
+    // para o private networking do Railway (`payments.railway.internal` resolve
+    // IPv6; ambientes legados são IPv6-only e um bind `0.0.0.0` fica inalcançável).
+    HOST: z.string().min(1).default('::'),
     HMAC_TOLERANCE_SECONDS: z.coerce.number().int().positive().default(300),
     TRUST_PROXY: optionalBool(false),
     // Nº de proxies confiáveis na frente do app (resolve o IP do cliente como a
@@ -82,13 +86,20 @@ const EnvSchema = z
     EFI_BOLETO_FINE: z.coerce.number().int().nonnegative().optional(),
     EFI_BOLETO_INTEREST: z.coerce.number().int().nonnegative().optional(),
 
+    // Token do `GET /metrics` (`x-metrics-token` ou `Authorization: Bearer`). O
+    // serviço tem domínio público (o webhook da Efí chega direto), então /metrics
+    // não pode ficar aberto em produção — o refine abaixo o torna obrigatório.
+    METRICS_TOKEN: z.string().min(16, 'METRICS_TOKEN deve ter pelo menos 16 caracteres').optional(),
+
     OUTBOX_POLL_INTERVAL_MS: z.coerce.number().int().positive().default(2000),
     OUTBOX_BATCH_SIZE: z.coerce.number().int().positive().default(100),
     // Após N falhas de publicação, o evento vira DEAD (sai da fila → não bloqueia).
     OUTBOX_MAX_ATTEMPTS: z.coerce.number().int().positive().default(10),
 
-    // Escala / resiliência
-    DATABASE_POOL_MAX: z.coerce.number().int().positive().default(10),
+    // Escala / resiliência. Default 20: o pool é compartilhado pelo hot path +
+    // 4 workers + leituras admin (N réplicas × este valor deve caber no
+    // max_connections do Postgres — use pooler em escala).
+    DATABASE_POOL_MAX: z.coerce.number().int().positive().default(20),
     // LISTEN/NOTIFY acorda os workers na hora (latência ~ms). Desligue (false) atrás
     // de PgBouncer em modo transaction/statement pooling (não suporta LISTEN) — o
     // poll periódico continua processando normalmente.
@@ -99,6 +110,13 @@ const EnvSchema = z
     // ilimitado. Roda no mesmo job periódico da limpeza de idempotência.
     RETENTION_DAYS: z.coerce.number().int().positive().default(30),
     RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(600),
+    // Rate limit GLOBAL das rotas de webhook da Efí (req/min, por instância).
+    // É um teto de backpressure (cada item de webhook custa 1 INSERT + 1 chamada
+    // à Efí), não a autenticação — esta é o EFI_WEBHOOK_SECRET. Chave única (não
+    // por IP): o X-Forwarded-For do webhook não é confiável o bastante p/ punir
+    // por IP, e o tráfego legítimo da Efí é baixo. Excedeu → 429 (a Efí re-tenta;
+    // a reconciliação é a rede de segurança).
+    WEBHOOK_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(600),
 
     // Criação de cobrança assíncrona (opt-in para picos de lançamento)
     ASYNC_CHARGE_CREATION: optionalBool(false),
@@ -159,6 +177,20 @@ const EnvSchema = z
   .refine((e) => !(e.NODE_ENV === 'production' && e.EFI_SANDBOX), {
     message: 'Em produção defina EFI_SANDBOX=false explicitamente (cobranças reais).',
     path: ['EFI_SANDBOX'],
+  })
+  // Em produção o webhook é alcançável pela internet (a Efí o chama direto no
+  // serviço). Sem o segredo, qualquer um POSTa payloads que custam 1 INSERT +
+  // 1 chamada mTLS à Efí por item (amplificação não autenticada). Fail-fast.
+  .refine((e) => !(e.NODE_ENV === 'production' && !e.EFI_WEBHOOK_SECRET), {
+    message:
+      'Em produção EFI_WEBHOOK_SECRET é obrigatório (registre o webhook na Efí com ?token=<segredo>).',
+    path: ['EFI_WEBHOOK_SECRET'],
+  })
+  // /metrics expõe telemetria operacional/financeira (backlog, dead-letters) e o
+  // serviço tem ingress público — em produção exige token.
+  .refine((e) => !(e.NODE_ENV === 'production' && !e.METRICS_TOKEN), {
+    message: 'Em produção METRICS_TOKEN é obrigatório (protege GET /metrics no ingress público).',
+    path: ['METRICS_TOKEN'],
   })
 
 export type Env = z.infer<typeof EnvSchema>

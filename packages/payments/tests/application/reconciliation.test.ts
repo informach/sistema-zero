@@ -76,6 +76,13 @@ describe('ReconciliationWorker', () => {
     gateway.overrideAmountInCents = 1n
     await newWorker().tick()
     expect((await getPayment.execute('sys-a', paymentId)).status).toBe('PENDING')
+    // Flag durável persistido na 1ª varredura…
+    const flagged = (await repo.findById(paymentId))?.metadata['amountMismatch']
+    expect(flagged).toMatchObject({ got: '1' })
+    // …e varreduras seguintes NÃO re-salvam (no-op do já-flagado — senão cada
+    // ciclo da reconciliação bumparia version/updated_at à toa).
+    await newWorker().tick()
+    expect((await repo.findById(paymentId))?.metadata['amountMismatch']).toEqual(flagged)
   })
 
   test('perder a corrida p/ outro writer (webhook/réplica) loga INFO, não ERROR', async () => {

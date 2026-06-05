@@ -30,10 +30,39 @@ describe('loadEnv — refines críticos (fail-fast no boot)', () => {
     expect(() => loadEnv(rest)).toThrow(/EFI_CERTIFICATE/)
   })
 
+  // Config mínima de PRODUÇÃO: além do EFI_SANDBOX=false, o boot exige o segredo
+  // do webhook (anti-amplificação não autenticada) e o token do /metrics
+  // (telemetria em ingress público).
+  const PROD: Record<string, string> = {
+    ...BASE,
+    NODE_ENV: 'production',
+    EFI_SANDBOX: 'false',
+    EFI_WEBHOOK_SECRET: 'segredo-webhook-forte',
+    METRICS_TOKEN: 'token-metrics-16chars',
+  }
+
   test('produção exige EFI_SANDBOX=false EXPLÍCITO (não aponta pro sandbox em silêncio)', () => {
-    expect(() => loadEnv({ ...BASE, NODE_ENV: 'production' })).toThrow(/EFI_SANDBOX/)
-    const ok = loadEnv({ ...BASE, NODE_ENV: 'production', EFI_SANDBOX: 'false' })
+    expect(() => loadEnv({ ...PROD, EFI_SANDBOX: 'true' })).toThrow(/EFI_SANDBOX/)
+    const ok = loadEnv(PROD)
     expect(ok.EFI_SANDBOX).toBe(false)
+  })
+
+  test('produção exige EFI_WEBHOOK_SECRET (webhook público sem segredo = amplificação)', () => {
+    const { EFI_WEBHOOK_SECRET: _omitted, ...rest } = PROD
+    expect(() => loadEnv(rest)).toThrow(/EFI_WEBHOOK_SECRET/)
+  })
+
+  test('produção exige METRICS_TOKEN (≥16 chars) — /metrics fica em ingress público', () => {
+    const { METRICS_TOKEN: _omitted, ...rest } = PROD
+    expect(() => loadEnv(rest)).toThrow(/METRICS_TOKEN/)
+    expect(() => loadEnv({ ...PROD, METRICS_TOKEN: 'curto' })).toThrow(/METRICS_TOKEN/)
+    // Fora de produção segue opcional (dev local sem token).
+    expect(loadEnv(BASE).METRICS_TOKEN).toBeUndefined()
+  })
+
+  test('HOST default é "::" (dual-stack — private networking do Railway é IPv6)', () => {
+    expect(loadEnv(BASE).HOST).toBe('::')
+    expect(loadEnv({ ...BASE, HOST: '0.0.0.0' }).HOST).toBe('0.0.0.0')
   })
 
   test('EFI_WEBHOOK_SECRET vazio → falha (para desabilitar, OMITA a variável)', () => {

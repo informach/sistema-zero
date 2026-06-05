@@ -205,7 +205,7 @@ describe('Members HTTP — webhooks', () => {
     const r1 = await app.handle(
       new Request('http://localhost/members/webhooks/grant', {
         method: 'POST',
-        headers: signedWebhookHeaders(body, 'd1'),
+        headers: signedWebhookHeaders('/members/webhooks/grant', body, 'd1'),
         body,
       }),
     )
@@ -218,7 +218,7 @@ describe('Members HTTP — webhooks', () => {
     const r2 = await app.handle(
       new Request('http://localhost/members/webhooks/grant', {
         method: 'POST',
-        headers: signedWebhookHeaders(body, 'd1'),
+        headers: signedWebhookHeaders('/members/webhooks/grant', body, 'd1'),
         body,
       }),
     )
@@ -232,7 +232,7 @@ describe('Members HTTP — webhooks', () => {
     const res = await app.handle(
       new Request('http://localhost/members/webhooks/grant', {
         method: 'POST',
-        headers: signedWebhookHeaders(body, 'd-unresolved'),
+        headers: signedWebhookHeaders('/members/webhooks/grant', body, 'd-unresolved'),
         body,
       }),
     )
@@ -282,7 +282,7 @@ describe('Members HTTP — webhooks', () => {
     await app.handle(
       new Request('http://localhost/members/webhooks/grant', {
         method: 'POST',
-        headers: signedWebhookHeaders(grantBody, 'g1'),
+        headers: signedWebhookHeaders('/members/webhooks/grant', grantBody, 'g1'),
         body: grantBody,
       }),
     )
@@ -292,7 +292,7 @@ describe('Members HTTP — webhooks', () => {
     const cancel = await app.handle(
       new Request('http://localhost/members/webhooks/subscription', {
         method: 'POST',
-        headers: signedWebhookHeaders(cancelBody, 's1'),
+        headers: signedWebhookHeaders('/members/webhooks/subscription', cancelBody, 's1'),
         body: cancelBody,
       }),
     )

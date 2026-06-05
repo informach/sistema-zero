@@ -141,7 +141,7 @@ describe('Chave-mestra — concessão', () => {
     const res = await app.handle(
       new Request('http://localhost/members/webhooks/grant', {
         method: 'POST',
-        headers: signedWebhookHeaders(raw, randomUUID()),
+        headers: signedWebhookHeaders('/members/webhooks/grant', raw, randomUUID()),
         body: raw,
       }),
     )

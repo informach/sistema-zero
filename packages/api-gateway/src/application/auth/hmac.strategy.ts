@@ -1,4 +1,4 @@
-import { ipMatchesAny, verifyHmacSignature } from '@sistemazero/core/security'
+import { canonicalHmacMessage, ipMatchesAny, verifyHmacSignature } from '@sistemazero/core/security'
 import type { ConsumerRepository } from '../../domain/ports/consumer-repository.port'
 import { ensureRawBody } from '../pipeline/context'
 import type { AuthStrategy } from './auth-strategy.port'
@@ -10,8 +10,10 @@ export interface HmacStrategyOptions {
 
 /**
  * Strategy HMAC (sistema-a-sistema): valida X-Consumer-Id + IP (CIDR) + assinatura
- * X-Signature sobre o corpo bruto (mensagem `"<idem>.<corpo>"` quando há
- * Idempotency-Key) com anti-replay. Reusa as utilidades do @sistemazero/core.
+ * X-Signature sobre a mensagem canônica `"<MÉTODO>.<path>.<idem>.<corpo>"` (sem
+ * Idempotency-Key: `"<MÉTODO>.<path>.<corpo>"`) com anti-replay. Amarrar
+ * método+path impede replay cross-endpoint (ex.: GET→DELETE de corpo vazio).
+ * Reusa as utilidades do @sistemazero/core.
  */
 export function createHmacStrategy(opts: HmacStrategyOptions): AuthStrategy {
   return {
@@ -35,7 +37,13 @@ export function createHmacStrategy(opts: HmacStrategyOptions): AuthStrategy {
 
       const rawBody = await ensureRawBody(ctx)
       const idem = ctx.request.headers.get('idempotency-key')
-      const signed = idem ? `${idem}.${rawBody}` : rawBody
+      // O consumidor assina o path que chama NO GATEWAY (pathname, sem query).
+      const signed = canonicalHmacMessage({
+        method: ctx.request.method,
+        path: ctx.url.pathname,
+        idempotencyKey: idem,
+        body: rawBody,
+      })
       const result = verifyHmacSignature({
         secret: consumer.hmacSecret,
         body: signed,

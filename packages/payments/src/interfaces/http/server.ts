@@ -26,7 +26,7 @@ import { buildErrorResponse } from './error-handler'
 import { TooManyRequestsError } from './errors'
 import { markOversizeBody, storeRawBody } from './raw-body'
 import { adminRoutes } from './routes/admin.routes'
-import { healthRoutes } from './routes/health.routes'
+import { healthRoutes, type ReadinessProbe } from './routes/health.routes'
 import { metricsRoutes } from './routes/metrics.routes'
 import { myRoutes } from './routes/my.routes'
 import { paymentsRoutes } from './routes/payments.routes'
@@ -38,6 +38,10 @@ export interface HttpDeps {
   logger: Logger
   consumers: ConsumerRepository
   rateLimiter: InMemoryRateLimiter
+  /** Teto global de backpressure das rotas de webhook da Efí (separado do limiter por consumidor). */
+  webhookRateLimiter: InMemoryRateLimiter
+  /** Probe de readiness (`/readyz`): banco alcançável + warm-up da Efí concluído. */
+  readiness: ReadinessProbe
   processPayment: ProcessPaymentService
   getPayment: GetPaymentService
   createSubscription: CreateSubscriptionService
@@ -61,17 +65,43 @@ export interface HttpDeps {
   getMyPayment: GetMyPaymentService
 }
 
+/** Rotas de infraestrutura fora do access log (healthcheck/polling = ruído). */
+const ACCESS_LOG_SKIP = new Set(['/health', '/readyz', '/metrics'])
+
 /**
  * Monta a aplicação Elysia: parser de corpo bruto (necessário para HMAC e
- * idempotência), tratamento central de erros, Swagger/OpenAPI e as rotas.
+ * idempotência), access log com request-id, tratamento central de erros,
+ * Swagger/OpenAPI e as rotas.
  */
 export function createServer(deps: HttpDeps) {
+  // Início da request p/ medir a latência no access log (chaveado pela própria
+  // Request — GC-coletável, mesmo padrão do raw-body).
+  const requestStart = new WeakMap<Request, number>()
+
   const app = new Elysia({
     // Teto de corpo no nível do Bun (rejeita no socket ANTES de bufferizar) —
     // defesa em profundidade junto da checagem por bytes do onParse (que cobre o
     // caso de Content-Length ausente/mentiroso no `app.handle` dos testes).
     serve: { maxRequestBodySize: deps.env.MAX_REQUEST_BODY_BYTES },
   })
+    .onRequest(({ request }) => {
+      requestStart.set(request, performance.now())
+    })
+    // Access log: UMA linha por request com o X-Request-Id do gateway — é o campo
+    // que junta o `gateway.access` do gateway com os logs deste serviço num
+    // incidente. Roda também em erro (onAfterResponse cobre o caminho do onError).
+    .onAfterResponse({ as: 'global' }, ({ request, set }) => {
+      const path = new URL(request.url).pathname
+      if (ACCESS_LOG_SKIP.has(path)) return
+      const start = requestStart.get(request)
+      deps.logger.info('http.access', {
+        requestId: request.headers.get('x-request-id') ?? undefined,
+        method: request.method,
+        path,
+        status: typeof set.status === 'number' ? set.status : (set.status ?? 200),
+        durationMs: start === undefined ? undefined : Math.round(performance.now() - start),
+      })
+    })
     // Captura o corpo bruto p/ HMAC/idempotência e MARCA corpos acima do teto
     // (anti-DoS). Não lança aqui: o Elysia não preserva erros tipados no onParse
     // (viram PARSE/400). A marca é consumida nas rotas via `enforceBodyLimit`.
@@ -122,14 +152,15 @@ export function createServer(deps: HttpDeps) {
   }
 
   return app
-    .use(healthRoutes())
-    .use(metricsRoutes(deps.getMetrics))
+    .use(healthRoutes(deps.readiness))
+    .use(metricsRoutes(deps.getMetrics, deps.env.METRICS_TOKEN))
     .use(
       webhooksRoutes({
         handleWebhook: deps.handleWebhook,
         handleBoletoNotification: deps.handleBoletoNotification,
         logger: deps.logger,
         webhookSecret: deps.env.EFI_WEBHOOK_SECRET,
+        rateLimiter: deps.webhookRateLimiter,
       }),
     )
     .use(

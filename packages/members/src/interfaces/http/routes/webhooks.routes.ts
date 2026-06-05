@@ -37,6 +37,8 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
     if (isOversizeBody(request)) throw new PayloadTooLargeError()
     assertWebhookSignature({
       secret: deps.webhookSecret,
+      method: request.method,
+      path: new URL(request.url).pathname,
       rawBody: getRawBody(request),
       signatureHeader: headers['x-signature'],
       toleranceSeconds: deps.toleranceSeconds,

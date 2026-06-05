@@ -138,10 +138,12 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
         members acha as próprias matrículas por subscriptionId e revoga/expira.
 ```
 
-- **Webhooks de entrada** verificam HMAC sobre o corpo BRUTO com `GATEWAY_HMAC_SECRET`
-  (= segredo de resign do gateway), header `x-signature: t=,v1=`. HMAC é checado no
-  hook `transform` (**antes** da validação do corpo → 401 antes de 422). Dedupe por
-  `x-delivery-id` (tabela `processed_webhooks`). Falha de concessão → o funil devolve
+- **Webhooks de entrada** verificam HMAC sobre a mensagem canônica
+  `"<MÉTODO>.<path>.<corpo BRUTO>"` (06/2026 — método+path impedem replay
+  cross-endpoint) com `GATEWAY_HMAC_SECRET` (= segredo de resign do gateway),
+  header `x-signature: t=,v1=`. HMAC é checado no hook `transform` (**antes** da
+  validação do corpo → 401 antes de 422). Dedupe por `x-delivery-id` (tabela
+  `processed_webhooks`). Falha de concessão → o funil devolve
   502 e o gateway re-entrega (members é idempotente pela `idempotencyKey`).
 - **Grant de oferta não resolvida** (catálogo 404) → `/webhooks/grant` devolve **502 e
   NÃO marca a entrega** (auto-cura uma corrida; uma divergência de slug permanente

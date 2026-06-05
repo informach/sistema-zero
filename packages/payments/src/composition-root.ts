@@ -25,6 +25,7 @@ import { EfiPaymentGateway } from './infrastructure/gateways/efi/efi.gateway'
 import { EfiCobrancasClient } from './infrastructure/gateways/efi/efi-cobrancas.client'
 import { createLogger, type Logger } from './infrastructure/logging/logger'
 import { OutboxPoller } from './infrastructure/outbox/outbox-poller'
+import { CachingConsumerRepository } from './infrastructure/persistence/caching-consumer-repository'
 import { PG_CHANNELS } from './infrastructure/persistence/drizzle/channels'
 import { DrizzleConsumerRepository } from './infrastructure/persistence/drizzle/consumer.repository'
 import { createDbConnection, type DbConnection } from './infrastructure/persistence/drizzle/db'
@@ -55,6 +56,14 @@ const IDEMPOTENCY_TTL_SECONDS = 24 * 60 * 60
  */
 const EFI_TOKEN_REWARM_INTERVAL_MS = 45 * 60 * 1000
 
+/**
+ * Chave do advisory lock do ciclo de limpeza/retenção ('payments' em ASCII
+ * int8; string + cast ::bigint — o driver não tipa BigInt como parâmetro). O
+ * espaço de advisory locks é GLOBAL ao banco compartilhado do monorepo — a
+ * constante precisa ser única entre os serviços.
+ */
+const RETENTION_ADVISORY_LOCK_KEY = '8103081227979411315'
+
 export interface Application {
   logger: Logger
   start(): Promise<void>
@@ -84,7 +93,9 @@ export function createApplication(env: Env): Application {
   const planRegistry = new DrizzleSubscriptionPlanRegistry(db)
   const idempotency = new DrizzleIdempotencyStore(db)
   const outboxRepo = new DrizzleOutboxRepository(db)
-  const consumers = new DrizzleConsumerRepository(db)
+  // Cache TTL 30s: o consumer é lido em TODA request autenticada e em toda
+  // entrega de webhook; o conjunto é minúsculo/quase estático (db:seed).
+  const consumers = new CachingConsumerRepository(new DrizzleConsumerRepository(db), 30_000)
   const webhookInbox = new DrizzleWebhookInbox(db)
   const webhookDeliveries = new DrizzleWebhookDeliveryRepository(db)
   const metrics = new DrizzleMetricsRepository(db)
@@ -133,6 +144,8 @@ export function createApplication(env: Env): Application {
   })
 
   const rateLimiter = new InMemoryRateLimiter(env.RATE_LIMIT_PER_MINUTE)
+  // Teto global das rotas de webhook (chave única, não por consumidor/IP).
+  const webhookRateLimiter = new InMemoryRateLimiter(env.WEBHOOK_RATE_LIMIT_PER_MINUTE)
 
   // Worker do modo assíncrono (só roda quando ASYNC_CHARGE_CREATION=true).
   const chargeWorker = new ChargeCreationWorker(payments, gateway, logger, {
@@ -222,12 +235,35 @@ export function createApplication(env: Env): Application {
   const listMyPayments = new ListMyPaymentsService(paymentsMyRead)
   const getMyPayment = new GetMyPaymentService(paymentsMyRead)
 
+  // Readiness (`/readyz`, healthcheck do Railway): a réplica só é promovida
+  // quando o banco responde E o warm-up da Efí TERMINOU (sucesso OU falha — o
+  // warm-up é best-effort; Efí fora do ar no boot não pode brickar o deploy, mas
+  // promover ANTES da tentativa reintroduz o 502 do PIX frio no redeploy).
+  let efiWarmupSettled = false
+  const markWarmupSettled = () => {
+    efiWarmupSettled = true
+  }
+  const readiness = async () => {
+    const checks: Record<string, string> = {
+      db: 'ok',
+      efiWarmup: efiWarmupSettled ? 'ok' : 'pending',
+    }
+    try {
+      await connection.sql`select 1`
+    } catch {
+      checks.db = 'error'
+    }
+    return { ready: checks.db === 'ok' && efiWarmupSettled, checks }
+  }
+
   // Borda HTTP
   const server = createServer({
     env,
     logger,
     consumers,
     rateLimiter,
+    webhookRateLimiter,
+    readiness,
     processPayment,
     getPayment,
     createSubscription,
@@ -266,40 +302,56 @@ export function createApplication(env: Env): Application {
       }
       // Limpeza periódica (fora do hot path): chaves de idempotência expiradas +
       // retenção das tabelas append-only (outbox/webhook_events/webhook_deliveries)
-      // para não crescerem sem limite.
-      cleanupTimer = setInterval(() => {
-        void idempotency.cleanupExpired().catch((error) =>
-          logger.error('idempotency.cleanup.failed', {
-            error: error instanceof Error ? error.message : String(error),
-          }),
-        )
-        const cutoff = new Date(Date.now() - env.RETENTION_DAYS * 24 * 60 * 60 * 1000)
-        void Promise.all([
-          outboxRepo.cleanup(cutoff),
-          webhookInbox.cleanup(cutoff),
-          webhookDeliveries.cleanup(cutoff),
-        ])
-          .then(([outboxRows, webhookEventRows, deliveryRows]) => {
-            if (outboxRows + webhookEventRows + deliveryRows > 0) {
-              logger.info('retention.cleaned', {
-                outbox: outboxRows,
-                webhookEvents: webhookEventRows,
-                deliveries: deliveryRows,
-              })
-            }
-          })
-          .catch((error) =>
-            logger.error('retention.cleanup.failed', {
+      // para não crescerem sem limite. O advisory lock garante que SÓ UMA réplica
+      // executa o ciclo (N réplicas disparando os mesmos DELETEs = carga ×N +
+      // contenção de lock à toa); xact-lock → solta sozinho no commit/crash.
+      const runCleanupCycle = async () => {
+        await connection.sql.begin(async (gate) => {
+          const [row] = await gate`
+            select pg_try_advisory_xact_lock(${RETENTION_ADVISORY_LOCK_KEY}::bigint) as locked
+          `
+          if (!row?.['locked']) return // outra réplica está limpando neste ciclo
+          // ⚠️ A transação-gate fica idle enquanto os DELETEs rodam no pool — o
+          // idle_in_transaction_session_timeout (30s) a mata se a limpeza passar
+          // disso (o lock solta e outra réplica pode assumir; DELETEs são
+          // idempotentes, então é seguro — só perde a exclusividade).
+          await idempotency.cleanupExpired().catch((error) =>
+            logger.error('idempotency.cleanup.failed', {
               error: error instanceof Error ? error.message : String(error),
             }),
           )
+          const cutoff = new Date(Date.now() - env.RETENTION_DAYS * 24 * 60 * 60 * 1000)
+          const [outboxRows, webhookEventRows, deliveryRows] = await Promise.all([
+            outboxRepo.cleanup(cutoff),
+            webhookInbox.cleanup(cutoff),
+            webhookDeliveries.cleanup(cutoff),
+          ])
+          if (outboxRows + webhookEventRows + deliveryRows > 0) {
+            logger.info('retention.cleaned', {
+              outbox: outboxRows,
+              webhookEvents: webhookEventRows,
+              deliveries: deliveryRows,
+            })
+          }
+        })
+      }
+      cleanupTimer = setInterval(() => {
+        void runCleanupCycle().catch((error) =>
+          logger.error('retention.cleanup.failed', {
+            error: error instanceof Error ? error.message : String(error),
+          }),
+        )
       }, env.IDEMPOTENCY_CLEANUP_INTERVAL_MS)
-      server.listen(env.PORT)
-      logger.info('http.listening', { port: env.PORT })
+      // `::` = dual-stack (IPv4+IPv6) — necessário p/ o private networking do
+      // Railway (`payments.railway.internal` resolve IPv6).
+      server.listen({ port: env.PORT, hostname: env.HOST })
+      logger.info('http.listening', { port: env.PORT, host: env.HOST })
       // Pré-aquece os tokens OAuth da Efí (best-effort, fora do caminho da request).
       // O 1º handshake mTLS do Pix é caro (~15s no cold-start) e, sem isto, a 1ª
-      // cobrança pós-restart estoura o timeout → 502 no funil. Não bloqueia o boot.
-      void efiClient
+      // cobrança pós-restart estoura o timeout → 502 no funil. Não bloqueia o boot,
+      // mas o `/readyz` (healthcheck do Railway) só fica pronto quando AMBOS os
+      // warm-ups terminam — a réplica nova não recebe tráfego com a Efí fria.
+      const pixWarmup = efiClient
         .warmUp()
         .then(() => logger.info('efi.pix.token.warmed'))
         .catch((error) =>
@@ -307,7 +359,7 @@ export function createApplication(env: Env): Application {
             error: error instanceof Error ? error.message : String(error),
           }),
         )
-      void cobrancasClient
+      const cobrancasWarmup = cobrancasClient
         .warmUp()
         .then(() => logger.info('efi.cobrancas.token.warmed'))
         .catch((error) =>
@@ -315,6 +367,7 @@ export function createApplication(env: Env): Application {
             error: error instanceof Error ? error.message : String(error),
           }),
         )
+      void Promise.allSettled([pixWarmup, cobrancasWarmup]).then(markWarmupSettled)
       // Re-warm periódico do token Pix: sem isto, o 1º checkout após >1h do boot
       // paga a re-autenticação mTLS (~15-16s) DENTRO da request → timeout → 502.
       rewarmTimer = setInterval(() => {

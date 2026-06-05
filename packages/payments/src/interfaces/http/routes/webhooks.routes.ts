@@ -1,4 +1,3 @@
-import { timingSafeEqual } from 'node:crypto'
 import { Elysia } from 'elysia'
 import type { HandleBoletoNotificationService } from '../../../application/handle-boleto-notification/handle-boleto-notification.service'
 import type {
@@ -6,29 +5,33 @@ import type {
   PixWebhookItem,
 } from '../../../application/handle-provider-webhook/handle-provider-webhook.service'
 import type { Logger } from '../../../infrastructure/logging/logger'
-import { PayloadTooLargeError } from '../errors'
+import type { InMemoryRateLimiter } from '../../../infrastructure/security/rate-limiter'
+import { PayloadTooLargeError, TooManyRequestsError } from '../errors'
 import { isOversizeBody } from '../raw-body'
+import { safeEqual } from '../safe-equal'
 
 export interface WebhooksRoutesDeps {
   handleWebhook: HandleProviderWebhookService
   handleBoletoNotification: HandleBoletoNotificationService
   logger: Logger
   /**
-   * Segredo compartilhado opcional. Quando definido, a Efí deve incluí-lo no
-   * registro do webhook (`?token=<segredo>` ou header `x-webhook-token`); sem ele
-   * a requisição é recusada (401). Quando ausente, a proteção é só o mTLS na borda
-   * + a re-consulta na Efí (comportamento legado).
+   * Segredo compartilhado opcional em dev; em produção o boot o EXIGE (refine no
+   * env). A Efí deve incluí-lo no registro do webhook (`?token=<segredo>` ou
+   * header `x-webhook-token`); sem ele a requisição é recusada (401). Quando
+   * ausente, a proteção é só a re-consulta na Efí (comportamento legado, só dev).
    */
   webhookSecret?: string
+  /**
+   * Teto GLOBAL de backpressure (chave única, não por IP — o XFF do webhook não é
+   * confiável p/ punir por IP). Cada item de webhook custa 1 INSERT + 1 chamada à
+   * Efí; sem teto, payloads forjados em volume esgotam pool/budget da Efí. Um 429
+   * não perde pagamento: a Efí re-tenta e a reconciliação é a rede de segurança.
+   */
+  rateLimiter: InMemoryRateLimiter
 }
 
-/** Comparação em tempo constante de strings (evita timing oracle no token). */
-function safeEqual(a: string, b: string): boolean {
-  const ab = Buffer.from(a)
-  const bb = Buffer.from(b)
-  if (ab.length !== bb.length) return false
-  return timingSafeEqual(ab, bb)
-}
+/** Chave única do rate limit global dos webhooks (limite agregado da rota). */
+const WEBHOOK_RATE_KEY = 'efi-webhook'
 
 /**
  * Webhook do Pix (Efí). A autenticidade vem do mTLS na borda, da **re-consulta da
@@ -43,9 +46,15 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
     return !!token && safeEqual(token, deps.webhookSecret)
   }
 
+  const checkRateLimit = () => {
+    const limit = deps.rateLimiter.check(WEBHOOK_RATE_KEY)
+    if (!limit.allowed) throw new TooManyRequestsError(limit.retryAfterSeconds)
+  }
+
   return (
     new Elysia({ prefix: '/webhooks' })
       .post('/efi/pix', async ({ body, set, query, headers, request }) => {
+        checkRateLimit()
         if (isOversizeBody(request)) throw new PayloadTooLargeError()
         if (!checkSecret(query, headers)) {
           deps.logger.warn('webhook.unauthorized')
@@ -67,6 +76,7 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
       // a re-consulta na Efí é a âncora de confiança (como no Pix). Aceita o token
       // por JSON `{notification}`, form-urlencoded `notification=<t>` ou `?token=`.
       .post('/efi/cobrancas', async ({ body, set, query, headers, request }) => {
+        checkRateLimit()
         if (isOversizeBody(request)) throw new PayloadTooLargeError()
         if (!checkSecret(query, headers)) {
           deps.logger.warn('webhook.unauthorized')

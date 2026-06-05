@@ -68,6 +68,16 @@ export class ReconciliationWorker {
                 expected: payment.amount.amountInCents.toString(),
                 got: charge.amountInCents.toString(),
               })
+              // Flag durável (contador no /metrics + revisão no admin); o no-op
+              // do já-flagado evita re-salvar a cada varredura da reconciliação.
+              if (
+                payment.flagAmountMismatch({
+                  expectedInCents: payment.amount.amountInCents,
+                  paidInCents: charge.amountInCents,
+                })
+              ) {
+                await this.payments.save(payment)
+              }
               continue
             }
             payment.markPaid(charge.paidAt)

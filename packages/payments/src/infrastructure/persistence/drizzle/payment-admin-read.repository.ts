@@ -7,7 +7,6 @@ import {
   ilike,
   inArray,
   isNotNull,
-  isNull,
   lte,
   or,
   type SQL,
@@ -207,41 +206,50 @@ export class DrizzlePaymentAdminReadRepository implements PaymentAdminReadReposi
   }
 
   async ops(): Promise<PaymentOpsSnapshot> {
-    const [
-      [outboxPending],
-      [outboxDead],
-      [awaitingCharge],
-      [deliveriesPending],
-      [deliveriesDead],
-      [reconcilePending],
-    ] = await Promise.all([
-      this.db.select({ v: count() }).from(outbox).where(eq(outbox.status, 'PENDING')),
-      this.db.select({ v: count() }).from(outbox).where(eq(outbox.status, 'DEAD')),
+    // 1 query por tabela com `count(*) FILTER` (era 6 counts paralelos = 6
+    // conexões do pool por chamada — o painel polling esse endpoint disputava o
+    // pool com o hot path). Os WHERE preservam o uso dos índices por status.
+    const [[outboxRow], [paymentsRow], [deliveriesRow]] = await Promise.all([
       this.db
-        .select({ v: count() })
+        .select({
+          pending: sql<number>`(count(*) filter (where ${outbox.status} = 'PENDING'))::int`,
+          dead: sql<number>`(count(*) filter (where ${outbox.status} = 'DEAD'))::int`,
+          oldestPendingAgeSeconds: sql<
+            number | null
+          >`floor(extract(epoch from (now() - min(${outbox.createdAt}) filter (where ${outbox.status} = 'PENDING'))))::int`,
+        })
+        .from(outbox)
+        .where(inArray(outbox.status, ['PENDING', 'DEAD'])),
+      this.db
+        .select({
+          awaitingCharge: sql<number>`(count(*) filter (where ${payments.providerPaymentId} is null))::int`,
+          reconcilePending: sql<number>`(count(*) filter (where ${payments.providerPaymentId} is not null))::int`,
+          amountMismatch: sql<number>`(count(*) filter (where ${payments.metadata} ? 'amountMismatch'))::int`,
+        })
         .from(payments)
-        .where(and(eq(payments.status, 'PENDING'), isNull(payments.providerPaymentId))),
+        .where(eq(payments.status, 'PENDING')),
       this.db
-        .select({ v: count() })
+        .select({
+          pending: sql<number>`(count(*) filter (where ${webhookDeliveries.status} = 'PENDING'))::int`,
+          dead: sql<number>`(count(*) filter (where ${webhookDeliveries.status} = 'DEAD'))::int`,
+          oldestPendingAgeSeconds: sql<
+            number | null
+          >`floor(extract(epoch from (now() - min(${webhookDeliveries.createdAt}) filter (where ${webhookDeliveries.status} = 'PENDING'))))::int`,
+        })
         .from(webhookDeliveries)
-        .where(eq(webhookDeliveries.status, 'PENDING')),
-      this.db
-        .select({ v: count() })
-        .from(webhookDeliveries)
-        .where(eq(webhookDeliveries.status, 'DEAD')),
-      this.db
-        .select({ v: count() })
-        .from(payments)
-        .where(and(eq(payments.status, 'PENDING'), isNotNull(payments.providerPaymentId))),
+        .where(inArray(webhookDeliveries.status, ['PENDING', 'DEAD'])),
     ])
 
     return {
-      outboxPending: outboxPending?.v ?? 0,
-      outboxDead: outboxDead?.v ?? 0,
-      paymentsAwaitingCharge: awaitingCharge?.v ?? 0,
-      webhookDeliveriesPending: deliveriesPending?.v ?? 0,
-      webhookDeliveriesDead: deliveriesDead?.v ?? 0,
-      reconcilePending: reconcilePending?.v ?? 0,
+      outboxPending: outboxRow?.pending ?? 0,
+      outboxDead: outboxRow?.dead ?? 0,
+      paymentsAwaitingCharge: paymentsRow?.awaitingCharge ?? 0,
+      webhookDeliveriesPending: deliveriesRow?.pending ?? 0,
+      webhookDeliveriesDead: deliveriesRow?.dead ?? 0,
+      reconcilePending: paymentsRow?.reconcilePending ?? 0,
+      outboxOldestPendingAgeSeconds: outboxRow?.oldestPendingAgeSeconds ?? null,
+      webhookDeliveriesOldestPendingAgeSeconds: deliveriesRow?.oldestPendingAgeSeconds ?? null,
+      amountMismatchPending: paymentsRow?.amountMismatch ?? 0,
     }
   }
 

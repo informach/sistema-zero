@@ -209,11 +209,10 @@ export class PaymentAggregate extends AggregateRoot<string> {
           `Pagamento ${snapshot.id} é CREDIT_CARD mas não tem dados de cartão persistidos`,
         )
       }
-      // Ciclo de assinatura é persistido sem token (a Efí guarda o cartão) →
-      // reidrata via `recurringCard`; cartão avulso mantém o token via `creditCard`.
-      method = snapshot.card.token
-        ? PaymentMethod.creditCard(snapshot.card)
-        : PaymentMethod.recurringCard(snapshot.card)
+      // O token NÃO é persistido (single-use, consumido na cobrança — ver
+      // snapshotToRow) → reidrata via `storedCard`, que preserva as parcelas e
+      // tolera linhas legadas com token.
+      method = PaymentMethod.storedCard(snapshot.card)
     } else if (snapshot.methodType === 'BOLETO') {
       method = PaymentMethod.boleto()
     } else {
@@ -323,6 +322,28 @@ export class PaymentAggregate extends AggregateRoot<string> {
       }
     }
     this.addEvent(new PaymentRefundedEvent(this.id, { consumerId: this.state.consumerId }))
+  }
+
+  /**
+   * Registra divergência entre o valor PAGO no provedor e o valor cobrado
+   * (`metadata.amountMismatch`) — NÃO muda o status (fica PENDING, revisão
+   * manual) nem emite evento. Durável e contável: alimenta o contador de
+   * `/metrics`/`/ops` e aparece no detalhe do pagamento no painel admin.
+   * Idempotente: já flagado → no-op e retorna `false` (o chamador pula o save —
+   * senão a reconciliação re-salvaria o mesmo flag a cada varredura).
+   */
+  flagAmountMismatch(info: { expectedInCents: bigint; paidInCents: bigint }): boolean {
+    if (this.state.metadata['amountMismatch']) return false
+    this.state.metadata = {
+      ...this.state.metadata,
+      amountMismatch: {
+        expected: info.expectedInCents.toString(),
+        got: info.paidInCents.toString(),
+        at: new Date().toISOString(),
+      },
+    }
+    this.touch()
+    return true
   }
 
   private transitionTo(target: PaymentStatus): void {
