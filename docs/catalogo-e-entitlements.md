@@ -108,6 +108,22 @@ O rascunho é livre (cadastro progressivo). **Ativar** um produto exige ele pron
 
 O formulário bloqueia com aviso e o backend valida de novo (defesa em profundidade).
 
+## A oferta no funil de vendas (o que muda onde)
+
+O funil é **mono-oferta**: vende a oferta apontada pela env **`CATALOG_OFFER_SLUG`** do host
+do funil. Ele **não tem preço próprio** — busca a oferta no catálogo em runtime (cache ~60s)
+e cobra sempre pela cotação do servidor. Três camadas:
+
+| Quero mudar… | Onde | Precisa deploy? |
+|---|---|---|
+| Preço, preço "de", parcelas, garantia, janela, cupom on/off, bônus, cupons | **Painel → Catálogo** (Ofertas/Cupons) | Não — reflete em ~1 min |
+| **Parar a venda** (emergência) | Oferta → status `paused` (checkout passa a responder "oferta não disponível") | Não |
+| QUAL oferta o funil vende | env `CATALOG_OFFER_SLUG` no host do funil | Restart |
+| Copy/layout/imagens da página de vendas | Código do funil (`src/content/`) | Sim |
+
+Promoção do dia a dia = editar o preço da oferta ou criar **cupom** (quem já comprou mantém o
+acesso — snapshot congelado). Trocar a env é só quando o funil muda de **produto**.
+
 ## A página de vendas do curso (o cadeado do catálogo)
 
 Na área do aluno, a página "Todos os cursos" mostra **cadeado** nos cursos que o aluno
