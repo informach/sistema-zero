@@ -52,6 +52,28 @@ bun run dev           # ou, na raiz: bun run dev:payments
   (`NODE_ENV != production`); em produção não é montado (não expõe o mapa de rotas).
 - Health: `GET /health`
 
+## Cartões de teste (sandbox da Efí)
+
+Com `EFI_SANDBOX=true`, **qualquer número de cartão Luhn-válido funciona** e o **último
+dígito** do número simula o resultado:
+
+| Final | Resultado | Exemplo (Visa, Luhn-válido) |
+|---|---|---|
+| `1` | Recusado — "Dados do cartão inválidos" | `4485 7856 0000 0071` |
+| `2` | Recusado — "não autorizada por motivos de segurança" | `4485 7856 0000 0022` |
+| `3` | Recusado — "tente novamente mais tarde" | `4485 7856 0000 0063` |
+| qualquer outro | ✅ **Aprovado** | `4485 7856 7429 0087` |
+
+- **Validade:** qualquer data futura · **CVV:** 3 dígitos (4 para Amex).
+- **CPF** do titular: use um válido, ex. `529.982.247-25`.
+- Cobranças de homologação ficam entre **R$ 0,01 e R$ 10,00**.
+- **Pix em sandbox:** a cobrança é criada de verdade (QR/copia-e-cola reais), mas **não
+  compensa sozinha** — não há como "pagar" o QR de teste.
+- A tokenização do cartão (`payment_token`) é feita no **browser do consumidor** (ex.: o
+  checkout do funil, via `payment-token-efi`); o payments recebe só o token. Ao testar o
+  checkout ponta a ponta, mantenha o **adblock desligado** (o fingerprint antifraude da
+  ClearSale roda na página).
+
 ## Autenticação service-to-service
 
 Todo consumidor é cadastrado na tabela `consumers` com: `allowed_cidrs` (IP
