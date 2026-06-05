@@ -15,7 +15,6 @@ export interface WhatsAppInstanceProps {
   messagesSinceRest: number
   nextAvailableAt: Date
   warmupStartedAt: Date | null
-  weight: number
   version: number
   createdAt: Date
   updatedAt: Date
@@ -26,7 +25,6 @@ export interface CreateWhatsAppInstanceInput {
   instanceName: string
   phoneNumber: string
   dailyCap?: number
-  weight?: number
   /** Inicia em aquecimento (teto reduzido nos primeiros dias). */
   warmup?: boolean
   now: Date
@@ -63,7 +61,6 @@ export class WhatsAppInstance extends AggregateRoot<string> {
       messagesSinceRest: 0,
       nextAvailableAt: input.now,
       warmupStartedAt: input.warmup ? input.now : null,
-      weight: input.weight ?? 1,
       version: 0,
       createdAt: input.now,
       updatedAt: input.now,
@@ -133,9 +130,6 @@ export class WhatsAppInstance extends AggregateRoot<string> {
   }
   get enabled(): boolean {
     return this.props.enabled
-  }
-  get weight(): number {
-    return this.props.weight
   }
   get version(): number {
     return this.props.version

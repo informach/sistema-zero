@@ -7,7 +7,7 @@ import {
   UnauthorizedError,
 } from '@sistemazero/core/http'
 import type { Logger } from '@sistemazero/core/logging'
-import { ConcurrencyConflictError } from '../../infrastructure/persistence/drizzle/concurrency.error'
+import { ConcurrencyConflictError } from '../../domain/ports/concurrency.error'
 
 export type { ErrorEnvelope }
 

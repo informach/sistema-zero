@@ -21,9 +21,11 @@ const rng: Rng = { float: () => 0, intBetween: () => FIXED }
 function config(over: Partial<SendWorkerConfig> = {}): SendWorkerConfig {
   return {
     intervalMs: 1000,
+    emailRatePerSec: 2,
     emailBatchSize: 2,
     whatsappBatchSize: 10,
     laneLeaseMs: 60_000,
+    claimLeaseMs: 600_000,
     pacing: {
       minDelayMs: 15_000,
       maxDelayMs: 45_000,
@@ -153,6 +155,78 @@ describe('SendWorker — e-mail (throttle por lote)', () => {
     const m = [...h.messages.store.values()][0]
     expect(m?.status).toBe('FAILED')
     expect(m?.state.failureCode).toBe('NO_SENDER')
+  })
+
+  it('token bucket: ticks back-to-back (NOTIFY) não furam a taxa', async () => {
+    // 1º tick consome o bucket inteiro (2); 2º tick no MESMO instante → 0 tokens.
+    await h.worker.tick()
+    expect(h.email.sent).toHaveLength(2)
+    await h.worker.tick()
+    expect(h.email.sent).toHaveLength(2)
+    const queued = [...h.messages.store.values()].filter((m) => m.status === 'QUEUED')
+    expect(queued).toHaveLength(1)
+  })
+
+  it('falha no update de UMA mensagem não derruba o resto do lote', async () => {
+    const ids = [...h.messages.store.keys()]
+    h.messages.failNextUpdateFor.add(ids[0] as string)
+    await h.worker.tick()
+    // A 1ª falhou o update (fica SENDING p/ o reaper); a 2ª foi enviada normalmente.
+    expect(h.messages.store.get(ids[0] as string)?.status).toBe('SENDING')
+    expect(h.messages.store.get(ids[1] as string)?.status).toBe('SENT')
+  })
+})
+
+describe('SendWorker — reaper de SENDING preso (lease de claim)', () => {
+  it('re-reivindica mensagem presa em SENDING com lease vencido e envia', async () => {
+    const h = harness()
+    await h.senders.create(
+      EmailSender.create({
+        id: 'sender-1',
+        fromEmail: 'no-reply@sistemazero.com',
+        fromName: 'SZ',
+        now: NOW,
+      }),
+    )
+    // Simula crash pós-claim: SENDING com nextAttemptAt (lease) já vencido.
+    const stuck = emailMessage()
+    stuck.startSending()
+    await h.messages.create(stuck)
+
+    await h.worker.tick()
+    const m = h.messages.store.get(stuck.id)
+    expect(m?.status).toBe('SENT')
+    expect(m?.state.attempts).toBe(1) // re-claim de SENDING incrementa attempts
+  })
+
+  it('claim zumbi além do teto de tentativas → FAILED sem chamar o provedor', async () => {
+    const h = harness()
+    await h.senders.create(
+      EmailSender.create({
+        id: 'sender-1',
+        fromEmail: 'no-reply@sistemazero.com',
+        fromName: 'SZ',
+        now: NOW,
+      }),
+    )
+    const stuck = Message.create({
+      id: 'm-zumbi',
+      channel: 'email',
+      templateKey: 'welcome',
+      recipient: { name: 'Helena', email: 'helena@example.com' },
+      renderedSubject: 'Oi',
+      renderedBody: '<p>Oi</p>',
+      senderId: 'sender-1',
+      maxAttempts: 1,
+      now: NOW,
+    })
+    stuck.startSending()
+    await h.messages.create(stuck)
+
+    await h.worker.tick()
+    const m = h.messages.store.get('m-zumbi')
+    expect(m?.status).toBe('FAILED')
+    expect(h.email.sent).toHaveLength(0)
   })
 })
 

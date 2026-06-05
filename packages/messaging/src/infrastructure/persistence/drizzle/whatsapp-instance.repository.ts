@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, lte } from 'drizzle-orm'
+import { and, asc, count, desc, eq, lte, sql } from 'drizzle-orm'
 import {
   WhatsAppInstance,
   type WhatsAppInstanceProps,
@@ -29,7 +29,6 @@ function toRow(i: WhatsAppInstance): typeof whatsappInstances.$inferInsert {
     messagesSinceRest: p.messagesSinceRest,
     nextAvailableAt: p.nextAvailableAt,
     warmupStartedAt: p.warmupStartedAt,
-    weight: p.weight,
     version: p.version,
     createdAt: p.createdAt,
     updatedAt: p.updatedAt,
@@ -48,7 +47,6 @@ function toAggregate(row: InstanceRow): WhatsAppInstance {
     messagesSinceRest: row.messagesSinceRest,
     nextAvailableAt: row.nextAvailableAt,
     warmupStartedAt: row.warmupStartedAt,
-    weight: row.weight,
     version: row.version,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
@@ -129,9 +127,15 @@ export class DrizzleWhatsAppInstanceRepository implements WhatsAppInstanceReposi
         const inst = toAggregate(row)
         if (!isLaneAvailable(inst.snapshot(), config, now)) continue
         // Reserva (lease): empurra o próximo horário p/ frente enquanto envia.
+        // Bump de version: um update admin/webhook carregado ANTES desta escrita
+        // conflita (em vez de regravar contadores de ritmo velhos por cima).
         await tx
           .update(whatsappInstances)
-          .set({ nextAvailableAt: new Date(now.getTime() + leaseMs), updatedAt: now })
+          .set({
+            nextAvailableAt: new Date(now.getTime() + leaseMs),
+            updatedAt: now,
+            version: sql`${whatsappInstances.version} + 1`,
+          })
           .where(eq(whatsappInstances.id, row.id))
         return inst
       }
@@ -148,6 +152,7 @@ export class DrizzleWhatsAppInstanceRepository implements WhatsAppInstanceReposi
         dayCursor: update.dayCursor,
         nextAvailableAt: update.nextAvailableAt,
         updatedAt: new Date(),
+        version: sql`${whatsappInstances.version} + 1`,
       })
       .where(eq(whatsappInstances.id, id))
   }
@@ -155,7 +160,11 @@ export class DrizzleWhatsAppInstanceRepository implements WhatsAppInstanceReposi
   async delayLane(id: string, until: Date): Promise<void> {
     await this.db
       .update(whatsappInstances)
-      .set({ nextAvailableAt: until, updatedAt: new Date() })
+      .set({
+        nextAvailableAt: until,
+        updatedAt: new Date(),
+        version: sql`${whatsappInstances.version} + 1`,
+      })
       .where(eq(whatsappInstances.id, id))
   }
 }

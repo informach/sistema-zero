@@ -22,18 +22,21 @@ import type {
   ListTemplatesService,
   UpdateTemplateService,
 } from '../../application/templates/template-admin.service'
+import type { Clock } from '../../domain/ports/clock.port'
 import type { Env } from '../../infrastructure/config/env'
 import type { Logger } from '../../infrastructure/logging/logger'
 import { buildErrorResponse } from './error-handler'
 import { isOversizeBody, markOversizeBody, storeRawBody } from './raw-body'
 import { adminRoutes } from './routes/admin.routes'
-import { healthRoutes } from './routes/health.routes'
+import { healthRoutes, type ReadinessProbe } from './routes/health.routes'
 import { sendRoutes } from './routes/send.routes'
 import { webhooksRoutes } from './routes/webhooks.routes'
 
 export interface HttpDeps {
   env: Env
   logger: Logger
+  clock: Clock
+  readiness: ReadinessProbe
   sendMessage: SendMessageService
   getMessage: GetMessageService
   listMessages: ListMessagesService
@@ -104,7 +107,7 @@ export function createServer(deps: HttpDeps) {
   }
 
   return app
-    .use(healthRoutes())
+    .use(healthRoutes(deps.readiness))
     .use(
       sendRoutes({
         sendMessage: deps.sendMessage,
@@ -133,8 +136,10 @@ export function createServer(deps: HttpDeps) {
         applyStatus: deps.applyStatus,
         setConnection: deps.setConnection,
         logger: deps.logger,
+        clock: deps.clock,
         sendgridPublicKey: deps.env.SENDGRID_WEBHOOK_PUBLIC_KEY,
         webhookToken: deps.env.MESSAGING_WEBHOOK_TOKEN,
+        timestampToleranceSeconds: deps.env.WEBHOOK_TIMESTAMP_TOLERANCE_SECONDS,
       }),
     )
 }

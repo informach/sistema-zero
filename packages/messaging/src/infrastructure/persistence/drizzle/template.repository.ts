@@ -81,14 +81,12 @@ export class DrizzleTemplateRepository implements TemplateRepository {
   }
 
   async list(query: ListTemplatesQuery): Promise<{ items: Template[]; total: number }> {
+    // Escapa os curingas do LIKE (`%`/`_`) e o próprio escape (`\`) — um `q`
+    // com `%` viraria match-tudo (busca literal, não padrão).
+    const like = query.q ? `%${query.q.replace(/[\\%_]/g, '\\$&')}%` : null
     const conditions = [
       query.channel ? eq(messageTemplates.channel, query.channel) : undefined,
-      query.q
-        ? or(
-            ilike(messageTemplates.name, `%${query.q}%`),
-            ilike(messageTemplates.key, `%${query.q}%`),
-          )
-        : undefined,
+      like ? or(ilike(messageTemplates.name, like), ilike(messageTemplates.key, like)) : undefined,
     ].filter(Boolean)
     const where = conditions.length > 0 ? and(...conditions) : undefined
 

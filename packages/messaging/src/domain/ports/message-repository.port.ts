@@ -24,9 +24,12 @@ export interface MessageRepository {
 
   /**
    * Reivindica (atômico, `FOR UPDATE SKIP LOCKED`) até `limit` e-mails DEVIDOS,
-   * marcando-os SENDING. Seguro com várias réplicas. Retorna os agregados em SENDING.
+   * marcando-os SENDING com um LEASE (`nextAttemptAt = now + leaseMs`). Mensagens
+   * presas em SENDING com lease vencido são RE-reivindicadas (reaper — recupera
+   * crash entre o claim e o update), incrementando `attempts` para garantir término.
+   * Seguro com várias réplicas. Retorna os agregados em SENDING.
    */
-  claimDueEmail(limit: number, now: Date): Promise<Message[]>
-  /** Reivindica UMA mensagem de WhatsApp devida (SKIP LOCKED), marcando SENDING. */
-  claimNextWhatsApp(now: Date): Promise<Message | null>
+  claimDueEmail(limit: number, now: Date, leaseMs: number): Promise<Message[]>
+  /** Reivindica UMA mensagem de WhatsApp devida (SKIP LOCKED, mesmo lease/reaper). */
+  claimNextWhatsApp(now: Date, leaseMs: number): Promise<Message | null>
 }

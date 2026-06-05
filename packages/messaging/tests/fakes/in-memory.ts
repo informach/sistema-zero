@@ -1,11 +1,16 @@
 import type { Logger } from '@sistemazero/core/logging'
 import type { WhatsAppInstance } from '../../src/domain/lane/whatsapp-instance.aggregate'
-import type { Message } from '../../src/domain/message/message.aggregate'
+import { Message } from '../../src/domain/message/message.aggregate'
+import { IdempotencyConflictError } from '../../src/domain/message/message.errors'
+import { ConcurrencyConflictError } from '../../src/domain/ports/concurrency.error'
 import type {
   ListMessagesQuery,
   MessageRepository,
 } from '../../src/domain/ports/message-repository.port'
-import type { SenderRepository } from '../../src/domain/ports/sender-repository.port'
+import type {
+  SaveSenderOptions,
+  SenderRepository,
+} from '../../src/domain/ports/sender-repository.port'
 import type { SuppressionRepository } from '../../src/domain/ports/suppression-repository.port'
 import type {
   ListTemplatesQuery,
@@ -17,6 +22,7 @@ import type {
 } from '../../src/domain/ports/webhook-inbox.port'
 import type { WhatsAppInstanceRepository } from '../../src/domain/ports/whatsapp-instance-repository.port'
 import type { EmailSender } from '../../src/domain/sender/email-sender.aggregate'
+import { normalizeAddress } from '../../src/domain/services/address'
 import {
   isLaneAvailable,
   type PacingConfig,
@@ -68,6 +74,8 @@ export interface CapturedEvent {
 export class InMemoryMessageRepository implements MessageRepository {
   readonly store = new Map<string, Message>()
   readonly events: CapturedEvent[] = []
+  /** Injeção de falha: ids cujo PRÓXIMO update lança (consumido ao disparar). */
+  readonly failNextUpdateFor = new Set<string>()
 
   private drain(m: Message): void {
     for (const e of m.pullEvents()) {
@@ -75,26 +83,52 @@ export class InMemoryMessageRepository implements MessageRepository {
     }
   }
 
+  /** Clone do agregado (espelha o banco: leituras não compartilham instância). */
+  private snapshot(m: Message): Message {
+    return Message.fromState(m.id, { ...m.state, recipient: { ...m.state.recipient } })
+  }
+
   async create(m: Message): Promise<void> {
+    // Espelha a unique parcial (consumer_id, idempotency_key) do banco real.
+    const { consumerId, idempotencyKey } = m.state
+    if (consumerId && idempotencyKey) {
+      for (const other of this.store.values()) {
+        if (
+          other.id !== m.id &&
+          other.state.consumerId === consumerId &&
+          other.state.idempotencyKey === idempotencyKey
+        ) {
+          throw new IdempotencyConflictError(
+            `Mensagem já enfileirada para (${consumerId}, ${idempotencyKey})`,
+          )
+        }
+      }
+    }
     this.store.set(m.id, m)
     this.drain(m)
   }
   async update(m: Message): Promise<void> {
+    if (this.failNextUpdateFor.delete(m.id)) {
+      throw new ConcurrencyConflictError(m.id)
+    }
     this.store.set(m.id, m)
     this.drain(m)
   }
   async findById(id: string): Promise<Message | null> {
-    return this.store.get(id) ?? null
+    const m = this.store.get(id)
+    return m ? this.snapshot(m) : null
   }
   async findByProviderMessageId(providerMessageId: string): Promise<Message | null> {
     for (const m of this.store.values()) {
-      if (m.state.providerMessageId === providerMessageId) return m
+      if (m.state.providerMessageId === providerMessageId) return this.snapshot(m)
     }
     return null
   }
   async findByIdempotency(consumerId: string, idempotencyKey: string): Promise<Message | null> {
     for (const m of this.store.values()) {
-      if (m.state.consumerId === consumerId && m.state.idempotencyKey === idempotencyKey) return m
+      if (m.state.consumerId === consumerId && m.state.idempotencyKey === idempotencyKey) {
+        return this.snapshot(m)
+      }
     }
     return null
   }
@@ -110,7 +144,8 @@ export class InMemoryMessageRepository implements MessageRepository {
       .filter(
         (m) =>
           m.channel === channel &&
-          (m.status === 'QUEUED' || m.status === 'SCHEDULED') &&
+          // SENDING com lease (nextAttemptAt) vencido entra como reaper (espelha o Drizzle).
+          (m.status === 'QUEUED' || m.status === 'SCHEDULED' || m.status === 'SENDING') &&
           m.state.scheduledAt.getTime() <= now.getTime() &&
           m.state.nextAttemptAt.getTime() <= now.getTime(),
       )
@@ -121,27 +156,51 @@ export class InMemoryMessageRepository implements MessageRepository {
       )
   }
 
-  async claimDueEmail(limit: number, now: Date): Promise<Message[]> {
-    const batch = this.due('email', now).slice(0, limit)
-    for (const m of batch) m.startSending()
-    return batch
+  /**
+   * Espelha o `markClaimed` do Drizzle: SENDING + lease; re-claim incrementa
+   * attempts. O store guarda um SNAPSHOT e o worker recebe um CLONE — mutações
+   * do worker só chegam ao store via `update()` (fidelidade ao banco real).
+   */
+  private claim(m: Message, now: Date, leaseMs: number): Message {
+    const stale = m.status === 'SENDING'
+    const props = {
+      ...m.state,
+      status: 'SENDING' as const,
+      nextAttemptAt: new Date(now.getTime() + leaseMs),
+      attempts: stale ? m.state.attempts + 1 : m.state.attempts,
+    }
+    this.store.set(m.id, Message.fromState(m.id, { ...props, recipient: { ...props.recipient } }))
+    return Message.fromState(m.id, { ...props, recipient: { ...props.recipient } })
   }
 
-  async claimNextWhatsApp(now: Date): Promise<Message | null> {
+  async claimDueEmail(limit: number, now: Date, leaseMs: number): Promise<Message[]> {
+    return this.due('email', now)
+      .slice(0, limit)
+      .map((m) => this.claim(m, now, leaseMs))
+  }
+
+  async claimNextWhatsApp(now: Date, leaseMs: number): Promise<Message | null> {
     const next = this.due('whatsapp', now)[0]
     if (!next) return null
-    next.startSending()
-    return next
+    return this.claim(next, now, leaseMs)
   }
 }
 
 export class InMemorySenderRepository implements SenderRepository {
   readonly store = new Map<string, EmailSender>()
 
-  async create(s: EmailSender): Promise<void> {
+  private clearOtherDefaults(exceptId: string): void {
+    for (const s of this.store.values()) {
+      if (s.isDefault && s.id !== exceptId) s.update({ isDefault: false }, new Date())
+    }
+  }
+
+  async create(s: EmailSender, opts: SaveSenderOptions = {}): Promise<void> {
+    if (opts.clearOtherDefaults) this.clearOtherDefaults(s.id)
     this.store.set(s.id, s)
   }
-  async update(s: EmailSender): Promise<void> {
+  async update(s: EmailSender, opts: SaveSenderOptions = {}): Promise<void> {
+    if (opts.clearOtherDefaults) this.clearOtherDefaults(s.id)
     this.store.set(s.id, s)
   }
   async findById(id: string): Promise<EmailSender | null> {
@@ -159,11 +218,6 @@ export class InMemorySenderRepository implements SenderRepository {
       if (s.isDefault && s.enabled) return s
     }
     return null
-  }
-  async clearDefault(): Promise<void> {
-    for (const s of this.store.values()) {
-      if (s.isDefault) s.update({ isDefault: false }, new Date())
-    }
   }
   async list(query: { limit: number; offset: number }): Promise<{
     items: EmailSender[]
@@ -226,7 +280,8 @@ export class InMemorySuppressionRepository implements SuppressionRepository {
   readonly store = new Set<string>()
 
   private key(channel: Channel, address: string): string {
-    return `${channel}:${address}`
+    // Normaliza nos dois lados (espelha o repositório Drizzle).
+    return `${channel}:${normalizeAddress(channel, address)}`
   }
   async isSuppressed(channel: Channel, address: string): Promise<boolean> {
     return this.store.has(this.key(channel, address))
@@ -239,6 +294,9 @@ export class InMemorySuppressionRepository implements SuppressionRepository {
 export class InMemoryWebhookInbox implements WebhookInboxRepository {
   readonly seen = new Set<string>()
 
+  async alreadyReceived(provider: string, providerEventId: string): Promise<boolean> {
+    return this.seen.has(`${provider}:${providerEventId}`)
+  }
   async markReceived(input: MarkReceivedInput): Promise<boolean> {
     const key = `${input.provider}:${input.providerEventId}`
     if (this.seen.has(key)) return false

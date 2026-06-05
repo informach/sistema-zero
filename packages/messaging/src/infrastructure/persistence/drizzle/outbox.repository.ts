@@ -71,13 +71,13 @@ export class DrizzleOutboxRepository implements OutboxRepository {
   /**
    * Retenção: remove eventos já terminais (PUBLISHED/DEAD) mais antigos que
    * `olderThan`. PENDING nunca é tocado. Roda num job periódico (fora do hot path)
-   * para a tabela não crescer sem limite. Retorna quantas linhas foram removidas.
+   * para a tabela não crescer sem limite. Retorna quantas linhas foram removidas
+   * (via `count` do driver — sem `RETURNING`, que materializaria todas as linhas).
    */
   async cleanup(olderThan: Date): Promise<number> {
-    const deleted = await this.db
+    const result = await this.db
       .delete(outbox)
       .where(and(ne(outbox.status, 'PENDING'), lt(outbox.createdAt, olderThan)))
-      .returning({ id: outbox.id })
-    return deleted.length
+    return Number((result as unknown as { count?: number }).count ?? 0)
   }
 }

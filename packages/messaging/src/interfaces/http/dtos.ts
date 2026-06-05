@@ -2,6 +2,9 @@ import { t } from 'elysia'
 
 const Channel = t.Union([t.Literal('email'), t.Literal('whatsapp')])
 
+/** Params `:id` (uuid) — sem isto um id malformado vira erro de cast do Postgres (500). */
+export const IdParams = t.Object({ id: t.String({ format: 'uuid' }) })
+
 export const SendBody = t.Object({
   channel: Channel,
   templateKey: t.String({ minLength: 1, maxLength: 64 }),
@@ -74,7 +77,6 @@ export const CreateInstanceBody = t.Object({
   instanceName: t.String({ minLength: 1, maxLength: 100 }),
   phoneNumber: t.String({ minLength: 8, maxLength: 20 }),
   dailyCap: t.Optional(t.Integer({ minimum: 1, maximum: 100_000 })),
-  weight: t.Optional(t.Integer({ minimum: 1, maximum: 100 })),
   warmup: t.Optional(t.Boolean()),
 })
 

@@ -1,5 +1,6 @@
 import { and, asc, count, desc, eq, inArray, lte, sql } from 'drizzle-orm'
 import { Message, type MessageProps } from '../../../domain/message/message.aggregate'
+import { IdempotencyConflictError } from '../../../domain/message/message.errors'
 import type {
   ListMessagesQuery,
   MessageRepository,
@@ -8,6 +9,15 @@ import { PG_CHANNELS } from './channels'
 import { ConcurrencyConflictError } from './concurrency.error'
 import type { Database } from './db'
 import { messages, outbox } from './schema'
+
+function isUniqueViolation(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    (error as { code: unknown }).code === '23505'
+  )
+}
 
 type MessageRow = typeof messages.$inferSelect
 
@@ -82,13 +92,24 @@ export class DrizzleMessageRepository implements MessageRepository {
   constructor(private readonly db: Database) {}
 
   async create(message: Message): Promise<void> {
-    await this.db.transaction(async (tx) => {
-      await tx.insert(messages).values(toRow(message))
-      const hadEvents = await this.writeEvents(tx, message)
-      // Acorda o worker de envio na hora (poll é a rede de segurança).
-      await tx.execute(sql`select pg_notify(${PG_CHANNELS.sends}, '')`)
-      if (hadEvents) await tx.execute(sql`select pg_notify(${PG_CHANNELS.outbox}, '')`)
-    })
+    try {
+      await this.db.transaction(async (tx) => {
+        await tx.insert(messages).values(toRow(message))
+        const hadEvents = await this.writeEvents(tx, message)
+        // Acorda o worker de envio na hora (poll é a rede de segurança).
+        await tx.execute(sql`select pg_notify(${PG_CHANNELS.sends}, '')`)
+        if (hadEvents) await tx.execute(sql`select pg_notify(${PG_CHANNELS.outbox}, '')`)
+      })
+    } catch (error) {
+      // Corrida check-then-insert da idempotência: requisição concorrente com a
+      // mesma (consumerId, idempotencyKey) venceu — o chamador devolve a existente.
+      if (isUniqueViolation(error) && message.state.consumerId && message.state.idempotencyKey) {
+        throw new IdempotencyConflictError(
+          `Mensagem já enfileirada para (${message.state.consumerId}, ${message.state.idempotencyKey})`,
+        )
+      }
+      throw error
+    }
   }
 
   async update(message: Message): Promise<void> {
@@ -163,7 +184,7 @@ export class DrizzleMessageRepository implements MessageRepository {
     return { items: rows.map(toAggregate), total: totalRows[0]?.value ?? 0 }
   }
 
-  async claimDueEmail(limit: number, now: Date): Promise<Message[]> {
+  async claimDueEmail(limit: number, now: Date, leaseMs: number): Promise<Message[]> {
     return this.db.transaction(async (tx) => {
       const due = await tx
         .select()
@@ -171,7 +192,9 @@ export class DrizzleMessageRepository implements MessageRepository {
         .where(
           and(
             eq(messages.channel, 'email'),
-            inArray(messages.status, ['QUEUED', 'SCHEDULED']),
+            // SENDING entra como REAPER: claim antigo cujo lease (nextAttemptAt)
+            // venceu — crash/erro entre o claim e o update não prende a mensagem.
+            inArray(messages.status, ['QUEUED', 'SCHEDULED', 'SENDING']),
             lte(messages.scheduledAt, now),
             lte(messages.nextAttemptAt, now),
           ),
@@ -180,13 +203,11 @@ export class DrizzleMessageRepository implements MessageRepository {
         .limit(limit)
         .for('update', { skipLocked: true })
       if (due.length === 0) return []
-      const ids = due.map((r) => r.id)
-      await tx.update(messages).set({ status: 'SENDING' }).where(inArray(messages.id, ids))
-      return due.map((r) => toAggregate({ ...r, status: 'SENDING' }))
+      return this.markClaimed(tx, due, now, leaseMs)
     })
   }
 
-  async claimNextWhatsApp(now: Date): Promise<Message | null> {
+  async claimNextWhatsApp(now: Date, leaseMs: number): Promise<Message | null> {
     return this.db.transaction(async (tx) => {
       const [row] = await tx
         .select()
@@ -194,7 +215,7 @@ export class DrizzleMessageRepository implements MessageRepository {
         .where(
           and(
             eq(messages.channel, 'whatsapp'),
-            inArray(messages.status, ['QUEUED', 'SCHEDULED']),
+            inArray(messages.status, ['QUEUED', 'SCHEDULED', 'SENDING']),
             lte(messages.scheduledAt, now),
             lte(messages.nextAttemptAt, now),
           ),
@@ -203,8 +224,49 @@ export class DrizzleMessageRepository implements MessageRepository {
         .limit(1)
         .for('update', { skipLocked: true })
       if (!row) return null
-      await tx.update(messages).set({ status: 'SENDING' }).where(eq(messages.id, row.id))
-      return toAggregate({ ...row, status: 'SENDING' })
+      const [claimed] = await this.markClaimed(tx, [row], now, leaseMs)
+      return claimed ?? null
     })
+  }
+
+  /**
+   * Marca as linhas selecionadas como SENDING com lease (`nextAttemptAt = now +
+   * leaseMs`). Linhas que JÁ estavam SENDING (re-claim de lease vencido) ganham
+   * `attempts + 1` — limita re-envios de um claim zumbi (o worker falha a mensagem
+   * quando `attempts >= maxAttempts`).
+   */
+  private async markClaimed(
+    tx: Parameters<Parameters<Database['transaction']>[0]>[0],
+    rows: MessageRow[],
+    now: Date,
+    leaseMs: number,
+  ): Promise<Message[]> {
+    const leaseUntil = new Date(now.getTime() + leaseMs)
+    const freshIds = rows.filter((r) => r.status !== 'SENDING').map((r) => r.id)
+    const staleIds = rows.filter((r) => r.status === 'SENDING').map((r) => r.id)
+    if (freshIds.length > 0) {
+      await tx
+        .update(messages)
+        .set({ status: 'SENDING', nextAttemptAt: leaseUntil })
+        .where(inArray(messages.id, freshIds))
+    }
+    if (staleIds.length > 0) {
+      await tx
+        .update(messages)
+        .set({
+          status: 'SENDING',
+          nextAttemptAt: leaseUntil,
+          attempts: sql`${messages.attempts} + 1`,
+        })
+        .where(inArray(messages.id, staleIds))
+    }
+    return rows.map((r) =>
+      toAggregate({
+        ...r,
+        status: 'SENDING',
+        nextAttemptAt: leaseUntil,
+        attempts: r.status === 'SENDING' ? r.attempts + 1 : r.attempts,
+      }),
+    )
   }
 }

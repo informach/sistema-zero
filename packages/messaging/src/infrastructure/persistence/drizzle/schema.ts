@@ -108,7 +108,6 @@ export const whatsappInstances = messagingSchema.table(
     nextAvailableAt: timestamp('next_available_at', { withTimezone: true }).notNull().defaultNow(),
     // Início do aquecimento (curva de teto menor nos primeiros dias). Null = sem aquecimento.
     warmupStartedAt: timestamp('warmup_started_at', { withTimezone: true }),
-    weight: integer('weight').notNull().default(1),
     version: integer('version').notNull().default(0),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),

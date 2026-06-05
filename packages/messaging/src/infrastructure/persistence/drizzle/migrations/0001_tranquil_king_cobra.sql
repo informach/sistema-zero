@@ -1,0 +1,1 @@
+ALTER TABLE "messaging"."whatsapp_instances" DROP COLUMN "weight";

@@ -40,6 +40,14 @@ import { DrizzleWhatsAppInstanceRepository } from './infrastructure/persistence/
 import { SendWorker } from './infrastructure/workers/send-worker'
 import { createServer } from './interfaces/http/server'
 
+/**
+ * Chave do advisory lock do ciclo de limpeza/retenção ('msging' em ASCII int8;
+ * string + cast ::bigint — o driver não tipa BigInt como parâmetro). O espaço de
+ * advisory locks é GLOBAL ao banco compartilhado do monorepo — a constante
+ * precisa ser única entre os serviços (o payments usa outra).
+ */
+const RETENTION_ADVISORY_LOCK_KEY = '120342423629415'
+
 export interface Application {
   logger: Logger
   start(): Promise<void>
@@ -100,12 +108,15 @@ export function createApplication(env: Env): Application {
     logger,
     config: {
       intervalMs: env.SEND_POLL_INTERVAL_MS,
+      emailRatePerSec: env.EMAIL_RATE_PER_SEC,
+      // Capacidade do bucket (rajada máxima) ≈ taxa sustentada × intervalo de poll.
       emailBatchSize: Math.max(
         1,
         Math.ceil((env.EMAIL_RATE_PER_SEC * env.SEND_POLL_INTERVAL_MS) / 1000),
       ),
       whatsappBatchSize: env.SEND_BATCH_SIZE,
       laneLeaseMs: env.WA_LANE_LEASE_MS,
+      claimLeaseMs: env.SEND_CLAIM_LEASE_MS,
       pacing: {
         minDelayMs: env.WA_MIN_DELAY_MS,
         maxDelayMs: env.WA_MAX_DELAY_MS,
@@ -144,9 +155,24 @@ export function createApplication(env: Env): Application {
   const applyStatus = new ApplyDeliveryStatusService(messages, suppressions, webhookInbox, logger)
   const setConnection = new SetInstanceConnectionService(instances, clock)
 
+  // Readiness: pronto = banco respondendo (healthcheck do deploy aponta p/ /readyz).
+  const readiness = async () => {
+    try {
+      await connection.sql`select 1`
+      return { ready: true, checks: { db: 'ok' } }
+    } catch (error) {
+      logger.warn('readyz.db_unreachable', {
+        error: error instanceof Error ? error.message : String(error),
+      })
+      return { ready: false, checks: { db: 'unreachable' } }
+    }
+  }
+
   const server = createServer({
     env,
     logger,
+    clock,
+    readiness,
     sendMessage,
     getMessage,
     listMessages,
@@ -175,17 +201,35 @@ export function createApplication(env: Env): Application {
         await notifications.listen(PG_CHANNELS.outbox, () => outboxPoller.wake())
         await notifications.listen(PG_CHANNELS.sends, () => sendWorker.wake())
       }
+      // Retenção periódica (fora do hot path). O advisory lock garante que SÓ UMA
+      // réplica executa o ciclo (N réplicas com os mesmos DELETEs = carga ×N);
+      // xact-lock → solta sozinho no commit/crash (espelha o payments).
+      const runCleanupCycle = async () => {
+        await connection.sql.begin(async (gate) => {
+          const [row] = await gate`
+            select pg_try_advisory_xact_lock(${RETENTION_ADVISORY_LOCK_KEY}::bigint) as locked
+          `
+          if (!row?.locked) return // outra réplica está limpando neste ciclo
+          const cutoff = new Date(Date.now() - env.RETENTION_DAYS * 24 * 60 * 60 * 1000)
+          const [outboxRows, webhookRows] = await Promise.all([
+            outboxRepo.cleanup(cutoff),
+            webhookInbox.cleanup(cutoff),
+          ])
+          if (outboxRows + webhookRows > 0) {
+            logger.info('retention.cleaned', { outbox: outboxRows, webhookEvents: webhookRows })
+          }
+        })
+      }
       cleanupTimer = setInterval(() => {
-        const cutoff = new Date(Date.now() - env.RETENTION_DAYS * 24 * 60 * 60 * 1000)
-        void Promise.all([outboxRepo.cleanup(cutoff), webhookInbox.cleanup(cutoff)]).catch(
-          (error) =>
-            logger.error('retention.cleanup.failed', {
-              error: error instanceof Error ? error.message : String(error),
-            }),
+        void runCleanupCycle().catch((error) =>
+          logger.error('retention.cleanup.failed', {
+            error: error instanceof Error ? error.message : String(error),
+          }),
         )
       }, env.CLEANUP_INTERVAL_MS)
-      server.listen(env.PORT)
-      logger.info('http.listening', { port: env.PORT })
+      // `::` = dual-stack (IPv4+IPv6) — necessário p/ o private networking do Railway.
+      server.listen({ port: env.PORT, hostname: env.HOST })
+      logger.info('http.listening', { port: env.PORT, host: env.HOST })
     },
     async stop() {
       if (cleanupTimer) clearInterval(cleanupTimer)

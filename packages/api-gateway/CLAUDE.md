@@ -118,7 +118,7 @@ Métodos: `slidingWindow` / `slidingWindowRefund(key, windowResetMs?)` (rate lim
 
 **Autorização / RBAC** (`authorization.stage`): a rota pode declarar `authorize: { roles?, statuses?, scopes? }`. A presença do bloco exige um **usuário resolvido** (senão 401); `status` deve estar em `statuses` (default `['active']`); `roles`/`scopes` (se definidos) precisam casar (senão 403). Rotas sem `authorize` só exigem autenticação.
 
-**Identidade confiável ao upstream:** o `request-transform.stage` injeta `X-Auth-User-*` (id/email/name/role/status/phone/source) a partir de `ctx.user` e **remove** quaisquer `X-Auth-*` de entrada (anti-spoof). O upstream confia neles (vêm só do gateway). As rotas `/auth/*` são públicas + `passthrough` (o IdP cuida da própria auth; o `/me` precisa do Bearer chegando ao upstream).
+**Identidade confiável ao upstream:** o `request-transform.stage` injeta `X-Auth-User-*` (id/email/name/role/status/phone/source) a partir de `ctx.user` e **remove** quaisquer `X-Auth-*` de entrada (anti-spoof). O upstream confia neles (vêm só do gateway). As rotas `/auth/*` são públicas + `passthrough` (o IdP cuida da própria auth; o `/me` precisa do Bearer chegando ao upstream). **Consumer HMAC ao upstream (06/2026):** em rotas não-`passthrough`, após o strip das credenciais de borda, o gateway **re-injeta `x-consumer-id` com o `ctx.principal.subject` AUTENTICADO** quando `principal.kind === 'hmac'` (nunca o valor cru do cliente; rotas `resign` sobrescrevem depois com o consumer do próprio gateway). É o que dá ao upstream a identidade do consumer p/ escopo de idempotência — sem isso a `Idempotency-Key` do messaging chegava sem consumer e o dedupe NUNCA engatava (achado crítico do 1º full review do messaging).
 
 ### 4.6 Padrões GoF presentes
 Proxy, Facade (`route-registry` + `gateway-plugin` + `gateway.config.ts`), Decorator (transforms, sticky), Chain of Responsibility (pipeline), Strategy (auth + LB).
@@ -146,7 +146,7 @@ Proxy, Facade (`route-registry` + `gateway-plugin` + `gateway.config.ts`), Decor
 - **Imutabilidade:** `readonly` em portas/DTOs; estado mutável só no `GatewayContext` (por requisição) e atrás do `GatewayStore`.
 - **Nomes:** arquivos `kebab-case`; classes `PascalCase`; funções/vars `camelCase`.
 - **Stateless:** NUNCA guarde estado de requisição em variável de módulo/instância de adapter — vai para o `GatewayStore` (senão quebra multi-réplica).
-- **Segurança de borda:** credenciais do cliente (`authorization`, `cookie`, `x-session-token`, `x-consumer-id`, `x-signature`) são removidas antes do proxy (exceto `upstreamAuth: 'passthrough'`).
+- **Segurança de borda:** credenciais do cliente (`authorization`, `cookie`, `x-session-token`, `x-consumer-id`, `x-signature`) são removidas antes do proxy (exceto `upstreamAuth: 'passthrough'`); em rotas HMAC o `x-consumer-id` é re-injetado com o principal AUTENTICADO (ver §4.5).
 
 ---
 

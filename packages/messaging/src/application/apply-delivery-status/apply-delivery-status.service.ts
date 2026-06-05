@@ -1,3 +1,5 @@
+import type { Message } from '../../domain/message/message.aggregate'
+import { ConcurrencyConflictError } from '../../domain/ports/concurrency.error'
 import type { MessageRepository } from '../../domain/ports/message-repository.port'
 import type { SuppressionRepository } from '../../domain/ports/suppression-repository.port'
 import type { WebhookInboxRepository } from '../../domain/ports/webhook-inbox.port'
@@ -29,11 +31,18 @@ export interface DeliveryStatusResult {
   applied: boolean
 }
 
+/** Re-tentativas locais quando o update conflita com o worker (corrida benigna). */
+const MAX_APPLY_ATTEMPTS = 3
+
 /**
  * Aplica um evento de STATUS (entregue/lido/bounce/spam) à mensagem. Provider-
  * agnóstico: as rotas de webhook normalizam o payload do provedor numa `action`.
- * Dedupe via `webhookInbox`. Em bounce/spam/unsub, adiciona o destinatário à
- * supressão (não reenviar). Idempotente (transições tolerantes na agregada).
+ *
+ * Ordem do dedupe (importante): o evento só é MARCADO no inbox DEPOIS de
+ * aplicado — marcar antes fazia uma falha no meio (ex.: conflito de versão com o
+ * worker) "consumir" o evento: a reentrega do provedor caía no dedupe e o status
+ * se perdia. Conflito de versão → recarrega e re-aplica (as transições do webhook
+ * são tolerantes/idempotentes, então reprocessar é seguro).
  */
 export class ApplyDeliveryStatusService {
   constructor(
@@ -46,7 +55,12 @@ export class ApplyDeliveryStatusService {
   async execute(input: DeliveryStatusInput): Promise<DeliveryStatusResult> {
     if (input.action === 'ignore') return { deduped: false, applied: false }
 
-    const message = input.providerMessageId
+    // Gate de LEITURA: já processado → reentrega legítima, nada a fazer.
+    if (await this.webhookInbox.alreadyReceived(input.provider, input.providerEventId)) {
+      return { deduped: true, applied: false }
+    }
+
+    let message = input.providerMessageId
       ? await this.messages.findByProviderMessageId(input.providerMessageId)
       : null
 
@@ -61,40 +75,53 @@ export class ApplyDeliveryStatusService {
       return { deduped: false, applied: false }
     }
 
-    const isNew = await this.webhookInbox.markReceived({
+    let changed = false
+    for (let attempt = 1; ; attempt++) {
+      changed = await this.apply(message, input)
+      if (!changed) break
+      try {
+        await this.messages.update(message)
+        break
+      } catch (error) {
+        if (!(error instanceof ConcurrencyConflictError) || attempt >= MAX_APPLY_ATTEMPTS) {
+          throw error // sem markReceived → a reentrega do provedor reprocessa
+        }
+        const fresh = await this.messages.findById(message.id)
+        if (!fresh) return { deduped: false, applied: false }
+        message = fresh
+      }
+    }
+
+    // Marca como processado por ÚLTIMO: falha aqui → reentrega re-aplica (no-op
+    // pelas transições tolerantes) e marca de novo.
+    await this.webhookInbox.markReceived({
       provider: input.provider,
       providerEventId: input.providerEventId,
       eventType: input.eventType,
       messageId: message.id,
       payload: input.payload,
     })
-    if (!isNew) return { deduped: true, applied: false }
+    return { deduped: false, applied: changed }
+  }
 
+  private async apply(message: Message, input: DeliveryStatusInput): Promise<boolean> {
     const now = input.occurredAt
-    let changed = false
     switch (input.action) {
       case 'delivered':
-        changed = message.markDelivered(now)
-        break
+        return message.markDelivered(now)
       case 'read':
-        changed = message.markRead(now)
-        break
+        return message.markRead(now)
       case 'failed':
         message.markFailed({ reason: input.eventType, code: input.provider, now })
-        changed = true
-        break
+        return true
       default: {
         // suppress_bounce | suppress_spam | suppress_unsub
         const address =
           message.channel === 'email' ? message.recipient.email : message.recipient.phone
         if (address) await this.suppressions.add(message.channel, address, input.action)
         message.suppress({ reason: input.action, now })
-        changed = true
-        break
+        return true
       }
     }
-
-    if (changed) await this.messages.update(message)
-    return { deduped: false, applied: changed }
   }
 }

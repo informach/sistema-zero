@@ -52,6 +52,21 @@ export class MessageDeliveredEvent extends DomainEvent {
   }
 }
 
+export class MessageSuppressedEvent extends DomainEvent {
+  readonly eventName = 'message.suppressed'
+
+  constructor(
+    private readonly data: BasePayload & { reason: string },
+    occurredAt?: Date,
+  ) {
+    super(data.messageId, occurredAt)
+  }
+
+  toPayload(): Record<string, unknown> {
+    return { ...this.data }
+  }
+}
+
 export class MessageFailedEvent extends DomainEvent {
   readonly eventName = 'message.failed'
 

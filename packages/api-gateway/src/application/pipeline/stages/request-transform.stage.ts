@@ -28,6 +28,14 @@ export function createRequestTransformStage(deps: RequestTransformDeps): Stage {
       stripIdentityHeaders(ctx.upstreamHeaders)
       if (ctx.route.route.upstreamAuth !== 'passthrough') {
         stripEdgeAuthHeaders(ctx.upstreamHeaders)
+        // Re-injeta a identidade AUTENTICADA do consumer HMAC como `x-consumer-id`
+        // confiável (espelha o X-Auth-User-* do JWT): o upstream usa o consumer p/
+        // escopo de idempotência (ex.: Idempotency-Key do messaging). Vem DEPOIS do
+        // strip (nunca é o valor do cliente) e ANTES do resign (que o sobrescreve
+        // com o consumer do próprio gateway em rotas `resign`).
+        if (ctx.principal?.kind === 'hmac') {
+          ctx.upstreamHeaders.set('x-consumer-id', ctx.principal.subject)
+        }
       }
       await applyRequestTransformers(deps.getTransformers(ctx.route.route.id), ctx)
       if (ctx.route.route.upstreamAuth === 'resign') {

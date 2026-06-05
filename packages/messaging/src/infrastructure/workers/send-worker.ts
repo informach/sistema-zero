@@ -18,12 +18,16 @@ import type { Logger } from '../logging/logger'
 
 export interface SendWorkerConfig {
   intervalMs: number
-  /** Máximo de e-mails por tick (≈ taxa/seg × intervalo) — throttle do e-mail. */
+  /** Taxa sustentada de e-mails por segundo (token bucket). */
+  emailRatePerSec: number
+  /** Capacidade do bucket de e-mail (rajada máxima ≈ taxa/seg × intervalo). */
   emailBatchSize: number
   /** Máximo de envios de WhatsApp por tick. */
   whatsappBatchSize: number
   /** Reserva (lease) da lane entre o claim e a confirmação do envio (ms). */
   laneLeaseMs: number
+  /** Lease do claim de MENSAGEM (reaper de SENDING preso — ver repositório). */
+  claimLeaseMs: number
   pacing: PacingConfig
   retry: BackoffConfig
   /** Janela do "digitando" (delay) antes de enviar no WhatsApp. */
@@ -112,19 +116,62 @@ export class SendWorker {
     }
   }
 
-  // ── E-mail (throttle por lote/tick) ──────────────────────────────────────────
+  // ── E-mail (token bucket: taxa sustentada + rajada limitada) ─────────────────
+  // O bucket é necessário porque o LISTEN/NOTIFY dispara ticks back-to-back: um
+  // limite "por tick" deixaria a taxa efetiva muito acima de EMAIL_RATE_PER_SEC
+  // sob rajada de enfileiramento. Estado por réplica (N réplicas = N× a taxa).
+  private emailTokens = 0
+  private emailRefillAtMs: number | null = null
+
+  private refillEmailTokens(now: Date): void {
+    const nowMs = now.getTime()
+    if (this.emailRefillAtMs === null) {
+      this.emailTokens = this.deps.config.emailBatchSize
+    } else {
+      const elapsedMs = Math.max(0, nowMs - this.emailRefillAtMs)
+      this.emailTokens = Math.min(
+        this.deps.config.emailBatchSize,
+        this.emailTokens + (elapsedMs / 1000) * this.deps.config.emailRatePerSec,
+      )
+    }
+    this.emailRefillAtMs = nowMs
+  }
+
   private async processEmail(): Promise<void> {
-    const batch = await this.deps.messages.claimDueEmail(
-      this.deps.config.emailBatchSize,
-      this.deps.clock.now(),
-    )
+    const now = this.deps.clock.now()
+    this.refillEmailTokens(now)
+    const limit = Math.min(this.deps.config.emailBatchSize, Math.floor(this.emailTokens))
+    if (limit < 1) return
+    const batch = await this.deps.messages.claimDueEmail(limit, now, this.deps.config.claimLeaseMs)
+    this.emailTokens -= batch.length
     for (const message of batch) {
       await this.sendEmail(message)
     }
   }
 
   private async sendEmail(message: Message): Promise<void> {
+    try {
+      await this.doSendEmail(message)
+    } catch (error) {
+      // Falha INESPERADA (ex.: conflito de versão com um webhook concorrente):
+      // loga e segue o LOTE — a mensagem fica SENDING e o lease do claim a
+      // devolve à fila (reaper). Uma mensagem nunca derruba as demais.
+      this.deps.logger.error('send.email.message_failed', {
+        messageId: message.id,
+        error: error instanceof Error ? error.message : String(error),
+      })
+    }
+  }
+
+  private async doSendEmail(message: Message): Promise<void> {
     const now = this.deps.clock.now()
+    // Claim zumbi re-reivindicado além do teto (o claim incrementa attempts no
+    // re-claim): falha em vez de re-enviar para sempre.
+    if (message.state.attempts >= message.state.maxAttempts) {
+      message.markFailed({ reason: 'Tentativas esgotadas (lease de claim vencido)', now })
+      await this.deps.messages.update(message)
+      return
+    }
     const email = message.recipient.email
     if (email && (await this.deps.suppressions.isSuppressed('email', email))) {
       message.suppress({ reason: 'suppressed', now })
@@ -170,7 +217,10 @@ export class SendWorker {
       )
       if (!lane) break // nenhuma lane disponível (delay/descanso/cap/sem número)
 
-      const message = await this.deps.messages.claimNextWhatsApp(this.deps.clock.now())
+      const message = await this.deps.messages.claimNextWhatsApp(
+        this.deps.clock.now(),
+        this.deps.config.claimLeaseMs,
+      )
       if (!message) {
         // Sem trabalho: libera a reserva da lane e encerra.
         await this.deps.instances.delayLane(lane.id, this.deps.clock.now())
@@ -182,7 +232,39 @@ export class SendWorker {
   }
 
   private async sendWhatsApp(lane: WhatsAppInstance, message: Message): Promise<void> {
+    try {
+      await this.doSendWhatsApp(lane, message)
+    } catch (error) {
+      // Falha INESPERADA (ex.: conflito de versão): loga e segue — a mensagem fica
+      // SENDING e o lease do claim a devolve à fila (reaper). Atrasa a lane para
+      // não martelar o número em loop.
+      this.deps.logger.error('send.whatsapp.message_failed', {
+        messageId: message.id,
+        laneId: lane.id,
+        error: error instanceof Error ? error.message : String(error),
+      })
+      await this.deps.instances
+        .delayLane(lane.id, new Date(this.deps.clock.now().getTime() + this.laneErrorDelay()))
+        .catch(() => {})
+    }
+  }
+
+  private laneErrorDelay(): number {
+    return this.deps.rng.intBetween(
+      this.deps.config.pacing.minDelayMs,
+      this.deps.config.pacing.maxDelayMs,
+    )
+  }
+
+  private async doSendWhatsApp(lane: WhatsAppInstance, message: Message): Promise<void> {
     const now = this.deps.clock.now()
+    // Claim zumbi re-reivindicado além do teto: falha em vez de re-enviar p/ sempre.
+    if (message.state.attempts >= message.state.maxAttempts) {
+      message.markFailed({ reason: 'Tentativas esgotadas (lease de claim vencido)', now })
+      await this.deps.messages.update(message)
+      await this.deps.instances.delayLane(lane.id, this.deps.clock.now())
+      return
+    }
     const phone = message.recipient.phone
     if (phone && (await this.deps.suppressions.isSuppressed('whatsapp', phone))) {
       message.suppress({ reason: 'suppressed', now })
@@ -216,13 +298,9 @@ export class SendWorker {
       this.applySendError(message, error)
       await this.deps.messages.update(message)
       // Falha NÃO conta cota, mas atrasa a lane (não martela um número com problema).
-      const delay = this.deps.rng.intBetween(
-        this.deps.config.pacing.minDelayMs,
-        this.deps.config.pacing.maxDelayMs,
-      )
       await this.deps.instances.delayLane(
         lane.id,
-        new Date(this.deps.clock.now().getTime() + delay),
+        new Date(this.deps.clock.now().getTime() + this.laneErrorDelay()),
       )
     }
   }

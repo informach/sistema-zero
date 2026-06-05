@@ -1,3 +1,4 @@
+import { normalizeAddress } from '../services/address'
 import { AggregateRoot } from '../shared/aggregate-root'
 import type { Channel } from '../shared/channel'
 import { InvalidStateTransitionError, ValidationError } from '../shared/errors'
@@ -6,6 +7,7 @@ import {
   MessageFailedEvent,
   MessageQueuedEvent,
   MessageSentEvent,
+  MessageSuppressedEvent,
 } from './message.events'
 import type { MessageStatus } from './message.status'
 
@@ -87,8 +89,12 @@ export class Message extends AggregateRoot<string> {
     const name = input.recipient.name?.trim()
     if (!name) throw new ValidationError('Nome do destinatário é obrigatório')
 
-    const email = input.recipient.email?.trim() || null
-    const phone = input.recipient.phone?.trim() || null
+    // Endereços NORMALIZADOS (e-mail minúsculo; telefone só dígitos) — a lista de
+    // supressão compara por igualdade, então o formato precisa ser estável.
+    const rawEmail = input.recipient.email?.trim() || null
+    const rawPhone = input.recipient.phone?.trim() || null
+    const email = rawEmail ? normalizeAddress('email', rawEmail) : null
+    const phone = rawPhone ? normalizeAddress('whatsapp', rawPhone) : null
 
     if (input.channel === 'email') {
       if (!email || !EMAIL_RE.test(email)) {
@@ -98,7 +104,7 @@ export class Message extends AggregateRoot<string> {
         throw new ValidationError('Assunto é obrigatório para e-mail')
       }
     } else if (input.channel === 'whatsapp') {
-      if (!phone || !/^\+?\d{10,15}$/.test(phone)) {
+      if (!phone || !/^\d{10,15}$/.test(phone)) {
         throw new ValidationError('Telefone do destinatário inválido (use 10–15 dígitos)')
       }
     }
@@ -256,6 +262,17 @@ export class Message extends AggregateRoot<string> {
     this.props.status = 'SUPPRESSED'
     this.props.failureReason = input.reason
     this.props.terminalAt = input.now
+    this.addEvent(
+      new MessageSuppressedEvent(
+        {
+          messageId: this.id,
+          channel: this.props.channel,
+          templateKey: this.props.templateKey,
+          reason: input.reason,
+        },
+        input.now,
+      ),
+    )
   }
 
   // ── Webhooks de status (tolerantes/idempotentes) ────────────────────────────

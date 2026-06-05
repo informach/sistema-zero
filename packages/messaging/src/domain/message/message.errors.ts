@@ -8,3 +8,12 @@ export class MessageNotFoundError extends DomainError {
 export class RecipientSuppressedError extends DomainError {
   readonly code = 'RECIPIENT_SUPPRESSED'
 }
+
+/**
+ * Inserção colidiu com a unique de idempotência `(consumerId, idempotencyKey)`:
+ * outra requisição CONCORRENTE com a mesma chave venceu a corrida check-then-insert.
+ * O chamador deve recarregar a mensagem existente e devolvê-la (idempotência).
+ */
+export class IdempotencyConflictError extends DomainError {
+  readonly code = 'IDEMPOTENCY_CONFLICT'
+}

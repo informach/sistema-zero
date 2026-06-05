@@ -1,5 +1,8 @@
-import { and, count, desc, eq } from 'drizzle-orm'
-import type { SenderRepository } from '../../../domain/ports/sender-repository.port'
+import { and, count, desc, eq, ne } from 'drizzle-orm'
+import type {
+  SaveSenderOptions,
+  SenderRepository,
+} from '../../../domain/ports/sender-repository.port'
 import { EmailSender, type EmailSenderProps } from '../../../domain/sender/email-sender.aggregate'
 import { ConcurrencyConflictError } from './concurrency.error'
 import type { Database } from './db'
@@ -41,17 +44,35 @@ function toAggregate(row: SenderRow): EmailSender {
 export class DrizzleSenderRepository implements SenderRepository {
   constructor(private readonly db: Database) {}
 
-  async create(sender: EmailSender): Promise<void> {
-    await this.db.insert(emailSenders).values(toRow(sender))
+  async create(sender: EmailSender, opts: SaveSenderOptions = {}): Promise<void> {
+    // Promoção de default é ATÔMICA: limpar os demais + inserir na MESMA transação.
+    // Falha no meio nunca deixa o sistema sem remetente default.
+    await this.db.transaction(async (tx) => {
+      if (opts.clearOtherDefaults) {
+        await tx
+          .update(emailSenders)
+          .set({ isDefault: false })
+          .where(and(eq(emailSenders.isDefault, true), ne(emailSenders.id, sender.id)))
+      }
+      await tx.insert(emailSenders).values(toRow(sender))
+    })
   }
 
-  async update(sender: EmailSender): Promise<void> {
-    const updated = await this.db
-      .update(emailSenders)
-      .set({ ...toRow(sender), version: sender.version + 1 })
-      .where(and(eq(emailSenders.id, sender.id), eq(emailSenders.version, sender.version)))
-      .returning({ id: emailSenders.id })
-    if (updated.length === 0) throw new ConcurrencyConflictError(sender.id)
+  async update(sender: EmailSender, opts: SaveSenderOptions = {}): Promise<void> {
+    await this.db.transaction(async (tx) => {
+      if (opts.clearOtherDefaults) {
+        await tx
+          .update(emailSenders)
+          .set({ isDefault: false })
+          .where(and(eq(emailSenders.isDefault, true), ne(emailSenders.id, sender.id)))
+      }
+      const updated = await tx
+        .update(emailSenders)
+        .set({ ...toRow(sender), version: sender.version + 1 })
+        .where(and(eq(emailSenders.id, sender.id), eq(emailSenders.version, sender.version)))
+        .returning({ id: emailSenders.id })
+      if (updated.length === 0) throw new ConcurrencyConflictError(sender.id)
+    })
   }
 
   async findById(id: string): Promise<EmailSender | null> {
@@ -66,13 +87,6 @@ export class DrizzleSenderRepository implements SenderRepository {
       .where(eq(emailSenders.fromEmail, fromEmail.trim().toLowerCase()))
       .limit(1)
     return row ? toAggregate(row) : null
-  }
-
-  async clearDefault(): Promise<void> {
-    await this.db
-      .update(emailSenders)
-      .set({ isDefault: false })
-      .where(eq(emailSenders.isDefault, true))
   }
 
   async findDefault(): Promise<EmailSender | null> {

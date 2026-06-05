@@ -28,9 +28,9 @@ export class CreateSenderService {
   async execute(input: CreateSenderInput): Promise<SenderView> {
     const existing = await this.senders.findByEmail(input.fromEmail)
     if (existing) throw new ValidationError(`Remetente ${input.fromEmail} já existe`)
-    if (input.isDefault) await this.senders.clearDefault()
     const sender = EmailSender.create({ id: this.idGen(), ...input, now: this.clock.now() })
-    await this.senders.create(sender)
+    // Promoção de default atômica (limpa os demais NA MESMA transação da gravação).
+    await this.senders.create(sender, { clearOtherDefaults: input.isDefault === true })
     return toSenderView(sender)
   }
 }
@@ -44,9 +44,9 @@ export class UpdateSenderService {
   async execute(id: string, patch: UpdateEmailSenderInput): Promise<SenderView> {
     const sender = await this.senders.findById(id)
     if (!sender) throw new SenderNotFoundError(`Remetente ${id} não encontrado`)
-    if (patch.isDefault === true) await this.senders.clearDefault()
     sender.update(patch, this.clock.now())
-    await this.senders.update(sender)
+    // Promoção de default atômica (limpa os demais NA MESMA transação da gravação).
+    await this.senders.update(sender, { clearOtherDefaults: patch.isDefault === true })
     return toSenderView(sender)
   }
 }

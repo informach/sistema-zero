@@ -35,6 +35,8 @@ import {
 export interface BuildAppOptions {
   requireAdmin?: boolean
   internalToken?: string
+  sendgridPublicKey?: string
+  webhookToken?: string
   now?: Date
 }
 
@@ -47,19 +49,24 @@ export function buildApp(opts: BuildAppOptions = {}) {
   const webhookInbox = new InMemoryWebhookInbox()
 
   const clock: Clock = { now: () => opts.now ?? new Date('2026-06-03T12:00:00Z') }
-  let counter = 0
-  const idGen = () => `id-${++counter}`
+  // uuid de verdade: as rotas validam `:id` com format uuid (espelha a produção).
+  const idGen = () => crypto.randomUUID()
 
   const env = {
     NODE_ENV: 'test',
     MAX_REQUEST_BODY_BYTES: 64 * 1024,
     REQUIRE_ADMIN: opts.requireAdmin ?? false,
     MESSAGING_INTERNAL_TOKEN: opts.internalToken,
+    SENDGRID_WEBHOOK_PUBLIC_KEY: opts.sendgridPublicKey,
+    MESSAGING_WEBHOOK_TOKEN: opts.webhookToken,
+    WEBHOOK_TIMESTAMP_TOLERANCE_SECONDS: 600,
   } as unknown as Env
 
   const app = createServer({
     env,
     logger: silentLogger,
+    clock,
+    readiness: async () => ({ ready: true, checks: { db: 'ok' } }),
     sendMessage: new SendMessageService(templates, messages, senders, suppressions, clock, idGen),
     getMessage: new GetMessageService(messages),
     listMessages: new ListMessagesService(messages),

@@ -1,4 +1,4 @@
-import { lt } from 'drizzle-orm'
+import { and, eq, lt } from 'drizzle-orm'
 import type {
   MarkReceivedInput,
   WebhookInboxRepository,
@@ -8,6 +8,20 @@ import { webhookEvents } from './schema'
 
 export class DrizzleWebhookInboxRepository implements WebhookInboxRepository {
   constructor(private readonly db: Database) {}
+
+  async alreadyReceived(provider: string, providerEventId: string): Promise<boolean> {
+    const [row] = await this.db
+      .select({ id: webhookEvents.id })
+      .from(webhookEvents)
+      .where(
+        and(
+          eq(webhookEvents.provider, provider),
+          eq(webhookEvents.providerEventId, providerEventId),
+        ),
+      )
+      .limit(1)
+    return row !== undefined
+  }
 
   async markReceived(input: MarkReceivedInput): Promise<boolean> {
     const inserted = await this.db
@@ -26,10 +40,9 @@ export class DrizzleWebhookInboxRepository implements WebhookInboxRepository {
   }
 
   async cleanup(olderThan: Date): Promise<number> {
-    const deleted = await this.db
+    const result = await this.db
       .delete(webhookEvents)
       .where(lt(webhookEvents.receivedAt, olderThan))
-      .returning({ id: webhookEvents.id })
-    return deleted.length
+    return Number((result as unknown as { count?: number }).count ?? 0)
   }
 }

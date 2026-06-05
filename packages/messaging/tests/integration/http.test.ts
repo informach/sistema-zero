@@ -145,8 +145,13 @@ describe('GET /messaging/messages/:id', () => {
 
     const ok = await ctx.app.handle(get(`/messaging/messages/${created.id}`))
     expect(ok.status).toBe(200)
-    const notFound = await ctx.app.handle(get('/messaging/messages/nope'))
+    // uuid válido inexistente → 404; id malformado → 400 (validação, não 500 do cast).
+    const notFound = await ctx.app.handle(
+      get('/messaging/messages/00000000-0000-4000-8000-000000000000'),
+    )
     expect(notFound.status).toBe(404)
+    const malformed = await ctx.app.handle(get('/messaging/messages/nope'))
+    expect(malformed.status).toBe(400)
   })
 })
 
@@ -211,5 +216,30 @@ describe('Auth', () => {
       }),
     )
     expect(res.status).toBe(401)
+  })
+
+  it('staff: leitura 200, ESCRITA 403 (espelha o RBAC do gateway)', async () => {
+    const ctx = buildApp({ requireAdmin: true })
+    const staff = { 'x-auth-user-role': 'staff', 'x-auth-user-status': 'active' }
+
+    const read = await ctx.app.handle(get('/messaging/admin/templates', staff))
+    expect(read.status).toBe(200)
+
+    const write = await ctx.app.handle(
+      postJson(
+        '/messaging/admin/templates',
+        { key: 'k', channel: 'whatsapp', name: 'N', body: 'B' },
+        staff,
+      ),
+    )
+    expect(write.status).toBe(403)
+  })
+})
+
+describe('Health', () => {
+  it('/health 200 sempre; /readyz reflete o probe', async () => {
+    const ctx = buildApp()
+    expect((await ctx.app.handle(get('/health'))).status).toBe(200)
+    expect((await ctx.app.handle(get('/readyz'))).status).toBe(200)
   })
 })

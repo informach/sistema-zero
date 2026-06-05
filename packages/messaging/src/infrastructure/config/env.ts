@@ -18,6 +18,9 @@ const EnvSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
     PORT: z.coerce.number().int().positive().default(3006),
+    // `::` = dual-stack (IPv4+IPv6) — necessário p/ o private networking do
+    // Railway (`messaging.railway.internal` resolve IPv6). Espelha o payments.
+    HOST: z.string().min(1).default('::'),
     // Teto do corpo da requisição (bytes) — anti-DoS. 64 KB.
     MAX_REQUEST_BODY_BYTES: z.coerce
       .number()
@@ -41,11 +44,14 @@ const EnvSchema = z
     SENDGRID_WEBHOOK_PUBLIC_KEY: z.string().optional(),
     EVOLUTION_URL: z.string().url().optional(),
     EVOLUTION_API_KEY: z.string().optional(),
-    // Segredo `?token=` exigido nos webhooks de status (defesa extra). Ausente = desligado.
+    // Segredo `?token=` exigido nos webhooks de status (defesa extra). Ausente = desligado
+    // (só em dev — em produção é OBRIGATÓRIO, ver refines no fim).
     MESSAGING_WEBHOOK_TOKEN: z
       .string()
       .min(1, 'MESSAGING_WEBHOOK_TOKEN não pode ser vazia; remova para desabilitar')
       .optional(),
+    // Janela de tolerância do timestamp assinado do webhook do SendGrid (anti-replay).
+    WEBHOOK_TIMESTAMP_TOLERANCE_SECONDS: z.coerce.number().int().positive().default(600),
 
     // ── Outbox / workers ────────────────────────────────────────────────────────
     OUTBOX_POLL_INTERVAL_MS: z.coerce.number().int().positive().default(2000),
@@ -55,6 +61,10 @@ const EnvSchema = z
     SEND_POLL_INTERVAL_MS: z.coerce.number().int().positive().default(3000),
     SEND_BATCH_SIZE: z.coerce.number().int().positive().default(50),
     MAX_SEND_ATTEMPTS: z.coerce.number().int().positive().default(5),
+    // Lease do claim de envio: mensagem reivindicada (SENDING) volta a ser elegível
+    // depois disto (reaper — recupera crash/erro entre o claim e o update). Deve ser
+    // MAIOR que o pior caso claim→update (lote de e-mail sequencial + timeout do provedor).
+    SEND_CLAIM_LEASE_MS: z.coerce.number().int().positive().default(600_000),
     CLEANUP_INTERVAL_MS: z.coerce.number().int().positive().default(300_000),
     RETENTION_DAYS: z.coerce.number().int().positive().default(30),
 
@@ -79,6 +89,29 @@ const EnvSchema = z
     message: 'WA_MAX_DELAY_MS deve ser >= WA_MIN_DELAY_MS',
     path: ['WA_MAX_DELAY_MS'],
   })
+  // ── Fail-closed em produção (espelha o payments): segurança não é opt-in ─────
+  .refine((e) => !(e.NODE_ENV === 'production' && !e.MESSAGING_INTERNAL_TOKEN), {
+    message:
+      'Em produção MESSAGING_INTERNAL_TOKEN é obrigatório (sem ele as rotas de envio ficam abertas)',
+    path: ['MESSAGING_INTERNAL_TOKEN'],
+  })
+  .refine((e) => !(e.NODE_ENV === 'production' && !e.MESSAGING_WEBHOOK_TOKEN), {
+    message:
+      'Em produção MESSAGING_WEBHOOK_TOKEN é obrigatório (webhook da Evolution é público; sem token = status forjável)',
+    path: ['MESSAGING_WEBHOOK_TOKEN'],
+  })
+  .refine((e) => !(e.NODE_ENV === 'production' && !e.REQUIRE_ADMIN), {
+    message: 'Em produção REQUIRE_ADMIN não pode ser desligado (defesa em profundidade do admin)',
+    path: ['REQUIRE_ADMIN'],
+  })
+  .refine(
+    (e) => !(e.NODE_ENV === 'production' && e.SENDGRID_API_KEY && !e.SENDGRID_WEBHOOK_PUBLIC_KEY),
+    {
+      message:
+        'Em produção com SENDGRID_API_KEY, SENDGRID_WEBHOOK_PUBLIC_KEY é obrigatória (bounce forjado suprime destinatários)',
+      path: ['SENDGRID_WEBHOOK_PUBLIC_KEY'],
+    },
+  )
 
 export type Env = z.infer<typeof EnvSchema>
 

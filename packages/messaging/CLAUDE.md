@@ -18,8 +18,10 @@ partir de **templates** guardados no nosso banco. Quem solicita passa o **canal*
 template** e os **dados do destinatário** (nome + e-mail OU telefone) + variáveis. Runtime: **Bun**.
 Porta **3006**. Schema Postgres próprio **`messaging`**.
 
-> Estado: **fatia standalone completa e testada** (57 testes). Enfileira → worker envia com ritmo →
-> webhooks de status atualizam a entrega. **Sem integração com a compra/funil ainda** (fatia futura).
+> Estado: **fatia standalone completa e testada** (86 testes) + **1º full review implementado**
+> (06/2026): reaper de SENDING, token bucket de e-mail, dedupe de webhook pós-aplicação,
+> fail-closed em prod, soft bounce não suprime, normalização de endereço, default atômico,
+> /readyz + bind `::`. Enfileira → worker envia com ritmo → webhooks de status atualizam a entrega.
 
 ## Decisões de design (leia antes de mexer)
 
@@ -36,7 +38,23 @@ Porta **3006**. Schema Postgres próprio **`messaging`**.
    (anti-injeção); WhatsApp é texto puro. Sem engine que execute código.
 4. **Outbox + worker + webhooks de status** (espelha o `payments`): enfileira em `QUEUED`, o worker
    envia respeitando o ritmo, e os webhooks (`delivered`/`read`/`bounce`/`spam`) atualizam a `Message`
-   e alimentam a **supressão** (não reenviar a hard-bounce/spam/unsub).
+   e alimentam a **supressão** (não reenviar a hard-bounce/spam/unsub). ⚠️ `bounce` com
+   `type: 'blocked'` é SOFT (caixa cheia/greylisting) → **NÃO suprime** (suprimir baniria cliente
+   pagante p/ sempre); só `type: 'bounce'` (hard) e `dropped` suprimem. **Endereços são
+   NORMALIZADOS** (`domain/services/address.ts`: e-mail minúsculo, fone só dígitos) na criação da
+   Message E nos repositórios de supressão — igualdade não pode depender do formato do consumidor.
+5. **Claim com LEASE + reaper** (`SEND_CLAIM_LEASE_MS`, 10min): o claim marca SENDING com
+   `next_attempt_at = now + lease`; mensagem presa em SENDING (crash/erro entre claim e update)
+   volta a ser elegível quando o lease vence (re-claim incrementa `attempts`; worker falha o claim
+   zumbi quando `attempts >= maxAttempts`). Erro num item do lote NÃO derruba os demais (try/catch
+   por mensagem). **E-mail usa token bucket** (taxa `EMAIL_RATE_PER_SEC` sustentada por relógio,
+   rajada = `taxa × intervalo`) — limite "por tick" furava a taxa quando o LISTEN/NOTIFY disparava
+   ticks back-to-back.
+6. **Dedupe de webhook é pós-aplicação**: `alreadyReceived` (gate de leitura) na entrada →
+   aplica (com retry em `ConcurrencyConflictError`: recarrega e re-aplica) → `markReceived` por
+   ÚLTIMO. Marcar antes "consumia" o evento numa falha no meio (a reentrega caía no dedupe e o
+   status se perdia). Anti-replay do SendGrid: timestamp assinado conferido contra
+   `WEBHOOK_TIMESTAMP_TOLERANCE_SECONDS` (600s).
 
 ## Arquitetura (DDD + Hexagonal — espelha `payments`)
 
@@ -85,18 +103,33 @@ tests/    unit/ (render, pacing, message, send-worker, sendgrid-webhook) · inte
 **Envio (S2S, atrás do gateway):**
 - `POST /messaging/send` → enfileira e responde **202** `{ messageId, status }`. Body:
   `{ channel, templateKey, recipient:{name,email?,phone?}, variables?, senderId?, scheduledAt?, priority? }`.
-  Idempotência por header `Idempotency-Key` (+ `X-Consumer-Id`). Auth: `x-internal-token` (injetado
-  pelo gateway; espelha o members). Em e-mail exige remetente (senderId ou default); destinatário
-  suprimido → 409.
-- `GET /messaging/messages/:id` → status.
+  Idempotência por header `Idempotency-Key` + `X-Consumer-Id` — ⚠️ o `x-consumer-id` que chega aqui
+  é **injetado pelo GATEWAY a partir do principal HMAC autenticado** (o do cliente é stripado como
+  credencial de borda; sem essa injeção a idempotência ficava morta em prod). Corrida
+  check-then-insert coberta: 23505 na unique → devolve a mensagem existente (202, nunca 500).
+  Auth: `x-internal-token` (injetado pelo gateway; espelha o members). Em e-mail exige remetente
+  (senderId ou default); destinatário suprimido → 409.
+- `GET /messaging/messages/:id` → status (`:id` validado como uuid → 400; inexistente → 404).
 
-**Admin (painel — JWT + RBAC no gateway, `requireAdmin` defesa em profundidade):**
-`/messaging/admin/templates` (POST/PATCH/GET/lista), `/messaging/admin/senders` (POST/PATCH/lista),
-`/messaging/admin/whatsapp-instances` (POST/PATCH/lista), `GET /messaging/admin/messages` (log).
+**Admin (painel — JWT + RBAC no gateway, `requireAdmin` defesa em profundidade COM distinção
+leitura/escrita: staff+ lê, admin+ escreve — espelha o gateway):**
+`/messaging/admin/templates` (POST/PATCH/GET/lista), `/messaging/admin/senders` (POST/PATCH/lista —
+promoção de default é ATÔMICA: `clearOtherDefaults` na mesma transação), `/messaging/admin/whatsapp-instances`
+(POST/PATCH/lista), `GET /messaging/admin/messages` (log). Params `:id` validados como uuid.
+
+**Health:** `/health` (liveness, sempre 200) e `/readyz` (readiness = banco respondendo — aponte o
+healthcheck do deploy p/ cá). Bind dual-stack `::` via `HOST` (private networking do Railway é IPv6).
 
 **Webhooks de status (públicos; o serviço valida):** `POST /messaging/webhooks/sendgrid` (assinatura
-**ECDSA**, `SENDGRID_WEBHOOK_PUBLIC_KEY`) e `POST /messaging/webhooks/evolution` (`?token=`,
-`MESSAGING_WEBHOOK_TOKEN`). Deduplica por `(provider, providerEventId)` em `webhook_events`.
+**ECDSA**, `SENDGRID_WEBHOOK_PUBLIC_KEY` + janela de timestamp `WEBHOOK_TIMESTAMP_TOLERANCE_SECONDS`)
+e `POST /messaging/webhooks/evolution` (`?token=`, `MESSAGING_WEBHOOK_TOKEN`, comparação
+timing-safe). Deduplica por `(provider, providerEventId)` em `webhook_events` — gate de leitura na
+entrada, marca DEPOIS de aplicar. `connection.update` NÃO sobrescreve `PAUSED`/`BANNED` (decisão do
+admin prevalece sobre reconexão da Evolution).
+
+**Fail-closed em produção (refines no `env.ts`):** `MESSAGING_INTERNAL_TOKEN`,
+`MESSAGING_WEBHOOK_TOKEN` e `REQUIRE_ADMIN=true` são OBRIGATÓRIOS; `SENDGRID_WEBHOOK_PUBLIC_KEY`
+obrigatória quando `SENDGRID_API_KEY` está setada.
 
 DTOs em **TypeBox**; erros de domínio → status no `error-handler` (TEMPLATE_NOT_FOUND→404,
 TEMPLATE_ALREADY_EXISTS→409, MISSING_TEMPLATE_VARIABLE→400, NO_SENDER_AVAILABLE/NO_WHATSAPP_INSTANCE_AVAILABLE→422,
@@ -106,8 +139,11 @@ RECIPIENT_SUPPRESSED→409, CONCURRENCY_CONFLICT/INVALID_STATE_TRANSITION→409,
 
 Rotas em `packages/api-gateway/gateway.config.ts` (serviço `messaging`, `MESSAGING_URL`). `messaging-send`
 + `messaging-message-get`: `auth: hmac` + injeção de `x-internal-token` (`messagingInternalTransforms`,
-`MESSAGING_INTERNAL_TOKEN`). `messaging-admin-*`: `jwt` + RBAC (LEITURA staff+; ESCRITA admin+).
-`messaging-webhook-{sendgrid,evolution}`: `public` (o serviço valida assinatura/token).
+`MESSAGING_INTERNAL_TOKEN`) + **`x-consumer-id` re-injetado pelo gateway com o principal HMAC
+autenticado** (o header do cliente é stripado como credencial de borda; a re-injeção é o que faz a
+idempotência por consumidor funcionar — request-transform.stage do gateway). `messaging-admin-*`:
+`jwt` + RBAC (LEITURA staff+; ESCRITA admin+). `messaging-webhook-{sendgrid,evolution}`: `public`
+(o serviço valida assinatura/token).
 
 ## Convenções
 
@@ -124,17 +160,24 @@ Rotas em `packages/api-gateway/gateway.config.ts` (serviço `messaging`, `MESSAG
 `schemaFilter:['messaging']`). Tabelas: `message_templates`, `email_senders`, `whatsapp_instances`,
 `messages`, `webhook_events` (dedupe), `suppressions`, `outbox`. **Journal próprio**
 (`migrations: { table: 'messaging_migrations' }`) — NÃO compartilhe `__drizzle_migrations`. A 1ª
-migration faz `CREATE SCHEMA "messaging"`. Índices de claim do worker em `messages(channel,status,
+migration faz `CREATE SCHEMA "messaging"`; a `0001` dropa a coluna `weight` (nunca foi usada na
+seleção de lane). Índices de claim do worker em `messages(channel,status,
 scheduled_at,next_attempt_at)` e seleção de lane em `whatsapp_instances(enabled,status,next_available_at)`.
+Escritas do worker na lane (`reserve`/`applyLanePacing`/`delayLane`) fazem **bump de `version`** —
+um PATCH admin concorrente conflita (409) em vez de regravar contadores de ritmo velhos por cima.
+Retenção (outbox/webhook_events) gateada por **advisory lock** (`pg_try_advisory_xact_lock`, chave
+própria do messaging — só UMA réplica limpa por ciclo).
 
 ## Ritmo anti-ban (env — `domain/services/pacing.ts`)
 
 `WA_MIN_DELAY_MS`(15s)/`WA_MAX_DELAY_MS`(45s) entre mensagens · `WA_REST_AFTER_N`(50) +
 `WA_REST_DURATION_MS`(10min) descanso · `WA_DEFAULT_DAILY_CAP` (no agregado, default 200) ·
 `WA_WARMUP_DAYS`(10)/`WA_WARMUP_START_CAP`(20) · `WA_LANE_LEASE_MS` (reserva da lane no envio) ·
-`EMAIL_RATE_PER_SEC`(5) throttle de e-mail · `SEND_RETRY_BASE_MS`/`SEND_RETRY_MAX_MS` (backoff). A
-**rotação entre números** sai do worker: ele puxa a próxima mensagem para qualquer lane livre, então a
-carga se distribui e os envios ficam escalonados (cada lane com seu próprio `next_available_at`).
+`SEND_CLAIM_LEASE_MS`(10min — lease/reaper do claim de MENSAGEM) · `EMAIL_RATE_PER_SEC`(5) token
+bucket de e-mail (taxa sustentada; rajada = taxa × `SEND_POLL_INTERVAL_MS`; por réplica) ·
+`SEND_RETRY_BASE_MS`/`SEND_RETRY_MAX_MS` (backoff). A **rotação entre números** sai do worker: ele
+puxa a próxima mensagem para qualquer lane livre, então a carga se distribui e os envios ficam
+escalonados (cada lane com seu próprio `next_available_at`).
 
 ## Pontos em aberto (futuro)
 
@@ -148,7 +191,8 @@ carga se distribui e os envios ficam escalonados (cada lane com seu próprio `ne
 - UI no painel `@sistemazero/admin` (templates/remetentes/números/log de mensagens).
 - Quiet hours por timezone, automação de aquecimento, métricas `/metrics` (lag de fila), rotação de
   remetentes de e-mail por reputação.
-- Anti-replay forte do webhook (hoje dedupe por `providerEventId`; status sem id usa `keyId:status`).
+- ~~Anti-replay forte do webhook~~ **FEITO no 1º full review (06/2026):** janela de timestamp
+  assinado no SendGrid + dedupe pós-aplicação. Resíduo: Evolution não tem assinatura (só `?token=`).
 
 ## Checklist antes de finalizar
 

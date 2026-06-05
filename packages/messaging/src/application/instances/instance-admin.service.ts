@@ -12,7 +12,6 @@ export interface CreateInstanceInput {
   instanceName: string
   phoneNumber: string
   dailyCap?: number
-  weight?: number
   warmup?: boolean
 }
 
@@ -69,6 +68,10 @@ export class SetInstanceConnectionService {
   async execute(instanceName: string, connected: boolean): Promise<void> {
     const instance = await this.instances.findByInstanceName(instanceName)
     if (!instance) return
+    // PAUSED/BANNED são decisões do ADMIN — uma reconexão da Evolution não pode
+    // sobrescrevê-las (a lane voltaria a enviar contra a intenção do operador).
+    // Só o admin (PATCH) tira a instância desses estados.
+    if (instance.status === 'PAUSED' || instance.status === 'BANNED') return
     instance.setStatus(connected ? 'CONNECTED' : 'DISCONNECTED', this.clock.now())
     await this.instances.update(instance)
   }

@@ -2,7 +2,7 @@ import { Elysia } from 'elysia'
 import type { GetMessageService } from '../../../application/get-message/get-message.service'
 import type { SendMessageService } from '../../../application/send-message/send-message.service'
 import { requireInternalToken } from '../auth'
-import { SendBody } from '../dtos'
+import { IdParams, SendBody } from '../dtos'
 
 export interface SendRoutesDeps {
   sendMessage: SendMessageService
@@ -37,8 +37,12 @@ export function sendRoutes(deps: SendRoutesDeps) {
       },
       { body: SendBody },
     )
-    .get('/messaging/messages/:id', async ({ params, headers }) => {
-      requireInternalToken(headers, deps.internalToken)
-      return deps.getMessage.execute(params.id)
-    })
+    .get(
+      '/messaging/messages/:id',
+      async ({ params, headers }) => {
+        requireInternalToken(headers, deps.internalToken)
+        return deps.getMessage.execute(params.id)
+      },
+      { params: IdParams },
+    )
 }

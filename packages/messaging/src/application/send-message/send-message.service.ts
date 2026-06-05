@@ -1,6 +1,9 @@
 import type { Message } from '../../domain/message/message.aggregate'
 import { Message as MessageAggregate } from '../../domain/message/message.aggregate'
-import { RecipientSuppressedError } from '../../domain/message/message.errors'
+import {
+  IdempotencyConflictError,
+  RecipientSuppressedError,
+} from '../../domain/message/message.errors'
 import type { Clock } from '../../domain/ports/clock.port'
 import type { MessageRepository } from '../../domain/ports/message-repository.port'
 import type { SenderRepository } from '../../domain/ports/sender-repository.port'
@@ -84,7 +87,18 @@ export class SendMessageService {
       now: this.clock.now(),
     })
 
-    await this.messages.create(message)
+    try {
+      await this.messages.create(message)
+    } catch (error) {
+      // Corrida da idempotência (duas requisições concorrentes com a mesma chave):
+      // quem perdeu o insert devolve a mensagem que o vencedor criou — mesma
+      // resposta 202 do caminho feliz, sem 500.
+      if (error instanceof IdempotencyConflictError && consumerId && idempotencyKey) {
+        const existing = await this.messages.findByIdempotency(consumerId, idempotencyKey)
+        if (existing) return toMessageView(existing)
+      }
+      throw error
+    }
     return toMessageView(message)
   }
 

@@ -21,6 +21,7 @@ import {
   CreateInstanceBody,
   CreateSenderBody,
   CreateTemplateBody,
+  IdParams,
   ListMessagesQueryDto,
   ListQuery,
   ListTemplatesQuery,
@@ -46,11 +47,14 @@ export interface AdminRoutesDeps {
 
 /**
  * Rotas de administração (painel). RBAC real no gateway (JWT); aqui `requireAdmin`
- * confere os `X-Auth-User-*` como defesa em profundidade. Caminho `/messaging/admin/*`.
+ * confere os `X-Auth-User-*` como defesa em profundidade, com a MESMA distinção
+ * leitura (staff+) / escrita (admin+) do gateway. Caminho `/messaging/admin/*`.
  */
 export function adminRoutes(deps: AdminRoutesDeps) {
-  const guard = (headers: Record<string, string | undefined>) =>
+  const read = (headers: Record<string, string | undefined>) =>
     requireAdmin(headers, deps.requireAdminEnabled)
+  const write = (headers: Record<string, string | undefined>) =>
+    requireAdmin(headers, deps.requireAdminEnabled, { write: true })
 
   return (
     new Elysia()
@@ -58,7 +62,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
       .post(
         '/messaging/admin/templates',
         ({ body, headers }) => {
-          guard(headers)
+          write(headers)
           return deps.createTemplate.execute(body)
         },
         { body: CreateTemplateBody },
@@ -66,19 +70,23 @@ export function adminRoutes(deps: AdminRoutesDeps) {
       .patch(
         '/messaging/admin/templates/:id',
         ({ params, body, headers }) => {
-          guard(headers)
+          write(headers)
           return deps.updateTemplate.execute(params.id, body)
         },
-        { body: UpdateTemplateBody },
+        { params: IdParams, body: UpdateTemplateBody },
       )
-      .get('/messaging/admin/templates/:id', ({ params, headers }) => {
-        guard(headers)
-        return deps.getTemplate.execute(params.id)
-      })
+      .get(
+        '/messaging/admin/templates/:id',
+        ({ params, headers }) => {
+          read(headers)
+          return deps.getTemplate.execute(params.id)
+        },
+        { params: IdParams },
+      )
       .get(
         '/messaging/admin/templates',
         ({ query, headers }) => {
-          guard(headers)
+          read(headers)
           return deps.listTemplates.execute({
             channel: query.channel,
             q: query.q,
@@ -92,7 +100,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
       .post(
         '/messaging/admin/senders',
         ({ body, headers }) => {
-          guard(headers)
+          write(headers)
           return deps.createSender.execute(body)
         },
         { body: CreateSenderBody },
@@ -100,15 +108,15 @@ export function adminRoutes(deps: AdminRoutesDeps) {
       .patch(
         '/messaging/admin/senders/:id',
         ({ params, body, headers }) => {
-          guard(headers)
+          write(headers)
           return deps.updateSender.execute(params.id, body)
         },
-        { body: UpdateSenderBody },
+        { params: IdParams, body: UpdateSenderBody },
       )
       .get(
         '/messaging/admin/senders',
         ({ query, headers }) => {
-          guard(headers)
+          read(headers)
           return deps.listSenders.execute({ limit: query.limit ?? 20, offset: query.offset ?? 0 })
         },
         { query: ListQuery },
@@ -117,7 +125,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
       .post(
         '/messaging/admin/whatsapp-instances',
         ({ body, headers }) => {
-          guard(headers)
+          write(headers)
           return deps.createInstance.execute(body)
         },
         { body: CreateInstanceBody },
@@ -125,15 +133,15 @@ export function adminRoutes(deps: AdminRoutesDeps) {
       .patch(
         '/messaging/admin/whatsapp-instances/:id',
         ({ params, body, headers }) => {
-          guard(headers)
+          write(headers)
           return deps.updateInstance.execute(params.id, body)
         },
-        { body: UpdateInstanceBody },
+        { params: IdParams, body: UpdateInstanceBody },
       )
       .get(
         '/messaging/admin/whatsapp-instances',
         ({ query, headers }) => {
-          guard(headers)
+          read(headers)
           return deps.listInstances.execute({ limit: query.limit ?? 20, offset: query.offset ?? 0 })
         },
         { query: ListQuery },
@@ -142,7 +150,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
       .get(
         '/messaging/admin/messages',
         ({ query, headers }) => {
-          guard(headers)
+          read(headers)
           return deps.listMessages.execute({
             channel: query.channel,
             status: query.status,

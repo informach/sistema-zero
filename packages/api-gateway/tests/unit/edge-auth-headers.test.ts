@@ -88,4 +88,41 @@ describe('request-transform stage: credenciais de borda', () => {
     expect(ctx.upstreamHeaders.get('authorization')).toBe(null)
     expect(ctx.upstreamHeaders.get('x-signature')).toBe(null)
   })
+
+  test('principal HMAC autenticado é re-injetado como x-consumer-id confiável', async () => {
+    const ctx = makeContext({
+      method: 'POST',
+      body: '{}',
+      // O cliente manda o próprio x-consumer-id (credencial de borda) — o valor
+      // que chega ao upstream deve ser o AUTENTICADO, nunca o do header cru.
+      headers: { 'x-consumer-id': 'spoofado', 'x-signature': 't=1,v1=a' },
+    })
+    ctx.route = routeMatch({})
+    ctx.principal = { kind: 'hmac', subject: 'funnel' }
+    const stage = createRequestTransformStage({ getTransformers: () => [] })
+    await stage.run(ctx)
+    expect(ctx.upstreamHeaders.get('x-consumer-id')).toBe('funnel')
+    expect(ctx.upstreamHeaders.get('x-signature')).toBe(null)
+  })
+
+  test('sem principal (rota pública): x-consumer-id NÃO chega ao upstream', async () => {
+    const ctx = makeContext({
+      method: 'POST',
+      body: '{}',
+      headers: { 'x-consumer-id': 'spoofado' },
+    })
+    ctx.route = routeMatch({})
+    const stage = createRequestTransformStage({ getTransformers: () => [] })
+    await stage.run(ctx)
+    expect(ctx.upstreamHeaders.get('x-consumer-id')).toBe(null)
+  })
+
+  test('principal JWT não vira x-consumer-id (só HMAC é consumer S2S)', async () => {
+    const ctx = makeContext({ method: 'POST', body: '{}', headers: {} })
+    ctx.route = routeMatch({})
+    ctx.principal = { kind: 'jwt', subject: 'user-1' }
+    const stage = createRequestTransformStage({ getTransformers: () => [] })
+    await stage.run(ctx)
+    expect(ctx.upstreamHeaders.get('x-consumer-id')).toBe(null)
+  })
 })
