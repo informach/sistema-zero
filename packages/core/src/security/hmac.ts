@@ -28,10 +28,14 @@ export function verifyHmacSignature(input: {
 }): HmacVerifyResult {
   if (!input.signatureHeader) return { valid: false, reason: 'malformed_header' }
 
+  // Divide cada par só no PRIMEIRO `=` (preserva `=` dentro do valor — `split`
+  // simples truncaria silenciosamente, ex.: um futuro v2 em base64 com padding).
   const parts = Object.fromEntries(
     input.signatureHeader.split(',').map((p) => {
-      const [k, v] = p.trim().split('=')
-      return [k ?? '', v ?? '']
+      const item = p.trim()
+      const eq = item.indexOf('=')
+      if (eq === -1) return [item, '']
+      return [item.slice(0, eq), item.slice(eq + 1)]
     }),
   ) as { t?: string; v1?: string }
 

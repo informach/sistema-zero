@@ -12,6 +12,7 @@ export interface RateLimitResult {
  */
 export class InMemoryRateLimiter {
   private readonly windows = new Map<string, { count: number; resetAt: number }>()
+  private nextSweepAt = 0
 
   constructor(
     private readonly limit: number,
@@ -20,6 +21,7 @@ export class InMemoryRateLimiter {
 
   check(key: string): RateLimitResult {
     const now = Date.now()
+    this.sweep(now)
     const current = this.windows.get(key)
 
     if (!current || current.resetAt <= now) {
@@ -33,5 +35,19 @@ export class InMemoryRateLimiter {
 
     current.count++
     return { allowed: true }
+  }
+
+  /**
+   * Expurgo preguiçoso: no máximo uma varredura O(n) por janela, removendo
+   * entradas já expiradas. Sem isso o `Map` só cresce — chaves vistas uma vez
+   * (ex.: muitos consumidores, ou uma futura chave por IP) ficariam retidas
+   * para sempre.
+   */
+  private sweep(now: number): void {
+    if (now < this.nextSweepAt) return
+    this.nextSweepAt = now + this.windowMs
+    for (const [key, window] of this.windows) {
+      if (window.resetAt <= now) this.windows.delete(key)
+    }
   }
 }
