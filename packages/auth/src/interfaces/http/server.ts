@@ -140,6 +140,7 @@ export function createServer(deps: HttpDeps) {
         createUser: deps.createUser,
         updateUser: deps.updateUser,
         batchGetUsers: deps.batchGetUsers,
+        internalToken: deps.env.AUTH_INTERNAL_TOKEN,
       }),
     )
 }

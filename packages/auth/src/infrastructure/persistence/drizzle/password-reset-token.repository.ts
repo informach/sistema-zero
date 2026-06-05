@@ -1,4 +1,4 @@
-import { and, desc, eq, isNull, lt } from 'drizzle-orm'
+import { and, desc, eq, inArray, isNull, lt } from 'drizzle-orm'
 import type {
   CreatePasswordResetTokenInput,
   PasswordResetTokenRecord,
@@ -8,6 +8,9 @@ import type { Database } from './db'
 import { passwordResetTokens } from './schema'
 
 type ResetRow = typeof passwordResetTokens.$inferSelect
+
+/** Teto por DELETE da purga (bounded sob o statement_timeout — ver refresh-token.repository). */
+const PURGE_BATCH_SIZE = 5_000
 
 /** Repositório de tokens de redefinição de senha (Drizzle/Postgres). */
 export class DrizzlePasswordResetTokenRepository implements PasswordResetTokenRepository {
@@ -58,11 +61,21 @@ export class DrizzlePasswordResetTokenRepository implements PasswordResetTokenRe
   }
 
   async deleteExpired(before: Date): Promise<number> {
-    const deleted = await this.db
-      .delete(passwordResetTokens)
-      .where(lt(passwordResetTokens.expiresAt, before))
-      .returning({ id: passwordResetTokens.id })
-    return deleted.length
+    // Em LOTES (subquery LIMIT) — usa o índice `password_reset_tokens_expires_idx`.
+    let total = 0
+    for (;;) {
+      const batch = this.db
+        .select({ id: passwordResetTokens.id })
+        .from(passwordResetTokens)
+        .where(lt(passwordResetTokens.expiresAt, before))
+        .limit(PURGE_BATCH_SIZE)
+      const deleted = await this.db
+        .delete(passwordResetTokens)
+        .where(inArray(passwordResetTokens.id, batch))
+        .returning({ id: passwordResetTokens.id })
+      total += deleted.length
+      if (deleted.length < PURGE_BATCH_SIZE) return total
+    }
   }
 }
 

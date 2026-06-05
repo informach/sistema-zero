@@ -1,4 +1,4 @@
-import { and, eq, isNull, lt } from 'drizzle-orm'
+import { and, eq, inArray, isNull, lt } from 'drizzle-orm'
 import type {
   CreateRefreshTokenInput,
   RefreshTokenRecord,
@@ -8,6 +8,13 @@ import type { Database } from './db'
 import { refreshTokens } from './schema'
 
 type RefreshRow = typeof refreshTokens.$inferSelect
+
+/**
+ * Teto de linhas por DELETE da purga. Uma DELETE única num backlog grande (ex.:
+ * purga parada por dias) estouraria o `statement_timeout` (30s) e NUNCA
+ * completaria — cada lote fica bem abaixo do teto e o laço soma os totais.
+ */
+const PURGE_BATCH_SIZE = 5_000
 
 /** Repositório de refresh tokens (Drizzle/Postgres). */
 export class DrizzleRefreshTokenRepository implements RefreshTokenRepository {
@@ -54,17 +61,21 @@ export class DrizzleRefreshTokenRepository implements RefreshTokenRepository {
   }
 
   async revoke(id: string): Promise<void> {
+    // Só se ainda vigente: re-revogar sobrescreveria o timestamp ORIGINAL da
+    // revogação (trilha de auditoria da reuse-detection).
     await this.db
       .update(refreshTokens)
       .set({ revokedAt: new Date() })
-      .where(eq(refreshTokens.id, id))
+      .where(and(eq(refreshTokens.id, id), isNull(refreshTokens.revokedAt)))
   }
 
   async revokeFamily(familyId: string): Promise<void> {
+    // Idem: preserva o revokedAt original das linhas já revogadas (e evita
+    // reescrever a família inteira a cada detecção de reuso repetida).
     await this.db
       .update(refreshTokens)
       .set({ revokedAt: new Date() })
-      .where(eq(refreshTokens.familyId, familyId))
+      .where(and(eq(refreshTokens.familyId, familyId), isNull(refreshTokens.revokedAt)))
   }
 
   async revokeAllForUser(userId: string): Promise<void> {
@@ -76,11 +87,22 @@ export class DrizzleRefreshTokenRepository implements RefreshTokenRepository {
   }
 
   async deleteExpired(before: Date): Promise<number> {
-    const deleted = await this.db
-      .delete(refreshTokens)
-      .where(lt(refreshTokens.expiresAt, before))
-      .returning({ id: refreshTokens.id })
-    return deleted.length
+    // Em LOTES (subquery LIMIT): cada DELETE fica bounded sob o statement_timeout.
+    // Usa o índice `refresh_tokens_expires_idx`.
+    let total = 0
+    for (;;) {
+      const batch = this.db
+        .select({ id: refreshTokens.id })
+        .from(refreshTokens)
+        .where(lt(refreshTokens.expiresAt, before))
+        .limit(PURGE_BATCH_SIZE)
+      const deleted = await this.db
+        .delete(refreshTokens)
+        .where(inArray(refreshTokens.id, batch))
+        .returning({ id: refreshTokens.id })
+      total += deleted.length
+      if (deleted.length < PURGE_BATCH_SIZE) return total
+    }
   }
 }
 

@@ -1,3 +1,4 @@
+import type { Logger } from '@sistemazero/core/logging'
 import type { PasswordHasher } from '../../domain/ports/password-hasher.port'
 import type { UserRepository } from '../../domain/ports/user-repository.port'
 import { InvalidCredentialsError, UserNotActiveError } from '../../domain/user/user.errors'
@@ -27,6 +28,7 @@ export class LoginService {
     private readonly hasher: PasswordHasher,
     private readonly tokens: AuthTokenService,
     private readonly opts: LoginServiceOptions = {},
+    private readonly logger?: Logger,
   ) {}
 
   async execute(command: LoginCommand): Promise<{ user: UserView; tokens: AuthTokens }> {
@@ -40,7 +42,12 @@ export class LoginService {
     }
 
     const ok = await this.hasher.verify(command.password, user.passwordHash)
-    if (!ok) throw new InvalidCredentialsError()
+    if (!ok) {
+      // Auditoria de brute-force POR CONTA (o access log do gateway só tem o IP):
+      // userId em vez de e-mail (minimiza PII no log). A resposta segue genérica.
+      this.logger?.warn('auth.login.failed', { userId: user.id, ip: command.ip ?? null })
+      throw new InvalidCredentialsError()
+    }
     if (!user.isActive()) throw new UserNotActiveError(statusMessage(user.status))
 
     const tokens = await this.tokens.issueForUser(user, {

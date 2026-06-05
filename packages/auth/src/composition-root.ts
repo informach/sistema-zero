@@ -112,7 +112,7 @@ export async function createApplication(env: Env): Promise<Application> {
     { passwordMinLength: env.PASSWORD_MIN_LENGTH },
     logger,
   )
-  const login = new LoginService(users, hasher, authTokens, { dummyHash })
+  const login = new LoginService(users, hasher, authTokens, { dummyHash }, logger)
   // Garante o usuário do comprador (novo/recorrente) no fluxo S2S pós-pagamento.
   const ensureBuyer = new EnsureBuyerService(
     users,

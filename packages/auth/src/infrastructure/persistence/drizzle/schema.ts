@@ -62,6 +62,9 @@ export const refreshTokens = auth.table(
     uniqueIndex('refresh_tokens_hash_uq').on(t.tokenHash),
     index('refresh_tokens_user_idx').on(t.userId),
     index('refresh_tokens_family_idx').on(t.familyId),
+    // Purga periódica (deleteExpired): sem este índice cada ciclo varre a tabela
+    // inteira — e é a tabela que mais cresce (1 linha por login/rotação).
+    index('refresh_tokens_expires_idx').on(t.expiresAt),
   ],
 )
 
@@ -83,6 +86,8 @@ export const passwordResetTokens = auth.table(
   (t) => [
     uniqueIndex('password_reset_tokens_hash_uq').on(t.tokenHash),
     index('password_reset_tokens_user_idx').on(t.userId),
+    // Purga periódica (deleteExpired).
+    index('password_reset_tokens_expires_idx').on(t.expiresAt),
   ],
 )
 
@@ -104,7 +109,11 @@ export const otpCodes = auth.table(
     consumedAt: timestamp('consumed_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index('otp_codes_user_purpose_idx').on(t.userId, t.purpose)],
+  (t) => [
+    index('otp_codes_user_purpose_idx').on(t.userId, t.purpose),
+    // Purga periódica (deleteExpired).
+    index('otp_codes_expires_idx').on(t.expiresAt),
+  ],
 )
 
 export const schema = {

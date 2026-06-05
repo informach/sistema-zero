@@ -77,7 +77,9 @@ export const UpdateMeBody = t.Object({
   lastName: t.Optional(t.String({ minLength: 1, maxLength: 100 })),
   phone: t.Optional(t.Union([t.String({ maxLength: 20 }), t.Null()])),
   // URL pública da foto de perfil (o upload é do app cliente; `null` remove).
-  avatarUrl: t.Optional(t.Union([t.String({ maxLength: 2000 }), t.Null()])),
+  // SÓ http(s): os apps renderizam este valor como `src` — sem o pino de scheme,
+  // um `javascript:`/`data:` armazenado viraria vetor nos clientes.
+  avatarUrl: t.Optional(t.Union([t.String({ maxLength: 2000, pattern: '^https?://' }), t.Null()])),
 })
 
 /** Corpo de `POST /auth/me/password` (troca logado; exige a senha atual). */

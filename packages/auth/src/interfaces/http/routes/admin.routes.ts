@@ -16,6 +16,7 @@ import {
   UserIdParams,
 } from '../dtos'
 import { PayloadTooLargeError } from '../errors'
+import { requireInternalToken } from '../internal-auth'
 import { isOversizeBody } from '../raw-body'
 
 export interface AdminRoutesDeps {
@@ -24,6 +25,13 @@ export interface AdminRoutesDeps {
   createUser: CreateUserService
   updateUser: UpdateUserService
   batchGetUsers: BatchGetUsersService
+  /**
+   * `AUTH_INTERNAL_TOKEN` — o gateway o injeta TAMBÉM nas rotas admin (igual ao
+   * members/catalog): é o que prova que os `X-Auth-User-*` vieram do gateway.
+   * Sem essa checagem, quem alcançasse o serviço direto na rede interna forjaria
+   * a identidade de superadmin só com headers.
+   */
+  internalToken: string | undefined
 }
 
 // Papéis aceitos por operação (re-checagem na borda; o gateway já barra antes).
@@ -38,6 +46,21 @@ const WRITE_ROLES: readonly UserRole[] = ['superadmin', 'admin']
  * profundidade) e usamos a identidade do ator nos guards de edição.
  */
 export function adminRoutes(deps: AdminRoutesDeps) {
+  // Ator = token interno do gateway (anti-spoof dos X-Auth-User-*) + papel/status.
+  const requireActor = (
+    headers: Record<string, string | undefined>,
+    allowed: readonly UserRole[],
+  ): GatewayActor => {
+    requireInternalToken(headers, deps.internalToken)
+    const actor = resolveGatewayActor(headers)
+    if (!actor) throw new UnauthorizedError('Identidade do gateway ausente')
+    if (!allowed.includes(actor.role)) {
+      throw new ForbiddenError('Sem permissão para esta operação')
+    }
+    if (actor.status !== 'active') throw new ForbiddenError('Conta sem acesso (status)')
+    return actor
+  }
+
   return new Elysia({ prefix: '/auth/admin' })
     .get(
       '/users',
@@ -111,22 +134,4 @@ export function adminRoutes(deps: AdminRoutesDeps) {
       },
       { body: UpdateUserBody, params: UserIdParams },
     )
-}
-
-/**
- * Exige um ator ativo (resolvido dos headers do gateway) cujo papel esteja em
- * `allowed`. Lança 401 (sem identidade) ou 403 (papel/status insuficiente) — o
- * gateway já barra, mas re-checamos na borda do serviço.
- */
-function requireActor(
-  headers: Record<string, string | undefined>,
-  allowed: readonly UserRole[],
-): GatewayActor {
-  const actor = resolveGatewayActor(headers)
-  if (!actor) throw new UnauthorizedError('Identidade do gateway ausente')
-  if (!allowed.includes(actor.role)) {
-    throw new ForbiddenError('Sem permissão para esta operação')
-  }
-  if (actor.status !== 'active') throw new ForbiddenError('Conta sem acesso (status)')
-  return actor
 }

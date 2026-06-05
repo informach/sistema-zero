@@ -1,4 +1,4 @@
-import { and, desc, eq, gt, isNull, lt, sql } from 'drizzle-orm'
+import { and, desc, eq, gt, inArray, isNull, lt, sql } from 'drizzle-orm'
 import type {
   CreateOtpCodeInput,
   OtpCodeRecord,
@@ -9,6 +9,9 @@ import type { Database } from './db'
 import { otpCodes } from './schema'
 
 type OtpRow = typeof otpCodes.$inferSelect
+
+/** Teto por DELETE da purga (bounded sob o statement_timeout — ver refresh-token.repository). */
+const PURGE_BATCH_SIZE = 5_000
 
 /** Repositório de códigos OTP (Drizzle/Postgres). Guarda só o hash do código. */
 export class DrizzleOtpCodeRepository implements OtpCodeRepository {
@@ -82,11 +85,21 @@ export class DrizzleOtpCodeRepository implements OtpCodeRepository {
   }
 
   async deleteExpired(before: Date): Promise<number> {
-    const deleted = await this.db
-      .delete(otpCodes)
-      .where(lt(otpCodes.expiresAt, before))
-      .returning({ id: otpCodes.id })
-    return deleted.length
+    // Em LOTES (subquery LIMIT) — usa o índice `otp_codes_expires_idx`.
+    let total = 0
+    for (;;) {
+      const batch = this.db
+        .select({ id: otpCodes.id })
+        .from(otpCodes)
+        .where(lt(otpCodes.expiresAt, before))
+        .limit(PURGE_BATCH_SIZE)
+      const deleted = await this.db
+        .delete(otpCodes)
+        .where(inArray(otpCodes.id, batch))
+        .returning({ id: otpCodes.id })
+      total += deleted.length
+      if (deleted.length < PURGE_BATCH_SIZE) return total
+    }
   }
 }
 

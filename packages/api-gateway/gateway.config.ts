@@ -485,6 +485,9 @@ const config: GatewayConfigInput = {
     // Bearer e injeta X-Auth-User-* confiável — o `auth` lê o ator daí, re-checa o
     // papel (defesa em profundidade) e aplica os guards hierárquicos. Leitura aceita
     // staff; a edição (PATCH) afina para superadmin/admin (o auth ainda barra admin↛admin).
+    // COM `authInternalTransforms` (igual ao members-admin): o auth exige o
+    // `x-internal-token` também no admin — sem ele os X-Auth-User-* seriam forjáveis
+    // por quem alcançasse o serviço direto na rede interna.
     {
       id: 'auth-admin-users-list',
       methods: ['GET'],
@@ -492,6 +495,7 @@ const config: GatewayConfigInput = {
       service: 'auth',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: authInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
     // Criação pelo painel (fluxo CONVITE: senha aleatória + e-mail de definição).
@@ -504,6 +508,7 @@ const config: GatewayConfigInput = {
       service: 'auth',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: authInternalTransforms,
       rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
     },
     {
@@ -513,6 +518,7 @@ const config: GatewayConfigInput = {
       service: 'auth',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: authInternalTransforms,
       rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
     },
     {
@@ -522,6 +528,7 @@ const config: GatewayConfigInput = {
       service: 'auth',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: authInternalTransforms,
       rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
     },
     // Hidratação de identidade em LOTE (≤100 ids) — usada pelo painel admin (área de
@@ -533,6 +540,7 @@ const config: GatewayConfigInput = {
       service: 'auth',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: authInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
 

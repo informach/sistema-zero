@@ -3,11 +3,11 @@ import type { RefreshTokenRepository } from '../../domain/ports/refresh-token-re
 
 export interface LogoutCommand {
   refreshToken: string
-  /** true = revoga TODAS as sessões do usuário (a família inteira). */
+  /** true = revoga TODAS as sessões do usuário (todos os dispositivos/famílias). */
   allSessions?: boolean
 }
 
-/** Caso de uso de logout: revoga o refresh apresentado (ou toda a família). Idempotente. */
+/** Caso de uso de logout: revoga o refresh apresentado (ou todas as sessões). Idempotente. */
 export class LogoutService {
   constructor(private readonly refreshTokens: RefreshTokenRepository) {}
 
@@ -19,7 +19,10 @@ export class LogoutService {
     const record = await this.refreshTokens.findByHash(sha256Hex(presented))
     if (!record) return
 
-    if (command.allSessions) await this.refreshTokens.revokeFamily(record.familyId)
+    // "Todas as sessões" = TODAS as famílias do usuário (cada login/dispositivo
+    // inicia uma família própria — revogar só a família do token apresentado
+    // deixaria os outros dispositivos logados).
+    if (command.allSessions) await this.refreshTokens.revokeAllForUser(record.userId)
     else await this.refreshTokens.revoke(record.id)
   }
 }

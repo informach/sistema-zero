@@ -17,12 +17,17 @@ usuário das claims e autoriza por rota). Runtime: **Bun**. Linguagem: **TS (ESM
 > Estado: **slices completos e testados** (registro/login/refresh/logout/me + JWKS;
 > admin de usuários; reset/definição de senha + **OTP por e-mail** — login passwordless
 > e recuperação por código — + self-service de perfil c/ avatar + rotas internas S2S),
-> 101 testes passando (incl. `tests/db/` contra Postgres real — pulados sem banco).
+> 105 testes passando (incl. `tests/db/` contra Postgres real — pulados sem banco).
 > **1º full review (2026-06-05) com TODOS os achados implementados** (rotação
 > atômica, fail-closed em prod, readyz/bind, purga, cooldowns — ver "Decisões").
+> **2º full review (2026-06-05, prod-readiness) com TODOS os achados implementados**:
+> `x-internal-token` TAMBÉM nas rotas admin (anti-spoof dos `X-Auth-User-*`),
+> messaging+COMMUNITY_URL obrigatórios em prod (fail-fast), logout `allSessions`
+> revoga TODAS as famílias, purga em LOTES + índices `expires_at`, revoke preserva
+> timestamp, avatarUrl só http(s), log de login falho, stack no unhandled.
 > Migrations `0000_*` (schema `auth`), `0001_*` (`password_reset_tokens`), `0002_*`
-> (`otp_codes`) e `0003_*` (`users.avatar_url`) **aplicadas** no Postgres
-> compartilhado local.
+> (`otp_codes`), `0003_*` (`users.avatar_url`) e `0004_*` (índices `expires_at` da
+> purga) **aplicadas** no Postgres compartilhado local.
 
 ## Arquitetura (DDD + Hexagonal)
 
@@ -99,7 +104,22 @@ src/
    **Purga periódica** (composition-root, a cada 6h + boot, advisory lock
    `pg_try_advisory_xact_lock` próprio — chave `1635430504`, espaço GLOBAL ao
    banco compartilhado): apaga refresh/reset/otp expirados há > 7 dias (folga
-   preserva a detecção tardia de reuso enquanto importa).
+   preserva a detecção tardia de reuso enquanto importa). O `deleteExpired` roda
+   em **LOTES de 5k** (subquery LIMIT — uma DELETE única num backlog grande
+   estouraria o `statement_timeout` de 30s e a purga NUNCA completaria) sobre os
+   índices `*_expires_idx` (migration `0004`). `revoke`/`revokeFamily` filtram
+   `revokedAt IS NULL` (preservam o timestamp ORIGINAL — trilha de auditoria).
+   **Logout `allSessions: true` = `revokeAllForUser`** (TODAS as famílias/
+   dispositivos — revogar só a família do token apresentado deixaria os outros
+   dispositivos logados). **Fail-fast de produção no env:** além do
+   `AUTH_INTERNAL_TOKEN`, produção exige `GATEWAY_URL` + `AUTH_HMAC_SECRET`
+   (sem eles o messaging é NO-OP silencioso — reset/OTP/convite responderiam 200
+   sem nunca enviar e-mail) e `COMMUNITY_URL` não-localhost (links de e-mail).
+   Login com senha errada loga `auth.login.failed` (userId + ip — auditoria de
+   brute-force POR CONTA; a resposta segue genérica). `avatarUrl` no PATCH /me
+   só aceita `http(s)://` (os apps renderizam como `src` — sem o pino,
+   `javascript:`/`data:` armazenado viraria vetor). O `unhandled.error` loga
+   `serializeError` (inclui stack).
 7. **Opcionais `phone`/`signupSource`:** fluem do DTO de registro → agregado →
    colunas nullable → claims do token → `user-view`. `signupSource` = app/canal do
    cadastro (funnel/web/mobile/admin).
@@ -169,7 +189,11 @@ src/
 - **Rotas admin `/auth/admin/users*`** (gestão de usuários pelo painel) são a
   EXCEÇÃO: o gateway as protege com **JWT + RBAC** (`GET` listar/detalhe + `POST
   .../batch` hidratação em lote por ids → superadmin/admin/staff; `POST /auth/admin/users`
-  criar + `PATCH` editar → superadmin/admin) e injeta `X-Auth-User-*` (NÃO `passthrough`).
+  criar + `PATCH` editar → superadmin/admin) e injeta `X-Auth-User-*` (NÃO `passthrough`)
+  **+ o `x-internal-token`** (`authInternalTransforms`/`AUTH_INTERNAL_TOKEN` — o
+  auth o EXIGE também no admin, igual ao members/catalog: é o que prova que os
+  `X-Auth-User-*` vieram do gateway; sem isso, quem alcançasse o serviço direto
+  na rede interna forjaria identidade de superadmin só com headers).
   O `batch` (`BatchGetUsersService` + `UserRepository.listByIds`, ≤100 ids) hidrata identidade
   p/ a área de membros (que lista `userId`s) — evita N+1. O serviço lê o ator desses
   headers (`resolveGatewayActor`),

@@ -98,8 +98,23 @@ const EnvSchema = z
   // (o gateway precisa do MESMO valor em AUTH_INTERNAL_TOKEN para injetá-lo).
   .refine((e) => e.NODE_ENV !== 'production' || (e.AUTH_INTERNAL_TOKEN?.length ?? 0) >= 16, {
     message:
-      'AUTH_INTERNAL_TOKEN é obrigatório em produção (≥ 16 caracteres) — sem ele as rotas /auth/internal/* ficam sem a defesa em profundidade',
+      'AUTH_INTERNAL_TOKEN é obrigatório em produção (≥ 16 caracteres) — sem ele as rotas /auth/internal/* e /auth/admin/* ficam sem a defesa em profundidade',
     path: ['AUTH_INTERNAL_TOKEN'],
+  })
+  // Produção exige o messaging configurado: sem GATEWAY_URL + AUTH_HMAC_SECRET o
+  // cliente é NO-OP silencioso — forgot-password/OTP/convite respondem 200 mas
+  // NENHUM e-mail sai (fluxos centrais quebrados sem nenhum erro visível).
+  .refine((e) => e.NODE_ENV !== 'production' || Boolean(e.GATEWAY_URL && e.AUTH_HMAC_SECRET), {
+    message:
+      'GATEWAY_URL e AUTH_HMAC_SECRET são obrigatórios em produção — sem eles o envio de e-mail (reset/OTP/convite) é um no-op silencioso',
+    path: ['GATEWAY_URL'],
+  })
+  // Os links de e-mail apontam para o COMMUNITY_URL — o default localhost em
+  // produção entregaria links quebrados (reset/convite inutilizáveis).
+  .refine((e) => e.NODE_ENV !== 'production' || !/localhost|127\.0\.0\.1/.test(e.COMMUNITY_URL), {
+    message:
+      'COMMUNITY_URL é obrigatória em produção (o default localhost geraria links de e-mail quebrados)',
+    path: ['COMMUNITY_URL'],
   })
 
 export type Env = z.infer<typeof EnvSchema>

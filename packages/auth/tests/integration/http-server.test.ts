@@ -323,6 +323,28 @@ describe('Auth HTTP server', () => {
     expect(after.status).toBe(401)
   })
 
+  test('POST /auth/logout allSessions revoga TODOS os dispositivos (famílias)', async () => {
+    const { app } = buildApp()
+    // Dispositivo A: registro (1ª família). Dispositivo B: login (2ª família).
+    const reg = (await (await app.handle(post('/auth/register', REGISTER_BODY))).json()) as {
+      tokens: Tokens
+    }
+    const loginRes = await app.handle(
+      post('/auth/login', { email: REGISTER_BODY.email, password: REGISTER_BODY.password }),
+    )
+    expect(loginRes.status).toBe(200)
+    const { tokens: deviceB } = (await loginRes.json()) as { tokens: Tokens }
+
+    // Logout "todas as sessões" pelo dispositivo A → o refresh do B também cai.
+    const logout = await app.handle(
+      post('/auth/logout', { refreshToken: reg.tokens.refreshToken, allSessions: true }),
+    )
+    expect(logout.status).toBe(200)
+    expect(
+      (await app.handle(post('/auth/refresh', { refreshToken: deviceB.refreshToken }))).status,
+    ).toBe(401)
+  })
+
   test('GET /auth/me com access token → 200 (contrato do usuário)', async () => {
     const { app } = buildApp()
     const reg = (await (await app.handle(post('/auth/register', REGISTER_BODY))).json()) as {
@@ -850,9 +872,10 @@ describe('Auth admin routes (/auth/admin/users)', () => {
     return id
   }
 
-  // Simula o gateway: injeta os headers X-Auth-User-* (confiáveis na borda do auth).
+  // Simula o gateway: injeta o x-internal-token (prova de origem) + X-Auth-User-*.
   function actorHeaders(role: string): Record<string, string> {
     return {
+      'x-internal-token': INTERNAL_TOKEN,
       'x-auth-user-id': crypto.randomUUID(),
       'x-auth-user-role': role,
       'x-auth-user-status': 'active',
@@ -873,6 +896,16 @@ describe('Auth admin routes (/auth/admin/users)', () => {
   test('GET /auth/admin/users sem identidade do gateway → 401', async () => {
     const { app } = buildApp()
     expect((await app.handle(getReq('/auth/admin/users'))).status).toBe(401)
+  })
+
+  test('GET /auth/admin/users com X-Auth-User-* forjados mas SEM x-internal-token → 401', async () => {
+    // Anti-spoof: os X-Auth-User-* só valem acompanhados do token interno que o
+    // gateway injeta — sem ele, headers forjados não viram identidade de admin.
+    const { app } = buildApp()
+    const { 'x-internal-token': _omitted, ...forged } = actorHeaders('superadmin')
+    expect((await app.handle(getReq('/auth/admin/users', forged))).status).toBe(401)
+    const wrong = { ...actorHeaders('superadmin'), 'x-internal-token': 'token-errado-qualquer' }
+    expect((await app.handle(getReq('/auth/admin/users', wrong))).status).toBe(401)
   })
 
   test('GET /auth/admin/users como customer → 403', async () => {
