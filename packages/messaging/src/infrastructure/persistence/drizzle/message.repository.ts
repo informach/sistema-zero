@@ -10,13 +10,19 @@ import { ConcurrencyConflictError } from './concurrency.error'
 import type { Database } from './db'
 import { messages, outbox } from './schema'
 
+/**
+ * 23505 (unique_violation) com tolerância a envelopamento: drizzle ≥0.44 embrulha
+ * o erro do driver em `DrizzleQueryError` com o original em `cause` — checar só o
+ * topo deixaria a corrida de idempotência virar 500 em vez do caminho idempotente.
+ * Caminha a cadeia de `cause` (com teto). Espelha o auth.
+ */
 function isUniqueViolation(error: unknown): boolean {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'code' in error &&
-    (error as { code: unknown }).code === '23505'
-  )
+  let current: unknown = error
+  for (let depth = 0; depth < 5 && typeof current === 'object' && current !== null; depth++) {
+    if ((current as { code?: unknown }).code === '23505') return true
+    current = (current as { cause?: unknown }).cause
+  }
+  return false
 }
 
 type MessageRow = typeof messages.$inferSelect
