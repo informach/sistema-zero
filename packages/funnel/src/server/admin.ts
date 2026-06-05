@@ -88,14 +88,44 @@ export async function adminLogout(request: Request, deps: AdminDeps): Promise<Re
   )
 }
 
-/** GET /api/admin/leads — uma linha por lead com todas as respostas. */
+/** Tamanho de página padrão e teto da listagem de leads. */
+const LEADS_PAGE_SIZE = 25
+const LEADS_MAX_LIMIT = 100
+
+/** Lê um inteiro ≥ 0 da query (NaN/negativo → fallback). */
+function intParam(value: string | null, fallback: number): number {
+  const n = Number.parseInt(value ?? '', 10)
+  return Number.isFinite(n) && n >= 0 ? n : fallback
+}
+
+/**
+ * GET /api/admin/leads — página de leads (mais recentes primeiro), com busca e
+ * ordenação no SERVIDOR (valem sobre TODOS os leads, não só a página atual).
+ * Query: `limit` (1..100, default 25), `offset`, `q` (nome/e-mail), `sort` (asc|desc).
+ * Resposta: `{ leads, total, limit, offset }` — `total` alimenta a paginação da UI.
+ */
 export async function adminLeads(request: Request, deps: AdminDeps): Promise<Response> {
   const auth = await resolveAdmin(request, deps.gateway, deps.secureCookie)
   if (!auth) return jsonError('Não autorizado.', 401, 'UNAUTHORIZED')
-  // Cap simples (mais recentes primeiro); sem paginação no painel ainda — revisar
-  // se o volume de leads passar de ~1000.
-  const leads = await deps.repo.listLeads(1000, 0)
-  return json({ leads }, 200, withSession({ 'cache-control': 'no-store' }, auth.setCookies))
+
+  const params = new URL(request.url).searchParams
+  const limit = Math.min(
+    LEADS_MAX_LIMIT,
+    Math.max(1, intParam(params.get('limit'), LEADS_PAGE_SIZE)),
+  )
+  const offset = intParam(params.get('offset'), 0)
+  const q = params.get('q')?.trim() || undefined
+  const sort = params.get('sort') === 'asc' ? 'asc' : 'desc'
+
+  const [leads, total] = await Promise.all([
+    deps.repo.listLeads(limit, offset, { q, sort }),
+    deps.repo.countLeads(q),
+  ])
+  return json(
+    { leads, total, limit, offset },
+    200,
+    withSession({ 'cache-control': 'no-store' }, auth.setCookies),
+  )
 }
 
 /** GET /api/admin/funnel — contagem e conversão por etapa. */

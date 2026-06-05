@@ -1,5 +1,8 @@
 import type { EventCount, FunnelRepo, Lead, LeadUpdate } from '../../src/db/repo'
 
+const matchesQuery = (l: Lead, term: string) =>
+  (l.nome ?? '').toLowerCase().includes(term) || (l.email ?? '').toLowerCase().includes(term)
+
 function baseLead(id: string): Lead {
   return {
     id,
@@ -86,11 +89,21 @@ export function createFakeRepo(): FakeRepoState {
     async insertEvent(leadId, eventName, step = null) {
       events.push({ leadId, eventName, step })
     },
-    async listLeads(limit, offset) {
-      return [...leads.values()].slice(offset, offset + limit)
+    async listLeads(limit, offset, filter) {
+      let rows = [...leads.values()]
+      const q = filter?.q?.trim().toLowerCase()
+      if (q) rows = rows.filter((l) => matchesQuery(l, q))
+      rows.sort((a, b) =>
+        filter?.sort === 'asc'
+          ? a.createdAt.getTime() - b.createdAt.getTime()
+          : b.createdAt.getTime() - a.createdAt.getTime(),
+      )
+      return rows.slice(offset, offset + limit)
     },
-    async countLeads() {
-      return leads.size
+    async countLeads(q) {
+      const term = q?.trim().toLowerCase()
+      if (!term) return leads.size
+      return [...leads.values()].filter((l) => matchesQuery(l, term)).length
     },
     async eventCounts(): Promise<EventCount[]> {
       const byName = new Map<string, Set<string>>()

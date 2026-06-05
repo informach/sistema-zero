@@ -11,6 +11,8 @@ interface Props {
   noindex?: boolean
   canonical?: string
   ogImage?: string
+  /** Classe no <html>. Usado pelo /admin (`"dark"`) p/ ativar o tema compartilhado. */
+  htmlClass?: string
 }
 
 const {
@@ -19,13 +21,14 @@ const {
   noindex = false,
   canonical,
   ogImage,
+  htmlClass = '',
 } = Astro.props
 
 const canonicalUrl = canonical ?? new URL(Astro.url.pathname, Astro.site ?? Astro.url).toString()
 ---
 
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" class={htmlClass}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />

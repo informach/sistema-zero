@@ -1,11 +1,13 @@
+import { Button } from '@sistemazero/ui/button'
+import { Card } from '@sistemazero/ui/card'
+import { Input } from '@sistemazero/ui/input'
+import { Field } from '@sistemazero/ui/label'
+import { PasswordInput } from '@sistemazero/ui/password-input'
 import { useState } from 'react'
 import { AdminLoginSchema } from '../../lib/admin-schema'
 import { apiPost } from '../../lib/api-fetch'
 
 type FieldErr = { email?: string; password?: string }
-
-const inputBase =
-  'w-full rounded-xl border bg-card px-4 py-3 text-ink outline-none transition placeholder:text-muted/60 focus:border-cyan'
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('')
@@ -40,28 +42,21 @@ export default function AdminLogin() {
   }
 
   return (
-    <div className="card w-full max-w-sm border-line/80 bg-card-2/60 p-7 shadow-2xl shadow-black/40">
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-lime/15 text-lime">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <rect
-            x="4"
-            y="10"
-            width="16"
-            height="10"
-            rx="2"
-            stroke="currentColor"
-            strokeWidth="1.6"
-          />
-          <path
-            d="M8 10V8a4 4 0 018 0v2"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-          />
-        </svg>
+    <Card className="w-full max-w-sm p-7 shadow-2xl shadow-black/40">
+      <div className="flex flex-col items-center text-center">
+        {/* Logo do sistema-zero (versão p/ fundo escuro — o /admin é sempre dark). */}
+        <img
+          src="/logo_dark.svg"
+          alt="Sistema Zero"
+          width={515}
+          height={44}
+          className="h-auto w-[196px] max-w-full"
+        />
+        <h1 className="mt-6 text-xl font-bold text-foreground">Painel administrativo</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Entre com sua conta para acessar os dados do funil.
+        </p>
       </div>
-      <h1 className="mt-5 text-xl font-bold text-ink">Painel administrativo</h1>
-      <p className="mt-1 text-sm text-muted">Entre com sua conta para acessar os dados do funil.</p>
 
       <form
         noValidate
@@ -71,14 +66,10 @@ export default function AdminLogin() {
         }}
         className="mt-6 flex flex-col gap-4"
       >
-        <div>
-          <label htmlFor="admin-email" className="mb-1.5 block text-sm font-semibold text-ink">
-            E-mail
-          </label>
-          <input
+        <Field label="E-mail" htmlFor="admin-email" error={fieldErr.email}>
+          <Input
             id="admin-email"
             type="email"
-            // biome-ignore lint/a11y/noAutofocus: foco direto no primeiro campo do login
             autoFocus
             autoComplete="username"
             value={email}
@@ -87,18 +78,12 @@ export default function AdminLogin() {
               if (fieldErr.email) setFieldErr((p) => ({ ...p, email: undefined }))
             }}
             aria-invalid={fieldErr.email ? true : undefined}
-            className={`${inputBase} ${fieldErr.email ? 'border-red-400/70' : 'border-line'}`}
           />
-          {fieldErr.email && <p className="mt-1.5 text-sm text-red-400">{fieldErr.email}</p>}
-        </div>
+        </Field>
 
-        <div>
-          <label htmlFor="admin-senha" className="mb-1.5 block text-sm font-semibold text-ink">
-            Senha
-          </label>
-          <input
+        <Field label="Senha" htmlFor="admin-senha" error={fieldErr.password}>
+          <PasswordInput
             id="admin-senha"
-            type="password"
             autoComplete="current-password"
             value={password}
             onChange={(e) => {
@@ -106,21 +91,15 @@ export default function AdminLogin() {
               if (fieldErr.password) setFieldErr((p) => ({ ...p, password: undefined }))
             }}
             aria-invalid={fieldErr.password ? true : undefined}
-            className={`${inputBase} ${fieldErr.password ? 'border-red-400/70' : 'border-line'}`}
           />
-          {fieldErr.password && <p className="mt-1.5 text-sm text-red-400">{fieldErr.password}</p>}
-        </div>
+        </Field>
 
-        {erro && <p className="text-sm text-red-400">{erro}</p>}
+        {erro && <p className="text-sm text-destructive">{erro}</p>}
 
-        <button
-          type="submit"
-          disabled={submitting}
-          className="btn btn-primary mt-1 disabled:opacity-50"
-        >
+        <Button type="submit" disabled={submitting} className="mt-1 h-11 w-full">
           {submitting ? 'Entrando…' : 'Entrar'}
-        </button>
+        </Button>
       </form>
-    </div>
+    </Card>
   )
 }

@@ -1,3 +1,4 @@
+import { Button } from '@sistemazero/ui/button'
 import type { ReactNode } from 'react'
 import { useState } from 'react'
 import { PRODUTO } from '../../content/copy'
@@ -25,18 +26,23 @@ export default function AdminDashboard() {
   return (
     <div>
       <header className="mb-6 flex items-center justify-between gap-4 border-b border-line pb-5">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-cyan">Sistema Zero</p>
-          <h1 className="mt-0.5 text-lg font-bold text-ink">Painel · {PRODUTO.nome}</h1>
+        <div className="flex min-w-0 items-center gap-3">
+          {/* Logo do sistema-zero (versão p/ fundo escuro — o /admin é sempre dark). */}
+          <img
+            src="/logo_dark.svg"
+            alt="Sistema Zero"
+            width={515}
+            height={44}
+            className="h-auto w-[116px] shrink-0 sm:w-[132px]"
+          />
+          <span aria-hidden="true" className="hidden h-5 w-px bg-line sm:block" />
+          <span className="hidden truncate text-sm font-medium text-muted sm:inline">
+            Painel · {PRODUTO.nome}
+          </span>
         </div>
-        <button
-          type="button"
-          onClick={sair}
-          disabled={saindo}
-          className="btn btn-ghost px-4 py-2 text-sm disabled:opacity-50"
-        >
-          Sair
-        </button>
+        <Button variant="outline" size="sm" onClick={sair} disabled={saindo}>
+          {saindo ? 'Saindo…' : 'Sair'}
+        </Button>
       </header>
 
       <div className="mb-6 inline-flex gap-1 rounded-xl border border-line bg-card/50 p-1">

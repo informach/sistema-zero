@@ -29,7 +29,17 @@ export default defineConfig({
     // devolve 504 "Outdated Optimize Dep" no chunk em voo (a ilha não hidrata).
     // Ver o gotcha "504 (Outdated Optimize Dep)" no CLAUDE.md.
     optimizeDeps: {
-      include: ['zod', 'motion/react', 'payment-token-efi'],
+      include: [
+        'zod',
+        'motion/react',
+        'payment-token-efi',
+        // Deps de terceiros do @sistemazero/ui (consumido pelas ilhas do /admin):
+        // pré-bundla p/ não disparar o churn de "504 Outdated Optimize Dep".
+        'lucide-react',
+        'class-variance-authority',
+        'clsx',
+        'tailwind-merge',
+      ],
     },
   },
   server: { port: 4321, host: true },

@@ -1,4 +1,4 @@
-import { desc, eq, sql } from 'drizzle-orm'
+import { asc, desc, eq, ilike, or, type SQL, sql } from 'drizzle-orm'
 import type { Database } from './client'
 import { funnelEvents, leads, processedWebhooks } from './schema'
 
@@ -9,6 +9,22 @@ export type LeadUpdate = Partial<typeof leads.$inferInsert>
 export interface EventCount {
   eventName: string
   leads: number
+}
+
+/** Filtro/ordenação da listagem de leads (busca por nome/e-mail + data). */
+export interface LeadFilter {
+  /** Busca case-insensitive em nome OU e-mail. */
+  q?: string
+  /** Ordem por `created_at` (default `desc` = mais recentes primeiro). */
+  sort?: 'asc' | 'desc'
+}
+
+/** WHERE compartilhado por `listLeads`/`countLeads` (mesma busca → mesmo total). */
+function leadSearchWhere(q?: string): SQL | undefined {
+  const term = q?.trim()
+  if (!term) return undefined
+  const like = `%${term}%`
+  return or(ilike(leads.nome, like), ilike(leads.email, like))
 }
 
 /**
@@ -36,8 +52,8 @@ export interface FunnelRepo {
   ): Promise<void>
   findLeadByPayment(paymentId: string): Promise<Lead | null>
   insertEvent(leadId: string, eventName: string, step?: string | null): Promise<void>
-  listLeads(limit: number, offset: number): Promise<Lead[]>
-  countLeads(): Promise<number>
+  listLeads(limit: number, offset: number, filter?: LeadFilter): Promise<Lead[]>
+  countLeads(q?: string): Promise<number>
   eventCounts(): Promise<EventCount[]>
   /** True se o delivery id já foi processado (dedupe de webhook). */
   isWebhookProcessed(deliveryId: string): Promise<boolean>
@@ -93,12 +109,22 @@ export function createFunnelRepo(db: Database): FunnelRepo {
       await db.insert(funnelEvents).values({ leadId, eventName, step })
     },
 
-    async listLeads(limit, offset) {
-      return db.select().from(leads).orderBy(desc(leads.createdAt)).limit(limit).offset(offset)
+    async listLeads(limit, offset, filter) {
+      const order = filter?.sort === 'asc' ? asc(leads.createdAt) : desc(leads.createdAt)
+      return db
+        .select()
+        .from(leads)
+        .where(leadSearchWhere(filter?.q))
+        .orderBy(order)
+        .limit(limit)
+        .offset(offset)
     },
 
-    async countLeads() {
-      const [row] = await db.select({ n: sql<number>`count(*)::int` }).from(leads)
+    async countLeads(q) {
+      const [row] = await db
+        .select({ n: sql<number>`count(*)::int` })
+        .from(leads)
+        .where(leadSearchWhere(q))
       return row?.n ?? 0
     },
 

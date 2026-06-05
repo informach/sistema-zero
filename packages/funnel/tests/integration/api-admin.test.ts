@@ -25,6 +25,9 @@ function getReq(cookie?: string): Request {
 }
 /** Cookie de sessão válido (access token do auth falso). */
 const accessCookie = (fg: FakeGatewayState) => `${ADMIN_ACCESS_COOKIE}=${fg.auth.access}`
+/** GET /api/admin/leads com query string (ex.: `?limit=25&offset=25`). */
+const leadsReq = (fg: FakeGatewayState, query = ''): Request =>
+  new Request(`http://localhost/api/admin/leads${query}`, { headers: { cookie: accessCookie(fg) } })
 
 describe('adminLogin', () => {
   test('200 e seta cookies access+refresh (HttpOnly) com credenciais de admin', async () => {
@@ -127,11 +130,56 @@ describe('adminFunnel', () => {
 })
 
 describe('adminLeads', () => {
-  test('lista os leads com sessão', async () => {
+  test('lista os leads com sessão (com total)', async () => {
     const { repo, fg, deps } = setup()
     await repo.createLead()
     const res = await adminLeads(getReq(accessCookie(fg)), deps)
     expect(res.status).toBe(200)
-    expect(((await res.json()) as { leads: unknown[] }).leads).toHaveLength(1)
+    const body = (await res.json()) as { leads: unknown[]; total: number }
+    expect(body.leads).toHaveLength(1)
+    expect(body.total).toBe(1)
+  })
+
+  test('pagina por limit/offset e devolve o total', async () => {
+    const { repo, fg, deps } = setup()
+    for (let i = 0; i < 30; i++) await repo.createLead()
+
+    const page1 = (await (await adminLeads(leadsReq(fg, '?limit=25&offset=0'), deps)).json()) as {
+      leads: unknown[]
+      total: number
+      limit: number
+      offset: number
+    }
+    expect(page1.total).toBe(30)
+    expect(page1.leads).toHaveLength(25)
+    expect(page1.limit).toBe(25)
+    expect(page1.offset).toBe(0)
+
+    const page2 = (await (await adminLeads(leadsReq(fg, '?limit=25&offset=25'), deps)).json()) as {
+      leads: unknown[]
+    }
+    expect(page2.leads).toHaveLength(5)
+  })
+
+  test('busca por nome/e-mail filtra o total (server-side)', async () => {
+    const { repo, fg, deps } = setup()
+    const a = await repo.createLead()
+    const b = await repo.createLead()
+    await repo.updateLead(a.id, { nome: 'Maria Silva', email: 'maria@example.com' })
+    await repo.updateLead(b.id, { nome: 'João Souza', email: 'joao@example.com' })
+
+    const res = await adminLeads(leadsReq(fg, '?q=maria'), deps)
+    const body = (await res.json()) as { leads: { id: string }[]; total: number }
+    expect(body.total).toBe(1)
+    expect(body.leads).toHaveLength(1)
+    expect(body.leads[0]?.id).toBe(a.id)
+  })
+
+  test('clampa o limit acima do teto (100)', async () => {
+    const { fg, deps } = setup()
+    const body = (await (await adminLeads(leadsReq(fg, '?limit=9999'), deps)).json()) as {
+      limit: number
+    }
+    expect(body.limit).toBe(100)
   })
 })
