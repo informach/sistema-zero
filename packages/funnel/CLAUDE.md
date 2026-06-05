@@ -141,14 +141,19 @@ gateway re-entrega) e **best-effort** no polling do Pix (`pixStatus`) e no cart�
 ## Renderização (prerender split)
 
 - **Estáticas (`prerender = true`):** `quiz` (shell; a ilha do quiz busca/cria o lead e
-  roda as 10 perguntas), `obrigado`, `politica-de-privacidade` e `termos-de-uso` (conteúdo em
+  roda as 10 perguntas), `politica-de-privacidade` e `termos-de-uso` (conteúdo em
   `content/legal.ts`; links no Footer novo — logo Sistema Zero + Recursos + voltar-ao-topo +
   copyright Informach/CNPJ). Servidas como HTML estático.
 - **SSR (`prerender = false`):** `index` (redirect 302 → `/quiz`), `oferta` (nome/preço vêm do
   catálogo em runtime; sem dado por-usuário → `cache-control: public, max-age=60,
-  stale-while-revalidate=300`), `resultado`, `checkout`, `admin`, `admin/login`, **todas** `/api/*`,
-  `health`. Páginas com dados do lead setam `cache-control: no-store` e redirecionam se faltar
-  cookie/contato.
+  stale-while-revalidate=300`), `resultado`, `checkout`, `obrigado`, `admin`, `admin/login`,
+  **todas** `/api/*`, `health`. Páginas com dados do lead setam `cache-control: no-store` e
+  redirecionam se faltar cookie/contato.
+  - ⚠️ **`obrigado` é SSR só para EXPIRAR o cookie do lead** (`clearLeadCookie`, `Max-Age=0`):
+    após a compra, o próximo checkout começa do zero. Combina com dois pontos no `checkout.astro`:
+    o **CPF NUNCA é pré-preenchido** (`initialContact.cpf = ''` — dado sensível, digitado a cada
+    compra) e o **lead já PAGO não é reaproveitado** (`if (lead?.paidAt) → novo lead`). Nome/e-mail/
+    telefone repopulam pela URL do pré-checkout. (Decisão do usuário, 06/2026.)
 
 ## Segurança
 
@@ -195,7 +200,10 @@ gateway re-entrega) e **best-effort** no polling do Pix (`pixStatus`) e no cart�
   (asc|desc) → `{ leads, total, limit, offset }`. Busca (ILIKE nome/e-mail) e ordenação valem sobre
   TODOS os leads (repo `listLeads(limit, offset, {q,sort})` + `countLeads(q)`, mesmo WHERE no count);
   a UI usa o `Pagination` do ui c/ busca debounced (reseta p/ página 1). Antes capava em 1000 sem
-  paginação.
+  paginação. **Status por lead** (coluna na tabela + badge no detalhe + seção "Compra"): derivado
+  dos dados reais — `paidAt`→**Comprou**, senão `paymentId`→**Checkout**, senão `email`→**Pré-checkout**,
+  senão **Quiz**. ⚠️ Usar esses campos, NÃO `last_step` (que fica na última pergunta do quiz — não
+  avança p/ checkout/pagamento; era por isso que comprador aparecia "na pergunta 10").
 - **Não importar `middleware.ts` em testes** (`bun test` não resolve o módulo virtual
   `astro:middleware`). Teste a lógica isolada (ex.: `lib/rate-limit.ts`).
 

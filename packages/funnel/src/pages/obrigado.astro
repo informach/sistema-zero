@@ -2,8 +2,16 @@
 import Footer from '../components/Footer.astro'
 import Header from '../components/Header.astro'
 import BaseLayout from '../layouts/BaseLayout.astro'
+import { clearLeadCookie } from '../lib/lead-session'
+import { getDeps } from '../server/deps'
 
-export const prerender = true
+// SSR (não estática) só para EXPIRAR o cookie do lead após a compra: assim um novo
+// checkout começa limpo (sem CPF/dados antigos; nome/e-mail/telefone voltam da URL).
+export const prerender = false
+
+const { env } = getDeps()
+Astro.response.headers.set('cache-control', 'no-store')
+Astro.response.headers.append('set-cookie', clearLeadCookie(env.NODE_ENV === 'production'))
 ---
 
 <BaseLayout title="Compra confirmada — No Comando da IA" noindex={true}>

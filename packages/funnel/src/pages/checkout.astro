@@ -19,6 +19,12 @@ const { repo, env, gateway } = getDeps()
 // params do pré-checkout — assim um cookie perdido não derruba a compra).
 let leadId = getLeadId(Astro.request)
 let lead = leadId ? await repo.getLead(leadId) : null
+// Lead já PAGO não é reaproveitado: nova compra = novo lead (sem CPF/dados antigos).
+// Defesa extra à expiração do cookie na /obrigado (cobre cookie que sobreviveu).
+if (lead?.paidAt) {
+  lead = null
+  leadId = null
+}
 if (!lead) {
   const created = await repo.createLead()
   leadId = created.id
@@ -43,10 +49,12 @@ if (lead && !lead.email) {
   }
 }
 
+// CPF NUNCA é pré-preenchido (decisão do usuário): dado sensível, digitado a cada
+// compra. Nome/e-mail vêm do lead/URL (o pré-checkout os fornece pela URL).
 const initialContact = {
   nome: lead?.nome ?? fromQuery.nome,
   email: lead?.email ?? fromQuery.email,
-  cpf: lead?.document ?? '',
+  cpf: '',
 }
 
 // Sem e-mail não há para quem entregar o ebook → volta para a oferta, onde o

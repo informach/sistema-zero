@@ -24,3 +24,13 @@ export function leadCookie(leadId: string, secure: boolean): string {
   const base = `${LEAD_COOKIE}=${encodeURIComponent(leadId)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${MAX_AGE}`
   return secure ? `${base}; Secure` : base
 }
+
+/**
+ * Set-Cookie que EXPIRA a sessão do lead (Max-Age=0). Usado na `/obrigado` após a
+ * compra: o próximo checkout começa do zero (sem CPF/dados antigos; nome/e-mail/
+ * telefone voltam pela URL do pré-checkout).
+ */
+export function clearLeadCookie(secure: boolean): string {
+  const base = `${LEAD_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`
+  return secure ? `${base}; Secure` : base
+}

@@ -35,6 +35,15 @@ interface LeadRow {
   mudancaDesejada: string | null
   lastStep: string
   createdAt: string
+  // Contato + compra (já vêm no /api/admin/leads; antes não eram exibidos).
+  document: string | null
+  paymentId: string | null
+  paidAt: string | null
+  couponCode: string | null
+  offerRef: string | null
+  buyerUserId: string | null
+  buyerIsNew: boolean | null
+  buyerRegisteredAt: string | null
 }
 
 interface LeadsResponse {
@@ -49,9 +58,38 @@ interface LeadsResponse {
 const PAGE_SIZE = 25
 
 const MONEY_COLS = new Set<keyof LeadRow>(['gastoTerceiros', 'valorHora', 'custoMensal'])
+const DATETIME_COLS = new Set<keyof LeadRow>(['createdAt', 'paidAt', 'buyerRegisteredAt'])
 
 const money = (c: number | null) => (c == null ? '—' : formatBRLFromCents(c))
 const txt = (v: string | number | null) => (v == null || v === '' ? '—' : String(v))
+const formatCpf = (cpf: string) =>
+  cpf.replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') || '—'
+
+// Status do lead derivado dos dados reais (o `last_step` NÃO avança p/ checkout/
+// pagamento — fica na última pergunta do quiz). Por isso usamos paidAt/paymentId/email.
+type StatusKey = 'comprou' | 'checkout' | 'precheckout' | 'quiz'
+function leadStatus(l: LeadRow): { key: StatusKey; label: string } {
+  if (l.paidAt) return { key: 'comprou', label: 'Comprou' }
+  if (l.paymentId) return { key: 'checkout', label: 'Checkout' }
+  if (l.email) return { key: 'precheckout', label: 'Pré-checkout' }
+  return { key: 'quiz', label: 'Quiz' }
+}
+
+const STATUS_CLASS: Record<StatusKey, string> = {
+  comprou: 'border-transparent bg-emerald-500/15 text-emerald-400',
+  checkout: 'border-transparent bg-amber-500/15 text-amber-400',
+  precheckout: 'border-transparent bg-cyan/15 text-cyan',
+  quiz: 'text-muted-foreground',
+}
+
+function StatusBadge({ lead }: { lead: LeadRow }) {
+  const s = leadStatus(lead)
+  return (
+    <Badge variant="outline" className={STATUS_CLASS[s.key]}>
+      {s.label}
+    </Badge>
+  )
+}
 
 const fmtDate = (iso: string) => {
   const d = new Date(iso)
@@ -77,6 +115,16 @@ const DETAIL_GROUPS: Array<{
       { key: 'nome', label: 'Nome' },
       { key: 'email', label: 'E-mail' },
       { key: 'telefone', label: 'Telefone' },
+      { key: 'document', label: 'CPF' },
+    ],
+  },
+  {
+    title: 'Compra',
+    fields: [
+      { key: 'paidAt', label: 'Pagou em' },
+      { key: 'buyerIsNew', label: 'Comprador' },
+      { key: 'couponCode', label: 'Cupom' },
+      { key: 'offerRef', label: 'Oferta' },
     ],
   },
   {
@@ -122,7 +170,12 @@ function SegmentoBadge({ value }: { value: string | null }) {
 function fieldValue(lead: LeadRow, key: keyof LeadRow): ReactNode {
   const raw = lead[key]
   if (key === 'segmento') return <SegmentoBadge value={raw as string | null} />
-  if (key === 'createdAt') return fmtDateTime(String(raw))
+  if (key === 'document') return raw ? formatCpf(String(raw)) : '—'
+  if (key === 'buyerIsNew') {
+    if (!lead.buyerUserId) return '—'
+    return raw ? 'Novo (1º acesso)' : 'Recorrente'
+  }
+  if (DATETIME_COLS.has(key)) return raw ? fmtDateTime(String(raw)) : '—'
   if (MONEY_COLS.has(key))
     return <span className="font-mono tabular-nums">{money(raw as number | null)}</span>
   return txt(raw as string | number | null)
@@ -223,9 +276,9 @@ export default function RespostasTable() {
                 <TableRow>
                   <TableHead>Nome</TableHead>
                   <TableHead>E-mail</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead>Segmento</TableHead>
                   <TableHead className="text-right">Custo mensal</TableHead>
-                  <TableHead>Última etapa</TableHead>
                   <TableHead className="text-right">Data</TableHead>
                 </TableRow>
               </TableHeader>
@@ -251,12 +304,14 @@ export default function RespostasTable() {
                       {txt(lead.email)}
                     </TableCell>
                     <TableCell>
+                      <StatusBadge lead={lead} />
+                    </TableCell>
+                    <TableCell>
                       <SegmentoBadge value={lead.segmento} />
                     </TableCell>
                     <TableCell className="text-right font-mono tabular-nums text-foreground">
                       {money(lead.custoMensal)}
                     </TableCell>
-                    <TableCell className="text-muted-foreground">{txt(lead.lastStep)}</TableCell>
                     <TableCell className="whitespace-nowrap text-right text-muted-foreground">
                       {fmtDate(lead.createdAt)}
                     </TableCell>
@@ -282,7 +337,7 @@ export default function RespostasTable() {
                   <SegmentoBadge value={lead.segmento} />
                 </div>
                 <div className="mt-3 flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">{txt(lead.lastStep)}</span>
+                  <StatusBadge lead={lead} />
                   <span className="font-mono tabular-nums text-foreground">
                     {money(lead.custoMensal)}
                   </span>
@@ -309,6 +364,7 @@ export default function RespostasTable() {
       >
         {selected ? (
           <div className="space-y-5">
+            <StatusBadge lead={selected} />
             {DETAIL_GROUPS.map((g) => (
               <section key={g.title}>
                 <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
