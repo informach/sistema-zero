@@ -89,6 +89,17 @@ function validateReferences(
       'alguma rota usa auth "jwt" mas nem JWT_JWKS_URL (RS256) nem JWT_HS256_SECRET (HS256) estão definidos',
     )
   }
+  // Em produção, verificar assinatura sem amarrar emissor/audiência aceitaria
+  // qualquer token assinado com a mesma chave para outro contexto/audiência.
+  if (
+    usesJwt &&
+    env.NODE_ENV === 'production' &&
+    !(env.JWT_ISSUER?.trim() && env.JWT_AUDIENCE?.trim())
+  ) {
+    problems.push(
+      'em produção, rotas com auth "jwt" exigem JWT_ISSUER e JWT_AUDIENCE (devem casar com o emissor @sistemazero/auth)',
+    )
+  }
   if (usesResign && !(env.GATEWAY_CONSUMER_ID?.trim() && env.GATEWAY_HMAC_SECRET?.trim())) {
     problems.push(
       'alguma rota usa upstreamAuth="resign" mas GATEWAY_CONSUMER_ID/GATEWAY_HMAC_SECRET ausentes',

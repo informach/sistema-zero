@@ -126,6 +126,11 @@ export class ProxyEngine {
           body,
           signal: ctrl.signal,
         })
+        // Trade-off deliberado: latência (EWMA) e in-flight são fechados na chegada
+        // dos HEADERS, não no fim do corpo — TTFB é o sinal certo p/ p2c-ewma, e
+        // rastrear o stream até o fim acoplaria o ciclo de vida do corpo ao LB.
+        // Efeito: least-connections subconta streams longos (aceitável; hoje cada
+        // serviço tem 1 instância e o corpo já está fluindo fora do hot path).
         this.deps.stats.end(target.id, performance.now() - t0)
         const ok = upstream.status < 500
         if (ok) this.deps.health.recordSuccess(target.id)

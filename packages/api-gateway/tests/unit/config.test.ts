@@ -119,4 +119,73 @@ describe('loadGatewayConfig', () => {
       ),
     ).rejects.toThrow(/vazio/)
   })
+
+  test('CORS por rota só aceita origins — campo fantasma (methods etc.) falha no boot', async () => {
+    await expect(
+      loadGatewayConfig(env, {
+        services: { p: service },
+        routes: [
+          {
+            id: 'r',
+            methods: ['GET'],
+            pathPattern: '/x',
+            service: 'p',
+            // `methods` por rota nunca foi aplicado (preflight é da config global):
+            // o schema estrito rejeita em vez de ignorar em silêncio.
+            cors: { origins: ['https://x.com'], methods: ['GET'] },
+          },
+        ],
+      }),
+    ).rejects.toThrow(/cors/)
+  })
+
+  test('CORS por rota com só origins → ok', async () => {
+    const cfg = await loadGatewayConfig(env, {
+      services: { p: service },
+      routes: [
+        {
+          id: 'r',
+          methods: ['GET'],
+          pathPattern: '/x',
+          service: 'p',
+          cors: { origins: ['https://x.com'] },
+        },
+      ],
+    })
+    expect(cfg.routes[0]?.cors?.origins).toEqual(['https://x.com'])
+  })
+
+  test('produção: rota jwt sem JWT_ISSUER/JWT_AUDIENCE → erro', async () => {
+    const prodEnv = loadEnv({
+      NODE_ENV: 'production',
+      TRUST_PROXY: 'true',
+      METRICS_TOKEN: 'metrics-token-com-16-chars',
+      MEMBERS_INTERNAL_TOKEN: 'members-internal-16chars',
+      CATALOG_INTERNAL_TOKEN: 'catalog-internal-16chars',
+      MESSAGING_INTERNAL_TOKEN: 'messaging-internal-16ch',
+      AUTH_INTERNAL_TOKEN: 'auth-internal-16-chars!',
+      JWT_HS256_SECRET: 'segredo-hs256-com-mais-de-32-caracteres',
+    })
+    const routes = [
+      { id: 'r', methods: ['GET'], pathPattern: '/x', service: 'p', auth: { strategies: ['jwt'] } },
+    ]
+    await expect(loadGatewayConfig(prodEnv, { services: { p: service }, routes })).rejects.toThrow(
+      /JWT_ISSUER/,
+    )
+
+    const withIssuer = loadEnv({
+      NODE_ENV: 'production',
+      TRUST_PROXY: 'true',
+      METRICS_TOKEN: 'metrics-token-com-16-chars',
+      MEMBERS_INTERNAL_TOKEN: 'members-internal-16chars',
+      CATALOG_INTERNAL_TOKEN: 'catalog-internal-16chars',
+      MESSAGING_INTERNAL_TOKEN: 'messaging-internal-16ch',
+      AUTH_INTERNAL_TOKEN: 'auth-internal-16-chars!',
+      JWT_HS256_SECRET: 'segredo-hs256-com-mais-de-32-caracteres',
+      JWT_ISSUER: 'sistemazero-auth',
+      JWT_AUDIENCE: 'sistemazero',
+    })
+    const cfg = await loadGatewayConfig(withIssuer, { services: { p: service }, routes })
+    expect(cfg.routes).toHaveLength(1)
+  })
 })

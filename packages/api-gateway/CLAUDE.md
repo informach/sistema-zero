@@ -130,9 +130,13 @@ Proxy, Facade (`route-registry` + `gateway-plugin` + `gateway.config.ts`), Decor
 - **`gateway.config.ts`** (`export default`): config declarativa (services, routes, consumers, cors, versionHeaders). Validada por Zod no boot (**fail-fast**). Origem alternativa: `GATEWAY_CONFIG_JSON` (inline) ou `GATEWAY_CONFIG_PATH`.
 - **`src/infrastructure/config/gateway-config.schema.ts`**: fonte única dos tipos (os tipos de domínio/app importam os inferidos como `import type`).
 - **`src/infrastructure/config/env.ts`**: env vars (Zod, fail-fast). Veja `.env.example`.
-- **`load-gateway-config.ts` → `validateReferences`**: validações cruzadas (route-ids únicos, serviço/grupo existem, jwt→JWKS, resign→creds, **tipo de transform conhecido**, **valor de `header-inject` não vazio**).
+- **`load-gateway-config.ts` → `validateReferences`**: validações cruzadas (route-ids únicos, serviço/grupo existem, jwt→JWKS, resign→creds, **tipo de transform conhecido**, **valor de `header-inject` não vazio**, **jwt em prod → `JWT_ISSUER`+`JWT_AUDIENCE` obrigatórios**).
+- **CORS por rota é SÓ `{ origins }`** (`routeCorsConfigSchema`, estrito): a checagem roda na requisição real (`cors.stage` → 403). O preflight (OPTIONS) e os demais headers CORS são da config **global** (plugin no `onRequest`, antes da resolução de rota) — declarar `methods`/`credentials`/etc. por rota **falha no boot** (prometeria um comportamento que não existe).
+- **Versionamento:** `versions[].upstreamGroup` troca o grupo de destino e `versions[].rewritePrefix` sobrepõe o prefixo de path da rota para aquela versão (aplicado no `route-resolve`).
 
-**Segredos** (`hmacSecret` ≥ 16 chars, validado no boot): defina em prod `FUNNEL_HMAC_SECRET`, `GATEWAY_CONSUMER_ID`/`GATEWAY_HMAC_SECRET`, `FUNNEL_INTERNAL_TOKEN`, `MEMBERS_INTERNAL_TOKEN`, `CATALOG_INTERNAL_TOKEN`. Vazio/curto **falha no boot** (evita auth com chave efetivamente vazia).
+**Segredos** (`hmacSecret` ≥ 16 chars, validado no boot): defina em prod `FUNNEL_HMAC_SECRET`, `GATEWAY_CONSUMER_ID`/`GATEWAY_HMAC_SECRET`, `FUNNEL_INTERNAL_TOKEN`, `MEMBERS_INTERNAL_TOKEN`, `CATALOG_INTERNAL_TOKEN`, `MESSAGING_INTERNAL_TOKEN`, `AUTH_INTERNAL_TOKEN`, `METRICS_TOKEN`. Vazio/curto **falha no boot** (evita auth com chave efetivamente vazia).
+
+**Fail-fast de PRODUÇÃO** (`env.ts`, 06/2026): com `NODE_ENV=production` o boot **exige** (senão não sobe): `METRICS_TOKEN` + os 4 tokens internos (`MEMBERS/CATALOG/MESSAGING/AUTH_INTERNAL_TOKEN`, ≥16 chars — vazio = injeção silenciosamente desligada, só aceitável em dev) e **`TRUST_PROXY` definido EXPLICITAMENTE** (o default silencioso `false` atrás de proxy colapsaria todos os clientes no IP do edge → um único balde de rate limit). `FUNNEL_*`/resign/jwt já eram fail-fast por outros caminhos (consumer min 16, header-inject vazio, `validateReferences`).
 
 **`MEMBERS_INTERNAL_TOKEN`** (defesa em profundidade da área de membros): quando setado, o gateway injeta `x-internal-token` (via `header-inject`, **sobrescreve** qualquer valor do cliente) nas rotas do **aluno** E do **admin** (`members-*` + `members-admin-*`; não nos webhooks que já têm HMAC), e o members o exige (`INTERNAL_API_TOKEN`, MESMO valor). Vazio → injeção desligada (só dev). É o que prova ao members que o `x-auth-user-id` veio do gateway. Em `gateway.config.ts` a injeção é condicional (array vazio quando não setado, p/ não falhar o boot do header-inject).
 
@@ -168,7 +172,7 @@ Proxy, Facade (`route-registry` + `gateway-plugin` + `gateway.config.ts`), Decor
 
 - **Anti-replay HMAC/webhook por nonce:** hoje é só janela de tempo (`toleranceSeconds`); replay do MESMO método+path possível dentro da janela (o replay cross-endpoint foi fechado em 06/2026 — método+path entram na mensagem canônica). Precisa de store de assinatura de uso único.
 - **Webhook assina só o corpo:** `x-event-type`/`x-delivery-id` ficam fora da assinatura (adulteráveis).
-- **Rate-limit spoofável** se `TRUST_PROXY`/`TRUSTED_PROXY_HOPS` estiverem mal configurados atrás de PaaS. (Mitigado em parte pelo **safety-net global por IP** — `global-rate-limit.stage`, ligado por `GLOBAL_RATE_LIMIT_PER_MINUTE` — que limita flood anônimo agregado por IP através de TODAS as rotas; **isenta `principal`s autenticados** (não estrangula o funil, IP único de egress) e por isso roda após o auth e **não cobre 404s pré-rota** nem floods de auth-fail, que dependem de proteção na borda/PaaS.)
+- **Rate-limit spoofável** se `TRUST_PROXY`/`TRUSTED_PROXY_HOPS` estiverem mal configurados atrás de PaaS. (Mitigado em parte pelo **safety-net global por IP** — `global-rate-limit.stage`, ligado por `GLOBAL_RATE_LIMIT_PER_MINUTE` — que limita flood anônimo agregado por IP através de TODAS as rotas; **isenta `principal`s autenticados** (não estrangula o funil, IP único de egress) e por isso roda após o auth e **não cobre 404s pré-rota** nem floods de auth-fail, que dependem de proteção na borda/PaaS. Desde 06/2026 o boot de prod **exige `TRUST_PROXY` explícito** — o erro silencioso de esquecer a env não sobe mais.)
 - **LB cross-réplica:** least-connections/p2c/sticky são **por réplica** (sem coordenação entre réplicas) — trade-off documentado.
 - **Observabilidade do fail-open:** quando o store de rate limit cai (fail-open libera), além do `warn` `gateway.rate_limit_unavailable` há a métrica `gateway_rate_limit_fail_open_total` em `/metrics` — alerte nela (fail-open silencioso = limites efetivamente desligados).
 
@@ -176,9 +180,10 @@ Proxy, Facade (`route-registry` + `gateway-plugin` + `gateway.config.ts`), Decor
 
 ## 9. Deploy
 
-- Serviço Railway separado via **`packages/api-gateway/railway.json`** (NÃO repontar o `railway.json` da raiz, que é do payments). Dockerfile `oven/bun:1`, build context = raiz do repo.
+- Serviço Railway separado via **`packages/api-gateway/railway.json`** (NÃO repontar o `railway.json` da raiz, que é do payments; tem `healthcheckPath: /readyz` + watchPatterns). Dockerfile `oven/bun:1`, build context = raiz do repo.
 - Para escala: `STATE_BACKEND=redis` + `REDIS_URL` (provisione um Redis). Alcance o payments via `PAYMENTS_URL` (ex.: `http://payments.railway.internal:3001`).
-- Liveness `/health` (sempre 200 se de pé), readiness `/readyz` (503 se store fora, sem upstream saudável, ou em drain). `/metrics` (JSON ou `?format=prom`) — sem auth, exponha só na rede interna.
+- Liveness `/health` (sempre 200 se de pé), readiness `/readyz` (503 se store fora, sem upstream saudável, ou em drain). **O gateway é a borda pública:** `/metrics` (JSON ou `?format=prom`) exige `METRICS_TOKEN` (header `x-metrics-token` ou `Authorization: Bearer`; obrigatório em prod) e o `/readyz` só inclui o snapshot detalhado de upstreams com o mesmo token (o healthcheck anônimo do Railway recebe só o status).
+- Em prod lembre de `SHUTDOWN_DRAIN_MS > 0` (o drain do `/readyz` no SIGTERM só vale com a espera ligada) e dos fail-fast do §5 (TRUST_PROXY explícito, tokens internos, METRICS_TOKEN, JWT_ISSUER/AUDIENCE).
 
 ---
 

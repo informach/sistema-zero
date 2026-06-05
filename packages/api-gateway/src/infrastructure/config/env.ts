@@ -14,6 +14,28 @@ const optionalBool = (def: boolean) =>
     })
     .transform((v) => (v === undefined ? def : v.toLowerCase() === 'true' || v === '1'))
 
+/**
+ * Segredo opcional: vazio/whitespace = ausente (igual ao tratamento do
+ * gateway.config.ts); quando presente, exige ≥16 chars (segredo curto = auth
+ * efetivamente desabilitada).
+ */
+const optionalSecret = z
+  .string()
+  .optional()
+  .transform((v) => v?.trim() || undefined)
+  .refine((v) => v === undefined || v.length >= 16, {
+    message: 'deve ter ao menos 16 caracteres',
+  })
+
+/** Segredos opcionais em dev que viram OBRIGATÓRIOS em produção (fail-fast no boot). */
+const PROD_REQUIRED_SECRETS: ReadonlyArray<{ key: string; why: string }> = [
+  { key: 'METRICS_TOKEN', why: 'protege GET /metrics e o snapshot do /readyz na borda pública' },
+  { key: 'MEMBERS_INTERNAL_TOKEN', why: 'prova ao members que a chamada veio do gateway' },
+  { key: 'CATALOG_INTERNAL_TOKEN', why: 'prova ao catalog que a chamada veio do gateway' },
+  { key: 'MESSAGING_INTERNAL_TOKEN', why: 'prova ao messaging que a chamada veio do gateway' },
+  { key: 'AUTH_INTERNAL_TOKEN', why: 'prova ao auth que a chamada veio do gateway' },
+]
+
 const EnvSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
@@ -29,6 +51,9 @@ const EnvSchema = z
     GATEWAY_CONFIG_JSON: z.string().optional(),
 
     // Resolução de IP do cliente atrás de proxy/LB (Railway injeta X-Forwarded-For).
+    // Em produção DEVE ser definido explicitamente (validado em loadEnv): o default
+    // silencioso atrás de proxy colapsaria todos os clientes no IP do edge — um
+    // único balde de rate limit (lockout/outage coletivo).
     TRUST_PROXY: optionalBool(false),
     TRUSTED_PROXY_HOPS: z.coerce.number().int().positive().default(1),
 
@@ -38,10 +63,6 @@ const EnvSchema = z
       .int()
       .positive()
       .default(1024 * 1024),
-
-    // Defaults de proxy (sobrescrevíveis por serviço/rota na config).
-    DEFAULT_TIMEOUT_MS: z.coerce.number().int().positive().default(15_000),
-    DEFAULT_RETRIES: z.coerce.number().int().nonnegative().default(0),
 
     // Rate limit global default (por identidade).
     RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(600),
@@ -53,8 +74,9 @@ const EnvSchema = z
     GLOBAL_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().nonnegative().default(1200),
     GLOBAL_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
 
-    // Auth JWT/sessão. A `jwt` strategy liga quando JWT_JWKS_URL e/ou JWT_HS256_SECRET
+    // Auth JWT. A `jwt` strategy liga quando JWT_JWKS_URL e/ou JWT_HS256_SECRET
     // existem (validado por rota no loader da config). O emissor é o @sistemazero/auth.
+    // Em produção, rotas jwt exigem TAMBÉM issuer+audience (validado no loader).
     JWT_ISSUER: z.string().optional(),
     JWT_AUDIENCE: z.string().optional(),
     JWT_JWKS_URL: z.string().optional(),
@@ -70,8 +92,6 @@ const EnvSchema = z
           .map((s) => s.trim())
           .filter(Boolean),
       ),
-    JWT_CACHE_TTL_MS: z.coerce.number().int().positive().default(300_000),
-    SESSION_TTL_SECONDS: z.coerce.number().int().positive().default(3_600),
 
     // Auth HMAC (clientes sistema-a-sistema do gateway) — anti-replay.
     HMAC_TOLERANCE_SECONDS: z.coerce.number().int().positive().default(300),
@@ -79,6 +99,19 @@ const EnvSchema = z
     // Credenciais do gateway como consumer de um upstream (rotas upstreamAuth=resign).
     GATEWAY_CONSUMER_ID: z.string().optional(),
     GATEWAY_HMAC_SECRET: z.string().optional(),
+
+    // Token do GET /metrics e do snapshot do /readyz (o gateway é a BORDA pública).
+    // Header `x-metrics-token` ou `Authorization: Bearer`. OBRIGATÓRIO em produção.
+    METRICS_TOKEN: optionalSecret,
+
+    // Tokens internos injetados por header-inject no gateway.config.ts (defesa em
+    // profundidade: provam ao upstream que a chamada passou pelo gateway). O config
+    // os lê DIRETO de process.env; aqui só validamos (≥16 chars; obrigatórios em
+    // produção — vazio = injeção silenciosamente desligada, só aceitável em dev).
+    MEMBERS_INTERNAL_TOKEN: optionalSecret,
+    CATALOG_INTERNAL_TOKEN: optionalSecret,
+    MESSAGING_INTERNAL_TOKEN: optionalSecret,
+    AUTH_INTERNAL_TOKEN: optionalSecret,
 
     // Resiliência.
     HEALTH_PROBE_INTERVAL_MS: z.coerce.number().int().positive().default(5_000),
@@ -107,6 +140,14 @@ const EnvSchema = z
     message: 'REDIS_URL é obrigatória quando STATE_BACKEND=redis',
     path: ['REDIS_URL'],
   })
+  .superRefine((e, ctx) => {
+    if (e.NODE_ENV !== 'production') return
+    for (const { key, why } of PROD_REQUIRED_SECRETS) {
+      if (!(e as Record<string, unknown>)[key]) {
+        ctx.addIssue({ code: 'custom', path: [key], message: `obrigatório em produção (${why})` })
+      }
+    }
+  })
 
 export type Env = z.infer<typeof EnvSchema>
 
@@ -118,6 +159,16 @@ export function loadEnv(source: Record<string, string | undefined> = process.env
       .map((i) => `  - ${i.path.join('.') || '(root)'}: ${i.message}`)
       .join('\n')
     throw new Error(`Variáveis de ambiente inválidas:\n${issues}`)
+  }
+  // Em produção TRUST_PROXY precisa ser uma DECISÃO explícita do operador (a
+  // checagem é na fonte crua — o default do schema mascararia a ausência).
+  if (parsed.data.NODE_ENV === 'production' && source.TRUST_PROXY === undefined) {
+    throw new Error(
+      'Em produção defina TRUST_PROXY explicitamente: true atrás de proxy/LB ' +
+        '(ex.: domínio público do Railway), false apenas com tráfego direto/rede ' +
+        'privada. O default silencioso (false) atrás de proxy faria todos os ' +
+        'clientes compartilharem o IP do edge num único balde de rate limit.',
+    )
   }
   return parsed.data
 }

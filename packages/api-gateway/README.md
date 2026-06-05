@@ -33,7 +33,9 @@ declarativa** e de forma **stateless** (pronto para escalar em N réplicas).
 - Valida **webhooks** recebidos (assinatura HMAC), injeta um token interno e
   reescreve o caminho antes de repassar.
 - Expõe `GET /health` (liveness), `GET /readyz` (readiness, com graceful drain) e
-  `GET /metrics` (JSON ou Prometheus) para operação.
+  `GET /metrics` (JSON ou Prometheus) para operação — `/metrics` e o snapshot
+  detalhado do `/readyz` exigem `METRICS_TOKEN` (obrigatório em produção; o
+  gateway é a borda pública).
 
 ## Arquitetura
 

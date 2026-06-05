@@ -26,15 +26,22 @@ function staticPrefixOf(pattern: string): string {
   return out.length ? `/${out.join('/')}` : ''
 }
 
-function applyRoutePathRewrite(route: RouteConfig, basePath: string): string {
+function applyRoutePathRewrite(
+  route: RouteConfig,
+  basePath: string,
+  versionRewritePrefix?: string,
+): string {
   let path = basePath
   if (route.stripPrefix) {
     const prefix = staticPrefixOf(route.pathPattern)
     if (prefix && path.startsWith(prefix)) path = path.slice(prefix.length) || '/'
   }
-  if (route.rewritePrefix) {
+  // O mapeamento da VERSÃO pedida pode sobrepor o prefixo da rota (ex.: v2 vive
+  // sob outro path no upstream).
+  const rewritePrefix = versionRewritePrefix ?? route.rewritePrefix
+  if (rewritePrefix) {
     const base = path.startsWith('/') ? path : `/${path}`
-    path = `${route.rewritePrefix.replace(/\/$/, '')}${base}`
+    path = `${rewritePrefix.replace(/\/$/, '')}${base}`
   }
   return path.startsWith('/') ? path : `/${path}`
 }
@@ -72,7 +79,8 @@ export function createRouteResolveStage(deps: RouteResolveDeps): Stage {
 
       // Se a rota declara versões, a pedida precisa existir (falha alto).
       const versions = match.route.versions
-      if (versions && versions.length > 0 && !resolveVersionMapping(versions, version)) {
+      const mapping = resolveVersionMapping(versions, version)
+      if (versions && versions.length > 0 && !mapping) {
         return errorResponse(
           400,
           'UNSUPPORTED_VERSION',
@@ -81,7 +89,7 @@ export function createRouteResolveStage(deps: RouteResolveDeps): Stage {
       }
 
       ctx.route = match
-      ctx.upstreamPath = `${applyRoutePathRewrite(match.route, basePath)}${ctx.url.search}`
+      ctx.upstreamPath = `${applyRoutePathRewrite(match.route, basePath, mapping?.rewritePrefix)}${ctx.url.search}`
       return undefined
     },
   }

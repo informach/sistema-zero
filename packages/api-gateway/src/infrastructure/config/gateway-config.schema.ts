@@ -81,6 +81,17 @@ export const corsConfigSchema = z
     path: ['credentials'],
   })
 
+/**
+ * CORS POR ROTA: só a checagem de `origins` (403 na requisição real — cors.stage).
+ * O preflight (OPTIONS) e os demais headers CORS são da config GLOBAL (plugin no
+ * onRequest, antes da resolução de rota) — por isso o schema é ESTRITO: declarar
+ * `methods`/`credentials`/etc. aqui prometeria um comportamento que não existe
+ * e deve falhar no boot, não ser ignorado em silêncio.
+ */
+export const routeCorsConfigSchema = z.strictObject({
+  origins: z.array(z.string()).min(1), // strings exatas, regex `/.../` ou '*'
+})
+
 export const transformRefSchema = z.union([
   z.string(),
   z.object({ type: z.string(), options: z.record(z.string(), z.unknown()).optional() }),
@@ -104,7 +115,7 @@ export const routeConfigSchema = z.object({
   authorize: authorizePolicySchema.optional(),
   upstreamAuth: z.enum(['passthrough', 'resign']).optional(),
   rateLimit: rateLimitRuleSchema.optional(),
-  cors: corsConfigSchema.optional(),
+  cors: routeCorsConfigSchema.optional(),
   transforms: z.array(transformRefSchema).default([]),
   timeoutMs: z.number().int().positive().optional(),
   retries: z.number().int().nonnegative().optional(),
@@ -156,6 +167,7 @@ export type AuthorizePolicy = z.infer<typeof authorizePolicySchema>
 export type RateLimitRule = z.infer<typeof rateLimitRuleSchema>
 export type StickyConfig = z.infer<typeof stickyConfigSchema>
 export type CorsConfig = z.infer<typeof corsConfigSchema>
+export type RouteCorsConfig = z.infer<typeof routeCorsConfigSchema>
 export type TransformRef = z.infer<typeof transformRefSchema>
 export type VersionMapping = z.infer<typeof versionMappingSchema>
 export type RouteConfig = z.infer<typeof routeConfigSchema>

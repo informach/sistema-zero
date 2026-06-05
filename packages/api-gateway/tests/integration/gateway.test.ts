@@ -224,6 +224,81 @@ describe('gateway (integração via app.handle)', () => {
     expect(statuses.slice(-2)).toEqual([200, 200])
   })
 
+  test('METRICS_TOKEN: /metrics exige token; /readyz esconde o snapshot de anônimo', async () => {
+    const token = 'metrics-token-com-16-chars'
+    const app = await buildApp(baseConfig, () => new Response('ok'), { METRICS_TOKEN: token })
+
+    // /metrics sem token → 401; com x-metrics-token ou Bearer → 200.
+    expect((await app.handle(new Request('http://gw.local/metrics'))).status).toBe(401)
+    const viaHeader = await app.handle(
+      new Request('http://gw.local/metrics', { headers: { 'x-metrics-token': token } }),
+    )
+    expect(viaHeader.status).toBe(200)
+    const viaBearer = await app.handle(
+      new Request('http://gw.local/metrics', { headers: { authorization: `Bearer ${token}` } }),
+    )
+    expect(viaBearer.status).toBe(200)
+
+    // /readyz continua servindo o healthcheck anônimo (status), mas o snapshot
+    // detalhado de upstreams (topologia interna) só sai com o token.
+    const anon = await app.handle(new Request('http://gw.local/readyz'))
+    expect(anon.status).toBe(200)
+    expect((await anon.json()) as Record<string, unknown>).not.toHaveProperty('upstreams')
+    const authed = await app.handle(
+      new Request('http://gw.local/readyz', { headers: { 'x-metrics-token': token } }),
+    )
+    expect((await authed.json()) as Record<string, unknown>).toHaveProperty('upstreams')
+  })
+
+  test('sem METRICS_TOKEN (dev), /metrics e o snapshot do /readyz ficam abertos', async () => {
+    const app = await buildApp(baseConfig)
+    expect((await app.handle(new Request('http://gw.local/metrics'))).status).toBe(200)
+    const ready = await app.handle(new Request('http://gw.local/readyz'))
+    expect((await ready.json()) as Record<string, unknown>).toHaveProperty('upstreams')
+  })
+
+  test('x-request-id do cliente: válido é ecoado; lixo é substituído por UUID', async () => {
+    const app = await buildApp(baseConfig)
+
+    const ok = await app.handle(req('/echo/1', { headers: { 'x-request-id': 'req_abc-123.z' } }))
+    expect(ok.headers.get('x-request-id')).toBe('req_abc-123.z')
+
+    const junk = await app.handle(
+      req('/echo/2', { headers: { 'x-request-id': `evil id ${'x'.repeat(200)}` } }),
+    )
+    const generated = junk.headers.get('x-request-id') ?? ''
+    expect(generated).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
+  })
+
+  test('versionamento: rewritePrefix do mapeamento de versão reescreve o path', async () => {
+    const verConfig: GatewayConfigInput = {
+      services: {
+        echo: { name: 'echo', upstreamGroups: { default: [{ url: 'http://up', id: 'a' }] } },
+      },
+      routes: [
+        {
+          id: 'v',
+          methods: ['GET'],
+          pathPattern: '/echo/:id',
+          service: 'echo',
+          auth: 'public',
+          versions: [{ version: 'v1' }, { version: 'v2', rewritePrefix: '/internal' }],
+        },
+      ],
+    }
+    let seenPath = ''
+    const app = await buildApp(verConfig, (r) => {
+      seenPath = r.path
+      return new Response('ok')
+    })
+
+    expect((await app.handle(req('/v1/echo/1'))).status).toBe(200)
+    expect(seenPath).toBe('/echo/1') // v1: sem rewrite
+
+    expect((await app.handle(req('/v2/echo/1'))).status).toBe(200)
+    expect(seenPath).toBe('/internal/echo/1') // v2: prefixo do mapeamento aplicado
+  })
+
   test('versionamento: versão não suportada → 400', async () => {
     const verConfig: GatewayConfigInput = {
       services: {

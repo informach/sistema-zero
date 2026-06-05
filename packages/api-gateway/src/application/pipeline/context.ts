@@ -45,11 +45,19 @@ export interface CreateContextInput {
   logger: Logger
 }
 
+/**
+ * Formato aceito para um X-Request-Id vindo do CLIENTE. O id é ecoado na resposta,
+ * propagado ao upstream e vai para o access log — sem o filtro, um valor arbitrário
+ * (lixo gigante / chars fora do token de header) seria refletido verbatim.
+ */
+const REQUEST_ID_RE = /^[A-Za-z0-9_.-]{1,128}$/
+
 /** Monta o contexto inicial da requisição. */
 export function createContext(input: CreateContextInput): GatewayContext {
   const { request } = input
   const url = new URL(request.url)
-  const requestId = request.headers.get('x-request-id')?.trim() || randomUUID()
+  const incomingId = request.headers.get('x-request-id')?.trim()
+  const requestId = incomingId && REQUEST_ID_RE.test(incomingId) ? incomingId : randomUUID()
   const { traceparent, traceId } = resolveTraceparent(request.headers.get('traceparent'))
   return {
     requestId,

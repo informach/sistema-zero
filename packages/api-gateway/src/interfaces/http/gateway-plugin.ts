@@ -50,9 +50,16 @@ export function createGatewayApp(deps: GatewayAppDeps) {
           store: deps.store,
           targetIds: deps.targetIds,
           getDraining: deps.getDraining,
+          metricsToken: deps.env.METRICS_TOKEN,
         }),
       )
-      .use(metricsRoutes({ metrics: deps.metrics, health: deps.health }))
+      .use(
+        metricsRoutes({
+          metrics: deps.metrics,
+          health: deps.health,
+          token: deps.env.METRICS_TOKEN,
+        }),
+      )
       .all('/*', ({ request, server }) => {
         const socketIp = server?.requestIP(request)?.address ?? ''
         const clientIp = resolveClientIp(
