@@ -42,8 +42,12 @@ export interface EntitlementRepository {
   save(entitlement: EntitlementAggregate): Promise<boolean>
   /** `UPDATE ... WHERE id = ? AND version = ?` → `false` se houve conflito de versão. */
   update(entitlement: EntitlementAggregate): Promise<boolean>
-  /** Matrícula ATIVA (status + validade) do aluno para um `courseRef`. */
-  findActiveByUserAndCourseRef(
+  /**
+   * Matrícula ATIVA (status + validade) que dá acesso ao curso: específica
+   * (`courseRef`) OU chave-mestra (`accessType='all_courses'`). Havendo mais de
+   * uma, devolve a "mais forte" (vitalícia > validade mais distante).
+   */
+  findActiveForCourse(
     userId: string,
     courseRef: string,
     now: Date,

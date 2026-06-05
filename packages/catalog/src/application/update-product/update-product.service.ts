@@ -62,6 +62,10 @@ export class UpdateProductService {
 
     if (command.status !== undefined) product.setStatus(command.status)
 
+    // Coerência kind↔fulfillment↔components↔status sobre o estado CONSOLIDADO
+    // (validar dentro de cada setter falharia em estados intermediários legítimos).
+    product.assertCoherent()
+
     await this.products.update(product)
     for (const event of product.pullEvents()) this.logger.info(event.eventName, event.toPayload())
     return toProductView(product)

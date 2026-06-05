@@ -271,17 +271,10 @@ export type PricingMode = 'one_time' | 'subscription'
 export type CouponType = 'percent' | 'fixed'
 
 // Fulfillment (entrega/acesso): espelha `domain/product/fulfillment.ts` do catalog.
-// É o que a área de membros usa p/ liberar o acesso após a compra.
-export type AccessType = 'download' | 'course' | 'community' | 'external' | 'none'
+// Entrega EXCLUSIVAMENTE via área de membros: `course` (um curso) ou
+// `all_courses` (chave-mestra — todos os cursos, atuais e futuros).
+export type AccessType = 'course' | 'all_courses'
 export type ReleaseMode = 'immediate' | 'days_after_purchase' | 'fixed_date'
-
-export interface FulfillmentAsset {
-  /** Rótulo exibível ao aluno (ex.: "Ebook (PDF)"). */
-  label: string
-  url?: string
-  /** Referência opaca a um ativo (ex.: id no storage). */
-  ref?: string
-}
 
 export interface ReleaseRule {
   mode: ReleaseMode
@@ -293,8 +286,7 @@ export interface ReleaseRule {
 
 export interface FulfillmentSpec {
   accessType: AccessType
-  assets?: FulfillmentAsset[]
-  /** SLUG do curso na área de membros (não o id). */
+  /** SLUG do curso na área de membros (obrigatório quando `accessType = course`). */
   courseRef?: string
   release?: ReleaseRule
 }

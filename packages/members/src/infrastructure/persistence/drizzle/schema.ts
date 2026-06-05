@@ -37,6 +37,8 @@ export const accessTypeEnum = members.enum('access_type', [
   'community',
   'external',
   'none',
+  // Chave-mestra: 1 matrícula cobre TODOS os cursos publicados (atuais e futuros).
+  'all_courses',
 ])
 export const entitlementStatusEnum = members.enum('entitlement_status', [
   'active',

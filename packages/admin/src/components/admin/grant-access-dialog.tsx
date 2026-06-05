@@ -23,7 +23,7 @@ const VALIDITY_PRESETS = [
 ] as const
 
 interface GrantForm {
-  mode: 'offer' | 'course'
+  mode: 'offer' | 'course' | 'all_courses'
   offerId: string
   courseRef: string
   preset: string
@@ -103,9 +103,12 @@ export function GrantAccessDialog({
   }
 
   async function grant() {
-    const ref = form.mode === 'offer' ? form.offerId : form.courseRef
-    if (!ref) {
-      toast.error(form.mode === 'offer' ? 'Selecione a oferta.' : 'Selecione o curso.')
+    if (form.mode === 'offer' && !form.offerId) {
+      toast.error('Selecione a oferta.')
+      return
+    }
+    if (form.mode === 'course' && !form.courseRef) {
+      toast.error('Selecione o curso.')
       return
     }
     const expiresAt = resolveExpiresAt(form)
@@ -117,8 +120,10 @@ export function GrantAccessDialog({
     try {
       const body =
         form.mode === 'offer'
-          ? { mode: 'offer', userId, offerRef: ref, expiresAt }
-          : { mode: 'course', userId, courseRef: ref, expiresAt }
+          ? { mode: 'offer', userId, offerRef: form.offerId, expiresAt }
+          : form.mode === 'course'
+            ? { mode: 'course', userId, courseRef: form.courseRef, expiresAt }
+            : { mode: 'all_courses', userId, expiresAt }
       await apiSend('/api/members/entitlements', 'POST', body)
       toast.success('Acesso concedido.')
       setForm(EMPTY_FORM)
@@ -163,10 +168,16 @@ export function GrantAccessDialog({
           >
             <option value="course">Por curso</option>
             <option value="offer">Por oferta do catálogo</option>
+            <option value="all_courses">Todos os cursos (chave-mestra)</option>
           </Select>
         </Field>
 
-        {form.mode === 'course' ? (
+        {form.mode === 'all_courses' ? (
+          <p className="text-muted-foreground text-sm">
+            Concede acesso a TODOS os cursos publicados — inclusive os lançados depois. Uma única
+            matrícula, revogável/extensível como qualquer outra.
+          </p>
+        ) : form.mode === 'course' ? (
           <Field label="Curso" htmlFor="grant-course">
             <Select
               id="grant-course"

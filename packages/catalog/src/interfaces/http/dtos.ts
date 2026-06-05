@@ -16,12 +16,6 @@ const pricingModeSchema = literals(PRICING_MODES)
 const couponTypeSchema = literals(COUPON_TYPES)
 const couponStatusSchema = literals(COUPON_STATUSES)
 
-const FulfillmentAssetSchema = t.Object({
-  label: t.String({ minLength: 1, maxLength: 200 }),
-  url: t.Optional(t.String({ maxLength: 2000 })),
-  ref: t.Optional(t.String({ maxLength: 200 })),
-})
-
 const ReleaseRuleSchema = t.Object({
   mode: t.Union([
     t.Literal('immediate'),
@@ -32,15 +26,10 @@ const ReleaseRuleSchema = t.Object({
   date: t.Optional(t.String({ maxLength: 40 })),
 })
 
+// Entrega exclusivamente via área de membros: `course` (um curso, courseRef) ou
+// `all_courses` (chave-mestra — todos os cursos, atuais e futuros).
 const FulfillmentSchema = t.Object({
-  accessType: t.Union([
-    t.Literal('download'),
-    t.Literal('course'),
-    t.Literal('community'),
-    t.Literal('external'),
-    t.Literal('none'),
-  ]),
-  assets: t.Optional(t.Array(FulfillmentAssetSchema)),
+  accessType: t.Union([t.Literal('course'), t.Literal('all_courses')]),
   courseRef: t.Optional(t.String({ maxLength: 200 })),
   release: t.Optional(ReleaseRuleSchema),
 })

@@ -53,7 +53,16 @@ e **favicon** completo: `src/app/favicon.ico` + PNGs 16/32/192/512 + apple-touch
 > líquido/transações/cancelamentos com tooltip, gráfico Recharts colapsável — série densa via BFF,
 > **agregada por semana >90d / mês >270d** com `granularity`/`periodEnd`) + **cadastros inteligentes**
 > (SKU/slug/code auto-gerados com dirty-flag, tooltips `Field.tooltip`, cupom com multi-select de
-> ofertas, produto em PÁGINA dedicada com editores de combo e fulfillment, oferta com bônus/itens) +
+> ofertas, produto em PÁGINA dedicada com editores de combo e fulfillment, oferta com bônus/itens;
+> **entrega derivada (06/2026)**: o FulfillmentEditor virou "O que esta compra libera" — `course`
+> (picker de curso) ou `all_courses` (chave-mestra, todos os cursos atuais e futuros) + Liberação;
+> sem select de accessType solto, sem editor de assets (download/external REMOVIDOS — tudo entrega
+> via curso). Card de Entrega SOME quando kind=`bundle` (combo entrega via componentes); trocar o
+> kind limpa o estado que não se aplica (`onKindChange`: → bundle zera fulfillment, ← bundle zera
+> components) e o payload manda `fulfillment:null` p/ combo. Validação client espelha o
+> `assertCoherent` do catalog: ATIVAR exige curso escolhido OU all_courses (não-combo) / ≥1
+> componente (combo); rascunho livre. Produto legado (download/assets) é normalizado no load
+> (`sanitizeFulfillment`) — salvar auto-limpa) +
 > **Fatia Mídia** (upload de imagens/anexos → Cloudflare R2 com sharp→WebP; vídeos → Vimeo via TUS
 > direto do browser + capa + transcrição re-hospedada no R2 — ver §Mídia).
 > Login via IdP (`@sistemazero/auth`) com JWT/RBAC. Badges usam tokens `--success/--success-foreground`
@@ -239,7 +248,8 @@ Da raiz: `bun run dev:admin`, `bun run build:admin`, `bun run start:admin`.
   (o client só faz gating de UX por `currentUser.role`).
   A lista de usuários também tem ações **"Conceder acesso"** (cortesia/teste — abre o
   `GrantAccessDialog` compartilhado em `components/admin/grant-access-dialog.tsx`, com pickers de
-  oferta/curso + presets de validade 7/30/90 dias/vitalício/data, POST `/api/members/entitlements`)
+  oferta/curso + modo **"Todos os cursos (chave-mestra)"** + presets de validade 7/30/90
+  dias/vitalício/data, POST `/api/members/entitlements`)
   e **"Matrículas"** (link p/ `/admin/membros/[userId]`). O member-detail usa o MESMO dialog.
 - Pagamentos (via gateway, JWT+RBAC): `GET /payments/admin/payments` (`?q&status&method&consumerId&from&to&limit&offset`)
   → `Paginated<PaymentView>`; `GET /payments/admin/payments/:id`; `GET /payments/admin/subscriptions`
@@ -257,9 +267,11 @@ Da raiz: `bun run dev:admin`, `bun run build:admin`, `bun run start:admin`.
   **`DELETE /payments/admin/subscriptions/:id`** (cancela) → `SubscriptionView`. Valores em **string**
   (bigint, centavos) → `formatCentsStr`. Adapter em `src/server/payments.ts`; views em `src/lib/types.ts`.
 - Membros (via gateway, JWT+RBAC): `GET /members/admin/members` (`?status&courseRef&limit&offset`) →
-  `Paginated<MemberSummaryView>`; `GET /members/admin/members/:userId` → matrículas + progresso;
-  `POST /members/admin/entitlements` (`{mode:'offer'|'course', userId, offerRef|courseRef, expiresAt?}`) →
-  concessão manual; `PATCH /members/admin/entitlements/:id` (`{action:'revoke'|'expire'|'extend', expiresAt?}`).
+  `Paginated<MemberSummaryView>`; `GET /members/admin/members/:userId` → matrículas + progresso
+  (matrícula `all_courses` renderiza "Todos os cursos (chave-mestra)" — `ACCESS_LABELS`);
+  `POST /members/admin/entitlements` (`{mode:'offer'|'course'|'all_courses', userId,
+  offerRef|courseRef?, expiresAt?}`) → concessão manual; `PATCH /members/admin/entitlements/:id`
+  (`{action:'revoke'|'expire'|'extend', expiresAt?}`).
   O **BFF agrega**: o handler `GET /api/members` hidrata nome/email do auth via
   `POST /auth/admin/users/batch` (`server/users.ts`: `batchGetUsers`/`getUser`). Adapter em
   `src/server/members.ts`; views em `src/lib/types.ts`.

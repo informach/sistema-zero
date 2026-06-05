@@ -14,9 +14,10 @@ import { type AdminEntitlementView, toAdminEntitlementView } from '../mappers/ad
 
 /**
  * Concessão MANUAL pelo admin (cortesia/suporte/correção). Reusa o agregado + repo
- * (NÃO o motor de webhook, que tem `sourceKind` fixo). Duas modalidades:
+ * (NÃO o motor de webhook, que tem `sourceKind` fixo). Três modalidades:
  * - `offer`: resolve a oferta no catálogo e congela o snapshot, igual a uma compra.
  * - `course`: concede direto um curso (sem oferta), com snapshot sintético.
+ * - `all_courses`: chave-mestra (todos os cursos, atuais e futuros), sem oferta.
  *
  * Idempotente por `manual:${userId}:${productId}` (+ índice único user/product/source):
  * re-conceder o MESMO produto a um membro com matrícula manual ATIVA devolve a
@@ -25,6 +26,15 @@ import { type AdminEntitlementView, toAdminEntitlementView } from '../mappers/ad
 export type GrantManualCommand =
   | { mode: 'offer'; userId: string; offerRef: string; expiresAt?: Date | null }
   | { mode: 'course'; userId: string; courseRef: string; expiresAt?: Date | null }
+  | { mode: 'all_courses'; userId: string; expiresAt?: Date | null }
+
+/**
+ * `product_id` sintético da chave-mestra MANUAL (a coluna é uuid NOT NULL e não há
+ * produto do catálogo envolvido). Constante → o índice único user/product/source
+ * deduplica re-concessões. Grants via OFERTA usam o productId REAL do produto
+ * "acesso total" do catálogo — não colidem com este sentinel.
+ */
+export const MANUAL_ALL_COURSES_PRODUCT_ID = '00000000-0000-0000-0000-000000000000'
 
 export interface GrantManualResult {
   granted: AdminEntitlementView[]
@@ -57,9 +67,14 @@ export class GrantManualEntitlementService {
   async execute(cmd: GrantManualCommand): Promise<GrantManualResult> {
     const now = this.deps.clock()
     const expiresAt = cmd.expiresAt ?? null
-    return cmd.mode === 'offer'
-      ? this.grantByOffer(cmd.userId, cmd.offerRef, expiresAt, now)
-      : this.grantByCourse(cmd.userId, cmd.courseRef, expiresAt, now)
+    switch (cmd.mode) {
+      case 'offer':
+        return this.grantByOffer(cmd.userId, cmd.offerRef, expiresAt, now)
+      case 'course':
+        return this.grantByCourse(cmd.userId, cmd.courseRef, expiresAt, now)
+      case 'all_courses':
+        return this.grantAllCourses(cmd.userId, expiresAt, now)
+    }
   }
 
   private async grantByOffer(
@@ -138,6 +153,39 @@ export class GrantManualEntitlementService {
       now,
     })
     this.deps.logger?.info('grant.manual.course', { userId, courseRef })
+    return { granted: [view] }
+  }
+
+  private async grantAllCourses(
+    userId: string,
+    expiresAt: Date | null,
+    now: Date,
+  ): Promise<GrantManualResult> {
+    // Chave-mestra de cortesia: snapshot sintético, sem oferta nem curso específico.
+    const snapshot: EntitlementSnapshot = {
+      offerId: '',
+      offerSlug: '',
+      productId: MANUAL_ALL_COURSES_PRODUCT_ID,
+      sku: '',
+      name: 'Todos os cursos',
+      kind: 'course',
+      accessType: 'all_courses',
+      courseRef: null,
+      fulfillment: { accessType: 'all_courses' },
+      resolvedAt: now.toISOString(),
+    }
+    const view = await this.grantOne({
+      userId,
+      productId: MANUAL_ALL_COURSES_PRODUCT_ID,
+      productKind: 'course',
+      accessType: 'all_courses',
+      courseRef: null,
+      offerId: null,
+      snapshot,
+      expiresAt,
+      now,
+    })
+    this.deps.logger?.info('grant.manual.all_courses', { userId })
     return { granted: [view] }
   }
 

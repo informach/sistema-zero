@@ -109,18 +109,24 @@ export class DrizzleEntitlementRepository implements EntitlementRepository {
     return updated.length > 0
   }
 
-  async findActiveByUserAndCourseRef(
+  async findActiveForCourse(
     userId: string,
     courseRef: string,
     now: Date,
   ): Promise<EntitlementAggregate | null> {
-    // Pode haver mais de uma matrícula ativa para o mesmo curso (ex.: vitalícia +
-    // assinatura). Escolhe a "mais forte": vitalícia (expiresAt nulo) primeiro,
-    // senão a de validade mais distante — para o detalhe exibir o acesso correto.
+    // Acesso ao curso = matrícula específica (courseRef) OU chave-mestra
+    // (accessType='all_courses'). Pode haver mais de uma ativa (ex.: vitalícia +
+    // assinatura + chave-mestra). Escolhe a "mais forte": vitalícia (expiresAt
+    // nulo) primeiro, senão a de validade mais distante.
     const [row] = await this.db
       .select()
       .from(entitlements)
-      .where(and(activePredicate(userId, now), eq(entitlements.courseRef, courseRef)))
+      .where(
+        and(
+          activePredicate(userId, now),
+          or(eq(entitlements.courseRef, courseRef), eq(entitlements.accessType, 'all_courses')),
+        ),
+      )
       .orderBy(sql`${entitlements.expiresAt} is null desc`, desc(entitlements.expiresAt))
       .limit(1)
     return row ? fromRow(row) : null

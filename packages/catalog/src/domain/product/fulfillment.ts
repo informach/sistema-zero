@@ -1,17 +1,16 @@
 /**
  * Como a área de membros libera o produto. Estruturado em JSON (coluna `jsonb`)
  * para evoluir sem migração. O catálogo é a fonte da verdade do "o que entregar";
- * a área de membros (futuro) consome isto para liberar o acesso.
+ * a área de membros consome isto para liberar o acesso.
+ *
+ * Decisão (06/2026): a entrega é EXCLUSIVAMENTE via área de membros —
+ * `course` libera UM curso (`courseRef` = slug) e `all_courses` é a chave-mestra
+ * (todos os cursos publicados, atuais E futuros; a checagem de acesso no members
+ * vira "chave do curso OU chave-mestra ativa"). Os antigos `download`/`external`/
+ * `none` + `assets` foram removidos do cadastro (entregas mortas — criavam
+ * acessos invisíveis ao aluno). `community` (tiers) é fatia futura: entra no
+ * union quando a comunidade real existir.
  */
-export interface FulfillmentAsset {
-  /** Rótulo exibível (ex.: "Ebook (PDF)", "Checklist de Clareza"). */
-  label: string
-  /** URL direta (se aplicável). */
-  url?: string
-  /** Referência opaca a um ativo (ex.: id de arquivo no storage). */
-  ref?: string
-}
-
 export type ReleaseMode = 'immediate' | 'days_after_purchase' | 'fixed_date'
 
 export interface ReleaseRule {
@@ -22,15 +21,13 @@ export interface ReleaseRule {
   date?: string
 }
 
-export type AccessType = 'download' | 'course' | 'community' | 'external' | 'none'
+export type AccessType = 'course' | 'all_courses'
 
 export interface FulfillmentSpec {
   /** Tipo de acesso que a área de membros deve conceder. */
   accessType: AccessType
-  /** Ativos para download/entrega. */
-  assets?: FulfillmentAsset[]
-  /** Referência ao conteúdo do curso/área de membros (quando aplicável). */
+  /** Slug do curso na área de membros (obrigatório quando `accessType = course`). */
   courseRef?: string
-  /** Regra de liberação (drip). Default implícito: imediata. */
+  /** Regra de liberação (drip). Default implícito: imediata. ARMAZENADA, ainda não aplicada pelo members. */
   release?: ReleaseRule
 }

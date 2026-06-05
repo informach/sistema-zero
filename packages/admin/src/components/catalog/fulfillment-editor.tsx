@@ -1,18 +1,13 @@
 'use client'
 
-import { Button } from '@sistemazero/ui/button'
 import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
 import { Select } from '@sistemazero/ui/select'
-import { Plus, X } from 'lucide-react'
 import type { AccessType, FulfillmentSpec, ReleaseMode } from '@/lib/types'
 
 const ACCESS_TYPES: { value: AccessType; label: string }[] = [
-  { value: 'none', label: 'Nenhum (sem entrega automática)' },
-  { value: 'course', label: 'Curso (área de membros)' },
-  { value: 'download', label: 'Download (arquivos/links)' },
-  { value: 'community', label: 'Comunidade' },
-  { value: 'external', label: 'Externo (link de terceiros)' },
+  { value: 'course', label: 'Um curso específico' },
+  { value: 'all_courses', label: 'Todos os cursos (atuais e futuros)' },
 ]
 
 const RELEASE_MODES: { value: ReleaseMode; label: string }[] = [
@@ -27,9 +22,11 @@ export interface CourseOption {
 }
 
 /**
- * Editor do fulfillment (Entrega / Acesso) do produto: define COMO a área de
- * membros libera o conteúdo após a compra — tipo de acesso, curso vinculado
- * (pelo SLUG), arquivos/links entregues e regra de liberação (drip).
+ * Editor do fulfillment (Entrega / Acesso) do produto. A entrega é SEMPRE via
+ * área de membros: "Um curso específico" (escolhe o curso pelo SLUG) ou
+ * "Todos os cursos" (chave-mestra — cobre cursos atuais E futuros, sem curso
+ * vinculado). + regra de liberação (drip; armazenada, ainda não aplicada).
+ * Não renderize para combos (kind=bundle) — combo entrega via componentes.
  */
 export function FulfillmentEditor({
   value,
@@ -42,16 +39,15 @@ export function FulfillmentEditor({
   courses: CourseOption[]
   coursesLoading?: boolean
 }) {
-  const spec: FulfillmentSpec = value ?? { accessType: 'none' }
-  const assets = spec.assets ?? []
+  const spec: FulfillmentSpec = value ?? { accessType: 'course' }
   const release = spec.release ?? { mode: 'immediate' as ReleaseMode }
 
   function update(patch: Partial<FulfillmentSpec>) {
     const next = { ...spec, ...patch }
-    // "none" puro (sem extras) → null no payload (produto sem entrega automática).
+    // "curso" sem curso escolhido e sem drip → null no payload (rascunho sem entrega
+    // definida ainda; o domínio exige entrega só para ATIVAR o produto).
     if (
-      next.accessType === 'none' &&
-      !next.assets?.length &&
+      next.accessType === 'course' &&
       !next.courseRef &&
       (!next.release || next.release.mode === 'immediate')
     ) {
@@ -62,41 +58,20 @@ export function FulfillmentEditor({
   }
 
   function setAccessType(accessType: AccessType) {
-    // Troca de tipo limpa o que não se aplica (curso ↔ arquivos).
-    update({
-      accessType,
-      ...(accessType === 'course' ? { assets: undefined } : { courseRef: undefined }),
-    })
-  }
-
-  function setAsset(index: number, patch: { label?: string; url?: string }) {
-    update({ assets: assets.map((a, i) => (i === index ? { ...a, ...patch } : a)) })
-  }
-
-  function addAsset() {
-    update({ assets: [...assets, { label: '' }] })
-  }
-
-  function removeAsset(index: number) {
-    const next = assets.filter((_, i) => i !== index)
-    update({ assets: next.length ? next : undefined })
+    // Chave-mestra não leva curso vinculado.
+    update({ accessType, ...(accessType === 'all_courses' ? { courseRef: undefined } : {}) })
   }
 
   function setReleaseMode(mode: ReleaseMode) {
     update({ release: mode === 'immediate' ? undefined : { mode } })
   }
 
-  const showAssets =
-    spec.accessType === 'download' ||
-    spec.accessType === 'external' ||
-    spec.accessType === 'community'
-
   return (
     <div className="flex flex-col gap-4 rounded-lg border border-border p-4">
       <Field
-        label="Tipo de acesso"
+        label="O que esta compra libera"
         htmlFor="accessType"
-        tooltip="Como o aluno acessa o produto após a compra: curso na área de membros, arquivos para download, comunidade, link externo — ou nenhum (entrega manual)."
+        tooltip="A entrega é sempre pela área de membros: um curso específico ou TODOS os cursos (chave-mestra — inclui cursos lançados depois da compra)."
       >
         <Select
           id="accessType"
@@ -131,111 +106,69 @@ export function FulfillmentEditor({
             ))}
           </Select>
         </Field>
-      ) : null}
+      ) : (
+        <p className="text-muted-foreground text-sm">
+          O comprador ganha acesso a todos os cursos publicados — inclusive os lançados depois da
+          compra. Nenhuma configuração extra.
+        </p>
+      )}
 
-      {showAssets ? (
+      <div className="grid gap-4 sm:grid-cols-2">
         <Field
-          label="Arquivos / links entregues"
-          tooltip="O que o aluno recebe (ex.: 'Ebook (PDF)' + URL). O rótulo aparece para o aluno."
+          label="Liberação"
+          htmlFor="releaseMode"
+          tooltip="Quando o acesso é liberado: na hora da compra, X dias depois (drip) ou numa data fixa."
         >
-          <div className="flex flex-col gap-2">
-            {assets.map((a, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: lista editável sem id natural
-              <div key={i} className="flex items-center gap-2">
-                <Input
-                  placeholder="Rótulo (ex.: Ebook PDF)"
-                  value={a.label}
-                  onChange={(e) => setAsset(i, { label: e.target.value })}
-                  className="flex-1"
-                />
-                <Input
-                  placeholder="URL (opcional)"
-                  value={a.url ?? ''}
-                  onChange={(e) => setAsset(i, { url: e.target.value || undefined })}
-                  className="flex-1"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  aria-label="Remover arquivo"
-                  onClick={() => removeAsset(i)}
-                >
-                  <X className="size-4" />
-                </Button>
-              </div>
-            ))}
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={addAsset}
-              className="self-start"
-            >
-              <Plus className="size-4" /> Adicionar arquivo/link
-            </Button>
-          </div>
-        </Field>
-      ) : null}
-
-      {spec.accessType !== 'none' ? (
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field
-            label="Liberação"
-            htmlFor="releaseMode"
-            tooltip="Quando o acesso é liberado: na hora da compra, X dias depois (drip) ou numa data fixa."
+          <Select
+            id="releaseMode"
+            value={release.mode}
+            onChange={(e) => setReleaseMode(e.target.value as ReleaseMode)}
           >
-            <Select
-              id="releaseMode"
-              value={release.mode}
-              onChange={(e) => setReleaseMode(e.target.value as ReleaseMode)}
-            >
-              {RELEASE_MODES.map((m) => (
-                <option key={m.value} value={m.value}>
-                  {m.label}
-                </option>
-              ))}
-            </Select>
+            {RELEASE_MODES.map((m) => (
+              <option key={m.value} value={m.value}>
+                {m.label}
+              </option>
+            ))}
+          </Select>
+        </Field>
+        {release.mode === 'days_after_purchase' ? (
+          <Field label="Dias após a compra" htmlFor="releaseDays">
+            <Input
+              id="releaseDays"
+              inputMode="numeric"
+              value={release.days != null ? String(release.days) : ''}
+              onChange={(e) => {
+                const days = Number.parseInt(e.target.value, 10)
+                update({
+                  release: {
+                    mode: 'days_after_purchase',
+                    ...(Number.isFinite(days) && days >= 0 ? { days } : {}),
+                  },
+                })
+              }}
+            />
           </Field>
-          {release.mode === 'days_after_purchase' ? (
-            <Field label="Dias após a compra" htmlFor="releaseDays">
-              <Input
-                id="releaseDays"
-                inputMode="numeric"
-                value={release.days != null ? String(release.days) : ''}
-                onChange={(e) => {
-                  const days = Number.parseInt(e.target.value, 10)
-                  update({
-                    release: {
-                      mode: 'days_after_purchase',
-                      ...(Number.isFinite(days) && days >= 0 ? { days } : {}),
-                    },
-                  })
-                }}
-              />
-            </Field>
-          ) : null}
-          {release.mode === 'fixed_date' ? (
-            <Field label="Data de liberação" htmlFor="releaseDate">
-              <Input
-                id="releaseDate"
-                type="date"
-                value={release.date ? release.date.slice(0, 10) : ''}
-                onChange={(e) =>
-                  update({
-                    release: {
-                      mode: 'fixed_date',
-                      ...(e.target.value
-                        ? { date: new Date(`${e.target.value}T00:00:00`).toISOString() }
-                        : {}),
-                    },
-                  })
-                }
-              />
-            </Field>
-          ) : null}
-        </div>
-      ) : null}
+        ) : null}
+        {release.mode === 'fixed_date' ? (
+          <Field label="Data de liberação" htmlFor="releaseDate">
+            <Input
+              id="releaseDate"
+              type="date"
+              value={release.date ? release.date.slice(0, 10) : ''}
+              onChange={(e) =>
+                update({
+                  release: {
+                    mode: 'fixed_date',
+                    ...(e.target.value
+                      ? { date: new Date(`${e.target.value}T00:00:00`).toISOString() }
+                      : {}),
+                  },
+                })
+              }
+            />
+          </Field>
+        ) : null}
+      </div>
     </div>
   )
 }

@@ -41,18 +41,13 @@ async function main(): Promise<void> {
       sellable: true,
       description:
         'Guia direto para tirar uma ideia do papel usando IA sem virar refém dela (método Z.E.R.O.).',
-      // Manifesto do que a área de membros (futuro) deve liberar.
+      // Manifesto do que a área de membros libera: a entrega é via CURSO
+      // (`courseRef` = slug do curso no members; o ebook + materiais vivem dentro
+      // dele como blocos/anexos). Convenção: rode o seed do members ANTES
+      // (`bun run --filter @sistemazero/members db:seed`) — mesmo slug.
       fulfillment: {
-        accessType: 'download',
-        assets: [
-          { label: 'Ebook No Comando da IA (PDF)' },
-          { label: 'Checklist de Clareza Antes do Prompt' },
-          { label: 'Template "Minha ideia em 1 página"' },
-          { label: 'Roteiro de Prompt Estruturado' },
-          { label: 'Checklist "Teste antes de acreditar"' },
-          { label: 'Bônus: Mini-glossário' },
-          { label: 'Bônus: 10 sinais de que você está virando refém da IA' },
-        ],
+        accessType: 'course',
+        courseRef: 'no-comando-da-ia',
         release: { mode: 'immediate' },
       },
     })

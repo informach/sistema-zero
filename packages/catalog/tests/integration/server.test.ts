@@ -103,6 +103,7 @@ describe('catalog HTTP', () => {
         name: 'No Comando da IA',
         kind: 'ebook',
         status: 'active',
+        fulfillment: { accessType: 'course', courseRef: 'no-comando-da-ia' },
       })
       const product = await built.createProduct.execute({
         sku: 'x',
@@ -209,6 +210,7 @@ describe('catalog HTTP', () => {
         name: 'NCIA',
         kind: 'ebook',
         status: 'active',
+        fulfillment: { accessType: 'course', courseRef: 'ncia' },
       })
       await built.createOffer.execute({
         productId: product.id,
@@ -305,6 +307,7 @@ describe('catalog HTTP', () => {
         name: 'Curso de IA',
         kind: 'course',
         status: 'active',
+        fulfillment: { accessType: 'course', courseRef: 'curso-ia' },
       })
       const p2 = await built.createProduct.execute({
         sku: 'ebook-ia',
@@ -462,6 +465,8 @@ describe('catalog HTTP', () => {
         name: 'P',
         kind: 'ebook',
         status: 'active',
+        // Chave-mestra: entrega "todos os cursos" não leva courseRef.
+        fulfillment: { accessType: 'all_courses' },
       })
       await built.createOffer.execute({
         productId: product.id,

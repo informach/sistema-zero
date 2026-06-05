@@ -31,6 +31,11 @@ const SOURCE_LABELS: Record<string, string> = {
   manual: 'Manual',
 }
 
+const ACCESS_LABELS: Record<string, string> = {
+  course: 'Curso',
+  all_courses: 'Todos os cursos (chave-mestra)',
+}
+
 export function MemberDetailClient({
   userId,
   currentRole,
@@ -203,7 +208,9 @@ export function MemberDetailClient({
                     <TableRow key={e.id}>
                       <TableCell>
                         <div className="font-medium">{e.name || e.courseRef || e.productId}</div>
-                        <div className="text-xs text-muted-foreground">{e.accessType}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {ACCESS_LABELS[e.accessType] ?? e.accessType}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <StatusBadge status={e.status} />

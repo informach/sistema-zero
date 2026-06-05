@@ -2,9 +2,22 @@
  * Espelho do `FulfillmentSpec` do catálogo (cópia local — a área de membros é dona
  * do seu domínio e não importa o pacote do catálogo). É o que vem em
  * `GET /catalog/offers/:slug/entitlements` por item e é congelado no snapshot da
- * matrícula. `accessType` é o que cada feature (curso/comunidade/download) consome.
+ * matrícula.
+ *
+ * ⚠️ Union TOLERANTE de leitura: o catálogo só ESCREVE `course` e `all_courses`
+ * (decisão 06/2026 — entrega exclusivamente via área de membros); os demais valores
+ * permanecem aqui para snapshots/linhas legadas carregarem sem erro.
+ * `all_courses` = chave-mestra: 1 matrícula cobre TODOS os cursos publicados,
+ * atuais e futuros (a checagem de acesso vira "chave do curso OU chave-mestra").
  */
-export const ACCESS_TYPES = ['download', 'course', 'community', 'external', 'none'] as const
+export const ACCESS_TYPES = [
+  'download',
+  'course',
+  'community',
+  'external',
+  'none',
+  'all_courses',
+] as const
 export type AccessType = (typeof ACCESS_TYPES)[number]
 
 export function isAccessType(value: unknown): value is AccessType {

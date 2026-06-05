@@ -117,6 +117,7 @@ export class ProductAggregate extends AggregateRoot<string> {
       createdAt: now,
       updatedAt: now,
     })
+    product.assertCoherent()
     product.addEvent(new ProductCreatedEvent(product.id, product.props.sku, product.props.kind))
     return product
   }
@@ -158,6 +159,42 @@ export class ProductAggregate extends AggregateRoot<string> {
     this.props.status = status
     this.touch(now)
     this.addEvent(new ProductUpdatedEvent(this.id, `status:${status}`))
+  }
+
+  /**
+   * Coerência de cadastro (kind ↔ fulfillment ↔ components ↔ status), gated por
+   * status: `draft`/`archived` são livres (cadastro progressivo); `active` exige o
+   * produto pronto para entregar. Chamada no `create()` e, no update, UMA vez após
+   * consolidar TODAS as mutações (updateDetails/setComponents/setStatus) — validar
+   * dentro de cada setter falharia em estados intermediários legítimos. NUNCA é
+   * chamada no `restore()`: produto legado precisa carregar para ser corrigido.
+   */
+  assertCoherent(): void {
+    const { kind, fulfillment, components, status } = this.props
+    if (kind === 'bundle') {
+      if (fulfillment !== null) {
+        throw new ValidationError('Combo não tem entrega própria — a entrega vem dos componentes')
+      }
+      if (status === 'active' && components.length === 0) {
+        throw new ValidationError('Combo ativo precisa de pelo menos um componente')
+      }
+      return
+    }
+    if (components.length > 0) {
+      throw new ValidationError('Apenas combos (tipo "Combo") podem ter componentes')
+    }
+    if (status !== 'active') return
+    if (!fulfillment) {
+      throw new ValidationError(
+        'Produto ativo precisa de entrega definida (um curso ou todos os cursos)',
+      )
+    }
+    if (fulfillment.accessType === 'course' && !fulfillment.courseRef?.trim()) {
+      throw new ValidationError('Produto ativo com entrega por curso precisa do curso vinculado')
+    }
+    if (fulfillment.accessType === 'all_courses' && fulfillment.courseRef) {
+      throw new ValidationError('Entrega "todos os cursos" não leva curso vinculado')
+    }
   }
 
   private touch(now?: Date): void {

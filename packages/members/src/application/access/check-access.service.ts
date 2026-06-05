@@ -14,7 +14,8 @@ export interface CourseAccess {
  * Centraliza a trinca repetida nos endpoints de conteúdo: resolve o curso →
  * exige publicado (senão 404) → exige matrícula ATIVA do aluno (senão 403).
  * A checagem de acesso é leitura LOCAL (status + validade), sem chamar ninguém.
- * Convenção: `entitlement.courseRef === course.slug`.
+ * Acesso = matrícula específica (`entitlement.courseRef === course.slug`) OU
+ * chave-mestra (`accessType='all_courses'`, cobre todos os cursos — atuais e futuros).
  */
 export class CheckAccessService {
   constructor(
@@ -37,7 +38,7 @@ export class CheckAccessService {
     // `published` ou `archived` concedem acesso a quem já tem matrícula; `draft`
     // (ou inexistente) → 404 (não vaza a existência de curso não publicado).
     if (!course || !isCourseAccessible(course.status)) throw new CourseNotFoundError()
-    const entitlement = await this.entitlements.findActiveByUserAndCourseRef(
+    const entitlement = await this.entitlements.findActiveForCourse(
       userId,
       course.slug,
       this.clock(),

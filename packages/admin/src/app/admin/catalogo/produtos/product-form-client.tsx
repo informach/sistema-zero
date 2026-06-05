@@ -51,6 +51,25 @@ const EMPTY_FORM: FormState = {
   sellable: true,
 }
 
+/**
+ * Linhas legadas podem ter `accessType` antigo (download/external/none) e `assets`:
+ * normaliza para o modelo novo (entrega só via curso/chave-mestra) — salvar o
+ * produto auto-limpa o legado.
+ */
+function sanitizeFulfillment(spec: FulfillmentSpec | null): FulfillmentSpec | null {
+  if (!spec) return null
+  if (spec.accessType === 'all_courses') {
+    return { accessType: 'all_courses', ...(spec.release ? { release: spec.release } : {}) }
+  }
+  // Sem curso e sem drip → sem entrega definida (mesma regra de colapso do editor).
+  if (!spec.courseRef && (!spec.release || spec.release.mode === 'immediate')) return null
+  return {
+    accessType: 'course',
+    ...(spec.courseRef ? { courseRef: spec.courseRef } : {}),
+    ...(spec.release ? { release: spec.release } : {}),
+  }
+}
+
 /** Formulário de produto (página dedicada): dados base + combo + entrega/acesso. */
 export function ProductFormClient({ productId }: { productId: string | null }) {
   const router = useRouter()
@@ -112,7 +131,7 @@ export function ProductFormClient({ productId }: { productId: string | null }) {
             .sort((a, b) => a.sortOrder - b.sortOrder)
             .map((c) => ({ productId: c.productId, isPrimary: c.isPrimary })),
         )
-        setFulfillment(p.fulfillment)
+        setFulfillment(sanitizeFulfillment(p.fulfillment))
         setSkuDirty(true)
         setSlugDirty(true)
       })
@@ -131,18 +150,41 @@ export function ProductFormClient({ productId }: { productId: string | null }) {
 
   const isBundle = form.kind === 'bundle'
 
+  // Transição de tipo limpa o que não se aplica: combo não tem entrega própria
+  // (a entrega vem dos componentes) e não-combo não tem componentes — espelha a
+  // validação de coerência do catálogo.
+  function onKindChange(kind: string) {
+    setForm((f) => ({ ...f, kind }))
+    if (kind === 'bundle') setFulfillment(null)
+    else setComponents([])
+  }
+
   async function save() {
     if (!form.name.trim() || (!isEdit && (!form.sku.trim() || !form.slug.trim()))) {
       toast.error('Preencha nome, SKU e slug.')
       return
     }
-    if (fulfillment?.accessType === 'course' && !fulfillment.courseRef) {
-      toast.error('Selecione o curso vinculado (ou troque o tipo de acesso).')
-      return
+    // Espelha o `assertCoherent` do catálogo: rascunho é livre; ATIVAR exige o
+    // produto pronto para entregar.
+    if (form.status === 'active') {
+      if (isBundle && components.length === 0) {
+        toast.error('Combo ativo precisa de pelo menos um componente.')
+        return
+      }
+      if (!isBundle && !fulfillment) {
+        toast.error('Produto ativo precisa de entrega: escolha um curso ou "Todos os cursos".')
+        return
+      }
+      if (!isBundle && fulfillment?.accessType === 'course' && !fulfillment.courseRef) {
+        toast.error('Selecione o curso vinculado (ou mude para "Todos os cursos").')
+        return
+      }
     }
     setSaving(true)
     try {
       // PATCH substitui as coleções — envia sempre o estado completo dos editores.
+      // Combo: fulfillment SEMPRE null (o domínio rejeita combo com entrega própria).
+      const fulfillmentPayload = isBundle ? null : fulfillment
       const componentsPayload = (isBundle ? components : []).map((c, i) => ({
         componentProductId: c.productId,
         sortOrder: i,
@@ -155,7 +197,7 @@ export function ProductFormClient({ productId }: { productId: string | null }) {
           status: form.status,
           sellable: form.sellable,
           description: form.description.trim() ? form.description : null,
-          fulfillment,
+          fulfillment: fulfillmentPayload,
           components: componentsPayload,
         })
         toast.success('Produto atualizado.')
@@ -168,7 +210,7 @@ export function ProductFormClient({ productId }: { productId: string | null }) {
           status: form.status,
           sellable: form.sellable,
           ...(form.description.trim() ? { description: form.description } : {}),
-          ...(fulfillment ? { fulfillment } : {}),
+          ...(fulfillmentPayload ? { fulfillment: fulfillmentPayload } : {}),
           ...(componentsPayload.length ? { components: componentsPayload } : {}),
         })
         toast.success('Produto criado.')
@@ -288,11 +330,7 @@ export function ProductFormClient({ productId }: { productId: string | null }) {
               htmlFor="kind"
               tooltip="O que é este item. 'Combo' agrupa vários produtos numa só compra — quem compra recebe acesso a todos."
             >
-              <Select
-                id="kind"
-                value={form.kind}
-                onChange={(e) => setForm((f) => ({ ...f, kind: e.target.value }))}
-              >
+              <Select id="kind" value={form.kind} onChange={(e) => onKindChange(e.target.value)}>
                 {KINDS.map((k) => (
                   <option key={k.value} value={k.value}>
                     {k.label}
@@ -357,22 +395,24 @@ export function ProductFormClient({ productId }: { productId: string | null }) {
         </Card>
       ) : null}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-1.5 text-base">
-            Entrega / Acesso (entitlements)
-            <InfoTooltip text="É isto que a área de membros usa para liberar o acesso do comprador: tipo de acesso, curso vinculado, arquivos e quando libera." />
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <FulfillmentEditor
-            value={fulfillment}
-            onChange={setFulfillment}
-            courses={courses}
-            coursesLoading={coursesLoading}
-          />
-        </CardContent>
-      </Card>
+      {!isBundle ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-1.5 text-base">
+              Entrega / Acesso
+              <InfoTooltip text="O que a área de membros libera para o comprador: um curso específico ou todos os cursos (chave-mestra) — e quando libera. Combo não tem entrega própria (vem dos componentes)." />
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <FulfillmentEditor
+              value={fulfillment}
+              onChange={setFulfillment}
+              courses={courses}
+              coursesLoading={coursesLoading}
+            />
+          </CardContent>
+        </Card>
+      ) : null}
 
       <div className="flex justify-end gap-2">
         <Link href="/admin/catalogo/produtos" className={buttonVariants({ variant: 'outline' })}>

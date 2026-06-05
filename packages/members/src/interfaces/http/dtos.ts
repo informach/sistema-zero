@@ -105,7 +105,8 @@ const EXPIRES_AT = t.Optional(t.Union([t.String({ maxLength: 40 }), t.Null()]))
 
 /**
  * Corpo de `POST /members/admin/entitlements` — concessão manual. União discriminada
- * por `mode`: `offer` (resolve a oferta no catálogo) ou `course` (direto por curso).
+ * por `mode`: `offer` (resolve a oferta no catálogo), `course` (direto por curso) ou
+ * `all_courses` (chave-mestra — todos os cursos, atuais e futuros).
  */
 export const GrantEntitlementBody = t.Union([
   t.Object({
@@ -118,6 +119,11 @@ export const GrantEntitlementBody = t.Union([
     mode: t.Literal('course'),
     userId: USER_ID,
     courseRef: t.String({ minLength: 1, maxLength: 200 }),
+    expiresAt: EXPIRES_AT,
+  }),
+  t.Object({
+    mode: t.Literal('all_courses'),
+    userId: USER_ID,
     expiresAt: EXPIRES_AT,
   }),
 ])

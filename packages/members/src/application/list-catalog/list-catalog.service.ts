@@ -21,11 +21,15 @@ export class ListCatalogService {
       this.entitlements.listActiveByUser(userId, this.clock()),
     ])
 
+    // Chave-mestra (`all_courses`) destrava o catálogo inteiro (atuais e futuros).
+    const hasMaster = active.some((e) => e.accessType === 'all_courses')
     const owned = new Set<string>()
     for (const e of active) {
       if (e.accessType === 'course' && e.courseRef) owned.add(e.courseRef)
     }
 
-    return published.map((course) => toCatalogCourseView(course, owned.has(course.slug)))
+    return published.map((course) =>
+      toCatalogCourseView(course, hasMaster || owned.has(course.slug)),
+    )
   }
 }

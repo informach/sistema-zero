@@ -108,14 +108,16 @@ export class InMemoryEntitlementRepository implements EntitlementRepository {
     return true
   }
 
-  async findActiveByUserAndCourseRef(
+  async findActiveForCourse(
     userId: string,
     courseRef: string,
     now: Date,
   ): Promise<EntitlementAggregate | null> {
+    // Mirror do SQL: matrícula específica OU chave-mestra; escolhe a mais forte.
     let strongest: EntitlementState | null = null
     for (const s of this.byId.values()) {
-      if (s.userId === userId && s.courseRef === courseRef && isActive(s, now)) {
+      const covers = s.courseRef === courseRef || s.accessType === 'all_courses'
+      if (s.userId === userId && covers && isActive(s, now)) {
         if (!strongest || isStrongerState(s, strongest)) strongest = s
       }
     }

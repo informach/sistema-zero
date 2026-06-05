@@ -292,6 +292,65 @@ export function grantLifetime(
   return e
 }
 
+/**
+ * Concede uma CHAVE-MESTRA (`accessType:'all_courses'`) diretamente — cobre todos
+ * os cursos publicados, atuais e futuros. Vitalícia por padrão.
+ */
+export function grantAllCourses(
+  entitlements: InMemoryEntitlementRepository,
+  opts: { userId: string; now?: Date; expiresAt?: Date | null; subscriptionId?: string },
+): EntitlementAggregate {
+  const now = opts.now ?? new Date('2026-06-01T00:00:00.000Z')
+  const subscriptionId = opts.subscriptionId ?? null
+  const e = EntitlementAggregate.grant({
+    id: randomUUID(),
+    userId: opts.userId,
+    productId: randomUUID(),
+    productKind: 'course',
+    accessType: 'all_courses',
+    courseRef: null,
+    offerId: randomUUID(),
+    snapshot: {
+      offerId: 'o',
+      offerSlug: 'o',
+      productId: 'p',
+      sku: 's',
+      name: 'Acesso Total',
+      kind: 'course',
+      accessType: 'all_courses',
+      courseRef: null,
+      fulfillment: { accessType: 'all_courses' },
+      resolvedAt: now.toISOString(),
+    },
+    sourceKind: subscriptionId ? 'subscription' : 'manual',
+    sourceId: subscriptionId ?? 'seed',
+    subscriptionId,
+    grantedAt: now,
+    expiresAt: opts.expiresAt ?? null,
+    idempotencyKey: `manual:${opts.userId}:all-courses-${randomUUID()}`,
+  })
+  entitlements.seed(e)
+  return e
+}
+
+/** Oferta resolvida (catálogo) cujo item entrega a chave-mestra (`all_courses`). */
+export function offerWithAllCourses(offerSlug: string): ResolvedOffer {
+  return {
+    offerId: randomUUID(),
+    offerSlug,
+    items: [
+      {
+        productId: randomUUID(),
+        sku: 'acesso-total',
+        name: 'Acesso Total',
+        kind: 'course',
+        isPrimary: true,
+        fulfillment: { accessType: 'all_courses' },
+      },
+    ],
+  }
+}
+
 /** Oferta resolvida (catálogo) que concede acesso ao curso `courseRef`. */
 export function offerWithCourse(offerSlug: string, courseRef: string): ResolvedOffer {
   return {

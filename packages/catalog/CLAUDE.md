@@ -30,9 +30,22 @@ Validado contra Hotmart, Kiwify, Teachable, Thinkific, Kajabi, Gumroad, Podia (+
    varia por oferta entra no que a **oferta concede** (`offer_items`). "BÔNUS" é só rótulo de copy no funil.
 5. **`sellable=false`** = material entregue só dentro de combo/oferta (nunca vendido sozinho).
 6. **Entitlement = registro durável por produto, desacoplado da cobrança** (insight Kajabi: revogar acesso ≠
-   parar cobrança; apagar oferta ≠ revogar acesso). Hoje o catálogo resolve só a **definição** de acesso
-   (`resolve-entitlements`); os **grants por usuário** (tabela `entitlement_grants`) virão com a área de
-   membros — o modelo já está preparado.
+   parar cobrança; apagar oferta ≠ revogar acesso). O catálogo resolve a **definição** de acesso
+   (`resolve-entitlements`); os **grants por usuário** são materializados pelo **members**
+   (tabela `members.entitlements`, snapshot congelado + idempotência).
+7. **Entrega EXCLUSIVAMENTE via área de membros** (decisão 06/2026, modelo Hotmart Club):
+   `FulfillmentSpec.accessType` = `'course'` (um curso, `courseRef` = slug no members) ou
+   `'all_courses'` (**chave-mestra** — todos os cursos publicados, atuais E futuros; sem courseRef).
+   Os antigos `download`/`external`/`none` + `assets` foram REMOVIDOS do cadastro (entregas mortas —
+   criavam acessos invisíveis ao aluno); e-book avulso = curso com bloco de livro 3D. Linhas legadas
+   no JSONB carregam sem erro (o type descreve o que se ESCREVE). `community` (tiers) é fatia futura.
+8. **Coerência de cadastro validada no domínio** (`ProductAggregate.assertCoherent()`): produto
+   `active` não-bundle exige fulfillment (`course`+courseRef OU `all_courses`); `bundle` exige
+   fulfillment null e, `active`, ≥1 componente; não-bundle não aceita components; `draft`/`archived`
+   livres (cadastro progressivo). Chamada no `create()` e UMA vez no fim do `UpdateProductService`
+   (estado consolidado — validar por setter falharia em estados intermediários); NUNCA no `restore()`
+   (legado precisa carregar p/ ser corrigido). `kind='bundle'` é a fonte do CADASTRO; o resolvedor
+   segue usando `components.length` como sinal de expansão.
 
 ### Resolução de entitlements (`domain/services/resolve-entitlements.ts`)
 Função PURA: dado a oferta (produto principal + `offer_items`), expande combos → folhas entregáveis,
@@ -142,8 +155,11 @@ migration faz `CREATE SCHEMA "catalog"`.
 
 ## Pontos em aberto (futuro)
 
-`entitlement_grants` (acesso por usuário, materializado na confirmação do pagamento — área de membros) ·
-drip/duração de acesso · order bumps/upsells · UI de cadastro de produtos/ofertas/cupons ·
+**Reconciliação de combo alterado pós-venda** (Teachable-style: adicionar curso a combo já vendido →
+re-conceder aos compradores; hoje o snapshot é congelado — workaround: grant manual) ·
+**estorno → revogação automática da matrícula** (hoje são 2 passos manuais no admin) ·
+drip (`release` é armazenado mas o members não aplica) · tiers de comunidade (`accessType
+'community'` volta ao union quando a comunidade real existir) · order bumps/upsells ·
 **ledger de resgates de cupom** (`coupon_redemptions`, chave única por pagamento/lead): hoje
 `max_redemptions` é **teto MOLE** — o desconto é aplicado na cobrança (`quote`) e contado só na
 confirmação (`redeem`, best-effort, sem idempotência própria), então sob concorrência os descontos

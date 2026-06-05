@@ -25,10 +25,12 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > anexo** (rota `/resolve`; view do aluno SEM url) + **classificação do curso**
 > (`course_ratings`, estilo Udemy — ver rota abaixo) + **bloco e-book** (kind `ebook`:
 > PDF privado que vira livro 3D no community; view do aluno SEM url + rota
-> `/ebook/resolve`) — **108 testes**. Migrations `0000` (schema `members`), `0001`
-> (`lesson_progress`), `0002` (`quiz_attempts`), `0003` (`lessons.is_published`), `0004`
-> (`course_ratings`) e `0005` (enum `lesson_block_kind` + `'ebook'`) — **aplicadas** no
-> Postgres compartilhado (`sistemazero`, :5433).
+> `/ebook/resolve`) + **chave-mestra `all_courses`** (06/2026: 1 matrícula cobre TODOS
+> os cursos publicados, atuais e futuros — ver Conceito central) — **115 testes**.
+> Migrations `0000` (schema `members`), `0001` (`lesson_progress`), `0002`
+> (`quiz_attempts`), `0003` (`lessons.is_published`), `0004` (`course_ratings`), `0005`
+> (enum `lesson_block_kind` + `'ebook'`) e `0006` (enum `access_type` + `'all_courses'`)
+> — **aplicadas** no Postgres compartilhado (`sistemazero`, :5433).
 
 ## Conceito central (decisões travadas com o usuário)
 
@@ -41,7 +43,14 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    null; assinatura → `expiresAt` estendido a cada ciclo + carência. Curso **`archived`
    mantém o acesso** de quem já tem matrícula (só `draft` bloqueia) — `isCourseAccessible`.
    Havendo >1 matrícula ativa p/ o mesmo curso, o detalhe escolhe a **mais forte**
-   (vitalícia > validade mais distante).
+   (vitalícia > validade mais distante). **Chave-mestra** (`accessType='all_courses'`,
+   `courseRef` null): acesso = "matrícula do curso OU chave-mestra ativa"
+   (`findActiveForCourse`, query única com OR); cobre cursos publicados DEPOIS do grant
+   sem reprocessamento. "Meus cursos" lista todos os publicados (+ archived com matrícula
+   específica) com o acesso mais forte por curso; o catálogo destrava tudo (`hasAccess`).
+   O union `AccessType` local é **mirror TOLERANTE de leitura** (mantém
+   download/external/none legados p/ snapshots antigos carregarem) — o catálogo só
+   escreve `course`/`all_courses`.
 3. **Snapshot congelado no grant**: resolve no catálogo o que a oferta dá direito e
    **grava** (offer/product/sku/fulfillment/courseRef) na matrícula. Mudar a oferta
    depois NÃO altera quem já comprou.
@@ -206,11 +215,13 @@ default `true`). Rotas em `interfaces/http/routes/admin.routes.ts`:
   nunca contar linhas); ordenação `max(granted_at) desc, user_id` (paginação estável).
 - `GET /members/admin/members/:userId` → todas as matrículas (qualquer status) + progresso
   por curso. Usa `findCoursesBySlugs` (SEM filtro de status → admin vê draft/archived).
-- `POST /members/admin/entitlements` (body `{mode:'offer',offerRef}` | `{mode:'course',courseRef}`,
-  + `userId`, `expiresAt?`) → concessão MANUAL. Reusa o agregado (`sourceKind:'manual'`,
-  `sourceId:'manual'`, key `manual:${userId}:${productId}`; curso usa `productId=course.id`),
-  NÃO o motor de webhook. Idempotente; re-conceder ATIVA devolve a existente; revogada/
-  expirada → 409 (use estender). `GrantManualEntitlementService`.
+- `POST /members/admin/entitlements` (body `{mode:'offer',offerRef}` | `{mode:'course',courseRef}`
+  | `{mode:'all_courses'}`, + `userId`, `expiresAt?`) → concessão MANUAL. Reusa o agregado
+  (`sourceKind:'manual'`, `sourceId:'manual'`, key `manual:${userId}:${productId}`; curso usa
+  `productId=course.id`; `all_courses` usa o uuid-sentinela `MANUAL_ALL_COURSES_PRODUCT_ID`
+  (nil uuid) — grants de chave-mestra via OFERTA usam o productId real do produto "acesso
+  total" do catálogo), NÃO o motor de webhook. Idempotente; re-conceder ATIVA devolve a
+  existente; revogada/expirada → 409 (use estender). `GrantManualEntitlementService`.
 - `PATCH /members/admin/entitlements/:id` (body `{action:'revoke'|'expire'|'extend', expiresAt?}`)
   → carrega por id, aplica a transição no agregado, persiste com concorrência otimista
   (conflito → 409). `ManageEntitlementService`. Erros novos: `ENTITLEMENT_CONFLICT`→409,
@@ -274,6 +285,9 @@ migration `0004`), `processed_webhooks`.
 - ~~Concessão p/ comprador RECORRENTE~~ **RESOLVIDA**: o funil usa `POST /auth/internal/ensure-buyer`
   (create-or-get por e-mail → SEMPRE devolve `userId`) antes do grant.
 - Drip/`fulfillment.release`; "acesso até o fim do período" no cancelamento (hoje corta na hora).
+- **Estorno → revogação automática** (hoje estornar no payments e revogar a matrícula são 2 passos
+  manuais separados no admin — gap vs Hotmart/Kajabi) e **reconciliação de combo alterado**
+  (adicionar curso a combo já vendido não re-concede; a chave-mestra cobre o caso "todos os cursos").
 - `course_progress` materializado; fan-out direto payments→members (hoje passa pelo funil).
 - `metadata.salesPageUrl` editável pelo admin (hoje os DTOs de autoria não tocam `metadata`;
   setar via seed/SQL).
