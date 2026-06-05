@@ -35,7 +35,12 @@ Porta **3006**. Schema Postgres próprio **`messaging`**.
    worker reveza.
 3. **Templates no nosso banco** (`message_templates`), renderizados localmente com `{{variável}}`
    (`domain/services/render-template.ts`). **Valores escapados em HTML** no corpo de e-mail
-   (anti-injeção); WhatsApp é texto puro. Sem engine que execute código.
+   (anti-injeção); WhatsApp é texto puro. Sem engine que execute código. O CONTEÚDO padrão é
+   versionado em `scripts/seed-templates.ts` (seed = upsert): e-mails com layout da marca
+   (600px, card branco, CTA gradiente cyan→lime `#42e5e0→#bfea00`, paleta hex ≈ tokens oklch do
+   community) e logo PNG hospedada (`EMAIL_LOGO_URL`). Variáveis são CONTRATO com os
+   consumidores — `welcome`/`password-reset`: `nome`+`link` (funil/auth); `otp`: `nome`+`codigo`
+   (auth). NÃO renomeie sem mudar os chamadores.
 4. **Outbox + worker + webhooks de status** (espelha o `payments`): enfileira em `QUEUED`, o worker
    envia respeitando o ritmo, e os webhooks (`delivered`/`read`/`bounce`/`spam`) atualizam a `Message`
    e alimentam a **supressão** (não reenviar a hard-bounce/spam/unsub). ⚠️ `bounce` com
@@ -90,7 +95,7 @@ tests/    unit/ (render, pacing, message, send-worker, sendgrid-webhook) · inte
 | `bun run typecheck` | `tsc --noEmit` |
 | `bun test` | testes (**sandbox off** — gotcha do monorepo) |
 | `bun run db:generate` / `db:migrate` | migrations (Drizzle; cria o schema `messaging`) |
-| `bun run templates:seed` | popula templates `welcome` (e-mail + whatsapp), `password-reset` (e-mail) e `otp` (e-mail + whatsapp — código de acesso `{{codigo}}`) |
+| `bun run templates:seed` | **UPSERT** dos templates padrão: `welcome` (e-mail + whatsapp), `password-reset` (e-mail) e `otp` (e-mail + whatsapp — `{{codigo}}`). É a fonte da verdade versionada do conteúdo — key existente tem subject/body/variables ATUALIZADOS (`active` preservado). E-mails têm layout HTML da marca (tabelas + CSS inline, logo via `EMAIL_LOGO_URL` — PNG fonte em `assets/logo-sistema-zero.png`, hospedada no R2 público; em prod suba a PNG e exporte a env antes do seed) |
 | `bun run evolution:create-instance <name> <phone>` | cria instância na Evolution (QR) + registra no banco |
 | `bun run webhooks:register <name> <url>` | aponta o webhook da instância p/ o nosso endpoint |
 | `bun run send:test <email\|whatsapp> <templateKey> <contato>` | dispara um envio de teste |
