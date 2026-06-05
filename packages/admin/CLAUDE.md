@@ -8,6 +8,11 @@
 
 Guia operacional do **painel administrativo** (full-stack). Leia antes de editar.
 
+> 📖 A explicação CONCEITUAL do catálogo (produto × oferta × matrícula, chave-mestra, as 3 formas
+> de bônus — o que cada tela do painel significa para o negócio) está em
+> [`docs/catalogo-e-entitlements.md`](../../docs/catalogo-e-entitlements.md). **Mudou o fluxo de
+> cadastro/concessão aqui? Atualize o manual também.**
+
 ## O que é
 
 Painel para o dono operar a plataforma: **usuários, pagamentos, produtos, ofertas, cupons e membros**.

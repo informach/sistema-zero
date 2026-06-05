@@ -34,6 +34,10 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 
 ## Conceito central (decisões travadas com o usuário)
 
+> 📖 A explicação CONCEITUAL do modelo comercial (produto × oferta × matrícula, chave-mestra,
+> bônus) está em [`docs/catalogo-e-entitlements.md`](../../docs/catalogo-e-entitlements.md) —
+> voltada ao OPERADOR. **Mudou regra de acesso aqui? Atualize o manual também.**
+
 1. **Entitlement = direito de acesso, GENÉRICO por tipo de produto** (`course |
    community | download | …`), separado do "o que comprou" (isso é do payments). É
    uma **tabela materializada** alimentada pelos eventos do payments. Padrão Stripe

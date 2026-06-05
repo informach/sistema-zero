@@ -20,6 +20,10 @@ produtos entregáveis). É consumido pelo **funil** (preço + "o que está inclu
 
 ## Modelo (decisões de design — leia antes de mexer)
 
+> 📖 A explicação CONCEITUAL (produto × oferta × matrícula, chave-mestra, as 3 formas de bônus)
+> está em [`docs/catalogo-e-entitlements.md`](../../docs/catalogo-e-entitlements.md) — voltada ao
+> OPERADOR do painel. **Mudou regra de negócio aqui? Atualize o manual também.**
+
 Validado contra Hotmart, Kiwify, Teachable, Thinkific, Kajabi, Gumroad, Podia (+ Stripe). Princípios:
 
 1. **Produto ≠ Preço.** O `Product` é o entregável/conteúdo e **NÃO guarda preço**. O preço vive na `Offer`.

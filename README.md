@@ -54,6 +54,15 @@ Gateway. Cada serviço é um pacote em `packages/*`, deployável de forma indepe
 | [`@sistemazero/core`](packages/core) | — | Lib compartilhada (security/logging/errors/result/http), sem framework |
 | [`@sistemazero/tui`](packages/tui) | — | UI de terminal (React + OpenTUI) |
 
+## Documentação
+
+- **[Catálogo & Entitlements — manual de operação](docs/catalogo-e-entitlements.md)** —
+  guia conceitual de produtos/ofertas/combos/bônus/acessos para quem opera o painel:
+  os 3 conceitos (produto · oferta · matrícula), a entrega via área de membros
+  (curso específico × chave-mestra "todos os cursos"), as 3 formas de bônus e as
+  limitações conhecidas. *(O "como funciona por dentro" segue nos `CLAUDE.md` de
+  cada pacote.)*
+
 ## Banco de dados (padrão do monorepo)
 
 **Um único Postgres** (`sistemazero`), com **um schema por bounded context** —
