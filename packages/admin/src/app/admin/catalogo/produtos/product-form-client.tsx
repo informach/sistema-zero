@@ -20,14 +20,16 @@ import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { skuify, slugify } from '@/lib/slug'
 import type { CourseView, FulfillmentSpec, Paginated, ProductView } from '@/lib/types'
 
+// Tipos oferecidos no cadastro. `service`/`other` saíram do form (decisão do
+// usuário, 06/2026 — "por enquanto"): o catálogo segue aceitando (enum no banco,
+// default 'other'), e um produto legado com tipo fora da lista ganha uma opção
+// extra na edição (não some do select).
 const KINDS: { value: string; label: string }[] = [
   { value: 'ebook', label: 'Ebook' },
   { value: 'course', label: 'Curso' },
   { value: 'template_kit', label: 'Kit de templates' },
   { value: 'community', label: 'Comunidade' },
-  { value: 'service', label: 'Serviço' },
   { value: 'bundle', label: 'Combo (agrupa produtos)' },
-  { value: 'other', label: 'Outro' },
 ]
 const PRODUCT_STATUSES = ['draft', 'active', 'archived']
 
@@ -331,7 +333,10 @@ export function ProductFormClient({ productId }: { productId: string | null }) {
               tooltip="O que é este item. 'Combo' agrupa vários produtos numa só compra — quem compra recebe acesso a todos."
             >
               <Select id="kind" value={form.kind} onChange={(e) => onKindChange(e.target.value)}>
-                {KINDS.map((k) => (
+                {(KINDS.some((k) => k.value === form.kind)
+                  ? KINDS
+                  : [...KINDS, { value: form.kind, label: `${form.kind} (legado)` }]
+                ).map((k) => (
                   <option key={k.value} value={k.value}>
                     {k.label}
                   </option>

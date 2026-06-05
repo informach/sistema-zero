@@ -57,7 +57,10 @@ e **favicon** completo: `src/app/favicon.ico` + PNGs 16/32/192/512 + apple-touch
 > **entrega derivada (06/2026)**: o FulfillmentEditor virou "O que esta compra libera" — `course`
 > (picker de curso) ou `all_courses` (chave-mestra, todos os cursos atuais e futuros) + Liberação;
 > sem select de accessType solto, sem editor de assets (download/external REMOVIDOS — tudo entrega
-> via curso). Card de Entrega SOME quando kind=`bundle` (combo entrega via componentes); trocar o
+> via curso). Tipos oferecidos no select: ebook/curso/kit/comunidade/combo — `service`/`other`
+> saíram do FORM (por enquanto; o catálogo segue aceitando — enum no banco, default 'other' — e
+> produto legado com tipo fora da lista ganha opção "(legado)" na edição). Card de Entrega SOME
+> quando kind=`bundle` (combo entrega via componentes); trocar o
 > kind limpa o estado que não se aplica (`onKindChange`: → bundle zera fulfillment, ← bundle zera
 > components) e o payload manda `fulfillment:null` p/ combo. Validação client espelha o
 > `assertCoherent` do catalog: ATIVAR exige curso escolhido OU all_courses (não-combo) / ≥1
