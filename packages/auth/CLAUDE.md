@@ -176,6 +176,22 @@ src/
     A busca `q` da listagem admin **escapa `%`/`_`/`\`** antes do ILIKE (busca
     literal, não padrão).
 
+## Sentry (monitoramento de erros)
+
+`@sentry/bun` (estável), ligado por `SENTRY_DSN` (ausente = no-op; projeto
+`sistema-zero-auth` na org `informach-nucleo-de-aprendizag`, us.sentry.io).
+Espelha o padrão do payments (3 camadas, `infrastructure/observability/sentry.ts`):
+1. **Espelho de logs** (`withSentryMirror`, no composition-root): TODO log ERROR
+   vira evento (fingerprint = nome do evento; contexto = extras) — cobre
+   `otp.email_failed`/`forgot_password.email_failed`/`tokens.purge.failed` etc.
+   `MIRROR_SKIP` evita duplicar o que já é capturado como exceção.
+2. **`captureException` no error-handler** (500 `unhandled.error`) — evento
+   canônico com stack.
+3. **Process handlers/boot** (`index.ts`): init no TOPO (após `loadEnv`),
+   captureException + `flushSentry()` no shutdown. `release` =
+   `RAILWAY_GIT_COMMIT_SHA`, `sendDefaultPii: false` (PII-free — userId em vez
+   de e-mail nos logs), `tracesSampleRate: 0` (só erros).
+
 ## Integração com o gateway
 
 - **HS256:** defina o MESMO `JWT_HS256_SECRET` aqui e no gateway. O gateway verifica

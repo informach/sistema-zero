@@ -24,6 +24,7 @@ import {
   createGatewayMessagingClient,
   createNullMessagingClient,
 } from './infrastructure/messaging/gateway-messaging-client'
+import { withSentryMirror } from './infrastructure/observability/sentry'
 import { createDbConnection, type DbConnection } from './infrastructure/persistence/drizzle/db'
 import { DrizzleOtpCodeRepository } from './infrastructure/persistence/drizzle/otp-code.repository'
 import { DrizzlePasswordResetTokenRepository } from './infrastructure/persistence/drizzle/password-reset-token.repository'
@@ -62,10 +63,15 @@ const PURGE_GRACE_MS = 7 * 24 * 60 * 60 * 1000
  * de assinatura (chaves JWT) e o hash "isca" do login são resolvidos no boot.
  */
 export async function createApplication(env: Env): Promise<Application> {
-  const logger = createLogger({
-    level: env.NODE_ENV === 'production' ? 'info' : 'debug',
-    pretty: env.NODE_ENV !== 'production',
-  })
+  // Espelho Sentry: TODO log de nível ERROR vira evento/issue (a convenção do
+  // package é "log ERROR = sinal alertável": e-mail de reset/OTP que não saiu,
+  // purga falhando...). No-op sem SENTRY_DSN.
+  const logger = withSentryMirror(
+    createLogger({
+      level: env.NODE_ENV === 'production' ? 'info' : 'debug',
+      pretty: env.NODE_ENV !== 'production',
+    }),
+  )
 
   const connection: DbConnection = createDbConnection(env.DATABASE_URL, {
     max: env.DATABASE_POOL_MAX,

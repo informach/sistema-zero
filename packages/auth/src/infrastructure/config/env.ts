@@ -34,6 +34,9 @@ const EnvSchema = z
     DATABASE_URL: z.string().min(1, 'DATABASE_URL é obrigatória'),
     DATABASE_POOL_MAX: z.coerce.number().int().positive().default(10),
 
+    // Sentry (monitoramento de erros). Ausente = desligado (dev/local).
+    SENTRY_DSN: z.string().url().optional(),
+
     // JWT
     JWT_ALG: z.enum(['HS256', 'RS256']).default('HS256'),
     JWT_ISSUER: z.string().min(1).default('sistemazero-auth'),
