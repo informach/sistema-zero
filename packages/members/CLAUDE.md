@@ -338,6 +338,20 @@ de vídeo/last-accessed — migration `0001`), `quiz_attempts` (histórico de qu
 migration `0002`), `course_ratings` (classificação do curso, UNIQUE user+course —
 migration `0004`), `processed_webhooks`.
 
+## Sentry (monitoramento de erros)
+
+`@sentry/bun`, ligado por `SENTRY_DSN` (ausente = no-op; projeto **`sistema-zero-members`**
+na org `informach-nucleo-de-aprendizag`, us.sentry.io). Espelha o padrão do payments/auth
+(3 camadas, `infrastructure/observability/sentry.ts`):
+1. **Espelho de logs** (`withSentryMirror`, no composition-root): TODO log ERROR vira
+   evento (fingerprint = nome do evento; contexto = extras) — cobre `grant.offer_empty`/
+   `retention.cleanup.failed` etc. `MIRROR_SKIP` evita duplicar o que já é capturado
+   como exceção.
+2. **`captureException` no error-handler** (500 `unhandled.error`) — evento canônico com stack.
+3. **Process handlers/boot** (`index.ts`): init no TOPO (após `loadEnv`), captureException +
+   `flushSentry()` no shutdown. `release` = `RAILWAY_GIT_COMMIT_SHA`, `sendDefaultPii: false`
+   (PII-free — userId em vez de e-mail nos logs), `tracesSampleRate: 0` (só erros).
+
 ## Deploy (Railway)
 
 Serviço próprio no projeto `sistema-zero` via **`packages/members/railway.json`** (config-as-code:
@@ -354,7 +368,8 @@ SEMPRE — boot falha sem ele), `INTERNAL_API_TOKEN` (= `MEMBERS_INTERNAL_TOKEN`
 obrigatório em prod), `CATALOG_INTERNAL_TOKEN` (= `INTERNAL_API_TOKEN` do catalog =
 `CATALOG_INTERNAL_TOKEN` do gateway — 1 token, 3 hosts; obrigatório em prod) e
 **`CATALOG_BASE_URL=http://catalog.railway.internal:3003`** (⚠️ o default é `localhost:3003` —
-esquecer esta env quebra o grant em runtime, não no boot). No GATEWAY: `MEMBERS_URL=
+esquecer esta env quebra o grant em runtime, não no boot) e `SENTRY_DSN` (projeto
+`sistema-zero-members` — ver §Sentry). No GATEWAY: `MEMBERS_URL=
 http://members.railway.internal:3004` + `MEMBERS_INTERNAL_TOKEN`. Ler tokens dos irmãos com
 `railway variables --kv`.
 

@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/bun'
 import { DomainError } from '@sistemazero/core/errors'
 import {
   type ErrorEnvelope,
@@ -69,6 +70,8 @@ export function buildErrorResponse(input: {
 
   // Erro inesperado: loga com stack (serializeError, aninhado em `error:` — nunca
   // espalhado, colidiria com `message` do evento), espelhando o gateway/auth.
+  // Exceção inesperada (500) → Sentry com stack (o espelho pula 'unhandled.error').
+  Sentry.captureException(error)
   input.logger.error('unhandled.error', { error: serializeError(error) })
   return { status: 500, body: envelope('INTERNAL_ERROR', 'Erro interno') }
 }

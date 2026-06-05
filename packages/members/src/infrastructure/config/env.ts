@@ -32,6 +32,9 @@ const EnvSchema = z
     DATABASE_URL: z.string().min(1, 'DATABASE_URL é obrigatória'),
     DATABASE_POOL_MAX: z.coerce.number().int().positive().default(10),
 
+    // Sentry (monitoramento de erros). Ausente = desligado (dev/local).
+    SENTRY_DSN: z.string().url().optional(),
+
     // Catálogo (S2S direto na rede interna). A rota de entitlements expõe o
     // manifesto de entrega e exige o `x-internal-token` do catalog (06/2026).
     CATALOG_BASE_URL: z.string().url().default('http://localhost:3003'),

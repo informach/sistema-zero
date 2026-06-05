@@ -28,6 +28,7 @@ import { SaveVideoPositionService } from './application/save-video-position/save
 import { SubmitQuizAttemptService } from './application/submit-quiz-attempt/submit-quiz-attempt.service'
 import type { Env } from './infrastructure/config/env'
 import { createCatalogHttpGateway } from './infrastructure/gateways/catalog-http.gateway'
+import { withSentryMirror } from './infrastructure/observability/sentry'
 import { DrizzleContentAdminRepository } from './infrastructure/persistence/drizzle/content-admin.repository'
 import { DrizzleCourseRepository } from './infrastructure/persistence/drizzle/course.repository'
 import { DrizzleCourseRatingRepository } from './infrastructure/persistence/drizzle/course-rating.repository'
@@ -58,10 +59,14 @@ const RETENTION_ADVISORY_LOCK_KEY = '30792292938117747'
  * concretos e os pluga nos ports.
  */
 export async function createApplication(env: Env): Promise<Application> {
-  const logger = createLogger({
-    level: env.NODE_ENV === 'production' ? 'info' : 'debug',
-    pretty: env.NODE_ENV !== 'production',
-  })
+  // Espelho Sentry: TODO log de nível ERROR vira evento/issue (a convenção do
+  // package é "log ERROR = sinal alertável"). Sem DSN o capture é no-op.
+  const logger = withSentryMirror(
+    createLogger({
+      level: env.NODE_ENV === 'production' ? 'info' : 'debug',
+      pretty: env.NODE_ENV !== 'production',
+    }),
+  )
 
   const connection: DbConnection = createDbConnection(env.DATABASE_URL, {
     max: env.DATABASE_POOL_MAX,
