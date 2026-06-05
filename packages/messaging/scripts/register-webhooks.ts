@@ -22,12 +22,17 @@ const res = await fetch(
   {
     method: 'POST',
     headers: { apikey: env.EVOLUTION_API_KEY, 'content-type': 'application/json' },
+    // ⚠️ Evolution v2.3+ exige o ENVELOPE `webhook` (o shape flat da doc oficial
+    // está defasado → 400 'instance requires property "webhook"', visto em prod).
     body: JSON.stringify({
-      enabled: true,
-      url,
-      webhookByEvents: false,
-      // Só o que o handler consome (SEND_MESSAGE era registrado e ignorado).
-      events: ['MESSAGES_UPDATE', 'CONNECTION_UPDATE'],
+      webhook: {
+        enabled: true,
+        url,
+        byEvents: false,
+        base64: false,
+        // Só o que o handler consome (SEND_MESSAGE era registrado e ignorado).
+        events: ['MESSAGES_UPDATE', 'CONNECTION_UPDATE'],
+      },
     }),
   },
 )
