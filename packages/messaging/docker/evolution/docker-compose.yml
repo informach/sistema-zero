@@ -1,0 +1,19 @@
+# Evolution API v2 (WhatsApp) — DEV local.
+# Sobe com: docker compose up -d (de dentro desta pasta; requer o Postgres dev
+# `pg-payments` na :5433 já rodando). Banco: o MESMO `sistemazero` do monorepo,
+# schema separado `evolution` (criado pelo Prisma da própria Evolution).
+# Manager UI: http://localhost:8080/manager (login = AUTHENTICATION_API_KEY).
+services:
+  evolution-api:
+    container_name: evolution_api
+    image: evoapicloud/evolution-api:v2.3.7
+    restart: unless-stopped
+    ports:
+      - '8080:8080'
+    env_file:
+      - .env
+    volumes:
+      - evolution_instances:/evolution/instances
+
+volumes:
+  evolution_instances:

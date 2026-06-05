@@ -140,6 +140,25 @@ DTOs em **TypeBox**; erros de domínio → status no `error-handler` (TEMPLATE_N
 TEMPLATE_ALREADY_EXISTS→409, MISSING_TEMPLATE_VARIABLE→400, NO_SENDER_AVAILABLE/NO_WHATSAPP_INSTANCE_AVAILABLE→422,
 RECIPIENT_SUPPRESSED→409, CONCURRENCY_CONFLICT/INVALID_STATE_TRANSITION→409, PROVIDER_ERROR→502).
 
+## Evolution API (infra do WhatsApp)
+
+- **Dev:** `docker compose up -d` em `docker/evolution/` (imagem `evoapicloud/evolution-api:v2.3.7` —
+  a org `atendai` parou no v2.2.x; porta 8080; Manager UI em `http://localhost:8080/manager`, login =
+  `AUTHENTICATION_API_KEY` do `.env` da pasta, gitignored — copie do `.env.example`). Usa o MESMO
+  Postgres do monorepo (`host.docker.internal:5433/sistemazero`) com **schema separado `evolution`**
+  (o Prisma da Evolution cria/migra sozinho — NÃO gerencie por aqui). No `.env` do messaging:
+  `EVOLUTION_URL=http://localhost:8080` + `EVOLUTION_API_KEY` (a MESMA chave).
+- **Prod (Railway, projeto `sistema-zero`):** serviço **`evolution-api`** (mesma imagem), domínio
+  `https://evolution-api-production-dd85.up.railway.app`, volume em `/evolution/instances`, banco =
+  Postgres compartilhado via `${{Postgres.DATABASE_URL}}?schema=evolution`, cache local (sem Redis —
+  1 réplica). Chave de prod SÓ no Railway (`railway variables --kv`, serviço evolution-api). Quando o
+  messaging subir em prod: `EVOLUTION_URL=http://evolution-api.railway.internal:8080` (private networking).
+- **Parear um número (1x por número/ambiente):** `bun run evolution:create-instance <nome> <fone>` →
+  escanear o QR com o WhatsApp do chip (ou parear pelo Manager UI). A instância nasce `DISCONNECTED`
+  + aquecimento; vira `CONNECTED` pelo webhook `connection.update` (registre:
+  `bun run webhooks:register <nome> "<url-do-messaging>/messaging/webhooks/evolution?token=<MESSAGING_WEBHOOK_TOKEN>"`)
+  ou manualmente via `PATCH /messaging/admin/whatsapp-instances/:id {status:"CONNECTED"}` (dev sem URL pública).
+
 ## Integração com o gateway
 
 Rotas em `packages/api-gateway/gateway.config.ts` (serviço `messaging`, `MESSAGING_URL`). `messaging-send`
