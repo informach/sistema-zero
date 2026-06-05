@@ -159,7 +159,10 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   ativa de curso do `x-auth-user-id`) e `salesPageUrl` (de `course.metadata.salesPageUrl`,
   string não-vazia; senão `null` → o community cai no fallback `FUNNEL_URL`). Sem
   progresso (catálogo é descoberta/venda). `ListCatalogService` (2 queries, sem N+1).
-  O `metadata` ainda NÃO é editável pelos DTOs admin (setar via seed/SQL; fatia futura).
+  O `salesPageUrl` é editável pela autoria admin (06/2026): `CourseBody` aceita
+  `salesPageUrl` (nullable) → vira a chave `metadata.salesPageUrl` — o service atualiza
+  SÓ essa chave preservando as demais do jsonb (`withSalesPageUrl`: vazio remove a
+  chave; objeto vazio volta a `null`); `CourseView` da autoria devolve `salesPageUrl`.
 - **`PUT /members/courses/:slug/lessons/:lessonId/position`** (aluno): salva a posição
   do vídeo — body `{positionSeconds: int 0..100000}` (TypeBox), valida matrícula + aula
   pertencer ao curso; upsert em `lesson_progress`. Devolve `{lessonId, positionSeconds,
@@ -293,8 +296,8 @@ migration `0004`), `processed_webhooks`.
   manuais separados no admin — gap vs Hotmart/Kajabi) e **reconciliação de combo alterado**
   (adicionar curso a combo já vendido não re-concede; a chave-mestra cobre o caso "todos os cursos").
 - `course_progress` materializado; fan-out direto payments→members (hoje passa pelo funil).
-- `metadata.salesPageUrl` editável pelo admin (hoje os DTOs de autoria não tocam `metadata`;
-  setar via seed/SQL).
+- ~~`metadata.salesPageUrl` editável pelo admin~~ **RESOLVIDO 06/2026**: campo "Página de
+  vendas (URL)" no form de curso do painel (ver `GET /members/catalog` acima).
 - Visualização das classificações do curso (listagem no admin e/ou média de estrelas no
   catálogo) — esta fatia SÓ coleta/guarda (`course_ratings`), decisão do usuário 04/06/2026.
 

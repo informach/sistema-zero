@@ -108,6 +108,20 @@ O rascunho é livre (cadastro progressivo). **Ativar** um produto exige ele pron
 
 O formulário bloqueia com aviso e o backend valida de novo (defesa em profundidade).
 
+## A página de vendas do curso (o cadeado do catálogo)
+
+Na área do aluno, a página "Todos os cursos" mostra **cadeado** nos cursos que o aluno
+não tem — e o clique abre a **página de vendas** daquele curso em nova aba. Esse link é
+cadastrado **no curso** (não no produto/oferta): painel → **Membros → Cursos → editar →
+"Página de vendas (URL)"**.
+
+- Preenchido → o cadeado leva para essa URL (ex.: a página da oferta no funil).
+- Vazio → cai no fallback: a página padrão do funil (`FUNNEL_URL` configurada no community).
+
+Por que no curso? Porque o cadeado aparece **por curso** na vitrine da área de membros —
+e um curso pode ser vendido por várias ofertas; você escolhe QUAL página de vendas é a
+"oficial" daquele curso.
+
 ## Gestão de acessos no admin
 
 - **Conceder acesso** (cortesia/teste/suporte) — Usuários → "Conceder acesso" ou

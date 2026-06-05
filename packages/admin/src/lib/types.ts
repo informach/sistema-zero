@@ -124,6 +124,8 @@ export interface CourseView {
   subtitle: string | null
   description: string | null
   coverImageUrl: string | null
+  /** Página de vendas (funil) — destino do cadeado no catálogo do community. */
+  salesPageUrl: string | null
   status: string
   createdAt: string
   updatedAt: string

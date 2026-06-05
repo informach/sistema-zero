@@ -129,7 +129,8 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
       description: fields.description,
       coverImageUrl: fields.coverImageUrl,
       status: fields.status,
-      metadata: null,
+      // `salesPageUrl` mora no metadata (jsonb) — única chave gerida pelo form.
+      metadata: fields.salesPageUrl ? { salesPageUrl: fields.salesPageUrl } : null,
       createdAt: now,
       updatedAt: now,
     }
@@ -156,6 +157,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
           description: course.description,
           coverImageUrl: course.coverImageUrl,
           status: course.status,
+          metadata: course.metadata,
           updatedAt: new Date(),
           version: expectedVersion + 1,
         })

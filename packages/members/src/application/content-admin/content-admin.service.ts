@@ -83,16 +83,39 @@ export class CourseAdminService {
     if (fields.status === 'published' && (await this.content.countPublishedLessons(id)) === 0) {
       throw new NoPublishedLessonError()
     }
-    const ok = await this.content.updateCourse({ ...existing, ...fields })
+    // `salesPageUrl` vive em `metadata` (jsonb): atualiza SÓ essa chave,
+    // preservando as demais; objeto que ficou vazio volta a `null`.
+    const { salesPageUrl, ...rest } = fields
+    const merged = {
+      ...existing,
+      ...rest,
+      metadata: withSalesPageUrl(existing.metadata, salesPageUrl),
+    }
+    const ok = await this.content.updateCourse(merged)
     if (!ok) throw new CourseConflictError()
     const fresh = await this.courses.findCourseById(id)
-    return toCourseView(fresh ?? { ...existing, ...fields })
+    return toCourseView(fresh ?? merged)
   }
 
   async remove(id: string): Promise<{ ok: true }> {
     if (!(await this.content.deleteCourse(id))) throw new CourseNotFoundError()
     return { ok: true }
   }
+}
+
+/**
+ * Substitui só a chave `salesPageUrl` do `metadata` do curso, preservando as
+ * demais (o metadata é um saco de extras livres — não pode ser sobrescrito
+ * inteiro pelo form). `null`/vazio remove a chave; objeto vazio → `null`.
+ */
+function withSalesPageUrl(
+  metadata: Record<string, unknown> | null,
+  salesPageUrl: string | null,
+): Record<string, unknown> | null {
+  const next: Record<string, unknown> = { ...(metadata ?? {}) }
+  if (salesPageUrl) next.salesPageUrl = salesPageUrl
+  else delete next.salesPageUrl
+  return Object.keys(next).length > 0 ? next : null
 }
 
 // ── Módulos ─────────────────────────────────────────────────────────────────

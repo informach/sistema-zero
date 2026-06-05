@@ -7,6 +7,7 @@ import type {
   Module,
   ModuleWithLessons,
 } from '../../domain/course/course'
+import { resolveSalesPageUrl } from './views'
 
 /** Views ADMIN de AUTORIA (CRUD de conteúdo). Datas → ISO. */
 
@@ -17,6 +18,8 @@ export interface CourseView {
   subtitle: string | null
   description: string | null
   coverImageUrl: string | null
+  /** Página de vendas (funil) — de `metadata.salesPageUrl`; `null` se não setada. */
+  salesPageUrl: string | null
   status: string
   createdAt: string
   updatedAt: string
@@ -30,6 +33,7 @@ export function toCourseView(c: Course): CourseView {
     subtitle: c.subtitle,
     description: c.description,
     coverImageUrl: c.coverImageUrl,
+    salesPageUrl: resolveSalesPageUrl(c),
     status: c.status,
     createdAt: c.createdAt.toISOString(),
     updatedAt: c.updatedAt.toISOString(),

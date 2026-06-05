@@ -16,6 +16,8 @@ export interface CourseFields {
   subtitle: string | null
   description: string | null
   coverImageUrl: string | null
+  /** Página de vendas (funil) — persiste em `metadata.salesPageUrl` (jsonb). */
+  salesPageUrl: string | null
   status: CourseStatus
 }
 

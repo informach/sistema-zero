@@ -80,7 +80,7 @@ export function toCatalogCourseView(course: Course, hasAccess: boolean): Catalog
 }
 
 /** URL da página de vendas (funil) — `metadata.salesPageUrl` string não-vazia, senão `null`. */
-function resolveSalesPageUrl(course: Course): string | null {
+export function resolveSalesPageUrl(course: Course): string | null {
   const raw = course.metadata?.salesPageUrl
   return typeof raw === 'string' && raw.length > 0 ? raw : null
 }

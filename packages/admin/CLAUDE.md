@@ -271,7 +271,10 @@ Da raiz: `bun run dev:admin`, `bun run build:admin`, `bun run start:admin`.
   `guarantee` (`PaymentRow`): `metadata.offerId` → `guaranteeDays` da oferta (1 chamada
   `listOffers limit:100`, best-effort → `null` se catálogo indisponível/sem oferta) + cálculo
   `paidAt + dias` (`until/daysLeft/expired`);
-  **`POST /payments/admin/payments/:id/refund`** (estorno Pix/cartão) → `PaymentView`;
+  **`POST /payments/admin/payments/:id/refund`** (estorno Pix/cartão) → `PaymentView`; sob corrida
+  (duplo-clique) o payments serializa por claim otimista e o perdedor recebe **409
+  `REFUND_IN_PROGRESS`** (o refund de cartão NÃO é idempotente na Efí) — trate como "já em
+  andamento, recarregue", não como falha;
   **`DELETE /payments/admin/subscriptions/:id`** (cancela) → `SubscriptionView`. Valores em **string**
   (bigint, centavos) → `formatCentsStr`. Adapter em `src/server/payments.ts`; views em `src/lib/types.ts`.
 - Membros (via gateway, JWT+RBAC): `GET /members/admin/members` (`?status&courseRef&limit&offset`) →
@@ -289,7 +292,12 @@ Da raiz: `bun run dev:admin`, `bun run build:admin`, `bun run start:admin`.
   (+ `…/reorder`) e `PATCH/DELETE /members/admin/{blocks,attachments}/:id`. Conteúdo de bloco é
   união por `kind`. Body de aula aceita **`isPublished`** (ausente → `false`: aula nova nasce
   RASCUNHO; `LessonView` devolve a flag); publicar curso `published` sem aula publicada → **409
-  `NO_PUBLISHED_LESSON`**. Páginas em `app/admin/membros/cursos/*` (lista + editor de curso + editor
+  `NO_PUBLISHED_LESSON`**. Body de curso aceita **`salesPageUrl`** (nullable, 06/2026) — campo
+  "Página de vendas (URL)" no dialog do curso (destino do cadeado no catálogo do community;
+  vazio → fallback `FUNNEL_URL`; vira `metadata.salesPageUrl` no members e `CourseView` a devolve).
+  ⚠️ O dialog do curso é o ÚNICO PATCH de curso (o editor `[courseId]` só toca módulos/aulas) —
+  se outro PATCH de curso surgir, ele PRECISA enviar `salesPageUrl` (ausente/null limpa a chave).
+  Páginas em `app/admin/membros/cursos/*` (lista + editor de curso + editor
   de aula com formulários por tipo de bloco). Adapter em `src/server/members.ts`; views em
   `src/lib/types.ts`.
 

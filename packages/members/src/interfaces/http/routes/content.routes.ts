@@ -48,6 +48,7 @@ const courseFields = (b: CourseInput): CourseFields => ({
   subtitle: b.subtitle ?? null,
   description: b.description ?? null,
   coverImageUrl: b.coverImageUrl ?? null,
+  salesPageUrl: b.salesPageUrl?.trim() ? b.salesPageUrl.trim() : null,
   status: b.status as CourseStatus,
 })
 const moduleFields = (b: ModuleInput): ModuleFields => ({

@@ -61,6 +61,33 @@ describe('Members HTTP — autoria: cursos', () => {
     expect((await get(app, `/members/admin/courses/${created.id}`)).status).toBe(404)
   })
 
+  test('salesPageUrl: cria, devolve na view, troca e limpa (metadata.salesPageUrl)', async () => {
+    const { app } = buildApp()
+    const created = await createCourse(app, {
+      salesPageUrl: 'https://funil.example.com/oferta',
+    })
+    expect(created.salesPageUrl).toBe('https://funil.example.com/oferta')
+
+    // PATCH troca a URL (form manda o estado completo).
+    const patched = await send(app, `/members/admin/courses/${created.id}`, 'PATCH', {
+      ...COURSE,
+      salesPageUrl: 'https://funil.example.com/black-friday',
+    })
+    expect((await readJson(patched)).salesPageUrl).toBe('https://funil.example.com/black-friday')
+
+    // E o catálogo do ALUNO enxerga a URL (precisa publicar: curso sem aula não
+    // publica — então valida via GET admin mesmo).
+    const fetched = await readJson(await get(app, `/members/admin/courses/${created.id}`))
+    expect(fetched.salesPageUrl).toBe('https://funil.example.com/black-friday')
+
+    // PATCH com null limpa (metadata volta a null — chave removida).
+    const cleared = await send(app, `/members/admin/courses/${created.id}`, 'PATCH', {
+      ...COURSE,
+      salesPageUrl: null,
+    })
+    expect((await readJson(cleared)).salesPageUrl).toBeNull()
+  })
+
   test('slug de curso duplicado → 409 DUPLICATE_SLUG', async () => {
     const { app } = buildApp()
     await createCourse(app)

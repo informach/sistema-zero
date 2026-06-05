@@ -38,6 +38,7 @@ interface FormState {
   subtitle: string
   description: string
   coverImageUrl: string
+  salesPageUrl: string
   status: string
 }
 
@@ -47,6 +48,7 @@ const EMPTY: FormState = {
   subtitle: '',
   description: '',
   coverImageUrl: '',
+  salesPageUrl: '',
   status: 'draft',
 }
 
@@ -104,6 +106,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
       subtitle: c.subtitle ?? '',
       description: c.description ?? '',
       coverImageUrl: c.coverImageUrl ?? '',
+      salesPageUrl: c.salesPageUrl ?? '',
       status: c.status,
     })
     setOpen(true)
@@ -114,6 +117,10 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
       toast.error('Preencha slug e título.')
       return
     }
+    if (form.salesPageUrl.trim() && !/^https?:\/\//i.test(form.salesPageUrl.trim())) {
+      toast.error('A página de vendas precisa ser uma URL completa (começando com https://).')
+      return
+    }
     setSaving(true)
     try {
       const payload = {
@@ -122,6 +129,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
         subtitle: form.subtitle.trim() ? form.subtitle.trim() : null,
         description: form.description.trim() ? form.description.trim() : null,
         coverImageUrl: form.coverImageUrl.trim() ? form.coverImageUrl.trim() : null,
+        salesPageUrl: form.salesPageUrl.trim() ? form.salesPageUrl.trim() : null,
         status: form.status,
       }
       if (editing) {
@@ -352,6 +360,19 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
               scope="course"
               value={form.coverImageUrl}
               onChange={(url) => setForm((f) => ({ ...f, coverImageUrl: url }))}
+            />
+          </Field>
+          <Field
+            label="Página de vendas (URL)"
+            htmlFor="salesPageUrl"
+            tooltip='Para onde o aluno SEM acesso é levado ao clicar no curso com cadeado em "Todos os cursos" (abre em nova aba). Vazio → usa a página padrão do funil.'
+          >
+            <Input
+              id="salesPageUrl"
+              type="url"
+              placeholder="https://sistemazero.com.br/oferta/..."
+              value={form.salesPageUrl}
+              onChange={(e) => setForm((f) => ({ ...f, salesPageUrl: e.target.value }))}
             />
           </Field>
         </div>

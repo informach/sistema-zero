@@ -327,10 +327,12 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
   async createCourse(fields: CourseFields): Promise<Course> {
     if (this.courses.some((c) => c.slug === fields.slug)) throw new DuplicateSlugError()
     const now = new Date()
+    // Mirror do SQL: `salesPageUrl` vira a chave do metadata (jsonb), não coluna.
+    const { salesPageUrl, ...rest } = fields
     const course: Course = {
       id: randomUUID(),
-      ...fields,
-      metadata: null,
+      ...rest,
+      metadata: salesPageUrl ? { salesPageUrl } : null,
       createdAt: now,
       updatedAt: now,
     }

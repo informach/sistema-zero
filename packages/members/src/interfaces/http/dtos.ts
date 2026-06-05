@@ -149,6 +149,9 @@ export const CourseBody = t.Object({
   subtitle: NULLABLE_TEXT,
   description: NULLABLE_TEXT,
   coverImageUrl: NULLABLE_URL,
+  // Página de vendas (funil): vira `metadata.salesPageUrl` — é para onde o
+  // cadeado do catálogo "Todos os cursos" leva quem não tem acesso.
+  salesPageUrl: NULLABLE_URL,
   status: COURSE_STATUS,
 })
 
