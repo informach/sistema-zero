@@ -18,12 +18,20 @@ const EFI_API = 'https://cobrancas.api.efipay.com.br https://cobrancas-h.api.efi
 const EFI_TOKENIZER = 'https://tokenizer.sejaefi.com.br'
 const EFI_FINGERPRINT = 'https://device.clearsale.com.br https://web.fpcs-monitor.com.br'
 
+// Extras SÓ DE DEV (nunca vão a produção): o cliente HMR do Vite cria um
+// SharedWorker via `blob:` p/ detectar o restart do server (sem `worker-src` o
+// fallback é o script-src e a CSP o bloqueava — "Creating a worker from blob:...
+// has been blocked" + auto-reload quebrado) e usa eval em deps otimizadas.
+const DEV = import.meta.env.DEV
+
 const CSP = [
   "default-src 'self'",
   `img-src 'self' data: ${EFI_FINGERPRINT}`, // QR do Pix vem como data:image/png;base64 + pixels fp.png
   "font-src 'self' data:",
   "style-src 'self' 'unsafe-inline'", // estilos inline do Astro/Tailwind + style={}
-  "script-src 'self' 'unsafe-inline' https://device.clearsale.com.br", // hidratação + JSON-LD inline + onerror da imagem + fp.js
+  // hidratação + JSON-LD inline + onerror da imagem + fp.js
+  `script-src 'self' 'unsafe-inline'${DEV ? " 'unsafe-eval'" : ''} https://device.clearsale.com.br`,
+  ...(DEV ? ["worker-src 'self' blob:"] : []),
   `connect-src 'self' ${EFI_API} ${EFI_TOKENIZER} ${EFI_FINGERPRINT}`,
   "object-src 'none'",
   "base-uri 'self'",

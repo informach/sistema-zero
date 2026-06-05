@@ -177,6 +177,13 @@ gateway re-entrega) e **best-effort** no polling do Pix (`pixStatus`) e no cart�
     Sem isso a tokenização falha e o `isScriptBlocked()` acusa "adblock" à toa. Se a Efí mudar de
     endpoints numa atualização da lib, re-extraia as URLs do bundle
     (`rg -o 'https://[a-z0-9.-]+' node_modules/payment-token-efi/dist/payment-token-efi-esm.min.js`).
+  - **Extras DEV-only na CSP** (`import.meta.env.DEV`; NUNCA em prod): `worker-src 'self' blob:` +
+    `'unsafe-eval'` no script-src. O cliente HMR do Vite cria um **SharedWorker via `blob:`** para
+    detectar o restart do dev server — sem `worker-src` o fallback é o script-src e a CSP o
+    bloqueava ("Creating a worker from 'blob:...' ... has been blocked" no console + auto-reload
+    quebrado após restart; o `[vite] Error: send was called before connect` é ruído da mesma
+    reconexão). Em prod não existe `/@vite/client` e nada cria worker (verificado no bundle da Efí
+    e em runtime) — a CSP segue estrita.
 - **Admin** (`/admin`, `/api/admin/*`): login com **usuário REAL do auth (IdP)** via gateway
   (`lib/admin-auth.ts`). `POST /api/admin/login` (ilha `AdminLogin`, e-mail+senha validados com Zod)
   chama o gateway `POST /auth/login`; só `role ∈ {admin, superadmin}` + `status: active` entra (senão
