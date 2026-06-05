@@ -42,13 +42,22 @@ const sandbox = (process.env.EFI_SANDBOX ?? 'true').toLowerCase() !== 'false'
 const skipMtls = (readArg('skip-mtls') ?? 'true').toLowerCase() !== 'false'
 
 // Se EFI_WEBHOOK_SECRET estiver definido, o endpoint /webhooks/efi/pix exige
-// ?token=<segredo>. A Efí ACRESCENTA `/pix` ao final da URL registrada, então
-// informe a base já com o token (ex.: --url https://host/webhooks/efi?token=SEGREDO)
-// se o seu setup preservar a query string; caso contrário, deixe o segredo vazio.
+// ?token=<segredo>. ⚠️ A Efí CONCATENA `/pix` no FINAL DA STRING registrada —
+// com query string isso viraria `?token=SEGREDO/pix` (token corrompido). O padrão
+// oficial da Efí é o parâmetro dummy `&ignorar=` (o `/pix` extra cai nele) com o
+// PATH COMPLETO na URL:  https://host/webhooks/efi/pix?token=SEGREDO&ignorar=
+// (passe via env WEBHOOK_URL — em shell, o `&` precisa de escape).
 if (process.env.EFI_WEBHOOK_SECRET?.trim() && !url.includes('token=')) {
   console.warn(
     '⚠️ EFI_WEBHOOK_SECRET está definido, mas a --url não inclui token=. ' +
       'O endpoint recusará as notificações (401) sem o token. Inclua-o na URL registrada.',
+  )
+}
+if (url.includes('token=') && !url.includes('ignorar=')) {
+  console.warn(
+    '⚠️ URL com query string SEM `&ignorar=`: a Efí concatena `/pix` no fim da string ' +
+      'e o token vira `<token>/pix` (401 em toda notificação). Use ' +
+      'https://host/webhooks/efi/pix?token=<segredo>&ignorar=',
   )
 }
 

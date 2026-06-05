@@ -212,11 +212,17 @@ o redeploy reintroduzia o 502 do 1º Pix frio). Passo a passo:
    # private networking → CIDR privado (fd00::/8) ou o IP observado nos logs;
    # via domínio público → IP de egress público do gateway.
    ```
-6. **Webhook** Pix (senão o pagamento fica eterno `PENDING`):
+6. **Webhook** Pix (senão o pagamento fica eterno `PENDING`). ⚠️ A Efí
+   **concatena `/pix` no FINAL da string registrada** — com query string, use o
+   padrão oficial `&ignorar=` (o `/pix` extra cai no parâmetro dummy) e registre
+   o **path completo** `/webhooks/efi/pix`:
    ```bash
-   bun run webhook:register --url "https://<seu-dominio>/webhooks/efi?token=<EFI_WEBHOOK_SECRET>"
-   # a Efí acrescenta /pix → chama /webhooks/efi/pix
+   # via env (evita o shell comer o `&` no Windows):
+   WEBHOOK_URL='https://<dominio>/webhooks/efi/pix?token=<EFI_WEBHOOK_SECRET>&ignorar=' \
+     bun run webhook:register
+   # a Efí chamará: .../webhooks/efi/pix?token=<segredo>&ignorar=/pix
    # usa validateMtls=false (skip mTLS) por padrão, necessário atrás de proxy
+   # SEM token (só dev): --url https://<dominio>/webhooks/efi (a Efí acrescenta /pix ao path)
    ```
 7. Valide em homologação (`EFI_SANDBOX=true`, `NODE_ENV` ≠ production) e só
    então troque credenciais + certificado + `EFI_SANDBOX=false` para produção
