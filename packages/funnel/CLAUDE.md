@@ -178,6 +178,24 @@ gateway re-entrega) e **best-effort** no polling do Pix (`pixStatus`) e no cart�
   revoga o refresh no auth e limpa os cookies. **O funil não guarda credencial/segredo de admin** — crie
   o admin no auth (`bun run --filter @sistemazero/auth db:seed --email <e> --password <p> --role admin`).
   Só seguro sob HTTPS.
+  - ⚠️ **Sem SSO com o painel `admin` (3005):** são apps separados — cookies de nomes diferentes
+    (`admin_*` aqui vs. `sz_admin_*` lá) e, em prod, domínios diferentes. Logar num NÃO loga no outro;
+    cada um faz o próprio login contra o mesmo IdP.
+- **UI do painel (06/2026):** o `/admin` (login + dashboard) usa o **`@sistemazero/ui`**
+  (Button/Card/Table/Badge/Dialog/Input/PasswordInput/Field) + o tema sistema-zero + o **logo**
+  (`public/logo_dark.svg`/`logo_white.svg`), espelhando o pacote `admin`. **Dark-only**: `BaseLayout`
+  tem prop `htmlClass` e só as páginas `/admin*` passam `htmlClass="dark"`. O tema no `global.css` é
+  **ADITIVO** — mantém os `@theme { --color-* }` de marca do funil e **OMITE de propósito**
+  `--color-card`/`--color-muted` (já significam card escuro e o cinza de TEXTO `text-muted` das
+  públicas; remapear regrediria-as). **REGRA: nessa camada só ADICIONE token novo.** As deps do ui
+  (`lucide-react`/`class-variance-authority`/`clsx`/`tailwind-merge`) viraram deps DIRETAS do funil +
+  entraram no `optimizeDeps.include` (senão o Vite não as resolve da raiz). Abas: **Respostas** (tabela
+  enxuta → `Dialog` c/ os 16 campos; cards no mobile) + **Performance** (KPIs/barras, intacta).
+- **`GET /api/admin/leads` pagina no SERVIDOR**: `?limit` (1..100, default 25) `&offset&q&sort`
+  (asc|desc) → `{ leads, total, limit, offset }`. Busca (ILIKE nome/e-mail) e ordenação valem sobre
+  TODOS os leads (repo `listLeads(limit, offset, {q,sort})` + `countLeads(q)`, mesmo WHERE no count);
+  a UI usa o `Pagination` do ui c/ busca debounced (reseta p/ página 1). Antes capava em 1000 sem
+  paginação.
 - **Não importar `middleware.ts` em testes** (`bun test` não resolve o módulo virtual
   `astro:middleware`). Teste a lógica isolada (ex.: `lib/rate-limit.ts`).
 
@@ -256,6 +274,9 @@ import dinâmico da ilha falha. Deps assim no funil: `zod` (via `contact-schema`
 `payment-token-efi` (`import('payment-token-efi')` em `CardCheckout`).
 
 **Fix:** já estão listadas em `vite.optimizeDeps.include` no `astro.config.mjs` (força o pré-bundle
-no cold-start). Ao adicionar uma **nova** dep de terceiros consumida só por ilha lazy/import
-dinâmico, inclua-a ali também. Um restart simples basta (mudar `optimizeDeps` muda o config-hash →
-re-otimização automática).
+no cold-start). Também ali: as deps do **`@sistemazero/ui`** (`lucide-react`/`class-variance-authority`/
+`clsx`/`tailwind-merge`, consumidas pelas ilhas do `/admin`) — e, como vivem só em
+`packages/ui/node_modules`, foram declaradas como deps DIRETAS do funil p/ o Vite resolvê-las da raiz
+(senão dá `Failed to resolve dependency`). Ao adicionar uma **nova** dep de terceiros consumida só por
+ilha lazy/import dinâmico, inclua-a ali também. Um restart simples basta (mudar `optimizeDeps` muda o
+config-hash → re-otimização automática).

@@ -65,6 +65,16 @@ bun run --filter @sistemazero/auth db:seed --email voce@exemplo.com --password "
 `/admin` sem sessão redireciona p/ o login; o botão "Sair" revoga o refresh no auth e encerra a sessão.
 Garanta HTTPS em produção (os cookies vão com `Secure`).
 
+> **Sem SSO com o painel `admin` (3005):** são apps separados (cookies `admin_*` aqui vs. `sz_admin_*`
+> lá e, em prod, domínios diferentes) — logar num não loga no outro; cada um autentica no mesmo IdP.
+
+O painel usa o tema e os componentes compartilhados do **`@sistemazero/ui`** + o logo do sistema-zero
+(`public/logo_dark.svg`), no mesmo visual do pacote `admin`. Duas abas: **Respostas** (tabela de leads —
+clique numa linha abre o detalhe com as 16 respostas; no mobile vira cards) e **Performance** (conversão
+por etapa). A aba Respostas **pagina no servidor** com busca por nome/e-mail e ordenação por data
+(`GET /api/admin/leads?limit&offset&q&sort` → `{ leads, total, limit, offset }`), então escala para muitos
+leads sem carregar tudo de uma vez.
+
 ## Imagens
 
 Todas as imagens vivem em `public/img/` e são referenciadas por URL (o build nunca quebra
