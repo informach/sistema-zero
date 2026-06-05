@@ -212,6 +212,18 @@ checagem desligadas); **obrigatório em produção** (o boot do catalog falha se
 — NÃO compartilhe `__drizzle_migrations` entre pacotes (dedupe por `created_at` pularia migrations). A
 migration faz `CREATE SCHEMA "catalog"`.
 
+## Deploy (Railway)
+
+Serviço próprio no projeto `sistema-zero` via **`packages/catalog/railway.json`** (config-as-code:
+Dockerfile `oven/bun:1` com build context = RAIZ do repo, watchPatterns catalog/core/lockfile,
+healthcheck **`/readyz`**). `preDeployCommand` roda **`db:deploy` = migrate + seed** (o seed é
+idempotente — checa por sku/slug e pula; rodar a cada deploy é seguro e dispensa acesso manual ao
+banco interno). **SEM domínio público por design** — o catálogo só é alcançado pelo gateway e pelo
+members via private networking (`catalog.railway.internal:3003`). Envs de prod: `NODE_ENV=production`
+(todo o fail-closed depende disso), `PORT=3003`, `DATABASE_URL=${{Postgres.DATABASE_URL}}`,
+`DATABASE_POOL_MAX`, `INTERNAL_API_TOKEN` (≥16; o MESMO valor vira `CATALOG_INTERNAL_TOKEN` no
+gateway E no members — 3 hosts, 1 token; ler com `railway variables --kv`).
+
 ## Pontos em aberto (futuro)
 
 **Reconciliação de combo alterado pós-venda** (Teachable-style: adicionar curso a combo já vendido →
