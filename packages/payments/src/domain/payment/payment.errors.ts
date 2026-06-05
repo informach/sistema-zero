@@ -83,3 +83,16 @@ export class RefundNotSupportedError extends DomainError {
     super(`Estorno não suportado: ${reason}`)
   }
 }
+
+/**
+ * Outro estorno do MESMO pagamento perdeu a corrida do claim otimista (ex.:
+ * duplo-clique no admin) e o vencedor ainda não concluiu. O refund de cartão
+ * NÃO é idempotente na Efí — melhor falhar com 409 do que estornar em dobro.
+ */
+export class RefundInProgressError extends DomainError {
+  readonly code = 'REFUND_IN_PROGRESS'
+
+  constructor() {
+    super('Já existe um estorno deste pagamento em andamento; aguarde e recarregue')
+  }
+}

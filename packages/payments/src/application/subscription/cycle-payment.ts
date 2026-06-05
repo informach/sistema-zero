@@ -1,7 +1,6 @@
 import { PaymentAggregate } from '../../domain/payment/payment.aggregate'
 import type { ProviderChargeStatus } from '../../domain/ports/payment-gateway.port'
 import type { SubscriptionAggregate } from '../../domain/subscription/subscription.aggregate'
-import { Customer } from '../../domain/value-objects/customer'
 import { IdempotencyKey } from '../../domain/value-objects/idempotency-key'
 import { PaymentMethod } from '../../domain/value-objects/payment-method'
 
@@ -20,15 +19,10 @@ export function buildCyclePayment(input: {
 }): PaymentAggregate {
   const { subscription, chargeId, status, paidAt } = input
 
-  const customer = subscription.customer
-    ? Customer.create({
-        name: subscription.customer.name,
-        email: subscription.customer.email,
-        document: subscription.customer.document.value,
-        phone: subscription.customer.phone,
-        address: subscription.customer.address,
-      })
-    : undefined
+  // O Customer da assinatura já é um VO imutável validado na entrada —
+  // compartilhar a instância é seguro e não revalida (um documento legado não
+  // pode impedir a contabilização de um ciclo).
+  const customer = subscription.customer ?? undefined
 
   const payment = PaymentAggregate.create({
     consumerId: subscription.consumerId,

@@ -1,16 +1,27 @@
 /** Erro de infraestrutura ao comunicar com a Efí (rede, autenticação, schema). */
 export class EfiGatewayError extends Error {
   readonly code = 'EFI_GATEWAY_ERROR'
+  declare readonly cause?: unknown
 
   constructor(
     message: string,
     readonly providerCode?: string,
-    override readonly cause?: unknown,
+    cause?: unknown,
     /** Status HTTP da resposta da Efí (quando houver) — usado para decidir retry. */
     readonly status?: number,
   ) {
     super(message)
     this.name = 'EfiGatewayError'
+    // `cause` carrega o corpo COMPLETO da resposta da Efí — que em erros de
+    // validação pode conter PII do pagador. Não-enumerável: um `JSON.stringify`
+    // ou log estruturado acidental do erro NÃO o serializa (continua acessível
+    // explicitamente via `error.cause` para debug).
+    Object.defineProperty(this, 'cause', {
+      value: cause,
+      enumerable: false,
+      writable: false,
+      configurable: true,
+    })
   }
 }
 

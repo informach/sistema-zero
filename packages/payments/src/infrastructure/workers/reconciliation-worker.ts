@@ -2,6 +2,7 @@ import type { PaymentAggregate } from '../../domain/payment/payment.aggregate'
 import type { PaymentGateway, ProviderCharge } from '../../domain/ports/payment-gateway.port'
 import type { PaymentRepository } from '../../domain/ports/payment-repository.port'
 import type { Logger } from '../logging/logger'
+import { ConcurrencyConflictError } from '../persistence/drizzle/concurrency.error'
 
 export interface ReconciliationWorkerOptions {
   intervalMs: number
@@ -78,6 +79,15 @@ export class ReconciliationWorker {
             this.logger.info('reconcile.expired', { paymentId: payment.id })
           }
         } catch (error) {
+          // `findStalePendingCharges` é um SELECT simples (sem claim/lease):
+          // com >1 réplica — ou correndo contra o webhook — dois writers podem
+          // pegar o MESMO pagamento e o perdedor conflita no `save`. É o caminho
+          // ESPERADO da concorrência otimista ("o outro venceu"), não uma falha:
+          // log info, sem alarme.
+          if (error instanceof ConcurrencyConflictError) {
+            this.logger.info('reconcile.lost_race', { paymentId: payment.id })
+            continue
+          }
           this.logger.error('reconcile.item_failed', {
             paymentId: payment.id,
             error: error instanceof Error ? error.message : String(error),

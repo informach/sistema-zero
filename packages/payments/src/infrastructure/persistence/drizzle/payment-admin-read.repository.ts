@@ -28,7 +28,7 @@ import type {
 } from '../../../domain/ports/payment-admin-read.port'
 import type { Database } from './db'
 import { rowToSnapshot } from './payment.repository'
-import { outbox, payments, webhookDeliveries } from './schema'
+import { outbox, payments, toDomainPaymentStatus, webhookDeliveries } from './schema'
 
 /** Fuso do RELATÓRIO: os buckets diários usam o dia civil brasileiro (os
  *  timestamptz são UTC no banco — truncar cru deslocaria vendas da noite). */
@@ -90,7 +90,7 @@ export class DrizzlePaymentAdminReadRepository implements PaymentAdminReadReposi
     ])
 
     const byStatus: PaymentStatusBucket[] = byStatusRows.map((r) => ({
-      status: r.status,
+      status: toDomainPaymentStatus(r.status),
       count: r.c,
       amountInCents: r.sum,
     }))

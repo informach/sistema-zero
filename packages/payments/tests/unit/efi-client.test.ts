@@ -113,6 +113,33 @@ describe('EfiClient (Pix) — resiliência e idempotência', () => {
     expect(tokenCalls(calls)).toHaveLength(1)
   })
 
+  test('budget total esgotado corta o retry mesmo de chamada idempotente (PUT)', async () => {
+    const calls = installFetch(({ url }) => {
+      if (url.endsWith('/oauth/token')) return jsonResponse(200, { access_token: 'tok' })
+      return jsonResponse(503, { mensagem: 'indisponível' })
+    })
+    // budget == timeout por tentativa → após a 1ª falha não sobra espaço para a
+    // 2ª tentativa inteira (elapsed + backoff + attemptTimeout > budget).
+    await expect(
+      pixClient({ requestTimeoutMs: 1000, totalBudgetMs: 1000 }).createCharge('txid123', {}),
+    ).rejects.toBeInstanceOf(EfiGatewayError)
+    expect(urlCalls(calls, '/v2/cob/')).toHaveLength(1) // sem retry: budget esgotado
+  })
+
+  test('budget com folga NÃO corta o retry (controle)', async () => {
+    const calls = installFetch(({ url }, counts) => {
+      if (url.endsWith('/oauth/token')) return jsonResponse(200, { access_token: 'tok' })
+      if (counts.endpoint === 1) return jsonResponse(503, { mensagem: 'x' })
+      return jsonResponse(200, { txid: 'abc' })
+    })
+    const res = await pixClient({ requestTimeoutMs: 50, totalBudgetMs: 10_000 }).createCharge(
+      'abc',
+      {},
+    )
+    expect(res).toEqual({ txid: 'abc' })
+    expect(urlCalls(calls, '/v2/cob/')).toHaveLength(2)
+  })
+
   test('timeout aborta a requisição pendurada e falha', async () => {
     installFetch(({ url, signal }) => {
       if (url.endsWith('/oauth/token')) return jsonResponse(200, { access_token: 'tok' })
@@ -162,5 +189,16 @@ describe('EfiCobrancasClient (Boleto) — resiliência e idempotência', () => {
     const res = await cobrancasClient().detailCharge(1)
     expect(res).toEqual({ data: { charge_id: 1 } })
     expect(urlCalls(calls, '/charge/1')).toHaveLength(2)
+  })
+
+  test('budget total esgotado corta o retry do GET idempotente', async () => {
+    const calls = installFetch(({ url }) => {
+      if (url.endsWith('/authorize')) return jsonResponse(200, { access_token: 'tok' })
+      return jsonResponse(502, { mensagem: 'x' })
+    })
+    await expect(
+      cobrancasClient({ requestTimeoutMs: 1000, totalBudgetMs: 1000 }).detailCharge(1),
+    ).rejects.toBeInstanceOf(EfiGatewayError)
+    expect(urlCalls(calls, '/charge/1')).toHaveLength(1)
   })
 })

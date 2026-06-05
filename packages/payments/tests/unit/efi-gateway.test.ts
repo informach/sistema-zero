@@ -249,11 +249,59 @@ describe('EfiPaymentGateway.createCardCharge', () => {
     await expect(gw.createCardCharge(cardInput)).rejects.toBeInstanceOf(EfiGatewayError)
   })
 
+  test('getPixCharge compara o valor PAGO (pix[].valor), não o cobrado', async () => {
+    const gw = new EfiPaymentGateway(
+      mockClient({
+        detailCharge: (async () => ({
+          txid: TXID,
+          status: 'CONCLUIDA',
+          valor: { original: '100.00' },
+          // Exemplo da doc oficial: cob de 100.00 paga com 110.00 — o valor
+          // efetivamente pago vem em pix[].valor.
+          pix: [{ endToEndId: 'E2E1', valor: '110.00', horario: '2026-01-02T10:00:00Z' }],
+        })) as EfiClient['detailCharge'],
+      }),
+    )
+    const out = await gw.getPixCharge(TXID)
+    expect(out.status).toBe('PAID')
+    expect(out.amountInCents).toBe(11000n) // pago, não os 10000 cobrados
+    expect(out.paidAt?.toISOString()).toBe('2026-01-02T10:00:00.000Z')
+  })
+
+  test('getPixCharge sem pagamento (pix[] vazio) cai no valor cobrado', async () => {
+    const gw = new EfiPaymentGateway(
+      mockClient({
+        detailCharge: (async () => ({
+          txid: TXID,
+          status: 'ATIVA',
+          valor: { original: '100.00' },
+        })) as EfiClient['detailCharge'],
+      }),
+    )
+    const out = await gw.getPixCharge(TXID)
+    expect(out.status).toBe('PENDING')
+    expect(out.amountInCents).toBe(10000n)
+    expect(out.paidAt).toBeUndefined()
+  })
+
   test('getCardCharge re-consulta e mapeia approved→PAID (cartão-aware)', async () => {
     const gw = new EfiPaymentGateway(mockClient({}), mockCobrancas({}))
     const out = await gw.getCardCharge('777')
     expect(out.status).toBe('PAID')
     expect(out.amountInCents).toBe(3700n)
+  })
+
+  test('EfiGatewayError não serializa o corpo da Efí (PII) em JSON.stringify', () => {
+    const err = new EfiGatewayError(
+      'Efí [teste]: validação',
+      'documento_invalido',
+      { violacoes: [{ propriedade: 'devedor.cpf', valor: '11122233344' }] },
+      400,
+    )
+    expect(JSON.stringify(err)).not.toContain('11122233344') // PII não vaza em log acidental
+    expect(err.cause).toMatchObject({ violacoes: expect.any(Array) }) // acessível p/ debug
+    expect(err.providerCode).toBe('documento_invalido')
+    expect(err.status).toBe(400)
   })
 
   test('sem cliente Cobranças configurado → erro claro', async () => {

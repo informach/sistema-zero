@@ -1,5 +1,5 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: any */
-import { EfiGatewayError } from './efi.errors'
+import { responseToEfiError, withRetry } from './http'
 
 /** `RequestInit` + a extensão `tls` do Bun (certificado de cliente para mTLS). */
 interface BunFetchInit extends RequestInit {
@@ -17,8 +17,18 @@ export interface EfiClientConfig {
   maxRetries?: number
   /** Atraso base do backoff exponencial, em ms. Padrão 200. */
   retryBaseMs?: number
-  /** Timeout por requisição HTTP, em ms (aborta sockets pendurados). Padrão 15s. */
+  /**
+   * Timeout POR TENTATIVA, em ms (aborta sockets pendurados). Padrão 20s — o
+   * handshake mTLS frio leva ~15-16s sob Bun (15s abortava no fim do handshake
+   * → PIX 502). Mantenha alinhado a `EFI_REQUEST_TIMEOUT_MS`.
+   */
   requestTimeoutMs?: number
+  /**
+   * Teto de tempo da operação INTEIRA (tentativas + backoff), em ms. Padrão 30s
+   * — precisa caber no timeout do gateway (35s) e folgar sob o TTL da reserva
+   * de idempotência (60s). Ver `withRetry` em `http.ts`.
+   */
+  totalBudgetMs?: number
 }
 
 /**
@@ -34,8 +44,12 @@ export interface EfiClientConfig {
 export class EfiClient {
   private readonly baseUrl: string
   private readonly tls: { cert: string; key: string }
-  private readonly maxRetries: number
-  private readonly retryBaseMs: number
+  private readonly retryOpts: {
+    maxRetries: number
+    baseMs: number
+    totalBudgetMs: number
+    attemptTimeoutMs: number
+  }
   private readonly requestTimeoutMs: number
   private token: { value: string; expiresAt: number } | null = null
   private authInFlight: Promise<string> | null = null
@@ -45,9 +59,13 @@ export class EfiClient {
       ? 'https://pix-h.api.efipay.com.br'
       : 'https://pix.api.efipay.com.br'
     this.tls = { cert: config.cert, key: config.key }
-    this.maxRetries = config.maxRetries ?? 3
-    this.retryBaseMs = config.retryBaseMs ?? 200
-    this.requestTimeoutMs = config.requestTimeoutMs ?? 15_000
+    this.requestTimeoutMs = config.requestTimeoutMs ?? 20_000
+    this.retryOpts = {
+      maxRetries: config.maxRetries ?? 3,
+      baseMs: config.retryBaseMs ?? 200,
+      totalBudgetMs: config.totalBudgetMs ?? 30_000,
+      attemptTimeoutMs: this.requestTimeoutMs,
+    }
   }
 
   /**
@@ -84,7 +102,7 @@ export class EfiClient {
       'base64',
     )
     // A autenticação (client_credentials) é idempotente → pode ser repetida com segurança.
-    const json = await this.withRetry('autenticação', true, async () => {
+    const json = await withRetry('autenticação', true, this.retryOpts, async () => {
       const init: BunFetchInit = {
         method: 'POST',
         headers: { Authorization: `Basic ${basic}`, 'Content-Type': 'application/json' },
@@ -92,7 +110,7 @@ export class EfiClient {
         tls: this.tls,
       }
       const res = await this.fetchWithTimeout(`${this.baseUrl}/oauth/token`, init)
-      if (!res.ok) throw await this.toError(res, 'autenticação')
+      if (!res.ok) throw await responseToEfiError(res, 'autenticação')
       return (await res.json()) as { access_token: string; expires_in?: number }
     })
     this.token = {
@@ -113,7 +131,7 @@ export class EfiClient {
     opts: { body?: unknown; headers?: Record<string, string>; idempotent?: boolean } = {},
   ): Promise<T> {
     const idempotent = opts.idempotent ?? method !== 'POST'
-    return this.withRetry(`${method} ${path}`, idempotent, async () => {
+    return withRetry(`${method} ${path}`, idempotent, this.retryOpts, async () => {
       const buildInit = (token: string): BunFetchInit => ({
         method,
         headers: {
@@ -137,7 +155,7 @@ export class EfiClient {
           buildInit(await this.authorize()),
         )
       }
-      if (!res.ok) throw await this.toError(res, `${method} ${path}`)
+      if (!res.ok) throw await responseToEfiError(res, `${method} ${path}`)
       if (res.status === 204) return undefined as T
       return (await res.json()) as T
     })
@@ -152,62 +170,6 @@ export class EfiClient {
     } finally {
       clearTimeout(timer)
     }
-  }
-
-  /** Executa `fn` com retry+backoff exponencial (com jitter) em erros transitórios. */
-  private async withRetry<T>(
-    context: string,
-    idempotent: boolean,
-    fn: () => Promise<T>,
-  ): Promise<T> {
-    let lastError: unknown
-    for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
-      try {
-        return await fn()
-      } catch (error) {
-        lastError = error
-        // Não repetir chamadas não-idempotentes: a 1ª pode ter tido efeito mesmo
-        // com resposta perdida (ex.: cobrança/chave criada → duplicaria).
-        if (!idempotent || attempt === this.maxRetries || !this.isRetryable(error)) break
-        const delay =
-          Math.min(this.retryBaseMs * 2 ** attempt, 2000) + Math.floor(Math.random() * 100)
-        await Bun.sleep(delay)
-      }
-    }
-    if (lastError instanceof EfiGatewayError) throw lastError
-    throw new EfiGatewayError(
-      `Efí [${context}]: ${lastError instanceof Error ? lastError.message : String(lastError)}`,
-      undefined,
-      lastError,
-    )
-  }
-
-  private isRetryable(error: unknown): boolean {
-    if (error instanceof EfiGatewayError) {
-      return error.status === 429 || (error.status !== undefined && error.status >= 500)
-    }
-    // Erro de rede (ECONNRESET, timeout/abort, etc.) → vale tentar de novo.
-    return true
-  }
-
-  private async toError(res: Response, context: string): Promise<EfiGatewayError> {
-    let detail: Record<string, unknown> | undefined
-    try {
-      detail = (await res.json()) as Record<string, unknown>
-    } catch {
-      detail = undefined
-    }
-    const d = detail ?? {}
-    const message = String(
-      d.mensagem ?? d.detail ?? d.error_description ?? d.title ?? d.nome ?? `HTTP ${res.status}`,
-    )
-    const code = d.nome ?? d.error ?? d.type
-    return new EfiGatewayError(
-      `Efí [${context}]: ${message}`,
-      code != null ? String(code) : String(res.status),
-      detail,
-      res.status,
-    )
   }
 
   // ── Endpoints Pix usados pelo serviço ─────────────────────────────────────

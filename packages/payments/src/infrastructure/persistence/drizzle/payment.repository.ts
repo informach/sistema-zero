@@ -8,7 +8,7 @@ import type { Currency } from '../../../domain/value-objects/money'
 import { PG_CHANNELS } from './channels'
 import { ConcurrencyConflictError } from './concurrency.error'
 import type { Database } from './db'
-import { outbox, payments } from './schema'
+import { outbox, payments, toDomainPaymentStatus } from './schema'
 
 type PaymentRow = typeof payments.$inferSelect
 
@@ -207,7 +207,7 @@ export function rowToSnapshot(row: PaymentRow): PaymentSnapshot {
     currency: row.currency as Currency,
     methodType: row.method,
     card: row.card ?? null,
-    status: row.status,
+    status: toDomainPaymentStatus(row.status),
     provider: row.provider,
     idempotencyKey: row.idempotencyKey,
     providerPaymentId: row.providerPaymentId,

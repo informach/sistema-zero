@@ -124,6 +124,9 @@ export function parseOneStepResponse(raw: any): ParsedBoletoCharge {
  * boleto pago com encargos, `total` inclui multa/juros (ou é reduzido por desconto),
  * o que faria um pagamento legítimo ser rejeitado e ficar PENDING para sempre.
  * Ordem: soma dos `items` → `value` → `total` (fallback, pode incluir encargos).
+ * A doc oficial do `GET /v1/charge/:id` lista `items` como campo SEMPRE presente
+ * no detalhe — os fallbacks são defensivos; o de `total` só seria atingido numa
+ * resposta fora de espec.
  */
 function principalInCents(data: any): bigint {
   const items = Array.isArray(data?.items) ? data.items : []

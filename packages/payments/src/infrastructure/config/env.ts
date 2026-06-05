@@ -53,10 +53,22 @@ const EnvSchema = z
       .string()
       .min(1, 'EFI_WEBHOOK_SECRET não pode ser vazia; remova a variável para desabilitar')
       .optional(),
-    // Timeout por requisição HTTP à Efí (ms) — aborta sockets pendurados (mTLS/Bun).
-    // Default 20s: o handshake mTLS frio leva ~15-16s sob Bun (15s abortava a
-    // request no fim do handshake → PIX 502). Mantenha < timeout do gateway (35s).
+    // Timeout POR TENTATIVA de requisição HTTP à Efí (ms) — aborta sockets
+    // pendurados (mTLS/Bun). Default 20s: o handshake mTLS frio leva ~15-16s sob
+    // Bun (15s abortava a request no fim do handshake → PIX 502).
     EFI_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(20_000),
+    // Teto de tempo da operação INTEIRA contra a Efí (todas as tentativas +
+    // backoff, ms). Sem ele o pior caso é (maxRetries+1)×timeout ≈ 86s — acima do
+    // timeout do gateway (35s) E do TTL da reserva de idempotência (ver refine
+    // abaixo), cuja expiração com a request original viva reabre a janela de
+    // cobrança duplicada. A 1ª tentativa sempre roda; o budget só corta retries.
+    EFI_TOTAL_RETRY_BUDGET_MS: z.coerce.number().int().positive().default(30_000),
+    // TTL da reserva IN_FLIGHT de idempotência (s). Recicla reservas presas por
+    // crash e é o LOCKOUT do retry do cliente após falha com efeito colateral.
+    // Deve cobrir com folga o budget total da Efí (refine abaixo) — a reserva
+    // expirar com a request original VIVA permite outra reserva → novo
+    // paymentId/txid → cobrança duplicada no provedor.
+    IDEMPOTENCY_IN_FLIGHT_TTL_SECONDS: z.coerce.number().int().positive().default(60),
 
     // Boleto (API Cobranças — SEM certificado/mTLS). Por padrão reusa as
     // credenciais do Pix (a mesma aplicação Efí pode ter os dois escopos);
@@ -122,6 +134,25 @@ const EnvSchema = z
       'CHARGE_CLAIM_STALE_MS deve ser >= 2× EFI_REQUEST_TIMEOUT_MS (evita re-reivindicar uma cobrança em andamento → boleto duplicado)',
     path: ['CHARGE_CLAIM_STALE_MS'],
   })
+  // O budget total precisa comportar ao menos UMA tentativa completa — senão a
+  // config é contraditória (o budget nunca permitiria retry algum, mas o operador
+  // acha que configurou N tentativas).
+  .refine((e) => e.EFI_TOTAL_RETRY_BUDGET_MS >= e.EFI_REQUEST_TIMEOUT_MS, {
+    message: 'EFI_TOTAL_RETRY_BUDGET_MS deve ser >= EFI_REQUEST_TIMEOUT_MS (uma tentativa inteira)',
+    path: ['EFI_TOTAL_RETRY_BUDGET_MS'],
+  })
+  // A reserva de idempotência NÃO pode expirar com a perna Efí ainda viva: outra
+  // reserva geraria novo paymentId/txid → cobrança duplicada no provedor (o
+  // fencing por reservationId protege o registro, não a 2ª cobrança). Folga de
+  // 10s sobre o budget cobre persistência + jitter de relógio.
+  .refine(
+    (e) => e.IDEMPOTENCY_IN_FLIGHT_TTL_SECONDS * 1000 >= e.EFI_TOTAL_RETRY_BUDGET_MS + 10_000,
+    {
+      message:
+        'IDEMPOTENCY_IN_FLIGHT_TTL_SECONDS deve cobrir EFI_TOTAL_RETRY_BUDGET_MS com folga de 10s (reserva expirar com a request viva = risco de cobrança duplicada)',
+      path: ['IDEMPOTENCY_IN_FLIGHT_TTL_SECONDS'],
+    },
+  )
   // Guard de produção: a flag de sandbox DEVE ser explicitamente desligada em
   // produção — senão um deploy aponta silenciosamente para o sandbox da Efí
   // (cobranças que nunca liquidam). Fail-fast no boot.

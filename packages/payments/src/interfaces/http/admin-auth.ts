@@ -19,7 +19,11 @@ export function requireAdmin(
   if (!requireAdminEnabled) return
   const role = headers['x-auth-user-role']
   if (!role) throw new UnauthorizedError('Autenticação necessária')
+  // O gateway SEMPRE injeta o status junto com o role (a partir das claims).
+  // Header ausente = requisição que não passou pelo gateway → rejeita
+  // (fail-closed; "ausente" não pode equivaler a "ativo").
   const status = headers['x-auth-user-status']
-  if (status && status !== 'active') throw new ForbiddenError('Conta inativa')
+  if (!status) throw new UnauthorizedError('Autenticação necessária')
+  if (status !== 'active') throw new ForbiddenError('Conta inativa')
   if (!ADMIN_ROLES.has(role)) throw new ForbiddenError('Permissão insuficiente')
 }

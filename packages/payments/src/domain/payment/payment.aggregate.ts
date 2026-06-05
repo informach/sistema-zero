@@ -9,7 +9,6 @@ import {
   type PaymentMethodType,
 } from '../value-objects/payment-method'
 import {
-  PaymentAuthorizedEvent,
   PaymentCreatedEvent,
   PaymentExpiredEvent,
   PaymentFailedEvent,
@@ -166,7 +165,9 @@ export class PaymentAggregate extends AggregateRoot<string> {
         boletoRequest: input.boletoRequest ?? null,
         customer: input.customer ?? null,
         description: input.description ?? null,
-        metadata: input.metadata ?? {},
+        // Cópia defensiva: guardar a referência do caller permitiria mutação
+        // por fora da fronteira do agregado (aliasing).
+        metadata: { ...(input.metadata ?? {}) },
         failureReason: null,
         subscriptionId: input.subscriptionId ?? null,
         createdAt: now,
@@ -190,20 +191,35 @@ export class PaymentAggregate extends AggregateRoot<string> {
     return payment
   }
 
-  /** Reconstrói o agregado a partir do estado persistido (sem emitir eventos). */
+  /**
+   * Reconstrói o agregado a partir do estado persistido (sem emitir eventos).
+   * Reconstituição CONFIA no estado já validado na entrada — não revalida regras
+   * de negócio (um endurecimento futuro de validação não pode tornar um
+   * pagamento já persistido ilegível/inestornável) — mas falha ALTO em estado
+   * estruturalmente impossível, em vez de mascarar corrupção.
+   */
   static restore(snapshot: PaymentSnapshot): PaymentAggregate {
     const amount = Money.fromCents(snapshot.amountInCents, snapshot.currency)
-    const method =
-      snapshot.methodType === 'CREDIT_CARD' && snapshot.card
-        ? // Ciclo de assinatura é persistido sem token (a Efí guarda o cartão) →
-          // reidrata via `recurringCard`; cartão avulso mantém o token via `creditCard`.
-          snapshot.card.token
-          ? PaymentMethod.creditCard(snapshot.card)
-          : PaymentMethod.recurringCard(snapshot.card)
-        : snapshot.methodType === 'BOLETO'
-          ? PaymentMethod.boleto()
-          : PaymentMethod.pix()
-    const customer = snapshot.customer ? Customer.create(snapshot.customer) : null
+    let method: PaymentMethod
+    if (snapshot.methodType === 'CREDIT_CARD') {
+      if (!snapshot.card) {
+        // Sem fallback silencioso (cairia em PIX e um save regravaria o
+        // methodType errado por cima — corrupção persistente).
+        throw new Error(
+          `Pagamento ${snapshot.id} é CREDIT_CARD mas não tem dados de cartão persistidos`,
+        )
+      }
+      // Ciclo de assinatura é persistido sem token (a Efí guarda o cartão) →
+      // reidrata via `recurringCard`; cartão avulso mantém o token via `creditCard`.
+      method = snapshot.card.token
+        ? PaymentMethod.creditCard(snapshot.card)
+        : PaymentMethod.recurringCard(snapshot.card)
+    } else if (snapshot.methodType === 'BOLETO') {
+      method = PaymentMethod.boleto()
+    } else {
+      method = PaymentMethod.pix()
+    }
+    const customer = snapshot.customer ? Customer.restore(snapshot.customer) : null
 
     return new PaymentAggregate(
       snapshot.id,
@@ -222,7 +238,7 @@ export class PaymentAggregate extends AggregateRoot<string> {
         boletoRequest: snapshot.boletoRequest,
         customer,
         description: snapshot.description,
-        metadata: snapshot.metadata,
+        metadata: { ...snapshot.metadata },
         failureReason: snapshot.failureReason,
         subscriptionId: snapshot.subscriptionId,
         createdAt: snapshot.createdAt,
@@ -260,12 +276,6 @@ export class PaymentAggregate extends AggregateRoot<string> {
     this.touch()
   }
 
-  markAuthorized(providerPaymentId: string): void {
-    this.transitionTo(PaymentStatus.AUTHORIZED)
-    this.state.providerPaymentId = providerPaymentId
-    this.addEvent(new PaymentAuthorizedEvent(this.id, { providerPaymentId }))
-  }
-
   markPaid(paidAt?: Date): void {
     // Idempotente: se já está pago, não reprocessa nem reemite evento.
     if (this.state.status === PaymentStatus.PAID) return
@@ -284,12 +294,17 @@ export class PaymentAggregate extends AggregateRoot<string> {
   }
 
   markFailed(reason: string): void {
+    // Idempotente (como `markPaid`): sob entrega ≥1 vez, re-marcar um estado
+    // terminal já alcançado é no-op — não lança nem reemite evento.
+    if (this.state.status === PaymentStatus.FAILED) return
     this.transitionTo(PaymentStatus.FAILED)
     this.state.failureReason = reason
     this.addEvent(new PaymentFailedEvent(this.id, { consumerId: this.state.consumerId, reason }))
   }
 
   markExpired(): void {
+    // Idempotente (como `markPaid`).
+    if (this.state.status === PaymentStatus.EXPIRED) return
     this.transitionTo(PaymentStatus.EXPIRED)
     this.addEvent(new PaymentExpiredEvent(this.id, { consumerId: this.state.consumerId }))
   }
@@ -395,8 +410,9 @@ export class PaymentAggregate extends AggregateRoot<string> {
     return this.state.description
   }
 
+  /** Cópia rasa — mutar o retorno não altera o estado interno do agregado. */
   get metadata(): Record<string, unknown> {
-    return this.state.metadata
+    return { ...this.state.metadata }
   }
 
   /** Id da assinatura-pai quando este pagamento é um ciclo recorrente (senão null). */
@@ -451,7 +467,7 @@ export class PaymentAggregate extends AggregateRoot<string> {
       boletoRequest: this.state.boletoRequest,
       customer,
       description: this.state.description,
-      metadata: this.state.metadata,
+      metadata: { ...this.state.metadata },
       failureReason: this.state.failureReason,
       subscriptionId: this.state.subscriptionId,
       createdAt: this.state.createdAt,

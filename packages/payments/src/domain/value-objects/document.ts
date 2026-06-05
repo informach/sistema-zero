@@ -37,6 +37,16 @@ export class Document extends ValueObject<DocumentProps> {
     throw new ValidationError('Documento deve ser um CPF (11) ou CNPJ (14) válido')
   }
 
+  /**
+   * Reidrata do estado persistido SEM revalidar dígitos verificadores —
+   * reconstituição confia no que já foi validado na entrada. Se a regra de
+   * validação endurecer no futuro, um documento legado não pode tornar o
+   * pagamento ilegível/inestornável.
+   */
+  static restore(value: string): Document {
+    return new Document({ value, type: value.length === 14 ? 'CNPJ' : 'CPF' })
+  }
+
   get value(): string {
     return this.props.value
   }

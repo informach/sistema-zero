@@ -48,17 +48,6 @@ import { createServer } from './interfaces/http/server'
 
 const IDEMPOTENCY_TTL_SECONDS = 24 * 60 * 60
 /**
- * TTL curto da reserva em andamento (recicla reservas presas por crash). É também
- * o LOCKOUT do retry do cliente após uma falha com efeito colateral (ex.: timeout
- * na Efí): 60s reduz esse lockout (era 120s) mantendo folga sobre o budget do
- * gateway (35s, POST não re-tentado). NÃO baixar de ~40s: a perna Efí no pior caso
- * (4 tentativas × timeout + backoff) pode passar de 45s — a reserva expirar com a
- * request original VIVA permite outra reserva → novo paymentId/txid → risco de
- * cobrança duplicada (o fencing por reservationId protege o registro, não a 2ª
- * cobrança no provedor).
- */
-const IDEMPOTENCY_IN_FLIGHT_TTL_SECONDS = 60
-/**
  * Re-aquecimento periódico do token OAuth do Pix (token vive 1h; mTLS frio custa
  * ~15-16s sob Bun). Passa `intervalo + margem` ao `warmUp` p/ SEMPRE renovar fora
  * do hot path. Só o client Pix: o da API Cobranças não usa mTLS (re-auth barata)
@@ -116,6 +105,7 @@ export function createApplication(env: Env): Application {
     key: efiCert.key,
     sandbox: env.EFI_SANDBOX,
     requestTimeoutMs: env.EFI_REQUEST_TIMEOUT_MS,
+    totalBudgetMs: env.EFI_TOTAL_RETRY_BUDGET_MS,
   })
   // Cliente da API Cobranças (boleto): SEM certificado/mTLS. O `efiCert` acima é
   // exclusivo do Pix — não é passado aqui (o construtor não tem cert/key).
@@ -124,6 +114,7 @@ export function createApplication(env: Env): Application {
     clientSecret: env.EFI_COBRANCAS_CLIENT_SECRET ?? env.EFI_CLIENT_SECRET,
     sandbox: env.EFI_SANDBOX,
     requestTimeoutMs: env.EFI_REQUEST_TIMEOUT_MS,
+    totalBudgetMs: env.EFI_TOTAL_RETRY_BUDGET_MS,
   })
   const gateway = new EfiPaymentGateway(efiClient, cobrancasClient, {
     expiresDays: env.EFI_BOLETO_DEFAULT_EXPIRES_DAYS,
@@ -176,7 +167,7 @@ export function createApplication(env: Env): Application {
     {
       pixKey: env.EFI_PIX_KEY,
       idempotencyTtlSeconds: IDEMPOTENCY_TTL_SECONDS,
-      idempotencyInFlightTtlSeconds: IDEMPOTENCY_IN_FLIGHT_TTL_SECONDS,
+      idempotencyInFlightTtlSeconds: env.IDEMPOTENCY_IN_FLIGHT_TTL_SECONDS,
       asyncChargeCreation: env.ASYNC_CHARGE_CREATION,
       boletoDefaultExpiresDays: env.EFI_BOLETO_DEFAULT_EXPIRES_DAYS,
     },
@@ -191,7 +182,7 @@ export function createApplication(env: Env): Application {
     idempotency,
     {
       idempotencyTtlSeconds: IDEMPOTENCY_TTL_SECONDS,
-      idempotencyInFlightTtlSeconds: IDEMPOTENCY_IN_FLIGHT_TTL_SECONDS,
+      idempotencyInFlightTtlSeconds: env.IDEMPOTENCY_IN_FLIGHT_TTL_SECONDS,
     },
     logger,
   )

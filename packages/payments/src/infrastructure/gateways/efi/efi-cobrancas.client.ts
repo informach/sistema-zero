@@ -9,8 +9,14 @@ export interface EfiCobrancasClientConfig {
   maxRetries?: number
   /** Atraso base do backoff exponencial, em ms. Padrão 200. */
   retryBaseMs?: number
-  /** Timeout por requisição HTTP, em ms. Padrão 15s. */
+  /** Timeout POR TENTATIVA, em ms. Padrão 20s (alinhado a `EFI_REQUEST_TIMEOUT_MS`). */
   requestTimeoutMs?: number
+  /**
+   * Teto de tempo da operação INTEIRA (tentativas + backoff), em ms. Padrão 30s
+   * — precisa caber no timeout do gateway (35s) e folgar sob o TTL da reserva
+   * de idempotência (60s). Ver `withRetry` em `http.ts`.
+   */
+  totalBudgetMs?: number
 }
 
 /**
@@ -23,8 +29,12 @@ export interface EfiCobrancasClientConfig {
  */
 export class EfiCobrancasClient {
   private readonly baseUrl: string
-  private readonly maxRetries: number
-  private readonly retryBaseMs: number
+  private readonly retryOpts: {
+    maxRetries: number
+    baseMs: number
+    totalBudgetMs: number
+    attemptTimeoutMs: number
+  }
   private readonly requestTimeoutMs: number
   private token: { value: string; expiresAt: number } | null = null
   private authInFlight: Promise<string> | null = null
@@ -33,9 +43,13 @@ export class EfiCobrancasClient {
     this.baseUrl = config.sandbox
       ? 'https://cobrancas-h.api.efipay.com.br/v1'
       : 'https://cobrancas.api.efipay.com.br/v1'
-    this.maxRetries = config.maxRetries ?? 3
-    this.retryBaseMs = config.retryBaseMs ?? 200
-    this.requestTimeoutMs = config.requestTimeoutMs ?? 15_000
+    this.requestTimeoutMs = config.requestTimeoutMs ?? 20_000
+    this.retryOpts = {
+      maxRetries: config.maxRetries ?? 3,
+      baseMs: config.retryBaseMs ?? 200,
+      totalBudgetMs: config.totalBudgetMs ?? 30_000,
+      attemptTimeoutMs: this.requestTimeoutMs,
+    }
   }
 
   /** Pré-aquece o token OAuth (cartão/boleto via API Cobranças). Ver `EfiClient.warmUp`. */
@@ -59,24 +73,19 @@ export class EfiCobrancasClient {
     const basic = Buffer.from(`${this.config.clientId}:${this.config.clientSecret}`).toString(
       'base64',
     )
-    const json = await withRetry(
-      'autenticação cobranças',
-      true,
-      { maxRetries: this.maxRetries, baseMs: this.retryBaseMs },
-      async () => {
-        const res = await fetchWithTimeout(
-          `${this.baseUrl}/authorize`,
-          {
-            method: 'POST',
-            headers: { Authorization: `Basic ${basic}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ grant_type: 'client_credentials' }),
-          },
-          this.requestTimeoutMs,
-        )
-        if (!res.ok) throw await responseToEfiError(res, 'autenticação cobranças')
-        return (await res.json()) as { access_token: string; expires_in?: number }
-      },
-    )
+    const json = await withRetry('autenticação cobranças', true, this.retryOpts, async () => {
+      const res = await fetchWithTimeout(
+        `${this.baseUrl}/authorize`,
+        {
+          method: 'POST',
+          headers: { Authorization: `Basic ${basic}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ grant_type: 'client_credentials' }),
+        },
+        this.requestTimeoutMs,
+      )
+      if (!res.ok) throw await responseToEfiError(res, 'autenticação cobranças')
+      return (await res.json()) as { access_token: string; expires_in?: number }
+    })
     // Token da API Cobranças vive ~600s (vs 3600s do Pix).
     this.token = {
       value: json.access_token,
@@ -96,35 +105,30 @@ export class EfiCobrancasClient {
     opts: { body?: unknown; idempotent?: boolean } = {},
   ): Promise<T> {
     const idempotent = opts.idempotent ?? method !== 'POST'
-    return withRetry(
-      `${method} ${path}`,
-      idempotent,
-      { maxRetries: this.maxRetries, baseMs: this.retryBaseMs },
-      async () => {
-        const buildInit = (token: string): RequestInit => ({
-          method,
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
-        })
+    return withRetry(`${method} ${path}`, idempotent, this.retryOpts, async () => {
+      const buildInit = (token: string): RequestInit => ({
+        method,
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
+      })
 
-        let res = await fetchWithTimeout(
+      let res = await fetchWithTimeout(
+        `${this.baseUrl}${path}`,
+        buildInit(await this.authorize()),
+        this.requestTimeoutMs,
+      )
+      if (res.status === 401) {
+        this.token = null
+        res = await fetchWithTimeout(
           `${this.baseUrl}${path}`,
           buildInit(await this.authorize()),
           this.requestTimeoutMs,
         )
-        if (res.status === 401) {
-          this.token = null
-          res = await fetchWithTimeout(
-            `${this.baseUrl}${path}`,
-            buildInit(await this.authorize()),
-            this.requestTimeoutMs,
-          )
-        }
-        if (!res.ok) throw await responseToEfiError(res, `${method} ${path}`)
-        if (res.status === 204) return undefined as T
-        return (await res.json()) as T
-      },
-    )
+      }
+      if (!res.ok) throw await responseToEfiError(res, `${method} ${path}`)
+      if (res.status === 204) return undefined as T
+      return (await res.json()) as T
+    })
   }
 
   // ── Endpoints Cobranças ───────────────────────────────────────────────────

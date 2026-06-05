@@ -21,21 +21,6 @@ export class PaymentCreatedEvent extends DomainEvent {
   }
 }
 
-export class PaymentAuthorizedEvent extends DomainEvent {
-  readonly eventName = 'payment.authorized'
-
-  constructor(
-    aggregateId: string,
-    private readonly data: { providerPaymentId: string },
-  ) {
-    super(aggregateId)
-  }
-
-  toPayload(): Record<string, unknown> {
-    return { paymentId: this.aggregateId, ...this.data }
-  }
-}
-
 export class PaymentPaidEvent extends DomainEvent {
   readonly eventName = 'payment.paid'
 

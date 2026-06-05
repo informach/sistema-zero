@@ -144,7 +144,9 @@ export class SubscriptionAggregate extends AggregateRoot<string> {
         lastChargeId: null,
         lastChargeAt: null,
         description: input.description ?? null,
-        metadata: input.metadata ?? {},
+        // Cópia defensiva: guardar a referência do caller permitiria mutação
+        // por fora da fronteira do agregado (aliasing).
+        metadata: { ...(input.metadata ?? {}) },
         canceledAt: null,
         createdAt: now,
         updatedAt: now,
@@ -166,10 +168,15 @@ export class SubscriptionAggregate extends AggregateRoot<string> {
     return subscription
   }
 
-  /** Reconstrói o agregado a partir do estado persistido (sem emitir eventos). */
+  /**
+   * Reconstrói o agregado a partir do estado persistido (sem emitir eventos).
+   * Reconstituição CONFIA no estado já validado na entrada — não revalida
+   * (`Customer.restore`): endurecer a validação não pode tornar uma assinatura
+   * já persistida ilegível/incancelável.
+   */
   static restore(snapshot: SubscriptionSnapshot): SubscriptionAggregate {
     const amount = Money.fromCents(snapshot.amountInCents, snapshot.currency)
-    const customer = snapshot.customer ? Customer.create(snapshot.customer) : null
+    const customer = snapshot.customer ? Customer.restore(snapshot.customer) : null
 
     return new SubscriptionAggregate(
       snapshot.id,
@@ -190,7 +197,7 @@ export class SubscriptionAggregate extends AggregateRoot<string> {
         lastChargeId: snapshot.lastChargeId,
         lastChargeAt: snapshot.lastChargeAt,
         description: snapshot.description,
-        metadata: snapshot.metadata,
+        metadata: { ...snapshot.metadata },
         canceledAt: snapshot.canceledAt,
         createdAt: snapshot.createdAt,
         updatedAt: snapshot.updatedAt,
@@ -225,9 +232,13 @@ export class SubscriptionAggregate extends AggregateRoot<string> {
   }
 
   /**
-   * Contabiliza um ciclo cobrado. **Idempotente por `chargeId`** (`lastChargeId`):
-   * o mesmo charge processado de novo (ex.: criação + notificação do 1º ciclo)
-   * não conta em dobro. Ao atingir o nº de repetições, expira automaticamente.
+   * Contabiliza um ciclo cobrado. **Idempotente apenas contra o ÚLTIMO
+   * `chargeId`** (`lastChargeId`): cobre o caso comum (criação + notificação do
+   * MESMO ciclo em sequência) mas NÃO uma reentrega fora de ordem (charge-1,
+   * charge-2, charge-1 de novo — recontaria). A dedupe FORTE é responsabilidade
+   * do `WebhookInbox` (chave `(chargeId, status)` em `webhook_events`), que corta
+   * a reentrega ANTES de chegar aqui — dentro da janela de `RETENTION_DAYS`.
+   * Ao atingir o nº de repetições, expira automaticamente.
    */
   recordCharge(chargeId: string, paidAt?: Date): void {
     if (this.state.lastChargeId === chargeId) return
@@ -341,8 +352,9 @@ export class SubscriptionAggregate extends AggregateRoot<string> {
     return this.state.description
   }
 
+  /** Cópia rasa — mutar o retorno não altera o estado interno do agregado. */
   get metadata(): Record<string, unknown> {
-    return this.state.metadata
+    return { ...this.state.metadata }
   }
 
   get canceledAt(): Date | null {
@@ -383,7 +395,7 @@ export class SubscriptionAggregate extends AggregateRoot<string> {
       lastChargeId: this.state.lastChargeId,
       lastChargeAt: this.state.lastChargeAt,
       description: this.state.description,
-      metadata: this.state.metadata,
+      metadata: { ...this.state.metadata },
       canceledAt: this.state.canceledAt,
       createdAt: this.state.createdAt,
       updatedAt: this.state.updatedAt,

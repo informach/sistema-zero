@@ -155,7 +155,15 @@ export class EfiPaymentGateway implements PaymentGateway {
         providerPaymentId: String(cob?.txid ?? txid),
         txid: String(cob?.txid ?? txid),
         status: mapCobStatus(cob?.status),
-        amountInCents: reaisStringToCents(cob?.valor?.original),
+        // Valor efetivamente PAGO (`pix[].valor` — o exemplo oficial da Efí
+        // mostra pago ≠ cobrado, ex.: cob de 100.00 paga com 110.00), com
+        // fallback no COBRADO (`valor.original`) enquanto não há pagamento.
+        // A verificação de valor do webhook/reconciliação compara este campo
+        // com o esperado — usar o cobrado aqui a tornaria tautológica.
+        amountInCents:
+          firstPix?.valor != null
+            ? reaisStringToCents(firstPix.valor)
+            : reaisStringToCents(cob?.valor?.original),
         paidAt: firstPix?.horario ? new Date(firstPix.horario) : undefined,
       }
     } catch (error) {

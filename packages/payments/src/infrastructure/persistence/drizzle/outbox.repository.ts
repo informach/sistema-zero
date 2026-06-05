@@ -9,7 +9,17 @@ import { outbox } from './schema'
  * `FOR UPDATE SKIP LOCKED` torna o polling seguro com várias réplicas: workers
  * concorrentes travam e pulam linhas diferentes, sem publicar o mesmo evento
  * duas vezes. A publicação é in-process (rápida), então segurar a transação
- * durante o lote é aceitável.
+ * durante o lote é aceitável — MANTENHA os handlers leves (sem HTTP/IO externo;
+ * entrega lenta vai para `webhook_deliveries`, não para dentro do `publish`).
+ *
+ * ⚠️ Atomicidade da publicação: o `publish` roda DENTRO desta transação, mas os
+ * handlers escrevem via POOL (outra conexão) — ex.: `enqueue` em
+ * `webhook_deliveries` commita independentemente do desfecho do lote. Se a
+ * transação do lote abortar DEPOIS de um enqueue (ex.: `idle_in_transaction`
+ * estourando), o evento volta a PENDING e será republicado → segundo `enqueue`.
+ * Isso NÃO duplica a entrega porque o enqueue é idempotente pela unique
+ * `(consumer_id, event_name, dedup_key)` — a garantia vem do DEDUP, não da
+ * transação. Não remova essa unique sem repensar este fluxo.
  */
 export class DrizzleOutboxRepository implements OutboxRepository {
   constructor(private readonly db: Database) {}

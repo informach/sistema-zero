@@ -78,6 +78,50 @@ describe('ReconciliationWorker', () => {
     expect((await getPayment.execute('sys-a', paymentId)).status).toBe('PENDING')
   })
 
+  test('perder a corrida p/ outro writer (webhook/réplica) loga INFO, não ERROR', async () => {
+    gateway.chargeStatus = 'PAID'
+    // O webhook "vence" entre o findStalePendingCharges e o save do worker:
+    // o save do worker conflita (version defasada) — caminho ESPERADO, sem alarme.
+    const original = repo.save.bind(repo)
+    let intercepts = 1
+    repo.save = async (payment) => {
+      if (intercepts-- > 0) {
+        const winner = await repo.findById(payment.id)
+        if (winner) {
+          winner.markPaid()
+          await original(winner)
+        }
+      }
+      return original(payment)
+    }
+    const logs: { level: string; msg: string }[] = []
+    const spyLogger = {
+      debug(msg: string) {
+        logs.push({ level: 'debug', msg })
+      },
+      info(msg: string) {
+        logs.push({ level: 'info', msg })
+      },
+      warn(msg: string) {
+        logs.push({ level: 'warn', msg })
+      },
+      error(msg: string) {
+        logs.push({ level: 'error', msg })
+      },
+    }
+    const worker = new ReconciliationWorker(repo, gateway, spyLogger, {
+      intervalMs: 1000,
+      batchSize: 10,
+      staleAfterMs: 0,
+    })
+
+    await worker.tick()
+
+    expect(logs.some((l) => l.level === 'info' && l.msg === 'reconcile.lost_race')).toBe(true)
+    expect(logs.filter((l) => l.level === 'error')).toHaveLength(0)
+    expect((await getPayment.execute('sys-a', paymentId)).status).toBe('PAID')
+  })
+
   test('isolamento por item: um getPixCharge que falha não aborta o lote', async () => {
     // segundo pagamento, cujo getPixCharge vai falhar
     const other = await service.execute({ ...command, idempotencyKey: 'idem-rec-002' })

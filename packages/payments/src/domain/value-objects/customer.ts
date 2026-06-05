@@ -56,6 +56,27 @@ export class Customer extends ValueObject<CustomerProps> {
     })
   }
 
+  /**
+   * Reidrata do estado persistido SEM revalidar (nome/e-mail/documento já foram
+   * validados na entrada). Reconstituir não pode falhar por regra de negócio —
+   * senão um registro legado fica irrecuperável (nem ler, nem estornar).
+   */
+  static restore(input: {
+    name: string
+    email: string
+    document: string
+    phone?: string
+    address?: Address
+  }): Customer {
+    return new Customer({
+      name: input.name,
+      email: input.email,
+      document: Document.restore(input.document),
+      phone: input.phone,
+      address: input.address,
+    })
+  }
+
   get name(): string {
     return this.props.name
   }

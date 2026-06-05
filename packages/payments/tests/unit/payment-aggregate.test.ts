@@ -49,6 +49,50 @@ describe('PaymentAggregate', () => {
     expect(() => payment.markPaid()).toThrow(InvalidStateTransitionError)
   })
 
+  test('markFailed/markExpired são idempotentes (entrega ≥1 vez não lança)', () => {
+    const failed = newPixPayment()
+    failed.markFailed('recusado')
+    failed.pullEvents()
+    failed.markFailed('recusado de novo') // re-entrega → no-op
+    expect(failed.status).toBe('FAILED')
+    expect(failed.pullEvents()).toHaveLength(0) // não reemite payment.failed
+
+    const expired = newPixPayment()
+    expired.markExpired()
+    expired.pullEvents()
+    expired.markExpired()
+    expect(expired.status).toBe('EXPIRED')
+    expect(expired.pullEvents()).toHaveLength(0)
+  })
+
+  test('restore de CREDIT_CARD sem card falha alto (não vira PIX silenciosamente)', () => {
+    const snap = newPixPayment().toSnapshot()
+    expect(() =>
+      PaymentAggregate.restore({ ...snap, methodType: 'CREDIT_CARD', card: null }),
+    ).toThrow(/CREDIT_CARD/)
+  })
+
+  test('metadata não vaza por referência (aliasing)', () => {
+    const input = { orderId: 'order-1' } as Record<string, unknown>
+    const payment = PaymentAggregate.create({
+      consumerId: 'sys-a',
+      amount: Money.fromCents(1000),
+      method: PaymentMethod.pix(),
+      idempotencyKey: IdempotencyKey.create('idem-12345678'),
+      metadata: input,
+    })
+
+    input.hacked = true // mutar o objeto do caller não afeta o agregado
+    expect(payment.metadata).toEqual({ orderId: 'order-1' })
+
+    payment.metadata.hacked = true // mutar o retorno do getter também não
+    expect(payment.metadata).toEqual({ orderId: 'order-1' })
+
+    const snap = payment.toSnapshot()
+    snap.metadata.hacked = true // nem o snapshot
+    expect(payment.metadata).toEqual({ orderId: 'order-1' })
+  })
+
   test('snapshot/restore preserva o estado', () => {
     const payment = newPixPayment()
     payment.registerProviderCharge({
@@ -106,7 +150,6 @@ describe('PaymentAggregate', () => {
       ['PAID', 'FAILED'],
       ['EXPIRED', 'PAID'],
       ['REFUNDED', 'PAID'],
-      ['AUTHORIZED', 'EXPIRED'],
       ['FAILED', 'PAID'],
       ['CANCELED', 'PAID'],
     ]
@@ -119,7 +162,7 @@ describe('PaymentAggregate', () => {
     const allowed: [PaymentStatus, PaymentStatus][] = [
       ['PENDING', 'PAID'],
       ['PENDING', 'EXPIRED'],
-      ['AUTHORIZED', 'PAID'],
+      ['PENDING', 'FAILED'],
       ['PAID', 'REFUNDED'],
     ]
     for (const [from, to] of allowed) {

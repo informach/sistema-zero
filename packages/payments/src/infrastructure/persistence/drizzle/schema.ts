@@ -17,6 +17,7 @@ import type {
   BoletoRequest,
   PixQrCode,
 } from '../../../domain/payment/payment.aggregate'
+import type { PaymentStatus } from '../../../domain/payment/payment.status'
 import type { Address } from '../../../domain/value-objects/customer'
 import type { CardData } from '../../../domain/value-objects/payment-method'
 
@@ -36,6 +37,10 @@ export interface CustomerJson {
 
 export const paymentStatusEnum = paymentsSchema.enum('payment_status', [
   'PENDING',
+  // ⚠️ LEGADO: nenhum writer emite AUTHORIZED (o one-step da Efí não tem etapa
+  // de pré-autorização) e o domínio não conhece mais esse estado. Mantido no
+  // enum do Postgres só porque remover valor de enum exige recriar o tipo —
+  // sem valor prático. NÃO reutilize.
   'AUTHORIZED',
   'PAID',
   'FAILED',
@@ -43,6 +48,20 @@ export const paymentStatusEnum = paymentsSchema.enum('payment_status', [
   'CANCELED',
   'REFUNDED',
 ])
+
+/**
+ * Narrowing do enum do BANCO (que mantém o `AUTHORIZED` legado) para o status
+ * de domínio. Nenhum writer jamais gravou `AUTHORIZED`; encontrá-lo numa linha
+ * é corrupção de dados → falha alto em vez de mascarar.
+ */
+export function toDomainPaymentStatus(
+  value: (typeof paymentStatusEnum.enumValues)[number],
+): PaymentStatus {
+  if (value === 'AUTHORIZED') {
+    throw new Error('payment_status legado AUTHORIZED encontrado no banco — não suportado')
+  }
+  return value
+}
 
 export const paymentMethodEnum = paymentsSchema.enum('payment_method', [
   'PIX',
@@ -121,7 +140,11 @@ export const payments = paymentsSchema.table(
   (t) => [
     uniqueIndex('payments_consumer_idem_uq').on(t.consumerId, t.idempotencyKey),
     index('payments_status_idx').on(t.status),
-    index('payments_txid_idx').on(t.txid),
+    // ÚNICO (parcial): o txid é determinístico (derivado do paymentId) e
+    // `findByTxid` assume 1 linha — a unique transforma a invariante "1 txid =
+    // 1 pagamento" em garantia do BANCO (defesa em profundidade contra bug de
+    // derivação/colisão), não só da lógica de aplicação.
+    uniqueIndex('payments_txid_uq').on(t.txid).where(sql`txid IS NOT NULL`),
     index('payments_provider_payment_idx').on(t.provider, t.providerPaymentId),
     // Índice parcial para o worker de criação de cobrança (fila de "aguardando charge").
     index('payments_pending_charge_idx')

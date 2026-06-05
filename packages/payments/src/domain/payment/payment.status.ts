@@ -1,13 +1,17 @@
 /**
  * Estados de um pagamento e as transições permitidas (máquina de estados).
  *
- * Fluxo Pix:    PENDING ──▶ PAID | EXPIRED
- * Fluxo Cartão: PENDING ──▶ AUTHORIZED ──▶ PAID | FAILED
- * Estorno:      PAID ──▶ REFUNDED
+ * Fluxo Pix/boleto: PENDING ──▶ PAID | EXPIRED
+ * Fluxo Cartão:     PENDING ──▶ PAID | FAILED (one-step da Efí: sem etapa de
+ *                   pré-autorização separada — `approved` vira PAID direto)
+ * Estorno:          PAID ──▶ REFUNDED
+ *
+ * Nota: o enum `payment_status` do BANCO ainda contém um valor legado
+ * `AUTHORIZED` (nunca escrito por nenhum writer); removê-lo do Postgres exigiria
+ * recriar o tipo — sem valor prático. Aqui no domínio ele não existe mais.
  */
 export const PaymentStatus = {
   PENDING: 'PENDING',
-  AUTHORIZED: 'AUTHORIZED',
   PAID: 'PAID',
   FAILED: 'FAILED',
   EXPIRED: 'EXPIRED',
@@ -18,8 +22,7 @@ export const PaymentStatus = {
 export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus]
 
 const TRANSITIONS: Readonly<Record<PaymentStatus, readonly PaymentStatus[]>> = {
-  PENDING: ['AUTHORIZED', 'PAID', 'FAILED', 'EXPIRED', 'CANCELED'],
-  AUTHORIZED: ['PAID', 'FAILED', 'CANCELED'],
+  PENDING: ['PAID', 'FAILED', 'EXPIRED', 'CANCELED'],
   PAID: ['REFUNDED'],
   FAILED: [],
   EXPIRED: [],

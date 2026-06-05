@@ -15,6 +15,13 @@
       "when": 1780568444417,
       "tag": "0001_brown_marvel_apes",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1780657520492,
+      "tag": "0002_dry_nekra",
+      "breakpoints": true
     }
   ]
 }

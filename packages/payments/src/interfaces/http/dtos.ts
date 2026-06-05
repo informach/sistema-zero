@@ -104,7 +104,6 @@ export const CreateSubscriptionBody = t.Object({
 // As datas chegam como string ISO e são parseadas no handler (guarda contra NaN). ──
 const PAYMENT_STATUS = t.Union([
   t.Literal('PENDING'),
-  t.Literal('AUTHORIZED'),
   t.Literal('PAID'),
   t.Literal('FAILED'),
   t.Literal('EXPIRED'),

@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { RefundPaymentService } from '../../src/application/refund-payment/refund-payment.service'
 import { PaymentAggregate, type PaymentSnapshot } from '../../src/domain/payment/payment.aggregate'
 import type { Currency } from '../../src/domain/value-objects/money'
+import { ConcurrencyConflictError } from '../../src/infrastructure/persistence/drizzle/concurrency.error'
 import { FakePixGateway, InMemoryPaymentRepository, silentLogger } from '../fakes/in-memory'
 
 function snapshot(over: Partial<PaymentSnapshot> = {}): PaymentSnapshot {
@@ -136,5 +137,76 @@ describe('RefundPaymentService', () => {
 
     await expect(service.execute(id)).rejects.toThrow()
     expect((await repo.findById(id))?.status).toBe('PAID')
+  })
+
+  // ── Corrida (o refund de cartão NÃO é idempotente na Efí) ─────────────────
+
+  test('estornos CONCORRENTES: o provedor é chamado exatamente UMA vez', async () => {
+    const repo = new InMemoryPaymentRepository()
+    const gateway = new FakePixGateway()
+    const service = new RefundPaymentService(repo, gateway, silentLogger)
+    const id = await seed(repo, { txid: 'txidrace01' })
+
+    // Duplo-clique no admin: duas requests carregam a MESMA versão. O claim
+    // otimista (save antes da chamada externa) deixa só uma passar.
+    const results = await Promise.allSettled([service.execute(id), service.execute(id)])
+
+    expect(gateway.refundedPix).toHaveLength(1) // nunca estorna em dobro no provedor
+    expect((await repo.findById(id))?.status).toBe('REFUNDED')
+    const ok = results.filter((r) => r.status === 'fulfilled')
+    expect(ok.length).toBeGreaterThanOrEqual(1)
+    // O perdedor (se não viu o REFUNDED ainda) falha com 409, nunca com estorno duplo.
+    for (const r of results) {
+      if (r.status === 'rejected') {
+        expect(r.reason).toMatchObject({ code: 'REFUND_IN_PROGRESS' })
+      }
+    }
+  })
+
+  test('perdedor do claim NÃO chama o provedor → REFUND_IN_PROGRESS', async () => {
+    const repo = new (class extends InMemoryPaymentRepository {
+      failures = 0 // armado só DEPOIS do seed
+      override async save(payment: PaymentAggregate): Promise<void> {
+        // Simula outro estorno vencendo o claim (UPDATE ... WHERE version perdeu).
+        if (this.failures-- > 0) throw new ConcurrencyConflictError(payment.id)
+        return super.save(payment)
+      }
+    })()
+    const gateway = new FakePixGateway()
+    const service = new RefundPaymentService(repo, gateway, silentLogger)
+    const id = await seed(repo)
+    repo.failures = 1
+
+    await expect(service.execute(id)).rejects.toMatchObject({ code: 'REFUND_IN_PROGRESS' })
+    expect(gateway.refundedPix).toHaveLength(0) // chave do achado: provedor intocado
+    expect((await repo.findById(id))?.status).toBe('PAID')
+  })
+
+  test('perdedor do claim com vencedor JÁ concluído → no-op idempotente', async () => {
+    const id = crypto.randomUUID()
+    const repo = new (class extends InMemoryPaymentRepository {
+      failures = 0 // armado só DEPOIS do seed
+      override async save(payment: PaymentAggregate): Promise<void> {
+        if (this.failures-- > 0) {
+          // O vencedor termina o estorno antes do perdedor recarregar.
+          const winner = await this.findById(id)
+          if (winner) {
+            winner.refund({ providerRefundId: 'dev-winner' })
+            await super.save(winner)
+          }
+          throw new ConcurrencyConflictError(payment.id)
+        }
+        return super.save(payment)
+      }
+    })()
+    const gateway = new FakePixGateway()
+    const service = new RefundPaymentService(repo, gateway, silentLogger)
+    await seed(repo, { id })
+    repo.failures = 1
+
+    const view = await service.execute(id)
+
+    expect(view.status).toBe('REFUNDED')
+    expect(gateway.refundedPix).toHaveLength(0) // não chamou o provedor de novo
   })
 })
