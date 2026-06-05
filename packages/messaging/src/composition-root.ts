@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { ApplyDeliveryStatusService } from './application/apply-delivery-status/apply-delivery-status.service'
 import { GetMessageService } from './application/get-message/get-message.service'
 import {
@@ -24,7 +26,10 @@ import { systemRng } from './domain/ports/rng.port'
 import type { Env } from './infrastructure/config/env'
 import { InProcessEventPublisher } from './infrastructure/events/in-process-event-publisher'
 import { EvolutionWhatsAppGateway } from './infrastructure/gateways/evolution/evolution.gateway'
-import { SendGridEmailGateway } from './infrastructure/gateways/sendgrid/sendgrid.gateway'
+import {
+  type InlineImage,
+  SendGridEmailGateway,
+} from './infrastructure/gateways/sendgrid/sendgrid.gateway'
 import { createLogger, type Logger } from './infrastructure/logging/logger'
 import { OutboxPoller } from './infrastructure/outbox/outbox-poller'
 import { PG_CHANNELS } from './infrastructure/persistence/drizzle/channels'
@@ -90,8 +95,34 @@ export function createApplication(env: Env): Application {
   })
   const notifications = new PgNotificationListener(connection.sql, logger)
 
+  // Logos embutidas nos e-mails (attachment inline + `cid:` — viajam DENTRO da
+  // mensagem; sem hospedagem externa/proxy de imagem). Arquivos versionados no
+  // próprio package (`assets/`); ausência não derruba o boot (e-mail sai sem logo).
+  const loadInlineImage = (contentId: string, filename: string): InlineImage | null => {
+    try {
+      return {
+        contentId,
+        filename,
+        mimeType: 'image/png',
+        contentBase64: readFileSync(join(import.meta.dir, '..', 'assets', filename)).toString(
+          'base64',
+        ),
+      }
+    } catch (error) {
+      logger.warn('email.inline_image_missing', {
+        filename,
+        error: error instanceof Error ? error.message : String(error),
+      })
+      return null
+    }
+  }
+  const inlineImages = [
+    loadInlineImage('logo-sz-light', 'logo-sistema-zero-light.png'),
+    loadInlineImage('logo-sz-dark', 'logo-sistema-zero-dark.png'),
+  ].filter((i): i is InlineImage => i !== null)
+
   // Adapters de provedor + worker de envio (ritmo anti-ban + rotação de números)
-  const emailGateway = new SendGridEmailGateway({ apiKey: env.SENDGRID_API_KEY })
+  const emailGateway = new SendGridEmailGateway({ apiKey: env.SENDGRID_API_KEY, inlineImages })
   const whatsappGateway = new EvolutionWhatsAppGateway({
     baseUrl: env.EVOLUTION_URL,
     apiKey: env.EVOLUTION_API_KEY,

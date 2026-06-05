@@ -16,18 +16,13 @@ import { loadEnv } from '../src/infrastructure/config/env'
 import { createDbConnection } from '../src/infrastructure/persistence/drizzle/db'
 import { DrizzleTemplateRepository } from '../src/infrastructure/persistence/drizzle/template.repository'
 
-// Logo "light": tinta escura sobre um backing da MESMA cor do fundo da página
-// (#fbfaf7) baked na PNG — INVISÍVEL no tema claro (logo "pura"); no dark
-// FORÇADO do Gmail (que inverte cores mas não recolore imagens) o backing claro
-// permanece e mantém a tinta legível.
-const LOGO_URL =
-  process.env.EMAIL_LOGO_URL ??
-  'https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/email/logo-sistema-zero-light.png'
-// Logo de texto CLARO (transparente): usada no swap do dark mode DESENHADO
-// (clientes que respeitam prefers-color-scheme: Apple Mail/Samsung/Outlook iOS+2019).
-const LOGO_DARK_URL =
-  process.env.EMAIL_LOGO_DARK_URL ??
-  'https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/email/logo-sistema-zero-dark.png'
+// Logos EMBUTIDAS no e-mail (attachment inline + Content-ID, padrão do
+// comunidade-sistema-zero): a imagem viaja DENTRO da mensagem — sem hospedagem
+// externa, sem proxy de imagem, sem link que quebra. As PNGs (puras, sem efeito,
+// geradas dos SVGs do community) vivem em `assets/` e o composition-root as
+// injeta no gateway do SendGrid, que anexa só as referenciadas por `cid:`.
+const LOGO_URL = 'cid:logo-sz-light' // tinta escura (tema claro)
+const LOGO_DARK_URL = 'cid:logo-sz-dark' // texto claro (swap no dark desenhado)
 
 // ── Paleta da marca (hex ≈ tokens oklch do community/admin) ───────────────────
 const INK = '#0d1117' // foreground / tinta da logo
@@ -149,8 +144,8 @@ function emailLayout(input: EmailLayoutInput): string {
           <!-- Logo: chip (default/Gmail) + texto claro (só no dark desenhado) -->
           <tr>
             <td align="center" style="padding:0 0 24px;">
-              <img src="${LOGO_URL}" width="268" alt="Sistema Zero" class="logo-light" style="display:block;width:268px;max-width:80%;height:auto;border:0;">
-              <img src="${LOGO_DARK_URL}" width="240" alt="Sistema Zero" class="logo-dark" style="display:none;width:240px;max-width:72%;height:auto;border:0;mso-hide:all;">
+              <img src="${LOGO_URL}" width="232" alt="Sistema Zero" class="logo-light" style="display:block;width:232px;max-width:70%;height:auto;border:0;">
+              <img src="${LOGO_DARK_URL}" width="232" alt="Sistema Zero" class="logo-dark" style="display:none;width:232px;max-width:70%;height:auto;border:0;mso-hide:all;">
             </td>
           </tr>
           <!-- Card -->
