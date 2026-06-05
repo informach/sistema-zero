@@ -26,7 +26,8 @@ const res = await fetch(
       enabled: true,
       url,
       webhookByEvents: false,
-      events: ['MESSAGES_UPDATE', 'SEND_MESSAGE', 'CONNECTION_UPDATE'],
+      // Só o que o handler consome (SEND_MESSAGE era registrado e ignorado).
+      events: ['MESSAGES_UPDATE', 'CONNECTION_UPDATE'],
     }),
   },
 )

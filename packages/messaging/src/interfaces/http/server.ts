@@ -25,10 +25,12 @@ import type {
 import type { Clock } from '../../domain/ports/clock.port'
 import type { Env } from '../../infrastructure/config/env'
 import type { Logger } from '../../infrastructure/logging/logger'
+import type { MetricsSnapshot } from '../../infrastructure/persistence/drizzle/metrics.repository'
 import { buildErrorResponse } from './error-handler'
 import { isOversizeBody, markOversizeBody, storeRawBody } from './raw-body'
 import { adminRoutes } from './routes/admin.routes'
 import { healthRoutes, type ReadinessProbe } from './routes/health.routes'
+import { metricsRoutes } from './routes/metrics.routes'
 import { sendRoutes } from './routes/send.routes'
 import { webhooksRoutes } from './routes/webhooks.routes'
 
@@ -37,6 +39,7 @@ export interface HttpDeps {
   logger: Logger
   clock: Clock
   readiness: ReadinessProbe
+  metrics: () => Promise<MetricsSnapshot>
   sendMessage: SendMessageService
   getMessage: GetMessageService
   listMessages: ListMessagesService
@@ -54,17 +57,46 @@ export interface HttpDeps {
   setConnection: SetInstanceConnectionService
 }
 
+/** Rotas fora do access log (probes/scrape — só ruído). */
+const ACCESS_LOG_SKIP = new Set(['/health', '/readyz', '/metrics'])
+const requestStart = new WeakMap<Request, number>()
+
 /**
- * Monta a aplicação Elysia: teto de corpo (anti-DoS) + captura do corpo bruto
- * (para verificar assinatura de webhooks), tratamento central de erros, Swagger
- * (fora de produção) e as rotas (envio S2S + admin).
+ * Monta a aplicação Elysia: teto de corpo (anti-DoS; MAIOR nas rotas de webhook —
+ * a SendGrid posta lotes de até 768KB) + captura do corpo bruto (para verificar
+ * assinatura de webhooks), access log com X-Request-Id, tratamento central de
+ * erros, Swagger (fora de produção) e as rotas (envio S2S + admin + métricas).
  */
 export function createServer(deps: HttpDeps) {
+  /** Teto de corpo POR ROTA: webhooks de status recebem lotes grandes do provedor. */
+  const maxBytesFor = (request: Request): number =>
+    new URL(request.url).pathname.startsWith('/messaging/webhooks/')
+      ? deps.env.WEBHOOK_MAX_BODY_BYTES
+      : deps.env.MAX_REQUEST_BODY_BYTES
+
   const app = new Elysia({
-    serve: { maxRequestBodySize: deps.env.MAX_REQUEST_BODY_BYTES },
+    // Teto no nível do Bun = o MAIOR dos dois (o fino é por rota, no onParse).
+    serve: { maxRequestBodySize: deps.env.WEBHOOK_MAX_BODY_BYTES },
   })
+    .onRequest(({ request }) => {
+      requestStart.set(request, performance.now())
+    })
+    // Access log: UMA linha por request com o X-Request-Id do gateway — junta o
+    // `gateway.access` com os logs deste serviço num incidente (espelha o payments).
+    .onAfterResponse({ as: 'global' }, ({ request, set }) => {
+      const path = new URL(request.url).pathname
+      if (ACCESS_LOG_SKIP.has(path)) return
+      const start = requestStart.get(request)
+      deps.logger.info('http.access', {
+        requestId: request.headers.get('x-request-id') ?? undefined,
+        method: request.method,
+        path,
+        status: typeof set.status === 'number' ? set.status : (set.status ?? 200),
+        durationMs: start === undefined ? undefined : Math.round(performance.now() - start),
+      })
+    })
     .onParse({ as: 'global' }, async ({ request, contentType }) => {
-      const maxBytes = deps.env.MAX_REQUEST_BODY_BYTES
+      const maxBytes = maxBytesFor(request)
       const declared = Number(request.headers.get('content-length') ?? '0')
       if (Number.isFinite(declared) && declared > maxBytes) {
         markOversizeBody(request)
@@ -81,7 +113,9 @@ export function createServer(deps: HttpDeps) {
       }
       return undefined
     })
-    .onBeforeHandle({ as: 'global' }, ({ request }) => {
+    // onTransform roda ANTES da validação de schema — senão o corpo gigante
+    // viraria 400 (body inválido) em vez do 413 correto.
+    .onTransform({ as: 'global' }, ({ request }) => {
       if (isOversizeBody(request)) throw new PayloadTooLargeError()
     })
     .onError({ as: 'global' }, ({ code, error, set }) => {
@@ -108,6 +142,7 @@ export function createServer(deps: HttpDeps) {
 
   return app
     .use(healthRoutes(deps.readiness))
+    .use(metricsRoutes(deps.metrics, deps.env.METRICS_TOKEN))
     .use(
       sendRoutes({
         sendMessage: deps.sendMessage,
@@ -118,6 +153,7 @@ export function createServer(deps: HttpDeps) {
     .use(
       adminRoutes({
         requireAdminEnabled: deps.env.REQUIRE_ADMIN,
+        internalToken: deps.env.MESSAGING_INTERNAL_TOKEN,
         listMessages: deps.listMessages,
         createTemplate: deps.createTemplate,
         updateTemplate: deps.updateTemplate,

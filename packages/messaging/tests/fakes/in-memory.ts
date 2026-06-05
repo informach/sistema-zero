@@ -184,6 +184,18 @@ export class InMemoryMessageRepository implements MessageRepository {
     if (!next) return null
     return this.claim(next, now, leaseMs)
   }
+
+  async cleanup(olderThan: Date): Promise<number> {
+    const PENDING = new Set(['QUEUED', 'SCHEDULED', 'SENDING'])
+    let removed = 0
+    for (const [id, m] of this.store) {
+      if (!PENDING.has(m.status) && m.state.createdAt.getTime() < olderThan.getTime()) {
+        this.store.delete(id)
+        removed += 1
+      }
+    }
+    return removed
+  }
 }
 
 export class InMemorySenderRepository implements SenderRepository {

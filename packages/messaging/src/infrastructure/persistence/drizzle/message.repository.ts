@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, inArray, lte, sql } from 'drizzle-orm'
+import { and, asc, count, desc, eq, inArray, lt, lte, sql } from 'drizzle-orm'
 import { Message, type MessageProps } from '../../../domain/message/message.aggregate'
 import { IdempotencyConflictError } from '../../../domain/message/message.errors'
 import type {
@@ -119,10 +119,26 @@ export class DrizzleMessageRepository implements MessageRepository {
   }
 
   async update(message: Message): Promise<void> {
+    const s = message.state
     await this.db.transaction(async (tx) => {
       const updated = await tx
         .update(messages)
-        .set({ ...toRow(message), version: message.version + 1 })
+        // SÓ os campos mutáveis pós-criação: regravar a linha inteira (incl. o
+        // rendered_body de ~6KB) a cada transição de status multiplicava WAL/bloat.
+        .set({
+          status: s.status,
+          providerMessageId: s.providerMessageId,
+          failureReason: s.failureReason,
+          failureCode: s.failureCode,
+          nextAttemptAt: s.nextAttemptAt,
+          attempts: s.attempts,
+          laneId: s.laneId,
+          sentAt: s.sentAt,
+          deliveredAt: s.deliveredAt,
+          readAt: s.readAt,
+          terminalAt: s.terminalAt,
+          version: message.version + 1,
+        })
         .where(and(eq(messages.id, message.id), eq(messages.version, message.version)))
         .returning({ id: messages.id })
       if (updated.length === 0) throw new ConcurrencyConflictError(message.id)
@@ -233,6 +249,17 @@ export class DrizzleMessageRepository implements MessageRepository {
       const [claimed] = await this.markClaimed(tx, [row], now, leaseMs)
       return claimed ?? null
     })
+  }
+
+  async cleanup(olderThan: Date): Promise<number> {
+    const result = await this.db.delete(messages).where(
+      and(
+        // NUNCA toca em pendentes — só estados que não voltam à fila.
+        inArray(messages.status, ['SENT', 'DELIVERED', 'READ', 'FAILED', 'SUPPRESSED']),
+        lt(messages.createdAt, olderThan),
+      ),
+    )
+    return Number((result as unknown as { count?: number }).count ?? 0)
   }
 
   /**

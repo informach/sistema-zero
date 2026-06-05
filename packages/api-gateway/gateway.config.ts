@@ -1012,6 +1012,9 @@ const config: GatewayConfigInput = {
       service: 'messaging',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      // 06/2026: o messaging exige o x-internal-token TAMBÉM no admin — prova de
+      // que os X-Auth-User-* vieram do gateway (igual members/catalog).
+      transforms: messagingInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
     {
@@ -1021,6 +1024,7 @@ const config: GatewayConfigInput = {
       service: 'messaging',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: messagingInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
     // Webhooks de STATUS (provedores → gateway → messaging). Públicos: o serviço

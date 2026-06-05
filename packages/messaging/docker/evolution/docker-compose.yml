@@ -9,7 +9,8 @@ services:
     image: evoapicloud/evolution-api:v2.3.7
     restart: unless-stopped
     ports:
-      - '8080:8080'
+      # Só loopback: máquina de dev em rede compartilhada não expõe a Evolution.
+      - '127.0.0.1:8080:8080'
     env_file:
       - .env
     volumes:

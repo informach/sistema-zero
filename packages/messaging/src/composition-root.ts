@@ -31,10 +31,12 @@ import {
   SendGridEmailGateway,
 } from './infrastructure/gateways/sendgrid/sendgrid.gateway'
 import { createLogger, type Logger } from './infrastructure/logging/logger'
+import { withSentryMirror } from './infrastructure/observability/sentry'
 import { OutboxPoller } from './infrastructure/outbox/outbox-poller'
 import { PG_CHANNELS } from './infrastructure/persistence/drizzle/channels'
 import { createDbConnection, type DbConnection } from './infrastructure/persistence/drizzle/db'
 import { DrizzleMessageRepository } from './infrastructure/persistence/drizzle/message.repository'
+import { DrizzleMetricsRepository } from './infrastructure/persistence/drizzle/metrics.repository'
 import { DrizzleOutboxRepository } from './infrastructure/persistence/drizzle/outbox.repository'
 import { PgNotificationListener } from './infrastructure/persistence/drizzle/pg-notification-listener'
 import { DrizzleSenderRepository } from './infrastructure/persistence/drizzle/sender.repository'
@@ -65,10 +67,13 @@ export interface Application {
  * Evolution), outbox poller e o worker de envio (ritmo anti-ban + rotação).
  */
 export function createApplication(env: Env): Application {
-  const logger = createLogger({
-    level: env.NODE_ENV === 'production' ? 'info' : 'debug',
-    pretty: env.NODE_ENV !== 'production',
-  })
+  // Espelho do Sentry: todo log ERROR vira evento alertável (no-op sem DSN).
+  const logger = withSentryMirror(
+    createLogger({
+      level: env.NODE_ENV === 'production' ? 'info' : 'debug',
+      pretty: env.NODE_ENV !== 'production',
+    }),
+  )
 
   const connection: DbConnection = createDbConnection(env.DATABASE_URL, {
     max: env.DATABASE_POOL_MAX,
@@ -199,11 +204,14 @@ export function createApplication(env: Env): Application {
     }
   }
 
+  const metricsRepo = new DrizzleMetricsRepository(db)
+
   const server = createServer({
     env,
     logger,
     clock,
     readiness,
+    metrics: () => metricsRepo.getMetrics(),
     sendMessage,
     getMessage,
     listMessages,
@@ -242,12 +250,21 @@ export function createApplication(env: Env): Application {
           `
           if (!row?.locked) return // outra réplica está limpando neste ciclo
           const cutoff = new Date(Date.now() - env.RETENTION_DAYS * 24 * 60 * 60 * 1000)
-          const [outboxRows, webhookRows] = await Promise.all([
+          const messagesCutoff = new Date(
+            Date.now() - env.MESSAGES_RETENTION_DAYS * 24 * 60 * 60 * 1000,
+          )
+          const [outboxRows, webhookRows, messageRows] = await Promise.all([
             outboxRepo.cleanup(cutoff),
             webhookInbox.cleanup(cutoff),
+            // Mensagens TERMINAIS: o rendered_body (~6KB/linha) cresceria p/ sempre.
+            messages.cleanup(messagesCutoff),
           ])
-          if (outboxRows + webhookRows > 0) {
-            logger.info('retention.cleaned', { outbox: outboxRows, webhookEvents: webhookRows })
+          if (outboxRows + webhookRows + messageRows > 0) {
+            logger.info('retention.cleaned', {
+              outbox: outboxRows,
+              webhookEvents: webhookRows,
+              messages: messageRows,
+            })
           }
         })
       }

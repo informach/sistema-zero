@@ -243,3 +243,77 @@ describe('Health', () => {
     expect((await ctx.app.handle(get('/readyz'))).status).toBe(200)
   })
 })
+
+describe('Admin exige x-internal-token (prova de que veio do gateway)', () => {
+  it('headers de admin VÁLIDOS sem o token → 401; com token → 200', async () => {
+    const ctx = buildApp({ requireAdmin: true, internalToken: 'tok-interno' })
+    const denied = await ctx.app.handle(get('/messaging/admin/templates', adminHeaders))
+    expect(denied.status).toBe(401)
+
+    const ok = await ctx.app.handle(
+      get('/messaging/admin/templates', { ...adminHeaders, 'x-internal-token': 'tok-interno' }),
+    )
+    expect(ok.status).toBe(200)
+  })
+
+  it('fail-closed: x-auth-user-status AUSENTE → 401 (ausente nunca é "ativo")', async () => {
+    const ctx = buildApp({ requireAdmin: true })
+    const res = await ctx.app.handle(
+      get('/messaging/admin/templates', { 'x-auth-user-role': 'admin' }),
+    )
+    expect(res.status).toBe(401)
+  })
+})
+
+describe('Teto de corpo por rota (lotes grandes do webhook)', () => {
+  it('corpo acima do teto geral passa no WEBHOOK e leva 413 no /send', async () => {
+    // Teto geral de 1KB; teto de webhook de 256KB — payload de ~8KB.
+    const ctx = buildApp({ maxRequestBodyBytes: 1024, webhookMaxBodyBytes: 256 * 1024 })
+    const bigBatch = Array.from({ length: 80 }, (_, i) => ({
+      event: 'processed',
+      sg_event_id: `evt-${i}`,
+      padding: 'x'.repeat(80),
+    }))
+
+    const webhook = await ctx.app.handle(postJson('/messaging/webhooks/sendgrid', bigBatch))
+    expect(webhook.status).toBe(200)
+
+    const send = await ctx.app.handle(postJson('/messaging/send', bigBatch))
+    expect(send.status).toBe(413)
+  })
+})
+
+describe('GET /metrics', () => {
+  it('com METRICS_TOKEN: 401 sem token, 200 com token (snapshot de backlog)', async () => {
+    const ctx = buildApp({ metricsToken: 'metrics-token-16+' })
+    expect((await ctx.app.handle(get('/metrics'))).status).toBe(401)
+
+    const ok = await ctx.app.handle(get('/metrics', { 'x-metrics-token': 'metrics-token-16+' }))
+    expect(ok.status).toBe(200)
+    const body = (await ok.json()) as Record<string, unknown>
+    expect(body).toHaveProperty('outboxPending')
+    expect(body).toHaveProperty('emailDue')
+    expect(body).toHaveProperty('whatsappOldestDueAgeSeconds')
+  })
+})
+
+describe('Tetos dos headers de idempotência', () => {
+  it('Idempotency-Key gigante → 400', async () => {
+    const ctx = buildApp()
+    await seedEmailTemplate(ctx.app)
+    await seedDefaultSender(ctx.app)
+    const res = await ctx.app.handle(
+      postJson(
+        '/messaging/send',
+        {
+          channel: 'email',
+          templateKey: 'welcome',
+          recipient: { name: 'Helena', email: 'helena@example.com' },
+          variables: { nome: 'Helena', senha: 'abc' },
+        },
+        { 'x-consumer-id': 'funnel', 'idempotency-key': 'k'.repeat(201) },
+      ),
+    )
+    expect(res.status).toBe(400)
+  })
+})

@@ -10,6 +10,7 @@ const PROD_OK = {
   NODE_ENV: 'production',
   MESSAGING_INTERNAL_TOKEN: 'token-interno',
   MESSAGING_WEBHOOK_TOKEN: 'token-webhook',
+  METRICS_TOKEN: 'token-de-metricas-16',
 }
 
 describe('loadEnv — fail-closed em produção', () => {
@@ -39,6 +40,18 @@ describe('loadEnv — fail-closed em produção', () => {
     expect(() => loadEnv({ ...PROD_OK, SENDGRID_API_KEY: 'SG.x' })).toThrow(
       /SENDGRID_WEBHOOK_PUBLIC_KEY/,
     )
+  })
+
+  it('produção sem METRICS_TOKEN → falha no boot', () => {
+    const { METRICS_TOKEN: _omit, ...semMetrics } = PROD_OK
+    expect(() => loadEnv(semMetrics)).toThrow(/METRICS_TOKEN/)
+  })
+
+  it('EVOLUTION_URL sem EVOLUTION_API_KEY (e vice-versa) → falha no boot', () => {
+    expect(() => loadEnv({ ...BASE, EVOLUTION_URL: 'http://localhost:8080' })).toThrow(
+      /EVOLUTION_API_KEY/,
+    )
+    expect(() => loadEnv({ ...BASE, EVOLUTION_API_KEY: 'chave' })).toThrow(/EVOLUTION_API_KEY/)
   })
 
   it('produção completa → ok', () => {

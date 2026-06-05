@@ -27,6 +27,14 @@ const EnvSchema = z
       .int()
       .positive()
       .default(64 * 1024),
+    // Teto MAIOR só p/ as rotas de webhook de status: a SendGrid posta eventos em
+    // LOTES de até 768 KB (doc oficial) — 64 KB derrubaria o lote inteiro (413 em
+    // loop = bounces/delivered perdidos). 2 MB dá folga.
+    WEBHOOK_MAX_BODY_BYTES: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(2 * 1024 * 1024),
 
     DATABASE_URL: z.string().min(1, 'DATABASE_URL é obrigatória'),
     DATABASE_POOL_MAX: z.coerce.number().int().positive().default(10),
@@ -67,6 +75,14 @@ const EnvSchema = z
     SEND_CLAIM_LEASE_MS: z.coerce.number().int().positive().default(600_000),
     CLEANUP_INTERVAL_MS: z.coerce.number().int().positive().default(300_000),
     RETENTION_DAYS: z.coerce.number().int().positive().default(30),
+    // Retenção da tabela `messages` (terminais): o rendered_body (~6KB/linha)
+    // cresceria p/ sempre sem expurgo. Janela maior que a do outbox (auditoria).
+    MESSAGES_RETENTION_DAYS: z.coerce.number().int().positive().default(90),
+    // Token do GET /metrics (header x-metrics-token ou Bearer). Obrigatório em
+    // produção (refine) — espelha o payments.
+    METRICS_TOKEN: z.string().min(16).optional(),
+    // Sentry (erros). Ausente = desligado (no-op) — espelha o payments.
+    SENTRY_DSN: z.string().url().optional(),
 
     // ── E-mail: throttle de envio ───────────────────────────────────────────────
     EMAIL_RATE_PER_SEC: z.coerce.number().int().positive().default(5),
@@ -112,6 +128,20 @@ const EnvSchema = z
       path: ['SENDGRID_WEBHOOK_PUBLIC_KEY'],
     },
   )
+  .refine((e) => !(e.NODE_ENV === 'production' && !e.METRICS_TOKEN), {
+    message: 'Em produção METRICS_TOKEN (≥16 chars) é obrigatório — /metrics não fica aberto',
+    path: ['METRICS_TOKEN'],
+  })
+  // EVOLUTION_URL e EVOLUTION_API_KEY andam em PAR: um sem o outro = envio de
+  // WhatsApp falhando em silêncio até esgotar tentativas.
+  .refine((e) => !e.EVOLUTION_URL === !e.EVOLUTION_API_KEY, {
+    message: 'EVOLUTION_URL e EVOLUTION_API_KEY devem ser definidas juntas (ou nenhuma)',
+    path: ['EVOLUTION_API_KEY'],
+  })
+  .refine((e) => e.WEBHOOK_MAX_BODY_BYTES >= e.MAX_REQUEST_BODY_BYTES, {
+    message: 'WEBHOOK_MAX_BODY_BYTES deve ser >= MAX_REQUEST_BODY_BYTES',
+    path: ['WEBHOOK_MAX_BODY_BYTES'],
+  })
 
 export type Env = z.infer<typeof EnvSchema>
 

@@ -8,6 +8,7 @@ import {
 } from '@sistemazero/core/http'
 import type { Logger } from '@sistemazero/core/logging'
 import { ConcurrencyConflictError } from '../../domain/ports/concurrency.error'
+import { captureException } from '../../infrastructure/observability/sentry'
 
 export type { ErrorEnvelope }
 
@@ -69,6 +70,8 @@ export function buildErrorResponse(input: {
   if (code === 'NOT_FOUND')
     return { status: 404, body: envelope('NOT_FOUND', 'Recurso não encontrado') }
 
+  // Exceção real com stack → Sentry (o espelho de logs PULA 'unhandled.error').
+  captureException(error)
   input.logger.error('unhandled.error', {
     message: error instanceof Error ? error.message : String(error),
   })

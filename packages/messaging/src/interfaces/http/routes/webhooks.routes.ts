@@ -109,8 +109,11 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
       set.status = 200
       return { ok: true, processed }
     })
-    .post('/messaging/webhooks/evolution', async ({ body, query, set }) => {
-      if (deps.webhookToken && !safeEqual(query.token ?? '', deps.webhookToken)) {
+    .post('/messaging/webhooks/evolution', async ({ body, query, headers, set }) => {
+      // Header preferido (não aparece em logs de acesso/proxies); query mantido
+      // porque a Evolution não suporta header custom no webhook registrado.
+      const provided = headers['x-webhook-token'] ?? query.token ?? ''
+      if (deps.webhookToken && !safeEqual(provided, deps.webhookToken)) {
         throw new UnauthorizedError('Token de webhook inválido')
       }
       const payload = asRecord(body)

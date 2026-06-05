@@ -153,8 +153,12 @@ export const messages = messagingSchema.table(
     terminalAt: timestamp('terminal_at', { withTimezone: true }),
   },
   (t) => [
-    // Claim do worker (mensagens devidas por canal).
-    index('messages_dispatch_idx').on(t.channel, t.status, t.scheduledAt, t.nextAttemptAt),
+    // Claim do worker: serve o filtro (channel,status) E o ORDER BY priority
+    // DESC, scheduled_at ASC — sem ele, pico de fila = sort do backlog inteiro a
+    // cada tick sob lock. Os timestamps de elegibilidade ficam como filtro.
+    index('messages_claim_idx').on(t.channel, t.status, t.priority.desc(), t.scheduledAt.asc()),
+    // Listagem do admin (ORDER BY created_at DESC).
+    index('messages_created_at_idx').on(t.createdAt),
     // Match de webhook de status (por id do provedor).
     index('messages_provider_message_id_idx').on(t.providerMessageId),
     // Dedupe da SOLICITAÇÃO de envio (idempotência por consumidor).

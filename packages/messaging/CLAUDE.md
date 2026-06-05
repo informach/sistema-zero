@@ -116,14 +116,31 @@ tests/    unit/ (render, pacing, message, send-worker, sendgrid-webhook) · inte
   (senderId ou default); destinatário suprimido → 409.
 - `GET /messaging/messages/:id` → status (`:id` validado como uuid → 400; inexistente → 404).
 
-**Admin (painel — JWT + RBAC no gateway, `requireAdmin` defesa em profundidade COM distinção
-leitura/escrita: staff+ lê, admin+ escreve — espelha o gateway):**
+**Admin (painel — JWT + RBAC no gateway; defesa em profundidade FAIL-CLOSED: role E status
+PRESENTES e `active` — header ausente = não veio do gateway → 401; distinção leitura/escrita:
+staff+ lê, admin+ escreve; e o gateway injeta o **`x-internal-token` TAMBÉM no admin** — prova de
+que os X-Auth-User-* vieram dele, igual members/catalog):**
 `/messaging/admin/templates` (POST/PATCH/GET/lista), `/messaging/admin/senders` (POST/PATCH/lista —
 promoção de default é ATÔMICA: `clearOtherDefaults` na mesma transação), `/messaging/admin/whatsapp-instances`
 (POST/PATCH/lista), `GET /messaging/admin/messages` (log). Params `:id` validados como uuid.
 
-**Health:** `/health` (liveness, sempre 200) e `/readyz` (readiness = banco respondendo — aponte o
-healthcheck do deploy p/ cá). Bind dual-stack `::` via `HOST` (private networking do Railway é IPv6).
+**Health/observabilidade:** `/health` (liveness, sempre 200), `/readyz` (readiness = banco
+respondendo — healthcheck do deploy) e **`GET /metrics`** (backlog/lag: outbox pending/dead + idade,
+due/sending + idade do mais antigo POR CANAL — alerte na IDADE, pega worker morto; token
+`METRICS_TOKEN` via `x-metrics-token`/Bearer, OBRIGATÓRIO em prod). **Access log** (`http.access`):
+1 linha/request com o `X-Request-Id` do gateway; pula health/readyz/metrics. **Sentry** (`SENTRY_DSN`,
+ausente = no-op): espelho de logs ERROR→evento + captureException no error-handler/process handlers
+(espelha o payments). Bind dual-stack `::` via `HOST` (private networking do Railway é IPv6).
+
+**Teto de corpo POR ROTA:** 64KB geral (`MAX_REQUEST_BODY_BYTES`) e **2MB nas rotas de webhook**
+(`WEBHOOK_MAX_BODY_BYTES`) — a SendGrid posta eventos em LOTES de até 768KB; com 64KB o lote levaria
+413 em loop e os status se perderiam. O check de oversize roda no `onTransform` (ANTES da validação
+de schema — senão viraria 400 em vez de 413).
+
+**Retenção:** ciclo periódico (advisory lock, 1 réplica por vez) limpa outbox/webhook_events
+(`RETENTION_DAYS`, 30d) e **mensagens TERMINAIS** (`MESSAGES_RETENTION_DAYS`, 90d — o
+`rendered_body` de ~6KB/linha cresceria p/ sempre; QUEUED/SCHEDULED/SENDING nunca são tocadas).
+O `update()` de mensagem grava SÓ campos mutáveis (não regrava o rendered_body a cada transição).
 
 **Webhooks de status (públicos; o serviço valida):** `POST /messaging/webhooks/sendgrid` (assinatura
 **ECDSA**, `SENDGRID_WEBHOOK_PUBLIC_KEY` + janela de timestamp `WEBHOOK_TIMESTAMP_TOLERANCE_SECONDS`)
@@ -133,8 +150,23 @@ entrada, marca DEPOIS de aplicar. `connection.update` NÃO sobrescreve `PAUSED`/
 admin prevalece sobre reconexão da Evolution).
 
 **Fail-closed em produção (refines no `env.ts`):** `MESSAGING_INTERNAL_TOKEN`,
-`MESSAGING_WEBHOOK_TOKEN` e `REQUIRE_ADMIN=true` são OBRIGATÓRIOS; `SENDGRID_WEBHOOK_PUBLIC_KEY`
-obrigatória quando `SENDGRID_API_KEY` está setada.
+`MESSAGING_WEBHOOK_TOKEN`, `METRICS_TOKEN` (≥16) e `REQUIRE_ADMIN=true` são OBRIGATÓRIOS;
+`SENDGRID_WEBHOOK_PUBLIC_KEY` obrigatória quando `SENDGRID_API_KEY` está setada;
+`EVOLUTION_URL`⟺`EVOLUTION_API_KEY` andam em par (qualquer ambiente).
+
+## Deploy (Railway)
+
+`packages/messaging/Dockerfile` (contexto = raiz do monorepo; os `assets/` das logos cid VÊM no
+COPY) + `packages/messaging/railway.json` (preDeploy `db:migrate`, healthcheck `/readyz`,
+watchPatterns messaging/core/lockfile). Serviço **PRIVADO** (sem domínio — topologia do projeto:
+público = só gateway/payments/evolution-QR). Envs: `DATABASE_URL=${{Postgres.DATABASE_URL}}`,
+tokens (`MESSAGING_INTERNAL_TOKEN` = o MESMO do gateway, `MESSAGING_WEBHOOK_TOKEN`,
+`METRICS_TOKEN`, `SENTRY_DSN`), `SENDGRID_API_KEY`+`SENDGRID_WEBHOOK_PUBLIC_KEY`,
+`EVOLUTION_URL=http://evolution-api.railway.internal:8080`+`EVOLUTION_API_KEY` (ler do serviço
+evolution-api). Pós-deploy: seed de templates + remetente default via **`railway ssh`** (o Postgres
+de prod é privado — `railway run` local não alcança). Webhook da Evolution usa a URL INTERNA
+(`http://messaging.railway.internal:3006/...`); o Event Webhook da SendGrid só quando o GATEWAY
+(público) subir — até lá e-mails saem mas bounce não suprime.
 
 DTOs em **TypeBox**; erros de domínio → status no `error-handler` (TEMPLATE_NOT_FOUND→404,
 TEMPLATE_ALREADY_EXISTS→409, MISSING_TEMPLATE_VARIABLE→400, NO_SENDER_AVAILABLE/NO_WHATSAPP_INSTANCE_AVAILABLE→422,
@@ -166,8 +198,9 @@ Rotas em `packages/api-gateway/gateway.config.ts` (serviço `messaging`, `MESSAG
 `MESSAGING_INTERNAL_TOKEN`) + **`x-consumer-id` re-injetado pelo gateway com o principal HMAC
 autenticado** (o header do cliente é stripado como credencial de borda; a re-injeção é o que faz a
 idempotência por consumidor funcionar — request-transform.stage do gateway). `messaging-admin-*`:
-`jwt` + RBAC (LEITURA staff+; ESCRITA admin+). `messaging-webhook-{sendgrid,evolution}`: `public`
-(o serviço valida assinatura/token).
+`jwt` + RBAC (LEITURA staff+; ESCRITA admin+) **+ `messagingInternalTransforms`** (o serviço exige o
+token também no admin). `messaging-webhook-{sendgrid,evolution}`: `public` (o serviço valida
+assinatura/token; aceita o token também via header `x-webhook-token`).
 
 ## Convenções
 
@@ -184,9 +217,10 @@ idempotência por consumidor funcionar — request-transform.stage do gateway). 
 `schemaFilter:['messaging']`). Tabelas: `message_templates`, `email_senders`, `whatsapp_instances`,
 `messages`, `webhook_events` (dedupe), `suppressions`, `outbox`. **Journal próprio**
 (`migrations: { table: 'messaging_migrations' }`) — NÃO compartilhe `__drizzle_migrations`. A 1ª
-migration faz `CREATE SCHEMA "messaging"`; a `0001` dropa a coluna `weight` (nunca foi usada na
-seleção de lane). Índices de claim do worker em `messages(channel,status,
-scheduled_at,next_attempt_at)` e seleção de lane em `whatsapp_instances(enabled,status,next_available_at)`.
+migration faz `CREATE SCHEMA "messaging"`; a `0001` dropa a coluna `weight`; a `0002` troca o índice
+de claim por `messages_claim_idx (channel, status, priority DESC, scheduled_at)` (serve o ORDER BY —
+sem ele, pico de fila = sort do backlog inteiro por tick) + `messages_created_at_idx` (listagem do
+admin). Seleção de lane em `whatsapp_instances(enabled,status,next_available_at)`.
 Escritas do worker na lane (`reserve`/`applyLanePacing`/`delayLane`) fazem **bump de `version`** —
 um PATCH admin concorrente conflita (409) em vez de regravar contadores de ritmo velhos por cima.
 Retenção (outbox/webhook_events) gateada por **advisory lock** (`pg_try_advisory_xact_lock`, chave

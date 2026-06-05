@@ -16,7 +16,7 @@ import type {
   ListTemplatesService,
   UpdateTemplateService,
 } from '../../../application/templates/template-admin.service'
-import { requireAdmin } from '../auth'
+import { requireAdmin, requireInternalToken } from '../auth'
 import {
   CreateInstanceBody,
   CreateSenderBody,
@@ -32,6 +32,10 @@ import {
 
 export interface AdminRoutesDeps {
   requireAdminEnabled: boolean
+  /** Token interno injetado pelo gateway TAMBÉM no admin (prova que os
+   *  X-Auth-User-* vieram do gateway — sem ele seriam forjáveis por quem
+   *  alcançasse o serviço direto na rede interna). Vazio → desligado (dev). */
+  internalToken: string | undefined
   createTemplate: CreateTemplateService
   updateTemplate: UpdateTemplateService
   getTemplate: GetTemplateService
@@ -51,10 +55,14 @@ export interface AdminRoutesDeps {
  * leitura (staff+) / escrita (admin+) do gateway. Caminho `/messaging/admin/*`.
  */
 export function adminRoutes(deps: AdminRoutesDeps) {
-  const read = (headers: Record<string, string | undefined>) =>
+  const read = (headers: Record<string, string | undefined>) => {
+    requireInternalToken(headers, deps.internalToken)
     requireAdmin(headers, deps.requireAdminEnabled)
-  const write = (headers: Record<string, string | undefined>) =>
+  }
+  const write = (headers: Record<string, string | undefined>) => {
+    requireInternalToken(headers, deps.internalToken)
     requireAdmin(headers, deps.requireAdminEnabled, { write: true })
+  }
 
   return (
     new Elysia()

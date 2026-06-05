@@ -32,4 +32,11 @@ export interface MessageRepository {
   claimDueEmail(limit: number, now: Date, leaseMs: number): Promise<Message[]>
   /** Reivindica UMA mensagem de WhatsApp devida (SKIP LOCKED, mesmo lease/reaper). */
   claimNextWhatsApp(now: Date, leaseMs: number): Promise<Message | null>
+
+  /**
+   * Retenção: remove mensagens TERMINAIS (nunca QUEUED/SCHEDULED/SENDING) mais
+   * antigas que `olderThan` — o `rendered_body` (~KBs por linha) cresceria sem
+   * limite. Roda no ciclo periódico (advisory lock). Retorna linhas removidas.
+   */
+  cleanup(olderThan: Date): Promise<number>
 }

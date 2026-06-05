@@ -11,8 +11,11 @@ type Headers = Record<string, string | undefined>
  * Defesa em profundidade do admin: o RBAC real é do gateway (JWT), que injeta
  * `X-Auth-User-*` confiável. Aqui conferimos o papel/estado desses headers — com
  * a MESMA distinção leitura/escrita do gateway (staff só lê; se o gateway falhar,
- * o serviço não vira escalada de privilégio). Em dev (fora do gateway) a checagem
- * pode ser desligada (`requireAdminEnabled=false`).
+ * o serviço não vira escalada de privilégio). **Fail-closed** (espelha o payments):
+ * role E status precisam estar PRESENTES — o gateway sempre injeta os dois;
+ * header ausente = a chamada não passou pelo gateway → 401. "Ausente" nunca
+ * equivale a "ativo". Em dev (fora do gateway) a checagem pode ser desligada
+ * (`requireAdminEnabled=false`).
  */
 export function requireAdmin(
   headers: Headers,
@@ -21,9 +24,9 @@ export function requireAdmin(
 ): void {
   if (!requireAdminEnabled) return
   const role = headers['x-auth-user-role']
-  if (!role) throw new UnauthorizedError('Autenticação necessária')
   const status = headers['x-auth-user-status']
-  if (status && status !== 'active') throw new ForbiddenError('Conta inativa')
+  if (!role || !status) throw new UnauthorizedError('Autenticação necessária')
+  if (status !== 'active') throw new ForbiddenError('Conta inativa')
   const allowed = opts.write ? WRITE_ROLES : READ_ROLES
   if (!allowed.has(role)) throw new ForbiddenError('Permissão insuficiente')
 }

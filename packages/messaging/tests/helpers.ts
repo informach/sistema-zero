@@ -37,6 +37,9 @@ export interface BuildAppOptions {
   internalToken?: string
   sendgridPublicKey?: string
   webhookToken?: string
+  metricsToken?: string
+  maxRequestBodyBytes?: number
+  webhookMaxBodyBytes?: number
   now?: Date
 }
 
@@ -54,11 +57,13 @@ export function buildApp(opts: BuildAppOptions = {}) {
 
   const env = {
     NODE_ENV: 'test',
-    MAX_REQUEST_BODY_BYTES: 64 * 1024,
+    MAX_REQUEST_BODY_BYTES: opts.maxRequestBodyBytes ?? 64 * 1024,
+    WEBHOOK_MAX_BODY_BYTES: opts.webhookMaxBodyBytes ?? 2 * 1024 * 1024,
     REQUIRE_ADMIN: opts.requireAdmin ?? false,
     MESSAGING_INTERNAL_TOKEN: opts.internalToken,
     SENDGRID_WEBHOOK_PUBLIC_KEY: opts.sendgridPublicKey,
     MESSAGING_WEBHOOK_TOKEN: opts.webhookToken,
+    METRICS_TOKEN: opts.metricsToken,
     WEBHOOK_TIMESTAMP_TOLERANCE_SECONDS: 600,
   } as unknown as Env
 
@@ -67,6 +72,17 @@ export function buildApp(opts: BuildAppOptions = {}) {
     logger: silentLogger,
     clock,
     readiness: async () => ({ ready: true, checks: { db: 'ok' } }),
+    metrics: async () => ({
+      outboxPending: 0,
+      outboxDead: 0,
+      outboxOldestPendingAgeSeconds: null,
+      emailDue: 0,
+      emailSending: 0,
+      emailOldestDueAgeSeconds: null,
+      whatsappDue: 0,
+      whatsappSending: 0,
+      whatsappOldestDueAgeSeconds: null,
+    }),
     sendMessage: new SendMessageService(templates, messages, senders, suppressions, clock, idGen),
     getMessage: new GetMessageService(messages),
     listMessages: new ListMessagesService(messages),
