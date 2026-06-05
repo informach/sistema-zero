@@ -11,9 +11,11 @@
  * A PNG fonte está em `assets/logo-sistema-zero.png` (gerada do
  * `community/public/logo_white.svg` — tinta #0D1117, p/ fundo claro).
  */
+import { EmailSender } from '../src/domain/sender/email-sender.aggregate'
 import { Template } from '../src/domain/template/template.aggregate'
 import { loadEnv } from '../src/infrastructure/config/env'
 import { createDbConnection } from '../src/infrastructure/persistence/drizzle/db'
+import { DrizzleSenderRepository } from '../src/infrastructure/persistence/drizzle/sender.repository'
 import { DrizzleTemplateRepository } from '../src/infrastructure/persistence/drizzle/template.repository'
 
 // Logos EMBUTIDAS no e-mail (attachment inline + Content-ID, padrão do
@@ -319,6 +321,22 @@ for (const seed of seeds) {
   }
   await templates.create(Template.create({ id: crypto.randomUUID(), ...seed, now }))
   console.log(`criado: ${seed.channel}/${seed.key}`)
+}
+
+// ── Remetente default (create-if-missing — edições do admin nunca são sobrescritas) ──
+// ⚠️ O endereço precisa estar VERIFICADO na SendGrid (autenticação do domínio
+// sistemazero.com.br) — sem isso o envio falha com 403 "Sender Identity".
+const senders = new DrizzleSenderRepository(connection.db)
+const DEFAULT_SENDER = { fromEmail: 'contato@sistemazero.com.br', fromName: 'Helena e Júlio' }
+const existingSender = await senders.findByEmail(DEFAULT_SENDER.fromEmail)
+if (existingSender) {
+  console.log(`remetente já existe: ${DEFAULT_SENDER.fromEmail}`)
+} else {
+  await senders.create(
+    EmailSender.create({ id: crypto.randomUUID(), ...DEFAULT_SENDER, isDefault: true, now }),
+    { clearOtherDefaults: true },
+  )
+  console.log(`remetente default criado: ${DEFAULT_SENDER.fromName} <${DEFAULT_SENDER.fromEmail}>`)
 }
 
 await connection.close()
