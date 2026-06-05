@@ -279,10 +279,17 @@ distinto das rotas consumer `/payments`,`/payments/:id` — ≥3 segmentos, sem 
 O RBAC REAL é do **gateway** (JWT + `authorize.roles:[superadmin,admin,staff]`); o
 serviço confere os headers `X-Auth-User-*` injetados (`requireAdmin` em
 `interfaces/http/admin-auth.ts`, **defesa em profundidade**, ligada por `REQUIRE_ADMIN`,
-default `true`). **Fail-closed**: exige role E status PRESENTES (o gateway sempre
-injeta os dois; header de status ausente = não passou pelo gateway → 401) e
-`status === 'active'` (senão 403) — "ausente" nunca equivale a "ativo". Estas rotas **NÃO** usam auth de consumidor (HMAC) nem `resign` no
-gateway. São cross-consumer (o painel enxerga todos).
+default `true`). **Desde 06/2026 exige TAMBÉM o `x-internal-token`** injetado pelo
+gateway (`INTERNAL_API_TOKEN`, MESMO valor do `PAYMENTS_INTERNAL_TOKEN` de lá;
+`assertInternalCaller` em `interfaces/http/internal-auth.ts`, comparação em tempo
+constante via `safeEqual` do core) — é a prova de que os `X-Auth-User-*` vieram do
+gateway; sem ela, qualquer processo na rede interna forjaria um admin (estorno!)
+chamando o serviço direto. Ausente em dev/local = checagem desligada; obrigatório
+em produção (refine). Espelha members/catalog/messaging/auth. **Fail-closed**:
+exige role E status PRESENTES (o gateway sempre injeta os dois; header de status
+ausente = não passou pelo gateway → 401) e `status === 'active'` (senão 403) —
+"ausente" nunca equivale a "ativo". Estas rotas **NÃO** usam auth de consumidor
+(HMAC) nem `resign` no gateway. São cross-consumer (o painel enxerga todos).
 
 ## Sentry (monitoramento de erros)
 
@@ -331,8 +338,9 @@ ligado por `SENTRY_DSN` (ausente = no-op; projeto `sistema-zero-payments` na org
 Rotas de leitura sob `/payments/my*` para o COMPRADOR ver as próprias compras
 (`GET /payments/my` paginada + `GET /payments/my/:id`). A auth real é do **gateway**
 (JWT + `authorize.statuses:['active']`, **sem roles** — qualquer conta ativa); o
-serviço lê o e-mail de `X-Auth-User-Email` (`requireBuyer` em
-`interfaces/http/my-auth.ts`, defesa em profundidade). TODA consulta é **escopada
+serviço exige o `x-internal-token` do gateway (`INTERNAL_API_TOKEN` — mesma prova
+de origem do admin, 06/2026) e lê o e-mail de `X-Auth-User-Email` (`requireBuyer`
+em `interfaces/http/my-auth.ts`, defesa em profundidade). TODA consulta é **escopada
 por `lower(customer->>'email')`** (índice de expressão `payments_customer_email_idx`)
 — id de outro comprador → 404 (anti-IDOR). Port de leitura dedicado
 (`payment-my-read.port` + `DrizzlePaymentMyReadRepository`), fora do hot-path;
@@ -411,7 +419,10 @@ o 1º Pix paga o mTLS de ~15s na request). Bind **dual-stack `::`** (env `HOST`)
 — obrigatório p/ `payments.railway.internal` (private networking é IPv6). **Em
 produção o boot exige** (refines fail-fast): `EFI_SANDBOX=false`,
 **`EFI_WEBHOOK_SECRET`** (webhook é público; sem segredo = amplificação não
-autenticada) e **`METRICS_TOKEN`** (≥16 chars; /metrics fica em ingress público).
+autenticada), **`METRICS_TOKEN`** (≥16 chars; /metrics fica em ingress público) e
+**`INTERNAL_API_TOKEN`** (≥16 chars; prova de origem do gateway nas rotas
+admin/minhas compras — MESMO valor do `PAYMENTS_INTERNAL_TOKEN` do gateway;
+⚠️ setar a env no host de prod ANTES do próximo deploy, senão o boot falha).
 `TRUST_PROXY` depende da topologia (ver `.env.example`): gateway via private
 networking → `false` (socket IP = gateway; allowlist fd00::/8); via domínio
 público → `true` + `HOPS=1`. ⚠️ **Migrations expand-then-contract** (o pre-deploy

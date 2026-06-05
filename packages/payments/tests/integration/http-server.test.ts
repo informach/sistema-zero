@@ -43,6 +43,8 @@ interface BuildOpts {
   trustedProxyHops?: number
   /** Liga a checagem `requireAdmin` nas rotas `/payments/admin/*`. */
   requireAdmin?: boolean
+  /** Token interno do gateway (`x-internal-token`) — admin + minhas compras. */
+  internalToken?: string
   /** Define `EFI_WEBHOOK_SECRET` (gate `?token=`/`x-webhook-token` dos webhooks). */
   webhookSecret?: string
   /** Teto global das rotas de webhook (req/min). */
@@ -204,6 +206,7 @@ function buildApp(opts: BuildOpts = {}) {
       amountMismatchPending: 0,
     }),
     requireAdminEnabled: opts.requireAdmin ?? false,
+    internalToken: opts.internalToken,
     listPayments: new ListPaymentsService(paymentsAdminRead),
     getAdminPayment: new GetAdminPaymentService(repo),
     listSubscriptions: new ListSubscriptionsService(subscriptionsAdminRead),
@@ -1077,6 +1080,30 @@ describe('Rotas admin (/payments/admin/*)', () => {
     expect(res.status).toBe(200)
   })
 
+  test('requireAdmin + internalToken: sem x-internal-token → 401 (mesmo com role admin)', async () => {
+    const { app } = buildApp({ requireAdmin: true, internalToken: 'tok-interno-de-teste-16' })
+    const res = await app.handle(
+      new Request('http://localhost/payments/admin/payments', { headers: adminHeaders() }),
+    )
+    expect(res.status).toBe(401)
+  })
+
+  test('requireAdmin + internalToken: token errado → 401; token certo → 200', async () => {
+    const { app } = buildApp({ requireAdmin: true, internalToken: 'tok-interno-de-teste-16' })
+    const wrong = await app.handle(
+      new Request('http://localhost/payments/admin/payments', {
+        headers: { ...adminHeaders(), 'x-internal-token': 'errado' },
+      }),
+    )
+    expect(wrong.status).toBe(401)
+    const ok = await app.handle(
+      new Request('http://localhost/payments/admin/payments', {
+        headers: { ...adminHeaders(), 'x-internal-token': 'tok-interno-de-teste-16' },
+      }),
+    )
+    expect(ok.status).toBe(200)
+  })
+
   test('requireAdmin ligado: TODAS as rotas admin passam o gate com admin ativo', async () => {
     const { app } = buildApp({ requireAdmin: true })
     const ID = '00000000-0000-0000-0000-000000000000'
@@ -1238,6 +1265,31 @@ describe('Minhas compras (/payments/my — self-service do comprador)', () => {
     const json = (await res.json()) as { error: { code: string } }
     // 401 do requireBuyer (autenticação necessária), não o da auth de consumer.
     expect(json.error.code).toBe('UNAUTHORIZED')
+  })
+
+  test('com internalToken: sem/errado x-internal-token → 401; com o token → 200', async () => {
+    const { app } = buildApp({ internalToken: 'tok-interno-de-teste-16' })
+    const missing = await app.handle(
+      new Request('http://localhost/payments/my', {
+        headers: { 'x-auth-user-email': 'aluno@example.com' },
+      }),
+    )
+    expect(missing.status).toBe(401)
+    const wrong = await app.handle(
+      new Request('http://localhost/payments/my', {
+        headers: { 'x-auth-user-email': 'aluno@example.com', 'x-internal-token': 'errado' },
+      }),
+    )
+    expect(wrong.status).toBe(401)
+    const ok = await app.handle(
+      new Request('http://localhost/payments/my', {
+        headers: {
+          'x-auth-user-email': 'aluno@example.com',
+          'x-internal-token': 'tok-interno-de-teste-16',
+        },
+      }),
+    )
+    expect(ok.status).toBe(200)
   })
 
   test('lista SÓ as compras do e-mail das claims (sem vazar de outros)', async () => {

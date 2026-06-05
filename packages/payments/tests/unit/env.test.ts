@@ -31,14 +31,15 @@ describe('loadEnv — refines críticos (fail-fast no boot)', () => {
   })
 
   // Config mínima de PRODUÇÃO: além do EFI_SANDBOX=false, o boot exige o segredo
-  // do webhook (anti-amplificação não autenticada) e o token do /metrics
-  // (telemetria em ingress público).
+  // do webhook (anti-amplificação não autenticada), o token do /metrics
+  // (telemetria em ingress público) e o token interno do gateway (admin/my).
   const PROD: Record<string, string> = {
     ...BASE,
     NODE_ENV: 'production',
     EFI_SANDBOX: 'false',
     EFI_WEBHOOK_SECRET: 'segredo-webhook-forte',
     METRICS_TOKEN: 'token-metrics-16chars',
+    INTERNAL_API_TOKEN: 'token-interno-16chars',
   }
 
   test('produção exige EFI_SANDBOX=false EXPLÍCITO (não aponta pro sandbox em silêncio)', () => {
@@ -58,6 +59,14 @@ describe('loadEnv — refines críticos (fail-fast no boot)', () => {
     expect(() => loadEnv({ ...PROD, METRICS_TOKEN: 'curto' })).toThrow(/METRICS_TOKEN/)
     // Fora de produção segue opcional (dev local sem token).
     expect(loadEnv(BASE).METRICS_TOKEN).toBeUndefined()
+  })
+
+  test('produção exige INTERNAL_API_TOKEN (admin/minhas compras confiam nos X-Auth-User-*)', () => {
+    const { INTERNAL_API_TOKEN: _omitted, ...rest } = PROD
+    expect(() => loadEnv(rest)).toThrow(/INTERNAL_API_TOKEN/)
+    expect(() => loadEnv({ ...PROD, INTERNAL_API_TOKEN: 'curto' })).toThrow(/INTERNAL_API_TOKEN/)
+    // Fora de produção segue opcional (dev local sem gateway).
+    expect(loadEnv(BASE).INTERNAL_API_TOKEN).toBeUndefined()
   })
 
   test('HOST default é "::" (dual-stack — private networking do Railway é IPv6)', () => {

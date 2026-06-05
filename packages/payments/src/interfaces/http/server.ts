@@ -52,6 +52,8 @@ export interface HttpDeps {
   getMetrics: () => Promise<MetricsSnapshot>
   // Leitura admin (painel @sistemazero/admin) — RBAC no gateway + `requireAdmin` aqui.
   requireAdminEnabled: boolean
+  /** Token interno do gateway (`x-internal-token`) — admin + minhas compras. */
+  internalToken?: string
   listPayments: ListPaymentsService
   getAdminPayment: GetAdminPaymentService
   listSubscriptions: ListSubscriptionsService
@@ -196,11 +198,13 @@ export function createServer(deps: HttpDeps) {
       myRoutes({
         listMyPayments: deps.listMyPayments,
         getMyPayment: deps.getMyPayment,
+        internalToken: deps.internalToken,
       }),
     )
     .use(
       adminRoutes({
         requireAdminEnabled: deps.requireAdminEnabled,
+        internalToken: deps.internalToken,
         listPayments: deps.listPayments,
         getPayment: deps.getAdminPayment,
         listSubscriptions: deps.listSubscriptions,

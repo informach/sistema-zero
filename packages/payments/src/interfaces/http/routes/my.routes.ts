@@ -10,6 +10,11 @@ const MAX_LIMIT = 100
 export interface MyRoutesDeps {
   listMyPayments: ListMyPaymentsService
   getMyPayment: GetMyPaymentService
+  /**
+   * Token interno do gateway (`x-internal-token`) — prova de que o e-mail do
+   * X-Auth-User-Email veio de lá. Ausente (dev/local) = checagem desligada.
+   */
+  internalToken?: string
 }
 
 /**
@@ -25,7 +30,7 @@ export function myRoutes(deps: MyRoutesDeps) {
     .get(
       '/',
       async ({ query, headers }) => {
-        const { email } = requireBuyer(headers)
+        const { email } = requireBuyer(headers, deps.internalToken)
         return deps.listMyPayments.execute({
           email,
           limit: clampLimit(query.limit),
@@ -37,7 +42,7 @@ export function myRoutes(deps: MyRoutesDeps) {
     .get(
       '/:id',
       async ({ params, headers }) => {
-        const { email } = requireBuyer(headers)
+        const { email } = requireBuyer(headers, deps.internalToken)
         return deps.getMyPayment.execute({ email, id: params.id })
       },
       { params: AdminIdParam },

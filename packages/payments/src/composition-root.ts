@@ -278,6 +278,7 @@ export function createApplication(env: Env): Application {
     handleBoletoNotification,
     getMetrics: () => metrics.getMetrics(),
     requireAdminEnabled: env.REQUIRE_ADMIN,
+    internalToken: env.INTERNAL_API_TOKEN,
     listPayments,
     getAdminPayment,
     listSubscriptions,

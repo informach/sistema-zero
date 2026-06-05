@@ -38,6 +38,16 @@ const EnvSchema = z
     // gateway injeta (defesa em profundidade). Seguro por default; só desligue
     // (`false`) em dev quando bater no serviço SEM passar pelo gateway.
     REQUIRE_ADMIN: optionalBool(true),
+    // Defesa em profundidade das rotas admin + "minhas compras": o gateway injeta
+    // `x-internal-token` com este valor (env PAYMENTS_INTERNAL_TOKEN lá) — é o que
+    // torna os X-Auth-User-* confiáveis. Sem ele, qualquer processo na rede
+    // interna forjaria um admin (estorno!) ou um e-mail de comprador chamando o
+    // serviço direto. Ausente (dev/local) = checagem desligada; obrigatório em
+    // produção (refine abaixo). Espelha members/catalog/messaging/auth.
+    INTERNAL_API_TOKEN: z
+      .string()
+      .min(16, 'INTERNAL_API_TOKEN deve ter ao menos 16 caracteres')
+      .optional(),
 
     DATABASE_URL: z.string().min(1, 'DATABASE_URL é obrigatória'),
 
@@ -193,6 +203,14 @@ const EnvSchema = z
   .refine((e) => !(e.NODE_ENV === 'production' && !e.METRICS_TOKEN), {
     message: 'Em produção METRICS_TOKEN é obrigatório (protege GET /metrics no ingress público).',
     path: ['METRICS_TOKEN'],
+  })
+  // As rotas admin (estorno!) e "minhas compras" confiam nos X-Auth-User-* — em
+  // produção essa confiança EXIGE a prova de que a chamada veio do gateway.
+  .refine((e) => !(e.NODE_ENV === 'production' && !e.INTERNAL_API_TOKEN), {
+    message:
+      'Em produção INTERNAL_API_TOKEN é obrigatório (defesa em profundidade do admin/minhas ' +
+      'compras — MESMO valor do PAYMENTS_INTERNAL_TOKEN do gateway).',
+    path: ['INTERNAL_API_TOKEN'],
   })
 
 export type Env = z.infer<typeof EnvSchema>
