@@ -29,7 +29,9 @@ const env = loadEnv({
   REQUIRE_ADMIN: 'true',
 })
 
-function build() {
+function build(opts: { env?: typeof env; readinessOk?: boolean } = {}) {
+  const activeEnv = opts.env ?? env
+  const readinessOk = opts.readinessOk ?? true
   const products = new InMemoryProductRepository()
   const offers = new InMemoryOfferRepository()
   const coupons = new InMemoryCouponRepository()
@@ -48,8 +50,12 @@ function build() {
   const createCoupon = new CreateCouponService(coupons, offers, logger)
   const updateCoupon = new UpdateCouponService(coupons, offers, logger)
   const app = createServer({
-    env,
+    env: activeEnv,
     logger,
+    readiness: async () => ({
+      ready: readinessOk,
+      checks: { db: readinessOk ? 'ok' : 'error' },
+    }),
     getOffer,
     getProduct,
     listProducts,
@@ -483,6 +489,272 @@ describe('catalog HTTP', () => {
       expect((await res.json()) as { error: { code: string } }).toMatchObject({
         error: { code: 'OFFER_NOT_AVAILABLE' },
       })
+    })
+  })
+
+  describe('readiness (/readyz)', () => {
+    it('banco ok → 200 ready', async () => {
+      const { app } = build()
+      const res = await app.handle(req('GET', '/readyz'))
+      expect(res.status).toBe(200)
+      expect((await res.json()) as { status: string }).toMatchObject({ status: 'ready' })
+    })
+
+    it('banco fora → 503 unavailable', async () => {
+      const { app } = build({ readinessOk: false })
+      const res = await app.handle(req('GET', '/readyz'))
+      expect(res.status).toBe(503)
+      expect((await res.json()) as { checks: { db: string } }).toMatchObject({
+        checks: { db: 'error' },
+      })
+    })
+  })
+
+  describe('leitura pública sanitizada', () => {
+    async function seedPublic(built: ReturnType<typeof build>) {
+      const product = await built.createProduct.execute({
+        sku: 'pub',
+        slug: 'pub',
+        name: 'Público',
+        kind: 'ebook',
+        status: 'active',
+        fulfillment: { accessType: 'course', courseRef: 'curso-secreto' },
+        metadata: { interno: true },
+      })
+      await built.createProduct.execute({
+        sku: 'rascunho',
+        slug: 'rascunho',
+        name: 'Rascunho',
+        kind: 'ebook',
+      })
+      await built.createOffer.execute({
+        productId: product.id,
+        code: 'pub-of',
+        slug: 'pub-of',
+        name: 'Oferta pública',
+        priceCents: 3700,
+        status: 'active',
+      })
+      await built.createOffer.execute({
+        productId: product.id,
+        code: 'rasc-of',
+        slug: 'rasc-of',
+        name: 'Oferta rascunho',
+        priceCents: 9900,
+      })
+      return product
+    }
+
+    it('GET /catalog/products/:slug NÃO expõe fulfillment/metadata/components/version', async () => {
+      const built = build()
+      await seedPublic(built)
+      const res = await built.app.handle(req('GET', '/catalog/products/pub'))
+      expect(res.status).toBe(200)
+      const view = (await res.json()) as Record<string, unknown>
+      expect(view.slug).toBe('pub')
+      expect(view.name).toBe('Público')
+      expect('fulfillment' in view).toBe(false)
+      expect('metadata' in view).toBe(false)
+      expect('components' in view).toBe(false)
+      expect('version' in view).toBe(false)
+    })
+
+    it('produto draft é inexistente ao público → 404', async () => {
+      const built = build()
+      await seedPublic(built)
+      const res = await built.app.handle(req('GET', '/catalog/products/rascunho'))
+      expect(res.status).toBe(404)
+    })
+
+    it('oferta draft é inexistente ao público → 404 (paused segue legível)', async () => {
+      const built = build()
+      const product = await seedPublic(built)
+      const draft = await built.app.handle(req('GET', '/catalog/offers/rasc-of'))
+      expect(draft.status).toBe(404)
+
+      await built.createOffer.execute({
+        productId: product.id,
+        code: 'paused-of2',
+        slug: 'paused-of2',
+        name: 'Oferta pausada',
+        priceCents: 1000,
+        status: 'active',
+      })
+      // pausa via PATCH admin (transição active → paused)
+      const offers = await built.app.handle(req('GET', '/catalog/admin/offers', { headers: ADMIN }))
+      const page = (await offers.json()) as { items: { id: string; slug: string }[] }
+      const paused = page.items.find((o) => o.slug === 'paused-of2')
+      await built.app.handle(
+        req('PATCH', `/catalog/offers/${paused?.id}`, {
+          headers: ADMIN,
+          body: { status: 'paused' },
+        }),
+      )
+      const res = await built.app.handle(req('GET', '/catalog/offers/paused-of2'))
+      expect(res.status).toBe(200)
+    })
+  })
+
+  describe('token interno (defesa em profundidade)', () => {
+    const TOKEN = 'token-interno-de-teste-catalogo'
+    const tokenEnv = loadEnv({
+      DATABASE_URL: 'postgres://localhost:5433/test',
+      NODE_ENV: 'test',
+      REQUIRE_ADMIN: 'true',
+      INTERNAL_API_TOKEN: TOKEN,
+    })
+
+    function buildWithToken() {
+      return build({ env: tokenEnv })
+    }
+
+    async function seedOffer(built: ReturnType<typeof build>) {
+      const product = await built.createProduct.execute({
+        sku: 'tok',
+        slug: 'tok',
+        name: 'Tok',
+        kind: 'ebook',
+        status: 'active',
+        fulfillment: { accessType: 'course', courseRef: 'tok' },
+      })
+      await built.createOffer.execute({
+        productId: product.id,
+        code: 'tok-of',
+        slug: 'tok-of',
+        name: 'Oferta',
+        priceCents: 3700,
+        status: 'active',
+      })
+    }
+
+    it('entitlements sem token → 401; com token → 200 com fulfillment', async () => {
+      const built = buildWithToken()
+      await seedOffer(built)
+      const denied = await built.app.handle(req('GET', '/catalog/offers/tok-of/entitlements'))
+      expect(denied.status).toBe(401)
+
+      const wrong = await built.app.handle(
+        req('GET', '/catalog/offers/tok-of/entitlements', {
+          headers: { 'x-internal-token': 'token-errado-mas-com-16-chars' },
+        }),
+      )
+      expect(wrong.status).toBe(401)
+
+      const ok = await built.app.handle(
+        req('GET', '/catalog/offers/tok-of/entitlements', {
+          headers: { 'x-internal-token': TOKEN },
+        }),
+      )
+      expect(ok.status).toBe(200)
+      const body = (await ok.json()) as { items: { fulfillment: unknown }[] }
+      expect(body.items[0]?.fulfillment).toMatchObject({ accessType: 'course' })
+    })
+
+    it('redeem sem token → 401 (não queima contador); com token → 200', async () => {
+      const built = buildWithToken()
+      await built.createCoupon.execute({
+        code: 'TOK5',
+        type: 'fixed',
+        amountOffCents: 500,
+        appliesToAll: true,
+        maxRedemptions: 1,
+      })
+      const denied = await built.app.handle(
+        req('POST', '/catalog/coupons/tok5/redeem', { body: {} }),
+      )
+      expect(denied.status).toBe(401)
+
+      const ok = await built.app.handle(
+        req('POST', '/catalog/coupons/tok5/redeem', {
+          body: {},
+          headers: { 'x-internal-token': TOKEN },
+        }),
+      )
+      expect(ok.status).toBe(200)
+    })
+
+    it('escrita/leitura admin sem token → 401 mesmo com role admin; com token → passa', async () => {
+      const built = buildWithToken()
+      const body = { sku: 'p-tok', slug: 'p-tok', name: 'P', kind: 'ebook' }
+      const denied = await built.app.handle(
+        req('POST', '/catalog/products', { body, headers: ADMIN }),
+      )
+      expect(denied.status).toBe(401)
+
+      const deniedRead = await built.app.handle(
+        req('GET', '/catalog/admin/products', { headers: ADMIN }),
+      )
+      expect(deniedRead.status).toBe(401)
+
+      const ok = await built.app.handle(
+        req('POST', '/catalog/products', {
+          body,
+          headers: { ...ADMIN, 'x-internal-token': TOKEN },
+        }),
+      )
+      expect(ok.status).toBe(201)
+
+      const okRead = await built.app.handle(
+        req('GET', '/catalog/admin/products', {
+          headers: { ...ADMIN, 'x-internal-token': TOKEN },
+        }),
+      )
+      expect(okRead.status).toBe(200)
+    })
+
+    it('rotas públicas (leitura/quote) NÃO exigem o token', async () => {
+      const built = buildWithToken()
+      await seedOffer(built)
+      const offer = await built.app.handle(req('GET', '/catalog/offers/tok-of'))
+      expect(offer.status).toBe(200)
+      const quote = await built.app.handle(
+        req('POST', '/catalog/offers/tok-of/quote', { body: {} }),
+      )
+      expect(quote.status).toBe(200)
+    })
+  })
+
+  describe('validação uuid nas bordas', () => {
+    it('PATCH /catalog/products/:id não-uuid → 404 (não 500 do 22P02)', async () => {
+      const { app } = build()
+      const res = await app.handle(
+        req('PATCH', '/catalog/products/nao-uuid', { headers: ADMIN, body: { name: 'X' } }),
+      )
+      expect(res.status).toBe(404)
+      expect((await res.json()) as { error: { code: string } }).toMatchObject({
+        error: { code: 'PRODUCT_NOT_FOUND' },
+      })
+    })
+
+    it('PATCH /catalog/offers/:id e /catalog/coupons/:id não-uuid → 404', async () => {
+      const { app } = build()
+      const offer = await app.handle(
+        req('PATCH', '/catalog/offers/nao-uuid', { headers: ADMIN, body: { name: 'X' } }),
+      )
+      expect(offer.status).toBe(404)
+      const coupon = await app.handle(
+        req('PATCH', '/catalog/coupons/nao-uuid', { headers: ADMIN, body: { status: 'inactive' } }),
+      )
+      expect(coupon.status).toBe(404)
+    })
+
+    it('POST /catalog/offers com productId não-uuid → 400 na borda', async () => {
+      const { app } = build()
+      const res = await app.handle(
+        req('POST', '/catalog/offers', {
+          headers: ADMIN,
+          body: { productId: 'nao-uuid', code: 'x', slug: 'x', name: 'X', priceCents: 100 },
+        }),
+      )
+      expect(res.status).toBe(400)
+    })
+
+    it('GET /catalog/admin/offers?productId=não-uuid → 400 na borda', async () => {
+      const { app } = build()
+      const res = await app.handle(
+        req('GET', '/catalog/admin/offers?productId=nao-uuid', { headers: ADMIN }),
+      )
+      expect(res.status).toBe(400)
     })
   })
 })

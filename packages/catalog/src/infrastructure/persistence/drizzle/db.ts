@@ -6,6 +6,8 @@ export type Database = PostgresJsDatabase<typeof schema>
 
 export interface DbConnection {
   db: Database
+  /** Client cru (postgres-js) — usado pela probe de readiness (`select 1`). */
+  sql: ReturnType<typeof postgres>
   close: () => Promise<void>
 }
 
@@ -41,6 +43,7 @@ export function createDbConnection(
 
   return {
     db,
+    sql: client,
     close: () => client.end({ timeout: 5 }),
   }
 }

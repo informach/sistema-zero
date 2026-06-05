@@ -81,6 +81,7 @@ export async function createApplication(env: Env): Promise<Application> {
   const catalog = createCatalogHttpGateway({
     baseUrl: env.CATALOG_BASE_URL,
     timeoutMs: env.CATALOG_REQUEST_TIMEOUT_MS,
+    internalToken: env.CATALOG_INTERNAL_TOKEN,
     logger,
   })
 

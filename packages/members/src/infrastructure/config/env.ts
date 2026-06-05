@@ -32,11 +32,20 @@ const EnvSchema = z
     DATABASE_URL: z.string().min(1, 'DATABASE_URL é obrigatória'),
     DATABASE_POOL_MAX: z.coerce.number().int().positive().default(10),
 
-    // Catálogo (S2S direto na rede interna; rota de entitlements é pública de leitura).
+    // Catálogo (S2S direto na rede interna). A rota de entitlements expõe o
+    // manifesto de entrega e exige o `x-internal-token` do catalog (06/2026).
     CATALOG_BASE_URL: z.string().url().default('http://localhost:3003'),
     // Timeout por chamada ao catálogo (resolve da oferta no grant). Sem ele, um
     // catálogo travado penduraria o handler do webhook (conexões acumulando).
     CATALOG_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
+    // Token interno enviado na chamada S2S de entitlements (= INTERNAL_API_TOKEN do
+    // catalog e CATALOG_INTERNAL_TOKEN do gateway). Opcional em dev/local (catálogo
+    // sem token); OBRIGATÓRIO em produção (ver refine abaixo) — sem ele o grant
+    // levaria 401 do catálogo em runtime.
+    CATALOG_INTERNAL_TOKEN: z
+      .string()
+      .min(16, 'CATALOG_INTERNAL_TOKEN deve ter ao menos 16 caracteres')
+      .optional(),
 
     // Verificação dos webhooks de entrada. O gateway re-assina (resign) a chamada do
     // funil como consumer `gateway` usando ESTE segredo (= GATEWAY_HMAC_SECRET do gateway).
@@ -75,6 +84,11 @@ const EnvSchema = z
     message:
       'INTERNAL_API_TOKEN é obrigatório em produção (defesa em profundidade da API do aluno)',
     path: ['INTERNAL_API_TOKEN'],
+  })
+  .refine((env) => env.NODE_ENV !== 'production' || Boolean(env.CATALOG_INTERNAL_TOKEN), {
+    message:
+      'CATALOG_INTERNAL_TOKEN é obrigatório em produção (o catálogo exige o token na rota S2S de entitlements)',
+    path: ['CATALOG_INTERNAL_TOKEN'],
   })
 
 export type Env = z.infer<typeof EnvSchema>

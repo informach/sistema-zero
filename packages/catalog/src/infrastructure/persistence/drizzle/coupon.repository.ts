@@ -12,6 +12,7 @@ import type { ListQuery, Page } from '../../../domain/ports/list'
 import { ConcurrencyConflictError } from '../../../domain/shared/concurrency.error'
 import type { Currency } from '../../../domain/value-objects/money'
 import type { Database } from './db'
+import { escapeLike, isUniqueViolation } from './pg-errors'
 import { couponOffers, coupons } from './schema'
 
 type CouponRow = typeof coupons.$inferSelect
@@ -147,7 +148,8 @@ function buildFilter(query: ListQuery): SQL | undefined {
   const conditions: SQL[] = []
   if (query.status) conditions.push(eq(coupons.status, query.status as CouponRow['status']))
   if (query.q) {
-    const like = `%${query.q.trim()}%`
+    // Busca LITERAL: escapa os curingas do LIKE (ver pg-errors.escapeLike).
+    const like = `%${escapeLike(query.q.trim())}%`
     const match = ilike(coupons.code, like)
     if (match) conditions.push(match)
   }
@@ -208,13 +210,4 @@ function toSnapshot(row: CouponRow, scope: CouponOfferRow[]): CouponSnapshot {
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   }
-}
-
-function isUniqueViolation(error: unknown): boolean {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'code' in error &&
-    (error as { code: unknown }).code === '23505'
-  )
 }

@@ -21,11 +21,13 @@ import { isOversizeBody, markOversizeBody } from './raw-body'
 import { adminRoutes } from './routes/admin.routes'
 import { adminReadRoutes } from './routes/admin-read.routes'
 import { catalogRoutes } from './routes/catalog.routes'
-import { healthRoutes } from './routes/health.routes'
+import { healthRoutes, type ReadinessProbe } from './routes/health.routes'
 
 export interface HttpDeps {
   env: Env
   logger: Logger
+  /** Probe de readiness (`/readyz`): banco alcançável. */
+  readiness: ReadinessProbe
   getOffer: GetOfferService
   getProduct: GetProductService
   listProducts: ListProductsService
@@ -97,18 +99,20 @@ export function createServer(deps: HttpDeps) {
   }
 
   return app
-    .use(healthRoutes())
+    .use(healthRoutes(deps.readiness))
     .use(
       catalogRoutes({
         getOffer: deps.getOffer,
         getProduct: deps.getProduct,
         quoteOffer: deps.quoteOffer,
         redeemCoupon: deps.redeemCoupon,
+        internalToken: deps.env.INTERNAL_API_TOKEN,
       }),
     )
     .use(
       adminRoutes({
         requireAdminEnabled: deps.env.REQUIRE_ADMIN,
+        internalToken: deps.env.INTERNAL_API_TOKEN,
         createProduct: deps.createProduct,
         updateProduct: deps.updateProduct,
         createOffer: deps.createOffer,
@@ -120,6 +124,7 @@ export function createServer(deps: HttpDeps) {
     .use(
       adminReadRoutes({
         requireAdminEnabled: deps.env.REQUIRE_ADMIN,
+        internalToken: deps.env.INTERNAL_API_TOKEN,
         listProducts: deps.listProducts,
         getProduct: deps.getProduct,
         listOffers: deps.listOffers,

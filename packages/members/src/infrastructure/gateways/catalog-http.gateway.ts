@@ -15,6 +15,12 @@ export interface CatalogHttpGatewayOptions {
   baseUrl: string
   /** Timeout por chamada (ms). Sem ele, um catálogo travado pendura o webhook. */
   timeoutMs?: number
+  /**
+   * Token interno exigido pelo catálogo na rota de entitlements (devolve o
+   * manifesto de entrega; = INTERNAL_API_TOKEN do catalog). Ausente em dev/local
+   * (catálogo sem token) → header não é enviado.
+   */
+  internalToken?: string
   /** Injetável em testes; default = fetch global. */
   fetchImpl?: typeof fetch
   /** Para aflorar drift de contrato (itens descartados no parse). */
@@ -25,22 +31,26 @@ const DEFAULT_TIMEOUT_MS = 10_000
 
 /**
  * Adapter HTTP do catálogo. Resolve `GET /catalog/offers/:slug/entitlements`
- * (rota pública de leitura) — chamada S2S direta na rede interna, fora do caminho
- * quente (só no grant). 404 → `null`; outros erros (incluindo timeout) → lança
- * (deixa o webhook retryável). Itens com shape inválido são DESCARTADOS com log
- * de warning — o chamador decide o que fazer com uma oferta sem itens.
+ * (rota INTERNA: devolve o `fulfillment` e exige `x-internal-token` quando o
+ * catálogo está com token configurado) — chamada S2S direta na rede interna,
+ * fora do caminho quente (só no grant). 404 → `null`; outros erros (incluindo
+ * timeout) → lança (deixa o webhook retryável). Itens com shape inválido são
+ * DESCARTADOS com log de warning — o chamador decide o que fazer com uma oferta
+ * sem itens.
  */
 export function createCatalogHttpGateway(opts: CatalogHttpGatewayOptions): CatalogGateway {
   const doFetch = opts.fetchImpl ?? fetch
   const base = opts.baseUrl.replace(/\/$/, '')
   const timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS
+  const headers: Record<string, string> = { accept: 'application/json' }
+  if (opts.internalToken) headers['x-internal-token'] = opts.internalToken
 
   return {
     async resolveOfferEntitlements(offerIdOrSlug: string): Promise<ResolvedOffer | null> {
       const url = `${base}/catalog/offers/${encodeURIComponent(offerIdOrSlug)}/entitlements`
       const res = await doFetch(url, {
         method: 'GET',
-        headers: { accept: 'application/json' },
+        headers,
         signal: AbortSignal.timeout(timeoutMs),
       })
       if (res.status === 404) return null

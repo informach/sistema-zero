@@ -30,6 +30,18 @@ export interface ProductView extends ProductSummaryView {
   updatedAt: string
 }
 
+/**
+ * View PÚBLICA do produto (`GET /catalog/products/:slug` via gateway, sem auth):
+ * só dados de marketing. NUNCA expõe `fulfillment` (o manifesto de entrega —
+ * courseRef), `metadata`, `components` nem `version` — esses são da view admin.
+ */
+export interface PublicProductView extends ProductSummaryView {
+  description: string | null
+  currency: string
+  createdAt: string
+  updatedAt: string
+}
+
 export function toProductSummary(product: ProductAggregate): ProductSummaryView {
   return {
     id: product.id,
@@ -39,6 +51,16 @@ export function toProductSummary(product: ProductAggregate): ProductSummaryView 
     kind: product.kind,
     status: product.status,
     sellable: product.sellable,
+  }
+}
+
+export function toPublicProductView(product: ProductAggregate): PublicProductView {
+  return {
+    ...toProductSummary(product),
+    description: product.description,
+    currency: product.currency,
+    createdAt: product.createdAt.toISOString(),
+    updatedAt: product.updatedAt.toISOString(),
   }
 }
 

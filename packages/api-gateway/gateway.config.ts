@@ -30,6 +30,20 @@ const membersInternalTransforms = MEMBERS_INTERNAL_TOKEN
       },
     ]
   : []
+// Token interno injetado nas rotas admin/escrita + redeem do catálogo (defesa em
+// profundidade, igual ao members): prova ao catalog que a chamada veio do gateway
+// (os X-Auth-User-* só são confiáveis se passaram por aqui). DEVE bater com o
+// INTERNAL_API_TOKEN do catalog (o members usa o MESMO valor na chamada S2S direta
+// de entitlements).
+const CATALOG_INTERNAL_TOKEN = process.env.CATALOG_INTERNAL_TOKEN ?? ''
+const catalogInternalTransforms = CATALOG_INTERNAL_TOKEN
+  ? [
+      {
+        type: 'header-inject' as const,
+        options: { headers: { 'x-internal-token': CATALOG_INTERNAL_TOKEN } },
+      },
+    ]
+  : []
 // Mensageria (@sistemazero/messaging): envio S2S de e-mail/WhatsApp por template.
 // O gateway injeta o x-internal-token nas rotas de envio (defesa em profundidade,
 // igual ao members). DEVE bater com o MESSAGING_INTERNAL_TOKEN do serviço.
@@ -540,7 +554,8 @@ const config: GatewayConfigInput = {
     // `GET /catalog/offers/:slug/entitlements` NÃO é exposto aqui de propósito: ele
     // devolve o `fulfillment` completo (asset url/ref, courseRef) e seria leitura
     // pública. Quem consome é a área de membros, S2S na rede interna (CATALOG_URL),
-    // fora do gateway. Se um dia precisar via gateway, exponha como `auth: hmac`.
+    // fora do gateway — enviando o `x-internal-token` (CATALOG_INTERNAL_TOKEN) que o
+    // catalog exige. Se um dia precisar via gateway, exponha como `auth: hmac`.
     {
       id: 'catalog-product-get',
       methods: ['GET'],
@@ -557,6 +572,7 @@ const config: GatewayConfigInput = {
       service: 'catalog',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: catalogInternalTransforms,
       rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
     },
     {
@@ -566,6 +582,7 @@ const config: GatewayConfigInput = {
       service: 'catalog',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: catalogInternalTransforms,
       rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
     },
     {
@@ -575,6 +592,7 @@ const config: GatewayConfigInput = {
       service: 'catalog',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: catalogInternalTransforms,
       rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
     },
     {
@@ -584,6 +602,7 @@ const config: GatewayConfigInput = {
       service: 'catalog',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: catalogInternalTransforms,
       rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
     },
     // Cotação com cupom (checkout): pública + rate limit por IP (mitiga brute-force de código).
@@ -604,6 +623,7 @@ const config: GatewayConfigInput = {
       service: 'catalog',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: catalogInternalTransforms,
       rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
     },
     {
@@ -613,6 +633,7 @@ const config: GatewayConfigInput = {
       service: 'catalog',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: catalogInternalTransforms,
       rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
     },
     // LEITURA admin (listagens paginadas p/ o painel @sistemazero/admin): JWT + RBAC.
@@ -624,6 +645,7 @@ const config: GatewayConfigInput = {
       service: 'catalog',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: catalogInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
     // GET-one de produto (página de edição do painel: deep-link/refresh).
@@ -634,6 +656,7 @@ const config: GatewayConfigInput = {
       service: 'catalog',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: catalogInternalTransforms,
       rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
     },
     {
@@ -643,6 +666,7 @@ const config: GatewayConfigInput = {
       service: 'catalog',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: catalogInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
     {
@@ -652,15 +676,19 @@ const config: GatewayConfigInput = {
       service: 'catalog',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: catalogInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
-    // Resgate de uso do cupom (funil, na confirmação do pagamento): HMAC de borda do funil.
+    // Resgate de uso do cupom (funil, na confirmação do pagamento): HMAC de borda do
+    // funil + x-internal-token (o catalog exige a prova de origem — sem ela, acesso
+    // direto na rede interna queimaria contador de cupom).
     {
       id: 'catalog-coupon-redeem',
       methods: ['POST'],
       pathPattern: '/catalog/coupons/:id/redeem',
       service: 'catalog',
       auth: { required: true, mode: 'any', strategies: ['hmac'] },
+      transforms: catalogInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
 

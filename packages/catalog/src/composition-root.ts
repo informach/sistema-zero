@@ -62,9 +62,23 @@ export function createApplication(env: Env): Application {
   const createCoupon = new CreateCouponService(coupons, offers, logger)
   const updateCoupon = new UpdateCouponService(coupons, offers, logger)
 
+  // Readiness (`/readyz`, healthcheck do Railway): a réplica só é promovida
+  // quando o banco responde — sem isto o redeploy promove uma réplica que ainda
+  // não fala com o Postgres e o gateway vê 5xx.
+  const readiness = async () => {
+    const checks: Record<string, string> = { db: 'ok' }
+    try {
+      await connection.sql`select 1`
+    } catch {
+      checks.db = 'error'
+    }
+    return { ready: checks.db === 'ok', checks }
+  }
+
   const server = createServer({
     env,
     logger,
+    readiness,
     getOffer,
     getProduct,
     listProducts,
@@ -83,8 +97,10 @@ export function createApplication(env: Env): Application {
   return {
     logger,
     async start() {
-      server.listen(env.PORT)
-      logger.info('http.listening', { port: env.PORT })
+      // `::` = dual-stack (IPv4+IPv6) — necessário p/ o private networking do
+      // Railway (`catalog.railway.internal` resolve IPv6).
+      server.listen({ port: env.PORT, hostname: env.HOST })
+      logger.info('http.listening', { port: env.PORT, host: env.HOST })
     },
     async stop() {
       await server.stop()

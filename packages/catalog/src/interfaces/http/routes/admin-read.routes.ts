@@ -4,7 +4,7 @@ import type { GetProductService } from '../../../application/get-product/get-pro
 import type { ListCouponsService } from '../../../application/list-coupons/list-coupons.service'
 import type { ListOffersService } from '../../../application/list-offers/list-offers.service'
 import type { ListProductsService } from '../../../application/list-products/list-products.service'
-import { requireAdmin } from '../auth'
+import { assertInternalCaller, requireAdmin } from '../auth'
 import { ListCouponsQuery, ListOffersQuery, ListProductsQuery } from '../dtos'
 
 const DEFAULT_LIMIT = 20
@@ -13,6 +13,8 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
 export interface AdminReadRoutesDeps {
   requireAdminEnabled: boolean
+  /** Token interno do gateway (defesa em profundidade). Vazio em dev → checagem desligada. */
+  internalToken?: string
   listProducts: ListProductsService
   getProduct: GetProductService
   listOffers: ListOffersService
@@ -22,12 +24,17 @@ export interface AdminReadRoutesDeps {
 /**
  * Rotas de LEITURA admin (listagens paginadas de produtos/ofertas/cupons). O RBAC
  * real é do gateway (JWT + role admin/staff); aqui conferimos os headers
- * `X-Auth-User-*` confiáveis (defesa em profundidade). Caminho `/catalog/admin/*`
- * distinto das rotas públicas `/:slug` para gating inequívoco no gateway.
+ * `X-Auth-User-*` confiáveis (defesa em profundidade) e exigimos o
+ * `x-internal-token` (header-inject do gateway — prova de origem, como na escrita).
+ * Caminho `/catalog/admin/*` distinto das rotas públicas `/:slug` para gating
+ * inequívoco no gateway.
  */
 export function adminReadRoutes(deps: AdminReadRoutesDeps) {
   return (
     new Elysia({ prefix: '/catalog/admin' })
+      .onBeforeHandle(({ headers }) =>
+        assertInternalCaller(headers['x-internal-token'], deps.internalToken),
+      )
       .get(
         '/products',
         async ({ query, headers }) => {

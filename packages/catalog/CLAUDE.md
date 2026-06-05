@@ -17,6 +17,10 @@ produtos entregáveis). É consumido pelo **funil** (preço + "o que está inclu
 > Estado: **slice completo e testado** (produtos/combos/ofertas + cupons + leitura pública +
 > escrita admin + resolução de entitlements). Migrations `0000`/`0001` aplicadas no Postgres
 > compartilhado (cria o **schema `catalog`**). Seed do produto atual (No Comando da IA, R$37) disponível.
+> **Full review 06/2026 com TODOS os achados implementados**: view pública de produto sanitizada +
+> `draft` 404 público, `x-internal-token` (entitlements S2S + admin/escrita + redeem, obrigatório em
+> prod), 23505 via `cause` (drizzle ≥0.44), escape do ILIKE, uuid nas bordas, `/readyz` + `HOST ::`,
+> `REQUIRE_ADMIN` fail-closed em prod — **90 testes**.
 
 ## Modelo (decisões de design — leia antes de mexer)
 
@@ -99,12 +103,20 @@ src/
 **Leitura (pública via gateway — dados de marketing):**
 - `GET /catalog/offers/:slug` → preço, condições, garantia + `includes` (itens resolvidos, com `isPrimary`).
   O `includes` é **labels-only** (`EntitlementItemView`, SEM `fulfillment`) — seguro p/ exibição pública.
-- `GET /catalog/products/:slug` → detalhe do produto.
+  Oferta **`draft` é inexistente ao público (404)** — rascunho não vaza preço/campanha por adivinhação
+  de slug; `paused`/`archived` seguem legíveis (página existente degrada; a `quote` bloqueia a cobrança).
+- `GET /catalog/products/:slug` → detalhe do produto em **view PÚBLICA sanitizada**
+  (`PublicProductView`: id/sku/slug/name/kind/status/sellable/description/currency — **SEM
+  `fulfillment`/`metadata`/`components`/`version`**, que são da view admin); `draft` → 404. Achado do
+  full review 06/2026: a rota pública devolvia a `ProductView` completa (vazava o manifesto de entrega).
 
 **Leitura interna (S2S, NÃO exposta no gateway):**
 - `GET /catalog/offers/:slug/entitlements` → definição de acesso completa, **com `fulfillment`**
   (asset url/ref, courseRef). Consumida pela **área de membros** direto na rede interna (`CATALOG_URL`),
-  no momento do grant. NÃO tem rota pública no gateway (evita vazar o manifesto de entrega à internet).
+  no momento do grant. NÃO tem rota pública no gateway (evita vazar o manifesto de entrega à internet)
+  **e o serviço exige `x-internal-token`** (= `INTERNAL_API_TOKEN`; o members envia via
+  `CATALOG_INTERNAL_TOKEN`) — sem o token, qualquer processo que alcançasse o catálogo direto leria
+  o manifesto.
 - `POST /catalog/offers/:slug/quote` → preço com cupom opcional (`{ couponCode? }` → preço/desconto/total).
   Público + rate-limit por IP; é o valor AUTORITATIVO que o funil cobra. **Só cota oferta disponível**
   (`isAvailable()`: status `active` + dentro da janela) — pausar/arquivar interrompe a venda
@@ -112,17 +124,25 @@ src/
 
 **Cupons:** desconto (percentual ou fixo) sobre o preço da oferta, com escopo (todas/ofertas específicas),
 validade, mínimo e limite de usos. `POST/PATCH /catalog/coupons` (admin). `POST /catalog/coupons/:code/redeem`
-(HMAC do funil) registra um uso ATÔMICO na confirmação do pagamento. O funil consome: `quote` no checkout
+(HMAC do funil no gateway **+ `x-internal-token`** — sem a prova de origem, acesso direto queimaria contador)
+registra um uso ATÔMICO na confirmação do pagamento. O funil consome: `quote` no checkout
 (valor final) + `redeem` na confirmação; cobra o final no payments e passa `metadata.offerId`/`couponCode`.
 
 **Escrita (admin):** `POST/PATCH /catalog/products` e `/catalog/offers`. O RBAC real é do **gateway**
 (JWT + `authorize.roles: [superadmin,admin,staff]`); o serviço confere os headers `X-Auth-User-Role`/
-`X-Auth-User-Status` (anti-spoof, injetados pelo gateway) como **defesa em profundidade** (`REQUIRE_ADMIN`).
+`X-Auth-User-Status` (anti-spoof, injetados pelo gateway) como **defesa em profundidade** (`REQUIRE_ADMIN`,
+**não desligável em produção** — boot falha) **e exige o `x-internal-token`** (header-inject do gateway,
+06/2026): os `X-Auth-User-*` só são confiáveis se a chamada passou pelo gateway — sem o token, qualquer
+processo que alcançasse o serviço direto forjaria um admin. `:id` dos `PATCH` valida **uuid** (non-UUID →
+404 direto, não 22P02→500); ids referenciados nos DTOs (`productId`, `componentProductId`, `items[].productId`,
+`offerIds`) validam uuid por pattern (→ 400 na borda).
 
 **Leitura admin (listagens paginadas — painel `@sistemazero/admin`):** `GET /catalog/admin/{products,offers,coupons}`
-(`?q&status&limit&offset`; offers aceita `?productId`) + `GET /catalog/admin/products/:id` (GET-one da página
-de edição do painel — `ProductView` completa com `fulfillment`/`components`; non-UUID → 404 direto). Mesmo
-gating (JWT+RBAC no gateway, `requireAdmin` defesa em profundidade). Caminho `/catalog/admin/*` é **distinto**
+(`?q&status&limit&offset`; offers aceita `?productId` — uuid validado na borda) + `GET /catalog/admin/products/:id`
+(GET-one da página de edição do painel — `ProductView` completa com `fulfillment`/`components`; non-UUID → 404
+direto). Mesmo gating da escrita (JWT+RBAC no gateway, `requireAdmin` + `x-internal-token` defesa em
+profundidade). A busca `q` **escapa `%`/`_`/`\`** antes do ILIKE (literal, não padrão — `pg-errors.escapeLike`).
+Caminho `/catalog/admin/*` é **distinto**
 das leituras públicas `/:slug` p/ gating inequívoco no gateway. Serviços `List{Products,Offers,Coupons}Service`;
 repos ganharam `list(query)` (batch dos filhos p/ evitar N+1). Ofertas listadas trazem o nome do produto
 principal (sem resolver entitlements) **e os `items` crus** (extras/bônus — o painel precisa deles p/ editar
@@ -138,8 +158,12 @@ Rotas em `packages/api-gateway/gateway.config.ts` (serviço `catalog`, `CATALOG_
 (produtos/ofertas/cupons) usam `auth: jwt` → o gateway **exige JWT configurado** (`JWT_HS256_SECRET` OU
 `JWT_JWKS_URL`). Leituras (`offers/:slug`, `products/:slug`) + `quote` são `auth: 'public'` + rate limit
 por IP. `redeem` usa `auth: hmac` (consumer `funnel`). **`offers/:slug/entitlements` NÃO tem rota no
-gateway** (devolve `fulfillment`; só a área de membros consome, S2S interno). O `:slug`/`:id` no gateway
-é só placeholder de match — o path real é repassado intacto.
+gateway** (devolve `fulfillment`; só a área de membros consome, S2S interno **enviando o
+`x-internal-token`**). O `:slug`/`:id` no gateway é só placeholder de match — o path real é repassado
+intacto. **`CATALOG_INTERNAL_TOKEN` no gateway** (06/2026): injeta `x-internal-token` (header-inject,
+sobrescreve valor do cliente) nas rotas admin/escrita + `redeem` do catálogo — MESMO valor do
+`INTERNAL_API_TOKEN` daqui (e do `CATALOG_INTERNAL_TOKEN` do members). Vazio em dev (injeção +
+checagem desligadas); **obrigatório em produção** (o boot do catalog falha sem o token).
 
 ## Convenções
 
@@ -148,6 +172,13 @@ gateway** (devolve `fulfillment`; só a área de membros consome, S2S interno). 
 - Dinheiro **sempre em centavos** (inteiro). `Money` (VO) valida.
 - Concorrência otimista: `version` + `UPDATE ... WHERE version = ?` nos repositórios → 0 linhas =
   `ConcurrencyConflictError`.
+- **⚠️ Gotcha do drizzle ≥ 0.44:** erros do driver chegam ENVELOPADOS em `DrizzleQueryError` — o
+  `PostgresError` (com `code: '23505'`) fica em **`error.cause`**. Use o `isUniqueViolation` de
+  `infrastructure/persistence/drizzle/pg-errors.ts` (caminha a cadeia de `cause`, com teto) em qualquer
+  mapeamento novo de erro do Postgres; `escapeLike` (mesmo arquivo) para toda busca ILIKE.
+- **Liveness/readiness**: `/health` (estático) + **`/readyz`** (probe `select 1`; 503 sem banco) —
+  healthcheck do Railway aponta p/ `/readyz`. Bind **dual-stack `::`** (env `HOST`) — private networking
+  do Railway é IPv6. Espelha o payments/members.
 
 ## Banco (schema `catalog`)
 

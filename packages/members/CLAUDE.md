@@ -169,8 +169,10 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   **OBRIGATÓRIO em produção** (boot falha sem ele). É o que torna o
   `x-auth-user-id`/`X-Auth-User-*` confiáveis (só valem se passaram pelo gateway).
   Webhooks NÃO usam (já têm HMAC).
-- **Catálogo** é chamado DIRETO (S2S, `CATALOG_BASE_URL`), fora do caminho quente — a
-  rota de entitlements é pública de leitura. **Timeout por chamada**
+- **Catálogo** é chamado DIRETO (S2S, `CATALOG_BASE_URL`), fora do caminho quente. A rota
+  de entitlements devolve o **manifesto de entrega** e (06/2026) **exige `x-internal-token`** —
+  o members envia `CATALOG_INTERNAL_TOKEN` (= `INTERNAL_API_TOKEN` do catalog; opcional em
+  dev/local, **OBRIGATÓRIO em produção** — boot falha sem ele). **Timeout por chamada**
   (`CATALOG_REQUEST_TIMEOUT_MS`, default 10s) — catálogo travado não pendura o webhook.
 - **`GET /members/catalog`** (rota do aluno, JWT + `x-internal-token`): "Todos os
   cursos" — TODO curso `published` (ordenado por título) com `hasAccess` (matrícula

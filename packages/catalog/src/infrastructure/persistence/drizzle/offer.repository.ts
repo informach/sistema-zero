@@ -12,6 +12,7 @@ import type { OfferRepository } from '../../../domain/ports/offer-repository.por
 import { ConcurrencyConflictError } from '../../../domain/shared/concurrency.error'
 import type { Currency } from '../../../domain/value-objects/money'
 import type { Database } from './db'
+import { escapeLike, isUniqueViolation } from './pg-errors'
 import { offerItems, offers } from './schema'
 
 type OfferRow = typeof offers.$inferSelect
@@ -151,7 +152,8 @@ function buildFilter(query: ListQuery & { productId?: string }): SQL | undefined
   if (query.status) conditions.push(eq(offers.status, query.status as OfferRow['status']))
   if (query.productId) conditions.push(eq(offers.productId, query.productId))
   if (query.q) {
-    const like = `%${query.q.trim()}%`
+    // Busca LITERAL: escapa os curingas do LIKE (ver pg-errors.escapeLike).
+    const like = `%${escapeLike(query.q.trim())}%`
     const match = or(ilike(offers.name, like), ilike(offers.slug, like), ilike(offers.code, like))
     if (match) conditions.push(match)
   }
@@ -225,13 +227,4 @@ function toSnapshot(row: OfferRow, itemRows: ItemRow[]): OfferSnapshot {
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   }
-}
-
-function isUniqueViolation(error: unknown): boolean {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'code' in error &&
-    (error as { code: unknown }).code === '23505'
-  )
 }

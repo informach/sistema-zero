@@ -36,8 +36,13 @@ const FulfillmentSchema = t.Object({
 
 const MetadataSchema = t.Record(t.String(), t.Unknown())
 
+// Ids que referenciam outras entidades validam o FORMATO uuid na borda (400) —
+// um id lixo chegaria à coluna `uuid` do Postgres como 22P02 e viraria 500.
+const UUID_PATTERN = '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+const UUID = t.String({ pattern: UUID_PATTERN })
+
 const ComponentSchema = t.Object({
-  componentProductId: t.String({ minLength: 1, maxLength: 64 }),
+  componentProductId: UUID,
   sortOrder: t.Optional(t.Integer({ minimum: 0 })),
   isPrimary: t.Optional(t.Boolean()),
 })
@@ -51,7 +56,7 @@ const OfferContentSchema = t.Object({
 })
 
 const OfferItemSchema = t.Object({
-  productId: t.String({ minLength: 1, maxLength: 64 }),
+  productId: UUID,
   sortOrder: t.Optional(t.Integer({ minimum: 0 })),
 })
 
@@ -77,7 +82,7 @@ export const ListProductsQuery = t.Object({
 export const ListOffersQuery = t.Object({
   q: LIST_Q,
   status: t.Optional(offerStatusSchema),
-  productId: t.Optional(t.String({ minLength: 1, maxLength: 64 })),
+  productId: t.Optional(UUID),
   limit: LIST_LIMIT,
   offset: LIST_OFFSET,
 })
@@ -118,7 +123,7 @@ export const UpdateProductBody = t.Object({
 
 /** Corpo de `POST /catalog/offers`. */
 export const CreateOfferBody = t.Object({
-  productId: t.String({ minLength: 1, maxLength: 64 }),
+  productId: UUID,
   code: SKU,
   slug: SLUG,
   name: NAME,
@@ -137,7 +142,7 @@ export const CreateOfferBody = t.Object({
   items: t.Optional(t.Array(OfferItemSchema)),
 })
 
-const OFFER_ID = t.String({ minLength: 1, maxLength: 64 })
+const OFFER_ID = UUID
 const CENTS = t.Integer({ minimum: 0, maximum: 2_000_000_000 })
 
 /** Corpo de `POST /catalog/offers/:slug/quote` — aplica um cupom (opcional). */
