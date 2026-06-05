@@ -34,6 +34,10 @@ const PROD_REQUIRED_SECRETS: ReadonlyArray<{ key: string; why: string }> = [
   { key: 'CATALOG_INTERNAL_TOKEN', why: 'prova ao catalog que a chamada veio do gateway' },
   { key: 'MESSAGING_INTERNAL_TOKEN', why: 'prova ao messaging que a chamada veio do gateway' },
   { key: 'AUTH_INTERNAL_TOKEN', why: 'prova ao auth que a chamada veio do gateway' },
+  {
+    key: 'PAYMENTS_INTERNAL_TOKEN',
+    why: 'prova ao payments que a chamada veio do gateway (admin + minhas compras)',
+  },
 ]
 
 const EnvSchema = z
@@ -57,12 +61,16 @@ const EnvSchema = z
     TRUST_PROXY: optionalBool(false),
     TRUSTED_PROXY_HOPS: z.coerce.number().int().positive().default(1),
 
-    // Teto do corpo (bytes). 1 MB — maior que o payments pois aqui é streamado.
+    // Teto GLOBAL do corpo (bytes) — enforçado pelo `maxRequestBodySize` do
+    // Bun.serve (413 automático). 2 MB: os webhooks de evento da SendGrid chegam
+    // em lotes de até ~2 MB (o messaging os aceita até esse teto) — 1 MB na borda
+    // os perderia em silêncio. Rotas individuais AFINAM o teto via
+    // `maxBodyBytes` na config (nunca o aumentam — validado no boot).
     MAX_REQUEST_BODY_BYTES: z.coerce
       .number()
       .int()
       .positive()
-      .default(1024 * 1024),
+      .default(2 * 1024 * 1024),
 
     // Rate limit global default (por identidade).
     RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(600),
@@ -112,6 +120,7 @@ const EnvSchema = z
     CATALOG_INTERNAL_TOKEN: optionalSecret,
     MESSAGING_INTERNAL_TOKEN: optionalSecret,
     AUTH_INTERNAL_TOKEN: optionalSecret,
+    PAYMENTS_INTERNAL_TOKEN: optionalSecret,
 
     // Resiliência.
     HEALTH_PROBE_INTERVAL_MS: z.coerce.number().int().positive().default(5_000),
@@ -169,6 +178,12 @@ export function loadEnv(source: Record<string, string | undefined> = process.env
         'privada. O default silencioso (false) atrás de proxy faria todos os ' +
         'clientes compartilharem o IP do edge num único balde de rate limit.',
     )
+  }
+  // Em produção o drain do SIGTERM só vale com espera > 0 (readyz 503 → o LB
+  // para de rotear → requisições em voo terminam). Sem a env, default de 5s —
+  // o default 0 do schema (dev/local) tornaria o graceful shutdown inócuo.
+  if (parsed.data.NODE_ENV === 'production' && source.SHUTDOWN_DRAIN_MS === undefined) {
+    return { ...parsed.data, SHUTDOWN_DRAIN_MS: 5_000 }
   }
   return parsed.data
 }

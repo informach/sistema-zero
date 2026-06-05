@@ -155,6 +155,37 @@ describe('loadGatewayConfig', () => {
     expect(cfg.routes[0]?.cors?.origins).toEqual(['https://x.com'])
   })
 
+  test('maxBodyBytes por rota acima do teto global → erro (o servidor venceria)', async () => {
+    await expect(
+      loadGatewayConfig(env, {
+        services: { p: service },
+        routes: [
+          {
+            id: 'r',
+            methods: ['POST'],
+            pathPattern: '/x',
+            service: 'p',
+            maxBodyBytes: env.MAX_REQUEST_BODY_BYTES + 1,
+          },
+        ],
+      }),
+    ).rejects.toThrow(/maxBodyBytes/)
+    // Igual ou abaixo do global → ok (afinar é o uso esperado).
+    const cfg = await loadGatewayConfig(env, {
+      services: { p: service },
+      routes: [
+        {
+          id: 'r',
+          methods: ['POST'],
+          pathPattern: '/x',
+          service: 'p',
+          maxBodyBytes: 64 * 1024,
+        },
+      ],
+    })
+    expect(cfg.routes[0]?.maxBodyBytes).toBe(64 * 1024)
+  })
+
   test('produção: rota jwt sem JWT_ISSUER/JWT_AUDIENCE → erro', async () => {
     const prodEnv = loadEnv({
       NODE_ENV: 'production',
@@ -164,6 +195,7 @@ describe('loadGatewayConfig', () => {
       CATALOG_INTERNAL_TOKEN: 'catalog-internal-16chars',
       MESSAGING_INTERNAL_TOKEN: 'messaging-internal-16ch',
       AUTH_INTERNAL_TOKEN: 'auth-internal-16-chars!',
+      PAYMENTS_INTERNAL_TOKEN: 'payments-internal-16chrs',
       JWT_HS256_SECRET: 'segredo-hs256-com-mais-de-32-caracteres',
     })
     const routes = [
@@ -181,6 +213,7 @@ describe('loadGatewayConfig', () => {
       CATALOG_INTERNAL_TOKEN: 'catalog-internal-16chars',
       MESSAGING_INTERNAL_TOKEN: 'messaging-internal-16ch',
       AUTH_INTERNAL_TOKEN: 'auth-internal-16-chars!',
+      PAYMENTS_INTERNAL_TOKEN: 'payments-internal-16chrs',
       JWT_HS256_SECRET: 'segredo-hs256-com-mais-de-32-caracteres',
       JWT_ISSUER: 'sistemazero-auth',
       JWT_AUDIENCE: 'sistemazero',

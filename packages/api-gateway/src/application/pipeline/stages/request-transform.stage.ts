@@ -2,6 +2,7 @@ import {
   injectIdentityHeaders,
   stripEdgeAuthHeaders,
   stripIdentityHeaders,
+  stripInternalTrustHeaders,
 } from '../../../infrastructure/proxy/header-rules'
 import type { Resigner } from '../../../infrastructure/upstream/resign.transformer'
 import { applyRequestTransformers } from '../../transform/transform-chain'
@@ -24,8 +25,11 @@ export function createRequestTransformStage(deps: RequestTransformDeps): Stage {
     name: 'request-transform',
     async run(ctx) {
       if (!ctx.route) return undefined
-      // Anti-spoof: o cliente NUNCA define os headers de identidade — sempre removidos.
+      // Anti-spoof: o cliente NUNCA define os headers de identidade nem os de
+      // confiança interna (x-internal-token) — sempre removidos, mesmo em
+      // `passthrough`; o `header-inject` da rota (re)põe o token DEPOIS do strip.
       stripIdentityHeaders(ctx.upstreamHeaders)
+      stripInternalTrustHeaders(ctx.upstreamHeaders)
       if (ctx.route.route.upstreamAuth !== 'passthrough') {
         stripEdgeAuthHeaders(ctx.upstreamHeaders)
         // Re-injeta a identidade AUTENTICADA do consumer HMAC como `x-consumer-id`

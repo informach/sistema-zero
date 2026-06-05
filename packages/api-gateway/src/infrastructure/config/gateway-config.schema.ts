@@ -117,6 +117,13 @@ export const routeConfigSchema = z.object({
   rateLimit: rateLimitRuleSchema.optional(),
   cors: routeCorsConfigSchema.optional(),
   transforms: z.array(transformRefSchema).default([]),
+  /**
+   * Teto do corpo POR ROTA (bytes), checado contra o Content-Length declarado no
+   * route-resolve. AFINA o teto global (`MAX_REQUEST_BODY_BYTES`) — nunca o
+   * aumenta (validado no boot): o teto duro real é o `maxRequestBodySize` do
+   * Bun.serve. Corpo chunked (sem Content-Length) só é capado pelo teto global.
+   */
+  maxBodyBytes: z.number().int().positive().optional(),
   timeoutMs: z.number().int().positive().optional(),
   retries: z.number().int().nonnegative().optional(),
   lb: lbStrategy.optional(),

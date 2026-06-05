@@ -80,6 +80,14 @@ function validateReferences(
       }
     }
     validateRouteTransforms(route, knownTransforms, problems)
+    // maxBodyBytes maior que o teto global seria mentira: o `maxRequestBodySize`
+    // do Bun.serve mata a requisição antes (413) e o valor da rota nunca valeria.
+    if (route.maxBodyBytes !== undefined && route.maxBodyBytes > env.MAX_REQUEST_BODY_BYTES) {
+      problems.push(
+        `rota "${route.id}": maxBodyBytes (${route.maxBodyBytes}) excede MAX_REQUEST_BODY_BYTES ` +
+          `(${env.MAX_REQUEST_BODY_BYTES}) — o teto do servidor venceria; suba a env ou reduza a rota`,
+      )
+    }
     if (route.auth !== 'public' && route.auth.strategies.includes('jwt')) usesJwt = true
     if (route.upstreamAuth === 'resign') usesResign = true
   }

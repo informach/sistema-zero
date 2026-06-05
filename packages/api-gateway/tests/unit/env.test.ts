@@ -10,6 +10,7 @@ const PROD_OK: Record<string, string> = {
   CATALOG_INTERNAL_TOKEN: 'catalog-internal-16chars',
   MESSAGING_INTERNAL_TOKEN: 'messaging-internal-16ch',
   AUTH_INTERNAL_TOKEN: 'auth-internal-16-chars!',
+  PAYMENTS_INTERNAL_TOKEN: 'payments-internal-16chrs',
 }
 
 describe('loadEnv — defaults de dev', () => {
@@ -48,6 +49,7 @@ describe('loadEnv — fail-fast de produção', () => {
     'CATALOG_INTERNAL_TOKEN',
     'MESSAGING_INTERNAL_TOKEN',
     'AUTH_INTERNAL_TOKEN',
+    'PAYMENTS_INTERNAL_TOKEN',
   ])('sem %s → falha (injeção silenciosamente desligada não sobe em prod)', (key) => {
     const source = { ...PROD_OK }
     delete source[key]
@@ -62,5 +64,18 @@ describe('loadEnv — fail-fast de produção', () => {
   test('TRUST_PROXY=false EXPLÍCITO em produção → ok (tráfego direto/rede privada)', () => {
     const env = loadEnv({ ...PROD_OK, TRUST_PROXY: 'false' })
     expect(env.TRUST_PROXY).toBe(false)
+  })
+
+  test('SHUTDOWN_DRAIN_MS sem env em produção → default 5s (drain do SIGTERM precisa valer)', () => {
+    expect(loadEnv(PROD_OK).SHUTDOWN_DRAIN_MS).toBe(5_000)
+    // Valor explícito do operador (inclusive 0) é respeitado.
+    expect(loadEnv({ ...PROD_OK, SHUTDOWN_DRAIN_MS: '0' }).SHUTDOWN_DRAIN_MS).toBe(0)
+    expect(loadEnv({ ...PROD_OK, SHUTDOWN_DRAIN_MS: '8000' }).SHUTDOWN_DRAIN_MS).toBe(8_000)
+    // Fora de produção o default segue 0 (dev/local sem espera).
+    expect(loadEnv({}).SHUTDOWN_DRAIN_MS).toBe(0)
+  })
+
+  test('MAX_REQUEST_BODY_BYTES default 2 MB (lotes de webhook da SendGrid)', () => {
+    expect(loadEnv({}).MAX_REQUEST_BODY_BYTES).toBe(2 * 1024 * 1024)
   })
 })

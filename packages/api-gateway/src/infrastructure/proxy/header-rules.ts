@@ -66,6 +66,21 @@ export function stripIdentityHeaders(headers: Headers): void {
   for (const name of IDENTITY_HEADER_NAMES) headers.delete(name)
 }
 
+/**
+ * Headers de CONFIANÇA interna (gateway → upstream): provam ao upstream que a
+ * chamada passou pelo gateway. O cliente NUNCA os define — sempre removidos da
+ * entrada (mesmo em rotas `passthrough`); as rotas com `header-inject` os põem
+ * DEPOIS do strip, com o valor do ambiente. Sem o strip, um valor do cliente
+ * vazaria intacto nas rotas sem o inject — o contrato "este header só existe se
+ * o gateway o pôs" quebraria em silêncio na primeira rota nova.
+ */
+export const INTERNAL_TRUST_HEADERS = ['x-internal-token'] as const
+
+/** Remove os headers de confiança interna da entrada (anti-spoof do cliente). */
+export function stripInternalTrustHeaders(headers: Headers): void {
+  for (const name of INTERNAL_TRUST_HEADERS) headers.delete(name)
+}
+
 /** Injeta a identidade confiável resolvida nos headers de saída (após o strip). */
 export function injectIdentityHeaders(headers: Headers, user: IdentityHeaderInput): void {
   stripIdentityHeaders(headers)
@@ -86,6 +101,7 @@ export function injectIdentityHeaders(headers: Headers, user: IdentityHeaderInpu
 export const SENSITIVE_LOG_HEADERS = new Set([
   ...EDGE_AUTH_HEADERS,
   ...IDENTITY_HEADER_NAMES,
+  ...INTERNAL_TRUST_HEADERS,
   'set-cookie',
   'proxy-authorization',
   'x-api-key',

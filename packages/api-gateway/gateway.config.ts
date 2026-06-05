@@ -15,6 +15,21 @@ import type { GatewayConfigInput } from './src/infrastructure/config/gateway-con
  */
 const PAYMENTS_URL = process.env.PAYMENTS_URL ?? 'http://localhost:3001'
 const AUTH_URL = process.env.AUTH_URL ?? 'http://localhost:3002'
+// Token interno injetado nas rotas admin + "minhas compras" do payments (defesa
+// em profundidade, igual aos demais serviços): prova ao payments que os
+// X-Auth-User-* vieram do gateway — sem ele, qualquer processo na rede interna
+// forjaria um admin (estorno!) ou um e-mail de comprador chamando o serviço
+// direto. DEVE bater com o INTERNAL_API_TOKEN do payments. As rotas consumer
+// (`/payments`, `/payments/:id`) ficam de fora: têm HMAC próprio.
+const PAYMENTS_INTERNAL_TOKEN = process.env.PAYMENTS_INTERNAL_TOKEN ?? ''
+const paymentsInternalTransforms = PAYMENTS_INTERNAL_TOKEN
+  ? [
+      {
+        type: 'header-inject' as const,
+        options: { headers: { 'x-internal-token': PAYMENTS_INTERNAL_TOKEN } },
+      },
+    ]
+  : []
 const CATALOG_URL = process.env.CATALOG_URL ?? 'http://localhost:3003'
 const MEMBERS_URL = process.env.MEMBERS_URL ?? 'http://localhost:3004'
 // Token interno injetado nas rotas do ALUNO (members) como defesa em profundidade:
@@ -89,6 +104,11 @@ const sharedResilience = {
   circuitBreaker: { enabled: true, failureRate: 0.5, minThroughput: 20, cooldownMs: 10_000 },
   retry: { maxRetries: 1, baseDelayMs: 50, maxDelayMs: 1_000 },
 }
+
+// Teto de corpo p/ rotas públicas de JSON pequeno (login/OTP/quote/webhooks de
+// pagamento): AFINA o teto global de 2 MB (necessário só p/ os lotes da SendGrid)
+// — 64 KB já é generoso p/ esses payloads e corta abuso barato em rota sem auth.
+const SMALL_JSON_BODY_BYTES = 64 * 1024
 
 const config: GatewayConfigInput = {
   defaultVersion: 'v1',
@@ -179,7 +199,10 @@ const config: GatewayConfigInput = {
       // checkout pós-restart (cache frio) isso pode passar dos 15s do default →
       // 504/502. Damos folga aqui (o payments tem seu próprio timeout/retry interno).
       timeoutMs: 35_000,
-      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+      // ⚠️ Todo o funil é UM principal (`funnel`) → este teto é o limite AGREGADO
+      // de checkouts do produto (10/s). O payments tem o próprio rate limit por
+      // consumidor; aqui é proteção contra runaway, não controle de capacidade.
+      rateLimit: { max: 600, windowMs: 60_000, by: 'principal' },
     },
     {
       id: 'payments-get',
@@ -188,7 +211,10 @@ const config: GatewayConfigInput = {
       service: 'payments',
       auth: { required: true, mode: 'any', strategies: ['hmac'] },
       upstreamAuth: 'resign',
-      rateLimit: { max: 600, windowMs: 60_000, by: 'principal' },
+      // Teto AGREGADO do polling de status de TODOS os compradores pendentes
+      // (funil = um principal): 50/s comporta ~150 PIX pendentes simultâneos
+      // pollando a cada 3s — dimensionado p/ pico de lançamento.
+      rateLimit: { max: 3000, windowMs: 60_000, by: 'principal' },
     },
     // ── Admin de pagamentos (painel @sistemazero/admin) ──────────────────────
     // LEITURA + ações (estorno/cancelar) para o dono operar. JWT + RBAC no gateway
@@ -203,6 +229,7 @@ const config: GatewayConfigInput = {
       service: 'payments',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: paymentsInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
     {
@@ -212,6 +239,7 @@ const config: GatewayConfigInput = {
       service: 'payments',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: paymentsInternalTransforms,
       rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
     },
     {
@@ -221,6 +249,7 @@ const config: GatewayConfigInput = {
       service: 'payments',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: paymentsInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
     {
@@ -230,6 +259,7 @@ const config: GatewayConfigInput = {
       service: 'payments',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: paymentsInternalTransforms,
       rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
     },
     {
@@ -239,6 +269,7 @@ const config: GatewayConfigInput = {
       service: 'payments',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: paymentsInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
     // Série diária do painel "Gestão de vendas". Rota PRÓPRIA: o matcher exige
@@ -250,6 +281,7 @@ const config: GatewayConfigInput = {
       service: 'payments',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: paymentsInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
     {
@@ -259,6 +291,7 @@ const config: GatewayConfigInput = {
       service: 'payments',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: paymentsInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
     // Ações (escrita): estorno e cancelamento. Mesmos papéis das leituras (alinha
@@ -270,6 +303,7 @@ const config: GatewayConfigInput = {
       service: 'payments',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: paymentsInternalTransforms,
       rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
     },
     {
@@ -279,6 +313,7 @@ const config: GatewayConfigInput = {
       service: 'payments',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: paymentsInternalTransforms,
       rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
     },
     // ── Minhas compras (app community — self-service do COMPRADOR) ──────────
@@ -293,6 +328,7 @@ const config: GatewayConfigInput = {
       service: 'payments',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { statuses: ['active'] },
+      transforms: paymentsInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
     {
@@ -302,6 +338,7 @@ const config: GatewayConfigInput = {
       service: 'payments',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { statuses: ['active'] },
+      transforms: paymentsInternalTransforms,
       rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
     },
     // payments → gateway → funil. O gateway valida a assinatura do webhook
@@ -312,6 +349,7 @@ const config: GatewayConfigInput = {
       pathPattern: '/webhooks/payments',
       service: 'funnel',
       auth: 'public',
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
       rateLimit: { max: 600, windowMs: 60_000, by: 'ip' },
       transforms: [
         { type: 'verify-webhook', options: { secretEnvVar: 'GATEWAY_HMAC_SECRET' } },
@@ -334,6 +372,7 @@ const config: GatewayConfigInput = {
       service: 'auth',
       auth: 'public',
       upstreamAuth: 'passthrough',
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
       rateLimit: { max: 20, windowMs: 60_000, by: 'ip' },
     },
     {
@@ -343,6 +382,7 @@ const config: GatewayConfigInput = {
       service: 'auth',
       auth: 'public',
       upstreamAuth: 'passthrough',
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
       rateLimit: { max: 20, windowMs: 60_000, by: 'ip' },
     },
     {
@@ -352,6 +392,7 @@ const config: GatewayConfigInput = {
       service: 'auth',
       auth: 'public',
       upstreamAuth: 'passthrough',
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
       rateLimit: { max: 60, windowMs: 60_000, by: 'ip' },
     },
     {
@@ -361,6 +402,7 @@ const config: GatewayConfigInput = {
       service: 'auth',
       auth: 'public',
       upstreamAuth: 'passthrough',
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
       rateLimit: { max: 60, windowMs: 60_000, by: 'ip' },
     },
     {
@@ -382,6 +424,7 @@ const config: GatewayConfigInput = {
       service: 'auth',
       auth: 'public',
       upstreamAuth: 'passthrough',
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
       rateLimit: { max: 5, windowMs: 60_000, by: 'ip' },
     },
     // Redefinição/definição de senha por token single-use (reset + 1º acesso).
@@ -392,6 +435,7 @@ const config: GatewayConfigInput = {
       service: 'auth',
       auth: 'public',
       upstreamAuth: 'passthrough',
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
       rateLimit: { max: 20, windowMs: 60_000, by: 'ip' },
     },
     // OTP: pede um código por e-mail. Rate limit AGRESSIVO por IP (anti-enumeração/
@@ -403,6 +447,7 @@ const config: GatewayConfigInput = {
       service: 'auth',
       auth: 'public',
       upstreamAuth: 'passthrough',
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
       rateLimit: { max: 5, windowMs: 60_000, by: 'ip' },
     },
     // OTP: verifica o código e loga (passwordless). Limite por IP cobre o brute-force
@@ -414,6 +459,7 @@ const config: GatewayConfigInput = {
       service: 'auth',
       auth: 'public',
       upstreamAuth: 'passthrough',
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
       rateLimit: { max: 20, windowMs: 60_000, by: 'ip' },
     },
     // Recuperação de senha por OTP (consome o código + define a nova senha).
@@ -424,6 +470,7 @@ const config: GatewayConfigInput = {
       service: 'auth',
       auth: 'public',
       upstreamAuth: 'passthrough',
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
       rateLimit: { max: 20, windowMs: 60_000, by: 'ip' },
     },
     // Self-service de perfil (app community): o Bearer chega ao auth (passthrough),
@@ -435,6 +482,7 @@ const config: GatewayConfigInput = {
       service: 'auth',
       auth: 'public',
       upstreamAuth: 'passthrough',
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
       rateLimit: { max: 30, windowMs: 60_000, by: 'ip' },
     },
     // Troca de senha logado (exige a senha atual; revoga as sessões no auth).
@@ -445,6 +493,7 @@ const config: GatewayConfigInput = {
       service: 'auth',
       auth: 'public',
       upstreamAuth: 'passthrough',
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
       rateLimit: { max: 10, windowMs: 60_000, by: 'ip' },
     },
     // Token de DEFINIÇÃO de senha do 1º acesso pós-compra (S2S: funil → auth).
@@ -621,6 +670,7 @@ const config: GatewayConfigInput = {
       service: 'catalog',
       auth: 'public',
       upstreamAuth: 'passthrough',
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
       rateLimit: { max: 120, windowMs: 60_000, by: 'ip' },
     },
     // Cadastro/edição de cupons (admin via JWT + RBAC).
@@ -1029,13 +1079,16 @@ const config: GatewayConfigInput = {
     },
     // Webhooks de STATUS (provedores → gateway → messaging). Públicos: o serviço
     // valida a assinatura ECDSA (SendGrid) / o `?token=` (Evolution). O corpo é
-    // repassado intacto (a assinatura é sobre o corpo bruto).
+    // repassado intacto (a assinatura é sobre o corpo bruto). Teto de 2 MB
+    // EXPLÍCITO: os lotes de evento da SendGrid chegam a ~768 KB+ e o messaging
+    // os aceita até 2 MB — é por causa destas rotas que o teto GLOBAL é 2 MB.
     {
       id: 'messaging-webhook-sendgrid',
       methods: ['POST'],
       pathPattern: '/messaging/webhooks/sendgrid',
       service: 'messaging',
       auth: 'public',
+      maxBodyBytes: 2 * 1024 * 1024,
       rateLimit: { max: 600, windowMs: 60_000, by: 'ip' },
     },
     {
@@ -1044,6 +1097,7 @@ const config: GatewayConfigInput = {
       pathPattern: '/messaging/webhooks/evolution',
       service: 'messaging',
       auth: 'public',
+      maxBodyBytes: 2 * 1024 * 1024,
       rateLimit: { max: 600, windowMs: 60_000, by: 'ip' },
     },
 

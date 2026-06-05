@@ -51,4 +51,14 @@ describe('RouteRegistry', () => {
   test('rota inexistente → undefined', () => {
     expect(registry.resolve('GET', '/unknown', 'v1')).toBeUndefined()
   })
+
+  test('%-encoding malformado num param NÃO lança (vira o valor bruto, não 500)', () => {
+    // decodeURIComponent('%zz') lançaria URIError → o pipeline viraria 500 +
+    // log de erro alertável a cada request de scanner. O valor fica como veio.
+    const m = registry.resolve('GET', '/payments/%zz', 'v1')
+    expect(m?.route.id).toBe('get')
+    expect(m?.params.id).toBe('%zz')
+    // Encoding válido segue decodificado normalmente.
+    expect(registry.resolve('GET', '/payments/a%20b', 'v1')?.params.id).toBe('a b')
+  })
 })

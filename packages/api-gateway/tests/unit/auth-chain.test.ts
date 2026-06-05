@@ -1,8 +1,11 @@
 import { describe, expect, test } from 'bun:test'
 import { createAuthChain } from '../../src/application/auth/auth-chain'
 import type { AuthResult, AuthStrategy } from '../../src/application/auth/auth-strategy.port'
+import { createSessionStrategy } from '../../src/application/auth/session.strategy'
+import type { GatewayStore } from '../../src/domain/ports/gateway-store.port'
 import type { AuthStrategyKind } from '../../src/domain/routing/route'
 import { authPolicySchema } from '../../src/infrastructure/config/gateway-config.schema'
+import { createInMemoryStore } from '../../src/infrastructure/store/in-memory-store'
 import { makeContext } from '../helpers'
 
 const strat = (name: AuthStrategyKind, result: AuthResult): AuthStrategy => ({
@@ -70,5 +73,21 @@ describe('auth chain', () => {
   test('public → skip', async () => {
     const chain = createAuthChain({})
     expect((await chain.authenticate(makeContext(), 'public')).ok).toBe('skip')
+  })
+})
+
+describe('session strategy: store indisponível', () => {
+  test('erro do store → 401 AUTH_UNAVAILABLE (fail-CLOSED, sem 500)', async () => {
+    const broken: GatewayStore = {
+      ...createInMemoryStore(),
+      get: async () => {
+        throw new Error('store down')
+      },
+    }
+    const strategy = createSessionStrategy(broken)
+    const ctx = makeContext({ headers: { 'x-session-token': 'tok-1' } })
+    // Auth NUNCA falha aberto; e o throw não pode subir (viraria 500 no pipeline).
+    const r = await strategy.authenticate(ctx)
+    expect(r).toMatchObject({ ok: false, status: 401, code: 'AUTH_UNAVAILABLE' })
   })
 })

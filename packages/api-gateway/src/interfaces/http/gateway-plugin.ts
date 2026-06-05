@@ -23,6 +23,25 @@ export interface GatewayAppDeps {
   metrics: MetricsRegistry
   targetIds: readonly string[]
   getDraining: () => boolean
+  /** Maior timeout de upstream da config (ms) — dimensiona o idleTimeout do servidor. */
+  maxUpstreamTimeoutMs: number
+}
+
+/**
+ * `idleTimeout` do Bun.serve (em SEGUNDOS) derivado do maior timeout de upstream.
+ * O Bun fecha conexões após `idleTimeout` SEM bytes trafegados — INCLUSIVE
+ * requisições em voo cujo upstream ainda não respondeu (TTFB lento). O default
+ * (10s) resetaria a conexão do cliente em qualquer rota mais lenta que 10s
+ * (ex.: `payments-create` a 35s, Efí fria) — anulando os `timeoutMs` da config.
+ * Folga de 10s sobre o maior timeout; cap no máximo do Bun (255s). Nunca 0
+ * (desabilitaria a colheita de conexões keep-alive ociosas na borda pública).
+ */
+export function idleTimeoutSecondsFor(maxUpstreamTimeoutMs: number): number {
+  const base =
+    Number.isFinite(maxUpstreamTimeoutMs) && maxUpstreamTimeoutMs > 0
+      ? maxUpstreamTimeoutMs
+      : 15_000
+  return Math.min(255, Math.ceil(base / 1000) + 10)
 }
 
 /**
@@ -34,7 +53,13 @@ export function createGatewayApp(deps: GatewayAppDeps) {
   return (
     // `maxRequestBodySize` enforça o teto do corpo no nível do Bun.serve (413
     // automático), de forma robusta — sem pipar o stream de entrada (frágil no Bun).
-    new Elysia({ serve: { maxRequestBodySize: deps.env.MAX_REQUEST_BODY_BYTES } })
+    // `idleTimeout` DEVE cobrir o upstream mais lento (ver idleTimeoutSecondsFor).
+    new Elysia({
+      serve: {
+        maxRequestBodySize: deps.env.MAX_REQUEST_BODY_BYTES,
+        idleTimeout: idleTimeoutSecondsFor(deps.maxUpstreamTimeoutMs),
+      },
+    })
       // Retornar o corpo (stream) faz o Elysia pular o parser default e NÃO consumir
       // o stream → o proxy encaminha o corpo intacto. '' quando não há corpo.
       .onParse({ as: 'global' }, ({ request }) => request.body ?? '')

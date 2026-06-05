@@ -3,6 +3,7 @@ import { canonicalHmacMessage, signHmac } from '@sistemazero/core/security'
 import { type Application, createApplication } from '../../src/composition-root'
 import { loadEnv } from '../../src/infrastructure/config/env'
 import type { GatewayConfigInput } from '../../src/infrastructure/config/gateway-config.schema'
+import { createInMemoryStore } from '../../src/infrastructure/store/in-memory-store'
 import { fakeForwarder } from '../helpers'
 
 const env = (overrides: Record<string, string> = {}) =>
@@ -322,5 +323,124 @@ describe('gateway (integração via app.handle)', () => {
     expect(((await bad.json()) as { error: { code: string } }).error.code).toBe(
       'UNSUPPORTED_VERSION',
     )
+  })
+
+  test('versionamento: rota SEM versões só atende a default (/v9 → 400, não default silencioso)', async () => {
+    const app = await buildApp(baseConfig)
+    // A default (v1) funciona pelas duas formas.
+    expect((await app.handle(req('/echo/1'))).status).toBe(200)
+    expect((await app.handle(req('/v1/echo/1'))).status).toBe(200)
+    // Versão inexistente não pode ser servida em silêncio como se existisse.
+    const path = await app.handle(req('/v9/echo/1'))
+    expect(path.status).toBe(400)
+    expect(((await path.json()) as { error: { code: string } }).error.code).toBe(
+      'UNSUPPORTED_VERSION',
+    )
+    const header = await app.handle(req('/echo/1', { headers: { 'x-api-version': 'v9' } }))
+    expect(header.status).toBe(400)
+  })
+
+  test('%-encoding malformado no path → 404/match normal, NUNCA 500', async () => {
+    const app = await buildApp(baseConfig)
+    // Casa /echo/:id (param fica com o valor bruto) e é proxiada — sem URIError/500.
+    const matched = await app.handle(req('/echo/%zz'))
+    expect(matched.status).toBe(200)
+    // Path que não casa nada segue 404 (não 500).
+    expect((await app.handle(req('/%zz'))).status).toBe(404)
+  })
+
+  test('maxBodyBytes por rota: Content-Length acima do teto da rota → 413', async () => {
+    const capConfig: GatewayConfigInput = {
+      services: {
+        echo: { name: 'echo', upstreamGroups: { default: [{ url: 'http://up', id: 'a' }] } },
+      },
+      routes: [
+        {
+          id: 'small',
+          methods: ['POST'],
+          pathPattern: '/small',
+          service: 'echo',
+          auth: 'public',
+          maxBodyBytes: 16,
+        },
+        { id: 'free', methods: ['POST'], pathPattern: '/free', service: 'echo', auth: 'public' },
+      ],
+    }
+    const app = await buildApp(capConfig)
+    const body = 'x'.repeat(32) // > 16 bytes, < teto global
+    // Content-Length explícito: o Request sintético do app.handle não o computa
+    // (em tráfego real o Bun.serve sempre o entrega ao handler).
+    const post = (path: string, b: string) =>
+      app.handle(
+        req(path, { method: 'POST', body: b, headers: { 'content-length': String(b.length) } }),
+      )
+    const over = await post('/small', body)
+    expect(over.status).toBe(413)
+    // Abaixo do teto da rota passa…
+    expect((await post('/small', 'ok')).status).toBe(200)
+    // …e rota sem teto próprio segue valendo só o global.
+    expect((await post('/free', body)).status).toBe(200)
+  })
+
+  test('x-internal-token do CLIENTE nunca chega ao upstream (header-inject repõe o do ambiente)', async () => {
+    const tokenConfig: GatewayConfigInput = {
+      services: {
+        echo: { name: 'echo', upstreamGroups: { default: [{ url: 'http://up', id: 'a' }] } },
+      },
+      routes: [
+        { id: 'plain', methods: ['POST'], pathPattern: '/plain', service: 'echo', auth: 'public' },
+        {
+          id: 'pass',
+          methods: ['POST'],
+          pathPattern: '/pass',
+          service: 'echo',
+          auth: 'public',
+          upstreamAuth: 'passthrough',
+        },
+        {
+          id: 'inject',
+          methods: ['POST'],
+          pathPattern: '/inject',
+          service: 'echo',
+          auth: 'public',
+          transforms: [
+            { type: 'header-inject', options: { headers: { 'x-internal-token': 'do-ambiente' } } },
+          ],
+        },
+      ],
+    }
+    const seen: { value: string | null } = { value: 'unset' }
+    const app = await buildApp(tokenConfig, (r) => {
+      seen.value = r.headers.get('x-internal-token')
+      return new Response('ok')
+    })
+    const spoof = { headers: { 'x-internal-token': 'forjado' }, method: 'POST', body: '{}' }
+
+    await app.handle(req('/plain', spoof))
+    expect(seen.value).toBeNull() // rota sem inject: o valor do cliente é removido
+    await app.handle(req('/pass', spoof))
+    expect(seen.value).toBeNull() // passthrough preserva creds de borda, MAS não este
+    await app.handle(req('/inject', spoof))
+    expect(seen.value).toBe('do-ambiente') // rota com inject: SEMPRE o valor do ambiente
+  })
+
+  test('/readyz: store fora NÃO derruba a prontidão (fail-open do data plane); fica visível como degraded', async () => {
+    const broken = createInMemoryStore()
+    const store: typeof broken = {
+      ...broken,
+      get: async () => {
+        throw new Error('store down')
+      },
+    }
+    const app = await createApplication(env(), {
+      rawConfig: baseConfig,
+      forwarder: fakeForwarder(() => new Response('ok')),
+      store,
+    })
+    const ready = await app.handle(new Request('http://gw.local/readyz'))
+    expect(ready.status).toBe(200) // upstream saudável → segue roteável
+    const json = (await ready.json()) as { status: string; store: boolean }
+    expect(json.store).toBe(false)
+    expect(json.status).toBe('degraded')
   })
 })

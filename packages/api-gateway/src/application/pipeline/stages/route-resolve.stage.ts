@@ -1,5 +1,6 @@
 import type { RouteResolver } from '../../../domain/routing/route-match'
 import {
+  normalizeVersion,
   parseRequestedVersion,
   resolveVersionMapping,
   stripVersionPrefix,
@@ -85,6 +86,29 @@ export function createRouteResolveStage(deps: RouteResolveDeps): Stage {
           400,
           'UNSUPPORTED_VERSION',
           `Versão "${version}" não suportada para esta rota`,
+        )
+      }
+      // Rota SEM versões declaradas só atende a versão default — servir `/v9/...`
+      // silenciosamente como default faria o cliente acreditar que a v9 existe.
+      if (
+        (!versions || versions.length === 0) &&
+        normalizeVersion(version) !== normalizeVersion(deps.defaultVersion)
+      ) {
+        return errorResponse(
+          400,
+          'UNSUPPORTED_VERSION',
+          `Versão "${version}" não suportada para esta rota`,
+        )
+      }
+
+      // Teto de corpo POR ROTA (afina o global, já checado acima). Vale para o
+      // Content-Length declarado; chunked é capado pelo maxRequestBodySize global.
+      const routeCap = match.route.maxBodyBytes
+      if (routeCap !== undefined && Number.isFinite(declared) && declared > routeCap) {
+        return errorResponse(
+          413,
+          'PAYLOAD_TOO_LARGE',
+          'Corpo da requisição excede o limite permitido',
         )
       }
 

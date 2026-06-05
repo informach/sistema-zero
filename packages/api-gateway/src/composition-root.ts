@@ -202,6 +202,27 @@ export async function createApplication(
   ]
   const pipeline: Pipeline = createPipeline(stages, finalizers)
 
+  // Consumer com CIDR aberto em produção: a única defesa vira o segredo HMAC.
+  // Não falha o boot (pode ser deliberado), mas precisa aparecer no log.
+  if (env.NODE_ENV === 'production') {
+    for (const consumer of config.consumers) {
+      if (consumer.allowedCidrs.some((c) => c === '0.0.0.0/0' || c === '::/0')) {
+        logger.warn('gateway.consumer_cidr_open', {
+          consumer: consumer.id,
+          hint: 'restrinja allowedCidrs à rede privada (ex.: fd00::/8 no Railway)',
+        })
+      }
+    }
+  }
+
+  // Maior timeout de upstream da config → dimensiona o idleTimeout do Bun.serve
+  // (o default de 10s resetaria conexões antes do upstream mais lento responder).
+  const maxUpstreamTimeoutMs = Math.max(
+    0,
+    ...Object.values(config.services).map((s) => s.timeoutMs),
+    ...config.routes.map((r) => r.timeoutMs ?? 0),
+  )
+
   const lifecycle = { draining: false }
   const app = createGatewayApp({
     env,
@@ -213,6 +234,7 @@ export async function createApplication(
     metrics,
     targetIds: allTargetIds,
     getDraining: () => lifecycle.draining,
+    maxUpstreamTimeoutMs,
   })
 
   const probe = new ActiveHealthProbe(probeTargets, health, env.HEALTH_PROBE_INTERVAL_MS, logger)

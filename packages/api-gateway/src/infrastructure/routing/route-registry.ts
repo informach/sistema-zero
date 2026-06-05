@@ -33,6 +33,20 @@ function specificityOf(segments: readonly Segment[]): number {
   return score
 }
 
+/**
+ * `decodeURIComponent` que não lança: %-encoding malformado (ex.: `/x/%zz`) fica
+ * como veio. O param é só informativo (o proxy repassa o path BRUTO ao upstream);
+ * deixar o `URIError` subir viraria 500 + log de erro alertável a cada request
+ * de scanner — em vez de um match normal decidido pelo upstream.
+ */
+function safeDecode(value: string): string {
+  try {
+    return decodeURIComponent(value)
+  } catch {
+    return value
+  }
+}
+
 function tryMatch(
   segments: readonly Segment[],
   pathSegs: readonly string[],
@@ -50,7 +64,7 @@ function tryMatch(
     if (seg.kind === 'static') {
       if (seg.value !== part) return undefined
     } else {
-      params[seg.name] = decodeURIComponent(part)
+      params[seg.name] = safeDecode(part)
     }
   }
   // Sem wildcard: o caminho precisa ter exatamente o mesmo nº de segmentos.

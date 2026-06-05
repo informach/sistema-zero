@@ -125,4 +125,18 @@ describe('request-transform stage: credenciais de borda', () => {
     await stage.run(ctx)
     expect(ctx.upstreamHeaders.get('x-consumer-id')).toBe(null)
   })
+
+  test('x-internal-token do cliente é removido SEMPRE — inclusive em passthrough', async () => {
+    for (const upstreamAuth of [undefined, 'passthrough' as const]) {
+      const ctx = makeContext({
+        method: 'POST',
+        body: '{}',
+        headers: { 'x-internal-token': 'forjado' },
+      })
+      ctx.route = routeMatch(upstreamAuth ? { upstreamAuth } : {})
+      const stage = createRequestTransformStage({ getTransformers: () => [] })
+      await stage.run(ctx)
+      expect(ctx.upstreamHeaders.get('x-internal-token')).toBe(null)
+    }
+  })
 })

@@ -46,7 +46,23 @@ export function createSessionStrategy(
         ctx.request.headers.get(headerName) ??
         readCookie(ctx.request.headers.get('cookie'), cookieName)
       if (!token) return { ok: 'skip' }
-      const data = await store.get<SessionData>(`session:${token}`)
+      let data: SessionData | null
+      try {
+        data = await store.get<SessionData>(`session:${token}`)
+      } catch (error) {
+        // Store fora: AUTH NUNCA falha aberto, mas também não pode virar 500
+        // (exceção subiria até o pipeline). Nega como credencial não verificável.
+        ctx.logger.warn('gateway.session_store_unavailable', {
+          requestId: ctx.requestId,
+          error: error instanceof Error ? error.message : String(error),
+        })
+        return {
+          ok: false,
+          status: 401,
+          code: 'AUTH_UNAVAILABLE',
+          message: 'Sessão não pôde ser verificada',
+        }
+      }
       if (!data)
         return {
           ok: false,
