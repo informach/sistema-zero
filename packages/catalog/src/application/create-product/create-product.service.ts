@@ -82,3 +82,39 @@ export async function assertComponentsExist(
     throw new ValidationError(`Produtos componentes inexistentes: ${missing.join(', ')}`)
   }
 }
+
+// Espelha o MAX_CLOSURE_ROUNDS/maxDepth do resolvedor: um grafo mais fundo que
+// isso já não resolve na leitura, então não há ciclo legítimo além desse teto.
+const MAX_CYCLE_SCAN_ROUNDS = 8
+
+/**
+ * Barra ciclo INDIRETO de combos na ESCRITA (A inclui B … que inclui A). A guarda
+ * de ciclo do resolvedor é só de leitura e DESCARTA o caminho silenciosamente —
+ * um combo cíclico resolveria para ZERO entregáveis e a venda entregaria nada
+ * (a falha só apareceria no grant do members, DEPOIS do pagamento). BFS pelos
+ * componentes armazenados a partir dos novos componentes; alcançar o próprio
+ * `productId` = ciclo. Só faz sentido no UPDATE: no create o id é recém-gerado e
+ * nenhum produto existente pode referenciá-lo (auto-referência já é barrada no
+ * agregado).
+ */
+export async function assertNoComponentCycle(
+  products: ProductRepository,
+  productId: string,
+  components: ProductComponent[],
+): Promise<void> {
+  if (components.length === 0) return
+  const visited = new Set<string>()
+  let frontier = components.map((c) => c.componentProductId)
+  for (let round = 0; round < MAX_CYCLE_SCAN_ROUNDS && frontier.length > 0; round++) {
+    if (frontier.includes(productId)) {
+      throw new ValidationError(
+        'Componentes formam um ciclo de combos (o produto acabaria incluindo a si mesmo)',
+      )
+    }
+    const pending = frontier.filter((id) => !visited.has(id))
+    if (pending.length === 0) return
+    for (const id of pending) visited.add(id)
+    const nodes = await products.findNodesByIds(pending)
+    frontier = [...new Set(nodes.flatMap((n) => n.components.map((c) => c.productId)))]
+  }
+}

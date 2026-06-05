@@ -98,15 +98,23 @@ export function createServer(deps: HttpDeps) {
     )
   }
 
+  // Micro-cache das leituras públicas por slug: ausente → 30s em produção
+  // (corta ~6-8 queries por render da página de vendas), 0 fora dela (admin/dev
+  // veem edição refletida na hora; testes determinísticos).
+  const publicCacheTtlMs =
+    deps.env.PUBLIC_CACHE_TTL_MS ?? (deps.env.NODE_ENV === 'production' ? 30_000 : 0)
+
   return app
     .use(healthRoutes(deps.readiness))
     .use(
       catalogRoutes({
+        logger: deps.logger,
         getOffer: deps.getOffer,
         getProduct: deps.getProduct,
         quoteOffer: deps.quoteOffer,
         redeemCoupon: deps.redeemCoupon,
         internalToken: deps.env.INTERNAL_API_TOKEN,
+        publicCacheTtlMs,
       }),
     )
     .use(

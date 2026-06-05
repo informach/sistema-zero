@@ -1,4 +1,4 @@
-import { CouponNotFoundError } from '../../domain/coupon/coupon.errors'
+import { CouponNotApplicableError, CouponNotFoundError } from '../../domain/coupon/coupon.errors'
 import { OfferNotAvailableError, OfferNotFoundError } from '../../domain/offer/offer.errors'
 import type { CouponRepository } from '../../domain/ports/coupon-repository.port'
 import type { OfferRepository } from '../../domain/ports/offer-repository.port'
@@ -46,10 +46,17 @@ export class QuoteOfferService {
     coupon.assertApplicable(offer.id, priceCents)
 
     const discountCents = coupon.computeDiscountCents(priceCents)
+    const finalPriceCents = priceCents - discountCents
+    // O funil cobra este valor no payments — cobrança de R$ 0,00 não existe (a
+    // Efí rejeita). Um cupom que ZERA o preço é inaplicável, não um pedido grátis:
+    // melhor 422 legível aqui do que o checkout quebrar na criação da cobrança.
+    if (finalPriceCents <= 0) {
+      throw new CouponNotApplicableError('Cupom não pode zerar o valor da compra')
+    }
     return {
       ...base,
       discountCents,
-      finalPriceCents: priceCents - discountCents,
+      finalPriceCents,
       coupon: {
         code: coupon.code,
         type: coupon.type,

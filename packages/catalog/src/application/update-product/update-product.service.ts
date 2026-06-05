@@ -6,6 +6,7 @@ import type { ProductKind } from '../../domain/product/product.kind'
 import type { ProductStatus } from '../../domain/product/product.status'
 import {
   assertComponentsExist,
+  assertNoComponentCycle,
   type ComponentInput,
   normalizeComponents,
 } from '../create-product/create-product.service'
@@ -55,8 +56,10 @@ export class UpdateProductService {
 
     if (command.components !== undefined) {
       const components = normalizeComponents(command.components)
-      // Não permitir auto-referência já é validado no agregado; valida existência.
+      // Não permitir auto-referência já é validado no agregado; valida existência
+      // e ciclo INDIRETO (A→B→…→A — resolveria para zero entregáveis na venda).
       await assertComponentsExist(this.products, components)
+      await assertNoComponentCycle(this.products, command.id, components)
       product.setComponents(components)
     }
 

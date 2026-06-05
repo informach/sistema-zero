@@ -32,6 +32,11 @@ const EnvSchema = z
     DATABASE_URL: z.string().min(1, 'DATABASE_URL é obrigatória'),
     DATABASE_POOL_MAX: z.coerce.number().int().positive().default(10),
 
+    // TTL (ms) do micro-cache das leituras PÚBLICAS por slug (oferta/produto —
+    // hot path da página de vendas do funil). Ausente → 30s em produção, 0
+    // (desligado) fora dela. 0 desliga. A `quote` nunca é cacheada.
+    PUBLIC_CACHE_TTL_MS: z.coerce.number().int().nonnegative().optional(),
+
     // Defesa em profundidade: prova de origem nas rotas que confiam em headers
     // injetados (admin/escrita, redeem) e na rota S2S de entitlements. O gateway
     // injeta `x-internal-token` (header-inject) e o members o envia na chamada

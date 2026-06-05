@@ -17,10 +17,14 @@ produtos entregáveis). É consumido pelo **funil** (preço + "o que está inclu
 > Estado: **slice completo e testado** (produtos/combos/ofertas + cupons + leitura pública +
 > escrita admin + resolução de entitlements). Migrations `0000`/`0001` aplicadas no Postgres
 > compartilhado (cria o **schema `catalog`**). Seed do produto atual (No Comando da IA, R$37) disponível.
-> **Full review 06/2026 com TODOS os achados implementados**: view pública de produto sanitizada +
+> **2º full review 06/2026 com TODOS os achados implementados**: view pública de produto sanitizada +
 > `draft` 404 público, `x-internal-token` (entitlements S2S + admin/escrita + redeem, obrigatório em
 > prod), 23505 via `cause` (drizzle ≥0.44), escape do ILIKE, uuid nas bordas, `/readyz` + `HOST ::`,
-> `REQUIRE_ADMIN` fail-closed em prod — **90 testes**.
+> `REQUIRE_ADMIN` fail-closed em prod. **3º full review (prod-readiness, 06/2026) idem**: ciclo
+> INDIRETO de combo barrado na ESCRITA, invariante `compareAt ≥ preço` revalidado no PATCH só de
+> preço, janela `availableFrom/Until` validada (create+update), cupom que ZERA o preço → 422 na
+> quote, micro-cache TTL das leituras públicas (`PUBLIC_CACHE_TTL_MS`), log próprio do S2S de
+> entitlements — **102 testes**.
 
 ## Modelo (decisões de design — leia antes de mexer)
 
@@ -60,6 +64,18 @@ Função PURA: dado a oferta (produto principal + `offer_items`), expande combos
 deduplica e marca o principal. Combos são **containers** (expandem, não são entregues). Guarda de ciclo +
 profundidade máxima. A aplicação (`ResolveOfferEntitlementsService`) carrega o fechamento do grafo
 (`findNodesByIds`, iterativo) e chama o resolvedor.
+
+**Ciclo INDIRETO de combo é barrado na ESCRITA** (`assertNoComponentCycle`, chamado no
+`UpdateProductService` quando `components` muda — no create é impossível, o id é recém-gerado):
+a guarda do resolvedor é só de leitura e DESCARTA o caminho cíclico silenciosamente — um combo
+A→B→…→A resolveria para **zero entregáveis** e a falha só apareceria no grant do members, DEPOIS
+do pagamento. BFS pelos componentes armazenados; alcançar o próprio id = 400.
+
+### Invariantes da oferta (06/2026)
+- **`compareAt ≥ preço` sempre**: o PATCH que só sobe o preço REVALIDA contra o `compareAt`
+  existente (sem isso, "de R$X por R$Y" invertia — precificação enganosa).
+- **Janela coerente**: `availableUntil > availableFrom` validado no create E no `updateDetails`
+  (estado consolidado) — janela invertida tornava a oferta indisponível sem nenhum erro.
 
 ## Arquitetura (DDD + Hexagonal — espelha `auth`/`payments`)
 
@@ -105,6 +121,11 @@ src/
   O `includes` é **labels-only** (`EntitlementItemView`, SEM `fulfillment`) — seguro p/ exibição pública.
   Oferta **`draft` é inexistente ao público (404)** — rascunho não vaza preço/campanha por adivinhação
   de slug; `paused`/`archived` seguem legíveis (página existente degrada; a `quote` bloqueia a cobrança).
+  **Micro-cache TTL** nas leituras públicas por slug (oferta E produto; `MicroCache`,
+  `infrastructure/cache/`): sem cache cada render da página de vendas custa 6–8 queries. TTL via
+  `PUBLIC_CACHE_TTL_MS` (ausente → **30s em produção, 0 fora dela**); por réplica, FIFO com teto de
+  entradas, cacheia misses (negative cache anti slug-spam). Staleness máxima pós-edição = o TTL.
+  A `quote` **NUNCA** é cacheada.
 - `GET /catalog/products/:slug` → detalhe do produto em **view PÚBLICA sanitizada**
   (`PublicProductView`: id/sku/slug/name/kind/status/sellable/description/currency — **SEM
   `fulfillment`/`metadata`/`components`/`version`**, que são da view admin); `draft` → 404. Achado do
@@ -116,11 +137,14 @@ src/
   no momento do grant. NÃO tem rota pública no gateway (evita vazar o manifesto de entrega à internet)
   **e o serviço exige `x-internal-token`** (= `INTERNAL_API_TOKEN`; o members envia via
   `CATALOG_INTERNAL_TOKEN`) — sem o token, qualquer processo que alcançasse o catálogo direto leria
-  o manifesto.
+  o manifesto. Como essa chamada NÃO passa pelo gateway (sem access log lá), a rota emite log próprio
+  (`catalog.entitlements_read`).
 - `POST /catalog/offers/:slug/quote` → preço com cupom opcional (`{ couponCode? }` → preço/desconto/total).
   Público + rate-limit por IP; é o valor AUTORITATIVO que o funil cobra. **Só cota oferta disponível**
   (`isAvailable()`: status `active` + dentro da janela) — pausar/arquivar interrompe a venda
   (`OFFER_NOT_AVAILABLE`→409). A resolução de entitlements (pós-pagamento) NÃO é gated por isso.
+  **Cupom que ZERA o preço → 422 `COUPON_NOT_APPLICABLE`** (cobrança de R$ 0,00 não existe — a Efí
+  rejeita; melhor 422 legível do que o checkout quebrar na criação da cobrança).
 
 **Cupons:** desconto (percentual ou fixo) sobre o preço da oferta, com escopo (todas/ofertas específicas),
 validade, mínimo e limite de usos. `POST/PATCH /catalog/coupons` (admin). `POST /catalog/coupons/:code/redeem`
@@ -199,7 +223,11 @@ drip (`release` é armazenado mas o members não aplica) · tiers de comunidade 
 `max_redemptions` é **teto MOLE** — o desconto é aplicado na cobrança (`quote`) e contado só na
 confirmação (`redeem`, best-effort, sem idempotência própria), então sob concorrência os descontos
 concedidos podem passar do limite e o contador pode sub-contar (erro engolido). O ledger daria
-garantia dura + idempotência. Mitigado hoje pelo gate exactly-once (`markPaid`) do funil.
+garantia dura + idempotência. Mitigado hoje pelo gate exactly-once (`markPaid`) do funil ·
+**rate-limit próprio na `quote`** (risco ACEITO no 3º review): o limite por IP vive só no gateway;
+acesso direto na rede interna enumeraria códigos de cupom sem teto (rede privada do Railway +
+cupons de baixo valor — não vale a complexidade hoje) · **`/metrics`** (espelhar o payments quando
+houver dashboard; o gateway já loga/metrifica o tráfego roteado).
 
 > O **funil já consome** o catálogo (preço/inclusões via gateway, `metadata.offerId`/`couponCode` no
 > checkout, `quote`/`redeem` de cupom). A contagem de uso do cupom (`redeem`) é **best-effort** na

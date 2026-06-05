@@ -1,19 +1,26 @@
 import { envelope } from '@sistemazero/core/http'
+import type { Logger } from '@sistemazero/core/logging'
 import { Elysia } from 'elysia'
 import type { GetOfferService } from '../../../application/get-offer/get-offer.service'
 import type { GetProductService } from '../../../application/get-product/get-product.service'
+import type { OfferView } from '../../../application/mappers/offer-view'
+import type { PublicProductView } from '../../../application/mappers/product-view'
 import type { QuoteOfferService } from '../../../application/quote-offer/quote-offer.service'
 import type { RedeemCouponService } from '../../../application/redeem-coupon/redeem-coupon.service'
+import { MicroCache } from '../../../infrastructure/cache/micro-cache'
 import { assertInternalCaller } from '../auth'
 import { QuoteOfferBody } from '../dtos'
 
 export interface CatalogRoutesDeps {
+  logger: Logger
   getOffer: GetOfferService
   getProduct: GetProductService
   quoteOffer: QuoteOfferService
   redeemCoupon: RedeemCouponService
   /** Token interno (defesa em profundidade). Vazio em dev → checagem desligada. */
   internalToken?: string
+  /** TTL do micro-cache das leituras públicas por slug. 0/ausente → desligado. */
+  publicCacheTtlMs?: number
 }
 
 /**
@@ -23,12 +30,25 @@ export interface CatalogRoutesDeps {
  * `fulfillment`). `entitlements` (S2S do members) e `redeem` (HMAC do funil no
  * gateway) exigem o `x-internal-token` — sem ele, qualquer processo que alcançasse
  * o serviço direto leria o manifesto de entrega ou queimaria contador de cupom.
+ *
+ * As leituras públicas passam por um micro-cache TTL (hot path da página de
+ * vendas: 6–8 queries por render sem cache). A `quote` NUNCA é cacheada (é o
+ * valor autoritativo de cobrança).
  */
 export function catalogRoutes(deps: CatalogRoutesDeps) {
+  const ttl = deps.publicCacheTtlMs ?? 0
+  const offerCache = new MicroCache<OfferView | null>(ttl)
+  const productCache = new MicroCache<PublicProductView | null>(ttl)
+
   return (
     new Elysia({ prefix: '/catalog' })
       .get('/offers/:slug', async ({ params, set }) => {
-        const offer = await deps.getOffer.getBySlug(params.slug)
+        const key = params.slug.trim().toLowerCase()
+        let offer = offerCache.get(key)
+        if (offer === undefined) {
+          offer = await deps.getOffer.getBySlug(params.slug)
+          offerCache.set(key, offer)
+        }
         // Rascunho nunca foi publicado → inexistente ao público (não vaza preço/
         // campanha por adivinhação de slug). Pausada/arquivada seguem legíveis —
         // a página existente degrada e a `quote` já bloqueia a cobrança.
@@ -44,6 +64,12 @@ export function catalogRoutes(deps: CatalogRoutesDeps) {
       .get('/offers/:slug/entitlements', async ({ params, headers, set }) => {
         assertInternalCaller(headers['x-internal-token'], deps.internalToken)
         const result = await deps.getOffer.getEntitlements(params.slug)
+        // Esta chamada NÃO passa pelo gateway (sem access log lá) — log próprio
+        // para a trilha de quem leu o manifesto de entrega.
+        deps.logger.info('catalog.entitlements_read', {
+          slug: params.slug,
+          found: Boolean(result),
+        })
         if (!result) {
           set.status = 404
           return envelope('OFFER_NOT_FOUND', 'Oferta não encontrada')
@@ -58,7 +84,12 @@ export function catalogRoutes(deps: CatalogRoutesDeps) {
         { body: QuoteOfferBody },
       )
       .get('/products/:slug', async ({ params, set }) => {
-        const product = await deps.getProduct.getPublicBySlug(params.slug)
+        const key = params.slug.trim().toLowerCase()
+        let product = productCache.get(key)
+        if (product === undefined) {
+          product = await deps.getProduct.getPublicBySlug(params.slug)
+          productCache.set(key, product)
+        }
         if (!product) {
           set.status = 404
           return envelope('PRODUCT_NOT_FOUND', 'Produto não encontrado')

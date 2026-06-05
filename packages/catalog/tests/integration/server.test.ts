@@ -282,6 +282,22 @@ describe('catalog HTTP', () => {
       expect(res.status).toBe(401)
     })
 
+    it('quote com cupom que ZERA o preço → 422 (cobrança de R$ 0,00 não existe)', async () => {
+      await app.handle(
+        req('POST', '/catalog/coupons', {
+          headers: ADMIN,
+          body: { code: 'ZERA', type: 'percent', percentOff: 100, appliesToAll: true },
+        }),
+      )
+      const res = await app.handle(
+        req('POST', '/catalog/offers/ncia/quote', { body: { couponCode: 'ZERA' } }),
+      )
+      expect(res.status).toBe(422)
+      expect((await res.json()) as { error: { code: string } }).toMatchObject({
+        error: { code: 'COUPON_NOT_APPLICABLE' },
+      })
+    })
+
     it('redeem incrementa e respeita o limite de usos', async () => {
       await app.handle(
         req('POST', '/catalog/coupons', {
@@ -459,6 +475,129 @@ describe('catalog HTTP', () => {
         }),
       )
       expect(denied.status).toBe(403)
+    })
+  })
+
+  describe('ciclo indireto de combos (barrado na escrita)', () => {
+    it('PATCH que fecharia A→B→A → 400 (a oferta resolveria para zero entregáveis)', async () => {
+      const built = build()
+      const leaf = await built.createProduct.execute({
+        sku: 'folha',
+        slug: 'folha',
+        name: 'Folha',
+        kind: 'ebook',
+      })
+      const a = await built.createProduct.execute({
+        sku: 'combo-a',
+        slug: 'combo-a',
+        name: 'Combo A',
+        kind: 'bundle',
+        components: [{ componentProductId: leaf.id, isPrimary: true }],
+      })
+      const b = await built.createProduct.execute({
+        sku: 'combo-b',
+        slug: 'combo-b',
+        name: 'Combo B',
+        kind: 'bundle',
+        components: [{ componentProductId: a.id, isPrimary: true }],
+      })
+      // A passa a incluir B, que já inclui A → ciclo indireto.
+      const res = await built.app.handle(
+        req('PATCH', `/catalog/products/${a.id}`, {
+          headers: ADMIN,
+          body: { components: [{ componentProductId: b.id, isPrimary: true }] },
+        }),
+      )
+      expect(res.status).toBe(400)
+      expect((await res.json()) as { error: { code: string } }).toMatchObject({
+        error: { code: 'VALIDATION_ERROR' },
+      })
+      // O grafo continua íntegro: A segue com a folha como componente.
+      const view = await built.app.handle(
+        req('GET', `/catalog/admin/products/${a.id}`, { headers: ADMIN }),
+      )
+      const body = (await view.json()) as {
+        components: { productId: string; sortOrder: number; isPrimary: boolean }[]
+      }
+      expect(body.components).toEqual([{ productId: leaf.id, sortOrder: 0, isPrimary: true }])
+    })
+  })
+
+  describe('micro-cache das leituras públicas', () => {
+    const cacheEnv = loadEnv({
+      DATABASE_URL: 'postgres://localhost:5433/test',
+      NODE_ENV: 'test',
+      REQUIRE_ADMIN: 'true',
+      PUBLIC_CACHE_TTL_MS: '60000',
+    })
+
+    it('GET público serve do cache dentro do TTL; quote segue autoritativa (sem cache)', async () => {
+      const built = build({ env: cacheEnv })
+      const product = await built.createProduct.execute({
+        sku: 'cache-p',
+        slug: 'cache-p',
+        name: 'Produto cacheado',
+        kind: 'ebook',
+        status: 'active',
+        fulfillment: { accessType: 'course', courseRef: 'cache-p' },
+      })
+      const offer = await built.createOffer.execute({
+        productId: product.id,
+        code: 'cache-of',
+        slug: 'cache-of',
+        name: 'Oferta cacheada',
+        priceCents: 3700,
+        status: 'active',
+      })
+
+      // Popula o cache.
+      const first = await built.app.handle(req('GET', '/catalog/offers/cache-of'))
+      expect(((await first.json()) as { priceCents: number }).priceCents).toBe(3700)
+
+      // Edita o preço via admin.
+      const patch = await built.app.handle(
+        req('PATCH', `/catalog/offers/${offer.id}`, {
+          headers: ADMIN,
+          body: { priceCents: 5000 },
+        }),
+      )
+      expect(patch.status).toBe(200)
+
+      // Leitura pública ainda vê o valor cacheado (staleness ≤ TTL, aceito)...
+      const cached = await built.app.handle(req('GET', '/catalog/offers/cache-of'))
+      expect(((await cached.json()) as { priceCents: number }).priceCents).toBe(3700)
+
+      // ...mas a quote (gate de cobrança) NUNCA é cacheada: já cobra o preço novo.
+      const quote = await built.app.handle(
+        req('POST', '/catalog/offers/cache-of/quote', { body: {} }),
+      )
+      expect(((await quote.json()) as { finalPriceCents: number }).finalPriceCents).toBe(5000)
+    })
+
+    it('no env de teste (sem TTL explícito) o cache fica desligado', async () => {
+      const built = build()
+      const product = await built.createProduct.execute({
+        sku: 'no-cache-p',
+        slug: 'no-cache-p',
+        name: 'Sem cache',
+        kind: 'ebook',
+        status: 'active',
+        fulfillment: { accessType: 'course', courseRef: 'no-cache-p' },
+      })
+      const offer = await built.createOffer.execute({
+        productId: product.id,
+        code: 'no-cache-of',
+        slug: 'no-cache-of',
+        name: 'Oferta sem cache',
+        priceCents: 1000,
+        status: 'active',
+      })
+      await built.app.handle(req('GET', '/catalog/offers/no-cache-of'))
+      await built.app.handle(
+        req('PATCH', `/catalog/offers/${offer.id}`, { headers: ADMIN, body: { priceCents: 2000 } }),
+      )
+      const res = await built.app.handle(req('GET', '/catalog/offers/no-cache-of'))
+      expect(((await res.json()) as { priceCents: number }).priceCents).toBe(2000)
     })
   })
 

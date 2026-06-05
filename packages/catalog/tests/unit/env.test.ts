@@ -41,4 +41,12 @@ describe('loadEnv (fail-fast de produção)', () => {
       /16 caracteres/,
     )
   })
+
+  it('PUBLIC_CACHE_TTL_MS: opcional, coage número, rejeita negativo', () => {
+    expect(loadEnv({ ...BASE, NODE_ENV: 'test' }).PUBLIC_CACHE_TTL_MS).toBeUndefined()
+    expect(
+      loadEnv({ ...BASE, NODE_ENV: 'test', PUBLIC_CACHE_TTL_MS: '30000' }).PUBLIC_CACHE_TTL_MS,
+    ).toBe(30000)
+    expect(() => loadEnv({ ...BASE, NODE_ENV: 'test', PUBLIC_CACHE_TTL_MS: '-1' })).toThrow()
+  })
 })

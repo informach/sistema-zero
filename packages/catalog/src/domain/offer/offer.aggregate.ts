@@ -141,6 +141,7 @@ export class OfferAggregate extends AggregateRoot<string> {
     // Valida o preço (inteiro ≥ 0) via Money.
     Money.fromCents(input.priceCents, currency)
     assertCompareAt(input.compareAtPriceCents, input.priceCents, currency)
+    assertAvailabilityWindow(input.availableFrom ?? null, input.availableUntil ?? null)
 
     const offer = new OfferAggregate(input.id, {
       version: 0,
@@ -195,12 +196,13 @@ export class OfferAggregate extends AggregateRoot<string> {
       this.props.priceCents = details.priceCents
     }
     if (details.compareAtPriceCents !== undefined) {
-      assertCompareAt(
-        details.compareAtPriceCents,
-        details.priceCents ?? this.props.priceCents,
-        this.props.currency,
-      )
+      assertCompareAt(details.compareAtPriceCents, this.props.priceCents, this.props.currency)
       this.props.compareAtPriceCents = details.compareAtPriceCents
+    } else if (details.priceCents !== undefined) {
+      // Preço mudou sem tocar o compareAt: revalida o invariante contra o
+      // EXISTENTE — subir o preço acima do "de" criaria um "de R$X por R$Y"
+      // invertido na página de vendas (precificação enganosa).
+      assertCompareAt(this.props.compareAtPriceCents, this.props.priceCents, this.props.currency)
     }
     if (details.pricingMode !== undefined) this.props.pricingMode = details.pricingMode
     if (details.installmentsMax !== undefined)
@@ -211,6 +213,9 @@ export class OfferAggregate extends AggregateRoot<string> {
       this.props.guaranteeDays = nullablePositiveInt(details.guaranteeDays, 'guaranteeDays')
     if (details.availableFrom !== undefined) this.props.availableFrom = details.availableFrom
     if (details.availableUntil !== undefined) this.props.availableUntil = details.availableUntil
+    // Sobre o estado CONSOLIDADO (espelha o assertWindow do cupom): janela
+    // invertida tornaria a oferta permanentemente indisponível sem nenhum erro.
+    assertAvailabilityWindow(this.props.availableFrom, this.props.availableUntil)
     if (details.content !== undefined) this.props.content = details.content
     if (details.metadata !== undefined) this.props.metadata = details.metadata
     this.touch(details.now)
@@ -320,6 +325,13 @@ function assertCompareAt(
   Money.fromCents(compareAt, currency)
   if (compareAt < price) {
     throw new ValidationError('O preço "de" (compareAt) não pode ser menor que o preço de venda')
+  }
+}
+
+/** Janela de disponibilidade coerente: `availableUntil` posterior a `availableFrom`. */
+function assertAvailabilityWindow(from: Date | null, until: Date | null): void {
+  if (from && until && until.getTime() <= from.getTime()) {
+    throw new ValidationError('availableUntil deve ser posterior a availableFrom')
   }
 }
 

@@ -41,6 +41,38 @@ describe('OfferAggregate', () => {
     )
   })
 
+  it('rejeita subir o preço acima do compareAt existente (PATCH só do preço)', () => {
+    const offer = makeOffer({ priceCents: 3700, compareAtPriceCents: 9700 })
+    expect(() => offer.updateDetails({ priceCents: 10000 })).toThrow(ValidationError)
+    // Subindo os dois coerentemente, passa.
+    offer.updateDetails({ priceCents: 10000, compareAtPriceCents: 14700 })
+    expect(offer.priceCents).toBe(10000)
+    expect(offer.compareAtPriceCents).toBe(14700)
+  })
+
+  it('rejeita janela de disponibilidade invertida (create e update)', () => {
+    const from = new Date('2026-06-10T00:00:00Z')
+    const until = new Date('2026-06-01T00:00:00Z')
+    expect(() =>
+      OfferAggregate.create({
+        id: 'o-win',
+        productId: 'prod-1',
+        code: Sku.create('win'),
+        slug: Slug.create('win'),
+        name: 'Janela',
+        priceCents: 100,
+        availableFrom: from,
+        availableUntil: until,
+      }),
+    ).toThrow(ValidationError)
+
+    const offer = makeOffer()
+    offer.updateDetails({ availableFrom: until, availableUntil: from }) // ordem correta
+    expect(() => offer.updateDetails({ availableUntil: new Date('2026-05-01T00:00:00Z') })).toThrow(
+      ValidationError,
+    )
+  })
+
   it('isAvailable só quando ativa e dentro da janela', () => {
     const offer = makeOffer({ status: 'active' })
     expect(offer.isAvailable()).toBe(true)
