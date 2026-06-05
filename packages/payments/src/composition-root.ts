@@ -24,6 +24,7 @@ import { EfiClient } from './infrastructure/gateways/efi/efi.client'
 import { EfiPaymentGateway } from './infrastructure/gateways/efi/efi.gateway'
 import { EfiCobrancasClient } from './infrastructure/gateways/efi/efi-cobrancas.client'
 import { createLogger, type Logger } from './infrastructure/logging/logger'
+import { withSentryMirror } from './infrastructure/observability/sentry'
 import { OutboxPoller } from './infrastructure/outbox/outbox-poller'
 import { CachingConsumerRepository } from './infrastructure/persistence/caching-consumer-repository'
 import { PG_CHANNELS } from './infrastructure/persistence/drizzle/channels'
@@ -77,10 +78,14 @@ export interface Application {
  * substituíveis.
  */
 export function createApplication(env: Env): Application {
-  const logger = createLogger({
-    level: env.NODE_ENV === 'production' ? 'info' : 'debug',
-    pretty: env.NODE_ENV !== 'production',
-  })
+  // Espelho Sentry: TODO log de nível ERROR vira evento/issue (a convenção do
+  // package é "log ERROR = sinal alertável"). No-op sem SENTRY_DSN.
+  const logger = withSentryMirror(
+    createLogger({
+      level: env.NODE_ENV === 'production' ? 'info' : 'debug',
+      pretty: env.NODE_ENV !== 'production',
+    }),
+  )
 
   const connection: DbConnection = createDbConnection(env.DATABASE_URL, {
     max: env.DATABASE_POOL_MAX,

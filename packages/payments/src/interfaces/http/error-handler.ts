@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/bun'
 import { DomainError } from '@sistemazero/core/errors'
 import type { ErrorEnvelope } from '@sistemazero/core/http'
 import {
@@ -60,6 +61,12 @@ export function buildErrorResponse(input: {
       message: error.message,
       providerCode: error.providerCode,
     })
+    // Exceção (com stack) no Sentry — o espelho de logs PULA 'gateway.error'
+    // de propósito (este capture é o evento canônico). No-op sem DSN.
+    Sentry.captureException(error, (scope) => {
+      scope.setFingerprint(['efi-gateway-error', error.providerCode ?? 'unknown'])
+      return scope
+    })
     return {
       status: 502,
       body: envelope('PROVIDER_ERROR', 'Falha ao comunicar com o provedor de pagamento'),
@@ -84,5 +91,7 @@ export function buildErrorResponse(input: {
   input.logger.error('unhandled.error', {
     message: error instanceof Error ? error.message : String(error),
   })
+  // Exceção inesperada (500) → Sentry com stack (o espelho pula 'unhandled.error').
+  Sentry.captureException(error)
   return { status: 500, body: envelope('INTERNAL_ERROR', 'Erro interno') }
 }

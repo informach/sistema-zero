@@ -284,6 +284,23 @@ injeta os dois; header de status ausente = não passou pelo gateway → 401) e
 `status === 'active'` (senão 403) — "ausente" nunca equivale a "ativo". Estas rotas **NÃO** usam auth de consumidor (HMAC) nem `resign` no
 gateway. São cross-consumer (o painel enxerga todos).
 
+## Sentry (monitoramento de erros)
+
+`@sentry/bun` (estável — o `@sentry/elysia` é ALPHA, não usar em pagamentos),
+ligado por `SENTRY_DSN` (ausente = no-op; projeto `sistema-zero-payments` na org
+`informach-nucleo-de-aprendizag`). Init no TOPO do `index.ts` (após `loadEnv`),
+`environment` = NODE_ENV, `release` = `RAILWAY_GIT_COMMIT_SHA`,
+**`sendDefaultPii: false`** (pagamentos — nada de headers/IP) e `tracesSampleRate: 0`
+(só erros). Três camadas (`infrastructure/observability/sentry.ts`):
+1. **Espelho de logs** (`withSentryMirror`, no composition-root): TODO log de
+   nível ERROR vira evento (fingerprint = nome do evento; contexto = extras) —
+   cobre workers/outbox/mismatch sem tocar call sites. `MIRROR_SKIP` evita
+   duplicar o que já é capturado como exceção (mantenha em sincronia!).
+2. **`captureException` no error-handler** (500 `unhandled.error` + 502
+   `EfiGatewayError`, fingerprint por providerCode) — evento canônico com stack.
+3. **Process handlers/boot** (`index.ts`): captureException + `flushSentry()` no
+   shutdown (entrega pendentes antes do exit).
+
 - **Leitura:** `GET /payments/admin/payments` (`?q&status&method&consumerId&from&to&limit&offset`),
   `GET /payments/admin/payments/:id`, `GET /payments/admin/subscriptions` (`?q&status&consumerId&limit&offset`),
   `GET /payments/admin/subscriptions/:id`, `GET /payments/admin/stats` (`?from&to` → receita/contagens),

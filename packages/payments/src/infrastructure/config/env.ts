@@ -90,6 +90,8 @@ const EnvSchema = z
     // serviço tem domínio público (o webhook da Efí chega direto), então /metrics
     // não pode ficar aberto em produção — o refine abaixo o torna obrigatório.
     METRICS_TOKEN: z.string().min(16, 'METRICS_TOKEN deve ter pelo menos 16 caracteres').optional(),
+    // DSN do Sentry (monitoramento de erros). Ausente = desligado (dev/local).
+    SENTRY_DSN: z.string().url().optional(),
 
     OUTBOX_POLL_INTERVAL_MS: z.coerce.number().int().positive().default(2000),
     OUTBOX_BATCH_SIZE: z.coerce.number().int().positive().default(100),
