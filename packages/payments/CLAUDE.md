@@ -61,7 +61,7 @@ tests/               # unit/ · application/ · integration/ · fakes/
 | `bun run dev` | sobe o servidor com watch |
 | `bun run start` | sobe o servidor |
 | `bun run typecheck` | `tsc --noEmit` (cobre `src`, `tests`, `scripts`) |
-| `bun test` | testes (unit + app com fakes + integração via `app.handle`) |
+| `bun test` | testes (unit + app com fakes + integração via `app.handle` + `tests/db/` contra Postgres real — estes PULAM sem banco na :5433) |
 | `bun run db:generate` | gera migration SQL a partir do `schema.ts` |
 | `bun run db:migrate` | aplica migrations |
 | `bun run db:seed --id <id> --cidrs "ip/32,..." [--webhook-url <url>]` | cadastra/atualiza um consumidor (imprime o HMAC secret); `--webhook-url` define o destino dos webhooks de saída |
@@ -103,6 +103,17 @@ tests/               # unit/ · application/ · integration/ · fakes/
    O `processPending` usa `FOR UPDATE SKIP LOCKED` → **seguro com várias réplicas**
    (não publica em dobro). Mantenha a publicação rápida (in-process) — entregas
    lentas (HTTP) vão para a fila `webhook_deliveries`, não para dentro do outbox.
+   A atomicidade (rollback CONJUNTO de pagamento + eventos numa falha no meio) é
+   **provada contra Postgres real** em `tests/db/outbox-atomicity.test.ts` —
+   banco dedicado `sistemazero_test` criado na mesma instância (:5433), migrations
+   aplicadas pelo próprio teste; sem Postgres alcançável os testes são **pulados**
+   (`bun test` segue verde sem infra; override: `TEST_DATABASE_URL`). O mesmo
+   arquivo prova a corrida de `version` sem evento duplicado, a unique do txid e
+   a reciclagem concorrente de reserva de idempotência. ⚠️ **bun:test gotcha**:
+   NÃO use `expect(...).rejects` com promises do drizzle/postgres-js (thenable
+   preguiçoso — a rejeição de um erro de query dentro de transação só chega
+   quando o pool morre no teardown → timeout de 5s + teste "(unnamed)" fantasma);
+   capture com try/catch (helper `rejectionOf` no próprio arquivo).
 
 4. **Nunca confie no webhook.** `HandleProviderWebhookService` **re-consulta a
    cobrança na Efí** (`getPixCharge`) antes de marcar como pago, confere o **valor
