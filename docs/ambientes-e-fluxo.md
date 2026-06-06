@@ -60,12 +60,20 @@ URLs públicas:
 
 ## Deploys
 
+- **Staging — AUTOMÁTICO via GitHub Actions**: push/merge na branch `staging` roda
+  o CI e, **se verde**, o job `deploy-staging` (no próprio `ci.yml`) dispara o
+  deploy **só dos serviços afetados pelo diff** (mapa que espelha os
+  `watchPatterns` dos `railway.json`; `bun.lock`/`package.json` → todos; `core` →
+  backends+funnel; `ui` → admin/community/funnel). Usa o secret `RAILWAY_TOKEN`
+  (token de conta do Railway) e espera os healthchecks convergirem. Forçar um
+  deploy: `gh workflow run CI --ref staging -f services=all` (ou CSV:
+  `-f services=funnel,auth`). *(O trigger nativo do Railway só pode ser armado
+  pelo dashboard — por isso o deploy é dirigido pelo CI, o que de quebra gateia
+  o deploy no CI verde.)*
 - **Produção**: merge na `main` → o **admin** auto-deploya (trigger armado no
   dashboard); os demais serviços são deployados **manualmente** (GraphQL
-  `serviceInstanceDeployV2` com o sha da main, ou dashboard).
-- **Staging**: deploy **manual** por sha da branch `staging` (mesma mutation).
-  Armar auto-deploy por push da staging é uma decisão pendente (dashboard:
-  serviço → Settings → Source → branch `staging`, por serviço).
+  `serviceInstanceDeployV2` com o sha da main, ou dashboard) — deploy de prod
+  deliberado, por escolha.
 - ⚠️ Gotcha de build: o Railway **só passa variáveis ao build do Dockerfile quando
   declaradas como `ARG`** (ver o Dockerfile do funnel — envs `PUBLIC_*`/
   `FUNNEL_PUBLIC_URL` são inlined no `astro build`).
