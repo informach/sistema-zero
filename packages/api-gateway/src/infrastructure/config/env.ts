@@ -112,6 +112,9 @@ const EnvSchema = z
     // Header `x-metrics-token` ou `Authorization: Bearer`. OBRIGATÓRIO em produção.
     METRICS_TOKEN: optionalSecret,
 
+    // DSN do Sentry (monitoramento de erros). Ausente = desligado (dev/local).
+    SENTRY_DSN: z.string().url().optional(),
+
     // Tokens internos injetados por header-inject no gateway.config.ts (defesa em
     // profundidade: provam ao upstream que a chamada passou pelo gateway). O config
     // os lê DIRETO de process.env; aqui só validamos (≥16 chars; obrigatórios em

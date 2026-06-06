@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/bun'
 import { DomainError } from '@sistemazero/core/errors'
 import {
   type ErrorEnvelope,
@@ -67,5 +68,8 @@ export function buildErrorResponse(input: {
     return { status: 404, body: envelope('NOT_FOUND', 'Recurso não encontrado') }
 
   input.logger.error('unhandled.error', { error: serializeError(error) })
+  // Exceção inesperada (500) → Sentry com stack (o espelho de logs PULA
+  // 'unhandled.error' de propósito — este capture é o evento canônico). No-op sem DSN.
+  Sentry.captureException(error)
   return { status: 500, body: envelope('INTERNAL_ERROR', 'Erro interno') }
 }

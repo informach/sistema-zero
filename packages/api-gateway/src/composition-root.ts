@@ -29,6 +29,7 @@ import { loadGatewayConfig } from './infrastructure/config/load-gateway-config'
 import { createLoadBalancer } from './infrastructure/load-balancing/load-balancer.factory'
 import { UpstreamStats } from './infrastructure/load-balancing/upstream-stats'
 import { MetricsRegistry } from './infrastructure/observability/metrics-registry'
+import { withSentryMirror } from './infrastructure/observability/sentry'
 import { createFetchForwarder } from './infrastructure/proxy/fetch-forwarder'
 import { ProxyEngine } from './infrastructure/proxy/proxy-engine'
 import {
@@ -68,7 +69,12 @@ export async function createApplication(
   env: Env,
   opts: CreateApplicationOptions = {},
 ): Promise<Application> {
-  const logger = createLogger({ level: env.LOG_LEVEL, pretty: env.NODE_ENV !== 'production' })
+  // Espelho do Sentry: logs ERROR viram evento alertável — com a política da
+  // BORDA p/ o access log (502/503/504 = sinal único do gateway; 500 = dup do
+  // upstream/pipeline, não espelha). No-op sem SENTRY_DSN.
+  const logger = withSentryMirror(
+    createLogger({ level: env.LOG_LEVEL, pretty: env.NODE_ENV !== 'production' }),
+  )
   const config = await loadGatewayConfig(env, opts.rawConfig, {
     validTransformTypes: Object.keys(defaultTransformerRegistry),
   })

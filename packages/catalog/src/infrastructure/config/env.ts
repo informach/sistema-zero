@@ -51,6 +51,9 @@ const EnvSchema = z
     // dos headers X-Auth-User-* (injetados pelo gateway) como defesa em profundidade.
     // Em dev, fora do gateway, pode-se desligar a checagem.
     REQUIRE_ADMIN: optionalBool(true),
+
+    // DSN do Sentry (monitoramento de erros). Ausente = desligado (dev/local).
+    SENTRY_DSN: z.string().url().optional(),
   })
   .refine((env) => env.NODE_ENV !== 'production' || Boolean(env.INTERNAL_API_TOKEN), {
     message:

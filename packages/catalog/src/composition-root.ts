@@ -14,6 +14,7 @@ import { UpdateCouponService } from './application/update-coupon/update-coupon.s
 import { UpdateOfferService } from './application/update-offer/update-offer.service'
 import { UpdateProductService } from './application/update-product/update-product.service'
 import type { Env } from './infrastructure/config/env'
+import { withSentryMirror } from './infrastructure/observability/sentry'
 import { DrizzleCouponRepository } from './infrastructure/persistence/drizzle/coupon.repository'
 import { createDbConnection, type DbConnection } from './infrastructure/persistence/drizzle/db'
 import { DrizzleOfferRepository } from './infrastructure/persistence/drizzle/offer.repository'
@@ -31,10 +32,14 @@ export interface Application {
  * concretos são instanciados e plugados nos ports.
  */
 export function createApplication(env: Env): Application {
-  const logger = createLogger({
-    level: env.NODE_ENV === 'production' ? 'info' : 'debug',
-    pretty: env.NODE_ENV !== 'production',
-  })
+  // Espelho do Sentry: TODO log de nível ERROR vira evento alertável (a convenção
+  // do monorepo é "log ERROR = sinal alertável"). No-op sem SENTRY_DSN.
+  const logger = withSentryMirror(
+    createLogger({
+      level: env.NODE_ENV === 'production' ? 'info' : 'debug',
+      pretty: env.NODE_ENV !== 'production',
+    }),
+  )
 
   const connection: DbConnection = createDbConnection(env.DATABASE_URL, {
     max: env.DATABASE_POOL_MAX,

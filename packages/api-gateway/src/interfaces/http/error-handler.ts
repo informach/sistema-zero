@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/bun'
 import { type ErrorEnvelope, envelope } from '@sistemazero/core/http'
 import { type Logger, serializeError } from '@sistemazero/core/logging'
 
@@ -28,5 +29,8 @@ export function buildGatewayErrorResponse(input: {
     return { status: 400, body: envelope('PARSE_ERROR', 'Corpo da requisição inválido') }
 
   input.logger.error('gateway.unhandled', { error: serializeError(error) })
+  // Exceção inesperada (500) → Sentry com stack (o espelho de logs PULA
+  // 'gateway.unhandled' de propósito — este capture é o evento canônico). No-op sem DSN.
+  Sentry.captureException(error)
   return { status: 500, body: envelope('INTERNAL_ERROR', 'Erro interno do gateway') }
 }
