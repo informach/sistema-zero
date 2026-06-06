@@ -343,9 +343,11 @@ egress/ida à internet; a borda pública também funciona), `FUNNEL_HMAC_SECRET`
 (projeto sistema-zero-funnel; ausente = desligado), **`NODE_ENV=production`** (controla o `Secure`
 dos cookies!), **`TRUST_PROXY=true`** (obrigatório explicitar em prod) e **`HOST=::`** (standalone
 lê HOST/PORT do ambiente; `::` p/ dual-stack). ⚠️ **Envs de BUILD** (inlined pelo Vite no `astro
-build` — o Railway disponibiliza as variáveis do serviço no build do Dockerfile):
-`PUBLIC_EFI_ACCOUNT_IDENTIFIER`, `PUBLIC_EFI_SANDBOX=false` e `FUNNEL_PUBLIC_URL` (site/sitemap —
-sem ela o sitemap sai `localhost`).
+build`): `PUBLIC_EFI_ACCOUNT_IDENTIFIER`, `PUBLIC_EFI_SANDBOX=false` e `FUNNEL_PUBLIC_URL`
+(site/canonical/sitemap — sem ela sai `localhost`). **O Railway SÓ passa variáveis ao build do
+Dockerfile quando declaradas como `ARG`** (aprendido no 1º deploy: sem os ARG o bundle saiu com
+localhost e sem o identificador da Efí) — os `ARG`/`ENV` correspondentes estão no Dockerfile antes
+do `astro build`; ao criar env de build NOVA, declare-a lá também.
 
 ## Sentry (monitoramento de erros)
 

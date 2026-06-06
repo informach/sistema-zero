@@ -14,9 +14,17 @@ COPY . .
 # migrations no pre-deploy e o astro/check participam do build).
 RUN bun install --frozen-lockfile
 
-# Build do Astro: marketing pré-renderizado + servidor SSR (dist/server/entry.mjs).
-# ⚠️ As PUBLIC_* (Efí) e FUNNEL_PUBLIC_URL são INLINED AQUI no build — defina-as
-# como variáveis do serviço no Railway (ficam disponíveis no build do Dockerfile).
+# Build do Astro: servidor SSR (dist/server/entry.mjs) + assets do cliente.
+# ⚠️ As PUBLIC_* (Efí) e FUNNEL_PUBLIC_URL são INLINED AQUI no build (Vite) — e o
+# Railway SÓ passa variáveis do serviço ao build do Dockerfile quando declaradas
+# como ARG (docs.railway.com/builds/dockerfiles). Sem isto o bundle sai com
+# localhost no canonical/sitemap e SEM o identificador da Efí (cartão morto).
+ARG FUNNEL_PUBLIC_URL
+ARG PUBLIC_EFI_ACCOUNT_IDENTIFIER
+ARG PUBLIC_EFI_SANDBOX
+ENV FUNNEL_PUBLIC_URL=$FUNNEL_PUBLIC_URL \
+    PUBLIC_EFI_ACCOUNT_IDENTIFIER=$PUBLIC_EFI_ACCOUNT_IDENTIFIER \
+    PUBLIC_EFI_SANDBOX=$PUBLIC_EFI_SANDBOX
 RUN bun run --filter @sistemazero/funnel build
 
 # Documental: o standalone escuta em HOST/PORT do ambiente (Railway injeta $PORT;
