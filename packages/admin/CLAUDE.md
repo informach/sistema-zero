@@ -90,20 +90,39 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
   pelo `alg` do token (espelha a jwt.strategy do gateway): **HS256** com `JWT_HS256_SECRET`
   (dev/local, MESMO segredo do auth/gateway) e/ou **RS256 via `JWT_JWKS_URL`** (PRODUÇÃO — o auth
   emite RS256; aponte p/ o gateway `<GATEWAY_URL>/auth/.well-known/jwks.json`; jose cuida do cache).
-  Pelo menos UM dos dois é obrigatório (refine no env). Token expirado → a assinatura já foi
-  validada (jose checa assinatura ANTES do exp) → decodifica p/ exibir; os dados renovam via
-  refresh-on-401.
+  Pelo menos UM dos dois é obrigatório (refine no env). **Em PRODUÇÃO o boot EXIGE `JWT_JWKS_URL` e
+  RECUSA `JWT_HS256_SECRET`** (full review 2): um segredo HS256 fraco copiado de dev forjaria a
+  sessão que autoriza LOCALMENTE o `/api/media/*` (essas rotas não passam pelo gateway). Token
+  expirado → a assinatura já foi validada (jose checa assinatura ANTES do exp) → decodifica p/
+  exibir; os dados renovam via refresh-on-401. Os **nomes dos cookies** vivem em `src/lib/cookies.ts`
+  (fonte única — `session.ts` escreve, `proxy.ts` lê): em prod ganham o prefixo **`__Host-`**
+  (`__Host-sz_admin_*` — o browser exige Secure+Path=/+sem Domain, prende o cookie a esta origem
+  exata); em dev (http) o prefixo é omitido (`__Host-` exige Secure). ⚠️ Ao subir p/ prod, sessões
+  abertas (cookies sem prefixo) deixam de ser lidas → 1 re-login regrava.
 - **Refresh (`src/server/gateway.ts`):** `gatewayFetch` em 401 chama `/auth/refresh`, regrava os
   cookies e re-tenta UMA vez. **Só** roda em Route Handlers/Server Actions (lá pode escrever cookies).
-  A rotação é **single-flight por refresh token** (mapa de promessas em módulo): chamadas paralelas
-  (`Promise.all` no BFF, fetches concorrentes do dashboard) compartilham UMA rotação — sem isso o
-  claim atômico do auth derruba a 2ª e o `clearSessionCookies` dela apagaria os cookies recém-
-  gravados (logout aleatório). Falha de REDE no refresh NÃO limpa cookies (transitória); recusa do
-  auth limpa. Toda chamada de saída tem **timeout** (`AbortSignal.timeout`: dados 60s, auth 15s) e
-  **propaga `x-forwarded-for`/`x-request-id`** do request de entrada (sem isso o rate limit por IP
-  do gateway e o log de login falho do auth veriam só o IP do host do admin).
-- **Gate de UI:** `src/proxy.ts` (convenção `proxy` do Next 16, ex-`middleware`) bloqueia `/admin/*` sem cookie de refresh (redirect `/login`);
-  `app/admin/layout.tsx` faz a checagem real (assinatura + role) e mostra "acesso negado" se preciso.
+  A rotação é **single-flight por refresh token**: chamadas paralelas (`Promise.all` no BFF, fetches
+  concorrentes do dashboard) compartilham UMA rotação — sem isso o claim atômico do auth derruba a
+  2ª e o `clearSessionCookies` dela apagaria os cookies recém-gravados (logout aleatório). ⚠️ O mapa
+  vive em **`globalThis`**, NÃO em escopo de módulo: o Turbopack separa route handlers (e o proxy)
+  em BUNDLES distintos com cópias próprias do módulo — um Map de módulo daria uma rotação concorrente
+  POR bundle, mesmo em UM processo, reabrindo o logout aleatório (lição verificada no community).
+  ⚠️ Mesmo no `globalThis`, o single-flight é **POR PROCESSO → só cobre 1 réplica** (ver §Deploy).
+  Falha de REDE no refresh NÃO limpa cookies (transitória); recusa do auth limpa. Toda chamada de
+  saída tem **timeout** (`AbortSignal.timeout`: dados 60s, auth 15s) e **propaga
+  `x-forwarded-for`/`x-request-id`** do request de entrada (sem isso o rate limit por IP do gateway e
+  o log de login falho do auth veriam só o IP do host do admin).
+- **Gate de UI + anti-CSRF:** `src/proxy.ts` (convenção `proxy` do Next 16, ex-`middleware`)
+  (a) **barra mutação `/api/*` que não seja same-origin** (`requiresOriginCheck` + `isSameOriginRequest`
+  de `lib/csrf.ts`) — defesa em profundidade além do `SameSite=Lax`, que NÃO barra um subdomínio
+  IRMÃO (same-site) no domínio definitivo; e (b) bloqueia `/admin/*` sem cookie de refresh (redirect
+  `/login`). `app/admin/layout.tsx` faz a checagem real (assinatura + role) e mostra "acesso negado"
+  se preciso. ⚠️ Os **security headers NÃO ficam mais no proxy** — migraram p/ `next.config.ts`
+  (`headers()`), que cobre TODAS as respostas, inclusive `/api/media/*` (fora do matcher do proxy):
+  CSP, XFO DENY, nosniff, Referrer-Policy, Permissions-Policy, `X-Robots-Tag: noindex` e HSTS (prod).
+  A **CSP** é sem-nonce (`'unsafe-inline'` p/ o bootstrap do Next; `connect-src` libera os hosts de
+  upload TUS do Vimeo `*.cloud.vimeo.com`; `img-src https:` p/ capas do R2/externas; `frame-src`
+  player.vimeo) — se o upload de vídeo sumir com erro de CSP, re-extraia o host de upload do Vimeo.
 
 ## Mídia (`/api/media/*` — R2 + Vimeo)
 
@@ -113,13 +132,17 @@ serviços internos) → **todo handler exige `requireMediaSession()`** (sessão 
 `src/server/media.ts`). O guard é **ESTRITO** (full review 06/2026): como o gateway nunca revalida
 essas rotas, token expirado NÃO autoriza — `verifyAccessToken` (exp incluso) + UMA tentativa de
 `tryRefresh` (Route Handler pode regravar cookies) e re-verificação; falhou → 401. (`getSession`
-tolera exp SÓ p/ exibição — não use p/ autorizar fora do gateway.) Todo upload tem **pre-check de
-Content-Length** (`rejectOversizedRequest`, 413) ANTES do `formData()` — o parse materializa o
-corpo inteiro em memória. O matcher do `proxy.ts` **exclui `api/media`** (o proxy buffeia o corpo a
-~10MB e estrangularia multipart). Fatia **stateless**: sem tabela de assets — URLs/IDs vivem no
-conteúdo dos blocos do members (lixo órfão no R2 é dívida documentada; sem GC nesta fatia).
-Chamadas externas têm timeout (Vimeo API 30s / bytes 60s; S3/R2 connection 5s / request 120s) e o
-`mediaErrorResponse` **não vaza** a mensagem interna em prod (fica no log).
+tolera exp SÓ p/ exibição — não use p/ autorizar fora do gateway.) O `requireMediaSession` também
+aplica a **mesma checagem anti-CSRF same-origin** do proxy (estas rotas ficam FORA do matcher dele).
+Todo upload tem **pre-check de Content-Length** (`rejectOversizedRequest`) ANTES do `formData()` — o
+parse materializa o corpo inteiro em memória; **Content-Length é OBRIGATÓRIO** (411 se ausente — sem
+isso um corpo chunked passaria sem teto até o check pós-parse), excedente → 413. O matcher do
+`proxy.ts` **exclui `api/media`** (o proxy buffeia o corpo a ~10MB e estrangularia multipart). Fatia
+**stateless**: sem tabela de assets — URLs/IDs vivem no conteúdo dos blocos do members (lixo órfão no
+R2 é dívida documentada; sem GC nesta fatia). Chamadas externas têm timeout (Vimeo API 30s / bytes
+60s; S3/R2 connection 5s / request 120s) e o `mediaErrorResponse` **não vaza** a mensagem interna em
+prod (fica no log) e **espelha o erro p/ o Sentry** (`captureServerException`, com a cadeia de
+`cause` — o `r2.ts` embrulha o erro do S3 preservando a causa).
 
 - `POST /api/media/images` (multipart ≤5MB png/jpg/webp; `scope=course|block`) → sharp→WebP →
   R2 `admin/{courses,blocks}/<uuid>.webp` → `{url,width,height,sizeBytes}`.
@@ -174,7 +197,8 @@ admin E do community.
    guard de sessão próprio (ver §Mídia).
 2. **Segredos só no servidor.** `src/lib/env.ts` é `server-only`; `src/server/*` idem. **Nunca**
    importe `env`/`server/*` de um Client Component (vaza p/ o bundle). Client fala só com `/api/*`.
-3. **Tokens em cookie HttpOnly** (`sz_admin_*`), `SameSite=Lax`, `Secure` em prod. Nunca exponha ao JS.
+3. **Tokens em cookie HttpOnly** (`sz_admin_*`; em prod prefixados **`__Host-`** — ver `lib/cookies.ts`),
+   `SameSite=Lax`, `Secure` em prod, `Path=/`, sem `Domain`. Nunca exponha ao JS.
 4. **Dinheiro em centavos** (inteiro). Conversão só na borda (`src/lib/format.ts`: `formatCents`/`reaisToCents`).
    O **payments** serializa valores como **string** (bigint) → use `formatCentsStr` (faz `Number()`).
 5. **Cookies só se escrevem** em Route Handlers/Server Actions (limitação do Next). Refresh mora lá.
@@ -203,10 +227,12 @@ src/
       catalog/{products,offers,coupons}/route.ts (+ [id]/route.ts — products tem GET-one + PATCH)
       payments/{transactions,subscriptions,stats,ops}/… (GET; [id] GET, [id]/refund POST, subscriptions/[id] DELETE)
       payments/stats/daily/route.ts (série diária do painel; ?from&to&productId)
-  server/   session.ts · gateway.ts · catalog.ts · users.ts · payments.ts   (server-only)
+  server/   session.ts · gateway.ts · catalog.ts · users.ts · payments.ts · sentry.ts   (server-side)
             payments.ts: getDailyPaymentsStats DENSIFICA a série (dias civis BRT, zeros, totals
-            via BigInt) e resolve productId→offerIds no catálogo antes de chamar o payments
+            via BigInt) e resolve productId→offerIds no catálogo antes de chamar o payments; +
+            micro-cache TTL da lista de ofertas (garantia). sentry.ts: ingestão via fetch (sem SDK)
   lib/      env.ts (server-only) · types.ts · format.ts · cn.ts · api.ts (client fetch)
+            cookies.ts (nomes dos cookies, prefixo __Host- em prod) · csrf.ts (same-origin, puro)
             slug.ts (slugify/skuify/offerSlugSuggestion/offerCodeSuggestion — kebab MINÚSCULO,
             espelha os VOs do catalog: Sku lowercase!; autogeração usa dirty-flag por campo)
   components/ catalog/* (offers-multi-select · components-editor · offer-items-editor ·
@@ -250,9 +276,15 @@ Da raiz: `bun run dev:admin`, `bun run build:admin`, `bun run start:admin`.
 - `GATEWAY_URL` (default `http://localhost:3000`; **em prod é OBRIGATÓRIO explícito** — fail-fast).
 - Verificação do access token — **pelo menos UM**: `JWT_HS256_SECRET` (dev/local, MESMO do
   auth/gateway) e/ou `JWT_JWKS_URL` (**produção** — o auth emite RS256; usar o JWKS via gateway:
-  `http://api-gateway.railway.internal:3000/auth/.well-known/jwks.json`).
+  `http://api-gateway.railway.internal:3000/auth/.well-known/jwks.json`). ⚠️ **Em produção o boot
+  EXIGE `JWT_JWKS_URL` e RECUSA `JWT_HS256_SECRET`** (full review 2 — HS256 fraco forjaria a sessão
+  local de `/api/media/*`).
 - `JWT_ISSUER`/`JWT_AUDIENCE`: **OBRIGATÓRIOS em produção** (fail-fast no boot — mesma regra do
   gateway; prod = `sistemazero-auth`/`sistemazero`); em dev, casar com o auth ativa a checagem.
+- `SENTRY_DSN` (opcional): espelho de erros LOCAIS do painel (pipeline de mídia + exceções de Route
+  Handler/RSC via `onRequestError`). Ausente = no-op. ⚠️ **Sem SDK** — o `src/server/sentry.ts` fala
+  o protocolo de ingestão via `fetch` (o tracing do standalone/Turbopack não copia pacotes externos
+  de forma confiável; ver §Deploy).
 
 **Fail-fast de boot:** as regras acima vivem em DOIS lugares que precisam ficar em sincronia —
 `src/instrumentation.ts` (cobre `next dev`; ⚠️ em PRODUÇÃO o Next 16 não roda `register()` no boot:
@@ -272,8 +304,22 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   (fail-fast de env → `server.js`). `PORT` injetado pelo Railway (fallback 3005), `HOSTNAME=::`
   (rede privada IPv6). `output: 'standalone'` + `poweredByHeader: false` no `next.config.ts`.
 - `/api/healthz` é liveness puro (sem auth, sem tocar upstream — degradação de serviço ≠ outage do
-  painel). Security headers (`proxy.ts`): XFO DENY, nosniff, Referrer-Policy, Permissions-Policy,
-  `X-Robots-Tag: noindex` e **HSTS em prod**.
+  painel). **Security headers + CSP** vivem no `next.config.ts` (`headers()`, cobrem TODAS as rotas
+  incl. `/api/media/*`): XFO DENY, nosniff, Referrer-Policy, Permissions-Policy, `X-Robots-Tag:
+  noindex`, **CSP** e **HSTS em prod**.
+- ⚠️ **RÉPLICA ÚNICA (não escalar horizontalmente sem refatorar):** o single-flight do refresh
+  (`gateway.ts`, em `globalThis`) e o micro-cache de garantia (`payments.ts`) são POR PROCESSO. Com
+  2+ réplicas, duas rotações concorrentes do mesmo refresh (em réplicas distintas) colidem no claim
+  atômico do auth → logout aleatório. O Railway roda 1 réplica por default (2-3 operadores não
+  exigem escala); para escalar, mover o single-flight p/ um store compartilhado ou dar ao auth uma
+  janela de reuso do refresh (`multiRegionConfig.<região>.numReplicas` no railway.json fixaria a
+  contagem, mas exige escolher a região — preferimos o default do dashboard).
+- ⚠️ **Tracing de externos no standalone (verificar no 1º deploy):** o `next build` (Turbopack) NÃO
+  copia pacotes `serverExternalPackages` (ex.: `sharp`) p/ o `.next/standalone/node_modules` no build
+  LOCAL (Windows) — os deps comuns são BUNDLADOS no chunk e não precisam, mas `sharp` é nativo e
+  PRECISA. Confirme que `sharp` chega ao container (build Linux do Dockerfile); se não, o Dockerfile
+  deve copiá-lo explicitamente. (Por isso o Sentry NÃO usa SDK — fala ingestão via `fetch`, sem dep
+  externa, imune a esse tracing.)
 - Envs de prod: `GATEWAY_URL` + `JWT_JWKS_URL` (+ `JWT_ISSUER`/`JWT_AUDIENCE`) + R2_*/VIMEO_*
   (incl. `R2_PRIVATE_BUCKET=comunidade-sistema-zero-privado`, `VIMEO_FOLDER_ID=29469887`).
 

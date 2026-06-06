@@ -81,7 +81,23 @@ async function readJson<T>(res: Response): Promise<T> {
 // `Promise.all` no BFF, fetches concorrentes do dashboard) compartilham UMA
 // rotação. Sem isso, a segunda rotação perde o claim atômico do auth, recebe
 // !ok e limparia os cookies que a primeira acabou de regravar → logout aleatório.
-const inflightRefresh = new Map<string, Promise<string | null>>()
+//
+// ⚠️ O estado vive em **`globalThis`**, NÃO em escopo de módulo: o Turbopack
+// separa route handlers (e, se um dia o proxy/RSC rotacionar, esses também) em
+// BUNDLES distintos com cópias próprias do módulo — um Map de módulo daria uma
+// rotação concorrente POR bundle, mesmo num único processo, reabrindo o logout
+// aleatório (lição verificada no community). Os bundles dividem o processo, então
+// o `globalThis` é o ponto de encontro.
+//
+// ⚠️ Mesmo assim o single-flight é POR PROCESSO → cobre só UMA réplica. O painel
+// roda em **réplica única** (default do Railway; 2-3 operadores não exigem escala
+// horizontal) — NÃO escale sem antes mover isto p/ um store compartilhado ou dar
+// ao auth uma janela de reuso do refresh. (Ver CLAUDE.md §Deploy.)
+const refreshGlobal = globalThis as typeof globalThis & {
+  __szAdminInflightRefresh?: Map<string, Promise<string | null>>
+}
+refreshGlobal.__szAdminInflightRefresh ??= new Map()
+const inflightRefresh = refreshGlobal.__szAdminInflightRefresh
 
 /**
  * Rotação de tokens (gateway → auth /refresh), com single-flight por refresh

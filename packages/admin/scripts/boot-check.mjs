@@ -31,6 +31,14 @@ if (prod) {
   if (!process.env.JWT_ISSUER?.trim() || !process.env.JWT_AUDIENCE?.trim()) {
     problems.push('JWT_ISSUER e JWT_AUDIENCE (pinagem do emissor — regra de prod do gateway)')
   }
+  // Prod usa SÓ RS256 via JWKS; um segredo HS256 forjaria a sessão local de
+  // `/api/media/*` (mantenha em sincronia com src/instrumentation.ts e lib/env.ts).
+  if (!jwksUrl) problems.push('JWT_JWKS_URL (produção exige RS256 via JWKS do gateway)')
+  if (hs256) {
+    problems.push(
+      'JWT_HS256_SECRET não deve existir em produção (use só JWKS — HS256 forjaria sessão)',
+    )
+  }
 }
 
 if (problems.length > 0) {

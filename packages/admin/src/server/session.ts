@@ -8,11 +8,9 @@ import {
   jwtVerify,
 } from 'jose'
 import { cookies } from 'next/headers'
+import { ACCESS_COOKIE, REFRESH_COOKIE } from '@/lib/cookies'
 import { getEnv, isProd } from '@/lib/env'
 import type { SessionUser } from '@/lib/types'
-
-const ACCESS_COOKIE = 'sz_admin_access'
-const REFRESH_COOKIE = 'sz_admin_refresh'
 
 /** Par de tokens devolvido pelo @sistemazero/auth (via gateway). */
 export interface AuthTokens {

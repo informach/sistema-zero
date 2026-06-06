@@ -118,7 +118,9 @@ export async function r2PutObject(input: R2PutObjectInput): Promise<{ key: strin
     await getClient(cfg).send(new PutObjectCommand(command))
   } catch (error) {
     console.error('[r2] putObject falhou', { key, error })
-    throw new Error('Falha ao enviar o arquivo para o armazenamento.')
+    // Preserva o erro do S3 como `cause` → o Sentry (via mediaErrorResponse)
+    // captura a causa real, não só a mensagem amigável.
+    throw new Error('Falha ao enviar o arquivo para o armazenamento.', { cause: error })
   }
   return { key, url: r2PublicUrl(key) }
 }
@@ -147,7 +149,7 @@ export async function r2PutObjectPrivate(input: R2PutObjectPrivateInput): Promis
     )
   } catch (error) {
     console.error('[r2] putObjectPrivate falhou', { key, error })
-    throw new Error('Falha ao enviar o arquivo para o armazenamento.')
+    throw new Error('Falha ao enviar o arquivo para o armazenamento.', { cause: error })
   }
   return { key }
 }

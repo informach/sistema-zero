@@ -1,6 +1,8 @@
 import 'server-only'
 import { randomUUID } from 'node:crypto'
+import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
+import { isSameOriginRequest } from '@/lib/csrf'
 import { getEnv, isProd } from '@/lib/env'
 import { safeExtension, sanitizeFilename } from '@/lib/filenames'
 import type { SessionUser } from '@/lib/types'
@@ -8,6 +10,7 @@ import { pickTranscriptTrack } from '@/lib/vimeo-helpers'
 import { tryRefresh } from './gateway'
 import { type ImagePreset, optimizeImage } from './image-optimizer'
 import { MediaNotConfiguredError, r2PutObject, r2PutObjectPrivate } from './r2'
+import { captureServerException } from './sentry'
 import { type AccessVerdict, getAccessToken, getRefreshToken, verifyAccessToken } from './session'
 import {
   addVideoToFolder,
@@ -72,6 +75,22 @@ export const AUDIO_MIME_TYPES = new Set([
  * ou uma `NextResponse` de erro pronta.
  */
 export async function requireMediaSession(): Promise<SessionUser | NextResponse> {
+  // Anti-CSRF (mesma régua do proxy; `/api/media/*` fica fora do matcher dele).
+  // Todo tráfego destas rotas é `fetch()` same-origin dos editores do painel.
+  const h = await headers()
+  if (
+    !isSameOriginRequest({
+      secFetchSite: h.get('sec-fetch-site'),
+      origin: h.get('origin'),
+      host: h.get('x-forwarded-host') ?? h.get('host'),
+    })
+  ) {
+    return NextResponse.json(
+      { error: { code: 'FORBIDDEN', message: 'Origem não permitida.' } },
+      { status: 403 },
+    )
+  }
+
   const access = await getAccessToken()
   const refresh = await getRefreshToken()
   let verdict: AccessVerdict =
@@ -111,6 +130,10 @@ export function mediaErrorResponse(error: unknown): NextResponse {
     )
   }
   console.error('[media] operação falhou', error)
+  // Erro inesperado da pipeline de mídia (R2/Vimeo) → Sentry, COM a cadeia de
+  // `cause` (o r2.ts embrulha o erro do S3 preservando a causa). 5xx de upstream
+  // não passam por aqui (esta rota não fala com o gateway).
+  captureServerException(error, { area: 'media' })
   // Em prod a mensagem interna (ex.: corpo de erro da API Vimeo) não vaza ao
   // cliente — o detalhe fica no log acima.
   const message =
@@ -122,17 +145,22 @@ export function mediaErrorResponse(error: unknown): NextResponse {
  * Pre-check do Content-Length ANTES do `req.formData()` — o parse materializa o
  * corpo INTEIRO em memória, então o limite precisa barrar o upload antes disso
  * (um arquivo de GBs mandado por engano derrubaria o host). Folga p/ o envelope
- * multipart (boundary/headers). Corpo sem Content-Length (chunked — browsers
- * sempre declaram em FormData) segue p/ o check pós-parse de `file.size`.
+ * multipart (boundary/headers). **Content-Length é OBRIGATÓRIO** nestas rotas
+ * (browsers SEMPRE declaram em `FormData`): sem ele, um corpo chunked passaria
+ * sem teto até o check pós-parse — fechamos a janela exigindo a declaração (411).
  */
 const MULTIPART_OVERHEAD_BYTES = 1024 * 1024
 
 export function rejectOversizedRequest(req: Request, maxBytes: number): NextResponse | null {
   const raw = req.headers.get('content-length')
-  if (!raw) return null
+  if (!raw) {
+    return NextResponse.json(
+      { error: { code: 'LENGTH_REQUIRED', message: 'Content-Length obrigatório no upload.' } },
+      { status: 411 },
+    )
+  }
   const declared = Number(raw)
-  if (!Number.isFinite(declared)) return null
-  if (declared > maxBytes + MULTIPART_OVERHEAD_BYTES) {
+  if (!Number.isFinite(declared) || declared > maxBytes + MULTIPART_OVERHEAD_BYTES) {
     return NextResponse.json(
       { error: { code: 'VALIDATION_ERROR', message: 'Arquivo excede o limite da rota.' } },
       { status: 413 },

@@ -18,6 +18,9 @@ const EnvSchema = z
     JWT_AUDIENCE: z.string().optional(),
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
 
+    // Sentry (opcional): ausente = no-op. Espelho de erros LOCAIS do painel.
+    SENTRY_DSN: z.string().url().optional(),
+
     // ── Upload de mídia (opcionais: sem eles a feature responde "indisponível",
     //    não derruba o boot — os adapters validam presença com erro amigável) ──
     // Cloudflare R2 (imagens/anexos/legendas VTT).
@@ -39,6 +42,18 @@ const EnvSchema = z
     message:
       'Configure JWT_HS256_SECRET (dev/HS256) e/ou JWT_JWKS_URL (produção/RS256 via gateway)',
     path: ['JWT_JWKS_URL'],
+  })
+  // Em PRODUÇÃO o auth emite RS256 e o gateway verifica via JWKS — HS256 não tem
+  // lugar aqui. Exigir JWKS e RECUSAR um segredo HS256 fecha o vetor de um segredo
+  // fraco copiado de dev forjar token aceito na autorização LOCAL de `/api/media/*`.
+  .refine((e) => e.NODE_ENV !== 'production' || Boolean(e.JWT_JWKS_URL), {
+    message: 'Em produção, JWT_JWKS_URL é obrigatório (o auth emite RS256 via JWKS)',
+    path: ['JWT_JWKS_URL'],
+  })
+  .refine((e) => e.NODE_ENV !== 'production' || !e.JWT_HS256_SECRET, {
+    message:
+      'Em produção, NÃO configure JWT_HS256_SECRET (um segredo HS256 forjaria sessão local de /api/media)',
+    path: ['JWT_HS256_SECRET'],
   })
 
 export type Env = z.infer<typeof EnvSchema>

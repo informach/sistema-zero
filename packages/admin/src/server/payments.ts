@@ -71,21 +71,31 @@ function offerIdOf(p: PaymentView): string | null {
   return typeof v === 'string' && v.length > 0 ? v : null
 }
 
+// Micro-cache da lista de ofertas usada SÓ p/ resolver a garantia exibida: cada
+// page view de transações refazia `listOffers(limit:100)` (1 hop ao catálogo). TTL
+// curto POR RÉPLICA (staleness máxima = TTL; garantia é informativa). 0 fora de
+// produção (testes/edição veem sempre fresco). Falha/vazio NÃO é cacheado — não
+// congela um mapa vazio quando o catálogo se recupera.
+const OFFERS_CACHE_TTL_MS = process.env.NODE_ENV === 'production' ? 60_000 : 0
+let offersCache: { at: number; map: Map<string, number | null> } | null = null
+
 /**
- * Resolve `offerId → guaranteeDays` em LOTE (1 chamada ao catálogo, limit 100 —
- * suficiente p/ o catálogo atual; ofertas além disso degradam p/ `null`).
+ * Mapa `offerId → guaranteeDays` do catálogo (limit 100 — suficiente p/ o
+ * catálogo atual; ofertas além disso degradam p/ `null`), com micro-cache TTL.
  * Best-effort: catálogo indisponível → mapa vazio (transações seguem úteis).
  */
-async function buildGuaranteeMap(offerIds: string[]): Promise<Map<string, number | null>> {
+async function loadGuaranteeMap(): Promise<Map<string, number | null>> {
+  const now = Date.now()
+  if (offersCache && now - offersCache.at < OFFERS_CACHE_TTL_MS) return offersCache.map
   const map = new Map<string, number | null>()
-  if (offerIds.length === 0) return map
   try {
     const res = await listOffers({ limit: 100 })
-    if (res.status !== 200) return map
-    for (const offer of res.body.items) map.set(offer.id, offer.guaranteeDays)
+    if (res.status === 200)
+      for (const offer of res.body.items) map.set(offer.id, offer.guaranteeDays)
   } catch {
     // best-effort: sem catálogo, sem garantia exibida.
   }
+  if (map.size > 0) offersCache = { at: now, map }
   return map
 }
 
@@ -97,8 +107,9 @@ export async function listPaymentsWithGuarantee(
   if (res.status !== 200 || !Array.isArray(res.body?.items)) {
     return res as unknown as GatewayResponse<Paginated<PaymentRow>>
   }
-  const offerIds = [...new Set(res.body.items.map(offerIdOf).filter((v): v is string => !!v))]
-  const guarantees = await buildGuaranteeMap(offerIds)
+  // Só toca o catálogo se ALGUMA linha tem oferta (sem isso, página sem garantia).
+  const hasOffers = res.body.items.some((p) => offerIdOf(p) !== null)
+  const guarantees = hasOffers ? await loadGuaranteeMap() : new Map<string, number | null>()
   const now = new Date()
   const items: PaymentRow[] = res.body.items.map((payment) => {
     const offerId = offerIdOf(payment)
@@ -115,7 +126,7 @@ export async function getPaymentWithGuarantee(id: string): Promise<GatewayRespon
   const res = await getPayment(id)
   if (res.status !== 200 || !res.body) return res as unknown as GatewayResponse<PaymentRow>
   const offerId = offerIdOf(res.body)
-  const guarantees = await buildGuaranteeMap(offerId ? [offerId] : [])
+  const guarantees = offerId ? await loadGuaranteeMap() : new Map<string, number | null>()
   return {
     status: 200,
     body: {
