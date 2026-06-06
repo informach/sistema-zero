@@ -86,9 +86,13 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
 
 - **Login:** `POST /api/admin/login` → gateway `/auth/login`; rejeita role ∉ {superadmin,admin,staff}
   (403); grava `sz_admin_access` (JWT) + `sz_admin_refresh` (opaco) em cookies **HttpOnly**.
-- **Sessão (`src/server/session.ts`):** `getSession()` verifica o access JWT (HS256, MESMO
-  `JWT_HS256_SECRET` do auth/gateway). Token expirado → a assinatura já foi validada (jose checa
-  assinatura ANTES do exp) → decodifica p/ exibir; os dados renovam via refresh-on-401.
+- **Sessão (`src/server/session.ts`):** `getSession()` verifica o access JWT — a chave é escolhida
+  pelo `alg` do token (espelha a jwt.strategy do gateway): **HS256** com `JWT_HS256_SECRET`
+  (dev/local, MESMO segredo do auth/gateway) e/ou **RS256 via `JWT_JWKS_URL`** (PRODUÇÃO — o auth
+  emite RS256; aponte p/ o gateway `<GATEWAY_URL>/auth/.well-known/jwks.json`; jose cuida do cache).
+  Pelo menos UM dos dois é obrigatório (refine no env). Token expirado → a assinatura já foi
+  validada (jose checa assinatura ANTES do exp) → decodifica p/ exibir; os dados renovam via
+  refresh-on-401.
 - **Refresh (`src/server/gateway.ts`):** `gatewayFetch` em 401 chama `/auth/refresh`, regrava os
   cookies e re-tenta UMA vez. **Só** roda em Route Handlers/Server Actions (lá pode escrever cookies).
 - **Gate de UI:** `src/proxy.ts` (convenção `proxy` do Next 16, ex-`middleware`) bloqueia `/admin/*` sem cookie de refresh (redirect `/login`);
@@ -229,8 +233,11 @@ Da raiz: `bun run dev:admin`, `bun run build:admin`, `bun run start:admin`.
 ## Env (`.env.example`)
 
 - `GATEWAY_URL` (default `http://localhost:3000`).
-- `JWT_HS256_SECRET` — **MESMO** do `@sistemazero/auth` e do gateway (verifica o access token).
-- `JWT_ISSUER`/`JWT_AUDIENCE` opcionais (se o auth emitir, casar ativa a checagem).
+- Verificação do access token — **pelo menos UM**: `JWT_HS256_SECRET` (dev/local, MESMO do
+  auth/gateway) e/ou `JWT_JWKS_URL` (**produção** — o auth emite RS256; usar o JWKS via gateway:
+  `http://api-gateway.railway.internal:3000/auth/.well-known/jwks.json`).
+- `JWT_ISSUER`/`JWT_AUDIENCE` opcionais (se o auth emitir, casar ativa a checagem; prod =
+  `sistemazero-auth`/`sistemazero`).
 
 ## Setup local (e2e)
 

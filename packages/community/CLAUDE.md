@@ -44,8 +44,11 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
 - **Login:** `POST /api/auth/login` → gateway `/auth/login`; **qualquer conta ATIVA entra**
   (inclusive `customer` — ≠ admin, que filtra papel); grava `sz_member_access` (JWT) +
   `sz_member_refresh` (opaco) em cookies **HttpOnly**.
-- **Sessão (`src/server/session.ts`):** `getSession()` verifica o access JWT (HS256, MESMO
-  `JWT_HS256_SECRET` do auth/gateway). Cookies `sz_member_*` (≠ `sz_admin_*` do painel).
+- **Sessão (`src/server/session.ts`):** `getSession()` verifica o access JWT — a chave é escolhida
+  pelo `alg` do token (espelha a jwt.strategy do gateway): **HS256** com `JWT_HS256_SECRET`
+  (dev/local, MESMO segredo do auth/gateway) e/ou **RS256 via `JWT_JWKS_URL`** (PRODUÇÃO — o auth
+  emite RS256; aponte p/ o gateway `<GATEWAY_URL>/auth/.well-known/jwks.json`). Pelo menos UM dos
+  dois é obrigatório (refine no env). Cookies `sz_member_*` (≠ `sz_admin_*` do painel).
 - **Refresh — DOIS caminhos, UMA rotação (`src/server/refresh.ts`):** `refreshTokens()` faz a
   chamada `/auth/refresh` com **single-flight + cache 60s por refresh token** — obrigatório:
   requisições concorrentes (prefetch + navegação, proxy + handler) apresentando o MESMO refresh
@@ -183,8 +186,10 @@ Da raiz: `bun run dev:community`, `build:community`, `typecheck:community`.
 ## Env (`.env.example`)
 
 - `GATEWAY_URL` (default `http://localhost:3000`).
-- `JWT_HS256_SECRET` — **MESMO** do `@sistemazero/auth` e do gateway.
-- `JWT_ISSUER`/`JWT_AUDIENCE` opcionais.
+- Verificação do access token — **pelo menos UM**: `JWT_HS256_SECRET` (dev/local, MESMO do
+  auth/gateway) e/ou `JWT_JWKS_URL` (**produção** — o auth emite RS256; usar o JWKS via gateway:
+  `http://api-gateway.railway.internal:3000/auth/.well-known/jwks.json`).
+- `JWT_ISSUER`/`JWT_AUDIENCE` opcionais (prod = `sistemazero-auth`/`sistemazero`).
 - `FUNNEL_URL` opcional — fallback da página de vendas (curso sem `metadata.salesPageUrl`):
   em `/cursos` (sem ela e sem metadata, o card bloqueado fica não-clicável) e na modal
   Compartilhar da classificação do curso (sem URL, o botão Compartilhar é ocultado).

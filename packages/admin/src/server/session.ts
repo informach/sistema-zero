@@ -1,5 +1,12 @@
 import 'server-only'
-import { decodeJwt, errors, type JWTVerifyOptions, jwtVerify } from 'jose'
+import {
+  createRemoteJWKSet,
+  decodeJwt,
+  errors,
+  type JWTVerifyGetKey,
+  type JWTVerifyOptions,
+  jwtVerify,
+} from 'jose'
 import { cookies } from 'next/headers'
 import { getEnv, isProd } from '@/lib/env'
 import type { SessionUser } from '@/lib/types'
@@ -16,13 +23,36 @@ export interface AuthTokens {
   refreshExpiresIn: number
 }
 
-function secretKey(): Uint8Array {
-  return new TextEncoder().encode(getEnv().JWT_HS256_SECRET)
+// JWKS remoto (RS256 do auth em PRODUÇÃO, via gateway) — singleton por processo;
+// o jose cuida do cache/cooldown/rotação das chaves.
+let jwks: ReturnType<typeof createRemoteJWKSet> | undefined
+
+/**
+ * Chave de verificação escolhida pelo `alg` do token (espelha a jwt.strategy do
+ * gateway): HS* → segredo compartilhado (dev/local); assimétrico → JWKS do auth
+ * (produção emite RS256 — não existe segredo HS256 lá). Os algoritmos aceitos
+ * são PINADOS ao que está configurado (anti alg-confusion/downgrade).
+ */
+function verificationKey(): JWTVerifyGetKey {
+  const env = getEnv()
+  const secret = env.JWT_HS256_SECRET ? new TextEncoder().encode(env.JWT_HS256_SECRET) : undefined
+  return (protectedHeader, token) => {
+    if ((protectedHeader.alg ?? '').startsWith('HS')) {
+      if (!secret) throw new Error('Token HS256 mas JWT_HS256_SECRET não configurado')
+      return Promise.resolve(secret)
+    }
+    if (!env.JWT_JWKS_URL) throw new Error('Token assimétrico mas JWT_JWKS_URL não configurado')
+    jwks ??= createRemoteJWKSet(new URL(env.JWT_JWKS_URL))
+    return jwks(protectedHeader, token)
+  }
 }
 
 function verifyOptions(): JWTVerifyOptions {
   const env = getEnv()
-  const opts: JWTVerifyOptions = { algorithms: ['HS256'] }
+  const algorithms: string[] = []
+  if (env.JWT_JWKS_URL) algorithms.push('RS256')
+  if (env.JWT_HS256_SECRET) algorithms.push('HS256')
+  const opts: JWTVerifyOptions = { algorithms }
   if (env.JWT_ISSUER) opts.issuer = env.JWT_ISSUER
   if (env.JWT_AUDIENCE) opts.audience = env.JWT_AUDIENCE
   return opts
@@ -42,8 +72,9 @@ function claimsToUser(payload: Record<string, unknown>): SessionUser | null {
 }
 
 /**
- * Sessão do painel: lê o access JWT do cookie e o verifica (assinatura HS256 com o
- * MESMO segredo do auth/gateway). Se o token expirou — a assinatura já foi validada
+ * Sessão do painel: lê o access JWT do cookie e o verifica (HS256 com o segredo
+ * compartilhado em dev e/ou RS256 via JWKS do auth em produção — a chave é
+ * escolhida pelo `alg` do token). Se o token expirou — a assinatura já foi validada
  * (jose checa assinatura ANTES do exp) — decodifica para exibição; as chamadas de
  * dados renovam via refresh-on-401 (ver `gateway.ts`). Assinatura inválida → null.
  */
@@ -53,7 +84,7 @@ export async function getSession(): Promise<SessionUser | null> {
   const refresh = store.get(REFRESH_COOKIE)?.value
   if (!access || !refresh) return null
   try {
-    const { payload } = await jwtVerify(access, secretKey(), verifyOptions())
+    const { payload } = await jwtVerify(access, verificationKey(), verifyOptions())
     return claimsToUser(payload)
   } catch (err) {
     if (err instanceof errors.JWTExpired) {
