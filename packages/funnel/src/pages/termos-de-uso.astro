@@ -4,7 +4,11 @@ import LegalDocument from '../components/LegalDocument.astro'
 import { TERMOS } from '../content/legal'
 import BaseLayout from '../layouts/BaseLayout.astro'
 
-export const prerender = true
+// SSR de propósito: pré-renderizada não passa pela middleware → sem security
+// headers em produção (sem CDN p/ repô-los). Conteúdo estático → cache curto.
+export const prerender = false
+
+Astro.response.headers.set('cache-control', 'public, max-age=300, stale-while-revalidate=3600')
 ---
 
 <BaseLayout title={`${TERMOS.titulo} — No Comando da IA`} description={TERMOS.descricao}>

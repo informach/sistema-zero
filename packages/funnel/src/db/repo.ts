@@ -44,9 +44,26 @@ export interface FunnelRepo {
   createLead(): Promise<{ id: string }>
   getLead(id: string): Promise<Lead | null>
   updateLead(id: string, set: LeadUpdate): Promise<void>
-  setPayment(id: string, paymentId: string): Promise<void>
+  /**
+   * Aponta o lead p/ a cobrança + grava o par no histórico (`lead_payments`),
+   * com o cupom aplicado NESTA cobrança (o redeem da confirmação lê de lá).
+   * `couponCode` ausente (re-aponte do webhook) não sobrescreve o histórico.
+   */
+  setPayment(id: string, paymentId: string, couponCode?: string | null): Promise<void>
+  /** Cupom aplicado na cobrança (histórico `lead_payments`); null = sem cupom. */
+  couponForPayment(paymentId: string): Promise<string | null>
   /** Marca pago se ainda não estava; retorna true se ESTA chamada foi a que pagou. */
   markPaid(id: string, paidAt: Date): Promise<boolean>
+  /**
+   * Claim ATÔMICO do welcome (one-shot): true só p/ a chamada que venceu
+   * (UPDATE … WHERE welcome_sent_at IS NULL). Corrida webhook × polling não
+   * pode emitir 2 tokens — o auth consome os pendentes (link já enviado morre).
+   */
+  claimWelcome(id: string, at: Date): Promise<boolean>
+  /** Desfaz o claim quando NADA foi emitido (token falhou) — permite retry futuro. */
+  releaseWelcome(id: string): Promise<void>
+  /** Marca a concessão na área de membros como concluída (one-shot, preserva o 1º timestamp). */
+  setMembersGranted(id: string, at: Date): Promise<void>
   /**
    * Marca o comprador como registrado no IdP (auth). Idempotente: só grava se
    * `buyer_registered_at` ainda for nulo (guarda contra corrida webhook × polling).
@@ -89,17 +106,27 @@ export function createFunnelRepo(db: Database): FunnelRepo {
         .where(eq(leads.id, id))
     },
 
-    async setPayment(id, paymentId) {
+    async setPayment(id, paymentId, couponCode) {
       // Além do ponteiro "cobrança atual" no lead, grava o HISTÓRICO em
-      // lead_payments — uma cobrança antiga ainda pagável (boleto/Pix re-gerado)
-      // precisa continuar resolvendo o lead no webhook (findLeadByPayment).
+      // lead_payments (com o cupom DESTA cobrança) — uma cobrança antiga ainda
+      // pagável (boleto/Pix re-gerado) precisa continuar resolvendo o lead no
+      // webhook (findLeadByPayment) e redimir o cupom certo na confirmação.
       await db.transaction(async (tx) => {
         await tx.update(leads).set({ paymentId, updatedAt: new Date() }).where(eq(leads.id, id))
         await tx
           .insert(leadPayments)
-          .values({ paymentId, leadId: id })
+          .values({ paymentId, leadId: id, couponCode: couponCode ?? null })
           .onConflictDoNothing({ target: leadPayments.paymentId })
       })
+    },
+
+    async couponForPayment(paymentId) {
+      const [row] = await db
+        .select({ couponCode: leadPayments.couponCode })
+        .from(leadPayments)
+        .where(eq(leadPayments.paymentId, paymentId))
+        .limit(1)
+      return row?.couponCode ?? null
     },
 
     async markPaid(id, paidAt) {
@@ -109,6 +136,29 @@ export function createFunnelRepo(db: Database): FunnelRepo {
         .where(sql`${leads.id} = ${id} and ${leads.paidAt} is null`)
         .returning({ id: leads.id })
       return rows.length > 0
+    },
+
+    async claimWelcome(id, at) {
+      const rows = await db
+        .update(leads)
+        .set({ welcomeSentAt: at, updatedAt: new Date() })
+        .where(sql`${leads.id} = ${id} and ${leads.welcomeSentAt} is null`)
+        .returning({ id: leads.id })
+      return rows.length > 0
+    },
+
+    async releaseWelcome(id) {
+      await db
+        .update(leads)
+        .set({ welcomeSentAt: null, updatedAt: new Date() })
+        .where(eq(leads.id, id))
+    },
+
+    async setMembersGranted(id, at) {
+      await db
+        .update(leads)
+        .set({ membersGrantedAt: at, updatedAt: new Date() })
+        .where(sql`${leads.id} = ${id} and ${leads.membersGrantedAt} is null`)
     },
 
     async setBuyerRegistration(id, buyerUserId, isNew, at) {

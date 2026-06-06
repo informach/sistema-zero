@@ -2,15 +2,28 @@ import { defineMiddleware } from 'astro:middleware'
 import { clientIp } from './lib/client-ip'
 import { getEnv } from './lib/env'
 import { rateLimit } from './lib/rate-limit'
+import { captureError } from './lib/sentry'
 
-// NOTA: a middleware roda nas rotas on-demand (SSR) — checkout, admin, resultado
-// e /api/*. Páginas de marketing pré-renderizadas são servidas como estáticas e
-// NÃO passam por aqui em runtime; para essas, configure os headers no proxy/CDN.
+// NOTA: TODAS as páginas são SSR (full review 06/2026: quiz/políticas deixaram o
+// prerender) — a middleware cobre o site inteiro com os security headers. Se uma
+// página voltar a ser pré-renderizada, ela é servida estática SEM passar por aqui
+// (e o branch de rate limit não pode rodar no prerender do build — ver abaixo).
 
 // Endpoints públicos de escrita que recebem um teto best-effort por IP.
-const RATE_LIMITED = /^\/api\/(leads|events|contact|checkout)(\/|$)/
-const RATE_LIMIT = 240 // requisições…
+const RATE_LIMITED_WRITE = /^\/api\/(leads|events|contact|checkout)(\/|$)/
+const WRITE_LIMIT = 240 // requisições…
 const RATE_WINDOW_MS = 60_000 // …por minuto, por IP (generoso: o quiz faz ~12 PATCH)
+
+// GETs que tocam banco/gateway (full review 06/2026 — antes NENHUM GET tinha teto):
+//  - /checkout (contato válido na URL INSERE lead) e /resultado (insere evento);
+//  - /api/checkout/:id (cada hit = 1 chamada assinada ao gateway; o teto de
+//    3000/min lá é AGREGADO do consumer `funnel` — sem teto por IP, um só
+//    cliente esgotava o budget de polling de TODOS os compradores pendentes);
+//  - /api/leads (leitura de banco) e /admin + /api/admin/* (cookie lixo dispara
+//    2 chamadas S2S — me+refresh — por request).
+const RATE_LIMITED_GET =
+  /^\/(checkout|resultado)$|^\/admin(\/|$)|^\/api\/(leads|checkout|admin)(\/|$)/
+const GET_LIMIT = 360 // por minuto por IP — folga p/ CGNAT (polling ≈ 17/min por comprador)
 
 // Login do admin tem bucket PRÓPRIO, bem mais apertado (anti brute-force por IP;
 // o cooldown por conta do auth é a defesa principal — isto barra o spray barato).
@@ -61,16 +74,19 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
   const method = ctx.request.method
   const isWrite = method === 'POST' || method === 'PATCH'
   const isAdminLogin = isWrite && ctx.url.pathname === ADMIN_LOGIN_PATH
-  if (isWrite && (isAdminLogin || RATE_LIMITED.test(ctx.url.pathname))) {
-    // getEnv()/clientAddress SÓ aqui dentro: a middleware também roda no
-    // prerender do build (só GET), onde não há env de runtime nem clientAddress.
+  const writeLimited = isWrite && (isAdminLogin || RATE_LIMITED_WRITE.test(ctx.url.pathname))
+  const getLimited = method === 'GET' && RATE_LIMITED_GET.test(ctx.url.pathname)
+  if (writeLimited || getLimited) {
+    // getEnv()/clientAddress SÓ aqui dentro: se alguma página voltar ao
+    // prerender, a middleware roda no build (só GET, paths de marketing — não
+    // casam os regex), onde não há env de runtime nem clientAddress.
     const ip = clientIp(ctx.request, ctx.clientAddress || 'unknown', getEnv().TRUST_PROXY)
-    const { allowed, retryAfterSeconds } = rateLimit(
-      isAdminLogin ? `${ip}:admin-login` : `${ip}:funnel-api`,
-      isAdminLogin ? ADMIN_LOGIN_LIMIT : RATE_LIMIT,
-      RATE_WINDOW_MS,
-      Date.now(),
-    )
+    const [key, limit]: [string, number] = isAdminLogin
+      ? [`${ip}:admin-login`, ADMIN_LOGIN_LIMIT]
+      : getLimited
+        ? [`${ip}:funnel-get`, GET_LIMIT]
+        : [`${ip}:funnel-api`, WRITE_LIMIT]
+    const { allowed, retryAfterSeconds } = rateLimit(key, limit, RATE_WINDOW_MS, Date.now())
     if (!allowed) {
       return new Response(
         JSON.stringify({
@@ -88,7 +104,15 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
     }
   }
 
-  const res = await next()
+  let res: Response
+  try {
+    res = await next()
+  } catch (err) {
+    // Exceção não tratada de rota/render → evento canônico no Sentry (com
+    // stack); o Astro segue renderizando o 500 normalmente.
+    captureError(err)
+    throw err
+  }
   applySecurityHeaders(res.headers)
   // API nunca é cacheável — default p/ handlers que não setam o próprio header
   // (alguns setam no-store explicitamente; nenhum quer cache compartilhado).

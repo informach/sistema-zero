@@ -15,7 +15,7 @@ export const POST: APIRoute = ({ request }) => {
     internalToken: env.FUNNEL_INTERNAL_TOKEN,
     fulfill: makeFulfill({ repo, gateway, log }),
     redeemCoupon: (code) => redeemCouponBestEffort(gateway, code, log),
-    grantMembers: makeGrantMembers({ gateway, offerRef: env.CATALOG_OFFER_SLUG, log }),
-    sendWelcome: makeSendWelcome({ gateway, communityUrl: env.COMMUNITY_URL, log }),
+    grantMembers: makeGrantMembers({ gateway, offerRef: env.CATALOG_OFFER_SLUG, repo, log }),
+    sendWelcome: makeSendWelcome({ gateway, communityUrl: env.COMMUNITY_URL, repo, log }),
   })
 }

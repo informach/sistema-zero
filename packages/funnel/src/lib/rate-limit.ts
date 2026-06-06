@@ -10,6 +10,16 @@ interface Bucket {
 
 const buckets = new Map<string, Bucket>()
 
+// Teto DURO de memória: botnet com IPs reais distintos numa mesma janela não
+// cresce o Map sem limite (~50k buckets ≈ poucos MB). Cheio = FAIL-OPEN p/
+// chaves novas — o limiter é best-effort; negar tráfego legítimo por estado
+// interno seria pior que deixar passar.
+const MAX_BUCKETS = 50_000
+// Sweep no máximo a cada 30s: varrer o Map inteiro A CADA inserção sob carga
+// (size > 5000) viraria custo quadrático.
+const SWEEP_MIN_INTERVAL_MS = 30_000
+let lastSweepAt = 0
+
 export interface RateLimitResult {
   allowed: boolean
   retryAfterSeconds: number
@@ -30,7 +40,15 @@ export function rateLimit(
 ): RateLimitResult {
   const bucket = buckets.get(key)
   if (!bucket || now >= bucket.resetAt) {
-    if (buckets.size > 5000) sweep(now)
+    if (buckets.size > 5000 && now - lastSweepAt >= SWEEP_MIN_INTERVAL_MS) {
+      sweep(now)
+      lastSweepAt = now
+    }
+    // Cheio E chave nova → fail-open sem inserir (re-uso de chave existente
+    // expirada não cresce o Map, então segue normal).
+    if (!bucket && buckets.size >= MAX_BUCKETS) {
+      return { allowed: true, retryAfterSeconds: 0 }
+    }
     buckets.set(key, { count: 1, resetAt: now + windowMs })
     return { allowed: true, retryAfterSeconds: 0 }
   }
@@ -44,4 +62,5 @@ export function rateLimit(
 /** Apenas para testes (zera o estado em memória). */
 export function resetRateLimit(): void {
   buckets.clear()
+  lastSweepAt = 0
 }

@@ -30,6 +30,8 @@ function baseLead(id: string): Lead {
     buyerUserId: null,
     buyerIsNew: null,
     buyerRegisteredAt: null,
+    welcomeSentAt: null,
+    membersGrantedAt: null,
     createdAt: new Date(),
     updatedAt: new Date(),
   }
@@ -40,8 +42,8 @@ export interface FakeRepoState {
   leads: Map<string, Lead>
   events: Array<{ leadId: string; eventName: string; step: string | null }>
   processed: Set<string>
-  /** Histórico payment_id → lead_id (espelha funil.lead_payments). */
-  payments: Map<string, string>
+  /** Histórico payment_id → { lead, cupom da cobrança } (espelha funil.lead_payments). */
+  payments: Map<string, { leadId: string; couponCode: string | null }>
 }
 
 /** Implementação em memória do FunnelRepo para testes (sem Postgres). */
@@ -49,7 +51,7 @@ export function createFakeRepo(): FakeRepoState {
   const leads = new Map<string, Lead>()
   const events: FakeRepoState['events'] = []
   const processed = new Set<string>()
-  const payments = new Map<string, string>()
+  const payments = new Map<string, { leadId: string; couponCode: string | null }>()
   let seq = 0
 
   const repo: FunnelRepo = {
@@ -65,12 +67,18 @@ export function createFakeRepo(): FakeRepoState {
       const lead = leads.get(id)
       if (lead) leads.set(id, { ...lead, ...set, updatedAt: new Date() })
     },
-    async setPayment(id, paymentId) {
+    async setPayment(id, paymentId, couponCode) {
       const lead = leads.get(id)
       if (lead) {
         lead.paymentId = paymentId
-        if (!payments.has(paymentId)) payments.set(paymentId, id)
+        // onConflictDoNothing: cobrança já registrada preserva o cupom original.
+        if (!payments.has(paymentId)) {
+          payments.set(paymentId, { leadId: id, couponCode: couponCode ?? null })
+        }
       }
+    },
+    async couponForPayment(paymentId) {
+      return payments.get(paymentId)?.couponCode ?? null
     },
     async markPaid(id, paidAt) {
       const lead = leads.get(id)
@@ -79,6 +87,22 @@ export function createFakeRepo(): FakeRepoState {
         return true
       }
       return false
+    },
+    async claimWelcome(id, at) {
+      const lead = leads.get(id)
+      if (lead && lead.welcomeSentAt == null) {
+        lead.welcomeSentAt = at
+        return true
+      }
+      return false
+    },
+    async releaseWelcome(id) {
+      const lead = leads.get(id)
+      if (lead) lead.welcomeSentAt = null
+    },
+    async setMembersGranted(id, at) {
+      const lead = leads.get(id)
+      if (lead && lead.membersGrantedAt == null) lead.membersGrantedAt = at
     },
     async setBuyerRegistration(id, buyerUserId, isNew, at) {
       const lead = leads.get(id)
@@ -92,7 +116,7 @@ export function createFakeRepo(): FakeRepoState {
       for (const lead of leads.values()) if (lead.paymentId === paymentId) return lead
       // Fallback no histórico (cobrança antiga, ponteiro já sobrescrito).
       const mapped = payments.get(paymentId)
-      return mapped ? (leads.get(mapped) ?? null) : null
+      return mapped ? (leads.get(mapped.leadId) ?? null) : null
     },
     async insertEvent(leadId, eventName, step = null) {
       events.push({ leadId, eventName, step })

@@ -62,8 +62,13 @@ export async function handlePaymentWebhook(request: Request, deps: WebhookDeps):
       const newlyPaid = await deps.repo.markPaid(lead.id, new Date())
       if (newlyPaid) {
         await deps.repo.insertEvent(lead.id, 'pagamento_confirmado', 'webhook')
-        // Registra o uso do cupom só na transição p/ pago (exactly-once via markPaid).
-        if (deps.redeemCoupon) await deps.redeemCoupon(lead.couponCode)
+        // Registra o uso do cupom só na transição p/ pago (exactly-once via
+        // markPaid), lendo o cupom DA COBRANÇA PAGA (lead_payments) — o
+        // `lead.couponCode` é o contexto do ÚLTIMO checkout e podia estar
+        // obsoleto (re-cotação sem cupom; boleto antigo com cupom pago depois).
+        if (deps.redeemCoupon) {
+          await deps.redeemCoupon(await deps.repo.couponForPayment(paymentId))
+        }
       }
 
       // Registra o comprador no IdP (auth). Falha transitória → devolve 502 e NÃO

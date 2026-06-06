@@ -9,9 +9,12 @@ import {
 } from '../../src/server/checkout'
 import { makeFulfill } from '../../src/server/fulfillment'
 import { makeGrantMembers } from '../../src/server/members-grant'
+import { handlePaymentWebhook } from '../../src/server/webhook'
 import { makeSendWelcome } from '../../src/server/welcome-email'
 import { createFakeRepo } from '../fakes/fake-db'
 import { createFakeGateway } from '../fakes/fake-gateway'
+
+const WEBHOOK_TOKEN = 'token-interno-do-gateway'
 
 // CPF válido (dígitos verificadores) para os forms de boleto/cartão.
 const CPF = '52998224725'
@@ -39,7 +42,7 @@ function deps(
     productName: 'No Comando da IA',
     productSku: 'no-comando-da-ia',
     fulfill: makeFulfill({ repo, gateway: gw.gateway }),
-    grantMembers: makeGrantMembers({ gateway: gw.gateway, offerRef: 'no-comando-da-ia' }),
+    grantMembers: makeGrantMembers({ gateway: gw.gateway, offerRef: 'no-comando-da-ia', repo }),
     log,
   }
 }
@@ -477,6 +480,58 @@ describe('409 ALREADY_PAID — lead pago não inicia nova cobrança', () => {
   })
 })
 
+describe('cupom: contexto do lead × cobrança (full review 06/2026)', () => {
+  test('re-cotação SEM cupom limpa o cupom velho do lead', async () => {
+    const { repo, leads, id } = await paidLead()
+    const gw = createFakeGateway()
+    gw.addCoupon('PROMO10', 1000)
+    await startPix(
+      req('POST', cookieFor(id), { contact: CONTACT, couponCode: 'promo10' }),
+      deps(repo, gw),
+    )
+    expect(leads.get(id)?.couponCode).toBe('PROMO10')
+    // Usuário remove o cupom e re-gera: o lead NÃO pode ficar com o cupom velho
+    // (o contexto do checkout é o último estado; o redeem lê de lead_payments).
+    await startPix(req('POST', cookieFor(id), { contact: CONTACT }), deps(repo, gw))
+    expect(leads.get(id)?.couponCode).toBeNull()
+  })
+
+  test('o redeem da confirmação usa o cupom DA COBRANÇA PAGA (lead_payments)', async () => {
+    const { repo } = createFakeRepo()
+    const gw = createFakeGateway()
+    const { id } = await repo.createLead()
+    await repo.updateLead(id, { nome: 'Ana', email: 'ana@example.com', telefone: '11999998888' })
+    // Boleto antigo COM cupom; Pix novo SEM cupom sobrescreve o ponteiro…
+    await repo.setPayment(id, 'pay-old', 'PROMO10')
+    await repo.setPayment(id, 'pay-new', null)
+
+    const redeemed: Array<string | null> = []
+    const webhookDeps = {
+      repo,
+      internalToken: WEBHOOK_TOKEN,
+      fulfill: makeFulfill({ repo, gateway: gw.gateway }),
+      redeemCoupon: async (code: string | null) => {
+        redeemed.push(code)
+      },
+    }
+    const whReq = (paymentId: string, deliveryId: string) =>
+      new Request('http://localhost/api/webhooks/payments', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-internal-token': WEBHOOK_TOKEN,
+          'x-delivery-id': deliveryId,
+        },
+        body: JSON.stringify({ event: 'payment.paid', data: { paymentId } }),
+      })
+
+    // …e o comprador paga o BOLETO antigo: redime o cupom DELE, não o do lead.
+    const res = await handlePaymentWebhook(whReq('pay-old', 'd1'), webhookDeps)
+    expect(res.status).toBe(200)
+    expect(redeemed).toEqual(['PROMO10'])
+  })
+})
+
 describe('welcome no caminho síncrono (simetria com o webhook)', () => {
   test('cartão aprovado (PAID) dispara grant E welcome (e-mail + WhatsApp)', async () => {
     const { repo, id } = await paidLead()
@@ -497,6 +552,7 @@ describe('welcome no caminho síncrono (simetria com o webhook)', () => {
         sendWelcome: makeSendWelcome({
           gateway: gw.gateway,
           communityUrl: 'http://localhost:3007',
+          repo,
         }),
       },
     )
@@ -506,5 +562,59 @@ describe('welcome no caminho síncrono (simetria com o webhook)', () => {
     // messaging deduplica por Idempotency-Key, então o replay não duplica).
     expect(gw.calls.passwordTokens).toEqual(['ana@example.com'])
     expect(gw.calls.messages.map((m) => m.input.channel)).toEqual(['email', 'whatsapp'])
+  })
+
+  test('REGRESSÃO: webhook confirma e polling repete → token emitido UMA vez, grant UMA vez', async () => {
+    // O cenário real de TODA compra Pix: webhook chega primeiro (token T1 +
+    // e-mail enviado); segundos depois o polling da tela vê PAID e repassa o
+    // pós-pagamento. Sem os one-shots, o polling emitia um token NOVO (o auth
+    // consome os pendentes → o T1 do e-mail JÁ entregue morria) e re-chamava o
+    // grant a cada poll.
+    const { repo, id } = await paidLead()
+    const gw = createFakeGateway()
+    const checkoutDeps = {
+      ...deps(repo, gw),
+      sendWelcome: makeSendWelcome({
+        gateway: gw.gateway,
+        communityUrl: 'http://localhost:3007',
+        repo,
+      }),
+    }
+    await startPix(req('POST', cookieFor(id), { contact: CONTACT }), checkoutDeps)
+
+    // 1) Webhook `payment.paid` entrega primeiro (fulfill + grant + welcome).
+    gw.setStatus('PAID')
+    const webhookRes = await handlePaymentWebhook(
+      new Request('http://localhost/api/webhooks/payments', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-internal-token': WEBHOOK_TOKEN,
+          'x-delivery-id': 'd1',
+        },
+        body: JSON.stringify({ event: 'payment.paid', data: { paymentId: 'pay-1' } }),
+      }),
+      {
+        repo,
+        internalToken: WEBHOOK_TOKEN,
+        fulfill: makeFulfill({ repo, gateway: gw.gateway }),
+        grantMembers: makeGrantMembers({ gateway: gw.gateway, offerRef: 'no-comando-da-ia', repo }),
+        sendWelcome: makeSendWelcome({
+          gateway: gw.gateway,
+          communityUrl: 'http://localhost:3007',
+          repo,
+        }),
+      },
+    )
+    expect(webhookRes.status).toBe(200)
+    expect(gw.calls.passwordTokens).toHaveLength(1)
+    expect(gw.calls.grant).toHaveLength(1)
+
+    // 2) Polling da tela vê PAID (2× — pode repetir) → NADA se repete.
+    await pixStatus(req('GET', cookieFor(id)), 'pay-1', checkoutDeps)
+    await pixStatus(req('GET', cookieFor(id)), 'pay-1', checkoutDeps)
+    expect(gw.calls.passwordTokens).toHaveLength(1) // o link do e-mail segue VIVO
+    expect(gw.calls.grant).toHaveLength(1) // sem S2S repetido por poll
+    expect(gw.calls.messages).toHaveLength(2) // e-mail + WhatsApp, uma vez cada
   })
 })

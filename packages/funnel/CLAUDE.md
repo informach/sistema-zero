@@ -30,7 +30,7 @@ payments) · **Tailwind v4** (`@theme` em `src/styles/global.css`) · **Zod** en
 ```bash
 bun run dev        # dev server :4321 (--host)
 bun run build      # marketing pré-renderizado + servidor SSR
-bun run start      # sobe o build (bun ./dist/server/entry.mjs)
+bun run start      # sobe o build via scripts/start.mjs (Sentry no boot + graceful shutdown)
 bun run typecheck  # astro check (cobre .astro + .ts + .tsx)
 bun test           # bun:test
 bun run check      # biome (lint+format); check:fix p/ aplicar
@@ -149,6 +149,9 @@ handlers devolvem `409 ALREADY_PAID` (guard ANTES da validação do corpo); reco
 gateway re-entrega) e **best-effort** no polling do Pix (`pixStatus`) e no cartão síncrono PAID
 (`startCard`) — via `server/members-grant.ts` (`makeGrantMembers`). Idempotente do lado do members
 (chave da matrícula), então reentregar/retentar é seguro; o webhook é o backstop durável.
+**ONE-SHOT (`leads.members_granted_at`, 2º full review 06/2026):** concessão concluída marca a
+coluna e não re-chama o members — antes, CADA poll pós-pago disparava um S2S real. Falha NÃO
+marca (retry segue); corrida webhook×polling pode chamar 2× (inócuo — members deduplica).
 
 **Boas-vindas / 1º acesso (`sendWelcome`) — e-mail + WhatsApp:** roda no webhook E nos caminhos
 síncronos (`runPostPayment`: cartão PAID/polling — simetria com o grant; se a entrega do webhook
@@ -165,14 +168,31 @@ chave única deduplicaria o 2º canal contra o 1º). O WhatsApp só sai se o tel
 formato internacional (`toWhatsAppPhone`: BR 10–11 dígitos → prefixa DDI `55`; já com 55 → mantém;
 outro formato → pula — e-mail é o canal primário). **BEST-EFFORT deliberado:** falha só loga e
 NUNCA muda o status do webhook (fallback do aluno = "esqueci minha senha"). Env: `COMMUNITY_URL`.
+- ⚠️ **ONE-SHOT ATÔMICO obrigatório (`claimWelcome` → `leads.welcome_sent_at`, 2º full review
+  06/2026):** o auth CONSOME os tokens pendentes ao emitir um novo (1 vivo/usuário) e o messaging
+  deduplica o reenvio — sem o claim, a 2ª execução (webhook×polling, em TODA compra Pix/cartão)
+  emitia token novo invalidando o do e-mail JÁ entregue: o comprador clicava num **link morto**.
+  Só quem vence o claim (`UPDATE … WHERE welcome_sent_at IS NULL RETURNING`) emite/envia; o claim
+  só é liberado (`releaseWelcome`) se a EMISSÃO do token falhou (nada saiu — retry futuro pode);
+  depois de emitido, NUNCA libere (re-emitir mata o link entregue). NÃO remova esse claim.
 
-## Renderização (prerender split)
+**Cupom por COBRANÇA (`lead_payments.coupon_code`, 2º full review 06/2026):** o redeem da
+confirmação (webhook e polling) lê o cupom da **cobrança paga** (`couponForPayment(paymentId)`),
+não do lead — `leads.coupon_code` é só o contexto do ÚLTIMO checkout (sobrescrito SEMPRE, null
+limpa) e ficava obsoleto: re-cotação sem cupom redimia cupom não aplicado; boleto antigo com cupom
+pago depois não redimia o certo. `setPayment(id, paymentId, couponCode)` grava o cupom no
+histórico (conflito preserva o original — re-aponte do webhook passa sem cupom).
 
-- **Estáticas (`prerender = true`):** `quiz` (shell; a ilha do quiz busca/cria o lead e
-  roda as 10 perguntas), `politica-de-privacidade` e `termos-de-uso` (conteúdo em
-  `content/legal.ts`; links no Footer novo — logo Sistema Zero + Recursos + voltar-ao-topo +
-  copyright Informach/CNPJ). Servidas como HTML estático.
-- **SSR (`prerender = false`):** `index` (redirect 302 → `/quiz`), `oferta` (nome/preço vêm do
+## Renderização (tudo SSR desde o 2º full review 06/2026)
+
+- **NÃO há mais páginas pré-renderizadas.** `quiz`, `politica-de-privacidade` e `termos-de-uso`
+  viraram SSR (`prerender = false`) DE PROPÓSITO: página pré-renderizada é servida estática pelo
+  adapter **sem passar pela middleware** → ficava SEM security headers (CSP/HSTS/XFO) em produção,
+  onde NÃO há CDN/proxy p/ repô-los. O custo de render é trivial e elas levam `cache-control:
+  public` curto (`max-age=60` no quiz, `max-age=300` nas legais). ⚠️ Se uma página voltar ao
+  prerender, lembre: middleware não roda nela em runtime (headers somem) e o branch de rate limit
+  da middleware não pode executar no prerender do build (sem env/clientAddress).
+- **SSR:** `index` (redirect 302 → `/quiz`), `oferta` (nome/preço vêm do
   catálogo em runtime; sem dado por-usuário → `cache-control: public, max-age=60,
   stale-while-revalidate=300`), `resultado`, `checkout`, `obrigado`, `admin`, `admin/login`,
   **todas** `/api/*`, `health`. Páginas com dados do lead setam `cache-control: no-store` e
@@ -188,12 +208,20 @@ NUNCA muda o status do webhook (fallback do aluno = "esqueci minha senha"). Env:
 - **`src/middleware.ts`** seta security headers (CSP, `X-Frame-Options: DENY`, `nosniff`,
   `Referrer-Policy`, `Permissions-Policy`, HSTS em prod), um **rate-limit best-effort** em memória
   (`lib/rate-limit.ts`, 240/min/IP nos POST/PATCH de `/api/{leads,events,contact,checkout}` +
-  bucket PRÓPRIO de **10/min/IP no `POST /api/admin/login`** — anti brute-force) e o default
-  `cache-control: no-store` em `/api/*` (quando o handler não seta o próprio).
-  - ⚠️ A middleware **só roda em rotas SSR** — páginas pré-renderizadas (marketing) são servidas
-    estáticas e **não passam por ela** em runtime. Em produção, replique os headers no proxy/CDN.
+  bucket PRÓPRIO de **10/min/IP no `POST /api/admin/login`** — anti brute-force + bucket de **GET
+  360/min/IP**, ver abaixo), captura exceção de rota p/ o Sentry (rethrow — o Astro renderiza o
+  500) e o default `cache-control: no-store` em `/api/*` (quando o handler não seta o próprio).
+  - Como TODAS as páginas são SSR (ver "Renderização"), a middleware cobre o site inteiro.
+  - **Rate limit de GET (2º full review 06/2026 — antes NENHUM GET tinha teto):** bucket
+    `funnel-get` 360/min/IP em `/checkout` e `/resultado` (SSR que ESCREVE no banco — lead com
+    contato válido na URL / evento), `/api/checkout/:id` (cada hit = 1 chamada assinada ao
+    gateway; o teto de 3000/min lá é AGREGADO do consumer `funnel` — sem teto por IP, um cliente
+    esgotava o polling de todos), `/api/leads` e `/admin*` + `/api/admin/*` (cookie lixo dispara 2
+    S2S por request). 360 = folga p/ CGNAT (polling ≈ 17/min/comprador).
   - ⚠️ O rate-limit é **por instância** (não compartilhado, não persiste). A defesa de borda real é
-    do gateway/CDN. Mantenha o limite generoso (o quiz faz ~12 PATCH por sessão).
+    do gateway/CDN. Mantenha o limite generoso (o quiz faz ~12 PATCH por sessão). O Map tem **teto
+    duro de 50k buckets** (cheio = fail-open p/ chaves novas; sweep no máx. a cada 30s) — botnet
+    com IPs distintos não cresce a memória sem limite.
   - ⚠️ **IP do cliente atrás de proxy = `TRUST_PROXY=true`** (`lib/client-ip.ts`): o Astro IGNORA o
     `x-forwarded-for` sem `security.allowedDomains` (verificado no fonte — `core/app/node.js`), então
     `clientAddress` em Railway seria o IP do PROXY → bucket único p/ TODOS os visitantes (self-DoS
@@ -286,6 +314,13 @@ Migrations forward-only por `drizzle-kit`, com **journal próprio por pacote**
 (`migrations: { table: 'funil_migrations' }`) no schema `drizzle` — NÃO compartilhe
 `__drizzle_migrations` entre pacotes (a dedupe por `created_at` pularia migrations).
 
+Colunas de controle pós-pagamento no lead (2º full review 06/2026): `welcome_sent_at` (claim
+atômico do welcome — ver "Boas-vindas") e `members_granted_at` (one-shot da concessão);
+`lead_payments.coupon_code` (cupom POR cobrança — fonte do redeem). Índice composto
+`funnel_events_name_lead_idx (event_name, lead_id)` substitui o índice só de `event_name`:
+o dashboard agrega `count(distinct lead_id) group by event_name` numa tabela que nunca é podada —
+com o composto é index-only scan.
+
 > Centavos em `integer` (int4, máx ~2,1e9): os tetos do `VALUE_SCHEMA` garantem que nenhum valor —
 > nem o produto `horas×valor×4` — estoure int4. Se um dia precisar de valores maiores, migre as
 > colunas de centavos para `bigint` (e ajuste os tetos).
@@ -295,14 +330,46 @@ Migrations forward-only por `drizzle-kit`, com **journal próprio por pacote**
 `packages/funnel/Dockerfile` (contexto = raiz do monorepo; roda `astro build` DENTRO do build da
 imagem) + `packages/funnel/railway.json` (preDeploy `db:migrate`, healthcheck **`/readyz`** —
 readiness com ping no banco e teto de 5s; `/health` segue liveness puro). Serviço **PÚBLICO** (é o
-site de vendas). Envs de runtime: `DATABASE_URL=${{Postgres.DATABASE_URL}}`, `GATEWAY_URL` (borda
-pública do gateway), `FUNNEL_HMAC_SECRET`/`FUNNEL_INTERNAL_TOKEN` (os MESMOS do gateway, ≥16 —
-fail-fast), `COMMUNITY_URL`, **`NODE_ENV=production`** (controla o `Secure` dos cookies!),
-**`TRUST_PROXY=true`** (obrigatório explicitar em prod) e **`HOST=::`** (standalone lê HOST/PORT do
-ambiente; `::` p/ dual-stack). ⚠️ **Envs de BUILD** (inlined pelo Vite no `astro build` — o Railway
-disponibiliza as variáveis do serviço no build do Dockerfile): `PUBLIC_EFI_ACCOUNT_IDENTIFIER`,
-`PUBLIC_EFI_SANDBOX=false` e `FUNNEL_PUBLIC_URL` (site/sitemap — sem ela o sitemap sai
-`localhost`).
+site de vendas). **O start é o wrapper `scripts/start.mjs`** (start script, CMD do Dockerfile e
+`startCommand` do railway.json — invocado DIRETO, sem `bun run` no meio, p/ o SIGTERM chegar):
+desliga o autostart do adapter (`ASTRO_NODE_AUTOSTART=disabled`), inicializa o **Sentry no boot**
+(+ process handlers de unhandledRejection/uncaughtException) e faz **graceful shutdown** no
+SIGTERM — o standalone NÃO trata sinais; sem o wrapper o deploy matava cobrança in-flight (Efí
+fria ~15s). Drena por até 25s e então derruba o restante (retry é seguro: Idempotency-Key
+determinística + auto-retry da ilha). Envs de runtime: `DATABASE_URL=${{Postgres.DATABASE_URL}}`,
+`GATEWAY_URL` (**prefira o private networking**: `http://api-gateway.railway.internal:3000` — sem
+egress/ida à internet; a borda pública também funciona), `FUNNEL_HMAC_SECRET`/
+`FUNNEL_INTERNAL_TOKEN` (os MESMOS do gateway, ≥16 — fail-fast), `COMMUNITY_URL`, `SENTRY_DSN`
+(projeto sistema-zero-funnel; ausente = desligado), **`NODE_ENV=production`** (controla o `Secure`
+dos cookies!), **`TRUST_PROXY=true`** (obrigatório explicitar em prod) e **`HOST=::`** (standalone
+lê HOST/PORT do ambiente; `::` p/ dual-stack). ⚠️ **Envs de BUILD** (inlined pelo Vite no `astro
+build` — o Railway disponibiliza as variáveis do serviço no build do Dockerfile):
+`PUBLIC_EFI_ACCOUNT_IDENTIFIER`, `PUBLIC_EFI_SANDBOX=false` e `FUNNEL_PUBLIC_URL` (site/sitemap —
+sem ela o sitemap sai `localhost`).
+
+## Sentry (monitoramento de erros)
+
+`@sentry/bun`, ligado por `SENTRY_DSN` (ausente = no-op). Espelha o padrão do
+payments/catalog/auth, adaptado ao Astro (sem error-handler central de framework):
+1. **Espelho de eventos de erro** no `deps.log` (`server/deps.ts`): todo evento cujo nome termina
+   em `error`/`failed` (`checkout.*.gateway_error`, `fulfill.ensure_failed`, `grant.failed`,
+   `welcome.*_failed`, `retention.error`…) vira evento Sentry (fingerprint = nome; meta = extra).
+   Sucessos (`welcome.sent`, `grant.done`…) ficam só no stderr — siga a convenção de sufixo ao
+   nomear evento novo.
+2. **`captureError` na middleware**: exceção não tratada de rota/render → `captureException`
+   (com stack) + rethrow (o Astro renderiza o 500 normalmente).
+3. **Boot/process handlers no `scripts/start.mjs`** (produção): init no topo,
+   unhandledRejection/uncaughtException capturados, `flush` no shutdown. Em dev o init é o
+   fallback lazy do `getDeps()` (idempotente). `release` = `RAILWAY_GIT_COMMIT_SHA`,
+   `sendDefaultPii: false`, `tracesSampleRate: 0` (só erros).
+
+## Pendências conhecidas (decididas, não esquecidas)
+
+- **`/metrics`**: sem endpoint próprio (Railway metrics + Sentry cobrem o lançamento; espelhar o
+  payments quando houver scraper/dashboard).
+- **Retenção LGPD de leads não-compradores**: `leads` guarda PII (nome/e-mail/telefone/CPF) por
+  prazo indefinido — definir janela de anonimização (decisão de produto) e um cron como o de
+  `processed_webhooks`.
 
 ## Testes
 

@@ -27,4 +27,22 @@ describe('rateLimit (janela fixa)', () => {
     expect(rateLimit('a', 1, 60_000, t).allowed).toBe(false)
     expect(rateLimit('b', 1, 60_000, t).allowed).toBe(true)
   })
+
+  test('teto duro de memória: Map cheio → chave NOVA é fail-open; existentes seguem limitadas', () => {
+    const t = 1_000_000
+    // Enche o Map até o teto (50k) dentro da MESMA janela (nada expira/varre).
+    for (let i = 0; i < 50_000; i++) {
+      rateLimit(`ip-${i}`, 1, 60_000, t)
+    }
+    // Chave nova com limite 1: fail-open SEM inserir (nunca conta/bloqueia).
+    expect(rateLimit('novo', 1, 60_000, t).allowed).toBe(true)
+    expect(rateLimit('novo', 1, 60_000, t).allowed).toBe(true)
+    // Chave existente continua sob o próprio limite.
+    expect(rateLimit('ip-0', 1, 60_000, t).allowed).toBe(false)
+    // Após a janela (e o intervalo mínimo do sweep), a varredura abre espaço e
+    // chaves novas voltam a ser CONTADAS normalmente.
+    const t2 = t + 61_000
+    expect(rateLimit('novo', 1, 60_000, t2).allowed).toBe(true)
+    expect(rateLimit('novo', 1, 60_000, t2).allowed).toBe(false)
+  })
 })

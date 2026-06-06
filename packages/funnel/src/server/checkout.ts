@@ -136,15 +136,17 @@ function paymentCreateError(
 /**
  * Persiste o contexto do checkout no lead: a OFERTA vendida (`offerRef`, p/ a
  * concessão de acesso usar a oferta certa em vez do env estático) + o cupom
- * aplicado (p/ registrar o uso na confirmação). Roda nos 3 métodos de pagamento.
+ * aplicado. Roda nos 3 métodos de pagamento. O cupom é SEMPRE sobrescrito
+ * (null limpa): re-cotação sem cupom não pode deixar o cupom velho no lead.
+ * (O redeem da confirmação lê o cupom POR COBRANÇA em `lead_payments` — aqui é
+ * só o contexto do último checkout, exibição/diagnóstico.)
  */
 async function persistCheckoutContext(
   deps: CheckoutDeps,
   leadId: string,
   couponCode: string | null,
 ): Promise<void> {
-  const set: LeadUpdate = { offerRef: deps.offerSlug }
-  if (couponCode) set.couponCode = couponCode
+  const set: LeadUpdate = { offerRef: deps.offerSlug, couponCode }
   await deps.repo.updateLead(leadId, set)
 }
 
@@ -262,7 +264,7 @@ export async function startPix(request: Request, deps: CheckoutDeps): Promise<Re
     )
   }
   const view = body as PaymentView
-  await deps.repo.setPayment(lead.id, view.id)
+  await deps.repo.setPayment(lead.id, view.id, charge.couponCode)
   await deps.repo.insertEvent(lead.id, 'pagamento_iniciado', 'checkout')
 
   return json({ paymentId: view.id, status: view.status, pix: view.pix ?? null })
@@ -329,7 +331,7 @@ export async function startBoleto(request: Request, deps: CheckoutDeps): Promise
     )
   }
   const view = body as PaymentView
-  await deps.repo.setPayment(lead.id, view.id)
+  await deps.repo.setPayment(lead.id, view.id, charge.couponCode)
   await deps.repo.insertEvent(lead.id, 'pagamento_iniciado', 'checkout_boleto')
 
   return json({ paymentId: view.id, status: view.status, boleto: view.boleto ?? null })
@@ -392,7 +394,7 @@ export async function startCard(request: Request, deps: CheckoutDeps): Promise<R
     )
   }
   const view = body as PaymentView
-  await deps.repo.setPayment(lead.id, view.id)
+  await deps.repo.setPayment(lead.id, view.id, charge.couponCode)
   await deps.repo.insertEvent(lead.id, 'pagamento_iniciado', 'checkout_card')
 
   if (view.status === 'PAID') {
@@ -410,33 +412,33 @@ export async function startCard(request: Request, deps: CheckoutDeps): Promise<R
 
 /**
  * Pós-pagamento (best-effort): registra o comprador e DEPOIS concede o acesso na
- * área de membros. Cada etapa é independente e tem os erros engolidos de propósito
- * — o webhook `payment.paid` é o backstop durável de AMBOS (registro idempotente
- * por e-mail; concessão idempotente pela chave da matrícula). A concessão relê o
- * lead para pegar o `buyer_user_id` que o `fulfill` acabou de gravar.
+ * área de membros + boas-vindas. Erros engolidos de propósito — o webhook
+ * `payment.paid` é o backstop durável das três etapas (registro idempotente por
+ * e-mail; concessão e welcome com one-shot próprio: `members_granted_at` /
+ * `welcome_sent_at`). Roda a cada poll com PAID, mas cada etapa se auto-gateia
+ * pelos marcadores — poll repetido após tudo concluído custa só leituras locais,
+ * ZERO S2S (antes, cada poll re-chamava grant + emitia token novo no auth, o que
+ * MATAVA o link de senha já enviado — o auth consome tokens pendentes).
  */
 async function runPostPayment(leadId: string, deps: CheckoutDeps): Promise<void> {
-  if (deps.fulfill) {
-    try {
-      const fresh = await deps.repo.getLead(leadId)
-      if (fresh) await deps.fulfill(fresh)
-    } catch {
-      /* o webhook é o backstop durável do registro */
+  if (!deps.fulfill && !deps.grantMembers && !deps.sendWelcome) return
+  try {
+    let lead = await deps.repo.getLead(leadId)
+    if (!lead) return
+    if (deps.fulfill && !lead.buyerRegisteredAt) {
+      await deps.fulfill(lead)
+      // Relê p/ o `buyer_user_id` que o fulfill acabou de gravar.
+      lead = (await deps.repo.getLead(leadId)) ?? lead
     }
-  }
-  if (deps.grantMembers || deps.sendWelcome) {
-    try {
-      const registered = await deps.repo.getLead(leadId)
-      if (registered?.buyerUserId) {
-        if (deps.grantMembers) await deps.grantMembers(registered)
-        // Boas-vindas também no caminho síncrono (simetria com o webhook): se a
-        // entrega do webhook falhar de vez, o comprador não fica sem o link de
-        // senha. Idempotente no replay (o messaging deduplica por chave).
-        if (deps.sendWelcome) await deps.sendWelcome(registered)
-      }
-    } catch {
-      /* o webhook é o backstop durável da concessão e das boas-vindas */
+    if (lead.buyerUserId) {
+      if (deps.grantMembers) await deps.grantMembers(lead)
+      // Boas-vindas também no caminho síncrono (simetria com o webhook): se a
+      // entrega do webhook falhar de vez, o comprador não fica sem o link de
+      // senha. One-shot atômico no handler (claim) — nunca emite token 2×.
+      if (deps.sendWelcome) await deps.sendWelcome(lead)
     }
+  } catch {
+    /* o webhook é o backstop durável do registro, da concessão e das boas-vindas */
   }
 }
 
@@ -465,8 +467,11 @@ export async function pixStatus(
     const newlyPaid = await deps.repo.markPaid(lead.id, new Date())
     if (newlyPaid) {
       await deps.repo.insertEvent(lead.id, 'pagamento_confirmado', 'checkout_polling')
-      // Registra o uso do cupom só na transição p/ pago (exactly-once via markPaid).
-      await redeemCouponBestEffort(deps.gateway, lead.couponCode)
+      // Registra o uso do cupom só na transição p/ pago (exactly-once via
+      // markPaid), lendo o cupom DA COBRANÇA PAGA (lead_payments) — o
+      // `lead.couponCode` é só o contexto do último checkout e podia estar
+      // obsoleto (cupom removido numa re-cotação, cobrança antiga etc.).
+      await redeemCouponBestEffort(deps.gateway, await deps.repo.couponForPayment(paymentId))
     }
     await runPostPayment(lead.id, deps)
   }

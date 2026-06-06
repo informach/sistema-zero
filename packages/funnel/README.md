@@ -19,8 +19,8 @@ admin (login via auth/IdP). Rodapé institucional com links para `/politica-de-p
 | Comando | O quê |
 |---|---|
 | `bun run dev` | dev server (`:4321`, com watch) |
-| `bun run build` | build (páginas de marketing pré-renderizadas + servidor SSR) |
-| `bun run start` | sobe o build (`bun ./dist/server/entry.mjs`) |
+| `bun run build` | build (servidor SSR — todas as páginas são on-demand) |
+| `bun run start` | sobe o build via `scripts/start.mjs` (Sentry no boot + graceful shutdown no SIGTERM) |
 | `bun run typecheck` | `astro check` |
 | `bun test` | testes (`bun:test`) |
 | `bun run db:generate` / `db:migrate` | migrations Drizzle (schema `funil`) |

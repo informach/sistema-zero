@@ -21,7 +21,10 @@ export const GET: APIRoute = async () => {
     return new Response(JSON.stringify({ status: 'ready' }), {
       headers: { 'content-type': 'application/json', 'cache-control': 'no-store' },
     })
-  } catch {
+  } catch (err) {
+    // Loga a CAUSA (env inválida no boot lazy / banco fora) — sem isto um deploy
+    // travado em "unavailable" era cego: o healthcheck só enxerga o 503.
+    console.error('readyz.unavailable', err instanceof Error ? err.message : String(err))
     return new Response(JSON.stringify({ status: 'unavailable' }), {
       status: 503,
       headers: { 'content-type': 'application/json', 'cache-control': 'no-store' },

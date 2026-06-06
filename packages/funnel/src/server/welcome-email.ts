@@ -1,4 +1,4 @@
-import type { Lead } from '../db/repo'
+import type { FunnelRepo, Lead } from '../db/repo'
 import type { GatewayClient, SendMessageInput } from '../lib/gateway-client'
 import { splitName } from './fulfillment'
 
@@ -6,6 +6,8 @@ export interface WelcomeEmailDeps {
   gateway: GatewayClient
   /** Base do app do aluno (link de definir senha): `${communityUrl}/redefinir-senha?token=...`. */
   communityUrl: string
+  /** One-shot atômico do welcome (claim) + liberação quando NADA foi emitido. */
+  repo: Pick<FunnelRepo, 'claimWelcome' | 'releaseWelcome'>
   log?: (msg: string, meta?: Record<string, unknown>) => void
 }
 
@@ -22,15 +24,30 @@ export interface WelcomeEmailDeps {
  * Idempotente no replay: `Idempotency-Key` POR CANAL (`welcome-<leadId>` /
  * `welcome-wa-<leadId>` — o messaging deduplica por consumer+chave; reusar a
  * mesma chave devolveria a mensagem do 1º canal em vez de enfileirar o 2º).
+ *
+ * ⚠️ ONE-SHOT ATÔMICO (`claimWelcome`, full review 06/2026): o welcome roda em
+ * DOIS caminhos (webhook E síncrono cartão/polling) e o auth CONSOME os tokens
+ * pendentes ao emitir um novo (1 vivo/usuário) — sem o claim, a 2ª execução
+ * emitia um token novo (invalidando o do e-mail JÁ entregue) e o messaging
+ * deduplicava o reenvio: o comprador clicava num LINK MORTO. Só a execução que
+ * vence o claim emite token/envia; o claim só é liberado se NADA foi emitido
+ * (falha na emissão do token) — depois de emitido, nunca (re-emitir mataria o
+ * link entregue).
  */
 export function makeSendWelcome(deps: WelcomeEmailDeps): (lead: Lead) => Promise<void> {
   return async (lead: Lead) => {
     if (!lead.buyerIsNew || !lead.email) return
+    // Repetição barata (lead fresco do chamador) — a corrida real é do claim.
+    if (lead.welcomeSentAt) return
     try {
+      if (!(await deps.repo.claimWelcome(lead.id, new Date()))) return
       const tokenRes = await deps.gateway.createPasswordToken(lead.email)
       const token = readToken(tokenRes.body)
       if (tokenRes.status !== 201 || !token) {
         deps.log?.('welcome.token_failed', { leadId: lead.id, status: tokenRes.status })
+        // Sem token emitido NADA saiu → libera o claim p/ um caminho futuro
+        // (reentrega do webhook / próximo poll) tentar de novo.
+        await deps.repo.releaseWelcome(lead.id)
         return
       }
 

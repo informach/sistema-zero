@@ -16,8 +16,8 @@ export const POST: APIRoute = ({ request }) => {
     productName: env.PRODUCT_NAME,
     productSku: env.PRODUCT_SKU,
     fulfill: makeFulfill({ repo, gateway, log }),
-    grantMembers: makeGrantMembers({ gateway, offerRef: env.CATALOG_OFFER_SLUG, log }),
-    sendWelcome: makeSendWelcome({ gateway, communityUrl: env.COMMUNITY_URL, log }),
+    grantMembers: makeGrantMembers({ gateway, offerRef: env.CATALOG_OFFER_SLUG, repo, log }),
+    sendWelcome: makeSendWelcome({ gateway, communityUrl: env.COMMUNITY_URL, repo, log }),
     log,
   })
 }

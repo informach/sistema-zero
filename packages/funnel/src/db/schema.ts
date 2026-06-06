@@ -54,6 +54,15 @@ export const leads = funil.table(
     // com o magic-link de 1º acesso. Recorrente (false) já tem credenciais.
     buyerIsNew: boolean('buyer_is_new'),
     buyerRegisteredAt: timestamp('buyer_registered_at', { withTimezone: true }),
+    // One-shot ATÔMICO do welcome (claim via UPDATE … WHERE IS NULL): o welcome
+    // NÃO pode rodar 2× — o auth CONSOME os tokens pendentes ao emitir um novo
+    // (1 vivo/usuário) e o messaging deduplica o reenvio; uma 2ª execução
+    // (webhook × polling) invalidaria o token do e-mail JÁ entregue (link morto).
+    welcomeSentAt: timestamp('welcome_sent_at', { withTimezone: true }),
+    // Concessão na área de membros CONCLUÍDA (one-shot): poll repetido após pago
+    // não re-chama o members (a concessão lá é idempotente, mas cada re-chamada
+    // era um S2S real por poll).
+    membersGrantedAt: timestamp('members_granted_at', { withTimezone: true }),
 
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
@@ -80,6 +89,11 @@ export const leadPayments = funil.table('lead_payments', {
   leadId: uuid('lead_id')
     .notNull()
     .references(() => leads.id, { onDelete: 'cascade' }),
+  // Cupom aplicado NESTA cobrança (null = sem cupom). O redeem da confirmação lê
+  // daqui (cobrança efetivamente paga) — `leads.coupon_code` é só o contexto do
+  // ÚLTIMO checkout e ficava obsoleto (re-cotação sem cupom redimia cupom não
+  // aplicado; boleto antigo com cupom pago depois não redimia o certo).
+  couponCode: text('coupon_code'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })
 
@@ -97,7 +111,10 @@ export const funnelEvents = funil.table(
   },
   (t) => [
     index('funnel_events_lead_idx').on(t.leadId),
-    index('funnel_events_name_idx').on(t.eventName),
+    // Composto (substitui o índice só de event_name, prefixo redundante): o
+    // dashboard agrega `count(distinct lead_id) group by event_name` sobre uma
+    // tabela que NUNCA é podada — com o composto vira index-only scan.
+    index('funnel_events_name_lead_idx').on(t.eventName, t.leadId),
   ],
 )
 

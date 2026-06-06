@@ -33,7 +33,7 @@ function deps(
     repo,
     internalToken: TOKEN,
     fulfill: makeFulfill({ repo, gateway: gw.gateway }),
-    grantMembers: makeGrantMembers({ gateway: gw.gateway, offerRef: OFFER }),
+    grantMembers: makeGrantMembers({ gateway: gw.gateway, offerRef: OFFER, repo }),
   }
 }
 
@@ -165,7 +165,7 @@ describe('POST /api/webhooks/payments', () => {
       ),
       {
         ...deps(repo, gw),
-        sendWelcome: makeSendWelcome({ gateway: gw.gateway, communityUrl: COMMUNITY_URL }),
+        sendWelcome: makeSendWelcome({ gateway: gw.gateway, communityUrl: COMMUNITY_URL, repo }),
       },
     )
     expect(res.status).toBe(200)
@@ -267,7 +267,7 @@ describe('POST /api/webhooks/payments', () => {
       ),
       {
         ...deps(repo, gw),
-        sendWelcome: makeSendWelcome({ gateway: gw.gateway, communityUrl: COMMUNITY_URL }),
+        sendWelcome: makeSendWelcome({ gateway: gw.gateway, communityUrl: COMMUNITY_URL, repo }),
       },
     )
     expect(res.status).toBe(200)
@@ -293,7 +293,7 @@ describe('POST /api/webhooks/payments', () => {
       ),
       {
         ...deps(repo, gw),
-        sendWelcome: makeSendWelcome({ gateway: gw.gateway, communityUrl: COMMUNITY_URL }),
+        sendWelcome: makeSendWelcome({ gateway: gw.gateway, communityUrl: COMMUNITY_URL, repo }),
       },
     )
     expect(res.status).toBe(200)

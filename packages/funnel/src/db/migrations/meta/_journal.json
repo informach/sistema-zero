@@ -50,6 +50,13 @@
       "when": 1780711907919,
       "tag": "0006_rapid_ironclad",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1780740184050,
+      "tag": "0007_panoramic_lethal_legion",
+      "breakpoints": true
     }
   ]
 }

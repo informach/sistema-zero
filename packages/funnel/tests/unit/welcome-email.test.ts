@@ -31,7 +31,7 @@ describe('makeSendWelcome (boas-vindas de 1º acesso: e-mail + WhatsApp)', () =>
     const gw = createFakeGateway()
     const lead = await registeredLead(repo)
 
-    await makeSendWelcome({ gateway: gw.gateway, communityUrl: COMMUNITY_URL })(lead)
+    await makeSendWelcome({ gateway: gw.gateway, communityUrl: COMMUNITY_URL, repo })(lead)
 
     expect(gw.calls.passwordTokens).toEqual(['ana@example.com'])
     expect(gw.calls.messages).toHaveLength(2)
@@ -60,7 +60,7 @@ describe('makeSendWelcome (boas-vindas de 1º acesso: e-mail + WhatsApp)', () =>
     const gw = createFakeGateway()
     const lead = await registeredLead(repo, { telefone: null })
 
-    await makeSendWelcome({ gateway: gw.gateway, communityUrl: COMMUNITY_URL })(lead)
+    await makeSendWelcome({ gateway: gw.gateway, communityUrl: COMMUNITY_URL, repo })(lead)
 
     expect(gw.calls.messages).toHaveLength(1)
     expect(gw.calls.messages[0]?.input.channel).toBe('email')
@@ -71,7 +71,7 @@ describe('makeSendWelcome (boas-vindas de 1º acesso: e-mail + WhatsApp)', () =>
     const gw = createFakeGateway()
     const lead = await registeredLead(repo, { isNew: false, userId: 'user-existing' })
 
-    await makeSendWelcome({ gateway: gw.gateway, communityUrl: COMMUNITY_URL })(lead)
+    await makeSendWelcome({ gateway: gw.gateway, communityUrl: COMMUNITY_URL, repo })(lead)
 
     expect(gw.calls.passwordTokens).toHaveLength(0)
     expect(gw.calls.messages).toHaveLength(0)
@@ -83,7 +83,7 @@ describe('makeSendWelcome (boas-vindas de 1º acesso: e-mail + WhatsApp)', () =>
     gw.setPasswordTokenStatus(404)
     const lead = await registeredLead(repo)
 
-    await makeSendWelcome({ gateway: gw.gateway, communityUrl: COMMUNITY_URL })(lead)
+    await makeSendWelcome({ gateway: gw.gateway, communityUrl: COMMUNITY_URL, repo })(lead)
     expect(gw.calls.messages).toHaveLength(0)
   })
 
@@ -94,7 +94,7 @@ describe('makeSendWelcome (boas-vindas de 1º acesso: e-mail + WhatsApp)', () =>
     const lead = await registeredLead(repo)
 
     // Não deve lançar; a falha do e-mail NÃO impede a tentativa do WhatsApp.
-    await makeSendWelcome({ gateway: gw.gateway, communityUrl: COMMUNITY_URL })(lead)
+    await makeSendWelcome({ gateway: gw.gateway, communityUrl: COMMUNITY_URL, repo })(lead)
     expect(gw.calls.messages).toHaveLength(2)
     expect(gw.calls.messages.map((m) => m.input.channel)).toEqual(['email', 'whatsapp'])
   })
@@ -109,8 +109,65 @@ describe('makeSendWelcome (boas-vindas de 1º acesso: e-mail + WhatsApp)', () =>
         throw new Error('rede caiu')
       },
     }
-    await makeSendWelcome({ gateway: broken, communityUrl: COMMUNITY_URL })(lead)
+    await makeSendWelcome({ gateway: broken, communityUrl: COMMUNITY_URL, repo })(lead)
     expect(gw.calls.messages).toHaveLength(0)
+  })
+
+  test('ONE-SHOT: 2ª execução (webhook × polling) NÃO re-emite token nem reenvia', async () => {
+    // O auth CONSOME os tokens pendentes ao emitir um novo (1 vivo/usuário) e o
+    // messaging deduplica o reenvio → sem o claim, a 2ª execução invalidava o
+    // token do e-mail JÁ entregue (link morto). Regressão do full review 06/2026.
+    const { repo, leads } = createFakeRepo()
+    const gw = createFakeGateway()
+    const lead = await registeredLead(repo)
+    const send = makeSendWelcome({ gateway: gw.gateway, communityUrl: COMMUNITY_URL, repo })
+
+    await send(lead)
+    expect(gw.calls.passwordTokens).toHaveLength(1)
+    expect(leads.get(lead.id)?.welcomeSentAt).not.toBeNull()
+
+    // 2ª execução com o lead FRESCO (welcome_sent_at já gravado — guard barato)
+    // e com um SNAPSHOT VELHO sem o marcador (corrida: o claim atômico barra).
+    const fresh = await repo.getLead(lead.id)
+    if (fresh) await send(fresh)
+    await send({ ...lead, welcomeSentAt: null })
+    expect(gw.calls.passwordTokens).toHaveLength(1)
+    expect(gw.calls.messages).toHaveLength(2) // só os 2 canais da 1ª execução
+  })
+
+  test('falha na emissão do token LIBERA o claim → retry futuro consegue enviar', async () => {
+    const { repo, leads } = createFakeRepo()
+    const gw = createFakeGateway()
+    gw.setPasswordTokenStatus(404)
+    const lead = await registeredLead(repo)
+    const send = makeSendWelcome({ gateway: gw.gateway, communityUrl: COMMUNITY_URL, repo })
+
+    await send(lead)
+    expect(gw.calls.messages).toHaveLength(0)
+    // NADA foi emitido → claim liberado p/ o próximo caminho (reentrega/poll).
+    expect(leads.get(lead.id)?.welcomeSentAt).toBeNull()
+
+    gw.setPasswordTokenStatus(201)
+    const fresh = await repo.getLead(lead.id)
+    if (fresh) await send(fresh)
+    expect(gw.calls.messages).toHaveLength(2)
+    expect(leads.get(lead.id)?.welcomeSentAt).not.toBeNull()
+  })
+
+  test('falha no ENVIO não libera o claim (token já emitido — re-emitir mataria o link)', async () => {
+    const { repo, leads } = createFakeRepo()
+    const gw = createFakeGateway()
+    gw.setSendMessageStatus(502)
+    const lead = await registeredLead(repo)
+    const send = makeSendWelcome({ gateway: gw.gateway, communityUrl: COMMUNITY_URL, repo })
+
+    await send(lead)
+    expect(gw.calls.passwordTokens).toHaveLength(1)
+    expect(leads.get(lead.id)?.welcomeSentAt).not.toBeNull()
+
+    const fresh = await repo.getLead(lead.id)
+    if (fresh) await send(fresh)
+    expect(gw.calls.passwordTokens).toHaveLength(1) // nenhum token novo
   })
 
   test('sendMessage lançando exceção no e-mail → WhatsApp ainda é tentado', async () => {
@@ -128,7 +185,7 @@ describe('makeSendWelcome (boas-vindas de 1º acesso: e-mail + WhatsApp)', () =>
         return { status: 202 as const, body: { messageId: 'msg-1', status: 'QUEUED' } }
       },
     }
-    await makeSendWelcome({ gateway: flaky, communityUrl: COMMUNITY_URL })(lead)
+    await makeSendWelcome({ gateway: flaky, communityUrl: COMMUNITY_URL, repo })(lead)
     expect(calls).toBe(2)
     expect(channels).toEqual(['email', 'whatsapp'])
   })

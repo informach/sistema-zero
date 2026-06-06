@@ -2,7 +2,14 @@
 import Quiz from '../islands/Quiz'
 import BaseLayout from '../layouts/BaseLayout.astro'
 
-export const prerender = true
+// SSR de propósito (full review 06/2026): página pré-renderizada é servida
+// estática SEM passar pela middleware → ficava SEM security headers (CSP/HSTS/
+// X-Frame-Options) em produção, onde NÃO há CDN/proxy p/ repô-los — e o quiz é
+// a página onde o usuário passa a sessão inteira. O shell é trivial de renderizar;
+// o cache público curto compensa.
+export const prerender = false
+
+Astro.response.headers.set('cache-control', 'public, max-age=60, stale-while-revalidate=300')
 ---
 
 <BaseLayout title="Quiz — No Comando da IA" noindex={true}>

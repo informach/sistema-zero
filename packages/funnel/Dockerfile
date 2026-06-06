@@ -26,4 +26,7 @@ EXPOSE 4321
 # Roda como usuário sem privilégios (a imagem oven/bun já provê o usuário `bun`).
 USER bun
 
-CMD ["bun", "run", "--filter", "@sistemazero/funnel", "start"]
+# Wrapper direto (sem `bun run` no meio): garante que o SIGTERM do Railway chega
+# ao processo do servidor — o wrapper drena as requisições in-flight (graceful
+# shutdown) e inicializa o Sentry no boot.
+CMD ["bun", "packages/funnel/scripts/start.mjs"]
