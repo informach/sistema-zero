@@ -54,8 +54,20 @@ Gateway. Cada serviço é um pacote em `packages/*`, deployável de forma indepe
 | [`@sistemazero/core`](packages/core) | — | Lib compartilhada (security/logging/errors/result/http), sem framework |
 | [`@sistemazero/tui`](packages/tui) | — | UI de terminal (React + OpenTUI) |
 
+## Fluxo de desenvolvimento (git → CI → staging → produção)
+
+A `main` é **protegida** (ruleset do GitHub): só entra código por **PR com o check
+`ci` verde** (lint + testes + typecheck do monorepo inteiro). O trabalho do dia a dia
+acontece na branch **`staging`** (ou em feature branches que abrem PR para ela), que
+deploya no **ambiente `staging` do Railway** (Postgres próprio, Efí homologação, R2
+de teste) para validação antes do PR `staging → main` (sempre **merge commit**).
+Detalhes, URLs dos dois ambientes e regras: **[docs/ambientes-e-fluxo.md](docs/ambientes-e-fluxo.md)**.
+
 ## Documentação
 
+- **[Ambientes & fluxo de desenvolvimento](docs/ambientes-e-fluxo.md)** — git flow
+  (staging → PR → main), CI obrigatório, os 2 environments do Railway (produção ×
+  staging: credenciais, URLs, deploys) e custo do staging.
 - **[Catálogo & Entitlements — manual de operação](docs/catalogo-e-entitlements.md)** —
   guia conceitual de produtos/ofertas/combos/bônus/acessos para quem opera o painel:
   os 3 conceitos (produto · oferta · matrícula), a entrega via área de membros
