@@ -15,38 +15,42 @@ Astro.response.headers.set('cache-control', 'no-store')
 
 const { repo, env, gateway } = getDeps()
 
-// Lead da sessão; sem cookie, cria um novo na hora (o contato pode vir nos query
-// params do pré-checkout — assim um cookie perdido não derruba a compra).
+// Lead da sessão (cookie). Lead já PAGO não é reaproveitado: nova compra = novo
+// lead (sem CPF/dados antigos) — defesa extra à expiração do cookie na /obrigado.
 let leadId = getLeadId(Astro.request)
 let lead = leadId ? await repo.getLead(leadId) : null
-// Lead já PAGO não é reaproveitado: nova compra = novo lead (sem CPF/dados antigos).
-// Defesa extra à expiração do cookie na /obrigado (cobre cookie que sobreviveu).
 if (lead?.paidAt) {
   lead = null
   leadId = null
 }
-if (!lead) {
-  const created = await repo.createLead()
-  leadId = created.id
-  Astro.response.headers.append('set-cookie', leadCookie(leadId, env.NODE_ENV === 'production'))
-  lead = await repo.getLead(leadId)
-}
 
-// Prefill: lead (banco) com fallback nos query params (?nome&email&telefone) que
-// o modal de pré-checkout anexa à URL. Se os params trazem um contato válido e o
-// lead ainda não tem, persiste já (recupera telefone p/ o cartão, por exemplo).
+// Contato dos query params (?nome&email&telefone) que o modal de pré-checkout
+// anexa à URL — fallback p/ cookie perdido. Validado UMA vez: serve de prefill
+// e de GATE para criar lead novo.
 const sp = Astro.url.searchParams
 const fromQuery = {
   nome: sp.get('nome')?.trim() ?? '',
   email: sp.get('email')?.trim() ?? '',
   telefone: sp.get('telefone')?.trim() ?? '',
 }
-if (lead && !lead.email) {
-  const parsed = ContactSchema.safeParse(fromQuery)
-  if (parsed.success) {
-    await repo.updateLead(lead.id, parsed.data)
-    lead = { ...lead, ...parsed.data }
-  }
+const queryContact = ContactSchema.safeParse(fromQuery)
+
+if (!lead) {
+  // Sem lead E sem contato válido na URL → volta p/ a oferta SEM criar lead.
+  // (Antes o insert rodava antes do guard: bot/crawler batendo em /checkout
+  // inseria uma linha no banco por hit, sem rate limit — GET não passa por ele.)
+  if (!queryContact.success) return Astro.redirect('/oferta')
+  // Contato válido na URL: cria o lead já com ele persistido (recupera o
+  // telefone p/ cartão/boleto, por exemplo).
+  const created = await repo.createLead()
+  leadId = created.id
+  Astro.response.headers.append('set-cookie', leadCookie(leadId, env.NODE_ENV === 'production'))
+  await repo.updateLead(leadId, queryContact.data)
+  lead = await repo.getLead(leadId)
+} else if (!lead.email && queryContact.success) {
+  // Lead existente ainda sem contato: persiste o da URL.
+  await repo.updateLead(lead.id, queryContact.data)
+  lead = { ...lead, ...queryContact.data }
 }
 
 // CPF NUNCA é pré-preenchido (decisão do usuário): dado sensível, digitado a cada

@@ -12,7 +12,18 @@ export interface GatewayClientOptions {
   hmacSecret: string
   /** Injetável em testes; default = fetch global. */
   fetchImpl?: typeof fetch
+  /** Timeout (ms) das chamadas em geral (leituras + S2S rápidos). Default 10s. */
+  timeoutMs?: number
+  /**
+   * Timeout (ms) da CRIAÇÃO de pagamento. Default 40s: a Efí fria leva ~15-16s
+   * (mTLS/OAuth) e o gateway segura a conexão por até 45s (idleTimeout) — um
+   * teto menor abortaria cobrança que ainda ia completar.
+   */
+  paymentTimeoutMs?: number
 }
+
+const DEFAULT_TIMEOUT_MS = 10_000
+const PAYMENT_CREATE_TIMEOUT_MS = 40_000
 
 export interface GatewayResult<T = unknown> {
   status: number
@@ -94,6 +105,46 @@ async function readBody(res: Response): Promise<unknown> {
 
 export function createGatewayClient(opts: GatewayClientOptions) {
   const doFetch = opts.fetchImpl ?? fetch
+  const timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS
+  const paymentTimeoutMs = opts.paymentTimeoutMs ?? PAYMENT_CREATE_TIMEOUT_MS
+
+  /**
+   * fetch com TIMEOUT que NUNCA lança: timeout → 504 GATEWAY_TIMEOUT; rede/DNS
+   * fora → 502 GATEWAY_UNREACHABLE. Os chamadores já tratam por status (retry/
+   * best-effort) — sem isto, um gateway pendurado segurava o handler (e o SSR
+   * do checkout) para sempre, e uma exceção de rede virava 500 opaco.
+   * ⚠️ AbortController + clearTimeout (NÃO `AbortSignal.timeout`): o signal de
+   * fábrica não é cancelável — cada chamada deixaria um timer de 10-40s vivo
+   * após a resposta (acúmulo em produção; e o bun test fica esperando os
+   * timers pendentes drenarem — a suíte inteira pendurava).
+   */
+  async function requestJson(url: string, init: RequestInit, ms: number): Promise<GatewayResult> {
+    const controller = new AbortController()
+    // Timer REFERENCIADO de propósito (sem unref): garante que o abort dispara
+    // mesmo quando só a promise do fetch segura o loop. O clearTimeout no
+    // finally evita acúmulo no caminho feliz.
+    const timer = setTimeout(
+      () => controller.abort(new DOMException('gateway timeout', 'TimeoutError')),
+      ms,
+    )
+    try {
+      const res = await doFetch(url, { ...init, signal: controller.signal })
+      return { status: res.status, body: await readBody(res) }
+    } catch (err) {
+      const timedOut = err instanceof DOMException && err.name === 'TimeoutError'
+      return {
+        status: timedOut ? 504 : 502,
+        body: {
+          error: {
+            code: timedOut ? 'GATEWAY_TIMEOUT' : 'GATEWAY_UNREACHABLE',
+            message: err instanceof Error ? err.message : String(err),
+          },
+        },
+      }
+    } finally {
+      clearTimeout(timer)
+    }
+  }
 
   function buildHeaders(
     method: string,
@@ -120,44 +171,46 @@ export function createGatewayClient(opts: GatewayClientOptions) {
     async createPayment(input: unknown, idempotencyKey: string): Promise<GatewayResult> {
       const rawBody = JSON.stringify(input)
       const path = '/payments'
-      const res = await doFetch(`${opts.baseUrl}${path}`, {
-        method: 'POST',
-        headers: buildHeaders('POST', path, rawBody, idempotencyKey),
-        body: rawBody,
-      })
-      return { status: res.status, body: await readBody(res) }
+      return requestJson(
+        `${opts.baseUrl}${path}`,
+        {
+          method: 'POST',
+          headers: buildHeaders('POST', path, rawBody, idempotencyKey),
+          body: rawBody,
+        },
+        paymentTimeoutMs,
+      )
     },
 
     /** GET /payments/:id (corpo vazio → assina "<ts>.GET.<path>."). */
     async getPayment(paymentId: string): Promise<GatewayResult> {
       const path = `/payments/${encodeURIComponent(paymentId)}`
-      const res = await doFetch(`${opts.baseUrl}${path}`, {
-        method: 'GET',
-        headers: buildHeaders('GET', path, ''),
-      })
-      return { status: res.status, body: await readBody(res) }
+      return requestJson(
+        `${opts.baseUrl}${path}`,
+        { method: 'GET', headers: buildHeaders('GET', path, '') },
+        timeoutMs,
+      )
     },
 
     /** GET /catalog/offers/:slug (via gateway → catalog). Rota pública (leitura de marketing). */
     async getOffer(slug: string): Promise<GatewayResult> {
       const path = `/catalog/offers/${encodeURIComponent(slug)}`
-      const res = await doFetch(`${opts.baseUrl}${path}`, {
-        method: 'GET',
-        headers: buildHeaders('GET', path, ''),
-      })
-      return { status: res.status, body: await readBody(res) }
+      return requestJson(
+        `${opts.baseUrl}${path}`,
+        { method: 'GET', headers: buildHeaders('GET', path, '') },
+        timeoutMs,
+      )
     },
 
     /** POST /catalog/offers/:slug/quote — preço autoritativo com cupom opcional. Rota pública. */
     async quoteOffer(slug: string, couponCode?: string): Promise<GatewayResult> {
       const rawBody = JSON.stringify(couponCode ? { couponCode } : {})
       const path = `/catalog/offers/${encodeURIComponent(slug)}/quote`
-      const res = await doFetch(`${opts.baseUrl}${path}`, {
-        method: 'POST',
-        headers: buildHeaders('POST', path, rawBody),
-        body: rawBody,
-      })
-      return { status: res.status, body: await readBody(res) }
+      return requestJson(
+        `${opts.baseUrl}${path}`,
+        { method: 'POST', headers: buildHeaders('POST', path, rawBody), body: rawBody },
+        timeoutMs,
+      )
     },
 
     /**
@@ -167,12 +220,11 @@ export function createGatewayClient(opts: GatewayClientOptions) {
     async redeemCoupon(code: string): Promise<GatewayResult> {
       const rawBody = '{}'
       const path = `/catalog/coupons/${encodeURIComponent(code)}/redeem`
-      const res = await doFetch(`${opts.baseUrl}${path}`, {
-        method: 'POST',
-        headers: buildHeaders('POST', path, rawBody),
-        body: rawBody,
-      })
-      return { status: res.status, body: await readBody(res) }
+      return requestJson(
+        `${opts.baseUrl}${path}`,
+        { method: 'POST', headers: buildHeaders('POST', path, rawBody), body: rawBody },
+        timeoutMs,
+      )
     },
 
     /**
@@ -186,12 +238,11 @@ export function createGatewayClient(opts: GatewayClientOptions) {
     async ensureBuyer(input: RegisterBuyerInput): Promise<GatewayResult> {
       const rawBody = JSON.stringify(input)
       const path = '/auth/internal/ensure-buyer'
-      const res = await doFetch(`${opts.baseUrl}${path}`, {
-        method: 'POST',
-        headers: buildHeaders('POST', path, rawBody),
-        body: rawBody,
-      })
-      return { status: res.status, body: await readBody(res) }
+      return requestJson(
+        `${opts.baseUrl}${path}`,
+        { method: 'POST', headers: buildHeaders('POST', path, rawBody), body: rawBody },
+        timeoutMs,
+      )
     },
 
     /**
@@ -200,41 +251,50 @@ export function createGatewayClient(opts: GatewayClientOptions) {
      * guarda os tokens em cookies HttpOnly e valida via `getMe`.
      */
     async loginAuth(email: string, password: string): Promise<GatewayResult> {
-      const res = await doFetch(`${opts.baseUrl}/auth/login`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      })
-      return { status: res.status, body: await readBody(res) }
+      return requestJson(
+        `${opts.baseUrl}/auth/login`,
+        {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        },
+        timeoutMs,
+      )
     },
 
     /** `GET /auth/me` com Bearer — valida o access token e devolve `{ user }` (ou 401). */
     async getMe(accessToken: string): Promise<GatewayResult> {
-      const res = await doFetch(`${opts.baseUrl}/auth/me`, {
-        method: 'GET',
-        headers: { authorization: `Bearer ${accessToken}` },
-      })
-      return { status: res.status, body: await readBody(res) }
+      return requestJson(
+        `${opts.baseUrl}/auth/me`,
+        { method: 'GET', headers: { authorization: `Bearer ${accessToken}` } },
+        timeoutMs,
+      )
     },
 
     /** `POST /auth/refresh` → `{ tokens }` (rotação no auth). 401 se o refresh não vale. */
     async refreshAuth(refreshToken: string): Promise<GatewayResult> {
-      const res = await doFetch(`${opts.baseUrl}/auth/refresh`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ refreshToken }),
-      })
-      return { status: res.status, body: await readBody(res) }
+      return requestJson(
+        `${opts.baseUrl}/auth/refresh`,
+        {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ refreshToken }),
+        },
+        timeoutMs,
+      )
     },
 
     /** `POST /auth/logout` — revoga o refresh token (encerra a sessão no auth). */
     async logoutAuth(refreshToken: string): Promise<GatewayResult> {
-      const res = await doFetch(`${opts.baseUrl}/auth/logout`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ refreshToken }),
-      })
-      return { status: res.status, body: await readBody(res) }
+      return requestJson(
+        `${opts.baseUrl}/auth/logout`,
+        {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ refreshToken }),
+        },
+        timeoutMs,
+      )
     },
 
     /**
@@ -246,12 +306,11 @@ export function createGatewayClient(opts: GatewayClientOptions) {
     async grantMembersAccess(input: GrantMembersInput): Promise<GatewayResult> {
       const rawBody = JSON.stringify(input)
       const path = '/members/webhooks/grant'
-      const res = await doFetch(`${opts.baseUrl}${path}`, {
-        method: 'POST',
-        headers: buildHeaders('POST', path, rawBody),
-        body: rawBody,
-      })
-      return { status: res.status, body: await readBody(res) }
+      return requestJson(
+        `${opts.baseUrl}${path}`,
+        { method: 'POST', headers: buildHeaders('POST', path, rawBody), body: rawBody },
+        timeoutMs,
+      )
     },
 
     /**
@@ -264,12 +323,11 @@ export function createGatewayClient(opts: GatewayClientOptions) {
     async createPasswordToken(email: string): Promise<GatewayResult> {
       const rawBody = JSON.stringify({ email })
       const path = '/auth/internal/password-tokens'
-      const res = await doFetch(`${opts.baseUrl}${path}`, {
-        method: 'POST',
-        headers: buildHeaders('POST', path, rawBody),
-        body: rawBody,
-      })
-      return { status: res.status, body: await readBody(res) }
+      return requestJson(
+        `${opts.baseUrl}${path}`,
+        { method: 'POST', headers: buildHeaders('POST', path, rawBody), body: rawBody },
+        timeoutMs,
+      )
     },
 
     /**
@@ -280,12 +338,15 @@ export function createGatewayClient(opts: GatewayClientOptions) {
     async sendMessage(input: SendMessageInput, idempotencyKey: string): Promise<GatewayResult> {
       const rawBody = JSON.stringify(input)
       const path = '/messaging/send'
-      const res = await doFetch(`${opts.baseUrl}${path}`, {
-        method: 'POST',
-        headers: buildHeaders('POST', path, rawBody, idempotencyKey),
-        body: rawBody,
-      })
-      return { status: res.status, body: await readBody(res) }
+      return requestJson(
+        `${opts.baseUrl}${path}`,
+        {
+          method: 'POST',
+          headers: buildHeaders('POST', path, rawBody, idempotencyKey),
+          body: rawBody,
+        },
+        timeoutMs,
+      )
     },
   }
 }

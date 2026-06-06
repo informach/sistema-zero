@@ -3,6 +3,7 @@ import { pixStatus } from '../../../server/checkout'
 import { getDeps } from '../../../server/deps'
 import { makeFulfill } from '../../../server/fulfillment'
 import { makeGrantMembers } from '../../../server/members-grant'
+import { makeSendWelcome } from '../../../server/welcome-email'
 
 export const prerender = false
 
@@ -16,6 +17,7 @@ export const GET: APIRoute = ({ request, params }) => {
     productSku: env.PRODUCT_SKU,
     fulfill: makeFulfill({ repo, gateway, log }),
     grantMembers: makeGrantMembers({ gateway, offerRef: env.CATALOG_OFFER_SLUG, log }),
+    sendWelcome: makeSendWelcome({ gateway, communityUrl: env.COMMUNITY_URL, log }),
     log,
   })
 }

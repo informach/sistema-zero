@@ -62,8 +62,26 @@ export const leads = funil.table(
     index('leads_email_idx').on(t.email),
     index('leads_segmento_idx').on(t.segmento),
     index('leads_created_idx').on(t.createdAt),
+    // Webhook `payment.paid` resolve o lead pela cobrança (findLeadByPayment).
+    index('leads_payment_idx').on(t.paymentId),
   ],
 )
+
+/**
+ * HISTÓRICO de cobranças por lead (payment_id → lead_id). O `leads.payment_id`
+ * guarda só a cobrança MAIS RECENTE (sobrescrito a cada checkout); sem este
+ * histórico, o webhook de uma cobrança antiga ainda pagável (boleto vale 3 dias,
+ * Pix re-gerado após corrigir dados) não encontraria o lead e a compra se
+ * perderia em silêncio. Alimentado pelo `setPayment`; consultado como fallback
+ * pelo `findLeadByPayment`.
+ */
+export const leadPayments = funil.table('lead_payments', {
+  paymentId: uuid('payment_id').primaryKey(),
+  leadId: uuid('lead_id')
+    .notNull()
+    .references(() => leads.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+})
 
 /** Eventos do funil (analytics). Um lead gera N eventos ao longo do percurso. */
 export const funnelEvents = funil.table(
@@ -90,4 +108,4 @@ export const processedWebhooks = funil.table('processed_webhooks', {
   processedAt: timestamp('processed_at', { withTimezone: true }).notNull().defaultNow(),
 })
 
-export const schema = { leads, funnelEvents, processedWebhooks }
+export const schema = { leads, funnelEvents, processedWebhooks, leadPayments }

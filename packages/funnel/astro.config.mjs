@@ -12,7 +12,10 @@ const site = process.env.FUNNEL_PUBLIC_URL ?? 'http://localhost:4321'
 // standalone (roda no Bun via `bun ./dist/server/entry.mjs`).
 export default defineConfig({
   output: 'server',
-  adapter: node({ mode: 'standalone' }),
+  // bodySizeLimit: o default do adapter é 1GB (!) — um POST JSON gigante seria
+  // bufferizado em memória. 64KB cobre com folga o maior corpo legítimo
+  // (checkout de cartão ≈ 2KB); excedente falha no parse → 400 BAD_REQUEST.
+  adapter: node({ mode: 'standalone', bodySizeLimit: 64 * 1024 }),
   site,
   integrations: [
     react(),

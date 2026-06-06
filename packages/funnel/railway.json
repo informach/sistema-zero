@@ -1,0 +1,22 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "packages/funnel/Dockerfile",
+    "watchPatterns": [
+      "/packages/funnel/**",
+      "/packages/core/**",
+      "/packages/ui/**",
+      "/bun.lock",
+      "/package.json",
+      "/.dockerignore"
+    ]
+  },
+  "deploy": {
+    "preDeployCommand": "bun run --filter @sistemazero/funnel db:migrate",
+    "startCommand": "bun run --filter @sistemazero/funnel start",
+    "healthcheckPath": "/readyz",
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 3
+  }
+}

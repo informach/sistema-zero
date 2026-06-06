@@ -1,5 +1,6 @@
 import { getDb } from '../db/client'
 import { createFunnelRepo, type FunnelRepo } from '../db/repo'
+import { startWebhookRetention } from '../db/retention'
 import { type Env, getEnv } from '../lib/env'
 import { createGatewayClient, type GatewayClient } from '../lib/gateway-client'
 
@@ -28,6 +29,8 @@ export function getDeps(): Deps {
       }),
       log: (msg, meta) => console.error(msg, meta ?? ''),
     }
+    // Limpeza periódica do dedupe de webhooks (1x por processo, advisory lock).
+    startWebhookRetention(getDb(), cached.log)
   }
   return cached
 }

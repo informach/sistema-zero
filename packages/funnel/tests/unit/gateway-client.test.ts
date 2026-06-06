@@ -129,3 +129,41 @@ describe('createGatewayClient (assinatura HMAC de borda)', () => {
     expect(verdict.valid).toBe(true)
   })
 })
+
+describe('timeout/falha de rede (nunca pendura o handler nem lança)', () => {
+  test('gateway pendurado → aborta no timeout e devolve 504 GATEWAY_TIMEOUT', async () => {
+    // fetch falso que só "responde" quando o AbortSignal dispara — simula o
+    // gateway segurando a conexão p/ sempre.
+    const fetchImpl = ((_url: string, init: RequestInit) =>
+      new Promise((_, reject) => {
+        init.signal?.addEventListener('abort', () => reject(init.signal?.reason))
+      })) as unknown as typeof fetch
+
+    const gw = createGatewayClient({
+      baseUrl: 'http://gateway',
+      consumerId: 'funnel',
+      hmacSecret: SECRET,
+      fetchImpl,
+      timeoutMs: 20,
+    })
+    const res = await gw.getPayment('p1')
+    expect(res.status).toBe(504)
+    expect((res.body as { error: { code: string } }).error.code).toBe('GATEWAY_TIMEOUT')
+  })
+
+  test('rede fora (fetch rejeita) → 502 GATEWAY_UNREACHABLE, sem exceção', async () => {
+    const fetchImpl = (async () => {
+      throw new TypeError('fetch failed')
+    }) as unknown as typeof fetch
+
+    const gw = createGatewayClient({
+      baseUrl: 'http://gateway',
+      consumerId: 'funnel',
+      hmacSecret: SECRET,
+      fetchImpl,
+    })
+    const res = await gw.createPayment({ amountInCents: 3700, method: 'PIX' }, 'k1')
+    expect(res.status).toBe(502)
+    expect((res.body as { error: { code: string } }).error.code).toBe('GATEWAY_UNREACHABLE')
+  })
+})

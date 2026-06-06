@@ -9,6 +9,7 @@ import {
 } from '../../src/server/checkout'
 import { makeFulfill } from '../../src/server/fulfillment'
 import { makeGrantMembers } from '../../src/server/members-grant'
+import { makeSendWelcome } from '../../src/server/welcome-email'
 import { createFakeRepo } from '../fakes/fake-db'
 import { createFakeGateway } from '../fakes/fake-gateway'
 
@@ -431,5 +432,79 @@ describe('POST /api/checkout/card', () => {
     expect(logged).toEqual(['checkout.card.gateway_error'])
     expect(leads.get(id)?.paidAt).toBeNull()
     expect(gw.calls.grant).toHaveLength(0)
+  })
+})
+
+describe('409 ALREADY_PAID — lead pago não inicia nova cobrança', () => {
+  // O guard roda ANTES da validação do corpo (por isso `{}` basta): pelo
+  // endpoint direto, um lead pago geraria nova cobrança sobrescrevendo o
+  // paymentId pago — pagar 2x pela mesma entrega. A página de checkout cria
+  // lead NOVO p/ recompra; a API agora barra também.
+  async function alreadyPaid() {
+    const fake = createFakeRepo()
+    const { id } = await fake.repo.createLead()
+    await fake.repo.updateLead(id, {
+      nome: 'Ana Souza',
+      email: 'ana@example.com',
+      telefone: '11999998888',
+    })
+    await fake.repo.markPaid(id, new Date())
+    return { ...fake, id }
+  }
+
+  async function expectAlreadyPaid(res: Response, gw: ReturnType<typeof createFakeGateway>) {
+    expect(res.status).toBe(409)
+    expect(((await res.json()) as { error: { code: string } }).error.code).toBe('ALREADY_PAID')
+    expect(gw.calls.create).toHaveLength(0)
+  }
+
+  test('pix', async () => {
+    const { repo, id } = await alreadyPaid()
+    const gw = createFakeGateway()
+    await expectAlreadyPaid(await startPix(req('POST', cookieFor(id), {}), deps(repo, gw)), gw)
+  })
+
+  test('boleto', async () => {
+    const { repo, id } = await alreadyPaid()
+    const gw = createFakeGateway()
+    await expectAlreadyPaid(await startBoleto(req('POST', cookieFor(id), {}), deps(repo, gw)), gw)
+  })
+
+  test('cartão', async () => {
+    const { repo, id } = await alreadyPaid()
+    const gw = createFakeGateway()
+    await expectAlreadyPaid(await startCard(req('POST', cookieFor(id), {}), deps(repo, gw)), gw)
+  })
+})
+
+describe('welcome no caminho síncrono (simetria com o webhook)', () => {
+  test('cartão aprovado (PAID) dispara grant E welcome (e-mail + WhatsApp)', async () => {
+    const { repo, id } = await paidLead()
+    const gw = createFakeGateway()
+    gw.setStatus('PAID')
+    const res = await startCard(
+      req('POST', cookieFor(id), {
+        token: 'card-token-xyz',
+        brand: 'visa',
+        last4: '0087',
+        installments: 1,
+        attemptId: 'att-1',
+        contact: CONTACT,
+        address: ADDRESS,
+      }),
+      {
+        ...deps(repo, gw),
+        sendWelcome: makeSendWelcome({
+          gateway: gw.gateway,
+          communityUrl: 'http://localhost:3007',
+        }),
+      },
+    )
+    expect(res.status).toBe(200)
+    expect(gw.calls.grant).toHaveLength(1)
+    // Welcome saiu já no caminho síncrono (webhook segue como backstop; o
+    // messaging deduplica por Idempotency-Key, então o replay não duplica).
+    expect(gw.calls.passwordTokens).toEqual(['ana@example.com'])
+    expect(gw.calls.messages.map((m) => m.input.channel)).toEqual(['email', 'whatsapp'])
   })
 })

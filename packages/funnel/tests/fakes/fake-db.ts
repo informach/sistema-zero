@@ -40,6 +40,8 @@ export interface FakeRepoState {
   leads: Map<string, Lead>
   events: Array<{ leadId: string; eventName: string; step: string | null }>
   processed: Set<string>
+  /** Histórico payment_id → lead_id (espelha funil.lead_payments). */
+  payments: Map<string, string>
 }
 
 /** Implementação em memória do FunnelRepo para testes (sem Postgres). */
@@ -47,6 +49,7 @@ export function createFakeRepo(): FakeRepoState {
   const leads = new Map<string, Lead>()
   const events: FakeRepoState['events'] = []
   const processed = new Set<string>()
+  const payments = new Map<string, string>()
   let seq = 0
 
   const repo: FunnelRepo = {
@@ -64,7 +67,10 @@ export function createFakeRepo(): FakeRepoState {
     },
     async setPayment(id, paymentId) {
       const lead = leads.get(id)
-      if (lead) lead.paymentId = paymentId
+      if (lead) {
+        lead.paymentId = paymentId
+        if (!payments.has(paymentId)) payments.set(paymentId, id)
+      }
     },
     async markPaid(id, paidAt) {
       const lead = leads.get(id)
@@ -84,7 +90,9 @@ export function createFakeRepo(): FakeRepoState {
     },
     async findLeadByPayment(paymentId) {
       for (const lead of leads.values()) if (lead.paymentId === paymentId) return lead
-      return null
+      // Fallback no histórico (cobrança antiga, ponteiro já sobrescrito).
+      const mapped = payments.get(paymentId)
+      return mapped ? (leads.get(mapped) ?? null) : null
     },
     async insertEvent(leadId, eventName, step = null) {
       events.push({ leadId, eventName, step })
@@ -124,5 +132,5 @@ export function createFakeRepo(): FakeRepoState {
     },
   }
 
-  return { repo, leads, events, processed }
+  return { repo, leads, events, processed, payments }
 }

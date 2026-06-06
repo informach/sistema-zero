@@ -107,14 +107,21 @@ amarrados → sem replay cross-endpoint); header `x-signature: t=<ts>,v1=<hex>`:
 **Checkout (estilo Hotmart, 06/2026):** card do produto (capa + nome + autor + preço) → **"Dados
 pessoais"** (e-mail + confirmação [só client] + nome + CPF, pré-populados do lead com fallback nos
 **query params** `?nome&email&telefone` que o `PreCheckoutModal` anexa ao redirect — sobrevive a
-refresh/cookie perdido; `checkout.astro` cria lead novo no SSR se faltar cookie e persiste o contato
-dos params) → formas de pagamento como **radio-cards** (Pix default + cartão; boleto fora da UI). O
+refresh/cookie perdido; `checkout.astro` cria lead novo no SSR **só com contato VÁLIDO nos params**
+— sem cookie e sem contato → redirect p/ `/oferta` SEM insert, senão bot/crawler em `/checkout`
+inseria uma linha por hit) → formas de pagamento como **radio-cards** (Pix default + cartão; boleto fora da UI). O
 corpo de `POST /api/checkout/{pix,card}` EXIGE `contact {nome,email,cpf}` (`CheckoutContactSchema`):
 o handler atualiza o lead (`document` = CPF sem máscara) e monta o `customer` da cobrança — no Pix
 vira o `devedor` da cob na Efí. **O Pix NÃO gera QR automático**: botão "Gerar código Pix"
 desabilitado até o contato validar (motivos: enviar dados completos à Efí + não criar transação à
 toa); depois do clique vale a máquina de estados de sempre (auto-retry, 409 "aguarde", polling,
 expiração 15min). O cartão usa o MESMO CPF compartilhado (o form não o coleta mais).
+
+**Timeouts do `gateway-client` (full review 06/2026):** TODA chamada ao gateway tem
+`AbortSignal.timeout` — 40s na criação de pagamento (Efí fria ~15-16s + idleTimeout 45s do
+gateway), 10s no resto. Timeout/rede fora **nunca lançam**: viram `GatewayResult` `504
+GATEWAY_TIMEOUT` / `502 GATEWAY_UNREACHABLE` (os chamadores já tratam por status; antes um gateway
+pendurado segurava o handler e o SSR do checkout p/ sempre).
 
 **Confirmação de pagamento (duas vias):**
 - **Polling** (`PixCheckout` → `GET /api/checkout/:id` via gateway) — UX/fallback.
@@ -127,14 +134,26 @@ expiração 15min). O cartão usa o MESMO CPF compartilhado (o form não o colet
 O webhook **processa antes** de registrar o `delivery_id`, para que uma falha transitória não faça o
 retry do gateway ser descartado.
 
+**Histórico de cobranças (`funil.lead_payments`, full review 06/2026):** `leads.payment_id` guarda
+só a cobrança MAIS RECENTE (sobrescrita a cada checkout). O `setPayment` também grava o par
+`payment_id → lead_id` no histórico, e o `findLeadByPayment` cai nele como fallback — sem isso, o
+webhook de uma cobrança antiga ainda pagável (**boleto vale 3 dias**; Pix re-gerado após corrigir
+dados) não encontrava o lead e a compra se perdia EM SILÊNCIO (entrega marcada como processada).
+Quando a cobrança paga não é a apontada, o webhook **re-aponta** `leads.payment_id` p/ ela antes do
+`markPaid` (o grant referencia a cobrança certa). **Lead já pago não inicia nova cobrança**: os 3
+handlers devolvem `409 ALREADY_PAID` (guard ANTES da validação do corpo); recompra = lead novo
+(a página de checkout já faz isso).
+
 **Concessão na área de membros (`grantMembers`):** roda DEPOIS do registro do comprador, em
 **três caminhos** (espelhando o `fulfill`): webhook (`payment.paid` → 502 `GRANT_RETRY` se falhar →
 gateway re-entrega) e **best-effort** no polling do Pix (`pixStatus`) e no cartão síncrono PAID
 (`startCard`) — via `server/members-grant.ts` (`makeGrantMembers`). Idempotente do lado do members
 (chave da matrícula), então reentregar/retentar é seguro; o webhook é o backstop durável.
 
-**Boas-vindas / 1º acesso (`sendWelcome`) — e-mail + WhatsApp:** roda no webhook DEPOIS de
-fulfill+grant, **só p/ comprador NOVO** (`buyerUserId` setado — o recorrente já tem credenciais).
+**Boas-vindas / 1º acesso (`sendWelcome`) — e-mail + WhatsApp:** roda no webhook E nos caminhos
+síncronos (`runPostPayment`: cartão PAID/polling — simetria com o grant; se a entrega do webhook
+quebrar de vez, o comprador não fica sem o link de senha) DEPOIS de fulfill+grant, **só p/
+comprador NOVO** (`buyerUserId` setado — o recorrente já tem credenciais).
 Via `server/welcome-email.ts` (`makeSendWelcome`): pede o token de definição de senha ao auth
 (`POST /auth/internal/password-tokens`, HMAC via gateway), monta o link
 `${COMMUNITY_URL}/redefinir-senha?token=...` e enfileira o template `welcome` no messaging
@@ -167,12 +186,24 @@ NUNCA muda o status do webhook (fallback do aluno = "esqueci minha senha"). Env:
 ## Segurança
 
 - **`src/middleware.ts`** seta security headers (CSP, `X-Frame-Options: DENY`, `nosniff`,
-  `Referrer-Policy`, `Permissions-Policy`, HSTS em prod) e um **rate-limit best-effort** em memória
-  (`lib/rate-limit.ts`, 240/min/IP nos POST/PATCH de `/api/{leads,events,contact,checkout}`).
+  `Referrer-Policy`, `Permissions-Policy`, HSTS em prod), um **rate-limit best-effort** em memória
+  (`lib/rate-limit.ts`, 240/min/IP nos POST/PATCH de `/api/{leads,events,contact,checkout}` +
+  bucket PRÓPRIO de **10/min/IP no `POST /api/admin/login`** — anti brute-force) e o default
+  `cache-control: no-store` em `/api/*` (quando o handler não seta o próprio).
   - ⚠️ A middleware **só roda em rotas SSR** — páginas pré-renderizadas (marketing) são servidas
     estáticas e **não passam por ela** em runtime. Em produção, replique os headers no proxy/CDN.
   - ⚠️ O rate-limit é **por instância** (não compartilhado, não persiste). A defesa de borda real é
     do gateway/CDN. Mantenha o limite generoso (o quiz faz ~12 PATCH por sessão).
+  - ⚠️ **IP do cliente atrás de proxy = `TRUST_PROXY=true`** (`lib/client-ip.ts`): o Astro IGNORA o
+    `x-forwarded-for` sem `security.allowedDomains` (verificado no fonte — `core/app/node.js`), então
+    `clientAddress` em Railway seria o IP do PROXY → bucket único p/ TODOS os visitantes (self-DoS
+    com ~20 usuários simultâneos no quiz). Com `TRUST_PROXY=true`, usamos o **ÚLTIMO** hop do XFF
+    (anexado pela borda confiável; o primeiro é forjável pelo cliente). OBRIGATÓRIO explicitar
+    true|false em produção (fail-fast no env). `getEnv()`/`clientAddress` são lidos SÓ dentro do
+    branch de escrita — a middleware também roda no prerender do build, onde não existem.
+  - **Corpo de request**: `node({ bodySizeLimit: 64 * 1024 })` no `astro.config.mjs` — o default do
+    adapter é 1GB(!); 64KB cobre com folga o maior corpo legítimo (cartão ≈ 2KB). Excedente quebra
+    o parse → 400.
   - A CSP usa `'unsafe-inline'` em script/style — necessário p/ hidratação do Astro, JSON-LD inline
     (`ProductJsonLd`) e o `onerror` do `ImageSlot`. Ao adicionar inline scripts, lembre disso.
   - A CSP também libera as origens do **checkout de cartão** (`payment-token-efi`): API de cobranças
@@ -231,9 +262,11 @@ NUNCA muda o status do webhook (fallback do aluno = "esqueci minha senha"). Env:
 | Cookie presente mas lead inexistente | 404 | `NOT_FOUND` |
 | Payload/valor inválido | 400 | `BAD_REQUEST` |
 | Checkout sem e-mail (sem contato p/ entregar) | 409 | `NO_CONTACT` |
+| Lead já pago tentando nova cobrança (recompra = lead novo) | 409 | `ALREADY_PAID` |
 | Cobrança ainda em criação (retry durante a reserva de idempotência do payments) | 409 | `PAYMENT_IN_PROGRESS` |
 | Rate limit | 429 | `RATE_LIMITED` |
 | Falha no gateway | 502 | `GATEWAY_ERROR` |
+| Gateway pendurado (timeout do `gateway-client`) | — interno | `GATEWAY_TIMEOUT` (504) / `GATEWAY_UNREACHABLE` (502) |
 | Admin sem sessão / login inválido (`/admin/*`) | 401 | `UNAUTHORIZED` |
 
 ## Banco (schema `funil`)
@@ -242,8 +275,13 @@ NUNCA muda o status do webhook (fallback do aluno = "esqueci minha senha"). Env:
 serviço (`payments`/`funil`/`auth`). Este package é dono do schema `funil`
 (`pgSchema('funil')` + `schemaFilter:['funil']`). Tabelas: `leads`
 (1 linha/lead, enriquecida a cada resposta; centavos em colunas `integer`; `document` = CPF sem
-máscara coletado nos dados pessoais do checkout), `funnel_events`
-(analytics; conversão por etapa usa `count(distinct lead_id)`), `processed_webhooks` (dedupe).
+máscara coletado nos dados pessoais do checkout; índice em `payment_id`), `funnel_events`
+(analytics; conversão por etapa usa `count(distinct lead_id)`; eventos do CLIENTE são um **enum
+fechado** `CLIENT_EVENTS` em `server/leads.ts` — marcos server-side como `pagamento_confirmado`
+NÃO são aceitos de ilha, senão inflariam a conversão), `processed_webhooks` (dedupe; **retenção de
+30 dias** via `db/retention.ts` — ciclo de 6h com advisory lock `47713920114417`, 1 réplica por
+vez; `funnel_events` NÃO é limpa de propósito: é o analytics histórico) e `lead_payments`
+(histórico payment→lead, ver seção de pagamentos).
 Migrations forward-only por `drizzle-kit`, com **journal próprio por pacote**
 (`migrations: { table: 'funil_migrations' }`) no schema `drizzle` — NÃO compartilhe
 `__drizzle_migrations` entre pacotes (a dedupe por `created_at` pularia migrations).
@@ -251,6 +289,20 @@ Migrations forward-only por `drizzle-kit`, com **journal próprio por pacote**
 > Centavos em `integer` (int4, máx ~2,1e9): os tetos do `VALUE_SCHEMA` garantem que nenhum valor —
 > nem o produto `horas×valor×4` — estoure int4. Se um dia precisar de valores maiores, migre as
 > colunas de centavos para `bigint` (e ajuste os tetos).
+
+## Deploy (Railway)
+
+`packages/funnel/Dockerfile` (contexto = raiz do monorepo; roda `astro build` DENTRO do build da
+imagem) + `packages/funnel/railway.json` (preDeploy `db:migrate`, healthcheck **`/readyz`** —
+readiness com ping no banco e teto de 5s; `/health` segue liveness puro). Serviço **PÚBLICO** (é o
+site de vendas). Envs de runtime: `DATABASE_URL=${{Postgres.DATABASE_URL}}`, `GATEWAY_URL` (borda
+pública do gateway), `FUNNEL_HMAC_SECRET`/`FUNNEL_INTERNAL_TOKEN` (os MESMOS do gateway, ≥16 —
+fail-fast), `COMMUNITY_URL`, **`NODE_ENV=production`** (controla o `Secure` dos cookies!),
+**`TRUST_PROXY=true`** (obrigatório explicitar em prod) e **`HOST=::`** (standalone lê HOST/PORT do
+ambiente; `::` p/ dual-stack). ⚠️ **Envs de BUILD** (inlined pelo Vite no `astro build` — o Railway
+disponibiliza as variáveis do serviço no build do Dockerfile): `PUBLIC_EFI_ACCOUNT_IDENTIFIER`,
+`PUBLIC_EFI_SANDBOX=false` e `FUNNEL_PUBLIC_URL` (site/sitemap — sem ela o sitemap sai
+`localhost`).
 
 ## Testes
 

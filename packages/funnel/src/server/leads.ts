@@ -51,15 +51,37 @@ const VALUE_SCHEMA: Record<LeadKey, z.ZodTypeAny> = {
   custo_mensal: z.coerce.number().int().min(0).max(2_000_000_000),
 }
 
+/**
+ * Eventos que o CLIENTE pode registrar (analytics). Enum FECHADO: os marcos
+ * server-side (`entrou_landing`, `viu_resultado`, `pagamento_iniciado`,
+ * `pagamento_confirmado`) ficam de fora de propósito — antes, qualquer string
+ * ≤64 era aceita e um cliente podia forjar `pagamento_confirmado`, inflando a
+ * conversão do dashboard (além de poluir a tabela com cardinalidade arbitrária).
+ */
+const CLIENT_EVENTS = [
+  'respondeu_pergunta_1',
+  'respondeu_pergunta_2',
+  'respondeu_pergunta_3',
+  'respondeu_pergunta_4',
+  'respondeu_pergunta_5',
+  'respondeu_pergunta_6',
+  'respondeu_pergunta_7',
+  'respondeu_pergunta_8',
+  'respondeu_pergunta_9',
+  'respondeu_pergunta_10',
+  'viu_pagina_vendas',
+  'abriu_checkout',
+] as const
+
 const PatchBody = z.object({
   key: z.enum(LEAD_KEYS),
   value: z.union([z.string(), z.number()]),
   lastStep: z.string().max(64).optional(),
-  eventName: z.string().max(64).optional(),
+  eventName: z.enum(CLIENT_EVENTS).optional(),
 })
 
 const EventBody = z.object({
-  eventName: z.string().min(1).max(64),
+  eventName: z.enum(CLIENT_EVENTS),
   step: z.string().max(64).optional(),
 })
 

@@ -1,4 +1,6 @@
 import { defineMiddleware } from 'astro:middleware'
+import { clientIp } from './lib/client-ip'
+import { getEnv } from './lib/env'
 import { rateLimit } from './lib/rate-limit'
 
 // NOTA: a middleware roda nas rotas on-demand (SSR) — checkout, admin, resultado
@@ -9,6 +11,11 @@ import { rateLimit } from './lib/rate-limit'
 const RATE_LIMITED = /^\/api\/(leads|events|contact|checkout)(\/|$)/
 const RATE_LIMIT = 240 // requisições…
 const RATE_WINDOW_MS = 60_000 // …por minuto, por IP (generoso: o quiz faz ~12 PATCH)
+
+// Login do admin tem bucket PRÓPRIO, bem mais apertado (anti brute-force por IP;
+// o cooldown por conta do auth é a defesa principal — isto barra o spray barato).
+const ADMIN_LOGIN_PATH = '/api/admin/login'
+const ADMIN_LOGIN_LIMIT = 10 // por minuto, por IP
 
 // Origens do checkout de cartão (payment-token-efi v3 — tokenização no browser):
 // API de cobranças da Efí (produção + sandbox/homolog., installments/pubkey),
@@ -52,10 +59,15 @@ function applySecurityHeaders(headers: Headers): void {
 
 export const onRequest = defineMiddleware(async (ctx, next) => {
   const method = ctx.request.method
-  if ((method === 'POST' || method === 'PATCH') && RATE_LIMITED.test(ctx.url.pathname)) {
+  const isWrite = method === 'POST' || method === 'PATCH'
+  const isAdminLogin = isWrite && ctx.url.pathname === ADMIN_LOGIN_PATH
+  if (isWrite && (isAdminLogin || RATE_LIMITED.test(ctx.url.pathname))) {
+    // getEnv()/clientAddress SÓ aqui dentro: a middleware também roda no
+    // prerender do build (só GET), onde não há env de runtime nem clientAddress.
+    const ip = clientIp(ctx.request, ctx.clientAddress || 'unknown', getEnv().TRUST_PROXY)
     const { allowed, retryAfterSeconds } = rateLimit(
-      `${ctx.clientAddress || 'unknown'}:funnel-api`,
-      RATE_LIMIT,
+      isAdminLogin ? `${ip}:admin-login` : `${ip}:funnel-api`,
+      isAdminLogin ? ADMIN_LOGIN_LIMIT : RATE_LIMIT,
       RATE_WINDOW_MS,
       Date.now(),
     )
@@ -78,5 +90,10 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
 
   const res = await next()
   applySecurityHeaders(res.headers)
+  // API nunca é cacheável — default p/ handlers que não setam o próprio header
+  // (alguns setam no-store explicitamente; nenhum quer cache compartilhado).
+  if (ctx.url.pathname.startsWith('/api/') && !res.headers.has('cache-control')) {
+    res.headers.set('cache-control', 'no-store')
+  }
   return res
 })

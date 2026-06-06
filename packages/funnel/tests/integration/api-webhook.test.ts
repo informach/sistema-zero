@@ -200,6 +200,33 @@ describe('POST /api/webhooks/payments', () => {
     expect(await repo.isWebhookProcessed('d1')).toBe(false) // não deduplica → retry possível
   })
 
+  test('cobrança ANTIGA paga (ponteiro sobrescrito) confirma via histórico e re-aponta o lead', async () => {
+    const { repo, leads } = createFakeRepo()
+    const gw = createFakeGateway()
+    const { id } = await repo.createLead()
+    await repo.updateLead(id, { nome: 'Bia', email: 'bia@example.com', telefone: '11988887777' })
+    // Boleto gerado ontem; Pix gerado hoje sobrescreve o ponteiro do lead…
+    await repo.setPayment(id, 'pay-old')
+    await repo.setPayment(id, 'pay-new')
+
+    // …e o comprador paga o BOLETO antigo (vale 3 dias).
+    const res = await handlePaymentWebhook(
+      req(
+        { id: 'd1', event: 'payment.paid', data: { paymentId: 'pay-old' } },
+        { token: TOKEN, deliveryId: 'd1' },
+      ),
+      deps(repo, gw),
+    )
+    expect(res.status).toBe(200)
+    // O lead foi resolvido pelo HISTÓRICO (lead_payments) — antes a compra se
+    // perdia em silêncio (findLeadByPayment → null + entrega marcada).
+    expect(leads.get(id)?.paidAt).not.toBeNull()
+    // E o ponteiro re-aponta p/ a cobrança DE FATO paga → o grant referencia a certa.
+    expect(leads.get(id)?.paymentId).toBe('pay-old')
+    expect(gw.calls.grant).toHaveLength(1)
+    expect((gw.calls.grant[0]?.input as { paymentId: string }).paymentId).toBe('pay-old')
+  })
+
   test('entregas com delivery-ids diferentes (mesmo pagamento) confirmam só uma vez', async () => {
     const { repo, leads, events } = createFakeRepo()
     const gw = createFakeGateway()

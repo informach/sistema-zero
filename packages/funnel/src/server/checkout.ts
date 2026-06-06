@@ -33,6 +33,13 @@ export interface CheckoutDeps {
    */
   grantMembers?: (lead: Lead) => Promise<void>
   /**
+   * Boas-vindas (e-mail + WhatsApp) com o link de definir senha. Best-effort nos
+   * caminhos síncronos (cartão/polling), espelhando o webhook — o handler nunca
+   * lança e o messaging deduplica por Idempotency-Key, então o replay do webhook
+   * NÃO duplica as mensagens.
+   */
+  sendWelcome?: (lead: Lead) => Promise<void>
+  /**
    * Log de diagnóstico (status+code+message do gateway em falha de pagamento —
    * antes o 502 genérico engolia o erro real). Opcional p/ não exigir mudança em
    * chamadas/testes antigos; injetado pela rota (handler permanece puro).
@@ -202,6 +209,9 @@ export async function startPix(request: Request, deps: CheckoutDeps): Promise<Re
   if (!leadId) return jsonError('Sem lead na sessão.', 401, 'NO_LEAD')
   let lead = await deps.repo.getLead(leadId)
   if (!lead) return jsonError('Lead não encontrado.', 404, 'NOT_FOUND')
+  // Lead já pago não inicia OUTRA cobrança (a página de checkout cria um lead
+  // novo p/ recompra; pelo endpoint direto seria pagar 2x pela mesma entrega).
+  if (lead.paidAt) return jsonError('Esta compra já foi confirmada.', 409, 'ALREADY_PAID')
 
   const parsed = PixChargeSchema.safeParse(await safeJson(request))
   if (!parsed.success) return invalidBody(parsed.error)
@@ -268,6 +278,7 @@ export async function startBoleto(request: Request, deps: CheckoutDeps): Promise
   if (!leadId) return jsonError('Sem lead na sessão.', 401, 'NO_LEAD')
   const lead = await deps.repo.getLead(leadId)
   if (!lead) return jsonError('Lead não encontrado.', 404, 'NOT_FOUND')
+  if (lead.paidAt) return jsonError('Esta compra já foi confirmada.', 409, 'ALREADY_PAID')
   if (!lead.email) return jsonError('Finalize seus dados antes de pagar.', 409, 'NO_CONTACT')
   if (!lead.telefone) return jsonError('Telefone é obrigatório para boleto.', 409, 'NO_CONTACT')
 
@@ -335,6 +346,7 @@ export async function startCard(request: Request, deps: CheckoutDeps): Promise<R
   if (!leadId) return jsonError('Sem lead na sessão.', 401, 'NO_LEAD')
   let lead = await deps.repo.getLead(leadId)
   if (!lead) return jsonError('Lead não encontrado.', 404, 'NOT_FOUND')
+  if (lead.paidAt) return jsonError('Esta compra já foi confirmada.', 409, 'ALREADY_PAID')
   if (!lead.telefone) return jsonError('Telefone é obrigatório para cartão.', 409, 'NO_CONTACT')
   const phoneDigits = lead.telefone.replace(/\D/g, '')
 
@@ -412,12 +424,18 @@ async function runPostPayment(leadId: string, deps: CheckoutDeps): Promise<void>
       /* o webhook é o backstop durável do registro */
     }
   }
-  if (deps.grantMembers) {
+  if (deps.grantMembers || deps.sendWelcome) {
     try {
       const registered = await deps.repo.getLead(leadId)
-      if (registered?.buyerUserId) await deps.grantMembers(registered)
+      if (registered?.buyerUserId) {
+        if (deps.grantMembers) await deps.grantMembers(registered)
+        // Boas-vindas também no caminho síncrono (simetria com o webhook): se a
+        // entrega do webhook falhar de vez, o comprador não fica sem o link de
+        // senha. Idempotente no replay (o messaging deduplica por chave).
+        if (deps.sendWelcome) await deps.sendWelcome(registered)
+      }
     } catch {
-      /* o webhook é o backstop durável da concessão */
+      /* o webhook é o backstop durável da concessão e das boas-vindas */
     }
   }
 }

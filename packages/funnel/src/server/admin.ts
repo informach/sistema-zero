@@ -113,8 +113,10 @@ export async function adminLeads(request: Request, deps: AdminDeps): Promise<Res
     LEADS_MAX_LIMIT,
     Math.max(1, intParam(params.get('limit'), LEADS_PAGE_SIZE)),
   )
-  const offset = intParam(params.get('offset'), 0)
-  const q = params.get('q')?.trim() || undefined
+  // Tetos defensivos: offset gigante vira scan inútil no Postgres; q sem cap
+  // vira um pattern ILIKE arbitrariamente caro.
+  const offset = Math.min(intParam(params.get('offset'), 0), 100_000)
+  const q = params.get('q')?.trim().slice(0, 100) || undefined
   const sort = params.get('sort') === 'asc' ? 'asc' : 'desc'
 
   const [leads, total] = await Promise.all([

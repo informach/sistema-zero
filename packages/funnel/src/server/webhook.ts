@@ -51,6 +51,14 @@ export async function handlePaymentWebhook(request: Request, deps: WebhookDeps):
   if (eventName === 'payment.paid' && typeof paymentId === 'string') {
     const lead = await deps.repo.findLeadByPayment(paymentId)
     if (lead) {
+      // Cobrança ANTIGA paga (o lead já aponta p/ uma mais nova, ainda não paga):
+      // re-aponta o ponteiro p/ a cobrança que DE FATO foi paga antes de marcar —
+      // o grant/admin passam a referenciar a cobrança certa. Se o lead já está
+      // pago, o ponteiro fica como está (a cobrança paga é a referência).
+      if (lead.paymentId !== paymentId && !lead.paidAt) {
+        await deps.repo.setPayment(lead.id, paymentId)
+        lead.paymentId = paymentId
+      }
       const newlyPaid = await deps.repo.markPaid(lead.id, new Date())
       if (newlyPaid) {
         await deps.repo.insertEvent(lead.id, 'pagamento_confirmado', 'webhook')

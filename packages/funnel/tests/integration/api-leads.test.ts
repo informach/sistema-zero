@@ -41,6 +41,39 @@ describe('POST /api/leads', () => {
   })
 })
 
+describe('POST /api/events (whitelist de eventos do cliente)', () => {
+  test('evento fora do whitelist (ex.: pagamento_confirmado) → 400, nada gravado', async () => {
+    const { repo, events } = createFakeRepo()
+    const { id } = await repo.createLead()
+    const res = await recordEvent(
+      new Request('http://localhost/api/events', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', cookie: cookieFor(id) },
+        body: JSON.stringify({ eventName: 'pagamento_confirmado' }),
+      }),
+      deps(repo),
+    )
+    // Marcos server-side NÃO são forjáveis pelo cliente (inflariam a conversão).
+    expect(res.status).toBe(400)
+    expect(events.filter((e) => e.eventName === 'pagamento_confirmado')).toHaveLength(0)
+  })
+
+  test('evento do whitelist (viu_pagina_vendas) → 201', async () => {
+    const { repo, events } = createFakeRepo()
+    const { id } = await repo.createLead()
+    const res = await recordEvent(
+      new Request('http://localhost/api/events', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', cookie: cookieFor(id) },
+        body: JSON.stringify({ eventName: 'viu_pagina_vendas' }),
+      }),
+      deps(repo),
+    )
+    expect(res.status).toBe(201)
+    expect(events.some((e) => e.eventName === 'viu_pagina_vendas')).toBe(true)
+  })
+})
+
 describe('PATCH /api/leads (lead do cookie)', () => {
   test('salva segmento e registra evento', async () => {
     const { repo, leads, events } = createFakeRepo()

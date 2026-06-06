@@ -1,6 +1,6 @@
 import { asc, desc, eq, ilike, or, type SQL, sql } from 'drizzle-orm'
 import type { Database } from './client'
-import { funnelEvents, leads, processedWebhooks } from './schema'
+import { funnelEvents, leadPayments, leads, processedWebhooks } from './schema'
 
 export type Lead = typeof leads.$inferSelect
 /** Colunas do lead que podem ser atualizadas via PATCH (contato + chaves do quiz). */
@@ -19,11 +19,20 @@ export interface LeadFilter {
   sort?: 'asc' | 'desc'
 }
 
+/**
+ * Escapa os curingas do LIKE/ILIKE (`%`, `_` e o próprio `\`) para que a busca
+ * trate o termo como literal — sem isto, `%` no input vira "casa tudo" e `_`
+ * vira "qualquer char" (padrão do monorepo; espelha o escapeLike do catalog).
+ */
+function escapeLike(term: string): string {
+  return term.replace(/[\\%_]/g, (ch) => `\\${ch}`)
+}
+
 /** WHERE compartilhado por `listLeads`/`countLeads` (mesma busca → mesmo total). */
 function leadSearchWhere(q?: string): SQL | undefined {
   const term = q?.trim()
   if (!term) return undefined
-  const like = `%${term}%`
+  const like = `%${escapeLike(term)}%`
   return or(ilike(leads.nome, like), ilike(leads.email, like))
 }
 
@@ -81,7 +90,16 @@ export function createFunnelRepo(db: Database): FunnelRepo {
     },
 
     async setPayment(id, paymentId) {
-      await db.update(leads).set({ paymentId, updatedAt: new Date() }).where(eq(leads.id, id))
+      // Além do ponteiro "cobrança atual" no lead, grava o HISTÓRICO em
+      // lead_payments — uma cobrança antiga ainda pagável (boleto/Pix re-gerado)
+      // precisa continuar resolvendo o lead no webhook (findLeadByPayment).
+      await db.transaction(async (tx) => {
+        await tx.update(leads).set({ paymentId, updatedAt: new Date() }).where(eq(leads.id, id))
+        await tx
+          .insert(leadPayments)
+          .values({ paymentId, leadId: id })
+          .onConflictDoNothing({ target: leadPayments.paymentId })
+      })
     },
 
     async markPaid(id, paidAt) {
@@ -102,7 +120,17 @@ export function createFunnelRepo(db: Database): FunnelRepo {
 
     async findLeadByPayment(paymentId) {
       const [row] = await db.select().from(leads).where(eq(leads.paymentId, paymentId)).limit(1)
-      return row ?? null
+      if (row) return row
+      // Fallback: cobrança ANTIGA do lead (o ponteiro já foi sobrescrito por um
+      // checkout mais novo) — resolve pelo histórico em lead_payments.
+      const [mapped] = await db
+        .select({ leadId: leadPayments.leadId })
+        .from(leadPayments)
+        .where(eq(leadPayments.paymentId, paymentId))
+        .limit(1)
+      if (!mapped) return null
+      const [lead] = await db.select().from(leads).where(eq(leads.id, mapped.leadId)).limit(1)
+      return lead ?? null
     },
 
     async insertEvent(leadId, eventName, step = null) {
