@@ -1,5 +1,5 @@
 import type { Lead } from '../db/repo'
-import type { GatewayClient } from '../lib/gateway-client'
+import type { GatewayClient, SendMessageInput } from '../lib/gateway-client'
 import { splitName } from './fulfillment'
 
 export interface WelcomeEmailDeps {
@@ -10,13 +10,18 @@ export interface WelcomeEmailDeps {
 }
 
 /**
- * E-mail de boas-vindas pós-compra com o link de DEFINIR a senha (1º acesso ao
- * app community). Roda após fulfill+grant, SÓ para comprador NOVO (`buyerIsNew` —
+ * Boas-vindas pós-compra com o link de DEFINIR a senha (1º acesso ao app
+ * community), por E-MAIL e WHATSAPP (template `welcome` existe nos dois canais;
+ * mesmo token/link nos dois — single-use: o primeiro clique vale, tanto faz o
+ * canal). Roda após fulfill+grant, SÓ para comprador NOVO (`buyerIsNew` —
  * recém-criado no IdP; o recorrente já tem credenciais, mandar um link de
  * redefinição seria confuso). BEST-EFFORT deliberado: qualquer falha é logada e
- * NUNCA lança — o e-mail não é crítico para a concessão do acesso (o aluno tem o
- * "esqueci minha senha" como fallback), então não força reentrega do webhook.
- * Idempotente no replay: `Idempotency-Key: welcome-<leadId>` (o messaging deduplica).
+ * NUNCA lança — as mensagens não são críticas para a concessão do acesso (o
+ * aluno tem o "esqueci minha senha" como fallback), então não força reentrega
+ * do webhook. Cada canal é INDEPENDENTE: a falha de um não impede o outro.
+ * Idempotente no replay: `Idempotency-Key` POR CANAL (`welcome-<leadId>` /
+ * `welcome-wa-<leadId>` — o messaging deduplica por consumer+chave; reusar a
+ * mesma chave devolveria a mensagem do 1º canal em vez de enfileirar o 2º).
  */
 export function makeSendWelcome(deps: WelcomeEmailDeps): (lead: Lead) => Promise<void> {
   return async (lead: Lead) => {
@@ -31,20 +36,34 @@ export function makeSendWelcome(deps: WelcomeEmailDeps): (lead: Lead) => Promise
 
       const { firstName } = splitName(lead.nome)
       const link = `${deps.communityUrl}/redefinir-senha?token=${encodeURIComponent(token)}`
-      const sendRes = await deps.gateway.sendMessage(
+      const variables = { nome: firstName, link }
+
+      await sendOne(
+        deps,
+        lead.id,
         {
           channel: 'email',
           templateKey: 'welcome',
           recipient: { name: firstName, email: lead.email },
-          variables: { nome: firstName, link },
+          variables,
         },
         `welcome-${lead.id}`,
       )
-      if (sendRes.status !== 202 && sendRes.status !== 200) {
-        deps.log?.('welcome.send_failed', { leadId: lead.id, status: sendRes.status })
-        return
+
+      const phone = toWhatsAppPhone(lead.telefone)
+      if (phone) {
+        await sendOne(
+          deps,
+          lead.id,
+          {
+            channel: 'whatsapp',
+            templateKey: 'welcome',
+            recipient: { name: firstName, phone },
+            variables,
+          },
+          `welcome-wa-${lead.id}`,
+        )
       }
-      deps.log?.('welcome.sent', { leadId: lead.id })
     } catch (err) {
       deps.log?.('welcome.error', {
         leadId: lead.id,
@@ -52,6 +71,42 @@ export function makeSendWelcome(deps: WelcomeEmailDeps): (lead: Lead) => Promise
       })
     }
   }
+}
+
+/** Um envio por canal — best-effort: loga sucesso/falha e NUNCA lança. */
+async function sendOne(
+  deps: WelcomeEmailDeps,
+  leadId: string,
+  input: SendMessageInput,
+  idempotencyKey: string,
+): Promise<void> {
+  try {
+    const res = await deps.gateway.sendMessage(input, idempotencyKey)
+    if (res.status !== 202 && res.status !== 200) {
+      deps.log?.('welcome.send_failed', { leadId, channel: input.channel, status: res.status })
+      return
+    }
+    deps.log?.('welcome.sent', { leadId, channel: input.channel })
+  } catch (err) {
+    deps.log?.('welcome.send_failed', {
+      leadId,
+      channel: input.channel,
+      message: err instanceof Error ? err.message : String(err),
+    })
+  }
+}
+
+/**
+ * Telefone do lead (BR: DDD+número, 10–11 dígitos — `ContactSchema`) no formato
+ * internacional que a Evolution espera (`55` + DDD + número, só dígitos). Já com
+ * DDI 55 → mantém; qualquer outra forma → `null` (sem WhatsApp; o e-mail segue
+ * como canal primário).
+ */
+export function toWhatsAppPhone(tel: string | null): string | null {
+  const digits = (tel ?? '').replace(/\D/g, '')
+  if (digits.length === 10 || digits.length === 11) return `55${digits}`
+  if ((digits.length === 12 || digits.length === 13) && digits.startsWith('55')) return digits
+  return null
 }
 
 function readToken(body: unknown): string | null {

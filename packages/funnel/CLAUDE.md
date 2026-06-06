@@ -133,14 +133,19 @@ gateway re-entrega) e **best-effort** no polling do Pix (`pixStatus`) e no cart�
 (`startCard`) — via `server/members-grant.ts` (`makeGrantMembers`). Idempotente do lado do members
 (chave da matrícula), então reentregar/retentar é seguro; o webhook é o backstop durável.
 
-**E-mail de boas-vindas / 1º acesso (`sendWelcome`):** roda no webhook DEPOIS de fulfill+grant,
-**só p/ comprador NOVO** (`buyerUserId` setado — o recorrente já tem credenciais). Via
-`server/welcome-email.ts` (`makeSendWelcome`): pede o token de definição de senha ao auth
+**Boas-vindas / 1º acesso (`sendWelcome`) — e-mail + WhatsApp:** roda no webhook DEPOIS de
+fulfill+grant, **só p/ comprador NOVO** (`buyerUserId` setado — o recorrente já tem credenciais).
+Via `server/welcome-email.ts` (`makeSendWelcome`): pede o token de definição de senha ao auth
 (`POST /auth/internal/password-tokens`, HMAC via gateway), monta o link
 `${COMMUNITY_URL}/redefinir-senha?token=...` e enfileira o template `welcome` no messaging
-(`POST /messaging/send`, `Idempotency-Key: welcome-<leadId>` → reentrega NÃO duplica).
-**BEST-EFFORT deliberado:** falha só loga e NUNCA muda o status do webhook (fallback do aluno =
-"esqueci minha senha"). Env: `COMMUNITY_URL`.
+(`POST /messaging/send`) pelos **DOIS canais** — o template existe em e-mail E whatsapp no seed do
+messaging, com o MESMO link/token (single-use: o 1º clique vale, tanto faz o canal). Cada canal é
+**independente e best-effort** (a falha de um não impede o outro) com `Idempotency-Key` **POR
+CANAL** (`welcome-<leadId>` / `welcome-wa-<leadId>` — o messaging deduplica por consumer+chave;
+chave única deduplicaria o 2º canal contra o 1º). O WhatsApp só sai se o telefone do lead virar
+formato internacional (`toWhatsAppPhone`: BR 10–11 dígitos → prefixa DDI `55`; já com 55 → mantém;
+outro formato → pula — e-mail é o canal primário). **BEST-EFFORT deliberado:** falha só loga e
+NUNCA muda o status do webhook (fallback do aluno = "esqueci minha senha"). Env: `COMMUNITY_URL`.
 
 ## Renderização (prerender split)
 

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import type { Lead } from '../../src/db/repo'
-import { makeSendWelcome } from '../../src/server/welcome-email'
+import { makeSendWelcome, toWhatsAppPhone } from '../../src/server/welcome-email'
 import { createFakeRepo } from '../fakes/fake-db'
 import { createFakeGateway } from '../fakes/fake-gateway'
 
@@ -9,13 +9,13 @@ const COMMUNITY_URL = 'http://localhost:3007'
 /** Lead pago + registrado (comprador NOVO por padrão) pronto p/ receber o welcome. */
 async function registeredLead(
   repo: ReturnType<typeof createFakeRepo>['repo'],
-  over: { isNew?: boolean; userId?: string } = {},
+  over: { isNew?: boolean; userId?: string; telefone?: string | null } = {},
 ): Promise<Lead> {
   const { id } = await repo.createLead()
   await repo.updateLead(id, {
     nome: 'Ana Souza',
     email: 'ana@example.com',
-    telefone: '11999998888',
+    telefone: over.telefone === undefined ? '11999998888' : over.telefone,
   })
   await repo.setPayment(id, 'pay-1')
   await repo.markPaid(id, new Date())
@@ -25,8 +25,8 @@ async function registeredLead(
   return lead
 }
 
-describe('makeSendWelcome (e-mail de 1º acesso)', () => {
-  test('comprador novo → cria token e envia welcome com link de definir senha', async () => {
+describe('makeSendWelcome (boas-vindas de 1º acesso: e-mail + WhatsApp)', () => {
+  test('comprador novo → cria token e envia welcome por e-mail E WhatsApp com o mesmo link', async () => {
     const { repo } = createFakeRepo()
     const gw = createFakeGateway()
     const lead = await registeredLead(repo)
@@ -34,14 +34,36 @@ describe('makeSendWelcome (e-mail de 1º acesso)', () => {
     await makeSendWelcome({ gateway: gw.gateway, communityUrl: COMMUNITY_URL })(lead)
 
     expect(gw.calls.passwordTokens).toEqual(['ana@example.com'])
-    expect(gw.calls.messages).toHaveLength(1)
-    const sent = gw.calls.messages[0]
-    expect(sent?.input.templateKey).toBe('welcome')
-    expect(sent?.input.channel).toBe('email')
-    expect(sent?.input.recipient).toEqual({ name: 'Ana', email: 'ana@example.com' })
-    expect(sent?.input.variables?.link).toBe(`${COMMUNITY_URL}/redefinir-senha?token=fake-pw-token`)
+    expect(gw.calls.messages).toHaveLength(2)
+    const link = `${COMMUNITY_URL}/redefinir-senha?token=fake-pw-token`
+
+    const email = gw.calls.messages[0]
+    expect(email?.input.templateKey).toBe('welcome')
+    expect(email?.input.channel).toBe('email')
+    expect(email?.input.recipient).toEqual({ name: 'Ana', email: 'ana@example.com' })
+    expect(email?.input.variables?.link).toBe(link)
     // Idempotente no replay do webhook (o messaging deduplica por consumer+chave).
-    expect(sent?.idempotencyKey).toBe(`welcome-${lead.id}`)
+    expect(email?.idempotencyKey).toBe(`welcome-${lead.id}`)
+
+    const wa = gw.calls.messages[1]
+    expect(wa?.input.templateKey).toBe('welcome')
+    expect(wa?.input.channel).toBe('whatsapp')
+    // Telefone BR (DDD+número) ganha o DDI 55 (formato da Evolution).
+    expect(wa?.input.recipient).toEqual({ name: 'Ana', phone: '5511999998888' })
+    expect(wa?.input.variables?.link).toBe(link)
+    // Chave DISTINTA por canal — a mesma chave deduplicaria contra o e-mail.
+    expect(wa?.idempotencyKey).toBe(`welcome-wa-${lead.id}`)
+  })
+
+  test('lead sem telefone → só o e-mail sai (WhatsApp é pulado)', async () => {
+    const { repo } = createFakeRepo()
+    const gw = createFakeGateway()
+    const lead = await registeredLead(repo, { telefone: null })
+
+    await makeSendWelcome({ gateway: gw.gateway, communityUrl: COMMUNITY_URL })(lead)
+
+    expect(gw.calls.messages).toHaveLength(1)
+    expect(gw.calls.messages[0]?.input.channel).toBe('email')
   })
 
   test('comprador RECORRENTE (is_new=false) → não envia (já tem credenciais)', async () => {
@@ -65,15 +87,16 @@ describe('makeSendWelcome (e-mail de 1º acesso)', () => {
     expect(gw.calls.messages).toHaveLength(0)
   })
 
-  test('falha no messaging → NÃO lança (best-effort; fallback = esqueci minha senha)', async () => {
+  test('falha no messaging → NÃO lança e os DOIS canais são tentados (independentes)', async () => {
     const { repo } = createFakeRepo()
     const gw = createFakeGateway()
     gw.setSendMessageStatus(502)
     const lead = await registeredLead(repo)
 
-    // Não deve lançar.
+    // Não deve lançar; a falha do e-mail NÃO impede a tentativa do WhatsApp.
     await makeSendWelcome({ gateway: gw.gateway, communityUrl: COMMUNITY_URL })(lead)
-    expect(gw.calls.messages).toHaveLength(1)
+    expect(gw.calls.messages).toHaveLength(2)
+    expect(gw.calls.messages.map((m) => m.input.channel)).toEqual(['email', 'whatsapp'])
   })
 
   test('gateway lançando exceção → NÃO propaga', async () => {
@@ -88,5 +111,47 @@ describe('makeSendWelcome (e-mail de 1º acesso)', () => {
     }
     await makeSendWelcome({ gateway: broken, communityUrl: COMMUNITY_URL })(lead)
     expect(gw.calls.messages).toHaveLength(0)
+  })
+
+  test('sendMessage lançando exceção no e-mail → WhatsApp ainda é tentado', async () => {
+    const { repo } = createFakeRepo()
+    const gw = createFakeGateway()
+    const lead = await registeredLead(repo)
+    let calls = 0
+    const channels: string[] = []
+    const flaky = {
+      ...gw.gateway,
+      sendMessage: async (input: { channel: string }) => {
+        calls += 1
+        channels.push(input.channel)
+        if (input.channel === 'email') throw new Error('rede caiu')
+        return { status: 202 as const, body: { messageId: 'msg-1', status: 'QUEUED' } }
+      },
+    }
+    await makeSendWelcome({ gateway: flaky, communityUrl: COMMUNITY_URL })(lead)
+    expect(calls).toBe(2)
+    expect(channels).toEqual(['email', 'whatsapp'])
+  })
+})
+
+describe('toWhatsAppPhone (BR → formato internacional da Evolution)', () => {
+  test('celular com máscara (11 dígitos) → 55 + dígitos', () => {
+    expect(toWhatsAppPhone('(11) 99999-8888')).toBe('5511999998888')
+  })
+
+  test('fixo (10 dígitos) → 55 + dígitos', () => {
+    expect(toWhatsAppPhone('1133334444')).toBe('551133334444')
+  })
+
+  test('já com DDI 55 → mantém', () => {
+    expect(toWhatsAppPhone('+55 11 99999-8888')).toBe('5511999998888')
+    expect(toWhatsAppPhone('551133334444')).toBe('551133334444')
+  })
+
+  test('vazio/curto/estranho → null (não envia)', () => {
+    expect(toWhatsAppPhone(null)).toBeNull()
+    expect(toWhatsAppPhone('')).toBeNull()
+    expect(toWhatsAppPhone('99999')).toBeNull()
+    expect(toWhatsAppPhone('123456789012345')).toBeNull() // 15 dígitos, não-BR
   })
 })

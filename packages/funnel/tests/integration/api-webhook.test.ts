@@ -222,7 +222,7 @@ describe('POST /api/webhooks/payments', () => {
     expect(gw.calls.ensureBuyer).toHaveLength(1)
   })
 
-  test('payment.paid dispara o welcome (token + e-mail) após o grant', async () => {
+  test('payment.paid dispara o welcome (token + e-mail + WhatsApp) após o grant', async () => {
     const { repo, leads } = createFakeRepo()
     const gw = createFakeGateway()
     const { id } = await repo.createLead()
@@ -245,8 +245,10 @@ describe('POST /api/webhooks/payments', () => {
     )
     expect(res.status).toBe(200)
     expect(gw.calls.passwordTokens).toEqual(['lia@example.com'])
-    expect(gw.calls.messages).toHaveLength(1)
+    expect(gw.calls.messages).toHaveLength(2)
+    expect(gw.calls.messages.map((m) => m.input.channel)).toEqual(['email', 'whatsapp'])
     expect(gw.calls.messages[0]?.idempotencyKey).toBe(`welcome-${leads.get(id)?.id}`)
+    expect(gw.calls.messages[1]?.idempotencyKey).toBe(`welcome-wa-${leads.get(id)?.id}`)
   })
 
   test('falha no welcome NÃO muda o 200 do webhook (best-effort) e a entrega é marcada', async () => {

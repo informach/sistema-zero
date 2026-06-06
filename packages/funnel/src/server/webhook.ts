@@ -13,7 +13,7 @@ export interface WebhookDeps {
   redeemCoupon?: (couponCode: string | null) => Promise<void>
   /** Concede o acesso na área de membros (após o registro do comprador). Opcional. */
   grantMembers?: (lead: Lead) => Promise<void>
-  /** E-mail de boas-vindas + link de definir senha (best-effort; NUNCA lança). Opcional. */
+  /** Boas-vindas (e-mail + WhatsApp) + link de definir senha (best-effort; NUNCA lança). Opcional. */
   sendWelcome?: (lead: Lead) => Promise<void>
 }
 
@@ -91,15 +91,16 @@ export async function handlePaymentWebhook(request: Request, deps: WebhookDeps):
             }
           }
 
-          // Boas-vindas + link de definir senha (1º acesso ao app community).
-          // BEST-EFFORT: o handler já engole falhas (e o cinto extra aqui garante
-          // que o e-mail NUNCA muda o status do webhook); idempotente no replay
-          // via Idempotency-Key `welcome-<leadId>` (o messaging deduplica).
+          // Boas-vindas (e-mail + WhatsApp) + link de definir senha (1º acesso ao
+          // app community). BEST-EFFORT: o handler já engole falhas (e o cinto
+          // extra aqui garante que as mensagens NUNCA mudam o status do webhook);
+          // idempotente no replay via Idempotency-Key por canal (`welcome-<leadId>`
+          // / `welcome-wa-<leadId>` — o messaging deduplica).
           if (deps.sendWelcome) {
             try {
               await deps.sendWelcome(registered)
             } catch {
-              // nunca propaga — e-mail não é crítico (fallback: "esqueci minha senha")
+              // nunca propaga — boas-vindas não é crítico (fallback: "esqueci minha senha")
             }
           }
         }

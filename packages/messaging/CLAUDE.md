@@ -240,7 +240,9 @@ escalonados (cada lane com seu próprio `next_available_at`).
 ## Pontos em aberto (futuro)
 
 - ~~Integração com a compra~~ **FEITA (jun/2026):** o funil envia o `welcome` no `payment.paid`
-  com o link de **definir senha** (o `auth` emite o token via `POST /auth/internal/password-tokens`;
+  pelos **dois canais** (e-mail + WhatsApp; chaves de idempotência POR canal — `welcome-<leadId>` /
+  `welcome-wa-<leadId>`; o funil prefixa o DDI 55 no telefone BR) com o link de **definir senha**
+  (o `auth` emite o token via `POST /auth/internal/password-tokens`;
   link aponta p/ o app `@sistemazero/community` `/redefinir-senha?token=...`). O `auth` também envia
   o `password-reset` (reset por link) e o **`otp`** (login passwordless + recuperação de senha por
   código — variáveis `nome`/`codigo`). Tudo chega aqui via gateway (HMAC consumers
