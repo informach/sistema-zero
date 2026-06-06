@@ -18,6 +18,8 @@ const EnvSchema = z
     JWT_AUDIENCE: z.string().optional(),
     // Fallback da página de vendas em "Todos os cursos" (curso sem metadata.salesPageUrl).
     FUNNEL_URL: z.string().url().optional(),
+    // Sentry (opcional): ausente = no-op. Espelho de erros LOCAIS da área do aluno.
+    SENTRY_DSN: z.string().url().optional(),
     // Cloudflare R2 (upload de avatar). OPCIONAIS: ausentes → upload responde 503
     // amigável (MEDIA_NOT_CONFIGURED), nunca quebra o boot.
     R2_ACCOUNT_ID: z.string().optional(),
@@ -35,6 +37,19 @@ const EnvSchema = z
     message:
       'Configure JWT_HS256_SECRET (dev/HS256) e/ou JWT_JWKS_URL (produção/RS256 via gateway)',
     path: ['JWT_JWKS_URL'],
+  })
+  // Em PRODUÇÃO o auth emite RS256 e o gateway verifica via JWKS — HS256 não tem
+  // lugar aqui. Exigir JWKS e RECUSAR um segredo HS256 fecha o vetor de um segredo
+  // fraco copiado de dev forjar token aceito na autorização LOCAL das rotas de
+  // mídia (`/api/me/avatar`, downloads de material). Espelha o admin.
+  .refine((e) => e.NODE_ENV !== 'production' || Boolean(e.JWT_JWKS_URL), {
+    message: 'Em produção, JWT_JWKS_URL é obrigatório (o auth emite RS256 via JWKS)',
+    path: ['JWT_JWKS_URL'],
+  })
+  .refine((e) => e.NODE_ENV !== 'production' || !e.JWT_HS256_SECRET, {
+    message:
+      'Em produção, NÃO configure JWT_HS256_SECRET (um segredo HS256 forjaria a sessão local de mídia/downloads)',
+    path: ['JWT_HS256_SECRET'],
   })
 
 export type Env = z.infer<typeof EnvSchema>

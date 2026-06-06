@@ -1,6 +1,7 @@
 import 'server-only'
+import { headers } from 'next/headers'
 import { getEnv } from '@/lib/env'
-import { refreshTokens } from './refresh'
+import { type ForwardHeaders, refreshTokens } from './refresh'
 import {
   type AuthTokens,
   clearSessionCookies,
@@ -8,6 +9,12 @@ import {
   getRefreshToken,
   setSessionCookies,
 } from './session'
+
+// Tetos das chamadas de saída (upstream pendurado NÃO pode pendurar a request
+// do aluno): dados via gateway cobrem a rota mais lenta com folga; auth
+// (login/refresh/logout/OTP) é rápido por contrato. Espelha o admin.
+const GATEWAY_TIMEOUT_MS = 60_000
+const AUTH_TIMEOUT_MS = 15_000
 
 export interface GatewayResponse<T = unknown> {
   status: number
@@ -20,6 +27,28 @@ export interface CallOpts {
   query?: Record<string, string | number | undefined | null>
 }
 
+/**
+ * Prova de origem do aluno repassada ao gateway: sem o `x-forwarded-for`, o
+ * rate limit por IP das rotas públicas (login 20/min, OTP 5/min!) e o log de
+ * login falho do auth veriam SÓ o IP do host do community — um balde único
+ * para a base inteira de alunos. O `x-request-id` amarra o rastreio
+ * ponta-a-ponta (o gateway valida o formato). Espelha o admin.
+ */
+export async function clientForwardHeaders(): Promise<ForwardHeaders> {
+  try {
+    const h = await headers()
+    const out: ForwardHeaders = {}
+    const xff = h.get('x-forwarded-for')
+    if (xff) out['x-forwarded-for'] = xff
+    const rid = h.get('x-request-id')
+    if (rid) out['x-request-id'] = rid
+    return out
+  } catch {
+    // Fora de request scope (defensivo) — segue sem os headers.
+    return {}
+  }
+}
+
 async function rawFetch(path: string, opts: CallOpts, access: string | null): Promise<Response> {
   const env = getEnv()
   const url = new URL(path, env.GATEWAY_URL)
@@ -28,13 +57,17 @@ async function rawFetch(path: string, opts: CallOpts, access: string | null): Pr
       if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, String(v))
     }
   }
-  const headers: Record<string, string> = { 'content-type': 'application/json' }
-  if (access) headers.authorization = `Bearer ${access}`
+  const reqHeaders: Record<string, string> = {
+    'content-type': 'application/json',
+    ...(await clientForwardHeaders()),
+  }
+  if (access) reqHeaders.authorization = `Bearer ${access}`
   return fetch(url, {
     method: opts.method ?? 'GET',
-    headers,
+    headers: reqHeaders,
     body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
     cache: 'no-store',
+    signal: AbortSignal.timeout(GATEWAY_TIMEOUT_MS),
   })
 }
 
@@ -47,17 +80,18 @@ async function readJson<T>(res: Response): Promise<T> {
 }
 
 /**
- * Rotação de tokens (gateway → auth /refresh) via `refreshTokens` (single-flight —
- * compartilha a rotação com o proxy e com chamadas concorrentes). Regrava os
- * cookies quando possível; em Server Component a escrita LANÇA ("Cookies can only
- * be modified in a Server Action or Route Handler") → engole e segue com o token
- * novo só nesta request (o cache do single-flight garante que a PRÓXIMA request,
- * ainda com o cookie antigo, receba os MESMOS tokens — sem revogar a família).
+ * Rotação de tokens (gateway → auth /refresh) via `refreshTokens` (single-flight
+ * em `globalThis` — compartilha a rotação com o proxy e com chamadas
+ * concorrentes). Regrava os cookies quando possível; em Server Component a
+ * escrita LANÇA ("Cookies can only be modified in a Server Action or Route
+ * Handler") → engole e segue com o token novo só nesta request (o cache do
+ * single-flight garante que a PRÓXIMA request, ainda com o cookie antigo,
+ * receba os MESMOS tokens — sem revogar a família).
  */
-async function tryRefresh(): Promise<string | null> {
+export async function tryRefresh(): Promise<string | null> {
   const refreshToken = await getRefreshToken()
   if (!refreshToken) return null
-  const result = await refreshTokens(refreshToken)
+  const result = await refreshTokens(refreshToken, await clientForwardHeaders())
   if (result === 'unavailable') return null
   if (result === 'invalid') {
     try {
@@ -116,9 +150,10 @@ export async function loginRequest(
   const env = getEnv()
   const res = await fetch(new URL('/auth/login', env.GATEWAY_URL), {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
+    headers: { 'content-type': 'application/json', ...(await clientForwardHeaders()) },
     body: JSON.stringify({ email, password }),
     cache: 'no-store',
+    signal: AbortSignal.timeout(AUTH_TIMEOUT_MS),
   })
   return { status: res.status, body: await readJson(res) }
 }
@@ -131,9 +166,10 @@ export async function verifyOtpRequest(
   const env = getEnv()
   const res = await fetch(new URL('/auth/otp/verify', env.GATEWAY_URL), {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
+    headers: { 'content-type': 'application/json', ...(await clientForwardHeaders()) },
     body: JSON.stringify({ email, code }),
     cache: 'no-store',
+    signal: AbortSignal.timeout(AUTH_TIMEOUT_MS),
   })
   return { status: res.status, body: await readJson(res) }
 }
@@ -144,9 +180,10 @@ export async function logoutRequest(refreshToken: string): Promise<void> {
   try {
     await fetch(new URL('/auth/logout', env.GATEWAY_URL), {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: { 'content-type': 'application/json', ...(await clientForwardHeaders()) },
       body: JSON.stringify({ refreshToken, allSessions: false }),
       cache: 'no-store',
+      signal: AbortSignal.timeout(AUTH_TIMEOUT_MS),
     })
   } catch {
     // best-effort; os cookies são limpos de qualquer forma

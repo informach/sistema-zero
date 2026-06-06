@@ -1,6 +1,8 @@
 import 'server-only'
 import {
+  DeleteObjectsCommand,
   GetObjectCommand,
+  ListObjectsV2Command,
   PutObjectCommand,
   type PutObjectCommandInput,
   S3Client,
@@ -89,6 +91,9 @@ function getClient(cfg: {
     region: 'auto',
     endpoint: `https://${cfg.accountId}.r2.cloudflarestorage.com`,
     credentials: { accessKeyId: cfg.accessKeyId, secretAccessKey: cfg.secretAccessKey },
+    // Sem teto, R2 pendurado = request do aluno pendurada. O requestTimeout é
+    // generoso porque materiais didáticos chegam a 100MB (stream). Espelha o admin.
+    requestHandler: { connectionTimeout: 5_000, requestTimeout: 120_000 },
   })
   return cachedClient
 }
@@ -119,18 +124,50 @@ export async function r2PutObject(input: R2PutObjectInput): Promise<{ key: strin
     await getClient(cfg).send(new PutObjectCommand(command))
   } catch (error) {
     console.error('[r2] putObject falhou', { key, error })
-    throw new Error('Falha ao enviar o arquivo para o armazenamento.')
+    // `cause` preservada: o Sentry (mediaErrorResponse) enxerga o erro real do S3.
+    throw new Error('Falha ao enviar o arquivo para o armazenamento.', { cause: error })
   }
   return { key, url: `${cfg.publicBaseUrl}/${key}` }
 }
 
+/** Lista as keys sob um prefixo do bucket PÚBLICO (limpeza de avatares antigos). */
+export async function r2ListKeys(prefix: string): Promise<string[]> {
+  const cfg = requireR2Config()
+  const res = await getClient(cfg).send(
+    new ListObjectsV2Command({ Bucket: cfg.bucket, Prefix: normalizeKey(prefix), MaxKeys: 100 }),
+  )
+  return (res.Contents ?? [])
+    .map((o) => o.Key)
+    .filter((k): k is string => typeof k === 'string' && k.length > 0)
+}
+
+/** Apaga objetos do bucket PÚBLICO em lote (limpeza de avatares antigos). */
+export async function r2DeleteObjects(keys: string[]): Promise<void> {
+  if (keys.length === 0) return
+  const cfg = requireR2Config()
+  await getClient(cfg).send(
+    new DeleteObjectsCommand({
+      Bucket: cfg.bucket,
+      Delete: { Objects: keys.map((Key) => ({ Key })), Quiet: true },
+    }),
+  )
+}
+
+/** Objeto do bucket privado em STREAM — consuma OU bufferize (`bufferFromStream`). */
+export interface R2PrivateObject {
+  body: ReadableStream<Uint8Array>
+  contentType: string | null
+  /** Tamanho declarado — decide buffer (marca d'água) vs stream direto. */
+  contentLength: number | null
+}
+
 /**
- * Baixa um objeto do bucket PRIVADO (materiais didáticos) para a rota autenticada
- * de download — onde a marca d'água com o e-mail do aluno é aplicada.
+ * Abre um objeto do bucket PRIVADO (materiais didáticos) como STREAM para a
+ * rota autenticada de download. Quem decide bufferizar é o caller (só os
+ * formatos marcáveis precisam — office/zip de até 100MB seguem em stream,
+ * sem materializar o arquivo inteiro em memória).
  */
-export async function r2GetObjectPrivate(
-  key: string,
-): Promise<{ body: Buffer; contentType: string }> {
+export async function r2GetObjectPrivate(key: string): Promise<R2PrivateObject> {
   const cfg = requirePrivateR2Config()
   const normalized = normalizeKey(key)
   try {
@@ -138,10 +175,19 @@ export async function r2GetObjectPrivate(
       new GetObjectCommand({ Bucket: cfg.bucket, Key: normalized }),
     )
     if (!res.Body) throw new Error('Objeto sem corpo')
-    const body = Buffer.from(await res.Body.transformToByteArray())
-    return { body, contentType: res.ContentType ?? 'application/octet-stream' }
+    return {
+      body: res.Body.transformToWebStream() as ReadableStream<Uint8Array>,
+      contentType: res.ContentType ?? null,
+      contentLength: typeof res.ContentLength === 'number' ? res.ContentLength : null,
+    }
   } catch (error) {
     console.error('[r2] getObjectPrivate falhou', { key: normalized, error })
-    throw new Error('Falha ao buscar o arquivo no armazenamento.')
+    // `cause` preservada: o Sentry (mediaErrorResponse) enxerga o erro real do S3.
+    throw new Error('Falha ao buscar o arquivo no armazenamento.', { cause: error })
   }
+}
+
+/** Materializa um stream em Buffer (SÓ p/ aplicar marca d'água — tem teto no caller). */
+export async function bufferFromStream(stream: ReadableStream<Uint8Array>): Promise<Buffer> {
+  return Buffer.from(await new Response(stream).arrayBuffer())
 }

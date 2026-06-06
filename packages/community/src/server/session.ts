@@ -8,11 +8,10 @@ import {
   jwtVerify,
 } from 'jose'
 import { cookies } from 'next/headers'
+// Nomes em `lib/cookies.ts` (fonte única com o proxy; `__Host-` em prod).
+import { ACCESS_COOKIE, REFRESH_COOKIE } from '@/lib/cookies'
 import { getEnv, isProd } from '@/lib/env'
 import type { SessionUser } from '@/lib/types'
-
-const ACCESS_COOKIE = 'sz_member_access'
-const REFRESH_COOKIE = 'sz_member_refresh'
 
 /** Par de tokens devolvido pelo @sistemazero/auth (via gateway). */
 export interface AuthTokens {
@@ -95,6 +94,26 @@ export async function getSession(): Promise<SessionUser | null> {
       }
     }
     return null
+  }
+}
+
+/** Veredito da verificação ESTRITA (exp incluso) — p/ decisões de AUTORIZAÇÃO. */
+export type AccessVerdict = { ok: true; user: SessionUser } | { ok: false; expired: boolean }
+
+/**
+ * Verificação estrita de um access token (assinatura + exp + iss/aud). Diferente
+ * de `getSession` (que tolera exp p/ EXIBIÇÃO — o gateway revalida toda chamada
+ * de dados), esta é a régua de quem AUTORIZA localmente sem passar pelo gateway
+ * (avatar→R2, downloads de material): token expirado aqui NÃO vale — o chamador
+ * tenta UM refresh. Espelha o admin (full review 06/2026).
+ */
+export async function verifyAccessToken(token: string): Promise<AccessVerdict> {
+  try {
+    const { payload } = await jwtVerify(token, verificationKey(), verifyOptions())
+    const user = claimsToUser(payload)
+    return user ? { ok: true, user } : { ok: false, expired: false }
+  } catch (err) {
+    return { ok: false, expired: err instanceof errors.JWTExpired }
   }
 }
 

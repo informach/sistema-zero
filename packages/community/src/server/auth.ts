@@ -1,7 +1,16 @@
 import 'server-only'
 import { getEnv } from '@/lib/env'
 import type { UserView } from '@/lib/types'
-import { type GatewayResponse, gatewayFetch, gatewayFetchReadonly } from './gateway'
+import {
+  clientForwardHeaders,
+  type GatewayResponse,
+  gatewayFetch,
+  gatewayFetchReadonly,
+} from './gateway'
+
+// Rotas públicas de auth são rápidas por contrato — gateway pendurado não pode
+// segurar a request do aluno.
+const AUTH_TIMEOUT_MS = 15_000
 
 /** Usuário fresco do banco (traz `phone`, que pode não estar nas claims). */
 export function getMe(): Promise<GatewayResponse<{ user: UserView }>> {
@@ -32,14 +41,19 @@ export function changeMyPassword(body: {
   return gatewayFetch('/auth/me/password', { method: 'POST', body })
 }
 
-/** Rotas PÚBLICAS (sem Bearer) — chamadas diretas ao gateway. */
+/**
+ * Rotas PÚBLICAS (sem Bearer) — chamadas diretas ao gateway. Propaga a prova de
+ * origem (`x-forwarded-for`/`x-request-id`): o rate limit dessas rotas é POR IP
+ * (OTP 5/min!) — sem isso, todos os alunos dividiriam o balde do host do BFF.
+ */
 async function publicPost(path: string, body: unknown): Promise<GatewayResponse> {
   const env = getEnv()
   const res = await fetch(new URL(path, env.GATEWAY_URL), {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
+    headers: { 'content-type': 'application/json', ...(await clientForwardHeaders()) },
     body: JSON.stringify(body),
     cache: 'no-store',
+    signal: AbortSignal.timeout(AUTH_TIMEOUT_MS),
   })
   return { status: res.status, body: await res.json().catch(() => null) }
 }

@@ -93,8 +93,13 @@ export function LoginForm() {
     if (!parsed.success) return setErrors({ email: parsed.error.issues[0]?.message })
     setErrors({})
     await run(async () => {
-      // Anti-enumeração: o backend responde SEMPRE 200; seguimos para o passo do código.
-      await post('/api/auth/otp/request', { email, purpose: 'sign_in' })
+      // Anti-enumeração: com o AUTH de pé a resposta é sempre 200 — mas rate
+      // limit (429) e indisponibilidade (503) são reais e o aluno precisa saber.
+      const res = await post('/api/auth/otp/request', { email, purpose: 'sign_in' })
+      if (!res.ok) {
+        await toastError(res, 'Não foi possível enviar o código.')
+        return
+      }
       setCodeSent(true)
       toast.success('Se houver uma conta com este e-mail, enviamos um código.')
     })

@@ -13,6 +13,15 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 
 const emailSchema = z.string().email('E-mail inválido')
+
+const ERROR_MESSAGES: Record<string, string> = {
+  INVALID_OTP: 'Código inválido ou expirado.',
+  TOO_MANY_ATTEMPTS: 'Muitas tentativas. Aguarde um minuto e tente novamente.',
+  // Rate limit do gateway chega cru no passo de redefinir (passthrough).
+  TOO_MANY_REQUESTS: 'Muitas tentativas. Aguarde um minuto e tente novamente.',
+  SERVICE_UNAVAILABLE: 'Serviço indisponível no momento. Tente novamente em instantes.',
+}
+
 const resetSchema = z
   .object({
     code: z.string().min(4, 'Informe o código'),
@@ -65,7 +74,14 @@ export function ForgotForm() {
     if (!parsed.success) return setErrors({ email: parsed.error.issues[0]?.message })
     setErrors({})
     await run(async () => {
-      await post('/api/auth/otp/request', { email, purpose: 'password_reset' })
+      // Anti-enumeração: com o AUTH de pé a resposta é sempre 200 — mas rate
+      // limit (429) e indisponibilidade (503) são reais e o aluno precisa saber.
+      const res = await post('/api/auth/otp/request', { email, purpose: 'password_reset' })
+      if (!res.ok) {
+        const data = (await res.json().catch(() => null)) as { error?: { code?: string } } | null
+        toast.error(ERROR_MESSAGES[data?.error?.code ?? ''] ?? 'Não foi possível enviar o código.')
+        return
+      }
       setCodeSent(true)
       toast.success('Se houver uma conta com este e-mail, enviamos um código.')
     })
@@ -94,11 +110,7 @@ export function ForgotForm() {
         return
       }
       const data = (await res.json().catch(() => null)) as { error?: { code?: string } } | null
-      toast.error(
-        data?.error?.code === 'INVALID_OTP'
-          ? 'Código inválido ou expirado.'
-          : 'Não foi possível redefinir a senha.',
-      )
+      toast.error(ERROR_MESSAGES[data?.error?.code ?? ''] ?? 'Não foi possível redefinir a senha.')
     })
   }
 

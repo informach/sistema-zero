@@ -48,12 +48,23 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
   pelo `alg` do token (espelha a jwt.strategy do gateway): **HS256** com `JWT_HS256_SECRET`
   (dev/local, MESMO segredo do auth/gateway) e/ou **RS256 via `JWT_JWKS_URL`** (PRODUÇÃO — o auth
   emite RS256; aponte p/ o gateway `<GATEWAY_URL>/auth/.well-known/jwks.json`). Pelo menos UM dos
-  dois é obrigatório (refine no env). Cookies `sz_member_*` (≠ `sz_admin_*` do painel).
+  dois é obrigatório (refine no env). **Em PRODUÇÃO o boot EXIGE `JWT_JWKS_URL` e RECUSA
+  `JWT_HS256_SECRET`** (full review 2, espelha o admin): um segredo HS256 fraco copiado de dev
+  forjaria a sessão que autoriza LOCALMENTE as rotas de mídia/downloads (não passam pelo gateway).
+  Os **nomes dos cookies** vivem em `src/lib/cookies.ts` (fonte ÚNICA — `session.ts` escreve,
+  `proxy.ts` lê/regrava): `sz_member_*` (≠ `sz_admin_*` do painel), em prod com prefixo
+  **`__Host-`** (browser exige Secure+Path=/+sem Domain — blinda contra fixation por subdomínio
+  irmão); em dev (http) o prefixo é omitido.
 - **Refresh — DOIS caminhos, UMA rotação (`src/server/refresh.ts`):** `refreshTokens()` faz a
   chamada `/auth/refresh` com **single-flight + cache 60s por refresh token** — obrigatório:
-  requisições concorrentes (prefetch + navegação, proxy + handler) apresentando o MESMO refresh
-  duas vezes disparariam a reuse-detection do auth e revogariam a família (logout). Estado em
-  memória de módulo (community é single-réplica pré-MVP). Quem rotaciona:
+  requisições concorrentes (prefetch + navegação, proxy + handler, beacon + página) apresentando o
+  MESMO refresh duas vezes disparariam a reuse-detection do auth e revogariam a família (logout).
+  ⚠️ O estado vive em **`globalThis`** (Symbol.for), NÃO em escopo de módulo: o Turbopack separa
+  proxy, páginas RSC e route handlers em TRÊS bundles com cópias próprias do módulo (verificado
+  nos chunks do build) — um Map de módulo daria uma rotação concorrente por contexto. Os três
+  rodam no mesmo processo, então o `globalThis` é o ponto de encontro (single-réplica pré-MVP;
+  com N réplicas este cache precisa ir p/ um store compartilhado). Unit-testado em
+  `tests/refresh.test.ts`. Quem rotaciona:
   1. **`src/proxy.ts`** (caminho de PÁGINA): access com `exp` vencido (decodeJwt, folga 30s) →
      rotaciona ANTES do render, reescreve o cookie da request (`NextResponse.next({request})`)
      e grava na response. Páginas/layouts são Server Components e **NÃO podem escrever cookies**
@@ -64,9 +75,24 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
      request, ainda com o cookie antigo, receba os MESMOS tokens).
   Para dados em Server Component use **`gatewayFetchReadonly`/`getMeReadonly`** quando um 401
   puder ser degradado (ex.: avatar do header) — nunca tenta refresh nem toca cookies.
-- **Gate de UI:** `src/proxy.ts` bloqueia `/` (exato) e `/cursos|/perfil|/compras` sem cookie de
-  refresh (redirect `/login`); o layout do grupo `(app)` faz a checagem real. A CSP do proxy tem
-  **`frame-src` allowlist** (youtube-nocookie + player.vimeo) p/ o player de aulas.
+- **Prova de origem ao gateway:** TODA chamada de saída (dados, login, OTP, refresh — inclusive
+  a do proxy) propaga **`x-forwarded-for`/`x-request-id`** do request de entrada
+  (`clientForwardHeaders` no gateway.ts; o proxy extrai do `NextRequest`). Sem isso o rate limit
+  POR IP das rotas públicas (login 20/min, **OTP 5/min**) e o log de login falho do auth veriam só
+  o IP do host do community — um balde único p/ a base inteira de alunos. E toda saída tem
+  **timeout** (`AbortSignal.timeout`: dados 60s, auth 15s) — espelha o admin.
+- **Gate de UI + anti-CSRF:** `src/proxy.ts` (a) **barra mutação `/api/*` que não seja
+  same-origin** (`requiresOriginCheck` + `isSameOriginRequest` de `lib/csrf.ts`, via
+  `Sec-Fetch-Site` com fallback `Origin`×host) — defesa em profundidade além do `SameSite=Lax`,
+  que NÃO barra um subdomínio IRMÃO (same-site) no domínio definitivo; `/api/me/avatar` fica FORA
+  do matcher (o proxy buffeia o corpo) e tem a MESMA checagem dentro do `requireUploadSession`;
+  e (b) bloqueia `/` (exato) e `/cursos|/perfil|/compras` sem cookie de refresh (redirect
+  `/login`); o layout do grupo `(app)` faz a checagem real. ⚠️ Os **security headers NÃO ficam no
+  proxy** — vivem em `next.config.ts` (`headers()`, cobre TODAS as respostas, incl. avatar/
+  estáticos): CSP (frame-src allowlist youtube-nocookie+vimeo, worker-src blob p/ pdf.js,
+  `https:` em script/style/font/connect/img/media porque o **iframe `srcDoc` do embed HERDA a CSP
+  do pai** — a fronteira real do embed é o sandbox), XFO DENY, nosniff, Referrer-Policy,
+  Permissions-Policy, `X-Robots-Tag: noindex` e **HSTS em prod**.
 - **Senha/OTP:** `/esqueci-senha` = recuperação por CÓDIGO (OTP por e-mail, 2 passos:
   `POST /auth/otp/request {purpose:'password_reset'}` — sempre 200, anti-enumeração — e
   `POST /auth/password/reset-otp` com código + senha nova). O login também tem modo **OTP
@@ -79,32 +105,54 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
 
 1. **O community nunca chama os serviços direto** — tudo via gateway (`src/server/gateway.ts`).
    Exceção CONSCIENTE (igual ao admin): `/api/me/avatar` fala com o **R2** (provedor externo) e por
-   isso tem guard de sessão próprio (`requireUploadSession` em `src/server/media.ts` — qualquer
-   conta ATIVA, sem exigência de role). Pipeline: multipart ≤5MB png/jpg/webp → sharp→WebP 512×512
-   (`image-optimizer.ts`, preset `avatar`) → R2 `community/avatars/<userId>/<uuid>.webp` (`r2.ts`)
-   → `PATCH /auth/me { avatarUrl }` via gateway. Envs R2_* ausentes → 503 `MEDIA_NOT_CONFIGURED`
-   amigável. `next.config.ts` tem `serverExternalPackages: ['sharp']`. Mesma exceção:
-   **`GET /api/cursos/:slug/aulas/:lessonId/anexos/:attachmentId`** (download de material) LÊ do
-   bucket R2 **PRIVADO** (`R2_PRIVATE_BUCKET`, `r2GetObjectPrivate`) — mas a AUTORIZAÇÃO real
-   (matrícula + aula publicada) vem do members via gateway (rota `/resolve`), que devolve a
-   `storageRef` (`r2priv:<key>` ou URL externa→302). PDF/imagem ganham **marca d'água com o
-   e-mail do aluno** (`server/watermark.ts`: pdf-lib rodapé em todas as páginas · sharp selo SVG
-   no canto, GIF animado via tile por frame; falha → serve o original + warn); demais formatos
-   passam sem marca. Resposta: `Content-Disposition: attachment` (label + extensão da key) e
-   `Cache-Control: private, no-store` (conteúdo é POR aluno). A `storageRef` NUNCA vai ao browser.
+   isso tem guard de sessão próprio (`requireUploadSession(req)` em `src/server/media.ts` —
+   qualquer conta ATIVA, sem exigência de role; guard **ESTRITO**: token expirado NÃO autoriza —
+   `verifyAccessToken` + UMA tentativa de `tryRefresh` e re-verificação, como o admin;
+   `getSession` tolera exp SÓ p/ exibição; em MUTAÇÃO o guard também aplica a checagem
+   **anti-CSRF same-origin** — a rota fica fora do matcher do proxy). Upload tem **pre-check de
+   Content-Length** (`rejectOversizedRequest`) ANTES do `formData()` (o parse materializa o corpo
+   em memória) — **Content-Length é OBRIGATÓRIO** (411 se ausente; sem isso um corpo chunked
+   passaria sem teto), excedente → 413 — e `mediaErrorResponse` **não vaza** a mensagem interna em
+   prod (o erro vai pro **Sentry** via `captureServerException`; o `r2.ts` preserva a `cause`). Pipeline: multipart ≤5MB
+   png/jpg/webp → sharp→WebP 512×512 (`image-optimizer.ts`, preset `avatar`) → R2
+   `community/avatars/<userId>/<uuid>.webp` (`r2.ts`) → `PATCH /auth/me { avatarUrl }` via gateway
+   → **limpeza dos avatares ANTERIORES** do prefixo do usuário (`removeStaleAvatars`,
+   best-effort — sem isso cada troca acumularia órfão no R2). Envs R2_* ausentes → 503
+   `MEDIA_NOT_CONFIGURED` amigável. `next.config.ts` tem `serverExternalPackages: ['sharp']`.
+   Mesma exceção: **`GET /api/cursos/:slug/aulas/:lessonId/anexos/:attachmentId`** (download de
+   material) LÊ do bucket R2 **PRIVADO** (`R2_PRIVATE_BUCKET`, `r2GetObjectPrivate` — devolve
+   STREAM + contentType/contentLength) — mas a AUTORIZAÇÃO real (matrícula + aula publicada) vem
+   do members via gateway (rota `/resolve`), que devolve a `storageRef` (`r2priv:<key>` ou URL
+   externa→302). O MIME e a decisão de marca vêm de **`resolveDownloadMedia`**
+   (`src/lib/download-mime.ts`, puro/testado): sinais REAIS (Content-Type do R2 + extensão da
+   key) decidem — o `fileType` do anexo é TEXTO LIVRE do admin e vale só como último recurso
+   (um "PDF" digitado à mão não desliga a marca em silêncio). PDF/imagem ganham **marca d'água
+   com o e-mail do aluno** (`server/watermark.ts`: pdf-lib rodapé em todas as páginas · sharp
+   selo SVG no canto, GIF animado via tile por frame; falha → serve o original + warn); demais
+   formatos vão em **STREAM direto** (sem materializar 100MB em memória) e arquivos marcáveis
+   acima de `WATERMARK_MAX_BYTES` (50MB) também caem p/ o original em stream + warn. **Marcar
+   passa pelo GATE de concorrência** (`server/watermark-queue.ts`, máx. 2 simultâneas, FIFO em
+   `globalThis` — full review 2): bufferizar+marcar sem teto, uma turma baixando o mesmo PDF
+   derrubaria o host por OOM; quem espera segura só um closure, não o buffer. Resposta:
+   `Content-Disposition: attachment` (label + extensão da key) e `Cache-Control: private,
+   no-store` (conteúdo é POR aluno). A `storageRef` NUNCA vai ao browser.
 2. **Segredos só no servidor.** `src/lib/env.ts` é `server-only`; `src/server/*` idem. **Nunca**
    importe `env`/`server/*` de um Client Component. Client fala só com `/api/*` (`src/lib/api.ts`).
-3. **Tokens em cookie HttpOnly** (`sz_member_*`), `SameSite=Lax`, `Secure` em prod.
+3. **Tokens em cookie HttpOnly** (`sz_member_*`; em prod prefixados **`__Host-`** — ver
+   `lib/cookies.ts`, fonte única), `SameSite=Lax`, `Secure` em prod, `Path=/`, sem `Domain`.
 4. **Dinheiro em centavos**; o payments serializa como **string** (bigint) → `formatCentsStr`.
 5. **Blocos de aula = conteúdo de terceiros.** NUNCA interpole `src` cru em iframe — extraia o ID e
    monte a URL canônica (`youtube-nocookie.com/embed/<id>`, `player.vimeo.com/video/<id>`); HTML de
    embed roda SÓ em `iframe sandbox` SEM `allow-same-origin` (`lesson-blocks.tsx`). **Embed v3:**
    sempre `srcDoc` em largura total + `aspect-video` (16:9) — `embedType`/`src`/`height` são
-   legado ignorado (bloco antigo só-src → "não suportado"). `rich_text`
-   renderiza `markdown` com conversor próprio controlado (sem HTML cru) — tokens suportados:
-   headings 1-3, listas `-`/`*` e numeradas `1.`, citação `> `, código inline/fenced, negrito,
-   itálico (`*x*`/`_x_`) e links http(s). É o ALVO do editor TipTap do admin (saída markdown) —
-   token novo na toolbar de lá exige suporte aqui.
+   legado ignorado (bloco antigo só-src → "não suportado"); o `content.sandbox` (allowlist do
+   members) também é **ignorado de propósito** — o renderer fixa `allow-scripts`, o default mais
+   restrito que ainda roda o interativo (honrar tokens por bloco abriria a porta p/
+   allow-same-origin). `rich_text` renderiza `markdown` com conversor próprio controlado (sem
+   HTML cru) — **`src/lib/markdown.tsx`**, puro e unit-testado (`tests/markdown.test.tsx`) —
+   tokens suportados: headings 1-3, listas `-`/`*` e numeradas `1.`, citação `> `, código
+   inline/fenced, negrito, itálico (`*x*`/`_x_`) e links http(s). É o ALVO do editor TipTap do
+   admin (saída markdown) — token novo na toolbar de lá exige suporte aqui (e teste).
 6. **Capas/imagens de curso usam `<img>`** (URLs externas arbitrárias da autoria — evita configurar
    `images.remotePatterns` por domínio). `noImgElement` está off no biome p/ este package.
 
@@ -125,6 +173,7 @@ src/
       perfil/               Foto (upload R2) + editar nome/telefone + trocar senha (e-mail IMUTÁVEL)
       compras/              Tabela paginada + dialog de detalhe
     api/
+      healthz/route.ts      liveness puro p/ o healthcheck do Railway (sem auth/upstream)
       auth/{login,logout,forgot-password,reset-password,me,me/password}/route.ts
       auth/{otp/request,otp/verify,password/reset-otp}/route.ts   (login/reset por código)
       me/avatar/route.ts    POST multipart → sharp→WebP → R2 → PATCH /auth/me
@@ -142,10 +191,22 @@ src/
       members/lessons/[lessonId]/{complete,position}/route.ts
       members/lessons/[lessonId]/blocks/[blockId]/quiz-attempts/route.ts
       payments/my/route.ts
-  server/   session.ts · gateway.ts · auth.ts · members.ts · payments.ts
-            r2.ts · image-optimizer.ts · media.ts (avatar→R2; exceção consciente)
-            watermark.ts (PDF pdf-lib + imagem sharp/SVG — puro, testado)   (server-only)
+  server/   session.ts (getSession exibição · verifyAccessToken ESTRITO p/ autorizar local)
+            gateway.ts (forward de x-forwarded-for/x-request-id + timeouts) · auth.ts ·
+            members.ts · payments.ts · r2.ts (privado em STREAM + list/delete de avatares +
+            timeouts S3 connection 5s/request 120s) · image-optimizer.ts ·
+            media.ts (guard estrito + anti-CSRF em mutação + 411/413 pre-check + limpeza de
+            avatares + espelho Sentry) · watermark.ts (PDF pdf-lib + imagem sharp/SVG — puro,
+            testado) · watermark-queue.ts (gate de concorrência da marca, FIFO em globalThis) ·
+            sentry.ts (ingestão via fetch, SEM SDK — sem `server-only` p/ o onRequestError)
+  instrumentation.ts      fail-fast de env em DEV (⚠️ prod NÃO roda register() — ver scripts/)
+                          + onRequestError → Sentry (exceções de Route Handler/RSC)
+  scripts/boot-check.mjs  fail-fast REAL de prod (CMD do Dockerfile; sincronia c/ instrumentation)
   lib/      env.ts (server-only) · types.ts (views do ALUNO) · user-display.ts · format.ts · cn.ts · api.ts
+            markdown.tsx (conversor controlado do rich_text — puro, testado)
+            download-mime.ts (MIME/marca dos downloads por sinais reais — puro, testado)
+            csrf.ts (same-origin via Sec-Fetch-Site — puro, testado) · cookies.ts (nomes dos
+            cookies, __Host- em prod — puro, testado)
   components/ community/* (topnav/user-menu/user-avatar/cards/blocos/course-rating-flow)
             community/ebook/* — LIVRO 3D do bloco e-book: ebook-block.tsx (resolve URL via
             LessonPlayerContext + dynamic ssr:false) → ebook-book.impl.tsx (Canvas r3f +
@@ -168,7 +229,7 @@ src/
 | `bun run dev` | Next dev server :3007 (Turbopack) |
 | `bun run build` / `start` | build (**`next build`** — Turbopack) + produção |
 | `bun run typecheck` | `tsc --noEmit` |
-| `bun test` | testes (watermark — rode com **sandbox off**, gotcha do monorepo) |
+| `bun test` | testes (watermark · markdown · download-mime · refresh · csrf · cookies · sentry · watermark-queue — rode com **sandbox off**, gotcha do monorepo) |
 | `bun run check` / `check:fix` | Biome |
 
 Da raiz: `bun run dev:community`, `build:community`, `typecheck:community`.
@@ -185,11 +246,23 @@ Da raiz: `bun run dev:community`, `build:community`, `typecheck:community`.
 
 ## Env (`.env.example`)
 
-- `GATEWAY_URL` (default `http://localhost:3000`).
+- `GATEWAY_URL` (default `http://localhost:3000`; **em prod é OBRIGATÓRIO explícito** — fail-fast).
 - Verificação do access token — **pelo menos UM**: `JWT_HS256_SECRET` (dev/local, MESMO do
   auth/gateway) e/ou `JWT_JWKS_URL` (**produção** — o auth emite RS256; usar o JWKS via gateway:
-  `http://api-gateway.railway.internal:3000/auth/.well-known/jwks.json`).
-- `JWT_ISSUER`/`JWT_AUDIENCE` opcionais (prod = `sistemazero-auth`/`sistemazero`).
+  `http://api-gateway.railway.internal:3000/auth/.well-known/jwks.json`). ⚠️ **Em produção o boot
+  EXIGE `JWT_JWKS_URL` e RECUSA `JWT_HS256_SECRET`** (full review 2 — HS256 fraco forjaria a
+  sessão local de mídia/downloads).
+- `JWT_ISSUER`/`JWT_AUDIENCE`: **OBRIGATÓRIOS em produção** (fail-fast no boot — mesma regra do
+  gateway/admin; prod = `sistemazero-auth`/`sistemazero`); em dev, casar com o auth ativa a checagem.
+- `SENTRY_DSN` (opcional): espelho de erros LOCAIS (pipeline de mídia/watermark + exceções de
+  Route Handler/RSC via `onRequestError`). Ausente = no-op. ⚠️ **Sem SDK** — `src/server/sentry.ts`
+  fala o protocolo de ingestão via `fetch` (o tracing do standalone/Turbopack não copia pacotes
+  externos de forma confiável; mesma decisão do admin).
+
+**Fail-fast de boot:** as regras acima vivem em DOIS lugares que precisam ficar em sincronia —
+`src/instrumentation.ts` (cobre `next dev`; ⚠️ em PRODUÇÃO o Next 16 não roda `register()` no
+boot) e **`scripts/boot-check.mjs`** (o fail-fast REAL de prod — launcher do CMD do Dockerfile:
+valida e só então importa o `server.js` standalone).
 - `FUNNEL_URL` opcional — fallback da página de vendas (curso sem `metadata.salesPageUrl`):
   em `/cursos` (sem ela e sem metadata, o card bloqueado fica não-clicável) e na modal
   Compartilhar da classificação do curso (sem URL, o botão Compartilhar é ocultado).
@@ -200,6 +273,33 @@ Da raiz: `bun run dev:community`, `build:community`, `typecheck:community`.
 - `R2_PRIVATE_BUCKET` opcional — leitura dos materiais didáticos p/ o download com marca d'água
   (mesmas credenciais; SEM acesso público: dev = `testes-privado` · prod =
   `comunidade-sistema-zero-privado`; ausente → download responde 503).
+
+## Deploy (Railway)
+
+- Serviço próprio via **`packages/community/railway.json`** (builder DOCKERFILE, build context =
+  RAIZ do monorepo, `healthcheckPath: /api/healthz`, watchPatterns community+ui+lock).
+- **Dockerfile** (espelha o admin): build em `node:22-bookworm-slim` com o binário do **bun**
+  copiado de `oven/bun:1` só p/ `bun install` (workspace); `next build` roda **package-local com
+  runtime Node** (`npm run build`). Runner copia `.next/standalone` (árvore espelha o monorepo —
+  `outputFileTracingRoot` = raiz) + static + public e roda `node packages/community/boot-check.mjs`
+  (fail-fast de env → `server.js`). `PORT` injetado pelo Railway (fallback 3007), `HOSTNAME=::`.
+  `output: 'standalone'` + `poweredByHeader: false` no `next.config.ts`.
+- `/api/healthz` é liveness puro (sem auth, sem tocar upstream). **Security headers + CSP vivem
+  no `next.config.ts`** (`headers()`, cobrem TODAS as rotas incl. `/api/me/avatar` e estáticos):
+  XFO DENY, nosniff, Referrer-Policy, Permissions-Policy, `X-Robots-Tag: noindex`, **HSTS em
+  prod** e CSP (frame-src allowlist + worker-src blob + base-uri/form-action/frame-ancestors;
+  `https:` em script/style/font/connect/img/media — o srcDoc do embed herda a CSP do pai).
+- ⚠️ **RÉPLICA ÚNICA (não escalar horizontalmente sem refatorar):** o single-flight do refresh
+  (`refresh.ts`) e o gate da marca d'água (`watermark-queue.ts`) vivem em `globalThis` — POR
+  PROCESSO. Com 2+ réplicas, duas rotações do mesmo refresh colidem no claim atômico do auth
+  (logout aleatório) e o teto de memória da marca vira teto POR réplica. Mesma régua do admin.
+- ⚠️ **Tracing de externos no standalone (verificar no 1º deploy):** o `next build` (Turbopack)
+  não copia `serverExternalPackages` (ex.: `sharp`) p/ o `.next/standalone/node_modules` de forma
+  confiável (descoberta do admin) — aqui o sharp atende avatar E marca d'água de imagem. Confirme
+  que `sharp` chega ao container; se não, o Dockerfile deve copiá-lo explicitamente.
+- Envs de prod: `GATEWAY_URL` + `JWT_JWKS_URL` (+ `JWT_ISSUER`/`JWT_AUDIENCE` obrigatórios; SEM
+  `JWT_HS256_SECRET` — o boot recusa) + `FUNNEL_URL` + R2_* (incl.
+  `R2_PRIVATE_BUCKET=comunidade-sistema-zero-privado`) + `SENTRY_DSN` (opcional).
 
 ## Setup local (e2e)
 
@@ -299,3 +399,5 @@ Da raiz: `bun run dev:community`, `build:community`, `typecheck:community`.
 - [ ] Nenhum `server/*`/`env` importado por Client Component. Sem `any` novo.
 - [ ] Bloco de aula novo? Renderer seguro (sem `src` cru em iframe; sandbox sem allow-same-origin).
 - [ ] Novo endpoint do gateway? Atualizou `src/server/*` + tipos + este `CLAUDE.md`.
+- [ ] Mexeu nas regras de env? `src/instrumentation.ts` e `scripts/boot-check.mjs` em SINCRONIA.
+- [ ] Chamada de saída nova? Propaga `x-forwarded-for`/`x-request-id` + `AbortSignal.timeout`.

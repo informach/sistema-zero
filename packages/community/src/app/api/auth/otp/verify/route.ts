@@ -23,6 +23,13 @@ export async function POST(req: Request) {
   if (status === 403) {
     return NextResponse.json({ error: { code: 'INACTIVE' } }, { status: 403 })
   }
+  // NÃO mascarar rate limit/indisponibilidade como "código inválido" (espelha o login).
+  if (status === 429) {
+    return NextResponse.json({ error: { code: 'TOO_MANY_ATTEMPTS' } }, { status: 429 })
+  }
+  if (status >= 500) {
+    return NextResponse.json({ error: { code: 'SERVICE_UNAVAILABLE' } }, { status: 503 })
+  }
   if (status !== 200 || !body?.tokens || !body?.user) {
     return NextResponse.json({ error: { code: 'INVALID_OTP' } }, { status: 401 })
   }

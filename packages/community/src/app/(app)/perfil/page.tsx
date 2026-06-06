@@ -1,4 +1,4 @@
-import { getMe } from '@/server/auth'
+import { getMeReadonly } from '@/server/auth'
 import { getSession } from '@/server/session'
 import { ProfileClient } from './profile-client'
 
@@ -6,8 +6,10 @@ export const dynamic = 'force-dynamic'
 
 export default async function ProfilePage() {
   // Dados frescos do banco (trazem `phone`); fallback nas claims da sessão.
+  // SOMENTE-LEITURA: página é Server Component (refresh/escrita de cookie aqui
+  // lança) — o proxy já renovou o access antes do render; 401 residual degrada.
   const session = await getSession()
-  const { status, body } = await getMe()
+  const { status, body } = await getMeReadonly()
   const user =
     status === 200 && body?.user ? body.user : session ? { ...session, phone: undefined } : null
 

@@ -1,10 +1,9 @@
 import { decodeJwt } from 'jose'
 import { type NextRequest, NextResponse } from 'next/server'
+import { ACCESS_COOKIE, REFRESH_COOKIE } from '@/lib/cookies'
+import { isSameOriginRequest, requiresOriginCheck } from '@/lib/csrf'
 import { isProd } from '@/lib/env'
 import { refreshTokens } from '@/server/refresh'
-
-const ACCESS_COOKIE = 'sz_member_access'
-const REFRESH_COOKIE = 'sz_member_refresh'
 
 /** Prefixos da área logada do aluno (gate real = layout do grupo `(app)`). A
  * HOME é a própria raiz `/` (sem rota `/home` — diferente da referência, que
@@ -12,40 +11,59 @@ const REFRESH_COOKIE = 'sz_member_refresh'
 const PROTECTED_PREFIXES = ['/cursos', '/perfil', '/compras']
 
 /**
- * Fast-path: bloqueia a área logada sem cookie de sessão (a checagem REAL de
- * assinatura acontece no layout via `getSession`) e RENOVA o access token
- * expirado ANTES do render — páginas/layouts são Server Components e NÃO podem
- * escrever cookies ("Cookies can only be modified in a Server Action or Route
- * Handler"); o proxy é o único lugar do caminho de página que pode. Também
- * aplica security headers em todas as respostas. (Convenção `proxy` do Next 16.)
+ * Gate de borda da área do aluno (convenção `proxy` do Next 16):
+ *  1. **Anti-CSRF (defesa em profundidade):** mutação em `/api/*` precisa ser
+ *     same-origin — o `SameSite=Lax` dos cookies não barra um subdomínio IRMÃO
+ *     (same-site) no domínio definitivo. (`/api/me/avatar` fica fora do matcher
+ *     — o proxy buffeia o corpo e estrangularia o multipart — e tem a MESMA
+ *     checagem dentro do `requireUploadSession`.)
+ *  2. **Fast-path de UI:** bloqueia a área logada sem cookie de sessão (a
+ *     checagem REAL de assinatura acontece no layout via `getSession`) e RENOVA
+ *     o access token expirado ANTES do render — páginas/layouts são Server
+ *     Components e NÃO podem escrever cookies; o proxy é o único lugar do
+ *     caminho de página que pode.
+ *
+ * Os **security headers** (XFO/CSP/HSTS/…) NÃO ficam aqui — vivem em
+ * `next.config.ts` (`headers()`), que cobre TODAS as respostas, inclusive as
+ * fora deste matcher (espelha o admin).
  */
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl
+
+  if (pathname.startsWith('/api/') && requiresOriginCheck(req.method) && !isSameOrigin(req)) {
+    return NextResponse.json(
+      { error: { code: 'FORBIDDEN', message: 'Origem não permitida.' } },
+      { status: 403 },
+    )
+  }
+
   const isProtected =
     pathname === '/' ||
     PROTECTED_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`))
-  if (!isProtected) return withSecurityHeaders(NextResponse.next())
+  if (!isProtected) return NextResponse.next()
 
   const refresh = req.cookies.get(REFRESH_COOKIE)?.value
-  if (!refresh) return withSecurityHeaders(redirectToLogin(req))
+  if (!refresh) return redirectToLogin(req)
 
   // Access ainda válido → segue direto (caminho quente, sem rede).
   if (!isAccessExpired(req.cookies.get(ACCESS_COOKIE)?.value)) {
-    return withSecurityHeaders(NextResponse.next())
+    return NextResponse.next()
   }
 
-  // Access expirado → rotaciona AQUI (single-flight compartilhado com o BFF).
-  const result = await refreshTokens(refresh)
+  // Access expirado → rotaciona AQUI (single-flight em globalThis, compartilhado
+  // com o BFF — bundles separados, mesmo processo). Propaga a prova de origem
+  // (rate limit por IP + auditoria do auth enxergam o aluno, não o host).
+  const result = await refreshTokens(refresh, forwardHeadersFrom(req))
   if (result === 'invalid') {
     // Sessão morta (refresh rejeitado) → limpa e manda logar de novo.
     const res = redirectToLogin(req)
     res.cookies.delete(ACCESS_COOKIE)
     res.cookies.delete(REFRESH_COOKIE)
-    return withSecurityHeaders(res)
+    return res
   }
   if (result === 'unavailable') {
     // Gateway/rede fora: degrada (páginas usam fallbacks) em vez de deslogar.
-    return withSecurityHeaders(NextResponse.next())
+    return NextResponse.next()
   }
 
   // Tokens novos: reescreve o cookie da REQUEST (o render já os enxerga via
@@ -53,6 +71,7 @@ export async function proxy(req: NextRequest) {
   req.cookies.set(ACCESS_COOKIE, result.accessToken)
   req.cookies.set(REFRESH_COOKIE, result.refreshToken)
   const res = NextResponse.next({ request: { headers: req.headers } })
+  // `__Host-` (prod) exige Secure + Path=/ + sem Domain — este `base` cumpre.
   const base = {
     httpOnly: true,
     sameSite: 'lax' as const,
@@ -62,7 +81,26 @@ export async function proxy(req: NextRequest) {
   }
   res.cookies.set(ACCESS_COOKIE, result.accessToken, base)
   res.cookies.set(REFRESH_COOKIE, result.refreshToken, base)
-  return withSecurityHeaders(res)
+  return res
+}
+
+/** Same-origin por `Sec-Fetch-Site` (não-forjável) com fallback de `Origin`×host. */
+function isSameOrigin(req: NextRequest): boolean {
+  return isSameOriginRequest({
+    secFetchSite: req.headers.get('sec-fetch-site'),
+    origin: req.headers.get('origin'),
+    host: req.headers.get('x-forwarded-host') ?? req.headers.get('host'),
+  })
+}
+
+/** Prova de origem repassada ao gateway no refresh (`x-forwarded-for`/`x-request-id`). */
+function forwardHeadersFrom(req: NextRequest): Record<string, string> {
+  const out: Record<string, string> = {}
+  const xff = req.headers.get('x-forwarded-for')
+  if (xff) out['x-forwarded-for'] = xff
+  const rid = req.headers.get('x-request-id')
+  if (rid) out['x-request-id'] = rid
+  return out
 }
 
 /** Expirado (ou ilegível) com folga de 30s — evita 401 no meio do render. */
@@ -82,22 +120,9 @@ function redirectToLogin(req: NextRequest): NextResponse {
   return NextResponse.redirect(url)
 }
 
-function withSecurityHeaders(res: NextResponse): NextResponse {
-  res.headers.set('X-Frame-Options', 'DENY')
-  res.headers.set('X-Content-Type-Options', 'nosniff')
-  res.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
-  res.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
-  // O player de aulas embute vídeo de terceiros: allowlist estrita de frames
-  // (YouTube nocookie + Vimeo). Sem `frame-src` os iframes seriam bloqueados.
-  // `worker-src`: o pdf.js do livro 3D roda num Web Worker do próprio bundle
-  // (explícito p/ não quebrar se um dia entrar default-src).
-  res.headers.set(
-    'Content-Security-Policy',
-    "frame-src 'self' https://www.youtube-nocookie.com https://player.vimeo.com; worker-src 'self' blob:; object-src 'none'",
-  )
-  return res
-}
-
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  // `api/me/avatar` fica FORA do matcher: o proxy buffeia o corpo (limite ~10MB)
+  // e copiaria o multipart à toa; a rota tem guard próprio (sessão estrita + a
+  // MESMA checagem anti-CSRF dentro do `requireUploadSession`).
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|api/me/avatar).*)'],
 }
