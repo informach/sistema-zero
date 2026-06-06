@@ -4,6 +4,7 @@ import {
   MAX_IMAGE_BYTES,
   mediaErrorResponse,
   optimizeAndStoreImage,
+  rejectOversizedRequest,
   requireMediaSession,
 } from '@/server/media'
 
@@ -15,6 +16,10 @@ import {
 export async function POST(req: Request) {
   const session = await requireMediaSession()
   if (session instanceof NextResponse) return session
+
+  // ANTES do formData(): o parse materializa o corpo inteiro em memória.
+  const oversized = rejectOversizedRequest(req, MAX_IMAGE_BYTES)
+  if (oversized) return oversized
 
   try {
     const form = await req.formData()

@@ -95,6 +95,13 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
   refresh-on-401.
 - **Refresh (`src/server/gateway.ts`):** `gatewayFetch` em 401 chama `/auth/refresh`, regrava os
   cookies e re-tenta UMA vez. **Só** roda em Route Handlers/Server Actions (lá pode escrever cookies).
+  A rotação é **single-flight por refresh token** (mapa de promessas em módulo): chamadas paralelas
+  (`Promise.all` no BFF, fetches concorrentes do dashboard) compartilham UMA rotação — sem isso o
+  claim atômico do auth derruba a 2ª e o `clearSessionCookies` dela apagaria os cookies recém-
+  gravados (logout aleatório). Falha de REDE no refresh NÃO limpa cookies (transitória); recusa do
+  auth limpa. Toda chamada de saída tem **timeout** (`AbortSignal.timeout`: dados 60s, auth 15s) e
+  **propaga `x-forwarded-for`/`x-request-id`** do request de entrada (sem isso o rate limit por IP
+  do gateway e o log de login falho do auth veriam só o IP do host do admin).
 - **Gate de UI:** `src/proxy.ts` (convenção `proxy` do Next 16, ex-`middleware`) bloqueia `/admin/*` sem cookie de refresh (redirect `/login`);
   `app/admin/layout.tsx` faz a checagem real (assinatura + role) e mostra "acesso negado" se preciso.
 
@@ -103,9 +110,16 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
 Upload nos cadastros de curso/aula (capa, blocos imagem/áudio, anexos, vídeo). **Estas rotas NÃO
 passam pelo gateway** (falam com provedores EXTERNOS — não viola o invariante 1, que é sobre
 serviços internos) → **todo handler exige `requireMediaSession()`** (sessão + role superadmin/admin;
-`src/server/media.ts`). O matcher do `proxy.ts` **exclui `api/media`** (o proxy buffeia o corpo a
+`src/server/media.ts`). O guard é **ESTRITO** (full review 06/2026): como o gateway nunca revalida
+essas rotas, token expirado NÃO autoriza — `verifyAccessToken` (exp incluso) + UMA tentativa de
+`tryRefresh` (Route Handler pode regravar cookies) e re-verificação; falhou → 401. (`getSession`
+tolera exp SÓ p/ exibição — não use p/ autorizar fora do gateway.) Todo upload tem **pre-check de
+Content-Length** (`rejectOversizedRequest`, 413) ANTES do `formData()` — o parse materializa o
+corpo inteiro em memória. O matcher do `proxy.ts` **exclui `api/media`** (o proxy buffeia o corpo a
 ~10MB e estrangularia multipart). Fatia **stateless**: sem tabela de assets — URLs/IDs vivem no
 conteúdo dos blocos do members (lixo órfão no R2 é dívida documentada; sem GC nesta fatia).
+Chamadas externas têm timeout (Vimeo API 30s / bytes 60s; S3/R2 connection 5s / request 120s) e o
+`mediaErrorResponse` **não vaza** a mensagem interna em prod (fica no log).
 
 - `POST /api/media/images` (multipart ≤5MB png/jpg/webp; `scope=course|block`) → sharp→WebP →
   R2 `admin/{courses,blocks}/<uuid>.webp` → `{url,width,height,sizeBytes}`.
@@ -216,6 +230,7 @@ src/
 |---------|-------|
 | `bun run dev` | Next dev server :3005 (**Turbopack** — ok, não pré-renderiza) |
 | `bun run build` / `start` | build (**`next build`** — Turbopack) + produção |
+| `bun test` | Suite (lógica pura de `src/lib/*`: sales-series, guarantee, filenames, vimeo-helpers, paths) |
 | `bun run typecheck` | `tsc --noEmit` |
 | `bun run check` / `check:fix` | Biome |
 
@@ -232,12 +247,35 @@ Da raiz: `bun run dev:admin`, `bun run build:admin`, `bun run start:admin`.
 
 ## Env (`.env.example`)
 
-- `GATEWAY_URL` (default `http://localhost:3000`).
+- `GATEWAY_URL` (default `http://localhost:3000`; **em prod é OBRIGATÓRIO explícito** — fail-fast).
 - Verificação do access token — **pelo menos UM**: `JWT_HS256_SECRET` (dev/local, MESMO do
   auth/gateway) e/ou `JWT_JWKS_URL` (**produção** — o auth emite RS256; usar o JWKS via gateway:
   `http://api-gateway.railway.internal:3000/auth/.well-known/jwks.json`).
-- `JWT_ISSUER`/`JWT_AUDIENCE` opcionais (se o auth emitir, casar ativa a checagem; prod =
-  `sistemazero-auth`/`sistemazero`).
+- `JWT_ISSUER`/`JWT_AUDIENCE`: **OBRIGATÓRIOS em produção** (fail-fast no boot — mesma regra do
+  gateway; prod = `sistemazero-auth`/`sistemazero`); em dev, casar com o auth ativa a checagem.
+
+**Fail-fast de boot:** as regras acima vivem em DOIS lugares que precisam ficar em sincronia —
+`src/instrumentation.ts` (cobre `next dev`; ⚠️ em PRODUÇÃO o Next 16 não roda `register()` no boot:
+o `NextServer.prepare()` pula em prod e o `route-module.prepare` dispara a instrumentation por
+request SEM await) e **`scripts/boot-check.mjs`** (o fail-fast REAL de prod — launcher do CMD do
+Dockerfile: valida e só então importa o `server.js` standalone).
+
+## Deploy (Railway)
+
+- Serviço próprio via **`packages/admin/railway.json`** (builder DOCKERFILE, build context = RAIZ
+  do monorepo, `healthcheckPath: /api/healthz`, watchPatterns admin+ui+lock).
+- **Dockerfile**: build em `node:22-bookworm-slim` com o binário do **bun copiado da imagem
+  `oven/bun:1`** só p/ `bun install` (workspace); o `next build` roda **package-local com runtime
+  Node** (`npm run build` — Next sob Bun não é suportado; e `--filter` da raiz quebra o React, ver
+  gotcha do build). Runner copia `.next/standalone` (árvore espelha o monorepo —
+  `outputFileTracingRoot` = raiz) + static + public e roda `node packages/admin/boot-check.mjs`
+  (fail-fast de env → `server.js`). `PORT` injetado pelo Railway (fallback 3005), `HOSTNAME=::`
+  (rede privada IPv6). `output: 'standalone'` + `poweredByHeader: false` no `next.config.ts`.
+- `/api/healthz` é liveness puro (sem auth, sem tocar upstream — degradação de serviço ≠ outage do
+  painel). Security headers (`proxy.ts`): XFO DENY, nosniff, Referrer-Policy, Permissions-Policy,
+  `X-Robots-Tag: noindex` e **HSTS em prod**.
+- Envs de prod: `GATEWAY_URL` + `JWT_JWKS_URL` (+ `JWT_ISSUER`/`JWT_AUDIENCE`) + R2_*/VIMEO_*
+  (incl. `R2_PRIVATE_BUCKET=comunidade-sistema-zero-privado`, `VIMEO_FOLDER_ID=29469887`).
 
 ## Setup local (e2e)
 
@@ -310,7 +348,8 @@ Da raiz: `bun run dev:admin`, `bun run build:admin`, `bun run start:admin`.
 
 ## Checklist antes de finalizar
 
-- [ ] `bun run typecheck` limpo · `bun run check` (Biome) limpo · `bun run build` passa.
+- [ ] `bun test` verde · `bun run typecheck` limpo · `bun run check` (Biome) limpo · `bun run build` passa.
 - [ ] Nenhum `server/*`/`env` importado por Client Component. Sem `any` novo.
 - [ ] Novo endpoint do gateway? Atualizou `src/server/*` + tipos + (se preciso) o `gateway.config.ts`.
+- [ ] Mexeu nas regras de env? `src/instrumentation.ts` e `scripts/boot-check.mjs` em SINCRONIA.
 ```

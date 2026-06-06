@@ -98,6 +98,25 @@ export async function getSession(): Promise<SessionUser | null> {
   }
 }
 
+/** Veredito da verificação ESTRITA (exp incluso) — p/ decisões de AUTORIZAÇÃO. */
+export type AccessVerdict = { ok: true; user: SessionUser } | { ok: false; expired: boolean }
+
+/**
+ * Verificação estrita de um access token (assinatura + exp + iss/aud). Diferente
+ * de `getSession` (que tolera exp p/ EXIBIÇÃO — o gateway revalida toda chamada
+ * de dados), esta é a régua de quem AUTORIZA localmente sem passar pelo gateway
+ * (`/api/media/*`): token expirado aqui NÃO vale — o chamador tenta UM refresh.
+ */
+export async function verifyAccessToken(token: string): Promise<AccessVerdict> {
+  try {
+    const { payload } = await jwtVerify(token, verificationKey(), verifyOptions())
+    const user = claimsToUser(payload)
+    return user ? { ok: true, user } : { ok: false, expired: false }
+  } catch (err) {
+    return { ok: false, expired: err instanceof errors.JWTExpired }
+  }
+}
+
 export async function getAccessToken(): Promise<string | null> {
   return (await cookies()).get(ACCESS_COOKIE)?.value ?? null
 }

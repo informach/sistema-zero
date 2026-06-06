@@ -1,9 +1,14 @@
 import 'server-only'
 import { getEnv } from '@/lib/env'
+import { parseWhitelistDomains } from '@/lib/vimeo-helpers'
 import { MediaNotConfiguredError } from './r2'
 
 const VIMEO_API_BASE = 'https://api.vimeo.com'
 const VIMEO_ACCEPT = 'application/vnd.vimeo.*+json;version=3.4'
+// Tetos das chamadas externas: API JSON é rápida; downloads/uploads de bytes
+// (VTT, capa) ganham folga. Sem isso, Vimeo pendurado = handler pendurado.
+const VIMEO_API_TIMEOUT_MS = 30_000
+const VIMEO_BYTES_TIMEOUT_MS = 60_000
 
 function requireAccessToken(): string {
   const token = getEnv().VIMEO_ACCESS_TOKEN
@@ -15,16 +20,7 @@ function requireAccessToken(): string {
 
 /** Domínios autorizados a embedar (privacy whitelist) — CSV da env, normalizado. */
 export function getWhitelistDomains(): string[] {
-  const raw = getEnv().VIMEO_WHITELIST_DOMAINS ?? ''
-  return raw
-    .split(',')
-    .map((domain) =>
-      domain
-        .trim()
-        .replace(/^https?:\/\//, '')
-        .replace(/\/.*$/, ''),
-    )
-    .filter(Boolean)
+  return parseWhitelistDomains(getEnv().VIMEO_WHITELIST_DOMAINS ?? '')
 }
 
 async function vimeoFetch<T>(
@@ -37,7 +33,11 @@ async function vimeoFetch<T>(
   headers.set('Accept', VIMEO_ACCEPT)
   if (init.body && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json')
 
-  const response = await fetch(`${VIMEO_API_BASE}${path}`, { ...init, headers })
+  const response = await fetch(`${VIMEO_API_BASE}${path}`, {
+    signal: AbortSignal.timeout(VIMEO_API_TIMEOUT_MS),
+    ...init,
+    headers,
+  })
   if (!response.ok) {
     const body = await response.text().catch(() => '')
     throw new Error(
@@ -179,7 +179,7 @@ export async function listTextTracks(vimeoVideoId: string): Promise<VimeoTextTra
 
 /** Baixa o VTT do track (o `link` do Vimeo é assinado/temporário — re-hospede!). */
 export async function getTextTrackVtt(link: string): Promise<string> {
-  const response = await fetch(link)
+  const response = await fetch(link, { signal: AbortSignal.timeout(VIMEO_BYTES_TIMEOUT_MS) })
   if (!response.ok) throw new Error(`Falha ao baixar o VTT (${response.status})`)
   return await response.text()
 }
@@ -200,19 +200,10 @@ export async function uploadVideoThumbnail(
     method: 'PUT',
     headers: { 'Content-Type': mimeType },
     body: imageBytes,
+    signal: AbortSignal.timeout(VIMEO_BYTES_TIMEOUT_MS),
   })
   if (!uploadResponse.ok) {
     const body = await uploadResponse.text().catch(() => '')
     throw new Error(`PUT da capa no Vimeo falhou (${uploadResponse.status}): ${body.slice(0, 300)}`)
-  }
-}
-
-/** Apaga o vídeo no Vimeo (404 = já não existe → ok). */
-export async function deleteVideo(vimeoVideoId: string): Promise<void> {
-  try {
-    await vimeoFetch(`/videos/${vimeoVideoId}`, { method: 'DELETE' }, { skipJsonParse: true })
-  } catch (error) {
-    if (error instanceof Error && /\(404\)/.test(error.message)) return
-    throw error
   }
 }

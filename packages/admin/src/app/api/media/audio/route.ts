@@ -3,6 +3,7 @@ import {
   AUDIO_MIME_TYPES,
   MAX_AUDIO_BYTES,
   mediaErrorResponse,
+  rejectOversizedRequest,
   requireMediaSession,
   storeAudioFile,
 } from '@/server/media'
@@ -15,6 +16,10 @@ import {
 export async function POST(req: Request) {
   const session = await requireMediaSession()
   if (session instanceof NextResponse) return session
+
+  // ANTES do formData(): o parse materializa o corpo inteiro em memória.
+  const oversized = rejectOversizedRequest(req, MAX_AUDIO_BYTES)
+  if (oversized) return oversized
 
   try {
     const form = await req.formData()

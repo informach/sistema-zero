@@ -12,6 +12,11 @@ export function proxy(req: NextRequest) {
   if (pathname.startsWith('/admin') && !req.cookies.has(REFRESH_COOKIE)) {
     const url = req.nextUrl.clone()
     url.pathname = '/login'
+    url.search = ''
+    // Preserva o destino p/ voltar após o login (`/admin` é o default do form —
+    // só vale parametrizar destinos mais profundos; o login valida o valor).
+    const dest = pathname + req.nextUrl.search
+    if (dest !== '/admin') url.searchParams.set('next', dest)
     return withSecurityHeaders(NextResponse.redirect(url))
   }
   return withSecurityHeaders(NextResponse.next())
@@ -22,6 +27,12 @@ function withSecurityHeaders(res: NextResponse): NextResponse {
   res.headers.set('X-Content-Type-Options', 'nosniff')
   res.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
   res.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+  // Painel administrativo: nunca indexável por buscadores.
+  res.headers.set('X-Robots-Tag', 'noindex, nofollow')
+  // HSTS só em produção (TLS termina na borda do Railway; dev local é http).
+  if (process.env.NODE_ENV === 'production') {
+    res.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+  }
   return res
 }
 

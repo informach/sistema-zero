@@ -1,10 +1,5 @@
 import 'server-only'
-import {
-  DeleteObjectCommand,
-  PutObjectCommand,
-  type PutObjectCommandInput,
-  S3Client,
-} from '@aws-sdk/client-s3'
+import { PutObjectCommand, type PutObjectCommandInput, S3Client } from '@aws-sdk/client-s3'
 import { getEnv } from '@/lib/env'
 
 const DEFAULT_CACHE_CONTROL = 'public, max-age=31536000, immutable'
@@ -88,6 +83,9 @@ function getClient(cfg: {
     region: 'auto',
     endpoint: `https://${cfg.accountId}.r2.cloudflarestorage.com`,
     credentials: { accessKeyId: cfg.accessKeyId, secretAccessKey: cfg.secretAccessKey },
+    // Sem teto, R2 pendurado = handler pendurado. O requestTimeout é generoso
+    // porque anexos chegam a 100MB (upload single-part).
+    requestHandler: { connectionTimeout: 5_000, requestTimeout: 120_000 },
   })
   return cachedClient
 }
@@ -152,17 +150,6 @@ export async function r2PutObjectPrivate(input: R2PutObjectPrivateInput): Promis
     throw new Error('Falha ao enviar o arquivo para o armazenamento.')
   }
   return { key }
-}
-
-export async function r2DeleteObject(key: string): Promise<void> {
-  const cfg = requireR2Config()
-  const normalized = normalizeKey(key)
-  try {
-    await getClient(cfg).send(new DeleteObjectCommand({ Bucket: cfg.bucket, Key: normalized }))
-  } catch (error) {
-    console.error('[r2] deleteObject falhou', { key: normalized, error })
-    throw new Error('Falha ao remover o arquivo do armazenamento.')
-  }
 }
 
 export function r2PublicUrl(key: string): string {

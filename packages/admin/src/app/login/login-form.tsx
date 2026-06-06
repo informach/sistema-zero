@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import { safeNextPath } from '@/lib/paths'
 
 const Schema = z.object({
   email: z.string().email('E-mail inválido'),
@@ -51,7 +52,11 @@ export function LoginForm() {
         body: JSON.stringify(parsed.data),
       })
       if (res.ok) {
-        router.replace('/admin')
+        // `?next=` preservado pelo proxy (deep-link no painel); validado anti
+        // open-redirect. Lido aqui (event handler, só client) p/ não precisar
+        // de Suspense de useSearchParams.
+        const next = safeNextPath(new URLSearchParams(window.location.search).get('next'))
+        router.replace(next ?? '/admin')
         router.refresh()
         return
       }

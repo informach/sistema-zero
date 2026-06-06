@@ -1,11 +1,14 @@
 import 'server-only'
 import { randomUUID } from 'node:crypto'
 import { NextResponse } from 'next/server'
-import { getEnv } from '@/lib/env'
+import { getEnv, isProd } from '@/lib/env'
+import { safeExtension, sanitizeFilename } from '@/lib/filenames'
 import type { SessionUser } from '@/lib/types'
+import { pickTranscriptTrack } from '@/lib/vimeo-helpers'
+import { tryRefresh } from './gateway'
 import { type ImagePreset, optimizeImage } from './image-optimizer'
 import { MediaNotConfiguredError, r2PutObject, r2PutObjectPrivate } from './r2'
-import { getSession } from './session'
+import { type AccessVerdict, getAccessToken, getRefreshToken, verifyAccessToken } from './session'
 import {
   addVideoToFolder,
   applyPrivacy,
@@ -61,17 +64,29 @@ export const AUDIO_MIME_TYPES = new Set([
 
 /**
  * `/api/media/*` NÃO passa pelo gateway (fala com R2/Vimeo direto) → o guard de
- * sessão é OBRIGATÓRIO aqui. Escrita de mídia segue o `canWrite` dos editores
- * (superadmin/admin). Retorna o usuário ou uma `NextResponse` de erro pronta.
+ * sessão é OBRIGATÓRIO aqui — e ESTRITO: o resto do BFF é revalidado pelo gateway
+ * a cada chamada, mas aqui a régua local é a única. Token expirado NÃO autoriza
+ * (`getSession` tolera exp só p/ exibição): tenta UMA rotação de refresh (somos
+ * Route Handlers — podemos regravar cookies) e re-verifica; falhou → 401. Escrita
+ * de mídia segue o `canWrite` dos editores (superadmin/admin). Retorna o usuário
+ * ou uma `NextResponse` de erro pronta.
  */
 export async function requireMediaSession(): Promise<SessionUser | NextResponse> {
-  const session = await getSession()
-  if (!session) {
+  const access = await getAccessToken()
+  const refresh = await getRefreshToken()
+  let verdict: AccessVerdict =
+    access && refresh ? await verifyAccessToken(access) : { ok: false, expired: false }
+  if (!verdict.ok && verdict.expired) {
+    const renewed = await tryRefresh()
+    if (renewed) verdict = await verifyAccessToken(renewed)
+  }
+  if (!verdict.ok) {
     return NextResponse.json(
       { error: { code: 'UNAUTHORIZED', message: 'Sessão expirada — faça login novamente.' } },
       { status: 401 },
     )
   }
+  const session = verdict.user
   if (session.role !== 'superadmin' && session.role !== 'admin') {
     return NextResponse.json(
       { error: { code: 'FORBIDDEN', message: 'Sem permissão para enviar mídia.' } },
@@ -96,8 +111,34 @@ export function mediaErrorResponse(error: unknown): NextResponse {
     )
   }
   console.error('[media] operação falhou', error)
-  const message = error instanceof Error ? error.message : 'Falha na operação de mídia.'
+  // Em prod a mensagem interna (ex.: corpo de erro da API Vimeo) não vaza ao
+  // cliente — o detalhe fica no log acima.
+  const message =
+    !isProd() && error instanceof Error ? error.message : 'Falha na operação de mídia.'
   return NextResponse.json({ error: { code: 'MEDIA_ERROR', message } }, { status: 500 })
+}
+
+/**
+ * Pre-check do Content-Length ANTES do `req.formData()` — o parse materializa o
+ * corpo INTEIRO em memória, então o limite precisa barrar o upload antes disso
+ * (um arquivo de GBs mandado por engano derrubaria o host). Folga p/ o envelope
+ * multipart (boundary/headers). Corpo sem Content-Length (chunked — browsers
+ * sempre declaram em FormData) segue p/ o check pós-parse de `file.size`.
+ */
+const MULTIPART_OVERHEAD_BYTES = 1024 * 1024
+
+export function rejectOversizedRequest(req: Request, maxBytes: number): NextResponse | null {
+  const raw = req.headers.get('content-length')
+  if (!raw) return null
+  const declared = Number(raw)
+  if (!Number.isFinite(declared)) return null
+  if (declared > maxBytes + MULTIPART_OVERHEAD_BYTES) {
+    return NextResponse.json(
+      { error: { code: 'VALIDATION_ERROR', message: 'Arquivo excede o limite da rota.' } },
+      { status: 413 },
+    )
+  }
+  return null
 }
 
 // ── Imagens (R2 + sharp→WebP) ───────────────────────────────────────────────
@@ -122,24 +163,8 @@ export async function optimizeAndStoreImage(file: File, preset: ImagePreset): Pr
 }
 
 // ── Arquivos genéricos (anexos/áudio) ───────────────────────────────────────
-
-/** Extensão segura derivada do nome original (fallback `bin`). */
-function safeExtension(filename: string): string {
-  const ext = filename.split('.').pop()?.toLowerCase() ?? ''
-  return /^[a-z0-9]{1,8}$/.test(ext) ? ext : 'bin'
-}
-
-/** Nome ASCII-seguro p/ o Content-Disposition (PG do header HTTP). */
-function sanitizeFilename(filename: string): string {
-  return (
-    filename
-      .normalize('NFKD')
-      .replace(/[̀-ͯ]/g, '') // remove diacríticos combinantes (ã → a)
-      .replace(/[^a-zA-Z0-9._-]+/g, '-')
-      .replace(/-{2,}/g, '-')
-      .slice(0, 120) || 'arquivo'
-  )
-}
+// (`safeExtension`/`sanitizeFilename` são puros e vivem em `@/lib/filenames` —
+// unit-testados via bun test.)
 
 export interface StoredFile {
   /** Referência `r2priv:<key>` (bucket PRIVADO) — não é uma URL navegável. */
@@ -247,21 +272,6 @@ export interface VideoStatus {
   embedUrl: string
   /** Legendas re-hospedadas no R2 (URLs estáveis) — presentes quando ready. */
   captions?: { lang: string; url: string }[]
-}
-
-/** Prioriza caption PT > qualquer PT > ativo > primeiro (régua da referência). */
-function pickTranscriptTrack<T extends { language: string; type: string; active: boolean }>(
-  tracks: T[],
-): T | null {
-  if (tracks.length === 0) return null
-  const isPt = (lang: string) => lang.toLowerCase().startsWith('pt')
-  return (
-    tracks.find((t) => t.type === 'captions' && isPt(t.language)) ??
-    tracks.find((t) => isPt(t.language)) ??
-    tracks.find((t) => t.active) ??
-    tracks[0] ??
-    null
-  )
 }
 
 /**

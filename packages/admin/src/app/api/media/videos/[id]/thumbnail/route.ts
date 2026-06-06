@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import {
   MAX_IMAGE_BYTES,
   mediaErrorResponse,
+  rejectOversizedRequest,
   requireMediaSession,
   storeVideoThumbnail,
 } from '@/server/media'
@@ -23,6 +24,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       { status: 400 },
     )
   }
+  // ANTES do formData(): o parse materializa o corpo inteiro em memória.
+  const oversized = rejectOversizedRequest(req, MAX_IMAGE_BYTES)
+  if (oversized) return oversized
+
   try {
     const form = await req.formData()
     const file = form.get('file')
