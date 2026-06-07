@@ -20,8 +20,9 @@ export class GetEbookDownloadService {
     courseSlug: string,
     lessonId: string,
     blockId: string,
+    privileged = false,
   ): Promise<EbookDownloadView> {
-    const { course } = await this.checkAccess.requireBySlug(userId, courseSlug)
+    const { course } = await this.checkAccess.requireBySlug(userId, courseSlug, privileged)
     const lesson = await this.courses.findLessonWithContent(lessonId)
     // Aula rascunho é invisível ao aluno (mesmo por URL direta) → 404.
     if (!lesson || lesson.courseId !== course.id || !lesson.isPublished) {

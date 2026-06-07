@@ -20,8 +20,9 @@ export class GetAttachmentDownloadService {
     courseSlug: string,
     lessonId: string,
     attachmentId: string,
+    privileged = false,
   ): Promise<AttachmentDownloadView> {
-    const { course } = await this.checkAccess.requireBySlug(userId, courseSlug)
+    const { course } = await this.checkAccess.requireBySlug(userId, courseSlug, privileged)
     const lesson = await this.courses.findLessonWithContent(lessonId)
     // Aula rascunho é invisível ao aluno (mesmo por URL direta) → 404.
     if (!lesson || lesson.courseId !== course.id || !lesson.isPublished) {

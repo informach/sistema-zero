@@ -1,5 +1,5 @@
 import { type JWTPayload, jwtVerify, SignJWT } from 'jose'
-import type { AccessTokenClaims, TokenIssuer } from '../../domain/ports/token-issuer.port'
+import type { AccessTokenClaims, ActClaim, TokenIssuer } from '../../domain/ports/token-issuer.port'
 import type { UserAggregate } from '../../domain/user/user.aggregate'
 import type { SigningMaterial } from './keys'
 
@@ -19,7 +19,7 @@ export function createJoseTokenIssuer(opts: JoseTokenIssuerOptions): TokenIssuer
   const { signing, issuer, audience, accessTtlSeconds } = opts
 
   return {
-    async issueAccessToken(user: UserAggregate) {
+    async issueAccessToken(user: UserAggregate, act?: ActClaim) {
       const nowSeconds = Math.floor(Date.now() / 1000)
       const claims: Record<string, unknown> = {
         email: user.email,
@@ -31,6 +31,8 @@ export function createJoseTokenIssuer(opts: JoseTokenIssuerOptions): TokenIssuer
       }
       if (user.phone) claims.phone = user.phone
       if (user.signupSource) claims.signupSource = user.signupSource
+      // Impersonação (RFC 8693): `sub` = alvo; `act.sub` = admin navegando como ele.
+      if (act) claims.act = act
 
       const header: { alg: string; kid?: string } = { alg: signing.alg }
       if (signing.kid) header.kid = signing.kid
@@ -92,5 +94,14 @@ function toClaims(payload: JWTPayload): AccessTokenClaims | null {
     status,
     phone: asString(payload.phone),
     signupSource: asString(payload.signupSource),
+    act: toActClaim(payload.act),
   }
+}
+
+function toActClaim(value: unknown): ActClaim | undefined {
+  if (typeof value !== 'object' || value === null) return undefined
+  const candidate = value as Record<string, unknown>
+  const sub = asString(candidate.sub)
+  if (!sub) return undefined
+  return { sub, email: asString(candidate.email), name: asString(candidate.name) }
 }

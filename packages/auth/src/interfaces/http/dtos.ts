@@ -127,6 +127,11 @@ export const BatchGetUsersBody = t.Object({
   ids: t.Array(t.String({ pattern: UUID_PATTERN }), { minItems: 1, maxItems: 100 }),
 })
 
+/** Corpo de `POST /auth/impersonate/exchange` (token de handoff single-use → sessão impersonada). */
+export const ImpersonateExchangeBody = t.Object({
+  token: t.String({ minLength: 10, maxLength: 512 }),
+})
+
 /**
  * Corpo de `POST /auth/admin/users` (criação pelo painel — fluxo CONVITE).
  * SEM senha: o serviço gera uma aleatória e envia o e-mail de definição.

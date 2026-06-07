@@ -100,6 +100,20 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
   `https:` em script/style/font/connect/img/media porque o **iframe `srcDoc` do embed HERDA a CSP
   do pai** — a fronteira real do embed é o sandbox), XFO DENY, nosniff, Referrer-Policy,
   Permissions-Policy, `X-Robots-Tag: noindex` e **HSTS em prod**.
+- **Impersonação (06/2026 — suporte "entra como" o aluno):** o painel admin abre
+  **`GET /impersonar?token=...`** (route handler; fora dos prefixos protegidos do proxy) →
+  `exchangeImpersonation` (gateway `POST /auth/impersonate/exchange`, token no CORPO, sem Bearer)
+  → `setSessionCookies` (SUBSTITUI a sessão do browser) → redirect `/`; token inválido/expirado →
+  `/login?erro=impersonacao`. A sessão vem com a claim **`act`** (RFC 8693 — `act.sub/email/name`
+  = ADMIN; parse em `lib/act.ts`, puro/testado; `SessionUser.act?` em types) e refresh de TTL
+  CURTO (2h, o auth preserva na rotação). UI: **`ImpersonationBanner`** (faixa âmbar persistente
+  acima do topnav no layout `(app)`) com "Encerrar" = logout normal (revoga a família) +
+  `window.location.replace('/login')`. **Sessão impersonada é SOMENTE-LEITURA p/ dados do aluno**:
+  `PATCH /api/auth/me`, `POST /api/auth/me/password` e mutações de mídia (avatar — checagem no
+  `requireUploadSession`) respondem **403 `IMPERSONATION_READONLY`**; GETs de download seguem
+  (a marca d'água sai com o e-mail do ALUNO, dono do acesso). Além disso, contas
+  superadmin/admin/staff logadas NORMALMENTE na community enxergam TODOS os cursos publicados
+  (chave-mestra virtual do members — sem cadeado no catálogo; rascunho continua invisível).
 - **Senha/OTP:** `/esqueci-senha` = recuperação por CÓDIGO (OTP por e-mail, 2 passos:
   `POST /auth/otp/request {purpose:'password_reset'}` — sempre 200, anti-enumeração — e
   `POST /auth/password/reset-otp` com código + senha nova). O login também tem modo **OTP

@@ -6,6 +6,18 @@
  */
 
 // ── Sessão / usuário (claims do JWT do auth) ────────────────────────────────
+
+/**
+ * Claim de ATOR (RFC 8693 `act`): presente quando a sessão é de IMPERSONAÇÃO —
+ * um admin navegando como o aluno (suporte). `sub` = id do admin; `email`/`name`
+ * são do ADMIN (exibição no banner). Sessão normal não tem a claim.
+ */
+export interface ActClaim {
+  sub: string
+  email?: string
+  name?: string
+}
+
 export interface SessionUser {
   id: string
   email: string
@@ -13,6 +25,8 @@ export interface SessionUser {
   lastName: string
   role: string
   status: string
+  /** Sessão de impersonação (suporte). Ausente = sessão normal do aluno. */
+  act?: ActClaim
 }
 
 /** Sessão + avatar fresco (claims não carregam foto — o layout hidrata via GET /auth/me). */

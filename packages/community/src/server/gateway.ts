@@ -174,6 +174,26 @@ export async function verifyOtpRequest(
   return { status: res.status, body: await readJson(res) }
 }
 
+/**
+ * Exchange do token de HANDOFF de impersonação (rota pública do gateway → auth,
+ * como o /login — sem Bearer). O token é single-use/60s; sucesso devolve a sessão
+ * DO ALUNO-ALVO com claim `act` (admin navegando como ele) e refresh de TTL curto.
+ * O token trafega no CORPO (não na URL desta chamada — não vaza em access log).
+ */
+export async function exchangeImpersonation(
+  token: string,
+): Promise<GatewayResponse<{ user?: { id: string }; tokens?: AuthTokens; error?: unknown }>> {
+  const env = getEnv()
+  const res = await fetch(new URL('/auth/impersonate/exchange', env.GATEWAY_URL), {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', ...(await clientForwardHeaders()) },
+    body: JSON.stringify({ token }),
+    cache: 'no-store',
+    signal: AbortSignal.timeout(AUTH_TIMEOUT_MS),
+  })
+  return { status: res.status, body: await readJson(res) }
+}
+
 /** Logout (revoga o refresh no auth). Best-effort. */
 export async function logoutRequest(refreshToken: string): Promise<void> {
   const env = getEnv()

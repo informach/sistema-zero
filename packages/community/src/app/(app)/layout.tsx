@@ -1,5 +1,7 @@
 import { redirect } from 'next/navigation'
 import { CommunityTopnav } from '@/components/community/community-topnav'
+import { ImpersonationBanner } from '@/components/community/impersonation-banner'
+import { actorLabel } from '@/lib/act'
 import { getMeReadonly } from '@/server/auth'
 import { getSession } from '@/server/session'
 
@@ -20,6 +22,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
+      {/* Sessão de impersonação (suporte): faixa persistente acima do header. */}
+      {session.act ? (
+        <ImpersonationBanner
+          studentName={`${session.firstName} ${session.lastName}`.trim() || session.email}
+          actorName={actorLabel(session.act)}
+        />
+      ) : null}
       <CommunityTopnav user={user} />
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 md:px-6">{children}</main>
     </div>

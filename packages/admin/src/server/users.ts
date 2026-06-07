@@ -48,3 +48,17 @@ export function getUser(id: string): Promise<GatewayResponse<{ user: UserView }>
 export function batchGetUsers(ids: string[]): Promise<GatewayResponse<{ users: UserView[] }>> {
   return gatewayFetch('/auth/admin/users/batch', { method: 'POST', body: { ids } })
 }
+
+/**
+ * "Entrar como" (impersonação p/ suporte): `POST /auth/admin/users/:id/impersonate`.
+ * O auth re-checa a matriz (admin só customer/staff) e devolve o token de HANDOFF
+ * single-use (~60s) + a URL base da community — o client abre
+ * `<communityUrl>/impersonar?token=...` em nova aba.
+ */
+export function impersonateUser(
+  id: string,
+): Promise<GatewayResponse<{ token: string; expiresAt: string; communityUrl: string }>> {
+  return gatewayFetch(`/auth/admin/users/${encodeURIComponent(id)}/impersonate`, {
+    method: 'POST',
+  })
+}

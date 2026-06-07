@@ -18,8 +18,13 @@ export class GetLessonService {
     private readonly clock: () => Date,
   ) {}
 
-  async execute(userId: string, courseSlug: string, lessonId: string): Promise<LessonDetailView> {
-    const { course } = await this.checkAccess.requireBySlug(userId, courseSlug)
+  async execute(
+    userId: string,
+    courseSlug: string,
+    lessonId: string,
+    privileged = false,
+  ): Promise<LessonDetailView> {
+    const { course } = await this.checkAccess.requireBySlug(userId, courseSlug, privileged)
     const lesson = await this.courses.findLessonWithContent(lessonId)
     // Aula rascunho é invisível ao aluno (mesmo por URL direta) → 404.
     if (!lesson || lesson.courseId !== course.id || !lesson.isPublished) {

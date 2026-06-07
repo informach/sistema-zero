@@ -6,6 +6,8 @@ import { ListUsersService } from '../../src/application/admin/list-users/list-us
 import { UpdateUserService } from '../../src/application/admin/update-user/update-user.service'
 import { EnsureBuyerService } from '../../src/application/ensure-buyer/ensure-buyer.service'
 import { GetMeService } from '../../src/application/get-me/get-me.service'
+import { CreateImpersonationTokenService } from '../../src/application/impersonation/create-impersonation-token.service'
+import { ExchangeImpersonationTokenService } from '../../src/application/impersonation/exchange-impersonation-token.service'
 import { LoginService } from '../../src/application/login/login.service'
 import { LogoutService } from '../../src/application/logout/logout.service'
 import { ChangeMyPasswordService } from '../../src/application/me/change-password.service'
@@ -28,6 +30,7 @@ import { createServer } from '../../src/interfaces/http/server'
 import {
   FakeMessagingClient,
   fakeHasher,
+  InMemoryImpersonationTokenRepository,
   InMemoryOtpCodeRepository,
   InMemoryPasswordResetTokenRepository,
   InMemoryRefreshTokenRepository,
@@ -52,7 +55,10 @@ function buildApp(
   const otpCodes = new InMemoryOtpCodeRepository()
   const messaging = new FakeMessagingClient()
   const tokenIssuer = testTokenIssuer()
-  const authTokens = new AuthTokenService(tokenIssuer, refreshTokens, { refreshTtlDays: 30 })
+  const authTokens = new AuthTokenService(tokenIssuer, refreshTokens, {
+    refreshTtlDays: 30,
+    impersonationRefreshTtlSeconds: 7200,
+  })
 
   const register = new RegisterService(
     users,
@@ -114,6 +120,19 @@ function buildApp(
   )
   const updateUser = new UpdateUserService(users, refreshTokens, silentLogger)
   const batchGetUsers = new BatchGetUsersService(users)
+  const impersonationTokens = new InMemoryImpersonationTokenRepository()
+  const createImpersonationToken = new CreateImpersonationTokenService(
+    users,
+    impersonationTokens,
+    { ttlSeconds: 60 },
+    silentLogger,
+  )
+  const exchangeImpersonationToken = new ExchangeImpersonationTokenService(
+    users,
+    impersonationTokens,
+    authTokens,
+    silentLogger,
+  )
 
   const env = {
     MAX_REQUEST_BODY_BYTES: 16 * 1024,
@@ -121,6 +140,7 @@ function buildApp(
     TRUST_PROXY: false,
     TRUSTED_PROXY_HOPS: 1,
     AUTH_INTERNAL_TOKEN: INTERNAL_TOKEN,
+    COMMUNITY_URL,
   } as unknown as Env
 
   const app = createServer({
@@ -150,8 +170,19 @@ function buildApp(
     createUser,
     updateUser,
     batchGetUsers,
+    createImpersonationToken,
+    exchangeImpersonationToken,
   })
-  return { app, users, refreshTokens, resetTokens, otpCodes, messaging, tokenIssuer }
+  return {
+    app,
+    users,
+    refreshTokens,
+    resetTokens,
+    otpCodes,
+    impersonationTokens,
+    messaging,
+    tokenIssuer,
+  }
 }
 
 const REGISTER_BODY = {
@@ -1118,5 +1149,132 @@ describe('Correções do full review (readyz / cooldown / 413)', () => {
     }
     expect((await app.handle(oversize('/auth/refresh'))).status).toBe(413)
     expect((await app.handle(oversize('/auth/logout'))).status).toBe(413)
+  })
+})
+
+describe('Impersonação (rotas /auth/admin/users/:id/impersonate + /auth/impersonate/exchange)', () => {
+  const now = new Date()
+
+  function seedTarget(users: InMemoryUserRepository, role: UserRole = 'customer'): string {
+    const id = crypto.randomUUID()
+    users.seed(
+      UserAggregate.restore({
+        id,
+        version: 0,
+        email: `alvo-${id.slice(0, 8)}@example.com`,
+        passwordHash: 'hashed:x',
+        firstName: 'Alvo',
+        lastName: 'Teste',
+        role,
+        status: 'active',
+        phone: null,
+        signupSource: null,
+        avatarUrl: null,
+        createdAt: now,
+        updatedAt: now,
+      }),
+    )
+    return id
+  }
+
+  function actorHeaders(role: string, id = crypto.randomUUID()): Record<string, string> {
+    return {
+      'x-internal-token': INTERNAL_TOKEN,
+      'x-auth-user-id': id,
+      'x-auth-user-role': role,
+      'x-auth-user-status': 'active',
+    }
+  }
+
+  test('staff não impersona (escrita exige admin/superadmin) → 403; sem gateway → 401', async () => {
+    const { app, users } = buildApp()
+    const targetId = seedTarget(users)
+    expect(
+      (
+        await app.handle(
+          post(`/auth/admin/users/${targetId}/impersonate`, {}, actorHeaders('staff')),
+        )
+      ).status,
+    ).toBe(403)
+    expect((await app.handle(post(`/auth/admin/users/${targetId}/impersonate`, {}))).status).toBe(
+      401,
+    )
+  })
+
+  test('fluxo completo: admin emite handoff → exchange devolve sessão do alvo com act', async () => {
+    const { app, users, tokenIssuer } = buildApp()
+    const adminId = crypto.randomUUID()
+    // O ATOR também existe no banco (o exchange o recarrega p/ montar a claim act).
+    users.seed(
+      UserAggregate.restore({
+        id: adminId,
+        version: 0,
+        email: 'admin@example.com',
+        passwordHash: 'hashed:x',
+        firstName: 'Admin',
+        lastName: 'Suporte',
+        role: 'admin',
+        status: 'active',
+        phone: null,
+        signupSource: null,
+        avatarUrl: null,
+        createdAt: now,
+        updatedAt: now,
+      }),
+    )
+    const targetId = seedTarget(users)
+
+    const created = await app.handle(
+      post(`/auth/admin/users/${targetId}/impersonate`, {}, actorHeaders('admin', adminId)),
+    )
+    expect(created.status).toBe(201)
+    const handoff = (await created.json()) as {
+      token: string
+      expiresAt: string
+      communityUrl: string
+    }
+    expect(handoff.communityUrl).toBe(COMMUNITY_URL)
+    expect(new Date(handoff.expiresAt).getTime()).toBeGreaterThan(Date.now())
+
+    const exchanged = await app.handle(post('/auth/impersonate/exchange', { token: handoff.token }))
+    expect(exchanged.status).toBe(200)
+    const session = (await exchanged.json()) as {
+      user: UserView
+      tokens: { accessToken: string; refreshExpiresIn: number }
+    }
+    expect(session.user.id).toBe(targetId)
+    expect(session.tokens.refreshExpiresIn).toBe(60 * 60 * 2)
+
+    const claims = await tokenIssuer.verifyAccessToken(session.tokens.accessToken)
+    expect(claims?.sub).toBe(targetId)
+    expect(claims?.act?.sub).toBe(adminId)
+
+    // Single-use: o mesmo token de handoff não vale uma 2ª vez.
+    expect(
+      (await app.handle(post('/auth/impersonate/exchange', { token: handoff.token }))).status,
+    ).toBe(401)
+  })
+
+  test('admin tentando impersonar admin → 403; alvo inexistente → 404; token lixo → 401', async () => {
+    const { app, users } = buildApp()
+    const otherAdmin = seedTarget(users, 'admin')
+    expect(
+      (
+        await app.handle(
+          post(`/auth/admin/users/${otherAdmin}/impersonate`, {}, actorHeaders('admin')),
+        )
+      ).status,
+    ).toBe(403)
+    expect(
+      (
+        await app.handle(
+          post(`/auth/admin/users/${crypto.randomUUID()}/impersonate`, {}, actorHeaders('admin')),
+        )
+      ).status,
+    ).toBe(404)
+    expect(
+      (await app.handle(post('/auth/impersonate/exchange', { token: 'token-invalido-123456' })))
+        .status,
+    ).toBe(401)
   })
 })

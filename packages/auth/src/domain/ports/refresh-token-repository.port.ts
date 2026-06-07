@@ -8,6 +8,8 @@ export interface RefreshTokenRecord {
   expiresAt: Date
   rotatedAt: Date | null
   revokedAt: Date | null
+  /** Sessão de impersonação: admin navegando como `userId` (`null` = sessão normal). */
+  impersonatorUserId: string | null
 }
 
 export interface CreateRefreshTokenInput {
@@ -18,6 +20,7 @@ export interface CreateRefreshTokenInput {
   expiresAt: Date
   userAgent?: string | null
   ip?: string | null
+  impersonatorUserId?: string | null
 }
 
 /**

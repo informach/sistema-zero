@@ -22,7 +22,10 @@ describe('Rotação atômica do refresh token', () => {
   function setup() {
     const users = new InMemoryUserRepository()
     const refreshTokens = new InMemoryRefreshTokenRepository()
-    const tokens = new AuthTokenService(testTokenIssuer(), refreshTokens, { refreshTtlDays: 30 })
+    const tokens = new AuthTokenService(testTokenIssuer(), refreshTokens, {
+      refreshTtlDays: 30,
+      impersonationRefreshTtlSeconds: 7200,
+    })
     const service = new RefreshService(users, refreshTokens, tokens, silentLogger)
 
     const user = UserAggregate.register({

@@ -11,7 +11,7 @@ import type { MarkLessonCompleteService } from '../../../application/mark-lesson
 import type { SaveCourseRatingService } from '../../../application/save-course-rating/save-course-rating.service'
 import type { SaveVideoPositionService } from '../../../application/save-video-position/save-video-position.service'
 import type { SubmitQuizAttemptService } from '../../../application/submit-quiz-attempt/submit-quiz-attempt.service'
-import { assertInternalCaller, resolveUserId } from '../auth'
+import { assertInternalCaller, isPrivilegedActor, resolveUserId } from '../auth'
 import {
   AttachmentResolveParams,
   CourseRatingBody,
@@ -43,7 +43,9 @@ export interface MembersRoutesDeps {
 /**
  * API de consumo do aluno. O `userId` vem do header `x-auth-user-id` (injetado
  * pelo gateway após verificar o JWT). Todo endpoint de conteúdo exige matrícula
- * ativa (403 sem vazar conteúdo) via `CheckAccessService` dentro dos casos de uso.
+ * ativa (403 sem vazar conteúdo) via `CheckAccessService` dentro dos casos de uso —
+ * EXCETO equipe interna (`isPrivilegedActor`): superadmin/admin/staff navegam tudo
+ * com chave-mestra virtual (rascunho continua 404, igual ao aluno com `all_courses`).
  * O `onBeforeHandle` confirma (em prod) que a chamada veio do gateway (token interno).
  */
 export function membersRoutes(deps: MembersRoutesDeps) {
@@ -54,36 +56,47 @@ export function membersRoutes(deps: MembersRoutesDeps) {
       )
       .get('/courses', async ({ headers }) => {
         const userId = resolveUserId(headers)
-        return { courses: await deps.listMyCourses.execute(userId) }
+        return { courses: await deps.listMyCourses.execute(userId, isPrivilegedActor(headers)) }
       })
       // Catálogo "Todos os cursos" (published + flag hasAccess do aluno).
       .get('/catalog', async ({ headers }) => {
         const userId = resolveUserId(headers)
-        return { courses: await deps.listCatalog.execute(userId) }
+        return { courses: await deps.listCatalog.execute(userId, isPrivilegedActor(headers)) }
       })
       .get('/courses/:slug', async ({ headers, params }) => {
         const userId = resolveUserId(headers)
-        return deps.getMyCourse.execute(userId, params.slug)
+        return deps.getMyCourse.execute(userId, params.slug, isPrivilegedActor(headers))
       })
       .get('/courses/:slug/progress', async ({ headers, params }) => {
         const userId = resolveUserId(headers)
-        return deps.getProgress.execute(userId, params.slug)
+        return deps.getProgress.execute(userId, params.slug, isPrivilegedActor(headers))
       })
       // Classificação do curso (1 por aluno+curso; ver SaveCourseRatingService).
       .get('/courses/:slug/rating', async ({ headers, params }) => {
         const userId = resolveUserId(headers)
-        return { rating: await deps.getCourseRating.execute(userId, params.slug) }
+        return {
+          rating: await deps.getCourseRating.execute(
+            userId,
+            params.slug,
+            isPrivilegedActor(headers),
+          ),
+        }
       })
       .put(
         '/courses/:slug/rating',
         async ({ headers, params, body }) => {
           const userId = resolveUserId(headers)
-          return deps.saveCourseRating.execute(userId, params.slug, {
-            // Conversão nota↔ratingHalf SÓ aqui (entrada) e no mapper (saída).
-            ratingHalf: body.rating * 2,
-            comment: body.comment ?? null,
-            feedbackAnswers: body.feedbackAnswers ?? null,
-          })
+          return deps.saveCourseRating.execute(
+            userId,
+            params.slug,
+            {
+              // Conversão nota↔ratingHalf SÓ aqui (entrada) e no mapper (saída).
+              ratingHalf: body.rating * 2,
+              comment: body.comment ?? null,
+              feedbackAnswers: body.feedbackAnswers ?? null,
+            },
+            isPrivilegedActor(headers),
+          )
         },
         { body: CourseRatingBody },
       )
@@ -91,7 +104,12 @@ export function membersRoutes(deps: MembersRoutesDeps) {
         '/courses/:slug/lessons/:lessonId',
         async ({ headers, params }) => {
           const userId = resolveUserId(headers)
-          return deps.getLesson.execute(userId, params.slug, params.lessonId)
+          return deps.getLesson.execute(
+            userId,
+            params.slug,
+            params.lessonId,
+            isPrivilegedActor(headers),
+          )
         },
         { params: SlugLessonParams },
       )
@@ -106,6 +124,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             params.slug,
             params.lessonId,
             params.attachmentId,
+            isPrivilegedActor(headers),
           )
         },
         { params: AttachmentResolveParams },
@@ -116,7 +135,13 @@ export function membersRoutes(deps: MembersRoutesDeps) {
         '/courses/:slug/lessons/:lessonId/blocks/:blockId/ebook/resolve',
         async ({ headers, params }) => {
           const userId = resolveUserId(headers)
-          return deps.resolveEbook.execute(userId, params.slug, params.lessonId, params.blockId)
+          return deps.resolveEbook.execute(
+            userId,
+            params.slug,
+            params.lessonId,
+            params.blockId,
+            isPrivilegedActor(headers),
+          )
         },
         { params: EbookResolveParams },
       )
@@ -124,7 +149,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
         '/lessons/:lessonId/complete',
         async ({ headers, params }) => {
           const userId = resolveUserId(headers)
-          return deps.markComplete.execute(userId, params.lessonId)
+          return deps.markComplete.execute(userId, params.lessonId, isPrivilegedActor(headers))
         },
         { params: LessonIdParams },
       )
@@ -137,6 +162,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             params.slug,
             params.lessonId,
             body.positionSeconds,
+            isPrivilegedActor(headers),
           )
         },
         { body: VideoPositionBody, params: SlugLessonParams },
@@ -146,7 +172,13 @@ export function membersRoutes(deps: MembersRoutesDeps) {
         '/lessons/:lessonId/blocks/:blockId/quiz-attempts',
         async ({ headers, params, body }) => {
           const userId = resolveUserId(headers)
-          return deps.submitQuiz.execute(userId, params.lessonId, params.blockId, body.answers)
+          return deps.submitQuiz.execute(
+            userId,
+            params.lessonId,
+            params.blockId,
+            body.answers,
+            isPrivilegedActor(headers),
+          )
         },
         { body: QuizAttemptBody, params: QuizAttemptParams },
       )

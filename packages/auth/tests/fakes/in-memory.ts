@@ -1,4 +1,9 @@
 import type { Logger } from '@sistemazero/core/logging'
+import type {
+  CreateImpersonationTokenInput,
+  ImpersonationTokenRecord,
+  ImpersonationTokenRepository,
+} from '../../src/domain/ports/impersonation-token-repository.port'
 import type { MessagingClient, SendEmailInput } from '../../src/domain/ports/messaging-client.port'
 import type {
   CreateOtpCodeInput,
@@ -117,6 +122,7 @@ export class InMemoryRefreshTokenRepository implements RefreshTokenRepository {
       expiresAt: input.expiresAt,
       rotatedAt: null,
       revokedAt: null,
+      impersonatorUserId: input.impersonatorUserId ?? null,
     })
   }
 
@@ -151,6 +157,48 @@ export class InMemoryRefreshTokenRepository implements RefreshTokenRepository {
     for (const record of this.byId.values()) {
       if (record.userId === userId && record.revokedAt === null) record.revokedAt = new Date()
     }
+  }
+
+  async deleteExpired(before: Date): Promise<number> {
+    let deleted = 0
+    for (const [id, record] of this.byId) {
+      if (record.expiresAt.getTime() < before.getTime()) {
+        this.byId.delete(id)
+        deleted += 1
+      }
+    }
+    return deleted
+  }
+}
+
+/** Repositório de tokens de handoff de impersonação em memória. */
+export class InMemoryImpersonationTokenRepository implements ImpersonationTokenRepository {
+  readonly byId = new Map<string, ImpersonationTokenRecord>()
+
+  async create(input: CreateImpersonationTokenInput): Promise<void> {
+    this.byId.set(input.id, {
+      id: input.id,
+      tokenHash: input.tokenHash,
+      actorId: input.actorId,
+      targetUserId: input.targetUserId,
+      expiresAt: input.expiresAt,
+      consumedAt: null,
+    })
+  }
+
+  async findByHash(tokenHash: string): Promise<ImpersonationTokenRecord | null> {
+    for (const record of this.byId.values()) {
+      if (record.tokenHash === tokenHash) return { ...record }
+    }
+    return null
+  }
+
+  async consume(id: string, at: Date): Promise<boolean> {
+    const record = this.byId.get(id)
+    // Espelha o consumo atômico do adapter: só consome se ainda não consumido.
+    if (!record || record.consumedAt !== null) return false
+    record.consumedAt = at
+    return true
   }
 
   async deleteExpired(before: Date): Promise<number> {

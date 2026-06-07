@@ -64,6 +64,14 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    (`findActiveForCourse`, query única com OR); cobre cursos publicados DEPOIS do grant
    sem reprocessamento. "Meus cursos" lista todos os publicados (+ archived com matrícula
    específica) com o acesso mais forte por curso; o catálogo destrava tudo (`hasAccess`).
+   **Equipe interna = chave-mestra VIRTUAL** (06/2026): `superadmin`/`admin`/`staff`
+   (header `x-auth-user-role` injetado pelo gateway — confiável pelo `x-internal-token`)
+   recebem `EntitlementAggregate.virtualAllCourses()` em memória (NUNCA persistida) em
+   TODAS as rotas do aluno — `isPrivilegedActor` resolvido na ROTA e propagado como
+   param `privileged` aos services (CheckAccessService + list-catalog + list-my-courses).
+   Rascunho continua 404 (check ANTES do bypass); rating de equipe CONTA em
+   `course_ratings` (trade-off aceito — a fatia só coleta; se um dia houver média
+   pública, filtrar staff na agregação).
    O union `AccessType` local é **mirror TOLERANTE de leitura** (mantém
    download/external/none legados p/ snapshots antigos carregarem) — o catálogo só
    escreve `course`/`all_courses`.

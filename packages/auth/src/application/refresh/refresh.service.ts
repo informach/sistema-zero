@@ -1,6 +1,7 @@
 import type { Logger } from '@sistemazero/core/logging'
 import { sha256Hex } from '@sistemazero/core/security'
 import type { RefreshTokenRepository } from '../../domain/ports/refresh-token-repository.port'
+import type { ActClaim } from '../../domain/ports/token-issuer.port'
 import type { UserRepository } from '../../domain/ports/user-repository.port'
 import { InvalidRefreshTokenError, UserNotActiveError } from '../../domain/user/user.errors'
 import type { AuthTokenService, AuthTokens } from '../tokens/auth-token.service'
@@ -47,6 +48,24 @@ export class RefreshService {
     if (!user) throw new InvalidRefreshTokenError()
     if (!user.isActive()) throw new UserNotActiveError()
 
+    // Sessão de IMPERSONAÇÃO: re-deriva a claim `act` do ATOR a cada rotação
+    // (o access é re-emitido do UserAggregate do ALVO e a perderia). Ator sumido
+    // ou desativado → a sessão de suporte morre junto (revoga a família).
+    let act: ActClaim | undefined
+    if (record.impersonatorUserId) {
+      const actor = await this.users.findById(record.impersonatorUserId)
+      if (!actor?.isActive()) {
+        await this.refreshTokens.revokeFamily(record.familyId)
+        this.logger.warn('auth.impersonation.actor_gone', {
+          userId: record.userId,
+          actorId: record.impersonatorUserId,
+          familyId: record.familyId,
+        })
+        throw new InvalidRefreshTokenError()
+      }
+      act = { sub: actor.id, email: actor.email, name: actor.fullName }
+    }
+
     // Rotaciona com claim ATÔMICO: consome o token atual e emite um novo na MESMA
     // família. Perder o claim = outra requisição rotacionou este token entre o
     // findByHash e aqui — semanticamente é REUSO (o fast-path acima não enxerga a
@@ -64,6 +83,8 @@ export class RefreshService {
     return this.tokens.rotate(user, record.familyId, {
       userAgent: command.userAgent,
       ip: command.ip,
+      impersonatorUserId: record.impersonatorUserId,
+      impersonatorAct: act ?? null,
     })
   }
 }

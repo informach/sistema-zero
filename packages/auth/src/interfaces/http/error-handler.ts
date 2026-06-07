@@ -24,6 +24,10 @@ const DOMAIN_STATUS: Record<string, number> = {
   RESET_TOKEN_EXPIRED: 401,
   INVALID_OTP: 401,
   VERSION_CONFLICT: 409,
+  // Impersonação (admin "entra como" um usuário na community).
+  IMPERSONATION_FORBIDDEN: 403,
+  TARGET_NOT_IMPERSONABLE: 409,
+  INVALID_IMPERSONATION_TOKEN: 401,
 }
 
 /**

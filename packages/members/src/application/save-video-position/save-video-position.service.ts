@@ -26,8 +26,9 @@ export class SaveVideoPositionService {
     courseSlug: string,
     lessonId: string,
     positionSeconds: number,
+    privileged = false,
   ): Promise<VideoPositionView> {
-    const { course } = await this.checkAccess.requireBySlug(userId, courseSlug)
+    const { course } = await this.checkAccess.requireBySlug(userId, courseSlug, privileged)
     const lesson = await this.courses.findLesson(lessonId)
     // Aula rascunho é invisível ao aluno → não aceita posição de vídeo.
     if (!lesson || lesson.courseId !== course.id || !lesson.isPublished) {

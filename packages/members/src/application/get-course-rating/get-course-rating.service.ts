@@ -9,8 +9,12 @@ export class GetCourseRatingService {
     private readonly ratings: CourseRatingRepository,
   ) {}
 
-  async execute(userId: string, courseSlug: string): Promise<CourseRatingView | null> {
-    const { course } = await this.checkAccess.requireBySlug(userId, courseSlug)
+  async execute(
+    userId: string,
+    courseSlug: string,
+    privileged = false,
+  ): Promise<CourseRatingView | null> {
+    const { course } = await this.checkAccess.requireBySlug(userId, courseSlug, privileged)
     const rating = await this.ratings.find(userId, course.id)
     return rating ? toCourseRatingView(rating) : null
   }

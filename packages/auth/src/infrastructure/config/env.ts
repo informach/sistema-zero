@@ -43,6 +43,12 @@ const EnvSchema = z
     JWT_AUDIENCE: z.string().min(1).default('sistemazero'),
     ACCESS_TOKEN_TTL_SECONDS: z.coerce.number().int().positive().default(900),
     REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(30),
+    // TTL do refresh de sessões IMPERSONADAS (admin "entra como" um usuário —
+    // sessão de suporte CURTA, morre sozinha; a rotação não a estica). 2h.
+    IMPERSONATION_REFRESH_TTL_SECONDS: z.coerce.number().int().positive().default(7200),
+    // TTL do token de HANDOFF de impersonação (só atravessa a URL admin→community;
+    // single-use). 60s.
+    IMPERSONATION_TOKEN_TTL_SECONDS: z.coerce.number().int().positive().default(60),
 
     // HS256 (segredo simétrico — compartilhado com o gateway).
     JWT_HS256_SECRET: z.string().optional(),

@@ -5,6 +5,7 @@ import type { CreateUserService } from '../../../application/admin/create-user/c
 import type { GetUserService } from '../../../application/admin/get-user/get-user.service'
 import type { ListUsersService } from '../../../application/admin/list-users/list-users.service'
 import type { UpdateUserService } from '../../../application/admin/update-user/update-user.service'
+import type { CreateImpersonationTokenService } from '../../../application/impersonation/create-impersonation-token.service'
 import { UserNotFoundError } from '../../../domain/user/user.errors'
 import type { UserRole } from '../../../domain/user/user.role'
 import { type GatewayActor, resolveGatewayActor } from '../auth'
@@ -25,6 +26,12 @@ export interface AdminRoutesDeps {
   createUser: CreateUserService
   updateUser: UpdateUserService
   batchGetUsers: BatchGetUsersService
+  createImpersonationToken: CreateImpersonationTokenService
+  /**
+   * Base pública da community (env `COMMUNITY_URL`): o painel admin (outra origem)
+   * recebe a URL pronta de `/impersonar` — não precisa conhecer o domínio do app.
+   */
+  communityUrl: string
   /**
    * `AUTH_INTERNAL_TOKEN` — o gateway o injeta TAMBÉM nas rotas admin (igual ao
    * members/catalog): é o que prova que os `X-Auth-User-*` vieram do gateway.
@@ -61,77 +68,101 @@ export function adminRoutes(deps: AdminRoutesDeps) {
     return actor
   }
 
-  return new Elysia({ prefix: '/auth/admin' })
-    .get(
-      '/users',
-      async ({ headers, query }) => {
-        requireActor(headers, READ_ROLES)
-        return deps.listUsers.execute({
-          q: query.q,
-          role: query.role,
-          status: query.status,
-          limit: query.limit ?? 20,
-          offset: query.offset ?? 0,
-        })
-      },
-      { query: ListUsersQuery },
-    )
-    .post(
-      '/users',
-      async ({ headers, body, request, set }) => {
-        if (isOversizeBody(request)) throw new PayloadTooLargeError()
-        const actor = requireActor(headers, WRITE_ROLES)
-        const result = await deps.createUser.execute({
-          actor: { id: actor.id, role: actor.role },
-          email: body.email,
-          firstName: body.firstName,
-          lastName: body.lastName,
-          phone: body.phone,
-          role: body.role,
-        })
-        set.status = 201
-        return result
-      },
-      { body: CreateUserBody },
-    )
-    .post(
-      '/users/batch',
-      async ({ headers, body, request }) => {
-        if (isOversizeBody(request)) throw new PayloadTooLargeError()
-        requireActor(headers, READ_ROLES)
-        return deps.batchGetUsers.execute(body.ids)
-      },
-      { body: BatchGetUsersBody },
-    )
-    .get(
-      '/users/:id',
-      async ({ headers, params }) => {
-        requireActor(headers, READ_ROLES)
-        const user = await deps.getUser.execute(params.id)
-        if (!user) throw new UserNotFoundError()
-        return { user }
-      },
-      { params: UserIdParams },
-    )
-    .patch(
-      '/users/:id',
-      async ({ headers, params, body, request }) => {
-        if (isOversizeBody(request)) throw new PayloadTooLargeError()
-        const actor = requireActor(headers, WRITE_ROLES)
-        const user = await deps.updateUser.execute({
-          targetId: params.id,
-          actor: { id: actor.id, role: actor.role },
-          changes: {
-            role: body.role,
-            status: body.status,
+  return (
+    new Elysia({ prefix: '/auth/admin' })
+      .get(
+        '/users',
+        async ({ headers, query }) => {
+          requireActor(headers, READ_ROLES)
+          return deps.listUsers.execute({
+            q: query.q,
+            role: query.role,
+            status: query.status,
+            limit: query.limit ?? 20,
+            offset: query.offset ?? 0,
+          })
+        },
+        { query: ListUsersQuery },
+      )
+      .post(
+        '/users',
+        async ({ headers, body, request, set }) => {
+          if (isOversizeBody(request)) throw new PayloadTooLargeError()
+          const actor = requireActor(headers, WRITE_ROLES)
+          const result = await deps.createUser.execute({
+            actor: { id: actor.id, role: actor.role },
+            email: body.email,
             firstName: body.firstName,
             lastName: body.lastName,
             phone: body.phone,
-          },
-          expectedVersion: body.version,
-        })
-        return { user }
-      },
-      { body: UpdateUserBody, params: UserIdParams },
-    )
+            role: body.role,
+          })
+          set.status = 201
+          return result
+        },
+        { body: CreateUserBody },
+      )
+      .post(
+        '/users/batch',
+        async ({ headers, body, request }) => {
+          if (isOversizeBody(request)) throw new PayloadTooLargeError()
+          requireActor(headers, READ_ROLES)
+          return deps.batchGetUsers.execute(body.ids)
+        },
+        { body: BatchGetUsersBody },
+      )
+      .get(
+        '/users/:id',
+        async ({ headers, params }) => {
+          requireActor(headers, READ_ROLES)
+          const user = await deps.getUser.execute(params.id)
+          if (!user) throw new UserNotFoundError()
+          return { user }
+        },
+        { params: UserIdParams },
+      )
+      .patch(
+        '/users/:id',
+        async ({ headers, params, body, request }) => {
+          if (isOversizeBody(request)) throw new PayloadTooLargeError()
+          const actor = requireActor(headers, WRITE_ROLES)
+          const user = await deps.updateUser.execute({
+            targetId: params.id,
+            actor: { id: actor.id, role: actor.role },
+            changes: {
+              role: body.role,
+              status: body.status,
+              firstName: body.firstName,
+              lastName: body.lastName,
+              phone: body.phone,
+            },
+            expectedVersion: body.version,
+          })
+          return { user }
+        },
+        { body: UpdateUserBody, params: UserIdParams },
+      )
+      // "Entrar como": emite o token de HANDOFF de impersonação (single-use, ~60s).
+      // O serviço re-checa a matriz (admin só customer/staff; superadmin qualquer;
+      // nunca a si mesmo) — o RBAC do gateway é só a 1ª camada. A URL devolvida
+      // aponta p/ a rota `/impersonar` da community, que faz o exchange.
+      .post(
+        '/users/:id/impersonate',
+        async ({ headers, params, set }) => {
+          const actor = requireActor(headers, WRITE_ROLES)
+          const result = await deps.createImpersonationToken.execute({
+            actorId: actor.id,
+            actorRole: actor.role,
+            targetUserId: params.id,
+          })
+          set.status = 201
+          return {
+            token: result.token,
+            expiresAt: result.expiresAt.toISOString(),
+            communityUrl: deps.communityUrl,
+          }
+        },
+        { params: UserIdParams },
+      )
+  )
 }

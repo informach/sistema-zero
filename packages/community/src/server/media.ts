@@ -64,6 +64,17 @@ export async function requireUploadSession(req: Request): Promise<SessionUser | 
       { status: 403 },
     )
   }
+  // Sessão de IMPERSONAÇÃO (claim `act`) é SOMENTE-LEITURA: mutação (trocar o
+  // avatar do aluno) é barrada; os GETs de download seguem — suporte pode VER o
+  // que o aluno vê (a marca d'água sai com o e-mail do aluno, dono do acesso).
+  if (requiresOriginCheck(req.method) && verdict.user.act) {
+    return NextResponse.json(
+      {
+        error: { code: 'IMPERSONATION_READONLY', message: 'Sessão de suporte é somente-leitura.' },
+      },
+      { status: 403 },
+    )
+  }
   return verdict.user
 }
 

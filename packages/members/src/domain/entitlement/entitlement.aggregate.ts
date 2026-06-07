@@ -81,6 +81,48 @@ export class EntitlementAggregate {
     return new EntitlementAggregate({ ...state })
   }
 
+  /**
+   * Chave-mestra VIRTUAL da equipe interna (superadmin/admin/staff): nunca é
+   * persistida — existe só em memória para os fluxos de leitura tratarem o ator
+   * privilegiado como um aluno com `all_courses` vitalício. Os mappers de view
+   * leem apenas `accessType`/`expiresAt`, mas o snapshot é preenchido com valores
+   * neutros REAIS (sem cast) para o agregado permanecer íntegro.
+   */
+  static virtualAllCourses(userId: string, now: Date): EntitlementAggregate {
+    return new EntitlementAggregate({
+      id: 'virtual-all-courses',
+      version: 0,
+      userId,
+      productId: 'virtual',
+      productKind: 'internal',
+      accessType: 'all_courses',
+      courseRef: null,
+      offerId: null,
+      snapshot: {
+        offerId: 'virtual',
+        offerSlug: 'virtual',
+        productId: 'virtual',
+        sku: 'virtual',
+        name: 'Acesso interno (equipe)',
+        kind: 'internal',
+        accessType: 'all_courses',
+        courseRef: null,
+        fulfillment: null,
+        resolvedAt: now.toISOString(),
+      },
+      status: 'active',
+      sourceKind: 'manual',
+      sourceId: 'internal-staff',
+      subscriptionId: null,
+      grantedAt: now,
+      expiresAt: null,
+      revokedAt: null,
+      idempotencyKey: `virtual:${userId}`,
+      createdAt: now,
+      updatedAt: now,
+    })
+  }
+
   /** Acesso liberado? `active` E (vitalício OU dentro da validade). Leitura pura. */
   isActiveAt(now: Date): boolean {
     if (this.state.status !== 'active') return false
