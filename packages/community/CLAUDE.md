@@ -58,7 +58,10 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
   Os **nomes dos cookies** vivem em `src/lib/cookies.ts` (fonte ÚNICA — `session.ts` escreve,
   `proxy.ts` lê/regrava): `sz_member_*` (≠ `sz_admin_*` do painel), em prod com prefixo
   **`__Host-`** (browser exige Secure+Path=/+sem Domain — blinda contra fixation por subdomínio
-  irmão); em dev (http) o prefixo é omitido.
+  irmão); em dev (http) o prefixo é omitido. ⚠️ A **remoção** também obedece o prefixo: expirar
+  usa `expireCookieOptions` (`set('', maxAge:0)` com `Secure`) — `cookies().delete()` pelado é
+  REJEITADO pelo browser p/ `__Host-*` e o cookie SOBREVIVE (logout não deslogava em prod; e2e
+  staging 07/06/2026).
 - **Refresh — DOIS caminhos, UMA rotação (`src/server/refresh.ts`):** `refreshTokens()` faz a
   chamada `/auth/refresh` com **single-flight + cache 60s por refresh token** — obrigatório:
   requisições concorrentes (prefetch + navegação, proxy + handler, beacon + página) apresentando o

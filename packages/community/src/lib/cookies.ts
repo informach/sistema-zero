@@ -17,6 +17,17 @@ export function prefixedCookieName(base: string, prod: boolean): string {
   return prod ? `__Host-${base}` : base
 }
 
+/**
+ * Atributos p/ EXPIRAR um cookie de sessão (`value: ''` + `maxAge: 0`), casando
+ * com os da escrita. ⚠️ Load-bearing: o browser aplica as regras do prefixo
+ * `__Host-` a TODO Set-Cookie do nome — inclusive o de remoção. Um
+ * `cookies().delete(nome)` pelado (sem `Secure`) é REJEITADO em prod e o cookie
+ * SOBREVIVE: logout que não desloga (visto no e2e de staging, 07/06/2026).
+ */
+export function expireCookieOptions(prod: boolean) {
+  return { httpOnly: true, sameSite: 'lax' as const, secure: prod, path: '/', maxAge: 0 }
+}
+
 const PROD = process.env.NODE_ENV === 'production'
 
 export const ACCESS_COOKIE = prefixedCookieName('sz_member_access', PROD)

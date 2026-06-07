@@ -8,7 +8,7 @@ import {
   jwtVerify,
 } from 'jose'
 import { cookies } from 'next/headers'
-import { ACCESS_COOKIE, REFRESH_COOKIE } from '@/lib/cookies'
+import { ACCESS_COOKIE, expireCookieOptions, REFRESH_COOKIE } from '@/lib/cookies'
 import { getEnv, isProd } from '@/lib/env'
 import type { SessionUser } from '@/lib/types'
 
@@ -134,6 +134,9 @@ export async function setSessionCookies(tokens: AuthTokens): Promise<void> {
 
 export async function clearSessionCookies(): Promise<void> {
   const store = await cookies()
-  store.delete(ACCESS_COOKIE)
-  store.delete(REFRESH_COOKIE)
+  // `set('', maxAge: 0)` com os MESMOS atributos da escrita — `delete()` pelado
+  // não manda `Secure` e o browser REJEITA a remoção de um `__Host-*` em prod
+  // (o cookie sobrevivia: logout não deslogava). Ver `expireCookieOptions`.
+  store.set(ACCESS_COOKIE, '', expireCookieOptions(isProd()))
+  store.set(REFRESH_COOKIE, '', expireCookieOptions(isProd()))
 }
