@@ -645,7 +645,7 @@ export function LessonEditorClient({
               >
                 <FileUploader
                   accept="application/pdf,.pdf"
-                  label="Clique para enviar o PDF do e-book (até 100 MB)"
+                  label="Clique para enviar o PDF do e-book (até 200 MB)"
                   onUploaded={(file) => {
                     setBlockForm((f) => ({
                       ...f,

@@ -84,7 +84,7 @@ function getClient(cfg: {
     endpoint: `https://${cfg.accountId}.r2.cloudflarestorage.com`,
     credentials: { accessKeyId: cfg.accessKeyId, secretAccessKey: cfg.secretAccessKey },
     // Sem teto, R2 pendurado = handler pendurado. O requestTimeout é generoso
-    // porque anexos chegam a 100MB (upload single-part).
+    // porque anexos chegam a 200MB (upload single-part).
     requestHandler: { connectionTimeout: 5_000, requestTimeout: 120_000 },
   })
   return cachedClient

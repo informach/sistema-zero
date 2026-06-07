@@ -92,7 +92,7 @@ function getClient(cfg: {
     endpoint: `https://${cfg.accountId}.r2.cloudflarestorage.com`,
     credentials: { accessKeyId: cfg.accessKeyId, secretAccessKey: cfg.secretAccessKey },
     // Sem teto, R2 pendurado = request do aluno pendurada. O requestTimeout é
-    // generoso porque materiais didáticos chegam a 100MB (stream). Espelha o admin.
+    // generoso porque materiais didáticos chegam a 200MB (stream). Espelha o admin.
     requestHandler: { connectionTimeout: 5_000, requestTimeout: 120_000 },
   })
   return cachedClient

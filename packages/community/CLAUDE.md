@@ -150,11 +150,13 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
    (um "PDF" digitado à mão não desliga a marca em silêncio). PDF/imagem ganham **marca d'água
    com o e-mail do aluno** (`server/watermark.ts`: pdf-lib rodapé em todas as páginas · sharp
    selo SVG no canto, GIF animado via tile por frame; falha → serve o original + warn); demais
-   formatos vão em **STREAM direto** (sem materializar 100MB em memória) e arquivos marcáveis
-   acima de `WATERMARK_MAX_BYTES` (50MB) também caem p/ o original em stream + warn. **Marcar
-   passa pelo GATE de concorrência** (`server/watermark-queue.ts`, máx. 2 simultâneas, FIFO em
-   `globalThis` — full review 2): bufferizar+marcar sem teto, uma turma baixando o mesmo PDF
-   derrubaria o host por OOM; quem espera segura só um closure, não o buffer. Resposta:
+   formatos vão em **STREAM direto** (sem materializar 200MB em memória) e arquivos marcáveis
+   acima de `WATERMARK_MAX_BYTES` (200MB, casado com o teto de upload do admin) também caem p/ o
+   original em stream + warn. **Marcar passa pelo GATE de concorrência**
+   (`server/watermark-queue.ts`, **máx. 1 simultânea** — baixado de 2 quando o teto subiu de 50MB
+   p/ 200MB p/ o pico não dobrar, ~600MB no pior caso; FIFO em `globalThis` — full review 2;
+   ⚠️ RAM ≥2GB no community → dá p/ voltar a 2): bufferizar+marcar sem teto, uma turma baixando o
+   mesmo PDF grande derrubaria o host por OOM; quem espera segura só um closure, não o buffer. Resposta:
    `Content-Disposition: attachment` (label + extensão da key) e `Cache-Control: private,
    no-store` (conteúdo é POR aluno). A `storageRef` NUNCA vai ao browser.
 2. **Segredos só no servidor.** `src/lib/env.ts` é `server-only`; `src/server/*` idem. **Nunca**
