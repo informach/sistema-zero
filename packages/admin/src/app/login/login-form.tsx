@@ -6,7 +6,6 @@ import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
 import { Spinner } from '@sistemazero/ui/spinner'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -25,7 +24,6 @@ const ERROR_MESSAGES: Record<string, string> = {
 }
 
 export function LoginForm() {
-  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
@@ -56,8 +54,11 @@ export function LoginForm() {
         // open-redirect. Lido aqui (event handler, só client) p/ não precisar
         // de Suspense de useSearchParams.
         const next = safeNextPath(new URLSearchParams(window.location.search).get('next'))
-        router.replace(next ?? '/admin')
-        router.refresh()
+        // Navegação de DOCUMENTO: o login muda cookies HttpOnly e `router.replace
+        // + router.refresh` corre um contra o outro (vercel/next.js#54766 — o
+        // refresh re-renderiza /login, que agora redireciona, e o operador ficava
+        // preso no /login até um F5; bug visto no community, mesmo padrão aqui).
+        window.location.replace(next ?? '/admin')
         return
       }
       const data = (await res.json().catch(() => null)) as { error?: { code?: string } } | null

@@ -43,7 +43,11 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
 
 - **Login:** `POST /api/auth/login` → gateway `/auth/login`; **qualquer conta ATIVA entra**
   (inclusive `customer` — ≠ admin, que filtra papel); grava `sz_member_access` (JWT) +
-  `sz_member_refresh` (opaco) em cookies **HttpOnly**.
+  `sz_member_refresh` (opaco) em cookies **HttpOnly**. ⚠️ **Transição de sessão (login/logout/
+  troca de senha) navega com `window.location.replace(...)` — NUNCA `router.replace +
+  router.refresh`**: o refresh não espera a navegação commitar (corrida vercel/next.js#54766) e
+  re-renderizava `/login` já com sessão → `redirect('/')` no meio do refresh → aluno preso no
+  login até um F5; o full load também descarta o router cache com dados RSC da sessão anterior.
 - **Sessão (`src/server/session.ts`):** `getSession()` verifica o access JWT — a chave é escolhida
   pelo `alg` do token (espelha a jwt.strategy do gateway): **HS256** com `JWT_HS256_SECRET`
   (dev/local, MESMO segredo do auth/gateway) e/ou **RS256 via `JWT_JWKS_URL`** (PRODUÇÃO — o auth
@@ -54,7 +58,10 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
   Os **nomes dos cookies** vivem em `src/lib/cookies.ts` (fonte ÚNICA — `session.ts` escreve,
   `proxy.ts` lê/regrava): `sz_member_*` (≠ `sz_admin_*` do painel), em prod com prefixo
   **`__Host-`** (browser exige Secure+Path=/+sem Domain — blinda contra fixation por subdomínio
-  irmão); em dev (http) o prefixo é omitido.
+  irmão); em dev (http) o prefixo é omitido. ⚠️ A **remoção** também obedece o prefixo: expirar
+  usa `expireCookieOptions` (`set('', maxAge:0)` com `Secure`) — `cookies().delete()` pelado é
+  REJEITADO pelo browser p/ `__Host-*` e o cookie SOBREVIVE (logout não deslogava em prod; e2e
+  staging 07/06/2026).
 - **Refresh — DOIS caminhos, UMA rotação (`src/server/refresh.ts`):** `refreshTokens()` faz a
   chamada `/auth/refresh` com **single-flight + cache 60s por refresh token** — obrigatório:
   requisições concorrentes (prefetch + navegação, proxy + handler, beacon + página) apresentando o

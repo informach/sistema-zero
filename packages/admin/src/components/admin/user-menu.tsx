@@ -1,7 +1,6 @@
 'use client'
 
 import { LogOut } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import type { SessionUser } from '@/lib/types'
 
@@ -9,7 +8,6 @@ export function UserMenu({ user }: { user: SessionUser }) {
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
-  const router = useRouter()
 
   const initial = (user.firstName?.[0] ?? user.email?.[0] ?? 'A').toUpperCase()
   const name = [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email
@@ -27,8 +25,10 @@ export function UserMenu({ user }: { user: SessionUser }) {
     try {
       await fetch('/api/admin/logout', { method: 'POST' })
     } finally {
-      router.replace('/login')
-      router.refresh()
+      // Navegação de DOCUMENTO: logout muda cookies HttpOnly e `router.replace +
+      // router.refresh` corre um contra o outro (vercel/next.js#54766); o full
+      // load também descarta o router cache com dados RSC da sessão encerrada.
+      window.location.replace('/login')
     }
   }
 

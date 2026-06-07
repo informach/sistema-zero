@@ -2,19 +2,19 @@
 
 import { Button } from '@sistemazero/ui/button'
 import { Spinner } from '@sistemazero/ui/spinner'
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 export function LogoutButton({ variant = 'outline' }: { variant?: 'outline' | 'ghost' }) {
-  const router = useRouter()
   const [busy, setBusy] = useState(false)
   async function logout() {
     setBusy(true)
     try {
       await fetch('/api/admin/logout', { method: 'POST' })
     } finally {
-      router.replace('/login')
-      router.refresh()
+      // Navegação de DOCUMENTO: logout muda cookies HttpOnly e `router.replace +
+      // router.refresh` corre um contra o outro (vercel/next.js#54766); o full
+      // load também descarta o router cache com dados RSC da sessão encerrada.
+      window.location.replace('/login')
     }
   }
   return (

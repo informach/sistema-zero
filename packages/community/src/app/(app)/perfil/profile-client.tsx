@@ -214,7 +214,6 @@ function ProfileForm({ user }: { user: UserView }) {
 }
 
 function PasswordForm() {
-  const router = useRouter()
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirm, setConfirm] = useState('')
@@ -243,9 +242,11 @@ function PasswordForm() {
       })
       if (res.ok) {
         // A troca revoga TODAS as sessões (segurança) → re-login com a senha nova.
+        // Navegação de DOCUMENTO: cookies HttpOnly mudaram e `router.replace +
+        // router.refresh` corre um contra o outro (vercel/next.js#54766); o full
+        // load também descarta o router cache com dados RSC da sessão revogada.
         toast.success('Senha alterada! Entre novamente com a nova senha.')
-        router.replace('/login')
-        router.refresh()
+        window.location.replace('/login')
         return
       }
       const data = (await res.json().catch(() => null)) as { error?: { code?: string } } | null

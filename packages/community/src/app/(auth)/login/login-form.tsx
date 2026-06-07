@@ -7,7 +7,6 @@ import { Field } from '@sistemazero/ui/label'
 import { PasswordInput } from '@sistemazero/ui/password-input'
 import { Spinner } from '@sistemazero/ui/spinner'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -28,7 +27,6 @@ type Errors = { email?: string; password?: string; code?: string }
 
 /** Login do aluno: por SENHA (padrão) ou por CÓDIGO (OTP por e-mail, passwordless). */
 export function LoginForm() {
-  const router = useRouter()
   const [mode, setMode] = useState<Mode>('password')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -38,8 +36,13 @@ export function LoginForm() {
   const [loading, setLoading] = useState(false)
 
   function goHome() {
-    router.replace('/')
-    router.refresh()
+    // Navegação de DOCUMENTO de propósito: o login muda cookies HttpOnly e o
+    // par `router.replace + router.refresh` corre um contra o outro (o refresh
+    // não espera a navegação commitar e re-renderiza /login, que agora redireciona
+    // — vercel/next.js#54766; o aluno ficava preso no /login até um F5). O full
+    // load garante que o servidor veja a sessão nova; `replace` tira o /login do
+    // histórico (voltar não retorna ao form).
+    window.location.replace('/')
   }
 
   function setIssues(error: z.ZodError) {

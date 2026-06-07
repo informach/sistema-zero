@@ -1,6 +1,6 @@
 import { decodeJwt } from 'jose'
 import { type NextRequest, NextResponse } from 'next/server'
-import { ACCESS_COOKIE, REFRESH_COOKIE } from '@/lib/cookies'
+import { ACCESS_COOKIE, expireCookieOptions, REFRESH_COOKIE } from '@/lib/cookies'
 import { isSameOriginRequest, requiresOriginCheck } from '@/lib/csrf'
 import { isProd } from '@/lib/env'
 import { refreshTokens } from '@/server/refresh'
@@ -55,10 +55,13 @@ export async function proxy(req: NextRequest) {
   // (rate limit por IP + auditoria do auth enxergam o aluno, não o host).
   const result = await refreshTokens(refresh, forwardHeadersFrom(req))
   if (result === 'invalid') {
-    // Sessão morta (refresh rejeitado) → limpa e manda logar de novo.
+    // Sessão morta (refresh rejeitado) → limpa e manda logar de novo. A limpeza
+    // usa `set('', maxAge: 0)` com os atributos da escrita — `delete()` pelado
+    // (sem `Secure`) é REJEITADO pelo browser p/ `__Host-*` em prod e os cookies
+    // mortos sobreviveriam (loop /login ⇄ / até expirarem).
     const res = redirectToLogin(req)
-    res.cookies.delete(ACCESS_COOKIE)
-    res.cookies.delete(REFRESH_COOKIE)
+    res.cookies.set(ACCESS_COOKIE, '', expireCookieOptions(isProd()))
+    res.cookies.set(REFRESH_COOKIE, '', expireCookieOptions(isProd()))
     return res
   }
   if (result === 'unavailable') {

@@ -2,7 +2,6 @@
 
 import { LogOut, Moon, Receipt, Sun, User } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { useEffect, useRef, useState } from 'react'
 import type { SessionUserWithAvatar } from '@/lib/types'
@@ -18,7 +17,6 @@ export function UserMenu({ user }: { user: SessionUserWithAvatar }) {
   const [busy, setBusy] = useState(false)
   const [mounted, setMounted] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
-  const router = useRouter()
   const { resolvedTheme, setTheme } = useTheme()
 
   useEffect(() => setMounted(true), [])
@@ -36,8 +34,10 @@ export function UserMenu({ user }: { user: SessionUserWithAvatar }) {
     try {
       await fetch('/api/auth/logout', { method: 'POST' })
     } finally {
-      router.replace('/login')
-      router.refresh()
+      // Navegação de DOCUMENTO: logout muda cookies HttpOnly e `router.replace +
+      // router.refresh` corre um contra o outro (vercel/next.js#54766); o full
+      // load também descarta o router cache com dados RSC do usuário deslogado.
+      window.location.replace('/login')
     }
   }
 
