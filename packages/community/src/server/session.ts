@@ -8,6 +8,7 @@ import {
   jwtVerify,
 } from 'jose'
 import { cookies } from 'next/headers'
+import { parseActClaim } from '@/lib/act'
 // Nomes em `lib/cookies.ts` (fonte única com o proxy; `__Host-` em prod).
 import { ACCESS_COOKIE, expireCookieOptions, REFRESH_COOKIE } from '@/lib/cookies'
 import { getEnv, isProd } from '@/lib/env'
@@ -60,7 +61,7 @@ function verifyOptions(): JWTVerifyOptions {
 function claimsToUser(payload: Record<string, unknown>): SessionUser | null {
   const { sub, email, firstName, lastName, role, status } = payload
   if (typeof sub !== 'string' || typeof role !== 'string' || typeof status !== 'string') return null
-  return {
+  const user: SessionUser = {
     id: sub,
     email: typeof email === 'string' ? email : '',
     firstName: typeof firstName === 'string' ? firstName : '',
@@ -68,6 +69,11 @@ function claimsToUser(payload: Record<string, unknown>): SessionUser | null {
     role,
     status,
   }
+  // Impersonação (suporte): a claim `act` identifica o ADMIN navegando como o
+  // aluno — liga o banner e bloqueia mutações de credenciais/perfil.
+  const act = parseActClaim(payload.act)
+  if (act) user.act = act
+  return user
 }
 
 /**

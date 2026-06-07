@@ -17,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from '@sistemazero/ui/table'
-import { GraduationCap, KeyRound, Pencil, Plus, Search } from 'lucide-react'
+import { GraduationCap, KeyRound, LogIn, Pencil, Plus, Search } from 'lucide-react'
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -26,6 +26,7 @@ import { GrantAccessDialog } from '@/components/admin/grant-access-dialog'
 import { StatusBadge } from '@/components/admin/status-badge'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { formatDate } from '@/lib/format'
+import { canImpersonate, impersonationUrl } from '@/lib/impersonation'
 import {
   type Paginated,
   PRIVILEGED_ROLES,
@@ -97,6 +98,7 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
   const [creating, setCreating] = useState(false)
 
   const [grantUserId, setGrantUserId] = useState<string | null>(null)
+  const [impersonatingId, setImpersonatingId] = useState<string | null>(null)
 
   const isSuper = currentUser.role === 'superadmin'
   const isAdmin = currentUser.role === 'admin'
@@ -217,6 +219,30 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
       )
     } finally {
       setCreating(false)
+    }
+  }
+
+  // "Entrar como" (suporte): pede o token de handoff e abre a community em nova aba
+  // já logada como o usuário. O token é single-use/60s — a aba precisa abrir na hora.
+  async function impersonate(u: UserView) {
+    setImpersonatingId(u.id)
+    try {
+      const res = await apiSend<{ token: string; expiresAt: string; communityUrl: string }>(
+        `/api/admin/users/${u.id}/impersonate`,
+        'POST',
+        {},
+      )
+      window.open(impersonationUrl(res.communityUrl, res.token), '_blank', 'noopener,noreferrer')
+      toast.success(`Sessão de suporte aberta como ${u.firstName} ${u.lastName}.`)
+    } catch (err) {
+      const e = err as ApiError
+      toast.error(
+        e.status === 403
+          ? 'Sem permissão para entrar como este usuário.'
+          : (e.message ?? 'Não foi possível iniciar a sessão de suporte.'),
+      )
+    } finally {
+      setImpersonatingId(null)
     }
   }
 
@@ -343,6 +369,18 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
                       >
                         <GraduationCap className="size-4" /> Matrículas
                       </Link>
+                      {canImpersonate(currentUser, u) ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          title="Entrar na área do aluno como este usuário (suporte)"
+                          disabled={impersonatingId === u.id}
+                          onClick={() => impersonate(u)}
+                        >
+                          {impersonatingId === u.id ? <Spinner /> : <LogIn className="size-4" />}{' '}
+                          Entrar como
+                        </Button>
+                      ) : null}
                       {canEdit(u) ? (
                         <Button variant="ghost" size="sm" onClick={() => openEdit(u)}>
                           <Pencil className="size-4" /> Editar

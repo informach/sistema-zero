@@ -6,6 +6,8 @@ import { ListUsersService } from './application/admin/list-users/list-users.serv
 import { UpdateUserService } from './application/admin/update-user/update-user.service'
 import { EnsureBuyerService } from './application/ensure-buyer/ensure-buyer.service'
 import { GetMeService } from './application/get-me/get-me.service'
+import { CreateImpersonationTokenService } from './application/impersonation/create-impersonation-token.service'
+import { ExchangeImpersonationTokenService } from './application/impersonation/exchange-impersonation-token.service'
 import { LoginService } from './application/login/login.service'
 import { LogoutService } from './application/logout/logout.service'
 import { ChangeMyPasswordService } from './application/me/change-password.service'
@@ -26,6 +28,7 @@ import {
 } from './infrastructure/messaging/gateway-messaging-client'
 import { withSentryMirror } from './infrastructure/observability/sentry'
 import { createDbConnection, type DbConnection } from './infrastructure/persistence/drizzle/db'
+import { DrizzleImpersonationTokenRepository } from './infrastructure/persistence/drizzle/impersonation-token.repository'
 import { DrizzleOtpCodeRepository } from './infrastructure/persistence/drizzle/otp-code.repository'
 import { DrizzlePasswordResetTokenRepository } from './infrastructure/persistence/drizzle/password-reset-token.repository'
 import { DrizzleRefreshTokenRepository } from './infrastructure/persistence/drizzle/refresh-token.repository'
@@ -83,6 +86,7 @@ export async function createApplication(env: Env): Promise<Application> {
   const refreshTokens = new DrizzleRefreshTokenRepository(db)
   const passwordResetTokens = new DrizzlePasswordResetTokenRepository(db)
   const otpCodes = new DrizzleOtpCodeRepository(db)
+  const impersonationTokens = new DrizzleImpersonationTokenRepository(db)
   const hasher = createBunPasswordHasher()
 
   // E-mail via gateway → messaging (HMAC). Sem config completa → no-op (best-effort).
@@ -105,6 +109,7 @@ export async function createApplication(env: Env): Promise<Application> {
 
   const authTokens = new AuthTokenService(tokenIssuer, refreshTokens, {
     refreshTtlDays: env.REFRESH_TOKEN_TTL_DAYS,
+    impersonationRefreshTtlSeconds: env.IMPERSONATION_REFRESH_TTL_SECONDS,
   })
 
   // Hash "isca" p/ equalizar o tempo do login quando o e-mail não existe (anti-enumeração).
@@ -193,6 +198,19 @@ export async function createApplication(env: Env): Promise<Application> {
   )
   const updateUser = new UpdateUserService(users, refreshTokens, logger)
   const batchGetUsers = new BatchGetUsersService(users)
+  // Impersonação (suporte): handoff single-use admin→community + exchange por sessão.
+  const createImpersonationToken = new CreateImpersonationTokenService(
+    users,
+    impersonationTokens,
+    { ttlSeconds: env.IMPERSONATION_TOKEN_TTL_SECONDS },
+    logger,
+  )
+  const exchangeImpersonationToken = new ExchangeImpersonationTokenService(
+    users,
+    impersonationTokens,
+    authTokens,
+    logger,
+  )
 
   // Readiness (`/readyz`, healthcheck do Railway): a réplica só é promovida
   // quando o banco responde (sem banco não há login/refresh — não recebe tráfego).
@@ -230,6 +248,8 @@ export async function createApplication(env: Env): Promise<Application> {
     createUser,
     updateUser,
     batchGetUsers,
+    createImpersonationToken,
+    exchangeImpersonationToken,
   })
 
   // Purga periódica (fora do hot path): refresh tokens, tokens de reset e códigos
@@ -243,13 +263,14 @@ export async function createApplication(env: Env): Promise<Application> {
       `
       if (!row?.['locked']) return // outra réplica está purgando neste ciclo
       const cutoff = new Date(Date.now() - PURGE_GRACE_MS)
-      const [refresh, reset, otp] = await Promise.all([
+      const [refresh, reset, otp, impersonation] = await Promise.all([
         refreshTokens.deleteExpired(cutoff),
         passwordResetTokens.deleteExpired(cutoff),
         otpCodes.deleteExpired(cutoff),
+        impersonationTokens.deleteExpired(cutoff),
       ])
-      if (refresh + reset + otp > 0) {
-        logger.info('tokens.purged', { refresh, reset, otp })
+      if (refresh + reset + otp + impersonation > 0) {
+        logger.info('tokens.purged', { refresh, reset, otp, impersonation })
       }
     })
   }

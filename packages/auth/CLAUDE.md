@@ -151,7 +151,28 @@ src/
    NÃO é editável (vínculo com as compras no payments; troca futura exigirá
    verificação). `POST /auth/me/password` troca a senha exigindo a atual; ambos
    revogam nada/todas as sessões respectivamente (troca de senha → re-login).
-10. **OTP por e-mail (`otp_codes`):** código guardado **só como sha256**, single-use
+10. **Impersonação (06/2026 — admin "entra como" um usuário na COMMUNITY, p/ suporte):**
+    dois passos, origens distintas (admin e community não compartilham cookies).
+    (a) `POST /auth/admin/users/:id/impersonate` (gateway: JWT + roles
+    superadmin/admin + `x-internal-token`): re-checa a MATRIZ no serviço
+    (`superadmin` → qualquer um; `admin` → só customer/staff; a si mesmo → 400;
+    alvo inativo → 409) e emite **token de HANDOFF** single-use (tabela
+    `impersonation_tokens`, sha256, TTL `IMPERSONATION_TOKEN_TTL_SECONDS` 60s,
+    consumo ATÔMICO espelhando o `claimForRotation`), devolvendo
+    `{token, expiresAt, communityUrl}` (`COMMUNITY_URL` — o admin abre
+    `<communityUrl>/impersonar?token=...`). (b) `POST /auth/impersonate/exchange`
+    (pública, rate-limited por IP no gateway; token no CORPO): consome o handoff e
+    emite sessão DO ALVO com claim **`act`** (RFC 8693 — `sub`=alvo,
+    `act.sub/email/name`=ator) e refresh de família MARCADA
+    (`refresh_tokens.impersonator_user_id`, migration `0005`) com TTL CURTO
+    (`IMPERSONATION_REFRESH_TTL_SECONDS`, 2h). **A rotação re-deriva `act` e o TTL
+    curto da família** (sem isso o /refresh re-emitiria do UserAggregate e
+    "esqueceria" a impersonação); ator removido/desativado na rotação ou no
+    exchange → revoga a família/nega. Erros de token são INDISTINGUÍVEIS
+    (`INVALID_IMPERSONATION_TOKEN`→401); `IMPERSONATION_FORBIDDEN`→403,
+    `TARGET_NOT_IMPERSONABLE`→409. Auditoria: `auth.impersonation.requested` /
+    `.exchanged` / `.actor_gone` (ids, sem PII). Purga periódica inclui a tabela.
+11. **OTP por e-mail (`otp_codes`):** código guardado **só como sha256**, single-use
     (`consumed_at`), TTL `OTP_TTL_MINUTES` (10); brute-force travado por `attempts`
     (`OTP_MAX_ATTEMPTS`, 5 — estourou → consome o código). Um código ativo por
     (usuário, finalidade): pedir outro consome os pendentes daquela finalidade.
@@ -167,7 +188,7 @@ src/
     **revoga TODAS as sessões**. É o fluxo do `/esqueci-senha` do community (o
     reset por LINK do item 8 continua p/ o 1º acesso pós-compra).
 
-11. **⚠️ Gotcha do drizzle ≥ 0.44 (vale p/ o monorepo):** erros do driver chegam
+12. **⚠️ Gotcha do drizzle ≥ 0.44 (vale p/ o monorepo):** erros do driver chegam
     ENVELOPADOS em `DrizzleQueryError` — o `PostgresError` original (com
     `code: '23505'` etc.) fica em **`error.cause`**. Checar `code` só no topo
     NUNCA casa (a corrida de cadastro virava 500 em vez de 409 — pego pelo

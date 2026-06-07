@@ -25,6 +25,21 @@ export function requireAdmin(
 }
 
 /**
+ * Equipe interna com acesso IRRESTRITO aos cursos (decisão 06/2026): superadmin/
+ * admin/staff na área do aluno enxergam TODO curso publicado como se tivessem uma
+ * chave-mestra `all_courses` virtual (rascunho continua 404 — mesma régua do aluno).
+ * O header `x-auth-user-role` é confiável pelo mesmo motivo do `x-auth-user-id`:
+ * o gateway o injeta após verificar o JWT (e o `x-internal-token` prova a origem).
+ */
+const PRIVILEGED_ROLES = new Set(['superadmin', 'admin', 'staff'])
+
+/** Requisição vem de equipe interna (superadmin/admin/staff)? Status já é `active` (gateway). */
+export function isPrivilegedActor(headers: Record<string, string | undefined>): boolean {
+  const role = headers['x-auth-user-role']
+  return role !== undefined && PRIVILEGED_ROLES.has(role)
+}
+
+/**
  * Identidade confiável do aluno. O gateway VERIFICA o JWT e injeta `x-auth-user-id`
  * (removendo qualquer um de entrada — anti-spoof), então o serviço só lê o header.
  * Em dev/local sem gateway, passe o header manualmente. Ausente → 401.

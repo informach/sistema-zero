@@ -56,6 +56,11 @@ export const refreshTokens = auth.table(
     revokedAt: timestamp('revoked_at', { withTimezone: true }),
     userAgent: text('user_agent'),
     ip: text('ip'),
+    // Sessão de IMPERSONAÇÃO: id do admin que está navegando como `userId`
+    // (`null` = sessão normal). Vive na FAMÍLIA: cada rotação re-deriva a claim
+    // `act` e o TTL curto a partir daqui — sem isso a rotação "esqueceria" a
+    // impersonação (re-emite do UserAggregate) e esticaria o TTL de volta.
+    impersonatorUserId: uuid('impersonator_user_id'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
@@ -116,9 +121,37 @@ export const otpCodes = auth.table(
   ],
 )
 
+/**
+ * Tokens de HANDOFF de impersonação (admin "entra como" um usuário na community).
+ * Tabela DEDICADA (não reaproveita `password_reset_tokens`): o blast radius fica
+ * isolado — um token de reset jamais vira sessão de impersonação e vice-versa —
+ * e ela carrega o PAR ator→alvo. Guarda só o `tokenHash` (sha256); single-use
+ * (`consumedAt`, consumo ATÔMICO) com TTL curtíssimo (~60s — só atravessa a URL).
+ */
+export const impersonationTokens = auth.table(
+  'impersonation_tokens',
+  {
+    id: uuid('id').primaryKey(),
+    tokenHash: text('token_hash').notNull(),
+    /** Admin/superadmin que pediu a impersonação (vira a claim `act.sub`). */
+    actorId: uuid('actor_id').notNull(),
+    /** Usuário cuja sessão será emitida no exchange. */
+    targetUserId: uuid('target_user_id').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    consumedAt: timestamp('consumed_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex('impersonation_tokens_hash_uq').on(t.tokenHash),
+    // Purga periódica (deleteExpired).
+    index('impersonation_tokens_expires_idx').on(t.expiresAt),
+  ],
+)
+
 export const schema = {
   users,
   refreshTokens,
   passwordResetTokens,
   otpCodes,
+  impersonationTokens,
 }

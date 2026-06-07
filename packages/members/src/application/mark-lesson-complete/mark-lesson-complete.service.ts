@@ -21,11 +21,11 @@ export class MarkLessonCompleteService {
     private readonly clock: () => Date,
   ) {}
 
-  async execute(userId: string, lessonId: string): Promise<CourseProgressView> {
+  async execute(userId: string, lessonId: string, privileged = false): Promise<CourseProgressView> {
     const lesson = await this.courses.findLessonWithContent(lessonId)
     // Aula rascunho não pode ser concluída pelo aluno → 404 (consistente com o GET).
     if (!lesson?.isPublished) throw new LessonNotFoundError()
-    const { course } = await this.checkAccess.requireById(userId, lesson.courseId)
+    const { course } = await this.checkAccess.requireById(userId, lesson.courseId, privileged)
 
     const completedIds = await this.progress.listCompletedLessonIds(userId, course.id)
     if (!completedIds.includes(lessonId)) {

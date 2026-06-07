@@ -592,6 +592,33 @@ const config: GatewayConfigInput = {
       transforms: authInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
+    // "Entrar como" (impersonação p/ suporte): emite o token de HANDOFF single-use.
+    // ESCRITA → superadmin/admin (o auth re-checa a matriz: admin só impersona
+    // customer/staff; superadmin qualquer um; nunca a si mesmo). 4 segmentos —
+    // não colide com `/auth/admin/users/:id` (o matcher exige nº igual de segmentos).
+    {
+      id: 'auth-admin-user-impersonate',
+      methods: ['POST'],
+      pathPattern: '/auth/admin/users/:id/impersonate',
+      service: 'auth',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: authInternalTransforms,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+    },
+    // Exchange do handoff de impersonação (chamado pelo SERVIDOR da community, sem
+    // Bearer — como o /login). A segurança é do próprio token (single-use, TTL 60s,
+    // consumo atômico no auth); aqui só rate limit por IP contra brute-force.
+    {
+      id: 'auth-impersonate-exchange',
+      methods: ['POST'],
+      pathPattern: '/auth/impersonate/exchange',
+      service: 'auth',
+      auth: 'public',
+      upstreamAuth: 'passthrough',
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 20, windowMs: 60_000, by: 'ip' },
+    },
 
     // ── Catálogo (@sistemazero/catalog) ──────────────────────────────────────
     // LEITURA pública (dados de marketing, não sensíveis) — o funil consome via

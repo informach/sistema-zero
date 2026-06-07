@@ -44,11 +44,12 @@ export class SubmitQuizAttemptService {
     lessonId: string,
     blockId: string,
     answers: QuizAnswers,
+    privileged = false,
   ): Promise<QuizAttemptResultView> {
     const lesson = await this.courses.findLessonWithContent(lessonId)
     // Aula rascunho é invisível ao aluno → também não aceita tentativas de quiz.
     if (!lesson?.isPublished) throw new LessonNotFoundError()
-    await this.checkAccess.requireById(userId, lesson.courseId)
+    await this.checkAccess.requireById(userId, lesson.courseId, privileged)
 
     const block = lesson.blocks.find((b) => b.id === blockId)
     if (block?.content.kind !== 'quiz') throw new QuizBlockNotFoundError()

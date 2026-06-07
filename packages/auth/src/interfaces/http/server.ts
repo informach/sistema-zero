@@ -8,6 +8,8 @@ import type { ListUsersService } from '../../application/admin/list-users/list-u
 import type { UpdateUserService } from '../../application/admin/update-user/update-user.service'
 import type { EnsureBuyerService } from '../../application/ensure-buyer/ensure-buyer.service'
 import type { GetMeService } from '../../application/get-me/get-me.service'
+import type { CreateImpersonationTokenService } from '../../application/impersonation/create-impersonation-token.service'
+import type { ExchangeImpersonationTokenService } from '../../application/impersonation/exchange-impersonation-token.service'
 import type { LoginService } from '../../application/login/login.service'
 import type { LogoutService } from '../../application/logout/logout.service'
 import type { ChangeMyPasswordService } from '../../application/me/change-password.service'
@@ -27,6 +29,7 @@ import { markOversizeBody } from './raw-body'
 import { adminRoutes } from './routes/admin.routes'
 import { authRoutes } from './routes/auth.routes'
 import { healthRoutes, type ReadinessProbe } from './routes/health.routes'
+import { impersonationRoutes } from './routes/impersonation.routes'
 import { internalRoutes } from './routes/internal.routes'
 
 export interface HttpDeps {
@@ -54,6 +57,8 @@ export interface HttpDeps {
   createUser: CreateUserService
   updateUser: UpdateUserService
   batchGetUsers: BatchGetUsersService
+  createImpersonationToken: CreateImpersonationTokenService
+  exchangeImpersonationToken: ExchangeImpersonationTokenService
 }
 
 /**
@@ -134,12 +139,21 @@ export function createServer(deps: HttpDeps) {
       }),
     )
     .use(
+      impersonationRoutes({
+        trustProxy: deps.env.TRUST_PROXY,
+        trustedProxyHops: deps.env.TRUSTED_PROXY_HOPS,
+        exchange: deps.exchangeImpersonationToken,
+      }),
+    )
+    .use(
       adminRoutes({
         listUsers: deps.listUsers,
         getUser: deps.getUser,
         createUser: deps.createUser,
         updateUser: deps.updateUser,
         batchGetUsers: deps.batchGetUsers,
+        createImpersonationToken: deps.createImpersonationToken,
+        communityUrl: deps.env.COMMUNITY_URL,
         internalToken: deps.env.AUTH_INTERNAL_TOKEN,
       }),
     )

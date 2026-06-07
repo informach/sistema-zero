@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { changeMyPassword } from '@/server/auth'
-import { clearSessionCookies } from '@/server/session'
+import { clearSessionCookies, getSession } from '@/server/session'
 
 const Body = z.object({
   currentPassword: z.string().min(1).max(200),
@@ -13,6 +13,12 @@ const Body = z.object({
  * os cookies aqui também; o cliente redireciona ao login.
  */
 export async function POST(req: Request) {
+  // Sessão de IMPERSONAÇÃO é SOMENTE-LEITURA: suporte não troca a senha do aluno
+  // (o admin nem conhece a atual — e trocar credenciais alheias seria takeover).
+  const session = await getSession()
+  if (session?.act) {
+    return NextResponse.json({ error: { code: 'IMPERSONATION_READONLY' } }, { status: 403 })
+  }
   const json = await req.json().catch(() => null)
   const parsed = Body.safeParse(json)
   if (!parsed.success) {

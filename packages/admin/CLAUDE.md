@@ -357,6 +357,14 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   oferta/curso + modo **"Todos os cursos (chave-mestra)"** + presets de validade 7/30/90
   dias/vitalício/data, POST `/api/members/entitlements`)
   e **"Matrículas"** (link p/ `/admin/membros/[userId]`). O member-detail usa o MESMO dialog.
+  **"Entrar como" (impersonação p/ suporte, 06/2026):** ação por linha (gating de UX =
+  `canImpersonate` em `lib/impersonation.ts`, puro/testado — superadmin → qualquer ativo;
+  admin → só customer/staff; nunca self/inativo; o AUTH re-checa a matriz no serviço) → BFF
+  `POST /api/admin/users/:id/impersonate` → gateway `POST /auth/admin/users/:id/impersonate` →
+  `{token, expiresAt, communityUrl}` (handoff single-use ~60s) → `window.open` de
+  `<communityUrl>/impersonar?token=...` (`impersonationUrl`) em nova aba — a community troca o
+  token pela sessão impersonada (claim `act`, banner, TTL curto). Adapter `impersonateUser` em
+  `server/users.ts`.
 - Pagamentos (via gateway, JWT+RBAC): `GET /payments/admin/payments` (`?q&status&method&consumerId&from&to&limit&offset`)
   → `Paginated<PaymentView>`; `GET /payments/admin/payments/:id`; `GET /payments/admin/subscriptions`
   (`?q&status&consumerId&limit&offset`) → `Paginated<SubscriptionView>`; `GET /payments/admin/subscriptions/:id`;

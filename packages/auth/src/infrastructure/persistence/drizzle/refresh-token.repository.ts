@@ -29,6 +29,7 @@ export class DrizzleRefreshTokenRepository implements RefreshTokenRepository {
       expiresAt: input.expiresAt,
       userAgent: input.userAgent ?? null,
       ip: input.ip ?? null,
+      impersonatorUserId: input.impersonatorUserId ?? null,
     })
   }
 
@@ -115,5 +116,6 @@ function toRecord(row: RefreshRow): RefreshTokenRecord {
     expiresAt: row.expiresAt,
     rotatedAt: row.rotatedAt,
     revokedAt: row.revokedAt,
+    impersonatorUserId: row.impersonatorUserId,
   }
 }

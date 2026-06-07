@@ -12,6 +12,12 @@ const registry = new RouteRegistry([
   r({ id: 'my-list', methods: ['GET'], pathPattern: '/payments/my' }),
   r({ id: 'my-get', methods: ['GET'], pathPattern: '/payments/my/:id' }),
   r({ id: 'wild', methods: ['GET'], pathPattern: '/files/*' }),
+  r({ id: 'user-get', methods: ['GET'], pathPattern: '/auth/admin/users/:id' }),
+  r({
+    id: 'user-impersonate',
+    methods: ['POST'],
+    pathPattern: '/auth/admin/users/:id/impersonate',
+  }),
 ])
 
 describe('RouteRegistry', () => {
@@ -50,6 +56,17 @@ describe('RouteRegistry', () => {
 
   test('rota inexistente → undefined', () => {
     expect(registry.resolve('GET', '/unknown', 'v1')).toBeUndefined()
+  })
+
+  test('/auth/admin/users/:id/impersonate NÃO colide com /auth/admin/users/:id', () => {
+    // O matcher exige nº igual de segmentos: 4 segmentos (impersonate) nunca caem
+    // na rota de 3 (detalhe do usuário) — e vice-versa.
+    const m = registry.resolve('POST', '/auth/admin/users/u-123/impersonate', 'v1')
+    expect(m?.route.id).toBe('user-impersonate')
+    expect(m?.params.id).toBe('u-123')
+    expect(registry.resolve('GET', '/auth/admin/users/u-123', 'v1')?.route.id).toBe('user-get')
+    // POST no detalhe (sem /impersonate) não existe → undefined.
+    expect(registry.resolve('POST', '/auth/admin/users/u-123', 'v1')).toBeUndefined()
   })
 
   test('%-encoding malformado num param NÃO lança (vira o valor bruto, não 500)', () => {

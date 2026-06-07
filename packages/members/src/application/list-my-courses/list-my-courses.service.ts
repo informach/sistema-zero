@@ -1,4 +1,4 @@
-import type { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
+import { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { EntitlementRepository } from '../../domain/ports/entitlement-repository.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
@@ -21,13 +21,17 @@ export class ListMyCoursesService {
     private readonly clock: () => Date,
   ) {}
 
-  async execute(userId: string): Promise<MyCourseView[]> {
-    const active = await this.entitlements.listActiveByUser(userId, this.clock())
+  async execute(userId: string, privileged = false): Promise<MyCourseView[]> {
+    // Equipe interna (`privileged`) = chave-mestra VIRTUAL: lista todos os
+    // publicados sem consultar matrículas (mesmo comportamento da `all_courses` real).
+    const active = privileged ? [] : await this.entitlements.listActiveByUser(userId, this.clock())
 
     // Matrículas de CURSO com courseRef ("mais forte" por curso se duplicada) +
     // a chave-mestra mais forte (se houver).
     const byCourseRef = new Map<string, EntitlementAggregate>()
-    let master: EntitlementAggregate | null = null
+    let master: EntitlementAggregate | null = privileged
+      ? EntitlementAggregate.virtualAllCourses(userId, this.clock())
+      : null
     for (const e of active) {
       if (e.accessType === 'all_courses') {
         if (!master || isStronger(e, master)) master = e

@@ -16,8 +16,12 @@ export class GetMyCourseService {
     private readonly ratings: CourseRatingRepository,
   ) {}
 
-  async execute(userId: string, courseSlug: string): Promise<CourseDetailView> {
-    const { course, entitlement } = await this.checkAccess.requireBySlug(userId, courseSlug)
+  async execute(userId: string, courseSlug: string, privileged = false): Promise<CourseDetailView> {
+    const { course, entitlement } = await this.checkAccess.requireBySlug(
+      userId,
+      courseSlug,
+      privileged,
+    )
     // Aluno só vê aulas PUBLICADAS — outline e progresso idem.
     const [outline, completedIds, last, lastAccessed, myRating] = await Promise.all([
       this.courses.findOutline(course.id, { publishedOnly: true }),

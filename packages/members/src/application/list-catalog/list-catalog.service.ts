@@ -15,14 +15,15 @@ export class ListCatalogService {
     private readonly clock: () => Date,
   ) {}
 
-  async execute(userId: string): Promise<CatalogCourseView[]> {
+  async execute(userId: string, privileged = false): Promise<CatalogCourseView[]> {
     const [published, active] = await Promise.all([
       this.courses.listPublishedCourses(),
       this.entitlements.listActiveByUser(userId, this.clock()),
     ])
 
     // Chave-mestra (`all_courses`) destrava o catálogo inteiro (atuais e futuros).
-    const hasMaster = active.some((e) => e.accessType === 'all_courses')
+    // Equipe interna (`privileged`) tem o mesmo efeito — chave-mestra virtual.
+    const hasMaster = privileged || active.some((e) => e.accessType === 'all_courses')
     const owned = new Set<string>()
     for (const e of active) {
       if (e.accessType === 'course' && e.courseRef) owned.add(e.courseRef)
