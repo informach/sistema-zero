@@ -86,6 +86,10 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
 
 - **Login:** `POST /api/admin/login` → gateway `/auth/login`; rejeita role ∉ {superadmin,admin,staff}
   (403); grava `sz_admin_access` (JWT) + `sz_admin_refresh` (opaco) em cookies **HttpOnly**.
+  ⚠️ **Transição de sessão (login/logout) navega com `window.location.replace(...)` — NUNCA
+  `router.replace + router.refresh`**: o refresh não espera a navegação commitar (corrida
+  vercel/next.js#54766) e re-renderiza `/login` já com sessão → preso no login até um F5 (bug
+  visto no community); o full load também descarta o router cache da sessão anterior.
 - **Sessão (`src/server/session.ts`):** `getSession()` verifica o access JWT — a chave é escolhida
   pelo `alg` do token (espelha a jwt.strategy do gateway): **HS256** com `JWT_HS256_SECRET`
   (dev/local, MESMO segredo do auth/gateway) e/ou **RS256 via `JWT_JWKS_URL`** (PRODUÇÃO — o auth

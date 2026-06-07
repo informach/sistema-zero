@@ -43,7 +43,11 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
 
 - **Login:** `POST /api/auth/login` → gateway `/auth/login`; **qualquer conta ATIVA entra**
   (inclusive `customer` — ≠ admin, que filtra papel); grava `sz_member_access` (JWT) +
-  `sz_member_refresh` (opaco) em cookies **HttpOnly**.
+  `sz_member_refresh` (opaco) em cookies **HttpOnly**. ⚠️ **Transição de sessão (login/logout/
+  troca de senha) navega com `window.location.replace(...)` — NUNCA `router.replace +
+  router.refresh`**: o refresh não espera a navegação commitar (corrida vercel/next.js#54766) e
+  re-renderizava `/login` já com sessão → `redirect('/')` no meio do refresh → aluno preso no
+  login até um F5; o full load também descarta o router cache com dados RSC da sessão anterior.
 - **Sessão (`src/server/session.ts`):** `getSession()` verifica o access JWT — a chave é escolhida
   pelo `alg` do token (espelha a jwt.strategy do gateway): **HS256** com `JWT_HS256_SECRET`
   (dev/local, MESMO segredo do auth/gateway) e/ou **RS256 via `JWT_JWKS_URL`** (PRODUÇÃO — o auth
