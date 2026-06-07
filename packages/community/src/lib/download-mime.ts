@@ -20,9 +20,12 @@ export interface DownloadMedia {
  * Teto p/ APLICAR a marca d'água: marcar exige materializar o arquivo em
  * memória (pdf-lib/sharp); acima disso serve o original em stream + warn
  * (mesma filosofia do fallback de falha de watermark — melhor entregar do que
- * quebrar o download). Anexos do admin chegam a 100MB.
+ * quebrar o download). Casado com o teto de upload do admin (200MB) — sem isso
+ * um e-book grande perderia a marca d'água por aluno (anti-pirataria). ⚠️ marcar
+ * 200MB carrega tudo em memória (ver `watermark-queue` p/ o gate de concorrência
+ * e o requisito de RAM do serviço).
  */
-export const WATERMARK_MAX_BYTES = 50 * 1024 * 1024 // 50MB
+export const WATERMARK_MAX_BYTES = 200 * 1024 * 1024 // 200MB
 
 const WATERMARKABLE_IMAGE_MIMES = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/gif'])
 

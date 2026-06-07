@@ -33,6 +33,7 @@ import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { useSortableItem } from '@/components/dnd/use-sortable-item'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
+import { slugify } from '@/lib/slug'
 import type { CourseTreeView, LessonView, ModuleView } from '@/lib/types'
 
 type Tree = CourseTreeView
@@ -66,6 +67,9 @@ export function CourseEditorClient({
     estimatedMinutes: '',
     isPublished: false,
   })
+  // Slug da aula = auto do título até o autor editar o slug à mão (dirty) — só na
+  // CRIAÇÃO (igual a produto/oferta/curso); na edição o slug é estável.
+  const [lessonSlugDirty, setLessonSlugDirty] = useState(false)
 
   // Arrastar só após 5px (deixa o clique nos botões do card livre).
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
@@ -182,6 +186,7 @@ export function CourseEditorClient({
     setLessonModuleId(moduleId)
     // Aula nova nasce RASCUNHO — o autor publica quando o conteúdo estiver pronto.
     setLessonForm({ slug: '', title: '', estimatedMinutes: '', isPublished: false })
+    setLessonSlugDirty(false) // slug em branco → autogera do título
     setLessonOpen(true)
   }
   function openEditLesson(l: LessonView) {
@@ -193,6 +198,7 @@ export function CourseEditorClient({
       estimatedMinutes: l.estimatedMinutes === null ? '' : String(l.estimatedMinutes),
       isPublished: l.isPublished,
     })
+    setLessonSlugDirty(true) // edição: slug existente é estável, não regenerar
     setLessonOpen(true)
   }
   async function saveLesson() {
@@ -337,7 +343,10 @@ export function CourseEditorClient({
               <Input
                 id="lslug"
                 value={lessonForm.slug}
-                onChange={(e) => setLessonForm((f) => ({ ...f, slug: e.target.value }))}
+                onChange={(e) => {
+                  setLessonSlugDirty(true)
+                  setLessonForm((f) => ({ ...f, slug: e.target.value }))
+                }}
               />
             </Field>
             <Field label="Duração (min)" htmlFor="lmin" hint="Opcional.">
@@ -354,7 +363,15 @@ export function CourseEditorClient({
             <Input
               id="ltitle"
               value={lessonForm.title}
-              onChange={(e) => setLessonForm((f) => ({ ...f, title: e.target.value }))}
+              onChange={(e) => {
+                const title = e.target.value
+                setLessonForm((f) => ({
+                  ...f,
+                  title,
+                  // Autogera o slug do título até o autor editá-lo à mão (dirty).
+                  ...(!editingLesson && !lessonSlugDirty ? { slug: slugify(title) } : {}),
+                }))
+              }}
             />
           </Field>
           <div className="flex items-center justify-between rounded-lg border border-border px-3 py-2.5">

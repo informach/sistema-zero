@@ -46,7 +46,7 @@ e **favicon** completo: `src/app/favicon.ico` + PNGs 16/32/192/512 + apple-touch
 > `AudioUploader` (bucket público + duração auto), interativo = **só HTML** (CodeMirror 6 —
 > `components/editor/html-code-editor{,.impl}.tsx`, `@uiw/react-codemirror`+`@codemirror/lang-html`,
 > dynamic ssr:false, tema via next-themes; renderiza iframe sandbox 16:9 no aluno) e **ebook** =
-> PDF via `FileUploader` (bucket privado, `r2priv:`, ≤100MB) + título → livro 3D no community;
+> PDF via `FileUploader` (bucket privado, `r2priv:`, ≤200MB) + título → livro 3D no community;
 > o upload do PDF do e-book também cria AUTOMATICAMENTE o anexo da aula (material p/ download,
 > `addEbookAttachment` com dedupe por URL; trocar o PDF deixa o material antigo — excluir manual); bloco
 > **rich_text usa TipTap** (`components/editor/rich-text-editor{,.impl}.tsx` —
@@ -158,7 +158,7 @@ prod (fica no log) e **espelha o erro p/ o Sentry** (`captureServerException`, c
   PÚBLICO de propósito: o `<audio>` do aluno toca a URL direto (bucket privado quebraria a
   reprodução — bug da v2, corrigido na autoria v3). A **duração é detectada no client**
   (`AudioUploader`: object URL + `loadedmetadata`) e salva no bloco — sem campo manual.
-- `POST /api/media/files` (multipart ≤100MB, allowlist pdf/zip/office/txt/csv/imagem/áudio) →
+- `POST /api/media/files` (multipart ≤200MB, allowlist pdf/zip/office/txt/csv/imagem/áudio) →
   bucket R2 **PRIVADO** (`R2_PRIVATE_BUCKET`, sem URL pública) `admin/attachments/*` →
   `{url,fileType,sizeBytes}` onde **`url` = referência `r2priv:<key>`** (NÃO navegável). O aluno
   baixa pela rota autenticada do community, que resolve a key, aplica a **marca d'água com o

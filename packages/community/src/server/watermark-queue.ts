@@ -2,12 +2,13 @@ import 'server-only'
 
 /**
  * Gate de concorrência da marca d'água: marcar exige MATERIALIZAR o arquivo em
- * memória (≤50MB) e o pdf-lib/sharp criam cópias internas — sem teto, uma turma
- * baixando o mesmo PDF de 40MB ao mesmo tempo estoura a memória do host (OOM).
- * No máximo `maxConcurrent` marcações rodam de cada vez; as demais ESPERAM em
- * fila (o download já leva segundos — esperar é melhor que 503). A memória fica
- * limitada a ~maxConcurrent × teto × fator das libs; quem espera segura só um
- * closure (e o stream do R2 ainda não consumido), não o buffer.
+ * memória (≤200MB — casado com o teto de upload do admin) e o pdf-lib/sharp
+ * criam cópias internas — sem teto, uma turma baixando o mesmo PDF grande ao
+ * mesmo tempo estoura a memória do host (OOM). No máximo `maxConcurrent`
+ * marcações rodam de cada vez; as demais ESPERAM em fila (o download já leva
+ * segundos — esperar é melhor que 503). A memória fica limitada a
+ * ~maxConcurrent × teto × fator das libs; quem espera segura só um closure
+ * (e o stream do R2 ainda não consumido), não o buffer.
  *
  * O estado vive em `globalThis` (Symbol.for) — mesma lição do single-flight do
  * refresh: o Turbopack pode duplicar o módulo por bundle (proxy/RSC/handlers);
@@ -40,8 +41,13 @@ export function createGate(maxConcurrent: number): ConcurrencyGate {
   }
 }
 
-/** 2 × 50MB × fator interno das libs ≈ algumas centenas de MB no pior caso. */
-const MAX_CONCURRENT_WATERMARKS = 2
+/**
+ * 1 × 200MB × fator interno das libs (pdf-lib reescreve o doc ~2-3×) ≈ ~600MB de
+ * pico. Era 2 quando o teto era 50MB (~300MB); ao subir o teto p/ 200MB,
+ * baixamos p/ 1 para o pico não dobrar de novo (OOM = crash, não erro tratável).
+ * Se a RAM do serviço community for elevada (≥2GB) no Railway, dá p/ voltar a 2.
+ */
+const MAX_CONCURRENT_WATERMARKS = 1
 
 const GATE_KEY = Symbol.for('@sistemazero/community:watermark-gate')
 
