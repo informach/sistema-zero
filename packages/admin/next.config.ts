@@ -16,6 +16,9 @@ const isDev = process.env.NODE_ENV !== 'production'
  *  - `connect-src` libera os hosts de UPLOAD TUS do Vimeo (o vídeo sobe DIRETO do
  *    browser p/ o `uploadLink` — `*.cloud.vimeo.com`/`*.vimeo.com`). ⚠️ Se o Vimeo
  *    trocar de host de upload, re-extraia daí (sintoma: upload some com erro de CSP).
+ *  - `connect-src` também libera `*.r2.cloudflarestorage.com`: anexo/e-book (PDF até
+ *    200MB) sobe DIRETO do browser p/ o R2 via URL PUT pré-assinada — sem isso o teto
+ *    de 100MB do Cloudflare Free (que fica na frente do admin) cortaria o upload.
  *  - `img-src https:` p/ as capas (R2 público + URL externa colada na autoria).
  *  - `frame-src player.vimeo.com` p/ o preview de vídeo no editor.
  */
@@ -30,7 +33,7 @@ const csp = [
   "font-src 'self' data:",
   "style-src 'self' 'unsafe-inline'",
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''}`,
-  "connect-src 'self' https://*.vimeo.com https://*.cloud.vimeo.com",
+  "connect-src 'self' https://*.vimeo.com https://*.cloud.vimeo.com https://*.r2.cloudflarestorage.com",
   "worker-src 'self' blob:",
   ...(isDev ? [] : ['upgrade-insecure-requests']),
 ].join('; ')

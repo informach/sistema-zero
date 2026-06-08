@@ -3,7 +3,7 @@
 import { Loader2, Upload } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { type ApiError, apiUpload } from '@/lib/api'
+import { type ApiError, apiSend } from '@/lib/api'
 
 const MAX_FILE_BYTES = 200 * 1024 * 1024
 
@@ -14,9 +14,47 @@ export interface UploadedFile {
   filename: string
 }
 
+interface PresignTarget {
+  uploadUrl: string
+  url: string
+  contentType: string
+}
+
 /**
- * Uploader de arquivo genérico (anexos de aula / áudio): envia ao R2 e devolve
- * URL + tipo + tamanho via `onUploaded` (o form continua aceitando URL manual).
+ * PUT direto no R2 com progresso real. Usa `XMLHttpRequest` (e não `fetch`) só
+ * porque o browser só expõe progresso de UPLOAD pelo `xhr.upload.onprogress` —
+ * essencial p/ um PDF de 200MB (sem isso o usuário vê só um spinner "infinito").
+ * NÃO manda cookies (cross-origin pro R2; a autorização é a assinatura da URL).
+ */
+function putToR2(
+  url: string,
+  file: File,
+  contentType: string,
+  onProgress: (pct: number) => void,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+    xhr.open('PUT', url)
+    // Tem que casar EXATAMENTE com o content-type assinado, senão o R2 recusa.
+    xhr.setRequestHeader('content-type', contentType)
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100))
+    }
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) resolve()
+      else reject(new Error(`Falha ao enviar para o armazenamento (HTTP ${xhr.status}).`))
+    }
+    xhr.onerror = () => reject(new Error('Falha de rede ao enviar o arquivo.'))
+    xhr.onabort = () => reject(new Error('Envio cancelado.'))
+    xhr.send(file)
+  })
+}
+
+/**
+ * Uploader de arquivo genérico (anexos de aula / e-book PDF, até 200MB): pede uma
+ * URL PUT pré-assinada ao BFF e sobe o arquivo DIRETO no bucket R2 privado, sem
+ * passar pelo admin nem pela borda do Cloudflare (teto de 100MB no Free). Devolve
+ * `r2priv:<key>` + tipo + tamanho via `onUploaded`.
  */
 export function FileUploader({
   onUploaded,
@@ -24,12 +62,13 @@ export function FileUploader({
   label = 'Clique para enviar um arquivo (até 200 MB)',
 }: {
   onUploaded: (file: UploadedFile) => void
-  /** accept do input (ex.: 'audio/*'); default = allowlist do servidor. */
+  /** accept do input (ex.: 'application/pdf,.pdf'); default = allowlist do servidor. */
   accept?: string
   label?: string
 }) {
   const fileRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
+  const [progress, setProgress] = useState<number | null>(null)
 
   async function upload(file: File) {
     if (file.size > MAX_FILE_BYTES) {
@@ -37,19 +76,26 @@ export function FileUploader({
       return
     }
     setUploading(true)
+    setProgress(0)
     try {
-      const form = new FormData()
-      form.set('file', file)
-      const stored = await apiUpload<{ url: string; fileType: string; sizeBytes: number }>(
-        '/api/media/files',
-        form,
-      )
-      onUploaded({ ...stored, filename: file.name })
+      const target = await apiSend<PresignTarget>('/api/media/files/presign', 'POST', {
+        filename: file.name,
+        contentType: file.type,
+        sizeBytes: file.size,
+      })
+      await putToR2(target.uploadUrl, file, target.contentType, setProgress)
+      onUploaded({
+        url: target.url,
+        fileType: target.contentType,
+        sizeBytes: file.size,
+        filename: file.name,
+      })
       toast.success('Arquivo enviado.')
     } catch (err) {
       toast.error((err as ApiError).message ?? 'Falha no upload do arquivo.')
     } finally {
       setUploading(false)
+      setProgress(null)
     }
   }
 
@@ -74,7 +120,8 @@ export function FileUploader({
       >
         {uploading ? (
           <>
-            <Loader2 className="size-4 animate-spin" /> Enviando…
+            <Loader2 className="size-4 animate-spin" />{' '}
+            {progress !== null ? `Enviando… ${progress}%` : 'Enviando…'}
           </>
         ) : (
           <>
