@@ -1,5 +1,6 @@
 import 'server-only'
 import { PutObjectCommand, type PutObjectCommandInput, S3Client } from '@aws-sdk/client-s3'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { getEnv } from '@/lib/env'
 
 const DEFAULT_CACHE_CONTROL = 'public, max-age=31536000, immutable'
@@ -152,6 +153,42 @@ export async function r2PutObjectPrivate(input: R2PutObjectPrivateInput): Promis
     throw new Error('Falha ao enviar o arquivo para o armazenamento.', { cause: error })
   }
   return { key }
+}
+
+export interface R2PresignPrivatePutInput {
+  key: string
+  contentType: string
+  /**
+   * Validade do link (segundos). Default 1h — um PDF de 200MB em uplink lento
+   * (BR) leva dezenas de minutos; janela curta demais faria o PUT falhar no meio.
+   */
+  expiresInSeconds?: number
+}
+
+/**
+ * Gera uma URL PUT pré-assinada p/ o bucket PRIVADO: o browser sobe o arquivo
+ * DIRETO no R2, sem passar pelo admin nem pela borda do Cloudflare (que no plano
+ * Free corta o corpo em 100MB) — mesmo modelo do upload direto de vídeo (Vimeo
+ * TUS). A `key` é SEMPRE gerada no servidor (o cliente não escolhe onde grava) e
+ * o `content-type` entra na assinatura (`signableHeaders`): o PUT do browser
+ * PRECISA mandar exatamente o mesmo valor, senão o R2 recusa. O objeto continua
+ * sem URL pública — o download é servido pelo community (com marca d'água).
+ */
+export async function r2PresignPrivatePut(
+  input: R2PresignPrivatePutInput,
+): Promise<{ key: string; uploadUrl: string }> {
+  const cfg = requirePrivateR2Config()
+  const key = normalizeKey(input.key)
+  const command = new PutObjectCommand({
+    Bucket: cfg.bucket,
+    Key: key,
+    ContentType: input.contentType,
+  })
+  const uploadUrl = await getSignedUrl(getClient(cfg), command, {
+    expiresIn: input.expiresInSeconds ?? 3600,
+    signableHeaders: new Set(['content-type']),
+  })
+  return { key, uploadUrl }
 }
 
 export function r2PublicUrl(key: string): string {

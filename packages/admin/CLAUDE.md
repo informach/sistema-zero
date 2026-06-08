@@ -158,13 +158,26 @@ prod (fica no log) e **espelha o erro p/ o Sentry** (`captureServerException`, c
   PÚBLICO de propósito: o `<audio>` do aluno toca a URL direto (bucket privado quebraria a
   reprodução — bug da v2, corrigido na autoria v3). A **duração é detectada no client**
   (`AudioUploader`: object URL + `loadedmetadata`) e salva no bloco — sem campo manual.
-- `POST /api/media/files` (multipart ≤200MB, allowlist pdf/zip/office/txt/csv/imagem/áudio) →
-  bucket R2 **PRIVADO** (`R2_PRIVATE_BUCKET`, sem URL pública) `admin/attachments/*` →
-  `{url,fileType,sizeBytes}` onde **`url` = referência `r2priv:<key>`** (NÃO navegável). O aluno
-  baixa pela rota autenticada do community, que resolve a key, aplica a **marca d'água com o
-  e-mail do aluno** (PDF: rodapé em todas as páginas; imagem: selo no canto) e seta o
-  Content-Disposition. URL http(s) colada manualmente no dialog de anexo segue suportada
-  (o community faz redirect — sem marca).
+- `POST /api/media/files/presign` (JSON `{filename,contentType,sizeBytes}`, allowlist
+  pdf/zip/office/txt/csv/imagem/áudio ≤200MB) → valida sessão/MIME/tamanho, gera a key
+  server-side e devolve **URL PUT pré-assinada** → `{uploadUrl,url,contentType}`. O
+  `FileUploader` então sobe o arquivo **DIRETO no bucket R2 privado** (XHR PUT com progresso),
+  exatamente como o vídeo sobe direto pro Vimeo. **`url` = `r2priv:<key>`** (NÃO navegável).
+  ⚠️ **Por que direto (e não multipart pelo admin):** `admin.sistemazero.com.br` fica atrás do
+  **Cloudflare (plano Free → teto RÍGIDO de 100MB no corpo da requisição)** — um PDF de e-book
+  >100MB é cortado pela borda do Cloudflare ANTES de chegar no admin (sintoma: "enviando…" pra
+  sempre, sem log no Railway/Sentry pq nem chega na origem). O upload direto pula o Cloudflare E o
+  buffer de memória do admin E o timeout de 300s da borda do Railway. Exige **CORS no bucket
+  privado** (regra `admin-direct-upload`: PUT/GET/HEAD de `https://admin.sistemazero.com.br` +
+  `http://localhost:3005`, header `content-type`) — setado via API Cloudflare R2 nos dois buckets
+  privados (dev+prod) em 08/06/2026; e `connect-src https://*.r2.cloudflarestorage.com` na CSP.
+- `POST /api/media/files` (multipart ≤200MB, mesma allowlist) → bucket R2 **PRIVADO**
+  (`R2_PRIVATE_BUCKET`) `admin/attachments/*` → `{url,fileType,sizeBytes}` com `url = r2priv:<key>`.
+  Rota legada/fallback (buffeia o corpo no admin → só serve ≤100MB atrás do Cloudflare Free); o
+  `FileUploader` NÃO a usa mais (usa o presign acima). O aluno baixa pela rota autenticada do
+  community, que resolve a key, aplica a **marca d'água com o e-mail do aluno** (PDF: rodapé em
+  todas as páginas; imagem: selo no canto) e seta o Content-Disposition. URL http(s) colada
+  manualmente no dialog de anexo segue suportada (o community faz redirect — sem marca).
 - `POST /api/media/videos/ticket` (`{filename,sizeBytes,mimeType}` ≤5GB mp4/mov/webm) → Vimeo
   `POST /me/videos` approach tus + privacy `view=disable, embed=whitelist` (+ domínios da env) →
   `{vimeoVideoId,uploadLink,embedUrl}`. O vídeo sobe DIRETO do browser (tus-js-client, chunk 128MB).
@@ -194,8 +207,10 @@ PRIVADO `R2_PRIVATE_BUCKET` (dev = `testes-privado` · prod = `comunidade-sistem
 SEM acesso público — mesmas credenciais; criados via wrangler em 04/06/2026, o MESMO token S3
 acessa os quatro). `scripts/verify-private-bucket.ts` (`bun scripts/verify-private-bucket.ts`)
 valida put/get/delete no bucket privado com as envs do `.env` — útil ao configurar um host novo.
-⚠️ Pendente em PROD: `R2_PRIVATE_BUCKET=comunidade-sistema-zero-privado` nas envs dos hosts do
-admin E do community.
+`R2_PRIVATE_BUCKET=comunidade-sistema-zero-privado` JÁ está setado no host de PROD do admin
+(verificado 08/06/2026). ⚠️ O upload de anexo/e-book agora é DIRETO do browser pro R2 (ver a rota
+`/api/media/files/presign` acima) → os buckets privados precisam da regra **CORS** `admin-direct-upload`
+(setada nos dois em 08/06/2026); host novo de admin com origem diferente precisa entrar nessa allowlist.
 
 ## Invariantes (NÃO quebrar)
 

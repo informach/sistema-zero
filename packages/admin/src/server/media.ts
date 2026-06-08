@@ -9,7 +9,7 @@ import type { SessionUser } from '@/lib/types'
 import { pickTranscriptTrack } from '@/lib/vimeo-helpers'
 import { tryRefresh } from './gateway'
 import { type ImagePreset, optimizeImage } from './image-optimizer'
-import { MediaNotConfiguredError, r2PutObject, r2PutObjectPrivate } from './r2'
+import { MediaNotConfiguredError, r2PresignPrivatePut, r2PutObject, r2PutObjectPrivate } from './r2'
 import { captureServerException } from './sentry'
 import { type AccessVerdict, getAccessToken, getRefreshToken, verifyAccessToken } from './session'
 import {
@@ -218,6 +218,38 @@ export async function storeGenericFile(file: File): Promise<StoredFile> {
     fileType: file.type || 'application/octet-stream',
     sizeBytes: body.byteLength,
   }
+}
+
+// ── Anexos/e-book: upload DIRETO pro R2 privado (presigned) ─────────────────
+
+export interface PrivateUploadTarget {
+  /** URL PUT pré-assinada — o browser sobe o arquivo DIRETO no R2 (sem o admin). */
+  uploadUrl: string
+  /** Referência `r2priv:<key>` que o cliente devolve no `onUploaded` após o PUT. */
+  url: string
+  /** Content-Type assinado: o PUT do browser precisa mandar exatamente este valor. */
+  contentType: string
+}
+
+export interface CreatePrivateUploadInput {
+  filename: string
+  contentType: string
+}
+
+/**
+ * Prepara um upload DIRETO de anexo/e-book pro bucket R2 PRIVADO: gera a key
+ * (server-side — o cliente não escolhe onde grava) e devolve a URL PUT
+ * pré-assinada. Os bytes NUNCA passam pelo admin nem pela borda do Cloudflare
+ * (teto de 100MB no Free), então um PDF de 200MB sobe sem estrangular a memória
+ * do host nem bater no timeout de 300s da borda. A validação de MIME/tamanho é
+ * feita na rota (envelope 4xx) antes de chamar aqui.
+ */
+export async function createPrivateUploadTarget(
+  input: CreatePrivateUploadInput,
+): Promise<PrivateUploadTarget> {
+  const key = `admin/attachments/${randomUUID()}.${safeExtension(input.filename)}`
+  const { uploadUrl } = await r2PresignPrivatePut({ key, contentType: input.contentType })
+  return { uploadUrl, url: `r2priv:${key}`, contentType: input.contentType }
 }
 
 // ── Áudio de aula (R2 PÚBLICO) ──────────────────────────────────────────────
