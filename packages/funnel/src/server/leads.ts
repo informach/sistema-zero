@@ -14,40 +14,42 @@ export interface LeadDeps {
 /** Mapeia a chave do produto (snake_case) → propriedade da coluna Drizzle (camelCase). */
 const KEY_TO_COLUMN: Record<LeadKey, keyof LeadUpdate> = {
   segmento: 'segmento',
-  gasto_terceiros: 'gastoTerceiros',
-  forma_de_criar: 'formaDeCriar',
+  tipo_criar: 'tipoCriar',
+  relacao_ia: 'relacaoIa',
   ja_quebrou: 'jaQuebrou',
-  nivel_refem: 'nivelRefem',
+  trava_principal: 'travaPrincipal',
+  custo_principal: 'custoPrincipal',
   horas_retrabalho: 'horasRetrabalho',
   valor_hora: 'valorHora',
   custo_mensal: 'custoMensal',
-  peso_principal: 'pesoPrincipal',
-  visualizacao: 'visualizacao',
-  o_que_falta: 'oQueFalta',
   mudanca_desejada: 'mudancaDesejada',
+  proximo_passo: 'proximoPasso',
+  sintese: 'sintese',
 }
 
-const CHOICE = z.enum(['A', 'B', 'C', 'D'])
+const CHOICE_ABCD = z.enum(['A', 'B', 'C', 'D'])
+const CHOICE_ABCDE = z.enum(['A', 'B', 'C', 'D', 'E'])
 
 /**
  * Validação do `value` por chave do quiz. Escolhas viram enums fechados (antes
- * qualquer string até 2000 chars era aceita). Numéricos ganham limite superior:
- * os centavos cabem em `integer` (int4) e o produto `horas × valor × 4` de
- * `calcCustoMensalCents` (168 × 2.000.000 × 4 ≈ 1,3e9) não estoura int4.
- * (Se um dia precisar de valores maiores, migrar as colunas de centavos p/ bigint.)
+ * qualquer string até 2000 chars era aceita) — P2 e P6 têm 5 opções (A–E), as
+ * demais 4 (A–D). Numéricos ganham limite superior: os centavos cabem em
+ * `integer` (int4) e o produto `horas × valor × 4` de `calcCustoMensalCents`
+ * (168 × 2.000.000 × 4 ≈ 1,3e9) não estoura int4. (Se precisar de valores
+ * maiores, migrar as colunas de centavos p/ bigint.)
  */
 const VALUE_SCHEMA: Record<LeadKey, z.ZodTypeAny> = {
-  segmento: CHOICE,
-  forma_de_criar: CHOICE,
-  peso_principal: CHOICE,
-  visualizacao: CHOICE,
-  o_que_falta: CHOICE,
-  mudanca_desejada: CHOICE,
-  ja_quebrou: z.enum(['sim', 'nao']),
-  nivel_refem: z.coerce.number().int().min(1).max(10),
+  segmento: CHOICE_ABCD,
+  tipo_criar: CHOICE_ABCDE,
+  relacao_ia: CHOICE_ABCD,
+  ja_quebrou: CHOICE_ABCD,
+  trava_principal: CHOICE_ABCD,
+  custo_principal: CHOICE_ABCDE,
+  mudanca_desejada: CHOICE_ABCD,
+  proximo_passo: CHOICE_ABCD,
+  sintese: CHOICE_ABCD,
   horas_retrabalho: z.coerce.number().int().min(0).max(168),
   valor_hora: z.coerce.number().int().min(0).max(2_000_000),
-  gasto_terceiros: z.coerce.number().int().min(0).max(2_000_000_000),
   custo_mensal: z.coerce.number().int().min(0).max(2_000_000_000),
 }
 
@@ -71,6 +73,8 @@ const CLIENT_EVENTS = [
   'respondeu_pergunta_10',
   'viu_pagina_vendas',
   'abriu_checkout',
+  'enviou_precheckout',
+  'redirecionou_checkout',
 ] as const
 
 const PatchBody = z.object({
@@ -80,39 +84,54 @@ const PatchBody = z.object({
   eventName: z.enum(CLIENT_EVENTS).optional(),
 })
 
+/**
+ * Metadados opcionais do evento — shape FECHADO e pequeno (sem objeto arbitrário
+ * vindo do browser). Hoje só `perfil_resultado` (no `viu_pagina_vendas`).
+ */
+const EventMetadata = z.object({ perfil_resultado: z.string().max(32) }).partial()
+
 const EventBody = z.object({
   eventName: z.enum(CLIENT_EVENTS),
   step: z.string().max(64).optional(),
+  metadata: EventMetadata.optional(),
 })
 
 /** Respostas do quiz no formato do produto (snake_case) — usado pelo resume do quiz. */
 export function leadAnswers(lead: Lead) {
   return {
     segmento: lead.segmento,
-    gasto_terceiros: lead.gastoTerceiros,
-    forma_de_criar: lead.formaDeCriar,
+    tipo_criar: lead.tipoCriar,
+    relacao_ia: lead.relacaoIa,
     ja_quebrou: lead.jaQuebrou,
-    nivel_refem: lead.nivelRefem,
+    trava_principal: lead.travaPrincipal,
+    custo_principal: lead.custoPrincipal,
     horas_retrabalho: lead.horasRetrabalho,
     valor_hora: lead.valorHora,
     custo_mensal: lead.custoMensal,
-    peso_principal: lead.pesoPrincipal,
-    visualizacao: lead.visualizacao,
-    o_que_falta: lead.oQueFalta,
     mudanca_desejada: lead.mudancaDesejada,
+    proximo_passo: lead.proximoPasso,
+    sintese: lead.sintese,
   }
 }
 
-/** POST /api/leads — inicia o lead (idempotente se o cookie já aponta p/ um lead). */
+/**
+ * POST /api/leads — inicia o lead (idempotente se o cookie já aponta p/ um lead).
+ * Devolve também as respostas atuais → o quiz resolve em UMA ida ao servidor (sem
+ * GET + POST), mostrando a pergunta certa mais rápido (retoma de onde parou).
+ */
 export async function createLead(request: Request, deps: LeadDeps): Promise<Response> {
   const existing = getLeadId(request)
   if (existing) {
     const lead = await deps.repo.getLead(existing)
-    if (lead) return json({ id: lead.id }, 200)
+    if (lead) {
+      return json({ id: lead.id, answers: leadAnswers(lead), lastStep: lead.lastStep }, 200)
+    }
   }
   const { id } = await deps.repo.createLead()
   await deps.repo.insertEvent(id, 'entrou_landing', 'landing')
-  return json({ id }, 201, { 'set-cookie': leadCookie(id, deps.secureCookie) })
+  return json({ id, answers: {}, lastStep: 'entrou_landing' }, 201, {
+    'set-cookie': leadCookie(id, deps.secureCookie),
+  })
 }
 
 /** GET /api/leads — estado do lead do cookie (resume do quiz). */
@@ -172,7 +191,12 @@ export async function recordEvent(request: Request, deps: LeadDeps): Promise<Res
   if (!parsed.success) return jsonError('Payload inválido.', 400, 'BAD_REQUEST')
   const lead = await deps.repo.getLead(id)
   if (!lead) return jsonError('Lead não encontrado.', 404, 'NOT_FOUND')
-  await deps.repo.insertEvent(id, parsed.data.eventName, parsed.data.step ?? null)
+  await deps.repo.insertEvent(
+    id,
+    parsed.data.eventName,
+    parsed.data.step ?? null,
+    parsed.data.metadata ?? null,
+  )
   return json({ ok: true }, 201)
 }
 

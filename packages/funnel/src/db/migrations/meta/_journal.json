@@ -57,6 +57,20 @@
       "when": 1780740184050,
       "tag": "0007_panoramic_lethal_legion",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1780996697232,
+      "tag": "0008_needy_ultron",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1780996739688,
+      "tag": "0009_careful_omega_sentinel",
+      "breakpoints": true
     }
   ]
 }

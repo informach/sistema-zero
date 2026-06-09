@@ -15,24 +15,27 @@ import {
 import { type ReactNode, useEffect, useState } from 'react'
 import { apiGet } from '../../lib/api-fetch'
 import { formatBRLFromCents } from '../../lib/money'
+import { isPerfil, PERFIL_LABELS } from '../../lib/perfil'
 
 interface LeadRow {
   id: string
   nome: string | null
   email: string | null
   telefone: string | null
+  // 12 chaves do quiz + perfil do diagnóstico (P1..P10; P7 é a calculadora).
   segmento: string | null
-  gastoTerceiros: number | null
-  formaDeCriar: string | null
+  tipoCriar: string | null
+  relacaoIa: string | null
   jaQuebrou: string | null
-  nivelRefem: number | null
+  travaPrincipal: string | null
+  custoPrincipal: string | null
   horasRetrabalho: number | null
   valorHora: number | null
   custoMensal: number | null
-  pesoPrincipal: string | null
-  visualizacao: string | null
-  oQueFalta: string | null
   mudancaDesejada: string | null
+  proximoPasso: string | null
+  sintese: string | null
+  perfilResultado: string | null
   lastStep: string
   createdAt: string
   // Contato + compra (já vêm no /api/admin/leads; antes não eram exibidos).
@@ -57,7 +60,7 @@ interface LeadsResponse {
 // muitos leads). Busca e ordenação também vão ao servidor (valem sobre o total).
 const PAGE_SIZE = 25
 
-const MONEY_COLS = new Set<keyof LeadRow>(['gastoTerceiros', 'valorHora', 'custoMensal'])
+const MONEY_COLS = new Set<keyof LeadRow>(['valorHora', 'custoMensal'])
 const DATETIME_COLS = new Set<keyof LeadRow>(['createdAt', 'paidAt', 'buyerRegisteredAt'])
 
 const money = (c: number | null) => (c == null ? '—' : formatBRLFromCents(c))
@@ -104,7 +107,7 @@ const fmtDateTime = (iso: string) => {
     : d.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
 }
 
-// Agrupamento dos 16 campos do quiz p/ o Dialog de detalhe.
+// Agrupamento dos campos do lead p/ o Dialog de detalhe.
 const DETAIL_GROUPS: Array<{
   title: string
   fields: Array<{ key: keyof LeadRow; label: string; wide?: boolean }>
@@ -130,23 +133,19 @@ const DETAIL_GROUPS: Array<{
   {
     title: 'Diagnóstico',
     fields: [
-      { key: 'segmento', label: 'Segmento' },
-      { key: 'gastoTerceiros', label: 'Gasto com terceiros' },
-      { key: 'formaDeCriar', label: 'Como cria' },
-      { key: 'jaQuebrou', label: 'Já quebrou' },
-      { key: 'nivelRefem', label: 'Nível refém' },
-      { key: 'horasRetrabalho', label: 'Horas/semana' },
-      { key: 'valorHora', label: 'Valor hora' },
+      { key: 'perfilResultado', label: 'Perfil', wide: true },
+      { key: 'segmento', label: 'Segmento (P1)' },
+      { key: 'tipoCriar', label: 'O que quer criar (P2)' },
+      { key: 'relacaoIa', label: 'Relação com IA (P3)' },
+      { key: 'jaQuebrou', label: 'Já quebrou (P4)' },
+      { key: 'travaPrincipal', label: 'O que mais trava (P5)' },
+      { key: 'custoPrincipal', label: 'O que custou (P6)' },
+      { key: 'horasRetrabalho', label: 'Horas/semana (P7)' },
+      { key: 'valorHora', label: 'Valor hora (P7)' },
       { key: 'custoMensal', label: 'Custo mensal' },
-      { key: 'pesoPrincipal', label: 'Peso principal' },
-      { key: 'visualizacao', label: 'Visualização' },
-    ],
-  },
-  {
-    title: 'Respostas abertas',
-    fields: [
-      { key: 'oQueFalta', label: 'O que falta', wide: true },
-      { key: 'mudancaDesejada', label: 'Mudança desejada', wide: true },
+      { key: 'mudancaDesejada', label: 'O que muda (P8)' },
+      { key: 'proximoPasso', label: 'O que precisa (P9)' },
+      { key: 'sintese', label: 'Síntese (P10)' },
     ],
   },
   {
@@ -167,8 +166,18 @@ function SegmentoBadge({ value }: { value: string | null }) {
   )
 }
 
+function PerfilBadge({ value }: { value: string | null }) {
+  if (!value) return <span className="text-muted-foreground">—</span>
+  return (
+    <Badge variant="outline" className="text-lime">
+      {isPerfil(value) ? PERFIL_LABELS[value] : value}
+    </Badge>
+  )
+}
+
 function fieldValue(lead: LeadRow, key: keyof LeadRow): ReactNode {
   const raw = lead[key]
+  if (key === 'perfilResultado') return <PerfilBadge value={raw as string | null} />
   if (key === 'segmento') return <SegmentoBadge value={raw as string | null} />
   if (key === 'document') return raw ? formatCpf(String(raw)) : '—'
   if (key === 'buyerIsNew') {
@@ -277,7 +286,7 @@ export default function RespostasTable() {
                   <TableHead>Nome</TableHead>
                   <TableHead>E-mail</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Segmento</TableHead>
+                  <TableHead>Perfil</TableHead>
                   <TableHead className="text-right">Custo mensal</TableHead>
                   <TableHead className="text-right">Data</TableHead>
                 </TableRow>
@@ -307,7 +316,7 @@ export default function RespostasTable() {
                       <StatusBadge lead={lead} />
                     </TableCell>
                     <TableCell>
-                      <SegmentoBadge value={lead.segmento} />
+                      <PerfilBadge value={lead.perfilResultado} />
                     </TableCell>
                     <TableCell className="text-right font-mono tabular-nums text-foreground">
                       {money(lead.custoMensal)}
@@ -334,7 +343,7 @@ export default function RespostasTable() {
                     <p className="truncate font-medium text-foreground">{txt(lead.nome)}</p>
                     <p className="truncate text-sm text-muted-foreground">{txt(lead.email)}</p>
                   </div>
-                  <SegmentoBadge value={lead.segmento} />
+                  <PerfilBadge value={lead.perfilResultado} />
                 </div>
                 <div className="mt-3 flex items-center justify-between text-sm">
                   <StatusBadge lead={lead} />

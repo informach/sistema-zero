@@ -67,9 +67,12 @@ export default function Calculadora({ step, submitting, onSubmit }: Props) {
         </button>
       ) : (
         <>
-          <div className="card border-lime/40 bg-card-2 p-5 text-base text-ink">
-            {custoMensalText(resultado.custo)}
-          </div>
+          {/* Frase de perda só quando há custo (> 0). Resultado 0 apenas segue p/ a P8. */}
+          {resultado.custo > 0 && (
+            <div className="card border-lime/40 bg-card-2 p-5 text-base text-ink">
+              {custoMensalText(resultado.custo)}
+            </div>
+          )}
           <button
             type="button"
             disabled={submitting}

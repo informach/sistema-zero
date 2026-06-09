@@ -9,9 +9,16 @@ const BRL0 = new Intl.NumberFormat('pt-BR', {
 
 const BRL2 = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
 
+const NUM0 = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 0 })
+
 /** Ex.: 400000 → "R$ 4.000". */
 export function formatBRLFromCents(cents: number): string {
   return BRL0.format(Math.round(cents) / 100)
+}
+
+/** Ex.: 400000 → "4.000" (número sem símbolo; o texto já traz o "R$"). */
+export function formatReaisNumber(cents: number): string {
+  return NUM0.format(Math.round(cents) / 100)
 }
 
 /** Ex.: 3700 → "R$ 37,00". */

@@ -3,10 +3,11 @@ import type { ReactNode } from 'react'
 import { useState } from 'react'
 import { PRODUTO } from '../../content/copy'
 import { apiPost } from '../../lib/api-fetch'
+import PerfisPanel from './PerfisPanel'
 import PerformancePanel from './PerformancePanel'
 import RespostasTable from './RespostasTable'
 
-type Aba = 'respostas' | 'performance'
+type Aba = 'respostas' | 'performance' | 'perfis'
 
 export default function AdminDashboard() {
   const [aba, setAba] = useState<Aba>('respostas')
@@ -52,9 +53,14 @@ export default function AdminDashboard() {
         <TabBtn active={aba === 'performance'} onClick={() => setAba('performance')}>
           Performance
         </TabBtn>
+        <TabBtn active={aba === 'perfis'} onClick={() => setAba('perfis')}>
+          Perfis
+        </TabBtn>
       </div>
 
-      {aba === 'respostas' ? <RespostasTable /> : <PerformancePanel />}
+      {aba === 'respostas' && <RespostasTable />}
+      {aba === 'performance' && <PerformancePanel />}
+      {aba === 'perfis' && <PerfisPanel />}
     </div>
   )
 }

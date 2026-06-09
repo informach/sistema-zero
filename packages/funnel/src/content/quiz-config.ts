@@ -3,35 +3,27 @@
 // Copy em pt-BR, verbatim do briefing. `last_step` vai de quiz_pergunta_1..10.
 
 export const LEAD_KEYS = [
-  'segmento',
-  'gasto_terceiros',
-  'forma_de_criar',
-  'ja_quebrou',
-  'nivel_refem',
-  'horas_retrabalho',
-  'valor_hora',
-  'custo_mensal',
-  'peso_principal',
-  'visualizacao',
-  'o_que_falta',
-  'mudanca_desejada',
+  'segmento', // P1
+  'tipo_criar', // P2 (não pontua)
+  'relacao_ia', // P3
+  'ja_quebrou', // P4
+  'trava_principal', // P5
+  'custo_principal', // P6
+  'horas_retrabalho', // P7 (calculadora)
+  'valor_hora', // P7 (calculadora)
+  'custo_mensal', // P7 (derivado)
+  'mudanca_desejada', // P8
+  'proximo_passo', // P9
+  'sintese', // P10 (não pontua)
 ] as const
 
 export type LeadKey = (typeof LEAD_KEYS)[number]
 
 /** Chaves que guardam números (as monetárias são salvas em CENTAVOS). */
-export const NUMERIC_KEYS = new Set<LeadKey>([
-  'gasto_terceiros',
-  'nivel_refem',
-  'horas_retrabalho',
-  'valor_hora',
-  'custo_mensal',
-])
+export const NUMERIC_KEYS = new Set<LeadKey>(['horas_retrabalho', 'valor_hora', 'custo_mensal'])
 
 /** Chaves monetárias (o cliente envia centavos; o admin formata como R$). */
-export const MONEY_KEYS = new Set<LeadKey>(['gasto_terceiros', 'valor_hora', 'custo_mensal'])
-
-export type Segmento = 'A' | 'B' | 'C' | 'D'
+export const MONEY_KEYS = new Set<LeadKey>(['valor_hora', 'custo_mensal'])
 
 export interface Opcao {
   value: string
@@ -46,6 +38,7 @@ interface StepBase {
   lastStep: string
   eventName: string
   titulo: string
+  /** Aviso/subtítulo opcional renderizado abaixo do título (ex.: P7). */
   subtitulo?: string
 }
 
@@ -54,23 +47,6 @@ export interface MultiplaEscolhaStep extends StepBase {
   comImagem?: boolean
   opcoes: Opcao[]
 }
-export interface SimNaoStep extends StepBase {
-  tipo: 'sim_nao'
-  sim: string
-  nao: string
-}
-export interface SliderStep extends StepBase {
-  tipo: 'slider'
-  min: number
-  max: number
-  labelMin: string
-  labelMax: string
-}
-export interface InputNumeroStep extends StepBase {
-  tipo: 'input_numero'
-  label: string
-  unidade: string
-}
 export interface CalculadoraStep extends StepBase {
   tipo: 'calculadora'
   campo1: { key: LeadKey; label: string; unidade: string }
@@ -78,12 +54,7 @@ export interface CalculadoraStep extends StepBase {
   resultadoKey: LeadKey
 }
 
-export type QuizStep =
-  | MultiplaEscolhaStep
-  | SimNaoStep
-  | SliderStep
-  | InputNumeroStep
-  | CalculadoraStep
+export type QuizStep = MultiplaEscolhaStep | CalculadoraStep
 
 export const QUIZ_STEPS: QuizStep[] = [
   {
@@ -97,47 +68,55 @@ export const QUIZ_STEPS: QuizStep[] = [
     opcoes: [
       {
         value: 'A',
-        label: 'Tenho uma ideia parada há meses e não sei como tirar do papel',
-        image: '/img/q1-card-a.jpg',
+        label:
+          'Tenho uma ideia ou um problema que daria pra resolver com um sistema, mas acho que isso é coisa de programador',
+        image: '/img/q1-card-a.webp',
       },
       {
         value: 'B',
-        label: 'Já criei algo com IA, mas quebra ou trava e eu não sei resolver',
-        image: '/img/q1-card-b.jpg',
+        label: 'Já criei algo com IA, funcionou, e depois quebrou sem eu saber por quê',
+        image: '/img/q1-card-b.webp',
       },
       {
         value: 'C',
-        label: 'Dependo de freelancer ou da IA pra cada ajuste, e isso me incomoda',
-        image: '/img/q1-card-c.jpg',
+        label: 'Tenho algo no ar, mas dependo de freelancer ou da IA pra cada mudança',
+        image: '/img/q1-card-c.webp',
       },
       {
         value: 'D',
-        label: 'Crio com IA, mas tenho a sensação de estar fazendo errado sem perceber',
-        image: '/img/q1-card-d.jpg',
+        label: 'Crio com IA, mas fico com a sensação de estar fazendo errado sem perceber',
+        image: '/img/q1-card-d.webp',
       },
     ],
   },
   {
     id: 2,
-    key: 'gasto_terceiros',
+    key: 'tipo_criar',
     lastStep: 'quiz_pergunta_2',
     eventName: 'respondeu_pergunta_2',
-    tipo: 'input_numero',
-    titulo:
-      'Quanto você já gastou (ou já te orçaram) com freelancer ou desenvolvedor pra mexer em coisas que você gostaria de resolver por conta própria?',
-    label: 'Valor aproximado',
-    unidade: 'R$',
+    tipo: 'multipla_escolha',
+    titulo: 'Que tipo de coisa você gostaria de tirar do papel?',
+    opcoes: [
+      {
+        value: 'A',
+        label: 'Um sistema simples pra organizar processos, clientes, tarefas ou informações',
+      },
+      { value: 'B', label: 'Uma página, quiz, calculadora ou ferramenta pra vender melhor' },
+      { value: 'C', label: 'Uma automação pra economizar tempo no meu trabalho' },
+      { value: 'D', label: 'Um app ou plataforma que está parada na minha cabeça há um tempo' },
+      { value: 'E', label: 'Ainda não sei bem, só quero entender o que é possível' },
+    ],
   },
   {
     id: 3,
-    key: 'forma_de_criar',
+    key: 'relacao_ia',
     lastStep: 'quiz_pergunta_3',
     eventName: 'respondeu_pergunta_3',
     tipo: 'multipla_escolha',
-    titulo: 'Como você costuma criar suas coisas com a IA hoje?',
+    titulo: 'Qual é a sua relação com a IA hoje quando pensa em criar algo?',
     opcoes: [
-      { value: 'A', label: 'Peço, ela entrega, eu copio e torço pra funcionar' },
-      { value: 'B', label: 'Vou testando na tentativa e erro até dar certo de algum jeito' },
+      { value: 'A', label: 'Ainda não comecei, porque não sei por onde ir' },
+      { value: 'B', label: 'Peço, ela entrega, eu copio e torço pra funcionar' },
       { value: 'C', label: 'Sigo tutoriais e adapto como dá pro meu caso' },
       { value: 'D', label: 'Chamo alguém pra fazer a parte técnica pra mim' },
     ],
@@ -147,34 +126,64 @@ export const QUIZ_STEPS: QuizStep[] = [
     key: 'ja_quebrou',
     lastStep: 'quiz_pergunta_4',
     eventName: 'respondeu_pergunta_4',
-    tipo: 'sim_nao',
+    tipo: 'multipla_escolha',
     titulo:
       'Já aconteceu de algo seu funcionar por uns dias e depois quebrar, e você não saber por onde começar a olhar?',
-    sim: 'Sim, já passei por isso',
-    nao: 'Não, ainda não',
+    opcoes: [
+      { value: 'A', label: 'Sim, já passei por isso' },
+      { value: 'B', label: 'Ainda não, porque nem cheguei a criar algo de verdade' },
+      {
+        value: 'C',
+        label: 'Não exatamente, mas tenho medo de publicar algo sem saber se está certo',
+      },
+      { value: 'D', label: 'Não, meu problema maior é depender de alguém para ajustar' },
+    ],
   },
   {
     id: 5,
-    key: 'nivel_refem',
+    key: 'trava_principal',
     lastStep: 'quiz_pergunta_5',
     eventName: 'respondeu_pergunta_5',
-    tipo: 'slider',
-    titulo: 'Quando algo dá errado no que você criou com a IA, o quanto você se sente refém dela?',
-    min: 1,
-    max: 10,
-    labelMin: 'Eu resolvo, estou no controle',
-    labelMax: 'Fico totalmente travado, dependo dela',
+    tipo: 'multipla_escolha',
+    titulo: 'Quando você pensa em criar um sistema, o que mais te trava?',
+    opcoes: [
+      { value: 'A', label: 'Não sei transformar minha ideia num plano claro' },
+      { value: 'B', label: 'Travo quando dá erro ou precisa mudar algo' },
+      { value: 'C', label: 'Dependo de outra pessoa pra cada ajuste' },
+      { value: 'D', label: 'Não sei avaliar se o que a IA entrega está certo' },
+    ],
   },
   {
     id: 6,
-    key: 'custo_mensal',
+    key: 'custo_principal',
     lastStep: 'quiz_pergunta_6',
     eventName: 'respondeu_pergunta_6',
+    tipo: 'multipla_escolha',
+    titulo: 'Olhando o que mais te trava, o que isso já te custou?',
+    opcoes: [
+      { value: 'A', label: 'Uma ideia boa parada há meses' },
+      { value: 'B', label: 'Tempo tentando fazer a IA consertar sem sair do lugar' },
+      { value: 'C', label: 'Dinheiro ou espera com freelancer e terceiros' },
+      { value: 'D', label: 'A insegurança de não saber se o que publiquei está de pé' },
+      {
+        value: 'E',
+        label:
+          'Ainda não me custou dinheiro, mas vejo gente saindo na frente enquanto a minha ideia segue parada',
+      },
+    ],
+  },
+  {
+    id: 7,
+    key: 'custo_mensal',
+    lastStep: 'quiz_pergunta_7',
+    eventName: 'respondeu_pergunta_7',
     tipo: 'calculadora',
-    titulo: 'Vamos ver quanto o tempo travado custa pra você.',
+    titulo: 'Quer ver quanto esse bloqueio te custa por mês?',
+    subtitulo: 'Se você ainda não começou ou nunca tentou nada, é só colocar 0 nos dois campos.',
     campo1: {
       key: 'horas_retrabalho',
-      label: 'Horas por semana que você perde tentando fazer a IA consertar algo',
+      label:
+        'Horas por semana que você perde por causa desse bloqueio, travado, pesquisando, esperando ou refazendo',
       unidade: 'horas',
     },
     campo2: {
@@ -185,60 +194,52 @@ export const QUIZ_STEPS: QuizStep[] = [
     resultadoKey: 'custo_mensal',
   },
   {
-    id: 7,
-    key: 'peso_principal',
-    lastStep: 'quiz_pergunta_7',
-    eventName: 'respondeu_pergunta_7',
-    tipo: 'multipla_escolha',
-    titulo: 'Olhando esse valor, o que mais pesa pra você?',
-    opcoes: [
-      { value: 'A', label: 'O dinheiro que escorre em retrabalho e em terceiros' },
-      { value: 'B', label: 'O tempo que eu poderia usar criando, não consertando' },
-      { value: 'C', label: 'A sensação de não ter controle do que é meu' },
-      { value: 'D', label: 'As ideias boas que ficam paradas porque eu travo' },
-    ],
-  },
-  {
     id: 8,
-    key: 'visualizacao',
+    key: 'mudanca_desejada',
     lastStep: 'quiz_pergunta_8',
     eventName: 'respondeu_pergunta_8',
     tipo: 'multipla_escolha',
     titulo:
-      'Imagine que daqui a 30 dias você abre o seu projeto, a IA gera, você entende o que ela fez, ajusta dois detalhes e põe no ar funcionando. O que muda primeiro?',
+      'Imagine que daqui a 30 dias você senta pra tirar a sua ideia do papel: conversa com a IA sabendo o que pedir, entende o que ela te entregou e sabe qual é o próximo passo. O que muda primeiro pra você?',
     opcoes: [
-      { value: 'A', label: 'Eu mesmo mexo no que precisa, na hora, sem esperar ninguém' },
-      { value: 'B', label: 'Explico pra um sócio ou cliente como funciona, com segurança' },
-      { value: 'C', label: 'Tiro do papel aquela ideia que estava parada há meses' },
-      { value: 'D', label: 'Olho o que a IA gerou e sei dizer se está certo antes de publicar' },
+      {
+        value: 'A',
+        label: 'Tiro do papel aquela ideia que estava parada, agora com um plano claro pra começar',
+      },
+      {
+        value: 'B',
+        label: 'Quando algo dá errado, eu sei onde olhar, em vez de abrir outra conversa no escuro',
+      },
+      { value: 'C', label: 'Eu mesmo faço os ajustes simples, na hora, sem esperar ninguém' },
+      { value: 'D', label: 'Olho o que a IA entregou e sei dizer se está certo antes de publicar' },
     ],
   },
   {
     id: 9,
-    key: 'o_que_falta',
+    key: 'proximo_passo',
     lastStep: 'quiz_pergunta_9',
     eventName: 'respondeu_pergunta_9',
     tipo: 'multipla_escolha',
-    titulo: 'O que mais falta pra você sair dessa posição?',
+    titulo: 'Pra dar esse primeiro passo nos próximos 30 dias, o que você mais precisa agora?',
     opcoes: [
-      { value: 'A', label: 'Um critério pra saber quando confiar na IA e quando questionar' },
-      { value: 'B', label: 'Entender o mínimo do que está acontecendo por baixo' },
-      { value: 'C', label: 'Parar de depender de outra pessoa pra cada ajuste' },
-      { value: 'D', label: 'Um ponto de partida claro, porque hoje eu me perco' },
+      { value: 'A', label: 'Organizar a ideia num plano claro antes de pedir pra IA construir' },
+      { value: 'B', label: 'Um critério pra entender e confiar no que a IA me entrega' },
+      { value: 'C', label: 'Conseguir resolver os ajustes simples sem depender de ninguém' },
+      { value: 'D', label: 'Uma forma de testar se está certo antes de publicar' },
     ],
   },
   {
     id: 10,
-    key: 'mudanca_desejada',
+    key: 'sintese',
     lastStep: 'quiz_pergunta_10',
     eventName: 'respondeu_pergunta_10',
     tipo: 'multipla_escolha',
-    titulo: 'Se desse pra mudar uma coisa a partir de hoje, qual seria?',
+    titulo: 'Pra fechar: o que você quer que mude no seu jeito de criar com IA?',
     opcoes: [
-      { value: 'A', label: 'Passar a comandar a IA, em vez de depender dela' },
-      { value: 'B', label: 'Criar com qualidade, confiando no que ponho no ar' },
-      { value: 'C', label: 'Ter autonomia pra tocar minhas ideias por conta própria' },
-      { value: 'D', label: 'Entender o que faço, pra parar de criar no escuro' },
+      { value: 'A', label: 'Sair do pedir e torcer e passar a conduzir com critério' },
+      { value: 'B', label: 'Transformar a ideia solta em algo que a IA consiga construir' },
+      { value: 'C', label: 'Avaliar e ajustar o que a IA entrega sem depender de terceiros' },
+      { value: 'D', label: 'Parar de me sentir refém da ferramenta e voltar pro comando' },
     ],
   },
 ]

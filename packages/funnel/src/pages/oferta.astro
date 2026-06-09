@@ -4,26 +4,37 @@ import Footer from '../components/Footer.astro'
 import ImageSlot from '../components/ImageSlot.astro'
 import SectionHeading from '../components/SectionHeading.astro'
 import ProductJsonLd from '../components/seo/ProductJsonLd.astro'
-import { CTA } from '../content/copy'
+import { HERO_PADRAO, HERO_PARAGRAFO_COMUM, HERO_POR_PERFIL } from '../content/hero-perfil'
 import { SALES } from '../content/sales-sections'
 import PreCheckoutModal from '../islands/PreCheckoutModal'
 import BaseLayout from '../layouts/BaseLayout.astro'
-import { formatBRLFromCents2 } from '../lib/money'
+import { formatBRLFromCents, formatBRLFromCents2 } from '../lib/money'
+import { isPerfil } from '../lib/perfil'
 import { getActiveOffer } from '../server/catalog'
 import { getDeps } from '../server/deps'
 
 // SSR (não prerender): nome/preço vêm do catálogo em runtime. Marketing sem dado
 // por-usuário → cacheável na borda; reflete mudança de preço da oferta em ~1min.
+// O `?perfil=` é segmento grosso (não-PII), então o cache por-URL é seguro.
 export const prerender = false
 
 const { env, gateway } = getDeps()
 const offer = await getActiveOffer(gateway, env.CATALOG_OFFER_SLUG)
 const productName = offer?.productName || env.PRODUCT_NAME
 const priceCents = offer?.priceCents ?? env.PRODUCT_PRICE_CENTS
-const priceLabel = formatBRLFromCents2(priceCents)
+const priceLabel = formatBRLFromCents2(priceCents) // "R$ 37,00" (boxes de preço)
+const priceLabelShort = formatBRLFromCents(priceCents) // "R$ 37" (botões e copy)
 const priceReais = (priceCents / 100).toFixed(2)
 
 Astro.response.headers.set('cache-control', 'public, max-age=60, stale-while-revalidate=300')
+
+// Hero dinâmico por perfil (Seção 1). `?perfil=` ausente/inválido → variação Padrão.
+const perfilParam = Astro.url.searchParams.get('perfil')
+const hero = isPerfil(perfilParam) ? HERO_POR_PERFIL[perfilParam] : HERO_PADRAO
+
+// Label do botão = base (sem preço) + preço do catálogo, p/ nunca divergir do box.
+const cta = (base: string) => `${base} (${priceLabelShort})`
+const stackTexto = SALES.stackValor.texto.replace('{preco}', priceLabelShort)
 
 const description =
   'Um guia direto para tirar sua ideia do papel com IA sem virar refém dela. Aprenda a comandar a IA com o método Z.E.R.O.'
@@ -31,7 +42,7 @@ const ofertaUrl = new URL('/oferta', Astro.site ?? Astro.url).toString()
 const trust = ['Garantia de 7 dias', 'Pagamento via Pix ou cartão de crédito', 'Acesso imediato']
 ---
 
-<BaseLayout title={`${productName} — Pare de pedir código no escuro`} description={description}>
+<BaseLayout title={`${productName} · Pare de pedir código no escuro`} description={description}>
   <ProductJsonLd
     slot="head"
     name={productName}
@@ -40,10 +51,18 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix ou cartão de crédito',
     url={ofertaUrl}
     image="/img/sales-hero.webp"
   />
+  <link
+    slot="head"
+    rel="preload"
+    as="image"
+    href="/img/sales-hero.webp"
+    type="image/webp"
+    fetchpriority="high"
+  />
 
   <!-- Sem header: a página de oferta tem apenas footer. -->
   <main>
-    <!-- ── Seção 1 — Hero ─────────────────────────────────────────────── -->
+    <!-- ── Seção 1 — Hero (dinâmico por perfil) ──────────────────────────── -->
     <section class="mx-auto max-w-3xl px-4 pb-14 pt-10 sm:pt-14">
       <p class="text-center">
         <span
@@ -57,15 +76,12 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix ou cartão de crédito',
       <h1
         class="mt-7 text-balance text-center text-3xl font-extrabold leading-[1.12] sm:text-[2.75rem]"
       >
-        {SALES.s1.titulo}
+        {hero.titulo}
       </h1>
 
       <div class="mx-auto max-w-2xl">
-        {
-          SALES.s1.paragrafos.map((p) => (
-            <p class="mt-5 text-center leading-relaxed text-muted">{p}</p>
-          ))
-        }
+        <p class="mt-5 text-center leading-relaxed text-muted">{hero.abertura}</p>
+        <p class="mt-5 text-center leading-relaxed text-muted">{HERO_PARAGRAFO_COMUM}</p>
       </div>
 
       <div class="mt-9">
@@ -74,6 +90,7 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix ou cartão de crédito',
           alt="No Comando da IA"
           ratio="16 / 9"
           class="rounded-2xl"
+          priority
         />
       </div>
 
@@ -83,7 +100,7 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix ou cartão de crédito',
         <p class="text-sm font-semibold text-muted">por apenas</p>
         <p class="mt-1 text-5xl font-extrabold text-lime">{priceLabel}</p>
         <p class="mt-2 text-sm text-muted">Pagamento único · acesso imediato</p>
-        <CtaButton label={CTA.principal} class="mt-5 w-full" />
+        <CtaButton label={hero.botao} class="mt-5 w-full" />
         <ul class="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-muted">
           {
             trust.map((t) => (
@@ -105,67 +122,31 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix ou cartão de crédito',
       </div>
     </section>
 
-    <!-- ── Seção 2 — Para quem é ──────────────────────────────────────── -->
+    <!-- ── Seção 2 — A verdadeira armadilha ──────────────────────────────── -->
     <section class="mx-auto max-w-3xl px-4 py-12 sm:py-14">
-      <SectionHeading title={SALES.s2.titulo} />
-      <div class="mx-auto max-w-2xl">
-        {
-          SALES.s2.paragrafos.map((p) => (
-            <p class="mt-5 text-center leading-relaxed text-muted">{p}</p>
-          ))
-        }
-      </div>
-      <p class="mt-8 text-sm font-bold text-ink">{SALES.s2.introLista}</p>
-      <ul class="mt-3 flex flex-col gap-2.5">
-        {
-          SALES.s2.bullets.map((b) => (
-            <li class="flex items-start gap-3 rounded-xl border border-line/60 bg-card/40 px-4 py-3.5 text-sm leading-relaxed text-ink">
-              <svg
-                class="mt-0.5 h-4 w-4 shrink-0 text-lime"
-                viewBox="0 0 20 20"
-                fill="none"
-                aria-hidden="true"
-              >
-                <path
-                  d="M4 10.5l3.5 3.5L16 6"
-                  stroke="currentColor"
-                  stroke-width="2.2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-              <span>{b}</span>
-            </li>
-          ))
-        }
-      </ul>
-    </section>
-
-    <!-- ── Seção 3 — A armadilha ──────────────────────────────────────── -->
-    <section class="mx-auto max-w-3xl px-4 py-12 sm:py-14">
-      <SectionHeading title={SALES.s3.titulo} />
+      <SectionHeading title={SALES.armadilha.titulo} />
       <div
         class="mt-7 rounded-2xl border border-line/60 border-l-4 border-l-lime/70 bg-card/40 p-6 sm:p-7"
       >
         {
-          SALES.s3.paragrafos.map((p) => (
+          SALES.armadilha.paragrafos.map((p) => (
             <p class="leading-relaxed text-muted [&:not(:first-child)]:mt-4">{p}</p>
           ))
         }
       </div>
     </section>
 
-    <!-- ── Seção 4 — Antes e depois ───────────────────────────────────── -->
+    <!-- ── Seção 3 — Antes e depois ──────────────────────────────────────── -->
     <section class="mx-auto max-w-3xl px-4 py-12 sm:py-14">
-      <SectionHeading title={SALES.s4.titulo} />
+      <SectionHeading title={SALES.antesDepois.titulo} />
       <div class="mt-7 grid gap-4 sm:grid-cols-2">
         <div class="rounded-2xl border border-line/60 bg-card/40 p-5">
           <p class="mb-4 text-xs font-bold uppercase tracking-[0.16em] text-muted">
-            {SALES.s4.cabecalho.antes}
+            {SALES.antesDepois.cabecalho.antes}
           </p>
           <ul class="flex flex-col gap-3.5">
             {
-              SALES.s4.linhas.map(([antes]) => (
+              SALES.antesDepois.linhas.map(([antes]) => (
                 <li class="flex items-start gap-2.5 text-sm leading-relaxed text-muted">
                   <svg
                     class="mt-0.5 h-4 w-4 shrink-0 text-red-400/80"
@@ -188,11 +169,11 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix ou cartão de crédito',
         </div>
         <div class="rounded-2xl border border-lime/40 bg-lime/5 p-5">
           <p class="mb-4 text-xs font-bold uppercase tracking-[0.16em] text-lime">
-            {SALES.s4.cabecalho.depois}
+            {SALES.antesDepois.cabecalho.depois}
           </p>
           <ul class="flex flex-col gap-3.5">
             {
-              SALES.s4.linhas.map(([, depois]) => (
+              SALES.antesDepois.linhas.map(([, depois]) => (
                 <li class="flex items-start gap-2.5 text-sm font-semibold leading-relaxed text-ink">
                   <svg
                     class="mt-0.5 h-4 w-4 shrink-0 text-lime"
@@ -215,14 +196,20 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix ou cartão de crédito',
           </ul>
         </div>
       </div>
+      <div class="mt-8 text-center">
+        <CtaButton label={cta(SALES.antesDepois.botao)} class="w-full sm:w-auto" />
+      </div>
     </section>
 
-    <!-- ── Seção 5 — Método Z.E.R.O. ──────────────────────────────────── -->
+    <!-- ── Seção 4 — O método Z.E.R.O. ───────────────────────────────────── -->
     <section class="mx-auto max-w-3xl px-4 py-12 sm:py-14">
-      <SectionHeading title={SALES.s5.titulo} />
+      <SectionHeading title={SALES.metodo.titulo} />
+      <p class="mx-auto mt-5 max-w-2xl text-center leading-relaxed text-muted">
+        {SALES.metodo.intro}
+      </p>
       <div class="mt-7 flex flex-col gap-2.5">
         {
-          SALES.s5.metodo.map((m) => (
+          SALES.metodo.itens.map((m) => (
             <div class="flex gap-4 rounded-xl border border-line/60 bg-card/40 p-5">
               <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-lime text-xl font-extrabold text-[#0b0f14]">
                 {m.letra}
@@ -237,20 +224,20 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix ou cartão de crédito',
       </div>
     </section>
 
-    <!-- ── Seção 5B — Primeiros passos ────────────────────────────────── -->
+    <!-- ── Seção 5 — Primeiros passos ────────────────────────────────────── -->
     <section class="mx-auto max-w-3xl px-4 py-12 sm:py-14">
-      <SectionHeading title={SALES.s5b.titulo} />
+      <SectionHeading title={SALES.primeirosPassos.titulo} />
       <div class="mx-auto max-w-2xl">
         {
-          SALES.s5b.paragrafos.map((p) => (
+          SALES.primeirosPassos.paragrafos.map((p) => (
             <p class="mt-5 text-center leading-relaxed text-muted">{p}</p>
           ))
         }
       </div>
-      <p class="mt-8 text-sm font-bold text-ink">{SALES.s5b.introExemplos}</p>
+      <p class="mt-8 text-sm font-bold text-ink">{SALES.primeirosPassos.introExemplos}</p>
       <div class="mt-3 flex flex-col gap-2.5">
         {
-          SALES.s5b.exemplos.map((e) => (
+          SALES.primeirosPassos.exemplos.map((e) => (
             <div class="flex items-start gap-3.5 rounded-xl border border-line/60 bg-card/40 p-4">
               <span class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-lime/15 text-lime">
                 <svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="none" aria-hidden="true">
@@ -272,13 +259,13 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix ou cartão de crédito',
         }
       </div>
       <p class="mx-auto mt-8 max-w-2xl text-center leading-relaxed text-muted">
-        {SALES.s5b.fechamento}
+        {SALES.primeirosPassos.fechamento}
       </p>
     </section>
 
-    <!-- ── Seção 6 — O que você recebe ────────────────────────────────── -->
+    <!-- ── Seção 6 — O que você recebe ───────────────────────────────────── -->
     <section class="mx-auto max-w-3xl px-4 py-12 sm:py-14">
-      <SectionHeading title={SALES.s6.titulo} />
+      <SectionHeading title={SALES.oQueRecebe.titulo} />
       <div
         class="mx-auto mt-7 flex max-w-2xl items-start gap-3.5 rounded-2xl border border-lime/40 bg-card/50 p-5"
       >
@@ -299,7 +286,7 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix ou cartão de crédito',
             stroke-width="1.5"
             stroke-linejoin="round"></path>
         </svg>
-        <p class="text-sm font-semibold leading-relaxed text-ink">{SALES.s6.ebook}</p>
+        <p class="text-sm font-semibold leading-relaxed text-ink">{SALES.oQueRecebe.ebook}</p>
       </div>
 
       <div class="mt-6">
@@ -311,7 +298,7 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix ou cartão de crédito',
         />
       </div>
 
-      <p class="mt-8 text-sm font-bold text-ink">{SALES.s6.kitTitulo}</p>
+      <p class="mt-8 text-sm font-bold text-ink">{SALES.oQueRecebe.kitTitulo}</p>
       <div class="mt-3">
         <ImageSlot
           src="/img/recebe-anexos.webp"
@@ -322,7 +309,7 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix ou cartão de crédito',
       </div>
       <div class="mt-4 grid gap-2.5 sm:grid-cols-2">
         {
-          SALES.s6.kit.map((item) => (
+          SALES.oQueRecebe.kit.map((item) => (
             <div class="flex items-center gap-3 rounded-xl border border-line/60 bg-card/40 px-4 py-3.5">
               <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-lime/15 text-lime">
                 <svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="none" aria-hidden="true">
@@ -340,32 +327,29 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix ou cartão de crédito',
           ))
         }
       </div>
-      <div class="mt-8 text-center">
-        <CtaButton label={CTA.principal} class="w-full sm:w-auto" />
-      </div>
     </section>
 
-    <!-- ── Seção 7 — O resultado final ────────────────────────────────── -->
+    <!-- ── Seção 7 — O resultado final ───────────────────────────────────── -->
     <section class="mx-auto max-w-3xl px-4 py-12 sm:py-14">
-      <SectionHeading title={SALES.s7.titulo} />
+      <SectionHeading title={SALES.resultadoFinal.titulo} />
       <div class="mx-auto max-w-2xl">
         {
-          SALES.s7.paragrafos.map((p) => (
+          SALES.resultadoFinal.paragrafos.map((p) => (
             <p class="mt-5 text-center leading-relaxed text-muted">{p}</p>
           ))
         }
       </div>
       <div class="mt-8 text-center">
-        <CtaButton label={CTA.principal} class="w-full sm:w-auto" />
+        <CtaButton label={cta(SALES.resultadoFinal.botao)} class="w-full sm:w-auto" />
       </div>
     </section>
 
-    <!-- ── Seção 8 — Bônus ────────────────────────────────────────────── -->
+    <!-- ── Seção 8 — Bônus ───────────────────────────────────────────────── -->
     <section class="mx-auto max-w-3xl px-4 py-12 sm:py-14">
-      <SectionHeading title={SALES.s8.titulo} />
+      <SectionHeading title={SALES.bonus.titulo} />
       <div class="mt-7 grid gap-4 sm:grid-cols-2">
         {
-          SALES.s8.bonus.map((b) => (
+          SALES.bonus.itens.map((b) => (
             <div class="flex flex-col gap-4 rounded-2xl border border-line/60 bg-card/40 p-5">
               <span class="self-start rounded-md bg-lime px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-[#0b0f14]">
                 Bônus
@@ -381,32 +365,62 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix ou cartão de crédito',
       </div>
     </section>
 
-    <!-- ── Seção 9 — O que não é ──────────────────────────────────────── -->
+    <!-- ── Seção 9 — Para quem é / não é ─────────────────────────────────── -->
     <section class="mx-auto max-w-3xl px-4 py-12 sm:py-14">
-      <SectionHeading title={SALES.s9.titulo} />
+      <SectionHeading title={SALES.paraQuem.titulo} />
       <div class="mx-auto max-w-2xl">
         {
-          SALES.s9.paragrafos.map((p) => (
+          SALES.paraQuem.paragrafos.map((p) => (
             <p class="mt-5 text-center leading-relaxed text-muted">{p}</p>
           ))
         }
+      </div>
+      <p class="mt-8 text-sm font-bold text-ink">{SALES.paraQuem.introLista}</p>
+      <ul class="mt-3 flex flex-col gap-2.5">
+        {
+          SALES.paraQuem.bullets.map((b) => (
+            <li class="flex items-start gap-3 rounded-xl border border-line/60 bg-card/40 px-4 py-3.5 text-sm leading-relaxed text-ink">
+              <svg
+                class="mt-0.5 h-4 w-4 shrink-0 text-lime"
+                viewBox="0 0 20 20"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M4 10.5l3.5 3.5L16 6"
+                  stroke="currentColor"
+                  stroke-width="2.2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              <span>{b}</span>
+            </li>
+          ))
+        }
+      </ul>
+      <div class="mt-8 rounded-2xl border border-line/60 bg-card/40 p-6 sm:p-7">
+        <p class="text-sm font-bold uppercase tracking-[0.16em] text-muted">
+          {SALES.paraQuem.naoTitulo}
+        </p>
+        <p class="mt-3 leading-relaxed text-muted">{SALES.paraQuem.naoParagrafo}</p>
       </div>
     </section>
 
-    <!-- ── Seção 9B — Para onde te leva ───────────────────────────────── -->
+    <!-- ── Seção 10 — Para onde essa habilidade pode te levar ────────────── -->
     <section class="mx-auto max-w-3xl px-4 py-12 sm:py-14">
-      <SectionHeading title={SALES.s9b.titulo} />
+      <SectionHeading title={SALES.paraOndeLeva.titulo} />
       <div class="mx-auto max-w-2xl">
         {
-          SALES.s9b.paragrafos.map((p) => (
+          SALES.paraOndeLeva.paragrafos.map((p) => (
             <p class="mt-5 text-center leading-relaxed text-muted">{p}</p>
           ))
         }
       </div>
-      <p class="mt-8 text-sm font-bold text-ink">{SALES.s9b.introLista}</p>
+      <p class="mt-8 text-sm font-bold text-ink">{SALES.paraOndeLeva.introLista}</p>
       <ul class="mt-3 flex flex-col gap-2.5">
         {
-          SALES.s9b.bullets.map((b) => (
+          SALES.paraOndeLeva.bullets.map((b) => (
             <li class="flex items-start gap-3 rounded-xl border border-line/60 bg-card/40 px-4 py-3.5 text-sm leading-relaxed text-muted">
               <svg
                 class="mt-0.5 h-4 w-4 shrink-0 text-lime"
@@ -427,43 +441,69 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix ou cartão de crédito',
           ))
         }
       </ul>
-      <p class="mt-8 font-semibold leading-relaxed text-ink">{SALES.s9b.fechamento}</p>
+      <p class="mt-8 font-semibold leading-relaxed text-ink">{SALES.paraOndeLeva.fechamento}</p>
     </section>
 
-    <!-- ── Seção 10 — Por que agora ───────────────────────────────────── -->
+    <!-- ── Seção 11 — Stack de valor ─────────────────────────────────────── -->
     <section class="mx-auto max-w-3xl px-4 py-12 sm:py-14">
-      <SectionHeading title={SALES.s10.titulo} />
-      <div class="mx-auto max-w-2xl">
-        {
-          SALES.s10.paragrafos.map((p) => (
-            <p class="mt-5 text-center leading-relaxed text-muted">{p}</p>
-          ))
-        }
+      <SectionHeading title={SALES.stackValor.titulo} />
+      <div
+        class="mx-auto mt-7 max-w-2xl rounded-2xl border border-lime/40 bg-card/50 p-6 sm:p-7"
+      >
+        <ul class="flex flex-col gap-3">
+          {
+            SALES.stackValor.itens.map((item) => (
+              <li class="flex items-start gap-3 text-sm font-semibold leading-relaxed text-ink">
+                <svg
+                  class="mt-0.5 h-4 w-4 shrink-0 text-lime"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M4 10.5l3.5 3.5L16 6"
+                    stroke="currentColor"
+                    stroke-width="2.2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                <span>{item}</span>
+              </li>
+            ))
+          }
+        </ul>
+        <p class="mt-5 border-t border-line/60 pt-5 text-sm leading-relaxed text-muted">
+          {stackTexto}
+        </p>
+      </div>
+      <div class="mt-8 text-center">
+        <CtaButton label={cta(SALES.stackValor.botao)} class="w-full sm:w-auto" />
       </div>
     </section>
 
-    <!-- ── Seção 11 — Quem criou ──────────────────────────────────────── -->
+    <!-- ── Seção 12 — Quem criou + nossas criações ───────────────────────── -->
     <section class="mx-auto max-w-3xl px-4 py-12 sm:py-14">
-      <SectionHeading title={SALES.s11.titulo} />
+      <SectionHeading title={SALES.quemCriou.titulo} />
       <div class="mx-auto max-w-2xl">
         {
-          SALES.s11.paragrafos.map((p) => (
+          SALES.quemCriou.paragrafos.map((p) => (
             <p class="mt-5 text-center leading-relaxed text-muted">{p}</p>
           ))
         }
       </div>
       <div class="mt-7">
         <ImageSlot
-          src={SALES.s11.foto.src}
-          alt={SALES.s11.foto.alt}
+          src={SALES.quemCriou.foto.src}
+          alt={SALES.quemCriou.foto.alt}
           ratio="16 / 9"
           class="rounded-2xl"
         />
       </div>
-      <p class="mt-8 text-sm font-bold text-ink">{SALES.s11.legendaPrints}</p>
+      <p class="mt-8 text-sm font-bold text-ink">{SALES.quemCriou.criacoesTitulo}</p>
       <div class="mt-3 grid gap-4 sm:grid-cols-2">
         {
-          SALES.s11.prints.map((img) => (
+          SALES.quemCriou.prints.map((img) => (
             <figure>
               <ImageSlot src={img.src} alt={img.alt} ratio="4 / 3" class="rounded-xl" />
               <figcaption class="mt-2 text-xs font-semibold leading-relaxed text-muted">
@@ -473,9 +513,10 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix ou cartão de crédito',
           ))
         }
       </div>
+      <p class="mt-7 leading-relaxed text-muted">{SALES.quemCriou.criacoesFecho}</p>
     </section>
 
-    <!-- ── Seção 12 — Garantia ────────────────────────────────────────── -->
+    <!-- ── Seção 13 — Garantia ───────────────────────────────────────────── -->
     <section class="mx-auto max-w-3xl px-4 py-12 sm:py-14">
       <div class="flex items-start gap-4 rounded-2xl border border-line/60 bg-card/50 p-6">
         <svg
@@ -497,25 +538,25 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix ou cartão de crédito',
             stroke-linejoin="round"></path>
         </svg>
         <div>
-          <h2 class="font-bold text-ink">{SALES.s12.titulo}</h2>
+          <h2 class="font-bold text-ink">{SALES.garantia.titulo}</h2>
           {
-            SALES.s12.paragrafos.map((p) => (
+            SALES.garantia.paragrafos.map((p) => (
               <p class="mt-1.5 text-sm leading-relaxed text-muted">{p}</p>
             ))
           }
         </div>
       </div>
       <div class="mt-8 text-center">
-        <CtaButton label={CTA.comecar} class="w-full sm:w-auto" />
+        <CtaButton label={cta(SALES.garantia.botao)} class="w-full sm:w-auto" />
       </div>
     </section>
 
-    <!-- ── Seção 13 — FAQ ─────────────────────────────────────────────── -->
+    <!-- ── Seção 15 — FAQ ────────────────────────────────────────────────── -->
     <section class="mx-auto max-w-3xl px-4 py-12 sm:py-14">
-      <SectionHeading title={SALES.s13.titulo} align="left" />
+      <SectionHeading title={SALES.faq.titulo} align="left" />
       <div class="mt-6 flex flex-col gap-2.5">
         {
-          SALES.s13.faq.map((item) => (
+          SALES.faq.itens.map((item) => (
             <details class="group rounded-xl border border-line/60 bg-card/40 px-5 py-4 transition hover:border-line">
               <summary class="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-bold text-ink [&::-webkit-details-marker]:hidden">
                 {item.pergunta}
@@ -539,11 +580,21 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix ou cartão de crédito',
           ))
         }
       </div>
+      <div class="mt-8 text-center">
+        <CtaButton label={cta(SALES.faq.botao)} class="w-full sm:w-auto" />
+      </div>
     </section>
 
-    <!-- ── CTA final ──────────────────────────────────────────────────── -->
-    <section class="mx-auto max-w-3xl px-4 pb-10 pt-4">
-      <div class="rounded-2xl border border-line/60 bg-card/60 p-8 text-center sm:p-10">
+    <!-- ── Seção 16 — Oferta final ───────────────────────────────────────── -->
+    <section class="mx-auto max-w-3xl px-4 py-12 sm:py-14">
+      <div class="mx-auto max-w-2xl">
+        {
+          SALES.ofertaFinal.paragrafos.map((p) => (
+            <p class="mt-5 text-center leading-relaxed text-muted">{p}</p>
+          ))
+        }
+      </div>
+      <div class="mt-8 rounded-2xl border border-line/60 bg-card/60 p-8 text-center sm:p-10">
         <p class="text-sm font-bold uppercase tracking-[0.18em] text-cyan">{productName}</p>
         <div class="mt-4 flex items-baseline justify-center gap-2">
           <span class="text-sm text-muted">por apenas</span>
@@ -553,7 +604,7 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix ou cartão de crédito',
           Pagamento único via Pix ou cartão de crédito · garantia de 7 dias
         </p>
         <div class="mt-7 flex justify-center">
-          <CtaButton label={CTA.principal} class="w-full sm:w-auto" />
+          <CtaButton label={SALES.ofertaFinal.botao} class="w-full sm:w-auto" />
         </div>
       </div>
     </section>

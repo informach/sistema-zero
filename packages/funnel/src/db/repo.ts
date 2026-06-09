@@ -11,6 +11,12 @@ export interface EventCount {
   leads: number
 }
 
+/** Contagem de leads por perfil do diagnóstico (aba PERFIS do /admin). */
+export interface PerfilCount {
+  perfil: string
+  count: number
+}
+
 /** Filtro/ordenação da listagem de leads (busca por nome/e-mail + data). */
 export interface LeadFilter {
   /** Busca case-insensitive em nome OU e-mail. */
@@ -77,10 +83,17 @@ export interface FunnelRepo {
     at: Date,
   ): Promise<void>
   findLeadByPayment(paymentId: string): Promise<Lead | null>
-  insertEvent(leadId: string, eventName: string, step?: string | null): Promise<void>
+  insertEvent(
+    leadId: string,
+    eventName: string,
+    step?: string | null,
+    metadata?: Record<string, unknown> | null,
+  ): Promise<void>
   listLeads(limit: number, offset: number, filter?: LeadFilter): Promise<Lead[]>
   countLeads(q?: string): Promise<number>
   eventCounts(): Promise<EventCount[]>
+  /** Contagem de leads por `perfil_resultado` (ignora nulos). */
+  perfilCounts(): Promise<PerfilCount[]>
   /** True se o delivery id já foi processado (dedupe de webhook). */
   isWebhookProcessed(deliveryId: string): Promise<boolean>
   /** Insere o delivery id; retorna false se já existia (webhook duplicado). */
@@ -183,8 +196,8 @@ export function createFunnelRepo(db: Database): FunnelRepo {
       return lead ?? null
     },
 
-    async insertEvent(leadId, eventName, step = null) {
-      await db.insert(funnelEvents).values({ leadId, eventName, step })
+    async insertEvent(leadId, eventName, step = null, metadata = null) {
+      await db.insert(funnelEvents).values({ leadId, eventName, step, metadata })
     },
 
     async listLeads(limit, offset, filter) {
@@ -214,6 +227,19 @@ export function createFunnelRepo(db: Database): FunnelRepo {
         })
         .from(funnelEvents)
         .groupBy(funnelEvents.eventName)
+    },
+
+    async perfilCounts() {
+      const rows = await db
+        .select({
+          perfil: leads.perfilResultado,
+          count: sql<number>`count(*)::int`,
+        })
+        .from(leads)
+        .where(sql`${leads.perfilResultado} is not null`)
+        .groupBy(leads.perfilResultado)
+      // O WHERE garante perfil não-nulo em runtime; estreita o tipo p/ a interface.
+      return rows.map((r) => ({ perfil: r.perfil as string, count: r.count }))
     },
 
     async isWebhookProcessed(deliveryId) {
