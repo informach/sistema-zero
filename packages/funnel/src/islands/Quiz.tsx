@@ -3,20 +3,14 @@ import { useEffect, useState } from 'react'
 import { LANDING } from '../content/copy'
 import {
   type CalculadoraStep,
-  type InputNumeroStep,
   type MultiplaEscolhaStep,
   QUIZ_STEPS,
   type QuizStep,
-  type SimNaoStep,
-  type SliderStep,
   TOTAL_PERGUNTAS,
 } from '../content/quiz-config'
-import { apiPatch, apiPost, apiTryGet } from '../lib/api-fetch'
+import { apiPatch, apiPost } from '../lib/api-fetch'
 import Calculadora from './questions/Calculadora'
-import InputNumero from './questions/InputNumero'
 import MultiplaEscolha from './questions/MultiplaEscolha'
-import SimNao from './questions/SimNao'
-import Slider from './questions/Slider'
 import type { AnswerPair, Answers, BaseQuestionProps } from './questions/types'
 
 function firstUnanswered(answers: Answers): number {
@@ -35,28 +29,28 @@ export default function Quiz() {
   const [submitting, setSubmitting] = useState(false)
   const reduce = useReducedMotion()
 
-  // Entrada do funil: `/` redireciona pra cá. Se não há lead (cookie), cria um
-  // (POST /api/leads → dispara `entrou_landing`) e começa na P1. Se há, retoma na
-  // primeira pergunta não respondida; se tudo respondido, vai pro resultado.
+  // Entrada do funil: `/` redireciona pra cá. UMA ida ao servidor: POST /api/leads
+  // (idempotente) cria o lead se não houver cookie (dispara `entrou_landing`) ou
+  // devolve o atual JÁ com as respostas. Daí retoma na 1ª pergunta não respondida;
+  // se tudo respondido, vai pro resultado.
   useEffect(() => {
     let active = true
     ;(async () => {
-      let data = await apiTryGet<{ answers: Answers }>('/api/leads')
-      if (!data) {
-        try {
-          await apiPost('/api/leads')
-        } catch {
-          /* sem lead: o PATCH abaixo falharia, mas seguimos exibindo a P1 */
-        }
+      let data: { answers?: Answers } | null = null
+      try {
+        data = await apiPost<{ answers?: Answers }>('/api/leads')
+      } catch {
+        /* sem lead: o PATCH falharia, mas seguimos exibindo a P1 */
         data = { answers: {} }
       }
       if (!active) return
-      const start = firstUnanswered(data.answers)
+      const answers = data?.answers ?? {}
+      const start = firstUnanswered(answers)
       if (start >= QUIZ_STEPS.length) {
         window.location.href = '/resultado'
         return
       }
-      setAnswers(data.answers)
+      setAnswers(answers)
       setIndex(start)
     })()
     return () => {
@@ -64,13 +58,7 @@ export default function Quiz() {
     }
   }, [])
 
-  if (index == null) {
-    return (
-      <div className="flex min-h-screen items-center justify-center px-4">
-        <p className="text-muted">Carregando…</p>
-      </div>
-    )
-  }
+  if (index == null) return <QuizSkeleton />
 
   const step = QUIZ_STEPS[index] as QuizStep
   const progress = Math.round((step.id / TOTAL_PERGUNTAS) * 100)
@@ -160,6 +148,11 @@ export default function Quiz() {
                   <span aria-hidden="true">⏱</span> {LANDING.tempo}
                 </p>
                 <h2 className="mt-12 text-xl font-bold text-ink sm:text-2xl">{step.titulo}</h2>
+                {step.subtitulo && (
+                  <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-muted">
+                    {step.subtitulo}
+                  </p>
+                )}
                 <div className="mt-7 text-left">
                   <QuestionRenderer
                     step={step}
@@ -174,15 +167,20 @@ export default function Quiz() {
                 <p className="mb-2 text-sm font-semibold text-cyan">
                   Pergunta {step.id} de {TOTAL_PERGUNTAS}
                 </p>
-                <h1 className="mb-8 text-2xl font-bold leading-snug text-ink sm:text-3xl">
+                <h1 className="text-2xl font-bold leading-snug text-ink sm:text-3xl">
                   {step.titulo}
                 </h1>
-                <QuestionRenderer
-                  step={step}
-                  answers={answers}
-                  submitting={submitting}
-                  onSubmit={handleSubmit}
-                />
+                {step.subtitulo && (
+                  <p className="mt-3 text-sm leading-relaxed text-muted">{step.subtitulo}</p>
+                )}
+                <div className="mt-8">
+                  <QuestionRenderer
+                    step={step}
+                    answers={answers}
+                    submitting={submitting}
+                    onSubmit={handleSubmit}
+                  />
+                </div>
               </>
             )}
           </motion.div>
@@ -196,15 +194,40 @@ function QuestionRenderer({ step, ...rest }: { step: QuizStep } & BaseQuestionPr
   switch (step.tipo) {
     case 'multipla_escolha':
       return <MultiplaEscolha step={step as MultiplaEscolhaStep} {...rest} />
-    case 'sim_nao':
-      return <SimNao step={step as SimNaoStep} {...rest} />
-    case 'slider':
-      return <Slider step={step as SliderStep} {...rest} />
-    case 'input_numero':
-      return <InputNumero step={step as InputNumeroStep} {...rest} />
     case 'calculadora':
       return <Calculadora step={step as CalculadoraStep} {...rest} />
     default:
       return null
   }
+}
+
+// Esqueleto com a cara da P1 (barra + etiqueta + título + tempo + 4 cards). Dá um
+// feedback de "carregando" muito melhor que um texto, e some assim que a 1ª
+// pergunta resolve (1 ida ao servidor).
+function QuizSkeleton() {
+  return (
+    <div className="relative flex min-h-screen flex-col">
+      <div className="fixed inset-x-0 top-0 z-20 h-1.5 bg-card/70" />
+      <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center px-4 py-16">
+        <div className="animate-pulse">
+          <div className="text-center">
+            <div className="mx-auto h-3 w-40 rounded-full bg-card-2" />
+            <div className="mx-auto mt-6 h-7 w-3/4 rounded-lg bg-card-2" />
+            <div className="mx-auto mt-3 h-7 w-2/3 rounded-lg bg-card-2" />
+            <div className="mx-auto mt-6 h-4 w-1/2 rounded bg-card-2/70" />
+            <div className="mx-auto mt-7 h-8 w-44 rounded-full bg-card-2/60" />
+            <div className="mx-auto mt-12 h-6 w-1/2 rounded bg-card-2" />
+          </div>
+          <div className="mt-8 grid gap-4 sm:grid-cols-2">
+            {[0, 1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="min-h-56 rounded-2xl border border-line bg-card-2 sm:min-h-64"
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 }

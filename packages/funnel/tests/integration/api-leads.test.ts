@@ -27,7 +27,9 @@ describe('POST /api/leads', () => {
     expect(setCookie).toContain('HttpOnly')
     const { id } = (await res.json()) as { id: string }
     expect(leads.has(id)).toBe(true)
-    expect(events).toEqual([{ leadId: id, eventName: 'entrou_landing', step: 'landing' }])
+    expect(events).toEqual([
+      { leadId: id, eventName: 'entrou_landing', step: 'landing', metadata: null },
+    ])
   })
 
   test('idempotente quando o cookie já aponta para um lead existente', async () => {
@@ -116,7 +118,7 @@ describe('PATCH /api/leads (lead do cookie)', () => {
     const { repo } = createFakeRepo()
     const { id } = await repo.createLead()
     const res = await patchLead(
-      req('PATCH', { key: 'gasto_terceiros', value: -5 }, cookieFor(id)),
+      req('PATCH', { key: 'horas_retrabalho', value: -5 }, cookieFor(id)),
       deps(repo),
     )
     expect(res.status).toBe(400)
@@ -133,21 +135,28 @@ describe('PATCH /api/leads (lead do cookie)', () => {
     expect(leads.get(id)?.segmento).toBeNull()
   })
 
+  test('aceita a 5ª opção (E) nas perguntas de 5 opções (tipo_criar/custo_principal)', async () => {
+    const { repo, leads } = createFakeRepo()
+    const { id } = await repo.createLead()
+    const ok = await patchLead(
+      req('PATCH', { key: 'tipo_criar', value: 'E' }, cookieFor(id)),
+      deps(repo),
+    )
+    expect(ok.status).toBe(200)
+    expect(leads.get(id)?.tipoCriar).toBe('E')
+    // ja_quebrou agora é A-D (deixou de ser sim/não): 'sim' é inválido.
+    const bad = await patchLead(
+      req('PATCH', { key: 'ja_quebrou', value: 'sim' }, cookieFor(id)),
+      deps(repo),
+    )
+    expect(bad.status).toBe(400)
+  })
+
   test('rejeita numérico acima do limite (anti-overflow int4)', async () => {
     const { repo } = createFakeRepo()
     const { id } = await repo.createLead()
     const res = await patchLead(
       req('PATCH', { key: 'valor_hora', value: 9_999_999_999 }, cookieFor(id)),
-      deps(repo),
-    )
-    expect(res.status).toBe(400)
-  })
-
-  test('rejeita nivel_refem fora de 1..10', async () => {
-    const { repo } = createFakeRepo()
-    const { id } = await repo.createLead()
-    const res = await patchLead(
-      req('PATCH', { key: 'nivel_refem', value: 11 }, cookieFor(id)),
       deps(repo),
     )
     expect(res.status).toBe(400)

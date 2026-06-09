@@ -24,7 +24,7 @@
     "@astrojs/node": "^10.1.2",
     "@astrojs/react": "^5.0.6",
     "@astrojs/sitemap": "^3.7.3",
-    "@fontsource/inter": "^5.2.8",
+    "@fontsource/plus-jakarta-sans": "^5.2.8",
     "@sentry/bun": "^10.56.0",
     "@sistemazero/core": "workspace:*",
     "@sistemazero/ui": "workspace:*",

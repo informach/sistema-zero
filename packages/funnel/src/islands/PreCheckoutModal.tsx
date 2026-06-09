@@ -2,6 +2,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { type Ref, useEffect, useId, useRef, useState } from 'react'
 import { apiPost } from '../lib/api-fetch'
 import { ContactSchema, fieldErrors } from '../lib/contact-schema'
+import { isPerfil } from '../lib/perfil'
 
 type Errors = Partial<Record<'nome' | 'email' | 'telefone', string>>
 
@@ -28,12 +29,18 @@ export default function PreCheckoutModal() {
   const reduce = useReducedMotion()
   const uid = useId()
 
-  // Garante o lead (mesmo p/ quem cai direto na oferta) e marca viu_pagina_vendas.
+  // Garante o lead (mesmo p/ quem cai direto na oferta) e marca viu_pagina_vendas
+  // com o perfil que veio na URL (`?perfil=`), quando válido.
   useEffect(() => {
     ;(async () => {
       try {
         await apiPost('/api/leads')
-        await apiPost('/api/events', { eventName: 'viu_pagina_vendas' })
+        const perfilParam = new URLSearchParams(window.location.search).get('perfil')
+        const metadata = isPerfil(perfilParam) ? { perfil_resultado: perfilParam } : undefined
+        await apiPost('/api/events', {
+          eventName: 'viu_pagina_vendas',
+          ...(metadata ? { metadata } : {}),
+        })
       } catch {
         /* silencioso */
       }
@@ -83,6 +90,8 @@ export default function PreCheckoutModal() {
     setErroGeral(null)
     try {
       await apiPost('/api/contact', parsed.data)
+      // Lead completo já gravado (contato + respostas do quiz + perfil) — marca o envio.
+      await apiPost('/api/events', { eventName: 'enviou_precheckout' }).catch(() => {})
       // Contato também vai na URL: se o cookie do lead se perder (ou a página for
       // recarregada num contexto novo), o checkout ainda pré-popula e recupera.
       const q = new URLSearchParams({
@@ -90,6 +99,8 @@ export default function PreCheckoutModal() {
         email: parsed.data.email,
         telefone: parsed.data.telefone,
       })
+      // Marca o redirecionamento antes de sair da página (best-effort, aguardado).
+      await apiPost('/api/events', { eventName: 'redirecionou_checkout' }).catch(() => {})
       window.location.href = `/checkout?${q.toString()}`
     } catch {
       setErroGeral('Não foi possível continuar. Confira os dados e tente novamente.')
@@ -135,7 +146,7 @@ export default function PreCheckoutModal() {
                   Falta um passo
                 </h2>
                 <p className="mt-1 text-sm text-muted">
-                  Confirme seus dados para acessar o checkout seguro.
+                  Confirme seus dados para ir pro pagamento seguro.
                 </p>
               </div>
               <button
@@ -212,7 +223,7 @@ export default function PreCheckoutModal() {
                 disabled={submitting}
                 className="btn btn-primary mt-1 disabled:opacity-50"
               >
-                {submitting ? 'Aguarde…' : 'Ir para o checkout →'}
+                {submitting ? 'Aguarde…' : 'Ir pro pagamento seguro →'}
               </button>
               <button
                 type="button"

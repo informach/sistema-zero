@@ -1,4 +1,4 @@
-import type { EventCount, FunnelRepo, Lead, LeadUpdate } from '../../src/db/repo'
+import type { EventCount, FunnelRepo, Lead, LeadUpdate, PerfilCount } from '../../src/db/repo'
 
 const matchesQuery = (l: Lead, term: string) =>
   (l.nome ?? '').toLowerCase().includes(term) || (l.email ?? '').toLowerCase().includes(term)
@@ -11,17 +11,18 @@ function baseLead(id: string): Lead {
     telefone: null,
     document: null,
     segmento: null,
-    gastoTerceiros: null,
-    formaDeCriar: null,
+    tipoCriar: null,
+    relacaoIa: null,
     jaQuebrou: null,
-    nivelRefem: null,
+    travaPrincipal: null,
+    custoPrincipal: null,
     horasRetrabalho: null,
     valorHora: null,
     custoMensal: null,
-    pesoPrincipal: null,
-    visualizacao: null,
-    oQueFalta: null,
     mudancaDesejada: null,
+    proximoPasso: null,
+    sintese: null,
+    perfilResultado: null,
     lastStep: 'entrou_landing',
     paymentId: null,
     couponCode: null,
@@ -40,7 +41,12 @@ function baseLead(id: string): Lead {
 export interface FakeRepoState {
   repo: FunnelRepo
   leads: Map<string, Lead>
-  events: Array<{ leadId: string; eventName: string; step: string | null }>
+  events: Array<{
+    leadId: string
+    eventName: string
+    step: string | null
+    metadata: Record<string, unknown> | null
+  }>
   processed: Set<string>
   /** Histórico payment_id → { lead, cupom da cobrança } (espelha funil.lead_payments). */
   payments: Map<string, { leadId: string; couponCode: string | null }>
@@ -118,8 +124,8 @@ export function createFakeRepo(): FakeRepoState {
       const mapped = payments.get(paymentId)
       return mapped ? (leads.get(mapped.leadId) ?? null) : null
     },
-    async insertEvent(leadId, eventName, step = null) {
-      events.push({ leadId, eventName, step })
+    async insertEvent(leadId, eventName, step = null, metadata = null) {
+      events.push({ leadId, eventName, step, metadata })
     },
     async listLeads(limit, offset, filter) {
       let rows = [...leads.values()]
@@ -145,6 +151,14 @@ export function createFakeRepo(): FakeRepoState {
         byName.set(e.eventName, set)
       }
       return [...byName].map(([eventName, set]) => ({ eventName, leads: set.size }))
+    },
+    async perfilCounts(): Promise<PerfilCount[]> {
+      const byPerfil = new Map<string, number>()
+      for (const l of leads.values()) {
+        if (l.perfilResultado == null) continue
+        byPerfil.set(l.perfilResultado, (byPerfil.get(l.perfilResultado) ?? 0) + 1)
+      }
+      return [...byPerfil].map(([perfil, count]) => ({ perfil, count }))
     },
     async isWebhookProcessed(deliveryId) {
       return processed.has(deliveryId)

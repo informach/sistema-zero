@@ -1,6 +1,12 @@
 import { describe, expect, test } from 'bun:test'
 import { ADMIN_ACCESS_COOKIE, ADMIN_REFRESH_COOKIE } from '../../src/lib/admin-auth'
-import { adminFunnel, adminLeads, adminLogin, adminLogout } from '../../src/server/admin'
+import {
+  adminFunnel,
+  adminLeads,
+  adminLogin,
+  adminLogout,
+  adminPerfis,
+} from '../../src/server/admin'
 import { createFakeRepo } from '../fakes/fake-db'
 import { createFakeGateway, type FakeGatewayState } from '../fakes/fake-gateway'
 
@@ -181,5 +187,42 @@ describe('adminLeads', () => {
       limit: number
     }
     expect(body.limit).toBe(100)
+  })
+})
+
+describe('adminPerfis', () => {
+  test('401 sem sessão', async () => {
+    const { deps } = setup()
+    const res = await adminPerfis(getReq(), deps)
+    expect(res.status).toBe(401)
+  })
+
+  test('conta leads por perfil (sempre os 4, na ordem canônica) e o total', async () => {
+    const { repo, fg, deps } = setup()
+    const a = await repo.createLead()
+    const b = await repo.createLead()
+    const c = await repo.createLead()
+    await repo.createLead() // sem perfil → não conta
+    await repo.updateLead(a.id, { perfilResultado: 'ideia_parada' })
+    await repo.updateLead(b.id, { perfilResultado: 'ideia_parada' })
+    await repo.updateLead(c.id, { perfilResultado: 'sem_criterio' })
+
+    const res = await adminPerfis(getReq(accessCookie(fg)), deps)
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as {
+      total: number
+      counts: Array<{ perfil: string; label: string; count: number }>
+    }
+    expect(body.total).toBe(3)
+    expect(body.counts.map((c) => c.perfil)).toEqual([
+      'ideia_parada',
+      'criando_no_escuro',
+      'refem_ajustes',
+      'sem_criterio',
+    ])
+    const byPerfil = new Map(body.counts.map((c) => [c.perfil, c.count]))
+    expect(byPerfil.get('ideia_parada')).toBe(2)
+    expect(byPerfil.get('sem_criterio')).toBe(1)
+    expect(byPerfil.get('criando_no_escuro')).toBe(0)
   })
 })

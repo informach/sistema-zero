@@ -7,8 +7,10 @@ interface Props {
   alt: string
   ratio?: string
   class?: string
+  /** Imagem above-the-fold (ex.: hero): carrega eager + alta prioridade, sem lazy. */
+  priority?: boolean
 }
-const { src, alt, ratio = '16 / 9', class: klass = '' } = Astro.props
+const { src, alt, ratio = '16 / 9', class: klass = '', priority = false } = Astro.props
 ---
 
 <div
@@ -21,7 +23,8 @@ const { src, alt, ratio = '16 / 9', class: klass = '' } = Astro.props
   <img
     src={src}
     alt={alt}
-    loading="lazy"
+    loading={priority ? 'eager' : 'lazy'}
+    fetchpriority={priority ? 'high' : 'auto'}
     decoding="async"
     class="relative h-full w-full object-cover"
     onerror="this.style.display='none'"

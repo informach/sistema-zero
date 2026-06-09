@@ -1,8 +1,10 @@
 ---
-import { RESULTADO } from '../content/copy'
+import { FECHO_COMPARTILHADO, RESULT_PROFILES } from '../content/result-profiles'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { getLeadId } from '../lib/lead-session'
-import { getResultMessage } from '../lib/result-text'
+import { isPerfil } from '../lib/perfil'
+import { projetoLabel, renderTemplate } from '../lib/result-template'
+import { computePerfil } from '../lib/scoring'
 import { getDeps } from '../server/deps'
 
 export const prerender = false
@@ -16,11 +18,37 @@ const { repo } = getDeps()
 const lead = await repo.getLead(leadId)
 if (!lead) return Astro.redirect('/')
 
+// Resultado aberto direto, sem o quiz respondido (nem a P1): volta pra landing,
+// em vez de mostrar um diagnóstico vazio.
+if (!lead.segmento) return Astro.redirect('/')
+
 await repo.insertEvent(lead.id, 'viu_resultado', 'resultado')
-const mensagem = getResultMessage(lead.segmento)
+
+// Perfil: usa o já calculado (persistido) ou roda o motor de pontuação agora e
+// persiste (one-shot — só grava se ainda não havia). Viaja na URL p/ o hero da oferta.
+const stored = isPerfil(lead.perfilResultado) ? lead.perfilResultado : null
+const perfil =
+  stored ??
+  computePerfil({
+    segmento: lead.segmento,
+    relacao_ia: lead.relacaoIa,
+    ja_quebrou: lead.jaQuebrou,
+    trava_principal: lead.travaPrincipal,
+    custo_principal: lead.custoPrincipal,
+    mudanca_desejada: lead.mudancaDesejada,
+    proximo_passo: lead.proximoPasso,
+  })
+if (!stored) await repo.updateLead(lead.id, { perfilResultado: perfil })
+
+const bloco = RESULT_PROFILES[perfil]
+const corpo = renderTemplate(bloco.corpo, {
+  projeto: projetoLabel(lead.tipoCriar),
+  custoMensalCents: lead.custoMensal,
+})
+const ofertaHref = `/oferta?perfil=${perfil}`
 ---
 
-<BaseLayout title="Seu diagnóstico — No Comando da IA" noindex={true}>
+<BaseLayout title="Seu diagnóstico · No Comando da IA" noindex={true}>
   <!-- Sem header/footer: a tela é a continuação direta do quiz. -->
   <div class="relative min-h-screen">
     <div
@@ -43,26 +71,26 @@ const mensagem = getResultMessage(lead.segmento)
         class="reveal-up mt-5 text-balance text-3xl font-extrabold leading-[1.1] text-ink sm:text-[2.5rem]"
         style="animation-delay: 60ms"
       >
-        {RESULTADO.titulo}
+        {bloco.titulo}
       </h1>
 
       <div
         class="reveal-up card mt-8 border-line/80 bg-card-2/60 p-6 sm:p-7"
         style="animation-delay: 120ms"
       >
-        <p class="text-base leading-relaxed text-ink/90 sm:text-lg">{mensagem}</p>
+        <p class="text-base leading-relaxed text-ink/90 sm:text-lg">{corpo}</p>
       </div>
 
       <p class="reveal-up mt-6 leading-relaxed text-muted" style="animation-delay: 180ms">
-        {RESULTADO.paragrafoFinal}
+        {FECHO_COMPARTILHADO}
       </p>
 
       <a
-        href="/oferta"
+        href={ofertaHref}
         class="reveal-up btn btn-primary mt-10 w-full text-center sm:w-auto"
         style="animation-delay: 240ms"
       >
-        {RESULTADO.cta} →
+        {bloco.cta} →
       </a>
     </main>
   </div>

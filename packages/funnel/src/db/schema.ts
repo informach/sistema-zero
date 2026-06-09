@@ -1,4 +1,13 @@
-import { boolean, index, integer, pgSchema, text, timestamp, uuid } from 'drizzle-orm/pg-core'
+import {
+  boolean,
+  index,
+  integer,
+  jsonb,
+  pgSchema,
+  text,
+  timestamp,
+  uuid,
+} from 'drizzle-orm/pg-core'
 
 // Este package compartilha o MESMO Postgres do payments, mas é dono do schema
 // `funil` (isolamento por `pgSchema`). O DDL gerado fica todo em `funil.*`.
@@ -20,19 +29,22 @@ export const leads = funil.table(
     telefone: text('telefone'),
     document: text('document'), // CPF sem máscara (devedor do Pix / titular do cartão)
 
-    // 12 chaves do quiz (parciais até o lead concluir).
-    segmento: text('segmento'), // A | B | C | D
-    gastoTerceiros: integer('gasto_terceiros'), // centavos
-    formaDeCriar: text('forma_de_criar'), // A | B | C | D
-    jaQuebrou: text('ja_quebrou'), // sim | nao
-    nivelRefem: integer('nivel_refem'), // slider 1..10
-    horasRetrabalho: integer('horas_retrabalho'), // horas/semana
-    valorHora: integer('valor_hora'), // centavos
+    // 12 chaves do quiz (parciais até o lead concluir) + perfil derivado, na ordem
+    // das perguntas P1..P10 (a P7 é a calculadora → horas/valor/custo_mensal).
+    segmento: text('segmento'), // A | B | C | D (P1)
+    tipoCriar: text('tipo_criar'), // A | B | C | D | E (P2, não pontua)
+    relacaoIa: text('relacao_ia'), // A | B | C | D (P3)
+    jaQuebrou: text('ja_quebrou'), // A | B | C | D (P4)
+    travaPrincipal: text('trava_principal'), // A | B | C | D (P5)
+    custoPrincipal: text('custo_principal'), // A | B | C | D | E (P6)
+    horasRetrabalho: integer('horas_retrabalho'), // horas/semana (P7)
+    valorHora: integer('valor_hora'), // centavos (P7)
     custoMensal: integer('custo_mensal'), // centavos (derivado: horas*valor*4)
-    pesoPrincipal: text('peso_principal'), // A | B | C | D
-    visualizacao: text('visualizacao'), // A | B | C | D
-    oQueFalta: text('o_que_falta'), // A | B | C | D
-    mudancaDesejada: text('mudanca_desejada'), // A | B | C | D
+    mudancaDesejada: text('mudanca_desejada'), // A | B | C | D (P8)
+    proximoPasso: text('proximo_passo'), // A | B | C | D (P9)
+    sintese: text('sintese'), // A | B | C | D (P10, não pontua)
+    // Perfil vencedor do motor de pontuação (rodado ao concluir o quiz, no /resultado).
+    perfilResultado: text('perfil_resultado'), // ideia_parada | criando_no_escuro | refem_ajustes | sem_criterio
 
     // Progresso / pagamento.
     lastStep: text('last_step').notNull().default('entrou_landing'),
@@ -70,6 +82,8 @@ export const leads = funil.table(
   (t) => [
     index('leads_email_idx').on(t.email),
     index('leads_segmento_idx').on(t.segmento),
+    // Aba PERFIS do /admin agrega `count(*) group by perfil_resultado`.
+    index('leads_perfil_idx').on(t.perfilResultado),
     index('leads_created_idx').on(t.createdAt),
     // Webhook `payment.paid` resolve o lead pela cobrança (findLeadByPayment).
     index('leads_payment_idx').on(t.paymentId),
@@ -107,6 +121,8 @@ export const funnelEvents = funil.table(
       .references(() => leads.id, { onDelete: 'cascade' }),
     eventName: text('event_name').notNull(),
     step: text('step'),
+    // Contexto opcional do evento (ex.: { perfil_resultado } no viu_pagina_vendas).
+    metadata: jsonb('metadata'),
     timestamp: timestamp('timestamp', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [

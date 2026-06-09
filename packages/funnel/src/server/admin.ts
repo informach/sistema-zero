@@ -10,6 +10,7 @@ import {
 import { AdminLoginSchema } from '../lib/admin-schema'
 import type { AuthTokens, AuthUser, GatewayClient } from '../lib/gateway-client'
 import { json, jsonError, safeJson } from '../lib/http'
+import { PERFIL_LABELS, PERFIS } from '../lib/perfil'
 
 export interface AdminDeps {
   repo: FunnelRepo
@@ -26,23 +27,25 @@ function withSession(base: Record<string, string>, setCookies?: string[]): [stri
   return headers
 }
 
-/** As 14 etapas do funil (landing + 10 perguntas + resultado + vendas + checkout)
- *  e os 2 marcos de pagamento. */
+/** Etapas do funil (landing + 10 perguntas + resultado + vendas + pré-checkout +
+ *  checkout) e os 2 marcos de pagamento. */
 export const FUNNEL_STEPS: { name: string; label: string }[] = [
   { name: 'entrou_landing', label: 'Entrou na landing' },
   { name: 'respondeu_pergunta_1', label: 'Pergunta 1 (segmento)' },
-  { name: 'respondeu_pergunta_2', label: 'Pergunta 2 (gasto)' },
-  { name: 'respondeu_pergunta_3', label: 'Pergunta 3 (como cria)' },
+  { name: 'respondeu_pergunta_2', label: 'Pergunta 2 (o que criar)' },
+  { name: 'respondeu_pergunta_3', label: 'Pergunta 3 (relação com IA)' },
   { name: 'respondeu_pergunta_4', label: 'Pergunta 4 (já quebrou)' },
-  { name: 'respondeu_pergunta_5', label: 'Pergunta 5 (refém)' },
-  { name: 'respondeu_pergunta_6', label: 'Pergunta 6 (calculadora)' },
-  { name: 'respondeu_pergunta_7', label: 'Pergunta 7 (peso)' },
-  { name: 'respondeu_pergunta_8', label: 'Pergunta 8 (visualização)' },
-  { name: 'respondeu_pergunta_9', label: 'Pergunta 9 (o que falta)' },
-  { name: 'respondeu_pergunta_10', label: 'Pergunta 10 (mudança)' },
+  { name: 'respondeu_pergunta_5', label: 'Pergunta 5 (o que trava)' },
+  { name: 'respondeu_pergunta_6', label: 'Pergunta 6 (o que custou)' },
+  { name: 'respondeu_pergunta_7', label: 'Pergunta 7 (calculadora)' },
+  { name: 'respondeu_pergunta_8', label: 'Pergunta 8 (o que muda)' },
+  { name: 'respondeu_pergunta_9', label: 'Pergunta 9 (o que precisa)' },
+  { name: 'respondeu_pergunta_10', label: 'Pergunta 10 (síntese)' },
   { name: 'viu_resultado', label: 'Viu o resultado' },
   { name: 'viu_pagina_vendas', label: 'Página de vendas' },
   { name: 'abriu_checkout', label: 'Abriu o checkout' },
+  { name: 'enviou_precheckout', label: 'Enviou o pré-checkout' },
+  { name: 'redirecionou_checkout', label: 'Foi para o checkout' },
   { name: 'pagamento_iniciado', label: 'Pagamento iniciado' },
   { name: 'pagamento_confirmado', label: 'Pagamento confirmado' },
 ]
@@ -152,4 +155,20 @@ export async function adminFunnel(request: Request, deps: AdminDeps): Promise<Re
     200,
     withSession({ 'cache-control': 'no-store' }, auth.setCookies),
   )
+}
+
+/** GET /api/admin/perfis — contagem de leads por perfil do diagnóstico. */
+export async function adminPerfis(request: Request, deps: AdminDeps): Promise<Response> {
+  const auth = await resolveAdmin(request, deps.gateway, deps.secureCookie)
+  if (!auth) return jsonError('Não autorizado.', 401, 'UNAUTHORIZED')
+  const rows = await deps.repo.perfilCounts()
+  const byPerfil = new Map(rows.map((r) => [r.perfil, r.count]))
+  // Sempre os 4 perfis (mesmo zerados), na ordem canônica, com rótulo p/ a UI.
+  const counts = PERFIS.map((perfil) => ({
+    perfil,
+    label: PERFIL_LABELS[perfil],
+    count: byPerfil.get(perfil) ?? 0,
+  }))
+  const total = counts.reduce((sum, c) => sum + c.count, 0)
+  return json({ counts, total }, 200, withSession({ 'cache-control': 'no-store' }, auth.setCookies))
 }
