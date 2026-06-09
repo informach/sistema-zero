@@ -29,6 +29,9 @@ COPY --from=build /app/packages/admin/public ./packages/admin/public
 # Launcher com fail-fast de env (em prod o Next NÃO roda o register() da
 # instrumentation no boot — ver comentário no próprio script).
 COPY --from=build /app/packages/admin/scripts/boot-check.mjs ./packages/admin/boot-check.mjs
+# Cache do otimizador de imagens do Next: a árvore é copiada como root e o
+# processo roda como `node` — sem isso todo next/image loga EACCES em prod.
+RUN mkdir -p packages/admin/.next/cache && chown -R node:node packages/admin/.next
 USER node
 EXPOSE 3005
 CMD ["node", "packages/admin/boot-check.mjs"]

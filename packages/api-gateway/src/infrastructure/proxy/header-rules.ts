@@ -36,6 +36,13 @@ export function stripEdgeAuthHeaders(headers: Headers): void {
  * Headers de IDENTIDADE confiável (gateway → upstream). O cliente NUNCA os define;
  * o gateway os REMOVE da entrada (anti-spoof) e injeta os valores resolvidos do
  * token verificado. O upstream pode confiar neles (vêm só do gateway, na rede interna).
+ *
+ * ⚠️ Valores com qualquer caractere fora do ASCII imprimível chegam URI-encoded
+ * (RFC 3986): header HTTP não comporta UTF-8 cru — `headers.set()` LANÇA com
+ * "André" no `x-auth-user-name` e o pipeline viraria 500 para todo usuário com
+ * acento no nome. Consumidor que precisar do valor original deve detectar `%` e
+ * aplicar `decodeURIComponent` (hoje nenhum serviço lê o `name`; e-mail/telefone/
+ * role/status/id são ASCII na prática e seguem crus).
  */
 export const IDENTITY_HEADERS = {
   id: 'x-auth-user-id',
@@ -81,16 +88,29 @@ export function stripInternalTrustHeaders(headers: Headers): void {
   for (const name of INTERNAL_TRUST_HEADERS) headers.delete(name)
 }
 
+const PRINTABLE_ASCII = /^[\t\x20-\x7e]*$/
+
+/**
+ * Valor seguro p/ header HTTP: ASCII imprimível passa cru; qualquer outro
+ * (acento, emoji, controle) sai URI-encoded — `headers.set()` lança TypeError
+ * com não-ASCII e derrubaria a requisição inteira (ver doc do IDENTITY_HEADERS).
+ */
+export function headerSafeValue(value: string): string {
+  return PRINTABLE_ASCII.test(value) ? value : encodeURIComponent(value)
+}
+
 /** Injeta a identidade confiável resolvida nos headers de saída (após o strip). */
 export function injectIdentityHeaders(headers: Headers, user: IdentityHeaderInput): void {
   stripIdentityHeaders(headers)
-  headers.set(IDENTITY_HEADERS.id, user.id)
-  headers.set(IDENTITY_HEADERS.email, user.email)
-  headers.set(IDENTITY_HEADERS.name, `${user.firstName} ${user.lastName}`.trim())
-  headers.set(IDENTITY_HEADERS.role, user.role)
-  headers.set(IDENTITY_HEADERS.status, user.status)
-  if (user.phone) headers.set(IDENTITY_HEADERS.phone, user.phone)
-  if (user.signupSource) headers.set(IDENTITY_HEADERS.signupSource, user.signupSource)
+  headers.set(IDENTITY_HEADERS.id, headerSafeValue(user.id))
+  headers.set(IDENTITY_HEADERS.email, headerSafeValue(user.email))
+  headers.set(IDENTITY_HEADERS.name, headerSafeValue(`${user.firstName} ${user.lastName}`.trim()))
+  headers.set(IDENTITY_HEADERS.role, headerSafeValue(user.role))
+  headers.set(IDENTITY_HEADERS.status, headerSafeValue(user.status))
+  if (user.phone) headers.set(IDENTITY_HEADERS.phone, headerSafeValue(user.phone))
+  if (user.signupSource) {
+    headers.set(IDENTITY_HEADERS.signupSource, headerSafeValue(user.signupSource))
+  }
 }
 
 /**

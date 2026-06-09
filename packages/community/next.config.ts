@@ -75,7 +75,15 @@ const nextConfig: NextConfig = {
   // Security headers em TODAS as respostas (inclui `/api/me/avatar` e estáticos,
   // fora do matcher do `proxy.ts`). Fonte única — não duplicar no proxy.
   async headers() {
-    return [{ source: '/:path*', headers: securityHeaders }]
+    return [
+      { source: '/:path*', headers: securityHeaders },
+      // Kill-switch do service worker fantasma (public/sw.js): o update-check do
+      // navegador precisa SEMPRE buscar a versão nova — nunca servir do cache HTTP.
+      {
+        source: '/sw.js',
+        headers: [{ key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' }],
+      },
+    ]
   },
 }
 

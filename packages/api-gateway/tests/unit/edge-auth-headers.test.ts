@@ -3,6 +3,8 @@ import { createRequestTransformStage } from '../../src/application/pipeline/stag
 import type { RouteConfig } from '../../src/infrastructure/config/gateway-config.schema'
 import {
   EDGE_AUTH_HEADERS,
+  headerSafeValue,
+  injectIdentityHeaders,
   stripEdgeAuthHeaders,
 } from '../../src/infrastructure/proxy/header-rules'
 import { createResigner } from '../../src/infrastructure/upstream/resign.transformer'
@@ -38,6 +40,31 @@ describe('stripEdgeAuthHeaders', () => {
     for (const n of EDGE_AUTH_HEADERS) expect(h.get(n)).toBe(null)
     expect(h.get('idempotency-key')).toBe('k')
     expect(h.get('content-type')).toBe('application/json')
+  })
+})
+
+describe('headerSafeValue / injectIdentityHeaders', () => {
+  test('ASCII imprimível passa cru; não-ASCII sai URI-encoded', () => {
+    expect(headerSafeValue('Maria Silva')).toBe('Maria Silva')
+    expect(headerSafeValue('maria@example.com')).toBe('maria@example.com')
+    expect(headerSafeValue('André Rocha de Oliveira')).toBe(
+      encodeURIComponent('André Rocha de Oliveira'),
+    )
+    expect(headerSafeValue('Zoë 🚀')).toBe(encodeURIComponent('Zoë 🚀'))
+  })
+
+  test('nome com acento NÃO lança no headers.set (era 500 p/ todo usuário acentuado)', () => {
+    const h = new Headers()
+    injectIdentityHeaders(h, {
+      id: 'user-1',
+      email: 'andre@example.com',
+      firstName: 'André',
+      lastName: 'Rocha de Oliveira',
+      role: 'customer',
+      status: 'active',
+    })
+    expect(h.get('x-auth-user-name')).toBe(encodeURIComponent('André Rocha de Oliveira'))
+    expect(h.get('x-auth-user-email')).toBe('andre@example.com')
   })
 })
 
