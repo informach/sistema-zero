@@ -109,6 +109,24 @@ describe('JWT auth + RBAC (HS256)', () => {
     expect(lastForwardHeaders?.get('x-auth-user-source')).toBe('funnel')
   })
 
+  test('nome com acento → 200 e name chega URI-encoded (regressão: era 500 no headers.set)', async () => {
+    const token = await signUser(
+      {
+        ...FULL_CLAIMS,
+        email: 'andre@example.com',
+        firstName: 'André',
+        lastName: 'Rocha de Oliveira',
+      },
+      'user-andre',
+    )
+    const res = await app.handle(get('/me', token))
+    expect(res.status).toBe(200)
+    expect(lastForwardHeaders?.get('x-auth-user-name')).toBe(
+      encodeURIComponent('André Rocha de Oliveira'),
+    )
+    expect(lastForwardHeaders?.get('x-auth-user-email')).toBe('andre@example.com')
+  })
+
   test('header X-Auth-* forjado pelo cliente é removido e sobrescrito pelo gateway', async () => {
     const token = await signUser(FULL_CLAIMS)
     const res = await app.handle(get('/me', token, { 'x-auth-user-role': 'admin' }))
