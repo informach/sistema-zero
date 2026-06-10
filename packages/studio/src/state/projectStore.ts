@@ -352,7 +352,20 @@ function sanitizeImportedExtraFiles(raw: unknown): ExtraFile[] {
   return out
 }
 
-function projectFilesLimitError(files: ProjectFiles, extraFiles: ExtraFile[]): string | null {
+/** Limites de POLÍTICA configuráveis pelo host (prop `limits` do <Studio>). */
+export interface StudioLimits {
+  maxFileChars?: number
+  maxTotalChars?: number
+  maxExtraFiles?: number
+}
+
+type ResolvedLimits = Required<StudioLimits>
+
+function projectFilesLimitError(
+  files: ProjectFiles,
+  extraFiles: ExtraFile[],
+  limits: ResolvedLimits = PROJECT_FILE_LIMITS,
+): string | null {
   const allFiles: Array<[string, string]> = [
     ['index.html', files['index.html']],
     ['style.css', files['style.css']],
@@ -360,20 +373,20 @@ function projectFilesLimitError(files: ProjectFiles, extraFiles: ExtraFile[]): s
     ...extraFiles.map((file): [string, string] => [file.name, file.content]),
   ]
 
-  if (extraFiles.length > MAX_EXTRA_FILES) {
-    return `Limite de ${MAX_EXTRA_FILES} arquivos extras excedido.`
+  if (extraFiles.length > limits.maxExtraFiles) {
+    return `Limite de ${limits.maxExtraFiles} arquivos extras excedido.`
   }
 
   let total = 0
   for (const [name, content] of allFiles) {
-    if (content.length > MAX_FILE_CHARS) {
-      return `O arquivo ${name} excede o limite de ${MAX_FILE_CHARS.toLocaleString('pt-BR')} caracteres.`
+    if (content.length > limits.maxFileChars) {
+      return `O arquivo ${name} excede o limite de ${limits.maxFileChars.toLocaleString('pt-BR')} caracteres.`
     }
     total += content.length
   }
 
-  if (total > MAX_TOTAL_CHARS) {
-    return `O projeto excede o limite total de ${MAX_TOTAL_CHARS.toLocaleString('pt-BR')} caracteres.`
+  if (total > limits.maxTotalChars) {
+    return `O projeto excede o limite total de ${limits.maxTotalChars.toLocaleString('pt-BR')} caracteres.`
   }
 
   return null
@@ -1167,7 +1180,15 @@ function countJSExpr(expr: JSExpr): number {
   return 1
 }
 
-export function createProjectStore(): StoreApi<ProjectStore> {
+export interface CreateProjectStoreOptions {
+  /** Limites de política do host — anti-DoS profundos continuam internos. */
+  limits?: StudioLimits
+}
+
+export function createProjectStore(
+  options: CreateProjectStoreOptions = {},
+): StoreApi<ProjectStore> {
+  const limits: ResolvedLimits = { ...PROJECT_FILE_LIMITS, ...options.limits }
   return createStore<ProjectStore>((set, get) => ({
     project: null,
     isDirty: false,
@@ -1265,7 +1286,7 @@ export function createProjectStore(): StoreApi<ProjectStore> {
       const p = get().project
       if (!p) return
       const nextFiles = { ...p.files, ...files }
-      const limitError = projectFilesLimitError(nextFiles, p.extraFiles ?? [])
+      const limitError = projectFilesLimitError(nextFiles, p.extraFiles ?? [], limits)
       if (limitError) {
         set({ saveError: limitError })
         return
@@ -1277,7 +1298,7 @@ export function createProjectStore(): StoreApi<ProjectStore> {
       if (!p) return
       if (p.files[name] === value) return
       const nextFiles = { ...p.files, [name]: value }
-      const limitError = projectFilesLimitError(nextFiles, p.extraFiles ?? [])
+      const limitError = projectFilesLimitError(nextFiles, p.extraFiles ?? [], limits)
       if (limitError) {
         set({ saveError: limitError })
         return
@@ -1298,7 +1319,7 @@ export function createProjectStore(): StoreApi<ProjectStore> {
       const p = get().project
       if (!p) return
       const nextFiles = patch.files ? { ...p.files, ...patch.files } : p.files
-      const limitError = projectFilesLimitError(nextFiles, p.extraFiles ?? [])
+      const limitError = projectFilesLimitError(nextFiles, p.extraFiles ?? [], limits)
       if (limitError) {
         set({ saveError: limitError })
         return
@@ -1371,7 +1392,8 @@ export function createProjectStore(): StoreApi<ProjectStore> {
       const extra = p.extraFiles ?? []
       if (extra.some((f) => f.name.toLowerCase() === normalized.toLowerCase()))
         return 'Já existe arquivo com esse nome.'
-      if (extra.length >= MAX_EXTRA_FILES) return `Limite de ${MAX_EXTRA_FILES} arquivos extras.`
+      if (extra.length >= limits.maxExtraFiles)
+        return `Limite de ${limits.maxExtraFiles} arquivos extras.`
       const language = inferExtraLanguage(normalized)
       if (!language) return 'Extensão não suportada.'
       const newFile: ExtraFile = {
@@ -1380,7 +1402,7 @@ export function createProjectStore(): StoreApi<ProjectStore> {
         content: defaultExtraContent(language),
       }
       const nextExtraFiles = [...extra, newFile]
-      const limitError = projectFilesLimitError(p.files, nextExtraFiles)
+      const limitError = projectFilesLimitError(p.files, nextExtraFiles, limits)
       if (limitError) return limitError
       set({
         project: bump({ ...p, extraFiles: nextExtraFiles }),
@@ -1395,7 +1417,7 @@ export function createProjectStore(): StoreApi<ProjectStore> {
       const current = p.extraFiles.find((f) => f.name === name)
       if (!current || current.content === content) return
       const next = p.extraFiles.map((f) => (f.name === name ? { ...f, content } : f))
-      const limitError = projectFilesLimitError(p.files, next)
+      const limitError = projectFilesLimitError(p.files, next, limits)
       if (limitError) {
         set({ saveError: limitError })
         return

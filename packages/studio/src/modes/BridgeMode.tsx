@@ -24,6 +24,7 @@ import { useProjectStore, useProjectStoreApi } from '../state/projectStore'
 import { CODE_FONT_SIZE_DEFAULT, useSettingsStore } from '../state/settingsStore'
 import { useSourcemapStore } from '../state/sourcemapStore'
 import { useUIStore } from '../state/uiStore'
+import { useStudioConfig } from '../studio/config'
 import { useStudioTheme } from '../studio/theme'
 import { BRIDGE_JS_HEADER, type BridgeReverseParseWorkerResponse } from './bridgeReverseParse'
 
@@ -52,7 +53,8 @@ export function BridgeMode(): JSX.Element {
   const applyProjectState = useProjectStore((s) => s.applyProjectState)
   const projectStoreApi = useProjectStoreApi()
   const setFiles = useProjectStore((s) => s.setFiles)
-  const showPreview = useUIStore((s) => s.showPreview)
+  const studioConfig = useStudioConfig()
+  const showPreview = useUIStore((s) => s.showPreview) && studioConfig.preview
   const setSourceMap = useSourcemapStore((s) => s.setMap)
   const pushLog = useLogsStore((s) => s.push)
   const codeFontSize = useSettingsStore((s) => s.codeFontSize)

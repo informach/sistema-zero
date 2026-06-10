@@ -11,6 +11,7 @@ import { PreviewIframe } from '../components/preview/PreviewIframe'
 import { useProjectStore } from '../state/projectStore'
 import { CODE_FONT_SIZE_DEFAULT, useSettingsStore } from '../state/settingsStore'
 import { useUIStore } from '../state/uiStore'
+import { useStudioConfig } from '../studio/config'
 import { useStudioTheme } from '../studio/theme'
 
 const EMPTY_EXTRA_FILES: ExtraFile[] = []
@@ -26,7 +27,8 @@ export function CodeMode(): JSX.Element {
   )
   const setFile = useProjectStore((s) => s.setFile)
   const setExtraFile = useProjectStore((s) => s.setExtraFile)
-  const showPreview = useUIStore((s) => s.showPreview)
+  const studioConfig = useStudioConfig()
+  const showPreview = useUIStore((s) => s.showPreview) && studioConfig.preview
   const codeFontSize = useSettingsStore((s) => s.codeFontSize)
   const studioTheme = useStudioTheme()
   const [activeFile, setActiveFile] = useState<string>('index.html')

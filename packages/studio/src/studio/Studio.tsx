@@ -7,6 +7,7 @@ import { useSettingsStore } from '../state/settingsStore'
 import { StudioStoresContext } from '../state/storesContext'
 import { createStudioStores, useStudioPersistence } from '../state/studioStores'
 import { useUIStore } from '../state/uiStore'
+import { resolveStudioConfig, StudioConfigProvider } from './config'
 import { StudioThemeProvider } from './theme'
 import type { StudioHandle, StudioProps } from './types'
 
@@ -29,8 +30,10 @@ import type { StudioHandle, StudioProps } from './types'
  */
 export function Studio(props: StudioProps): JSX.Element {
   // 1x por instância; StrictMode-safe (re-render descarta a duplicata).
-  // `persistence` é estático por instância (lido só aqui).
-  const [stores] = useState(() => createStudioStores({ persistence: props.persistence }))
+  // `persistence` e `limits` são estáticos por instância (lidos só aqui).
+  const [stores] = useState(() =>
+    createStudioStores({ persistence: props.persistence, limits: props.limits }),
+  )
   return (
     <StudioStoresContext.Provider value={stores}>
       <StudioBody {...props} />
@@ -41,6 +44,9 @@ export function Studio(props: StudioProps): JSX.Element {
 /** Corpo do Studio — DENTRO do provider, para os hooks lerem as stores da instância. */
 function StudioBody({
   initialProject,
+  features,
+  allowedModes,
+  initialMode,
   onChange,
   onSave,
   onError,
@@ -60,10 +66,23 @@ function StudioBody({
     if (locale) setLocale(locale)
   })
 
+  const config = useMemo(
+    () => resolveStudioConfig(features, allowedModes),
+    [features, allowedModes],
+  )
+
   // `replaceProject` (handle) troca o projeto sem mexer na prop.
   const [replacedProject, setReplacedProject] = useState<Project | null>(null)
   const sourceProject = replacedProject ?? initialProject
-  const sanitized = useMemo(() => sanitizeProjectForHost(sourceProject), [sourceProject])
+  const sanitized = useMemo(() => {
+    const project = sanitizeProjectForHost(sourceProject)
+    if (!project) return null
+    // Coerção de modo: initialMode sobrepõe o salvo; fora de allowedModes cai
+    // no primeiro permitido. Não marca sujo (é abertura, não edição).
+    let mode = initialMode ?? project.mode
+    if (!config.allowedModes.includes(mode)) mode = config.allowedModes[0] ?? project.mode
+    return mode === project.mode ? project : { ...project, mode }
+  }, [sourceProject, initialMode, config.allowedModes])
 
   const projectStoreApi = useProjectStoreApi()
   const persistence = useStudioPersistence()
@@ -138,22 +157,24 @@ function StudioBody({
   }, [blockUnloadWhenDirty, isDirty])
 
   return (
-    <StudioThemeProvider value={effectiveTheme}>
-      <div
-        data-sz-theme={effectiveTheme}
-        className={['h-full min-h-0', className].filter(Boolean).join(' ')}
-        style={{ fontFamily: 'var(--font-family-sans)', ...style }}
-      >
-        {sanitized === null ? (
-          <div className="flex h-full flex-col items-center justify-center gap-2 bg-sz-bg text-sz-fg-soft">
-            <p className="text-sm">
-              Projeto inválido — confira o initialProject passado ao Studio.
-            </p>
-          </div>
-        ) : hasProject ? (
-          <Shell onExit={onExit} canToggleTheme={theme === undefined} />
-        ) : null}
-      </div>
-    </StudioThemeProvider>
+    <StudioConfigProvider value={config}>
+      <StudioThemeProvider value={effectiveTheme}>
+        <div
+          data-sz-theme={effectiveTheme}
+          className={['h-full min-h-0', className].filter(Boolean).join(' ')}
+          style={{ fontFamily: 'var(--font-family-sans)', ...style }}
+        >
+          {sanitized === null ? (
+            <div className="flex h-full flex-col items-center justify-center gap-2 bg-sz-bg text-sz-fg-soft">
+              <p className="text-sm">
+                Projeto inválido — confira o initialProject passado ao Studio.
+              </p>
+            </div>
+          ) : hasProject ? (
+            <Shell onExit={onExit} canToggleTheme={theme === undefined} />
+          ) : null}
+        </div>
+      </StudioThemeProvider>
+    </StudioConfigProvider>
   )
 }

@@ -1,7 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="12" fill="#0f172a"/>
-  <rect x="10" y="10" width="20" height="20" rx="3" fill="#22d3ee"/>
-  <rect x="34" y="10" width="20" height="20" rx="3" fill="#a78bfa"/>
-  <rect x="10" y="34" width="20" height="20" rx="3" fill="#34d399"/>
-  <rect x="34" y="34" width="20" height="20" rx="3" fill="#fbbf24"/>
+<svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M131.152 0H28.8484C12.8383 0 0 12.8846 0 28.8896V131.11C0 147.115 12.8383 160 28.8484 160H131.152C147.111 160 160 147.115 160 131.11V28.8896C160 12.8846 147.111 0 131.152 0ZM58.7036 9.51244C61.4726 9.51244 63.6878 11.727 63.6878 14.4951C63.6878 17.2633 61.4726 19.4778 58.7036 19.4778C55.9346 19.4778 53.7194 17.2633 53.7194 14.4951C53.7194 11.727 55.9346 9.51244 58.7036 9.51244ZM44.3549 9.71375C47.124 9.71375 49.3393 11.9283 49.3393 14.6965C49.3393 17.4646 47.124 19.6791 44.3549 19.6791C41.5859 19.6791 39.3707 17.4646 39.3707 14.6965C39.3707 11.9283 41.5859 9.71375 44.3549 9.71375ZM29.2511 9.71375C32.0201 9.71375 34.2355 11.9283 34.2355 14.6965C34.2355 17.4646 32.0201 19.6791 29.2511 19.6791C26.482 19.6791 24.2669 17.4646 24.2669 14.6965C24.2669 11.9283 26.482 9.71375 29.2511 9.71375Z" fill="white"/>
+<circle cx="29.2511" cy="14.6965" r="4.9842" fill="#B1EF59"/>
+<circle cx="44.3549" cy="14.6965" r="4.9842" fill="#B1EF59"/>
+<circle cx="58.7036" cy="14.4951" r="4.9842" fill="#B1EF59"/>
+<rect x="23.8613" y="24" width="38.8052" height="81.6357" rx="6" fill="url(#paint0)"/>
+<rect x="68.6904" y="24" width="67.3474" height="81.8248" rx="6" fill="url(#paint1)"/>
+<path d="M91.898 75.6968L77.2754 68.9296V63.7935L91.898 56.9916V62.2319L81.1234 67.2639V65.4593L91.898 70.4566V75.6968Z" fill="white"/>
+<path d="M94.7835 80L104.942 51.3697H109.929L99.7706 80H94.7835Z" fill="white"/>
+<path d="M112.83 75.6968V70.4566L123.605 65.4593V67.2639L112.83 62.2319V56.9916L127.453 63.7935V68.9296L112.83 75.6968Z" fill="white"/>
+<rect x="23.8613" y="111.597" width="112.176" height="24.4034" rx="6" fill="url(#paint2)"/>
+<defs>
+<linearGradient id="paint0" x1="23.8613" y1="24" x2="87.1674" y2="54.0923" gradientUnits="userSpaceOnUse">
+<stop stop-color="#B8EF50"/>
+<stop offset="1" stop-color="#43E8DE"/>
+</linearGradient>
+<linearGradient id="paint1" x1="68.6904" y1="24" x2="148.772" y2="89.8392" gradientUnits="userSpaceOnUse">
+<stop stop-color="#B8EF50"/>
+<stop offset="1" stop-color="#43E8DE"/>
+</linearGradient>
+<linearGradient id="paint2" x1="23.8613" y1="111.597" x2="33.9844" y2="158.078" gradientUnits="userSpaceOnUse">
+<stop stop-color="#B8EF50"/>
+<stop offset="1" stop-color="#43E8DE"/>
+</linearGradient>
+</defs>
 </svg>

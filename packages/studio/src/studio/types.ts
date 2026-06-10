@@ -1,6 +1,8 @@
 import type { CSSProperties, Ref } from 'react'
 import type { IDEMode, Locale, Project } from '#core'
 import type { StudioPersistence } from '../persistence/types'
+import type { StudioLimits } from '../state/projectStore'
+import type { StudioFeatures } from './config'
 import type { StudioTheme } from './theme'
 
 export type StudioLocale = Locale
@@ -31,6 +33,24 @@ export interface StudioProps {
    * trocar exige remount.
    */
   persistence?: StudioPersistence
+  /**
+   * Liga/desliga partes do editor. Defaults: preview/console/extensões ON;
+   * terminal OFF (exige COOP/COEP no host — ver docs/embedding.md); IA OFF
+   * (`true` = BYOK; objeto injeta chave/modelo do host).
+   */
+  features?: StudioFeatures
+  /**
+   * Modos exibidos na Topbar (default: os 3). Se o modo do projeto não estiver
+   * na lista, o editor abre no primeiro permitido.
+   */
+  allowedModes?: readonly IDEMode[]
+  /** Abre neste modo (sobrepõe o modo salvo no projeto, sem marcar sujo). */
+  initialMode?: IDEMode
+  /**
+   * Limites de política (tamanho de arquivo/projeto, nº de extras). Defaults
+   * generosos; anti-DoS profundos continuam internos. Estático por instância.
+   */
+  limits?: StudioLimits
   /**
    * Snapshot completo do projeto no MESMO debounce do autosave (1s) e em todo
    * flush (salvar explícito, pagehide, unmount). Emitido também com

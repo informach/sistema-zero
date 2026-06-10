@@ -9,6 +9,7 @@ import { ErrorBoundary } from '#ui'
 import { BlocksMode, BridgeMode, CodeMode } from '../../modes/lazyModes'
 import { useProjectStore } from '../../state/projectStore'
 import { useUIStore } from '../../state/uiStore'
+import { useStudioConfig } from '../../studio/config'
 import { BottomPanel } from './BottomPanel'
 import { SectionErrorFallback } from './ErrorViews'
 import { EditorSkeleton } from './LoadingViews'
@@ -42,6 +43,8 @@ export function Shell({ onExit, canToggleTheme }: ShellProps): JSX.Element {
   )
   const showExtensions = useUIStore((s) => s.showExtensions)
   const setShowExtensions = useUIStore((s) => s.setShowExtensions)
+  const config = useStudioConfig()
+  const hasBottomPanel = config.console || config.terminal || config.ai
   const installedExtensionKey = useMemo(
     () => installedExtensions.map((ext) => `${ext.id}@${ext.version}`).join('|'),
     [installedExtensions],
@@ -92,13 +95,17 @@ export function Shell({ onExit, canToggleTheme }: ShellProps): JSX.Element {
               </ErrorBoundary>
             </div>
           </Panel>
-          <PanelResizeHandle className="sz-resize-handle sz-resize-handle--horizontal" />
-          <Panel defaultSize={30} minSize={10} maxSize={70}>
-            <BottomPanel />
-          </Panel>
+          {hasBottomPanel && (
+            <>
+              <PanelResizeHandle className="sz-resize-handle sz-resize-handle--horizontal" />
+              <Panel defaultSize={30} minSize={10} maxSize={70}>
+                <BottomPanel />
+              </Panel>
+            </>
+          )}
         </PanelGroup>
       </main>
-      {showExtensions && (
+      {showExtensions && config.extensions && (
         <ErrorBoundary
           label="extensões"
           resetKeys={[showExtensions]}

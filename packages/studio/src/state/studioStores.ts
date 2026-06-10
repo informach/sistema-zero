@@ -4,7 +4,7 @@ import { createPersistenceService, type PersistenceService } from '../persistenc
 import { resolvePersistenceAdapter, type StudioPersistence } from '../persistence/types'
 import { createHighlightStore } from './highlightStore'
 import { createLogsStore } from './logsStore'
-import { createProjectStore, useProjectStore } from './projectStore'
+import { createProjectStore, type StudioLimits, useProjectStore } from './projectStore'
 import { createSourcemapStore } from './sourcemapStore'
 import { StudioStoresContext } from './storesContext'
 import { createUIStore } from './uiStore'
@@ -31,10 +31,12 @@ export interface StudioStores {
 export interface CreateStudioStoresOptions {
   /** Estático por instância (como locale): trocar exige remount do <Studio>. */
   persistence?: StudioPersistence
+  /** Limites de política do host (maxFileChars etc.) — também estáticos. */
+  limits?: StudioLimits
 }
 
 export function createStudioStores(options: CreateStudioStoresOptions = {}): StudioStores {
-  const project = createProjectStore()
+  const project = createProjectStore({ limits: options.limits })
   const adapter = resolvePersistenceAdapter(
     options.persistence ?? 'local',
     createLocalPersistenceAdapter,

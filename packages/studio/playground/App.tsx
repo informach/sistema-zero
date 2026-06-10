@@ -86,6 +86,8 @@ function EditorScreen({
     <Studio
       initialProject={state.project}
       onExit={onExit}
+      // Experiência completa no playground (defaults embarcados: terminal/IA OFF).
+      features={{ terminal: true, ai: true }}
       // Host fake: loga o fluxo híbrido p/ validação manual (DevTools).
       onChange={(project) => console.debug('[host] onChange', project.id, project.updatedAt)}
       onSave={(project) => console.debug('[host] onSave', project.id)}

@@ -2,11 +2,12 @@ import type { JSX } from 'react'
 import { useEffect, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { IDE_MODES, MODE_LABELS, t } from '#core'
-import { Badge, Button } from '#ui'
+import { Badge, BrandLogo, Button } from '#ui'
 import { useProjectStore } from '../../state/projectStore'
 import { useSettingsStore } from '../../state/settingsStore'
 import { useStudioPersistence } from '../../state/studioStores'
 import { useUIStore } from '../../state/uiStore'
+import { useStudioConfig } from '../../studio/config'
 import { useStudioTheme } from '../../studio/theme'
 
 export interface TopbarProps {
@@ -36,6 +37,7 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
   const setBottomTab = useUIStore((s) => s.setBottomTab)
   const studioTheme = useStudioTheme()
   const setTheme = useSettingsStore((s) => s.setTheme)
+  const config = useStudioConfig()
 
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(projectName)
@@ -79,12 +81,12 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
           className="flex items-center gap-2 text-sz-fg hover:opacity-80"
           title="Voltar à lista de projetos"
         >
-          <Logo />
+          <BrandLogo className="h-6 w-6" />
           <strong>{t('app.name')}</strong>
         </button>
       ) : (
         <span className="flex items-center gap-2 text-sz-fg">
-          <Logo />
+          <BrandLogo className="h-6 w-6" />
           <strong>{t('app.name')}</strong>
         </span>
       )}
@@ -129,7 +131,7 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
       </span>
 
       <div className="ml-4 flex rounded-md border border-sz-border bg-sz-bg p-0.5">
-        {IDE_MODES.map((m) => {
+        {IDE_MODES.filter((m) => config.allowedModes.includes(m)).map((m) => {
           const active = projectMode === m
           return (
             <button
@@ -168,17 +170,21 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
         <Button variant="ghost" size="sm" onClick={handleSave} disabled={saving}>
           {saving ? 'Salvando...' : 'Salvar'}
         </Button>
-        <Button variant="ghost" size="sm" onClick={() => setShowPreview(!showPreview)}>
-          {showPreview ? 'Ocultar' : 'Mostrar'} {t('panel.preview')}
-        </Button>
-        <Button
-          variant={showExtensions ? 'primary' : 'ghost'}
-          size="sm"
-          onClick={() => setShowExtensions(!showExtensions)}
-        >
-          {t('topbar.extensions')}
-        </Button>
-        {projectMode === 'code' && (
+        {config.preview && (
+          <Button variant="ghost" size="sm" onClick={() => setShowPreview(!showPreview)}>
+            {showPreview ? 'Ocultar' : 'Mostrar'} {t('panel.preview')}
+          </Button>
+        )}
+        {config.extensions && (
+          <Button
+            variant={showExtensions ? 'primary' : 'ghost'}
+            size="sm"
+            onClick={() => setShowExtensions(!showExtensions)}
+          >
+            {t('topbar.extensions')}
+          </Button>
+        )}
+        {projectMode === 'code' && config.ai && (
           <Button variant="ghost" size="sm" onClick={() => setBottomTab('ai')}>
             {t('topbar.ai')}
           </Button>
@@ -220,18 +226,6 @@ function MoonIcon() {
       aria-hidden="true"
     >
       <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-    </svg>
-  )
-}
-
-function Logo() {
-  return (
-    <svg viewBox="0 0 64 64" className="h-6 w-6" role="img" aria-label="Sistema Zero Studio">
-      <rect width="64" height="64" rx="12" fill="#0f172a" />
-      <rect x="10" y="10" width="20" height="20" rx="3" fill="#22d3ee" />
-      <rect x="34" y="10" width="20" height="20" rx="3" fill="#a78bfa" />
-      <rect x="10" y="34" width="20" height="20" rx="3" fill="#34d399" />
-      <rect x="34" y="34" width="20" height="20" rx="3" fill="#fbbf24" />
     </svg>
   )
 }
