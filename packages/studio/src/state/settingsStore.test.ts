@@ -5,16 +5,31 @@ import { beforeEach, describe, expect, it, mock } from 'bun:test'
 // O mock de idb-keyval NÃO é restaurado no afterAll de propósito: o registry
 // de módulos é compartilhado pela suíte toda e o IndexedDB real não existe no
 // happy-dom — o no-op é a opção segura para os arquivos seguintes.
+// ⚠️ Por ISSO o mock precisa exportar a superfície COMPLETA consumida em src/
+// (persistence.ts importa getMany/setMany/delMany/keys): como o registry é
+// global, o PRIMEIRO arquivo a mockar define o shape p/ a suíte toda — no Linux
+// (ordem de arquivos ≠ Windows) um mock estreito quebrava o linker do CI com
+// "Export named 'getMany' not found".
 const idb = {
   createStore: mock(() => ({ name: 'test-store' })),
+  del: mock(async () => undefined),
+  delMany: mock(async () => undefined),
   get: mock(async (): Promise<unknown> => undefined),
+  getMany: mock(async (): Promise<unknown[]> => []),
+  keys: mock(async (): Promise<unknown[]> => []),
   set: mock(async () => undefined),
+  setMany: mock(async () => undefined),
 }
 
 mock.module('idb-keyval', () => ({
   createStore: idb.createStore,
+  del: idb.del,
+  delMany: idb.delMany,
   get: idb.get,
+  getMany: idb.getMany,
+  keys: idb.keys,
   set: idb.set,
+  setMany: idb.setMany,
 }))
 
 const {
