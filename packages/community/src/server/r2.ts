@@ -2,11 +2,13 @@ import 'server-only'
 import {
   DeleteObjectsCommand,
   GetObjectCommand,
+  HeadObjectCommand,
   ListObjectsV2Command,
   PutObjectCommand,
   type PutObjectCommandInput,
   S3Client,
 } from '@aws-sdk/client-s3'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { getEnv } from '@/lib/env'
 
 // Espelha o @sistemazero/admin (src/server/r2.ts) — mesmo bucket R2, prefixo próprio.
@@ -190,4 +192,75 @@ export async function r2GetObjectPrivate(key: string): Promise<R2PrivateObject> 
 /** Materializa um stream em Buffer (SÓ p/ aplicar marca d'água — tem teto no caller). */
 export async function bufferFromStream(stream: ReadableStream<Uint8Array>): Promise<Buffer> {
   return Buffer.from(await new Response(stream).arrayBuffer())
+}
+
+/** Metadados de um objeto do bucket PRIVADO sem abrir o corpo (HEAD). */
+export interface R2PrivateHead {
+  contentType: string | null
+  contentLength: number | null
+}
+
+/** HEAD no bucket privado — null se o objeto não existe (decide cache/caminho). */
+export async function r2HeadObjectPrivate(key: string): Promise<R2PrivateHead | null> {
+  const cfg = requirePrivateR2Config()
+  const normalized = normalizeKey(key)
+  try {
+    const res = await getClient(cfg).send(
+      new HeadObjectCommand({ Bucket: cfg.bucket, Key: normalized }),
+    )
+    return {
+      contentType: res.ContentType ?? null,
+      contentLength: typeof res.ContentLength === 'number' ? res.ContentLength : null,
+    }
+  } catch (error) {
+    const name = (error as { name?: string }).name
+    if (name === 'NotFound' || name === 'NoSuchKey' || name === '404') return null
+    console.error('[r2] headObjectPrivate falhou', { key: normalized, error })
+    throw new Error('Falha ao consultar o arquivo no armazenamento.', { cause: error })
+  }
+}
+
+/** Sobe um objeto no bucket PRIVADO (cache de PDFs com marca d'água por aluno). */
+export async function r2PutObjectPrivate(input: R2PutObjectInput): Promise<void> {
+  const cfg = requirePrivateR2Config()
+  const key = normalizeKey(input.key)
+  try {
+    await getClient(cfg).send(
+      new PutObjectCommand({
+        Bucket: cfg.bucket,
+        Key: key,
+        Body: input.body,
+        ContentType: input.contentType,
+        // Cache HTTP é irrelevante aqui (bucket sem acesso público; a entrega é
+        // por URL pré-assinada de TTL curto) — não usar o default público/imutável.
+        CacheControl: input.cacheControl ?? 'private, no-store',
+      }),
+    )
+  } catch (error) {
+    console.error('[r2] putObjectPrivate falhou', { key, error })
+    throw new Error('Falha ao gravar o arquivo no armazenamento.', { cause: error })
+  }
+}
+
+/**
+ * URL pré-assinada de GET no bucket PRIVADO (TTL curto). É como arquivos GRANDES
+ * chegam ao aluno: o browser baixa DIRETO do R2 (rápido, com Range), em vez de
+ * arrastar 100MB+ por Next→Railway→Cloudflare — cadeia que segura o arquivo
+ * inteiro na memória do servidor enquanto escoa (era a causa do community
+ * degradar com poucos downloads simultâneos).
+ */
+export async function r2PresignGetPrivate(
+  key: string,
+  opts: { expiresInSeconds?: number; responseContentDisposition?: string } = {},
+): Promise<string> {
+  const cfg = requirePrivateR2Config()
+  return getSignedUrl(
+    getClient(cfg),
+    new GetObjectCommand({
+      Bucket: cfg.bucket,
+      Key: normalizeKey(key),
+      ResponseContentDisposition: opts.responseContentDisposition,
+    }),
+    { expiresIn: opts.expiresInSeconds ?? 300 },
+  )
 }

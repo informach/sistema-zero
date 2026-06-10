@@ -27,6 +27,30 @@ export interface DownloadMedia {
  */
 export const WATERMARK_MAX_BYTES = 200 * 1024 * 1024 // 200MB
 
+/**
+ * A partir deste tamanho o arquivo NÃO é servido pela rota (Next→Railway→
+ * Cloudflare): o aluno recebe 302 p/ uma URL pré-assinada do R2 e baixa DIRETO.
+ * Servir um e-book de 119MB pela rota segurava o buffer inteiro na memória do
+ * servidor enquanto a conexão do aluno escoava (minutos) — poucos downloads
+ * simultâneos degradavam o community inteiro (incidente 10/06). A marca d'água
+ * é preservada via CACHE do PDF marcado por aluno no bucket privado
+ * (`watermarkCacheKey`), gerado uma vez e pré-assinado nas vezes seguintes.
+ */
+export const DIRECT_DELIVERY_MIN_BYTES = 20 * 1024 * 1024 // 20MB
+
+/**
+ * Key do cache do PDF marcado por (arquivo, aluno) no bucket privado — livre de
+ * colisão por construção (key de origem inteira + userId entram na key). Trocar
+ * o PDF do bloco gera key de origem nova (uuid) → cache antigo nunca é servido
+ * por engano. O prefixo `watermarked/` tem regra de lifecycle no bucket (expira
+ * sozinho — re-gerar é barato).
+ */
+export function watermarkCacheKey(srcKey: string, userId: string): string {
+  const safeSrc = srcKey.replace(/^\/+/, '').replace(/[^a-zA-Z0-9._-]+/g, '_')
+  const safeUser = userId.replace(/[^a-zA-Z0-9-]+/g, '_')
+  return `watermarked/${safeSrc}/${safeUser}.pdf`
+}
+
 const WATERMARKABLE_IMAGE_MIMES = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/gif'])
 
 const EXTENSION_MIMES: Record<string, string> = {

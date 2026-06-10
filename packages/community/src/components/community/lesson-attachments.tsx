@@ -5,6 +5,7 @@ import { Spinner } from '@sistemazero/ui/spinner'
 import { Download } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { friendlyFileType } from '@/lib/format'
 import type { LessonAttachmentView } from '@/lib/types'
 
 /**
@@ -71,8 +72,10 @@ export function LessonAttachments({
                   {file.label}
                   {isDownloading ? (
                     <span className="text-xs text-muted-foreground">Preparando o download…</span>
-                  ) : file.fileType ? (
-                    <span className="text-xs uppercase text-muted-foreground">{file.fileType}</span>
+                  ) : friendlyFileType(file.fileType) ? (
+                    <span className="text-xs uppercase text-muted-foreground">
+                      {friendlyFileType(file.fileType)}
+                    </span>
                   ) : null}
                 </button>
               </li>
