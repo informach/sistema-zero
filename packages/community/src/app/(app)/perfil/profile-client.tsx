@@ -14,6 +14,7 @@ import { z } from 'zod'
 import { UserAvatar } from '@/components/community/user-avatar'
 import { apiSend } from '@/lib/api'
 import type { UserView } from '@/lib/types'
+import { getUserDisplayName } from '@/lib/user-display'
 
 const AVATAR_MIME_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp'])
 const AVATAR_MAX_BYTES = 5 * 1024 * 1024 // 5MB (mesma régua do servidor)
@@ -95,19 +96,38 @@ function AvatarForm({ user }: { user: UserView }) {
     <Card>
       <CardHeader>
         <CardTitle>Foto de perfil</CardTitle>
-        <CardDescription>
-          Aparece no menu e na comunidade. PNG, JPG ou WebP de até 5MB.
-        </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="flex items-center gap-5">
-          <UserAvatar
-            avatarUrl={preview ?? user.avatarUrl}
-            firstName={user.firstName}
-            lastName={user.lastName}
-            email={user.email}
-            size="xl"
-          />
+        <div className="flex flex-wrap items-center gap-5">
+          <button
+            type="button"
+            aria-label="Trocar foto"
+            disabled={uploading}
+            onClick={() => fileInputRef.current?.click()}
+            className="group relative shrink-0 cursor-pointer overflow-hidden rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          >
+            <UserAvatar
+              avatarUrl={preview ?? user.avatarUrl}
+              firstName={user.firstName}
+              lastName={user.lastName}
+              email={user.email}
+              size="xl"
+            />
+            <span
+              aria-hidden="true"
+              className="absolute inset-0 flex items-center justify-center rounded-full bg-black/45 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+            >
+              <Camera className="size-6 text-white" />
+            </span>
+          </button>
+          <div className="min-w-0 flex-1">
+            <p className="font-semibold">
+              {getUserDisplayName(user.firstName, user.lastName, user.email)}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Recomendamos usar uma imagem PNG, JPG ou WebP de até 5 MB.
+            </p>
+          </div>
           <input
             ref={fileInputRef}
             type="file"
