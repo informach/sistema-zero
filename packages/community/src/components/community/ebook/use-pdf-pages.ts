@@ -125,10 +125,17 @@ export function usePdfPages(pdfUrl: string): PdfPages {
   useEffect(() => {
     disposedRef.current = false
     let cancelled = false
+    // Aborta o download no unmount/troca de aula — sem isso, cada saída da
+    // página deixava um download "zumbi" do PDF inteiro (100MB+) saturando a
+    // conexão do aluno e a memória do servidor (incidente 10/06).
+    const aborter = new AbortController()
 
     async function load() {
       try {
-        const [pdfjs, res] = await Promise.all([loadPdfjs(), fetch(pdfUrl)])
+        const [pdfjs, res] = await Promise.all([
+          loadPdfjs(),
+          fetch(pdfUrl, { signal: aborter.signal }),
+        ])
         if (!res.ok) throw new Error(`Falha ao baixar o e-book (${res.status})`)
         const data = new Uint8Array(await res.arrayBuffer())
         const task = pdfjs.getDocument({ data })
@@ -157,6 +164,7 @@ export function usePdfPages(pdfUrl: string): PdfPages {
     return () => {
       cancelled = true
       disposedRef.current = true
+      aborter.abort()
       for (const tex of texturesRef.current.values()) tex.dispose()
       texturesRef.current.clear()
       void taskRef.current?.destroy()

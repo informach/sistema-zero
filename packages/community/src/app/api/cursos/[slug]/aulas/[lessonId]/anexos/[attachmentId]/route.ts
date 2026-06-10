@@ -1,8 +1,18 @@
 import { NextResponse } from 'next/server'
-import { resolveDownloadMedia, WATERMARK_MAX_BYTES } from '@/lib/download-mime'
+import {
+  DIRECT_DELIVERY_MIN_BYTES,
+  resolveDownloadMedia,
+  WATERMARK_MAX_BYTES,
+} from '@/lib/download-mime'
 import { mediaErrorResponse, requireUploadSession } from '@/server/media'
 import { resolveAttachment } from '@/server/members'
-import { bufferFromStream, r2GetObjectPrivate } from '@/server/r2'
+import { presignWatermarkedPdf } from '@/server/private-delivery'
+import {
+  bufferFromStream,
+  r2GetObjectPrivate,
+  r2HeadObjectPrivate,
+  r2PresignGetPrivate,
+} from '@/server/r2'
 import { watermarkImage, watermarkPdf } from '@/server/watermark'
 import { watermarkGate } from '@/server/watermark-queue'
 
@@ -70,9 +80,18 @@ export async function GET(
 
   try {
     const key = storageRef.slice(R2_PRIVATE_PREFIX.length)
-    const obj = await r2GetObjectPrivate(key)
+    // HEAD primeiro: arquivo GRANDE nem passa pela rota (302 p/ o R2 direto) —
+    // servir 100MB+ por aqui segura buffer/stream na memória do servidor
+    // enquanto a conexão do aluno escoa (incidente 10/06).
+    const head = await r2HeadObjectPrivate(key)
+    if (!head) {
+      return NextResponse.json(
+        { error: { code: 'NOT_FOUND', message: 'Arquivo do material não encontrado' } },
+        { status: 404 },
+      )
+    }
     const media = resolveDownloadMedia({
-      contentType: obj.contentType,
+      contentType: head.contentType,
       key,
       fileType: resolved.body.fileType,
     })
@@ -81,9 +100,36 @@ export async function GET(
     const ext = extensionFromKey(key)
     const base = sanitizeFilename(label)
     const filename = ext && !base.toLowerCase().endsWith(`.${ext}`) ? `${base}.${ext}` : base
+    const disposition = `attachment; filename="${filename}"`
+    const len = head.contentLength
+
+    if (len !== null && len > DIRECT_DELIVERY_MIN_BYTES) {
+      // PDF marcável dentro do teto → cache do PDF marcado + 302 direto do R2.
+      if (media.watermark === 'pdf' && len <= WATERMARK_MAX_BYTES) {
+        const url = await presignWatermarkedPdf({
+          srcKey: key,
+          email: session.email,
+          userId: session.id,
+          responseContentDisposition: disposition,
+        })
+        return NextResponse.redirect(url, 302)
+      }
+      // Sem marca (office/zip/…), imagem gigante (não realista) ou acima do
+      // teto da marca → original direto do R2 (mesma filosofia do fallback).
+      if (len > WATERMARK_MAX_BYTES && media.watermark !== null) {
+        console.warn("[anexos] arquivo excede o teto da marca d'água — pré-assinando original", {
+          key,
+          contentLength: len,
+        })
+      }
+      const url = await r2PresignGetPrivate(key, { responseContentDisposition: disposition })
+      return NextResponse.redirect(url, 302)
+    }
+
+    const obj = await r2GetObjectPrivate(key)
     const headers = {
       'content-type': media.mime,
-      'content-disposition': `attachment; filename="${filename}"`,
+      'content-disposition': disposition,
       // Conteúdo é POR ALUNO (e-mail estampado) — nunca cachear compartilhado.
       'cache-control': 'private, no-store',
     }
@@ -92,17 +138,8 @@ export async function GET(
     if (media.watermark === null) {
       return new Response(obj.body, { headers })
     }
-    // Grande demais p/ marcar (materializa em memória) → original em stream
-    // (mesma filosofia do fallback de falha de watermark: entregar > quebrar).
-    if (obj.contentLength !== null && obj.contentLength > WATERMARK_MAX_BYTES) {
-      console.warn("[anexos] arquivo excede o teto da marca d'água — servindo original", {
-        key,
-        contentLength: obj.contentLength,
-      })
-      return new Response(obj.body, { headers })
-    }
 
-    // Bufferizar+marcar dentro do GATE de concorrência: materializa ≤50MB +
+    // Bufferizar+marcar dentro do GATE de concorrência: materializa ≤20MB +
     // cópias do pdf-lib/sharp — sem teto, N downloads simultâneos = OOM.
     return await watermarkGate().run(async () => {
       const original = await bufferFromStream(obj.body)

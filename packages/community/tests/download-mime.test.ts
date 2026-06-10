@@ -92,3 +92,17 @@ describe('resolveDownloadMedia', () => {
     expect(media).toEqual({ mime: 'application/pdf', watermark: 'pdf' })
   })
 })
+
+describe('watermarkCacheKey', () => {
+  test('determinística, sob watermarked/, livre de colisão por construção', async () => {
+    const { watermarkCacheKey } = await import('../src/lib/download-mime')
+    const a = watermarkCacheKey('admin/attachments/abc-123.pdf', 'user-1')
+    expect(a).toBe('watermarked/admin_attachments_abc-123.pdf/user-1.pdf')
+    expect(watermarkCacheKey('admin/attachments/abc-123.pdf', 'user-1')).toBe(a)
+    // Usuário diferente e arquivo diferente → keys diferentes.
+    expect(watermarkCacheKey('admin/attachments/abc-123.pdf', 'user-2')).not.toBe(a)
+    expect(watermarkCacheKey('admin/attachments/outro.pdf', 'user-1')).not.toBe(a)
+    // Caracteres fora do safelist não vazam p/ a key.
+    expect(watermarkCacheKey('/a b/ç.pdf', 'u u')).toBe('watermarked/a_b_.pdf/u_u.pdf')
+  })
+})
