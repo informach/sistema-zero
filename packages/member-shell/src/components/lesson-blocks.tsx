@@ -1,6 +1,6 @@
 'use client'
 
-import { renderMarkdown } from '@/lib/markdown'
+import { renderMarkdown } from '../lib/markdown'
 import type {
   AudioBlock,
   EbookBlock,
@@ -11,7 +11,7 @@ import type {
   QuizStateView,
   RichTextBlock,
   VideoBlock,
-} from '@/lib/types'
+} from '../lib/types'
 import { EbookBlockView } from './ebook/ebook-block'
 import { useLessonPlayer } from './lesson-player-context'
 import { QuizBlockView } from './quiz-block'

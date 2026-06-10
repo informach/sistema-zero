@@ -1,5 +1,5 @@
-import { cn } from '@/lib/cn'
-import { getUserDisplayName, getUserInitials } from '@/lib/user-display'
+import { cn } from '../lib/cn'
+import { getUserDisplayName, getUserInitials } from '../lib/user-display'
 
 const SIZES = {
   /** Botão do header. */

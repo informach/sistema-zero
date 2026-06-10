@@ -1,7 +1,2 @@
-import { type ClassValue, clsx } from 'clsx'
-import { twMerge } from 'tailwind-merge'
-
-/** Concatena classes (clsx) e resolve conflitos do Tailwind (tailwind-merge). */
-export function cn(...inputs: ClassValue[]): string {
-  return twMerge(clsx(inputs))
-}
+// Shim: implementação no @sistemazero/member-shell.
+export * from '@sistemazero/member-shell/lib/cn'

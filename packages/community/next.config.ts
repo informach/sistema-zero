@@ -69,9 +69,9 @@ const nextConfig: NextConfig = {
   // (O Sentry NÃO usa SDK aqui — ingestão via fetch, sem dep externa, imune ao
   // tracing de externos do standalone/Turbopack; mesma decisão do admin.)
   serverExternalPackages: ['sharp'],
-  // Pacote workspace com TS cru (componentes compartilhados) — transpilar junto.
+  // Pacotes workspace com TS cru (componentes/BFF compartilhados) — transpilar junto.
   // three: recomendação oficial do react-three-fiber p/ Next 13.1+ (livro 3D do e-book).
-  transpilePackages: ['@sistemazero/ui', 'three'],
+  transpilePackages: ['@sistemazero/ui', '@sistemazero/member-shell', 'three'],
   // Security headers em TODAS as respostas (inclui `/api/me/avatar` e estáticos,
   // fora do matcher do `proxy.ts`). Fonte única — não duplicar no proxy.
   async headers() {

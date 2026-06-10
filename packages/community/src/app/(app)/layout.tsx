@@ -1,6 +1,6 @@
+import { ImpersonationBanner } from '@sistemazero/member-shell/components/impersonation-banner'
 import { redirect } from 'next/navigation'
 import { CommunityTopnav } from '@/components/community/community-topnav'
-import { ImpersonationBanner } from '@/components/community/impersonation-banner'
 import { actorLabel } from '@/lib/act'
 import { getMeReadonly } from '@/server/auth'
 import { getSession } from '@/server/session'

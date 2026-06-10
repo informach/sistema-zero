@@ -5,9 +5,9 @@ import { Card } from '@sistemazero/ui/card'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { CheckCircle2, Timer, Trophy, XCircle } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { type ApiError, apiSend } from '@/lib/api'
-import { cn } from '@/lib/cn'
-import type { QuizAttemptResultView, QuizBlock, QuizStateView } from '@/lib/types'
+import { type ApiError, apiSend } from '../lib/api'
+import { cn } from '../lib/cn'
+import type { QuizAttemptResultView, QuizBlock, QuizStateView } from '../lib/types'
 import { useLessonPlayer } from './lesson-player-context'
 
 interface Props {

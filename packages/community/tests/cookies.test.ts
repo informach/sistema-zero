@@ -1,5 +1,18 @@
 import { describe, expect, test } from 'bun:test'
-import { expireCookieOptions, prefixedCookieName } from '../src/lib/cookies'
+import {
+  ACCESS_COOKIE,
+  expireCookieOptions,
+  prefixedCookieName,
+  REFRESH_COOKIE,
+} from '../src/lib/cookies'
+
+describe('nomes dos cookies DESTE app', () => {
+  test('community usa sz_member_* (≠ sz_kids_* do community-kids; jar dividido em dev)', () => {
+    // NODE_ENV=test → sem prefixo __Host- (ver prefixedCookieName abaixo).
+    expect(ACCESS_COOKIE).toBe('sz_member_access')
+    expect(REFRESH_COOKIE).toBe('sz_member_refresh')
+  })
+})
 
 describe('prefixedCookieName', () => {
   test('produção usa o prefixo __Host- (Secure + Path=/ + sem Domain)', () => {

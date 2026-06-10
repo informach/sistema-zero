@@ -1,10 +1,5 @@
-import { NextResponse } from 'next/server'
-import { logoutRequest } from '@/server/gateway'
-import { clearSessionCookies, getRefreshToken } from '@/server/session'
+// Shim: a lógica vive no @sistemazero/member-shell (createShellRoutes) —
+// compartilhada com o community-kids; um fix pousa num lugar só.
+import { shell } from '@/server/shell'
 
-export async function POST() {
-  const refresh = await getRefreshToken()
-  if (refresh) await logoutRequest(refresh)
-  await clearSessionCookies()
-  return NextResponse.json({ ok: true })
-}
+export const { POST } = shell.routes.authLogout

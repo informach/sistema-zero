@@ -1,7 +1,7 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import type { EbookBlock } from '@/lib/types'
+import type { EbookBlock } from '../../lib/types'
 import { useLessonPlayer } from '../lesson-player-context'
 
 /**

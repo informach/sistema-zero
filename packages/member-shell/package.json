@@ -1,0 +1,55 @@
+{
+  "name": "@sistemazero/member-shell",
+  "version": "0.1.0",
+  "description": "Núcleo compartilhado dos apps de área do aluno (community/community-kids): BFF (sessão/gateway/refresh/mídia/marca d'água), libs puras e componentes de domínio. Consumido como TS source (modelo do @sistemazero/core) — parametrizado por app via createShell({ cookieBase, audience }).",
+  "type": "module",
+  "private": true,
+  "module": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./server/*": "./src/server/*.ts",
+    "./lib/markdown": "./src/lib/markdown.tsx",
+    "./lib/*": "./src/lib/*.ts",
+    "./components/ebook/*": "./src/components/ebook/*",
+    "./components/*": "./src/components/*.tsx",
+    "./routes": "./src/routes/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "check": "biome check .",
+    "check:fix": "biome check --write ."
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1032.0",
+    "@aws-sdk/s3-request-presigner": "^3.1032.0",
+    "@cantoo/pdf-lib": "^2.7.1",
+    "@react-three/drei": "^10",
+    "@react-three/fiber": "^9",
+    "@sistemazero/ui": "workspace:*",
+    "@vimeo/player": "^2.30.4",
+    "clsx": "^2.1.1",
+    "jose": "^6.1.0",
+    "lucide-react": "^0.546.0",
+    "pdfjs-dist": "^6.0.227",
+    "server-only": "^0.0.1",
+    "sharp": "^0.34.5",
+    "sonner": "^2.0.7",
+    "tailwind-merge": "^3.4.0",
+    "three": "^0.184.0",
+    "zod": "^4.1.12"
+  },
+  "peerDependencies": {
+    "next": "^16",
+    "react": "^19",
+    "react-dom": "^19"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.14",
+    "@types/node": "^22.10.0",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/three": "^0.184.1",
+    "typescript": "^5.7.0"
+  }
+}

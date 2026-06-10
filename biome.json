@@ -183,6 +183,27 @@
       }
     },
     {
+      "includes": ["packages/member-shell/**/*.tsx"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "noStaticElementInteractions": "off",
+            "useKeyWithClickEvents": "off",
+            "useSemanticElements": "off",
+            "noSvgWithoutTitle": "off",
+            "useButtonType": "off",
+            "noLabelWithoutControl": "off"
+          },
+          "correctness": {
+            "useExhaustiveDependencies": "warn"
+          },
+          "performance": {
+            "noImgElement": "off"
+          }
+        }
+      }
+    },
+    {
       "includes": ["packages/studio/**"],
       "linter": {
         "rules": {

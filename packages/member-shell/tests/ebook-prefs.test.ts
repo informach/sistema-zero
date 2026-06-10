@@ -4,7 +4,7 @@ import {
   BRIGHTNESS_MAX,
   BRIGHTNESS_MIN,
   parseBrightness,
-} from '../src/components/community/ebook/ebook-prefs'
+} from '../src/components/ebook/ebook-prefs'
 
 describe('parseBrightness', () => {
   test('ausente (null) cai no padrão — brilho total', () => {

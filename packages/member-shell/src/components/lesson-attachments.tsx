@@ -5,8 +5,8 @@ import { Spinner } from '@sistemazero/ui/spinner'
 import { Download } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { friendlyFileType } from '@/lib/format'
-import type { LessonAttachmentView } from '@/lib/types'
+import { friendlyFileType } from '../lib/format'
+import type { LessonAttachmentView } from '../lib/types'
 
 /**
  * "Materiais da aula" com download NA MESMA página: a rota autenticada demora

@@ -1,12 +1,12 @@
 'use client'
 
+import { UserAvatar } from '@sistemazero/member-shell/components/user-avatar'
 import { LogOut, Moon, Receipt, Sun, User } from 'lucide-react'
 import Link from 'next/link'
 import { useTheme } from 'next-themes'
 import { useEffect, useRef, useState } from 'react'
 import type { SessionUserWithAvatar } from '@/lib/types'
 import { getUserDisplayName } from '@/lib/user-display'
-import { UserAvatar } from './user-avatar'
 
 /**
  * Menu do avatar (espelha o projeto de referência): cabeçalho com foto + nome +

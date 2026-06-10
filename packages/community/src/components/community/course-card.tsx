@@ -1,8 +1,8 @@
+import { ProgressBar } from '@sistemazero/member-shell/components/progress-bar'
 import { Card } from '@sistemazero/ui/card'
 import { BookOpen } from 'lucide-react'
 import Link from 'next/link'
 import type { MyCourseView } from '@/lib/types'
-import { ProgressBar } from './progress-bar'
 
 /** Card de curso da home ("Meus cursos"): capa + progresso + CTA. */
 export function CourseCard({ course }: { course: MyCourseView }) {

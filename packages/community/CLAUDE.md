@@ -33,6 +33,20 @@ Gateway** (NUNCA os serviços direto). Design/tema portado do projeto de referê
 > rota `/home` (a referência era monolito com landing na raiz; aqui a home É a raiz). O layout do
 > grupo `(app)` hidrata `avatarUrl` fresco via `getMe()` (claims não carregam foto).
 
+> ⚠️ **EXTRAÇÃO 06/2026 — `@sistemazero/member-shell`:** todo o BFF (sessão/gateway/refresh/
+> mídia/marca d'água/clients), as libs puras, os componentes de DOMÍNIO (player, blocos, quiz,
+> ebook 3D, anexos) e a LÓGICA dos route handlers vivem agora no
+> **[`packages/member-shell`](../member-shell/CLAUDE.md)** — compartilhados com o
+> `community-kids`. Aqui ficam: `src/server/shell.ts` (`createShell({ cookieBase: 'sz_member',
+> audience: 'adult' })`), SHIMS nos paths antigos (`src/server/*`, `src/lib/*` re-exportam do
+> shell — páginas seguem importando `@/...`), `route.ts` de 1-3 linhas sobre `shell.routes.*`,
+> `proxy.ts` (config + matcher literal), componentes de IDENTIDADE e o globals.css. As regras de
+> segurança descritas abaixo CONTINUAM valendo — a implementação só mudou de endereço; fix de BFF
+> agora pousa no member-shell (e roda nos dois apps). Os testes das libs/BFF moveram p/ lá
+> (`packages/member-shell/tests`); aqui ficou `tests/cookies.test.ts` (trava os nomes
+> `sz_member_*`). Dockerfile copia o `boot-check.mjs` DO member-shell; railway.json e ci.yml
+> incluem `/packages/member-shell/**` como gatilho de deploy deste app.
+
 ## Arquitetura (o padrão central — preserve-o; espelha o @sistemazero/admin)
 
 ```

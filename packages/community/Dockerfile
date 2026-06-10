@@ -27,8 +27,10 @@ COPY --from=build /app/packages/community/.next/standalone ./
 COPY --from=build /app/packages/community/.next/static ./packages/community/.next/static
 COPY --from=build /app/packages/community/public ./packages/community/public
 # Launcher com fail-fast de env (em prod o Next NÃO roda o register() da
-# instrumentation no boot — ver comentário no próprio script).
-COPY --from=build /app/packages/community/scripts/boot-check.mjs ./packages/community/boot-check.mjs
+# instrumentation no boot — ver comentário no próprio script). Fonte ÚNICA no
+# member-shell (compartilhado com o community-kids); o `import('./server.js')`
+# é relativo ao DESTINO da cópia — funciona igual.
+COPY --from=build /app/packages/member-shell/scripts/boot-check.mjs ./packages/community/boot-check.mjs
 # Cache do otimizador de imagens do Next: a árvore é copiada como root e o
 # processo roda como `node` — sem isso todo next/image loga EACCES em prod.
 RUN mkdir -p packages/community/.next/cache && chown -R node:node packages/community/.next

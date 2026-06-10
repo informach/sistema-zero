@@ -1,12 +1,7 @@
-import { NextResponse } from 'next/server'
+// Shim: a lógica vive no @sistemazero/member-shell (createShellRoutes) —
+// compartilhada com o community-kids; um fix pousa num lugar só.
+import { shell } from '@/server/shell'
 
 export const dynamic = 'force-dynamic'
 
-/**
- * Liveness p/ o healthcheck do Railway: sem auth e sem tocar upstream — responde
- * "estou de pé" (o gateway/serviços têm os próprios `/readyz`; acoplar aqui
- * transformaria degradação deles em outage da área do aluno).
- */
-export function GET() {
-  return NextResponse.json({ status: 'ok' })
-}
+export const { GET } = shell.routes.healthz
