@@ -233,7 +233,8 @@ src/
   components/ community/* (topnav/user-menu/user-avatar/cards/blocos/course-rating-flow)
             community/ebook/* — LIVRO 3D do bloco e-book: ebook-block.tsx (resolve URL via
             LessonPlayerContext + dynamic ssr:false) → ebook-book.impl.tsx (Canvas r3f +
-            OrbitControls restrito + botões/label) + book-3d.tsx (folhas = BoxGeometry
+            OrbitControls restrito + botões/label + slider de brilho — preferência via
+            ebook-prefs.ts, localStorage) + book-3d.tsx (folhas = BoxGeometry
             segmentado + SkinnedMesh/bones, dobra com damp por frame; técnica própria) +
             use-pdf-pages.ts (pdf.js → CanvasTexture, janela folha±2 c/ dispose; worker via
             new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url), singleton)
@@ -252,7 +253,7 @@ src/
 | `bun run dev` | Next dev server :3007 (Turbopack) |
 | `bun run build` / `start` | build (**`next build`** — Turbopack) + produção |
 | `bun run typecheck` | `tsc --noEmit` |
-| `bun test` | testes (watermark · markdown · download-mime · refresh · csrf · cookies · sentry · watermark-queue — rode com **sandbox off**, gotcha do monorepo) |
+| `bun test` | testes (watermark · markdown · download-mime · refresh · csrf · cookies · sentry · watermark-queue · ebook-prefs — rode com **sandbox off**, gotcha do monorepo) |
 | `bun run check` / `check:fix` | Biome |
 
 Da raiz: `bun run dev:community`, `build:community`, `typecheck:community`.
@@ -394,7 +395,11 @@ valida e só então importa o `server.js` standalone).
   folhas viradas) — cada pilha desce na ordem certa (recém-virada por cima), o topo esquerdo
   fica 2 gaps acima do direito (folha em virada nunca colide com o novo topo direito; pilhas
   não se sobrepõem em x) e `SHEET_GAP = 1.4×espessura` (faces coplanares = z-fighting). **Legibilidade**: `Canvas flat` (SEM tone mapping — ACES lavava
-  o contraste do texto), texturas 1536px + `anisotropy 16`, luz ambiente dominante. **Tela
+  o contraste do texto), texturas 1536px + `anisotropy 16` e **luzes calibradas p/ a página de
+  frente renderizar a ~1.0** (modo físico do three r155+ divide a difusa por π — ambiente 2.75 +
+  direcional 0.5; intensidades baixas deixam o papel CINZA, percebido como "overlay escuro") +
+  **slider de brilho da página** (Sun + range 0.5–1.0 ao lado do fullscreen, multiplica as duas
+  luzes; preferência em localStorage `sz:ebook:brightness` via `ebook-prefs.ts`, puro/testado). **Tela
   cheia** no container (Fullscreen API, mesmo padrão do `vimeo-player`; em fullscreen o
   `aspect-video` vira `h-full` e o **zoom por scroll LIGA** — fora dela ficaria sequestrando o
   scroll da página). Fundo = gradiente radial calmo (azul-escuro). Texturas via pdf.js (worker
