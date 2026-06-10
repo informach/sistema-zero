@@ -1,3 +1,4 @@
+import { formatTelefone } from '@sistemazero/ui/phone'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { type Ref, useEffect, useId, useRef, useState } from 'react'
 import { apiPost } from '../lib/api-fetch'
@@ -5,16 +6,6 @@ import { ContactSchema, fieldErrors } from '../lib/contact-schema'
 import { isPerfil } from '../lib/perfil'
 
 type Errors = Partial<Record<'nome' | 'email' | 'telefone', string>>
-
-/** Máscara pt-BR: "(11) 99999-9999" (aceita fixo de 10 dígitos também). */
-function formatTelefone(value: string): string {
-  const d = value.replace(/\D/g, '').slice(0, 11)
-  if (d.length === 0) return ''
-  if (d.length <= 2) return `(${d}`
-  if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`
-  if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`
-  return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`
-}
 
 export default function PreCheckoutModal() {
   const [open, setOpen] = useState(false)

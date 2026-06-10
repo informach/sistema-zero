@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@sist
 import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
 import { PasswordInput } from '@sistemazero/ui/password-input'
+import { brLocalDigits, formatTelefone, phoneDigits } from '@sistemazero/ui/phone'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { Camera } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -22,7 +23,15 @@ const AVATAR_MAX_BYTES = 5 * 1024 * 1024 // 5MB (mesma régua do servidor)
 const ProfileSchema = z.object({
   firstName: z.string().min(1, 'Informe o nome').max(100),
   lastName: z.string().min(1, 'Informe o sobrenome').max(100),
-  phone: z.string().max(20).optional(),
+  // Obrigatório: todo comprador cadastra telefone na compra (o funil exige) —
+  // mesmas regras/mensagens do ContactSchema do funil (BR: DDD + número).
+  phone: z
+    .string()
+    .min(1, 'Informe seu telefone.')
+    .refine((v) => {
+      const n = phoneDigits(v).length
+      return n === 10 || n === 11
+    }, 'Telefone inválido. Use DDD + número.'),
 })
 
 const PasswordSchema = z
@@ -154,13 +163,15 @@ function ProfileForm({ user }: { user: UserView }) {
   const router = useRouter()
   const [firstName, setFirstName] = useState(user.firstName)
   const [lastName, setLastName] = useState(user.lastName)
-  const [phone, setPhone] = useState(user.phone ?? '')
+  // O auth guarda só dígitos (o funil grava DDD+número na compra); dado legado
+  // pode vir com DDI/formato livre → normaliza e exibe com a máscara BR.
+  const [phone, setPhone] = useState(formatTelefone(brLocalDigits(user.phone ?? '')))
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [saving, setSaving] = useState(false)
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
-    const parsed = ProfileSchema.safeParse({ firstName, lastName, phone: phone || undefined })
+    const parsed = ProfileSchema.safeParse({ firstName, lastName, phone })
     if (!parsed.success) {
       const next: Record<string, string> = {}
       for (const issue of parsed.error.issues) next[String(issue.path[0])] = issue.message
@@ -173,7 +184,8 @@ function ProfileForm({ user }: { user: UserView }) {
       await apiSend('/api/auth/me', 'PATCH', {
         firstName: parsed.data.firstName,
         lastName: parsed.data.lastName,
-        phone: parsed.data.phone ?? null,
+        // Persiste SÓ DÍGITOS (consistente com o que o funil grava no auth).
+        phone: phoneDigits(parsed.data.phone),
       })
       toast.success('Perfil atualizado!')
       router.refresh()
@@ -213,13 +225,15 @@ function ProfileForm({ user }: { user: UserView }) {
               />
             </Field>
           </div>
-          <Field label="Telefone (opcional)" htmlFor="phone" error={errors.phone}>
+          <Field label="Telefone" htmlFor="phone" error={errors.phone}>
             <Input
               id="phone"
               type="tel"
+              inputMode="tel"
               autoComplete="tel"
+              placeholder="(11) 99999-9999"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) => setPhone(formatTelefone(e.target.value))}
               aria-invalid={Boolean(errors.phone)}
             />
           </Field>

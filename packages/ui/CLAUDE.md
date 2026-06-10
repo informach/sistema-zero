@@ -43,7 +43,9 @@ Udemy; X/Voltar são absolutos no header) · info-tooltip · input · label (`Fi
 pagination · password-input · progress · select · spinner · star-rating (display + input com MEIA
 estrela 1–5: radios nativos sr-only sobre as metades — 1ª estrela é alvo inteiro —, hover preview,
 âmbar `fill-amber-400`; sem `onChange` = read-only) · switch · table · textarea · `cn`
-(clsx + tailwind-merge).
+(clsx + tailwind-merge) · **`phone`** (`@sistemazero/ui/phone`, módulo PURO sem React:
+`phoneDigits`/`brLocalDigits`/`formatTelefone` — máscara BR "(11) 99999-9999"; usado pelo
+perfil do community e pelo pré-checkout do funil; convenção: o auth guarda SÓ DÍGITOS locais).
 
 ## Comandos
 
