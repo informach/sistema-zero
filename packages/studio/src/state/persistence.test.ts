@@ -30,16 +30,23 @@ mock.module('idb-keyval', () => ({
   setMany: idb.setMany,
 }))
 
-const { bootstrapPersistence, listAllProjects, saveCurrentProject, setAutosaveDelayForTests } =
-  await import('./persistence')
+const { listAllProjects } = await import('./persistence')
 const { PROJECT_FILE_LIMITS, useProjectStore } = await import('./projectStore')
+const { createPersistenceService, setAutosaveDelayForTests } = await import(
+  '../persistence/service'
+)
+const { createLocalPersistenceAdapter } = await import('../persistence/local')
 
 // Sem fake timers no bun:test: encurta o debounce do autosave e espera com
 // timers reais (folga de 5x para máquinas lentas/CI).
 const AUTOSAVE_TEST_DELAY_MS = 10
 const waitForAutosave = () => Bun.sleep(AUTOSAVE_TEST_DELAY_MS * 5)
 
-describe('bootstrapPersistence', () => {
+// Serviço sobre a store DEFAULT (mesmo arranjo do fallback fora de um
+// <Studio>); cada teste dá attach/detach.
+const service = createPersistenceService(useProjectStore, createLocalPersistenceAdapter())
+
+describe('PersistenceService', () => {
   beforeEach(() => {
     setAutosaveDelayForTests(AUTOSAVE_TEST_DELAY_MS)
     idb.createStore.mockClear()
@@ -59,7 +66,7 @@ describe('bootstrapPersistence', () => {
   })
 
   it('persiste o projeto quando o debounce de autosave completa', async () => {
-    const cleanup = bootstrapPersistence()
+    const detach = service.attach()
     useProjectStore.getState().setProject(createEmptyProject('project-1', 'Projeto 1'))
 
     await waitForAutosave()
@@ -73,11 +80,11 @@ describe('bootstrapPersistence', () => {
       expect.anything(),
     )
 
-    cleanup()
+    detach()
   })
 
   it('mantém o snapshot pendente quando o projeto é descarregado antes do debounce', async () => {
-    const cleanup = bootstrapPersistence()
+    const detach = service.attach()
     useProjectStore.getState().setProject(createEmptyProject('project-1', 'Projeto 1'))
     useProjectStore.getState().unloadProject()
 
@@ -92,11 +99,11 @@ describe('bootstrapPersistence', () => {
       expect.anything(),
     )
 
-    cleanup()
+    detach()
   })
 
   it('cancela autosave pendente ao excluir o projeto carregado', async () => {
-    const cleanup = bootstrapPersistence()
+    const detach = service.attach()
     useProjectStore.getState().setProject(createEmptyProject('project-1', 'Projeto 1'))
 
     await useProjectStore.getState().deleteProject('project-1')
@@ -113,11 +120,11 @@ describe('bootstrapPersistence', () => {
     )
     expect(idb.setMany).not.toHaveBeenCalled()
 
-    cleanup()
+    detach()
   })
 
   it('força gravação pendente quando a página está saindo', async () => {
-    const cleanup = bootstrapPersistence()
+    const detach = service.attach()
     useProjectStore.getState().setProject(createEmptyProject('project-pagehide', 'Projeto'))
 
     window.dispatchEvent(new Event('pagehide'))
@@ -134,17 +141,53 @@ describe('bootstrapPersistence', () => {
     await waitForAutosave()
     expect(idb.setMany).toHaveBeenCalledTimes(1)
 
-    cleanup()
+    detach()
   })
 
-  it('cancela autosave pendente quando o cleanup roda', async () => {
-    const cleanup = bootstrapPersistence()
+  it('flusha o autosave pendente no detach (unmount não perde a última edição)', async () => {
+    const detach = service.attach()
     useProjectStore.getState().setProject(createEmptyProject('project-2', 'Projeto 2'))
 
-    cleanup()
+    detach()
+    expect(idb.setMany).toHaveBeenCalledTimes(1)
+
+    await waitForAutosave()
+    expect(idb.setMany).toHaveBeenCalledTimes(1)
+  })
+
+  it('emite onChange no debounce com o snapshot completo, mesmo com persistence none', async () => {
+    const noneService = createPersistenceService(useProjectStore, null)
+    const changes: string[] = []
+    noneService.handlers = { onChange: (project) => changes.push(project.id) }
+    const detach = noneService.attach()
+
+    useProjectStore.getState().setProject(createEmptyProject('project-7', 'Projeto 7'))
     await waitForAutosave()
 
+    expect(changes).toEqual(['project-7'])
     expect(idb.setMany).not.toHaveBeenCalled()
+    // Snapshot entregue ao host conta como salvo (badge "Salvo").
+    expect(useProjectStore.getState().isDirty).toBe(false)
+
+    detach()
+  })
+
+  it('onSave rejeitado marca erro no badge, notifica onError e propaga', async () => {
+    const failing = createPersistenceService(useProjectStore, null)
+    const errors: string[] = []
+    failing.handlers = {
+      onSave: async () => {
+        throw new Error('host recusou')
+      },
+      onError: (error) => errors.push(error.message),
+    }
+    useProjectStore.getState().setProject(createEmptyProject('project-8', 'Projeto 8'))
+
+    expect(failing.save()).rejects.toThrow('host recusou')
+    await Bun.sleep(0)
+
+    expect(useProjectStore.getState().saveError).toContain('host recusou')
+    expect(errors).toHaveLength(1)
   })
 
   it('não marca como salvo se uma edição nova acontece enquanto a persistência anterior está em voo', async () => {
@@ -156,7 +199,7 @@ describe('bootstrapPersistence', () => {
         }),
     )
 
-    const cleanup = bootstrapPersistence()
+    const detach = service.attach()
     useProjectStore.getState().setProject(createEmptyProject('project-3', 'Projeto 3'))
 
     await waitForAutosave()
@@ -170,13 +213,13 @@ describe('bootstrapPersistence', () => {
 
     expect(useProjectStore.getState().isDirty).toBe(true)
 
-    cleanup()
+    detach()
   })
 
   it('mantém o projeto sujo e registra erro quando o autosave falha', async () => {
     idb.setMany.mockRejectedValueOnce(new Error('QuotaExceededError'))
 
-    const cleanup = bootstrapPersistence()
+    const detach = service.attach()
     useProjectStore.getState().setProject(createEmptyProject('project-4', 'Projeto 4'))
 
     await waitForAutosave()
@@ -184,14 +227,14 @@ describe('bootstrapPersistence', () => {
     expect(useProjectStore.getState().isDirty).toBe(true)
     expect(useProjectStore.getState().saveError).toContain('QuotaExceededError')
 
-    cleanup()
+    detach()
   })
 
   it('salvar manualmente cancela o autosave pendente', async () => {
-    const cleanup = bootstrapPersistence()
+    const detach = service.attach()
     useProjectStore.getState().setProject(createEmptyProject('project-5', 'Projeto 5'))
 
-    await saveCurrentProject()
+    await service.save()
     await waitForAutosave()
 
     expect(idb.setMany).toHaveBeenCalledTimes(1)
@@ -204,7 +247,7 @@ describe('bootstrapPersistence', () => {
       expect.anything(),
     )
 
-    cleanup()
+    detach()
   })
 
   it('salvar manualmente não marca salvo se outro snapshot entra enquanto persiste', async () => {
@@ -217,7 +260,7 @@ describe('bootstrapPersistence', () => {
     )
 
     useProjectStore.getState().setProject(createEmptyProject('project-6', 'Projeto 6'))
-    const savePromise = saveCurrentProject()
+    const savePromise = service.save()
     useProjectStore.getState().setFile('script.js', 'console.log("nova edição");\n')
 
     resolvePersist?.()

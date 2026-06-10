@@ -3,7 +3,7 @@ import type { Project } from '#core'
 import type { ExtensionDefinition } from '#extensions'
 import { type JSStatement, type SZIR, statementIsExtension } from '#ir'
 import { findExtension, OFFICIAL_CATALOG } from '#official-extensions'
-import { useProjectStore } from './projectStore'
+import { type ProjectStoreApi, useProjectStore } from './projectStore'
 
 export { findExtension, OFFICIAL_CATALOG }
 
@@ -21,18 +21,21 @@ export function unregisterExtension(extId: string): void {
  * Ao instalar: registra blocos no Blockly + adiciona no projeto. Idempotente
  * — instalar a mesma extensão duas vezes não cria duplicatas.
  */
-export function installExtension(ext: ExtensionDefinition): void {
+export function installExtension(
+  ext: ExtensionDefinition,
+  store: ProjectStoreApi = useProjectStore,
+): void {
   registerExtension(ext)
-  useProjectStore.getState().installExtension(ext.manifest.id, ext.manifest.version)
+  store.getState().installExtension(ext.manifest.id, ext.manifest.version)
 }
 
 /**
  * Ao remover: tira blocos do Blockly + remove do projeto + limpa quaisquer
  * blocos do workspace serializados em blocksState (caller decide se filtra).
  */
-export function removeExtension(extId: string): void {
+export function removeExtension(extId: string, store: ProjectStoreApi = useProjectStore): void {
   unregisterExtension(extId)
-  useProjectStore.getState().removeExtension(extId)
+  store.getState().removeExtension(extId)
 }
 
 /**

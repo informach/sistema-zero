@@ -1,5 +1,8 @@
-import { create } from 'zustand'
+import { useContext } from 'react'
+import { useStore } from 'zustand'
+import { createStore, type StoreApi } from 'zustand/vanilla'
 import type { SourceMappedFile } from '#generators'
+import { StudioStoresContext } from './storesContext'
 
 /**
  * Estado efêmero de highlight cruzado. Quando o aluno seleciona um bloco no
@@ -27,23 +30,39 @@ interface HighlightStore {
   reset: () => void
 }
 
-export const useHighlightStore = create<HighlightStore>((set) => ({
-  selectedBlockId: null,
-  selectionNonce: 0,
-  cursorFile: null,
-  cursorLine: null,
-  cursorColumn: null,
-  source: null,
-  selectBlock: (id) =>
-    set((s) => ({ selectedBlockId: id, source: 'blocks', selectionNonce: s.selectionNonce + 1 })),
-  setCursor: (file, line, column) =>
-    set({ cursorFile: file, cursorLine: line, cursorColumn: column ?? null, source: 'editor' }),
-  reset: () =>
-    set({
-      selectedBlockId: null,
-      cursorFile: null,
-      cursorLine: null,
-      cursorColumn: null,
-      source: null,
-    }),
-}))
+export function createHighlightStore(): StoreApi<HighlightStore> {
+  return createStore<HighlightStore>((set) => ({
+    selectedBlockId: null,
+    selectionNonce: 0,
+    cursorFile: null,
+    cursorLine: null,
+    cursorColumn: null,
+    source: null,
+    selectBlock: (id) =>
+      set((s) => ({ selectedBlockId: id, source: 'blocks', selectionNonce: s.selectionNonce + 1 })),
+    setCursor: (file, line, column) =>
+      set({ cursorFile: file, cursorLine: line, cursorColumn: column ?? null, source: 'editor' }),
+    reset: () =>
+      set({
+        selectedBlockId: null,
+        cursorFile: null,
+        cursorLine: null,
+        cursorColumn: null,
+        source: null,
+      }),
+  }))
+}
+
+const defaultHighlightStore = createHighlightStore()
+
+type BoundUseHighlightStore = (<T>(selector: (s: HighlightStore) => T) => T) &
+  StoreApi<HighlightStore>
+
+/** Hook por instância (ver uiStore.ts para o contrato default/estáticas). */
+export const useHighlightStore: BoundUseHighlightStore = Object.assign(
+  function useHighlightStoreHook<T>(selector: (s: HighlightStore) => T): T {
+    const stores = useContext(StudioStoresContext)
+    return useStore(stores?.highlight ?? defaultHighlightStore, selector)
+  },
+  defaultHighlightStore,
+)

@@ -9,6 +9,7 @@ import { ErrorBoundary } from '#ui'
 import { BlocksMode, BridgeMode, CodeMode } from '../../modes/lazyModes'
 import { useProjectStore } from '../../state/projectStore'
 import { useUIStore } from '../../state/uiStore'
+import { useStudioConfig } from '../../studio/config'
 import { BottomPanel } from './BottomPanel'
 import { SectionErrorFallback } from './ErrorViews'
 import { EditorSkeleton } from './LoadingViews'
@@ -27,9 +28,11 @@ function ModeFallback({ name }: { name: string }) {
 export interface ShellProps {
   /** Sai do editor (ex.: volta à lista de projetos do host). Sem ela, a Topbar esconde a navegação. */
   onExit?: () => void
+  /** Mostra o toggle claro/escuro na Topbar (false quando o host fixa o tema via prop). */
+  canToggleTheme?: boolean
 }
 
-export function Shell({ onExit }: ShellProps): JSX.Element {
+export function Shell({ onExit, canToggleTheme }: ShellProps): JSX.Element {
   const { hasProject, projectId, projectMode, installedExtensions } = useProjectStore(
     useShallow((s) => ({
       hasProject: Boolean(s.project),
@@ -40,6 +43,8 @@ export function Shell({ onExit }: ShellProps): JSX.Element {
   )
   const showExtensions = useUIStore((s) => s.showExtensions)
   const setShowExtensions = useUIStore((s) => s.setShowExtensions)
+  const config = useStudioConfig()
+  const hasBottomPanel = config.console || config.terminal || config.ai
   const installedExtensionKey = useMemo(
     () => installedExtensions.map((ext) => `${ext.id}@${ext.version}`).join('|'),
     [installedExtensions],
@@ -56,7 +61,7 @@ export function Shell({ onExit }: ShellProps): JSX.Element {
 
   return (
     <div className="flex h-full flex-col bg-sz-bg text-sz-fg">
-      <Topbar onExit={onExit} />
+      <Topbar onExit={onExit} canToggleTheme={canToggleTheme} />
       <main className="flex min-h-0 flex-1 flex-col">
         <PanelGroup direction="vertical" className="h-full w-full" autoSaveId="sz-shell-vertical">
           <Panel defaultSize={70} minSize={30}>
@@ -90,13 +95,17 @@ export function Shell({ onExit }: ShellProps): JSX.Element {
               </ErrorBoundary>
             </div>
           </Panel>
-          <PanelResizeHandle className="sz-resize-handle sz-resize-handle--horizontal" />
-          <Panel defaultSize={30} minSize={10} maxSize={70}>
-            <BottomPanel />
-          </Panel>
+          {hasBottomPanel && (
+            <>
+              <PanelResizeHandle className="sz-resize-handle sz-resize-handle--horizontal" />
+              <Panel defaultSize={30} minSize={10} maxSize={70}>
+                <BottomPanel />
+              </Panel>
+            </>
+          )}
         </PanelGroup>
       </main>
-      {showExtensions && (
+      {showExtensions && config.extensions && (
         <ErrorBoundary
           label="extensões"
           resetKeys={[showExtensions]}

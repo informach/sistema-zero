@@ -8,6 +8,7 @@ import { ModeLimitationsNotice } from '../components/layout/ModeLimitationsNotic
 import { PreviewIframe } from '../components/preview/PreviewIframe'
 import { useProjectStore } from '../state/projectStore'
 import { useUIStore } from '../state/uiStore'
+import { useStudioConfig } from '../studio/config'
 
 export function BlocksMode(): JSX.Element {
   const { hasProject, blocksState, ir } = useProjectStore(
@@ -18,7 +19,8 @@ export function BlocksMode(): JSX.Element {
     })),
   )
   const applyProjectState = useProjectStore((s) => s.applyProjectState)
-  const showPreview = useUIStore((s) => s.showPreview)
+  const studioConfig = useStudioConfig()
+  const showPreview = useUIStore((s) => s.showPreview) && studioConfig.preview
 
   // Projetos antigos ou vindos do modo Código podem ter IR salvo, mas ainda não
   // ter a serialização do Blockly — ou ter um `blocksState` VAZIO (sobra de um

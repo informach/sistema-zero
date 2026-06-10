@@ -1,5 +1,7 @@
+import { useContext } from 'react'
 import { ulid } from 'ulid'
-import { create } from 'zustand'
+import { useStore } from 'zustand'
+import { createStore, type StoreApi } from 'zustand/vanilla'
 import {
   createEmptyProject,
   type ExtraFile,
@@ -27,12 +29,15 @@ import {
   loadProjectById,
   persistProject,
 } from './persistence'
+import { StudioStoresContext } from './storesContext'
 
 interface ProjectStore {
   project: Project | null
   isDirty: boolean
   saveError: string | null
   loadProject: (id: string) => Promise<Project | null>
+  /** Hidrata um projeto já sanitizado (host/<Studio>) SEM marcar como sujo. */
+  hydrateProject: (p: Project) => void
   unloadProject: () => void
   createProject: (name: string) => Promise<Project>
   duplicateProject: (id: string) => Promise<Project | null>
@@ -347,7 +352,20 @@ function sanitizeImportedExtraFiles(raw: unknown): ExtraFile[] {
   return out
 }
 
-function projectFilesLimitError(files: ProjectFiles, extraFiles: ExtraFile[]): string | null {
+/** Limites de POLÍTICA configuráveis pelo host (prop `limits` do <Studio>). */
+export interface StudioLimits {
+  maxFileChars?: number
+  maxTotalChars?: number
+  maxExtraFiles?: number
+}
+
+type ResolvedLimits = Required<StudioLimits>
+
+function projectFilesLimitError(
+  files: ProjectFiles,
+  extraFiles: ExtraFile[],
+  limits: ResolvedLimits = PROJECT_FILE_LIMITS,
+): string | null {
   const allFiles: Array<[string, string]> = [
     ['index.html', files['index.html']],
     ['style.css', files['style.css']],
@@ -355,20 +373,20 @@ function projectFilesLimitError(files: ProjectFiles, extraFiles: ExtraFile[]): s
     ...extraFiles.map((file): [string, string] => [file.name, file.content]),
   ]
 
-  if (extraFiles.length > MAX_EXTRA_FILES) {
-    return `Limite de ${MAX_EXTRA_FILES} arquivos extras excedido.`
+  if (extraFiles.length > limits.maxExtraFiles) {
+    return `Limite de ${limits.maxExtraFiles} arquivos extras excedido.`
   }
 
   let total = 0
   for (const [name, content] of allFiles) {
-    if (content.length > MAX_FILE_CHARS) {
-      return `O arquivo ${name} excede o limite de ${MAX_FILE_CHARS.toLocaleString('pt-BR')} caracteres.`
+    if (content.length > limits.maxFileChars) {
+      return `O arquivo ${name} excede o limite de ${limits.maxFileChars.toLocaleString('pt-BR')} caracteres.`
     }
     total += content.length
   }
 
-  if (total > MAX_TOTAL_CHARS) {
-    return `O projeto excede o limite total de ${MAX_TOTAL_CHARS.toLocaleString('pt-BR')} caracteres.`
+  if (total > limits.maxTotalChars) {
+    return `O projeto excede o limite total de ${limits.maxTotalChars.toLocaleString('pt-BR')} caracteres.`
   }
 
   return null
@@ -714,6 +732,15 @@ function sanitizeStoredProject(raw: unknown, requestedId?: string): Project | nu
 
 export async function loadSanitizedProjectById(id: string): Promise<Project | null> {
   return sanitizeStoredProject(await loadProjectById(id), id)
+}
+
+/**
+ * Sanitiza um Project vindo do HOST (prop `initialProject` do <Studio>) com as
+ * mesmas regras aplicadas a projetos persistidos — protege contra JSON
+ * malformado/hostil passado pelo app que embarca o editor.
+ */
+export function sanitizeProjectForHost(raw: unknown): Project | null {
+  return sanitizeStoredProject(raw)
 }
 
 function getAllowedBlocklyBlockTypes(
@@ -1153,269 +1180,306 @@ function countJSExpr(expr: JSExpr): number {
   return 1
 }
 
-export const useProjectStore = create<ProjectStore>((set, get) => ({
-  project: null,
-  isDirty: false,
-  saveError: null,
-  loadProject: async (id) => {
-    const existing = await loadSanitizedProjectById(id)
-    if (!existing) {
-      set({ project: null, isDirty: false, saveError: null })
+export interface CreateProjectStoreOptions {
+  /** Limites de política do host — anti-DoS profundos continuam internos. */
+  limits?: StudioLimits
+}
+
+export function createProjectStore(
+  options: CreateProjectStoreOptions = {},
+): StoreApi<ProjectStore> {
+  const limits: ResolvedLimits = { ...PROJECT_FILE_LIMITS, ...options.limits }
+  return createStore<ProjectStore>((set, get) => ({
+    project: null,
+    isDirty: false,
+    saveError: null,
+    loadProject: async (id) => {
+      const existing = await loadSanitizedProjectById(id)
+      if (!existing) {
+        set({ project: null, isDirty: false, saveError: null })
+        return null
+      }
+      set({ project: existing, isDirty: false, saveError: null })
+      return existing
+    },
+    hydrateProject: (p) => set({ project: p, isDirty: false, saveError: null }),
+    unloadProject: () => set({ project: null, isDirty: false, saveError: null }),
+    createProject: async (name) => {
+      const p = createEmptyProject(ulid(), sanitizeProjectName(name))
+      await persistProject(p)
+      return p
+    },
+    duplicateProject: async (id) => {
+      const source = await loadSanitizedProjectById(id)
+      if (!source) return null
+      const now = Date.now()
+      const copy: Project = {
+        ...source,
+        id: ulid(),
+        name: `${source.name} (cópia)`,
+        createdAt: now,
+        updatedAt: now,
+      }
+      await persistProject(copy)
+      return copy
+    },
+    deleteProject: async (id) => {
+      await deleteProjectFromDB(id)
+      if (get().project?.id === id) {
+        set({ project: null, isDirty: false, saveError: null })
+      }
+    },
+    renameProject: async (id, name) => {
+      const safeName = sanitizeProjectName(name)
+      const existing = await loadSanitizedProjectById(id)
+      if (!existing) return
+      const next = { ...existing, name: safeName, updatedAt: Date.now() }
+      await persistProject(next)
+      if (get().project?.id === id) {
+        set({ project: next, isDirty: false, saveError: null })
+      }
+    },
+    importProjectFromJSON: async (raw) => {
+      if (!raw || typeof raw !== 'object') {
+        throw new Error('Arquivo inválido: não é um objeto JSON.')
+      }
+      const r = raw as Record<string, unknown>
+      if (typeof r.name !== 'string' || !isProjectFiles(r.files)) {
+        throw new Error('Arquivo inválido: faltam campos obrigatórios (name, files).')
+      }
+      // Limites de tamanho — evita travar a IDE com arquivos enormes.
+      const files = sanitizeCanonicalProjectFiles(r.files)
+      if (!files) {
+        throw new Error('Arquivo inválido: conteúdo excede o tamanho máximo permitido.')
+      }
+
+      // IR: só aceita se passar pelo schema e pelos limites de tamanho/complexidade.
+      const ir = sanitizeImportedIR(r.ir)
+
+      const installedExtensions = sanitizeImportedExtensions(r.installedExtensions)
+      const blocksState = sanitizeImportedBlocksState(r.blocksState, installedExtensions)
+
+      const now = Date.now()
+      const base = createEmptyProject(ulid(), sanitizeProjectName(r.name))
+      const mode: IDEMode = IDE_MODES.includes(r.mode as IDEMode) ? (r.mode as IDEMode) : base.mode
+      const imported: Project = {
+        ...base,
+        files,
+        extraFiles: sanitizeImportedExtraFiles(r.extraFiles),
+        mode,
+        ir: ir ?? base.ir,
+        blocksState,
+        installedExtensions,
+        createdAt: now,
+        updatedAt: now,
+      }
+      await persistProject(imported)
+      return imported
+    },
+    setProject: (p) => set({ project: p, isDirty: true, saveError: null }),
+    setMode: (mode) => {
+      const p = get().project
+      if (!p) return
+      set({ project: bump({ ...p, mode }), isDirty: true, saveError: null })
+    },
+    setFiles: (files) => {
+      const p = get().project
+      if (!p) return
+      const nextFiles = { ...p.files, ...files }
+      const limitError = projectFilesLimitError(nextFiles, p.extraFiles ?? [], limits)
+      if (limitError) {
+        set({ saveError: limitError })
+        return
+      }
+      set({ project: bump({ ...p, files: nextFiles }), isDirty: true, saveError: null })
+    },
+    setFile: (name, value) => {
+      const p = get().project
+      if (!p) return
+      if (p.files[name] === value) return
+      const nextFiles = { ...p.files, [name]: value }
+      const limitError = projectFilesLimitError(nextFiles, p.extraFiles ?? [], limits)
+      if (limitError) {
+        set({ saveError: limitError })
+        return
+      }
+      set({ project: bump({ ...p, files: nextFiles }), isDirty: true, saveError: null })
+    },
+    setIR: (ir) => {
+      const p = get().project
+      if (!p) return
+      set({ project: bump({ ...p, ir }), isDirty: true, saveError: null })
+    },
+    setBlocksState: (state) => {
+      const p = get().project
+      if (!p) return
+      set({ project: bump({ ...p, blocksState: state }), isDirty: true, saveError: null })
+    },
+    applyProjectState: (patch) => {
+      const p = get().project
+      if (!p) return
+      const nextFiles = patch.files ? { ...p.files, ...patch.files } : p.files
+      const limitError = projectFilesLimitError(nextFiles, p.extraFiles ?? [], limits)
+      if (limitError) {
+        set({ saveError: limitError })
+        return
+      }
+      set({
+        project: bump({
+          ...p,
+          files: nextFiles,
+          ir: 'ir' in patch ? (patch.ir ?? null) : p.ir,
+          blocksState: 'blocksState' in patch ? (patch.blocksState ?? null) : p.blocksState,
+          installedExtensions: patch.installedExtensions ?? p.installedExtensions,
+        }),
+        isDirty: true,
+        saveError: null,
+      })
+    },
+    installExtension: (id, version) => {
+      const p = get().project
+      if (!p) return
+      if (p.installedExtensions.some((e) => e.id === id)) return
+      const entry: InstalledExtension = { id, version, installedAt: Date.now() }
+      const ir = p.ir
+        ? {
+            ...p.ir,
+            extensions: p.ir.extensions.some((extension) => extension.extensionId === id)
+              ? p.ir.extensions
+              : [...p.ir.extensions, { extensionId: id }],
+          }
+        : p.ir
+      set({
+        project: bump({ ...p, ir, installedExtensions: [...p.installedExtensions, entry] }),
+        isDirty: true,
+        saveError: null,
+      })
+    },
+    removeExtension: (id) => {
+      const p = get().project
+      if (!p) return
+      set({
+        project: bump({
+          ...p,
+          ir: p.ir
+            ? {
+                ...p.ir,
+                extensions: p.ir.extensions.filter((extension) => extension.extensionId !== id),
+              }
+            : p.ir,
+          installedExtensions: p.installedExtensions.filter((e) => e.id !== id),
+        }),
+        isDirty: true,
+        saveError: null,
+      })
+    },
+    rename: (name) => {
+      const p = get().project
+      if (!p) return
+      const safeName = sanitizeProjectName(name)
+      if (p.name === safeName) return
+      set({ project: bump({ ...p, name: safeName }), isDirty: true, saveError: null })
+    },
+    markSaved: () => set({ isDirty: false, saveError: null }),
+    markSaveFailed: (message) => set({ isDirty: true, saveError: message }),
+    addExtraFile: (name) => {
+      const p = get().project
+      if (!p) return 'Nenhum projeto carregado.'
+      const normalized = normalizeExtraFileName(name)
+      if (!normalized) return 'Use um nome seguro com .html, .css, .js ou .mjs.'
+      if (isReservedProjectFileName(normalized))
+        return 'Esse nome é reservado para um arquivo canônico.'
+      const extra = p.extraFiles ?? []
+      if (extra.some((f) => f.name.toLowerCase() === normalized.toLowerCase()))
+        return 'Já existe arquivo com esse nome.'
+      if (extra.length >= limits.maxExtraFiles)
+        return `Limite de ${limits.maxExtraFiles} arquivos extras.`
+      const language = inferExtraLanguage(normalized)
+      if (!language) return 'Extensão não suportada.'
+      const newFile: ExtraFile = {
+        name: normalized,
+        language,
+        content: defaultExtraContent(language),
+      }
+      const nextExtraFiles = [...extra, newFile]
+      const limitError = projectFilesLimitError(p.files, nextExtraFiles, limits)
+      if (limitError) return limitError
+      set({
+        project: bump({ ...p, extraFiles: nextExtraFiles }),
+        isDirty: true,
+        saveError: null,
+      })
       return null
-    }
-    set({ project: existing, isDirty: false, saveError: null })
-    return existing
-  },
-  unloadProject: () => set({ project: null, isDirty: false, saveError: null }),
-  createProject: async (name) => {
-    const p = createEmptyProject(ulid(), sanitizeProjectName(name))
-    await persistProject(p)
-    return p
-  },
-  duplicateProject: async (id) => {
-    const source = await loadSanitizedProjectById(id)
-    if (!source) return null
-    const now = Date.now()
-    const copy: Project = {
-      ...source,
-      id: ulid(),
-      name: `${source.name} (cópia)`,
-      createdAt: now,
-      updatedAt: now,
-    }
-    await persistProject(copy)
-    return copy
-  },
-  deleteProject: async (id) => {
-    await deleteProjectFromDB(id)
-    if (get().project?.id === id) {
-      set({ project: null, isDirty: false, saveError: null })
-    }
-  },
-  renameProject: async (id, name) => {
-    const safeName = sanitizeProjectName(name)
-    const existing = await loadSanitizedProjectById(id)
-    if (!existing) return
-    const next = { ...existing, name: safeName, updatedAt: Date.now() }
-    await persistProject(next)
-    if (get().project?.id === id) {
-      set({ project: next, isDirty: false, saveError: null })
-    }
-  },
-  importProjectFromJSON: async (raw) => {
-    if (!raw || typeof raw !== 'object') {
-      throw new Error('Arquivo inválido: não é um objeto JSON.')
-    }
-    const r = raw as Record<string, unknown>
-    if (typeof r.name !== 'string' || !isProjectFiles(r.files)) {
-      throw new Error('Arquivo inválido: faltam campos obrigatórios (name, files).')
-    }
-    // Limites de tamanho — evita travar a IDE com arquivos enormes.
-    const files = sanitizeCanonicalProjectFiles(r.files)
-    if (!files) {
-      throw new Error('Arquivo inválido: conteúdo excede o tamanho máximo permitido.')
-    }
-
-    // IR: só aceita se passar pelo schema e pelos limites de tamanho/complexidade.
-    const ir = sanitizeImportedIR(r.ir)
-
-    const installedExtensions = sanitizeImportedExtensions(r.installedExtensions)
-    const blocksState = sanitizeImportedBlocksState(r.blocksState, installedExtensions)
-
-    const now = Date.now()
-    const base = createEmptyProject(ulid(), sanitizeProjectName(r.name))
-    const mode: IDEMode = IDE_MODES.includes(r.mode as IDEMode) ? (r.mode as IDEMode) : base.mode
-    const imported: Project = {
-      ...base,
-      files,
-      extraFiles: sanitizeImportedExtraFiles(r.extraFiles),
-      mode,
-      ir: ir ?? base.ir,
-      blocksState,
-      installedExtensions,
-      createdAt: now,
-      updatedAt: now,
-    }
-    await persistProject(imported)
-    return imported
-  },
-  setProject: (p) => set({ project: p, isDirty: true, saveError: null }),
-  setMode: (mode) => {
-    const p = get().project
-    if (!p) return
-    set({ project: bump({ ...p, mode }), isDirty: true, saveError: null })
-  },
-  setFiles: (files) => {
-    const p = get().project
-    if (!p) return
-    const nextFiles = { ...p.files, ...files }
-    const limitError = projectFilesLimitError(nextFiles, p.extraFiles ?? [])
-    if (limitError) {
-      set({ saveError: limitError })
-      return
-    }
-    set({ project: bump({ ...p, files: nextFiles }), isDirty: true, saveError: null })
-  },
-  setFile: (name, value) => {
-    const p = get().project
-    if (!p) return
-    if (p.files[name] === value) return
-    const nextFiles = { ...p.files, [name]: value }
-    const limitError = projectFilesLimitError(nextFiles, p.extraFiles ?? [])
-    if (limitError) {
-      set({ saveError: limitError })
-      return
-    }
-    set({ project: bump({ ...p, files: nextFiles }), isDirty: true, saveError: null })
-  },
-  setIR: (ir) => {
-    const p = get().project
-    if (!p) return
-    set({ project: bump({ ...p, ir }), isDirty: true, saveError: null })
-  },
-  setBlocksState: (state) => {
-    const p = get().project
-    if (!p) return
-    set({ project: bump({ ...p, blocksState: state }), isDirty: true, saveError: null })
-  },
-  applyProjectState: (patch) => {
-    const p = get().project
-    if (!p) return
-    const nextFiles = patch.files ? { ...p.files, ...patch.files } : p.files
-    const limitError = projectFilesLimitError(nextFiles, p.extraFiles ?? [])
-    if (limitError) {
-      set({ saveError: limitError })
-      return
-    }
-    set({
-      project: bump({
-        ...p,
-        files: nextFiles,
-        ir: 'ir' in patch ? (patch.ir ?? null) : p.ir,
-        blocksState: 'blocksState' in patch ? (patch.blocksState ?? null) : p.blocksState,
-        installedExtensions: patch.installedExtensions ?? p.installedExtensions,
-      }),
-      isDirty: true,
-      saveError: null,
-    })
-  },
-  installExtension: (id, version) => {
-    const p = get().project
-    if (!p) return
-    if (p.installedExtensions.some((e) => e.id === id)) return
-    const entry: InstalledExtension = { id, version, installedAt: Date.now() }
-    const ir = p.ir
-      ? {
-          ...p.ir,
-          extensions: p.ir.extensions.some((extension) => extension.extensionId === id)
-            ? p.ir.extensions
-            : [...p.ir.extensions, { extensionId: id }],
-        }
-      : p.ir
-    set({
-      project: bump({ ...p, ir, installedExtensions: [...p.installedExtensions, entry] }),
-      isDirty: true,
-      saveError: null,
-    })
-  },
-  removeExtension: (id) => {
-    const p = get().project
-    if (!p) return
-    set({
-      project: bump({
-        ...p,
-        ir: p.ir
-          ? {
-              ...p.ir,
-              extensions: p.ir.extensions.filter((extension) => extension.extensionId !== id),
-            }
-          : p.ir,
-        installedExtensions: p.installedExtensions.filter((e) => e.id !== id),
-      }),
-      isDirty: true,
-      saveError: null,
-    })
-  },
-  rename: (name) => {
-    const p = get().project
-    if (!p) return
-    const safeName = sanitizeProjectName(name)
-    if (p.name === safeName) return
-    set({ project: bump({ ...p, name: safeName }), isDirty: true, saveError: null })
-  },
-  markSaved: () => set({ isDirty: false, saveError: null }),
-  markSaveFailed: (message) => set({ isDirty: true, saveError: message }),
-  addExtraFile: (name) => {
-    const p = get().project
-    if (!p) return 'Nenhum projeto carregado.'
-    const normalized = normalizeExtraFileName(name)
-    if (!normalized) return 'Use um nome seguro com .html, .css, .js ou .mjs.'
-    if (isReservedProjectFileName(normalized))
-      return 'Esse nome é reservado para um arquivo canônico.'
-    const extra = p.extraFiles ?? []
-    if (extra.some((f) => f.name.toLowerCase() === normalized.toLowerCase()))
-      return 'Já existe arquivo com esse nome.'
-    if (extra.length >= MAX_EXTRA_FILES) return `Limite de ${MAX_EXTRA_FILES} arquivos extras.`
-    const language = inferExtraLanguage(normalized)
-    if (!language) return 'Extensão não suportada.'
-    const newFile: ExtraFile = {
-      name: normalized,
-      language,
-      content: defaultExtraContent(language),
-    }
-    const nextExtraFiles = [...extra, newFile]
-    const limitError = projectFilesLimitError(p.files, nextExtraFiles)
-    if (limitError) return limitError
-    set({
-      project: bump({ ...p, extraFiles: nextExtraFiles }),
-      isDirty: true,
-      saveError: null,
-    })
-    return null
-  },
-  setExtraFile: (name, content) => {
-    const p = get().project
-    if (!p?.extraFiles) return
-    const current = p.extraFiles.find((f) => f.name === name)
-    if (!current || current.content === content) return
-    const next = p.extraFiles.map((f) => (f.name === name ? { ...f, content } : f))
-    const limitError = projectFilesLimitError(p.files, next)
-    if (limitError) {
-      set({ saveError: limitError })
-      return
-    }
-    set({ project: bump({ ...p, extraFiles: next }), isDirty: true, saveError: null })
-  },
-  renameExtraFile: (oldName, newName) => {
-    const p = get().project
-    if (!p?.extraFiles) return 'Sem arquivos extras.'
-    const normalized = normalizeExtraFileName(newName)
-    if (!normalized) return 'Use um nome seguro com .html, .css, .js ou .mjs.'
-    if (isReservedProjectFileName(normalized)) return 'Nome reservado.'
-    if (
-      p.extraFiles.some(
-        (f) => f.name !== oldName && f.name.toLowerCase() === normalized.toLowerCase(),
+    },
+    setExtraFile: (name, content) => {
+      const p = get().project
+      if (!p?.extraFiles) return
+      const current = p.extraFiles.find((f) => f.name === name)
+      if (!current || current.content === content) return
+      const next = p.extraFiles.map((f) => (f.name === name ? { ...f, content } : f))
+      const limitError = projectFilesLimitError(p.files, next, limits)
+      if (limitError) {
+        set({ saveError: limitError })
+        return
+      }
+      set({ project: bump({ ...p, extraFiles: next }), isDirty: true, saveError: null })
+    },
+    renameExtraFile: (oldName, newName) => {
+      const p = get().project
+      if (!p?.extraFiles) return 'Sem arquivos extras.'
+      const normalized = normalizeExtraFileName(newName)
+      if (!normalized) return 'Use um nome seguro com .html, .css, .js ou .mjs.'
+      if (isReservedProjectFileName(normalized)) return 'Nome reservado.'
+      if (
+        p.extraFiles.some(
+          (f) => f.name !== oldName && f.name.toLowerCase() === normalized.toLowerCase(),
+        )
       )
-    )
-      return 'Já existe arquivo com esse nome.'
-    const language = inferExtraLanguage(normalized)
-    if (!language) return 'Extensão não suportada.'
-    const next = p.extraFiles.map((f) =>
-      f.name === oldName ? { ...f, name: normalized, language } : f,
-    )
-    set({ project: bump({ ...p, extraFiles: next }), isDirty: true, saveError: null })
-    return null
-  },
-  removeExtraFile: (name) => {
-    const p = get().project
-    if (!p?.extraFiles) return
-    set({
-      project: bump({ ...p, extraFiles: p.extraFiles.filter((f) => f.name !== name) }),
-      isDirty: true,
-      saveError: null,
-    })
-  },
-}))
+        return 'Já existe arquivo com esse nome.'
+      const language = inferExtraLanguage(normalized)
+      if (!language) return 'Extensão não suportada.'
+      const next = p.extraFiles.map((f) =>
+        f.name === oldName ? { ...f, name: normalized, language } : f,
+      )
+      set({ project: bump({ ...p, extraFiles: next }), isDirty: true, saveError: null })
+      return null
+    },
+    removeExtraFile: (name) => {
+      const p = get().project
+      if (!p?.extraFiles) return
+      set({
+        project: bump({ ...p, extraFiles: p.extraFiles.filter((f) => f.name !== name) }),
+        isDirty: true,
+        saveError: null,
+      })
+    },
+  }))
+}
+
+const defaultProjectStore = createProjectStore()
+
+export type ProjectStoreApi = StoreApi<ProjectStore>
+
+type BoundUseProjectStore = (<T>(selector: (s: ProjectStore) => T) => T) & StoreApi<ProjectStore>
+
+/**
+ * Hook por instância: lê a store do <Studio> mais próximo; fora de um Studio
+ * (lista de projetos, testes de componente) cai na default de módulo. As
+ * estáticas (getState/setState/subscribe) operam SEMPRE na default — contrato
+ * usado pelos testes.
+ */
+export const useProjectStore: BoundUseProjectStore = Object.assign(function useProjectStoreHook<T>(
+  selector: (s: ProjectStore) => T,
+): T {
+  const stores = useContext(StudioStoresContext)
+  return useStore(stores?.project ?? defaultProjectStore, selector)
+}, defaultProjectStore)
+
+/** StoreApi da instância atual — p/ acesso imperativo (getState) em handlers. */
+export function useProjectStoreApi(): ProjectStoreApi {
+  const stores = useContext(StudioStoresContext)
+  return stores?.project ?? defaultProjectStore
+}
 
 function defaultExtraContent(language: ExtraFileLanguage): string {
   if (language === 'css') return '/* Estilos extras */\n'

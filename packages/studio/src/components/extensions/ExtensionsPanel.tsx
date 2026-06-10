@@ -14,7 +14,7 @@ import {
   removeExtensionArtifacts,
   unregisterExtension,
 } from '../../state/extensionsAdapter'
-import { useProjectStore } from '../../state/projectStore'
+import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 
 export interface ExtensionsPanelProps {
   open: boolean
@@ -31,6 +31,7 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
     })),
   )
   const applyProjectState = useProjectStore((s) => s.applyProjectState)
+  const projectStoreApi = useProjectStoreApi()
   const [pendingRemoval, setPendingRemoval] = useState<{ id: string; count: number } | null>(null)
 
   if (!hasProject)
@@ -42,10 +43,10 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
     )
   const installedIds = new Set(installedExtensions.map((e) => e.id))
 
-  const handleInstall = (ext: ExtensionDefinition) => installExtension(ext)
+  const handleInstall = (ext: ExtensionDefinition) => installExtension(ext, projectStoreApi)
 
   const handleRemoveClick = (extId: string) => {
-    const project = useProjectStore.getState().project
+    const project = projectStoreApi.getState().project
     if (!project) return
     const count = countExtensionBlocksInProject(project, extId)
     if (count > 0) setPendingRemoval({ id: extId, count })
@@ -59,7 +60,7 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
   }
 
   const removeAndClean = (extId: string) => {
-    const project = useProjectStore.getState().project
+    const project = projectStoreApi.getState().project
     if (!project) return
     const cleaned = removeExtensionArtifacts(project, extId)
     unregisterExtension(extId)
@@ -82,7 +83,7 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
   }
 
   const handleLoadExample = (ext: ExtensionDefinition) => {
-    const project = useProjectStore.getState().project
+    const project = projectStoreApi.getState().project
     if (!project) return
     const example = ext.manifest.examples[0]
     if (!example) return

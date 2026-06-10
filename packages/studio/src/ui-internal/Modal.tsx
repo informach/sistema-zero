@@ -1,6 +1,7 @@
 import type { JSX } from 'react'
 import { type ReactNode, useEffect, useId, useRef } from 'react'
 import { createPortal } from 'react-dom'
+import { StudioThemeScope } from '../studio/theme'
 import { cn } from './cn'
 
 export interface ModalProps {
@@ -44,42 +45,46 @@ export function Modal({
   }, [open])
 
   if (!open) return null
+  // Portala para fora do root do <Studio> — o StudioThemeScope reaplica o
+  // [data-sz-theme] para os tokens de cor valerem dentro do modal.
   return createPortal(
-    <dialog
-      ref={dialogRef}
-      aria-modal="true"
-      aria-labelledby={titleId}
-      tabIndex={-1}
-      className="fixed inset-0 z-50 m-0 flex h-full max-h-none w-full max-w-none items-center justify-center border-0 bg-black/60 p-4 text-inherit backdrop:bg-transparent backdrop-blur-sm"
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget) onClose()
-      }}
-      onCancel={(e) => {
-        e.preventDefault()
-        onClose()
-      }}
-    >
-      <div
-        className={cn(
-          'w-full max-w-[640px] min-w-[320px] rounded-lg border border-sz-border bg-sz-panel shadow-2xl',
-          className,
-        )}
-        role="document"
+    <StudioThemeScope>
+      <dialog
+        ref={dialogRef}
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        className="fixed inset-0 z-50 m-0 flex h-full max-h-none w-full max-w-none items-center justify-center border-0 bg-black/60 p-4 text-inherit backdrop:bg-transparent backdrop-blur-sm"
+        onMouseDown={(e) => {
+          if (e.target === e.currentTarget) onClose()
+        }}
+        onCancel={(e) => {
+          e.preventDefault()
+          onClose()
+        }}
       >
-        <header
-          id={titleId}
-          className="border-b border-sz-border px-5 py-3.5 text-sm font-semibold text-sz-fg"
+        <div
+          className={cn(
+            'w-full max-w-[640px] min-w-[320px] rounded-lg border border-sz-border bg-sz-panel shadow-2xl',
+            className,
+          )}
+          role="document"
         >
-          {title}
-        </header>
-        <div className="px-5 py-4 text-sm text-sz-fg-soft">{children}</div>
-        {footer && (
-          <footer className="flex justify-end gap-2 border-t border-sz-border px-5 py-3.5">
-            {footer}
-          </footer>
-        )}
-      </div>
-    </dialog>,
+          <header
+            id={titleId}
+            className="border-b border-sz-border px-5 py-3.5 text-sm font-semibold text-sz-fg"
+          >
+            {title}
+          </header>
+          <div className="px-5 py-4 text-sm text-sz-fg-soft">{children}</div>
+          {footer && (
+            <footer className="flex justify-end gap-2 border-t border-sz-border px-5 py-3.5">
+              {footer}
+            </footer>
+          )}
+        </div>
+      </dialog>
+    </StudioThemeScope>,
     document.body,
   )
 }

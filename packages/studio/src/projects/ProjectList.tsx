@@ -1,19 +1,19 @@
 import type { JSX } from 'react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { t } from '#core'
-import { Button } from '#ui'
+import { BrandLogo, Button } from '#ui'
 import { ImportButton } from '../components/projects/ImportButton'
 import { NewProjectModal } from '../components/projects/NewProjectModal'
 import { ProjectCard } from '../components/projects/ProjectCard'
 import { listAllProjects, type ProjectSummary } from '../state/persistence'
 import { useProjectStore } from '../state/projectStore'
 
-export interface ProjectListPageProps {
+export interface ProjectListProps {
   /** Chamado quando um projeto deve abrir no editor (criado, importado ou clicado). */
   onOpenProject: (projectId: string) => void
 }
 
-export function ProjectListPage({ onOpenProject }: ProjectListPageProps): JSX.Element {
+export function ProjectList({ onOpenProject }: ProjectListProps): JSX.Element {
   const createProject = useProjectStore((s) => s.createProject)
   const [projects, setProjects] = useState<ProjectSummary[] | null>(null)
   const [search, setSearch] = useState('')
@@ -57,7 +57,7 @@ export function ProjectListPage({ onOpenProject }: ProjectListPageProps): JSX.El
   return (
     <div className="flex h-full flex-col bg-sz-bg text-sz-fg">
       <header className="flex items-center gap-3 border-b border-sz-border bg-sz-panel px-6 py-4">
-        <Logo />
+        <BrandLogo className="h-8 w-8" />
         <div className="flex flex-col">
           <h1 className="text-base font-semibold text-sz-fg">{t('app.name')}</h1>
           <p className="text-xs text-sz-fg-soft">{t('projects.subtitle')}</p>
@@ -124,17 +124,5 @@ function EmptyState({ onCreate }: { onCreate: () => void }): JSX.Element {
         + {t('projects.new')}
       </Button>
     </div>
-  )
-}
-
-function Logo() {
-  return (
-    <svg viewBox="0 0 64 64" className="h-8 w-8" role="img" aria-label="Sistema Zero Studio">
-      <rect width="64" height="64" rx="12" fill="#0f172a" />
-      <rect x="10" y="10" width="20" height="20" rx="3" fill="#22d3ee" />
-      <rect x="34" y="10" width="20" height="20" rx="3" fill="#a78bfa" />
-      <rect x="10" y="34" width="20" height="20" rx="3" fill="#34d399" />
-      <rect x="34" y="34" width="20" height="20" rx="3" fill="#fbbf24" />
-    </svg>
   )
 }

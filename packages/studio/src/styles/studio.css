@@ -13,46 +13,58 @@
  * do host, para não colidir com `.dark`/tokens próprios dos apps.
  */
 
+/*
+ * Paleta SISTEMA ZERO (espelha o projeto de referência comunidade-sistema-zero,
+ * a mesma base do admin/community). Identidade DUAL da marca: o acento é LIME
+ * no dark e CYAN no light — exatamente como o --primary da referência.
+ * Valores default = tema ESCURO; o claro sobrescreve via [data-sz-theme="light"].
+ */
 @theme {
-  --color-sz-bg: #0b1020;
-  --color-sz-bg-soft: #11172a;
-  --color-sz-panel: #151c34;
-  --color-sz-panel-soft: #1a2240;
-  --color-sz-border: #232b4a;
-  --color-sz-border-soft: #1c2340;
-  --color-sz-fg: #e6e9f5;
-  --color-sz-fg-soft: #aab1cf;
-  --color-sz-fg-mute: #6b7299;
-  --color-sz-accent: #22d3ee;
-  --color-sz-accent-soft: #67e8f9;
+  --color-sz-bg: oklch(0.103 0.01 265); /* background  (#0d1117) */
+  --color-sz-bg-soft: oklch(0.125 0.01 265); /* meio-termo bg→card */
+  --color-sz-panel: oklch(0.14 0.01 265); /* card        (#161b22) */
+  --color-sz-panel-soft: oklch(0.185 0.01 265); /* secondary/muted */
+  --color-sz-border: oklch(0.21 0.01 265); /* border */
+  --color-sz-border-soft: oklch(0.17 0.01 265);
+  --color-sz-fg: oklch(0.975 0.003 255); /* foreground */
+  --color-sz-fg-soft: oklch(0.75 0.008 245);
+  --color-sz-fg-mute: oklch(0.6 0.012 235); /* muted-foreground */
+  --color-sz-accent: oklch(0.875 0.215 122); /* primary = brand-lime */
+  --color-sz-accent-soft: oklch(0.92 0.2 125); /* link-hover */
+  --color-sz-cyan: oklch(0.84 0.13 192); /* brand-cyan (detalhes) */
   --color-sz-warn: #fbbf24;
-  --color-sz-error: #f87171;
+  --color-sz-error: oklch(0.64 0.215 27); /* destructive */
   --color-sz-success: #34d399;
-  --font-family-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-family-mono: "JetBrains Mono", "Fira Code", ui-monospace, Menlo, monospace;
+  --font-family-sans:
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --font-family-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+    monospace;
 }
 
 /* Tema claro — override por atributo data-sz-theme="light" no root do Studio. */
 [data-sz-theme="light"] {
-  --color-sz-bg: #f6f7fb;
-  --color-sz-bg-soft: #eef0f7;
-  --color-sz-panel: #ffffff;
-  --color-sz-panel-soft: #f1f3f9;
-  --color-sz-border: #d8dcea;
-  --color-sz-border-soft: #e6e9f5;
-  --color-sz-fg: #1a2240;
-  --color-sz-fg-soft: #475078;
-  --color-sz-fg-mute: #8a8fab;
-  --color-sz-accent: #0891b2;
-  --color-sz-accent-soft: #06b6d4;
+  --color-sz-bg: oklch(0.985 0.004 100); /* background off-white */
+  --color-sz-bg-soft: oklch(0.97 0.004 255);
+  --color-sz-panel: oklch(1 0 0); /* card = branco puro */
+  --color-sz-panel-soft: oklch(0.955 0.004 255); /* secondary/muted */
+  --color-sz-border: oklch(0.9 0.005 255);
+  --color-sz-border-soft: oklch(0.93 0.005 255);
+  --color-sz-fg: oklch(0.105 0.01 265);
+  --color-sz-fg-soft: oklch(0.5 0.01 255); /* muted-foreground */
+  --color-sz-fg-mute: oklch(0.62 0.008 255);
+  --color-sz-accent: oklch(0.52 0.14 200); /* primary = cyan escuro (AA) */
+  --color-sz-accent-soft: oklch(0.44 0.14 210); /* link */
+  --color-sz-cyan: oklch(0.52 0.14 200);
   --color-sz-warn: #b45309;
-  --color-sz-error: #b91c1c;
+  --color-sz-error: oklch(0.55 0.22 27); /* destructive */
   --color-sz-success: #047857;
 }
 
 /* Highlight cruzado bloco ↔ linha no Monaco (ver useCrossHighlight). */
 .sz-highlight-line {
-  background-color: rgba(34, 211, 238, 0.18);
+  background-color: color-mix(in oklab, var(--color-sz-accent) 18%, transparent);
 }
 .sz-highlight-gutter {
   background-color: var(--color-sz-accent);

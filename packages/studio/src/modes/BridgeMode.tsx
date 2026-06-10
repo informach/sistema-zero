@@ -20,10 +20,12 @@ import { useCrossHighlight } from '../hooks/useCrossHighlight'
 import { useDebounced } from '../hooks/useDebounced'
 import { useHighlightStore } from '../state/highlightStore'
 import { useLogsStore } from '../state/logsStore'
-import { useProjectStore } from '../state/projectStore'
+import { useProjectStore, useProjectStoreApi } from '../state/projectStore'
 import { CODE_FONT_SIZE_DEFAULT, useSettingsStore } from '../state/settingsStore'
 import { useSourcemapStore } from '../state/sourcemapStore'
 import { useUIStore } from '../state/uiStore'
+import { useStudioConfig } from '../studio/config'
+import { useStudioTheme } from '../studio/theme'
 import { BRIDGE_JS_HEADER, type BridgeReverseParseWorkerResponse } from './bridgeReverseParse'
 
 const EMPTY_INSTALLED_EXTENSIONS: InstalledExtension[] = []
@@ -49,11 +51,14 @@ export function BridgeMode(): JSX.Element {
       })),
     )
   const applyProjectState = useProjectStore((s) => s.applyProjectState)
+  const projectStoreApi = useProjectStoreApi()
   const setFiles = useProjectStore((s) => s.setFiles)
-  const showPreview = useUIStore((s) => s.showPreview)
+  const studioConfig = useStudioConfig()
+  const showPreview = useUIStore((s) => s.showPreview) && studioConfig.preview
   const setSourceMap = useSourcemapStore((s) => s.setMap)
   const pushLog = useLogsStore((s) => s.push)
   const codeFontSize = useSettingsStore((s) => s.codeFontSize)
+  const studioTheme = useStudioTheme()
   const [parseDiagnostics, setParseDiagnostics] = useState<ParseProjectDiagnostic[]>([])
 
   // Source mapping cruzado bloco ↔ linha.
@@ -251,7 +256,7 @@ export function BridgeMode(): JSX.Element {
       // Preserva o layout das colunas (várias pilhas do mesmo tipo) derivando-o
       // do blocksState atual (lido fresco do store, evitando closure obsoleta) e
       // re-aplicando ao workspace reconstruído.
-      const layout = layoutFromBlocksState(useProjectStore.getState().project?.blocksState ?? null)
+      const layout = layoutFromBlocksState(projectStoreApi.getState().project?.blocksState ?? null)
       if (!layout) {
         // Sem layout, `buildWorkspaceStateFromIR` aplica defaults (x = 32, 452, 872).
         // Avisar aqui torna visível quando o reverse-parse é a causa do "layout
@@ -338,6 +343,7 @@ export function BridgeMode(): JSX.Element {
             <MonacoTabs
               files={filesArray}
               modelPathPrefix={projectId}
+              theme={studioTheme === 'light' ? 'light' : 'vs-dark'}
               fontSize={codeFontSize || CODE_FONT_SIZE_DEFAULT}
               formatLabel={t('editor.format')}
               tabsRightSlot={<FontSizeControls />}

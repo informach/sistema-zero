@@ -22,6 +22,7 @@ interface SearchCategoryInstance {
   initBlockSearcher(): void
   onClick(e: Event): void
   setSelected(isSelected: boolean): void
+  registerShortcut?(): void
   dispose(): void
   searchField?: HTMLInputElement
   flyoutItems_: Array<{ kind: string; text?: string; type?: string }>
@@ -76,6 +77,17 @@ export function registerPtSearchCategory(): void {
   if (!isSearchCategoryCtor(Base) || !supportsSearchCategoryOverrides(Base)) return
 
   class PtSearchCategory extends Base {
+    // O plugin registra um atalho GLOBAL ("startSearch") no ShortcutRegistry e
+    // LANÇA se ele já existir — a 2ª instância de <Studio> com o modo Blocos
+    // aberto derrubava o painel inteiro. Desregistra o anterior antes de
+    // delegar (último registrado fica com o atalho de teclado; limitação
+    // conhecida de multi-instância, o resto da busca funciona normal).
+    override registerShortcut(): void {
+      const registry = Blockly.ShortcutRegistry.registry
+      if (registry.getRegistry().startSearch) registry.unregister('startSearch')
+      super.registerShortcut?.()
+    }
+
     override createDom_(): HTMLElement {
       const dom = super.createDom_()
       const field = this.searchField
@@ -195,7 +207,11 @@ export function registerPtSearchCategory(): void {
   registered = true
 }
 
-/** Visual do campo de busca dentro do flyout: sem outline, com padding. */
+/**
+ * Visual do campo de busca dentro do flyout: sem outline, com padding. Usa os
+ * tokens da paleta (o input vive dentro da injection div, que está sob o
+ * [data-sz-theme] do root do Studio — claro/escuro acompanham o tema).
+ */
 function stylizeSearchField(field: HTMLInputElement): void {
   Object.assign(field.style, {
     position: 'absolute',
@@ -206,10 +222,10 @@ function stylizeSearchField(field: HTMLInputElement): void {
     border: 'none',
     outline: 'none',
     borderRadius: '8px',
-    background: '#0b1020',
-    color: '#e6e9f5',
+    background: 'var(--color-sz-bg)',
+    color: 'var(--color-sz-fg)',
     fontSize: '13px',
-    fontFamily: 'Inter, system-ui, sans-serif',
-    boxShadow: '0 0 0 1px #2b3556',
+    fontFamily: 'var(--font-family-sans)',
+    boxShadow: '0 0 0 1px var(--color-sz-border)',
   } satisfies Partial<CSSStyleDeclaration>)
 }
