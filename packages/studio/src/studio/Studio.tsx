@@ -3,14 +3,22 @@ import { useEffect, useMemo, useState } from 'react'
 import { setLocale } from '#core'
 import { Shell } from '../components/layout/Shell'
 import { bootstrapPersistence } from '../state/persistence'
-import { sanitizeProjectForHost, useProjectStore } from '../state/projectStore'
+import { sanitizeProjectForHost, useProjectStore, useProjectStoreApi } from '../state/projectStore'
 import { useSettingsStore } from '../state/settingsStore'
+import { StudioStoresContext } from '../state/storesContext'
+import { createStudioStores } from '../state/studioStores'
 import { useUIStore } from '../state/uiStore'
 import { StudioThemeProvider } from './theme'
 import type { StudioProps } from './types'
 
 /**
  * Editor embarcável do Sistema Zero Studio (modos Blocos/Ponte/Código).
+ *
+ * Cada instância cria o próprio conjunto de stores (projeto/ui/console/
+ * highlight/sourcemap) via StudioStoresContext — duas instâncias na mesma
+ * página não compartilham estado, e cada montagem nasce limpa. As
+ * configurações (tema/fonte/chave de IA) são preferência do usuário e
+ * continuam compartilhadas.
  *
  * O componente é dono do lifecycle que no app standalone vivia em App.tsx +
  * EditorPage: hidrata o `initialProject` nos stores, liga a persistência
@@ -21,7 +29,18 @@ import type { StudioProps } from './types'
  * server): `next/dynamic(..., { ssr: false })` no Next, `client:only="react"`
  * no Astro.
  */
-export function Studio({
+export function Studio(props: StudioProps): JSX.Element {
+  // 1x por instância; StrictMode-safe (re-render descarta a duplicata).
+  const [stores] = useState(() => createStudioStores())
+  return (
+    <StudioStoresContext.Provider value={stores}>
+      <StudioBody {...props} />
+    </StudioStoresContext.Provider>
+  )
+}
+
+/** Corpo do Studio — DENTRO do provider, para os hooks lerem as stores da instância. */
+function StudioBody({
   initialProject,
   theme,
   locale,
@@ -38,6 +57,7 @@ export function Studio({
 
   const sanitized = useMemo(() => sanitizeProjectForHost(initialProject), [initialProject])
 
+  const projectStoreApi = useProjectStoreApi()
   const hydrateProject = useProjectStore((s) => s.hydrateProject)
   const unloadProject = useProjectStore((s) => s.unloadProject)
   const isDirty = useProjectStore((s) => s.isDirty)
@@ -55,10 +75,10 @@ export function Studio({
   }, [sanitized, hydrateProject, unloadProject, setPreviewRunning])
 
   useEffect(() => {
-    const cleanup = bootstrapPersistence()
+    const cleanup = bootstrapPersistence(projectStoreApi)
     void loadSettings()
     return cleanup
-  }, [loadSettings])
+  }, [projectStoreApi, loadSettings])
 
   useEffect(() => {
     if (!blockUnloadWhenDirty || !isDirty) return
@@ -79,10 +99,12 @@ export function Studio({
       >
         {sanitized === null ? (
           <div className="flex h-full flex-col items-center justify-center gap-2 bg-sz-bg text-sz-fg-soft">
-            <p className="text-sm">Projeto inválido — confira o initialProject passado ao Studio.</p>
+            <p className="text-sm">
+              Projeto inválido — confira o initialProject passado ao Studio.
+            </p>
           </div>
         ) : hasProject ? (
-          <Shell onExit={onExit} />
+          <Shell onExit={onExit} canToggleTheme={theme === undefined} />
         ) : null}
       </div>
     </StudioThemeProvider>

@@ -1,6 +1,6 @@
 import { createStore, delMany, get, getMany, keys, setMany } from 'idb-keyval'
 import { IDE_MODES, type IDEMode, type Project } from '#core'
-import { useProjectStore } from './projectStore'
+import { type ProjectStoreApi, useProjectStore } from './projectStore'
 
 const LEGACY_PROJECT_KEY_PREFIX = 'sz:project:'
 const PROJECT_META_KEY_PREFIX = 'sz:project-meta:'
@@ -22,6 +22,8 @@ function getStore() {
 interface PendingAutosave {
   timer: ReturnType<typeof setTimeout>
   project: Project
+  /** Store da instância que agendou — markSaved/markSaveFailed vão para ela. */
+  store: ProjectStoreApi
 }
 
 const pendingAutosaves = new Map<string, PendingAutosave>()
@@ -56,8 +58,8 @@ function formatPersistenceError(err: unknown): string {
   return detail ? `Falha ao salvar projeto: ${detail}` : 'Falha ao salvar projeto.'
 }
 
-export function bootstrapPersistence(): () => void {
-  const unsub = useProjectStore.subscribe((state, prev) => {
+export function bootstrapPersistence(store: ProjectStoreApi = useProjectStore): () => void {
+  const unsub = store.subscribe((state, prev) => {
     if (!state.project) {
       return
     }
@@ -67,12 +69,12 @@ export function bootstrapPersistence(): () => void {
     const timer = setTimeout(async () => {
       try {
         await persistProject(projectToPersist)
-        if (useProjectStore.getState().project === projectToPersist) {
-          useProjectStore.getState().markSaved()
+        if (store.getState().project === projectToPersist) {
+          store.getState().markSaved()
         }
       } catch (err) {
-        if (useProjectStore.getState().project === projectToPersist) {
-          useProjectStore.getState().markSaveFailed(formatPersistenceError(err))
+        if (store.getState().project === projectToPersist) {
+          store.getState().markSaveFailed(formatPersistenceError(err))
         }
       } finally {
         const pending = pendingAutosaves.get(projectToPersist.id)
@@ -81,11 +83,11 @@ export function bootstrapPersistence(): () => void {
         }
       }
     }, autosaveDelay)
-    pendingAutosaves.set(projectToPersist.id, { timer, project: projectToPersist })
+    pendingAutosaves.set(projectToPersist.id, { timer, project: projectToPersist, store })
   })
 
   const flushOnPageExit = () => {
-    flushPendingAutosaves()
+    flushPendingAutosaves(store)
   }
   window.addEventListener('pagehide', flushOnPageExit)
   window.addEventListener('beforeunload', flushOnPageExit)
@@ -98,28 +100,33 @@ export function bootstrapPersistence(): () => void {
   }
 }
 
-function flushPendingAutosaves(): void {
-  const snapshots = Array.from(pendingAutosaves.values(), (pending) => pending.project)
-  const currentState = useProjectStore.getState()
+function flushPendingAutosaves(currentStore: ProjectStoreApi): void {
+  // pagehide é da página inteira: drena TODOS os autosaves pendentes (de
+  // qualquer instância), cada um respondendo à própria store.
+  const snapshots = Array.from(pendingAutosaves.values(), (pending) => ({
+    project: pending.project,
+    store: pending.store,
+  }))
+  const currentState = currentStore.getState()
   if (
     currentState.project &&
     currentState.isDirty &&
-    !snapshots.some((project) => project.id === currentState.project?.id)
+    !snapshots.some((snapshot) => snapshot.project.id === currentState.project?.id)
   ) {
-    snapshots.push(currentState.project)
+    snapshots.push({ project: currentState.project, store: currentStore })
   }
   clearAutosaveTimers()
 
-  for (const projectToPersist of snapshots) {
+  for (const { project: projectToPersist, store } of snapshots) {
     void persistProject(projectToPersist)
       .then(() => {
-        if (useProjectStore.getState().project === projectToPersist) {
-          useProjectStore.getState().markSaved()
+        if (store.getState().project === projectToPersist) {
+          store.getState().markSaved()
         }
       })
       .catch((err: unknown) => {
-        if (useProjectStore.getState().project === projectToPersist) {
-          useProjectStore.getState().markSaveFailed(formatPersistenceError(err))
+        if (store.getState().project === projectToPersist) {
+          store.getState().markSaveFailed(formatPersistenceError(err))
           return
         }
         console.warn(formatPersistenceError(err))
@@ -221,18 +228,18 @@ export async function listAllProjects(): Promise<ProjectSummary[]> {
   return summaries
 }
 
-export async function saveCurrentProject(): Promise<void> {
-  const project = useProjectStore.getState().project
+export async function saveCurrentProject(store: ProjectStoreApi = useProjectStore): Promise<void> {
+  const project = store.getState().project
   if (!project) return
   clearAutosaveTimerForProject(project.id)
   try {
     await persistProject(project)
-    if (useProjectStore.getState().project === project) {
-      useProjectStore.getState().markSaved()
+    if (store.getState().project === project) {
+      store.getState().markSaved()
     }
   } catch (err) {
-    if (useProjectStore.getState().project === project) {
-      useProjectStore.getState().markSaveFailed(formatPersistenceError(err))
+    if (store.getState().project === project) {
+      store.getState().markSaveFailed(formatPersistenceError(err))
     }
     throw err
   }

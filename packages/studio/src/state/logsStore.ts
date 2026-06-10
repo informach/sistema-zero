@@ -1,4 +1,6 @@
-import { create } from 'zustand'
+import { useContext } from 'react'
+import { useStore } from 'zustand'
+import { createStore, type StoreApi } from 'zustand/vanilla'
 import {
   type LogKind,
   PREVIEW_MAX_ERROR_CHARS,
@@ -6,6 +8,7 @@ import {
   PREVIEW_MAX_LOG_PARTS,
   type PreviewMessage,
 } from '#preview'
+import { StudioStoresContext } from './storesContext'
 
 export const MAX_LOG_TEXT_CHARS = 16_000
 export const MAX_LOG_ENTRIES = 500
@@ -26,11 +29,6 @@ interface LogsStore {
   clear: () => void
 }
 
-let counter = 0
-let rateWindowStartedAt = 0
-let rateWindowCount = 0
-let rateWindowDropNoticeSent = false
-
 function truncateLogText(text: string): string {
   if (text.length <= MAX_LOG_TEXT_CHARS) return text
   return `${text.slice(0, MAX_LOG_TEXT_CHARS)}... [truncado]`
@@ -47,68 +45,90 @@ function truncateErrorStack(stack: string | undefined): string | undefined {
   return `${stack.slice(0, PREVIEW_MAX_ERROR_CHARS)}... [truncado]`
 }
 
-export const useLogsStore = create<LogsStore>((set) => ({
-  entries: [],
-  push: (m) => {
-    const now = Date.now()
-    set((s) => {
-      if (s.entries.length === 0) resetLogRateLimit(now)
-      const admission = admitLogMessage(now)
-      if (admission === 'drop') return s
-      const entry = admission === 'notice' ? createRateLimitNotice(now) : createLogEntry(m)
-      return appendLogEntry(s.entries, entry)
-    })
-  },
-  clear: () => {
-    resetLogRateLimit()
-    set({ entries: [] })
-  },
-}))
+export function createLogsStore(): StoreApi<LogsStore> {
+  // Contadores no CLOSURE da factory (eram variáveis de módulo): cada
+  // instância do <Studio> tem o próprio rate-limit, e montagens novas nascem
+  // zeradas.
+  let counter = 0
+  let rateWindowStartedAt = 0
+  let rateWindowCount = 0
+  let rateWindowDropNoticeSent = false
 
-function createLogEntry(m: PreviewMessage): LogEntry {
-  counter += 1
-  const safeParts = m.parts.slice(0, PREVIEW_MAX_LOG_PARTS + 1).map((part) => truncatePart(part))
-  const text = truncateLogText(safeParts.join(' '))
-  return {
-    id: counter,
-    kind: m.kind,
-    text,
-    timestamp: m.timestamp,
-    errorStack: truncateErrorStack(m.error?.stack),
+  function resetLogRateLimit(now = Date.now()): void {
+    rateWindowStartedAt = now
+    rateWindowCount = 0
+    rateWindowDropNoticeSent = false
   }
+
+  function admitLogMessage(now: number): 'accept' | 'notice' | 'drop' {
+    if (now - rateWindowStartedAt >= LOG_RATE_LIMIT_WINDOW_MS) {
+      resetLogRateLimit(now)
+    }
+    if (rateWindowCount < LOG_RATE_LIMIT_MAX_MESSAGES) {
+      rateWindowCount += 1
+      return 'accept'
+    }
+    if (!rateWindowDropNoticeSent) {
+      rateWindowDropNoticeSent = true
+      return 'notice'
+    }
+    return 'drop'
+  }
+
+  function createLogEntry(m: PreviewMessage): LogEntry {
+    counter += 1
+    const safeParts = m.parts.slice(0, PREVIEW_MAX_LOG_PARTS + 1).map((part) => truncatePart(part))
+    const text = truncateLogText(safeParts.join(' '))
+    return {
+      id: counter,
+      kind: m.kind,
+      text,
+      timestamp: m.timestamp,
+      errorStack: truncateErrorStack(m.error?.stack),
+    }
+  }
+
+  function createRateLimitNotice(now: number): LogEntry {
+    counter += 1
+    return {
+      id: counter,
+      kind: 'warn',
+      text: 'Muitas mensagens do preview em pouco tempo; novas mensagens foram agrupadas para manter a IDE responsiva.',
+      timestamp: now,
+    }
+  }
+
+  function appendLogEntry(entries: LogEntry[], entry: LogEntry): { entries: LogEntry[] } {
+    return { entries: [...entries.slice(-(MAX_LOG_ENTRIES - 1)), entry] }
+  }
+
+  return createStore<LogsStore>((set) => ({
+    entries: [],
+    push: (m) => {
+      const now = Date.now()
+      set((s) => {
+        if (s.entries.length === 0) resetLogRateLimit(now)
+        const admission = admitLogMessage(now)
+        if (admission === 'drop') return s
+        const entry = admission === 'notice' ? createRateLimitNotice(now) : createLogEntry(m)
+        return appendLogEntry(s.entries, entry)
+      })
+    },
+    clear: () => {
+      resetLogRateLimit()
+      set({ entries: [] })
+    },
+  }))
 }
 
-function createRateLimitNotice(now: number): LogEntry {
-  counter += 1
-  return {
-    id: counter,
-    kind: 'warn',
-    text: 'Muitas mensagens do preview em pouco tempo; novas mensagens foram agrupadas para manter a IDE responsiva.',
-    timestamp: now,
-  }
-}
+const defaultLogsStore = createLogsStore()
 
-function appendLogEntry(entries: LogEntry[], entry: LogEntry): { entries: LogEntry[] } {
-  return { entries: [...entries.slice(-(MAX_LOG_ENTRIES - 1)), entry] }
-}
+type BoundUseLogsStore = (<T>(selector: (s: LogsStore) => T) => T) & StoreApi<LogsStore>
 
-function admitLogMessage(now: number): 'accept' | 'notice' | 'drop' {
-  if (now - rateWindowStartedAt >= LOG_RATE_LIMIT_WINDOW_MS) {
-    resetLogRateLimit(now)
-  }
-  if (rateWindowCount < LOG_RATE_LIMIT_MAX_MESSAGES) {
-    rateWindowCount += 1
-    return 'accept'
-  }
-  if (!rateWindowDropNoticeSent) {
-    rateWindowDropNoticeSent = true
-    return 'notice'
-  }
-  return 'drop'
-}
-
-function resetLogRateLimit(now = Date.now()): void {
-  rateWindowStartedAt = now
-  rateWindowCount = 0
-  rateWindowDropNoticeSent = false
-}
+/** Hook por instância (ver uiStore.ts para o contrato default/estáticas). */
+export const useLogsStore: BoundUseLogsStore = Object.assign(function useLogsStoreHook<T>(
+  selector: (s: LogsStore) => T,
+): T {
+  const stores = useContext(StudioStoresContext)
+  return useStore(stores?.logs ?? defaultLogsStore, selector)
+}, defaultLogsStore)

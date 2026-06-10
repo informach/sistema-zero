@@ -1,6 +1,6 @@
+import { createEmptyProject, type Project, Studio } from '@sistemazero/studio'
 import type { JSX } from 'react'
 import { useEffect, useState } from 'react'
-import { type Project, Studio } from '@sistemazero/studio'
 import { LoadingScreen } from '../src/components/layout/LoadingViews'
 import { ProjectListPage } from '../src/pages/ProjectListPage'
 import { loadSanitizedProjectById } from '../src/state/projectStore'
@@ -14,13 +14,32 @@ import { useSettingsStore } from '../src/state/settingsStore'
 // Repare que o host NÃO seta data-sz-theme no <html>: o tema é escopado pelo
 // root do <Studio> — trocar o tema nas configurações do editor muda SÓ a área
 // do editor, provando o isolamento.
-type View = { name: 'list' } | { name: 'editor'; projectId: string }
+type View = { name: 'list' } | { name: 'editor'; projectId: string } | { name: 'dual' }
 
 function parseViewFromLocation(): View {
+  if (window.location.pathname === '/dual') return { name: 'dual' }
   const match = window.location.pathname.match(/^\/editor\/(.+)$/)
-  return match?.[1]
-    ? { name: 'editor', projectId: decodeURIComponent(match[1]) }
-    : { name: 'list' }
+  return match?.[1] ? { name: 'editor', projectId: decodeURIComponent(match[1]) } : { name: 'list' }
+}
+
+/**
+ * Prova do isolamento por instância (checkpoint da fase de stores): duas
+ * cópias do <Studio> lado a lado, com temas diferentes, sem cross-talk de
+ * projeto/console/preview. Acessível em /dual.
+ */
+function DualView(): JSX.Element {
+  const [a] = useState(() => createEmptyProject('dual-a', 'Instância A'))
+  const [b] = useState(() => createEmptyProject('dual-b', 'Instância B'))
+  return (
+    <div className="grid h-full grid-cols-2 gap-2 p-2" style={{ background: '#333' }}>
+      <div className="h-full min-h-0 overflow-hidden rounded">
+        <Studio initialProject={a} theme="dark" />
+      </div>
+      <div className="h-full min-h-0 overflow-hidden rounded">
+        <Studio initialProject={b} theme="light" />
+      </div>
+    </div>
+  )
 }
 
 type EditorState =
@@ -93,10 +112,11 @@ export function App(): JSX.Element {
     document.documentElement.style.fontSize = `${fontSize}px`
   }, [fontSize])
 
+  if (view.name === 'dual') {
+    return <DualView />
+  }
   if (view.name === 'editor') {
     return <EditorScreen projectId={view.projectId} onExit={() => navigate({ name: 'list' })} />
   }
-  return (
-    <ProjectListPage onOpenProject={(id) => navigate({ name: 'editor', projectId: id })} />
-  )
+  return <ProjectListPage onOpenProject={(id) => navigate({ name: 'editor', projectId: id })} />
 }

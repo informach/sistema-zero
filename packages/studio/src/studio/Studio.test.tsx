@@ -1,14 +1,10 @@
-import { afterAll, afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
-import { createEmptyProject } from '#core'
+import { afterAll, afterEach, describe, expect, it, mock } from 'bun:test'
 import { cleanup, render, waitFor } from '@testing-library/react'
+import { createEmptyProject } from '#core'
 
 // bun:test não isola module mocks por arquivo: restaura o Shell real no
 // afterAll para não vazar o stub para os próximos arquivos da suíte.
 const realShell = { ...(await import('../components/layout/Shell')) }
-
-mock.module('../components/layout/Shell', () => ({
-  Shell: () => <div data-testid="editor-shell" />,
-}))
 
 // idb-keyval mockado (sem restore, de propósito): o IndexedDB real não existe
 // no happy-dom e o registry de módulos é compartilhado pela suíte toda.
@@ -23,47 +19,71 @@ mock.module('idb-keyval', () => ({
   setMany: mock(async () => undefined),
 }))
 
-const { Studio } = await import('./Studio')
 const { useProjectStore } = await import('../state/projectStore')
 const { useUIStore } = await import('../state/uiStore')
+
+// O Shell vira um PROBE: renderiza por DENTRO do provider da instância, então
+// os hooks aqui leem as stores POR INSTÂNCIA (as estáticas useXStore.getState
+// leem a default — não servem para inspecionar um <Studio>).
+function ShellProbe(): React.JSX.Element {
+  const projectId = useProjectStore((s) => s.project?.id ?? '')
+  const isDirty = useProjectStore((s) => s.isDirty)
+  const previewRunning = useUIStore((s) => s.previewRunning)
+  return (
+    <div
+      data-testid="editor-shell"
+      data-project={projectId}
+      data-dirty={String(isDirty)}
+      data-preview={String(previewRunning)}
+    />
+  )
+}
+
+mock.module('../components/layout/Shell', () => ({
+  Shell: ShellProbe,
+}))
+
+const { Studio } = await import('./Studio')
 
 afterAll(() => {
   mock.module('../components/layout/Shell', () => realShell)
 })
 
 describe('Studio', () => {
-  beforeEach(() => {
-    useProjectStore.setState({ project: null, isDirty: false, saveError: null })
-    useUIStore.setState({ previewRunning: false })
-  })
-
   afterEach(() => {
     cleanup()
-    useProjectStore.setState({ project: null, isDirty: false, saveError: null })
-    useUIStore.setState({ previewRunning: true })
   })
 
-  it('hidrata o initialProject sem marcar sujo e religa o preview', async () => {
+  it('hidrata o initialProject na store DA INSTÂNCIA, sem sujar e com preview ligado', async () => {
     const project = createEmptyProject('project-1', 'Projeto 1')
 
-    render(<Studio initialProject={project} />)
+    const { getByTestId } = render(<Studio initialProject={project} />)
 
     await waitFor(() => {
-      expect(useProjectStore.getState().project?.id).toBe('project-1')
+      expect(getByTestId('editor-shell').getAttribute('data-project')).toBe('project-1')
     })
-    expect(useProjectStore.getState().isDirty).toBe(false)
-    expect(useUIStore.getState().previewRunning).toBe(true)
+    expect(getByTestId('editor-shell').getAttribute('data-dirty')).toBe('false')
+    expect(getByTestId('editor-shell').getAttribute('data-preview')).toBe('true')
+    // A store default (fora de qualquer Studio) permanece intocada — prova do
+    // isolamento por instância.
+    expect(useProjectStore.getState().project).toBeNull()
   })
 
-  it('descarrega o projeto no unmount', async () => {
-    const project = createEmptyProject('project-2', 'Projeto 2')
-    const { unmount } = render(<Studio initialProject={project} />)
+  it('duas instâncias na mesma página não compartilham estado', async () => {
+    const a = createEmptyProject('project-a', 'A')
+    const b = createEmptyProject('project-b', 'B')
+
+    const { getAllByTestId } = render(
+      <>
+        <Studio initialProject={a} />
+        <Studio initialProject={b} />
+      </>,
+    )
 
     await waitFor(() => {
-      expect(useProjectStore.getState().project?.id).toBe('project-2')
+      const probes = getAllByTestId('editor-shell')
+      expect(probes.map((p) => p.getAttribute('data-project'))).toEqual(['project-a', 'project-b'])
     })
-    unmount()
-    expect(useProjectStore.getState().project).toBeNull()
   })
 
   it('renderiza aviso quando o initialProject é inválido', () => {

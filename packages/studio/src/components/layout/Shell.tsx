@@ -27,9 +27,11 @@ function ModeFallback({ name }: { name: string }) {
 export interface ShellProps {
   /** Sai do editor (ex.: volta à lista de projetos do host). Sem ela, a Topbar esconde a navegação. */
   onExit?: () => void
+  /** Mostra o toggle claro/escuro na Topbar (false quando o host fixa o tema via prop). */
+  canToggleTheme?: boolean
 }
 
-export function Shell({ onExit }: ShellProps): JSX.Element {
+export function Shell({ onExit, canToggleTheme }: ShellProps): JSX.Element {
   const { hasProject, projectId, projectMode, installedExtensions } = useProjectStore(
     useShallow((s) => ({
       hasProject: Boolean(s.project),
@@ -56,7 +58,7 @@ export function Shell({ onExit }: ShellProps): JSX.Element {
 
   return (
     <div className="flex h-full flex-col bg-sz-bg text-sz-fg">
-      <Topbar onExit={onExit} />
+      <Topbar onExit={onExit} canToggleTheme={canToggleTheme} />
       <main className="flex min-h-0 flex-1 flex-col">
         <PanelGroup direction="vertical" className="h-full w-full" autoSaveId="sz-shell-vertical">
           <Panel defaultSize={70} minSize={30}>

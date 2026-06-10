@@ -9,30 +9,34 @@ import {
   ensureBlocklyInitialized,
   registerClassesFlyout,
   registerFunctionsFlyout,
-  szTheme,
+  szGridColourFor,
+  szThemeFor,
 } from '#blockly'
 import type { InstalledExtension } from '#core'
 import { generateProjectFilesWithMap } from '#generators'
 import { findExtension } from '#official-extensions'
 import { useCrossHighlight } from '../../hooks/useCrossHighlight'
 import { useHighlightStore } from '../../state/highlightStore'
-import { useProjectStore } from '../../state/projectStore'
+import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useSourcemapStore } from '../../state/sourcemapStore'
+import { useStudioTheme } from '../../studio/theme'
 import { Spinner } from '../layout/LoadingViews'
 
 ensureBlocklyInitialized()
 
 const EMPTY_INSTALLED_EXTENSIONS: InstalledExtension[] = []
 const BLOCKLY_REGENERATION_DELAY_MS = 120
-const BLOCKLY_WORKSPACE_CONFIGURATION: Blockly.BlocklyOptions = {
-  theme: szTheme,
-  renderer: 'zelos',
-  grid: { spacing: 24, length: 3, colour: '#1c2340', snap: true },
-  zoom: { controls: true, wheel: true, startScale: 0.9, minScale: 0.4, maxScale: 1.8 },
-  move: { scrollbars: true, drag: true, wheel: true },
-  trashcan: true,
-  // Habilita "Recolher/Expandir blocos" no menu de contexto nativo.
-  collapse: true,
+function blocklyWorkspaceConfiguration(theme: 'dark' | 'light'): Blockly.BlocklyOptions {
+  return {
+    theme: szThemeFor(theme),
+    renderer: 'zelos',
+    grid: { spacing: 24, length: 3, colour: szGridColourFor(theme), snap: true },
+    zoom: { controls: true, wheel: true, startScale: 0.9, minScale: 0.4, maxScale: 1.8 },
+    move: { scrollbars: true, drag: true, wheel: true },
+    trashcan: true,
+    // Habilita "Recolher/Expandir blocos" no menu de contexto nativo.
+    collapse: true,
+  }
 }
 
 /**
@@ -130,6 +134,11 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
     })),
   )
   const applyProjectState = useProjectStore((s) => s.applyProjectState)
+  const projectStoreApi = useProjectStoreApi()
+  const studioTheme = useStudioTheme()
+  // Ref para a injeção (efeito de mount único) usar o tema vigente sem re-injetar.
+  const studioThemeRef = useRef(studioTheme)
+  studioThemeRef.current = studioTheme
   const setSourceMap = useSourcemapStore((s) => s.setMap)
   const selectBlock = useHighlightStore((s) => s.selectBlock)
   const editorCursorLine = useHighlightStore((s) => s.cursorLine)
@@ -183,7 +192,7 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
       const built = buildIRFromWorkspace(workspace)
       // Lê o projeto mais recente do store (evita closure obsoleta) e preserva a
       // casca do documento (head/doctype) que os blocos não representam.
-      const current = useProjectStore.getState().project
+      const current = projectStoreApi.getState().project
       const ir = current?.ir?.htmlShell ? { ...built, htmlShell: current.ir.htmlShell } : built
       const { files, sourceMap } = generateProjectFilesWithMap({
         ir,
@@ -216,7 +225,7 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
       applyProjectState({ ir, blocksState: state, files })
       setSourceMap(sourceMap)
     },
-    [applyProjectState, setSourceMap],
+    [applyProjectState, setSourceMap, projectStoreApi],
   )
 
   const flushScheduledRegeneration = useCallback(() => {
@@ -504,7 +513,7 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
     if (!initialToolbox) return
 
     const injected = Blockly.inject(container, {
-      ...BLOCKLY_WORKSPACE_CONFIGURATION,
+      ...blocklyWorkspaceConfiguration(studioThemeRef.current),
       toolbox: initialToolbox,
     })
     appliedToolboxRef.current = initialToolbox
@@ -518,6 +527,13 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
       appliedToolboxRef.current = null
     }
   }, [])
+
+  // Troca de tema ao vivo (toggle do Topbar/host): o Theme cobre workspace,
+  // toolbox e flyout; só a cor da grade fica da injeção inicial (detalhe sutil).
+  useEffect(() => {
+    if (!workspace) return
+    workspace.setTheme(szThemeFor(studioTheme))
+  }, [workspace, studioTheme])
 
   return (
     <div className={['relative h-full w-full', className].filter(Boolean).join(' ')}>
