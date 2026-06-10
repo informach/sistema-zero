@@ -1,4 +1,4 @@
-import { afterAll, afterEach, describe, expect, it, mock } from 'bun:test'
+import { afterAll, afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
 import { cleanup, render, waitFor } from '@testing-library/react'
 import { createRef } from 'react'
 import { createEmptyProject } from '#core'
@@ -53,6 +53,15 @@ afterAll(() => {
 })
 
 describe('Studio', () => {
+  beforeEach(() => {
+    // A store DEFAULT é compartilhada pela suíte inteira (singleton de módulo):
+    // outro ARQUIVO pode ter deixado um projeto residual nela, e a ordem dos
+    // arquivos varia entre SOs (no Linux, extraFilesPreservation.test rodava
+    // antes e a asserção de isolamento abaixo via o resíduo — CI vermelho).
+    // Zera para a prova de isolamento valer por si.
+    useProjectStore.setState({ project: null, isDirty: false, saveError: null })
+  })
+
   afterEach(() => {
     cleanup()
   })
