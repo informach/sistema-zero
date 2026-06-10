@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, test } from 'bun:test'
+import { ValidationError } from '@sistemazero/core/errors'
 import { ForbiddenError } from '@sistemazero/core/http'
 import type { CreateUserActor } from '../../src/application/admin/create-user/create-user.command'
 import { CreateUserService } from '../../src/application/admin/create-user/create-user.service'
@@ -12,6 +13,7 @@ import {
 } from '../fakes/in-memory'
 
 const COMMUNITY_URL = 'http://localhost:3007'
+const KIDS_COMMUNITY_URL = 'http://localhost:3008'
 
 const admin: CreateUserActor = { id: crypto.randomUUID(), role: 'admin' }
 const superadmin: CreateUserActor = { id: crypto.randomUUID(), role: 'superadmin' }
@@ -40,7 +42,7 @@ describe('CreateUserService — criação pelo painel (convite)', () => {
       fakeHasher,
       createPasswordToken,
       messaging,
-      { communityUrl: COMMUNITY_URL },
+      { urls: { main: COMMUNITY_URL, kids: KIDS_COMMUNITY_URL } },
       silentLogger,
     )
   })
@@ -59,6 +61,33 @@ describe('CreateUserService — criação pelo painel (convite)', () => {
     expect(sent?.templateKey).toBe('welcome')
     expect(sent?.recipient.email).toBe('convidada@example.com')
     expect(sent?.variables.link).toStartWith(`${COMMUNITY_URL}/redefinir-senha?token=`)
+  })
+
+  test('convite com platform=kids → link com a base kids', async () => {
+    const result = await service.execute({ actor: admin, ...BASE_COMMAND, platform: 'kids' })
+    expect(result.inviteSent).toBe(true)
+    expect(messaging.sent[0]?.variables.link).toStartWith(
+      `${KIDS_COMMUNITY_URL}/redefinir-senha?token=`,
+    )
+  })
+
+  test('platform=kids SEM env configurada → 400 e NÃO cria a conta', async () => {
+    const semKids = new CreateUserService(
+      users,
+      fakeHasher,
+      new CreatePasswordTokenService(users, new InMemoryPasswordResetTokenRepository(), {
+        ttlMinutes: 60,
+      }),
+      messaging,
+      { urls: { main: COMMUNITY_URL } },
+      silentLogger,
+    )
+    await expect(
+      semKids.execute({ actor: admin, ...BASE_COMMAND, platform: 'kids' }),
+    ).rejects.toBeInstanceOf(ValidationError)
+    // Falha ANTES do efeito colateral: nenhum usuário criado, nenhum e-mail.
+    expect(await users.findByEmail('convidada@example.com')).toBeNull()
+    expect(messaging.sent).toHaveLength(0)
   })
 
   test('admin cria staff; e-mail é normalizado (lowercase)', async () => {

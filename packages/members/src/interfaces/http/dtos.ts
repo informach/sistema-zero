@@ -20,6 +20,16 @@ export const AttachmentResolveParams = t.Object({
 export const EbookResolveParams = t.Object({ slug: t.String(), lessonId: UUID, blockId: UUID })
 export const QuizAttemptParams = t.Object({ lessonId: UUID, blockId: UUID })
 
+// Audiência da vitrine (plataforma): `adult` (community) | `kids` (community-kids).
+const AUDIENCE = t.Union([t.Literal('adult'), t.Literal('kids')])
+
+/**
+ * Query das LISTAGENS do aluno (`GET /members/courses` e `/catalog`): qual vitrine
+ * o BFF chamador quer. Ausente → `adult` (zero regressão no community atual);
+ * valor inválido → 400 na borda.
+ */
+export const AudienceQuery = t.Object({ audience: t.Optional(AUDIENCE) })
+
 /**
  * Corpo de `POST /members/webhooks/grant` — concessão de acesso (funil → gateway →
  * members). `subscription` presente = acesso por assinatura; ausente = compra única.
@@ -183,12 +193,16 @@ export const CourseBody = t.Object({
   // cadeado do catálogo "Todos os cursos" leva quem não tem acesso.
   salesPageUrl: NULLABLE_URL,
   status: COURSE_STATUS,
+  // Plataforma do curso. AUSENTE: create → `adult`; update → PRESERVA a atual
+  // (build antigo do admin sem o campo não rebaixa curso kids em silêncio).
+  audience: t.Optional(t.Union([AUDIENCE, t.Null()])),
 })
 
 /** Query de `GET /members/admin/courses`. */
 export const ListCoursesQuery = t.Object({
   q: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
   status: t.Optional(COURSE_STATUS),
+  audience: t.Optional(AUDIENCE),
   limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100 })),
   offset: t.Optional(t.Numeric({ minimum: 0, maximum: 1_000_000 })),
 })

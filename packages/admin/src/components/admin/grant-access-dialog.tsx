@@ -168,14 +168,15 @@ export function GrantAccessDialog({
           >
             <option value="course">Por curso</option>
             <option value="offer">Por oferta do catálogo</option>
-            <option value="all_courses">Todos os cursos (chave-mestra)</option>
+            <option value="all_courses">Todos os cursos adultos (chave-mestra)</option>
           </Select>
         </Field>
 
         {form.mode === 'all_courses' ? (
           <p className="text-muted-foreground text-sm">
-            Concede acesso a TODOS os cursos publicados — inclusive os lançados depois. Uma única
-            matrícula, revogável/extensível como qualquer outra.
+            Concede acesso a TODOS os cursos ADULTOS publicados — inclusive os lançados depois.
+            Cursos Kids ficam fora (conceda por curso). Uma única matrícula, revogável/extensível
+            como qualquer outra.
           </p>
         ) : form.mode === 'course' ? (
           <Field label="Curso" htmlFor="grant-course">
@@ -187,7 +188,7 @@ export function GrantAccessDialog({
               <option value="">{optionsLoaded ? 'Selecione…' : 'Carregando…'}</option>
               {courses.map((c) => (
                 <option key={c.id} value={c.slug}>
-                  {c.title} ({c.slug})
+                  {c.title} ({c.slug}){c.audience === 'kids' ? ' [Kids]' : ''}
                 </option>
               ))}
             </Select>

@@ -51,3 +51,7 @@ secrets/
 
 # Playwright MCP (artefatos de sessão de teste no browser)
 .playwright-mcp/
+
+# Playwright e2e (packages/studio — fora do CI)
+test-results/
+playwright-report/

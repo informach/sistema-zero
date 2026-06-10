@@ -55,6 +55,18 @@ describe('loadEnv', () => {
     expect(() => loadEnv(semCommunity)).toThrow(/COMMUNITY_URL/)
   })
 
+  test('KIDS_COMMUNITY_URL: opcional em produção; setada com localhost → falha no boot', () => {
+    // Ausente: produção sobe normalmente (o domínio kids pode não existir ainda).
+    expect(() => loadEnv(PROD_BASE)).not.toThrow()
+    // Setada apontando p/ localhost: links de e-mail quebrados — fail-fast.
+    expect(() => loadEnv({ ...PROD_BASE, KIDS_COMMUNITY_URL: 'http://localhost:3008' })).toThrow(
+      /KIDS_COMMUNITY_URL/,
+    )
+    // Setada com domínio real: ok.
+    const env = loadEnv({ ...PROD_BASE, KIDS_COMMUNITY_URL: 'https://kids.example.com' })
+    expect(env.KIDS_COMMUNITY_URL).toBe('https://kids.example.com')
+  })
+
   test('dev/test SEM AUTH_INTERNAL_TOKEN → ok (checagem desligada fora de produção)', () => {
     expect(() => loadEnv(BASE)).not.toThrow()
   })

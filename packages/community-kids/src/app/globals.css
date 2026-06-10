@@ -1,0 +1,539 @@
+@import "tailwindcss";
+/* Componentes compartilhados (@sistemazero/ui + @sistemazero/member-shell) —
+   o scanner do Tailwind v4 precisa VER as classes deles (sem isto renderizam pelados). */
+@source "../../../ui/src";
+@source "../../../member-shell/src";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-link: var(--link);
+  --color-link-hover: var(--link-hover);
+  --color-interactive: var(--interactive-text);
+  --color-interactive-hover: var(--interactive-text-hover);
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+/* ============================================================
+   SISTEMA ZERO KIDS — LIGHT MODE (default: creme quente +
+   verde vibrante + laranja; vibe Duolingo×Brilliant, 8–13 anos)
+   ============================================================ */
+:root {
+  --kids-green: oklch(0.65 0.2 145);
+  --kids-orange: oklch(0.72 0.17 60);
+  --kids-purple: oklch(0.55 0.2 295);
+  --kids-sky: oklch(0.7 0.14 230);
+
+  --background: oklch(0.985 0.015 95);
+  --foreground: oklch(0.2 0.03 280);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.2 0.03 280);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.2 0.03 280);
+
+  --primary: oklch(0.55 0.17 145);
+  --primary-foreground: oklch(1 0 0);
+
+  --link: oklch(0.48 0.16 230);
+  --link-hover: oklch(0.4 0.17 230);
+  --interactive-text: var(--link);
+  --interactive-text-hover: var(--link-hover);
+
+  /* Gradient CTA — verde → azul-céu (vibrante mas legível). */
+  --brand-gradient-start: var(--kids-green);
+  --brand-gradient-end: var(--kids-sky);
+
+  --secondary: oklch(0.95 0.03 95);
+  --secondary-foreground: oklch(0.25 0.04 280);
+
+  --muted: oklch(0.95 0.02 95);
+  --muted-foreground: oklch(0.48 0.03 280);
+
+  --accent: oklch(0.62 0.17 60);
+  --accent-foreground: oklch(1 0 0);
+
+  --destructive: oklch(0.55 0.22 27);
+  --destructive-foreground: oklch(1 0 0);
+
+  --success: oklch(0.45 0.13 150);
+  --success-foreground: oklch(0.4 0.13 150);
+
+  --border: oklch(0.89 0.02 95);
+  --input: oklch(0.91 0.02 95);
+  --ring: oklch(0.55 0.17 145);
+
+  --chart-1: var(--kids-green);
+  --chart-2: var(--kids-orange);
+  --chart-3: var(--kids-purple);
+  --chart-4: var(--kids-sky);
+  --chart-5: oklch(0.48 0.03 280);
+
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+    monospace;
+
+  /* Cards bem arredondados (os --radius-sm/md/lg/xl derivam daqui). */
+  --radius: 1rem;
+
+  /* Signature meta-tokens (gradiente CTA, hot badge) — nomes preservados. */
+  --sz-primary: oklch(0.55 0.17 145);
+  --sz-primary-fg: oklch(1 0 0);
+  --sz-accent: oklch(0.62 0.17 60);
+  --sz-hot: oklch(0.55 0.22 27);
+  --sz-hot-tint: oklch(0.55 0.22 27 / 0.1);
+  --sz-gradient: linear-gradient(90deg, oklch(0.55 0.17 145), oklch(0.5 0.15 230));
+}
+
+/* ============================================================
+   SISTEMA ZERO KIDS — DARK MODE (mesma paleta, dessaturada
+   sobre azul-noite; o toggle continua no menu do avatar)
+   ============================================================ */
+.dark {
+  --background: oklch(0.16 0.02 280);
+  --foreground: oklch(0.97 0.005 95);
+
+  --card: oklch(0.2 0.025 280);
+  --card-foreground: oklch(0.97 0.005 95);
+  --popover: oklch(0.23 0.025 280);
+  --popover-foreground: oklch(0.97 0.005 95);
+
+  --primary: oklch(0.75 0.19 145);
+  --primary-foreground: oklch(0.16 0.02 280);
+
+  --link: oklch(0.78 0.13 230);
+  --link-hover: oklch(0.85 0.11 230);
+  --interactive-text: var(--link);
+  --interactive-text-hover: var(--link-hover);
+
+  --brand-gradient-start: oklch(0.75 0.19 145);
+  --brand-gradient-end: oklch(0.78 0.13 230);
+
+  --secondary: oklch(0.25 0.03 280);
+  --secondary-foreground: oklch(0.97 0.005 95);
+
+  --muted: oklch(0.25 0.03 280);
+  --muted-foreground: oklch(0.66 0.02 280);
+
+  --accent: oklch(0.27 0.03 280);
+  --accent-foreground: oklch(0.78 0.15 60);
+
+  --destructive: oklch(0.64 0.215 27);
+  --destructive-foreground: oklch(0.97 0.005 95);
+
+  --success: oklch(0.27 0.03 280);
+  --success-foreground: oklch(0.78 0.15 150);
+
+  --border: oklch(0.28 0.03 280);
+  --input: oklch(0.3 0.03 280);
+  --ring: oklch(0.75 0.19 145);
+
+  --chart-1: oklch(0.75 0.19 145);
+  --chart-2: oklch(0.78 0.15 60);
+  --chart-3: oklch(0.72 0.16 295);
+  --chart-4: oklch(0.78 0.13 230);
+  --chart-5: oklch(0.66 0.02 280);
+
+  --sz-primary: oklch(0.75 0.19 145);
+  --sz-primary-fg: oklch(0.16 0.02 280);
+  --sz-accent: oklch(0.78 0.15 60);
+  --sz-hot: oklch(0.704 0.191 22);
+  --sz-hot-tint: oklch(0.704 0.191 22 / 0.15);
+  --sz-gradient: linear-gradient(90deg, oklch(0.75 0.19 145), oklch(0.78 0.13 230));
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    /* Corpo: Nunito (sans arredondada, x-height alto — legibilidade comprovada
+       em material infanto-juvenil). Display/headings: Baloo 2 via .sz-display.
+       Mono: Geist Mono (blocos de código das aulas de IA pedem mono séria). */
+    --font-sans:
+      var(--font-nunito), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+      Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-display: var(--font-baloo), var(--font-nunito), ui-sans-serif, system-ui, sans-serif;
+    --font-mono:
+      var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+      "Liberation Mono", "Courier New", monospace;
+    font-family: var(--font-sans);
+    @apply bg-background text-foreground;
+  }
+  a[href],
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+  button:disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+}
+
+/* ============================================================
+   UTILITÁRIOS DE MARCA — Sistema Zero Kids
+   (mesmos NOMES do community: os componentes compartilhados do
+   member-shell consomem estas classes — vestem o tema daqui)
+   ============================================================ */
+.brand-gradient-text {
+  background: linear-gradient(90deg, var(--brand-gradient-start), var(--brand-gradient-end));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Button variant="default" vira o CTA "3D" kids (sombra dura + afunda no clique). */
+button.bg-primary.text-primary-foreground,
+a.bg-primary.text-primary-foreground {
+  background-image: var(--sz-gradient);
+  background-color: transparent;
+  color: var(--sz-primary-fg);
+  box-shadow: 0 4px 0 color-mix(in oklch, var(--sz-primary) 60%, black);
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    filter 0.12s ease;
+}
+button.bg-primary.text-primary-foreground:hover:not(:disabled),
+a.bg-primary.text-primary-foreground:hover:not([aria-disabled="true"]) {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow: 0 5px 0 color-mix(in oklch, var(--sz-primary) 60%, black);
+}
+button.bg-primary.text-primary-foreground:active:not(:disabled),
+a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 color-mix(in oklch, var(--sz-primary) 60%, black);
+}
+
+/* CTA gradiente standalone — mesmo visual do Button default, fora do Button */
+.sz-btn-gradient {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.875rem;
+  padding: 0 1.125rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  border: 0;
+  background-image: var(--sz-gradient);
+  color: var(--sz-primary-fg);
+  cursor: pointer;
+  box-shadow: 0 4px 0 color-mix(in oklch, var(--sz-primary) 60%, black);
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    filter 0.12s ease;
+}
+.sz-btn-gradient:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+.sz-btn-gradient svg {
+  stroke: currentColor;
+}
+
+/* Hot badge — laranja kids com pulso sutil */
+.sz-hot-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-family: var(--font-display);
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.1875rem 0.625rem 0.1875rem 0.5rem;
+  border-radius: 9999px;
+  background: var(--sz-hot-tint);
+  color: var(--sz-hot);
+  border: 1px solid color-mix(in oklch, var(--sz-hot) 35%, transparent);
+}
+.sz-hot-badge .dot {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+  background: var(--sz-hot);
+  animation: sz-pulse 1.6s ease-in-out infinite;
+}
+@keyframes sz-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(1.3);
+  }
+}
+
+/* Badges de categoria/nível sobre a capa do curso */
+.course-meta-badge {
+  color: oklch(1 0 0);
+  border-color: color-mix(in oklch, var(--kids-orange) 35%, transparent);
+  background-color: color-mix(in oklch, black 42%, transparent);
+  backdrop-filter: blur(10px);
+}
+
+/* Progress bar gradiente — mais ALTA que a do community (criança enxerga o avanço) */
+.sz-progress {
+  position: relative;
+  height: 0.625rem;
+  background: color-mix(in oklch, var(--muted) 70%, transparent);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+.sz-progress > span {
+  display: block;
+  height: 100%;
+  background-image: var(--sz-gradient);
+  border-radius: inherit;
+}
+
+/* Divider — hairline em gradiente */
+.sz-divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in oklch, var(--sz-primary) 40%, transparent) 20%,
+    color-mix(in oklch, var(--sz-accent) 40%, transparent) 80%,
+    transparent 100%
+  );
+  border: 0;
+  margin: 1.5rem 0;
+}
+
+/* Display text — Baloo 2 (arredondada/amigável) p/ títulos e números */
+.sz-display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+.sz-display-grad {
+  background-image: var(--sz-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Microinterações kids (cards/celebrações). Respeita reduced-motion (abaixo). */
+.kid-pop {
+  transition: transform 0.18s ease-out;
+}
+.kid-pop:hover {
+  transform: translateY(-2px) scale(1.02);
+}
+@keyframes kid-wiggle {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-6deg) scale(1.1);
+  }
+  75% {
+    transform: rotate(6deg) scale(1.1);
+  }
+}
+.kid-wiggle {
+  animation: kid-wiggle 0.5s ease-in-out;
+}
+
+/* Esconde o reveal nativo de senha (usamos o toggle próprio Eye/EyeOff) */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="password"]::-webkit-strong-password-auto-fill-button {
+  display: none !important;
+}
+
+/* Prosa de aula — tipografia MAIOR e mais arejada que a do community (8–13 anos) */
+.lesson-prose {
+  line-height: 1.8;
+  font-size: 1.0625rem;
+}
+.lesson-prose h1,
+.lesson-prose h2,
+.lesson-prose h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 1.5em 0 0.5em;
+  line-height: 1.25;
+}
+.lesson-prose h1 {
+  font-size: 1.625rem;
+}
+.lesson-prose h2 {
+  font-size: 1.375rem;
+}
+.lesson-prose h3 {
+  font-size: 1.125rem;
+}
+.lesson-prose p {
+  margin: 0.75em 0;
+}
+.lesson-prose ul,
+.lesson-prose ol {
+  margin: 0.75em 0;
+  padding-left: 1.5rem;
+}
+.lesson-prose ul {
+  list-style: disc;
+}
+.lesson-prose ol {
+  list-style: decimal;
+}
+.lesson-prose li {
+  margin: 0.25em 0;
+}
+.lesson-prose a {
+  color: var(--interactive-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.lesson-prose a:hover {
+  color: var(--interactive-text-hover);
+}
+.lesson-prose strong {
+  font-weight: 700;
+}
+.lesson-prose code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: color-mix(in oklch, var(--muted) 80%, transparent);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+}
+.lesson-prose pre {
+  background: color-mix(in oklch, var(--muted) 80%, transparent);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  overflow-x: auto;
+  margin: 1em 0;
+}
+.lesson-prose pre code {
+  background: transparent;
+  padding: 0;
+}
+.lesson-prose blockquote {
+  border-left: 3px solid color-mix(in oklch, var(--sz-primary) 50%, transparent);
+  padding-left: 1rem;
+  margin: 1em 0;
+  color: var(--muted-foreground);
+}
+.lesson-prose > :first-child {
+  margin-top: 0;
+}
+.lesson-prose > :last-child {
+  margin-bottom: 0;
+}
+
+/* Modal — backdrop + entrada */
+@keyframes sz-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes sz-zoom-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+.sz-overlay {
+  animation: sz-fade-in 0.15s ease;
+}
+.sz-modal {
+  animation: sz-zoom-in 0.15s ease;
+}
+
+/* Scrollbar discreta */
+.scrollbar-subtle {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+.scrollbar-subtle:hover {
+  scrollbar-color: color-mix(in oklch, var(--foreground) 18%, transparent) transparent;
+}
+.scrollbar-subtle::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.scrollbar-subtle::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 9999px;
+}
+.scrollbar-subtle:hover::-webkit-scrollbar-thumb {
+  background: color-mix(in oklch, var(--foreground) 18%, transparent);
+}
+
+/* Toast — contraste garantido em ambos os modos */
+[data-sonner-toast] {
+  background: var(--popover) !important;
+  color: var(--popover-foreground) !important;
+  border: 1px solid var(--border) !important;
+}
+
+/* Acessibilidade: animações desligam p/ quem pediu menos movimento */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

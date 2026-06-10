@@ -1,5 +1,12 @@
 'use client'
 
+import { LessonAttachments } from '@sistemazero/member-shell/components/lesson-attachments'
+import { LessonBlocks } from '@sistemazero/member-shell/components/lesson-blocks'
+import {
+  type LessonPlayerContextValue,
+  LessonPlayerProvider,
+} from '@sistemazero/member-shell/components/lesson-player-context'
+import { ProgressBar } from '@sistemazero/member-shell/components/progress-bar'
 import { Button, buttonVariants } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Spinner } from '@sistemazero/ui/spinner'
@@ -9,13 +16,6 @@ import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { CourseRatingFlow, type RatingViewer } from '@/components/community/course-rating-flow'
-import { LessonAttachments } from '@/components/community/lesson-attachments'
-import { LessonBlocks } from '@/components/community/lesson-blocks'
-import {
-  type LessonPlayerContextValue,
-  LessonPlayerProvider,
-} from '@/components/community/lesson-player-context'
-import { ProgressBar } from '@/components/community/progress-bar'
 import { type ApiError, apiSend } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import type { CourseDetailView, LessonDetailView, QuizBlock } from '@/lib/types'

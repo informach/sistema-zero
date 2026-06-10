@@ -38,9 +38,16 @@ são anexos das aulas. No cadastro do produto há uma única pergunta:
 
 - **Um curso específico** → escolha qual curso (pelo slug). É o produto comum.
 - **Todos os cursos (atuais e futuros)** → a **chave-mestra**: uma única matrícula
-  cobre TODOS os cursos publicados, **inclusive os lançados depois da compra**, sem
-  nenhum reprocessamento. Use para "acesso total" (Black Friday, plano anual, plano
-  da comunidade).
+  cobre TODOS os cursos **da plataforma principal (adultos)** publicados, **inclusive
+  os lançados depois da compra**, sem nenhum reprocessamento. Use para "acesso total"
+  (Black Friday, plano anual, plano da comunidade).
+
+> ⚠️ **Cursos Kids ficam FORA da chave-mestra** (decisão de 06/2026). Cada curso tem
+> uma **Audiência** (campo no cadastro do curso): **Adulto** (plataforma principal,
+> comunidade.sistemazero.com.br) ou **Kids** (plataforma infanto-juvenil). A chave-mestra
+> "todos os cursos" significa "todos os cursos ADULTOS" — acesso a curso Kids é sempre
+> por matrícula específica (concessão manual ou compra do produto kids). A equipe
+> interna (superadmin/admin/staff) continua enxergando as duas plataformas, para suporte.
 
 **A entrega mora no PRODUTO, nunca na oferta.** Motivo: reuso — o mesmo produto pode
 ser vendido por N ofertas sem reconfigurar nada:

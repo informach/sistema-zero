@@ -63,6 +63,8 @@ interface CreateFormState {
   email: string
   phone: string
   role: string
+  /** Plataforma de destino do convite (link do e-mail): `main` | `kids`. */
+  platform: string
 }
 
 const EMPTY_CREATE: CreateFormState = {
@@ -71,6 +73,7 @@ const EMPTY_CREATE: CreateFormState = {
   email: '',
   phone: '',
   role: 'customer',
+  platform: 'main',
 }
 
 export function UsersClient({ currentUser }: { currentUser: { id: string; role: string } }) {
@@ -200,6 +203,7 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
           lastName: createForm.lastName.trim(),
           phone: createForm.phone.trim() ? createForm.phone.trim() : null,
           role: createForm.role,
+          platform: createForm.platform,
         },
       )
       if (res.inviteSent) {
@@ -548,6 +552,20 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
               </Select>
             </Field>
           </div>
+          <Field
+            label="Plataforma do convite"
+            htmlFor="c-platform"
+            tooltip="Para onde o link do e-mail de convite aponta: a comunidade principal ou a plataforma Kids. Não muda a conta — só o destino do primeiro acesso."
+          >
+            <Select
+              id="c-platform"
+              value={createForm.platform}
+              onChange={(e) => setCreateForm((f) => ({ ...f, platform: e.target.value }))}
+            >
+              <option value="main">Principal (comunidade)</option>
+              <option value="kids">Kids</option>
+            </Select>
+          </Field>
         </div>
       </Dialog>
 

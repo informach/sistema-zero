@@ -40,8 +40,9 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > chars no `x-delivery-id`) — **139 testes**.
 > Migrations `0000` (schema `members`), `0001` (`lesson_progress`), `0002`
 > (`quiz_attempts`), `0003` (`lessons.is_published`), `0004` (`course_ratings`), `0005`
-> (enum `lesson_block_kind` + `'ebook'`), `0006` (enum `access_type` + `'all_courses'`)
-> e `0007` (índice `processed_webhooks_processed_at_idx`)
+> (enum `lesson_block_kind` + `'ebook'`), `0006` (enum `access_type` + `'all_courses'`),
+> `0007` (índice `processed_webhooks_processed_at_idx`) e `0008` (enum
+> `course_audience` + coluna `courses.audience`, default `adult` — plataforma kids)
 > — **aplicadas** no Postgres compartilhado (`sistemazero`, :5433).
 
 ## Conceito central (decisões travadas com o usuário)
@@ -62,8 +63,12 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    (vitalícia > validade mais distante). **Chave-mestra** (`accessType='all_courses'`,
    `courseRef` null): acesso = "matrícula do curso OU chave-mestra ativa"
    (`findActiveForCourse`, query única com OR); cobre cursos publicados DEPOIS do grant
-   sem reprocessamento. "Meus cursos" lista todos os publicados (+ archived com matrícula
-   específica) com o acesso mais forte por curso; o catálogo destrava tudo (`hasAccess`).
+   sem reprocessamento. ⚠️ **Desde 06/2026 a chave-mestra cobre só cursos `adult`**:
+   curso `kids` (ver Audiência, item 9) exige matrícula ESPECÍFICA — o
+   `CheckAccessService` (ponto único) passa `masterCovers: course.audience === 'adult'`
+   ao `findActiveForCourse`, que tira o braço `all_courses` do OR. "Meus cursos" lista
+   todos os publicados da VITRINE (+ archived com matrícula específica) com o acesso
+   mais forte por curso; o catálogo destrava tudo (`hasAccess`) — na vitrine adult.
    **Equipe interna = chave-mestra VIRTUAL** (06/2026): `superadmin`/`admin`/`staff`
    (header `x-auth-user-role` injetado pelo gateway — confiável pelo `x-internal-token`)
    recebem `EntitlementAggregate.virtualAllCourses()` em memória (NUNCA persistida) em
@@ -101,6 +106,19 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    upsert): `positionSeconds` retoma o vídeo de onde parou; `updatedAt` alimenta o
    `continueLessonId` (prioridade: última acessada não concluída > 1ª não concluída >
    1ª aula — `resolveContinueLesson`, puro) devolvido no detalhe e em "meus cursos".
+9. **Audiência do curso = plataforma** (06/2026, migration `0008`): coluna
+   `courses.audience` (`adult` | `kids`, default `adult`) — é COLUNA (não metadata)
+   porque participa da AUTORIZAÇÃO (chave-mestra, item 2). Segmenta as VITRINES:
+   `GET /members/courses` e `/catalog` aceitam `?audience=adult|kids` (ausente →
+   `adult`, zero regressão no community; inválido → 400 via `AudienceQuery`) e os
+   services filtram `listPublishedCourses(audience)` + descartam matrícula específica
+   de curso da outra vitrine na resposta (o ACESSO segue válido — só não aparece ali).
+   O DETALHE/aula/quiz/anexos/ebook NÃO filtram por audiência (plataforma é descoberta;
+   acesso é matrícula — e a equipe precisa navegar as duas). Autoria: `CourseBody.audience`
+   opcional — ausente no CREATE → `adult`; ausente no UPDATE → **PRESERVA a atual**
+   (≠ do `salesPageUrl`, que limpa: um PATCH de build antigo do admin não pode rebaixar
+   curso kids em silêncio). Views (`MyCourseView`/`CatalogCourseView`/`CourseDetailView`/
+   `CourseView` admin) expõem `audience`. O front kids é o `@sistemazero/community-kids`.
 
 ## Arquitetura (DDD + Hexagonal — espelha auth/catalog)
 

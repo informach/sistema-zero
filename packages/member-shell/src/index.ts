@@ -1,0 +1,53 @@
+import 'server-only'
+import { sessionCookieNames } from './lib/cookies'
+import { createShellRoutes } from './routes'
+import {
+  createAuthClient,
+  createMembersClient,
+  createPaymentsClient,
+  type MembersAudience,
+} from './server/clients'
+import { createGatewayModule } from './server/gateway'
+import { createMediaModule } from './server/media'
+import { createSessionModule } from './server/session'
+
+export interface ShellConfig {
+  /**
+   * Base dos cookies de sessão (`sz_member` no community, `sz_kids` no kids) —
+   * compile-time por app: cookies não escopam por porta em dev e os dois apps
+   * podem rodar lado a lado (localhost:3007/:3008) com jars independentes.
+   */
+  cookieBase: string
+  /** Vitrine do members deste app (`adult` | `kids`) — só afeta as LISTAGENS. */
+  audience: MembersAudience
+  /** Nome do app p/ logs/erros (ex.: `@sistemazero/community`). */
+  serviceName: string
+}
+
+export type Shell = ReturnType<typeof createShell>
+
+/**
+ * Compositor do BFF de um app de área do aluno. Chamado UMA vez no wrapper
+ * `src/server/shell.ts` de cada app — o Turbopack separa proxy/RSC/handlers em
+ * bundles com cópias dos módulos, e cada bundle re-executa o wrapper com a
+ * MESMA config estática (determinístico); o estado compartilhado real
+ * (single-flight do refresh, gate da marca d'água, JWKS) vive em `globalThis`
+ * via `Symbol.for` DENTRO dos módulos do shell — nunca em closure de factory.
+ */
+export function createShell(cfg: ShellConfig) {
+  // process.env DIRETO (não o zod do lib/env): createShell roda em MODULE SCOPE
+  // (wrapper shell.ts de cada app) — o getEnv() validaria a env inteira no
+  // import e quebraria o `next build` (page data collection roda com
+  // NODE_ENV=production sobre a .env de dev). Mesma técnica do lib/cookies
+  // original; o zod continua validando no PRIMEIRO USO real.
+  const cookies = sessionCookieNames(cfg.cookieBase, process.env.NODE_ENV === 'production')
+  const session = createSessionModule(cookies)
+  const gateway = createGatewayModule(session)
+  const auth = createAuthClient(gateway)
+  const members = createMembersClient(gateway, { audience: cfg.audience })
+  const payments = createPaymentsClient(gateway)
+  const media = createMediaModule({ session, gateway })
+  const routes = createShellRoutes({ session, gateway, auth, members, payments, media })
+
+  return { config: cfg, cookies, session, gateway, auth, members, payments, media, routes }
+}

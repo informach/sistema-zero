@@ -15,10 +15,12 @@ export interface CourseAccess {
  * exige publicado (senão 404) → exige matrícula ATIVA do aluno (senão 403).
  * A checagem de acesso é leitura LOCAL (status + validade), sem chamar ninguém.
  * Acesso = matrícula específica (`entitlement.courseRef === course.slug`) OU
- * chave-mestra (`accessType='all_courses'`, cobre todos os cursos — atuais e futuros).
+ * chave-mestra (`accessType='all_courses'`, cobre todos os cursos ADULTOS —
+ * atuais e futuros; curso `kids` fica FORA da chave-mestra, via `masterCovers`).
  * `privileged=true` (equipe interna — `isPrivilegedActor` na rota) dispensa a
- * matrícula com uma chave-mestra VIRTUAL; o 404 de curso draft fica ANTES do
- * bypass — equipe vê só conteúdo acessível, igual ao aluno com chave-mestra real.
+ * matrícula com uma chave-mestra VIRTUAL que cobre as DUAS audiências (suporte);
+ * o 404 de curso draft fica ANTES do bypass — equipe vê só conteúdo acessível,
+ * igual ao aluno com chave-mestra real.
  */
 export class CheckAccessService {
   constructor(
@@ -52,10 +54,13 @@ export class CheckAccessService {
     if (privileged) {
       return { course, entitlement: EntitlementAggregate.virtualAllCourses(userId, this.clock()) }
     }
+    // Chave-mestra `all_courses` cobre só cursos `adult` — para curso `kids`,
+    // o OR da chave-mestra sai da query e resta a matrícula específica.
     const entitlement = await this.entitlements.findActiveForCourse(
       userId,
       course.slug,
       this.clock(),
+      { masterCovers: course.audience === 'adult' },
     )
     if (!entitlement) throw new AccessDeniedError()
     return { course, entitlement }

@@ -21,6 +21,8 @@ export interface CourseView {
   /** Página de vendas (funil) — de `metadata.salesPageUrl`; `null` se não setada. */
   salesPageUrl: string | null
   status: string
+  /** Plataforma do curso (`adult` | `kids`). */
+  audience: string
   createdAt: string
   updatedAt: string
 }
@@ -35,6 +37,7 @@ export function toCourseView(c: Course): CourseView {
     coverImageUrl: c.coverImageUrl,
     salesPageUrl: resolveSalesPageUrl(c),
     status: c.status,
+    audience: c.audience,
     createdAt: c.createdAt.toISOString(),
     updatedAt: c.updatedAt.toISOString(),
   }

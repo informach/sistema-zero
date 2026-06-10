@@ -52,13 +52,16 @@ export function batchGetUsers(ids: string[]): Promise<GatewayResponse<{ users: U
 /**
  * "Entrar como" (impersonação p/ suporte): `POST /auth/admin/users/:id/impersonate`.
  * O auth re-checa a matriz (admin só customer/staff) e devolve o token de HANDOFF
- * single-use (~60s) + a URL base da community — o client abre
- * `<communityUrl>/impersonar?token=...` em nova aba.
+ * single-use (~60s) + a URL base da plataforma — o client abre
+ * `<communityUrl>/impersonar?token=...` em nova aba. `platform: 'kids'` →
+ * a URL devolvida é a do app kids (mesmo token/exchange; muda só o destino).
  */
 export function impersonateUser(
   id: string,
+  platform?: 'main' | 'kids',
 ): Promise<GatewayResponse<{ token: string; expiresAt: string; communityUrl: string }>> {
-  return gatewayFetch(`/auth/admin/users/${encodeURIComponent(id)}/impersonate`, {
+  const query = platform === 'kids' ? '?platform=kids' : ''
+  return gatewayFetch(`/auth/admin/users/${encodeURIComponent(id)}/impersonate${query}`, {
     method: 'POST',
   })
 }

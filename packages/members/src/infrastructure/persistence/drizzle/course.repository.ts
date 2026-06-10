@@ -1,6 +1,7 @@
 import { and, asc, count, eq, inArray } from 'drizzle-orm'
 import type {
   Course,
+  CourseAudience,
   Lesson,
   LessonAttachment,
   LessonBlock,
@@ -22,6 +23,7 @@ function toCourse(row: typeof courses.$inferSelect): Course {
     description: row.description,
     coverImageUrl: row.coverImageUrl,
     status: row.status,
+    audience: row.audience,
     metadata: row.metadata ?? null,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
@@ -108,11 +110,11 @@ export class DrizzleCourseRepository implements CourseRepository {
     return rows.map(toCourse)
   }
 
-  async listPublishedCourses(): Promise<Course[]> {
+  async listPublishedCourses(audience: CourseAudience): Promise<Course[]> {
     const rows = await this.db
       .select()
       .from(courses)
-      .where(eq(courses.status, 'published'))
+      .where(and(eq(courses.status, 'published'), eq(courses.audience, audience)))
       .orderBy(asc(courses.title))
     return rows.map(toCourse)
   }

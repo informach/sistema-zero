@@ -28,7 +28,13 @@ import { ImageUploader } from '@/components/media/image-uploader'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { formatDate } from '@/lib/format'
 import { slugify } from '@/lib/slug'
-import { COURSE_STATUSES, type CourseView, type Paginated } from '@/lib/types'
+import {
+  AUDIENCE_LABELS,
+  COURSE_AUDIENCES,
+  COURSE_STATUSES,
+  type CourseView,
+  type Paginated,
+} from '@/lib/types'
 
 const LIMIT = 20
 
@@ -40,6 +46,7 @@ interface FormState {
   coverImageUrl: string
   salesPageUrl: string
   status: string
+  audience: string
 }
 
 const EMPTY: FormState = {
@@ -50,6 +57,7 @@ const EMPTY: FormState = {
   coverImageUrl: '',
   salesPageUrl: '',
   status: 'draft',
+  audience: 'adult',
 }
 
 export function CoursesClient({ currentRole }: { currentRole: string }) {
@@ -108,6 +116,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
       coverImageUrl: c.coverImageUrl ?? '',
       salesPageUrl: c.salesPageUrl ?? '',
       status: c.status,
+      audience: c.audience ?? 'adult',
     })
     setOpen(true)
   }
@@ -131,6 +140,8 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
         coverImageUrl: form.coverImageUrl.trim() ? form.coverImageUrl.trim() : null,
         salesPageUrl: form.salesPageUrl.trim() ? form.salesPageUrl.trim() : null,
         status: form.status,
+        // SEMPRE enviado (explícito > depender do preserve do members no PATCH).
+        audience: form.audience,
       }
       if (editing) {
         await apiSend(`/api/members/courses/${editing.id}`, 'PATCH', payload)
@@ -235,7 +246,14 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
               items.map((c) => (
                 <TableRow key={c.id}>
                   <TableCell>
-                    <div className="font-medium">{c.title}</div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{c.title}</span>
+                      {c.audience === 'kids' ? (
+                        <span className="rounded-full bg-success/15 px-2 py-0.5 text-[11px] font-medium text-success-foreground">
+                          Kids
+                        </span>
+                      ) : null}
+                    </div>
                     <div className="text-xs text-muted-foreground">{c.slug}</div>
                   </TableCell>
                   <TableCell>
@@ -336,6 +354,23 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
               </Select>
             </Field>
           </div>
+          <Field
+            label="Audiência"
+            htmlFor="caudience"
+            tooltip="Em qual plataforma o curso aparece: Adulto (comunidade principal) ou Kids (plataforma infanto-juvenil). Cursos Kids ficam FORA da chave-mestra 'todos os cursos' — acesso é sempre por matrícula específica."
+          >
+            <Select
+              id="caudience"
+              value={form.audience}
+              onChange={(e) => setForm((f) => ({ ...f, audience: e.target.value }))}
+            >
+              {COURSE_AUDIENCES.map((a) => (
+                <option key={a} value={a}>
+                  {AUDIENCE_LABELS[a]}
+                </option>
+              ))}
+            </Select>
+          </Field>
           <Field label="Subtítulo" htmlFor="subtitle" hint="Opcional.">
             <Input
               id="subtitle"

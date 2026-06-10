@@ -74,6 +74,10 @@ const EnvSchema = z
     OTP_REQUEST_COOLDOWN_SECONDS: z.coerce.number().int().min(0).default(60),
     // Base dos links de e-mail (app community): `${COMMUNITY_URL}/redefinir-senha?token=...`.
     COMMUNITY_URL: z.string().url().default('http://localhost:3007'),
+    // Base dos links da plataforma KIDS (community-kids). OPCIONAL: sem ela, fluxos
+    // com `platform: 'kids'` respondem 400 (o boot do auth não depende do domínio
+    // kids existir). Quando setada em produção, não pode ser localhost (refine).
+    KIDS_COMMUNITY_URL: z.string().url().optional(),
     // Token interno injetado pelo gateway nas rotas `/auth/internal/*` (defesa em
     // profundidade). Vazio/ausente = checagem desligada (dev).
     AUTH_INTERNAL_TOKEN: z.string().optional(),
@@ -125,6 +129,18 @@ const EnvSchema = z
       'COMMUNITY_URL é obrigatória em produção (o default localhost geraria links de e-mail quebrados)',
     path: ['COMMUNITY_URL'],
   })
+  // Mesma régua para a plataforma kids — mas só quando a env estiver setada.
+  .refine(
+    (e) =>
+      e.NODE_ENV !== 'production' ||
+      !e.KIDS_COMMUNITY_URL ||
+      !/localhost|127\.0\.0\.1/.test(e.KIDS_COMMUNITY_URL),
+    {
+      message:
+        'KIDS_COMMUNITY_URL em produção não pode apontar para localhost (links de e-mail quebrados)',
+      path: ['KIDS_COMMUNITY_URL'],
+    },
+  )
 
 export type Env = z.infer<typeof EnvSchema>
 

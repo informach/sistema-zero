@@ -22,6 +22,10 @@ import type { CourseFeedbackAnswers } from '../../../domain/rating/course-rating
 export const members = pgSchema('members')
 
 export const courseStatusEnum = members.enum('course_status', ['draft', 'published', 'archived'])
+// Audiência do curso: segmenta a VITRINE entre as plataformas (adulto = community,
+// kids = community-kids). É coluna (não metadata) porque participa da AUTORIZAÇÃO:
+// a chave-mestra `all_courses` cobre só cursos `adult` (ver CheckAccessService).
+export const courseAudienceEnum = members.enum('course_audience', ['adult', 'kids'])
 export const lessonBlockKindEnum = members.enum('lesson_block_kind', [
   'rich_text',
   'video',
@@ -64,6 +68,7 @@ export const courses = members.table(
     description: text('description'),
     coverImageUrl: text('cover_image_url'),
     status: courseStatusEnum('status').notNull().default('draft'),
+    audience: courseAudienceEnum('audience').notNull().default('adult'),
     metadata: jsonb('metadata').$type<Record<string, unknown>>(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),

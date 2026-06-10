@@ -1,6 +1,7 @@
 @import "tailwindcss";
 /* Componentes compartilhados (@sistemazero/ui) — o scanner precisa ver as classes deles. */
 @source "../../../ui/src";
+@source "../../../member-shell/src";
 
 @custom-variant dark (&:is(.dark *));
 

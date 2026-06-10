@@ -88,6 +88,48 @@ describe('Members HTTP — autoria: cursos', () => {
     expect((await readJson(cleared)).salesPageUrl).toBeNull()
   })
 
+  test('audience: cria default adult; explícito kids; PATCH ausente PRESERVA; troca explícita', async () => {
+    const { app } = buildApp()
+    // Sem o campo → adult (default da plataforma principal).
+    const created = await createCourse(app)
+    expect(created.audience).toBe('adult')
+
+    // Explícito kids no create.
+    const kids = await createCourse(app, { slug: 'curso-kids', audience: 'kids' })
+    expect(kids.audience).toBe('kids')
+
+    // PATCH SEM o campo preserva (build antigo do admin não rebaixa kids → adult).
+    const preserved = await send(app, `/members/admin/courses/${kids.id}`, 'PATCH', {
+      ...COURSE,
+      slug: 'curso-kids',
+      title: 'Curso Kids Editado',
+    })
+    expect((await readJson(preserved)).audience).toBe('kids')
+
+    // PATCH explícito troca.
+    const switched = await send(app, `/members/admin/courses/${kids.id}`, 'PATCH', {
+      ...COURSE,
+      slug: 'curso-kids',
+      audience: 'adult',
+    })
+    expect((await readJson(switched)).audience).toBe('adult')
+  })
+
+  test('audience inválida → 400; filtro ?audience= na listagem admin', async () => {
+    const { app } = buildApp()
+    const bad = await send(app, '/members/admin/courses', 'POST', {
+      ...COURSE,
+      audience: 'teen',
+    })
+    expect(bad.status).toBe(400)
+
+    await createCourse(app)
+    await createCourse(app, { slug: 'curso-kids', audience: 'kids' })
+    const onlyKids = await readJson(await get(app, '/members/admin/courses?audience=kids'))
+    expect(onlyKids.total).toBe(1)
+    expect(onlyKids.items[0].slug).toBe('curso-kids')
+  })
+
   test('slug de curso duplicado → 409 DUPLICATE_SLUG', async () => {
     const { app } = buildApp()
     await createCourse(app)

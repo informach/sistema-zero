@@ -1,0 +1,3 @@
+[test]
+# happy-dom global (document/window) p/ os testes de componente e de Blockly.
+preload = ["./test-setup.ts"]

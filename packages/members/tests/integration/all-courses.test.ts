@@ -103,6 +103,71 @@ describe('Chave-mestra — "meus cursos" e catálogo', () => {
   })
 })
 
+describe('Audiência (kids) — vitrines e chave-mestra', () => {
+  test('chave-mestra NÃO abre curso kids (403 no detalhe); matrícula específica abre', async () => {
+    const { app, courses, entitlements } = buildApp()
+    seedSampleCourse(courses, 'curso-kids', 'published', 'kids')
+    grantAllCourses(entitlements, { userId: USER })
+
+    // all_courses cobre só cursos adult — deep-link em curso kids é 403.
+    expect((await get(app, '/members/courses/curso-kids', authHeaders())).status).toBe(403)
+
+    // Matrícula ESPECÍFICA do curso kids libera normalmente.
+    grantLifetime(entitlements, { userId: USER, courseRef: 'curso-kids' })
+    expect((await get(app, '/members/courses/curso-kids', authHeaders())).status).toBe(200)
+  })
+
+  test('listagens filtram por vitrine: default adult; ?audience=kids só kids', async () => {
+    const { app, courses, entitlements } = buildApp()
+    seedSampleCourse(courses, 'curso-adulto')
+    seedSampleCourse(courses, 'curso-kids', 'published', 'kids')
+    grantLifetime(entitlements, { userId: USER, courseRef: 'curso-adulto' })
+    grantLifetime(entitlements, { userId: USER, courseRef: 'curso-kids' })
+
+    // Sem query → vitrine adult (zero regressão no community atual).
+    const adult = await readJson(await get(app, '/members/courses', authHeaders()))
+    expect(adult.courses.map((c: any) => c.courseSlug)).toEqual(['curso-adulto'])
+
+    const kids = await readJson(await get(app, '/members/courses?audience=kids', authHeaders()))
+    expect(kids.courses.map((c: any) => c.courseSlug)).toEqual(['curso-kids'])
+    expect(kids.courses[0].audience).toBe('kids')
+  })
+
+  test('catálogo kids: chave-mestra real NÃO destrava (hasAccess=false sem matrícula)', async () => {
+    const { app, courses, entitlements } = buildApp()
+    seedSampleCourse(courses, 'curso-adulto')
+    seedSampleCourse(courses, 'curso-kids', 'published', 'kids')
+    grantAllCourses(entitlements, { userId: USER })
+
+    // Catálogo adult: destravado pela chave-mestra; curso kids não aparece.
+    const adult = await readJson(await get(app, '/members/catalog', authHeaders()))
+    expect(adult.courses.map((c: any) => c.courseSlug)).toEqual(['curso-adulto'])
+    expect(adult.courses[0].hasAccess).toBe(true)
+
+    // Catálogo kids: só kids, e a chave-mestra adulta não conta como acesso.
+    const kids = await readJson(await get(app, '/members/catalog?audience=kids', authHeaders()))
+    expect(kids.courses.map((c: any) => c.courseSlug)).toEqual(['curso-kids'])
+    expect(kids.courses[0].hasAccess).toBe(false)
+  })
+
+  test('chave-mestra com "meus cursos" kids: vitrine vazia sem matrícula específica', async () => {
+    const { app, courses, entitlements } = buildApp()
+    seedSampleCourse(courses, 'curso-adulto')
+    seedSampleCourse(courses, 'curso-kids', 'published', 'kids')
+    grantAllCourses(entitlements, { userId: USER })
+
+    const kids = await readJson(await get(app, '/members/courses?audience=kids', authHeaders()))
+    expect(kids.courses).toHaveLength(0)
+  })
+
+  test('?audience inválida → 400 na borda', async () => {
+    const { app, courses } = buildApp()
+    seedSampleCourse(courses, 'curso-a')
+    expect((await get(app, '/members/courses?audience=teen', authHeaders())).status).toBe(400)
+    expect((await get(app, '/members/catalog?audience=foo', authHeaders())).status).toBe(400)
+  })
+})
+
 describe('Chave-mestra — concessão', () => {
   test('manual (admin): mode all_courses concede; re-conceder é idempotente', async () => {
     const { app } = buildApp()

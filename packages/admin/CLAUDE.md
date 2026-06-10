@@ -418,6 +418,15 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   vazio → fallback `FUNNEL_URL`; vira `metadata.salesPageUrl` no members e `CourseView` a devolve).
   ⚠️ O dialog do curso é o ÚNICO PATCH de curso (o editor `[courseId]` só toca módulos/aulas) —
   se outro PATCH de curso surgir, ele PRECISA enviar `salesPageUrl` (ausente/null limpa a chave).
+  Body de curso também aceita **`audience`** (`adult`|`kids`, 06/2026 — plataforma Kids): select
+  "Audiência" no dialog, **sempre enviado** (o members PRESERVA quando ausente — ≠ salesPageUrl);
+  `CourseView.audience` devolvido; badge "Kids" na listagem. Curso `kids` fica FORA da chave-mestra
+  `all_courses` (copy do GrantAccessDialog = "todos os cursos ADULTOS"; option de curso kids ganha
+  sufixo `[Kids]`). **Convite multi-plataforma**: `POST /auth/admin/users` aceita
+  `platform: 'main'|'kids'` (select "Plataforma do convite" no dialog — decide a base do link do
+  e-mail `welcome`); impersonação aceita `?platform=kids` (`impersonateUser(id, platform?)` em
+  `server/users.ts` devolve a `communityUrl` do app kids; o botão de UI kids entra quando o
+  community-kids existir).
   Páginas em `app/admin/membros/cursos/*` (lista + editor de curso + editor
   de aula com formulários por tipo de bloco). Adapter em `src/server/members.ts`; views em
   `src/lib/types.ts`.

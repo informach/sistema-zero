@@ -1,5 +1,6 @@
 'use client'
 
+import { UserAvatar } from '@sistemazero/member-shell/components/user-avatar'
 import { Button } from '@sistemazero/ui/button'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { Input } from '@sistemazero/ui/input'
@@ -18,7 +19,6 @@ import type {
   CourseRatingView,
 } from '@/lib/types'
 import { getUserDisplayName } from '@/lib/user-display'
-import { UserAvatar } from './user-avatar'
 
 /** Dados do aluno exibidos no passo de agradecimento (avatar + nome). */
 export interface RatingViewer {

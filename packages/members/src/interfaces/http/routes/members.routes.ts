@@ -14,6 +14,7 @@ import type { SubmitQuizAttemptService } from '../../../application/submit-quiz-
 import { assertInternalCaller, isPrivilegedActor, resolveUserId } from '../auth'
 import {
   AttachmentResolveParams,
+  AudienceQuery,
   CourseRatingBody,
   EbookResolveParams,
   LessonIdParams,
@@ -54,15 +55,36 @@ export function membersRoutes(deps: MembersRoutesDeps) {
       .onBeforeHandle(({ headers }) =>
         assertInternalCaller(headers['x-internal-token'], deps.internalToken),
       )
-      .get('/courses', async ({ headers }) => {
-        const userId = resolveUserId(headers)
-        return { courses: await deps.listMyCourses.execute(userId, isPrivilegedActor(headers)) }
-      })
-      // Catálogo "Todos os cursos" (published + flag hasAccess do aluno).
-      .get('/catalog', async ({ headers }) => {
-        const userId = resolveUserId(headers)
-        return { courses: await deps.listCatalog.execute(userId, isPrivilegedActor(headers)) }
-      })
+      // Listagens por VITRINE: `?audience=adult|kids` (ausente → adult; inválido → 400).
+      .get(
+        '/courses',
+        async ({ headers, query }) => {
+          const userId = resolveUserId(headers)
+          return {
+            courses: await deps.listMyCourses.execute(
+              userId,
+              isPrivilegedActor(headers),
+              query.audience ?? 'adult',
+            ),
+          }
+        },
+        { query: AudienceQuery },
+      )
+      // Catálogo "Todos os cursos" (published da audiência + flag hasAccess do aluno).
+      .get(
+        '/catalog',
+        async ({ headers, query }) => {
+          const userId = resolveUserId(headers)
+          return {
+            courses: await deps.listCatalog.execute(
+              userId,
+              isPrivilegedActor(headers),
+              query.audience ?? 'adult',
+            ),
+          }
+        },
+        { query: AudienceQuery },
+      )
       .get('/courses/:slug', async ({ headers, params }) => {
         const userId = resolveUserId(headers)
         return deps.getMyCourse.execute(userId, params.slug, isPrivilegedActor(headers))

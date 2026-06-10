@@ -31,6 +31,8 @@ export interface MyCourseView {
   title: string
   subtitle: string | null
   coverImageUrl: string | null
+  /** Plataforma do curso (`adult` | `kids`) — a vitrine já vem filtrada. */
+  audience: string
   access: AccessView
   progress: CourseProgress
   /** Última aula acessada (posição de vídeo) — atalho do card; `null` se nunca acessou. */
@@ -48,6 +50,7 @@ export function toMyCourseView(
     title: course.title,
     subtitle: course.subtitle,
     coverImageUrl: course.coverImageUrl,
+    audience: course.audience,
     access: toAccessView(entitlement),
     progress,
     continueLessonId,
@@ -63,6 +66,8 @@ export interface CatalogCourseView {
   title: string
   subtitle: string | null
   coverImageUrl: string | null
+  /** Plataforma do curso (`adult` | `kids`) — o catálogo já vem filtrado. */
+  audience: string
   hasAccess: boolean
   /** URL da página de vendas (funil) — de `course.metadata.salesPageUrl`; `null` se não setada. */
   salesPageUrl: string | null
@@ -74,6 +79,7 @@ export function toCatalogCourseView(course: Course, hasAccess: boolean): Catalog
     title: course.title,
     subtitle: course.subtitle,
     coverImageUrl: course.coverImageUrl,
+    audience: course.audience,
     hasAccess,
     salesPageUrl: resolveSalesPageUrl(course),
   }
@@ -127,6 +133,8 @@ export interface CourseDetailView {
   subtitle: string | null
   description: string | null
   coverImageUrl: string | null
+  /** Plataforma do curso (`adult` | `kids`) — o BFF pode validar/redirecionar. */
+  audience: string
   access: AccessView
   progress: CourseProgressView
   /** Aula-alvo do CTA "Continuar de onde parou" (ver `resolveContinueLesson`). */
@@ -153,6 +161,7 @@ export function toCourseDetailView(
     subtitle: course.subtitle,
     description: course.description,
     coverImageUrl: course.coverImageUrl,
+    audience: course.audience,
     access: toAccessView(entitlement),
     progress,
     continueLessonId,

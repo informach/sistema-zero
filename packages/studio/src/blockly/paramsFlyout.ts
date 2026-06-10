@@ -1,0 +1,151 @@
+import * as Blockly from 'blockly/core'
+import { FUNCTION_BLOCKS, OOP_BLOCKS } from './blocks'
+import { getParamNames } from './blocks/paramsMutator'
+import { socketInputsFor } from './blocks/valueSockets'
+
+/**
+ * Conteúdo dinâmico da categoria "Classes". Junta, num só lugar:
+ *  - os blocos de classe (classe, construtor, método, novo, propriedades, etc.);
+ *  - os blocos-relator (`sz_val_arg`) dos parâmetros do construtor/método em que
+ *    o aluno está trabalhando (escopo = bloco selecionado). Assim não precisa de
+ *    uma categoria "Parâmetros" separada.
+ */
+
+export const CLASSES_FLYOUT_CALLBACK = 'SZ_CLASSES'
+export const FUNCTIONS_FLYOUT_CALLBACK = 'SZ_FUNCTIONS'
+
+type FlyoutItem =
+  | { kind: 'label'; text: string }
+  | { kind: 'block'; type: string; fields?: Record<string, string>; inputs?: unknown }
+
+/** Blocos cujos parâmetros (via `sz_params_mutator`) dão escopo aos relatores. */
+const PARAM_SCOPE_TYPES = new Set(['sz_js_class_method', 'sz_js_constructor', 'sz_js_function'])
+
+/** Sobe pelos blocos-pai até achar a função/método/construtor que dá escopo aos parâmetros. */
+function scopeParams(block: Blockly.Block): string[] | null {
+  let cur: Blockly.Block | null = block
+  while (cur) {
+    if (PARAM_SCOPE_TYPES.has(cur.type)) {
+      return getParamNames(cur)
+    }
+    cur = cur.getParent()
+  }
+  return null
+}
+
+/** Todos os parâmetros distintos declarados no workspace (fallback sem escopo). */
+function allParams(workspace: Blockly.Workspace): string[] {
+  const set = new Set<string>()
+  for (const b of workspace.getAllBlocks(false)) {
+    if (PARAM_SCOPE_TYPES.has(b.type)) {
+      for (const p of getParamNames(b)) set.add(p)
+    }
+  }
+  return [...set]
+}
+
+/**
+ * Blocos de propriedade/método POR NOME, substituídos pela categoria "Objetos"
+ * (tomada de valor). Continuam registrados para abrir projetos salvos, mas saem
+ * da paleta. "Minha propriedade" (`sz_val_this_prop`/`sz_js_set_this_prop`) fica.
+ */
+const LEGACY_OOP_TYPES = new Set([
+  'sz_val_get_prop',
+  'sz_js_set_prop',
+  'sz_val_call_method',
+  'sz_js_call_method',
+])
+
+/** Entradas estáticas dos blocos de classe (com sombras nos slots de valor). */
+function staticEntries(): FlyoutItem[] {
+  return OOP_BLOCKS.filter(
+    (b) => !b.hidden && b.type !== 'sz_val_arg' && !LEGACY_OOP_TYPES.has(b.type),
+  ).map((b) => {
+    const inputs = socketInputsFor(b.type)
+    if (!inputs) return { kind: 'block', type: b.type }
+    return { kind: 'block', type: b.type, inputs }
+  })
+}
+
+function classesFlyout(workspace: Blockly.WorkspaceSvg): FlyoutItem[] {
+  const items: FlyoutItem[] = [...staticEntries()]
+
+  const selected = Blockly.common.getSelected()
+  const selectedBlock = selected instanceof Blockly.BlockSvg ? selected : null
+  let names = selectedBlock ? scopeParams(selectedBlock) : null
+  if (!names || names.length === 0) names = allParams(workspace)
+
+  if (names.length > 0) {
+    items.push({ kind: 'label', text: 'Parâmetros' })
+    for (const name of names) {
+      items.push({ kind: 'block', type: 'sz_val_arg', fields: { NAME: name } })
+    }
+  }
+  return items
+}
+
+/** Registra o callback do flyout da categoria Classes num workspace. */
+export function registerClassesFlyout(workspace: Blockly.WorkspaceSvg): void {
+  workspace.registerToolboxCategoryCallback(
+    CLASSES_FLYOUT_CALLBACK,
+    classesFlyout as unknown as (
+      ws: Blockly.WorkspaceSvg,
+    ) => Blockly.utils.toolbox.FlyoutItemInfo[],
+  )
+}
+
+/** Tipo de bloco como item de flyout, já com sombras dos slots de valor. */
+function blockEntry(type: string): FlyoutItem {
+  const inputs = socketInputsFor(type)
+  return inputs ? { kind: 'block', type, inputs } : { kind: 'block', type }
+}
+
+/**
+ * Conteúdo dinâmico da categoria "Funções": os blocos de função (declarar,
+ * chamar como comando/valor) e `retornar`, mais os relatores (`sz_val_arg`) dos
+ * parâmetros da função em edição (escopo = bloco selecionado; fallback = todos).
+ */
+function functionsFlyout(workspace: Blockly.WorkspaceSvg): FlyoutItem[] {
+  const items: FlyoutItem[] = [
+    ...FUNCTION_BLOCKS.filter((b) => !b.hidden).map((b) => blockEntry(b.type)),
+    blockEntry('sz_js_return'),
+    blockEntry('sz_js_return_void'),
+  ]
+
+  const selected = Blockly.common.getSelected()
+  const selectedBlock = selected instanceof Blockly.BlockSvg ? selected : null
+  let names = selectedBlock ? scopeParams(selectedBlock) : null
+  if (!names || names.length === 0) names = allParams(workspace)
+
+  if (names.length > 0) {
+    items.push({ kind: 'label', text: 'Parâmetros' })
+    for (const name of names) {
+      items.push({ kind: 'block', type: 'sz_val_arg', fields: { NAME: name } })
+    }
+  }
+  return items
+}
+
+/**
+ * Tipos de bloco que vivem SÓ nas categorias dinâmicas (Funções/Classes) — não
+ * estão no `languageTree` estático e por isso a busca (`@blockly/toolbox-search`)
+ * não os indexa sozinha. Exclui os relatores `sz_val_arg` (gerados por escopo) e
+ * os blocos OOP legados (fora da paleta). Usado por `searchCategory.ts`.
+ */
+export function dynamicCategoryBlockTypes(): string[] {
+  const fns = FUNCTION_BLOCKS.filter((b) => !b.hidden).map((b) => b.type)
+  const classes = OOP_BLOCKS.filter(
+    (b) => !b.hidden && b.type !== 'sz_val_arg' && !LEGACY_OOP_TYPES.has(b.type),
+  ).map((b) => b.type)
+  return [...fns, 'sz_js_return', 'sz_js_return_void', ...classes]
+}
+
+/** Registra o callback do flyout da categoria Funções num workspace. */
+export function registerFunctionsFlyout(workspace: Blockly.WorkspaceSvg): void {
+  workspace.registerToolboxCategoryCallback(
+    FUNCTIONS_FLYOUT_CALLBACK,
+    functionsFlyout as unknown as (
+      ws: Blockly.WorkspaceSvg,
+    ) => Blockly.utils.toolbox.FlyoutItemInfo[],
+  )
+}

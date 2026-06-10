@@ -1,34 +1,19 @@
 /**
- * Nomes dos cookies de sessão do aluno (fonte ÚNICA — `session.ts` os escreve e
- * `proxy.ts` lê/regrava no gate de UI; sem centralizar, um divergir do outro
- * deslogaria todo mundo em silêncio — antes deste arquivo os nomes viviam
- * DUPLICADOS nos dois lugares).
- *
- * Em produção (HTTPS) usam o prefixo **`__Host-`**: o browser só aceita o cookie
- * se vier com `Secure`, `Path=/` e SEM `Domain` — prende o cookie a esta origem
- * exata e blinda contra fixation por um subdomínio irmão (que poderia setar um
- * `sz_member_*` de escopo de domínio). Em dev (`http://localhost`) o prefixo é
- * OMITIDO: `__Host-` EXIGE `Secure`, que o browser rejeita sob http. Espelha o
- * admin (`packages/admin/src/lib/cookies.ts`).
+ * Nomes dos cookies de sessão DESTE app (fonte única — `session.ts` escreve,
+ * `proxy.ts` lê/regrava): `sz_member_*`, com prefixo `__Host-` em prod. Os
+ * HELPERS (prefixo/expiração) vivem no `@sistemazero/member-shell` — aqui ficam
+ * só as 4 linhas de configuração por app (o kids usa `sz_kids_*`; compile-time
+ * de propósito: cookies não escopam por porta em dev).
  */
+import { sessionCookieNames } from '@sistemazero/member-shell/lib/cookies'
 
-/** Aplica o prefixo `__Host-` só em produção (puro — testável nos dois ramos). */
-export function prefixedCookieName(base: string, prod: boolean): string {
-  return prod ? `__Host-${base}` : base
-}
-
-/**
- * Atributos p/ EXPIRAR um cookie de sessão (`value: ''` + `maxAge: 0`), casando
- * com os da escrita. ⚠️ Load-bearing: o browser aplica as regras do prefixo
- * `__Host-` a TODO Set-Cookie do nome — inclusive o de remoção. Um
- * `cookies().delete(nome)` pelado (sem `Secure`) é REJEITADO em prod e o cookie
- * SOBREVIVE: logout que não desloga (visto no e2e de staging, 07/06/2026).
- */
-export function expireCookieOptions(prod: boolean) {
-  return { httpOnly: true, sameSite: 'lax' as const, secure: prod, path: '/', maxAge: 0 }
-}
+export {
+  expireCookieOptions,
+  prefixedCookieName,
+} from '@sistemazero/member-shell/lib/cookies'
 
 const PROD = process.env.NODE_ENV === 'production'
 
-export const ACCESS_COOKIE = prefixedCookieName('sz_member_access', PROD)
-export const REFRESH_COOKIE = prefixedCookieName('sz_member_refresh', PROD)
+const names = sessionCookieNames('sz_member', PROD)
+export const ACCESS_COOKIE = names.accessCookie
+export const REFRESH_COOKIE = names.refreshCookie

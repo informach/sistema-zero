@@ -1,0 +1,148 @@
+/*
+ * Tokens + estilos do componente <Studio>. Este arquivo é exportado como
+ * `@sistemazero/studio/styles.css` e deve ser importado DENTRO do pipeline
+ * Tailwind do consumer (depois do `@import "tailwindcss"` dele), junto com
+ * `@source` apontando para packages/studio/src — ver docs/embedding.md.
+ *
+ * NÃO importa tailwindcss aqui (duplicaria preflight/utilities no consumer) e
+ * NÃO define `@custom-variant dark` (o studio não usa `dark:`; definir aqui
+ * sobrescreveria a variant dark do app consumidor — última definição vence).
+ *
+ * Tema: os tokens abaixo valem para o tema escuro (default). O tema claro é
+ * ativado por `[data-sz-theme="light"]` no ROOT do <Studio> — nunca no <html>
+ * do host, para não colidir com `.dark`/tokens próprios dos apps.
+ */
+
+/*
+ * Paleta SISTEMA ZERO (espelha o projeto de referência comunidade-sistema-zero,
+ * a mesma base do admin/community). Identidade DUAL da marca: o acento é LIME
+ * no dark e CYAN no light — exatamente como o --primary da referência.
+ * Valores default = tema ESCURO; o claro sobrescreve via [data-sz-theme="light"].
+ */
+@theme {
+  --color-sz-bg: oklch(0.103 0.01 265); /* background  (#0d1117) */
+  --color-sz-bg-soft: oklch(0.125 0.01 265); /* meio-termo bg→card */
+  --color-sz-panel: oklch(0.14 0.01 265); /* card        (#161b22) */
+  --color-sz-panel-soft: oklch(0.185 0.01 265); /* secondary/muted */
+  --color-sz-border: oklch(0.21 0.01 265); /* border */
+  --color-sz-border-soft: oklch(0.17 0.01 265);
+  --color-sz-fg: oklch(0.975 0.003 255); /* foreground */
+  --color-sz-fg-soft: oklch(0.75 0.008 245);
+  --color-sz-fg-mute: oklch(0.6 0.012 235); /* muted-foreground */
+  --color-sz-accent: oklch(0.875 0.215 122); /* primary = brand-lime */
+  --color-sz-accent-soft: oklch(0.92 0.2 125); /* link-hover */
+  --color-sz-cyan: oklch(0.84 0.13 192); /* brand-cyan (detalhes) */
+  --color-sz-warn: #fbbf24;
+  --color-sz-error: oklch(0.64 0.215 27); /* destructive */
+  --color-sz-success: #34d399;
+  --font-family-sans:
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --font-family-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+    monospace;
+}
+
+/* Tema claro — override por atributo data-sz-theme="light" no root do Studio. */
+[data-sz-theme="light"] {
+  --color-sz-bg: oklch(0.985 0.004 100); /* background off-white */
+  --color-sz-bg-soft: oklch(0.97 0.004 255);
+  --color-sz-panel: oklch(1 0 0); /* card = branco puro */
+  --color-sz-panel-soft: oklch(0.955 0.004 255); /* secondary/muted */
+  --color-sz-border: oklch(0.9 0.005 255);
+  --color-sz-border-soft: oklch(0.93 0.005 255);
+  --color-sz-fg: oklch(0.105 0.01 265);
+  --color-sz-fg-soft: oklch(0.5 0.01 255); /* muted-foreground */
+  --color-sz-fg-mute: oklch(0.62 0.008 255);
+  --color-sz-accent: oklch(0.52 0.14 200); /* primary = cyan escuro (AA) */
+  --color-sz-accent-soft: oklch(0.44 0.14 210); /* link */
+  --color-sz-cyan: oklch(0.52 0.14 200);
+  --color-sz-warn: #b45309;
+  --color-sz-error: oklch(0.55 0.22 27); /* destructive */
+  --color-sz-success: #047857;
+}
+
+/* Highlight cruzado bloco ↔ linha no Monaco (ver useCrossHighlight). */
+.sz-highlight-line {
+  background-color: color-mix(in oklab, var(--color-sz-accent) 18%, transparent);
+}
+.sz-highlight-gutter {
+  background-color: var(--color-sz-accent);
+  /* biome-ignore lint/complexity/noImportantStyles: precisa sobrepor a largura inline que o Monaco aplica na decoração da gutter. */
+  width: 3px !important;
+  margin-left: 3px;
+}
+
+/*
+ * Blockly: ao fechar uma categoria do toolbox, o flyout vira display:none mas
+ * a scrollbar interna às vezes permanece visível no SVG. Forçar visibility
+ * none nesses casos remove o resíduo sem afetar o flyout aberto.
+ */
+.blocklyFlyout[style*="display: none"],
+.blocklyFlyout[style*="display:none"] {
+  /* biome-ignore lint/complexity/noImportantStyles: precisa vencer o style inline display:none que o Blockly injeta no flyout. */
+  visibility: hidden !important;
+}
+.blocklyFlyout[style*="display: none"] .blocklyFlyoutScrollbar,
+.blocklyFlyout[style*="display:none"] .blocklyFlyoutScrollbar,
+.blocklyFlyout[style*="display: none"] ~ .blocklyScrollbarHorizontal,
+.blocklyFlyout[style*="display: none"] ~ .blocklyScrollbarVertical {
+  /* biome-ignore lint/complexity/noImportantStyles: precisa vencer o style inline que o Blockly aplica à scrollbar residual do flyout fechado. */
+  display: none !important;
+}
+
+.blocklyToolboxCategoryContainer:focus,
+.blocklyToolboxCategoryContainer.blocklyActiveFocus,
+.blocklyToolboxCategory:focus {
+  outline: none;
+}
+.blocklyToolboxCategory {
+  box-sizing: border-box;
+  border-radius: 0 4px 4px 0;
+}
+.blocklyToolboxSelected {
+  box-shadow: none;
+}
+
+/*
+ * Handles de resize do react-resizable-panels — sutil em repouso, claramente
+ * arrastável em hover/drag. Usa um track central de 1px mas área de hit
+ * generosa (toda a faixa do handle) para facilitar agarrar.
+ */
+.sz-resize-handle {
+  position: relative;
+  background: transparent;
+  transition: background-color 120ms ease;
+}
+.sz-resize-handle::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  background: var(--color-sz-border);
+  transition: background-color 120ms ease;
+}
+.sz-resize-handle--vertical {
+  width: 6px;
+  cursor: col-resize;
+}
+.sz-resize-handle--vertical::before {
+  width: 1px;
+  height: 100%;
+}
+.sz-resize-handle--horizontal {
+  height: 6px;
+  cursor: row-resize;
+}
+.sz-resize-handle--horizontal::before {
+  height: 1px;
+  width: 100%;
+}
+.sz-resize-handle:hover::before,
+.sz-resize-handle[data-resize-handle-active]::before {
+  background: var(--color-sz-accent);
+}
+.sz-resize-handle:hover,
+.sz-resize-handle[data-resize-handle-active] {
+  background: color-mix(in srgb, var(--color-sz-accent) 15%, transparent);
+}
