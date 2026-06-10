@@ -1,14 +1,19 @@
+import { useContext } from 'react'
+import { createLocalPersistenceAdapter } from '../persistence/local'
+import { createPersistenceService, type PersistenceService } from '../persistence/service'
+import { resolvePersistenceAdapter, type StudioPersistence } from '../persistence/types'
 import { createHighlightStore } from './highlightStore'
 import { createLogsStore } from './logsStore'
-import { createProjectStore } from './projectStore'
+import { createProjectStore, useProjectStore } from './projectStore'
 import { createSourcemapStore } from './sourcemapStore'
+import { StudioStoresContext } from './storesContext'
 import { createUIStore } from './uiStore'
 
 /**
- * Conjunto de stores de UMA instância do <Studio>. Criado no mount (1x por
- * instância) e distribuído via StudioStoresContext — duas instâncias na mesma
- * página não compartilham projeto/console/highlight, e cada montagem nasce
- * limpa (StrictMode-safe).
+ * Conjunto de stores + serviço de persistência de UMA instância do <Studio>.
+ * Criado no mount (1x por instância) e distribuído via StudioStoresContext —
+ * duas instâncias na mesma página não compartilham projeto/console/highlight,
+ * e cada montagem nasce limpa (StrictMode-safe).
  *
  * `settingsStore` fica DE FORA de propósito: é preferência do usuário
  * (tema/fonte do código/chave de IA), compartilhada entre instâncias e
@@ -20,14 +25,41 @@ export interface StudioStores {
   highlight: ReturnType<typeof createHighlightStore>
   logs: ReturnType<typeof createLogsStore>
   sourcemap: ReturnType<typeof createSourcemapStore>
+  persistence: PersistenceService
 }
 
-export function createStudioStores(): StudioStores {
+export interface CreateStudioStoresOptions {
+  /** Estático por instância (como locale): trocar exige remount do <Studio>. */
+  persistence?: StudioPersistence
+}
+
+export function createStudioStores(options: CreateStudioStoresOptions = {}): StudioStores {
+  const project = createProjectStore()
+  const adapter = resolvePersistenceAdapter(
+    options.persistence ?? 'local',
+    createLocalPersistenceAdapter,
+  )
   return {
-    project: createProjectStore(),
+    project,
     ui: createUIStore(),
     highlight: createHighlightStore(),
     logs: createLogsStore(),
     sourcemap: createSourcemapStore(),
+    persistence: createPersistenceService(project, adapter),
   }
+}
+
+// Fallback fora de um <Studio> (lista de projetos/testes): serviço sobre a
+// store default + IndexedDB, espelhando o comportamento do app standalone.
+let defaultPersistenceService: PersistenceService | null = null
+
+/** Serviço de persistência da instância atual (Salvar explícito, flush). */
+export function useStudioPersistence(): PersistenceService {
+  const stores = useContext(StudioStoresContext)
+  if (stores) return stores.persistence
+  defaultPersistenceService ??= createPersistenceService(
+    useProjectStore,
+    createLocalPersistenceAdapter(),
+  )
+  return defaultPersistenceService
 }

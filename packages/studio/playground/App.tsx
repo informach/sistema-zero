@@ -82,7 +82,18 @@ function EditorScreen({
       </div>
     )
   }
-  return <Studio initialProject={state.project} onExit={onExit} />
+  return (
+    <Studio
+      initialProject={state.project}
+      onExit={onExit}
+      // Host fake: loga o fluxo híbrido p/ validação manual (DevTools).
+      onChange={(project) => console.debug('[host] onChange', project.id, project.updatedAt)}
+      onSave={(project) => console.debug('[host] onSave', project.id)}
+      onError={(error) => console.warn('[host] onError', error)}
+      onModeChange={(mode) => console.debug('[host] onModeChange', mode)}
+      onReady={() => console.debug('[host] onReady')}
+    />
+  )
 }
 
 export function App(): JSX.Element {

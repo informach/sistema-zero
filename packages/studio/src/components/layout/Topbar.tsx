@@ -3,9 +3,9 @@ import { useEffect, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { IDE_MODES, MODE_LABELS, t } from '#core'
 import { Badge, Button } from '#ui'
-import { saveCurrentProject } from '../../state/persistence'
-import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
+import { useProjectStore } from '../../state/projectStore'
 import { useSettingsStore } from '../../state/settingsStore'
+import { useStudioPersistence } from '../../state/studioStores'
 import { useUIStore } from '../../state/uiStore'
 import { useStudioTheme } from '../../studio/theme'
 
@@ -25,7 +25,7 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
     })),
   )
   const isDirty = useProjectStore((s) => s.isDirty)
-  const projectStoreApi = useProjectStoreApi()
+  const persistence = useStudioPersistence()
   const saveError = useProjectStore((s) => s.saveError)
   const setMode = useProjectStore((s) => s.setMode)
   const rename = useProjectStore((s) => s.rename)
@@ -51,7 +51,7 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
     if (!onExit) return
     if (isDirty) {
       try {
-        await saveCurrentProject(projectStoreApi)
+        await persistence.save()
       } catch {
         return
       }
@@ -62,7 +62,7 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
   const handleSave = async () => {
     setSaving(true)
     try {
-      await saveCurrentProject(projectStoreApi)
+      await persistence.save()
     } catch {
       // O erro persistente é exibido no badge; evita rejection não tratada no evento.
     } finally {

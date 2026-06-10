@@ -1,29 +1,27 @@
 import type { JSX } from 'react'
-import { useEffect, useMemo, useState } from 'react'
-import { setLocale } from '#core'
+import { useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
+import { type Project, setLocale } from '#core'
 import { Shell } from '../components/layout/Shell'
-import { bootstrapPersistence } from '../state/persistence'
 import { sanitizeProjectForHost, useProjectStore, useProjectStoreApi } from '../state/projectStore'
 import { useSettingsStore } from '../state/settingsStore'
 import { StudioStoresContext } from '../state/storesContext'
-import { createStudioStores } from '../state/studioStores'
+import { createStudioStores, useStudioPersistence } from '../state/studioStores'
 import { useUIStore } from '../state/uiStore'
 import { StudioThemeProvider } from './theme'
-import type { StudioProps } from './types'
+import type { StudioHandle, StudioProps } from './types'
 
 /**
  * Editor embarcável do Sistema Zero Studio (modos Blocos/Ponte/Código).
  *
  * Cada instância cria o próprio conjunto de stores (projeto/ui/console/
- * highlight/sourcemap) via StudioStoresContext — duas instâncias na mesma
- * página não compartilham estado, e cada montagem nasce limpa. As
- * configurações (tema/fonte/chave de IA) são preferência do usuário e
- * continuam compartilhadas.
+ * highlight/sourcemap) + serviço de persistência via StudioStoresContext —
+ * duas instâncias na mesma página não compartilham estado, e cada montagem
+ * nasce limpa. As configurações (tema/fonte/chave de IA) são preferência do
+ * usuário e continuam compartilhadas.
  *
- * O componente é dono do lifecycle que no app standalone vivia em App.tsx +
- * EditorPage: hidrata o `initialProject` nos stores, liga a persistência
- * (autosave em IndexedDB) e o aviso de beforeunload, e escopa o tema via
- * data-sz-theme no root — sem tocar no <html> do host.
+ * Dados: uncontrolled — `initialProject` hidrata, `onChange` entrega snapshots
+ * no debounce do autosave, `persistence` decide onde salvar ('local' |
+ * 'none' | adapter). Acesso imperativo via `ref` (StudioHandle).
  *
  * Renderizar SOMENTE no client (Monaco/Blockly/IndexedDB não existem no
  * server): `next/dynamic(..., { ssr: false })` no Next, `client:only="react"`
@@ -31,7 +29,8 @@ import type { StudioProps } from './types'
  */
 export function Studio(props: StudioProps): JSX.Element {
   // 1x por instância; StrictMode-safe (re-render descarta a duplicata).
-  const [stores] = useState(() => createStudioStores())
+  // `persistence` é estático por instância (lido só aqui).
+  const [stores] = useState(() => createStudioStores({ persistence: props.persistence }))
   return (
     <StudioStoresContext.Provider value={stores}>
       <StudioBody {...props} />
@@ -42,12 +41,18 @@ export function Studio(props: StudioProps): JSX.Element {
 /** Corpo do Studio — DENTRO do provider, para os hooks lerem as stores da instância. */
 function StudioBody({
   initialProject,
+  onChange,
+  onSave,
+  onError,
+  onModeChange,
+  onReady,
   theme,
   locale,
   onExit,
   blockUnloadWhenDirty = true,
   className,
   style,
+  ref,
 }: StudioProps): JSX.Element {
   // Locale é estático por instância e precisa valer ANTES do primeiro render
   // dos filhos (há `t()` avaliado em escopo de módulo nos chunks lazy).
@@ -55,9 +60,13 @@ function StudioBody({
     if (locale) setLocale(locale)
   })
 
-  const sanitized = useMemo(() => sanitizeProjectForHost(initialProject), [initialProject])
+  // `replaceProject` (handle) troca o projeto sem mexer na prop.
+  const [replacedProject, setReplacedProject] = useState<Project | null>(null)
+  const sourceProject = replacedProject ?? initialProject
+  const sanitized = useMemo(() => sanitizeProjectForHost(sourceProject), [sourceProject])
 
   const projectStoreApi = useProjectStoreApi()
+  const persistence = useStudioPersistence()
   const hydrateProject = useProjectStore((s) => s.hydrateProject)
   const unloadProject = useProjectStore((s) => s.unloadProject)
   const isDirty = useProjectStore((s) => s.isDirty)
@@ -67,6 +76,23 @@ function StudioBody({
   const settingsTheme = useSettingsStore((s) => s.theme)
   const effectiveTheme = theme ?? settingsTheme
 
+  // Callbacks do host mudam por render — o serviço lê sempre a versão atual.
+  useEffect(() => {
+    persistence.handlers = { onChange, onSave, onError }
+  }, [persistence, onChange, onSave, onError])
+
+  useImperativeHandle(
+    ref,
+    (): StudioHandle => ({
+      getProject: () => projectStoreApi.getState().project,
+      save: () => persistence.save(),
+      replaceProject: (project) => setReplacedProject(project),
+      setMode: (mode) => projectStoreApi.getState().setMode(mode),
+      isDirty: () => projectStoreApi.getState().isDirty,
+    }),
+    [projectStoreApi, persistence],
+  )
+
   useEffect(() => {
     if (!sanitized) return
     hydrateProject(sanitized)
@@ -75,10 +101,31 @@ function StudioBody({
   }, [sanitized, hydrateProject, unloadProject, setPreviewRunning])
 
   useEffect(() => {
-    const cleanup = bootstrapPersistence(projectStoreApi)
+    const detach = persistence.attach()
     void loadSettings()
-    return cleanup
-  }, [projectStoreApi, loadSettings])
+    return detach
+  }, [persistence, loadSettings])
+
+  // onReady: 1x, quando o projeto hidratou e o Shell pode renderizar.
+  const readyFiredRef = useRef(false)
+  useEffect(() => {
+    if (!hasProject || readyFiredRef.current) return
+    readyFiredRef.current = true
+    onReady?.()
+  }, [hasProject, onReady])
+
+  // onModeChange: observa o modo do projeto na store da instância.
+  const onModeChangeRef = useRef(onModeChange)
+  onModeChangeRef.current = onModeChange
+  useEffect(() => {
+    return projectStoreApi.subscribe((state, prev) => {
+      const mode = state.project?.mode
+      const prevMode = prev.project?.mode
+      if (mode && prevMode && mode !== prevMode && state.project?.id === prev.project?.id) {
+        onModeChangeRef.current?.(mode)
+      }
+    })
+  }, [projectStoreApi])
 
   useEffect(() => {
     if (!blockUnloadWhenDirty || !isDirty) return

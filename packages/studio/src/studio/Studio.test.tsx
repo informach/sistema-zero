@@ -1,6 +1,8 @@
 import { afterAll, afterEach, describe, expect, it, mock } from 'bun:test'
 import { cleanup, render, waitFor } from '@testing-library/react'
+import { createRef } from 'react'
 import { createEmptyProject } from '#core'
+import type { StudioHandle } from './types'
 
 // bun:test não isola module mocks por arquivo: restaura o Shell real no
 // afterAll para não vazar o stub para os próximos arquivos da suíte.
@@ -44,6 +46,7 @@ mock.module('../components/layout/Shell', () => ({
 }))
 
 const { Studio } = await import('./Studio')
+const { setAutosaveDelayForTests } = await import('../persistence/service')
 
 afterAll(() => {
   mock.module('../components/layout/Shell', () => realShell)
@@ -91,6 +94,37 @@ describe('Studio', () => {
       <Studio initialProject={{ id: 'x' } as Parameters<typeof Studio>[0]['initialProject']} />,
     )
     expect(getByText(/Projeto inválido/)).toBeTruthy()
+  })
+
+  it('persistence none entrega onChange no debounce e o handle expõe o projeto', async () => {
+    setAutosaveDelayForTests(10)
+    const changes: string[] = []
+    const handleRef = createRef<StudioHandle>()
+    render(
+      <Studio
+        ref={handleRef}
+        initialProject={createEmptyProject('project-h', 'Handle')}
+        persistence="none"
+        onChange={(project) => changes.push(project.mode)}
+      />,
+    )
+
+    await waitFor(() => {
+      expect(handleRef.current?.getProject()?.id).toBe('project-h')
+    })
+    expect(handleRef.current?.isDirty()).toBe(false)
+
+    handleRef.current?.setMode('code')
+    expect(handleRef.current?.isDirty()).toBe(true)
+
+    await waitFor(() => {
+      expect(changes).toContain('code')
+    })
+    // Snapshot entregue ao host conta como salvo.
+    await waitFor(() => {
+      expect(handleRef.current?.isDirty()).toBe(false)
+    })
+    setAutosaveDelayForTests(null)
   })
 
   it('escopa o tema no root via data-sz-theme', async () => {

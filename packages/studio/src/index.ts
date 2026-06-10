@@ -9,6 +9,9 @@ export type {
   ProjectFiles,
 } from '#core'
 export { createEmptyProject, IDE_MODES, MODE_LABELS } from '#core'
+export { createLocalPersistenceAdapter } from './persistence/local'
+export type { StudioPersistence, StudioPersistenceAdapter } from './persistence/types'
+export type { ProjectSummary } from './state/persistence'
 export { Studio } from './studio/Studio'
 export type { StudioTheme } from './studio/theme'
-export type { StudioLocale, StudioProps } from './studio/types'
+export type { StudioHandle, StudioLocale, StudioProps } from './studio/types'

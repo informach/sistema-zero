@@ -1,6 +1,6 @@
 import { createStore, delMany, get, getMany, keys, setMany } from 'idb-keyval'
 import { IDE_MODES, type IDEMode, type Project } from '#core'
-import { type ProjectStoreApi, useProjectStore } from './projectStore'
+import { cancelPendingAutosavesFor } from '../persistence/service'
 
 const LEGACY_PROJECT_KEY_PREFIX = 'sz:project:'
 const PROJECT_META_KEY_PREFIX = 'sz:project-meta:'
@@ -19,120 +19,10 @@ function getStore() {
   return store
 }
 
-interface PendingAutosave {
-  timer: ReturnType<typeof setTimeout>
-  project: Project
-  /** Store da instância que agendou — markSaved/markSaveFailed vão para ela. */
-  store: ProjectStoreApi
-}
-
-const pendingAutosaves = new Map<string, PendingAutosave>()
-const AUTOSAVE_DELAY_DEFAULT = 1000
-let autosaveDelay = AUTOSAVE_DELAY_DEFAULT
-
-/**
- * Encurta o debounce do autosave em testes — bun:test não tem fake timers
- * (substitui o vi.useFakeTimers/advanceTimersByTimeAsync do repo de origem),
- * então os testes usam timers reais com um delay curto.
- */
-export function setAutosaveDelayForTests(ms: number | null): void {
-  autosaveDelay = ms ?? AUTOSAVE_DELAY_DEFAULT
-}
-
-function clearAutosaveTimerForProject(id: string): void {
-  const pending = pendingAutosaves.get(id)
-  if (!pending) return
-  clearTimeout(pending.timer)
-  pendingAutosaves.delete(id)
-}
-
-function clearAutosaveTimers(): void {
-  for (const pending of pendingAutosaves.values()) {
-    clearTimeout(pending.timer)
-  }
-  pendingAutosaves.clear()
-}
-
-function formatPersistenceError(err: unknown): string {
-  const detail = err instanceof Error ? err.message : String(err)
-  return detail ? `Falha ao salvar projeto: ${detail}` : 'Falha ao salvar projeto.'
-}
-
-export function bootstrapPersistence(store: ProjectStoreApi = useProjectStore): () => void {
-  const unsub = store.subscribe((state, prev) => {
-    if (!state.project) {
-      return
-    }
-    if (state.project === prev.project) return
-    const projectToPersist = state.project
-    clearAutosaveTimerForProject(projectToPersist.id)
-    const timer = setTimeout(async () => {
-      try {
-        await persistProject(projectToPersist)
-        if (store.getState().project === projectToPersist) {
-          store.getState().markSaved()
-        }
-      } catch (err) {
-        if (store.getState().project === projectToPersist) {
-          store.getState().markSaveFailed(formatPersistenceError(err))
-        }
-      } finally {
-        const pending = pendingAutosaves.get(projectToPersist.id)
-        if (pending?.timer === timer) {
-          pendingAutosaves.delete(projectToPersist.id)
-        }
-      }
-    }, autosaveDelay)
-    pendingAutosaves.set(projectToPersist.id, { timer, project: projectToPersist, store })
-  })
-
-  const flushOnPageExit = () => {
-    flushPendingAutosaves(store)
-  }
-  window.addEventListener('pagehide', flushOnPageExit)
-  window.addEventListener('beforeunload', flushOnPageExit)
-
-  return () => {
-    unsub()
-    window.removeEventListener('pagehide', flushOnPageExit)
-    window.removeEventListener('beforeunload', flushOnPageExit)
-    clearAutosaveTimers()
-  }
-}
-
-function flushPendingAutosaves(currentStore: ProjectStoreApi): void {
-  // pagehide é da página inteira: drena TODOS os autosaves pendentes (de
-  // qualquer instância), cada um respondendo à própria store.
-  const snapshots = Array.from(pendingAutosaves.values(), (pending) => ({
-    project: pending.project,
-    store: pending.store,
-  }))
-  const currentState = currentStore.getState()
-  if (
-    currentState.project &&
-    currentState.isDirty &&
-    !snapshots.some((snapshot) => snapshot.project.id === currentState.project?.id)
-  ) {
-    snapshots.push({ project: currentState.project, store: currentStore })
-  }
-  clearAutosaveTimers()
-
-  for (const { project: projectToPersist, store } of snapshots) {
-    void persistProject(projectToPersist)
-      .then(() => {
-        if (store.getState().project === projectToPersist) {
-          store.getState().markSaved()
-        }
-      })
-      .catch((err: unknown) => {
-        if (store.getState().project === projectToPersist) {
-          store.getState().markSaveFailed(formatPersistenceError(err))
-          return
-        }
-        console.warn(formatPersistenceError(err))
-      })
-  }
-}
+// O AGENDAMENTO (autosave debounced/flush/salvar explícito) vive em
+// src/persistence/service.ts (PersistenceService, por instância do <Studio>).
+// Este módulo mantém só as operações PURAS de IndexedDB — que são exatamente o
+// adapter 'local' (ver src/persistence/local.ts).
 
 export async function persistProject(project: Project): Promise<void> {
   await setMany(
@@ -159,7 +49,9 @@ export async function loadProjectById(id: string): Promise<Project | null> {
 }
 
 export async function deleteProject(id: string): Promise<void> {
-  clearAutosaveTimerForProject(id)
+  // Cancela autosaves em voo em TODAS as instâncias — um timer pendente
+  // re-persistiria o projeto recém-apagado.
+  cancelPendingAutosavesFor(id)
   await delMany(
     [projectMetaKey(id), projectFilesKey(id), projectStateKey(id), legacyProjectKey(id)],
     getStore(),
@@ -226,23 +118,6 @@ export async function listAllProjects(): Promise<ProjectSummary[]> {
 
   summaries.sort((a, b) => b.updatedAt - a.updatedAt)
   return summaries
-}
-
-export async function saveCurrentProject(store: ProjectStoreApi = useProjectStore): Promise<void> {
-  const project = store.getState().project
-  if (!project) return
-  clearAutosaveTimerForProject(project.id)
-  try {
-    await persistProject(project)
-    if (store.getState().project === project) {
-      store.getState().markSaved()
-    }
-  } catch (err) {
-    if (store.getState().project === project) {
-      store.getState().markSaveFailed(formatPersistenceError(err))
-    }
-    throw err
-  }
 }
 
 function projectToMetaRecord(
