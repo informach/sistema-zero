@@ -1,0 +1,28 @@
+{
+  // Standalone (não estende o tsconfig.base do monorepo): o studio foi escrito
+  // com verbatimModuleSyntax desligado, e os "#imports" do package.json exigem
+  // moduleResolution bundler. Espelha o tsconfig.base do repo de origem.
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": false,
+    "useDefineForClassFields": true,
+    "noEmit": true,
+    "types": ["bun", "vite/client"]
+  },
+  "include": ["src", "playground", "e2e", "test-setup.ts", "playwright.config.ts"],
+  "exclude": ["node_modules"]
+}

@@ -13,7 +13,10 @@
       "!bun.lock",
       "!**/.astro",
       "!**/.next",
-      "!**/next-env.d.ts"
+      "!**/next-env.d.ts",
+      "!**/test-results",
+      "!**/playwright-report",
+      "!**/.cache"
     ]
   },
   "formatter": {
@@ -175,6 +178,27 @@
         "rules": {
           "complexity": {
             "noImportantStyles": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["packages/studio/**"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "noStaticElementInteractions": "off",
+            "useKeyWithClickEvents": "off",
+            "useSemanticElements": "off",
+            "noSvgWithoutTitle": "off",
+            "useButtonType": "off",
+            "noLabelWithoutControl": "off"
+          },
+          "correctness": {
+            "useExhaustiveDependencies": "warn"
+          },
+          "suspicious": {
+            "noThenProperty": "off"
           }
         }
       }

@@ -1,0 +1,2178 @@
+import { type ParserOptions, parse } from '@babel/parser'
+import type { EventKind, JSExpr, JSStatement } from '#ir'
+
+const BABEL_OPTS: ParserOptions = {
+  sourceType: 'module',
+  errorRecovery: true,
+  plugins: [],
+}
+
+export interface ParseJSDiagnostic {
+  kind: 'syntaxError'
+  message: string
+}
+
+export interface ParseJSResult {
+  statements: JSStatement[]
+  diagnostics: ParseJSDiagnostic[]
+}
+
+/**
+ * Parser JS pragmático: tenta reconhecer apenas os padrões que os blocos
+ * emitem. Qualquer outra coisa vira `rawJS advanced` preservando o snippet
+ * original.
+ */
+export function parseJS(source: string): JSStatement[] {
+  return parseJSWithDiagnostics(source).statements
+}
+
+export function parseJSWithDiagnostics(source: string): ParseJSResult {
+  if (!source.trim()) return { statements: [], diagnostics: [] }
+  let ast: ReturnType<typeof parse>
+  try {
+    ast = parse(source, BABEL_OPTS)
+  } catch (error) {
+    return {
+      statements: [{ type: 'rawJS', code: source, advanced: true }],
+      diagnostics: [{ kind: 'syntaxError', message: errorMessage(error) }],
+    }
+  }
+
+  const recoverableErrors = (ast as { errors?: Array<{ message?: string }> }).errors ?? []
+  if (recoverableErrors.length > 0) {
+    return {
+      statements: [{ type: 'rawJS', code: source, advanced: true }],
+      diagnostics: [
+        {
+          kind: 'syntaxError',
+          message: recoverableErrors.map((e) => e.message ?? 'Erro de sintaxe').join('\n'),
+        },
+      ],
+    }
+  }
+
+  const ctx: ParseCtx = {
+    elementVars: new Map(),
+    canvasElementVars: new Set(),
+    ctxVars: new Set(),
+    elementToCtx: new Map(),
+    instanceVars: new Set(),
+  }
+  const out = mapStatementList(ast.program.body, source, ctx)
+  // Remove os `getElementById` soltos que foram absorvidos por um `canvasSetup`.
+  const statements = out.filter(
+    (s) => !(s.type === 'getElementById' && ctx.canvasElementVars.has(s.varName)),
+  )
+  return { statements, diagnostics: [] }
+}
+
+// biome-ignore lint/suspicious/noExplicitAny: Babel AST nodes são tipados de forma muito ampla
+type Node = any
+
+/**
+ * Estado do parse: registra quais variáveis guardam um elemento via
+ * `const x = document.getElementById("id")`. Hoje `extractTarget` trata
+ * qualquer identificador como alvo-variável (`targetKind: 'var'`), então o mapa
+ * é mantido apenas como registro/informação do parse.
+ */
+interface ParseCtx {
+  elementVars: Map<string, string>
+  /**
+   * Variáveis de elemento `<canvas>` que foram absorvidas num `canvasSetup`
+   * (par `getElementById` + `getContext('2d')`). O `getElementById` solto
+   * correspondente é removido na pós-passagem — o `canvasSetup` regenera as
+   * duas linhas.
+   */
+  canvasElementVars: Set<string>
+  /**
+   * Variáveis de contexto 2D (`const ctx = canvas.getContext('2d')`). Servem de
+   * *guard*: os matchers de método de canvas (`ctx.fillRect(...)` etc.) só
+   * disparam quando o objeto é um ctx conhecido — evita falso positivo em
+   * `qualquerCoisa.fillRect(...)`.
+   */
+  ctxVars: Set<string>
+  /**
+   * Variável do elemento `<canvas>` → variável do contexto associado
+   * (ex.: `canvas` → `ctx`). Necessário para `canvasSetSize`, cuja IR usa
+   * `ctxVar` mas cujo código escreve em `canvas.width`/`canvas.height`.
+   */
+  elementToCtx: Map<string, string>
+  /**
+   * Variáveis que guardam uma instância (`const p = new Classe(...)`). Servem
+   * de *guard* para `callMethod`: `p.metodo(...)` só vira bloco quando `p` é uma
+   * instância conhecida — evita falso positivo em `foo.fillRect(...)`.
+   */
+  instanceVars: Set<string>
+}
+
+const KNOWN_EVENT_KINDS: ReadonlySet<EventKind> = new Set([
+  'click',
+  'keydown',
+  'keyup',
+  'mouseover',
+  'mouseout',
+  'submit',
+  'input',
+  'change',
+])
+
+function snippet(source: string, node: Node): string {
+  if (!node || typeof node.start !== 'number') return ''
+  const raw = source.slice(node.start, node.end ?? node.start)
+  const lines = raw.split('\n')
+  if (lines.length <= 1) return raw.trim()
+  // A primeira linha começa em `node.start` (sem indentação); as seguintes
+  // carregam a indentação original do arquivo. Removemos a indentação comum das
+  // continuações para guardar um trecho "relativo" — assim re-gerar (com pad) e
+  // re-parsear não acumula espaços a cada ciclo (round-trip estável do avançado).
+  let min = Number.POSITIVE_INFINITY
+  for (let i = 1; i < lines.length; i += 1) {
+    const line = lines[i]
+    if (!line?.trim()) continue
+    const indent = line.match(/^[ \t]*/)?.[0].length ?? 0
+    if (indent < min) min = indent
+  }
+  if (!Number.isFinite(min)) min = 0
+  const dedented = [
+    lines[0]?.trimEnd() ?? '',
+    ...lines.slice(1).map((line) => (line.trim() ? line.slice(min).trimEnd() : '')),
+  ]
+  return dedented.join('\n').trim()
+}
+
+function asRaw(source: string, node: Node): JSStatement {
+  return { type: 'rawJS', code: snippet(source, node), advanced: true }
+}
+
+function mapStatement(
+  node: Node,
+  source: string,
+  ctx: ParseCtx,
+): JSStatement | JSStatement[] | null {
+  switch (node.type) {
+    case 'VariableDeclaration':
+      return mapVariable(node, source, ctx)
+    case 'ExpressionStatement':
+      return mapExpressionStatement(node, source, ctx)
+    case 'IfStatement':
+      return mapIf(node, source, ctx)
+    case 'ForStatement':
+      return mapFor(node, source, ctx)
+    case 'BlockStatement':
+      // Bloco solto `{ ... }` em posição de statement — hoje só o
+      // `canvasDrawImage` é emitido assim (escopo para a variável da imagem).
+      return tryMatchDrawImage(node, ctx) ?? asRaw(source, node)
+    case 'ClassDeclaration':
+      return mapClass(node, source, ctx)
+    case 'FunctionDeclaration':
+      return mapFunction(node, source, ctx)
+    case 'ReturnStatement': {
+      // `return;` (saída antecipada) → return sem valor (sz_js_return_void).
+      if (!node.argument) return { type: 'return' }
+      // `return <valor simples>;` → return com valor; senão código avançado.
+      const value = toExpr(node.argument, ctx)
+      if (isSimpleValue(value)) return { type: 'return', value }
+      return asRaw(source, node)
+    }
+    default:
+      return asRaw(source, node)
+  }
+}
+
+/**
+ * `class Nome [extends Base] { constructor(...) { ... } metodo(...) { ... } }`.
+ * O construtor e os métodos têm corpo livre (mapeado por `mapStatementList`):
+ * `this.x = v` vira `setThisProp`, e o resto, statements normais. Só preserva a
+ * classe inteira como código avançado para `static`, getters/setters, campos de
+ * classe e parâmetros não-triviais — sem perder o original. Herança simples
+ * (`extends Identificador`) é suportada; expressões de herança complexas viram raw.
+ */
+function mapClass(node: Node, source: string, ctx: ParseCtx): JSStatement {
+  if (node.id?.type !== 'Identifier') return asRaw(source, node)
+  let superClass: string | undefined
+  if (node.superClass) {
+    if (node.superClass.type === 'Identifier') superClass = node.superClass.name
+    else return asRaw(source, node)
+  }
+  const members = node.body?.body ?? []
+  let ctorParams: string[] = []
+  let ctorBody: JSStatement[] = []
+  const methods: Array<{ name: string; params: string[]; body: JSStatement[] }> = []
+
+  for (const member of members) {
+    if (
+      member.type !== 'ClassMethod' ||
+      member.static ||
+      member.computed ||
+      member.key?.type !== 'Identifier' ||
+      !Array.isArray(member.params) ||
+      !member.params.every((p: Node) => p?.type === 'Identifier')
+    ) {
+      return asRaw(source, node)
+    }
+    const params: string[] = member.params.map((p: Node) => p.name)
+
+    if (member.kind === 'constructor') {
+      ctorParams = params
+      ctorBody = mapStatementList(member.body?.body ?? [], source, ctx)
+    } else if (member.kind === 'method') {
+      methods.push({
+        name: member.key.name,
+        params,
+        body: mapStatementList(member.body?.body ?? [], source, ctx),
+      })
+    } else {
+      return asRaw(source, node)
+    }
+  }
+
+  return {
+    type: 'classDecl',
+    name: node.id.name,
+    ...(superClass ? { superClass } : {}),
+    ctorParams,
+    ctorBody,
+    methods,
+  }
+}
+
+/**
+ * `function nome(params) { ... }` de topo → `funcDecl`. Params precisam ser
+ * identificadores simples; async/generator e params não-triviais viram raw.
+ * Roda DEPOIS dos matchers de fusão (anim loop), que têm prioridade.
+ */
+function mapFunction(node: Node, source: string, ctx: ParseCtx): JSStatement {
+  if (node.id?.type !== 'Identifier') return asRaw(source, node)
+  if (node.async || node.generator) return asRaw(source, node)
+  if (!Array.isArray(node.params) || !node.params.every((p: Node) => p?.type === 'Identifier')) {
+    return asRaw(source, node)
+  }
+  const params: string[] = node.params.map((p: Node) => p.name)
+  const body = mapStatementList(node.body?.body ?? [], source, ctx)
+  return { type: 'funcDecl', name: node.id.name, params, body }
+}
+
+/**
+ * Funções globais que NÃO devem virar "chamar função" do aluno: têm tratamento
+ * próprio (alert, setTimeout) ou são wiring de runtime (requestAnimationFrame).
+ */
+const GLOBAL_CALL_DENYLIST: ReadonlySet<string> = new Set([
+  'alert',
+  'requestAnimationFrame',
+  'cancelAnimationFrame',
+  'setTimeout',
+  'setInterval',
+  'parseInt',
+  'parseFloat',
+])
+
+/**
+ * Objetos globais cujo `.prop` / `.metodo(...)` NÃO deve virar bloco genérico de
+ * objeto (`memberGet`/`memberCall`): ou têm matcher próprio (window, Math, event,
+ * console) ou não são objetos que o aluno manipula. Mantém `console.error`,
+ * `JSON.stringify`, `Object.keys`, etc. como código avançado.
+ */
+const GLOBAL_OBJECTS: ReadonlySet<string> = new Set([
+  'window',
+  'document',
+  'console',
+  'Math',
+  'JSON',
+  'Object',
+  'Array',
+  'navigator',
+  'location',
+  'history',
+  'localStorage',
+  'sessionStorage',
+  'event',
+])
+
+/** O nó é um identificador de objeto global (não deve virar bloco de objeto genérico). */
+function isGlobalObject(node: Node): boolean {
+  return node?.type === 'Identifier' && GLOBAL_OBJECTS.has(node.name)
+}
+
+/** `cancelAnimationFrame(<id>)` → `cancelAnimationFrame`, se o id for um valor simples. */
+function tryMatchCancelAnimationFrame(expr: Node, ctx: ParseCtx): JSStatement | null {
+  if (expr?.type !== 'CallExpression' || expr.callee?.type !== 'Identifier') return null
+  if (expr.callee.name !== 'cancelAnimationFrame' || expr.arguments?.length !== 1) return null
+  const handle = toExpr(expr.arguments[0], ctx)
+  return isSimpleValue(handle) ? { type: 'cancelAnimationFrame', handle: handle as JSExpr } : null
+}
+
+/** `nome(args)` (callee Identifier) → `callFunction`, se todos os args forem valores. */
+function tryMatchFunctionCall(expr: Node, ctx: ParseCtx): JSStatement | null {
+  if (expr?.type !== 'CallExpression' || expr.callee?.type !== 'Identifier') return null
+  if (GLOBAL_CALL_DENYLIST.has(expr.callee.name)) return null
+  const args = (expr.arguments ?? []).map((a: Node) => toExpr(a, ctx))
+  if (!args.every(isSimpleValue)) return null
+  return { type: 'callFunction', name: expr.callee.name, args: args as JSExpr[] }
+}
+
+/**
+ * Passagem de sequência: reconhece, em ordem, padrões de canvas que ocupam
+ * mais de um statement (ex.: `canvas.width`+`canvas.height`, `beginPath`+`arc`+
+ * `fill`) antes de cair no mapeamento statement-a-statement. Usada no topo e
+ * dentro de blocos.
+ */
+function mapStatementList(nodes: Node[], source: string, ctx: ParseCtx): JSStatement[] {
+  const out: JSStatement[] = []
+  let i = 0
+  while (i < nodes.length) {
+    const fused =
+      tryFuseCanvasSetSize(nodes, i, ctx) ??
+      tryFuseCanvasArc(nodes, i, ctx) ??
+      tryFuseCanvasGradient(nodes, i, ctx) ??
+      tryFuseAnimationLoop(nodes, i, source, ctx) ??
+      tryFuseKeyboard(nodes, i, ctx)
+    if (fused) {
+      out.push(fused.stmt)
+      i += fused.consumed
+      continue
+    }
+    const stmt = mapStatement(nodes[i], source, ctx)
+    if (Array.isArray(stmt)) out.push(...stmt)
+    else if (stmt) out.push(stmt)
+    i += 1
+  }
+  return out
+}
+
+function mapVariable(node: Node, source: string, ctx: ParseCtx): JSStatement | JSStatement[] {
+  const out: JSStatement[] = []
+  // `const` vira um bloco de constante; `let`/`var` ficam sem `kind` (= let).
+  const kindField: { kind?: 'const' } = node.kind === 'const' ? { kind: 'const' } : {}
+  for (const decl of node.declarations) {
+    // Desestruturação de lista: const [a, b] = lista → várias atribuições por índice.
+    if (decl.id?.type === 'ArrayPattern') {
+      const fromVar = decl.init?.type === 'Identifier' ? (decl.init.name as string) : null
+      const elements = decl.id.elements ?? []
+      if (fromVar && elements.length > 0 && elements.every((e: Node) => e?.type === 'Identifier')) {
+        elements.forEach((el: Node, i: number) => {
+          out.push({
+            type: 'var',
+            name: el.name,
+            value: { type: 'index', arrayVar: fromVar, index: { type: 'num', value: i } },
+            ...kindField,
+          })
+        })
+      } else {
+        out.push(asRaw(source, decl))
+      }
+      continue
+    }
+    if (decl.id?.type !== 'Identifier') {
+      out.push(asRaw(source, decl))
+      continue
+    }
+    const name: string = decl.id.name
+    const init = decl.init
+    // getElementById: const x = document.getElementById('id')
+    const byId = matchGetElementById(init)
+    if (byId) {
+      ctx.elementVars.set(name, byId)
+      out.push({ type: 'getElementById', id: byId, varName: name })
+      continue
+    }
+    // querySelector: const x = document.querySelector('sel')
+    if (
+      init?.type === 'CallExpression' &&
+      init.callee?.type === 'MemberExpression' &&
+      init.callee.object?.name === 'document' &&
+      init.callee.property?.name === 'querySelector' &&
+      init.arguments?.length === 1 &&
+      init.arguments[0].type === 'StringLiteral'
+    ) {
+      out.push({ type: 'querySelector', selector: init.arguments[0].value, varName: name })
+      continue
+    }
+    // createElement: const x = document.createElement('div')
+    const createdTag = matchCreateElement(init)
+    if (createdTag !== null) {
+      ctx.elementVars.set(name, name)
+      out.push({ type: 'createElement', tag: createdTag, varName: name })
+      continue
+    }
+    // canvasSetup: const ctx = <canvasVar>.getContext('2d'), onde <canvasVar>
+    // veio de um getElementById anterior. Funde o par numa única IR canvasSetup.
+    const canvasVar = matchGetContext(init)
+    if (canvasVar) {
+      const canvasId = ctx.elementVars.get(canvasVar)
+      if (canvasId !== undefined) {
+        ctx.canvasElementVars.add(canvasVar)
+        ctx.ctxVars.add(name)
+        ctx.elementToCtx.set(canvasVar, name)
+        out.push({ type: 'canvasSetup', canvasId, varName: name })
+        continue
+      }
+    }
+    // getProperty: const x = el.textContent | el.value
+    // (ou document.getElementById('id').textContent)
+    const prop = matchGetProperty(init, ctx)
+    if (prop) {
+      out.push({ type: 'getProperty', ...prop, varName: name })
+      continue
+    }
+    // newInstance: const x = new Classe(args). Date/Image têm tratamento próprio.
+    if (
+      init?.type === 'NewExpression' &&
+      init.callee?.type === 'Identifier' &&
+      init.callee.name !== 'Date' &&
+      init.callee.name !== 'Image'
+    ) {
+      const args = (init.arguments ?? []).map((a: Node) => toExpr(a, ctx))
+      if (args.every(isSimpleValue)) {
+        ctx.instanceVars.add(name)
+        out.push({
+          type: 'newInstance',
+          varName: name,
+          className: init.callee.name,
+          args: args as JSExpr[],
+        })
+      } else {
+        out.push(asRaw(source, node))
+      }
+      continue
+    }
+    if (init == null) {
+      // `let x;` — declaração sem valor inicial (sz_js_var_declare).
+      out.push({ type: 'declareVar', name })
+    } else if (init.type === 'NumericLiteral') {
+      out.push({ type: 'var', name, value: { type: 'num', value: init.value }, ...kindField })
+    } else if (init?.type === 'StringLiteral') {
+      out.push({ type: 'var', name, value: { type: 'str', value: init.value }, ...kindField })
+    } else if (init?.type === 'BooleanLiteral') {
+      out.push({ type: 'var', name, value: { type: 'bool', value: init.value }, ...kindField })
+    } else {
+      // Demais inicializadores (contas, Math.*, variável, etc.): viram um `var`
+      // se o valor for representável por um bloco; senão preserva como avançado.
+      const value = toExpr(init, ctx)
+      if (isSimpleValue(value)) out.push({ type: 'var', name, value, ...kindField })
+      else out.push(asRaw(source, node))
+    }
+  }
+  return out.length === 1 ? (out[0] as JSStatement) : out
+}
+
+function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSStatement {
+  const expr = node.expression
+  // console.log(...)
+  if (
+    expr?.type === 'CallExpression' &&
+    expr.callee?.type === 'MemberExpression' &&
+    expr.callee.object?.name === 'console' &&
+    expr.callee.property?.name === 'log' &&
+    expr.arguments?.length === 1
+  ) {
+    const arg = expr.arguments[0]
+    if (arg.type === 'StringLiteral') {
+      return { type: 'consoleLog', value: { type: 'str', value: arg.value } }
+    }
+    if (arg.type === 'NumericLiteral') {
+      return { type: 'consoleLog', value: { type: 'num', value: arg.value } }
+    }
+    if (arg.type === 'Identifier') {
+      return { type: 'consoleLog', value: { type: 'var', name: arg.name } }
+    }
+    return asRaw(source, node)
+  }
+
+  // alert(...)
+  if (
+    expr?.type === 'CallExpression' &&
+    expr.callee?.type === 'Identifier' &&
+    expr.callee.name === 'alert' &&
+    expr.arguments?.length === 1
+  ) {
+    const arg = expr.arguments[0]
+    if (arg.type === 'StringLiteral') {
+      return { type: 'alert', value: { type: 'str', value: arg.value } }
+    }
+    if (arg.type === 'NumericLiteral') {
+      return { type: 'alert', value: { type: 'num', value: arg.value } }
+    }
+    if (arg.type === 'Identifier') {
+      return { type: 'alert', value: { type: 'var', name: arg.name } }
+    }
+    return asRaw(source, node)
+  }
+
+  if (expr?.type === 'AssignmentExpression' && expr.operator === '=') {
+    // this.X = v → setThisProp (dentro de método/construtor).
+    if (
+      (expr.left?.type === 'MemberExpression' || expr.left?.type === 'OptionalMemberExpression') &&
+      !expr.left.computed &&
+      expr.left.object?.type === 'ThisExpression' &&
+      expr.left.property?.type === 'Identifier'
+    ) {
+      const value = toExpr(expr.right, ctx)
+      if (isSimpleValue(value)) return { type: 'setThisProp', name: expr.left.property.name, value }
+      return asRaw(source, node)
+    }
+    // ctx.fillStyle = <cor> (cor é string; ctx precisa ser um contexto conhecido)
+    if (
+      (expr.left?.type === 'MemberExpression' || expr.left?.type === 'OptionalMemberExpression') &&
+      expr.left.property?.name === 'fillStyle' &&
+      expr.left.object?.type === 'Identifier' &&
+      ctx.ctxVars.has(expr.left.object.name)
+    ) {
+      // `toExpr` já normaliza string hexadecimal → `color` e identificador → `var`.
+      const color = toExpr(expr.right)
+      if (color) return { type: 'canvasFillStyle', ctxVar: expr.left.object.name, color }
+      return asRaw(source, node)
+    }
+    // el.dataset.chave = <simples>
+    const dataset = tryMatchSetDataset(expr, ctx)
+    if (dataset) return dataset
+    // x.textContent = <simples> | x.value = <simples> | x.innerHTML = <simples>
+    // (ou document.getElementById('id').textContent = …)
+    if (
+      (expr.left?.type === 'MemberExpression' || expr.left?.type === 'OptionalMemberExpression') &&
+      (expr.left.property?.name === 'textContent' ||
+        expr.left.property?.name === 'value' ||
+        expr.left.property?.name === 'innerHTML')
+    ) {
+      const property = expr.left.property.name as 'textContent' | 'value' | 'innerHTML'
+      const target = extractTarget(expr.left.object, ctx)
+      const value = toExpr(expr.right, ctx)
+      if (target && value) {
+        return {
+          type: 'setProperty',
+          targetId: target.id,
+          ...targetKindField(target),
+          property,
+          value,
+        }
+      }
+      return asRaw(source, node)
+    }
+    // Geral: <obj>.prop = v sobre qualquer objeto representável. Cobre instância
+    // (`p.x = v`) e aninhamento (`this.velocidade.x = v`). Roda DEPOIS dos matchers
+    // específicos (fillStyle, dataset, textContent) e dos pares de canvas (consumidos
+    // antes em mapStatementList).
+    if (
+      (expr.left?.type === 'MemberExpression' || expr.left?.type === 'OptionalMemberExpression') &&
+      !expr.left.computed &&
+      expr.left.property?.type === 'Identifier' &&
+      !isGlobalObject(expr.left.object)
+    ) {
+      const object = toExpr(expr.left.object, ctx)
+      const value = toExpr(expr.right, ctx)
+      if (isSimpleValue(object) && isSimpleValue(value)) {
+        return { type: 'memberSet', object, name: expr.left.property.name, value }
+      }
+      return asRaw(source, node)
+    }
+    // x = expr — qualquer valor representável por um bloco (num, texto, conta,
+    // variável, chamada de função, etc.). `x = x + n` é reconvertido em bloco de
+    // incremento por workspaceState.incrementExpr.
+    if (expr.left?.type === 'Identifier') {
+      const name: string = expr.left.name
+      const value = toExpr(expr.right, ctx)
+      if (isSimpleValue(value)) return { type: 'assign', name, value }
+      return asRaw(source, node)
+    }
+    return asRaw(source, node)
+  }
+
+  // x += n / x -= n → assign(x = x ± n). Round-trip do bloco "Somar N".
+  if (
+    expr?.type === 'AssignmentExpression' &&
+    (expr.operator === '+=' || expr.operator === '-=') &&
+    expr.left?.type === 'Identifier'
+  ) {
+    const name: string = expr.left.name
+    const right = toExpr(expr.right, ctx)
+    if (isSimpleValue(right)) {
+      return {
+        type: 'assign',
+        name,
+        value: {
+          type: 'binop',
+          op: expr.operator === '+=' ? '+' : '-',
+          left: { type: 'var', name },
+          right,
+        },
+      }
+    }
+    return asRaw(source, node)
+  }
+
+  // x++ / x-- → assign(x = x ± 1).
+  if (expr?.type === 'UpdateExpression' && expr.argument?.type === 'Identifier') {
+    const name: string = expr.argument.name
+    return {
+      type: 'assign',
+      name,
+      value: {
+        type: 'binop',
+        op: expr.operator === '++' ? '+' : '-',
+        left: { type: 'var', name },
+        right: { type: 'num', value: 1 },
+      },
+    }
+  }
+
+  // document.getElementById('x')?.addEventListener('event', cb)  (ou via variável)
+  const evt = tryMatchEventListener(expr, ctx)
+  if (evt) {
+    // Listener apontando para uma função nomeada → eventHandler.
+    if (evt.handlerName) {
+      return {
+        type: 'eventHandler',
+        target: evt.target,
+        ...(evt.targetKind ? { targetKind: evt.targetKind } : {}),
+        event: evt.event,
+        handlerName: evt.handlerName,
+      }
+    }
+    const bodyStmts = bodyOfFn(evt.callback, source, ctx)
+    return {
+      type: 'event',
+      target: evt.target,
+      ...(evt.targetKind ? { targetKind: evt.targetKind } : {}),
+      event: evt.event,
+      body: bodyStmts,
+    }
+  }
+
+  // document.getElementById('x')?.classList.{add|remove|toggle}('cls')  (ou via variável)
+  const cls = tryMatchClassList(expr, ctx)
+  if (cls) {
+    return {
+      type: 'classOp',
+      targetId: cls.target,
+      ...(cls.targetKind ? { targetKind: cls.targetKind } : {}),
+      op: cls.op,
+      className: cls.className,
+    }
+  }
+
+  // cancelAnimationFrame(id) — para o loop de animação.
+  const cancelAnim = tryMatchCancelAnimationFrame(expr, ctx)
+  if (cancelAnim) return cancelAnim
+
+  // Métodos de canvas de uma linha: ctx.fillRect(...), ctx.save(), etc.
+  const canvasCall = tryMatchCanvasCall(expr, ctx)
+  if (canvasCall) return canvasCall
+
+  // lista.push(valor) / lista.pop() / lista.shift()
+  const arrayOp = tryMatchArrayOp(expr, ctx)
+  if (arrayOp) return arrayOp
+
+  // pai.appendChild(filho)
+  const append = tryMatchAppendChild(expr, ctx)
+  if (append) return append
+
+  // lista.forEach((item, i) => { … })
+  const forEach = tryMatchForEach(expr, source, ctx)
+  if (forEach) return forEach
+
+  // setTimeout(() => { … }, ms)
+  const timeout = tryMatchSetTimeout(expr, source, ctx)
+  if (timeout) return timeout
+
+  // setInterval(() => { … }, ms)
+  const interval = tryMatchSetInterval(expr, source, ctx)
+  if (interval) return interval
+
+  // objeto.metodo(args) — chamada de método de um objeto guardado em variável.
+  const methodCall = tryMatchMethodCall(expr, ctx)
+  if (methodCall) return methodCall
+
+  // nome(args) — chamada de uma função do aluno como comando.
+  const fnCall = tryMatchFunctionCall(expr, ctx)
+  if (fnCall) return fnCall
+
+  return asRaw(source, node)
+}
+
+/** `document.createElement('tag')` → nome da tag; senão `null`. */
+function matchCreateElement(node: Node): string | null {
+  if (node?.type !== 'CallExpression') return null
+  const callee = node.callee
+  if (callee?.type !== 'MemberExpression' || callee.computed) return null
+  if (callee.object?.name !== 'document' || callee.property?.name !== 'createElement') return null
+  if (node.arguments?.length !== 1 || node.arguments[0].type !== 'StringLiteral') return null
+  return node.arguments[0].value as string
+}
+
+/** `pai.appendChild(filho)` (ambos identificadores) → `appendChild`. */
+function tryMatchAppendChild(expr: Node, ctx: ParseCtx): JSStatement | null {
+  if (expr?.type !== 'CallExpression') return null
+  const callee = expr.callee
+  if (callee?.type !== 'MemberExpression' || callee.computed) return null
+  if (callee.object?.type !== 'Identifier' || callee.property?.name !== 'appendChild') return null
+  if (ctx.instanceVars.has(callee.object.name)) return null
+  if (expr.arguments?.length !== 1 || expr.arguments[0].type !== 'Identifier') return null
+  return {
+    type: 'appendChild',
+    parentVar: callee.object.name,
+    childVar: expr.arguments[0].name,
+  }
+}
+
+/** `<alvo>.dataset.chave = <simples>` → `setDataset`; senão `null`. */
+function tryMatchSetDataset(expr: Node, ctx: ParseCtx): JSStatement | null {
+  const left = expr.left
+  if (
+    !left ||
+    (left.type !== 'MemberExpression' && left.type !== 'OptionalMemberExpression') ||
+    left.computed ||
+    left.property?.type !== 'Identifier'
+  ) {
+    return null
+  }
+  const obj = left.object
+  if (!obj || (obj.type !== 'MemberExpression' && obj.type !== 'OptionalMemberExpression')) {
+    return null
+  }
+  if (obj.property?.name !== 'dataset') return null
+  const target = extractTarget(obj.object, ctx)
+  if (!target) return null
+  const value = toExpr(expr.right, ctx)
+  if (!isSimpleValue(value)) return null
+  return {
+    type: 'setDataset',
+    targetId: target.id,
+    ...targetKindField(target),
+    key: left.property.name,
+    value,
+  }
+}
+
+/** `<lista>.forEach((item[, i]) => { … })` → `forEach`. */
+function tryMatchForEach(expr: Node, source: string, ctx: ParseCtx): JSStatement | null {
+  if (expr?.type !== 'CallExpression') return null
+  const callee = expr.callee
+  if (callee?.type !== 'MemberExpression' || callee.computed) return null
+  if (callee.object?.type !== 'Identifier' || callee.property?.name !== 'forEach') return null
+  if (ctx.instanceVars.has(callee.object.name)) return null
+  if (expr.arguments?.length !== 1) return null
+  const cb = expr.arguments[0]
+  if (cb.type !== 'ArrowFunctionExpression' && cb.type !== 'FunctionExpression') return null
+  const params = cb.params ?? []
+  if (params.length < 1 || params.length > 2) return null
+  if (!params.every((p: Node) => p?.type === 'Identifier')) return null
+  const itemName: string = params[0].name
+  const indexName: string | undefined = params[1]?.name
+  const body = bodyOfFn(cb, source, ctx)
+  return {
+    type: 'forEach',
+    arrayVar: callee.object.name,
+    itemName,
+    ...(indexName ? { indexName } : {}),
+    body,
+  }
+}
+
+/** `setTimeout(() => { … }, ms)` → `setTimeout`. Callback sem parâmetros. */
+function tryMatchSetTimeout(expr: Node, source: string, ctx: ParseCtx): JSStatement | null {
+  if (expr?.type !== 'CallExpression' || expr.callee?.type !== 'Identifier') return null
+  if (expr.callee.name !== 'setTimeout' || expr.arguments?.length !== 2) return null
+  const cb = expr.arguments[0]
+  if (cb.type !== 'ArrowFunctionExpression' && cb.type !== 'FunctionExpression') return null
+  if ((cb.params?.length ?? 0) !== 0) return null
+  const delay = toExpr(expr.arguments[1], ctx)
+  if (!isSimpleValue(delay)) return null
+  const body = bodyOfFn(cb, source, ctx)
+  return { type: 'setTimeout', delay, body }
+}
+
+/** `setInterval(() => { … }, ms)` → `setInterval`. Callback sem parâmetros. */
+function tryMatchSetInterval(expr: Node, source: string, ctx: ParseCtx): JSStatement | null {
+  if (expr?.type !== 'CallExpression' || expr.callee?.type !== 'Identifier') return null
+  if (expr.callee.name !== 'setInterval' || expr.arguments?.length !== 2) return null
+  const cb = expr.arguments[0]
+  if (cb.type !== 'ArrowFunctionExpression' && cb.type !== 'FunctionExpression') return null
+  if ((cb.params?.length ?? 0) !== 0) return null
+  const delay = toExpr(expr.arguments[1], ctx)
+  if (!isSimpleValue(delay)) return null
+  const body = bodyOfFn(cb, source, ctx)
+  return { type: 'setInterval', delay, body }
+}
+
+/**
+ * `<var>.push(valor)` → `arrayPush`; `<var>.pop()` / `<var>.shift()` →
+ * `arrayRemove`. Ignora instâncias de classe conhecidas (essas viram
+ * `callMethod`), para não confundir um método `push` de uma classe com a lista.
+ */
+function tryMatchArrayOp(expr: Node, ctx: ParseCtx): JSStatement | null {
+  if (expr?.type !== 'CallExpression') return null
+  const callee = expr.callee
+  if (callee?.type !== 'MemberExpression' || callee.computed) return null
+  if (callee.object?.type !== 'Identifier' || callee.property?.type !== 'Identifier') return null
+  const arrayVar: string = callee.object.name
+  if (ctx.instanceVars.has(arrayVar)) return null
+  const method = callee.property.name
+  const args = expr.arguments ?? []
+  if (method === 'push' && args.length === 1) {
+    const value = toExpr(args[0], ctx)
+    return isSimpleValue(value) ? { type: 'arrayPush', arrayVar, value } : null
+  }
+  if ((method === 'pop' || method === 'shift') && args.length === 0) {
+    return { type: 'arrayRemove', arrayVar, end: method }
+  }
+  // arr.splice(start, count) → remover `count` itens a partir de `start`.
+  if (method === 'splice' && args.length === 2) {
+    const start = toExpr(args[0], ctx)
+    const count = toExpr(args[1], ctx)
+    if (isSimpleValue(start) && isSimpleValue(count)) {
+      return { type: 'arraySplice', arrayVar, start, count }
+    }
+  }
+  return null
+}
+
+/**
+ * `<objeto>.<metodo>(args)` → `memberCall`. O objeto pode ser qualquer valor
+ * representável (variável, `this.algo`, acesso aninhado) — cobre `instancia.metodo()`,
+ * `this.lista.push(x)`, etc. Exclui objetos globais (console, document, Math, …) e
+ * contextos de canvas / listas (tratados antes). Args precisam ser valores; senão
+ * `null` e a linha vira código avançado.
+ */
+function tryMatchMethodCall(expr: Node, ctx: ParseCtx): JSStatement | null {
+  if (expr?.type !== 'CallExpression') return null
+  const callee = expr.callee
+  if (callee?.type !== 'MemberExpression' || callee.computed) return null
+  if (callee.property?.type !== 'Identifier') return null
+  if (isGlobalObject(callee.object)) return null
+  const object = toExpr(callee.object, ctx)
+  if (!isSimpleValue(object)) return null
+  const args = (expr.arguments ?? []).map((a: Node) => toExpr(a, ctx))
+  if (!args.every(isSimpleValue)) return null
+  return { type: 'memberCall', object, method: callee.property.name, args: args as JSExpr[] }
+}
+
+// ---------- canvas: matchers de chamada ----------
+
+interface CtxCall {
+  ctxVar: string
+  method: string
+  args: Node[]
+}
+
+/**
+ * Reconhece `<ctx conhecido>.<método>(...)` (chamada normal ou optional) e
+ * devolve o ctx, o nome do método e os argumentos; senão `null`. É o *guard*
+ * central dos blocos de canvas: só casa quando o objeto é um contexto 2D
+ * registrado em `ctx.ctxVars`.
+ */
+function matchCtxCall(expr: Node, ctx: ParseCtx): CtxCall | null {
+  if (!expr || (expr.type !== 'CallExpression' && expr.type !== 'OptionalCallExpression')) {
+    return null
+  }
+  const callee = expr.callee
+  if (
+    !callee ||
+    (callee.type !== 'MemberExpression' && callee.type !== 'OptionalMemberExpression')
+  ) {
+    return null
+  }
+  if (callee.object?.type !== 'Identifier' || !ctx.ctxVars.has(callee.object.name)) return null
+  const method = callee.property?.name
+  if (typeof method !== 'string') return null
+  return { ctxVar: callee.object.name, method, args: expr.arguments ?? [] }
+}
+
+/** `node` (ExpressionStatement) é uma chamada `<ctx>.<method>(...)`? */
+function matchCtxCallNode(node: Node, ctx: ParseCtx, method: string): CtxCall | null {
+  if (node?.type !== 'ExpressionStatement') return null
+  const call = matchCtxCall(node.expression, ctx)
+  return call && call.method === method ? call : null
+}
+
+/** Nome do objeto em `<Identifier>.<prop>` (membro normal ou optional); senão `null`. */
+function memberObjName(node: Node, prop: string): string | null {
+  if (!node || (node.type !== 'MemberExpression' && node.type !== 'OptionalMemberExpression')) {
+    return null
+  }
+  if (node.property?.name !== prop) return null
+  if (node.object?.type !== 'Identifier') return null
+  return node.object.name as string
+}
+
+/** Métodos de canvas que viram um statement de uma única linha. */
+function tryMatchCanvasCall(expr: Node, ctx: ParseCtx): JSStatement | null {
+  const call = matchCtxCall(expr, ctx)
+  if (!call) return null
+  const { ctxVar, method, args } = call
+  switch (method) {
+    case 'fillRect': {
+      const [x, y, w, h] = mapArgs(args, 4, ctx)
+      return x && y && w && h ? { type: 'canvasFillRect', ctxVar, x, y, w, h } : null
+    }
+    case 'fillText': {
+      const [text, x, y] = mapArgs(args, 3, ctx)
+      return text && x && y ? { type: 'canvasFillText', ctxVar, text, x, y } : null
+    }
+    case 'clearRect': {
+      // ctx.clearRect(0, 0, <canvas>.width, <canvas>.height)
+      const canvasVar = matchClearRectArgs(args)
+      return canvasVar ? { type: 'canvasClear', ctxVar, canvasVar } : null
+    }
+    case 'save':
+      return args.length === 0 ? { type: 'canvasSave', ctxVar } : null
+    case 'restore':
+      return args.length === 0 ? { type: 'canvasRestore', ctxVar } : null
+    case 'translate': {
+      const [x, y] = mapArgs(args, 2, ctx)
+      return x && y ? { type: 'canvasTranslate', ctxVar, x, y } : null
+    }
+    case 'rotate': {
+      const [angle] = mapArgs(args, 1, ctx)
+      return angle ? { type: 'canvasRotate', ctxVar, angle } : null
+    }
+    case 'scale': {
+      const [sx, sy] = mapArgs(args, 2, ctx)
+      return sx && sy ? { type: 'canvasScale', ctxVar, sx, sy } : null
+    }
+    default:
+      return null
+  }
+}
+
+/**
+ * Converte exatamente `count` argumentos via `toExpr`; devolve `[]` se a aridade
+ * não bate. Repassar `ctx` é essencial: sem ele, `canvas.width`/`canvas.height`
+ * dentro de `ctx.fillRect(...)` não reconhecem o elemento canvas (que mora em
+ * `ctx.elementToCtx`) e caem no `memberGet` genérico em vez de `canvasDim`.
+ */
+function mapArgs(args: Node[], count: number, ctx?: ParseCtx): (JSExpr | null)[] {
+  if (args.length !== count) return new Array(count).fill(null)
+  return args.map((a) => toExpr(a, ctx))
+}
+
+/** `(0, 0, <canvas>.width, <canvas>.height)` → nome do `<canvas>`; senão `null`. */
+function matchClearRectArgs(args: Node[]): string | null {
+  if (args.length !== 4) return null
+  if (args[0]?.type !== 'NumericLiteral' || args[0].value !== 0) return null
+  if (args[1]?.type !== 'NumericLiteral' || args[1].value !== 0) return null
+  const w = memberObjName(args[2], 'width')
+  const h = memberObjName(args[3], 'height')
+  return w && h && w === h ? w : null
+}
+
+/**
+ * Reconhece o bloco gerado por `canvasDrawImage`:
+ * `{ const img = new Image(); img.src = "..."; img.onload = () => ctx.drawImage(img, x, y, w, h); }`.
+ */
+function tryMatchDrawImage(block: Node, ctx: ParseCtx): JSStatement | null {
+  const body = block?.body
+  if (!Array.isArray(body) || body.length !== 3) return null
+
+  // 1) const img = new Image();
+  const decl = body[0]
+  if (decl?.type !== 'VariableDeclaration' || decl.declarations?.length !== 1) return null
+  const id = decl.declarations[0]?.id
+  const init = decl.declarations[0]?.init
+  if (id?.type !== 'Identifier') return null
+  if (init?.type !== 'NewExpression' || init.callee?.name !== 'Image') return null
+  const img = id.name
+
+  // 2) img.src = "...";
+  const srcStmt = body[1]
+  if (srcStmt?.type !== 'ExpressionStatement') return null
+  const srcAssign = srcStmt.expression
+  if (srcAssign?.type !== 'AssignmentExpression' || srcAssign.operator !== '=') return null
+  if (memberObjName(srcAssign.left, 'src') !== img) return null
+  if (srcAssign.right?.type !== 'StringLiteral') return null
+  const src = srcAssign.right.value as string
+
+  // 3) img.onload = () => ctx.drawImage(img, x, y, w, h);
+  const onloadStmt = body[2]
+  if (onloadStmt?.type !== 'ExpressionStatement') return null
+  const onloadAssign = onloadStmt.expression
+  if (onloadAssign?.type !== 'AssignmentExpression' || onloadAssign.operator !== '=') return null
+  if (memberObjName(onloadAssign.left, 'onload') !== img) return null
+  const fn = onloadAssign.right
+  if (fn?.type !== 'ArrowFunctionExpression' && fn?.type !== 'FunctionExpression') return null
+  let drawCall = fn.body
+  if (drawCall?.type === 'BlockStatement') {
+    if (drawCall.body?.length !== 1 || drawCall.body[0]?.type !== 'ExpressionStatement') return null
+    drawCall = drawCall.body[0].expression
+  }
+  const draw = matchCtxCall(drawCall, ctx)
+  if (draw?.method !== 'drawImage') return null
+  if (draw.args.length !== 5) return null
+  if (draw.args[0]?.type !== 'Identifier' || draw.args[0].name !== img) return null
+  const [x, y, w, h] = mapArgs(draw.args.slice(1), 4, ctx)
+  if (!x || !y || !w || !h) return null
+  return { type: 'canvasDrawImage', ctxVar: draw.ctxVar, src, x, y, w, h }
+}
+
+// ---------- canvas: matchers de fusão (vários statements → 1 IR) ----------
+
+/** Resultado de um matcher de fusão: a IR e quantos nós ela consumiu. */
+interface FusedStatement {
+  stmt: JSStatement
+  consumed: number
+}
+
+/** `<canvas>.width = W;` (ou `height`) onde `<canvas>` é um elemento conhecido. */
+function matchCanvasDimAssign(
+  node: Node,
+  ctx: ParseCtx,
+  dim: 'width' | 'height',
+): { canvasVar: string; value: JSExpr } | null {
+  if (node?.type !== 'ExpressionStatement') return null
+  const expr = node.expression
+  if (expr?.type !== 'AssignmentExpression' || expr.operator !== '=') return null
+  const canvasVar = memberObjName(expr.left, dim)
+  if (!canvasVar || !ctx.elementToCtx.has(canvasVar)) return null
+  const value = toExpr(expr.right)
+  return value ? { canvasVar, value } : null
+}
+
+/** `canvas.width = W;` seguido de `canvas.height = H;` → `canvasSetSize`. */
+function tryFuseCanvasSetSize(nodes: Node[], i: number, ctx: ParseCtx): FusedStatement | null {
+  const w = matchCanvasDimAssign(nodes[i], ctx, 'width')
+  if (!w) return null
+  const h = matchCanvasDimAssign(nodes[i + 1], ctx, 'height')
+  if (!h || h.canvasVar !== w.canvasVar) return null
+  const ctxVar = ctx.elementToCtx.get(w.canvasVar)
+  if (!ctxVar) return null
+  return { stmt: { type: 'canvasSetSize', ctxVar, w: w.value, h: h.value }, consumed: 2 }
+}
+
+/** `ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();` → `canvasArc`. */
+function tryFuseCanvasArc(nodes: Node[], i: number, ctx: ParseCtx): FusedStatement | null {
+  const begin = matchCtxCallNode(nodes[i], ctx, 'beginPath')
+  if (!begin) return null
+  const arc = matchCtxCallNode(nodes[i + 1], ctx, 'arc')
+  if (!arc || arc.ctxVar !== begin.ctxVar) return null
+  const fill = matchCtxCallNode(nodes[i + 2], ctx, 'fill')
+  if (!fill || fill.ctxVar !== begin.ctxVar) return null
+  if (arc.args.length < 3) return null
+  const x = toExpr(arc.args[0], ctx)
+  const y = toExpr(arc.args[1], ctx)
+  const r = toExpr(arc.args[2], ctx)
+  if (!x || !y || !r) return null
+  return { stmt: { type: 'canvasArc', ctxVar: begin.ctxVar, x, y, r }, consumed: 3 }
+}
+
+/** `g.addColorStop(offset, "#cor");` referenciando a variável do gradiente. */
+function matchAddColorStop(node: Node, varName: string): { offset: number; color: string } | null {
+  if (node?.type !== 'ExpressionStatement') return null
+  const expr = node.expression
+  if (expr?.type !== 'CallExpression') return null
+  const callee = expr.callee
+  if (callee?.type !== 'MemberExpression') return null
+  if (callee.object?.type !== 'Identifier' || callee.object.name !== varName) return null
+  if (callee.property?.name !== 'addColorStop') return null
+  if (expr.arguments?.length !== 2) return null
+  const offset = expr.arguments[0]
+  const color = expr.arguments[1]
+  if (offset?.type !== 'NumericLiteral' || color?.type !== 'StringLiteral') return null
+  return { offset: offset.value, color: color.value }
+}
+
+/**
+ * `const g = ctx.createLinearGradient(x0,y0,x1,y1);` seguido de N
+ * `g.addColorStop(...)` → `canvasGradient` (consome `1 + N` nós).
+ */
+function tryFuseCanvasGradient(nodes: Node[], i: number, ctx: ParseCtx): FusedStatement | null {
+  const decl = nodes[i]
+  if (decl?.type !== 'VariableDeclaration' || decl.declarations?.length !== 1) return null
+  const id = decl.declarations[0]?.id
+  if (id?.type !== 'Identifier') return null
+  const call = matchCtxCall(decl.declarations[0]?.init, ctx)
+  if (call?.method !== 'createLinearGradient' || call.args.length !== 4) return null
+  const x0 = toExpr(call.args[0], ctx)
+  const y0 = toExpr(call.args[1], ctx)
+  const x1 = toExpr(call.args[2], ctx)
+  const y1 = toExpr(call.args[3], ctx)
+  if (!x0 || !y0 || !x1 || !y1) return null
+  const varName = id.name
+  const stops: Array<{ offset: number; color: string }> = []
+  let j = i + 1
+  for (; j < nodes.length; j++) {
+    const stop = matchAddColorStop(nodes[j], varName)
+    if (!stop) break
+    stops.push(stop)
+  }
+  if (stops.length === 0) return null
+  return {
+    stmt: { type: 'canvasGradient', ctxVar: call.ctxVar, varName, x0, y0, x1, y1, stops },
+    consumed: j - i,
+  }
+}
+
+/** `requestAnimationFrame(<name>)` como expressão. */
+function isRafCall(expr: Node, name: string): boolean {
+  if (expr?.type !== 'CallExpression') return false
+  if (expr.callee?.type !== 'Identifier' || expr.callee.name !== 'requestAnimationFrame') {
+    return false
+  }
+  const arg = expr.arguments?.[0]
+  return expr.arguments?.length === 1 && arg?.type === 'Identifier' && arg.name === name
+}
+
+function isRafCallStatement(node: Node, name: string): boolean {
+  return node?.type === 'ExpressionStatement' && isRafCall(node.expression, name)
+}
+
+/** `<name>()` — chamada direta da função, sem argumentos. */
+function isPlainCallStatement(node: Node, name: string): boolean {
+  if (node?.type !== 'ExpressionStatement') return false
+  const expr = node.expression
+  return (
+    expr?.type === 'CallExpression' &&
+    expr.callee?.type === 'Identifier' &&
+    expr.callee.name === name &&
+    (expr.arguments?.length ?? 0) === 0
+  )
+}
+
+/** `let X;` (uma única declaração, sem inicializador) → nome `X`; senão `null`. */
+function declaredVarName(node: Node): string | null {
+  if (node?.type !== 'VariableDeclaration') return null
+  const decls = node.declarations
+  if (!Array.isArray(decls) || decls.length !== 1) return null
+  const d = decls[0]
+  if (d?.id?.type !== 'Identifier' || d.init != null) return null
+  return d.id.name
+}
+
+/** `<handle> = requestAnimationFrame(<name>)` → nome de `<handle>`; senão `null`. */
+function rafAssignmentHandle(node: Node, name: string): string | null {
+  if (node?.type !== 'ExpressionStatement') return null
+  const expr = node.expression
+  if (expr?.type !== 'AssignmentExpression' || expr.operator !== '=') return null
+  if (expr.left?.type !== 'Identifier') return null
+  return isRafCall(expr.right, name) ? expr.left.name : null
+}
+
+/**
+ * `function F() { ...corpo...; requestAnimationFrame(F); }` seguido do pontapé
+ * externo `F();` (ou, em projetos antigos, `requestAnimationFrame(F);`) →
+ * `animationLoop` (corpo sem o RAF final).
+ *
+ * Forma cancelável (id guardado): `let X;` + `function F() { ...; X =
+ * requestAnimationFrame(F); }` + `F();` → `animationLoop` com `handle: X`.
+ */
+function tryFuseAnimationLoop(
+  nodes: Node[],
+  i: number,
+  source: string,
+  ctx: ParseCtx,
+): FusedStatement | null {
+  const declName = declaredVarName(nodes[i])
+  if (declName) {
+    const decl = nodes[i + 1]
+    if (decl?.type === 'FunctionDeclaration' && decl.id?.type === 'Identifier') {
+      const name = decl.id.name
+      const bodyNodes = decl.body?.body
+      if (
+        isPlainCallStatement(nodes[i + 2], name) &&
+        Array.isArray(bodyNodes) &&
+        bodyNodes.length > 0
+      ) {
+        // O `<handle> = requestAnimationFrame(frame)` pode estar no TOPO do corpo
+        // (forma atual, permite cancelar de dentro) ou no FIM (forma legada).
+        const firstIsRaf = rafAssignmentHandle(bodyNodes[0], name) === declName
+        const lastIsRaf = rafAssignmentHandle(bodyNodes[bodyNodes.length - 1], name) === declName
+        if (firstIsRaf || lastIsRaf) {
+          const inner = firstIsRaf ? bodyNodes.slice(1) : bodyNodes.slice(0, -1)
+          const body = mapStatementList(inner, source, ctx)
+          return { stmt: { type: 'animationLoop', handle: declName, body }, consumed: 3 }
+        }
+      }
+    }
+  }
+
+  const fn = nodes[i]
+  if (fn?.type !== 'FunctionDeclaration' || fn.id?.type !== 'Identifier') return null
+  const name = fn.id.name
+  // Pontapé externo: `frame()` (forma atual) ou `requestAnimationFrame(frame)`
+  // (forma antiga, mantida para projetos já salvos).
+  if (!isPlainCallStatement(nodes[i + 1], name) && !isRafCallStatement(nodes[i + 1], name)) {
+    return null
+  }
+  const bodyNodes = fn.body?.body
+  if (!Array.isArray(bodyNodes) || bodyNodes.length === 0) return null
+  if (!isRafCallStatement(bodyNodes[bodyNodes.length - 1], name)) return null
+  const body = mapStatementList(bodyNodes.slice(0, -1), source, ctx)
+  return { stmt: { type: 'animationLoop', body }, consumed: 2 }
+}
+
+/** Objeto de estado de teclado: `{ left:false, right:false, up:false, down:false }`. */
+function isKeyStateObject(node: Node): boolean {
+  if (node?.type !== 'ObjectExpression') return false
+  const want = new Set(['left', 'right', 'up', 'down'])
+  const got = new Set<string>()
+  for (const p of node.properties ?? []) {
+    if (p.type !== 'ObjectProperty') return false
+    const key = p.key?.name ?? p.key?.value
+    if (typeof key !== 'string' || !want.has(key)) return false
+    if (p.value?.type !== 'BooleanLiteral') return false
+    got.add(key)
+  }
+  return got.size === want.size
+}
+
+/** `document.addEventListener('<event>', ...)`. */
+function isDocumentKeyListener(node: Node, event: 'keydown' | 'keyup'): boolean {
+  if (node?.type !== 'ExpressionStatement') return false
+  const expr = node.expression
+  if (expr?.type !== 'CallExpression') return false
+  const callee = expr.callee
+  if (callee?.type !== 'MemberExpression') return false
+  if (callee.object?.type !== 'Identifier' || callee.object.name !== 'document') return false
+  if (callee.property?.name !== 'addEventListener') return false
+  const arg = expr.arguments?.[0]
+  return arg?.type === 'StringLiteral' && arg.value === event
+}
+
+/**
+ * `const v = { left,right,up,down: false };` + listeners `keydown`/`keyup` no
+ * document → `keyboardSimple`. Roda antes do matcher genérico de evento, então
+ * tem prioridade sobre transformar os listeners em blocos `event`.
+ */
+function tryFuseKeyboard(nodes: Node[], i: number, _ctx: ParseCtx): FusedStatement | null {
+  const decl = nodes[i]
+  if (decl?.type !== 'VariableDeclaration' || decl.declarations?.length !== 1) return null
+  const id = decl.declarations[0]?.id
+  if (id?.type !== 'Identifier') return null
+  if (!isKeyStateObject(decl.declarations[0]?.init)) return null
+  if (!isDocumentKeyListener(nodes[i + 1], 'keydown')) return null
+  if (!isDocumentKeyListener(nodes[i + 2], 'keyup')) return null
+  return { stmt: { type: 'keyboardSimple', varName: id.name }, consumed: 3 }
+}
+
+/**
+ * Reconhece `<obj>.getContext('2d')` (CallExpression normal ou optional) e
+ * devolve o nome da variável `<obj>` (o elemento canvas); senão `null`.
+ */
+function matchGetContext(node: Node): string | null {
+  if (!node || (node.type !== 'CallExpression' && node.type !== 'OptionalCallExpression')) {
+    return null
+  }
+  const callee = node.callee
+  if (
+    !callee ||
+    (callee.type !== 'MemberExpression' && callee.type !== 'OptionalMemberExpression')
+  ) {
+    return null
+  }
+  if (callee.object?.type !== 'Identifier' || callee.property?.name !== 'getContext') return null
+  if (node.arguments?.length !== 1 || node.arguments[0].type !== 'StringLiteral') return null
+  if (node.arguments[0].value !== '2d') return null
+  return callee.object.name as string
+}
+
+/**
+ * Reconhece `document.getElementById('id')` (CallExpression normal ou optional)
+ * e devolve o id; senão `null`.
+ */
+function matchGetElementById(node: Node): string | null {
+  if (!node || (node.type !== 'CallExpression' && node.type !== 'OptionalCallExpression')) {
+    return null
+  }
+  const callee = node.callee
+  if (
+    !callee ||
+    (callee.type !== 'MemberExpression' && callee.type !== 'OptionalMemberExpression')
+  ) {
+    return null
+  }
+  if (callee.object?.name !== 'document' || callee.property?.name !== 'getElementById') return null
+  if (node.arguments?.length !== 1 || node.arguments[0].type !== 'StringLiteral') return null
+  return node.arguments[0].value as string
+}
+
+/**
+ * Reconhece leitura de propriedade simples — `el.textContent` ou `el.value`
+ * (membro normal ou optional), com o alvo resolvido via `extractTarget`
+ * (id direto ou variável de elemento). Espelha o statement `getProperty`.
+ */
+function matchGetProperty(
+  node: Node,
+  ctx: ParseCtx,
+): {
+  targetId: string
+  targetKind?: 'var'
+  property: 'textContent' | 'value' | 'innerHTML'
+} | null {
+  if (!node || (node.type !== 'MemberExpression' && node.type !== 'OptionalMemberExpression')) {
+    return null
+  }
+  const propName = node.property?.name
+  if (propName !== 'textContent' && propName !== 'value' && propName !== 'innerHTML') return null
+  const target = extractTarget(node.object, ctx)
+  if (!target) return null
+  return { targetId: target.id, ...targetKindField(target), property: propName }
+}
+
+function mapIf(node: Node, source: string, ctx: ParseCtx): JSStatement {
+  // if (<condição>) { ... } else { ... } — a condição é qualquer valor
+  // representável por bloco (comparação, lógico &&/||, classList.contains,
+  // .length, variável…); senão a linha inteira vira código avançado.
+  const cond = toExpr(node.test, ctx)
+  if (!isSimpleValue(cond)) return asRaw(source, node)
+  const thenBody = bodyOfBlock(node.consequent, source, ctx)
+  const elseBody = node.alternate ? bodyOfBlock(node.alternate, source, ctx) : undefined
+  return {
+    type: 'if',
+    cond,
+    then: thenBody,
+    else: elseBody,
+  }
+}
+
+function mapFor(node: Node, source: string, ctx: ParseCtx): JSStatement {
+  // for (let i = 0; i < N; i++) { ... }
+  const init = node.init
+  const test = node.test
+  const update = node.update
+  if (
+    init?.type !== 'VariableDeclaration' ||
+    init.declarations?.length !== 1 ||
+    init.declarations[0]?.id?.type !== 'Identifier' ||
+    init.declarations[0]?.init?.type !== 'NumericLiteral' ||
+    init.declarations[0].init.value !== 0
+  ) {
+    return asRaw(source, node)
+  }
+  const iName = init.declarations[0].id.name
+  if (
+    test?.type !== 'BinaryExpression' ||
+    test.operator !== '<' ||
+    test.left?.type !== 'Identifier' ||
+    test.left.name !== iName ||
+    test.right?.type !== 'NumericLiteral'
+  ) {
+    return asRaw(source, node)
+  }
+  const times = test.right.value as number
+  if (
+    update?.type !== 'UpdateExpression' ||
+    update.operator !== '++' ||
+    update.argument?.type !== 'Identifier' ||
+    update.argument.name !== iName
+  ) {
+    return asRaw(source, node)
+  }
+  const body = bodyOfBlock(node.body, source, ctx)
+  return { type: 'repeat', times: { type: 'num', value: times }, body }
+}
+
+// ---------- helpers de matching ----------
+
+function tryMatchBinop(expr: Node, ctx?: ParseCtx): JSExpr | null {
+  if (expr?.type !== 'BinaryExpression') return null
+  // Igualdade estrita (===/!==) é preservada como tal (não normaliza p/ ==/!=).
+  if (
+    !['>', '<', '==', '!=', '>=', '<=', '===', '!==', '+', '-', '*', '/', '%', '**'].includes(
+      expr.operator,
+    )
+  ) {
+    return null
+  }
+  const left = toExpr(expr.left, ctx)
+  const right = toExpr(expr.right, ctx)
+  if (!left || !right) return null
+  return { type: 'binop', op: expr.operator, left, right }
+}
+
+function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
+  if (!node) return null
+  if (node.type === 'NumericLiteral') return { type: 'num', value: node.value }
+  if (node.type === 'StringLiteral') {
+    // `rgba(r, g, b, a)` → cor com transparência (volta ao bloco sz_val_color_alpha).
+    const rgba = /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*([\d.]+)\s*\)$/.exec(
+      node.value,
+    )
+    if (rgba) {
+      const hex = `#${[rgba[1], rgba[2], rgba[3]]
+        .map((n) => Number(n).toString(16).padStart(2, '0'))
+        .join('')}`
+      return { type: 'colorAlpha', hex, alpha: Number(rgba[4]) }
+    }
+    // Uma string hexadecimal `#rrggbb` é tratada como COR (volta ao bloco seletor
+    // de cor, `sz_val_color`). Como `color` e `str` geram o mesmo código, no pior
+    // caso (um seletor raro tipo "#aabbcc") muda só a aparência do bloco.
+    return /^#[0-9a-fA-F]{6}$/.test(node.value)
+      ? { type: 'color', value: node.value }
+      : { type: 'str', value: node.value }
+  }
+  if (node.type === 'BooleanLiteral') return { type: 'bool', value: node.value }
+  if (node.type === 'Identifier') return { type: 'var', name: node.name }
+  // `this` (o elemento atual dentro de um handler).
+  if (node.type === 'ThisExpression') return { type: 'thisRef' }
+  // this.<prop> — usado dentro de métodos/construtor.
+  if (
+    node.type === 'MemberExpression' &&
+    !node.computed &&
+    node.object?.type === 'ThisExpression' &&
+    node.property?.type === 'Identifier'
+  ) {
+    return { type: 'thisProp', name: node.property.name }
+  }
+  // window.innerWidth / window.innerHeight → valor global.
+  if (
+    node.type === 'MemberExpression' &&
+    !node.computed &&
+    node.object?.type === 'Identifier' &&
+    node.object.name === 'window' &&
+    node.property?.type === 'Identifier'
+  ) {
+    if (node.property.name === 'innerWidth') return { type: 'global', kind: 'innerWidth' }
+    if (node.property.name === 'innerHeight') return { type: 'global', kind: 'innerHeight' }
+  }
+  // event.clientX / event.clientY → posição do clique (sz_val_event_pos).
+  if (
+    node.type === 'MemberExpression' &&
+    !node.computed &&
+    node.object?.type === 'Identifier' &&
+    node.object.name === 'event' &&
+    node.property?.type === 'Identifier' &&
+    (node.property.name === 'clientX' || node.property.name === 'clientY')
+  ) {
+    return { type: 'eventProp', prop: node.property.name }
+  }
+  // Math.PI → constante matemática (sz_val_math_pi). Outras constantes (ex.:
+  // Math.E) não têm bloco, então ficam como código avançado (preservadas).
+  if (
+    node.type === 'MemberExpression' &&
+    !node.computed &&
+    node.object?.type === 'Identifier' &&
+    node.object.name === 'Math' &&
+    node.property?.type === 'Identifier' &&
+    node.property.name === 'PI'
+  ) {
+    return { type: 'mathConst', name: 'PI' }
+  }
+  // <variável>.length → tamanho da lista (sz_val_array_length).
+  if (
+    node.type === 'MemberExpression' &&
+    !node.computed &&
+    node.object?.type === 'Identifier' &&
+    node.property?.type === 'Identifier' &&
+    node.property.name === 'length'
+  ) {
+    return { type: 'arrayLength', arrayVar: node.object.name }
+  }
+  // <canvas>.width / <canvas>.height → dimensão do canvas (sz_val_canvas_width).
+  // Só quando `<canvas>` é um elemento de canvas conhecido (par getElementById +
+  // getContext('2d') já visto); a IR guarda o contexto associado em `ctxVar`.
+  if (
+    ctx &&
+    node.type === 'MemberExpression' &&
+    !node.computed &&
+    node.object?.type === 'Identifier' &&
+    node.property?.type === 'Identifier' &&
+    (node.property.name === 'width' || node.property.name === 'height') &&
+    ctx.elementToCtx.has(node.object.name)
+  ) {
+    return {
+      type: 'canvasDim',
+      ctxVar: ctx.elementToCtx.get(node.object.name) as string,
+      dim: node.property.name,
+    }
+  }
+  // (arg * Math.PI / 180) / (arg * 180 / Math.PI) → conversão de ângulo.
+  const angle = matchAngleConvert(node, ctx)
+  if (angle) return angle
+  if (node.type === 'BinaryExpression') return tryMatchBinop(node, ctx)
+  // `a && b` / `a || b` → operador lógico (sz_val_logic). Aninha cadeias longas.
+  if (node.type === 'LogicalExpression') {
+    if (node.operator !== '&&' && node.operator !== '||') return null
+    const left = toExpr(node.left, ctx)
+    const right = toExpr(node.right, ctx)
+    if (!isSimpleValue(left) || !isSimpleValue(right)) return null
+    return { type: 'logical', op: node.operator, left, right }
+  }
+  // `cond ? a : b` → operador ternário (sz_val_ternary).
+  if (node.type === 'ConditionalExpression') {
+    const condition = toExpr(node.test, ctx)
+    const whenTrue = toExpr(node.consequent, ctx)
+    const whenFalse = toExpr(node.alternate, ctx)
+    if (!isSimpleValue(condition) || !isSimpleValue(whenTrue) || !isSimpleValue(whenFalse)) {
+      return null
+    }
+    return { type: 'ternary', condition, whenTrue, whenFalse }
+  }
+  const now = matchNow(node)
+  if (now) return now
+  // Math.random() cru → decimal aleatório de 0 a 1 (sz_val_random_float).
+  if (isRandomCall(node)) return { type: 'randomFloat' }
+  // Math.hypot(a.x - b.x, a.y - b.y) → distância entre dois objetos (sz_val_distance).
+  // Roda antes do hypot genérico para vencer quando o formato bate.
+  const dist = matchDistance(node, ctx)
+  if (dist) return dist
+  const math = matchMathCall(node, ctx)
+  if (math) return math
+  // nome(args) como VALOR (callee identificador, fora da denylist) → `call`.
+  if (node.type === 'CallExpression' && node.callee?.type === 'Identifier') {
+    if (!GLOBAL_CALL_DENYLIST.has(node.callee.name)) {
+      const args = (node.arguments ?? []).map((a: Node) => toExpr(a, ctx))
+      if (args.every(isSimpleValue)) {
+        return { type: 'call', name: node.callee.name, args: args as JSExpr[] }
+      }
+    }
+  }
+  // `hsl(${...}, 50%, 50%)` → cor HSL (bloco específico, antes do concat geral).
+  if (node.type === 'TemplateLiteral') {
+    const hsl = tryMatchHslTemplate(node, ctx)
+    if (hsl) return hsl
+  }
+  // `texto ${valor}` → juntar texto (sz_val_join).
+  if (node.type === 'TemplateLiteral') {
+    const parts: JSExpr[] = []
+    const quasis = node.quasis ?? []
+    const exprs = node.expressions ?? []
+    for (let i = 0; i < quasis.length; i += 1) {
+      const text = quasis[i]?.value?.cooked ?? quasis[i]?.value?.raw ?? ''
+      if (text) parts.push({ type: 'str', value: text })
+      if (i < exprs.length) {
+        const e = toExpr(exprs[i], ctx)
+        if (!isSimpleValue(e)) return null
+        parts.push(e)
+      }
+    }
+    return { type: 'concat', parts }
+  }
+  // `arr.sort(() => Math.random() - 0.5)` → embaralhar (sz_val_shuffle).
+  const shuffle = matchShuffle(node)
+  if (shuffle) return shuffle
+  // `arr[i]` → item da lista por índice (sz_val_array_index).
+  if (
+    node.type === 'MemberExpression' &&
+    node.computed &&
+    node.object?.type === 'Identifier' &&
+    node.property
+  ) {
+    const idx = toExpr(node.property, ctx)
+    if (isSimpleValue(idx)) return { type: 'index', arrayVar: node.object.name, index: idx }
+  }
+  // `[...a, ...b]` → juntar listas (sz_val_concat_arrays).
+  if (
+    node.type === 'ArrayExpression' &&
+    (node.elements?.length ?? 0) > 0 &&
+    node.elements.every((el: Node) => el?.type === 'SpreadElement')
+  ) {
+    const parts = node.elements.map((el: Node) => toExpr(el.argument, ctx))
+    if (parts.every(isSimpleValue)) return { type: 'concatArrays', parts: parts as JSExpr[] }
+  }
+  // { x, y } / { x, y, z } → vetor literal (sz_val_vector2d / 3d).
+  const vec = matchVector(node, ctx)
+  if (vec) return vec
+  // { chave: valor, ... } genérico → objeto literal (sz_val_object).
+  const obj = matchObjectLiteral(node, ctx)
+  if (obj) return obj
+  // [a, b, …] → lista/array literal (sz_val_array).
+  if (node.type === 'ArrayExpression') {
+    const items = (node.elements ?? []).map((el: Node) => toExpr(el, ctx))
+    return items.every(isSimpleValue) ? { type: 'array', items: items as JSExpr[] } : null
+  }
+  // <obj>.dataset.chave → leitura de data-attribute (sz_val_dataset).
+  if (
+    node.type === 'MemberExpression' &&
+    !node.computed &&
+    node.property?.type === 'Identifier' &&
+    (node.object?.type === 'MemberExpression' ||
+      node.object?.type === 'OptionalMemberExpression') &&
+    !node.object.computed &&
+    node.object.property?.name === 'dataset' &&
+    node.object.object?.type === 'Identifier'
+  ) {
+    return { type: 'datasetGet', objectVar: node.object.object.name, key: node.property.name }
+  }
+  // <alvo>.classList.contains('classe') → sz_val_class_contains.
+  if (ctx) {
+    const contains = matchClassContains(node, ctx)
+    if (contains) return contains
+  }
+  // Geral: chamada de método em forma de valor sobre qualquer objeto
+  // representável (object.metodo(args)). Roda por último (depois de canvas, Math,
+  // .length, dataset, classList, …); exclui objetos globais.
+  if (
+    node.type === 'CallExpression' &&
+    node.callee?.type === 'MemberExpression' &&
+    !node.callee.computed &&
+    node.callee.property?.type === 'Identifier' &&
+    !isGlobalObject(node.callee.object)
+  ) {
+    const object = toExpr(node.callee.object, ctx)
+    const args = (node.arguments ?? []).map((a: Node) => toExpr(a, ctx))
+    if (isSimpleValue(object) && args.every(isSimpleValue)) {
+      return {
+        type: 'memberCallExpr',
+        object,
+        method: node.callee.property.name,
+        args: args as JSExpr[],
+      }
+    }
+    return null
+  }
+  // Geral: leitura de propriedade de qualquer objeto representável (object.prop).
+  // Cobre aninhamento como `this.velocidade.x` (objeto = thisProp) e `obj.prop`.
+  if (
+    node.type === 'MemberExpression' &&
+    !node.computed &&
+    node.property?.type === 'Identifier' &&
+    !isGlobalObject(node.object)
+  ) {
+    const object = toExpr(node.object, ctx)
+    if (isSimpleValue(object)) {
+      return { type: 'memberGet', object, name: node.property.name }
+    }
+  }
+  return null
+}
+
+/**
+ * `` `hsl(<H>, <S>%, <L>%)` `` (template literal) → cor HSL (`sz_val_color_hsl`).
+ * Cada slot pode ser número literal (no texto) OU interpolação `${...}`. Marca as
+ * interpolações com `@i@` no texto reconstruído e casa o padrão por regex; resolve
+ * cada slot de volta para o número ou a expressão original. Falha → vira `concat`.
+ */
+function tryMatchHslTemplate(node: Node, ctx?: ParseCtx): JSExpr | null {
+  const quasis = node.quasis ?? []
+  const exprs = node.expressions ?? []
+  let pattern = ''
+  for (let i = 0; i < quasis.length; i += 1) {
+    pattern += quasis[i]?.value?.cooked ?? quasis[i]?.value?.raw ?? ''
+    if (i < exprs.length) pattern += `@${i}@`
+  }
+  const slot = '(@\\d+@|-?[\\d.]+)'
+  const re = new RegExp(`^hsl\\(\\s*${slot}\\s*,\\s*${slot}\\s*%\\s*,\\s*${slot}\\s*%\\s*\\)$`)
+  const m = re.exec(pattern)
+  if (!m) return null
+  const resolve = (token: string | undefined): JSExpr | null => {
+    if (!token) return null
+    const mark = /^@(\d+)@$/.exec(token)
+    return mark ? toExpr(exprs[Number(mark[1])], ctx) : { type: 'num', value: Number(token) }
+  }
+  const h = resolve(m[1])
+  const s = resolve(m[2])
+  const l = resolve(m[3])
+  if (!isSimpleValue(h) || !isSimpleValue(s) || !isSimpleValue(l)) return null
+  return { type: 'hslColor', h, s, l }
+}
+
+/**
+ * Verdadeiro só para expressões que um bloco de VALOR (`sz_val_*`) representa
+ * — espelha `exprToValueBlock` no editor. Usado para decidir se argumentos de
+ * `new`/chamada de método podem virar blocos; caso contrário a linha é
+ * preservada como código avançado (sem perder o original).
+ */
+function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
+  if (!expr) return false
+  switch (expr.type) {
+    case 'num':
+    case 'str':
+    case 'color':
+    case 'colorAlpha':
+    case 'bool':
+    case 'var':
+    case 'global':
+    case 'canvasDim':
+    case 'thisProp':
+    case 'propAccess':
+    case 'mathConst':
+    case 'eventProp':
+      return true
+    case 'random':
+      return isSimpleValue(expr.min) && isSimpleValue(expr.max)
+    case 'hslColor':
+      return isSimpleValue(expr.h) && isSimpleValue(expr.s) && isSimpleValue(expr.l)
+    case 'randomFloat':
+      return true
+    case 'callMethodExpr':
+      return expr.args.every(isSimpleValue)
+    case 'call':
+      return expr.args.every(isSimpleValue)
+    case 'datasetGet':
+    case 'classContains':
+    case 'shuffle':
+    case 'thisRef':
+      return true
+    case 'concat':
+    case 'concatArrays':
+      return expr.parts.every(isSimpleValue)
+    case 'index':
+      return isSimpleValue(expr.index)
+    case 'binop':
+      // Contas (sz_math_arithmetic) e comparações (sz_val_compare) têm bloco.
+      return isSimpleValue(expr.left) && isSimpleValue(expr.right)
+    case 'logical':
+      // Operadores lógicos &&/|| (sz_val_logic).
+      return isSimpleValue(expr.left) && isSimpleValue(expr.right)
+    case 'ternary':
+      // Operador ternário (sz_val_ternary): condição e os dois ramos têm bloco.
+      return (
+        isSimpleValue(expr.condition) &&
+        isSimpleValue(expr.whenTrue) &&
+        isSimpleValue(expr.whenFalse)
+      )
+    case 'mathUnary':
+    case 'angleConvert':
+      return isSimpleValue(expr.arg)
+    case 'mathBinary':
+    case 'distance':
+      return isSimpleValue(expr.a) && isSimpleValue(expr.b)
+    case 'vec2':
+      return isSimpleValue(expr.x) && isSimpleValue(expr.y)
+    case 'vec3':
+      return isSimpleValue(expr.x) && isSimpleValue(expr.y) && isSimpleValue(expr.z)
+    case 'array':
+      return expr.items.every(isSimpleValue)
+    case 'arrayLength':
+      return true
+    case 'objectLiteral':
+      return expr.entries.every((e) => isSimpleValue(e.value))
+    case 'memberGet':
+      return isSimpleValue(expr.object)
+    case 'memberCallExpr':
+      return isSimpleValue(expr.object) && expr.args.every(isSimpleValue)
+    default:
+      return false
+  }
+}
+
+/**
+ * Reconhece valores calculados da data/hora: `new Date().getFullYear()`,
+ * `new Date().toLocaleDateString()` e `new Date().toLocaleTimeString()`.
+ */
+function matchNow(node: Node): JSExpr | null {
+  if (node?.type !== 'CallExpression' || node.arguments?.length !== 0) return null
+  const callee = node.callee
+  if (callee?.type !== 'MemberExpression') return null
+  const obj = callee.object
+  if (obj?.type !== 'NewExpression' || obj.callee?.name !== 'Date') return null
+  if (obj.arguments?.length) return null
+  switch (callee.property?.name) {
+    case 'getFullYear':
+      return { type: 'now', kind: 'year' }
+    case 'toLocaleDateString':
+      return { type: 'now', kind: 'date' }
+    case 'toLocaleTimeString':
+      return { type: 'now', kind: 'time' }
+    default:
+      return null
+  }
+}
+
+const MATH_UNARY_FNS = new Set([
+  'round',
+  'floor',
+  'ceil',
+  'abs',
+  'sqrt',
+  'sin',
+  'cos',
+  'tan',
+  'asin',
+  'acos',
+  'atan',
+])
+const MATH_BINARY_FNS = new Set(['min', 'max', 'atan2', 'hypot'])
+
+/**
+ * Reconhece `Math.<fn>(...)`: `round/floor/ceil/abs/sqrt(x)` → `mathUnary` e
+ * `min/max(a, b)` → `mathBinary`. Os argumentos precisam ser valores
+ * representáveis; senão devolve `null` (a linha cai em código avançado).
+ */
+function matchMathCall(node: Node, ctx?: ParseCtx): JSExpr | null {
+  if (node?.type !== 'CallExpression') return null
+  const callee = node.callee
+  if (callee?.type !== 'MemberExpression' || callee.computed) return null
+  if (callee.object?.type !== 'Identifier' || callee.object.name !== 'Math') return null
+  const fn = callee.property?.name
+  if (typeof fn !== 'string') return null
+  const args = node.arguments ?? []
+  if (MATH_UNARY_FNS.has(fn) && args.length === 1) {
+    const arg = toExpr(args[0], ctx)
+    return isSimpleValue(arg) ? { type: 'mathUnary', fn: fn as MathUnaryFn, arg } : null
+  }
+  if (MATH_BINARY_FNS.has(fn) && args.length === 2) {
+    const a = toExpr(args[0], ctx)
+    const b = toExpr(args[1], ctx)
+    return isSimpleValue(a) && isSimpleValue(b)
+      ? { type: 'mathBinary', fn: fn as 'min' | 'max' | 'atan2' | 'hypot', a, b }
+      : null
+  }
+  return null
+}
+
+type MathUnaryFn = (JSExpr & { type: 'mathUnary' })['fn']
+
+/** `Math.random()` (chamada sem argumentos do membro não-computado Math.random). */
+function isRandomCall(node: Node): boolean {
+  if (node?.type !== 'CallExpression' || (node.arguments?.length ?? 0) !== 0) return false
+  const callee = node.callee
+  if (callee?.type !== 'MemberExpression' || callee.computed) return false
+  return callee.object?.name === 'Math' && callee.property?.name === 'random'
+}
+
+/** Mesma referência de objeto: `player`, `this`, `this.alvo`, `a.b.c` (não-computado). */
+function sameRef(a: Node, b: Node): boolean {
+  if (!a || !b || a.type !== b.type) return false
+  if (a.type === 'Identifier') return a.name === b.name
+  if (a.type === 'ThisExpression') return true
+  if (a.type === 'MemberExpression' && !a.computed && !b.computed) {
+    return a.property?.name === b.property?.name && sameRef(a.object, b.object)
+  }
+  return false
+}
+
+/** `<obj>.<coord>` (membro não-computado cuja propriedade é `coord`). */
+function isCoordMember(node: Node, coord: 'x' | 'y'): boolean {
+  return (
+    !!node &&
+    node.type === 'MemberExpression' &&
+    !node.computed &&
+    node.property?.type === 'Identifier' &&
+    node.property.name === coord
+  )
+}
+
+/** `A.<coord> - B.<coord>` (subtração de coordenadas). */
+function isCoordDiff(node: Node, coord: 'x' | 'y'): boolean {
+  return (
+    !!node &&
+    node.type === 'BinaryExpression' &&
+    node.operator === '-' &&
+    isCoordMember(node.left, coord) &&
+    isCoordMember(node.right, coord)
+  )
+}
+
+/**
+ * `Math.hypot(A.x - B.x, A.y - B.y)` → distância entre dois objetos `A` e `B`
+ * que têm posição (.x/.y). Exige o mesmo objeto em x e y dos dois lados; senão
+ * devolve `null` e a linha cai no `hypot` genérico (mathBinary).
+ */
+function matchDistance(node: Node, ctx?: ParseCtx): JSExpr | null {
+  if (node?.type !== 'CallExpression') return null
+  const callee = node.callee
+  if (callee?.type !== 'MemberExpression' || callee.computed) return null
+  if (callee.object?.name !== 'Math' || callee.property?.name !== 'hypot') return null
+  const args = node.arguments ?? []
+  if (args.length !== 2) return null
+  const [dx, dy] = args
+  if (!isCoordDiff(dx, 'x') || !isCoordDiff(dy, 'y')) return null
+  // O objeto A (lado esquerdo) e o objeto B (lado direito) precisam ser os mesmos
+  // em ambas as coordenadas.
+  if (!sameRef(dx.left.object, dy.left.object)) return null
+  if (!sameRef(dx.right.object, dy.right.object)) return null
+  const a = toExpr(dx.left.object, ctx)
+  const b = toExpr(dx.right.object, ctx)
+  if (!isSimpleValue(a) || !isSimpleValue(b)) return null
+  return { type: 'distance', a, b }
+}
+
+/** `Math.random() - 0.5` (corpo do comparador de embaralhamento). */
+function isRandomMinusHalf(node: Node): boolean {
+  if (node?.type !== 'BinaryExpression' || node.operator !== '-') return false
+  const left = node.left
+  if (left?.type !== 'CallExpression' || (left.arguments?.length ?? 0) !== 0) return false
+  const lc = left.callee
+  if (lc?.type !== 'MemberExpression') return false
+  if (lc.object?.name !== 'Math' || lc.property?.name !== 'random') return false
+  return node.right?.type === 'NumericLiteral' && node.right.value === 0.5
+}
+
+/** `<lista>.sort(() => Math.random() - 0.5)` → `shuffle`. Corpo direto ou `return`. */
+function matchShuffle(node: Node): JSExpr | null {
+  if (node?.type !== 'CallExpression') return null
+  const callee = node.callee
+  if (callee?.type !== 'MemberExpression' || callee.computed) return null
+  if (callee.object?.type !== 'Identifier' || callee.property?.name !== 'sort') return null
+  if (node.arguments?.length !== 1) return null
+  const cb = node.arguments[0]
+  if (cb.type !== 'ArrowFunctionExpression' && cb.type !== 'FunctionExpression') return null
+  let body = cb.body
+  if (body?.type === 'BlockStatement') {
+    if (body.body?.length !== 1 || body.body[0]?.type !== 'ReturnStatement') return null
+    body = body.body[0].argument
+  }
+  if (!isRandomMinusHalf(body)) return null
+  return { type: 'shuffle', arrayVar: callee.object.name }
+}
+
+/** `Math.PI` (membro não-computado). */
+function isMathPI(node: Node): boolean {
+  return (
+    !!node &&
+    node.type === 'MemberExpression' &&
+    !node.computed &&
+    node.object?.type === 'Identifier' &&
+    node.object.name === 'Math' &&
+    node.property?.type === 'Identifier' &&
+    node.property.name === 'PI'
+  )
+}
+
+function isNumericLiteral(node: Node, value: number): boolean {
+  return !!node && node.type === 'NumericLiteral' && node.value === value
+}
+
+/**
+ * Reconhece a forma exata gerada para conversão de ângulo:
+ *   graus → radianos: `(arg * Math.PI / 180)`  → BinaryExpression `/` com
+ *     esquerda `arg * Math.PI` e direita `180`.
+ *   radianos → graus: `(arg * 180 / Math.PI)`  → `/` com esquerda `arg * 180`
+ *     e direita `Math.PI`.
+ */
+function matchAngleConvert(node: Node, ctx?: ParseCtx): JSExpr | null {
+  if (node?.type !== 'BinaryExpression' || node.operator !== '/') return null
+  const left = node.left
+  if (left?.type !== 'BinaryExpression' || left.operator !== '*') return null
+  // degToRad: (arg * Math.PI) / 180
+  if (isMathPI(left.right) && isNumericLiteral(node.right, 180)) {
+    const arg = toExpr(left.left, ctx)
+    return isSimpleValue(arg) ? { type: 'angleConvert', dir: 'degToRad', arg } : null
+  }
+  // radToDeg: (arg * 180) / Math.PI
+  if (isNumericLiteral(left.right, 180) && isMathPI(node.right)) {
+    const arg = toExpr(left.left, ctx)
+    return isSimpleValue(arg) ? { type: 'angleConvert', dir: 'radToDeg', arg } : null
+  }
+  return null
+}
+
+/**
+ * Reconhece um objeto literal com chaves exatamente `x, y` (vec2) ou `x, y, z`
+ * (vec3), não-computadas e com valores simples. Outros objetos não casam e a
+ * linha é preservada como código avançado.
+ */
+function matchVector(node: Node, ctx?: ParseCtx): JSExpr | null {
+  if (node?.type !== 'ObjectExpression') return null
+  const props = node.properties ?? []
+  const byKey = new Map<string, JSExpr>()
+  for (const prop of props) {
+    if (prop.type !== 'ObjectProperty' || prop.computed) return null
+    const key = prop.key
+    const name =
+      key?.type === 'Identifier' ? key.name : key?.type === 'StringLiteral' ? key.value : null
+    if (name !== 'x' && name !== 'y' && name !== 'z') return null
+    const value = toExpr(prop.value, ctx)
+    if (!isSimpleValue(value)) return null
+    byKey.set(name, value)
+  }
+  if (byKey.size === 2 && byKey.has('x') && byKey.has('y')) {
+    return { type: 'vec2', x: byKey.get('x') as JSExpr, y: byKey.get('y') as JSExpr }
+  }
+  if (byKey.size === 3 && byKey.has('x') && byKey.has('y') && byKey.has('z')) {
+    return {
+      type: 'vec3',
+      x: byKey.get('x') as JSExpr,
+      y: byKey.get('y') as JSExpr,
+      z: byKey.get('z') as JSExpr,
+    }
+  }
+  return null
+}
+
+/**
+ * Reconhece um objeto literal genérico (`{ chave: valor, ... }`) com chaves
+ * não-computadas (identificador ou string) e valores representáveis. Roda DEPOIS
+ * de `matchVector` (vec2/vec3 ficam com seus blocos próprios). Spread, métodos
+ * e getters/setters não casam — a linha vira código avançado. Atalho (`{ x }`)
+ * é aceito e regenerado como `{ x: x }`.
+ */
+function matchObjectLiteral(node: Node, ctx?: ParseCtx): JSExpr | null {
+  if (node?.type !== 'ObjectExpression') return null
+  const props = node.properties ?? []
+  const entries: Array<{ key: string; value: JSExpr }> = []
+  for (const prop of props) {
+    if (prop.type !== 'ObjectProperty' || prop.computed) return null
+    const key = prop.key
+    const name =
+      key?.type === 'Identifier' ? key.name : key?.type === 'StringLiteral' ? key.value : null
+    if (name == null) return null
+    const value = toExpr(prop.value, ctx)
+    if (!isSimpleValue(value)) return null
+    entries.push({ key: name, value })
+  }
+  return { type: 'objectLiteral', entries }
+}
+
+interface MatchedListener {
+  target: string
+  targetKind?: 'var' | 'document'
+  event: EventKind
+  /** Callback inline (arrow/função anônima) — vira corpo de `event`. */
+  callback?: Node
+  /** Função nomeada passada por referência — vira `eventHandler`. */
+  handlerName?: string
+}
+
+function tryMatchEventListener(expr: Node, ctx: ParseCtx): MatchedListener | null {
+  if (!expr || (expr.type !== 'CallExpression' && expr.type !== 'OptionalCallExpression')) {
+    return null
+  }
+  // método é .addEventListener (membro chamado direto ou optional)
+  const callee = expr.callee
+  if (
+    !callee ||
+    (callee.type !== 'MemberExpression' && callee.type !== 'OptionalMemberExpression')
+  ) {
+    return null
+  }
+  if (callee.property?.name !== 'addEventListener') return null
+  if (expr.arguments?.length !== 2) return null
+  const eventArg = expr.arguments[0]
+  const cbArg = expr.arguments[1]
+  if (eventArg.type !== 'StringLiteral') return null
+  if (!KNOWN_EVENT_KINDS.has(eventArg.value as EventKind)) return null
+  // Callback inline (arrow/função) ou referência a uma função nomeada.
+  const isFn = cbArg.type === 'ArrowFunctionExpression' || cbArg.type === 'FunctionExpression'
+  const isNamed = cbArg.type === 'Identifier'
+  if (!isFn && !isNamed) return null
+  const handler = isNamed ? { handlerName: cbArg.name as string } : { callback: cbArg }
+
+  // Escuta global no documento: `document.addEventListener(...)`.
+  if (callee.object?.type === 'Identifier' && callee.object.name === 'document') {
+    return {
+      target: 'document',
+      targetKind: 'document',
+      event: eventArg.value as EventKind,
+      ...handler,
+    }
+  }
+
+  // Alvo: document.getElementById('x') ou uma variável de elemento.
+  const target = extractTarget(callee.object, ctx)
+  if (!target) return null
+  return {
+    target: target.id,
+    ...targetKindField(target),
+    event: eventArg.value as EventKind,
+    ...handler,
+  }
+}
+
+/**
+ * Alvo de um statement que age sobre um elemento. `id` carrega ou um id (quando
+ * `kind` é omitido) ou o nome de uma variável que guarda o elemento (`kind: 'var'`).
+ */
+interface TargetRef {
+  id: string
+  kind?: 'var' | 'this'
+}
+
+/** Campos prontos para a IR: só inclui `targetKind` quando é variável (não 'this'). */
+function targetKindField(ref: TargetRef): { targetKind?: 'var' } {
+  return ref.kind === 'var' ? { targetKind: 'var' } : {}
+}
+
+/** Como `targetKindField`, mas também propaga 'this' — para classList (classOp/contains). */
+function classTargetKindField(ref: TargetRef): { targetKind?: 'var' | 'this' } {
+  if (ref.kind === 'var') return { targetKind: 'var' }
+  if (ref.kind === 'this') return { targetKind: 'this' }
+  return {}
+}
+
+function extractTarget(node: Node, _ctx: ParseCtx): TargetRef | null {
+  if (!node) return null
+  // document.getElementById('x') — uso inline por id
+  const byId = matchGetElementById(node)
+  if (byId !== null) return { id: byId }
+  // this — o elemento atual dentro de um handler.
+  if (node.type === 'ThisExpression') return { id: '', kind: 'this' }
+  // document (eventos globais: keydown/keyup/etc)
+  if (node.type === 'Identifier' && node.name === 'document') {
+    return { id: '__document__' }
+  }
+  // qualquer outra variável: assume que guarda um elemento (ex.: const x =
+  // document.querySelector(...)) e referencia a própria variável.
+  if (node.type === 'Identifier') {
+    return { id: node.name, kind: 'var' }
+  }
+  return null
+}
+
+interface MatchedClassList {
+  target: string
+  targetKind?: 'var' | 'this'
+  op: 'add' | 'remove' | 'toggle'
+  className: string
+}
+
+function tryMatchClassList(expr: Node, ctx: ParseCtx): MatchedClassList | null {
+  if (!expr || (expr.type !== 'CallExpression' && expr.type !== 'OptionalCallExpression')) {
+    return null
+  }
+  const callee = expr.callee
+  if (
+    !callee ||
+    (callee.type !== 'MemberExpression' && callee.type !== 'OptionalMemberExpression')
+  ) {
+    return null
+  }
+  const op = callee.property?.name as 'add' | 'remove' | 'toggle' | undefined
+  if (!op || !['add', 'remove', 'toggle'].includes(op)) return null
+  // callee.object precisa ser .classList em algo
+  const obj = callee.object
+  if (!obj || (obj.type !== 'MemberExpression' && obj.type !== 'OptionalMemberExpression'))
+    return null
+  if (obj.property?.name !== 'classList') return null
+  const target = extractTarget(obj.object, ctx)
+  if (!target) return null
+  if (expr.arguments?.length !== 1 || expr.arguments[0].type !== 'StringLiteral') return null
+  return {
+    target: target.id,
+    ...classTargetKindField(target),
+    op,
+    className: expr.arguments[0].value,
+  }
+}
+
+/** `<alvo>.classList.contains('classe')` → `classContains` (valor). */
+function matchClassContains(node: Node, ctx: ParseCtx): JSExpr | null {
+  if (!node || (node.type !== 'CallExpression' && node.type !== 'OptionalCallExpression')) {
+    return null
+  }
+  const callee = node.callee
+  if (
+    !callee ||
+    (callee.type !== 'MemberExpression' && callee.type !== 'OptionalMemberExpression')
+  ) {
+    return null
+  }
+  if (callee.property?.name !== 'contains') return null
+  const obj = callee.object
+  if (!obj || (obj.type !== 'MemberExpression' && obj.type !== 'OptionalMemberExpression')) {
+    return null
+  }
+  if (obj.property?.name !== 'classList') return null
+  const target = extractTarget(obj.object, ctx)
+  if (!target) return null
+  if (node.arguments?.length !== 1 || node.arguments[0].type !== 'StringLiteral') return null
+  return {
+    type: 'classContains',
+    targetId: target.id,
+    ...classTargetKindField(target),
+    className: node.arguments[0].value,
+  }
+}
+
+function bodyOfBlock(node: Node, source: string, ctx: ParseCtx): JSStatement[] {
+  if (!node) return []
+  if (node.type === 'BlockStatement') {
+    return mapStatementList(node.body, source, ctx)
+  }
+  // Statement único sem chaves
+  return mapStatementList([node], source, ctx)
+}
+
+function bodyOfFn(fn: Node, source: string, ctx: ParseCtx): JSStatement[] {
+  if (!fn?.body) return []
+  if (fn.body.type === 'BlockStatement') return bodyOfBlock(fn.body, source, ctx)
+  // Arrow function com expressão direta (sem chaves): trata como statement
+  return bodyOfBlock(
+    { type: 'BlockStatement', body: [{ type: 'ExpressionStatement', expression: fn.body }] },
+    source,
+    ctx,
+  )
+}
+
+function errorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message
+  return 'Erro de sintaxe em JavaScript.'
+}

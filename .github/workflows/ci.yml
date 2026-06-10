@@ -124,6 +124,7 @@ jobs:
                   packages/funnel/*) add funnel ;;
                   packages/admin/*) add admin ;;
                   packages/community/*) add community ;;
+                  packages/studio/*) ;; # lib interna (sem serviço deployado); quando um app a consumir, somar o consumer aqui
                 esac
               done <<< "$CHANGED"
             fi

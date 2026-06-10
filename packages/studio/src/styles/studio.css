@@ -1,0 +1,136 @@
+/*
+ * Tokens + estilos do componente <Studio>. Este arquivo é exportado como
+ * `@sistemazero/studio/styles.css` e deve ser importado DENTRO do pipeline
+ * Tailwind do consumer (depois do `@import "tailwindcss"` dele), junto com
+ * `@source` apontando para packages/studio/src — ver docs/embedding.md.
+ *
+ * NÃO importa tailwindcss aqui (duplicaria preflight/utilities no consumer) e
+ * NÃO define `@custom-variant dark` (o studio não usa `dark:`; definir aqui
+ * sobrescreveria a variant dark do app consumidor — última definição vence).
+ *
+ * Tema: os tokens abaixo valem para o tema escuro (default). O tema claro é
+ * ativado por `[data-sz-theme="light"]` no ROOT do <Studio> — nunca no <html>
+ * do host, para não colidir com `.dark`/tokens próprios dos apps.
+ */
+
+@theme {
+  --color-sz-bg: #0b1020;
+  --color-sz-bg-soft: #11172a;
+  --color-sz-panel: #151c34;
+  --color-sz-panel-soft: #1a2240;
+  --color-sz-border: #232b4a;
+  --color-sz-border-soft: #1c2340;
+  --color-sz-fg: #e6e9f5;
+  --color-sz-fg-soft: #aab1cf;
+  --color-sz-fg-mute: #6b7299;
+  --color-sz-accent: #22d3ee;
+  --color-sz-accent-soft: #67e8f9;
+  --color-sz-warn: #fbbf24;
+  --color-sz-error: #f87171;
+  --color-sz-success: #34d399;
+  --font-family-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-family-mono: "JetBrains Mono", "Fira Code", ui-monospace, Menlo, monospace;
+}
+
+/* Tema claro — override por atributo data-sz-theme="light" no root do Studio. */
+[data-sz-theme="light"] {
+  --color-sz-bg: #f6f7fb;
+  --color-sz-bg-soft: #eef0f7;
+  --color-sz-panel: #ffffff;
+  --color-sz-panel-soft: #f1f3f9;
+  --color-sz-border: #d8dcea;
+  --color-sz-border-soft: #e6e9f5;
+  --color-sz-fg: #1a2240;
+  --color-sz-fg-soft: #475078;
+  --color-sz-fg-mute: #8a8fab;
+  --color-sz-accent: #0891b2;
+  --color-sz-accent-soft: #06b6d4;
+  --color-sz-warn: #b45309;
+  --color-sz-error: #b91c1c;
+  --color-sz-success: #047857;
+}
+
+/* Highlight cruzado bloco ↔ linha no Monaco (ver useCrossHighlight). */
+.sz-highlight-line {
+  background-color: rgba(34, 211, 238, 0.18);
+}
+.sz-highlight-gutter {
+  background-color: var(--color-sz-accent);
+  /* biome-ignore lint/complexity/noImportantStyles: precisa sobrepor a largura inline que o Monaco aplica na decoração da gutter. */
+  width: 3px !important;
+  margin-left: 3px;
+}
+
+/*
+ * Blockly: ao fechar uma categoria do toolbox, o flyout vira display:none mas
+ * a scrollbar interna às vezes permanece visível no SVG. Forçar visibility
+ * none nesses casos remove o resíduo sem afetar o flyout aberto.
+ */
+.blocklyFlyout[style*="display: none"],
+.blocklyFlyout[style*="display:none"] {
+  /* biome-ignore lint/complexity/noImportantStyles: precisa vencer o style inline display:none que o Blockly injeta no flyout. */
+  visibility: hidden !important;
+}
+.blocklyFlyout[style*="display: none"] .blocklyFlyoutScrollbar,
+.blocklyFlyout[style*="display:none"] .blocklyFlyoutScrollbar,
+.blocklyFlyout[style*="display: none"] ~ .blocklyScrollbarHorizontal,
+.blocklyFlyout[style*="display: none"] ~ .blocklyScrollbarVertical {
+  /* biome-ignore lint/complexity/noImportantStyles: precisa vencer o style inline que o Blockly aplica à scrollbar residual do flyout fechado. */
+  display: none !important;
+}
+
+.blocklyToolboxCategoryContainer:focus,
+.blocklyToolboxCategoryContainer.blocklyActiveFocus,
+.blocklyToolboxCategory:focus {
+  outline: none;
+}
+.blocklyToolboxCategory {
+  box-sizing: border-box;
+  border-radius: 0 4px 4px 0;
+}
+.blocklyToolboxSelected {
+  box-shadow: none;
+}
+
+/*
+ * Handles de resize do react-resizable-panels — sutil em repouso, claramente
+ * arrastável em hover/drag. Usa um track central de 1px mas área de hit
+ * generosa (toda a faixa do handle) para facilitar agarrar.
+ */
+.sz-resize-handle {
+  position: relative;
+  background: transparent;
+  transition: background-color 120ms ease;
+}
+.sz-resize-handle::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  background: var(--color-sz-border);
+  transition: background-color 120ms ease;
+}
+.sz-resize-handle--vertical {
+  width: 6px;
+  cursor: col-resize;
+}
+.sz-resize-handle--vertical::before {
+  width: 1px;
+  height: 100%;
+}
+.sz-resize-handle--horizontal {
+  height: 6px;
+  cursor: row-resize;
+}
+.sz-resize-handle--horizontal::before {
+  height: 1px;
+  width: 100%;
+}
+.sz-resize-handle:hover::before,
+.sz-resize-handle[data-resize-handle-active]::before {
+  background: var(--color-sz-accent);
+}
+.sz-resize-handle:hover,
+.sz-resize-handle[data-resize-handle-active] {
+  background: color-mix(in srgb, var(--color-sz-accent) 15%, transparent);
+}

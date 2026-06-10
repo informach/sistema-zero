@@ -1,0 +1,729 @@
+import { describe, expect, it } from 'bun:test'
+import { num, str, variable } from '#ir'
+import { generateJS } from '../js'
+
+describe('generateJS', () => {
+  it('emite var/assign/consoleLog', () => {
+    const code = generateJS({
+      statements: [
+        { type: 'var', name: 'contador', value: num(0) },
+        {
+          type: 'assign',
+          name: 'contador',
+          value: { type: 'binop', op: '+', left: variable('contador'), right: num(1) },
+        },
+        { type: 'consoleLog', value: variable('contador') },
+      ],
+    })
+    expect(code).toContain('let contador = 0;')
+    expect(code).toContain('contador = contador + 1;')
+    expect(code).toContain('console.log(contador);')
+  })
+
+  it('emite const quando o var tem kind:const', () => {
+    const code = generateJS({
+      statements: [{ type: 'var', kind: 'const', name: 'PI', value: num(3.14) }],
+    })
+    expect(code).toContain('const PI = 3.14;')
+  })
+
+  it('emite declaração sem valor (declareVar) e Math.random() cru (randomFloat)', () => {
+    const code = generateJS({
+      statements: [
+        { type: 'declareVar', name: 'x' },
+        {
+          type: 'var',
+          kind: 'const',
+          name: 'raio',
+          value: { type: 'binop', op: '*', left: { type: 'randomFloat' }, right: num(26) },
+        },
+      ],
+    })
+    expect(code).toContain('let x;')
+    expect(code).toContain('const raio = Math.random() * 26;')
+  })
+
+  it('emite Math.hypot (mathBinary) e splice (arraySplice)', () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'var',
+          kind: 'const',
+          name: 'dist',
+          value: { type: 'mathBinary', fn: 'hypot', a: variable('dx'), b: variable('dy') },
+        },
+        { type: 'arraySplice', arrayVar: 'enemies', start: variable('index'), count: num(1) },
+      ],
+    })
+    expect(code).toContain('const dist = Math.hypot(dx, dy);')
+    expect(code).toContain('enemies.splice(index, 1);')
+  })
+
+  it('emite distância entre objetos (Math.hypot a.x-b.x, a.y-b.y)', () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'var',
+          kind: 'const',
+          name: 'd',
+          value: { type: 'distance', a: variable('player'), b: variable('enemy') },
+        },
+      ],
+    })
+    expect(code).toContain('const d = Math.hypot(player.x - enemy.x, player.y - enemy.y);')
+  })
+
+  it('emite operações de matemática (resto, potência, Math.*)', () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'var',
+          name: 'r',
+          value: { type: 'binop', op: '%', left: variable('a'), right: num(2) },
+        },
+        {
+          type: 'var',
+          name: 'p',
+          value: { type: 'binop', op: '**', left: variable('a'), right: num(2) },
+        },
+        { type: 'var', name: 'q', value: { type: 'mathUnary', fn: 'sqrt', arg: variable('a') } },
+        {
+          type: 'var',
+          name: 'm',
+          value: { type: 'mathBinary', fn: 'max', a: variable('a'), b: num(10) },
+        },
+      ],
+    })
+    expect(code).toContain('let r = a % 2;')
+    expect(code).toContain('let p = a ** 2;')
+    expect(code).toContain('let q = Math.sqrt(a);')
+    expect(code).toContain('let m = Math.max(a, 10);')
+  })
+
+  it('emite trigonometria, atan2, Math.PI e conversão de ângulo', () => {
+    const code = generateJS({
+      statements: [
+        { type: 'var', name: 's', value: { type: 'mathUnary', fn: 'sin', arg: variable('a') } },
+        {
+          type: 'var',
+          name: 'ang',
+          value: { type: 'mathBinary', fn: 'atan2', a: variable('dy'), b: variable('dx') },
+        },
+        { type: 'var', name: 'p', value: { type: 'mathConst', name: 'PI' } },
+        {
+          type: 'var',
+          name: 'rad',
+          value: { type: 'angleConvert', dir: 'degToRad', arg: num(90) },
+        },
+        {
+          type: 'var',
+          name: 'deg',
+          value: { type: 'angleConvert', dir: 'radToDeg', arg: variable('r') },
+        },
+      ],
+    })
+    expect(code).toContain('let s = Math.sin(a);')
+    expect(code).toContain('let ang = Math.atan2(dy, dx);')
+    expect(code).toContain('let p = Math.PI;')
+    expect(code).toContain('let rad = (90 * Math.PI / 180);')
+    expect(code).toContain('let deg = (r * 180 / Math.PI);')
+  })
+
+  it('emite clique global com event.clientX/clientY', () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'event',
+          target: 'document',
+          targetKind: 'document',
+          event: 'click',
+          body: [
+            { type: 'var', name: 'mx', value: { type: 'eventProp', prop: 'clientX' } },
+            { type: 'var', name: 'my', value: { type: 'eventProp', prop: 'clientY' } },
+          ],
+        },
+      ],
+    })
+    expect(code).toContain('document.addEventListener("click", (event) => {')
+    expect(code).toContain('let mx = event.clientX;')
+    expect(code).toContain('let my = event.clientY;')
+  })
+
+  it('emite lista (array), tamanho, adicionar e remover', () => {
+    const code = generateJS({
+      statements: [
+        { type: 'var', name: 'itens', value: { type: 'array', items: [num(1), num(2)] } },
+        { type: 'var', name: 'vazia', value: { type: 'array', items: [] } },
+        { type: 'arrayPush', arrayVar: 'itens', value: num(3) },
+        { type: 'arrayRemove', arrayVar: 'itens', end: 'pop' },
+        { type: 'arrayRemove', arrayVar: 'itens', end: 'shift' },
+        { type: 'var', name: 'n', value: { type: 'arrayLength', arrayVar: 'itens' } },
+      ],
+    })
+    expect(code).toContain('let itens = [1, 2];')
+    expect(code).toContain('let vazia = [];')
+    expect(code).toContain('itens.push(3);')
+    expect(code).toContain('itens.pop();')
+    expect(code).toContain('itens.shift();')
+    expect(code).toContain('let n = itens.length;')
+  })
+
+  it('emite vetores 2D e 3D como objeto literal', () => {
+    const code = generateJS({
+      statements: [
+        { type: 'var', name: 'pos', value: { type: 'vec2', x: num(10), y: num(20) } },
+        {
+          type: 'var',
+          name: 'p3',
+          value: { type: 'vec3', x: variable('a'), y: num(0), z: num(5) },
+        },
+      ],
+    })
+    expect(code).toContain('let pos = { x: 10, y: 20 };')
+    expect(code).toContain('let p3 = { x: a, y: 0, z: 5 };')
+  })
+
+  it('não redeclara quando a instância tem o mesmo nome da classe', () => {
+    // `class Player {}` + `const Player = new Player()` seria
+    // "Identifier 'Player' has already been declared". A variável recebe sufixo.
+    const code = generateJS({
+      statements: [
+        { type: 'classDecl', name: 'Player', ctorParams: [], ctorBody: [], methods: [] },
+        { type: 'newInstance', varName: 'Player', className: 'Player', args: [] },
+      ],
+    })
+    expect(code).toContain('class Player {')
+    expect(code).toContain('= new Player();')
+    expect(code).not.toMatch(/const Player =/)
+  })
+
+  it('não declara a mesma classe duas vezes (duplicata vira nome único)', () => {
+    // Dois blocos de classe "Pessoa" não podem gerar `class Pessoa` duas vezes
+    // (SyntaxError que quebra o preview inteiro); a segunda recebe sufixo.
+    const code = generateJS({
+      statements: [
+        { type: 'classDecl', name: 'Pessoa', __id: 'a', ctorParams: [], ctorBody: [], methods: [] },
+        { type: 'classDecl', name: 'Pessoa', __id: 'b', ctorParams: [], ctorBody: [], methods: [] },
+      ],
+    })
+    expect(code).toContain('class Pessoa {')
+    expect(code).toContain('class Pessoa_2 {')
+  })
+
+  it('emite if/else aninhado e repeat', () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'if',
+          cond: { type: 'binop', op: '>', left: variable('x'), right: num(0) },
+          then: [{ type: 'consoleLog', value: str('positivo') }],
+          else: [{ type: 'consoleLog', value: str('negativo') }],
+        },
+        {
+          type: 'repeat',
+          times: num(3),
+          body: [{ type: 'consoleLog', value: str('!') }],
+        },
+      ],
+    })
+    expect(code).toMatch(/if \(x > 0\) \{/)
+    expect(code).toContain('console.log("positivo");')
+    expect(code).toContain('} else {')
+    expect(code).toMatch(/for \(let i = 0; i < 3; i\+\+\) \{/)
+  })
+
+  it('emite event click usando getElementById + addEventListener', () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'event',
+          target: 'meuBotao',
+          event: 'click',
+          body: [{ type: 'consoleLog', value: str('clicado') }],
+        },
+      ],
+    })
+    expect(code).toContain('document.getElementById("meuBotao")?.addEventListener("click"')
+    expect(code).toContain('console.log("clicado");')
+  })
+
+  it('emite setText via textContent', () => {
+    const code = generateJS({
+      statements: [{ type: 'setText', targetId: 'saida', value: str('Olá!') }],
+    })
+    expect(code).toContain('document.getElementById("saida")')
+    expect(code).toContain('el.textContent = "Olá!"')
+  })
+
+  it('emite alert com texto e com variável', () => {
+    const code = generateJS({
+      statements: [
+        { type: 'alert', value: str('Oi!') },
+        { type: 'alert', value: variable('contador') },
+      ],
+    })
+    expect(code).toContain('alert("Oi!");')
+    expect(code).toContain('alert(contador);')
+  })
+
+  it('emite setProperty escrevendo textContent/value (texto e variável)', () => {
+    const code = generateJS({
+      statements: [
+        { type: 'setProperty', targetId: 'saida', property: 'textContent', value: str('Oi') },
+        { type: 'setProperty', targetId: 'campo', property: 'value', value: variable('nome') },
+      ],
+    })
+    expect(code).toContain('document.getElementById("saida").textContent = "Oi";')
+    expect(code).toContain('document.getElementById("campo").value = nome;')
+  })
+
+  it('emite getProperty lendo textContent/value via optional chaining', () => {
+    const code = generateJS({
+      statements: [
+        { type: 'getProperty', targetId: 'saida', property: 'textContent', varName: 'conteudo' },
+        { type: 'getProperty', targetId: 'campo', property: 'value', varName: 'digitado' },
+      ],
+    })
+    expect(code).toContain('const conteudo = document.getElementById("saida")?.textContent;')
+    expect(code).toContain('const digitado = document.getElementById("campo")?.value;')
+  })
+
+  it('emite setProperty com valor calculado (now): ano/data/hora', () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'setProperty',
+          targetId: 'currentYear',
+          targetKind: 'var',
+          property: 'textContent',
+          value: { type: 'now', kind: 'year' },
+        },
+        {
+          type: 'setProperty',
+          targetId: 'd',
+          property: 'textContent',
+          value: { type: 'now', kind: 'date' },
+        },
+        {
+          type: 'setProperty',
+          targetId: 'h',
+          property: 'textContent',
+          value: { type: 'now', kind: 'time' },
+        },
+      ],
+    })
+    expect(code).toContain('currentYear.textContent = new Date().getFullYear();')
+    expect(code).toContain(
+      'document.getElementById("d").textContent = new Date().toLocaleDateString();',
+    )
+    expect(code).toContain(
+      'document.getElementById("h").textContent = new Date().toLocaleTimeString();',
+    )
+  })
+
+  it('quando targetKind é var, usa a variável direto (set/get/classOp/event)', () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'setProperty',
+          targetId: 'caixa',
+          targetKind: 'var',
+          property: 'textContent',
+          value: str('Oi'),
+        },
+        {
+          type: 'getProperty',
+          targetId: 'caixa',
+          targetKind: 'var',
+          property: 'value',
+          varName: 'v',
+        },
+        { type: 'classOp', targetId: 'caixa', targetKind: 'var', op: 'add', className: 'ativo' },
+        { type: 'event', target: 'caixa', targetKind: 'var', event: 'click', body: [] },
+      ],
+    })
+    expect(code).toContain('caixa.textContent = "Oi";')
+    expect(code).toContain('const v = caixa?.value;')
+    expect(code).toContain('caixa?.classList.add("ativo");')
+    expect(code).toContain('caixa?.addEventListener("click"')
+    // Não deve cair no document.getElementById quando é variável.
+    expect(code).not.toContain('document.getElementById("caixa")')
+  })
+
+  it('emite canvasSetup com par canvas + contexto', () => {
+    const code = generateJS({
+      statements: [{ type: 'canvasSetup', canvasId: 'game', varName: 'ctx' }],
+    })
+    expect(code).toContain('const canvas = document.getElementById("game")')
+    expect(code).toContain("const ctx = canvas.getContext('2d');")
+  })
+
+  it('console.log de "canvas" referencia o elemento (não vira canvas_2)', () => {
+    const code = generateJS({
+      statements: [
+        { type: 'canvasSetup', canvasId: 'game', varName: 'ctx' },
+        { type: 'consoleLog', value: { type: 'var', name: 'canvas' } },
+      ],
+    })
+    // Referenciar `canvas` resolve para o próprio elemento do canvas.
+    expect(code).toContain('const canvas = document.getElementById("game");')
+    expect(code).toContain('console.log(canvas);')
+    expect(code).not.toContain('canvas_2')
+  })
+
+  it('é determinístico independente da ordem dos statements (canvas estável)', () => {
+    const stmts = [
+      { type: 'canvasSetup', canvasId: 'game', varName: 'ctx' },
+      { type: 'canvasClear', ctxVar: 'ctx', canvasVar: 'ctx' },
+    ] as const
+    const a = generateJS({ statements: [...stmts] })
+    const b = generateJS({ statements: [...stmts] })
+    expect(a).toBe(b)
+    expect(a).not.toContain('canvas_2')
+  })
+
+  it('emite canvasSetSize com window.innerWidth/Height (tela cheia)', () => {
+    const code = generateJS({
+      statements: [
+        { type: 'canvasSetup', canvasId: 'game', varName: 'ctx' },
+        {
+          type: 'canvasSetSize',
+          ctxVar: 'ctx',
+          w: { type: 'global', kind: 'innerWidth' },
+          h: { type: 'global', kind: 'innerHeight' },
+        },
+      ],
+    })
+    expect(code).toContain('canvas.width = window.innerWidth;')
+    expect(code).toContain('canvas.height = window.innerHeight;')
+  })
+
+  it('compila valores helper: canvasDim e random', () => {
+    const code = generateJS({
+      statements: [
+        { type: 'canvasSetup', canvasId: 'game', varName: 'ctx' },
+        {
+          type: 'canvasArc',
+          ctxVar: 'ctx',
+          x: { type: 'canvasDim', ctxVar: 'ctx', dim: 'width' },
+          y: { type: 'canvasDim', ctxVar: 'ctx', dim: 'height' },
+          r: { type: 'random', min: { type: 'num', value: 5 }, max: { type: 'num', value: 20 } },
+        },
+      ],
+    })
+    expect(code).toContain('ctx.arc(canvas.width, canvas.height,')
+    expect(code).toContain('Math.floor(Math.random() * (20 - 5 + 1)) + 5')
+  })
+
+  it('emite animationLoop com requestAnimationFrame interno e pontapé frame()', () => {
+    const code = generateJS({
+      statements: [{ type: 'animationLoop', body: [{ type: 'consoleLog', value: num(1) }] }],
+    })
+    expect(code).toContain('function frame()')
+    // RAF reagenda o próximo quadro dentro da função.
+    expect(code).toContain('requestAnimationFrame(frame);')
+    // Pontapé inicial: chama a própria função (sem parâmetros) fora de tudo.
+    expect(code).toContain('frame();')
+  })
+
+  it('emite animationLoop cancelável guardando o id em uma variável', () => {
+    const code = generateJS({
+      statements: [
+        { type: 'animationLoop', handle: 'animId', body: [{ type: 'consoleLog', value: num(1) }] },
+      ],
+    })
+    expect(code).toContain('let animId;')
+    expect(code).toContain('function frame()')
+    // Dentro da função, o id é reatribuído a cada quadro.
+    expect(code).toContain('animId = requestAnimationFrame(frame);')
+    expect(code).toContain('frame();')
+    // O re-agendamento fica NO TOPO da função (antes do corpo), para que um
+    // cancelAnimationFrame chamado de dentro do corpo realmente pare o loop.
+    expect(code.indexOf('animId = requestAnimationFrame(frame);')).toBeLessThan(
+      code.indexOf('console.log(1)'),
+    )
+  })
+
+  it('emite cancelAnimationFrame com a variável do id', () => {
+    const code = generateJS({
+      statements: [{ type: 'cancelAnimationFrame', handle: { type: 'var', name: 'animId' } }],
+    })
+    expect(code).toContain('cancelAnimationFrame(animId);')
+  })
+
+  it('emite keyboardSimple com mapeamento de teclas', () => {
+    const code = generateJS({
+      statements: [{ type: 'keyboardSimple', varName: 'teclas' }],
+    })
+    expect(code).toContain('const teclas = { left: false, right: false, up: false, down: false };')
+    expect(code).toContain("if (e.key === 'ArrowLeft') teclas.left = true;")
+  })
+
+  it('emite g2d:createSprite com chamada didática para SZGame2D', () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'g2d:createSprite',
+          varName: 'jogador',
+          x: 100,
+          y: 100,
+          w: 40,
+          h: 40,
+          color: '#22d3ee',
+        },
+      ],
+    })
+    expect(code).toContain(
+      'const jogador = SZGame2D.createSprite({ x: 100, y: 100, w: 40, h: 40, color: "#22d3ee" });',
+    )
+  })
+
+  it('emite g2d:moveByKeys e drawSprite', () => {
+    const code = generateJS({
+      statements: [
+        { type: 'g2d:moveByKeys', spriteVar: 'jogador', speed: 4 },
+        { type: 'g2d:drawSprite', spriteVar: 'jogador', ctxVar: 'ctx' },
+      ],
+    })
+    expect(code).toContain('SZGame2D.moveByKeys(jogador, 4);')
+    expect(code).toContain('SZGame2D.drawSprite(ctx, jogador);')
+  })
+
+  it('emite g2d:updateEachFrame envolvendo body em gameLoop', () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'g2d:updateEachFrame',
+          body: [
+            { type: 'canvasClear', ctxVar: 'ctx', canvasVar: 'ctx' },
+            { type: 'g2d:drawSprite', spriteVar: 'p', ctxVar: 'ctx' },
+          ],
+        },
+      ],
+    })
+    expect(code).toMatch(/SZGame2D\.gameLoop\(function update\(\) \{/)
+    expect(code).toContain('SZGame2D.drawSprite(ctx, p);')
+  })
+
+  it('eleva o loop de animação aninhado para o nível global (fora de tudo)', () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'event',
+          target: 'btn',
+          event: 'click',
+          body: [
+            { type: 'consoleLog', value: str('iniciar') },
+            { type: 'animationLoop', body: [{ type: 'consoleLog', value: num(1) }] },
+          ],
+        },
+      ],
+    })
+    // A função e a chamada frame() ficam no topo, sem indentação.
+    expect(code).toMatch(/^function frame\(\) \{/m)
+    expect(code).toMatch(/^frame\(\);/m)
+    // O addEventListener fecha ANTES de declarar a função frame (loop não está aninhado).
+    const idxClose = code.indexOf('});')
+    const idxFrameFn = code.indexOf('function frame()')
+    expect(idxClose).toBeGreaterThanOrEqual(0)
+    expect(idxFrameFn).toBeGreaterThan(idxClose)
+    // Dentro do handler não há chamada frame().
+    const handler = code.slice(0, idxClose)
+    expect(handler).not.toContain('frame()')
+  })
+
+  it('gera setInterval(() => {…}, ms)', () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'setInterval',
+          delay: num(500),
+          body: [{ type: 'consoleLog', value: str('tick') }],
+        },
+      ],
+    })
+    expect(code).toContain('setInterval(() => {')
+    expect(code).toContain('}, 500);')
+    expect(code).toContain('console.log("tick");')
+  })
+
+  it('preserva rawJS (modo avançado) sem alteração', () => {
+    const code = generateJS({
+      statements: [{ type: 'rawJS', code: 'setTimeout(() => alert("hi"), 100);', advanced: true }],
+    })
+    expect(code).toContain('setTimeout(() => alert("hi"), 100);')
+  })
+
+  it('emite event mouseover ligado a um elemento por id', () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'event',
+          target: 'cartao',
+          event: 'mouseover',
+          body: [{ type: 'consoleLog', value: str('hover!') }],
+        },
+      ],
+    })
+    expect(code).toContain('document.getElementById("cartao")?.addEventListener("mouseover"')
+  })
+
+  it('emite event submit em formulário por id', () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'event',
+          target: 'meuForm',
+          event: 'submit',
+          body: [{ type: 'consoleLog', value: str('enviou') }],
+        },
+      ],
+    })
+    expect(code).toContain('document.getElementById("meuForm")?.addEventListener("submit"')
+  })
+
+  it('emite querySelector com const', () => {
+    const code = generateJS({
+      statements: [{ type: 'querySelector', selector: '.caixa', varName: 'caixa' }],
+    })
+    expect(code).toContain('const caixa = document.querySelector(".caixa");')
+  })
+
+  it('emite classOp.add com classList.add', () => {
+    const code = generateJS({
+      statements: [{ type: 'classOp', targetId: 'meuBotao', op: 'add', className: 'ativo' }],
+    })
+    expect(code).toContain('document.getElementById("meuBotao")?.classList.add("ativo");')
+  })
+
+  it('emite canvasDrawImage com onload', () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'canvasDrawImage',
+          ctxVar: 'ctx',
+          src: 'https://exemplo.com/img.png',
+          x: { type: 'num', value: 0 },
+          y: { type: 'num', value: 0 },
+          w: { type: 'num', value: 100 },
+          h: { type: 'num', value: 100 },
+        },
+      ],
+    })
+    expect(code).toContain('new Image()')
+    expect(code).toContain('ctxImg.src = "https://exemplo.com/img.png"')
+    expect(code).toContain('ctx.drawImage(ctxImg, 0, 0, 100, 100)')
+  })
+
+  it('emite canvasSave/restore/translate/rotate/scale', () => {
+    const code = generateJS({
+      statements: [
+        { type: 'canvasSave', ctxVar: 'ctx' },
+        {
+          type: 'canvasTranslate',
+          ctxVar: 'ctx',
+          x: { type: 'num', value: 50 },
+          y: { type: 'num', value: 50 },
+        },
+        { type: 'canvasRotate', ctxVar: 'ctx', angle: { type: 'num', value: 0.5 } },
+        {
+          type: 'canvasScale',
+          ctxVar: 'ctx',
+          sx: { type: 'num', value: 2 },
+          sy: { type: 'num', value: 2 },
+        },
+        { type: 'canvasRestore', ctxVar: 'ctx' },
+      ],
+    })
+    expect(code).toContain('ctx.save();')
+    expect(code).toContain('ctx.translate(50, 50);')
+    expect(code).toContain('ctx.rotate(0.5);')
+    expect(code).toContain('ctx.scale(2, 2);')
+    expect(code).toContain('ctx.restore();')
+  })
+
+  it('emite canvasGradient com addColorStop para cada parada', () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'canvasGradient',
+          ctxVar: 'ctx',
+          varName: 'g',
+          x0: { type: 'num', value: 0 },
+          y0: { type: 'num', value: 0 },
+          x1: { type: 'num', value: 200 },
+          y1: { type: 'num', value: 0 },
+          stops: [
+            { offset: 0, color: '#22d3ee' },
+            { offset: 1, color: '#a78bfa' },
+          ],
+        },
+      ],
+    })
+    expect(code).toContain('const g = ctx.createLinearGradient(0, 0, 200, 0);')
+    expect(code).toContain('g.addColorStop(0, "#22d3ee");')
+    expect(code).toContain('g.addColorStop(1, "#a78bfa");')
+  })
+
+  it('normaliza palavras reservadas preservando referências', () => {
+    const code = generateJS({
+      statements: [
+        { type: 'var', name: 'class', value: num(1) },
+        {
+          type: 'assign',
+          name: 'class',
+          value: { type: 'binop', op: '+', left: variable('class'), right: num(1) },
+        },
+        { type: 'consoleLog', value: variable('class') },
+      ],
+    })
+
+    expect(code).toContain('let class_ = 1;')
+    expect(code).toContain('class_ = class_ + 1;')
+    expect(code).toContain('console.log(class_);')
+    expect(() => new Function(code)).not.toThrow()
+  })
+
+  it('evita colisões quando nomes diferentes viram o mesmo identificador', () => {
+    const code = generateJS({
+      statements: [
+        { type: 'var', name: 'a-b', value: num(1) },
+        { type: 'var', name: 'a_b', value: num(2) },
+        { type: 'consoleLog', value: variable('a-b') },
+        { type: 'consoleLog', value: variable('a_b') },
+      ],
+    })
+
+    expect(code).toContain('let a_b_2 = 1;')
+    expect(code).toContain('let a_b = 2;')
+    expect(code).toContain('console.log(a_b_2);')
+    expect(code).toContain('console.log(a_b);')
+    expect(() => new Function(code)).not.toThrow()
+  })
+
+  it('evita colisão entre variáveis do aluno e temporários internos', () => {
+    const code = generateJS({
+      statements: [
+        { type: 'var', name: 'i', value: num(0) },
+        {
+          type: 'repeat',
+          times: num(2),
+          body: [{ type: 'consoleLog', value: variable('i') }],
+        },
+      ],
+    })
+
+    expect(code).toContain('let i = 0;')
+    expect(code).toMatch(/for \(let i_2 = 0; i_2 < 2; i_2\+\+\)/)
+    expect(code).toContain('console.log(i);')
+    expect(() => new Function(code)).not.toThrow()
+  })
+
+  it('inclui header quando fornecido', () => {
+    const code = generateJS({
+      statements: [],
+      header: '// Gerado pelo Sistema Zero Studio',
+    })
+    expect(code.startsWith('// Gerado pelo Sistema Zero Studio')).toBe(true)
+  })
+})

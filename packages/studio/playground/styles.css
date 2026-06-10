@@ -1,0 +1,49 @@
+/*
+ * Entry CSS do PLAYGROUND (equivale ao globals.css de um app consumidor).
+ * Um consumer real replica as 3 primeiras linhas no css dele — ver
+ * docs/embedding.md.
+ */
+@import "tailwindcss";
+@import "../src/styles/studio.css";
+
+@source "../src";
+
+/*
+ * Resets de APP standalone — ficam FORA do CSS exportado pelo package porque
+ * um consumer não pode herdar height/margin/scrollbar globais de uma lib.
+ */
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  font-family: var(--font-family-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-sz-bg-soft);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-sz-border);
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-sz-fg-mute);
+}
+
+button {
+  font-family: inherit;
+}
