@@ -53,7 +53,12 @@
     "build:community": "cd packages/community && bun run build",
     "start:community": "bun run --filter @sistemazero/community start",
     "typecheck:community": "bun run --filter @sistemazero/community typecheck",
-    "test:community": "bun run --filter @sistemazero/community test"
+    "test:community": "bun run --filter @sistemazero/community test",
+    "dev:kids": "bun run --filter @sistemazero/community-kids dev",
+    "build:kids": "cd packages/community-kids && bun run build",
+    "start:kids": "bun run --filter @sistemazero/community-kids start",
+    "typecheck:kids": "bun run --filter @sistemazero/community-kids typecheck",
+    "test:kids": "bun run --filter @sistemazero/community-kids test"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.16"

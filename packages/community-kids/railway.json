@@ -1,0 +1,20 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "packages/community-kids/Dockerfile",
+    "watchPatterns": [
+      "/packages/community-kids/**",
+      "/packages/member-shell/**",
+      "/packages/ui/**",
+      "/bun.lock",
+      "/package.json",
+      "/.dockerignore"
+    ]
+  },
+  "deploy": {
+    "healthcheckPath": "/api/healthz",
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 3
+  }
+}

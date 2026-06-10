@@ -125,6 +125,7 @@ jobs:
                   packages/admin/*) add admin ;;
                   packages/community/*) add community ;;
                   packages/member-shell/*) add community ;; # BFF compartilhado; somar community-kids quando o serviço existir
+                  packages/community-kids/*) ;; # serviço AINDA NÃO criado no Railway — criar (fluxo GraphQL do CLAUDE.md do kids), somar o id ao SVC_ID e trocar este no-op por `add community-kids`
                   packages/studio/*) ;; # lib interna (sem serviço deployado); quando um app a consumir, somar o consumer aqui
                 esac
               done <<< "$CHANGED"
