@@ -6,7 +6,13 @@ import { getSession } from '@/server/session'
 const Body = z.object({
   firstName: z.string().min(1).max(100).optional(),
   lastName: z.string().min(1).max(100).optional(),
-  phone: z.string().max(20).nullable().optional(),
+  // Telefone é OBRIGATÓRIO no perfil (todo comprador o cadastra na compra):
+  // a borda não aceita limpar (null) e exige o formato só-dígitos BR que o
+  // funil grava no auth (DDD + número). O auth segue genérico de propósito.
+  phone: z
+    .string()
+    .regex(/^\d{10,11}$/)
+    .optional(),
 })
 
 /** Edita o perfil do PRÓPRIO aluno (nome/telefone — e-mail não é editável). */

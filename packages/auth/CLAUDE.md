@@ -144,6 +144,10 @@ src/
    e-mail**: SEMPRE devolve `{ userId, created }` (201 criou / 200 reaproveitou) — é
    o que destrava o COMPRADOR RECORRENTE (que no `register` recebia 409 e ficava sem
    `userId`, logo sem concessão de acesso). NÃO emite tokens (S2S, sem sessão).
+   **Backfill de telefone (06/2026):** usuário pré-existente SEM `phone` (ex.: conta
+   criada por convite do admin) ganha o telefone do comando na compra — best-effort
+   (falha só loga `ensure_buyer.phone_backfill_failed`, nunca quebra a compra) e
+   NUNCA sobrescreve telefone já salvo (o self-service do `/me` prevalece).
 9. **Self-service (`/me`):** `PATCH /auth/me` edita nome/telefone/**foto**
    (`avatarUrl` — URL pública; o UPLOAD é do app cliente, ex.: community → R2;
    `null` remove; flui agregado → coluna `avatar_url` → `UserView.avatarUrl`,

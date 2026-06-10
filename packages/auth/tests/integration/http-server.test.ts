@@ -751,6 +751,40 @@ describe('Password reset + perfil self-service', () => {
     expect(body.created).toBe(false)
     expect(body.userId).toBe(user.id)
   })
+
+  test('ensure-buyer faz backfill do telefone quando o usuário existia SEM telefone', async () => {
+    const { app, users } = buildApp()
+    // Conta pré-existente sem telefone (ex.: criada por convite do admin).
+    const semTelefone = { ...REGISTER_BODY, phone: undefined }
+    await app.handle(post('/auth/register', semTelefone))
+
+    const res = await app.handle(
+      post(
+        '/auth/internal/ensure-buyer',
+        { ...ENSURE_BODY, email: REGISTER_BODY.email, phone: '11999998888' },
+        { 'x-internal-token': INTERNAL_TOKEN },
+      ),
+    )
+    expect(res.status).toBe(200)
+    const stored = await users.findByEmail(REGISTER_BODY.email)
+    expect(stored?.phone).toBe('11999998888')
+  })
+
+  test('ensure-buyer NÃO sobrescreve telefone já cadastrado', async () => {
+    const { app, users } = buildApp()
+    await app.handle(post('/auth/register', REGISTER_BODY))
+
+    const res = await app.handle(
+      post(
+        '/auth/internal/ensure-buyer',
+        { ...ENSURE_BODY, email: REGISTER_BODY.email, phone: '11888887777' },
+        { 'x-internal-token': INTERNAL_TOKEN },
+      ),
+    )
+    expect(res.status).toBe(200)
+    const stored = await users.findByEmail(REGISTER_BODY.email)
+    expect(stored?.phone).toBe(REGISTER_BODY.phone)
+  })
 })
 
 describe('Auth OTP (login passwordless + recuperação por código)', () => {

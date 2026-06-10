@@ -21,7 +21,8 @@ export interface EnsureBuyerResult {
 /**
  * Garante que existe um usuário para o e-mail do comprador, retornando o `userId`
  * (novo ou existente). Idempotente: e-mail já cadastrado → devolve o id existente
- * (`created: false`), sem tocar na senha/perfil. É o que destrava o COMPRADOR
+ * (`created: false`), sem tocar na senha/perfil — EXCETO o backfill do telefone
+ * quando o usuário não tinha um (ver `backfillPhone`). É o que destrava o COMPRADOR
  * RECORRENTE (que antes recebia 409 no `register` e ficava sem acesso). NÃO emite
  * tokens (é S2S, sem sessão). A senha do `command` só vale no caminho de criação
  * (dummy; a real é definida depois pelo magic-link de 1º acesso).
@@ -38,7 +39,10 @@ export class EnsureBuyerService {
     const email = Email.create(command.email)
 
     const existing = await this.users.findByEmail(email.value)
-    if (existing) return { userId: existing.id, created: false }
+    if (existing) {
+      await this.backfillPhone(existing, command.phone)
+      return { userId: existing.id, created: false }
+    }
 
     assertPasswordPolicy(command.password, this.opts.passwordMinLength)
     const firstName = command.firstName.trim()
@@ -70,5 +74,25 @@ export class EnsureBuyerService {
 
     for (const event of user.pullEvents()) this.logger.info(event.eventName, event.toPayload())
     return { userId: user.id, created: true }
+  }
+
+  /**
+   * Usuário pré-existente SEM telefone (ex.: conta criada por convite do admin)
+   * ganha o telefone informado na compra — é o que popula o perfil da área do
+   * aluno. NUNCA sobrescreve um telefone já salvo (o self-service do /me
+   * prevalece), e falha aqui não pode quebrar o fluxo de compra: é best-effort.
+   */
+  private async backfillPhone(user: UserAggregate, phone: string | undefined): Promise<void> {
+    if (!phone || user.phone) return
+    try {
+      const baseVersion = user.version
+      user.updateProfile({ phone })
+      if (user.version !== baseVersion) await this.users.update(user, baseVersion)
+    } catch (error) {
+      this.logger.warn('ensure_buyer.phone_backfill_failed', {
+        userId: user.id,
+        message: error instanceof Error ? error.message : String(error),
+      })
+    }
   }
 }

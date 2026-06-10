@@ -344,7 +344,11 @@ valida e só então importa o `server.js` standalone).
   `POST /auth/reset-password`, `POST /auth/otp/request` `{email, purpose}` (5/min/IP, sempre 200),
   `POST /auth/otp/verify` `{email, code}` (→ tokens), `POST /auth/password/reset-otp`
   `{email, code, newPassword}`, `PATCH /auth/me` `{firstName?,lastName?,phone?,avatarUrl?}` (SEM
-  e-mail; `avatarUrl` setado pelo handler do upload), `POST /auth/me/password`
+  e-mail; `avatarUrl` setado pelo handler do upload; ⚠️ a borda do community —
+  `/api/auth/me` — exige `phone` SÓ-DÍGITOS 10–11 e NÃO aceita `null`: telefone é
+  OBRIGATÓRIO no perfil — todo comprador o cadastra na compra e o ensure-buyer do auth
+  faz backfill p/ conta pré-existente sem telefone; o form usa a máscara BR de
+  `@sistemazero/ui/phone`), `POST /auth/me/password`
   `{currentPassword,newPassword}` (revoga todas as sessões).
 - Members (JWT + x-internal-token injetados pelo gateway): `GET /members/courses` →
   `{courses: MyCourseView[]}` (+`continueLessonId`); `GET /members/catalog` →
