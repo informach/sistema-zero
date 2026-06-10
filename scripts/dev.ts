@@ -13,7 +13,8 @@
  *   bun run dev:status                    mostra o que está de pé
  *   bun run dev:logs      <serviço> [--once]   acompanha o log de um serviço
  *
- * Serviços válidos: gateway, payments, auth, catalog, members, messaging, funnel, admin, community
+ * Serviços válidos: gateway, payments, auth, catalog, members, messaging, funnel, admin,
+ * community, kids
  */
 
 import { spawn, spawnSync } from 'node:child_process'
@@ -44,6 +45,8 @@ const SERVICES: ServiceDef[] = [
   { name: 'admin', dir: 'admin', script: 'dev:admin', port: 3005 },
   // Área do aluno (Next.js). Também é só um BFF que chama o gateway (sem banco próprio).
   { name: 'community', dir: 'community', script: 'dev:community', port: 3007 },
+  // Plataforma kids (Next.js) — mesmo padrão BFF do community, vitrine kids do members.
+  { name: 'kids', dir: 'community-kids', script: 'dev:kids', port: 3008 },
 ]
 
 type StateRecord = { pid: number; startedAt: string; port: number; logFile: string }
