@@ -13,14 +13,14 @@ import { type GatewayResponse, gatewayFetch } from './gateway'
 
 const enc = encodeURIComponent
 
-/** Cursos com matrícula ativa do aluno logado. */
+/** Cursos com matrícula ativa do aluno logado (vitrine ADULTA — explícito; é o default do members). */
 export function listMyCourses(): Promise<GatewayResponse<{ courses: MyCourseView[] }>> {
-  return gatewayFetch('/members/courses')
+  return gatewayFetch('/members/courses?audience=adult')
 }
 
-/** Catálogo "Todos os cursos" (published + flag hasAccess do aluno). */
+/** Catálogo "Todos os cursos" (published da vitrine ADULTA + flag hasAccess do aluno). */
 export function listCatalog(): Promise<GatewayResponse<{ courses: CatalogCourseView[] }>> {
-  return gatewayFetch('/members/catalog')
+  return gatewayFetch('/members/catalog?audience=adult')
 }
 
 /** Detalhe do curso (módulos + aulas + progresso). */

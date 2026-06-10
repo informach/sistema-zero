@@ -1,5 +1,6 @@
 import type {
   Course,
+  CourseAudience,
   CourseStatus,
   Lesson,
   LessonAttachment,
@@ -19,6 +20,12 @@ export interface CourseFields {
   /** Página de vendas (funil) — persiste em `metadata.salesPageUrl` (jsonb). */
   salesPageUrl: string | null
   status: CourseStatus
+  /**
+   * Audiência da plataforma. `null` = "não informado": no CREATE vira `adult`;
+   * no UPDATE **preserva a atual** (≠ do `salesPageUrl`, que limpa quando ausente)
+   * — um PATCH de build antigo do admin não pode rebaixar um curso kids em silêncio.
+   */
+  audience: CourseAudience | null
 }
 
 export interface ModuleFields {
@@ -43,6 +50,7 @@ export interface AttachmentFields {
 export interface ListCoursesAdminFilter {
   q?: string
   status?: CourseStatus
+  audience?: CourseAudience
   limit: number
   offset: number
 }

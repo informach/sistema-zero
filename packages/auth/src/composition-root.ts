@@ -142,7 +142,7 @@ export async function createApplication(env: Env): Promise<Application> {
     createPasswordToken,
     messaging,
     {
-      communityUrl: env.COMMUNITY_URL,
+      urls: { main: env.COMMUNITY_URL, kids: env.KIDS_COMMUNITY_URL },
       cooldownSeconds: env.RESET_REQUEST_COOLDOWN_SECONDS,
     },
     logger,
@@ -193,7 +193,7 @@ export async function createApplication(env: Env): Promise<Application> {
     hasher,
     createPasswordToken,
     messaging,
-    { communityUrl: env.COMMUNITY_URL },
+    { urls: { main: env.COMMUNITY_URL, kids: env.KIDS_COMMUNITY_URL } },
     logger,
   )
   const updateUser = new UpdateUserService(users, refreshTokens, logger)

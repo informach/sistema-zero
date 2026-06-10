@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import type { Logger } from '@sistemazero/core/logging'
 import {
   type Course,
+  type CourseAudience,
   isCourseAccessible,
   type Lesson,
   type LessonAttachment,
@@ -112,11 +113,15 @@ export class InMemoryEntitlementRepository implements EntitlementRepository {
     userId: string,
     courseRef: string,
     now: Date,
+    opts?: { masterCovers?: boolean },
   ): Promise<EntitlementAggregate | null> {
-    // Mirror do SQL: matrícula específica OU chave-mestra; escolhe a mais forte.
+    // Mirror do SQL: matrícula específica OU chave-mestra (se `masterCovers`,
+    // default true — `false` = curso kids, fora da chave-mestra); a mais forte.
     let strongest: EntitlementState | null = null
     for (const s of this.byId.values()) {
-      const covers = s.courseRef === courseRef || s.accessType === 'all_courses'
+      const covers =
+        s.courseRef === courseRef ||
+        (opts?.masterCovers !== false && s.accessType === 'all_courses')
       if (s.userId === userId && covers && isActive(s, now)) {
         if (!strongest || isStrongerState(s, strongest)) strongest = s
       }
@@ -247,9 +252,9 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     return this.courses.filter((c) => set.has(c.slug))
   }
 
-  async listPublishedCourses(): Promise<Course[]> {
+  async listPublishedCourses(audience: CourseAudience): Promise<Course[]> {
     return this.courses
-      .filter((c) => c.status === 'published')
+      .filter((c) => c.status === 'published' && c.audience === audience)
       .sort((a, b) => a.title.localeCompare(b.title))
   }
 
@@ -329,6 +334,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
       all = all.filter((c) => c.title.toLowerCase().includes(q) || c.slug.toLowerCase().includes(q))
     }
     if (filter.status) all = all.filter((c) => c.status === filter.status)
+    if (filter.audience) all = all.filter((c) => c.audience === filter.audience)
     all.sort((a, b) => a.title.localeCompare(b.title))
     return { items: all.slice(filter.offset, filter.offset + filter.limit), total: all.length }
   }
@@ -336,11 +342,13 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
   async createCourse(fields: CourseFields): Promise<Course> {
     if (this.courses.some((c) => c.slug === fields.slug)) throw new DuplicateSlugError()
     const now = new Date()
-    // Mirror do SQL: `salesPageUrl` vira a chave do metadata (jsonb), não coluna.
-    const { salesPageUrl, ...rest } = fields
+    // Mirror do SQL: `salesPageUrl` vira a chave do metadata (jsonb), não coluna;
+    // `audience` ausente cai no default da coluna (`adult`).
+    const { salesPageUrl, audience, ...rest } = fields
     const course: Course = {
       id: randomUUID(),
       ...rest,
+      audience: audience ?? 'adult',
       metadata: salesPageUrl ? { salesPageUrl } : null,
       createdAt: now,
       updatedAt: now,

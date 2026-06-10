@@ -1,4 +1,5 @@
 import type { UserRole } from '../../../domain/user/user.role'
+import type { Platform } from '../../platform'
 
 /** Quem está criando (resolvido dos headers do gateway). */
 export interface CreateUserActor {
@@ -17,4 +18,6 @@ export interface CreateUserCommand {
   lastName: string
   phone?: string | null
   role: UserRole
+  /** Plataforma de destino do convite (`main` default | `kids`) — decide a base do link. */
+  platform?: Platform
 }

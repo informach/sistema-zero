@@ -26,7 +26,7 @@ import { RevokeEntitlementService } from '../src/application/revoke-entitlement/
 import { SaveCourseRatingService } from '../src/application/save-course-rating/save-course-rating.service'
 import { SaveVideoPositionService } from '../src/application/save-video-position/save-video-position.service'
 import { SubmitQuizAttemptService } from '../src/application/submit-quiz-attempt/submit-quiz-attempt.service'
-import type { CourseStatus } from '../src/domain/course/course'
+import type { CourseAudience, CourseStatus } from '../src/domain/course/course'
 import { EntitlementAggregate } from '../src/domain/entitlement/entitlement.aggregate'
 import type { ResolvedOffer } from '../src/domain/ports/catalog-gateway.port'
 import type { Env } from '../src/infrastructure/config/env'
@@ -172,6 +172,7 @@ export function seedSampleCourse(
   courses: InMemoryCourseRepository,
   slug = 'curso-demo',
   status: CourseStatus = 'published',
+  audience: CourseAudience = 'adult',
 ) {
   const now = new Date('2026-06-01T00:00:00.000Z')
   const courseId = randomUUID()
@@ -187,6 +188,7 @@ export function seedSampleCourse(
     description: null,
     coverImageUrl: null,
     status,
+    audience,
     metadata: null,
     createdAt: now,
     updatedAt: now,

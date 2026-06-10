@@ -56,6 +56,8 @@ const courseFields = (b: CourseInput): CourseFields => ({
   coverImageUrl: b.coverImageUrl ?? null,
   salesPageUrl: b.salesPageUrl?.trim() ? b.salesPageUrl.trim() : null,
   status: b.status as CourseStatus,
+  // `null` = não informado (create → adult; update → preserva — ver CourseFields).
+  audience: b.audience ?? null,
 })
 const moduleFields = (b: ModuleInput): ModuleFields => ({
   title: b.title,
@@ -102,6 +104,7 @@ export function contentRoutes(deps: ContentRoutesDeps) {
           return deps.courses.list({
             q: query.q,
             status: query.status as CourseStatus | undefined,
+            audience: query.audience,
             limit: clampLimit(query.limit),
             offset: query.offset ?? 0,
           })

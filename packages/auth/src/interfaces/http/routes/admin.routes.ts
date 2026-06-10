@@ -6,6 +6,7 @@ import type { GetUserService } from '../../../application/admin/get-user/get-use
 import type { ListUsersService } from '../../../application/admin/list-users/list-users.service'
 import type { UpdateUserService } from '../../../application/admin/update-user/update-user.service'
 import type { CreateImpersonationTokenService } from '../../../application/impersonation/create-impersonation-token.service'
+import { type PlatformUrls, resolvePlatformUrl } from '../../../application/platform'
 import { UserNotFoundError } from '../../../domain/user/user.errors'
 import type { UserRole } from '../../../domain/user/user.role'
 import { type GatewayActor, resolveGatewayActor } from '../auth'
@@ -13,6 +14,7 @@ import {
   BatchGetUsersBody,
   CreateUserBody,
   ListUsersQuery,
+  PlatformQuery,
   UpdateUserBody,
   UserIdParams,
 } from '../dtos'
@@ -28,10 +30,11 @@ export interface AdminRoutesDeps {
   batchGetUsers: BatchGetUsersService
   createImpersonationToken: CreateImpersonationTokenService
   /**
-   * Base pública da community (env `COMMUNITY_URL`): o painel admin (outra origem)
-   * recebe a URL pronta de `/impersonar` — não precisa conhecer o domínio do app.
+   * Bases públicas das plataformas (`COMMUNITY_URL`/`KIDS_COMMUNITY_URL`): o painel
+   * admin (outra origem) recebe a URL pronta de `/impersonar` — não precisa
+   * conhecer os domínios dos apps. `?platform=kids` escolhe a base kids.
    */
-  communityUrl: string
+  urls: PlatformUrls
   /**
    * `AUTH_INTERNAL_TOKEN` — o gateway o injeta TAMBÉM nas rotas admin (igual ao
    * members/catalog): é o que prova que os `X-Auth-User-*` vieram do gateway.
@@ -96,6 +99,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
             lastName: body.lastName,
             phone: body.phone,
             role: body.role,
+            platform: body.platform,
           })
           set.status = 201
           return result
@@ -148,8 +152,11 @@ export function adminRoutes(deps: AdminRoutesDeps) {
       // aponta p/ a rota `/impersonar` da community, que faz o exchange.
       .post(
         '/users/:id/impersonate',
-        async ({ headers, params, set }) => {
+        async ({ headers, params, query, set }) => {
           const actor = requireActor(headers, WRITE_ROLES)
+          // `?platform=kids` → URL do app kids (a env ausente → 400, ANTES de
+          // emitir o token — sem handoff órfão).
+          const communityUrl = resolvePlatformUrl(deps.urls, query.platform)
           const result = await deps.createImpersonationToken.execute({
             actorId: actor.id,
             actorRole: actor.role,
@@ -159,10 +166,10 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           return {
             token: result.token,
             expiresAt: result.expiresAt.toISOString(),
-            communityUrl: deps.communityUrl,
+            communityUrl,
           }
         },
-        { params: UserIdParams },
+        { params: UserIdParams, query: PlatformQuery },
       )
   )
 }

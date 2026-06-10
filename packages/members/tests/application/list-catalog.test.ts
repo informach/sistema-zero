@@ -16,6 +16,7 @@ function makeCourse(over: Partial<Course> & { slug: string; title: string }): Co
     description: null,
     coverImageUrl: null,
     status: 'published' as CourseStatus,
+    audience: 'adult',
     metadata: null,
     createdAt: created,
     updatedAt: created,
@@ -105,6 +106,7 @@ describe('ListCatalogService (catálogo "Todos os cursos")', () => {
       title: 'Curso',
       subtitle: 'Sub',
       coverImageUrl: 'https://cdn.example.com/capa.webp',
+      audience: 'adult',
       hasAccess: true,
       salesPageUrl: null,
     })

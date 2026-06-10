@@ -9,6 +9,15 @@ export const COURSE_STATUSES = ['draft', 'published', 'archived'] as const
 export type CourseStatus = (typeof COURSE_STATUSES)[number]
 
 /**
+ * Audiência do curso: a qual PLATAFORMA o curso pertence (`adult` = community,
+ * `kids` = community-kids). Governa a vitrine (listagens filtram por audiência)
+ * E a chave-mestra: `all_courses` cobre só cursos `adult` — curso kids exige
+ * matrícula específica. Equipe interna (chave-mestra VIRTUAL) vê as duas.
+ */
+export const COURSE_AUDIENCES = ['adult', 'kids'] as const
+export type CourseAudience = (typeof COURSE_AUDIENCES)[number]
+
+/**
  * Status que concedem acesso a quem já tem matrícula: `published` (à venda) ou
  * `archived` (retirado da venda, mas quem comprou mantém o acesso — padrão LMS).
  * `draft` nunca concede acesso. Descoberta/venda usa só `published`; consumo usa isto.
@@ -27,6 +36,7 @@ export interface Course {
   description: string | null
   coverImageUrl: string | null
   status: CourseStatus
+  audience: CourseAudience
   /** Extras livres (ex.: `salesPageUrl` — URL da página de vendas no funil). */
   metadata: Record<string, unknown> | null
   createdAt: Date

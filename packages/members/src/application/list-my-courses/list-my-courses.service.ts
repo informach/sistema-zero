@@ -1,3 +1,4 @@
+import type { CourseAudience } from '../../domain/course/course'
 import { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { EntitlementRepository } from '../../domain/ports/entitlement-repository.port'
@@ -8,9 +9,12 @@ import { type MyCourseView, toMyCourseView } from '../mappers/views'
 
 /**
  * "Meus cursos": matrículas ATIVAS de curso → cursos publicados + progresso.
- * Chave-mestra (`all_courses`) inclui TODOS os cursos publicados (atuais e
- * futuros); por curso vale o acesso "mais forte" entre a matrícula específica e a
- * chave-mestra (vitalícia > validade mais distante).
+ * A vitrine é por AUDIÊNCIA (`adult` = community, `kids` = community-kids): só
+ * cursos da audiência pedida aparecem. Chave-mestra (`all_courses`) inclui TODOS
+ * os cursos publicados ADULTOS (atuais e futuros) — em vitrine `kids` ela é
+ * ignorada (curso kids exige matrícula específica); a chave-mestra VIRTUAL da
+ * equipe interna vale nas duas. Por curso vale o acesso "mais forte" entre a
+ * matrícula específica e a chave-mestra (vitalícia > validade mais distante).
  */
 export class ListMyCoursesService {
   constructor(
@@ -21,19 +25,25 @@ export class ListMyCoursesService {
     private readonly clock: () => Date,
   ) {}
 
-  async execute(userId: string, privileged = false): Promise<MyCourseView[]> {
+  async execute(
+    userId: string,
+    privileged = false,
+    audience: CourseAudience = 'adult',
+  ): Promise<MyCourseView[]> {
     // Equipe interna (`privileged`) = chave-mestra VIRTUAL: lista todos os
     // publicados sem consultar matrículas (mesmo comportamento da `all_courses` real).
     const active = privileged ? [] : await this.entitlements.listActiveByUser(userId, this.clock())
 
     // Matrículas de CURSO com courseRef ("mais forte" por curso se duplicada) +
-    // a chave-mestra mais forte (se houver).
+    // a chave-mestra mais forte (se houver). A chave-mestra REAL cobre só cursos
+    // `adult` — em vitrine `kids` ela é ignorada; a VIRTUAL (equipe) vale sempre.
     const byCourseRef = new Map<string, EntitlementAggregate>()
     let master: EntitlementAggregate | null = privileged
       ? EntitlementAggregate.virtualAllCourses(userId, this.clock())
       : null
     for (const e of active) {
       if (e.accessType === 'all_courses') {
+        if (audience !== 'adult') continue
         if (!master || isStronger(e, master)) master = e
         continue
       }
@@ -43,10 +53,10 @@ export class ListMyCoursesService {
     }
     if (byCourseRef.size === 0 && !master) return []
 
-    // Chave-mestra → todos os PUBLICADOS; matrículas específicas ainda incluem
-    // cursos `archived` (quem matriculou mantém acesso). Dedupe por id.
+    // Chave-mestra → todos os PUBLICADOS da audiência; matrículas específicas
+    // ainda incluem cursos `archived` (quem matriculou mantém acesso). Dedupe por id.
     const courses = master
-      ? await this.courses.listPublishedCourses()
+      ? await this.courses.listPublishedCourses(audience)
       : await this.courses.findAccessibleCoursesBySlugs([...byCourseRef.keys()])
     if (master && byCourseRef.size > 0) {
       const have = new Set(courses.map((c) => c.slug))
@@ -67,6 +77,9 @@ export class ListMyCoursesService {
 
     const views: MyCourseView[] = []
     for (const course of courses) {
+      // Vitrine por audiência: matrícula específica de curso da OUTRA plataforma
+      // não aparece aqui (o acesso segue válido — só não é desta vitrine).
+      if (course.audience !== audience) continue
       const specific = byCourseRef.get(course.slug)
       const entitlement = pickStronger(specific ?? null, master)
       if (!entitlement) continue

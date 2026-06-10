@@ -120,7 +120,8 @@ export function authRoutes(deps: AuthRoutesDeps) {
       async ({ body, request }) => {
         if (isOversizeBody(request)) throw new PayloadTooLargeError()
         // SEMPRE 200, exista a conta ou não (anti-enumeração). O e-mail é best-effort.
-        await deps.forgotPassword.execute({ email: body.email })
+        // `platform` decide a base do link (community vs kids) — kids sem env → 400.
+        await deps.forgotPassword.execute({ email: body.email, platform: body.platform })
         return { ok: true }
       },
       { body: ForgotPasswordBody },

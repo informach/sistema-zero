@@ -46,11 +46,14 @@ export interface EntitlementRepository {
    * Matrícula ATIVA (status + validade) que dá acesso ao curso: específica
    * (`courseRef`) OU chave-mestra (`accessType='all_courses'`). Havendo mais de
    * uma, devolve a "mais forte" (vitalícia > validade mais distante).
+   * `masterCovers: false` tira a chave-mestra do OR — usado quando o curso é
+   * `kids` (a `all_courses` cobre só cursos `adult`). Default `true` (compat).
    */
   findActiveForCourse(
     userId: string,
     courseRef: string,
     now: Date,
+    opts?: { masterCovers?: boolean },
   ): Promise<EntitlementAggregate | null>
   /** Todas as matrículas ATIVAS do aluno (qualquer tipo). */
   listActiveByUser(userId: string, now: Date): Promise<EntitlementAggregate[]>

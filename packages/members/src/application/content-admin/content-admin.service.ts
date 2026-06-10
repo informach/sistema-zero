@@ -67,7 +67,10 @@ export class CourseAdminService {
   async create(fields: CourseFields): Promise<CourseView> {
     // Curso novo nasce sem aulas → nunca pode nascer `published`.
     if (fields.status === 'published') throw new NoPublishedLessonError()
-    return toCourseView(await this.content.createCourse(fields))
+    // Audiência ausente → `adult` (plataforma principal).
+    return toCourseView(
+      await this.content.createCourse({ ...fields, audience: fields.audience ?? 'adult' }),
+    )
   }
 
   async get(id: string): Promise<CourseTreeView> {
@@ -86,10 +89,13 @@ export class CourseAdminService {
     }
     // `salesPageUrl` vive em `metadata` (jsonb): atualiza SÓ essa chave,
     // preservando as demais; objeto que ficou vazio volta a `null`.
-    const { salesPageUrl, ...rest } = fields
+    // `audience` AUSENTE preserva a atual (≠ do salesPageUrl, que limpa): um
+    // PATCH de build antigo do admin sem o campo não rebaixa curso kids → adult.
+    const { salesPageUrl, audience, ...rest } = fields
     const merged = {
       ...existing,
       ...rest,
+      audience: audience ?? existing.audience,
       metadata: withSalesPageUrl(existing.metadata, salesPageUrl),
     }
     const ok = await this.content.updateCourse(merged)

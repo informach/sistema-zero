@@ -39,9 +39,18 @@ export const LogoutBody = t.Object({
   allSessions: t.Optional(t.Boolean()),
 })
 
+// Plataforma de DESTINO dos links de e-mail (enum — NUNCA URL do cliente):
+// `main` = community | `kids` = community-kids. Ausente → main.
+const platformLiteral = t.Union([t.Literal('main'), t.Literal('kids')])
+
+/** Query opcional `?platform=` (impersonação: decide a `communityUrl` devolvida). */
+export const PlatformQuery = t.Object({ platform: t.Optional(platformLiteral) })
+
 /** Corpo de `POST /auth/forgot-password`. Resposta é SEMPRE 200 (anti-enumeração). */
 export const ForgotPasswordBody = t.Object({
   email: t.String({ minLength: 3, maxLength: 320, pattern: EMAIL_PATTERN }),
+  // Plataforma de onde o pedido veio (base do link). kids sem env configurada → 400.
+  platform: t.Optional(platformLiteral),
 })
 
 /** Corpo de `POST /auth/reset-password` (token single-use do e-mail). */
@@ -142,6 +151,8 @@ export const CreateUserBody = t.Object({
   lastName: t.String({ minLength: 1, maxLength: 100 }),
   phone: t.Optional(t.Union([t.String({ maxLength: 20 }), t.Null()])),
   role: roleLiteral,
+  // Plataforma de destino do CONVITE (link do e-mail `welcome`). Ausente → main.
+  platform: t.Optional(platformLiteral),
 })
 
 /** Corpo de `PATCH /auth/admin/users/:id`. Todos os campos são opcionais (edição parcial). */

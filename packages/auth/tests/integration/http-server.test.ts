@@ -40,6 +40,7 @@ import {
 import { testTokenIssuer } from '../helpers'
 
 const COMMUNITY_URL = 'http://localhost:3007'
+const KIDS_COMMUNITY_URL = 'http://localhost:3008'
 const INTERNAL_TOKEN = 'internal-token-de-teste'
 
 function buildApp(
@@ -98,7 +99,10 @@ function buildApp(
   const forgotPassword = new ForgotPasswordService(
     createPasswordToken,
     messaging,
-    { communityUrl: COMMUNITY_URL, cooldownSeconds: resetCooldownSeconds },
+    {
+      urls: { main: COMMUNITY_URL, kids: KIDS_COMMUNITY_URL },
+      cooldownSeconds: resetCooldownSeconds,
+    },
     silentLogger,
   )
   const resetPassword = new ResetPasswordService(users, resetTokens, refreshTokens, fakeHasher, {
@@ -115,7 +119,7 @@ function buildApp(
     fakeHasher,
     createPasswordToken,
     messaging,
-    { communityUrl: COMMUNITY_URL },
+    { urls: { main: COMMUNITY_URL, kids: KIDS_COMMUNITY_URL } },
     silentLogger,
   )
   const updateUser = new UpdateUserService(users, refreshTokens, silentLogger)
@@ -141,6 +145,7 @@ function buildApp(
     TRUSTED_PROXY_HOPS: 1,
     AUTH_INTERNAL_TOKEN: INTERNAL_TOKEN,
     COMMUNITY_URL,
+    KIDS_COMMUNITY_URL,
   } as unknown as Env
 
   const app = createServer({
@@ -441,6 +446,26 @@ describe('Password reset + perfil self-service', () => {
     expect(sent?.templateKey).toBe('password-reset')
     expect(sent?.recipient.email).toBe('maria@example.com')
     expect(sent?.variables.link).toStartWith(`${COMMUNITY_URL}/redefinir-senha?token=`)
+  })
+
+  test('forgot-password com platform=kids → link com a base kids', async () => {
+    const { app, messaging } = buildApp()
+    await app.handle(post('/auth/register', REGISTER_BODY))
+    const res = await app.handle(
+      post('/auth/forgot-password', { email: 'maria@example.com', platform: 'kids' }),
+    )
+    expect(res.status).toBe(200)
+    expect(messaging.sent[0]?.variables.link).toStartWith(
+      `${KIDS_COMMUNITY_URL}/redefinir-senha?token=`,
+    )
+  })
+
+  test('forgot-password com platform inválida → 400 na borda', async () => {
+    const { app } = buildApp()
+    const res = await app.handle(
+      post('/auth/forgot-password', { email: 'maria@example.com', platform: 'teen' }),
+    )
+    expect(res.status).toBe(400)
   })
 
   test('forgot-password com e-mail inexistente → 200 SEM envio (anti-enumeração)', async () => {
@@ -1269,6 +1294,19 @@ describe('Impersonação (rotas /auth/admin/users/:id/impersonate + /auth/impers
     }
     expect(handoff.communityUrl).toBe(COMMUNITY_URL)
     expect(new Date(handoff.expiresAt).getTime()).toBeGreaterThan(Date.now())
+
+    // `?platform=kids` → a URL devolvida é a do app kids (mesmo handoff/exchange).
+    const kidsRes = await app.handle(
+      post(
+        `/auth/admin/users/${targetId}/impersonate?platform=kids`,
+        {},
+        actorHeaders('admin', adminId),
+      ),
+    )
+    expect(kidsRes.status).toBe(201)
+    expect(((await kidsRes.json()) as { communityUrl: string }).communityUrl).toBe(
+      KIDS_COMMUNITY_URL,
+    )
 
     const exchanged = await app.handle(post('/auth/impersonate/exchange', { token: handoff.token }))
     expect(exchanged.status).toBe(200)

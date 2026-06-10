@@ -57,6 +57,13 @@
       "when": 1780689317475,
       "tag": "0007_green_dreaming_celestial",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1781123985633,
+      "tag": "0008_closed_mephistopheles",
+      "breakpoints": true
     }
   ]
 }

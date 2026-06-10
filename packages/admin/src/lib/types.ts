@@ -117,6 +117,14 @@ export interface MemberDetail {
 export const COURSE_STATUSES = ['draft', 'published', 'archived'] as const
 export type CourseStatus = (typeof COURSE_STATUSES)[number]
 
+/** Plataforma do curso: `adult` (community) | `kids` (community-kids). */
+export const COURSE_AUDIENCES = ['adult', 'kids'] as const
+export type CourseAudience = (typeof COURSE_AUDIENCES)[number]
+export const AUDIENCE_LABELS: Record<CourseAudience, string> = {
+  adult: 'Adulto',
+  kids: 'Kids',
+}
+
 export interface CourseView {
   id: string
   slug: string
@@ -127,6 +135,8 @@ export interface CourseView {
   /** Página de vendas (funil) — destino do cadeado no catálogo do community. */
   salesPageUrl: string | null
   status: string
+  /** Plataforma do curso (`adult` | `kids`) — a chave-mestra cobre só `adult`. */
+  audience: CourseAudience
   createdAt: string
   updatedAt: string
 }

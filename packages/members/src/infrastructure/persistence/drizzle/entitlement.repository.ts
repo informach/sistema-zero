@@ -113,20 +113,22 @@ export class DrizzleEntitlementRepository implements EntitlementRepository {
     userId: string,
     courseRef: string,
     now: Date,
+    opts?: { masterCovers?: boolean },
   ): Promise<EntitlementAggregate | null> {
     // Acesso ao curso = matrícula específica (courseRef) OU chave-mestra
     // (accessType='all_courses'). Pode haver mais de uma ativa (ex.: vitalícia +
     // assinatura + chave-mestra). Escolhe a "mais forte": vitalícia (expiresAt
     // nulo) primeiro, senão a de validade mais distante.
+    // `masterCovers: false` (curso `kids`) tira o braço da chave-mestra do OR —
+    // a `all_courses` cobre só cursos `adult`.
+    const coverage =
+      opts?.masterCovers === false
+        ? eq(entitlements.courseRef, courseRef)
+        : or(eq(entitlements.courseRef, courseRef), eq(entitlements.accessType, 'all_courses'))
     const [row] = await this.db
       .select()
       .from(entitlements)
-      .where(
-        and(
-          activePredicate(userId, now),
-          or(eq(entitlements.courseRef, courseRef), eq(entitlements.accessType, 'all_courses')),
-        ),
-      )
+      .where(and(activePredicate(userId, now), coverage))
       .orderBy(sql`${entitlements.expiresAt} is null desc`, desc(entitlements.expiresAt))
       .limit(1)
     return row ? fromRow(row) : null

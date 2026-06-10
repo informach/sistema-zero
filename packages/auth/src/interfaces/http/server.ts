@@ -153,7 +153,7 @@ export function createServer(deps: HttpDeps) {
         updateUser: deps.updateUser,
         batchGetUsers: deps.batchGetUsers,
         createImpersonationToken: deps.createImpersonationToken,
-        communityUrl: deps.env.COMMUNITY_URL,
+        urls: { main: deps.env.COMMUNITY_URL, kids: deps.env.KIDS_COMMUNITY_URL },
         internalToken: deps.env.AUTH_INTERNAL_TOKEN,
       }),
     )

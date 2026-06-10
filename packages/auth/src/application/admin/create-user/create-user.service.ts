@@ -12,14 +12,15 @@ import type { UserRole } from '../../../domain/user/user.role'
 import { Email } from '../../../domain/value-objects/email'
 import { type AdminUserView, toAdminUserView } from '../../mappers/admin-user-view'
 import type { CreatePasswordTokenService } from '../../password-reset/create-password-token.service'
+import { type PlatformUrls, resolvePlatformUrl } from '../../platform'
 import type { CreateUserActor, CreateUserCommand } from './create-user.command'
 
 /** Papéis privilegiados que só `superadmin` pode conceder (espelha o update-user). */
 const PRIVILEGED_ROLES: ReadonlySet<UserRole> = new Set<UserRole>(['admin', 'superadmin'])
 
 export interface CreateUserOptions {
-  /** Base do link de definição de senha: `${communityUrl}/redefinir-senha?token=...`. */
-  communityUrl: string
+  /** Bases do link de definição de senha por plataforma: `${base}/redefinir-senha?token=...`. */
+  urls: PlatformUrls
 }
 
 export interface CreateUserResult {
@@ -49,6 +50,9 @@ export class CreateUserService {
 
   async execute(command: CreateUserCommand): Promise<CreateUserResult> {
     this.authorize(command.actor, command.role)
+    // Resolve a base do link ANTES de criar a conta: convite kids com a env
+    // ausente → 400 sem efeito colateral (não cria conta com convite morto).
+    const linkBase = resolvePlatformUrl(this.opts.urls, command.platform)
 
     const email = Email.create(command.email)
     const firstName = command.firstName.trim()
@@ -77,22 +81,23 @@ export class CreateUserService {
     await this.users.create(user)
     for (const event of user.pullEvents()) this.logger.info(event.eventName, event.toPayload())
 
-    const inviteSent = await this.sendInvite(user.email, user.id)
+    const inviteSent = await this.sendInvite(user.email, user.id, linkBase)
     this.logger.info('admin.user.created', {
       userId: user.id,
       role: user.role,
       by: command.actor.id,
+      platform: command.platform ?? 'main',
       inviteSent,
     })
     return { user: toAdminUserView(user), inviteSent }
   }
 
   /** Convite (token + e-mail `welcome`) — best-effort, nunca desfaz a criação. */
-  private async sendInvite(email: string, userId: string): Promise<boolean> {
+  private async sendInvite(email: string, userId: string, linkBase: string): Promise<boolean> {
     try {
       const issued = await this.createPasswordToken.execute({ email })
       if (!issued) return false
-      const link = `${this.opts.communityUrl}/redefinir-senha?token=${issued.token}`
+      const link = `${linkBase}/redefinir-senha?token=${issued.token}`
       await this.messaging.sendEmail({
         templateKey: 'welcome',
         recipient: { name: issued.firstName, email: issued.email },

@@ -1,4 +1,10 @@
-import type { Course, Lesson, LessonWithContent, ModuleWithLessons } from '../course/course'
+import type {
+  Course,
+  CourseAudience,
+  Lesson,
+  LessonWithContent,
+  ModuleWithLessons,
+} from '../course/course'
 
 /** Leitura da árvore de conteúdo (Fatia 1 = só leitura; autoria é fatia seguinte). */
 export interface CourseRepository {
@@ -10,8 +16,11 @@ export interface CourseRepository {
   findAccessibleCoursesBySlugs(slugs: string[]): Promise<Course[]>
   /** Cursos por slugs, QUALQUER status (admin: progresso/detalhe inclui draft/archived). */
   findCoursesBySlugs(slugs: string[]): Promise<Course[]>
-  /** TODOS os cursos `published` (catálogo/descoberta), ordenados por título. */
-  listPublishedCourses(): Promise<Course[]>
+  /**
+   * TODOS os cursos `published` da AUDIÊNCIA (catálogo/descoberta), ordenados por
+   * título. O param é obrigatório: cada vitrine (community/community-kids) decide.
+   */
+  listPublishedCourses(audience: CourseAudience): Promise<Course[]>
   /**
    * Módulos do curso, cada um com suas aulas resumidas (sem o conteúdo dos blocos).
    * `publishedOnly` filtra aulas rascunho (visão do ALUNO); o admin vê tudo.

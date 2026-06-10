@@ -41,6 +41,7 @@ const toCourse = (r: CourseRow): Course => ({
   description: r.description,
   coverImageUrl: r.coverImageUrl,
   status: r.status,
+  audience: r.audience,
   metadata: r.metadata ?? null,
   createdAt: r.createdAt,
   updatedAt: r.updatedAt,
@@ -111,6 +112,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
       clauses.push(m)
     }
     if (filter.status) clauses.push(eq(courses.status, filter.status))
+    if (filter.audience) clauses.push(eq(courses.audience, filter.audience))
     const where = clauses.length > 0 ? and(...clauses) : undefined
 
     const [rows, [counted]] = await Promise.all([
@@ -137,6 +139,8 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
       description: fields.description,
       coverImageUrl: fields.coverImageUrl,
       status: fields.status,
+      // O service normaliza `audience` no create; o `?? 'adult'` cobre chamadas diretas.
+      audience: fields.audience ?? ('adult' as const),
       // `salesPageUrl` mora no metadata (jsonb) — única chave gerida pelo form.
       metadata: fields.salesPageUrl ? { salesPageUrl: fields.salesPageUrl } : null,
       createdAt: now,
@@ -165,6 +169,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
           description: course.description,
           coverImageUrl: course.coverImageUrl,
           status: course.status,
+          audience: course.audience,
           metadata: course.metadata,
           updatedAt: new Date(),
           version: expectedVersion + 1,

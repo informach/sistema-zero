@@ -55,6 +55,24 @@ describe('Equipe interna (superadmin/admin/staff) — acesso irrestrito', () => 
     expect((await get(app, '/members/courses/rascunho', roleHeaders(role))).status).toBe(404)
   })
 
+  test('equipe vê curso KIDS sem matrícula (chave-mestra virtual cobre as duas vitrines)', async () => {
+    const { app, courses } = buildApp()
+    seedSampleCourse(courses, 'curso-kids', 'published', 'kids')
+
+    // Detalhe destravado (suporte navega a plataforma kids).
+    expect((await get(app, '/members/courses/curso-kids', roleHeaders('staff'))).status).toBe(200)
+
+    // Vitrine kids lista e destrava para a equipe.
+    const kids = await readJson(
+      await get(app, '/members/courses?audience=kids', roleHeaders('staff')),
+    )
+    expect(kids.courses.map((c: any) => c.courseSlug)).toEqual(['curso-kids'])
+    const catalog = await readJson(
+      await get(app, '/members/catalog?audience=kids', roleHeaders('staff')),
+    )
+    expect(catalog.courses[0].hasAccess).toBe(true)
+  })
+
   test('customer sem matrícula continua 403 (role não-privilegiado não destrava)', async () => {
     const { app, courses } = buildApp()
     seedSampleCourse(courses, 'curso-a')
