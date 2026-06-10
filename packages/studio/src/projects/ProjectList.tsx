@@ -8,12 +8,12 @@ import { ProjectCard } from '../components/projects/ProjectCard'
 import { listAllProjects, type ProjectSummary } from '../state/persistence'
 import { useProjectStore } from '../state/projectStore'
 
-export interface ProjectListPageProps {
+export interface ProjectListProps {
   /** Chamado quando um projeto deve abrir no editor (criado, importado ou clicado). */
   onOpenProject: (projectId: string) => void
 }
 
-export function ProjectListPage({ onOpenProject }: ProjectListPageProps): JSX.Element {
+export function ProjectList({ onOpenProject }: ProjectListProps): JSX.Element {
   const createProject = useProjectStore((s) => s.createProject)
   const [projects, setProjects] = useState<ProjectSummary[] | null>(null)
   const [search, setSearch] = useState('')
