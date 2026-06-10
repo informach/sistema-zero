@@ -6,6 +6,7 @@ import { Button, ConfirmDialog } from '#ui'
 import { prefetchMode } from '../../modes/lazyModes'
 import type { ProjectSummary } from '../../state/persistence'
 import { loadSanitizedProjectById, useProjectStore } from '../../state/projectStore'
+import { StudioThemeScope } from '../../studio/theme'
 import { Spinner } from '../layout/LoadingViews'
 
 export interface ProjectCardProps {
@@ -240,7 +241,7 @@ export function ProjectCard({ summary, onChanged, onOpen }: ProjectCardProps): J
             {menuOpen &&
               menuPosition &&
               createPortal(
-                <>
+                <StudioThemeScope>
                   <button
                     type="button"
                     aria-label="Fechar menu de ações"
@@ -279,7 +280,7 @@ export function ProjectCard({ summary, onChanged, onOpen }: ProjectCardProps): J
                       {t('projects.delete')}
                     </MenuItem>
                   </div>
-                </>,
+                </StudioThemeScope>,
                 document.body,
               )}
           </div>

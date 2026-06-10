@@ -1,6 +1,7 @@
 import type { JSX } from 'react'
 import { type ReactNode, useEffect, useId, useRef } from 'react'
 import { createPortal } from 'react-dom'
+import { StudioThemeScope } from '../studio/theme'
 import { cn } from './cn'
 
 export interface ModalProps {
@@ -44,8 +45,11 @@ export function Modal({
   }, [open])
 
   if (!open) return null
+  // Portala para fora do root do <Studio> — o StudioThemeScope reaplica o
+  // [data-sz-theme] para os tokens de cor valerem dentro do modal.
   return createPortal(
-    <dialog
+    <StudioThemeScope>
+      <dialog
       ref={dialogRef}
       aria-modal="true"
       aria-labelledby={titleId}
@@ -79,7 +83,8 @@ export function Modal({
           </footer>
         )}
       </div>
-    </dialog>,
+      </dialog>
+    </StudioThemeScope>,
     document.body,
   )
 }

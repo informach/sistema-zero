@@ -1,29 +1,74 @@
 import type { JSX } from 'react'
 import { useEffect, useState } from 'react'
-import { EditorPage } from '../src/pages/EditorPage'
+import { type Project, Studio } from '@sistemazero/studio'
+import { LoadingScreen } from '../src/components/layout/LoadingViews'
 import { ProjectListPage } from '../src/pages/ProjectListPage'
-import { bootstrapPersistence } from '../src/state/persistence'
-import { useProjectStore } from '../src/state/projectStore'
+import { loadSanitizedProjectById } from '../src/state/projectStore'
 import { useSettingsStore } from '../src/state/settingsStore'
 
-// App do PLAYGROUND: simula o host que embarca o studio. A navegação
+// App do PLAYGROUND: simula o host que embarca o <Studio>. A navegação
 // lista ⇄ editor usa history.pushState direto (o package não tem router —
 // quem roteia é o app consumidor); manter /editor/:id na URL preserva o
-// comportamento de reload e os specs e2e. O lifecycle abaixo (persistência,
-// settings, tema, beforeunload) migra para dentro do <Studio> nas próximas
-// fases.
+// comportamento de reload e os specs e2e.
+//
+// Repare que o host NÃO seta data-sz-theme no <html>: o tema é escopado pelo
+// root do <Studio> — trocar o tema nas configurações do editor muda SÓ a área
+// do editor, provando o isolamento.
 type View = { name: 'list' } | { name: 'editor'; projectId: string }
 
 function parseViewFromLocation(): View {
   const match = window.location.pathname.match(/^\/editor\/(.+)$/)
-  return match?.[1] ? { name: 'editor', projectId: decodeURIComponent(match[1]) } : { name: 'list' }
+  return match?.[1]
+    ? { name: 'editor', projectId: decodeURIComponent(match[1]) }
+    : { name: 'list' }
+}
+
+type EditorState =
+  | { status: 'loading' }
+  | { status: 'ready'; project: Project }
+  | { status: 'not-found' }
+
+function EditorScreen({
+  projectId,
+  onExit,
+}: {
+  projectId: string
+  onExit: () => void
+}): JSX.Element {
+  const [state, setState] = useState<EditorState>({ status: 'loading' })
+
+  useEffect(() => {
+    let cancelled = false
+    setState({ status: 'loading' })
+    void loadSanitizedProjectById(projectId).then((project) => {
+      if (cancelled) return
+      setState(project ? { status: 'ready', project } : { status: 'not-found' })
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [projectId])
+
+  useEffect(() => {
+    if (state.status !== 'not-found') return
+    const timer = setTimeout(() => onExit(), 1500)
+    return () => clearTimeout(timer)
+  }, [state.status, onExit])
+
+  if (state.status === 'loading') return <LoadingScreen message="Carregando projeto…" />
+  if (state.status === 'not-found') {
+    return (
+      <div className="flex h-full flex-col items-center justify-center gap-2 bg-sz-bg text-sz-fg-soft">
+        <p className="text-sm">Projeto não encontrado. Voltando à lista…</p>
+      </div>
+    )
+  }
+  return <Studio initialProject={state.project} onExit={onExit} />
 }
 
 export function App(): JSX.Element {
   const loadSettings = useSettingsStore((s) => s.load)
-  const theme = useSettingsStore((s) => s.theme)
   const fontSize = useSettingsStore((s) => s.fontSize)
-  const isDirty = useProjectStore((s) => s.isDirty)
   const [view, setView] = useState<View>(() => parseViewFromLocation())
 
   const navigate = (next: View) => {
@@ -39,31 +84,19 @@ export function App(): JSX.Element {
   }, [])
 
   useEffect(() => {
-    const cleanup = bootstrapPersistence()
     void loadSettings()
-    return cleanup
   }, [loadSettings])
 
-  useEffect(() => {
-    document.documentElement.setAttribute('data-sz-theme', theme)
-  }, [theme])
-
+  // Escala global da UI — hack de app standalone que segue no playground até a
+  // fase que remove o fontSize de UI das configurações.
   useEffect(() => {
     document.documentElement.style.fontSize = `${fontSize}px`
   }, [fontSize])
 
-  useEffect(() => {
-    if (!isDirty) return
-    const onBeforeUnload = (event: BeforeUnloadEvent) => {
-      event.preventDefault()
-      event.returnValue = ''
-    }
-    window.addEventListener('beforeunload', onBeforeUnload)
-    return () => window.removeEventListener('beforeunload', onBeforeUnload)
-  }, [isDirty])
-
   if (view.name === 'editor') {
-    return <EditorPage projectId={view.projectId} onExit={() => navigate({ name: 'list' })} />
+    return <EditorScreen projectId={view.projectId} onExit={() => navigate({ name: 'list' })} />
   }
-  return <ProjectListPage onOpenProject={(id) => navigate({ name: 'editor', projectId: id })} />
+  return (
+    <ProjectListPage onOpenProject={(id) => navigate({ name: 'editor', projectId: id })} />
+  )
 }

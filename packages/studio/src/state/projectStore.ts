@@ -33,6 +33,8 @@ interface ProjectStore {
   isDirty: boolean
   saveError: string | null
   loadProject: (id: string) => Promise<Project | null>
+  /** Hidrata um projeto já sanitizado (host/<Studio>) SEM marcar como sujo. */
+  hydrateProject: (p: Project) => void
   unloadProject: () => void
   createProject: (name: string) => Promise<Project>
   duplicateProject: (id: string) => Promise<Project | null>
@@ -716,6 +718,15 @@ export async function loadSanitizedProjectById(id: string): Promise<Project | nu
   return sanitizeStoredProject(await loadProjectById(id), id)
 }
 
+/**
+ * Sanitiza um Project vindo do HOST (prop `initialProject` do <Studio>) com as
+ * mesmas regras aplicadas a projetos persistidos — protege contra JSON
+ * malformado/hostil passado pelo app que embarca o editor.
+ */
+export function sanitizeProjectForHost(raw: unknown): Project | null {
+  return sanitizeStoredProject(raw)
+}
+
 function getAllowedBlocklyBlockTypes(
   installedExtensions: InstalledExtension[],
 ): ReadonlySet<string> {
@@ -1166,6 +1177,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     set({ project: existing, isDirty: false, saveError: null })
     return existing
   },
+  hydrateProject: (p) => set({ project: p, isDirty: false, saveError: null }),
   unloadProject: () => set({ project: null, isDirty: false, saveError: null }),
   createProject: async (name) => {
     const p = createEmptyProject(ulid(), sanitizeProjectName(name))
