@@ -8,6 +8,8 @@ import {
   LessonAdminService,
   ModuleAdminService,
 } from '../src/application/content-admin/content-admin.service'
+import { AwardGamificationService } from '../src/application/gamification/award-gamification.service'
+import { GetGamificationService } from '../src/application/gamification/get-gamification.service'
 import { GetAttachmentDownloadService } from '../src/application/get-attachment-download/get-attachment-download.service'
 import { GetCourseProgressService } from '../src/application/get-course-progress/get-course-progress.service'
 import { GetCourseRatingService } from '../src/application/get-course-rating/get-course-rating.service'
@@ -36,6 +38,7 @@ import {
   InMemoryCourseRatingRepository,
   InMemoryCourseRepository,
   InMemoryEntitlementRepository,
+  InMemoryGamificationRepository,
   InMemoryProcessedWebhookRepository,
   InMemoryProgressRepository,
   InMemoryQuizAttemptRepository,
@@ -64,10 +67,12 @@ export function buildApp(
   const positions = new InMemoryVideoPositionRepository()
   const quizAttempts = new InMemoryQuizAttemptRepository()
   const ratings = new InMemoryCourseRatingRepository()
+  const gamification = new InMemoryGamificationRepository({ entitlements, courses })
   const processed = new InMemoryProcessedWebhookRepository()
   const catalog = new FakeCatalogGateway()
 
   const checkAccess = new CheckAccessService(courses, entitlements, clock)
+  const awardGamification = new AwardGamificationService(gamification, clock, silentLogger)
   const grant = new GrantEntitlementService({
     catalog,
     entitlements,
@@ -102,6 +107,7 @@ export function buildApp(
         courses,
         progress,
         quizAttempts,
+        awardGamification,
         clock,
       ),
       getProgress: new GetCourseProgressService(checkAccess, courses, progress),
@@ -112,9 +118,11 @@ export function buildApp(
         checkAccess,
         courses,
         quizAttempts,
+        awardGamification,
         () => randomUUID(),
         clock,
       ),
+      getGamification: new GetGamificationService(gamification, clock),
       internalToken: opts.internalToken,
     },
     webhooks: {
@@ -161,6 +169,7 @@ export function buildApp(
     positions,
     quizAttempts,
     ratings,
+    gamification,
     processed,
     catalog,
     clockRef,

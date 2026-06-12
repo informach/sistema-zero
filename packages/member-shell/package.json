@@ -10,7 +10,7 @@
     "./server/*": "./src/server/*.ts",
     "./lib/markdown": "./src/lib/markdown.tsx",
     "./lib/*": "./src/lib/*.ts",
-    "./components/ebook/*": "./src/components/ebook/*",
+    "./components/ebook/*": "./src/components/ebook/*.tsx",
     "./components/*": "./src/components/*.tsx",
     "./routes": "./src/routes/index.ts"
   },

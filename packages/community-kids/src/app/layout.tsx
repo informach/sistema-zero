@@ -13,8 +13,8 @@ const nunito = Nunito({ subsets: ['latin'], variable: '--font-nunito' })
 export const metadata: Metadata = {
   title: 'Sistema Zero Kids',
   description: 'Plataforma de cursos infanto-juvenil do Sistema Zero',
-  // ⚠️ Favicons/logos são PLACEHOLDERS herdados do community até a marca kids
-  // existir — trocar os assets em public/ quando o branding chegar.
+  // Favicons HERDADOS do community DE PROPÓSITO (decisão de marca: mesmo
+  // favicon). Logo = wordmark oficial + selo "kids" (KidsLogo/logo_kids_*.svg).
   icons: {
     icon: [
       { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },

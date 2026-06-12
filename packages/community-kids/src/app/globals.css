@@ -48,59 +48,69 @@
 }
 
 /* ============================================================
-   SISTEMA ZERO KIDS — LIGHT MODE (default: creme quente +
-   verde vibrante + laranja; vibe Duolingo×Brilliant, 8–13 anos)
+   SISTEMA ZERO KIDS — LIGHT MODE (default)
+   PALETA DA MARCA (mesma do comunidade-sistema-zero / community):
+   cyan #42E8E0 · lime #C4F042 · vermelho hot — no light o cyan
+   escurecido é primary (AA sobre branco), a lima escurecida é
+   accent; inverte no .dark. A vibe kids (Duolingo×Brilliant) vem
+   do USO: tints, gradientes, sombras duras 3D, radius 1rem.
    ============================================================ */
 :root {
-  --kids-green: oklch(0.65 0.2 145);
-  --kids-orange: oklch(0.72 0.17 60);
-  --kids-purple: oklch(0.55 0.2 295);
-  --kids-sky: oklch(0.7 0.14 230);
+  --brand-lime: oklch(0.875 0.215 122); /* #C4F042 */
+  --brand-cyan: oklch(0.84 0.13 192); /* #42E8E0 */
 
-  --background: oklch(0.985 0.015 95);
-  --foreground: oklch(0.2 0.03 280);
+  /* Sólidos kids — versões AA p/ texto branco no light (o neon puro
+     L≥0.84 só vira fundo de texto no dark, com texto navy). */
+  --kids-cyan: oklch(0.52 0.14 200);
+  --kids-lime: oklch(0.55 0.17 130);
+  --kids-cyan-tint: oklch(0.52 0.14 200 / 0.1);
+  --kids-lime-tint: oklch(0.55 0.17 130 / 0.12);
+
+  --background: oklch(0.985 0.004 100);
+  --foreground: oklch(0.105 0.01 265);
 
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0.03 280);
+  --card-foreground: oklch(0.105 0.01 265);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2 0.03 280);
+  --popover-foreground: oklch(0.105 0.01 265);
 
-  --primary: oklch(0.55 0.17 145);
+  --primary: oklch(0.52 0.14 200);
   --primary-foreground: oklch(1 0 0);
 
-  --link: oklch(0.48 0.16 230);
-  --link-hover: oklch(0.4 0.17 230);
+  --link: oklch(0.44 0.14 210);
+  --link-hover: oklch(0.38 0.15 210);
   --interactive-text: var(--link);
   --interactive-text-hover: var(--link-hover);
 
-  /* Gradient CTA — verde → azul-céu (vibrante mas legível). */
-  --brand-gradient-start: var(--kids-green);
-  --brand-gradient-end: var(--kids-sky);
+  /* Gradient CTA — cyan → lime no light (texto branco AA via --sz-gradient). */
+  --brand-gradient-start: var(--brand-cyan);
+  --brand-gradient-end: var(--brand-lime);
 
-  --secondary: oklch(0.95 0.03 95);
-  --secondary-foreground: oklch(0.25 0.04 280);
+  --secondary: oklch(0.955 0.004 255);
+  --secondary-foreground: oklch(0.145 0.01 265);
 
-  --muted: oklch(0.95 0.02 95);
-  --muted-foreground: oklch(0.48 0.03 280);
+  --muted: oklch(0.955 0.004 255);
+  --muted-foreground: oklch(0.5 0.01 255);
 
-  --accent: oklch(0.62 0.17 60);
+  --accent: oklch(0.62 0.18 135);
   --accent-foreground: oklch(1 0 0);
 
   --destructive: oklch(0.55 0.22 27);
   --destructive-foreground: oklch(1 0 0);
 
+  /* Sucesso (badge `success` do @sistemazero/ui) — igual community/admin. */
   --success: oklch(0.45 0.13 150);
   --success-foreground: oklch(0.4 0.13 150);
 
-  --border: oklch(0.89 0.02 95);
-  --input: oklch(0.91 0.02 95);
-  --ring: oklch(0.55 0.17 145);
+  --border: oklch(0.9 0.005 255);
+  --input: oklch(0.92 0.005 255);
+  --ring: oklch(0.52 0.14 200);
 
-  --chart-1: var(--kids-green);
-  --chart-2: var(--kids-orange);
-  --chart-3: var(--kids-purple);
-  --chart-4: var(--kids-sky);
-  --chart-5: oklch(0.48 0.03 280);
+  --chart-1: oklch(0.52 0.14 200);
+  --chart-2: oklch(0.62 0.18 135);
+  --chart-3: oklch(0.58 0.16 170);
+  --chart-4: oklch(0.55 0.22 27);
+  --chart-5: oklch(0.5 0.01 255);
 
   --font-sans:
     ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
@@ -112,70 +122,78 @@
   /* Cards bem arredondados (os --radius-sm/md/lg/xl derivam daqui). */
   --radius: 1rem;
 
-  /* Signature meta-tokens (gradiente CTA, hot badge) — nomes preservados. */
-  --sz-primary: oklch(0.55 0.17 145);
+  /* Signature meta-tokens (gradiente CTA, hot badge) — nomes preservados.
+     Gradiente light com pontas ESCURECIDAS (texto branco AA — truque do community). */
+  --sz-primary: oklch(0.52 0.14 200);
   --sz-primary-fg: oklch(1 0 0);
-  --sz-accent: oklch(0.62 0.17 60);
+  --sz-accent: oklch(0.62 0.18 135);
   --sz-hot: oklch(0.55 0.22 27);
   --sz-hot-tint: oklch(0.55 0.22 27 / 0.1);
-  --sz-gradient: linear-gradient(90deg, oklch(0.55 0.17 145), oklch(0.5 0.15 230));
+  --sz-gradient: linear-gradient(90deg, oklch(0.5 0.14 200), oklch(0.52 0.18 135));
 }
 
 /* ============================================================
-   SISTEMA ZERO KIDS — DARK MODE (mesma paleta, dessaturada
-   sobre azul-noite; o toggle continua no menu do avatar)
+   SISTEMA ZERO KIDS — DARK MODE (azul-noite #0D1117, lime neon
+   como primary, cyan como acento; o toggle continua no menu do
+   avatar)
    ============================================================ */
 .dark {
-  --background: oklch(0.16 0.02 280);
-  --foreground: oklch(0.97 0.005 95);
+  /* No dark os sólidos kids SÃO os neons da marca (texto navy por cima). */
+  --kids-cyan: var(--brand-cyan);
+  --kids-lime: var(--brand-lime);
+  --kids-cyan-tint: oklch(0.84 0.13 192 / 0.15);
+  --kids-lime-tint: oklch(0.875 0.215 122 / 0.15);
 
-  --card: oklch(0.2 0.025 280);
-  --card-foreground: oklch(0.97 0.005 95);
-  --popover: oklch(0.23 0.025 280);
-  --popover-foreground: oklch(0.97 0.005 95);
+  --background: oklch(0.103 0.01 265);
+  --foreground: oklch(0.975 0.003 255);
 
-  --primary: oklch(0.75 0.19 145);
-  --primary-foreground: oklch(0.16 0.02 280);
+  --card: oklch(0.14 0.01 265);
+  --card-foreground: oklch(0.975 0.003 255);
+  --popover: oklch(0.17 0.01 265);
+  --popover-foreground: oklch(0.975 0.003 255);
 
-  --link: oklch(0.78 0.13 230);
-  --link-hover: oklch(0.85 0.11 230);
+  --primary: var(--brand-lime);
+  --primary-foreground: oklch(0.103 0.01 265);
+
+  --link: oklch(0.875 0.215 122);
+  --link-hover: oklch(0.92 0.2 125);
   --interactive-text: var(--link);
   --interactive-text-hover: var(--link-hover);
 
-  --brand-gradient-start: oklch(0.75 0.19 145);
-  --brand-gradient-end: oklch(0.78 0.13 230);
+  --brand-gradient-start: var(--brand-lime);
+  --brand-gradient-end: var(--brand-cyan);
 
-  --secondary: oklch(0.25 0.03 280);
-  --secondary-foreground: oklch(0.97 0.005 95);
+  --secondary: oklch(0.185 0.01 265);
+  --secondary-foreground: oklch(0.975 0.003 255);
 
-  --muted: oklch(0.25 0.03 280);
-  --muted-foreground: oklch(0.66 0.02 280);
+  --muted: oklch(0.185 0.01 265);
+  --muted-foreground: oklch(0.6 0.012 235);
 
-  --accent: oklch(0.27 0.03 280);
-  --accent-foreground: oklch(0.78 0.15 60);
+  --accent: oklch(0.21 0.01 265);
+  --accent-foreground: oklch(0.84 0.13 192);
 
   --destructive: oklch(0.64 0.215 27);
-  --destructive-foreground: oklch(0.97 0.005 95);
+  --destructive-foreground: oklch(0.975 0.003 255);
 
-  --success: oklch(0.27 0.03 280);
-  --success-foreground: oklch(0.78 0.15 150);
+  --success: oklch(0.21 0.01 265);
+  --success-foreground: oklch(0.84 0.13 192);
 
-  --border: oklch(0.28 0.03 280);
-  --input: oklch(0.3 0.03 280);
-  --ring: oklch(0.75 0.19 145);
+  --border: oklch(0.21 0.01 265);
+  --input: oklch(0.23 0.01 265);
+  --ring: oklch(0.875 0.215 122);
 
-  --chart-1: oklch(0.75 0.19 145);
-  --chart-2: oklch(0.78 0.15 60);
-  --chart-3: oklch(0.72 0.16 295);
-  --chart-4: oklch(0.78 0.13 230);
-  --chart-5: oklch(0.66 0.02 280);
+  --chart-1: oklch(0.875 0.215 122);
+  --chart-2: oklch(0.84 0.13 192);
+  --chart-3: oklch(0.858 0.172 157);
+  --chart-4: oklch(0.64 0.215 27);
+  --chart-5: oklch(0.6 0.012 235);
 
-  --sz-primary: oklch(0.75 0.19 145);
-  --sz-primary-fg: oklch(0.16 0.02 280);
-  --sz-accent: oklch(0.78 0.15 60);
+  --sz-primary: oklch(0.875 0.215 122);
+  --sz-primary-fg: oklch(0.103 0.01 265);
+  --sz-accent: oklch(0.84 0.13 192);
   --sz-hot: oklch(0.704 0.191 22);
   --sz-hot-tint: oklch(0.704 0.191 22 / 0.15);
-  --sz-gradient: linear-gradient(90deg, oklch(0.75 0.19 145), oklch(0.78 0.13 230));
+  --sz-gradient: linear-gradient(90deg, oklch(0.875 0.215 122), oklch(0.84 0.13 192));
 }
 
 @layer base {
@@ -217,6 +235,18 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+/* Glow da marca p/ elevação em dark mode (portado do community). */
+.dark .brand-glow {
+  box-shadow:
+    0 0 12px color-mix(in oklch, var(--brand-lime) 35%, transparent),
+    0 0 24px color-mix(in oklch, var(--brand-lime) 15%, transparent);
+}
+.dark .brand-glow-cyan {
+  box-shadow:
+    0 0 12px color-mix(in oklch, var(--brand-cyan) 35%, transparent),
+    0 0 24px color-mix(in oklch, var(--brand-cyan) 15%, transparent);
 }
 
 /* Button variant="default" vira o CTA "3D" kids (sombra dura + afunda no clique). */
@@ -273,7 +303,7 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
   stroke: currentColor;
 }
 
-/* Hot badge — laranja kids com pulso sutil */
+/* Hot badge — vermelho da marca com pulso sutil */
 .sz-hot-badge {
   display: inline-flex;
   align-items: center;
@@ -311,12 +341,13 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
 /* Badges de categoria/nível sobre a capa do curso */
 .course-meta-badge {
   color: oklch(1 0 0);
-  border-color: color-mix(in oklch, var(--kids-orange) 35%, transparent);
+  border-color: color-mix(in oklch, var(--brand-lime) 30%, transparent);
   background-color: color-mix(in oklch, black 42%, transparent);
   backdrop-filter: blur(10px);
 }
 
-/* Progress bar gradiente — mais ALTA que a do community (criança enxerga o avanço) */
+/* Progress bar gradiente — mais ALTA que a do community (criança enxerga o
+   avanço) e com transição de width (a celebração anima antes→depois). */
 .sz-progress {
   position: relative;
   height: 0.625rem;
@@ -329,6 +360,7 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
   height: 100%;
   background-image: var(--sz-gradient);
   border-radius: inherit;
+  transition: width 0.6s ease;
 }
 
 /* Divider — hairline em gradiente */
@@ -380,6 +412,234 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
 }
 .kid-wiggle {
   animation: kid-wiggle 0.5s ease-in-out;
+}
+@keyframes kids-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+.kid-float {
+  animation: kids-float 4s ease-in-out infinite;
+}
+
+/* ============================================================
+   TRILHA (estilo Duolingo) — unidades coloridas + nós serpenteantes.
+   Temas de unidade por INDIREÇÃO (--unit/--unit-fg/--unit-bg):
+   banner, nós e balão herdam a cor da seção. Classes aplicadas via
+   mapa literal no course-trail.tsx (scanner do Tailwind à parte —
+   isto é CSS plano, mas o mapa evita template strings dinâmicas).
+   ============================================================ */
+:root {
+  --trail-step: 4.25rem; /* deslocamento horizontal por coluna do serpenteado */
+  --trail-row: 7.5rem; /* altura da linha (nó + legenda + respiro) */
+  --trail-node: 4.5rem; /* diâmetro do nó */
+}
+@media (max-width: 640px) {
+  :root {
+    --trail-step: 2.25rem;
+    --trail-row: 6.5rem;
+    --trail-node: 3.75rem;
+  }
+}
+
+.kids-unit-cyan {
+  --unit: var(--kids-cyan);
+  --unit-fg: oklch(1 0 0);
+  --unit-bg: var(--unit);
+  --unit-bg-image: none;
+}
+.kids-unit-lime {
+  --unit: var(--kids-lime);
+  --unit-fg: oklch(1 0 0);
+  --unit-bg: var(--unit);
+  --unit-bg-image: none;
+}
+.kids-unit-grad {
+  --unit: var(--sz-primary);
+  --unit-fg: var(--sz-primary-fg);
+  --unit-bg: transparent;
+  --unit-bg-image: var(--sz-gradient);
+}
+/* No dark os sólidos são neon → texto navy por cima. */
+.dark .kids-unit-cyan,
+.dark .kids-unit-lime {
+  --unit-fg: oklch(0.103 0.01 265);
+}
+
+.kids-unit-banner {
+  border-radius: calc(var(--radius) + 4px);
+  background-color: var(--unit-bg);
+  background-image: var(--unit-bg-image);
+  color: var(--unit-fg);
+  box-shadow: 0 4px 0 color-mix(in oklch, var(--unit) 55%, black);
+}
+
+/* Card de curso vestindo o tema da unidade (borda + sombra dura coloridas). */
+.kids-card {
+  border: 2px solid var(--unit);
+  box-shadow: 0 4px 0 color-mix(in oklch, var(--unit) 35%, transparent);
+}
+
+.kids-node {
+  width: var(--trail-node);
+  height: var(--trail-node);
+  border-radius: 9999px;
+  display: grid;
+  place-items: center;
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease;
+}
+.kids-node--done {
+  background-color: var(--unit-bg);
+  background-image: var(--unit-bg-image);
+  color: var(--unit-fg);
+  --node-shadow: color-mix(in oklch, var(--unit) 55%, black);
+  box-shadow: 0 5px 0 var(--node-shadow);
+}
+.kids-node--current {
+  background-color: var(--unit-bg);
+  background-image: var(--unit-bg-image);
+  color: var(--unit-fg);
+  --node-shadow: color-mix(in oklch, var(--unit) 55%, black);
+  box-shadow: 0 5px 0 var(--node-shadow);
+  animation: kids-ring 1.8s ease-out infinite;
+}
+.kids-node--todo {
+  background-color: var(--card);
+  color: var(--muted-foreground);
+  border: 2px solid var(--border);
+  --node-shadow: var(--border);
+  box-shadow: 0 5px 0 var(--node-shadow);
+}
+/* Baú de fim de unidade (gamificação): fechado = tracejado neutro;
+   aberto = veste o tema da unidade (mesmos tokens dos nós done). */
+.kids-node--chest-closed {
+  background-color: var(--card);
+  color: var(--muted-foreground);
+  border: 2px dashed var(--border);
+  --node-shadow: var(--border);
+  box-shadow: 0 5px 0 var(--node-shadow);
+}
+.kids-node--chest-open {
+  background-color: var(--unit-bg);
+  background-image: var(--unit-bg-image);
+  color: var(--unit-fg);
+  --node-shadow: color-mix(in oklch, var(--unit) 55%, black);
+  box-shadow: 0 5px 0 var(--node-shadow);
+}
+/* O alvo de clique é o <Link> ao redor; o nó afunda junto. */
+.kids-node-link:active .kids-node {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 var(--node-shadow);
+}
+@keyframes kids-ring {
+  0% {
+    outline: 4px solid color-mix(in oklch, var(--unit) 45%, transparent);
+    outline-offset: 2px;
+  }
+  70%,
+  100% {
+    outline: 4px solid transparent;
+    outline-offset: 12px;
+  }
+}
+
+/* Balão "COMEÇAR/CONTINUAR" sobre o nó atual (o transform é DONO do
+   centering — keyframes incluem o translateX(-50%)). */
+.kids-balloon {
+  position: absolute;
+  top: -2.5rem;
+  left: 50%;
+  z-index: 10;
+  font-family: var(--font-display);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  background: var(--card);
+  color: var(--unit);
+  border: 2px solid var(--unit);
+  border-radius: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  animation: kids-bob 1.4s ease-in-out infinite;
+}
+.kids-balloon::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -0.4rem;
+  width: 0.65rem;
+  height: 0.65rem;
+  transform: translateX(-50%) rotate(45deg);
+  background: var(--card);
+  border-right: 2px solid var(--unit);
+  border-bottom: 2px solid var(--unit);
+}
+@keyframes kids-bob {
+  0%,
+  100% {
+    transform: translate(-50%, 0);
+  }
+  50% {
+    transform: translate(-50%, -6px);
+  }
+}
+
+/* Conectores pontilhados entre nós consecutivos (posição inline). */
+.kids-trail-dot {
+  position: absolute;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background: var(--border);
+}
+.kids-trail-dot--done {
+  background: color-mix(in oklch, var(--unit) 55%, transparent);
+}
+
+/* ============================================================
+   CELEBRAÇÃO — confete em CSS puro (cores SÓ da marca; o bloco
+   reduced-motion abaixo zera a animação — o cleanup é por
+   setTimeout, nunca por animationend).
+   ============================================================ */
+.kids-confetti-piece {
+  position: absolute;
+  top: -8%;
+  width: 0.5rem;
+  height: 0.875rem;
+  border-radius: 2px;
+  pointer-events: none;
+  opacity: 0;
+  animation: kids-confetti-fall var(--confetti-duration, 2.4s) ease-in var(--confetti-delay, 0s) 1
+    forwards;
+}
+@keyframes kids-confetti-fall {
+  from {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(110vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+/* Blobs decorativos do auth (fundo lúdico em cores da marca). */
+.kids-blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(60px);
+  opacity: 0.25;
+  pointer-events: none;
+}
+.dark .kids-blob {
+  opacity: 0.18;
 }
 
 /* Esconde o reveal nativo de senha (usamos o toggle próprio Eye/EyeOff) */

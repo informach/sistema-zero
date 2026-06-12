@@ -18,6 +18,13 @@ import {
   EntitlementAggregate,
   type EntitlementState,
 } from '../../src/domain/entitlement/entitlement.aggregate'
+import type { BadgeSlug } from '../../src/domain/gamification/badges'
+import {
+  advanceStreak,
+  courseBadgeSlugs,
+  quizPerfectBadgeSlugs,
+  streakBadgeSlugs,
+} from '../../src/domain/gamification/gamification'
 import type { CatalogGateway, ResolvedOffer } from '../../src/domain/ports/catalog-gateway.port'
 import type {
   AttachmentFields,
@@ -38,6 +45,14 @@ import type {
   ListMembersResult,
   MemberSummary,
 } from '../../src/domain/ports/entitlement-repository.port'
+import type {
+  AwardInput,
+  AwardResult,
+  GamificationProfileRecord,
+  GamificationRanking,
+  GamificationRepository,
+  XpEventInput,
+} from '../../src/domain/ports/gamification-repository.port'
 import type { ProcessedWebhookRepository } from '../../src/domain/ports/processed-webhook-repository.port'
 import type { ProgressRepository } from '../../src/domain/ports/progress-repository.port'
 import type {
@@ -302,6 +317,10 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
         l.id !== opts?.excludeLessonId &&
         l.moduleId !== opts?.excludeModuleId,
     ).length
+  }
+
+  async listPublishedLessonIds(moduleId: string): Promise<string[]> {
+    return this.lessons.filter((l) => l.moduleId === moduleId && l.isPublished).map((l) => l.id)
   }
 
   async countLessonsByCourseIds(courseIds: string[]): Promise<Map<string, number>> {
@@ -574,9 +593,15 @@ export class InMemoryProgressRepository implements ProgressRepository {
   /** `lessonSource` espelha o join com `lessons.is_published` das contagens `*Published`. */
   constructor(private readonly lessonSource?: { lessons: Lesson[] }) {}
 
-  async markComplete(userId: string, lessonId: string, courseId: string, now: Date): Promise<void> {
-    if (this.completions.some((c) => c.userId === userId && c.lessonId === lessonId)) return
+  async markComplete(
+    userId: string,
+    lessonId: string,
+    courseId: string,
+    now: Date,
+  ): Promise<boolean> {
+    if (this.completions.some((c) => c.userId === userId && c.lessonId === lessonId)) return false
     this.completions.push({ userId, lessonId, courseId, completedAt: now })
+    return true
   }
 
   async countCompleted(userId: string, courseId: string): Promise<number> {
@@ -767,6 +792,166 @@ export class InMemoryQuizAttemptRepository implements QuizAttemptRepository {
       existing.everPassed = existing.everPassed || a.passed
     }
     return out
+  }
+}
+
+interface XpEventRow extends XpEventInput {
+  userId: string
+  audience: CourseAudience
+  createdAt: Date
+}
+
+/**
+ * Mirror da transação do Drizzle: ledger idempotente + streak + badges —
+ * TUDO segregado por vitrine (perfil/badges/contagens chaveiam user+audience).
+ */
+export class InMemoryGamificationRepository implements GamificationRepository {
+  readonly events: XpEventRow[] = []
+  readonly profiles = new Map<string, GamificationProfileRecord>()
+  readonly badges: {
+    userId: string
+    audience: CourseAudience
+    badgeSlug: string
+    unlockedAt: Date
+  }[] = []
+  /** Mirror da coluna `privileged` do perfil (equipe fora do ranking). */
+  readonly privilegedUsers = new Set<string>()
+  /** Simula indisponibilidade (testa o fail-open dos services). */
+  failAlways = false
+
+  /** Fontes p/ a coorte do ranking (mirror do join entitlements×courses). */
+  constructor(
+    private readonly sources?: {
+      entitlements: InMemoryEntitlementRepository
+      courses: InMemoryCourseRepository
+    },
+  ) {}
+
+  private profileKey(userId: string, audience: CourseAudience): string {
+    return `${userId}:${audience}`
+  }
+
+  async award(input: AwardInput): Promise<AwardResult> {
+    if (this.failAlways) throw new Error('gamification indisponível (fake)')
+
+    const newEvents: XpEventInput[] = []
+    for (const e of input.events) {
+      // UNIQUE continua (user, sourceType, sourceId) — um source pertence a UM curso.
+      const dup = this.events.some(
+        (x) =>
+          x.userId === input.userId && x.sourceType === e.sourceType && x.sourceId === e.sourceId,
+      )
+      if (dup) continue
+      this.events.push({
+        ...e,
+        userId: input.userId,
+        audience: input.audience,
+        createdAt: input.now,
+      })
+      newEvents.push(e)
+    }
+
+    const badgeCandidates = new Set<BadgeSlug>()
+    const countByType = (type: XpEventInput['sourceType']) =>
+      this.events.filter(
+        (x) => x.userId === input.userId && x.audience === input.audience && x.sourceType === type,
+      ).length
+    if (newEvents.some((e) => e.sourceType === 'lesson_complete')) {
+      if (countByType('lesson_complete') === 1) badgeCandidates.add('first-lesson')
+    }
+    if (newEvents.some((e) => e.sourceType === 'course_complete')) {
+      for (const slug of courseBadgeSlugs(countByType('course_complete'))) {
+        badgeCandidates.add(slug)
+      }
+    }
+    if (newEvents.some((e) => e.sourceType === 'quiz_perfect')) {
+      for (const slug of quizPerfectBadgeSlugs(countByType('quiz_perfect'))) {
+        badgeCandidates.add(slug)
+      }
+    }
+
+    const key = this.profileKey(input.userId, input.audience)
+    const profile = this.profiles.get(key)
+    const xpAwarded = newEvents.reduce((sum, e) => sum + e.amount, 0)
+    let totalXp = profile?.xp ?? 0
+    let streak = {
+      current: profile?.streakCurrent ?? 0,
+      best: profile?.streakBest ?? 0,
+      extended: false,
+    }
+
+    // Streak só com XP REAL novo (amount > 0) — MARCO não move (mirror do SQL).
+    if (newEvents.some((e) => e.amount > 0)) {
+      streak = advanceStreak(
+        {
+          streakCurrent: profile?.streakCurrent ?? 0,
+          streakBest: profile?.streakBest ?? 0,
+          lastActivityDate: profile?.lastActivityDate ?? null,
+        },
+        input.today,
+      )
+      totalXp += xpAwarded
+      this.profiles.set(key, {
+        userId: input.userId,
+        xp: totalXp,
+        streakCurrent: streak.current,
+        streakBest: streak.best,
+        lastActivityDate: input.today,
+      })
+      if (input.privileged) this.privilegedUsers.add(input.userId)
+      else this.privilegedUsers.delete(input.userId)
+      for (const slug of streakBadgeSlugs(streak.current)) badgeCandidates.add(slug)
+    }
+
+    const badgesUnlocked: { slug: string; unlockedAt: Date }[] = []
+    for (const slug of badgeCandidates) {
+      const dup = this.badges.some(
+        (b) => b.userId === input.userId && b.audience === input.audience && b.badgeSlug === slug,
+      )
+      if (dup) continue
+      this.badges.push({
+        userId: input.userId,
+        audience: input.audience,
+        badgeSlug: slug,
+        unlockedAt: input.now,
+      })
+      badgesUnlocked.push({ slug, unlockedAt: input.now })
+    }
+
+    return { xpAwarded, totalXp, streak, newEvents, badgesUnlocked }
+  }
+
+  async getProfile(
+    userId: string,
+    audience: CourseAudience,
+  ): Promise<GamificationProfileRecord | null> {
+    return this.profiles.get(this.profileKey(userId, audience)) ?? null
+  }
+
+  async listBadges(
+    userId: string,
+    audience: CourseAudience,
+  ): Promise<{ badgeSlug: string; unlockedAt: Date }[]> {
+    return this.badges
+      .filter((b) => b.userId === userId && b.audience === audience)
+      .map((b) => ({ badgeSlug: b.badgeSlug, unlockedAt: b.unlockedAt }))
+  }
+
+  /** Mirror do SQL: coorte = matrícula (qualquer status) em curso da audiência, SEM equipe. */
+  async getRanking(userId: string, audience: CourseAudience): Promise<GamificationRanking> {
+    const cohort = new Set<string>()
+    for (const e of this.sources?.entitlements.byId.values() ?? []) {
+      const course = this.sources?.courses.courses.find((c) => c.slug === e.courseRef)
+      if (course?.audience === audience && !this.privilegedUsers.has(e.userId)) {
+        cohort.add(e.userId)
+      }
+    }
+    const myXp = this.profiles.get(this.profileKey(userId, audience))?.xp ?? 0
+    let ahead = 0
+    for (const uid of cohort) {
+      if ((this.profiles.get(this.profileKey(uid, audience))?.xp ?? 0) > myXp) ahead += 1
+    }
+    return { position: ahead + 1, totalStudents: cohort.size }
   }
 }
 

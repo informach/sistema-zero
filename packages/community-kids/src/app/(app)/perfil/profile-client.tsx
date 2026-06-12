@@ -3,11 +3,12 @@
 import { UserAvatar } from '@sistemazero/member-shell/components/user-avatar'
 import { Button } from '@sistemazero/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@sistemazero/ui/card'
+import { Dialog } from '@sistemazero/ui/dialog'
 import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
 import { PasswordInput } from '@sistemazero/ui/password-input'
 import { Spinner } from '@sistemazero/ui/spinner'
-import { Camera } from 'lucide-react'
+import { Camera, Pencil, Trophy } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -18,6 +19,12 @@ import { getUserDisplayName } from '@/lib/user-display'
 
 const AVATAR_MIME_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp'])
 const AVATAR_MAX_BYTES = 5 * 1024 * 1024 // 5MB (mesma régua do servidor)
+
+/** Colocação no ranking kids (XP) — `null` = gamificação indisponível (esconde a linha). */
+export interface RankingInfo {
+  position: number
+  totalStudents: number
+}
 
 // SEM campo de telefone no kids (decisão da v1): o aluno infanto-juvenil não tem
 // telefone próprio — o contato é do RESPONSÁVEL e vive no cadastro da compra.
@@ -38,17 +45,37 @@ const PasswordSchema = z
     path: ['confirm'],
   })
 
-export function ProfileClient({ user }: { user: UserView }) {
+/**
+ * Perfil kids: 1 card de identidade (foto CLICÁVEL = único caminho de troca,
+ * nome + e-mail + colocação no ranking kids) e o botão "Editar perfil" abre o
+ * modal com os formulários de dados pessoais e senha (decisão 06/2026 — antes
+ * eram dois cards soltos na página).
+ */
+export function ProfileClient({ user, ranking }: { user: UserView; ranking: RankingInfo | null }) {
+  const [editing, setEditing] = useState(false)
+
   return (
-    <div className="flex flex-col gap-6">
-      <AvatarForm user={user} />
-      <ProfileForm user={user} />
-      <PasswordForm />
-    </div>
+    <>
+      <IdentityCard user={user} ranking={ranking} onEdit={() => setEditing(true)} />
+      <Dialog open={editing} onClose={() => setEditing(false)} title="Editar perfil">
+        <div className="flex flex-col gap-5">
+          <ProfileForm user={user} />
+          <PasswordForm />
+        </div>
+      </Dialog>
+    </>
   )
 }
 
-function AvatarForm({ user }: { user: UserView }) {
+function IdentityCard({
+  user,
+  ranking,
+  onEdit,
+}: {
+  user: UserView
+  ranking: RankingInfo | null
+  onEdit: () => void
+}) {
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [preview, setPreview] = useState<string | null>(null)
@@ -96,14 +123,14 @@ function AvatarForm({ user }: { user: UserView }) {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Foto de perfil</CardTitle>
-      </CardHeader>
-      <CardContent>
+      {/* Sem CardHeader: o pt-0 default do CardContent deixaria o card sem topo. */}
+      <CardContent className="pt-6">
         <div className="flex flex-wrap items-center gap-5">
+          {/* ÚNICO caminho de troca da foto: clicar na própria foto. */}
           <button
             type="button"
-            aria-label="Trocar foto"
+            aria-label="Trocar foto de perfil"
+            title="Trocar foto"
             disabled={uploading}
             onClick={() => fileInputRef.current?.click()}
             className="group relative shrink-0 cursor-pointer overflow-hidden rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
@@ -119,16 +146,27 @@ function AvatarForm({ user }: { user: UserView }) {
               aria-hidden="true"
               className="absolute inset-0 flex items-center justify-center rounded-full bg-black/45 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
             >
-              <Camera className="size-6 text-white" />
+              {uploading ? (
+                <Spinner className="text-white" />
+              ) : (
+                <Camera className="size-6 text-white" />
+              )}
             </span>
           </button>
           <div className="min-w-0 flex-1">
             <p className="font-semibold">
               {getUserDisplayName(user.firstName, user.lastName, user.email)}
             </p>
-            <p className="text-sm text-muted-foreground">
-              Recomendamos usar uma imagem PNG, JPG ou WebP de até 5 MB.
-            </p>
+            <p className="truncate text-muted-foreground text-sm">{user.email}</p>
+            {ranking ? (
+              <p className="mt-1.5 flex items-center gap-1.5 text-sm">
+                <Trophy className="size-4 shrink-0 text-primary" />
+                <span className="font-bold [font-family:var(--font-display)]">
+                  {ranking.position}º lugar
+                </span>
+                <span className="text-muted-foreground">no ranking</span>
+              </p>
+            ) : null}
           </div>
           <input
             ref={fileInputRef}
@@ -137,14 +175,9 @@ function AvatarForm({ user }: { user: UserView }) {
             className="hidden"
             onChange={onFileChange}
           />
-          <Button
-            type="button"
-            variant="outline"
-            disabled={uploading}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            {uploading ? <Spinner /> : <Camera className="size-4" />}
-            Trocar foto
+          <Button type="button" variant="outline" onClick={onEdit}>
+            <Pencil className="size-4" />
+            Editar perfil
           </Button>
         </div>
       </CardContent>

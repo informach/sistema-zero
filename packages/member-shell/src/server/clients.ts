@@ -7,10 +7,13 @@ import type {
   CourseFeedbackAnswers,
   CourseRatingView,
   EbookDownloadView,
+  GamificationMeView,
+  LessonCompleteResult,
   LessonDetailView,
   MyCourseView,
   Paginated,
   PaymentView,
+  QuizAttemptResultView,
   UserView,
 } from '../lib/types'
 import { clientForwardHeaders, type GatewayModule, type GatewayResponse } from './gateway'
@@ -157,9 +160,40 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       )
     },
 
-    /** Marca a aula como concluída (idempotente no members). */
-    markLessonComplete(lessonId: string): Promise<GatewayResponse<unknown>> {
+    /**
+     * Marca a aula como concluída (idempotente no members). A resposta traz o
+     * progresso + `gamification` (delta de XP/streak/badges — a UI celebra sem
+     * round-trip).
+     */
+    markLessonComplete(lessonId: string): Promise<GatewayResponse<LessonCompleteResult>> {
       return gw.gatewayFetch(`/members/lessons/${enc(lessonId)}/complete`, { method: 'POST' })
+    },
+
+    /**
+     * Perfil de gamificação do aluno NA VITRINE deste app (XP/streak/badges e
+     * ranking são SEGREGADOS por audiência — kids e adult não se misturam) —
+     * Route Handlers. `withRanking` inclui a colocação no ranking de XP
+     * (cálculo extra — só a página de perfil pede).
+     */
+    getGamification(opts?: {
+      withRanking?: boolean
+    }): Promise<GatewayResponse<GamificationMeView>> {
+      return gw.gatewayFetch('/members/gamification/me', {
+        query: { audience, ...(opts?.withRanking ? { ranking: 'true' } : {}) },
+      })
+    },
+
+    /**
+     * Perfil de gamificação SEM refresh/escrita de cookie — o seguro em Server
+     * Components (layout/home/perfil). 401 → caller esconde o widget (best-effort,
+     * mesmo padrão do `getMeReadonly`).
+     */
+    getGamificationReadonly(opts?: {
+      withRanking?: boolean
+    }): Promise<GatewayResponse<GamificationMeView>> {
+      return gw.gatewayFetchReadonly('/members/gamification/me', {
+        query: { audience, ...(opts?.withRanking ? { ranking: 'true' } : {}) },
+      })
     },
 
     /** Salva a posição de reprodução do vídeo (throttled no client). */
@@ -194,7 +228,7 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       lessonId: string,
       blockId: string,
       answers: Record<string, string[]>,
-    ): Promise<GatewayResponse<unknown>> {
+    ): Promise<GatewayResponse<QuizAttemptResultView>> {
       return gw.gatewayFetch(
         `/members/lessons/${enc(lessonId)}/blocks/${enc(blockId)}/quiz-attempts`,
         { method: 'POST', body: { answers } },

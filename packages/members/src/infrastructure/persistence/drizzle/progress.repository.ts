@@ -7,11 +7,18 @@ import { lessonCompletions, lessons } from './schema'
 export class DrizzleProgressRepository implements ProgressRepository {
   constructor(private readonly db: Database) {}
 
-  async markComplete(userId: string, lessonId: string, courseId: string, now: Date): Promise<void> {
-    await this.db
+  async markComplete(
+    userId: string,
+    lessonId: string,
+    courseId: string,
+    now: Date,
+  ): Promise<boolean> {
+    const inserted = await this.db
       .insert(lessonCompletions)
       .values({ id: randomUUID(), userId, lessonId, courseId, completedAt: now })
       .onConflictDoNothing({ target: [lessonCompletions.userId, lessonCompletions.lessonId] })
+      .returning({ id: lessonCompletions.id })
+    return inserted.length > 0
   }
 
   async countCompleted(userId: string, courseId: string): Promise<number> {

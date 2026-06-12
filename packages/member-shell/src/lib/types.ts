@@ -240,6 +240,62 @@ export interface QuizQuestionResultView {
   explanation: string | null
 }
 
+// ── Gamificação (XP/streak/badges — vitrine v1 = community-kids) ────────────
+/** Catálogo v1 de badges (mirror de members `domain/gamification/badges.ts`). */
+export type BadgeSlug =
+  | 'first-lesson'
+  | 'streak-7'
+  | 'streak-30'
+  | 'streak-60'
+  | 'streak-180'
+  | 'streak-365'
+  | 'course-complete'
+  | 'course-complete-2'
+  | 'course-complete-3'
+  | 'quiz-perfect'
+  | 'quiz-perfect-10'
+  | 'quiz-perfect-30'
+
+/**
+ * Delta de UMA ação (complete/quiz aprovado) — vem NA resposta da ação (a UI
+ * celebra sem round-trip). `null` = award falhou no members (fail-open) ou
+ * resposta de um members antigo sem o campo.
+ */
+export interface GamificationDelta {
+  /** XP desta ação (0 = já premiado antes — ledger idempotente). */
+  xpAwarded: number
+  totalXp: number
+  streak: { current: number; best: number; extended: boolean }
+  /** `slug` largo de propósito (forward-compat) — a UI ignora slug desconhecido. */
+  badgesUnlocked: { slug: string; unlockedAt: string }[]
+  /** `true` quando ESTA ação fechou a unidade (baú já incluído no xpAwarded). */
+  unitCompleted: boolean
+}
+
+/** `GET /members/gamification/me` — widgets (sidebar/home) e vitrine do perfil. */
+export interface GamificationMeView {
+  xp: number
+  streak: {
+    /** Streak de exibição: 0 quando quebrado. */
+    current: number
+    best: number
+    /** Já houve atividade com XP hoje (dia civil de São Paulo). */
+    activeToday: boolean
+  }
+  /** Catálogo COMPLETO na ordem do members — bloqueada tem `unlockedAt: null`. */
+  badges: { slug: string; unlockedAt: string | null }[]
+  /**
+   * Colocação no ranking de XP da VITRINE do app (rankings adult/kids são
+   * separados). Presente só quando pedido com `withRanking` (página de perfil).
+   */
+  ranking?: { position: number; totalStudents: number }
+}
+
+/** `POST /members/lessons/:lessonId/complete` — progresso + delta de gamificação. */
+export interface LessonCompleteResult extends CourseProgressView {
+  gamification: GamificationDelta | null
+}
+
 /** `POST /members/lessons/:lessonId/blocks/:blockId/quiz-attempts`. */
 export interface QuizAttemptResultView {
   score: number
@@ -248,6 +304,8 @@ export interface QuizAttemptResultView {
   attemptsCount: number
   retryAvailableAt: string | null
   questions: QuizQuestionResultView[]
+  /** Delta de XP/streak — só quando APROVADO (`null` reprovado/award falhou). */
+  gamification?: GamificationDelta | null
 }
 
 /** Bloco como chega da API (`content` é `unknown` na borda — narrowing por `kind`). */

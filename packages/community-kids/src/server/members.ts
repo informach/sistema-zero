@@ -12,4 +12,6 @@ export const {
   saveVideoPosition,
   saveCourseRating,
   submitQuizAttempt,
+  getGamification,
+  getGamificationReadonly,
 } = shell.members

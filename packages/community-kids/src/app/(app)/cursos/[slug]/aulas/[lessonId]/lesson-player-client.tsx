@@ -1,7 +1,5 @@
 'use client'
 
-import { LessonAttachments } from '@sistemazero/member-shell/components/lesson-attachments'
-import { LessonBlocks } from '@sistemazero/member-shell/components/lesson-blocks'
 import {
   type LessonPlayerContextValue,
   LessonPlayerProvider,
@@ -10,14 +8,26 @@ import { ProgressBar } from '@sistemazero/member-shell/components/progress-bar'
 import { Button, buttonVariants } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Spinner } from '@sistemazero/ui/spinner'
-import { ArrowLeft, ArrowRight, CheckCircle2, ChevronLeft, Circle } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { CourseRatingFlow, type RatingViewer } from '@/components/kids/course-rating-flow'
+import { KidsLessonAttachments } from '@/components/kids/kids-lesson-attachments'
+import { KidsLessonBlocks } from '@/components/kids/kids-lesson-blocks'
+import { LessonCelebration } from '@/components/kids/lesson-celebration'
+import { UNIT_THEME_CLASS, unitThemeAt } from '@/components/kids/unit-theme'
 import { type ApiError, apiSend } from '@/lib/api'
 import { cn } from '@/lib/cn'
-import type { CourseDetailView, LessonDetailView, QuizBlock } from '@/lib/types'
+import type {
+  CourseDetailView,
+  CourseProgressView,
+  GamificationDelta,
+  LessonCompleteResult,
+  LessonDetailView,
+  QuizBlock,
+} from '@/lib/types'
 
 interface Props {
   course: CourseDetailView
@@ -26,15 +36,46 @@ interface Props {
   nextHref: string | null
   /** E-mail do aluno (sessão) — watermark do player de vídeo. */
   viewerEmail: string | null
+  /** Aluno exibido no agradecimento da classificação (avatar + nome). */
+  ratingViewer: RatingViewer
+  /** Página de vendas do curso (Compartilhar) — `null` oculta o botão. */
+  shareUrl: string | null
 }
 
 /** Persistência da posição: salva no máximo a cada N segundos durante o playback. */
 const POSITION_SAVE_INTERVAL_MS = 12_000
 
-export function LessonPlayer({ course, lesson, prevHref, nextHref, viewerEmail }: Props) {
+export function LessonPlayer({
+  course,
+  lesson,
+  prevHref,
+  nextHref,
+  viewerEmail,
+  ratingViewer,
+  shareUrl,
+}: Props) {
   const router = useRouter()
   const [completing, setCompleting] = useState(false)
+  // Snapshot do progresso ANTES do refresh (a celebração anima antes→depois)
+  // + delta de gamificação vindo na RESPOSTA do complete; null = overlay fechado.
+  const [celebration, setCelebration] = useState<{
+    progress: CourseProgressView
+    gamification: GamificationDelta | null
+  } | null>(null)
   const courseHref = `/cursos/${encodeURIComponent(course.slug)}`
+
+  // Numeração global da aula ("AULA N DE M" + círculos da mini-trilha).
+  const flatLessons = useMemo(() => course.modules.flatMap((m) => m.lessons), [course.modules])
+  const lessonNumber = flatLessons.findIndex((l) => l.id === lesson.id) + 1
+  const moduleStartIndexes = useMemo(() => {
+    const starts: number[] = []
+    let acc = 0
+    for (const m of course.modules) {
+      starts.push(acc)
+      acc += m.lessons.length
+    }
+    return starts
+  }, [course.modules])
 
   // Há quiz com nota de corte ainda não aprovado? (bloqueia o concluir — 409 no backend)
   const blockedByQuiz = useMemo(
@@ -118,10 +159,22 @@ export function LessonPlayer({ course, lesson, prevHref, nextHref, viewerEmail }
       if (completedRef.current) return
       if (!opts.silent) setCompleting(true)
       try {
-        await apiSend(`/api/members/lessons/${encodeURIComponent(lesson.id)}/complete`, 'POST')
+        const res = await apiSend<LessonCompleteResult>(
+          `/api/members/lessons/${encodeURIComponent(lesson.id)}/complete`,
+          'POST',
+        )
         completedRef.current = true
-        toast.success('Aula concluída!')
-        if (!opts.silent && nextHref) router.push(nextHref)
+        const gamification = res?.gamification ?? null
+        if (opts.silent) {
+          // Auto-conclusão a ~90% do vídeo: só o toast (com o XP ganho) —
+          // interromper o vídeo com um overlay no meio da reprodução seria hostil.
+          const xp = gamification?.xpAwarded ?? 0
+          toast.success(xp > 0 ? `Aula concluída! +${xp} XP` : 'Aula concluída!')
+        } else {
+          // Celebração assume a navegação (snapshot ANTES do refresh — as
+          // props de progresso mudam quando o server re-renderiza).
+          setCelebration({ progress: course.progress, gamification })
+        }
         router.refresh()
       } catch (err) {
         const apiErr = err as ApiError
@@ -137,7 +190,7 @@ export function LessonPlayer({ course, lesson, prevHref, nextHref, viewerEmail }
         if (!opts.silent) setCompleting(false)
       }
     },
-    [lesson.id, nextHref, router],
+    [lesson.id, course.progress, router],
   )
 
   const onVideoReachedThreshold = useCallback(() => {
@@ -174,22 +227,31 @@ export function LessonPlayer({ course, lesson, prevHref, nextHref, viewerEmail }
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
         {/* Conteúdo principal */}
         <div className="flex min-w-0 flex-1 flex-col gap-6">
-          {/* mb-2: título → 1º bloco fica um pouco maior que o gap entre blocos */}
-          <div className="mb-2">
+          {/* Header de "lição" (padrão Duolingo): voltar em círculo + progresso do CURSO. */}
+          <div className="flex items-center gap-3">
             <Link
               href={courseHref}
-              className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+              aria-label={`Voltar à trilha de ${course.title}`}
+              className="grid size-10 shrink-0 place-items-center rounded-full border-2 border-border bg-card text-muted-foreground shadow-[0_3px_0_var(--border)] transition-all hover:text-foreground active:translate-y-[2px] active:shadow-[0_1px_0_var(--border)]"
             >
-              <ChevronLeft className="size-4" />
-              {course.title}
+              <ArrowLeft className="size-5" />
             </Link>
-            <h1 className="sz-display mt-2 text-2xl">{lesson.title}</h1>
+            <ProgressBar value={course.progress.percent} className="flex-1" />
+            <span className="sz-display text-sm">{course.progress.percent}%</span>
           </div>
 
-          <LessonBlocks blocks={lesson.blocks} />
+          {/* mb-2: título → 1º bloco fica um pouco maior que o gap entre blocos */}
+          <div className="mb-2">
+            <span className="inline-block rounded-full px-3 py-1 font-bold text-xs uppercase tracking-widest [background-image:var(--sz-gradient)] [font-family:var(--font-display)] text-(--sz-primary-fg)">
+              Aula {lessonNumber} de {flatLessons.length}
+            </span>
+            <h1 className="sz-display mt-3 text-2xl md:text-3xl">{lesson.title}</h1>
+          </div>
+
+          <KidsLessonBlocks blocks={lesson.blocks} />
 
           {lesson.attachments.length > 0 ? (
-            <LessonAttachments
+            <KidsLessonAttachments
               courseSlug={course.slug}
               lessonId={lesson.id}
               attachments={lesson.attachments}
@@ -205,12 +267,18 @@ export function LessonPlayer({ course, lesson, prevHref, nextHref, viewerEmail }
               </span>
             ) : (
               <div className="flex flex-col gap-1">
-                <Button onClick={() => complete()} disabled={completing || blockedByQuiz}>
-                  {completing ? <Spinner /> : <CheckCircle2 className="size-4" />}
+                {/* CTA 3D grande (o seletor global do Button default já aplica
+                    a sombra dura + afunda no clique). */}
+                <Button
+                  onClick={() => complete()}
+                  disabled={completing || blockedByQuiz}
+                  className="h-12 rounded-full px-8 text-base"
+                >
+                  {completing ? <Spinner /> : <CheckCircle2 className="size-5" />}
                   Concluir aula
                 </Button>
                 {blockedByQuiz ? (
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     Passe no quiz da aula para poder concluí-la.
                   </p>
                 ) : null}
@@ -218,13 +286,19 @@ export function LessonPlayer({ course, lesson, prevHref, nextHref, viewerEmail }
             )}
             <div className="ml-auto flex items-center gap-2">
               {prevHref ? (
-                <Link href={prevHref} className={buttonVariants({ variant: 'outline' })}>
+                <Link
+                  href={prevHref}
+                  className={cn(buttonVariants({ variant: 'outline' }), 'h-11 rounded-full px-5')}
+                >
                   <ArrowLeft className="size-4" />
                   Anterior
                 </Link>
               ) : null}
               {nextHref ? (
-                <Link href={nextHref} className={buttonVariants({ variant: 'outline' })}>
+                <Link
+                  href={nextHref}
+                  className={cn(buttonVariants({ variant: 'outline' }), 'h-11 rounded-full px-5')}
+                >
                   Próxima
                   <ArrowRight className="size-4" />
                 </Link>
@@ -233,44 +307,59 @@ export function LessonPlayer({ course, lesson, prevHref, nextHref, viewerEmail }
           </div>
         </div>
 
-        {/* Outline do curso (sidebar) */}
-        {/* lg:mt-7 alinha o topo do card com o título da aula (breadcrumb 20px + mt-2 do h1) */}
-        <aside className="w-full shrink-0 lg:sticky lg:top-20 lg:mt-7 lg:w-72">
+        {/* Outline do curso (sidebar) como MINI-TRILHA: módulos = unidades
+            temáticas, aulas = círculos numerados. lg:top-6: sem header fixo
+            no desktop (a navegação é a sidebar do app). */}
+        <aside className="w-full shrink-0 lg:sticky lg:top-6 lg:w-72">
           <Card className="overflow-hidden p-0">
-            <div className="border-b border-border px-4 py-3">
-              <p className="text-sm font-semibold">{course.title}</p>
-              <div className="mt-2 flex items-center gap-2">
-                <ProgressBar value={course.progress.percent} className="flex-1" />
-                <span className="sz-display text-xs">{course.progress.percent}%</span>
-              </div>
-              {/* Sem fluxo de classificação no kids (decisão da v1). */}
+            {/* Sem barra de progresso aqui: o header da lição (topo) já a mostra. */}
+            <div className="border-border border-b px-4 py-3">
+              <p className="sz-display text-sm">{course.title}</p>
+              <CourseRatingFlow
+                courseSlug={course.slug}
+                initialRating={course.myRating}
+                shareUrl={shareUrl}
+                viewer={ratingViewer}
+              />
             </div>
             <nav className="scrollbar-subtle max-h-[28rem] overflow-y-auto">
-              {course.modules.map((module) => (
-                <div key={module.id}>
-                  <p className="bg-muted/40 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              {course.modules.map((module, moduleIndex) => (
+                <div key={module.id} className={UNIT_THEME_CLASS[unitThemeAt(moduleIndex)]}>
+                  <p className="bg-muted/40 px-4 py-1.5 font-bold text-(--unit) text-xs uppercase tracking-wide [font-family:var(--font-display)]">
                     {module.title}
                   </p>
                   <ul>
-                    {module.lessons.map((item) => {
+                    {module.lessons.map((item, lessonIndex) => {
                       const active = item.id === lesson.id
+                      const number = (moduleStartIndexes[moduleIndex] ?? 0) + lessonIndex + 1
                       return (
                         <li key={item.id}>
                           <Link
                             href={`${courseHref}/aulas/${encodeURIComponent(item.id)}`}
                             className={cn(
-                              'flex items-center gap-2 px-4 py-2 text-sm transition-colors',
+                              'flex items-center gap-2.5 px-4 py-2 text-sm transition-colors',
                               active
-                                ? 'bg-muted font-medium text-foreground'
+                                ? 'bg-[color-mix(in_oklch,var(--unit)_12%,transparent)] font-semibold text-foreground'
                                 : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
                             )}
                             aria-current={active ? 'page' : undefined}
                           >
-                            {item.completed ? (
-                              <CheckCircle2 className="size-3.5 shrink-0 text-accent dark:text-primary" />
-                            ) : (
-                              <Circle className="size-3.5 shrink-0" />
-                            )}
+                            <span
+                              className={cn(
+                                'grid size-6 shrink-0 place-items-center rounded-full border-2 font-bold text-[0.65rem] [font-family:var(--font-display)]',
+                                item.completed
+                                  ? 'border-transparent [background-color:var(--unit-bg)] [background-image:var(--unit-bg-image)] text-(--unit-fg)'
+                                  : active
+                                    ? 'border-(--unit) text-(--unit)'
+                                    : 'border-border',
+                              )}
+                            >
+                              {item.completed ? (
+                                <Check className="size-3.5" strokeWidth={3.5} />
+                              ) : (
+                                number
+                              )}
+                            </span>
                             <span className="truncate">{item.title}</span>
                           </Link>
                         </li>
@@ -283,6 +372,16 @@ export function LessonPlayer({ course, lesson, prevHref, nextHref, viewerEmail }
           </Card>
         </aside>
       </div>
+
+      {celebration ? (
+        <LessonCelebration
+          progressBefore={celebration.progress}
+          gamification={celebration.gamification}
+          nextHref={nextHref}
+          courseHref={courseHref}
+          onClose={() => setCelebration(null)}
+        />
+      ) : null}
     </LessonPlayerProvider>
   )
 }

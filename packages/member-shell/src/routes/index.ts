@@ -659,6 +659,14 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     },
   }
 
+  /** Perfil de gamificação do aluno (XP/streak/badges) — widgets client-side. */
+  const gamificationMe = {
+    GET: async () => {
+      const { status, body } = await members.getGamification()
+      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+    },
+  }
+
   /**
    * Persiste a posição do vídeo (throttled no client). Aceita também o corpo do
    * `navigator.sendBeacon` (que pode chegar como text/plain) — por isso o parse é
@@ -773,6 +781,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     ebookDownload,
     courseRating,
     lessonComplete,
+    gamificationMe,
     lessonPosition,
     quizAttempts,
     paymentsMy,

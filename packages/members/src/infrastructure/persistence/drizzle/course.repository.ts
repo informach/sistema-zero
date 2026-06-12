@@ -181,6 +181,14 @@ export class DrizzleCourseRepository implements CourseRepository {
     return row?.c ?? 0
   }
 
+  async listPublishedLessonIds(moduleId: string): Promise<string[]> {
+    const rows = await this.db
+      .select({ id: lessons.id })
+      .from(lessons)
+      .where(and(eq(lessons.moduleId, moduleId), eq(lessons.isPublished, true)))
+    return rows.map((r) => r.id)
+  }
+
   async countLessonsByCourseIds(courseIds: string[]): Promise<Map<string, number>> {
     if (courseIds.length === 0) return new Map()
     const rows = await this.db

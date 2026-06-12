@@ -13,6 +13,8 @@ import {
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { QuizAttemptRepository } from '../../domain/ports/quiz-attempt-repository.port'
 import type { CheckAccessService } from '../access/check-access.service'
+import type { AwardGamificationService } from '../gamification/award-gamification.service'
+import type { GamificationDeltaView } from '../mappers/views'
 
 export interface QuizAttemptResultView {
   score: number
@@ -23,6 +25,8 @@ export interface QuizAttemptResultView {
   retryAvailableAt: string | null
   /** Correções por questão — o gabarito SÓ trafega aqui. */
   questions: QuizQuestionResult[]
+  /** Delta de XP/streak/badges — só quando APROVADO (`null` reprovado/falha do award). */
+  gamification: GamificationDeltaView | null
 }
 
 /**
@@ -35,6 +39,7 @@ export class SubmitQuizAttemptService {
     private readonly checkAccess: CheckAccessService,
     private readonly courses: CourseRepository,
     private readonly attempts: QuizAttemptRepository,
+    private readonly gamification: AwardGamificationService,
     private readonly newId: () => string,
     private readonly clock: () => Date,
   ) {}
@@ -49,7 +54,8 @@ export class SubmitQuizAttemptService {
     const lesson = await this.courses.findLessonWithContent(lessonId)
     // Aula rascunho é invisível ao aluno → também não aceita tentativas de quiz.
     if (!lesson?.isPublished) throw new LessonNotFoundError()
-    await this.checkAccess.requireById(userId, lesson.courseId, privileged)
+    // O curso dá a VITRINE do award (gamificação é segregada por audiência).
+    const { course } = await this.checkAccess.requireById(userId, lesson.courseId, privileged)
 
     const block = lesson.blocks.find((b) => b.id === blockId)
     if (block?.content.kind !== 'quiz') throw new QuizBlockNotFoundError()
@@ -85,6 +91,18 @@ export class SubmitQuizAttemptService {
       )
     }
 
+    // XP só no quiz APROVADO (reprovar não pune nem premia). Re-aprovação não
+    // re-premia (ledger por blockId) — mas nota 100 ainda destrava a badge.
+    const gamification = grade.passed
+      ? await this.gamification.awardQuizPassed({
+          userId,
+          blockId,
+          score: grade.score,
+          audience: course.audience,
+          privileged,
+        })
+      : null
+
     return {
       score: grade.score,
       passed: grade.passed,
@@ -94,6 +112,7 @@ export class SubmitQuizAttemptService {
         ? null
         : new Date(now.getTime() + QUIZ_RETRY_COOLDOWN_MS).toISOString(),
       questions: grade.questions,
+      gamification,
     }
   }
 }

@@ -1,4 +1,5 @@
 import { Elysia } from 'elysia'
+import type { GetGamificationService } from '../../../application/gamification/get-gamification.service'
 import type { GetAttachmentDownloadService } from '../../../application/get-attachment-download/get-attachment-download.service'
 import type { GetCourseProgressService } from '../../../application/get-course-progress/get-course-progress.service'
 import type { GetCourseRatingService } from '../../../application/get-course-rating/get-course-rating.service'
@@ -17,6 +18,7 @@ import {
   AudienceQuery,
   CourseRatingBody,
   EbookResolveParams,
+  GamificationQuery,
   LessonIdParams,
   QuizAttemptBody,
   QuizAttemptParams,
@@ -37,6 +39,7 @@ export interface MembersRoutesDeps {
   submitQuiz: SubmitQuizAttemptService
   getCourseRating: GetCourseRatingService
   saveCourseRating: SaveCourseRatingService
+  getGamification: GetGamificationService
   /** Token interno do gateway (defesa em profundidade). Vazio em dev → checagem desligada. */
   internalToken?: string
 }
@@ -84,6 +87,21 @@ export function membersRoutes(deps: MembersRoutesDeps) {
           }
         },
         { query: AudienceQuery },
+      )
+      // Perfil de gamificação do aluno NA VITRINE (`?audience=`, default adult —
+      // XP/streak/badges são segregados por audiência) — recurso do PRÓPRIO
+      // usuário (sem CheckAccess: qualquer conta ativa; sem perfil → zeros).
+      // `?ranking=true` inclui a colocação no ranking de XP da mesma vitrine.
+      .get(
+        '/gamification/me',
+        async ({ headers, query }) => {
+          const userId = resolveUserId(headers)
+          return deps.getGamification.execute(userId, {
+            audience: query.audience ?? 'adult',
+            withRanking: query.ranking === 'true',
+          })
+        },
+        { query: GamificationQuery },
       )
       .get('/courses/:slug', async ({ headers, params }) => {
         const userId = resolveUserId(headers)

@@ -1,5 +1,6 @@
 import {
   boolean,
+  date,
   index,
   integer,
   jsonb,
@@ -274,6 +275,77 @@ export const courseRatings = members.table(
   (t) => [uniqueIndex('course_ratings_user_course_uq').on(t.userId, t.courseId)],
 )
 
+// ── Gamificação (XP/streak/badges — fatia 06/2026, vitrine v1 = kids) ───────
+export const xpSourceTypeEnum = members.enum('xp_source_type', [
+  'lesson_complete',
+  'quiz_passed',
+  'unit_complete',
+  // MARCOS (amount 0 — não movem XP/streak, só contam p/ badges):
+  // curso 100% (course-complete/-2/-3) e quiz com nota 100 (quiz-perfect/-10/-30).
+  'course_complete',
+  'quiz_perfect',
+])
+
+// Perfil agregado (1 linha por aluno POR VITRINE — XP/streak kids e adult são
+// SEPARADOS, decisão do usuário 06/2026). `last_activity_date` é a DATA CIVIL
+// de São Paulo ('YYYY-MM-DD', calculada no app) — `mode: 'string'` é
+// OBRIGATÓRIO: `mode: 'date'` faria round-trip via `Date` UTC e deslocaria o dia.
+export const gamificationProfiles = members.table(
+  'gamification_profiles',
+  {
+    id: uuid('id').primaryKey(),
+    userId: uuid('user_id').notNull(),
+    // Vitrine da atividade (audiência do CURSO que gerou o award).
+    audience: courseAudienceEnum('audience').notNull().default('adult'),
+    xp: integer('xp').notNull().default(0),
+    streakCurrent: integer('streak_current').notNull().default(0),
+    streakBest: integer('streak_best').notNull().default(0),
+    lastActivityDate: date('last_activity_date', { mode: 'string' }),
+    // Ator é EQUIPE (superadmin/admin/staff)? Snapshot do último award — o
+    // ranking conta SÓ clientes (members não conhece roles; o gateway injeta).
+    privileged: boolean('privileged').notNull().default(false),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [uniqueIndex('gamification_profiles_user_audience_uq').on(t.userId, t.audience)],
+)
+
+// Ledger de XP. O UNIQUE (user, source_type, source_id) é a IDEMPOTÊNCIA:
+// re-complete/replay nunca duplica XP. `source_id` (lessonId|blockId|moduleId|
+// courseId) é snapshot SEM FK — aula deletada não pode apagar o XP histórico.
+// `audience` segmenta as contagens por vitrine (um source pertence a UM curso
+// → uma audiência; por isso o UNIQUE não precisa dela).
+export const xpEvents = members.table(
+  'xp_events',
+  {
+    id: uuid('id').primaryKey(),
+    userId: uuid('user_id').notNull(),
+    audience: courseAudienceEnum('audience').notNull().default('adult'),
+    sourceType: xpSourceTypeEnum('source_type').notNull(),
+    sourceId: uuid('source_id').notNull(),
+    amount: integer('amount').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('xp_events_user_source_uq').on(t.userId, t.sourceType, t.sourceId),
+    index('xp_events_user_created_idx').on(t.userId, t.createdAt),
+  ],
+)
+
+// Badges destravadas POR VITRINE (catálogo vive EM CÓDIGO — domain/gamification/
+// badges.ts): a "1ª aula" do kids é independente da do adult.
+export const userBadges = members.table(
+  'user_badges',
+  {
+    id: uuid('id').primaryKey(),
+    userId: uuid('user_id').notNull(),
+    audience: courseAudienceEnum('audience').notNull().default('adult'),
+    badgeSlug: text('badge_slug').notNull(),
+    unlockedAt: timestamp('unlocked_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [uniqueIndex('user_badges_user_audience_badge_uq').on(t.userId, t.audience, t.badgeSlug)],
+)
+
 // ── Deduplicação de webhooks de entrada ─────────────────────────────────────
 export const processedWebhooks = members.table(
   'processed_webhooks',
@@ -298,6 +370,9 @@ export const schema = {
   lessonProgress,
   quizAttempts,
   courseRatings,
+  gamificationProfiles,
+  xpEvents,
+  userBadges,
   processedWebhooks,
 }
 

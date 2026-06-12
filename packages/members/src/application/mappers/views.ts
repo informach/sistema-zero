@@ -1,6 +1,7 @@
 import type { Course, LessonWithContent, ModuleWithLessons } from '../../domain/course/course'
 import { toMemberFacingQuizContent } from '../../domain/course/quiz'
 import type { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
+import type { AwardResult } from '../../domain/ports/gamification-repository.port'
 import type { CourseProgress } from '../../domain/progress/progress'
 import type { CourseFeedbackAnswers, CourseRating } from '../../domain/rating/course-rating'
 
@@ -24,6 +25,60 @@ export function toCourseProgressView(
   lastCompletedAt: Date | null,
 ): CourseProgressView {
   return { ...progress, lastCompletedAt: lastCompletedAt ? lastCompletedAt.toISOString() : null }
+}
+
+/**
+ * Delta de gamificação de UMA ação (complete/quiz aprovado) — devolvido NA
+ * RESPOSTA da ação (a UI celebra sem round-trip). `null` na rota = award
+ * falhou (fail-open) ou quiz reprovado. Campo ADITIVO: o community adulto
+ * ignora; a vitrine v1 é o community-kids.
+ */
+export interface GamificationDeltaView {
+  /** XP desta ação (0 = tudo já premiado antes — ledger idempotente). */
+  xpAwarded: number
+  totalXp: number
+  streak: { current: number; best: number; extended: boolean }
+  badgesUnlocked: { slug: string; unlockedAt: string }[]
+  /** `true` quando ESTA ação fechou a unidade (baú de +25 XP incluído no total). */
+  unitCompleted: boolean
+}
+
+export function toGamificationDeltaView(result: AwardResult): GamificationDeltaView {
+  return {
+    xpAwarded: result.xpAwarded,
+    totalXp: result.totalXp,
+    streak: result.streak,
+    badgesUnlocked: result.badgesUnlocked.map((b) => ({
+      slug: b.slug,
+      unlockedAt: b.unlockedAt.toISOString(),
+    })),
+    unitCompleted: result.newEvents.some((e) => e.sourceType === 'unit_complete'),
+  }
+}
+
+/** Resposta do complete da aula: progresso + delta de gamificação (aditivo). */
+export interface LessonCompleteView extends CourseProgressView {
+  gamification: GamificationDeltaView | null
+}
+
+/** Perfil de gamificação do aluno (widgets/perfil — `GET /members/gamification/me`). */
+export interface GamificationMeView {
+  xp: number
+  streak: {
+    /** Streak de EXIBIÇÃO: 0 quando quebrado (última atividade antes de ontem). */
+    current: number
+    best: number
+    /** `true` = já houve atividade com XP hoje (data civil de São Paulo). */
+    activeToday: boolean
+  }
+  /** Catálogo COMPLETO na ordem do domain — badge bloqueada tem `unlockedAt: null`. */
+  badges: { slug: string; unlockedAt: string | null }[]
+  /**
+   * Colocação no ranking de XP da VITRINE pedida (`?ranking=true` junto do
+   * `?audience=`) — XP/perfil/coorte são por audiência, então os rankings
+   * adult/kids são separados. Ausente quando o caller não pediu.
+   */
+  ranking?: { position: number; totalStudents: number }
 }
 
 export interface MyCourseView {
