@@ -8,6 +8,8 @@ import {
   LessonAdminService,
   ModuleAdminService,
 } from './application/content-admin/content-admin.service'
+import { AwardGamificationService } from './application/gamification/award-gamification.service'
+import { GetGamificationService } from './application/gamification/get-gamification.service'
 import { GetAttachmentDownloadService } from './application/get-attachment-download/get-attachment-download.service'
 import { GetCourseProgressService } from './application/get-course-progress/get-course-progress.service'
 import { GetCourseRatingService } from './application/get-course-rating/get-course-rating.service'
@@ -34,6 +36,7 @@ import { DrizzleCourseRepository } from './infrastructure/persistence/drizzle/co
 import { DrizzleCourseRatingRepository } from './infrastructure/persistence/drizzle/course-rating.repository'
 import { createDbConnection, type DbConnection } from './infrastructure/persistence/drizzle/db'
 import { DrizzleEntitlementRepository } from './infrastructure/persistence/drizzle/entitlement.repository'
+import { DrizzleGamificationRepository } from './infrastructure/persistence/drizzle/gamification.repository'
 import { DrizzleProcessedWebhookRepository } from './infrastructure/persistence/drizzle/processed-webhook.repository'
 import { DrizzleProgressRepository } from './infrastructure/persistence/drizzle/progress.repository'
 import { DrizzleQuizAttemptRepository } from './infrastructure/persistence/drizzle/quiz-attempt.repository'
@@ -82,6 +85,7 @@ export async function createApplication(env: Env): Promise<Application> {
   const positions = new DrizzleVideoPositionRepository(db)
   const quizAttempts = new DrizzleQuizAttemptRepository(db)
   const ratings = new DrizzleCourseRatingRepository(db)
+  const gamificationRepo = new DrizzleGamificationRepository(db)
   const processed = new DrizzleProcessedWebhookRepository(db)
   const catalog = createCatalogHttpGateway({
     baseUrl: env.CATALOG_BASE_URL,
@@ -105,11 +109,14 @@ export async function createApplication(env: Env): Promise<Application> {
   )
   const resolveAttachment = new GetAttachmentDownloadService(checkAccess, courses)
   const resolveEbook = new GetEbookDownloadService(checkAccess, courses)
+  const awardGamification = new AwardGamificationService(gamificationRepo, clock, logger)
+  const getGamification = new GetGamificationService(gamificationRepo, clock)
   const markComplete = new MarkLessonCompleteService(
     checkAccess,
     courses,
     progress,
     quizAttempts,
+    awardGamification,
     clock,
   )
   const getProgress = new GetCourseProgressService(checkAccess, courses, progress)
@@ -120,6 +127,7 @@ export async function createApplication(env: Env): Promise<Application> {
     checkAccess,
     courses,
     quizAttempts,
+    awardGamification,
     () => randomUUID(),
     clock,
   )
@@ -184,6 +192,7 @@ export async function createApplication(env: Env): Promise<Application> {
       submitQuiz,
       getCourseRating,
       saveCourseRating,
+      getGamification,
       internalToken: env.INTERNAL_API_TOKEN,
     },
     webhooks: {

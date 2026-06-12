@@ -9,8 +9,11 @@
  *   numerador inflava (curso "100%" sem o aluno ter feito as aulas visíveis).
  */
 export interface ProgressRepository {
-  /** Marca a aula como concluída. Idempotente (ON CONFLICT DO NOTHING). */
-  markComplete(userId: string, lessonId: string, courseId: string, now: Date): Promise<void>
+  /**
+   * Marca a aula como concluída. Idempotente (ON CONFLICT DO NOTHING);
+   * devolve `true` quando a conclusão é NOVA (re-complete → `false`).
+   */
+  markComplete(userId: string, lessonId: string, courseId: string, now: Date): Promise<boolean>
   /** Quantas aulas do curso o aluno concluiu (cru — visão admin). */
   countCompleted(userId: string, courseId: string): Promise<number>
   /** Concluídas por curso, em lote (cru — visão admin). courseId → concluídas. */

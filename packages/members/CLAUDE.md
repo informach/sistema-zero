@@ -37,13 +37,15 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > **uuid validado nas bordas** — params TypeBox + `userId` dos webhooks/grant manual,
 > id lixo → 400 e nunca 22P02→500; URLs do admin exigem `http(s)` —
 > `r2priv:` permitido em anexo/ebook — barrando `javascript:` na borda; cap de 200
-> chars no `x-delivery-id`) — **139 testes**.
+> chars no `x-delivery-id`) + **gamificação (XP/streak/badges — fatia 06/2026, ver
+> §Gamificação)** — **177 testes**.
 > Migrations `0000` (schema `members`), `0001` (`lesson_progress`), `0002`
 > (`quiz_attempts`), `0003` (`lessons.is_published`), `0004` (`course_ratings`), `0005`
 > (enum `lesson_block_kind` + `'ebook'`), `0006` (enum `access_type` + `'all_courses'`),
-> `0007` (índice `processed_webhooks_processed_at_idx`) e `0008` (enum
-> `course_audience` + coluna `courses.audience`, default `adult` — plataforma kids)
-> — **aplicadas** no Postgres compartilhado (`sistemazero`, :5433).
+> `0007` (índice `processed_webhooks_processed_at_idx`), `0008` (enum
+> `course_audience` + coluna `courses.audience`, default `adult` — plataforma kids) e
+> `0009` (gamificação: enum `xp_source_type` + `gamification_profiles`/`xp_events`/
+> `user_badges`) — **aplicadas** no Postgres compartilhado (`sistemazero`, :5433).
 
 ## Conceito central (decisões travadas com o usuário)
 
@@ -271,6 +273,75 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   `retryAvailableAt`), o `save` da tentativa re-checa o cooldown DENTRO de uma
   transação serializada por (aluno, bloco) via `pg_advisory_xact_lock(hashtextextended)`
   — dois submits simultâneos não furam a janela (o perdedor leva 429 sem gravar).
+
+## Gamificação (XP/streak/badges — fatia 06/2026, vitrine v1 = community-kids)
+
+**TUDO é SEGREGADO POR VITRINE** (decisão do usuário 12/06: XP/streak/badges/ranking kids
+e adult NÃO se misturam; a audiência vem do CURSO no momento do award — migration `0012`).
+Estado em `gamification_profiles` (1/aluno **POR AUDIÊNCIA** — UNIQUE user+audience: xp,
+streak, `last_activity_date` = **data civil de São Paulo** `YYYY-MM-DD`), `xp_events`
+(ledger **idempotente por UNIQUE (user_id, source_type, source_id)** — re-complete/replay
+NUNCA duplica XP; source_id é snapshot SEM FK; coluna `audience` segmenta as CONTAGENS —
+um source pertence a um curso, logo a uma audiência) e `user_badges` (UNIQUE
+user+audience+slug — a "1ª aula" do kids é independente da do adult). Domain puro em
+`domain/gamification/` (XP_VALUES, `quizPassedXp`, `localDateSaoPaulo`/`advanceStreak`/
+`effectiveStreak` — timezone FIXA America/Sao_Paulo, cálculo SEMPRE no backend; o "dia"
+vira às 03:00Z). Decisões travadas com o usuário (06/2026): **SEM corações/vidas**;
+XP = aula 10 · quiz aprovado 20 + bônus `round(score/10)` cap +10 · baú de unidade 25;
+**catálogo de badges EM CÓDIGO** (`BADGE_SLUGS`, 12 na v1: first-lesson,
+streak-7/30/60/180/365, course-complete/-2/-3, quiz-perfect/-10/-30 — sem tabela/seed:
+preDeploy de prod roda só `db:migrate` e o catálogo muda junto com o código que o detecta);
+ligas/lojinha = fora. **Marcos são contados pelo LEDGER** (migrations `0010`/`0011`):
+curso 100% gera `course_complete` (sourceId = courseId) e quiz com nota 100 gera
+`quiz_perfect` (sourceId = blockId) — eventos-marco de **amount 0**, dedupe por source;
+o repo deriva as badges do count (1/2/3 cursos; 1/10/30 notas mil). ⚠️ **Marco NÃO move
+streak**: o avanço de streak/lastActivityDate é gateado em evento novo de `amount > 0`
+(regra "só atividade que rende XP conta" — um re-pass com nota 100 destrava a badge sem
+estender o streak). Atividade ANTERIOR às migrations não tem marco retroativo
+(regra geral de não-backfill).
+
+- **Award DENTRO das ações existentes**, devolvendo o delta NA RESPOSTA (a UI celebra sem
+  round-trip): o complete devolve `LessonCompleteView` = progresso + `gamification:
+  {xpAwarded, totalXp, streak:{current,best,extended}, badgesUnlocked[], unitCompleted}`
+  (ADITIVO — o community adulto ignora); o quiz devolve o mesmo campo SÓ quando aprovado.
+  Streak conta qualquer atividade que rende XP; sem evento novo no ledger, streak/
+  lastActivityDate ficam INTOCADOS (mas badge candidata do caller ainda concede — ex.:
+  `quiz-perfect` num re-pass com nota 100).
+- **`AwardGamificationService` é FAIL-OPEN por design**: erro → log
+  `gamification.award_failed` (Sentry via espelho) + `gamification: null` — a gamificação
+  NUNCA derruba complete/quiz (rotas usadas também pelo adulto); o ledger idempotente se
+  auto-cura na próxima chamada do mesmo source. NÃO remover o try/catch.
+- **Baú de fim de unidade**: o complete detecta módulo 100% via
+  `listPublishedLessonIds(moduleId)` (só PUBLICADAS, consistente com o progresso) →
+  evento `unit_complete` (sourceId = moduleId, dedupado). `markComplete` do progresso
+  agora devolve `boolean` (conclusão nova?).
+- **`DrizzleGamificationRepository.award`** roda numa transação serializada POR ALUNO via
+  `pg_advisory_xact_lock(hashtextextended('gamification:'+userId, 0))` (namespace distinto
+  do lock de quiz); o RETURNING do `onConflictDoNothing` separa eventos novos de replays.
+  `last_activity_date` é `date` com **`mode: 'string'`** — `mode: 'date'` deslocaria o dia
+  via round-trip `Date` UTC.
+- **`GET /members/gamification/me?audience=adult|kids`** (rota do aluno, JWT +
+  `x-internal-token`; sem CheckAccess — recurso do próprio usuário; `audience` ausente →
+  `adult`, como nas listagens — o shell SEMPRE manda a do app): perfil DA VITRINE —
+  `{xp, streak:{current,best,activeToday}, badges:[{slug, unlockedAt|null}]}` — catálogo
+  COMPLETO na ordem do domain (bloqueada = null); `current` é o streak de EXIBIÇÃO (0
+  quando a última atividade foi antes de ontem). **`?ranking=true`** inclui
+  `ranking: {position, totalStudents}` da MESMA vitrine: coorte = usuários com ≥1
+  matrícula (QUALQUER status — histórico é permanente, como o XP) em curso daquela
+  audiência; posição = competition ranking ("1224") por `profiles.xp` da audiência — XP
+  estritamente maior fica à frente, empate divide, aluno sem perfil conta com XP 0.
+  **SÓ CLIENTE ranqueia** (decisão do usuário): equipe (superadmin/admin/staff) fica fora —
+  o members não conhece roles (vivem no auth), então o award grava o snapshot
+  `gamification_profiles.privileged` (do `isPrivilegedActor` da rota, migration `0011`) e o
+  ranking filtra `privileged = false`; equipe sem perfil (nunca pontuou) ainda conta na
+  coorte por presunção — irrelevante na prática (0 XP, não fica à frente de ninguém).
+  Cálculo do ranking só quando o param vem (a página de perfil pede; widgets não).
+- **Impersonação/equipe**: XP credita no aluno do `x-auth-user-id` — consistente com as
+  completions (que já são gravadas); suporte "fazendo aula" pelo aluno gera XP real
+  (trade-off aceito, igual ao rating de equipe).
+- Sem backfill: histórico anterior ao deploy não gera XP retroativo (script manual se um
+  dia for pedido). Aluno com tudo 100% não tem fonte de XP p/ estender streak ("revisão
+  conta?" = decisão futura, fora da v1).
 
 ## Admin (painel `@sistemazero/admin`)
 

@@ -31,6 +31,17 @@ const AUDIENCE = t.Union([t.Literal('adult'), t.Literal('kids')])
 export const AudienceQuery = t.Object({ audience: t.Optional(AUDIENCE) })
 
 /**
+ * Query de `GET /members/gamification/me`: a gamificação é SEGREGADA por
+ * vitrine — `?audience=adult|kids` escolhe o perfil (ausente → `adult`, como
+ * nas listagens); `?ranking=true` pede TAMBÉM a colocação no ranking de XP da
+ * MESMA vitrine (cálculo extra — os widgets omitem).
+ */
+export const GamificationQuery = t.Object({
+  audience: t.Optional(AUDIENCE),
+  ranking: t.Optional(t.Literal('true')),
+})
+
+/**
  * Corpo de `POST /members/webhooks/grant` — concessão de acesso (funil → gateway →
  * members). `subscription` presente = acesso por assinatura; ausente = compra única.
  * `userId` vem do auth (ensure-buyer) e é sempre uuid — formato validado na borda.

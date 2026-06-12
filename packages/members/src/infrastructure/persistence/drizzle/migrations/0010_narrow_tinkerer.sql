@@ -1,0 +1,1 @@
+ALTER TYPE "members"."xp_source_type" ADD VALUE 'course_complete';

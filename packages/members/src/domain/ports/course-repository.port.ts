@@ -32,6 +32,8 @@ export interface CourseRepository {
   countLessons(courseId: string): Promise<number>
   /** Total de aulas PUBLICADAS (denominador do progresso do aluno). */
   countPublishedLessons(courseId: string): Promise<number>
+  /** Ids das aulas PUBLICADAS do módulo (detecção do baú de fim de unidade). */
+  listPublishedLessonIds(moduleId: string): Promise<string[]>
   /** Total de aulas por curso, em lote (admin). courseId → total. */
   countLessonsByCourseIds(courseIds: string[]): Promise<Map<string, number>>
   /** Total de aulas PUBLICADAS por curso, em lote (evita N+1 em "meus cursos"). */
