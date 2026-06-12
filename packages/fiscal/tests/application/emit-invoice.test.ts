@@ -5,6 +5,7 @@ import {
   type EmitterProfile,
   INFORMACH_BASE,
 } from '../../src/domain/dps/emitter-profile'
+import { SkipReason } from '../../src/domain/invoice/invoice.status'
 import {
   FakePaymentsClient,
   InMemoryInvoiceRepository,
@@ -153,6 +154,24 @@ describe('emissão', () => {
     const after = await invoices.findById(invoice.id)
     expect(after?.status).toBe('FAILED')
     expect(after?.lastError).toContain('E0207')
+  })
+
+  test('estorno corre com a emissão: nota REAL vira CANCEL_PENDING com a chave (não some)', async () => {
+    const { invoices, payments, sefin, service } = build()
+    payments.set(paidSnapshot())
+    const invoice = await scheduledInvoice(invoices)
+    // O refund chega DURANTE a chamada à Sefin (entre o claim e o markEmitted):
+    // a NFS-e é autorizada, mas o status já é SKIPPED quando vamos gravar.
+    sefin.onEmit = async () => {
+      await invoices.skip(invoice.id, SkipReason.REFUNDED_BEFORE_EMISSION)
+    }
+
+    await service.execute(invoice)
+
+    const after = await invoices.findById(invoice.id)
+    expect(after?.status).toBe('CANCEL_PENDING') // será cancelada, não perdida
+    expect(after?.accessKey).toBe('1'.repeat(50)) // a chave REAL foi preservada
+    expect(after?.cancelRequestedBy).toBe('system:refund') // cMotivo 2 no worker
   })
 
   test('duplicate (re-POST pós-timeout) → recupera pela consulta, EMITTED sem nota dobrada', async () => {

@@ -49,6 +49,9 @@ export class EmissionWorker {
       })
       for (const invoice of claimed) {
         try {
+          // Renova o lease por-nota: num lote longo, as notas no fim não estouram
+          // o claim (que outra réplica re-reivindicaria e reprocessaria).
+          await this.invoices.touchClaim(invoice.id)
           await this.emit.execute(invoice)
         } catch (error) {
           // O serviço já trata os caminhos esperados; isto é o inesperado.

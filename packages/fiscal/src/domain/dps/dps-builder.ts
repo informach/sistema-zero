@@ -8,14 +8,27 @@ const esc = (s: string) =>
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
 
+/** UTC-3 fixo (Brasil sem horário de verão) + 60s de folga de clock skew. */
+const BRT_OFFSET_MS = 3 * 3600_000
+const CLOCK_SKEW_MARGIN_MS = 60_000
+
 /**
  * Data/hora em TZ de Brasília com 60s de margem: relógio local adiantado vs o
  * servidor da Sefin → E0008 ("emissão posterior ao processamento"), visto na
- * prática no spike. Brasil não tem horário de verão — UTC-3 fixo.
+ * prática no spike.
  */
 export function dhEmissao(now = Date.now()): string {
-  const d = new Date(now - 3 * 3600_000 - 60_000)
+  const d = new Date(now - BRT_OFFSET_MS - CLOCK_SKEW_MARGIN_MS)
   return `${d.toISOString().slice(0, 19)}-03:00`
+}
+
+/**
+ * Data de competência (YYYY-MM-DD) na MESMA base/margem do dhEmi. Computar a
+ * competência sem a margem de 60s fazia, na virada da meia-noite BRT, dCompet
+ * cair no dia N enquanto o dhEmi (com a folga) caía no dia N-1 → rejeição.
+ */
+export function dCompetBRT(now = Date.now()): string {
+  return new Date(now - BRT_OFFSET_MS - CLOCK_SKEW_MARGIN_MS).toISOString().slice(0, 10)
 }
 
 /**

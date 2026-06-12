@@ -3,7 +3,6 @@ import { composeServiceDescription } from '../../domain/dps/emitter-profile'
 import { SkipReason } from '../../domain/invoice/invoice.status'
 import type { CatalogClient, PaymentsClient } from '../../domain/ports/clients.port'
 import type { InvoiceRepository } from '../../domain/ports/invoice-repository.port'
-import type { ProcessedWebhookStore } from '../../domain/ports/processed-webhook.port'
 
 export interface WebhookDelivery {
   deliveryId: string
