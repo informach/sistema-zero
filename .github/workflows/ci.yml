@@ -87,6 +87,7 @@ jobs:
             [admin]=e00eca0b-5323-4424-9b58-fdb073cfce82
             [community]=9df1b493-4cea-4b36-bec8-7299f054c17d
             [community-kids]=fc8a1b29-ac14-4dc9-a7b3-03d497b8bf4f
+            [fiscal]=2ea11afd-bdfd-4736-b400-c3db13fd8a0e
           )
 
           declare -A WANT=()
@@ -114,7 +115,7 @@ jobs:
                 case "$f" in
                   bun.lock|package.json|.dockerignore) add_all ;;
                   railway.json) add payments ;; # o railway.json da RAIZ é do payments
-                  packages/core/*) for s in api-gateway auth catalog payments members messaging funnel; do add "$s"; done ;;
+                  packages/core/*) for s in api-gateway auth catalog payments members messaging funnel fiscal; do add "$s"; done ;;
                   packages/ui/*) add admin; add community; add community-kids; add funnel ;;
                   packages/api-gateway/*) add api-gateway ;;
                   packages/auth/*) add auth ;;
@@ -127,6 +128,7 @@ jobs:
                   packages/community/*) add community ;;
                   packages/member-shell/*) add community; add community-kids ;; # BFF compartilhado pelos 2 apps de aluno
                   packages/community-kids/*) add community-kids ;;
+                  packages/fiscal/*) add fiscal ;;
                   packages/studio/*) ;; # lib interna (sem serviço deployado); quando um app a consumir, somar o consumer aqui
                 esac
               done <<< "$CHANGED"
