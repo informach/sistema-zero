@@ -12,6 +12,9 @@ const registry = new RouteRegistry([
   r({ id: 'my-list', methods: ['GET'], pathPattern: '/payments/my' }),
   r({ id: 'my-get', methods: ['GET'], pathPattern: '/payments/my/:id' }),
   r({ id: 'wild', methods: ['GET'], pathPattern: '/files/*' }),
+  r({ id: 'members-courses', methods: ['GET'], pathPattern: '/members/courses' }),
+  r({ id: 'members-course-detail', methods: ['GET'], pathPattern: '/members/courses/:slug' }),
+  r({ id: 'gamification-me', methods: ['GET'], pathPattern: '/members/gamification/me' }),
   r({ id: 'user-get', methods: ['GET'], pathPattern: '/auth/admin/users/:id' }),
   r({
     id: 'user-impersonate',
@@ -67,6 +70,17 @@ describe('RouteRegistry', () => {
     expect(registry.resolve('GET', '/auth/admin/users/u-123', 'v1')?.route.id).toBe('user-get')
     // POST no detalhe (sem /impersonate) não existe → undefined.
     expect(registry.resolve('POST', '/auth/admin/users/u-123', 'v1')).toBeUndefined()
+  })
+
+  test('/members/gamification/me resolve na rota própria (não colide com /members/courses/:slug)', () => {
+    expect(registry.resolve('GET', '/members/gamification/me', 'v1')?.route.id).toBe(
+      'gamification-me',
+    )
+    expect(registry.resolve('GET', '/members/courses/meu-curso', 'v1')?.route.id).toBe(
+      'members-course-detail',
+    )
+    // Sem POST/PUT declarados → método não exposto.
+    expect(registry.resolve('POST', '/members/gamification/me', 'v1')).toBeUndefined()
   })
 
   test('%-encoding malformado num param NÃO lança (vira o valor bruto, não 500)', () => {
