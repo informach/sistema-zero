@@ -32,6 +32,12 @@ const cidrs = (readArg('cidrs', 'SEED_ALLOWED_CIDRS') ?? '')
   .filter(Boolean)
 const secret = readArg('secret', 'SEED_HMAC_SECRET') ?? randomBytes(32).toString('hex')
 const webhookUrl = readArg('webhook-url', 'SEED_WEBHOOK_URL') ?? null
+// Fan-out: eventos aos quais o consumer assina além dos próprios pagamentos
+// (ex.: --subscribed-events "payment.paid,payment.refunded" p/ o serviço fiscal).
+const subscribedEvents = (readArg('subscribed-events', 'SEED_SUBSCRIBED_EVENTS') ?? '')
+  .split(',')
+  .map((e) => e.trim())
+  .filter(Boolean)
 
 if (cidrs.length === 0) {
   console.warn(
@@ -44,15 +50,32 @@ const { db, close } = createDbConnection(databaseUrl)
 
 await db
   .insert(consumers)
-  .values({ id, name, hmacSecret: secret, allowedCidrs: cidrs, webhookUrl, isActive: true })
+  .values({
+    id,
+    name,
+    hmacSecret: secret,
+    allowedCidrs: cidrs,
+    webhookUrl,
+    subscribedEvents,
+    isActive: true,
+  })
   .onConflictDoUpdate({
     target: consumers.id,
-    set: { name, hmacSecret: secret, allowedCidrs: cidrs, webhookUrl, isActive: true },
+    set: {
+      name,
+      hmacSecret: secret,
+      allowedCidrs: cidrs,
+      webhookUrl,
+      subscribedEvents,
+      isActive: true,
+    },
   })
 
 await close()
 
 console.log('✅ Consumidor salvo:')
-console.log(JSON.stringify({ id, name, allowedCidrs: cidrs, webhookUrl }, null, 2))
+console.log(
+  JSON.stringify({ id, name, allowedCidrs: cidrs, webhookUrl, subscribedEvents }, null, 2),
+)
 console.log('\n🔑 HMAC secret (guarde com segurança — configure no sistema consumidor):')
 console.log(secret)

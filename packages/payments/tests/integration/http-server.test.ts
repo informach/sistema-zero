@@ -1351,3 +1351,65 @@ describe('Minhas compras (/payments/my — self-service do comprador)', () => {
     expect(bad.status).toBe(400)
   })
 })
+
+describe('Rota interna S2S (/payments/internal/payments/:id — leitura p/ o fiscal)', () => {
+  async function createBoleto(
+    app: ReturnType<typeof buildApp>['app'],
+    key: string,
+  ): Promise<string> {
+    const res = await app.handle(
+      new Request('http://localhost/payments', {
+        method: 'POST',
+        headers: postHeaders(BOLETO_BODY, { key }),
+        body: BOLETO_BODY,
+      }),
+    )
+    expect(res.status).toBe(201)
+    return ((await res.json()) as { id: string }).id
+  }
+
+  test('com internalToken: sem/errado x-internal-token → 401; com o token → 200 e AdminPaymentView', async () => {
+    const { app } = buildApp({ internalToken: 'tok-interno-de-teste-16' })
+    const id = await createBoleto(app, 'idem-int-1')
+
+    const missing = await app.handle(
+      new Request(`http://localhost/payments/internal/payments/${id}`),
+    )
+    expect(missing.status).toBe(401)
+
+    const wrong = await app.handle(
+      new Request(`http://localhost/payments/internal/payments/${id}`, {
+        headers: { 'x-internal-token': 'errado' },
+      }),
+    )
+    expect(wrong.status).toBe(401)
+
+    const ok = await app.handle(
+      new Request(`http://localhost/payments/internal/payments/${id}`, {
+        headers: { 'x-internal-token': 'tok-interno-de-teste-16' },
+      }),
+    )
+    expect(ok.status).toBe(200)
+    const view = (await ok.json()) as Record<string, unknown>
+    // AdminPaymentView: cross-consumer, com customer/status/metadata (o fiscal precisa).
+    expect(view.id).toBe(id)
+    expect(view.customer).toBeDefined()
+    expect(view.status).toBeDefined()
+  })
+
+  test('id inexistente → 404; id não-uuid → 400 (borda valida o formato)', async () => {
+    const { app } = buildApp({ internalToken: 'tok-interno-de-teste-16' })
+    const headers = { 'x-internal-token': 'tok-interno-de-teste-16' }
+    const notFound = await app.handle(
+      new Request(
+        'http://localhost/payments/internal/payments/00000000-0000-4000-8000-000000000000',
+        { headers },
+      ),
+    )
+    expect(notFound.status).toBe(404)
+    const bad = await app.handle(
+      new Request('http://localhost/payments/internal/payments/nao-uuid', { headers }),
+    )
+    expect(bad.status).toBe(400)
+  })
+})

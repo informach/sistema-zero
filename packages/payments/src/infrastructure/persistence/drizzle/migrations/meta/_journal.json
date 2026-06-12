@@ -29,6 +29,13 @@
       "when": 1780661780965,
       "tag": "0003_lush_vanisher",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1781281907859,
+      "tag": "0004_jazzy_changeling",
+      "breakpoints": true
     }
   ]
 }

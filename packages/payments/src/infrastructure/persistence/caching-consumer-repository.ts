@@ -35,4 +35,20 @@ export class CachingConsumerRepository implements ConsumerRepository {
     }
     return value
   }
+
+  // Subscribers por evento (fan-out): consultado a cada evento publicado. Aqui
+  // PODE cachear lista vazia — o eventName vem do NOSSO código (nomes fixos de
+  // eventos de domínio), não do cliente, então não infla o Map.
+  private readonly subscribersCache = new Map<string, { value: Consumer[]; expiresAt: number }>()
+
+  async findSubscribers(eventName: string): Promise<Consumer[]> {
+    const now = Date.now()
+    const hit = this.subscribersCache.get(eventName)
+    if (hit && hit.expiresAt > now) return hit.value
+    if (hit) this.subscribersCache.delete(eventName)
+
+    const value = await this.inner.findSubscribers(eventName)
+    this.subscribersCache.set(eventName, { value, expiresAt: now + this.ttlMs })
+    return value
+  }
 }

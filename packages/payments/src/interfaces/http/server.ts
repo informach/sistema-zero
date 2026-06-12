@@ -27,6 +27,7 @@ import { TooManyRequestsError } from './errors'
 import { markOversizeBody, storeRawBody } from './raw-body'
 import { adminRoutes } from './routes/admin.routes'
 import { healthRoutes, type ReadinessProbe } from './routes/health.routes'
+import { internalRoutes } from './routes/internal.routes'
 import { metricsRoutes } from './routes/metrics.routes'
 import { myRoutes } from './routes/my.routes'
 import { paymentsRoutes } from './routes/payments.routes'
@@ -199,6 +200,13 @@ export function createServer(deps: HttpDeps) {
         listMyPayments: deps.listMyPayments,
         getMyPayment: deps.getMyPayment,
         internalToken: deps.internalToken,
+      }),
+    )
+    .use(
+      internalRoutes({
+        internalToken: deps.internalToken,
+        getPayment: deps.getAdminPayment,
+        logger: deps.logger,
       }),
     )
     .use(

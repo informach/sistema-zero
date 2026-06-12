@@ -97,6 +97,8 @@ export const consumers = paymentsSchema.table('consumers', {
   allowedCidrs: text('allowed_cidrs').array().notNull().default(sql`ARRAY[]::text[]`),
   // URL para receber os webhooks de saída (notificação de pagamento). Opcional.
   webhookUrl: text('webhook_url'),
+  // Eventos aos quais o consumer está inscrito p/ fan-out (além dos próprios).
+  subscribedEvents: text('subscribed_events').array().notNull().default(sql`ARRAY[]::text[]`),
   isActive: boolean('is_active').notNull().default(true),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })
