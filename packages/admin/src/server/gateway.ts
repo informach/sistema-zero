@@ -161,6 +161,22 @@ export async function gatewayFetch<T = unknown>(
   return { status: res.status, body: await readJson<T>(res) }
 }
 
+/**
+ * Variante BINÁRIA do `gatewayFetch`: mesmo Bearer/refresh-on-401/timeout, mas
+ * devolve a `Response` CRUA — o corpo NÃO é materializado aqui, permitindo
+ * streaming pass-through (ex.: PDF da NFS-e). Mesmas restrições de uso (Route
+ * Handlers/Server Actions — a rotação escreve cookies).
+ */
+export async function gatewayFetchRaw(path: string, opts: CallOpts = {}): Promise<Response> {
+  const access = await getAccessToken()
+  let res = await rawFetch(path, opts, access)
+  if (res.status === 401) {
+    const renewed = await tryRefresh()
+    if (renewed) res = await rawFetch(path, opts, renewed)
+  }
+  return res
+}
+
 /** Login (rota pública do gateway → auth). NÃO leva Bearer. */
 export async function loginRequest(
   email: string,

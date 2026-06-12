@@ -1,0 +1,22 @@
+import { NextResponse } from 'next/server'
+import { isValidCancelReason } from '@/lib/nfse'
+import { cancelInvoice } from '@/server/nfse'
+
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const payload = (await req.json().catch(() => null)) as { reason?: unknown } | null
+  const reason = typeof payload?.reason === 'string' ? payload.reason.trim() : ''
+  if (!isValidCancelReason(reason)) {
+    return NextResponse.json(
+      {
+        error: {
+          code: 'INVALID_REASON',
+          message: 'Informe o motivo do cancelamento (3 a 500 caracteres).',
+        },
+      },
+      { status: 400 },
+    )
+  }
+  const { status, body } = await cancelInvoice(id, reason)
+  return NextResponse.json(body, { status })
+}

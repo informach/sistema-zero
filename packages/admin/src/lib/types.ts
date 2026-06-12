@@ -495,6 +495,73 @@ export interface PaymentOps {
   reconcilePending: number
 }
 
+// ── Notas fiscais (espelha as views admin do @sistemazero/fiscal) ──
+// ⚠️ `amountInCents` vem como STRING (bigint serializado) — formate com `formatCentsStr`.
+
+export const INVOICE_STATUSES = [
+  'SCHEDULED',
+  'EMITTED',
+  'SKIPPED',
+  'FAILED',
+  'CANCEL_PENDING',
+  'CANCELLED',
+  'SUBSTITUTED',
+] as const
+export type InvoiceStatus = (typeof INVOICE_STATUSES)[number]
+
+export interface InvoiceView {
+  id: string
+  paymentId: string
+  status: string
+  customer: { name: string; email: string; document: string }
+  amountInCents: string
+  serviceDescription: string
+  guaranteeDays: number | null
+  paidAt: string
+  scheduledFor: string
+  attempts: number
+  lastError: string | null
+  skipReason: string | null
+  dpsSeries: string | null
+  dpsNumber: string | null
+  accessKey: string | null
+  competenceDate: string | null
+  ambiente: string
+  emittedAt: string | null
+  cancelReason: string | null
+  cancelRequestedBy: string | null
+  cancelledAt: string | null
+  substitutesId: string | null
+  substitutedById: string | null
+  pdfStoredAt: string | null
+  emailSentAt: string | null
+  createdAt: string
+}
+
+export interface InvoiceEventView {
+  id: string
+  type: string
+  actor: string | null
+  detail: Record<string, unknown>
+  createdAt: string
+}
+
+/** Lista paginada do fiscal (o serviço devolve só `items`+`total`). */
+export interface InvoiceList {
+  items: InvoiceView[]
+  total: number
+}
+
+/** Detalhe da nota: snapshot + timeline de eventos. */
+export interface InvoiceDetail {
+  invoice: InvoiceView
+  events: InvoiceEventView[]
+}
+
+export interface FiscalStats {
+  byStatus: Record<string, number>
+}
+
 // ── Série diária do painel "Gestão de vendas" ──
 
 /** Bucket de um dia civil (America/Sao_Paulo). Valores em centavos como STRING. */
