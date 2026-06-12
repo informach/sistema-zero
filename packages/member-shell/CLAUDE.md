@@ -23,6 +23,16 @@ reutilizável NUNCA é cópia por app). Consumido como **TS source** via `export
 | Helpers de cookie (`sessionCookieNames`/`prefixedCookieName`/`expireCookieOptions`) | CONSTANTES `sz_member_*`/`sz_kids_*` (compile-time POR APP — cookies não escopam por porta em dev) |
 | `scripts/boot-check.mjs` (fail-fast REAL de prod — os Dockerfiles dos apps copiam DAQUI) | `instrumentation.ts` (fail-fast de dev, autocontido) |
 
+**Gamificação (06/2026):** tipos em `lib/types.ts` (`GamificationDelta`/`GamificationMeView`/
+`LessonCompleteResult`/`BadgeSlug` — mirror das views do members; `QuizAttemptResultView.gamification?`),
+client `members.getGamification()` + variante **`getGamificationReadonly()`** (Server Components —
+mesmo padrão do `getMeReadonly`: sem refresh/escrita de cookie, 401 → widget some; ambos mandam
+SEMPRE `?audience=<a do app>` — **a gamificação inteira é segregada por vitrine**, XP/streak/
+badges/ranking kids e adult não se misturam; `{withRanking}` soma `?ranking=true`) e handler
+passthrough `shell.routes.gamificationMe` (`GET /api/members/gamification/me`). `markLessonComplete`/
+`submitQuizAttempt` agora são TIPADOS (a resposta carrega o delta `gamification` — aditivo; o
+community adulto ignora, a vitrine v1 é o kids).
+
 ## Invariantes (NÃO quebrar)
 
 1. **Parametrização é por FACTORY, nunca por config em escopo de módulo**: o Turbopack separa
@@ -45,6 +55,14 @@ reutilizável NUNCA é cópia por app). Consumido como **TS source** via `export
    da marca d'água (OOM), arquivos >20MB = 302 pré-assinado (downloads-zumbi), storageRef NUNCA ao
    browser. **Fix aqui = fix nos dois apps; mudança aqui RODA NOS DOIS — rode as suítes dos dois.**
 5. Réplica ÚNICA por app (single-flight/gate em `globalThis` são por processo).
+6. **`vimeo-player`: o SDK é o DONO do iframe** (`new Player(divHost, { id })`). NUNCA voltar ao
+   padrão "iframe no JSX + `new Player(iframe)`": `destroy()` REMOVE o iframe do DOM real sem o
+   React saber — com o double-invoke do StrictMode (e re-runs do effect) o ref vira um iframe
+   ÓRFÃO e o vídeo some na navegação client-side, só voltando com F5 (bug real, corrigido
+   11/06/2026 — afetava os dois apps).
+7. **Exports map: subpaths de componente levam EXTENSÃO** (`"./components/ebook/*":
+   "./src/components/ebook/*.tsx"`) — padrão sem extensão resolve no Turbopack mas NÃO no `tsc`
+   (o typecheck do consumidor quebra com "Cannot find module").
 
 ## Comandos
 
