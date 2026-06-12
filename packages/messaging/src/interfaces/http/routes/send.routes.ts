@@ -40,6 +40,7 @@ export function sendRoutes(deps: SendRoutesDeps) {
           templateKey: body.templateKey,
           recipient: body.recipient,
           variables: body.variables,
+          attachments: body.attachments,
           senderId: body.senderId ?? null,
           scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : undefined,
           priority: body.priority,

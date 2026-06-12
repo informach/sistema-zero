@@ -130,6 +130,12 @@ export const messages = messagingSchema.table(
     recipientEmail: text('recipient_email'),
     recipientPhone: text('recipient_phone'),
     variables: jsonb('variables').$type<Record<string, string>>().notNull().default({}),
+    // Anexos por URL (e-mail): SÓ os metadados {filename,url,contentType} — os
+    // bytes são buscados pelo worker no momento do envio e NUNCA persistidos.
+    attachments: jsonb('attachments')
+      .$type<Array<{ filename: string; url: string; contentType: string | null }>>()
+      .notNull()
+      .default([]),
     renderedSubject: text('rendered_subject'),
     renderedBody: text('rendered_body').notNull(),
     senderId: uuid('sender_id'), // e-mail: remetente resolvido

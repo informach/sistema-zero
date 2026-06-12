@@ -65,6 +65,59 @@ describe('Message.create — validação', () => {
     ).toThrow()
   })
 
+  it('anexos: aceita em e-mail (normaliza contentType ausente para null)', () => {
+    const m = Message.create({
+      id: 'x',
+      channel: 'email',
+      templateKey: 'nfse-emitida',
+      recipient: { name: 'A', email: 'a@b.com' },
+      renderedSubject: 'S',
+      renderedBody: 'B',
+      attachments: [{ filename: ' danfse.pdf ', url: 'https://fiscal.railway.internal/a.pdf' }],
+      now,
+    })
+    expect(m.state.attachments).toEqual([
+      { filename: 'danfse.pdf', url: 'https://fiscal.railway.internal/a.pdf', contentType: null },
+    ])
+  })
+
+  it('anexos: rejeita em whatsapp, url não-http(s) e mais de 3', () => {
+    const base = {
+      id: 'x',
+      templateKey: 't',
+      renderedSubject: 'S',
+      renderedBody: 'B',
+      now,
+    }
+    expect(() =>
+      Message.create({
+        ...base,
+        channel: 'whatsapp',
+        recipient: { name: 'A', phone: '5511999999999' },
+        attachments: [{ filename: 'a.pdf', url: 'https://x/a.pdf' }],
+      }),
+    ).toThrow(/canal e-mail/)
+    expect(() =>
+      Message.create({
+        ...base,
+        channel: 'email',
+        recipient: { name: 'A', email: 'a@b.com' },
+        attachments: [{ filename: 'a.pdf', url: 'ftp://x/a.pdf' }],
+      }),
+    ).toThrow(/http/)
+    expect(() =>
+      Message.create({
+        ...base,
+        channel: 'email',
+        recipient: { name: 'A', email: 'a@b.com' },
+        attachments: Array.from({ length: 4 }, (_, i) => ({
+          filename: `a-${i}.pdf`,
+          url: `https://x/${i}.pdf`,
+        })),
+      }),
+    ).toThrow(/Máximo de 3/)
+  })
+
   it('emite message.queued e nasce QUEUED quando não agendada', () => {
     const m = emailMessage()
     expect(m.status).toBe('QUEUED')

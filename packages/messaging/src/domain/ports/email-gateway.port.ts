@@ -1,3 +1,10 @@
+/** Anexo "de verdade" (disposition attachment) — ex.: DANFSe em PDF. */
+export interface EmailAttachment {
+  filename: string
+  contentType: string
+  contentBase64: string
+}
+
 export interface SendEmailInput {
   to: string
   toName: string | null
@@ -7,6 +14,8 @@ export interface SendEmailInput {
   from: string
   fromName: string
   replyTo: string | null
+  /** Anexos já materializados (o worker buscou os bytes por URL antes do envio). */
+  attachments?: EmailAttachment[]
 }
 
 export interface SendEmailResult {

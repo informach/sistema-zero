@@ -26,6 +26,7 @@ import { systemRng } from './domain/ports/rng.port'
 import type { Env } from './infrastructure/config/env'
 import { InProcessEventPublisher } from './infrastructure/events/in-process-event-publisher'
 import { EvolutionWhatsAppGateway } from './infrastructure/gateways/evolution/evolution.gateway'
+import { HttpAttachmentFetcher } from './infrastructure/gateways/http-attachment-fetcher'
 import {
   type InlineImage,
   SendGridEmailGateway,
@@ -128,6 +129,12 @@ export function createApplication(env: Env): Application {
 
   // Adapters de provedor + worker de envio (ritmo anti-ban + rotação de números)
   const emailGateway = new SendGridEmailGateway({ apiKey: env.SENDGRID_API_KEY, inlineImages })
+  // Anexos por URL (e-mail): o worker busca os bytes no envio — teto de tamanho
+  // + allowlist de hosts (anti-SSRF; vazia = dev liberado).
+  const attachmentFetcher = new HttpAttachmentFetcher({
+    maxBytes: env.ATTACHMENT_MAX_BYTES,
+    allowedHosts: env.ATTACHMENT_FETCH_ALLOWED_HOSTS,
+  })
   const whatsappGateway = new EvolutionWhatsAppGateway({
     baseUrl: env.EVOLUTION_URL,
     apiKey: env.EVOLUTION_API_KEY,
@@ -138,6 +145,7 @@ export function createApplication(env: Env): Application {
     senders,
     suppressions,
     emailGateway,
+    attachmentFetcher,
     whatsappGateway,
     clock,
     rng: systemRng,

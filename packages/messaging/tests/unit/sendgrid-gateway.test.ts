@@ -66,3 +66,61 @@ describe('SendGridEmailGateway — imagens inline (cid:)', () => {
     expect(captured.bodies[0]).not.toHaveProperty('attachments')
   })
 })
+
+describe('SendGridEmailGateway — anexos por URL (disposition attachment)', () => {
+  it('anexo de arquivo COEXISTE com a logo inline no mesmo array', async () => {
+    const captured = captureFetch()
+    const gateway = new SendGridEmailGateway({ apiKey: 'SG.test', inlineImages: IMAGES })
+
+    await gateway.sendEmail({
+      to: 'a@b.com',
+      toName: 'A',
+      subject: 'Sua nota fiscal',
+      html: '<img src="cid:logo-sz-light"><p>NF anexa</p>',
+      from: 'no-reply@sz.com',
+      fromName: 'SZ',
+      replyTo: null,
+      attachments: [
+        { filename: 'danfse.pdf', contentType: 'application/pdf', contentBase64: 'UERG' },
+      ],
+    })
+
+    const body = captured.bodies[0] as { attachments?: Array<Record<string, unknown>> }
+    expect(body.attachments).toHaveLength(2)
+    expect(body.attachments?.[0]).toEqual({
+      content: 'QUFB',
+      filename: 'light.png',
+      type: 'image/png',
+      disposition: 'inline',
+      content_id: 'logo-sz-light',
+    })
+    expect(body.attachments?.[1]).toEqual({
+      content: 'UERG',
+      filename: 'danfse.pdf',
+      type: 'application/pdf',
+      disposition: 'attachment',
+    })
+    // anexo "de verdade" NÃO leva content_id (não é inline).
+    expect(body.attachments?.[1]).not.toHaveProperty('content_id')
+  })
+
+  it('anexos sem nenhum cid: no html → só o attachment', async () => {
+    const captured = captureFetch()
+    const gateway = new SendGridEmailGateway({ apiKey: 'SG.test', inlineImages: IMAGES })
+    await gateway.sendEmail({
+      to: 'a@b.com',
+      toName: null,
+      subject: 'Oi',
+      html: '<p>sem logo</p>',
+      from: 'no-reply@sz.com',
+      fromName: 'SZ',
+      replyTo: null,
+      attachments: [
+        { filename: 'danfse.pdf', contentType: 'application/pdf', contentBase64: 'UERG' },
+      ],
+    })
+    const body = captured.bodies[0] as { attachments?: Array<Record<string, unknown>> }
+    expect(body.attachments).toHaveLength(1)
+    expect(body.attachments?.[0]?.disposition).toBe('attachment')
+  })
+})

@@ -20,6 +20,8 @@ export interface SendMessageInput {
   templateKey: string
   recipient: { name: string; email?: string | null; phone?: string | null }
   variables?: Record<string, string>
+  /** Anexos por URL (e-mail): só METADADOS — o worker busca os bytes no envio. */
+  attachments?: Array<{ filename: string; url: string; contentType?: string | null }>
   senderId?: string | null
   scheduledAt?: Date
   priority?: number
@@ -77,6 +79,7 @@ export class SendMessageService {
       templateId: template.id,
       recipient: input.recipient,
       variables: input.variables ?? {},
+      attachments: input.attachments,
       renderedSubject: rendered.value.subject,
       renderedBody: rendered.value.body,
       senderId,

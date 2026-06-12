@@ -40,7 +40,8 @@ Porta **3006**. Schema Postgres próprio **`messaging`**.
    (600px, card branco, CTA gradiente cyan→lime `#42e5e0→#bfea00`, paleta hex ≈ tokens oklch do
    community) e logo PNG hospedada (`EMAIL_LOGO_URL`). Variáveis são CONTRATO com os
    consumidores — `welcome`/`password-reset`: `nome`+`link` (funil/auth); `otp`: `nome`+`codigo`
-   (auth). NÃO renomeie sem mudar os chamadores.
+   (auth); `nfse-emitida`: `nome`+`produto`+`valor`+`chave` (fiscal — DANFSe anexado por URL).
+   NÃO renomeie sem mudar os chamadores.
 4. **Outbox + worker + webhooks de status** (espelha o `payments`): enfileira em `QUEUED`, o worker
    envia respeitando o ritmo, e os webhooks (`delivered`/`read`/`bounce`/`spam`) atualizam a `Message`
    e alimentam a **supressão** (não reenviar a hard-bounce/spam/unsub). ⚠️ `bounce` com
@@ -60,6 +61,19 @@ Porta **3006**. Schema Postgres próprio **`messaging`**.
    ÚLTIMO. Marcar antes "consumia" o evento numa falha no meio (a reentrega caía no dedupe e o
    status se perdia). Anti-replay do SendGrid: timestamp assinado conferido contra
    `WEBHOOK_TIMESTAMP_TOLERANCE_SECONDS` (600s).
+7. **Anexos por URL (e-mail)**: o body do `/messaging/send` tem teto de 64KB → os bytes NUNCA
+   viajam inline nem são persistidos. `SendBody.attachments` (máx. 3: `{filename,url,contentType?}`,
+   url http(s)) guarda SÓ os METADADOS na coluna jsonb `messages.attachments` (migration `0003`);
+   o **worker** busca cada URL no momento do envio (`HttpAttachmentFetcher`: fetch nativo +
+   `AbortSignal.timeout(15s)`, `redirect: 'error'` — seguir redirect driblaria a allowlist) e
+   injeta o base64 no gateway (`disposition: 'attachment'`, COEXISTE com as logos inline `cid:`).
+   Política de erro: timeout/rede/4xx/5xx/tamanho = falha **RE-TENTÁVEL** (mesmo retry/backoff de
+   um erro do SendGrid — o anexo pode ainda não estar disponível); URL inválida/host fora da
+   allowlist = **PERMANENTE** (FAILED). Envs: `ATTACHMENT_MAX_BYTES` (teto por anexo, default 5MB —
+   confere content-length E o tamanho real lido em streaming) e `ATTACHMENT_FETCH_ALLOWED_HOSTS`
+   (CSV de hostnames, anti-SSRF; VAZIA = dev liberado; **em prod SETE** — ex.:
+   `fiscal.railway.internal`). Anexo só no canal e-mail (domínio rejeita em whatsapp).
+   Consumidor: serviço fiscal envia o template `nfse-emitida` com o DANFSe (PDF) por URL.
 
 ## Arquitetura (DDD + Hexagonal — espelha `payments`)
 
@@ -95,7 +109,7 @@ tests/    unit/ (render, pacing, message, send-worker, sendgrid-webhook) · inte
 | `bun run typecheck` | `tsc --noEmit` |
 | `bun test` | testes (**sandbox off** — gotcha do monorepo) |
 | `bun run db:generate` / `db:migrate` | migrations (Drizzle; cria o schema `messaging`) |
-| `bun run templates:seed` | **UPSERT** dos templates padrão: `welcome` (e-mail + whatsapp), `password-reset` (e-mail) e `otp` (e-mail + whatsapp — `{{codigo}}`). É a fonte da verdade versionada do conteúdo — key existente tem subject/body/variables ATUALIZADOS (`active` preservado). E-mails têm layout HTML da marca (tabelas + CSS inline) com **logos EMBUTIDAS** (attachment inline + `cid:`, padrão do comunidade-sistema-zero — a imagem viaja DENTRO do e-mail; sem hospedagem externa/proxy/R2; PNGs PURAS em `assets/logo-sistema-zero-{light,dark}.png`, injetadas no gateway pelo composition-root, anexadas só quando o HTML referencia o `cid:`) e **dark mode** via `@media (prefers-color-scheme: dark)` com o tema dark do community + swap da logo (Apple Mail/Samsung/Outlook iOS; o Gmail que inverte à força mantém a logo de tinta escura — limitação aceita). ⚠️ NUNCA apague asset remoto referenciado por e-mail JÁ ENVIADO (aprendido na marra) |
+| `bun run templates:seed` | **UPSERT** dos templates padrão: `welcome` (e-mail + whatsapp), `password-reset` (e-mail), `otp` (e-mail + whatsapp — `{{codigo}}`) e `nfse-emitida` (e-mail — `{{nome}}/{{produto}}/{{valor}}/{{chave}}`, NFS-e anexada em PDF via anexos por URL). É a fonte da verdade versionada do conteúdo — key existente tem subject/body/variables ATUALIZADOS (`active` preservado). E-mails têm layout HTML da marca (tabelas + CSS inline) com **logos EMBUTIDAS** (attachment inline + `cid:`, padrão do comunidade-sistema-zero — a imagem viaja DENTRO do e-mail; sem hospedagem externa/proxy/R2; PNGs PURAS em `assets/logo-sistema-zero-{light,dark}.png`, injetadas no gateway pelo composition-root, anexadas só quando o HTML referencia o `cid:`) e **dark mode** via `@media (prefers-color-scheme: dark)` com o tema dark do community + swap da logo (Apple Mail/Samsung/Outlook iOS; o Gmail que inverte à força mantém a logo de tinta escura — limitação aceita). ⚠️ NUNCA apague asset remoto referenciado por e-mail JÁ ENVIADO (aprendido na marra) |
 | `bun run evolution:create-instance <name> <phone>` | cria instância na Evolution (QR) + registra no banco |
 | `bun run webhooks:register <name> <url>` | aponta o webhook da instância p/ o nosso endpoint |
 | `bun run send:test <email\|whatsapp> <templateKey> <contato>` | dispara um envio de teste |
@@ -107,7 +121,8 @@ tests/    unit/ (render, pacing, message, send-worker, sendgrid-webhook) · inte
 
 **Envio (S2S, atrás do gateway):**
 - `POST /messaging/send` → enfileira e responde **202** `{ messageId, status }`. Body:
-  `{ channel, templateKey, recipient:{name,email?,phone?}, variables?, senderId?, scheduledAt?, priority? }`.
+  `{ channel, templateKey, recipient:{name,email?,phone?}, variables?, attachments?, senderId?, scheduledAt?, priority? }`
+  (`attachments`: máx. 3 `{filename,url,contentType?}` — anexos por URL, só e-mail; ver decisão 7).
   Idempotência por header `Idempotency-Key` + `X-Consumer-Id` — ⚠️ o `x-consumer-id` que chega aqui
   é **injetado pelo GATEWAY a partir do principal HMAC autenticado** (o do cliente é stripado como
   credencial de borda; sem essa injeção a idempotência ficava morta em prod). Corrida
@@ -220,7 +235,8 @@ assinatura/token; aceita o token também via header `x-webhook-token`).
 migration faz `CREATE SCHEMA "messaging"`; a `0001` dropa a coluna `weight`; a `0002` troca o índice
 de claim por `messages_claim_idx (channel, status, priority DESC, scheduled_at)` (serve o ORDER BY —
 sem ele, pico de fila = sort do backlog inteiro por tick) + `messages_created_at_idx` (listagem do
-admin). Seleção de lane em `whatsapp_instances(enabled,status,next_available_at)`.
+admin); a `0003` adiciona `messages.attachments` (jsonb, default `[]` — SÓ metadados de anexo por
+URL). Seleção de lane em `whatsapp_instances(enabled,status,next_available_at)`.
 Escritas do worker na lane (`reserve`/`applyLanePacing`/`delayLane`) fazem **bump de `version`** —
 um PATCH admin concorrente conflita (409) em vez de regravar contadores de ritmo velhos por cima.
 Retenção (outbox/webhook_events) gateada por **advisory lock** (`pg_try_advisory_xact_lock`, chave

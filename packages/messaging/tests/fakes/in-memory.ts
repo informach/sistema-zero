@@ -85,7 +85,11 @@ export class InMemoryMessageRepository implements MessageRepository {
 
   /** Clone do agregado (espelha o banco: leituras não compartilham instância). */
   private snapshot(m: Message): Message {
-    return Message.fromState(m.id, { ...m.state, recipient: { ...m.state.recipient } })
+    return Message.fromState(m.id, {
+      ...m.state,
+      recipient: { ...m.state.recipient },
+      attachments: m.state.attachments.map((a) => ({ ...a })),
+    })
   }
 
   async create(m: Message): Promise<void> {

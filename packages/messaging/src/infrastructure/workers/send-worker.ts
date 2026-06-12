@@ -1,7 +1,8 @@
 import type { WhatsAppInstance } from '../../domain/lane/whatsapp-instance.aggregate'
-import type { Message } from '../../domain/message/message.aggregate'
+import type { Message, MessageAttachment } from '../../domain/message/message.aggregate'
+import type { AttachmentFetcher } from '../../domain/ports/attachment-fetcher.port'
 import type { Clock } from '../../domain/ports/clock.port'
-import type { EmailGateway } from '../../domain/ports/email-gateway.port'
+import type { EmailAttachment, EmailGateway } from '../../domain/ports/email-gateway.port'
 import type { MessageRepository } from '../../domain/ports/message-repository.port'
 import { ProviderSendError } from '../../domain/ports/provider-error'
 import type { Rng } from '../../domain/ports/rng.port'
@@ -41,6 +42,8 @@ export interface SendWorkerDeps {
   senders: SenderRepository
   suppressions: SuppressionRepository
   emailGateway: EmailGateway
+  /** Busca o conteúdo dos anexos por URL no momento do envio (e-mail). */
+  attachmentFetcher: AttachmentFetcher
   whatsappGateway: WhatsAppGatewayLike
   clock: Clock
   rng: Rng
@@ -189,6 +192,12 @@ export class SendWorker {
     }
 
     try {
+      // Anexos por URL: materializa os bytes AGORA (falha de fetch cai no mesmo
+      // caminho de retry/backoff de um erro do SendGrid — applySendError abaixo).
+      const attachments =
+        message.state.attachments.length > 0
+          ? await this.fetchAttachments(message.state.attachments)
+          : undefined
       const { providerMessageId } = await this.deps.emailGateway.sendEmail({
         to: email ?? '',
         toName: message.recipient.name,
@@ -197,12 +206,27 @@ export class SendWorker {
         from: sender.state.fromEmail,
         fromName: sender.state.fromName,
         replyTo: sender.state.replyTo,
+        ...(attachments ? { attachments } : {}),
       })
       message.markSent({ providerMessageId, sentAt: this.deps.clock.now() })
     } catch (error) {
       this.applySendError(message, error)
     }
     await this.deps.messages.update(message)
+  }
+
+  /** Busca cada anexo por URL e injeta o base64 (contentType: metadado > origem). */
+  private async fetchAttachments(metas: readonly MessageAttachment[]): Promise<EmailAttachment[]> {
+    return Promise.all(
+      metas.map(async (meta) => {
+        const fetched = await this.deps.attachmentFetcher.fetch(meta.url)
+        return {
+          filename: meta.filename,
+          contentType: meta.contentType ?? fetched.contentType ?? 'application/octet-stream',
+          contentBase64: fetched.contentBase64,
+        }
+      }),
+    )
   }
 
   // ── WhatsApp (rotação entre lanes + ritmo anti-ban) ──────────────────────────

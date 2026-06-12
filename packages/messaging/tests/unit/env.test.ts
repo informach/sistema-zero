@@ -54,6 +54,27 @@ describe('loadEnv — fail-closed em produção', () => {
     expect(() => loadEnv({ ...BASE, EVOLUTION_API_KEY: 'chave' })).toThrow(/EVOLUTION_API_KEY/)
   })
 
+  it('anexos: defaults seguros (5MB; allowlist vazia = dev liberado)', () => {
+    const env = loadEnv(BASE)
+    expect(env.ATTACHMENT_MAX_BYTES).toBe(5 * 1024 * 1024)
+    expect(env.ATTACHMENT_FETCH_ALLOWED_HOSTS).toEqual([])
+  })
+
+  it('anexos: CSV de hosts é aparado, minúsculo e ignora entradas vazias', () => {
+    const env = loadEnv({
+      ...BASE,
+      ATTACHMENT_FETCH_ALLOWED_HOSTS: ' Fiscal.Railway.Internal , ,outro.host,',
+    })
+    expect(env.ATTACHMENT_FETCH_ALLOWED_HOSTS).toEqual(['fiscal.railway.internal', 'outro.host'])
+  })
+
+  it('ATTACHMENT_MAX_BYTES inválido → falha no boot', () => {
+    expect(() => loadEnv({ ...BASE, ATTACHMENT_MAX_BYTES: 'muito' })).toThrow(
+      /ATTACHMENT_MAX_BYTES/,
+    )
+    expect(() => loadEnv({ ...BASE, ATTACHMENT_MAX_BYTES: '0' })).toThrow(/ATTACHMENT_MAX_BYTES/)
+  })
+
   it('produção completa → ok', () => {
     const env = loadEnv({
       ...PROD_OK,

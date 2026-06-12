@@ -5,6 +5,14 @@ const Channel = t.Union([t.Literal('email'), t.Literal('whatsapp')])
 /** Params `:id` (uuid) — sem isto um id malformado vira erro de cast do Postgres (500). */
 export const IdParams = t.Object({ id: t.String({ format: 'uuid' }) })
 
+/** Anexo por URL (e-mail): só METADADOS viajam no body (teto 64KB) — o worker
+ *  busca os bytes na `url` no momento do envio. */
+const SendAttachment = t.Object({
+  filename: t.String({ minLength: 1, maxLength: 200 }),
+  url: t.String({ pattern: '^https?://', maxLength: 2048 }),
+  contentType: t.Optional(t.String({ minLength: 1, maxLength: 128 })),
+})
+
 export const SendBody = t.Object({
   channel: Channel,
   templateKey: t.String({ minLength: 1, maxLength: 64 }),
@@ -14,6 +22,7 @@ export const SendBody = t.Object({
     phone: t.Optional(t.String({ minLength: 8, maxLength: 20 })),
   }),
   variables: t.Optional(t.Record(t.String(), t.String())),
+  attachments: t.Optional(t.Array(SendAttachment, { maxItems: 3 })),
   senderId: t.Optional(t.String({ maxLength: 64 })),
   scheduledAt: t.Optional(t.String({ format: 'date-time' })),
   priority: t.Optional(t.Integer({ minimum: 0, maximum: 100 })),

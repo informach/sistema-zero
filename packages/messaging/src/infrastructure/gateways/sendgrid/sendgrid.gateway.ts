@@ -58,7 +58,7 @@ export class SendGridEmailGateway implements EmailGateway {
     }
 
     // Embute (inline) só as imagens que o HTML realmente referencia por `cid:`.
-    const attachments = this.inlineImages
+    const inlineAttachments = this.inlineImages
       .filter((img) => input.html.includes(`cid:${img.contentId}`))
       .map((img) => ({
         content: img.contentBase64,
@@ -67,6 +67,14 @@ export class SendGridEmailGateway implements EmailGateway {
         disposition: 'inline' as const,
         content_id: img.contentId,
       }))
+    // Anexos "de verdade" (ex.: DANFSe em PDF) — coexistem com as logos inline.
+    const fileAttachments = (input.attachments ?? []).map((a) => ({
+      content: a.contentBase64,
+      filename: a.filename,
+      type: a.contentType,
+      disposition: 'attachment' as const,
+    }))
+    const attachments = [...inlineAttachments, ...fileAttachments]
 
     const body = {
       personalizations: [
