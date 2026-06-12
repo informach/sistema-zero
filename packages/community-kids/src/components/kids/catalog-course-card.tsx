@@ -1,22 +1,33 @@
 import { Card } from '@sistemazero/ui/card'
 import { BookOpen, Lock, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
+import { cn } from '@/lib/cn'
 import type { CatalogCourseView } from '@/lib/types'
+import { UNIT_THEME_CLASS, type UnitTheme } from './unit-theme'
 
 interface CatalogCourseCardProps {
   course: CatalogCourseView
   /** URL final da página de vendas (metadata.salesPageUrl ?? FUNNEL_URL), resolvida no server. */
   salesUrl: string | null
+  /** Tema da unidade (o grid alterna por índice); bloqueado fica neutro. */
+  theme?: UnitTheme
 }
 
 /**
- * Card de "Todos os cursos": desbloqueado → entra no curso; bloqueado → cadeado
- * e clique leva à página de vendas (funil). Espelha o rodapé da referência
- * (ShieldCheck "Liberado" / Lock "Bloqueado").
+ * Card de "Todos os cursos": desbloqueado → entra no curso (vestindo o tema
+ * da unidade); bloqueado → cadeado, card neutro e clique leva à página de
+ * vendas (funil). Rodapé ShieldCheck "Liberado" / Lock "Bloqueado".
  */
-export function CatalogCourseCard({ course, salesUrl }: CatalogCourseCardProps) {
+export function CatalogCourseCard({ course, salesUrl, theme = 'cyan' }: CatalogCourseCardProps) {
   const body = (
-    <Card className="h-full overflow-hidden p-0 transition-shadow group-hover:shadow-lg dark:group-hover:brand-glow">
+    <Card
+      className={cn(
+        'h-full overflow-hidden p-0 dark:group-hover:brand-glow',
+        course.hasAccess
+          ? cn('kids-card kid-pop', UNIT_THEME_CLASS[theme])
+          : 'transition-shadow group-hover:shadow-lg',
+      )}
+    >
       <div className="relative aspect-video w-full overflow-hidden bg-muted">
         {course.coverImageUrl ? (
           // Capa pode ser URL externa arbitrária (autoria) → <img> simples,

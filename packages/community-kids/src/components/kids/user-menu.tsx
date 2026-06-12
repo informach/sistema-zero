@@ -11,9 +11,16 @@ import { getUserDisplayName } from '@/lib/user-display'
 /**
  * Menu do avatar: cabeçalho com foto + nome + e-mail, itens Meu perfil/Mudar
  * tema e Sair. SEM "Compras" (decisão da v1 kids: a compra é do RESPONSÁVEL —
- * histórico financeiro não aparece na área da criança). Dropdown custom.
+ * histórico financeiro não aparece na área da criança). Dropdown custom;
+ * `direction="up"` abre PARA CIMA (rodapé da sidebar do desktop).
  */
-export function UserMenu({ user }: { user: SessionUserWithAvatar }) {
+export function UserMenu({
+  user,
+  direction = 'down',
+}: {
+  user: SessionUserWithAvatar
+  direction?: 'up' | 'down'
+}) {
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const [mounted, setMounted] = useState(false)
@@ -63,7 +70,11 @@ export function UserMenu({ user }: { user: SessionUserWithAvatar }) {
         />
       </button>
       {open ? (
-        <div className="absolute right-0 z-50 mt-2 w-72 overflow-hidden rounded-lg border border-border bg-popover text-popover-foreground shadow-lg">
+        <div
+          className={`absolute z-50 w-72 overflow-hidden rounded-lg border border-border bg-popover text-popover-foreground shadow-lg ${
+            direction === 'up' ? 'bottom-full left-0 mb-2' : 'right-0 mt-2'
+          }`}
+        >
           {/* Cabeçalho: avatar à esquerda + nome/e-mail */}
           <div className="flex items-center gap-3 border-b border-border px-3 py-3">
             <UserAvatar

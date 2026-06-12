@@ -1,4 +1,4 @@
-import { GraduationCap, Home } from 'lucide-react'
+import { CircleUserRound, GraduationCap, Home } from 'lucide-react'
 
 export interface NavItem {
   href: string
@@ -9,11 +9,14 @@ export interface NavItem {
 }
 
 /**
- * Navegação principal do aluno (centralizada no header). Compras/Perfil vivem
- * no menu do avatar. `/cursos` (catálogo) e `/cursos/[slug]` (detalhe) acendem
- * "Todos os cursos"; a home (grid "Meus cursos") acende "Início".
+ * Navegação principal do aluno — sidebar (desktop) + tab bar (mobile),
+ * estilo Duolingo. `/cursos` (catálogo) e `/cursos/[slug]` (trilha) acendem
+ * "Cursos"; a home (grid "Meus cursos") acende "Início". Perfil tem item
+ * próprio (criança navega por ícones grandes; o menu do avatar segue
+ * existindo p/ tema/sair).
  */
 export const NAV_ITEMS: NavItem[] = [
   { href: '/', label: 'Início', icon: Home },
-  { href: '/cursos', label: 'Todos os cursos', icon: GraduationCap, match: '/cursos' },
+  { href: '/cursos', label: 'Cursos', icon: GraduationCap, match: '/cursos' },
+  { href: '/perfil', label: 'Perfil', icon: CircleUserRound },
 ]
