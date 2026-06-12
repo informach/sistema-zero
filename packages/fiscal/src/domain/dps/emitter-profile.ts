@@ -41,15 +41,20 @@ export const INFORMACH_BASE = {
   cNBS: '122051900',
 } as const satisfies Partial<EmitterProfile>
 
+/** Teto da discriminação (xDescServ) — alinhado ao maxLength da substituição admin. */
+const MAX_SERVICE_DESC = 1900
+
 /**
  * Discriminação do serviço na nota: prefixo (ex. "Treinamento online") + nome
  * REAL do produto comprado (catálogo). Pedido do usuário 12/06 — o prefixo
- * reforça o enquadramento no item 8.02 (instrução/treinamento).
+ * reforça o enquadramento no item 8.02 (instrução/treinamento). Cap defensivo:
+ * nome de produto muito longo estouraria o limite do xDescServ → rejeição.
  */
 export function composeServiceDescription(prefix: string, productName: string | null): string {
   const name = productName?.trim() || 'Produto digital'
   const p = prefix.trim()
-  return p ? `${p} - ${name}` : name
+  const full = p ? `${p} - ${name}` : name
+  return full.length > MAX_SERVICE_DESC ? full.slice(0, MAX_SERVICE_DESC) : full
 }
 
 /**

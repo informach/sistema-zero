@@ -13,7 +13,7 @@ import {
 
 const SECRET = 's'.repeat(32)
 
-function build(opts: { secret?: string } = {}) {
+function build(opts: { secret?: string; metricsToken?: string } = {}) {
   const invoices = new InMemoryInvoiceRepository()
   const payments = new FakePaymentsClient()
   const catalog = new FakeCatalogClient()
@@ -42,6 +42,7 @@ function build(opts: { secret?: string } = {}) {
     serviceDescPrefix: 'Treinamento on-line',
     webhookHmacSecret: opts.secret,
     webhookToleranceSeconds: 300,
+    metricsToken: opts.metricsToken,
     readiness: async () => {},
   })
   return { app, invoices, payments, catalog, processedWebhooks }
@@ -150,6 +151,36 @@ describe('GET /fiscal/files/:token (capability-URL do DANFSe)', () => {
     expect(unknown.status).toBe(404)
     const malformed = await app.handle(new Request('http://localhost/fiscal/files/curto.pdf'))
     expect(malformed.status).toBe(404)
+  })
+})
+
+describe('GET /metrics', () => {
+  const TOKEN = 'metrics-token-16chars'
+
+  test('aberto sem token (dev); com token exige header válido e retorna byStatus', async () => {
+    const open = build()
+    expect((await open.app.handle(new Request('http://localhost/metrics'))).status).toBe(200)
+
+    const { app, invoices } = build({ metricsToken: TOKEN })
+    await invoices.schedule({
+      paymentId: 'pay-1',
+      customer: { name: 'M', email: 'm@m.com', document: '52998224725' },
+      amountInCents: 3700n,
+      serviceDescription: 'Curso',
+      offerId: null,
+      guaranteeDays: null,
+      paidAt: new Date(),
+      scheduledFor: new Date(),
+      ambiente: 'producao-restrita',
+    })
+
+    expect((await app.handle(new Request('http://localhost/metrics'))).status).toBe(401)
+    const ok = await app.handle(
+      new Request('http://localhost/metrics', { headers: { 'x-metrics-token': TOKEN } }),
+    )
+    expect(ok.status).toBe(200)
+    const body = (await ok.json()) as { byStatus: Record<string, number> }
+    expect(body.byStatus['SCHEDULED']).toBe(1)
   })
 })
 

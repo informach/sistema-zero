@@ -228,8 +228,8 @@ export class DrizzleInvoiceRepository implements InvoiceRepository {
       competenceDate: string
       pdfToken: string
     },
-  ): Promise<void> {
-    await this.transition(id, ['SCHEDULED'], {
+  ): Promise<boolean> {
+    const affected = await this.transition(id, ['SCHEDULED'], {
       status: 'EMITTED',
       dpsXml: data.dpsXml,
       nfseXml: data.nfseXml,
@@ -241,6 +241,48 @@ export class DrizzleInvoiceRepository implements InvoiceRepository {
       lastError: null,
       nextAttemptAt: null,
     })
+    return affected > 0
+  }
+
+  async forceCancelAfterRacedEmission(
+    id: string,
+    data: {
+      dpsXml: string
+      nfseXml: string
+      accessKey: string
+      competenceDate: string
+      pdfToken: string
+    },
+    cancelReason: string,
+  ): Promise<void> {
+    // A NFS-e foi autorizada na Sefin, mas um estorno marcou SKIPPED antes do
+    // markEmitted. Grava a emissão REAL e encaminha p/ cancelamento (cMotivo 2 —
+    // serviço não prestado). Guardado por SKIPPED p/ não pisar noutra transição.
+    await this.db
+      .update(invoices)
+      .set({
+        status: 'CANCEL_PENDING',
+        dpsXml: data.dpsXml,
+        nfseXml: data.nfseXml,
+        accessKey: data.accessKey,
+        competenceDate: data.competenceDate,
+        pdfToken: data.pdfToken,
+        emittedAt: new Date(),
+        cancelRequestedBy: 'system:refund',
+        cancelReason,
+        skipReason: null,
+        claimedAt: null,
+        lastError: null,
+        nextAttemptAt: null,
+        version: sql`${invoices.version} + 1`,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(invoices.id, id), eq(invoices.status, 'SKIPPED')))
+  }
+
+  async touchClaim(id: string): Promise<void> {
+    // Só claimed_at: não toca updated_at (a fila de cancelamento ordena por ele).
+    await this.db.update(invoices).set({ claimedAt: new Date() }).where(eq(invoices.id, id))
   }
 
   async releaseForRetry(id: string, nextAttemptAt: Date, lastError: string): Promise<void> {
@@ -383,16 +425,23 @@ export class DrizzleInvoiceRepository implements InvoiceRepository {
       .where(eq(invoices.id, id))
   }
 
-  /** Transição guardada por status de origem — 0 linhas = corrida perdida (no-op). */
+  /**
+   * Transição guardada por status de origem. Retorna o nº de linhas afetadas —
+   * 0 = corrida perdida (status já mudou). O chamador decide se o no-op é benigno
+   * (refund idempotente) ou precisa reconciliar (emissão real perdida, ver
+   * markEmitted/forceCancelAfterRacedEmission).
+   */
   private async transition(
     id: string,
     from: InvoiceStatus[],
     set: Partial<typeof invoices.$inferInsert>,
-  ): Promise<void> {
-    await this.db
+  ): Promise<number> {
+    const rows = await this.db
       .update(invoices)
       .set({ ...set, version: sql`${invoices.version} + 1`, updatedAt: new Date() })
       .where(and(eq(invoices.id, id), inArray(invoices.status, from)))
+      .returning({ id: invoices.id })
+    return rows.length
   }
 }
 

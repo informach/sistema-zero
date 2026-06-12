@@ -52,6 +52,8 @@ export class CancellationWorker {
           continue
         }
         try {
+          // Renova o lease por-nota (lote longo não estoura o claim — ver emissão).
+          await this.invoices.touchClaim(invoice.id)
           const result = await this.sefin.cancelNfse({
             accessKey: invoice.accessKey,
             cMotivo: invoice.cancelRequestedBy === 'system:refund' ? '2' : '9',

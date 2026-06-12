@@ -178,6 +178,8 @@ export function createApplication(env: Env): Application {
     webhookToleranceSeconds: env.PAYMENTS_WEBHOOK_TOLERANCE_SECONDS,
     requireAdminEnabled: env.REQUIRE_ADMIN,
     internalToken: env.INTERNAL_API_TOKEN,
+    metricsToken: env.METRICS_TOKEN,
+    maxRequestBodyBytes: env.MAX_REQUEST_BODY_BYTES,
     readiness: async () => {
       await connection.sql`select 1`
     },

@@ -1,5 +1,6 @@
 import { randomBytes } from 'node:crypto'
 import type { Logger } from '@sistemazero/core/logging'
+import { dCompetBRT } from '../../domain/dps/dps-builder'
 import { SkipReason } from '../../domain/invoice/invoice.status'
 import type { PaymentsClient } from '../../domain/ports/clients.port'
 import type { Invoice, InvoiceRepository } from '../../domain/ports/invoice-repository.port'
@@ -70,8 +71,10 @@ export class EmitInvoiceService {
       (n) => this.config.buildDpsId(this.config.serie, n),
     )
 
-    // 3. Competência = HOJE em BRT (UTC-3 fixo — Brasil sem horário de verão).
-    const competenceDate = new Date(Date.now() - 3 * 3600_000).toISOString().slice(0, 10)
+    // 3. Competência = HOJE em BRT, na MESMA base/margem do dhEmi (dps-builder):
+    // sem isso, na virada da meia-noite dCompet podia ficar 1 dia à frente do
+    // dhEmi (que subtrai 60s de folga de clock skew) → rejeição da Sefin.
+    const competenceDate = dCompetBRT()
 
     await this.invoices.appendEvent(invoice.id, 'EMIT_ATTEMPT', 'system', {
       attempt: invoice.attempts,
@@ -118,12 +121,13 @@ export class EmitInvoiceService {
     }
 
     if (result.kind === 'rejected') {
-      const detail = result.errors.map((e) => `${e.code}: ${e.message}`).join(' | ')
+      // A Sefin pode ecoar o CPF do tomador na descrição (ex. E0207) — redige
+      // sequências longas de dígitos antes de persistir/logar (vai p/ o Sentry).
+      const errors = redactDocuments(result.errors)
+      const detail = errors.map((e) => `${e.code}: ${e.message}`).join(' | ')
       await this.invoices.markFailed(invoice.id, detail)
-      await this.invoices.appendEvent(invoice.id, 'EMIT_FAILED', 'system', {
-        errors: result.errors,
-      })
-      this.logger.error('fiscal.emit_rejected', { invoiceId: invoice.id, errors: result.errors })
+      await this.invoices.appendEvent(invoice.id, 'EMIT_FAILED', 'system', { errors })
+      this.logger.error('fiscal.emit_rejected', { invoiceId: invoice.id, errors })
       return
     }
 
@@ -164,13 +168,19 @@ export class EmitInvoiceService {
     },
   ): Promise<void> {
     const pdfToken = randomBytes(32).toString('hex')
-    await this.invoices.markEmitted(invoice.id, {
+    const recorded = await this.invoices.markEmitted(invoice.id, {
       dpsXml: data.dpsXml,
       nfseXml: data.nfseXml,
       accessKey: data.accessKey,
       competenceDate: data.competenceDate,
       pdfToken,
     })
+    if (!recorded) {
+      // A NFS-e foi autorizada na Sefin, mas o status mudou no meio (corrida):
+      // jamais perder a chave de uma nota REAL.
+      await this.reconcileRacedEmission(invoice, data, pdfToken)
+      return
+    }
     await this.invoices.appendEvent(invoice.id, 'EMITTED', 'system', {
       accessKey: data.accessKey,
       recovered: data.recovered,
@@ -229,6 +239,50 @@ export class EmitInvoiceService {
     }
   }
 
+  /**
+   * `markEmitted` não casou (0 linhas): entre a emissão CONFIRMADA na Sefin e a
+   * gravação, uma corrida mudou o status. A NFS-e REAL existe — nunca perder a
+   * chave nem deixar nota de venda estornada sem cancelar:
+   *  - já EMITTED (outra réplica gravou) → idempotente, nada a fazer;
+   *  - SKIPPED (estorno correu junto) → grava a emissão e encaminha p/ cancelamento;
+   *  - qualquer outro estado → ERROR alertável com a chave (ação manual).
+   */
+  private async reconcileRacedEmission(
+    invoice: Invoice,
+    data: { dpsXml: string; nfseXml: string; accessKey: string; competenceDate: string },
+    pdfToken: string,
+  ): Promise<void> {
+    const current = await this.invoices.findById(invoice.id)
+    if (current?.status === 'EMITTED') {
+      this.logger.info('fiscal.emit_already_recorded', {
+        invoiceId: invoice.id,
+        accessKey: data.accessKey,
+      })
+      return
+    }
+    if (current?.status === 'SKIPPED') {
+      await this.invoices.forceCancelAfterRacedEmission(
+        invoice.id,
+        { ...data, pdfToken },
+        'Pagamento reembolsado durante a emissão',
+      )
+      await this.invoices.appendEvent(invoice.id, 'EMITTED_THEN_CANCEL_PENDING', 'system', {
+        accessKey: data.accessKey,
+        racedFrom: 'SKIPPED',
+      })
+      this.logger.error('fiscal.emitted_after_skip', {
+        invoiceId: invoice.id,
+        accessKey: data.accessKey,
+      })
+      return
+    }
+    this.logger.error('fiscal.emit_recording_lost_race', {
+      invoiceId: invoice.id,
+      accessKey: data.accessKey,
+      status: current?.status ?? 'NOT_FOUND',
+    })
+  }
+
   /** Backoff exponencial (1min × 2^attempts, teto 6h) ou FAILED se esgotou. */
   private async backoffOrFail(invoice: Invoice, reason: string): Promise<void> {
     if (invoice.attempts >= this.config.maxAttempts) {
@@ -262,4 +316,9 @@ function centsToReais(cents: bigint): string {
 
 function msg(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
+}
+
+/** Mascara sequências de ≥11 dígitos (CPF/CNPJ que a Sefin pode ecoar no erro). */
+function redactDocuments<T extends { code: string; message: string }>(errors: T[]): T[] {
+  return errors.map((e) => ({ ...e, message: e.message.replace(/\d{11,}/g, '***') }))
 }

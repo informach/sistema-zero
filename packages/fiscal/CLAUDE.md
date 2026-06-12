@@ -56,6 +56,8 @@ A Produção Restrita usa o MESMO certificado real e **não gera nota com valida
 4. **Substituição** = DPS NOVA com grupo `subst{chSubstda,cMotivo}` (NÃO é evento; o sistema cancela a
    original); quando a substituta emite, a original vira SUBSTITUTED.
 5. `GET /fiscal/files/:token.pdf` — capability-URL (token 32 bytes) p/ o messaging anexar o DANFSe.
+   `GET /metrics` (`{byStatus}`; `METRICS_TOKEN` via `x-metrics-token`/Bearer, obrigatório em prod)
+   — alerte em `FAILED`/`CANCEL_PENDING` > 0. Teto de corpo = `MAX_REQUEST_BODY_BYTES` (Bun.serve).
 6. **Emissão MANUAL (admin+)**: `POST /fiscal/admin/invoices/:id/emit-now` antecipa uma SCHEDULED
    (scheduledFor=AGORA; a re-verificação de estorno continua valendo) e
    `POST /fiscal/admin/invoices {paymentId}` cria+emite AGORA por pagamento (backfill de vendas
@@ -67,6 +69,13 @@ A Produção Restrita usa o MESMO certificado real e **não gera nota com valida
 `SCHEDULED → EMITTED | SKIPPED | FAILED` · `EMITTED → CANCEL_PENDING | SUBSTITUTED` ·
 `CANCEL_PENDING → CANCELLED` · `FAILED → SCHEDULED` (retry admin). Central: `domain/invoice/invoice.status.ts`.
 Transições no repositório são UPDATEs **guardados por status de origem** (corrida perdida = no-op).
+⚠️ **Exceção de reconciliação:** `markEmitted` retorna `boolean`; se NÃO casar (0 linhas
+porque um estorno marcou SKIPPED entre a emissão CONFIRMADA na Sefin e a gravação), o
+`EmitInvoiceService` reconcilia — a NFS-e REAL existe, então `forceCancelAfterRacedEmission`
+grava a chave e força `SKIPPED → CANCEL_PENDING` (cMotivo 2) p/ o CancellationWorker cancelar.
+JAMAIS perder a chave de uma nota válida de venda estornada (`fiscal.emitted_after_skip` = ERROR
+alertável). Os workers renovam o lease **por-nota** (`touchClaim`) antes de cada item — lote longo
+não estoura o claim com N réplicas.
 
 ## Numeração da DPS
 

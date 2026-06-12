@@ -198,7 +198,7 @@ export class InMemoryInvoiceRepository implements InvoiceRepository {
       competenceDate: string
       pdfToken: string
     },
-  ): Promise<void> {
+  ): Promise<boolean> {
     const inv = this.invoices.get(id)
     if (inv?.status === 'SCHEDULED') {
       Object.assign(inv, {
@@ -209,7 +209,41 @@ export class InMemoryInvoiceRepository implements InvoiceRepository {
         lastError: null,
         nextAttemptAt: null,
       })
+      return true
     }
+    return false
+  }
+
+  async forceCancelAfterRacedEmission(
+    id: string,
+    data: {
+      dpsXml: string
+      nfseXml: string
+      accessKey: string
+      competenceDate: string
+      pdfToken: string
+    },
+    cancelReason: string,
+  ): Promise<void> {
+    const inv = this.invoices.get(id)
+    if (inv?.status === 'SKIPPED') {
+      Object.assign(inv, {
+        status: 'CANCEL_PENDING',
+        ...data,
+        emittedAt: new Date(),
+        cancelRequestedBy: 'system:refund',
+        cancelReason,
+        skipReason: null,
+        claimedAt: null,
+        lastError: null,
+        nextAttemptAt: null,
+      })
+    }
+  }
+
+  async touchClaim(id: string): Promise<void> {
+    const inv = this.invoices.get(id)
+    if (inv) inv.claimedAt = new Date()
   }
 
   async releaseForRetry(id: string, nextAttemptAt: Date, lastError: string): Promise<void> {
@@ -372,9 +406,12 @@ export class ScriptedSefinGateway implements SefinNacionalGateway {
   nextResults: EmitResult[] = []
   emitError: Error | null = null
   lookupResult: { accessKey: string } | null = null
+  /** Hook p/ simular trabalho concorrente DURANTE a chamada à Sefin (ex.: estorno). */
+  onEmit: (() => Promise<void>) | null = null
 
   async emitDps(input: EmitDpsInput): Promise<EmitResult> {
     this.emitted.push(input)
+    if (this.onEmit) await this.onEmit()
     if (this.emitError) throw this.emitError
     const next = this.nextResults.shift()
     return (

@@ -42,7 +42,9 @@ export const invoices = fiscalSchema.table(
   'invoices',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    // Concorrência otimista (transições disputadas: worker × webhook × admin).
+    // Contador informativo de mutações (auditoria). A guarda de concorrência
+    // REAL das transições disputadas (worker × webhook × admin) é o UPDATE
+    // condicionado ao status de origem no repositório, não este número.
     version: integer('version').notNull().default(0),
     paymentId: uuid('payment_id').notNull(),
     status: invoiceStatusEnum('status').notNull(),

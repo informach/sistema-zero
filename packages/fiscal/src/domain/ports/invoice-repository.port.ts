@@ -107,6 +107,14 @@ export interface InvoiceRepository {
     maxAttempts: number
   }): Promise<Invoice[]>
 
+  /**
+   * Renova o lease (claimed_at = agora) da nota em processamento. Chamado pelos
+   * workers ANTES de cada item: um lote longo não estoura o lease da nota atual
+   * (que outra réplica re-reivindicaria). Atualiza só claimed_at (não mexe na
+   * ordenação da fila de cancelamento por updated_at).
+   */
+  touchClaim(id: string): Promise<void>
+
   /** Aloca (uma única vez) número/série/dpsId; retry reusa o já alocado. */
   allocateDpsNumber(
     id: string,
@@ -114,7 +122,12 @@ export interface InvoiceRepository {
     buildDpsId: (n: bigint) => string,
   ): Promise<{ dpsNumber: bigint; dpsId: string }>
 
-  /** Resultado de emissão bem-sucedida (→ EMITTED). */
+  /**
+   * Resultado de emissão bem-sucedida (SCHEDULED → EMITTED). Retorna `false`
+   * quando NENHUMA linha casou (o status mudou no meio — ex.: um estorno marcou
+   * SKIPPED entre a emissão confirmada na Sefin e esta gravação). O chamador
+   * trata o `false` SEM perder a chave (ver `forceCancelAfterRacedEmission`).
+   */
   markEmitted(
     id: string,
     data: {
@@ -124,6 +137,25 @@ export interface InvoiceRepository {
       competenceDate: string
       pdfToken: string
     },
+  ): Promise<boolean>
+
+  /**
+   * Reconciliação de corrida: a NFS-e foi REALMENTE autorizada na Sefin, mas um
+   * estorno marcou a nota SKIPPED antes do `markEmitted`. Persiste a emissão real
+   * (chave/xml) e encaminha p/ cancelamento (`CANCEL_PENDING`, cMotivo de estorno)
+   * — JAMAIS deixa uma nota válida de venda estornada sem registro nem cancelamento.
+   * Guardado por `SKIPPED` (no-op se outra transição já ocorreu).
+   */
+  forceCancelAfterRacedEmission(
+    id: string,
+    data: {
+      dpsXml: string
+      nfseXml: string
+      accessKey: string
+      competenceDate: string
+      pdfToken: string
+    },
+    cancelReason: string,
   ): Promise<void>
 
   /** Falha re-tentável: devolve à fila com backoff. */
