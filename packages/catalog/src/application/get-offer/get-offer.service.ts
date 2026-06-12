@@ -38,6 +38,17 @@ export class GetOfferService {
     return offer ? this.toView(offer) : null
   }
 
+  /**
+   * Leitura pública por slug com fallback por id (UUID) — o serviço fiscal só
+   * conhece o `metadata.offerId` do pagamento. Mesmo dado já público por slug
+   * (zero vazamento novo); a regra de draft-404 é aplicada na rota, igual ao slug.
+   */
+  async getBySlugOrId(slugOrId: string): Promise<OfferView | null> {
+    const offer = await this.offers.findBySlug(slugOrId)
+    if (offer) return this.toView(offer)
+    return isUuid(slugOrId) ? this.getById(slugOrId) : null
+  }
+
   /** Definição de acesso resolvida (com `fulfillment`) — funil + futura área de membros. */
   async getEntitlements(idOrSlug: string): Promise<OfferEntitlementsResult | null> {
     // A rota passa o slug; só tenta por id se parecer um UUID (evita cast inválido no Postgres).

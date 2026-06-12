@@ -118,6 +118,9 @@ src/
 
 **Leitura (pública via gateway — dados de marketing):**
 - `GET /catalog/offers/:slug` → preço, condições, garantia + `includes` (itens resolvidos, com `isPrimary`).
+  O param aceita **slug OU UUID** (fallback `getBySlugOrId`, 06/2026): o serviço **fiscal** resolve a
+  oferta pelo `metadata.offerId` do pagamento (guaranteeDays + nome p/ a NFS-e). Mesma view, mesmo
+  micro-cache, mesma regra de draft-404 — zero vazamento novo.
   O `includes` é **labels-only** (`EntitlementItemView`, SEM `fulfillment`) — seguro p/ exibição pública.
   Oferta **`draft` é inexistente ao público (404)** — rascunho não vaza preço/campanha por adivinhação
   de slug; `paused`/`archived` seguem legíveis (página existente degrada; a `quote` bloqueia a cobrança).
