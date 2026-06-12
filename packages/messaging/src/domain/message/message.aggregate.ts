@@ -12,11 +12,31 @@ import {
 import type { MessageStatus } from './message.status'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const MAX_ATTACHMENTS = 3
 
 export interface MessageRecipient {
   name: string
   email: string | null
   phone: string | null
+}
+
+/**
+ * METADADOS de um anexo por URL (e-mail). Os BYTES nunca entram no agregado nem
+ * no banco — o worker busca o conteúdo na `url` no momento do envio.
+ */
+export interface MessageAttachment {
+  filename: string
+  url: string
+  contentType: string | null
+}
+
+function isHttpUrl(value: string): boolean {
+  try {
+    const parsed = new URL(value)
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:'
+  } catch {
+    return false
+  }
 }
 
 export interface MessageProps {
@@ -25,6 +45,7 @@ export interface MessageProps {
   templateId: string | null
   recipient: MessageRecipient
   variables: Record<string, string>
+  attachments: MessageAttachment[]
   renderedSubject: string | null
   renderedBody: string
   senderId: string | null
@@ -55,6 +76,7 @@ export interface CreateMessageInput {
   templateId?: string | null
   recipient: { name: string; email?: string | null; phone?: string | null }
   variables?: Record<string, string>
+  attachments?: Array<{ filename: string; url: string; contentType?: string | null }>
   renderedSubject?: string | null
   renderedBody: string
   senderId?: string | null
@@ -110,6 +132,29 @@ export class Message extends AggregateRoot<string> {
     }
     if (!input.renderedBody?.trim()) throw new ValidationError('Corpo da mensagem vazio')
 
+    // Anexos por URL: só METADADOS (os bytes são buscados pelo worker no envio).
+    const attachments: MessageAttachment[] = (input.attachments ?? []).map((a) => ({
+      filename: a.filename?.trim() ?? '',
+      url: a.url?.trim() ?? '',
+      contentType: a.contentType?.trim() || null,
+    }))
+    if (attachments.length > 0) {
+      if (input.channel !== 'email') {
+        throw new ValidationError('Anexos só são suportados no canal e-mail')
+      }
+      if (attachments.length > MAX_ATTACHMENTS) {
+        throw new ValidationError(`Máximo de ${MAX_ATTACHMENTS} anexos por mensagem`)
+      }
+      for (const attachment of attachments) {
+        if (!attachment.filename) {
+          throw new ValidationError('Nome de arquivo do anexo é obrigatório')
+        }
+        if (!isHttpUrl(attachment.url)) {
+          throw new ValidationError('URL de anexo deve ser http(s)')
+        }
+      }
+    }
+
     const scheduledAt = input.scheduledAt ?? input.now
     const status: MessageStatus =
       scheduledAt.getTime() > input.now.getTime() ? 'SCHEDULED' : 'QUEUED'
@@ -120,6 +165,7 @@ export class Message extends AggregateRoot<string> {
       templateId: input.templateId ?? null,
       recipient: { name, email, phone },
       variables: input.variables ?? {},
+      attachments,
       renderedSubject: input.renderedSubject ?? null,
       renderedBody: input.renderedBody,
       senderId: input.senderId ?? null,

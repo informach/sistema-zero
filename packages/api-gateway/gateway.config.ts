@@ -72,6 +72,26 @@ const messagingInternalTransforms = MESSAGING_INTERNAL_TOKEN
       },
     ]
   : []
+// Fiscal (@sistemazero/fiscal): emissão automática de NFS-e pós-garantia. O
+// gateway injeta o x-internal-token nas rotas admin (defesa em profundidade,
+// igual aos demais). DEVE bater com o INTERNAL_API_TOKEN do fiscal. O webhook
+// payments→fiscal NÃO passa por aqui (private networking direto).
+const FISCAL_URL = process.env.FISCAL_URL ?? 'http://localhost:3009'
+const FISCAL_INTERNAL_TOKEN = process.env.FISCAL_INTERNAL_TOKEN ?? ''
+const fiscalInternalTransforms = FISCAL_INTERNAL_TOKEN
+  ? [
+      {
+        type: 'header-inject' as const,
+        options: { headers: { 'x-internal-token': FISCAL_INTERNAL_TOKEN } },
+      },
+    ]
+  : []
+// O fiscal como consumer HMAC de borda (e-mail da NFS-e via /messaging/send).
+const FISCAL_HMAC_SECRET = process.env.FISCAL_HMAC_SECRET ?? ''
+const FISCAL_ALLOWED_CIDRS = (process.env.FISCAL_ALLOWED_CIDRS ?? '0.0.0.0/0,::/0')
+  .split(',')
+  .map((c) => c.trim())
+  .filter(Boolean)
 const FUNNEL_URL = process.env.FUNNEL_URL ?? 'http://localhost:4321'
 const FUNNEL_HMAC_SECRET = process.env.FUNNEL_HMAC_SECRET ?? ''
 const FUNNEL_INTERNAL_TOKEN = process.env.FUNNEL_INTERNAL_TOKEN ?? ''
@@ -134,6 +154,16 @@ const config: GatewayConfigInput = {
           },
         ]
       : []),
+    // O fiscal como consumer HMAC de borda (e-mail da NFS-e via /messaging/send).
+    ...(FISCAL_HMAC_SECRET
+      ? [
+          {
+            id: 'fiscal',
+            hmacSecret: FISCAL_HMAC_SECRET,
+            allowedCidrs: FISCAL_ALLOWED_CIDRS,
+          },
+        ]
+      : []),
   ],
   services: {
     payments: {
@@ -182,6 +212,14 @@ const config: GatewayConfigInput = {
       name: 'messaging',
       upstreamGroups: {
         default: [{ url: MESSAGING_URL, healthCheckPath: '/health' }],
+      },
+      ...sharedResilience,
+    },
+    // Serviço fiscal: NFS-e automática pós-garantia (admin-only via gateway).
+    fiscal: {
+      name: 'fiscal',
+      upstreamGroups: {
+        default: [{ url: FISCAL_URL, healthCheckPath: '/healthz' }],
       },
       ...sharedResilience,
     },
@@ -1138,6 +1176,103 @@ const config: GatewayConfigInput = {
       auth: 'public',
       maxBodyBytes: 2 * 1024 * 1024,
       rateLimit: { max: 600, windowMs: 60_000, by: 'ip' },
+    },
+
+    // ── Fiscal (NFS-e): admin do painel. JWT + RBAC no gateway; o fiscal
+    // confere os X-Auth-* (requireAdmin) + x-internal-token (prova de origem).
+    // Espelha o payments-admin. O webhook payments→fiscal NÃO passa por aqui.
+    {
+      id: 'fiscal-admin-invoices-list',
+      methods: ['GET'],
+      pathPattern: '/fiscal/admin/invoices',
+      service: 'fiscal',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: fiscalInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'fiscal-admin-invoice-get',
+      methods: ['GET'],
+      pathPattern: '/fiscal/admin/invoices/:id',
+      service: 'fiscal',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: fiscalInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'fiscal-admin-invoice-pdf',
+      methods: ['GET'],
+      pathPattern: '/fiscal/admin/invoices/:id/pdf',
+      service: 'fiscal',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: fiscalInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    // Ações de escrita: admin+ (staff não cancela/substitui nota fiscal).
+    {
+      id: 'fiscal-admin-invoice-retry',
+      methods: ['POST'],
+      pathPattern: '/fiscal/admin/invoices/:id/retry',
+      service: 'fiscal',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: fiscalInternalTransforms,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'fiscal-admin-invoice-cancel',
+      methods: ['POST'],
+      pathPattern: '/fiscal/admin/invoices/:id/cancel',
+      service: 'fiscal',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: fiscalInternalTransforms,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'fiscal-admin-invoice-substitute',
+      methods: ['POST'],
+      pathPattern: '/fiscal/admin/invoices/:id/substitute',
+      service: 'fiscal',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: fiscalInternalTransforms,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'fiscal-admin-invoice-emit-now',
+      methods: ['POST'],
+      pathPattern: '/fiscal/admin/invoices/:id/emit-now',
+      service: 'fiscal',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: fiscalInternalTransforms,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+    },
+    // Emissão MANUAL por pagamento (backfill/antecipação — decisão do admin).
+    // MESMO path literal do GET list; o matcher distingue pelo método.
+    {
+      id: 'fiscal-admin-invoice-create',
+      methods: ['POST'],
+      pathPattern: '/fiscal/admin/invoices',
+      service: 'fiscal',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: fiscalInternalTransforms,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'fiscal-admin-stats',
+      methods: ['GET'],
+      pathPattern: '/fiscal/admin/stats',
+      service: 'fiscal',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: fiscalInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
 
     // ── Exemplo: rota de negócio protegida por JWT + RBAC ────────────────────

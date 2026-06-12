@@ -243,13 +243,21 @@ src/
                           (SKU/slug auto do nome + ComponentsEditor se kind=bundle + FulfillmentEditor)
       usuarios/             page.tsx (passa o operador p/ gating) + users-client.tsx (tabela + dialog edição)
       pagamentos/{transacoes,assinaturas,operacoes}/  page.tsx + *-client.tsx (lista/detalhe + estorno/cancelar; index redireciona p/ transacoes)
+      notas-fiscais/       page.tsx + invoices-client.tsx (lista/filtros/stats + botão "Emitir
+                          manualmente" no header) + invoice-detail-dialog.tsx (snapshot + timeline +
+                          ações por estado, incl. "Emitir agora" p/ SCHEDULED) +
+                          manual-invoice-dialog.tsx (emissão manual por Payment ID) +
+                          invoice-status-badge.tsx (mapeamento puro em lib/nfse.ts)
       membros/             (conforme a fatia de membros; curso com slug auto do título)
     api/
       admin/{login,logout}/route.ts · admin/users/route.ts (+ [id]/route.ts p/ PATCH)
       catalog/{products,offers,coupons}/route.ts (+ [id]/route.ts — products tem GET-one + PATCH)
       payments/{transactions,subscriptions,stats,ops}/… (GET; [id] GET, [id]/refund POST, subscriptions/[id] DELETE)
       payments/stats/daily/route.ts (série diária do painel; ?from&to&productId)
-  server/   session.ts · gateway.ts · catalog.ts · users.ts · payments.ts · sentry.ts   (server-side)
+      nfse/{invoices,stats}/… (GET lista/detalhe/stats; invoices POST = emissão manual por
+      paymentId, uuid validado no BFF → 400; [id]/pdf GET = STREAMING pass-through
+      do binário via gatewayFetchRaw; [id]/{retry,cancel,substitute,emit-now} POST)
+  server/   session.ts · gateway.ts · catalog.ts · users.ts · payments.ts · nfse.ts · sentry.ts   (server-side)
             payments.ts: getDailyPaymentsStats DENSIFICA a série (dias civis BRT, zeros, totals
             via BigInt) e resolve productId→offerIds no catálogo antes de chamar o payments; +
             micro-cache TTL da lista de ofertas (garantia). sentry.ts: ingestão via fetch (sem SDK)
@@ -398,6 +406,30 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   andamento, recarregue", não como falha;
   **`DELETE /payments/admin/subscriptions/:id`** (cancela) → `SubscriptionView`. Valores em **string**
   (bigint, centavos) → `formatCentsStr`. Adapter em `src/server/payments.ts`; views em `src/lib/types.ts`.
+- Notas fiscais (via gateway, JWT+RBAC — serviço `@sistemazero/fiscal`, NFS-e pós-garantia):
+  `GET /fiscal/admin/invoices` (`?status&q&limit&offset`) → `{ items: InvoiceView[], total }`;
+  `GET /fiscal/admin/invoices/:id` → `{ invoice, events: InvoiceEventView[] }`;
+  `GET /fiscal/admin/invoices/:id/pdf` → binário `application/pdf` (404 sem PDF) — o BFF
+  repassa em STREAMING via `gatewayFetchRaw` (variante crua do gatewayFetch, mesmo
+  Bearer/refresh-on-401, sem materializar o corpo); `POST …/:id/retry` (só FAILED);
+  `POST …/:id/cancel` `{reason}` (obrigatório 3..500 — validado no BFF E no serviço);
+  `POST …/:id/substitute` `{customerName?,customerDocument?,serviceDescription?}` (≥1 campo) →
+  201 `{id}` da nota substituta (a original é cancelada por substituição);
+  `POST …/:id/emit-now` → `{ok:true}` (só SCHEDULED — ANTECIPA a emissão: o worker emite em
+  ≤30s e a re-verificação de estorno na emissão continua valendo; outros estados → 409
+  `INVALID_STATE`; ação "Emitir agora" no detalhe, confirm em 2 passos);
+  **`POST /fiscal/admin/invoices`** `{paymentId: uuid}` → 201 `{id}` — emissão MANUAL por
+  pagamento (backfill/antecipação: emite AGORA, sem esperar a garantia). Erros: 404
+  `PAYMENT_NOT_FOUND` · 409 `PAYMENT_NOT_PAID` ("Pagamento está X — só PAID emite nota") ·
+  409 `INVOICE_ALREADY_EXISTS` (a mensagem traz o id da nota existente —
+  `extractExistingInvoiceId` em `lib/nfse.ts` o extrai e a UI oferece abri-la) · 422
+  `INVALID_DOCUMENT` (sem CPF válido) · 502 `PAYMENTS_UNAVAILABLE`. O BFF valida o uuid
+  ANTES do gateway (400 `INVALID_PAYMENT_ID`; `isValidUuid` puro). UI: botão "Emitir
+  manualmente" no header da página → `manual-invoice-dialog.tsx`;
+  `GET /fiscal/admin/stats` → `{ byStatus }`. Status: SCHEDULED|EMITTED|SKIPPED|FAILED|
+  CANCEL_PENDING|CANCELLED|SUBSTITUTED — labels/cores/gates de ação/máscara de CPF/chave
+  truncada são PUROS em `src/lib/nfse.ts` (unit-testados). `amountInCents` é STRING (bigint) →
+  `formatCentsStr`, como no payments. Adapter em `src/server/nfse.ts`; views em `src/lib/types.ts`.
 - Membros (via gateway, JWT+RBAC): `GET /members/admin/members` (`?status&courseRef&limit&offset`) →
   `Paginated<MemberSummaryView>`; `GET /members/admin/members/:userId` → matrículas + progresso
   (matrícula `all_courses` renderiza "Todos os cursos (chave-mestra)" — `ACCESS_LABELS`);

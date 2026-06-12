@@ -1,0 +1,45 @@
+{
+  "name": "@sistemazero/fiscal",
+  "version": "0.1.0",
+  "description": "Emissão automática de NFS-e (padrão nacional) pós-garantia — DDD + Hexagonal",
+  "type": "module",
+  "private": true,
+  "module": "src/index.ts",
+  "scripts": {
+    "dev": "bun run --watch src/index.ts",
+    "start": "bun run src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "check": "biome check .",
+    "check:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "lint": "biome lint .",
+    "spike:cert": "bun spike/lib/make-test-cert.ts",
+    "spike:00": "bun spike/00-mtls-check.ts",
+    "spike:01": "bun spike/01-sign-dps.ts",
+    "spike:02": "bun spike/02-emit.ts",
+    "spike:03": "bun spike/03-cancel.ts",
+    "spike:04": "bun spike/04-danfse.ts",
+    "spike:05": "bun spike/05-substitute.ts"
+  },
+  "dependencies": {
+    "@sentry/bun": "^10.56.0",
+    "@sistemazero/core": "workspace:*",
+    "drizzle-orm": "^0.44.5",
+    "elysia": "^1.4.9",
+    "node-forge": "^1.3.1",
+    "postgres": "^3.4.7",
+    "xml-crypto": "^6.1.2",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/node-forge": "^1.3.11",
+    "drizzle-kit": "^0.31.5"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}

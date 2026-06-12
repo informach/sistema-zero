@@ -1,0 +1,18 @@
+# Segredos do spike (certificado A1 e configuração local)
+.env
+spike/.env
+spike/secrets/
+*.p12
+*.pfx
+*.pem
+
+# Saídas geradas pelos scripts do spike
+spike/out/
+
+# Descompactados/derivados da documentação (os originais .zip/.xlsx/.pdf ficam)
+spike/docs/xsd/
+spike/docs/anexo_a/
+spike/docs/anexo_b/
+spike/docs/anexo_i/
+spike/docs/anexo_ii/
+spike/docs/.firecrawl/

@@ -1,0 +1,1 @@
+ALTER TABLE "payments"."consumers" ADD COLUMN "subscribed_events" text[] DEFAULT ARRAY[]::text[] NOT NULL;

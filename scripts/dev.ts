@@ -14,7 +14,7 @@
  *   bun run dev:logs      <serviço> [--once]   acompanha o log de um serviço
  *
  * Serviços válidos: gateway, payments, auth, catalog, members, messaging, funnel, admin,
- * community, kids
+ * community, kids, fiscal
  */
 
 import { spawn, spawnSync } from 'node:child_process'
@@ -47,6 +47,8 @@ const SERVICES: ServiceDef[] = [
   { name: 'community', dir: 'community', script: 'dev:community', port: 3007 },
   // Plataforma kids (Next.js) — mesmo padrão BFF do community, vitrine kids do members.
   { name: 'kids', dir: 'community-kids', script: 'dev:kids', port: 3008 },
+  // Fiscal: emissão automática de NFS-e pós-garantia (em dev usa a Produção Restrita).
+  { name: 'fiscal', dir: 'fiscal', script: 'dev:fiscal', port: 3009 },
 ]
 
 type StateRecord = { pid: number; startedAt: string; port: number; logFile: string }

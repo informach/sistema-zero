@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm'
+import { and, arrayContains, eq, isNotNull } from 'drizzle-orm'
 import type { Consumer, ConsumerRepository } from '../../../domain/ports/consumer-repository.port'
 import type { Database } from './db'
 import { consumers } from './schema'
@@ -15,14 +15,32 @@ export class DrizzleConsumerRepository implements ConsumerRepository {
       .limit(1)
 
     if (!row) return null
+    return toConsumer(row)
+  }
 
-    return {
-      id: row.id,
-      name: row.name,
-      hmacSecret: row.hmacSecret,
-      allowedCidrs: row.allowedCidrs,
-      webhookUrl: row.webhookUrl,
-      isActive: row.isActive,
-    }
+  async findSubscribers(eventName: string): Promise<Consumer[]> {
+    const rows = await this.db
+      .select()
+      .from(consumers)
+      .where(
+        and(
+          eq(consumers.isActive, true),
+          isNotNull(consumers.webhookUrl),
+          arrayContains(consumers.subscribedEvents, [eventName]),
+        ),
+      )
+    return rows.map(toConsumer)
+  }
+}
+
+function toConsumer(row: typeof consumers.$inferSelect): Consumer {
+  return {
+    id: row.id,
+    name: row.name,
+    hmacSecret: row.hmacSecret,
+    allowedCidrs: row.allowedCidrs,
+    webhookUrl: row.webhookUrl,
+    subscribedEvents: row.subscribedEvents,
+    isActive: row.isActive,
   }
 }

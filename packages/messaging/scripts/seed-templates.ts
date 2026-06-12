@@ -279,6 +279,29 @@ const seeds = [
     }),
   },
   {
+    key: 'nfse-emitida',
+    channel: 'email' as const,
+    name: 'Nota fiscal emitida (e-mail)',
+    subject: 'Sua nota fiscal — {{produto}}',
+    variables: ['nome', 'produto', 'valor', 'chave'],
+    body: emailLayout({
+      preheader: 'A nota fiscal da sua compra foi emitida e está anexada em PDF neste e-mail.',
+      title: 'Sua nota fiscal chegou, {{nome}}',
+      content: [
+        p(
+          'A nota fiscal da sua compra de <strong>{{produto}}</strong>, no valor de <strong>{{valor}}</strong>, foi emitida com sucesso.',
+        ),
+        p(
+          'O documento (DANFSe) está <strong>anexado a este e-mail em PDF</strong> — é só abrir ou baixar quando precisar. Guarde-o para a sua referência.',
+        ),
+        divider,
+        small('Chave de acesso da NFS-e:'),
+        `<p class="mut" style="margin:0;font-family:'Courier New',Courier,monospace;font-size:12px;line-height:18px;word-break:break-all;color:${MUTED};">{{chave}}</p>`,
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque uma compra foi realizada com este endereço.',
+    }),
+  },
+  {
     key: 'otp',
     channel: 'whatsapp' as const,
     name: 'Código de acesso (WhatsApp)',

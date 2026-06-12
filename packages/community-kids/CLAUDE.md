@@ -128,29 +128,22 @@ vitrine no community adulto (campos já chegam — decisão de produto).
 Da raiz: `dev:kids`, **`build:kids` (package-local — gotcha do `--filter` quebrar o React)**,
 `typecheck:kids`, `test:kids`. Mexeu no member-shell? Rode as suítes/builds DOS DOIS apps.
 
-## Env / Deploy (Railway) — ⚠️ SERVIÇO AINDA NÃO CRIADO
+## Env / Deploy (Railway) — EM PRODUÇÃO desde 12/06/2026
 
-Mesma matriz do community (ver o CLAUDE.md de lá): `GATEWAY_URL`, `JWT_JWKS_URL` (prod EXIGE; HS256
-RECUSADO), `JWT_ISSUER/AUDIENCE`, `R2_*` (staging `testes`/`testes-privado`; prod
+Serviço `community-kids` (id `fc8a1b29-ac14-4dc9-a7b3-03d497b8bf4f`) NO AR nos dois ambientes:
+**staging** `https://community-kids-staging.up.railway.app` (deploy automático via job
+`deploy-staging` do ci.yml — kids está no mapa `SVC_ID` e nos cases member-shell/ui) e
+**produção** `https://community-kids-production.up.railway.app` (deploy manual, como os demais).
+`KIDS_COMMUNITY_URL` SETADA no auth dos dois ambientes. Matriz de env = a do community (ver o
+CLAUDE.md de lá): `GATEWAY_URL`, `JWT_JWKS_URL` (prod EXIGE; HS256 RECUSADO),
+`JWT_ISSUER/AUDIENCE`, `R2_*` (staging `testes`/`testes-privado`; prod
 `comunidade-sistema-zero`/`-privado` — MESMOS buckets, avatar compartilhado por usuário),
-`SENTRY_DSN` opcional (criar projeto `sistema-zero-community-kids` quando for a prod). **SEM
-FUNNEL_URL.** Porta 3008; réplica ÚNICA (globalThis no shell); RAM como a do community (marca
-d'água). `railway.json` pronto (Dockerfile, healthcheck `/api/healthz`, watchPatterns incl.
-member-shell/ui).
+`SENTRY_DSN` opcional. **SEM FUNNEL_URL.** Porta 3008; réplica ÚNICA (globalThis no shell);
+healthcheck `/api/healthz`.
 
-**Passos pendentes de AUTORIZAÇÃO DO USUÁRIO (infra):**
-1. Criar o serviço no Railway (fluxo GraphQL anti-config-errada do railway-deploy:
-   `serviceCreate` SEM source → `serviceInstanceUpdate{railwayConfigFile:
-   "packages/community-kids/railway.json"}` nos DOIS ambientes → `serviceConnect` repo@main →
-   vars de staging → `serviceInstanceDeployV2` com sha da staging → `serviceDomainCreate`
-   (targetPort 3008)).
-2. `KIDS_COMMUNITY_URL` no serviço **auth** (staging = domínio staging do kids; prod =
-   `https://kids.sistemazero.com.br` quando existir) + redeploy do auth.
-3. ci.yml: somar `community-kids=<service-id>` ao mapa `SVC_ID` e trocar o no-op do case
-   `packages/community-kids/*` por `add community-kids` (e somar kids aos cases member-shell/ui).
-4. 1º deploy: verificar `sharp` no container (gotcha do tracing standalone — igual admin/community).
-5. Domínio prod `kids.sistemazero.com.br` (dashboard + CNAME Cloudflare) — aí sim setar o
-   KIDS_COMMUNITY_URL de prod.
+**Pendências de infra (não bloqueiam):** domínio definitivo `kids.sistemazero.com.br`
+(dashboard + CNAME Cloudflare; depois apontar o `KIDS_COMMUNITY_URL` de prod p/ ele) e projeto
+Sentry `sistema-zero-community-kids` + DSN no host.
 
 ## Checklist antes de finalizar
 

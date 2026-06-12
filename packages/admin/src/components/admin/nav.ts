@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   type LucideIcon,
   Package,
+  ReceiptText,
   Users,
 } from 'lucide-react'
 
@@ -25,6 +26,7 @@ export const NAV_ITEMS: NavItem[] = [
     icon: CreditCard,
     match: '/admin/pagamentos',
   },
+  { label: 'Notas fiscais', href: '/admin/notas-fiscais', icon: ReceiptText },
   { label: 'Catálogo', href: '/admin/catalogo/produtos', icon: Package, match: '/admin/catalogo' },
   { label: 'Membros', href: '/admin/membros', icon: GraduationCap, match: '/admin/membros' },
 ]

@@ -127,6 +127,102 @@ describe('POST /messaging/send (e-mail)', () => {
   })
 })
 
+describe('POST /messaging/send — anexos por URL', () => {
+  let ctx: ReturnType<typeof buildApp>
+  const payload = (attachments: unknown) => ({
+    channel: 'email',
+    templateKey: 'welcome',
+    recipient: { name: 'Helena', email: 'helena@example.com' },
+    variables: { nome: 'Helena', senha: 'abc' },
+    attachments,
+  })
+
+  beforeEach(async () => {
+    ctx = buildApp()
+    await seedEmailTemplate(ctx.app)
+    await seedDefaultSender(ctx.app)
+  })
+
+  it('aceita attachments válidos e persiste SÓ os metadados na mensagem', async () => {
+    const res = await ctx.app.handle(
+      postJson(
+        '/messaging/send',
+        payload([
+          {
+            filename: 'danfse.pdf',
+            url: 'https://fiscal.railway.internal/nfse/1.pdf',
+            contentType: 'application/pdf',
+          },
+          { filename: 'recibo.pdf', url: 'http://fiscal.railway.internal/recibo/1.pdf' },
+        ]),
+      ),
+    )
+    expect(res.status).toBe(202)
+    const body = (await res.json()) as { id: string }
+    const stored = ctx.messages.store.get(body.id)
+    expect(stored?.state.attachments).toEqual([
+      {
+        filename: 'danfse.pdf',
+        url: 'https://fiscal.railway.internal/nfse/1.pdf',
+        contentType: 'application/pdf',
+      },
+      {
+        filename: 'recibo.pdf',
+        url: 'http://fiscal.railway.internal/recibo/1.pdf',
+        contentType: null,
+      },
+    ])
+  })
+
+  it('rejeita mais de 3 anexos (400)', async () => {
+    const four = Array.from({ length: 4 }, (_, i) => ({
+      filename: `a-${i}.pdf`,
+      url: `https://fiscal.railway.internal/${i}.pdf`,
+    }))
+    const res = await ctx.app.handle(postJson('/messaging/send', payload(four)))
+    expect(res.status).toBe(400)
+  })
+
+  it('rejeita url que não é http(s) (400)', async () => {
+    const res = await ctx.app.handle(
+      postJson('/messaging/send', payload([{ filename: 'a.pdf', url: 'ftp://x/a.pdf' }])),
+    )
+    expect(res.status).toBe(400)
+  })
+
+  it('rejeita filename vazio (400)', async () => {
+    const res = await ctx.app.handle(
+      postJson(
+        '/messaging/send',
+        payload([{ filename: '', url: 'https://fiscal.railway.internal/a.pdf' }]),
+      ),
+    )
+    expect(res.status).toBe(400)
+  })
+
+  it('anexo em canal whatsapp → 400 (validação de domínio)', async () => {
+    await ctx.app.handle(
+      postJson('/messaging/admin/templates', {
+        key: 'welcome',
+        channel: 'whatsapp',
+        name: 'Boas-vindas WA',
+        body: 'Olá {{nome}}',
+        variables: ['nome'],
+      }),
+    )
+    const res = await ctx.app.handle(
+      postJson('/messaging/send', {
+        channel: 'whatsapp',
+        templateKey: 'welcome',
+        recipient: { name: 'Zé', phone: '5511999999999' },
+        variables: { nome: 'Zé' },
+        attachments: [{ filename: 'a.pdf', url: 'https://fiscal.railway.internal/a.pdf' }],
+      }),
+    )
+    expect(res.status).toBe(400)
+  })
+})
+
 describe('GET /messaging/messages/:id', () => {
   it('200 para mensagem existente, 404 para inexistente', async () => {
     const ctx = buildApp()

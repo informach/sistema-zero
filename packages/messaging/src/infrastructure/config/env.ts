@@ -87,6 +87,25 @@ const EnvSchema = z
     // ── E-mail: throttle de envio ───────────────────────────────────────────────
     EMAIL_RATE_PER_SEC: z.coerce.number().int().positive().default(5),
 
+    // ── E-mail: anexos por URL (o worker busca os bytes no envio) ───────────────
+    // Teto por anexo (content-length E tamanho real lido). Default 5MB.
+    ATTACHMENT_MAX_BYTES: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(5 * 1024 * 1024),
+    // Allowlist de hostnames (CSV) p/ o fetch de anexos — anti-SSRF. VAZIA = dev
+    // liberado; quando setada, só os hosts listados (em prod: fiscal.railway.internal).
+    ATTACHMENT_FETCH_ALLOWED_HOSTS: z
+      .string()
+      .optional()
+      .transform((v) =>
+        (v ?? '')
+          .split(',')
+          .map((h) => h.trim().toLowerCase())
+          .filter((h) => h.length > 0),
+      ),
+
     // ── WhatsApp: ritmo anti-ban (ver domain/services/pacing.ts) ────────────────
     WA_MIN_DELAY_MS: z.coerce.number().int().positive().default(15_000),
     WA_MAX_DELAY_MS: z.coerce.number().int().positive().default(45_000),

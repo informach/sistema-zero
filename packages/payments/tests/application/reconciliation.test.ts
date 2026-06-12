@@ -7,6 +7,7 @@ import { InProcessEventPublisher } from '../../src/infrastructure/events/in-proc
 import { ReconciliationWorker } from '../../src/infrastructure/workers/reconciliation-worker'
 import {
   FakePixGateway,
+  InMemoryConsumerRepository,
   InMemoryIdempotencyStore,
   InMemoryPaymentRepository,
   InMemoryWebhookDeliveryRepository,
@@ -145,21 +146,82 @@ describe('ReconciliationWorker', () => {
 })
 
 describe('Webhook de saída (enqueue no payment.paid)', () => {
+  const subscriber = (id: string, events: string[]) => ({
+    id,
+    name: id,
+    hmacSecret: 's'.repeat(32),
+    allowedCidrs: [],
+    webhookUrl: `http://${id}.internal/webhooks/payments`,
+    subscribedEvents: events,
+    isActive: true,
+  })
+
+  const paidMessage = {
+    id: 'evt-1',
+    aggregateId: 'pay-1',
+    eventName: 'payment.paid',
+    payload: { paymentId: 'pay-1', consumerId: 'sys-a', txid: 'txid-1' },
+    attemptCount: 0,
+    createdAt: new Date(),
+  }
+
   test('payment.paid enfileira uma entrega para o consumidor', async () => {
     const deliveries = new InMemoryWebhookDeliveryRepository()
     const publisher = new InProcessEventPublisher(silentLogger)
-    registerPaymentEventHandlers(publisher, deliveries, silentLogger)
+    registerPaymentEventHandlers(
+      publisher,
+      deliveries,
+      new InMemoryConsumerRepository(),
+      silentLogger,
+    )
 
-    await publisher.publish({
-      id: 'evt-1',
-      aggregateId: 'pay-1',
-      eventName: 'payment.paid',
-      payload: { paymentId: 'pay-1', consumerId: 'sys-a', txid: 'txid-1' },
-      attemptCount: 0,
-      createdAt: new Date(),
-    })
+    await publisher.publish(paidMessage)
 
     expect(deliveries.enqueued).toHaveLength(1)
     expect(deliveries.enqueued[0]).toMatchObject({ consumerId: 'sys-a', eventName: 'payment.paid' })
+  })
+
+  test('fan-out: subscriber inscrito recebe o evento ALÉM do dono (mesmo dedupKey)', async () => {
+    const deliveries = new InMemoryWebhookDeliveryRepository()
+    const publisher = new InProcessEventPublisher(silentLogger)
+    const consumers = new InMemoryConsumerRepository()
+      .add(subscriber('fiscal', ['payment.paid', 'payment.refunded']))
+      .add(subscriber('outro', ['payment.refunded'])) // não inscrito em paid
+    registerPaymentEventHandlers(publisher, deliveries, consumers, silentLogger)
+
+    await publisher.publish(paidMessage)
+
+    expect(deliveries.enqueued).toHaveLength(2)
+    expect(deliveries.enqueued.map((d) => d.consumerId).sort()).toEqual(['fiscal', 'sys-a'])
+    // Mesmo dedupKey por consumer → republicação do outbox segue idempotente.
+    for (const d of deliveries.enqueued) expect(d.dedupKey).toBe('pay-1')
+  })
+
+  test('fan-out: subscriber que é o PRÓPRIO dono não recebe em dobro', async () => {
+    const deliveries = new InMemoryWebhookDeliveryRepository()
+    const publisher = new InProcessEventPublisher(silentLogger)
+    const consumers = new InMemoryConsumerRepository().add(subscriber('sys-a', ['payment.paid']))
+    registerPaymentEventHandlers(publisher, deliveries, consumers, silentLogger)
+
+    await publisher.publish(paidMessage)
+
+    expect(deliveries.enqueued).toHaveLength(1)
+  })
+
+  test('fan-out: falha no lookup de subscribers NÃO derruba a entrega ao dono', async () => {
+    const deliveries = new InMemoryWebhookDeliveryRepository()
+    const publisher = new InProcessEventPublisher(silentLogger)
+    const broken = {
+      findById: async () => null,
+      findSubscribers: async () => {
+        throw new Error('db down')
+      },
+    }
+    registerPaymentEventHandlers(publisher, deliveries, broken, silentLogger)
+
+    await publisher.publish(paidMessage)
+
+    expect(deliveries.enqueued).toHaveLength(1)
+    expect(deliveries.enqueued[0]).toMatchObject({ consumerId: 'sys-a' })
   })
 })

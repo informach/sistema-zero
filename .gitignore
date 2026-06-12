@@ -55,3 +55,6 @@ secrets/
 # Playwright e2e (packages/studio — fora do CI)
 test-results/
 playwright-report/
+
+# Temporários de sessão (scripts de operação, segredos efêmeros)
+.tmp/

@@ -732,6 +732,28 @@ describe('catalog HTTP', () => {
       const res = await built.app.handle(req('GET', '/catalog/offers/paused-of2'))
       expect(res.status).toBe(200)
     })
+
+    it('GET /catalog/offers/:slug aceita UUID como fallback (consumo do fiscal via metadata.offerId)', async () => {
+      const built = build()
+      await seedPublic(built)
+      const offers = await built.app.handle(req('GET', '/catalog/admin/offers', { headers: ADMIN }))
+      const page = (await offers.json()) as { items: { id: string; slug: string }[] }
+      const active = page.items.find((o) => o.slug === 'pub-of')
+      const draft = page.items.find((o) => o.slug === 'rasc-of')
+
+      const byId = await built.app.handle(req('GET', `/catalog/offers/${active?.id}`))
+      expect(byId.status).toBe(200)
+      const view = (await byId.json()) as { slug: string }
+      expect(view.slug).toBe('pub-of')
+
+      // Mesma regra do slug: draft por UUID também é 404 público.
+      const draftById = await built.app.handle(req('GET', `/catalog/offers/${draft?.id}`))
+      expect(draftById.status).toBe(404)
+
+      // Não-slug e não-UUID → 404 limpo (sem 22P02/500 do cast de uuid).
+      const garbage = await built.app.handle(req('GET', '/catalog/offers/nao-existe-nem-e-uuid'))
+      expect(garbage.status).toBe(404)
+    })
   })
 
   describe('token interno (defesa em profundidade)', () => {

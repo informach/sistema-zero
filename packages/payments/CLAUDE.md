@@ -218,6 +218,17 @@ tests/               # unit/ · application/ · integration/ · fakes/
   meio conta como tentativa → eventualmente DEAD, sem re-entrega infinita). Fila
   alimentada por `registerPaymentEventHandlers` em `payment.paid`/`payment.failed`/
   `payment.expired`/`payment.refunded` (precisa de `consumers.webhook_url`).
+  **FAN-OUT (06/2026, migration 0004):** além do dono, o evento é entregue a todo
+  consumer com o nome em `consumers.subscribed_events` (ex.: o **fiscal** assina
+  `payment.paid`/`payment.refunded` p/ NFS-e; seed: `--subscribed-events "a,b"`).
+  A unique `(consumer_id, event_name, dedup_key)` deduplica POR consumer; falha
+  no lookup de subscribers não derruba a entrega ao dono (`findSubscribers` com
+  cache TTL 30s no `CachingConsumerRepository`).
+
+**Rota interna S2S (06/2026):** `GET /payments/internal/payments/:id` → `AdminPaymentView`
+cross-consumer, auth = `x-internal-token` (`assertInternalCaller`). Consumida pelo **fiscal**
+(o payload do webhook só traz ids; a view tem customer/valor/metadata/status). NÃO exposta no
+gateway — private networking direto. Log `payments.internal_read`.
 
 **Outros:** rate limit por consumidor (`RATE_LIMIT_PER_MINUTE` → 429 + `Retry-After`,
 em memória/por instância — troque por Redis p/ limite global) + rate limit **GLOBAL

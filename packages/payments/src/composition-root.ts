@@ -141,7 +141,7 @@ export function createApplication(env: Env): Application {
 
   // Eventos + outbox poller
   const publisher = new InProcessEventPublisher(logger)
-  registerPaymentEventHandlers(publisher, webhookDeliveries, logger)
+  registerPaymentEventHandlers(publisher, webhookDeliveries, consumers, logger)
   const outboxPoller = new OutboxPoller(outboxRepo, publisher, logger, {
     intervalMs: env.OUTBOX_POLL_INTERVAL_MS,
     batchSize: env.OUTBOX_BATCH_SIZE,

@@ -46,7 +46,9 @@ export function catalogRoutes(deps: CatalogRoutesDeps) {
         const key = params.slug.trim().toLowerCase()
         let offer = offerCache.get(key)
         if (offer === undefined) {
-          offer = await deps.getOffer.getBySlug(params.slug)
+          // Slug com fallback por UUID: o fiscal resolve a oferta pelo
+          // `metadata.offerId` do pagamento (mesma view pública, mesmo cache).
+          offer = await deps.getOffer.getBySlugOrId(params.slug)
           offerCache.set(key, offer)
         }
         // Rascunho nunca foi publicado → inexistente ao público (não vaza preço/

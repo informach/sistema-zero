@@ -1,10 +1,16 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { WhatsAppInstance } from '../../src/domain/lane/whatsapp-instance.aggregate'
 import { Message } from '../../src/domain/message/message.aggregate'
+import type { AttachmentFetcher } from '../../src/domain/ports/attachment-fetcher.port'
 import type { Rng } from '../../src/domain/ports/rng.port'
 import { EmailSender } from '../../src/domain/sender/email-sender.aggregate'
+import { HttpAttachmentFetcher } from '../../src/infrastructure/gateways/http-attachment-fetcher'
 import { SendWorker, type SendWorkerConfig } from '../../src/infrastructure/workers/send-worker'
-import { FakeEmailGateway, FakeWhatsAppGateway } from '../fakes/fake-gateways'
+import {
+  FakeAttachmentFetcher,
+  FakeEmailGateway,
+  FakeWhatsAppGateway,
+} from '../fakes/fake-gateways'
 import {
   InMemoryMessageRepository,
   InMemorySenderRepository,
@@ -48,15 +54,17 @@ interface Harness {
   senders: InMemorySenderRepository
   suppressions: InMemorySuppressionRepository
   email: FakeEmailGateway
+  attachments: FakeAttachmentFetcher
   whatsapp: FakeWhatsAppGateway
 }
 
-function harness(cfg: SendWorkerConfig = config()): Harness {
+function harness(cfg: SendWorkerConfig = config(), fetcher?: AttachmentFetcher): Harness {
   const messages = new InMemoryMessageRepository()
   const instances = new InMemoryWhatsAppInstanceRepository()
   const senders = new InMemorySenderRepository()
   const suppressions = new InMemorySuppressionRepository()
   const email = new FakeEmailGateway()
+  const attachments = new FakeAttachmentFetcher()
   const whatsapp = new FakeWhatsAppGateway()
   const worker = new SendWorker({
     messages,
@@ -64,13 +72,14 @@ function harness(cfg: SendWorkerConfig = config()): Harness {
     senders,
     suppressions,
     emailGateway: email,
+    attachmentFetcher: fetcher ?? attachments,
     whatsappGateway: whatsapp,
     clock,
     rng,
     logger: silentLogger,
     config: cfg,
   })
-  return { worker, messages, instances, senders, suppressions, email, whatsapp }
+  return { worker, messages, instances, senders, suppressions, email, attachments, whatsapp }
 }
 
 let id = 0
@@ -227,6 +236,147 @@ describe('SendWorker — reaper de SENDING preso (lease de claim)', () => {
     const m = h.messages.store.get('m-zumbi')
     expect(m?.status).toBe('FAILED')
     expect(h.email.sent).toHaveLength(0)
+  })
+})
+
+describe('SendWorker — anexos por URL (e-mail)', () => {
+  const ATTACHMENT_URL = 'http://fiscal.railway.internal:3008/internal/nfse/abc/danfse.pdf'
+
+  function emailWithAttachment(over: Partial<{ contentType: string | null }> = {}): Message {
+    return Message.create({
+      id: `m-${++id}`,
+      channel: 'email',
+      templateKey: 'nfse-emitida',
+      recipient: { name: 'Helena', email: 'helena@example.com' },
+      renderedSubject: 'Sua nota fiscal',
+      renderedBody: '<p>NF anexa</p>',
+      senderId: 'sender-1',
+      attachments: [
+        {
+          filename: 'danfse.pdf',
+          url: ATTACHMENT_URL,
+          contentType: over.contentType === undefined ? 'application/pdf' : over.contentType,
+        },
+      ],
+      now: NOW,
+    })
+  }
+
+  async function seedSender(h: Harness): Promise<void> {
+    await h.senders.create(
+      EmailSender.create({
+        id: 'sender-1',
+        fromEmail: 'no-reply@sistemazero.com',
+        fromName: 'SZ',
+        now: NOW,
+      }),
+    )
+  }
+
+  it('busca a URL e injeta o base64 + contentType no gateway (disposition attachment)', async () => {
+    const h = harness()
+    await seedSender(h)
+    h.attachments.contents.set(ATTACHMENT_URL, {
+      contentBase64: 'JVBERi0xLjQ=',
+      contentType: 'application/octet-stream',
+    })
+    await h.messages.create(emailWithAttachment())
+
+    await h.worker.tick()
+    expect(h.attachments.fetched).toEqual([ATTACHMENT_URL])
+    expect(h.email.sent[0]?.attachments).toEqual([
+      // contentType do METADADO vence o da origem.
+      { filename: 'danfse.pdf', contentType: 'application/pdf', contentBase64: 'JVBERi0xLjQ=' },
+    ])
+    expect([...h.messages.store.values()][0]?.status).toBe('SENT')
+  })
+
+  it('sem contentType no metadado usa o da origem', async () => {
+    const h = harness()
+    await seedSender(h)
+    h.attachments.contents.set(ATTACHMENT_URL, {
+      contentBase64: 'UERG',
+      contentType: 'application/pdf',
+    })
+    await h.messages.create(emailWithAttachment({ contentType: null }))
+
+    await h.worker.tick()
+    expect(h.email.sent[0]?.attachments?.[0]?.contentType).toBe('application/pdf')
+  })
+
+  it('mensagem sem anexos não passa pelo fetcher (gateway sem attachments)', async () => {
+    const h = harness()
+    await seedSender(h)
+    await h.messages.create(emailMessage())
+
+    await h.worker.tick()
+    expect(h.attachments.fetched).toHaveLength(0)
+    expect(h.email.sent[0]?.attachments).toBeUndefined()
+  })
+
+  it('falha no fetch → RE-TENTÁVEL com backoff (não FAILED, SendGrid nem é chamado)', async () => {
+    const h = harness()
+    await seedSender(h)
+    h.attachments.fail = 'transient'
+    await h.messages.create(emailWithAttachment())
+
+    await h.worker.tick()
+    expect(h.email.sent).toHaveLength(0)
+    const m = [...h.messages.store.values()][0]
+    expect(m?.status).toBe('QUEUED')
+    expect(m?.state.attempts).toBe(1)
+    expect(m?.state.nextAttemptAt.getTime()).toBe(NOW.getTime() + FIXED)
+  })
+
+  it('falha permanente do fetch (host bloqueado) → FAILED', async () => {
+    const h = harness()
+    await seedSender(h)
+    h.attachments.fail = 'permanent'
+    await h.messages.create(emailWithAttachment())
+
+    await h.worker.tick()
+    expect(h.email.sent).toHaveLength(0)
+    expect([...h.messages.store.values()][0]?.status).toBe('FAILED')
+  })
+
+  it('fim a fim: HttpAttachmentFetcher real busca num Bun.serve efêmero', async () => {
+    const bytes = new TextEncoder().encode('%PDF-1.4 danfse-de-teste')
+    const server = Bun.serve({
+      port: 0,
+      fetch: () => new Response(bytes, { headers: { 'content-type': 'application/pdf' } }),
+    })
+    try {
+      const fetcher = new HttpAttachmentFetcher({ maxBytes: 1024, allowedHosts: [] })
+      const h = harness(config(), fetcher)
+      await seedSender(h)
+      await h.messages.create(
+        Message.create({
+          id: `m-${++id}`,
+          channel: 'email',
+          templateKey: 'nfse-emitida',
+          recipient: { name: 'Helena', email: 'helena@example.com' },
+          renderedSubject: 'Sua nota fiscal',
+          renderedBody: '<p>NF anexa</p>',
+          senderId: 'sender-1',
+          attachments: [
+            { filename: 'danfse.pdf', url: `http://127.0.0.1:${server.port}/danfse.pdf` },
+          ],
+          now: NOW,
+        }),
+      )
+
+      await h.worker.tick()
+      expect(h.email.sent[0]?.attachments).toEqual([
+        {
+          filename: 'danfse.pdf',
+          contentType: 'application/pdf',
+          contentBase64: Buffer.from(bytes).toString('base64'),
+        },
+      ])
+      expect([...h.messages.store.values()][0]?.status).toBe('SENT')
+    } finally {
+      server.stop(true)
+    }
   })
 })
 
