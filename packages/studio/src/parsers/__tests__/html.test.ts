@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { parseHTML } from '../html'
+import { extractHTMLShell, parseHTML } from '../html'
 
 describe('parseHTML', () => {
   it('extrai h1 e p simples', () => {
@@ -163,5 +163,28 @@ describe('parseHTML', () => {
   it('NÃO trata style.css em subpasta como canônico (preserva)', () => {
     const ir = parseHTML('<body><link rel="stylesheet" href="css/style.css" /></body>')
     expect(ir[0]).toMatchObject({ type: 'rawHTML', advanced: true })
+  })
+
+  it('aninhamento patologicamente profundo não crasha (degrada ou parseia)', () => {
+    // A recursão mapNode↔mapChildren não tem guarda de profundidade; o contrato
+    // de não-crashar precisa valer mesmo para entradas patológicas.
+    const depth = 20000
+    const source = `<body>${'<div>'.repeat(depth)}x${'</div>'.repeat(depth)}</body>`
+    const ir = parseHTML(source)
+    expect(Array.isArray(ir)).toBe(true)
+  })
+})
+
+describe('extractHTMLShell', () => {
+  it('escapa aspas duplas no valor de atributo de <html> (round-trip fiel)', () => {
+    // Sem escape, a aspa dupla embutida quebraria a fronteira do atributo.
+    const shell = extractHTMLShell("<!doctype html><html data-x='a\"b'><head></head></html>")
+    expect(shell?.htmlAttrs).toContain('data-x="a&quot;b"')
+    expect(shell?.htmlAttrs).not.toContain('"a"b"')
+  })
+
+  it('escapa &, < e > no valor de atributo de <html>', () => {
+    const shell = extractHTMLShell('<html data-x="a&amp;b&lt;c&gt;d"><head></head></html>')
+    expect(shell?.htmlAttrs).toContain('data-x="a&amp;b&lt;c&gt;d"')
   })
 })

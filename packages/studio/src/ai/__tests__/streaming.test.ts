@@ -57,6 +57,89 @@ describe('consumeSSEStream', () => {
     expect(full).toBe('Olá, mundo')
   })
 
+  // Stream que entrega [DONE] mas NÃO fecha o body (como a OpenRouter faz) —
+  // expomos se o reader foi cancelado p/ liberar a conexão.
+  function doneButOpenStream(chunks: string[]): {
+    stream: ReadableStream<Uint8Array>
+    canceled: () => boolean
+  } {
+    let wasCanceled = false
+    const encoder = new TextEncoder()
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        for (const chunk of chunks) controller.enqueue(encoder.encode(chunk))
+        // Sem controller.close() — o body fica aberto após o [DONE].
+      },
+      cancel() {
+        wasCanceled = true
+      },
+    })
+    return { stream, canceled: () => wasCanceled }
+  }
+
+  it('cancela o reader ao quebrar por [DONE] mesmo com o body aberto', async () => {
+    const { stream, canceled } = doneButOpenStream([
+      'data: {"choices":[{"delta":{"content":"oi"}}]}\n\n',
+      'data: [DONE]\n\n',
+    ])
+    const full = await consumeSSEStream(stream)
+    expect(full).toBe('oi')
+    expect(canceled()).toBe(true)
+  })
+
+  it('NÃO cancela o reader quando o stream fecha sozinho (EOF natural)', async () => {
+    let wasCanceled = false
+    const encoder = new TextEncoder()
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(encoder.encode('data: {"choices":[{"delta":{"content":"x"}}]}\n\n'))
+        controller.close()
+      },
+      cancel() {
+        wasCanceled = true
+      },
+    })
+    const full = await consumeSSEStream(stream)
+    expect(full).toBe('x')
+    expect(wasCanceled).toBe(false)
+  })
+
+  it('remonta caractere multi-byte partido na fronteira de chunks', async () => {
+    // "é" em UTF-8 = 0xC3 0xA9 (2 bytes). Cortamos EXATAMENTE entre os 2 bytes:
+    // o 1º byte chega num chunk e o 2º no chunk seguinte. O decode incremental
+    // ({ stream: true }) tem que segurar o byte parcial e remontar o caractere
+    // sem corromper — guarda de não-regressão do caminho de decode.
+    const encoder = new TextEncoder()
+    const event = encoder.encode('data: {"choices":[{"delta":{"content":"café"}}]}\n\n')
+    const idx = event.indexOf(0xc3) // 1º byte de "é"
+    expect(idx).toBeGreaterThan(0)
+    const head = event.slice(0, idx + 1)
+    const tail = event.slice(idx + 1)
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(head)
+        controller.enqueue(tail)
+        controller.close()
+      },
+    })
+    const result = await consumeSSEStream(stream)
+    expect(result).toBe('café')
+  })
+
+  it('faz flush terminal do decoder ao fim do stream (não deixa bytes presos)', async () => {
+    // Caso do flush terminal: a ÚLTIMA leitura do stream entrega um caractere
+    // multi-byte COMPLETO mas via { stream: true } o TextDecoder pode segurar
+    // estado interno; o decode() final (sem args) garante que nada fica preso.
+    // Verificamos que o conteúdo acentuado emitido no derradeiro chunk (que
+    // fecha o bloco e o stream juntos) chega íntegro à saída.
+    const stream = mockStream([
+      'data: {"choices":[{"delta":{"content":"ç"}}]}\n\n',
+      'data: {"choices":[{"delta":{"content":"ãé"}}]}\n\n',
+    ])
+    const result = await consumeSSEStream(stream)
+    expect(result).toBe('çãé')
+  })
+
   // Stream que nunca emite nem fecha — simula servidor "pendurado".
   function hangingStream(): { stream: ReadableStream<Uint8Array>; canceled: () => boolean } {
     let wasCanceled = false

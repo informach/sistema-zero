@@ -20,9 +20,9 @@
  * Valores default = tema ESCURO; o claro sobrescreve via [data-sz-theme="light"].
  */
 @theme {
-  --color-sz-bg: oklch(0.103 0.01 265); /* background  (#0d1117) */
+  --color-sz-bg: oklch(0.103 0.01 265); /* background  (#030406) */
   --color-sz-bg-soft: oklch(0.125 0.01 265); /* meio-termo bg→card */
-  --color-sz-panel: oklch(0.14 0.01 265); /* card        (#161b22) */
+  --color-sz-panel: oklch(0.14 0.01 265); /* card        (#07090d) */
   --color-sz-panel-soft: oklch(0.185 0.01 265); /* secondary/muted */
   --color-sz-border: oklch(0.21 0.01 265); /* border */
   --color-sz-border-soft: oklch(0.17 0.01 265);

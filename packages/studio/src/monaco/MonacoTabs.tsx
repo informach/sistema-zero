@@ -1,10 +1,20 @@
 import Editor, { type OnChange, type OnMount } from '@monaco-editor/react'
 import type * as monacoNs from 'monaco-editor'
 import type { JSX } from 'react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { inferLanguage } from './languages'
-import { buildMonacoModelPath, disposeModelsForPathPrefix, getMonacoModelPath } from './modelPaths'
-import { configureMonacoWorkers, getMonacoModelRegistry, loadLanguageServices } from './workers'
+import {
+  buildMonacoModelPath,
+  disposeModelsForPathPrefix,
+  getMonacoModelPath,
+  resolveModelPathPrefix,
+} from './modelPaths'
+import {
+  configureMonacoWorkers,
+  getMonacoModelRegistry,
+  loadLanguageServices,
+  monacoThemeName,
+} from './workers'
 
 configureMonacoWorkers()
 
@@ -66,6 +76,11 @@ export interface MonacoTabsProps {
    * componente; sem prefixo, projetos diferentes reusam o mesmo model
    * (`script.js`…) e o editor mostra o código do projeto anterior até trocar de
    * aba. Prefixar por projeto garante models distintos por projeto.
+   *
+   * Internamente este prefixo é AINDA salgado com um id estável por instância
+   * (via `useId`) — ver `resolveModelPathPrefix`. Sem o sal, dois <Studio> no
+   * mesmo `projectId` (rota /dual) compartilham os models globais e o desmonte
+   * de um descarta os models vivos do outro.
    */
   modelPathPrefix?: string
 }
@@ -147,6 +162,14 @@ export function MonacoTabs({
   onCloseFile,
   modelPathPrefix,
 }: MonacoTabsProps): JSX.Element {
+  // Id ESTÁVEL por instância: gerado uma vez por montagem do componente. Salga o
+  // prefixo dos models para que dois <Studio> no mesmo `projectId` (rota /dual)
+  // não compartilhem nem descartem os models um do outro no registro global.
+  const instanceId = useId()
+  const saltedPrefix = useMemo(
+    () => resolveModelPathPrefix(modelPathPrefix, instanceId),
+    [modelPathPrefix, instanceId],
+  )
   const [internalActive, setInternalActive] = useState<string>(activeFile ?? files[0]?.name ?? '')
   const current = activeFile ?? internalActive
   const file = files.find((f) => f.name === current) ?? files[0]
@@ -162,11 +185,11 @@ export function MonacoTabs({
   useEffect(() => scheduleLanguageServicesLoad(), [])
 
   useEffect(() => {
-    const prefix = modelPathPrefix
+    const prefix = saltedPrefix
     return () => {
       disposeModelsForPathPrefix(prefix, getMonacoModelRegistry())
     }
-  }, [modelPathPrefix])
+  }, [saltedPrefix])
 
   useEffect(() => {
     currentFileNameRef.current = file?.name ?? ''
@@ -207,7 +230,7 @@ export function MonacoTabs({
       const model = editor?.getModel()
       if (!editor || !model) return false
 
-      const expectedPath = buildMonacoModelPath(modelPathPrefix, target.file)
+      const expectedPath = buildMonacoModelPath(saltedPrefix, target.file)
       if (getMonacoModelPath(model) !== expectedPath) return false
 
       const range = toMonacoRange(target, model)
@@ -237,7 +260,7 @@ export function MonacoTabs({
       // realce viva enquanto o bloco estiver selecionado no canvas.
       return true
     },
-    [modelPathPrefix],
+    [saltedPrefix],
   )
 
   useEffect(() => {
@@ -356,8 +379,8 @@ export function MonacoTabs({
       <div className="flex-1">
         <Editor
           height="100%"
-          theme={theme}
-          path={buildMonacoModelPath(modelPathPrefix, file.name)}
+          theme={monacoThemeName(theme)}
+          path={buildMonacoModelPath(saltedPrefix, file.name)}
           defaultLanguage={inferLanguage(file.name)}
           value={file.value}
           onChange={handleChange}

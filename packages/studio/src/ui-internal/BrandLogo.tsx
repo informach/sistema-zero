@@ -1,4 +1,5 @@
 import type { JSX } from 'react'
+import { useId } from 'react'
 
 /**
  * Marca do Sistema Zero Studio (extraída do logo oficial logoszs.svg — apenas
@@ -7,6 +8,13 @@ import type { JSX } from 'react'
  * material oficial).
  */
 export function BrandLogo({ className = 'h-6 w-6' }: { className?: string }): JSX.Element {
+  // Ids ÚNICOS por instância/render: ids fixos (sz-logo-g0/1/2) duplicados na
+  // página são HTML inválido e podem fazer um <svg> referenciar o gradiente de
+  // outra montagem do logo. useId() garante unicidade entre instâncias do Studio.
+  const uid = useId()
+  const g0 = `${uid}-g0`
+  const g1 = `${uid}-g1`
+  const g2 = `${uid}-g2`
   return (
     <svg viewBox="0 0 160 160" className={className} role="img" aria-label="Sistema Zero Studio">
       <path
@@ -16,8 +24,8 @@ export function BrandLogo({ className = 'h-6 w-6' }: { className?: string }): JS
       <circle cx="29.2511" cy="14.6965" r="4.9842" fill="#B1EF59" />
       <circle cx="44.3549" cy="14.6965" r="4.9842" fill="#B1EF59" />
       <circle cx="58.7036" cy="14.4951" r="4.9842" fill="#B1EF59" />
-      <rect x="23.8613" y="24" width="38.8052" height="81.6357" rx="6" fill="url(#sz-logo-g0)" />
-      <rect x="68.6904" y="24" width="67.3474" height="81.8248" rx="6" fill="url(#sz-logo-g1)" />
+      <rect x="23.8613" y="24" width="38.8052" height="81.6357" rx="6" fill={`url(#${g0})`} />
+      <rect x="68.6904" y="24" width="67.3474" height="81.8248" rx="6" fill={`url(#${g1})`} />
       <path
         d="M91.898 75.6968L77.2754 68.9296V63.7935L91.898 56.9916V62.2319L81.1234 67.2639V65.4593L91.898 70.4566V75.6968Z"
         fill="white"
@@ -27,17 +35,10 @@ export function BrandLogo({ className = 'h-6 w-6' }: { className?: string }): JS
         d="M112.83 75.6968V70.4566L123.605 65.4593V67.2639L112.83 62.2319V56.9916L127.453 63.7935V68.9296L112.83 75.6968Z"
         fill="white"
       />
-      <rect
-        x="23.8613"
-        y="111.597"
-        width="112.176"
-        height="24.4034"
-        rx="6"
-        fill="url(#sz-logo-g2)"
-      />
+      <rect x="23.8613" y="111.597" width="112.176" height="24.4034" rx="6" fill={`url(#${g2})`} />
       <defs>
         <linearGradient
-          id="sz-logo-g0"
+          id={g0}
           x1="23.8613"
           y1="24"
           x2="87.1674"
@@ -48,7 +49,7 @@ export function BrandLogo({ className = 'h-6 w-6' }: { className?: string }): JS
           <stop offset="1" stopColor="#43E8DE" />
         </linearGradient>
         <linearGradient
-          id="sz-logo-g1"
+          id={g1}
           x1="68.6904"
           y1="24"
           x2="148.772"
@@ -59,7 +60,7 @@ export function BrandLogo({ className = 'h-6 w-6' }: { className?: string }): JS
           <stop offset="1" stopColor="#43E8DE" />
         </linearGradient>
         <linearGradient
-          id="sz-logo-g2"
+          id={g2}
           x1="23.8613"
           y1="111.597"
           x2="33.9844"

@@ -141,4 +141,49 @@ describe('generateHTML', () => {
     })
     expect(html).not.toContain('SZGame2D')
   })
+
+  it('neutraliza </script> literal em JS inline (não fecha o elemento cedo)', () => {
+    const js = 'const s = "</script><img src=x onerror=alert(1)>";'
+    const html = generateHTML({
+      title: 'Test',
+      body: [],
+      shell: { jsPlacement: 'inline-body-end' },
+      jsCode: js,
+    })
+    // O fechamento literal foi neutralizado com a barra invertida — o `<img>`
+    // continua sendo TEXTO dentro do script, não fecha o elemento cedo.
+    expect(html).toContain('<\\/script><img src=x onerror=alert(1)>')
+    expect(html).not.toContain('</script><img')
+    // Exatamente um `</script>` (o do elemento): o conteúdo não fecha outro.
+    expect(html.match(/<\/script>/g)?.length).toBe(1)
+  })
+
+  it('neutraliza </style> literal em CSS inline (não fecha o elemento cedo)', () => {
+    const css = 'body::after { content: "</style><b>x</b>"; }'
+    const html = generateHTML({
+      title: 'Test',
+      body: [],
+      shell: { cssPlacement: 'inline-head' },
+      cssCode: css,
+    })
+    expect(html).toContain('<\\/style>')
+    expect(html).not.toContain('</style><b>')
+    expect(html.match(/<\/style>/g)?.length).toBe(1)
+  })
+
+  it('neutraliza a escalada <!-- ... <script em JS inline (duplo-escape)', () => {
+    const js = '/* <!-- */ const t = "<script>foo</script>";'
+    const html = generateHTML({
+      title: 'Test',
+      body: [],
+      shell: { jsPlacement: 'inline-body-end' },
+      jsCode: js,
+    })
+    // Aberturas neutralizadas: o tokenizer nunca entra no estado de duplo-escape.
+    expect(html).toContain('<\\!--')
+    expect(html).toContain('<\\script>')
+    expect(html).toContain('<\\/script>')
+    // Só o elemento de fato fecha.
+    expect(html.match(/<\/script>/g)?.length).toBe(1)
+  })
 })

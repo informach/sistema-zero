@@ -10,8 +10,24 @@ export interface MonacoModelRegistry {
   getModels(): readonly DisposableMonacoModel[]
 }
 
+/**
+ * Compõe o prefixo SALGADO do `path` dos models a partir do prefixo do projeto
+ * (ex.: id do projeto) e de um id ESTÁVEL por instância do <Studio> (gerado uma
+ * vez via `useId()` no MonacoTabs). Sem o sal por instância, dois <Studio> no
+ * MESMO `projectId` (rota /dual) compartilham os mesmos models num registro
+ * GLOBAL — e o desmonte de um descarta os models VIVOS do outro.
+ *
+ * Nunca devolve string vazia: um `projectId` em branco cai no `instanceId`, que
+ * é sempre não-vazio, garantindo um discriminador por instância no `path`.
+ */
+export function resolveModelPathPrefix(prefix: string | undefined, instanceId: string): string {
+  const project = (prefix ?? '').trim()
+  return project ? `${project}::${instanceId}` : instanceId
+}
+
 export function buildMonacoModelPath(prefix: string | undefined, fileName: string): string {
-  return prefix ? `${prefix}/${fileName}` : fileName
+  const safePrefix = (prefix ?? '').trim()
+  return safePrefix ? `${safePrefix}/${fileName}` : fileName
 }
 
 export function getMonacoModelPath(model: DisposableMonacoModel): string {

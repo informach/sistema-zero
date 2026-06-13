@@ -138,17 +138,92 @@ export function BridgeMode(): JSX.Element {
   const reverseParseRequestSeq = useRef(0)
   const syntaxError = parseDiagnostics.find((diagnostic) => diagnostic.kind === 'syntaxError')
 
+  // Refs com os valores mais recentes lidos pelo handler PERSISTENTE do worker.
+  // O handler é instalado UMA vez (efeito de criação do worker abaixo) e não pode
+  // depender de closures: ele lê `ir`/`blocksState` FRESCOS via store getState() e
+  // as funções estáveis via refs, evitando dropar o resultado de um reparse quando
+  // uma edição de bloco re-renderiza o componente no meio do parse.
+  const applyProjectStateRef = useRef(applyProjectState)
+  const pushLogRef = useRef(pushLog)
+  useEffect(() => {
+    applyProjectStateRef.current = applyProjectState
+    pushLogRef.current = pushLog
+  }, [applyProjectState, pushLog])
+
   useEffect(() => {
     const worker = new Worker(new URL('./bridgeReverseParseWorker.ts', import.meta.url), {
       type: 'module',
     })
     reverseParseWorkerRef.current = worker
+    // Handler PERSISTENTE instalado uma única vez. Despacha por `requestId`
+    // contra o seq atual e lê o estado FRESCO do store — nunca via closure.
+    worker.onmessage = (event: MessageEvent<BridgeReverseParseWorkerResponse>) => {
+      const message = event.data
+      if (message.requestId !== reverseParseRequestSeq.current) return
+      if ('error' in message) {
+        pushLogRef.current({
+          source: PREVIEW_MESSAGE_SOURCE,
+          kind: 'error',
+          parts: [`Erro ao sincronizar código -> blocos: ${message.error}`],
+          timestamp: Date.now(),
+        })
+        return
+      }
+
+      const result = message.result
+      setParseDiagnostics(result.diagnostics)
+      // O sourcemap é responsabilidade do efeito acima (derivado do `ir` do
+      // store): quando este handler adota um novo `ir`, o efeito regenera o
+      // sourcemap com as chaves certas. Nos atalhos abaixo o `ir` exibido não
+      // muda, então o sourcemap atual continua válido.
+      if (result.kind !== 'parsed' || !result.ir) {
+        return
+      }
+      // Lê o `ir`/`blocksState` FRESCOS do store (closure obsoleta dropava o
+      // resultado quando uma edição de bloco mudava o `ir` durante o parse).
+      const currentProject = projectStoreApi.getState().project
+      const currentIR = currentProject?.ir ?? null
+      if (deepEqualIR(result.ir, currentIR)) {
+        return
+      }
+      // Mudança só na casca (head/doctype) ou nos ids — os blocos não representam
+      // isso. Atualiza a casca SEM reconstruir o workspace, preservando o layout
+      // do aluno (ex.: colunas separadas de JS) em edições cosméticas no código.
+      if (currentIR && irBlockStructureEqual(result.ir, currentIR)) {
+        applyProjectStateRef.current({ ir: { ...currentIR, htmlShell: result.ir.htmlShell } })
+        return
+      }
+      // Preserva o layout das colunas (várias pilhas do mesmo tipo) derivando-o
+      // do blocksState atual (lido fresco do store, evitando closure obsoleta) e
+      // re-aplicando ao workspace reconstruído.
+      const layout = layoutFromBlocksState(currentProject?.blocksState ?? null)
+      if (!layout) {
+        // Sem layout, `buildWorkspaceStateFromIR` aplica defaults (x = 32, 452, 872).
+        // Avisar aqui torna visível quando o reverse-parse é a causa do "layout
+        // volta às colunas" — útil pra distinguir do drop pelo sanitizer.
+        console.warn('[sz] reverse-parse rebuild sem layout — posições serão resetadas.')
+      }
+      applyProjectStateRef.current({
+        ir: result.ir,
+        blocksState: buildWorkspaceStateFromIR(result.ir, { layout }),
+      })
+    }
+    worker.onerror = (event) => {
+      pushLogRef.current({
+        source: PREVIEW_MESSAGE_SOURCE,
+        kind: 'error',
+        parts: [`Erro no worker de sincronização: ${event.message}`],
+        timestamp: Date.now(),
+      })
+    }
     return () => {
       reverseParseRequestSeq.current += 1
       reverseParseWorkerRef.current = null
+      worker.onmessage = null
+      worker.onerror = null
       worker.terminate()
     }
-  }, [])
+  }, [projectStoreApi])
 
   // Ao entrar num projeto que TEM IR mas ainda não tem `blocksState` — ou tem
   // um `blocksState` VAZIO (sobra de um ciclo anterior em que o sanitizer
@@ -186,6 +261,10 @@ export function BridgeMode(): JSX.Element {
     const reverseParseChars = debouncedHtml.length + debouncedCss.length + debouncedJs.length
     if (reverseParseChars > MAX_BRIDGE_REVERSE_PARSE_CHARS) {
       setParseDiagnostics([])
+      // Zera o snapshot: ao voltar para baixo do limite, a PRIMEIRA edição
+      // sub-limite deve sempre reparsear (sem isso, um snapshot velho idêntico
+      // ao texto reduzido faria o atalho abaixo pular o reparse).
+      lastSnapshot.current = null
       if (!lastReportedLargeProject.current) {
         pushLog({
           source: PREVIEW_MESSAGE_SOURCE,
@@ -218,65 +297,6 @@ export function BridgeMode(): JSX.Element {
       'style.css': debouncedCss,
       'script.js': debouncedJs,
     }
-    lastSnapshot.current = currentFiles
-    const requestId = reverseParseRequestSeq.current + 1
-    reverseParseRequestSeq.current = requestId
-    worker.onmessage = (event: MessageEvent<BridgeReverseParseWorkerResponse>) => {
-      const message = event.data
-      if (message.requestId !== reverseParseRequestSeq.current) return
-      if ('error' in message) {
-        pushLog({
-          source: PREVIEW_MESSAGE_SOURCE,
-          kind: 'error',
-          parts: [`Erro ao sincronizar código -> blocos: ${message.error}`],
-          timestamp: Date.now(),
-        })
-        return
-      }
-
-      const result = message.result
-      setParseDiagnostics(result.diagnostics)
-      // O sourcemap é responsabilidade do efeito acima (derivado do `ir` do
-      // store): quando este handler adota um novo `ir`, o efeito regenera o
-      // sourcemap com as chaves certas. Nos atalhos abaixo o `ir` exibido não
-      // muda, então o sourcemap atual continua válido.
-      if (result.kind !== 'parsed' || !result.ir) {
-        return
-      }
-      if (deepEqualIR(result.ir, ir)) {
-        return
-      }
-      // Mudança só na casca (head/doctype) ou nos ids — os blocos não representam
-      // isso. Atualiza a casca SEM reconstruir o workspace, preservando o layout
-      // do aluno (ex.: colunas separadas de JS) em edições cosméticas no código.
-      if (ir && irBlockStructureEqual(result.ir, ir)) {
-        applyProjectState({ ir: { ...ir, htmlShell: result.ir.htmlShell } })
-        return
-      }
-      // Preserva o layout das colunas (várias pilhas do mesmo tipo) derivando-o
-      // do blocksState atual (lido fresco do store, evitando closure obsoleta) e
-      // re-aplicando ao workspace reconstruído.
-      const layout = layoutFromBlocksState(projectStoreApi.getState().project?.blocksState ?? null)
-      if (!layout) {
-        // Sem layout, `buildWorkspaceStateFromIR` aplica defaults (x = 32, 452, 872).
-        // Avisar aqui torna visível quando o reverse-parse é a causa do "layout
-        // volta às colunas" — útil pra distinguir do drop pelo sanitizer.
-        console.warn('[sz] reverse-parse rebuild sem layout — posições serão resetadas.')
-      }
-      applyProjectState({
-        ir: result.ir,
-        blocksState: buildWorkspaceStateFromIR(result.ir, { layout }),
-      })
-    }
-    worker.onerror = (event) => {
-      if (requestId !== reverseParseRequestSeq.current) return
-      pushLog({
-        source: PREVIEW_MESSAGE_SOURCE,
-        kind: 'error',
-        parts: [`Erro no worker de sincronização: ${event.message}`],
-        timestamp: Date.now(),
-      })
-    }
     // O HTML é parseado AQUI, na main thread, porque depende do `DOMParser`
     // nativo — que não existe em `WorkerGlobalScope`. `extractInlineAssets`
     // também resolve de onde vêm CSS/JS (arquivo externo vs. `<style>`/`<script>`
@@ -286,8 +306,6 @@ export function BridgeMode(): JSX.Element {
     try {
       assets = extractInlineAssets(debouncedHtml, debouncedCss, debouncedJs)
     } catch (err) {
-      worker.onmessage = null
-      worker.onerror = null
       pushLog({
         source: PREVIEW_MESSAGE_SOURCE,
         kind: 'error',
@@ -299,6 +317,14 @@ export function BridgeMode(): JSX.Element {
       return
     }
 
+    // Só marca como processado DEPOIS de `extractInlineAssets` ter dado certo e
+    // imediatamente antes de postar: um snapshot que lança não pode ser lembrado
+    // como já processado (senão uma edição idêntica posterior seria pulada).
+    lastSnapshot.current = currentFiles
+    const requestId = reverseParseRequestSeq.current + 1
+    reverseParseRequestSeq.current = requestId
+    // O handler (onmessage/onerror) é PERSISTENTE — instalado uma vez na criação
+    // do worker — e despacha por `requestId`. Aqui só postamos o pedido.
     worker.postMessage({
       requestId,
       files: currentFiles,
@@ -306,25 +332,18 @@ export function BridgeMode(): JSX.Element {
       htmlShell: assets.htmlShell,
       cssSource: assets.cssSource,
       jsSource: assets.jsSource,
-      ir,
+      ir: projectStoreApi.getState().project?.ir ?? null,
       projectName,
       installedExtensionIds: installedExtensions.map((extension) => extension.id),
     })
-
-    return () => {
-      if (requestId !== reverseParseRequestSeq.current) return
-      worker.onmessage = null
-      worker.onerror = null
-    }
   }, [
-    applyProjectState,
     debouncedHtml,
     debouncedCss,
     debouncedJs,
     hasProject,
     installedExtensions,
-    ir,
     projectName,
+    projectStoreApi,
     pushLog,
   ])
 

@@ -412,7 +412,7 @@ describe('generateJS', () => {
       ],
     })
     expect(code).toContain('ctx.arc(canvas.width, canvas.height,')
-    expect(code).toContain('Math.floor(Math.random() * (20 - 5 + 1)) + 5')
+    expect(code).toContain('Math.floor(Math.random() * ((20) - (5) + 1)) + (5)')
   })
 
   it('emite animationLoop com requestAnimationFrame interno e pontapé frame()', () => {
@@ -716,6 +716,53 @@ describe('generateJS', () => {
     expect(code).toContain('let i = 0;')
     expect(code).toMatch(/for \(let i_2 = 0; i_2 < 2; i_2\+\+\)/)
     expect(code).toContain('console.log(i);')
+    expect(() => new Function(code)).not.toThrow()
+  })
+
+  it('emite rgba() válido para hex bem formado (#rrggbb e #rgb)', () => {
+    const code = generateJS({
+      statements: [
+        { type: 'var', name: 'c1', value: { type: 'colorAlpha', hex: '#22d3ee', alpha: 0.5 } },
+        { type: 'var', name: 'c2', value: { type: 'colorAlpha', hex: '#abc', alpha: 1 } },
+      ],
+    })
+    expect(code).toContain('let c1 = "rgba(34, 211, 238, 0.5)";')
+    // #abc expande para #aabbcc.
+    expect(code).toContain('let c2 = "rgba(170, 187, 204, 1)";')
+  })
+
+  it('colorAlpha com hex malformado cai para preto (sem NaN) e clampa o alpha', () => {
+    const code = generateJS({
+      statements: [
+        { type: 'var', name: 'ruim', value: { type: 'colorAlpha', hex: 'azul', alpha: 0.3 } },
+        { type: 'var', name: 'over', value: { type: 'colorAlpha', hex: '#fff', alpha: 9 } },
+        { type: 'var', name: 'under', value: { type: 'colorAlpha', hex: '#000000', alpha: -2 } },
+      ],
+    })
+    expect(code).not.toContain('NaN')
+    expect(code).toContain('let ruim = "rgba(0, 0, 0, 0.3)";')
+    // alpha fora de [0,1] é truncado.
+    expect(code).toContain('let over = "rgba(255, 255, 255, 1)";')
+    expect(code).toContain('let under = "rgba(0, 0, 0, 0)";')
+  })
+
+  it('parentiza os limites do random (limite aditivo não quebra a aritmética)', () => {
+    // min = a - b, max = m. Sem parênteses sairia `Math.random() * (m - a - b + 1)`
+    // — aritmética errada. Com parênteses: `((m) - (a - b) + 1)`.
+    const code = generateJS({
+      statements: [
+        {
+          type: 'var',
+          name: 'n',
+          value: {
+            type: 'random',
+            min: { type: 'binop', op: '-', left: variable('a'), right: variable('b') },
+            max: variable('m'),
+          },
+        },
+      ],
+    })
+    expect(code).toContain('Math.floor(Math.random() * ((m) - (a - b) + 1)) + (a - b)')
     expect(() => new Function(code)).not.toThrow()
   })
 

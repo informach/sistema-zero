@@ -137,6 +137,7 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
             <button
               key={m}
               type="button"
+              aria-pressed={active}
               onClick={() => setMode(m)}
               style={{ touchAction: 'manipulation' }}
               className={[

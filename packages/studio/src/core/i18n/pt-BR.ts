@@ -36,9 +36,8 @@ export const ptBR: Record<string, string> = {
 
   'console.clear': 'Limpar',
   'console.empty': 'Sem mensagens. Use console.log para registrar algo.',
-
-  'terminal.placeholder':
-    'Terminal disponível em fases futuras (suporte a WebContainers planejado).',
+  'console.message': '1 mensagem',
+  'console.messages': '{count} mensagens',
 
   'ai.placeholder':
     'Painel de IA está em modo de demonstração. A integração real chegará em fase futura.',

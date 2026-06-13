@@ -27,6 +27,7 @@ interface TerminalRuntime {
   outputAbort: AbortController
   dataSubscription: { dispose(): void }
   onResize: () => void
+  resizeObserver: ResizeObserver
 }
 
 const EMPTY_EXTRA_FILES: ExtraFile[] = []
@@ -60,6 +61,7 @@ export function Terminal(): JSX.Element {
     syncChainRef.current = Promise.resolve()
     if (!runtime) return
 
+    runtime.resizeObserver.disconnect()
     window.removeEventListener('resize', runtime.onResize)
     runtime.dataSubscription.dispose()
     runtime.outputAbort.abort()
@@ -98,12 +100,16 @@ export function Terminal(): JSX.Element {
       const fit = new FitAddonCtor()
       term.loadAddon(fit)
 
-      if (!containerRef.current) {
+      const container = containerRef.current
+      if (!container) {
+        // O term recém-criado ainda não está no runtimeRef, então cleanupRuntime
+        // não o descartaria — dispose explícito antes de lançar evita o leak.
+        term.dispose()
         throw new Error('Área do terminal não está disponível.')
       }
 
-      containerRef.current.replaceChildren()
-      term.open(containerRef.current)
+      container.replaceChildren()
+      term.open(container)
       fit.fit()
 
       await webcontainer.mount(buildTerminalFileTree(project))
@@ -141,6 +147,13 @@ export function Terminal(): JSX.Element {
         shell.resize({ cols: term.cols, rows: term.rows })
       }
       window.addEventListener('resize', onResize)
+      // O split inferior usa um PanelResizeHandle: arrastá-lo redimensiona o
+      // container SEM disparar 'resize' na window, deixando linhas/colunas do
+      // xterm e do PTY defasadas. O ResizeObserver pega esse caso.
+      const resizeObserver = new ResizeObserver(() => {
+        onResize()
+      })
+      resizeObserver.observe(container)
 
       runtimeRef.current = {
         webcontainer,
@@ -151,6 +164,7 @@ export function Terminal(): JSX.Element {
         outputAbort,
         dataSubscription,
         onResize,
+        resizeObserver,
       }
       term.writeln('Sistema Zero Studio terminal')
       term.writeln('Arquivos do projeto montados no WebContainer.')

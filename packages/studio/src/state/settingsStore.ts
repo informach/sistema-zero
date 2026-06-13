@@ -1,4 +1,4 @@
-import { createStore, get, set } from 'idb-keyval'
+import { createStore, get, update } from 'idb-keyval'
 import { create } from 'zustand'
 
 export const DEFAULT_AI_MODEL = '~anthropic/claude-sonnet-latest'
@@ -46,14 +46,10 @@ export interface PersistedSettings {
   aiApiKeyStorage?: AIApiKeyStorage
   aiModel?: string
   theme?: ThemeName
-  fontSize?: number
   codeFontSize?: number
 }
 
 const MAX_AI_API_KEY_CHARS = 4096
-const UI_FONT_SIZE_MIN = 13
-const UI_FONT_SIZE_MAX = 22
-const UI_FONT_SIZE_DEFAULT = 16
 export const CODE_FONT_SIZE_MIN = 10
 export const CODE_FONT_SIZE_MAX = 32
 export const CODE_FONT_SIZE_DEFAULT = 13
@@ -72,11 +68,6 @@ function normalizeTheme(value: unknown): ThemeName | undefined {
   return value === 'dark' || value === 'light' ? value : undefined
 }
 
-function clampUIFontSize(n: number): number {
-  if (!Number.isFinite(n)) return UI_FONT_SIZE_DEFAULT
-  return Math.max(UI_FONT_SIZE_MIN, Math.min(UI_FONT_SIZE_MAX, Math.round(n)))
-}
-
 function clampCodeFontSize(n: number): number {
   if (!Number.isFinite(n)) return CODE_FONT_SIZE_DEFAULT
   return Math.max(CODE_FONT_SIZE_MIN, Math.min(CODE_FONT_SIZE_MAX, Math.round(n)))
@@ -92,7 +83,6 @@ function sanitizePersistedSettings(value: unknown): PersistedSettings {
   if (typeof raw.aiModel === 'string') settings.aiModel = normalizeAIModel(raw.aiModel)
   const theme = normalizeTheme(raw.theme)
   if (theme) settings.theme = theme
-  if (typeof raw.fontSize === 'number') settings.fontSize = clampUIFontSize(raw.fontSize)
   if (typeof raw.codeFontSize === 'number') {
     settings.codeFontSize = clampCodeFontSize(raw.codeFontSize)
   }
@@ -111,7 +101,6 @@ interface SettingsState {
   aiApiKeyStorage: AIApiKeyStorage
   aiModel: string
   theme: ThemeName
-  fontSize: number
   codeFontSize: number
   loaded: boolean
   load: () => Promise<void>
@@ -120,7 +109,6 @@ interface SettingsState {
   clearAIApiKey: () => Promise<void>
   setAIModel: (m: string) => Promise<void>
   setTheme: (t: ThemeName) => Promise<void>
-  setFontSize: (n: number) => Promise<void>
   setCodeFontSize: (n: number) => Promise<void>
   increaseCodeFontSize: () => Promise<void>
   decreaseCodeFontSize: () => Promise<void>
@@ -131,13 +119,22 @@ async function readPersisted(): Promise<PersistedSettings> {
   return sanitizePersistedSettings(await get<unknown>(SETTINGS_KEY, getStore()))
 }
 
+// O read-modify-write roda DENTRO de uma única transação do IndexedDB via
+// idb-keyval update(): setters concorrentes são enfileirados e não se perdem
+// (o get+set separado deixava cada um ler o mesmo estado antigo e o último
+// gravava por cima, descartando o patch do outro — visível após reload).
 async function writeMerge(patch: Partial<PersistedSettings>): Promise<void> {
-  const current = await readPersisted()
-  const next: PersistedSettings = { ...current, ...patch }
-  for (const key of Object.keys(next) as Array<keyof PersistedSettings>) {
-    if (next[key] === undefined) delete next[key]
-  }
-  await set(SETTINGS_KEY, next, getStore())
+  await update<unknown>(
+    SETTINGS_KEY,
+    (current) => {
+      const next: PersistedSettings = { ...sanitizePersistedSettings(current), ...patch }
+      for (const key of Object.keys(next) as Array<keyof PersistedSettings>) {
+        if (next[key] === undefined) delete next[key]
+      }
+      return next
+    },
+    getStore(),
+  )
 }
 
 export const useSettingsStore = create<SettingsState>((setState, getState) => ({
@@ -145,7 +142,6 @@ export const useSettingsStore = create<SettingsState>((setState, getState) => ({
   aiApiKeyStorage: 'session',
   aiModel: DEFAULT_AI_MODEL,
   theme: 'dark',
-  fontSize: UI_FONT_SIZE_DEFAULT,
   codeFontSize: CODE_FONT_SIZE_DEFAULT,
   loaded: false,
   load: async () => {
@@ -157,7 +153,6 @@ export const useSettingsStore = create<SettingsState>((setState, getState) => ({
       aiApiKeyStorage,
       aiModel,
       theme: persisted.theme ?? 'dark',
-      fontSize: persisted.fontSize ?? UI_FONT_SIZE_DEFAULT,
       codeFontSize: clampCodeFontSize(persisted.codeFontSize ?? CODE_FONT_SIZE_DEFAULT),
       loaded: true,
     })
@@ -197,11 +192,6 @@ export const useSettingsStore = create<SettingsState>((setState, getState) => ({
   setTheme: async (theme) => {
     setState({ theme })
     await writeMerge({ theme })
-  },
-  setFontSize: async (n) => {
-    const fontSize = clampUIFontSize(n)
-    setState({ fontSize })
-    await writeMerge({ fontSize })
   },
   setCodeFontSize: async (n) => {
     const codeFontSize = clampCodeFontSize(n)

@@ -392,6 +392,20 @@ function projectFilesLimitError(
   return null
 }
 
+/**
+ * Garante o teto COMBINADO (canônicos + extras) ao carregar um projeto. Os dois
+ * grupos são limitados independente, então a soma podia chegar ao dobro do
+ * limite de edição ao vivo. Derruba extras (do fim para o começo) até o conjunto
+ * passar em `projectFilesLimitError`, mantendo os arquivos canônicos do aluno.
+ */
+function limitCombinedExtraFiles(files: ProjectFiles, extraFiles: ExtraFile[]): ExtraFile[] {
+  const trimmed = [...extraFiles]
+  while (trimmed.length > 0 && projectFilesLimitError(files, trimmed) !== null) {
+    trimmed.pop()
+  }
+  return trimmed
+}
+
 /** Valida `installedExtensions` vindos de um JSON não confiável. */
 function sanitizeImportedExtensions(raw: unknown): InstalledExtension[] {
   if (!Array.isArray(raw)) return []
@@ -715,12 +729,19 @@ function sanitizeStoredProject(raw: unknown, requestedId?: string): Project | nu
   const createdAt = sanitizeTimestamp(r.createdAt, base.createdAt)
   const updatedAt = sanitizeTimestamp(r.updatedAt, createdAt)
 
+  // Os canônicos (≤ MAX_TOTAL_CHARS) e os extras (≤ MAX_TOTAL_CHARS) são
+  // limitados INDEPENDENTE acima, então a soma podia chegar a ~16 MB — o dobro
+  // do limite de edição ao vivo (projectFilesLimitError em setFiles etc.). Aplica
+  // o mesmo teto combinado no load: derruba extras (do fim) até caber, casando
+  // com o guard de edição em vez de aceitar um projeto que a IDE recusaria salvar.
+  const extraFiles = limitCombinedExtraFiles(files, sanitizeImportedExtraFiles(r.extraFiles))
+
   return {
     ...base,
     id,
     name,
     files,
-    extraFiles: sanitizeImportedExtraFiles(r.extraFiles),
+    extraFiles,
     mode: IDE_MODES.includes(r.mode as IDEMode) ? (r.mode as IDEMode) : base.mode,
     ir: sanitizeStoredIR(r.ir),
     blocksState: sanitizeStoredBlocksState(r.blocksState, installedExtensions),

@@ -197,6 +197,18 @@ describe('parseJS', () => {
     expect(ir[0]?.type).toBe('rawJS')
   })
 
+  it('cadeia aditiva muito longa não estoura a pilha (degrada para rawJS)', () => {
+    // O Babel parseia o aninhamento sem reclamar; só a descida recursiva do
+    // mapeamento pode estourar a pilha. Não pode crashar: degrada para rawJS.
+    const code = `let total = ${Array.from({ length: 50000 }, (_, i) => i).join(' + ')};`
+    const ir = parseJS(code)
+    expect(Array.isArray(ir)).toBe(true)
+    // Ou reconhece como árvore de binop, ou degrada para rawJS — mas nunca crasha.
+    if (ir[0]?.type === 'rawJS') {
+      expect(ir).toEqual([{ type: 'rawJS', code, advanced: true }])
+    }
+  })
+
   it('reconhece addEventListener click em getElementById', () => {
     const code = `document.getElementById("meuBotao")?.addEventListener("click", (event) => {\n  console.log("oi");\n});`
     const ir = parseJS(code)
@@ -456,6 +468,21 @@ const ctx = canvas.getContext("2d");
       ctxVar: 'ctx',
       color: { type: 'colorAlpha', hex: '#000000', alpha: 0.1 },
     })
+  })
+
+  it('rgba com canal fora de [0,255] preserva o literal como string (não vira hex malformado)', () => {
+    // rgba(999,0,0,1): 999 não cabe em 2 dígitos hex — sem validação geraria um
+    // hex de 3 dígitos que o gerador re-fatiaria numa cor DIFERENTE.
+    expect(parseJS('let cor = "rgba(999,0,0,1)";')).toEqual([
+      { type: 'var', name: 'cor', value: { type: 'str', value: 'rgba(999,0,0,1)' } },
+    ])
+  })
+
+  it('rgba com alpha de múltiplos pontos preserva o literal como string (sem NaN)', () => {
+    // rgba(0,0,0,1.2.3): Number("1.2.3") seria NaN; preserva verbatim.
+    expect(parseJS('let cor = "rgba(0,0,0,1.2.3)";')).toEqual([
+      { type: 'var', name: 'cor', value: { type: 'str', value: 'rgba(0,0,0,1.2.3)' } },
+    ])
   })
 
   it('reconhece hsl com Math.random()*360 e S/L literais → hslColor (matiz como expressão)', () => {

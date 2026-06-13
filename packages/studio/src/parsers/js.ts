@@ -58,7 +58,20 @@ export function parseJSWithDiagnostics(source: string): ParseJSResult {
     elementToCtx: new Map(),
     instanceVars: new Set(),
   }
-  const out = mapStatementList(ast.program.body, source, ctx)
+  // A descida recursiva também precisa estar protegida: o Babel parseia
+  // aninhamentos profundos sem reclamar e só a recursão do mapeamento estoura a
+  // pilha (RangeError). Sem o try/catch aqui, esse throw escaparia e quebraria o
+  // contrato de não-crashar — então degradamos para `rawJS advanced` como qualquer
+  // entrada não-parseável.
+  let out: JSStatement[]
+  try {
+    out = mapStatementList(ast.program.body, source, ctx)
+  } catch (error) {
+    return {
+      statements: [{ type: 'rawJS', code: source, advanced: true }],
+      diagnostics: [{ kind: 'syntaxError', message: errorMessage(error) }],
+    }
+  }
   // Remove os `getElementById` soltos que foram absorvidos por um `canvasSetup`.
   const statements = out.filter(
     (s) => !(s.type === 'getElementById' && ctx.canvasElementVars.has(s.varName)),
@@ -1385,10 +1398,20 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
       node.value,
     )
     if (rgba) {
-      const hex = `#${[rgba[1], rgba[2], rgba[3]]
-        .map((n) => Number(n).toString(16).padStart(2, '0'))
-        .join('')}`
-      return { type: 'colorAlpha', hex, alpha: Number(rgba[4]) }
+      // Valida os canais (0–255) e o alpha (número finito em [0,1] com um único
+      // ponto decimal). Sem isso, `rgba(999,0,0,1)` geraria um hex de 3 dígitos
+      // que o gerador re-fatia numa cor DIFERENTE, e `rgba(0,0,0,1.2.3)` viraria
+      // `alpha: NaN`. Se algo falhar, preserva o literal original verbatim como
+      // string ("código é sagrado").
+      const channels = [rgba[1], rgba[2], rgba[3]].map((n) => Number(n))
+      const alpha = Number(rgba[4])
+      const dotCount = rgba[4]?.match(/\./g)?.length ?? 0
+      const channelsOk = channels.every((n) => n <= 255)
+      const alphaOk = dotCount <= 1 && Number.isFinite(alpha) && alpha >= 0 && alpha <= 1
+      if (channelsOk && alphaOk) {
+        const hex = `#${channels.map((n) => n.toString(16).padStart(2, '0')).join('')}`
+        return { type: 'colorAlpha', hex, alpha }
+      }
     }
     // Uma string hexadecimal `#rrggbb` é tratada como COR (volta ao bloco seletor
     // de cor, `sz_val_color`). Como `color` e `str` geram o mesmo código, no pior

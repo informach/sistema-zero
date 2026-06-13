@@ -32,9 +32,8 @@ mock.module('idb-keyval', () => ({
 
 const { listAllProjects } = await import('./persistence')
 const { PROJECT_FILE_LIMITS, useProjectStore } = await import('./projectStore')
-const { createPersistenceService, setAutosaveDelayForTests } = await import(
-  '../persistence/service'
-)
+const { cancelPendingAutosavesFor, createPersistenceService, setAutosaveDelayForTests } =
+  await import('../persistence/service')
 const { createLocalPersistenceAdapter } = await import('../persistence/local')
 
 // Sem fake timers no bun:test: encurta o debounce do autosave e espera com
@@ -267,6 +266,59 @@ describe('PersistenceService', () => {
     await savePromise
 
     expect(useProjectStore.getState().isDirty).toBe(true)
+  })
+
+  it('não re-persiste o projeto excluído quando o delete chega com o save em voo', async () => {
+    // Adapter lento/remoto: o save fica em voo (resolve sob comando), abrindo a
+    // janela em que o delete chega DEPOIS do debounce — quando a entrada já saiu
+    // de `pending` e cancelar timers não acha nada. Sem a marca de excluído, o
+    // save em voo marcaria salvo (e re-persistiria) o projeto recém-apagado.
+    let resolvePersist: (() => void) | undefined
+    const slowAdapter = {
+      load: async () => null,
+      save: () =>
+        new Promise<void>((resolve) => {
+          resolvePersist = resolve
+        }),
+    }
+    const slowService = createPersistenceService(useProjectStore, slowAdapter)
+    const detach = slowService.attach()
+
+    useProjectStore.getState().setProject(createEmptyProject('project-del', 'Projeto'))
+    await waitForAutosave()
+    // O autosave disparou e o save está pendurado, com o projeto ainda sujo.
+    expect(useProjectStore.getState().isDirty).toBe(true)
+    expect(resolvePersist).toBeDefined()
+
+    // Delete fora do ciclo do serviço marca o id como excluído (mesma chamada
+    // que `deleteProject` faz via state/persistence).
+    cancelPendingAutosavesFor('project-del')
+
+    // O save em voo resolve: o projeto SEGUE no store (=== project ainda casa),
+    // mas a marca de excluído tem de impedir o markSaved.
+    resolvePersist?.()
+    await Bun.sleep(0)
+
+    expect(useProjectStore.getState().isDirty).toBe(true)
+
+    detach()
+  })
+
+  it('não agenda gravação ao hidratar/carregar um projeto (isDirty:false não escreve)', async () => {
+    const detach = service.attach()
+
+    // Hidratar instala um novo Project com isDirty:false — não pode disparar um
+    // write redundante dos mesmos bytes (round-trip à toa em adapters remotos).
+    useProjectStore.getState().hydrateProject(createEmptyProject('project-hydrate', 'Projeto'))
+    await waitForAutosave()
+    expect(idb.setMany).not.toHaveBeenCalled()
+
+    // Uma edição genuína (isDirty:true) volta a agendar normalmente.
+    useProjectStore.getState().setFile('script.js', 'console.log("editado");\n')
+    await waitForAutosave()
+    expect(idb.setMany).toHaveBeenCalledTimes(1)
+
+    detach()
   })
 })
 

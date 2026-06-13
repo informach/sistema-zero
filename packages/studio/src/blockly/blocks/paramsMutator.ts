@@ -123,6 +123,11 @@ const PARAMS_MUTATOR_MIXIN = {
       input.appendField(
         new Blockly.FieldTextInput(param.name, (value: string) => {
           const clean = sanitize(value, param.name)
+          // Nomes duplicados gerariam `constructor(x, x)` → SyntaxError ao rodar.
+          // Rejeita a renomeação (mantém o nome anterior) se colidir com OUTRO
+          // parâmetro deste bloco — `addParam_` já garante unicidade na criação.
+          const collides = this.params_.some((p) => p !== param && p.name === clean)
+          if (collides) return param.name
           renameReporters(this, param.name, clean)
           param.name = clean
           return clean

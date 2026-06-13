@@ -1,6 +1,8 @@
 import type { JSX } from 'react'
 import { useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import { type Project, setLocale } from '#core'
+import { ErrorBoundary } from '#ui'
+import { RootErrorFallback } from '../components/layout/ErrorViews'
 import { Shell } from '../components/layout/Shell'
 import { sanitizeProjectForHost, useProjectStore, useProjectStoreApi } from '../state/projectStore'
 import { useSettingsStore } from '../state/settingsStore'
@@ -66,14 +68,27 @@ function StudioBody({
     if (locale) setLocale(locale)
   })
 
+  // Chave PRIMITIVA estável dos modos: um literal inline `allowedModes` muda de
+  // referência a cada render do host, mas o conteúdo é o mesmo. Memorizar a
+  // config/sanitização por esta string (e não pelo array) evita que um
+  // re-render do host re-rode `resolveStudioConfig` → derive um novo
+  // `config.allowedModes` → re-sanitize o projeto → re-hidrate, descartando as
+  // edições não salvas do aluno. Prop omitida → '' (cai na constante IDE_MODES).
+  const allowedModesKey = allowedModes ? [...allowedModes].sort().join('|') : ''
+  // Dep é a chave primitiva estável `allowedModesKey`, NÃO o array `allowedModes`
+  // (literal inline muda de referência a cada render do host).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: ver acima — allowedModesKey é a forma estável de allowedModes
   const config = useMemo(
     () => resolveStudioConfig(features, allowedModes),
-    [features, allowedModes],
+    [features, allowedModesKey],
   )
 
   // `replaceProject` (handle) troca o projeto sem mexer na prop.
   const [replacedProject, setReplacedProject] = useState<Project | null>(null)
   const sourceProject = replacedProject ?? initialProject
+  // Dep é a chave primitiva estável `allowedModesKey` em vez de `config.allowedModes`
+  // (array que muda de referência a cada render do host com allowedModes inline).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: ver acima — depende de allowedModesKey, não do array config.allowedModes
   const sanitized = useMemo(() => {
     const project = sanitizeProjectForHost(sourceProject)
     if (!project) return null
@@ -82,7 +97,7 @@ function StudioBody({
     let mode = initialMode ?? project.mode
     if (!config.allowedModes.includes(mode)) mode = config.allowedModes[0] ?? project.mode
     return mode === project.mode ? project : { ...project, mode }
-  }, [sourceProject, initialMode, config.allowedModes])
+  }, [sourceProject, initialMode, allowedModesKey])
 
   const projectStoreApi = useProjectStoreApi()
   const persistence = useStudioPersistence()
@@ -125,13 +140,21 @@ function StudioBody({
     return detach
   }, [persistence, loadSettings])
 
-  // onReady: 1x, quando o projeto hidratou e o Shell pode renderizar.
+  // onReady: 1x POR PROJETO carregado. O ref re-arma quando a identidade do
+  // projeto muda (ex.: handle.replaceProject() → unload+re-hidrata), senão um
+  // novo projeto carregado nunca dispararia onReady de novo.
   const readyFiredRef = useRef(false)
+  const readyFiredForIdRef = useRef<string | null>(null)
+  const sanitizedId = sanitized?.id ?? null
   useEffect(() => {
+    if (readyFiredForIdRef.current !== sanitizedId) {
+      readyFiredForIdRef.current = sanitizedId
+      readyFiredRef.current = false
+    }
     if (!hasProject || readyFiredRef.current) return
     readyFiredRef.current = true
     onReady?.()
-  }, [hasProject, onReady])
+  }, [hasProject, onReady, sanitizedId])
 
   // onModeChange: observa o modo do projeto na store da instância.
   const onModeChangeRef = useRef(onModeChange)
@@ -171,7 +194,9 @@ function StudioBody({
               </p>
             </div>
           ) : hasProject ? (
-            <Shell onExit={onExit} canToggleTheme={theme === undefined} />
+            <ErrorBoundary fallback={RootErrorFallback} resetKeys={[sanitizedId]} label="Studio">
+              <Shell onExit={onExit} canToggleTheme={theme === undefined} />
+            </ErrorBoundary>
           ) : null}
         </div>
       </StudioThemeProvider>

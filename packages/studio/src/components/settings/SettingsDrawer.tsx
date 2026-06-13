@@ -43,8 +43,11 @@ export function SettingsDrawer({
     if (!open) return
     setDraftKey(apiKey)
     setShowKey(false)
-    setSection(initialSection)
-  }, [apiKey, initialSection, open])
+    // Sem aba de IA (host fixou chave/modelo e não permite chave do aluno) o
+    // initialSection 'ai' deixaria o corpo vazio — clampa em 'appearance',
+    // espelhando o inicializador do useState.
+    setSection(showAITab ? initialSection : 'appearance')
+  }, [apiKey, initialSection, open, showAITab])
 
   const handleSaveKey = async () => {
     const nextKey = draftKey.trim()
@@ -191,6 +194,7 @@ export function SettingsDrawer({
                 <button
                   key={t}
                   type="button"
+                  aria-pressed={theme === t}
                   onClick={() => void setTheme(t)}
                   className={[
                     'flex-1 rounded px-3 py-1 text-xs font-medium transition-colors',

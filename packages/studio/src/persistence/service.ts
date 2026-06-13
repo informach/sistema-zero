@@ -44,7 +44,16 @@ interface ServiceInternals {
 // instâncias — senão um timer em voo re-persistiria o projeto apagado.
 const liveServices = new Set<ServiceInternals>()
 
+// IDs marcados como excluídos enquanto um save pode estar EM VOO. Cancelar só os
+// timers pendentes não basta: um autosave que já passou do debounce removeu sua
+// entrada de `pending` e está aguardando `adapter.save` (lento/remoto) quando o
+// delete chega — o projeto não está mais em `pending`, então `clearTimerFor` não
+// acha nada, o `delMany` apaga e o save em voo RE-PERSISTE o apagado. Marcar o
+// id aqui faz `persistAndMark` abortar antes e depois do await.
+const deletedProjects = new Set<string>()
+
 export function cancelPendingAutosavesFor(projectId: string): void {
+  deletedProjects.add(projectId)
   for (const service of liveServices) service.clearTimerFor(projectId)
 }
 
@@ -109,8 +118,14 @@ export function createPersistenceService(
   }
 
   async function persistAndMark(project: Project): Promise<void> {
+    // Já excluído antes de começar: não persiste de volta o que foi apagado.
+    if (deletedProjects.has(project.id)) return
     try {
       if (adapter) await adapter.save(project)
+      // Excluído ENQUANTO o save estava em voo (adapter lento/remoto): aborta sem
+      // marcar salvo — o `delMany` do delete já correu, re-persistir ressuscitaria
+      // o projeto apagado.
+      if (deletedProjects.has(project.id)) return
       if (store.getState().project === project) {
         store.getState().markSaved()
       }
@@ -126,6 +141,10 @@ export function createPersistenceService(
   }
 
   function schedule(project: Project): void {
+    // Uma edição agendada significa que o projeto está VIVO de novo (re-criado/
+    // re-importado com o mesmo id, ou carregado após um delete): tira a marca de
+    // excluído para não bloquear gravações legítimas.
+    deletedProjects.delete(project.id)
     internals.clearTimerFor(project.id)
     const timer = setTimeout(() => {
       const entry = pending.get(project.id)
@@ -157,6 +176,11 @@ export function createPersistenceService(
     const unsub = store.subscribe((state, prev) => {
       if (!state.project) return
       if (state.project === prev.project) return
+      // Carregar/hidratar instala um novo Project com isDirty:false — sem esse
+      // guard a troca de referência agendava um write redundante dos MESMOS
+      // bytes (round-trip desperdiçado em adapters remotos). Só edições reais
+      // (setProject/setFile/... marcam isDirty:true) devem agendar.
+      if (!state.isDirty) return
       schedule(state.project)
     })
     const flushOnPageExit = () => flushPending()
@@ -179,6 +203,9 @@ export function createPersistenceService(
   async function save(): Promise<void> {
     const project = store.getState().project
     if (!project) return
+    // Salvar explícito é sobre o projeto carregado AGORA — está vivo: tira a
+    // marca de excluído para um id reaproveitado não ser bloqueado.
+    deletedProjects.delete(project.id)
     internals.clearTimerFor(project.id)
     emitChange(project)
     try {

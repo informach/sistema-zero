@@ -1,5 +1,5 @@
 import type { JSX } from 'react'
-import { lazy, Suspense, useEffect, useMemo } from 'react'
+import { lazy, Suspense, useEffect, useId, useMemo } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { useShallow } from 'zustand/react/shallow'
 import type { InstalledExtension } from '#core'
@@ -45,6 +45,12 @@ export function Shell({ onExit, canToggleTheme }: ShellProps): JSX.Element {
   const setShowExtensions = useUIStore((s) => s.setShowExtensions)
   const config = useStudioConfig()
   const hasBottomPanel = config.console || config.terminal || config.ai
+  // `autoSaveId` POR INSTÂNCIA: o react-resizable-panels persiste o layout no
+  // localStorage com essa chave; um id fixo fazia instâncias no mesmo origin
+  // sobrescreverem o layout uma da outra. `useId` é estável e único por
+  // instância montada.
+  const instanceId = useId()
+  const verticalAutoSaveId = `sz-shell-vertical:${instanceId}`
   const installedExtensionKey = useMemo(
     () => installedExtensions.map((ext) => `${ext.id}@${ext.version}`).join('|'),
     [installedExtensions],
@@ -63,7 +69,7 @@ export function Shell({ onExit, canToggleTheme }: ShellProps): JSX.Element {
     <div className="flex h-full flex-col bg-sz-bg text-sz-fg">
       <Topbar onExit={onExit} canToggleTheme={canToggleTheme} />
       <main className="flex min-h-0 flex-1 flex-col">
-        <PanelGroup direction="vertical" className="h-full w-full" autoSaveId="sz-shell-vertical">
+        <PanelGroup direction="vertical" className="h-full w-full" autoSaveId={verticalAutoSaveId}>
           <Panel defaultSize={70} minSize={30}>
             {/* `key` por projeto: ao trocar de projeto, remonta a subárvore do
                 modo (e, dentro dela, Monaco e Preview) — assim os valores

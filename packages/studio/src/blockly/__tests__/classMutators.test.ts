@@ -56,6 +56,29 @@ describe('mutators de classe — + adiciona herança e parâmetros', () => {
     expect(classDeclOf(ws).ctorParams).toEqual(['nome'])
   })
 
+  it('rejeita renomear um parâmetro para um nome já usado por outro (evita constructor(x, x))', () => {
+    const ws = new Blockly.Workspace()
+    const cls = ws.newBlock('sz_js_class')
+    cls.setFieldValue('Pessoa', 'NAME')
+    const ctor = ws.newBlock('sz_js_constructor') as ParamsApi
+    const members = cls.getInput('MEMBERS')
+    if (members?.connection && ctor.previousConnection) {
+      members.connection.connect(ctor.previousConnection)
+    }
+
+    ctor.addParam_()
+    ctor.addParam_()
+    ctor.setFieldValue('x', 'P0')
+    ctor.setFieldValue('y', 'P1')
+    expect(classDeclOf(ws).ctorParams).toEqual(['x', 'y'])
+
+    // Renomear P1 para 'x' colidiria com P0 → o validador rejeita e mantém 'y',
+    // evitando gerar `constructor(x, x)` (SyntaxError ao rodar).
+    ctor.setFieldValue('x', 'P1')
+    expect(ctor.getFieldValue('P1')).toBe('y')
+    expect(classDeclOf(ws).ctorParams).toEqual(['x', 'y'])
+  })
+
   it('ignora insertion markers ao montar a IR', () => {
     const ws = new Blockly.Workspace()
     const real = ws.newBlock('sz_js_class')

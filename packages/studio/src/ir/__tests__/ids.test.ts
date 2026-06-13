@@ -101,4 +101,53 @@ describe('assignStableIdsToIR', () => {
       expect(cls.methods[0]?.body[0]?.__id).toBe('b_js_1_methods_0_body_0')
     }
   })
+
+  it('atribui __id de fallback às regras dentro de uma @media', () => {
+    const ir: SZIR = {
+      html: [],
+      css: [
+        {
+          type: 'mediaQuery',
+          feature: 'max-width',
+          px: 600,
+          rules: [
+            { selector: '.box', declarations: { width: '100%' } },
+            { type: 'rawCSS', code: '.raw { color: red }', advanced: true },
+          ],
+        },
+      ],
+      js: [],
+      extensions: [],
+    }
+
+    const result = assignStableIdsToIR(ir, 'm')
+    const media = result.css[0]
+    expect(media?.__id).toBe('m_css_0')
+    if (media && 'type' in media && media.type === 'mediaQuery') {
+      expect(media.rules[0]?.__id).toBe('m_css_0_rules_0')
+      expect(media.rules[1]?.__id).toBe('m_css_0_rules_1')
+    }
+  })
+
+  it('preserva __id já existente em regra dentro de @media', () => {
+    const ir: SZIR = {
+      html: [],
+      css: [
+        {
+          type: 'mediaQuery',
+          feature: 'min-width',
+          px: 800,
+          rules: [{ selector: '.col', declarations: { display: 'flex' }, __id: 'css_manual' }],
+        },
+      ],
+      js: [],
+      extensions: [],
+    }
+
+    const result = assignStableIdsToIR(ir, 'm')
+    const media = result.css[0]
+    if (media && 'type' in media && media.type === 'mediaQuery') {
+      expect(media.rules[0]?.__id).toBe('css_manual')
+    }
+  })
 })

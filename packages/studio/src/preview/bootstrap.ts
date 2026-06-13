@@ -1,4 +1,5 @@
 import { isReservedProjectFileName, normalizeExtraFileName } from '#core'
+import { escapeScriptContent, escapeStyleContent } from '../generators/escape'
 import { buildInterceptorScript } from './interceptors'
 
 export interface PreviewExtraFile {
@@ -126,14 +127,6 @@ function scriptTag(code: string, attrs: Record<string, string> = {}): string {
     .map(([name, value]) => ` ${name}="${escapeAttr(value)}"`)
     .join('')
   return `<script${attrText}>${escapeScriptContent(code)}</script>`
-}
-
-function escapeScriptContent(code: string): string {
-  return code.replace(/<\/script/gi, '<\\/script')
-}
-
-function escapeStyleContent(css: string): string {
-  return css.replace(/<\/style/gi, '<\\/style')
 }
 
 function base64Encode(s: string): string {

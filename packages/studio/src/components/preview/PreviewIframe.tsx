@@ -171,8 +171,17 @@ export function PreviewIframe(): JSX.Element {
 
   useEffect(() => {
     const handler = (ev: MessageEvent) => {
+      // Autenticação da mensagem: `ev.source === contentWindow` é a verificação
+      // pretendida e SUFICIENTE — a identidade do `source` (referência ao Window
+      // do nosso próprio iframe) é estritamente mais forte que `ev.origin`.
+      // O iframe é sandbox SEM `allow-same-origin`, então sua origem é "null" e
+      // ele não pode forjar essa referência. `allow-same-origin` NUNCA pode ser
+      // adicionado ao sandbox (daria ao iframe a nossa origem). A checagem de
+      // origem abaixo é só defesa em profundidade — "null" do sandbox, ou a
+      // própria origem caso o navegador a reporte.
       const source = iframeRef.current?.contentWindow
       if (!source || ev.source !== source) return
+      if (ev.origin !== 'null' && ev.origin !== window.location.origin) return
       if (!isPreviewMessage(ev.data)) return
       pushLog(ev.data)
     }

@@ -14,7 +14,10 @@ export interface ExtensionManifest {
   /** Não-oficiais nunca aparecem; este flag é apenas auto-documentação. */
   enabledByDefault: boolean
   permissions: ExtensionPermission[]
-  /** Docs em markdown. Servem também como prompt para a IA. */
+  /**
+   * Documentação em markdown para o usuário final — NÃO é o prompt da IA. O
+   * contexto da IA vive em `ExtensionDefinition.ai.promptContext`.
+   */
   docs: string
   examples: ExtensionExample[]
 }

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import type { GeneratedFiles } from '#generators'
 import { generateProjectFilesWithMap } from '#generators'
-import type { SZIR } from '#ir'
+import { deepEqualIR, type SZIR } from '#ir'
 import { extractInlineAssets } from '#parsers'
 import { type BridgeReverseParseInput, runBridgeReverseParse } from './bridgeReverseParse'
 
@@ -93,5 +93,37 @@ describe('runBridgeReverseParse', () => {
     expect(result.ir?.extensions).toEqual([{ extensionId: 'game-2d' }])
     expect(result.sourceMap).not.toBeNull()
     expect(result.diagnostics.some((diagnostic) => diagnostic.kind === 'syntaxError')).toBe(false)
+  })
+
+  it('arquivos editados produzem IR NOVO e distinto da IR atual (não pode ser dropado)', () => {
+    // Contrato do handler PERSISTENTE da Ponte: quando o aluno edita o texto, o
+    // worker devolve `kind: parsed` com um `ir` DIFERENTE do `ir` em vigor. Esse
+    // é exatamente o resultado que o handler antigo dropava quando uma edição de
+    // bloco re-rodava o efeito no meio do parse (ele nulava o onmessage). Aqui
+    // garantimos que o resultado carrega um IR aplicável e distinto.
+    const baseIr: SZIR = {
+      html: [{ type: 'element', tag: 'h1', text: 'Oi', __id: 'title' }],
+      css: [],
+      js: [],
+      extensions: [],
+    }
+    const editedFiles: GeneratedFiles = {
+      'index.html': '<h1>Oi</h1><p>Novo parágrafo</p>',
+      'style.css': '',
+      'script.js': '',
+    }
+    const result = runBridgeReverseParse(
+      inputFromFiles(editedFiles, {
+        ir: baseIr,
+        projectName: 'Projeto',
+        installedExtensionIds: [],
+      }),
+    )
+
+    expect(result.kind).toBe('parsed')
+    if (result.kind !== 'parsed') return
+    expect(result.ir).not.toBeNull()
+    // O resultado precisa ser distinto da IR vigente — senão o handler o ignora.
+    expect(deepEqualIR(result.ir, baseIr)).toBe(false)
   })
 })

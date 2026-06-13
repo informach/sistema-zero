@@ -80,8 +80,16 @@ function collectAllAttrs(el: Element): Record<string, string> | undefined {
  */
 export function parseHTML(source: string): HTMLNode[] {
   if (!source.trim()) return []
-  const doc = new DOMParser().parseFromString(source, 'text/html')
-  return parseBodyNodes(doc)
+  // A descida recursiva (mapNode↔mapChildren) não tem guarda de profundidade;
+  // um aninhamento patológico pode estourar a pilha (RangeError). Para honrar o
+  // contrato de não-crashar, degradamos para um único nó avançado preservando o
+  // HTML original verbatim ("código é sagrado").
+  try {
+    const doc = new DOMParser().parseFromString(source, 'text/html')
+    return parseBodyNodes(doc)
+  } catch {
+    return [{ type: 'rawHTML', html: source, advanced: true }]
+  }
 }
 
 /** Mapeia os filhos diretos de `<body>` em `HTMLNode[]`. */
@@ -157,7 +165,7 @@ function extractShellFromDoc(doc: Document, source: string): HTMLShell | undefin
   const htmlEl = doc.documentElement
   if (htmlEl) {
     const attrs = Array.from(htmlEl.attributes)
-      .map((attr) => ` ${attr.name}="${attr.value}"`)
+      .map((attr) => ` ${attr.name}="${escapeAttrValue(attr.value)}"`)
       .join('')
     if (attrs) shell.htmlAttrs = attrs
   }
@@ -167,6 +175,19 @@ function extractShellFromDoc(doc: Document, source: string): HTMLShell | undefin
   if (headInner) shell.head = head?.innerHTML ?? ''
 
   return Object.keys(shell).length > 0 ? shell : undefined
+}
+
+/**
+ * Escapa o valor (DECODIFICADO) de um atributo para re-serialização dentro de
+ * aspas duplas. Sem isso, uma aspa dupla embutida quebraria a fronteira do
+ * atributo e corromperia o round-trip da casca de `<html>`.
+ */
+function escapeAttrValue(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
 }
 
 /** Resultado de {@link extractInlineAssets}: HTML + casca + fontes CSS/JS resolvidas. */
@@ -224,51 +245,67 @@ export function extractInlineAssets(
     }
   }
 
-  const doc = new DOMParser().parseFromString(indexHtml, 'text/html')
+  // A descida recursiva (parseBodyNodes→mapNode↔mapChildren) não tem guarda de
+  // profundidade; um aninhamento patológico pode estourar a pilha (RangeError).
+  // Para honrar o contrato de não-crashar em TODOS os chamadores, degradamos para
+  // um resultado mínimo seguro: o HTML vira um único nó avançado verbatim e o
+  // CSS/JS recebidos são preservados como `external`.
+  try {
+    const doc = new DOMParser().parseFromString(indexHtml, 'text/html')
 
-  let cssSource = styleCss
-  let cssPlacement: AssetPlacement = 'external'
-  if (!styleCss.trim()) {
-    const styles = Array.from(doc.querySelectorAll('style')).filter(
-      (el) => (el.textContent ?? '').trim() !== '',
-    )
-    const el = styles.length === 1 ? styles[0] : undefined
-    if (el) {
-      cssSource = el.textContent ?? ''
-      cssPlacement = isInHead(el) ? 'inline-head' : 'inline-body-end'
-      el.remove()
+    let cssSource = styleCss
+    let cssPlacement: AssetPlacement = 'external'
+    if (!styleCss.trim()) {
+      const styles = Array.from(doc.querySelectorAll('style')).filter(
+        (el) => (el.textContent ?? '').trim() !== '',
+      )
+      const el = styles.length === 1 ? styles[0] : undefined
+      if (el) {
+        cssSource = el.textContent ?? ''
+        cssPlacement = isInHead(el) ? 'inline-head' : 'inline-body-end'
+        el.remove()
+      }
+    }
+
+    let jsSource = scriptJs
+    let jsPlacement: AssetPlacement = 'external'
+    let jsModule = false
+    if (!scriptJs.trim()) {
+      const scripts = Array.from(doc.querySelectorAll('script')).filter((el) => {
+        if (el.hasAttribute('src')) return false
+        const type = (el.getAttribute('type') ?? '').toLowerCase()
+        if (!INLINE_SCRIPT_TYPES.has(type)) return false
+        return (el.textContent ?? '').trim() !== ''
+      })
+      const el = scripts.length === 1 ? scripts[0] : undefined
+      if (el) {
+        jsSource = el.textContent ?? ''
+        jsPlacement = isInHead(el) ? 'inline-head' : 'inline-body-end'
+        // Preserva se era module — senão o re-emitimos como clássico (globais + onclick).
+        jsModule = (el.getAttribute('type') ?? '').toLowerCase() === 'module'
+        el.remove()
+      }
+    }
+
+    const html = parseBodyNodes(doc)
+    const baseShell = extractShellFromDoc(doc, indexHtml)
+    const shell: HTMLShell = { ...(baseShell ?? {}) }
+    if (cssPlacement !== 'external') shell.cssPlacement = cssPlacement
+    if (jsPlacement !== 'external') shell.jsPlacement = jsPlacement
+    if (jsModule) shell.jsModule = true
+    const htmlShell = Object.keys(shell).length > 0 ? shell : undefined
+
+    return { html, htmlShell, cssSource, jsSource, cssPlacement, jsPlacement }
+  } catch {
+    return {
+      html: [{ type: 'rawHTML', html: indexHtml, advanced: true }],
+      htmlShell: undefined,
+      cssSource: styleCss,
+      jsSource: scriptJs,
+      cssPlacement: 'external',
+      jsPlacement: 'external',
     }
   }
-
-  let jsSource = scriptJs
-  let jsPlacement: AssetPlacement = 'external'
-  let jsModule = false
-  if (!scriptJs.trim()) {
-    const scripts = Array.from(doc.querySelectorAll('script')).filter((el) => {
-      if (el.hasAttribute('src')) return false
-      const type = (el.getAttribute('type') ?? '').toLowerCase()
-      if (!INLINE_SCRIPT_TYPES.has(type)) return false
-      return (el.textContent ?? '').trim() !== ''
-    })
-    const el = scripts.length === 1 ? scripts[0] : undefined
-    if (el) {
-      jsSource = el.textContent ?? ''
-      jsPlacement = isInHead(el) ? 'inline-head' : 'inline-body-end'
-      // Preserva se era module — senão o re-emitimos como clássico (globais + onclick).
-      jsModule = (el.getAttribute('type') ?? '').toLowerCase() === 'module'
-      el.remove()
-    }
-  }
-
-  const html = parseBodyNodes(doc)
-  const baseShell = extractShellFromDoc(doc, indexHtml)
-  const shell: HTMLShell = { ...(baseShell ?? {}) }
-  if (cssPlacement !== 'external') shell.cssPlacement = cssPlacement
-  if (jsPlacement !== 'external') shell.jsPlacement = jsPlacement
-  if (jsModule) shell.jsModule = true
-  const htmlShell = Object.keys(shell).length > 0 ? shell : undefined
-
-  return { html, htmlShell, cssSource, jsSource, cssPlacement, jsPlacement }
 }
 
 /**

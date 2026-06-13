@@ -159,9 +159,16 @@ export async function consumeSSEStream(
   }
 
   try {
+    // EOF natural fecha o stream sozinho; o break por [DONE] NÃO — a OpenRouter
+    // emite `data: [DONE]` e mantém o body aberto, então precisamos cancelar o
+    // reader nesse caso p/ não deixar a conexão travada até o GC.
+    let reachedEof = false
     while (true) {
       const { value, done } = await readWithGuards(reader, signal, idleTimeoutMs)
-      if (done) break
+      if (done) {
+        reachedEof = true
+        break
+      }
       const chunk = decoder.decode(value, { stream: true })
       const result = parseSSEChunk(chunk, remainder)
       remainder = result.remainder
@@ -173,6 +180,11 @@ export async function consumeSSEStream(
       }
       if (result.done) break
     }
+    // Liberou o último decode incremental: flush terminal recupera bytes de uma
+    // sequência multi-byte truncada que o `{ stream: true }` ainda segurava.
+    remainder += decoder.decode()
+    // Quebramos por [DONE] (não foi EOF): cancela o reader p/ liberar a conexão.
+    if (!reachedEof) await reader.cancel().catch(() => undefined)
     // Flush remainder final
     if (remainder.trim()) {
       const result = parseSSEChunk('\n\n', remainder)

@@ -28,7 +28,11 @@ export function ConsolePanel(): JSX.Element {
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between border-b border-sz-border-soft px-3 py-1.5">
-        <span className="text-xs text-sz-fg-mute">{entries.length} mensagens</span>
+        <span className="text-xs text-sz-fg-mute">
+          {t(entries.length === 1 ? 'console.message' : 'console.messages', {
+            count: entries.length,
+          })}
+        </span>
         <Button variant="ghost" size="sm" onClick={clear}>
           {t('console.clear')}
         </Button>

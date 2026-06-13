@@ -1,4 +1,5 @@
 import type { HTMLNode, HTMLShell } from '#ir'
+import { escapeScriptContent, escapeStyleContent } from './escape'
 import { countLines, SourceMapBuilder } from './sourceMap'
 
 export interface GenerateHTMLOptions {
@@ -122,15 +123,23 @@ function buildHeadFromShell(shell: HTMLShell, headExtraText: string): string {
   return `${doctype}\n<html${htmlAttrs}>\n  <head>${headInner}</head>\n  <body>`
 }
 
-/** `<style>` inline (placement inline-head/body-end), indentado para leitura. */
+/**
+ * `<style>` inline (placement inline-head/body-end), indentado para leitura.
+ * Neutraliza `</style` literal no CSS — senão o elemento fecharia cedo e o
+ * documento persistido ficaria corrompido.
+ */
 function inlineStyle(css: string): string {
-  return `    <style>\n${indent(css.trimEnd(), 6)}\n    </style>`
+  return `    <style>\n${indent(escapeStyleContent(css.trimEnd()), 6)}\n    </style>`
 }
 
-/** `<script>` inline. Clássico por padrão (globais + `onclick`); module só quando pedido. */
+/**
+ * `<script>` inline. Clássico por padrão (globais + `onclick`); module só quando
+ * pedido. Neutraliza `</script` literal no JS (mesma proteção que o preview já
+ * aplica) — senão o `</script>` fecharia o elemento cedo, truncando o JS.
+ */
 function inlineScript(js: string, module: boolean): string {
   const attr = module ? ' type="module"' : ''
-  return `    <script${attr}>\n${indent(js.trimEnd(), 6)}\n    </script>`
+  return `    <script${attr}>\n${indent(escapeScriptContent(js.trimEnd()), 6)}\n    </script>`
 }
 
 export function renderNodes(nodes: HTMLNode[], indentSpaces = 0): string {

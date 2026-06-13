@@ -10,15 +10,29 @@ import { beforeEach, describe, expect, it, mock } from 'bun:test'
 // global, o PRIMEIRO arquivo a mockar define o shape p/ a suíte toda — no Linux
 // (ordem de arquivos ≠ Windows) um mock estreito quebrava o linker do CI com
 // "Export named 'getMany' not found".
+//
+// update() modela a transação atômica do idb-keyval real: read-modify-write
+// SERIALIZADO por chave (cada chamada espera a anterior na cauda da promise),
+// para o teste de setters concorrentes provar que nenhum patch se perde.
+const memory = new Map<unknown, unknown>()
+let updateChain: Promise<void> = Promise.resolve()
 const idb = {
   createStore: mock(() => ({ name: 'test-store' })),
   del: mock(async () => undefined),
   delMany: mock(async () => undefined),
-  get: mock(async (): Promise<unknown> => undefined),
+  get: mock(async (key: unknown): Promise<unknown> => memory.get(key)),
   getMany: mock(async (): Promise<unknown[]> => []),
   keys: mock(async (): Promise<unknown[]> => []),
-  set: mock(async () => undefined),
+  set: mock(async (key: unknown, value: unknown) => {
+    memory.set(key, value)
+  }),
   setMany: mock(async () => undefined),
+  update: mock((key: unknown, updater: (old: unknown) => unknown): Promise<void> => {
+    updateChain = updateChain.then(() => {
+      memory.set(key, updater(memory.get(key)))
+    })
+    return updateChain
+  }),
 }
 
 mock.module('idb-keyval', () => ({
@@ -30,6 +44,7 @@ mock.module('idb-keyval', () => ({
   keys: idb.keys,
   set: idb.set,
   setMany: idb.setMany,
+  update: idb.update,
 }))
 
 const {
@@ -57,12 +72,14 @@ describe('useSettingsStore persistence', () => {
     idb.createStore.mockClear()
     idb.get.mockClear()
     idb.set.mockClear()
+    idb.update.mockClear()
+    memory.clear()
+    updateChain = Promise.resolve()
     useSettingsStore.setState({
       aiApiKey: '',
       aiApiKeyStorage: 'session',
       aiModel: DEFAULT_AI_MODEL,
       theme: 'dark',
-      fontSize: 16,
       codeFontSize: CODE_FONT_SIZE_DEFAULT,
       loaded: false,
     })
@@ -74,7 +91,6 @@ describe('useSettingsStore persistence', () => {
       aiApiKeyStorage: 'disk',
       aiModel: 'provider/model-inexistente',
       theme: 'sepia',
-      fontSize: 999,
       codeFontSize: -10,
     })
 
@@ -85,7 +101,6 @@ describe('useSettingsStore persistence', () => {
     expect(state.aiApiKeyStorage).toBe('session')
     expect(state.aiModel).toBe(DEFAULT_AI_MODEL)
     expect(state.theme).toBe('dark')
-    expect(state.fontSize).toBe(22)
     expect(state.codeFontSize).toBe(CODE_FONT_SIZE_MIN)
     expect(state.loaded).toBe(true)
   })
@@ -104,15 +119,12 @@ describe('useSettingsStore persistence', () => {
 
     expect(useSettingsStore.getState().aiApiKey).toBe('sk-session')
     expect(useSettingsStore.getState().aiApiKeyStorage).toBe('session')
-    expect(idb.set).toHaveBeenCalledWith(
-      'sz:settings',
-      { aiApiKeyStorage: 'session' },
-      expect.anything(),
-    )
+    expect(idb.update).toHaveBeenCalledWith('sz:settings', expect.any(Function), expect.anything())
+    expect(memory.get('sz:settings')).toEqual({ aiApiKeyStorage: 'session' })
   })
 
   it('remove a chave persistida quando o usuário limpa a configuração', async () => {
-    idb.get.mockResolvedValueOnce({
+    memory.set('sz:settings', {
       aiApiKey: 'sk-or-v1-old',
       aiApiKeyStorage: 'persistent',
     })
@@ -120,10 +132,24 @@ describe('useSettingsStore persistence', () => {
     await useSettingsStore.getState().clearAIApiKey()
 
     expect(useSettingsStore.getState().aiApiKey).toBe('')
-    expect(idb.set).toHaveBeenCalledWith(
-      'sz:settings',
-      { aiApiKeyStorage: 'persistent' },
-      expect.anything(),
-    )
+    expect(memory.get('sz:settings')).toEqual({ aiApiKeyStorage: 'persistent' })
+  })
+
+  it('persiste os dois patches quando setters concorrentes se sobrepõem', async () => {
+    // get+set separado fazia ambos lerem o mesmo estado vazio e o último
+    // gravava por cima; o update() atômico enfileira e mescla os dois.
+    await Promise.all([
+      useSettingsStore.getState().setTheme('light'),
+      useSettingsStore.getState().setAIModel('anthropic/claude-haiku-4.5'),
+    ])
+
+    const persisted = memory.get('sz:settings')
+    expect(persisted).toMatchObject({
+      theme: 'light',
+      aiModel: 'anthropic/claude-haiku-4.5',
+    })
+    // Estado em memória continua imediato para os dois.
+    expect(useSettingsStore.getState().theme).toBe('light')
+    expect(useSettingsStore.getState().aiModel).toBe('anthropic/claude-haiku-4.5')
   })
 })

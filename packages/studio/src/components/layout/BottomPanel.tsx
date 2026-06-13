@@ -1,4 +1,4 @@
-import type { JSX } from 'react'
+import type { JSX, ReactNode } from 'react'
 import { lazy, Suspense, useEffect } from 'react'
 import { t } from '#core'
 import { ErrorBoundary } from '#ui'
@@ -41,15 +41,20 @@ export function BottomPanel(): JSX.Element {
     if (!tabs.some(([k]) => k === tab)) setTab(tabs[0]?.[0] ?? 'console')
   }, [tab, tabs, setTab])
 
+  const showTerminal = mode === 'code' && config.terminal
+  const showAI = mode === 'code' && config.ai
+
   return (
     <div className="flex h-full min-h-0 flex-col bg-sz-panel">
-      <div className="flex border-b border-sz-border">
+      <div role="tablist" className="flex border-b border-sz-border">
         {tabs.map(([k, labelKey]) => {
           const active = tab === k
           return (
             <button
               key={k}
               type="button"
+              role="tab"
+              aria-selected={active}
               onClick={() => setTab(k)}
               className={[
                 'px-3 py-2 text-xs font-medium transition-colors',
@@ -64,44 +69,71 @@ export function BottomPanel(): JSX.Element {
         })}
       </div>
       <div className="min-h-0 flex-1 overflow-hidden">
-        {tab === 'console' && config.console && <ConsolePanel />}
-        {tab === 'terminal' && mode === 'code' && config.terminal && (
-          <ErrorBoundary
-            label="terminal"
-            resetKeys={[tab]}
-            fallback={(p) => <SectionErrorFallback {...p} title="O terminal falhou ao carregar" />}
-          >
-            <Suspense
-              fallback={
-                <div className="flex h-full items-center justify-center bg-sz-panel text-xs text-sz-fg-soft">
-                  Carregando terminal…
-                </div>
-              }
+        {config.console && (
+          <TabPane active={tab === 'console'}>
+            <ErrorBoundary
+              label="console"
+              fallback={(p) => <SectionErrorFallback {...p} title="O console falhou ao carregar" />}
             >
-              <Terminal />
-            </Suspense>
-          </ErrorBoundary>
+              <ConsolePanel />
+            </ErrorBoundary>
+          </TabPane>
         )}
-        {tab === 'ai' && mode === 'code' && config.ai && (
-          <ErrorBoundary
-            label="ia"
-            resetKeys={[tab]}
-            fallback={(p) => (
-              <SectionErrorFallback {...p} title="O painel de IA falhou ao carregar" />
-            )}
-          >
-            <Suspense
-              fallback={
-                <div className="flex h-full items-center justify-center bg-sz-panel text-xs text-sz-fg-soft">
-                  Carregando IA…
-                </div>
-              }
+        {/* Terminal e IA ficam MONTADOS enquanto disponíveis no modo Código e só
+            alternam visibilidade — desmontar a cada troca de aba mataria o jsh
+            e o buffer do xterm (scrollback + processo em execução perdidos). */}
+        {showTerminal && (
+          <TabPane active={tab === 'terminal'}>
+            <ErrorBoundary
+              label="terminal"
+              resetKeys={[tab]}
+              fallback={(p) => (
+                <SectionErrorFallback {...p} title="O terminal falhou ao carregar" />
+              )}
             >
-              <AIPanel />
-            </Suspense>
-          </ErrorBoundary>
+              <Suspense
+                fallback={
+                  <div className="flex h-full items-center justify-center bg-sz-panel text-xs text-sz-fg-soft">
+                    Carregando terminal…
+                  </div>
+                }
+              >
+                <Terminal />
+              </Suspense>
+            </ErrorBoundary>
+          </TabPane>
+        )}
+        {showAI && (
+          <TabPane active={tab === 'ai'}>
+            <ErrorBoundary
+              label="ia"
+              resetKeys={[tab]}
+              fallback={(p) => (
+                <SectionErrorFallback {...p} title="O painel de IA falhou ao carregar" />
+              )}
+            >
+              <Suspense
+                fallback={
+                  <div className="flex h-full items-center justify-center bg-sz-panel text-xs text-sz-fg-soft">
+                    Carregando IA…
+                  </div>
+                }
+              >
+                <AIPanel />
+              </Suspense>
+            </ErrorBoundary>
+          </TabPane>
         )}
       </div>
     </div>
   )
+}
+
+/**
+ * Container de aba: mantém o filho montado e só alterna a visibilidade via
+ * `hidden`. Preserva o estado do Terminal (shell do WebContainer + scrollback)
+ * e da IA ao trocar de aba.
+ */
+function TabPane({ active, children }: { active: boolean; children: ReactNode }): JSX.Element {
+  return <div className={active ? 'h-full' : 'hidden'}>{children}</div>
 }
