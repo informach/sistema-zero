@@ -21,6 +21,11 @@ const isDev = process.env.NODE_ENV !== 'production'
  *    de 100MB do Cloudflare Free (que fica na frente do admin) cortaria o upload.
  *  - `img-src https:` p/ as capas (R2 público + URL externa colada na autoria).
  *  - `frame-src player.vimeo.com` p/ o preview de vídeo no editor.
+ *  - `static.cloudflareinsights.com` (script) + `cloudflareinsights.com` (connect): o
+ *    admin fica atrás do Cloudflare (plano Free), que INJETA o beacon de Browser
+ *    Insights (`beacon.min.js`) no HTML e o reporta em `cloudflareinsights.com/cdn-cgi/rum`
+ *    — sem o allowlist a CSP bloqueia o script (ruído no console). Alternativa: desligar
+ *    a injeção no dashboard do Cloudflare (Web Analytics) e remover estas duas entradas.
  */
 const csp = [
   "default-src 'self'",
@@ -32,8 +37,8 @@ const csp = [
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
   "style-src 'self' 'unsafe-inline'",
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''}`,
-  "connect-src 'self' https://*.vimeo.com https://*.cloud.vimeo.com https://*.r2.cloudflarestorage.com",
+  `script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com${isDev ? " 'unsafe-eval'" : ''}`,
+  "connect-src 'self' https://*.vimeo.com https://*.cloud.vimeo.com https://*.r2.cloudflarestorage.com https://cloudflareinsights.com",
   "worker-src 'self' blob:",
   ...(isDev ? [] : ['upgrade-insecure-requests']),
 ].join('; ')
