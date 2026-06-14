@@ -64,15 +64,20 @@ projeto que instalar a extensão.
       sem uso real = remover. Permission usada mas não declarada = bug de
       segurança (o aluno não vê o aviso correto no painel de extensões).
 
-> **As permissions são ENFORÇADAS, não só declarativas.** O `permissionGuard`
+> **Só a REDE é enforçada em runtime; o resto é declarativo.** O `permissionGuard`
 > (`src/preview/permissionGuard.ts`, injetado no `<head>` do preview) neutraliza
-> `fetch`/XHR/WebSocket/`sendBeacon`, storage/cookie e `AudioContext` quando a
-> permission correspondente NÃO foi concedida. Consequência contra-intuitiva:
-> declarar `network` **destrava** o `fetch` do aluno (o guard deixa de envolvê-lo).
-> Por isso uma extensão que só CARREGA uma lib via CDN fixado (ver item 7) **não**
-> declara `network` — o carregamento da lib é `script-src`/importmap, não a rede
-> do aluno (`connect-src`). A `game-3d` declara apenas `['canvas']` mesmo
-> importando o Three.js de um CDN.
+> APENAS as APIs de rede — `fetch`/XHR/`WebSocket`/`EventSource`/`sendBeacon` —
+> quando a rede não foi concedida. As demais capacidades (`canvas`, `keyboard`,
+> `mouse`, `audio`, `storage`) são uma BASELINE sempre liberada ao aluno: **NÃO há
+> gate de runtime** para `AudioContext`, `localStorage`/`IndexedDB` ou cookie.
+> Essas permissions são DECLARATIVAS — alimentam o aviso do painel de extensões e
+> a revisão de PR (itens 1 e 3 acima), não um bloqueio efetivo. Consequência
+> contra-intuitiva: declarar `network` **destrava** o `fetch` do aluno (o guard
+> deixa de envolvê-lo); o professor ainda restringe por origem via
+> `fetchAllowedOrigins`. Por isso uma extensão que só CARREGA uma lib via CDN
+> fixado (ver item 7) **não** declara `network` — o carregamento da lib é
+> `script-src`/importmap, não a rede do aluno (`connect-src`). A `game-3d` declara
+> apenas `['canvas']` mesmo importando o Three.js de um CDN.
 
 ### 7. Entrega de libs ESM via importmap (`esmImports`)
 

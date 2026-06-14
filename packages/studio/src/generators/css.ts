@@ -161,9 +161,71 @@ function renderMediaQuery(entry: MediaQueryCSS, startLine: number, map: SourceMa
   return rendered
 }
 
+/**
+ * Defesa em profundidade contra injeção de CSS (o esquema Zod é a correção
+ * durável; isto é o cinto-e-suspensório do gerador). Um seletor/nome com `{`
+ * ou `}` poderia fechar a regra atual e abrir outra (`}`+nova regra → exfil via
+ * `background:url(...)`). Remove as chaves para que o texto nunca quebre a
+ * estrutura `selector { … }`.
+ */
+function stripBraces(text: string): string {
+  return text.replace(/[{}]/g, '')
+}
+
+/**
+ * Uma DECLARAÇÃO cujo valor escapa da estrutura `selector { … }` é descartada.
+ * `{`/`}` e `;` rompem a regra (ex.: `red } body { background:url(...) }` ou
+ * `red; background:url(...)`) — mas só quando estão FORA de aspas, comentários e
+ * parênteses. DENTRO de uma string (`content:"a{b}c"`, `content:"a;b"`), de um
+ * comentário (`/* a;b *​/`) ou de `url(data:…;base64,…)` esses caracteres fazem
+ * parte do valor e são legítimos. Reusa a mesma máquina de estados de
+ * aspas/comentários do {@link findMatchingBrace}/{@link scanDeclarationSegments}
+ * do parser, então o que o parser separou em profundidade 0 nunca é rejeitado
+ * por engano — e valores de IR importada/IA com chave/`;` "soltos" caem aqui.
+ */
+function isSafeDeclarationValue(value: string): boolean {
+  let paren = 0
+  let quote: '"' | "'" | null = null
+  let inComment = false
+  for (let i = 0; i < value.length; i += 1) {
+    const ch = value[i]
+    const next = value[i + 1]
+    if (inComment) {
+      if (ch === '*' && next === '/') {
+        inComment = false
+        i += 1
+      }
+      continue
+    }
+    if (quote) {
+      if (ch === '\\') {
+        i += 1
+        continue
+      }
+      if (ch === quote) quote = null
+      continue
+    }
+    if (ch === '/' && next === '*') {
+      inComment = true
+      i += 1
+      continue
+    }
+    if (ch === '"' || ch === "'") quote = ch
+    else if (ch === '(') paren += 1
+    else if (ch === ')') {
+      if (paren > 0) paren -= 1
+    } else if (ch === '{' || ch === '}') return false
+    else if (ch === ';' && paren === 0) return false
+  }
+  return true
+}
+
 function renderRule(selector: string, declarations: GroupedDeclaration[]): string {
-  const decls = declarations.map(({ key, value }) => `  ${key}: ${value};`).join('\n')
-  return `${selector} {\n${decls}\n}`
+  const decls = declarations
+    .filter(({ value }) => isSafeDeclarationValue(value))
+    .map(({ key, value }) => `  ${stripBraces(key)}: ${value};`)
+    .join('\n')
+  return `${stripBraces(selector)} {\n${decls}\n}`
 }
 
 /** Renderiza `@keyframes nome { at { decls } … }` (2 níveis de indentação). */
@@ -171,12 +233,13 @@ function renderKeyframes(entry: KeyframesCSS): string {
   const steps = entry.steps
     .map((step) => {
       const decls = Object.entries(step.declarations)
-        .map(([k, v]) => `    ${k}: ${v};`)
+        .filter(([, v]) => isSafeDeclarationValue(v))
+        .map(([k, v]) => `    ${stripBraces(k)}: ${v};`)
         .join('\n')
-      return `  ${step.at} {\n${decls}\n  }`
+      return `  ${stripBraces(step.at)} {\n${decls}\n  }`
     })
     .join('\n')
-  return `@keyframes ${entry.name} {\n${steps}\n}`
+  return `@keyframes ${stripBraces(entry.name)} {\n${steps}\n}`
 }
 
 function isRawCSS(entry: CSSEntry): entry is Extract<CSSEntry, { type: 'rawCSS' }> {

@@ -17,6 +17,11 @@ const idb = {
   keys: mock(async (): Promise<unknown[]> => []),
   set: mock(async () => undefined),
   setMany: mock(async () => undefined),
+  // `update` é usado por settingsStore.ts. O registry de module mocks é GLOBAL na
+  // suíte (não isolado por arquivo), então este export precisa existir aqui senão
+  // settingsStore.ts quebra ("Export named 'update' not found") quando carregado
+  // no mesmo processo de teste.
+  update: mock(async () => undefined),
 }
 
 mock.module('idb-keyval', () => ({
@@ -28,9 +33,10 @@ mock.module('idb-keyval', () => ({
   keys: idb.keys,
   set: idb.set,
   setMany: idb.setMany,
+  update: idb.update,
 }))
 
-const { listAllProjects, persistProject } = await import('./persistence')
+const { listAllProjects, persistProject, renameProjectMeta } = await import('./persistence')
 const { PROJECT_FILE_LIMITS, useProjectStore } = await import('./projectStore')
 const { cancelPendingAutosavesFor, createPersistenceService, setAutosaveDelayForTests } =
   await import('../persistence/service')
@@ -260,6 +266,11 @@ describe('PersistenceService', () => {
 
     useProjectStore.getState().setProject(createEmptyProject('project-6', 'Projeto 6'))
     const savePromise = service.save()
+    // O adapter.save agora corre DENTRO do mutex por id (#12), ou seja, numa
+    // microtask — esperamos um tick para a task encadeada chamar o setMany e
+    // capturar `resolvePersist` ANTES de tentarmos resolvê-lo. Sem isso ele seria
+    // undefined aqui e o save ficaria pendurado (promise nunca settla).
+    await Bun.sleep(0)
     useProjectStore.getState().setFile('script.js', 'console.log("nova edição");\n')
 
     resolvePersist?.()
@@ -291,15 +302,20 @@ describe('PersistenceService', () => {
     expect(resolvePersist).toBeDefined()
 
     // Delete fora do ciclo do serviço marca o id como excluído (mesma chamada
-    // que `deleteProject` faz via state/persistence).
+    // que `deleteProject` faz via state/persistence). Além de cercar o id, o
+    // fan-out agora DESCARREGA o projeto desta instância (fecha a janela de
+    // ressurreição além da janela de graça): project vira null, isDirty false.
     cancelPendingAutosavesFor('project-del')
+    expect(useProjectStore.getState().project).toBeNull()
 
-    // O save em voo resolve: o projeto SEGUE no store (=== project ainda casa),
-    // mas a marca de excluído tem de impedir o markSaved.
+    // O save em voo resolve: o projeto já NÃO está mais carregado (=== project
+    // não casa) E a cerca está ativa, então não há markSaved nem re-persistência.
     resolvePersist?.()
     await Bun.sleep(0)
 
-    expect(useProjectStore.getState().isDirty).toBe(true)
+    // Permanece descarregado — o save em voo não ressuscitou o projeto apagado.
+    expect(useProjectStore.getState().project).toBeNull()
+    expect(useProjectStore.getState().isDirty).toBe(false)
 
     detach()
   })
@@ -413,6 +429,55 @@ describe('importProjectFromJSON', () => {
     expect(imported.blocksState).toBeNull()
   })
 
+  it('preserva kind/tree/proMeta de um projeto profissional no export→import', async () => {
+    // Regressão: importProjectFromJSON dropava kind/tree/proMeta, rebaixando todo
+    // projeto pro exportado para classic vazio. Agora reconstrói via os mesmos
+    // sanitizers do load (sanitizeProTree/sanitizeProMeta).
+    const imported = await useProjectStore.getState().importProjectFromJSON({
+      name: 'Pro exportado',
+      kind: 'pro',
+      mode: 'blocks', // ignorado: pro força 'code'
+      tree: {
+        'package.json': { kind: 'file', content: '{}' },
+        src: { kind: 'dir' },
+        'src/main.ts': { kind: 'file', content: 'export {}' },
+      },
+      proMeta: { devScript: 'dev', templateId: 'react-ts' },
+      files: {
+        'index.html': '<h1>ok</h1>',
+        'style.css': '',
+        'script.js': '',
+      },
+    })
+
+    expect(imported.kind).toBe('pro')
+    expect(imported.mode).toBe('code')
+    expect(imported.proMeta?.templateId).toBe('react-ts')
+    expect(imported.tree?.['src/main.ts']?.kind).toBe('file')
+    // O registro persistido (meta) carrega kind/proMeta.
+    const lastArgs = idb.setMany.mock.calls.at(-1) as unknown as unknown[]
+    const records = (lastArgs?.[0] ?? []) as [string, Record<string, unknown>][]
+    const meta = records.find(([k]) => k.startsWith('sz:project-meta:'))?.[1]
+    expect(meta?.kind).toBe('pro')
+  })
+
+  it('rebaixa para classic um pro importado com tree inválida (node_modules)', async () => {
+    const imported = await useProjectStore.getState().importProjectFromJSON({
+      name: 'Pro quebrado',
+      kind: 'pro',
+      tree: { 'node_modules/evil.js': { kind: 'file', content: 'x' } },
+      proMeta: { devScript: 'dev', templateId: 'react-ts' },
+      files: {
+        'index.html': '<h1>ok</h1>',
+        'style.css': '',
+        'script.js': '',
+      },
+    })
+
+    expect(imported.kind).toBeUndefined()
+    expect(imported.tree).toBeUndefined()
+  })
+
   it('rejeita blocksState importado com blocos demais antes de persistir', async () => {
     const blocks = Array.from({ length: 5_001 }, (_, index) => ({
       type: 'sz_js_console_log_text',
@@ -433,6 +498,76 @@ describe('importProjectFromJSON', () => {
     ).rejects.toThrow('blocksState excede o tamanho ou a complexidade máxima')
 
     expect(idb.setMany).not.toHaveBeenCalled()
+  })
+})
+
+describe('renameProjectMeta — serializado contra persistProject (mesmo id)', () => {
+  beforeEach(() => {
+    idb.get.mockClear()
+    idb.set.mockClear()
+    idb.setMany.mockClear()
+  })
+
+  it('o get-then-set do rename NÃO intercala com um persistProject em voo do mesmo id', async () => {
+    // persistProject usa setMany; deixamos a 1ª chamada PENDENTE para manter a
+    // escrita em voo. O renameProjectMeta do MESMO id deve ficar ENFILEIRADO na
+    // cadeia de escrita por id — sem chamar `get` até o persist resolver.
+    let resolvePersist: (() => void) | undefined
+    idb.setMany.mockImplementationOnce(
+      () =>
+        new Promise<undefined>((resolve) => {
+          resolvePersist = () => resolve(undefined)
+        }),
+    )
+
+    const persisting = persistProject({
+      ...createEmptyProject('rename-race', 'v1'),
+    })
+    await Bun.sleep(0)
+    // O persist está em voo (setMany pendente).
+    expect(idb.setMany).toHaveBeenCalledTimes(1)
+
+    // Dispara o rename: encadeado atrás do persist, ainda não leu o meta.
+    const renaming = renameProjectMeta('rename-race', 'v2')
+    await Bun.sleep(0)
+    expect(idb.get).not.toHaveBeenCalled()
+    expect(idb.set).not.toHaveBeenCalled()
+
+    // Libera o persist → só então o rename roda seu get-then-set.
+    idb.get.mockResolvedValueOnce({ id: 'rename-race', name: 'v1' })
+    resolvePersist?.()
+    await persisting
+    await renaming
+
+    expect(idb.get).toHaveBeenCalledTimes(1)
+    expect(idb.set).toHaveBeenCalledTimes(1)
+    // O set grava o nome novo por cima do meta lido DEPOIS do persist (não antes).
+    const setArgs = idb.set.mock.calls.at(-1) as unknown as unknown[]
+    expect((setArgs?.[1] as { name?: string })?.name).toBe('v2')
+  })
+
+  it('renames concorrentes do mesmo id serializam (último vence, sem perder leitura)', async () => {
+    // Dois renames em sequência imediata: cada um lê o meta corrente e grava.
+    // Sem serialização, ambos leriam o MESMO meta e o 2º get poderia rodar antes
+    // do 1º set. Com a cadeia, a ordem é get1→set1→get2→set2.
+    const order: string[] = []
+    idb.get.mockImplementation(async () => {
+      order.push('get')
+      return { id: 'rename-seq', name: 'base' }
+    })
+    idb.set.mockImplementation(async () => {
+      order.push('set')
+      return undefined
+    })
+
+    await Promise.all([renameProjectMeta('rename-seq', 'a'), renameProjectMeta('rename-seq', 'b')])
+
+    expect(order).toEqual(['get', 'set', 'get', 'set'])
+
+    idb.get.mockReset()
+    idb.set.mockReset()
+    idb.get.mockImplementation(async (): Promise<unknown> => undefined)
+    idb.set.mockImplementation(async () => undefined)
   })
 })
 

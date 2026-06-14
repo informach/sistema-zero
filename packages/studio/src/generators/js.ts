@@ -744,11 +744,17 @@ function compileStatementCode(
       const delayLine = base + 1 + countLines(body)
       return `${pad}setInterval(() => {\n${body}\n${pad}}, ${compileExpr(stmt.delay, 0, identifiers, recAt(delayLine))});`
     }
-    case 'rawJS':
-      return stmt.code
-        .split('\n')
-        .map((l) => (l.length ? pad + l : l))
-        .join('\n')
+    case 'rawJS': {
+      // Indenta APENAS a 1ª linha física (e só se ela não for vazia). As linhas
+      // seguintes ficam verbatim — re-indentar todas inseria o pad DENTRO de
+      // template/strings multilinha, corrompendo o conteúdo. No nível raiz (pad
+      // vazio) o texto sai byte-a-byte idêntico ao original.
+      if (!pad) return stmt.code
+      const nl = stmt.code.indexOf('\n')
+      const firstLine = nl === -1 ? stmt.code : stmt.code.slice(0, nl)
+      if (!firstLine.length) return stmt.code
+      return pad + stmt.code
+    }
   }
 }
 

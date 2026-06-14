@@ -294,6 +294,7 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
   // carga (`FINISHED_LOADING`), zera o guard e ressincroniza o snapshot com o
   // estado REAL salvo — assim normalizações do Blockly não regeneram nem
   // sobrescrevem o código (bug de perda de código ao entrar na Ponte).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: o listener captura estado via refs de propósito (não re-subscrever a cada edição)
   useEffect(() => {
     if (!workspace) return
     const listener = (event: Blockly.Events.Abstract) => {
@@ -455,6 +456,7 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
 
   // Restaura blocksState quando trocar de projeto ou quando a Ponte gerar
   // blocos a partir do código.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: restaura só quando workspace/blocksState mudam; demais leituras via ref são intencionais
   useEffect(() => {
     if (!workspace) return
     if (!blocksState) {

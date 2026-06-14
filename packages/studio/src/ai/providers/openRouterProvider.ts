@@ -63,12 +63,49 @@ export interface OpenRouterProviderOptions {
   appTitle?: string
   /** Limite padrão de saída para evitar respostas longas demais no painel. */
   defaultMaxTokens?: number
+  /**
+   * Relógio de parede (ms) para o handshake/headers e para o `response.json()`
+   * do caminho não-streaming. Default {@link CONNECT_TIMEOUT_MS}. Exposto p/
+   * permitir um valor curto nos testes (handshake travado sem esperar 30s).
+   */
+  connectTimeoutMs?: number
 }
 
 const DEFAULT_ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions'
 const DEFAULT_MAX_TOKENS = 900
+/**
+ * Substituto exibível quando o upstream conclui COM SUCESSO mas devolve texto
+ * vazio (stream sem deltas / `message.content` ausente). Sem isso o painel
+ * renderizava uma bolha em branco. O AIPanel também tem sua própria salvaguarda
+ * (o stream alimenta a bolha por tokens, não pelo retorno) — defesa em camadas.
+ */
+export const AI_EMPTY_RESPONSE_FALLBACK = 'A IA não retornou conteúdo. Tente novamente.'
 /** Tempo máximo sem receber tokens antes de desistir do stream (ms). */
 const STREAM_IDLE_TIMEOUT_MS = 60_000
+/**
+ * Tempo máximo (relógio de parede) para o handshake/headers da request E para
+ * o `response.json()` do caminho não-streaming. O `idleTimeoutMs` do stream só
+ * começa a contar DEPOIS de `response.body`, então um handshake travado ou uma
+ * resposta que manda headers e "pendura" deixaria a promise pendente p/ sempre
+ * (painel travado em "busy" até reload). Cancela-se após os headers chegarem
+ * para NÃO matar um stream saudável e longo.
+ */
+const CONNECT_TIMEOUT_MS = 30_000
+
+function makeTimeoutError(ms: number): Error {
+  const err = new Error(`OpenRouter sem resposta após ${ms}ms (handshake/headers)`)
+  err.name = 'TimeoutError'
+  return err
+}
+
+function makeAbortError(message: string): Error {
+  if (typeof DOMException !== 'undefined') {
+    return new DOMException(message, 'AbortError')
+  }
+  const err = new Error(message)
+  err.name = 'AbortError'
+  return err
+}
 
 /**
  * Implementação `AIProvider` usando OpenRouter como gateway. Adapta o
@@ -109,19 +146,67 @@ export class OpenRouterProvider implements AIProvider {
       temperature: options.temperature ?? 0.4,
       max_tokens: options.maxTokens ?? this.opts.defaultMaxTokens ?? DEFAULT_MAX_TOKENS,
     }
-    const response = await this.fetchImpl(DEFAULT_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.opts.apiKey}`,
-        'HTTP-Referer': this.opts.referer ?? 'https://sistema-zero-studio.dev',
-        'X-OpenRouter-Title': this.opts.appTitle ?? 'Sistema Zero Studio',
-      },
-      body: JSON.stringify(body),
-      signal: options.signal,
+    // Relógio de parede do handshake: um AbortController PRÓPRIO encadeado ao
+    // `options.signal`. Abortar este controller cancela o fetch (rejeita o
+    // await abaixo) — assim um handshake travado não pendura a promise. O timer
+    // é zerado assim que os headers chegam (clearTimeout) p/ não matar stream.
+    const connectTimeoutMs = this.opts.connectTimeoutMs ?? CONNECT_TIMEOUT_MS
+    const connectController = new AbortController()
+    let connectTimer: ReturnType<typeof setTimeout> | undefined
+    // Relógio de parede do handshake como PROMISE: ao disparar (a) aborta o
+    // controller p/ cancelar a conexão real E (b) REJEITA a corrida abaixo —
+    // assim um `fetchImpl` que IGNORE o AbortSignal (mock de teste, polyfill
+    // antigo) ainda é limitado e nunca pendura a promise (painel travado em
+    // "busy"). Desarmado assim que os headers chegam.
+    const connectTimeoutPromise = new Promise<never>((_, reject) => {
+      connectTimer = setTimeout(() => {
+        connectController.abort()
+        reject(makeTimeoutError(connectTimeoutMs))
+      }, connectTimeoutMs)
     })
+    const clearConnectTimer = () => {
+      if (connectTimer !== undefined) {
+        clearTimeout(connectTimer)
+        connectTimer = undefined
+      }
+    }
+    // Propaga o abort do caller (UI) para o nosso controller. Se o caller já
+    // abortou, o controller nasce abortado.
+    const onCallerAbort = () => connectController.abort()
+    if (options.signal) {
+      if (options.signal.aborted) connectController.abort()
+      else options.signal.addEventListener('abort', onCallerAbort, { once: true })
+    }
+
+    let response: Response
+    try {
+      response = await Promise.race([
+        this.fetchImpl(DEFAULT_ENDPOINT, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${this.opts.apiKey}`,
+            'HTTP-Referer': this.opts.referer ?? 'https://sistema-zero-studio.dev',
+            'X-OpenRouter-Title': this.opts.appTitle ?? 'Sistema Zero Studio',
+          },
+          body: JSON.stringify(body),
+          signal: connectController.signal,
+        }),
+        connectTimeoutPromise,
+      ])
+    } catch (err) {
+      clearConnectTimer()
+      options.signal?.removeEventListener('abort', onCallerAbort)
+      // O timer rejeita com makeTimeoutError; o caller rejeita com AbortError —
+      // ambos sobem como `err` p/ o painel surfaçar a causa e liberar o "busy".
+      throw err
+    }
+    // Headers chegaram: desarma o relógio do handshake. Um stream longo e
+    // saudável NÃO é mais limitado por ele (o idleTimeout do stream assume).
+    clearConnectTimer()
 
     if (!response.ok) {
+      options.signal?.removeEventListener('abort', onCallerAbort)
       const text = await safeText(response)
       throw new OpenRouterError(
         `OpenRouter erro ${response.status}: ${text || response.statusText}`,
@@ -130,16 +215,53 @@ export class OpenRouterProvider implements AIProvider {
     }
 
     if (options.onToken && response.body) {
-      return consumeSSEStream(response.body, options.onToken, {
+      options.signal?.removeEventListener('abort', onCallerAbort)
+      const streamed = await consumeSSEStream(response.body, options.onToken, {
         signal: options.signal,
         idleTimeoutMs: STREAM_IDLE_TIMEOUT_MS,
       })
+      return streamed.trim() ? streamed : AI_EMPTY_RESPONSE_FALLBACK
     }
 
-    const data = (await response.json()) as {
-      choices?: Array<{ message?: { content?: string } }>
+    // Caminho não-streaming (explicar/sugerir/desafio): `response.json()` pode
+    // pendurar se o servidor mandou headers e parou de enviar o corpo. Corremos
+    // a leitura contra uma rejeição explícita por timeout — a corrida garante
+    // que o await sempre acerta o `finally` (que libera o "busy" no painel),
+    // mesmo que o runtime não propague o abort a um Response já resolvido.
+    // `connectController.abort()` ainda tenta liberar a conexão subjacente.
+    let jsonTimer: ReturnType<typeof setTimeout> | undefined
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      jsonTimer = setTimeout(() => {
+        connectController.abort()
+        reject(makeTimeoutError(connectTimeoutMs))
+      }, connectTimeoutMs)
+    })
+    // Espelha o braço de abort do caminho de streaming: um abort do caller
+    // DURANTE a leitura do corpo (já passados os headers) não chegava a
+    // `response.json()` — o `connectController.signal` foi pro fetch, não pro
+    // body já resolvido. Sem este braço o await ficaria pendente até o timeout.
+    let abortListener: (() => void) | undefined
+    const abortPromise = new Promise<never>((_, reject) => {
+      const sig = options.signal
+      if (!sig) return
+      if (sig.aborted) {
+        reject(makeAbortError('Requisição de IA abortada'))
+        return
+      }
+      abortListener = () => reject(makeAbortError('Requisição de IA abortada'))
+      sig.addEventListener('abort', abortListener, { once: true })
+    })
+    try {
+      const data = (await Promise.race([response.json(), timeoutPromise, abortPromise])) as {
+        choices?: Array<{ message?: { content?: string } }>
+      }
+      const content = data.choices?.[0]?.message?.content ?? ''
+      return content.trim() ? content : AI_EMPTY_RESPONSE_FALLBACK
+    } finally {
+      if (jsonTimer !== undefined) clearTimeout(jsonTimer)
+      if (abortListener) options.signal?.removeEventListener('abort', abortListener)
+      options.signal?.removeEventListener('abort', onCallerAbort)
     }
-    return data.choices?.[0]?.message?.content ?? ''
   }
 
   // ---------- AIProvider implementation ----------

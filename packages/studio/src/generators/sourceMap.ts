@@ -1,5 +1,5 @@
 import type { CSSEntry, CSSRule } from '#ir'
-import { normalizeSelector, parseCSSWithSpans } from '#parsers'
+import { normalizeDeclKey, normalizeSelector, parseCSSWithSpans } from '#parsers'
 
 /**
  * Estrutura simples de source-map: para cada __id de nó da IR registramos
@@ -253,7 +253,10 @@ export function buildCssSourceMapFromText(
     let minLine = Number.POSITIVE_INFINITY
     let maxLine = 0
     for (const prop of Object.keys(rule.declarations)) {
-      const line = nextLine(selector, prop.toLowerCase())
+      // Mesma normalização do parser: minúscula para props padrão, caixa
+      // PRESERVADA para custom properties (`--Cor` é case-sensitive). Casa com
+      // as chaves dos spans, que agora também preservam a caixa das custom props.
+      const line = nextLine(selector, normalizeDeclKey(prop))
       if (line == null) continue
       if (line < minLine) minLine = line
       if (line > maxLine) maxLine = line

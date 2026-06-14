@@ -73,6 +73,45 @@ describe('generateJS', () => {
     expect(code).toContain('const d = Math.hypot(player.x - enemy.x, player.y - enemy.y);')
   })
 
+  it('usa IIFE na distância quando um operando tem efeito colateral (avalia uma vez)', () => {
+    // a = lista.pop(). Na forma inline, `a` saía DUAS vezes (a.x e a.y) → dois pop().
+    // A IIFE liga cada operando a um parâmetro e avalia uma única vez.
+    const code = generateJS({
+      statements: [
+        {
+          type: 'var',
+          kind: 'const',
+          name: 'd',
+          value: {
+            type: 'distance',
+            a: { type: 'memberCallExpr', object: variable('lista'), method: 'pop', args: [] },
+            b: variable('enemy'),
+          },
+        },
+      ],
+    })
+    // O efeito colateral aparece UMA única vez no código gerado.
+    expect(code.match(/lista\.pop\(\)/g)?.length).toBe(1)
+    expect(code).toContain('((a, b) => Math.hypot(a.x - b.x, a.y - b.y))(lista.pop(), enemy)')
+    expect(() => new Function(code)).not.toThrow()
+  })
+
+  it('mantém a forma inline da distância quando ambos os operandos são puros', () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'var',
+          kind: 'const',
+          name: 'd',
+          value: { type: 'distance', a: variable('player'), b: variable('enemy') },
+        },
+      ],
+    })
+    expect(code).toContain('const d = Math.hypot(player.x - enemy.x, player.y - enemy.y);')
+    expect(code).not.toContain('=>')
+    expect(() => new Function(code)).not.toThrow()
+  })
+
   it('emite operações de matemática (resto, potência, Math.*)', () => {
     const code = generateJS({
       statements: [
@@ -554,6 +593,37 @@ describe('generateJS', () => {
     expect(code).toContain('setTimeout(() => alert("hi"), 100);')
   })
 
+  it('preserva o interior de um template literal multilinha no rawJS (sem re-indentar cada linha)', () => {
+    // O conteúdo entre crases (incl. linhas em branco e indentação própria) NÃO
+    // pode ser tocado: re-indentar cada linha física inseria espaços DENTRO da
+    // string. No nível raiz (sem pad) o texto sai byte-a-byte idêntico.
+    const raw = ['const msg = `linha1', '  meio indentado', '', 'fim`;'].join('\n')
+    const code = generateJS({
+      statements: [{ type: 'rawJS', code: raw, advanced: true }],
+    })
+    expect(code).toContain(raw)
+  })
+
+  it('mantém o template literal multilinha verbatim mesmo quando o rawJS é indentado (dentro de um if)', () => {
+    // Aqui o rawJS está aninhado, então a 1ª linha recebe o pad de indentação,
+    // mas as linhas seguintes (interior do template) permanecem intocadas.
+    const raw = ['const html = `<p>', '  recuo do autor', 'fim</p>`;'].join('\n')
+    const code = generateJS({
+      statements: [
+        {
+          type: 'if',
+          cond: { type: 'binop', op: '>', left: variable('x'), right: num(0) },
+          then: [{ type: 'rawJS', code: raw, advanced: true }],
+        },
+      ],
+    })
+    // 1ª linha recebe o pad (2 espaços), abrindo a crase indentada uma vez.
+    expect(code).toContain('  const html = `<p>')
+    // As linhas internas do template ficam exatamente como o autor escreveu.
+    expect(code).toContain('\n  recuo do autor\n')
+    expect(code).toContain('\nfim</p>`;')
+  })
+
   it('emite event mouseover ligado a um elemento por id', () => {
     const code = generateJS({
       statements: [
@@ -764,6 +834,44 @@ describe('generateJS', () => {
     })
     expect(code).toContain('Math.floor(Math.random() * ((m) - (a - b) + 1)) + (a - b)')
     expect(() => new Function(code)).not.toThrow()
+  })
+
+  it('usa IIFE no random quando um limite tem efeito colateral (avalia uma vez)', () => {
+    // min = lista.pop(). Na forma inline, `min` saía DUAS vezes → dois pop().
+    // A IIFE liga cada limite a um parâmetro e avalia uma única vez.
+    const code = generateJS({
+      statements: [
+        {
+          type: 'var',
+          name: 'n',
+          value: {
+            type: 'random',
+            min: { type: 'memberCallExpr', object: variable('lista'), method: 'pop', args: [] },
+            max: num(10),
+          },
+        },
+      ],
+    })
+    // O efeito colateral aparece UMA única vez no código gerado.
+    expect(code.match(/lista\.pop\(\)/g)?.length).toBe(1)
+    expect(code).toContain(
+      '((a, b) => Math.floor(Math.random() * (b - a + 1)) + a)(lista.pop(), 10)',
+    )
+    expect(() => new Function(code)).not.toThrow()
+  })
+
+  it('mantém a forma inline do random quando ambos os limites são puros', () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'var',
+          name: 'n',
+          value: { type: 'random', min: num(1), max: variable('m') },
+        },
+      ],
+    })
+    expect(code).toContain('Math.floor(Math.random() * ((m) - (1) + 1)) + (1)')
+    expect(code).not.toContain('=>')
   })
 
   it('inclui header quando fornecido', () => {

@@ -5,7 +5,12 @@ import {
   DEFAULT_AI_MODEL,
   useSettingsStore,
 } from '../../state/settingsStore'
-import { resolveStudioConfig, StudioConfigProvider } from '../../studio/config'
+import {
+  resolveLearning,
+  resolvePreviewSecurity,
+  resolveStudioConfig,
+  StudioConfigProvider,
+} from '../../studio/config'
 import { SettingsDrawer } from './SettingsDrawer'
 
 function apiKeyInput(): HTMLInputElement {
@@ -83,10 +88,11 @@ describe('SettingsDrawer', () => {
     // Host fixa o modelo e não permite chave do aluno: sem seção de chave nem de
     // modelo, a aba de IA some. O initialSection default 'ai' não pode deixar o
     // corpo vazio — o efeito de abertura precisa clampar em 'appearance'.
-    const config = resolveStudioConfig(
-      { ai: { model: 'openrouter/auto', allowUserKey: false } },
-      undefined,
-    )
+    const config = {
+      ...resolveStudioConfig({ ai: { model: 'openrouter/auto', allowUserKey: false } }, undefined),
+      previewSecurity: resolvePreviewSecurity(),
+      learning: resolveLearning(),
+    }
 
     render(
       <StudioConfigProvider value={config}>

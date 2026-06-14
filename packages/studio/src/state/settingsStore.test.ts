@@ -135,6 +135,40 @@ describe('useSettingsStore persistence', () => {
     expect(memory.get('sz:settings')).toEqual({ aiApiKeyStorage: 'persistent' })
   })
 
+  it('é idempotente: re-load preserva a chave de sessão em memória (2ª montagem não rebaixa o provider)', async () => {
+    // 1ª carga: storage vazio → store hidratada com loaded=true.
+    await useSettingsStore.getState().load()
+    expect(useSettingsStore.getState().loaded).toBe(true)
+
+    // Usuário digita a chave no modo SESSÃO (vive só em memória, não vai pro IDB).
+    await useSettingsStore.getState().setAIApiKey('sk-session-only', { storage: 'session' })
+    expect(useSettingsStore.getState().aiApiKey).toBe('sk-session-only')
+
+    // 2ª montagem de <Studio>/<ProjectList> re-chama load(): deve sair cedo e
+    // NÃO rodar o setState destrutivo que zeraria a chave de sessão.
+    idb.get.mockClear()
+    await useSettingsStore.getState().load()
+
+    expect(useSettingsStore.getState().aiApiKey).toBe('sk-session-only')
+    expect(useSettingsStore.getState().aiApiKeyStorage).toBe('session')
+    // Saiu cedo: nem leu o IndexedDB de novo.
+    expect(idb.get).not.toHaveBeenCalled()
+  })
+
+  it('coalesce primeiras cargas concorrentes numa única leitura/hidratação', async () => {
+    memory.set('sz:settings', { aiModel: 'anthropic/claude-haiku-4.5', theme: 'light' })
+    idb.get.mockClear()
+
+    // Duas montagens simultâneas disparam load() antes de qualquer setState.
+    await Promise.all([useSettingsStore.getState().load(), useSettingsStore.getState().load()])
+
+    expect(useSettingsStore.getState().loaded).toBe(true)
+    expect(useSettingsStore.getState().aiModel).toBe('anthropic/claude-haiku-4.5')
+    expect(useSettingsStore.getState().theme).toBe('light')
+    // Coalescido: só uma leitura do IndexedDB, não duas.
+    expect(idb.get).toHaveBeenCalledTimes(1)
+  })
+
   it('persiste os dois patches quando setters concorrentes se sobrepõem', async () => {
     // get+set separado fazia ambos lerem o mesmo estado vazio e o último
     // gravava por cima; o update() atômico enfileira e mescla os dois.

@@ -335,6 +335,13 @@ function mapNode(node: Node): HTMLNode | null {
     if (!text.trim()) return null
     return { type: 'rawHTML', html: text, advanced: true }
   }
+  // Comentários HTML são preservados verbatim como "código avançado" (igual a uma
+  // tag desconhecida) — o DOM expõe só o miolo em `data`, então reconstruímos o
+  // `<!-- ... -->`. Sem isso o comentário sumiria no round-trip e, quando inline
+  // entre textos (`<p>x<!--c-->y</p>`), os trechos de texto se fundiriam ("xy").
+  if (node.nodeType === Node.COMMENT_NODE) {
+    return { type: 'rawHTML', html: `<!--${node.textContent ?? ''}-->`, advanced: true }
+  }
   if (node.nodeType !== Node.ELEMENT_NODE) return null
   const el = node as Element
   const tag = el.tagName.toLowerCase()
@@ -378,11 +385,16 @@ function mapNode(node: Node): HTMLNode | null {
     }
 
     const hasElementChild = Array.from(el.childNodes).some((n) => n.nodeType === Node.ELEMENT_NODE)
+    // Comentário inline também precisa da recursão: o ramo-folha usa só
+    // `el.textContent`, que descarta o comentário E funde os textos vizinhos
+    // (`<p>x<!--c-->y</p>` → "xy"). Detectá-lo aqui rota a tag para `mapChildren`,
+    // que preserva cada trecho de texto e o comentário (como `rawHTML`).
+    const hasCommentChild = Array.from(el.childNodes).some((n) => n.nodeType === Node.COMMENT_NODE)
     // Tag de texto com filhos-elemento (ex.: <p>© <span></span> texto</p> ou
     // <h2>Título <strong>!</strong></h2>) → decompõe em blocos aninhados: cada
     // pedaço de texto vira um nó `text` e cada elemento é mapeado recursivamente.
     // Espaços-em-branco puros são descartados.
-    if (hasElementChild && INLINE_TEXT_TAGS.has(t)) {
+    if ((hasElementChild || hasCommentChild) && INLINE_TEXT_TAGS.has(t)) {
       const node: Extract<HTMLNode, { type: 'element' }> = {
         type: 'element',
         tag: t,
@@ -392,9 +404,10 @@ function mapNode(node: Node): HTMLNode | null {
       if (attrs) node.attrs = attrs
       return node
     }
-    // Folha não-inline (a, button) com filhos-elemento → preserva VERBATIM como
-    // um único bloco avançado. Nada se perde.
-    if (hasElementChild) {
+    // Folha não-inline (a, button) com filhos-elemento OU com comentário inline →
+    // preserva VERBATIM como um único bloco avançado (o ramo-folha abaixo usaria
+    // `el.textContent`, perdendo o comentário e fundindo os textos). Nada se perde.
+    if (hasElementChild || hasCommentChild) {
       return { type: 'rawHTML', html: el.outerHTML, advanced: true }
     }
     const node: Extract<HTMLNode, { type: 'element' }> = {

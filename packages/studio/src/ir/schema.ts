@@ -395,9 +395,68 @@ export interface CSSRule {
   __id?: string
 }
 
+/**
+ * Texto de CSS que não pode carregar `{`/`}` — usado em seletor, nome de
+ * `@keyframes` e seletor de passo (`at`). Uma chave nesses campos poderia
+ * encerrar a regra atual e emendar outra (injeção: `}` + nova regra com
+ * `background:url(...)` para exfiltração). É a correção DURÁVEL: bloqueia já na
+ * importação de IR (o strip do gerador é só o cinto-e-suspensório).
+ */
+const cssNameText = () => irText().regex(/^[^{}]*$/, 'CSS não pode conter chaves { }')
+
+/**
+ * Uma chave `{`/`}` em PROFUNDIDADE 0 (fora de aspas e de comentários) rompe a
+ * estrutura `selector { … }` e é a vetor de injeção. DENTRO de uma string
+ * (`content:"a{b}c"`) ou de um comentário (`/* { *​/`) a chave faz parte do valor
+ * e é legítima. Esta máquina de estados (igual à de `generators/css.ts` e à do
+ * parser) devolve `true` quando NÃO há chave solta em profundidade 0.
+ */
+function cssValueHasNoLooseBrace(value: string): boolean {
+  let quote: '"' | "'" | null = null
+  let inComment = false
+  for (let i = 0; i < value.length; i += 1) {
+    const ch = value[i]
+    const next = value[i + 1]
+    if (inComment) {
+      if (ch === '*' && next === '/') {
+        inComment = false
+        i += 1
+      }
+      continue
+    }
+    if (quote) {
+      if (ch === '\\') {
+        i += 1
+        continue
+      }
+      if (ch === quote) quote = null
+      continue
+    }
+    if (ch === '/' && next === '*') {
+      inComment = true
+      i += 1
+      continue
+    }
+    if (ch === '"' || ch === "'") quote = ch
+    else if (ch === '{' || ch === '}') return false
+  }
+  return true
+}
+
+/**
+ * VALOR de declaração CSS: proíbe chaves `{`/`}` SOLTAS (rompem a regra) mas
+ * PERMITE chaves dentro de strings/comentários (`content:"a{b}c"`). O regex
+ * antigo `^[^{}]*$` rejeitava o valor inteiro e corrompia o round-trip. O `;` é
+ * PERMITIDO porque é legítimo dentro de `url(data:…;base64,…)` e de strings
+ * (`content:"a;b"`); o `;` em profundidade 0 (emendar declaração) é barrado no
+ * gerador, em `isSafeDeclarationValue` (generators/css.ts).
+ */
+const cssValueText = () =>
+  irText().refine(cssValueHasNoLooseBrace, 'Valor de CSS não pode conter chaves { } soltas')
+
 export const CSSRuleSchema: z.ZodType<CSSRule> = z.object({
-  selector: irText().min(1),
-  declarations: z.record(z.string(), irText()),
+  selector: cssNameText().min(1),
+  declarations: z.record(z.string(), cssValueText()),
   __declIds: z.record(z.string(), z.string()).optional(),
   ...idField,
 })
@@ -453,8 +512,13 @@ export interface KeyframesCSS {
 
 export const KeyframesCSSSchema: z.ZodType<KeyframesCSS> = z.object({
   type: z.literal('keyframes'),
-  name: irText().min(1),
-  steps: z.array(z.object({ at: irText().min(1), declarations: z.record(z.string(), irText()) })),
+  name: cssNameText().min(1),
+  steps: z.array(
+    z.object({
+      at: cssNameText().min(1),
+      declarations: z.record(z.string(), cssValueText()),
+    }),
+  ),
   ...idField,
 })
 

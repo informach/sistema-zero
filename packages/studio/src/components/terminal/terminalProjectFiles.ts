@@ -24,9 +24,27 @@ export interface TerminalProjectSnapshot {
 }
 
 /**
+ * Erro de colisão de nomes na árvore do modo profissional: o MESMO caminho é
+ * usado como arquivo E como pasta (ex.: existe `src` arquivo e `src/main.ts`).
+ * O `FileSystemTree` não pode ter os dois — falhamos alto em vez de sobrescrever
+ * um pelo outro silenciosamente (o que perderia dados do aluno sem aviso).
+ */
+export class ProTreeCollisionError extends Error {
+  constructor(public readonly path: string) {
+    super(
+      `Colisão de nomes na árvore do projeto: "${path}" é usado como arquivo e como pasta ao mesmo tempo.`,
+    )
+    this.name = 'ProTreeCollisionError'
+  }
+}
+
+/**
  * Converte a árvore path-keyed do modo profissional no `FileSystemTree`
  * aninhado do @webcontainer/api. Cria as pastas-pai antes dos filhos e ignora
  * qualquer caminho com segmento `node_modules` (defesa em profundidade).
+ *
+ * Lança `ProTreeCollisionError` quando um mesmo caminho aparece como arquivo e
+ * como pasta — antes esse caso sobrescrevia silenciosamente um nó pelo outro.
  */
 export function proTreeToFileSystemTree(tree: ProjectTree): FileSystemTree {
   const root: FileSystemTree = {}
@@ -37,19 +55,33 @@ export function proTreeToFileSystemTree(tree: ProjectTree): FileSystemTree {
     const segments = path.split('/')
     if (segments.includes('node_modules')) continue
     let cursor = root
+    let prefix = ''
     for (let i = 0; i < segments.length - 1; i++) {
       const seg = segments[i] as string
-      let entry = cursor[seg]
-      if (!entry || !('directory' in entry)) {
-        entry = { directory: {} }
-        cursor[seg] = entry
+      prefix = prefix ? `${prefix}/${seg}` : seg
+      const entry = cursor[seg]
+      if (entry && !('directory' in entry)) {
+        // Um arquivo já ocupa este segmento, mas o caminho atual exige que seja
+        // uma pasta-pai — colisão (ex.: `src` arquivo + `src/main.ts`).
+        throw new ProTreeCollisionError(prefix)
       }
-      cursor = (entry as DirectoryNode).directory
+      const dir = entry ?? { directory: {} }
+      cursor[seg] = dir
+      cursor = (dir as DirectoryNode).directory
     }
     const leaf = segments[segments.length - 1] as string
+    const existing = cursor[leaf]
     if (node.kind === 'file') {
+      if (existing && 'directory' in existing) {
+        // Já criamos uma pasta com este nome (algum filho a declarou) e agora
+        // o mesmo caminho aparece como arquivo — colisão.
+        throw new ProTreeCollisionError(path)
+      }
       cursor[leaf] = { file: { contents: node.content } }
-    } else if (!cursor[leaf]) {
+    } else if (existing && !('directory' in existing)) {
+      // O caminho é declarado como pasta, mas já há um arquivo aqui — colisão.
+      throw new ProTreeCollisionError(path)
+    } else if (!existing) {
       cursor[leaf] = { directory: {} }
     }
   }

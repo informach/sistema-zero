@@ -1,4 +1,8 @@
 import * as Blockly from 'blockly/core'
+// Importar um helper de `generators` na camada de blocos é intencional: garante
+// que o nome do parâmetro no MODELO do bloco seja idêntico ao identificador
+// emitido no código (sem dígito inicial nem palavra reservada solta).
+import { normalizeIdentifier } from '../../generators/identifier'
 import { withMutation } from './mutatorEvents'
 
 /**
@@ -49,11 +53,16 @@ function genId(): string {
 
 function sanitize(raw: unknown, fallback: string): string {
   if (typeof raw !== 'string') return fallback
-  const cleaned = raw
-    .trim()
-    .replace(/[^A-Za-z0-9_$]/g, '')
-    .slice(0, MAX_PARAM_CHARS)
-  return cleaned.length > 0 ? cleaned : fallback
+  const trimmed = raw.trim().slice(0, MAX_PARAM_CHARS)
+  if (trimmed.length === 0) return fallback
+  // `normalizeIdentifier` é a MESMA normalização do gerador de código: prefixa
+  // dígito inicial (`2x` → `_2x`) e desambigua palavra reservada (`class` →
+  // `class_`), além de colapsar caracteres ilegais. Sem isso, nomes como `2x`
+  // ou `return` entravam no modelo do bloco e só quebravam ao gerar o código.
+  const normalized = normalizeIdentifier(trimmed)
+  // `normalizeIdentifier` nunca devolve vazio, mas `_` (seu fallback p/ nome só
+  // de caracteres ilegais) não é um nome útil — cai para o fallback posicional.
+  return normalized === '_' ? fallback : normalized
 }
 
 function sanitizeParamId(raw: unknown): string {
@@ -71,16 +80,50 @@ function bodyRoot(block: ParamsBlock): Blockly.Block | null {
   return block.getInputTargetBlock(BODY_INPUT)
 }
 
-/** Atualiza os relatores `sz_val_arg` do corpo desta definição ao renomear um parâmetro. */
+/**
+ * Tipos que abrem um NOVO escopo de parâmetros: ao renomear um parâmetro desta
+ * definição NÃO podemos descer para o corpo de uma definição aninhada — lá o
+ * mesmo nome de relator (`sz_val_arg`) pode ser uma variável SOMBREADA que
+ * pertence àquela definição interna, não a esta.
+ */
+const NESTED_DEFINITION_TYPES = new Set([
+  'sz_js_function',
+  'sz_js_class_method',
+  'sz_js_constructor',
+])
+
+/**
+ * Atualiza os relatores `sz_val_arg` do corpo desta definição ao renomear um
+ * parâmetro. Caminha o corpo MANUALMENTE e PARA nas fronteiras de definição
+ * aninhada (função/método/construtor) — assim um parâmetro de mesmo nome num
+ * escopo interno (sombra) não é renomeado por engano.
+ */
 function renameReporters(block: ParamsBlock, oldName: string, newName: string): void {
   if (oldName === newName) return
   const root = bodyRoot(block)
   if (!root) return
-  for (const b of root.getDescendants(false)) {
-    if (b.type === 'sz_val_arg' && b.getFieldValue('NAME') === oldName) {
-      b.setFieldValue(newName, 'NAME')
+
+  const visit = (start: Blockly.Block | null): void => {
+    let cur: Blockly.Block | null = start
+    while (cur) {
+      // Uma definição aninhada abre um novo escopo: não descemos para o corpo
+      // dela (evita renomear uma sombra), mas seguimos a cadeia `next` irmã.
+      if (!NESTED_DEFINITION_TYPES.has(cur.type)) {
+        if (cur.type === 'sz_val_arg' && cur.getFieldValue('NAME') === oldName) {
+          cur.setFieldValue(newName, 'NAME')
+        }
+        // Desce pelos filhos de cada input (statements e value inputs). A cadeia
+        // `next` deste nível é seguida pelo laço; `inputList` nunca a inclui.
+        for (const input of cur.inputList) {
+          const target = input.connection?.targetBlock()
+          if (target) visit(target)
+        }
+      }
+      cur = cur.getNextBlock()
     }
   }
+
+  visit(root)
 }
 
 /**

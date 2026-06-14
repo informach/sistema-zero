@@ -75,7 +75,22 @@ export interface ConsumeSSEOptions {
    * `0`/undefined desativa o timeout.
    */
   idleTimeoutMs?: number
+  /**
+   * Teto (em bytes/chars) do buffer remanescente — a parte do bloco SSE ainda
+   * não terminada por `\n\n`. Se o upstream despeja um corpo longo SEM nenhum
+   * delimitador, o `remainder` cresceria sem limite e o `prev + chunk` viraria
+   * um re-split O(n²). Ao estourar, abortamos a leitura com erro. `0`/undefined
+   * cai no default {@link DEFAULT_MAX_REMAINDER_BYTES}.
+   */
+  maxRemainderBytes?: number
 }
+
+/**
+ * Teto default do buffer remanescente (~512KB). Um único evento SSE legítimo
+ * (delta de tokens) é minúsculo; centenas de KB sem `\n\n` indicam upstream
+ * defeituoso ou hostil — abortamos em vez de crescer/re-splitar sem parar.
+ */
+const DEFAULT_MAX_REMAINDER_BYTES = 512 * 1024
 
 function makeAbortError(message: string): Error {
   if (typeof DOMException !== 'undefined') {
@@ -148,6 +163,10 @@ export async function consumeSSEStream(
   options: ConsumeSSEOptions = {},
 ): Promise<string> {
   const { signal, idleTimeoutMs } = options
+  const maxRemainderBytes =
+    options.maxRemainderBytes && options.maxRemainderBytes > 0
+      ? options.maxRemainderBytes
+      : DEFAULT_MAX_REMAINDER_BYTES
   const reader = stream.getReader()
   const decoder = new TextDecoder()
   let full = ''
@@ -172,6 +191,14 @@ export async function consumeSSEStream(
       const chunk = decoder.decode(value, { stream: true })
       const result = parseSSEChunk(chunk, remainder)
       remainder = result.remainder
+      // Salvaguarda: um corpo longo sem `\n\n` faria o remainder crescer sem
+      // limite (e cada chunk re-splitaria o buffer inteiro = O(n²)). Aborta a
+      // leitura — o `catch` abaixo cancela o reader p/ liberar a conexão.
+      if (remainder.length > maxRemainderBytes) {
+        throw new Error(
+          `Stream de IA sem delimitador após ${maxRemainderBytes} bytes (resposta malformada)`,
+        )
+      }
       for (const evt of result.events) {
         if (evt.content) {
           full += evt.content

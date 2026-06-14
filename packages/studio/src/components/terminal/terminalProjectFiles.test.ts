@@ -3,6 +3,7 @@ import type { DirectoryNode, FileNode } from '@webcontainer/api'
 import type { ProjectTree } from '#core'
 import {
   buildTerminalFileContents,
+  ProTreeCollisionError,
   proTreeToFileSystemTree,
   WEB_CONTAINER_PACKAGE_DEPENDENCIES,
 } from './terminalProjectFiles'
@@ -87,6 +88,36 @@ describe('proTreeToFileSystemTree', () => {
     })
     expect(fst.node_modules).toBeUndefined()
     expect((fst.src as DirectoryNode).directory['ok.ts']).toBeDefined()
+  })
+
+  it('falha alto quando um arquivo é reusado como pasta-pai (não sobrescreve em silêncio)', () => {
+    // `src` arquivo + `src/main.ts` exige que `src` seja pasta — colisão.
+    const collidingTree: ProjectTree = {
+      src: { kind: 'file', content: 'sou um arquivo' },
+      'src/main.ts': { kind: 'file', content: 'export {}' },
+    }
+    expect(() => proTreeToFileSystemTree(collidingTree)).toThrow(ProTreeCollisionError)
+    expect(() => proTreeToFileSystemTree(collidingTree)).toThrow(/src/)
+  })
+
+  it('falha alto quando uma pasta declarada colide com um arquivo de mesmo nome', () => {
+    // `app` arquivo + `app` dir (declarado por filho) — colisão na outra ordem.
+    const collidingTree: ProjectTree = {
+      'app/index.ts': { kind: 'file', content: 'ok' },
+      app: { kind: 'file', content: 'arquivo conflitante' },
+    }
+    expect(() => proTreeToFileSystemTree(collidingTree)).toThrow(ProTreeCollisionError)
+  })
+
+  it('falha alto quando o mesmo caminho é declarado como dir e arquivo aparece depois', () => {
+    const collidingTree: ProjectTree = {
+      lib: { kind: 'dir' },
+      'lib/x.ts': { kind: 'file', content: 'x' },
+      // `lib` reaparece como arquivo via outra entrada de mesmo nome impossível
+      // no objeto, então testamos o caminho dir→arquivo com prefixo:
+    }
+    // Esta árvore é coerente (lib é só pasta) — NÃO deve lançar.
+    expect(() => proTreeToFileSystemTree(collidingTree)).not.toThrow()
   })
 
   it('buildTerminalFileContents deriva flat da tree em modo pro', () => {

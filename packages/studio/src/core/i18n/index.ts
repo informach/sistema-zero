@@ -34,7 +34,9 @@ export function getLocale(): Locale {
  * placeholders no formato {nome}.
  */
 export function t(key: string, vars: Record<string, string | number> = {}): string {
-  const raw = DICT[currentLocale][key] ?? key
+  // Um host sem tipagem pode setar um locale fora do enum (ex.: 'fr'); cair em
+  // pt-BR é melhor que estourar TypeError ao indexar DICT[locale-desconhecido].
+  const raw = (DICT[currentLocale] ?? DICT['pt-BR'])[key] ?? key
   return raw.replace(/\{(\w+)\}/g, (_, k: string) =>
     vars[k] !== undefined ? String(vars[k]) : `{${k}}`,
   )

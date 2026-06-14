@@ -16,18 +16,31 @@
 /**
  * Escapa o conteúdo de um `<script>` inline.
  *
- * Além do fechamento `</script` (que encerraria o elemento), neutraliza também
- * a ABERTURA da escalada de duplo-escape do tokenizer HTML: um corpo com `<!--`
- * seguido de `<script` move o parser para o estado "script data double escaped",
- * onde um `</script` deixa de fechar o elemento. Inserir a barra invertida em
- * `<!--` e `<script` impede o parser de entrar nesse estado, mantendo a
- * semântica do JS intacta (`<\!--` ≡ `<!--`, `<\script` ≡ `<script`).
+ * Neutraliza TRÊS sequências que o tokenizer HTML reconhece dentro de
+ * `<script>…</script>`:
+ *  - `</script` (FECHAMENTO) — encerraria o elemento cedo;
+ *  - `<!--` e `<script` (ABERTURAS do "script data double escaped") — `<!--`
+ *    seguido de `<script` põe o tokenizer no estado de DUPLO-ESCAPE, no qual o
+ *    `</script>` REAL do gerador NÃO fecha mais o elemento (só transiciona de
+ *    volta), e todo o resto do documento passa a ser lido como script.
+ *    Neutralizar a abertura `<script` impede entrar nesse estado.
+ *
+ * A barra invertida é transparente para a maioria do JS (`<\/script` ≡
+ * `</script` numa string ou regex). ⚠️ LIMITAÇÃO conhecida: dentro de um REGEX
+ * literal do aluno, `/<!--/u` vira `/<\!--/u` (SyntaxError sob a flag `u`) e
+ * `/<script>/` muda de significado. Por isso o preview NÃO usa mais esta função
+ * para o JS do aluno: TODO o JS do aluno é emitido como script EXTERNO via
+ * `data:` URL (ver `preview/bootstrap.ts` — module/clássico/clássico-deferido),
+ * que não passa por aqui e preserva o código verbatim. Esta função cobre o
+ * `index.html` PERSISTIDO (`generators/html.ts`) e os scripts 1ª-parte do
+ * preview (interceptor/permissionGuard/loopGuard/extensões), onde a defesa
+ * contra early-close/duplo-escape pesa mais que esse caso raro de regex.
  */
 export function escapeScriptContent(code: string): string {
   return code
+    .replace(/<\/script/gi, '<\\/script')
     .replace(/<!--/g, '<\\!--')
     .replace(/<script/gi, '<\\script')
-    .replace(/<\/script/gi, '<\\/script')
 }
 
 /** Escapa o conteúdo de um `<style>` inline (neutraliza o fechamento `</style`). */

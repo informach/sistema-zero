@@ -255,8 +255,16 @@ function htmlNodeToBlockInner(node: SZIR['html'][number]): SerializedBlocklyBloc
     return block('sz_html_text', { TEXT: node.text }, {}, node.__id)
   }
   if (node.type === 'canvas') {
-    // Largura/altura não são mais campos do bloco — só o id.
-    return block('sz_html_canvas', { ID: node.id }, {}, node.__id)
+    // Largura/altura não são mais campos do bloco — só o id. Quando a IR carrega
+    // width/height (ex.: `<canvas width=200 height=100>` vindo do HTML), os
+    // guardamos no `data` do bloco (mesma estratégia do `extraData`) para que o
+    // round-trip blocos→código não os perca. `buildIR` os recupera de `data`.
+    const built = block('sz_html_canvas', { ID: node.id }, {}, node.__id)
+    const extra: Record<string, number> = {}
+    if (node.width !== undefined) extra.width = node.width
+    if (node.height !== undefined) extra.height = node.height
+    if (Object.keys(extra).length > 0) built.data = JSON.stringify(extra)
+    return built
   }
 
   const containerType = CONTAINER_BLOCK[node.tag]

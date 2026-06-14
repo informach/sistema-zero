@@ -133,4 +133,114 @@ describe('gameTwoDRuntime.gameLoop', () => {
     }).not.toThrow()
     expect(count).toBe(2)
   })
+
+  it('mantém apenas UM loop ativo: chamar gameLoop de novo para o anterior', () => {
+    // requestAnimationFrame com fila controlada que carrega o ID de cada frame,
+    // para sabermos qual `tick` está agendado e respeitar cancelAnimationFrame.
+    const frames: Array<{ id: number; cb: () => void }> = []
+    const win = { addEventListener() {}, SZGame2D: undefined } as unknown as Record<string, unknown>
+    let nextId = 1
+    const requestAnimationFrame = (cb: () => void) => {
+      const id = nextId++
+      frames.push({ id, cb })
+      return id
+    }
+    const canceled = new Set<number>()
+    const cancelAnimationFrame = (id: number) => canceled.add(id)
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval
+    new Function('window', 'requestAnimationFrame', 'cancelAnimationFrame', gameTwoDRuntime)(
+      win,
+      requestAnimationFrame,
+      cancelAnimationFrame,
+    )
+    const api = (win as unknown as { SZGame2D: { gameLoop: (fn: () => void) => () => void } })
+      .SZGame2D
+
+    // flushAll roda todos os frames pendentes (uma rodada), pulando os cancelados.
+    const flushRound = () => {
+      const round = frames.splice(0, frames.length)
+      for (const f of round) {
+        if (!canceled.has(f.id)) f.cb()
+      }
+    }
+
+    let countA = 0
+    let countB = 0
+    api.gameLoop(() => {
+      countA += 1
+    })
+    // Segundo loop: deve PARAR o primeiro automaticamente (sem empilhar RAFs).
+    api.gameLoop(() => {
+      countB += 1
+    })
+
+    flushRound()
+    flushRound()
+    // Só o segundo loop continua vivo; o primeiro foi cancelado na 2ª chamada.
+    expect(countA).toBe(0)
+    expect(countB).toBe(2)
+  })
+})
+
+describe('gameTwoDRuntime.onPointer', () => {
+  // Loader que captura os listeners registrados em window por nome de evento,
+  // para podermos disparar um 'pointerdown' sintético e contar os handlers.
+  function loadWithPointer() {
+    type Listener = (ev: unknown) => void
+    const listeners: Record<string, Listener[]> = {}
+    const win = {
+      addEventListener(name: string, fn: Listener) {
+        listeners[name] ??= []
+        listeners[name].push(fn)
+      },
+      SZGame2D: undefined,
+    } as unknown as Record<string, unknown>
+    const requestAnimationFrame = () => 0
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval
+    new Function('window', 'requestAnimationFrame', gameTwoDRuntime)(win, requestAnimationFrame)
+    const api = (
+      win as unknown as { SZGame2D: { onPointer: (fn: (x: number, y: number) => void) => void } }
+    ).SZGame2D
+    const firePointerDown = (x: number, y: number) => {
+      for (const fn of listeners.pointerdown ?? []) fn({ clientX: x, clientY: y })
+    }
+    return { api, firePointerDown }
+  }
+
+  it('registrar a MESMA fn duas vezes mantém um único handler', () => {
+    const { api, firePointerDown } = loadWithPointer()
+    let calls = 0
+    const handler = () => {
+      calls += 1
+    }
+    api.onPointer(handler)
+    api.onPointer(handler)
+    firePointerDown(10, 20)
+    // Apesar de duas chamadas a onPointer com a MESMA referência, um clique
+    // dispara o handler uma única vez.
+    expect(calls).toBe(1)
+  })
+
+  it('funções DIFERENTES continuam acumulando (API compatível)', () => {
+    const { api, firePointerDown } = loadWithPointer()
+    let a = 0
+    let b = 0
+    api.onPointer(() => {
+      a += 1
+    })
+    api.onPointer(() => {
+      b += 1
+    })
+    firePointerDown(0, 0)
+    expect(a).toBe(1)
+    expect(b).toBe(1)
+  })
+
+  it('ignora valores que não são função', () => {
+    const { api, firePointerDown } = loadWithPointer()
+    expect(() => {
+      ;(api.onPointer as unknown as (v: unknown) => void)(null)
+      firePointerDown(0, 0)
+    }).not.toThrow()
+  })
 })

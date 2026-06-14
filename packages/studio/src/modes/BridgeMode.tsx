@@ -32,6 +32,27 @@ const EMPTY_INSTALLED_EXTENSIONS: InstalledExtension[] = []
 const MAX_BRIDGE_REVERSE_PARSE_CHARS = 500_000
 
 /**
+ * Decide se um resultado código->blocos do worker está OBSOLETO. Além do
+ * `requestId` (que só avança quando o efeito do lado-código posta um novo
+ * pedido), comparamos um `stateEpoch` monotônico que avança a CADA mudança de
+ * `ir`/`blocksState` no store — venha do lado-código OU do lado-blocos. Sem o
+ * epoch, uma edição de BLOCO em voo (BlocklyPanel.regenerateFromBlocks atualiza
+ * o IR sem mexer no `requestId`) seria sobrescrita por um resultado de reparse
+ * mais antigo que ainda estava no worker. Pura para ser testável isoladamente.
+ */
+export function isReverseParseResultStale(args: {
+  resultRequestId: number
+  currentRequestSeq: number
+  epochAtPost: number
+  currentStateEpoch: number
+}): boolean {
+  if (args.resultRequestId !== args.currentRequestSeq) return true
+  // O epoch avançou desde que o pedido foi postado => o store (ir/blocksState)
+  // mudou por OUTRA fonte (tipicamente uma edição de bloco) e tem precedência.
+  return args.currentStateEpoch !== args.epochAtPost
+}
+
+/**
  * Modo Ponte: blocos à esquerda, Monaco à direita, preview à direita-direita
  * (opcional). Mudanças no Monaco fazem parse e atualizam IR/workspace sem
  * sobrescrever os arquivos digitados. Mudanças nos blocos seguem o fluxo
@@ -136,7 +157,30 @@ export function BridgeMode(): JSX.Element {
   const lastReportedLargeProject = useRef(false)
   const reverseParseWorkerRef = useRef<Worker | null>(null)
   const reverseParseRequestSeq = useRef(0)
+  // Epoch monotônico do estado relevante para os blocos (`ir`/`blocksState`).
+  // Avança em QUALQUER mudança dessas duas chaves no store — lado-código
+  // (reverse-parse aplica novo IR) E lado-blocos (regenerateFromBlocks). O
+  // pedido de reparse memoriza o epoch vigente no momento do post; o handler
+  // dropa o resultado se o epoch avançou (edição de bloco concorrente venceu).
+  const stateEpoch = useRef(0)
+  const epochAtPost = useRef(0)
   const syntaxError = parseDiagnostics.find((diagnostic) => diagnostic.kind === 'syntaxError')
+
+  // Inscreve no store e avança o `stateEpoch` sempre que `ir` OU `blocksState`
+  // mudarem de referência, independentemente da fonte. `setFiles` (edição de
+  // código) NÃO mexe nessas chaves, então não conta — só mudanças que os blocos
+  // representam invalidam um reparse em voo.
+  useEffect(() => {
+    let prev = projectStoreApi.getState().project
+    const unsubscribe = projectStoreApi.subscribe((state) => {
+      const next = state.project
+      if (next?.ir !== prev?.ir || next?.blocksState !== prev?.blocksState) {
+        stateEpoch.current += 1
+      }
+      prev = next
+    })
+    return unsubscribe
+  }, [projectStoreApi])
 
   // Refs com os valores mais recentes lidos pelo handler PERSISTENTE do worker.
   // O handler é instalado UMA vez (efeito de criação do worker abaixo) e não pode
@@ -159,7 +203,20 @@ export function BridgeMode(): JSX.Element {
     // contra o seq atual e lê o estado FRESCO do store — nunca via closure.
     worker.onmessage = (event: MessageEvent<BridgeReverseParseWorkerResponse>) => {
       const message = event.data
-      if (message.requestId !== reverseParseRequestSeq.current) return
+      // Dropa resultados obsoletos: por `requestId` (lado-código postou outro
+      // pedido) E por `stateEpoch` (uma edição de BLOCO mudou o ir/blocksState
+      // desde o post — ela tem precedência e não pode ser clobberada por um
+      // reparse mais antigo que ainda estava no worker).
+      if (
+        isReverseParseResultStale({
+          resultRequestId: message.requestId,
+          currentRequestSeq: reverseParseRequestSeq.current,
+          epochAtPost: epochAtPost.current,
+          currentStateEpoch: stateEpoch.current,
+        })
+      ) {
+        return
+      }
       if ('error' in message) {
         pushLogRef.current({
           source: PREVIEW_MESSAGE_SOURCE,
@@ -323,6 +380,9 @@ export function BridgeMode(): JSX.Element {
     lastSnapshot.current = currentFiles
     const requestId = reverseParseRequestSeq.current + 1
     reverseParseRequestSeq.current = requestId
+    // Memoriza o epoch vigente: o handler dropa o resultado se uma edição de
+    // bloco avançar o epoch enquanto este reparse está no worker.
+    epochAtPost.current = stateEpoch.current
     // O handler (onmessage/onerror) é PERSISTENTE — instalado uma vez na criação
     // do worker — e despacha por `requestId`. Aqui só postamos o pedido.
     worker.postMessage({

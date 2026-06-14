@@ -21,7 +21,11 @@ const PHASE_LABEL: Partial<Record<Phase, string>> = {
  * Exceções do app cross-origin chegam via `preview-message` e vão ao Console.
  */
 export function ProPreview(): JSX.Element {
-  const { ensureMounted, error: mountError } = useProWebContainer()
+  const { ensureMounted, error: mountError, state: mountState } = useProWebContainer()
+  // Espelho em ref para ler o estado de mount ATUAL dentro do efeito sem torná-lo
+  // dependência (depender dele rerodaria boot/install/dev a cada transição).
+  const mountStateRef = useRef(mountState)
+  mountStateRef.current = mountState
   const projectId = useProjectStore((s) => s.project?.id ?? null)
   const devScript = useProjectStore((s) => s.project?.proMeta?.devScript ?? 'dev')
   const pushLog = useLogsStore((s) => s.push)
@@ -56,7 +60,16 @@ export function ProPreview(): JSX.Element {
       const wc = await ensureMounted()
       if (cancelled) return
       if (!wc) {
-        setError(mountError ?? 'Não foi possível iniciar o ambiente.')
+        // FS singleton em uso por outra instância (clássica ou pro) nesta aba:
+        // espelha a UI de "ocupado" do Terminal em vez do erro genérico.
+        if (mountStateRef.current === 'busy') {
+          setError(
+            'O ambiente (WebContainer) já está em uso em outra instância nesta aba. ' +
+              'Feche o editor/terminal da outra instância (ou troque o projeto dela) e tente de novo.',
+          )
+        } else {
+          setError(mountError ?? 'Não foi possível iniciar o ambiente.')
+        }
         setPhase('error')
         return
       }
@@ -102,7 +115,17 @@ export function ProPreview(): JSX.Element {
         }),
       ])
       window.clearTimeout(installTimer)
-      if (cancelled) return
+      if (cancelled) {
+        // Desmontou/trocou de projeto durante o install: o cleanup só mata o
+        // devProcessRef (ainda null aqui). Sem este kill, o `npm install` fica
+        // órfão rodando no container singleton (espelha o dev-spawn abaixo).
+        try {
+          install.kill()
+        } catch {
+          // já encerrado
+        }
+        return
+      }
       if (installCode === 'timeout') {
         try {
           install.kill()

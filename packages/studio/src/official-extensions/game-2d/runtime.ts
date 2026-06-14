@@ -71,8 +71,15 @@ export const gameTwoDRuntime = `(function () {
    * Loop de jogo. Recebe uma função que vai rodar a cada frame e devolve uma
    * função para PARAR o loop (chame-a quando o jogo acabar ou ao reiniciar,
    * para não empilhar vários loops rodando ao mesmo tempo).
+   *
+   * Só pode existir UM loop ativo: ao chamar gameLoop de novo (ex.: o gerador
+   * emite a chamada num caminho que roda mais de uma vez), o loop anterior é
+   * parado automaticamente antes de iniciar o novo. Assim a velocidade do jogo
+   * não acelera por empilhamento de RAFs.
    */
+  var activeLoopStop = null;
   function gameLoop(fn) {
+    if (activeLoopStop) activeLoopStop();
     var canceled = false;
     var rafId = 0;
     function tick() {
@@ -81,10 +88,13 @@ export const gameTwoDRuntime = `(function () {
       rafId = requestAnimationFrame(tick);
     }
     rafId = requestAnimationFrame(tick);
-    return function stop() {
+    function stop() {
       canceled = true;
       if (rafId) cancelAnimationFrame(rafId);
-    };
+      if (activeLoopStop === stop) activeLoopStop = null;
+    }
+    activeLoopStop = stop;
+    return stop;
   }
 
   // ---- Física ----
@@ -169,8 +179,17 @@ export const gameTwoDRuntime = `(function () {
       catch (err) { console.error(err && err.message ? err.message : err); }
     }
   });
-  /** Registra uma função chamada a cada clique/toque com a posição (x, y) no canvas. */
-  function onPointer(fn) { if (typeof fn === 'function') pointerHandlers.push(fn); }
+  /**
+   * Registra uma função chamada a cada clique/toque com a posição (x, y) no
+   * canvas. Idempotente: registrar a MESMA referência de função mais de uma vez
+   * (ex.: o gerador re-emite a chamada num caminho quente) mantém um único
+   * handler, em vez de empilhar disparos duplicados por clique.
+   */
+  function onPointer(fn) {
+    if (typeof fn !== 'function') return;
+    if (pointerHandlers.indexOf(fn) !== -1) return;
+    pointerHandlers.push(fn);
+  }
 
   window.SZGame2D = {
     createSprite: createSprite,

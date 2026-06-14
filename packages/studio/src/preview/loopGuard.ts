@@ -128,6 +128,14 @@ function walk(node: unknown, visit: (node: object) => void): void {
  * macrotasks via um "pump" de `setTimeout(0)` capturado pristino — durante um
  * loop síncrono longo o pump não roda, o orçamento estoura e a checagem lança um
  * `Error` marcado com `__szLoopGuard` (o interceptor traduz para 'loopStopped').
+ *
+ * A função do tick é DECLARADA com nome (hoisted) e TRAVADA em `window` via
+ * `Object.defineProperty` com `writable:false`/`configurable:false`: o código
+ * do aluno (de propósito ou por colisão de nome) NÃO pode reatribuir
+ * `window.__szLoopTick` para desligar o orçamento e travar a aba com um
+ * `while (true) {}`. O `try/catch` degrada para a atribuição simples caso o
+ * `defineProperty` falhe (ambiente exótico) — a guarda nunca pode quebrar o
+ * preview.
  */
 export function buildLoopGuardRuntime(budgetMs: number = DEFAULT_LOOP_BUDGET_MS): string {
   const budget = Number.isFinite(budgetMs) && budgetMs > 0 ? budgetMs : DEFAULT_LOOP_BUDGET_MS
@@ -144,7 +152,7 @@ export function buildLoopGuardRuntime(budgetMs: number = DEFAULT_LOOP_BUDGET_MS)
       ? performance.now()
       : Date.now();
   }
-  window.__szLoopTick = function () {
+  function __szLoopTick() {
     var t = now();
     if (start === null) { start = t; return; }
     if (t - start > BUDGET) {
@@ -153,6 +161,19 @@ export function buildLoopGuardRuntime(budgetMs: number = DEFAULT_LOOP_BUDGET_MS)
       e.__szLoopGuard = true;
       throw e;
     }
-  };
+  }
+  // Trava o tick: writable/configurable false impedem o aluno de reatribuir
+  // window.__szLoopTick para neutralizar o orçamento. Fallback p/ atribuição
+  // simples se defineProperty falhar — a guarda jamais pode quebrar o preview.
+  try {
+    Object.defineProperty(window, '__szLoopTick', {
+      value: __szLoopTick,
+      writable: false,
+      configurable: false,
+      enumerable: false,
+    });
+  } catch (e) {
+    window.__szLoopTick = __szLoopTick;
+  }
 })();`
 }

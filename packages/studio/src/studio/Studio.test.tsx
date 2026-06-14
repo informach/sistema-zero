@@ -179,6 +179,26 @@ describe('Studio', () => {
     expect(handleRef.current?.isDirty()).toBe(true)
   })
 
+  it('ligar professional numa instância montada re-coage o modo ativo proibido', async () => {
+    const project = createEmptyProject('project-coerce', 'Coerção')
+    // Começa não-pro: modo blocks é permitido.
+    const { getByTestId, rerender } = render(<Studio initialProject={project} />)
+
+    await waitFor(() => {
+      expect(getByTestId('editor-shell').getAttribute('data-mode')).toBe('blocks')
+    })
+
+    // Host liga o modo profissional na MESMA instância: config.allowedModes vira
+    // ['code'], então a aba ativa 'blocks' fica proibida. A coerção precisa
+    // recomputar (memo keyado nos modos RESOLVIDOS, não na prop allowedModes) e
+    // cair no primeiro permitido ('code').
+    rerender(<Studio initialProject={project} features={{ professional: true }} />)
+
+    await waitFor(() => {
+      expect(getByTestId('editor-shell').getAttribute('data-mode')).toBe('code')
+    })
+  })
+
   it('onReady dispara 1x por projeto e re-arma após replaceProject', async () => {
     const handleRef = createRef<StudioHandle>()
     const readyIds: string[] = []

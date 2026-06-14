@@ -70,8 +70,13 @@ export interface StudioProps {
    * Snapshot completo do projeto no MESMO debounce do autosave (1s) e em todo
    * flush (salvar explícito, pagehide, unmount). Emitido também com
    * persistence 'none' — é assim que o host persiste no backend.
+   *
+   * `ctx.reason` distingue o autosave do debounce (`'autosave'`) do flush de
+   * fechamento (`'flush'`): no flush o transporte normal (fetch) é abortado pela
+   * navegação, então o host deve usar `navigator.sendBeacon` / `fetch` com
+   * `keepalive` — a biblioteca não pode fazer isso por você. Ver docs/embedding.md.
    */
-  onChange?: (project: Project) => void
+  onChange?: (project: Project, ctx?: { reason: 'autosave' | 'flush' }) => void
   /** Após salvar explícito (botão Salvar / handle.save()). Promise rejeitada marca erro no badge. */
   onSave?: (project: Project) => void | Promise<void>
   /** Erros não-fatais de persistência (autosave/save que falhou). */

@@ -10,8 +10,26 @@
  */
 export const gameThreeDRuntime = `import * as THREE from 'three';
 (function () {
+  // Registro dos mundos criados nesta página. O navegador limita o número de
+  // contextos WebGL ativos (~16): a cada "Atualizar" o preview roda este runtime
+  // de novo e cria um WebGLRenderer novo. Sem liberar o contexto antigo, o mais
+  // velho é forçado a perder o contexto e a cena fica preta. Mantemos a lista
+  // para descartar tudo no fechamento/refresh da página.
+  var worlds = [];
+
   function createScene(canvasId) {
     var canvas = document.getElementById(canvasId);
+    // Mesmo canvas, novo "Atualizar"/recriar: descarta o mundo anterior ANTES
+    // de instanciar outro WebGLRenderer sobre o MESMO canvas, senão o contexto
+    // antigo fica vivo no registro e o navegador acaba forçando perda de
+    // contexto (cena preta) ao estourar o limite de ~16 contextos WebGL.
+    if (canvas) {
+      for (var k = worlds.length - 1; k >= 0; k--) {
+        if (worlds[k] && worlds[k]._canvas === canvas) {
+          try { dispose(worlds[k]); } catch (e) {}
+        }
+      }
+    }
     var renderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvas || undefined });
     var w = canvas && canvas.width ? canvas.width : 400;
     var h = canvas && canvas.height ? canvas.height : 300;
@@ -26,7 +44,9 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     var dir = new THREE.DirectionalLight(0xffffff, 0.9);
     dir.position.set(3, 5, 4);
     scene.add(dir);
-    return { scene: scene, camera: camera, renderer: renderer, _objects: [] };
+    var world = { scene: scene, camera: camera, renderer: renderer, _objects: [], _canvas: canvas || null };
+    worlds.push(world);
+    return world;
   }
 
   function setBackground(world, color) {
@@ -78,15 +98,38 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   /** Libera GPU: para o loop e descarta geometrias/materiais/renderer. */
   function dispose(world) {
     if (!world) return;
+    // Tira o mundo do registro mesmo que o descarte abaixo falhe.
+    var idx = worlds.indexOf(world);
+    if (idx !== -1) worlds.splice(idx, 1);
     if (world.renderer) {
       world.renderer.setAnimationLoop(null);
       try { world.renderer.dispose(); } catch (e) {}
+      // \`dispose()\` sozinho NÃO devolve o contexto WebGL ao navegador — é o
+      // \`forceContextLoss()\` que libera o slot de GPU e evita a cena preta
+      // depois de vários "Atualizar".
+      try { world.renderer.forceContextLoss(); } catch (e) {}
     }
     for (var i = 0; i < (world._objects || []).length; i++) {
       var o = world._objects[i];
       if (o && o.geometry && o.geometry.dispose) o.geometry.dispose();
       if (o && o.material && o.material.dispose) o.material.dispose();
     }
+  }
+
+  /** Descarta TODOS os mundos vivos — usado no fechamento/refresh da página. */
+  function disposeAll() {
+    // Copia a lista: dispose() mexe no array original via splice.
+    var pending = worlds.slice();
+    for (var i = 0; i < pending.length; i++) {
+      try { dispose(pending[i]); } catch (e) {}
+    }
+  }
+
+  // Auto-registro: não dependemos de GC preguiçoso nem de o host chamar dispose.
+  // pagehide cobre o caso moderno (inclui bfcache); beforeunload é o fallback.
+  if (typeof window !== 'undefined' && window.addEventListener) {
+    window.addEventListener('pagehide', disposeAll);
+    window.addEventListener('beforeunload', disposeAll);
   }
 
   window.SZGame3D = {
@@ -99,6 +142,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     setRotation: setRotation,
     animate: animate,
     dispose: dispose,
+    disposeAll: disposeAll,
     THREE: THREE
   };
 })();`

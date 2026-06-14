@@ -1,4 +1,4 @@
-import type { JSX } from 'react'
+import type { JSX, KeyboardEvent as ReactKeyboardEvent } from 'react'
 import { type ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { t } from '#core'
@@ -78,7 +78,37 @@ export function ProjectCard({ summary, onChanged, onOpen }: ProjectCardProps): J
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const triggerRef = useRef<HTMLButtonElement | null>(null)
+  const menuRef = useRef<HTMLDivElement | null>(null)
   const renameInputRef = useRef<HTMLInputElement | null>(null)
+
+  // Fecha o menu E devolve o foco ao gatilho (kebab), para teclado/leitor de
+  // tela não ficarem presos no <body> após Escape/seleção/clique fora.
+  const closeMenu = () => {
+    setMenuOpen(false)
+    triggerRef.current?.focus()
+  }
+
+  // Itens de menu visíveis (role=menuitem) para a navegação por setas.
+  const menuItems = (): HTMLButtonElement[] =>
+    menuRef.current
+      ? Array.from(menuRef.current.querySelectorAll<HTMLButtonElement>('[role="menuitem"]'))
+      : []
+
+  // Foco itinerante (roving) no menu: setas movem entre itens, Home/End vão às
+  // pontas. Escape é tratado no listener de documento (closeMenu restaura foco).
+  const onMenuKeyDown = (e: ReactKeyboardEvent<HTMLDivElement>) => {
+    const items = menuItems()
+    if (items.length === 0) return
+    const current = items.indexOf(document.activeElement as HTMLButtonElement)
+    let next = -1
+    if (e.key === 'ArrowDown') next = current < 0 ? 0 : (current + 1) % items.length
+    else if (e.key === 'ArrowUp') next = current <= 0 ? items.length - 1 : current - 1
+    else if (e.key === 'Home') next = 0
+    else if (e.key === 'End') next = items.length - 1
+    else return
+    e.preventDefault()
+    items[next]?.focus()
+  }
 
   useEffect(() => {
     setDraft(summary.name)
@@ -109,14 +139,24 @@ export function ProjectCard({ summary, onChanged, onOpen }: ProjectCardProps): J
     }
   }, [menuOpen])
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: subscreve o keydown só ao ABRIR/fechar; closeMenu é estável o suficiente
   useEffect(() => {
     if (!menuOpen) return
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setMenuOpen(false)
+      if (e.key === 'Escape') closeMenu()
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
   }, [menuOpen])
+
+  // Ao abrir, leva o foco para o primeiro item (foco-in) — sem isso o teclado/SR
+  // ficava no <body> e os itens portalados eram inalcançáveis. Roda após o
+  // posicionamento (menuPosition definido = menu já no DOM).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: menuItems() consulta o DOM na hora; rodar só ao abrir/posicionar é intencional
+  useEffect(() => {
+    if (!menuOpen || !menuPosition) return
+    menuItems()[0]?.focus()
+  }, [menuOpen, menuPosition])
 
   const commitRename = async () => {
     setEditing(false)
@@ -130,7 +170,7 @@ export function ProjectCard({ summary, onChanged, onOpen }: ProjectCardProps): J
   }
 
   const handleDuplicate = async () => {
-    setMenuOpen(false)
+    closeMenu()
     await duplicateProject(summary.id)
     onChanged()
   }
@@ -148,7 +188,7 @@ export function ProjectCard({ summary, onChanged, onOpen }: ProjectCardProps): J
   }
 
   const handleExport = async () => {
-    setMenuOpen(false)
+    closeMenu()
     const full = await loadSanitizedProjectById(summary.id)
     if (!full) return
     downloadAsJSON(full.name, full)
@@ -249,12 +289,14 @@ export function ProjectCard({ summary, onChanged, onOpen }: ProjectCardProps): J
                     className="fixed inset-0 z-40 cursor-default bg-transparent"
                     onMouseDown={(e) => {
                       e.preventDefault()
-                      setMenuOpen(false)
+                      closeMenu()
                     }}
                   />
                   <div
+                    ref={menuRef}
                     role="menu"
                     aria-label="Ações do projeto"
+                    onKeyDown={onMenuKeyDown}
                     className="fixed z-50 w-44 overflow-hidden rounded-md border border-sz-border bg-sz-panel shadow-2xl"
                     style={{ left: menuPosition.left, top: menuPosition.top }}
                   >
@@ -273,7 +315,11 @@ export function ProjectCard({ summary, onChanged, onOpen }: ProjectCardProps): J
                     <MenuItem
                       danger
                       onClick={() => {
-                        setMenuOpen(false)
+                        // closeMenu() devolve o foco ao kebab ANTES de o menu
+                        // desmontar; assim o Modal do ConfirmDialog captura o
+                        // gatilho como activeElement e o restaura ao fechar
+                        // (sem isso o foco caía no <body> e se perdia).
+                        closeMenu()
                         setDeleteOpen(true)
                       }}
                     >

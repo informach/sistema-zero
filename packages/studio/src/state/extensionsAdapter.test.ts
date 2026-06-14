@@ -96,6 +96,42 @@ describe('extensionsAdapter', () => {
     ).toBe(0)
   })
 
+  it('mantém uma sombra no slot `next` do pai sobrevivente como sombra (#22)', () => {
+    // Pai sobrevivente (`sz_html_div`, core) com o slot `next` ocupado por uma
+    // SOMBRA (não um bloco real). Ao remover uma extensão sem blocos presentes,
+    // o pai segue intacto — e a sombra do `next` NÃO pode virar bloco real
+    // (`shadow`→`block`), senão a próxima des-serialização perde a distinção.
+    const blocksState = {
+      blocks: {
+        blocks: [
+          {
+            type: 'sz_html_div',
+            id: 'pai',
+            next: {
+              shadow: { type: 'sz_html_p', id: 'sombra_next' },
+            },
+          },
+        ],
+      },
+    }
+    const project = {
+      ...createEmptyProject('p1', 'Projeto'),
+      ir: null,
+      blocksState,
+      installedExtensions: [{ id: 'game-2d', version: '0.1.0', installedAt: 1 }],
+    }
+
+    const cleaned = removeExtensionArtifacts(project, 'game-2d')
+    const root = cleaned.blocksState as {
+      blocks: { blocks: Array<{ next?: { block?: unknown; shadow?: unknown } }> }
+    }
+    const next = root.blocks.blocks[0]?.next
+    // A sombra continua sob `shadow` — e nunca foi promovida a `block`.
+    expect(next).toHaveProperty('shadow')
+    expect(next).not.toHaveProperty('block')
+    expect((next?.shadow as { type?: string })?.type).toBe('sz_html_p')
+  })
+
   it('removeExtension NÃO desregistra blocos do Blockly global (invariante #5)', () => {
     // Outra instância na mesma página pode ainda usar essas definições; o
     // registro Blockly.Blocks é global de módulo. A remoção por-instância só

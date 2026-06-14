@@ -1,5 +1,5 @@
 import type { JSX } from 'react'
-import { Suspense, useEffect, useMemo, useState } from 'react'
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { useShallow } from 'zustand/react/shallow'
 import { type ProjectTree, t } from '#core'
@@ -42,19 +42,27 @@ export function ProCodeMode(): JSX.Element {
   const [openFiles, setOpenFiles] = useState<string[]>([])
   const [activeFile, setActiveFile] = useState<string>('')
 
-  // Abre um arquivo padrão quando o projeto carrega e nada está aberto.
+  // Auto-abre o arquivo padrão UMA VEZ por carga de projeto. Antes o efeito
+  // disparava sempre que `openFiles.length === 0`, então fechar a última aba
+  // reabria o default no mesmo instante — o aluno não conseguia ficar sem abas.
+  const autoOpenedProjectRef = useRef<string | null>(null)
   useEffect(() => {
-    if (openFiles.length > 0) return
+    if (autoOpenedProjectRef.current === projectId) return
     const fileKeys = Object.entries(tree)
       .filter(([, node]) => node.kind === 'file')
       .map(([path]) => path)
+    // Sem arquivos ainda (árvore vazia no 1º render): espera o próximo tick com a
+    // árvore carregada antes de marcar este projeto como já auto-aberto.
     if (fileKeys.length === 0) return
+    autoOpenedProjectRef.current = projectId ?? null
+    // Respeita abas que o usuário já abriu manualmente antes do efeito rodar.
+    if (openFiles.length > 0) return
     const initial = DEFAULT_OPEN_CANDIDATES.find((c) => fileKeys.includes(c)) ?? fileKeys[0]
     if (initial) {
       setOpenFiles([initial])
       setActiveFile(initial)
     }
-  }, [tree, openFiles.length])
+  }, [tree, projectId, openFiles.length])
 
   // Fecha abas de arquivos que sumiram da árvore (excluídos/renomeados).
   useEffect(() => {

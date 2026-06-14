@@ -8,7 +8,11 @@ import { Button } from '#ui'
  * e oferece "tentar de novo" sem derrubar o resto da IDE.
  */
 
-export function RootErrorFallback({ error, reset }: ErrorBoundaryFallbackProps): JSX.Element {
+export function RootErrorFallback({
+  error,
+  reset,
+  onExit,
+}: ErrorBoundaryFallbackProps & { onExit?: () => void }): JSX.Element {
   return (
     <div
       role="alert"
@@ -29,16 +33,19 @@ export function RootErrorFallback({ error, reset }: ErrorBoundaryFallbackProps):
           <Button size="sm" variant="primary" onClick={() => window.location.reload()}>
             Recarregar
           </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => {
-              reset()
-              window.location.assign('/')
-            }}
-          >
-            Voltar aos projetos
-          </Button>
+          {/* Navegação é do host (callbacks) — sem onExit, o botão some (espelha a Topbar). */}
+          {onExit && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                reset()
+                onExit()
+              }}
+            >
+              Voltar aos projetos
+            </Button>
+          )}
         </div>
       </div>
     </div>

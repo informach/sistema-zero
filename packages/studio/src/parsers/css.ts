@@ -9,8 +9,27 @@ import type { CSSEntry } from '#ir'
  * Apenas as @-rules (`@media`, `@keyframes`, …) têm estrutura aninhada que o
  * regex não modela; elas continuam como `rawCSS advanced`, preservadas verbatim.
  */
+/**
+ * Profundidade máxima de @media aninhados que estruturamos. `@media`s mais
+ * fundos que isso degradam para `rawCSS advanced` (preservados verbatim) em vez
+ * de continuar a recursão `parseCSS → tryParseMediaQuery → parseCSS`, que num
+ * aninhamento patológico estouraria a pilha (RangeError). Mesmo espírito da
+ * guarda de profundidade do `parsers/html.ts`.
+ */
+const MAX_MEDIA_NESTING = 64
+
 export function parseCSS(source: string): CSSEntry[] {
+  return parseCSSAtDepth(source, 0)
+}
+
+function parseCSSAtDepth(source: string, depth: number): CSSEntry[] {
   if (!source.trim()) return []
+  // Acima do limite, paramos de recursar: o trecho inteiro vira um único nó
+  // avançado, preservado verbatim — nunca crasha (honra "código é sagrado").
+  if (depth > MAX_MEDIA_NESTING) {
+    const code = source.trim()
+    return code ? [{ type: 'rawCSS', code, advanced: true }] : []
+  }
   const entries: CSSEntry[] = []
 
   let index = 0
@@ -23,7 +42,7 @@ export function parseCSS(source: string): CSSEntry[] {
       // Tenta reconhecer `@media (max-width|min-width: Npx) { ... }` como bloco
       // estruturado; qualquer outra @-rule (ou condição fora desse formato)
       // continua como rawCSS avançado, preservada verbatim.
-      const media = tryParseMediaQuery(source, index, end)
+      const media = tryParseMediaQuery(source, index, end, depth)
       const keyframes = media ? null : tryParseKeyframes(source, index, end)
       if (media) {
         entries.push(media)
@@ -69,7 +88,12 @@ export function parseCSS(source: string): CSSEntry[] {
  * (uma única feature de largura em px inteiros) — aí o chamador mantém o
  * `@media` original como rawCSS avançado.
  */
-function tryParseMediaQuery(source: string, start: number, end: number): CSSEntry | null {
+function tryParseMediaQuery(
+  source: string,
+  start: number,
+  end: number,
+  depth: number,
+): CSSEntry | null {
   const slice = source.slice(start, end)
   const open = slice.indexOf('{')
   if (open < 0) return null
@@ -80,7 +104,7 @@ function tryParseMediaQuery(source: string, start: number, end: number): CSSEntr
   // caso contrário o chamador o mantém verbatim como rawCSS avançado.
   const close = findMatchingBrace(slice, open)
   if (close < 0) return null
-  const rules = parseCSS(slice.slice(open + 1, close))
+  const rules = parseCSSAtDepth(slice.slice(open + 1, close), depth + 1)
   return {
     type: 'mediaQuery',
     feature: match[1] as 'max-width' | 'min-width',
@@ -141,14 +165,55 @@ function skipWhitespaceAndComments(source: string, start: number): number {
   return index
 }
 
-function readAtRuleEnd(source: string, start: number): number {
-  const firstBlock = source.indexOf('{', start)
-  const firstSemicolon = source.indexOf(';', start)
-  if (firstSemicolon >= 0 && (firstBlock < 0 || firstSemicolon < firstBlock)) {
-    return firstSemicolon + 1
+/**
+ * Acha o primeiro `{` ou `;` em PROFUNDIDADE 0 a partir de `start`, ignorando
+ * ocorrências dentro de strings (`@import "a;b.css"`) e de comentários
+ * (`/* ; *​/`) — um `indexOf` cru pegaria esses por engano e cortaria a @-rule no
+ * lugar errado. Devolve `{ index, char }` do delimitador, ou `null` se não houver.
+ */
+function findAtRuleDelimiter(
+  source: string,
+  start: number,
+): { index: number; char: '{' | ';' } | null {
+  let quote: '"' | "'" | null = null
+  let inComment = false
+  for (let i = start; i < source.length; i += 1) {
+    const ch = source[i]
+    const next = source[i + 1]
+    if (inComment) {
+      if (ch === '*' && next === '/') {
+        inComment = false
+        i += 1
+      }
+      continue
+    }
+    if (quote) {
+      if (ch === '\\') {
+        i += 1
+        continue
+      }
+      if (ch === quote) quote = null
+      continue
+    }
+    if (ch === '/' && next === '*') {
+      inComment = true
+      i += 1
+      continue
+    }
+    if (ch === '"' || ch === "'") {
+      quote = ch
+      continue
+    }
+    if (ch === '{' || ch === ';') return { index: i, char: ch }
   }
-  if (firstBlock < 0) return source.length
-  const close = findMatchingBrace(source, firstBlock)
+  return null
+}
+
+function readAtRuleEnd(source: string, start: number): number {
+  const delim = findAtRuleDelimiter(source, start)
+  if (!delim) return source.length
+  if (delim.char === ';') return delim.index + 1
+  const close = findMatchingBrace(source, delim.index)
   return close < 0 ? source.length : close + 1
 }
 
@@ -199,14 +264,108 @@ function findMatchingBrace(source: string, openIndex: number): number {
   return -1
 }
 
+/**
+ * Um segmento de declaração já delimitado pelo {@link scanDeclarationSegments}:
+ * `[segStart, segEnd)` no texto-fonte e o offset do PRIMEIRO `:` em profundidade
+ * 0 (`-1` quando não há, ex.: segmento só com espaços ou sem dois-pontos).
+ */
+interface DeclSegment {
+  segStart: number
+  segEnd: number
+  colon: number
+}
+
+/**
+ * Scanner ÚNICO de declarações: varre `[start, end)` e devolve um segmento por
+ * declaração, quebrando SÓ nos `;` em profundidade 0 (fora de parênteses, fora
+ * de strings e fora de comentários) e marcando o PRIMEIRO `:` em profundidade 0
+ * de cada segmento. É a fonte da verdade compartilhada por
+ * {@link parseDeclarations} (IR) e {@link parseDeclarationsWithSpans} (posições)
+ * para que os dois NUNCA divirjam — ex.: `background: url(data:image/png;base64,
+ * AAAA)` e `content: "a;b"` sobrevivem intactos em ambos.
+ */
+function scanDeclarationSegments(source: string, start: number, end: number): DeclSegment[] {
+  const segments: DeclSegment[] = []
+  let segStart = start
+  let colon = -1
+  let paren = 0
+  let quote: '"' | "'" | null = null
+  let i = start
+
+  while (i < end) {
+    const ch = source[i]
+    const next = source[i + 1]
+    if (quote) {
+      if (ch === '\\') {
+        i += 2
+        continue
+      }
+      if (ch === quote) quote = null
+      i += 1
+      continue
+    }
+    if (ch === '/' && next === '*') {
+      const ce = source.indexOf('*/', i + 2)
+      i = ce < 0 ? end : ce + 2
+      continue
+    }
+    if (ch === '"' || ch === "'") {
+      quote = ch
+      i += 1
+      continue
+    }
+    if (ch === '(') {
+      paren += 1
+      i += 1
+      continue
+    }
+    if (ch === ')') {
+      if (paren > 0) paren -= 1
+      i += 1
+      continue
+    }
+    if (ch === ':' && paren === 0 && colon < 0) {
+      colon = i
+      i += 1
+      continue
+    }
+    if (ch === ';' && paren === 0) {
+      segments.push({ segStart, segEnd: i, colon })
+      segStart = i + 1
+      colon = -1
+      i += 1
+      continue
+    }
+    i += 1
+  }
+  segments.push({ segStart, segEnd: end, colon })
+  return segments
+}
+
+/**
+ * Normaliza a CHAVE de uma declaração. Propriedades padrão são case-insensitive
+ * (`COLOR` ≡ `color`) e viram minúsculas para casar com o IR. Já as CUSTOM
+ * PROPERTIES (`--Nome`, variáveis CSS) são CASE-SENSITIVE pela spec — `--Cor` e
+ * `--cor` são variáveis distintas, e `var(--Cor)` só resolve com a mesma caixa —
+ * então preservamos a caixa original delas. Compartilhado por
+ * {@link parseDeclarations} e {@link parseDeclarationsWithSpans} para não divergir.
+ */
+export function normalizeDeclKey(key: string): string {
+  return key.startsWith('--') ? key : key.toLowerCase()
+}
+
+/**
+ * Declarações para o IR (sem posições). Roteia pelo {@link scanDeclarationSegments}
+ * para enxergar parênteses/strings/comentários do mesmo jeito que o parser de
+ * posições — `;`/`:` dentro de `url(data:…;base64,…)`, `calc()` ou strings não
+ * truncam mais o valor. Mantém a semântica de Record (última duplicata vence).
+ */
 function parseDeclarations(raw: string): Record<string, string> {
   const out: Record<string, string> = {}
-  const parts = raw.split(';')
-  for (const part of parts) {
-    const idx = part.indexOf(':')
-    if (idx < 0) continue
-    const key = part.slice(0, idx).trim().toLowerCase()
-    const value = part.slice(idx + 1).trim()
+  for (const { segStart, segEnd, colon } of scanDeclarationSegments(raw, 0, raw.length)) {
+    if (colon < 0) continue
+    const key = normalizeDeclKey(raw.slice(segStart, colon).trim())
+    const value = raw.slice(colon + 1, segEnd).trim()
     if (key && value) out[key] = value
   }
   return out
@@ -221,7 +380,10 @@ function parseDeclarations(raw: string): Record<string, string> {
 // ---------------------------------------------------------------------------
 
 export interface CssDeclSpan {
-  /** Propriedade em minúsculas (igual ao IR). */
+  /**
+   * Propriedade normalizada (igual ao IR): minúsculas para props padrão,
+   * mas com a CAIXA PRESERVADA para custom properties `--Nome` (case-sensitive).
+   */
   prop: string
   value: string
   /** Linha 1-indexed do NOME da propriedade no texto exibido. */
@@ -290,11 +452,12 @@ export function offsetToLine(source: string, offset: number): number {
 }
 
 /**
- * Varre as declarações em [start, end) preservando posições. Diferente de
- * {@link parseDeclarations}, mantém DUPLICATAS (cada `prop: valor` é uma
- * entrada) e ancora a `line` no nome da propriedade. Ignora `:`/`;` dentro de
- * strings, comentários e parênteses (ex.: `url()`, `calc()`, gradientes,
- * `url(data:...;base64,...)`).
+ * Varre as declarações em [start, end) preservando posições. Reaproveita o
+ * {@link scanDeclarationSegments} (mesma quebra de segmentos do
+ * {@link parseDeclarations}, então os dois nunca divergem) e, por cima, mantém
+ * DUPLICATAS (cada `prop: valor` é uma entrada) e ancora a `line` no nome da
+ * propriedade. Ignora `:`/`;` dentro de strings, comentários e parênteses
+ * (ex.: `url()`, `calc()`, gradientes, `url(data:...;base64,...)`).
  */
 function parseDeclarationsWithSpans(
   source: string,
@@ -303,74 +466,20 @@ function parseDeclarationsWithSpans(
   lineStarts: number[],
 ): CssDeclSpan[] {
   const decls: CssDeclSpan[] = []
-  let segStart = start
-  let colon = -1
-  let paren = 0
-  let quote: '"' | "'" | null = null
-  let i = start
-
-  const pushSegment = (segEnd: number): void => {
-    if (colon < 0) return
+  for (const { segStart, segEnd, colon } of scanDeclarationSegments(source, start, end)) {
+    if (colon < 0) continue
     const propRaw = source.slice(segStart, colon)
     // Mascara comentários do nome da prop preservando offsets (comentário →
     // espaços do mesmo tamanho), p/ a prop e a linha não incluírem o `/* */`
     // (ex.: `\n  /* c */\n  color: …` → prop `color`, na linha do `color`).
     const propMasked = propRaw.replace(/\/\*[\s\S]*?\*\//g, (m) => ' '.repeat(m.length))
     const value = source.slice(colon + 1, segEnd).trim()
-    const prop = propMasked.trim().toLowerCase()
-    if (!prop || !value) return
+    const prop = normalizeDeclKey(propMasked.trim())
+    if (!prop || !value) continue
     const rel = propMasked.search(/\S/)
     const propOffset = segStart + (rel < 0 ? 0 : rel)
     decls.push({ prop, value, line: lineOf(lineStarts, propOffset) })
   }
-
-  while (i < end) {
-    const ch = source[i]
-    const next = source[i + 1]
-    if (quote) {
-      if (ch === '\\') {
-        i += 2
-        continue
-      }
-      if (ch === quote) quote = null
-      i += 1
-      continue
-    }
-    if (ch === '/' && next === '*') {
-      const ce = source.indexOf('*/', i + 2)
-      i = ce < 0 ? end : ce + 2
-      continue
-    }
-    if (ch === '"' || ch === "'") {
-      quote = ch
-      i += 1
-      continue
-    }
-    if (ch === '(') {
-      paren += 1
-      i += 1
-      continue
-    }
-    if (ch === ')') {
-      if (paren > 0) paren -= 1
-      i += 1
-      continue
-    }
-    if (ch === ':' && paren === 0 && colon < 0) {
-      colon = i
-      i += 1
-      continue
-    }
-    if (ch === ';' && paren === 0) {
-      pushSegment(i)
-      segStart = i + 1
-      colon = -1
-      i += 1
-      continue
-    }
-    i += 1
-  }
-  pushSegment(end)
   return decls
 }
 

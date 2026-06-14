@@ -18,6 +18,15 @@ export function bool(value: boolean): JSExpr {
   return { type: 'bool', value }
 }
 
+// NOTA: `deepEqualIR` e `irBlockStructureEqual` comparam via `JSON.stringify`,
+// que serializa as chaves na ORDEM DE INSERÇÃO. Por isso ambas dependem do IR
+// ser CANÔNICO — ou seja, todos os produtores (buildIR a partir dos blocos e os
+// reverse parsers a partir do código) precisam montar cada objeto com as chaves
+// na MESMA ordem. Dois IRs estruturalmente idênticos mas com chaves inseridas em
+// ordens diferentes serializam para strings distintas e seriam tidos como
+// diferentes aqui. Mantenha a ordem de inserção dos campos consistente entre os
+// geradores ao evoluir o schema (sem isso, a Ponte cairia em rebuild a cada
+// reparse). Sem mudança de comportamento — apenas documentação do contrato.
 export function deepEqualIR(a: SZIR | null, b: SZIR | null): boolean {
   if (a === b) return true
   if (!a || !b) return false

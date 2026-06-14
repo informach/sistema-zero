@@ -165,6 +165,53 @@ describe('parseHTML', () => {
     expect(ir[0]).toMatchObject({ type: 'rawHTML', advanced: true })
   })
 
+  it('preserva comentário HTML entre blocos no round-trip (não some)', () => {
+    const ir = parseHTML('<body><h1>a</h1><!--keep--><p>b</p></body>')
+    expect(ir).toEqual([
+      { type: 'element', tag: 'h1', text: 'a' },
+      { type: 'rawHTML', html: '<!--keep-->', advanced: true },
+      { type: 'element', tag: 'p', text: 'b' },
+    ])
+  })
+
+  it('preserva comentário inline em <p> SEM fundir os textos vizinhos', () => {
+    const ir = parseHTML('<p>x<!--c-->y</p>')
+    expect(ir[0]?.type).toBe('element')
+    if (ir[0]?.type === 'element') {
+      expect(ir[0].tag).toBe('p')
+      expect(ir[0].text).toBeUndefined()
+      expect(ir[0].children).toEqual([
+        { type: 'text', text: 'x' },
+        { type: 'rawHTML', html: '<!--c-->', advanced: true },
+        { type: 'text', text: 'y' },
+      ])
+    }
+  })
+
+  it('preserva comentário inline dentro de container (recursão)', () => {
+    const ir = parseHTML('<div><!--topo--><p>oi</p></div>')
+    expect(ir[0]?.type).toBe('element')
+    if (ir[0]?.type === 'element') {
+      expect(ir[0].children?.[0]).toEqual({
+        type: 'rawHTML',
+        html: '<!--topo-->',
+        advanced: true,
+      })
+      expect(ir[0].children?.[1]).toEqual({ type: 'element', tag: 'p', text: 'oi' })
+    }
+  })
+
+  it('preserva comentário inline em folha não-inline (<a>) verbatim', () => {
+    const ir = parseHTML('<a href="#">x<!--c-->y</a>')
+    expect(ir[0]?.type).toBe('rawHTML')
+    if (ir[0]?.type === 'rawHTML') {
+      expect(ir[0].advanced).toBe(true)
+      expect(ir[0].html).toContain('<!--c-->')
+      expect(ir[0].html).toContain('x')
+      expect(ir[0].html).toContain('y')
+    }
+  })
+
   it('aninhamento patologicamente profundo não crasha (degrada ou parseia)', () => {
     // A recursão mapNode↔mapChildren não tem guarda de profundidade; o contrato
     // de não-crashar precisa valer mesmo para entradas patológicas.

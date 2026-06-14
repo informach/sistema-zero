@@ -124,6 +124,27 @@ function mergeBlockData(block: Blockly.Block, node: HTMLNode): void {
 }
 
 /**
+ * Recupera `width`/`height` guardados no `data` JSON do bloco `sz_html_canvas`
+ * (contraparte do stash em `htmlNodeToBlockInner` de workspaceState). Só devolve
+ * valores numéricos finitos; `data` ausente/inválido vira `{}`.
+ */
+function parseCanvasData(raw: string | null | undefined): { width?: number; height?: number } {
+  if (!raw) return {}
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(raw)
+  } catch {
+    return {}
+  }
+  if (typeof parsed !== 'object' || parsed === null) return {}
+  const { width, height } = parsed as { width?: unknown; height?: unknown }
+  const out: { width?: number; height?: number } = {}
+  if (typeof width === 'number' && Number.isFinite(width)) out.width = width
+  if (typeof height === 'number' && Number.isFinite(height)) out.height = height
+  return out
+}
+
+/**
  * Mescla o campo `CLASS` do bloco no `attrs.class` da IR. Contraparte de
  * `htmlNodeToBlock` em workspaceState, que preenche o campo a partir de
  * `attrs.class`. Campo vazio é ignorado (round-trip estável).
@@ -541,6 +562,10 @@ function getCssDeclarations(
   const declIds: Record<string, string> = {}
   let cur: Blockly.Block | null = block.getInputTargetBlock(name)
   while (cur) {
+    if (cur.isInsertionMarker()) {
+      cur = cur.getNextBlock()
+      continue
+    }
     if (cur.type === 'sz_css_decl') {
       const prop = f(cur, 'PROP').trim()
       if (prop) {
@@ -624,11 +649,13 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       return htmlText('h1', block, seen)
     case 'sz_html_p':
       return htmlText('p', block, seen)
-    case 'sz_html_button':
+    case 'sz_html_button': {
+      const id = f(block, 'ID')
       return {
         kind: 'html',
-        value: { type: 'element', tag: 'button', id: f(block, 'ID'), text: f(block, 'TEXT') },
+        value: { type: 'element', tag: 'button', ...(id ? { id } : {}), text: f(block, 'TEXT') },
       }
+    }
     case 'sz_html_div':
       return htmlContainer('div', block, seen)
     case 'sz_html_header':
@@ -703,13 +730,14 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       }
     }
     case 'sz_html_canvas': {
-      // Largura/altura saíram do bloco HTML — o tamanho é definido nos blocos
-      // de Canvas (JS). Lê campos W/H legados se um projeto antigo os tiver.
+      // Largura/altura saíram do bloco HTML — o tamanho costuma ser definido nos
+      // blocos de Canvas (JS). Quando o canvas veio do HTML com width/height
+      // (ex.: `<canvas width=200 height=100>`), o workspaceState os guardou no
+      // `data` do bloco; recuperamos daqui para o round-trip não os perder.
       const node: Extract<HTMLNode, { type: 'canvas' }> = { type: 'canvas', id: f(block, 'ID') }
-      const w = block.getFieldValue('W')
-      const h = block.getFieldValue('H')
-      if (w != null && Number.isFinite(Number(w))) node.width = Number(w)
-      if (h != null && Number.isFinite(Number(h))) node.height = Number(h)
+      const dims = parseCanvasData((block as unknown as { data?: string | null }).data)
+      if (dims.width != null) node.width = dims.width
+      if (dims.height != null) node.height = dims.height
       return { kind: 'html', value: node }
     }
     case 'sz_html_text':

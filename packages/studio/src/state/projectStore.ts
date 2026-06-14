@@ -31,6 +31,7 @@ import {
   deleteProject as deleteProjectFromDB,
   loadProjectById,
   persistProject,
+  renameProjectMeta,
 } from './persistence'
 import {
   addProDir,
@@ -313,7 +314,9 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_val_window_width',
 ])
 
-const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> = {
+// Exportado para o teste de drift (extensionBlocklySync.test.ts): a allowlist por
+// extensão DEVE casar 1-para-1 com os block defs de OFFICIAL_CATALOG[].blockly.
+export const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> = {
   'game-2d': new Set([
     'sz_g2d_collides',
     'sz_g2d_create_sprite',
@@ -1201,7 +1204,20 @@ function countHTMLNode(node: HTMLNode): number {
   return 1 + (node.children ?? []).reduce((total, child) => total + countHTMLNode(child), 0)
 }
 
-function countCSSEntry(_entry: CSSEntry): number {
+function countCSSEntry(entry: CSSEntry): number {
+  // Recursão para não SUBcontar o teto MAX_IR_NODES: uma media query carrega N
+  // regras aninhadas e um @keyframes carrega N passos — contá-los como 1 deixava
+  // um IR hostil empilhar milhares de nós dentro de uns poucos containers sem
+  // estourar o limite. Mantido em sincronia com MediaQueryCSS/KeyframesCSS (#ir).
+  // `CSSRule` não tem campo `type` (só selector/declarations), então o guard
+  // `'type' in entry` distingue a regra plana das entradas discriminadas.
+  if (!('type' in entry)) return 1
+  if (entry.type === 'mediaQuery') {
+    return 1 + entry.rules.reduce((total, child) => total + countCSSEntry(child), 0)
+  }
+  if (entry.type === 'keyframes') {
+    return 1 + entry.steps.length
+  }
   return 1
 }
 
@@ -1379,12 +1395,14 @@ export function createProjectStore(
     },
     renameProject: async (id, name) => {
       const safeName = sanitizeProjectName(name)
-      const existing = await loadSanitizedProjectById(id)
-      if (!existing) return
-      const next = { ...existing, name: safeName, updatedAt: Date.now() }
-      await persistProject(next)
-      if (get().project?.id === id) {
-        set({ project: next, isDirty: false, saveError: null })
+      // Escrita SÓ-METADADO: NÃO reler+reescrever files/state (snapshot estale
+      // ressuscitaria bytes antigos e correria com o autosave do editor aberto).
+      await renameProjectMeta(id, safeName)
+      // Atualiza a store viva só se for o projeto carregado — e SÓ o nome/updatedAt,
+      // preservando edições não salvas em arquivos/IR/blocksState do editor aberto.
+      const current = get().project
+      if (current?.id === id) {
+        set({ project: { ...current, name: safeName, updatedAt: Date.now() }, saveError: null })
       }
     },
     importProjectFromJSON: async (raw) => {
@@ -1407,19 +1425,45 @@ export function createProjectStore(
       const installedExtensions = sanitizeImportedExtensions(r.installedExtensions)
       const blocksState = sanitizeImportedBlocksState(r.blocksState, installedExtensions)
 
+      // Modo profissional: reconstrói kind/tree/proMeta com os MESMOS sanitizers
+      // do load (sanitizeProTree/sanitizeProMeta). Sem isso, exportar→importar um
+      // projeto pro dropava esses campos e o projeto voltava como classic vazio.
+      // Qualquer falha de sanitização rebaixa para classic (igual a
+      // sanitizeStoredProject). `node_modules` nunca passa (barrado em proTree).
+      let tree: ProjectTree | undefined
+      let proMeta: ProProjectMeta | undefined
+      if (r.kind === 'pro') {
+        const sanitizedTree = sanitizeProTree(r.tree)
+        const sanitizedMeta = sanitizeProMeta(r.proMeta)
+        if (sanitizedTree && sanitizedMeta) {
+          tree = sanitizedTree
+          proMeta = sanitizedMeta
+        }
+      }
+      const isPro = tree != null && proMeta != null
+
       const now = Date.now()
       const base = createEmptyProject(ulid(), sanitizeProjectName(r.name))
-      const mode: IDEMode = IDE_MODES.includes(r.mode as IDEMode) ? (r.mode as IDEMode) : base.mode
+      const mode: IDEMode = isPro
+        ? 'code'
+        : IDE_MODES.includes(r.mode as IDEMode)
+          ? (r.mode as IDEMode)
+          : base.mode
       const imported: Project = {
         ...base,
         files,
-        extraFiles: sanitizeImportedExtraFiles(r.extraFiles),
+        // Espelha o teto COMBINADO do load (canônicos + extras ≤ MAX_TOTAL_CHARS):
+        // sem isso a soma podia passar de 8 MB e o primeiro reopen derrubaria
+        // extras em silêncio, divergindo o registro no disco do que foi aberto.
+        extraFiles: limitCombinedExtraFiles(files, sanitizeImportedExtraFiles(r.extraFiles)),
         mode,
         ir: ir ?? base.ir,
         blocksState,
         installedExtensions,
         createdAt: now,
         updatedAt: now,
+        // Pro vive sempre no modo 'code' (mode já é 'code' acima).
+        ...(isPro ? { kind: 'pro' as const, tree, proMeta } : {}),
       }
       await persistProject(imported)
       return imported

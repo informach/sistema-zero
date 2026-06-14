@@ -10,6 +10,7 @@ import { StudioStoresContext } from '../state/storesContext'
 import { createStudioStores, useStudioPersistence } from '../state/studioStores'
 import { useUIStore } from '../state/uiStore'
 import {
+  type ResolvedStudioConfig,
   resolveLearning,
   resolvePreviewSecurity,
   resolveStudioConfig,
@@ -100,17 +101,26 @@ function StudioBody({
   const [learning] = useState(() =>
     resolveLearning({ level, allowBlocks, allowCategories, allowLevelReveal }),
   )
+  // `previewSecurity`/`learning` saem de fora do BaseStudioConfig de propósito
+  // (ver config.ts) e são anexados SÓ aqui — a anotação ResolvedStudioConfig
+  // torna os dois obrigatórios neste call site.
   const config = useMemo(
-    () => ({ ...baseConfig, previewSecurity, learning }),
+    (): ResolvedStudioConfig => ({ ...baseConfig, previewSecurity, learning }),
     [baseConfig, previewSecurity, learning],
   )
 
   // `replaceProject` (handle) troca o projeto sem mexer na prop.
   const [replacedProject, setReplacedProject] = useState<Project | null>(null)
   const sourceProject = replacedProject ?? initialProject
-  // Dep é a chave primitiva estável `allowedModesKey` em vez de `config.allowedModes`
+  // Chave primitiva estável dos modos RESOLVIDOS (não da prop): flipa exatamente
+  // quando `config.allowedModes` muda — inclusive ao ligar `professional` numa
+  // instância montada (que força ['code']). Keyar pela prop `allowedModesKey`
+  // não recomputaria a coerção nesse caso, deixando a aba ativa fora dos modos
+  // permitidos. NÃO depender do array cru (referência muda a cada render).
+  const resolvedModesKey = config.allowedModes.join('|')
+  // Dep é a chave primitiva estável `resolvedModesKey` em vez de `config.allowedModes`
   // (array que muda de referência a cada render do host com allowedModes inline).
-  // biome-ignore lint/correctness/useExhaustiveDependencies: ver acima — depende de allowedModesKey, não do array config.allowedModes
+  // biome-ignore lint/correctness/useExhaustiveDependencies: ver acima — depende de resolvedModesKey, não do array config.allowedModes
   const sanitized = useMemo(() => {
     const project = sanitizeProjectForHost(sourceProject)
     if (!project) return null
@@ -119,7 +129,7 @@ function StudioBody({
     let mode = initialMode ?? project.mode
     if (!config.allowedModes.includes(mode)) mode = config.allowedModes[0] ?? project.mode
     return mode === project.mode ? project : { ...project, mode }
-  }, [sourceProject, initialMode, allowedModesKey])
+  }, [sourceProject, initialMode, resolvedModesKey])
 
   const projectStoreApi = useProjectStoreApi()
   const persistence = useStudioPersistence()
@@ -216,7 +226,11 @@ function StudioBody({
               </p>
             </div>
           ) : hasProject ? (
-            <ErrorBoundary fallback={RootErrorFallback} resetKeys={[sanitizedId]} label="Studio">
+            <ErrorBoundary
+              fallback={(p) => <RootErrorFallback {...p} onExit={onExit} />}
+              resetKeys={[sanitizedId]}
+              label="Studio"
+            >
               <Shell onExit={onExit} canToggleTheme={theme === undefined} />
             </ErrorBoundary>
           ) : null}

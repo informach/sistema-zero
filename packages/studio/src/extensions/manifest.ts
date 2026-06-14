@@ -11,6 +11,103 @@ export const ExtensionPermissionSchema = z.enum([
   'network',
 ])
 
+// Pré-guarda de profundidade/tamanho do IR de exemplo. O SZIRSchema é recursivo
+// (z.lazy em HTML/CSS/JS), então um exemplo HOSTIL/malformado (aninhamento
+// profundo) poderia estourar a pilha ANTES da validação do schema. Espelha os
+// limites do caminho de import de IR (sanitizeImportedIR em state/projectStore),
+// aplicados ANTES do parse — endurecimento proativo. Mantido auto-contido aqui
+// para não acoplar o barril #extensions (avaliado no boot de toda extensão) ao
+// grafo do projectStore (zustand/idb-keyval).
+const IR_EXAMPLE_LIMITS = {
+  maxChars: 4_000_000,
+  maxContainerNodes: 20_000,
+  maxDepth: 80,
+  maxArrayItems: 25_000,
+  maxObjectKeys: 250,
+  maxStringChars: 2_000_000,
+} as const
+
+function isPlainRecord(value: object): value is Record<string, unknown> {
+  const proto = Object.getPrototypeOf(value)
+  return proto === Object.prototype || proto === null
+}
+
+/**
+ * Percorre `value` iterativamente (pilha própria, sem recursão) e devolve `false`
+ * se exceder profundidade, nº de containers, tamanho total ou se contiver ciclos/
+ * valores não-JSON. Idêntico em espírito ao `isJsonShapeWithinLimits` do caminho
+ * de import — barra a entrada antes do parse recursivo do Zod.
+ */
+function isIrExampleWithinLimits(value: unknown): boolean {
+  const limits = IR_EXAMPLE_LIMITS
+  const stack: Array<{ value: unknown; depth: number }> = [{ value, depth: 0 }]
+  const seen = new WeakSet<object>()
+  let chars = 0
+  let containerNodes = 0
+
+  const addChars = (amount: number): boolean => {
+    chars += amount
+    return chars <= limits.maxChars
+  }
+
+  while (stack.length > 0) {
+    const current = stack.pop()
+    if (!current) continue
+    const { value: item, depth } = current
+    if (depth > limits.maxDepth) return false
+    if (item == null) continue
+
+    if (typeof item === 'string') {
+      if (item.length > limits.maxStringChars) return false
+      if (!addChars(item.length)) return false
+      continue
+    }
+    if (typeof item === 'number') {
+      if (!Number.isFinite(item)) return false
+      if (!addChars(String(item).length)) return false
+      continue
+    }
+    if (typeof item === 'boolean') {
+      if (!addChars(item ? 4 : 5)) return false
+      continue
+    }
+    if (typeof item !== 'object') return false
+    if (seen.has(item)) return false
+    seen.add(item)
+
+    containerNodes += 1
+    if (containerNodes > limits.maxContainerNodes) return false
+
+    if (Array.isArray(item)) {
+      if (item.length > limits.maxArrayItems) return false
+      for (let index = item.length - 1; index >= 0; index -= 1) {
+        stack.push({ value: item[index], depth: depth + 1 })
+      }
+      continue
+    }
+    if (!isPlainRecord(item)) return false
+    const entries = Object.entries(item)
+    if (entries.length > limits.maxObjectKeys) return false
+    for (const [key, child] of entries) {
+      if (!addChars(key.length)) return false
+      stack.push({ value: child, depth: depth + 1 })
+    }
+  }
+  return true
+}
+
+/**
+ * Schema do IR de exemplo COM a pré-guarda de profundidade/tamanho aplicada antes
+ * do parse recursivo. `superRefine` roda a pré-checagem; se passar, o
+ * `SZIRSchema` valida a forma. (z.preprocess não dá para lançar; aqui o refine
+ * adiciona uma issue e o pipe para o SZIRSchema só ocorre se shape passou.)
+ */
+const BoundedExampleIRSchema = z
+  .custom<unknown>((value) => isIrExampleWithinLimits(value), {
+    error: 'IR de exemplo excede o tamanho ou a profundidade máxima permitida.',
+  })
+  .pipe(SZIRSchema)
+
 // Tetos defensivos: um manifest é só metadados + docs, então strings imensas
 // indicam dados malformados/maliciosos. Limites generosos para não atrapalhar
 // extensões reais (o docs oficial tem ~1 KB) mas finitos para evitar exaustão
@@ -24,7 +121,8 @@ const MAX_EXAMPLES = 50
 export const ExtensionExampleSchema = z.object({
   name: z.string().min(1).max(MAX_NAME_CHARS),
   description: z.string().max(MAX_DESCRIPTION_CHARS).optional(),
-  ir: SZIRSchema,
+  // Pré-guarda de profundidade/tamanho ANTES do parse recursivo do SZIRSchema.
+  ir: BoundedExampleIRSchema,
 })
 
 export const ExtensionManifestSchema = z.object({

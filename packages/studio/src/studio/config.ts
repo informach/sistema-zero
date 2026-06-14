@@ -116,10 +116,20 @@ export interface ResolvedStudioConfig {
   learning: LearningConfig
 }
 
+/**
+ * Parte da config derivada SÓ de `features`/`allowedModes`. `previewSecurity` e
+ * `learning` ficam de fora de propósito: dependem da prop `limits` e do perfil de
+ * aprendizado, que o Studio resolve por instância via `resolvePreviewSecurity` /
+ * `resolveLearning`. Mantê-los fora daqui impede que um chamador receba
+ * silenciosamente os defaults de módulo (ignorando os limites do host) — só o
+ * call site do Studio (e o STANDALONE_CONFIG) os anexa.
+ */
+export type BaseStudioConfig = Omit<ResolvedStudioConfig, 'previewSecurity' | 'learning'>
+
 export function resolveStudioConfig(
   features: StudioFeatures | undefined,
   allowedModes: readonly IDEMode[] | undefined,
-): ResolvedStudioConfig {
+): BaseStudioConfig {
   const ai = features?.ai ?? false
   const aiObject = typeof ai === 'object' ? ai : {}
   const professional = features?.professional ?? false
@@ -139,8 +149,6 @@ export function resolveStudioConfig(
       allowUserKey: aiObject.allowUserKey ?? !aiObject.apiKey,
     },
     allowedModes: resolvedModes,
-    previewSecurity: DEFAULT_PREVIEW_SECURITY,
-    learning: DEFAULT_LEARNING_CONFIG,
   }
 }
 

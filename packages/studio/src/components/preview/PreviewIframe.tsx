@@ -219,6 +219,18 @@ export function PreviewIframe(): JSX.Element {
   }, [doc])
 
   // Loop do watchdog: marca travado se nenhum heartbeat chegar dentro do timeout.
+  //
+  // ⚠️ LIMITAÇÃO CONHECIDA do sandbox de MESMA THREAD: o iframe srcdoc
+  // null-origin compartilha a thread principal do host. O loopGuard (Camada A)
+  // corta laços síncronos instrumentados, mas trabalho síncrono NÃO-laço — p.ex.
+  // `Array.from({ length: 1e10 })`, um `JSON.parse` gigante, ReDoS ou recursão
+  // profunda — congela a thread compartilhada. Este watchdog só consegue
+  // DETECTAR o congelamento (pela ausência de heartbeats), não INTERROMPÊ-LO: o
+  // próprio `setPreviewRunning` fica enfileirado na thread travada e só roda
+  // quando ela destrava. O remédio definitivo é mover o preview para
+  // CROSS-ORIGIN/CROSS-PROCESS (iframe servido de outra origem isolada, com
+  // process/site isolation do navegador dando uma thread própria que pode ser
+  // morta) — fora do escopo desta camada. Ver docs/embedding.md.
   useEffect(() => {
     if (!docIsLive) return
     const id = setInterval(() => {

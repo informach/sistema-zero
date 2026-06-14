@@ -11,14 +11,22 @@ describe('transpileExtra', () => {
     expect(out).toContain('soma')
   })
 
-  it('compila JSX de um .tsx', () => {
+  it('rejeita .tsx com throw legível (sem React no preview)', () => {
     const out = transpileExtra('App.tsx', 'export const App = () => <div className="x">oi</div>')
+    expect(out).toContain('throw new Error(')
+    expect(out).toContain('JSX/TSX não é suportado')
+    expect(out).toContain('App.tsx')
+    // NÃO emite import de react/jsx-runtime (que falharia em resolver no preview).
+    expect(out).not.toContain('react/jsx-runtime')
     expect(out).not.toContain('<div')
-    expect(out).toContain('jsx')
   })
 
-  it('compila JSX de um .jsx (sem tipos)', () => {
+  it('rejeita .jsx com throw legível (sem React no preview)', () => {
     const out = transpileExtra('comp.jsx', 'export const C = () => <span>oi</span>')
+    expect(out).toContain('throw new Error(')
+    expect(out).toContain('JSX/TSX não é suportado')
+    expect(out).toContain('comp.jsx')
+    expect(out).not.toContain('react/jsx-runtime')
     expect(out).not.toContain('<span>')
   })
 

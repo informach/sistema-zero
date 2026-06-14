@@ -124,6 +124,14 @@ async function readPersisted(): Promise<PersistedSettings> {
   return sanitizePersistedSettings(await get<unknown>(SETTINGS_KEY, getStore()))
 }
 
+// load() é singleton: a 1ª carga hidrata a store a partir do IndexedDB, mas a
+// chave de sessão (modo 'session') vive SÓ em memória — re-rodar o setState
+// destrutivo numa 2ª montagem de <Studio>/<ProjectList> apagaria a chave e
+// rebaixaria o provider para mock. Por isso load() retorna cedo se já carregou
+// e coalesce primeiras cargas concorrentes numa única promise em voo (duas
+// montagens simultâneas não disparam dois setState).
+let loadInFlight: Promise<void> | null = null
+
 // O read-modify-write roda DENTRO de uma única transação do IndexedDB via
 // idb-keyval update(): setters concorrentes são enfileirados e não se perdem
 // (o get+set separado deixava cada um ler o mesmo estado antigo e o último
@@ -151,23 +159,32 @@ export const useSettingsStore = create<SettingsState>((setState, getState) => ({
   revealAdvanced: false,
   loaded: false,
   load: async () => {
-    const persisted = await readPersisted()
-    const aiModel = normalizeAIModel(persisted.aiModel)
-    const aiApiKeyStorage = normalizeAIApiKeyStorage(persisted.aiApiKeyStorage)
-    setState({
-      aiApiKey: aiApiKeyStorage === 'persistent' ? (persisted.aiApiKey ?? '') : '',
-      aiApiKeyStorage,
-      aiModel,
-      theme: persisted.theme ?? 'dark',
-      codeFontSize: clampCodeFontSize(persisted.codeFontSize ?? CODE_FONT_SIZE_DEFAULT),
-      revealAdvanced: persisted.revealAdvanced ?? false,
-      loaded: true,
-    })
-    if (aiApiKeyStorage === 'session' && persisted.aiApiKey) {
-      await writeMerge({ aiApiKey: undefined, aiApiKeyStorage })
-    }
-    if (persisted.aiModel && persisted.aiModel !== aiModel) {
-      await writeMerge({ aiModel })
+    if (getState().loaded) return
+    if (loadInFlight) return loadInFlight
+    loadInFlight = (async () => {
+      const persisted = await readPersisted()
+      const aiModel = normalizeAIModel(persisted.aiModel)
+      const aiApiKeyStorage = normalizeAIApiKeyStorage(persisted.aiApiKeyStorage)
+      setState({
+        aiApiKey: aiApiKeyStorage === 'persistent' ? (persisted.aiApiKey ?? '') : '',
+        aiApiKeyStorage,
+        aiModel,
+        theme: persisted.theme ?? 'dark',
+        codeFontSize: clampCodeFontSize(persisted.codeFontSize ?? CODE_FONT_SIZE_DEFAULT),
+        revealAdvanced: persisted.revealAdvanced ?? false,
+        loaded: true,
+      })
+      if (aiApiKeyStorage === 'session' && persisted.aiApiKey) {
+        await writeMerge({ aiApiKey: undefined, aiApiKeyStorage })
+      }
+      if (persisted.aiModel && persisted.aiModel !== aiModel) {
+        await writeMerge({ aiModel })
+      }
+    })()
+    try {
+      await loadInFlight
+    } finally {
+      loadInFlight = null
     }
   },
   setAIApiKey: async (k, options) => {

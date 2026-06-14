@@ -184,7 +184,10 @@ function cleanBlockNode(node: unknown, types: Set<string>): unknown | unknown[] 
 
   return {
     ...obj,
-    next: nextBlocks[0] ? { block: nextBlocks[0] } : undefined,
+    // Pai sobrevive: limpa o `next` com a MESMA lógica dos inputs, preservando a
+    // distinção block/shadow. Reconstruir `{ block: nextBlocks[0] }` promovia uma
+    // sombra a bloco real (shadow→real) e descartava o segundo filho do wrapper.
+    next: obj.next ? (cleanWrapper(obj.next, types) ?? undefined) : undefined,
     inputs: Object.keys(inputs).length > 0 ? inputs : undefined,
   }
 }

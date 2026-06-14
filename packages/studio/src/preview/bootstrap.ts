@@ -104,11 +104,27 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
   for (const file of extraJsFiles) {
     const transpiled = transpileExtra(file.name, file.content)
     const dataUrl = `data:text/javascript;base64,${base64Encode(instrumentLoops(transpiled))}`
-    for (const key of importmapKeysFor(file.name)) importmap[key] = dataUrl
+    for (const key of importmapKeysFor(file.name)) {
+      // Skip-on-conflict: o PRIMEIRO specifier (módulo de extensão ou extra
+      // anterior, ex.: `utils.ts` vs `utils.js` que ambos mapeiam `./utils`)
+      // vence. Sobrescrever quebraria silenciosamente o import que já resolvia.
+      if (key in importmap) {
+        console.warn(
+          `[studio] Specifier de importmap em conflito ignorado: "${key}" (de "${file.name}").`,
+        )
+        continue
+      }
+      importmap[key] = dataUrl
+    }
   }
+  // Invariante: o JSON do importmap NÃO passa por escapeScriptContent (suas
+  // inserções de `\` são escapes inválidos de JSON e quebrariam o JSON.parse do
+  // navegador). A ÚNICA substituição segura para JSON é neutralizar o fechamento
+  // literal `</script` (que encerraria o elemento cedo): `<\/script` é JSON
+  // válido (`\/` ≡ `/`) e o tokenizer HTML não fecha o <script>.
   const importmapTag =
     Object.keys(importmap).length > 0
-      ? `<script type="importmap">${JSON.stringify({ imports: importmap })}</script>`
+      ? `<script type="importmap">${JSON.stringify({ imports: importmap }).replace(/<\/script/gi, '<\\/script')}</script>`
       : ''
 
   // O CSS canônico entra como <style> inline para não depender de fetch
@@ -116,17 +132,43 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
   // hrefs relativos a parent).
   const styleTag = input.css ? `<style>${escapeStyleContent(input.css)}</style>` : ''
 
-  // O JS canônico vira <script type="module"> APENAS quando usa import/export
-  // (precisa do importmap dos extras). Senão é clássico, para preservar funções
-  // globais e handlers `onclick="..."` da página do aluno — em module, nomes do
-  // topo não viram globais e o `onclick` quebraria. Erros continuam capturados
-  // pelo interceptor global. A detecção de module usa o JS ORIGINAL (a guarda de
-  // loop não adiciona import/export); o conteúdo executado é o instrumentado.
+  // O JS canônico vira <script type="module"> APENAS quando o PRÓPRIO código do
+  // aluno usa import/export (precisa do importmap dos extras). Senão é clássico,
+  // para preservar funções globais e handlers `onclick="..."` da página do aluno
+  // — em module, nomes do topo não viram globais e o `onclick` quebraria. Erros
+  // continuam capturados pelo interceptor global. A detecção de module usa o JS
+  // ORIGINAL (a guarda de loop não adiciona import/export); o conteúdo executado
+  // é o instrumentado.
   const jsNeedsModule = /^\s*(?:import|export)\b/m.test(input.js)
   const instrumentedJs = instrumentLoops(input.js)
-  const userScript = instrumentedJs
-    ? scriptTag(instrumentedJs, jsNeedsModule || needsModules ? { type: 'module' } : {})
-    : ''
+  // ⚠️ Em TODOS os caminhos o JS do aluno é emitido como script EXTERNO via
+  // `data:text/javascript;base64,…`, NÃO inline. Motivo: inline o conteúdo
+  // passaria por `escapeScriptContent`, que insere `\` em `</script`, `<!--` e
+  // `<script` — neutralização que corrompe literais legítimos do aluno (um regex
+  // `/<!--/u` vira `/<\!--/u` → SyntaxError; `/<\/script>/` muda de significado).
+  // A data: URL é opaca e self-contained (não passa pelo tokenizer HTML do
+  // documento pai), então dispensa esse escape e preserva o código verbatim.
+  // Semântica preservada por tipo:
+  //  - module (jsNeedsModule): external type="module" — importmap resolve igual,
+  //    escopo de módulo é idêntico inline vs externo.
+  //  - clássico (default): external SEM defer — script clássico externo mantém
+  //    escopo global (globais/onclick funcionam) e roda na ordem do documento
+  //    (data: URL não faz round-trip de rede).
+  //  - clássico DEFERIDO (needsModules e !jsNeedsModule): external + `defer` —
+  //    escopo global + ordem APÓS o module da extensão (que define p.ex.
+  //    window.SZGame3D). `<script defer>` INLINE é ignorado, por isso externo.
+  const jsNeedsDeferredClassic = !jsNeedsModule && needsModules
+  let userScript = ''
+  if (instrumentedJs) {
+    const dataUrl = `data:text/javascript;base64,${base64Encode(instrumentedJs)}`
+    if (jsNeedsModule) {
+      userScript = scriptTag('', { type: 'module', src: dataUrl })
+    } else if (jsNeedsDeferredClassic) {
+      userScript = scriptTag('', { defer: '', src: dataUrl })
+    } else {
+      userScript = scriptTag('', { src: dataUrl })
+    }
+  }
 
   // Camadas de segurança no <head>, em ordem (defesa em profundidade):
   // CSP → interceptor (console/erros/heartbeat) → permissionGuard (rede) →
@@ -176,7 +218,19 @@ function splitHtml(html: string): { headInner: string; bodyInner: string } {
   const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i)
   let headInner = headMatch?.[1] ?? ''
   headInner = headInner.replace(/<link[^>]*href=["'][^"']*style\.css["'][^>]*>/gi, '')
-  let bodyInner = bodyMatch?.[1] ?? html
+  // Quando há <html> mas FALTA <body>, não despejamos o documento inteiro no
+  // corpo gerado (doctype + <html> + <head> completo viriam junto, duplicando o
+  // <head> e renderizando o conteúdo do head como texto). Removemos doctype,
+  // a casca <html>/</html> e o bloco <head>...</head> antes de usar como corpo.
+  let bodyInner: string
+  if (bodyMatch) {
+    bodyInner = bodyMatch[1] ?? ''
+  } else {
+    bodyInner = html
+      .replace(/<!doctype[^>]*>/gi, '')
+      .replace(/<\/?html[^>]*>/gi, '')
+      .replace(/<head[^>]*>[\s\S]*?<\/head>/gi, '')
+  }
   bodyInner = bodyInner.replace(/<script[^>]*src=["'][^"']*script\.js["'][^>]*><\/script>/gi, '')
   return { headInner: headInner.trim(), bodyInner: bodyInner.trim() }
 }

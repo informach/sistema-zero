@@ -27,12 +27,21 @@ export function ProFileTree({ activeFile, onSelectFile }: ProFileTreeProps): JSX
   const [pendingDelete, setPendingDelete] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const renameInputRef = useRef<HTMLInputElement | null>(null)
+  const createInputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
     if (!renaming) return
     renameInputRef.current?.focus()
     renameInputRef.current?.select()
   }, [renaming])
+
+  // O `autoFocus` nativo só dispara na montagem do input. Como o campo de criação
+  // é reutilizado (clicar no + de outra pasta com o form aberto só troca
+  // `creating.base`, sem remontar), focamos via effect a cada (re)abertura.
+  useEffect(() => {
+    if (!creating) return
+    createInputRef.current?.focus()
+  }, [creating])
 
   const toggle = (path: string) => {
     setCollapsed((prev) => {
@@ -67,7 +76,13 @@ export function ProFileTree({ activeFile, onSelectFile }: ProFileTreeProps): JSX
       setError(err)
       return
     }
+    // `renameProNode` renomeia a subárvore inteira (from/... → to/...). Se o
+    // arquivo aberto está DENTRO da pasta renomeada, seu path morreu — reaponta
+    // para o equivalente sob o novo prefixo (espelha o branch do delete acima).
     if (activeFile === renaming.from) onSelectFile(to)
+    else if (activeFile.startsWith(`${renaming.from}/`)) {
+      onSelectFile(to + activeFile.slice(renaming.from.length))
+    }
     setRenaming(null)
     setError(null)
   }
@@ -204,11 +219,10 @@ export function ProFileTree({ activeFile, onSelectFile }: ProFileTreeProps): JSX
             {creating.base ? ` em ${creating.base}/` : ' na raiz'}
           </p>
           <input
+            ref={createInputRef}
             name="new-pro-node"
             aria-label="Nome do novo item"
             autoComplete="off"
-            // biome-ignore lint/a11y/noAutofocus: foco esperado ao abrir o campo de criação
-            autoFocus
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             onKeyDown={(e) => {

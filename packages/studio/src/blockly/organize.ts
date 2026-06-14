@@ -46,9 +46,11 @@ export function organizeBlocks(workspace: Blockly.Workspace | null | undefined):
 
   const ws = workspace as Blockly.WorkspaceSvg
   Blockly.Events.setGroup(true)
-  const resizesWereEnabled = ws.setResizesEnabled != null
+  // Só registra se a API de pausar redimensionamentos existe (não captura o
+  // estado anterior — sempre reativamos no fim, que é o comportamento padrão).
+  const canToggleResizes = ws.setResizesEnabled != null
   try {
-    if (resizesWereEnabled) ws.setResizesEnabled(false)
+    if (canToggleResizes) ws.setResizesEnabled(false)
     let runningX = START_X
     for (const category of COLUMN_ORDER) {
       const group = groups[category]
@@ -67,7 +69,7 @@ export function organizeBlocks(workspace: Blockly.Workspace | null | undefined):
       runningX += colWidth + GAP_X
     }
   } finally {
-    if (resizesWereEnabled) ws.setResizesEnabled(true)
+    if (canToggleResizes) ws.setResizesEnabled(true)
     Blockly.Events.setGroup(false)
   }
   ws.render?.()

@@ -1,4 +1,4 @@
-import { createStore, delMany, get, getMany, keys, setMany } from 'idb-keyval'
+import { createStore, delMany, get, getMany, keys, set, setMany } from 'idb-keyval'
 import { IDE_MODES, type IDEMode, type Project } from '#core'
 import { cancelPendingAutosavesFor } from '../persistence/service'
 
@@ -24,14 +24,48 @@ function getStore() {
 // Este módulo mantém só as operações PURAS de IndexedDB — que são exatamente o
 // adapter 'local' (ver src/persistence/local.ts).
 
+// Cadeia de ESCRITA por id de projeto: encadeia persistProject/renameProjectMeta/
+// deleteProject do MESMO id para não correrem entre si. O `renameProjectMeta` faz
+// um get-then-set NÃO-ATÔMICO do registro de meta — sem esta serialização, um
+// `persistProject` (autosave do editor aberto) do mesmo id intercalado entre o
+// `get` e o `set` do rename perderia o nome novo (o set do rename gravaria por
+// cima com base num meta lido ANTES do persist, ou o persist gravaria por cima do
+// rename). A entrada é removida quando a própria cauda termina, para o Map não
+// crescer. Vive aqui (módulo, não por instância) porque as escritas de IDB também
+// vêm de create/import/duplicate, fora do mutex por instância do service.
+const writeChains = new Map<string, Promise<void>>()
+
+function runSerializedWrite(id: string, task: () => Promise<void>): Promise<void> {
+  const prev = writeChains.get(id)
+  // `prev` é blindado contra rejeição (handler nos dois ramos) para uma falha de
+  // uma escrita anterior não derrubar a cadeia das seguintes.
+  const next = prev ? prev.then(task, task) : task()
+  // A cadeia GUARDADA no Map nunca rejeita (o ramo de erro vira a limpeza), para
+  // não vazar uma unhandled rejection quando uma escrita falha (ex.: quota cheia)
+  // — mas o RESULTADO devolvido ao chamador propaga a falha (o autosave precisa
+  // marcar o badge de erro). São dois consumidores distintos do mesmo `task`.
+  const settled = next.then(
+    () => {
+      if (writeChains.get(id) === settled) writeChains.delete(id)
+    },
+    () => {
+      if (writeChains.get(id) === settled) writeChains.delete(id)
+    },
+  )
+  writeChains.set(id, settled)
+  return next
+}
+
 export async function persistProject(project: Project): Promise<void> {
-  await setMany(
-    [
-      [projectMetaKey(project.id), projectToMetaRecord(project)],
-      [projectFilesKey(project.id), projectToFilesRecord(project)],
-      [projectStateKey(project.id), projectToStateRecord(project)],
-    ],
-    getStore(),
+  await runSerializedWrite(project.id, () =>
+    setMany(
+      [
+        [projectMetaKey(project.id), projectToMetaRecord(project)],
+        [projectFilesKey(project.id), projectToFilesRecord(project)],
+        [projectStateKey(project.id), projectToStateRecord(project)],
+      ],
+      getStore(),
+    ),
   )
 }
 
@@ -52,10 +86,34 @@ export async function deleteProject(id: string): Promise<void> {
   // Cancela autosaves em voo em TODAS as instâncias — um timer pendente
   // re-persistiria o projeto recém-apagado.
   cancelPendingAutosavesFor(id)
-  await delMany(
-    [projectMetaKey(id), projectFilesKey(id), projectStateKey(id), legacyProjectKey(id)],
-    getStore(),
+  // No MESMO mutex de escrita do id: o delMany não pode intercalar com um
+  // persist/rename em voo do mesmo projeto.
+  await runSerializedWrite(id, () =>
+    delMany(
+      [projectMetaKey(id), projectFilesKey(id), projectStateKey(id), legacyProjectKey(id)],
+      getStore(),
+    ),
   )
+}
+
+/**
+ * Renomeia um projeto reescrevendo SÓ o registro de metadados (sz:project-meta:).
+ * Lê o meta atual, troca o nome e bumpa `updatedAt`; arquivos e state ficam
+ * INTOCADOS — renomear via persistProject(projeto-lido-do-disco) reescreveria
+ * files+state a partir de um snapshot estale, ressuscitando bytes antigos e
+ * correndo contra o autosave de um editor aberto. No-op se não houver registro de
+ * meta (projeto inexistente ou só no formato legado).
+ */
+export async function renameProjectMeta(id: string, name: string): Promise<void> {
+  // get-then-set SERIALIZADO contra persistProject/deleteProject do mesmo id: a
+  // leitura e a gravação do meta correm como uma unidade, sem um autosave do
+  // editor aberto intercalar entre elas e perder o nome novo (ou ser sobrescrito).
+  await runSerializedWrite(id, async () => {
+    const kvStore = getStore()
+    const meta = await get<Record<string, unknown>>(projectMetaKey(id), kvStore)
+    if (!meta || typeof meta !== 'object' || Array.isArray(meta)) return
+    await set(projectMetaKey(id), { ...meta, name, updatedAt: Date.now() }, kvStore)
+  })
 }
 
 export interface ProjectSummary {
