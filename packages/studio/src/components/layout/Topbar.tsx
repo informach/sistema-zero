@@ -6,8 +6,8 @@ import {
   Badge,
   BrandLogo,
   BrandWordmark,
-  cn,
   ConfirmDialog,
+  cn,
   IconDownload,
   IconEye,
   IconEyeOff,
@@ -233,11 +233,19 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
             className="flex shrink-0 items-center text-sz-fg hover:opacity-80"
             title="Voltar à lista de projetos"
           >
-            {isCompact ? <BrandLogo className="h-6 w-6" /> : <BrandWordmark className="h-5 w-auto" />}
+            {isCompact ? (
+              <BrandLogo className="h-6 w-6" />
+            ) : (
+              <BrandWordmark className="h-5 w-auto" />
+            )}
           </button>
         ) : (
           <span className="flex shrink-0 items-center text-sz-fg">
-            {isCompact ? <BrandLogo className="h-6 w-6" /> : <BrandWordmark className="h-5 w-auto" />}
+            {isCompact ? (
+              <BrandLogo className="h-6 w-6" />
+            ) : (
+              <BrandWordmark className="h-5 w-auto" />
+            )}
           </span>
         )}
         {!isCompact && <span className="shrink-0 text-sz-fg-mute">/</span>}
@@ -289,7 +297,9 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
           />
         ) : (
           <span className="shrink-0" title={saveError ?? undefined}>
-            <Badge tone={saveError ? 'error' : isDirty ? 'warn' : 'success'}>{saveStatusLabel}</Badge>
+            <Badge tone={saveError ? 'error' : isDirty ? 'warn' : 'success'}>
+              {saveStatusLabel}
+            </Badge>
           </span>
         )}
 
@@ -322,7 +332,9 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
           </div>
         )}
 
-        <div className={cn('ml-auto flex shrink-0 items-center', isCompact ? 'gap-0.5' : 'gap-1.5')}>
+        <div
+          className={cn('ml-auto flex shrink-0 items-center', isCompact ? 'gap-0.5' : 'gap-1.5')}
+        >
           <button
             type="button"
             onClick={handleSave}

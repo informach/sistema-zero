@@ -8,7 +8,7 @@ import { useStudioConfig } from '../../studio/config'
 import { ConsolePanel } from '../console/ConsolePanel'
 import { SectionErrorFallback } from './ErrorViews'
 import { AIPanel, Terminal } from './lazyPanels'
-import { Tabs, type TabItem } from './TabStrip'
+import { type TabItem, Tabs } from './TabStrip'
 
 // Chaves de tradução AVALIADAS NO RENDER — `t()` em escopo de módulo congela
 // o idioma no import, antes de a prop `locale` do <Studio> valer.

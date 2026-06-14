@@ -48,7 +48,8 @@ export function Tabs({
   const onKeyDown = (e: KeyboardEvent<HTMLButtonElement>, index: number) => {
     let next: number | null = null
     if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (index + 1) % items.length
-    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (index - 1 + items.length) % items.length
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp')
+      next = (index - 1 + items.length) % items.length
     else if (e.key === 'Home') next = 0
     else if (e.key === 'End') next = items.length - 1
     if (next === null) return
@@ -91,7 +92,9 @@ export function Tabs({
                   : 'border-transparent text-sz-fg-soft hover:text-sz-fg',
               )}
             >
-              {item.icon && <span className="flex h-4 w-4 items-center justify-center">{item.icon}</span>}
+              {item.icon && (
+                <span className="flex h-4 w-4 items-center justify-center">{item.icon}</span>
+              )}
               {item.label}
             </button>
           )

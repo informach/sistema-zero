@@ -137,7 +137,7 @@ export function Menu({
         >
           {sections.map((section, si) => (
             <div key={section.id} role="group" aria-label={section.label}>
-              {si > 0 && <div role="separator" className="my-1 h-px bg-sz-border" />}
+              {si > 0 && <div aria-hidden="true" className="my-1 h-px bg-sz-border" />}
               {section.label && (
                 <div className="px-3 pb-1 pt-1.5 text-[0.65rem] font-semibold uppercase tracking-wide text-sz-fg-mute">
                   {section.label}
@@ -156,7 +156,7 @@ export function Menu({
                     role="menuitem"
                     tabIndex={-1}
                     disabled={item.disabled}
-                    aria-pressed={item.active}
+                    aria-current={item.active || undefined}
                     onClick={() => {
                       item.onSelect()
                       close()
