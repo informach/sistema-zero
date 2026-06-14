@@ -2,8 +2,10 @@ import { readFileSync } from 'node:fs'
 import * as forge from 'node-forge'
 
 export interface A1Certificate {
-  /** Certificado(s) em PEM (cadeia completa do PFX). */
+  /** Certificado(s) em PEM (cadeia completa do PFX) — vai no `tls.cert` do mTLS. */
   cert: string
+  /** SÓ o PEM da entidade final (leaf) — vai no X509Certificate da ASSINATURA. */
+  leafCertPem: string
   /** Chave privada em PEM. */
   key: string
   info: { subject: string; notBefore: Date; notAfter: Date }
@@ -52,11 +54,16 @@ export function loadA1Certificate(opts: {
   const certs = bags.map((b) => b.cert).filter((c): c is forge.pki.Certificate => Boolean(c))
   if (certs.length === 0) throw new Error('Certificado não encontrado no PFX')
 
+  // Entidade final = o cert que NÃO é CA. Identificado explicitamente (NÃO o 1º
+  // bloco do PEM concatenado): a ordem dos bags do PFX não garante o leaf primeiro,
+  // e um CA no X509Certificate da assinatura (com a chave do leaf) = assinatura
+  // rejeitada pela Sefin em TODA emissão. Latente até a renovação do A1 (23/09/2026).
   const leaf =
     certs.find((c) => !c.extensions?.some((e) => e.name === 'basicConstraints' && e.cA)) ??
     certs[0]!
   return {
     cert: certs.map((c) => forge.pki.certificateToPem(c)).join(''),
+    leafCertPem: forge.pki.certificateToPem(leaf),
     key,
     info: {
       subject: String(leaf.subject.getField('CN')?.value ?? '(sem CN)'),
@@ -64,13 +71,6 @@ export function loadA1Certificate(opts: {
       notAfter: leaf.validity.notAfter,
     },
   }
-}
-
-/** Só o PEM da entidade final — vai no KeyInfo/X509Certificate da assinatura. */
-export function leafCertPem(cert: A1Certificate): string {
-  const first = cert.cert.match(/-----BEGIN CERTIFICATE-----[\s\S]*?-----END CERTIFICATE-----/)
-  if (!first) throw new Error('PEM sem bloco de certificado')
-  return first[0]
 }
 
 /** Dias restantes de validade (negativo = expirado). */

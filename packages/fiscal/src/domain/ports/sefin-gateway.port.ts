@@ -21,8 +21,11 @@ export type EmitResult =
   | { kind: 'accepted'; accessKey: string; nfseXml: string; dpsXml: string }
   /** Rejeição determinística (regra de negócio da Sefin) — NÃO re-tentar. */
   | { kind: 'rejected'; errors: Array<{ code: string; message: string }>; dpsXml: string }
-  /** A DPS já tinha virado NFS-e (re-POST pós-timeout) — recuperar via consulta. */
-  | { kind: 'duplicate'; dpsXml: string }
+  /**
+   * A DPS já tinha virado NFS-e (re-POST pós-timeout). O gateway JÁ resolveu a
+   * chave na consulta do 400 — vem aqui (não há 2ª consulta no serviço).
+   */
+  | { kind: 'duplicate'; accessKey: string; dpsXml: string }
 
 export interface SefinNacionalGateway {
   /** Monta, assina e envia a DPS (síncrono). Lança em erro de rede/5xx (re-tentável). */

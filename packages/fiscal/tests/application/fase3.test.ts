@@ -137,16 +137,48 @@ describe('CancellationWorker', () => {
       staleMs: 0,
     })
 
+    // Chaves DISTINTAS p/ provar a LIGAÇÃO por nota (não só o conjunto {2,9}):
+    // cMotivo 2 = "Serviço não Prestado" (dinheiro voltou) vs 9 = "Outros" (admin).
     const byRefund = await emittedInvoice(invoices)
-    await invoices.requestCancel(byRefund.id, 'system:refund', 'Pagamento reembolsado')
+    Object.assign(byRefund, { accessKey: '1'.repeat(50) })
+    await invoices.requestCancel(
+      byRefund.id,
+      'system:refund',
+      'Pagamento reembolsado ao consumidor',
+    )
     const byAdmin = await emittedInvoice(invoices)
-    await invoices.requestCancel(byAdmin.id, 'admin:u-1', 'Dados errados')
+    Object.assign(byAdmin, { accessKey: '8'.repeat(50) })
+    await invoices.requestCancel(byAdmin.id, 'admin:u-1', 'Dados cadastrais corrigidos na nota')
 
     await worker.tick()
 
     expect((await invoices.findById(byRefund.id))?.status).toBe('CANCELLED')
     expect((await invoices.findById(byAdmin.id))?.status).toBe('CANCELLED')
-    expect(sefin.cancelled.map((c) => c.cMotivo).sort()).toEqual(['2', '9'])
+    const refundCancel = sefin.cancelled.find((c) => c.accessKey === '1'.repeat(50))
+    const adminCancel = sefin.cancelled.find((c) => c.accessKey === '8'.repeat(50))
+    expect(refundCancel?.cMotivo).toBe('2') // estorno → 2
+    expect(adminCancel?.cMotivo).toBe('9') // admin → 9
+  })
+
+  test('xMotivo curto é normalizado p/ ≥15 chars (TSMotivo) antes de ir à Sefin', async () => {
+    const { invoices } = build()
+    const sefin = new ScriptedSefinGateway()
+    const worker = new CancellationWorker(invoices, sefin, silentLogger, {
+      intervalMs: 60_000,
+      batchSize: 10,
+      staleMs: 0,
+    })
+    const invoice = await emittedInvoice(invoices)
+    // Dado legado curto (a borda do admin já valida 15-255, mas o worker é defensivo).
+    Object.assign(invoice, {
+      status: 'CANCEL_PENDING',
+      cancelReason: 'erro',
+      cancelRequestedBy: 'admin:u-1',
+    })
+
+    await worker.tick()
+
+    expect(sefin.cancelled[0]?.xMotivo.length).toBeGreaterThanOrEqual(15)
   })
 
   test('rejeição da Sefin → permanece CANCEL_PENDING (visível) com evento CANCEL_FAILED', async () => {

@@ -412,7 +412,8 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   `GET /fiscal/admin/invoices/:id/pdf` → binário `application/pdf` (404 sem PDF) — o BFF
   repassa em STREAMING via `gatewayFetchRaw` (variante crua do gatewayFetch, mesmo
   Bearer/refresh-on-401, sem materializar o corpo); `POST …/:id/retry` (só FAILED);
-  `POST …/:id/cancel` `{reason}` (obrigatório 3..500 — validado no BFF E no serviço);
+  `POST …/:id/cancel` `{reason}` (obrigatório 15..255 = TSMotivo do XSD — validado no BFF E no serviço;
+  fora disso a Sefin rejeita e a nota fica presa em CANCEL_PENDING);
   `POST …/:id/substitute` `{customerName?,customerDocument?,serviceDescription?}` (≥1 campo) →
   201 `{id}` da nota substituta (a original é cancelada por substituição);
   `POST …/:id/emit-now` → `{ok:true}` (só SCHEDULED — ANTECIPA a emissão: o worker emite em

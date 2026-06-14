@@ -132,14 +132,10 @@ export class EmitInvoiceService {
     }
 
     if (result.kind === 'duplicate') {
-      // Resposta perdida num envio anterior: recupera pela consulta do Id da DPS.
-      const found = await this.sefin.findNfseByDpsId(dpsId).catch(() => null)
-      if (!found) {
-        await this.backoffOrFail(invoice, 'DPS duplicada mas NFS-e não localizada na consulta')
-        return
-      }
+      // Resposta perdida num envio anterior: o gateway JÁ resolveu a chave na
+      // consulta do Id da DPS (sem 2ª consulta aqui).
       await this.finishEmission(invoice, {
-        accessKey: found.accessKey,
+        accessKey: result.accessKey,
         nfseXml: '',
         dpsXml: result.dpsXml,
         competenceDate,
@@ -168,13 +164,29 @@ export class EmitInvoiceService {
     },
   ): Promise<void> {
     const pdfToken = randomBytes(32).toString('hex')
-    const recorded = await this.invoices.markEmitted(invoice.id, {
+    const emitData = {
       dpsXml: data.dpsXml,
       nfseXml: data.nfseXml,
       accessKey: data.accessKey,
       competenceDate: data.competenceDate,
       pdfToken,
-    })
+    }
+    // Substituição: gravar a emissão da substituta E marcar a original SUBSTITUTED
+    // numa ÚNICA transação (atomicidade — um crash entre as duas escritas deixava
+    // a original presa EMITTED p/ sempre).
+    let recorded: boolean
+    let originalSubstituted = false
+    if (invoice.substitutesId) {
+      const res = await this.invoices.markEmittedAsSubstitute(
+        invoice.id,
+        emitData,
+        invoice.substitutesId,
+      )
+      recorded = res.recorded
+      originalSubstituted = res.originalSubstituted
+    } else {
+      recorded = await this.invoices.markEmitted(invoice.id, emitData)
+    }
     if (!recorded) {
       // A NFS-e foi autorizada na Sefin, mas o status mudou no meio (corrida):
       // jamais perder a chave de uma nota REAL.
@@ -187,12 +199,27 @@ export class EmitInvoiceService {
     })
     this.logger.info('fiscal.invoice_emitted', { invoiceId: invoice.id, accessKey: data.accessKey })
 
-    // Substituição: a original vira SUBSTITUTED quando a substituta emite.
+    // Substituição: a original vira SUBSTITUTED na MESMA transação acima.
     if (invoice.substitutesId) {
-      await this.invoices.markSubstituted(invoice.substitutesId, invoice.id)
-      await this.invoices.appendEvent(invoice.substitutesId, 'SUBSTITUTED', 'system', {
-        substituteId: invoice.id,
-      })
+      if (originalSubstituted) {
+        await this.invoices.appendEvent(invoice.substitutesId, 'SUBSTITUTED', 'system', {
+          substituteId: invoice.id,
+        })
+      } else {
+        // A original já tinha saído de EMITTED (ex.: um estorno a moveu p/
+        // CANCEL_PENDING entre o agendamento da substituta e esta gravação). NÃO
+        // sobrescrevemos o cancelamento — a substituta virou nota REAL e, se a
+        // venda foi estornada, precisa de cancelamento próprio (ação manual /
+        // o handler de estorno trata as ATIVAS do pagamento). Sinal alertável:
+        this.logger.error('fiscal.substitute_original_not_emitted', {
+          invoiceId: invoice.id,
+          originalId: invoice.substitutesId,
+          accessKey: data.accessKey,
+        })
+        await this.invoices.appendEvent(invoice.id, 'SUBSTITUTE_ORIGINAL_NOT_EMITTED', 'system', {
+          originalId: invoice.substitutesId,
+        })
+      }
     }
 
     // DANFSe: best-effort — persistir o PDF na emissão blinda contra a troca do
@@ -211,7 +238,7 @@ export class EmitInvoiceService {
     // só com o PDF armazenado — o anexo é a capability-URL deste serviço.
     if (pdfStored && invoice.customer.email) {
       try {
-        await this.messaging.sendInvoiceEmail({
+        const dispatched = await this.messaging.sendInvoiceEmail({
           idempotencyKey: `nfse-${invoice.id}`,
           recipient: { name: invoice.customer.name || 'Cliente', email: invoice.customer.email },
           variables: {
@@ -228,8 +255,12 @@ export class EmitInvoiceService {
             },
           ],
         })
-        await this.invoices.markEmailSent(invoice.id)
-        await this.invoices.appendEvent(invoice.id, 'EMAIL_QUEUED', 'system', {})
+        // Só marca "enviado" se o e-mail foi REALMENTE despachado — o cliente no-op
+        // (sem gateway) retorna false e NÃO deixa emailSentAt fantasma no admin.
+        if (dispatched) {
+          await this.invoices.markEmailSent(invoice.id)
+          await this.invoices.appendEvent(invoice.id, 'EMAIL_QUEUED', 'system', {})
+        }
       } catch (error) {
         this.logger.error('fiscal.invoice_email_failed', {
           invoiceId: invoice.id,

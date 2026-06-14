@@ -9,6 +9,11 @@ export interface SendInvoiceEmailInput {
 }
 
 export interface MessagingClient {
-  /** Lança em falha (chamador decide se é best-effort). */
-  sendInvoiceEmail(input: SendInvoiceEmailInput): Promise<void>
+  /**
+   * Retorna `true` se o e-mail foi DESPACHADO (cliente real, 2xx do gateway);
+   * `false` se o cliente é no-op (sem GATEWAY_URL/FISCAL_HMAC_SECRET) — assim o
+   * `emailSentAt` NÃO é marcado num envio que nunca aconteceu (admin não vê
+   * "enviado" fantasma). Lança em FALHA real (chamador trata como best-effort).
+   */
+  sendInvoiceEmail(input: SendInvoiceEmailInput): Promise<boolean>
 }

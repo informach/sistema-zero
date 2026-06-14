@@ -82,6 +82,10 @@ export interface InvoiceRepository {
   findActiveByPaymentId(paymentId: string): Promise<Invoice | null>
   /** TODAS as ativas do pagamento (incl. substituta em voo) — p/ o estorno. */
   findActiveManyByPaymentId(paymentId: string): Promise<Invoice[]>
+  /** Substituta ATIVA de uma original — guarda contra dupla substituição. */
+  findActiveSubstituteFor(originalId: string): Promise<Invoice | null>
+  /** Última nota NÃO-substituta do pagamento em QUALQUER status (idempotência do fluxo automático). */
+  findAnyByPaymentId(paymentId: string): Promise<Invoice | null>
   list(query: InvoiceListQuery): Promise<{ items: Invoice[]; total: number }>
   countByStatus(): Promise<Record<string, number>>
   listEvents(invoiceId: string): Promise<InvoiceEventRow[]>
@@ -106,6 +110,13 @@ export interface InvoiceRepository {
     staleMs: number
     maxAttempts: number
   }): Promise<Invoice[]>
+
+  /**
+   * Coletor de notas presas em SCHEDULED com `attempts > maxAttempts` (crash entre
+   * o claim e a transição terminal): força FAILED p/ não somem do radar. Retorna
+   * quantas foram coletadas. Chamado pelo worker no início de cada ciclo.
+   */
+  failExhausted(maxAttempts: number): Promise<number>
 
   /**
    * Renova o lease (claimed_at = agora) da nota em processamento. Chamado pelos
@@ -179,8 +190,23 @@ export interface InvoiceRepository {
   /** Antecipação manual: SCHEDULED → scheduledFor=AGORA (limpa backoff). */
   expedite(id: string): Promise<void>
 
-  /** Nota substituta emitida → original vira SUBSTITUTED. */
-  markSubstituted(originalId: string, substituteId: string): Promise<void>
+  /**
+   * Substituta emitida: grava EMITTED da substituta E marca a original SUBSTITUTED
+   * numa ÚNICA transação. A original só transiciona se ainda EMITTED (um estorno
+   * que a moveu p/ CANCEL_PENDING NÃO é sobrescrito → `originalSubstituted=false`).
+   * `recorded=false` = a substituta já não estava SCHEDULED (corrida → reconciliar).
+   */
+  markEmittedAsSubstitute(
+    substituteId: string,
+    data: {
+      dpsXml: string
+      nfseXml: string
+      accessKey: string
+      competenceDate: string
+      pdfToken: string
+    },
+    originalId: string,
+  ): Promise<{ recorded: boolean; originalSubstituted: boolean }>
 
   /** Trilha de auditoria (append-only). */
   appendEvent(

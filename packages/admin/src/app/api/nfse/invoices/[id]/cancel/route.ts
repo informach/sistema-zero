@@ -11,7 +11,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       {
         error: {
           code: 'INVALID_REASON',
-          message: 'Informe o motivo do cancelamento (3 a 500 caracteres).',
+          message: 'Informe o motivo do cancelamento (15 a 255 caracteres — exigência da Sefin).',
         },
       },
       { status: 400 },

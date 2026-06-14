@@ -118,10 +118,14 @@ export function canEmitNow(inv: Pick<InvoiceView, 'status'>): boolean {
   return inv.status === 'SCHEDULED'
 }
 
-/** Motivo de cancelamento válido (espelha o contrato: 3..500 chars após trim). */
+/**
+ * Motivo de cancelamento válido. Espelha o contrato do fiscal: o motivo vira o
+ * `xMotivo` do evento e101101 = tipo TSMotivo do XSD = **15..255** chars (fora
+ * disso a Sefin rejeita o cancelamento e a nota fica presa em CANCEL_PENDING).
+ */
 export function isValidCancelReason(reason: string): boolean {
   const trimmed = reason.trim()
-  return trimmed.length >= 3 && trimmed.length <= 500
+  return trimmed.length >= 15 && trimmed.length <= 255
 }
 
 // ── Emissão manual ──

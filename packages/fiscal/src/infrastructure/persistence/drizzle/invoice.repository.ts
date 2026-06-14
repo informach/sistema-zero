@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, isNull, lte, notInArray, or, sql } from 'drizzle-orm'
+import { and, desc, eq, inArray, isNull, lte, or, sql } from 'drizzle-orm'
 import type { InvoiceStatus, SkipReason } from '../../../domain/invoice/invoice.status'
 import type {
   Invoice,
@@ -40,6 +40,32 @@ export class DrizzleInvoiceRepository implements InvoiceRepository {
       .from(invoices)
       .where(and(eq(invoices.paymentId, paymentId), inArray(invoices.status, ACTIVE_STATUSES)))
     return rows.map(toInvoice)
+  }
+
+  /** Substituta ATIVA (não-terminal) de uma nota original — guarda contra dupla substituição. */
+  async findActiveSubstituteFor(originalId: string): Promise<Invoice | null> {
+    const [row] = await this.db
+      .select()
+      .from(invoices)
+      .where(and(eq(invoices.substitutesId, originalId), inArray(invoices.status, ACTIVE_STATUSES)))
+      .limit(1)
+    return row ? toInvoice(row) : null
+  }
+
+  /**
+   * Última nota NÃO-substituta do pagamento, em QUALQUER status (incl. terminais).
+   * O fluxo automático cria no máximo UMA nota por pagamento na vida — re-entrega
+   * de webhook após a 1ª já ter virado SKIPPED/FAILED não pode gerar uma 2ª (a
+   * unique parcial só cobre ATIVAS). Backfill manual usa rota própria (admin).
+   */
+  async findAnyByPaymentId(paymentId: string): Promise<Invoice | null> {
+    const [row] = await this.db
+      .select()
+      .from(invoices)
+      .where(and(eq(invoices.paymentId, paymentId), isNull(invoices.substitutesId)))
+      .orderBy(desc(invoices.createdAt))
+      .limit(1)
+    return row ? toInvoice(row) : null
   }
 
   async list(query: {
@@ -122,10 +148,13 @@ export class DrizzleInvoiceRepository implements InvoiceRepository {
       if (!row) throw new Error('insert sem retorno')
       return toInvoice(row)
     } catch (error) {
-      // Corrida de re-entrega: a unique parcial (1 ativa por payment) segura a
-      // segunda inserção — devolve a existente (idempotência).
+      // Corrida de re-entrega: a unique parcial segura a 2ª inserção — devolve a
+      // existente (idempotência). Substituta colide na `invoices_substitute_active_uq`
+      // (1 substituta ativa por original); nota normal na `invoices_payment_active_uq`.
       if (isUniqueViolation(error)) {
-        const existing = await this.findActiveByPaymentId(input.paymentId)
+        const existing = input.substitutesId
+          ? await this.findActiveSubstituteFor(input.substitutesId)
+          : await this.findActiveByPaymentId(input.paymentId)
         if (existing) return existing
       }
       throw error
@@ -179,6 +208,36 @@ export class DrizzleInvoiceRepository implements InvoiceRepository {
         .returning()
     })
     return rows.map(toInvoice)
+  }
+
+  /**
+   * Coletor de notas presas: o claim faz attempts++ ANTES da emissão, então um
+   * crash (deploy/OOM/SIGKILL) entre o claim e a transição terminal deixa a nota
+   * SCHEDULED com attempts elevado. Quando attempts ultrapassa maxAttempts o
+   * filtro do claim (`attempts <= maxAttempts`) deixa de pegá-la → ficaria presa
+   * em SCHEDULED P/ SEMPRE, contada como "agendada" no /metrics (invisível). Aqui
+   * forçamos FAILED (visível/alertável). Roda no início de cada tick do worker.
+   */
+  async failExhausted(maxAttempts: number): Promise<number> {
+    const now = new Date()
+    const rows = await this.db
+      .update(invoices)
+      .set({
+        status: 'FAILED',
+        lastError: 'tentativas esgotadas: presa em SCHEDULED após crash (attempts > maxAttempts)',
+        claimedAt: null,
+        version: sql`${invoices.version} + 1`,
+        updatedAt: now,
+      })
+      .where(
+        and(
+          eq(invoices.status, 'SCHEDULED'),
+          lte(invoices.scheduledFor, now),
+          sql`${invoices.attempts} > ${maxAttempts}`,
+        ),
+      )
+      .returning({ id: invoices.id })
+    return rows.length
   }
 
   async allocateDpsNumber(
@@ -281,8 +340,13 @@ export class DrizzleInvoiceRepository implements InvoiceRepository {
   }
 
   async touchClaim(id: string): Promise<void> {
-    // Só claimed_at: não toca updated_at (a fila de cancelamento ordena por ele).
-    await this.db.update(invoices).set({ claimedAt: new Date() }).where(eq(invoices.id, id))
+    // Só renova o lease de uma nota AINDA no ciclo de processamento — nunca
+    // ressuscita o claimed_at de uma que já saiu (ex.: estorno marcou SKIPPED no
+    // meio do tick). Só claimed_at: não toca updated_at (fila de cancelamento ordena por ele).
+    await this.db
+      .update(invoices)
+      .set({ claimedAt: new Date() })
+      .where(and(eq(invoices.id, id), inArray(invoices.status, ['SCHEDULED', 'CANCEL_PENDING'])))
   }
 
   async releaseForRetry(id: string, nextAttemptAt: Date, lastError: string): Promise<void> {
@@ -363,16 +427,59 @@ export class DrizzleInvoiceRepository implements InvoiceRepository {
       .where(and(eq(invoices.id, id), eq(invoices.status, 'SCHEDULED')))
   }
 
-  async markSubstituted(originalId: string, substituteId: string): Promise<void> {
-    await this.db
-      .update(invoices)
-      .set({ status: 'SUBSTITUTED', substitutedById: substituteId, updatedAt: new Date() })
-      .where(
-        and(
-          eq(invoices.id, originalId),
-          notInArray(invoices.status, ['SUBSTITUTED', 'CANCELLED', 'SKIPPED']),
-        ),
-      )
+  /**
+   * Grava a emissão da SUBSTITUTA e marca a ORIGINAL como SUBSTITUTED numa ÚNICA
+   * transação (atomicidade — um crash entre as duas escritas deixava a original
+   * presa EMITTED p/ sempre). A original SÓ transiciona se ainda estiver EMITTED:
+   * se um estorno a moveu p/ CANCEL_PENDING, NÃO sobrescrevemos o cancelamento
+   * (`originalSubstituted=false` → o chamador alerta). Retorna `recorded=false`
+   * quando a própria substituta não estava mais SCHEDULED (corrida → reconciliar).
+   */
+  async markEmittedAsSubstitute(
+    substituteId: string,
+    data: {
+      dpsXml: string
+      nfseXml: string
+      accessKey: string
+      competenceDate: string
+      pdfToken: string
+    },
+    originalId: string,
+  ): Promise<{ recorded: boolean; originalSubstituted: boolean }> {
+    return this.db.transaction(async (tx) => {
+      const now = new Date()
+      const sub = await tx
+        .update(invoices)
+        .set({
+          status: 'EMITTED',
+          dpsXml: data.dpsXml,
+          nfseXml: data.nfseXml,
+          accessKey: data.accessKey,
+          competenceDate: data.competenceDate,
+          pdfToken: data.pdfToken,
+          emittedAt: now,
+          claimedAt: null,
+          lastError: null,
+          nextAttemptAt: null,
+          version: sql`${invoices.version} + 1`,
+          updatedAt: now,
+        })
+        .where(and(eq(invoices.id, substituteId), eq(invoices.status, 'SCHEDULED')))
+        .returning({ id: invoices.id })
+      if (sub.length === 0) return { recorded: false, originalSubstituted: false }
+
+      const orig = await tx
+        .update(invoices)
+        .set({
+          status: 'SUBSTITUTED',
+          substitutedById: substituteId,
+          version: sql`${invoices.version} + 1`,
+          updatedAt: now,
+        })
+        .where(and(eq(invoices.id, originalId), eq(invoices.status, 'EMITTED')))
+        .returning({ id: invoices.id })
+      return { recorded: true, originalSubstituted: orig.length > 0 }
+    })
   }
 
   async appendEvent(

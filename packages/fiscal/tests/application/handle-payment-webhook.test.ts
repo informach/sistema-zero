@@ -95,6 +95,14 @@ describe('payment.paid → agendamento', () => {
     expect(result.kind).toBe('retryable')
   })
 
+  test('oferta paga 404 no catalog → retryable (não emite cedo com garantia default)', async () => {
+    const { invoices, payments, service } = build()
+    payments.set(paidSnapshot()) // metadata.offerId = 'offer-1', mas o catalog está vazio
+    const result = await service.execute(paid())
+    expect(result.kind).toBe('retryable') // fail-closed: oferta paga DEVE existir
+    expect(invoices.invoices.size).toBe(0) // nada agendado
+  })
+
   test('pagamento que já não está PAID (corrida c/ refund) → consome sem agendar', async () => {
     const { invoices, payments, service } = build()
     payments.set(paidSnapshot({ status: 'REFUNDED' }))
@@ -161,6 +169,46 @@ describe('payment.refunded', () => {
     const { service } = build()
     const result = await service.execute(refunded('pay-desconhecido'))
     expect(result.kind).toBe('ok')
+  })
+
+  test('estorno de EMITTED com emittedAt NULO → CANCEL_PENDING (fail-closed, não fora-da-janela)', async () => {
+    const { invoices, payments, catalog, service } = build()
+    payments.set(paidSnapshot())
+    catalog.set({ id: 'offer-1', name: 'O', productName: 'C', guaranteeDays: 7 })
+    await service.execute(paid())
+    const [invoice] = [...invoices.invoices.values()]
+    Object.assign(invoice!, { status: 'EMITTED', emittedAt: null }) // estado anômalo
+
+    await service.execute(refunded())
+    // emittedAt nulo NÃO pode virar idade ~56 anos (epoch) e pular o cancelamento.
+    expect(invoice?.status).toBe('CANCEL_PENDING')
+  })
+})
+
+describe('idempotência por pagamento (não só por nota ativa)', () => {
+  test('re-entrega do paid após a nota já ter virado SKIPPED não cria 2ª nota', async () => {
+    const { invoices, payments, catalog, service } = build()
+    payments.set(paidSnapshot())
+    catalog.set({ id: 'offer-1', name: 'O', productName: 'C', guaranteeDays: 7 })
+    await service.execute(paid())
+    await service.execute(refunded()) // SCHEDULED → SKIPPED
+    expect([...invoices.invoices.values()][0]?.status).toBe('SKIPPED')
+
+    // Crash entre execute() e markProcessed → MESMO paid re-entregue (deliveryId novo):
+    const result = await service.execute({ ...paid(), deliveryId: 'd-reentrega' })
+    expect(result.kind).toBe('ok')
+    expect(invoices.invoices.size).toBe(1) // NÃO ressuscita uma 2ª nota p/ venda estornada
+  })
+
+  test('re-entrega do paid após FAILED (CPF inválido) não cria 2ª nota', async () => {
+    const { invoices, payments, catalog, service } = build()
+    payments.set(paidSnapshot({ customer: { name: 'X', email: 'x@x.com', document: 'abc' } }))
+    catalog.set({ id: 'offer-1', name: 'O', productName: 'C', guaranteeDays: 7 })
+    await service.execute(paid())
+    expect([...invoices.invoices.values()][0]?.status).toBe('FAILED')
+
+    await service.execute({ ...paid(), deliveryId: 'd-reentrega' })
+    expect(invoices.invoices.size).toBe(1)
   })
 })
 

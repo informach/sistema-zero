@@ -11,20 +11,10 @@ export const InvoiceStatus = {
 
 export type InvoiceStatus = (typeof InvoiceStatus)[keyof typeof InvoiceStatus]
 
-const TRANSITIONS: Record<InvoiceStatus, InvoiceStatus[]> = {
-  SCHEDULED: ['EMITTED', 'SKIPPED', 'FAILED'],
-  EMITTED: ['CANCEL_PENDING', 'SUBSTITUTED'],
-  SKIPPED: [],
-  // Admin reprocessa uma FAILED → volta à fila.
-  FAILED: ['SCHEDULED'],
-  CANCEL_PENDING: ['CANCELLED'],
-  CANCELLED: [],
-  SUBSTITUTED: [],
-}
-
-export function canTransition(from: InvoiceStatus, to: InvoiceStatus): boolean {
-  return TRANSITIONS[from].includes(to)
-}
+// As transições válidas são GUARDADAS no repositório (UPDATE condicionado ao
+// status de origem em `transition()`/`markEmittedAsSubstitute()`/etc.), incluindo
+// a exceção de reconciliação SKIPPED→CANCEL_PENDING. Um mapa estático aqui
+// duplicaria essa verdade e divergiria dela (era dead code enganoso) — removido.
 
 /** Motivos de SKIPPED (nota que nunca será emitida). */
 export const SkipReason = {

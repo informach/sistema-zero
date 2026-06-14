@@ -1,5 +1,15 @@
 import { z } from 'zod'
 
+/** URL aponta p/ loopback? (localhost/127.0.0.1/::1) — inválida entre serviços em deploy. */
+function isLoopbackUrl(u: string): boolean {
+  try {
+    const h = new URL(u).hostname.toLowerCase().replace(/^\[|\]$/g, '')
+    return h === 'localhost' || h === '127.0.0.1' || h === '::1' || h.endsWith('.localhost')
+  } catch {
+    return false
+  }
+}
+
 const BOOL_VALUES = new Set(['true', 'false', '1', '0'])
 const optionalBool = (def: boolean) =>
   z
@@ -39,11 +49,16 @@ const EnvSchema = z
     NFSE_CERT_PFX_PATH: z.string().optional(),
     NFSE_CERT_PASSWORD: z.string().optional(),
     NFSE_CERT_WARN_DAYS: z.coerce.number().int().positive().default(30),
-    /** Série PRÓPRIA do sistema (Emissor Web usa a dele) — validada no spike. */
+    /**
+     * Série PRÓPRIA do sistema (Emissor Web usa a dele). Default = 901 (série de
+     * DEV) p/ que um host SEM a var NÃO caia na série 2 de PRODUÇÃO — a Produção
+     * Restrita é um espaço de numeração COMPARTILHADO entre ambientes (dev/staging),
+     * e a série 2 colidiria com a produção. Convenção: dev=901 · staging=902 · prod=2.
+     */
     NFSE_DPS_SERIE: z
       .string()
       .regex(/^\d{1,5}$/, 'série numérica de até 5 dígitos')
-      .default('2'),
+      .default('901'),
     /** Lei 12.741 (forma simplificada do Simples): alíquota efetiva, configurável. */
     NFSE_PTOTTRIB_SN: z
       .string()
@@ -62,7 +77,10 @@ const EnvSchema = z
       .regex(/^\d{1,15}$/, 'IM só com dígitos')
       .optional(),
     NFSE_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(20_000),
+    /** Teto do ciclo de emissão (POST + consulta do 400) — passado por chamada à Sefin. */
     NFSE_TOTAL_RETRY_BUDGET_MS: z.coerce.number().int().positive().default(60_000),
+    /** Algoritmo da assinatura XMLDSig. `sha1` aceito hoje; `sha256` é o escape. */
+    NFSE_SIG_ALGO: z.enum(['sha1', 'sha256']).default('sha1'),
 
     // ── Agendamento/worker ───────────────────────────────────────────────────
     /** Oferta sem garantia declarada → emite após N dias (CDC art. 49 = 7). */
@@ -139,6 +157,39 @@ const EnvSchema = z
     message:
       'NFSE_CLAIM_STALE_MS deve ser ≥ 2× NFSE_REQUEST_TIMEOUT_MS (réplica só re-reivindica depois que a outra parou)',
   })
+  // E-mail da nota (gateway → messaging): co-dependente. Em PRODUÇÃO real os dois
+  // são obrigatórios (senão a nota é emitida e o comprador NUNCA recebe o DANFSe,
+  // com o admin marcando "enviado" — ver também o sinal `sent` do MessagingClient).
+  .refine(
+    (env) => env.APP_ENV !== 'production' || Boolean(env.GATEWAY_URL && env.FISCAL_HMAC_SECRET),
+    {
+      message: 'Em produção GATEWAY_URL e FISCAL_HMAC_SECRET são obrigatórios (e-mail da nota)',
+    },
+  )
+  // URLs entre serviços não podem ser loopback em deploy (cada serviço é um host).
+  .refine((env) => env.NODE_ENV !== 'production' || !isLoopbackUrl(env.PAYMENTS_BASE_URL), {
+    message: 'PAYMENTS_BASE_URL não pode apontar p/ localhost em produção/staging',
+  })
+  .refine((env) => env.NODE_ENV !== 'production' || !isLoopbackUrl(env.CATALOG_BASE_URL), {
+    message: 'CATALOG_BASE_URL não pode apontar p/ localhost em produção/staging',
+  })
+  .refine((env) => env.APP_ENV !== 'production' || !isLoopbackUrl(env.FISCAL_SELF_URL), {
+    message:
+      'FISCAL_SELF_URL não pode apontar p/ localhost em produção (o messaging busca o DANFSe nesta URL)',
+  })
+  // Série × ambiente: produção restrita é numeração COMPARTILHADA — staging não pode
+  // usar a série de produção (2), e produção não pode rodar nas séries de dev/staging.
+  .refine((env) => env.APP_ENV !== 'staging' || env.NFSE_DPS_SERIE !== '2', {
+    message: 'APP_ENV=staging NÃO pode usar a série de produção 2 (colisão na Produção Restrita)',
+  })
+  .refine(
+    (env) =>
+      env.APP_ENV !== 'production' ||
+      (env.NFSE_DPS_SERIE !== '901' && env.NFSE_DPS_SERIE !== '902'),
+    {
+      message: 'APP_ENV=production não pode usar as séries de dev/staging (901/902)',
+    },
+  )
 
 export type Env = z.infer<typeof EnvSchema>
 

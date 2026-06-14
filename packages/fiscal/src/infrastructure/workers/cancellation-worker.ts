@@ -57,7 +57,10 @@ export class CancellationWorker {
           const result = await this.sefin.cancelNfse({
             accessKey: invoice.accessKey,
             cMotivo: invoice.cancelRequestedBy === 'system:refund' ? '2' : '9',
-            xMotivo: invoice.cancelReason ?? 'Cancelamento solicitado',
+            // xMotivo = TSMotivo do XSD (15–255). Normaliza defensivamente: o motivo
+            // do admin já é validado na borda, mas dados legados/curtos seriam
+            // REJEITADOS pela Sefin → nota presa em CANCEL_PENDING.
+            xMotivo: normalizeMotivo(invoice.cancelReason),
           })
           if (result.kind === 'accepted') {
             await this.invoices.markCancelled(invoice.id, result.eventXml)
@@ -86,4 +89,11 @@ export class CancellationWorker {
       this.running = false
     }
   }
+}
+
+/** Garante o xMotivo dentro de TSMotivo (15–255 chars) — fora disso a Sefin rejeita. */
+function normalizeMotivo(reason: string | null): string {
+  const base = (reason ?? '').trim() || 'Cancelamento de NFS-e solicitado pelo emitente'
+  const padded = base.length < 15 ? `${base} - cancelamento de NFS-e pelo emitente` : base
+  return padded.slice(0, 255)
 }

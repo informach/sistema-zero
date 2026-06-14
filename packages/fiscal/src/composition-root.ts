@@ -98,7 +98,12 @@ export function createApplication(env: Env): Application {
     sefin = new SefinHttpGateway(
       profile,
       certInfo,
-      { ambiente: env.NFSE_AMBIENTE, timeoutMs: env.NFSE_REQUEST_TIMEOUT_MS },
+      {
+        ambiente: env.NFSE_AMBIENTE,
+        timeoutMs: env.NFSE_REQUEST_TIMEOUT_MS,
+        totalBudgetMs: env.NFSE_TOTAL_RETRY_BUDGET_MS,
+        sigAlgo: env.NFSE_SIG_ALGO,
+      },
       logger,
     )
     danfse = new AdnDanfseClient(certInfo, {
@@ -194,21 +199,35 @@ export function createApplication(env: Env): Application {
       server = app.listen({ hostname: env.HOST, port: env.PORT })
       emissionWorker.start()
       cancellationWorker.start()
-      // Retenção do dedupe + alerta diário de expiração do certificado
-      // (advisory lock — 1 réplica por ciclo; o espelho do Sentry pega o ERROR).
+      // Saúde do certificado (por-réplica, FORA do advisory lock — cada réplica
+      // tem o MESMO cert e precisa parar a sua própria emissão se ele expirar).
+      const checkCertHealth = () => {
+        if (!certInfo) return
+        const daysLeft = certDaysLeft(certInfo)
+        if (daysLeft < 0 && env.NODE_ENV === 'production') {
+          // Cert EXPIRADO: a Sefin devolve 403 e as notas só empilham FAILED com
+          // erro opaco. Para emissão E cancelamento aqui (ambos precisam do mTLS);
+          // renovar o A1 + redeploy religa (o boot recarrega o cert e re-valida).
+          logger.error('fiscal.cert_expired_emission_halted', {
+            daysLeft,
+            notAfter: certInfo.info.notAfter.toISOString(),
+          })
+          emissionWorker.stop()
+          cancellationWorker.stop()
+        } else if (daysLeft < env.NFSE_CERT_WARN_DAYS) {
+          logger.error('fiscal.cert_expiring', {
+            daysLeft,
+            notAfter: certInfo.info.notAfter.toISOString(),
+          })
+        }
+      }
+
+      // Retenção do dedupe (advisory lock — 1 réplica por ciclo) + saúde do cert.
       retentionTimer = setInterval(() => {
+        checkCertHealth()
         void withAdvisoryLock(connection.db, FISCAL_RETENTION_LOCK_KEY, async () => {
           const pruned = await processedWebhooks.pruneOlderThan(PROCESSED_WEBHOOK_RETENTION_DAYS)
           if (pruned > 0) logger.info('fiscal.retention_pruned', { pruned })
-          if (certInfo) {
-            const daysLeft = certDaysLeft(certInfo)
-            if (daysLeft < env.NFSE_CERT_WARN_DAYS) {
-              logger.error('fiscal.cert_expiring', {
-                daysLeft,
-                notAfter: certInfo.info.notAfter.toISOString(),
-              })
-            }
-          }
         }).catch((error) => logger.error('fiscal.retention_failed', { error: String(error) }))
       }, RETENTION_INTERVAL_MS)
       logger.info('app.started', {

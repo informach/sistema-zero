@@ -48,7 +48,7 @@ export function createServer(deps: HttpDeps) {
       // Teto de corpo no nível do Bun.serve (rejeita no socket antes de bufferizar).
       serve: { maxRequestBodySize: deps.maxRequestBodyBytes ?? 64 * 1024 },
     })
-      .onError(({ error, set }) => {
+      .onError(({ error, set, code }) => {
         if (error instanceof UnauthorizedError) {
           set.status = 401
           return envelope('UNAUTHORIZED', error.message)
@@ -56,6 +56,12 @@ export function createServer(deps: HttpDeps) {
         if (error instanceof ForbiddenError) {
           set.status = 403
           return envelope('FORBIDDEN', error.message)
+        }
+        if (code === 'VALIDATION') {
+          // Envelope FIXO: nunca ecoar o input recebido (o corpo padrão de erro do
+          // Elysia inclui `found`) nem vazar a forma do schema a um chamador inválido.
+          set.status = 400
+          return envelope('VALIDATION_ERROR', 'Requisição inválida')
         }
         if (set.status === 200 || set.status === undefined) set.status = 500
         if (set.status === 500) {
@@ -121,18 +127,30 @@ export function createServer(deps: HttpDeps) {
             }
           }
 
-          const deliveryId = (headers['x-delivery-id'] ?? '').slice(0, MAX_DELIVERY_ID)
-          if (!deliveryId) {
-            set.status = 400
-            return { error: 'x-delivery-id ausente' }
-          }
-
-          let parsed: { event?: unknown; data?: unknown }
+          let parsed: { id?: unknown; event?: unknown; data?: unknown }
           try {
-            parsed = JSON.parse(raw) as { event?: unknown; data?: unknown }
+            parsed = JSON.parse(raw) as { id?: unknown; event?: unknown; data?: unknown }
           } catch {
             set.status = 400
             return { error: 'corpo não é JSON' }
+          }
+          // Dedupe pelo ID do corpo ASSINADO (o payments envia `{id,event,data}` e a
+          // HMAC cobre o corpo). O header `x-delivery-id` é o MESMO valor mas NÃO
+          // assinado — um replay trocando só o header forjaria um id novo e burlaria
+          // o dedupe. Usamos o id do corpo; o header serve de fallback (dev sem HMAC).
+          const headerDeliveryId = (headers['x-delivery-id'] ?? '').slice(0, MAX_DELIVERY_ID)
+          const bodyDeliveryId =
+            typeof parsed.id === 'string' ? parsed.id.slice(0, MAX_DELIVERY_ID) : ''
+          const deliveryId = bodyDeliveryId || headerDeliveryId
+          if (!deliveryId) {
+            set.status = 400
+            return { error: 'id de entrega ausente' }
+          }
+          if (bodyDeliveryId && headerDeliveryId && bodyDeliveryId !== headerDeliveryId) {
+            deps.logger.warn('fiscal.webhook_delivery_id_mismatch', {
+              bodyDeliveryId,
+              headerDeliveryId,
+            })
           }
           const eventName = typeof parsed.event === 'string' ? parsed.event : ''
           const payload = (parsed.data ?? {}) as Record<string, unknown>
@@ -180,8 +198,13 @@ export function createServer(deps: HttpDeps) {
         }
         return new Response(Buffer.from(pdf.content), {
           headers: {
-            'content-type': pdf.contentType,
+            // content-type fixado na borda; nosniff + no-store: a URL é mailada ao
+            // comprador e buscada pelo messaging — documento fiscal com PII não deve
+            // ser sniffado nem cacheado por intermediários.
+            'content-type': 'application/pdf',
             'content-disposition': 'attachment; filename="nota-fiscal.pdf"',
+            'x-content-type-options': 'nosniff',
+            'cache-control': 'private, no-store',
           },
         })
       })

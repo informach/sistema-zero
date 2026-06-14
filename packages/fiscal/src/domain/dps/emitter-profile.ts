@@ -54,7 +54,10 @@ export function composeServiceDescription(prefix: string, productName: string | 
   const name = productName?.trim() || 'Produto digital'
   const p = prefix.trim()
   const full = p ? `${p} - ${name}` : name
-  return full.length > MAX_SERVICE_DESC ? full.slice(0, MAX_SERVICE_DESC) : full
+  // Trunca por CODEPOINT (não por unidade UTF-16): `slice` poderia cortar um par
+  // surrogate (emoji) ao meio e deixar um surrogate solto = UTF-8/XML inválido.
+  const points = [...full]
+  return points.length > MAX_SERVICE_DESC ? points.slice(0, MAX_SERVICE_DESC).join('') : full
 }
 
 /**
