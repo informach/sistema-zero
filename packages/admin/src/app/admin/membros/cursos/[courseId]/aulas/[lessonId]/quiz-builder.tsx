@@ -3,8 +3,8 @@
 import { Button } from '@sistemazero/ui/button'
 import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
-import { Textarea } from '@sistemazero/ui/textarea'
 import { Plus, Trash2 } from 'lucide-react'
+import { RichTextEditor } from '@/components/editor/rich-text-editor'
 import type { QuizQuestion } from '@/lib/types'
 
 export interface QuizValue {
@@ -92,11 +92,18 @@ export function QuizBuilder({
           type="number"
           min={0}
           max={100}
+          step={1}
           className="max-w-32"
           value={value.passingScore ?? ''}
           onChange={(e) => {
             const raw = e.target.value.trim()
-            onChange({ ...value, passingScore: raw === '' ? undefined : Number(raw) })
+            // Nota de corte é % INTEIRA (o members rejeita decimais — score é inteiro).
+            const n = Math.round(Number(raw))
+            onChange({
+              ...value,
+              passingScore:
+                raw === '' || Number.isNaN(n) ? undefined : Math.min(100, Math.max(0, n)),
+            })
           }}
         />
       </Field>
@@ -114,11 +121,10 @@ export function QuizBuilder({
                 <Trash2 className="size-4" />
               </Button>
             </div>
-            <Field label="Enunciado" htmlFor={`qb-prompt-${q.id}`}>
-              <Input
-                id={`qb-prompt-${q.id}`}
-                value={q.prompt}
-                onChange={(e) => patchQuestion(q.id, { prompt: e.target.value })}
+            <Field label="Enunciado" hint="Formatação rica e imagens (negrito, listas, etc.).">
+              <RichTextEditor
+                content={q.prompt}
+                onChange={(markdown) => patchQuestion(q.id, { prompt: markdown })}
               />
             </Field>
 
@@ -127,27 +133,32 @@ export function QuizBuilder({
                 Opções (marque as corretas)
               </span>
               {q.choices.map((c) => (
-                <div key={c.id} className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    className="size-4 shrink-0 accent-primary"
-                    aria-label="Opção correta"
-                    checked={q.correctChoiceIds.includes(c.id)}
-                    onChange={() => toggleCorrect(q, c.id)}
+                <div key={c.id} className="space-y-2 rounded-lg border border-border p-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <label className="flex cursor-pointer items-center gap-2 text-xs font-medium text-muted-foreground">
+                      <input
+                        type="checkbox"
+                        className="size-4 shrink-0 accent-primary"
+                        checked={q.correctChoiceIds.includes(c.id)}
+                        onChange={() => toggleCorrect(q, c.id)}
+                      />
+                      Opção correta
+                    </label>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      title="Remover opção"
+                      disabled={q.choices.length <= 2}
+                      onClick={() => removeChoice(q, c.id)}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </div>
+                  <RichTextEditor
+                    compact
+                    content={c.label}
+                    onChange={(markdown) => patchChoice(q, c.id, markdown)}
                   />
-                  <Input
-                    value={c.label}
-                    placeholder="Texto da opção"
-                    onChange={(e) => patchChoice(q, c.id, e.target.value)}
-                  />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    disabled={q.choices.length <= 2}
-                    onClick={() => removeChoice(q, c.id)}
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
                 </div>
               ))}
               <Button
@@ -159,18 +170,13 @@ export function QuizBuilder({
               </Button>
             </div>
 
-            <Field
-              label="Explicação"
-              htmlFor={`qb-expl-${q.id}`}
-              hint="Opcional — o aluno vê após responder."
-            >
-              <Textarea
-                id={`qb-expl-${q.id}`}
-                rows={2}
-                value={q.explanation ?? ''}
-                onChange={(e) =>
+            <Field label="Explicação" hint="Opcional — o aluno vê após responder.">
+              <RichTextEditor
+                compact
+                content={q.explanation ?? ''}
+                onChange={(markdown) =>
                   patchQuestion(q.id, {
-                    explanation: e.target.value.trim() ? e.target.value : undefined,
+                    explanation: markdown.trim() ? markdown : undefined,
                   })
                 }
               />

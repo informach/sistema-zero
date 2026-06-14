@@ -21,6 +21,8 @@ const ERROR_MESSAGES: Record<string, string> = {
   FORBIDDEN: 'Esta conta não tem acesso ao painel.',
   INACTIVE: 'Conta inativa. Procure um administrador.',
   INVALID_INPUT: 'Dados inválidos.',
+  TOO_MANY_ATTEMPTS: 'Muitas tentativas. Aguarde um instante e tente de novo.',
+  SERVICE_UNAVAILABLE: 'Serviço indisponível no momento. Tente novamente em instantes.',
 }
 
 export function LoginForm() {

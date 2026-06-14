@@ -3,6 +3,7 @@ import {
   GraduationCap,
   LayoutDashboard,
   type LucideIcon,
+  MessagesSquare,
   Package,
   ReceiptText,
   Users,
@@ -29,6 +30,12 @@ export const NAV_ITEMS: NavItem[] = [
   { label: 'Notas fiscais', href: '/admin/notas-fiscais', icon: ReceiptText },
   { label: 'Catálogo', href: '/admin/catalogo/produtos', icon: Package, match: '/admin/catalogo' },
   { label: 'Membros', href: '/admin/membros', icon: GraduationCap, match: '/admin/membros' },
+  {
+    label: 'Comunidade',
+    href: '/admin/comunidade/servidores',
+    icon: MessagesSquare,
+    match: '/admin/comunidade',
+  },
 ]
 
 export const CATALOG_TABS = [
@@ -46,4 +53,9 @@ export const PAYMENTS_TABS = [
   { label: 'Transações', href: '/admin/pagamentos/transacoes' },
   { label: 'Assinaturas', href: '/admin/pagamentos/assinaturas' },
   { label: 'Operações', href: '/admin/pagamentos/operacoes' },
+]
+
+export const COMMUNITY_TABS = [
+  { label: 'Servidores', href: '/admin/comunidade/servidores' },
+  { label: 'Moderação', href: '/admin/comunidade/moderacao' },
 ]

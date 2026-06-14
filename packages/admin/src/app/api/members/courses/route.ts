@@ -4,7 +4,7 @@ import { createCourse, listCourses } from '@/server/members'
 function num(value: string | null): number | undefined {
   if (!value) return undefined
   const n = Number(value)
-  return Number.isFinite(n) ? n : undefined
+  return Number.isInteger(n) && n >= 0 ? n : undefined
 }
 
 export async function GET(req: Request) {

@@ -33,7 +33,8 @@ const csp = [
   "object-src 'none'",
   "frame-ancestors 'none'",
   "form-action 'self'",
-  "frame-src 'self' https://player.vimeo.com",
+  // `blob:` p/ o preview/iframe do editor embarcável @sistemazero/studio (autoria + entregas).
+  "frame-src 'self' blob: https://player.vimeo.com",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
   "style-src 'self' 'unsafe-inline'",
@@ -70,8 +71,8 @@ const nextConfig: NextConfig = {
   // (O Sentry NÃO usa SDK aqui — fala o protocolo de ingestão via fetch, sem dep
   // externa, justamente p/ não depender do tracing de externos do standalone.)
   serverExternalPackages: ['sharp'],
-  // Pacote workspace com TS cru (componentes compartilhados) — transpilar junto.
-  transpilePackages: ['@sistemazero/ui'],
+  // Pacotes workspace com TS cru (componentes compartilhados + editor embarcável) — transpilar junto.
+  transpilePackages: ['@sistemazero/ui', '@sistemazero/studio'],
   // Security headers em TODAS as respostas (inclui `/api/media/*`, que fica fora
   // do matcher do `proxy.ts`). Fonte única — não duplicar no proxy.
   async headers() {

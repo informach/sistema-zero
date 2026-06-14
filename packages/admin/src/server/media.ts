@@ -234,6 +234,8 @@ export interface PrivateUploadTarget {
 export interface CreatePrivateUploadInput {
   filename: string
   contentType: string
+  /** Tamanho exato (bytes) — entra na assinatura p/ prender o teto no R2. */
+  sizeBytes: number
 }
 
 /**
@@ -248,7 +250,11 @@ export async function createPrivateUploadTarget(
   input: CreatePrivateUploadInput,
 ): Promise<PrivateUploadTarget> {
   const key = `admin/attachments/${randomUUID()}.${safeExtension(input.filename)}`
-  const { uploadUrl } = await r2PresignPrivatePut({ key, contentType: input.contentType })
+  const { uploadUrl } = await r2PresignPrivatePut({
+    key,
+    contentType: input.contentType,
+    contentLength: input.sizeBytes,
+  })
   return { uploadUrl, url: `r2priv:${key}`, contentType: input.contentType }
 }
 
@@ -344,7 +350,10 @@ async function syncTranscript(vimeoVideoId: string): Promise<{ lang: string; url
   if (!chosen) return []
   const vtt = await getTextTrackVtt(chosen.link)
   if (!vtt.trim()) return []
-  const lang = chosen.language.toLowerCase() || 'pt'
+  // `lang` vem da API do Vimeo → sanitiza antes de entrar na key do R2 (um valor
+  // com `/` ou `..` escaparia o prefixo `admin/captions/`; achado do review).
+  const rawLang = chosen.language.toLowerCase()
+  const lang = /^[a-z]{2,3}(-[a-z]{2,4})?$/.test(rawLang) ? rawLang : 'pt'
   const { url } = await r2PutObject({
     key: `admin/captions/${vimeoVideoId}-${lang}.vtt`,
     body: Buffer.from(vtt, 'utf8'),

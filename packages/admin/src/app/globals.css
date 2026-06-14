@@ -1,6 +1,9 @@
 @import "tailwindcss";
 /* Componentes compartilhados (@sistemazero/ui) — o scanner precisa ver as classes deles. */
 @source "../../../ui/src";
+/* Editor embarcável (bloco `studio`, autoria + entregas): o scanner precisa gerar as
+   classes utilitárias do @sistemazero/studio; os tokens vêm do CSS importado pelo embed. */
+@source "../../../studio/src";
 
 @custom-variant dark (&:is(.dark *));
 
