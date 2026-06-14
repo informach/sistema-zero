@@ -526,3 +526,89 @@ describe('source map (declarações CSS por bloco)', () => {
     expect(sourceMap.raw).toMatchObject({ file: 'style.css', startLine: 1, endLine: 1 })
   })
 })
+
+describe('source map — placement inline (CSS/JS dentro do index.html)', () => {
+  // Regressão: num projeto de arquivo único (CSS/JS embutidos no HTML), o gerador
+  // DESCARTAVA as entradas de JS/CSS — selecionar um bloco JS/CSS no modo Ponte
+  // não realçava nada (cross.lookupBlock devolvia null). Agora as entradas são
+  // remapeadas para o index.html, na linha real do trecho inline.
+  it('JS inline (inline-body-end): blocos mapeiam para o index.html na linha real', () => {
+    const { files, sourceMap } = generateProjectFilesWithMap({
+      projectName: 'Test',
+      ir: {
+        html: [],
+        css: [],
+        js: [
+          { __id: 'j1', type: 'var', name: 'x', value: { type: 'num', value: 0 } },
+          { __id: 'j2', type: 'consoleLog', value: { type: 'str', value: 'oi' } },
+        ],
+        htmlShell: { jsPlacement: 'inline-body-end' },
+        extensions: [],
+      },
+    })
+    // O JS vive embutido no index.html → script.js fica vazio.
+    expect(files['script.js']).toBe('')
+    expect(files['index.html']).toContain('<script>')
+    const htmlLines = files['index.html'].split('\n')
+    expect(sourceMap.j1?.file).toBe('index.html')
+    expect(sourceMap.j2?.file).toBe('index.html')
+    // A linha apontada contém de fato o código gerado do bloco.
+    expect(htmlLines[(sourceMap.j1?.startLine ?? 0) - 1]).toContain('let x = 0;')
+    expect(htmlLines[(sourceMap.j2?.startLine ?? 0) - 1]).toContain('console.log("oi");')
+  })
+
+  it('CSS inline (inline-head): a regra mapeia para o index.html na linha real', () => {
+    const { files, sourceMap } = generateProjectFilesWithMap({
+      projectName: 'Test',
+      ir: {
+        html: [],
+        css: [{ __id: 'c1', selector: '.box', declarations: { background: 'red' } }],
+        js: [],
+        htmlShell: { cssPlacement: 'inline-head' },
+        extensions: [],
+      },
+    })
+    expect(files['style.css']).toBe('')
+    expect(files['index.html']).toContain('<style>')
+    const htmlLines = files['index.html'].split('\n')
+    expect(sourceMap.c1?.file).toBe('index.html')
+    // A faixa da regra cobre o seletor + declaração, dentro do index.html.
+    expect(htmlLines[(sourceMap.c1?.startLine ?? 0) - 1]).toContain('.box {')
+  })
+
+  it('round-trip: reverseSourceMap + findIdAtLine resolve a linha inline para o id', () => {
+    const { sourceMap } = generateProjectFilesWithMap({
+      projectName: 'Test',
+      ir: {
+        html: [],
+        css: [],
+        js: [
+          { __id: 'a', type: 'consoleLog', value: { type: 'num', value: 1 } },
+          { __id: 'b', type: 'consoleLog', value: { type: 'num', value: 2 } },
+        ],
+        htmlShell: { jsPlacement: 'inline-body-end' },
+        extensions: [],
+      },
+    })
+    const rev = reverseSourceMap(sourceMap)
+    const lineA = sourceMap.a?.startLine ?? 0
+    const lineB = sourceMap.b?.startLine ?? 0
+    expect(findIdAtLine(rev, 'index.html', lineA)).toBe('a')
+    expect(findIdAtLine(rev, 'index.html', lineB)).toBe('b')
+  })
+
+  it('placement external segue mapeando para script.js/style.css (sem regressão)', () => {
+    const { sourceMap } = generateProjectFilesWithMap({
+      projectName: 'Test',
+      ir: {
+        html: [],
+        css: [{ __id: 'c1', selector: 'body', declarations: { color: '#fff' } }],
+        js: [{ __id: 'j1', type: 'consoleLog', value: { type: 'str', value: 'oi' } }],
+        htmlShell: { cssPlacement: 'external', jsPlacement: 'external' },
+        extensions: [],
+      },
+    })
+    expect(sourceMap.j1?.file).toBe('script.js')
+    expect(sourceMap.c1?.file).toBe('style.css')
+  })
+})
