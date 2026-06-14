@@ -1,0 +1,104 @@
+/**
+ * Runtime didático injetado no <head> do iframe quando a extensão "game-3d"
+ * está instalada. É um SCRIPT MODULE (importa `three` via importmap — ver
+ * `runtime.esmImports`), então roda DEFERIDO e em ordem antes do código do
+ * aluno (que também vira module quando há importmap de extensão).
+ *
+ * Expõe `window.SZGame3D` — wrapper fino e legível sobre Three.js. Higiene de
+ * GPU: pixelRatio ≤ 2; ao recriar/parar o loop, dispose de geometrias/materiais
+ * e `setAnimationLoop(null)`.
+ */
+export const gameThreeDRuntime = `import * as THREE from 'three';
+(function () {
+  function createScene(canvasId) {
+    var canvas = document.getElementById(canvasId);
+    var renderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvas || undefined });
+    var w = canvas && canvas.width ? canvas.width : 400;
+    var h = canvas && canvas.height ? canvas.height : 300;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setSize(w, h, false);
+    var scene = new THREE.Scene();
+    scene.background = new THREE.Color('#0b1020');
+    var camera = new THREE.PerspectiveCamera(60, w / h, 0.1, 1000);
+    camera.position.set(0, 0, 5);
+    // Luz para o MeshStandardMaterial ser visível sem passo extra.
+    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+    var dir = new THREE.DirectionalLight(0xffffff, 0.9);
+    dir.position.set(3, 5, 4);
+    scene.add(dir);
+    return { scene: scene, camera: camera, renderer: renderer, _objects: [] };
+  }
+
+  function setBackground(world, color) {
+    if (world && world.scene) world.scene.background = new THREE.Color(color);
+  }
+
+  function setCameraPosition(world, x, y, z) {
+    if (!world || !world.camera) return;
+    world.camera.position.set(x, y, z);
+    world.camera.lookAt(0, 0, 0);
+  }
+
+  function addMesh(world, geo, color) {
+    var mat = new THREE.MeshStandardMaterial({ color: color || '#22d3ee' });
+    var mesh = new THREE.Mesh(geo, mat);
+    if (world && world.scene) {
+      world.scene.add(mesh);
+      world._objects.push(mesh);
+    }
+    return mesh;
+  }
+  function createBox(world, opts) {
+    opts = opts || {};
+    var s = typeof opts.size === 'number' ? opts.size : 1;
+    return addMesh(world, new THREE.BoxGeometry(s, s, s), opts.color);
+  }
+  function createSphere(world, opts) {
+    opts = opts || {};
+    var r = typeof opts.radius === 'number' ? opts.radius : 0.5;
+    return addMesh(world, new THREE.SphereGeometry(r, 32, 16), opts.color);
+  }
+
+  function setPosition(obj, x, y, z) { if (obj && obj.position) obj.position.set(x, y, z); }
+  function setRotation(obj, x, y, z) { if (obj && obj.rotation) obj.rotation.set(x, y, z); }
+
+  function animate(world, fn) {
+    if (!world || !world.renderer) return;
+    world.renderer.setAnimationLoop(function () {
+      try {
+        fn();
+        world.renderer.render(world.scene, world.camera);
+      } catch (e) {
+        console.error(e && e.message ? e.message : e);
+        world.renderer.setAnimationLoop(null);
+      }
+    });
+  }
+
+  /** Libera GPU: para o loop e descarta geometrias/materiais/renderer. */
+  function dispose(world) {
+    if (!world) return;
+    if (world.renderer) {
+      world.renderer.setAnimationLoop(null);
+      try { world.renderer.dispose(); } catch (e) {}
+    }
+    for (var i = 0; i < (world._objects || []).length; i++) {
+      var o = world._objects[i];
+      if (o && o.geometry && o.geometry.dispose) o.geometry.dispose();
+      if (o && o.material && o.material.dispose) o.material.dispose();
+    }
+  }
+
+  window.SZGame3D = {
+    createScene: createScene,
+    setBackground: setBackground,
+    setCameraPosition: setCameraPosition,
+    createBox: createBox,
+    createSphere: createSphere,
+    setPosition: setPosition,
+    setRotation: setRotation,
+    animate: animate,
+    dispose: dispose,
+    THREE: THREE
+  };
+})();`

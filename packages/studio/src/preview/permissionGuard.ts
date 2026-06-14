@@ -1,0 +1,97 @@
+import type { ExtensionPermission } from '#extensions'
+import { sanitizeFetchOrigins } from './csp'
+
+/**
+ * Enforcement em RUNTIME das permissões dentro do iframe do preview. Hoje as
+ * permissions de extensão (`extensions/manifest.ts`) são só declarativas; este
+ * guard as torna efetivas, fechando o gap do checklist do `docs/EXTENSIONS.md`.
+ *
+ * Foco no vetor de risco real deste ambiente: REDE (exfiltração / supply-chain).
+ * As capacidades que o aluno PRECISA para aprender (canvas, teclado, mouse,
+ * áudio, storage) ficam liberadas por uma baseline — só a rede é travada por
+ * padrão, e o professor a libera por origem (`fetchAllowedOrigins`). Uma
+ * extensão que declare `network` também libera (código 1st-party auditado).
+ *
+ * Injetado ANTES dos `bootstrapScript` de extensões e do código do aluno, então
+ * vale para ambos — até uma extensão que esqueça de declarar `network` é barrada.
+ */
+
+/** Capacidades sempre disponíveis ao código do aluno (não são vetor de exfil). */
+export const STUDENT_BASELINE_PERMISSIONS: readonly ExtensionPermission[] = [
+  'canvas',
+  'keyboard',
+  'mouse',
+  'audio',
+  'storage',
+]
+
+export interface PermissionGuardOptions {
+  /** Permissões concedidas (união das extensões instaladas). */
+  granted?: readonly ExtensionPermission[]
+  /** Origens https/http liberadas pelo professor para fetch/XHR. */
+  fetchAllowedOrigins?: readonly string[]
+}
+
+/**
+ * Monta o IIFE de enforcement. Retorna `''` quando a rede está totalmente
+ * liberada (extensão com `network` e sem allowlist restritiva) — nada a fazer.
+ */
+export function buildPermissionGuardRuntime(options: PermissionGuardOptions = {}): string {
+  const granted = new Set<ExtensionPermission>([
+    ...STUDENT_BASELINE_PERMISSIONS,
+    ...(options.granted ?? []),
+  ])
+  const origins = sanitizeFetchOrigins(options.fetchAllowedOrigins)
+
+  // Rede liberada sem restrição de origem: extensão 1st-party declarou network e
+  // o professor não impôs allowlist. Nada a neutralizar.
+  if (granted.has('network') && origins.length === 0) return ''
+
+  const allowJson = origins.length > 0 ? JSON.stringify(origins) : 'null'
+  return `(function () {
+  var ALLOW = ${allowJson};
+  function blocked(api) {
+    return function () {
+      throw new Error('Acesso à rede bloqueado neste preview (' + api + '). Peça ao professor para liberar o domínio ou use o modo profissional.');
+    };
+  }
+  function originOf(u) {
+    try { return new URL(typeof u === 'string' ? u : (u && u.url), location.href).origin; }
+    catch (e) { return null; }
+  }
+  function allowed(u) {
+    if (!ALLOW) return false;
+    var o = originOf(u);
+    return o !== null && ALLOW.indexOf(o) >= 0;
+  }
+  if (ALLOW) {
+    var origFetch = window.fetch;
+    if (origFetch) {
+      window.fetch = function (input, init) {
+        if (allowed(input)) return origFetch.apply(this, arguments);
+        return Promise.reject(new Error('Domínio não liberado no preview: ' + (originOf(input) || input)));
+      };
+    }
+    var OrigXHR = window.XMLHttpRequest;
+    if (OrigXHR && OrigXHR.prototype && OrigXHR.prototype.open) {
+      var origOpen = OrigXHR.prototype.open;
+      OrigXHR.prototype.open = function (method, url) {
+        if (!allowed(url)) throw new Error('Domínio não liberado no preview: ' + (originOf(url) || url));
+        return origOpen.apply(this, arguments);
+      };
+    }
+  } else {
+    window.fetch = blocked('fetch');
+    if (window.XMLHttpRequest) {
+      window.XMLHttpRequest = function () { throw new Error('Acesso à rede bloqueado neste preview (XMLHttpRequest). Peça ao professor para liberar o domínio ou use o modo profissional.'); };
+    }
+  }
+  // WebSocket/EventSource não casam com a allowlist http(s): sempre bloqueados
+  // quando a rede não é totalmente liberada.
+  if (window.WebSocket) window.WebSocket = blocked('WebSocket');
+  if (window.EventSource) window.EventSource = blocked('EventSource');
+  if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+    navigator.sendBeacon = function () { return false; };
+  }
+})();`
+}

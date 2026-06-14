@@ -7,6 +7,11 @@ API global injetada como window.SZGame2D:
 - isColliding(a, b): AABB.
 - gameLoop(fn): chama fn a cada requestAnimationFrame.
 - keys: estado das setas { left, right, up, down }.
+- setGravity(g) / applyVelocity(sprite): física simples (vy += gravidade).
+- bounceOnEdges(sprite, ctx): ricochete nas bordas do canvas.
+- circleCollides(a, b): colisão por círculo.
+- playSound(freq, ms): bip sintetizado (Web Audio).
+- onPointer((x, y) => {…}): callback a cada clique/toque; pointer = { x, y, down }.
 
 Quando ajudar o aluno com jogos 2D:
 - Sempre lembre que o canvas precisa ser criado em HTML primeiro.

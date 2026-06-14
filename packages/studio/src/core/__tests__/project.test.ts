@@ -28,17 +28,20 @@ describe('project defaults', () => {
 })
 
 describe('extra project files', () => {
-  it('normaliza nomes seguros e aceita html/css/js/mjs', () => {
+  it('normaliza nomes seguros e aceita html/css/js/mjs/ts/tsx/jsx', () => {
     expect(normalizeExtraFileName(' utils.js ')).toBe('utils.js')
     expect(normalizeExtraFileName('fragmento.html')).toBe('fragmento.html')
     expect(normalizeExtraFileName('tema.css')).toBe('tema.css')
     expect(normalizeExtraFileName('modulo.mjs')).toBe('modulo.mjs')
+    expect(normalizeExtraFileName('tipos.ts')).toBe('tipos.ts')
+    expect(normalizeExtraFileName('App.tsx')).toBe('App.tsx')
+    expect(normalizeExtraFileName('comp.jsx')).toBe('comp.jsx')
   })
 
   it('rejeita caminhos virtuais inseguros e extensões fora do subset', () => {
     expect(normalizeExtraFileName('../secret.js')).toBeNull()
     expect(normalizeExtraFileName('pasta/arquivo.js')).toBeNull()
-    expect(normalizeExtraFileName('script.jsx')).toBeNull()
+    expect(normalizeExtraFileName('dados.json')).toBeNull()
     expect(normalizeExtraFileName('.env.js')).toBeNull()
   })
 
@@ -47,5 +50,8 @@ describe('extra project files', () => {
     expect(inferExtraLanguage('componente.mjs')).toBe('javascript')
     expect(inferExtraLanguage('layout.html')).toBe('html')
     expect(inferExtraLanguage('tema.css')).toBe('css')
+    expect(inferExtraLanguage('tipos.ts')).toBe('typescript')
+    expect(inferExtraLanguage('App.tsx')).toBe('typescript')
+    expect(inferExtraLanguage('comp.jsx')).toBe('javascript')
   })
 })

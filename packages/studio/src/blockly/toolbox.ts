@@ -1,7 +1,15 @@
 import {
+  type BlockLevel,
+  FULL_LEARNING_PROFILE,
+  isBlockTypeAllowed,
+  isCategoryAllowed,
+  type LearningProfile,
+} from '#core'
+import {
   ADVANCED_BLOCKS,
   CANVAS_BLOCKS,
   CSS_BLOCKS,
+  DOM_BLOCKS,
   HTML_BLOCKS,
   JS_BLOCKS,
   MATH_BLOCKS,
@@ -50,9 +58,13 @@ export interface ToolboxConfiguration {
   contents: (ToolboxCategory | ToolboxSearchCategory | ToolboxCustomCategory)[]
 }
 
-function toEntries(blocks: BlockDefinition[]): ToolboxBlockEntry[] {
+function toEntries(
+  blocks: BlockDefinition[],
+  categoryLevel: BlockLevel,
+  profile: LearningProfile,
+): ToolboxBlockEntry[] {
   return blocks
-    .filter((b) => !b.hidden)
+    .filter((b) => !b.hidden && isBlockTypeAllowed(b.type, b.level ?? categoryLevel, profile))
     .map((b) => {
       const inputs = socketInputsFor(b.type)
       if (!inputs) return { kind: 'block', type: b.type } as const
@@ -60,81 +72,68 @@ function toEntries(blocks: BlockDefinition[]): ToolboxBlockEntry[] {
     })
 }
 
-export function buildCoreToolbox(extraCategories: ToolboxCategory[] = []): ToolboxConfiguration {
-  return {
-    kind: 'categoryToolbox',
-    contents: [
-      {
-        kind: 'search',
-        name: '🔎 Pesquisar',
-        colour: CATEGORY_COLORS.search,
-        contents: [],
-      },
-      {
-        kind: 'category',
-        name: 'HTML',
-        colour: CATEGORY_COLORS.html,
-        contents: toEntries(HTML_BLOCKS),
-      },
-      {
-        kind: 'category',
-        name: 'CSS',
-        colour: CATEGORY_COLORS.css,
-        contents: toEntries(CSS_BLOCKS),
-      },
-      {
-        kind: 'category',
-        name: 'JavaScript',
-        colour: CATEGORY_COLORS.js,
-        contents: toEntries(JS_BLOCKS),
-      },
-      {
-        kind: 'category',
-        name: 'Matemática',
-        colour: CATEGORY_COLORS.math,
-        contents: toEntries(MATH_BLOCKS),
-      },
-      {
-        kind: 'category',
-        name: 'Canvas',
-        colour: CATEGORY_COLORS.canvas,
-        contents: toEntries(CANVAS_BLOCKS),
-      },
-      {
-        kind: 'category',
-        name: 'Valores',
-        colour: CATEGORY_COLORS.values,
-        contents: toEntries(VALUE_BLOCKS),
-      },
-      {
-        // Categoria dinâmica: blocos de função + relatores dos parâmetros da
-        // função em edição (ver functionsFlyout).
-        kind: 'category',
-        name: 'Funções',
-        colour: CATEGORY_COLORS.functions,
-        custom: 'SZ_FUNCTIONS',
-      },
-      {
-        // Categoria dinâmica: botão "Criar uma classe" + blocos + relatores dos
-        // parâmetros do construtor/método atual (ver classesFlyout).
-        kind: 'category',
-        name: 'Classes',
-        colour: CATEGORY_COLORS.classes,
-        custom: 'SZ_CLASSES',
-      },
-      {
-        kind: 'category',
-        name: 'Objetos',
-        colour: CATEGORY_COLORS.objects,
-        contents: toEntries(OBJECT_BLOCKS),
-      },
-      ...extraCategories,
-      {
-        kind: 'category',
-        name: 'Avançado',
-        colour: CATEGORY_COLORS.advanced,
-        contents: toEntries(ADVANCED_BLOCKS),
-      },
-    ],
+/** Nível default de cada categoria core (sobreposto pelo `level` de cada bloco). */
+const CORE_CATEGORY_LEVELS: Record<string, BlockLevel> = {
+  HTML: 'iniciante',
+  CSS: 'iniciante',
+  DOM: 'iniciante',
+  JavaScript: 'iniciante',
+  Matemática: 'iniciante',
+  Canvas: 'intermediario',
+  Valores: 'iniciante',
+  Funções: 'intermediario',
+  Classes: 'avancado',
+  Objetos: 'intermediario',
+  Avançado: 'avancado',
+}
+
+/**
+ * Monta a toolbox core, filtrada pelo perfil de aprendizado. Sem perfil, mostra
+ * tudo (default standalone/playground/testes). Categorias acima do nível somem;
+ * dentro de uma categoria visível, blocos acima do nível também são omitidos;
+ * categorias de conteúdo que ficam vazias são descartadas.
+ */
+export function buildCoreToolbox(
+  extraCategories: ToolboxCategory[] = [],
+  profile: LearningProfile = FULL_LEARNING_PROFILE,
+): ToolboxConfiguration {
+  const contents: ToolboxConfiguration['contents'] = [
+    // Busca é sempre visível; ela só encontra os blocos que estão na toolbox
+    // (já filtrada), então respeita o nível automaticamente.
+    { kind: 'search', name: '🔎 Pesquisar', colour: CATEGORY_COLORS.search, contents: [] },
+  ]
+
+  const pushContent = (name: string, colour: string, blocks: BlockDefinition[]): void => {
+    const level = CORE_CATEGORY_LEVELS[name] ?? 'iniciante'
+    if (!isCategoryAllowed(name, level, profile)) return
+    const entries = toEntries(blocks, level, profile)
+    if (entries.length === 0) return
+    contents.push({ kind: 'category', name, colour, contents: entries })
   }
+
+  const pushCustom = (name: string, colour: string, custom: string): void => {
+    const level = CORE_CATEGORY_LEVELS[name] ?? 'iniciante'
+    if (!isCategoryAllowed(name, level, profile)) return
+    contents.push({ kind: 'category', name, colour, custom })
+  }
+
+  pushContent('HTML', CATEGORY_COLORS.html, HTML_BLOCKS)
+  pushContent('CSS', CATEGORY_COLORS.css, CSS_BLOCKS)
+  // DOM (manipulação da página) entre CSS e JavaScript: HTML→CSS→DOM agrupa o
+  // "pacote da página"; JavaScript fica com a linguagem (lógica) logo abaixo.
+  pushContent('DOM', CATEGORY_COLORS.dom, DOM_BLOCKS)
+  pushContent('JavaScript', CATEGORY_COLORS.js, JS_BLOCKS)
+  pushContent('Matemática', CATEGORY_COLORS.math, MATH_BLOCKS)
+  pushContent('Canvas', CATEGORY_COLORS.canvas, CANVAS_BLOCKS)
+  pushContent('Valores', CATEGORY_COLORS.values, VALUE_BLOCKS)
+  // Categorias dinâmicas: blocos de função/classe + relatores dos parâmetros
+  // em edição (ver functionsFlyout/classesFlyout).
+  pushCustom('Funções', CATEGORY_COLORS.functions, 'SZ_FUNCTIONS')
+  pushCustom('Classes', CATEGORY_COLORS.classes, 'SZ_CLASSES')
+  pushContent('Objetos', CATEGORY_COLORS.objects, OBJECT_BLOCKS)
+  // Extensões: o caller já filtra por nível (minLevel) antes de passar.
+  contents.push(...extraCategories)
+  pushContent('Avançado', CATEGORY_COLORS.advanced, ADVANCED_BLOCKS)
+
+  return { kind: 'categoryToolbox', contents }
 }

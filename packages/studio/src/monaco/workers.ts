@@ -6,6 +6,10 @@ import { loader } from '@monaco-editor/react'
 import 'monaco-editor/esm/vs/basic-languages/css/css.contribution.js'
 import 'monaco-editor/esm/vs/basic-languages/html/html.contribution.js'
 import 'monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution.js'
+// TypeScript (.ts/.tsx) no modo Código: colorização do Monaco. O language
+// service do TS é carregado em loadLanguageServices; o preview transpila via
+// Sucrase (o Monaco só edita/checa).
+import 'monaco-editor/esm/vs/basic-languages/typescript/typescript.contribution.js'
 // Algumas contribuições do editor precisam registrar ações/serviços antes de o
 // editor ser instanciado. Elas ficam no chunk lazy do Monaco, não na listagem.
 import 'monaco-editor/esm/vs/editor/contrib/suggest/browser/suggestController.js'
@@ -151,6 +155,16 @@ export function loadLanguageServices(): Promise<void> {
         noSyntaxValidation: true,
       })
       ts.javascriptDefaults.setEagerModelSync(true)
+      // TypeScript (.ts/.tsx) no modo Código: aqui os erros de TIPO são
+      // educativos (diferente do JS), então deixamos a validação LIGADA (default
+      // do typescriptDefaults). jsx ligado para .tsx.
+      ts.typescriptDefaults.setCompilerOptions({
+        target: ts.ScriptTarget.ESNext,
+        allowNonTsExtensions: true,
+        jsx: ts.JsxEmit.ReactJSX,
+        lib: ['esnext', 'dom', 'dom.iterable'],
+      })
+      ts.typescriptDefaults.setEagerModelSync(true)
     })
     .catch((err) => {
       // Permite nova tentativa numa próxima montagem do editor.

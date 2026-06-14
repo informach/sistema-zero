@@ -1,5 +1,5 @@
 import type { CSSProperties, Ref } from 'react'
-import type { IDEMode, Locale, Project } from '#core'
+import type { BlockLevel, IDEMode, Locale, Project } from '#core'
 import type { StudioPersistence } from '../persistence/types'
 import type { StudioLimits } from '../state/projectStore'
 import type { StudioFeatures } from './config'
@@ -46,6 +46,21 @@ export interface StudioProps {
   allowedModes?: readonly IDEMode[]
   /** Abre neste modo (sobrepõe o modo salvo no projeto, sem marcar sujo). */
   initialMode?: IDEMode
+  /**
+   * Nível de aprendizado FIXADO pelo professor (divulgação progressiva): cura a
+   * paleta de blocos por dificuldade. Default: 'avancado' (mostra tudo).
+   * Estático por instância. Ver `allowBlocks`/`allowCategories`/`allowLevelReveal`.
+   */
+  level?: BlockLevel
+  /** Tipos de bloco sempre visíveis, independente do nível (allowlist da aula). */
+  allowBlocks?: readonly string[]
+  /** Nomes de categoria sempre visíveis, independente do nível. */
+  allowCategories?: readonly string[]
+  /**
+   * Permite o aluno revelar blocos avançados (toggle nas configurações). Default
+   * true. O professor pode desligar para travar a paleta no nível definido.
+   */
+  allowLevelReveal?: boolean
   /**
    * Limites de política (tamanho de arquivo/projeto, nº de extras). Defaults
    * generosos; anti-DoS profundos continuam internos. Estático por instância.

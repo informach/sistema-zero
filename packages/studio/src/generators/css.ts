@@ -1,4 +1,4 @@
-import type { CSSEntry, CSSRule, MediaQueryCSS } from '#ir'
+import type { CSSEntry, CSSRule, KeyframesCSS, MediaQueryCSS } from '#ir'
 import { countLines, SourceMapBuilder } from './sourceMap'
 
 export interface GenerateCSSWithMapResult {
@@ -37,6 +37,7 @@ type RenderGroup =
   | { kind: 'raw'; ids: string[]; code: string }
   | { kind: 'rule'; selector: string; segments: RuleSegment[] }
   | { kind: 'media'; entry: MediaQueryCSS }
+  | { kind: 'keyframes'; entry: KeyframesCSS }
 
 function entryDeclarations(entry: CSSRule): GroupedDeclaration[] {
   const declIds = entry.__declIds
@@ -66,6 +67,10 @@ export function generateCSSWithMap(entries: CSSEntry[]): GenerateCSSWithMapResul
       groups.push({ kind: 'media', entry })
       continue
     }
+    if (isKeyframes(entry)) {
+      groups.push({ kind: 'keyframes', entry })
+      continue
+    }
     const segment: RuleSegment = {
       ...(entry.__id ? { id: entry.__id } : {}),
       declarations: entryDeclarations(entry),
@@ -84,6 +89,9 @@ export function generateCSSWithMap(entries: CSSEntry[]): GenerateCSSWithMapResul
     let rendered: string
     if (group.kind === 'media') {
       rendered = renderMediaQuery(group.entry, line, map)
+    } else if (group.kind === 'keyframes') {
+      rendered = renderKeyframes(group.entry)
+      map.record(group.entry.__id, 'style.css', line, line + countLines(rendered) - 1)
     } else if (group.kind === 'raw') {
       rendered = group.code
       // Sem este `map.record`, o bloco `sz_adv_raw_css` ficava sem entrada no
@@ -158,10 +166,27 @@ function renderRule(selector: string, declarations: GroupedDeclaration[]): strin
   return `${selector} {\n${decls}\n}`
 }
 
+/** Renderiza `@keyframes nome { at { decls } … }` (2 níveis de indentação). */
+function renderKeyframes(entry: KeyframesCSS): string {
+  const steps = entry.steps
+    .map((step) => {
+      const decls = Object.entries(step.declarations)
+        .map(([k, v]) => `    ${k}: ${v};`)
+        .join('\n')
+      return `  ${step.at} {\n${decls}\n  }`
+    })
+    .join('\n')
+  return `@keyframes ${entry.name} {\n${steps}\n}`
+}
+
 function isRawCSS(entry: CSSEntry): entry is Extract<CSSEntry, { type: 'rawCSS' }> {
   return 'type' in entry && entry.type === 'rawCSS'
 }
 
 function isMediaQuery(entry: CSSEntry): entry is MediaQueryCSS {
   return 'type' in entry && entry.type === 'mediaQuery'
+}
+
+function isKeyframes(entry: CSSEntry): entry is KeyframesCSS {
+  return 'type' in entry && entry.type === 'keyframes'
 }

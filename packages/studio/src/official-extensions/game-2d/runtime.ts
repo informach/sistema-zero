@@ -87,12 +87,104 @@ export const gameTwoDRuntime = `(function () {
     };
   }
 
+  // ---- Física ----
+  // Mundo com gravidade (px/frame² aplicada ao eixo Y por applyVelocity).
+  var world = { gravity: 0 };
+  function setGravity(g) { world.gravity = typeof g === 'number' ? g : 0; }
+
+  /** Integra a velocidade no sprite e soma a gravidade ao vy. */
+  function applyVelocity(s) {
+    if (!s) return;
+    s.x += s.vx || 0;
+    s.y += s.vy || 0;
+    s.vy = (s.vy || 0) + world.gravity;
+  }
+
+  /** Faz o sprite ricochetear nas bordas do canvas (invertendo a velocidade). */
+  function bounceOnEdges(s, ctx) {
+    if (!s || !ctx || !ctx.canvas) return;
+    var w = ctx.canvas.width, h = ctx.canvas.height;
+    if (s.x < 0) { s.x = 0; s.vx = Math.abs(s.vx || 0); }
+    else if (s.x + s.w > w) { s.x = w - s.w; s.vx = -Math.abs(s.vx || 0); }
+    if (s.y < 0) { s.y = 0; s.vy = Math.abs(s.vy || 0); }
+    else if (s.y + s.h > h) { s.y = h - s.h; s.vy = -Math.abs(s.vy || 0); }
+  }
+
+  /** Colisão por círculo: distância dos centros < soma dos raios (≈ metade do lado). */
+  function circleCollides(a, b) {
+    if (!a || !b) return false;
+    var ar = Math.min(a.w, a.h) / 2, br = Math.min(b.w, b.h) / 2;
+    var dx = (a.x + a.w / 2) - (b.x + b.w / 2);
+    var dy = (a.y + a.h / 2) - (b.y + b.h / 2);
+    return Math.sqrt(dx * dx + dy * dy) < ar + br;
+  }
+
+  // ---- Áudio (Web Audio, sem assets) ----
+  var audioCtx = null;
+  function ensureAudio() {
+    if (audioCtx) return audioCtx;
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) audioCtx = new AC();
+    } catch (e) {}
+    return audioCtx;
+  }
+  /** Toca um tom curto (freq em Hz, duração em ms). Sintetizado — não precisa de arquivo. */
+  function playSound(freq, ms) {
+    var ctx = ensureAudio();
+    if (!ctx) return;
+    try {
+      if (ctx.state === 'suspended' && ctx.resume) ctx.resume();
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.value = typeof freq === 'number' && freq > 0 ? freq : 440;
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      var dur = (typeof ms === 'number' && ms > 0 ? ms : 200) / 1000;
+      var t = ctx.currentTime;
+      gain.gain.setValueAtTime(0.12, t);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      osc.start(t);
+      osc.stop(t + dur);
+    } catch (e) {}
+  }
+
+  // ---- Ponteiro (mouse/toque, Pointer Events) ----
+  var pointer = { x: 0, y: 0, down: false };
+  var pointerHandlers = [];
+  function pointerXY(e) {
+    var c = document.querySelector('canvas');
+    var rect = c ? c.getBoundingClientRect() : { left: 0, top: 0 };
+    return { x: (e.clientX || 0) - rect.left, y: (e.clientY || 0) - rect.top };
+  }
+  window.addEventListener('pointermove', function (e) {
+    var p = pointerXY(e); pointer.x = p.x; pointer.y = p.y;
+  });
+  window.addEventListener('pointerup', function () { pointer.down = false; });
+  window.addEventListener('pointerdown', function (e) {
+    var p = pointerXY(e); pointer.x = p.x; pointer.y = p.y; pointer.down = true;
+    for (var i = 0; i < pointerHandlers.length; i++) {
+      try { pointerHandlers[i](p.x, p.y); }
+      catch (err) { console.error(err && err.message ? err.message : err); }
+    }
+  });
+  /** Registra uma função chamada a cada clique/toque com a posição (x, y) no canvas. */
+  function onPointer(fn) { if (typeof fn === 'function') pointerHandlers.push(fn); }
+
   window.SZGame2D = {
     createSprite: createSprite,
     drawSprite: drawSprite,
     moveByKeys: moveByKeys,
     isColliding: isColliding,
     gameLoop: gameLoop,
-    keys: keys
+    keys: keys,
+    setGravity: setGravity,
+    applyVelocity: applyVelocity,
+    bounceOnEdges: bounceOnEdges,
+    circleCollides: circleCollides,
+    playSound: playSound,
+    onPointer: onPointer,
+    pointer: pointer
   };
 })();`

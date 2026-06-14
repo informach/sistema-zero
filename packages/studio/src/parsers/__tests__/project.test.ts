@@ -24,8 +24,9 @@ describe('parseProjectFilesWithDiagnostics', () => {
   it('reporta trechos avançados preservados', () => {
     const result = parseProjectFilesWithDiagnostics({
       'index.html': '<html><body><article>Avançado</article></body></html>',
-      // @keyframes tem estrutura aninhada que o parser não modela → rawCSS advanced.
-      'style.css': '@keyframes girar { from { opacity: 0; } to { opacity: 1; } }',
+      // @font-face tem estrutura que o parser não modela → rawCSS advanced.
+      // (@keyframes virou estruturado na Fase 3 — não degrada mais.)
+      'style.css': '@font-face { font-family: "X"; src: url(x.woff2); }',
       'script.js': 'throw new Error("falha");',
     })
 

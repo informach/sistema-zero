@@ -1,3 +1,4 @@
+import type { BlockLevel } from '#core'
 import type { SZIR } from '#ir'
 
 export type ExtensionPermission = 'canvas' | 'keyboard' | 'mouse' | 'audio' | 'storage' | 'network'
@@ -43,6 +44,12 @@ export interface ExtensionToolboxCategory {
  */
 export interface ExtensionDefinition {
   manifest: ExtensionManifest
+  /**
+   * Nível mínimo de aprendizado para a categoria da extensão aparecer na paleta
+   * (divulgação progressiva). Ausente ⇒ visível em qualquer nível. Ex.: game-3d
+   * usa 'avancado' para não poluir a paleta do iniciante.
+   */
+  minLevel?: BlockLevel
   blockly: {
     /** Block JSON definitions (compatíveis com defineBlocksWithJsonArray). */
     // biome-ignore lint/suspicious/noExplicitAny: o formato Blockly é livre por design
@@ -52,6 +59,14 @@ export interface ExtensionDefinition {
   runtime: {
     /** Script injetado no <head> do iframe — expõe API global (ex.: window.SZGame2D). */
     bootstrapScript: string
+    /**
+     * Módulos ESM que a extensão precisa no preview, como mapa
+     * `specifier → URL` adicionado ao importmap do iframe (ex.:
+     * `{ three: 'https://esm.sh/three@0.180.0' }`). A URL é FIXADA (pinada) e a
+     * CSP libera SÓ essa origem em `script-src` — não é vetor de exfiltração
+     * (carregamento de lib de mão única). Use só com a permission `network`.
+     */
+    esmImports?: Record<string, string>
   }
   ai?: {
     /** Contexto rico para futuras integrações de IA. */

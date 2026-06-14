@@ -289,6 +289,10 @@ export function compileExpr(
     }
     case 'eventProp':
       return `event.${expr.prop}`
+    case 'storageGet': {
+      const store = expr.store === 'session' ? 'sessionStorage' : 'localStorage'
+      return `${store}.getItem(${compileExpr(expr.key, 0, identifiers, rec)})`
+    }
     case 'vec2':
       return `{ x: ${compileExpr(expr.x, 0, identifiers, rec)}, y: ${compileExpr(expr.y, 0, identifiers, rec)} }`
     case 'vec3':

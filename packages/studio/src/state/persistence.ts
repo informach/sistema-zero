@@ -122,7 +122,10 @@ export async function listAllProjects(): Promise<ProjectSummary[]> {
 
 function projectToMetaRecord(
   project: Project,
-): Pick<Project, 'id' | 'name' | 'createdAt' | 'updatedAt' | 'mode' | 'installedExtensions'> {
+): Pick<
+  Project,
+  'id' | 'name' | 'createdAt' | 'updatedAt' | 'mode' | 'installedExtensions' | 'kind' | 'proMeta'
+> {
   return {
     id: project.id,
     name: project.name,
@@ -130,14 +133,22 @@ function projectToMetaRecord(
     updatedAt: project.updatedAt,
     mode: project.mode,
     installedExtensions: project.installedExtensions,
+    // Modo profissional: discriminante + metadados do dev-server. Ausentes em
+    // projetos classic (undefined é preservado pelo structured clone do IDB).
+    kind: project.kind,
+    proMeta: project.proMeta,
   }
 }
 
-function projectToFilesRecord(project: Project): Pick<Project, 'id' | 'files' | 'extraFiles'> {
+function projectToFilesRecord(
+  project: Project,
+): Pick<Project, 'id' | 'files' | 'extraFiles' | 'tree'> {
   return {
     id: project.id,
     files: project.files,
     extraFiles: project.extraFiles,
+    // Árvore real do modo profissional (path-keyed); ausente em classic.
+    tree: project.tree,
   }
 }
 

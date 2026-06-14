@@ -15,6 +15,8 @@ import {
   normalizeExtraFileName,
   type Project,
   type ProjectFiles,
+  type ProjectTree,
+  type ProProjectMeta,
 } from '#core'
 import {
   type CSSEntry,
@@ -24,11 +26,21 @@ import {
   type SZIR,
   SZIRSchema,
 } from '#ir'
+import { createProProject as createProProjectFromTemplate } from '../components/code/pro-templates'
 import {
   deleteProject as deleteProjectFromDB,
   loadProjectById,
   persistProject,
 } from './persistence'
+import {
+  addProDir,
+  addProFile,
+  removeProNode,
+  renameProNode,
+  sanitizeProMeta,
+  sanitizeProTree,
+  setProFileContent,
+} from './proTree'
 import { StudioStoresContext } from './storesContext'
 
 interface ProjectStore {
@@ -40,6 +52,8 @@ interface ProjectStore {
   hydrateProject: (p: Project) => void
   unloadProject: () => void
   createProject: (name: string) => Promise<Project>
+  /** Cria e persiste um projeto PROFISSIONAL a partir de um template. */
+  createProProject: (name: string, templateId: string) => Promise<Project>
   duplicateProject: (id: string) => Promise<Project | null>
   deleteProject: (id: string) => Promise<void>
   renameProject: (id: string, name: string) => Promise<void>
@@ -61,6 +75,15 @@ interface ProjectStore {
   setExtraFile: (name: string, content: string) => void
   renameExtraFile: (oldName: string, newName: string) => string | null
   removeExtraFile: (name: string) => void
+  // --- Modo profissional (project.kind === 'pro') ---
+  /** Cria arquivo na árvore pro. Devolve mensagem de erro ou null se ok. */
+  addProFile: (path: string) => string | null
+  /** Cria pasta na árvore pro. Devolve mensagem de erro ou null se ok. */
+  addProDir: (path: string) => string | null
+  setProFileContent: (path: string, content: string) => void
+  /** Renomeia/move nó da árvore pro. Devolve mensagem de erro ou null se ok. */
+  renameProNode: (from: string, to: string) => string | null
+  removeProNode: (path: string) => void
 }
 
 interface ProjectStatePatch {
@@ -140,6 +163,9 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_css_font_size',
   'sz_css_font_weight',
   'sz_css_gap',
+  'sz_css_grid',
+  'sz_css_keyframes',
+  'sz_css_transition',
   'sz_css_gradient',
   'sz_css_height',
   'sz_css_justify',
@@ -199,7 +225,18 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_js_on_submit',
   'sz_js_on_event_named',
   'sz_js_query_selector',
+  'sz_js_query_selector_all',
+  'sz_js_storage_set',
+  'sz_js_event_method',
+  'sz_js_fetch_json',
   'sz_js_repeat',
+  'sz_js_while',
+  'sz_js_do_while',
+  'sz_js_break',
+  'sz_js_continue',
+  'sz_js_for_of',
+  'sz_js_for_range',
+  'sz_js_try_catch',
   'sz_js_for_each',
   'sz_js_set_timeout',
   'sz_js_set_interval',
@@ -258,6 +295,7 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_val_number',
   'sz_val_random',
   'sz_val_random_float',
+  'sz_val_storage_get',
   'sz_val_text',
   'sz_val_this_prop',
   'sz_val_get_prop',
@@ -286,6 +324,22 @@ const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> = {
     'sz_g2d_set_position',
     'sz_g2d_set_velocity',
     'sz_g2d_update_each_frame',
+    'sz_g2d_set_gravity',
+    'sz_g2d_apply_velocity',
+    'sz_g2d_bounce_edges',
+    'sz_g2d_circle_collides',
+    'sz_g2d_play_sound',
+    'sz_g2d_on_pointer',
+  ]),
+  'game-3d': new Set([
+    'sz_g3d_create_scene',
+    'sz_g3d_set_background',
+    'sz_g3d_set_camera',
+    'sz_g3d_create_box',
+    'sz_g3d_create_sphere',
+    'sz_g3d_set_position',
+    'sz_g3d_set_rotation',
+    'sz_g3d_animate',
   ]),
 }
 
@@ -357,9 +411,25 @@ export interface StudioLimits {
   maxFileChars?: number
   maxTotalChars?: number
   maxExtraFiles?: number
+  /** Orçamento de tempo síncrono de um loop no preview antes de cortar (ms). */
+  previewLoopBudgetMs?: number
+  /** Timeout do watchdog de heartbeat do preview (ms). */
+  previewHeartbeatTimeoutMs?: number
+  /** Origens https/http que o código do aluno pode acessar via fetch/XHR. */
+  fetchAllowedOrigins?: readonly string[]
+  /**
+   * Timeout (ms) de processos NÃO-INTERATIVOS do terminal/dev-server (ex.:
+   * `npm install`). O shell interativo (`jsh`) NUNCA é morto por timeout.
+   */
+  terminalProcessTimeoutMs?: number
 }
 
-type ResolvedLimits = Required<StudioLimits>
+// Só os limites de ARQUIVO são resolvidos com defaults aqui; os de política de
+// segurança do preview são resolvidos em studio/config.ts (precisam chegar aos
+// componentes via contexto).
+type ResolvedLimits = Required<
+  Pick<StudioLimits, 'maxFileChars' | 'maxTotalChars' | 'maxExtraFiles'>
+>
 
 function projectFilesLimitError(
   files: ProjectFiles,
@@ -736,18 +806,35 @@ function sanitizeStoredProject(raw: unknown, requestedId?: string): Project | nu
   // com o guard de edição em vez de aceitar um projeto que a IDE recusaria salvar.
   const extraFiles = limitCombinedExtraFiles(files, sanitizeImportedExtraFiles(r.extraFiles))
 
+  // Modo profissional: aceita `kind:'pro'` só com `tree` válida + `proMeta`.
+  // Qualquer falha REBAIXA para classic (o `files` canônico vazio-válido evita
+  // crash). `node_modules` nunca passa (barrado em normalizeProPath).
+  let tree: ProjectTree | undefined
+  let proMeta: ProProjectMeta | undefined
+  if (r.kind === 'pro') {
+    const sanitizedTree = sanitizeProTree(r.tree)
+    const sanitizedMeta = sanitizeProMeta(r.proMeta)
+    if (sanitizedTree && sanitizedMeta) {
+      tree = sanitizedTree
+      proMeta = sanitizedMeta
+    }
+  }
+  const isPro = tree != null && proMeta != null
+
   return {
     ...base,
     id,
     name,
     files,
     extraFiles,
-    mode: IDE_MODES.includes(r.mode as IDEMode) ? (r.mode as IDEMode) : base.mode,
+    // Pro vive sempre no modo 'code'.
+    mode: isPro ? 'code' : IDE_MODES.includes(r.mode as IDEMode) ? (r.mode as IDEMode) : base.mode,
     ir: sanitizeStoredIR(r.ir),
     blocksState: sanitizeStoredBlocksState(r.blocksState, installedExtensions),
     installedExtensions,
     createdAt,
     updatedAt,
+    ...(isPro ? { kind: 'pro' as const, tree, proMeta } : {}),
   }
 }
 
@@ -1133,9 +1220,42 @@ function countJSStatement(statement: JSStatement): number {
         countJSExpr(statement.times) +
         statement.body.reduce((total, child) => total + countJSStatement(child), 0)
       )
+    case 'while':
+    case 'doWhile':
+      return (
+        1 +
+        countJSExpr(statement.cond) +
+        statement.body.reduce((total, child) => total + countJSStatement(child), 0)
+      )
+    case 'forOf':
+      return 1 + statement.body.reduce((total, child) => total + countJSStatement(child), 0)
+    case 'tryCatch':
+      return (
+        1 +
+        statement.body.reduce((total, child) => total + countJSStatement(child), 0) +
+        statement.handler.reduce((total, child) => total + countJSStatement(child), 0) +
+        (statement.finalizer ?? []).reduce((total, child) => total + countJSStatement(child), 0)
+      )
+    case 'fetchJson':
+      return (
+        1 +
+        countJSExpr(statement.url) +
+        statement.body.reduce((total, child) => total + countJSStatement(child), 0) +
+        (statement.catchBody ?? []).reduce((total, child) => total + countJSStatement(child), 0)
+      )
+    case 'forRange':
+      return (
+        1 +
+        countJSExpr(statement.from) +
+        countJSExpr(statement.to) +
+        countJSExpr(statement.step) +
+        statement.body.reduce((total, child) => total + countJSStatement(child), 0)
+      )
     case 'event':
     case 'animationLoop':
     case 'g2d:updateEachFrame':
+    case 'g2d:onPointer':
+    case 'g3d:animate':
       return 1 + statement.body.reduce((total, child) => total + countJSStatement(child), 0)
     case 'var':
     case 'assign':
@@ -1148,6 +1268,8 @@ function countJSStatement(statement: JSStatement): number {
       return 1 + countJSExpr(statement.value)
     case 'setProperty':
       return 1 + countJSExpr(statement.value)
+    case 'storageSet':
+      return 1 + countJSExpr(statement.key) + countJSExpr(statement.value)
     case 'canvasFillStyle':
       return 1 + countJSExpr(statement.color)
     case 'canvasFillRect':
@@ -1227,6 +1349,11 @@ export function createProjectStore(
     unloadProject: () => set({ project: null, isDirty: false, saveError: null }),
     createProject: async (name) => {
       const p = createEmptyProject(ulid(), sanitizeProjectName(name))
+      await persistProject(p)
+      return p
+    },
+    createProProject: async (name, templateId) => {
+      const p = createProProjectFromTemplate(ulid(), sanitizeProjectName(name), templateId)
       await persistProject(p)
       return p
     },
@@ -1407,7 +1534,7 @@ export function createProjectStore(
       const p = get().project
       if (!p) return 'Nenhum projeto carregado.'
       const normalized = normalizeExtraFileName(name)
-      if (!normalized) return 'Use um nome seguro com .html, .css, .js ou .mjs.'
+      if (!normalized) return 'Use um nome seguro com .html, .css, .js, .mjs, .ts ou .tsx.'
       if (isReservedProjectFileName(normalized))
         return 'Esse nome é reservado para um arquivo canônico.'
       const extra = p.extraFiles ?? []
@@ -1449,7 +1576,7 @@ export function createProjectStore(
       const p = get().project
       if (!p?.extraFiles) return 'Sem arquivos extras.'
       const normalized = normalizeExtraFileName(newName)
-      if (!normalized) return 'Use um nome seguro com .html, .css, .js ou .mjs.'
+      if (!normalized) return 'Use um nome seguro com .html, .css, .js, .mjs, .ts ou .tsx.'
       if (isReservedProjectFileName(normalized)) return 'Nome reservado.'
       if (
         p.extraFiles.some(
@@ -1473,6 +1600,44 @@ export function createProjectStore(
         isDirty: true,
         saveError: null,
       })
+    },
+    addProFile: (path) => {
+      const p = get().project
+      if (!p?.tree) return 'Nenhum projeto profissional carregado.'
+      const result = addProFile(p.tree, path)
+      if (!result.tree) return result.error ?? 'Falha ao criar arquivo.'
+      set({ project: bump({ ...p, tree: result.tree }), isDirty: true, saveError: null })
+      return null
+    },
+    addProDir: (path) => {
+      const p = get().project
+      if (!p?.tree) return 'Nenhum projeto profissional carregado.'
+      const result = addProDir(p.tree, path)
+      if (!result.tree) return result.error ?? 'Falha ao criar pasta.'
+      set({ project: bump({ ...p, tree: result.tree }), isDirty: true, saveError: null })
+      return null
+    },
+    setProFileContent: (path, content) => {
+      const p = get().project
+      if (!p?.tree) return
+      const next = setProFileContent(p.tree, path, content)
+      if (next === p.tree) return
+      set({ project: bump({ ...p, tree: next }), isDirty: true, saveError: null })
+    },
+    renameProNode: (from, to) => {
+      const p = get().project
+      if (!p?.tree) return 'Nenhum projeto profissional carregado.'
+      const result = renameProNode(p.tree, from, to)
+      if (!result.tree) return result.error ?? 'Falha ao renomear.'
+      set({ project: bump({ ...p, tree: result.tree }), isDirty: true, saveError: null })
+      return null
+    },
+    removeProNode: (path) => {
+      const p = get().project
+      if (!p?.tree) return
+      const next = removeProNode(p.tree, path)
+      if (next === p.tree) return
+      set({ project: bump({ ...p, tree: next }), isDirty: true, saveError: null })
     },
   }))
 }
@@ -1505,5 +1670,6 @@ export function useProjectStoreApi(): ProjectStoreApi {
 function defaultExtraContent(language: ExtraFileLanguage): string {
   if (language === 'css') return '/* Estilos extras */\n'
   if (language === 'html') return '<!-- HTML extra -->\n'
+  if (language === 'typescript') return '// TypeScript extra\n'
   return '// JavaScript extra\n'
 }

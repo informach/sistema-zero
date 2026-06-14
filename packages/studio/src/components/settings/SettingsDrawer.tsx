@@ -25,7 +25,12 @@ export function SettingsDrawer({
   const clearAIApiKey = useSettingsStore((s) => s.clearAIApiKey)
   const setAIModel = useSettingsStore((s) => s.setAIModel)
   const setTheme = useSettingsStore((s) => s.setTheme)
+  const revealAdvanced = useSettingsStore((s) => s.revealAdvanced)
+  const setRevealAdvanced = useSettingsStore((s) => s.setRevealAdvanced)
   const config = useStudioConfig()
+  // Toggle de "revelar avançado" só faz sentido quando o professor permite e o
+  // nível fixado não é já o avançado (senão a paleta já mostra tudo).
+  const showRevealToggle = config.learning.allowLevelReveal && config.learning.level !== 'avancado'
   // Host injetou chave/modelo? As seções correspondentes somem (a configuração
   // é da plataforma, não do aluno).
   const hostKey = Boolean(config.aiConfig.apiKey)
@@ -210,6 +215,24 @@ export function SettingsDrawer({
           {/* O ajuste de fonte da UI saiu daqui: ele mutava o font-size do <html>
               do HOST — inaceitável embarcado. O tamanho da fonte do CÓDIGO
               continua nos controles A−/A+ do editor. */}
+
+          {showRevealToggle && (
+            <div className="block text-xs text-sz-fg-soft">
+              <span>Blocos avançados</span>
+              <label className="mt-1 flex items-center gap-2 text-xs text-sz-fg-soft">
+                <input
+                  type="checkbox"
+                  checked={revealAdvanced}
+                  onChange={(e) => void setRevealAdvanced(e.currentTarget.checked)}
+                />
+                Mostrar blocos avançados na paleta
+              </label>
+              <p className="mt-1 text-xs text-sz-fg-mute">
+                Sua turma começa com os blocos essenciais. Ative para explorar recursos mais
+                avançados quando se sentir pronto.
+              </p>
+            </div>
+          )}
         </section>
       )}
     </Modal>

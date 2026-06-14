@@ -398,4 +398,48 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     tooltip:
       'Regras CSS que só valem quando a tela é menor (no máximo) ou maior (no mínimo) que o tamanho dado — @media. Use para responsividade. Coloque blocos de CSS dentro.',
   },
+
+  // ---- CSS moderno ----
+  {
+    type: 'sz_css_transition',
+    message0: 'transição suave (transition) do seletor %1 por %2 ms',
+    args0: [
+      { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
+      { type: 'field_number', name: 'MS', value: 300, min: 0 },
+    ],
+    previousStatement: 'CSSEntry',
+    nextStatement: 'CSSEntry',
+    colour: C,
+    level: 'intermediario',
+    tooltip: 'Anima suavemente as mudanças de estilo do elemento (transition: all Nms ease).',
+  },
+  {
+    type: 'sz_css_grid',
+    message0: 'grade (grid) do seletor %1 com %2 colunas e espaço %3 px',
+    args0: [
+      { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
+      { type: 'field_number', name: 'COLS', value: 3, min: 1 },
+      { type: 'field_number', name: 'GAP', value: 16, min: 0 },
+    ],
+    previousStatement: 'CSSEntry',
+    nextStatement: 'CSSEntry',
+    colour: C,
+    level: 'intermediario',
+    tooltip: 'Layout em grade: display:grid com N colunas iguais (1fr) e espaço entre elas.',
+  },
+  {
+    type: 'sz_css_keyframes',
+    message0: 'animação chamada %1',
+    args0: [{ type: 'field_input', name: 'NAME', text: 'aparecer' }],
+    message1: 'no início (from) %1',
+    args1: [{ type: 'input_statement', name: 'FROM', check: 'CSSDecl' }],
+    message2: 'no fim (to) %1',
+    args2: [{ type: 'input_statement', name: 'TO', check: 'CSSDecl' }],
+    previousStatement: 'CSSEntry',
+    nextStatement: 'CSSEntry',
+    colour: C,
+    level: 'avancado',
+    tooltip:
+      'Cria uma animação CSS (@keyframes) do estado inicial (from) ao final (to). Para usar, aplique "animation: nome 1s" numa Regra CSS do elemento.',
+  },
 ]

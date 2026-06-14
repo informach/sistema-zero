@@ -79,6 +79,69 @@ describe('buildPreviewDoc', () => {
     expect(doc).toContain('data:text/javascript;base64,')
   })
 
+  it('transpila extra .ts e mapeia ./nome, ./nome.js e ./nome.ts no importmap', () => {
+    const doc = buildPreviewDoc({
+      html: '<html><body></body></html>',
+      css: '',
+      js: '',
+      extraFiles: [
+        {
+          name: 'soma.ts',
+          language: 'typescript',
+          content: 'export const soma = (a: number) => a + 1',
+        },
+      ],
+    })
+    expect(doc).toContain('type="importmap"')
+    expect(doc).toContain('"./soma.ts"')
+    expect(doc).toContain('"./soma.js"')
+    expect(doc).toContain('"./soma"')
+    // O conteúdo no data URL é JS transpilado (sem anotação de tipo).
+    const base64 = doc.match(/data:text\/javascript;base64,([A-Za-z0-9+/=]+)/)?.[1] ?? ''
+    const decoded = Buffer.from(base64, 'base64').toString('utf-8')
+    expect(decoded).not.toContain(': number')
+    expect(decoded).toContain('soma')
+  })
+
+  it('injeta módulos ESM de extensão no importmap e libera a origem na CSP', () => {
+    const doc = buildPreviewDoc({
+      html: '<html><body></body></html>',
+      css: '',
+      js: 'import * as THREE from "three";',
+      extensionImports: { three: 'https://esm.sh/three@0.180.0' },
+    })
+    expect(doc).toContain('type="importmap"')
+    expect(doc).toContain('"three":"https://esm.sh/three@0.180.0"')
+    // A CSP libera SÓ a origem do CDN em script-src (não a URL inteira).
+    expect(doc).toMatch(/script-src[^;]*https:\/\/esm\.sh/)
+    expect(doc).not.toMatch(/script-src[^;]*three@0\.180/)
+  })
+
+  it('sem módulos de extensão, a CSP não libera origens externas em script-src', () => {
+    const doc = buildPreviewDoc({ html: '<body></body>', css: '', js: '' })
+    expect(doc).toMatch(/script-src 'unsafe-inline' data: blob:;/)
+  })
+
+  it('com módulos de extensão, scripts de extensão e do aluno viram type=module (ordem deferida)', () => {
+    const doc = buildPreviewDoc({
+      html: '<body></body>',
+      css: '',
+      js: 'SZGame3D.createScene("tela");',
+      extensionScripts: ["import * as THREE from 'three'; window.SZGame3D = {};"],
+      extensionImports: { three: 'https://esm.sh/three@0.180.0' },
+    })
+    // O bootstrap da extensão (importa three) e o código do aluno são módulos.
+    expect(doc.match(/<script type="module">/g)?.length).toBeGreaterThanOrEqual(2)
+    // O bootstrap (importa three) aparece ANTES do código do aluno.
+    expect(doc.indexOf('window.SZGame3D = {}')).toBeLessThan(doc.indexOf('SZGame3D.createScene'))
+    // ⚠️ REGRESSÃO: o importmap PRECISA vir antes de QUALQUER script type=module,
+    // senão `import ... from 'three'` falha ("Failed to resolve module specifier").
+    const importmapIdx = doc.indexOf('type="importmap"')
+    const firstModuleIdx = doc.indexOf('<script type="module">')
+    expect(importmapIdx).toBeGreaterThanOrEqual(0)
+    expect(importmapIdx).toBeLessThan(firstModuleIdx)
+  })
+
   it('inline arquivos extras CSS como <style data-file>', () => {
     const doc = buildPreviewDoc({
       html: '<html><body></body></html>',

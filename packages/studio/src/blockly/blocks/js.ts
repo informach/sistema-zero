@@ -3,38 +3,13 @@ import type { BlockDefinition } from './types'
 
 const C = CATEGORY_COLORS.js
 
+/**
+ * Blocos da LINGUAGEM JavaScript: variáveis, console/alert, controle de fluxo,
+ * listas, timers e Web APIs (storage/fetch). A MANIPULAÇÃO DO DOM (eventos,
+ * busca de elementos, propriedades, classes, criação) vive em `dom.ts`
+ * (categoria "DOM", entre CSS e JavaScript na toolbox).
+ */
 export const JS_BLOCKS: BlockDefinition[] = [
-  {
-    type: 'sz_js_on_click',
-    message0: 'Quando clicarem (click) %1 %2',
-    args0: [
-      {
-        type: 'field_dropdown',
-        name: 'TARGET_KIND',
-        options: [
-          ['no elemento id', 'id'],
-          ['na variável', 'var'],
-        ],
-      },
-      { type: 'field_input', name: 'TARGET', text: 'meuBotao' },
-    ],
-    message1: 'fazer %1',
-    args1: [{ type: 'input_statement', name: 'DO' }],
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    colour: C,
-  },
-  {
-    type: 'sz_js_on_click_anywhere',
-    message0: 'Quando clicarem em qualquer lugar da tela',
-    message1: 'fazer %1',
-    args1: [{ type: 'input_statement', name: 'DO' }],
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    colour: C,
-    tooltip:
-      'Reage a um clique em qualquer parte da página (document). Use "posição do clique" para saber onde clicaram.',
-  },
   {
     type: 'sz_js_array_push',
     message0: 'na lista %1 adicionar %2',
@@ -116,178 +91,6 @@ export const JS_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip: 'Mostra uma janelinha de aviso com o valor de uma variável (alert).',
-  },
-  {
-    // Legado: substituído por sz_js_set_property_text. Mantido (oculto da
-    // paleta) para que projetos antigos salvos com este bloco ainda carreguem.
-    type: 'sz_js_set_text',
-    message0: 'Alterar texto (textContent) do elemento id %1 para %2',
-    args0: [
-      { type: 'field_input', name: 'TARGET', text: 'saida' },
-      { type: 'field_input', name: 'VALUE', text: 'Novo texto' },
-    ],
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    colour: C,
-    hidden: true,
-  },
-  {
-    type: 'sz_js_set_property_text',
-    message0: 'Alterar %1 %2 %3 para %4',
-    args0: [
-      {
-        type: 'field_dropdown',
-        name: 'PROP',
-        options: [
-          ['o texto (textContent)', 'textContent'],
-          ['o valor (value)', 'value'],
-          ['o conteúdo HTML (innerHTML)', 'innerHTML'],
-        ],
-      },
-      {
-        type: 'field_dropdown',
-        name: 'TARGET_KIND',
-        options: [
-          ['do elemento id', 'id'],
-          ['da variável', 'var'],
-        ],
-      },
-      { type: 'field_input', name: 'TARGET', text: 'saida' },
-      { type: 'field_input', name: 'VALUE', text: 'Novo texto' },
-    ],
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    colour: C,
-    tooltip:
-      'Escreve um texto fixo numa propriedade de um elemento (por id) ou da variável que o guarda.',
-  },
-  {
-    type: 'sz_js_set_property_var',
-    message0: 'Alterar %1 %2 %3 para o valor da variável %4',
-    args0: [
-      {
-        type: 'field_dropdown',
-        name: 'PROP',
-        options: [
-          ['o texto (textContent)', 'textContent'],
-          ['o valor (value)', 'value'],
-          ['o conteúdo HTML (innerHTML)', 'innerHTML'],
-        ],
-      },
-      {
-        type: 'field_dropdown',
-        name: 'TARGET_KIND',
-        options: [
-          ['do elemento id', 'id'],
-          ['da variável', 'var'],
-        ],
-      },
-      { type: 'field_input', name: 'TARGET', text: 'saida' },
-      { type: 'field_input', name: 'NAME', text: 'conteudo' },
-    ],
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    colour: C,
-    tooltip: 'Escreve o valor de uma variável numa propriedade do elemento (por id ou variável).',
-  },
-  {
-    type: 'sz_js_set_property_calc',
-    message0: 'Alterar %1 %2 %3 para %4',
-    args0: [
-      {
-        type: 'field_dropdown',
-        name: 'PROP',
-        options: [
-          ['o texto (textContent)', 'textContent'],
-          ['o valor (value)', 'value'],
-          ['o conteúdo HTML (innerHTML)', 'innerHTML'],
-        ],
-      },
-      {
-        type: 'field_dropdown',
-        name: 'TARGET_KIND',
-        options: [
-          ['do elemento id', 'id'],
-          ['da variável', 'var'],
-        ],
-      },
-      { type: 'field_input', name: 'TARGET', text: 'saida' },
-      {
-        type: 'field_dropdown',
-        name: 'CALC',
-        options: [
-          ['o ano atual (new Date().getFullYear())', 'year'],
-          ['a data de hoje (toLocaleDateString)', 'date'],
-          ['a hora agora (toLocaleTimeString)', 'time'],
-        ],
-      },
-    ],
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    colour: C,
-    tooltip:
-      'Escreve um valor calculado da data/hora (ano atual, data de hoje ou hora) numa propriedade do elemento.',
-  },
-  {
-    type: 'sz_js_set_property',
-    message0: 'alterar %1 %2 %3 para o valor %4',
-    args0: [
-      {
-        type: 'field_dropdown',
-        name: 'PROP',
-        options: [
-          ['o texto (textContent)', 'textContent'],
-          ['o valor (value)', 'value'],
-          ['o conteúdo HTML (innerHTML)', 'innerHTML'],
-        ],
-      },
-      {
-        type: 'field_dropdown',
-        name: 'TARGET_KIND',
-        options: [
-          ['do elemento id', 'id'],
-          ['da variável', 'var'],
-        ],
-      },
-      { type: 'field_input', name: 'TARGET', text: 'saida' },
-      { type: 'input_value', name: 'VALUE', check: 'JSValue' },
-    ],
-    inputsInline: true,
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    colour: C,
-    tooltip:
-      'Escreve uma propriedade do elemento com qualquer valor (texto montado, conta, etc.). Use "juntar texto" para montar HTML.',
-  },
-  {
-    type: 'sz_js_get_property',
-    message0: 'Pegar %1 %2 %3 e guardar em %4',
-    args0: [
-      {
-        type: 'field_dropdown',
-        name: 'PROP',
-        options: [
-          ['o texto (textContent)', 'textContent'],
-          ['o valor (value)', 'value'],
-          ['o conteúdo HTML (innerHTML)', 'innerHTML'],
-        ],
-      },
-      {
-        type: 'field_dropdown',
-        name: 'TARGET_KIND',
-        options: [
-          ['do elemento id', 'id'],
-          ['da variável', 'var'],
-        ],
-      },
-      { type: 'field_input', name: 'TARGET', text: 'saida' },
-      { type: 'field_input', name: 'NAME', text: 'conteudo' },
-    ],
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    colour: C,
-    tooltip:
-      'Lê uma propriedade (o texto ou o valor digitado) de um elemento por id ou variável e guarda numa variável.',
   },
   {
     type: 'sz_js_var_declare',
@@ -373,6 +176,105 @@ export const JS_BLOCKS: BlockDefinition[] = [
     colour: C,
   },
   {
+    type: 'sz_js_while',
+    message0: 'enquanto (while) %1',
+    args0: [{ type: 'input_value', name: 'COND', check: 'JSValue' }],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'DO' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    level: 'intermediario',
+    tooltip:
+      'Repete o "fazer" enquanto a condição for verdadeira. Garanta que a condição um dia fique falsa, senão o laço não termina.',
+  },
+  {
+    type: 'sz_js_do_while',
+    message0: 'fazer %1',
+    args0: [{ type: 'input_statement', name: 'DO' }],
+    message1: 'enquanto (do...while) %1',
+    args1: [{ type: 'input_value', name: 'COND', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    level: 'intermediario',
+    tooltip: 'Executa o "fazer" pelo menos uma vez e repete enquanto a condição for verdadeira.',
+  },
+  {
+    type: 'sz_js_break',
+    message0: 'sair do laço (break)',
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    level: 'intermediario',
+    tooltip: 'Interrompe o laço (loop) atual imediatamente.',
+  },
+  {
+    type: 'sz_js_continue',
+    message0: 'pular para a próxima volta (continue)',
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    level: 'intermediario',
+    tooltip: 'Pula o resto desta volta e vai direto para a próxima repetição do laço.',
+  },
+  {
+    type: 'sz_js_for_of',
+    message0: 'para cada %1 de (for...of) %2',
+    args0: [
+      { type: 'field_input', name: 'ITEM', text: 'item' },
+      { type: 'field_input', name: 'NAME', text: 'lista' },
+    ],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'DO' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    level: 'intermediario',
+    tooltip:
+      'Percorre cada item de uma lista (for...of). Sem posição/índice — use "para cada item" se precisar do índice.',
+  },
+  {
+    type: 'sz_js_for_range',
+    message0: 'contar %1 de %2 até %3 (passo %4)',
+    args0: [
+      { type: 'field_input', name: 'VAR', text: 'i' },
+      { type: 'input_value', name: 'FROM', check: 'JSValue' },
+      { type: 'input_value', name: 'TO', check: 'JSValue' },
+      { type: 'input_value', name: 'STEP', check: 'JSValue' },
+    ],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'DO' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    level: 'intermediario',
+    tooltip:
+      'Laço de contagem (for clássico): vai de "de" até "até" (exclusivo) somando o passo a cada volta.',
+  },
+  {
+    type: 'sz_js_try_catch',
+    message0: 'tentar (try) %1',
+    args0: [{ type: 'input_statement', name: 'BODY' }],
+    message1: 'se der erro %1 fazer (catch) %2',
+    args1: [
+      { type: 'field_input', name: 'ERR', text: 'erro' },
+      { type: 'input_statement', name: 'HANDLER' },
+    ],
+    message2: 'no fim, sempre (finally) %1',
+    args2: [{ type: 'input_statement', name: 'FINALLY' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    level: 'avancado',
+    tooltip:
+      'Tenta executar o "tentar"; se acontecer um erro, executa o "se der erro" (com a mensagem na variável); o "no fim" roda sempre. Deixe o "no fim" vazio se não precisar.',
+  },
+  {
     type: 'sz_js_for_each',
     message0: 'para cada item %1 (posição %2) na lista %3',
     args0: [
@@ -413,202 +315,48 @@ export const JS_BLOCKS: BlockDefinition[] = [
     colour: C,
     tooltip: 'Repete o "fazer" a cada intervalo de tempo em milissegundos (setInterval).',
   },
-  // ---- DOM extras (Fase 2.3) ----
   {
-    type: 'sz_js_on_mouseover',
-    message0: 'Quando o mouse passar (mouseover) %1 %2',
+    type: 'sz_js_storage_set',
+    message0: 'guardar em %1 a chave %2 com o valor %3',
     args0: [
       {
         type: 'field_dropdown',
-        name: 'TARGET_KIND',
+        name: 'STORE',
         options: [
-          ['sobre o elemento id', 'id'],
-          ['sobre a variável', 'var'],
+          ['localStorage (permanente)', 'local'],
+          ['sessionStorage (só nesta sessão)', 'session'],
         ],
       },
-      { type: 'field_input', name: 'TARGET', text: 'meuElemento' },
-    ],
-    message1: 'fazer %1',
-    args1: [{ type: 'input_statement', name: 'DO' }],
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    colour: C,
-  },
-  {
-    type: 'sz_js_on_submit',
-    message0: 'Quando enviar (submit) %1 %2',
-    args0: [
-      {
-        type: 'field_dropdown',
-        name: 'TARGET_KIND',
-        options: [
-          ['o formulário id', 'id'],
-          ['a variável', 'var'],
-        ],
-      },
-      { type: 'field_input', name: 'TARGET', text: 'meuForm' },
-    ],
-    message1: 'fazer %1',
-    args1: [{ type: 'input_statement', name: 'DO' }],
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    colour: C,
-  },
-  {
-    type: 'sz_js_on_input',
-    message0: 'Quando digitar (input) %1 %2',
-    args0: [
-      {
-        type: 'field_dropdown',
-        name: 'TARGET_KIND',
-        options: [
-          ['no elemento id', 'id'],
-          ['na variável', 'var'],
-        ],
-      },
-      { type: 'field_input', name: 'TARGET', text: 'meuInput' },
-    ],
-    message1: 'fazer %1',
-    args1: [{ type: 'input_statement', name: 'DO' }],
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    colour: C,
-  },
-  {
-    type: 'sz_js_query_selector',
-    message0: 'Pegar elemento (querySelector) via seletor %1 e guardar em %2',
-    args0: [
-      { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
-      { type: 'field_input', name: 'NAME', text: 'caixa' },
-    ],
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    colour: C,
-  },
-  {
-    type: 'sz_js_get_element_by_id',
-    message0: 'Pegar elemento (getElementById) id %1 e guardar em %2',
-    args0: [
-      { type: 'field_input', name: 'ID', text: 'meuBotao' },
-      { type: 'field_input', name: 'NAME', text: 'meuBotao' },
-    ],
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    colour: C,
-    tooltip: 'Guarda o elemento de um id numa variável (document.getElementById).',
-  },
-  {
-    type: 'sz_js_on_event_named',
-    message0: 'quando %1 em %2 %3 chamar a função %4',
-    args0: [
-      {
-        type: 'field_dropdown',
-        name: 'EVENT',
-        options: [
-          ['clicar (click)', 'click'],
-          ['passar o mouse (mouseover)', 'mouseover'],
-          ['tirar o mouse (mouseout)', 'mouseout'],
-          ['enviar (submit)', 'submit'],
-          ['digitar (input)', 'input'],
-          ['mudar (change)', 'change'],
-          ['apertar tecla (keydown)', 'keydown'],
-          ['soltar tecla (keyup)', 'keyup'],
-        ],
-      },
-      {
-        type: 'field_dropdown',
-        name: 'TARGET_KIND',
-        options: [
-          ['o elemento id', 'id'],
-          ['a variável', 'var'],
-        ],
-      },
-      { type: 'field_input', name: 'TARGET', text: 'meuBotao' },
-      { type: 'field_input', name: 'HANDLER', text: 'fazerAlgo' },
-    ],
-    inputsInline: true,
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    colour: C,
-    tooltip:
-      'Liga um evento a uma função já criada (el.addEventListener("click", funcao)). Dentro da função, "elemento atual (this)" é o elemento que disparou.',
-  },
-  {
-    type: 'sz_js_create_element',
-    message0: 'criar elemento %1 e guardar em %2',
-    args0: [
-      { type: 'field_input', name: 'TAG', text: 'div' },
-      { type: 'field_input', name: 'NAME', text: 'elemento' },
-    ],
-    inputsInline: true,
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    colour: C,
-    tooltip:
-      'Cria um novo elemento HTML em memória e guarda numa variável (document.createElement).',
-  },
-  {
-    type: 'sz_js_append_child',
-    message0: 'dentro de %1 adicionar %2',
-    args0: [
-      { type: 'field_input', name: 'PARENT', text: 'pai' },
-      { type: 'field_input', name: 'CHILD', text: 'filho' },
-    ],
-    inputsInline: true,
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    colour: C,
-    tooltip: 'Coloca um elemento dentro de outro (pai.appendChild(filho)).',
-  },
-  {
-    type: 'sz_js_set_dataset',
-    message0: 'no elemento %1 %2 guardar no dado %3 o valor %4',
-    args0: [
-      {
-        type: 'field_dropdown',
-        name: 'TARGET_KIND',
-        options: [
-          ['id', 'id'],
-          ['variável', 'var'],
-        ],
-      },
-      { type: 'field_input', name: 'TARGET', text: 'elemento' },
-      { type: 'field_input', name: 'KEY', text: 'chave' },
+      { type: 'field_input', name: 'KEY', text: 'nome' },
       { type: 'input_value', name: 'VALUE', check: 'JSValue' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Guarda um valor num data-attribute do elemento (el.dataset.chave = valor).',
+    level: 'intermediario',
+    tooltip:
+      'Salva um valor no navegador. localStorage fica salvo entre visitas; sessionStorage só nesta aba/sessão.',
   },
   {
-    type: 'sz_js_class_op',
-    message0: '%1 classe (classList) %2 %3 %4',
-    args0: [
-      {
-        type: 'field_dropdown',
-        name: 'OP',
-        options: [
-          ['adicionar', 'add'],
-          ['remover', 'remove'],
-          ['alternar', 'toggle'],
-        ],
-      },
-      { type: 'field_input', name: 'CLASS', text: 'ativo' },
-      {
-        type: 'field_dropdown',
-        name: 'TARGET_KIND',
-        options: [
-          ['no elemento id', 'id'],
-          ['na variável', 'var'],
-          ['no elemento atual (this)', 'this'],
-        ],
-      },
-      { type: 'field_input', name: 'TARGET', text: 'meuElemento' },
+    type: 'sz_js_fetch_json',
+    message0: 'buscar JSON (fetch) da URL %1',
+    args0: [{ type: 'field_input', name: 'URL', text: 'https://api.exemplo.com/dados' }],
+    message1: 'quando chegar, guardar em %1 e fazer %2',
+    args1: [
+      { type: 'field_input', name: 'OK', text: 'dados' },
+      { type: 'input_statement', name: 'BODY' },
+    ],
+    message2: 'se der erro, guardar em %1 e fazer %2',
+    args2: [
+      { type: 'field_input', name: 'ERR', text: 'erro' },
+      { type: 'input_statement', name: 'CATCH' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    level: 'avancado',
+    tooltip:
+      'Busca dados de uma URL e converte para JSON (fetch). Os dados ficam na variável "quando chegar"; um erro fica na variável "se der erro". Precisa de permissão de rede no preview (o professor libera a origem).',
   },
 ]

@@ -2,6 +2,7 @@ import type { JSX } from 'react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import type { ExtraFile, InstalledExtension } from '#core'
+import type { ExtensionPermission } from '#extensions'
 import { findExtension } from '#official-extensions'
 import { buildPreviewDoc, isPreviewMessage } from '#preview'
 import { Button } from '#ui'
@@ -9,6 +10,7 @@ import { useDebounced } from '../../hooks/useDebounced'
 import { useLogsStore } from '../../state/logsStore'
 import { useProjectStore } from '../../state/projectStore'
 import { useUIStore } from '../../state/uiStore'
+import { useStudioConfig } from '../../studio/config'
 import {
   estimatePreviewInputChars,
   PREVIEW_RENDER_INPUT_LIMIT_CHARS,
@@ -33,9 +35,14 @@ export function PreviewIframe(): JSX.Element {
       })),
     )
   const pushLog = useLogsStore((s) => s.push)
+  const previewSecurity = useStudioConfig().previewSecurity
   const previewRunning = useUIStore((s) => s.previewRunning)
   const setPreviewRunning = useUIStore((s) => s.setPreviewRunning)
   const iframeRef = useRef<HTMLIFrameElement>(null)
+  // Watchdog de heartbeat (Camada B): se o thread do iframe travar num cálculo
+  // síncrono, o interceptor para de emitir heartbeats e mostramos o aviso.
+  const lastHeartbeatRef = useRef(0)
+  const [previewStalled, setPreviewStalled] = useState(false)
   // Incrementado quando o preview precisa executar/reexecutar o documento atual
   // mesmo que o HTML/CSS/JS gerado seja idêntico.
   const [renderNonce, setRenderNonce] = useState(0)
@@ -104,6 +111,30 @@ export function PreviewIframe(): JSX.Element {
       .filter((s): s is string => Boolean(s))
   }, [debouncedIds])
 
+  // Módulos ESM declarados pelas extensões instaladas (specifier → URL pinada,
+  // ex.: three via CDN). Entram no importmap; as origens vão para o script-src.
+  const extensionImports = useMemo(() => {
+    const ids = debouncedIds ? debouncedIds.split(',') : []
+    const imports: Record<string, string> = {}
+    for (const id of ids) {
+      const ext = findExtension(id)
+      if (ext?.runtime.esmImports) Object.assign(imports, ext.runtime.esmImports)
+    }
+    return imports
+  }, [debouncedIds])
+
+  // União das permissions declaradas pelas extensões instaladas — o
+  // permissionGuard usa isto + a baseline do aluno para liberar/travar rede.
+  const installedPermissions = useMemo(() => {
+    const ids = debouncedIds ? debouncedIds.split(',') : []
+    const perms = new Set<ExtensionPermission>()
+    for (const id of ids) {
+      const ext = findExtension(id)
+      if (ext) for (const p of ext.manifest.permissions) perms.add(p)
+    }
+    return Array.from(perms)
+  }, [debouncedIds])
+
   const previewBudgetInput = useMemo(
     () => ({
       html: debouncedHtml,
@@ -150,6 +181,10 @@ export function PreviewIframe(): JSX.Element {
       extensionScripts,
       extraFiles: debouncedExtraFiles,
       parentOrigin: typeof window !== 'undefined' ? window.location.origin : undefined,
+      installedPermissions,
+      fetchAllowedOrigins: previewSecurity.fetchAllowedOrigins,
+      loopBudgetMs: previewSecurity.loopBudgetMs,
+      extensionImports,
     })
     // O botão "Atualizar" muda `renderNonce`. Embutimos o nonce no próprio documento
     // para que o `srcDoc` mude e o iframe recarregue (re-executando o código) mesmo
@@ -166,8 +201,33 @@ export function PreviewIframe(): JSX.Element {
     debouncedJs,
     extensionScripts,
     debouncedExtraFiles,
+    installedPermissions,
+    extensionImports,
+    previewSecurity,
     renderNonce,
   ])
+
+  const docIsLive = doc !== PAUSED_PREVIEW_DOC
+
+  // Reseta o relógio do heartbeat sempre que o documento muda (novo render):
+  // dá ao iframe a janela completa antes de considerar travado. `doc` é o
+  // GATILHO (não lido no corpo), por isso fica na lista de propósito.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `doc` é o gatilho do reset, não uma dependência lida
+  useEffect(() => {
+    lastHeartbeatRef.current = Date.now()
+    setPreviewStalled(false)
+  }, [doc])
+
+  // Loop do watchdog: marca travado se nenhum heartbeat chegar dentro do timeout.
+  useEffect(() => {
+    if (!docIsLive) return
+    const id = setInterval(() => {
+      if (Date.now() - lastHeartbeatRef.current > previewSecurity.heartbeatTimeoutMs) {
+        setPreviewStalled(true)
+      }
+    }, 1000)
+    return () => clearInterval(id)
+  }, [docIsLive, previewSecurity.heartbeatTimeoutMs])
 
   useEffect(() => {
     const handler = (ev: MessageEvent) => {
@@ -183,6 +243,12 @@ export function PreviewIframe(): JSX.Element {
       if (!source || ev.source !== source) return
       if (ev.origin !== 'null' && ev.origin !== window.location.origin) return
       if (!isPreviewMessage(ev.data)) return
+      // Heartbeat NÃO é log: alimenta o watchdog e não vai para o console.
+      if (ev.data.kind === 'heartbeat') {
+        lastHeartbeatRef.current = Date.now()
+        setPreviewStalled((stalled) => (stalled ? false : stalled))
+        return
+      }
       pushLog(ev.data)
     }
     window.addEventListener('message', handler)
@@ -221,7 +287,11 @@ export function PreviewIframe(): JSX.Element {
         ref={iframeRef}
         title="Pré-visualização"
         srcDoc={doc}
-        onLoad={() => setLoadedSrcDoc(iframeRef.current?.getAttribute('srcdoc') ?? null)}
+        onLoad={() => {
+          setLoadedSrcDoc(iframeRef.current?.getAttribute('srcdoc') ?? null)
+          lastHeartbeatRef.current = Date.now()
+          setPreviewStalled(false)
+        }}
         sandbox="allow-scripts allow-modals"
         className="h-full w-full flex-1 bg-white"
       />
@@ -243,6 +313,32 @@ export function PreviewIframe(): JSX.Element {
             >
               Renderizar uma vez
             </Button>
+          </div>
+        </div>
+      )}
+      {previewStalled && !previewPaused && (
+        <div className="absolute inset-0 flex items-center justify-center bg-sz-panel/95 p-6 text-center">
+          <div className="max-w-sm rounded-md border border-sz-border bg-sz-bg p-4 shadow-lg">
+            <p className="text-sm font-semibold text-sz-fg">O preview parece travado</p>
+            <p className="mt-2 text-xs text-sz-fg-soft">
+              O código pode estar preso em um cálculo muito longo. Você pode parar a execução ou
+              continuar esperando se for algo demorado de propósito.
+            </p>
+            <div className="mt-3 flex items-center justify-center gap-2">
+              <Button size="sm" variant="primary" onClick={() => setPreviewRunning(false)}>
+                Parar
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  lastHeartbeatRef.current = Date.now()
+                  setPreviewStalled(false)
+                }}
+              >
+                Continuar esperando
+              </Button>
+            </div>
           </div>
         </div>
       )}

@@ -1,5 +1,6 @@
 import type { SZIR } from '#ir'
 import type { IDEMode } from './modes'
+import type { ProjectKind, ProjectTree, ProProjectMeta } from './proProject'
 
 export interface ProjectFiles {
   'index.html': string
@@ -7,7 +8,7 @@ export interface ProjectFiles {
   'script.js': string
 }
 
-export type ExtraFileLanguage = 'html' | 'css' | 'javascript'
+export type ExtraFileLanguage = 'html' | 'css' | 'javascript' | 'typescript'
 
 export interface ExtraFile {
   /** Nome do arquivo com extensão (ex.: `utils.js`, `cores.css`). Único no projeto. */
@@ -34,6 +35,12 @@ export interface Project {
   ir: SZIR | null
   blocksState: unknown | null
   installedExtensions: InstalledExtension[]
+  /** Discriminante do modo. Ausente/undefined = 'classic'. */
+  kind?: ProjectKind
+  /** Só quando `kind: 'pro'`: árvore de arquivos real (path-keyed). */
+  tree?: ProjectTree
+  /** Só quando `kind: 'pro'`: metadados do dev-server. */
+  proMeta?: ProProjectMeta
 }
 
 export const FILE_NAMES = ['index.html', 'style.css', 'script.js'] as const
@@ -42,12 +49,14 @@ export type FileName = (typeof FILE_NAMES)[number]
 /** Conjunto de nomes protegidos (canônicos) — não podem ser renomeados nem deletados. */
 export const CANONICAL_FILES: ReadonlySet<string> = new Set(FILE_NAMES)
 
-const EXTRA_FILE_NAME_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]*\.(?:html|css|mjs|js)$/i
+const EXTRA_FILE_NAME_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]*\.(?:html|css|mjs|js|tsx|ts|jsx)$/i
 
 export function inferExtraLanguage(fileName: string): ExtraFileLanguage | null {
   if (/\.html?$/i.test(fileName)) return 'html'
   if (/\.css$/i.test(fileName)) return 'css'
-  if (/\.m?js$/i.test(fileName)) return 'javascript'
+  // .ts/.tsx → typescript (transpilado por Sucrase no preview do modo Código).
+  if (/\.tsx?$/i.test(fileName)) return 'typescript'
+  if (/\.(?:m?js|jsx)$/i.test(fileName)) return 'javascript'
   return null
 }
 

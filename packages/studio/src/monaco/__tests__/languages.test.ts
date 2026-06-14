@@ -8,5 +8,7 @@ describe('inferLanguage', () => {
     expect(inferLanguage('tema.css')).toBe('css')
     expect(inferLanguage('helper.js')).toBe('javascript')
     expect(inferLanguage('module.mjs')).toBe('javascript')
+    expect(inferLanguage('tipos.ts')).toBe('typescript')
+    expect(inferLanguage('App.tsx')).toBe('typescript')
   })
 })

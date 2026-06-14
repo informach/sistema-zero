@@ -43,6 +43,7 @@
     "monaco-editor": "^0.52.2",
     "react-blockly": "^9.0.0",
     "react-resizable-panels": "^2.1.9",
+    "sucrase": "^3.35.1",
     "ulid": "^3.0.2",
     "zod": "^4.4.3",
     "zustand": "^5.0.0"

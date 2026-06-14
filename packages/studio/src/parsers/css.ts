@@ -24,8 +24,11 @@ export function parseCSS(source: string): CSSEntry[] {
       // estruturado; qualquer outra @-rule (ou condição fora desse formato)
       // continua como rawCSS avançado, preservada verbatim.
       const media = tryParseMediaQuery(source, index, end)
+      const keyframes = media ? null : tryParseKeyframes(source, index, end)
       if (media) {
         entries.push(media)
+      } else if (keyframes) {
+        entries.push(keyframes)
       } else {
         const code = source.slice(index, end).trim()
         if (code) entries.push({ type: 'rawCSS', code, advanced: true })
@@ -84,6 +87,41 @@ function tryParseMediaQuery(source: string, start: number, end: number): CSSEntr
     px: Number(match[2]),
     rules,
   }
+}
+
+/**
+ * Reconhece `@keyframes nome { 0% { … } 100% { … } }` como {@link KeyframesCSS}.
+ * O nome precisa ser um identificador simples; cada passo é `at { decls }` com
+ * `at` = `from`/`to`/`N%`. Reaproveita {@link findMatchingBrace}/
+ * {@link parseDeclarations}. Devolve `null` se não casar (mantém rawCSS).
+ */
+function tryParseKeyframes(source: string, start: number, end: number): CSSEntry | null {
+  const slice = source.slice(start, end)
+  if (!/^@keyframes\b/.test(slice)) return null
+  const open = slice.indexOf('{')
+  if (open < 0) return null
+  const name = slice.slice('@keyframes'.length, open).trim()
+  if (!/^[A-Za-z_-][\w-]*$/.test(name)) return null
+  const close = findMatchingBrace(slice, open)
+  if (close < 0) return null
+  const inner = slice.slice(open + 1, close)
+
+  const steps: Array<{ at: string; declarations: Record<string, string> }> = []
+  let i = 0
+  while (i < inner.length) {
+    i = skipWhitespaceAndComments(inner, i)
+    if (i >= inner.length) break
+    const stepOpen = inner.indexOf('{', i)
+    if (stepOpen < 0) break
+    const stepClose = findMatchingBrace(inner, stepOpen)
+    if (stepClose < 0) break
+    const at = inner.slice(i, stepOpen).trim().toLowerCase()
+    const declarations = parseDeclarations(inner.slice(stepOpen + 1, stepClose))
+    if (at && Object.keys(declarations).length > 0) steps.push({ at, declarations })
+    i = stepClose + 1
+  }
+  if (steps.length === 0) return null
+  return { type: 'keyframes', name, steps }
 }
 
 function skipWhitespaceAndComments(source: string, start: number): number {

@@ -30,7 +30,7 @@ mock.module('idb-keyval', () => ({
   setMany: idb.setMany,
 }))
 
-const { listAllProjects } = await import('./persistence')
+const { listAllProjects, persistProject } = await import('./persistence')
 const { PROJECT_FILE_LIMITS, useProjectStore } = await import('./projectStore')
 const { cancelPendingAutosavesFor, createPersistenceService, setAutosaveDelayForTests } =
   await import('../persistence/service')
@@ -570,6 +570,39 @@ describe('loadProject', () => {
     expect(Number.isFinite(loaded?.updatedAt)).toBe(true)
     expect(Number.isFinite(loaded?.installedExtensions[0]?.installedAt)).toBe(true)
     expect(useProjectStore.getState().project).toBe(loaded)
+  })
+
+  it('preserva kind/tree/proMeta de projeto profissional no roundtrip persist→load', async () => {
+    // Regressão: a serialização particionada (meta/files/state) dropava os
+    // campos do modo profissional, rebaixando todo projeto pro para classic no
+    // reload. Persiste um pro e recarrega pelos MESMOS registros gravados.
+    const proProject = {
+      ...createEmptyProject('pro-1', 'Pro'),
+      mode: 'code' as const,
+      kind: 'pro' as const,
+      tree: {
+        'package.json': { kind: 'file' as const, content: '{}' },
+        src: { kind: 'dir' as const },
+        'src/main.ts': { kind: 'file' as const, content: 'export {}' },
+      },
+      proMeta: { devScript: 'dev', templateId: 'react-ts' },
+    }
+    await persistProject(proProject)
+    const lastArgs = idb.setMany.mock.calls.at(-1) as unknown as unknown[]
+    const records = (lastArgs?.[0] ?? []) as [string, unknown][]
+    const byKey = new Map(records.map(([k, v]) => [k, v]))
+    idb.getMany.mockResolvedValueOnce([
+      byKey.get('sz:project-meta:pro-1'),
+      byKey.get('sz:project-files:pro-1'),
+      byKey.get('sz:project-state:pro-1'),
+    ])
+
+    const loaded = await useProjectStore.getState().loadProject('pro-1')
+
+    expect(loaded?.kind).toBe('pro')
+    expect(loaded?.mode).toBe('code')
+    expect(loaded?.proMeta?.templateId).toBe('react-ts')
+    expect(loaded?.tree?.['src/main.ts']?.kind).toBe('file')
   })
 
   it('carrega projeto salvo em registros particionados antes do formato legado', async () => {

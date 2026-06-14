@@ -176,8 +176,13 @@ describe('parseJS', () => {
     })
   })
 
-  it('JS arbitrário (try/catch) vira rawJS advanced preservando o código', () => {
-    const code = 'try { fazer(); } catch (e) {}'
+  it('try/catch agora é reconhecido (não degrada mais para rawJS)', () => {
+    const ir = parseJS('try { fazer(); } catch (e) {}')
+    expect(ir[0]?.type).toBe('tryCatch')
+  })
+
+  it('JS arbitrário não-representável (generator) vira rawJS advanced preservando o código', () => {
+    const code = 'function* contar() { yield 1; }'
     const ir = parseJS(code)
     expect(ir).toEqual([{ type: 'rawJS', code, advanced: true }])
   })

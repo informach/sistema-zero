@@ -2,13 +2,12 @@ import type { JSX } from 'react'
 import { useEffect, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { IDE_MODES, MODE_LABELS, t } from '#core'
-import { Badge, BrandLogo, Button } from '#ui'
+import { Badge, BrandWordmark, Button } from '#ui'
 import { useProjectStore } from '../../state/projectStore'
-import { useSettingsStore } from '../../state/settingsStore'
 import { useStudioPersistence } from '../../state/studioStores'
 import { useUIStore } from '../../state/uiStore'
 import { useStudioConfig } from '../../studio/config'
-import { useStudioTheme } from '../../studio/theme'
+import { ThemeToggle } from './ThemeToggle'
 
 export interface TopbarProps {
   /** Sai do editor (host decide o destino). Sem ela, logo vira estático e o botão "Projetos" some. */
@@ -35,8 +34,6 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
   const showPreview = useUIStore((s) => s.showPreview)
   const setShowPreview = useUIStore((s) => s.setShowPreview)
   const setBottomTab = useUIStore((s) => s.setBottomTab)
-  const studioTheme = useStudioTheme()
-  const setTheme = useSettingsStore((s) => s.setTheme)
   const config = useStudioConfig()
 
   const [editing, setEditing] = useState(false)
@@ -78,16 +75,14 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
         <button
           type="button"
           onClick={() => void exitToProjects()}
-          className="flex items-center gap-2 text-sz-fg hover:opacity-80"
+          className="flex items-center text-sz-fg hover:opacity-80"
           title="Voltar à lista de projetos"
         >
-          <BrandLogo className="h-6 w-6" />
-          <strong>{t('app.name')}</strong>
+          <BrandWordmark className="h-5 w-auto" />
         </button>
       ) : (
-        <span className="flex items-center gap-2 text-sz-fg">
-          <BrandLogo className="h-6 w-6" />
-          <strong>{t('app.name')}</strong>
+        <span className="flex items-center text-sz-fg">
+          <BrandWordmark className="h-5 w-auto" />
         </span>
       )}
       <span className="text-sz-fg-mute">/</span>
@@ -152,17 +147,7 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
       </div>
 
       <div className="ml-auto flex items-center gap-2">
-        {canToggleTheme && (
-          <button
-            type="button"
-            onClick={() => void setTheme(studioTheme === 'dark' ? 'light' : 'dark')}
-            title="Mudar tema"
-            aria-label="Mudar tema"
-            className="rounded p-1.5 text-sz-fg-soft transition-colors hover:bg-sz-bg hover:text-sz-fg"
-          >
-            {studioTheme === 'dark' ? <SunIcon /> : <MoonIcon />}
-          </button>
-        )}
+        {canToggleTheme && <ThemeToggle />}
         {onExit && (
           <Button variant="ghost" size="sm" onClick={() => void exitToProjects()}>
             {t('topbar.projects')}
@@ -192,41 +177,5 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
         )}
       </div>
     </header>
-  )
-}
-
-function SunIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      aria-hidden="true"
-    >
-      <circle cx="12" cy="12" r="4" />
-      <path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
-    </svg>
-  )
-}
-
-function MoonIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-    </svg>
   )
 }

@@ -11,6 +11,9 @@ const COLORS: Record<LogEntry['kind'], string> = {
   error: 'text-sz-error',
   runtimeError: 'text-sz-error',
   unhandledRejection: 'text-sz-error',
+  loopStopped: 'text-sz-warn',
+  // Heartbeat nunca chega ao console (o PreviewIframe filtra); chave só p/ o tipo.
+  heartbeat: 'text-sz-fg-mute',
 }
 
 const KIND_LABEL: Record<LogEntry['kind'], string> = {
@@ -20,6 +23,8 @@ const KIND_LABEL: Record<LogEntry['kind'], string> = {
   error: 'error',
   runtimeError: 'erro de execução',
   unhandledRejection: 'promessa rejeitada',
+  loopStopped: 'laço interrompido',
+  heartbeat: 'heartbeat',
 }
 
 export function ConsolePanel(): JSX.Element {

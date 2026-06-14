@@ -1,4 +1,16 @@
-export type LogKind = 'log' | 'warn' | 'error' | 'info' | 'unhandledRejection' | 'runtimeError'
+export type LogKind =
+  | 'log'
+  | 'warn'
+  | 'error'
+  | 'info'
+  | 'unhandledRejection'
+  | 'runtimeError'
+  // Loop síncrono cortado pela guarda de tempo (loopGuard). Vira entrada de
+  // console com mensagem amigável.
+  | 'loopStopped'
+  // Sinal de vida do preview (watchdog de heartbeat). NÃO é log — o PreviewIframe
+  // consome e NÃO encaminha ao logsStore.
+  | 'heartbeat'
 const LOG_KINDS: ReadonlySet<string> = new Set([
   'log',
   'warn',
@@ -6,6 +18,8 @@ const LOG_KINDS: ReadonlySet<string> = new Set([
   'info',
   'unhandledRejection',
   'runtimeError',
+  'loopStopped',
+  'heartbeat',
 ])
 
 export interface PreviewMessage {

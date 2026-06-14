@@ -47,6 +47,8 @@ export interface PersistedSettings {
   aiModel?: string
   theme?: ThemeName
   codeFontSize?: number
+  /** Aluno revelou blocos avançados na paleta (divulgação progressiva). */
+  revealAdvanced?: boolean
 }
 
 const MAX_AI_API_KEY_CHARS = 4096
@@ -86,6 +88,7 @@ function sanitizePersistedSettings(value: unknown): PersistedSettings {
   if (typeof raw.codeFontSize === 'number') {
     settings.codeFontSize = clampCodeFontSize(raw.codeFontSize)
   }
+  if (typeof raw.revealAdvanced === 'boolean') settings.revealAdvanced = raw.revealAdvanced
   return settings
 }
 
@@ -102,6 +105,7 @@ interface SettingsState {
   aiModel: string
   theme: ThemeName
   codeFontSize: number
+  revealAdvanced: boolean
   loaded: boolean
   load: () => Promise<void>
   setAIApiKey: (k: string, options?: { storage?: AIApiKeyStorage }) => Promise<void>
@@ -113,6 +117,7 @@ interface SettingsState {
   increaseCodeFontSize: () => Promise<void>
   decreaseCodeFontSize: () => Promise<void>
   resetCodeFontSize: () => Promise<void>
+  setRevealAdvanced: (v: boolean) => Promise<void>
 }
 
 async function readPersisted(): Promise<PersistedSettings> {
@@ -143,6 +148,7 @@ export const useSettingsStore = create<SettingsState>((setState, getState) => ({
   aiModel: DEFAULT_AI_MODEL,
   theme: 'dark',
   codeFontSize: CODE_FONT_SIZE_DEFAULT,
+  revealAdvanced: false,
   loaded: false,
   load: async () => {
     const persisted = await readPersisted()
@@ -154,6 +160,7 @@ export const useSettingsStore = create<SettingsState>((setState, getState) => ({
       aiModel,
       theme: persisted.theme ?? 'dark',
       codeFontSize: clampCodeFontSize(persisted.codeFontSize ?? CODE_FONT_SIZE_DEFAULT),
+      revealAdvanced: persisted.revealAdvanced ?? false,
       loaded: true,
     })
     if (aiApiKeyStorage === 'session' && persisted.aiApiKey) {
@@ -211,5 +218,9 @@ export const useSettingsStore = create<SettingsState>((setState, getState) => ({
   resetCodeFontSize: async () => {
     setState({ codeFontSize: CODE_FONT_SIZE_DEFAULT })
     await writeMerge({ codeFontSize: CODE_FONT_SIZE_DEFAULT })
+  },
+  setRevealAdvanced: async (revealAdvanced) => {
+    setState({ revealAdvanced })
+    await writeMerge({ revealAdvanced })
   },
 }))

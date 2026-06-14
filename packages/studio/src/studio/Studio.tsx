@@ -9,7 +9,12 @@ import { useSettingsStore } from '../state/settingsStore'
 import { StudioStoresContext } from '../state/storesContext'
 import { createStudioStores, useStudioPersistence } from '../state/studioStores'
 import { useUIStore } from '../state/uiStore'
-import { resolveStudioConfig, StudioConfigProvider } from './config'
+import {
+  resolveLearning,
+  resolvePreviewSecurity,
+  resolveStudioConfig,
+  StudioConfigProvider,
+} from './config'
 import { StudioThemeProvider } from './theme'
 import type { StudioHandle, StudioProps } from './types'
 
@@ -49,6 +54,11 @@ function StudioBody({
   features,
   allowedModes,
   initialMode,
+  limits,
+  level,
+  allowBlocks,
+  allowCategories,
+  allowLevelReveal,
   onChange,
   onSave,
   onError,
@@ -78,9 +88,21 @@ function StudioBody({
   // Dep é a chave primitiva estável `allowedModesKey`, NÃO o array `allowedModes`
   // (literal inline muda de referência a cada render do host).
   // biome-ignore lint/correctness/useExhaustiveDependencies: ver acima — allowedModesKey é a forma estável de allowedModes
-  const config = useMemo(
+  const baseConfig = useMemo(
     () => resolveStudioConfig(features, allowedModes),
     [features, allowedModesKey],
+  )
+  // `limits` é estático por instância (lido só na criação das stores). Resolve a
+  // política de segurança do preview UMA vez para não re-derivar o config a cada
+  // render do host (o que re-sanitizaria/re-hidrataria o projeto — ver acima).
+  const [previewSecurity] = useState(() => resolvePreviewSecurity(limits))
+  // Perfil de aprendizado também é estático por instância (fixado pelo professor).
+  const [learning] = useState(() =>
+    resolveLearning({ level, allowBlocks, allowCategories, allowLevelReveal }),
+  )
+  const config = useMemo(
+    () => ({ ...baseConfig, previewSecurity, learning }),
+    [baseConfig, previewSecurity, learning],
   )
 
   // `replaceProject` (handle) troca o projeto sem mexer na prop.

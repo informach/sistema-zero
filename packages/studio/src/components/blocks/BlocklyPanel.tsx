@@ -12,13 +12,15 @@ import {
   szGridColourFor,
   szThemeFor,
 } from '#blockly'
-import type { InstalledExtension } from '#core'
+import { type InstalledExtension, isCategoryAllowed, type LearningProfile } from '#core'
 import { generateProjectFilesWithMap } from '#generators'
 import { findExtension } from '#official-extensions'
 import { useCrossHighlight } from '../../hooks/useCrossHighlight'
 import { useHighlightStore } from '../../state/highlightStore'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
+import { useSettingsStore } from '../../state/settingsStore'
 import { useSourcemapStore } from '../../state/sourcemapStore'
+import { useStudioConfig } from '../../studio/config'
 import { useStudioTheme } from '../../studio/theme'
 import { Spinner } from '../layout/LoadingViews'
 
@@ -170,13 +172,31 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
 
   const installedIds = useMemo(() => installedExtensions.map((e) => e.id), [installedExtensions])
 
+  // Perfil de aprendizado: o professor fixa o nível (config); o aluno pode
+  // revelar o avançado (settings), se o professor permitir.
+  const learning = useStudioConfig().learning
+  const revealAdvanced = useSettingsStore((s) => s.revealAdvanced)
+  const profile = useMemo<LearningProfile>(
+    () => ({
+      level: learning.level,
+      revealed: learning.allowLevelReveal && revealAdvanced,
+      allowBlocks: learning.allowBlocks,
+      allowCategories: learning.allowCategories,
+    }),
+    [learning, revealAdvanced],
+  )
+
   const toolbox = useMemo(() => {
     const extras = installedIds
       .map((id) => findExtension(id))
       .filter((e): e is NonNullable<ReturnType<typeof findExtension>> => Boolean(e))
+      // Gateia a categoria da extensão pelo nível (ex.: game-3d = 'avancado').
+      .filter((e) =>
+        isCategoryAllowed(e.blockly.toolboxCategory.name, e.minLevel ?? 'iniciante', profile),
+      )
       .map((e) => e.blockly.toolboxCategory)
-    return buildCoreToolbox(extras)
-  }, [installedIds])
+    return buildCoreToolbox(extras, profile)
+  }, [installedIds, profile])
   initialToolboxRef.current ??= toolbox
 
   // Regenera arquivos/IR a partir dos blocos. Só deve ser chamada para edições

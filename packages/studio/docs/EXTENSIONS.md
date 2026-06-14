@@ -64,6 +64,42 @@ projeto que instalar a extensão.
       sem uso real = remover. Permission usada mas não declarada = bug de
       segurança (o aluno não vê o aviso correto no painel de extensões).
 
+> **As permissions são ENFORÇADAS, não só declarativas.** O `permissionGuard`
+> (`src/preview/permissionGuard.ts`, injetado no `<head>` do preview) neutraliza
+> `fetch`/XHR/WebSocket/`sendBeacon`, storage/cookie e `AudioContext` quando a
+> permission correspondente NÃO foi concedida. Consequência contra-intuitiva:
+> declarar `network` **destrava** o `fetch` do aluno (o guard deixa de envolvê-lo).
+> Por isso uma extensão que só CARREGA uma lib via CDN fixado (ver item 7) **não**
+> declara `network` — o carregamento da lib é `script-src`/importmap, não a rede
+> do aluno (`connect-src`). A `game-3d` declara apenas `['canvas']` mesmo
+> importando o Three.js de um CDN.
+
+### 7. Entrega de libs ESM via importmap (`esmImports`)
+
+Extensões que dependem de uma biblioteca ESM grande (ex.: Three.js) **não**
+embutem a lib no `bootstrapScript` nem usam `<script src>` remoto solto. Em vez
+disso declaram `esmImports` na `ExtensionDefinition`:
+
+```ts
+// official-extensions/game-3d/index.ts
+esmImports: { three: 'https://esm.sh/three@0.180.0' }
+```
+
+O `bootstrap.ts` injeta esses pares no **importmap** do iframe e, quando há
+algum `esmImports`, promove os scripts de extensão E o script do aluno a
+`type="module"` (para a ordem de carregamento dos módulos ser respeitada — o
+`bootstrapScript` faz `import * as THREE from 'three'` e define `window.SZGame3D`
+antes de o código do aluno rodar). Regras:
+
+- [ ] Versão **fixada** (pin exato, ex.: `three@0.180.0`), nunca `latest`/range.
+- [ ] CDN de ESM confiável e estável (usamos `esm.sh`). A origem do `esmImports`
+      é adicionada ao `script-src` do CSP do preview — revise-a.
+- [ ] A mesma versão deve existir como dep npm no template profissional
+      correspondente (`three-ts`), para o código gerado migrar de Blocos →
+      Profissional sem ajuste de versão.
+- [ ] Higiene de GPU no runtime: `dispose()` de geometrias/materiais/renderer,
+      `setPixelRatio(<=2)`, `setAnimationLoop(null)` no teardown.
+
 ### 4. Blocos namespaced
 
 - [ ] **Todos** os blocos da extensão usam um prefixo de tipo próprio

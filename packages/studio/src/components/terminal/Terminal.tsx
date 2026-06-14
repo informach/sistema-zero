@@ -13,7 +13,7 @@ import {
   buildTerminalFileTree,
   type TerminalProjectSnapshot,
 } from './terminalProjectFiles'
-import { getWebContainer } from './webContainerClient'
+import { getWebContainer, resetWebContainerFs } from './webContainerClient'
 
 type Status = 'idle' | 'loading' | 'ready' | 'error'
 const TERMINAL_SYNC_DELAY_MS = 150
@@ -40,6 +40,8 @@ export function Terminal(): JSX.Element {
         name: s.project?.name ?? 'sz-project',
         files: s.project?.files ?? null,
         extraFiles: s.project?.extraFiles ?? EMPTY_EXTRA_FILES,
+        kind: s.project?.kind === 'pro' ? 'pro' : undefined,
+        tree: s.project?.tree,
       }),
     ),
   )
@@ -112,8 +114,21 @@ export function Terminal(): JSX.Element {
       term.open(container)
       fit.fit()
 
-      await webcontainer.mount(buildTerminalFileTree(project))
-      syncedFilesRef.current = new Map(Object.entries(buildTerminalFileContents(project)))
+      // No modo profissional o FS é montado/sincronizado pelo ProWebContainerProvider
+      // (escritor ÚNICO). O Terminal só abre o shell sobre o FS já montado — dois
+      // sincronizadores no mesmo container singleton corromperiam os arquivos.
+      if (project.kind !== 'pro') {
+        // Isolamento por projeto: o container é singleton por aba, então arquivos
+        // de um projeto anterior (ou de um projeto pro) ficariam no FS. Limpa
+        // tudo (preservando node_modules p/ não reinstalar) antes de montar.
+        await resetWebContainerFs(webcontainer)
+        if (loadSeqRef.current !== loadId) {
+          term.dispose()
+          return
+        }
+        await webcontainer.mount(buildTerminalFileTree(project))
+        syncedFilesRef.current = new Map(Object.entries(buildTerminalFileContents(project)))
+      }
       if (loadSeqRef.current !== loadId) {
         term.dispose()
         return
@@ -195,6 +210,8 @@ export function Terminal(): JSX.Element {
 
   useEffect(() => {
     if (status !== 'ready') return
+    // Pro: o sync é do ProWebContainerProvider (escritor único). Ver handleLoad.
+    if (project.kind === 'pro') return
     const runtime = runtimeRef.current
     if (!runtime) return
     const contents = buildTerminalFileContents(project)
@@ -240,6 +257,19 @@ export function Terminal(): JSX.Element {
   return (
     <div className="relative h-full bg-sz-panel">
       <div ref={containerRef} className="h-full w-full" />
+
+      {status === 'ready' && (
+        // O shell interativo (jsh) NUNCA é morto por timeout; só por aqui (ou
+        // pela troca de projeto). Reiniciar remonta o FS e abre um novo shell.
+        <button
+          type="button"
+          onClick={handleLoad}
+          title="Reiniciar terminal"
+          className="absolute right-2 top-2 z-10 rounded border border-sz-border bg-sz-panel/80 px-2 py-1 text-xs text-sz-fg-soft hover:text-sz-accent"
+        >
+          Reiniciar
+        </button>
+      )}
 
       {status === 'idle' && (
         <TerminalOverlay>
