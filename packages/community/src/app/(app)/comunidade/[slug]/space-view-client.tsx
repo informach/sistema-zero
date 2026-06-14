@@ -20,6 +20,7 @@ import type {
   HubChannelView,
   HubCommentView,
   HubPage,
+  HubReaction,
   HubSpaceView,
   HubThreadView,
 } from '@/lib/types'
@@ -36,13 +37,45 @@ function timeAgo(iso: string): string {
   return `${Math.floor(h / 24)} d`
 }
 
+/**
+ * Toggle LOCAL (otimista) de uma reação. A API de reação devolve só `{ ok }`,
+ * sem a contagem fresca; refetchar a página de comentários a cada clique perderia
+ * o que o aluno já trouxe via "Carregar mais".
+ */
+function toggleReaction(reactions: HubReaction[], emoji: string, wasMine: boolean): HubReaction[] {
+  const existing = reactions.find((r) => r.emoji === emoji)
+  if (wasMine) {
+    if (!existing) return reactions
+    const count = existing.count - 1
+    return count <= 0
+      ? reactions.filter((r) => r.emoji !== emoji)
+      : reactions.map((r) => (r.emoji === emoji ? { ...r, count, reactedByMe: false } : r))
+  }
+  return existing
+    ? reactions.map((r) =>
+        r.emoji === emoji ? { ...r, count: r.count + 1, reactedByMe: true } : r,
+      )
+    : [...reactions, { emoji, count: 1, reactedByMe: true }]
+}
+
 export function SpaceViewClient({ slug, viewerId }: { slug: string; viewerId: string }) {
   const [space, setSpace] = useState<HubSpaceView | null>(null)
   const [channels, setChannels] = useState<HubChannelView[]>([])
   const [channel, setChannel] = useState<HubChannelView | null>(null)
   const [threads, setThreads] = useState<HubThreadView[]>([])
+  const [threadsCursor, setThreadsCursor] = useState<string | null>(null)
+  const [threadsHasMore, setThreadsHasMore] = useState(false)
+  const [loadingMoreThreads, setLoadingMoreThreads] = useState(false)
   const [thread, setThread] = useState<HubThreadView | null>(null)
   const [comments, setComments] = useState<HubCommentView[]>([])
+  // Comentários criados NESTA sessão — renderizados sempre no fim (são os mais
+  // novos; a paginação cresce do mais antigo p/ o mais recente). Mantê-los
+  // separados evita que um "Carregar mais" insira páginas DEPOIS do que o aluno
+  // acabou de postar (quebraria a ordem cronológica).
+  const [newComments, setNewComments] = useState<HubCommentView[]>([])
+  const [commentsCursor, setCommentsCursor] = useState<string | null>(null)
+  const [commentsHasMore, setCommentsHasMore] = useState(false)
+  const [loadingMoreComments, setLoadingMoreComments] = useState(false)
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
 
@@ -54,7 +87,7 @@ export function SpaceViewClient({ slug, viewerId }: { slug: string; viewerId: st
   const [commentAttachments, setCommentAttachments] = useState<UploadedAttachment[]>([])
 
   const authorLabel = useCallback(
-    (authorId: string | null) => (authorId === viewerId ? 'Você' : 'Membro'),
+    (authorId: string | null) => (authorId === viewerId ? 'Você' : 'Colega'),
     [viewerId],
   )
 
@@ -80,11 +113,13 @@ export function SpaceViewClient({ slug, viewerId }: { slug: string; viewerId: st
     }
   }, [slug])
 
-  // ── Ao trocar de canal: carrega tópicos + marca visto ──
+  // ── Ao trocar de canal: carrega a 1ª página de tópicos + marca visto ──
   const loadThreads = useCallback(async (channelId: string) => {
     try {
       const page = await apiGet<HubPage<HubThreadView>>(`/api/hub/channels/${channelId}/threads`)
       setThreads(page.items)
+      setThreadsCursor(page.nextCursor)
+      setThreadsHasMore(page.hasMore)
     } catch (err) {
       toast.error((err as ApiError).message ?? 'Falha ao carregar os tópicos.')
     }
@@ -103,9 +138,32 @@ export function SpaceViewClient({ slug, viewerId }: { slug: string; viewerId: st
     void loadThreads(channel.id)
   }, [channel, loadThreads])
 
+  async function loadMoreThreads() {
+    if (!channel || !threadsCursor || loadingMoreThreads) return
+    setLoadingMoreThreads(true)
+    try {
+      const page = await apiGet<HubPage<HubThreadView>>(
+        `/api/hub/channels/${channel.id}/threads?cursor=${encodeURIComponent(threadsCursor)}`,
+      )
+      setThreads((prev) => {
+        const seen = new Set(prev.map((t) => t.id))
+        return [...prev, ...page.items.filter((t) => !seen.has(t.id))]
+      })
+      setThreadsCursor(page.nextCursor)
+      setThreadsHasMore(page.hasMore)
+    } catch (err) {
+      toast.error((err as ApiError).message ?? 'Falha ao carregar mais tópicos.')
+    } finally {
+      setLoadingMoreThreads(false)
+    }
+  }
+
   async function openThread(t: HubThreadView) {
     setThread(t)
     setComments([])
+    setNewComments([])
+    setCommentsCursor(null)
+    setCommentsHasMore(false)
     // Rascunho do comentário é POR tópico — não vaza texto/anexos de um tópico
     // para o próximo ao trocar de tópico.
     setCommentBody('')
@@ -113,8 +171,32 @@ export function SpaceViewClient({ slug, viewerId }: { slug: string; viewerId: st
     try {
       const page = await apiGet<HubPage<HubCommentView>>(`/api/hub/threads/${t.id}/comments`)
       setComments(page.items)
+      setCommentsCursor(page.nextCursor)
+      setCommentsHasMore(page.hasMore)
     } catch (err) {
       toast.error((err as ApiError).message ?? 'Falha ao carregar os comentários.')
+    }
+  }
+
+  async function loadMoreComments() {
+    if (!thread || !commentsCursor || loadingMoreComments) return
+    setLoadingMoreComments(true)
+    try {
+      const page = await apiGet<HubPage<HubCommentView>>(
+        `/api/hub/threads/${thread.id}/comments?after=${encodeURIComponent(commentsCursor)}`,
+      )
+      setComments((prev) => {
+        // Filtra o que já está na lista OU já foi postado nesta sessão (a última
+        // página acaba devolvendo o comentário recém-criado).
+        const seen = new Set([...prev, ...newComments].map((c) => c.id))
+        return [...prev, ...page.items.filter((c) => !seen.has(c.id))]
+      })
+      setCommentsCursor(page.nextCursor)
+      setCommentsHasMore(page.hasMore)
+    } catch (err) {
+      toast.error((err as ApiError).message ?? 'Falha ao carregar mais comentários.')
+    } finally {
+      setLoadingMoreComments(false)
     }
   }
 
@@ -141,6 +223,7 @@ export function SpaceViewClient({ slug, viewerId }: { slug: string; viewerId: st
       setNewBody('')
       setNewAttachments([])
       setShowNew(false)
+      // Recarrega a 1ª página: o tópico novo sobe ao topo (ordenação por atividade).
       await loadThreads(channel.id)
     } catch (err) {
       const e = err as ApiError
@@ -169,11 +252,11 @@ export function SpaceViewClient({ slug, viewerId }: { slug: string; viewerId: st
       )
       setCommentBody('')
       setCommentAttachments([])
+      // Mostra o comentário no fim sem refetchar — preserva as páginas já trazidas.
+      setNewComments((prev) => (prev.some((c) => c.id === created.id) ? prev : [...prev, created]))
       if (created.pending) {
         toast.success('Comentário enviado para aprovação.')
       }
-      const page = await apiGet<HubPage<HubCommentView>>(`/api/hub/threads/${thread.id}/comments`)
-      setComments(page.items)
     } catch (err) {
       const e = err as ApiError
       toast.error(
@@ -188,22 +271,37 @@ export function SpaceViewClient({ slug, viewerId }: { slug: string; viewerId: st
     }
   }
 
+  // Atualização OTIMISTA local da reação (preserva a paginação — ver toggleReaction).
+  function applyReaction(
+    target: 'threads' | 'comments',
+    id: string,
+    emoji: string,
+    wasMine: boolean,
+  ) {
+    if (target === 'threads') {
+      setThread((prev) =>
+        prev && prev.id === id
+          ? { ...prev, reactions: toggleReaction(prev.reactions, emoji, wasMine) }
+          : prev,
+      )
+      return
+    }
+    const patch = (c: HubCommentView) =>
+      c.id === id ? { ...c, reactions: toggleReaction(c.reactions, emoji, wasMine) } : c
+    setComments((prev) => prev.map(patch))
+    setNewComments((prev) => prev.map(patch))
+  }
+
   async function react(target: 'threads' | 'comments', id: string, emoji: string, mine: boolean) {
+    applyReaction(target, id, emoji, mine)
     try {
       if (mine) {
         await apiSend(`/api/hub/${target}/${id}/reactions/${encodeURIComponent(emoji)}`, 'DELETE')
       } else {
         await apiSend(`/api/hub/${target}/${id}/reactions`, 'POST', { emoji })
       }
-      if (thread) {
-        const [t, page] = await Promise.all([
-          apiGet<HubThreadView>(`/api/hub/threads/${thread.id}`),
-          apiGet<HubPage<HubCommentView>>(`/api/hub/threads/${thread.id}/comments`),
-        ])
-        setThread(t)
-        setComments(page.items)
-      }
     } catch (err) {
+      applyReaction(target, id, emoji, !mine) // reverte o otimismo
       toast.error((err as ApiError).message ?? 'Não foi possível reagir.')
     }
   }
@@ -270,6 +368,10 @@ export function SpaceViewClient({ slug, viewerId }: { slug: string; viewerId: st
             <ThreadDetail
               thread={thread}
               comments={comments}
+              newComments={newComments}
+              hasMoreComments={commentsHasMore}
+              loadingMoreComments={loadingMoreComments}
+              onLoadMoreComments={loadMoreComments}
               busy={busy}
               commentBody={commentBody}
               setCommentBody={setCommentBody}
@@ -323,29 +425,43 @@ export function SpaceViewClient({ slug, viewerId }: { slug: string; viewerId: st
                   Nenhum tópico ainda. Seja o primeiro a postar!
                 </Card>
               ) : (
-                threads.map((t) => (
-                  <button
-                    type="button"
-                    key={t.id}
-                    onClick={() => openThread(t)}
-                    className="w-full text-left"
-                  >
-                    <Card className="space-y-1 p-3 transition-colors hover:bg-muted/50">
-                      <div className="flex items-center gap-2">
-                        {t.isPinned ? <Badge variant="muted">Fixado</Badge> : null}
-                        {t.pending ? <Badge variant="muted">Aguardando aprovação</Badge> : null}
-                        <span className="truncate font-medium">{t.title}</span>
-                      </div>
-                      <p className="flex items-center gap-3 text-xs text-muted-foreground">
-                        <span>{authorLabel(t.authorId)}</span>
-                        <span className="inline-flex items-center gap-1">
-                          <MessageCircle className="size-3" /> {t.commentCount}
-                        </span>
-                        <span>{timeAgo(t.lastActivityAt)}</span>
-                      </p>
-                    </Card>
-                  </button>
-                ))
+                <>
+                  {threads.map((t) => (
+                    <button
+                      type="button"
+                      key={t.id}
+                      onClick={() => openThread(t)}
+                      className="w-full text-left"
+                    >
+                      <Card className="space-y-1 p-3 transition-colors hover:bg-muted/50">
+                        <div className="flex items-center gap-2">
+                          {t.isPinned ? <Badge variant="muted">Fixado</Badge> : null}
+                          {t.pending ? <Badge variant="muted">Aguardando aprovação</Badge> : null}
+                          <span className="truncate font-medium">{t.title}</span>
+                        </div>
+                        <p className="flex items-center gap-3 text-xs text-muted-foreground">
+                          <span>{authorLabel(t.authorId)}</span>
+                          <span className="inline-flex items-center gap-1">
+                            <MessageCircle className="size-3" /> {t.commentCount}
+                          </span>
+                          <span>{timeAgo(t.lastActivityAt)}</span>
+                        </p>
+                      </Card>
+                    </button>
+                  ))}
+                  {threadsHasMore ? (
+                    <div className="flex justify-center pt-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={loadMoreThreads}
+                        disabled={loadingMoreThreads}
+                      >
+                        {loadingMoreThreads ? 'Carregando…' : 'Carregar mais'}
+                      </Button>
+                    </div>
+                  ) : null}
+                </>
               )}
             </div>
           )}
@@ -390,9 +506,51 @@ function ReactionBar({
   )
 }
 
+function CommentCard({
+  comment,
+  authorLabel,
+  onReact,
+  onReport,
+}: {
+  comment: HubCommentView
+  authorLabel: (authorId: string | null) => string
+  onReact: (target: 'threads' | 'comments', id: string, emoji: string, mine: boolean) => void
+  onReport: (target: 'threads' | 'comments', id: string) => void
+}) {
+  return (
+    <Card className="space-y-2 p-3">
+      <p className="text-xs text-muted-foreground">
+        {authorLabel(comment.authorId)}
+        {comment.pending ? ' · aguardando aprovação' : ''}
+      </p>
+      <div className="lesson-prose">{renderMarkdown(comment.body)}</div>
+      <AttachmentList attachments={comment.attachments} />
+      <div className="flex items-center justify-between">
+        <ReactionBar
+          target="comments"
+          id={comment.id}
+          reactions={comment.reactions}
+          onReact={onReact}
+        />
+        <button
+          type="button"
+          onClick={() => onReport('comments', comment.id)}
+          className="text-xs text-muted-foreground hover:text-foreground"
+        >
+          Denunciar
+        </button>
+      </div>
+    </Card>
+  )
+}
+
 function ThreadDetail({
   thread,
   comments,
+  newComments,
+  hasMoreComments,
+  loadingMoreComments,
+  onLoadMoreComments,
   busy,
   commentBody,
   setCommentBody,
@@ -406,6 +564,10 @@ function ThreadDetail({
 }: {
   thread: HubThreadView
   comments: HubCommentView[]
+  newComments: HubCommentView[]
+  hasMoreComments: boolean
+  loadingMoreComments: boolean
+  onLoadMoreComments: () => void
   busy: boolean
   commentBody: string
   setCommentBody: (v: string) => void
@@ -417,6 +579,7 @@ function ThreadDetail({
   onReport: (target: 'threads' | 'comments', id: string) => void
   authorLabel: (authorId: string | null) => string
 }) {
+  const total = comments.length + newComments.length
   return (
     <div className="space-y-4">
       <button
@@ -451,27 +614,37 @@ function ThreadDetail({
 
       <div className="space-y-3">
         <h3 className="text-sm font-semibold text-muted-foreground">
-          {comments.length} comentário{comments.length === 1 ? '' : 's'}
+          {total} comentário{total === 1 ? '' : 's'}
         </h3>
         {comments.map((c) => (
-          <Card key={c.id} className="space-y-2 p-3">
-            <p className="text-xs text-muted-foreground">
-              {authorLabel(c.authorId)}
-              {c.pending ? ' · aguardando aprovação' : ''}
-            </p>
-            <div className="lesson-prose">{renderMarkdown(c.body)}</div>
-            <AttachmentList attachments={c.attachments} />
-            <div className="flex items-center justify-between">
-              <ReactionBar target="comments" id={c.id} reactions={c.reactions} onReact={onReact} />
-              <button
-                type="button"
-                onClick={() => onReport('comments', c.id)}
-                className="text-xs text-muted-foreground hover:text-foreground"
-              >
-                Denunciar
-              </button>
-            </div>
-          </Card>
+          <CommentCard
+            key={c.id}
+            comment={c}
+            authorLabel={authorLabel}
+            onReact={onReact}
+            onReport={onReport}
+          />
+        ))}
+        {hasMoreComments ? (
+          <div className="flex justify-center">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onLoadMoreComments}
+              disabled={loadingMoreComments}
+            >
+              {loadingMoreComments ? 'Carregando…' : 'Carregar mais comentários'}
+            </Button>
+          </div>
+        ) : null}
+        {newComments.map((c) => (
+          <CommentCard
+            key={c.id}
+            comment={c}
+            authorLabel={authorLabel}
+            onReact={onReact}
+            onReport={onReport}
+          />
         ))}
       </div>
 
