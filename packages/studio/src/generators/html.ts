@@ -1,6 +1,29 @@
 import type { HTMLNode, HTMLShell } from '#ir'
 import { escapeScriptContent, escapeStyleContent } from './escape'
+import { assertGeneratorDepth } from './js'
 import { countLines, SourceMapBuilder } from './sourceMap'
+
+/**
+ * Guarda de profundidade ITERATIVA para a árvore HTML. As recursões de
+ * renderização (`renderElement`/`renderNodesWithMap`/`renderInline`) não tinham
+ * guarda — um DOM patologicamente aninhado estourava a pilha do motor no meio da
+ * geração, e os chamadores na thread principal não capturavam. Rodando aqui (com
+ * pilha explícita, sem recursão), abortamos com {@link GeneratorDepthError}
+ * antes do crash. `assertGeneratorDepth` compartilha o teto único com o gerador
+ * de JS.
+ */
+function assertHTMLDepth(nodes: HTMLNode[]): void {
+  const stack: Array<{ list: HTMLNode[]; depth: number }> = [{ list: nodes, depth: 0 }]
+  while (stack.length > 0) {
+    const { list, depth } = stack.pop() as { list: HTMLNode[]; depth: number }
+    assertGeneratorDepth(depth)
+    for (const node of list) {
+      if (node.type === 'element' && node.children && node.children.length > 0) {
+        stack.push({ list: node.children, depth: depth + 1 })
+      }
+    }
+  }
+}
 
 export interface GenerateHTMLOptions {
   title?: string
@@ -32,6 +55,7 @@ export function generateHTML(opts: GenerateHTMLOptions): string {
  * faixa de linhas onde ele foi renderizado dentro do arquivo `index.html`.
  */
 export function generateHTMLWithMap(opts: GenerateHTMLOptions): GenerateHTMLWithMapResult {
+  assertHTMLDepth(opts.body)
   const map = new SourceMapBuilder()
   const title = escapeHtml(opts.title ?? 'Sistema Zero')
   const cssHref = opts.cssHref ?? 'style.css'
@@ -39,9 +63,14 @@ export function generateHTMLWithMap(opts: GenerateHTMLOptions): GenerateHTMLWith
   const cssPlacement = opts.shell?.cssPlacement ?? 'external'
   const jsPlacement = opts.shell?.jsPlacement ?? 'external'
   // Script inline é CLÁSSICO por padrão (preserva globais + `onclick="..."`).
-  // Só vira module quando o original era module ou usa import/export no topo.
-  const jsModule =
-    opts.shell?.jsModule === true || /^\s*(?:import|export)\b/m.test(opts.jsCode ?? '')
+  // Só vira module quando a casca diz que o original ERA module — sinal
+  // autoritativo posto pelo `extractInlineAssets` do parser a partir do
+  // `type="module"` real do `<script>`. NÃO farejamos o texto gerado: um
+  // `import`/`export` no início de QUALQUER linha (inclusive dentro de uma
+  // string/template/comentário do aluno, ou do JS vindo dos blocos — que nunca é
+  // ESM) ligava o `m` do regex e promovia o script a module, derrubando as
+  // funções globais e os handlers `onclick="..."` no preview E no site exportado.
+  const jsModule = opts.shell?.jsModule === true
 
   // Assets que vão DENTRO do <head> (placement inline-head).
   const headExtra: string[] = []
@@ -143,6 +172,7 @@ function inlineScript(js: string, module: boolean): string {
 }
 
 export function renderNodes(nodes: HTMLNode[], indentSpaces = 0): string {
+  assertHTMLDepth(nodes)
   return renderNodesWithMap(nodes, indentSpaces).code
 }
 
@@ -292,7 +322,15 @@ function escapeHtml(s: string): string {
 }
 
 function escapeAttr(s: string): string {
-  return s.replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+  // O par chave="valor" já é seguro só com `&`/`"` escapados (o `"` fecha o
+  // valor); ainda assim escapamos `<`/`>` para alinhar com `escapeHtml` e por
+  // defesa em profundidade — um `<`/`>` solto num valor de atributo não deveria
+  // sangrar para o stream de tags.
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
 }
 
 function indent(s: string, n: number): string {

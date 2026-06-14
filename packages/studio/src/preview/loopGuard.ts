@@ -19,7 +19,18 @@ import { type ParserOptions, parse } from '@babel/parser'
  *   nem os `bootstrapScript` de extensões (código 1st-party auditado).
  */
 
-const BABEL_OPTS: ParserOptions = {
+// Parse em modo CLÁSSICO (script) primeiro: `sourceType:'module'` é SEMPRE strict,
+// então construções legais num script clássico — `with (o) {}` e `return` no topo —
+// viram ERROS recuperáveis e, antes, faziam o arquivo inteiro sair sem
+// instrumentação (os loops rodavam sem guarda). 'script' não é strict e aceita
+// essas construções. Caímos para 'module' só se o parse clássico LANÇAR de vez
+// (ex.: o código usa import/export de topo, que só é válido em módulo).
+const BABEL_OPTS_SCRIPT: ParserOptions = {
+  sourceType: 'script',
+  errorRecovery: true,
+  plugins: [],
+}
+const BABEL_OPTS_MODULE: ParserOptions = {
   sourceType: 'module',
   errorRecovery: true,
   plugins: [],
@@ -64,7 +75,10 @@ interface LoopBody {
 
 /**
  * Instrumenta os loops do código. Retorna o código original (sem alteração)
- * quando não há loops, quando o parse falha ou quando há erros recuperáveis.
+ * quando não há loops ou quando o parse falha de vez (sem corpo de programa
+ * utilizável). Erros recuperáveis do Babel (ex.: `with`/`return` de topo num
+ * script clássico) NÃO impedem a instrumentação — os loops encontrados no AST
+ * recuperado ainda recebem a guarda.
  */
 export function instrumentLoops(code: string): string {
   if (!code.trim()) return code
@@ -73,12 +87,25 @@ export function instrumentLoops(code: string): string {
 
   let ast: ReturnType<typeof parse>
   try {
-    ast = parse(code, BABEL_OPTS)
+    ast = parse(code, BABEL_OPTS_SCRIPT)
   } catch {
-    return code
+    // Parse clássico LANÇOU (não foi só erro recuperável): provavelmente é um
+    // módulo de verdade (import/export no topo). Tenta como módulo.
+    try {
+      ast = parse(code, BABEL_OPTS_MODULE)
+    } catch {
+      // Parse falhou totalmente nos dois modos → devolve o original intacto. A
+      // guarda jamais pode quebrar o preview.
+      return code
+    }
   }
-  const errors = (ast as { errors?: unknown[] }).errors ?? []
-  if (errors.length > 0) return code
+  // NÃO bailamos só porque `errors.length > 0`: com errorRecovery o Babel ainda
+  // produz um `program`/`body` utilizável mesmo registrando erros recuperáveis
+  // (ex.: construções clássicas no modo errado). Só desistimos se NÃO há um corpo
+  // de programa para instrumentar — aí não há loop algum a alcançar de qualquer
+  // forma. Instrumentamos os loops que o AST recuperado expõe.
+  const body = (ast.program as { body?: unknown[] } | undefined)?.body
+  if (!ast.program || !Array.isArray(body)) return code
 
   const edits: Array<{ pos: number; text: string }> = []
   walk(ast.program, (node) => {
@@ -147,13 +174,19 @@ export function buildLoopGuardRuntime(budgetMs: number = DEFAULT_LOOP_BUDGET_MS)
     : setTimeout;
   function reset() { start = null; try { schedule(reset, 0); } catch (e) {} }
   try { schedule(reset, 0); } catch (e) {}
-  function now() {
-    return (typeof performance !== 'undefined' && performance.now)
-      ? performance.now()
-      : Date.now();
-  }
+  // CAPTURA o relógio UMA VEZ, na instalação da guarda (este IIFE roda no <head>
+  // ANTES do código do aluno). Se resolvêssemos performance.now/Date.now no tick,
+  // o aluno poderia CONGELAR o relógio antes do laço (ex.: Date.now = function(){
+  // return 0 } ou redefinir window.performance) e o orçamento NUNCA estouraria →
+  // while(true){} travaria a aba. Aqui guardamos a função pristina e ligada (bind)
+  // ao seu dono, então uma reatribuição posterior do aluno não tem efeito.
+  var nowFn = (typeof window !== 'undefined' && window.performance && typeof window.performance.now === 'function')
+    ? window.performance.now.bind(window.performance)
+    : ((typeof performance !== 'undefined' && typeof performance.now === 'function')
+        ? performance.now.bind(performance)
+        : Date.now.bind(Date));
   function __szLoopTick() {
-    var t = now();
+    var t = nowFn();
     if (start === null) { start = t; return; }
     if (t - start > BUDGET) {
       start = null;

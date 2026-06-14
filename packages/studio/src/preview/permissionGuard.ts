@@ -55,14 +55,25 @@ export function buildPermissionGuardRuntime(options: PermissionGuardOptions = {}
       throw new Error('Acesso à rede bloqueado neste preview (' + api + '). Peça ao professor para liberar o domínio ou use o modo profissional.');
     };
   }
-  function originOf(u) {
-    try { return new URL(typeof u === 'string' ? u : (u && u.url), location.href).origin; }
+  function parseUrl(u) {
+    try { return new URL(typeof u === 'string' ? u : (u && u.url), location.href); }
     catch (e) { return null; }
+  }
+  function originOf(u) {
+    var parsed = parseUrl(u);
+    return parsed ? parsed.origin : null;
   }
   function allowed(u) {
     if (!ALLOW) return false;
-    var o = originOf(u);
-    return o !== null && ALLOW.indexOf(o) >= 0;
+    var parsed = parseUrl(u);
+    if (!parsed) return false;
+    // Só http/https podem casar a allowlist. URLs como blob:/data:/filesystem:
+    // têm um esquema externo + uma origem INTERNA herdada do conteúdo embutido
+    // (ex.: blob:https://api-permitida/uuid → origin 'https://api-permitida'),
+    // então a comparação por .origin passaria indevidamente. Travamos pelo
+    // protocolo ANTES de comparar a origem.
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return false;
+    return ALLOW.indexOf(parsed.origin) >= 0;
   }
   if (ALLOW) {
     var origFetch = window.fetch;

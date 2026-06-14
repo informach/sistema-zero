@@ -61,18 +61,47 @@ export function getProFsMountedProjectId(): string | null {
   return proFsMountedProjectId
 }
 
+/** Tempo padrão de espera pelo sinal de mount do FS pro antes de desistir. */
+export const PRO_FS_MOUNT_TIMEOUT_MS = 30_000
+
 /**
  * Resolve quando o FS pro de `projectId` estiver montado (imediatamente se já
- * está). O Terminal pro aguarda isto antes de spawnar o jsh, participando do
- * mount de escritor único em vez de montar/resetar por conta própria.
+ * está), com `true`. O Terminal pro aguarda isto antes de spawnar o jsh,
+ * participando do mount de escritor único em vez de montar/resetar por conta
+ * própria.
+ *
+ * Resolve com `false` (NÃO rejeita) se o mount não acontecer em `timeoutMs` — o
+ * escritor único pode estar `busy` (outra instância é dona do FS singleton) e
+ * nunca publicar o sinal. Sem o timeout o Terminal pro ficava preso para sempre
+ * "Carregando…", sem nunca cair na UI de ocupado. O caller trata `false` como
+ * sinal de ocupado. O waiter é desregistrado ao expirar para não vazar nem
+ * resolver tarde sobre um load já obsoleto.
  */
-export function waitForProFsMounted(projectId: string): Promise<void> {
-  if (proFsMountedProjectId === projectId) return Promise.resolve()
-  return new Promise<void>((resolve) => {
+export function waitForProFsMounted(
+  projectId: string,
+  timeoutMs: number = PRO_FS_MOUNT_TIMEOUT_MS,
+): Promise<boolean> {
+  if (proFsMountedProjectId === projectId) return Promise.resolve(true)
+  return new Promise<boolean>((resolve) => {
+    let settled = false
+    let timer: ReturnType<typeof setTimeout> | null = null
     const check = () => {
-      if (proFsMountedProjectId === projectId) resolve()
-      else proFsMountWaiters.add(check)
+      if (settled) return
+      if (proFsMountedProjectId === projectId) {
+        settled = true
+        if (timer !== null) clearTimeout(timer)
+        proFsMountWaiters.delete(check)
+        resolve(true)
+      } else {
+        proFsMountWaiters.add(check)
+      }
     }
+    timer = setTimeout(() => {
+      if (settled) return
+      settled = true
+      proFsMountWaiters.delete(check)
+      resolve(false)
+    }, timeoutMs)
     check()
   })
 }
@@ -118,16 +147,64 @@ export function getWebContainer(): Promise<WebContainer> {
 }
 
 /**
- * Apaga o FS do container preservando `keep` (default `node_modules`) — usado ao
- * trocar de projeto profissional para remontar a árvore sem reinstalar deps
- * (boot+install são lentos; preservar node_modules evita o npm install de novo
- * quando o template é o mesmo).
+ * Sentinela de "template" para projetos CLÁSSICOS. Todo projeto classic monta o
+ * MESMO package.json (WEB_CONTAINER_PACKAGE_DEPENDENCIES), então classic→classic
+ * pode preservar `node_modules`; mas pro→classic (ou classic→pro) precisa apagá-lo.
+ * Usar este sentinela único faz a comparação de template tratar todos os classic
+ * como o mesmo template, distinto de qualquer template pro.
+ */
+export const CLASSIC_TEMPLATE_ID = '__sz_classic__'
+
+// Template (proMeta.templateId ou CLASSIC_TEMPLATE_ID) cujo `node_modules` está
+// atualmente no FS singleton. `null` = desconhecido. Usado para decidir se vale a
+// pena preservar `node_modules` na troca de projeto: preservar entre templates
+// DIFERENTES (ex.: react-ts → vanilla-vite, ou pro → classic) ENVENENA o `npm
+// install` seguinte (deps incompatíveis ficam no FS), então só preservamos quando
+// o template novo casa com o que está montado.
+let mountedTemplateId: string | null = null
+
+/** Define o template atualmente montado (chamado após um mount bem-sucedido). */
+export function setMountedTemplateId(templateId: string | null): void {
+  mountedTemplateId = templateId
+}
+
+/** Template atualmente montado no FS singleton. Exposto para teste/diagnóstico. */
+export function getMountedTemplateId(): string | null {
+  return mountedTemplateId
+}
+
+export interface ResetWebContainerFsOptions {
+  /**
+   * Template do projeto que será montado a seguir (`proMeta.templateId`), ou
+   * `null` para classic / desconhecido. `node_modules` só é preservado quando
+   * casa com o template já montado (`mountedTemplateId`) — entre templates
+   * diferentes ele é APAGADO para não envenenar o `npm install`.
+   */
+  templateId?: string | null
+}
+
+/**
+ * Apaga o FS do container. Por padrão preserva `node_modules` — usado ao trocar
+ * de projeto profissional para remontar a árvore sem reinstalar deps (boot+install
+ * são lentos; preservar node_modules evita o npm install de novo quando o template
+ * é o MESMO).
+ *
+ * Quando `templateId` é informado e NÃO casa com o template já montado, o
+ * `node_modules` é apagado junto: preservá-lo entre templates diferentes deixaria
+ * dependências do template anterior no FS e o `npm install` do novo projeto
+ * herdaria árvore incompatível.
  */
 export async function resetWebContainerFs(
   wc: WebContainer,
-  keep: readonly string[] = ['node_modules'],
+  options: ResetWebContainerFsOptions = {},
 ): Promise<void> {
-  const keepSet = new Set(keep)
+  const { templateId } = options
+  // Só preserva node_modules quando há um template conhecido em ambos os lados e
+  // eles casam. templateId === undefined => caller não thread (compat): mantém o
+  // comportamento antigo de preservar. null (classic) nunca casa => apaga.
+  const keepNodeModules =
+    templateId === undefined || (templateId !== null && templateId === mountedTemplateId)
+  const keepSet = new Set(keepNodeModules ? ['node_modules'] : [])
   const entries = await wc.fs.readdir('/', { withFileTypes: true })
   await Promise.all(
     entries

@@ -32,6 +32,16 @@ describe('addProFile', () => {
   it('rejeita quando um ancestral é arquivo', () => {
     expect(addProFile(base, 'package.json/child.ts').error).toBeDefined()
   })
+
+  it('rejeita variante de CAIXA de um arquivo existente (FS case-insensível)', () => {
+    // src/main.ts já existe; src/Main.TS colidiria no WebContainer/macOS/Windows.
+    expect(addProFile(base, 'src/Main.TS').error).toBeDefined()
+    // E permanece bloqueado para um arquivo recém-criado.
+    const created = addProFile(base, 'src/App.tsx').tree as ProjectTree
+    expect(addProFile(created, 'src/app.tsx').error).toBeDefined()
+    // Mas um nome genuinamente novo passa.
+    expect(addProFile(base, 'src/outro.ts').error).toBeUndefined()
+  })
 })
 
 describe('addProDir', () => {
@@ -41,6 +51,9 @@ describe('addProDir', () => {
   })
   it('rejeita colisão', () => {
     expect(addProDir(base, 'src').error).toBeDefined()
+  })
+  it('rejeita variante de caixa de pasta existente', () => {
+    expect(addProDir(base, 'SRC').error).toBeDefined()
   })
 })
 
@@ -81,6 +94,21 @@ describe('renameProNode', () => {
     expect(renameProNode(base, 'src', 'src/child').error).toBeDefined()
     expect(renameProNode(base, 'src/main.ts', 'package.json').error).toBeDefined()
     expect(renameProNode(base, 'nope', 'x.ts').error).toBeDefined()
+  })
+
+  it('recusa renomear para variante de caixa de OUTRO nó, mas permite só trocar a caixa do próprio', () => {
+    const tree: ProjectTree = {
+      src: { kind: 'dir' },
+      'src/main.ts': { kind: 'file', content: 'a' },
+      'src/app.tsx': { kind: 'file', content: 'b' },
+    }
+    // app.tsx → Main.ts colidiria (case-insensível) com main.ts.
+    expect(renameProNode(tree, 'src/app.tsx', 'src/Main.ts').error).toBeDefined()
+    // Mas corrigir a CAIXA do próprio nó é permitido (ignora a si mesmo).
+    const { tree: fixed } = renameProNode(tree, 'src/app.tsx', 'src/App.tsx')
+    expect(fixed?.['src/App.tsx']).toBeDefined()
+    expect(fixed?.['src/app.tsx']).toBeUndefined()
+    expect((fixed?.['src/App.tsx'] as { content: string }).content).toBe('b')
   })
 })
 

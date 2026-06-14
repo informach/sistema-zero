@@ -19,6 +19,23 @@ export interface FsDiff {
    * último arquivo dentro deles. Ordenadas da mais profunda para a mais rasa.
    */
   rmdirs: string[]
+  /**
+   * Caminhos em CONFLITO arquivo↔diretório entre os snapshots: o MESMO caminho era
+   * arquivo e virou pasta (o aluno trocou o arquivo `src/data` pela pasta
+   * `src/data/x.ts`) ou era pasta e virou arquivo (`src/data/x.ts` → arquivo
+   * `src/data`). Esses caminhos precisam ser removidos RECURSIVAMENTE *antes* de
+   * qualquer mkdir/write — senão `mkdir('src/data')` colide com o arquivo homônimo
+   * que ainda existe (e a falha é engolida) ou `writeFile('src/data')` colide com
+   * a pasta homônima ainda presente, e o write nunca aplica → sync travado. Cada
+   * caminho aqui já NÃO aparece em `removes`/`rmdirs` (seria operação redundante e
+   * fora de ordem).
+   */
+  removeFirstPaths: string[]
+  /**
+   * Atalho: `removeFirstPaths.length > 0`. O sincronizador, quando `true`, aplica
+   * `removeFirstPaths` ANTES de mkdirs/writes.
+   */
+  removeFirst: boolean
 }
 
 function parentDirsOf(path: string): string[] {
@@ -63,5 +80,35 @@ export function computeFsDiff(prev: Record<string, string>, next: Record<string,
     .filter((dir) => !nextDirs.has(dir))
     .sort((a, b) => b.split('/').length - a.split('/').length)
 
-  return { writes, removes, mkdirs: [...mkdirSet], rmdirs }
+  // Transição arquivo↔diretório no MESMO caminho. `prev`/`next` são mapas PLANOS
+  // (path → conteúdo só de arquivos), então o conflito se manifesta de dois jeitos:
+  //  - arquivo→pasta: `path` era arquivo (chave em prev), sumiu de next e agora é
+  //    pasta-pai de algum arquivo do snapshot novo (está em `nextDirs`).
+  //  - pasta→arquivo: `path` era pasta-pai em prev (está em `prevDirs`) e agora é
+  //    um arquivo (chave em next).
+  // Em ambos os casos o caminho em conflito precisa ser apagado RECURSIVAMENTE
+  // antes de qualquer mkdir/write.
+  const removeFirstSet = new Set<string>()
+  for (const path of removes) {
+    if (nextDirs.has(path)) removeFirstSet.add(path) // arquivo→pasta
+  }
+  for (const dir of prevDirs) {
+    if (dir in next) removeFirstSet.add(dir) // pasta→arquivo (dir virou arquivo)
+  }
+  const removeFirstPaths = [...removeFirstSet]
+
+  // Os caminhos em conflito saem de `removes`/`rmdirs`: removê-los ali seria
+  // redundante (já estão em removeFirstPaths) e, no caso pasta→arquivo, um rmdir
+  // do caminho rodaria DEPOIS do write e apagaria o arquivo recém-escrito.
+  const filteredRemoves = removes.filter((p) => !removeFirstSet.has(p))
+  const filteredRmdirs = rmdirs.filter((d) => !removeFirstSet.has(d))
+
+  return {
+    writes,
+    removes: filteredRemoves,
+    mkdirs: [...mkdirSet],
+    rmdirs: filteredRmdirs,
+    removeFirstPaths,
+    removeFirst: removeFirstPaths.length > 0,
+  }
 }

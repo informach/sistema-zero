@@ -32,4 +32,29 @@ describe('buildPermissionGuardRuntime', () => {
     const rt = buildPermissionGuardRuntime({ fetchAllowedOrigins: ['não-é-origem'] })
     expect(rt).toContain('var ALLOW = null;')
   })
+
+  it('NÃO libera blob:/data: cuja origem interna casa a allowlist (#LOW)', () => {
+    // blob:https://api.exemplo.com/uuid tem protocol blob: mas origin
+    // https://api.exemplo.com — sem a checagem de protocolo, allowed() passaria.
+    const rt = buildPermissionGuardRuntime({
+      fetchAllowedOrigins: ['https://api.exemplo.com'],
+    })
+    // Executa o IIFE num window falso; fetch original devolve um marcador.
+    const ALLOWED_MARKER = Symbol('passou')
+    const fakeWindow: Record<string, unknown> = {
+      fetch: () => ALLOWED_MARKER,
+    }
+    const fakeLocation = { href: 'https://aluno.preview/' }
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval
+    new Function('window', 'location', rt)(fakeWindow, fakeLocation)
+    const wrappedFetch = fakeWindow.fetch as (input: string) => unknown
+
+    // URL https legítima da allowlist → passa para o fetch original.
+    expect(wrappedFetch('https://api.exemplo.com/dados')).toBe(ALLOWED_MARKER)
+
+    // blob: com a MESMA origem interna → bloqueado (retorna Promise rejeitada).
+    const blobResult = wrappedFetch('blob:https://api.exemplo.com/uuid-1234')
+    expect(blobResult).toBeInstanceOf(Promise)
+    return expect(blobResult).rejects.toThrow('não liberado')
+  })
 })

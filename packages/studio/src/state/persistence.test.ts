@@ -37,7 +37,7 @@ mock.module('idb-keyval', () => ({
 }))
 
 const { listAllProjects, persistProject, renameProjectMeta } = await import('./persistence')
-const { PROJECT_FILE_LIMITS, useProjectStore } = await import('./projectStore')
+const { createProjectStore, PROJECT_FILE_LIMITS, useProjectStore } = await import('./projectStore')
 const { cancelPendingAutosavesFor, createPersistenceService, setAutosaveDelayForTests } =
   await import('../persistence/service')
 const { createLocalPersistenceAdapter } = await import('../persistence/local')
@@ -742,6 +742,47 @@ describe('loadProject', () => {
     expect(loaded?.tree?.['src/main.ts']?.kind).toBe('file')
   })
 
+  it('loads sobrepostos: o mais NOVO vence mesmo resolvendo por último (guard de geração)', async () => {
+    // Store próprio: o contador de geração vive no closure do factory (por
+    // instância), então isolamos do default para o teste ser determinístico.
+    const store = createProjectStore()
+
+    const partitioned = (id: string, name: string) => [
+      { id, name, createdAt: 10, updatedAt: 20, mode: 'blocks', installedExtensions: [] },
+      {
+        id,
+        files: { 'index.html': '<h1>ok</h1>', 'style.css': '', 'script.js': '' },
+        extraFiles: [],
+      },
+      { id, ir: null, blocksState: null },
+    ]
+
+    // getMany do load A fica PENDURADO; o do load B resolve já. O aluno clicou A
+    // e logo B — B é o mais novo e deve ganhar, mesmo se A resolver depois.
+    let resolveA: ((value: unknown[]) => void) | undefined
+    idb.getMany
+      .mockImplementationOnce(
+        () =>
+          new Promise<unknown[]>((resolve) => {
+            resolveA = resolve as (value: unknown[]) => void
+          }),
+      )
+      .mockResolvedValueOnce(partitioned('proj-b', 'Projeto B'))
+
+    const loadA = store.getState().loadProject('proj-a')
+    const loadB = store.getState().loadProject('proj-b')
+
+    // B resolve primeiro e instala no store.
+    await loadB
+    expect(store.getState().project?.id).toBe('proj-b')
+
+    // A resolve por ÚLTIMO (out-of-order): NÃO pode sobrescrever B nem zerar nada.
+    resolveA?.(partitioned('proj-a', 'Projeto A'))
+    await loadA
+
+    expect(store.getState().project?.id).toBe('proj-b')
+  })
+
   it('carrega projeto salvo em registros particionados antes do formato legado', async () => {
     idb.getMany.mockResolvedValueOnce([
       {
@@ -769,7 +810,9 @@ describe('loadProject', () => {
     expect(loaded).toMatchObject({
       id: 'project-split',
       name: 'Projeto particionado',
-      mode: 'code',
+      // D2: projeto básico legado salvo em 'code' carrega coagido para 'bridge'
+      // (o básico só tem Blocos/Ponte; o Código standalone virou exclusivo do pro).
+      mode: 'bridge',
       files: {
         'index.html': '<h1>ok</h1>',
         'style.css': '',

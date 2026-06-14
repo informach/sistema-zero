@@ -243,4 +243,57 @@ describe('gameTwoDRuntime.onPointer', () => {
       firePointerDown(0, 0)
     }).not.toThrow()
   })
+
+  it('registrar arrows NOVOS a cada frame não cresce a lista sem limite', () => {
+    // Cenário real do bug: o gerador emite um arrow LITERAL a cada execução do
+    // bloco "quando clicar/tocar". Se o aluno colocar esse bloco dentro do "a
+    // cada frame", onPointer recebe uma referência inédita por frame e a lista
+    // cresceria sem limite. Simulamos 1000 "frames" registrando funções
+    // distintas e verificamos que UM clique não dispara 1000 vezes.
+    const { api, firePointerDown } = loadWithPointer()
+    let totalCalls = 0
+    for (let frame = 0; frame < 1000; frame++) {
+      // arrow novo a cada iteração — referência sempre diferente
+      api.onPointer(() => {
+        totalCalls += 1
+      })
+    }
+    firePointerDown(5, 5)
+    // Com o teto de 32 handlers, um clique dispara no máximo 32 vezes — não 1000.
+    expect(totalCalls).toBeLessThanOrEqual(32)
+    expect(totalCalls).toBeGreaterThan(0)
+  })
+
+  it('avisa no console (uma vez) ao atingir o teto', () => {
+    const { api } = loadWithPointer()
+    const original = console.warn
+    let warnCount = 0
+    console.warn = () => {
+      warnCount += 1
+    }
+    try {
+      // Bem acima do teto de 32 → deve avisar, mas só UMA vez.
+      for (let i = 0; i < 100; i++) {
+        api.onPointer(() => {})
+      }
+    } finally {
+      console.warn = original
+    }
+    expect(warnCount).toBe(1)
+  })
+
+  it('poucos handlers distintos continuam todos disparando', () => {
+    // O cap não pode quebrar o uso legítimo de alguns cliques registrados de
+    // propósito: 4 handlers distintos abaixo do teto devem TODOS rodar.
+    const { api, firePointerDown } = loadWithPointer()
+    const counts = [0, 0, 0, 0]
+    for (let i = 0; i < counts.length; i++) {
+      const idx = i
+      api.onPointer(() => {
+        counts[idx] = (counts[idx] ?? 0) + 1
+      })
+    }
+    firePointerDown(0, 0)
+    expect(counts).toEqual([1, 1, 1, 1])
+  })
 })

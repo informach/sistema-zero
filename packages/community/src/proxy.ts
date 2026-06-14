@@ -11,13 +11,14 @@ import { ACCESS_COOKIE, REFRESH_COOKIE } from '@/lib/cookies'
  */
 export const proxy = createMemberProxy({
   cookies: { accessCookie: ACCESS_COOKIE, refreshCookie: REFRESH_COOKIE },
-  protectedPrefixes: ['/cursos', '/perfil', '/compras'],
+  protectedPrefixes: ['/cursos', '/perfil', '/compras', '/comunidade'],
   isRootProtected: true,
 })
 
 export const config = {
-  // `api/me/avatar` fica FORA do matcher: o proxy buffeia o corpo (limite ~10MB)
-  // e copiaria o multipart à toa; a rota tem guard próprio (sessão estrita + a
-  // MESMA checagem anti-CSRF dentro do `requireUploadSession`).
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|api/me/avatar).*)'],
+  // `api/me/avatar` e o upload de imagem do hub (`api/hub/uploads/image`) ficam
+  // FORA do matcher: são multipart e o proxy copiaria o corpo à toa; ambas as
+  // rotas têm guard próprio (sessão estrita + a MESMA checagem anti-CSRF dentro
+  // do `requireUploadSession`).
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|api/me/avatar|api/hub/uploads/image).*)'],
 }

@@ -21,7 +21,6 @@ export function SettingsDrawer({
   const model = useSettingsStore((s) => s.aiModel)
   const theme = useSettingsStore((s) => s.theme)
   const setAIApiKey = useSettingsStore((s) => s.setAIApiKey)
-  const setAIApiKeyStorage = useSettingsStore((s) => s.setAIApiKeyStorage)
   const clearAIApiKey = useSettingsStore((s) => s.clearAIApiKey)
   const setAIModel = useSettingsStore((s) => s.setAIModel)
   const setTheme = useSettingsStore((s) => s.setTheme)
@@ -63,6 +62,18 @@ export function SettingsDrawer({
   const handleClearKey = async () => {
     await clearAIApiKey()
     setDraftKey('')
+  }
+
+  const handleStorageToggle = async (persistent: boolean) => {
+    // Comita o RASCUNHO digitado junto com a escolha de armazenamento. Antes o
+    // toggle só chamava setAIApiKeyStorage, que persiste a chave JÁ na store —
+    // então marcar a caixa ANTES de clicar "Salvar" guardava a chave antiga/vazia
+    // e o que o aluno acabou de digitar (só em draftKey) virava no-op silencioso
+    // ao recarregar (rebaixava para o provider mock). Persistir o draft elimina a
+    // divergência draft↔store.
+    const nextKey = draftKey.trim()
+    await setAIApiKey(nextKey, { storage: persistent ? 'persistent' : 'session' })
+    setDraftKey(nextKey)
   }
 
   return (
@@ -146,9 +157,7 @@ export function SettingsDrawer({
                 <input
                   type="checkbox"
                   checked={apiKeyStorage === 'persistent'}
-                  onChange={(e) =>
-                    void setAIApiKeyStorage(e.currentTarget.checked ? 'persistent' : 'session')
-                  }
+                  onChange={(e) => void handleStorageToggle(e.currentTarget.checked)}
                 />
                 Salvar chave neste navegador
               </label>

@@ -1,5 +1,12 @@
 import { beforeEach, describe, expect, it, mock } from 'bun:test'
 
+// settingsStore agora faz bail cedo se `indexedDB` não existir (igual ao
+// gameStorage.ts — Firefox modo privado, contextos restritos). O happy-dom não
+// registra `indexedDB`, então damos um stub para o caminho real (createStore→
+// get/update mockados) continuar sendo exercitado.
+const globalWithIdb = globalThis as { indexedDB?: unknown }
+globalWithIdb.indexedDB = globalWithIdb.indexedDB ?? {}
+
 // bun:test não hoista mocks (sem vi.hoisted): declara o objeto antes do
 // mock.module e importa o módulo sob teste DEPOIS, dinamicamente.
 // O mock de idb-keyval NÃO é restaurado no afterAll de propósito: o registry
@@ -167,6 +174,21 @@ describe('useSettingsStore persistence', () => {
     expect(useSettingsStore.getState().theme).toBe('light')
     // Coalescido: só uma leitura do IndexedDB, não duas.
     expect(idb.get).toHaveBeenCalledTimes(1)
+  })
+
+  it('leitura do IndexedDB que LANÇA cai nos defaults com loaded:true (não pendura)', async () => {
+    // Firefox modo privado / IDB bloqueado: o get() rejeita. Sem o try/catch no
+    // loader a store ficava loaded:false para sempre e todo awaiter coalescido
+    // rejeitava. Agora caímos para os defaults em memória, loaded:true, sem throw.
+    idb.get.mockRejectedValueOnce(new Error('InvalidStateError: IDB bloqueado'))
+
+    await expect(useSettingsStore.getState().load()).resolves.toBeUndefined()
+
+    const state = useSettingsStore.getState()
+    expect(state.loaded).toBe(true)
+    expect(state.aiModel).toBe(DEFAULT_AI_MODEL)
+    expect(state.theme).toBe('dark')
+    expect(state.codeFontSize).toBe(CODE_FONT_SIZE_DEFAULT)
   })
 
   it('persiste os dois patches quando setters concorrentes se sobrepõem', async () => {

@@ -32,6 +32,54 @@ describe('generateCSS — defesa contra injeção (#18)', () => {
     expect(css).toContain('color: red;')
   })
 
+  it('descarta declaração cuja CHAVE traz : ou ; (declaração-fantasma)', () => {
+    const css = generateCSS([
+      {
+        selector: '.alvo',
+        declarations: {
+          // Chave maliciosa: `color:red;x` saía como `color:red;x: 1px;`,
+          // injetando um `color:red` fantasma à revelia do aluno.
+          'color:red;x': '1px',
+          padding: '8px',
+        },
+      },
+    ])
+    // A chave inválida some por inteiro; nenhum `color:red` fantasma aparece.
+    expect(css).not.toContain('color:red')
+    expect(css).not.toContain('color: red')
+    // A declaração legítima sobrevive.
+    expect(css).toContain('padding: 8px;')
+  })
+
+  it('descarta declaração cuja CHAVE traz chaves ou quebra de linha', () => {
+    const css = generateCSS([
+      {
+        selector: '.alvo',
+        declarations: {
+          'x } body { color': 'red',
+          'a\nb': '2px',
+          margin: '0',
+        },
+      },
+    ])
+    expect(css).not.toContain('} body {')
+    expect(css).not.toContain('a\nb')
+    expect(css).toContain('margin: 0;')
+  })
+
+  it('descarta passo de @keyframes cuja CHAVE é inválida', () => {
+    const css = generateCSS([
+      {
+        type: 'keyframes',
+        name: 'pulsar',
+        steps: [{ at: '50%', declarations: { 'opacity;x': '1', transform: 'scale(1.1)' } }],
+      },
+    ])
+    // A chave com `;` é descartada; a declaração legítima permanece.
+    expect(css).not.toContain('opacity;x')
+    expect(css).toContain('transform: scale(1.1);')
+  })
+
   it('sanitiza nome de @keyframes e seletor de passo (não quebra a estrutura)', () => {
     const css = generateCSS([
       {

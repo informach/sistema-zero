@@ -67,6 +67,12 @@ export function buildPreviewCSP(options: PreviewCSPOptions = {}): string {
     'font-src data: https:',
     `connect-src ${connectSrc}`,
     'frame-src https: data: blob:',
+    // Sem worker-src, os Workers cairiam no `script-src` (que libera data:/blob:)
+    // e o aluno poderia criar Workers NÃO instrumentados (fora do alcance do
+    // loopGuard, que só roda no thread principal) com `while(true){}` — laços
+    // imortais e inmatáveis num thread paralelo. Workers não são recurso suportado
+    // no preview básico, então os zeramos por completo.
+    "worker-src 'none'",
     "base-uri 'none'",
     "form-action 'none'",
   ].join('; ')

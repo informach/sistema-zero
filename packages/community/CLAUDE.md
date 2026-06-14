@@ -185,11 +185,13 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
    legado ignorado (bloco antigo só-src → "não suportado"); o `content.sandbox` (allowlist do
    members) também é **ignorado de propósito** — o renderer fixa `allow-scripts`, o default mais
    restrito que ainda roda o interativo (honrar tokens por bloco abriria a porta p/
-   allow-same-origin). `rich_text` renderiza `markdown` com conversor próprio controlado (sem
-   HTML cru) — **`src/lib/markdown.tsx`**, puro e unit-testado (`tests/markdown.test.tsx`) —
-   tokens suportados: headings 1-3, listas `-`/`*` e numeradas `1.`, citação `> `, código
-   inline/fenced, negrito, itálico (`*x*`/`_x_`) e links http(s). É o ALVO do editor TipTap do
-   admin (saída markdown) — token novo na toolbar de lá exige suporte aqui (e teste).
+   allow-same-origin). `rich_text` **e o bloco `quiz`** (enunciado/opções/explicação) renderizam
+   `markdown` com conversor próprio controlado (sem HTML cru) — **`member-shell/src/lib/markdown.tsx`**,
+   puro e unit-testado (`member-shell/tests/markdown.test.tsx`) — tokens suportados: headings 1-3,
+   listas `-`/`*` e numeradas `1.`, citação `> `, código inline/fenced, negrito, itálico
+   (`*x*`/`_x_`), links e **imagens `![alt](url)`** (links e imagens SÓ com esquema http(s) —
+   `javascript:`/`data:` caem como texto literal; a CSP já libera `img-src https:`). É o ALVO do
+   editor TipTap do admin (saída markdown) — token novo na toolbar de lá exige suporte aqui (e teste).
 6. **Capas/imagens de curso usam `<img>`** (URLs externas arbitrárias da autoria — evita configurar
    `images.remotePatterns` por domínio). `noImgElement` está off no biome p/ este package.
 
@@ -372,16 +374,20 @@ valida e só então importa o `server.js` standalone).
   client-side com estado na URL `?q=&acesso=&ordem=`); `GET /members/courses/:slug` → `CourseDetailView`
   (módulos+outline + `continueLessonId`: última aula acessada > 1ª não concluída > 1ª);
   `GET /members/courses/:slug/lessons/:lessonId` → `LessonDetailView` (**busca por ID**, blocos
-  `kind: rich_text|video|image|audio|quiz|embed|ebook` + anexos + `positionSeconds`; bloco quiz vem
-  **SEM gabarito** e com `quizState`; **anexo vem SEM `url`** — o download é pela rota BFF
+  `kind: rich_text|video|image|audio|quiz|embed|ebook|studio` + anexos + `positionSeconds`; bloco quiz vem
+  **SEM gabarito** e com `quizState`; **bloco `studio`** vem com a config inteira (`initialProject`/level/
+  allowlist — não é segredo) + `studioState{submitted}` — o editor embarcado roda no client (ssr:false),
+  WIP no IndexedDB local, e "Enviar para o professor" faz `POST /api/members/lessons/:lessonId/blocks/:blockId/studio-submission`;
+  **anexo vem SEM `url`** — o download é pela rota BFF
   `/api/cursos/:slug/aulas/:lessonId/anexos/:id`, que resolve a localização real via
   `GET …/attachments/:attachmentId/resolve` → `AttachmentDownloadView{storageRef}` e aplica a
   marca d'água — ver invariante 1; **bloco `ebook` também vem SEM `url`** — o livro 3D busca o PDF
   pela rota BFF `/api/cursos/:slug/aulas/:lessonId/blocos/:blockId/ebook`, que resolve via
   `GET …/blocks/:blockId/ebook/resolve` → `EbookDownloadView{title,storageRef}`, aplica a MESMA
   marca d'água de PDF e serve INLINE com `private, no-store`); `POST /members/lessons/:lessonId/complete` (→ **409
-  `QUIZ_GATE_NOT_PASSED`** se houver quiz com `passingScore` não aprovado — a UI desabilita o
-  botão e silencia o auto-complete); `PUT /members/courses/:slug/lessons/:lessonId/position`
+  `QUIZ_GATE_NOT_PASSED`** se houver quiz com `passingScore` não aprovado, **ou 409
+  `STUDIO_GATE_NOT_SUBMITTED`** se houver bloco `studio` sem projeto enviado — a UI desabilita o
+  botão (`blockedByQuiz`/`blockedByStudio`) e silencia o auto-complete); `PUT /members/courses/:slug/lessons/:lessonId/position`
   `{positionSeconds}` (BFF expõe como `POST /api/members/lessons/:id/position` com
   `{courseSlug, positionSeconds}` — POST porque `sendBeacon` não faz PUT; parse tolerante a
   text/plain); `POST /members/lessons/:lessonId/blocks/:blockId/quiz-attempts` `{answers}` →

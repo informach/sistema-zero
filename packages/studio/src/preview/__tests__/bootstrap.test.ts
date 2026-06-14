@@ -3,6 +3,40 @@ import { buildPreviewDoc } from '../bootstrap'
 import { PREVIEW_INTERCEPTOR_SCRIPT } from '../interceptors'
 
 describe('buildPreviewDoc', () => {
+  it('instrumenta <script> inline do HTML do aluno (loopGuard cobre o index.html) — 5º review #9', () => {
+    const doc = buildPreviewDoc({
+      html: '<body><h1>oi</h1><script>while(true){}</script></body>',
+      css: '',
+      js: '',
+    })
+    // O laço inline não roda mais cru: foi externalizado para uma data: URL.
+    expect(doc).not.toContain('<script>while(true){}</script>')
+    const match = doc.match(/<script[^>]*src="data:text\/javascript;base64,([^"]+)"/i)
+    expect(match).not.toBeNull()
+    const decoded = Buffer.from(match?.[1] ?? '', 'base64').toString('utf-8')
+    // ...com a guarda de loop injetada no corpo do while.
+    expect(decoded).toContain('__szLoopTick')
+    expect(decoded).toContain('while')
+  })
+
+  it('preserva type="module" ao instrumentar um <script type=module> inline — 5º review #9', () => {
+    const doc = buildPreviewDoc({
+      html: '<body><script type="module">for(;;){}</script></body>',
+      css: '',
+      js: '',
+    })
+    expect(doc).toMatch(/<script[^>]*type="module"[^>]*src="data:text\/javascript;base64,/i)
+  })
+
+  it('não toca em <script type="importmap"> inline do aluno — 5º review #9', () => {
+    const doc = buildPreviewDoc({
+      html: '<body><script type="importmap">{"imports":{}}</script></body>',
+      css: '',
+      js: '',
+    })
+    expect(doc).toContain('<script type="importmap">{"imports":{}}</script>')
+  })
+
   it('inclui o interceptor antes de scripts da extensão', () => {
     const doc = buildPreviewDoc({
       html: '<html><body><h1>Oi</h1></body></html>',

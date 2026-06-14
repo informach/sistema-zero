@@ -14,11 +14,13 @@ import {
   type TerminalProjectSnapshot,
 } from './terminalProjectFiles'
 import {
+  CLASSIC_TEMPLATE_ID,
   claimFsOwnership,
   getWebContainer,
   releaseFsOwnership,
   requestProFsMount,
   resetWebContainerFs,
+  setMountedTemplateId,
   waitForProFsMounted,
 } from './webContainerClient'
 
@@ -165,9 +167,20 @@ export function Terminal(): JSX.Element {
         // pro identificado, segue sem esperar (cenário degradado).
         if (projectId && waitForProFsMounted) {
           requestProFsMount?.()
-          await waitForProFsMounted(projectId)
+          // `waitForProFsMounted` tem TIMEOUT: o escritor único pode estar `busy`
+          // (outra instância é dona do FS singleton) e nunca publicar o sinal —
+          // sem o timeout o terminal ficava preso para sempre "Carregando…". Ao
+          // expirar (resolve `false`), espelhamos a UI de ocupado do terminal
+          // clássico em vez de girar para sempre; o botão "Tentar novamente"
+          // rechama handleLoad quando a posse for liberada.
+          const mounted = await waitForProFsMounted(projectId)
           if (loadSeqRef.current !== loadId) {
             term.dispose()
+            return
+          }
+          if (!mounted) {
+            term.dispose()
+            setStatus('busy')
             return
           }
         }
@@ -182,13 +195,19 @@ export function Terminal(): JSX.Element {
         }
         // Isolamento por projeto: o container é singleton por aba, então arquivos
         // de um projeto anterior (ou de um projeto pro) ficariam no FS. Limpa
-        // tudo (preservando node_modules p/ não reinstalar) antes de montar.
-        await resetWebContainerFs(webcontainer)
+        // tudo antes de montar. node_modules só é preservado entre projetos do
+        // MESMO template — todo classic compartilha o sentinela CLASSIC_TEMPLATE_ID
+        // (mesmo package.json), mas vindo de um template pro o node_modules dele é
+        // apagado para não envenenar a árvore deps do classic.
+        await resetWebContainerFs(webcontainer, { templateId: CLASSIC_TEMPLATE_ID })
         if (loadSeqRef.current !== loadId) {
           term.dispose()
           return
         }
         await webcontainer.mount(buildTerminalFileTree(project))
+        // Guarda opcional: o módulo `webContainerClient` é totalmente mockado em
+        // alguns testes sem expor esta função (ver os wrappers de posse acima).
+        setMountedTemplateId?.(CLASSIC_TEMPLATE_ID)
         syncedFilesRef.current = new Map(Object.entries(buildTerminalFileContents(project)))
       }
       if (loadSeqRef.current !== loadId) {
@@ -217,7 +236,9 @@ export function Terminal(): JSX.Element {
 
       const input = shell.input.getWriter()
       const dataSubscription = term.onData((data: string) => {
-        void input.write(data)
+        // Uma tecla digitada que corra com o teardown do shell (writer já liberado
+        // / stream fechado) rejeita o write — sem o catch vira unhandled rejection.
+        void input.write(data).catch(() => undefined)
       })
       const onResize = () => {
         fit.fit()
@@ -293,14 +314,20 @@ export function Terminal(): JSX.Element {
     let cancelled = false
     const timer = window.setTimeout(() => {
       const sync = syncChainRef.current.then(async () => {
-        if (cancelled || syncSeqRef.current !== syncId || runtimeRef.current !== runtime) return
+        // Staleness reverificada ENTRE os batches awaited (não só na entrada): um
+        // teardown/troca-de-projeto pousando no meio do voo escreveria sobre o FS
+        // singleton já resetado/remontado por outro projeto (cross-project bleed).
+        const fresh = () =>
+          !cancelled && syncSeqRef.current === syncId && runtimeRef.current === runtime
+        if (!fresh()) return
         await Promise.all(
           filesToWrite.map(([name, content]) => runtime.webcontainer.fs.writeFile(name, content)),
         )
+        if (!fresh()) return
         await Promise.all(
           filesToRemove.map((name) => runtime.webcontainer.fs.rm(name, { force: true })),
         )
-        if (!cancelled && syncSeqRef.current === syncId && runtimeRef.current === runtime) {
+        if (fresh()) {
           syncedFilesRef.current = new Map(Object.entries(contents))
         }
       })

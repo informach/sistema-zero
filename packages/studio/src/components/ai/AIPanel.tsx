@@ -320,7 +320,17 @@ export function AIPanel(): JSX.Element {
             </Button>
           </div>
         </header>
-        <div ref={transcriptRef} className="flex-1 overflow-auto px-3 py-2 text-xs">
+        {/* role="log" + aria-live="polite": leitores de tela anunciam as mensagens
+            que chegam (inclusive a resposta da IA em streaming). "polite" coalesce
+            as atualizações e só fala quando o usuário está ocioso, evitando inundar
+            a cada token. Sem isto a resposta da IA aparecia sem nenhum aviso ao SR. */}
+        <div
+          ref={transcriptRef}
+          role="log"
+          aria-live="polite"
+          aria-relevant="additions text"
+          className="flex-1 overflow-auto px-3 py-2 text-xs"
+        >
           {messages.map((m) => (
             <ChatMessageItem key={m.id} message={m} />
           ))}

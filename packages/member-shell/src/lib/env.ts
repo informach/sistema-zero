@@ -30,6 +30,10 @@ const EnvSchema = z
     // Bucket PRIVADO (materiais didáticos) — leitura p/ a rota de download com marca
     // d'água. Sem URL pública; mesmas credenciais R2. Ausente → download responde 503.
     R2_PRIVATE_BUCKET: z.string().optional(),
+    // Bucket PRIVADO de UGC da comunidade (anexos de tópicos/comentários do fórum).
+    // Upload/download DIRETO browser↔R2 por URL pré-assinada (CORS PUT/GET); o BFF
+    // só assina (acesso checado pelo hub). Sem URL pública. Ausente → anexos 503.
+    R2_UGC_BUCKET: z.string().optional(),
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   })
   // Sem nenhuma forma de verificar o token, toda sessão seria inválida em silêncio.

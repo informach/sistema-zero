@@ -67,7 +67,13 @@ export interface BuildPreviewDocInput {
  */
 export function buildPreviewDoc(input: BuildPreviewDocInput): string {
   const userHtml = input.html.trim()
-  const { headInner, bodyInner } = splitHtml(userHtml)
+  const split = splitHtml(userHtml)
+  // `<script>` INLINE no HTML do aluno (index.html) também passa pela guarda de
+  // loop: sem isto, `<script>while(true){}</script>` colado no index escapava o
+  // loopGuard (que só instrumentava o JS canônico) e congelava a aba — o mesmo
+  // que a Camada A promete cortar. Ver instrumentInlineScripts.
+  const headInner = instrumentInlineScripts(split.headInner)
+  const bodyInner = instrumentInlineScripts(split.bodyInner)
 
   // Quando há módulos ESM de extensão (ex.: three), os scripts que os usam
   // PRECISAM ser `type="module"` (importmap). Módulos são DEFERIDOS e rodam em
@@ -89,7 +95,7 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
 
   const extraHtml = safeExtraFiles
     .filter((f) => f.language === 'html')
-    .map((f) => splitHtml(f.content).bodyInner)
+    .map((f) => instrumentInlineScripts(splitHtml(f.content).bodyInner))
     .filter(Boolean)
     .join('\n')
 
@@ -229,6 +235,43 @@ ${extraHtml}
 ${userScript}
 </body>
 </html>`
+}
+
+/**
+ * Instrumenta os `<script>` INLINE executáveis (sem `src`, type clássico ou
+ * module) de um fragmento de HTML do aluno, externalizando-os para `data:` URL —
+ * o MESMO tratamento do JS canônico (ver buildPreviewDoc). Dois ganhos:
+ *  1. o conteúdo passa por `instrumentLoops`, fechando o furo em que um
+ *     `<script>while(true){}</script>` no index.html escapava a Camada A do
+ *     loopGuard e congelava a aba;
+ *  2. a `data:` URL é opaca/self-contained, então o código vai verbatim sem
+ *     passar pelo tokenizer HTML (um `</script>` literal no corpo do script não
+ *     fecha a tag cedo).
+ * Scripts com `src`, importmap/json/template e tags não-`<script>` passam intactos.
+ * Externalizar um clássico preserva o escopo GLOBAL e a ordem de documento (igual
+ * ao caminho do JS canônico); module continua deferido.
+ */
+function instrumentInlineScripts(html: string): string {
+  if (!html || !/<script\b/i.test(html)) return html
+  return html.replace(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi, (full, rawAttrs, content) => {
+    const attrs = String(rawAttrs)
+    if (/[\s"']src\s*=/i.test(attrs)) return full
+    const type = (attrs.match(/\btype\s*=\s*["']?([^"'\s>]*)/i)?.[1] ?? '').toLowerCase()
+    const isClassic = type === '' || type === 'text/javascript' || type === 'application/javascript'
+    const isModule = type === 'module'
+    if (!isClassic && !isModule) return full
+    const code = String(content)
+    if (!code.trim()) return full
+    const dataUrl = `data:text/javascript;base64,${base64Encode(instrumentLoops(code))}`
+    // Preserva atributos que não sejam `type`/`src`; reemite `type="module"`
+    // quando for o caso (mantém o deferimento e o escopo de módulo).
+    const keptAttrs = attrs
+      .replace(/\btype\s*=\s*["']?[^"'\s>]*["']?/i, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+    const typeAttr = isModule ? ' type="module"' : ''
+    return `<script${typeAttr}${keptAttrs ? ` ${keptAttrs}` : ''} src="${dataUrl}"></script>`
+  })
 }
 
 function splitHtml(html: string): { headInner: string; bodyInner: string } {

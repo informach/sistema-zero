@@ -6,11 +6,13 @@ import {
 } from './config'
 
 describe('resolveStudioConfig — modo profissional', () => {
-  it('professional força terminal:true e allowedModes:[code]', () => {
+  it('professional força terminal:true e mantém a allowlist do host (D2: modos por kind)', () => {
+    // D2: professional NÃO força mais code-only globalmente — os modos passam a
+    // depender do `kind` do projeto (modesForKind). A allowlist do host é mantida.
     const cfg = resolveStudioConfig({ professional: true }, ['blocks', 'bridge'])
     expect(cfg.professional).toBe(true)
     expect(cfg.terminal).toBe(true)
-    expect(cfg.allowedModes).toEqual(['code'])
+    expect(cfg.allowedModes).toEqual(['blocks', 'bridge'])
   })
 
   it('default é não-profissional e não força terminal', () => {

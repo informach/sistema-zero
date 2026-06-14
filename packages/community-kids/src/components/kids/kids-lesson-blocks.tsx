@@ -2,8 +2,16 @@
 
 import { EbookBlockView } from '@sistemazero/member-shell/components/ebook/ebook-block'
 import { useLessonPlayer } from '@sistemazero/member-shell/components/lesson-player-context'
+import { StudioBlockView } from '@sistemazero/member-shell/components/studio/studio-block'
 import { VimeoPlayer } from '@sistemazero/member-shell/components/vimeo-player'
-import { BookOpenText, Clapperboard, Gamepad2, Headphones, type LucideIcon } from 'lucide-react'
+import {
+  BookOpenText,
+  Clapperboard,
+  Code2,
+  Gamepad2,
+  Headphones,
+  type LucideIcon,
+} from 'lucide-react'
 import { cn } from '@/lib/cn'
 import { renderMarkdown } from '@/lib/markdown'
 import type {
@@ -15,6 +23,8 @@ import type {
   QuizBlock,
   QuizStateView,
   RichTextBlock,
+  StudioBlock,
+  StudioStateView,
   VideoBlock,
 } from '@/lib/types'
 import { KidsQuiz } from './kids-quiz'
@@ -92,6 +102,17 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
         <div className="flex flex-col gap-3">
           <BlockChip icon={BookOpenText} label="Leia o livro" themeClass="kids-unit-cyan" />
           <EbookBlockView blockId={block.id} content={content as unknown as EbookBlock} />
+        </div>
+      )
+    case 'studio':
+      return (
+        <div className="kids-unit-grad flex flex-col gap-3">
+          <BlockChip icon={Code2} label="Crie" themeClass="kids-unit-grad" />
+          <StudioBlockView
+            blockId={block.id}
+            content={content as unknown as StudioBlock}
+            studioState={(block.studioState as StudioStateView | null | undefined) ?? null}
+          />
         </div>
       )
     default:

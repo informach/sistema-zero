@@ -7,11 +7,12 @@ import {
   type ExtraFile,
   type ExtraFileLanguage,
   type FileName,
-  IDE_MODES,
   type IDEMode,
   type InstalledExtension,
   inferExtraLanguage,
   isReservedProjectFileName,
+  modesForKind,
+  normalizeClassicMode,
   normalizeExtraFileName,
   type Project,
   type ProjectFiles,
@@ -61,6 +62,8 @@ interface ProjectStore {
   importProjectFromJSON: (raw: unknown) => Promise<Project>
   setProject: (p: Project) => void
   setMode: (mode: IDEMode) => void
+  /** Gradua um projeto básico para profissional (Vite). One-way. */
+  convertToPro: () => Promise<void>
   setFiles: (files: Partial<ProjectFiles>) => void
   setFile: (name: FileName, value: string) => void
   setIR: (ir: SZIR | null) => void
@@ -830,8 +833,9 @@ function sanitizeStoredProject(raw: unknown, requestedId?: string): Project | nu
     name,
     files,
     extraFiles,
-    // Pro vive sempre no modo 'code'.
-    mode: isPro ? 'code' : IDE_MODES.includes(r.mode as IDEMode) ? (r.mode as IDEMode) : base.mode,
+    // Pro vive sempre no modo 'code'; básico vive em Blocos/Ponte ('code' legado
+    // cai em 'bridge') — separação D2.
+    mode: isPro ? 'code' : normalizeClassicMode(r.mode),
     ir: sanitizeStoredIR(r.ir),
     blocksState: sanitizeStoredBlocksState(r.blocksState, installedExtensions),
     installedExtensions,
@@ -1348,12 +1352,26 @@ export function createProjectStore(
   options: CreateProjectStoreOptions = {},
 ): StoreApi<ProjectStore> {
   const limits: ResolvedLimits = { ...PROJECT_FILE_LIMITS, ...options.limits }
+  // Sequência monotônica de carga (single-flight, igual ao loadInFlight do
+  // settingsStore): dois loads que se sobrepõem (aluno clica projeto A e logo B)
+  // podem resolver FORA DE ORDEM — sem o guard, o mais LENTO (mais antigo)
+  // sobrescreveria o mais novo e ainda zeraria isDirty. Capturamos o número antes
+  // do await e, ao voltar, abortamos (não dá `set`) se um load mais novo começou.
+  // Por instância (no closure do factory), não module-global: stores separadas
+  // não disputam o mesmo contador.
+  let loadSeq = 0
   return createStore<ProjectStore>((set, get) => ({
     project: null,
     isDirty: false,
     saveError: null,
     loadProject: async (id) => {
+      loadSeq += 1
+      const seq = loadSeq
       const existing = await loadSanitizedProjectById(id)
+      // Um load mais novo começou enquanto este aguardava o disco: a corrida foi
+      // perdida — não toca o store (o load mais novo é a verdade), mas devolve o
+      // que ESTE load leu para o chamador que o aguardava (sem efeito colateral).
+      if (seq !== loadSeq) return existing
       if (!existing) {
         set({ project: null, isDirty: false, saveError: null })
         return null
@@ -1444,11 +1462,7 @@ export function createProjectStore(
 
       const now = Date.now()
       const base = createEmptyProject(ulid(), sanitizeProjectName(r.name))
-      const mode: IDEMode = isPro
-        ? 'code'
-        : IDE_MODES.includes(r.mode as IDEMode)
-          ? (r.mode as IDEMode)
-          : base.mode
+      const mode: IDEMode = isPro ? 'code' : normalizeClassicMode(r.mode)
       const imported: Project = {
         ...base,
         files,
@@ -1472,7 +1486,52 @@ export function createProjectStore(
     setMode: (mode) => {
       const p = get().project
       if (!p) return
-      set({ project: bump({ ...p, mode }), isDirty: true, saveError: null })
+      // Só permite modos válidos para o TIPO do projeto (D2): básico = Blocos/
+      // Ponte, pro = Código. Um modo fora disso cai no primeiro permitido.
+      const allowed = modesForKind(p.kind)
+      const next: IDEMode = allowed.includes(mode) ? mode : (allowed[0] ?? 'blocks')
+      if (p.mode === next) return
+      set({ project: bump({ ...p, mode: next }), isDirty: true, saveError: null })
+    },
+    convertToPro: async () => {
+      const initial = get().project
+      if (!initial || initial.kind === 'pro') return
+      // Import dinâmico PRIMEIRO: o build de conversão (com sucrase via
+      // export/fileMap) só entra no bundle quando o aluno gradua o projeto, não no
+      // boot do editor. Fazê-lo antes de ler o snapshot evita converter um estado
+      // estale só por causa da latência do import.
+      const { convertClassicToProTree } = await import('./convertToPro')
+      // Lê o snapshot MAIS FRESCO e converte a partir DELE: a árvore reflete o
+      // mesmo conteúdo que os campos do básico (files/ir/blocksState) que vamos
+      // zerar. Construir a tree do snapshot pré-import (como antes) descartava
+      // edições feitas durante o await — a tree ficava com o conteúdo antigo e o
+      // novo se perdia ao zerar os arquivos.
+      const source = get().project
+      if (!source || source.kind === 'pro') return
+      const tree = await convertClassicToProTree(source)
+      // Re-confirma após o await da conversão: o projeto pode ter sido
+      // trocado/apagado/graduado nesse meio-tempo. Só commita se ainda for o
+      // MESMO projeto classic que originou esta `tree`.
+      const fresh = get().project
+      if (!fresh || fresh.id !== source.id || fresh.kind === 'pro') return
+      // Constrói a partir de `source` (NÃO de `fresh`): a `tree` foi gerada desse
+      // snapshot e os campos do básico que zeramos pertencem a ele. Espalhar
+      // `fresh` aqui voltaria a divergir tree×conteúdo (a tree teria o conteúdo de
+      // `source` enquanto o resto viria de `fresh`). `name`/`updatedAt` de `source`
+      // são preservados; o `bump` atualiza `updatedAt` no commit.
+      const converted: Project = {
+        ...source,
+        kind: 'pro',
+        mode: 'code',
+        tree,
+        proMeta: { devScript: 'dev', templateId: 'vanilla-vite' },
+        // O pro usa a `tree` como fonte da verdade; zera os campos do básico.
+        files: { 'index.html': '', 'style.css': '', 'script.js': '' },
+        extraFiles: [],
+        ir: null,
+        blocksState: null,
+      }
+      set({ project: bump(converted), isDirty: true, saveError: null })
     },
     setFiles: (files) => {
       const p = get().project

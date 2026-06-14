@@ -1,5 +1,21 @@
 import * as Blockly from 'blockly/core'
-import { dynamicCategoryBlockTypes } from './paramsFlyout'
+import type { LearningProfile } from '#core'
+import { blockedDynamicSearchTypes, dynamicCategoryBlockTypes } from './paramsFlyout'
+
+// Perfil de aprendizado POR WORKSPACE para a busca respeitar o nível. A categoria
+// de busca é um registro GLOBAL (singleton por origin) e indexa os tipos
+// dinâmicos (Funções/Classes) sem perfil; o BlocklyPanel publica aqui o perfil de
+// cada workspace para a busca filtrar a OFERTA por nível em match time. WeakMap:
+// não retém workspaces descartados.
+const searchProfiles = new WeakMap<object, LearningProfile>()
+
+/** O BlocklyPanel chama isto quando tem o workspace + perfil (mount/troca de nível). */
+export function setSearchProfileForWorkspace(
+  workspace: object | null,
+  profile: LearningProfile,
+): void {
+  if (workspace) searchProfiles.set(workspace, profile)
+}
 
 /**
  * O plugin `@blockly/toolbox-search` registra a categoria `search` colocando um
@@ -241,6 +257,19 @@ export function registerPtSearchCategory(): void {
         value && typeof searcher?.blockTypesMatching === 'function'
           ? (searcher.blockTypesMatching(value) ?? [])
           : []
+      // Respeita o nível do aluno: a busca indexa Funções/Classes GLOBALMENTE (eles
+      // não estão no languageTree estático já filtrado), então a OFERTA não pode
+      // vazar blocos acima do perfil deste workspace — o professor pode tê-los
+      // ocultado para divulgação progressiva. Espelha o gate da paleta (pushCustom).
+      const profile = this.workspace_ ? searchProfiles.get(this.workspace_) : undefined
+      if (profile) {
+        const blocked = blockedDynamicSearchTypes(profile)
+        if (blocked.size > 0) {
+          this.flyoutItems_ = this.flyoutItems_.filter(
+            (item) => item.kind !== 'block' || !item.type || !blocked.has(item.type),
+          )
+        }
+      }
       if (this.flyoutItems_.length === 0) {
         this.flyoutItems_.push({
           kind: 'label',

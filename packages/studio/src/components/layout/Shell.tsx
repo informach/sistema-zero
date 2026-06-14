@@ -1,16 +1,17 @@
 import type { JSX } from 'react'
-import { lazy, Suspense, useEffect, useId, useMemo } from 'react'
+import { lazy, Suspense, useId, useRef } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { useShallow } from 'zustand/react/shallow'
-import type { InstalledExtension } from '#core'
 import { ErrorBoundary } from '#ui'
 // Lazy imports por modo — Blockly não baixa até o aluno entrar em Blocos ou
 // Ponte; Monaco não baixa até entrar em Ponte ou Código.
 import { BlocksMode, BridgeMode, CodeMode } from '../../modes/lazyModes'
+import { StudioLayoutProvider, useStudioWidth } from '../../studio/layoutContext'
 import { useProjectStore } from '../../state/projectStore'
 import { useUIStore } from '../../state/uiStore'
 import { useStudioConfig } from '../../studio/config'
 import { BottomPanel } from './BottomPanel'
+import { ConvertLegacyPrompt } from './ConvertLegacyPrompt'
 import { SectionErrorFallback } from './ErrorViews'
 import { EditorSkeleton } from './LoadingViews'
 import { Topbar } from './Topbar'
@@ -18,8 +19,6 @@ import { Topbar } from './Topbar'
 const ExtensionsPanel = lazy(() =>
   import('../extensions/ExtensionsPanel').then((m) => ({ default: m.ExtensionsPanel })),
 )
-
-const EMPTY_INSTALLED_EXTENSIONS: InstalledExtension[] = []
 
 function ModeFallback({ name }: { name: string }) {
   return <EditorSkeleton message={`Carregando modo ${name}…`} />
@@ -33,12 +32,11 @@ export interface ShellProps {
 }
 
 export function Shell({ onExit, canToggleTheme }: ShellProps): JSX.Element {
-  const { hasProject, projectId, projectMode, installedExtensions } = useProjectStore(
+  const { hasProject, projectId, projectMode } = useProjectStore(
     useShallow((s) => ({
       hasProject: Boolean(s.project),
       projectId: s.project?.id,
       projectMode: s.project?.mode ?? 'blocks',
-      installedExtensions: s.project?.installedExtensions ?? EMPTY_INSTALLED_EXTENSIONS,
     })),
   )
   const showExtensions = useUIStore((s) => s.showExtensions)
@@ -51,23 +49,18 @@ export function Shell({ onExit, canToggleTheme }: ShellProps): JSX.Element {
   // instância montada.
   const instanceId = useId()
   const verticalAutoSaveId = `sz-shell-vertical:${instanceId}`
-  const installedExtensionKey = useMemo(
-    () => installedExtensions.map((ext) => `${ext.id}@${ext.version}`).join('|'),
-    [installedExtensions],
-  )
 
-  useEffect(() => {
-    if (installedExtensionKey.length === 0) return
-    void import('../../state/extensionsAdapter').then(({ reregisterInstalledExtensions }) => {
-      reregisterInstalledExtensions({ installedExtensions })
-    })
-  }, [installedExtensions, installedExtensionKey])
+  // Mede a largura do PRÓPRIO Studio (embarcado em largura variável) e expõe os
+  // tiers de layout (isNarrow/isCompact) para a Topbar e o branch wide/narrow.
+  const rootRef = useRef<HTMLDivElement>(null)
+  const layout = useStudioWidth(rootRef)
 
   if (!hasProject) return <div />
 
   return (
-    <div className="flex h-full flex-col bg-sz-bg text-sz-fg">
-      <Topbar onExit={onExit} canToggleTheme={canToggleTheme} />
+    <StudioLayoutProvider value={layout}>
+      <div ref={rootRef} className="flex h-full flex-col bg-sz-bg text-sz-fg">
+        <Topbar onExit={onExit} canToggleTheme={canToggleTheme} />
       <main className="flex min-h-0 flex-1 flex-col">
         <PanelGroup direction="vertical" className="h-full w-full" autoSaveId={verticalAutoSaveId}>
           <Panel defaultSize={70} minSize={30}>
@@ -124,6 +117,8 @@ export function Shell({ onExit, canToggleTheme }: ShellProps): JSX.Element {
           </Suspense>
         </ErrorBoundary>
       )}
-    </div>
+        <ConvertLegacyPrompt />
+      </div>
+    </StudioLayoutProvider>
   )
 }

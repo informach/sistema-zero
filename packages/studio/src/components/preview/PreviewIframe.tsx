@@ -74,6 +74,14 @@ export function PreviewIframe(): JSX.Element {
   const latestStoragePayload = useRef<Record<string, string> | null>(null)
   const storageFlushTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastStorageFlushAt = useRef(0)
+  // Cap de taxa de mensagens (defesa contra flood). O handler abaixo faz
+  // structured-clone + validação em TODA mensagem; um programa do aluno (ou um
+  // Worker/microtask) que poste em rajada degradaria o thread do host. Mantemos um
+  // contador por janela de 1s e DESCARTAMOS o excedente ANTES da validação pesada.
+  // O teto é generoso (acomoda heartbeat 1/s + escritas de jogo em laço), só corta
+  // abuso real.
+  const messageWindowStartRef = useRef(0)
+  const messageWindowCountRef = useRef(0)
   // Gate da primeira execução: só liberamos o doc AO VIVO depois de hidratar o
   // estado salvo. Sem isso, um Play disparado antes da leitura do IndexedDB
   // semearia o preview vazio e o primeiro setItem do programa (ex.: fome=100)
@@ -335,6 +343,11 @@ export function PreviewIframe(): JSX.Element {
   useEffect(() => {
     if (!docIsLive) return
     const id = setInterval(() => {
+      // Aba em segundo plano: o navegador ESTRANGULA o setInterval do heartbeat
+      // (e este também), então a ausência de heartbeats é esperada e NÃO indica
+      // travamento — só consideramos travado com a aba visível, evitando o falso
+      // positivo de "preview travado" ao voltar para uma aba que ficou de lado.
+      if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return
       if (Date.now() - lastHeartbeatRef.current > previewSecurity.heartbeatTimeoutMs) {
         setPreviewStalled(true)
       }
@@ -355,6 +368,16 @@ export function PreviewIframe(): JSX.Element {
       const source = iframeRef.current?.contentWindow
       if (!source || ev.source !== source) return
       if (ev.origin !== 'null' && ev.origin !== window.location.origin) return
+      // Cap de taxa: depois da autenticação barata (referência + origem) e ANTES
+      // da validação/structured-clone caras. Conta mensagens por janela de 1s e
+      // descarta o excedente — uma rajada (Worker/microtask) não derruba o host.
+      const nowTs = Date.now()
+      if (nowTs - messageWindowStartRef.current >= MESSAGE_RATE_WINDOW_MS) {
+        messageWindowStartRef.current = nowTs
+        messageWindowCountRef.current = 0
+      }
+      messageWindowCountRef.current += 1
+      if (messageWindowCountRef.current > MESSAGE_RATE_MAX_PER_WINDOW) return
       // Escrita no armazenamento persistente do programa do aluno (guardar/ler).
       if (isPreviewStorageWriteMessage(ev.data)) {
         // Descarta escrita de um doc de OUTRO projeto: na janela de troca de
@@ -483,6 +506,11 @@ const PAUSED_PREVIEW_DOC = '<!doctype html><html lang="pt-BR"><body></body></htm
 
 // Intervalo do throttle de persistência do estado salvo (guardar/ler).
 const STORAGE_FLUSH_MS = 500
+
+// Cap de taxa de mensagens vindas do iframe (anti-flood). Janela de 1s e teto
+// generoso: heartbeat (1/s) + escritas de jogo em laço cabem; só corta abuso.
+const MESSAGE_RATE_WINDOW_MS = 1000
+const MESSAGE_RATE_MAX_PER_WINDOW = 240
 
 function formatPreviewSize(chars: number): string {
   if (chars >= 1_000_000) return `${(chars / 1_000_000).toFixed(1)} M caracteres`

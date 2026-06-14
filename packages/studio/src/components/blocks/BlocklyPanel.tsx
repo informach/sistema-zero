@@ -9,6 +9,7 @@ import {
   ensureBlocklyInitialized,
   registerClassesFlyout,
   registerFunctionsFlyout,
+  setSearchProfileForWorkspace,
   szGridColourFor,
   szThemeFor,
 } from '#blockly'
@@ -16,6 +17,7 @@ import { type InstalledExtension, isCategoryAllowed, type LearningProfile } from
 import { generateProjectFilesWithMap } from '#generators'
 import { findExtension } from '#official-extensions'
 import { useCrossHighlight } from '../../hooks/useCrossHighlight'
+import { reregisterInstalledExtensions } from '../../state/extensionsAdapter'
 import { useHighlightStore } from '../../state/highlightStore'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useSettingsStore } from '../../state/settingsStore'
@@ -171,6 +173,18 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
   const preservedPositionsRef = useRef<Map<string, [number, number]> | null>(null)
 
   const installedIds = useMemo(() => installedExtensions.map((e) => e.id), [installedExtensions])
+
+  // Registra os blocos das extensões instaladas ANTES de qualquer
+  // `workspaces.load(blocksState)`. Síncrono (este componente já está no chunk do
+  // Blockly, com import estático) e idempotente. O efeito roda na montagem, e o
+  // load é adiado um frame (requestAnimationFrame abaixo) — então as definições
+  // sempre existem quando os blocos salvos são desserializados. Antes, a única
+  // inscrição vinha do efeito ASSÍNCRONO do Shell (dynamic import), que perdia a
+  // corrida no 1º carregamento e fazia o load lançar "Invalid block definition
+  // for type: sz_g2d_*" até o aluno dar reload.
+  useEffect(() => {
+    reregisterInstalledExtensions({ installedExtensions })
+  }, [installedExtensions])
 
   // Perfil de aprendizado: o professor fixa o nível (config); o aluno pode
   // revelar o avançado (settings), se o professor permitir.
@@ -426,6 +440,13 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
     appliedToolboxRef.current = toolbox
     scheduleBlocklyResize(workspace)
   }, [workspace, toolbox])
+
+  // Publica o perfil deste workspace para a busca de blocos filtrar a oferta por
+  // nível (a categoria de busca é um registro GLOBAL e não conhece o perfil por
+  // instância; sem isto, a busca vazaria Funções/Classes acima do nível fixado).
+  useEffect(() => {
+    if (workspace) setSearchProfileForWorkspace(workspace, profile)
+  }, [workspace, profile])
 
   // Reage a mudança de cursor no Monaco: encontra o bloco que gerou aquela
   // linha e o seleciona/centraliza no workspace.

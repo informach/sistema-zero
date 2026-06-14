@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test'
+import type { JSStatement } from '#ir'
 import { num, str, variable } from '#ir'
-import { generateJS } from '../js'
+import { GeneratorDepthError, generateJS, MAX_GENERATOR_DEPTH } from '../js'
 
 describe('generateJS', () => {
   it('emite var/assign/consoleLog', () => {
@@ -880,5 +881,24 @@ describe('generateJS', () => {
       header: '// Gerado pelo Sistema Zero Studio',
     })
     expect(code.startsWith('// Gerado pelo Sistema Zero Studio')).toBe(true)
+  })
+
+  it('lança GeneratorDepthError (capturável) numa IR aninhada demais, sem estourar a pilha', () => {
+    // Monta `if` dentro de `if` … bem além do teto. Sem a guarda, isto estourava
+    // a pilha do motor (RangeError) e os chamadores na thread principal (que não
+    // têm try/catch) tinham tela branca. Agora vira um erro TIPADO e capturável.
+    let nested: JSStatement = { type: 'consoleLog', value: num(1) }
+    for (let i = 0; i < MAX_GENERATOR_DEPTH + 50; i += 1) {
+      nested = { type: 'if', cond: { type: 'bool', value: true }, then: [nested] }
+    }
+    expect(() => generateJS({ statements: [nested] })).toThrow(GeneratorDepthError)
+  })
+
+  it('aceita aninhamento dentro do limite (não lança)', () => {
+    let nested: JSStatement = { type: 'consoleLog', value: num(1) }
+    for (let i = 0; i < 50; i += 1) {
+      nested = { type: 'if', cond: { type: 'bool', value: true }, then: [nested] }
+    }
+    expect(() => generateJS({ statements: [nested] })).not.toThrow()
   })
 })

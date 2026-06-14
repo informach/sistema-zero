@@ -125,6 +125,15 @@ export function createPersistenceService(
 ): PersistenceService {
   const pending = new Map<string, PendingAutosave>()
 
+  // Dedupe de flush no unload: `flushPending` está registrado em pagehide E
+  // beforeunload (ambos podem disparar num único fechamento) — sem isto cada
+  // unload emitia onChange('flush') DUAS vezes e re-persistia o mesmo snapshot
+  // (o `isDirty` segue true porque o persist é async, então o 2º evento via o
+  // projeto ainda sujo e re-enfileirava). Marca-se ao flushar e re-arma só quando
+  // uma edição genuína volta a agendar (schedule), para um flush legítimo depois
+  // de novas edições continuar funcionando.
+  let flushed = false
+
   // Mutex por id de projeto: encadeia os `adapter.save` do MESMO projeto para
   // não correrem entre si. Sem isso, quando um debounce dispara e uma edição
   // seguinte agenda outro save antes do primeiro resolver, um adapter remoto/BFF
@@ -240,6 +249,9 @@ export function createPersistenceService(
     // A cerca é tirada SÓ nos caminhos legítimos de re-criação/persistência (ver
     // `save` e os clears de create/persist), e auto-expira pela janela de graça.
     internals.clearTimerFor(project.id)
+    // Edição genuína: re-arma o flush (um flush anterior já drenou, mas há algo
+    // novo a salvar no próximo fechamento).
+    flushed = false
     const timer = setTimeout(() => {
       const entry = pending.get(project.id)
       if (entry?.timer === timer) pending.delete(project.id)
@@ -250,6 +262,10 @@ export function createPersistenceService(
   }
 
   function flushPending(): void {
+    // Já drenado neste ciclo de fechamento (pagehide já correu, beforeunload
+    // chegou em seguida): no-op até uma nova edição re-armar.
+    if (flushed) return
+    flushed = true
     const snapshots = Array.from(pending.values(), (entry) => entry.project)
     const current = store.getState()
     if (

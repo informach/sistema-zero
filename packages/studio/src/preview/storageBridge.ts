@@ -30,7 +30,11 @@ import { PREVIEW_MESSAGE_SOURCE, sanitizePreviewStorageData } from './types'
 export interface StorageBridgeOptions {
   /** Snapshot do store `local` a semear (já clampado pelo chamador). */
   localSnapshot?: Record<string, string>
-  /** Origem da app, usada como `targetOrigin` do postMessage (defesa em profundidade). */
+  /**
+   * Origem da app, usada como `targetOrigin` do postMessage (defesa em
+   * profundidade). AUSENTE → o bridge NÃO espelha o estado salvo ao parent
+   * (não usa '*' para não vazar o snapshot do aluno a janelas arbitrárias).
+   */
   parentOrigin?: string
   /** Projeto para o qual o doc é construído — carimbado em cada `storageWrite`. */
   projectId?: string
@@ -40,7 +44,12 @@ export function buildStorageBridgeRuntime(options: StorageBridgeOptions = {}): s
   // Clampa o snapshot aqui também: o doc do preview não deve carregar um seed
   // gigante mesmo que o mirror do parent tenha escapado dos limites.
   const seed = sanitizePreviewStorageData(options.localSnapshot ?? {})
-  const targetOrigin = options.parentOrigin ?? '*'
+  // Ao contrário do canal de console (não-sensível), o bridge ESPELHA o estado
+  // salvo do aluno (localStorage) ao parent. Postar isso com targetOrigin '*'
+  // entregaria o snapshot a QUALQUER janela que interceptasse a mensagem — um
+  // foot-gun se um chamador futuro instanciar o bridge sem a origem da app. Sem
+  // uma origem conhecida, NÃO espelhamos (TARGET = null abaixo desliga o post).
+  const targetOrigin = options.parentOrigin ?? null
   // SEED entra como STRING JSON + JSON.parse em runtime (não como objeto literal):
   // um literal `{ "__proto__": ... }` definiria o protótipo em vez de criar a
   // chave própria, perdendo uma chave literal `__proto__`. JSON.parse cria own key.
@@ -60,6 +69,10 @@ export function buildStorageBridgeRuntime(options: StorageBridgeOptions = {}): s
     }
     function notify() {
       if (!persistKind) return;
+      // Sem origem conhecida da app, NÃO espelhamos o estado salvo do aluno (não
+      // vazamos o snapshot a '*'). O store local segue funcionando dentro do
+      // sandbox; só a persistência no parent fica desligada.
+      if (TARGET === null) return;
       try {
         // Null-proto: preserva uma chave própria "__proto__" no snapshot postado.
         var out = Object.create(null);

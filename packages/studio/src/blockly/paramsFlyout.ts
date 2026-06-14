@@ -1,4 +1,5 @@
 import * as Blockly from 'blockly/core'
+import { isCategoryAllowed, type LearningProfile } from '#core'
 import { FUNCTION_BLOCKS, OOP_BLOCKS } from './blocks'
 import { getParamNames } from './blocks/paramsMutator'
 import { socketInputsFor } from './blocks/valueSockets'
@@ -132,12 +133,45 @@ function functionsFlyout(workspace: Blockly.WorkspaceSvg): FlyoutItem[] {
  * não os indexa sozinha. Exclui os relatores `sz_val_arg` (gerados por escopo) e
  * os blocos OOP legados (fora da paleta). Usado por `searchCategory.ts`.
  */
-export function dynamicCategoryBlockTypes(): string[] {
-  const fns = FUNCTION_BLOCKS.filter((b) => !b.hidden).map((b) => b.type)
-  const classes = OOP_BLOCKS.filter(
+/** Tipos da categoria "Funções" (sem os ocultos), incl. os de retorno. */
+function functionCategoryBlockTypes(): string[] {
+  return [
+    ...FUNCTION_BLOCKS.filter((b) => !b.hidden).map((b) => b.type),
+    'sz_js_return',
+    'sz_js_return_void',
+  ]
+}
+
+/** Tipos da categoria "Classes" (sem ocultos/legados/relatores). */
+function classCategoryBlockTypes(): string[] {
+  return OOP_BLOCKS.filter(
     (b) => !b.hidden && b.type !== 'sz_val_arg' && !LEGACY_OOP_TYPES.has(b.type),
   ).map((b) => b.type)
-  return [...fns, 'sz_js_return', 'sz_js_return_void', ...classes]
+}
+
+export function dynamicCategoryBlockTypes(): string[] {
+  return [...functionCategoryBlockTypes(), ...classCategoryBlockTypes()]
+}
+
+/**
+ * Tipos dinâmicos (Funções/Classes) que NÃO cabem no perfil e por isso devem
+ * sumir da OFERTA da busca de blocos. A busca os indexa GLOBALMENTE (não estão no
+ * languageTree estático já filtrado por nível), então sem este filtro um aluno em
+ * perfil restrito acharia Funções/Classes digitando o nome — vazamento da oferta
+ * que contradiz a divulgação progressiva do professor. Espelha EXATAMENTE o gate
+ * da paleta: `pushCustom` em toolbox.ts gateia essas categorias só por
+ * `isCategoryAllowed` (Funções='intermediario', Classes='avancado'), sem filtrar
+ * bloco a bloco — então aqui também gateamos por categoria inteira.
+ */
+export function blockedDynamicSearchTypes(profile: LearningProfile): Set<string> {
+  const blocked = new Set<string>()
+  if (!isCategoryAllowed('Funções', 'intermediario', profile)) {
+    for (const type of functionCategoryBlockTypes()) blocked.add(type)
+  }
+  if (!isCategoryAllowed('Classes', 'avancado', profile)) {
+    for (const type of classCategoryBlockTypes()) blocked.add(type)
+  }
+  return blocked
 }
 
 /** Registra o callback do flyout da categoria Funções num workspace. */

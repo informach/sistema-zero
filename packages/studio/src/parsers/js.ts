@@ -2773,9 +2773,16 @@ function extractTarget(node: Node, _ctx: ParseCtx): TargetRef | null {
   if (byId !== null) return { id: byId }
   // this — o elemento atual dentro de um handler.
   if (node.type === 'ThisExpression') return { id: '', kind: 'this' }
-  // document (eventos globais: keydown/keyup/etc)
+  // `document` CRU (não `document.getElementById`/`addEventListener`, tratados
+  // antes e separadamente): NÃO é um elemento. Devolver o sentinela `__document__`
+  // fazia `document.classList`/`dataset`/property virarem
+  // `getElementById("__document__")` (alvo inexistente → no-op) no round-trip da
+  // Ponte; tratá-lo como 'var' arriscaria reescrever em matchers onde isso não
+  // vale. Retornamos null → o statement inteiro cai em `rawJS` verbatim ("código é
+  // sagrado"). O caminho de evento global (`document.addEventListener`) já é
+  // resolvido em `tryMatchEventListener` ANTES de chegar aqui.
   if (node.type === 'Identifier' && node.name === 'document') {
-    return { id: '__document__' }
+    return null
   }
   // qualquer outra variável: assume que guarda um elemento (ex.: const x =
   // document.querySelector(...)) e referencia a própria variável.

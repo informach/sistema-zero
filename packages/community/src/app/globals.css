@@ -2,6 +2,9 @@
 /* Componentes compartilhados (@sistemazero/ui) — o scanner precisa ver as classes deles. */
 @source "../../../ui/src";
 @source "../../../member-shell/src";
+/* Editor embarcável (bloco `studio`): o scanner precisa gerar as classes utilitárias
+   do @sistemazero/studio; os tokens --color-sz-* vêm do CSS importado pelo componente. */
+@source "../../../studio/src";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -445,6 +448,13 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
   padding-left: 1rem;
   margin: 1em 0;
   color: var(--muted-foreground);
+}
+/* Imagens em markdown (enunciado/opção de quiz, rich_text) — responsivas e arredondadas */
+.lesson-prose img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius);
+  margin: 0.75em 0;
 }
 /* O espaçamento entre blocos vem do gap do container — sem margens vazando nas bordas */
 .lesson-prose > :first-child {

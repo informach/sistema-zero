@@ -75,16 +75,54 @@ export function countAdvancedCSS(entries: CSSEntry[]): number {
   return entries.filter((entry) => 'type' in entry && entry.type === 'rawCSS').length
 }
 
+/**
+ * Lista TODOS os corpos (sub-listas de statements) de um statement. A versão
+ * antiga de {@link countAdvancedJS} só descia em `if/repeat/event/animationLoop/
+ * g2d:updateEachFrame`, então um trecho `rawJS` aninhado dentro de `while`,
+ * `funcDecl`, `forEach`, `tryCatch`, `classDecl` etc. NÃO era contado — o aviso
+ * "N trechos viraram Código avançado" subnotificava e furava a garantia de que
+ * "código é sagrado". Este walk é EXAUSTIVO sobre todas as variantes que
+ * carregam corpo (espelha o walk de statements do `generators/js.ts`); variantes
+ * sem corpo devolvem `[]`. Ao evoluir o schema com um novo statement-bloco,
+ * adicione o(s) corpo(s) dele aqui.
+ */
+function childStatementBodies(stmt: JSStatement): JSStatement[][] {
+  switch (stmt.type) {
+    case 'if':
+      return [stmt.then, stmt.else ?? []]
+    case 'repeat':
+    case 'while':
+    case 'doWhile':
+    case 'forOf':
+    case 'forRange':
+    case 'event':
+    case 'animationLoop':
+    case 'g2d:updateEachFrame':
+    case 'g2d:onPointer':
+    case 'g3d:animate':
+    case 'funcDecl':
+    case 'forEach':
+    case 'setTimeout':
+    case 'setInterval':
+      return [stmt.body]
+    case 'tryCatch':
+      return [stmt.body, stmt.handler, stmt.finalizer ?? []]
+    case 'fetchJson':
+      return [stmt.body, stmt.catchBody ?? []]
+    case 'classDecl':
+      return [stmt.ctorBody, ...stmt.methods.map((m) => m.body)]
+    default:
+      return []
+  }
+}
+
 export function countAdvancedJS(statements: JSStatement[]): number {
   return statements.reduce((total, statement) => {
-    if (statement.type === 'rawJS') return total + 1
-    if (statement.type === 'if') {
-      return total + countAdvancedJS(statement.then) + countAdvancedJS(statement.else ?? [])
-    }
-    if (statement.type === 'repeat') return total + countAdvancedJS(statement.body)
-    if (statement.type === 'event') return total + countAdvancedJS(statement.body)
-    if (statement.type === 'animationLoop') return total + countAdvancedJS(statement.body)
-    if (statement.type === 'g2d:updateEachFrame') return total + countAdvancedJS(statement.body)
-    return total
+    const here = statement.type === 'rawJS' ? 1 : 0
+    const nested = childStatementBodies(statement).reduce(
+      (sum, body) => sum + countAdvancedJS(body),
+      0,
+    )
+    return total + here + nested
   }, 0)
 }

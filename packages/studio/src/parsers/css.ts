@@ -34,7 +34,18 @@ function parseCSSAtDepth(source: string, depth: number): CSSEntry[] {
 
   let index = 0
   while (index < source.length) {
+    const beforeSkip = index
     index = skipWhitespaceAndComments(source, index)
+    // Comentário SOLTO entre regras: preserva verbatim como rawCSS avançado
+    // (igual a rawHTML/rawJS) — senão some no round-trip código→IR→código. O
+    // trecho pulado é só espaço+comentário, então `trim()` devolve o(s) comentário(s).
+    if (index > beforeSkip) {
+      const skipped = source.slice(beforeSkip, index)
+      if (skipped.includes('/*')) {
+        const code = skipped.trim()
+        if (code) entries.push({ type: 'rawCSS', code, advanced: true })
+      }
+    }
     if (index >= source.length) break
 
     if (source[index] === '@') {
@@ -71,9 +82,20 @@ function parseCSSAtDepth(source: string, depth: number): CSSEntry[] {
     }
 
     const selector = source.slice(index, open).trim()
-    const declarations = parseDeclarations(source.slice(open + 1, close))
-    if (selector && Object.keys(declarations).length > 0) {
-      entries.push({ selector, declarations })
+    const declBlock = source.slice(open + 1, close)
+    const declarations = parseDeclarations(declBlock)
+    if (selector) {
+      // Regra VAZIA (placeholder `.x {}` / só com declarações inválidas) ou com
+      // PROPRIEDADE DUPLICADA (fallback de progressive enhancement, ex.:
+      // `display: flex; display: grid`) não cabe no Record do IR (chave única,
+      // última vence) — preserva a regra INTEIRA verbatim como rawCSS avançado,
+      // honrando "código é sagrado" sem mudar o schema. Senão, regra estruturada.
+      if (Object.keys(declarations).length === 0 || hasDuplicateDeclKeys(declBlock)) {
+        const code = source.slice(index, close + 1).trim()
+        if (code) entries.push({ type: 'rawCSS', code, advanced: true })
+      } else {
+        entries.push({ selector, declarations })
+      }
     }
     index = close + 1
   }
@@ -355,6 +377,36 @@ export function normalizeDeclKey(key: string): string {
 }
 
 /**
+ * Mascara comentários `/* *​/` no NOME de uma propriedade trocando-os por espaços
+ * do mesmo tamanho (preserva offsets para o parser de posições). Compartilhado
+ * por {@link parseDeclarations} (chave do IR) e {@link parseDeclarationsWithSpans}
+ * (prop do span) para que os dois NUNCA divirjam — `.box { /* nota *​/ color: red }`
+ * vira a chave `color` em AMBOS, não `/* nota *​/ color` só num lado.
+ */
+function maskPropComments(propRaw: string): string {
+  return propRaw.replace(/\/\*[\s\S]*?\*\//g, (m) => ' '.repeat(m.length))
+}
+
+/**
+ * Há propriedade REPETIDA em profundidade 0 dentro deste bloco de declarações?
+ * Usa a MESMA segmentação/normalização do {@link parseDeclarations}, então o que
+ * o parser veria como uma chave colapsada é exatamente o que conta como duplicata
+ * — o chamador então preserva a regra inteira verbatim em vez de perder o fallback.
+ */
+function hasDuplicateDeclKeys(block: string): boolean {
+  const seen = new Set<string>()
+  for (const { segStart, segEnd, colon } of scanDeclarationSegments(block, 0, block.length)) {
+    if (colon < 0) continue
+    const key = normalizeDeclKey(maskPropComments(block.slice(segStart, colon)).trim())
+    const value = block.slice(colon + 1, segEnd).trim()
+    if (!key || !value) continue
+    if (seen.has(key)) return true
+    seen.add(key)
+  }
+  return false
+}
+
+/**
  * Declarações para o IR (sem posições). Roteia pelo {@link scanDeclarationSegments}
  * para enxergar parênteses/strings/comentários do mesmo jeito que o parser de
  * posições — `;`/`:` dentro de `url(data:…;base64,…)`, `calc()` ou strings não
@@ -364,7 +416,10 @@ function parseDeclarations(raw: string): Record<string, string> {
   const out: Record<string, string> = {}
   for (const { segStart, segEnd, colon } of scanDeclarationSegments(raw, 0, raw.length)) {
     if (colon < 0) continue
-    const key = normalizeDeclKey(raw.slice(segStart, colon).trim())
+    // Mascara comentários no NOME da prop (mesma fonte da verdade dos spans) — sem
+    // isto a chave do IR virava `/* nota */ color` e divergia do span `color`,
+    // quebrando o realce bloco↔código de toda declaração precedida de comentário.
+    const key = normalizeDeclKey(maskPropComments(raw.slice(segStart, colon)).trim())
     const value = raw.slice(colon + 1, segEnd).trim()
     if (key && value) out[key] = value
   }
@@ -472,7 +527,8 @@ function parseDeclarationsWithSpans(
     // Mascara comentários do nome da prop preservando offsets (comentário →
     // espaços do mesmo tamanho), p/ a prop e a linha não incluírem o `/* */`
     // (ex.: `\n  /* c */\n  color: …` → prop `color`, na linha do `color`).
-    const propMasked = propRaw.replace(/\/\*[\s\S]*?\*\//g, (m) => ' '.repeat(m.length))
+    // Mesmo helper do parseDeclarations (chave do IR) — os dois NUNCA divergem.
+    const propMasked = maskPropComments(propRaw)
     const value = source.slice(colon + 1, segEnd).trim()
     const prop = normalizeDeclKey(propMasked.trim())
     if (!prop || !value) continue

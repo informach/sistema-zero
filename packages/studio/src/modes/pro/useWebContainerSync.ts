@@ -11,8 +11,10 @@ import {
   registerProMountTrigger,
   releaseFsOwnership,
   resetWebContainerFs,
+  setMountedTemplateId,
   setProFsMounted,
 } from '../../components/terminal/webContainerClient'
+import { useProjectStoreApi } from '../../state/projectStore'
 import { computeFsDiff } from './fsDiff'
 
 export type WcMountState = 'idle' | 'mounting' | 'mounted' | 'error' | 'busy'
@@ -37,6 +39,10 @@ export function useWebContainerSync(snapshot: TerminalProjectSnapshot): UseWebCo
   const projectId = snapshot.id
   const snapshotRef = useRef(snapshot)
   snapshotRef.current = snapshot
+  // Store da INSTÂNCIA (não a default de módulo) para ler o templateId do projeto
+  // pro de forma imperativa no mount — o snapshot (TerminalProjectSnapshot) não
+  // carrega proMeta e o tipo é compartilhado com o terminal clássico.
+  const projectStoreApi = useProjectStoreApi()
 
   // Identidade ESTÁVEL desta instância pro para o token de dono ÚNICO do FS
   // (compartilhado com o terminal clássico via webContainerClient).
@@ -73,14 +79,26 @@ export function useWebContainerSync(snapshot: TerminalProjectSnapshot): UseWebCo
         }
         const wc = await getWebContainer()
         if (mountSeqRef.current !== mountId) return null
-        // Troca de projeto: limpa o FS preservando node_modules (evita reinstalar).
-        if (mountedProjectRef.current && mountedProjectRef.current !== projectId) {
-          await resetWebContainerFs(wc)
+        // templateId do projeto pro que vamos montar (proMeta não vem no snapshot).
+        const templateId = projectStoreApi.getState().project?.proMeta?.templateId ?? null
+        // O FS singleton da aba não é comprovadamente DESTE projeto: reseta antes de
+        // montar. Cobre não só a troca de projeto na MESMA instância, mas TAMBÉM o
+        // 1º mount (mountedProjectRef === null) — `wc.mount` MESCLA na árvore atual,
+        // então sem o reset um projeto pro montaria por cima dos arquivos+node_modules
+        // que OUTRA instância pro (que já liberou a posse) deixou no singleton.
+        // `resetWebContainerFs` só preserva node_modules quando o template casa com o
+        // montado (mountedTemplateId); entre templates diferentes (ou no 1º mount,
+        // mountedTemplateId=null) limpa tudo, evitando deps incompatíveis no install.
+        if (mountedProjectRef.current !== projectId) {
+          await resetWebContainerFs(wc, { templateId })
+          if (mountSeqRef.current !== mountId) return null
         }
         await wc.mount(buildTerminalFileTree(snapshotRef.current))
         if (mountSeqRef.current !== mountId) return null
         webcontainerRef.current = wc
         mountedProjectRef.current = projectId
+        // Registra o template agora montado para a próxima troca decidir o keep.
+        setMountedTemplateId?.(templateId)
         syncedFilesRef.current = new Map(
           Object.entries(buildTerminalFileContents(snapshotRef.current)),
         )
@@ -91,6 +109,15 @@ export function useWebContainerSync(snapshot: TerminalProjectSnapshot): UseWebCo
         return wc
       } catch (err) {
         if (mountSeqRef.current !== mountId) return null
+        // O mount não materializou um container (boot do WebContainer, colisão de
+        // árvore em buildTerminalFileTree ou wc.mount lançaram): solta a posse do FS
+        // singleton para a OUTRA instância da aba poder montar — senão o FS fica
+        // PRESO a esta instância que não montou nada, e o irmão fica 'busy' para
+        // sempre. `webcontainerRef.current` só é setado APÓS um mount com sucesso
+        // (acima), então um valor truthy aqui = já havia container vivo (posse
+        // legítima, NÃO solta); null = nunca montou (solta). Espelha o teardown em
+        // erro do Terminal clássico (cleanupRuntime → releaseClassicFs).
+        if (!webcontainerRef.current) releaseFsOwnership?.(fsOwnerRef.current)
         setError(err instanceof Error ? err.message : String(err))
         setState('error')
         return null
@@ -100,7 +127,9 @@ export function useWebContainerSync(snapshot: TerminalProjectSnapshot): UseWebCo
     })()
     mountPromiseRef.current = promise
     return promise
-  }, [projectId])
+    // `projectStoreApi` é referência ESTÁVEL por instância (StoreApi do contexto);
+    // está nas deps só para satisfazer a regra exaustiva — não re-cria o callback.
+  }, [projectId, projectStoreApi])
 
   // Troca de projeto: invalida mount/sync em voo e volta para idle (o ProPreview
   // chama ensureMounted de novo, que fará o reset+remount). SÓ dispara numa
@@ -150,22 +179,50 @@ export function useWebContainerSync(snapshot: TerminalProjectSnapshot): UseWebCo
     if (!wc) return
     const contents = buildTerminalFileContents(snapshot)
     const diff = computeFsDiff(Object.fromEntries(syncedFilesRef.current), contents)
-    if (diff.writes.length === 0 && diff.removes.length === 0 && diff.rmdirs.length === 0) return
+    if (
+      diff.writes.length === 0 &&
+      diff.removes.length === 0 &&
+      diff.rmdirs.length === 0 &&
+      diff.removeFirstPaths.length === 0
+    )
+      return
 
     const syncId = ++syncSeqRef.current
     let cancelled = false
     const timer = window.setTimeout(() => {
       const run = syncChainRef.current.then(async () => {
-        if (cancelled || syncSeqRef.current !== syncId || webcontainerRef.current !== wc) return
+        // Staleness verificada ANTES de cada batch awaited (não só na entrada): um
+        // teardown/troca-de-projeto que pousasse no MEIO do voo escreveria sobre o
+        // FS singleton já resetado/remontado por outro projeto (cross-project
+        // bleed). `fresh()` retorna false quando esta corrida ficou obsoleta.
+        const fresh = () =>
+          !cancelled && syncSeqRef.current === syncId && webcontainerRef.current === wc
+        if (!fresh()) return
+        // Transição arquivo↔diretório (ver computeFsDiff.removeFirstPaths): apaga
+        // RECURSIVAMENTE o nó antigo do caminho em conflito ANTES de qualquer
+        // mkdir/write — senão o mkdir colide com o arquivo homônimo ainda presente
+        // (falha engolida) ou o write colide com a pasta homônima, e o sync trava
+        // para sempre.
+        if (diff.removeFirstPaths.length > 0) {
+          await Promise.all(
+            diff.removeFirstPaths.map((p) => wc.fs.rm(p, { force: true, recursive: true })),
+          )
+          if (!fresh()) return
+        }
         for (const dir of diff.mkdirs) {
           await wc.fs.mkdir(dir, { recursive: true }).catch(() => undefined)
         }
+        if (!fresh()) return
         await Promise.all(diff.writes.map((w) => wc.fs.writeFile(w.path, w.content)))
+        if (!fresh()) return
+        // Removes "normais" (deleções sem conflito de tipo) vêm DEPOIS dos writes:
+        // tolera renomes que reescrevem arquivos compartilhados sem perder dados.
         await Promise.all(diff.removes.map((p) => wc.fs.rm(p, { force: true, recursive: true })))
+        if (!fresh()) return
         // Poda pastas que ficaram vazias após remover o último arquivo dentro
         // delas (da mais profunda para a mais rasa — ver computeFsDiff).
         await Promise.all(diff.rmdirs.map((d) => wc.fs.rm(d, { force: true, recursive: true })))
-        if (!cancelled && syncSeqRef.current === syncId && webcontainerRef.current === wc) {
+        if (fresh()) {
           syncedFilesRef.current = new Map(Object.entries(contents))
         }
       })

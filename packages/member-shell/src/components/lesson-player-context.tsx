@@ -22,6 +22,8 @@ export interface LessonPlayerContextValue {
   onVideoReachedThreshold?: () => void
   /** Marca a aula como concluída (mesmo fluxo do botão). Usado pelo quiz. */
   refreshAfterQuiz?: () => void
+  /** Re-renderiza a página após o envio do projeto do Estúdio (destrava o gate). */
+  refreshAfterStudio?: () => void
 }
 
 const LessonPlayerContext = createContext<LessonPlayerContextValue | null>(null)

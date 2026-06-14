@@ -1,6 +1,6 @@
 import type { JSX } from 'react'
 import { useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
-import { type Project, setLocale } from '#core'
+import { modesForKind, type Project, setLocale } from '#core'
 import { ErrorBoundary } from '#ui'
 import { RootErrorFallback } from '../components/layout/ErrorViews'
 import { Shell } from '../components/layout/Shell'
@@ -124,10 +124,15 @@ function StudioBody({
   const sanitized = useMemo(() => {
     const project = sanitizeProjectForHost(sourceProject)
     if (!project) return null
-    // Coerção de modo: initialMode sobrepõe o salvo; fora de allowedModes cai
-    // no primeiro permitido. Não marca sujo (é abertura, não edição).
+    // Coerção de modo (D2): os modos dependem do TIPO do projeto (modesForKind)
+    // intersectados com a allowlist do host — pro = só Código; básico = Blocos/
+    // Ponte. initialMode sobrepõe o salvo; fora dos permitidos cai no primeiro.
+    // Não marca sujo (é abertura, não edição).
+    const kindModes = modesForKind(project.kind)
+    const allowed =
+      project.kind === 'pro' ? kindModes : kindModes.filter((m) => config.allowedModes.includes(m))
     let mode = initialMode ?? project.mode
-    if (!config.allowedModes.includes(mode)) mode = config.allowedModes[0] ?? project.mode
+    if (!allowed.includes(mode)) mode = allowed[0] ?? project.mode
     return mode === project.mode ? project : { ...project, mode }
   }, [sourceProject, initialMode, resolvedModesKey])
 

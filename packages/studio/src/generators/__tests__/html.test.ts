@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'bun:test'
+import type { HTMLNode } from '#ir'
 import { generateHTML } from '../html'
+import { GeneratorDepthError, MAX_GENERATOR_DEPTH } from '../js'
 
 describe('generateHTML', () => {
   it('produz um documento HTML válido com title, link CSS e script JS', () => {
@@ -171,7 +173,7 @@ describe('generateHTML', () => {
     expect(html.match(/<\/style>/g)?.length).toBe(1)
   })
 
-  it('neutraliza a escalada <!-- ... <script em JS inline (duplo-escape)', () => {
+  it('neutraliza só o fechamento </script no JS inline (preserva <!-- e <script)', () => {
     const js = '/* <!-- */ const t = "<script>foo</script>";'
     const html = generateHTML({
       title: 'Test',
@@ -179,11 +181,56 @@ describe('generateHTML', () => {
       shell: { jsPlacement: 'inline-body-end' },
       jsCode: js,
     })
-    // Aberturas neutralizadas: o tokenizer nunca entra no estado de duplo-escape.
-    expect(html).toContain('<\\!--')
-    expect(html).toContain('<\\script>')
-    expect(html).toContain('<\\/script>')
-    // Só o elemento de fato fecha.
+    // Aberturas ficam intactas (regex /u do aluno preservado); só o fechamento
+    // literal é neutralizado. O `<script>foo` (abertura) sai cru; o `</script>`
+    // após `foo` (fechamento) é neutralizado para `<\/script>`.
+    expect(html).toContain('<!--')
+    expect(html).not.toContain('<\\!--')
+    expect(html).toContain('<script>foo<\\/script>')
+    // Só o elemento de fato fecha (o `</script>` interno foi escapado).
     expect(html.match(/<\/script>/g)?.length).toBe(1)
+  })
+
+  it('script inline é CLÁSSICO mesmo com import/export em string (sem virar module)', () => {
+    // O bug M3: o sniff por regex `/^\s*(?:import|export)\b/m` ligava no token
+    // `export` no INÍCIO de uma linha dentro de uma STRING do aluno, promovendo
+    // o script a `type="module"` — o que quebra funções globais e `onclick=...`.
+    // Agora confiamos só em `shell.jsModule` (autoritativo do parser).
+    const js = 'const texto = `\nexport isso é só texto\n`;\nfunction saudar() {}'
+    const html = generateHTML({
+      title: 'Test',
+      body: [],
+      shell: { jsPlacement: 'inline-body-end' },
+      jsCode: js,
+    })
+    expect(html).toContain('<script>')
+    expect(html).not.toContain('type="module"')
+  })
+
+  it('script inline vira module SÓ quando shell.jsModule é true', () => {
+    const html = generateHTML({
+      title: 'Test',
+      body: [],
+      shell: { jsPlacement: 'inline-body-end', jsModule: true },
+      jsCode: 'import { x } from "./mod.js";',
+    })
+    expect(html).toContain('<script type="module">')
+  })
+
+  it('escapa < e > no valor de atributo (consistência com escapeHtml)', () => {
+    const html = generateHTML({
+      title: 'Test',
+      body: [{ type: 'element', tag: 'div', attrs: { title: 'a<b>c' } }],
+    })
+    expect(html).toContain('title="a&lt;b&gt;c"')
+    expect(html).not.toContain('a<b>c')
+  })
+
+  it('lança GeneratorDepthError (capturável) com elementos aninhados demais', () => {
+    let node: HTMLNode = { type: 'element', tag: 'span', text: 'fundo' }
+    for (let i = 0; i < MAX_GENERATOR_DEPTH + 50; i += 1) {
+      node = { type: 'element', tag: 'div', children: [node] }
+    }
+    expect(() => generateHTML({ title: 'X', body: [node] })).toThrow(GeneratorDepthError)
   })
 })

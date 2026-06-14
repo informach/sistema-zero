@@ -7,14 +7,22 @@ export interface ApiError {
   status: number
   code: string
   message: string
+  /** Só em `QUIZ_COOLDOWN` (429): ISO de quando o aluno pode refazer o quiz. */
+  retryAvailableAt?: string
 }
 
 function extractError(status: number, body: unknown): ApiError {
-  const envelope = body as { error?: { code?: string; message?: string } } | null
+  const envelope = body as {
+    error?: { code?: string; message?: string }
+    retryAvailableAt?: string
+  } | null
   return {
     status,
     code: envelope?.error?.code ?? 'ERROR',
     message: envelope?.error?.message ?? 'Algo deu errado.',
+    ...(typeof envelope?.retryAvailableAt === 'string'
+      ? { retryAvailableAt: envelope.retryAvailableAt }
+      : {}),
   }
 }
 

@@ -15,6 +15,17 @@ const PHASE_LABEL: Partial<Record<Phase, string>> = {
 }
 
 /**
+ * Teto de tamanho para mensagem/stack vindas do app do preview antes de irem ao
+ * Console. Um erro com payload gigante (string enorme serializada no message ou
+ * um stack recursivo) inflaria o store de logs e a UI. 4KB cobre stacks reais.
+ */
+const MAX_LOG_STRING = 4096
+
+function capLogString(value: string): string {
+  return value.length > MAX_LOG_STRING ? `${value.slice(0, MAX_LOG_STRING)}… (truncado)` : value
+}
+
+/**
  * Preview do MODO PROFISSIONAL: em vez do srcdoc, aponta o iframe para a URL do
  * dev-server (Vite) rodando DENTRO do WebContainer. Fluxo:
  * mount (via provider) → npm install → npm run dev → `server-ready` → iframe.
@@ -74,18 +85,29 @@ export function ProPreview(): JSX.Element {
         return
       }
 
+      // Marca que o dev-server chegou a 'pronto': desarma o monitor de saída
+      // prematura abaixo (um dev-server vivo PODE encerrar/reiniciar depois sem ser
+      // erro de boot).
+      let serverReady = false
       const unsubReady = wc.on('server-ready', (_port, readyUrl) => {
         if (cancelled) return
+        serverReady = true
         setUrl(readyUrl)
         setPhase('ready')
       })
       const unsubPreview = wc.on('preview-message', (message) => {
-        const text = 'message' in message ? message.message : 'Erro no console do preview'
+        // Mesmo guard do `server-ready`: sem ele um erro de runtime do app do
+        // projeto ANTERIOR (o unsub roda no cleanup, mas pode haver mensagem em
+        // voo) sangraria para o Console do projeto novo.
+        if (cancelled) return
+        const rawText = 'message' in message ? message.message : 'Erro no console do preview'
+        const text = capLogString(rawText)
+        const stack = 'stack' in message && message.stack ? capLogString(message.stack) : undefined
         pushLog({
           source: 'sz-preview',
           kind: 'runtimeError',
           parts: [text],
-          error: { message: text, stack: message.stack ?? undefined },
+          error: { message: text, stack },
           timestamp: Date.now(),
         })
       })
@@ -145,18 +167,41 @@ export function ProPreview(): JSX.Element {
       // npm run dev
       setPhase('starting')
       const dev = await wc.spawn('npm', ['run', devScript])
+      // Atribui o ref ANTES de checar `cancelled`: se o cancelamento pousar entre
+      // o check e a atribuição, o `cleanup()` já teria rodado lendo um ref ainda
+      // nulo e deixaria o dev-server órfão no container singleton. Atribuindo
+      // primeiro, o cleanup que vier depois encontra o processo e o mata; e
+      // rechecamos aqui para o caso de o cleanup já ter rodado.
+      devProcessRef.current = dev
       if (cancelled) {
         try {
           dev.kill()
         } catch {
           // ignore
         }
+        devProcessRef.current = null
         return
       }
-      devProcessRef.current = dev
       void dev.output
         .pipeTo(new WritableStream<string>({ write: appendTail }))
         .catch(() => undefined)
+      // Monitora a SAÍDA do dev-server. Ao contrário do `npm install` (não-
+      // interativo, com timeout), o `npm run dev` é de longa duração e NÃO leva
+      // timeout — mas se ele MORRE na largada (vite.config inválido, erro de
+      // sintaxe recusado no boot, porta ocupada, script `dev` inexistente no
+      // template), o `server-ready` nunca dispara e a fase ficaria presa em
+      // 'starting' PARA SEMPRE, sem mensagem acionável. Se o exit resolver ANTES do
+      // 'server-ready', vamos para 'error' com o código. (Não há timeout: um
+      // dev-server saudável fica vivo indefinidamente.)
+      void dev.exit.then((code) => {
+        if (cancelled || serverReady) return
+        setError(
+          code === 0
+            ? 'O servidor de desenvolvimento encerrou antes de ficar pronto.'
+            : `O servidor de desenvolvimento encerrou (código ${code}). Veja o terminal/console para o erro.`,
+        )
+        setPhase('error')
+      })
     }
 
     void run()

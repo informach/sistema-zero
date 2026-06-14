@@ -264,3 +264,102 @@ export async function r2PresignGetPrivate(
     { expiresIn: opts.expiresInSeconds ?? 300 },
   )
 }
+
+// ── UGC (anexos da comunidade/fórum) ─────────────────────────────────────────
+// Bucket PRIVADO próprio. Diferente dos materiais didáticos: NÃO leva marca
+// d'água (é conteúdo do próprio aluno) e o upload/download é DIRETO browser↔R2
+// (presigned PUT/GET com CORS) — o BFF só assina, o hub autoriza.
+
+interface R2UgcConfig {
+  accountId: string
+  accessKeyId: string
+  secretAccessKey: string
+  bucket: string
+}
+
+function requireUgcR2Config(): R2UgcConfig {
+  const env = getEnv()
+  if (
+    !env.R2_ACCOUNT_ID ||
+    !env.R2_ACCESS_KEY_ID ||
+    !env.R2_SECRET_ACCESS_KEY ||
+    !env.R2_UGC_BUCKET
+  ) {
+    throw new MediaNotConfiguredError(
+      'Anexos indisponíveis: configure R2_ACCOUNT_ID/R2_ACCESS_KEY_ID/R2_SECRET_ACCESS_KEY/R2_UGC_BUCKET.',
+    )
+  }
+  return {
+    accountId: env.R2_ACCOUNT_ID,
+    accessKeyId: env.R2_ACCESS_KEY_ID,
+    secretAccessKey: env.R2_SECRET_ACCESS_KEY,
+    bucket: env.R2_UGC_BUCKET,
+  }
+}
+
+/**
+ * URL pré-assinada de PUT no bucket UGC. ASSINA `Content-Length` e `Content-Type`
+ * exatos: o browser PUTa DIRETO no R2 e não consegue subir mais bytes nem outro
+ * tipo do que foi autorizado (o tamanho deixa de ser "confiança no cliente"). TTL
+ * curto. O arquivo grande nunca toca o Next/gateway (teto de 2MB da borda intacto).
+ */
+export async function r2PresignPutUgc(input: {
+  key: string
+  contentType: string
+  contentLength: number
+  expiresInSeconds?: number
+}): Promise<string> {
+  const cfg = requireUgcR2Config()
+  return getSignedUrl(
+    getClient(cfg),
+    new PutObjectCommand({
+      Bucket: cfg.bucket,
+      Key: normalizeKey(input.key),
+      ContentType: input.contentType,
+      ContentLength: input.contentLength,
+    }),
+    { expiresIn: input.expiresInSeconds ?? 300 },
+  )
+}
+
+/** URL pré-assinada de GET no bucket UGC (TTL curto) — entrega direta browser←R2. */
+export async function r2PresignGetUgc(
+  key: string,
+  opts: {
+    expiresInSeconds?: number
+    responseContentDisposition?: string
+    responseContentType?: string
+  } = {},
+): Promise<string> {
+  const cfg = requireUgcR2Config()
+  return getSignedUrl(
+    getClient(cfg),
+    new GetObjectCommand({
+      Bucket: cfg.bucket,
+      Key: normalizeKey(key),
+      ResponseContentDisposition: opts.responseContentDisposition,
+      ResponseContentType: opts.responseContentType,
+    }),
+    { expiresIn: opts.expiresInSeconds ?? 300 },
+  )
+}
+
+/** Sobe um objeto no bucket UGC (caminho de IMAGEM: o BFF re-encoda antes de subir). */
+export async function r2PutObjectUgc(input: R2PutObjectInput): Promise<void> {
+  const cfg = requireUgcR2Config()
+  const key = normalizeKey(input.key)
+  try {
+    await getClient(cfg).send(
+      new PutObjectCommand({
+        Bucket: cfg.bucket,
+        Key: key,
+        Body: input.body,
+        ContentType: input.contentType,
+        CacheControl: input.cacheControl ?? 'private, max-age=86400',
+      }),
+    )
+  } catch (error) {
+    console.error('[r2] putObjectUgc falhou', { key, error })
+    throw new Error('Falha ao enviar o anexo para o armazenamento.', { cause: error })
+  }
+}

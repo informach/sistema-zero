@@ -127,11 +127,12 @@ describe('Studio', () => {
     })
     expect(handleRef.current?.isDirty()).toBe(false)
 
-    handleRef.current?.setMode('code')
+    // D2: projeto básico só alterna entre Blocos e Ponte (Código é só do pro).
+    handleRef.current?.setMode('bridge')
     expect(handleRef.current?.isDirty()).toBe(true)
 
     await waitFor(() => {
-      expect(changes).toContain('code')
+      expect(changes).toContain('bridge')
     })
     // Snapshot entregue ao host conta como salvo.
     await waitFor(() => {
@@ -156,46 +157,49 @@ describe('Studio', () => {
     // Array INLINE: o host recria a referência a cada render, mas o conteúdo é o
     // mesmo. Antes, isso re-rodava resolveStudioConfig → re-sanitize → re-hidrata.
     const { getByTestId, rerender } = render(
-      <Studio ref={handleRef} initialProject={project} allowedModes={['blocks', 'code']} />,
+      <Studio ref={handleRef} initialProject={project} allowedModes={['blocks', 'bridge']} />,
     )
 
     await waitFor(() => {
       expect(getByTestId('editor-shell').getAttribute('data-project')).toBe('project-keep')
     })
 
-    // Edição não salva do aluno (troca de modo marca sujo).
-    handleRef.current?.setMode('code')
+    // Edição não salva do aluno (troca de modo marca sujo). D2: básico = Blocos/Ponte.
+    handleRef.current?.setMode('bridge')
     await waitFor(() => {
       expect(getByTestId('editor-shell').getAttribute('data-dirty')).toBe('true')
     })
-    expect(getByTestId('editor-shell').getAttribute('data-mode')).toBe('code')
+    expect(getByTestId('editor-shell').getAttribute('data-mode')).toBe('bridge')
 
     // Re-render do host com um NOVO array inline de conteúdo igual.
-    rerender(<Studio ref={handleRef} initialProject={project} allowedModes={['blocks', 'code']} />)
+    rerender(
+      <Studio ref={handleRef} initialProject={project} allowedModes={['blocks', 'bridge']} />,
+    )
 
     // A edição e o estado sujo sobrevivem (não re-hidratou do snapshot original).
-    expect(getByTestId('editor-shell').getAttribute('data-mode')).toBe('code')
+    expect(getByTestId('editor-shell').getAttribute('data-mode')).toBe('bridge')
     expect(getByTestId('editor-shell').getAttribute('data-dirty')).toBe('true')
     expect(handleRef.current?.isDirty()).toBe(true)
   })
 
-  it('ligar professional numa instância montada re-coage o modo ativo proibido', async () => {
+  it('apertar allowedModes numa instância montada re-coage o modo ativo proibido', async () => {
     const project = createEmptyProject('project-coerce', 'Coerção')
-    // Começa não-pro: modo blocks é permitido.
-    const { getByTestId, rerender } = render(<Studio initialProject={project} />)
+    // Começa com Blocos e Ponte permitidos; abre no modo padrão 'blocks'.
+    const { getByTestId, rerender } = render(
+      <Studio initialProject={project} allowedModes={['blocks', 'bridge']} />,
+    )
 
     await waitFor(() => {
       expect(getByTestId('editor-shell').getAttribute('data-mode')).toBe('blocks')
     })
 
-    // Host liga o modo profissional na MESMA instância: config.allowedModes vira
-    // ['code'], então a aba ativa 'blocks' fica proibida. A coerção precisa
-    // recomputar (memo keyado nos modos RESOLVIDOS, não na prop allowedModes) e
-    // cair no primeiro permitido ('code').
-    rerender(<Studio initialProject={project} features={{ professional: true }} />)
+    // Host restringe os modos para só 'bridge': a aba ativa 'blocks' fica proibida.
+    // A coerção recomputa (memo keyado nos modos RESOLVIDOS) e cai no primeiro
+    // permitido ('bridge').
+    rerender(<Studio initialProject={project} allowedModes={['bridge']} />)
 
     await waitFor(() => {
-      expect(getByTestId('editor-shell').getAttribute('data-mode')).toBe('code')
+      expect(getByTestId('editor-shell').getAttribute('data-mode')).toBe('bridge')
     })
   })
 

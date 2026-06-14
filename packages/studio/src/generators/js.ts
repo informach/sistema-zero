@@ -8,6 +8,88 @@ import {
 } from './expr'
 import { countLines, SourceMapBuilder } from './sourceMap'
 
+/**
+ * Profundidade máxima de aninhamento que os geradores aceitam antes de abortar
+ * de forma controlada. Os PARSERS já degradam quando o aninhamento estoura a
+ * pilha (RangeError), mas os GERADORES não tinham guarda — uma IR
+ * patologicamente aninhada (ex.: `if` dentro de `if` dentro de `if`… milhares de
+ * níveis, ou elementos/`@media` igualmente fundos) estourava a pilha do motor
+ * de JS no meio da compilação, e dois chamadores na thread principal
+ * (`regenerateFromBlocks` na BlocklyPanel, ExtensionsPanel) não envolvem a
+ * geração em try/catch → tela branca. Com um teto bem ABAIXO do limite do motor
+ * (~10–15k frames), lançamos um erro TIPADO e CAPTURÁVEL antes do crash, então
+ * o chamador pode tratá-lo (ou ao menos não derrubar a aba). 200 é folgado para
+ * qualquer projeto real e ainda longe do limite de pilha.
+ */
+export const MAX_GENERATOR_DEPTH = 200
+
+/**
+ * Erro lançado quando a IR excede {@link MAX_GENERATOR_DEPTH} níveis de
+ * aninhamento. Tipado para que os chamadores possam distingui-lo de um bug do
+ * gerador (`error instanceof GeneratorDepthError`) e degradar com elegância.
+ */
+export class GeneratorDepthError extends Error {
+  constructor(message = 'IR aninhada além do limite suportado pelo gerador') {
+    super(message)
+    this.name = 'GeneratorDepthError'
+  }
+}
+
+/** Lança {@link GeneratorDepthError} quando `depth` ultrapassa o teto. */
+export function assertGeneratorDepth(depth: number): void {
+  if (depth > MAX_GENERATOR_DEPTH) throw new GeneratorDepthError()
+}
+
+/** Sub-listas de statements (corpos) de um statement — `[]` para folhas. */
+function jsChildBodies(stmt: JSStatement): JSStatement[][] {
+  switch (stmt.type) {
+    case 'if':
+      return [stmt.then, stmt.else ?? []]
+    case 'repeat':
+    case 'while':
+    case 'doWhile':
+    case 'forOf':
+    case 'forRange':
+    case 'event':
+    case 'animationLoop':
+    case 'g2d:updateEachFrame':
+    case 'g2d:onPointer':
+    case 'g3d:animate':
+    case 'funcDecl':
+    case 'forEach':
+    case 'setTimeout':
+    case 'setInterval':
+      return [stmt.body]
+    case 'tryCatch':
+      return [stmt.body, stmt.handler, stmt.finalizer ?? []]
+    case 'fetchJson':
+      return [stmt.body, stmt.catchBody ?? []]
+    case 'classDecl':
+      return [stmt.ctorBody, ...stmt.methods.map((m) => m.body)]
+    default:
+      return []
+  }
+}
+
+/**
+ * Guarda de profundidade ITERATIVA (pilha explícita, sem recursão). Roda ANTES
+ * de `hoistAnimationLoops`/`createPreparedIdentifierScope`/compilação — todas
+ * recursões sem guarda própria que estourariam a pilha numa IR patológica antes
+ * de chegar ao `compileStatementCode`. Como é iterativa, ela mesma não estoura.
+ */
+function assertJSDepth(statements: JSStatement[]): void {
+  const stack: Array<{ list: JSStatement[]; depth: number }> = [{ list: statements, depth: 0 }]
+  while (stack.length > 0) {
+    const { list, depth } = stack.pop() as { list: JSStatement[]; depth: number }
+    assertGeneratorDepth(depth)
+    for (const stmt of list) {
+      for (const body of jsChildBodies(stmt)) {
+        stack.push({ list: body, depth: depth + 1 })
+      }
+    }
+  }
+}
+
 export interface GenerateJSOptions {
   statements: JSStatement[]
   /** Header injected at top (e.g., comment header). */
@@ -36,6 +118,9 @@ export function generateJS(opts: GenerateJSOptions): string {
  */
 export function generateJSWithMap(opts: GenerateJSOptions): GenerateJSWithMapResult {
   const map = new SourceMapBuilder()
+  // Aborta cedo (erro tipado e capturável) numa IR aninhada demais — antes que
+  // as recursões abaixo (hoist/escopo/compilação) estourem a pilha do motor.
+  assertJSDepth(opts.statements)
   // O loop de animação ("A cada frame fazer") sempre vai para o nível global,
   // fora de qualquer bloco: `function frame(){…} frame();`. A chamada precisa do
   // mesmo escopo da função, então ambos sobem juntos.
@@ -189,6 +274,10 @@ function compileStatementCode(
   identifiers: IdentifierScope,
   mapContext?: CompileMapContext,
 ): string {
+  // `indent` cresce em 1 a cada corpo aninhado (compileStatements(body, indent+1)),
+  // então É a profundidade de aninhamento — guardamos aqui, o único ponto de
+  // recursão de statements, antes de estourar a pilha do motor.
+  assertGeneratorDepth(indent)
   const pad = '  '.repeat(indent)
   // Linha-base (1ª linha) deste statement. Expressões em soquetes de valor são
   // single-line; `recAt(line)` registra cada uma na linha onde foi emitida.
@@ -778,6 +867,10 @@ function lastLineEndColumn(code: string): number {
 }
 
 function createPreparedIdentifierScope(statements: JSStatement[]): IdentifierScope {
+  // Guarda também o caminho de `compileStatements` chamado de fora (sem passar
+  // um escopo) — aqui as recursões de reserva/coleta rodam primeiro. Iterativo,
+  // então não estoura a pilha por conta própria.
+  assertJSDepth(statements)
   const identifiers = createIdentifierScope()
   // Reserva o elemento <canvas> de cada `canvasSetup` ANTES dos nomes de
   // variável. Assim o elemento fica sempre com o nome `canvas` (estável), em vez

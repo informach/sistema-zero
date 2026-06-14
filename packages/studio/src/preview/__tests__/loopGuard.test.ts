@@ -49,6 +49,33 @@ describe('instrumentLoops', () => {
     expect(instrumentLoops(broken)).toBe(broken)
   })
 
+  it('instrumenta loop em script clássico com with (não-strict, #M5)', () => {
+    // `with` é erro recuperável em sourceType:'module' (sempre strict). Antes, um
+    // único `with` no arquivo fazia TODOS os loops saírem sem guarda. Agora o
+    // parse clássico aceita `with` e o `while` recebe o tick.
+    const out = instrumentLoops('with (o) { v = 1 } while (true) { passo() }')
+    expect(out).toContain('__szLoopTick();')
+    expect(out.indexOf('__szLoopTick();')).toBeLessThan(out.indexOf('passo()'))
+    // o código do aluno (incl. o with) é preservado verbatim
+    expect(out).toContain('with (o)')
+  })
+
+  it('instrumenta loop após return de topo (script clássico, #M5)', () => {
+    // `return` no topo é legal num script clássico; em module vira erro. O loop
+    // depois dele ainda precisa de guarda.
+    const out = instrumentLoops('if (x) return;\nwhile (true) { tique() }')
+    expect(out).toContain('__szLoopTick();')
+    expect(out).toContain('return;')
+  })
+
+  it('instrumenta loop em módulo de verdade (fallback de import/export, #M5)', () => {
+    // import/export no topo só valem em module; o parse clássico lança e caímos
+    // para o módulo, ainda instrumentando o loop.
+    const out = instrumentLoops('import { x } from "y";\nwhile (true) { roda() }')
+    expect(out).toContain('__szLoopTick();')
+    expect(out).toContain('import { x }')
+  })
+
   it('string vazia volta vazia', () => {
     expect(instrumentLoops('')).toBe('')
   })
@@ -116,5 +143,43 @@ describe('buildLoopGuardRuntime', () => {
       thrown = e
     }
     expect((thrown as { __szLoopGuard?: boolean })?.__szLoopGuard).toBe(true)
+  })
+
+  it('captura o relógio na instalação: congelar o tempo depois não desliga o orçamento (#M4)', () => {
+    // O aluno congela performance.now/Date.now ANTES do laço para impedir que o
+    // orçamento estoure. A guarda captura uma cópia LIGADA do relógio na
+    // instalação (roda no <head> antes do código do aluno), então a sabotagem
+    // posterior não tem efeito.
+    let realClock = 0
+    const perf = { now: () => realClock }
+    const fakeWindow: Record<string, unknown> = {
+      setTimeout: () => 0, // pump no-op: o orçamento nunca reseta no teste
+      performance: perf,
+    }
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval
+    new Function('window', 'setTimeout', buildLoopGuardRuntime(100))(fakeWindow, () => 0)
+
+    const tick = fakeWindow.__szLoopTick as () => void
+    realClock = 0
+    tick() // start = 0
+
+    // SABOTAGEM: o aluno congela o relógio (performance.now e Date.now → 0).
+    perf.now = () => 0
+    const realDateNow = Date.now
+    try {
+      Date.now = () => 0
+      realClock = 999_999 // tempo real avançou muito além do orçamento
+      let thrown: unknown
+      try {
+        tick()
+      } catch (e) {
+        thrown = e
+      }
+      // A guarda usa o relógio CAPTURADO (ainda lê realClock via a função ligada),
+      // então o orçamento estoura mesmo com performance.now/Date.now congelados.
+      expect((thrown as { __szLoopGuard?: boolean })?.__szLoopGuard).toBe(true)
+    } finally {
+      Date.now = realDateNow
+    }
   })
 })

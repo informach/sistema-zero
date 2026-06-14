@@ -1,5 +1,6 @@
 import { createStore, del, get, set } from 'idb-keyval'
 import { sanitizePreviewStorageData } from '#preview'
+import { isGameStorageDeleted, runSerializedWrite } from './persistence'
 
 /**
  * Persistência do `localStorage` do PROGRAMA DO ALUNO no preview ("guardar/ler").
@@ -56,34 +57,47 @@ export async function loadGameStorage(projectId: string): Promise<Record<string,
 /**
  * Grava o snapshot do `localStorage` deste projeto. Apaga o registro quando o
  * mapa fica vazio (clear/removeItem que esvazia) — evita lixo no IndexedDB.
+ *
+ * Roda na MESMA cadeia de escrita por id do `deleteProject` (`runSerializedWrite`)
+ * e checa a cerca de exclusão: um flush do preview em voo durante um delete não
+ * pode pousar o `set` DEPOIS do `delMany` e ressuscitar um `sz:game-storage:<id>`
+ * órfão. A serialização ordena os dois; a cerca derruba um write que chegue tarde.
  */
 export async function writeGameStorage(
   projectId: string,
   data: Record<string, string>,
 ): Promise<void> {
   if (!projectId) return
-  try {
-    const kv = getStore()
-    if (!kv) return
-    const clean = sanitizePreviewStorageData(data)
-    if (Object.keys(clean).length === 0) {
-      await del(gameStorageKey(projectId), kv)
-      return
+  await runSerializedWrite(projectId, async () => {
+    // Apagado enquanto este write esperava na fila (ou já enfileirado após o
+    // delMany): descarta — não recria o registro do projeto que não existe mais.
+    if (isGameStorageDeleted(projectId)) return
+    try {
+      const kv = getStore()
+      if (!kv) return
+      const clean = sanitizePreviewStorageData(data)
+      if (Object.keys(clean).length === 0) {
+        await del(gameStorageKey(projectId), kv)
+        return
+      }
+      await set(gameStorageKey(projectId), clean, kv)
+    } catch {
+      // best-effort: quota cheia / sem IndexedDB não pode quebrar o preview.
     }
-    await set(gameStorageKey(projectId), clean, kv)
-  } catch {
-    // best-effort: quota cheia / sem IndexedDB não pode quebrar o preview.
-  }
+  })
 }
 
-/** Remove o armazenamento do projeto (chamado quando o projeto é apagado). */
+/** Remove o armazenamento do projeto (chamado quando o projeto é apagado). No
+ * MESMO mutex de escrita por id, para não correr com um `writeGameStorage`. */
 export async function deleteGameStorage(projectId: string): Promise<void> {
   if (!projectId) return
-  try {
-    const kv = getStore()
-    if (!kv) return
-    await del(gameStorageKey(projectId), kv)
-  } catch {
-    // best-effort.
-  }
+  await runSerializedWrite(projectId, async () => {
+    try {
+      const kv = getStore()
+      if (!kv) return
+      await del(gameStorageKey(projectId), kv)
+    } catch {
+      // best-effort.
+    }
+  })
 }

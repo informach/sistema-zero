@@ -94,8 +94,22 @@ function sanitizePersistedSettings(value: unknown): PersistedSettings {
 
 const SETTINGS_KEY = 'sz:settings'
 let store: ReturnType<typeof createStore> | null = null
-function getStore() {
-  if (!store) store = createStore('sistema-zero-studio', 'kv')
+let storeInitFailed = false
+function getStore(): ReturnType<typeof createStore> | null {
+  if (store || storeInitFailed) return store
+  // Sem IndexedDB (Firefox em modo privado, contextos restritos, happy-dom) não
+  // há o que abrir — e `createStore` pode até LANÇAR. Blindamos igual ao
+  // gameStorage.ts: degrada para "sem store" em vez de derrubar o load().
+  if (typeof indexedDB === 'undefined') {
+    storeInitFailed = true
+    return null
+  }
+  try {
+    store = createStore('sistema-zero-studio', 'kv')
+  } catch {
+    storeInitFailed = true
+    store = null
+  }
   return store
 }
 
@@ -121,7 +135,9 @@ interface SettingsState {
 }
 
 async function readPersisted(): Promise<PersistedSettings> {
-  return sanitizePersistedSettings(await get<unknown>(SETTINGS_KEY, getStore()))
+  const kv = getStore()
+  if (!kv) return {}
+  return sanitizePersistedSettings(await get<unknown>(SETTINGS_KEY, kv))
 }
 
 // load() é singleton: a 1ª carga hidrata a store a partir do IndexedDB, mas a
@@ -137,6 +153,10 @@ let loadInFlight: Promise<void> | null = null
 // (o get+set separado deixava cada um ler o mesmo estado antigo e o último
 // gravava por cima, descartando o patch do outro — visível após reload).
 async function writeMerge(patch: Partial<PersistedSettings>): Promise<void> {
+  const kv = getStore()
+  // Sem IndexedDB: a store viva continua mutando (preferência em memória), mas
+  // não há onde persistir — no-op silencioso em vez de lançar.
+  if (!kv) return
   await update<unknown>(
     SETTINGS_KEY,
     (current) => {
@@ -146,7 +166,7 @@ async function writeMerge(patch: Partial<PersistedSettings>): Promise<void> {
       }
       return next
     },
-    getStore(),
+    kv,
   )
 }
 
@@ -162,23 +182,31 @@ export const useSettingsStore = create<SettingsState>((setState, getState) => ({
     if (getState().loaded) return
     if (loadInFlight) return loadInFlight
     loadInFlight = (async () => {
-      const persisted = await readPersisted()
-      const aiModel = normalizeAIModel(persisted.aiModel)
-      const aiApiKeyStorage = normalizeAIApiKeyStorage(persisted.aiApiKeyStorage)
-      setState({
-        aiApiKey: aiApiKeyStorage === 'persistent' ? (persisted.aiApiKey ?? '') : '',
-        aiApiKeyStorage,
-        aiModel,
-        theme: persisted.theme ?? 'dark',
-        codeFontSize: clampCodeFontSize(persisted.codeFontSize ?? CODE_FONT_SIZE_DEFAULT),
-        revealAdvanced: persisted.revealAdvanced ?? false,
-        loaded: true,
-      })
-      if (aiApiKeyStorage === 'session' && persisted.aiApiKey) {
-        await writeMerge({ aiApiKey: undefined, aiApiKeyStorage })
-      }
-      if (persisted.aiModel && persisted.aiModel !== aiModel) {
-        await writeMerge({ aiModel })
+      try {
+        const persisted = await readPersisted()
+        const aiModel = normalizeAIModel(persisted.aiModel)
+        const aiApiKeyStorage = normalizeAIApiKeyStorage(persisted.aiApiKeyStorage)
+        setState({
+          aiApiKey: aiApiKeyStorage === 'persistent' ? (persisted.aiApiKey ?? '') : '',
+          aiApiKeyStorage,
+          aiModel,
+          theme: persisted.theme ?? 'dark',
+          codeFontSize: clampCodeFontSize(persisted.codeFontSize ?? CODE_FONT_SIZE_DEFAULT),
+          revealAdvanced: persisted.revealAdvanced ?? false,
+          loaded: true,
+        })
+        if (aiApiKeyStorage === 'session' && persisted.aiApiKey) {
+          await writeMerge({ aiApiKey: undefined, aiApiKeyStorage })
+        }
+        if (persisted.aiModel && persisted.aiModel !== aiModel) {
+          await writeMerge({ aiModel })
+        }
+      } catch {
+        // Leitura do IndexedDB FALHOU (Firefox modo privado, IDB bloqueado): sem
+        // try/catch a store ficava `loaded:false` PARA SEMPRE e todo awaiter
+        // coalescido rejeitava. Caímos para os defaults em memória com
+        // `loaded:true` — a IDE funciona, só não persiste preferências.
+        setState({ loaded: true })
       }
     })()
     try {

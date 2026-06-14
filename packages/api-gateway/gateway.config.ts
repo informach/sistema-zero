@@ -118,6 +118,21 @@ const authInternalTransforms = AUTH_INTERNAL_TOKEN
     ]
   : []
 
+// Comunidade em fórum (@sistemazero/hub): spaces/canais/tópicos/comentários +
+// reações + moderação. O gateway injeta o x-internal-token nas rotas do aluno e
+// admin (defesa em profundidade, igual ao members). DEVE bater com o
+// INTERNAL_API_TOKEN do hub.
+const HUB_URL = process.env.HUB_URL ?? 'http://localhost:3010'
+const HUB_INTERNAL_TOKEN = process.env.HUB_INTERNAL_TOKEN ?? ''
+const hubInternalTransforms = HUB_INTERNAL_TOKEN
+  ? [
+      {
+        type: 'header-inject' as const,
+        options: { headers: { 'x-internal-token': HUB_INTERNAL_TOKEN } },
+      },
+    ]
+  : []
+
 const sharedResilience = {
   loadBalancer: 'round-robin' as const,
   timeoutMs: 15_000,
@@ -220,6 +235,14 @@ const config: GatewayConfigInput = {
       name: 'fiscal',
       upstreamGroups: {
         default: [{ url: FISCAL_URL, healthCheckPath: '/healthz' }],
+      },
+      ...sharedResilience,
+    },
+    // Comunidade em fórum: servidores/canais/tópicos/comentários + moderação.
+    hub: {
+      name: 'hub',
+      upstreamGroups: {
+        default: [{ url: HUB_URL, healthCheckPath: '/health' }],
       },
       ...sharedResilience,
     },
@@ -961,6 +984,19 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
     },
+    // Entrega do projeto do Estúdio (mesmo JSON do "Exportar projeto"). Corpo maior
+    // que os JSONs pequenos do aluno (o projeto inteiro) — cabe no teto global (2 MB);
+    // o members reforça o próprio teto. Baixa frequência (envio manual) → 30/min.
+    {
+      id: 'members-studio-submission',
+      methods: ['POST'],
+      pathPattern: '/members/lessons/:lessonId/blocks/:blockId/studio-submission',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+    },
     // Concessão/assinatura (funil → gateway → members): HMAC de borda do funil +
     // o gateway re-assina como consumer `gateway` (members verifica com GATEWAY_HMAC_SECRET).
     {
@@ -1096,6 +1132,18 @@ const config: GatewayConfigInput = {
       authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    // Leitura admin de blocos (GET `/members/admin/blocks/:id/studio-submissions[/:userId]`):
+    // acompanhamento das entregas do Estúdio pelo professor (LEITURA staff+).
+    {
+      id: 'members-admin-blocks-read',
+      methods: ['GET'],
+      pathPattern: '/members/admin/blocks/*',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
     },
     {
       id: 'members-admin-attachments-write',
@@ -1273,6 +1321,251 @@ const config: GatewayConfigInput = {
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
       transforms: fiscalInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+
+    // ── Comunidade em fórum (@sistemazero/hub) ───────────────────────────────
+    // Consumo do ALUNO: JWT + conta ativa; o gateway injeta X-Auth-User-* +
+    // `x-internal-token` (defesa em profundidade, igual ao members). Perfil de
+    // FÓRUM (não chat): leituras 300/min; escrita (tópico/comentário/edição)
+    // 60/min + corpo 64KB; reações/seen/report 120/min. `:slug`/`:id`/`:emoji`
+    // são placeholders de match — o path real é repassado intacto ao upstream.
+    {
+      id: 'hub-spaces',
+      methods: ['GET'],
+      pathPattern: '/hub/spaces',
+      service: 'hub',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'hub-space-get',
+      methods: ['GET'],
+      pathPattern: '/hub/spaces/:slug',
+      service: 'hub',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'hub-space-channels',
+      methods: ['GET'],
+      pathPattern: '/hub/spaces/:slug/channels',
+      service: 'hub',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'hub-channel-threads',
+      methods: ['GET'],
+      pathPattern: '/hub/channels/:id/threads',
+      service: 'hub',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'hub-thread-create',
+      methods: ['POST'],
+      pathPattern: '/hub/channels/:id/threads',
+      service: 'hub',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'hub-thread-get',
+      methods: ['GET'],
+      pathPattern: '/hub/threads/:id',
+      service: 'hub',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'hub-thread-comments',
+      methods: ['GET'],
+      pathPattern: '/hub/threads/:id/comments',
+      service: 'hub',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'hub-comment-create',
+      methods: ['POST'],
+      pathPattern: '/hub/threads/:id/comments',
+      service: 'hub',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'hub-thread-edit',
+      methods: ['PATCH'],
+      pathPattern: '/hub/threads/:id',
+      service: 'hub',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'hub-comment-edit',
+      methods: ['PATCH'],
+      pathPattern: '/hub/comments/:id',
+      service: 'hub',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'hub-thread-react-add',
+      methods: ['POST'],
+      pathPattern: '/hub/threads/:id/reactions',
+      service: 'hub',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'hub-thread-react-remove',
+      methods: ['DELETE'],
+      pathPattern: '/hub/threads/:id/reactions/:emoji',
+      service: 'hub',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'hub-comment-react-add',
+      methods: ['POST'],
+      pathPattern: '/hub/comments/:id/reactions',
+      service: 'hub',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'hub-comment-react-remove',
+      methods: ['DELETE'],
+      pathPattern: '/hub/comments/:id/reactions/:emoji',
+      service: 'hub',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'hub-channel-seen',
+      methods: ['POST'],
+      pathPattern: '/hub/channels/:id/seen',
+      service: 'hub',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'hub-thread-report',
+      methods: ['POST'],
+      pathPattern: '/hub/threads/:id/report',
+      service: 'hub',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'hub-comment-report',
+      methods: ['POST'],
+      pathPattern: '/hub/comments/:id/report',
+      service: 'hub',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    // Registro de metadado de anexo (o BFF mint o presigned PUT e chama esta rota).
+    {
+      id: 'hub-attachments-register',
+      methods: ['POST'],
+      pathPattern: '/hub/attachments',
+      service: 'hub',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+    },
+    // Resolução do anexo (devolve o storageRef ao BFF, que mint o presigned GET).
+    {
+      id: 'hub-attachment-resolve',
+      methods: ['GET'],
+      pathPattern: '/hub/attachments/:id/resolve',
+      service: 'hub',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    // Admin (painel): JWT + RBAC. `/hub/admin/*` distinto das rotas do aluno.
+    // LEITURA (GET) → superadmin/admin/staff; ESCRITA → superadmin/admin. Wildcard
+    // `/*` casa todos os subpaths (spaces/channels/reorder/pending/reports/...).
+    {
+      id: 'hub-admin-read',
+      methods: ['GET'],
+      pathPattern: '/hub/admin/*',
+      service: 'hub',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'hub-admin-write',
+      methods: ['POST', 'PATCH', 'DELETE'],
+      pathPattern: '/hub/admin/*',
+      service: 'hub',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+    },
+    // Concessão/revogação (funil/members → gateway → hub): invalida o cache de
+    // acesso. HMAC de borda + o gateway re-assina como consumer `gateway`.
+    {
+      id: 'hub-webhook-grant',
+      methods: ['POST'],
+      pathPattern: '/hub/webhooks/grant',
+      service: 'hub',
+      auth: { required: true, mode: 'any', strategies: ['hmac'] },
+      upstreamAuth: 'resign',
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 600, windowMs: 60_000, by: 'principal' },
     },
 
     // ── Exemplo: rota de negócio protegida por JWT + RBAC ────────────────────

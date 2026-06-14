@@ -27,6 +27,8 @@ export interface StudioFeatures {
   console?: boolean
   /** Painel de extensões + botão na Topbar. Default: true. */
   extensions?: boolean
+  /** Botão "Exportar" na Topbar (gera o ZIP de deploy). Default: true. */
+  export?: boolean
   /** Aba Terminal (WebContainer). Default: false — exige COOP/COEP no host. */
   terminal?: boolean
   /** Aba/painel de IA. `true` = BYOK (mock até ter chave); objeto configura. Default: false. */
@@ -106,6 +108,7 @@ export interface ResolvedStudioConfig {
   preview: boolean
   console: boolean
   extensions: boolean
+  export: boolean
   terminal: boolean
   ai: boolean
   /** Modo profissional ligado (dev-server WebContainer). */
@@ -133,12 +136,18 @@ export function resolveStudioConfig(
   const ai = features?.ai ?? false
   const aiObject = typeof ai === 'object' ? ai : {}
   const professional = features?.professional ?? false
+  // `allowedModes` é a allowlist do HOST. NÃO forçamos mais 'code' quando
+  // `professional` está ligado: agora os modos dependem do TIPO do projeto
+  // (modesForKind) — básico = Blocos/Ponte, pro = Código. `professional` só
+  // habilita CRIAR/CONVERTER projetos profissionais (a Topbar intersecta a
+  // allowlist com os modos do `kind`).
   const modes = allowedModes?.filter((mode) => IDE_MODES.includes(mode)) ?? IDE_MODES
-  const resolvedModes = professional ? (['code'] as const) : modes.length > 0 ? modes : IDE_MODES
+  const resolvedModes = modes.length > 0 ? modes : IDE_MODES
   return {
     preview: features?.preview ?? true,
     console: features?.console ?? true,
     extensions: features?.extensions ?? true,
+    export: features?.export ?? true,
     // Profissional EXIGE o terminal (é onde roda o dev-server).
     terminal: professional ? true : (features?.terminal ?? false),
     ai: ai !== false,
@@ -158,6 +167,7 @@ const STANDALONE_CONFIG: ResolvedStudioConfig = {
   preview: true,
   console: true,
   extensions: true,
+  export: true,
   terminal: true,
   ai: true,
   professional: false,

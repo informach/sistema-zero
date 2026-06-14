@@ -60,6 +60,13 @@ export function LessonPlayer({
     [lesson.blocks],
   )
 
+  // Há bloco de estúdio cujo projeto ainda não foi enviado? (mesmo gate do quiz — 409)
+  const blockedByStudio = useMemo(
+    () => lesson.blocks.some((b) => b.kind === 'studio' && !b.studioState?.submitted),
+    [lesson.blocks],
+  )
+  const completeBlocked = blockedByQuiz || blockedByStudio
+
   // ── Posição do vídeo: refs (sem re-render) + throttle + flush por beacon ────
   const positionUrl = `/api/members/lessons/${encodeURIComponent(lesson.id)}/position`
   const lastPosRef = useRef(lesson.positionSeconds ?? 0)
@@ -143,6 +150,11 @@ export function LessonPlayer({
           if (!opts.silent) {
             toast.error('Conclua o quiz da aula com a nota mínima para finalizá-la.')
           }
+        } else if (apiErr?.code === 'STUDIO_GATE_NOT_SUBMITTED') {
+          // A aula só conclui depois de enviar o projeto do Estúdio ao professor.
+          if (!opts.silent) {
+            toast.error('Envie o projeto do Estúdio para poder concluir a aula.')
+          }
         } else if (!opts.silent) {
           toast.error('Não foi possível marcar a aula. Tente de novo.')
         }
@@ -168,6 +180,7 @@ export function LessonPlayer({
       onVideoFlush,
       onVideoReachedThreshold,
       refreshAfterQuiz: () => router.refresh(),
+      refreshAfterStudio: () => router.refresh(),
     }),
     [
       lesson.id,
@@ -218,13 +231,17 @@ export function LessonPlayer({
               </span>
             ) : (
               <div className="flex flex-col gap-1">
-                <Button onClick={() => complete()} disabled={completing || blockedByQuiz}>
+                <Button onClick={() => complete()} disabled={completing || completeBlocked}>
                   {completing ? <Spinner /> : <CheckCircle2 className="size-4" />}
                   Concluir aula
                 </Button>
                 {blockedByQuiz ? (
                   <p className="text-xs text-muted-foreground">
                     Passe no quiz da aula para poder concluí-la.
+                  </p>
+                ) : blockedByStudio ? (
+                  <p className="text-xs text-muted-foreground">
+                    Envie o projeto do Estúdio para poder concluir a aula.
                   </p>
                 ) : null}
               </div>

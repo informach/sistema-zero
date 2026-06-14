@@ -1,11 +1,16 @@
 import { afterEach, describe, expect, it } from 'bun:test'
+import type { WebContainer } from '@webcontainer/api'
 import {
+  CLASSIC_TEMPLATE_ID,
   claimFsOwnership,
   currentFsOwner,
+  getMountedTemplateId,
   getProFsMountedProjectId,
   registerProMountTrigger,
   releaseFsOwnership,
   requestProFsMount,
+  resetWebContainerFs,
+  setMountedTemplateId,
   setProFsMounted,
   waitForProFsMounted,
 } from './webContainerClient'
@@ -17,11 +22,12 @@ import {
 
 afterEach(() => {
   // Reseta o estado de módulo para não vazar entre testes: libera o dono atual
-  // (qualquer que seja), zera o sinal de mount e o gatilho registrado.
+  // (qualquer que seja), zera o sinal de mount, o gatilho e o template montado.
   const owner = currentFsOwner()
   if (owner) releaseFsOwnership(owner)
   setProFsMounted(null)
   registerProMountTrigger(null)
+  setMountedTemplateId(null)
 })
 
 describe('claimFsOwnership / releaseFsOwnership (dono único do FS)', () => {
@@ -62,14 +68,23 @@ describe('claimFsOwnership / releaseFsOwnership (dono único do FS)', () => {
 })
 
 describe('sinal de FS pro montado', () => {
-  it('waitForProFsMounted resolve na hora se já está montado para o projeto', async () => {
+  it('waitForProFsMounted resolve na hora (com true) se já está montado para o projeto', async () => {
     setProFsMounted('p1')
     expect(getProFsMountedProjectId()).toBe('p1')
-    let resolved = false
-    await waitForProFsMounted('p1').then(() => {
-      resolved = true
-    })
-    expect(resolved).toBe(true)
+    await expect(waitForProFsMounted('p1')).resolves.toBe(true)
+  })
+
+  it('waitForProFsMounted resolve com FALSE (não rejeita) ao expirar o timeout', async () => {
+    // Ninguém monta `nunca`: o escritor único pode estar busy e jamais publicar o
+    // sinal. Com timeout curto a espera resolve false (sinal de ocupado) em vez de
+    // girar para sempre. Timer real (sem fake timers nesta suíte).
+    await expect(waitForProFsMounted('nunca', 5)).resolves.toBe(false)
+  })
+
+  it('mount que chega ANTES do timeout vence a corrida (resolve true)', async () => {
+    const pending = waitForProFsMounted('p9', 1000)
+    setProFsMounted('p9')
+    await expect(pending).resolves.toBe(true)
   })
 
   it('waitForProFsMounted espera até o mount do projeto correto', async () => {
@@ -115,6 +130,14 @@ describe('gatilho de mount pro (registerProMountTrigger / requestProFsMount)', (
     expect(() => requestProFsMount()).not.toThrow()
   })
 
+  it('setMountedTemplateId / getMountedTemplateId rastreiam o template montado', () => {
+    expect(getMountedTemplateId()).toBeNull()
+    setMountedTemplateId('react-ts')
+    expect(getMountedTemplateId()).toBe('react-ts')
+    setMountedTemplateId(CLASSIC_TEMPLATE_ID)
+    expect(getMountedTemplateId()).toBe(CLASSIC_TEMPLATE_ID)
+  })
+
   it('o Terminal pro: pedir mount + esperar resolve quando o provider monta', async () => {
     // Simula o escritor único: ao ser acionado, monta o FS do projeto.
     registerProMountTrigger(() => setProFsMounted('proj'))
@@ -129,5 +152,60 @@ describe('gatilho de mount pro (registerProMountTrigger / requestProFsMount)', (
     requestProFsMount()
     await pending
     expect(resolved).toBe(true)
+  })
+})
+
+describe('resetWebContainerFs — preservação de node_modules por template', () => {
+  // FS falso: lista as entradas da raiz e registra quais foram apagadas.
+  function fakeWc(entries: string[]) {
+    const removed: string[] = []
+    const wc = {
+      fs: {
+        readdir: async (_path: string, _opts: { withFileTypes: true }) =>
+          entries.map((name) => ({ name })),
+        rm: async (path: string) => {
+          removed.push(path)
+        },
+      },
+    } as unknown as WebContainer
+    return { wc, removed }
+  }
+
+  it('sem templateId (compat): preserva node_modules', async () => {
+    const { wc, removed } = fakeWc(['src', 'node_modules', 'package.json'])
+    await resetWebContainerFs(wc)
+    expect(removed).toContain('/src')
+    expect(removed).toContain('/package.json')
+    expect(removed).not.toContain('/node_modules')
+  })
+
+  it('template IGUAL ao montado: preserva node_modules (evita reinstalar)', async () => {
+    setMountedTemplateId('react-ts')
+    const { wc, removed } = fakeWc(['src', 'node_modules'])
+    await resetWebContainerFs(wc, { templateId: 'react-ts' })
+    expect(removed).toContain('/src')
+    expect(removed).not.toContain('/node_modules')
+  })
+
+  it('template DIFERENTE do montado: apaga node_modules (não envenena o npm install)', async () => {
+    setMountedTemplateId('react-ts')
+    const { wc, removed } = fakeWc(['src', 'node_modules'])
+    await resetWebContainerFs(wc, { templateId: 'vanilla-vite' })
+    expect(removed).toContain('/src')
+    expect(removed).toContain('/node_modules')
+  })
+
+  it('pro → classic: apaga node_modules do template pro', async () => {
+    setMountedTemplateId('react-ts')
+    const { wc, removed } = fakeWc(['index.html', 'node_modules'])
+    await resetWebContainerFs(wc, { templateId: CLASSIC_TEMPLATE_ID })
+    expect(removed).toContain('/node_modules')
+  })
+
+  it('classic → classic: preserva node_modules (mesmo sentinela)', async () => {
+    setMountedTemplateId(CLASSIC_TEMPLATE_ID)
+    const { wc, removed } = fakeWc(['index.html', 'node_modules'])
+    await resetWebContainerFs(wc, { templateId: CLASSIC_TEMPLATE_ID })
+    expect(removed).not.toContain('/node_modules')
   })
 })

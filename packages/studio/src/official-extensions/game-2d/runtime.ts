@@ -163,6 +163,14 @@ export const gameTwoDRuntime = `(function () {
   // ---- Ponteiro (mouse/toque, Pointer Events) ----
   var pointer = { x: 0, y: 0, down: false };
   var pointerHandlers = [];
+  // Teto de segurança de handlers de clique/toque. O gerador emite um arrow
+  // NOVO a cada vez que o bloco "quando clicar/tocar" roda; se o aluno colocar
+  // esse bloco DENTRO do "a cada frame" (é um input_statement, então é legal),
+  // onPointer seria chamado com uma referência inédita por frame e a lista
+  // cresceria sem limite — vazamento de memória + N disparos por clique. O cap
+  // é folgado o bastante para vários handlers distintos de propósito.
+  var MAX_POINTER_HANDLERS = 32;
+  var pointerLimitWarned = false;
   function pointerXY(e) {
     var c = document.querySelector('canvas');
     var rect = c ? c.getBoundingClientRect() : { left: 0, top: 0 };
@@ -181,13 +189,36 @@ export const gameTwoDRuntime = `(function () {
   });
   /**
    * Registra uma função chamada a cada clique/toque com a posição (x, y) no
-   * canvas. Idempotente: registrar a MESMA referência de função mais de uma vez
-   * (ex.: o gerador re-emite a chamada num caminho quente) mantém um único
-   * handler, em vez de empilhar disparos duplicados por clique.
+   * canvas. Dois guardas, nessa ordem:
+   *
+   *  1. Dedup por REFERÊNCIA: registrar a mesma função duas vezes mantém um só
+   *     handler. Só ajuda quando a referência se repete de fato (ex.: aluno
+   *     chama onPointer com a mesma variável duas vezes).
+   *  2. Teto rígido (MAX_POINTER_HANDLERS): o gerador emite um arrow LITERAL
+   *     novo a cada execução do bloco, então o dedup por referência NUNCA casa
+   *     nesse caso. Se o bloco "quando clicar/tocar" estiver dentro do "a cada
+   *     frame", a lista cresceria sem limite. Acima do teto, ignoramos novos
+   *     registros (avisando uma única vez no console) — o jogo segue rodando
+   *     com os handlers que já tem, sem vazar memória nem multiplicar disparos.
+   *
+   * O cap NÃO muda o comportamento legítimo de poucos handlers distintos: 32 é
+   * folgado para qualquer jogo didático com alguns cliques registrados de
+   * propósito.
    */
   function onPointer(fn) {
     if (typeof fn !== 'function') return;
     if (pointerHandlers.indexOf(fn) !== -1) return;
+    if (pointerHandlers.length >= MAX_POINTER_HANDLERS) {
+      if (!pointerLimitWarned) {
+        pointerLimitWarned = true;
+        console.warn(
+          'SZGame2D: muitos handlers de clique/toque registrados (limite ' +
+            MAX_POINTER_HANDLERS +
+            '). Registros extras serão ignorados. Dica: registre "quando clicar/tocar" FORA do "a cada frame".'
+        );
+      }
+      return;
+    }
     pointerHandlers.push(fn);
   }
 

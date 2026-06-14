@@ -36,7 +36,7 @@ function getStore() {
 // vêm de create/import/duplicate, fora do mutex por instância do service.
 const writeChains = new Map<string, Promise<void>>()
 
-function runSerializedWrite(id: string, task: () => Promise<void>): Promise<void> {
+export function runSerializedWrite(id: string, task: () => Promise<void>): Promise<void> {
   const prev = writeChains.get(id)
   // `prev` é blindado contra rejeição (handler nos dois ramos) para uma falha de
   // uma escrita anterior não derrubar a cadeia das seguintes.
@@ -83,10 +83,51 @@ export async function loadProjectById(id: string): Promise<Project | null> {
   return ((await get<Project>(legacyProjectKey(id), kvStore)) ?? null) as Project | null
 }
 
+// CERCA de exclusão do armazenamento do programa do aluno (blocos guardar/ler).
+// O preview faz `writeGameStorage` à parte do mutex por id (flush do localStorage
+// do bichinho); um `set` desse flush pode CHEGAR depois do `delMany` do delete e
+// RESSUSCITAR um registro `sz:game-storage:<id>` órfão (o projeto já não existe).
+// Serializar a escrita no MESMO `runSerializedWrite` do delete ordena os dois, mas
+// uma escrita ENFILEIRADA depois que o delMany já saiu da cadeia ainda passaria —
+// por isso esta cerca: marcada no delete e checada DENTRO da cadeia da escrita,
+// derruba qualquer write tardio do id apagado. Map id→timestamp com poda lazy por
+// janela de graça (igual à cerca do service), para não vazar um ULID por exclusão.
+const GAME_STORAGE_FENCE_GRACE_MS = 60_000
+const deletedGameStorage = new Map<string, number>()
+
+function pruneGameStorageFence(now: number): void {
+  if (deletedGameStorage.size === 0) return
+  for (const [id, deletedAt] of deletedGameStorage) {
+    if (now - deletedAt >= GAME_STORAGE_FENCE_GRACE_MS) deletedGameStorage.delete(id)
+  }
+}
+
+/** Marca o id como apagado: um `writeGameStorage` tardio (flush do preview em voo)
+ * é descartado em vez de recriar o registro órfão. Chamado pelo `deleteProject`. */
+export function fenceGameStorageDelete(id: string): void {
+  const now = Date.now()
+  pruneGameStorageFence(now)
+  deletedGameStorage.set(id, now)
+}
+
+/** A cerca ainda vale para este id? Poda lazy de passagem para limitar o Map. */
+export function isGameStorageDeleted(id: string): boolean {
+  const deletedAt = deletedGameStorage.get(id)
+  if (deletedAt === undefined) return false
+  if (Date.now() - deletedAt >= GAME_STORAGE_FENCE_GRACE_MS) {
+    deletedGameStorage.delete(id)
+    return false
+  }
+  return true
+}
+
 export async function deleteProject(id: string): Promise<void> {
   // Cancela autosaves em voo em TODAS as instâncias — um timer pendente
   // re-persistiria o projeto recém-apagado.
   cancelPendingAutosavesFor(id)
+  // Cerca o armazenamento do programa do aluno ANTES do delMany: um flush do
+  // preview já em voo (writeGameStorage) que chegue depois é descartado.
+  fenceGameStorageDelete(id)
   // No MESMO mutex de escrita do id: o delMany não pode intercalar com um
   // persist/rename em voo do mesmo projeto.
   await runSerializedWrite(id, () =>
@@ -119,8 +160,20 @@ export async function renameProjectMeta(id: string, name: string): Promise<void>
   await runSerializedWrite(id, async () => {
     const kvStore = getStore()
     const meta = await get<Record<string, unknown>>(projectMetaKey(id), kvStore)
-    if (!meta || typeof meta !== 'object' || Array.isArray(meta)) return
-    await set(projectMetaKey(id), { ...meta, name, updatedAt: Date.now() }, kvStore)
+    if (meta && typeof meta === 'object' && !Array.isArray(meta)) {
+      await set(projectMetaKey(id), { ...meta, name, updatedAt: Date.now() }, kvStore)
+      return
+    }
+    // Sem partição de meta: projeto no formato LEGADO (`sz:project:<id>`, doc único
+    // anterior à migração 3-partições) que nunca foi aberto/editado — só ganha
+    // partições no 1º persistProject. O legado é suportado p/ leitura/listagem
+    // (loadProjectById/listAllProjects), então o rename PRECISA persistir; senão a
+    // ProjectList reverte o nome ao reler o disco. Regrava o nome no PRÓPRIO doc
+    // legado (mesma chave), dentro do mesmo runSerializedWrite.
+    const legacy = await get<Record<string, unknown>>(legacyProjectKey(id), kvStore)
+    if (legacy && typeof legacy === 'object' && !Array.isArray(legacy)) {
+      await set(legacyProjectKey(id), { ...legacy, name, updatedAt: Date.now() }, kvStore)
+    }
   })
 }
 

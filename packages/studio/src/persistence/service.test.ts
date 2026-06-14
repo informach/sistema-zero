@@ -193,6 +193,59 @@ describe('PersistenceService — ctx.reason do onChange', () => {
 
     expect(reasons).toEqual(['flush'])
   })
+
+  it('pagehide + beforeunload no mesmo fechamento flusham UMA vez só (dedupe)', async () => {
+    // Ambos os listeners disparam num único unload. Sem dedupe, o onChange('flush')
+    // saía DUAS vezes e o snapshot era re-persistido (isDirty segue true porque o
+    // persist é async). O flag `flushed` colapsa o 2º evento.
+    const saves: string[] = []
+    const service = createPersistenceService(useProjectStore, {
+      load: async () => null,
+      save: async (project) => {
+        saves.push(project.id)
+      },
+    })
+    const reasons: Array<string | undefined> = []
+    service.handlers = { onChange: (_project, ctx) => reasons.push(ctx?.reason) }
+    const detach = service.attach()
+
+    useProjectStore.getState().setProject(createEmptyProject('project-dedupe', 'Dedupe'))
+    window.dispatchEvent(new Event('pagehide'))
+    window.dispatchEvent(new Event('beforeunload'))
+    await Bun.sleep(0)
+
+    expect(reasons).toEqual(['flush'])
+    expect(saves).toEqual(['project-dedupe'])
+
+    detach()
+  })
+
+  it('uma edição nova após um flush re-arma o flush do próximo fechamento', async () => {
+    // O dedupe não pode travar o flush para sempre: uma edição genuína (schedule)
+    // re-arma. Sem isso, um flush no meio da sessão perderia tudo o que viesse
+    // depois no fechamento real.
+    const saves: string[] = []
+    const service = createPersistenceService(useProjectStore, {
+      load: async () => null,
+      save: async (project) => {
+        saves.push(project.name)
+      },
+    })
+    const detach = service.attach()
+
+    useProjectStore.getState().setProject(createEmptyProject('project-rearm', 'v1'))
+    window.dispatchEvent(new Event('pagehide'))
+    await Bun.sleep(0)
+
+    // Edição nova → re-arma o flush.
+    useProjectStore.getState().rename('v2')
+    window.dispatchEvent(new Event('pagehide'))
+    await Bun.sleep(0)
+
+    expect(saves).toEqual(['v1', 'v2'])
+
+    detach()
+  })
 })
 
 describe('PersistenceService — exclusão cross-instância (sem ressurreição)', () => {

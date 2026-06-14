@@ -65,3 +65,45 @@ describe('computeFsDiff', () => {
     expect(diff.mkdirs).toContain('new')
   })
 })
+
+// A3: transição arquivo↔diretório no MESMO caminho. O diff é plano (path →
+// conteúdo só de arquivos), então sozinho ele não sabe que `src/data` mudou de
+// arquivo para pasta (ou vice-versa). Sem o sinal `removeFirst` o sync faz
+// mkdir/write ANTES do remove e o mkdir colide com o arquivo homônimo (falha
+// engolida), travando o sync para sempre. `removeFirst` instrui o sync a apagar
+// o nó antigo primeiro.
+describe('computeFsDiff — transição arquivo↔diretório (removeFirst)', () => {
+  it('por padrão (sem transição) removeFirst é false', () => {
+    const diff = computeFsDiff({ 'a.ts': 'x' }, { 'a.ts': 'y', 'b.ts': 'z' })
+    expect(diff.removeFirst).toBe(false)
+  })
+
+  it('arquivo→diretório no mesmo caminho: caminho em conflito vai p/ removeFirstPaths', () => {
+    // `src/data` era ARQUIVO; agora `src/data` é PASTA com `x.ts` dentro.
+    const diff = computeFsDiff({ 'src/data': 'conteudo antigo' }, { 'src/data/x.ts': 'novo' })
+    expect(diff.removeFirst).toBe(true)
+    // o arquivo antigo `src/data` é removido ANTES do mkdir/write (removeFirstPaths)
+    expect(diff.removeFirstPaths).toContain('src/data')
+    // e NÃO duplicado em removes (seria redundante/fora de ordem)
+    expect(diff.removes).not.toContain('src/data')
+    expect(diff.writes).toEqual([{ path: 'src/data/x.ts', content: 'novo' }])
+    expect(diff.mkdirs).toContain('src/data')
+  })
+
+  it('diretório→arquivo no mesmo caminho: a pasta antiga vai p/ removeFirstPaths (não rmdirs)', () => {
+    // `src/data` era PASTA (com `x.ts`); agora `src/data` é um ARQUIVO.
+    const diff = computeFsDiff({ 'src/data/x.ts': 'antigo' }, { 'src/data': 'agora arquivo' })
+    expect(diff.removeFirst).toBe(true)
+    // a pasta `src/data` é apagada RECURSIVAMENTE antes do write do arquivo novo
+    expect(diff.removeFirstPaths).toContain('src/data')
+    // NÃO pode estar em rmdirs: rmdirs roda DEPOIS do write e apagaria o arquivo
+    expect(diff.rmdirs).not.toContain('src/data')
+    expect(diff.writes).toEqual([{ path: 'src/data', content: 'agora arquivo' }])
+  })
+
+  it('renomeio sem colisão de caminho NÃO marca removeFirst', () => {
+    const diff = computeFsDiff({ 'src/a.ts': 'x' }, { 'src/b.ts': 'x' })
+    expect(diff.removeFirst).toBe(false)
+    expect(diff.removeFirstPaths).toEqual([])
+  })
+})

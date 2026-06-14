@@ -1,6 +1,7 @@
 'use client'
 
 import { useLessonPlayer } from '@sistemazero/member-shell/components/lesson-player-context'
+import { renderInline, renderMarkdown } from '@sistemazero/member-shell/lib/markdown'
 import { Card } from '@sistemazero/ui/card'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { ArrowLeft, Check, Sparkles, Timer, Trophy, X } from 'lucide-react'
@@ -37,13 +38,16 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
   const [submitting, setSubmitting] = useState(false)
   const [result, setResult] = useState<QuizAttemptResultView | null>(null)
   const [error, setError] = useState<string | null>(null)
+  // Cooldown vindo do 429 de corrida (a pré-checagem passou, o save atômico perdeu).
+  const [cooldownUntil, setCooldownUntil] = useState<string | null>(null)
 
   const questions = content.questions ?? []
   const passedBefore = quizState?.passed ?? false
   const passed = result?.passed ?? passedBefore
   const lastScore = result?.score ?? quizState?.lastScore ?? null
   const passingScore = result?.passingScore ?? content.passingScore ?? 100
-  const retryAvailableAt = result?.retryAvailableAt ?? quizState?.retryAvailableAt ?? null
+  const retryAvailableAt =
+    result?.retryAvailableAt ?? cooldownUntil ?? quizState?.retryAvailableAt ?? null
   const cooldownLeft = useCooldown(passed ? null : retryAvailableAt)
 
   if (questions.length === 0) return null
@@ -65,11 +69,12 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
       }
     } catch (err) {
       const apiErr = err as ApiError
-      setError(
-        apiErr?.code === 'QUIZ_COOLDOWN'
-          ? 'Aguarde o tempo de espera para refazer o quiz.'
-          : 'Não foi possível enviar as respostas. Tente de novo.',
-      )
+      if (apiErr?.code === 'QUIZ_COOLDOWN') {
+        if (apiErr.retryAvailableAt) setCooldownUntil(apiErr.retryAvailableAt)
+        setError('Aguarde o tempo de espera para refazer o quiz.')
+      } else {
+        setError('Não foi possível enviar as respostas. Tente de novo.')
+      }
     } finally {
       setSubmitting(false)
     }
@@ -80,6 +85,8 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
     setAnswers({})
     setStep(0)
     setPhase('intro')
+    setCooldownUntil(null)
+    setError(null)
   }
 
   // ── Aprovado (nesta visita ou em tentativa anterior) ────────────────────────
@@ -239,7 +246,10 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
         Pergunta {step + 1} de {questions.length}
       </p>
 
-      <p className="sz-display text-lg md:text-xl">{question.prompt}</p>
+      {/* Enunciado em markdown (negrito/títulos/listas/imagens); sz-display dá a fonte da marca. */}
+      <div className="lesson-prose sz-display text-lg md:text-xl">
+        {renderMarkdown(question.prompt)}
+      </div>
 
       <div role="radiogroup" aria-label={question.prompt} className="flex flex-col gap-3">
         {question.choices.map((choice, ci) => {
@@ -269,7 +279,11 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
               >
                 {CHOICE_LETTERS[ci] ?? '•'}
               </span>
-              <span className="flex-1">{choice.label}</span>
+              {/* Opção: markdown INLINE (negrito/itálico/código/imagens) — o <button>
+                  só aceita conteúdo inline; `plainLinks` evita aninhar <a> num <button>. */}
+              <span className="flex-1 [&_img]:my-1 [&_img]:max-h-40 [&_img]:rounded-lg [&_img]:align-middle">
+                {renderInline(choice.label, { plainLinks: true })}
+              </span>
               {selected ? <Check className="size-5 shrink-0" strokeWidth={3} /> : null}
             </button>
           )
@@ -348,8 +362,9 @@ function QuizReview({
                 )}
               </span>
               <div className="min-w-0 flex-1">
-                <p className="font-bold text-sm">
-                  {qi + 1}. {q.prompt}
+                {/* Recap compacto: markdown inline (preserva o text-sm do cartão de correção). */}
+                <p className="font-bold text-sm [&_img]:my-1 [&_img]:max-h-32 [&_img]:rounded-lg [&_img]:align-middle">
+                  {qi + 1}. {renderInline(q.prompt)}
                 </p>
                 <div className="mt-2 flex flex-col gap-1 text-sm">
                   {q.choices.map((choice) => {
@@ -360,7 +375,7 @@ function QuizReview({
                       <p
                         key={choice.id}
                         className={cn(
-                          'flex items-center gap-1.5',
+                          'flex items-center gap-1.5 [&_img]:max-h-24 [&_img]:rounded-lg [&_img]:align-middle',
                           isCorrect
                             ? 'font-semibold text-success-foreground'
                             : 'text-destructive line-through',
@@ -371,15 +386,15 @@ function QuizReview({
                         ) : (
                           <X className="size-3.5 shrink-0" strokeWidth={3} />
                         )}
-                        {choice.label}
+                        {renderInline(choice.label)}
                       </p>
                     )
                   })}
                 </div>
                 {!correction.correct && correction.explanation ? (
-                  <p className="mt-2 rounded-xl bg-card px-3 py-2 text-muted-foreground text-sm">
-                    {correction.explanation}
-                  </p>
+                  <div className="lesson-prose mt-2 rounded-xl bg-card px-3 py-2 text-muted-foreground">
+                    {renderMarkdown(correction.explanation)}
+                  </div>
                 ) : null}
               </div>
             </div>

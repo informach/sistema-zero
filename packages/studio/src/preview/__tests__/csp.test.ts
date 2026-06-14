@@ -17,6 +17,16 @@ describe('buildPreviewCSP', () => {
     expect(csp).toContain('font-src data: https:')
   })
 
+  it("trava workers (worker-src 'none')", () => {
+    // Sem worker-src, Workers cairiam no script-src (data:/blob:) e o aluno
+    // poderia criar laços imortais fora do alcance do loopGuard.
+    expect(buildPreviewCSP()).toContain("worker-src 'none'")
+    // mesmo com origens de script de extensão liberadas, worker continua travado.
+    expect(buildPreviewCSP({ scriptAllowedOrigins: ['https://esm.sh'] })).toContain(
+      "worker-src 'none'",
+    )
+  })
+
   it('connect-src lista as origens liberadas', () => {
     const csp = buildPreviewCSP({ fetchAllowedOrigins: ['https://api.exemplo.com'] })
     expect(csp).toContain('connect-src https://api.exemplo.com')

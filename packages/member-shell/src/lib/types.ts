@@ -5,6 +5,9 @@
  * `application/mappers/payment-view.ts`, auth `application/mappers/user-view.ts`).
  */
 
+// Tipos do editor embarcável (bloco `studio`) — type-only (erasado em runtime).
+import type { BlockLevel, IDEMode, Project } from '@sistemazero/studio'
+
 // ── Sessão / usuário (claims do JWT do auth) ────────────────────────────────
 
 /**
@@ -214,6 +217,21 @@ export interface EbookBlock {
   kind: 'ebook'
   title?: string
 }
+/**
+ * Bloco Estúdio: renderiza o @sistemazero/studio pré-configurado pelo admin. A config
+ * NÃO é segredo (o aluno precisa dela p/ montar o editor). `initialProject` é o snapshot
+ * `Project` da lib. A entrega do aluno (mesmo JSON do "Exportar projeto") bloqueia a
+ * conclusão da aula até ser enviada — `studioState` reflete se já enviou.
+ */
+export interface StudioBlock {
+  kind: 'studio'
+  initialProject: Project
+  level?: BlockLevel
+  allowBlocks?: string[]
+  allowCategories?: string[]
+  allowedModes?: IDEMode[]
+  allowLevelReveal?: boolean
+}
 export type LessonBlockContent =
   | RichTextBlock
   | VideoBlock
@@ -222,6 +240,7 @@ export type LessonBlockContent =
   | QuizBlock
   | EmbedBlock
   | EbookBlock
+  | StudioBlock
 
 /** Estado das tentativas do aluno num bloco de quiz (vem no GET da aula). */
 export interface QuizStateView {
@@ -230,6 +249,18 @@ export interface QuizStateView {
   attemptsCount: number
   /** ISO; não-nulo só durante o cooldown de retry após reprovar. */
   retryAvailableAt: string | null
+}
+
+/** Estado da entrega do aluno num bloco de estúdio (vem no GET da aula). */
+export interface StudioStateView {
+  submitted: boolean
+  /** ISO da última entrega; `null` se ainda não enviou. */
+  submittedAt: string | null
+}
+
+/** `POST /members/lessons/:lessonId/blocks/:blockId/studio-submission`. */
+export interface StudioSubmissionResultView {
+  submittedAt: string
 }
 
 /** Correção por questão — devolvida SÓ pelo submit do quiz. */
@@ -316,6 +347,8 @@ export interface LessonBlockView {
   content: unknown
   /** Presente só em blocos de quiz. */
   quizState?: QuizStateView | null
+  /** Presente só em blocos de estúdio. */
+  studioState?: StudioStateView | null
 }
 
 /**
@@ -405,4 +438,109 @@ export const PAYMENT_METHOD_LABELS: Record<string, string> = {
   PIX: 'Pix',
   BOLETO: 'Boleto',
   CREDIT_CARD: 'Cartão de crédito',
+}
+
+// ── Comunidade (fórum — @sistemazero/hub) ───────────────────────────────────
+// Espelham as views STUDENT-facing do hub (`application/mappers/{views,thread-views}.ts`).
+
+/** Servidor visto pelo aluno (sem accessConfig — detalhe interno do hub). */
+export interface HubSpaceView {
+  id: string
+  slug: string
+  name: string
+  description: string | null
+  iconUrl: string | null
+  audience: 'adult' | 'kids'
+}
+
+/** Canal (fórum) visto pelo aluno. `requiresApproval` é o efetivo (canal ?? space). */
+export interface HubChannelView {
+  id: string
+  spaceId: string
+  slug: string
+  name: string
+  topic: string | null
+  postingPolicy: 'members' | 'staff_only'
+  requiresApproval: boolean
+  /** Há atividade depois da última visita (badge de novidade). */
+  hasUnread: boolean
+}
+
+export type HubContentStatus = 'pending' | 'visible' | 'hidden' | 'deleted' | 'rejected'
+
+/** Resumo agregado de um emoji num tópico/comentário. */
+export interface HubReaction {
+  emoji: string
+  count: number
+  reactedByMe: boolean
+}
+
+export type HubAttachmentKind = 'image' | 'pdf' | 'document' | 'audio' | 'video'
+
+/** Anexo na view (SEM storageRef — o download é por `/api/hub/attachments/:id`). */
+export interface HubAttachmentView {
+  id: string
+  kind: HubAttachmentKind
+  mime: string
+  sizeBytes: number
+  width: number | null
+  height: number | null
+  durationSeconds: number | null
+  originalName: string
+}
+
+/**
+ * Resolução de anexo do hub — consumida SÓ pelo BFF (traz a `storageRef` que
+ * NUNCA vai ao browser; o BFF mina a URL pré-assinada a partir dela).
+ */
+export interface HubResolvedAttachment {
+  id: string
+  storageRef: string
+  mime: string
+  kind: HubAttachmentKind
+  originalName: string
+  sizeBytes: number
+}
+
+export interface HubThreadView {
+  id: string
+  channelId: string
+  /** `null` quando NÃO é do viewer — o BFF redige o id de terceiros (ver `hub-redact`). */
+  authorId: string | null
+  title: string
+  slug: string
+  body: string
+  isPinned: boolean
+  isLocked: boolean
+  status: HubContentStatus
+  /** Aguardando aprovação (só o autor/staff enxerga). */
+  pending: boolean
+  commentCount: number
+  reactions: HubReaction[]
+  attachments: HubAttachmentView[]
+  lastActivityAt: string
+  createdAt: string
+  editedAt: string | null
+}
+
+export interface HubCommentView {
+  id: string
+  threadId: string
+  /** `null` quando NÃO é do viewer — o BFF redige o id de terceiros (ver `hub-redact`). */
+  authorId: string | null
+  body: string
+  status: HubContentStatus
+  pending: boolean
+  reactions: HubReaction[]
+  attachments: HubAttachmentView[]
+  replyToId: string | null
+  createdAt: string
+  editedAt: string | null
+}
+
+/** Página por cursor opaco (tópicos/comentários). */
+export interface HubPage<T> {
+  items: T[]
+  nextCursor: string | null
+  hasMore: boolean
 }

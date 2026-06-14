@@ -1,5 +1,23 @@
 import type { CSSEntry, CSSRule, KeyframesCSS, MediaQueryCSS } from '#ir'
+import { assertGeneratorDepth } from './js'
 import { countLines, SourceMapBuilder } from './sourceMap'
+
+/**
+ * Guarda de profundidade ITERATIVA para `@media` aninhados. `generateCSSWithMap`
+ * recursa via `renderMediaQuery` (uma media query pode conter outra), sem guarda
+ * — um aninhamento patológico estourava a pilha do motor. Pilha explícita (sem
+ * recursão) abortando com {@link GeneratorDepthError}, mesmo teto único do JS.
+ */
+function assertCSSDepth(entries: CSSEntry[]): void {
+  const stack: Array<{ list: CSSEntry[]; depth: number }> = [{ list: entries, depth: 0 }]
+  while (stack.length > 0) {
+    const { list, depth } = stack.pop() as { list: CSSEntry[]; depth: number }
+    assertGeneratorDepth(depth)
+    for (const entry of list) {
+      if (isMediaQuery(entry)) stack.push({ list: entry.rules, depth: depth + 1 })
+    }
+  }
+}
 
 export interface GenerateCSSWithMapResult {
   code: string
@@ -51,6 +69,7 @@ function entryDeclarations(entry: CSSRule): GroupedDeclaration[] {
 export function generateCSSWithMap(entries: CSSEntry[]): GenerateCSSWithMapResult {
   const map = new SourceMapBuilder()
   if (entries.length === 0) return { code: '', map }
+  assertCSSDepth(entries)
 
   // Agrupa entradas `CSSRule` CONSECUTIVAS de mesmo seletor num único bloco
   // visual (`.container {…}` não se repete quando o seletor virou vários
@@ -220,9 +239,23 @@ function isSafeDeclarationValue(value: string): boolean {
   return true
 }
 
+/**
+ * Uma CHAVE (propriedade) de declaração só pode conter o NOME da propriedade —
+ * nunca os caracteres que estruturam o CSS. `stripBraces` removia só `{`/`}`,
+ * mas `:` e `;` numa chave injetam uma declaração-fantasma: a chave
+ * `color:red;x` saía como `color:red;x: <value>;`, "vazando" um `color:red`
+ * extra (ou pior, exfil via `background:url(...)`). Recusamos a declaração
+ * inteira quando a chave traz `{`, `}`, `:`, `;` ou quebra de linha — análogo
+ * ao {@link isSafeDeclarationValue} no lado do valor. Vale para IR
+ * importada/gerada por IA com chaves "soltas".
+ */
+function isSafeDeclarationKey(key: string): boolean {
+  return !/[{};:\r\n]/.test(key)
+}
+
 function renderRule(selector: string, declarations: GroupedDeclaration[]): string {
   const decls = declarations
-    .filter(({ value }) => isSafeDeclarationValue(value))
+    .filter(({ key, value }) => isSafeDeclarationKey(key) && isSafeDeclarationValue(value))
     .map(({ key, value }) => `  ${stripBraces(key)}: ${value};`)
     .join('\n')
   return `${stripBraces(selector)} {\n${decls}\n}`
@@ -233,7 +266,7 @@ function renderKeyframes(entry: KeyframesCSS): string {
   const steps = entry.steps
     .map((step) => {
       const decls = Object.entries(step.declarations)
-        .filter(([, v]) => isSafeDeclarationValue(v))
+        .filter(([k, v]) => isSafeDeclarationKey(k) && isSafeDeclarationValue(v))
         .map(([k, v]) => `    ${stripBraces(k)}: ${v};`)
         .join('\n')
       return `  ${stripBraces(step.at)} {\n${decls}\n  }`

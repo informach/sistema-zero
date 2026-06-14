@@ -31,6 +31,26 @@ function parentFileConflict(tree: ProjectTree, path: string): string | null {
   return null
 }
 
+/**
+ * Existe um nó cujo caminho é uma VARIANTE DE CAIXA de `path` (ex.: `src/App.tsx`
+ * vs `src/app.tsx`)? A árvore é case-SENSÍVEL (chave como digitada), mas o
+ * WebContainer monta num FS case-INSENSÍVEL (macOS/Windows) onde os dois colapsam
+ * num só — então bloqueamos a criação de uma variante de caixa de um path já
+ * existente. `ignore` (e sua subárvore) é pulado: num rename, o próprio nó movido
+ * não conta como colisão consigo mesmo.
+ */
+function caseInsensitiveCollision(tree: ProjectTree, path: string, ignore?: string): string | null {
+  const lower = path.toLowerCase()
+  const ignorePrefix = ignore ? `${ignore}/` : null
+  for (const key of Object.keys(tree)) {
+    if (key === ignore || (ignorePrefix && key.startsWith(ignorePrefix))) continue
+    if (key !== path && key.toLowerCase() === lower) {
+      return `Já existe "${key}" — caminhos que diferem só na caixa colidem em alguns sistemas.`
+    }
+  }
+  return null
+}
+
 /** Copia a árvore criando como `dir` toda pasta-pai ausente do `path`. */
 function withParents(tree: ProjectTree, path: string): ProjectTree {
   const next: ProjectTree = { ...tree }
@@ -44,6 +64,8 @@ export function addProFile(tree: ProjectTree, path: string): ProTreeResult {
   const norm = normalizeProPath(path, { expectFile: true })
   if (!norm) return { error: 'Nome de arquivo inválido (use .ts, .tsx, .css, .html…).' }
   if (tree[norm]) return { error: 'Já existe um arquivo ou pasta com esse caminho.' }
+  const caseConflict = caseInsensitiveCollision(tree, norm)
+  if (caseConflict) return { error: caseConflict }
   const conflict = parentFileConflict(tree, norm)
   if (conflict) return { error: conflict }
   const next = withParents(tree, norm)
@@ -55,6 +77,8 @@ export function addProDir(tree: ProjectTree, path: string): ProTreeResult {
   const norm = normalizeProPath(path)
   if (!norm) return { error: 'Nome de pasta inválido.' }
   if (tree[norm]) return { error: 'Já existe um arquivo ou pasta com esse caminho.' }
+  const caseConflict = caseInsensitiveCollision(tree, norm)
+  if (caseConflict) return { error: caseConflict }
   const conflict = parentFileConflict(tree, norm)
   if (conflict) return { error: conflict }
   const next = withParents(tree, norm)
@@ -81,6 +105,10 @@ export function renameProNode(tree: ProjectTree, from: string, to: string): ProT
     return { error: 'Não dá para mover uma pasta para dentro dela mesma.' }
   }
   if (tree[norm]) return { error: 'Já existe um arquivo ou pasta com esse caminho.' }
+  // Variante de caixa: ignora o PRÓPRIO nó (e subárvore) — renomear só a caixa
+  // (`app.tsx` → `App.tsx`) é intencional e permitido; colidir com OUTRO nó não.
+  const caseConflict = caseInsensitiveCollision(tree, norm, from)
+  if (caseConflict) return { error: caseConflict }
   const conflict = parentFileConflict(tree, norm)
   if (conflict) return { error: conflict }
 

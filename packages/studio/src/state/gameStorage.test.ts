@@ -18,13 +18,20 @@ const idb = {
   }),
 }
 
+// delMany do delete escreve no MESMO backend (apaga as chaves do projeto),
+// para o teste de corrida delete×write provar que nenhum write tardio ressuscita
+// o registro.
+const delMany = mock(async (kvKeys: string[]) => {
+  for (const key of kvKeys) backend.delete(key)
+})
+
 mock.module('idb-keyval', () => ({
   createStore: idb.createStore,
   get: idb.get,
   set: idb.set,
   del: idb.del,
   // Exports usados por OUTROS módulos carregados no mesmo processo de teste.
-  delMany: mock(async () => undefined),
+  delMany,
   getMany: mock(async () => []),
   keys: mock(async () => []),
   setMany: mock(async () => undefined),
@@ -34,6 +41,7 @@ mock.module('idb-keyval', () => ({
 const { loadGameStorage, writeGameStorage, deleteGameStorage, gameStorageKey } = await import(
   './gameStorage'
 )
+const { deleteProject } = await import('./persistence')
 
 describe('gameStorage', () => {
   beforeEach(() => {
@@ -83,5 +91,28 @@ describe('gameStorage', () => {
     expect(await loadGameStorage('proj-1')).toEqual({})
     backend.set(gameStorageKey('proj-2'), { ok: '1', bad: { nested: true } })
     expect(await loadGameStorage('proj-2')).toEqual({ ok: '1' })
+  })
+
+  it('um write do preview que chega APÓS o delete não ressuscita o registro órfão', async () => {
+    // Modela a corrida M6: o delete do projeto e um flush do localStorage do
+    // bichinho (preview) acontecem juntos. Com a serialização por id + cerca de
+    // exclusão, o write tardio é DESCARTADO — não recria sz:game-storage:<id>.
+    await deleteProject('race-1')
+    // Flush do preview que escapou (timer do storage não cancelado) chega depois.
+    await writeGameStorage('race-1', { fome: '9' })
+
+    expect(backend.has(gameStorageKey('race-1'))).toBe(false)
+    expect(await loadGameStorage('race-1')).toEqual({})
+  })
+
+  it('um write enfileirado ANTES do delete é varrido pelo delMany (sem órfão)', async () => {
+    // O write chega primeiro e grava; o delete vem logo atrás no MESMO mutex de
+    // escrita por id e o delMany apaga a chave recém-escrita. Sem órfão.
+    const writing = writeGameStorage('race-2', { fome: '3' })
+    const deleting = deleteProject('race-2')
+    await Promise.all([writing, deleting])
+
+    expect(backend.has(gameStorageKey('race-2'))).toBe(false)
+    expect(await loadGameStorage('race-2')).toEqual({})
   })
 })

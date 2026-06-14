@@ -29,7 +29,8 @@ const csp = [
   "object-src 'none'",
   "frame-ancestors 'none'",
   "form-action 'self'",
-  "frame-src 'self' https://www.youtube-nocookie.com https://player.vimeo.com",
+  // `blob:` p/ o preview/iframe do bloco `studio` (editor embarcável @sistemazero/studio).
+  "frame-src 'self' blob: https://www.youtube-nocookie.com https://player.vimeo.com",
   // Capas de curso são URLs externas arbitrárias da autoria + avatares do R2.
   "img-src 'self' data: blob: https:",
   "font-src 'self' data: https:",
@@ -71,7 +72,12 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ['sharp'],
   // Pacotes workspace com TS cru (componentes/BFF compartilhados) — transpilar junto.
   // three: recomendação oficial do react-three-fiber p/ Next 13.1+ (livro 3D do e-book).
-  transpilePackages: ['@sistemazero/ui', '@sistemazero/member-shell', 'three'],
+  transpilePackages: [
+    '@sistemazero/ui',
+    '@sistemazero/member-shell',
+    '@sistemazero/studio',
+    'three',
+  ],
   // Security headers em TODAS as respostas (inclui `/api/me/avatar` e estáticos,
   // fora do matcher do `proxy.ts`). Fonte única — não duplicar no proxy.
   async headers() {
