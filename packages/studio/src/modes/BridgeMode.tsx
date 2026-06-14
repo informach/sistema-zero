@@ -15,6 +15,7 @@ import { FontSizeControls } from '../components/code/FontSizeControls'
 import { MonacoTabs } from '../components/code/LazyMonacoTabs'
 import { EditorSkeleton } from '../components/layout/LoadingViews'
 import { ModeLimitationsNotice } from '../components/layout/ModeLimitationsNotice'
+import { NarrowPanels } from '../components/layout/NarrowPanels'
 import { PreviewIframe } from '../components/preview/PreviewIframe'
 import { useCrossHighlight } from '../hooks/useCrossHighlight'
 import { useDebounced } from '../hooks/useDebounced'
@@ -25,6 +26,7 @@ import { CODE_FONT_SIZE_DEFAULT, useSettingsStore } from '../state/settingsStore
 import { useSourcemapStore } from '../state/sourcemapStore'
 import { useUIStore } from '../state/uiStore'
 import { useStudioConfig } from '../studio/config'
+import { useStudioLayout } from '../studio/layoutContext'
 import { useStudioTheme } from '../studio/theme'
 import { BRIDGE_JS_HEADER, type BridgeReverseParseWorkerResponse } from './bridgeReverseParse'
 
@@ -76,6 +78,7 @@ export function BridgeMode(): JSX.Element {
   const setFiles = useProjectStore((s) => s.setFiles)
   const studioConfig = useStudioConfig()
   const showPreview = useUIStore((s) => s.showPreview) && studioConfig.preview
+  const { isNarrow } = useStudioLayout()
   const setSourceMap = useSourcemapStore((s) => s.setMap)
   const pushLog = useLogsStore((s) => s.push)
   const codeFontSize = useSettingsStore((s) => s.codeFontSize)
@@ -409,6 +412,47 @@ export function BridgeMode(): JSX.Element {
 
   if (!hasProject) return <div />
 
+  const codeEditor = (
+    <Suspense fallback={<EditorSkeleton message="Carregando editor de código…" />}>
+      <MonacoTabs
+        files={filesArray}
+        modelPathPrefix={projectId}
+        compact={isNarrow}
+        theme={studioTheme === 'light' ? 'light' : 'vs-dark'}
+        fontSize={codeFontSize || CODE_FONT_SIZE_DEFAULT}
+        formatLabel={t('editor.format')}
+        tabsRightSlot={<FontSizeControls />}
+        onChange={(name, value) => {
+          if (files && (name === 'index.html' || name === 'style.css' || name === 'script.js')) {
+            setFiles({ ...files, [name]: value })
+          }
+        }}
+        highlight={monacoHighlight}
+        // Sincronização só no sentido bloco→código: selecionar/editar o
+        // texto NÃO seleciona blocos (decisão de UX — evita o canvas pular
+        // e o acoplamento atrapalhar a edição). Por isso não passamos
+        // `onCursorChange` (que publicaria o cursor como fonte 'editor').
+      />
+    </Suspense>
+  )
+
+  if (isNarrow) {
+    return (
+      <div className="flex h-full w-full min-h-0 flex-col">
+        <ModeLimitationsNotice />
+        <div className="min-h-0 flex-1">
+          <NarrowPanels
+            editorPanes={[
+              { id: 'blocks', label: t('tab.blocks'), content: <BlocklyPanel /> },
+              { id: 'code', label: t('tab.code'), content: codeEditor },
+            ]}
+            preview={showPreview ? <PreviewIframe /> : undefined}
+          />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex h-full w-full min-h-0 flex-col">
       <ModeLimitationsNotice />
@@ -418,29 +462,7 @@ export function BridgeMode(): JSX.Element {
         </Panel>
         <PanelResizeHandle className="sz-resize-handle sz-resize-handle--vertical" />
         <Panel defaultSize={showPreview ? 35 : 65} minSize={20}>
-          <Suspense fallback={<EditorSkeleton message="Carregando editor de código…" />}>
-            <MonacoTabs
-              files={filesArray}
-              modelPathPrefix={projectId}
-              theme={studioTheme === 'light' ? 'light' : 'vs-dark'}
-              fontSize={codeFontSize || CODE_FONT_SIZE_DEFAULT}
-              formatLabel={t('editor.format')}
-              tabsRightSlot={<FontSizeControls />}
-              onChange={(name, value) => {
-                if (
-                  files &&
-                  (name === 'index.html' || name === 'style.css' || name === 'script.js')
-                ) {
-                  setFiles({ ...files, [name]: value })
-                }
-              }}
-              highlight={monacoHighlight}
-              // Sincronização só no sentido bloco→código: selecionar/editar o
-              // texto NÃO seleciona blocos (decisão de UX — evita o canvas pular
-              // e o acoplamento atrapalhar a edição). Por isso não passamos
-              // `onCursorChange` (que publicaria o cursor como fonte 'editor').
-            />
-          </Suspense>
+          {codeEditor}
         </Panel>
         {showPreview && (
           <>

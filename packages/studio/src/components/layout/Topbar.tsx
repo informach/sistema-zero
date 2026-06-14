@@ -13,12 +13,14 @@ import {
   IconEyeOff,
   IconGraduation,
   IconGrid,
+  IconMessageSquare,
   IconMoon,
   IconMore,
   IconPuzzle,
   IconSave,
   IconSparkles,
   IconSun,
+  IconTerminal,
   Menu,
   type MenuItem,
   type MenuSection,
@@ -91,7 +93,12 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
   const setShowExtensions = useUIStore((s) => s.setShowExtensions)
   const showPreview = useUIStore((s) => s.showPreview)
   const setShowPreview = useUIStore((s) => s.setShowPreview)
-  const setBottomTab = useUIStore((s) => s.setBottomTab)
+  const showConsole = useUIStore((s) => s.showConsole)
+  const setShowConsole = useUIStore((s) => s.setShowConsole)
+  const showTerminal = useUIStore((s) => s.showTerminal)
+  const setShowTerminal = useUIStore((s) => s.setShowTerminal)
+  const showAI = useUIStore((s) => s.showAI)
+  const setShowAI = useUIStore((s) => s.setShowAI)
   const config = useStudioConfig()
   const { isNarrow, isCompact } = useStudioLayout()
   const theme = useStudioTheme()
@@ -168,7 +175,39 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
     })
   }
 
+  // Mostrar/esconder cada painel, no mesmo espírito do toggle do Preview — cada
+  // um no contexto em que aparece (Console em todo modo; Terminal/IA só no
+  // Código). As flags valem nos dois layouts (no wide a barra inferior some
+  // quando tudo é escondido; no narrow a aba some). O Preview tem ainda o ícone
+  // dedicado na própria Topbar.
   const viewItems: MenuItem[] = []
+  if (config.console) {
+    viewItems.push({
+      id: 'console',
+      label: t('panel.console'),
+      icon: <IconMessageSquare />,
+      active: showConsole,
+      onSelect: () => setShowConsole(!showConsole),
+    })
+  }
+  if (projectMode === 'code' && config.terminal) {
+    viewItems.push({
+      id: 'terminal',
+      label: t('panel.terminal'),
+      icon: <IconTerminal />,
+      active: showTerminal,
+      onSelect: () => setShowTerminal(!showTerminal),
+    })
+  }
+  if (projectMode === 'code' && config.ai) {
+    viewItems.push({
+      id: 'ai',
+      label: t('panel.ai'),
+      icon: <IconSparkles />,
+      active: showAI,
+      onSelect: () => setShowAI(!showAI),
+    })
+  }
   if (config.extensions) {
     viewItems.push({
       id: 'extensions',
@@ -176,14 +215,6 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
       icon: <IconPuzzle />,
       active: showExtensions,
       onSelect: () => setShowExtensions(!showExtensions),
-    })
-  }
-  if (projectMode === 'code' && config.ai) {
-    viewItems.push({
-      id: 'ai',
-      label: t('topbar.ai'),
-      icon: <IconSparkles />,
-      onSelect: () => setBottomTab('ai'),
     })
   }
 
@@ -349,7 +380,7 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
               <span className="text-sm">{saving ? t('topbar.saving') : t('topbar.save')}</span>
             )}
           </button>
-          {config.preview && !isNarrow && (
+          {config.preview && (
             <IconButton
               label={showPreview ? t('topbar.hidePreview') : t('topbar.showPreview')}
               active={showPreview}

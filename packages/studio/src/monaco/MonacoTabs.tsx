@@ -58,6 +58,12 @@ export interface MonacoTabsProps {
   /** Conteúdo extra renderizado à direita da fila de abas. */
   tabsRightSlot?: JSX.Element
   /**
+   * Modo compacto (largura estreita): o botão "Formatar" vira só ícone (o rótulo
+   * vai para o `title`/`aria-label`), poupando espaço no cabeçalho quando o editor
+   * está numa tira de abas estreita. As abas de arquivo continuam roláveis.
+   */
+  compact?: boolean
+  /**
    * Rótulo do botão "Formatar" (i18n fica no app; o pacote é genérico). Quando
    * omitido, o botão não é exibido. O atalho Shift+Alt+F continua funcionando
    * independentemente deste botão.
@@ -84,6 +90,27 @@ export interface MonacoTabsProps {
    * de um descarta os models vivos do outro.
    */
   modelPathPrefix?: string
+}
+
+/** Ícone "formatar" (linhas alinhadas) — usado no botão compacto, sem dep externa. */
+function FormatGlyph(): JSX.Element {
+  return (
+    <svg
+      width={16}
+      height={16}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <line x1="4" y1="6" x2="20" y2="6" />
+      <line x1="4" y1="12" x2="14" y2="12" />
+      <line x1="4" y1="18" x2="18" y2="18" />
+    </svg>
+  )
 }
 
 function clampLine(line: number, model: monacoNs.editor.ITextModel): number {
@@ -162,6 +189,7 @@ export function MonacoTabs({
   canCloseFile,
   onCloseFile,
   modelPathPrefix,
+  compact = false,
 }: MonacoTabsProps): JSX.Element {
   // Id ESTÁVEL por instância: gerado uma vez por montagem do componente. Salga o
   // prefixo dos models para que dois <Studio> no mesmo `projectId` (rota /dual)
@@ -419,9 +447,9 @@ export function MonacoTabs({
               onClick={handleFormat}
               title={`${formatLabel} (Shift+Alt+F)`}
               aria-label={formatLabel}
-              className="rounded px-2.5 py-1.5 text-xs font-medium leading-none text-sz-fg hover:bg-sz-bg"
+              className="inline-flex items-center rounded px-2.5 py-1.5 text-xs font-medium leading-none text-sz-fg hover:bg-sz-bg"
             >
-              {formatLabel}
+              {compact ? <FormatGlyph /> : formatLabel}
             </button>
           </div>
         )}

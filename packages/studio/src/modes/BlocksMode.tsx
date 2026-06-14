@@ -3,12 +3,15 @@ import { useEffect } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { useShallow } from 'zustand/react/shallow'
 import { buildWorkspaceStateFromIR, isBlocksStateEmpty } from '#blockly'
+import { t } from '#core'
 import { BlocklyPanel } from '../components/blocks/BlocklyPanel'
 import { ModeLimitationsNotice } from '../components/layout/ModeLimitationsNotice'
+import { NarrowPanels } from '../components/layout/NarrowPanels'
 import { PreviewIframe } from '../components/preview/PreviewIframe'
 import { useProjectStore } from '../state/projectStore'
 import { useUIStore } from '../state/uiStore'
 import { useStudioConfig } from '../studio/config'
+import { useStudioLayout } from '../studio/layoutContext'
 
 export function BlocksMode(): JSX.Element {
   const { hasProject, blocksState, ir } = useProjectStore(
@@ -21,6 +24,7 @@ export function BlocksMode(): JSX.Element {
   const applyProjectState = useProjectStore((s) => s.applyProjectState)
   const studioConfig = useStudioConfig()
   const showPreview = useUIStore((s) => s.showPreview) && studioConfig.preview
+  const { isNarrow } = useStudioLayout()
 
   // Projetos antigos ou vindos do modo Código podem ter IR salvo, mas ainda não
   // ter a serialização do Blockly — ou ter um `blocksState` VAZIO (sobra de um
@@ -32,6 +36,20 @@ export function BlocksMode(): JSX.Element {
     if (ir.html.length === 0 && ir.css.length === 0 && ir.js.length === 0) return
     applyProjectState({ blocksState: buildWorkspaceStateFromIR(ir) })
   }, [hasProject, blocksState, ir, applyProjectState])
+
+  if (isNarrow) {
+    return (
+      <div className="flex h-full w-full min-h-0 flex-col">
+        <ModeLimitationsNotice />
+        <div className="min-h-0 flex-1">
+          <NarrowPanels
+            editorPanes={[{ id: 'blocks', label: t('tab.blocks'), content: <BlocklyPanel /> }]}
+            preview={showPreview ? <PreviewIframe /> : undefined}
+          />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex h-full w-full min-h-0 flex-col">

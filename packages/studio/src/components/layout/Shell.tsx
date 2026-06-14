@@ -3,26 +3,21 @@ import { lazy, Suspense, useId, useRef } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { useShallow } from 'zustand/react/shallow'
 import { ErrorBoundary } from '#ui'
-// Lazy imports por modo — Blockly não baixa até o aluno entrar em Blocos ou
-// Ponte; Monaco não baixa até entrar em Ponte ou Código.
-import { BlocksMode, BridgeMode, CodeMode } from '../../modes/lazyModes'
 import { useProjectStore } from '../../state/projectStore'
 import { useUIStore } from '../../state/uiStore'
 import { useStudioConfig } from '../../studio/config'
 import { StudioLayoutProvider, useStudioWidth } from '../../studio/layoutContext'
 import { BottomPanel } from './BottomPanel'
+import { useVisibleBottomTabs } from './bottomTabs'
 import { ConvertLegacyPrompt } from './ConvertLegacyPrompt'
 import { SectionErrorFallback } from './ErrorViews'
-import { EditorSkeleton } from './LoadingViews'
+import { ModeArea } from './ModeArea'
+import { NarrowLayout } from './NarrowLayout'
 import { Topbar } from './Topbar'
 
 const ExtensionsPanel = lazy(() =>
   import('../extensions/ExtensionsPanel').then((m) => ({ default: m.ExtensionsPanel })),
 )
-
-function ModeFallback({ name }: { name: string }) {
-  return <EditorSkeleton message={`Carregando modo ${name}…`} />
-}
 
 export interface ShellProps {
   /** Sai do editor (ex.: volta à lista de projetos do host). Sem ela, a Topbar esconde a navegação. */
@@ -42,7 +37,10 @@ export function Shell({ onExit, canToggleTheme }: ShellProps): JSX.Element {
   const showExtensions = useUIStore((s) => s.showExtensions)
   const setShowExtensions = useUIStore((s) => s.setShowExtensions)
   const config = useStudioConfig()
-  const hasBottomPanel = config.console || config.terminal || config.ai
+  // A barra inferior (wide) só existe quando há ALGUMA aba inferior visível — as
+  // features do host cruzadas com o contexto de modo e com as preferências de
+  // mostrar/esconder do aluno. Some por completo quando o aluno esconde tudo.
+  const hasBottomPanel = useVisibleBottomTabs().length > 0
   // `autoSaveId` POR INSTÂNCIA: o react-resizable-panels persiste o layout no
   // localStorage com essa chave; um id fixo fazia instâncias no mesmo origin
   // sobrescreverem o layout uma da outra. `useId` é estável e único por
@@ -61,53 +59,35 @@ export function Shell({ onExit, canToggleTheme }: ShellProps): JSX.Element {
     <StudioLayoutProvider value={layout}>
       <div ref={rootRef} className="flex h-full flex-col bg-sz-bg text-sz-fg">
         <Topbar onExit={onExit} canToggleTheme={canToggleTheme} />
-        <main className="flex min-h-0 flex-1 flex-col">
-          <PanelGroup
-            direction="vertical"
-            className="h-full w-full"
-            autoSaveId={verticalAutoSaveId}
-          >
-            <Panel defaultSize={70} minSize={30}>
+        {layout.isNarrow ? (
+          <NarrowLayout projectMode={projectMode} projectId={projectId} />
+        ) : (
+          <main className="flex min-h-0 flex-1 flex-col">
+            <PanelGroup
+              direction="vertical"
+              className="h-full w-full"
+              autoSaveId={verticalAutoSaveId}
+            >
               {/* `key` por projeto: ao trocar de projeto, remonta a subárvore do
-                modo (e, dentro dela, Monaco e Preview) — assim os valores
-                debounced e refs começam já com o conteúdo do novo projeto, sem
-                mostrar/renderizar o projeto anterior no primeiro instante. */}
-              <div key={projectId} className="flex h-full min-h-0 w-full">
-                <ErrorBoundary
-                  label={`modo ${projectMode}`}
-                  resetKeys={[projectMode, projectId]}
-                  fallback={(p) => (
-                    <SectionErrorFallback {...p} title="Não foi possível carregar o editor" />
-                  )}
-                >
-                  {projectMode === 'blocks' && (
-                    <Suspense fallback={<ModeFallback name="Blocos" />}>
-                      <BlocksMode />
-                    </Suspense>
-                  )}
-                  {projectMode === 'bridge' && (
-                    <Suspense fallback={<ModeFallback name="Ponte" />}>
-                      <BridgeMode />
-                    </Suspense>
-                  )}
-                  {projectMode === 'code' && (
-                    <Suspense fallback={<ModeFallback name="Código" />}>
-                      <CodeMode />
-                    </Suspense>
-                  )}
-                </ErrorBoundary>
-              </div>
-            </Panel>
-            {hasBottomPanel && (
-              <>
-                <PanelResizeHandle className="sz-resize-handle sz-resize-handle--horizontal" />
-                <Panel defaultSize={30} minSize={10} maxSize={70}>
-                  <BottomPanel />
-                </Panel>
-              </>
-            )}
-          </PanelGroup>
-        </main>
+                  modo (e, dentro dela, Monaco e Preview) — assim os valores
+                  debounced e refs começam já com o conteúdo do novo projeto, sem
+                  mostrar/renderizar o projeto anterior no primeiro instante. */}
+              <Panel id="sz-editor" order={1} defaultSize={70} minSize={30}>
+                <div key={projectId} className="flex h-full min-h-0 w-full">
+                  <ModeArea projectMode={projectMode} projectId={projectId} />
+                </div>
+              </Panel>
+              {hasBottomPanel && (
+                <>
+                  <PanelResizeHandle className="sz-resize-handle sz-resize-handle--horizontal" />
+                  <Panel id="sz-bottom" order={2} defaultSize={30} minSize={10} maxSize={70}>
+                    <BottomPanel />
+                  </Panel>
+                </>
+              )}
+            </PanelGroup>
+          </main>
+        )}
         {showExtensions && config.extensions && (
           <ErrorBoundary
             label="extensões"

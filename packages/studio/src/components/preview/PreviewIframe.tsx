@@ -17,6 +17,7 @@ import { useLogsStore } from '../../state/logsStore'
 import { useProjectStore } from '../../state/projectStore'
 import { useUIStore } from '../../state/uiStore'
 import { useStudioConfig } from '../../studio/config'
+import { useStudioLayout } from '../../studio/layoutContext'
 import {
   estimatePreviewInputChars,
   PREVIEW_RENDER_INPUT_LIMIT_CHARS,
@@ -44,6 +45,7 @@ export function PreviewIframe(): JSX.Element {
   const previewSecurity = useStudioConfig().previewSecurity
   const previewRunning = useUIStore((s) => s.previewRunning)
   const setPreviewRunning = useUIStore((s) => s.setPreviewRunning)
+  const { isNarrow } = useStudioLayout()
   const iframeRef = useRef<HTMLIFrameElement>(null)
   // Watchdog de heartbeat (Camada B): se o thread do iframe travar num cálculo
   // síncrono, o interceptor para de emitir heartbeats e mostramos o aviso.
@@ -418,26 +420,33 @@ export function PreviewIframe(): JSX.Element {
           size="sm"
           variant={previewRunning ? 'ghost' : 'primary'}
           onClick={handleTogglePreviewRunning}
-          title={previewRunning ? 'Parar a execução do preview' : 'Executar o preview'}
+          title={previewRunning ? 'Parar a execução do preview' : 'Reproduzir o preview'}
+          aria-label={previewRunning ? 'Parar a execução do preview' : 'Reproduzir o preview'}
         >
-          {previewRunning ? '⏹ Parar' : '▶ Reproduzir'}
+          {previewRunning ? (isNarrow ? '⏹' : '⏹ Parar') : isNarrow ? '▶' : '▶ Reproduzir'}
         </Button>
         <Button
           size="sm"
           variant="ghost"
           onClick={handleRefresh}
           title="Re-executar o código atual"
+          aria-label="Atualizar o preview"
         >
-          ⟳ Atualizar
+          {isNarrow ? '⟳' : '⟳ Atualizar'}
         </Button>
         {documentTitle && (
-          <span className="ml-2 truncate text-xs font-medium text-sz-fg-soft" title={documentTitle}>
+          <span
+            className="ml-2 min-w-0 flex-1 truncate text-xs font-medium text-sz-fg-soft"
+            title={documentTitle}
+          >
             {documentTitle}
           </span>
         )}
-        <span className="ml-auto whitespace-nowrap pl-2 text-xs text-sz-fg-soft">
-          {previewRunning ? 'Executando' : 'Parado'}
-        </span>
+        {!isNarrow && (
+          <span className="ml-auto whitespace-nowrap pl-2 text-xs text-sz-fg-soft">
+            {previewRunning ? 'Executando' : 'Parado'}
+          </span>
+        )}
       </div>
       <iframe
         ref={iframeRef}
