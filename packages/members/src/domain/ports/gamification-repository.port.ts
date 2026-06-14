@@ -81,7 +81,10 @@ export interface GamificationRepository {
    * Colocação do aluno no ranking de XP da VITRINE: coorte = usuários com ≥1
    * matrícula (qualquer status — histórico é permanente, como o XP) em curso
    * daquela audiência, EXCLUINDO equipe (perfil `privileged` — só cliente
-   * ranqueia). Aluno sem perfil ainda conta com XP 0.
+   * ranqueia). Aluno sem perfil ainda conta com XP 0. **`null` quando o
+   * requester NÃO pertence à coorte** (sem matrícula na audiência, ou equipe) —
+   * o service omite o `ranking` (não devolve "1º de 0" nem ranqueia entre pares
+   * dos quais não faz parte).
    */
-  getRanking(userId: string, audience: CourseAudience): Promise<GamificationRanking>
+  getRanking(userId: string, audience: CourseAudience): Promise<GamificationRanking | null>
 }

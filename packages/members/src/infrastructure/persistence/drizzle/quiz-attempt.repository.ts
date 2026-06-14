@@ -29,7 +29,9 @@ export class DrizzleQuizAttemptRepository implements QuizAttemptRepository {
         .where(
           and(eq(quizAttempts.userId, attempt.userId), eq(quizAttempts.blockId, attempt.blockId)),
         )
-        .orderBy(desc(quizAttempts.createdAt))
+        // `id` como desempate determinístico: dois submits no MESMO ms (duplo-clique/
+        // retry) não deixam `rows[0]` ambíguo (afeta lastScore/lastPassed/cooldown).
+        .orderBy(desc(quizAttempts.createdAt), desc(quizAttempts.id))
       const last = rows[0]
       const everPassed = rows.some((r) => r.passed)
       const blocked =
@@ -59,7 +61,9 @@ export class DrizzleQuizAttemptRepository implements QuizAttemptRepository {
       })
       .from(quizAttempts)
       .where(and(eq(quizAttempts.userId, userId), inArray(quizAttempts.blockId, blockIds)))
-      .orderBy(desc(quizAttempts.createdAt))
+      // Desempate determinístico no mesmo ms (ver save()): a linha mais recente por
+      // bloco define lastScore/lastPassed/lastAttemptAt do resumo.
+      .orderBy(desc(quizAttempts.createdAt), desc(quizAttempts.id))
     const out = new Map<string, QuizAttemptSummary>()
     for (const r of rows) {
       const existing = out.get(r.blockId)

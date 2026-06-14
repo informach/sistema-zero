@@ -9,6 +9,7 @@ import {
   UnauthorizedError,
 } from '@sistemazero/core/http'
 import { type Logger, serializeError } from '@sistemazero/core/logging'
+import { QuizCooldownError } from '../../domain/course/course.errors'
 
 export type { ErrorEnvelope }
 
@@ -24,12 +25,14 @@ const DOMAIN_STATUS: Record<string, number> = {
   OFFER_NOT_FOUND: 404,
   QUIZ_BLOCK_NOT_FOUND: 404,
   EBOOK_BLOCK_NOT_FOUND: 404,
+  STUDIO_BLOCK_NOT_FOUND: 404,
   INVALID_STATE_TRANSITION: 409,
   ENTITLEMENT_CONFLICT: 409,
   DUPLICATE_SLUG: 409,
   CONCURRENCY_CONFLICT: 409,
   NO_PUBLISHED_LESSON: 409,
   QUIZ_GATE_NOT_PASSED: 409,
+  STUDIO_GATE_NOT_SUBMITTED: 409,
   QUIZ_COOLDOWN: 429,
 }
 
@@ -38,8 +41,20 @@ export function buildErrorResponse(input: {
   code: string | number
   error: unknown
   logger: Logger
-}): { status: number; body: ErrorEnvelope } {
+}): { status: number; body: ErrorEnvelope & { retryAvailableAt?: string } } {
   const { error, code } = input
+
+  // Cooldown do quiz: além do code/message, expõe `retryAvailableAt` ESTRUTURADO
+  // (o cliente inicia o countdown sem reler a aula — útil no 429 de corrida).
+  if (error instanceof QuizCooldownError) {
+    return {
+      status: 429,
+      body: {
+        ...envelope(error.code, error.message),
+        retryAvailableAt: error.retryAvailableAt.toISOString(),
+      },
+    }
+  }
 
   if (error instanceof UnauthorizedError)
     return { status: 401, body: envelope('UNAUTHORIZED', error.message) }

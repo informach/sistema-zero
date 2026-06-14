@@ -59,6 +59,11 @@ import type {
   QuizAttemptRecord,
   QuizAttemptRepository,
 } from '../../src/domain/ports/quiz-attempt-repository.port'
+import type {
+  StudioSubmissionRecord,
+  StudioSubmissionRepository,
+  StudioSubmissionSummary,
+} from '../../src/domain/ports/studio-submission-repository.port'
 import type { VideoPositionRepository } from '../../src/domain/ports/video-position-repository.port'
 import type { CourseRating } from '../../src/domain/rating/course-rating'
 
@@ -795,6 +800,47 @@ export class InMemoryQuizAttemptRepository implements QuizAttemptRepository {
   }
 }
 
+export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepository {
+  readonly submissions: StudioSubmissionRecord[] = []
+
+  /** Upsert por (user, block) — reenvio sobrescreve o projeto + a data. */
+  async upsert(submission: StudioSubmissionRecord): Promise<void> {
+    const existing = this.submissions.find(
+      (s) => s.userId === submission.userId && s.blockId === submission.blockId,
+    )
+    if (existing) {
+      existing.project = submission.project
+      existing.submittedAt = submission.submittedAt
+    } else {
+      this.submissions.push({ ...submission })
+    }
+  }
+
+  async listSubmittedBlockIds(userId: string, blockIds: string[]): Promise<Set<string>> {
+    const set = new Set(blockIds)
+    return new Set(
+      this.submissions
+        .filter((s) => s.userId === userId && set.has(s.blockId))
+        .map((s) => s.blockId),
+    )
+  }
+
+  async listByBlock(blockId: string): Promise<StudioSubmissionSummary[]> {
+    return this.submissions
+      .filter((s) => s.blockId === blockId)
+      .sort((a, b) => a.submittedAt.getTime() - b.submittedAt.getTime())
+      .map((s) => ({ userId: s.userId, submittedAt: s.submittedAt }))
+  }
+
+  async getOne(
+    userId: string,
+    blockId: string,
+  ): Promise<{ project: unknown; submittedAt: Date } | null> {
+    const s = this.submissions.find((x) => x.userId === userId && x.blockId === blockId)
+    return s ? { project: s.project, submittedAt: s.submittedAt } : null
+  }
+}
+
 interface XpEventRow extends XpEventInput {
   userId: string
   audience: CourseAudience
@@ -938,7 +984,7 @@ export class InMemoryGamificationRepository implements GamificationRepository {
   }
 
   /** Mirror do SQL: coorte = matrícula (qualquer status) em curso da audiência, SEM equipe. */
-  async getRanking(userId: string, audience: CourseAudience): Promise<GamificationRanking> {
+  async getRanking(userId: string, audience: CourseAudience): Promise<GamificationRanking | null> {
     const cohort = new Set<string>()
     for (const e of this.sources?.entitlements.byId.values() ?? []) {
       const course = this.sources?.courses.courses.find((c) => c.slug === e.courseRef)
@@ -946,6 +992,8 @@ export class InMemoryGamificationRepository implements GamificationRepository {
         cohort.add(e.userId)
       }
     }
+    // Fora da coorte (sem matrícula na audiência, ou equipe) → sem ranking.
+    if (!cohort.has(userId)) return null
     const myXp = this.profiles.get(this.profileKey(userId, audience))?.xp ?? 0
     let ahead = 0
     for (const uid of cohort) {

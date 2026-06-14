@@ -91,6 +91,12 @@ export class SubmitQuizAttemptService {
       )
     }
 
+    // Estado AUTORITATIVO pós-save (inclui esta tentativa): `attemptsCount` exato
+    // sob concorrência e `retryAvailableAt` derivado do MESMO resumo que o
+    // quizState do GET (computeRetryAvailableAt) — a resposta nunca contradiz a
+    // leitura. `everPassed` (aprovado antes) zera o cooldown mesmo reprovando agora.
+    const after = (await this.attempts.summarizeByBlockIds(userId, [blockId])).get(blockId) ?? null
+
     // XP só no quiz APROVADO (reprovar não pune nem premia). Re-aprovação não
     // re-premia (ledger por blockId) — mas nota 100 ainda destrava a badge.
     const gamification = grade.passed
@@ -107,10 +113,8 @@ export class SubmitQuizAttemptService {
       score: grade.score,
       passed: grade.passed,
       passingScore: grade.passingScore,
-      attemptsCount: (summary?.attemptsCount ?? 0) + 1,
-      retryAvailableAt: grade.passed
-        ? null
-        : new Date(now.getTime() + QUIZ_RETRY_COOLDOWN_MS).toISOString(),
+      attemptsCount: after?.attemptsCount ?? 1,
+      retryAvailableAt: computeRetryAvailableAt(after, now)?.toISOString() ?? null,
       questions: grade.questions,
       gamification,
     }

@@ -6,6 +6,7 @@ import type {
   LessonAdminService,
   ModuleAdminService,
 } from '../../../application/content-admin/content-admin.service'
+import type { StudioSubmissionsAdminService } from '../../../application/studio-submissions-admin/studio-submissions-admin.service'
 import type { CourseStatus } from '../../../domain/course/course'
 import type { LessonBlockContent } from '../../../domain/course/lesson-block'
 import type {
@@ -16,6 +17,7 @@ import type {
 } from '../../../domain/ports/content-admin-repository.port'
 import { assertInternalCaller, requireAdmin } from '../auth'
 import {
+  AdminStudioSubmissionParams,
   AttachmentBody,
   BlockBody,
   CourseBody,
@@ -41,6 +43,7 @@ export interface ContentRoutesDeps {
   lessons: LessonAdminService
   blocks: BlockAdminService
   attachments: AttachmentAdminService
+  studioSubmissions: StudioSubmissionsAdminService
 }
 
 type CourseInput = typeof CourseBody.static
@@ -287,6 +290,27 @@ export function contentRoutes(deps: ContentRoutesDeps) {
           return deps.attachments.remove(params.id)
         },
         { params: IdParams },
+      )
+      // ── Entregas do Estúdio (acompanhamento do professor) ──
+      // `/blocks/:id/...` reusa o param `:id` das rotas de bloco (sem reintroduzir
+      // `:lessonId` aqui — colidiria com `/lessons/:id/...` no roteador). `id` = blockId.
+      // Lista quem entregou + quando (nomes são hidratados no BFF do admin via auth).
+      .get(
+        '/blocks/:id/studio-submissions',
+        async ({ params, headers }) => {
+          guard(headers)
+          return { submissions: await deps.studioSubmissions.list(params.id) }
+        },
+        { params: IdParams },
+      )
+      // Entrega de um aluno (projeto inteiro) — abrir no Estúdio embutido do admin.
+      .get(
+        '/blocks/:id/studio-submissions/:userId',
+        async ({ params, headers }) => {
+          guard(headers)
+          return deps.studioSubmissions.getOne(params.userId, params.id)
+        },
+        { params: AdminStudioSubmissionParams },
       )
   )
 }

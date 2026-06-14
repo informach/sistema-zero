@@ -1,7 +1,12 @@
-import { LessonNotFoundError, QuizGateNotPassedError } from '../../domain/course/course.errors'
+import {
+  LessonNotFoundError,
+  QuizGateNotPassedError,
+  StudioGateNotSubmittedError,
+} from '../../domain/course/course.errors'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { QuizAttemptRepository } from '../../domain/ports/quiz-attempt-repository.port'
+import type { StudioSubmissionRepository } from '../../domain/ports/studio-submission-repository.port'
 import { computeProgress } from '../../domain/progress/progress'
 import type { CheckAccessService } from '../access/check-access.service'
 import type { AwardGamificationService } from '../gamification/award-gamification.service'
@@ -21,6 +26,7 @@ export class MarkLessonCompleteService {
     private readonly courses: CourseRepository,
     private readonly progress: ProgressRepository,
     private readonly quizAttempts: QuizAttemptRepository,
+    private readonly studioSubmissions: StudioSubmissionRepository,
     private readonly gamification: AwardGamificationService,
     private readonly clock: () => Date,
   ) {}
@@ -33,13 +39,34 @@ export class MarkLessonCompleteService {
 
     const completedIds = await this.progress.listCompletedLessonIds(userId, course.id)
     if (!completedIds.includes(lessonId)) {
+      // Só gateiam quizzes COM nota de corte E com questões: um quiz gated vazio
+      // não é respondível (a UI não o renderiza), então gatear nele travaria a
+      // aula para sempre. A autoria já barra esse estado (validateQuizAuthoring),
+      // mas dados legados/escrita direta podem tê-lo — defesa em profundidade.
       const gatedQuizIds = lesson.blocks
-        .filter((b) => b.content.kind === 'quiz' && b.content.passingScore !== undefined)
+        .filter(
+          (b) =>
+            b.content.kind === 'quiz' &&
+            b.content.passingScore !== undefined &&
+            b.content.questions.length > 0,
+        )
         .map((b) => b.id)
       if (gatedQuizIds.length > 0) {
         const summaries = await this.quizAttempts.summarizeByBlockIds(userId, gatedQuizIds)
         const allPassed = gatedQuizIds.every((id) => summaries.get(id)?.everPassed)
         if (!allPassed) throw new QuizGateNotPassedError()
+      }
+
+      // Mesmo gate do quiz, para o bloco Estúdio: a aula só conclui depois que o
+      // aluno ENVIA o projeto (qualquer bloco studio sem entrega → 409).
+      const gatedStudioIds = lesson.blocks
+        .filter((b) => b.content.kind === 'studio')
+        .map((b) => b.id)
+      if (gatedStudioIds.length > 0) {
+        const submitted = await this.studioSubmissions.listSubmittedBlockIds(userId, gatedStudioIds)
+        if (!gatedStudioIds.every((id) => submitted.has(id))) {
+          throw new StudioGateNotSubmittedError()
+        }
       }
     }
 

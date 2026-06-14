@@ -28,9 +28,24 @@ const EnvSchema = z
       .int()
       .positive()
       .default(64 * 1024),
+    // Rotas do Estúdio (entrega do aluno + autoria do bloco) carregam o projeto
+    // INTEIRO — bem maior que os JSONs do aluno. Teto próprio (default 2 MB = teto
+    // global da borda/gateway); o serviço ainda reforça `MAX_STUDIO_PROJECT_CHARS`
+    // (1.5 M) na camada de aplicação. Sem isto, o teto de 64 KB rejeitava (413)
+    // toda entrega de Estúdio não trivial ANTES do handler (era 100% quebrado em
+    // prod, onde a env não é setada — ver server.ts `bodyLimitForPath`).
+    MAX_STUDIO_BODY_BYTES: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(2 * 1024 * 1024),
 
     DATABASE_URL: z.string().min(1, 'DATABASE_URL é obrigatória'),
     DATABASE_POOL_MAX: z.coerce.number().int().positive().default(10),
+    // TLS na conexão com o Postgres. Default `false` (rede privada do Railway —
+    // postura aceita); ligue (`DATABASE_SSL=true`) se o banco passar a exigir TLS
+    // (ex.: Postgres externo/público) sem precisar mexer no código.
+    DATABASE_SSL: optionalBool(false),
 
     // Sentry (monitoramento de erros). Ausente = desligado (dev/local).
     SENTRY_DSN: z.string().url().optional(),
@@ -93,6 +108,22 @@ const EnvSchema = z
       'CATALOG_INTERNAL_TOKEN é obrigatório em produção (o catálogo exige o token na rota S2S de entitlements)',
     path: ['CATALOG_INTERNAL_TOKEN'],
   })
+  // `CATALOG_BASE_URL` tem default `localhost:3003` (conveniência de dev). Esquecer
+  // a env em produção bootava VERDE e quebrava TODO grant em runtime (502
+  // OFFER_UNRESOLVED — comprador sem acesso em silêncio). Falha no boot em prod se
+  // o host ainda apontar para localhost (vira o host interno: catalog.railway.internal).
+  .refine(
+    (env) => {
+      if (env.NODE_ENV !== 'production') return true
+      const host = new URL(env.CATALOG_BASE_URL).hostname
+      return host !== 'localhost' && host !== '127.0.0.1' && host !== '::1'
+    },
+    {
+      message:
+        'CATALOG_BASE_URL não pode apontar para localhost em produção (defina o host interno, ex.: http://catalog.railway.internal:3003)',
+      path: ['CATALOG_BASE_URL'],
+    },
+  )
 
 export type Env = z.infer<typeof EnvSchema>
 

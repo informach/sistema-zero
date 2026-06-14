@@ -130,18 +130,24 @@ export class EntitlementAggregate {
   }
 
   /**
-   * Estende a validade (ciclo de assinatura). Só move p/ FRENTE — idempotente sob
-   * reentrega. Reativa se estava `expired` e a nova validade é futura. Não toca em `revoked`.
+   * Estende a validade (ciclo de assinatura). A validade só move p/ FRENTE
+   * (idempotente sob reentrega), MAS a reativação de uma `expired` é avaliada
+   * independentemente: uma renovação cujo alvo não avança a validade (ex.: `expire`
+   * marcou o status sem mexer no `expiresAt`, que ainda é futuro) ainda reativa —
+   * antes o early-return monotônico engolia esse caso e a renovação se perdia.
+   * Nunca toca em `revoked`.
    */
   extendTo(expiresAt: Date, now: Date): void {
     if (this.state.status === 'revoked') return
     const current = this.state.expiresAt
-    if (current && current.getTime() >= expiresAt.getTime()) return
-    this.state.expiresAt = expiresAt
-    if (this.state.status === 'expired' && expiresAt.getTime() > now.getTime()) {
-      this.state.status = 'active'
-    }
-    this.state.updatedAt = now
+    const advances = current === null || expiresAt.getTime() > current.getTime()
+    if (advances) this.state.expiresAt = expiresAt
+    const shouldReactivate =
+      this.state.status === 'expired' &&
+      this.state.expiresAt !== null &&
+      this.state.expiresAt.getTime() > now.getTime()
+    if (shouldReactivate) this.state.status = 'active'
+    if (advances || shouldReactivate) this.state.updatedAt = now
   }
 
   /**

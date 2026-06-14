@@ -29,8 +29,14 @@ export interface QuizGrade {
  * Corrige a tentativa NO SERVIDOR. Uma questão só conta como certa se o conjunto
  * de choices marcados é EXATAMENTE o gabarito (suporta múltipla resposta correta).
  * Respostas para questões inexistentes são ignoradas.
+ *
+ * **Fixação** (bloco SEM `passingScore`): não há nota de corte → `passed: true`
+ * ao enviar (qualquer nota). Isso evita cooldown e credita o XP uma vez (ledger
+ * idempotente) — coerente com o rótulo "só para treinar". COM `passingScore`,
+ * aprova só quem alcança a nota.
  */
 export function gradeQuizAttempt(block: QuizBlock, answers: QuizAnswers): QuizGrade {
+  const hasGate = block.passingScore !== undefined
   const passingScore = block.passingScore ?? QUIZ_DEFAULT_PASSING_SCORE
   const questions = block.questions.map((q) => {
     const given = new Set(answers[q.id] ?? [])
@@ -46,7 +52,7 @@ export function gradeQuizAttempt(block: QuizBlock, answers: QuizAnswers): QuizGr
   const total = questions.length
   const right = questions.filter((q) => q.correct).length
   const score = total > 0 ? Math.round((right / total) * 100) : 100
-  return { score, passed: score >= passingScore, passingScore, questions }
+  return { score, passed: hasGate ? score >= passingScore : true, passingScore, questions }
 }
 
 /**
@@ -57,6 +63,13 @@ export function gradeQuizAttempt(block: QuizBlock, answers: QuizAnswers): QuizGr
  * Retorna a mensagem do problema, ou `null` se válido.
  */
 export function validateQuizAuthoring(block: QuizBlock): string | null {
+  // Quiz COM nota de corte PRECISA de questões: um quiz vazio não é respondível
+  // pelo aluno (a UI nem renderiza), então o gate da aula nunca seria satisfeito
+  // → conclusão travada para sempre. Quiz vazio SEM nota de corte segue permitido
+  // (rascunho em construção no builder; não bloqueia a conclusão).
+  if (block.passingScore !== undefined && block.questions.length === 0) {
+    return 'Um quiz com nota de corte precisa de ao menos uma questão'
+  }
   const questionIds = new Set<string>()
   for (const q of block.questions) {
     if (questionIds.has(q.id)) return `Questão com id duplicado: ${q.id}`

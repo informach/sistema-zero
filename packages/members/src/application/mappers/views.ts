@@ -248,6 +248,13 @@ export interface QuizStateView {
   retryAvailableAt: string | null
 }
 
+/** Estado da entrega do aluno num bloco de estúdio (já enviou? quando?). */
+export interface StudioStateView {
+  submitted: boolean
+  /** ISO da última entrega; `null` se ainda não enviou. */
+  submittedAt: string | null
+}
+
 export interface LessonBlockView {
   id: string
   kind: string
@@ -255,6 +262,8 @@ export interface LessonBlockView {
   content: unknown
   /** Presente só em blocos de quiz. */
   quizState?: QuizStateView | null
+  /** Presente só em blocos de estúdio. */
+  studioState?: StudioStateView | null
 }
 
 /**
@@ -306,6 +315,7 @@ export function toLessonDetailView(
   completed: boolean,
   positionSeconds: number | null,
   quizStates: Map<string, QuizStateView> = new Map(),
+  studioStates: Map<string, StudioStateView> = new Map(),
 ): LessonDetailView {
   return {
     id: lesson.id,
@@ -338,6 +348,17 @@ export function toLessonDetailView(
       if (b.content.kind === 'ebook') {
         const { url: _url, ...memberFacing } = b.content
         return { id: b.id, kind: b.kind, sortOrder: b.sortOrder, content: memberFacing }
+      }
+      // Estúdio: a config (initialProject/level/allowlist) NÃO é segredo — o aluno
+      // precisa dela para montar o editor. Anexa só o estado da entrega (já enviou?).
+      if (b.content.kind === 'studio') {
+        return {
+          id: b.id,
+          kind: b.kind,
+          sortOrder: b.sortOrder,
+          content: b.content,
+          studioState: studioStates.get(b.id) ?? { submitted: false, submittedAt: null },
+        }
       }
       return { id: b.id, kind: b.kind, sortOrder: b.sortOrder, content: b.content }
     }),

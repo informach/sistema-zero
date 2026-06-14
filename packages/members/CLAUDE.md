@@ -90,20 +90,42 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 5. **Convenção**: `entitlement.courseRef === course.slug` (e === `fulfillment.courseRef`
    do produto no catálogo). É o elo oferta→curso.
 6. **Aula = lista ordenada de BLOCOS** (`lesson_blocks`, união discriminada por
-   `kind`: rich_text/video/image/audio/quiz/embed/ebook). Aula composta (vídeo +
+   `kind`: rich_text/video/image/audio/quiz/embed/ebook/**studio**). Aula composta (vídeo +
    interativo + texto) = vários blocos. Comunidade só modelada (feature é fatia
    seguinte). **Autoria v3 (06/2026):** `embed` aceita SÓ `{html, sandbox?}` no DTO
    (sempre iframe sandbox no front; `embedType`/`src`/`height` são legado tolerado no
    TYPE mas rejeitado na escrita); `ebook` = `{url: 'r2priv:<key>', title?}` — PDF no
    bucket R2 privado que o community renderiza como livro 3D com marca d'água.
+   **`studio` (06/2026, migration `0013`):** editor `@sistemazero/studio` embarcado e
+   pré-configurado pelo admin — `{initialProject (snapshot Project, JSON opaco — o front
+   sanitiza, teto `MAX_STUDIO_PROJECT_CHARS` 1.5M), level?, allowBlocks?, allowCategories?,
+   allowedModes?, allowLevelReveal?}`. A config NÃO é segredo (vai inteira ao aluno). O aluno
+   ENVIA o projeto (`POST …/blocks/:blockId/studio-submission` `{project}`) → tabela
+   `studio_submissions` (1 linha/aluno+bloco, upsert — reenvio último-vence) e isso
+   ⚠️ **As rotas que carregam o projeto** (entrega do aluno + autoria do bloco:
+   `POST /admin/lessons/:id/blocks` e `PATCH /admin/blocks/:id`) têm teto de CORPO próprio
+   `MAX_STUDIO_BODY_BYTES` no server (default **2 MB**, `bodyLimitForPath` em `server.ts`),
+   separado do teto pequeno de 64 KB das demais rotas — 06/2026: antes o teto global de 64 KB
+   barrava **413 toda entrega não trivial** (era 100% quebrado em prod, onde a env não é setada).
+   Corpo acima do teto → **413 em TODAS as rotas** (`onTransform` global; antes só os webhooks
+   barravam o oversize, as rotas de aluno caíam em 422 confuso com `{}`).
+   **bloqueia a conclusão da aula até enviar** (`STUDIO_GATE_NOT_SUBMITTED`→409, espelha o
+   gate do quiz — ver mark-lesson-complete). A projeção member-facing anexa
+   `studioState {submitted, submittedAt}` (como o `quizState`). Admin acompanha em
+   `GET /members/admin/blocks/:id/studio-submissions[/:userId]` (lista + projeto inteiro p/
+   abrir no Estúdio do professor). Sem nota.
 7. **Quiz é corrigido NO SERVIDOR** (`quiz_attempts` guarda o histórico; score 0–100 por
    conjunto EXATO de choices). O GET da aula **NUNCA envia o gabarito** — a projeção
    member-facing (`toMemberFacingQuizContent`) remove `correctChoiceIds`/`explanation`
    e anexa `quizState` (lastScore/passed/attemptsCount/retryAvailableAt); correções/
-   explicações só chegam na RESPOSTA do submit. Reprovou → **cooldown de 5 min**
-   (`QUIZ_COOLDOWN`→429). Quiz **com `passingScore`** bloqueia o complete da aula até
-   aprovar (`QUIZ_GATE_NOT_PASSED`→409); SEM `passingScore` é fixação (não bloqueia);
-   aula já concluída nunca regride. Aprovado uma vez = destravado para sempre.
+   explicações só chegam na RESPOSTA do submit. Quiz **com `passingScore`**: reprovar
+   → **cooldown de 5 min** (`QUIZ_COOLDOWN`→429) e bloqueia o complete da aula até
+   aprovar (`QUIZ_GATE_NOT_PASSED`→409). Quiz **SEM `passingScore` = fixação**: não
+   reprova (`gradeQuizAttempt` → `passed:true` ao enviar) — **sem cooldown** e o XP é
+   creditado uma vez (ledger idempotente); nunca bloqueia o complete. Aula já concluída
+   nunca regride; aprovado uma vez = destravado para sempre. ⚠️ Quiz **com nota de
+   corte EXIGE ≥1 questão** (`validateQuizAuthoring` → 400; e o gate ignora quiz gated
+   vazio): um quiz gated sem questões não é respondível → travaria a aula para sempre.
 8. **Posição de vídeo + last-accessed** (`lesson_progress`, 1 linha por aluno+aula,
    upsert): `positionSeconds` retoma o vídeo de onde parou; `updatedAt` alimenta o
    `continueLessonId` (prioridade: última acessada não concluída > 1ª não concluída >
@@ -183,8 +205,14 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   cross-endpoint) com `GATEWAY_HMAC_SECRET` (= segredo de resign do gateway),
   header `x-signature: t=,v1=`. HMAC é checado no hook `transform` (**antes** da
   validação do corpo → 401 antes de 422). Dedupe por `x-delivery-id` (tabela
-  `processed_webhooks`). Falha de concessão → o funil devolve
-  502 e o gateway re-entrega (members é idempotente pela `idempotencyKey`).
+  `processed_webhooks`): checa ANTES, marca só DEPOIS do sucesso. Falha de concessão → o
+  funil devolve 502 e o gateway re-entrega (members é idempotente pela `idempotencyKey`).
+  ⚠️ **Marcar-após-sucesso é DELIBERADO** (não trocar por "claim-first"): duas entregas
+  concorrentes da MESMA delivery podem ambas processar, mas é INÓCUO (grant/revoke
+  idempotentes). Um "claim antes de processar" fecharia essa corrida benigna, mas REGREDIRIA
+  a crash-safety — um crash entre o claim e a conclusão deduparia para sempre uma concessão
+  que nunca completou (comprador sem acesso). A idempotência cobre a corrida; o
+  marcar-após-sucesso cobre o crash. (Full review 06/2026.)
 - **Grant de oferta não resolvida** (catálogo 404) → `/webhooks/grant` devolve **502
   `OFFER_UNRESOLVED` e NÃO marca a entrega** (auto-cura uma corrida; uma divergência
   de slug permanente aflora como falhas repetidas em vez de sumir). Oferta resolvida
@@ -196,6 +224,10 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   matrícula): sem isso, a renovação que perdesse a corrida p/ um cancel/ação admin
   respondia 200 e a extensão do ciclo se perdia de vez. Conflito persistente → lança
   (5xx → re-entrega). Reentrega do mesmo ciclo (validade já cobre o alvo) = no-op.
+  `extendTo` avalia a REATIVAÇÃO de uma `expired` independentemente do avanço da validade
+  (06/2026): renovação cujo alvo não move o `expiresAt` (ex.: `expire` marcou o status sem
+  mexer numa validade ainda futura) ainda reativa — antes o early-return monotônico engolia
+  o caso e a renovação se perdia.
 - **API do aluno E rotas admin = defesa em profundidade**: o gateway injeta
   `x-internal-token` (`header-inject`, sobrescreve qualquer valor do cliente) e o
   members o exige nas rotas do aluno **e em `/members/admin/*`** (06/2026 — sem ele,
@@ -335,7 +367,12 @@ estender o streak). Atividade ANTERIOR às migrations não tem marco retroativo
   `gamification_profiles.privileged` (do `isPrivilegedActor` da rota, migration `0011`) e o
   ranking filtra `privileged = false`; equipe sem perfil (nunca pontuou) ainda conta na
   coorte por presunção — irrelevante na prática (0 XP, não fica à frente de ninguém).
-  Cálculo do ranking só quando o param vem (a página de perfil pede; widgets não).
+  Cálculo do ranking só quando o param vem (a página de perfil pede; widgets não); as 3
+  leituras (membro/total/à-frente) rodam numa transação (snapshot consistente sob award
+  concorrente). **Requester FORA da coorte** (sem matrícula na audiência pedida, ou equipe)
+  → `getRanking` devolve `null` e o service **OMITE** o `ranking` (06/2026): sem isto vinha
+  "1º de 0" ou ranqueava o aluno entre pares dos quais não faz parte — e o front kids
+  renderiza `ranking.position` direto (só checa o objeto inteiro nulo, não o campo).
 - **Impersonação/equipe**: XP credita no aluno do `x-auth-user-id` — consistente com as
   completions (que já são gravadas); suporte "fazendo aula" pelo aluno gera XP real
   (trade-off aceito, igual ao rating de equipe).
@@ -350,8 +387,9 @@ RBAC real no gateway (LEITURA → superadmin/admin/staff; ESCRITA → superadmin
 serviço confere os headers `X-Auth-User-*` via `requireAdmin` (defesa em profundidade,
 `env.REQUIRE_ADMIN`, default `true`) **e exige o `x-internal-token`** (06/2026 — o
 gateway injeta via `membersInternalTransforms`; sem ele os `X-Auth-User-*` seriam
-forjáveis por quem alcançasse o serviço direto). Rotas em
-`interfaces/http/routes/admin.routes.ts`:
+forjáveis por quem alcançasse o serviço direto). `requireAdmin` trata `x-auth-user-status`
+**AUSENTE como inativo** (06/2026 — o gateway SEMPRE injeta `active`; a falta indica chamada
+que não passou pela borda → 403). Rotas em `interfaces/http/routes/admin.routes.ts`:
 
 - `GET /members/admin/members` (`?status&courseRef&limit&offset`) → membros distintos
   (1 linha = 1 usuário com matrícula) com sumário (`activeCount/totalCount`, cursos,
@@ -464,11 +502,14 @@ Envs de prod: `NODE_ENV=production` (liga os refines fail-closed), `PORT=3004`,
 SEMPRE — boot falha sem ele), `INTERNAL_API_TOKEN` (= `MEMBERS_INTERNAL_TOKEN` do gateway;
 obrigatório em prod), `CATALOG_INTERNAL_TOKEN` (= `INTERNAL_API_TOKEN` do catalog =
 `CATALOG_INTERNAL_TOKEN` do gateway — 1 token, 3 hosts; obrigatório em prod) e
-**`CATALOG_BASE_URL=http://catalog.railway.internal:3003`** (⚠️ o default é `localhost:3003` —
-esquecer esta env quebra o grant em runtime, não no boot) e `SENTRY_DSN` (projeto
-`sistema-zero-members` — ver §Sentry). No GATEWAY: `MEMBERS_URL=
-http://members.railway.internal:3004` + `MEMBERS_INTERNAL_TOKEN`. Ler tokens dos irmãos com
-`railway variables --kv`.
+**`CATALOG_BASE_URL=http://catalog.railway.internal:3003`** (default `localhost:3003`; em
+**produção o boot FALHA** se ainda apontar p/ localhost — refine 06/2026, antes quebrava só o
+grant em runtime) e `SENTRY_DSN` (projeto
+`sistema-zero-members` — ver §Sentry). Opcional: `MAX_STUDIO_BODY_BYTES` (default 2 MB — teto
+de corpo das rotas de Estúdio; ver §Conceito 6) e `DATABASE_SSL` (default `false`; `true` →
+`ssl:'require'` se o Postgres passar a exigir TLS — hoje rede privada sem TLS). No GATEWAY:
+`MEMBERS_URL=http://members.railway.internal:3004` + `MEMBERS_INTERNAL_TOKEN`. Ler tokens dos
+irmãos com `railway variables --kv`.
 
 ## Pendente (fatias seguintes)
 

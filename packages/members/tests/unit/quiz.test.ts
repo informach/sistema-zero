@@ -54,9 +54,14 @@ describe('gradeQuizAttempt', () => {
     expect(g.passed).toBe(false)
   })
 
-  test('passingScore default é 100; abaixo dele reprova', () => {
+  test('fixação (sem passingScore) → concluído ao enviar (não reprova)', () => {
     const semCorte: QuizBlock = { ...quiz, passingScore: undefined }
-    expect(gradeQuizAttempt(semCorte, { q1: ['b'], q2: ['b'] }).passed).toBe(false)
+    // Sem nota de corte não há reprovação: passa ao enviar (qualquer nota) —
+    // evita cooldown e credita XP uma vez (coerente com "só para treinar").
+    expect(gradeQuizAttempt(semCorte, { q1: ['b'], q2: ['b'] }).passed).toBe(true)
+    expect(gradeQuizAttempt(semCorte, { q1: ['a'], q2: [] }).passed).toBe(true)
+    // O score real segue calculado (50%) e passingScore reportado é o default.
+    expect(gradeQuizAttempt(semCorte, { q1: ['b'], q2: ['b'] }).score).toBe(50)
     expect(gradeQuizAttempt(semCorte, { q1: ['b'], q2: ['b'] }).passingScore).toBe(100)
   })
 

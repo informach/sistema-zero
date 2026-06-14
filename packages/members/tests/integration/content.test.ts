@@ -300,6 +300,13 @@ describe('Members HTTP — autoria: árvore de conteúdo', () => {
       content: { kind: 'quiz', questions: [] },
     })
     expect(empty.status).toBe(201)
+
+    // ...MAS quiz COM nota de corte e sem questões → 400 (gate impossível de
+    // satisfazer travaria a conclusão da aula para sempre).
+    const gatedEmpty = await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+      content: { kind: 'quiz', passingScore: 50, questions: [] },
+    })
+    expect(gatedEmpty.status).toBe(400)
   })
 
   test('excluir módulo remove as aulas em cascata', async () => {
@@ -501,6 +508,15 @@ describe('Members HTTP — autoria: reordenação', () => {
       orderedIds: [m1.id],
     })
     expect(bad.status).toBe(400)
+
+    // Id repetido (mesmo tamanho, ambos ∈ atuais) corromperia o sortOrder → 400.
+    const dup = await send(app, `/members/admin/courses/${course.id}/modules/reorder`, 'POST', {
+      orderedIds: [m1.id, m1.id],
+    })
+    expect(dup.status).toBe(400)
+    // A ordem anterior (B, A) permanece intacta.
+    const tree2 = await readJson(await get(app, `/members/admin/courses/${course.id}`))
+    expect(tree2.modules.map((m: { title: string }) => m.title)).toEqual(['B', 'A'])
   })
 })
 

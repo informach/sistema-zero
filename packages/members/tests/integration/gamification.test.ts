@@ -453,6 +453,24 @@ describe('Gamificação — ranking por vitrine (?audience= + ?ranking=true)', (
     expect(adult.ranking).toEqual({ position: 1, totalStudents: 1 })
   })
 
+  test('requester FORA da coorte (sem matrícula na audiência) → ranking omitido', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const kidsCourse = seedSampleCourse(courses, 'curso-kids', 'published', 'kids')
+    seedSampleCourse(courses, 'curso-adulto', 'published', 'adult')
+    // USER só tem matrícula KIDS — não pertence à coorte ADULT.
+    grantLifetime(entitlements, { userId: USER, courseRef: kidsCourse.slug })
+
+    const adult = await readJson(
+      await app.handle(
+        new Request('http://localhost/members/gamification/me?audience=adult&ranking=true', {
+          headers: authHeaders,
+        }),
+      ),
+    )
+    // Sem "1º de 0" nem ranqueado entre pares dos quais não faz parte.
+    expect(adult.ranking).toBeUndefined()
+  })
+
   test('equipe (admin/staff/superadmin) fica FORA do ranking — só cliente conta', async () => {
     const { app, courses, entitlements } = buildApp()
     const kidsCourse = seedSampleCourse(courses, 'curso-kids', 'published', 'kids')

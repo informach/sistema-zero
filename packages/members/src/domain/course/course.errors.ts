@@ -90,3 +90,19 @@ export class QuizGateNotPassedError extends DomainError {
     super(message)
   }
 }
+
+/** Bloco de estúdio inexistente na aula (ou o bloco não é um estúdio). → 404. */
+export class StudioBlockNotFoundError extends DomainError {
+  readonly code = 'STUDIO_BLOCK_NOT_FOUND'
+  constructor(message = 'Atividade do Estúdio não encontrada') {
+    super(message)
+  }
+}
+
+/** Aula tem bloco de estúdio cujo projeto ainda não foi enviado — conclusão bloqueada. → 409. */
+export class StudioGateNotSubmittedError extends DomainError {
+  readonly code = 'STUDIO_GATE_NOT_SUBMITTED'
+  constructor(message = 'Envie o projeto do Estúdio para poder concluir a aula') {
+    super(message)
+  }
+}
