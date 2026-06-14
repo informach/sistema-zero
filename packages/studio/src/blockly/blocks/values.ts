@@ -337,7 +337,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     ],
     output: 'JSValue',
     colour: C,
-    level: 'intermediario',
+    level: 'iniciante',
     tooltip: 'Lê um valor salvo no navegador (localStorage.getItem). Devolve texto ou nulo.',
   },
   {

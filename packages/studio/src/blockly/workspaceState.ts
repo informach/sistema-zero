@@ -1,3 +1,4 @@
+import { compileStatements } from '#generators'
 import type { CSSEntry, JSExpr, JSStatement, KeyframesCSS, SZIR } from '#ir'
 import { readingOrderIndices, SHADOW_PRESETS } from './buildIR'
 
@@ -1676,14 +1677,28 @@ function incrementExpr(targetName: string, expr: JSExpr): number | null {
 }
 
 function rawJSBlock(stmt: JSStatement): SerializedBlocklyBlock {
-  return block(
-    'sz_adv_raw_js',
-    {
-      CODE: stmt.type === 'rawJS' ? stmt.code : JSON.stringify(stmt, null, 2),
-    },
-    {},
-    stmt.__id,
-  )
+  return block('sz_adv_raw_js', { CODE: rawJSCodeFor(stmt) }, {}, stmt.__id)
+}
+
+/**
+ * Código que o bloco de "código avançado" carrega quando um statement do IR não é
+ * representável como bloco estruturado. Para um `rawJS` é o código verbatim; para
+ * qualquer outro (ex.: `storageSet`/`storageGet` com chave NÃO-literal, ou
+ * `querySelector`/`fetchJson` com seletor/URL dinâmico) COMPILAMOS o statement
+ * para JS válido — antes era um `JSON.stringify` do nó do IR, que o gerador
+ * re-emitia VERBATIM como um objeto literal quebrado, DESCARTANDO a chamada real
+ * (ex.: o `localStorage.setItem(variavel, x)` sumia ao passar pela visão de
+ * Blocos). Compilar mantém o trecho válido e re-parseável (round-trip estável).
+ */
+function rawJSCodeFor(stmt: JSStatement): string {
+  if (stmt.type === 'rawJS') return stmt.code
+  try {
+    return compileStatements([stmt], 0)
+  } catch {
+    // A montagem dos blocos JAMAIS pode quebrar: na falha (inalcançável p/ IR
+    // válido) cai para o nó comentado — JS inerte que preserva o dado p/ debug.
+    return `/* ${JSON.stringify(stmt)} */`
+  }
 }
 
 /**

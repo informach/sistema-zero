@@ -334,7 +334,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    level: 'intermediario',
+    level: 'iniciante',
     tooltip:
       'Salva um valor no navegador. localStorage fica salvo entre visitas; sessionStorage só nesta aba/sessão.',
   },

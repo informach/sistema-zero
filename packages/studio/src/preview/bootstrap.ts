@@ -5,6 +5,7 @@ import { buildPreviewCSPMetaTag } from './csp'
 import { buildInterceptorScript } from './interceptors'
 import { buildLoopGuardRuntime, instrumentLoops } from './loopGuard'
 import { buildPermissionGuardRuntime } from './permissionGuard'
+import { buildStorageBridgeRuntime } from './storageBridge'
 import { transpileExtra } from './transpile'
 
 export interface PreviewExtraFile {
@@ -36,6 +37,14 @@ export interface BuildPreviewDocInput {
   fetchAllowedOrigins?: readonly string[]
   /** Orçamento de tempo síncrono do loopGuard (ms). */
   loopBudgetMs?: number
+  /**
+   * Snapshot do `localStorage` persistido deste projeto, semeado no bridge de
+   * armazenamento (src/preview/storageBridge.ts) para que os blocos "guardar/ler"
+   * funcionem e o estado sobreviva ao recarregar. Ausente/vazio = começa zerado.
+   */
+  localStorageSnapshot?: Record<string, string>
+  /** Projeto deste doc — carimbado nas mensagens de escrita do bridge. */
+  storageProjectId?: string
   /**
    * Módulos ESM de extensões instaladas (`specifier → URL`, ex.:
    * `{ three: 'https://esm.sh/three@0.180.0' }`). Entram no importmap e suas
@@ -172,9 +181,10 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
 
   // Camadas de segurança no <head>, em ordem (defesa em profundidade):
   // CSP → interceptor (console/erros/heartbeat) → permissionGuard (rede) →
-  // loopGuard (runtime do __szLoopTick) → IMPORTMAP → scripts de extensão (NÃO
-  // instrumentados) → estilos → conteúdo do <head> do aluno → corpo → código do
-  // aluno. ⚠️ O importmap PRECISA vir antes de QUALQUER `<script type="module">`
+  // loopGuard (runtime do __szLoopTick) → storageBridge (localStorage shim) →
+  // IMPORTMAP → scripts de extensão (NÃO instrumentados) → estilos → conteúdo do
+  // <head> do aluno → corpo → código do aluno. ⚠️ O importmap PRECISA vir antes
+  // de QUALQUER `<script type="module">`
   // (extScripts viram module quando há extensionImports) — senão o `import ...
   // from 'three'` falha com "Failed to resolve module specifier".
   const cspMeta = buildPreviewCSPMetaTag({
@@ -187,6 +197,16 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
   })
   const permissionGuardTag = permissionGuard ? scriptTag(permissionGuard) : ''
   const loopGuardTag = scriptTag(buildLoopGuardRuntime(input.loopBudgetMs))
+  // Bridge de armazenamento: shima localStorage/sessionStorage (a origem opaca do
+  // sandbox os faria LANÇAR) e espelha o store `local` ao parent. Vem antes do
+  // importmap/extensões/aluno para que `localStorage` já exista quando rodarem.
+  const storageBridgeTag = scriptTag(
+    buildStorageBridgeRuntime({
+      localSnapshot: input.localStorageSnapshot,
+      parentOrigin: input.parentOrigin,
+      projectId: input.storageProjectId,
+    }),
+  )
 
   return `<!doctype html>
 <html lang="pt-BR">
@@ -196,6 +216,7 @@ ${cspMeta}
 ${scriptTag(buildInterceptorScript(input.parentOrigin))}
 ${permissionGuardTag}
 ${loopGuardTag}
+${storageBridgeTag}
 ${importmapTag}
 ${extScripts}
 ${styleTag}

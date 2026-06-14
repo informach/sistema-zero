@@ -190,9 +190,11 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
     const extras = installedIds
       .map((id) => findExtension(id))
       .filter((e): e is NonNullable<ReturnType<typeof findExtension>> => Boolean(e))
-      // Gateia a categoria da extensão pelo nível (ex.: game-3d = 'avancado').
+      // Gateia a categoria da extensão pelo nível (ex.: game-2d = 'intermediario',
+      // game-3d = 'avancado'). Default 'intermediario': extensões NUNCA aparecem
+      // na paleta do iniciante, mesmo que esqueçam de declarar minLevel.
       .filter((e) =>
-        isCategoryAllowed(e.blockly.toolboxCategory.name, e.minLevel ?? 'iniciante', profile),
+        isCategoryAllowed(e.blockly.toolboxCategory.name, e.minLevel ?? 'intermediario', profile),
       )
       .map((e) => e.blockly.toolboxCategory)
     return buildCoreToolbox(extras, profile)

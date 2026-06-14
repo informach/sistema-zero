@@ -1,12 +1,18 @@
 import type { JSX } from 'react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import type { ExtraFile, InstalledExtension } from '#core'
 import type { ExtensionPermission } from '#extensions'
 import { findExtension } from '#official-extensions'
-import { buildPreviewDoc, isPreviewMessage } from '#preview'
+import {
+  buildPreviewDoc,
+  isPreviewMessage,
+  isPreviewStorageWriteMessage,
+  sanitizePreviewStorageData,
+} from '#preview'
 import { Button } from '#ui'
 import { useDebounced } from '../../hooks/useDebounced'
+import { loadGameStorage, writeGameStorage } from '../../state/gameStorage'
 import { useLogsStore } from '../../state/logsStore'
 import { useProjectStore } from '../../state/projectStore'
 import { useUIStore } from '../../state/uiStore'
@@ -50,10 +56,93 @@ export function PreviewIframe(): JSX.Element {
   const [loadedSrcDoc, setLoadedSrcDoc] = useState<string | null>(null)
   const [renderLargePreviewForInput, setRenderLargePreviewForInput] =
     useState<PreviewBudgetInput | null>(null)
+  // Mirror em memória do `localStorage` persistido do projeto (blocos
+  // "guardar/ler"). É SEMEADO no doc do preview a cada build (lido como ref, NÃO
+  // como dependência — senão cada escrita reconstruiria o doc e RECARREGARIA o
+  // preview, zerando o programa que acabou de salvar). As mutações chegam por
+  // postMessage do bridge e são persistidas (debounced) no IndexedDB.
+  const gameStorageRef = useRef<Record<string, string>>({})
+  const projectIdRef = useRef<string | null>(projectId)
+  projectIdRef.current = projectId
+  // Throttle de gravação. O bridge posta o store INTEIRO a cada mutação (pode ser
+  // muitas por segundo). Guardamos só o ÚLTIMO payload e o processamos (sanitiza +
+  // mirror + persiste) na BORDA DE SUBIDA e no máximo a cada STORAGE_FLUSH_MS:
+  // limita o custo de sanitização na main-thread e impede que um programa que
+  // escreve em laço ASSÍNCRONO (fora do alcance do loopGuard) resete um debounce
+  // pra sempre e nunca persista. O payload mais recente sempre vence (última
+  // escrita preservada).
+  const latestStoragePayload = useRef<Record<string, string> | null>(null)
+  const storageFlushTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const lastStorageFlushAt = useRef(0)
+  // Gate da primeira execução: só liberamos o doc AO VIVO depois de hidratar o
+  // estado salvo. Sem isso, um Play disparado antes da leitura do IndexedDB
+  // semearia o preview vazio e o primeiro setItem do programa (ex.: fome=100)
+  // sobrescreveria a fome salva — perda de dado no 1º run.
+  const [storageReady, setStorageReady] = useState(false)
+
+  // Processa o payload pendente DO PROJETO ATUAL: atualiza o mirror (para o
+  // próximo build semear fresco) e persiste no IndexedDB.
+  const processStorageNow = useCallback(() => {
+    if (storageFlushTimer.current) {
+      clearTimeout(storageFlushTimer.current)
+      storageFlushTimer.current = null
+    }
+    const raw = latestStoragePayload.current
+    if (raw == null) return
+    latestStoragePayload.current = null
+    lastStorageFlushAt.current = Date.now()
+    const data = sanitizePreviewStorageData(raw)
+    gameStorageRef.current = data
+    const id = projectIdRef.current
+    if (id) void writeGameStorage(id, data)
+  }, [])
+
+  const scheduleStorageFlush = useCallback(() => {
+    if (storageFlushTimer.current) return // trailing já agendado — coalesce
+    const sinceLast = Date.now() - lastStorageFlushAt.current
+    if (sinceLast >= STORAGE_FLUSH_MS) {
+      processStorageNow() // borda de subida: persiste já a 1ª escrita ociosa
+    } else {
+      storageFlushTimer.current = setTimeout(processStorageNow, STORAGE_FLUSH_MS - sinceLast)
+    }
+  }, [processStorageNow])
 
   useEffect(() => {
     if (!projectId) {
       autoStartedProjectId.current = null
+    }
+  }, [projectId])
+
+  // Hidrata o mirror ao abrir/trocar de projeto; ao sair, descarrega o payload
+  // pendente do projeto que estava aberto (não some com a última jogada).
+  useEffect(() => {
+    let cancelled = false
+    gameStorageRef.current = {}
+    setStorageReady(false)
+    if (projectId) {
+      void loadGameStorage(projectId).then((data) => {
+        if (cancelled) return
+        gameStorageRef.current = data
+        setStorageReady(true)
+      })
+    } else {
+      setStorageReady(true)
+    }
+    const previousProjectId = projectId
+    return () => {
+      cancelled = true
+      // Persiste o pendente NO PROJETO QUE ESTAVA ABERTO. projectIdRef já aponta
+      // para o NOVO projeto após a troca, então usamos previousProjectId explícito
+      // (processStorageNow gravaria no projeto errado aqui).
+      if (storageFlushTimer.current) {
+        clearTimeout(storageFlushTimer.current)
+        storageFlushTimer.current = null
+      }
+      const raw = latestStoragePayload.current
+      latestStoragePayload.current = null
+      if (raw != null && previousProjectId) {
+        void writeGameStorage(previousProjectId, sanitizePreviewStorageData(raw))
+      }
     }
   }, [projectId])
 
@@ -70,6 +159,8 @@ export function PreviewIframe(): JSX.Element {
       setPreviewRunning(false)
       return
     }
+    // Garante que o mirror reflete a última escrita ANTES de reconstruir o doc.
+    processStorageNow()
     markCurrentProjectStarted()
     setPreviewRunning(true)
     rerenderPreview()
@@ -77,6 +168,8 @@ export function PreviewIframe(): JSX.Element {
 
   const handleRefresh = () => {
     // Atualizar implica executar: se estava parado, religa o Play.
+    // Descarrega a última escrita ao mirror antes de o doc ser reconstruído.
+    processStorageNow()
     markCurrentProjectStarted()
     if (!previewRunning) setPreviewRunning(true)
     rerenderPreview()
@@ -174,6 +267,8 @@ export function PreviewIframe(): JSX.Element {
     if (!previewRunning) return PAUSED_PREVIEW_DOC
     if (previewPaused) return PAUSED_PREVIEW_DOC
     if (!currentProjectHasRun) return PAUSED_PREVIEW_DOC
+    // Aguarda hidratar o estado salvo antes do 1º build (ver storageReady acima).
+    if (projectId && !storageReady) return PAUSED_PREVIEW_DOC
     const base = buildPreviewDoc({
       html: debouncedHtml,
       css: debouncedCss,
@@ -185,6 +280,10 @@ export function PreviewIframe(): JSX.Element {
       fetchAllowedOrigins: previewSecurity.fetchAllowedOrigins,
       loopBudgetMs: previewSecurity.loopBudgetMs,
       extensionImports,
+      // Semeia o estado salvo (lido do ref: deliberadamente FORA das deps do memo
+      // — uma escrita não deve reconstruir o doc e recarregar o preview).
+      localStorageSnapshot: gameStorageRef.current,
+      storageProjectId: projectId ?? undefined,
     })
     // O botão "Atualizar" muda `renderNonce`. Embutimos o nonce no próprio documento
     // para que o `srcDoc` mude e o iframe recarregue (re-executando o código) mesmo
@@ -196,6 +295,8 @@ export function PreviewIframe(): JSX.Element {
     previewRunning,
     previewPaused,
     currentProjectHasRun,
+    projectId,
+    storageReady,
     debouncedHtml,
     debouncedCss,
     debouncedJs,
@@ -254,6 +355,17 @@ export function PreviewIframe(): JSX.Element {
       const source = iframeRef.current?.contentWindow
       if (!source || ev.source !== source) return
       if (ev.origin !== 'null' && ev.origin !== window.location.origin) return
+      // Escrita no armazenamento persistente do programa do aluno (guardar/ler).
+      if (isPreviewStorageWriteMessage(ev.data)) {
+        // Descarta escrita de um doc de OUTRO projeto: na janela de troca de
+        // projeto, o programa ANTIGO (iframe ainda vivo) não pode gravar no
+        // projeto NOVO. O carimbo projectId vem do doc que produziu a mensagem.
+        if (ev.data.projectId !== projectIdRef.current) return
+        // Guarda só o último payload; o throttle sanitiza/persiste (ver acima).
+        latestStoragePayload.current = ev.data.data
+        scheduleStorageFlush()
+        return
+      }
       if (!isPreviewMessage(ev.data)) return
       // Heartbeat NÃO é log: alimenta o watchdog e não vai para o console.
       if (ev.data.kind === 'heartbeat') {
@@ -265,7 +377,16 @@ export function PreviewIframe(): JSX.Element {
     }
     window.addEventListener('message', handler)
     return () => window.removeEventListener('message', handler)
-  }, [pushLog])
+  }, [pushLog, scheduleStorageFlush])
+
+  // Descarrega o estado salvo pendente quando a aba/IDE fecha — a última jogada
+  // antes de um F5 não pode se perder na janela do throttle. (O unmount/troca de
+  // projeto é coberto pela limpeza do efeito de hidratação acima.)
+  useEffect(() => {
+    const flush = () => processStorageNow()
+    window.addEventListener('pagehide', flush)
+    return () => window.removeEventListener('pagehide', flush)
+  }, [processStorageNow])
 
   return (
     <div className="relative flex h-full flex-col bg-sz-bg">
@@ -359,6 +480,9 @@ export function PreviewIframe(): JSX.Element {
 }
 
 const PAUSED_PREVIEW_DOC = '<!doctype html><html lang="pt-BR"><body></body></html>'
+
+// Intervalo do throttle de persistência do estado salvo (guardar/ler).
+const STORAGE_FLUSH_MS = 500
 
 function formatPreviewSize(chars: number): string {
   if (chars >= 1_000_000) return `${(chars / 1_000_000).toFixed(1)} M caracteres`

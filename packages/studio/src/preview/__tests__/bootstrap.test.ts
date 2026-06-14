@@ -35,6 +35,26 @@ describe('buildPreviewDoc', () => {
     expect(doc.match(/window\.SZGame2D/g)).toHaveLength(1)
   })
 
+  it('injeta o bridge de armazenamento antes do código do aluno e semeia o snapshot', () => {
+    const doc = buildPreviewDoc({
+      html: '<html><body></body></html>',
+      css: '',
+      js: 'const fome = localStorage.getItem("fome");',
+      localStorageSnapshot: { fome: '7' },
+    })
+    // O shim de localStorage está presente e semeado (seed embutido como string
+    // JSON + JSON.parse em runtime — a chave do snapshot aparece no doc).
+    expect(doc).toContain("install('localStorage'")
+    expect(doc).toContain("install('sessionStorage'")
+    expect(doc).toContain('JSON.parse(')
+    expect(doc).toContain('fome')
+    // E vem ANTES do script do aluno (que lê localStorage).
+    const idxBridge = doc.indexOf("install('localStorage'")
+    const idxUserScript = doc.lastIndexOf('<script src="data:text/javascript;base64,')
+    expect(idxBridge).toBeGreaterThan(-1)
+    expect(idxUserScript).toBeGreaterThan(idxBridge)
+  })
+
   it('embute CSS como <style> inline', () => {
     const doc = buildPreviewDoc({
       html: '<html><body></body></html>',

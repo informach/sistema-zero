@@ -748,6 +748,31 @@ describe('Canvas — round-trip de width/height pela Ponte', () => {
     expect(canvasBlock).toBeDefined()
     expect(canvasBlock?.data).toBeUndefined()
   })
+
+  it('fallback de bloco "código avançado" carrega JS válido, não um dump do IR', () => {
+    // storageSet com chave NÃO-literal (variável) não cabe no bloco estruturado
+    // (cuja chave é um campo de texto) → cai no bloco de código avançado. O CODE
+    // tem que ser a CHAMADA real, não um JSON.stringify do nó (que sumia com o
+    // setItem ao gerar o código).
+    const state = buildWorkspaceStateFromIR({
+      html: [],
+      css: [],
+      js: [
+        {
+          type: 'storageSet',
+          store: 'local',
+          key: { type: 'var', name: 'chave' },
+          value: { type: 'var', name: 'valor' },
+        },
+      ],
+      extensions: [],
+    })
+    const raw = collectBlocks(state.blocks.blocks).find((b) => b.type === 'sz_adv_raw_js')
+    expect(raw).toBeDefined()
+    expect(raw?.fields?.CODE).toBe('localStorage.setItem(chave, valor);')
+    // E NÃO um dump do IR.
+    expect(raw?.fields?.CODE).not.toContain('"type"')
+  })
 })
 
 function collectTypes(blocks: SerializedBlocklyBlock[]): string[] {

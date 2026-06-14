@@ -120,6 +120,8 @@ describe('PersistenceService', () => {
         'sz:project-files:project-1',
         'sz:project-state:project-1',
         'sz:project:project-1',
+        // Armazenamento do programa do aluno (blocos "guardar/ler") deste projeto.
+        'sz:game-storage:project-1',
       ],
       expect.anything(),
     )

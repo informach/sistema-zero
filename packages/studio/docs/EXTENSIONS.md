@@ -32,8 +32,9 @@ projeto que instalar a extensão.
 - [ ] Sem chamadas de rede (`fetch`, `XMLHttpRequest`, `WebSocket`,
       `navigator.sendBeacon`) a menos que a permission `network` seja
       declarada e justificada (ver item 3).
-- [ ] Sem acesso a `localStorage`/`IndexedDB`/`cookie` a menos que a permission
-      `storage` seja declarada e justificada.
+- [ ] `localStorage`/`sessionStorage` no preview são SHIMS isolados por projeto
+      (ver nota abaixo), não o armazenamento global do navegador; uma extensão que
+      os use deve declarar a permission `storage` e justificar.
 - [ ] A API global tem **prefixo de namespace próprio** (ex.: `window.SZGame2D`),
       nunca polui o escopo global com nomes genéricos.
 - [ ] Listeners de teclado/mouse/áudio só existem se as permissions
@@ -69,9 +70,23 @@ projeto que instalar a extensão.
 > APENAS as APIs de rede — `fetch`/XHR/`WebSocket`/`EventSource`/`sendBeacon` —
 > quando a rede não foi concedida. As demais capacidades (`canvas`, `keyboard`,
 > `mouse`, `audio`, `storage`) são uma BASELINE sempre liberada ao aluno: **NÃO há
-> gate de runtime** para `AudioContext`, `localStorage`/`IndexedDB` ou cookie.
-> Essas permissions são DECLARATIVAS — alimentam o aviso do painel de extensões e
-> a revisão de PR (itens 1 e 3 acima), não um bloqueio efetivo. Consequência
+> gate de runtime** para `AudioContext` ou cookie. Essas permissions são
+> DECLARATIVAS — alimentam o aviso do painel de extensões e a revisão de PR
+> (itens 1 e 3 acima), não um bloqueio efetivo.
+>
+> **`storage` (localStorage/sessionStorage):** o sandbox tem origem OPACA — o
+> `localStorage`/`sessionStorage` REAL do navegador LANÇA `SecurityError` ali. Por
+> isso o `storageBridge` (`src/preview/storageBridge.ts`) injeta um SHIM funcional:
+> `local` é persistido POR PROJETO (IndexedDB, via `state/gameStorage.ts`) e
+> re-semeado a cada execução — sobrevive a "Atualizar" e ao recarregar a IDE;
+> `session` é efêmero (zera a cada execução). NÃO é o `localStorage` global do
+> navegador (é isolado por projeto, não compartilhado entre projetos/abas), mas dá
+> aos blocos "guardar/ler" o comportamento esperado pelo aluno. Limitações
+> conhecidas (baixas, aceitas): só a API de MÉTODOS (`getItem/setItem/removeItem/
+> clear/key/length`) — acesso por propriedade (`localStorage.x = …`) não persiste;
+> e um `location.reload()` DENTRO do programa re-semeia do snapshot do build (uma
+> reexecução via "Atualizar"/recarregar a IDE re-semeia do estado já salvo).
+> Consequência
 > contra-intuitiva: declarar `network` **destrava** o `fetch` do aluno (o guard
 > deixa de envolvê-lo); o professor ainda restringe por origem via
 > `fetchAllowedOrigins`. Por isso uma extensão que só CARREGA uma lib via CDN

@@ -46,8 +46,9 @@ export interface ExtensionDefinition {
   manifest: ExtensionManifest
   /**
    * Nível mínimo de aprendizado para a categoria da extensão aparecer na paleta
-   * (divulgação progressiva). Ausente ⇒ visível em qualquer nível. Ex.: game-3d
-   * usa 'avancado' para não poluir a paleta do iniciante.
+   * (divulgação progressiva). Ausente ⇒ default 'intermediario': extensões NUNCA
+   * aparecem no nível iniciante (regra do produto). Ex.: game-2d = 'intermediario',
+   * game-3d = 'avancado'.
    */
   minLevel?: BlockLevel
   blockly: {

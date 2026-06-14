@@ -2,6 +2,14 @@ import { describe, expect, it } from 'bun:test'
 import { compileStatements } from '#generators'
 import { SZIRSchema } from '#ir'
 import { pongExample } from '../examples'
+import { gameTwoDExtension } from '../index'
+
+describe('game-2d — definição da extensão', () => {
+  it('nível intermediário — NÃO aparece na paleta do iniciante', () => {
+    expect(gameTwoDExtension.manifest.id).toBe('game-2d')
+    expect(gameTwoDExtension.minLevel).toBe('intermediario')
+  })
+})
 
 /** Coleta todos os `type` de nós do IR (deep-walk) para detectar `rawJS`. */
 function collectTypes(value: unknown, out: Set<string> = new Set()): Set<string> {

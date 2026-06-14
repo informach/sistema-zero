@@ -1,6 +1,7 @@
 import { createStore, delMany, get, getMany, keys, set, setMany } from 'idb-keyval'
 import { IDE_MODES, type IDEMode, type Project } from '#core'
 import { cancelPendingAutosavesFor } from '../persistence/service'
+import { gameStorageKey } from './gameStorage'
 
 const LEGACY_PROJECT_KEY_PREFIX = 'sz:project:'
 const PROJECT_META_KEY_PREFIX = 'sz:project-meta:'
@@ -90,7 +91,14 @@ export async function deleteProject(id: string): Promise<void> {
   // persist/rename em voo do mesmo projeto.
   await runSerializedWrite(id, () =>
     delMany(
-      [projectMetaKey(id), projectFilesKey(id), projectStateKey(id), legacyProjectKey(id)],
+      [
+        projectMetaKey(id),
+        projectFilesKey(id),
+        projectStateKey(id),
+        legacyProjectKey(id),
+        // Armazenamento do programa do aluno (blocos "guardar/ler") deste projeto.
+        gameStorageKey(id),
+      ],
       getStore(),
     ),
   )
