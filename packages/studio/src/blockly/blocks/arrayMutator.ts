@@ -141,7 +141,8 @@ function clampItemCount(value: number): number {
 }
 
 function arrayMutatorHelper(this: ArrayMutatorBlock): void {
-  // Forma inicial: dois espaços com sombra de número.
+  // Forma inicial: array VAZIO (DEFAULT_ITEMS = 0); o aluno adiciona espaços
+  // com o botão +.
   this.syncShape_()
 }
 

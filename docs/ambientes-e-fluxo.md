@@ -64,7 +64,11 @@ URLs públicas:
   o CI e, **se verde**, o job `deploy-staging` (no próprio `ci.yml`) dispara o
   deploy **só dos serviços afetados pelo diff** (mapa que espelha os
   `watchPatterns` dos `railway.json`; `bun.lock`/`package.json` → todos; `core` →
-  backends+funnel; `ui` → admin/community/funnel). Usa o secret `RAILWAY_TOKEN`
+  backends+funnel+fiscal; `ui` → admin/community/community-kids/funnel;
+  `member-shell` → community/community-kids). O mapa já cobre **community-kids** e
+  **fiscal** (ambos em prod desde 06/2026); o **hub** ainda NÃO está no mapa (deploy
+  pendente) e o **studio** é lib interna (somar os consumidores ao mapa quando o bloco
+  estúdio for à prod). Usa o secret `RAILWAY_TOKEN`
   (token de conta do Railway) e espera os healthchecks convergirem. Forçar um
   deploy: `gh workflow run CI --ref staging -f services=all` (ou CSV:
   `-f services=funnel,auth`). *(O trigger nativo do Railway só pode ser armado

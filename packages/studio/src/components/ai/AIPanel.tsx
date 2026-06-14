@@ -20,7 +20,25 @@ import {
 let nextId = 0
 const AI_RESPONSE_MAX_TOKENS = 900
 const AI_STREAM_FLUSH_MS = 50
+/** Texto exibido quando a IA conclui com sucesso mas sem conteúdo algum. */
+const AI_EMPTY_RESPONSE_PLACEHOLDER = 'A IA não retornou conteúdo. Tente novamente.'
 const EMPTY_INSTALLED_EXTENSIONS: InstalledExtension[] = []
+/** Folga (px) dentro da qual consideramos o aluno "no fim" do transcript. */
+const STICKY_BOTTOM_THRESHOLD_PX = 48
+
+/**
+ * Decide se o auto-scroll deve grudar no rodapé: só quando o leitor já estava
+ * perto do fim. Lido acima (rolou pra trás) NÃO é puxado de volta. Geometria
+ * vem do elemento de scroll do transcript. Extraído como função pura p/ teste.
+ */
+export function shouldStickToBottom(geometry: {
+  scrollHeight: number
+  scrollTop: number
+  clientHeight: number
+}): boolean {
+  const distanceFromBottom = geometry.scrollHeight - geometry.scrollTop - geometry.clientHeight
+  return distanceFromBottom <= STICKY_BOTTOM_THRESHOLD_PX
+}
 
 // Memoizado: durante o streaming só a mensagem em andamento muda de props, então
 // as mensagens anteriores não re-renderizam (e não re-disparam o `animate-pulse`).
@@ -70,6 +88,7 @@ export function AIPanel(): JSX.Element {
   const activeAbortRef = useRef<AbortController | null>(null)
   const streamBufferRef = useRef<{ messageId: number; text: string } | null>(null)
   const streamFlushTimerRef = useRef<number | null>(null)
+  const transcriptRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     return () => {
@@ -81,6 +100,19 @@ export function AIPanel(): JSX.Element {
       streamBufferRef.current = null
     }
   }, [])
+
+  // Auto-scroll grudado no rodapé: tokens em streaming e mensagens novas se
+  // acumulavam abaixo da dobra. Usamos scrollTop = scrollHeight (não
+  // scrollIntoView, que mexeria no scroll do host). Só "puxamos" se o aluno já
+  // estava perto do fim — assim ler o histórico mais acima não dá solavanco.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `messages` é só o GATILHO (o corpo lê apenas refs/função pura)
+  useEffect(() => {
+    const el = transcriptRef.current
+    if (!el) return
+    if (shouldStickToBottom(el)) {
+      el.scrollTop = el.scrollHeight
+    }
+  }, [messages])
 
   const ctx = useMemo(
     () => ({
@@ -159,7 +191,15 @@ export function AIPanel(): JSX.Element {
         })
         if (activeRequestRef.current !== requestId) return
         flushStreamBuffer()
-        setMessages((m) => updateChatMessage(m, id, (msg) => ({ ...msg, streaming: false })))
+        setMessages((m) =>
+          updateChatMessage(m, id, (msg) => ({
+            ...msg,
+            streaming: false,
+            // Sucesso sem conteúdo (stream vazio / resposta vazia) renderizava
+            // uma bolha em branco — substitui por um aviso amigável.
+            text: msg.text.trim() ? msg.text : AI_EMPTY_RESPONSE_PLACEHOLDER,
+          })),
+        )
       } catch (err) {
         if (activeRequestRef.current !== requestId) return
         if (abortController.signal.aborted) return
@@ -280,7 +320,17 @@ export function AIPanel(): JSX.Element {
             </Button>
           </div>
         </header>
-        <div className="flex-1 overflow-auto px-3 py-2 text-xs">
+        {/* role="log" + aria-live="polite": leitores de tela anunciam as mensagens
+            que chegam (inclusive a resposta da IA em streaming). "polite" coalesce
+            as atualizações e só fala quando o usuário está ocioso, evitando inundar
+            a cada token. Sem isto a resposta da IA aparecia sem nenhum aviso ao SR. */}
+        <div
+          ref={transcriptRef}
+          role="log"
+          aria-live="polite"
+          aria-relevant="additions text"
+          className="flex-1 overflow-auto px-3 py-2 text-xs"
+        >
           {messages.map((m) => (
             <ChatMessageItem key={m.id} message={m} />
           ))}

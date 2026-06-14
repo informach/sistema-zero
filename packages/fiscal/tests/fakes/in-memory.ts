@@ -38,6 +38,8 @@ export class InMemoryInvoiceRepository implements InvoiceRepository {
     detail: Record<string, unknown>
   }> = []
   pdfs = new Map<string, { content: Uint8Array; contentType: string }>()
+  /** Spy de teste: ids cujo lease foi renovado (touchClaim). */
+  touched: string[] = []
   private counter = new Map<string, bigint>()
   private seq = 0
 
@@ -57,6 +59,20 @@ export class InMemoryInvoiceRepository implements InvoiceRepository {
     return [...this.invoices.values()].filter(
       (inv) => inv.paymentId === paymentId && ACTIVE.includes(inv.status),
     )
+  }
+
+  async findActiveSubstituteFor(originalId: string): Promise<Invoice | null> {
+    for (const inv of this.invoices.values()) {
+      if (inv.substitutesId === originalId && ACTIVE.includes(inv.status)) return inv
+    }
+    return null
+  }
+
+  async findAnyByPaymentId(paymentId: string): Promise<Invoice | null> {
+    const matches = [...this.invoices.values()]
+      .filter((inv) => inv.paymentId === paymentId && !inv.substitutesId)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    return matches[0] ?? null
   }
 
   async list(query: { status?: Invoice['status']; q?: string; limit: number; offset: number }) {
@@ -95,8 +111,11 @@ export class InMemoryInvoiceRepository implements InvoiceRepository {
   }
 
   async schedule(input: ScheduleInvoiceInput): Promise<Invoice> {
-    // Substituta fica FORA da unique de payment ativa (convive com a original).
-    const existing = input.substitutesId ? null : await this.findActiveByPaymentId(input.paymentId)
+    // Substituta colide na unique de substituta ativa (1 por original); nota normal
+    // na unique de payment ativa. Idempotência da re-entrega/corrida em ambos.
+    const existing = input.substitutesId
+      ? await this.findActiveSubstituteFor(input.substitutesId)
+      : await this.findActiveByPaymentId(input.paymentId)
     if (existing) return existing
     this.seq += 1
     const invoice: Invoice = {
@@ -146,6 +165,7 @@ export class InMemoryInvoiceRepository implements InvoiceRepository {
     if (inv?.status === 'SCHEDULED') {
       inv.status = 'SKIPPED'
       inv.skipReason = detail ? `${reason}: ${detail}` : reason
+      inv.version += 1
     }
   }
 
@@ -155,22 +175,43 @@ export class InMemoryInvoiceRepository implements InvoiceRepository {
     maxAttempts: number
   }): Promise<Invoice[]> {
     const now = Date.now()
-    const out: Invoice[] = []
+    // Espelha o adapter real: ORDER BY scheduled_for ANTES do LIMIT batchSize.
+    const due = [...this.invoices.values()]
+      .filter(
+        (inv) =>
+          inv.status === 'SCHEDULED' &&
+          inv.scheduledFor.getTime() <= now &&
+          (!inv.nextAttemptAt || inv.nextAttemptAt.getTime() <= now) &&
+          (!inv.claimedAt || now - inv.claimedAt.getTime() >= opts.staleMs) &&
+          inv.attempts <= opts.maxAttempts,
+      )
+      .sort((a, b) => a.scheduledFor.getTime() - b.scheduledFor.getTime())
+      .slice(0, opts.batchSize)
+    for (const inv of due) {
+      inv.claimedAt = new Date(now)
+      inv.attempts += 1
+    }
+    return due
+  }
+
+  async failExhausted(maxAttempts: number): Promise<number> {
+    const now = Date.now()
+    let count = 0
     for (const inv of this.invoices.values()) {
-      if (out.length >= opts.batchSize) break
-      const due =
+      if (
         inv.status === 'SCHEDULED' &&
         inv.scheduledFor.getTime() <= now &&
-        (!inv.nextAttemptAt || inv.nextAttemptAt.getTime() <= now) &&
-        (!inv.claimedAt || now - inv.claimedAt.getTime() >= opts.staleMs) &&
-        inv.attempts <= opts.maxAttempts
-      if (due) {
-        inv.claimedAt = new Date(now)
-        inv.attempts += 1
-        out.push(inv)
+        inv.attempts > maxAttempts
+      ) {
+        inv.status = 'FAILED'
+        inv.lastError =
+          'tentativas esgotadas: presa em SCHEDULED após crash (attempts > maxAttempts)'
+        inv.claimedAt = null
+        inv.version += 1
+        count += 1
       }
     }
-    return out
+    return count
   }
 
   async allocateDpsNumber(
@@ -208,6 +249,7 @@ export class InMemoryInvoiceRepository implements InvoiceRepository {
         claimedAt: null,
         lastError: null,
         nextAttemptAt: null,
+        version: inv.version + 1,
       })
       return true
     }
@@ -237,13 +279,15 @@ export class InMemoryInvoiceRepository implements InvoiceRepository {
         claimedAt: null,
         lastError: null,
         nextAttemptAt: null,
+        version: inv.version + 1,
       })
     }
   }
 
   async touchClaim(id: string): Promise<void> {
+    this.touched.push(id)
     const inv = this.invoices.get(id)
-    if (inv) inv.claimedAt = new Date()
+    if (inv && ['SCHEDULED', 'CANCEL_PENDING'].includes(inv.status)) inv.claimedAt = new Date()
   }
 
   async releaseForRetry(id: string, nextAttemptAt: Date, lastError: string): Promise<void> {
@@ -255,13 +299,18 @@ export class InMemoryInvoiceRepository implements InvoiceRepository {
   async markFailed(id: string, lastError: string): Promise<void> {
     const inv = this.invoices.get(id)
     if (inv?.status === 'SCHEDULED')
-      Object.assign(inv, { status: 'FAILED', lastError, claimedAt: null })
+      Object.assign(inv, { status: 'FAILED', lastError, claimedAt: null, version: inv.version + 1 })
   }
 
   async requestCancel(id: string, by: string, reason: string): Promise<void> {
     const inv = this.invoices.get(id)
     if (inv?.status === 'EMITTED') {
-      Object.assign(inv, { status: 'CANCEL_PENDING', cancelRequestedBy: by, cancelReason: reason })
+      Object.assign(inv, {
+        status: 'CANCEL_PENDING',
+        cancelRequestedBy: by,
+        cancelReason: reason,
+        version: inv.version + 1,
+      })
     }
   }
 
@@ -289,6 +338,7 @@ export class InMemoryInvoiceRepository implements InvoiceRepository {
         cancelEventXml,
         cancelledAt: new Date(),
         claimedAt: null,
+        version: inv.version + 1,
       })
     }
   }
@@ -303,6 +353,7 @@ export class InMemoryInvoiceRepository implements InvoiceRepository {
         nextAttemptAt: null,
         lastError: null,
         claimedAt: null,
+        version: inv.version + 1,
       })
     }
   }
@@ -314,11 +365,38 @@ export class InMemoryInvoiceRepository implements InvoiceRepository {
     }
   }
 
-  async markSubstituted(originalId: string, substituteId: string): Promise<void> {
-    const inv = this.invoices.get(originalId)
-    if (inv && !['SUBSTITUTED', 'CANCELLED', 'SKIPPED'].includes(inv.status)) {
-      Object.assign(inv, { status: 'SUBSTITUTED', substitutedById: substituteId })
+  async markEmittedAsSubstitute(
+    substituteId: string,
+    data: {
+      dpsXml: string
+      nfseXml: string
+      accessKey: string
+      competenceDate: string
+      pdfToken: string
+    },
+    originalId: string,
+  ): Promise<{ recorded: boolean; originalSubstituted: boolean }> {
+    const sub = this.invoices.get(substituteId)
+    if (sub?.status !== 'SCHEDULED') return { recorded: false, originalSubstituted: false }
+    Object.assign(sub, {
+      status: 'EMITTED',
+      ...data,
+      emittedAt: new Date(),
+      claimedAt: null,
+      lastError: null,
+      nextAttemptAt: null,
+      version: sub.version + 1,
+    })
+    const orig = this.invoices.get(originalId)
+    if (orig?.status === 'EMITTED') {
+      Object.assign(orig, {
+        status: 'SUBSTITUTED',
+        substitutedById: substituteId,
+        version: orig.version + 1,
+      })
+      return { recorded: true, originalSubstituted: true }
     }
+    return { recorded: true, originalSubstituted: false }
   }
 
   async appendEvent(
@@ -459,9 +537,10 @@ export class RecordingMessagingClient {
     recipient: { name: string; email: string }
     variables: Record<string, string>
     attachments: Array<{ filename: string; url: string; contentType?: string }>
-  }): Promise<void> {
+  }): Promise<boolean> {
     if (this.failWith) throw this.failWith
     this.sent.push(input)
+    return true
   }
 }
 

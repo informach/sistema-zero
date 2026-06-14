@@ -74,7 +74,8 @@ describe('POST /webhooks/payments', () => {
     const res = await app.handle(delivery(PAID_BODY, { secret: SECRET }))
     expect(res.status).toBe(200)
     expect(await invoices.findActiveByPaymentId('pay-1')).not.toBeNull()
-    expect(await processedWebhooks.isProcessed('del-1')).toBe(true)
+    // Dedupe keyed no id do corpo ASSINADO (`evt-1`), não no x-delivery-id do header.
+    expect(await processedWebhooks.isProcessed('evt-1')).toBe(true)
   })
 
   test('sem/errada assinatura → 401 (com secret configurado)', async () => {
@@ -83,6 +84,52 @@ describe('POST /webhooks/payments', () => {
     expect(missing.status).toBe(401)
     const wrong = await app.handle(delivery(PAID_BODY, { secret: 'x'.repeat(32) }))
     expect(wrong.status).toBe(401)
+  })
+
+  test('timestamp expirado (fora da tolerância) e header malformado → 401', async () => {
+    const { app } = build({ secret: SECRET })
+    const raw = JSON.stringify(PAID_BODY)
+
+    // Assinatura válida MAS com ts de 1h atrás (tolerância = 300s) → replay barrado.
+    const oldTs = Math.floor(Date.now() / 1000) - 3600
+    const expired = await app.handle(
+      new Request('http://localhost/webhooks/payments', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-delivery-id': 'evt-1',
+          'x-signature': `t=${oldTs},v1=${signHmac(SECRET, raw, oldTs)}`,
+        },
+        body: raw,
+      }),
+    )
+    expect(expired.status).toBe(401)
+
+    // Header sem t=/v1= (garbage).
+    const malformed = await app.handle(
+      new Request('http://localhost/webhooks/payments', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-delivery-id': 'evt-1',
+          'x-signature': 'lixo',
+        },
+        body: raw,
+      }),
+    )
+    expect(malformed.status).toBe(401)
+  })
+
+  test('dedupe pelo id ASSINADO do corpo: replay trocando só o x-delivery-id NÃO reprocessa', async () => {
+    const { app, invoices, payments, catalog } = build({ secret: SECRET })
+    payments.set(paidSnapshot())
+    catalog.set({ id: 'offer-1', name: 'O', productName: 'C', guaranteeDays: 7 })
+
+    await app.handle(delivery(PAID_BODY, { secret: SECRET, deliveryId: 'header-A' }))
+    // Mesmo corpo (id 'evt-1' assinado), header DIFERENTE → ainda dedupado.
+    const replay = await app.handle(delivery(PAID_BODY, { secret: SECRET, deliveryId: 'header-B' }))
+    expect((await replay.json()) as Record<string, unknown>).toMatchObject({ deduped: true })
+    expect(invoices.invoices.size).toBe(1)
   })
 
   test('mesma x-delivery-id duas vezes → segunda é dedupada (sem reprocessar)', async () => {
@@ -103,7 +150,7 @@ describe('POST /webhooks/payments', () => {
 
     const res = await app.handle(delivery(PAID_BODY, { secret: SECRET }))
     expect(res.status).toBe(502)
-    expect(await processedWebhooks.isProcessed('del-1')).toBe(false)
+    expect(await processedWebhooks.isProcessed('evt-1')).toBe(false)
   })
 
   test('sem x-delivery-id → 400; corpo não-JSON → 400', async () => {
@@ -319,20 +366,22 @@ describe('Rotas admin (/fiscal/admin/*)', () => {
     expect(retryOk.status).toBe(200)
     expect((await invoices.findById(failed.id))?.status).toBe('SCHEDULED')
 
+    // Motivo curto (< 15 = TSMotivo) → erro de validação mapeado p/ 400 (envelope
+    // fixo, sem ecoar o input) pelo onError.
     const cancelNoReason = await app.handle(
       new Request(`http://localhost/fiscal/admin/invoices/${emitted.id}/cancel`, {
         method: 'POST',
         headers: { ...ADMIN, 'content-type': 'application/json' },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ reason: 'curto' }),
       }),
     )
-    expect(cancelNoReason.status).toBe(422)
+    expect(cancelNoReason.status).toBe(400)
 
     const cancelOk = await app.handle(
       new Request(`http://localhost/fiscal/admin/invoices/${emitted.id}/cancel`, {
         method: 'POST',
         headers: { ...ADMIN, 'content-type': 'application/json' },
-        body: JSON.stringify({ reason: 'Erro nos dados da nota' }),
+        body: JSON.stringify({ reason: 'Erro nos dados cadastrais da nota fiscal' }),
       }),
     )
     expect(cancelOk.status).toBe(200)
@@ -342,8 +391,10 @@ describe('Rotas admin (/fiscal/admin/*)', () => {
   })
 
   test('substitute: cria SCHEDULED(now) vinculada; exige ≥1 campo e CPF válido', async () => {
-    const { app, invoices } = buildAdmin()
+    const { app, invoices, payments } = buildAdmin()
     const original = await seedInvoice(invoices, 'EMITTED')
+    // A substituta re-verifica o pagamento (fail-fast): registra um PAID.
+    payments.set(paidSnapshot({ id: original.paymentId }))
 
     const nothing = await app.handle(
       new Request(`http://localhost/fiscal/admin/invoices/${original.id}/substitute`, {
@@ -377,6 +428,34 @@ describe('Rotas admin (/fiscal/admin/*)', () => {
     expect(substitute?.substitutesId).toBe(original.id)
     expect(substitute?.customer.name).toBe('Maria Corrigida')
     expect(substitute?.customer.document).toBe('52998224725') // herdado
+
+    // 2ª substituição com uma já EM VOO → 409 (sem criar DUAS NFS-e reais p/ a venda).
+    const dup = await app.handle(
+      new Request(`http://localhost/fiscal/admin/invoices/${original.id}/substitute`, {
+        method: 'POST',
+        headers: { ...ADMIN, 'content-type': 'application/json' },
+        body: JSON.stringify({ customerName: 'Outra Tentativa' }),
+      }),
+    )
+    expect(dup.status).toBe(409)
+    expect((await dup.json()) as Record<string, unknown>).toMatchObject({
+      error: { code: 'SUBSTITUTE_IN_PROGRESS' },
+    })
+  })
+
+  test('substitute de pagamento estornado → 409 (re-verifica o pagamento)', async () => {
+    const { app, invoices, payments } = buildAdmin()
+    const original = await seedInvoice(invoices, 'EMITTED')
+    payments.set(paidSnapshot({ id: original.paymentId, refundedAt: new Date() }))
+
+    const res = await app.handle(
+      new Request(`http://localhost/fiscal/admin/invoices/${original.id}/substitute`, {
+        method: 'POST',
+        headers: { ...ADMIN, 'content-type': 'application/json' },
+        body: JSON.stringify({ customerName: 'X Corrigido' }),
+      }),
+    )
+    expect(res.status).toBe(409)
   })
 
   test('stats agrupa por status', async () => {

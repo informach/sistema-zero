@@ -10,6 +10,10 @@ infanto-juvenil). Extraído do `@sistemazero/community` em 06/2026 (regra do usu
 reutilizável NUNCA é cópia por app). Consumido como **TS source** via `exports` map (modelo do
 `@sistemazero/core`); os apps precisam de `transpilePackages: ['@sistemazero/member-shell']` e
 `@source "../../../member-shell/src"` no globals.css (Tailwind v4 só gera classes que o scanner vê).
+⚠️ O bloco `studio` (studio-block) puxa o **`@sistemazero/studio`**: os apps consumidores também
+precisam de `transpilePackages: ['@sistemazero/studio']` + `@source "../../../studio/src"` +
+`frame-src 'self' blob:` na CSP (Monaco/Blockly/preview; terminal OFF dispensa COOP/COEP). O handler
+de entrega é `shell.routes.studioSubmit` (`POST /api/members/lessons/:lessonId/blocks/:blockId/studio-submission`).
 
 ## O que vive aqui vs no app
 
@@ -19,9 +23,23 @@ reutilizável NUNCA é cópia por app). Consumido como **TS source** via `export
 | Route handlers (`createShellRoutes`) — a LÓGICA inteira de `/api/*` | `route.ts` de 1-3 linhas (`export const { POST } = shell.routes.x`) |
 | `createMemberProxy` (anti-CSRF + gate + rotação pré-render) | `proxy.ts` com config do app + `matcher` LITERAL |
 | Libs puras (csrf, download-mime, act, format, markdown, types, api, cn…) | — |
-| Componentes de DOMÍNIO (vimeo-player, lesson-blocks, quiz-block, ebook 3D, anexos, progress-bar, impersonation-banner, user-avatar) — 100% em tokens CSS, vestem o tema do app | Componentes de IDENTIDADE (topnav, user-menu, cards, auth-shell) + globals.css/tokens |
+| Componentes de DOMÍNIO (vimeo-player, lesson-blocks, quiz-block, ebook 3D, **studio/studio-block** — editor @sistemazero/studio embarcado, dynamic ssr:false, rascunho LOCAL IndexedDB chaveado por bloco, "Enviar para o professor" + "Expandir" fullscreen —, anexos, progress-bar, impersonation-banner, user-avatar) — 100% em tokens CSS, vestem o tema do app | Componentes de IDENTIDADE (topnav, user-menu, cards, auth-shell) + globals.css/tokens |
 | Helpers de cookie (`sessionCookieNames`/`prefixedCookieName`/`expireCookieOptions`) | CONSTANTES `sz_member_*`/`sz_kids_*` (compile-time POR APP — cookies não escopam por porta em dev) |
 | `scripts/boot-check.mjs` (fail-fast REAL de prod — os Dockerfiles dos apps copiam DAQUI) | `instrumentation.ts` (fail-fast de dev, autocontido) |
+
+**Comunidade/fórum (hub, 06/2026):** o shell expõe o **cliente do hub** (`createHubClient` em
+`server/clients.ts`, sempre com `?audience=<a do app>`) e os **route handlers `/api/hub/*`**
+(`createHubRoutes` em `routes/hub.ts`, montados no `createShellRoutes` e espalhados no `index.ts` como
+`routes.hub*`) — leitura de spaces/canais/tópicos/comentários + criar/editar tópico e comentário +
+reações/seen/report, repassados ao **`@sistemazero/hub`** via gateway. A LÓGICA (validação Zod de
+título/corpo/emoji/motivo) vive aqui; o `route.ts` de cada app vira 1-3 linhas. **Privacidade do
+aluno (NÃO regredir):** o BFF **redige o `authorId` de TERCEIROS** nas views de tópico/comentário
+(`okRedacted` → `lib/hub-redact`, puro/testado em `tests/hub-redact.test.ts`) — só o id do PRÓPRIO
+viewer chega ao browser (por isso `HubThreadView/HubCommentView.authorId` é `string | null`); os
+apps comparam o id apenas p/ rotular "Você"/"Colega", ninguém EXIBE o id. Por isso
+`createHubRoutes` recebe `{ hub, media, session }` (o `session` resolve o viewer p/ a redação). Os
+helpers PUROS de anexo (`lib/hub-attachments`: allowlist de MIME, limites, `sanitizeFilename`,
+`extForMime`, `isInlineKind`) têm cobertura em `tests/hub-attachments.test.ts`.
 
 **Gamificação (06/2026):** tipos em `lib/types.ts` (`GamificationDelta`/`GamificationMeView`/
 `LessonCompleteResult`/`BadgeSlug` — mirror das views do members; `QuizAttemptResultView.gamification?`),

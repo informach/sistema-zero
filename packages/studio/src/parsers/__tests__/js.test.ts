@@ -1,5 +1,17 @@
 import { describe, expect, it } from 'bun:test'
+import { parse } from '@babel/parser'
+import { generateJS } from '../../generators/js'
 import { parseJS } from '../js'
+
+/** Confere que `code` é JS re-parseável (sem lançar nem erros de recuperação). */
+function isReparseable(code: string): boolean {
+  try {
+    const ast = parse(code, { sourceType: 'module', errorRecovery: true })
+    return ((ast as { errors?: unknown[] }).errors ?? []).length === 0
+  } catch {
+    return false
+  }
+}
 
 describe('parseJS', () => {
   it('reconhece console.log com string literal', () => {
@@ -10,6 +22,19 @@ describe('parseJS', () => {
   it('reconhece var literal numérico', () => {
     const ir = parseJS('let contador = 0;')
     expect(ir).toEqual([{ type: 'var', name: 'contador', value: { type: 'num', value: 0 } }])
+  })
+
+  it('preserva literal numérico que estoura (1e1000 → texto cru, não 0)', () => {
+    // O Babel parseia `1e1000` como `Infinity` sem erro; `Infinity` viraria `null`
+    // no JSON e o gerador o reescreve como `0` — então a linha precisa cair em
+    // rawJS, preservando o texto-fonte original (atalho do var fast-path inclusive).
+    expect(parseJS('const x = 1e1000;')).toEqual([
+      { type: 'rawJS', code: 'const x = 1e1000;', advanced: true },
+    ])
+    // Mesmo via toExpr (init não-literal direto): valor não finito dentro de uma conta.
+    expect(parseJS('let y = 1e999 + 1;')).toEqual([
+      { type: 'rawJS', code: 'let y = 1e999 + 1;', advanced: true },
+    ])
   })
 
   it('reconhece atribuição literal', () => {
@@ -176,8 +201,13 @@ describe('parseJS', () => {
     })
   })
 
-  it('JS arbitrário (try/catch) vira rawJS advanced preservando o código', () => {
-    const code = 'try { fazer(); } catch (e) {}'
+  it('try/catch agora é reconhecido (não degrada mais para rawJS)', () => {
+    const ir = parseJS('try { fazer(); } catch (e) {}')
+    expect(ir[0]?.type).toBe('tryCatch')
+  })
+
+  it('JS arbitrário não-representável (generator) vira rawJS advanced preservando o código', () => {
+    const code = 'function* contar() { yield 1; }'
     const ir = parseJS(code)
     expect(ir).toEqual([{ type: 'rawJS', code, advanced: true }])
   })
@@ -195,6 +225,18 @@ describe('parseJS', () => {
     const code = 'function bad( {'
     const ir = parseJS(code)
     expect(ir[0]?.type).toBe('rawJS')
+  })
+
+  it('cadeia aditiva muito longa não estoura a pilha (degrada para rawJS)', () => {
+    // O Babel parseia o aninhamento sem reclamar; só a descida recursiva do
+    // mapeamento pode estourar a pilha. Não pode crashar: degrada para rawJS.
+    const code = `let total = ${Array.from({ length: 50000 }, (_, i) => i).join(' + ')};`
+    const ir = parseJS(code)
+    expect(Array.isArray(ir)).toBe(true)
+    // Ou reconhece como árvore de binop, ou degrada para rawJS — mas nunca crasha.
+    if (ir[0]?.type === 'rawJS') {
+      expect(ir).toEqual([{ type: 'rawJS', code, advanced: true }])
+    }
   })
 
   it('reconhece addEventListener click em getElementById', () => {
@@ -456,6 +498,21 @@ const ctx = canvas.getContext("2d");
       ctxVar: 'ctx',
       color: { type: 'colorAlpha', hex: '#000000', alpha: 0.1 },
     })
+  })
+
+  it('rgba com canal fora de [0,255] preserva o literal como string (não vira hex malformado)', () => {
+    // rgba(999,0,0,1): 999 não cabe em 2 dígitos hex — sem validação geraria um
+    // hex de 3 dígitos que o gerador re-fatiaria numa cor DIFERENTE.
+    expect(parseJS('let cor = "rgba(999,0,0,1)";')).toEqual([
+      { type: 'var', name: 'cor', value: { type: 'str', value: 'rgba(999,0,0,1)' } },
+    ])
+  })
+
+  it('rgba com alpha de múltiplos pontos preserva o literal como string (sem NaN)', () => {
+    // rgba(0,0,0,1.2.3): Number("1.2.3") seria NaN; preserva verbatim.
+    expect(parseJS('let cor = "rgba(0,0,0,1.2.3)";')).toEqual([
+      { type: 'var', name: 'cor', value: { type: 'str', value: 'rgba(0,0,0,1.2.3)' } },
+    ])
   })
 
   it('reconhece hsl com Math.random()*360 e S/L literais → hslColor (matiz como expressão)', () => {
@@ -1291,5 +1348,160 @@ document.addEventListener('keyup', (e) => {
     expect(parseJS('selecionadas.push(this);')).toEqual([
       { type: 'arrayPush', arrayVar: 'selecionadas', value: { type: 'thisRef' } },
     ])
+  })
+
+  // ---- desestruturação não-representável PRESERVA a palavra-chave (HIGH) ----
+  describe('desestruturação não-representável vira rawJS do nó-pai (preserva const/let/var)', () => {
+    it('const {a, b} = obj → rawJS com a palavra const e re-parseável', () => {
+      const ir = parseJS('const {a, b} = obj;')
+      // O snippet preserva a palavra-chave: sem ela viraria `{a, b} = obj;`, que
+      // o parser lê como bloco + erro (não é um objeto de atribuição válido).
+      expect(ir).toEqual([{ type: 'rawJS', code: 'const {a, b} = obj;', advanced: true }])
+      const gen = generateJS({ statements: ir })
+      expect(gen).toContain('const ')
+      expect(isReparseable(gen)).toBe(true)
+    })
+
+    it('let {x} = obj → rawJS com a palavra let e re-parseável', () => {
+      const ir = parseJS('let {x} = obj;')
+      expect(ir).toEqual([{ type: 'rawJS', code: 'let {x} = obj;', advanced: true }])
+      expect(isReparseable(generateJS({ statements: ir }))).toBe(true)
+    })
+
+    it('desestruturação de lista não-modelável mantém const e é re-parseável', () => {
+      // Padrões que NÃO casam o modelo "índices por posição" (default, rest, buraco)
+      // caem em rawJS do nó-pai inteiro — com a palavra `const`.
+      for (const src of ['const [a, b = 5] = x;', 'const [a, ...r] = x;', 'const [a, , c] = x;']) {
+        const ir = parseJS(src)
+        expect(ir).toEqual([{ type: 'rawJS', code: src, advanced: true }])
+        const gen = generateJS({ statements: ir })
+        expect(gen).toContain('const ')
+        expect(isReparseable(gen)).toBe(true)
+      }
+    })
+
+    it('não duplica statement com vários declaradores quando um não é representável', () => {
+      // Um único asRaw do nó-pai: não emite o nó duas vezes (um por declarador).
+      const ir = parseJS('const a = 1, {b} = obj;')
+      expect(ir).toEqual([{ type: 'rawJS', code: 'const a = 1, {b} = obj;', advanced: true }])
+      expect(isReparseable(generateJS({ statements: ir }))).toBe(true)
+    })
+
+    it('mantém os casos representáveis intactos (lista por índice e literal)', () => {
+      // const [a, b] = lista → atribuições por índice (não regride).
+      expect(parseJS('const [a, b] = lista;')).toEqual([
+        {
+          type: 'var',
+          kind: 'const',
+          name: 'a',
+          value: { type: 'index', arrayVar: 'lista', index: { type: 'num', value: 0 } },
+        },
+        {
+          type: 'var',
+          kind: 'const',
+          name: 'b',
+          value: { type: 'index', arrayVar: 'lista', index: { type: 'num', value: 1 } },
+        },
+      ])
+      // const x = ... simples segue como var const.
+      expect(parseJS('const x = 5;')).toEqual([
+        { type: 'var', name: 'x', value: { type: 'num', value: 5 }, kind: 'const' },
+      ])
+    })
+  })
+
+  // ---- canvasSetup aninhado: remoção do getElementById órfão por ESCOPO (MED) ----
+  describe('getElementById órfão do canvasSetup some também em corpos aninhados', () => {
+    const nested = [
+      'function setup() {',
+      '  const canvas = document.getElementById("c");',
+      '  const ctx = canvas.getContext("2d");',
+      '  ctx.fillRect(0, 0, 10, 10);',
+      '}',
+    ].join('\n')
+
+    it('o getElementById solto dentro da função é absorvido pelo canvasSetup', () => {
+      const ir = parseJS(nested)
+      expect(ir[0]).toMatchObject({ type: 'funcDecl', name: 'setup' })
+      const body = (ir[0] as { body: Array<{ type: string }> }).body
+      // O corpo NÃO contém um getElementById solto: o canvasSetup regenera as duas
+      // linhas. Sem a remoção por escopo, ele sobraria e cresceria a cada ciclo.
+      expect(body.some((s) => s.type === 'getElementById')).toBe(false)
+      expect(body[0]).toMatchObject({ type: 'canvasSetup' })
+    })
+
+    it('é ponto fixo: parse→gen→parse→gen não cresce o getElementById', () => {
+      const gen1 = generateJS({ statements: parseJS(nested) })
+      const gen2 = generateJS({ statements: parseJS(gen1) })
+      expect(gen2).toBe(gen1)
+      // Exatamente UMA criação do canvas (o canvasSetup), nada acumulado.
+      const count = (gen2.match(/getElementById/g) ?? []).length
+      expect(count).toBe(1)
+    })
+  })
+
+  // ---- mapClass: bail não vaza ctx para statements irmãos (LOW) ----
+  describe('classe que cai em rawJS não corrompe matches irmãos', () => {
+    it('sprite registrado num construtor de classe que dá bail não funde s.x/s.y irmãos', () => {
+      // A classe registra `s` como sprite no construtor, mas tem um getter
+      // (não-representável) → cai em rawJS. As mutações de ctx do construtor NÃO
+      // podem vazar: o `s.x = ...; s.y = ...;` solto seguinte deve ficar como dois
+      // memberSet, e NÃO virar g2d:setPosition.
+      const src = [
+        'class Bola {',
+        '  constructor() {',
+        '    const s = SZGame2D.createSprite({ x: 1, y: 2 });',
+        '  }',
+        '  get raio() {',
+        '    return 5;',
+        '  }',
+        '}',
+        'const s = obj;',
+        's.x = 1;',
+        's.y = 2;',
+      ].join('\n')
+      const ir = parseJS(src)
+      expect(ir[0]).toMatchObject({ type: 'rawJS', advanced: true })
+      // s = obj (não é sprite), e as duas atribuições seguem como memberSet.
+      expect(ir.slice(1)).toEqual([
+        { type: 'var', name: 's', value: { type: 'var', name: 'obj' }, kind: 'const' },
+        {
+          type: 'memberSet',
+          object: { type: 'var', name: 's' },
+          name: 'x',
+          value: { type: 'num', value: 1 },
+        },
+        {
+          type: 'memberSet',
+          object: { type: 'var', name: 's' },
+          name: 'y',
+          value: { type: 'num', value: 2 },
+        },
+      ])
+      // Nenhuma fusão de sprite vazou.
+      expect(ir.some((s) => s.type === 'g2d:setPosition' || s.type === 'g2d:setVelocity')).toBe(
+        false,
+      )
+    })
+
+    it('classe válida seguida de uso de sprite continua funcionando (sem regressão)', () => {
+      // Garante que a 2ª passada ainda mapeia corpos corretamente.
+      const src = ['class X {', '  oi() {', '    alert("a");', '  }', '}'].join('\n')
+      expect(parseJS(src)).toEqual([
+        {
+          type: 'classDecl',
+          name: 'X',
+          ctorParams: [],
+          ctorBody: [],
+          methods: [
+            {
+              name: 'oi',
+              params: [],
+              body: [{ type: 'alert', value: { type: 'str', value: 'a' } }],
+            },
+          ],
+        },
+      ])
+    })
   })
 })

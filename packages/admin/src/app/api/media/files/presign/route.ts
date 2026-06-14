@@ -69,7 +69,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    const target = await createPrivateUploadTarget({ filename, contentType })
+    const target = await createPrivateUploadTarget({ filename, contentType, sizeBytes })
     return NextResponse.json(target)
   } catch (error) {
     return mediaErrorResponse(error)

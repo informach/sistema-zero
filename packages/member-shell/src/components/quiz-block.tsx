@@ -7,6 +7,7 @@ import { CheckCircle2, Timer, Trophy, XCircle } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { type ApiError, apiSend } from '../lib/api'
 import { cn } from '../lib/cn'
+import { renderMarkdown } from '../lib/markdown'
 import type { QuizAttemptResultView, QuizBlock, QuizStateView } from '../lib/types'
 import { useLessonPlayer } from './lesson-player-context'
 
@@ -29,12 +30,15 @@ export function QuizBlockView({ blockId, content, quizState }: Props) {
   const [submitting, setSubmitting] = useState(false)
   const [result, setResult] = useState<QuizAttemptResultView | null>(null)
   const [error, setError] = useState<string | null>(null)
+  // Cooldown vindo do 429 de corrida (a pré-checagem passou, o save atômico perdeu).
+  const [cooldownUntil, setCooldownUntil] = useState<string | null>(null)
 
   const questions = content.questions ?? []
   const passed = result?.passed ?? quizState?.passed ?? false
   const lastScore = result?.score ?? quizState?.lastScore ?? null
   const passingScore = result?.passingScore ?? content.passingScore ?? 100
-  const retryAvailableAt = result?.retryAvailableAt ?? quizState?.retryAvailableAt ?? null
+  const retryAvailableAt =
+    result?.retryAvailableAt ?? cooldownUntil ?? quizState?.retryAvailableAt ?? null
   const cooldownLeft = useCooldown(passed ? null : retryAvailableAt)
 
   // Correções por questão (só existem após um submit nesta visita).
@@ -66,11 +70,12 @@ export function QuizBlockView({ blockId, content, quizState }: Props) {
       }
     } catch (err) {
       const apiErr = err as ApiError
-      setError(
-        apiErr?.code === 'QUIZ_COOLDOWN'
-          ? 'Aguarde o tempo de espera para refazer o quiz.'
-          : 'Não foi possível enviar as respostas. Tente de novo.',
-      )
+      if (apiErr?.code === 'QUIZ_COOLDOWN') {
+        if (apiErr.retryAvailableAt) setCooldownUntil(apiErr.retryAvailableAt)
+        setError('Aguarde o tempo de espera para refazer o quiz.')
+      } else {
+        setError('Não foi possível enviar as respostas. Tente de novo.')
+      }
     } finally {
       setSubmitting(false)
     }
@@ -92,8 +97,10 @@ export function QuizBlockView({ blockId, content, quizState }: Props) {
         const correction = corrections.get(q.id)
         return (
           <fieldset key={q.id} className="flex flex-col gap-2">
-            <legend className="text-sm font-medium">
-              {qi + 1}. {q.prompt}
+            <legend className="flex gap-1.5 text-sm font-medium text-foreground">
+              <span className="shrink-0">{qi + 1}.</span>
+              {/* Enunciado em markdown (negrito/títulos/listas/imagens) — renderer puro/XSS-safe. */}
+              <div className="lesson-prose flex-1">{renderMarkdown(q.prompt)}</div>
             </legend>
             {q.choices.map((choice) => {
               const selected = chosen === choice.id
@@ -123,7 +130,10 @@ export function QuizBlockView({ blockId, content, quizState }: Props) {
                     onChange={() => setAnswers((a) => ({ ...a, [q.id]: choice.id }))}
                     className="size-4 shrink-0 accent-primary"
                   />
-                  <span className="flex-1 leading-5 text-foreground">{choice.label}</span>
+                  {/* Texto da opção em markdown (formatação rica + imagens). */}
+                  <div className="lesson-prose flex-1 text-foreground">
+                    {renderMarkdown(choice.label)}
+                  </div>
                   {showCorrection && isCorrectChoice ? (
                     <CheckCircle2 className="size-4 text-accent dark:text-primary" />
                   ) : null}
@@ -134,9 +144,9 @@ export function QuizBlockView({ blockId, content, quizState }: Props) {
               )
             })}
             {correction && !correction.correct && correction.explanation ? (
-              <p className="rounded-lg bg-muted/60 px-3 py-2 text-xs text-muted-foreground">
-                {correction.explanation}
-              </p>
+              <div className="lesson-prose rounded-lg bg-muted/60 px-3 py-2 text-xs text-muted-foreground">
+                {renderMarkdown(correction.explanation)}
+              </div>
             ) : null}
           </fieldset>
         )

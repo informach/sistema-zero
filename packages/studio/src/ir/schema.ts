@@ -96,6 +96,8 @@ export type JSExpr =
   | (JSExprCommon & { type: 'angleConvert'; dir: 'degToRad' | 'radToDeg'; arg: JSExpr })
   // Propriedade do evento dentro de um listener (event.clientX / event.clientY).
   | (JSExprCommon & { type: 'eventProp'; prop: 'clientX' | 'clientY' })
+  // Lê do armazenamento do navegador (`localStorage.getItem(chave)` / `sessionStorage`).
+  | (JSExprCommon & { type: 'storageGet'; store: 'local' | 'session'; key: JSExpr })
   // Vetor 2D/3D literal ({ x, y } / { x, y, z }).
   | (JSExprCommon & { type: 'vec2'; x: JSExpr; y: JSExpr })
   | (JSExprCommon & { type: 'vec3'; x: JSExpr; y: JSExpr; z: JSExpr })
@@ -212,6 +214,12 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
       ...idField,
     }),
     z.object({ type: z.literal('eventProp'), prop: z.enum(['clientX', 'clientY']), ...idField }),
+    z.object({
+      type: z.literal('storageGet'),
+      store: z.enum(['local', 'session']),
+      key: JSExprSchema,
+      ...idField,
+    }),
     z.object({ type: z.literal('vec2'), x: JSExprSchema, y: JSExprSchema, ...idField }),
     z.object({
       type: z.literal('vec3'),
@@ -387,9 +395,68 @@ export interface CSSRule {
   __id?: string
 }
 
+/**
+ * Texto de CSS que não pode carregar `{`/`}` — usado em seletor, nome de
+ * `@keyframes` e seletor de passo (`at`). Uma chave nesses campos poderia
+ * encerrar a regra atual e emendar outra (injeção: `}` + nova regra com
+ * `background:url(...)` para exfiltração). É a correção DURÁVEL: bloqueia já na
+ * importação de IR (o strip do gerador é só o cinto-e-suspensório).
+ */
+const cssNameText = () => irText().regex(/^[^{}]*$/, 'CSS não pode conter chaves { }')
+
+/**
+ * Uma chave `{`/`}` em PROFUNDIDADE 0 (fora de aspas e de comentários) rompe a
+ * estrutura `selector { … }` e é a vetor de injeção. DENTRO de uma string
+ * (`content:"a{b}c"`) ou de um comentário (`/* { *​/`) a chave faz parte do valor
+ * e é legítima. Esta máquina de estados (igual à de `generators/css.ts` e à do
+ * parser) devolve `true` quando NÃO há chave solta em profundidade 0.
+ */
+function cssValueHasNoLooseBrace(value: string): boolean {
+  let quote: '"' | "'" | null = null
+  let inComment = false
+  for (let i = 0; i < value.length; i += 1) {
+    const ch = value[i]
+    const next = value[i + 1]
+    if (inComment) {
+      if (ch === '*' && next === '/') {
+        inComment = false
+        i += 1
+      }
+      continue
+    }
+    if (quote) {
+      if (ch === '\\') {
+        i += 1
+        continue
+      }
+      if (ch === quote) quote = null
+      continue
+    }
+    if (ch === '/' && next === '*') {
+      inComment = true
+      i += 1
+      continue
+    }
+    if (ch === '"' || ch === "'") quote = ch
+    else if (ch === '{' || ch === '}') return false
+  }
+  return true
+}
+
+/**
+ * VALOR de declaração CSS: proíbe chaves `{`/`}` SOLTAS (rompem a regra) mas
+ * PERMITE chaves dentro de strings/comentários (`content:"a{b}c"`). O regex
+ * antigo `^[^{}]*$` rejeitava o valor inteiro e corrompia o round-trip. O `;` é
+ * PERMITIDO porque é legítimo dentro de `url(data:…;base64,…)` e de strings
+ * (`content:"a;b"`); o `;` em profundidade 0 (emendar declaração) é barrado no
+ * gerador, em `isSafeDeclarationValue` (generators/css.ts).
+ */
+const cssValueText = () =>
+  irText().refine(cssValueHasNoLooseBrace, 'Valor de CSS não pode conter chaves { } soltas')
+
 export const CSSRuleSchema: z.ZodType<CSSRule> = z.object({
-  selector: irText().min(1),
-  declarations: z.record(z.string(), irText()),
+  selector: cssNameText().min(1),
+  declarations: z.record(z.string(), cssValueText()),
   __declIds: z.record(z.string(), z.string()).optional(),
   ...idField,
 })
@@ -431,12 +498,37 @@ export const MediaQueryCSSSchema: z.ZodType<MediaQueryCSS> = z.object({
   ...idField,
 })
 
-export type CSSEntry = CSSRule | RawCSS | MediaQueryCSS
+/**
+ * `@keyframes nome { 0% { … } 100% { … } }`. Cada passo tem um seletor de
+ * tempo (`at`: `from`/`to`/`N%`) e suas declarações. Animações que fogem desse
+ * formato (ex.: `@-webkit-keyframes`) continuam como {@link RawCSS}.
+ */
+export interface KeyframesCSS {
+  type: 'keyframes'
+  name: string
+  steps: Array<{ at: string; declarations: Record<string, string> }>
+  __id?: string
+}
+
+export const KeyframesCSSSchema: z.ZodType<KeyframesCSS> = z.object({
+  type: z.literal('keyframes'),
+  name: cssNameText().min(1),
+  steps: z.array(
+    z.object({
+      at: cssNameText().min(1),
+      declarations: z.record(z.string(), cssValueText()),
+    }),
+  ),
+  ...idField,
+})
+
+export type CSSEntry = CSSRule | RawCSS | MediaQueryCSS | KeyframesCSS
 
 export const CSSEntrySchema: z.ZodType<CSSEntry> = z.union([
   CSSRuleSchema,
   RawCSSSchema,
   MediaQueryCSSSchema,
+  KeyframesCSSSchema,
 ])
 
 // ---------- JS Statements ----------
@@ -464,6 +556,52 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'assign'; name: string; value: JSExpr })
   | (JSStatementCommon & { type: 'if'; cond: JSExpr; then: JSStatement[]; else?: JSStatement[] })
   | (JSStatementCommon & { type: 'repeat'; times: JSExpr; body: JSStatement[] })
+  // Laço com condição (`while (cond) { … }`).
+  | (JSStatementCommon & { type: 'while'; cond: JSExpr; body: JSStatement[] })
+  // Laço que executa ao menos uma vez (`do { … } while (cond)`).
+  | (JSStatementCommon & { type: 'doWhile'; cond: JSExpr; body: JSStatement[] })
+  // Sai do laço atual (`break;`).
+  | (JSStatementCommon & { type: 'break' })
+  // Pula para a próxima volta do laço (`continue;`).
+  | (JSStatementCommon & { type: 'continue' })
+  // Itera os itens de uma lista (`for (const item of lista) { … }`). Distinto de
+  // `forEach` (sem índice) — preserva a escolha do aluno no round-trip.
+  | (JSStatementCommon & {
+      type: 'forOf'
+      itemName: string
+      iterableVar: string
+      body: JSStatement[]
+    })
+  // `for` clássico de contagem (`for (let i = de; i < ate; i += passo) { … }`).
+  // `op` sempre `<`; o `repeat` (de 0, passo 1) tem match exato e tem prioridade.
+  | (JSStatementCommon & {
+      type: 'forRange'
+      varName: string
+      from: JSExpr
+      to: JSExpr
+      step: JSExpr
+      body: JSStatement[]
+    })
+  // try/catch/finally. `errorName` ausente = `catch { … }` (sem binding). O
+  // `finalizer` ausente = sem bloco `finally`.
+  | (JSStatementCommon & {
+      type: 'tryCatch'
+      body: JSStatement[]
+      errorName?: string
+      handler: JSStatement[]
+      finalizer?: JSStatement[]
+    })
+  // Busca JSON de uma URL via `fetch(url).then(r => r.json()).then((dados)=>{…})`
+  // com `.catch((erro)=>{…})` opcional. `okName`/`catchName` = variáveis dos dados
+  // e do erro; o `catchBody` ausente = sem `.catch`.
+  | (JSStatementCommon & {
+      type: 'fetchJson'
+      url: JSExpr
+      okName: string
+      body: JSStatement[]
+      catchName?: string
+      catchBody?: JSStatement[]
+    })
   | (JSStatementCommon & {
       type: 'event'
       target: string
@@ -507,7 +645,20 @@ export type JSStatement =
       value: JSExpr
     })
   | (JSStatementCommon & { type: 'querySelector'; selector: string; varName: string })
+  // Seleciona TODOS os elementos que casam (`document.querySelectorAll('sel')`).
+  // O resultado (NodeList) é iterável com `forEach`.
+  | (JSStatementCommon & { type: 'querySelectorAll'; selector: string; varName: string })
   | (JSStatementCommon & { type: 'getElementById'; id: string; varName: string })
+  // Salva um valor no armazenamento do navegador
+  // (`localStorage.setItem(chave, valor)` / `sessionStorage`).
+  | (JSStatementCommon & {
+      type: 'storageSet'
+      store: 'local' | 'session'
+      key: JSExpr
+      value: JSExpr
+    })
+  // Dentro de um handler de evento: `event.preventDefault()` / `event.stopPropagation()`.
+  | (JSStatementCommon & { type: 'eventMethod'; method: 'preventDefault' | 'stopPropagation' })
   | (JSStatementCommon & {
       type: 'classOp'
       targetId: string
@@ -605,6 +756,65 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'g2d:score'; varName: string; initial: number })
   | (JSStatementCommon & { type: 'g2d:gameOver'; ctxVar: string; text: string })
   | (JSStatementCommon & { type: 'g2d:updateEachFrame'; body: JSStatement[] })
+  // Física: gravidade do mundo, integração de velocidade, ricochete nas bordas,
+  // colisão por círculo.
+  | (JSStatementCommon & { type: 'g2d:setGravity'; value: number })
+  | (JSStatementCommon & { type: 'g2d:applyVelocity'; spriteVar: string })
+  | (JSStatementCommon & { type: 'g2d:bounceOnEdges'; spriteVar: string; ctxVar: string })
+  | (JSStatementCommon & {
+      type: 'g2d:circleCollides'
+      aVar: string
+      bVar: string
+      varName: string
+    })
+  // Áudio: toca um tom (Web Audio, sem assets).
+  | (JSStatementCommon & { type: 'g2d:playSound'; freq: number; durationMs: number })
+  // Entrada de mouse/toque: corpo recebe a posição do ponteiro em xName/yName.
+  | (JSStatementCommon & {
+      type: 'g2d:onPointer'
+      xName: string
+      yName: string
+      body: JSStatement[]
+    })
+  // ---- Game 3D (extensão game-3d, Three.js via window.SZGame3D) ----
+  | (JSStatementCommon & { type: 'g3d:createScene'; canvasId: string; varName: string })
+  | (JSStatementCommon & { type: 'g3d:setBackground'; worldVar: string; color: string })
+  | (JSStatementCommon & {
+      type: 'g3d:setCameraPosition'
+      worldVar: string
+      x: JSExpr
+      y: JSExpr
+      z: JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'g3d:createBox'
+      varName: string
+      worldVar: string
+      size: number
+      color: string
+    })
+  | (JSStatementCommon & {
+      type: 'g3d:createSphere'
+      varName: string
+      worldVar: string
+      radius: number
+      color: string
+    })
+  | (JSStatementCommon & {
+      type: 'g3d:setPosition'
+      objVar: string
+      x: JSExpr
+      y: JSExpr
+      z: JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'g3d:setRotation'
+      objVar: string
+      x: JSExpr
+      y: JSExpr
+      z: JSExpr
+    })
+  | (JSStatementCommon & { type: 'g3d:animate'; worldVar: string; body: JSStatement[] })
   // Orientação a objetos
   | (JSStatementCommon & {
       type: 'classDecl'
@@ -705,6 +915,53 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('while'),
+      cond: JSExprSchema,
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('doWhile'),
+      cond: JSExprSchema,
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({ type: z.literal('break'), ...idField }),
+    z.object({ type: z.literal('continue'), ...idField }),
+    z.object({
+      type: z.literal('forOf'),
+      itemName: irText(),
+      iterableVar: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('forRange'),
+      varName: irText(),
+      from: JSExprSchema,
+      to: JSExprSchema,
+      step: JSExprSchema,
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('tryCatch'),
+      body: z.array(JSStatementSchema),
+      errorName: irText().optional(),
+      handler: z.array(JSStatementSchema),
+      finalizer: z.array(JSStatementSchema).optional(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('fetchJson'),
+      url: JSExprSchema,
+      okName: irText(),
+      body: z.array(JSStatementSchema),
+      catchName: irText().optional(),
+      catchBody: z.array(JSStatementSchema).optional(),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('event'),
       target: irText(),
       targetKind: z.enum(['id', 'var', 'document']).optional(),
@@ -760,6 +1017,24 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('querySelector'),
       selector: irText(),
       varName: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('querySelectorAll'),
+      selector: irText(),
+      varName: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('storageSet'),
+      store: z.enum(['local', 'session']),
+      key: JSExprSchema,
+      value: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('eventMethod'),
+      method: z.enum(['preventDefault', 'stopPropagation']),
       ...idField,
     }),
     z.object({
@@ -949,6 +1224,92 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('g2d:gameOver'),
       ctxVar: irText(),
       text: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:setGravity'), value: z.number(), ...idField }),
+    z.object({ type: z.literal('g2d:applyVelocity'), spriteVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:bounceOnEdges'),
+      spriteVar: irText(),
+      ctxVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:circleCollides'),
+      aVar: irText(),
+      bVar: irText(),
+      varName: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:playSound'),
+      freq: z.number(),
+      durationMs: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:onPointer'),
+      xName: irText(),
+      yName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:createScene'),
+      canvasId: irText(),
+      varName: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:setBackground'),
+      worldVar: irText(),
+      color: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:setCameraPosition'),
+      worldVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      z: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:createBox'),
+      varName: irText(),
+      worldVar: irText(),
+      size: z.number(),
+      color: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:createSphere'),
+      varName: irText(),
+      worldVar: irText(),
+      radius: z.number(),
+      color: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:setPosition'),
+      objVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      z: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:setRotation'),
+      objVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      z: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:animate'),
+      worldVar: irText(),
+      body: z.array(JSStatementSchema),
       ...idField,
     }),
     z.object({
@@ -1166,9 +1527,27 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:score',
   'g2d:gameOver',
   'g2d:updateEachFrame',
+  'g2d:setGravity',
+  'g2d:applyVelocity',
+  'g2d:bounceOnEdges',
+  'g2d:circleCollides',
+  'g2d:playSound',
+  'g2d:onPointer',
+])
+
+export const G3D_STATEMENT_TYPES = new Set([
+  'g3d:createScene',
+  'g3d:setBackground',
+  'g3d:setCameraPosition',
+  'g3d:createBox',
+  'g3d:createSphere',
+  'g3d:setPosition',
+  'g3d:setRotation',
+  'g3d:animate',
 ])
 
 export function statementIsExtension(stmt: JSStatement, extensionId: string): boolean {
   if (extensionId === 'game-2d') return stmt.type.startsWith('g2d:')
+  if (extensionId === 'game-3d') return stmt.type.startsWith('g3d:')
   return false
 }

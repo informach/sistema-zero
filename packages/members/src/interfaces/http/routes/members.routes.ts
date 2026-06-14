@@ -12,6 +12,7 @@ import type { MarkLessonCompleteService } from '../../../application/mark-lesson
 import type { SaveCourseRatingService } from '../../../application/save-course-rating/save-course-rating.service'
 import type { SaveVideoPositionService } from '../../../application/save-video-position/save-video-position.service'
 import type { SubmitQuizAttemptService } from '../../../application/submit-quiz-attempt/submit-quiz-attempt.service'
+import type { SubmitStudioProjectService } from '../../../application/submit-studio-project/submit-studio-project.service'
 import { assertInternalCaller, isPrivilegedActor, resolveUserId } from '../auth'
 import {
   AttachmentResolveParams,
@@ -23,6 +24,8 @@ import {
   QuizAttemptBody,
   QuizAttemptParams,
   SlugLessonParams,
+  StudioSubmissionBody,
+  StudioSubmissionParams,
   VideoPositionBody,
 } from '../dtos'
 
@@ -37,6 +40,7 @@ export interface MembersRoutesDeps {
   getProgress: GetCourseProgressService
   savePosition: SaveVideoPositionService
   submitQuiz: SubmitQuizAttemptService
+  submitStudio: SubmitStudioProjectService
   getCourseRating: GetCourseRatingService
   saveCourseRating: SaveCourseRatingService
   getGamification: GetGamificationService
@@ -221,6 +225,22 @@ export function membersRoutes(deps: MembersRoutesDeps) {
           )
         },
         { body: QuizAttemptBody, params: QuizAttemptParams },
+      )
+      // Entrega do projeto do Estúdio (mesmo JSON do "Exportar projeto"). Upsert por
+      // aluno+bloco; destrava a conclusão da aula (gate em mark-lesson-complete).
+      .post(
+        '/lessons/:lessonId/blocks/:blockId/studio-submission',
+        async ({ headers, params, body }) => {
+          const userId = resolveUserId(headers)
+          return deps.submitStudio.execute(
+            userId,
+            params.lessonId,
+            params.blockId,
+            body.project,
+            isPrivilegedActor(headers),
+          )
+        },
+        { body: StudioSubmissionBody, params: StudioSubmissionParams },
       )
   )
 }

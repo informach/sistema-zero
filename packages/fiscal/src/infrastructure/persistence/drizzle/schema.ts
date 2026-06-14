@@ -104,6 +104,14 @@ export const invoices = fiscalSchema.table(
       .where(
         sql`status NOT IN ('SUBSTITUTED', 'SKIPPED', 'CANCELLED', 'FAILED') AND substitutes_id IS NULL`,
       ),
+    // 1 SUBSTITUTA ativa por nota original. As substitutas ficam FORA da unique
+    // acima (substitutes_id NOT NULL), então sem esta guarda dois POST /substitute
+    // concorrentes criariam DUAS substitutas → DUAS NFS-e reais para uma venda.
+    uniqueIndex('invoices_substitute_active_uq')
+      .on(t.substitutesId)
+      .where(
+        sql`substitutes_id IS NOT NULL AND status NOT IN ('SUBSTITUTED', 'SKIPPED', 'CANCELLED', 'FAILED')`,
+      ),
     uniqueIndex('invoices_dps_uq').on(t.dpsSeries, t.dpsNumber).where(sql`dps_number IS NOT NULL`),
     uniqueIndex('invoices_access_key_uq').on(t.accessKey).where(sql`access_key IS NOT NULL`),
     uniqueIndex('invoices_pdf_token_uq').on(t.pdfToken).where(sql`pdf_token IS NOT NULL`),
@@ -113,6 +121,26 @@ export const invoices = fiscalSchema.table(
     index('invoices_status_idx').on(t.status),
     index('invoices_created_at_idx').on(t.createdAt),
     index('invoices_payment_idx').on(t.paymentId),
+    // Busca livre `q` do admin (ILIKE '%…%' em nome/e-mail/CPF/paymentId/chave).
+    // pg_trgm (extensão criada na migration) torna cada ramo indexável — sem isto
+    // cada busca é seq scan da tabela inteira (×2, items + count). Espelha payments.
+    index('invoices_customer_name_trgm_idx').using(
+      'gin',
+      sql`(${t.customer} ->> 'name') gin_trgm_ops`,
+    ),
+    index('invoices_customer_email_trgm_idx').using(
+      'gin',
+      sql`(${t.customer} ->> 'email') gin_trgm_ops`,
+    ),
+    index('invoices_customer_document_trgm_idx').using(
+      'gin',
+      sql`(${t.customer} ->> 'document') gin_trgm_ops`,
+    ),
+    index('invoices_payment_id_text_trgm_idx').using(
+      'gin',
+      sql`(${t.paymentId}::text) gin_trgm_ops`,
+    ),
+    index('invoices_access_key_trgm_idx').using('gin', t.accessKey.op('gin_trgm_ops')),
   ],
 )
 

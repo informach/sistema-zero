@@ -1,10 +1,17 @@
 import { isReservedProjectFileName, normalizeExtraFileName } from '#core'
+import type { ExtensionPermission } from '#extensions'
+import { escapeScriptContent, escapeStyleContent } from '../generators/escape'
+import { buildPreviewCSPMetaTag } from './csp'
 import { buildInterceptorScript } from './interceptors'
+import { buildLoopGuardRuntime, instrumentLoops } from './loopGuard'
+import { buildPermissionGuardRuntime } from './permissionGuard'
+import { buildStorageBridgeRuntime } from './storageBridge'
+import { transpileExtra } from './transpile'
 
 export interface PreviewExtraFile {
-  /** Nome relativo (ex.: `utils.js`, `cores.css`). */
+  /** Nome relativo (ex.: `utils.js`, `cores.css`, `tipos.ts`). */
   name: string
-  language: 'html' | 'css' | 'javascript'
+  language: 'html' | 'css' | 'javascript' | 'typescript'
   content: string
 }
 
@@ -21,6 +28,29 @@ export interface BuildPreviewDocInput {
    * (defesa em profundidade). Quando ausente, usa `'*'`.
    */
   parentOrigin?: string
+  /**
+   * Permissões concedidas (união dos manifests das extensões instaladas). O
+   * permissionGuard usa isto + a baseline do aluno para liberar/travar rede.
+   */
+  installedPermissions?: readonly ExtensionPermission[]
+  /** Origens liberadas pelo professor para fetch/XHR (opt-in). */
+  fetchAllowedOrigins?: readonly string[]
+  /** Orçamento de tempo síncrono do loopGuard (ms). */
+  loopBudgetMs?: number
+  /**
+   * Snapshot do `localStorage` persistido deste projeto, semeado no bridge de
+   * armazenamento (src/preview/storageBridge.ts) para que os blocos "guardar/ler"
+   * funcionem e o estado sobreviva ao recarregar. Ausente/vazio = começa zerado.
+   */
+  localStorageSnapshot?: Record<string, string>
+  /** Projeto deste doc — carimbado nas mensagens de escrita do bridge. */
+  storageProjectId?: string
+  /**
+   * Módulos ESM de extensões instaladas (`specifier → URL`, ex.:
+   * `{ three: 'https://esm.sh/three@0.180.0' }`). Entram no importmap e suas
+   * origens são liberadas no `script-src` da CSP.
+   */
+  extensionImports?: Record<string, string>
 }
 
 /**
@@ -37,9 +67,24 @@ export interface BuildPreviewDocInput {
  */
 export function buildPreviewDoc(input: BuildPreviewDocInput): string {
   const userHtml = input.html.trim()
-  const { headInner, bodyInner } = splitHtml(userHtml)
+  const split = splitHtml(userHtml)
+  // `<script>` INLINE no HTML do aluno (index.html) também passa pela guarda de
+  // loop: sem isto, `<script>while(true){}</script>` colado no index escapava o
+  // loopGuard (que só instrumentava o JS canônico) e congelava a aba — o mesmo
+  // que a Camada A promete cortar. Ver instrumentInlineScripts.
+  const headInner = instrumentInlineScripts(split.headInner)
+  const bodyInner = instrumentInlineScripts(split.bodyInner)
 
-  const extScripts = (input.extensionScripts ?? []).map((s) => scriptTag(s)).join('\n')
+  // Quando há módulos ESM de extensão (ex.: three), os scripts que os usam
+  // PRECISAM ser `type="module"` (importmap). Módulos são DEFERIDOS e rodam em
+  // ordem após o parse — então o bootstrap da extensão (que importa three e
+  // define window.SZGame3D) executa ANTES do código do aluno, que também vira
+  // module para enxergar o global. (Caso comum sem isso: o script clássico do
+  // aluno roda durante o parse, antes do module da extensão → SZGame3D undefined.)
+  const needsModules = Object.keys(input.extensionImports ?? {}).length > 0
+  const extScripts = (input.extensionScripts ?? [])
+    .map((s) => scriptTag(s, needsModules ? { type: 'module' } : {}))
+    .join('\n')
   const safeExtraFiles = (input.extraFiles ?? [])
     .map((file) => {
       const safeName = normalizeExtraFileName(file.name)
@@ -50,7 +95,7 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
 
   const extraHtml = safeExtraFiles
     .filter((f) => f.language === 'html')
-    .map((f) => splitHtml(f.content).bodyInner)
+    .map((f) => instrumentInlineScripts(splitHtml(f.content).bodyInner))
     .filter(Boolean)
     .join('\n')
 
@@ -59,17 +104,42 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
     .map((f) => `<style data-file="${escapeAttr(f.name)}">${escapeStyleContent(f.content)}</style>`)
     .join('\n')
 
-  // Extras JS: cada um vira data URL e entra no importmap como `./nome.js`.
-  const extraJsFiles = safeExtraFiles.filter((f) => f.language === 'javascript')
+  // Extras de script (JS e TS): cada um é transpilado (TS/TSX/JSX → JS via
+  // Sucrase; .js/.mjs passam direto), instrumentado contra loop infinito (código
+  // do aluno), vira data URL e entra no importmap. Para extras TS, mapeamos
+  // também as formas comuns de import (`./nome`, `./nome.js`) além de `./nome.ts`.
+  const extraJsFiles = safeExtraFiles.filter(
+    (f) => f.language === 'javascript' || f.language === 'typescript',
+  )
   const importmap: Record<string, string> = {}
-  for (const file of extraJsFiles) {
-    const dataUrl = `data:text/javascript;base64,${base64Encode(file.content)}`
-    importmap[`./${file.name}`] = dataUrl
-    importmap[file.name] = dataUrl
+  // Módulos ESM de extensões (specifier → URL pinada, ex.: three via CDN).
+  for (const [spec, url] of Object.entries(input.extensionImports ?? {})) {
+    if (spec && typeof url === 'string') importmap[spec] = url
   }
+  for (const file of extraJsFiles) {
+    const transpiled = transpileExtra(file.name, file.content)
+    const dataUrl = `data:text/javascript;base64,${base64Encode(instrumentLoops(transpiled))}`
+    for (const key of importmapKeysFor(file.name)) {
+      // Skip-on-conflict: o PRIMEIRO specifier (módulo de extensão ou extra
+      // anterior, ex.: `utils.ts` vs `utils.js` que ambos mapeiam `./utils`)
+      // vence. Sobrescrever quebraria silenciosamente o import que já resolvia.
+      if (key in importmap) {
+        console.warn(
+          `[studio] Specifier de importmap em conflito ignorado: "${key}" (de "${file.name}").`,
+        )
+        continue
+      }
+      importmap[key] = dataUrl
+    }
+  }
+  // Invariante: o JSON do importmap NÃO passa por escapeScriptContent (suas
+  // inserções de `\` são escapes inválidos de JSON e quebrariam o JSON.parse do
+  // navegador). A ÚNICA substituição segura para JSON é neutralizar o fechamento
+  // literal `</script` (que encerraria o elemento cedo): `<\/script` é JSON
+  // válido (`\/` ≡ `/`) e o tokenizer HTML não fecha o <script>.
   const importmapTag =
     Object.keys(importmap).length > 0
-      ? `<script type="importmap">${JSON.stringify({ imports: importmap })}</script>`
+      ? `<script type="importmap">${JSON.stringify({ imports: importmap }).replace(/<\/script/gi, '<\\/script')}</script>`
       : ''
 
   // O CSS canônico entra como <style> inline para não depender de fetch
@@ -77,21 +147,84 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
   // hrefs relativos a parent).
   const styleTag = input.css ? `<style>${escapeStyleContent(input.css)}</style>` : ''
 
-  // O JS canônico vira <script type="module"> APENAS quando usa import/export
-  // (precisa do importmap dos extras). Senão é clássico, para preservar funções
-  // globais e handlers `onclick="..."` da página do aluno — em module, nomes do
-  // topo não viram globais e o `onclick` quebraria. Erros continuam capturados
-  // pelo interceptor global.
+  // O JS canônico vira <script type="module"> APENAS quando o PRÓPRIO código do
+  // aluno usa import/export (precisa do importmap dos extras). Senão é clássico,
+  // para preservar funções globais e handlers `onclick="..."` da página do aluno
+  // — em module, nomes do topo não viram globais e o `onclick` quebraria. Erros
+  // continuam capturados pelo interceptor global. A detecção de module usa o JS
+  // ORIGINAL (a guarda de loop não adiciona import/export); o conteúdo executado
+  // é o instrumentado.
   const jsNeedsModule = /^\s*(?:import|export)\b/m.test(input.js)
-  const userScript = input.js ? scriptTag(input.js, jsNeedsModule ? { type: 'module' } : {}) : ''
+  const instrumentedJs = instrumentLoops(input.js)
+  // ⚠️ Em TODOS os caminhos o JS do aluno é emitido como script EXTERNO via
+  // `data:text/javascript;base64,…`, NÃO inline. Motivo: inline o conteúdo
+  // passaria por `escapeScriptContent`, que insere `\` em `</script`, `<!--` e
+  // `<script` — neutralização que corrompe literais legítimos do aluno (um regex
+  // `/<!--/u` vira `/<\!--/u` → SyntaxError; `/<\/script>/` muda de significado).
+  // A data: URL é opaca e self-contained (não passa pelo tokenizer HTML do
+  // documento pai), então dispensa esse escape e preserva o código verbatim.
+  // Semântica preservada por tipo:
+  //  - module (jsNeedsModule): external type="module" — importmap resolve igual,
+  //    escopo de módulo é idêntico inline vs externo.
+  //  - clássico (default): external SEM defer — script clássico externo mantém
+  //    escopo global (globais/onclick funcionam) e roda na ordem do documento
+  //    (data: URL não faz round-trip de rede).
+  //  - clássico DEFERIDO (needsModules e !jsNeedsModule): external + `defer` —
+  //    escopo global + ordem APÓS o module da extensão (que define p.ex.
+  //    window.SZGame3D). `<script defer>` INLINE é ignorado, por isso externo.
+  const jsNeedsDeferredClassic = !jsNeedsModule && needsModules
+  let userScript = ''
+  if (instrumentedJs) {
+    const dataUrl = `data:text/javascript;base64,${base64Encode(instrumentedJs)}`
+    if (jsNeedsModule) {
+      userScript = scriptTag('', { type: 'module', src: dataUrl })
+    } else if (jsNeedsDeferredClassic) {
+      userScript = scriptTag('', { defer: '', src: dataUrl })
+    } else {
+      userScript = scriptTag('', { src: dataUrl })
+    }
+  }
+
+  // Camadas de segurança no <head>, em ordem (defesa em profundidade):
+  // CSP → interceptor (console/erros/heartbeat) → permissionGuard (rede) →
+  // loopGuard (runtime do __szLoopTick) → storageBridge (localStorage shim) →
+  // IMPORTMAP → scripts de extensão (NÃO instrumentados) → estilos → conteúdo do
+  // <head> do aluno → corpo → código do aluno. ⚠️ O importmap PRECISA vir antes
+  // de QUALQUER `<script type="module">`
+  // (extScripts viram module quando há extensionImports) — senão o `import ...
+  // from 'three'` falha com "Failed to resolve module specifier".
+  const cspMeta = buildPreviewCSPMetaTag({
+    fetchAllowedOrigins: input.fetchAllowedOrigins,
+    scriptAllowedOrigins: extensionImportOrigins(input.extensionImports),
+  })
+  const permissionGuard = buildPermissionGuardRuntime({
+    granted: input.installedPermissions,
+    fetchAllowedOrigins: input.fetchAllowedOrigins,
+  })
+  const permissionGuardTag = permissionGuard ? scriptTag(permissionGuard) : ''
+  const loopGuardTag = scriptTag(buildLoopGuardRuntime(input.loopBudgetMs))
+  // Bridge de armazenamento: shima localStorage/sessionStorage (a origem opaca do
+  // sandbox os faria LANÇAR) e espelha o store `local` ao parent. Vem antes do
+  // importmap/extensões/aluno para que `localStorage` já exista quando rodarem.
+  const storageBridgeTag = scriptTag(
+    buildStorageBridgeRuntime({
+      localSnapshot: input.localStorageSnapshot,
+      parentOrigin: input.parentOrigin,
+      projectId: input.storageProjectId,
+    }),
+  )
 
   return `<!doctype html>
 <html lang="pt-BR">
 <head>
+${cspMeta}
 <meta charset="UTF-8" />
 ${scriptTag(buildInterceptorScript(input.parentOrigin))}
-${extScripts}
+${permissionGuardTag}
+${loopGuardTag}
+${storageBridgeTag}
 ${importmapTag}
+${extScripts}
 ${styleTag}
 ${extraCss}
 ${headInner}
@@ -104,6 +237,43 @@ ${userScript}
 </html>`
 }
 
+/**
+ * Instrumenta os `<script>` INLINE executáveis (sem `src`, type clássico ou
+ * module) de um fragmento de HTML do aluno, externalizando-os para `data:` URL —
+ * o MESMO tratamento do JS canônico (ver buildPreviewDoc). Dois ganhos:
+ *  1. o conteúdo passa por `instrumentLoops`, fechando o furo em que um
+ *     `<script>while(true){}</script>` no index.html escapava a Camada A do
+ *     loopGuard e congelava a aba;
+ *  2. a `data:` URL é opaca/self-contained, então o código vai verbatim sem
+ *     passar pelo tokenizer HTML (um `</script>` literal no corpo do script não
+ *     fecha a tag cedo).
+ * Scripts com `src`, importmap/json/template e tags não-`<script>` passam intactos.
+ * Externalizar um clássico preserva o escopo GLOBAL e a ordem de documento (igual
+ * ao caminho do JS canônico); module continua deferido.
+ */
+function instrumentInlineScripts(html: string): string {
+  if (!html || !/<script\b/i.test(html)) return html
+  return html.replace(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi, (full, rawAttrs, content) => {
+    const attrs = String(rawAttrs)
+    if (/[\s"']src\s*=/i.test(attrs)) return full
+    const type = (attrs.match(/\btype\s*=\s*["']?([^"'\s>]*)/i)?.[1] ?? '').toLowerCase()
+    const isClassic = type === '' || type === 'text/javascript' || type === 'application/javascript'
+    const isModule = type === 'module'
+    if (!isClassic && !isModule) return full
+    const code = String(content)
+    if (!code.trim()) return full
+    const dataUrl = `data:text/javascript;base64,${base64Encode(instrumentLoops(code))}`
+    // Preserva atributos que não sejam `type`/`src`; reemite `type="module"`
+    // quando for o caso (mantém o deferimento e o escopo de módulo).
+    const keptAttrs = attrs
+      .replace(/\btype\s*=\s*["']?[^"'\s>]*["']?/i, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+    const typeAttr = isModule ? ' type="module"' : ''
+    return `<script${typeAttr}${keptAttrs ? ` ${keptAttrs}` : ''} src="${dataUrl}"></script>`
+  })
+}
+
 function splitHtml(html: string): { headInner: string; bodyInner: string } {
   if (!/<html[\s>]/i.test(html)) {
     return { headInner: '', bodyInner: html }
@@ -112,7 +282,19 @@ function splitHtml(html: string): { headInner: string; bodyInner: string } {
   const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i)
   let headInner = headMatch?.[1] ?? ''
   headInner = headInner.replace(/<link[^>]*href=["'][^"']*style\.css["'][^>]*>/gi, '')
-  let bodyInner = bodyMatch?.[1] ?? html
+  // Quando há <html> mas FALTA <body>, não despejamos o documento inteiro no
+  // corpo gerado (doctype + <html> + <head> completo viriam junto, duplicando o
+  // <head> e renderizando o conteúdo do head como texto). Removemos doctype,
+  // a casca <html>/</html> e o bloco <head>...</head> antes de usar como corpo.
+  let bodyInner: string
+  if (bodyMatch) {
+    bodyInner = bodyMatch[1] ?? ''
+  } else {
+    bodyInner = html
+      .replace(/<!doctype[^>]*>/gi, '')
+      .replace(/<\/?html[^>]*>/gi, '')
+      .replace(/<head[^>]*>[\s\S]*?<\/head>/gi, '')
+  }
   bodyInner = bodyInner.replace(/<script[^>]*src=["'][^"']*script\.js["'][^>]*><\/script>/gi, '')
   return { headInner: headInner.trim(), bodyInner: bodyInner.trim() }
 }
@@ -121,19 +303,39 @@ function escapeAttr(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/"/g, '&quot;')
 }
 
+/** Origens (esquema+host) das URLs de módulos de extensão, para liberar na CSP. */
+function extensionImportOrigins(imports?: Record<string, string>): string[] {
+  if (!imports) return []
+  const origins = new Set<string>()
+  for (const url of Object.values(imports)) {
+    try {
+      origins.add(new URL(url).origin)
+    } catch {
+      // URL inválida → ignora (o importmap também não a usará de forma útil).
+    }
+  }
+  return Array.from(origins)
+}
+
+/**
+ * Chaves de importmap para um extra. JS/MJS: `./nome.js` e `nome.js`. TS/TSX/JSX:
+ * além de `./nome.ts`, mapeia também `./nome.js`/`./nome` (formas de import mais
+ * comuns em TS) para a MESMA data URL transpilada.
+ */
+function importmapKeysFor(name: string): string[] {
+  const keys = [`./${name}`, name]
+  const base = name.match(/^(.*)\.(?:tsx?|jsx)$/i)?.[1]
+  if (base) {
+    keys.push(`./${base}.js`, `${base}.js`, `./${base}`, base)
+  }
+  return keys
+}
+
 function scriptTag(code: string, attrs: Record<string, string> = {}): string {
   const attrText = Object.entries(attrs)
     .map(([name, value]) => ` ${name}="${escapeAttr(value)}"`)
     .join('')
   return `<script${attrText}>${escapeScriptContent(code)}</script>`
-}
-
-function escapeScriptContent(code: string): string {
-  return code.replace(/<\/script/gi, '<\\/script')
-}
-
-function escapeStyleContent(css: string): string {
-  return css.replace(/<\/style/gi, '<\\/style')
 }
 
 function base64Encode(s: string): string {

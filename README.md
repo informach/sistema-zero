@@ -37,6 +37,10 @@ Gateway. Cada serviço é um pacote em `packages/*`, deployável de forma indepe
   materializa o acesso do aluno (matrícula concedida por webhook pós-pagamento) e
   serve os cursos/aulas; **payments** expõe também "minhas compras" ao aluno
   (`GET /payments/my`); **messaging** envia os transacionais (boas-vindas/reset).
+- **community-kids** é a vitrine infantil (BFF, gamificada); **fiscal** emite NFS-e
+  automática pós-garantia; **hub** é a comunidade em fórum (back-end pronto, front-ends
+  em andamento). **member-shell**/**studio**/**ui**/**core** são libs compartilhadas
+  (a área do aluno e o studio embarcável).
 
 ## Pacotes
 
@@ -50,8 +54,14 @@ Gateway. Cada serviço é um pacote em `packages/*`, deployável de forma indepe
 | [`@sistemazero/admin`](packages/admin) | 3005 | Painel admin (Next.js 16, BFF via gateway): catálogo, usuários, pagamentos, membros |
 | [`@sistemazero/messaging`](packages/messaging) | 3006 | Mensageria transacional: e-mail (SendGrid) + WhatsApp (Evolution), templates no banco — DDD/Hexagonal |
 | [`@sistemazero/community`](packages/community) | 3007 | Área do aluno (Next.js 16, BFF via gateway): login (senha/OTP), cursos/player, catálogo "todos os cursos", materiais c/ marca d'água do aluno, perfil c/ foto, compras |
+| [`@sistemazero/community-kids`](packages/community-kids) | 3008 | Área do aluno infantil (Next.js 16, BFF via gateway): redesign Duolingo + gamificação (XP/streak/badges/ranking) |
+| [`@sistemazero/fiscal`](packages/fiscal) | 3009 | Emissão automática de NFS-e pós-garantia (Efí/prefeitura) — DDD/Hexagonal |
+| [`@sistemazero/hub`](packages/hub) | 3010 | Comunidade em fórum: servidores/canais/tópicos/comentários + reações + moderação — DDD/Hexagonal |
 | [`@sistemazero/funnel`](packages/funnel) | 4321 | Funil de vendas (Astro 6 + ilhas React): quiz → vendas → checkout (Pix/cartão/boleto) → admin |
 | [`@sistemazero/core`](packages/core) | — | Lib compartilhada (security/logging/errors/result/http), sem framework |
+| [`@sistemazero/member-shell`](packages/member-shell) | — | Shell compartilhado da área do aluno (route handlers, proxy anti-CSRF, componentes de domínio) — consumido por community/community-kids |
+| [`@sistemazero/studio`](packages/studio) | — | IDE educacional embarcável (Blocos/Código/Ponte + preview sandbox + jogos 2D/3D) — lib interna |
+| [`@sistemazero/ui`](packages/ui) | — | Componentes compartilhados (admin + community) |
 | [`@sistemazero/tui`](packages/tui) | — | UI de terminal (React + OpenTUI) |
 
 ## Fluxo de desenvolvimento (git → CI → staging → produção)
@@ -81,8 +91,10 @@ Detalhes, URLs dos dois ambientes e regras: **[docs/ambientes-e-fluxo.md](docs/a
 isolado por `pgSchema` no Drizzle:
 
 - `payments` → schema `payments` · `funnel` → schema `funil` · `auth` → schema `auth` ·
-  `catalog` → schema `catalog` · `members` → schema `members` · `messaging` → schema `messaging`.
-- O gateway/admin/community/core/tui **não** têm banco (admin/community são BFFs do gateway).
+  `catalog` → schema `catalog` · `members` → schema `members` · `messaging` → schema `messaging` ·
+  `fiscal` → schema `fiscal` · `hub` → schema `hub`.
+- O gateway/admin/community/community-kids/core/tui **não** têm banco (admin/community/
+  community-kids são BFFs do gateway; member-shell/studio/ui/core/tui são libs).
 - Cada serviço tem **journal de migrations próprio** (`<serviço>_migrations` no schema
   `drizzle`) — NÃO compartilhe `__drizzle_migrations` entre pacotes (a dedupe por
   `created_at` pularia migrations de outro pacote).
@@ -99,6 +111,8 @@ bun run --filter @sistemazero/auth      db:migrate
 bun run --filter @sistemazero/catalog   db:migrate   # depois: db:seed (produto + oferta atuais)
 bun run --filter @sistemazero/members   db:migrate   # depois: db:seed (curso de exemplo)
 bun run --filter @sistemazero/messaging db:migrate   # depois: templates:seed (welcome + password-reset + otp)
+bun run --filter @sistemazero/fiscal    db:migrate
+bun run --filter @sistemazero/hub       db:migrate
 ```
 
 ## Setup

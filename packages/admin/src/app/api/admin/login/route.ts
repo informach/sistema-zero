@@ -21,6 +21,16 @@ export async function POST(req: Request) {
   if (status === 403) {
     return NextResponse.json({ error: { code: 'INACTIVE' } }, { status: 403 })
   }
+  // Não colapsar TUDO em "credenciais inválidas": um 429 (rate limit do gateway —
+  // o XFF real é repassado, então o limite é por operador) ou um 5xx (auth fora do
+  // ar / Efí fria estourando o timeout) precisam de mensagem própria, senão o
+  // operador reescreve a senha em loop e piora o lockout / mascara um incidente.
+  if (status === 429) {
+    return NextResponse.json({ error: { code: 'TOO_MANY_ATTEMPTS' } }, { status: 429 })
+  }
+  if (status >= 500) {
+    return NextResponse.json({ error: { code: 'SERVICE_UNAVAILABLE' } }, { status: 503 })
+  }
   if (status !== 200 || !body?.tokens || !body?.user) {
     return NextResponse.json({ error: { code: 'INVALID_CREDENTIALS' } }, { status: 401 })
   }

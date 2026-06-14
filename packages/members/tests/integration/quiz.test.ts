@@ -145,6 +145,29 @@ describe('Quiz server-side', () => {
     expect(await readJson(retry)).toMatchObject({ passed: true, attemptsCount: 2 })
   })
 
+  test('aprovado antes: reprovar num re-treino NÃO re-arma cooldown (retryAvailableAt null)', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const course = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
+    const blockId = seedQuizBlock(courses, course.lessonIds[0], { passingScore: 100 })
+
+    // Aprova (gate destravado para sempre).
+    const pass = await submit(app, course.lessonIds[0], blockId, { q1: ['b'], q2: ['a'] })
+    expect((await readJson(pass)).passed).toBe(true)
+
+    // Re-treino reprovado: como já aprovou, NÃO há cooldown — e a resposta não pode
+    // anunciar um `retryAvailableAt` que o GET (computeRetryAvailableAt) dá como nulo.
+    const refail = await submit(app, course.lessonIds[0], blockId, { q1: ['a'], q2: ['a'] })
+    expect(refail.status).toBe(200)
+    const body = await readJson(refail)
+    expect(body.passed).toBe(false)
+    expect(body.retryAvailableAt).toBeNull()
+
+    const lesson = await readJson(await getLesson(app, course.slug, course.lessonIds[0]))
+    const qb = lesson.blocks.find((b: { kind: string }) => b.kind === 'quiz')
+    expect(qb.quizState.retryAvailableAt).toBeNull()
+  })
+
   test('corrida de submits simultâneos: o guard atômico do save barra o perdedor (429)', async () => {
     const { app, courses, entitlements, quizAttempts } = buildApp()
     const course = seedSampleCourse(courses)
@@ -195,6 +218,40 @@ describe('Quiz server-side', () => {
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
     seedQuizBlock(courses, course.lessonIds[0])
 
+    expect((await complete(app, course.lessonIds[0])).status).toBe(200)
+  })
+
+  test('fixação: submit < 100% → concluído, sem cooldown, reenvio liberado na hora', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const course = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
+    const blockId = seedQuizBlock(courses, course.lessonIds[0]) // sem passingScore
+
+    const res = await submit(app, course.lessonIds[0], blockId, { q1: ['a'], q2: ['a'] })
+    expect(res.status).toBe(200)
+    const body = await readJson(res)
+    // Sem nota de corte: passou ao enviar mesmo com 50% — e SEM cooldown.
+    expect(body).toMatchObject({ score: 50, passed: true })
+    expect(body.retryAvailableAt).toBeNull()
+
+    // Reenvio imediato NÃO é bloqueado (fixação não impõe espera).
+    const again = await submit(app, course.lessonIds[0], blockId, { q1: ['b'], q2: ['a'] })
+    expect(again.status).toBe(200)
+    expect((await readJson(again)).passed).toBe(true)
+  })
+
+  test('quiz gated mas SEM perguntas não trava o complete (não-respondível)', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const course = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
+    // Estado que a UI não cria, mas dados legados/escrita direta poderiam ter.
+    courses.blocks.push({
+      id: randomUUID(),
+      lessonId: course.lessonIds[0],
+      kind: 'quiz',
+      sortOrder: 11,
+      content: { kind: 'quiz', passingScore: 50, questions: [] },
+    })
     expect((await complete(app, course.lessonIds[0])).status).toBe(200)
   })
 

@@ -13,10 +13,44 @@ import {
   buildTerminalFileTree,
   type TerminalProjectSnapshot,
 } from './terminalProjectFiles'
-import { getWebContainer } from './webContainerClient'
+import {
+  CLASSIC_TEMPLATE_ID,
+  claimFsOwnership,
+  getWebContainer,
+  releaseFsOwnership,
+  requestProFsMount,
+  resetWebContainerFs,
+  setMountedTemplateId,
+  waitForProFsMounted,
+} from './webContainerClient'
 
-type Status = 'idle' | 'loading' | 'ready' | 'error'
+type Status = 'idle' | 'loading' | 'ready' | 'error' | 'busy'
 const TERMINAL_SYNC_DELAY_MS = 150
+
+// O WebContainer é um SINGLETON por aba e a montagem do modo clássico escreve na
+// RAIZ (`/`) após `resetWebContainerFs`. Com dois <Studio> na mesma aba (clássico
+// ou pro), carregar o terminal de B apagaria os arquivos montados por A debaixo
+// do jsh/dev-server em execução de A. A posse do FS é um TOKEN ÚNICO compartilhado
+// (fonte única em `webContainerClient`: claim/releaseFsOwnership) entre o terminal
+// clássico e o sincronizador pro. Os wrappers abaixo delegam a ele; o fallback
+// para um token de módulo local cobre o cenário de teste em que o módulo
+// `webContainerClient` é totalmente mockado (sem expor as funções de posse).
+let localFsOwner: symbol | null = null
+
+function claimClassicFs(owner: symbol): boolean {
+  if (claimFsOwnership) return claimFsOwnership(owner)
+  if (localFsOwner !== null && localFsOwner !== owner) return false
+  localFsOwner = owner
+  return true
+}
+
+function releaseClassicFs(owner: symbol): void {
+  if (releaseFsOwnership) {
+    releaseFsOwnership(owner)
+    return
+  }
+  if (localFsOwner === owner) localFsOwner = null
+}
 
 interface TerminalRuntime {
   webcontainer: WebContainer
@@ -27,6 +61,7 @@ interface TerminalRuntime {
   outputAbort: AbortController
   dataSubscription: { dispose(): void }
   onResize: () => void
+  resizeObserver: ResizeObserver
 }
 
 const EMPTY_EXTRA_FILES: ExtraFile[] = []
@@ -39,11 +74,15 @@ export function Terminal(): JSX.Element {
         name: s.project?.name ?? 'sz-project',
         files: s.project?.files ?? null,
         extraFiles: s.project?.extraFiles ?? EMPTY_EXTRA_FILES,
+        kind: s.project?.kind === 'pro' ? 'pro' : undefined,
+        tree: s.project?.tree,
       }),
     ),
   )
   const projectId = project?.id
   const containerRef = useRef<HTMLDivElement>(null)
+  // Identidade ESTÁVEL desta instância para o token de dono do FS clássico.
+  const fsOwnerRef = useRef<symbol>(Symbol('sz-classic-terminal'))
   const runtimeRef = useRef<TerminalRuntime | null>(null)
   const syncedFilesRef = useRef<Map<string, string>>(new Map())
   const loadSeqRef = useRef(0)
@@ -58,8 +97,13 @@ export function Terminal(): JSX.Element {
     syncedFilesRef.current = new Map()
     syncSeqRef.current += 1
     syncChainRef.current = Promise.resolve()
+    // Libera o FS clássico para outra instância poder montar (no-op se não somos
+    // donos). Fora do `if (!runtime)` abaixo porque podemos ser donos sem runtime
+    // pronto (claim feito, load abortado por troca de projeto/desmontagem).
+    releaseClassicFs(fsOwnerRef.current)
     if (!runtime) return
 
+    runtime.resizeObserver.disconnect()
     window.removeEventListener('resize', runtime.onResize)
     runtime.dataSubscription.dispose()
     runtime.outputAbort.abort()
@@ -98,16 +142,74 @@ export function Terminal(): JSX.Element {
       const fit = new FitAddonCtor()
       term.loadAddon(fit)
 
-      if (!containerRef.current) {
+      const container = containerRef.current
+      if (!container) {
+        // O term recém-criado ainda não está no runtimeRef, então cleanupRuntime
+        // não o descartaria — dispose explícito antes de lançar evita o leak.
+        term.dispose()
         throw new Error('Área do terminal não está disponível.')
       }
 
-      containerRef.current.replaceChildren()
-      term.open(containerRef.current)
+      container.replaceChildren()
+      term.open(container)
       fit.fit()
 
-      await webcontainer.mount(buildTerminalFileTree(project))
-      syncedFilesRef.current = new Map(Object.entries(buildTerminalFileContents(project)))
+      // No modo profissional o FS é montado/sincronizado pelo ProWebContainerProvider
+      // (escritor ÚNICO). O Terminal só abre o shell sobre o FS já montado — dois
+      // sincronizadores no mesmo container singleton corromperiam os arquivos.
+      if (project.kind === 'pro') {
+        // O FS pro é montado pelo escritor único (useWebContainerSync), que vive
+        // na árvore do editor — o Terminal é um irmão FORA daquele provider e não
+        // chama ensureMounted. Pede o mount ao escritor único (no-op se já montou
+        // ou se o preview já o disparou) e espera o SINAL antes de abrir o jsh —
+        // evita rodar sobre um FS vazio/stale (de um projeto anterior) e evita
+        // esperar para sempre quando o preview está fechado. Se não houver projeto
+        // pro identificado, segue sem esperar (cenário degradado).
+        if (projectId && waitForProFsMounted) {
+          requestProFsMount?.()
+          // `waitForProFsMounted` tem TIMEOUT: o escritor único pode estar `busy`
+          // (outra instância é dona do FS singleton) e nunca publicar o sinal —
+          // sem o timeout o terminal ficava preso para sempre "Carregando…". Ao
+          // expirar (resolve `false`), espelhamos a UI de ocupado do terminal
+          // clássico em vez de girar para sempre; o botão "Tentar novamente"
+          // rechama handleLoad quando a posse for liberada.
+          const mounted = await waitForProFsMounted(projectId)
+          if (loadSeqRef.current !== loadId) {
+            term.dispose()
+            return
+          }
+          if (!mounted) {
+            term.dispose()
+            setStatus('busy')
+            return
+          }
+        }
+      } else {
+        // Dono único do FS clássico: outra instância já montou na raiz e tem um
+        // jsh/dev-server rodando sobre ela — resetar/remontar aqui apagaria os
+        // arquivos dela. Recusa antes de tocar no FS.
+        if (!claimClassicFs(fsOwnerRef.current)) {
+          term.dispose()
+          setStatus('busy')
+          return
+        }
+        // Isolamento por projeto: o container é singleton por aba, então arquivos
+        // de um projeto anterior (ou de um projeto pro) ficariam no FS. Limpa
+        // tudo antes de montar. node_modules só é preservado entre projetos do
+        // MESMO template — todo classic compartilha o sentinela CLASSIC_TEMPLATE_ID
+        // (mesmo package.json), mas vindo de um template pro o node_modules dele é
+        // apagado para não envenenar a árvore deps do classic.
+        await resetWebContainerFs(webcontainer, { templateId: CLASSIC_TEMPLATE_ID })
+        if (loadSeqRef.current !== loadId) {
+          term.dispose()
+          return
+        }
+        await webcontainer.mount(buildTerminalFileTree(project))
+        // Guarda opcional: o módulo `webContainerClient` é totalmente mockado em
+        // alguns testes sem expor esta função (ver os wrappers de posse acima).
+        setMountedTemplateId?.(CLASSIC_TEMPLATE_ID)
+        syncedFilesRef.current = new Map(Object.entries(buildTerminalFileContents(project)))
+      }
       if (loadSeqRef.current !== loadId) {
         term.dispose()
         return
@@ -134,13 +236,22 @@ export function Terminal(): JSX.Element {
 
       const input = shell.input.getWriter()
       const dataSubscription = term.onData((data: string) => {
-        void input.write(data)
+        // Uma tecla digitada que corra com o teardown do shell (writer já liberado
+        // / stream fechado) rejeita o write — sem o catch vira unhandled rejection.
+        void input.write(data).catch(() => undefined)
       })
       const onResize = () => {
         fit.fit()
         shell.resize({ cols: term.cols, rows: term.rows })
       }
       window.addEventListener('resize', onResize)
+      // O split inferior usa um PanelResizeHandle: arrastá-lo redimensiona o
+      // container SEM disparar 'resize' na window, deixando linhas/colunas do
+      // xterm e do PTY defasadas. O ResizeObserver pega esse caso.
+      const resizeObserver = new ResizeObserver(() => {
+        onResize()
+      })
+      resizeObserver.observe(container)
 
       runtimeRef.current = {
         webcontainer,
@@ -151,18 +262,23 @@ export function Terminal(): JSX.Element {
         outputAbort,
         dataSubscription,
         onResize,
+        resizeObserver,
       }
       term.writeln('Sistema Zero Studio terminal')
       term.writeln('Arquivos do projeto montados no WebContainer.')
       setStatus('ready')
     } catch (err) {
-      cleanupRuntime()
+      // Staleness PRIMEIRO (espelha o caminho de sucesso): se uma carga mais nova
+      // já assumiu (loadId obsoleto), NÃO podemos tocar no runtimeRef — um
+      // cleanupRuntime() aqui destruiria o runtime da carga nova. O erro desta
+      // carga obsoleta é irrelevante; só retorna.
       if (loadSeqRef.current !== loadId) return
+      cleanupRuntime()
       const message = err instanceof Error ? err.message : String(err)
       setError(message)
       setStatus('error')
     }
-  }, [cleanupRuntime, project])
+  }, [cleanupRuntime, project, projectId])
 
   useEffect(() => {
     return () => {
@@ -181,6 +297,8 @@ export function Terminal(): JSX.Element {
 
   useEffect(() => {
     if (status !== 'ready') return
+    // Pro: o sync é do ProWebContainerProvider (escritor único). Ver handleLoad.
+    if (project.kind === 'pro') return
     const runtime = runtimeRef.current
     if (!runtime) return
     const contents = buildTerminalFileContents(project)
@@ -196,14 +314,20 @@ export function Terminal(): JSX.Element {
     let cancelled = false
     const timer = window.setTimeout(() => {
       const sync = syncChainRef.current.then(async () => {
-        if (cancelled || syncSeqRef.current !== syncId || runtimeRef.current !== runtime) return
+        // Staleness reverificada ENTRE os batches awaited (não só na entrada): um
+        // teardown/troca-de-projeto pousando no meio do voo escreveria sobre o FS
+        // singleton já resetado/remontado por outro projeto (cross-project bleed).
+        const fresh = () =>
+          !cancelled && syncSeqRef.current === syncId && runtimeRef.current === runtime
+        if (!fresh()) return
         await Promise.all(
           filesToWrite.map(([name, content]) => runtime.webcontainer.fs.writeFile(name, content)),
         )
+        if (!fresh()) return
         await Promise.all(
           filesToRemove.map((name) => runtime.webcontainer.fs.rm(name, { force: true })),
         )
-        if (!cancelled && syncSeqRef.current === syncId && runtimeRef.current === runtime) {
+        if (fresh()) {
           syncedFilesRef.current = new Map(Object.entries(contents))
         }
       })
@@ -227,6 +351,19 @@ export function Terminal(): JSX.Element {
     <div className="relative h-full bg-sz-panel">
       <div ref={containerRef} className="h-full w-full" />
 
+      {status === 'ready' && (
+        // O shell interativo (jsh) NUNCA é morto por timeout; só por aqui (ou
+        // pela troca de projeto). Reiniciar remonta o FS e abre um novo shell.
+        <button
+          type="button"
+          onClick={handleLoad}
+          title="Reiniciar terminal"
+          className="absolute right-2 top-2 z-10 rounded border border-sz-border bg-sz-panel/80 px-2 py-1 text-xs text-sz-fg-soft hover:text-sz-accent"
+        >
+          Reiniciar
+        </button>
+      )}
+
       {status === 'idle' && (
         <TerminalOverlay>
           <p className="max-w-md text-sz-fg-soft">
@@ -246,6 +383,21 @@ export function Terminal(): JSX.Element {
       {status === 'loading' && (
         <TerminalOverlay>
           <p className="text-sz-fg-soft">Carregando WebContainers...</p>
+        </TerminalOverlay>
+      )}
+
+      {status === 'busy' && (
+        <TerminalOverlay>
+          <p className="max-w-md text-sz-warn">
+            O terminal já está em uso em outra instância nesta aba.
+          </p>
+          <p className="max-w-md text-sz-fg-mute">
+            O sistema de arquivos do WebContainer é único por aba. Feche o terminal da outra
+            instância (ou troque o projeto dela) e tente de novo.
+          </p>
+          <Button variant="ghost" size="sm" onClick={handleLoad}>
+            Tentar novamente
+          </Button>
         </TerminalOverlay>
       )}
 

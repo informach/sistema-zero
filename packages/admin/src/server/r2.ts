@@ -159,6 +159,13 @@ export interface R2PresignPrivatePutInput {
   key: string
   contentType: string
   /**
+   * Tamanho exato (bytes). Quando presente, entra na ASSINATURA (`content-length`
+   * em `signableHeaders`): o R2 recusa um PUT cujo corpo tenha tamanho diferente.
+   * Sem isso o teto de 200MB checado na rota é só consultivo — o upload vai DIRETO
+   * pro R2, então só a assinatura prende o tamanho de verdade (achado do review).
+   */
+  contentLength?: number
+  /**
    * Validade do link (segundos). Default 1h — um PDF de 200MB em uplink lento
    * (BR) leva dezenas de minutos; janela curta demais faria o PUT falhar no meio.
    */
@@ -179,14 +186,18 @@ export async function r2PresignPrivatePut(
 ): Promise<{ key: string; uploadUrl: string }> {
   const cfg = requirePrivateR2Config()
   const key = normalizeKey(input.key)
+  const pinLength = typeof input.contentLength === 'number' && input.contentLength > 0
   const command = new PutObjectCommand({
     Bucket: cfg.bucket,
     Key: key,
     ContentType: input.contentType,
+    ...(pinLength ? { ContentLength: input.contentLength } : {}),
   })
   const uploadUrl = await getSignedUrl(getClient(cfg), command, {
     expiresIn: input.expiresInSeconds ?? 3600,
-    signableHeaders: new Set(['content-type']),
+    // `content-length` assinado só quando temos o tamanho → o browser SEMPRE manda
+    // o Content-Length casando com o arquivo, então o R2 prende o teto de verdade.
+    signableHeaders: new Set(pinLength ? ['content-type', 'content-length'] : ['content-type']),
   })
   return { key, uploadUrl }
 }

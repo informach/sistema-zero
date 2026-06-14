@@ -15,7 +15,12 @@ export function ImportButton({ onImported }: ImportButtonProps): JSX.Element {
 
   const handleFile = async (file: File) => {
     try {
-      if (file.size > MAX_PROJECT_IMPORT_CHARS) {
+      // `file.size` é em BYTES; o limite real é em CARACTERES (checado abaixo
+      // com `text.length`). Aqui é só um teto anti-DoS para não ler arquivos
+      // gigantescos: 4 bytes/char é o pior caso de expansão UTF-8, então comparar
+      // bytes contra `MAX_PROJECT_IMPORT_CHARS * 4` evita rejeitar por engano
+      // conteúdo multi-byte que cabe dentro do limite de caracteres.
+      if (file.size > MAX_PROJECT_IMPORT_CHARS * 4) {
         throw new Error('arquivo excede o tamanho máximo permitido')
       }
       const text = await file.text()

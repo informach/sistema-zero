@@ -1,5 +1,5 @@
 import type { CSSProperties, Ref } from 'react'
-import type { IDEMode, Locale, Project } from '#core'
+import type { BlockLevel, IDEMode, Locale, Project } from '#core'
 import type { StudioPersistence } from '../persistence/types'
 import type { StudioLimits } from '../state/projectStore'
 import type { StudioFeatures } from './config'
@@ -47,6 +47,21 @@ export interface StudioProps {
   /** Abre neste modo (sobrepõe o modo salvo no projeto, sem marcar sujo). */
   initialMode?: IDEMode
   /**
+   * Nível de aprendizado FIXADO pelo professor (divulgação progressiva): cura a
+   * paleta de blocos por dificuldade. Default: 'avancado' (mostra tudo).
+   * Estático por instância. Ver `allowBlocks`/`allowCategories`/`allowLevelReveal`.
+   */
+  level?: BlockLevel
+  /** Tipos de bloco sempre visíveis, independente do nível (allowlist da aula). */
+  allowBlocks?: readonly string[]
+  /** Nomes de categoria sempre visíveis, independente do nível. */
+  allowCategories?: readonly string[]
+  /**
+   * Permite o aluno revelar blocos avançados (toggle nas configurações). Default
+   * true. O professor pode desligar para travar a paleta no nível definido.
+   */
+  allowLevelReveal?: boolean
+  /**
    * Limites de política (tamanho de arquivo/projeto, nº de extras). Defaults
    * generosos; anti-DoS profundos continuam internos. Estático por instância.
    */
@@ -55,8 +70,13 @@ export interface StudioProps {
    * Snapshot completo do projeto no MESMO debounce do autosave (1s) e em todo
    * flush (salvar explícito, pagehide, unmount). Emitido também com
    * persistence 'none' — é assim que o host persiste no backend.
+   *
+   * `ctx.reason` distingue o autosave do debounce (`'autosave'`) do flush de
+   * fechamento (`'flush'`): no flush o transporte normal (fetch) é abortado pela
+   * navegação, então o host deve usar `navigator.sendBeacon` / `fetch` com
+   * `keepalive` — a biblioteca não pode fazer isso por você. Ver docs/embedding.md.
    */
-  onChange?: (project: Project) => void
+  onChange?: (project: Project, ctx?: { reason: 'autosave' | 'flush' }) => void
   /** Após salvar explícito (botão Salvar / handle.save()). Promise rejeitada marca erro no badge. */
   onSave?: (project: Project) => void | Promise<void>
   /** Erros não-fatais de persistência (autosave/save que falhou). */

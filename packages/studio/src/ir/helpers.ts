@@ -18,6 +18,15 @@ export function bool(value: boolean): JSExpr {
   return { type: 'bool', value }
 }
 
+// NOTA: `deepEqualIR` e `irBlockStructureEqual` comparam via `JSON.stringify`,
+// que serializa as chaves na ORDEM DE INSERÇÃO. Por isso ambas dependem do IR
+// ser CANÔNICO — ou seja, todos os produtores (buildIR a partir dos blocos e os
+// reverse parsers a partir do código) precisam montar cada objeto com as chaves
+// na MESMA ordem. Dois IRs estruturalmente idênticos mas com chaves inseridas em
+// ordens diferentes serializam para strings distintas e seriam tidos como
+// diferentes aqui. Mantenha a ordem de inserção dos campos consistente entre os
+// geradores ao evoluir o schema (sem isso, a Ponte cairia em rebuild a cada
+// reparse). Sem mudança de comportamento — apenas documentação do contrato.
 export function deepEqualIR(a: SZIR | null, b: SZIR | null): boolean {
   if (a === b) return true
   if (!a || !b) return false
@@ -26,15 +35,20 @@ export function deepEqualIR(a: SZIR | null, b: SZIR | null): boolean {
 
 /**
  * Igualdade ESTRUTURAL para fins de blocos: compara `html`/`css`/`js`/`extensions`
- * ignorando `__id` e a casca (`htmlShell`). A Ponte usa isso para decidir se uma
- * reparse mexeu em algo que os blocos representam — mudanças só na casca (ex.:
- * espaços no `<head>`) ou nos ids NÃO devem reconstruir/colapsar o workspace.
+ * ignorando os campos só-de-source-map (`__id`, `ctorId`, `__declIds`) e a casca
+ * (`htmlShell`). A Ponte usa isso para decidir se uma reparse mexeu em algo que os
+ * blocos representam — mudanças só na casca (ex.: espaços no `<head>`) ou nos ids
+ * NÃO devem reconstruir/colapsar o workspace. `ctorId` (no classDecl) e `__declIds`
+ * (na CSSRule) só são setados pelo buildIR — os reverse parsers nunca os emitem —,
+ * então mantê-los na comparação faria qualquer projeto com classe JS ou declaração
+ * CSS cair em rebuild total a cada edição cosmética do código.
  */
 export function irBlockStructureEqual(a: SZIR, b: SZIR): boolean {
   const norm = (ir: SZIR): string =>
     JSON.stringify(
       { html: ir.html, css: ir.css, js: ir.js, extensions: ir.extensions },
-      (key, value) => (key === '__id' ? undefined : value),
+      (key, value) =>
+        key === '__id' || key === 'ctorId' || key === '__declIds' ? undefined : value,
     )
   return norm(a) === norm(b)
 }
@@ -61,16 +75,54 @@ export function countAdvancedCSS(entries: CSSEntry[]): number {
   return entries.filter((entry) => 'type' in entry && entry.type === 'rawCSS').length
 }
 
+/**
+ * Lista TODOS os corpos (sub-listas de statements) de um statement. A versão
+ * antiga de {@link countAdvancedJS} só descia em `if/repeat/event/animationLoop/
+ * g2d:updateEachFrame`, então um trecho `rawJS` aninhado dentro de `while`,
+ * `funcDecl`, `forEach`, `tryCatch`, `classDecl` etc. NÃO era contado — o aviso
+ * "N trechos viraram Código avançado" subnotificava e furava a garantia de que
+ * "código é sagrado". Este walk é EXAUSTIVO sobre todas as variantes que
+ * carregam corpo (espelha o walk de statements do `generators/js.ts`); variantes
+ * sem corpo devolvem `[]`. Ao evoluir o schema com um novo statement-bloco,
+ * adicione o(s) corpo(s) dele aqui.
+ */
+function childStatementBodies(stmt: JSStatement): JSStatement[][] {
+  switch (stmt.type) {
+    case 'if':
+      return [stmt.then, stmt.else ?? []]
+    case 'repeat':
+    case 'while':
+    case 'doWhile':
+    case 'forOf':
+    case 'forRange':
+    case 'event':
+    case 'animationLoop':
+    case 'g2d:updateEachFrame':
+    case 'g2d:onPointer':
+    case 'g3d:animate':
+    case 'funcDecl':
+    case 'forEach':
+    case 'setTimeout':
+    case 'setInterval':
+      return [stmt.body]
+    case 'tryCatch':
+      return [stmt.body, stmt.handler, stmt.finalizer ?? []]
+    case 'fetchJson':
+      return [stmt.body, stmt.catchBody ?? []]
+    case 'classDecl':
+      return [stmt.ctorBody, ...stmt.methods.map((m) => m.body)]
+    default:
+      return []
+  }
+}
+
 export function countAdvancedJS(statements: JSStatement[]): number {
   return statements.reduce((total, statement) => {
-    if (statement.type === 'rawJS') return total + 1
-    if (statement.type === 'if') {
-      return total + countAdvancedJS(statement.then) + countAdvancedJS(statement.else ?? [])
-    }
-    if (statement.type === 'repeat') return total + countAdvancedJS(statement.body)
-    if (statement.type === 'event') return total + countAdvancedJS(statement.body)
-    if (statement.type === 'animationLoop') return total + countAdvancedJS(statement.body)
-    if (statement.type === 'g2d:updateEachFrame') return total + countAdvancedJS(statement.body)
-    return total
+    const here = statement.type === 'rawJS' ? 1 : 0
+    const nested = childStatementBodies(statement).reduce(
+      (sum, body) => sum + countAdvancedJS(body),
+      0,
+    )
+    return total + here + nested
   }, 0)
 }

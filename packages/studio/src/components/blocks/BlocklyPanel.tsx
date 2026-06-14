@@ -9,16 +9,20 @@ import {
   ensureBlocklyInitialized,
   registerClassesFlyout,
   registerFunctionsFlyout,
+  setSearchProfileForWorkspace,
   szGridColourFor,
   szThemeFor,
 } from '#blockly'
-import type { InstalledExtension } from '#core'
+import { type InstalledExtension, isCategoryAllowed, type LearningProfile } from '#core'
 import { generateProjectFilesWithMap } from '#generators'
 import { findExtension } from '#official-extensions'
 import { useCrossHighlight } from '../../hooks/useCrossHighlight'
+import { reregisterInstalledExtensions } from '../../state/extensionsAdapter'
 import { useHighlightStore } from '../../state/highlightStore'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
+import { useSettingsStore } from '../../state/settingsStore'
 import { useSourcemapStore } from '../../state/sourcemapStore'
+import { useStudioConfig } from '../../studio/config'
 import { useStudioTheme } from '../../studio/theme'
 import { Spinner } from '../layout/LoadingViews'
 
@@ -170,13 +174,45 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
 
   const installedIds = useMemo(() => installedExtensions.map((e) => e.id), [installedExtensions])
 
+  // Registra os blocos das extensões instaladas ANTES de qualquer
+  // `workspaces.load(blocksState)`. Síncrono (este componente já está no chunk do
+  // Blockly, com import estático) e idempotente. O efeito roda na montagem, e o
+  // load é adiado um frame (requestAnimationFrame abaixo) — então as definições
+  // sempre existem quando os blocos salvos são desserializados. Antes, a única
+  // inscrição vinha do efeito ASSÍNCRONO do Shell (dynamic import), que perdia a
+  // corrida no 1º carregamento e fazia o load lançar "Invalid block definition
+  // for type: sz_g2d_*" até o aluno dar reload.
+  useEffect(() => {
+    reregisterInstalledExtensions({ installedExtensions })
+  }, [installedExtensions])
+
+  // Perfil de aprendizado: o professor fixa o nível (config); o aluno pode
+  // revelar o avançado (settings), se o professor permitir.
+  const learning = useStudioConfig().learning
+  const revealAdvanced = useSettingsStore((s) => s.revealAdvanced)
+  const profile = useMemo<LearningProfile>(
+    () => ({
+      level: learning.level,
+      revealed: learning.allowLevelReveal && revealAdvanced,
+      allowBlocks: learning.allowBlocks,
+      allowCategories: learning.allowCategories,
+    }),
+    [learning, revealAdvanced],
+  )
+
   const toolbox = useMemo(() => {
     const extras = installedIds
       .map((id) => findExtension(id))
       .filter((e): e is NonNullable<ReturnType<typeof findExtension>> => Boolean(e))
+      // Gateia a categoria da extensão pelo nível (ex.: game-2d = 'intermediario',
+      // game-3d = 'avancado'). Default 'intermediario': extensões NUNCA aparecem
+      // na paleta do iniciante, mesmo que esqueçam de declarar minLevel.
+      .filter((e) =>
+        isCategoryAllowed(e.blockly.toolboxCategory.name, e.minLevel ?? 'intermediario', profile),
+      )
       .map((e) => e.blockly.toolboxCategory)
-    return buildCoreToolbox(extras)
-  }, [installedIds])
+    return buildCoreToolbox(extras, profile)
+  }, [installedIds, profile])
   initialToolboxRef.current ??= toolbox
 
   // Regenera arquivos/IR a partir dos blocos. Só deve ser chamada para edições
@@ -274,6 +310,7 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
   // carga (`FINISHED_LOADING`), zera o guard e ressincroniza o snapshot com o
   // estado REAL salvo — assim normalizações do Blockly não regeneram nem
   // sobrescrevem o código (bug de perda de código ao entrar na Ponte).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: o listener captura estado via refs de propósito (não re-subscrever a cada edição)
   useEffect(() => {
     if (!workspace) return
     const listener = (event: Blockly.Events.Abstract) => {
@@ -404,6 +441,13 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
     scheduleBlocklyResize(workspace)
   }, [workspace, toolbox])
 
+  // Publica o perfil deste workspace para a busca de blocos filtrar a oferta por
+  // nível (a categoria de busca é um registro GLOBAL e não conhece o perfil por
+  // instância; sem isto, a busca vazaria Funções/Classes acima do nível fixado).
+  useEffect(() => {
+    if (workspace) setSearchProfileForWorkspace(workspace, profile)
+  }, [workspace, profile])
+
   // Reage a mudança de cursor no Monaco: encontra o bloco que gerou aquela
   // linha e o seleciona/centraliza no workspace.
   useEffect(() => {
@@ -435,6 +479,7 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
 
   // Restaura blocksState quando trocar de projeto ou quando a Ponte gerar
   // blocos a partir do código.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: restaura só quando workspace/blocksState mudam; demais leituras via ref são intencionais
   useEffect(() => {
     if (!workspace) return
     if (!blocksState) {

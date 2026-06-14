@@ -3,9 +3,15 @@ import { computeRetryAvailableAt } from '../../domain/course/quiz'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { QuizAttemptRepository } from '../../domain/ports/quiz-attempt-repository.port'
+import type { StudioSubmissionRepository } from '../../domain/ports/studio-submission-repository.port'
 import type { VideoPositionRepository } from '../../domain/ports/video-position-repository.port'
 import type { CheckAccessService } from '../access/check-access.service'
-import { type LessonDetailView, type QuizStateView, toLessonDetailView } from '../mappers/views'
+import {
+  type LessonDetailView,
+  type QuizStateView,
+  type StudioStateView,
+  toLessonDetailView,
+} from '../mappers/views'
 
 /** Detalhe da aula com o conteúdo COMPLETO (blocos + anexos) — exige acesso ativo. */
 export class GetLessonService {
@@ -15,6 +21,7 @@ export class GetLessonService {
     private readonly progress: ProgressRepository,
     private readonly positions: VideoPositionRepository,
     private readonly quizAttempts: QuizAttemptRepository,
+    private readonly studioSubmissions: StudioSubmissionRepository,
     private readonly clock: () => Date,
   ) {}
 
@@ -32,10 +39,12 @@ export class GetLessonService {
     }
 
     const quizBlockIds = lesson.blocks.filter((b) => b.content.kind === 'quiz').map((b) => b.id)
-    const [completedIds, positionSeconds, summaries] = await Promise.all([
+    const studioBlockIds = lesson.blocks.filter((b) => b.content.kind === 'studio').map((b) => b.id)
+    const [completedIds, positionSeconds, summaries, submittedStudioIds] = await Promise.all([
       this.progress.listCompletedLessonIds(userId, course.id),
       this.positions.findPosition(userId, lessonId),
       this.quizAttempts.summarizeByBlockIds(userId, quizBlockIds),
+      this.studioSubmissions.listSubmittedBlockIds(userId, studioBlockIds),
     ])
 
     const now = this.clock()
@@ -49,12 +58,24 @@ export class GetLessonService {
       })
     }
 
+    // Estado da entrega por bloco de estúdio (submitted? — sem o projeto, que é
+    // pesado; o continuar/inspecionar usa o rascunho local ou a rota admin).
+    const studioStates = new Map<string, StudioStateView>()
+    for (const blockId of studioBlockIds) {
+      studioStates.set(blockId, {
+        submitted: submittedStudioIds.has(blockId),
+        // Data exata não é necessária ao gate/UI do aluno; o painel do professor a traz.
+        submittedAt: null,
+      })
+    }
+
     return toLessonDetailView(
       lesson,
       course.slug,
       completedIds.includes(lessonId),
       positionSeconds,
       quizStates,
+      studioStates,
     )
   }
 }

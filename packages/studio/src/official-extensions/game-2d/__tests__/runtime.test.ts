@@ -133,4 +133,167 @@ describe('gameTwoDRuntime.gameLoop', () => {
     }).not.toThrow()
     expect(count).toBe(2)
   })
+
+  it('mantém apenas UM loop ativo: chamar gameLoop de novo para o anterior', () => {
+    // requestAnimationFrame com fila controlada que carrega o ID de cada frame,
+    // para sabermos qual `tick` está agendado e respeitar cancelAnimationFrame.
+    const frames: Array<{ id: number; cb: () => void }> = []
+    const win = { addEventListener() {}, SZGame2D: undefined } as unknown as Record<string, unknown>
+    let nextId = 1
+    const requestAnimationFrame = (cb: () => void) => {
+      const id = nextId++
+      frames.push({ id, cb })
+      return id
+    }
+    const canceled = new Set<number>()
+    const cancelAnimationFrame = (id: number) => canceled.add(id)
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval
+    new Function('window', 'requestAnimationFrame', 'cancelAnimationFrame', gameTwoDRuntime)(
+      win,
+      requestAnimationFrame,
+      cancelAnimationFrame,
+    )
+    const api = (win as unknown as { SZGame2D: { gameLoop: (fn: () => void) => () => void } })
+      .SZGame2D
+
+    // flushAll roda todos os frames pendentes (uma rodada), pulando os cancelados.
+    const flushRound = () => {
+      const round = frames.splice(0, frames.length)
+      for (const f of round) {
+        if (!canceled.has(f.id)) f.cb()
+      }
+    }
+
+    let countA = 0
+    let countB = 0
+    api.gameLoop(() => {
+      countA += 1
+    })
+    // Segundo loop: deve PARAR o primeiro automaticamente (sem empilhar RAFs).
+    api.gameLoop(() => {
+      countB += 1
+    })
+
+    flushRound()
+    flushRound()
+    // Só o segundo loop continua vivo; o primeiro foi cancelado na 2ª chamada.
+    expect(countA).toBe(0)
+    expect(countB).toBe(2)
+  })
+})
+
+describe('gameTwoDRuntime.onPointer', () => {
+  // Loader que captura os listeners registrados em window por nome de evento,
+  // para podermos disparar um 'pointerdown' sintético e contar os handlers.
+  function loadWithPointer() {
+    type Listener = (ev: unknown) => void
+    const listeners: Record<string, Listener[]> = {}
+    const win = {
+      addEventListener(name: string, fn: Listener) {
+        listeners[name] ??= []
+        listeners[name].push(fn)
+      },
+      SZGame2D: undefined,
+    } as unknown as Record<string, unknown>
+    const requestAnimationFrame = () => 0
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval
+    new Function('window', 'requestAnimationFrame', gameTwoDRuntime)(win, requestAnimationFrame)
+    const api = (
+      win as unknown as { SZGame2D: { onPointer: (fn: (x: number, y: number) => void) => void } }
+    ).SZGame2D
+    const firePointerDown = (x: number, y: number) => {
+      for (const fn of listeners.pointerdown ?? []) fn({ clientX: x, clientY: y })
+    }
+    return { api, firePointerDown }
+  }
+
+  it('registrar a MESMA fn duas vezes mantém um único handler', () => {
+    const { api, firePointerDown } = loadWithPointer()
+    let calls = 0
+    const handler = () => {
+      calls += 1
+    }
+    api.onPointer(handler)
+    api.onPointer(handler)
+    firePointerDown(10, 20)
+    // Apesar de duas chamadas a onPointer com a MESMA referência, um clique
+    // dispara o handler uma única vez.
+    expect(calls).toBe(1)
+  })
+
+  it('funções DIFERENTES continuam acumulando (API compatível)', () => {
+    const { api, firePointerDown } = loadWithPointer()
+    let a = 0
+    let b = 0
+    api.onPointer(() => {
+      a += 1
+    })
+    api.onPointer(() => {
+      b += 1
+    })
+    firePointerDown(0, 0)
+    expect(a).toBe(1)
+    expect(b).toBe(1)
+  })
+
+  it('ignora valores que não são função', () => {
+    const { api, firePointerDown } = loadWithPointer()
+    expect(() => {
+      ;(api.onPointer as unknown as (v: unknown) => void)(null)
+      firePointerDown(0, 0)
+    }).not.toThrow()
+  })
+
+  it('registrar arrows NOVOS a cada frame não cresce a lista sem limite', () => {
+    // Cenário real do bug: o gerador emite um arrow LITERAL a cada execução do
+    // bloco "quando clicar/tocar". Se o aluno colocar esse bloco dentro do "a
+    // cada frame", onPointer recebe uma referência inédita por frame e a lista
+    // cresceria sem limite. Simulamos 1000 "frames" registrando funções
+    // distintas e verificamos que UM clique não dispara 1000 vezes.
+    const { api, firePointerDown } = loadWithPointer()
+    let totalCalls = 0
+    for (let frame = 0; frame < 1000; frame++) {
+      // arrow novo a cada iteração — referência sempre diferente
+      api.onPointer(() => {
+        totalCalls += 1
+      })
+    }
+    firePointerDown(5, 5)
+    // Com o teto de 32 handlers, um clique dispara no máximo 32 vezes — não 1000.
+    expect(totalCalls).toBeLessThanOrEqual(32)
+    expect(totalCalls).toBeGreaterThan(0)
+  })
+
+  it('avisa no console (uma vez) ao atingir o teto', () => {
+    const { api } = loadWithPointer()
+    const original = console.warn
+    let warnCount = 0
+    console.warn = () => {
+      warnCount += 1
+    }
+    try {
+      // Bem acima do teto de 32 → deve avisar, mas só UMA vez.
+      for (let i = 0; i < 100; i++) {
+        api.onPointer(() => {})
+      }
+    } finally {
+      console.warn = original
+    }
+    expect(warnCount).toBe(1)
+  })
+
+  it('poucos handlers distintos continuam todos disparando', () => {
+    // O cap não pode quebrar o uso legítimo de alguns cliques registrados de
+    // propósito: 4 handlers distintos abaixo do teto devem TODOS rodar.
+    const { api, firePointerDown } = loadWithPointer()
+    const counts = [0, 0, 0, 0]
+    for (let i = 0; i < counts.length; i++) {
+      const idx = i
+      api.onPointer(() => {
+        counts[idx] = (counts[idx] ?? 0) + 1
+      })
+    }
+    firePointerDown(0, 0)
+    expect(counts).toEqual([1, 1, 1, 1])
+  })
 })

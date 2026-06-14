@@ -177,11 +177,36 @@ export async function listTextTracks(vimeoVideoId: string): Promise<VimeoTextTra
   return response.data ?? []
 }
 
-/** Baixa o VTT do track (o `link` do Vimeo é assinado/temporário — re-hospede!). */
+/** Hosts de onde aceitamos baixar o VTT (o `link` vem de um campo da API Vimeo). */
+const VTT_ALLOWED_HOST_SUFFIXES = ['.vimeo.com', '.vimeocdn.com']
+const MAX_VTT_BYTES = 5 * 1024 * 1024 // legendas são pequenas; teto generoso
+
+/**
+ * Baixa o VTT do track (o `link` do Vimeo é assinado/temporário — re-hospede!).
+ * O destino sai de um campo JSON da API do Vimeo: validamos esquema+host ANTES do
+ * fetch (defesa anti-SSRF — um fetch no servidor não pode seguir URL arbitrária na
+ * rede privada do Railway) e limitamos o corpo (achado do review).
+ */
 export async function getTextTrackVtt(link: string): Promise<string> {
+  let url: URL
+  try {
+    url = new URL(link)
+  } catch {
+    throw new Error('Link de legenda inválido')
+  }
+  const host = url.hostname.toLowerCase()
+  const hostOk = VTT_ALLOWED_HOST_SUFFIXES.some((s) => host === s.slice(1) || host.endsWith(s))
+  if (url.protocol !== 'https:' || !hostOk) throw new Error('Host de legenda não permitido')
+
   const response = await fetch(link, { signal: AbortSignal.timeout(VIMEO_BYTES_TIMEOUT_MS) })
   if (!response.ok) throw new Error(`Falha ao baixar o VTT (${response.status})`)
-  return await response.text()
+  const declared = Number(response.headers.get('content-length'))
+  if (Number.isFinite(declared) && declared > MAX_VTT_BYTES) {
+    throw new Error('VTT excede o tamanho máximo')
+  }
+  const text = await response.text()
+  if (text.length > MAX_VTT_BYTES) throw new Error('VTT excede o tamanho máximo')
+  return text
 }
 
 /** Sobe a capa custom do vídeo (POST /pictures cria o slot + PUT envia os bytes). */

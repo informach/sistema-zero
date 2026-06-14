@@ -1,6 +1,7 @@
-import { createStore, delMany, get, getMany, keys, setMany } from 'idb-keyval'
+import { createStore, delMany, get, getMany, keys, set, setMany } from 'idb-keyval'
 import { IDE_MODES, type IDEMode, type Project } from '#core'
 import { cancelPendingAutosavesFor } from '../persistence/service'
+import { gameStorageKey } from './gameStorage'
 
 const LEGACY_PROJECT_KEY_PREFIX = 'sz:project:'
 const PROJECT_META_KEY_PREFIX = 'sz:project-meta:'
@@ -24,14 +25,48 @@ function getStore() {
 // Este módulo mantém só as operações PURAS de IndexedDB — que são exatamente o
 // adapter 'local' (ver src/persistence/local.ts).
 
+// Cadeia de ESCRITA por id de projeto: encadeia persistProject/renameProjectMeta/
+// deleteProject do MESMO id para não correrem entre si. O `renameProjectMeta` faz
+// um get-then-set NÃO-ATÔMICO do registro de meta — sem esta serialização, um
+// `persistProject` (autosave do editor aberto) do mesmo id intercalado entre o
+// `get` e o `set` do rename perderia o nome novo (o set do rename gravaria por
+// cima com base num meta lido ANTES do persist, ou o persist gravaria por cima do
+// rename). A entrada é removida quando a própria cauda termina, para o Map não
+// crescer. Vive aqui (módulo, não por instância) porque as escritas de IDB também
+// vêm de create/import/duplicate, fora do mutex por instância do service.
+const writeChains = new Map<string, Promise<void>>()
+
+export function runSerializedWrite(id: string, task: () => Promise<void>): Promise<void> {
+  const prev = writeChains.get(id)
+  // `prev` é blindado contra rejeição (handler nos dois ramos) para uma falha de
+  // uma escrita anterior não derrubar a cadeia das seguintes.
+  const next = prev ? prev.then(task, task) : task()
+  // A cadeia GUARDADA no Map nunca rejeita (o ramo de erro vira a limpeza), para
+  // não vazar uma unhandled rejection quando uma escrita falha (ex.: quota cheia)
+  // — mas o RESULTADO devolvido ao chamador propaga a falha (o autosave precisa
+  // marcar o badge de erro). São dois consumidores distintos do mesmo `task`.
+  const settled = next.then(
+    () => {
+      if (writeChains.get(id) === settled) writeChains.delete(id)
+    },
+    () => {
+      if (writeChains.get(id) === settled) writeChains.delete(id)
+    },
+  )
+  writeChains.set(id, settled)
+  return next
+}
+
 export async function persistProject(project: Project): Promise<void> {
-  await setMany(
-    [
-      [projectMetaKey(project.id), projectToMetaRecord(project)],
-      [projectFilesKey(project.id), projectToFilesRecord(project)],
-      [projectStateKey(project.id), projectToStateRecord(project)],
-    ],
-    getStore(),
+  await runSerializedWrite(project.id, () =>
+    setMany(
+      [
+        [projectMetaKey(project.id), projectToMetaRecord(project)],
+        [projectFilesKey(project.id), projectToFilesRecord(project)],
+        [projectStateKey(project.id), projectToStateRecord(project)],
+      ],
+      getStore(),
+    ),
   )
 }
 
@@ -48,14 +83,98 @@ export async function loadProjectById(id: string): Promise<Project | null> {
   return ((await get<Project>(legacyProjectKey(id), kvStore)) ?? null) as Project | null
 }
 
+// CERCA de exclusão do armazenamento do programa do aluno (blocos guardar/ler).
+// O preview faz `writeGameStorage` à parte do mutex por id (flush do localStorage
+// do bichinho); um `set` desse flush pode CHEGAR depois do `delMany` do delete e
+// RESSUSCITAR um registro `sz:game-storage:<id>` órfão (o projeto já não existe).
+// Serializar a escrita no MESMO `runSerializedWrite` do delete ordena os dois, mas
+// uma escrita ENFILEIRADA depois que o delMany já saiu da cadeia ainda passaria —
+// por isso esta cerca: marcada no delete e checada DENTRO da cadeia da escrita,
+// derruba qualquer write tardio do id apagado. Map id→timestamp com poda lazy por
+// janela de graça (igual à cerca do service), para não vazar um ULID por exclusão.
+const GAME_STORAGE_FENCE_GRACE_MS = 60_000
+const deletedGameStorage = new Map<string, number>()
+
+function pruneGameStorageFence(now: number): void {
+  if (deletedGameStorage.size === 0) return
+  for (const [id, deletedAt] of deletedGameStorage) {
+    if (now - deletedAt >= GAME_STORAGE_FENCE_GRACE_MS) deletedGameStorage.delete(id)
+  }
+}
+
+/** Marca o id como apagado: um `writeGameStorage` tardio (flush do preview em voo)
+ * é descartado em vez de recriar o registro órfão. Chamado pelo `deleteProject`. */
+export function fenceGameStorageDelete(id: string): void {
+  const now = Date.now()
+  pruneGameStorageFence(now)
+  deletedGameStorage.set(id, now)
+}
+
+/** A cerca ainda vale para este id? Poda lazy de passagem para limitar o Map. */
+export function isGameStorageDeleted(id: string): boolean {
+  const deletedAt = deletedGameStorage.get(id)
+  if (deletedAt === undefined) return false
+  if (Date.now() - deletedAt >= GAME_STORAGE_FENCE_GRACE_MS) {
+    deletedGameStorage.delete(id)
+    return false
+  }
+  return true
+}
+
 export async function deleteProject(id: string): Promise<void> {
   // Cancela autosaves em voo em TODAS as instâncias — um timer pendente
   // re-persistiria o projeto recém-apagado.
   cancelPendingAutosavesFor(id)
-  await delMany(
-    [projectMetaKey(id), projectFilesKey(id), projectStateKey(id), legacyProjectKey(id)],
-    getStore(),
+  // Cerca o armazenamento do programa do aluno ANTES do delMany: um flush do
+  // preview já em voo (writeGameStorage) que chegue depois é descartado.
+  fenceGameStorageDelete(id)
+  // No MESMO mutex de escrita do id: o delMany não pode intercalar com um
+  // persist/rename em voo do mesmo projeto.
+  await runSerializedWrite(id, () =>
+    delMany(
+      [
+        projectMetaKey(id),
+        projectFilesKey(id),
+        projectStateKey(id),
+        legacyProjectKey(id),
+        // Armazenamento do programa do aluno (blocos "guardar/ler") deste projeto.
+        gameStorageKey(id),
+      ],
+      getStore(),
+    ),
   )
+}
+
+/**
+ * Renomeia um projeto reescrevendo SÓ o registro de metadados (sz:project-meta:).
+ * Lê o meta atual, troca o nome e bumpa `updatedAt`; arquivos e state ficam
+ * INTOCADOS — renomear via persistProject(projeto-lido-do-disco) reescreveria
+ * files+state a partir de um snapshot estale, ressuscitando bytes antigos e
+ * correndo contra o autosave de um editor aberto. No-op se não houver registro de
+ * meta (projeto inexistente ou só no formato legado).
+ */
+export async function renameProjectMeta(id: string, name: string): Promise<void> {
+  // get-then-set SERIALIZADO contra persistProject/deleteProject do mesmo id: a
+  // leitura e a gravação do meta correm como uma unidade, sem um autosave do
+  // editor aberto intercalar entre elas e perder o nome novo (ou ser sobrescrito).
+  await runSerializedWrite(id, async () => {
+    const kvStore = getStore()
+    const meta = await get<Record<string, unknown>>(projectMetaKey(id), kvStore)
+    if (meta && typeof meta === 'object' && !Array.isArray(meta)) {
+      await set(projectMetaKey(id), { ...meta, name, updatedAt: Date.now() }, kvStore)
+      return
+    }
+    // Sem partição de meta: projeto no formato LEGADO (`sz:project:<id>`, doc único
+    // anterior à migração 3-partições) que nunca foi aberto/editado — só ganha
+    // partições no 1º persistProject. O legado é suportado p/ leitura/listagem
+    // (loadProjectById/listAllProjects), então o rename PRECISA persistir; senão a
+    // ProjectList reverte o nome ao reler o disco. Regrava o nome no PRÓPRIO doc
+    // legado (mesma chave), dentro do mesmo runSerializedWrite.
+    const legacy = await get<Record<string, unknown>>(legacyProjectKey(id), kvStore)
+    if (legacy && typeof legacy === 'object' && !Array.isArray(legacy)) {
+      await set(legacyProjectKey(id), { ...legacy, name, updatedAt: Date.now() }, kvStore)
+    }
+  })
 }
 
 export interface ProjectSummary {
@@ -122,7 +241,10 @@ export async function listAllProjects(): Promise<ProjectSummary[]> {
 
 function projectToMetaRecord(
   project: Project,
-): Pick<Project, 'id' | 'name' | 'createdAt' | 'updatedAt' | 'mode' | 'installedExtensions'> {
+): Pick<
+  Project,
+  'id' | 'name' | 'createdAt' | 'updatedAt' | 'mode' | 'installedExtensions' | 'kind' | 'proMeta'
+> {
   return {
     id: project.id,
     name: project.name,
@@ -130,14 +252,22 @@ function projectToMetaRecord(
     updatedAt: project.updatedAt,
     mode: project.mode,
     installedExtensions: project.installedExtensions,
+    // Modo profissional: discriminante + metadados do dev-server. Ausentes em
+    // projetos classic (undefined é preservado pelo structured clone do IDB).
+    kind: project.kind,
+    proMeta: project.proMeta,
   }
 }
 
-function projectToFilesRecord(project: Project): Pick<Project, 'id' | 'files' | 'extraFiles'> {
+function projectToFilesRecord(
+  project: Project,
+): Pick<Project, 'id' | 'files' | 'extraFiles' | 'tree'> {
   return {
     id: project.id,
     files: project.files,
     extraFiles: project.extraFiles,
+    // Árvore real do modo profissional (path-keyed); ausente em classic.
+    tree: project.tree,
   }
 }
 

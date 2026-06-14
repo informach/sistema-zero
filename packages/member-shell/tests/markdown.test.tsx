@@ -3,9 +3,21 @@ import { isValidElement, type ReactElement, type ReactNode } from 'react'
 import { renderInline, renderMarkdown } from '../src/lib/markdown'
 
 /** Narrowing de elemento React com props tipadas p/ os asserts. */
-function el(node: ReactNode): ReactElement<{ children?: ReactNode; href?: string; rel?: string }> {
+function el(node: ReactNode): ReactElement<{
+  children?: ReactNode
+  href?: string
+  rel?: string
+  src?: string
+  alt?: string
+}> {
   if (!isValidElement(node)) throw new Error(`esperava um elemento React, veio: ${String(node)}`)
-  return node as ReactElement<{ children?: ReactNode; href?: string; rel?: string }>
+  return node as ReactElement<{
+    children?: ReactNode
+    href?: string
+    rel?: string
+    src?: string
+    alt?: string
+  }>
 }
 
 /** Texto plano de uma árvore (suficiente p/ os asserts estruturais). */
@@ -75,6 +87,12 @@ describe('renderInline (tokens)', () => {
     expect(a.props.rel).toBe('noopener noreferrer')
   })
 
+  test('plainLinks: link http(s) vira só o TEXTO (sem <a> — p/ dentro de <button>)', () => {
+    const out = renderInline('veja [site](https://exemplo.com/x) aqui', { plainLinks: true })
+    expect(out.every((n) => !isValidElement(n) || el(n).type !== 'a')).toBe(true)
+    expect(textOf(out)).toBe('veja site aqui')
+  })
+
   test('link javascript: NÃO é linkificado (fica texto plano)', () => {
     const out = renderInline('[x](javascript:alert(1))')
     expect(out.every((n) => !isValidElement(n) || el(n).type !== 'a')).toBe(true)
@@ -84,5 +102,37 @@ describe('renderInline (tokens)', () => {
   test('link data: também fica texto plano', () => {
     const out = renderInline('[x](data:text/html,<b>oi</b>)')
     expect(out.every((n) => !isValidElement(n) || el(n).type !== 'a')).toBe(true)
+  })
+
+  test('imagem https vira <img> com src e alt', () => {
+    const out = renderInline('![um gato](https://cdn.exemplo.com/gato.webp)')
+    const img = el(out[0])
+    expect(img.type).toBe('img')
+    expect(img.props.src).toBe('https://cdn.exemplo.com/gato.webp')
+    expect(img.props.alt).toBe('um gato')
+  })
+
+  test('imagem com alt vazio é permitida', () => {
+    const out = renderInline('![](https://cdn.exemplo.com/x.webp)')
+    const img = el(out[0])
+    expect(img.type).toBe('img')
+    expect(img.props.alt).toBe('')
+  })
+
+  test('imagem inline convive com texto e negrito', () => {
+    const out = renderInline('veja ![g](https://x.com/g.png) e **fim**')
+    const tags = out.filter((n) => isValidElement(n)).map((n) => el(n).type)
+    expect(tags).toEqual(['img', 'strong'])
+  })
+
+  test('imagem javascript: NÃO vira <img> (fica texto plano)', () => {
+    const out = renderInline('![x](javascript:alert(1))')
+    expect(out.every((n) => !isValidElement(n) || el(n).type !== 'img')).toBe(true)
+    expect(textOf(out)).toBe('![x](javascript:alert(1))')
+  })
+
+  test('imagem data: também fica texto plano', () => {
+    const out = renderInline('![x](data:image/svg+xml,<svg onload=alert(1)/>)')
+    expect(out.every((n) => !isValidElement(n) || el(n).type !== 'img')).toBe(true)
   })
 })

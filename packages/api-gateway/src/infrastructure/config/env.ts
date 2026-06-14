@@ -38,6 +38,7 @@ const PROD_REQUIRED_SECRETS: ReadonlyArray<{ key: string; why: string }> = [
     key: 'PAYMENTS_INTERNAL_TOKEN',
     why: 'prova ao payments que a chamada veio do gateway (admin + minhas compras)',
   },
+  { key: 'HUB_INTERNAL_TOKEN', why: 'prova ao hub (comunidade) que a chamada veio do gateway' },
 ]
 
 const EnvSchema = z
@@ -124,6 +125,7 @@ const EnvSchema = z
     MESSAGING_INTERNAL_TOKEN: optionalSecret,
     AUTH_INTERNAL_TOKEN: optionalSecret,
     PAYMENTS_INTERNAL_TOKEN: optionalSecret,
+    HUB_INTERNAL_TOKEN: optionalSecret,
 
     // Resiliência.
     HEALTH_PROBE_INTERVAL_MS: z.coerce.number().int().positive().default(5_000),

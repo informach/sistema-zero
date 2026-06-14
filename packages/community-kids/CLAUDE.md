@@ -23,13 +23,20 @@ toast). **Mascote-faísca** = estrela da logo com rosto (`mascot.tsx`, expressio
 happy/celebrating/thinking/sleeping; `useId` p/ o gradiente). **Página de aula kids (2ª rodada
 06/2026)**: header de "lição" (voltar em círculo + progresso + chip AULA N DE M), sidebar =
 mini-trilha numerada por unidade, e FORKS DE APRESENTAÇÃO dos renderers do member-shell —
-`kids-lesson-blocks.tsx` (chips de atividade Assista/Escute/Brinque/Leia o livro + molduras;
+`kids-lesson-blocks.tsx` (chips de atividade Assista/Escute/Brinque/Leia o livro/**Crie** + molduras;
+o bloco **`studio`** (chip "Crie") REUSA o `StudioBlockView` do member-shell — editor embarcado,
+rascunho local, "Enviar para o professor" + gate de conclusão `STUDIO_GATE_NOT_SUBMITTED` (mesmo do
+quiz, tratado no `lesson-player-client`); exige `@sistemazero/studio` em transpilePackages + `@source`
++ `frame-src blob:`;
 ⚠️ invariantes de segurança COPIADOS do shell: URL canônica de vídeo, sandbox SEM
 allow-same-origin, markdown controlado — mexeu na segurança de bloco, replique nos DOIS
 renderers), `kids-lesson-attachments.tsx` (mesma mecânica de download) e **`kids-quiz.tsx`
 estilo Duolingo** (intro c/ mascote → UMA pergunta por vez c/ segmentos de progresso e cartas
 de resposta → correção verde/vermelho no FINAL — o gabarito só chega na resposta do submit,
-grading é server-side; cooldown/passingScore preservados). **Gamificação REAL implementada
+grading é server-side; cooldown/passingScore preservados; ⚠️ enunciado/opções/explicação são
+MARKDOWN — `renderMarkdown` (bloco) no enunciado/explicação e `renderInline` nas opções e no
+recap, pois o `<button>` só aceita conteúdo inline; imagens limitadas por `[&_img]:max-h-*`).
+**Gamificação REAL implementada
 (11/06/2026)** — ver §"Gamificação estilo Duolingo" abaixo; nada fake, estado no members.
 
 ## A regra de ouro: quase tudo vem do member-shell

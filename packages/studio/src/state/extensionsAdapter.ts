@@ -1,4 +1,4 @@
-import { buildWorkspaceStateFromIR, registerExtensionBlocks, unregisterBlocks } from '#blockly'
+import { buildWorkspaceStateFromIR, registerExtensionBlocks } from '#blockly'
 import type { Project } from '#core'
 import type { ExtensionDefinition } from '#extensions'
 import { type JSStatement, type SZIR, statementIsExtension } from '#ir'
@@ -9,12 +9,6 @@ export { findExtension, OFFICIAL_CATALOG }
 
 export function registerExtension(ext: ExtensionDefinition): void {
   registerExtensionBlocks(ext.blockly.blocks)
-}
-
-export function unregisterExtension(extId: string): void {
-  const ext = findExtension(extId)
-  if (!ext) return
-  unregisterBlocks(ext.blockly.blocks.map((b) => b.type as string))
 }
 
 /**
@@ -30,11 +24,19 @@ export function installExtension(
 }
 
 /**
- * Ao remover: tira blocos do Blockly + remove do projeto + limpa quaisquer
- * blocos do workspace serializados em blocksState (caller decide se filtra).
+ * Ao remover: tira a extensão do projeto e limpa quaisquer blocos do workspace
+ * serializados em blocksState (caller decide se filtra). NÃO desregistra os
+ * blocos do Blockly: o registro `Blockly.Blocks` é um global de módulo (UMD)
+ * COMPARTILHADO por todas as instâncias na página (invariante #5). Apagá-lo
+ * num uninstall por-instância derrubaria as definições que outra instância
+ * ainda usa — e ela nunca re-registraria (seu `installedExtensions` não mudou),
+ * perdendo silenciosamente os blocos na próxima des-serialização. A toolbox é
+ * reconstruída a partir do `installedExtensions`, então a categoria some sem
+ * tocar no `Blockly.Blocks`; e `registerExtensionBlocks` é idempotente, então
+ * deixar as definições registradas é seguro. `unregisterBlocks` (em #blockly)
+ * fica disponível apenas para teardown de teste.
  */
 export function removeExtension(extId: string, store: ProjectStoreApi = useProjectStore): void {
-  unregisterExtension(extId)
   store.getState().removeExtension(extId)
 }
 
@@ -70,21 +72,34 @@ function countMatching(nodes: unknown[], types: Set<string>): number {
     if (!node || typeof node !== 'object') continue
     const obj = node as {
       type?: string
-      next?: { block?: unknown }
+      next?: { block?: unknown; shadow?: unknown }
       inputs?: Record<string, unknown>
     }
     if (obj.type && types.has(obj.type)) n += 1
-    if (obj.next && (obj.next as { block?: unknown }).block) {
-      n += countMatching([(obj.next as { block?: unknown }).block], types)
-    }
+    if (obj.next) n += countMatching(wrapperChildren(obj.next), types)
     if (obj.inputs) {
       for (const inp of Object.values(obj.inputs)) {
-        const inObj = inp as { block?: unknown }
-        if (inObj?.block) n += countMatching([inObj.block], types)
+        n += countMatching(wrapperChildren(inp), types)
       }
     }
   }
   return n
+}
+
+/**
+ * Filhos de um wrapper de input/next na serialização do Blockly: `{ block }`,
+ * `{ shadow }` ou ambos (slot com sombra padrão + bloco real). Espelha
+ * `getSerializedBlockWrapperChildren` do projectStore — percorrer só `.block`
+ * deixava um bloco de extensão dentro de uma sombra escapar da contagem e da
+ * limpeza, tropeçando depois na allowlist e resetando o layout.
+ */
+function wrapperChildren(wrapper: unknown): unknown[] {
+  if (!wrapper || typeof wrapper !== 'object') return []
+  const obj = wrapper as { block?: unknown; shadow?: unknown }
+  const children: unknown[] = []
+  if (obj.block) children.push(obj.block)
+  if (obj.shadow) children.push(obj.shadow)
+  return children
 }
 
 function removeExtensionFromIR(ir: SZIR, extId: string): SZIR {
@@ -150,26 +165,52 @@ function cleanBlockNode(node: unknown, types: Set<string>): unknown | unknown[] 
   if (!node || typeof node !== 'object') return node
   const obj = node as {
     type?: string
-    next?: { block?: unknown }
-    inputs?: Record<string, { block?: unknown }>
+    next?: { block?: unknown; shadow?: unknown }
+    inputs?: Record<string, { block?: unknown; shadow?: unknown }>
   }
 
-  const nextBlocks = obj.next?.block ? removeMatching([obj.next.block], types) : []
+  // Filhos sobreviventes do `next` (achatados em `block` + `shadow`): se o
+  // próprio bloco for removido, eles são promovidos para o lugar dele.
+  const nextBlocks = obj.next ? removeMatching(wrapperChildren(obj.next), types) : []
   if (obj.type && types.has(obj.type)) return nextBlocks
 
-  const inputs: Record<string, { block: unknown }> = {}
+  const inputs: Record<string, { block?: unknown; shadow?: unknown }> = {}
   if (obj.inputs) {
     for (const [name, input] of Object.entries(obj.inputs)) {
-      const blocks = input.block ? removeMatching([input.block], types) : []
-      if (blocks[0]) inputs[name] = { block: blocks[0] }
+      const cleaned = cleanWrapper(input, types)
+      if (cleaned) inputs[name] = cleaned
     }
   }
 
   return {
     ...obj,
-    next: nextBlocks[0] ? { block: nextBlocks[0] } : undefined,
+    // Pai sobrevive: limpa o `next` com a MESMA lógica dos inputs, preservando a
+    // distinção block/shadow. Reconstruir `{ block: nextBlocks[0] }` promovia uma
+    // sombra a bloco real (shadow→real) e descartava o segundo filho do wrapper.
+    next: obj.next ? (cleanWrapper(obj.next, types) ?? undefined) : undefined,
     inputs: Object.keys(inputs).length > 0 ? inputs : undefined,
   }
+}
+
+/**
+ * Limpa um wrapper de input preservando a distinção `block`/`shadow`. Devolve
+ * `null` se nenhum filho sobreviver. Espelha `wrapperChildren`/`countMatching`
+ * para que um bloco de extensão dentro de uma sombra também seja removido.
+ */
+function cleanWrapper(
+  wrapper: { block?: unknown; shadow?: unknown },
+  types: Set<string>,
+): { block?: unknown; shadow?: unknown } | null {
+  const out: { block?: unknown; shadow?: unknown } = {}
+  if (wrapper.block) {
+    const blocks = removeMatching([wrapper.block], types)
+    if (blocks[0]) out.block = blocks[0]
+  }
+  if (wrapper.shadow) {
+    const shadows = removeMatching([wrapper.shadow], types)
+    if (shadows[0]) out.shadow = shadows[0]
+  }
+  return out.block || out.shadow ? out : null
 }
 
 /**

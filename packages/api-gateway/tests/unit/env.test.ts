@@ -11,6 +11,7 @@ const PROD_OK: Record<string, string> = {
   MESSAGING_INTERNAL_TOKEN: 'messaging-internal-16ch',
   AUTH_INTERNAL_TOKEN: 'auth-internal-16-chars!',
   PAYMENTS_INTERNAL_TOKEN: 'payments-internal-16chrs',
+  HUB_INTERNAL_TOKEN: 'hub-internal-16-chars-ok',
 }
 
 describe('loadEnv — defaults de dev', () => {
@@ -50,6 +51,7 @@ describe('loadEnv — fail-fast de produção', () => {
     'MESSAGING_INTERNAL_TOKEN',
     'AUTH_INTERNAL_TOKEN',
     'PAYMENTS_INTERNAL_TOKEN',
+    'HUB_INTERNAL_TOKEN',
   ])('sem %s → falha (injeção silenciosamente desligada não sobe em prod)', (key) => {
     const source = { ...PROD_OK }
     delete source[key]

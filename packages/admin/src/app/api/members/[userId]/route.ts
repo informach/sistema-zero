@@ -9,7 +9,13 @@ export async function GET(_req: Request, { params }: { params: Promise<{ userId:
   const [detail, identity] = await Promise.all([getMember(userId), getUser(userId)])
 
   if (detail.status !== 200 || !detail.body) {
-    return NextResponse.json(detail.body, { status: detail.status })
+    // Normaliza erro fora do envelope `{ error }` (como faz a lista) p/ a UI não
+    // cair no genérico "Algo deu errado." (achado do review).
+    const envelope = detail.body as { error?: { code?: string; message?: string } } | null
+    const normalized = envelope?.error?.message
+      ? detail.body
+      : { error: { code: 'UPSTREAM_ERROR', message: 'Não foi possível carregar o membro.' } }
+    return NextResponse.json(normalized, { status: detail.status === 200 ? 502 : detail.status })
   }
 
   const user = identity.status === 200 ? (identity.body?.user ?? null) : null

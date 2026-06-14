@@ -135,11 +135,46 @@ const OBJECT_MUTATOR_MIXIN = {
 
   minus(this: ObjectMutatorBlock): void {
     if (this.itemCount_ <= 0) return
-    withMutation(this, () => {
-      this.itemCount_ -= 1
-      this.rebuild_()
-    })
+    // O texto da CHAVE removida não está no extraState (só a contagem), então a
+    // remoção do último campo perderia o texto digitado pelo aluno no undo.
+    // Antes de descartar o campo, disparamos UM evento de mudança de campo p/ a
+    // CHAVE que vai sumir; ao desfazer, o Blockly restaura o texto via setValue
+    // no campo recriado pelo rebuild (que roda no undo da mutação). Ordem: o
+    // evento de campo vem ANTES do de mutação, então o undo (reverso) recria o
+    // campo primeiro e só depois reaplica o texto.
+    const lastIndex = this.itemCount_ - 1
+    // O evento da CHAVE e o da mutação precisam ser UM passo de undo só: agrupa
+    // ambos (preservando um grupo externo, se a UI já tiver aberto um). Sem isso,
+    // desfazer só reverteria a mutação e o texto continuaria perdido.
+    const outerGroup = Blockly.Events.getGroup()
+    if (!outerGroup) Blockly.Events.setGroup(true)
+    try {
+      fireRemovedKeyChange(this, lastIndex)
+      withMutation(this, () => {
+        this.itemCount_ -= 1
+        this.rebuild_()
+      })
+    } finally {
+      if (!outerGroup) Blockly.Events.setGroup(false)
+    }
   },
+}
+
+/**
+ * Dispara um `BlockChange` de campo ('field') para a CHAVE no índice dado, com o
+ * texto atual como valor "antes" e string vazia como "depois", de modo que o
+ * undo reponha o texto do aluno. No-op se os eventos estiverem desabilitados
+ * (load/syncShape) ou se o campo não existir.
+ */
+function fireRemovedKeyChange(block: ObjectMutatorBlock, index: number): void {
+  if (!Blockly.Events.isEnabled()) return
+  const fieldName = `KEY${index}`
+  if (!block.getField(fieldName)) return
+  const text = (block.getFieldValue(fieldName) as string | null) ?? ''
+  const BlockChange = Blockly.Events.get(
+    Blockly.Events.BLOCK_CHANGE,
+  ) as typeof Blockly.Events.BlockChange
+  Blockly.Events.fire(new BlockChange(block, 'field', fieldName, text, ''))
 }
 
 function clampItemCount(value: number): number {

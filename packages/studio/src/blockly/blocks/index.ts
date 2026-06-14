@@ -3,6 +3,7 @@ import 'blockly/blocks'
 import { ADVANCED_BLOCKS } from './advanced'
 import { CANVAS_BLOCKS } from './canvas'
 import { CSS_BLOCKS } from './css'
+import { DOM_BLOCKS } from './dom'
 import { FUNCTION_BLOCKS } from './functions'
 import { HTML_BLOCKS } from './html'
 import { JS_BLOCKS } from './js'
@@ -17,6 +18,7 @@ export {
   ADVANCED_BLOCKS,
   CANVAS_BLOCKS,
   CSS_BLOCKS,
+  DOM_BLOCKS,
   FUNCTION_BLOCKS,
   HTML_BLOCKS,
   JS_BLOCKS,
@@ -29,6 +31,7 @@ export {
 export const CORE_BLOCKS: BlockDefinition[] = [
   ...HTML_BLOCKS,
   ...CSS_BLOCKS,
+  ...DOM_BLOCKS,
   ...JS_BLOCKS,
   ...CANVAS_BLOCKS,
   ...VALUE_BLOCKS,
@@ -59,7 +62,16 @@ export function registerExtensionBlocks(blocks: BlockDefinition[]): void {
   if (novos.length > 0) Blockly.defineBlocksWithJsonArray(novos as object[])
 }
 
-/** Para testes / desinstalação. Remove os blocos de uma extensão pelo tipo. */
+/**
+ * APENAS para teardown de teste. Remove os blocos de uma extensão pelo tipo.
+ *
+ * O registro `Blockly.Blocks` é um global de módulo (UMD) compartilhado por
+ * todas as instâncias `<Studio>` na página (invariante #5), então a remoção de
+ * extensão por-instância NUNCA chama isto — apagar uma definição derrubaria as
+ * outras instâncias que ainda a usam. A categoria some porque a toolbox é
+ * reconstruída a partir do `installedExtensions`; ver `removeExtension` em
+ * `state/extensionsAdapter.ts`.
+ */
 export function unregisterBlocks(types: string[]): void {
   for (const t of types) {
     delete Blockly.Blocks[t]

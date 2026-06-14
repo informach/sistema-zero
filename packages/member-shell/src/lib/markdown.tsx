@@ -4,9 +4,11 @@ import type { ReactNode } from 'react'
  * Conversor MÍNIMO e CONTROLADO de markdown → React (sem HTML cru — superfície
  * sensível a XSS, por isso puro e testado via bun test). Tokens suportados:
  * headings 1-3, listas `-`/`*` e numeradas `1.`, citação `> `, código
- * inline/fenced, negrito, itálico (`*x*`/`_x_`) e links http(s). É o ALVO do
- * editor TipTap do admin (saída markdown) — token novo na toolbar de lá exige
- * suporte aqui. Consumido pelo bloco `rich_text` (`lesson-blocks.tsx`).
+ * inline/fenced, negrito, itálico (`*x*`/`_x_`), links e imagens `![alt](url)`
+ * — links e imagens só com esquema http(s) (esquema inválido cai como texto
+ * literal). É o ALVO do editor TipTap do admin (saída markdown) — token novo na
+ * toolbar de lá exige suporte aqui. Consumido pelo bloco `rich_text`
+ * (`lesson-blocks.tsx`) e pelo bloco `quiz` (`quiz-block.tsx`).
  */
 export function renderMarkdown(md: string): ReactNode[] {
   const out: ReactNode[] = []
@@ -124,10 +126,20 @@ export function renderMarkdown(md: string): ReactNode[] {
   return out
 }
 
-/** Inline: **negrito**, *itálico* ou _itálico_, `código` e [links](url) — só http(s) nos links. */
-export function renderInline(text: string): ReactNode[] {
+/**
+ * Inline: **negrito**, *itálico* ou _itálico_, `código`, imagens `![alt](url)` e
+ * [links](url) — imagens e links SÓ com esquema http(s) (a imagem vem ANTES do
+ * link na alternância pois o token começa com `!`; esquema inválido — ex.
+ * `javascript:` — não casa o token e cai como texto literal).
+ *
+ * `plainLinks`: renderiza o TEXTO do link (sem `<a>`) — use quando o resultado
+ * cai dentro de conteúdo interativo (ex.: `<button>` das opções do quiz kids),
+ * onde aninhar `<a>` é HTML inválido / armadilha de a11y.
+ */
+export function renderInline(text: string, opts: { plainLinks?: boolean } = {}): ReactNode[] {
   const parts: ReactNode[] = []
-  const pattern = /(\*\*[^*]+\*\*|\*[^*]+\*|_[^_]+_|`[^`]+`|\[[^\]]+\]\(https?:\/\/[^\s)]+\))/g
+  const pattern =
+    /(\*\*[^*]+\*\*|\*[^*]+\*|_[^_]+_|`[^`]+`|!\[[^\]]*\]\(https?:\/\/[^\s)]+\)|\[[^\]]+\]\(https?:\/\/[^\s)]+\))/g
   let last = 0
   let key = 0
   for (const match of text.matchAll(pattern)) {
@@ -140,14 +152,28 @@ export function renderInline(text: string): ReactNode[] {
       parts.push(<em key={`e-${key++}`}>{token.slice(1, -1)}</em>)
     } else if (token.startsWith('`')) {
       parts.push(<code key={`i-${key++}`}>{token.slice(1, -1)}</code>)
+    } else if (token.startsWith('![')) {
+      const img = token.match(/^!\[([^\]]*)\]\((https?:\/\/[^\s)]+)\)$/)
+      if (img?.[2]) {
+        // <img> (não next/image): URLs externas arbitrárias da autoria, sem remotePatterns;
+        // a CSP dos apps libera img-src https:. Esquema != http(s) já caiu como texto acima.
+        parts.push(<img key={`img-${key++}`} src={img[2]} alt={img[1] ?? ''} loading="lazy" />)
+      } else {
+        parts.push(token)
+      }
     } else {
       const link = token.match(/^\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)$/)
       if (link?.[1] && link[2]) {
-        parts.push(
-          <a key={`a-${key++}`} href={link[2]} target="_blank" rel="noopener noreferrer">
-            {link[1]}
-          </a>,
-        )
+        // Dentro de conteúdo interativo, só o texto (não aninhar <a> em <button>).
+        if (opts.plainLinks) {
+          parts.push(link[1])
+        } else {
+          parts.push(
+            <a key={`a-${key++}`} href={link[2]} target="_blank" rel="noopener noreferrer">
+              {link[1]}
+            </a>,
+          )
+        }
       } else {
         parts.push(token)
       }

@@ -106,6 +106,81 @@ export const gameTwoDBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
   },
+
+  // ---- Física ----
+  {
+    type: 'sz_g2d_set_gravity',
+    message0: 'Definir gravidade do mundo como %1',
+    args0: [{ type: 'field_number', name: 'VALUE', value: 0.5 }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'A gravidade é somada à velocidade vertical de cada sprite em "Aplicar velocidade".',
+  },
+  {
+    type: 'sz_g2d_apply_velocity',
+    message0: 'Aplicar velocidade e gravidade ao sprite %1',
+    args0: [{ type: 'field_input', name: 'SPRITE', text: 'jogador' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Move o sprite pela sua velocidade (vx/vy) e soma a gravidade ao vy.',
+  },
+  {
+    type: 'sz_g2d_bounce_edges',
+    message0: 'Ricochetear sprite %1 nas bordas do pincel %2',
+    args0: [
+      { type: 'field_input', name: 'SPRITE', text: 'bola' },
+      { type: 'field_input', name: 'CTX', text: 'ctx' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Faz o sprite quicar nas bordas do canvas, invertendo a velocidade.',
+  },
+  {
+    type: 'sz_g2d_circle_collides',
+    message0: 'Guardar em %1 se sprite %2 encosta (círculo) no sprite %3',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'bateu' },
+      { type: 'field_input', name: 'A', text: 'jogador' },
+      { type: 'field_input', name: 'B', text: 'inimigo' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Colisão por círculo (mais justa para objetos redondos que a caixa retangular).',
+  },
+
+  // ---- Áudio ----
+  {
+    type: 'sz_g2d_play_sound',
+    message0: 'Tocar som de %1 Hz por %2 ms',
+    args0: [
+      { type: 'field_number', name: 'FREQ', value: 440, min: 20 },
+      { type: 'field_number', name: 'MS', value: 200, min: 1 },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Toca um bip sintetizado (sem precisar de arquivo). Ex.: 440 Hz = lá; agudo = número maior.',
+  },
+
+  // ---- Mouse / toque ----
+  {
+    type: 'sz_g2d_on_pointer',
+    message0: 'Quando clicar/tocar, na posição x %1 y %2 fazer %3',
+    args0: [
+      { type: 'field_input', name: 'PX', text: 'px' },
+      { type: 'field_input', name: 'PY', text: 'py' },
+      { type: 'input_statement', name: 'BODY' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Roda o "fazer" a cada clique/toque, com a posição do ponteiro no canvas em px/py.',
+  },
 ]
 
 export const gameTwoDToolboxCategory: ExtensionToolboxCategory = {

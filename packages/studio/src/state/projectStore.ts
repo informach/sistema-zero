@@ -7,14 +7,17 @@ import {
   type ExtraFile,
   type ExtraFileLanguage,
   type FileName,
-  IDE_MODES,
   type IDEMode,
   type InstalledExtension,
   inferExtraLanguage,
   isReservedProjectFileName,
+  modesForKind,
+  normalizeClassicMode,
   normalizeExtraFileName,
   type Project,
   type ProjectFiles,
+  type ProjectTree,
+  type ProProjectMeta,
 } from '#core'
 import {
   type CSSEntry,
@@ -24,11 +27,22 @@ import {
   type SZIR,
   SZIRSchema,
 } from '#ir'
+import { createProProject as createProProjectFromTemplate } from '../components/code/pro-templates'
 import {
   deleteProject as deleteProjectFromDB,
   loadProjectById,
   persistProject,
+  renameProjectMeta,
 } from './persistence'
+import {
+  addProDir,
+  addProFile,
+  removeProNode,
+  renameProNode,
+  sanitizeProMeta,
+  sanitizeProTree,
+  setProFileContent,
+} from './proTree'
 import { StudioStoresContext } from './storesContext'
 
 interface ProjectStore {
@@ -40,12 +54,16 @@ interface ProjectStore {
   hydrateProject: (p: Project) => void
   unloadProject: () => void
   createProject: (name: string) => Promise<Project>
+  /** Cria e persiste um projeto PROFISSIONAL a partir de um template. */
+  createProProject: (name: string, templateId: string) => Promise<Project>
   duplicateProject: (id: string) => Promise<Project | null>
   deleteProject: (id: string) => Promise<void>
   renameProject: (id: string, name: string) => Promise<void>
   importProjectFromJSON: (raw: unknown) => Promise<Project>
   setProject: (p: Project) => void
   setMode: (mode: IDEMode) => void
+  /** Gradua um projeto básico para profissional (Vite). One-way. */
+  convertToPro: () => Promise<void>
   setFiles: (files: Partial<ProjectFiles>) => void
   setFile: (name: FileName, value: string) => void
   setIR: (ir: SZIR | null) => void
@@ -61,6 +79,15 @@ interface ProjectStore {
   setExtraFile: (name: string, content: string) => void
   renameExtraFile: (oldName: string, newName: string) => string | null
   removeExtraFile: (name: string) => void
+  // --- Modo profissional (project.kind === 'pro') ---
+  /** Cria arquivo na árvore pro. Devolve mensagem de erro ou null se ok. */
+  addProFile: (path: string) => string | null
+  /** Cria pasta na árvore pro. Devolve mensagem de erro ou null se ok. */
+  addProDir: (path: string) => string | null
+  setProFileContent: (path: string, content: string) => void
+  /** Renomeia/move nó da árvore pro. Devolve mensagem de erro ou null se ok. */
+  renameProNode: (from: string, to: string) => string | null
+  removeProNode: (path: string) => void
 }
 
 interface ProjectStatePatch {
@@ -140,6 +167,9 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_css_font_size',
   'sz_css_font_weight',
   'sz_css_gap',
+  'sz_css_grid',
+  'sz_css_keyframes',
+  'sz_css_transition',
   'sz_css_gradient',
   'sz_css_height',
   'sz_css_justify',
@@ -199,7 +229,18 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_js_on_submit',
   'sz_js_on_event_named',
   'sz_js_query_selector',
+  'sz_js_query_selector_all',
+  'sz_js_storage_set',
+  'sz_js_event_method',
+  'sz_js_fetch_json',
   'sz_js_repeat',
+  'sz_js_while',
+  'sz_js_do_while',
+  'sz_js_break',
+  'sz_js_continue',
+  'sz_js_for_of',
+  'sz_js_for_range',
+  'sz_js_try_catch',
   'sz_js_for_each',
   'sz_js_set_timeout',
   'sz_js_set_interval',
@@ -258,6 +299,7 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_val_number',
   'sz_val_random',
   'sz_val_random_float',
+  'sz_val_storage_get',
   'sz_val_text',
   'sz_val_this_prop',
   'sz_val_get_prop',
@@ -275,7 +317,9 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_val_window_width',
 ])
 
-const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> = {
+// Exportado para o teste de drift (extensionBlocklySync.test.ts): a allowlist por
+// extensão DEVE casar 1-para-1 com os block defs de OFFICIAL_CATALOG[].blockly.
+export const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> = {
   'game-2d': new Set([
     'sz_g2d_collides',
     'sz_g2d_create_sprite',
@@ -286,6 +330,22 @@ const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> = {
     'sz_g2d_set_position',
     'sz_g2d_set_velocity',
     'sz_g2d_update_each_frame',
+    'sz_g2d_set_gravity',
+    'sz_g2d_apply_velocity',
+    'sz_g2d_bounce_edges',
+    'sz_g2d_circle_collides',
+    'sz_g2d_play_sound',
+    'sz_g2d_on_pointer',
+  ]),
+  'game-3d': new Set([
+    'sz_g3d_create_scene',
+    'sz_g3d_set_background',
+    'sz_g3d_set_camera',
+    'sz_g3d_create_box',
+    'sz_g3d_create_sphere',
+    'sz_g3d_set_position',
+    'sz_g3d_set_rotation',
+    'sz_g3d_animate',
   ]),
 }
 
@@ -357,9 +417,25 @@ export interface StudioLimits {
   maxFileChars?: number
   maxTotalChars?: number
   maxExtraFiles?: number
+  /** Orçamento de tempo síncrono de um loop no preview antes de cortar (ms). */
+  previewLoopBudgetMs?: number
+  /** Timeout do watchdog de heartbeat do preview (ms). */
+  previewHeartbeatTimeoutMs?: number
+  /** Origens https/http que o código do aluno pode acessar via fetch/XHR. */
+  fetchAllowedOrigins?: readonly string[]
+  /**
+   * Timeout (ms) de processos NÃO-INTERATIVOS do terminal/dev-server (ex.:
+   * `npm install`). O shell interativo (`jsh`) NUNCA é morto por timeout.
+   */
+  terminalProcessTimeoutMs?: number
 }
 
-type ResolvedLimits = Required<StudioLimits>
+// Só os limites de ARQUIVO são resolvidos com defaults aqui; os de política de
+// segurança do preview são resolvidos em studio/config.ts (precisam chegar aos
+// componentes via contexto).
+type ResolvedLimits = Required<
+  Pick<StudioLimits, 'maxFileChars' | 'maxTotalChars' | 'maxExtraFiles'>
+>
 
 function projectFilesLimitError(
   files: ProjectFiles,
@@ -390,6 +466,20 @@ function projectFilesLimitError(
   }
 
   return null
+}
+
+/**
+ * Garante o teto COMBINADO (canônicos + extras) ao carregar um projeto. Os dois
+ * grupos são limitados independente, então a soma podia chegar ao dobro do
+ * limite de edição ao vivo. Derruba extras (do fim para o começo) até o conjunto
+ * passar em `projectFilesLimitError`, mantendo os arquivos canônicos do aluno.
+ */
+function limitCombinedExtraFiles(files: ProjectFiles, extraFiles: ExtraFile[]): ExtraFile[] {
+  const trimmed = [...extraFiles]
+  while (trimmed.length > 0 && projectFilesLimitError(files, trimmed) !== null) {
+    trimmed.pop()
+  }
+  return trimmed
 }
 
 /** Valida `installedExtensions` vindos de um JSON não confiável. */
@@ -715,18 +805,43 @@ function sanitizeStoredProject(raw: unknown, requestedId?: string): Project | nu
   const createdAt = sanitizeTimestamp(r.createdAt, base.createdAt)
   const updatedAt = sanitizeTimestamp(r.updatedAt, createdAt)
 
+  // Os canônicos (≤ MAX_TOTAL_CHARS) e os extras (≤ MAX_TOTAL_CHARS) são
+  // limitados INDEPENDENTE acima, então a soma podia chegar a ~16 MB — o dobro
+  // do limite de edição ao vivo (projectFilesLimitError em setFiles etc.). Aplica
+  // o mesmo teto combinado no load: derruba extras (do fim) até caber, casando
+  // com o guard de edição em vez de aceitar um projeto que a IDE recusaria salvar.
+  const extraFiles = limitCombinedExtraFiles(files, sanitizeImportedExtraFiles(r.extraFiles))
+
+  // Modo profissional: aceita `kind:'pro'` só com `tree` válida + `proMeta`.
+  // Qualquer falha REBAIXA para classic (o `files` canônico vazio-válido evita
+  // crash). `node_modules` nunca passa (barrado em normalizeProPath).
+  let tree: ProjectTree | undefined
+  let proMeta: ProProjectMeta | undefined
+  if (r.kind === 'pro') {
+    const sanitizedTree = sanitizeProTree(r.tree)
+    const sanitizedMeta = sanitizeProMeta(r.proMeta)
+    if (sanitizedTree && sanitizedMeta) {
+      tree = sanitizedTree
+      proMeta = sanitizedMeta
+    }
+  }
+  const isPro = tree != null && proMeta != null
+
   return {
     ...base,
     id,
     name,
     files,
-    extraFiles: sanitizeImportedExtraFiles(r.extraFiles),
-    mode: IDE_MODES.includes(r.mode as IDEMode) ? (r.mode as IDEMode) : base.mode,
+    extraFiles,
+    // Pro vive sempre no modo 'code'; básico vive em Blocos/Ponte ('code' legado
+    // cai em 'bridge') — separação D2.
+    mode: isPro ? 'code' : normalizeClassicMode(r.mode),
     ir: sanitizeStoredIR(r.ir),
     blocksState: sanitizeStoredBlocksState(r.blocksState, installedExtensions),
     installedExtensions,
     createdAt,
     updatedAt,
+    ...(isPro ? { kind: 'pro' as const, tree, proMeta } : {}),
   }
 }
 
@@ -1093,7 +1208,20 @@ function countHTMLNode(node: HTMLNode): number {
   return 1 + (node.children ?? []).reduce((total, child) => total + countHTMLNode(child), 0)
 }
 
-function countCSSEntry(_entry: CSSEntry): number {
+function countCSSEntry(entry: CSSEntry): number {
+  // Recursão para não SUBcontar o teto MAX_IR_NODES: uma media query carrega N
+  // regras aninhadas e um @keyframes carrega N passos — contá-los como 1 deixava
+  // um IR hostil empilhar milhares de nós dentro de uns poucos containers sem
+  // estourar o limite. Mantido em sincronia com MediaQueryCSS/KeyframesCSS (#ir).
+  // `CSSRule` não tem campo `type` (só selector/declarations), então o guard
+  // `'type' in entry` distingue a regra plana das entradas discriminadas.
+  if (!('type' in entry)) return 1
+  if (entry.type === 'mediaQuery') {
+    return 1 + entry.rules.reduce((total, child) => total + countCSSEntry(child), 0)
+  }
+  if (entry.type === 'keyframes') {
+    return 1 + entry.steps.length
+  }
   return 1
 }
 
@@ -1112,9 +1240,42 @@ function countJSStatement(statement: JSStatement): number {
         countJSExpr(statement.times) +
         statement.body.reduce((total, child) => total + countJSStatement(child), 0)
       )
+    case 'while':
+    case 'doWhile':
+      return (
+        1 +
+        countJSExpr(statement.cond) +
+        statement.body.reduce((total, child) => total + countJSStatement(child), 0)
+      )
+    case 'forOf':
+      return 1 + statement.body.reduce((total, child) => total + countJSStatement(child), 0)
+    case 'tryCatch':
+      return (
+        1 +
+        statement.body.reduce((total, child) => total + countJSStatement(child), 0) +
+        statement.handler.reduce((total, child) => total + countJSStatement(child), 0) +
+        (statement.finalizer ?? []).reduce((total, child) => total + countJSStatement(child), 0)
+      )
+    case 'fetchJson':
+      return (
+        1 +
+        countJSExpr(statement.url) +
+        statement.body.reduce((total, child) => total + countJSStatement(child), 0) +
+        (statement.catchBody ?? []).reduce((total, child) => total + countJSStatement(child), 0)
+      )
+    case 'forRange':
+      return (
+        1 +
+        countJSExpr(statement.from) +
+        countJSExpr(statement.to) +
+        countJSExpr(statement.step) +
+        statement.body.reduce((total, child) => total + countJSStatement(child), 0)
+      )
     case 'event':
     case 'animationLoop':
     case 'g2d:updateEachFrame':
+    case 'g2d:onPointer':
+    case 'g3d:animate':
       return 1 + statement.body.reduce((total, child) => total + countJSStatement(child), 0)
     case 'var':
     case 'assign':
@@ -1127,6 +1288,8 @@ function countJSStatement(statement: JSStatement): number {
       return 1 + countJSExpr(statement.value)
     case 'setProperty':
       return 1 + countJSExpr(statement.value)
+    case 'storageSet':
+      return 1 + countJSExpr(statement.key) + countJSExpr(statement.value)
     case 'canvasFillStyle':
       return 1 + countJSExpr(statement.color)
     case 'canvasFillRect':
@@ -1189,12 +1352,26 @@ export function createProjectStore(
   options: CreateProjectStoreOptions = {},
 ): StoreApi<ProjectStore> {
   const limits: ResolvedLimits = { ...PROJECT_FILE_LIMITS, ...options.limits }
+  // Sequência monotônica de carga (single-flight, igual ao loadInFlight do
+  // settingsStore): dois loads que se sobrepõem (aluno clica projeto A e logo B)
+  // podem resolver FORA DE ORDEM — sem o guard, o mais LENTO (mais antigo)
+  // sobrescreveria o mais novo e ainda zeraria isDirty. Capturamos o número antes
+  // do await e, ao voltar, abortamos (não dá `set`) se um load mais novo começou.
+  // Por instância (no closure do factory), não module-global: stores separadas
+  // não disputam o mesmo contador.
+  let loadSeq = 0
   return createStore<ProjectStore>((set, get) => ({
     project: null,
     isDirty: false,
     saveError: null,
     loadProject: async (id) => {
+      loadSeq += 1
+      const seq = loadSeq
       const existing = await loadSanitizedProjectById(id)
+      // Um load mais novo começou enquanto este aguardava o disco: a corrida foi
+      // perdida — não toca o store (o load mais novo é a verdade), mas devolve o
+      // que ESTE load leu para o chamador que o aguardava (sem efeito colateral).
+      if (seq !== loadSeq) return existing
       if (!existing) {
         set({ project: null, isDirty: false, saveError: null })
         return null
@@ -1206,6 +1383,11 @@ export function createProjectStore(
     unloadProject: () => set({ project: null, isDirty: false, saveError: null }),
     createProject: async (name) => {
       const p = createEmptyProject(ulid(), sanitizeProjectName(name))
+      await persistProject(p)
+      return p
+    },
+    createProProject: async (name, templateId) => {
+      const p = createProProjectFromTemplate(ulid(), sanitizeProjectName(name), templateId)
       await persistProject(p)
       return p
     },
@@ -1231,12 +1413,14 @@ export function createProjectStore(
     },
     renameProject: async (id, name) => {
       const safeName = sanitizeProjectName(name)
-      const existing = await loadSanitizedProjectById(id)
-      if (!existing) return
-      const next = { ...existing, name: safeName, updatedAt: Date.now() }
-      await persistProject(next)
-      if (get().project?.id === id) {
-        set({ project: next, isDirty: false, saveError: null })
+      // Escrita SÓ-METADADO: NÃO reler+reescrever files/state (snapshot estale
+      // ressuscitaria bytes antigos e correria com o autosave do editor aberto).
+      await renameProjectMeta(id, safeName)
+      // Atualiza a store viva só se for o projeto carregado — e SÓ o nome/updatedAt,
+      // preservando edições não salvas em arquivos/IR/blocksState do editor aberto.
+      const current = get().project
+      if (current?.id === id) {
+        set({ project: { ...current, name: safeName, updatedAt: Date.now() }, saveError: null })
       }
     },
     importProjectFromJSON: async (raw) => {
@@ -1259,19 +1443,41 @@ export function createProjectStore(
       const installedExtensions = sanitizeImportedExtensions(r.installedExtensions)
       const blocksState = sanitizeImportedBlocksState(r.blocksState, installedExtensions)
 
+      // Modo profissional: reconstrói kind/tree/proMeta com os MESMOS sanitizers
+      // do load (sanitizeProTree/sanitizeProMeta). Sem isso, exportar→importar um
+      // projeto pro dropava esses campos e o projeto voltava como classic vazio.
+      // Qualquer falha de sanitização rebaixa para classic (igual a
+      // sanitizeStoredProject). `node_modules` nunca passa (barrado em proTree).
+      let tree: ProjectTree | undefined
+      let proMeta: ProProjectMeta | undefined
+      if (r.kind === 'pro') {
+        const sanitizedTree = sanitizeProTree(r.tree)
+        const sanitizedMeta = sanitizeProMeta(r.proMeta)
+        if (sanitizedTree && sanitizedMeta) {
+          tree = sanitizedTree
+          proMeta = sanitizedMeta
+        }
+      }
+      const isPro = tree != null && proMeta != null
+
       const now = Date.now()
       const base = createEmptyProject(ulid(), sanitizeProjectName(r.name))
-      const mode: IDEMode = IDE_MODES.includes(r.mode as IDEMode) ? (r.mode as IDEMode) : base.mode
+      const mode: IDEMode = isPro ? 'code' : normalizeClassicMode(r.mode)
       const imported: Project = {
         ...base,
         files,
-        extraFiles: sanitizeImportedExtraFiles(r.extraFiles),
+        // Espelha o teto COMBINADO do load (canônicos + extras ≤ MAX_TOTAL_CHARS):
+        // sem isso a soma podia passar de 8 MB e o primeiro reopen derrubaria
+        // extras em silêncio, divergindo o registro no disco do que foi aberto.
+        extraFiles: limitCombinedExtraFiles(files, sanitizeImportedExtraFiles(r.extraFiles)),
         mode,
         ir: ir ?? base.ir,
         blocksState,
         installedExtensions,
         createdAt: now,
         updatedAt: now,
+        // Pro vive sempre no modo 'code' (mode já é 'code' acima).
+        ...(isPro ? { kind: 'pro' as const, tree, proMeta } : {}),
       }
       await persistProject(imported)
       return imported
@@ -1280,7 +1486,52 @@ export function createProjectStore(
     setMode: (mode) => {
       const p = get().project
       if (!p) return
-      set({ project: bump({ ...p, mode }), isDirty: true, saveError: null })
+      // Só permite modos válidos para o TIPO do projeto (D2): básico = Blocos/
+      // Ponte, pro = Código. Um modo fora disso cai no primeiro permitido.
+      const allowed = modesForKind(p.kind)
+      const next: IDEMode = allowed.includes(mode) ? mode : (allowed[0] ?? 'blocks')
+      if (p.mode === next) return
+      set({ project: bump({ ...p, mode: next }), isDirty: true, saveError: null })
+    },
+    convertToPro: async () => {
+      const initial = get().project
+      if (!initial || initial.kind === 'pro') return
+      // Import dinâmico PRIMEIRO: o build de conversão (com sucrase via
+      // export/fileMap) só entra no bundle quando o aluno gradua o projeto, não no
+      // boot do editor. Fazê-lo antes de ler o snapshot evita converter um estado
+      // estale só por causa da latência do import.
+      const { convertClassicToProTree } = await import('./convertToPro')
+      // Lê o snapshot MAIS FRESCO e converte a partir DELE: a árvore reflete o
+      // mesmo conteúdo que os campos do básico (files/ir/blocksState) que vamos
+      // zerar. Construir a tree do snapshot pré-import (como antes) descartava
+      // edições feitas durante o await — a tree ficava com o conteúdo antigo e o
+      // novo se perdia ao zerar os arquivos.
+      const source = get().project
+      if (!source || source.kind === 'pro') return
+      const tree = await convertClassicToProTree(source)
+      // Re-confirma após o await da conversão: o projeto pode ter sido
+      // trocado/apagado/graduado nesse meio-tempo. Só commita se ainda for o
+      // MESMO projeto classic que originou esta `tree`.
+      const fresh = get().project
+      if (!fresh || fresh.id !== source.id || fresh.kind === 'pro') return
+      // Constrói a partir de `source` (NÃO de `fresh`): a `tree` foi gerada desse
+      // snapshot e os campos do básico que zeramos pertencem a ele. Espalhar
+      // `fresh` aqui voltaria a divergir tree×conteúdo (a tree teria o conteúdo de
+      // `source` enquanto o resto viria de `fresh`). `name`/`updatedAt` de `source`
+      // são preservados; o `bump` atualiza `updatedAt` no commit.
+      const converted: Project = {
+        ...source,
+        kind: 'pro',
+        mode: 'code',
+        tree,
+        proMeta: { devScript: 'dev', templateId: 'vanilla-vite' },
+        // O pro usa a `tree` como fonte da verdade; zera os campos do básico.
+        files: { 'index.html': '', 'style.css': '', 'script.js': '' },
+        extraFiles: [],
+        ir: null,
+        blocksState: null,
+      }
+      set({ project: bump(converted), isDirty: true, saveError: null })
     },
     setFiles: (files) => {
       const p = get().project
@@ -1386,7 +1637,7 @@ export function createProjectStore(
       const p = get().project
       if (!p) return 'Nenhum projeto carregado.'
       const normalized = normalizeExtraFileName(name)
-      if (!normalized) return 'Use um nome seguro com .html, .css, .js ou .mjs.'
+      if (!normalized) return 'Use um nome seguro com .html, .css, .js, .mjs, .ts ou .tsx.'
       if (isReservedProjectFileName(normalized))
         return 'Esse nome é reservado para um arquivo canônico.'
       const extra = p.extraFiles ?? []
@@ -1428,7 +1679,7 @@ export function createProjectStore(
       const p = get().project
       if (!p?.extraFiles) return 'Sem arquivos extras.'
       const normalized = normalizeExtraFileName(newName)
-      if (!normalized) return 'Use um nome seguro com .html, .css, .js ou .mjs.'
+      if (!normalized) return 'Use um nome seguro com .html, .css, .js, .mjs, .ts ou .tsx.'
       if (isReservedProjectFileName(normalized)) return 'Nome reservado.'
       if (
         p.extraFiles.some(
@@ -1452,6 +1703,44 @@ export function createProjectStore(
         isDirty: true,
         saveError: null,
       })
+    },
+    addProFile: (path) => {
+      const p = get().project
+      if (!p?.tree) return 'Nenhum projeto profissional carregado.'
+      const result = addProFile(p.tree, path)
+      if (!result.tree) return result.error ?? 'Falha ao criar arquivo.'
+      set({ project: bump({ ...p, tree: result.tree }), isDirty: true, saveError: null })
+      return null
+    },
+    addProDir: (path) => {
+      const p = get().project
+      if (!p?.tree) return 'Nenhum projeto profissional carregado.'
+      const result = addProDir(p.tree, path)
+      if (!result.tree) return result.error ?? 'Falha ao criar pasta.'
+      set({ project: bump({ ...p, tree: result.tree }), isDirty: true, saveError: null })
+      return null
+    },
+    setProFileContent: (path, content) => {
+      const p = get().project
+      if (!p?.tree) return
+      const next = setProFileContent(p.tree, path, content)
+      if (next === p.tree) return
+      set({ project: bump({ ...p, tree: next }), isDirty: true, saveError: null })
+    },
+    renameProNode: (from, to) => {
+      const p = get().project
+      if (!p?.tree) return 'Nenhum projeto profissional carregado.'
+      const result = renameProNode(p.tree, from, to)
+      if (!result.tree) return result.error ?? 'Falha ao renomear.'
+      set({ project: bump({ ...p, tree: result.tree }), isDirty: true, saveError: null })
+      return null
+    },
+    removeProNode: (path) => {
+      const p = get().project
+      if (!p?.tree) return
+      const next = removeProNode(p.tree, path)
+      if (next === p.tree) return
+      set({ project: bump({ ...p, tree: next }), isDirty: true, saveError: null })
     },
   }))
 }
@@ -1484,5 +1773,6 @@ export function useProjectStoreApi(): ProjectStoreApi {
 function defaultExtraContent(language: ExtraFileLanguage): string {
   if (language === 'css') return '/* Estilos extras */\n'
   if (language === 'html') return '<!-- HTML extra -->\n'
+  if (language === 'typescript') return '// TypeScript extra\n'
   return '// JavaScript extra\n'
 }

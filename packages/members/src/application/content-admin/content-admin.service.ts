@@ -6,7 +6,7 @@ import {
   LessonNotFoundError,
   NoPublishedLessonError,
 } from '../../domain/course/course.errors'
-import type { LessonBlockContent } from '../../domain/course/lesson-block'
+import { type LessonBlockContent, MAX_STUDIO_PROJECT_CHARS } from '../../domain/course/lesson-block'
 import { validateQuizAuthoring } from '../../domain/course/quiz'
 import type {
   AttachmentFields,
@@ -40,8 +40,13 @@ function assertSameSet(current: string[], provided: string[]): void {
     throw new InvalidContentCommandError('A reordenação precisa conter exatamente os itens atuais')
   }
   const set = new Set(current)
+  // Sem checar duplicatas, `[a,a]` passaria por `[a,b]` (mesmo tamanho, ambos ∈ set):
+  // o reorder gravaria a→0,a→1 e NUNCA tocaria `b` → sortOrder colidido/furado.
+  const seen = new Set<string>()
   for (const id of provided) {
     if (!set.has(id)) throw new InvalidContentCommandError('Id desconhecido na reordenação')
+    if (seen.has(id)) throw new InvalidContentCommandError('Id repetido na reordenação')
+    seen.add(id)
   }
 }
 
@@ -237,11 +242,20 @@ export class LessonAdminService {
 
 // ── Blocos ──────────────────────────────────────────────────────────────────
 
-/** Coerência semântica do bloco (além do shape TypeBox). Quiz incoerente → 400. */
+/** Coerência semântica do bloco (além do shape TypeBox). Quiz/estúdio incoerente → 400. */
 function assertBlockCoherent(content: LessonBlockContent): void {
-  if (content.kind !== 'quiz') return
-  const problem = validateQuizAuthoring(content)
-  if (problem) throw new InvalidContentCommandError(problem)
+  if (content.kind === 'quiz') {
+    const problem = validateQuizAuthoring(content)
+    if (problem) throw new InvalidContentCommandError(problem)
+    return
+  }
+  // Estúdio: o `initialProject` é JSON opaco do editor — limita o peso no jsonb
+  // (mesmo teto da entrega do aluno). O shape em si o front sanitiza (autoria + aluno).
+  if (content.kind === 'studio') {
+    if (JSON.stringify(content.initialProject).length > MAX_STUDIO_PROJECT_CHARS) {
+      throw new InvalidContentCommandError('Projeto inicial excede o tamanho máximo permitido')
+    }
+  }
 }
 
 export class BlockAdminService {

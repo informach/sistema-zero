@@ -1,13 +1,21 @@
 import type { JSX } from 'react'
 import { useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
-import { type Project, setLocale } from '#core'
+import { modesForKind, type Project, setLocale } from '#core'
+import { ErrorBoundary } from '#ui'
+import { RootErrorFallback } from '../components/layout/ErrorViews'
 import { Shell } from '../components/layout/Shell'
 import { sanitizeProjectForHost, useProjectStore, useProjectStoreApi } from '../state/projectStore'
 import { useSettingsStore } from '../state/settingsStore'
 import { StudioStoresContext } from '../state/storesContext'
 import { createStudioStores, useStudioPersistence } from '../state/studioStores'
 import { useUIStore } from '../state/uiStore'
-import { resolveStudioConfig, StudioConfigProvider } from './config'
+import {
+  type ResolvedStudioConfig,
+  resolveLearning,
+  resolvePreviewSecurity,
+  resolveStudioConfig,
+  StudioConfigProvider,
+} from './config'
 import { StudioThemeProvider } from './theme'
 import type { StudioHandle, StudioProps } from './types'
 
@@ -47,6 +55,11 @@ function StudioBody({
   features,
   allowedModes,
   initialMode,
+  limits,
+  level,
+  allowBlocks,
+  allowCategories,
+  allowLevelReveal,
   onChange,
   onSave,
   onError,
@@ -66,23 +79,62 @@ function StudioBody({
     if (locale) setLocale(locale)
   })
 
-  const config = useMemo(
+  // Chave PRIMITIVA estável dos modos: um literal inline `allowedModes` muda de
+  // referência a cada render do host, mas o conteúdo é o mesmo. Memorizar a
+  // config/sanitização por esta string (e não pelo array) evita que um
+  // re-render do host re-rode `resolveStudioConfig` → derive um novo
+  // `config.allowedModes` → re-sanitize o projeto → re-hidrate, descartando as
+  // edições não salvas do aluno. Prop omitida → '' (cai na constante IDE_MODES).
+  const allowedModesKey = allowedModes ? [...allowedModes].sort().join('|') : ''
+  // Dep é a chave primitiva estável `allowedModesKey`, NÃO o array `allowedModes`
+  // (literal inline muda de referência a cada render do host).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: ver acima — allowedModesKey é a forma estável de allowedModes
+  const baseConfig = useMemo(
     () => resolveStudioConfig(features, allowedModes),
-    [features, allowedModes],
+    [features, allowedModesKey],
+  )
+  // `limits` é estático por instância (lido só na criação das stores). Resolve a
+  // política de segurança do preview UMA vez para não re-derivar o config a cada
+  // render do host (o que re-sanitizaria/re-hidrataria o projeto — ver acima).
+  const [previewSecurity] = useState(() => resolvePreviewSecurity(limits))
+  // Perfil de aprendizado também é estático por instância (fixado pelo professor).
+  const [learning] = useState(() =>
+    resolveLearning({ level, allowBlocks, allowCategories, allowLevelReveal }),
+  )
+  // `previewSecurity`/`learning` saem de fora do BaseStudioConfig de propósito
+  // (ver config.ts) e são anexados SÓ aqui — a anotação ResolvedStudioConfig
+  // torna os dois obrigatórios neste call site.
+  const config = useMemo(
+    (): ResolvedStudioConfig => ({ ...baseConfig, previewSecurity, learning }),
+    [baseConfig, previewSecurity, learning],
   )
 
   // `replaceProject` (handle) troca o projeto sem mexer na prop.
   const [replacedProject, setReplacedProject] = useState<Project | null>(null)
   const sourceProject = replacedProject ?? initialProject
+  // Chave primitiva estável dos modos RESOLVIDOS (não da prop): flipa exatamente
+  // quando `config.allowedModes` muda — inclusive ao ligar `professional` numa
+  // instância montada (que força ['code']). Keyar pela prop `allowedModesKey`
+  // não recomputaria a coerção nesse caso, deixando a aba ativa fora dos modos
+  // permitidos. NÃO depender do array cru (referência muda a cada render).
+  const resolvedModesKey = config.allowedModes.join('|')
+  // Dep é a chave primitiva estável `resolvedModesKey` em vez de `config.allowedModes`
+  // (array que muda de referência a cada render do host com allowedModes inline).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: ver acima — depende de resolvedModesKey, não do array config.allowedModes
   const sanitized = useMemo(() => {
     const project = sanitizeProjectForHost(sourceProject)
     if (!project) return null
-    // Coerção de modo: initialMode sobrepõe o salvo; fora de allowedModes cai
-    // no primeiro permitido. Não marca sujo (é abertura, não edição).
+    // Coerção de modo (D2): os modos dependem do TIPO do projeto (modesForKind)
+    // intersectados com a allowlist do host — pro = só Código; básico = Blocos/
+    // Ponte. initialMode sobrepõe o salvo; fora dos permitidos cai no primeiro.
+    // Não marca sujo (é abertura, não edição).
+    const kindModes = modesForKind(project.kind)
+    const allowed =
+      project.kind === 'pro' ? kindModes : kindModes.filter((m) => config.allowedModes.includes(m))
     let mode = initialMode ?? project.mode
-    if (!config.allowedModes.includes(mode)) mode = config.allowedModes[0] ?? project.mode
+    if (!allowed.includes(mode)) mode = allowed[0] ?? project.mode
     return mode === project.mode ? project : { ...project, mode }
-  }, [sourceProject, initialMode, config.allowedModes])
+  }, [sourceProject, initialMode, resolvedModesKey])
 
   const projectStoreApi = useProjectStoreApi()
   const persistence = useStudioPersistence()
@@ -125,13 +177,21 @@ function StudioBody({
     return detach
   }, [persistence, loadSettings])
 
-  // onReady: 1x, quando o projeto hidratou e o Shell pode renderizar.
+  // onReady: 1x POR PROJETO carregado. O ref re-arma quando a identidade do
+  // projeto muda (ex.: handle.replaceProject() → unload+re-hidrata), senão um
+  // novo projeto carregado nunca dispararia onReady de novo.
   const readyFiredRef = useRef(false)
+  const readyFiredForIdRef = useRef<string | null>(null)
+  const sanitizedId = sanitized?.id ?? null
   useEffect(() => {
+    if (readyFiredForIdRef.current !== sanitizedId) {
+      readyFiredForIdRef.current = sanitizedId
+      readyFiredRef.current = false
+    }
     if (!hasProject || readyFiredRef.current) return
     readyFiredRef.current = true
     onReady?.()
-  }, [hasProject, onReady])
+  }, [hasProject, onReady, sanitizedId])
 
   // onModeChange: observa o modo do projeto na store da instância.
   const onModeChangeRef = useRef(onModeChange)
@@ -171,7 +231,13 @@ function StudioBody({
               </p>
             </div>
           ) : hasProject ? (
-            <Shell onExit={onExit} canToggleTheme={theme === undefined} />
+            <ErrorBoundary
+              fallback={(p) => <RootErrorFallback {...p} onExit={onExit} />}
+              resetKeys={[sanitizedId]}
+              label="Studio"
+            >
+              <Shell onExit={onExit} canToggleTheme={theme === undefined} />
+            </ErrorBoundary>
           ) : null}
         </div>
       </StudioThemeProvider>

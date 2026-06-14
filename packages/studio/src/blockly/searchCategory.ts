@@ -1,5 +1,21 @@
 import * as Blockly from 'blockly/core'
-import { dynamicCategoryBlockTypes } from './paramsFlyout'
+import type { LearningProfile } from '#core'
+import { blockedDynamicSearchTypes, dynamicCategoryBlockTypes } from './paramsFlyout'
+
+// Perfil de aprendizado POR WORKSPACE para a busca respeitar o nível. A categoria
+// de busca é um registro GLOBAL (singleton por origin) e indexa os tipos
+// dinâmicos (Funções/Classes) sem perfil; o BlocklyPanel publica aqui o perfil de
+// cada workspace para a busca filtrar a OFERTA por nível em match time. WeakMap:
+// não retém workspaces descartados.
+const searchProfiles = new WeakMap<object, LearningProfile>()
+
+/** O BlocklyPanel chama isto quando tem o workspace + perfil (mount/troca de nível). */
+export function setSearchProfileForWorkspace(
+  workspace: object | null,
+  profile: LearningProfile,
+): void {
+  if (workspace) searchProfiles.set(workspace, profile)
+}
 
 /**
  * O plugin `@blockly/toolbox-search` registra a categoria `search` colocando um
@@ -12,6 +28,36 @@ import { dynamicCategoryBlockTypes } from './paramsFlyout'
  *  - corrigir o "primeiro clique não ativa" (reposiciona até o flyout existir).
  */
 const KIND = 'search'
+
+// COMPATIBILIDADE: este arquivo depende de internos PRIVADOS do Blockly e do
+// plugin de busca — campos com sufixo `_` (`flyoutItems_`, `rowContents_`,
+// `parentToolbox_`, `workspace_`, `svgGroup_`) e métodos `createDom_`,
+// `createIconDom_`, `createLabelDom_`, `matchBlocks`, `initBlockSearcher`,
+// `blockSearcher`. Eles existem e têm esta forma em `blockly@12.5` /
+// `@blockly/toolbox-search@3.1` (ver versões no package.json). Qualquer minor
+// pode renomeá-los/removê-los. Por isso cada acesso a um interno é defendido:
+// se um esperado sumir, NÃO quebramos o painel — degradamos (a busca perde
+// aquele detalhe) e emitimos UM `console.warn` identificando o interno ausente,
+// para o upgrade ser diagnosticável. Quando os internos existem, o comportamento
+// é idêntico ao anterior.
+
+let warnedIncompatible = false
+
+/**
+ * Emite UM ÚNICO `console.warn` por carga do módulo apontando qual interno do
+ * Blockly/plugin não casou com a suposição de versão. Evita spam (a categoria de
+ * busca recria DOM e roda matchBlocks a cada tecla) e dá um rastro claro de que
+ * o upgrade quebrou um interno privado.
+ */
+function warnIncompatibility(detail: string): void {
+  if (warnedIncompatible) return
+  warnedIncompatible = true
+  console.warn(
+    `[sistema-zero/studio] Categoria de busca de blocos: interno do Blockly/@blockly/toolbox-search ` +
+      `incompatível (${detail}). Esperado blockly@12.5 / @blockly/toolbox-search@3.1. ` +
+      `A busca degrada graciosamente; verifique a versão do Blockly após o upgrade.`,
+  )
+}
 
 interface SearchCategoryInstance {
   createDom_(): HTMLElement
@@ -70,6 +116,45 @@ function getInjectionDiv(category: SearchCategoryInstance): HTMLElement | null {
   return injectionDiv instanceof HTMLElement ? injectionDiv : null
 }
 
+/** Item de toolbox que sabe (re)registrar o atalho global da busca. */
+interface ShortcutAwareItem {
+  registerShortcut?(): void
+}
+
+/** Toolbox (impl. padrão do Blockly) que expõe seus itens. */
+interface ToolboxWithItems {
+  getToolboxItems?(): unknown[]
+}
+
+/** Workspace que pode ter uma toolbox (apenas a principal de cada injeção tem). */
+interface WorkspaceWithToolbox {
+  getToolbox?(): ToolboxWithItems | null
+}
+
+/**
+ * Devolve o atalho global "startSearch" a uma categoria de busca AINDA viva,
+ * pulando a que está sendo descartada. Percorre todos os workspaces registrados
+ * e suas toolboxes procurando uma categoria de busca (item com `registerShortcut`);
+ * a primeira encontrada re-registra o atalho. Sem isso, desmontar a última
+ * instância montada deixava as demais sem Ctrl+B (finding multi-instância).
+ */
+function handBackSearchShortcut(disposing: SearchCategoryInstance): void {
+  const workspaces = Blockly.common.getAllWorkspaces() as WorkspaceWithToolbox[]
+  for (const ws of workspaces) {
+    const toolbox = ws.getToolbox?.()
+    const items = toolbox?.getToolboxItems?.()
+    if (!items) continue
+    for (const item of items) {
+      if (item === disposing) continue
+      const candidate = item as ShortcutAwareItem
+      if (typeof candidate.registerShortcut === 'function') {
+        candidate.registerShortcut()
+        return
+      }
+    }
+  }
+}
+
 /** Re-registra a categoria de busca em português e com o input no flyout. */
 export function registerPtSearchCategory(): void {
   if (registered) return
@@ -83,8 +168,15 @@ export function registerPtSearchCategory(): void {
     // delegar (último registrado fica com o atalho de teclado; limitação
     // conhecida de multi-instância, o resto da busca funciona normal).
     override registerShortcut(): void {
-      const registry = Blockly.ShortcutRegistry.registry
-      if (registry.getRegistry().startSearch) registry.unregister('startSearch')
+      const registry = Blockly.ShortcutRegistry?.registry
+      // Sem o ShortcutRegistry esperado não dá pra desfazer o atalho global do
+      // plugin antes de re-registrar; ainda assim tentamos delegar (a 2ª
+      // instância pode quebrar, mas não derrubamos esta).
+      if (registry && typeof registry.getRegistry === 'function') {
+        if (registry.getRegistry().startSearch) registry.unregister('startSearch')
+      } else {
+        warnIncompatibility('ShortcutRegistry.registry.getRegistry ausente')
+      }
       super.registerShortcut?.()
     }
 
@@ -100,6 +192,8 @@ export function registerPtSearchCategory(): void {
       }
       // Restaura ícone + rótulo na linha (igual às outras categorias) para que o
       // título "Pesquisar" fique alinhado, em vez de colado na esquerda.
+      // `rowContents_` é interno do plugin: se sumir, mantemos o DOM que o
+      // `super` já montou (sem o realinhamento) em vez de quebrar.
       if (this.rowContents_) {
         this.rowContents_.replaceChildren(
           this.createIconDom_(),
@@ -109,6 +203,8 @@ export function registerPtSearchCategory(): void {
         // na borda inferior da linha).
         this.rowContents_.style.display = 'flex'
         this.rowContents_.style.alignItems = 'center'
+      } else {
+        warnIncompatibility('rowContents_ ausente na linha da categoria')
       }
       return dom
     }
@@ -138,14 +234,42 @@ export function registerPtSearchCategory(): void {
     }
 
     override matchBlocks(): void {
+      // `flyoutItems_` é o array interno que o flyout renderiza. Se o plugin o
+      // renomear/remover, gravar nele seria escrever numa propriedade fantasma
+      // (busca silenciosamente vazia). Avisamos e saímos sem tocar em internos
+      // ausentes — o painel de blocos segue de pé, só a busca não popula.
+      if (!Array.isArray(this.flyoutItems_)) {
+        warnIncompatibility('flyoutItems_ ausente — busca de blocos indisponível')
+        return
+      }
       // Replica a lógica do plugin controlando o texto em PT-BR diretamente
       // (sem o "flash" em inglês que ocorre ao traduzir depois do super).
       const value = this.searchField?.value ?? ''
+      const searcher = this.blockSearcher
+      if (value && typeof searcher?.blockTypesMatching !== 'function') {
+        warnIncompatibility('blockSearcher.blockTypesMatching ausente')
+      }
       // Blockly 12 (@blockly/toolbox-search v3): `blockTypesMatching` já devolve
       // os FlyoutItemInfo prontos (`{ kind: 'block', type, ... }`). Atribuímos
       // direto — o `.map()` antigo (era `string[]` no Blockly 11) embrulhava cada
       // item num `type` = objeto inválido e o flyout não renderizava nada.
-      this.flyoutItems_ = value ? (this.blockSearcher?.blockTypesMatching(value) ?? []) : []
+      this.flyoutItems_ =
+        value && typeof searcher?.blockTypesMatching === 'function'
+          ? (searcher.blockTypesMatching(value) ?? [])
+          : []
+      // Respeita o nível do aluno: a busca indexa Funções/Classes GLOBALMENTE (eles
+      // não estão no languageTree estático já filtrado), então a OFERTA não pode
+      // vazar blocos acima do perfil deste workspace — o professor pode tê-los
+      // ocultado para divulgação progressiva. Espelha o gate da paleta (pushCustom).
+      const profile = this.workspace_ ? searchProfiles.get(this.workspace_) : undefined
+      if (profile) {
+        const blocked = blockedDynamicSearchTypes(profile)
+        if (blocked.size > 0) {
+          this.flyoutItems_ = this.flyoutItems_.filter(
+            (item) => item.kind !== 'block' || !item.type || !blocked.has(item.type),
+          )
+        }
+      }
       if (this.flyoutItems_.length === 0) {
         this.flyoutItems_.push({
           kind: 'label',
@@ -162,13 +286,28 @@ export function registerPtSearchCategory(): void {
     // não apareciam na busca. Indexamos esses tipos também.
     override initBlockSearcher(): void {
       super.initBlockSearcher()
+      // `blockSearcher.indexBlocks` é interno do plugin; sem ele só perdemos a
+      // indexação extra das categorias dinâmicas (Funções/Classes) — a busca do
+      // languageTree estático que o `super` montou continua valendo.
+      const indexBlocks = this.blockSearcher?.indexBlocks
+      if (typeof indexBlocks !== 'function') {
+        warnIncompatibility('blockSearcher.indexBlocks ausente')
+        return
+      }
       const extra = dynamicCategoryBlockTypes().map((type) => ({ kind: 'block', type }))
-      this.blockSearcher?.indexBlocks(extra)
+      indexBlocks.call(this.blockSearcher, extra)
     }
 
     override dispose(): void {
       this.searchField?.remove()
+      // `super.dispose()` desregistra o atalho GLOBAL "startSearch" do plugin —
+      // mesmo quando ESTA instância não era a dona dele. Resultado: depois de
+      // montar A→B e desmontar B, NENHUMA instância ficava com o Ctrl+B, apesar
+      // de A continuar viva. Após o dispose, devolvemos o atalho a uma categoria
+      // de busca sobrevivente (re-chamando seu registerShortcut, que já faz o
+      // desregistra-antes-de-registrar — rule 5).
       super.dispose()
+      handBackSearchShortcut(this)
     }
 
     /** Tenta posicionar o input por alguns frames até o flyout existir. */

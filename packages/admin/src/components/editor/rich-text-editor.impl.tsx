@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from '@sistemazero/ui/button'
+import Image from '@tiptap/extension-image'
 import { EditorContent, type Editor as TiptapEditor, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import {
@@ -9,16 +10,23 @@ import {
   Heading1,
   Heading2,
   Heading3,
+  ImagePlus,
   Italic,
   Link as LinkIcon,
   List,
   ListOrdered,
+  Loader2,
   Quote,
   SquareCode,
 } from 'lucide-react'
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { toast } from 'sonner'
 import { Markdown } from 'tiptap-markdown'
+import { type ApiError, apiUpload } from '@/lib/api'
 import { cn } from '@/lib/cn'
+
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024
+const ACCEPTED_IMAGE = 'image/png,image/jpeg,image/webp'
 
 /** O tiptap-markdown (tipado p/ TipTap v2) não aumenta o `Storage` do v3 — cast estreito. */
 function getMarkdown(editor: TiptapEditor): string {
@@ -35,9 +43,12 @@ function getMarkdown(editor: TiptapEditor): string {
 export default function RichTextEditorImpl({
   content,
   onChange,
+  compact = false,
 }: {
   content: string
   onChange: (markdown: string) => void
+  /** Altura mínima menor (campos densos como opções/explicação do quiz). */
+  compact?: boolean
 }) {
   const editor = useEditor({
     extensions: [
@@ -45,6 +56,9 @@ export default function RichTextEditorImpl({
         heading: { levels: [1, 2, 3] },
         link: { openOnClick: false },
       }),
+      // Imagem como bloco (não-inline) — o tiptap-markdown serializa o node p/
+      // `![alt](src)`, que o renderer do aluno (member-shell/lib/markdown) desenha.
+      Image.configure({ allowBase64: false }),
       Markdown.configure({ html: false }),
     ],
     content,
@@ -54,7 +68,10 @@ export default function RichTextEditorImpl({
     onUpdate: ({ editor: e }) => onChange(getMarkdown(e)),
     editorProps: {
       attributes: {
-        class: 'rich-text-content min-h-40 px-3 py-2 text-sm focus:outline-none',
+        class: cn(
+          'rich-text-content px-3 py-2 text-sm focus:outline-none',
+          compact ? 'min-h-20' : 'min-h-40',
+        ),
       },
     },
   })
@@ -79,6 +96,30 @@ export default function RichTextEditorImpl({
 }
 
 function Toolbar({ editor }: { editor: TiptapEditor }) {
+  const fileRef = useRef<HTMLInputElement>(null)
+  const [uploading, setUploading] = useState(false)
+
+  // Upload de imagem → R2 (sharp→WebP, mesma rota/contrato do ImageUploader,
+  // `scope=block`) → insere o node Image, que serializa p/ `![](url)` no markdown.
+  async function uploadImage(file: File) {
+    if (file.size > MAX_IMAGE_BYTES) {
+      toast.error('Imagem excede o limite de 5 MB.')
+      return
+    }
+    setUploading(true)
+    try {
+      const form = new FormData()
+      form.set('file', file)
+      form.set('scope', 'block')
+      const { url } = await apiUpload<{ url: string }>('/api/media/images', form)
+      editor.chain().focus().setImage({ src: url }).run()
+    } catch (err) {
+      toast.error((err as ApiError).message ?? 'Falha no upload da imagem.')
+    } finally {
+      setUploading(false)
+    }
+  }
+
   function setLink() {
     const previous = editor.getAttributes('link').href as string | undefined
     const url = window.prompt('URL do link (https://…)', previous ?? '')
@@ -181,6 +222,29 @@ function Toolbar({ editor }: { editor: TiptapEditor }) {
           {item.icon}
         </Button>
       ))}
+      <input
+        ref={fileRef}
+        type="file"
+        accept={ACCEPTED_IMAGE}
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0]
+          e.target.value = ''
+          if (file) void uploadImage(file)
+        }}
+      />
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        title="Imagem"
+        aria-label="Imagem"
+        disabled={uploading}
+        className="size-7"
+        onClick={() => fileRef.current?.click()}
+      >
+        {uploading ? <Loader2 className="size-4 animate-spin" /> : <ImagePlus className="size-4" />}
+      </Button>
     </div>
   )
 }

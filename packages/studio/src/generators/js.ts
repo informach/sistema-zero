@@ -8,6 +8,88 @@ import {
 } from './expr'
 import { countLines, SourceMapBuilder } from './sourceMap'
 
+/**
+ * Profundidade máxima de aninhamento que os geradores aceitam antes de abortar
+ * de forma controlada. Os PARSERS já degradam quando o aninhamento estoura a
+ * pilha (RangeError), mas os GERADORES não tinham guarda — uma IR
+ * patologicamente aninhada (ex.: `if` dentro de `if` dentro de `if`… milhares de
+ * níveis, ou elementos/`@media` igualmente fundos) estourava a pilha do motor
+ * de JS no meio da compilação, e dois chamadores na thread principal
+ * (`regenerateFromBlocks` na BlocklyPanel, ExtensionsPanel) não envolvem a
+ * geração em try/catch → tela branca. Com um teto bem ABAIXO do limite do motor
+ * (~10–15k frames), lançamos um erro TIPADO e CAPTURÁVEL antes do crash, então
+ * o chamador pode tratá-lo (ou ao menos não derrubar a aba). 200 é folgado para
+ * qualquer projeto real e ainda longe do limite de pilha.
+ */
+export const MAX_GENERATOR_DEPTH = 200
+
+/**
+ * Erro lançado quando a IR excede {@link MAX_GENERATOR_DEPTH} níveis de
+ * aninhamento. Tipado para que os chamadores possam distingui-lo de um bug do
+ * gerador (`error instanceof GeneratorDepthError`) e degradar com elegância.
+ */
+export class GeneratorDepthError extends Error {
+  constructor(message = 'IR aninhada além do limite suportado pelo gerador') {
+    super(message)
+    this.name = 'GeneratorDepthError'
+  }
+}
+
+/** Lança {@link GeneratorDepthError} quando `depth` ultrapassa o teto. */
+export function assertGeneratorDepth(depth: number): void {
+  if (depth > MAX_GENERATOR_DEPTH) throw new GeneratorDepthError()
+}
+
+/** Sub-listas de statements (corpos) de um statement — `[]` para folhas. */
+function jsChildBodies(stmt: JSStatement): JSStatement[][] {
+  switch (stmt.type) {
+    case 'if':
+      return [stmt.then, stmt.else ?? []]
+    case 'repeat':
+    case 'while':
+    case 'doWhile':
+    case 'forOf':
+    case 'forRange':
+    case 'event':
+    case 'animationLoop':
+    case 'g2d:updateEachFrame':
+    case 'g2d:onPointer':
+    case 'g3d:animate':
+    case 'funcDecl':
+    case 'forEach':
+    case 'setTimeout':
+    case 'setInterval':
+      return [stmt.body]
+    case 'tryCatch':
+      return [stmt.body, stmt.handler, stmt.finalizer ?? []]
+    case 'fetchJson':
+      return [stmt.body, stmt.catchBody ?? []]
+    case 'classDecl':
+      return [stmt.ctorBody, ...stmt.methods.map((m) => m.body)]
+    default:
+      return []
+  }
+}
+
+/**
+ * Guarda de profundidade ITERATIVA (pilha explícita, sem recursão). Roda ANTES
+ * de `hoistAnimationLoops`/`createPreparedIdentifierScope`/compilação — todas
+ * recursões sem guarda própria que estourariam a pilha numa IR patológica antes
+ * de chegar ao `compileStatementCode`. Como é iterativa, ela mesma não estoura.
+ */
+function assertJSDepth(statements: JSStatement[]): void {
+  const stack: Array<{ list: JSStatement[]; depth: number }> = [{ list: statements, depth: 0 }]
+  while (stack.length > 0) {
+    const { list, depth } = stack.pop() as { list: JSStatement[]; depth: number }
+    assertGeneratorDepth(depth)
+    for (const stmt of list) {
+      for (const body of jsChildBodies(stmt)) {
+        stack.push({ list: body, depth: depth + 1 })
+      }
+    }
+  }
+}
+
 export interface GenerateJSOptions {
   statements: JSStatement[]
   /** Header injected at top (e.g., comment header). */
@@ -36,6 +118,9 @@ export function generateJS(opts: GenerateJSOptions): string {
  */
 export function generateJSWithMap(opts: GenerateJSOptions): GenerateJSWithMapResult {
   const map = new SourceMapBuilder()
+  // Aborta cedo (erro tipado e capturável) numa IR aninhada demais — antes que
+  // as recursões abaixo (hoist/escopo/compilação) estourem a pilha do motor.
+  assertJSDepth(opts.statements)
   // O loop de animação ("A cada frame fazer") sempre vai para o nível global,
   // fora de qualquer bloco: `function frame(){…} frame();`. A chamada precisa do
   // mesmo escopo da função, então ambos sobem juntos.
@@ -82,6 +167,24 @@ function stripNestedAnimationLoops(stmt: JSStatement, hoisted: JSStatement[]): J
       }
     case 'repeat':
       return { ...stmt, body: extractAnimationLoops(stmt.body, hoisted) }
+    case 'while':
+    case 'doWhile':
+    case 'forOf':
+    case 'forRange':
+      return { ...stmt, body: extractAnimationLoops(stmt.body, hoisted) }
+    case 'tryCatch':
+      return {
+        ...stmt,
+        body: extractAnimationLoops(stmt.body, hoisted),
+        handler: extractAnimationLoops(stmt.handler, hoisted),
+        finalizer: stmt.finalizer ? extractAnimationLoops(stmt.finalizer, hoisted) : undefined,
+      }
+    case 'fetchJson':
+      return {
+        ...stmt,
+        body: extractAnimationLoops(stmt.body, hoisted),
+        catchBody: stmt.catchBody ? extractAnimationLoops(stmt.catchBody, hoisted) : undefined,
+      }
     case 'event':
       return { ...stmt, body: extractAnimationLoops(stmt.body, hoisted) }
     case 'forEach':
@@ -171,6 +274,10 @@ function compileStatementCode(
   identifiers: IdentifierScope,
   mapContext?: CompileMapContext,
 ): string {
+  // `indent` cresce em 1 a cada corpo aninhado (compileStatements(body, indent+1)),
+  // então É a profundidade de aninhamento — guardamos aqui, o único ponto de
+  // recursão de statements, antes de estourar a pilha do motor.
+  assertGeneratorDepth(indent)
   const pad = '  '.repeat(indent)
   // Linha-base (1ª linha) deste statement. Expressões em soquetes de valor são
   // single-line; `recAt(line)` registra cada uma na linha onde foi emitida.
@@ -216,6 +323,112 @@ function compileStatementCode(
       const loopVar = identifiers.reserveInternal('i')
       return `${pad}for (let ${loopVar} = 0; ${loopVar} < ${times}; ${loopVar}++) {\n${body}\n${pad}}`
     }
+    case 'while': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}while (${compileExpr(stmt.cond, 0, identifiers, recAt(base))}) {\n${body}\n${pad}}`
+    }
+    case 'doWhile': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      // `} while (cond);` é a última linha: base + 1 (abertura) + linhas do corpo.
+      const condLine = base + 1 + countLines(body)
+      return `${pad}do {\n${body}\n${pad}} while (${compileExpr(stmt.cond, 0, identifiers, recAt(condLine))});`
+    }
+    case 'break':
+      return `${pad}break;`
+    case 'continue':
+      return `${pad}continue;`
+    case 'forOf': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}for (const ${identifiers.get(stmt.itemName)} of ${identifiers.get(stmt.iterableVar)}) {\n${body}\n${pad}}`
+    }
+    case 'forRange': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      const v = identifiers.get(stmt.varName)
+      const from = compileExpr(stmt.from, 0, identifiers, recAt(base))
+      const to = compileExpr(stmt.to, 0, identifiers, recAt(base))
+      const stepIsOne = stmt.step.type === 'num' && stmt.step.value === 1
+      const update = stepIsOne
+        ? `${v}++`
+        : `${v} += ${compileExpr(stmt.step, 0, identifiers, recAt(base))}`
+      return `${pad}for (let ${v} = ${from}; ${v} < ${to}; ${update}) {\n${body}\n${pad}}`
+    }
+    case 'tryCatch': {
+      const startLine = mapContext?.startLine ?? 1
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, startLine + 1),
+      )
+      // `} catch (erro) {` fica na linha base + 1 (try) + linhas do corpo.
+      const catchHeaderLine = startLine + 1 + countLines(body)
+      const handler = compileStatements(
+        stmt.handler,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, catchHeaderLine + 1),
+      )
+      const param = stmt.errorName ? `(${identifiers.get(stmt.errorName)}) ` : ''
+      let out = `${pad}try {\n${body}\n${pad}} catch ${param}{\n${handler}\n${pad}}`
+      if (stmt.finalizer) {
+        const finallyHeaderLine = catchHeaderLine + 1 + countLines(handler)
+        const finalizer = compileStatements(
+          stmt.finalizer,
+          indent + 1,
+          identifiers,
+          childMapContext(mapContext, finallyHeaderLine + 1),
+        )
+        out += ` finally {\n${finalizer}\n${pad}}`
+      }
+      return out
+    }
+    case 'fetchJson': {
+      const startLine = mapContext?.startLine ?? 1
+      const url = compileExpr(stmt.url, 0, identifiers, recAt(startLine))
+      const resp = identifiers.reserveInternal('resposta')
+      const ok = identifiers.get(stmt.okName)
+      // Linhas: fetch(url) | .then(json) | .then((dados) => { | corpo… | })
+      const body = compileStatements(
+        stmt.body,
+        indent + 2,
+        identifiers,
+        childMapContext(mapContext, startLine + 3),
+      )
+      let out = `${pad}fetch(${url})\n${pad}  .then((${resp}) => ${resp}.json())\n${pad}  .then((${ok}) => {\n${body}\n${pad}  })`
+      if (stmt.catchBody) {
+        const catchVar = stmt.catchName
+          ? identifiers.get(stmt.catchName)
+          : identifiers.reserveInternal('erro')
+        const catchBody = compileStatements(
+          stmt.catchBody,
+          indent + 2,
+          identifiers,
+          childMapContext(mapContext, startLine + 3 + countLines(body) + 2),
+        )
+        out += `\n${pad}  .catch((${catchVar}) => {\n${catchBody}\n${pad}  })`
+      }
+      return `${out};`
+    }
     case 'event': {
       const body = compileStatements(
         stmt.body,
@@ -252,6 +465,14 @@ function compileStatementCode(
       return `${pad}const ${identifiers.get(stmt.varName)} = ${elementExpr(stmt.targetId, stmt.targetKind, identifiers)}?.${stmt.property};`
     case 'querySelector':
       return `${pad}const ${identifiers.get(stmt.varName)} = document.querySelector(${JSON.stringify(stmt.selector)});`
+    case 'querySelectorAll':
+      return `${pad}const ${identifiers.get(stmt.varName)} = document.querySelectorAll(${JSON.stringify(stmt.selector)});`
+    case 'storageSet': {
+      const store = stmt.store === 'session' ? 'sessionStorage' : 'localStorage'
+      return `${pad}${store}.setItem(${compileExpr(stmt.key, 0, identifiers, recAt(base))}, ${compileExpr(stmt.value, 0, identifiers, recAt(base))});`
+    }
+    case 'eventMethod':
+      return `${pad}event.${stmt.method}();`
     case 'getElementById':
       return `${pad}const ${identifiers.get(stmt.varName)} = document.getElementById(${JSON.stringify(stmt.id)});`
     case 'classOp':
@@ -424,6 +645,25 @@ function compileStatementCode(
         `${pad}${identifiers.get(stmt.ctxVar)}.font = '32px sans-serif';`,
         `${pad}${identifiers.get(stmt.ctxVar)}.fillText(${JSON.stringify(stmt.text)}, 40, 80);`,
       ].join('\n')
+    case 'g2d:setGravity':
+      return `${pad}SZGame2D.setGravity(${stmt.value});`
+    case 'g2d:applyVelocity':
+      return `${pad}SZGame2D.applyVelocity(${identifiers.get(stmt.spriteVar)});`
+    case 'g2d:bounceOnEdges':
+      return `${pad}SZGame2D.bounceOnEdges(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.ctxVar)});`
+    case 'g2d:circleCollides':
+      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.circleCollides(${identifiers.get(stmt.aVar)}, ${identifiers.get(stmt.bVar)});`
+    case 'g2d:playSound':
+      return `${pad}SZGame2D.playSound(${stmt.freq}, ${stmt.durationMs});`
+    case 'g2d:onPointer': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGame2D.onPointer((${identifiers.get(stmt.xName)}, ${identifiers.get(stmt.yName)}) => {\n${body}\n${pad}});`
+    }
     case 'g2d:updateEachFrame': {
       const body = compileStatements(
         stmt.body,
@@ -433,6 +673,29 @@ function compileStatementCode(
       )
       const update = identifiers.reserveInternal('update')
       return [`${pad}SZGame2D.gameLoop(function ${update}() {`, body, `${pad}});`].join('\n')
+    }
+    case 'g3d:createScene':
+      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame3D.createScene(${JSON.stringify(stmt.canvasId)});`
+    case 'g3d:setBackground':
+      return `${pad}SZGame3D.setBackground(${identifiers.get(stmt.worldVar)}, ${JSON.stringify(stmt.color)});`
+    case 'g3d:setCameraPosition':
+      return `${pad}SZGame3D.setCameraPosition(${identifiers.get(stmt.worldVar)}, ${compileExpr(stmt.x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base))}, ${compileExpr(stmt.z, 0, identifiers, recAt(base))});`
+    case 'g3d:createBox':
+      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame3D.createBox(${identifiers.get(stmt.worldVar)}, { size: ${stmt.size}, color: ${JSON.stringify(stmt.color)} });`
+    case 'g3d:createSphere':
+      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame3D.createSphere(${identifiers.get(stmt.worldVar)}, { radius: ${stmt.radius}, color: ${JSON.stringify(stmt.color)} });`
+    case 'g3d:setPosition':
+      return `${pad}SZGame3D.setPosition(${identifiers.get(stmt.objVar)}, ${compileExpr(stmt.x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base))}, ${compileExpr(stmt.z, 0, identifiers, recAt(base))});`
+    case 'g3d:setRotation':
+      return `${pad}SZGame3D.setRotation(${identifiers.get(stmt.objVar)}, ${compileExpr(stmt.x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base))}, ${compileExpr(stmt.z, 0, identifiers, recAt(base))});`
+    case 'g3d:animate': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGame3D.animate(${identifiers.get(stmt.worldVar)}, () => {\n${body}\n${pad}});`
     }
     case 'classDecl': {
       const className = identifiers.declareClassName(classKey(stmt), stmt.name)
@@ -570,11 +833,17 @@ function compileStatementCode(
       const delayLine = base + 1 + countLines(body)
       return `${pad}setInterval(() => {\n${body}\n${pad}}, ${compileExpr(stmt.delay, 0, identifiers, recAt(delayLine))});`
     }
-    case 'rawJS':
-      return stmt.code
-        .split('\n')
-        .map((l) => (l.length ? pad + l : l))
-        .join('\n')
+    case 'rawJS': {
+      // Indenta APENAS a 1ª linha física (e só se ela não for vazia). As linhas
+      // seguintes ficam verbatim — re-indentar todas inseria o pad DENTRO de
+      // template/strings multilinha, corrompendo o conteúdo. No nível raiz (pad
+      // vazio) o texto sai byte-a-byte idêntico ao original.
+      if (!pad) return stmt.code
+      const nl = stmt.code.indexOf('\n')
+      const firstLine = nl === -1 ? stmt.code : stmt.code.slice(0, nl)
+      if (!firstLine.length) return stmt.code
+      return pad + stmt.code
+    }
   }
 }
 
@@ -598,6 +867,10 @@ function lastLineEndColumn(code: string): number {
 }
 
 function createPreparedIdentifierScope(statements: JSStatement[]): IdentifierScope {
+  // Guarda também o caminho de `compileStatements` chamado de fora (sem passar
+  // um escopo) — aqui as recursões de reserva/coleta rodam primeiro. Iterativo,
+  // então não estoura a pilha por conta própria.
+  assertJSDepth(statements)
   const identifiers = createIdentifierScope()
   // Reserva o elemento <canvas> de cada `canvasSetup` ANTES dos nomes de
   // variável. Assim o elemento fica sempre com o nome `canvas` (estável), em vez
@@ -631,17 +904,32 @@ function reserveClassNames(statements: JSStatement[], scope: IdentifierScope): v
         if (stmt.else) reserveClassNames(stmt.else, scope)
         break
       case 'repeat':
+      case 'while':
+      case 'doWhile':
+      case 'forOf':
+      case 'forRange':
       case 'event':
       case 'forEach':
       case 'setTimeout':
       case 'setInterval':
       case 'animationLoop':
       case 'g2d:updateEachFrame':
+      case 'g2d:onPointer':
+      case 'g3d:animate':
         reserveClassNames(stmt.body, scope)
         break
       case 'classDecl':
         reserveClassNames(stmt.ctorBody, scope)
         for (const method of stmt.methods) reserveClassNames(method.body, scope)
+        break
+      case 'tryCatch':
+        reserveClassNames(stmt.body, scope)
+        reserveClassNames(stmt.handler, scope)
+        if (stmt.finalizer) reserveClassNames(stmt.finalizer, scope)
+        break
+      case 'fetchJson':
+        reserveClassNames(stmt.body, scope)
+        if (stmt.catchBody) reserveClassNames(stmt.catchBody, scope)
         break
     }
   }
@@ -657,16 +945,31 @@ function reserveCanvasElements(statements: JSStatement[], scope: IdentifierScope
         if (stmt.else) reserveCanvasElements(stmt.else, scope)
         break
       case 'repeat':
+      case 'while':
+      case 'doWhile':
+      case 'forOf':
+      case 'forRange':
       case 'event':
       case 'forEach':
       case 'setTimeout':
       case 'setInterval':
       case 'animationLoop':
       case 'g2d:updateEachFrame':
+      case 'g2d:onPointer':
+      case 'g3d:animate':
         reserveCanvasElements(stmt.body, scope)
         break
       case 'classDecl':
         for (const method of stmt.methods) reserveCanvasElements(method.body, scope)
+        break
+      case 'tryCatch':
+        reserveCanvasElements(stmt.body, scope)
+        reserveCanvasElements(stmt.handler, scope)
+        if (stmt.finalizer) reserveCanvasElements(stmt.finalizer, scope)
+        break
+      case 'fetchJson':
+        reserveCanvasElements(stmt.body, scope)
+        if (stmt.catchBody) reserveCanvasElements(stmt.catchBody, scope)
         break
     }
   }
@@ -705,6 +1008,39 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(stmt.times, names)
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
+    case 'while':
+    case 'doWhile':
+      collectExprIdentifiers(stmt.cond, names)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'break':
+    case 'continue':
+      return
+    case 'forOf':
+      names.add(stmt.itemName)
+      names.add(stmt.iterableVar)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'forRange':
+      names.add(stmt.varName)
+      collectExprIdentifiers(stmt.from, names)
+      collectExprIdentifiers(stmt.to, names)
+      collectExprIdentifiers(stmt.step, names)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'tryCatch':
+      if (stmt.errorName) names.add(stmt.errorName)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      for (const child of stmt.handler) collectStatementIdentifiers(child, names)
+      for (const child of stmt.finalizer ?? []) collectStatementIdentifiers(child, names)
+      return
+    case 'fetchJson':
+      collectExprIdentifiers(stmt.url, names)
+      names.add(stmt.okName)
+      if (stmt.catchName) names.add(stmt.catchName)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      for (const child of stmt.catchBody ?? []) collectStatementIdentifiers(child, names)
+      return
     case 'event':
     case 'animationLoop':
     case 'g2d:updateEachFrame':
@@ -717,9 +1053,16 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(stmt.value, names)
       return
     case 'querySelector':
+    case 'querySelectorAll':
     case 'getElementById':
     case 'keyboardSimple':
       names.add(stmt.varName)
+      return
+    case 'storageSet':
+      collectExprIdentifiers(stmt.key, names)
+      collectExprIdentifiers(stmt.value, names)
+      return
+    case 'eventMethod':
       return
     case 'createElement':
       names.add(stmt.varName)
@@ -823,6 +1166,54 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'g2d:gameOver':
       names.add(stmt.ctxVar)
+      return
+    case 'g2d:applyVelocity':
+      names.add(stmt.spriteVar)
+      return
+    case 'g2d:bounceOnEdges':
+      names.add(stmt.spriteVar)
+      names.add(stmt.ctxVar)
+      return
+    case 'g2d:circleCollides':
+      names.add(stmt.aVar)
+      names.add(stmt.bVar)
+      names.add(stmt.varName)
+      return
+    case 'g2d:setGravity':
+    case 'g2d:playSound':
+      return
+    case 'g2d:onPointer':
+      names.add(stmt.xName)
+      names.add(stmt.yName)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'g3d:createScene':
+      names.add(stmt.varName)
+      return
+    case 'g3d:setBackground':
+      names.add(stmt.worldVar)
+      return
+    case 'g3d:setCameraPosition':
+      names.add(stmt.worldVar)
+      collectExprIdentifiers(stmt.x, names)
+      collectExprIdentifiers(stmt.y, names)
+      collectExprIdentifiers(stmt.z, names)
+      return
+    case 'g3d:createBox':
+    case 'g3d:createSphere':
+      names.add(stmt.varName)
+      names.add(stmt.worldVar)
+      return
+    case 'g3d:setPosition':
+    case 'g3d:setRotation':
+      names.add(stmt.objVar)
+      collectExprIdentifiers(stmt.x, names)
+      collectExprIdentifiers(stmt.y, names)
+      collectExprIdentifiers(stmt.z, names)
+      return
+    case 'g3d:animate':
+      names.add(stmt.worldVar)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
     case 'classDecl':
       for (const param of stmt.ctorParams ?? []) names.add(param)
@@ -929,6 +1320,9 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
       return
     case 'propAccess':
       names.add(expr.objectVar)
+      return
+    case 'storageGet':
+      collectExprIdentifiers(expr.key, names)
       return
     case 'callMethodExpr':
       names.add(expr.objectVar)

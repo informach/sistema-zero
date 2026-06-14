@@ -59,6 +59,15 @@ export const GrantWebhookBody = t.Object({
   ),
 })
 
+/**
+ * Corpo de `POST /members/internal/access-check` (S2S — consumido pela comunidade):
+ * resolve, num passo, quais `courseRefs` o usuário acessa + se tem chave-mestra.
+ */
+export const AccessCheckBody = t.Object({
+  userId: UUID,
+  courseRefs: t.Array(t.String({ minLength: 1, maxLength: 200 }), { maxItems: 200 }),
+})
+
 /** Corpo de `POST /members/webhooks/subscription` — ciclo de vida da assinatura. */
 export const SubscriptionWebhookBody = t.Object({
   event: t.Union([t.Literal('canceled'), t.Literal('expired')]),
@@ -284,18 +293,22 @@ const QuizBlockSchema = t.Object({
   questions: t.Array(
     t.Object({
       id: t.String({ minLength: 1, maxLength: 64 }),
-      prompt: t.String({ minLength: 1, maxLength: 2000 }),
+      // prompt/label/explanation são MARKDOWN (formatação rica + imagens `![](url)`
+      // do editor TipTap do admin) — limites folgados p/ caber URLs de imagem do R2.
+      prompt: t.String({ minLength: 1, maxLength: 5000 }),
       choices: t.Array(
         t.Object({
           id: t.String({ minLength: 1, maxLength: 64 }),
-          label: t.String({ minLength: 1, maxLength: 500 }),
+          label: t.String({ minLength: 1, maxLength: 2000 }),
         }),
       ),
       correctChoiceIds: t.Array(t.String({ maxLength: 64 })),
-      explanation: t.Optional(t.String({ maxLength: 2000 })),
+      explanation: t.Optional(t.String({ maxLength: 5000 })),
     }),
   ),
-  passingScore: t.Optional(t.Number({ minimum: 0, maximum: 100 })),
+  // Nota de corte é % inteira (o score do aluno é inteiro 0–100; 99.5 só "passaria"
+  // com 100 e confundiria a autoria).
+  passingScore: t.Optional(t.Integer({ minimum: 0, maximum: 100 })),
 })
 // Autoria v3: interativo é SEMPRE iframe sandbox com HTML (embedType/src/height
 // viraram legado — só existem em blocos antigos, nunca em escrita nova).
@@ -321,6 +334,37 @@ const EbookBlockSchema = t.Object({
   title: t.Optional(t.String({ maxLength: 300 })),
 })
 
+const StudioLevelSchema = t.Union([
+  t.Literal('iniciante'),
+  t.Literal('intermediario'),
+  t.Literal('avancado'),
+])
+const StudioModeSchema = t.Union([t.Literal('blocks'), t.Literal('bridge'), t.Literal('code')])
+/**
+ * Snapshot `Project` do Estúdio (autoria do admin = `initialProject`; entrega do
+ * aluno = corpo do submit). Validado de forma DEFENSIVA — só exigimos `name`+`files`,
+ * o resto passa (`additionalProperties`): o @sistemazero/studio sanitiza o shape inteiro
+ * na autoria (export) e DE NOVO no aluno (`sanitizeProjectForHost`). O TETO DE TAMANHO
+ * (anti-DoS no jsonb) é aplicado no service — TypeBox não limita bytes do agregado.
+ */
+const StudioProjectSchema = t.Object(
+  {
+    name: t.String({ maxLength: 200 }),
+    files: t.Record(t.String({ maxLength: 200 }), t.String({ maxLength: 2_000_000 })),
+  },
+  { additionalProperties: true },
+)
+/** Bloco Estúdio: editor pré-configurado embutido na aula (ver domain/course/lesson-block.ts). */
+const StudioBlockSchema = t.Object({
+  kind: t.Literal('studio'),
+  initialProject: StudioProjectSchema,
+  level: t.Optional(StudioLevelSchema),
+  allowBlocks: t.Optional(t.Array(t.String({ maxLength: 80 }), { maxItems: 500 })),
+  allowCategories: t.Optional(t.Array(t.String({ maxLength: 80 }), { maxItems: 100 })),
+  allowedModes: t.Optional(t.Array(StudioModeSchema, { maxItems: 3 })),
+  allowLevelReveal: t.Optional(t.Boolean()),
+})
+
 export const LessonBlockContentSchema = t.Union([
   RichTextBlockSchema,
   VideoBlockSchema,
@@ -329,7 +373,16 @@ export const LessonBlockContentSchema = t.Union([
   QuizBlockSchema,
   EmbedBlockSchema,
   EbookBlockSchema,
+  StudioBlockSchema,
 ])
+
+/** Params da rota de entrega do Estúdio (aluno) — espelha o quiz-attempts. */
+export const StudioSubmissionParams = t.Object({ lessonId: UUID, blockId: UUID })
+/** Params da rota admin de UMA entrega (por bloco + aluno). `id` = blockId. */
+export const AdminStudioSubmissionParams = t.Object({ id: UUID, userId: UUID })
+
+/** Corpo de `POST /members/lessons/:lessonId/blocks/:blockId/studio-submission` (aluno). */
+export const StudioSubmissionBody = t.Object({ project: StudioProjectSchema })
 
 /** Corpo de `POST/PATCH /members/admin/...blocks`. */
 export const BlockBody = t.Object({ content: LessonBlockContentSchema })

@@ -58,15 +58,27 @@ export const pongExample: ExtensionExample = {
           { type: 'canvasClear', ctxVar: 'ctx', canvasVar: 'ctx' },
           { type: 'g2d:moveByKeys', spriteVar: 'jogador', speed: 4 },
           { type: 'g2d:drawSprite', spriteVar: 'jogador', ctxVar: 'ctx' },
+          // Física da bola com os blocos do próprio motor (em vez de JS cru, que
+          // caía no bloco "código avançado"): mover pela velocidade, quicar nas
+          // bordas e, ao bater na raquete, mandar a bola para a direita (vx > 0).
+          { type: 'g2d:applyVelocity', spriteVar: 'bola' },
+          { type: 'g2d:bounceOnEdges', spriteVar: 'bola', ctxVar: 'ctx' },
+          { type: 'g2d:collides', aVar: 'jogador', bVar: 'bola', varName: 'bateu' },
           {
-            type: 'rawJS',
-            advanced: true,
-            code: [
-              'bola.x += bola.vx; bola.y += bola.vy;',
-              'if (bola.x < 0 || bola.x + bola.w > canvas.width) bola.vx *= -1;',
-              'if (bola.y < 0 || bola.y + bola.h > canvas.height) bola.vy *= -1;',
-              'if (SZGame2D.isColliding(jogador, bola)) bola.vx = Math.abs(bola.vx);',
-            ].join('\n'),
+            type: 'if',
+            cond: { type: 'var', name: 'bateu' },
+            then: [
+              {
+                type: 'memberSet',
+                object: { type: 'var', name: 'bola' },
+                name: 'vx',
+                value: {
+                  type: 'mathUnary',
+                  fn: 'abs',
+                  arg: { type: 'memberGet', object: { type: 'var', name: 'bola' }, name: 'vx' },
+                },
+              },
+            ],
           },
           { type: 'g2d:drawSprite', spriteVar: 'bola', ctxVar: 'ctx' },
         ],

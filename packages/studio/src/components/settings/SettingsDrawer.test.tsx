@@ -5,6 +5,12 @@ import {
   DEFAULT_AI_MODEL,
   useSettingsStore,
 } from '../../state/settingsStore'
+import {
+  resolveLearning,
+  resolvePreviewSecurity,
+  resolveStudioConfig,
+  StudioConfigProvider,
+} from '../../studio/config'
 import { SettingsDrawer } from './SettingsDrawer'
 
 function apiKeyInput(): HTMLInputElement {
@@ -31,7 +37,6 @@ describe('SettingsDrawer', () => {
       aiApiKeyStorage: 'persistent',
       aiModel: DEFAULT_AI_MODEL,
       theme: 'dark',
-      fontSize: 16,
       codeFontSize: CODE_FONT_SIZE_DEFAULT,
       loaded: true,
     })
@@ -77,5 +82,26 @@ describe('SettingsDrawer', () => {
     expect(checkbox).toBeInstanceOf(HTMLInputElement)
     expect((checkbox as HTMLInputElement).checked).toBe(false)
     expect(document.body.textContent).toContain('Modo sessão')
+  })
+
+  it('abre na Aparência (e não vazio) quando a aba de IA não existe', () => {
+    // Host fixa o modelo e não permite chave do aluno: sem seção de chave nem de
+    // modelo, a aba de IA some. O initialSection default 'ai' não pode deixar o
+    // corpo vazio — o efeito de abertura precisa clampar em 'appearance'.
+    const config = {
+      ...resolveStudioConfig({ ai: { model: 'openrouter/auto', allowUserKey: false } }, undefined),
+      previewSecurity: resolvePreviewSecurity(),
+      learning: resolveLearning(),
+    }
+
+    render(
+      <StudioConfigProvider value={config}>
+        <SettingsDrawer open onClose={() => undefined} />
+      </StudioConfigProvider>,
+    )
+
+    expect(document.body.textContent).toContain('Aparência')
+    expect(document.body.textContent).toContain('Tema')
+    expect(document.body.textContent).not.toContain('Assistente de IA')
   })
 })

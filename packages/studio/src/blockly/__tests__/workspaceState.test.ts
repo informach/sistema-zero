@@ -1,7 +1,11 @@
-import { describe, expect, it } from 'bun:test'
+import * as Blockly from 'blockly/core'
+import 'blockly/blocks'
+import { beforeAll, describe, expect, it } from 'bun:test'
 import { generateProjectFiles, generateProjectFilesWithMap } from '#generators'
 import { assignStableIdsToIR, type SZIR } from '#ir'
 import { parseProjectFiles } from '#parsers'
+import { buildIRFromWorkspace } from '../buildIR'
+import { ensureBlocklyInitialized } from '../setup'
 import { buildWorkspaceStateFromIR, type SerializedBlocklyBlock } from '../workspaceState'
 
 describe('buildWorkspaceStateFromIR', () => {
@@ -704,6 +708,70 @@ describe('buildWorkspaceStateFromIR', () => {
     expect(types).toContain('sz_val_bool')
     expect(types).toContain('sz_js_var_increment')
     expect(types).not.toContain('sz_adv_raw_js')
+  })
+})
+
+describe('Canvas — round-trip de width/height pela Ponte', () => {
+  beforeAll(() => ensureBlocklyInitialized())
+
+  it('preserva <canvas width=200 height=100> no ciclo código→blocos→código', () => {
+    // Regressão (finding #20): largura/altura saíram dos campos do bloco, mas a
+    // IR ainda as carrega. Sem stash no `data` do bloco, o round-trip blocos→IR
+    // lia campos W/H inexistentes e o tamanho do canvas desaparecia.
+    const html = '<canvas id="tela" width="200" height="100"></canvas>'
+    const parsed = parseProjectFiles({ 'index.html': html, 'style.css': '', 'script.js': '' })
+    // O parser leu width/height do HTML para a IR.
+    expect(parsed.html[0]).toMatchObject({ type: 'canvas', id: 'tela', width: 200, height: 100 })
+
+    // Carrega num workspace de verdade e lê a IR de volta (exercita o stash em
+    // `data` + a recuperação em buildIR).
+    const state = buildWorkspaceStateFromIR(parsed)
+    const ws = new Blockly.Workspace()
+    Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
+    const ir2 = buildIRFromWorkspace(ws)
+    expect(ir2.html[0]).toMatchObject({ type: 'canvas', id: 'tela', width: 200, height: 100 })
+
+    // E o HTML regenerado mantém os atributos.
+    const out = generateProjectFiles({ ir: ir2, projectName: 'Canvas' })
+    expect(out['index.html']).toContain('width="200"')
+    expect(out['index.html']).toContain('height="100"')
+  })
+
+  it('canvas sem width/height continua sem stash no `data` (round-trip estável)', () => {
+    const state = buildWorkspaceStateFromIR({
+      html: [{ type: 'canvas', id: 'tela' }],
+      css: [],
+      js: [],
+      extensions: [],
+    })
+    const canvasBlock = collectBlocks(state.blocks.blocks).find((b) => b.type === 'sz_html_canvas')
+    expect(canvasBlock).toBeDefined()
+    expect(canvasBlock?.data).toBeUndefined()
+  })
+
+  it('fallback de bloco "código avançado" carrega JS válido, não um dump do IR', () => {
+    // storageSet com chave NÃO-literal (variável) não cabe no bloco estruturado
+    // (cuja chave é um campo de texto) → cai no bloco de código avançado. O CODE
+    // tem que ser a CHAMADA real, não um JSON.stringify do nó (que sumia com o
+    // setItem ao gerar o código).
+    const state = buildWorkspaceStateFromIR({
+      html: [],
+      css: [],
+      js: [
+        {
+          type: 'storageSet',
+          store: 'local',
+          key: { type: 'var', name: 'chave' },
+          value: { type: 'var', name: 'valor' },
+        },
+      ],
+      extensions: [],
+    })
+    const raw = collectBlocks(state.blocks.blocks).find((b) => b.type === 'sz_adv_raw_js')
+    expect(raw).toBeDefined()
+    expect(raw?.fields?.CODE).toBe('localStorage.setItem(chave, valor);')
+    // E NÃO um dump do IR.
+    expect(raw?.fields?.CODE).not.toContain('"type"')
   })
 })
 

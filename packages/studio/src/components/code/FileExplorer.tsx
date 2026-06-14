@@ -139,9 +139,10 @@ export function FileExplorer({ activeFile, onSelectFile }: FileExplorerProps): J
                     type="button"
                     onClick={() => setPendingDelete(file.name)}
                     title="Excluir arquivo"
+                    aria-label={`Excluir ${file.name}`}
                     className="text-sz-fg-mute hover:text-sz-error"
                   >
-                    ×
+                    <span aria-hidden="true">×</span>
                   </button>
                 </div>
               )

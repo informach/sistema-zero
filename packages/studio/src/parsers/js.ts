@@ -57,8 +57,22 @@ export function parseJSWithDiagnostics(source: string): ParseJSResult {
     ctxVars: new Set(),
     elementToCtx: new Map(),
     instanceVars: new Set(),
+    spriteVars: new Set(),
   }
-  const out = mapStatementList(ast.program.body, source, ctx)
+  // A descida recursiva também precisa estar protegida: o Babel parseia
+  // aninhamentos profundos sem reclamar e só a recursão do mapeamento estoura a
+  // pilha (RangeError). Sem o try/catch aqui, esse throw escaparia e quebraria o
+  // contrato de não-crashar — então degradamos para `rawJS advanced` como qualquer
+  // entrada não-parseável.
+  let out: JSStatement[]
+  try {
+    out = mapStatementList(ast.program.body, source, ctx)
+  } catch (error) {
+    return {
+      statements: [{ type: 'rawJS', code: source, advanced: true }],
+      diagnostics: [{ kind: 'syntaxError', message: errorMessage(error) }],
+    }
+  }
   // Remove os `getElementById` soltos que foram absorvidos por um `canvasSetup`.
   const statements = out.filter(
     (s) => !(s.type === 'getElementById' && ctx.canvasElementVars.has(s.varName)),
@@ -103,6 +117,14 @@ interface ParseCtx {
    * instância conhecida — evita falso positivo em `foo.fillRect(...)`.
    */
   instanceVars: Set<string>
+  /**
+   * Sprites do game-2d (`const s = SZGame2D.createSprite(...)`). Servem de
+   * *guard* para a fusão de `s.vx = ...; s.vy = ...;` → `g2d:setVelocity` (e
+   * `s.x/s.y` → `g2d:setPosition`): só funde quando o objeto é um sprite
+   * conhecido — `ponto.x = ...; ponto.y = ...;` de um objeto qualquer segue
+   * como dois `memberSet`.
+   */
+  spriteVars: Set<string>
 }
 
 const KNOWN_EVENT_KINDS: ReadonlySet<EventKind> = new Set([
@@ -158,6 +180,19 @@ function mapStatement(
       return mapIf(node, source, ctx)
     case 'ForStatement':
       return mapFor(node, source, ctx)
+    case 'ForOfStatement':
+      return mapForOf(node, source, ctx)
+    case 'WhileStatement':
+      return mapWhile(node, source, ctx)
+    case 'DoWhileStatement':
+      return mapDoWhile(node, source, ctx)
+    case 'BreakStatement':
+      // `break;` simples; com label (`break loop;`) vira código avançado.
+      return node.label ? asRaw(source, node) : { type: 'break' }
+    case 'ContinueStatement':
+      return node.label ? asRaw(source, node) : { type: 'continue' }
+    case 'TryStatement':
+      return mapTry(node, source, ctx)
     case 'BlockStatement':
       // Bloco solto `{ ... }` em posição de statement — hoje só o
       // `canvasDrawImage` é emitido assim (escopo para a variável da imagem).
@@ -195,10 +230,12 @@ function mapClass(node: Node, source: string, ctx: ParseCtx): JSStatement {
     else return asRaw(source, node)
   }
   const members = node.body?.body ?? []
-  let ctorParams: string[] = []
-  let ctorBody: JSStatement[] = []
-  const methods: Array<{ name: string; params: string[]; body: JSStatement[] }> = []
 
+  // 1ª passada: confere que TODOS os membros são representáveis (método/construtor
+  // simples, sem static/computed/getter/setter/campos) ANTES de mapear qualquer
+  // corpo. Sem isso, mapear os corpos cedo poluía o `ctx` (spriteVars/instanceVars/
+  // ctxVars/elementVars/…) e, se um membro posterior falhasse o guard e a classe
+  // caísse em `asRaw`, essas mutações vazariam e contaminavam statements irmãos.
   for (const member of members) {
     if (
       member.type !== 'ClassMethod' ||
@@ -206,23 +243,28 @@ function mapClass(node: Node, source: string, ctx: ParseCtx): JSStatement {
       member.computed ||
       member.key?.type !== 'Identifier' ||
       !Array.isArray(member.params) ||
-      !member.params.every((p: Node) => p?.type === 'Identifier')
+      !member.params.every((p: Node) => p?.type === 'Identifier') ||
+      (member.kind !== 'constructor' && member.kind !== 'method')
     ) {
       return asRaw(source, node)
     }
-    const params: string[] = member.params.map((p: Node) => p.name)
+  }
 
+  // 2ª passada: a classe é representável; agora sim mapeamos os corpos no `ctx`.
+  let ctorParams: string[] = []
+  let ctorBody: JSStatement[] = []
+  const methods: Array<{ name: string; params: string[]; body: JSStatement[] }> = []
+  for (const member of members) {
+    const params: string[] = member.params.map((p: Node) => p.name)
     if (member.kind === 'constructor') {
       ctorParams = params
       ctorBody = mapStatementList(member.body?.body ?? [], source, ctx)
-    } else if (member.kind === 'method') {
+    } else {
       methods.push({
         name: member.key.name,
         params,
         body: mapStatementList(member.body?.body ?? [], source, ctx),
       })
-    } else {
-      return asRaw(source, node)
     }
   }
 
@@ -301,6 +343,134 @@ function tryMatchCancelAnimationFrame(expr: Node, ctx: ParseCtx): JSStatement | 
   return isSimpleValue(handle) ? { type: 'cancelAnimationFrame', handle: handle as JSExpr } : null
 }
 
+/** `localStorage.setItem(chave, valor)` / `sessionStorage.setItem(...)` → `storageSet`. */
+function tryMatchStorageSet(expr: Node, ctx: ParseCtx): JSStatement | null {
+  if (expr?.type !== 'CallExpression' || expr.callee?.type !== 'MemberExpression') return null
+  const obj = expr.callee.object
+  if (
+    obj?.type !== 'Identifier' ||
+    (obj.name !== 'localStorage' && obj.name !== 'sessionStorage')
+  ) {
+    return null
+  }
+  if (expr.callee.property?.name !== 'setItem' || expr.arguments?.length !== 2) return null
+  const key = toExpr(expr.arguments[0], ctx)
+  const value = toExpr(expr.arguments[1], ctx)
+  if (!isSimpleValue(key) || !isSimpleValue(value)) return null
+  return {
+    type: 'storageSet',
+    store: obj.name === 'sessionStorage' ? 'session' : 'local',
+    key,
+    value,
+  }
+}
+
+/** `event.preventDefault()` / `event.stopPropagation()` → `eventMethod`. */
+function tryMatchEventMethod(expr: Node): JSStatement | null {
+  if (expr?.type !== 'CallExpression' || expr.callee?.type !== 'MemberExpression') return null
+  const obj = expr.callee.object
+  if (obj?.type !== 'Identifier' || obj.name !== 'event') return null
+  const method = expr.callee.property?.name
+  if (
+    (method === 'preventDefault' || method === 'stopPropagation') &&
+    (expr.arguments?.length ?? 0) === 0
+  ) {
+    return { type: 'eventMethod', method }
+  }
+  return null
+}
+
+/** `obj.metodo(arg)` com 1 argumento (usado para destrinchar a cadeia do fetch). */
+function isChainCall(node: Node, method: string): boolean {
+  return (
+    node?.type === 'CallExpression' &&
+    node.callee?.type === 'MemberExpression' &&
+    !node.callee.computed &&
+    node.callee.property?.name === method &&
+    node.arguments?.length === 1
+  )
+}
+
+/** Nome do (único) parâmetro de uma arrow/função: `{}` (sem param) ou `{param}`; null se inválido. */
+function callbackParam(cb: Node): { param?: string } | null {
+  if (cb?.type !== 'ArrowFunctionExpression' && cb?.type !== 'FunctionExpression') return null
+  const params = cb.params ?? []
+  if (params.length === 0) return {}
+  if (params.length === 1 && params[0]?.type === 'Identifier') return { param: params[0].name }
+  return null
+}
+
+/** Confere se o callback é `(r) => r.json()` ou `(r) => { return r.json(); }`. */
+function isJsonCallback(cb: Node): boolean {
+  if (cb?.type !== 'ArrowFunctionExpression' && cb?.type !== 'FunctionExpression') return false
+  const params = cb.params ?? []
+  if (params.length !== 1 || params[0]?.type !== 'Identifier') return false
+  const p = params[0].name
+  let expr = cb.body
+  if (expr?.type === 'BlockStatement') {
+    const stmts = expr.body ?? []
+    if (stmts.length !== 1 || stmts[0]?.type !== 'ReturnStatement') return false
+    expr = stmts[0].argument
+  }
+  return (
+    expr?.type === 'CallExpression' &&
+    expr.callee?.type === 'MemberExpression' &&
+    expr.callee.object?.type === 'Identifier' &&
+    expr.callee.object.name === p &&
+    expr.callee.property?.name === 'json' &&
+    (expr.arguments?.length ?? 0) === 0
+  )
+}
+
+/**
+ * `fetch(url).then(r => r.json()).then((dados) => {…})[.catch((erro) => {…})]`
+ * → `fetchJson`. Desembrulha de fora para dentro: catch (opcional) → then(dados)
+ * → then(json) → fetch(url).
+ */
+function tryMatchFetchJson(expr: Node, source: string, ctx: ParseCtx): JSStatement | null {
+  let node: Node = expr
+  let catchName: string | undefined
+  let catchBody: JSStatement[] | undefined
+  let hasCatch = false
+  if (isChainCall(node, 'catch')) {
+    const cb = node.arguments[0]
+    const param = callbackParam(cb)
+    if (!param) return null
+    catchName = param.param
+    catchBody = bodyOfFn(cb, source, ctx)
+    hasCatch = true
+    node = node.callee.object
+  }
+  // .then((dados) => { … })
+  if (!isChainCall(node, 'then')) return null
+  const dataCb = node.arguments[0]
+  const dataParam = callbackParam(dataCb)
+  if (!dataParam) return null
+  const body = bodyOfFn(dataCb, source, ctx)
+  node = node.callee.object
+  // .then((r) => r.json())
+  if (!isChainCall(node, 'then') || !isJsonCallback(node.arguments[0])) return null
+  node = node.callee.object
+  // fetch(url)
+  if (
+    node?.type !== 'CallExpression' ||
+    node.callee?.type !== 'Identifier' ||
+    node.callee.name !== 'fetch' ||
+    node.arguments?.length !== 1
+  ) {
+    return null
+  }
+  const url = toExpr(node.arguments[0], ctx)
+  if (!isSimpleValue(url)) return null
+  return {
+    type: 'fetchJson',
+    url,
+    okName: dataParam.param ?? 'dados',
+    body,
+    ...(hasCatch ? { ...(catchName ? { catchName } : {}), catchBody: catchBody ?? [] } : {}),
+  }
+}
+
 /** `nome(args)` (callee Identifier) → `callFunction`, se todos os args forem valores. */
 function tryMatchFunctionCall(expr: Node, ctx: ParseCtx): JSStatement | null {
   if (expr?.type !== 'CallExpression' || expr.callee?.type !== 'Identifier') return null
@@ -325,6 +495,7 @@ function mapStatementList(nodes: Node[], source: string, ctx: ParseCtx): JSState
       tryFuseCanvasArc(nodes, i, ctx) ??
       tryFuseCanvasGradient(nodes, i, ctx) ??
       tryFuseAnimationLoop(nodes, i, source, ctx) ??
+      tryFuseGame2DSpriteAssign(nodes, i, ctx) ??
       tryFuseKeyboard(nodes, i, ctx)
     if (fused) {
       out.push(fused.stmt)
@@ -336,123 +507,154 @@ function mapStatementList(nodes: Node[], source: string, ctx: ParseCtx): JSState
     else if (stmt) out.push(stmt)
     i += 1
   }
-  return out
+  // Remove os `getElementById` soltos absorvidos por um `canvasSetup` NESTE
+  // escopo. A descida só funde o par `getElementById` + `getContext('2d')` em
+  // `canvasSetup` quando ambos estão no MESMO corpo; portanto o órfão a remover
+  // também está aqui. Fazer a remoção por escopo (e não só no topo) impede o
+  // `getElementById` morto de crescer a cada ciclo parse→gen→parse dentro de
+  // funções/blocos aninhados (idempotente — ponto fixo do round-trip).
+  return out.filter((s) => !(s.type === 'getElementById' && ctx.canvasElementVars.has(s.varName)))
 }
 
 function mapVariable(node: Node, source: string, ctx: ParseCtx): JSStatement | JSStatement[] {
   const out: JSStatement[] = []
+  // Quando QUALQUER declarador não é representável por um bloco, a declaração
+  // INTEIRA cai em `rawJS` (um único `asRaw` do nó-pai). Slicear apenas o
+  // declarador (`asRaw(source, decl)`) perderia a palavra-chave `const`/`let`/
+  // `var`, que mora no nó-pai `VariableDeclaration` — gerando JS inválido tipo
+  // `{a, b} = obj` ao re-emitir. Um único `asRaw(source, node)` no nó-pai também
+  // evita duplicar a statement em declarações com vários declaradores.
+  for (const decl of node.declarations) {
+    const mapped = mapDeclarator(decl, node, ctx)
+    if (mapped === null) return asRaw(source, node)
+    out.push(...mapped)
+  }
+  return out.length === 1 ? (out[0] as JSStatement) : out
+}
+
+/**
+ * Mapeia UM declarador de uma `VariableDeclaration`. Retorna a lista de
+ * statements representáveis, ou `null` quando o declarador não é representável
+ * por blocos (o chamador então preserva a declaração inteira como `rawJS`,
+ * mantendo a palavra-chave `const`/`let`/`var`). As mutações de `ctx` (registro
+ * de elementos/contextos/instâncias/sprites) são aplicadas em ordem, para que
+ * declaradores seguintes da MESMA statement enxerguem os anteriores.
+ */
+function mapDeclarator(decl: Node, node: Node, ctx: ParseCtx): JSStatement[] | null {
   // `const` vira um bloco de constante; `let`/`var` ficam sem `kind` (= let).
   const kindField: { kind?: 'const' } = node.kind === 'const' ? { kind: 'const' } : {}
-  for (const decl of node.declarations) {
-    // Desestruturação de lista: const [a, b] = lista → várias atribuições por índice.
-    if (decl.id?.type === 'ArrayPattern') {
-      const fromVar = decl.init?.type === 'Identifier' ? (decl.init.name as string) : null
-      const elements = decl.id.elements ?? []
-      if (fromVar && elements.length > 0 && elements.every((e: Node) => e?.type === 'Identifier')) {
-        elements.forEach((el: Node, i: number) => {
-          out.push({
-            type: 'var',
-            name: el.name,
-            value: { type: 'index', arrayVar: fromVar, index: { type: 'num', value: i } },
-            ...kindField,
-          })
-        })
-      } else {
-        out.push(asRaw(source, decl))
-      }
-      continue
+  // Desestruturação de lista: const [a, b] = lista → várias atribuições por índice.
+  if (decl.id?.type === 'ArrayPattern') {
+    const fromVar = decl.init?.type === 'Identifier' ? (decl.init.name as string) : null
+    const elements = decl.id.elements ?? []
+    if (fromVar && elements.length > 0 && elements.every((e: Node) => e?.type === 'Identifier')) {
+      return elements.map((el: Node, i: number) => ({
+        type: 'var',
+        name: el.name,
+        value: { type: 'index', arrayVar: fromVar, index: { type: 'num', value: i } },
+        ...kindField,
+      }))
     }
-    if (decl.id?.type !== 'Identifier') {
-      out.push(asRaw(source, decl))
-      continue
+    return null
+  }
+  if (decl.id?.type !== 'Identifier') return null
+  const name: string = decl.id.name
+  const init = decl.init
+  // getElementById: const x = document.getElementById('id')
+  const byId = matchGetElementById(init)
+  if (byId) {
+    ctx.elementVars.set(name, byId)
+    return [{ type: 'getElementById', id: byId, varName: name }]
+  }
+  // querySelector / querySelectorAll: const x = document.querySelector[All]('sel')
+  if (
+    init?.type === 'CallExpression' &&
+    init.callee?.type === 'MemberExpression' &&
+    init.callee.object?.name === 'document' &&
+    (init.callee.property?.name === 'querySelector' ||
+      init.callee.property?.name === 'querySelectorAll') &&
+    init.arguments?.length === 1 &&
+    init.arguments[0].type === 'StringLiteral'
+  ) {
+    const type =
+      init.callee.property.name === 'querySelectorAll' ? 'querySelectorAll' : 'querySelector'
+    return [{ type, selector: init.arguments[0].value, varName: name }]
+  }
+  // createElement: const x = document.createElement('div')
+  const createdTag = matchCreateElement(init)
+  if (createdTag !== null) {
+    ctx.elementVars.set(name, name)
+    return [{ type: 'createElement', tag: createdTag, varName: name }]
+  }
+  // canvasSetup: const ctx = <canvasVar>.getContext('2d'), onde <canvasVar>
+  // veio de um getElementById anterior. Funde o par numa única IR canvasSetup.
+  const canvasVar = matchGetContext(init)
+  if (canvasVar) {
+    const canvasId = ctx.elementVars.get(canvasVar)
+    if (canvasId !== undefined) {
+      ctx.canvasElementVars.add(canvasVar)
+      ctx.ctxVars.add(name)
+      ctx.elementToCtx.set(canvasVar, name)
+      return [{ type: 'canvasSetup', canvasId, varName: name }]
     }
-    const name: string = decl.id.name
-    const init = decl.init
-    // getElementById: const x = document.getElementById('id')
-    const byId = matchGetElementById(init)
-    if (byId) {
-      ctx.elementVars.set(name, byId)
-      out.push({ type: 'getElementById', id: byId, varName: name })
-      continue
-    }
-    // querySelector: const x = document.querySelector('sel')
-    if (
-      init?.type === 'CallExpression' &&
-      init.callee?.type === 'MemberExpression' &&
-      init.callee.object?.name === 'document' &&
-      init.callee.property?.name === 'querySelector' &&
-      init.arguments?.length === 1 &&
-      init.arguments[0].type === 'StringLiteral'
-    ) {
-      out.push({ type: 'querySelector', selector: init.arguments[0].value, varName: name })
-      continue
-    }
-    // createElement: const x = document.createElement('div')
-    const createdTag = matchCreateElement(init)
-    if (createdTag !== null) {
-      ctx.elementVars.set(name, name)
-      out.push({ type: 'createElement', tag: createdTag, varName: name })
-      continue
-    }
-    // canvasSetup: const ctx = <canvasVar>.getContext('2d'), onde <canvasVar>
-    // veio de um getElementById anterior. Funde o par numa única IR canvasSetup.
-    const canvasVar = matchGetContext(init)
-    if (canvasVar) {
-      const canvasId = ctx.elementVars.get(canvasVar)
-      if (canvasId !== undefined) {
-        ctx.canvasElementVars.add(canvasVar)
-        ctx.ctxVars.add(name)
-        ctx.elementToCtx.set(canvasVar, name)
-        out.push({ type: 'canvasSetup', canvasId, varName: name })
-        continue
-      }
-    }
-    // getProperty: const x = el.textContent | el.value
-    // (ou document.getElementById('id').textContent)
-    const prop = matchGetProperty(init, ctx)
-    if (prop) {
-      out.push({ type: 'getProperty', ...prop, varName: name })
-      continue
-    }
-    // newInstance: const x = new Classe(args). Date/Image têm tratamento próprio.
-    if (
-      init?.type === 'NewExpression' &&
-      init.callee?.type === 'Identifier' &&
-      init.callee.name !== 'Date' &&
-      init.callee.name !== 'Image'
-    ) {
-      const args = (init.arguments ?? []).map((a: Node) => toExpr(a, ctx))
-      if (args.every(isSimpleValue)) {
-        ctx.instanceVars.add(name)
-        out.push({
+  }
+  // getProperty: const x = el.textContent | el.value
+  // (ou document.getElementById('id').textContent)
+  const prop = matchGetProperty(init, ctx)
+  if (prop) {
+    return [{ type: 'getProperty', ...prop, varName: name }]
+  }
+  // newInstance: const x = new Classe(args). Date/Image têm tratamento próprio.
+  if (
+    init?.type === 'NewExpression' &&
+    init.callee?.type === 'Identifier' &&
+    init.callee.name !== 'Date' &&
+    init.callee.name !== 'Image'
+  ) {
+    const args = (init.arguments ?? []).map((a: Node) => toExpr(a, ctx))
+    if (args.every(isSimpleValue)) {
+      ctx.instanceVars.add(name)
+      return [
+        {
           type: 'newInstance',
           varName: name,
           className: init.callee.name,
           args: args as JSExpr[],
-        })
-      } else {
-        out.push(asRaw(source, node))
-      }
-      continue
+        },
+      ]
     }
-    if (init == null) {
-      // `let x;` — declaração sem valor inicial (sz_js_var_declare).
-      out.push({ type: 'declareVar', name })
-    } else if (init.type === 'NumericLiteral') {
-      out.push({ type: 'var', name, value: { type: 'num', value: init.value }, ...kindField })
-    } else if (init?.type === 'StringLiteral') {
-      out.push({ type: 'var', name, value: { type: 'str', value: init.value }, ...kindField })
-    } else if (init?.type === 'BooleanLiteral') {
-      out.push({ type: 'var', name, value: { type: 'bool', value: init.value }, ...kindField })
-    } else {
-      // Demais inicializadores (contas, Math.*, variável, etc.): viram um `var`
-      // se o valor for representável por um bloco; senão preserva como avançado.
-      const value = toExpr(init, ctx)
-      if (isSimpleValue(value)) out.push({ type: 'var', name, value, ...kindField })
-      else out.push(asRaw(source, node))
-    }
+    return null
   }
-  return out.length === 1 ? (out[0] as JSStatement) : out
+  // game-2d: const s = SZGame2D.createSprite({...}) / const b = SZGame2D.isColliding(a, b)
+  // / SZGame2D.circleCollides(a, b). Antes do cascade de literais.
+  const g2dVar = tryMatchGame2DVarInit(name, init, ctx)
+  if (g2dVar) return [g2dVar]
+  // game-3d: const cena = SZGame3D.createScene("id") / const caixa = SZGame3D.createBox(cena, {...})
+  // / const bola = SZGame3D.createSphere(cena, {...}). Também antes do cascade de literais.
+  const g3dVar = tryMatchGame3DVarInit(name, init, ctx)
+  if (g3dVar) return [g3dVar]
+  if (init == null) {
+    // `let x;` — declaração sem valor inicial (sz_js_var_declare).
+    return [{ type: 'declareVar', name }]
+  }
+  if (init.type === 'NumericLiteral' && Number.isFinite(init.value)) {
+    // O guard `Number.isFinite` é essencial: `1e1000` é parseado como
+    // `Infinity` e este atalho NÃO passa por `asRaw`. Sem ele, o valor não
+    // finito vazaria como `num` e o gerador o reescreveria como `0` — então
+    // deixamos cair no `else` genérico (toExpr → null → asRaw, texto preservado).
+    return [{ type: 'var', name, value: { type: 'num', value: init.value }, ...kindField }]
+  }
+  if (init?.type === 'StringLiteral') {
+    return [{ type: 'var', name, value: { type: 'str', value: init.value }, ...kindField }]
+  }
+  if (init?.type === 'BooleanLiteral') {
+    return [{ type: 'var', name, value: { type: 'bool', value: init.value }, ...kindField }]
+  }
+  // Demais inicializadores (contas, Math.*, variável, etc.): viram um `var`
+  // se o valor for representável por um bloco; senão preserva como avançado.
+  const value = toExpr(init, ctx)
+  if (isSimpleValue(value)) return [{ type: 'var', name, value, ...kindField }]
+  return null
 }
 
 function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSStatement {
@@ -469,7 +671,9 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
     if (arg.type === 'StringLiteral') {
       return { type: 'consoleLog', value: { type: 'str', value: arg.value } }
     }
-    if (arg.type === 'NumericLiteral') {
+    // Number.isFinite: 1e1000 (Infinity) serializa como null e o gerador o
+    // emitiria como 0 — cai no asRaw para preservar o texto original (ver #17).
+    if (arg.type === 'NumericLiteral' && Number.isFinite(arg.value)) {
       return { type: 'consoleLog', value: { type: 'num', value: arg.value } }
     }
     if (arg.type === 'Identifier') {
@@ -489,7 +693,7 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
     if (arg.type === 'StringLiteral') {
       return { type: 'alert', value: { type: 'str', value: arg.value } }
     }
-    if (arg.type === 'NumericLiteral') {
+    if (arg.type === 'NumericLiteral' && Number.isFinite(arg.value)) {
       return { type: 'alert', value: { type: 'num', value: arg.value } }
     }
     if (arg.type === 'Identifier') {
@@ -637,6 +841,18 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
     }
   }
 
+  // localStorage.setItem(chave, valor) / sessionStorage.setItem(...)
+  const storageSet = tryMatchStorageSet(expr, ctx)
+  if (storageSet) return storageSet
+
+  // event.preventDefault() / event.stopPropagation()
+  const eventMethod = tryMatchEventMethod(expr)
+  if (eventMethod) return eventMethod
+
+  // fetch(url).then(r => r.json()).then((dados) => {…}).catch((erro) => {…})
+  const fetchJson = tryMatchFetchJson(expr, source, ctx)
+  if (fetchJson) return fetchJson
+
   // document.getElementById('x')?.classList.{add|remove|toggle}('cls')  (ou via variável)
   const cls = tryMatchClassList(expr, ctx)
   if (cls) {
@@ -676,6 +892,18 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
   // setInterval(() => { … }, ms)
   const interval = tryMatchSetInterval(expr, source, ctx)
   if (interval) return interval
+
+  // game-2d: SZGame2D.gameLoop(function update(){…}) / onPointer((px,py)=>{…}) e
+  // helpers de uma linha (drawSprite, moveByKeys, applyVelocity, bounceOnEdges,
+  // setGravity, playSound). ANTES do método genérico — senão viram memberCall.
+  const g2dCall = tryMatchGame2DCall(expr, source, ctx)
+  if (g2dCall) return g2dCall
+
+  // game-3d: SZGame3D.animate(cena, () => {…}) e helpers de uma linha
+  // (setBackground, setCameraPosition, setPosition, setRotation). Idem: ANTES do
+  // método genérico — senão viram memberCall.
+  const g3dCall = tryMatchGame3DCall(expr, source, ctx)
+  if (g3dCall) return g3dCall
 
   // objeto.metodo(args) — chamada de método de um objeto guardado em variável.
   const methodCall = tryMatchMethodCall(expr, ctx)
@@ -843,6 +1071,353 @@ function tryMatchMethodCall(expr: Node, ctx: ParseCtx): JSStatement | null {
   const args = (expr.arguments ?? []).map((a: Node) => toExpr(a, ctx))
   if (!args.every(isSimpleValue)) return null
   return { type: 'memberCall', object, method: callee.property.name, args: args as JSExpr[] }
+}
+
+// ---------- game-2d: reverse-parse dos helpers SZGame2D.* ----------
+// O gerador emite `SZGame2D.gameLoop(function update(){…})`, `SZGame2D.drawSprite
+// (ctx, s)` etc. Estes matchers reconhecem esse código de volta nos blocos g2d:*
+// (modo Ponte). Espelham generators/js.ts — qualquer mudança de assinatura lá
+// precisa refletir aqui. Casos `const x = SZGame2D.createSprite/isColliding/...`
+// ficam em tryMatchGame2DVarInit; `s.vx=;s.vy=;`/`s.x=;s.y=;` em tryFuseGame2DSpriteAssign.
+
+/** Nome de um `Identifier`; senão null. */
+function identifierName(node: Node): string | null {
+  return node?.type === 'Identifier' ? (node.name as string) : null
+}
+
+/** Literal numérico (aceita `-N`); senão null. */
+function numericLiteralValue(node: Node): number | null {
+  if (node?.type === 'NumericLiteral') return node.value as number
+  if (
+    node?.type === 'UnaryExpression' &&
+    node.operator === '-' &&
+    node.argument?.type === 'NumericLiteral'
+  ) {
+    return -(node.argument.value as number)
+  }
+  return null
+}
+
+/** `SZGame2D.<metodo>(args)` → `{ method, args }` se o objeto for exatamente SZGame2D. */
+function asSZGame2DCall(expr: Node): { method: string; args: Node[] } | null {
+  if (expr?.type !== 'CallExpression') return null
+  const callee = expr.callee
+  if (callee?.type !== 'MemberExpression' || callee.computed) return null
+  if (callee.object?.type !== 'Identifier' || callee.object.name !== 'SZGame2D') return null
+  if (callee.property?.type !== 'Identifier') return null
+  return { method: callee.property.name as string, args: expr.arguments ?? [] }
+}
+
+/** Lê `{ x, y, w, h, color }` de um literal de objeto. null se alguma chave for não-literal/desconhecida. */
+function readSpriteOptions(
+  obj: Node,
+): { x: number; y: number; w: number; h: number; color: string } | null {
+  const result = { x: 0, y: 0, w: 32, h: 32, color: '#22d3ee' }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'x' || key === 'y' || key === 'w' || key === 'h') {
+      const v = numericLiteralValue(prop.value)
+      if (v === null) return null
+      result[key] = v
+    } else if (key === 'color') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      result.color = prop.value.value as string
+    } else if (key === 'vx' || key === 'vy') {
+      // createSprite aceita vx/vy no runtime, mas o bloco não os guarda. Tolera
+      // se forem literais (ignora); não-literal não é representável → bail.
+      if (numericLiteralValue(prop.value) === null) return null
+    } else {
+      return null
+    }
+  }
+  return result
+}
+
+/** SZGame2D.gameLoop/onPointer/drawSprite/moveByKeys/applyVelocity/bounceOnEdges/setGravity/playSound. */
+function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatement | null {
+  const call = asSZGame2DCall(expr)
+  if (!call) return null
+  const { method, args } = call
+  const isFn = (n: Node) =>
+    n?.type === 'FunctionExpression' || n?.type === 'ArrowFunctionExpression'
+
+  switch (method) {
+    case 'gameLoop': {
+      if (!isFn(args[0])) return null
+      return { type: 'g2d:updateEachFrame', body: bodyOfFn(args[0], source, ctx) }
+    }
+    case 'onPointer': {
+      if (!isFn(args[0])) return null
+      const params = args[0].params ?? []
+      return {
+        type: 'g2d:onPointer',
+        xName: identifierName(params[0]) ?? 'px',
+        yName: identifierName(params[1]) ?? 'py',
+        body: bodyOfFn(args[0], source, ctx),
+      }
+    }
+    case 'drawSprite': {
+      // generator: SZGame2D.drawSprite(ctx, sprite)
+      const ctxVar = identifierName(args[0])
+      const spriteVar = identifierName(args[1])
+      return ctxVar && spriteVar ? { type: 'g2d:drawSprite', spriteVar, ctxVar } : null
+    }
+    case 'moveByKeys': {
+      const spriteVar = identifierName(args[0])
+      const speed = numericLiteralValue(args[1])
+      return spriteVar && speed !== null ? { type: 'g2d:moveByKeys', spriteVar, speed } : null
+    }
+    case 'applyVelocity': {
+      const spriteVar = identifierName(args[0])
+      return spriteVar ? { type: 'g2d:applyVelocity', spriteVar } : null
+    }
+    case 'bounceOnEdges': {
+      // generator: SZGame2D.bounceOnEdges(sprite, ctx)
+      const spriteVar = identifierName(args[0])
+      const ctxVar = identifierName(args[1])
+      return spriteVar && ctxVar ? { type: 'g2d:bounceOnEdges', spriteVar, ctxVar } : null
+    }
+    case 'setGravity': {
+      const value = numericLiteralValue(args[0])
+      return value !== null ? { type: 'g2d:setGravity', value } : null
+    }
+    case 'playSound': {
+      const freq = numericLiteralValue(args[0])
+      const durationMs = numericLiteralValue(args[1])
+      return freq !== null && durationMs !== null
+        ? { type: 'g2d:playSound', freq, durationMs }
+        : null
+    }
+    default:
+      // createSprite/isColliding/circleCollides são var-init (tryMatchGame2DVarInit);
+      // como chamada solta caem no método genérico.
+      return null
+  }
+}
+
+/** `const x = SZGame2D.createSprite({...}) | isColliding(a,b) | circleCollides(a,b)`. */
+function tryMatchGame2DVarInit(name: string, init: Node, ctx: ParseCtx): JSStatement | null {
+  const call = asSZGame2DCall(init)
+  if (!call) return null
+  const { method, args } = call
+  if (method === 'isColliding' || method === 'circleCollides') {
+    const aVar = identifierName(args[0])
+    const bVar = identifierName(args[1])
+    if (!aVar || !bVar) return null
+    const type = method === 'circleCollides' ? 'g2d:circleCollides' : 'g2d:collides'
+    return { type, aVar, bVar, varName: name }
+  }
+  if (method === 'createSprite') {
+    if (args[0]?.type !== 'ObjectExpression') return null
+    const sprite = readSpriteOptions(args[0])
+    if (!sprite) return null
+    ctx.spriteVars.add(name)
+    return { type: 'g2d:createSprite', varName: name, ...sprite }
+  }
+  return null
+}
+
+/** `<sprite>.<prop> = <expr>;` onde `<sprite>` é um sprite conhecido. */
+function matchSpriteMemberAssign(
+  node: Node,
+  ctx: ParseCtx,
+  prop: 'vx' | 'vy' | 'x' | 'y',
+): { spriteVar: string; value: JSExpr } | null {
+  if (node?.type !== 'ExpressionStatement') return null
+  const expr = node.expression
+  if (expr?.type !== 'AssignmentExpression' || expr.operator !== '=') return null
+  const left = expr.left
+  if (left?.type !== 'MemberExpression' || left.computed) return null
+  if (left.object?.type !== 'Identifier' || left.property?.type !== 'Identifier') return null
+  if (left.property.name !== prop) return null
+  const spriteVar = left.object.name as string
+  if (!ctx.spriteVars.has(spriteVar)) return null
+  const value = toExpr(expr.right, ctx)
+  return isSimpleValue(value) ? { spriteVar, value: value as JSExpr } : null
+}
+
+/** `s.vx = …; s.vy = …;` → `g2d:setVelocity`; `s.x = …; s.y = …;` → `g2d:setPosition`. */
+function tryFuseGame2DSpriteAssign(nodes: Node[], i: number, ctx: ParseCtx): FusedStatement | null {
+  const vx = matchSpriteMemberAssign(nodes[i], ctx, 'vx')
+  if (vx) {
+    const vy = matchSpriteMemberAssign(nodes[i + 1], ctx, 'vy')
+    if (vy && vy.spriteVar === vx.spriteVar) {
+      return {
+        stmt: { type: 'g2d:setVelocity', spriteVar: vx.spriteVar, vx: vx.value, vy: vy.value },
+        consumed: 2,
+      }
+    }
+  }
+  const px = matchSpriteMemberAssign(nodes[i], ctx, 'x')
+  if (px) {
+    const py = matchSpriteMemberAssign(nodes[i + 1], ctx, 'y')
+    if (py && py.spriteVar === px.spriteVar) {
+      return {
+        stmt: { type: 'g2d:setPosition', spriteVar: px.spriteVar, x: px.value, y: py.value },
+        consumed: 2,
+      }
+    }
+  }
+  return null
+}
+
+// ---------- game-3d: reverse-parse dos helpers SZGame3D.* ----------
+// O gerador emite `const cena = SZGame3D.createScene("tela")`, `SZGame3D.animate
+// (cena, () => {…})`, `SZGame3D.setRotation(obj, x, y, z)` etc. Estes matchers
+// reconhecem esse código de volta nos blocos g3d:* (modo Ponte), espelhando os
+// sites de emissão em generators/js.ts — qualquer mudança de assinatura lá precisa
+// refletir aqui. Casos `const x = SZGame3D.createScene/createBox/createSphere(...)`
+// ficam em tryMatchGame3DVarInit; os demais (chamada solta) em tryMatchGame3DCall.
+
+/** `SZGame3D.<metodo>(args)` → `{ method, args }` se o objeto for exatamente SZGame3D. */
+function asSZGame3DCall(expr: Node): { method: string; args: Node[] } | null {
+  if (expr?.type !== 'CallExpression') return null
+  const callee = expr.callee
+  if (callee?.type !== 'MemberExpression' || callee.computed) return null
+  if (callee.object?.type !== 'Identifier' || callee.object.name !== 'SZGame3D') return null
+  if (callee.property?.type !== 'Identifier') return null
+  return { method: callee.property.name as string, args: expr.arguments ?? [] }
+}
+
+/** Lê `{ size, color }` de um literal de objeto. null se alguma chave for não-literal/desconhecida. */
+function readBoxOptions(obj: Node): { size: number; color: string } | null {
+  const result = { size: 1, color: '#22d3ee' }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'size') {
+      const v = numericLiteralValue(prop.value)
+      if (v === null) return null
+      result.size = v
+    } else if (key === 'color') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      result.color = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return result
+}
+
+/** Lê `{ radius, color }` de um literal de objeto. null se alguma chave for não-literal/desconhecida. */
+function readSphereOptions(obj: Node): { radius: number; color: string } | null {
+  const result = { radius: 0.5, color: '#f59e0b' }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'radius') {
+      const v = numericLiteralValue(prop.value)
+      if (v === null) return null
+      result.radius = v
+    } else if (key === 'color') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      result.color = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return result
+}
+
+/**
+ * SZGame3D.setBackground/setCameraPosition/setPosition/setRotation/animate como
+ * statement. ANTES do método genérico — senão viram memberCall. As coordenadas
+ * (x/y/z) precisam ser valores representáveis; senão a linha cai em código avançado.
+ */
+function tryMatchGame3DCall(expr: Node, source: string, ctx: ParseCtx): JSStatement | null {
+  const call = asSZGame3DCall(expr)
+  if (!call) return null
+  const { method, args } = call
+  const isFn = (n: Node) =>
+    n?.type === 'FunctionExpression' || n?.type === 'ArrowFunctionExpression'
+
+  switch (method) {
+    case 'setBackground': {
+      // generator: SZGame3D.setBackground(world, "#cor")
+      const worldVar = identifierName(args[0])
+      if (!worldVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'g3d:setBackground', worldVar, color: args[1].value as string }
+    }
+    case 'setCameraPosition': {
+      // generator: SZGame3D.setCameraPosition(world, x, y, z)
+      const worldVar = identifierName(args[0])
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      const z = toExpr(args[3], ctx)
+      if (!worldVar || !isSimpleValue(x) || !isSimpleValue(y) || !isSimpleValue(z)) return null
+      return { type: 'g3d:setCameraPosition', worldVar, x, y, z }
+    }
+    case 'setPosition': {
+      // generator: SZGame3D.setPosition(obj, x, y, z)
+      const objVar = identifierName(args[0])
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      const z = toExpr(args[3], ctx)
+      if (!objVar || !isSimpleValue(x) || !isSimpleValue(y) || !isSimpleValue(z)) return null
+      return { type: 'g3d:setPosition', objVar, x, y, z }
+    }
+    case 'setRotation': {
+      // generator: SZGame3D.setRotation(obj, x, y, z)
+      const objVar = identifierName(args[0])
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      const z = toExpr(args[3], ctx)
+      if (!objVar || !isSimpleValue(x) || !isSimpleValue(y) || !isSimpleValue(z)) return null
+      return { type: 'g3d:setRotation', objVar, x, y, z }
+    }
+    case 'animate': {
+      // generator: SZGame3D.animate(world, () => {…})
+      const worldVar = identifierName(args[0])
+      if (!worldVar || !isFn(args[1])) return null
+      return { type: 'g3d:animate', worldVar, body: bodyOfFn(args[1], source, ctx) }
+    }
+    default:
+      // createScene/createBox/createSphere são var-init (tryMatchGame3DVarInit);
+      // como chamada solta caem no método genérico.
+      return null
+  }
+}
+
+/** `const x = SZGame3D.createScene("id") | createBox(world,{…}) | createSphere(world,{…})`. */
+function tryMatchGame3DVarInit(name: string, init: Node, _ctx: ParseCtx): JSStatement | null {
+  const call = asSZGame3DCall(init)
+  if (!call) return null
+  const { method, args } = call
+  if (method === 'createScene') {
+    if (args[0]?.type !== 'StringLiteral') return null
+    return { type: 'g3d:createScene', canvasId: args[0].value as string, varName: name }
+  }
+  if (method === 'createBox') {
+    const worldVar = identifierName(args[0])
+    if (!worldVar || args[1]?.type !== 'ObjectExpression') return null
+    const box = readBoxOptions(args[1])
+    if (!box) return null
+    return { type: 'g3d:createBox', varName: name, worldVar, ...box }
+  }
+  if (method === 'createSphere') {
+    const worldVar = identifierName(args[0])
+    if (!worldVar || args[1]?.type !== 'ObjectExpression') return null
+    const sphere = readSphereOptions(args[1])
+    if (!sphere) return null
+    return { type: 'g3d:createSphere', varName: name, worldVar, ...sphere }
+  }
+  return null
 }
 
 // ---------- canvas: matchers de chamada ----------
@@ -1321,8 +1896,25 @@ function mapIf(node: Node, source: string, ctx: ParseCtx): JSStatement {
   }
 }
 
+function mapForOf(node: Node, source: string, ctx: ParseCtx): JSStatement {
+  // for (const item of lista) { ... } — left = const/let de UM Identifier simples,
+  // right = Identifier (variável da lista). Demais formas viram código avançado.
+  const left = node.left
+  if (left?.type !== 'VariableDeclaration' || left.declarations?.length !== 1) {
+    return asRaw(source, node)
+  }
+  const id = left.declarations[0]?.id
+  if (id?.type !== 'Identifier' || node.right?.type !== 'Identifier') return asRaw(source, node)
+  return {
+    type: 'forOf',
+    itemName: id.name,
+    iterableVar: node.right.name,
+    body: bodyOfBlock(node.body, source, ctx),
+  }
+}
+
 function mapFor(node: Node, source: string, ctx: ParseCtx): JSStatement {
-  // for (let i = 0; i < N; i++) { ... }
+  // for (let v = <de>; v < <ate>; v++ | v += <passo> | v = v + <passo>) { ... }
   const init = node.init
   const test = node.test
   const update = node.update
@@ -1330,32 +1922,100 @@ function mapFor(node: Node, source: string, ctx: ParseCtx): JSStatement {
     init?.type !== 'VariableDeclaration' ||
     init.declarations?.length !== 1 ||
     init.declarations[0]?.id?.type !== 'Identifier' ||
-    init.declarations[0]?.init?.type !== 'NumericLiteral' ||
-    init.declarations[0].init.value !== 0
+    !init.declarations[0].init
   ) {
     return asRaw(source, node)
   }
   const iName = init.declarations[0].id.name
+  const from = toExpr(init.declarations[0].init, ctx)
+  if (!isSimpleValue(from)) return asRaw(source, node)
+
   if (
     test?.type !== 'BinaryExpression' ||
     test.operator !== '<' ||
     test.left?.type !== 'Identifier' ||
-    test.left.name !== iName ||
-    test.right?.type !== 'NumericLiteral'
+    test.left.name !== iName
   ) {
     return asRaw(source, node)
   }
-  const times = test.right.value as number
+  const to = toExpr(test.right, ctx)
+  if (!isSimpleValue(to)) return asRaw(source, node)
+
+  // Passo: i++ (1), i += <expr>, ou i = i + <expr>.
+  let step: JSExpr | null = null
   if (
-    update?.type !== 'UpdateExpression' ||
-    update.operator !== '++' ||
-    update.argument?.type !== 'Identifier' ||
-    update.argument.name !== iName
+    update?.type === 'UpdateExpression' &&
+    update.operator === '++' &&
+    update.argument?.type === 'Identifier' &&
+    update.argument.name === iName
   ) {
-    return asRaw(source, node)
+    step = { type: 'num', value: 1 }
+  } else if (
+    update?.type === 'AssignmentExpression' &&
+    update.operator === '+=' &&
+    update.left?.type === 'Identifier' &&
+    update.left.name === iName
+  ) {
+    step = toExpr(update.right, ctx)
+  } else if (
+    update?.type === 'AssignmentExpression' &&
+    update.operator === '=' &&
+    update.left?.type === 'Identifier' &&
+    update.left.name === iName &&
+    update.right?.type === 'BinaryExpression' &&
+    update.right.operator === '+' &&
+    update.right.left?.type === 'Identifier' &&
+    update.right.left.name === iName
+  ) {
+    step = toExpr(update.right.right, ctx)
   }
+  if (!isSimpleValue(step)) return asRaw(source, node)
+
   const body = bodyOfBlock(node.body, source, ctx)
-  return { type: 'repeat', times: { type: 'num', value: times }, body }
+
+  // Match EXATO do bloco "repeat" (de 0, até número, passo 1) tem PRIORIDADE —
+  // preserva o round-trip do sz_js_repeat.
+  if (
+    from.type === 'num' &&
+    from.value === 0 &&
+    to.type === 'num' &&
+    step.type === 'num' &&
+    step.value === 1
+  ) {
+    return { type: 'repeat', times: to, body }
+  }
+  return { type: 'forRange', varName: iName, from, to, step, body }
+}
+
+function mapWhile(node: Node, source: string, ctx: ParseCtx): JSStatement {
+  // while (<condição>) { ... } — condição precisa ser um valor representável.
+  const cond = toExpr(node.test, ctx)
+  if (!isSimpleValue(cond)) return asRaw(source, node)
+  return { type: 'while', cond, body: bodyOfBlock(node.body, source, ctx) }
+}
+
+function mapDoWhile(node: Node, source: string, ctx: ParseCtx): JSStatement {
+  // do { ... } while (<condição>)
+  const cond = toExpr(node.test, ctx)
+  if (!isSimpleValue(cond)) return asRaw(source, node)
+  return { type: 'doWhile', cond, body: bodyOfBlock(node.body, source, ctx) }
+}
+
+function mapTry(node: Node, source: string, ctx: ParseCtx): JSStatement {
+  // try { ... } catch (e) { ... } [finally { ... }]. Exige um catch (o bloco
+  // sempre tem o ramo "se der erro"); try sem catch (só finally) vira avançado.
+  if (!node.handler) return asRaw(source, node)
+  const param = node.handler.param
+  if (param && param.type !== 'Identifier') return asRaw(source, node)
+  const errorName: string | undefined = param ? param.name : undefined
+  const finalizer = node.finalizer ? bodyOfBlock(node.finalizer, source, ctx) : undefined
+  return {
+    type: 'tryCatch',
+    body: bodyOfBlock(node.block, source, ctx),
+    ...(errorName ? { errorName } : {}),
+    handler: bodyOfBlock(node.handler.body, source, ctx),
+    ...(finalizer ? { finalizer } : {}),
+  }
 }
 
 // ---------- helpers de matching ----------
@@ -1378,17 +2038,34 @@ function tryMatchBinop(expr: Node, ctx?: ParseCtx): JSExpr | null {
 
 function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
   if (!node) return null
-  if (node.type === 'NumericLiteral') return { type: 'num', value: node.value }
+  if (node.type === 'NumericLiteral') {
+    // Literais que estouram (`1e1000`) o Babel parseia como `Infinity` sem erro.
+    // `Infinity` serializa para `null` no JSON e o gerador o mapeia para `0`, o
+    // que MUDA o valor — então devolvemos `null` aqui para a linha cair em
+    // `asRaw` e o texto-fonte original ser preservado ("código é sagrado").
+    if (!Number.isFinite(node.value)) return null
+    return { type: 'num', value: node.value }
+  }
   if (node.type === 'StringLiteral') {
     // `rgba(r, g, b, a)` → cor com transparência (volta ao bloco sz_val_color_alpha).
     const rgba = /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*([\d.]+)\s*\)$/.exec(
       node.value,
     )
     if (rgba) {
-      const hex = `#${[rgba[1], rgba[2], rgba[3]]
-        .map((n) => Number(n).toString(16).padStart(2, '0'))
-        .join('')}`
-      return { type: 'colorAlpha', hex, alpha: Number(rgba[4]) }
+      // Valida os canais (0–255) e o alpha (número finito em [0,1] com um único
+      // ponto decimal). Sem isso, `rgba(999,0,0,1)` geraria um hex de 3 dígitos
+      // que o gerador re-fatia numa cor DIFERENTE, e `rgba(0,0,0,1.2.3)` viraria
+      // `alpha: NaN`. Se algo falhar, preserva o literal original verbatim como
+      // string ("código é sagrado").
+      const channels = [rgba[1], rgba[2], rgba[3]].map((n) => Number(n))
+      const alpha = Number(rgba[4])
+      const dotCount = rgba[4]?.match(/\./g)?.length ?? 0
+      const channelsOk = channels.every((n) => n <= 255)
+      const alphaOk = dotCount <= 1 && Number.isFinite(alpha) && alpha >= 0 && alpha <= 1
+      if (channelsOk && alphaOk) {
+        const hex = `#${channels.map((n) => n.toString(16).padStart(2, '0')).join('')}`
+        return { type: 'colorAlpha', hex, alpha }
+      }
     }
     // Uma string hexadecimal `#rrggbb` é tratada como COR (volta ao bloco seletor
     // de cor, `sz_val_color`). Como `color` e `str` geram o mesmo código, no pior
@@ -1475,6 +2152,25 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
   // (arg * Math.PI / 180) / (arg * 180 / Math.PI) → conversão de ângulo.
   const angle = matchAngleConvert(node, ctx)
   if (angle) return angle
+  // localStorage.getItem(chave) / sessionStorage.getItem(chave) → storageGet.
+  if (node.type === 'CallExpression' && node.callee?.type === 'MemberExpression') {
+    const obj = node.callee.object
+    if (
+      obj?.type === 'Identifier' &&
+      (obj.name === 'localStorage' || obj.name === 'sessionStorage') &&
+      node.callee.property?.name === 'getItem' &&
+      node.arguments?.length === 1
+    ) {
+      const key = toExpr(node.arguments[0], ctx)
+      if (isSimpleValue(key)) {
+        return {
+          type: 'storageGet',
+          store: obj.name === 'sessionStorage' ? 'session' : 'local',
+          key,
+        }
+      }
+    }
+  }
   if (node.type === 'BinaryExpression') return tryMatchBinop(node, ctx)
   // `a && b` / `a || b` → operador lógico (sz_val_logic). Aninha cadeias longas.
   if (node.type === 'LogicalExpression') {
@@ -1675,6 +2371,8 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'mathConst':
     case 'eventProp':
       return true
+    case 'storageGet':
+      return isSimpleValue(expr.key)
     case 'random':
       return isSimpleValue(expr.min) && isSimpleValue(expr.max)
     case 'hslColor':
@@ -2075,9 +2773,16 @@ function extractTarget(node: Node, _ctx: ParseCtx): TargetRef | null {
   if (byId !== null) return { id: byId }
   // this — o elemento atual dentro de um handler.
   if (node.type === 'ThisExpression') return { id: '', kind: 'this' }
-  // document (eventos globais: keydown/keyup/etc)
+  // `document` CRU (não `document.getElementById`/`addEventListener`, tratados
+  // antes e separadamente): NÃO é um elemento. Devolver o sentinela `__document__`
+  // fazia `document.classList`/`dataset`/property virarem
+  // `getElementById("__document__")` (alvo inexistente → no-op) no round-trip da
+  // Ponte; tratá-lo como 'var' arriscaria reescrever em matchers onde isso não
+  // vale. Retornamos null → o statement inteiro cai em `rawJS` verbatim ("código é
+  // sagrado"). O caminho de evento global (`document.addEventListener`) já é
+  // resolvido em `tryMatchEventListener` ANTES de chegar aqui.
   if (node.type === 'Identifier' && node.name === 'document') {
-    return { id: '__document__' }
+    return null
   }
   // qualquer outra variável: assume que guarda um elemento (ex.: const x =
   // document.querySelector(...)) e referencia a própria variável.

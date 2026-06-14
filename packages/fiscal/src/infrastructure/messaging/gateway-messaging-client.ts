@@ -20,7 +20,7 @@ export function createGatewayMessagingClient(opts: {
   const doFetch = opts.fetchImpl ?? fetch
 
   return {
-    async sendInvoiceEmail(input: SendInvoiceEmailInput): Promise<void> {
+    async sendInvoiceEmail(input: SendInvoiceEmailInput): Promise<boolean> {
       const rawBody = JSON.stringify({
         channel: 'email',
         templateKey: 'nfse-emitida',
@@ -52,15 +52,17 @@ export function createGatewayMessagingClient(opts: {
         const body = await res.text().catch(() => '')
         throw new Error(`messaging/send falhou: ${res.status} ${body.slice(0, 300)}`)
       }
+      return true
     },
   }
 }
 
-/** No-op p/ dev/teste sem gateway (o envio é best-effort de qualquer forma). */
+/** No-op p/ dev/teste sem gateway: retorna `false` (NÃO marca emailSentAt). */
 export function createNullMessagingClient(logger?: Logger): MessagingClient {
   return {
-    async sendInvoiceEmail(input: SendInvoiceEmailInput): Promise<void> {
+    async sendInvoiceEmail(input: SendInvoiceEmailInput): Promise<boolean> {
       logger?.debug('fiscal.messaging_noop', { idempotencyKey: input.idempotencyKey })
+      return false
     },
   }
 }

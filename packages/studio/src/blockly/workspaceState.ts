@@ -1,4 +1,5 @@
-import type { CSSEntry, JSExpr, JSStatement, SZIR } from '#ir'
+import { compileStatements } from '#generators'
+import type { CSSEntry, JSExpr, JSStatement, KeyframesCSS, SZIR } from '#ir'
 import { readingOrderIndices, SHADOW_PRESETS } from './buildIR'
 
 /** Tags container (têm input CHILDREN) → tipo de bloco. */
@@ -255,8 +256,16 @@ function htmlNodeToBlockInner(node: SZIR['html'][number]): SerializedBlocklyBloc
     return block('sz_html_text', { TEXT: node.text }, {}, node.__id)
   }
   if (node.type === 'canvas') {
-    // Largura/altura não são mais campos do bloco — só o id.
-    return block('sz_html_canvas', { ID: node.id }, {}, node.__id)
+    // Largura/altura não são mais campos do bloco — só o id. Quando a IR carrega
+    // width/height (ex.: `<canvas width=200 height=100>` vindo do HTML), os
+    // guardamos no `data` do bloco (mesma estratégia do `extraData`) para que o
+    // round-trip blocos→código não os perca. `buildIR` os recupera de `data`.
+    const built = block('sz_html_canvas', { ID: node.id }, {}, node.__id)
+    const extra: Record<string, number> = {}
+    if (node.width !== undefined) extra.width = node.width
+    if (node.height !== undefined) extra.height = node.height
+    if (Object.keys(extra).length > 0) built.data = JSON.stringify(extra)
+    return built
   }
 
   const containerType = CONTAINER_BLOCK[node.tag]
@@ -326,6 +335,53 @@ function htmlNodeToBlockInner(node: SZIR['html'][number]): SerializedBlocklyBloc
   return block('sz_adv_raw_html', { CODE: renderElementFallback(node) }, {}, node.__id)
 }
 
+/** Declarações → blocos `sz_css_decl` (encaixáveis num input CSSDecl). */
+function declarationsToBlocks(declarations?: Record<string, string>): SerializedBlocklyBlock[] {
+  if (!declarations) return []
+  return Object.entries(declarations).map(([prop, value]) =>
+    block('sz_css_decl', { PROP: prop, VALUE: value }),
+  )
+}
+
+/** Texto `@keyframes …` para o fallback rawCSS (passos que o bloco from/to não cobre). */
+function keyframesToText(entry: KeyframesCSS): string {
+  const steps = entry.steps
+    .map((step) => {
+      const decls = Object.entries(step.declarations)
+        .map(([k, v]) => `    ${k}: ${v};`)
+        .join('\n')
+      return `  ${step.at} {\n${decls}\n  }`
+    })
+    .join('\n')
+  return `@keyframes ${entry.name} {\n${steps}\n}`
+}
+
+/**
+ * Reverte `@keyframes` para o bloco from/to quando os passos são só `from`/`0%`
+ * e `to`/`100%`; caso contrário (multi-passo, vindo de código) cai num bloco
+ * rawCSS preservando o texto.
+ */
+function keyframesToBlock(entry: KeyframesCSS): SerializedBlocklyBlock {
+  const from = entry.steps.find((s) => s.at === 'from' || s.at === '0%')
+  const to = entry.steps.find((s) => s.at === 'to' || s.at === '100%')
+  const isFromTo =
+    /^[A-Za-z_-][\w-]*$/.test(entry.name) &&
+    entry.steps.length > 0 &&
+    entry.steps.every((s) => s === from || s === to)
+  if (isFromTo) {
+    return block(
+      'sz_css_keyframes',
+      { NAME: entry.name },
+      {
+        FROM: declarationsToBlocks(from?.declarations),
+        TO: declarationsToBlocks(to?.declarations),
+      },
+      entry.__id,
+    )
+  }
+  return block('sz_adv_raw_css', { CODE: keyframesToText(entry) }, {}, entry.__id)
+}
+
 function cssEntryToBlocks(entry: CSSEntry): SerializedBlocklyBlock[] {
   if ('type' in entry && entry.type === 'rawCSS') {
     return [block('sz_adv_raw_css', { CODE: entry.code }, {}, entry.__id)]
@@ -340,6 +396,9 @@ function cssEntryToBlocks(entry: CSSEntry): SerializedBlocklyBlock[] {
         entry.__id,
       ),
     ]
+  }
+  if ('type' in entry && entry.type === 'keyframes') {
+    return [keyframesToBlock(entry)]
   }
 
   const blocks: SerializedBlocklyBlock[] = []
@@ -709,6 +768,59 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         ? rawJSBlock(stmt)
         : block('sz_js_repeat', { TIMES: times }, { DO: statementsToBlocks(stmt.body) }, stmt.__id)
     }
+    case 'while': {
+      const cond = exprToValueBlock(stmt.cond)
+      if (!cond) return rawJSBlock(stmt)
+      return block('sz_js_while', {}, { DO: statementsToBlocks(stmt.body) }, stmt.__id, {
+        COND: cond,
+      })
+    }
+    case 'doWhile': {
+      const cond = exprToValueBlock(stmt.cond)
+      if (!cond) return rawJSBlock(stmt)
+      return block('sz_js_do_while', {}, { DO: statementsToBlocks(stmt.body) }, stmt.__id, {
+        COND: cond,
+      })
+    }
+    case 'break':
+      return block('sz_js_break', {}, {}, stmt.__id)
+    case 'continue':
+      return block('sz_js_continue', {}, {}, stmt.__id)
+    case 'forOf':
+      return block(
+        'sz_js_for_of',
+        { ITEM: stmt.itemName, NAME: stmt.iterableVar },
+        { DO: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'forRange': {
+      const from = exprToValueBlock(stmt.from)
+      const to = exprToValueBlock(stmt.to)
+      const step = exprToValueBlock(stmt.step)
+      if (!from || !to || !step) return rawJSBlock(stmt)
+      return block(
+        'sz_js_for_range',
+        { VAR: stmt.varName },
+        { DO: statementsToBlocks(stmt.body) },
+        stmt.__id,
+        {
+          FROM: from,
+          TO: to,
+          STEP: step,
+        },
+      )
+    }
+    case 'tryCatch':
+      return block(
+        'sz_js_try_catch',
+        { ERR: stmt.errorName ?? 'erro' },
+        {
+          BODY: statementsToBlocks(stmt.body),
+          HANDLER: statementsToBlocks(stmt.handler),
+          FINALLY: statementsToBlocks(stmt.finalizer ?? []),
+        },
+        stmt.__id,
+      )
     case 'forEach':
       return block(
         'sz_js_for_each',
@@ -787,6 +899,37 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         {},
         stmt.__id,
       )
+    case 'querySelectorAll':
+      return block(
+        'sz_js_query_selector_all',
+        { SELECTOR: stmt.selector, NAME: stmt.varName },
+        {},
+        stmt.__id,
+      )
+    case 'storageSet': {
+      // O bloco guarda a chave num campo de texto: só representável se for literal.
+      if (stmt.key.type !== 'str') return rawJSBlock(stmt)
+      const value = exprToValueBlock(stmt.value)
+      if (!value) return rawJSBlock(stmt)
+      return block('sz_js_storage_set', { STORE: stmt.store, KEY: stmt.key.value }, {}, stmt.__id, {
+        VALUE: value,
+      })
+    }
+    case 'eventMethod':
+      return block('sz_js_event_method', { METHOD: stmt.method }, {}, stmt.__id)
+    case 'fetchJson': {
+      // A URL vai num campo de texto: só representável como bloco se for literal.
+      if (stmt.url.type !== 'str') return rawJSBlock(stmt)
+      return block(
+        'sz_js_fetch_json',
+        { URL: stmt.url.value, OK: stmt.okName, ERR: stmt.catchName ?? 'erro' },
+        {
+          BODY: statementsToBlocks(stmt.body),
+          CATCH: statementsToBlocks(stmt.catchBody ?? []),
+        },
+        stmt.__id,
+      )
+    }
     case 'getElementById':
       return block('sz_js_get_element_by_id', { ID: stmt.id, NAME: stmt.varName }, {}, stmt.__id)
     case 'classOp':
@@ -931,6 +1074,93 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       return block(
         'sz_g2d_update_each_frame',
         {},
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'g2d:setGravity':
+      return block('sz_g2d_set_gravity', { VALUE: stmt.value }, {}, stmt.__id)
+    case 'g2d:applyVelocity':
+      return block('sz_g2d_apply_velocity', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
+    case 'g2d:bounceOnEdges':
+      return block(
+        'sz_g2d_bounce_edges',
+        { SPRITE: stmt.spriteVar, CTX: stmt.ctxVar },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:circleCollides':
+      return block(
+        'sz_g2d_circle_collides',
+        { NAME: stmt.varName, A: stmt.aVar, B: stmt.bVar },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:playSound':
+      return block('sz_g2d_play_sound', { FREQ: stmt.freq, MS: stmt.durationMs }, {}, stmt.__id)
+    case 'g2d:onPointer':
+      return block(
+        'sz_g2d_on_pointer',
+        { PX: stmt.xName, PY: stmt.yName },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'g3d:createScene':
+      return block(
+        'sz_g3d_create_scene',
+        { CANVAS: stmt.canvasId, NAME: stmt.varName },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:setBackground':
+      return block(
+        'sz_g3d_set_background',
+        { WORLD: stmt.worldVar, COLOR: stmt.color },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:setCameraPosition': {
+      const x = exprToValueBlock(stmt.x)
+      const y = exprToValueBlock(stmt.y)
+      const z = exprToValueBlock(stmt.z)
+      if (!x || !y || !z) return rawJSBlock(stmt)
+      return block('sz_g3d_set_camera', { WORLD: stmt.worldVar }, {}, stmt.__id, {
+        X: x,
+        Y: y,
+        Z: z,
+      })
+    }
+    case 'g3d:createBox':
+      return block(
+        'sz_g3d_create_box',
+        { NAME: stmt.varName, WORLD: stmt.worldVar, SIZE: stmt.size, COLOR: stmt.color },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:createSphere':
+      return block(
+        'sz_g3d_create_sphere',
+        { NAME: stmt.varName, WORLD: stmt.worldVar, RADIUS: stmt.radius, COLOR: stmt.color },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:setPosition': {
+      const x = exprToValueBlock(stmt.x)
+      const y = exprToValueBlock(stmt.y)
+      const z = exprToValueBlock(stmt.z)
+      if (!x || !y || !z) return rawJSBlock(stmt)
+      return block('sz_g3d_set_position', { OBJ: stmt.objVar }, {}, stmt.__id, { X: x, Y: y, Z: z })
+    }
+    case 'g3d:setRotation': {
+      const x = exprToValueBlock(stmt.x)
+      const y = exprToValueBlock(stmt.y)
+      const z = exprToValueBlock(stmt.z)
+      if (!x || !y || !z) return rawJSBlock(stmt)
+      return block('sz_g3d_set_rotation', { OBJ: stmt.objVar }, {}, stmt.__id, { X: x, Y: y, Z: z })
+    }
+    case 'g3d:animate':
+      return block(
+        'sz_g3d_animate',
+        { WORLD: stmt.worldVar },
         { BODY: statementsToBlocks(stmt.body) },
         stmt.__id,
       )
@@ -1313,6 +1543,11 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_val_shuffle', { NAME: expr.arrayVar })
     case 'datasetGet':
       return block('sz_val_dataset', { KEY: expr.key, OBJ: expr.objectVar })
+    case 'storageGet':
+      // A chave vai num campo de texto: só representável como bloco se for literal.
+      return expr.key.type === 'str'
+        ? block('sz_val_storage_get', { STORE: expr.store, KEY: expr.key.value })
+        : null
     case 'classContains':
       return block('sz_val_class_contains', {
         TARGET_KIND: expr.targetKind ?? 'id',
@@ -1442,14 +1677,28 @@ function incrementExpr(targetName: string, expr: JSExpr): number | null {
 }
 
 function rawJSBlock(stmt: JSStatement): SerializedBlocklyBlock {
-  return block(
-    'sz_adv_raw_js',
-    {
-      CODE: stmt.type === 'rawJS' ? stmt.code : JSON.stringify(stmt, null, 2),
-    },
-    {},
-    stmt.__id,
-  )
+  return block('sz_adv_raw_js', { CODE: rawJSCodeFor(stmt) }, {}, stmt.__id)
+}
+
+/**
+ * Código que o bloco de "código avançado" carrega quando um statement do IR não é
+ * representável como bloco estruturado. Para um `rawJS` é o código verbatim; para
+ * qualquer outro (ex.: `storageSet`/`storageGet` com chave NÃO-literal, ou
+ * `querySelector`/`fetchJson` com seletor/URL dinâmico) COMPILAMOS o statement
+ * para JS válido — antes era um `JSON.stringify` do nó do IR, que o gerador
+ * re-emitia VERBATIM como um objeto literal quebrado, DESCARTANDO a chamada real
+ * (ex.: o `localStorage.setItem(variavel, x)` sumia ao passar pela visão de
+ * Blocos). Compilar mantém o trecho válido e re-parseável (round-trip estável).
+ */
+function rawJSCodeFor(stmt: JSStatement): string {
+  if (stmt.type === 'rawJS') return stmt.code
+  try {
+    return compileStatements([stmt], 0)
+  } catch {
+    // A montagem dos blocos JAMAIS pode quebrar: na falha (inalcançável p/ IR
+    // válido) cai para o nó comentado — JS inerte que preserva o dado p/ debug.
+    return `/* ${JSON.stringify(stmt)} */`
+  }
 }
 
 /**

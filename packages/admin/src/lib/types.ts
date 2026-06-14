@@ -4,6 +4,9 @@
  * seguro p/ Client Components).
  */
 
+// Tipos do editor embarcável (bloco `studio`) — type-only (erasado em runtime).
+import type { BlockLevel, IDEMode, Project } from '@sistemazero/studio'
+
 export interface SessionUser {
   id: string
   email: string
@@ -174,6 +177,7 @@ export const LESSON_BLOCK_KINDS = [
   'quiz',
   'embed',
   'ebook',
+  'studio',
 ] as const
 export type LessonBlockKind = (typeof LESSON_BLOCK_KINDS)[number]
 
@@ -233,6 +237,20 @@ export interface EbookBlock {
   url: string
   title?: string
 }
+/**
+ * Bloco Estúdio: editor @sistemazero/studio pré-configurado pelo admin. `initialProject`
+ * é o snapshot autorado no editor embutido (nome/tipo/código de partida); os demais
+ * campos são a config de aprendizado (nível, allowlist de blocos, modos).
+ */
+export interface StudioBlock {
+  kind: 'studio'
+  initialProject: Project
+  level?: BlockLevel
+  allowBlocks?: string[]
+  allowCategories?: string[]
+  allowedModes?: IDEMode[]
+  allowLevelReveal?: boolean
+}
 export type LessonBlockContent =
   | RichTextBlock
   | VideoBlock
@@ -241,6 +259,21 @@ export type LessonBlockContent =
   | QuizBlock
   | EmbedBlock
   | EbookBlock
+  | StudioBlock
+
+/** Resumo de UMA entrega do Estúdio (admin), com identidade hidratada do auth. */
+export interface StudioSubmissionRow {
+  userId: string
+  submittedAt: string
+  name: string | null
+  email: string | null
+}
+
+/** Projeto enviado por um aluno (abrir no Estúdio embutido do admin). */
+export interface StudioSubmissionDetailView {
+  project: Project
+  submittedAt: string
+}
 
 export interface BlockView {
   id: string

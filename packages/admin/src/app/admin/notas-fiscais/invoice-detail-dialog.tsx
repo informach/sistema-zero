@@ -474,15 +474,15 @@ function CancelInvoiceDialog({
     >
       <Field
         label="Motivo do cancelamento"
-        hint="Obrigatório — entre 3 e 500 caracteres."
+        hint="Obrigatório — entre 15 e 255 caracteres (exigência da Sefin)."
         htmlFor="cancel-reason"
       >
         <Textarea
           id="cancel-reason"
           value={reason}
           onChange={(e) => setReason(e.target.value)}
-          maxLength={500}
-          placeholder="Ex.: estorno do pagamento dentro da garantia"
+          maxLength={255}
+          placeholder="Ex.: estorno do pagamento ao cliente dentro da garantia"
         />
       </Field>
     </Dialog>

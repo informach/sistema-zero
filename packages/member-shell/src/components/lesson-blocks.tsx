@@ -10,11 +10,14 @@ import type {
   QuizBlock,
   QuizStateView,
   RichTextBlock,
+  StudioBlock,
+  StudioStateView,
   VideoBlock,
 } from '../lib/types'
 import { EbookBlockView } from './ebook/ebook-block'
 import { useLessonPlayer } from './lesson-player-context'
 import { QuizBlockView } from './quiz-block'
+import { StudioBlockView } from './studio/studio-block'
 import { VimeoPlayer } from './vimeo-player'
 
 /**
@@ -60,6 +63,14 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
       return <Embed content={content as unknown as EmbedBlock} />
     case 'ebook':
       return <EbookBlockView blockId={block.id} content={content as unknown as EbookBlock} />
+    case 'studio':
+      return (
+        <StudioBlockView
+          blockId={block.id}
+          content={content as unknown as StudioBlock}
+          studioState={(block.studioState as StudioStateView | null | undefined) ?? null}
+        />
+      )
     default:
       return null
   }

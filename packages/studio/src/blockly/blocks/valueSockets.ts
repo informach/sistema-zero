@@ -55,6 +55,10 @@ export const VALUE_SOCKETS: Record<string, Record<string, number>> = {
   sz_js_set_property: { VALUE: 0 },
   // Item da lista por índice.
   sz_val_array_index: { INDEX: 0 },
+  // For clássico (contar de/até/passo).
+  sz_js_for_range: { FROM: 0, TO: 10, STEP: 1 },
+  // Armazenamento do navegador: o valor a guardar é uma tomada.
+  sz_js_storage_set: { VALUE: 0 },
 }
 
 /**
@@ -106,6 +110,31 @@ const CUSTOM_SOCKETS: Record<string, Record<string, SocketShadow>> = {
     OBJ2: { shadow: { type: 'sz_val_variable', fields: { NAME: 'enemy' } } },
   },
   sz_js_if_else: {
+    COND: {
+      shadow: {
+        type: 'sz_val_compare',
+        fields: { OP: '>' },
+        inputs: {
+          LEFT: { shadow: { type: 'sz_val_variable', fields: { NAME: 'x' } } },
+          RIGHT: { shadow: { type: 'sz_val_number', fields: { NUM: 0 } } },
+        },
+      },
+    },
+  },
+  // while / do-while: a condição já vem como uma comparação `x > 0` (igual ao "Se").
+  sz_js_while: {
+    COND: {
+      shadow: {
+        type: 'sz_val_compare',
+        fields: { OP: '>' },
+        inputs: {
+          LEFT: { shadow: { type: 'sz_val_variable', fields: { NAME: 'x' } } },
+          RIGHT: { shadow: { type: 'sz_val_number', fields: { NUM: 0 } } },
+        },
+      },
+    },
+  },
+  sz_js_do_while: {
     COND: {
       shadow: {
         type: 'sz_val_compare',

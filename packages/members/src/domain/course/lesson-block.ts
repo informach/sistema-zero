@@ -12,6 +12,7 @@ export const LESSON_BLOCK_KINDS = [
   'quiz',
   'embed',
   'ebook',
+  'studio',
 ] as const
 
 export type LessonBlockKind = (typeof LESSON_BLOCK_KINDS)[number]
@@ -104,6 +105,46 @@ export interface EbookBlock {
   title?: string
 }
 
+/**
+ * Teto do JSON do projeto do Estúdio (autoria e entrega). Anti-DoS do jsonb:
+ * `JSON.stringify(project).length` acima disso → 413. Folgado para uma atividade de
+ * aula (Blockly/código pequenos) e abaixo do teto de corpo do gateway (2 MB) — a
+ * entrega do aluno passa pela borda.
+ */
+export const MAX_STUDIO_PROJECT_CHARS = 1_500_000
+
+/** Nível de aprendizado fixado pelo professor (espelha o BlockLevel do @sistemazero/studio). */
+export type StudioLevel = 'iniciante' | 'intermediario' | 'avancado'
+
+/** Modos do editor expostos ao aluno (espelha o IDEMode do @sistemazero/studio). */
+export type StudioMode = 'blocks' | 'bridge' | 'code'
+
+/**
+ * Bloco Estúdio: renderiza uma versão LIMITADA do @sistemazero/studio pré-configurada
+ * pelo admin para a atividade da aula. `initialProject` é o snapshot do Estúdio
+ * (shape `Project` da lib) autorado no editor embutido da autoria — já codifica nome,
+ * TIPO (extensões web/jogo-2D/jogo-3D) e o código/blocos de partida. O members NÃO importa
+ * a lib (é backend): trata `initialProject` como JSON de cliente sanitizado (o Estúdio
+ * sanitiza na autoria via export e DE NOVO no aluno via `sanitizeProjectForHost`); aqui só
+ * vale o teto de tamanho. A ENTREGA do aluno (mesmo formato JSON) bloqueia a conclusão da
+ * aula até ser enviada — espelha o gate do quiz (ver mark-lesson-complete.service).
+ */
+export interface StudioBlock {
+  kind: 'studio'
+  /** Snapshot `Project` do Estúdio autorado pelo admin (JSON opaco aqui). */
+  initialProject: unknown
+  /** Nível fixado (default 'avancado' = mostra tudo). */
+  level?: StudioLevel
+  /** Bloquinhos sempre visíveis, independente do nível (allowlist da aula). */
+  allowBlocks?: string[]
+  /** Categorias sempre visíveis, independente do nível. */
+  allowCategories?: string[]
+  /** Modos exibidos ao aluno (default: os permitidos pelo tipo do projeto). */
+  allowedModes?: StudioMode[]
+  /** Aluno pode revelar blocos avançados (default true). */
+  allowLevelReveal?: boolean
+}
+
 /** União discriminada por `kind` — o conteúdo guardado na coluna `lesson_blocks.content`. */
 export type LessonBlockContent =
   | RichTextBlock
@@ -113,3 +154,4 @@ export type LessonBlockContent =
   | QuizBlock
   | EmbedBlock
   | EbookBlock
+  | StudioBlock

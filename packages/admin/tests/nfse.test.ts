@@ -202,11 +202,13 @@ describe('extractExistingInvoiceId', () => {
 })
 
 describe('isValidCancelReason', () => {
-  test('3..500 chars após trim', () => {
-    expect(isValidCancelReason('ok!')).toBe(true)
-    expect(isValidCancelReason('  ab  ')).toBe(false)
-    expect(isValidCancelReason('a'.repeat(500))).toBe(true)
-    expect(isValidCancelReason('a'.repeat(501))).toBe(false)
+  test('15..255 chars após trim (TSMotivo do XSD — espelha o contrato do fiscal)', () => {
+    expect(isValidCancelReason('curto')).toBe(false) // < 15
+    expect(isValidCancelReason('a'.repeat(15))).toBe(true)
+    expect(isValidCancelReason('Estorno do pagamento ao cliente')).toBe(true)
+    expect(isValidCancelReason('a'.repeat(255))).toBe(true)
+    expect(isValidCancelReason('a'.repeat(256))).toBe(false)
+    expect(isValidCancelReason(`  ${'a'.repeat(14)}  `)).toBe(false) // 14 após trim
     expect(isValidCancelReason('')).toBe(false)
   })
 })

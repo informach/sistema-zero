@@ -8,7 +8,7 @@ import type {
   SefinNacionalGateway,
 } from '../../../domain/ports/sefin-gateway.port'
 import type { A1Certificate } from '../../certificate/a1-certificate'
-import { signXml } from '../../signing/xml-crypto-signer'
+import { type SigAlgo, signXml } from '../../signing/xml-crypto-signer'
 import { createMtlsFetch, gunzipBase64, gzipBase64, sefinUrls } from './sefin.client'
 
 interface SefinErrorBody {
@@ -27,27 +27,48 @@ interface SefinErrorBody {
 export class SefinHttpGateway implements SefinNacionalGateway {
   private readonly fetch: ReturnType<typeof createMtlsFetch>
   private readonly base: string
+  private readonly perReqMs: number
+  private readonly totalBudgetMs: number
+  private readonly sigAlgo: SigAlgo
 
   constructor(
     private readonly profile: EmitterProfile,
     cert: A1Certificate,
-    opts: { ambiente: 'producao' | 'producao-restrita'; timeoutMs: number },
+    opts: {
+      ambiente: 'producao' | 'producao-restrita'
+      timeoutMs: number
+      totalBudgetMs: number
+      sigAlgo: SigAlgo
+    },
     private readonly logger: Logger,
     private readonly certRef = cert,
   ) {
     this.fetch = createMtlsFetch(cert, opts.timeoutMs)
     this.base = sefinUrls(opts.ambiente).sefin
+    this.perReqMs = opts.timeoutMs
+    this.totalBudgetMs = opts.totalBudgetMs
+    this.sigAlgo = opts.sigAlgo
+  }
+
+  /** Timeout efetivo da próxima chamada = min(timeout por tentativa, orçamento restante). */
+  private remaining(deadline: number): number {
+    return Math.max(1, Math.min(this.perReqMs, deadline - Date.now()))
   }
 
   async emitDps(input: EmitDpsInput): Promise<EmitResult> {
+    const deadline = Date.now() + this.totalBudgetMs
     const xml = buildDpsXml(this.profile, input)
-    const signed = signXml(xml, 'infDPS', this.certRef)
+    const signed = signXml(xml, 'infDPS', this.certRef, this.sigAlgo)
 
-    const res = await this.fetch(`${this.base}/nfse`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ dpsXmlGZipB64: gzipBase64(signed) }),
-    })
+    const res = await this.fetch(
+      `${this.base}/nfse`,
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ dpsXmlGZipB64: gzipBase64(signed) }),
+      },
+      this.remaining(deadline),
+    )
 
     if (res.status === 201) {
       const body = (await res.json()) as { chaveAcesso?: string; nfseXmlGZipB64?: string }
@@ -67,21 +88,31 @@ export class SefinHttpGateway implements SefinNacionalGateway {
         message: e.Descricao ?? '',
       }))
       // Número reusado já virou NFS-e num envio anterior? → duplicate (não FAILED).
-      const existing = await this.findNfseByDpsId(input.dpsId).catch(() => null)
+      // A chave resolvida AQUI viaja no resultado — o serviço NÃO reconsulta.
+      const existing = await this.findNfseByDpsId(input.dpsId, this.remaining(deadline)).catch(
+        () => null,
+      )
       if (existing) {
         this.logger.info('fiscal.sefin_duplicate_detected', { dpsId: input.dpsId })
-        return { kind: 'duplicate', dpsXml: signed }
+        return { kind: 'duplicate', accessKey: existing.accessKey, dpsXml: signed }
       }
       return { kind: 'rejected', errors, dpsXml: signed }
     }
 
-    // 403 = certificado; 5xx = instabilidade — ambos re-tentáveis (alertáveis).
+    // 403 = certificado (expirado/revogado/sem permissão) — erro ACIONÁVEL distinto
+    // (senão o lastError da nota FAILED era um "403" cru sem ligação com o A1).
     const text = await res.text().catch(() => '')
+    if (res.status === 403) {
+      throw new Error(
+        `Sefin recusou o certificado A1 (403) — expirado/revogado? Verifique NFSE_CERT_* e a validade (vence 23/09/2026). ${text.slice(0, 160)}`,
+      )
+    }
+    // 5xx = instabilidade — re-tentável (alertável).
     throw new Error(`Sefin respondeu ${res.status}: ${text.slice(0, 300)}`)
   }
 
-  async findNfseByDpsId(dpsId: string): Promise<{ accessKey: string } | null> {
-    const res = await this.fetch(`${this.base}/dps/${encodeURIComponent(dpsId)}`)
+  async findNfseByDpsId(dpsId: string, timeoutMs?: number): Promise<{ accessKey: string } | null> {
+    const res = await this.fetch(`${this.base}/dps/${encodeURIComponent(dpsId)}`, {}, timeoutMs)
     if (res.status === 404) return null
     if (!res.ok) throw new Error(`Sefin GET /dps respondeu ${res.status}`)
     const body = (await res.json()) as { chaveAcesso?: string }
@@ -90,7 +121,7 @@ export class SefinHttpGateway implements SefinNacionalGateway {
 
   async cancelNfse(input: { accessKey: string; cMotivo: '1' | '2' | '9'; xMotivo: string }) {
     const { xml } = buildCancelEventXml(this.profile, input)
-    const signed = signXml(xml, 'infPedReg', this.certRef)
+    const signed = signXml(xml, 'infPedReg', this.certRef, this.sigAlgo)
 
     const res = await this.fetch(`${this.base}/nfse/${input.accessKey}/eventos`, {
       method: 'POST',

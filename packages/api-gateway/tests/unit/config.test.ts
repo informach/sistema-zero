@@ -196,6 +196,7 @@ describe('loadGatewayConfig', () => {
       MESSAGING_INTERNAL_TOKEN: 'messaging-internal-16ch',
       AUTH_INTERNAL_TOKEN: 'auth-internal-16-chars!',
       PAYMENTS_INTERNAL_TOKEN: 'payments-internal-16chrs',
+      HUB_INTERNAL_TOKEN: 'hub-internal-token-16chrs',
       JWT_HS256_SECRET: 'segredo-hs256-com-mais-de-32-caracteres',
     })
     const routes = [
@@ -214,6 +215,7 @@ describe('loadGatewayConfig', () => {
       MESSAGING_INTERNAL_TOKEN: 'messaging-internal-16ch',
       AUTH_INTERNAL_TOKEN: 'auth-internal-16-chars!',
       PAYMENTS_INTERNAL_TOKEN: 'payments-internal-16chrs',
+      HUB_INTERNAL_TOKEN: 'hub-internal-token-16chrs',
       JWT_HS256_SECRET: 'segredo-hs256-com-mais-de-32-caracteres',
       JWT_ISSUER: 'sistemazero-auth',
       JWT_AUDIENCE: 'sistemazero',

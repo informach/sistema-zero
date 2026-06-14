@@ -1,8 +1,10 @@
 import 'server-only'
 import { sessionCookieNames } from './lib/cookies'
 import { createShellRoutes } from './routes'
+import { createHubRoutes } from './routes/hub'
 import {
   createAuthClient,
+  createHubClient,
   createMembersClient,
   createPaymentsClient,
   type MembersAudience,
@@ -46,8 +48,12 @@ export function createShell(cfg: ShellConfig) {
   const auth = createAuthClient(gateway)
   const members = createMembersClient(gateway, { audience: cfg.audience })
   const payments = createPaymentsClient(gateway)
+  const hub = createHubClient(gateway, { audience: cfg.audience })
   const media = createMediaModule({ session, gateway })
-  const routes = createShellRoutes({ session, gateway, auth, members, payments, media })
+  const routes = {
+    ...createShellRoutes({ session, gateway, auth, members, payments, media }),
+    ...createHubRoutes({ hub, media, session }),
+  }
 
-  return { config: cfg, cookies, session, gateway, auth, members, payments, media, routes }
+  return { config: cfg, cookies, session, gateway, auth, members, payments, hub, media, routes }
 }

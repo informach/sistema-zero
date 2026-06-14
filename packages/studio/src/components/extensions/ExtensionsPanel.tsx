@@ -12,7 +12,6 @@ import {
   installExtension,
   registerExtension,
   removeExtensionArtifacts,
-  unregisterExtension,
 } from '../../state/extensionsAdapter'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 
@@ -63,7 +62,10 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
     const project = projectStoreApi.getState().project
     if (!project) return
     const cleaned = removeExtensionArtifacts(project, extId)
-    unregisterExtension(extId)
+    // NÃO desregistra os blocos do Blockly: o registro é global de módulo
+    // compartilhado entre instâncias (invariante #5; ver removeExtension). A
+    // categoria some porque a toolbox é reconstruída a partir do
+    // installedExtensions abaixo, sem tocar no Blockly.Blocks.
     applyProjectState({
       ir: cleaned.ir,
       blocksState: cleaned.blocksState,

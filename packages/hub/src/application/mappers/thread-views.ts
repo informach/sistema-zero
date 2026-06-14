@@ -1,0 +1,154 @@
+import type { Attachment } from '../../domain/attachment/attachment'
+import type { ReactionSummaryItem } from '../../domain/ports/reaction-repository.port'
+import type { Comment, ContentStatus, Thread } from '../../domain/thread/thread'
+import { encodeCursor } from '../cursor'
+
+type ReactionMap = Map<string, ReactionSummaryItem[]>
+const reactionsFor = (map: ReactionMap | undefined, id: string): ReactionSummaryItem[] =>
+  map?.get(id) ?? []
+
+/** Anexo na view (SEM storageRef — o download é pela rota BFF `/api/hub/attachments/:id`). */
+export interface AttachmentView {
+  id: string
+  kind: Attachment['kind']
+  mime: string
+  sizeBytes: number
+  width: number | null
+  height: number | null
+  durationSeconds: number | null
+  originalName: string
+}
+
+export function toAttachmentView(a: Attachment): AttachmentView {
+  return {
+    id: a.id,
+    kind: a.kind,
+    mime: a.mime,
+    sizeBytes: a.sizeBytes,
+    width: a.width,
+    height: a.height,
+    durationSeconds: a.durationSeconds,
+    originalName: a.originalName,
+  }
+}
+
+type AttachmentMap = Map<string, Attachment[]>
+const attachmentsFor = (map: AttachmentMap | undefined, id: string): AttachmentView[] =>
+  (map?.get(id) ?? []).map(toAttachmentView)
+
+export interface ThreadView {
+  id: string
+  channelId: string
+  authorId: string
+  title: string
+  slug: string
+  body: string
+  isPinned: boolean
+  isLocked: boolean
+  status: ContentStatus
+  /** Conveniência p/ a UI: aguardando aprovação (só o autor/staff enxerga). */
+  pending: boolean
+  commentCount: number
+  reactions: ReactionSummaryItem[]
+  attachments: AttachmentView[]
+  lastActivityAt: string
+  createdAt: string
+  editedAt: string | null
+}
+
+export interface CommentView {
+  id: string
+  threadId: string
+  authorId: string
+  body: string
+  status: ContentStatus
+  pending: boolean
+  reactions: ReactionSummaryItem[]
+  attachments: AttachmentView[]
+  replyToId: string | null
+  createdAt: string
+  editedAt: string | null
+}
+
+export interface Page<T> {
+  items: T[]
+  nextCursor: string | null
+  hasMore: boolean
+}
+
+export function toThreadView(
+  t: Thread,
+  reactions: ReactionSummaryItem[] = [],
+  attachments: AttachmentView[] = [],
+): ThreadView {
+  return {
+    id: t.id,
+    channelId: t.channelId,
+    authorId: t.authorId,
+    title: t.title,
+    slug: t.slug,
+    body: t.body,
+    isPinned: t.isPinned,
+    isLocked: t.isLocked,
+    status: t.status,
+    pending: t.status === 'pending',
+    commentCount: t.commentCount,
+    reactions,
+    attachments,
+    lastActivityAt: t.lastActivityAt.toISOString(),
+    createdAt: t.createdAt.toISOString(),
+    editedAt: t.editedAt ? t.editedAt.toISOString() : null,
+  }
+}
+
+export function toCommentView(
+  c: Comment,
+  reactions: ReactionSummaryItem[] = [],
+  attachments: AttachmentView[] = [],
+): CommentView {
+  return {
+    id: c.id,
+    threadId: c.threadId,
+    authorId: c.authorId,
+    body: c.body,
+    status: c.status,
+    pending: c.status === 'pending',
+    reactions,
+    attachments,
+    replyToId: c.replyToId,
+    createdAt: c.createdAt.toISOString(),
+    editedAt: c.editedAt ? c.editedAt.toISOString() : null,
+  }
+}
+
+export function toThreadPage(
+  items: Thread[],
+  hasMore: boolean,
+  reactions?: ReactionMap,
+  attachments?: AttachmentMap,
+): Page<ThreadView> {
+  const last = items[items.length - 1]
+  return {
+    items: items.map((t) =>
+      toThreadView(t, reactionsFor(reactions, t.id), attachmentsFor(attachments, t.id)),
+    ),
+    nextCursor: hasMore && last ? encodeCursor({ t: last.lastActivityAt, id: last.id }) : null,
+    hasMore,
+  }
+}
+
+export function toCommentPage(
+  items: Comment[],
+  hasMore: boolean,
+  reactions?: ReactionMap,
+  attachments?: AttachmentMap,
+): Page<CommentView> {
+  const last = items[items.length - 1]
+  return {
+    items: items.map((c) =>
+      toCommentView(c, reactionsFor(reactions, c.id), attachmentsFor(attachments, c.id)),
+    ),
+    nextCursor: hasMore && last ? encodeCursor({ t: last.createdAt, id: last.id }) : null,
+    hasMore,
+  }
+}

@@ -45,7 +45,9 @@ describe('blocos de valor (sockets) — round-trip IR<->blocos', () => {
         r: { type: 'random', min: { type: 'num', value: 5 }, max: { type: 'num', value: 20 } },
       },
     ])
-    expect(js).toContain('ctx.arc(canvas.width, 50, Math.floor(Math.random() * (20 - 5 + 1)) + 5')
+    expect(js).toContain(
+      'ctx.arc(canvas.width, 50, Math.floor(Math.random() * ((20) - (5) + 1)) + (5)',
+    )
   })
 
   it('preserva números simples (shadow) num retângulo', () => {

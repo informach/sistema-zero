@@ -9,10 +9,25 @@ export const ptBR: Record<string, string> = {
 
   'topbar.preview': 'Pré-visualizar',
   'topbar.save': 'Salvar',
+  'topbar.saving': 'Salvando…',
   'topbar.extensions': 'Extensões',
+  'topbar.export': 'Exportar',
+  'topbar.convertPro': 'Virar profissional',
   'topbar.ai': 'IA',
   'topbar.rename': 'Renomear projeto',
   'topbar.projects': 'Meus projetos',
+  'topbar.more': 'Mais opções',
+  'topbar.theme': 'Mudar tema',
+  'topbar.showPreview': 'Mostrar pré-visualização',
+  'topbar.hidePreview': 'Ocultar pré-visualização',
+  'topbar.group.file': 'Arquivo',
+  'topbar.group.view': 'Exibição',
+  'topbar.group.account': 'Conta',
+
+  'tab.blocks': 'Blocos',
+  'tab.code': 'Código',
+  'tab.preview': 'Pré-visualização',
+  'tab.files': 'Arquivos',
 
   'panel.console': 'Console',
   'panel.terminal': 'Terminal',
@@ -36,9 +51,8 @@ export const ptBR: Record<string, string> = {
 
   'console.clear': 'Limpar',
   'console.empty': 'Sem mensagens. Use console.log para registrar algo.',
-
-  'terminal.placeholder':
-    'Terminal disponível em fases futuras (suporte a WebContainers planejado).',
+  'console.message': '1 mensagem',
+  'console.messages': '{count} mensagens',
 
   'ai.placeholder':
     'Painel de IA está em modo de demonstração. A integração real chegará em fase futura.',
@@ -78,4 +92,29 @@ export const ptBR: Record<string, string> = {
     'Este código não é representável em blocos e foi marcado como Código avançado. Você pode continuar editando no editor de código.',
 
   'code.advancedBlock': 'Código avançado',
+
+  'export.title': 'Exportar para publicação',
+  'export.description':
+    'Gera um arquivo ZIP pronto para publicar no Railway (o site mais o Dockerfile e o passo a passo).',
+  'export.minify': 'Minificar o código (recomendado)',
+  'export.proNote':
+    'Projeto profissional: o build com a minificação roda no Railway durante o deploy.',
+  'export.action': 'Exportar',
+  'export.cancel': 'Cancelar',
+  'export.working': 'Preparando o pacote…',
+  'export.collecting': 'Reunindo os arquivos…',
+  'export.minifying': 'Minificando…',
+  'export.zipping': 'Compactando…',
+  'export.error': 'Não foi possível exportar: {reason}',
+
+  'convert.title': 'Transformar em projeto profissional?',
+  'convert.body':
+    'O projeto profissional usa um ambiente de verdade (TypeScript + npm + Vite), com vários arquivos e pastas. Você sai dos blocos e passa a editar só no Código. Esta ação não pode ser desfeita.',
+  'convert.legacyTitle': 'Este projeto precisa virar profissional',
+  'convert.legacyBody':
+    'Este projeto tem {count} arquivo(s) além dos três básicos, que o modo Blocos e Ponte não edita. Quer transformá-lo num projeto profissional (Vite) para trabalhar com todos eles? Esta ação não pode ser desfeita.',
+  'convert.confirm': 'Transformar',
+  'convert.cancel': 'Cancelar',
+  'convert.later': 'Agora não',
+  'convert.working': 'Transformando…',
 }

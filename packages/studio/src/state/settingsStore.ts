@@ -1,4 +1,4 @@
-import { createStore, get, set } from 'idb-keyval'
+import { createStore, get, update } from 'idb-keyval'
 import { create } from 'zustand'
 
 export const DEFAULT_AI_MODEL = '~anthropic/claude-sonnet-latest'
@@ -46,14 +46,12 @@ export interface PersistedSettings {
   aiApiKeyStorage?: AIApiKeyStorage
   aiModel?: string
   theme?: ThemeName
-  fontSize?: number
   codeFontSize?: number
+  /** Aluno revelou blocos avançados na paleta (divulgação progressiva). */
+  revealAdvanced?: boolean
 }
 
 const MAX_AI_API_KEY_CHARS = 4096
-const UI_FONT_SIZE_MIN = 13
-const UI_FONT_SIZE_MAX = 22
-const UI_FONT_SIZE_DEFAULT = 16
 export const CODE_FONT_SIZE_MIN = 10
 export const CODE_FONT_SIZE_MAX = 32
 export const CODE_FONT_SIZE_DEFAULT = 13
@@ -72,11 +70,6 @@ function normalizeTheme(value: unknown): ThemeName | undefined {
   return value === 'dark' || value === 'light' ? value : undefined
 }
 
-function clampUIFontSize(n: number): number {
-  if (!Number.isFinite(n)) return UI_FONT_SIZE_DEFAULT
-  return Math.max(UI_FONT_SIZE_MIN, Math.min(UI_FONT_SIZE_MAX, Math.round(n)))
-}
-
 function clampCodeFontSize(n: number): number {
   if (!Number.isFinite(n)) return CODE_FONT_SIZE_DEFAULT
   return Math.max(CODE_FONT_SIZE_MIN, Math.min(CODE_FONT_SIZE_MAX, Math.round(n)))
@@ -92,17 +85,31 @@ function sanitizePersistedSettings(value: unknown): PersistedSettings {
   if (typeof raw.aiModel === 'string') settings.aiModel = normalizeAIModel(raw.aiModel)
   const theme = normalizeTheme(raw.theme)
   if (theme) settings.theme = theme
-  if (typeof raw.fontSize === 'number') settings.fontSize = clampUIFontSize(raw.fontSize)
   if (typeof raw.codeFontSize === 'number') {
     settings.codeFontSize = clampCodeFontSize(raw.codeFontSize)
   }
+  if (typeof raw.revealAdvanced === 'boolean') settings.revealAdvanced = raw.revealAdvanced
   return settings
 }
 
 const SETTINGS_KEY = 'sz:settings'
 let store: ReturnType<typeof createStore> | null = null
-function getStore() {
-  if (!store) store = createStore('sistema-zero-studio', 'kv')
+let storeInitFailed = false
+function getStore(): ReturnType<typeof createStore> | null {
+  if (store || storeInitFailed) return store
+  // Sem IndexedDB (Firefox em modo privado, contextos restritos, happy-dom) não
+  // há o que abrir — e `createStore` pode até LANÇAR. Blindamos igual ao
+  // gameStorage.ts: degrada para "sem store" em vez de derrubar o load().
+  if (typeof indexedDB === 'undefined') {
+    storeInitFailed = true
+    return null
+  }
+  try {
+    store = createStore('sistema-zero-studio', 'kv')
+  } catch {
+    storeInitFailed = true
+    store = null
+  }
   return store
 }
 
@@ -111,8 +118,8 @@ interface SettingsState {
   aiApiKeyStorage: AIApiKeyStorage
   aiModel: string
   theme: ThemeName
-  fontSize: number
   codeFontSize: number
+  revealAdvanced: boolean
   loaded: boolean
   load: () => Promise<void>
   setAIApiKey: (k: string, options?: { storage?: AIApiKeyStorage }) => Promise<void>
@@ -120,24 +127,47 @@ interface SettingsState {
   clearAIApiKey: () => Promise<void>
   setAIModel: (m: string) => Promise<void>
   setTheme: (t: ThemeName) => Promise<void>
-  setFontSize: (n: number) => Promise<void>
   setCodeFontSize: (n: number) => Promise<void>
   increaseCodeFontSize: () => Promise<void>
   decreaseCodeFontSize: () => Promise<void>
   resetCodeFontSize: () => Promise<void>
+  setRevealAdvanced: (v: boolean) => Promise<void>
 }
 
 async function readPersisted(): Promise<PersistedSettings> {
-  return sanitizePersistedSettings(await get<unknown>(SETTINGS_KEY, getStore()))
+  const kv = getStore()
+  if (!kv) return {}
+  return sanitizePersistedSettings(await get<unknown>(SETTINGS_KEY, kv))
 }
 
+// load() é singleton: a 1ª carga hidrata a store a partir do IndexedDB, mas a
+// chave de sessão (modo 'session') vive SÓ em memória — re-rodar o setState
+// destrutivo numa 2ª montagem de <Studio>/<ProjectList> apagaria a chave e
+// rebaixaria o provider para mock. Por isso load() retorna cedo se já carregou
+// e coalesce primeiras cargas concorrentes numa única promise em voo (duas
+// montagens simultâneas não disparam dois setState).
+let loadInFlight: Promise<void> | null = null
+
+// O read-modify-write roda DENTRO de uma única transação do IndexedDB via
+// idb-keyval update(): setters concorrentes são enfileirados e não se perdem
+// (o get+set separado deixava cada um ler o mesmo estado antigo e o último
+// gravava por cima, descartando o patch do outro — visível após reload).
 async function writeMerge(patch: Partial<PersistedSettings>): Promise<void> {
-  const current = await readPersisted()
-  const next: PersistedSettings = { ...current, ...patch }
-  for (const key of Object.keys(next) as Array<keyof PersistedSettings>) {
-    if (next[key] === undefined) delete next[key]
-  }
-  await set(SETTINGS_KEY, next, getStore())
+  const kv = getStore()
+  // Sem IndexedDB: a store viva continua mutando (preferência em memória), mas
+  // não há onde persistir — no-op silencioso em vez de lançar.
+  if (!kv) return
+  await update<unknown>(
+    SETTINGS_KEY,
+    (current) => {
+      const next: PersistedSettings = { ...sanitizePersistedSettings(current), ...patch }
+      for (const key of Object.keys(next) as Array<keyof PersistedSettings>) {
+        if (next[key] === undefined) delete next[key]
+      }
+      return next
+    },
+    kv,
+  )
 }
 
 export const useSettingsStore = create<SettingsState>((setState, getState) => ({
@@ -145,27 +175,44 @@ export const useSettingsStore = create<SettingsState>((setState, getState) => ({
   aiApiKeyStorage: 'session',
   aiModel: DEFAULT_AI_MODEL,
   theme: 'dark',
-  fontSize: UI_FONT_SIZE_DEFAULT,
   codeFontSize: CODE_FONT_SIZE_DEFAULT,
+  revealAdvanced: false,
   loaded: false,
   load: async () => {
-    const persisted = await readPersisted()
-    const aiModel = normalizeAIModel(persisted.aiModel)
-    const aiApiKeyStorage = normalizeAIApiKeyStorage(persisted.aiApiKeyStorage)
-    setState({
-      aiApiKey: aiApiKeyStorage === 'persistent' ? (persisted.aiApiKey ?? '') : '',
-      aiApiKeyStorage,
-      aiModel,
-      theme: persisted.theme ?? 'dark',
-      fontSize: persisted.fontSize ?? UI_FONT_SIZE_DEFAULT,
-      codeFontSize: clampCodeFontSize(persisted.codeFontSize ?? CODE_FONT_SIZE_DEFAULT),
-      loaded: true,
-    })
-    if (aiApiKeyStorage === 'session' && persisted.aiApiKey) {
-      await writeMerge({ aiApiKey: undefined, aiApiKeyStorage })
-    }
-    if (persisted.aiModel && persisted.aiModel !== aiModel) {
-      await writeMerge({ aiModel })
+    if (getState().loaded) return
+    if (loadInFlight) return loadInFlight
+    loadInFlight = (async () => {
+      try {
+        const persisted = await readPersisted()
+        const aiModel = normalizeAIModel(persisted.aiModel)
+        const aiApiKeyStorage = normalizeAIApiKeyStorage(persisted.aiApiKeyStorage)
+        setState({
+          aiApiKey: aiApiKeyStorage === 'persistent' ? (persisted.aiApiKey ?? '') : '',
+          aiApiKeyStorage,
+          aiModel,
+          theme: persisted.theme ?? 'dark',
+          codeFontSize: clampCodeFontSize(persisted.codeFontSize ?? CODE_FONT_SIZE_DEFAULT),
+          revealAdvanced: persisted.revealAdvanced ?? false,
+          loaded: true,
+        })
+        if (aiApiKeyStorage === 'session' && persisted.aiApiKey) {
+          await writeMerge({ aiApiKey: undefined, aiApiKeyStorage })
+        }
+        if (persisted.aiModel && persisted.aiModel !== aiModel) {
+          await writeMerge({ aiModel })
+        }
+      } catch {
+        // Leitura do IndexedDB FALHOU (Firefox modo privado, IDB bloqueado): sem
+        // try/catch a store ficava `loaded:false` PARA SEMPRE e todo awaiter
+        // coalescido rejeitava. Caímos para os defaults em memória com
+        // `loaded:true` — a IDE funciona, só não persiste preferências.
+        setState({ loaded: true })
+      }
+    })()
+    try {
+      await loadInFlight
+    } finally {
+      loadInFlight = null
     }
   },
   setAIApiKey: async (k, options) => {
@@ -198,11 +245,6 @@ export const useSettingsStore = create<SettingsState>((setState, getState) => ({
     setState({ theme })
     await writeMerge({ theme })
   },
-  setFontSize: async (n) => {
-    const fontSize = clampUIFontSize(n)
-    setState({ fontSize })
-    await writeMerge({ fontSize })
-  },
   setCodeFontSize: async (n) => {
     const codeFontSize = clampCodeFontSize(n)
     setState({ codeFontSize })
@@ -221,5 +263,9 @@ export const useSettingsStore = create<SettingsState>((setState, getState) => ({
   resetCodeFontSize: async () => {
     setState({ codeFontSize: CODE_FONT_SIZE_DEFAULT })
     await writeMerge({ codeFontSize: CODE_FONT_SIZE_DEFAULT })
+  },
+  setRevealAdvanced: async (revealAdvanced) => {
+    setState({ revealAdvanced })
+    await writeMerge({ revealAdvanced })
   },
 }))

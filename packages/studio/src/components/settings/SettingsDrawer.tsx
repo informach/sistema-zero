@@ -21,11 +21,15 @@ export function SettingsDrawer({
   const model = useSettingsStore((s) => s.aiModel)
   const theme = useSettingsStore((s) => s.theme)
   const setAIApiKey = useSettingsStore((s) => s.setAIApiKey)
-  const setAIApiKeyStorage = useSettingsStore((s) => s.setAIApiKeyStorage)
   const clearAIApiKey = useSettingsStore((s) => s.clearAIApiKey)
   const setAIModel = useSettingsStore((s) => s.setAIModel)
   const setTheme = useSettingsStore((s) => s.setTheme)
+  const revealAdvanced = useSettingsStore((s) => s.revealAdvanced)
+  const setRevealAdvanced = useSettingsStore((s) => s.setRevealAdvanced)
   const config = useStudioConfig()
+  // Toggle de "revelar avançado" só faz sentido quando o professor permite e o
+  // nível fixado não é já o avançado (senão a paleta já mostra tudo).
+  const showRevealToggle = config.learning.allowLevelReveal && config.learning.level !== 'avancado'
   // Host injetou chave/modelo? As seções correspondentes somem (a configuração
   // é da plataforma, não do aluno).
   const hostKey = Boolean(config.aiConfig.apiKey)
@@ -43,8 +47,11 @@ export function SettingsDrawer({
     if (!open) return
     setDraftKey(apiKey)
     setShowKey(false)
-    setSection(initialSection)
-  }, [apiKey, initialSection, open])
+    // Sem aba de IA (host fixou chave/modelo e não permite chave do aluno) o
+    // initialSection 'ai' deixaria o corpo vazio — clampa em 'appearance',
+    // espelhando o inicializador do useState.
+    setSection(showAITab ? initialSection : 'appearance')
+  }, [apiKey, initialSection, open, showAITab])
 
   const handleSaveKey = async () => {
     const nextKey = draftKey.trim()
@@ -55,6 +62,18 @@ export function SettingsDrawer({
   const handleClearKey = async () => {
     await clearAIApiKey()
     setDraftKey('')
+  }
+
+  const handleStorageToggle = async (persistent: boolean) => {
+    // Comita o RASCUNHO digitado junto com a escolha de armazenamento. Antes o
+    // toggle só chamava setAIApiKeyStorage, que persiste a chave JÁ na store —
+    // então marcar a caixa ANTES de clicar "Salvar" guardava a chave antiga/vazia
+    // e o que o aluno acabou de digitar (só em draftKey) virava no-op silencioso
+    // ao recarregar (rebaixava para o provider mock). Persistir o draft elimina a
+    // divergência draft↔store.
+    const nextKey = draftKey.trim()
+    await setAIApiKey(nextKey, { storage: persistent ? 'persistent' : 'session' })
+    setDraftKey(nextKey)
   }
 
   return (
@@ -138,9 +157,7 @@ export function SettingsDrawer({
                 <input
                   type="checkbox"
                   checked={apiKeyStorage === 'persistent'}
-                  onChange={(e) =>
-                    void setAIApiKeyStorage(e.currentTarget.checked ? 'persistent' : 'session')
-                  }
+                  onChange={(e) => void handleStorageToggle(e.currentTarget.checked)}
                 />
                 Salvar chave neste navegador
               </label>
@@ -191,6 +208,7 @@ export function SettingsDrawer({
                 <button
                   key={t}
                   type="button"
+                  aria-pressed={theme === t}
                   onClick={() => void setTheme(t)}
                   className={[
                     'flex-1 rounded px-3 py-1 text-xs font-medium transition-colors',
@@ -206,6 +224,24 @@ export function SettingsDrawer({
           {/* O ajuste de fonte da UI saiu daqui: ele mutava o font-size do <html>
               do HOST — inaceitável embarcado. O tamanho da fonte do CÓDIGO
               continua nos controles A−/A+ do editor. */}
+
+          {showRevealToggle && (
+            <div className="block text-xs text-sz-fg-soft">
+              <span>Blocos avançados</span>
+              <label className="mt-1 flex items-center gap-2 text-xs text-sz-fg-soft">
+                <input
+                  type="checkbox"
+                  checked={revealAdvanced}
+                  onChange={(e) => void setRevealAdvanced(e.currentTarget.checked)}
+                />
+                Mostrar blocos avançados na paleta
+              </label>
+              <p className="mt-1 text-xs text-sz-fg-mute">
+                Sua turma começa com os blocos essenciais. Ative para explorar recursos mais
+                avançados quando se sentir pronto.
+              </p>
+            </div>
+          )}
         </section>
       )}
     </Modal>

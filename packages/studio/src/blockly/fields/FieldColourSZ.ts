@@ -5,6 +5,21 @@ import { SZ_PALETTE_COLOURS, SZ_PALETTE_COLUMNS, SZ_PALETTE_TITLES } from '../co
 const HEX_RE = /^#[0-9a-fA-F]{6}$/
 
 /**
+ * Reaplica o `data-sz-theme` do root do <Studio> no conteúdo portalado do
+ * DropDownDiv (que vive sob document.body, fora do escopo de tema). Descobre o
+ * tema pela injection div do workspace do bloco, que está sob o `[data-sz-theme]`
+ * do root. Mesmo padrão do StudioThemeScope/Modal para conteúdo portalado.
+ */
+function applyThemeScope(field: Blockly.Field, content: HTMLElement): void {
+  const workspace = field.getSourceBlock()?.workspace as { getInjectionDiv?(): unknown } | undefined
+  const injectionDiv = workspace?.getInjectionDiv?.()
+  const scope = injectionDiv instanceof HTMLElement ? injectionDiv.closest('[data-sz-theme]') : null
+  const theme = scope?.getAttribute('data-sz-theme')
+  if (!theme) return
+  content.setAttribute('data-sz-theme', theme)
+}
+
+/**
  * Campo de cor do Sistema Zero. Usa a paleta MakeCode-like definida em
  * colorPalette.ts e injeta um input HEX no rodapé do dropdown para permitir
  * cor livre quando a paleta não é suficiente.
@@ -25,15 +40,20 @@ export class FieldColourSZ extends FieldColour {
     const content = Blockly.DropDownDiv.getContentDiv()
     if (!content || content.querySelector('.sz-hex-input-row')) return
 
+    // O DropDownDiv é portalado para document.body, fora do [data-sz-theme] do
+    // root do <Studio> — reaplica o atributo no conteúdo para os tokens da
+    // paleta resolverem com o tema certo (mesma ideia do StudioThemeScope/Modal).
+    applyThemeScope(this, content)
+
     const row = document.createElement('div')
     row.className = 'sz-hex-input-row'
     row.style.cssText =
-      'display:flex;gap:6px;padding:8px 6px 4px;border-top:1px solid #232b4a;align-items:center;background:#11172a;'
+      'display:flex;gap:6px;padding:8px 6px 4px;border-top:1px solid var(--color-sz-border);align-items:center;background:var(--color-sz-panel);'
 
     const label = document.createElement('span')
     label.textContent = 'HEX'
     label.style.cssText =
-      'font-size:12px;color:#aab1cf;font-family:Inter,system-ui,sans-serif;font-weight:500;'
+      'font-size:12px;color:var(--color-sz-fg);font-family:Inter,system-ui,sans-serif;font-weight:500;'
 
     const input = document.createElement('input')
     input.type = 'text'
@@ -42,16 +62,16 @@ export class FieldColourSZ extends FieldColour {
     input.maxLength = 7
     input.spellcheck = false
     input.style.cssText =
-      'flex:1;padding:3px 6px;border:1px solid #232b4a;background:#0b1020;color:#e6e9f5;border-radius:4px;font-size:12px;font-family:"JetBrains Mono",ui-monospace,monospace;outline:none;'
+      'flex:1;padding:3px 6px;border:1px solid var(--color-sz-border);background:var(--color-sz-bg);color:var(--color-sz-fg);border-radius:4px;font-size:12px;font-family:"JetBrains Mono",ui-monospace,monospace;outline:none;'
 
     const applyBtn = document.createElement('button')
     applyBtn.textContent = 'OK'
     applyBtn.type = 'button'
     applyBtn.style.cssText =
-      'padding:3px 10px;background:#22d3ee;color:#0b1020;border:0;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600;'
+      'padding:3px 10px;background:var(--color-sz-accent);color:var(--color-sz-bg);border:0;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600;'
 
     const setError = (msg: string | null) => {
-      input.style.borderColor = msg ? '#f87171' : '#232b4a'
+      input.style.borderColor = msg ? 'var(--color-sz-error)' : 'var(--color-sz-border)'
       input.title = msg ?? ''
     }
 

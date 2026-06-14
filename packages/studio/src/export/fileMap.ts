@@ -1,0 +1,274 @@
+import { isReservedProjectFileName, normalizeExtraFileName, type Project } from '#core'
+import { findExtension } from '#official-extensions'
+import { transpileExtra } from '../preview/transpile'
+import type { Minifiers } from './minify'
+import { buildProductionIndexHtml } from './productionHtml'
+
+/** Mapa de arquivos em memória: caminho (com `/`) → conteúdo. Vira ZIP. */
+export type ExportFileMap = Record<string, string | Uint8Array>
+
+export interface ClassicFileMapResult {
+  files: ExportFileMap
+  /** Avisos não-fatais (extra que não compilou, lib 3D via esm.sh, JS 3D inline). */
+  warnings: string[]
+}
+
+const MODULE_RE = /^\s*(?:import|export)\b/m
+
+/**
+ * Monta os arquivos de um projeto CLÁSSICO sob `public/` (site estático). Usa
+ * `project.files` (a fonte da verdade que o preview mostra) + extras transpilados
+ * em arquivos reais + bootstraps de extensão + importmap, tudo via
+ * `buildProductionIndexHtml`. `minifiers` é injetado (identity nos testes).
+ *
+ * Retorna `{ files, warnings }` (como `buildProFileMap`): falhas não-fatais (um
+ * extra `.ts` quebrado, lib 3D via CDN, JS 3D inline ambíguo) viram aviso em vez
+ * de quebrar o export silenciosamente.
+ */
+export async function buildClassicFileMap(
+  project: Project,
+  minifiers: Minifiers,
+): Promise<ClassicFileMapResult> {
+  const files: ExportFileMap = {}
+  const warnings: string[] = []
+
+  let rawHtml = project.files['index.html'] ?? ''
+  const rawCss = project.files['style.css'] ?? ''
+  const rawJs = project.files['script.js'] ?? ''
+
+  // Placement inline ⇒ style.css/script.js vêm vazios (o conteúdo já está dentro
+  // do index.html). Só emite o arquivo externo quando há conteúdo.
+  const hasExternalCss = rawCss.trim().length > 0
+  let hasExternalJs = rawJs.trim().length > 0
+  let jsIsModule = MODULE_RE.test(rawJs)
+
+  if (hasExternalCss) files['public/style.css'] = await minifiers.css(rawCss)
+  if (hasExternalJs) files['public/script.js'] = await minifiers.js(rawJs, { module: jsIsModule })
+
+  // Extras → arquivos reais. CSS é linkado no <head>; HTML vira fragmento no
+  // <body>; JS/TS é transpilado para `.js` real (import explícito com .js resolve).
+  const extraCssHrefs: string[] = []
+  const extraHtmlFragments: string[] = []
+  for (const extra of project.extraFiles ?? []) {
+    const name = normalizeExtraFileName(extra.name)
+    if (!name || isReservedProjectFileName(name)) continue
+    if (extra.language === 'css') {
+      // Colisão pelo NOME DE SAÍDA: `isReservedProjectFileName` só barra os nomes
+      // EXATOS (style.css), mas dois extras com o mesmo basename — ou um extra que
+      // já exista como canônico — colidiriam em `public/<name>`. Pular + avisar em
+      // vez de sobrescrever silenciosamente o trabalho do aluno.
+      const destPath = `public/${name}`
+      if (destPath in files) {
+        warnings.push(outputCollisionWarning(name, name))
+        continue
+      }
+      files[destPath] = await minifiers.css(extra.content)
+      extraCssHrefs.push(name)
+    } else if (extra.language === 'html') {
+      extraHtmlFragments.push(extractBodyFragment(extra.content))
+    } else {
+      const jsName = name.replace(/\.(?:tsx?|jsx|mjs|cjs)$/i, '.js')
+      // Colisão pelo NOME DE SAÍDA pós-rewrite de extensão: um extra `script.ts`
+      // NÃO é reservado (só os nomes exatos são), vira `script.js` e SOBRESCREVERIA
+      // o `public/script.js` canônico do aluno — perda silenciosa do código
+      // principal no site publicado / no "Virar profissional". `utils.ts` + `utils.js`
+      // também colidem entre si. O canônico já foi gravado acima (linha 46), então
+      // a checagem `in files` pega ambos os casos: pula + avisa, nunca clobra.
+      const destPath = `public/${jsName}`
+      if (destPath in files) {
+        warnings.push(outputCollisionWarning(name, jsName))
+        continue
+      }
+      // transpileExtra pode LANÇAR (extra .ts/.tsx malformado em algum caminho).
+      // No clássico isso virava export quebrado SEM aviso (o ExportDialog só
+      // captura throws; o ConvertLegacyPrompt engolia). Isolamos por extra:
+      // pula o arquivo e COLETA um aviso para a UI surfar.
+      try {
+        const transpiled = transpileExtra(name, extra.content)
+        files[destPath] = await minifiers.js(transpiled, {
+          module: MODULE_RE.test(transpiled),
+        })
+      } catch (error) {
+        const reason = error instanceof Error ? error.message : String(error)
+        warnings.push(
+          `O arquivo "${name}" não pôde ser compilado e ficou de fora do site publicado (${reason}).`,
+        )
+      }
+    }
+  }
+
+  // Extensões instaladas: bootstrap vira arquivo real; esmImports vão ao importmap.
+  const extensionScriptSrcs: string[] = []
+  const importmap: Record<string, string> = {}
+  let usesEsmImports = false
+  for (const installed of project.installedExtensions) {
+    const ext = findExtension(installed.id)
+    if (!ext) continue
+    const src = `sz-ext/${installed.id}.js`
+    files[`public/${src}`] = await minifiers.js(ext.runtime.bootstrapScript, {
+      module: Boolean(ext.runtime.esmImports),
+    })
+    extensionScriptSrcs.push(src)
+    if (ext.runtime.esmImports) {
+      Object.assign(importmap, ext.runtime.esmImports)
+      usesEsmImports = true
+    }
+  }
+
+  const needsModules = Object.keys(importmap).length > 0
+
+  // A2: JS canônico INLINE + extensão ESM (precisa module). Um `<script>` clássico
+  // inline no body roda no PARSE, antes do module deferido da extensão — então a
+  // API da extensão (ex.: window.SZGame3D) fica undefined no site exportado. O
+  // preview evita isso externalizando SEMPRE o JS do aluno. Aqui, quando o JS é
+  // inline (hasExternalJs=false) e há exatamente UM `<script>` clássico candidato
+  // no body, externalizamos: o conteúdo vai para public/script.js e a tag inline
+  // vira `<script defer src="script.js">` (roda DEPOIS do module da extensão).
+  if (needsModules && !hasExternalJs) {
+    const candidates = findInlineClassicScripts(rawHtml)
+    if (candidates.length === 1) {
+      const candidate = candidates[0]!
+      files['public/script.js'] = await minifiers.js(candidate.content, { module: false })
+      rawHtml =
+        rawHtml.slice(0, candidate.start) +
+        '<script defer src="script.js"></script>' +
+        rawHtml.slice(candidate.end)
+      // Agora o JS é externo e clássico: o buildProductionIndexHtml NÃO precisa
+      // reinjetar nem reajustar (a tag já está deferida e correta).
+      hasExternalJs = true
+      jsIsModule = false
+    } else {
+      // Detecção ambígua (zero ou vários scripts inline candidatos): não mexemos
+      // no HTML do aluno, só avisamos para que ele coloque o JS em script.js — só
+      // assim a biblioteca 3D (module) carrega ANTES do código que a usa.
+      warnings.push(
+        'Para a biblioteca 3D funcionar no site publicado, coloque o seu código JavaScript no arquivo script.js (e não dentro do index.html), para que a biblioteca carregue primeiro.',
+      )
+    }
+  }
+
+  // LOW: dependência esm.sh. Extensões com esmImports (ex.: game-3d → three) são
+  // carregadas da internet em tempo de execução do VISITANTE no site estático.
+  if (usesEsmImports) {
+    warnings.push(
+      'Este projeto usa uma biblioteca 3D carregada da internet (esm.sh); quem abrir o site publicado precisa estar online.',
+    )
+  }
+
+  const indexHtml = buildProductionIndexHtml({
+    html: rawHtml,
+    hasExternalCss,
+    hasExternalJs,
+    jsIsModule,
+    importmap,
+    extensionScriptSrcs,
+    extraCssHrefs,
+    extraHtmlFragments,
+  })
+  files['public/index.html'] = minifiers.html(indexHtml)
+
+  return { files, warnings }
+}
+
+export interface ProFileMapResult {
+  files: ExportFileMap
+  /** Avisos não-fatais (ex.: package.json sem script de build). */
+  warnings: string[]
+}
+
+/**
+ * Monta os arquivos de um projeto PRO: a árvore inteira como arquivos reais
+ * (pula `node_modules`). Não minifica — o Vite minifica no build do deploy.
+ */
+export function buildProFileMap(project: Project): ProFileMapResult {
+  const files: ExportFileMap = {}
+  const tree = project.tree ?? {}
+  for (const [path, node] of Object.entries(tree)) {
+    if (node.kind !== 'file') continue
+    if (path.split('/').includes('node_modules')) continue
+    files[path] = node.content
+  }
+
+  const warnings: string[] = []
+  const pkgRaw =
+    typeof files['package.json'] === 'string' ? (files['package.json'] as string) : null
+  if (!pkgRaw) {
+    warnings.push('Este projeto nao tem package.json; o deploy precisa de um build que gere dist/.')
+  } else {
+    try {
+      const pkg = JSON.parse(pkgRaw) as { scripts?: Record<string, string> }
+      if (!pkg.scripts?.build) {
+        warnings.push(
+          'O package.json nao tem o script "build"; o Dockerfile espera que ele gere dist/.',
+        )
+      }
+    } catch {
+      warnings.push('O package.json esta invalido (JSON nao pode ser lido).')
+    }
+  }
+
+  return { files, warnings }
+}
+
+/** Aviso de extra descartado por colidir no NOME DE SAÍDA com outro arquivo. */
+function outputCollisionWarning(inputName: string, outName: string): string {
+  return `O arquivo "${inputName}" ficou de fora do site publicado porque o nome de saída "${outName}" já é usado por outro arquivo do projeto (o conteúdo principal foi preservado).`
+}
+
+/** Extrai o conteúdo do `<body>` de um extra HTML (ou usa o fragmento inteiro). */
+function extractBodyFragment(html: string): string {
+  const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i)
+  if (bodyMatch) return (bodyMatch[1] ?? '').trim()
+  if (/<html[\s>]/i.test(html)) {
+    return html
+      .replace(/<!doctype[^>]*>/gi, '')
+      .replace(/<\/?html[^>]*>/gi, '')
+      .replace(/<head[^>]*>[\s\S]*?<\/head>/gi, '')
+      .trim()
+  }
+  return html.trim()
+}
+
+interface InlineScriptMatch {
+  /** Conteúdo (corpo) do `<script>` inline. */
+  content: string
+  /** Índice de início da tag de abertura no html. */
+  start: number
+  /** Índice (exclusivo) após o `</script>`. */
+  end: number
+}
+
+/**
+ * Localiza `<script>` INLINE clássicos no `<body>` (sem `src`, sem
+ * `type="module"`, e sem outro `type` não-JS). Usado pela externalização A2: só
+ * agimos quando há EXATAMENTE um candidato (ambíguo = aviso, não chute).
+ */
+function findInlineClassicScripts(html: string): InlineScriptMatch[] {
+  const bodyStart = bodyContentStart(html)
+  const out: InlineScriptMatch[] = []
+  const re = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi
+  let m: RegExpExecArray | null = re.exec(html)
+  while (m !== null) {
+    const attrs = m[1] ?? ''
+    const content = m[2] ?? ''
+    const start = m.index
+    const isInBody = start >= bodyStart
+    const hasSrc = /[\s"']src=/i.test(attrs)
+    const typeMatch = attrs.match(/\btype=["']?([^"'\s>]*)/i)
+    const type = (typeMatch?.[1] ?? '').toLowerCase()
+    // Clássico = sem type ou um type de JS clássico explícito. Module e qualquer
+    // type não-JS (json, importmap, text/template…) NÃO são candidatos.
+    const isClassic = type === '' || type === 'text/javascript' || type === 'application/javascript'
+    if (isInBody && !hasSrc && isClassic && content.trim().length > 0) {
+      out.push({ content, start, end: re.lastIndex })
+    }
+    m = re.exec(html)
+  }
+  return out
+}
+
+/** Índice onde o conteúdo do `<body>` começa (0 se não houver `<body>`). */
+function bodyContentStart(html: string): number {
+  const m = html.match(/<body[^>]*>/i)
+  return m && m.index !== undefined ? m.index + m[0].length : 0
+}

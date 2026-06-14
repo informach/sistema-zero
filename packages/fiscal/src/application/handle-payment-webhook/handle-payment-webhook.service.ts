@@ -80,21 +80,41 @@ export class HandlePaymentWebhookService {
       return { kind: 'ok' }
     }
 
+    // Idempotência do fluxo automático: no MÁXIMO 1 nota por pagamento na vida. A
+    // unique parcial só cobre ATIVAS, então uma re-entrega após a 1ª já ter virado
+    // SKIPPED/FAILED criaria uma 2ª nota — aqui barramos por QUALQUER status.
+    // (Backfill/retry deliberado é pela rota admin, não pelo webhook.)
+    const existing = await this.invoices.findAnyByPaymentId(paymentId)
+    if (existing) {
+      this.logger.info('fiscal.paid_already_handled', {
+        paymentId,
+        invoiceId: existing.id,
+        status: existing.status,
+      })
+      return { kind: 'ok' }
+    }
+
     const offerId =
       typeof snapshot.metadata['offerId'] === 'string' ? snapshot.metadata['offerId'] : null
     let guaranteeDays: number | null = null
     let productName: string | null = null
     if (offerId) {
+      let offer: Awaited<ReturnType<CatalogClient['getOfferById']>>
       try {
-        const offer = await this.catalog.getOfferById(offerId)
-        if (offer) {
-          guaranteeDays = offer.guaranteeDays
-          productName = offer.productName ?? offer.name
-        }
+        offer = await this.catalog.getOfferById(offerId)
       } catch (error) {
         // guaranteeDays errado emitiria a nota CEDO demais — fail-closed, re-entrega.
         return { kind: 'retryable', reason: `catalog indisponível: ${msg(error)}` }
       }
+      if (!offer) {
+        // Oferta paga DEVE existir no catálogo. 404 (drift/oferta removida) sem o
+        // guaranteeDays real arriscaria emitir DENTRO da garantia (default 7 < real)
+        // — fail-closed: re-entrega e alerta (≠ do manual, onde o admin decide).
+        this.logger.error('fiscal.offer_not_found', { paymentId, offerId })
+        return { kind: 'retryable', reason: `oferta ${offerId} não encontrada no catalog` }
+      }
+      guaranteeDays = offer.guaranteeDays
+      productName = offer.productName ?? offer.name
     }
     const serviceDescription = composeServiceDescription(this.config.serviceDescPrefix, productName)
 
@@ -164,7 +184,11 @@ export class HandlePaymentWebhookService {
       }
 
       if (invoice.status === 'EMITTED') {
-        const ageDays = (Date.now() - (invoice.emittedAt?.getTime() ?? 0)) / (24 * 3600_000)
+        // emittedAt nulo numa EMITTED é anômalo — trata como RECÉM-emitida (idade 0)
+        // p/ falhar FECHADO em direção ao cancelamento (≠ de `?? 0` = epoch = ~56
+        // anos = fora da janela = NÃO cancela uma venda estornada).
+        const emittedMs = invoice.emittedAt?.getTime()
+        const ageDays = emittedMs == null ? 0 : (Date.now() - emittedMs) / (24 * 3600_000)
         if (ageDays > this.config.cancelWindowDays) {
           // Fora da janela técnica de cancelamento — só sinaliza (ação manual).
           this.logger.error('fiscal.refund_after_cancel_window', {

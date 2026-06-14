@@ -60,6 +60,18 @@ describe('EntitlementAggregate', () => {
     expect(e.status).toBe('active')
   })
 
+  test('extendTo reativa expirada com validade vigente futura mesmo sem avançar o alvo', () => {
+    const e = make(T('2026-03-01')) // validade futura
+    e.expire(T('2026-02-02')) // expira cedo — o expiresAt (2026-03-01) ainda é futuro
+    expect(e.status).toBe('expired')
+    // Renovação cujo alvo NÃO avança a validade (2026-02-15 < 2026-03-01) ainda
+    // reativa — antes o early-return monotônico engolia este caso e a renovação se perdia.
+    e.extendTo(T('2026-02-15'), T('2026-02-02'))
+    expect(e.status).toBe('active')
+    expect(e.expiresAt?.toISOString()).toBe(T('2026-03-01').toISOString()) // validade preservada
+    expect(e.isActiveAt(T('2026-02-20'))).toBe(true)
+  })
+
   test('revoke encerra o acesso e não é reativável por extendTo', () => {
     const e = make(null)
     e.revoke(T('2026-02-01'))

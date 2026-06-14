@@ -1,4 +1,4 @@
-import type { HTMLNode, SZIR } from './schema'
+import type { CSSEntry, HTMLNode, SZIR } from './schema'
 
 export function assignStableIdsToIR(ir: SZIR, prefix = 'ir'): SZIR {
   // JS: clona e atribui `__id` a TODOS os nós (statements e expressões) em
@@ -14,11 +14,30 @@ export function assignStableIdsToIR(ir: SZIR, prefix = 'ir'): SZIR {
   })
   return {
     html: ir.html.map((node, index) => assignHTMLId(node, `${prefix}_html_${index}`)),
-    css: ir.css.map((entry, index) => ({ ...entry, __id: entry.__id ?? `${prefix}_css_${index}` })),
+    css: ir.css.map((entry, index) => assignCSSId(entry, `${prefix}_css_${index}`)),
     js,
     extensions: [...ir.extensions],
     ...(ir.htmlShell ? { htmlShell: ir.htmlShell } : {}),
   }
+}
+
+/**
+ * Atribui `__id` a uma entrada de CSS e, no caso de `@media`, recorre nas regras
+ * internas com um id de fallback determinístico (`${id}_rules_${i}`). Sem isso as
+ * regras dentro de uma media query ficavam sem `__id` (o reverse parser de CSS
+ * também não os emite), quebrando o realce bloco↔código do conteúdo responsivo.
+ * NÃO passa por `assignNodeIds`: aquele só atribui `__id` a objetos com campo
+ * `type`, e `CSSRule` não tem — seria pulada.
+ */
+function assignCSSId(entry: CSSEntry, id: string): CSSEntry {
+  if ('type' in entry && entry.type === 'mediaQuery') {
+    return {
+      ...entry,
+      __id: entry.__id ?? id,
+      rules: entry.rules.map((rule, index) => assignCSSId(rule, `${id}_rules_${index}`)),
+    }
+  }
+  return { ...entry, __id: entry.__id ?? id }
 }
 
 function assignHTMLId(node: HTMLNode, id: string): HTMLNode {

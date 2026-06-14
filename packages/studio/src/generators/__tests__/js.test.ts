@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test'
+import type { JSStatement } from '#ir'
 import { num, str, variable } from '#ir'
-import { generateJS } from '../js'
+import { GeneratorDepthError, generateJS, MAX_GENERATOR_DEPTH } from '../js'
 
 describe('generateJS', () => {
   it('emite var/assign/consoleLog', () => {
@@ -71,6 +72,45 @@ describe('generateJS', () => {
       ],
     })
     expect(code).toContain('const d = Math.hypot(player.x - enemy.x, player.y - enemy.y);')
+  })
+
+  it('usa IIFE na distância quando um operando tem efeito colateral (avalia uma vez)', () => {
+    // a = lista.pop(). Na forma inline, `a` saía DUAS vezes (a.x e a.y) → dois pop().
+    // A IIFE liga cada operando a um parâmetro e avalia uma única vez.
+    const code = generateJS({
+      statements: [
+        {
+          type: 'var',
+          kind: 'const',
+          name: 'd',
+          value: {
+            type: 'distance',
+            a: { type: 'memberCallExpr', object: variable('lista'), method: 'pop', args: [] },
+            b: variable('enemy'),
+          },
+        },
+      ],
+    })
+    // O efeito colateral aparece UMA única vez no código gerado.
+    expect(code.match(/lista\.pop\(\)/g)?.length).toBe(1)
+    expect(code).toContain('((a, b) => Math.hypot(a.x - b.x, a.y - b.y))(lista.pop(), enemy)')
+    expect(() => new Function(code)).not.toThrow()
+  })
+
+  it('mantém a forma inline da distância quando ambos os operandos são puros', () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'var',
+          kind: 'const',
+          name: 'd',
+          value: { type: 'distance', a: variable('player'), b: variable('enemy') },
+        },
+      ],
+    })
+    expect(code).toContain('const d = Math.hypot(player.x - enemy.x, player.y - enemy.y);')
+    expect(code).not.toContain('=>')
+    expect(() => new Function(code)).not.toThrow()
   })
 
   it('emite operações de matemática (resto, potência, Math.*)', () => {
@@ -412,7 +452,7 @@ describe('generateJS', () => {
       ],
     })
     expect(code).toContain('ctx.arc(canvas.width, canvas.height,')
-    expect(code).toContain('Math.floor(Math.random() * (20 - 5 + 1)) + 5')
+    expect(code).toContain('Math.floor(Math.random() * ((20) - (5) + 1)) + (5)')
   })
 
   it('emite animationLoop com requestAnimationFrame interno e pontapé frame()', () => {
@@ -552,6 +592,37 @@ describe('generateJS', () => {
       statements: [{ type: 'rawJS', code: 'setTimeout(() => alert("hi"), 100);', advanced: true }],
     })
     expect(code).toContain('setTimeout(() => alert("hi"), 100);')
+  })
+
+  it('preserva o interior de um template literal multilinha no rawJS (sem re-indentar cada linha)', () => {
+    // O conteúdo entre crases (incl. linhas em branco e indentação própria) NÃO
+    // pode ser tocado: re-indentar cada linha física inseria espaços DENTRO da
+    // string. No nível raiz (sem pad) o texto sai byte-a-byte idêntico.
+    const raw = ['const msg = `linha1', '  meio indentado', '', 'fim`;'].join('\n')
+    const code = generateJS({
+      statements: [{ type: 'rawJS', code: raw, advanced: true }],
+    })
+    expect(code).toContain(raw)
+  })
+
+  it('mantém o template literal multilinha verbatim mesmo quando o rawJS é indentado (dentro de um if)', () => {
+    // Aqui o rawJS está aninhado, então a 1ª linha recebe o pad de indentação,
+    // mas as linhas seguintes (interior do template) permanecem intocadas.
+    const raw = ['const html = `<p>', '  recuo do autor', 'fim</p>`;'].join('\n')
+    const code = generateJS({
+      statements: [
+        {
+          type: 'if',
+          cond: { type: 'binop', op: '>', left: variable('x'), right: num(0) },
+          then: [{ type: 'rawJS', code: raw, advanced: true }],
+        },
+      ],
+    })
+    // 1ª linha recebe o pad (2 espaços), abrindo a crase indentada uma vez.
+    expect(code).toContain('  const html = `<p>')
+    // As linhas internas do template ficam exatamente como o autor escreveu.
+    expect(code).toContain('\n  recuo do autor\n')
+    expect(code).toContain('\nfim</p>`;')
   })
 
   it('emite event mouseover ligado a um elemento por id', () => {
@@ -719,11 +790,115 @@ describe('generateJS', () => {
     expect(() => new Function(code)).not.toThrow()
   })
 
+  it('emite rgba() válido para hex bem formado (#rrggbb e #rgb)', () => {
+    const code = generateJS({
+      statements: [
+        { type: 'var', name: 'c1', value: { type: 'colorAlpha', hex: '#22d3ee', alpha: 0.5 } },
+        { type: 'var', name: 'c2', value: { type: 'colorAlpha', hex: '#abc', alpha: 1 } },
+      ],
+    })
+    expect(code).toContain('let c1 = "rgba(34, 211, 238, 0.5)";')
+    // #abc expande para #aabbcc.
+    expect(code).toContain('let c2 = "rgba(170, 187, 204, 1)";')
+  })
+
+  it('colorAlpha com hex malformado cai para preto (sem NaN) e clampa o alpha', () => {
+    const code = generateJS({
+      statements: [
+        { type: 'var', name: 'ruim', value: { type: 'colorAlpha', hex: 'azul', alpha: 0.3 } },
+        { type: 'var', name: 'over', value: { type: 'colorAlpha', hex: '#fff', alpha: 9 } },
+        { type: 'var', name: 'under', value: { type: 'colorAlpha', hex: '#000000', alpha: -2 } },
+      ],
+    })
+    expect(code).not.toContain('NaN')
+    expect(code).toContain('let ruim = "rgba(0, 0, 0, 0.3)";')
+    // alpha fora de [0,1] é truncado.
+    expect(code).toContain('let over = "rgba(255, 255, 255, 1)";')
+    expect(code).toContain('let under = "rgba(0, 0, 0, 0)";')
+  })
+
+  it('parentiza os limites do random (limite aditivo não quebra a aritmética)', () => {
+    // min = a - b, max = m. Sem parênteses sairia `Math.random() * (m - a - b + 1)`
+    // — aritmética errada. Com parênteses: `((m) - (a - b) + 1)`.
+    const code = generateJS({
+      statements: [
+        {
+          type: 'var',
+          name: 'n',
+          value: {
+            type: 'random',
+            min: { type: 'binop', op: '-', left: variable('a'), right: variable('b') },
+            max: variable('m'),
+          },
+        },
+      ],
+    })
+    expect(code).toContain('Math.floor(Math.random() * ((m) - (a - b) + 1)) + (a - b)')
+    expect(() => new Function(code)).not.toThrow()
+  })
+
+  it('usa IIFE no random quando um limite tem efeito colateral (avalia uma vez)', () => {
+    // min = lista.pop(). Na forma inline, `min` saía DUAS vezes → dois pop().
+    // A IIFE liga cada limite a um parâmetro e avalia uma única vez.
+    const code = generateJS({
+      statements: [
+        {
+          type: 'var',
+          name: 'n',
+          value: {
+            type: 'random',
+            min: { type: 'memberCallExpr', object: variable('lista'), method: 'pop', args: [] },
+            max: num(10),
+          },
+        },
+      ],
+    })
+    // O efeito colateral aparece UMA única vez no código gerado.
+    expect(code.match(/lista\.pop\(\)/g)?.length).toBe(1)
+    expect(code).toContain(
+      '((a, b) => Math.floor(Math.random() * (b - a + 1)) + a)(lista.pop(), 10)',
+    )
+    expect(() => new Function(code)).not.toThrow()
+  })
+
+  it('mantém a forma inline do random quando ambos os limites são puros', () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'var',
+          name: 'n',
+          value: { type: 'random', min: num(1), max: variable('m') },
+        },
+      ],
+    })
+    expect(code).toContain('Math.floor(Math.random() * ((m) - (1) + 1)) + (1)')
+    expect(code).not.toContain('=>')
+  })
+
   it('inclui header quando fornecido', () => {
     const code = generateJS({
       statements: [],
       header: '// Gerado pelo Sistema Zero Studio',
     })
     expect(code.startsWith('// Gerado pelo Sistema Zero Studio')).toBe(true)
+  })
+
+  it('lança GeneratorDepthError (capturável) numa IR aninhada demais, sem estourar a pilha', () => {
+    // Monta `if` dentro de `if` … bem além do teto. Sem a guarda, isto estourava
+    // a pilha do motor (RangeError) e os chamadores na thread principal (que não
+    // têm try/catch) tinham tela branca. Agora vira um erro TIPADO e capturável.
+    let nested: JSStatement = { type: 'consoleLog', value: num(1) }
+    for (let i = 0; i < MAX_GENERATOR_DEPTH + 50; i += 1) {
+      nested = { type: 'if', cond: { type: 'bool', value: true }, then: [nested] }
+    }
+    expect(() => generateJS({ statements: [nested] })).toThrow(GeneratorDepthError)
+  })
+
+  it('aceita aninhamento dentro do limite (não lança)', () => {
+    let nested: JSStatement = { type: 'consoleLog', value: num(1) }
+    for (let i = 0; i < 50; i += 1) {
+      nested = { type: 'if', cond: { type: 'bool', value: true }, then: [nested] }
+    }
+    expect(() => generateJS({ statements: [nested] })).not.toThrow()
   })
 })

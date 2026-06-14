@@ -1,5 +1,11 @@
 import type { JSExpr } from '#ir'
+import { normalizeIdentifier, safeIdent } from './identifier'
 import type { SourceMapBuilder } from './sourceMap'
+
+// `normalizeIdentifier`/`safeIdent` foram extraídos para `./identifier` (são
+// compartilhados com a camada de blocos via `paramsMutator`). Re-exportamos aqui
+// para que os importadores existentes (`js.ts`) continuem funcionando.
+export { normalizeIdentifier, safeIdent }
 
 /**
  * Contexto opcional de source map para expressões. Como `compileExpr` nunca
@@ -10,51 +16,6 @@ export interface ExprMapContext {
   map: SourceMapBuilder
   line: number
 }
-
-const JS_RESERVED_WORDS = new Set([
-  'arguments',
-  'await',
-  'break',
-  'case',
-  'catch',
-  'class',
-  'const',
-  'continue',
-  'debugger',
-  'default',
-  'delete',
-  'do',
-  'else',
-  'enum',
-  'eval',
-  'export',
-  'extends',
-  'false',
-  'finally',
-  'for',
-  'function',
-  'if',
-  'import',
-  'in',
-  'instanceof',
-  'let',
-  'new',
-  'null',
-  'return',
-  'static',
-  'super',
-  'switch',
-  'this',
-  'throw',
-  'true',
-  'try',
-  'typeof',
-  'var',
-  'void',
-  'while',
-  'with',
-  'yield',
-])
 
 /** Precedência do operador ternário (`?:`): a mais baixa, abaixo de `||`. */
 const TERNARY_PRECEDENCE = 0.5
@@ -186,10 +147,15 @@ export function compileExpr(
     case 'color':
       return JSON.stringify(expr.value)
     case 'colorAlpha': {
-      const r = Number.parseInt(expr.hex.slice(1, 3), 16)
-      const g = Number.parseInt(expr.hex.slice(3, 5), 16)
-      const b = Number.parseInt(expr.hex.slice(5, 7), 16)
-      const a = Math.round(expr.alpha * 100) / 100
+      // `hex` é irText() não validado — sem normalizar, um valor malformado vira
+      // `rgba(NaN, NaN, NaN, …)`. Aceita #rgb (expande p/ #rrggbb) e #rrggbb;
+      // qualquer outra coisa cai para preto. Alpha é truncado a [0, 1].
+      const normalized = normalizeHex(expr.hex)
+      const r = Number.parseInt(normalized.slice(1, 3), 16)
+      const g = Number.parseInt(normalized.slice(3, 5), 16)
+      const b = Number.parseInt(normalized.slice(5, 7), 16)
+      const alpha = Math.min(1, Math.max(0, Number.isFinite(expr.alpha) ? expr.alpha : 0))
+      const a = Math.round(alpha * 100) / 100
       return JSON.stringify(`rgba(${r}, ${g}, ${b}, ${a})`)
     }
     case 'bool':
@@ -241,7 +207,18 @@ export function compileExpr(
     case 'random': {
       const min = compileExpr(expr.min, 0, identifiers, rec)
       const max = compileExpr(expr.max, 0, identifiers, rec)
-      return `Math.floor(Math.random() * (${max} - ${min} + 1)) + ${min}`
+      // Parenteses explícitos em cada operando: compilados em precedência 0, os
+      // limites aditivos (ex.: `a - b`) sairiam sem parênteses e a aritmética
+      // ficaria errada (`(m - a - b + 1)`).
+      if (isPureExpr(expr.min) && isPureExpr(expr.max)) {
+        // Limites sem efeito colateral: inline legível (o `min` aparecer duas
+        // vezes é inofensivo). Mantém a forma que o aluno reconhece.
+        return `Math.floor(Math.random() * ((${max}) - (${min}) + 1)) + (${min})`
+      }
+      // Limite com efeito colateral (ex.: `lista.pop()`): a forma inline emitia
+      // `min` DUAS vezes, avaliando o efeito em dobro. Uma IIFE liga cada limite
+      // a um parâmetro, garantindo avaliação única na ordem min→max.
+      return `((a, b) => Math.floor(Math.random() * (b - a + 1)) + a)(${min}, ${max})`
     }
     case 'hslColor': {
       // Números literais entram inline (`50%`); o resto vira interpolação
@@ -267,9 +244,20 @@ export function compileExpr(
     case 'mathBinary':
       return `Math.${expr.fn}(${compileExpr(expr.a, 0, identifiers, rec)}, ${compileExpr(expr.b, 0, identifiers, rec)})`
     case 'distance': {
-      const a = compileExpr(expr.a, MEMBER_PRECEDENCE, identifiers, rec)
-      const b = compileExpr(expr.b, MEMBER_PRECEDENCE, identifiers, rec)
-      return `Math.hypot(${a}.x - ${b}.x, ${a}.y - ${b}.y)`
+      if (isPureExpr(expr.a) && isPureExpr(expr.b)) {
+        // Operandos sem efeito colateral: forma inline legível (cada operando
+        // aparecer duas vezes é inofensivo). `MEMBER_PRECEDENCE` força parênteses
+        // em torno de operadores (ex.: `(a + b).x`).
+        const a = compileExpr(expr.a, MEMBER_PRECEDENCE, identifiers, rec)
+        const b = compileExpr(expr.b, MEMBER_PRECEDENCE, identifiers, rec)
+        return `Math.hypot(${a}.x - ${b}.x, ${a}.y - ${b}.y)`
+      }
+      // Operando com efeito colateral (ex.: `lista.pop()`): a forma inline emitia
+      // cada operando DUAS vezes, avaliando o efeito em dobro. Uma IIFE liga cada
+      // operando a um parâmetro, garantindo avaliação única na ordem a→b.
+      const a = compileExpr(expr.a, 0, identifiers, rec)
+      const b = compileExpr(expr.b, 0, identifiers, rec)
+      return `((a, b) => Math.hypot(a.x - b.x, a.y - b.y))(${a}, ${b})`
     }
     case 'mathConst':
       return `Math.${expr.name}`
@@ -279,6 +267,10 @@ export function compileExpr(
     }
     case 'eventProp':
       return `event.${expr.prop}`
+    case 'storageGet': {
+      const store = expr.store === 'session' ? 'sessionStorage' : 'localStorage'
+      return `${store}.getItem(${compileExpr(expr.key, 0, identifiers, rec)})`
+    }
     case 'vec2':
       return `{ x: ${compileExpr(expr.x, 0, identifiers, rec)}, y: ${compileExpr(expr.y, 0, identifiers, rec)} }`
     case 'vec3':
@@ -335,6 +327,71 @@ export function compileExpr(
 }
 
 /**
+ * Uma expressão é "pura" quando reemiti-la (texto idêntico) não muda o
+ * comportamento — ou seja, avaliá-la duas vezes equivale a avaliá-la uma só.
+ * Usada pelo `random` para decidir entre a forma inline (limites duplicados,
+ * legível) e a IIFE (limite avaliado uma única vez). Tipos que CHAMAM código do
+ * aluno (`call`/`callMethodExpr`/`memberCallExpr`) ou que carregam estado/efeito
+ * (`shuffle`, `storageGet`, `now`, `randomFloat`, `random`, …) são impuros; os
+ * compostos só são puros quando TODOS os filhos também são.
+ */
+function isPureExpr(expr: JSExpr): boolean {
+  switch (expr.type) {
+    case 'num':
+    case 'str':
+    case 'color':
+    case 'colorAlpha':
+    case 'bool':
+    case 'var':
+    case 'thisRef':
+    case 'thisProp':
+    case 'propAccess':
+    case 'arrayLength':
+    case 'mathConst':
+    case 'eventProp':
+    case 'global':
+    case 'canvasDim':
+    case 'datasetGet':
+    case 'classContains':
+      return true
+    case 'binop':
+    case 'logical':
+      return isPureExpr(expr.left) && isPureExpr(expr.right)
+    case 'ternary':
+      return isPureExpr(expr.condition) && isPureExpr(expr.whenTrue) && isPureExpr(expr.whenFalse)
+    case 'mathUnary':
+      return isPureExpr(expr.arg)
+    case 'mathBinary':
+      return isPureExpr(expr.a) && isPureExpr(expr.b)
+    case 'distance':
+      return isPureExpr(expr.a) && isPureExpr(expr.b)
+    case 'angleConvert':
+      return isPureExpr(expr.arg)
+    case 'vec2':
+      return isPureExpr(expr.x) && isPureExpr(expr.y)
+    case 'vec3':
+      return isPureExpr(expr.x) && isPureExpr(expr.y) && isPureExpr(expr.z)
+    case 'memberGet':
+      return isPureExpr(expr.object)
+    case 'index':
+      return isPureExpr(expr.index)
+    case 'array':
+      return expr.items.every(isPureExpr)
+    case 'concat':
+    case 'concatArrays':
+      return expr.parts.every(isPureExpr)
+    case 'objectLiteral':
+      return expr.entries.every((e) => isPureExpr(e.value))
+    case 'hslColor':
+      return isPureExpr(expr.h) && isPureExpr(expr.s) && isPureExpr(expr.l)
+    default:
+      // Inclui call/callMethodExpr/memberCallExpr/shuffle/storageGet/now/
+      // random/randomFloat: na dúvida, trata como impuro (usa a IIFE).
+      return false
+  }
+}
+
+/**
  * Precedência (alta) do acesso a membro: ao compilar o OBJETO de
  * `memberGet`/`memberCallExpr`, força parênteses em torno de operadores
  * (ex.: `(a + b).x`). Identificadores/`this`/membros não checam precedência,
@@ -357,12 +414,19 @@ function formatNumber(n: number): string {
   return Number.isInteger(n) ? `${n}` : `${n}`
 }
 
-export function safeIdent(name: string): string {
-  return normalizeIdentifier(name)
-}
-
-export function normalizeIdentifier(name: string): string {
-  const cleaned = name.replace(/[^A-Za-z0-9_$]/g, '_')
-  const withPrefix = /^[0-9]/.test(cleaned) ? `_${cleaned}` : cleaned || '_'
-  return JS_RESERVED_WORDS.has(withPrefix) ? `${withPrefix}_` : withPrefix
+/**
+ * Normaliza um hex de cor para a forma `#rrggbb`. Aceita `#rgb` (expande cada
+ * dígito) e `#rrggbb`; qualquer outro valor (vazio, sem `#`, comprimento
+ * errado) cai para `#000000` — evita `rgba(NaN, …)` a partir de hex malformado.
+ */
+function normalizeHex(hex: string): string {
+  if (!/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(hex)) return '#000000'
+  if (hex.length === 4) {
+    // #rgb → #rrggbb: duplica cada dígito.
+    const r = hex.slice(1, 2)
+    const g = hex.slice(2, 3)
+    const b = hex.slice(3, 4)
+    return `#${r}${r}${g}${g}${b}${b}`
+  }
+  return hex
 }

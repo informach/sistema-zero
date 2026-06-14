@@ -146,8 +146,27 @@ const VideoPositionBody = z.object({
 })
 
 const QuizAttemptBody = z.object({
-  answers: z.record(z.string().min(1).max(64), z.array(z.string().min(1).max(64)).max(20)),
+  // Espelha o TypeBox do members: ≤100 questões, ≤20 choices/questão, chaves/ids ≤64.
+  answers: z
+    .record(z.string().min(1).max(64), z.array(z.string().min(1).max(64)).max(20))
+    .refine((a) => Object.keys(a).length <= 100, 'Máximo de 100 questões'),
 })
+
+/**
+ * Valida o corpo da entrega do Estúdio SEM reserializar/strip — o projeto precisa
+ * chegar ao members INTACTO (zod `.parse` removeria `mode`/`ir`/`blocksState`/
+ * `installedExtensions`, corrompendo a entrega). Só checamos a forma mínima e
+ * devolvemos a referência ORIGINAL; o shape inteiro é sanitizado no front da lib e
+ * revalidado no members. Teto de tamanho é da borda (gateway 2 MB) e do members.
+ */
+function extractStudioProject(raw: unknown): Record<string, unknown> | null {
+  if (!raw || typeof raw !== 'object') return null
+  const project = (raw as { project?: unknown }).project
+  if (!project || typeof project !== 'object' || Array.isArray(project)) return null
+  const p = project as Record<string, unknown>
+  if (typeof p.name !== 'string' || typeof p.files !== 'object' || p.files === null) return null
+  return p
+}
 
 const invalidInput = () => NextResponse.json({ error: { code: 'INVALID_INPUT' } }, { status: 400 })
 
@@ -713,6 +732,17 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     },
   }
 
+  /** Entrega do projeto do Estúdio ao members (destrava a conclusão da aula). */
+  const studioSubmit = {
+    POST: async (req: Request, ctx: { params: Promise<{ lessonId: string; blockId: string }> }) => {
+      const { lessonId, blockId } = await ctx.params
+      const project = extractStudioProject(await req.json().catch(() => null))
+      if (!project) return invalidInput()
+      const { status, body } = await members.submitStudioProject(lessonId, blockId, project)
+      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+    },
+  }
+
   // ── Payments ──────────────────────────────────────────────────────────────
 
   /** Lista paginada das compras do aluno logado (filtro por e-mail é do backend). */
@@ -784,6 +814,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     gamificationMe,
     lessonPosition,
     quizAttempts,
+    studioSubmit,
     paymentsMy,
     impersonate,
     healthz,

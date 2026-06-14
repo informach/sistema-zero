@@ -19,6 +19,7 @@
     "@react-three/drei": "^10",
     "@react-three/fiber": "^9",
     "@sistemazero/member-shell": "workspace:*",
+    "@sistemazero/studio": "workspace:*",
     "@sistemazero/ui": "workspace:*",
     "@vimeo/player": "^2.30.4",
     "class-variance-authority": "^0.7.1",

@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { canonicalHmacMessage, signHmac } from '@sistemazero/core/security'
 import { CheckAccessService } from '../src/application/access/check-access.service'
+import { AccessCheckService } from '../src/application/access-check/access-check.service'
 import {
   AttachmentAdminService,
   BlockAdminService,
@@ -27,7 +28,9 @@ import { MarkLessonCompleteService } from '../src/application/mark-lesson-comple
 import { RevokeEntitlementService } from '../src/application/revoke-entitlement/revoke-entitlement.service'
 import { SaveCourseRatingService } from '../src/application/save-course-rating/save-course-rating.service'
 import { SaveVideoPositionService } from '../src/application/save-video-position/save-video-position.service'
+import { StudioSubmissionsAdminService } from '../src/application/studio-submissions-admin/studio-submissions-admin.service'
 import { SubmitQuizAttemptService } from '../src/application/submit-quiz-attempt/submit-quiz-attempt.service'
+import { SubmitStudioProjectService } from '../src/application/submit-studio-project/submit-studio-project.service'
 import type { CourseAudience, CourseStatus } from '../src/domain/course/course'
 import { EntitlementAggregate } from '../src/domain/entitlement/entitlement.aggregate'
 import type { ResolvedOffer } from '../src/domain/ports/catalog-gateway.port'
@@ -42,6 +45,7 @@ import {
   InMemoryProcessedWebhookRepository,
   InMemoryProgressRepository,
   InMemoryQuizAttemptRepository,
+  InMemoryStudioSubmissionRepository,
   InMemoryVideoPositionRepository,
   silentLogger,
 } from './fakes/in-memory'
@@ -66,6 +70,7 @@ export function buildApp(
   const progress = new InMemoryProgressRepository(courses)
   const positions = new InMemoryVideoPositionRepository()
   const quizAttempts = new InMemoryQuizAttemptRepository()
+  const studioSubmissions = new InMemoryStudioSubmissionRepository()
   const ratings = new InMemoryCourseRatingRepository()
   const gamification = new InMemoryGamificationRepository({ entitlements, courses })
   const processed = new InMemoryProcessedWebhookRepository()
@@ -82,7 +87,11 @@ export function buildApp(
   })
   const revoke = new RevokeEntitlementService({ entitlements, clock, logger: silentLogger })
 
-  const env = { NODE_ENV: 'test', MAX_REQUEST_BODY_BYTES: 64 * 1024 } as unknown as Env
+  const env = {
+    NODE_ENV: 'test',
+    MAX_REQUEST_BODY_BYTES: 64 * 1024,
+    MAX_STUDIO_BODY_BYTES: 2 * 1024 * 1024,
+  } as unknown as Env
 
   const app = createServer({
     env,
@@ -98,6 +107,7 @@ export function buildApp(
         progress,
         positions,
         quizAttempts,
+        studioSubmissions,
         clock,
       ),
       resolveAttachment: new GetAttachmentDownloadService(checkAccess, courses),
@@ -107,6 +117,7 @@ export function buildApp(
         courses,
         progress,
         quizAttempts,
+        studioSubmissions,
         awardGamification,
         clock,
       ),
@@ -119,6 +130,13 @@ export function buildApp(
         courses,
         quizAttempts,
         awardGamification,
+        () => randomUUID(),
+        clock,
+      ),
+      submitStudio: new SubmitStudioProjectService(
+        checkAccess,
+        courses,
+        studioSubmissions,
         () => randomUUID(),
         clock,
       ),
@@ -158,6 +176,11 @@ export function buildApp(
       lessons: new LessonAdminService(courses, courses),
       blocks: new BlockAdminService(courses),
       attachments: new AttachmentAdminService(courses),
+      studioSubmissions: new StudioSubmissionsAdminService(studioSubmissions),
+    },
+    internal: {
+      accessCheck: new AccessCheckService(entitlements, clock),
+      internalToken: opts.internalToken,
     },
   })
 
@@ -168,6 +191,7 @@ export function buildApp(
     progress,
     positions,
     quizAttempts,
+    studioSubmissions,
     ratings,
     gamification,
     processed,

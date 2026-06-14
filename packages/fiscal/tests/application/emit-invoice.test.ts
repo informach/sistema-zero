@@ -6,6 +6,7 @@ import {
   INFORMACH_BASE,
 } from '../../src/domain/dps/emitter-profile'
 import { SkipReason } from '../../src/domain/invoice/invoice.status'
+import { createNullMessagingClient } from '../../src/infrastructure/messaging/gateway-messaging-client'
 import {
   FakePaymentsClient,
   InMemoryInvoiceRepository,
@@ -177,8 +178,8 @@ describe('emissão', () => {
   test('duplicate (re-POST pós-timeout) → recupera pela consulta, EMITTED sem nota dobrada', async () => {
     const { invoices, payments, sefin, service } = build()
     payments.set(paidSnapshot())
-    sefin.nextResults.push({ kind: 'duplicate', dpsXml: '<DPS/>' })
-    sefin.lookupResult = { accessKey: '9'.repeat(50) }
+    // O gateway real resolve a chave na consulta do 400 e a devolve no resultado.
+    sefin.nextResults.push({ kind: 'duplicate', accessKey: '9'.repeat(50), dpsXml: '<DPS/>' })
     const invoice = await scheduledInvoice(invoices)
 
     await service.execute(invoice)
@@ -250,6 +251,114 @@ describe('emissão', () => {
 
     expect((await invoices.findById(original.id))?.status).toBe('SUBSTITUTED')
     expect((await invoices.findById(original.id))?.substitutedById).toBe(substitute.id)
+  })
+
+  test('reconcile: já EMITTED por outra réplica → idempotente, NÃO sobrescreve a chave', async () => {
+    const { invoices, payments, sefin, service } = build()
+    payments.set(paidSnapshot())
+    const invoice = await scheduledInvoice(invoices)
+    // Outra réplica grava EMITTED com OUTRA chave durante a chamada à Sefin.
+    sefin.onEmit = async () => {
+      const inv = invoices.invoices.get(invoice.id)
+      if (inv) Object.assign(inv, { status: 'EMITTED', accessKey: `2${'0'.repeat(49)}` })
+    }
+
+    await service.execute(invoice)
+
+    const after = await invoices.findById(invoice.id)
+    expect(after?.status).toBe('EMITTED')
+    expect(after?.accessKey).toBe(`2${'0'.repeat(49)}`) // a chave existente, não a do 2º envio
+  })
+
+  test('reconcile: corrida p/ outro estado (FAILED) → status intocado (alerta lost-race)', async () => {
+    const { invoices, payments, sefin, service } = build()
+    payments.set(paidSnapshot())
+    const invoice = await scheduledInvoice(invoices)
+    sefin.onEmit = async () => {
+      const inv = invoices.invoices.get(invoice.id)
+      if (inv) inv.status = 'FAILED'
+    }
+
+    await service.execute(invoice)
+
+    // markEmitted não casa (não é SCHEDULED) e o estado não é EMITTED/SKIPPED:
+    // não sobrescreve — fica como está e loga fiscal.emit_recording_lost_race.
+    expect((await invoices.findById(invoice.id))?.status).toBe('FAILED')
+  })
+
+  test('substituta emite mas a original já está CANCEL_PENDING (estorno) → cancelamento NÃO é perdido', async () => {
+    const { invoices, payments, service } = build()
+    payments.set(paidSnapshot({ id: 'pay-0' })) // a substituta re-verifica este pagamento
+    const original = await invoices.schedule({
+      paymentId: 'pay-0',
+      customer: { name: 'X', email: 'x@x.com', document: '52998224725' },
+      amountInCents: 3700n,
+      serviceDescription: 'Curso',
+      offerId: null,
+      guaranteeDays: null,
+      paidAt: new Date(),
+      scheduledFor: new Date(),
+      ambiente: 'producao-restrita',
+    })
+    Object.assign(original, { status: 'EMITTED', emittedAt: new Date(), accessKey: '5'.repeat(50) })
+    // Estorno moveu a original p/ CANCEL_PENDING ANTES da substituta gravar.
+    await invoices.requestCancel(
+      original.id,
+      'system:refund',
+      'Pagamento reembolsado ao consumidor',
+    )
+
+    const substitute = await invoices.schedule({
+      paymentId: 'pay-0',
+      customer: { name: 'Maria', email: 'm@m.com', document: '52998224725' },
+      amountInCents: 3700n,
+      serviceDescription: 'Curso (corrigido)',
+      offerId: null,
+      guaranteeDays: null,
+      paidAt: new Date(),
+      scheduledFor: new Date(Date.now() - 1000),
+      ambiente: 'producao-restrita',
+      substitutesId: original.id,
+    })
+    const [claimed] = await invoices.claimDueForEmission({
+      batchSize: 10,
+      staleMs: 0,
+      maxAttempts: 10,
+    })
+    await service.execute(claimed ?? substitute)
+
+    // A original NÃO foi sobrescrita p/ SUBSTITUTED — segue rumo ao cancelamento.
+    expect((await invoices.findById(original.id))?.status).toBe('CANCEL_PENDING')
+    expect((await invoices.findById(substitute.id))?.status).toBe('EMITTED')
+    expect(invoices.events.some((e) => e.type === 'SUBSTITUTE_ORIGINAL_NOT_EMITTED')).toBe(true)
+  })
+
+  test('cliente de e-mail no-op (sem gateway) NÃO marca emailSentAt fantasma', async () => {
+    const invoices = new InMemoryInvoiceRepository()
+    const payments = new FakePaymentsClient()
+    const sefin = new ScriptedSefinGateway()
+    const service = new EmitInvoiceService(
+      invoices,
+      payments,
+      sefin,
+      new ScriptedDanfseClient(),
+      createNullMessagingClient(), // sem GATEWAY_URL/FISCAL_HMAC_SECRET
+      {
+        serie: '2',
+        maxAttempts: 10,
+        buildDpsId: (serie, numero) => buildDpsId(profile, serie, numero),
+        selfUrl: 'http://fiscal.test:3009',
+      },
+      silentLogger,
+    )
+    payments.set(paidSnapshot())
+    const invoice = await scheduledInvoice(invoices)
+
+    await service.execute(invoice)
+
+    const after = await invoices.findById(invoice.id)
+    expect(after?.status).toBe('EMITTED')
+    expect(after?.emailSentAt).toBeNull() // nada enviado → nada marcado
   })
 })
 

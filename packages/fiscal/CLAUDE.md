@@ -30,6 +30,37 @@ Runtime: **Bun**. Plano completo: `~/.claude/plans/agora-precisamos-come-ar-a-de
 > (env) e o FAKE só em dev/teste sem cert (RECUSA `producao`). **47 testes.**
 > FALTA: deploy em staging + e2e (criar serviço Railway, seeds, envs) e deploy em produção.
 
+## Endurecimentos do 2º full review (13/06) — **102 testes** (incl. `tests/db/` real)
+
+Achados implementados (correção/fiscal/segurança/concorrência):
+- **Substituição** sem nota dobrada: `invoices_substitute_active_uq` (1 substituta ativa por original)
+  + 409 `SUBSTITUTE_IN_PROGRESS` na rota + **re-verificação do pagamento** (não substitui venda
+  estornada). `schedule()` recupera o 23505 da substituta via `findActiveSubstituteFor`.
+- **`markEmittedAsSubstitute`** (substituiu `markSubstituted`): grava EMITTED da substituta + marca a
+  original SUBSTITUTED na MESMA transação (atomicidade), e SÓ se a original ainda EMITTED — um estorno
+  que a moveu p/ CANCEL_PENDING NÃO é sobrescrito (alerta `fiscal.substitute_original_not_emitted`).
+- **Cancelamento**: `xMotivo` = TSMotivo do XSD = **15–255** chars (borda valida; worker normaliza
+  defensivamente). Antes minLength 3/maxLength 500 → Sefin rejeitava → nota presa em CANCEL_PENDING.
+- **Coletor de presas** (`failExhausted`, no início do tick): nota SCHEDULED com `attempts > maxAttempts`
+  (crash entre claim e transição) vira FAILED — não some do `/metrics` p/ sempre.
+- **Idempotência por pagamento** (`findAnyByPaymentId`): re-entrega do `paid` após SKIPPED/FAILED não
+  cria 2ª nota. Oferta paga 404 no catalog → **retryable** (não emite cedo com garantia default).
+- **Cert**: `leafCertPem` explícito (não o 1º bloco da cadeia — bag order pode pôr CA antes do leaf).
+  **Circuit-breaker**: cert expirado em prod PARA os workers (por-réplica) + `fiscal.cert_expired_emission_halted`.
+- **env refines novos**: série × ambiente (staging≠2, prod∉{901,902}; default agora **901**); URLs S2S
+  não-localhost em prod/staging; `GATEWAY_URL`+`FISCAL_HMAC_SECRET` co-dependentes e obrigatórios em
+  produção; `NFSE_SIG_ALGO` (sha1|sha256, escape). Cliente de e-mail no-op retorna `false` → **não marca
+  `emailSentAt` fantasma**.
+- **Borda**: auth ANTES da validação (`onTransform`) + `VALIDATION` mapeado p/ 400 sem ecoar input;
+  dedupe do webhook pelo **id ASSINADO do corpo** (não o `x-delivery-id` do header); PDF com
+  `nosniff`+`no-store`. `esc()` remove controles C0 do XML; `composeServiceDescription` trunca por
+  codepoint. Gateway: 403 = erro de cert acionável; `duplicate` carrega a chave (sem 2ª consulta);
+  `NFSE_TOTAL_RETRY_BUDGET_MS` aplicado por chamada.
+- **Índices**: pg_trgm GIN na busca `q` do admin (migration `0001`, com `CREATE EXTENSION` à mão).
+- ⚠️ **DEPLOY**: os refines novos EXIGEM no host de prod/staging, ANTES do próximo deploy: séries certas,
+  `GATEWAY_URL`+`FISCAL_HMAC_SECRET` (prod), `PAYMENTS_BASE_URL`/`CATALOG_BASE_URL`/`FISCAL_SELF_URL`
+  não-localhost — senão o boot falha-rápido. Migration `0001` roda no preDeploy (índices, idempotente).
+
 ## Regra de ambientes (CORAÇÃO do serviço — não relaxar)
 
 `APP_ENV=production` ⇒ `NFSE_AMBIENTE=producao` · `APP_ENV=staging` ⇒ `producao-restrita` ·

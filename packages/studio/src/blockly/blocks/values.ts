@@ -322,6 +322,25 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     tooltip: 'Lê um data-attribute guardado num elemento (el.dataset.chave).',
   },
   {
+    type: 'sz_val_storage_get',
+    message0: 'ler de %1 a chave %2',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'STORE',
+        options: [
+          ['localStorage', 'local'],
+          ['sessionStorage', 'session'],
+        ],
+      },
+      { type: 'field_input', name: 'KEY', text: 'nome' },
+    ],
+    output: 'JSValue',
+    colour: C,
+    level: 'iniciante',
+    tooltip: 'Lê um valor salvo no navegador (localStorage.getItem). Devolve texto ou nulo.',
+  },
+  {
     type: 'sz_val_class_contains',
     message0: 'o elemento %1 %2 tem a classe %3',
     args0: [

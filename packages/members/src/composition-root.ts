@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { createLogger, type Logger } from '@sistemazero/core/logging'
 import { CheckAccessService } from './application/access/check-access.service'
+import { AccessCheckService } from './application/access-check/access-check.service'
 import {
   AttachmentAdminService,
   BlockAdminService,
@@ -27,7 +28,9 @@ import { MarkLessonCompleteService } from './application/mark-lesson-complete/ma
 import { RevokeEntitlementService } from './application/revoke-entitlement/revoke-entitlement.service'
 import { SaveCourseRatingService } from './application/save-course-rating/save-course-rating.service'
 import { SaveVideoPositionService } from './application/save-video-position/save-video-position.service'
+import { StudioSubmissionsAdminService } from './application/studio-submissions-admin/studio-submissions-admin.service'
 import { SubmitQuizAttemptService } from './application/submit-quiz-attempt/submit-quiz-attempt.service'
+import { SubmitStudioProjectService } from './application/submit-studio-project/submit-studio-project.service'
 import type { Env } from './infrastructure/config/env'
 import { createCatalogHttpGateway } from './infrastructure/gateways/catalog-http.gateway'
 import { withSentryMirror } from './infrastructure/observability/sentry'
@@ -40,6 +43,7 @@ import { DrizzleGamificationRepository } from './infrastructure/persistence/driz
 import { DrizzleProcessedWebhookRepository } from './infrastructure/persistence/drizzle/processed-webhook.repository'
 import { DrizzleProgressRepository } from './infrastructure/persistence/drizzle/progress.repository'
 import { DrizzleQuizAttemptRepository } from './infrastructure/persistence/drizzle/quiz-attempt.repository'
+import { DrizzleStudioSubmissionRepository } from './infrastructure/persistence/drizzle/studio-submission.repository'
 import { DrizzleVideoPositionRepository } from './infrastructure/persistence/drizzle/video-position.repository'
 import { createServer } from './interfaces/http/server'
 
@@ -73,6 +77,7 @@ export async function createApplication(env: Env): Promise<Application> {
 
   const connection: DbConnection = createDbConnection(env.DATABASE_URL, {
     max: env.DATABASE_POOL_MAX,
+    ssl: env.DATABASE_SSL,
   })
   const db = connection.db
   const clock = () => new Date()
@@ -84,6 +89,7 @@ export async function createApplication(env: Env): Promise<Application> {
   const progress = new DrizzleProgressRepository(db)
   const positions = new DrizzleVideoPositionRepository(db)
   const quizAttempts = new DrizzleQuizAttemptRepository(db)
+  const studioSubmissions = new DrizzleStudioSubmissionRepository(db)
   const ratings = new DrizzleCourseRatingRepository(db)
   const gamificationRepo = new DrizzleGamificationRepository(db)
   const processed = new DrizzleProcessedWebhookRepository(db)
@@ -96,6 +102,8 @@ export async function createApplication(env: Env): Promise<Application> {
 
   // Casos de uso do aluno
   const checkAccess = new CheckAccessService(courses, entitlements, clock)
+  // S2S: resolução de acesso em lote (consumido pela comunidade @sistemazero/hub).
+  const accessCheck = new AccessCheckService(entitlements, clock)
   const listMyCourses = new ListMyCoursesService(entitlements, courses, progress, positions, clock)
   const listCatalog = new ListCatalogService(courses, entitlements, clock)
   const getMyCourse = new GetMyCourseService(checkAccess, courses, progress, positions, ratings)
@@ -105,6 +113,7 @@ export async function createApplication(env: Env): Promise<Application> {
     progress,
     positions,
     quizAttempts,
+    studioSubmissions,
     clock,
   )
   const resolveAttachment = new GetAttachmentDownloadService(checkAccess, courses)
@@ -116,6 +125,7 @@ export async function createApplication(env: Env): Promise<Application> {
     courses,
     progress,
     quizAttempts,
+    studioSubmissions,
     awardGamification,
     clock,
   )
@@ -131,6 +141,14 @@ export async function createApplication(env: Env): Promise<Application> {
     () => randomUUID(),
     clock,
   )
+  const submitStudio = new SubmitStudioProjectService(
+    checkAccess,
+    courses,
+    studioSubmissions,
+    () => randomUUID(),
+    clock,
+  )
+  const studioSubmissionsAdmin = new StudioSubmissionsAdminService(studioSubmissions)
 
   // Motor de acesso (webhooks)
   const grant = new GrantEntitlementService({
@@ -190,6 +208,7 @@ export async function createApplication(env: Env): Promise<Application> {
       getProgress,
       savePosition,
       submitQuiz,
+      submitStudio,
       getCourseRating,
       saveCourseRating,
       getGamification,
@@ -220,6 +239,11 @@ export async function createApplication(env: Env): Promise<Application> {
       lessons: lessonAdmin,
       blocks: blockAdmin,
       attachments: attachmentAdmin,
+      studioSubmissions: studioSubmissionsAdmin,
+    },
+    internal: {
+      accessCheck,
+      internalToken: env.INTERNAL_API_TOKEN,
     },
   })
 

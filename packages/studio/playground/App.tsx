@@ -72,12 +72,14 @@ function EditorScreen({
       </div>
     )
   }
+  const isPro = state.project.kind === 'pro'
   return (
     <Studio
       initialProject={state.project}
       onExit={onExit}
       // Experiência completa no playground (defaults embarcados: terminal/IA OFF).
-      features={{ terminal: true, ai: true }}
+      // Projeto profissional força terminal + allowedModes:['code'] via a flag.
+      features={isPro ? { professional: true, ai: true } : { terminal: true, ai: true }}
       // Host fake: loga o fluxo híbrido p/ validação manual (DevTools).
       onChange={(project) => console.debug('[host] onChange', project.id, project.updatedAt)}
       onSave={(project) => console.debug('[host] onSave', project.id)}
@@ -133,5 +135,9 @@ export function App(): JSX.Element {
   if (view.name === 'editor') {
     return <EditorScreen projectId={view.projectId} onExit={() => navigate({ name: 'list' })} />
   }
-  return <ProjectList onOpenProject={(id) => navigate({ name: 'editor', projectId: id })} />
+  // professional habilita o seletor de template profissional no "Novo projeto"
+  // (o dev server do Vite já envia COOP/COEP, exigidos pelo WebContainer).
+  return (
+    <ProjectList professional onOpenProject={(id) => navigate({ name: 'editor', projectId: id })} />
+  )
 }

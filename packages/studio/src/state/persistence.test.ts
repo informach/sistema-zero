@@ -17,6 +17,11 @@ const idb = {
   keys: mock(async (): Promise<unknown[]> => []),
   set: mock(async () => undefined),
   setMany: mock(async () => undefined),
+  // `update` é usado por settingsStore.ts. O registry de module mocks é GLOBAL na
+  // suíte (não isolado por arquivo), então este export precisa existir aqui senão
+  // settingsStore.ts quebra ("Export named 'update' not found") quando carregado
+  // no mesmo processo de teste.
+  update: mock(async () => undefined),
 }
 
 mock.module('idb-keyval', () => ({
@@ -28,13 +33,13 @@ mock.module('idb-keyval', () => ({
   keys: idb.keys,
   set: idb.set,
   setMany: idb.setMany,
+  update: idb.update,
 }))
 
-const { listAllProjects } = await import('./persistence')
-const { PROJECT_FILE_LIMITS, useProjectStore } = await import('./projectStore')
-const { createPersistenceService, setAutosaveDelayForTests } = await import(
-  '../persistence/service'
-)
+const { listAllProjects, persistProject, renameProjectMeta } = await import('./persistence')
+const { createProjectStore, PROJECT_FILE_LIMITS, useProjectStore } = await import('./projectStore')
+const { cancelPendingAutosavesFor, createPersistenceService, setAutosaveDelayForTests } =
+  await import('../persistence/service')
 const { createLocalPersistenceAdapter } = await import('../persistence/local')
 
 // Sem fake timers no bun:test: encurta o debounce do autosave e espera com
@@ -115,6 +120,8 @@ describe('PersistenceService', () => {
         'sz:project-files:project-1',
         'sz:project-state:project-1',
         'sz:project:project-1',
+        // Armazenamento do programa do aluno (blocos "guardar/ler") deste projeto.
+        'sz:game-storage:project-1',
       ],
       expect.anything(),
     )
@@ -261,12 +268,75 @@ describe('PersistenceService', () => {
 
     useProjectStore.getState().setProject(createEmptyProject('project-6', 'Projeto 6'))
     const savePromise = service.save()
+    // O adapter.save agora corre DENTRO do mutex por id (#12), ou seja, numa
+    // microtask — esperamos um tick para a task encadeada chamar o setMany e
+    // capturar `resolvePersist` ANTES de tentarmos resolvê-lo. Sem isso ele seria
+    // undefined aqui e o save ficaria pendurado (promise nunca settla).
+    await Bun.sleep(0)
     useProjectStore.getState().setFile('script.js', 'console.log("nova edição");\n')
 
     resolvePersist?.()
     await savePromise
 
     expect(useProjectStore.getState().isDirty).toBe(true)
+  })
+
+  it('não re-persiste o projeto excluído quando o delete chega com o save em voo', async () => {
+    // Adapter lento/remoto: o save fica em voo (resolve sob comando), abrindo a
+    // janela em que o delete chega DEPOIS do debounce — quando a entrada já saiu
+    // de `pending` e cancelar timers não acha nada. Sem a marca de excluído, o
+    // save em voo marcaria salvo (e re-persistiria) o projeto recém-apagado.
+    let resolvePersist: (() => void) | undefined
+    const slowAdapter = {
+      load: async () => null,
+      save: () =>
+        new Promise<void>((resolve) => {
+          resolvePersist = resolve
+        }),
+    }
+    const slowService = createPersistenceService(useProjectStore, slowAdapter)
+    const detach = slowService.attach()
+
+    useProjectStore.getState().setProject(createEmptyProject('project-del', 'Projeto'))
+    await waitForAutosave()
+    // O autosave disparou e o save está pendurado, com o projeto ainda sujo.
+    expect(useProjectStore.getState().isDirty).toBe(true)
+    expect(resolvePersist).toBeDefined()
+
+    // Delete fora do ciclo do serviço marca o id como excluído (mesma chamada
+    // que `deleteProject` faz via state/persistence). Além de cercar o id, o
+    // fan-out agora DESCARREGA o projeto desta instância (fecha a janela de
+    // ressurreição além da janela de graça): project vira null, isDirty false.
+    cancelPendingAutosavesFor('project-del')
+    expect(useProjectStore.getState().project).toBeNull()
+
+    // O save em voo resolve: o projeto já NÃO está mais carregado (=== project
+    // não casa) E a cerca está ativa, então não há markSaved nem re-persistência.
+    resolvePersist?.()
+    await Bun.sleep(0)
+
+    // Permanece descarregado — o save em voo não ressuscitou o projeto apagado.
+    expect(useProjectStore.getState().project).toBeNull()
+    expect(useProjectStore.getState().isDirty).toBe(false)
+
+    detach()
+  })
+
+  it('não agenda gravação ao hidratar/carregar um projeto (isDirty:false não escreve)', async () => {
+    const detach = service.attach()
+
+    // Hidratar instala um novo Project com isDirty:false — não pode disparar um
+    // write redundante dos mesmos bytes (round-trip à toa em adapters remotos).
+    useProjectStore.getState().hydrateProject(createEmptyProject('project-hydrate', 'Projeto'))
+    await waitForAutosave()
+    expect(idb.setMany).not.toHaveBeenCalled()
+
+    // Uma edição genuína (isDirty:true) volta a agendar normalmente.
+    useProjectStore.getState().setFile('script.js', 'console.log("editado");\n')
+    await waitForAutosave()
+    expect(idb.setMany).toHaveBeenCalledTimes(1)
+
+    detach()
   })
 })
 
@@ -361,6 +431,55 @@ describe('importProjectFromJSON', () => {
     expect(imported.blocksState).toBeNull()
   })
 
+  it('preserva kind/tree/proMeta de um projeto profissional no export→import', async () => {
+    // Regressão: importProjectFromJSON dropava kind/tree/proMeta, rebaixando todo
+    // projeto pro exportado para classic vazio. Agora reconstrói via os mesmos
+    // sanitizers do load (sanitizeProTree/sanitizeProMeta).
+    const imported = await useProjectStore.getState().importProjectFromJSON({
+      name: 'Pro exportado',
+      kind: 'pro',
+      mode: 'blocks', // ignorado: pro força 'code'
+      tree: {
+        'package.json': { kind: 'file', content: '{}' },
+        src: { kind: 'dir' },
+        'src/main.ts': { kind: 'file', content: 'export {}' },
+      },
+      proMeta: { devScript: 'dev', templateId: 'react-ts' },
+      files: {
+        'index.html': '<h1>ok</h1>',
+        'style.css': '',
+        'script.js': '',
+      },
+    })
+
+    expect(imported.kind).toBe('pro')
+    expect(imported.mode).toBe('code')
+    expect(imported.proMeta?.templateId).toBe('react-ts')
+    expect(imported.tree?.['src/main.ts']?.kind).toBe('file')
+    // O registro persistido (meta) carrega kind/proMeta.
+    const lastArgs = idb.setMany.mock.calls.at(-1) as unknown as unknown[]
+    const records = (lastArgs?.[0] ?? []) as [string, Record<string, unknown>][]
+    const meta = records.find(([k]) => k.startsWith('sz:project-meta:'))?.[1]
+    expect(meta?.kind).toBe('pro')
+  })
+
+  it('rebaixa para classic um pro importado com tree inválida (node_modules)', async () => {
+    const imported = await useProjectStore.getState().importProjectFromJSON({
+      name: 'Pro quebrado',
+      kind: 'pro',
+      tree: { 'node_modules/evil.js': { kind: 'file', content: 'x' } },
+      proMeta: { devScript: 'dev', templateId: 'react-ts' },
+      files: {
+        'index.html': '<h1>ok</h1>',
+        'style.css': '',
+        'script.js': '',
+      },
+    })
+
+    expect(imported.kind).toBeUndefined()
+    expect(imported.tree).toBeUndefined()
+  })
+
   it('rejeita blocksState importado com blocos demais antes de persistir', async () => {
     const blocks = Array.from({ length: 5_001 }, (_, index) => ({
       type: 'sz_js_console_log_text',
@@ -381,6 +500,76 @@ describe('importProjectFromJSON', () => {
     ).rejects.toThrow('blocksState excede o tamanho ou a complexidade máxima')
 
     expect(idb.setMany).not.toHaveBeenCalled()
+  })
+})
+
+describe('renameProjectMeta — serializado contra persistProject (mesmo id)', () => {
+  beforeEach(() => {
+    idb.get.mockClear()
+    idb.set.mockClear()
+    idb.setMany.mockClear()
+  })
+
+  it('o get-then-set do rename NÃO intercala com um persistProject em voo do mesmo id', async () => {
+    // persistProject usa setMany; deixamos a 1ª chamada PENDENTE para manter a
+    // escrita em voo. O renameProjectMeta do MESMO id deve ficar ENFILEIRADO na
+    // cadeia de escrita por id — sem chamar `get` até o persist resolver.
+    let resolvePersist: (() => void) | undefined
+    idb.setMany.mockImplementationOnce(
+      () =>
+        new Promise<undefined>((resolve) => {
+          resolvePersist = () => resolve(undefined)
+        }),
+    )
+
+    const persisting = persistProject({
+      ...createEmptyProject('rename-race', 'v1'),
+    })
+    await Bun.sleep(0)
+    // O persist está em voo (setMany pendente).
+    expect(idb.setMany).toHaveBeenCalledTimes(1)
+
+    // Dispara o rename: encadeado atrás do persist, ainda não leu o meta.
+    const renaming = renameProjectMeta('rename-race', 'v2')
+    await Bun.sleep(0)
+    expect(idb.get).not.toHaveBeenCalled()
+    expect(idb.set).not.toHaveBeenCalled()
+
+    // Libera o persist → só então o rename roda seu get-then-set.
+    idb.get.mockResolvedValueOnce({ id: 'rename-race', name: 'v1' })
+    resolvePersist?.()
+    await persisting
+    await renaming
+
+    expect(idb.get).toHaveBeenCalledTimes(1)
+    expect(idb.set).toHaveBeenCalledTimes(1)
+    // O set grava o nome novo por cima do meta lido DEPOIS do persist (não antes).
+    const setArgs = idb.set.mock.calls.at(-1) as unknown as unknown[]
+    expect((setArgs?.[1] as { name?: string })?.name).toBe('v2')
+  })
+
+  it('renames concorrentes do mesmo id serializam (último vence, sem perder leitura)', async () => {
+    // Dois renames em sequência imediata: cada um lê o meta corrente e grava.
+    // Sem serialização, ambos leriam o MESMO meta e o 2º get poderia rodar antes
+    // do 1º set. Com a cadeia, a ordem é get1→set1→get2→set2.
+    const order: string[] = []
+    idb.get.mockImplementation(async () => {
+      order.push('get')
+      return { id: 'rename-seq', name: 'base' }
+    })
+    idb.set.mockImplementation(async () => {
+      order.push('set')
+      return undefined
+    })
+
+    await Promise.all([renameProjectMeta('rename-seq', 'a'), renameProjectMeta('rename-seq', 'b')])
+
+    expect(order).toEqual(['get', 'set', 'get', 'set'])
+
+    idb.get.mockReset()
+    idb.set.mockReset()
+    idb.get.mockImplementation(async (): Promise<unknown> => undefined)
+    idb.set.mockImplementation(async () => undefined)
   })
 })
 
@@ -520,6 +709,80 @@ describe('loadProject', () => {
     expect(useProjectStore.getState().project).toBe(loaded)
   })
 
+  it('preserva kind/tree/proMeta de projeto profissional no roundtrip persist→load', async () => {
+    // Regressão: a serialização particionada (meta/files/state) dropava os
+    // campos do modo profissional, rebaixando todo projeto pro para classic no
+    // reload. Persiste um pro e recarrega pelos MESMOS registros gravados.
+    const proProject = {
+      ...createEmptyProject('pro-1', 'Pro'),
+      mode: 'code' as const,
+      kind: 'pro' as const,
+      tree: {
+        'package.json': { kind: 'file' as const, content: '{}' },
+        src: { kind: 'dir' as const },
+        'src/main.ts': { kind: 'file' as const, content: 'export {}' },
+      },
+      proMeta: { devScript: 'dev', templateId: 'react-ts' },
+    }
+    await persistProject(proProject)
+    const lastArgs = idb.setMany.mock.calls.at(-1) as unknown as unknown[]
+    const records = (lastArgs?.[0] ?? []) as [string, unknown][]
+    const byKey = new Map(records.map(([k, v]) => [k, v]))
+    idb.getMany.mockResolvedValueOnce([
+      byKey.get('sz:project-meta:pro-1'),
+      byKey.get('sz:project-files:pro-1'),
+      byKey.get('sz:project-state:pro-1'),
+    ])
+
+    const loaded = await useProjectStore.getState().loadProject('pro-1')
+
+    expect(loaded?.kind).toBe('pro')
+    expect(loaded?.mode).toBe('code')
+    expect(loaded?.proMeta?.templateId).toBe('react-ts')
+    expect(loaded?.tree?.['src/main.ts']?.kind).toBe('file')
+  })
+
+  it('loads sobrepostos: o mais NOVO vence mesmo resolvendo por último (guard de geração)', async () => {
+    // Store próprio: o contador de geração vive no closure do factory (por
+    // instância), então isolamos do default para o teste ser determinístico.
+    const store = createProjectStore()
+
+    const partitioned = (id: string, name: string) => [
+      { id, name, createdAt: 10, updatedAt: 20, mode: 'blocks', installedExtensions: [] },
+      {
+        id,
+        files: { 'index.html': '<h1>ok</h1>', 'style.css': '', 'script.js': '' },
+        extraFiles: [],
+      },
+      { id, ir: null, blocksState: null },
+    ]
+
+    // getMany do load A fica PENDURADO; o do load B resolve já. O aluno clicou A
+    // e logo B — B é o mais novo e deve ganhar, mesmo se A resolver depois.
+    let resolveA: ((value: unknown[]) => void) | undefined
+    idb.getMany
+      .mockImplementationOnce(
+        () =>
+          new Promise<unknown[]>((resolve) => {
+            resolveA = resolve as (value: unknown[]) => void
+          }),
+      )
+      .mockResolvedValueOnce(partitioned('proj-b', 'Projeto B'))
+
+    const loadA = store.getState().loadProject('proj-a')
+    const loadB = store.getState().loadProject('proj-b')
+
+    // B resolve primeiro e instala no store.
+    await loadB
+    expect(store.getState().project?.id).toBe('proj-b')
+
+    // A resolve por ÚLTIMO (out-of-order): NÃO pode sobrescrever B nem zerar nada.
+    resolveA?.(partitioned('proj-a', 'Projeto A'))
+    await loadA
+
+    expect(store.getState().project?.id).toBe('proj-b')
+  })
+
   it('carrega projeto salvo em registros particionados antes do formato legado', async () => {
     idb.getMany.mockResolvedValueOnce([
       {
@@ -547,7 +810,9 @@ describe('loadProject', () => {
     expect(loaded).toMatchObject({
       id: 'project-split',
       name: 'Projeto particionado',
-      mode: 'code',
+      // D2: projeto básico legado salvo em 'code' carrega coagido para 'bridge'
+      // (o básico só tem Blocos/Ponte; o Código standalone virou exclusivo do pro).
+      mode: 'bridge',
       files: {
         'index.html': '<h1>ok</h1>',
         'style.css': '',

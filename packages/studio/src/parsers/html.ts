@@ -80,8 +80,16 @@ function collectAllAttrs(el: Element): Record<string, string> | undefined {
  */
 export function parseHTML(source: string): HTMLNode[] {
   if (!source.trim()) return []
-  const doc = new DOMParser().parseFromString(source, 'text/html')
-  return parseBodyNodes(doc)
+  // A descida recursiva (mapNode↔mapChildren) não tem guarda de profundidade;
+  // um aninhamento patológico pode estourar a pilha (RangeError). Para honrar o
+  // contrato de não-crashar, degradamos para um único nó avançado preservando o
+  // HTML original verbatim ("código é sagrado").
+  try {
+    const doc = new DOMParser().parseFromString(source, 'text/html')
+    return parseBodyNodes(doc)
+  } catch {
+    return [{ type: 'rawHTML', html: source, advanced: true }]
+  }
 }
 
 /** Mapeia os filhos diretos de `<body>` em `HTMLNode[]`. */
@@ -157,7 +165,7 @@ function extractShellFromDoc(doc: Document, source: string): HTMLShell | undefin
   const htmlEl = doc.documentElement
   if (htmlEl) {
     const attrs = Array.from(htmlEl.attributes)
-      .map((attr) => ` ${attr.name}="${attr.value}"`)
+      .map((attr) => ` ${attr.name}="${escapeAttrValue(attr.value)}"`)
       .join('')
     if (attrs) shell.htmlAttrs = attrs
   }
@@ -167,6 +175,19 @@ function extractShellFromDoc(doc: Document, source: string): HTMLShell | undefin
   if (headInner) shell.head = head?.innerHTML ?? ''
 
   return Object.keys(shell).length > 0 ? shell : undefined
+}
+
+/**
+ * Escapa o valor (DECODIFICADO) de um atributo para re-serialização dentro de
+ * aspas duplas. Sem isso, uma aspa dupla embutida quebraria a fronteira do
+ * atributo e corromperia o round-trip da casca de `<html>`.
+ */
+function escapeAttrValue(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
 }
 
 /** Resultado de {@link extractInlineAssets}: HTML + casca + fontes CSS/JS resolvidas. */
@@ -224,51 +245,67 @@ export function extractInlineAssets(
     }
   }
 
-  const doc = new DOMParser().parseFromString(indexHtml, 'text/html')
+  // A descida recursiva (parseBodyNodes→mapNode↔mapChildren) não tem guarda de
+  // profundidade; um aninhamento patológico pode estourar a pilha (RangeError).
+  // Para honrar o contrato de não-crashar em TODOS os chamadores, degradamos para
+  // um resultado mínimo seguro: o HTML vira um único nó avançado verbatim e o
+  // CSS/JS recebidos são preservados como `external`.
+  try {
+    const doc = new DOMParser().parseFromString(indexHtml, 'text/html')
 
-  let cssSource = styleCss
-  let cssPlacement: AssetPlacement = 'external'
-  if (!styleCss.trim()) {
-    const styles = Array.from(doc.querySelectorAll('style')).filter(
-      (el) => (el.textContent ?? '').trim() !== '',
-    )
-    const el = styles.length === 1 ? styles[0] : undefined
-    if (el) {
-      cssSource = el.textContent ?? ''
-      cssPlacement = isInHead(el) ? 'inline-head' : 'inline-body-end'
-      el.remove()
+    let cssSource = styleCss
+    let cssPlacement: AssetPlacement = 'external'
+    if (!styleCss.trim()) {
+      const styles = Array.from(doc.querySelectorAll('style')).filter(
+        (el) => (el.textContent ?? '').trim() !== '',
+      )
+      const el = styles.length === 1 ? styles[0] : undefined
+      if (el) {
+        cssSource = el.textContent ?? ''
+        cssPlacement = isInHead(el) ? 'inline-head' : 'inline-body-end'
+        el.remove()
+      }
+    }
+
+    let jsSource = scriptJs
+    let jsPlacement: AssetPlacement = 'external'
+    let jsModule = false
+    if (!scriptJs.trim()) {
+      const scripts = Array.from(doc.querySelectorAll('script')).filter((el) => {
+        if (el.hasAttribute('src')) return false
+        const type = (el.getAttribute('type') ?? '').toLowerCase()
+        if (!INLINE_SCRIPT_TYPES.has(type)) return false
+        return (el.textContent ?? '').trim() !== ''
+      })
+      const el = scripts.length === 1 ? scripts[0] : undefined
+      if (el) {
+        jsSource = el.textContent ?? ''
+        jsPlacement = isInHead(el) ? 'inline-head' : 'inline-body-end'
+        // Preserva se era module — senão o re-emitimos como clássico (globais + onclick).
+        jsModule = (el.getAttribute('type') ?? '').toLowerCase() === 'module'
+        el.remove()
+      }
+    }
+
+    const html = parseBodyNodes(doc)
+    const baseShell = extractShellFromDoc(doc, indexHtml)
+    const shell: HTMLShell = { ...(baseShell ?? {}) }
+    if (cssPlacement !== 'external') shell.cssPlacement = cssPlacement
+    if (jsPlacement !== 'external') shell.jsPlacement = jsPlacement
+    if (jsModule) shell.jsModule = true
+    const htmlShell = Object.keys(shell).length > 0 ? shell : undefined
+
+    return { html, htmlShell, cssSource, jsSource, cssPlacement, jsPlacement }
+  } catch {
+    return {
+      html: [{ type: 'rawHTML', html: indexHtml, advanced: true }],
+      htmlShell: undefined,
+      cssSource: styleCss,
+      jsSource: scriptJs,
+      cssPlacement: 'external',
+      jsPlacement: 'external',
     }
   }
-
-  let jsSource = scriptJs
-  let jsPlacement: AssetPlacement = 'external'
-  let jsModule = false
-  if (!scriptJs.trim()) {
-    const scripts = Array.from(doc.querySelectorAll('script')).filter((el) => {
-      if (el.hasAttribute('src')) return false
-      const type = (el.getAttribute('type') ?? '').toLowerCase()
-      if (!INLINE_SCRIPT_TYPES.has(type)) return false
-      return (el.textContent ?? '').trim() !== ''
-    })
-    const el = scripts.length === 1 ? scripts[0] : undefined
-    if (el) {
-      jsSource = el.textContent ?? ''
-      jsPlacement = isInHead(el) ? 'inline-head' : 'inline-body-end'
-      // Preserva se era module — senão o re-emitimos como clássico (globais + onclick).
-      jsModule = (el.getAttribute('type') ?? '').toLowerCase() === 'module'
-      el.remove()
-    }
-  }
-
-  const html = parseBodyNodes(doc)
-  const baseShell = extractShellFromDoc(doc, indexHtml)
-  const shell: HTMLShell = { ...(baseShell ?? {}) }
-  if (cssPlacement !== 'external') shell.cssPlacement = cssPlacement
-  if (jsPlacement !== 'external') shell.jsPlacement = jsPlacement
-  if (jsModule) shell.jsModule = true
-  const htmlShell = Object.keys(shell).length > 0 ? shell : undefined
-
-  return { html, htmlShell, cssSource, jsSource, cssPlacement, jsPlacement }
 }
 
 /**
@@ -297,6 +334,13 @@ function mapNode(node: Node): HTMLNode | null {
     const text = node.textContent ?? ''
     if (!text.trim()) return null
     return { type: 'rawHTML', html: text, advanced: true }
+  }
+  // Comentários HTML são preservados verbatim como "código avançado" (igual a uma
+  // tag desconhecida) — o DOM expõe só o miolo em `data`, então reconstruímos o
+  // `<!-- ... -->`. Sem isso o comentário sumiria no round-trip e, quando inline
+  // entre textos (`<p>x<!--c-->y</p>`), os trechos de texto se fundiriam ("xy").
+  if (node.nodeType === Node.COMMENT_NODE) {
+    return { type: 'rawHTML', html: `<!--${node.textContent ?? ''}-->`, advanced: true }
   }
   if (node.nodeType !== Node.ELEMENT_NODE) return null
   const el = node as Element
@@ -341,11 +385,16 @@ function mapNode(node: Node): HTMLNode | null {
     }
 
     const hasElementChild = Array.from(el.childNodes).some((n) => n.nodeType === Node.ELEMENT_NODE)
+    // Comentário inline também precisa da recursão: o ramo-folha usa só
+    // `el.textContent`, que descarta o comentário E funde os textos vizinhos
+    // (`<p>x<!--c-->y</p>` → "xy"). Detectá-lo aqui rota a tag para `mapChildren`,
+    // que preserva cada trecho de texto e o comentário (como `rawHTML`).
+    const hasCommentChild = Array.from(el.childNodes).some((n) => n.nodeType === Node.COMMENT_NODE)
     // Tag de texto com filhos-elemento (ex.: <p>© <span></span> texto</p> ou
     // <h2>Título <strong>!</strong></h2>) → decompõe em blocos aninhados: cada
     // pedaço de texto vira um nó `text` e cada elemento é mapeado recursivamente.
     // Espaços-em-branco puros são descartados.
-    if (hasElementChild && INLINE_TEXT_TAGS.has(t)) {
+    if ((hasElementChild || hasCommentChild) && INLINE_TEXT_TAGS.has(t)) {
       const node: Extract<HTMLNode, { type: 'element' }> = {
         type: 'element',
         tag: t,
@@ -355,9 +404,10 @@ function mapNode(node: Node): HTMLNode | null {
       if (attrs) node.attrs = attrs
       return node
     }
-    // Folha não-inline (a, button) com filhos-elemento → preserva VERBATIM como
-    // um único bloco avançado. Nada se perde.
-    if (hasElementChild) {
+    // Folha não-inline (a, button) com filhos-elemento OU com comentário inline →
+    // preserva VERBATIM como um único bloco avançado (o ramo-folha abaixo usaria
+    // `el.textContent`, perdendo o comentário e fundindo os textos). Nada se perde.
+    if (hasElementChild || hasCommentChild) {
       return { type: 'rawHTML', html: el.outerHTML, advanced: true }
     }
     const node: Extract<HTMLNode, { type: 'element' }> = {

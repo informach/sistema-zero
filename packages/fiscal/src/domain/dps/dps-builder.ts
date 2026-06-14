@@ -1,8 +1,24 @@
 import type { EmitDpsInput } from '../ports/sefin-gateway.port'
 import type { EmitterProfile } from './emitter-profile'
 
+/**
+ * Remove caracteres de controle C0 PROIBIDOS no XML 1.0 (códigos 0–8, 11, 12,
+ * 14–31; mantém \t=9, \n=10, \r=13) — não há entidade que os represente. Um byte
+ * de controle vindo de nome/descrição de upstream tornaria o XML mal-formado e
+ * quebraria a assinatura/emissão. Filtro por código (sem regex) p/ legibilidade.
+ */
+function stripXmlControls(s: string): string {
+  let out = ''
+  for (const ch of s) {
+    const c = ch.charCodeAt(0)
+    if (c <= 8 || c === 11 || c === 12 || (c >= 14 && c <= 31)) continue
+    out += ch
+  }
+  return out
+}
+
 const esc = (s: string) =>
-  s
+  stripXmlControls(s)
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')

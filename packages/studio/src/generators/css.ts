@@ -1,5 +1,23 @@
-import type { CSSEntry, CSSRule, MediaQueryCSS } from '#ir'
+import type { CSSEntry, CSSRule, KeyframesCSS, MediaQueryCSS } from '#ir'
+import { assertGeneratorDepth } from './js'
 import { countLines, SourceMapBuilder } from './sourceMap'
+
+/**
+ * Guarda de profundidade ITERATIVA para `@media` aninhados. `generateCSSWithMap`
+ * recursa via `renderMediaQuery` (uma media query pode conter outra), sem guarda
+ * — um aninhamento patológico estourava a pilha do motor. Pilha explícita (sem
+ * recursão) abortando com {@link GeneratorDepthError}, mesmo teto único do JS.
+ */
+function assertCSSDepth(entries: CSSEntry[]): void {
+  const stack: Array<{ list: CSSEntry[]; depth: number }> = [{ list: entries, depth: 0 }]
+  while (stack.length > 0) {
+    const { list, depth } = stack.pop() as { list: CSSEntry[]; depth: number }
+    assertGeneratorDepth(depth)
+    for (const entry of list) {
+      if (isMediaQuery(entry)) stack.push({ list: entry.rules, depth: depth + 1 })
+    }
+  }
+}
 
 export interface GenerateCSSWithMapResult {
   code: string
@@ -37,6 +55,7 @@ type RenderGroup =
   | { kind: 'raw'; ids: string[]; code: string }
   | { kind: 'rule'; selector: string; segments: RuleSegment[] }
   | { kind: 'media'; entry: MediaQueryCSS }
+  | { kind: 'keyframes'; entry: KeyframesCSS }
 
 function entryDeclarations(entry: CSSRule): GroupedDeclaration[] {
   const declIds = entry.__declIds
@@ -50,6 +69,7 @@ function entryDeclarations(entry: CSSRule): GroupedDeclaration[] {
 export function generateCSSWithMap(entries: CSSEntry[]): GenerateCSSWithMapResult {
   const map = new SourceMapBuilder()
   if (entries.length === 0) return { code: '', map }
+  assertCSSDepth(entries)
 
   // Agrupa entradas `CSSRule` CONSECUTIVAS de mesmo seletor num único bloco
   // visual (`.container {…}` não se repete quando o seletor virou vários
@@ -64,6 +84,10 @@ export function generateCSSWithMap(entries: CSSEntry[]): GenerateCSSWithMapResul
     }
     if (isMediaQuery(entry)) {
       groups.push({ kind: 'media', entry })
+      continue
+    }
+    if (isKeyframes(entry)) {
+      groups.push({ kind: 'keyframes', entry })
       continue
     }
     const segment: RuleSegment = {
@@ -84,6 +108,9 @@ export function generateCSSWithMap(entries: CSSEntry[]): GenerateCSSWithMapResul
     let rendered: string
     if (group.kind === 'media') {
       rendered = renderMediaQuery(group.entry, line, map)
+    } else if (group.kind === 'keyframes') {
+      rendered = renderKeyframes(group.entry)
+      map.record(group.entry.__id, 'style.css', line, line + countLines(rendered) - 1)
     } else if (group.kind === 'raw') {
       rendered = group.code
       // Sem este `map.record`, o bloco `sz_adv_raw_css` ficava sem entrada no
@@ -153,9 +180,99 @@ function renderMediaQuery(entry: MediaQueryCSS, startLine: number, map: SourceMa
   return rendered
 }
 
+/**
+ * Defesa em profundidade contra injeção de CSS (o esquema Zod é a correção
+ * durável; isto é o cinto-e-suspensório do gerador). Um seletor/nome com `{`
+ * ou `}` poderia fechar a regra atual e abrir outra (`}`+nova regra → exfil via
+ * `background:url(...)`). Remove as chaves para que o texto nunca quebre a
+ * estrutura `selector { … }`.
+ */
+function stripBraces(text: string): string {
+  return text.replace(/[{}]/g, '')
+}
+
+/**
+ * Uma DECLARAÇÃO cujo valor escapa da estrutura `selector { … }` é descartada.
+ * `{`/`}` e `;` rompem a regra (ex.: `red } body { background:url(...) }` ou
+ * `red; background:url(...)`) — mas só quando estão FORA de aspas, comentários e
+ * parênteses. DENTRO de uma string (`content:"a{b}c"`, `content:"a;b"`), de um
+ * comentário (`/* a;b *​/`) ou de `url(data:…;base64,…)` esses caracteres fazem
+ * parte do valor e são legítimos. Reusa a mesma máquina de estados de
+ * aspas/comentários do {@link findMatchingBrace}/{@link scanDeclarationSegments}
+ * do parser, então o que o parser separou em profundidade 0 nunca é rejeitado
+ * por engano — e valores de IR importada/IA com chave/`;` "soltos" caem aqui.
+ */
+function isSafeDeclarationValue(value: string): boolean {
+  let paren = 0
+  let quote: '"' | "'" | null = null
+  let inComment = false
+  for (let i = 0; i < value.length; i += 1) {
+    const ch = value[i]
+    const next = value[i + 1]
+    if (inComment) {
+      if (ch === '*' && next === '/') {
+        inComment = false
+        i += 1
+      }
+      continue
+    }
+    if (quote) {
+      if (ch === '\\') {
+        i += 1
+        continue
+      }
+      if (ch === quote) quote = null
+      continue
+    }
+    if (ch === '/' && next === '*') {
+      inComment = true
+      i += 1
+      continue
+    }
+    if (ch === '"' || ch === "'") quote = ch
+    else if (ch === '(') paren += 1
+    else if (ch === ')') {
+      if (paren > 0) paren -= 1
+    } else if (ch === '{' || ch === '}') return false
+    else if (ch === ';' && paren === 0) return false
+  }
+  return true
+}
+
+/**
+ * Uma CHAVE (propriedade) de declaração só pode conter o NOME da propriedade —
+ * nunca os caracteres que estruturam o CSS. `stripBraces` removia só `{`/`}`,
+ * mas `:` e `;` numa chave injetam uma declaração-fantasma: a chave
+ * `color:red;x` saía como `color:red;x: <value>;`, "vazando" um `color:red`
+ * extra (ou pior, exfil via `background:url(...)`). Recusamos a declaração
+ * inteira quando a chave traz `{`, `}`, `:`, `;` ou quebra de linha — análogo
+ * ao {@link isSafeDeclarationValue} no lado do valor. Vale para IR
+ * importada/gerada por IA com chaves "soltas".
+ */
+function isSafeDeclarationKey(key: string): boolean {
+  return !/[{};:\r\n]/.test(key)
+}
+
 function renderRule(selector: string, declarations: GroupedDeclaration[]): string {
-  const decls = declarations.map(({ key, value }) => `  ${key}: ${value};`).join('\n')
-  return `${selector} {\n${decls}\n}`
+  const decls = declarations
+    .filter(({ key, value }) => isSafeDeclarationKey(key) && isSafeDeclarationValue(value))
+    .map(({ key, value }) => `  ${stripBraces(key)}: ${value};`)
+    .join('\n')
+  return `${stripBraces(selector)} {\n${decls}\n}`
+}
+
+/** Renderiza `@keyframes nome { at { decls } … }` (2 níveis de indentação). */
+function renderKeyframes(entry: KeyframesCSS): string {
+  const steps = entry.steps
+    .map((step) => {
+      const decls = Object.entries(step.declarations)
+        .filter(([k, v]) => isSafeDeclarationKey(k) && isSafeDeclarationValue(v))
+        .map(([k, v]) => `    ${stripBraces(k)}: ${v};`)
+        .join('\n')
+      return `  ${stripBraces(step.at)} {\n${decls}\n  }`
+    })
+    .join('\n')
+  return `@keyframes ${stripBraces(entry.name)} {\n${steps}\n}`
 }
 
 function isRawCSS(entry: CSSEntry): entry is Extract<CSSEntry, { type: 'rawCSS' }> {
@@ -164,4 +281,8 @@ function isRawCSS(entry: CSSEntry): entry is Extract<CSSEntry, { type: 'rawCSS' 
 
 function isMediaQuery(entry: CSSEntry): entry is MediaQueryCSS {
   return 'type' in entry && entry.type === 'mediaQuery'
+}
+
+function isKeyframes(entry: CSSEntry): entry is KeyframesCSS {
+  return 'type' in entry && entry.type === 'keyframes'
 }

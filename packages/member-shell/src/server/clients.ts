@@ -8,12 +8,20 @@ import type {
   CourseRatingView,
   EbookDownloadView,
   GamificationMeView,
+  HubAttachmentKind,
+  HubChannelView,
+  HubCommentView,
+  HubPage,
+  HubResolvedAttachment,
+  HubSpaceView,
+  HubThreadView,
   LessonCompleteResult,
   LessonDetailView,
   MyCourseView,
   Paginated,
   PaymentView,
   QuizAttemptResultView,
+  StudioSubmissionResultView,
   UserView,
 } from '../lib/types'
 import { clientForwardHeaders, type GatewayModule, type GatewayResponse } from './gateway'
@@ -30,6 +38,7 @@ export type MembersAudience = 'adult' | 'kids'
 export type AuthClient = ReturnType<typeof createAuthClient>
 export type MembersClient = ReturnType<typeof createMembersClient>
 export type PaymentsClient = ReturnType<typeof createPaymentsClient>
+export type HubClient = ReturnType<typeof createHubClient>
 
 /**
  * Rotas PÚBLICAS (sem Bearer) — chamadas diretas ao gateway. Propaga a prova de
@@ -232,6 +241,127 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       return gw.gatewayFetch(
         `/members/lessons/${enc(lessonId)}/blocks/${enc(blockId)}/quiz-attempts`,
         { method: 'POST', body: { answers } },
+      )
+    },
+
+    /** Entrega o projeto do Estúdio (mesmo JSON do "Exportar projeto"). */
+    submitStudioProject(
+      lessonId: string,
+      blockId: string,
+      project: unknown,
+    ): Promise<GatewayResponse<StudioSubmissionResultView>> {
+      return gw.gatewayFetch(
+        `/members/lessons/${enc(lessonId)}/blocks/${enc(blockId)}/studio-submission`,
+        { method: 'POST', body: { project } },
+      )
+    },
+  }
+}
+
+/**
+ * Client da COMUNIDADE (fórum — @sistemazero/hub). `audience` é a vitrine do app
+ * (só afeta a listagem de servidores). O hub gateia por matrícula/cargo no servidor.
+ */
+export function createHubClient(gw: GatewayModule, opts: { audience: MembersAudience }) {
+  const { audience } = opts
+  return {
+    listSpaces(): Promise<GatewayResponse<{ items: HubSpaceView[] }>> {
+      return gw.gatewayFetch('/hub/spaces', { query: { audience } })
+    },
+    getSpace(slug: string): Promise<GatewayResponse<HubSpaceView>> {
+      return gw.gatewayFetch(`/hub/spaces/${enc(slug)}`)
+    },
+    listChannels(slug: string): Promise<GatewayResponse<{ items: HubChannelView[] }>> {
+      return gw.gatewayFetch(`/hub/spaces/${enc(slug)}/channels`)
+    },
+    listThreads(
+      channelId: string,
+      params: { cursor?: string; limit?: number } = {},
+    ): Promise<GatewayResponse<HubPage<HubThreadView>>> {
+      return gw.gatewayFetch(`/hub/channels/${enc(channelId)}/threads`, {
+        query: { cursor: params.cursor, limit: params.limit },
+      })
+    },
+    createThread(
+      channelId: string,
+      body: { title: string; body: string; attachmentIds?: string[] },
+    ): Promise<GatewayResponse<HubThreadView>> {
+      return gw.gatewayFetch(`/hub/channels/${enc(channelId)}/threads`, { method: 'POST', body })
+    },
+    getThread(id: string): Promise<GatewayResponse<HubThreadView>> {
+      return gw.gatewayFetch(`/hub/threads/${enc(id)}`)
+    },
+    editThread(id: string, body: string): Promise<GatewayResponse<HubThreadView>> {
+      return gw.gatewayFetch(`/hub/threads/${enc(id)}`, { method: 'PATCH', body: { body } })
+    },
+    listComments(
+      threadId: string,
+      params: { after?: string; limit?: number } = {},
+    ): Promise<GatewayResponse<HubPage<HubCommentView>>> {
+      return gw.gatewayFetch(`/hub/threads/${enc(threadId)}/comments`, {
+        query: { after: params.after, limit: params.limit },
+      })
+    },
+    createComment(
+      threadId: string,
+      body: { body: string; replyToId?: string | null; attachmentIds?: string[] },
+    ): Promise<GatewayResponse<HubCommentView>> {
+      return gw.gatewayFetch(`/hub/threads/${enc(threadId)}/comments`, { method: 'POST', body })
+    },
+    editComment(id: string, body: string): Promise<GatewayResponse<HubCommentView>> {
+      return gw.gatewayFetch(`/hub/comments/${enc(id)}`, { method: 'PATCH', body: { body } })
+    },
+    react(
+      target: 'thread' | 'comment',
+      id: string,
+      emoji: string,
+    ): Promise<GatewayResponse<{ ok: true }>> {
+      return gw.gatewayFetch(
+        `/hub/${target === 'thread' ? 'threads' : 'comments'}/${enc(id)}/reactions`,
+        {
+          method: 'POST',
+          body: { emoji },
+        },
+      )
+    },
+    unreact(
+      target: 'thread' | 'comment',
+      id: string,
+      emoji: string,
+    ): Promise<GatewayResponse<{ ok: true }>> {
+      return gw.gatewayFetch(
+        `/hub/${target === 'thread' ? 'threads' : 'comments'}/${enc(id)}/reactions/${enc(emoji)}`,
+        { method: 'DELETE' },
+      )
+    },
+    markSeen(channelId: string): Promise<GatewayResponse<{ ok: true }>> {
+      return gw.gatewayFetch(`/hub/channels/${enc(channelId)}/seen`, { method: 'POST', body: {} })
+    },
+    /** Registra o metadado do anexo (o BFF já gerou a key + assinou o PUT). */
+    registerAttachment(body: {
+      kind: HubAttachmentKind
+      mime: string
+      sizeBytes: number
+      originalName: string
+      storageRef: string
+    }): Promise<GatewayResponse<{ id: string }>> {
+      return gw.gatewayFetch('/hub/attachments', { method: 'POST', body })
+    },
+    /** Autoriza e resolve a `storageRef` de um anexo (consumido só pela rota de serve). */
+    resolveAttachment(id: string): Promise<GatewayResponse<HubResolvedAttachment>> {
+      return gw.gatewayFetch(`/hub/attachments/${enc(id)}/resolve`)
+    },
+    report(
+      target: 'thread' | 'comment',
+      id: string,
+      reason: string,
+    ): Promise<GatewayResponse<{ ok: true }>> {
+      return gw.gatewayFetch(
+        `/hub/${target === 'thread' ? 'threads' : 'comments'}/${enc(id)}/report`,
+        {
+          method: 'POST',
+          body: { reason },
+        },
       )
     },
   }

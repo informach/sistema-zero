@@ -22,6 +22,8 @@ export function createDbConnection(
     connectTimeoutSeconds?: number
     statementTimeoutMs?: number
     idleInTransactionTimeoutMs?: number
+    /** TLS na conexão (default off — rede privada). `true` → `ssl: 'require'`. */
+    ssl?: boolean
   } = {},
 ): DbConnection {
   const statementTimeoutMs = opts.statementTimeoutMs ?? 30_000
@@ -31,6 +33,7 @@ export function createDbConnection(
     max: opts.max ?? 10,
     idle_timeout: opts.idleTimeoutSeconds ?? 20,
     connect_timeout: opts.connectTimeoutSeconds ?? 10,
+    ssl: opts.ssl ? 'require' : false,
     connection: {
       statement_timeout: statementTimeoutMs,
       idle_in_transaction_session_timeout: idleInTransactionTimeoutMs,

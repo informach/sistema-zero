@@ -106,6 +106,19 @@ export function buildInterceptorScript(targetOrigin = '*'): string {
       // se postMessage falhar, não há para onde reclamar
     }
   }
+  // Sinal de vida sem payload — o watchdog do PreviewIframe (Camada B) detecta
+  // travamento síncrono pela AUSÊNCIA de heartbeats (o setInterval não dispara
+  // enquanto o thread está preso). setInterval é capturado pristino aqui (o
+  // interceptor é o primeiro script do <head>).
+  function sendBare(kind) {
+    try {
+      parent.postMessage({ source: SRC, kind: kind, parts: [], timestamp: Date.now() }, TARGET_ORIGIN);
+    } catch (e) {}
+  }
+  // Erro lançado pela guarda de loop (loopGuard) carrega a marca __szLoopGuard.
+  function isLoopGuard(err) {
+    return !!(err && typeof err === 'object' && err.__szLoopGuard);
+  }
   var origLog = console.log;
   var origWarn = console.warn;
   var origError = console.error;
@@ -115,6 +128,11 @@ export function buildInterceptorScript(targetOrigin = '*'): string {
   console.error = function () { send('error', arguments); origError.apply(console, arguments); };
   console.info = function () { send('info', arguments); origInfo.apply(console, arguments); };
   window.onerror = function (msg, src, line, col, err) {
+    if (isLoopGuard(err)) {
+      var loopMsg = String((err && err.message) || msg);
+      send('loopStopped', [truncateText(loopMsg)], { message: truncateErrorText(loopMsg) });
+      return true;
+    }
     send('runtimeError', [truncateText(String(msg))], {
       message: truncateErrorText(String(msg)),
       stack: err && err.stack ? truncateErrorText(String(err.stack)) : undefined,
@@ -125,6 +143,11 @@ export function buildInterceptorScript(targetOrigin = '*'): string {
   };
   window.addEventListener('unhandledrejection', function (ev) {
     var reason = ev && ev.reason;
+    if (isLoopGuard(reason)) {
+      var loopMsg = String(reason.message || 'Laço interrompido pela guarda de tempo.');
+      send('loopStopped', [truncateText(loopMsg)], { message: truncateErrorText(loopMsg) });
+      return;
+    }
     var msg = reason && reason.message ? reason.message : safeStringify(reason);
     send('unhandledRejection', [truncateText(String(msg))], {
       message: truncateErrorText(String(msg)),
@@ -155,6 +178,10 @@ export function buildInterceptorScript(targetOrigin = '*'): string {
       target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, true);
+  // Heartbeat: imediato + periódico. Enquanto um loop síncrono prende o thread,
+  // este intervalo NÃO dispara — é assim que o watchdog detecta travamento.
+  sendBare('heartbeat');
+  try { setInterval(function () { sendBare('heartbeat'); }, 1000); } catch (e) {}
 })();`
 }
 

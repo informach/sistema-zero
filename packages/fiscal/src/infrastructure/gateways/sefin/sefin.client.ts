@@ -26,14 +26,18 @@ interface BunTlsFetchInit extends RequestInit {
   tls?: { cert: string; key: string }
 }
 
-/** fetch com mTLS (PEM do A1) + timeout por tentativa — técnica do payments/efi. */
-export function createMtlsFetch(cert: A1Certificate, timeoutMs: number) {
-  return (url: string, init: RequestInit = {}): Promise<Response> => {
+/**
+ * fetch com mTLS (PEM do A1). O `timeoutMs` por chamada permite ao gateway passar
+ * o ORÇAMENTO RESTANTE do ciclo de emissão (NFSE_TOTAL_RETRY_BUDGET_MS) — sem isso
+ * cada round-trip teria o timeout cheio e o pior caso somaria N×timeout.
+ */
+export function createMtlsFetch(cert: A1Certificate, defaultTimeoutMs: number) {
+  return (url: string, init: RequestInit = {}, timeoutMs = defaultTimeoutMs): Promise<Response> => {
     const merged: BunTlsFetchInit = {
       ...init,
       headers: { accept: 'application/json, */*', ...(init.headers ?? {}) },
       tls: { cert: cert.cert, key: cert.key },
-      signal: AbortSignal.timeout(timeoutMs),
+      signal: AbortSignal.timeout(Math.max(1, Math.floor(timeoutMs))),
     }
     return fetch(url, merged)
   }

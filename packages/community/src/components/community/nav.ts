@@ -1,4 +1,4 @@
-import { GraduationCap, Home } from 'lucide-react'
+import { GraduationCap, Home, MessagesSquare } from 'lucide-react'
 
 export interface NavItem {
   href: string
@@ -16,4 +16,5 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { href: '/', label: 'Início', icon: Home },
   { href: '/cursos', label: 'Todos os cursos', icon: GraduationCap, match: '/cursos' },
+  { href: '/comunidade', label: 'Comunidade', icon: MessagesSquare, match: '/comunidade' },
 ]

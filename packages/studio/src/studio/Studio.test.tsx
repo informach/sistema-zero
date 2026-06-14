@@ -21,7 +21,9 @@ mock.module('idb-keyval', () => ({
   setMany: mock(async () => undefined),
 }))
 
-const { useProjectStore } = await import('../state/projectStore')
+const { useProjectStore, sanitizeProjectForHost, PROJECT_FILE_LIMITS } = await import(
+  '../state/projectStore'
+)
 const { useUIStore } = await import('../state/uiStore')
 
 // O Shell vira um PROBE: renderiza por DENTRO do provider da instância, então
@@ -29,12 +31,14 @@ const { useUIStore } = await import('../state/uiStore')
 // leem a default — não servem para inspecionar um <Studio>).
 function ShellProbe(): React.JSX.Element {
   const projectId = useProjectStore((s) => s.project?.id ?? '')
+  const mode = useProjectStore((s) => s.project?.mode ?? '')
   const isDirty = useProjectStore((s) => s.isDirty)
   const previewRunning = useUIStore((s) => s.previewRunning)
   return (
     <div
       data-testid="editor-shell"
       data-project={projectId}
+      data-mode={mode}
       data-dirty={String(isDirty)}
       data-preview={String(previewRunning)}
     />
@@ -123,11 +127,12 @@ describe('Studio', () => {
     })
     expect(handleRef.current?.isDirty()).toBe(false)
 
-    handleRef.current?.setMode('code')
+    // D2: projeto básico só alterna entre Blocos e Ponte (Código é só do pro).
+    handleRef.current?.setMode('bridge')
     expect(handleRef.current?.isDirty()).toBe(true)
 
     await waitFor(() => {
-      expect(changes).toContain('code')
+      expect(changes).toContain('bridge')
     })
     // Snapshot entregue ao host conta como salvo.
     await waitFor(() => {
@@ -144,5 +149,109 @@ describe('Studio', () => {
       expect(container.querySelector('[data-sz-theme="light"]')).toBeTruthy()
     })
     expect(document.documentElement.getAttribute('data-sz-theme')).toBeNull()
+  })
+
+  it('re-render do host com allowedModes inline NÃO descarta edições não salvas', async () => {
+    const handleRef = createRef<StudioHandle>()
+    const project = createEmptyProject('project-keep', 'Manter')
+    // Array INLINE: o host recria a referência a cada render, mas o conteúdo é o
+    // mesmo. Antes, isso re-rodava resolveStudioConfig → re-sanitize → re-hidrata.
+    const { getByTestId, rerender } = render(
+      <Studio ref={handleRef} initialProject={project} allowedModes={['blocks', 'bridge']} />,
+    )
+
+    await waitFor(() => {
+      expect(getByTestId('editor-shell').getAttribute('data-project')).toBe('project-keep')
+    })
+
+    // Edição não salva do aluno (troca de modo marca sujo). D2: básico = Blocos/Ponte.
+    handleRef.current?.setMode('bridge')
+    await waitFor(() => {
+      expect(getByTestId('editor-shell').getAttribute('data-dirty')).toBe('true')
+    })
+    expect(getByTestId('editor-shell').getAttribute('data-mode')).toBe('bridge')
+
+    // Re-render do host com um NOVO array inline de conteúdo igual.
+    rerender(
+      <Studio ref={handleRef} initialProject={project} allowedModes={['blocks', 'bridge']} />,
+    )
+
+    // A edição e o estado sujo sobrevivem (não re-hidratou do snapshot original).
+    expect(getByTestId('editor-shell').getAttribute('data-mode')).toBe('bridge')
+    expect(getByTestId('editor-shell').getAttribute('data-dirty')).toBe('true')
+    expect(handleRef.current?.isDirty()).toBe(true)
+  })
+
+  it('apertar allowedModes numa instância montada re-coage o modo ativo proibido', async () => {
+    const project = createEmptyProject('project-coerce', 'Coerção')
+    // Começa com Blocos e Ponte permitidos; abre no modo padrão 'blocks'.
+    const { getByTestId, rerender } = render(
+      <Studio initialProject={project} allowedModes={['blocks', 'bridge']} />,
+    )
+
+    await waitFor(() => {
+      expect(getByTestId('editor-shell').getAttribute('data-mode')).toBe('blocks')
+    })
+
+    // Host restringe os modos para só 'bridge': a aba ativa 'blocks' fica proibida.
+    // A coerção recomputa (memo keyado nos modos RESOLVIDOS) e cai no primeiro
+    // permitido ('bridge').
+    rerender(<Studio initialProject={project} allowedModes={['bridge']} />)
+
+    await waitFor(() => {
+      expect(getByTestId('editor-shell').getAttribute('data-mode')).toBe('bridge')
+    })
+  })
+
+  it('onReady dispara 1x por projeto e re-arma após replaceProject', async () => {
+    const handleRef = createRef<StudioHandle>()
+    const readyIds: string[] = []
+    render(
+      <Studio
+        ref={handleRef}
+        initialProject={createEmptyProject('project-r1', 'R1')}
+        onReady={() => readyIds.push(handleRef.current?.getProject()?.id ?? '')}
+      />,
+    )
+
+    await waitFor(() => {
+      expect(readyIds).toEqual(['project-r1'])
+    })
+
+    // Troca o projeto pelo handle → unload + re-hidrata: onReady re-dispara.
+    handleRef.current?.replaceProject(createEmptyProject('project-r2', 'R2'))
+    await waitFor(() => {
+      expect(readyIds).toEqual(['project-r1', 'project-r2'])
+    })
+  })
+})
+
+describe('sanitizeProjectForHost — teto combinado de arquivos', () => {
+  it('derruba extras quando canônicos + extras excedem o limite total', () => {
+    // Canônicos e extras são limitados INDEPENDENTE (cada grupo ≤ maxTotalChars),
+    // então a soma podia chegar a ~2x o limite. Cada arquivo aqui passa nos
+    // limites individuais, mas a SOMA estoura — os extras devem ser podados.
+    const fileChars = PROJECT_FILE_LIMITS.maxFileChars
+    const big = 'a'.repeat(fileChars)
+    const project = sanitizeProjectForHost({
+      id: 'oversized',
+      name: 'Grande',
+      files: { 'index.html': big, 'style.css': big, 'script.js': big }, // 3x = total canônico
+      extraFiles: [
+        { name: 'extra-a.js', content: big }, // estouraria o combinado
+        { name: 'extra-b.js', content: big },
+      ],
+    })
+
+    expect(project).not.toBeNull()
+    const extras = project?.extraFiles ?? []
+    // Pelo menos um extra foi podado para caber no limite combinado.
+    expect(extras.length).toBeLessThan(2)
+    const total =
+      (project?.files['index.html'].length ?? 0) +
+      (project?.files['style.css'].length ?? 0) +
+      (project?.files['script.js'].length ?? 0) +
+      extras.reduce((sum, f) => sum + f.content.length, 0)
+    expect(total).toBeLessThanOrEqual(PROJECT_FILE_LIMITS.maxTotalChars)
   })
 })

@@ -5,6 +5,7 @@ import {
   disposeModelsForPathPrefix,
   getMonacoModelPath,
   isModelInPathPrefix,
+  resolveModelPathPrefix,
 } from '../modelPaths'
 
 function model(path: string): DisposableMonacoModel {
@@ -21,6 +22,27 @@ describe('Monaco model paths', () => {
   it('prefixa models por projeto', () => {
     expect(buildMonacoModelPath('project-1', 'script.js')).toBe('project-1/script.js')
     expect(buildMonacoModelPath(undefined, 'script.js')).toBe('script.js')
+    // Prefixo só com espaços é tratado como vazio (não vira ` /script.js`).
+    expect(buildMonacoModelPath('   ', 'script.js')).toBe('script.js')
+  })
+
+  it('salga o prefixo com o id por instância', () => {
+    // Dois <Studio> no MESMO projectId precisam de prefixos DISTINTOS.
+    expect(resolveModelPathPrefix('project-1', ':r0:')).toBe('project-1:::r0:')
+    expect(resolveModelPathPrefix('project-1', ':r1:')).toBe('project-1:::r1:')
+    expect(resolveModelPathPrefix('project-1', ':r0:')).not.toBe(
+      resolveModelPathPrefix('project-1', ':r1:'),
+    )
+  })
+
+  it('nunca devolve prefixo vazio: projectId em branco cai no id por instância', () => {
+    // Sem isso, um project.id vazio vazaria/colidiria models entre instâncias.
+    expect(resolveModelPathPrefix(undefined, ':r0:')).toBe(':r0:')
+    expect(resolveModelPathPrefix('', ':r0:')).toBe(':r0:')
+    expect(resolveModelPathPrefix('   ', ':r0:')).toBe(':r0:')
+    // E o caminho resultante carrega sempre um discriminador não-vazio.
+    const prefix = resolveModelPathPrefix('', ':r2:')
+    expect(buildMonacoModelPath(prefix, 'script.js')).toBe(':r2:/script.js')
   })
 
   it('normaliza path de URI para comparar prefixo', () => {
@@ -42,5 +64,21 @@ describe('Monaco model paths', () => {
     expect(mine.dispose).toHaveBeenCalledTimes(1)
     expect(alsoMine.dispose).toHaveBeenCalledTimes(1)
     expect(other.dispose).not.toHaveBeenCalled()
+  })
+
+  it('duas instâncias no mesmo projeto não descartam os models uma da outra', () => {
+    // Reproduz a rota /dual: mesmo projectId, ids de instância distintos.
+    const projectId = 'project-1'
+    const prefixA = resolveModelPathPrefix(projectId, ':r0:')
+    const prefixB = resolveModelPathPrefix(projectId, ':r1:')
+    const a = model(buildMonacoModelPath(prefixA, 'script.js'))
+    const b = model(buildMonacoModelPath(prefixB, 'script.js'))
+    const registry = { getModels: () => [a, b] }
+
+    // Desmontar a instância A só pode descartar os models DELA.
+    const disposed = disposeModelsForPathPrefix(prefixA, registry)
+    expect(disposed).toBe(1)
+    expect(a.dispose).toHaveBeenCalledTimes(1)
+    expect(b.dispose).not.toHaveBeenCalled()
   })
 })

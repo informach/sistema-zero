@@ -11,6 +11,9 @@ validateManifest(gameTwoDManifest)
 
 export const gameTwoDExtension: ExtensionDefinition = {
   manifest: gameTwoDManifest,
+  // Extensões nunca aparecem na paleta do INICIANTE: 2D entra no intermediário
+  // (3D no avançado). Divulgação progressiva.
+  minLevel: 'intermediario',
   blockly: {
     blocks: gameTwoDBlocks,
     toolboxCategory: gameTwoDToolboxCategory,

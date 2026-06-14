@@ -35,6 +35,7 @@ export const lessonBlockKindEnum = members.enum('lesson_block_kind', [
   'quiz',
   'embed',
   'ebook',
+  'studio',
 ])
 export const accessTypeEnum = members.enum('access_type', [
   'download',
@@ -255,6 +256,34 @@ export const lessonProgress = members.table(
   ],
 )
 
+// ── Entrega do projeto do Estúdio (1 linha por aluno+bloco, upsert) ─────────
+// O aluno faz a atividade no bloco `studio` e ENVIA o projeto (mesmo JSON do
+// "Exportar projeto"). A existência da linha destrava a conclusão da aula —
+// espelha o gate do quiz. Reenvio = upsert (último vence). Sem nota.
+export const studioSubmissions = members.table(
+  'studio_submissions',
+  {
+    id: uuid('id').primaryKey(),
+    userId: uuid('user_id').notNull(),
+    blockId: uuid('block_id')
+      .notNull()
+      .references(() => lessonBlocks.id, { onDelete: 'cascade' }),
+    lessonId: uuid('lesson_id')
+      .notNull()
+      .references(() => lessons.id, { onDelete: 'cascade' }),
+    courseId: uuid('course_id')
+      .notNull()
+      .references(() => courses.id, { onDelete: 'cascade' }),
+    /** Snapshot `Project` do Estúdio enviado pelo aluno (importável no Estúdio do professor). */
+    project: jsonb('project').$type<unknown>().notNull(),
+    submittedAt: timestamp('submitted_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('studio_submissions_user_block_uq').on(t.userId, t.blockId),
+    index('studio_submissions_block_idx').on(t.blockId, t.submittedAt),
+  ],
+)
+
 // ── Classificação do curso pelo aluno (1 linha por aluno+curso, upsert) ─────
 // `rating_half` = nota×2 (inteiro 2..10 → 1.0..5.0 em passos de 0.5) — evita
 // float/numeric-string. Cada passo do fluxo da UI persiste o estado acumulado.
@@ -369,6 +398,7 @@ export const schema = {
   lessonCompletions,
   lessonProgress,
   quizAttempts,
+  studioSubmissions,
   courseRatings,
   gamificationProfiles,
   xpEvents,

@@ -38,7 +38,7 @@ e **favicon** completo: `src/app/favicon.ico` + PNGs 16/32/192/512 + apple-touch
 > endpoints `/reorder`, erro→toast+reload) + módulos **colapsáveis** com contador "X de Y aulas
 > publicadas · N min" + **publicação por aula** (switch no dialog — aula nova nasce RASCUNHO —,
 > badge Publicada/Rascunho; publicar curso sem aula publicada → 409 `NO_PUBLISHED_LESSON` no
-> toast) + editor de blocos polimórficos (texto/vídeo/imagem/áudio/quiz/embed/**ebook**) e anexos,
+> toast) + editor de blocos polimórficos (texto/vídeo/imagem/áudio/quiz/embed/**ebook**/**studio**) e anexos,
 > ambos com DnD; **autoria v3 (06/2026): upload é o ÚNICO caminho** — imagem upload-only
 > (`ImageUploader allowManualUrl={false}`; capa de curso mantém URL manual), vídeo **só Vimeo**
 > (sem select de provider/URL/duração manual — o uploader TUS preenche src/duração/transcrição;
@@ -51,9 +51,13 @@ e **favicon** completo: `src/app/favicon.ico` + PNGs 16/32/192/512 + apple-touch
 > `addEbookAttachment` com dedupe por URL; trocar o PDF deixa o material antigo — excluir manual); bloco
 > **rich_text usa TipTap** (`components/editor/rich-text-editor{,.impl}.tsx` —
 > saída MARKDOWN via tiptap-markdown, `dynamic ssr:false` + `immediatelyRender:false` +
-> `shouldRerenderOnTransaction:true`; estilos `.rich-text-content` no globals.css) e bloco
-> **quiz usa builder visual** (`aulas/[lessonId]/quiz-builder.tsx` — perguntas/opções/corretas/
-> nota de corte, `validateQuiz` espelha o members; sem JSON cru)) + **Painel "Gestão de vendas"**
+> `shouldRerenderOnTransaction:true`; estilos `.rich-text-content` no globals.css; **suporta
+> IMAGEM** via `@tiptap/extension-image` + botão da toolbar que faz upload em `/api/media/images`
+> (`scope=block`) e insere `setImage` → serializa p/ `![](url)`; prop `compact` reduz a altura
+> mínima) e bloco **quiz usa o MESMO editor TipTap** (`aulas/[lessonId]/quiz-builder.tsx` —
+> enunciado, opções e explicação são MARKDOWN com formatação rica + imagens, `compact` nas
+> opções/explicação; checkbox "correta"/nota de corte seguem; `validateQuiz` espelha o members;
+> o aluno renderiza via `member-shell/lib/markdown`)) + **Painel "Gestão de vendas"**
 > (estilo Hotmart: filtros produto/período **7/30/90 dias + 6/12 meses**, cards
 > líquido/transações/cancelamentos com tooltip, gráfico Recharts colapsável — série densa via BFF,
 > **agregada por semana >90d / mês >270d** com `granularity`/`periodEnd`) + **cadastros inteligentes**
@@ -412,7 +416,8 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   `GET /fiscal/admin/invoices/:id/pdf` → binário `application/pdf` (404 sem PDF) — o BFF
   repassa em STREAMING via `gatewayFetchRaw` (variante crua do gatewayFetch, mesmo
   Bearer/refresh-on-401, sem materializar o corpo); `POST …/:id/retry` (só FAILED);
-  `POST …/:id/cancel` `{reason}` (obrigatório 3..500 — validado no BFF E no serviço);
+  `POST …/:id/cancel` `{reason}` (obrigatório 15..255 = TSMotivo do XSD — validado no BFF E no serviço;
+  fora disso a Sefin rejeita e a nota fica presa em CANCEL_PENDING);
   `POST …/:id/substitute` `{customerName?,customerDocument?,serviceDescription?}` (≥1 campo) →
   201 `{id}` da nota substituta (a original é cancelada por substituição);
   `POST …/:id/emit-now` → `{ok:true}` (só SCHEDULED — ANTECIPA a emissão: o worker emite em
@@ -462,6 +467,23 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   Páginas em `app/admin/membros/cursos/*` (lista + editor de curso + editor
   de aula com formulários por tipo de bloco). Adapter em `src/server/members.ts`; views em
   `src/lib/types.ts`.
+  **Bloco `studio` (06/2026):** o form de bloco embute o **`@sistemazero/studio`**
+  (`components/studio/studio-embed.tsx`, dynamic ssr:false, `persistence:'none'`) — o admin monta o
+  PROJETO INICIAL (tipo/código/nome) e o `saveBlock` captura via `handleRef.getProject()`; campos à
+  parte: nível, modos liberados, categorias sempre visíveis, "revelar avançado". **Acompanhamento do
+  professor:** botão "Entregas" no bloco → `studio-submissions-dialog.tsx` lista quem entregou
+  (`GET /api/members/blocks/:id/studio-submissions`, nomes hidratados do auth via batch) + abre o
+  projeto do aluno num Estúdio embutido (`…/:userId`) ou baixa o `.szproject.json`. Requer
+  `transpilePackages:['@sistemazero/studio']` + `@source "../../../studio/src"` + `frame-src blob:` na CSP.
+
+- **Comunidade (hub) — fatia 06/2026.** Item de nav "Comunidade" (`MessagesSquare`) + abas
+  `COMMUNITY_TABS` (Servidores · Moderação). Páginas em `app/admin/comunidade/`: **`servidores`**
+  (lista + criação/edição de servidores e canais — `servers-client.tsx`), **`servidores/[id]`**
+  (detalhe do servidor + canais — `space-detail-client.tsx`) e **`moderacao`** (fila de aprovação +
+  denúncias + silenciar/banir — `moderation-client.tsx`). BFF: adapter `src/server/hub.ts` + tipos
+  `src/lib/hub-types.ts`; a árvore de route handlers `app/api/hub/admin/*` espelha as rotas admin do
+  gateway (spaces/channels + reorder, `pending`/approve/reject/hide/delete/pin/lock, reports/resolve,
+  mutes/bans). Consome o **`@sistemazero/hub`** via gateway (JWT + RBAC: leitura staff+, escrita admin+).
 
 ## Checklist antes de finalizar
 

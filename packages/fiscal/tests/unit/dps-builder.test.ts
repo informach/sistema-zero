@@ -1,5 +1,10 @@
 import { describe, expect, test } from 'bun:test'
-import { buildCancelEventXml, buildDpsXml, dhEmissao } from '../../src/domain/dps/dps-builder'
+import {
+  buildCancelEventXml,
+  buildDpsXml,
+  dCompetBRT,
+  dhEmissao,
+} from '../../src/domain/dps/dps-builder'
 import {
   buildDpsId,
   composeServiceDescription,
@@ -69,6 +74,39 @@ describe('buildDpsXml (leiaute ACEITO pela Sefin na Produção Restrita — spik
     const fixed = Date.parse('2026-06-12T15:00:00Z')
     expect(dhEmissao(fixed)).toBe('2026-06-12T11:59:00-03:00')
   })
+
+  test('caracteres de controle C0 são removidos do XML (mal-formaria/quebraria a assinatura)', () => {
+    const sujo = `Mar${String.fromCharCode(7)}ia${String.fromCharCode(0)}` // BEL + NUL
+    const desc = `Cur${String.fromCharCode(0x1b)}so` // ESC
+    const xml = buildDpsXml(profile, {
+      ...input,
+      tomador: { cpf: '52998224725', nome: sujo },
+      descricao: desc,
+    })
+    expect(xml).toContain('<xNome>Maria</xNome>')
+    expect(xml).toContain('<xDescServ>Curso</xDescServ>')
+    // Nenhum byte de controle C0 (exceto \t \n \r) sobrou no XML.
+    const hasControl = [...xml].some((c) => {
+      const n = c.charCodeAt(0)
+      return n <= 8 || n === 11 || n === 12 || (n >= 14 && n <= 31)
+    })
+    expect(hasControl).toBe(false)
+  })
+})
+
+describe('dCompetBRT (competência = data da emissão, MESMA base/margem do dhEmi — fix B3)', () => {
+  test('na virada da meia-noite BRT, dCompet NÃO fica 1 dia à frente do dhEmi', () => {
+    // 23:59:30 BRT (02:59:30Z do dia seguinte) — a margem de 60s puxa p/ o dia anterior.
+    const instant = Date.parse('2026-06-13T02:59:30Z')
+    expect(dCompetBRT(instant)).toBe('2026-06-12')
+    // Casa EXATAMENTE com o prefixo de data do dhEmi no mesmo instante.
+    expect(dCompetBRT(instant)).toBe(dhEmissao(instant).slice(0, 10))
+  })
+
+  test('logo após a meia-noite BRT também casa com o dhEmi', () => {
+    const instant = Date.parse('2026-06-13T03:00:30Z') // 00:00:30 BRT
+    expect(dCompetBRT(instant)).toBe(dhEmissao(instant).slice(0, 10))
+  })
 })
 
 describe('buildCancelEventXml (e101101)', () => {
@@ -106,5 +144,12 @@ describe('composeServiceDescription', () => {
     expect(composeServiceDescription('  Treinamento on-line  ', '  Curso X  ')).toBe(
       'Treinamento on-line - Curso X',
     )
+  })
+
+  test('trunca em 1900 por CODEPOINT — não parte um par surrogate (emoji)', () => {
+    const desc = composeServiceDescription('', '😀'.repeat(2000)) // 2000 codepoints > 1900
+    expect([...desc]).toHaveLength(1900)
+    // Um surrogate solto faria o encode/serialização XML estourar.
+    expect(() => encodeURIComponent(desc)).not.toThrow()
   })
 })

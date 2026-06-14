@@ -13,13 +13,15 @@ import { CODE_FONT_SIZE_DEFAULT, useSettingsStore } from '../state/settingsStore
 import { useUIStore } from '../state/uiStore'
 import { useStudioConfig } from '../studio/config'
 import { useStudioTheme } from '../studio/theme'
+import { ProCodeMode } from './pro/ProCodeMode'
 
 const EMPTY_EXTRA_FILES: ExtraFile[] = []
 
 export function CodeMode(): JSX.Element {
-  const { hasProject, projectId, files, extras } = useProjectStore(
+  const { hasProject, isPro, projectId, files, extras } = useProjectStore(
     useShallow((s) => ({
       hasProject: Boolean(s.project),
+      isPro: s.project?.kind === 'pro',
       projectId: s.project?.id,
       files: s.project?.files,
       extras: s.project?.extraFiles ?? EMPTY_EXTRA_FILES,
@@ -61,6 +63,8 @@ export function CodeMode(): JSX.Element {
   }, [files, extras, openExtras])
 
   if (!hasProject) return <div />
+  // Projetos profissionais usam árvore real + dev-server (não os 3 canônicos).
+  if (isPro) return <ProCodeMode />
 
   const handleChange = (name: string, value: string) => {
     if (CANONICAL_FILES.has(name)) {

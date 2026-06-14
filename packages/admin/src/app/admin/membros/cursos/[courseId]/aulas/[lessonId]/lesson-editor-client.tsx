@@ -9,6 +9,7 @@ import {
   useSensors,
 } from '@dnd-kit/core'
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import type { BlockLevel, IDEMode, Project, StudioHandle } from '@sistemazero/studio'
 import { Badge } from '@sistemazero/ui/badge'
 import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
@@ -17,9 +18,9 @@ import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
 import { Select } from '@sistemazero/ui/select'
 import { Spinner } from '@sistemazero/ui/spinner'
-import { ArrowLeft, GripVertical, Pencil, Plus } from 'lucide-react'
+import { ArrowLeft, GripVertical, Pencil, Plus, Users } from 'lucide-react'
 import Link from 'next/link'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { useSortableItem } from '@/components/dnd/use-sortable-item'
@@ -30,6 +31,7 @@ import { FileUploader, type UploadedFile } from '@/components/media/file-uploade
 import { ImageUploader } from '@/components/media/image-uploader'
 import { VideoThumbnailUploader } from '@/components/media/video-thumbnail-uploader'
 import { VideoUploader } from '@/components/media/video-uploader'
+import { StudioEmbed } from '@/components/studio/studio-embed'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import {
   type AttachmentView,
@@ -40,6 +42,7 @@ import {
   type LessonContentView,
 } from '@/lib/types'
 import { QuizBuilder, type QuizValue, validateQuiz } from './quiz-builder'
+import { StudioSubmissionsDialog } from './studio-submissions-dialog'
 
 const KIND_LABELS: Record<string, string> = {
   rich_text: 'Texto',
@@ -49,7 +52,33 @@ const KIND_LABELS: Record<string, string> = {
   quiz: 'Quiz',
   embed: 'Interativo',
   ebook: 'E-book (livro 3D)',
+  studio: 'Estúdio',
 }
+
+const STUDIO_LEVELS: { value: BlockLevel; label: string }[] = [
+  { value: 'iniciante', label: 'Iniciante' },
+  { value: 'intermediario', label: 'Intermediário' },
+  { value: 'avancado', label: 'Avançado' },
+]
+// Categorias da paleta do Estúdio (espelha CORE_CATEGORY_LEVELS da lib).
+const STUDIO_CATEGORIES = [
+  'HTML',
+  'CSS',
+  'DOM',
+  'JavaScript',
+  'Matemática',
+  'Canvas',
+  'Valores',
+  'Objetos',
+  'Funções',
+  'Classes',
+  'Avançado',
+]
+const STUDIO_MODES: { value: IDEMode; label: string }[] = [
+  { value: 'blocks', label: 'Blocos' },
+  { value: 'bridge', label: 'Ponte' },
+  { value: 'code', label: 'Código' },
+]
 
 interface BlockForm {
   kind: LessonBlockKind
@@ -74,6 +103,19 @@ interface BlockForm {
   /** E-book: referência `r2priv:<key>` do PDF + título opcional. */
   pdfUrl: string
   title: string
+  /** Estúdio: nível fixado (paleta por dificuldade). */
+  studioLevel: BlockLevel
+  /** Estúdio: categorias de blocos sempre visíveis. */
+  studioCategories: string[]
+  /** Estúdio: modos liberados ao aluno (vazio = todos os do tipo de projeto). */
+  studioModes: IDEMode[]
+  /** Estúdio: aluno pode revelar blocos avançados. */
+  studioAllowReveal: boolean
+  /**
+   * Estúdio: allowlist de blocos por id. Sem UI hoje, mas carregada/reemitida p/
+   * não ser APAGADA ao editar+salvar um bloco que a tenha (seed/import; achado do review).
+   */
+  studioAllowBlocks: string[]
 }
 
 const EMPTY_BLOCK: BlockForm = {
@@ -90,15 +132,33 @@ const EMPTY_BLOCK: BlockForm = {
   captions: [],
   pdfUrl: '',
   title: '',
+  studioLevel: 'iniciante',
+  studioCategories: [],
+  studioModes: ['blocks', 'bridge', 'code'],
+  studioAllowReveal: true,
+  studioAllowBlocks: [],
 }
 
 const num = (s: string): number | undefined => (s.trim() ? Number(s) : undefined)
 const opt = (s: string): string | undefined => (s.trim() ? s.trim() : undefined)
 
-/** Monta o conteúdo do bloco a partir do form. */
-function buildContent(f: BlockForm): LessonBlockContent {
+/** Monta o conteúdo do bloco a partir do form. `studioProject` = snapshot do editor embutido. */
+function buildContent(f: BlockForm, studioProject?: Project): LessonBlockContent {
   const dur = num(f.durationSeconds)
   switch (f.kind) {
+    case 'studio':
+      // `studioProject` é garantido não-nulo no saveBlock (validação antes de chamar).
+      return {
+        kind: 'studio',
+        initialProject: studioProject as Project,
+        level: f.studioLevel,
+        ...(f.studioCategories.length > 0 ? { allowCategories: f.studioCategories } : {}),
+        ...(f.studioAllowBlocks.length > 0 ? { allowBlocks: f.studioAllowBlocks } : {}),
+        ...(f.studioModes.length > 0 && f.studioModes.length < STUDIO_MODES.length
+          ? { allowedModes: f.studioModes }
+          : {}),
+        allowLevelReveal: f.studioAllowReveal,
+      }
     case 'rich_text':
       return {
         kind: 'rich_text',
@@ -153,6 +213,11 @@ function validateBlock(f: BlockForm): string | null {
       return f.html.trim() ? null : 'Escreva o HTML do conteúdo interativo.'
     case 'ebook':
       return f.pdfUrl.trim() ? null : 'Envie o PDF do e-book antes de salvar.'
+    case 'studio':
+      // O projeto inicial vem do editor embutido (validado no saveBlock). Aqui só
+      // barramos "zero modos" — que, omitido no payload, viraria "todos liberados"
+      // (o OPOSTO da intenção do autor; achado do review).
+      return f.studioModes.length > 0 ? null : 'Selecione ao menos um modo do Estúdio.'
     default:
       return null
   }
@@ -176,6 +241,8 @@ function blockSummary(b: BlockView): string {
       return c.title ?? c.url
     case 'quiz':
       return `${c.questions.length} pergunta(s)`
+    case 'studio':
+      return (c.initialProject as { name?: string })?.name ?? 'Atividade do Estúdio'
     default:
       return '—'
   }
@@ -199,6 +266,10 @@ export function LessonEditorClient({
   const [blockOpen, setBlockOpen] = useState(false)
   const [editingBlock, setEditingBlock] = useState<BlockView | null>(null)
   const [blockForm, setBlockForm] = useState<BlockForm>(EMPTY_BLOCK)
+  // Handle do Estúdio embutido na autoria — lido no saveBlock (snapshot do projeto inicial).
+  const studioHandleRef = useRef<StudioHandle | null>(null)
+  // Bloco cujas ENTREGAS o professor está acompanhando (dialog separado).
+  const [submissionsBlockId, setSubmissionsBlockId] = useState<string | null>(null)
 
   const [attOpen, setAttOpen] = useState(false)
   const [editingAtt, setEditingAtt] = useState<AttachmentView | null>(null)
@@ -266,6 +337,14 @@ export function LessonEditorClient({
       captions: c.kind === 'video' ? (c.captions ?? []) : [],
       pdfUrl: c.kind === 'ebook' ? c.url : '',
       title: c.kind === 'ebook' ? (c.title ?? '') : '',
+      studioLevel: c.kind === 'studio' ? (c.level ?? 'iniciante') : 'iniciante',
+      studioCategories: c.kind === 'studio' ? (c.allowCategories ?? []) : [],
+      studioModes:
+        c.kind === 'studio'
+          ? (c.allowedModes ?? ['blocks', 'bridge', 'code'])
+          : ['blocks', 'bridge', 'code'],
+      studioAllowReveal: c.kind === 'studio' ? (c.allowLevelReveal ?? true) : true,
+      studioAllowBlocks: c.kind === 'studio' ? (c.allowBlocks ?? []) : [],
     })
     setBlockOpen(true)
   }
@@ -277,12 +356,22 @@ export function LessonEditorClient({
         return
       }
     }
+    // Estúdio: captura o snapshot do editor embutido (nome/tipo/código de partida).
+    let studioProject: Project | undefined
+    if (blockForm.kind === 'studio') {
+      const p = studioHandleRef.current?.getProject()
+      if (!p) {
+        toast.error('Monte o projeto inicial no Estúdio antes de salvar.')
+        return
+      }
+      studioProject = p
+    }
     const missing = validateBlock(blockForm)
     if (missing) {
       toast.error(missing)
       return
     }
-    const content = buildContent(blockForm)
+    const content = buildContent(blockForm, studioProject)
     await run(async () => {
       if (editingBlock)
         await apiSend(`/api/members/blocks/${editingBlock.id}`, 'PATCH', { content })
@@ -440,6 +529,9 @@ export function LessonEditorClient({
                       canWrite={canWrite}
                       onEdit={() => openEditBlock(b)}
                       onDelete={() => deleteBlock(b)}
+                      onSubmissions={
+                        b.kind === 'studio' ? () => setSubmissionsBlockId(b.id) : undefined
+                      }
                     />
                   ))}
                 </SortableContext>
@@ -677,6 +769,108 @@ export function LessonEditorClient({
               onChange={(quiz) => setBlockForm((f) => ({ ...f, quiz }))}
             />
           ) : null}
+
+          {blockForm.kind === 'studio' ? (
+            <div className="flex flex-col gap-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field
+                  label="Nível"
+                  htmlFor="slevel"
+                  hint="Cura a paleta de blocos por dificuldade."
+                >
+                  <Select
+                    id="slevel"
+                    value={blockForm.studioLevel}
+                    onChange={(e) =>
+                      setBlockForm((f) => ({ ...f, studioLevel: e.target.value as BlockLevel }))
+                    }
+                  >
+                    {STUDIO_LEVELS.map((l) => (
+                      <option key={l.value} value={l.value}>
+                        {l.label}
+                      </option>
+                    ))}
+                  </Select>
+                </Field>
+                <Field
+                  label="Modos liberados"
+                  hint="O aluno alterna entre eles (limitado ao tipo do projeto)."
+                >
+                  <div className="flex flex-wrap gap-3 pt-1.5">
+                    {STUDIO_MODES.map((m) => (
+                      <label key={m.value} className="flex items-center gap-1.5 text-sm">
+                        <input
+                          type="checkbox"
+                          className="size-4 accent-primary"
+                          checked={blockForm.studioModes.includes(m.value)}
+                          onChange={(e) =>
+                            setBlockForm((f) => ({
+                              ...f,
+                              studioModes: e.target.checked
+                                ? [...f.studioModes, m.value]
+                                : f.studioModes.filter((x) => x !== m.value),
+                            }))
+                          }
+                        />
+                        {m.label}
+                      </label>
+                    ))}
+                  </div>
+                </Field>
+              </div>
+              <Field
+                label="Bloquinhos sempre visíveis"
+                hint="Categorias liberadas independente do nível (opcional)."
+              >
+                <div className="flex flex-wrap gap-3 pt-1.5">
+                  {STUDIO_CATEGORIES.map((cat) => (
+                    <label key={cat} className="flex items-center gap-1.5 text-sm">
+                      <input
+                        type="checkbox"
+                        className="size-4 accent-primary"
+                        checked={blockForm.studioCategories.includes(cat)}
+                        onChange={(e) =>
+                          setBlockForm((f) => ({
+                            ...f,
+                            studioCategories: e.target.checked
+                              ? [...f.studioCategories, cat]
+                              : f.studioCategories.filter((x) => x !== cat),
+                          }))
+                        }
+                      />
+                      {cat}
+                    </label>
+                  ))}
+                </div>
+              </Field>
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  className="size-4 accent-primary"
+                  checked={blockForm.studioAllowReveal}
+                  onChange={(e) =>
+                    setBlockForm((f) => ({ ...f, studioAllowReveal: e.target.checked }))
+                  }
+                />
+                Aluno pode revelar blocos avançados
+              </label>
+              <Field
+                label="Projeto inicial"
+                hint="Monte o tipo de projeto, o código de partida e o nome — é o que o aluno abre na aula."
+              >
+                <StudioEmbed
+                  key={editingBlock?.id ?? 'new-studio'}
+                  initialProject={
+                    editingBlock && editingBlock.content.kind === 'studio'
+                      ? (editingBlock.content.initialProject as Project)
+                      : null
+                  }
+                  handleRef={studioHandleRef}
+                  features={{ terminal: false, ai: false, professional: false, export: false }}
+                />
+              </Field>
+            </div>
+          ) : null}
         </div>
       </Dialog>
 
@@ -747,6 +941,14 @@ export function LessonEditorClient({
           </div>
         </div>
       </Dialog>
+
+      {submissionsBlockId ? (
+        <StudioSubmissionsDialog
+          blockId={submissionsBlockId}
+          open
+          onClose={() => setSubmissionsBlockId(null)}
+        />
+      ) : null}
     </div>
   )
 }
@@ -757,11 +959,14 @@ function SortableBlockItem({
   canWrite,
   onEdit,
   onDelete,
+  onSubmissions,
 }: {
   block: BlockView
   canWrite: boolean
   onEdit: () => void
   onDelete: () => void
+  /** Presente só em blocos de estúdio — abre o acompanhamento de entregas. */
+  onSubmissions?: () => void
 }) {
   const { attributes, listeners, setNodeRef, style } = useSortableItem(block.id)
 
@@ -782,16 +987,23 @@ function SortableBlockItem({
         <Badge variant="outline">{KIND_LABELS[block.kind] ?? block.kind}</Badge>
         <span className="truncate text-sm text-muted-foreground">{blockSummary(block)}</span>
       </div>
-      {canWrite ? (
-        <div className="flex shrink-0 items-center gap-1">
-          <Button variant="ghost" size="sm" onClick={onEdit}>
-            <Pencil className="size-4" /> Editar
+      <div className="flex shrink-0 items-center gap-1">
+        {onSubmissions ? (
+          <Button variant="ghost" size="sm" onClick={onSubmissions}>
+            <Users className="size-4" /> Entregas
           </Button>
-          <Button variant="ghost" size="sm" onClick={onDelete}>
-            Excluir
-          </Button>
-        </div>
-      ) : null}
+        ) : null}
+        {canWrite ? (
+          <>
+            <Button variant="ghost" size="sm" onClick={onEdit}>
+              <Pencil className="size-4" /> Editar
+            </Button>
+            <Button variant="ghost" size="sm" onClick={onDelete}>
+              Excluir
+            </Button>
+          </>
+        ) : null}
+      </div>
     </Card>
   )
 }
