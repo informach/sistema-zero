@@ -1,5 +1,5 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it, mock, spyOn } from 'bun:test'
-import { act, cleanup, render } from '@testing-library/react'
+import { act, cleanup, render, waitFor } from '@testing-library/react'
 import type { JSX } from 'react'
 import { useEffect } from 'react'
 import { createEmptyProject } from '#core'
@@ -90,9 +90,11 @@ describe('BottomPanel', () => {
   it('mantém o Terminal montado ao alternar abas (não remonta)', async () => {
     useUIStore.setState({ bottomTab: 'terminal' })
     const { findByTestId, getByTestId } = render(<BottomPanel />)
-    // Espera o chunk lazy do Terminal resolver.
+    // Espera o chunk lazy do Terminal resolver E o effect de montagem FLUSHAR — o
+    // `findByTestId` resolve no commit (probe no DOM), mas o passive effect que
+    // incrementa `terminalMounts` corre depois; sem o waitFor, no CI dá 0 (flake).
     await findByTestId('terminal-probe')
-    expect(terminalMounts).toBe(1)
+    await waitFor(() => expect(terminalMounts).toBe(1))
 
     // Vai para console e volta para o terminal.
     act(() => useUIStore.setState({ bottomTab: 'console' }))
