@@ -7,10 +7,12 @@ import { FontSizeControls } from '../../components/code/FontSizeControls'
 import { MonacoTabs } from '../../components/code/LazyMonacoTabs'
 import { ProFileTree } from '../../components/code/ProFileTree'
 import { EditorSkeleton } from '../../components/layout/LoadingViews'
+import { NarrowPanels } from '../../components/layout/NarrowPanels'
 import { useProjectStore } from '../../state/projectStore'
 import { CODE_FONT_SIZE_DEFAULT, useSettingsStore } from '../../state/settingsStore'
 import { useUIStore } from '../../state/uiStore'
 import { useStudioConfig } from '../../studio/config'
+import { useStudioLayout } from '../../studio/layoutContext'
 import { useStudioTheme } from '../../studio/theme'
 import { ProPreview } from './ProPreview'
 import { ProWebContainerProvider } from './ProWebContainerProvider'
@@ -38,6 +40,7 @@ export function ProCodeMode(): JSX.Element {
   const showPreview = useUIStore((s) => s.showPreview) && studioConfig.preview
   const codeFontSize = useSettingsStore((s) => s.codeFontSize)
   const studioTheme = useStudioTheme()
+  const { isNarrow } = useStudioLayout()
 
   const [openFiles, setOpenFiles] = useState<string[]>([])
   const [activeFile, setActiveFile] = useState<string>('')
@@ -99,6 +102,44 @@ export function ProCodeMode(): JSX.Element {
     setOpenFiles((prev) => prev.filter((p) => p !== name))
   }
 
+  const codeEditor = (
+    <Suspense fallback={<EditorSkeleton message="Carregando editor de código…" />}>
+      <MonacoTabs
+        files={filesArray}
+        modelPathPrefix={projectId}
+        activeFile={activeFile}
+        onActiveFileChange={setActiveFile}
+        onChange={(name, value) => setProFileContent(name, value)}
+        theme={studioTheme === 'light' ? 'light' : 'vs-dark'}
+        fontSize={codeFontSize || CODE_FONT_SIZE_DEFAULT}
+        formatLabel={t('editor.format')}
+        tabsRightSlot={<FontSizeControls />}
+        canCloseFile={() => true}
+        onCloseFile={handleCloseFile}
+      />
+    </Suspense>
+  )
+
+  if (isNarrow) {
+    return (
+      <ProWebContainerProvider>
+        <NarrowPanels
+          editorPanes={[{ id: 'code', label: t('tab.code'), content: codeEditor }]}
+          preview={showPreview ? <ProPreview /> : undefined}
+          filesDrawer={(close) => (
+            <ProFileTree
+              activeFile={activeFile}
+              onSelectFile={(path) => {
+                handleSelectFile(path)
+                close()
+              }}
+            />
+          )}
+        />
+      </ProWebContainerProvider>
+    )
+  }
+
   return (
     <ProWebContainerProvider>
       <PanelGroup direction="horizontal" className="h-full w-full">
@@ -107,21 +148,7 @@ export function ProCodeMode(): JSX.Element {
         </Panel>
         <PanelResizeHandle className="sz-resize-handle sz-resize-handle--vertical" />
         <Panel defaultSize={showPreview ? 45 : 80} minSize={28}>
-          <Suspense fallback={<EditorSkeleton message="Carregando editor de código…" />}>
-            <MonacoTabs
-              files={filesArray}
-              modelPathPrefix={projectId}
-              activeFile={activeFile}
-              onActiveFileChange={setActiveFile}
-              onChange={(name, value) => setProFileContent(name, value)}
-              theme={studioTheme === 'light' ? 'light' : 'vs-dark'}
-              fontSize={codeFontSize || CODE_FONT_SIZE_DEFAULT}
-              formatLabel={t('editor.format')}
-              tabsRightSlot={<FontSizeControls />}
-              canCloseFile={() => true}
-              onCloseFile={handleCloseFile}
-            />
-          </Suspense>
+          {codeEditor}
         </Panel>
         {showPreview && (
           <>

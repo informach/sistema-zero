@@ -44,6 +44,16 @@ export interface GenerateHTMLOptions {
 export interface GenerateHTMLWithMapResult {
   code: string
   map: SourceMapBuilder
+  /**
+   * Linha (1-based) em `code` onde começa o CORPO do CSS inline (`<style>`),
+   * quando `cssPlacement` é inline. `undefined` para CSS externo/ausente. Permite
+   * remapear o source map do CSS para dentro do index.html (ver
+   * generateProjectFilesWithMap), para o realce bloco↔código funcionar mesmo com
+   * CSS embutido no HTML.
+   */
+  cssInlineStartLine?: number
+  /** Análogo a {@link cssInlineStartLine} para o JS inline (`<script>`). */
+  jsInlineStartLine?: number
 }
 
 export function generateHTML(opts: GenerateHTMLOptions): string {
@@ -72,11 +82,21 @@ export function generateHTMLWithMap(opts: GenerateHTMLOptions): GenerateHTMLWith
   // funções globais e os handlers `onclick="..."` no preview E no site exportado.
   const jsModule = opts.shell?.jsModule === true
 
-  // Assets que vão DENTRO do <head> (placement inline-head).
+  // Assets que vão DENTRO do <head> (placement inline-head). Guardamos a string
+  // EXATA de cada bloco inline (idêntica à que vai parar no `code`) para depois
+  // localizar, por busca, a linha onde o corpo do CSS/JS começa — e remapear o
+  // source map do trecho para dentro do index.html (ver generateProjectFilesWithMap).
+  let cssInlineBlock: string | null = null
+  let jsInlineBlock: string | null = null
   const headExtra: string[] = []
-  if (cssPlacement === 'inline-head' && opts.cssCode) headExtra.push(inlineStyle(opts.cssCode))
-  if (jsPlacement === 'inline-head' && opts.jsCode)
-    headExtra.push(inlineScript(opts.jsCode, jsModule))
+  if (cssPlacement === 'inline-head' && opts.cssCode) {
+    cssInlineBlock = inlineStyle(opts.cssCode)
+    headExtra.push(cssInlineBlock)
+  }
+  if (jsPlacement === 'inline-head' && opts.jsCode) {
+    jsInlineBlock = inlineScript(opts.jsCode, jsModule)
+    headExtra.push(jsInlineBlock)
+  }
   const headExtraText = headExtra.length > 0 ? `\n${headExtra.join('\n')}` : ''
 
   // Quando há uma casca preservada do código (head/doctype customizados pelo
@@ -100,16 +120,42 @@ export function generateHTMLWithMap(opts: GenerateHTMLOptions): GenerateHTMLWith
 
   // Assets/wiring que vão no FIM do <body>.
   const bodyEnd: string[] = []
-  if (cssPlacement === 'inline-body-end' && opts.cssCode) bodyEnd.push(inlineStyle(opts.cssCode))
+  if (cssPlacement === 'inline-body-end' && opts.cssCode) {
+    cssInlineBlock = inlineStyle(opts.cssCode)
+    bodyEnd.push(cssInlineBlock)
+  }
   if (jsPlacement === 'external') {
     bodyEnd.push(`    <script src="${jsSrc}"></script>`)
   } else if (jsPlacement === 'inline-body-end' && opts.jsCode) {
-    bodyEnd.push(inlineScript(opts.jsCode, jsModule))
+    jsInlineBlock = inlineScript(opts.jsCode, jsModule)
+    bodyEnd.push(jsInlineBlock)
   }
   const bodyEndText = bodyEnd.length > 0 ? `\n${bodyEnd.join('\n')}` : ''
 
   const code = `${head}\n${bodyHtml}${bodyEndText}\n  </body>\n</html>\n`
-  return { code, map }
+  return {
+    code,
+    map,
+    cssInlineStartLine: firstInlineBodyLine(code, cssInlineBlock),
+    jsInlineStartLine: firstInlineBodyLine(code, jsInlineBlock),
+  }
+}
+
+/**
+ * Linha (1-based) em `code` onde começa o CORPO de um bloco inline
+ * (`<style>`/`<script>`) — a linha logo APÓS o abridor `    <style>`/
+ * `    <script ...>`. O `block` é a string EXATA embutida no documento (contém o
+ * CSS/JS do aluno), então a busca é única. Devolve `undefined` quando não há
+ * bloco inline ou (defensivo) quando ele não é encontrado.
+ */
+function firstInlineBodyLine(code: string, block: string | null): number | undefined {
+  if (!block) return undefined
+  const idx = code.indexOf(block)
+  if (idx === -1) return undefined
+  // O bloco é sempre precedido por '\n' (separador do headExtra/bodyEnd), então a
+  // linha do abridor = nº de linhas do prefixo + 1; o corpo começa na seguinte.
+  const openerLine = countLines(code.slice(0, idx)) + 1
+  return openerLine + 1
 }
 
 /** Cabeçalho padrão (sem casca preservada), até `<body>`. */

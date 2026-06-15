@@ -2,7 +2,7 @@ import type { SZIR } from '#ir'
 import { generateCSS, generateCSSWithMap } from './css'
 import { generateHTML, generateHTMLWithMap } from './html'
 import { generateJS, generateJSWithMap } from './js'
-import type { SourceMap } from './sourceMap'
+import type { SourceMap, SourceMappedFile } from './sourceMap'
 
 export interface ProjectGenerationInput {
   ir: SZIR
@@ -45,6 +45,13 @@ export function generateProjectFiles(input: ProjectGenerationInput): GeneratedFi
 /**
  * Gera os três arquivos + um source map combinado: para cada nó da IR com
  * `__id`, mapeia em qual arquivo e linha o trecho foi escrito.
+ *
+ * CSS/JS externos mapeiam para `style.css`/`script.js`. Quando são INLINE (vivem
+ * dentro do index.html), as entradas são REMAPEADAS para `index.html`, deslocando
+ * as linhas para onde o `<style>`/`<script>` foi embutido — sem isso, selecionar
+ * um bloco JS/CSS num projeto de arquivo único não realçava nada (o map não tinha
+ * a chave). O deslocamento vem de `cssInlineStartLine`/`jsInlineStartLine`, que o
+ * gerador de HTML calcula a partir da posição real do bloco inline.
  */
 export function generateProjectFilesWithMap(
   input: ProjectGenerationInput,
@@ -60,14 +67,21 @@ export function generateProjectFilesWithMap(
     cssCode: css.code,
     jsCode: js.code,
   })
-  // Quando o CSS/JS é inline, ele vive dentro de index.html; o source map de
-  // style.css/script.js apontaria para arquivos vazios, então é omitido
-  // (realce cruzado de conteúdo inline é refinamento futuro — ver plano).
-  const sourceMap: SourceMap = {
-    ...html.map.build(),
-    ...(cssPlacement === 'external' ? css.map.build() : {}),
-    ...(jsPlacement === 'external' ? js.map.build() : {}),
-  }
+
+  const sourceMap: SourceMap = { ...html.map.build() }
+  Object.assign(
+    sourceMap,
+    cssPlacement === 'external'
+      ? css.map.build()
+      : remapToInlineHost(css.map.build(), html.cssInlineStartLine),
+  )
+  Object.assign(
+    sourceMap,
+    jsPlacement === 'external'
+      ? js.map.build()
+      : remapToInlineHost(js.map.build(), html.jsInlineStartLine),
+  )
+
   return {
     files: {
       'index.html': html.code,
@@ -76,4 +90,30 @@ export function generateProjectFilesWithMap(
     },
     sourceMap,
   }
+}
+
+/**
+ * Reaponta as entradas de um source map de CSS/JS inline para `index.html`,
+ * somando o offset de linha onde o corpo do `<style>`/`<script>` começa no
+ * documento. `startLine` 1-based do corpo → offset = startLine - 1. Quando o
+ * início é desconhecido (sem bloco inline, p.ex. arquivo vazio), devolve `{}` —
+ * não há trecho para realçar. As colunas ficam relativas ao código não-indentado
+ * (a indentação inline desloca +6); como o realce do Monaco é por LINHA INTEIRA,
+ * isso não afeta o destaque, e a Ponte não usa a direção reversa.
+ */
+function remapToInlineHost(map: SourceMap, bodyStartLine: number | undefined): SourceMap {
+  if (bodyStartLine === undefined) return {}
+  const offset = bodyStartLine - 1
+  const out: SourceMap = {}
+  for (const [id, entry] of Object.entries(map)) {
+    const file: SourceMappedFile = 'index.html'
+    out[id] = {
+      file,
+      startLine: entry.startLine + offset,
+      endLine: entry.endLine + offset,
+      startColumn: entry.startColumn,
+      endColumn: entry.endColumn,
+    }
+  }
+  return out
 }

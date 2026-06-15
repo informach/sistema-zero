@@ -34,15 +34,48 @@ function scopeParams(block: Blockly.Block): string[] | null {
   return null
 }
 
+// Cache de `allParams` por workspace, invalidado por uma versão que só avança em
+// eventos que podem mudar parâmetros. Abrir a categoria Funções/Classes SEM um
+// bloco selecionado caía no fallback `allParams`, que varria TODOS os blocos
+// (O(N)) a cada abertura da paleta — perceptível em projetos grandes.
+const paramsVersion = new WeakMap<Blockly.Workspace, number>()
+const allParamsCache = new WeakMap<Blockly.Workspace, { version: number; params: string[] }>()
+const versionTracked = new WeakSet<Blockly.Workspace>()
+
+/**
+ * Garante (uma vez por workspace) um listener barato que avança a versão dos
+ * parâmetros em create/delete/change — os únicos eventos que mexem na lista de
+ * parâmetros (o mutator de parâmetros emite BLOCK_CHANGE). O custo por evento é
+ * um type-check + incremento de Map; muito menor que a varredura O(N) que evita.
+ */
+function ensureParamsVersionTracking(workspace: Blockly.Workspace): void {
+  if (versionTracked.has(workspace)) return
+  versionTracked.add(workspace)
+  workspace.addChangeListener((event: Blockly.Events.Abstract) => {
+    if (
+      event.type === Blockly.Events.BLOCK_CREATE ||
+      event.type === Blockly.Events.BLOCK_DELETE ||
+      event.type === Blockly.Events.BLOCK_CHANGE
+    ) {
+      paramsVersion.set(workspace, (paramsVersion.get(workspace) ?? 0) + 1)
+    }
+  })
+}
+
 /** Todos os parâmetros distintos declarados no workspace (fallback sem escopo). */
 function allParams(workspace: Blockly.Workspace): string[] {
+  const version = paramsVersion.get(workspace) ?? 0
+  const cached = allParamsCache.get(workspace)
+  if (cached && cached.version === version) return cached.params
   const set = new Set<string>()
   for (const b of workspace.getAllBlocks(false)) {
     if (PARAM_SCOPE_TYPES.has(b.type)) {
       for (const p of getParamNames(b)) set.add(p)
     }
   }
-  return [...set]
+  const params = [...set]
+  allParamsCache.set(workspace, { version, params })
+  return params
 }
 
 /**
@@ -87,6 +120,7 @@ function classesFlyout(workspace: Blockly.WorkspaceSvg): FlyoutItem[] {
 
 /** Registra o callback do flyout da categoria Classes num workspace. */
 export function registerClassesFlyout(workspace: Blockly.WorkspaceSvg): void {
+  ensureParamsVersionTracking(workspace)
   workspace.registerToolboxCategoryCallback(
     CLASSES_FLYOUT_CALLBACK,
     classesFlyout as unknown as (
@@ -176,6 +210,7 @@ export function blockedDynamicSearchTypes(profile: LearningProfile): Set<string>
 
 /** Registra o callback do flyout da categoria Funções num workspace. */
 export function registerFunctionsFlyout(workspace: Blockly.WorkspaceSvg): void {
+  ensureParamsVersionTracking(workspace)
   workspace.registerToolboxCategoryCallback(
     FUNCTIONS_FLYOUT_CALLBACK,
     functionsFlyout as unknown as (

@@ -12,11 +12,14 @@ import {
   setSearchProfileForWorkspace,
   szGridColourFor,
   szThemeFor,
+  withWorkspaceLoad,
 } from '#blockly'
 import { type InstalledExtension, isCategoryAllowed, type LearningProfile } from '#core'
 import { generateProjectFilesWithMap } from '#generators'
+import { deepEqualIR } from '#ir'
 import { findExtension } from '#official-extensions'
 import { useCrossHighlight } from '../../hooks/useCrossHighlight'
+import { primeCanonicalSourceMap } from '../../state/canonicalSourceMap'
 import { reregisterInstalledExtensions } from '../../state/extensionsAdapter'
 import { useHighlightStore } from '../../state/highlightStore'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
@@ -30,6 +33,10 @@ ensureBlocklyInitialized()
 
 const EMPTY_INSTALLED_EXTENSIONS: InstalledExtension[] = []
 const BLOCKLY_REGENERATION_DELAY_MS = 120
+// Cabeçalho dos arquivos gerados dos blocos. DEVE casar com `BRIDGE_JS_HEADER`
+// (modes/bridgeReverseParse) para o memo de source-map por `ir` reusar o mapa
+// entre o regenerate e o efeito canônico do BridgeMode (chave inclui o header).
+const REGEN_JS_HEADER = '// Gerado pelo Sistema Zero Studio'
 function blocklyWorkspaceConfiguration(theme: 'dark' | 'light'): Blockly.BlocklyOptions {
   return {
     theme: szThemeFor(theme),
@@ -230,11 +237,15 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
       // casca do documento (head/doctype) que os blocos não representam.
       const current = projectStoreApi.getState().project
       const ir = current?.ir?.htmlShell ? { ...built, htmlShell: current.ir.htmlShell } : built
+      const projectNameForGen = current?.name ?? 'Projeto'
       const { files, sourceMap } = generateProjectFilesWithMap({
         ir,
-        projectName: current?.name ?? 'Projeto',
-        jsHeader: '// Gerado pelo Sistema Zero Studio',
+        projectName: projectNameForGen,
+        jsHeader: REGEN_JS_HEADER,
       })
+      // Semeia o memo por `ir`: na Ponte, o efeito canônico do BridgeMode reusa
+      // este mapa em vez de regerar o projeto de novo com o MESMO `ir`.
+      primeCanonicalSourceMap(ir, projectNameForGen, REGEN_JS_HEADER, sourceMap)
       // Modo Ponte: ao CARREGAR os blocos (force), NUNCA reescrever os arquivos do
       // aluno com o canônico — "código é sagrado". Só sincronizamos o IR (para os
       // ids/__declIds e o sourcemap de HTML/JS ficarem completos) e o blocksState
@@ -242,15 +253,22 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
       // realce bloco↔código funciona via sourcemap posicional (ver BridgeMode).
       // Edições REAIS de bloco (sem `force`) continuam gerando os arquivos abaixo.
       if (options.force && current?.mode === 'bridge') {
+        // NÃO definimos o sourcemap aqui: na Ponte, o BridgeMode é a ÚNICA
+        // autoridade do sourcemap — ele deriva o cabeçalho do JS do TEXTO EXIBIDO
+        // (código do aluno pode não ter o cabeçalho canônico) e usa o CSS
+        // posicional. Definir o canônico (cabeçalho fixo) aqui sobrescrevia o do
+        // BridgeMode e deslocava as linhas do realce/seleção bloco↔código.
         applyProjectState({ ir, blocksState: state })
-        setSourceMap(sourceMap)
         return
       }
       if (
         options.force &&
         current &&
         JSON.stringify(current.blocksState) === serialized &&
-        JSON.stringify(current.ir) === JSON.stringify(ir) &&
+        // Comparação ESTRUTURAL do IR (uma só varredura) no lugar de
+        // `JSON.stringify(a) === JSON.stringify(b)` (duas serializações O(N) do
+        // projeto inteiro) — caminho de carga, mas sem desperdiçar duas strings.
+        deepEqualIR(current.ir, ir) &&
         current.files['index.html'] === files['index.html'] &&
         current.files['style.css'] === files['style.css'] &&
         current.files['script.js'] === files['script.js']
@@ -484,7 +502,9 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
     if (!workspace) return
     if (!blocksState) {
       isApplyingStateRef.current = true
-      workspace.clear()
+      // Cerca de carga: `clear()` emite um BLOCK_DELETE por bloco; sem a cerca,
+      // cada bloco-mutador varreria o workspace a cada remoção (O(N·M)).
+      withWorkspaceLoad(() => workspace.clear())
       lastSerializedRef.current = JSON.stringify(Blockly.serialization.workspaces.save(workspace))
       scheduleBlocklyResize(workspace as Blockly.WorkspaceSvg)
       queueMicrotask(() => {
@@ -508,7 +528,13 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
     const handle = requestAnimationFrame(() => {
       if (cancelled) return
       try {
-        Blockly.serialization.workspaces.load(blocksState as Record<string, unknown>, workspace)
+        // Cerca de carga: o `load` emite N BLOCK_CREATE antes do FINISHED_LOADING
+        // final. A cerca faz os blocos-mutador ignorarem os eventos
+        // intermediários (deixando passar só o FINISHED_LOADING, onde resolvem a
+        // assinatura uma única vez) — evita o O(N·M) ao abrir projetos grandes.
+        withWorkspaceLoad(() =>
+          Blockly.serialization.workspaces.load(blocksState as Record<string, unknown>, workspace),
+        )
         scheduleBlocklyResize(workspace as Blockly.WorkspaceSvg)
         // `FINISHED_LOADING` é quem normalmente zera o guard e ressincroniza o
         // snapshot com o estado REAL salvo. O microtask é só um fallback (caso o

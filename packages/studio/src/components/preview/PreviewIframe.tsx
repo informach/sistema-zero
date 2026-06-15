@@ -12,6 +12,7 @@ import {
 } from '#preview'
 import { Button } from '#ui'
 import { useDebounced } from '../../hooks/useDebounced'
+import { useMeasuredWidth } from '../../hooks/useMeasuredWidth'
 import { loadGameStorage, writeGameStorage } from '../../state/gameStorage'
 import { useLogsStore } from '../../state/logsStore'
 import { useProjectStore } from '../../state/projectStore'
@@ -26,6 +27,14 @@ import {
 
 const EMPTY_EXTRA_FILES: ExtraFile[] = []
 const EMPTY_INSTALLED_EXTENSIONS: InstalledExtension[] = []
+
+/**
+ * Abaixo desta largura do PRÓPRIO painel de preview, a barra de ferramentas
+ * compacta: os botões viram só ícone (▶/⏹/⟳) e o "Executando/Parado" some.
+ * Medida por `ResizeObserver`, então reage ao arraste do split do `PanelGroup`,
+ * não ao tamanho da página.
+ */
+const PREVIEW_TOOLBAR_COMPACT_MAX_PX = 400
 
 export function PreviewIframe(): JSX.Element {
   const { projectId, html, css, js, projectName, installedExtensions, extraFiles } =
@@ -44,6 +53,11 @@ export function PreviewIframe(): JSX.Element {
   const previewSecurity = useStudioConfig().previewSecurity
   const previewRunning = useUIStore((s) => s.previewRunning)
   const setPreviewRunning = useUIStore((s) => s.setPreviewRunning)
+  // A barra do preview compacta conforme o PRÓPRIO contêiner (não o Studio): o
+  // painel encolhe ao arrastar o split, então medimos a largura real aqui.
+  const rootRef = useRef<HTMLDivElement>(null)
+  const toolbarWidth = useMeasuredWidth(rootRef)
+  const compactToolbar = toolbarWidth > 0 && toolbarWidth < PREVIEW_TOOLBAR_COMPACT_MAX_PX
   const iframeRef = useRef<HTMLIFrameElement>(null)
   // Watchdog de heartbeat (Camada B): se o thread do iframe travar num cálculo
   // síncrono, o interceptor para de emitir heartbeats e mostramos o aviso.
@@ -412,32 +426,45 @@ export function PreviewIframe(): JSX.Element {
   }, [processStorageNow])
 
   return (
-    <div className="relative flex h-full flex-col bg-sz-bg">
+    <div ref={rootRef} className="relative flex h-full flex-col bg-sz-bg">
       <div className="flex items-center gap-1 border-b border-sz-border bg-sz-panel px-2 py-1">
         <Button
           size="sm"
           variant={previewRunning ? 'ghost' : 'primary'}
           onClick={handleTogglePreviewRunning}
-          title={previewRunning ? 'Parar a execução do preview' : 'Executar o preview'}
+          title={previewRunning ? 'Parar a execução do preview' : 'Reproduzir o preview'}
+          aria-label={previewRunning ? 'Parar a execução do preview' : 'Reproduzir o preview'}
         >
-          {previewRunning ? '⏹ Parar' : '▶ Reproduzir'}
+          {previewRunning
+            ? compactToolbar
+              ? '⏹'
+              : '⏹ Parar'
+            : compactToolbar
+              ? '▶'
+              : '▶ Reproduzir'}
         </Button>
         <Button
           size="sm"
           variant="ghost"
           onClick={handleRefresh}
           title="Re-executar o código atual"
+          aria-label="Atualizar o preview"
         >
-          ⟳ Atualizar
+          {compactToolbar ? '⟳' : '⟳ Atualizar'}
         </Button>
         {documentTitle && (
-          <span className="ml-2 truncate text-xs font-medium text-sz-fg-soft" title={documentTitle}>
+          <span
+            className="ml-2 min-w-0 flex-1 truncate text-xs font-medium text-sz-fg-soft"
+            title={documentTitle}
+          >
             {documentTitle}
           </span>
         )}
-        <span className="ml-auto whitespace-nowrap pl-2 text-xs text-sz-fg-soft">
-          {previewRunning ? 'Executando' : 'Parado'}
-        </span>
+        {!compactToolbar && (
+          <span className="ml-auto whitespace-nowrap pl-2 text-xs text-sz-fg-soft">
+            {previewRunning ? 'Executando' : 'Parado'}
+          </span>
+        )}
       </div>
       <iframe
         ref={iframeRef}

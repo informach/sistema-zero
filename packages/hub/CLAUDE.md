@@ -18,14 +18,18 @@ Linguagem: **TS (ESM)**. Framework HTTP: **Elysia**. Porta **3010**.
 
 > Estado: **back-end COMPLETO e testado** (estrutura admin de spaces/canais + leitura do aluno
 > com resolução de acesso + tópicos/comentários com pré-moderação + reações + badge de novidades +
-> denúncias + fila de aprovação + ocultar/apagar/fixar/trancar + silenciar/banir) — **31 testes**
-> (5 arquivos de integração). Migration `0000_luxuriant_krista_starr` (schema `hub` + 11 tabelas).
-> **PENDENTES:** os front-ends (`/comunidade` no community/kids, editor de tópico, UI admin de
-> moderação), o fluxo de **anexos UGC** (R2) e os **webhooks de concessão/revogação** — essas duas
-> últimas já têm **rota PROVISIONADA no gateway** (`/hub/attachments*`, `/hub/webhooks/grant`) e
-> **infra pronta** (tabela `attachments`, `processed_webhooks` + retenção, `GATEWAY_HMAC_SECRET`,
-> limites de anexo no env), mas **as rotas inbound ainda NÃO estão montadas no serviço** (`server.ts`
-> só monta health/spaces/threads/reactions/report/admin/moderation). Deploy no Railway ainda não feito.
+> denúncias + fila de aprovação + ocultar/apagar/fixar/trancar + silenciar/banir + **anexos UGC**
+> + **webhooks de concessão/revogação**) — **49 testes** (9 arquivos de integração, incl.
+> `attachments`, `webhooks`, `hardening`). Migration `0000_luxuriant_krista_starr` (schema `hub` +
+> 11 tabelas).
+> **Anexos UGC + webhooks (06/2026): MONTADOS e testados.** O `server.ts` monta `attachmentsRoutes`
+> (`POST /hub/attachments` registra o metadado `pending_upload`; `GET /hub/attachments/:id/resolve`
+> autoriza e devolve o `storageRef` ao BFF) e `webhooksRoutes` (`POST /hub/webhooks/grant`, HMAC
+> sobre o corpo BRUTO + dedupe por `x-delivery-id` → invalida o micro-cache de acesso do usuário).
+> O presign/upload/serve direto browser↔R2 vive no BFF (`@sistemazero/member-shell` →
+> community/community-kids). **PENDENTES:** a **UI admin de moderação** (a fila e as ações já
+> existem na API) e o **deploy no Railway**. Os front-ends `/comunidade` (community + kids) já
+> consomem tudo via gateway.
 
 ## Conceito central (decisões travadas)
 
@@ -162,10 +166,12 @@ hide,delete,pin,unpin,lock,unlock}` e `…/comments/:id/{approve,reject,hide,del
 `POST /hub/admin/{mutes,bans}` + `POST /hub/admin/{mutes,bans}/remove`, `GET /hub/admin/mutes-bans`.
 > ⚠️ Mute/ban são `/mutes` e `/bans` (não `/mute`/`/unmute`); remoção é `POST …/remove`, não DELETE.
 
-**Provisionado no gateway, NÃO montado no serviço ainda:** `/hub/attachments` (registro de metadado
-de anexo), `/hub/attachments/:id/resolve` (devolve o `storageRef` ao BFF) e `/hub/webhooks/grant`
-(HMAC `resign` — concessão/revogação invalida o cache de acesso). Adicione a rota no `server.ts` +
-fatia de aplicação quando for implementar — o env e as tabelas já existem.
+**Anexos + webhook (MONTADOS — `server.ts` usa `attachmentsRoutes` e `webhooksRoutes`):**
+`POST /hub/attachments` (registra o metadado `pending_upload`; JWT + `x-internal-token`),
+`GET /hub/attachments/:id/resolve` (autoriza pelo acesso ao conteúdo-pai e devolve o `storageRef`
+ao BFF — NUNCA ao browser) e `POST /hub/webhooks/grant` (HMAC sobre o corpo BRUTO + dedupe por
+`x-delivery-id` → `access.invalidate(userId)`). O arquivo em si não passa pelo hub: presign/upload/
+download direto browser↔R2 são mintados pelo BFF (member-shell).
 
 ## Modelo (schema `hub`, Postgres compartilhado `sistemazero` :5433)
 
@@ -256,6 +262,7 @@ in-memory das portas em `tests/fakes/in-memory.ts`; montagem via `tests/helpers.
 5. **uuid validado na borda** (DTOs TypeBox): id lixo → 400, nunca `22P02`→500.
 6. **`x-internal-token` é defesa em profundidade**, não a auth: o gateway é quem verifica o JWT e
    aplica o RBAC. Sem o token, `X-Auth-User-*` seriam forjáveis por quem alcançasse o serviço direto.
-7. **Anexos + webhooks: provisionados, não montados.** Rota no gateway e tabela/env existem, mas o
-   `server.ts` ainda não monta `/hub/attachments*` nem `/hub/webhooks/grant` — implemente a fatia
-   antes de prometer o comportamento.
+7. **Anexos + webhooks: MONTADOS e testados.** `server.ts` usa `attachmentsRoutes`
+   (`/hub/attachments*`) e `webhooksRoutes` (`/hub/webhooks/grant`); suítes `attachments`/`webhooks`.
+   O `storageRef` (`r2ugc:<key>`) NUNCA vai ao browser — só o BFF (member-shell) o resolve para
+   mintar o presign. Falta a UI admin de moderação e o deploy no Railway.

@@ -2023,11 +2023,7 @@ function mapTry(node: Node, source: string, ctx: ParseCtx): JSStatement {
 function tryMatchBinop(expr: Node, ctx?: ParseCtx): JSExpr | null {
   if (expr?.type !== 'BinaryExpression') return null
   // Igualdade estrita (===/!==) é preservada como tal (não normaliza p/ ==/!=).
-  if (
-    !['>', '<', '==', '!=', '>=', '<=', '===', '!==', '+', '-', '*', '/', '%', '**'].includes(
-      expr.operator,
-    )
-  ) {
+  if (!BINOP_OPERATORS.has(expr.operator)) {
     return null
   }
   const left = toExpr(expr.left, ctx)
@@ -2038,285 +2034,286 @@ function tryMatchBinop(expr: Node, ctx?: ParseCtx): JSExpr | null {
 
 function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
   if (!node) return null
-  if (node.type === 'NumericLiteral') {
-    // Literais que estouram (`1e1000`) o Babel parseia como `Infinity` sem erro.
-    // `Infinity` serializa para `null` no JSON e o gerador o mapeia para `0`, o
-    // que MUDA o valor — então devolvemos `null` aqui para a linha cair em
-    // `asRaw` e o texto-fonte original ser preservado ("código é sagrado").
-    if (!Number.isFinite(node.value)) return null
-    return { type: 'num', value: node.value }
-  }
-  if (node.type === 'StringLiteral') {
-    // `rgba(r, g, b, a)` → cor com transparência (volta ao bloco sz_val_color_alpha).
-    const rgba = /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*([\d.]+)\s*\)$/.exec(
-      node.value,
-    )
-    if (rgba) {
-      // Valida os canais (0–255) e o alpha (número finito em [0,1] com um único
-      // ponto decimal). Sem isso, `rgba(999,0,0,1)` geraria um hex de 3 dígitos
-      // que o gerador re-fatia numa cor DIFERENTE, e `rgba(0,0,0,1.2.3)` viraria
-      // `alpha: NaN`. Se algo falhar, preserva o literal original verbatim como
-      // string ("código é sagrado").
-      const channels = [rgba[1], rgba[2], rgba[3]].map((n) => Number(n))
-      const alpha = Number(rgba[4])
-      const dotCount = rgba[4]?.match(/\./g)?.length ?? 0
-      const channelsOk = channels.every((n) => n <= 255)
-      const alphaOk = dotCount <= 1 && Number.isFinite(alpha) && alpha >= 0 && alpha <= 1
-      if (channelsOk && alphaOk) {
-        const hex = `#${channels.map((n) => n.toString(16).padStart(2, '0')).join('')}`
-        return { type: 'colorAlpha', hex, alpha }
-      }
+  // Despacho por TIPO de nó. Antes era uma escada de ~30 `if (node.type === …)`
+  // intercalada com submatchers (matchNow/matchDistance/matchVector/…), cada um
+  // re-testando o tipo internamente — um nó de chamada percorria ~9 submatchers
+  // irrelevantes antes do certo. Cada submatcher casa EXATAMENTE um tipo, então
+  // agrupar por `node.type` preserva a ordem RELATIVA dentro de cada tipo (a
+  // única que importa) e pula os blocos de outros tipos. Comportamento idêntico.
+  switch (node.type) {
+    case 'NumericLiteral': {
+      // Literais que estouram (`1e1000`) o Babel parseia como `Infinity` sem
+      // erro. `Infinity` serializa para `null` no JSON e o gerador o mapeia para
+      // `0`, o que MUDA o valor — então devolvemos `null` para a linha cair em
+      // `asRaw` e o texto-fonte original ser preservado ("código é sagrado").
+      if (!Number.isFinite(node.value)) return null
+      return { type: 'num', value: node.value }
     }
-    // Uma string hexadecimal `#rrggbb` é tratada como COR (volta ao bloco seletor
-    // de cor, `sz_val_color`). Como `color` e `str` geram o mesmo código, no pior
-    // caso (um seletor raro tipo "#aabbcc") muda só a aparência do bloco.
-    return /^#[0-9a-fA-F]{6}$/.test(node.value)
-      ? { type: 'color', value: node.value }
-      : { type: 'str', value: node.value }
-  }
-  if (node.type === 'BooleanLiteral') return { type: 'bool', value: node.value }
-  if (node.type === 'Identifier') return { type: 'var', name: node.name }
-  // `this` (o elemento atual dentro de um handler).
-  if (node.type === 'ThisExpression') return { type: 'thisRef' }
-  // this.<prop> — usado dentro de métodos/construtor.
-  if (
-    node.type === 'MemberExpression' &&
-    !node.computed &&
-    node.object?.type === 'ThisExpression' &&
-    node.property?.type === 'Identifier'
-  ) {
-    return { type: 'thisProp', name: node.property.name }
-  }
-  // window.innerWidth / window.innerHeight → valor global.
-  if (
-    node.type === 'MemberExpression' &&
-    !node.computed &&
-    node.object?.type === 'Identifier' &&
-    node.object.name === 'window' &&
-    node.property?.type === 'Identifier'
-  ) {
-    if (node.property.name === 'innerWidth') return { type: 'global', kind: 'innerWidth' }
-    if (node.property.name === 'innerHeight') return { type: 'global', kind: 'innerHeight' }
-  }
-  // event.clientX / event.clientY → posição do clique (sz_val_event_pos).
-  if (
-    node.type === 'MemberExpression' &&
-    !node.computed &&
-    node.object?.type === 'Identifier' &&
-    node.object.name === 'event' &&
-    node.property?.type === 'Identifier' &&
-    (node.property.name === 'clientX' || node.property.name === 'clientY')
-  ) {
-    return { type: 'eventProp', prop: node.property.name }
-  }
-  // Math.PI → constante matemática (sz_val_math_pi). Outras constantes (ex.:
-  // Math.E) não têm bloco, então ficam como código avançado (preservadas).
-  if (
-    node.type === 'MemberExpression' &&
-    !node.computed &&
-    node.object?.type === 'Identifier' &&
-    node.object.name === 'Math' &&
-    node.property?.type === 'Identifier' &&
-    node.property.name === 'PI'
-  ) {
-    return { type: 'mathConst', name: 'PI' }
-  }
-  // <variável>.length → tamanho da lista (sz_val_array_length).
-  if (
-    node.type === 'MemberExpression' &&
-    !node.computed &&
-    node.object?.type === 'Identifier' &&
-    node.property?.type === 'Identifier' &&
-    node.property.name === 'length'
-  ) {
-    return { type: 'arrayLength', arrayVar: node.object.name }
-  }
-  // <canvas>.width / <canvas>.height → dimensão do canvas (sz_val_canvas_width).
-  // Só quando `<canvas>` é um elemento de canvas conhecido (par getElementById +
-  // getContext('2d') já visto); a IR guarda o contexto associado em `ctxVar`.
-  if (
-    ctx &&
-    node.type === 'MemberExpression' &&
-    !node.computed &&
-    node.object?.type === 'Identifier' &&
-    node.property?.type === 'Identifier' &&
-    (node.property.name === 'width' || node.property.name === 'height') &&
-    ctx.elementToCtx.has(node.object.name)
-  ) {
-    return {
-      type: 'canvasDim',
-      ctxVar: ctx.elementToCtx.get(node.object.name) as string,
-      dim: node.property.name,
-    }
-  }
-  // (arg * Math.PI / 180) / (arg * 180 / Math.PI) → conversão de ângulo.
-  const angle = matchAngleConvert(node, ctx)
-  if (angle) return angle
-  // localStorage.getItem(chave) / sessionStorage.getItem(chave) → storageGet.
-  if (node.type === 'CallExpression' && node.callee?.type === 'MemberExpression') {
-    const obj = node.callee.object
-    if (
-      obj?.type === 'Identifier' &&
-      (obj.name === 'localStorage' || obj.name === 'sessionStorage') &&
-      node.callee.property?.name === 'getItem' &&
-      node.arguments?.length === 1
-    ) {
-      const key = toExpr(node.arguments[0], ctx)
-      if (isSimpleValue(key)) {
-        return {
-          type: 'storageGet',
-          store: obj.name === 'sessionStorage' ? 'session' : 'local',
-          key,
+    case 'StringLiteral': {
+      // `rgba(r, g, b, a)` → cor com transparência (bloco sz_val_color_alpha).
+      const rgba = /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*([\d.]+)\s*\)$/.exec(
+        node.value,
+      )
+      if (rgba) {
+        // Valida os canais (0–255) e o alpha (número finito em [0,1] com um único
+        // ponto decimal). Sem isso, `rgba(999,0,0,1)` geraria um hex de 3 dígitos
+        // que o gerador re-fatia numa cor DIFERENTE, e `rgba(0,0,0,1.2.3)` viraria
+        // `alpha: NaN`. Se algo falhar, preserva o literal verbatim como string.
+        const channels = [rgba[1], rgba[2], rgba[3]].map((n) => Number(n))
+        const alpha = Number(rgba[4])
+        const dotCount = rgba[4]?.match(/\./g)?.length ?? 0
+        const channelsOk = channels.every((n) => n <= 255)
+        const alphaOk = dotCount <= 1 && Number.isFinite(alpha) && alpha >= 0 && alpha <= 1
+        if (channelsOk && alphaOk) {
+          const hex = `#${channels.map((n) => n.toString(16).padStart(2, '0')).join('')}`
+          return { type: 'colorAlpha', hex, alpha }
         }
       }
+      // Uma string hexadecimal `#rrggbb` é tratada como COR (bloco sz_val_color).
+      // Como `color` e `str` geram o mesmo código, no pior caso (um seletor raro
+      // tipo "#aabbcc") muda só a aparência do bloco.
+      return /^#[0-9a-fA-F]{6}$/.test(node.value)
+        ? { type: 'color', value: node.value }
+        : { type: 'str', value: node.value }
     }
-  }
-  if (node.type === 'BinaryExpression') return tryMatchBinop(node, ctx)
-  // `a && b` / `a || b` → operador lógico (sz_val_logic). Aninha cadeias longas.
-  if (node.type === 'LogicalExpression') {
-    if (node.operator !== '&&' && node.operator !== '||') return null
-    const left = toExpr(node.left, ctx)
-    const right = toExpr(node.right, ctx)
-    if (!isSimpleValue(left) || !isSimpleValue(right)) return null
-    return { type: 'logical', op: node.operator, left, right }
-  }
-  // `cond ? a : b` → operador ternário (sz_val_ternary).
-  if (node.type === 'ConditionalExpression') {
-    const condition = toExpr(node.test, ctx)
-    const whenTrue = toExpr(node.consequent, ctx)
-    const whenFalse = toExpr(node.alternate, ctx)
-    if (!isSimpleValue(condition) || !isSimpleValue(whenTrue) || !isSimpleValue(whenFalse)) {
+    case 'BooleanLiteral':
+      return { type: 'bool', value: node.value }
+    case 'Identifier':
+      return { type: 'var', name: node.name }
+    // `this` (o elemento atual dentro de um handler).
+    case 'ThisExpression':
+      return { type: 'thisRef' }
+    case 'MemberExpression': {
+      // this.<prop> — usado dentro de métodos/construtor.
+      if (
+        !node.computed &&
+        node.object?.type === 'ThisExpression' &&
+        node.property?.type === 'Identifier'
+      ) {
+        return { type: 'thisProp', name: node.property.name }
+      }
+      // window.innerWidth / window.innerHeight → valor global.
+      if (
+        !node.computed &&
+        node.object?.type === 'Identifier' &&
+        node.object.name === 'window' &&
+        node.property?.type === 'Identifier'
+      ) {
+        if (node.property.name === 'innerWidth') return { type: 'global', kind: 'innerWidth' }
+        if (node.property.name === 'innerHeight') return { type: 'global', kind: 'innerHeight' }
+      }
+      // event.clientX / event.clientY → posição do clique (sz_val_event_pos).
+      if (
+        !node.computed &&
+        node.object?.type === 'Identifier' &&
+        node.object.name === 'event' &&
+        node.property?.type === 'Identifier' &&
+        (node.property.name === 'clientX' || node.property.name === 'clientY')
+      ) {
+        return { type: 'eventProp', prop: node.property.name }
+      }
+      // Math.PI → constante matemática (sz_val_math_pi). Outras constantes (ex.:
+      // Math.E) não têm bloco, então ficam como código avançado (preservadas).
+      if (
+        !node.computed &&
+        node.object?.type === 'Identifier' &&
+        node.object.name === 'Math' &&
+        node.property?.type === 'Identifier' &&
+        node.property.name === 'PI'
+      ) {
+        return { type: 'mathConst', name: 'PI' }
+      }
+      // <variável>.length → tamanho da lista (sz_val_array_length).
+      if (
+        !node.computed &&
+        node.object?.type === 'Identifier' &&
+        node.property?.type === 'Identifier' &&
+        node.property.name === 'length'
+      ) {
+        return { type: 'arrayLength', arrayVar: node.object.name }
+      }
+      // <canvas>.width / <canvas>.height → dimensão do canvas (sz_val_canvas_width).
+      // Só quando `<canvas>` é um elemento de canvas conhecido (par getElementById
+      // + getContext('2d') já visto); a IR guarda o contexto associado em `ctxVar`.
+      if (
+        ctx &&
+        !node.computed &&
+        node.object?.type === 'Identifier' &&
+        node.property?.type === 'Identifier' &&
+        (node.property.name === 'width' || node.property.name === 'height') &&
+        ctx.elementToCtx.has(node.object.name)
+      ) {
+        return {
+          type: 'canvasDim',
+          ctxVar: ctx.elementToCtx.get(node.object.name) as string,
+          dim: node.property.name,
+        }
+      }
+      // `arr[i]` → item da lista por índice (sz_val_array_index).
+      if (node.computed && node.object?.type === 'Identifier' && node.property) {
+        const idx = toExpr(node.property, ctx)
+        if (isSimpleValue(idx)) return { type: 'index', arrayVar: node.object.name, index: idx }
+      }
+      // <obj>.dataset.chave → leitura de data-attribute (sz_val_dataset).
+      if (
+        !node.computed &&
+        node.property?.type === 'Identifier' &&
+        (node.object?.type === 'MemberExpression' ||
+          node.object?.type === 'OptionalMemberExpression') &&
+        !node.object.computed &&
+        node.object.property?.name === 'dataset' &&
+        node.object.object?.type === 'Identifier'
+      ) {
+        return { type: 'datasetGet', objectVar: node.object.object.name, key: node.property.name }
+      }
+      // Geral: leitura de propriedade de qualquer objeto representável (object.prop).
+      // Cobre aninhamento como `this.velocidade.x` (objeto = thisProp) e `obj.prop`.
+      if (!node.computed && node.property?.type === 'Identifier' && !isGlobalObject(node.object)) {
+        const object = toExpr(node.object, ctx)
+        if (isSimpleValue(object)) {
+          return { type: 'memberGet', object, name: node.property.name }
+        }
+      }
       return null
     }
-    return { type: 'ternary', condition, whenTrue, whenFalse }
-  }
-  const now = matchNow(node)
-  if (now) return now
-  // Math.random() cru → decimal aleatório de 0 a 1 (sz_val_random_float).
-  if (isRandomCall(node)) return { type: 'randomFloat' }
-  // Math.hypot(a.x - b.x, a.y - b.y) → distância entre dois objetos (sz_val_distance).
-  // Roda antes do hypot genérico para vencer quando o formato bate.
-  const dist = matchDistance(node, ctx)
-  if (dist) return dist
-  const math = matchMathCall(node, ctx)
-  if (math) return math
-  // nome(args) como VALOR (callee identificador, fora da denylist) → `call`.
-  if (node.type === 'CallExpression' && node.callee?.type === 'Identifier') {
-    if (!GLOBAL_CALL_DENYLIST.has(node.callee.name)) {
-      const args = (node.arguments ?? []).map((a: Node) => toExpr(a, ctx))
-      if (args.every(isSimpleValue)) {
-        return { type: 'call', name: node.callee.name, args: args as JSExpr[] }
+    case 'BinaryExpression': {
+      // (arg * Math.PI / 180) / (arg * 180 / Math.PI) → conversão de ângulo.
+      const angle = matchAngleConvert(node, ctx)
+      if (angle) return angle
+      return tryMatchBinop(node, ctx)
+    }
+    // `a && b` / `a || b` → operador lógico (sz_val_logic). Aninha cadeias longas.
+    case 'LogicalExpression': {
+      if (node.operator !== '&&' && node.operator !== '||') return null
+      const left = toExpr(node.left, ctx)
+      const right = toExpr(node.right, ctx)
+      if (!isSimpleValue(left) || !isSimpleValue(right)) return null
+      return { type: 'logical', op: node.operator, left, right }
+    }
+    // `cond ? a : b` → operador ternário (sz_val_ternary).
+    case 'ConditionalExpression': {
+      const condition = toExpr(node.test, ctx)
+      const whenTrue = toExpr(node.consequent, ctx)
+      const whenFalse = toExpr(node.alternate, ctx)
+      if (!isSimpleValue(condition) || !isSimpleValue(whenTrue) || !isSimpleValue(whenFalse)) {
+        return null
       }
+      return { type: 'ternary', condition, whenTrue, whenFalse }
     }
-  }
-  // `hsl(${...}, 50%, 50%)` → cor HSL (bloco específico, antes do concat geral).
-  if (node.type === 'TemplateLiteral') {
-    const hsl = tryMatchHslTemplate(node, ctx)
-    if (hsl) return hsl
-  }
-  // `texto ${valor}` → juntar texto (sz_val_join).
-  if (node.type === 'TemplateLiteral') {
-    const parts: JSExpr[] = []
-    const quasis = node.quasis ?? []
-    const exprs = node.expressions ?? []
-    for (let i = 0; i < quasis.length; i += 1) {
-      const text = quasis[i]?.value?.cooked ?? quasis[i]?.value?.raw ?? ''
-      if (text) parts.push({ type: 'str', value: text })
-      if (i < exprs.length) {
-        const e = toExpr(exprs[i], ctx)
-        if (!isSimpleValue(e)) return null
-        parts.push(e)
+    case 'TemplateLiteral': {
+      // `hsl(${...}, 50%, 50%)` → cor HSL (bloco específico, antes do concat geral).
+      const hsl = tryMatchHslTemplate(node, ctx)
+      if (hsl) return hsl
+      // `texto ${valor}` → juntar texto (sz_val_join).
+      const parts: JSExpr[] = []
+      const quasis = node.quasis ?? []
+      const exprs = node.expressions ?? []
+      for (let i = 0; i < quasis.length; i += 1) {
+        const text = quasis[i]?.value?.cooked ?? quasis[i]?.value?.raw ?? ''
+        if (text) parts.push({ type: 'str', value: text })
+        if (i < exprs.length) {
+          const e = toExpr(exprs[i], ctx)
+          if (!isSimpleValue(e)) return null
+          parts.push(e)
+        }
       }
+      return { type: 'concat', parts }
     }
-    return { type: 'concat', parts }
-  }
-  // `arr.sort(() => Math.random() - 0.5)` → embaralhar (sz_val_shuffle).
-  const shuffle = matchShuffle(node)
-  if (shuffle) return shuffle
-  // `arr[i]` → item da lista por índice (sz_val_array_index).
-  if (
-    node.type === 'MemberExpression' &&
-    node.computed &&
-    node.object?.type === 'Identifier' &&
-    node.property
-  ) {
-    const idx = toExpr(node.property, ctx)
-    if (isSimpleValue(idx)) return { type: 'index', arrayVar: node.object.name, index: idx }
-  }
-  // `[...a, ...b]` → juntar listas (sz_val_concat_arrays).
-  if (
-    node.type === 'ArrayExpression' &&
-    (node.elements?.length ?? 0) > 0 &&
-    node.elements.every((el: Node) => el?.type === 'SpreadElement')
-  ) {
-    const parts = node.elements.map((el: Node) => toExpr(el.argument, ctx))
-    if (parts.every(isSimpleValue)) return { type: 'concatArrays', parts: parts as JSExpr[] }
-  }
-  // { x, y } / { x, y, z } → vetor literal (sz_val_vector2d / 3d).
-  const vec = matchVector(node, ctx)
-  if (vec) return vec
-  // { chave: valor, ... } genérico → objeto literal (sz_val_object).
-  const obj = matchObjectLiteral(node, ctx)
-  if (obj) return obj
-  // [a, b, …] → lista/array literal (sz_val_array).
-  if (node.type === 'ArrayExpression') {
-    const items = (node.elements ?? []).map((el: Node) => toExpr(el, ctx))
-    return items.every(isSimpleValue) ? { type: 'array', items: items as JSExpr[] } : null
-  }
-  // <obj>.dataset.chave → leitura de data-attribute (sz_val_dataset).
-  if (
-    node.type === 'MemberExpression' &&
-    !node.computed &&
-    node.property?.type === 'Identifier' &&
-    (node.object?.type === 'MemberExpression' ||
-      node.object?.type === 'OptionalMemberExpression') &&
-    !node.object.computed &&
-    node.object.property?.name === 'dataset' &&
-    node.object.object?.type === 'Identifier'
-  ) {
-    return { type: 'datasetGet', objectVar: node.object.object.name, key: node.property.name }
-  }
-  // <alvo>.classList.contains('classe') → sz_val_class_contains.
-  if (ctx) {
-    const contains = matchClassContains(node, ctx)
-    if (contains) return contains
-  }
-  // Geral: chamada de método em forma de valor sobre qualquer objeto
-  // representável (object.metodo(args)). Roda por último (depois de canvas, Math,
-  // .length, dataset, classList, …); exclui objetos globais.
-  if (
-    node.type === 'CallExpression' &&
-    node.callee?.type === 'MemberExpression' &&
-    !node.callee.computed &&
-    node.callee.property?.type === 'Identifier' &&
-    !isGlobalObject(node.callee.object)
-  ) {
-    const object = toExpr(node.callee.object, ctx)
-    const args = (node.arguments ?? []).map((a: Node) => toExpr(a, ctx))
-    if (isSimpleValue(object) && args.every(isSimpleValue)) {
-      return {
-        type: 'memberCallExpr',
-        object,
-        method: node.callee.property.name,
-        args: args as JSExpr[],
+    case 'ArrayExpression': {
+      // `[...a, ...b]` → juntar listas (sz_val_concat_arrays).
+      if (
+        (node.elements?.length ?? 0) > 0 &&
+        node.elements.every((el: Node) => el?.type === 'SpreadElement')
+      ) {
+        const parts = node.elements.map((el: Node) => toExpr(el.argument, ctx))
+        if (parts.every(isSimpleValue)) return { type: 'concatArrays', parts: parts as JSExpr[] }
       }
+      // [a, b, …] → lista/array literal (sz_val_array).
+      const items = (node.elements ?? []).map((el: Node) => toExpr(el, ctx))
+      return items.every(isSimpleValue) ? { type: 'array', items: items as JSExpr[] } : null
     }
-    return null
-  }
-  // Geral: leitura de propriedade de qualquer objeto representável (object.prop).
-  // Cobre aninhamento como `this.velocidade.x` (objeto = thisProp) e `obj.prop`.
-  if (
-    node.type === 'MemberExpression' &&
-    !node.computed &&
-    node.property?.type === 'Identifier' &&
-    !isGlobalObject(node.object)
-  ) {
-    const object = toExpr(node.object, ctx)
-    if (isSimpleValue(object)) {
-      return { type: 'memberGet', object, name: node.property.name }
+    case 'ObjectExpression': {
+      // { x, y } / { x, y, z } → vetor literal (sz_val_vector2d / 3d).
+      const vec = matchVector(node, ctx)
+      if (vec) return vec
+      // { chave: valor, ... } genérico → objeto literal (sz_val_object).
+      return matchObjectLiteral(node, ctx)
     }
+    case 'CallExpression':
+    case 'OptionalCallExpression': {
+      // localStorage.getItem(chave) / sessionStorage.getItem(chave) → storageGet.
+      if (node.type === 'CallExpression' && node.callee?.type === 'MemberExpression') {
+        const obj = node.callee.object
+        if (
+          obj?.type === 'Identifier' &&
+          (obj.name === 'localStorage' || obj.name === 'sessionStorage') &&
+          node.callee.property?.name === 'getItem' &&
+          node.arguments?.length === 1
+        ) {
+          const key = toExpr(node.arguments[0], ctx)
+          if (isSimpleValue(key)) {
+            return {
+              type: 'storageGet',
+              store: obj.name === 'sessionStorage' ? 'session' : 'local',
+              key,
+            }
+          }
+        }
+      }
+      const now = matchNow(node)
+      if (now) return now
+      // Math.random() cru → decimal aleatório de 0 a 1 (sz_val_random_float).
+      if (isRandomCall(node)) return { type: 'randomFloat' }
+      // Math.hypot(a.x - b.x, a.y - b.y) → distância entre objetos (sz_val_distance).
+      // Roda antes do hypot genérico para vencer quando o formato bate.
+      const dist = matchDistance(node, ctx)
+      if (dist) return dist
+      const math = matchMathCall(node, ctx)
+      if (math) return math
+      // nome(args) como VALOR (callee identificador, fora da denylist) → `call`.
+      if (node.type === 'CallExpression' && node.callee?.type === 'Identifier') {
+        if (!GLOBAL_CALL_DENYLIST.has(node.callee.name)) {
+          const args = (node.arguments ?? []).map((a: Node) => toExpr(a, ctx))
+          if (args.every(isSimpleValue)) {
+            return { type: 'call', name: node.callee.name, args: args as JSExpr[] }
+          }
+        }
+      }
+      // `arr.sort(() => Math.random() - 0.5)` → embaralhar (sz_val_shuffle).
+      const shuffle = matchShuffle(node)
+      if (shuffle) return shuffle
+      // <alvo>.classList.contains('classe') → sz_val_class_contains.
+      if (ctx) {
+        const contains = matchClassContains(node, ctx)
+        if (contains) return contains
+      }
+      // Geral: chamada de método em forma de valor sobre qualquer objeto
+      // representável (object.metodo(args)). Roda por último (depois de canvas,
+      // Math, .length, dataset, classList, …); exclui objetos globais.
+      if (
+        node.type === 'CallExpression' &&
+        node.callee?.type === 'MemberExpression' &&
+        !node.callee.computed &&
+        node.callee.property?.type === 'Identifier' &&
+        !isGlobalObject(node.callee.object)
+      ) {
+        const object = toExpr(node.callee.object, ctx)
+        const args = (node.arguments ?? []).map((a: Node) => toExpr(a, ctx))
+        if (isSimpleValue(object) && args.every(isSimpleValue)) {
+          return {
+            type: 'memberCallExpr',
+            object,
+            method: node.callee.property.name,
+            args: args as JSExpr[],
+          }
+        }
+        return null
+      }
+      return null
+    }
+    default:
+      return null
   }
-  return null
 }
 
 /**
@@ -2468,6 +2465,26 @@ const MATH_UNARY_FNS = new Set([
   'atan',
 ])
 const MATH_BINARY_FNS = new Set(['min', 'max', 'atan2', 'hypot'])
+// Operadores binários reconhecidos. `Set` em vez de um array-literal recriado e
+// varrido a cada `BinaryExpression` (toExpr é o caminho mais quente do parser —
+// uma alocação + scan O(14) por nó aritmético somava muito em código denso).
+const BINOP_OPERATORS = new Set([
+  '>',
+  '<',
+  '==',
+  '!=',
+  '>=',
+  '<=',
+  '===',
+  '!==',
+  '+',
+  '-',
+  '*',
+  '/',
+  '%',
+  '**',
+])
+const CLASSLIST_OPS = new Set(['add', 'remove', 'toggle'])
 
 /**
  * Reconhece `Math.<fn>(...)`: `round/floor/ceil/abs/sqrt(x)` → `mathUnary` e
@@ -2811,7 +2828,7 @@ function tryMatchClassList(expr: Node, ctx: ParseCtx): MatchedClassList | null {
     return null
   }
   const op = callee.property?.name as 'add' | 'remove' | 'toggle' | undefined
-  if (!op || !['add', 'remove', 'toggle'].includes(op)) return null
+  if (!op || !CLASSLIST_OPS.has(op)) return null
   // callee.object precisa ser .classList em algo
   const obj = callee.object
   if (!obj || (obj.type !== 'MemberExpression' && obj.type !== 'OptionalMemberExpression'))

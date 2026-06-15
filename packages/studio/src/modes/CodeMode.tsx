@@ -7,11 +7,13 @@ import { FileExplorer } from '../components/code/FileExplorer'
 import { FontSizeControls } from '../components/code/FontSizeControls'
 import { MonacoTabs } from '../components/code/LazyMonacoTabs'
 import { EditorSkeleton } from '../components/layout/LoadingViews'
+import { NarrowPanels } from '../components/layout/NarrowPanels'
 import { PreviewIframe } from '../components/preview/PreviewIframe'
 import { useProjectStore } from '../state/projectStore'
 import { CODE_FONT_SIZE_DEFAULT, useSettingsStore } from '../state/settingsStore'
 import { useUIStore } from '../state/uiStore'
 import { useStudioConfig } from '../studio/config'
+import { useStudioLayout } from '../studio/layoutContext'
 import { useStudioTheme } from '../studio/theme'
 import { ProCodeMode } from './pro/ProCodeMode'
 
@@ -33,6 +35,7 @@ export function CodeMode(): JSX.Element {
   const showPreview = useUIStore((s) => s.showPreview) && studioConfig.preview
   const codeFontSize = useSettingsStore((s) => s.codeFontSize)
   const studioTheme = useStudioTheme()
+  const { isNarrow } = useStudioLayout()
   const [activeFile, setActiveFile] = useState<string>('index.html')
   // Nomes dos arquivos EXTRAS abertos como aba. Os canônicos estão sempre
   // abertos. Fechar uma aba só remove o extra daqui (UI) — o arquivo continua
@@ -96,6 +99,42 @@ export function CodeMode(): JSX.Element {
     setOpenExtras((prev) => prev.filter((n) => n !== name))
   }
 
+  const codeEditor = (
+    <Suspense fallback={<EditorSkeleton message="Carregando editor de código…" />}>
+      <MonacoTabs
+        files={filesArray}
+        modelPathPrefix={projectId}
+        activeFile={activeFile}
+        onActiveFileChange={setActiveFile}
+        onChange={handleChange}
+        theme={studioTheme === 'light' ? 'light' : 'vs-dark'}
+        fontSize={codeFontSize || CODE_FONT_SIZE_DEFAULT}
+        formatLabel={t('editor.format')}
+        tabsRightSlot={<FontSizeControls />}
+        canCloseFile={(name) => !CANONICAL_FILES.has(name)}
+        onCloseFile={handleCloseFile}
+      />
+    </Suspense>
+  )
+
+  if (isNarrow) {
+    return (
+      <NarrowPanels
+        editorPanes={[{ id: 'code', label: t('tab.code'), content: codeEditor }]}
+        preview={showPreview ? <PreviewIframe /> : undefined}
+        filesDrawer={(close) => (
+          <FileExplorer
+            activeFile={activeFile}
+            onSelectFile={(name) => {
+              handleSelectFile(name)
+              close()
+            }}
+          />
+        )}
+      />
+    )
+  }
+
   return (
     <PanelGroup direction="horizontal" className="h-full w-full">
       <Panel defaultSize={18} minSize={14} maxSize={26}>
@@ -103,21 +142,7 @@ export function CodeMode(): JSX.Element {
       </Panel>
       <PanelResizeHandle className="sz-resize-handle sz-resize-handle--vertical" />
       <Panel defaultSize={showPreview ? 47 : 82} minSize={30}>
-        <Suspense fallback={<EditorSkeleton message="Carregando editor de código…" />}>
-          <MonacoTabs
-            files={filesArray}
-            modelPathPrefix={projectId}
-            activeFile={activeFile}
-            onActiveFileChange={setActiveFile}
-            onChange={handleChange}
-            theme={studioTheme === 'light' ? 'light' : 'vs-dark'}
-            fontSize={codeFontSize || CODE_FONT_SIZE_DEFAULT}
-            formatLabel={t('editor.format')}
-            tabsRightSlot={<FontSizeControls />}
-            canCloseFile={(name) => !CANONICAL_FILES.has(name)}
-            onCloseFile={handleCloseFile}
-          />
-        </Suspense>
+        {codeEditor}
       </Panel>
       {showPreview && (
         <>

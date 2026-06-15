@@ -4,8 +4,8 @@ import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { useShallow } from 'zustand/react/shallow'
 import { buildWorkspaceStateFromIR, isBlocksStateEmpty, layoutFromBlocksState } from '#blockly'
 import { type InstalledExtension, t } from '#core'
-import type { GeneratedFiles } from '#generators'
-import { buildCssSourceMapFromText, generateProjectFilesWithMap } from '#generators'
+import type { GeneratedFiles, SourceMap } from '#generators'
+import { buildCssSourceMapFromText } from '#generators'
 import { deepEqualIR, irBlockStructureEqual } from '#ir'
 import type { ParseProjectDiagnostic } from '#parsers'
 import { extractInlineAssets } from '#parsers'
@@ -15,9 +15,11 @@ import { FontSizeControls } from '../components/code/FontSizeControls'
 import { MonacoTabs } from '../components/code/LazyMonacoTabs'
 import { EditorSkeleton } from '../components/layout/LoadingViews'
 import { ModeLimitationsNotice } from '../components/layout/ModeLimitationsNotice'
+import { NarrowPanels } from '../components/layout/NarrowPanels'
 import { PreviewIframe } from '../components/preview/PreviewIframe'
 import { useCrossHighlight } from '../hooks/useCrossHighlight'
 import { useDebounced } from '../hooks/useDebounced'
+import { getCanonicalSourceMap } from '../state/canonicalSourceMap'
 import { useHighlightStore } from '../state/highlightStore'
 import { useLogsStore } from '../state/logsStore'
 import { useProjectStore, useProjectStoreApi } from '../state/projectStore'
@@ -25,6 +27,7 @@ import { CODE_FONT_SIZE_DEFAULT, useSettingsStore } from '../state/settingsStore
 import { useSourcemapStore } from '../state/sourcemapStore'
 import { useUIStore } from '../state/uiStore'
 import { useStudioConfig } from '../studio/config'
+import { useStudioLayout } from '../studio/layoutContext'
 import { useStudioTheme } from '../studio/theme'
 import { BRIDGE_JS_HEADER, type BridgeReverseParseWorkerResponse } from './bridgeReverseParse'
 
@@ -76,6 +79,7 @@ export function BridgeMode(): JSX.Element {
   const setFiles = useProjectStore((s) => s.setFiles)
   const studioConfig = useStudioConfig()
   const showPreview = useUIStore((s) => s.showPreview) && studioConfig.preview
+  const { isNarrow } = useStudioLayout()
   const setSourceMap = useSourcemapStore((s) => s.setMap)
   const pushLog = useLogsStore((s) => s.push)
   const codeFontSize = useSettingsStore((s) => s.codeFontSize)
@@ -119,44 +123,88 @@ export function BridgeMode(): JSX.Element {
   const debouncedCss = useDebounced(files?.['style.css'] ?? '', 900)
   const debouncedJs = useDebounced(files?.['script.js'] ?? '', 900)
 
-  // Source map (HTML/JS canônico + CSS posicional). HTML/JS continuam derivados
-  // do `ir` (gerador canônico). Já as entradas de CSS são reconstruídas a partir
-  // do TEXTO EXIBIDO (`style.css` do aluno), não do CSS canônico: assim o realce
-  // bloco↔código cai na linha EXATA mesmo quando a formatação do aluno difere da
-  // canônica (seletor multilinha como `html,\nbody {`, linhas em branco,
-  // comentários, indentação). Sem isso, "código é sagrado" + geração canônica
-  // divergiam e a seleção pulava de linha (clicar `margin` realçava `width`).
-  // Depende de `debouncedCss` para recalcular quando só o texto muda (o IR pode
-  // ficar igual pelo atalho deepEqualIR). Mescla `{ ...canônico, ...posicional }`:
-  // o posicional sobrepõe só os ids que conseguiu resolver no texto; @media/raw e
-  // ids não encontrados mantêm o canônico (nunca realça linha errada nos demais).
+  // Cabeçalho do JS exibido: o source map precisa CASAR com o `script.js` REAL.
+  // Código gerado dos blocos traz o cabeçalho; código DIGITADO/COLADO ("código é
+  // sagrado") não — usar o cabeçalho canônico deslocava todas as linhas do JS
+  // (clicar num bloco realçava a linha errada). Memorizamos só a PRESENÇA do
+  // cabeçalho (string|undefined) para não regenerar o canônico a cada tecla no
+  // corpo do JS — só quando a presença do cabeçalho realmente vira.
+  const displayedJsHeader = useMemo(
+    () => (debouncedJs.startsWith(BRIDGE_JS_HEADER) ? BRIDGE_JS_HEADER : undefined),
+    [debouncedJs],
+  )
+
+  // Source map canônico (HTML/JS): derivado SÓ do `ir`. ANTES o efeito também
+  // dependia de `debouncedCss`, então CADA tecla no CSS re-rodava o gerador
+  // INTEIRO (HTML+CSS+JS) só para remontar o mapa — desperdício O(programa) por
+  // tecla. Agora o canônico recomputa apenas quando o `ir`/cabeçalho mudam.
+  const [canonicalSourceMap, setCanonicalSourceMap] = useState<SourceMap | null>(null)
   useEffect(() => {
     if (!ir) {
-      setSourceMap({})
+      setCanonicalSourceMap(null)
       return
     }
     try {
-      const { sourceMap } = generateProjectFilesWithMap({
-        ir,
-        projectName,
-        jsHeader: BRIDGE_JS_HEADER,
-      })
-      if (debouncedCss.trim()) {
-        const positionalCss = buildCssSourceMapFromText(debouncedCss, ir.css, 'style.css')
-        setSourceMap({ ...sourceMap, ...positionalCss })
-      } else {
-        setSourceMap(sourceMap)
-      }
+      // Memo por `ir`: numa edição de bloco, o `regenerateFromBlocks` já gerou
+      // este mesmo `ir` (precisava dos `files`) e SEMEOU o cache — aqui reusamos
+      // em vez de regerar o projeto inteiro. Na edição de CÓDIGO, o regenerate
+      // não rodou: cache-miss gera UMA vez.
+      setCanonicalSourceMap(getCanonicalSourceMap(ir, projectName, displayedJsHeader))
     } catch {
-      // Geração best-effort; em caso de erro mantém o sourcemap anterior.
+      // Geração best-effort; em caso de erro mantém o mapa anterior.
     }
-  }, [ir, projectName, debouncedCss, setSourceMap])
+  }, [ir, projectName, displayedJsHeader])
+
+  // Entradas de CSS reconstruídas do TEXTO EXIBIDO (`style.css` do aluno), não do
+  // CSS canônico: o realce bloco↔código cai na linha EXATA mesmo quando a
+  // formatação do aluno difere da canônica (seletor multilinha como `html,\nbody
+  // {`, linhas em branco, comentários, indentação). Recalcula só quando o TEXTO
+  // do CSS (ou `ir.css`) muda — parse barato de CSS, sem regerar HTML/JS.
+  const positionalCssMap = useMemo(() => {
+    if (!ir || !debouncedCss.trim()) return null
+    try {
+      return buildCssSourceMapFromText(debouncedCss, ir.css, 'style.css')
+    } catch {
+      return null
+    }
+  }, [ir, debouncedCss])
+
+  // Publica a mescla `{ ...canônico, ...posicional }`: o posicional sobrepõe só os
+  // ids que conseguiu resolver no texto; @media/raw e ids não encontrados mantêm
+  // o canônico (nunca realça linha errada nos demais).
+  useEffect(() => {
+    if (!canonicalSourceMap) {
+      setSourceMap({})
+      return
+    }
+    setSourceMap(
+      positionalCssMap ? { ...canonicalSourceMap, ...positionalCssMap } : canonicalSourceMap,
+    )
+  }, [canonicalSourceMap, positionalCssMap, setSourceMap])
 
   const lastSnapshot = useRef<GeneratedFiles | null>(null)
+  // Cache LRU-1 do parse de HTML (`extractInlineAssets` roda DOMParser na main
+  // thread). A árvore HTML + casca dependem só do `index.html` e de se CSS/JS são
+  // externos vs. inline (a extração inline só dispara com o arquivo externo
+  // vazio). Então, ao digitar CÓDIGO/CSS sem mexer no HTML, reaproveitamos o
+  // parse e só trocamos as fontes externas — evita re-parsear o HTML por tecla.
+  const inlineAssetsCache = useRef<{
+    html: string
+    cssExternal: boolean
+    jsExternal: boolean
+    result: ReturnType<typeof extractInlineAssets>
+  } | null>(null)
   const lastReportedSyntaxError = useRef<string | null>(null)
   const lastReportedLargeProject = useRef(false)
   const reverseParseWorkerRef = useRef<Worker | null>(null)
   const reverseParseRequestSeq = useRef(0)
+  // Single-flight do worker: TRUE entre o post e a resposta. Enquanto ocupado,
+  // NÃO enfileiramos um 2º parse (o worker é uma thread só; pedidos empilhados
+  // seriam processados por inteiro e descartados pelo requestId — CPU à toa em
+  // arquivos grandes). Um novo texto enquanto ocupado aguarda; ao liberar, o
+  // `workerFreeNonce` re-dispara o efeito, que posta SÓ o texto mais novo.
+  const reverseParseBusy = useRef(false)
+  const [workerFreeNonce, setWorkerFreeNonce] = useState(0)
   // Epoch monotônico do estado relevante para os blocos (`ir`/`blocksState`).
   // Avança em QUALQUER mudança dessas duas chaves no store — lado-código
   // (reverse-parse aplica novo IR) E lado-blocos (regenerateFromBlocks). O
@@ -203,6 +251,12 @@ export function BridgeMode(): JSX.Element {
     // contra o seq atual e lê o estado FRESCO do store — nunca via closure.
     worker.onmessage = (event: MessageEvent<BridgeReverseParseWorkerResponse>) => {
       const message = event.data
+      // O worker terminou: libera o single-flight e cutuca o efeito de post para
+      // reavaliar (pode haver um texto mais novo que ficou retido enquanto
+      // ocupado). Feito ANTES do drop por obsolescência — mesmo um resultado
+      // descartado significa que o worker está livre.
+      reverseParseBusy.current = false
+      setWorkerFreeNonce((n) => n + 1)
       // Dropa resultados obsoletos: por `requestId` (lado-código postou outro
       // pedido) E por `stateEpoch` (uma edição de BLOCO mudou o ir/blocksState
       // desde o post — ela tem precedência e não pode ser clobberada por um
@@ -266,6 +320,10 @@ export function BridgeMode(): JSX.Element {
       })
     }
     worker.onerror = (event) => {
+      // Worker falhou: também libera o single-flight, senão um erro travaria os
+      // posts seguintes (busy ficaria true para sempre).
+      reverseParseBusy.current = false
+      setWorkerFreeNonce((n) => n + 1)
       pushLogRef.current({
         source: PREVIEW_MESSAGE_SOURCE,
         kind: 'error',
@@ -276,6 +334,9 @@ export function BridgeMode(): JSX.Element {
     return () => {
       reverseParseRequestSeq.current += 1
       reverseParseWorkerRef.current = null
+      // Worker recriado/desmontado: zera o single-flight para o próximo não
+      // nascer travado.
+      reverseParseBusy.current = false
       worker.onmessage = null
       worker.onerror = null
       worker.terminate()
@@ -313,6 +374,7 @@ export function BridgeMode(): JSX.Element {
   // Reverso: ao mudar arquivos, reparse → atualiza IR (que regenera arquivos
   // no próximo ciclo? Não — em modo Ponte, o blocosToFiles vem dos blocos,
   // então só atualizamos IR. UI/Blocks reagirão à mudança do IR via load.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `workerFreeNonce` é só um gatilho de re-execução (single-flight do worker), não é lido no corpo
   useEffect(() => {
     if (!hasProject) return
     const reverseParseChars = debouncedHtml.length + debouncedCss.length + debouncedJs.length
@@ -349,6 +411,10 @@ export function BridgeMode(): JSX.Element {
     ) {
       return
     }
+    // Worker ainda processando o parse anterior: NÃO enfileira um 2º. Retornamos
+    // SEM tocar `lastSnapshot`, então ao liberar (workerFreeNonce muda → o efeito
+    // re-roda) este texto (ou um mais novo) será reprocessado e postado uma vez.
+    if (reverseParseBusy.current) return
     const currentFiles: GeneratedFiles = {
       'index.html': debouncedHtml,
       'style.css': debouncedCss,
@@ -360,18 +426,38 @@ export function BridgeMode(): JSX.Element {
     // inline) e grava o `placement` na casca. O resultado (objetos planos)
     // viaja serializável ao worker, que faz o trabalho pesado (Babel/CSS).
     let assets: ReturnType<typeof extractInlineAssets>
-    try {
-      assets = extractInlineAssets(debouncedHtml, debouncedCss, debouncedJs)
-    } catch (err) {
-      pushLog({
-        source: PREVIEW_MESSAGE_SOURCE,
-        kind: 'error',
-        parts: [
-          `Erro ao sincronizar código -> blocos: ${err instanceof Error ? err.message : String(err)}`,
-        ],
-        timestamp: Date.now(),
-      })
-      return
+    const cssExternal = debouncedCss.trim() !== ''
+    const jsExternal = debouncedJs.trim() !== ''
+    const cached = inlineAssetsCache.current
+    if (
+      cached &&
+      cached.html === debouncedHtml &&
+      cached.cssExternal === cssExternal &&
+      cached.jsExternal === jsExternal
+    ) {
+      // HTML e o MODO (inline/externo) de CSS/JS inalterados: a árvore HTML e a
+      // casca não mudam. Reusamos o parse e só repassamos as fontes externas
+      // atuais (as inline já vivem dentro do HTML, que não mudou).
+      assets = {
+        ...cached.result,
+        cssSource: cssExternal ? debouncedCss : cached.result.cssSource,
+        jsSource: jsExternal ? debouncedJs : cached.result.jsSource,
+      }
+    } else {
+      try {
+        assets = extractInlineAssets(debouncedHtml, debouncedCss, debouncedJs)
+      } catch (err) {
+        pushLog({
+          source: PREVIEW_MESSAGE_SOURCE,
+          kind: 'error',
+          parts: [
+            `Erro ao sincronizar código -> blocos: ${err instanceof Error ? err.message : String(err)}`,
+          ],
+          timestamp: Date.now(),
+        })
+        return
+      }
+      inlineAssetsCache.current = { html: debouncedHtml, cssExternal, jsExternal, result: assets }
     }
 
     // Só marca como processado DEPOIS de `extractInlineAssets` ter dado certo e
@@ -396,6 +482,8 @@ export function BridgeMode(): JSX.Element {
       projectName,
       installedExtensionIds: installedExtensions.map((extension) => extension.id),
     })
+    // A partir daqui o worker está ocupado até responder (single-flight).
+    reverseParseBusy.current = true
   }, [
     debouncedHtml,
     debouncedCss,
@@ -405,9 +493,52 @@ export function BridgeMode(): JSX.Element {
     projectName,
     projectStoreApi,
     pushLog,
+    // Re-roda quando o worker libera: posta o texto mais novo retido enquanto
+    // ocupado (single-flight com coalescing para o último).
+    workerFreeNonce,
   ])
 
   if (!hasProject) return <div />
+
+  const codeEditor = (
+    <Suspense fallback={<EditorSkeleton message="Carregando editor de código…" />}>
+      <MonacoTabs
+        files={filesArray}
+        modelPathPrefix={projectId}
+        theme={studioTheme === 'light' ? 'light' : 'vs-dark'}
+        fontSize={codeFontSize || CODE_FONT_SIZE_DEFAULT}
+        formatLabel={t('editor.format')}
+        tabsRightSlot={<FontSizeControls />}
+        onChange={(name, value) => {
+          if (files && (name === 'index.html' || name === 'style.css' || name === 'script.js')) {
+            setFiles({ ...files, [name]: value })
+          }
+        }}
+        highlight={monacoHighlight}
+        // Sincronização só no sentido bloco→código: selecionar/editar o
+        // texto NÃO seleciona blocos (decisão de UX — evita o canvas pular
+        // e o acoplamento atrapalhar a edição). Por isso não passamos
+        // `onCursorChange` (que publicaria o cursor como fonte 'editor').
+      />
+    </Suspense>
+  )
+
+  if (isNarrow) {
+    return (
+      <div className="flex h-full w-full min-h-0 flex-col">
+        <ModeLimitationsNotice />
+        <div className="min-h-0 flex-1">
+          <NarrowPanels
+            editorPanes={[
+              { id: 'blocks', label: t('tab.blocks'), content: <BlocklyPanel /> },
+              { id: 'code', label: t('tab.code'), content: codeEditor },
+            ]}
+            preview={showPreview ? <PreviewIframe /> : undefined}
+          />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex h-full w-full min-h-0 flex-col">
@@ -418,29 +549,7 @@ export function BridgeMode(): JSX.Element {
         </Panel>
         <PanelResizeHandle className="sz-resize-handle sz-resize-handle--vertical" />
         <Panel defaultSize={showPreview ? 35 : 65} minSize={20}>
-          <Suspense fallback={<EditorSkeleton message="Carregando editor de código…" />}>
-            <MonacoTabs
-              files={filesArray}
-              modelPathPrefix={projectId}
-              theme={studioTheme === 'light' ? 'light' : 'vs-dark'}
-              fontSize={codeFontSize || CODE_FONT_SIZE_DEFAULT}
-              formatLabel={t('editor.format')}
-              tabsRightSlot={<FontSizeControls />}
-              onChange={(name, value) => {
-                if (
-                  files &&
-                  (name === 'index.html' || name === 'style.css' || name === 'script.js')
-                ) {
-                  setFiles({ ...files, [name]: value })
-                }
-              }}
-              highlight={monacoHighlight}
-              // Sincronização só no sentido bloco→código: selecionar/editar o
-              // texto NÃO seleciona blocos (decisão de UX — evita o canvas pular
-              // e o acoplamento atrapalhar a edição). Por isso não passamos
-              // `onCursorChange` (que publicaria o cursor como fonte 'editor').
-            />
-          </Suspense>
+          {codeEditor}
         </Panel>
         {showPreview && (
           <>

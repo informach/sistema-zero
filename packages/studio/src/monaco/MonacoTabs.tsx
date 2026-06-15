@@ -2,6 +2,7 @@ import Editor, { type OnChange, type OnMount } from '@monaco-editor/react'
 import type * as monacoNs from 'monaco-editor'
 import type { JSX } from 'react'
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
+import { useMeasuredWidth } from '../hooks/useMeasuredWidth'
 import { inferLanguage } from './languages'
 import {
   buildMonacoModelPath,
@@ -18,6 +19,15 @@ import {
 } from './workers'
 
 configureMonacoWorkers()
+
+/**
+ * Abaixo desta largura do PRÓPRIO contêiner do editor (não do Studio inteiro), o
+ * cabeçalho compacta: o botão "Formatar" vira só ícone. Medido por
+ * `ResizeObserver`, então acompanha o arraste do split do `PanelGroup` — o editor
+ * encolhe na Ponte (3 painéis) ou quando o aluno reduz o painel, e o cabeçalho
+ * reage à largura REAL dele, não à da página.
+ */
+const MONACO_COMPACT_MAX_PX = 480
 
 export interface MonacoTabsFile {
   name: string
@@ -84,6 +94,27 @@ export interface MonacoTabsProps {
    * de um descarta os models vivos do outro.
    */
   modelPathPrefix?: string
+}
+
+/** Ícone "formatar" (linhas alinhadas) — usado no botão compacto, sem dep externa. */
+function FormatGlyph(): JSX.Element {
+  return (
+    <svg
+      width={16}
+      height={16}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <line x1="4" y1="6" x2="20" y2="6" />
+      <line x1="4" y1="12" x2="14" y2="12" />
+      <line x1="4" y1="18" x2="18" y2="18" />
+    </svg>
+  )
 }
 
 function clampLine(line: number, model: monacoNs.editor.ITextModel): number {
@@ -163,6 +194,11 @@ export function MonacoTabs({
   onCloseFile,
   modelPathPrefix,
 }: MonacoTabsProps): JSX.Element {
+  // Mede o PRÓPRIO contêiner (não o Studio): o cabeçalho compacta conforme a
+  // largura real do editor, que muda ao arrastar o split do PanelGroup.
+  const rootRef = useRef<HTMLDivElement>(null)
+  const measuredWidth = useMeasuredWidth(rootRef)
+  const compact = measuredWidth > 0 && measuredWidth < MONACO_COMPACT_MAX_PX
   // Id ESTÁVEL por instância: gerado uma vez por montagem do componente. Salga o
   // prefixo dos models para que dois <Studio> no mesmo `projectId` (rota /dual)
   // não compartilhem nem descartem os models um do outro no registro global.
@@ -196,6 +232,9 @@ export function MonacoTabs({
   const editorRef = useRef<monacoNs.editor.IStandaloneCodeEditor | null>(null)
   const decorationsRef = useRef<monacoNs.editor.IEditorDecorationsCollection | null>(null)
   const activeHighlightRef = useRef<MonacoHighlight | null>(null)
+  // Último `nonce` cuja SELEÇÃO já foi aplicada — evita re-selecionar (e roubar o
+  // cursor) quando o highlight é só recomputado pelo reparse durante a digitação.
+  const lastSelectionNonceRef = useRef<number | undefined>(undefined)
   const onCursorChangeRef = useRef(onCursorChange)
   const [mountedEditor, setMountedEditor] = useState<monacoNs.editor.IStandaloneCodeEditor | null>(
     null,
@@ -275,11 +314,19 @@ export function MonacoTabs({
       if (getMonacoModelPath(model) !== expectedPath) return false
 
       const range = toMonacoRange(target, model)
-      // Só REVELA e DECORA (realce de linha + gutter). NÃO usamos
-      // `editor.setSelection`: selecionar o trecho inteiro roubava a seleção/cursor
-      // do aluno a cada realce de bloco — no modo Ponte isso deixava um trecho
-      // preso selecionado e impedia a edição. A decoration abaixo já mostra a faixa.
       editor.revealRangeInCenterIfOutsideViewport(range)
+
+      // Seleciona DE FATO o trecho do bloco (o aluno espera "selecionar a linha"),
+      // mas SÓ quando o pedido é NOVO: `nonce` muda a cada clique de bloco
+      // (selectBlock), e NÃO muda quando o highlight é só recomputado pelo reparse
+      // durante a digitação. Sem esse gate, cada reparse (~900ms) re-selecionava o
+      // trecho e roubava o cursor do aluno no meio da edição — por isso a seleção
+      // tinha sido removida. Com o gate, editar nunca mexe na seleção; a decoration
+      // abaixo permanece como realce persistente enquanto o bloco está selecionado.
+      if (target.nonce !== undefined && target.nonce !== lastSelectionNonceRef.current) {
+        lastSelectionNonceRef.current = target.nonce
+        editor.setSelection(range)
+      }
 
       const decorations = [
         {
@@ -369,7 +416,7 @@ export function MonacoTabs({
   }
 
   return (
-    <div className={['flex h-full flex-col', className].filter(Boolean).join(' ')}>
+    <div ref={rootRef} className={['flex h-full flex-col', className].filter(Boolean).join(' ')}>
       <div className="flex items-stretch border-b border-sz-border bg-sz-panel">
         <div className="flex flex-1 overflow-x-auto">
           {files.map((f) => {
@@ -419,9 +466,9 @@ export function MonacoTabs({
               onClick={handleFormat}
               title={`${formatLabel} (Shift+Alt+F)`}
               aria-label={formatLabel}
-              className="rounded px-2.5 py-1.5 text-xs font-medium leading-none text-sz-fg hover:bg-sz-bg"
+              className="inline-flex items-center rounded px-2.5 py-1.5 text-xs font-medium leading-none text-sz-fg hover:bg-sz-bg"
             >
-              {formatLabel}
+              {compact ? <FormatGlyph /> : formatLabel}
             </button>
           </div>
         )}

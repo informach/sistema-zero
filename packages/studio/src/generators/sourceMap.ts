@@ -71,9 +71,19 @@ export class SourceMapBuilder {
  */
 export function countLines(snippet: string): number {
   if (!snippet) return 0
+  // `indexOf` nativo (C++) é muito mais rápido que iterar code-point a code-point
+  // (`for…of`) — esta função é chamada várias vezes por geração, sobre o texto
+  // INTEIRO de cada statement. Contamos só `\n` (BMP, sem surrogate), então a
+  // varredura por código de caractere é exata.
   let n = 0
-  for (const ch of snippet) if (ch === '\n') n++
-  if (!snippet.endsWith('\n')) n++
+  let i = snippet.indexOf('\n')
+  while (i !== -1) {
+    n++
+    i = snippet.indexOf('\n', i + 1)
+  }
+  // 10 = '\n'. Snippet não-vazio aqui (guard acima); se não termina em quebra,
+  // a última linha de conteúdo conta como +1 (semântica de gerador incremental).
+  if (snippet.charCodeAt(snippet.length - 1) !== 10) n++
   return n
 }
 

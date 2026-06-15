@@ -21,6 +21,8 @@ const realEditorReact = { ...(await import('@monaco-editor/react')) }
 
 interface FakeModel extends DisposableMonacoModel {
   disposed: boolean
+  getLineCount: () => number
+  getLineMaxColumn: (line: number) => number
 }
 
 type CursorListener = (e: {
@@ -35,6 +37,9 @@ function makeModel(path: string): FakeModel {
   const model: FakeModel = {
     disposed: false,
     uri: { path, toString: () => path },
+    // Stubs largos para `toMonacoRange` não clampar nas faixas dos testes.
+    getLineCount: () => 1000,
+    getLineMaxColumn: () => 200,
     dispose() {
       model.disposed = true
       fakeModels.delete(path)
@@ -65,10 +70,13 @@ interface FakeEditor {
   onDidChangeModel: (cb: ModelListener) => { dispose: () => void }
   createDecorationsCollection: () => { set: () => void; clear: () => void }
   revealRangeInCenterIfOutsideViewport: () => void
+  setSelection: (range: { startLineNumber: number; endLineNumber: number }) => void
   getAction: () => null
 }
 
 let currentEditor: FakeEditor | null = null
+// Faixas passadas a editor.setSelection — para asserir a SELEÇÃO do realce.
+const selectionCalls: Array<{ startLineNumber: number; endLineNumber: number }> = []
 
 function makeEditor(initialPath: string): FakeEditor {
   let modelPath = initialPath
@@ -94,6 +102,12 @@ function makeEditor(initialPath: string): FakeEditor {
     },
     createDecorationsCollection: () => ({ set: () => {}, clear: () => {} }),
     revealRangeInCenterIfOutsideViewport: () => {},
+    setSelection: (range) => {
+      selectionCalls.push({
+        startLineNumber: range.startLineNumber,
+        endLineNumber: range.endLineNumber,
+      })
+    },
     getAction: () => null,
   }
   return editor
@@ -150,6 +164,7 @@ const { MonacoTabs } = await import('../MonacoTabs')
 function resetWorld(): void {
   fakeModels.clear()
   currentEditor = null
+  selectionCalls.length = 0
 }
 
 describe('MonacoTabs — ciclo de vida dos models', () => {
@@ -449,5 +464,67 @@ describe('MonacoTabs — aba ativa no modo não-controlado', () => {
       />,
     )
     expect(activeTabName()).toBe('a.js')
+  })
+})
+
+describe('MonacoTabs — seleção do realce (bloco→código)', () => {
+  beforeEach(resetWorld)
+  afterEach(() => {
+    cleanup()
+    resetWorld()
+  })
+
+  const files = [
+    { name: 'index.html', value: '<html></html>' },
+    { name: 'style.css', value: 'body{}' },
+    { name: 'script.js', value: 'const a = 1' },
+  ]
+
+  it('seleciona DE FATO a faixa do bloco ao receber um realce novo', () => {
+    render(
+      <MonacoTabs
+        files={files}
+        onChange={() => {}}
+        modelPathPrefix="proj-sel"
+        highlight={{ file: 'index.html', startLine: 7, endLine: 8, nonce: 1 }}
+      />,
+    )
+    expect(selectionCalls).toEqual([{ startLineNumber: 7, endLineNumber: 8 }])
+  })
+
+  it('NÃO re-seleciona quando o realce muda mas o nonce é o mesmo (digitação)', () => {
+    const { rerender } = render(
+      <MonacoTabs
+        files={files}
+        onChange={() => {}}
+        modelPathPrefix="proj-sel"
+        highlight={{ file: 'index.html', startLine: 7, endLine: 8, nonce: 1 }}
+      />,
+    )
+    expect(selectionCalls).toHaveLength(1)
+
+    // Reparse durante a edição: novo objeto de highlight (linhas deslocadas),
+    // MESMO nonce → o cursor do aluno NÃO pode ser roubado.
+    rerender(
+      <MonacoTabs
+        files={files}
+        onChange={() => {}}
+        modelPathPrefix="proj-sel"
+        highlight={{ file: 'index.html', startLine: 9, endLine: 9, nonce: 1 }}
+      />,
+    )
+    expect(selectionCalls).toHaveLength(1)
+
+    // Novo clique de bloco (nonce diferente) → seleciona de novo.
+    rerender(
+      <MonacoTabs
+        files={files}
+        onChange={() => {}}
+        modelPathPrefix="proj-sel"
+        highlight={{ file: 'index.html', startLine: 9, endLine: 9, nonce: 2 }}
+      />,
+    )
+    expect(selectionCalls).toHaveLength(2)
+    expect(selectionCalls[1]).toEqual({ startLineNumber: 9, endLineNumber: 9 })
   })
 })

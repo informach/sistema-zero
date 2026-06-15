@@ -2,6 +2,7 @@ import * as Blockly from 'blockly/core'
 import 'blockly/blocks'
 import { beforeAll, describe, expect, it } from 'bun:test'
 import { buildIRFromWorkspace } from '../buildIR'
+import { withWorkspaceLoad } from '../loadFence'
 import { ensureBlocklyInitialized } from '../setup'
 
 interface ExtendsApi extends Blockly.Block {
@@ -200,8 +201,8 @@ interface ObjectApi extends Blockly.Block {
   minus(): void
 }
 interface ArgsApiFull extends Blockly.Block {
-  syncShape_(): void
-  resolveSignature_(): string[] | null
+  syncShape_(event?: Blockly.Events.Abstract | null): void
+  resolveSignature_(event?: Blockly.Events.Abstract | null): string[] | null
   onchange(event?: Blockly.Events.Abstract): void
 }
 
@@ -341,6 +342,72 @@ describe('argsMutator.onchange — atalho barato evita o scan O(workspace)', () 
     // 2ª onchange com o MESMO evento auto-direcionado e campos inalterados:
     // o atalho barato bate e o scan NÃO roda de novo.
     novo.onchange(ev)
+    expect(scans).toBe(1)
+  })
+})
+
+describe('argsMutator — varredura O(N·M) coalescida e cercada na carga', () => {
+  beforeAll(() => ensureBlocklyInitialized())
+
+  it('M blocos respondendo ao MESMO evento compartilham UMA varredura por tipo', () => {
+    const ws = new Blockly.Workspace()
+    const cls = ws.newBlock('sz_js_class')
+    cls.setFieldValue('Pessoa', 'NAME')
+
+    // Dois `novo X = new Pessoa(...)`: ambos resolvem a assinatura varrendo
+    // `sz_js_class`. Sob o MESMO objeto de evento, a varredura é compartilhada.
+    const a = ws.newBlock('sz_js_new_var') as ArgsApiFull
+    a.setFieldValue('a', 'VARNAME')
+    a.setFieldValue('Pessoa', 'CLASS')
+    const b = ws.newBlock('sz_js_new_var') as ArgsApiFull
+    b.setFieldValue('b', 'VARNAME')
+    b.setFieldValue('Pessoa', 'CLASS')
+
+    let classScans = 0
+    const realGet = ws.getBlocksByType.bind(ws)
+    ws.getBlocksByType = ((type: string, ordered?: boolean) => {
+      if (type === 'sz_js_class') classScans += 1
+      return realGet(type, ordered ?? false)
+    }) as typeof ws.getBlocksByType
+
+    // Evento de um TERCEIRO bloco (não-self para ambos): os dois `novo` passam
+    // pela resolução. O mesmo objeto de evento é despachado aos dois.
+    const ev = new Blockly.Events.BlockMove(cls) as Blockly.Events.Abstract
+    a.onchange(ev)
+    b.onchange(ev)
+
+    // Sem coalescing seriam 2 varreduras de `sz_js_class`; com o cache por
+    // evento, é 1.
+    expect(classScans).toBe(1)
+  })
+
+  it('ignora os eventos intermediários enquanto uma carga está em voo', () => {
+    const ws = new Blockly.Workspace()
+    const cls = ws.newBlock('sz_js_class')
+    cls.setFieldValue('Pessoa', 'NAME')
+    const novo = ws.newBlock('sz_js_new_var') as ArgsApiFull
+    novo.setFieldValue('p', 'VARNAME')
+    novo.setFieldValue('Pessoa', 'CLASS')
+
+    let scans = 0
+    const realResolve = novo.resolveSignature_.bind(novo)
+    novo.resolveSignature_ = ((event?: Blockly.Events.Abstract | null) => {
+      scans += 1
+      return realResolve(event)
+    }) as typeof novo.resolveSignature_
+
+    // Durante a cerca de carga, um BLOCK_CREATE intermediário é ignorado…
+    withWorkspaceLoad(() => {
+      const create = new Blockly.Events.BlockCreate(cls) as Blockly.Events.Abstract
+      novo.onchange(create)
+    })
+    expect(scans).toBe(0)
+
+    // …mas o FINISHED_LOADING final SEMPRE resolve a assinatura uma vez.
+    withWorkspaceLoad(() => {
+      const finished = new Blockly.Events.FinishedLoading(ws) as Blockly.Events.Abstract
+      novo.onchange(finished)
+    })
     expect(scans).toBe(1)
   })
 })
