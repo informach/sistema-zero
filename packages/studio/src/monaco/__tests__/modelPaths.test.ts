@@ -26,23 +26,30 @@ describe('Monaco model paths', () => {
     expect(buildMonacoModelPath('   ', 'script.js')).toBe('script.js')
   })
 
-  it('salga o prefixo com o id por instância', () => {
+  it('salga o prefixo com o id por instância SEM `:` (não vira esquema de URI)', () => {
+    // O `useId()` pode conter `:` (ex.: `:r0:`). O Monaco cria o model via
+    // `monaco.Uri.parse(path)`, que trata TUDO antes do 1º `:` como ESQUEMA — o
+    // projectId sumia de `uri.path` e o realce/seleção bloco↔código nunca casava.
+    // Saneamos `:` → `_`, então o prefixo NUNCA tem `:`.
+    const a = resolveModelPathPrefix('project-1', ':r0:')
+    const b = resolveModelPathPrefix('project-1', ':r1:')
+    expect(a).not.toContain(':')
+    expect(a.startsWith('project-1')).toBe(true)
     // Dois <Studio> no MESMO projectId precisam de prefixos DISTINTOS.
-    expect(resolveModelPathPrefix('project-1', ':r0:')).toBe('project-1:::r0:')
-    expect(resolveModelPathPrefix('project-1', ':r1:')).toBe('project-1:::r1:')
-    expect(resolveModelPathPrefix('project-1', ':r0:')).not.toBe(
-      resolveModelPathPrefix('project-1', ':r1:'),
-    )
+    expect(a).not.toBe(b)
   })
 
   it('nunca devolve prefixo vazio: projectId em branco cai no id por instância', () => {
     // Sem isso, um project.id vazio vazaria/colidiria models entre instâncias.
-    expect(resolveModelPathPrefix(undefined, ':r0:')).toBe(':r0:')
-    expect(resolveModelPathPrefix('', ':r0:')).toBe(':r0:')
-    expect(resolveModelPathPrefix('   ', ':r0:')).toBe(':r0:')
-    // E o caminho resultante carrega sempre um discriminador não-vazio.
+    // O id é saneado (`:` → `_`) para o path não ganhar um esquema de URI.
+    expect(resolveModelPathPrefix(undefined, ':r0:')).toBe('_r0_')
+    expect(resolveModelPathPrefix('', ':r0:')).toBe('_r0_')
+    expect(resolveModelPathPrefix('   ', ':r0:')).toBe('_r0_')
+    // E o caminho resultante carrega sempre um discriminador não-vazio e sem `:`.
     const prefix = resolveModelPathPrefix('', ':r2:')
-    expect(buildMonacoModelPath(prefix, 'script.js')).toBe(':r2:/script.js')
+    const path = buildMonacoModelPath(prefix, 'script.js')
+    expect(path).toBe('_r2_/script.js')
+    expect(path).not.toContain(':')
   })
 
   it('normaliza path de URI para comparar prefixo', () => {

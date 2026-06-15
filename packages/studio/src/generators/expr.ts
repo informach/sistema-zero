@@ -62,6 +62,11 @@ export class IdentifierScope implements IdentifierResolver {
   private readonly canvasElements = new Map<string, string>()
   private readonly declaredClasses = new Map<string, string>()
   private readonly classRefs = new Map<string, string>()
+  // Próximo sufixo a tentar por base, para a sondagem de colisão NÃO recomeçar do
+  // 2 a cada nome homônimo: k nomes que normalizam para a MESMA base custavam
+  // O(k²) (a k-ésima alocação varria os sufixos 2..k). Como `used` só cresce
+  // (nunca libera), retomar do último sufixo é seguro — o `while` ainda confere.
+  private readonly nextSuffix = new Map<string, number>()
   private internalCount = 0
 
   get(name: string): string {
@@ -115,12 +120,15 @@ export class IdentifierScope implements IdentifierResolver {
   }
 
   private allocate(key: string, base: string): string {
-    let candidate = base
-    let suffix = 2
+    // `suffix < 2` significa "tentar a base nua primeiro"; >= 2 retoma da última
+    // tentativa desta base (os sufixos abaixo já foram consumidos por ela).
+    let suffix = this.nextSuffix.get(base) ?? 0
+    let candidate = suffix < 2 ? base : `${base}_${suffix}`
     while (this.used.has(candidate)) {
+      suffix = suffix < 2 ? 2 : suffix + 1
       candidate = `${base}_${suffix}`
-      suffix += 1
     }
+    this.nextSuffix.set(base, suffix < 2 ? 2 : suffix + 1)
     this.used.add(candidate)
     this.byOriginal.set(key, candidate)
     return candidate

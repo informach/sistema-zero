@@ -110,7 +110,6 @@ export function ProCodeMode(): JSX.Element {
         activeFile={activeFile}
         onActiveFileChange={setActiveFile}
         onChange={(name, value) => setProFileContent(name, value)}
-        compact={isNarrow}
         theme={studioTheme === 'light' ? 'light' : 'vs-dark'}
         fontSize={codeFontSize || CODE_FONT_SIZE_DEFAULT}
         formatLabel={t('editor.format')}

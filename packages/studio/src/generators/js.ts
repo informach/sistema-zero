@@ -151,9 +151,29 @@ export function generateJSWithMap(opts: GenerateJSOptions): GenerateJSWithMapRes
  * lista top-level (na ordem em que aparecem).
  */
 function hoistAnimationLoops(statements: JSStatement[]): JSStatement[] {
+  // Atalho do caso comum: se NENHUM loop de animação está ANINHADO dentro do
+  // corpo de outro statement, não há o que elevar — devolve a lista original SEM
+  // clonar a árvore. Antes, o `map` + spreads recursivos de `stripNested…`
+  // alocavam uma cópia de CADA statement-container a cada geração (a cada tecla),
+  // mesmo em projetos sem `animationLoop` algum.
+  const needsHoist = statements.some((stmt) =>
+    jsChildBodies(stmt).some((body) => containsAnimationLoop(body)),
+  )
+  if (!needsHoist) return statements
   const hoisted: JSStatement[] = []
   const top = statements.map((s) => stripNestedAnimationLoops(s, hoisted))
   return [...top, ...hoisted]
+}
+
+/** Há algum `animationLoop` em qualquer ponto desta lista (recursivo)? */
+function containsAnimationLoop(list: JSStatement[]): boolean {
+  for (const stmt of list) {
+    if (stmt.type === 'animationLoop') return true
+    for (const body of jsChildBodies(stmt)) {
+      if (containsAnimationLoop(body)) return true
+    }
+  }
+  return false
 }
 
 /** Remove loops de animação dos corpos aninhados de `stmt`, jogando-os em `hoisted`. */

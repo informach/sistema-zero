@@ -12,12 +12,12 @@ import {
 } from '#preview'
 import { Button } from '#ui'
 import { useDebounced } from '../../hooks/useDebounced'
+import { useMeasuredWidth } from '../../hooks/useMeasuredWidth'
 import { loadGameStorage, writeGameStorage } from '../../state/gameStorage'
 import { useLogsStore } from '../../state/logsStore'
 import { useProjectStore } from '../../state/projectStore'
 import { useUIStore } from '../../state/uiStore'
 import { useStudioConfig } from '../../studio/config'
-import { useStudioLayout } from '../../studio/layoutContext'
 import {
   estimatePreviewInputChars,
   PREVIEW_RENDER_INPUT_LIMIT_CHARS,
@@ -27,6 +27,14 @@ import {
 
 const EMPTY_EXTRA_FILES: ExtraFile[] = []
 const EMPTY_INSTALLED_EXTENSIONS: InstalledExtension[] = []
+
+/**
+ * Abaixo desta largura do PRÓPRIO painel de preview, a barra de ferramentas
+ * compacta: os botões viram só ícone (▶/⏹/⟳) e o "Executando/Parado" some.
+ * Medida por `ResizeObserver`, então reage ao arraste do split do `PanelGroup`,
+ * não ao tamanho da página.
+ */
+const PREVIEW_TOOLBAR_COMPACT_MAX_PX = 400
 
 export function PreviewIframe(): JSX.Element {
   const { projectId, html, css, js, projectName, installedExtensions, extraFiles } =
@@ -45,7 +53,11 @@ export function PreviewIframe(): JSX.Element {
   const previewSecurity = useStudioConfig().previewSecurity
   const previewRunning = useUIStore((s) => s.previewRunning)
   const setPreviewRunning = useUIStore((s) => s.setPreviewRunning)
-  const { isNarrow } = useStudioLayout()
+  // A barra do preview compacta conforme o PRÓPRIO contêiner (não o Studio): o
+  // painel encolhe ao arrastar o split, então medimos a largura real aqui.
+  const rootRef = useRef<HTMLDivElement>(null)
+  const toolbarWidth = useMeasuredWidth(rootRef)
+  const compactToolbar = toolbarWidth > 0 && toolbarWidth < PREVIEW_TOOLBAR_COMPACT_MAX_PX
   const iframeRef = useRef<HTMLIFrameElement>(null)
   // Watchdog de heartbeat (Camada B): se o thread do iframe travar num cálculo
   // síncrono, o interceptor para de emitir heartbeats e mostramos o aviso.
@@ -414,7 +426,7 @@ export function PreviewIframe(): JSX.Element {
   }, [processStorageNow])
 
   return (
-    <div className="relative flex h-full flex-col bg-sz-bg">
+    <div ref={rootRef} className="relative flex h-full flex-col bg-sz-bg">
       <div className="flex items-center gap-1 border-b border-sz-border bg-sz-panel px-2 py-1">
         <Button
           size="sm"
@@ -423,7 +435,13 @@ export function PreviewIframe(): JSX.Element {
           title={previewRunning ? 'Parar a execução do preview' : 'Reproduzir o preview'}
           aria-label={previewRunning ? 'Parar a execução do preview' : 'Reproduzir o preview'}
         >
-          {previewRunning ? (isNarrow ? '⏹' : '⏹ Parar') : isNarrow ? '▶' : '▶ Reproduzir'}
+          {previewRunning
+            ? compactToolbar
+              ? '⏹'
+              : '⏹ Parar'
+            : compactToolbar
+              ? '▶'
+              : '▶ Reproduzir'}
         </Button>
         <Button
           size="sm"
@@ -432,7 +450,7 @@ export function PreviewIframe(): JSX.Element {
           title="Re-executar o código atual"
           aria-label="Atualizar o preview"
         >
-          {isNarrow ? '⟳' : '⟳ Atualizar'}
+          {compactToolbar ? '⟳' : '⟳ Atualizar'}
         </Button>
         {documentTitle && (
           <span
@@ -442,7 +460,7 @@ export function PreviewIframe(): JSX.Element {
             {documentTitle}
           </span>
         )}
-        {!isNarrow && (
+        {!compactToolbar && (
           <span className="ml-auto whitespace-nowrap pl-2 text-xs text-sz-fg-soft">
             {previewRunning ? 'Executando' : 'Parado'}
           </span>

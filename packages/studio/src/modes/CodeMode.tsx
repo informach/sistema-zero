@@ -107,7 +107,6 @@ export function CodeMode(): JSX.Element {
         activeFile={activeFile}
         onActiveFileChange={setActiveFile}
         onChange={handleChange}
-        compact={isNarrow}
         theme={studioTheme === 'light' ? 'light' : 'vs-dark'}
         fontSize={codeFontSize || CODE_FONT_SIZE_DEFAULT}
         formatLabel={t('editor.format')}
