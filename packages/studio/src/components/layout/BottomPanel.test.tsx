@@ -1,7 +1,7 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it, mock, spyOn } from 'bun:test'
 import { act, cleanup, render, waitFor } from '@testing-library/react'
 import type { JSX } from 'react'
-import { useEffect } from 'react'
+import { useLayoutEffect } from 'react'
 import { createEmptyProject } from '#core'
 import { useProjectStore } from '../../state/projectStore'
 import { useUIStore } from '../../state/uiStore'
@@ -15,11 +15,13 @@ const realConsolePanel = { ...(await import('../console/ConsolePanel')) }
 
 // Probe leve do Terminal: marca quantas vezes foi MONTADO (effect com deps []).
 // Se a troca de aba desmontasse o Terminal, um retorno à aba o montaria de novo
-// (contagem > 1).
+// (contagem > 1). ⚠️ useLayoutEffect (NÃO useEffect): o passive effect não
+// flusha p/ o componente lazy no harness do CI (happy-dom@20 + bun:test) e o
+// contador ficava 0; o layout effect corre SÍNCRONO no commit, dentro do act().
 let terminalMounts = 0
 mock.module('../terminal/Terminal', () => ({
   Terminal: (): JSX.Element => {
-    useEffect(() => {
+    useLayoutEffect(() => {
       terminalMounts += 1
     }, [])
     return <div data-testid="terminal-probe">terminal</div>
