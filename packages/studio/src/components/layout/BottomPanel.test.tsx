@@ -1,7 +1,6 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it, mock, spyOn } from 'bun:test'
-import { act, cleanup, render, waitFor } from '@testing-library/react'
+import { act, cleanup, render } from '@testing-library/react'
 import type { JSX } from 'react'
-import { useLayoutEffect } from 'react'
 import { createEmptyProject } from '#core'
 import { useProjectStore } from '../../state/projectStore'
 import { useUIStore } from '../../state/uiStore'
@@ -13,19 +12,12 @@ const realTerminal = { ...(await import('../terminal/Terminal')) }
 const realAIPanel = { ...(await import('../ai/AIPanel')) }
 const realConsolePanel = { ...(await import('../console/ConsolePanel')) }
 
-// Probe leve do Terminal: marca quantas vezes foi MONTADO (effect com deps []).
-// Se a troca de aba desmontasse o Terminal, um retorno à aba o montaria de novo
-// (contagem > 1). ⚠️ useLayoutEffect (NÃO useEffect): o passive effect não
-// flusha p/ o componente lazy no harness do CI (happy-dom@20 + bun:test) e o
-// contador ficava 0; o layout effect corre SÍNCRONO no commit, dentro do act().
-let terminalMounts = 0
+// Probe leve do Terminal. A "não remontagem" é verificada por IDENTIDADE DO NÓ do
+// DOM (ver teste abaixo), não por contagem de effect: o passive/layout effect de
+// um componente `lazy` NÃO flusha no harness do CI (happy-dom@20 + bun:test), o
+// que tornava um contador de montagens flaky (0 no CI, ok local).
 mock.module('../terminal/Terminal', () => ({
-  Terminal: (): JSX.Element => {
-    useLayoutEffect(() => {
-      terminalMounts += 1
-    }, [])
-    return <div data-testid="terminal-probe">terminal</div>
-  },
+  Terminal: (): JSX.Element => <div data-testid="terminal-probe">terminal</div>,
 }))
 
 mock.module('../ai/AIPanel', () => ({
@@ -59,7 +51,6 @@ function setCodeProject(): void {
 
 describe('BottomPanel', () => {
   beforeEach(() => {
-    terminalMounts = 0
     consoleShouldThrow = false
     setCodeProject()
     useUIStore.setState({ bottomTab: 'console' })
@@ -92,21 +83,21 @@ describe('BottomPanel', () => {
   it('mantém o Terminal montado ao alternar abas (não remonta)', async () => {
     useUIStore.setState({ bottomTab: 'terminal' })
     const { findByTestId, getByTestId } = render(<BottomPanel />)
-    // Espera o chunk lazy do Terminal resolver E o effect de montagem FLUSHAR — o
-    // `findByTestId` resolve no commit (probe no DOM), mas o passive effect que
-    // incrementa `terminalMounts` corre depois; sem o waitFor, no CI dá 0 (flake).
-    await findByTestId('terminal-probe')
-    await waitFor(() => expect(terminalMounts).toBe(1))
+    // Captura o NÓ do DOM do Terminal (chunk lazy resolvido). Se a troca de aba
+    // remontasse o componente, o React criaria um nó NOVO; se ele só fica oculto
+    // (hidden), o MESMO nó persiste. Comparar identidade é determinístico e não
+    // depende de flush de effect (que não roda p/ lazy no harness do CI).
+    const firstNode = await findByTestId('terminal-probe')
 
-    // Vai para console e volta para o terminal.
+    // Vai para console: o Terminal continua no DOM (mesmo nó), só oculto.
     act(() => useUIStore.setState({ bottomTab: 'console' }))
     expect(getByTestId('console-probe')).toBeTruthy()
-    // O Terminal continua no DOM mesmo com a aba console ativa.
-    expect(getByTestId('terminal-probe')).toBeTruthy()
+    expect(getByTestId('terminal-probe')).toBe(firstNode)
 
+    // Volta para o terminal: ainda o MESMO nó = não remontou (shell do
+    // WebContainer e buffer do xterm sobrevivem).
     act(() => useUIStore.setState({ bottomTab: 'terminal' }))
-    // Nenhuma remontagem: o shell do WebContainer e o buffer do xterm sobrevivem.
-    expect(terminalMounts).toBe(1)
+    expect(getByTestId('terminal-probe')).toBe(firstNode)
   })
 
   it('isola falha do ConsolePanel num boundary com fallback', async () => {
