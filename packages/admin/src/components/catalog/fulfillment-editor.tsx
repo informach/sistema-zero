@@ -5,6 +5,9 @@ import { Field } from '@sistemazero/ui/label'
 import { Select } from '@sistemazero/ui/select'
 import type { AccessType, FulfillmentSpec, ReleaseMode } from '@/lib/types'
 
+/** Teto de perfis (kids) — espelha o DTO do catálogo (`maxProfiles` 1..50). */
+export const MAX_KIDS_PROFILES = 50
+
 const ACCESS_TYPES: { value: AccessType; label: string }[] = [
   { value: 'course', label: 'Um curso específico' },
   { value: 'all_courses', label: 'Todos os cursos (atuais e futuros)' },
@@ -116,7 +119,7 @@ export function FulfillmentEditor({
       <Field
         label="Quantidade de perfis (plataforma Kids)"
         htmlFor="maxProfiles"
-        tooltip="Quantos perfis de criança (estilo Netflix) esta compra libera. O responsável cria até esse número de perfis. Deixe VAZIO fora da plataforma Kids. Inteiro ≥ 1."
+        tooltip="Quantos perfis de criança (estilo Netflix) esta compra libera. O responsável cria até esse número de perfis. Deixe VAZIO fora da plataforma Kids. Inteiro de 1 a 50."
       >
         <Input
           id="maxProfiles"
@@ -124,8 +127,13 @@ export function FulfillmentEditor({
           placeholder="Ex.: 2 (vazio = sem limite de perfis)"
           value={spec.maxProfiles != null ? String(spec.maxProfiles) : ''}
           onChange={(e) => {
+            // Espelha o teto do catálogo (DTO `maxProfiles` 1..50): sem isso, um valor
+            // > 50 passa o client e o catálogo rejeita com um 400 genérico confuso.
             const n = Number.parseInt(e.target.value, 10)
-            update({ maxProfiles: Number.isFinite(n) && n >= 1 ? n : undefined })
+            update({
+              maxProfiles:
+                Number.isFinite(n) && n >= 1 ? Math.min(n, MAX_KIDS_PROFILES) : undefined,
+            })
           }}
         />
       </Field>

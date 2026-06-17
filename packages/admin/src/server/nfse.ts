@@ -56,7 +56,7 @@ export function createManualInvoice(paymentId: string): Promise<GatewayResponse<
   return gatewayFetch('/fiscal/admin/invoices', { method: 'POST', body: { paymentId } })
 }
 
-/** Cancela a nota emitida (motivo obrigatório, 3..500 chars). */
+/** Cancela a nota emitida (motivo obrigatório, 15..255 chars = TSMotivo do XSD). */
 export function cancelInvoice(id: string, reason: string): Promise<GatewayResponse<unknown>> {
   return gatewayFetch(`/fiscal/admin/invoices/${encodeURIComponent(id)}/cancel`, {
     method: 'POST',
