@@ -20,12 +20,15 @@ export class GetGamificationService {
 
   async execute(
     userId: string,
+    accountId: string,
     opts: { audience: CourseAudience; withRanking?: boolean },
   ): Promise<GamificationMeView> {
+    // XP/streak/badges são do PERFIL (`userId`); o ranking precisa da CONTA
+    // (`accountId`) para a pertinência à coorte (acesso da conta na audiência).
     const [profile, badges, ranking] = await Promise.all([
       this.repo.getProfile(userId, opts.audience),
       this.repo.listBadges(userId, opts.audience),
-      opts.withRanking ? this.repo.getRanking(userId, opts.audience) : null,
+      opts.withRanking ? this.repo.getRanking(userId, accountId, opts.audience) : null,
     ])
     const today = localDateSaoPaulo(this.clock())
     const unlockedBySlug = new Map(badges.map((b) => [b.badgeSlug, b.unlockedAt]))

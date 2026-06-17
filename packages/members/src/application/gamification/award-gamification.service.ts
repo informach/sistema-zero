@@ -25,6 +25,8 @@ export class AwardGamificationService {
 
   async awardLessonCompletion(input: {
     userId: string
+    /** CONTA do responsável (sessão de perfil). Default → userId no caller. */
+    accountId: string
     lessonId: string
     moduleId: string
     courseId: string
@@ -53,11 +55,13 @@ export class AwardGamificationService {
     if (input.courseCompleted) {
       events.push({ sourceType: 'course_complete', sourceId: input.courseId, amount: 0 })
     }
-    return this.award(input.userId, input.audience, events, input.privileged)
+    return this.award(input.userId, input.accountId, input.audience, events, input.privileged)
   }
 
   async awardQuizPassed(input: {
     userId: string
+    /** CONTA do responsável (sessão de perfil). Default → userId no caller. */
+    accountId: string
     blockId: string
     score: number
     /** Vitrine do CURSO — TODA a gamificação é segregada por audiência. */
@@ -72,11 +76,12 @@ export class AwardGamificationService {
     if (input.score === 100) {
       events.push({ sourceType: 'quiz_perfect', sourceId: input.blockId, amount: 0 })
     }
-    return this.award(input.userId, input.audience, events, input.privileged)
+    return this.award(input.userId, input.accountId, input.audience, events, input.privileged)
   }
 
   private async award(
     userId: string,
+    accountId: string,
     audience: CourseAudience,
     events: XpEventInput[],
     privileged: boolean,
@@ -85,6 +90,7 @@ export class AwardGamificationService {
     try {
       const result = await this.repo.award({
         userId,
+        accountId,
         audience,
         events,
         today: localDateSaoPaulo(now),

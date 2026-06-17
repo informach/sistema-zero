@@ -106,7 +106,8 @@ export function membersRoutes(deps: MembersRoutesDeps) {
         '/gamification/me',
         async ({ headers, query }) => {
           const userId = resolveUserId(headers)
-          return deps.getGamification.execute(userId, {
+          // XP/streak/badges pelo PERFIL (userId); a coorte do ranking pela CONTA.
+          return deps.getGamification.execute(userId, resolveAccountId(headers), {
             audience: query.audience ?? 'adult',
             withRanking: query.ranking === 'true',
           })

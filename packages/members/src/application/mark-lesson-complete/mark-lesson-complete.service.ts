@@ -100,6 +100,7 @@ export class MarkLessonCompleteService {
     // auto-cura o caso "conclusão gravada mas award perdido" (fail-open).
     const gamification = await this.gamification.awardLessonCompletion({
       userId,
+      accountId: accountId ?? userId,
       lessonId,
       moduleId: lesson.moduleId,
       courseId: course.id,

@@ -324,6 +324,11 @@ export const gamificationProfiles = members.table(
   {
     id: uuid('id').primaryKey(),
     userId: uuid('user_id').notNull(),
+    // CONTA do responsável dona do perfil (sessão de perfil estilo Netflix). É o
+    // elo perfil→conta usado SÓ pela COORTE do ranking (perfis cuja conta tem
+    // matrícula na audiência). Fora de sessão de perfil = o próprio `user_id` (a
+    // conta É o id). Snapshot do award; backfilled = user_id nas linhas legadas.
+    accountId: uuid('account_id'),
     // Vitrine da atividade (audiência do CURSO que gerou o award).
     audience: courseAudienceEnum('audience').notNull().default('adult'),
     xp: integer('xp').notNull().default(0),

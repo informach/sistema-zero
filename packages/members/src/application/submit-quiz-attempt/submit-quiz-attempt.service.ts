@@ -108,6 +108,7 @@ export class SubmitQuizAttemptService {
     const gamification = grade.passed
       ? await this.gamification.awardQuizPassed({
           userId,
+          accountId: accountId ?? userId,
           blockId,
           score: grade.score,
           audience: course.audience,

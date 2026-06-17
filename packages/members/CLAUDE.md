@@ -402,11 +402,17 @@ rating — keyados no perfil); o ACESSO/matrícula resolve pela CONTA. `resolveA
 a conta É o id). As rotas passam `accountId` aos casos de uso de conteúdo, que o usam
 SÓ no `CheckAccessService` (param opcional `accountId`, default → userId — zero
 regressão no community adulto); `ListMyCourses`/`ListCatalog` resolvem `hasAccess`/
-"meus cursos" pela conta e o PROGRESSO pelo perfil. A gamificação `GET /gamification/me`
-NÃO usa accountId (o XP é da criança, keyado no perfil). ⚠️ **Ranking** ainda usa o
-join `gamificationProfiles.userId = entitlements.userId` — perfil-irmão não-default
-(sem entitlement próprio) tem o ranking OMITIDO até o cohort por `account_id` (PR3b);
-o perfil-padrão da migração (id = accountId) segue ranqueando.
+"meus cursos" pela conta e o PROGRESSO pelo perfil. O XP/streak/badges de
+`GET /gamification/me` são do PERFIL (keyados no userId); só a COORTE do ranking usa o
+accountId.
+
+**Ranking por PERFIL (PR3b):** `gamification_profiles.account_id` (migration `0014`,
+backfilled = user_id nas linhas legadas) é o elo perfil→conta. O award grava o
+account_id (threading accountId em mark-complete/submit-quiz → AwardInput); a coorte de
+`getRanking(userId, accountId, audience)` = PERFIS (não-equipe) da audiência cuja CONTA
+tem matrícula na audiência (`account_id IN contas-com-matrícula`). Conta sem matrícula
+na audiência → `null` (ranking omitido). Perfis-irmãos da MESMA conta competem juntos;
+requester sem perfil (XP 0) ainda é contado.
 
 ## Admin (painel `@sistemazero/admin`)
 

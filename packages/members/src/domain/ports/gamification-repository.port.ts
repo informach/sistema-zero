@@ -32,6 +32,11 @@ export interface GamificationProfileRecord {
 export interface AwardInput {
   userId: string
   /**
+   * CONTA do responsável (sessão de perfil estilo Netflix). Em sessão normal = o
+   * próprio `userId`. Snapshot no perfil — usado SÓ pela coorte do ranking.
+   */
+  accountId: string
+  /**
    * Vitrine da ação (audiência do CURSO que gerou o award) — TODA a
    * gamificação é segregada por audiência: perfil/streak/badges/contagens.
    */
@@ -78,13 +83,16 @@ export interface GamificationRepository {
     audience: CourseAudience,
   ): Promise<{ badgeSlug: string; unlockedAt: Date }[]>
   /**
-   * Colocação do aluno no ranking de XP da VITRINE: coorte = usuários com ≥1
-   * matrícula (qualquer status — histórico é permanente, como o XP) em curso
-   * daquela audiência, EXCLUINDO equipe (perfil `privileged` — só cliente
-   * ranqueia). Aluno sem perfil ainda conta com XP 0. **`null` quando o
-   * requester NÃO pertence à coorte** (sem matrícula na audiência, ou equipe) —
-   * o service omite o `ranking` (não devolve "1º de 0" nem ranqueia entre pares
-   * dos quais não faz parte).
+   * Colocação do PERFIL no ranking de XP da VITRINE. Coorte (estilo Netflix) =
+   * PERFIS (linhas de `gamification_profiles`, `privileged=false`) cuja CONTA
+   * (`account_id`) tem ≥1 matrícula em curso da audiência. O `userId` é o perfil
+   * (XP do perfil); o `accountId` decide a pertinência à coorte (acesso da conta).
+   * **`null` quando a conta NÃO tem matrícula na audiência** (sem acesso) — o
+   * service omite o `ranking`. O requester sem perfil (XP 0) ainda é contado.
    */
-  getRanking(userId: string, audience: CourseAudience): Promise<GamificationRanking | null>
+  getRanking(
+    userId: string,
+    accountId: string,
+    audience: CourseAudience,
+  ): Promise<GamificationRanking | null>
 }

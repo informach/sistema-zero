@@ -58,4 +58,27 @@ describe('Sessão de perfil — acesso pela CONTA, dados pelo PERFIL', () => {
     const body = await readJson(await get(app, '/members/courses?audience=kids', prof(PROFILE_A)))
     expect(body.courses.map((c: { courseSlug: string }) => c.courseSlug)).toContain(slug)
   })
+
+  test('ranking kids: perfis da MESMA conta competem juntos; conta sem matrícula → sem ranking', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const { slug, lessonIds } = seedSampleCourse(courses, 'kids-curso', 'published', 'kids')
+    grantLifetime(entitlements, { userId: ACCOUNT, courseRef: slug })
+
+    // Perfil A conclui as 2 aulas (mais XP); perfil B conclui 1 (menos XP).
+    await post(app, `/members/lessons/${lessonIds[0]}/complete`, prof(PROFILE_A))
+    await post(app, `/members/lessons/${lessonIds[1]}/complete`, prof(PROFILE_A))
+    await post(app, `/members/lessons/${lessonIds[0]}/complete`, prof(PROFILE_B))
+
+    const rank = async (p: Record<string, string>) =>
+      readJson(await get(app, '/members/gamification/me?audience=kids&ranking=true', p))
+    expect((await rank(prof(PROFILE_A))).ranking).toEqual({ position: 1, totalStudents: 2 })
+    expect((await rank(prof(PROFILE_B))).ranking).toEqual({ position: 2, totalStudents: 2 })
+
+    // Perfil de OUTRA conta sem matrícula kids → não está na vitrine → ranking omitido.
+    const other = {
+      'x-auth-user-id': 'e0000000-0000-4000-8000-000000000005',
+      'x-auth-account-id': 'd0000000-0000-4000-8000-000000000004',
+    }
+    expect((await rank(other)).ranking).toBeUndefined()
+  })
 })
