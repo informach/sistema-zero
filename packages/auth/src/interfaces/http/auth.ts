@@ -33,6 +33,17 @@ export function resolveGatewayActor(
 }
 
 /**
+ * Equipe interna (superadmin/admin/staff) — espelha o `isPrivilegedActor` do
+ * members. Usada p/ liberar testes/verificação da plataforma à equipe (ex.: perfis
+ * Kids ILIMITADOS), enquanto o `customer` segue limitado pelo plano.
+ */
+const PRIVILEGED_ROLES = new Set<UserRole>(['superadmin', 'admin', 'staff'])
+
+export function isPrivilegedRole(role: UserRole): boolean {
+  return PRIVILEGED_ROLES.has(role)
+}
+
+/**
  * Resolve o IP de origem. Atrás de proxy confiável, NUNCA confie na entrada mais
  * à esquerda do `X-Forwarded-For` (forjável pelo cliente): pega a entrada que o
  * proxy confiável anexou — a `trustedProxyHops`-ésima a partir do fim. Fail-closed.

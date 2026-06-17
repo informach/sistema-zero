@@ -401,7 +401,10 @@ export class InMemoryProfileRepository implements ProfileRepository {
 /** Gateway de allowance fake: o teste seta `maxProfiles` (teto vindo do members). */
 export class FakeProfileAllowanceGateway implements ProfileAllowanceGateway {
   maxProfiles = 0
+  /** Quantas vezes o teto foi consultado — a equipe interna não deve consultar (sem S2S). */
+  calls = 0
   async getAllowance(): Promise<{ maxProfiles: number }> {
+    this.calls++
     return { maxProfiles: this.maxProfiles }
   }
 }

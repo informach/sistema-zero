@@ -7,7 +7,7 @@ import type { ExitProfileSessionService } from '../../../application/profiles/ex
 import type { ListProfilesService } from '../../../application/profiles/list-profiles.service'
 import type { SelectProfileService } from '../../../application/profiles/select-profile.service'
 import type { UpdateProfileDetailsService } from '../../../application/profiles/update-profile.service'
-import { type AuthContext, resolveClientIp, resolveGatewayActor } from '../auth'
+import { type AuthContext, isPrivilegedRole, resolveClientIp, resolveGatewayActor } from '../auth'
 import {
   CreateProfileBody,
   ExitProfileSessionBody,
@@ -66,12 +66,13 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
   }
 
   // Gestão: exige sessão da CONTA (sem `pfl`). Sessão de perfil → 403 (área dos pais).
-  const requireAccountSession = (headers: Record<string, string | undefined>): string => {
+  // Devolve o ATOR (id + role) — o role decide o teto de perfis (equipe = ilimitado).
+  const requireAccountSession = (headers: Record<string, string | undefined>) => {
     const actor = ensureOrigin(headers)
     if (headers['x-auth-account-id']?.trim()) {
       throw new ForbiddenError('Gerencie os perfis na área dos pais (saia do perfil primeiro)')
     }
-    return actor.id
+    return actor
   }
 
   // Edição de UM perfil: a CONTA edita qualquer perfil dela; a sessão de PERFIL edita
@@ -102,9 +103,11 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
         '/profiles',
         async ({ headers, body, request, set }) => {
           if (isOversizeBody(request)) throw new PayloadTooLargeError()
-          const accountUserId = requireAccountSession(headers)
+          const actor = requireAccountSession(headers)
           const profile = await deps.createProfile.execute({
-            accountUserId,
+            accountUserId: actor.id,
+            // Equipe interna (superadmin/admin/staff) cria perfis ILIMITADOS p/ testar.
+            privileged: isPrivilegedRole(actor.role),
             name: body.name,
             avatarUrl: body.avatarUrl,
             whatsapp: body.whatsapp,
@@ -134,7 +137,7 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
       .delete(
         '/profiles/:id',
         async ({ headers, params }) => {
-          const accountUserId = requireAccountSession(headers)
+          const accountUserId = requireAccountSession(headers).id
           await deps.archiveProfile.execute({ accountUserId, profileId: params.id })
           return { archived: true }
         },

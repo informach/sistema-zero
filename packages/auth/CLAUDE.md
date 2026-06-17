@@ -222,6 +222,12 @@ prefixo `/auth` com paths explícitos): `GET` lista os ativos, `POST` cria, `PAT
   env) e o repositório faz a contagem + insert **atômicos** (advisory xact-lock por
   conta — dois creates simultâneos não furam o teto → 409 `PROFILE_LIMIT_REACHED`).
   `maxProfiles <= 0` = a conta não comprou. Validação de foto (http(s)) no agregado.
+- **Equipe interna = perfis ILIMITADOS** (06/2026): se o ator é privilegiado
+  (`superadmin`/`admin`/`staff` — `isPrivilegedRole`, detectado na borda da rota a
+  partir do `x-auth-user-role`), o `CreateProfileService` recebe `privileged: true`,
+  **pula o S2S** do members e usa teto ilimitado (mantendo o insert atômico). É o
+  espelho, p/ perfis, do acesso irrestrito de conteúdo da equipe — testar/verificar o
+  Kids sem matrícula. O `customer` segue limitado pelo plano (sem regressão).
 - Envs novas (ver §env): `MEMBERS_BASE_URL`/`MEMBERS_REQUEST_TIMEOUT_MS`/
   `MEMBERS_INTERNAL_TOKEN` (obrigatório em prod — o members exige o token na rota S2S).
 

@@ -1433,6 +1433,27 @@ describe('Auth — perfis (estilo Netflix)', () => {
     )
   })
 
+  // Equipe interna (superadmin/admin/staff): perfis ILIMITADOS p/ testar/verificar o
+  // Kids sem matrícula — bypassa o teto do members (e nem consulta o S2S).
+  for (const role of ['superadmin', 'admin', 'staff'] as const) {
+    test(`equipe (${role}): perfis ilimitados mesmo com allowance=0 (sem S2S)`, async () => {
+      const { app, allowance } = buildApp()
+      allowance.maxProfiles = 0 // a conta da equipe não tem matrícula kids
+      const headers = gw(ACCOUNT, { 'x-auth-user-role': role })
+      for (const name of ['Sofia', 'Théo', 'Bia']) {
+        expect((await app.handle(req('POST', '/auth/profiles', headers, { name }))).status).toBe(
+          201,
+        )
+      }
+      const list = (await (await app.handle(req('GET', '/auth/profiles', headers))).json()) as {
+        profiles: Profile[]
+      }
+      expect(list.profiles.map((p) => p.name)).toEqual(['Sofia', 'Théo', 'Bia'])
+      // Não chama o members p/ a equipe (teto resolvido na borda pelo papel).
+      expect(allowance.calls).toBe(0)
+    })
+  }
+
   test('cria até o teto e barra o excedente; a lista volta ordenada', async () => {
     const { app, allowance } = buildApp()
     allowance.maxProfiles = 2
