@@ -38,11 +38,13 @@ export interface AdminRoutesDeps {
  * (`/members/courses…`) p/ gating inequívoco. Também exige o `x-internal-token`
  * (header-inject do gateway): os X-Auth-User-* só são confiáveis se a chamada
  * passou pelo gateway — sem o token, qualquer processo que alcance o members
- * direto na rede interna forjaria um admin.
+ * direto na rede interna forjaria um admin. Checado no `onTransform` (antes da
+ * validação → 401 antes de 422, espelhando o HMAC dos webhooks); o `requireAdmin`
+ * por rota roda depois (precisa só dos headers de role, sempre presentes).
  */
 export function adminRoutes(deps: AdminRoutesDeps) {
   return new Elysia({ prefix: '/members/admin' })
-    .onBeforeHandle(({ headers }) =>
+    .onTransform(({ headers }) =>
       assertInternalCaller(headers['x-internal-token'], deps.internalToken),
     )
     .get(

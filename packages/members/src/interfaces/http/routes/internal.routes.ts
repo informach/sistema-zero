@@ -20,7 +20,7 @@ export interface InternalRoutesDeps {
  */
 export function internalRoutes(deps: InternalRoutesDeps) {
   return new Elysia({ prefix: '/members/internal' })
-    .onBeforeHandle(({ headers }) =>
+    .onTransform(({ headers }) =>
       assertInternalCaller(headers['x-internal-token'], deps.internalToken),
     )
     .post('/access-check', ({ body }) => deps.accessCheck.execute(body.userId, body.courseRefs), {

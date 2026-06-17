@@ -408,11 +408,16 @@ accountId.
 
 **Ranking por PERFIL (PR3b):** `gamification_profiles.account_id` (migration `0014`,
 backfilled = user_id nas linhas legadas) é o elo perfil→conta. O award grava o
-account_id (threading accountId em mark-complete/submit-quiz → AwardInput); a coorte de
-`getRanking(userId, accountId, audience)` = PERFIS (não-equipe) da audiência cuja CONTA
-tem matrícula na audiência (`account_id IN contas-com-matrícula`). Conta sem matrícula
-na audiência → `null` (ranking omitido). Perfis-irmãos da MESMA conta competem juntos;
-requester sem perfil (XP 0) ainda é contado.
+account_id **só no INSERT** (é IMUTÁVEL por perfil — nunca no update; sobrescrever a
+cada award re-keyaria o perfil p/ si mesmo se uma chamada de sessão de perfil chegasse
+sem `x-auth-account-id`); threading accountId em mark-complete/submit-quiz → AwardInput.
+A coorte de `getRanking(userId, accountId, audience)` = PERFIS (não-equipe) da audiência
+cuja CONTA tem matrícula na audiência (`account_id IN contas-com-matrícula`). Conta sem
+matrícula na audiência → `null` (ranking omitido). Perfis-irmãos da MESMA conta competem
+juntos; requester sem perfil (XP 0) ainda é contado. Migration `0015`: `account_id` vira
+**NOT NULL** (com backfill defensivo) + índices `gamification_profiles_ranking_idx`
+(`audience, privileged, xp`) e `_account_idx` (`account_id`) — sem eles o cálculo do
+ranking varria a tabela inteira da vitrine.
 
 ## Admin (painel `@sistemazero/admin`)
 

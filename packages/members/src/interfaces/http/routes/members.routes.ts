@@ -57,12 +57,13 @@ export interface MembersRoutesDeps {
  * Todo endpoint de conteúdo exige matrícula ativa (403 sem vazar conteúdo) via
  * `CheckAccessService` dentro dos casos de uso — EXCETO equipe interna
  * (`isPrivilegedActor`): superadmin/admin/staff navegam tudo com chave-mestra virtual.
- * O `onBeforeHandle` confirma (em prod) que a chamada veio do gateway (token interno).
+ * O `onTransform` confirma (em prod) que a chamada veio do gateway (token interno)
+ * ANTES da validação do corpo/params — 401 antes de 422, espelhando o HMAC dos webhooks.
  */
 export function membersRoutes(deps: MembersRoutesDeps) {
   return (
     new Elysia({ prefix: '/members' })
-      .onBeforeHandle(({ headers }) =>
+      .onTransform(({ headers }) =>
         assertInternalCaller(headers['x-internal-token'], deps.internalToken),
       )
       // Listagens por VITRINE: `?audience=adult|kids` (ausente → adult; inválido → 400).
