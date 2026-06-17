@@ -71,10 +71,33 @@ antes de entrar na área de aprender. `src/proxy.ts` seta `requireProfileSelectP
 `(app)`, sem a sidebar kids — + `perfis-client.tsx`): rostinhos clicáveis (selecionar = 1
 clique → `/api/profiles/:id/select` → reload da home), **Área dos pais** (numa sessão de perfil
 pede a SENHA do responsável → `/api/profile-session/exit`; numa sessão da conta gerencia direto:
-criar/editar/arquivar + **foto** via `/api/profiles/:id/avatar`, multipart, FORA do matcher). O
-limite de perfis é do plano (criar acima → 409 no toast). Toda a lógica do BFF vive no
-**member-shell** (`shell.routes.profile*` + `shell.profiles`); os `route.ts` são shims de 1-3
-linhas. `getSession().activeProfile` indica a sessão de perfil ativa.
+criar/editar/arquivar + **foto** via `/api/profiles/:id/avatar`, multipart, FORA do matcher + a
+**troca de senha da CONTA** — `ParentPasswordChange` → `/api/auth/me/password`, só na sessão da
+conta, pois senha é da CONTA, não do perfil). O limite de perfis é do plano (criar acima → 409 no
+toast). Toda a lógica do BFF vive no **member-shell** (`shell.routes.profile*` + `shell.profiles`);
+os `route.ts` são shims de 1-3 linhas. `getSession().activeProfile` indica a sessão de perfil ativa.
+A página **"Meu perfil"** (`app/(app)/perfil`, sempre em sessão de perfil) edita o PRÓPRIO perfil
+(nome ≥ 3 / foto / telefone) via `/api/profiles/:id` — NUNCA a conta (full review F1: o auth recusa
+`/auth/me` de escrita em sessão de perfil).
+
+## Comunidade / "Turma" (hub/fórum)
+
+Porta kids do fórum compartilhado (`@sistemazero/hub` via member-shell). A LÓGICA do
+BFF (clients do hub, **redação do `authorId` de terceiros**, validação Zod de
+título/corpo/emoji/motivo) vive no **member-shell** (`createHubRoutes`); os `route.ts`
+em `src/app/api/hub/*` são shims de 3 linhas e `/comunidade` entra nos
+`protectedPrefixes` do `proxy.ts`. A UI é PRÓPRIA (tom kids): `app/(app)/comunidade/
+page.tsx` (grade de "Turmas") + `[slug]/page.tsx` → `kids-space-view-client.tsx`
+(canais, tópicos, respostas, reações OTIMISTAS com allowlist de emojis, "Avisar
+professor" por modal — sem `window.prompt` —, anexos via `AttachmentUploader`/
+`AttachmentList` do shell, paginação por cursor: query **`cursor`** p/ tópicos e
+**`after`** p/ respostas — casam com os route handlers). **Privacidade (NÃO
+regredir):** o BFF redige o `authorId` de terceiros; a UI só rotula "Você"/"Colega"
+comparando com o `viewerId` da sessão (ninguém EXIBE id). Corpo de tópico/resposta =
+`renderMarkdown` controlado (mesma superfície XSS-sensível dos blocos). Item "Turma"
+no `nav.ts` (sidebar + tab bar). ⚠️ **Corpo é OBRIGATÓRIO** no envio (schema do hub
+`body.min(1)`): o botão "Responder" exige `replyBody.trim()` — não habilitar só com
+anexo (o servidor recusaria).
 
 ## Diferenças deliberadas vs o community (decisões da v1, 06/2026)
 
@@ -84,8 +107,9 @@ linhas. `getSession().activeProfile` indica a sessão de perfil ativa.
    modais do community (`course-rating-flow.tsx` próprio, copy em tom kids + mascote; rota shim
    `/api/members/courses/[slug]/rating` compartilhada). Compartilhar usa SÓ `salesPageUrl` do
    curso (kids segue SEM `FUNNEL_URL`).
-3. **Perfil SEM telefone** (aluno kids não tem telefone próprio; o contato é do responsável e
-   vive na compra). A borda PATCH `/api/auth/me` do shell aceita OMITIR o campo.
+3. **Telefone agora é DO PERFIL** (decisão do usuário, 06/2026 — antes o perfil kids não tinha
+   telefone): a criança edita nome/foto/**telefone** (`whatsapp` do perfil) na página "Meu
+   perfil" via `/api/profiles/:id`. O telefone do RESPONSÁVEL segue na compra (não se mistura).
 4. **SEM `FUNNEL_URL`** (kids não tem funil na v1): curso bloqueado no catálogo sem
    `salesPageUrl` fica não-clicável — comportamento herdado.
 5. **SEM `public/sw.js`** (kill-switch era cicatriz do domínio do community).
@@ -133,12 +157,14 @@ do avatar: 401 → widget some); rota BFF `/api/members/gamification/me` = 1 lin
 - `streak-card.tsx` — card da home (só com cursos liberados E gamificação disponível).
 - `badge-showcase.tsx` — vitrine do perfil: catálogo completo, bloqueada = tracejada+cadeado,
   desbloqueada = cor da marca + data.
-- **Perfil (redesign 06/2026, decisão do usuário):** 1 card de identidade — foto CLICÁVEL
-  (único caminho de troca, sem botão "Trocar foto" nem título), nome + e-mail + **colocação no
-  ranking kids** (`getGamificationReadonly({withRanking: true})` → `ranking.position/totalStudents`;
-  rankings adult/kids são separados — contrato no CLAUDE.md do members) — e botão "Editar
-  perfil" abrindo o Dialog compartilhado com os DOIS cards (Dados pessoais + Alterar senha),
-  que saíram da página.
+- **Perfil = "Meu perfil" da CRIANÇA (full review F1, 06/2026):** a página edita o PRÓPRIO
+  PERFIL (não a conta). 1 card de identidade — foto CLICÁVEL (único caminho de troca, via
+  `/api/profiles/:id/avatar`), nome + telefone do perfil + **colocação no ranking kids**
+  (`getGamificationReadonly({withRanking: true})` → `ranking.position/totalStudents`; rankings
+  adult/kids separados) — e botão "Editar perfil" abrindo um Dialog com nome (≥ 3) + telefone,
+  que PATCHa `/api/profiles/:id`. O perfil ativo é resolvido de `listReadonly()` por `id ==
+  session.id`. **E-mail e SENHA da conta saíram daqui** (são da CONTA): a troca de senha vive na
+  **Área dos pais** (`/perfis`, sessão da conta → `ParentPasswordChange`).
 
 **Backlog da gamificação:** ligas (precisa de massa de alunos), revisão de aula estende streak?,
 vitrine no community adulto (campos já chegam — decisão de produto).
