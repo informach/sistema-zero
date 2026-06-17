@@ -235,6 +235,14 @@ arquivado/sumido → CAI para sessão da conta — a criança volta à grade). R
   pela presença do `x-auth-account-id` que o gateway injeta só quando há `pfl`. Listar e
   selecionar aceitam ambas. (O gateway resolve `pfl.accountId` → header `x-auth-account-id`,
   stripado da entrada/anti-spoof — ver api-gateway.)
+- **Migração de produção (PR6) — `scripts/backfill-default-profiles.ts`** (`bun run
+  db:backfill-profiles [--dry-run]`): cria o **perfil-padrão por conta com matrícula KIDS
+  ativa** com `id = id da conta` — o progresso/gamificação/comunidade histórico (keyado no
+  `user_id` da conta, pré-perfis) fica atribuído ao perfil SEM re-keyar nada (migração
+  ADITIVA). Idempotente (ON CONFLICT no PK) e re-executável; cross-schema (lê
+  `members.entitlements`/`courses`, escreve `auth.profiles`). ⚠️ RODA UMA VEZ, MANUALMENTE,
+  ANTES de habilitar a UI de perfis (validar em staging primeiro) — NÃO é preDeploy. O
+  backfill de `gamification_profiles.account_id` já é da migration `0014` do members.
 
 ## Sentry (monitoramento de erros)
 
