@@ -10,6 +10,9 @@ export const dynamic = 'force-dynamic'
 
 export default async function HomePage() {
   const user = await getSession()
+  // Numa sessão de PERFIL a saudação é para a CRIANÇA (nome do perfil ativo); o
+  // token carrega o nome da CONTA, então o perfil tem prioridade.
+  const greetName = user?.activeProfile?.name ?? user?.firstName
   // Gamificação é best-effort (401/gateway fora → card some), igual ao layout.
   const [{ status, body }, gam] = await Promise.all([listMyCourses(), getGamificationReadonly()])
   const courses = status === 200 ? (body?.courses ?? []) : []
@@ -24,7 +27,7 @@ export default async function HomePage() {
         />
         <div>
           <h1 className="sz-display text-3xl md:text-4xl">
-            Olá{user?.firstName ? `, ${user.firstName}` : ''}!
+            Olá{greetName ? `, ${greetName}` : ''}!
           </h1>
           <p className="mt-1 text-muted-foreground text-sm md:text-base">
             Bora aprender mais um pouquinho hoje?

@@ -4,6 +4,7 @@ import {
   InvalidImpersonationTokenError,
   TargetNotImpersonableError,
 } from '../../domain/impersonation/impersonation.errors'
+import { canImpersonate } from '../../domain/impersonation/impersonation.policy'
 import type { ImpersonationTokenRepository } from '../../domain/ports/impersonation-token-repository.port'
 import type { UserRepository } from '../../domain/ports/user-repository.port'
 import { toUserView, type UserView } from '../mappers/user-view'
@@ -53,6 +54,10 @@ export class ExchangeImpersonationTokenService {
     // Ator sumido/desativado entre o pedido e o exchange → handoff morre junto.
     const actor = await this.users.findById(record.actorId)
     if (!actor?.isActive()) throw new InvalidImpersonationTokenError()
+    // Re-checa a MATRIZ com o papel FRESCO do ator: um admin rebaixado a customer na
+    // janela (~60s) entre emitir e trocar o handoff não completa a impersonação
+    // (full review F5). Erro indistinguível dos demais (não vaza que o token era válido).
+    if (!canImpersonate(actor.role, target.role)) throw new InvalidImpersonationTokenError()
 
     const tokens = await this.authTokens.issueForUser(target, {
       userAgent: command.userAgent,

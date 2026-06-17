@@ -51,6 +51,20 @@ passthrough `shell.routes.gamificationMe` (`GET /api/members/gamification/me`). 
 `submitQuizAttempt` agora são TIPADOS (a resposta carrega o delta `gamification` — aditivo; o
 community adulto ignora, a vitrine v1 é o kids).
 
+**Perfis estilo Netflix (PR5, kids):** o shell expõe o **client de perfis**
+(`createProfilesClient` em `server/clients.ts` → `/auth/profiles*` no auth) e os **route
+handlers** `profilesList`/`profileCreate`/`profileUpdate`/`profileArchive`/`profileSelect`/
+`profileExit`/`profileAvatar` (em `createShellRoutes`). `select`/`exit` EMITEM tokens novos
+e o handler TROCA os cookies (igual ao exchange de impersonação): `select` = entrar/trocar de
+perfil (1 clique, sem PIN); `exit` = voltar à área dos pais (gateado pela senha do responsável
+no auth). **`exit` REVOGA o refresh da sessão de perfil deixada** (full review F3): captura o
+refresh ATUAL antes de trocar os cookies e chama `gateway.logoutRequest` (best-effort) — a
+família NOVA da conta não é tocada (família distinta), mas o token de perfil órfão não fica vivo. A claim **`pfl`** do JWT é lida por `parseProfileClaim` (`lib/act.ts`, pura/testada) →
+`SessionUser.activeProfile` (`{accountId, name}`). O **proxy** ganhou `requireProfileSelectPath`
+(opcional, só o kids usa): conta logada SEM `pfl` na área de aprender → redireciona p/ a grade
+(ex.: `/perfis`); a própria rota é isenta. O avatar do perfil (`profileAvatar`) reusa a pipeline
+do `/me` (sharp→WebP→R2 por `profileId`) — fica FORA do matcher do proxy (multipart).
+
 ## Invariantes (NÃO quebrar)
 
 1. **Parametrização é por FACTORY, nunca por config em escopo de módulo**: o Turbopack separa

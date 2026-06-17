@@ -82,6 +82,17 @@ const EnvSchema = z
     // profundidade). Vazio/ausente = checagem desligada (dev).
     AUTH_INTERNAL_TOKEN: z.string().optional(),
 
+    // Área de membros (S2S direto na rede interna): o auth resolve o TETO de perfis
+    // kids da conta em `GET /members/internal/profile-allowance` ao criar um perfil.
+    MEMBERS_BASE_URL: z.string().url().default('http://localhost:3004'),
+    MEMBERS_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
+    // Token interno enviado na chamada S2S (= INTERNAL_API_TOKEN do members). Opcional
+    // em dev/local (members sem token); OBRIGATÓRIO em produção (ver refine abaixo).
+    MEMBERS_INTERNAL_TOKEN: z
+      .string()
+      .min(16, 'MEMBERS_INTERNAL_TOKEN deve ter ao menos 16 caracteres')
+      .optional(),
+
     // Envio de e-mail via gateway → messaging (HMAC de borda, consumer `auth`).
     // Sem GATEWAY_URL + AUTH_HMAC_SECRET, o cliente vira no-op (envio desligado).
     GATEWAY_URL: z.string().url().optional(),
@@ -139,6 +150,28 @@ const EnvSchema = z
       message:
         'KIDS_COMMUNITY_URL em produção não pode apontar para localhost (links de e-mail quebrados)',
       path: ['KIDS_COMMUNITY_URL'],
+    },
+  )
+  // Produção exige o token interno do members: sem ele a rota S2S de allowance
+  // responde 401 e NENHUM perfil pode ser criado (o create falha fechado).
+  .refine((e) => e.NODE_ENV !== 'production' || (e.MEMBERS_INTERNAL_TOKEN?.length ?? 0) >= 16, {
+    message:
+      'MEMBERS_INTERNAL_TOKEN é obrigatório em produção (o members exige x-internal-token na rota S2S de profile-allowance)',
+    path: ['MEMBERS_INTERNAL_TOKEN'],
+  })
+  // `MEMBERS_BASE_URL` tem default localhost (dev). Em produção precisa apontar para
+  // o host interno (members.railway.internal) — localhost bootaria verde e quebraria
+  // a criação de perfil em runtime.
+  .refine(
+    (e) => {
+      if (e.NODE_ENV !== 'production') return true
+      const host = new URL(e.MEMBERS_BASE_URL).hostname
+      return host !== 'localhost' && host !== '127.0.0.1' && host !== '::1'
+    },
+    {
+      message:
+        'MEMBERS_BASE_URL não pode apontar para localhost em produção (defina o host interno, ex.: http://members.railway.internal:3004)',
+      path: ['MEMBERS_BASE_URL'],
     },
   )
 

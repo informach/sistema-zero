@@ -25,6 +25,7 @@ import { ListMembersService } from '../src/application/list-members/list-members
 import { ListMyCoursesService } from '../src/application/list-my-courses/list-my-courses.service'
 import { ManageEntitlementService } from '../src/application/manage-entitlement/manage-entitlement.service'
 import { MarkLessonCompleteService } from '../src/application/mark-lesson-complete/mark-lesson-complete.service'
+import { GetProfileAllowanceService } from '../src/application/profile-allowance/get-profile-allowance.service'
 import { RevokeEntitlementService } from '../src/application/revoke-entitlement/revoke-entitlement.service'
 import { SaveCourseRatingService } from '../src/application/save-course-rating/save-course-rating.service'
 import { SaveVideoPositionService } from '../src/application/save-video-position/save-video-position.service'
@@ -180,6 +181,9 @@ export function buildApp(
     },
     internal: {
       accessCheck: new AccessCheckService(entitlements, clock),
+      profileAllowance: new GetProfileAllowanceService(entitlements, clock, {
+        defaultMaxProfiles: 1,
+      }),
       internalToken: opts.internalToken,
     },
   })

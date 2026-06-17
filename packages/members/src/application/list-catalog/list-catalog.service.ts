@@ -20,10 +20,12 @@ export class ListCatalogService {
     userId: string,
     privileged = false,
     audience: CourseAudience = 'adult',
+    accountId?: string,
   ): Promise<CatalogCourseView[]> {
+    // `hasAccess` resolve a matrícula pela CONTA (sessão de perfil → accountId).
     const [published, active] = await Promise.all([
       this.courses.listPublishedCourses(audience),
-      this.entitlements.listActiveByUser(userId, this.clock()),
+      this.entitlements.listActiveByUser(accountId ?? userId, this.clock()),
     ])
 
     // Chave-mestra (`all_courses`) destrava o catálogo ADULTO inteiro (atuais e

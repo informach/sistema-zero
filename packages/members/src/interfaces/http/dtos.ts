@@ -68,6 +68,32 @@ export const AccessCheckBody = t.Object({
   courseRefs: t.Array(t.String({ minLength: 1, maxLength: 200 }), { maxItems: 200 }),
 })
 
+/**
+ * Query de `GET /members/internal/profile-allowance` (S2S — consumido pelo `auth`
+ * ao criar um perfil): quantos perfis de criança a CONTA (`accountId`) pode criar.
+ */
+export const ProfileAllowanceQuery = t.Object({ accountId: UUID })
+
+/**
+ * Query de `GET /members/admin/members/:userId` — CSV opcional dos ids dos perfis
+ * (estilo Netflix) da conta, p/ o progresso POR PERFIL. O handler valida o formato
+ * uuid e limita a quantidade (perfis lixo/exagerados são descartados na borda).
+ */
+export const MemberDetailQuery = t.Object({
+  profileIds: t.Optional(t.String({ maxLength: 2000 })),
+})
+
+const UUID_RE = new RegExp(UUID_PATTERN)
+/** Quebra o CSV de `profileIds` em uuids válidos (descarta lixo; teto de 50). */
+export function parseProfileIds(csv: string | undefined): string[] {
+  if (!csv) return []
+  return csv
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s) => UUID_RE.test(s))
+    .slice(0, 50)
+}
+
 /** Corpo de `POST /members/webhooks/subscription` — ciclo de vida da assinatura. */
 export const SubscriptionWebhookBody = t.Object({
   event: t.Union([t.Literal('canceled'), t.Literal('expired')]),

@@ -324,6 +324,13 @@ export const gamificationProfiles = members.table(
   {
     id: uuid('id').primaryKey(),
     userId: uuid('user_id').notNull(),
+    // CONTA do responsável dona do perfil (sessão de perfil estilo Netflix). É o
+    // elo perfil→conta usado SÓ pela COORTE do ranking (perfis cuja conta tem
+    // matrícula na audiência). Fora de sessão de perfil = o próprio `user_id` (a
+    // conta É o id). IMUTÁVEL por perfil: gravado SÓ no INSERT do award (nunca no
+    // update), backfilled = user_id nas linhas legadas (migration 0014). NOT NULL
+    // (migration 0015): um `account_id` nulo derrubaria o perfil da própria coorte.
+    accountId: uuid('account_id').notNull(),
     // Vitrine da atividade (audiência do CURSO que gerou o award).
     audience: courseAudienceEnum('audience').notNull().default('adult'),
     xp: integer('xp').notNull().default(0),
@@ -336,7 +343,16 @@ export const gamificationProfiles = members.table(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },
-  (t) => [uniqueIndex('gamification_profiles_user_audience_uq').on(t.userId, t.audience)],
+  (t) => [
+    uniqueIndex('gamification_profiles_user_audience_uq').on(t.userId, t.audience),
+    // Ranking (página de perfil): a coorte filtra por audiência + `privileged=false`
+    // e ordena/conta por `xp` — sem este índice cada cálculo varria a tabela inteira
+    // da vitrine (o `user_audience_uq` tem audience como 2ª coluna, não serve ao filtro).
+    index('gamification_profiles_ranking_idx').on(t.audience, t.privileged, t.xp),
+    // Coorte do ranking = perfis cuja CONTA tem matrícula na audiência
+    // (`account_id IN (...)`); sem índice em account_id o `IN (subquery)` varre tudo.
+    index('gamification_profiles_account_idx').on(t.accountId),
+  ],
 )
 
 // Ledger de XP. O UNIQUE (user, source_type, source_id) é a IDEMPOTÊNCIA:

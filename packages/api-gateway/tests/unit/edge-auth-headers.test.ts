@@ -66,6 +66,62 @@ describe('headerSafeValue / injectIdentityHeaders', () => {
     expect(h.get('x-auth-user-name')).toBe(encodeURIComponent('André Rocha de Oliveira'))
     expect(h.get('x-auth-user-email')).toBe('andre@example.com')
   })
+
+  test('sessão de PERFIL: x-auth-account-id é injetado; o valor forjado do cliente é descartado', () => {
+    const h = new Headers({ 'x-auth-account-id': 'conta-forjada' })
+    injectIdentityHeaders(h, {
+      id: 'profile-1', // sub = perfil de criança
+      email: 'pai@example.com',
+      firstName: 'Pai',
+      lastName: 'Silva',
+      role: 'customer',
+      status: 'active',
+      accountId: 'conta-do-pai',
+    })
+    expect(h.get('x-auth-user-id')).toBe('profile-1')
+    expect(h.get('x-auth-account-id')).toBe('conta-do-pai')
+  })
+
+  test('sessão da CONTA (sem accountId): x-auth-account-id fica AUSENTE (entrada do cliente removida)', () => {
+    const h = new Headers({ 'x-auth-account-id': 'conta-forjada' })
+    injectIdentityHeaders(h, {
+      id: 'conta-1',
+      email: 'pai@example.com',
+      firstName: 'Pai',
+      lastName: 'Silva',
+      role: 'customer',
+      status: 'active',
+    })
+    expect(h.get('x-auth-account-id')).toBe(null)
+  })
+
+  test('sessão de IMPERSONAÇÃO: x-auth-impersonator-id é injetado; o valor forjado do cliente é descartado', () => {
+    const h = new Headers({ 'x-auth-impersonator-id': 'admin-forjado' })
+    injectIdentityHeaders(h, {
+      id: 'aluno-1', // sub = usuário-alvo
+      email: 'aluno@example.com',
+      firstName: 'Aluno',
+      lastName: 'Silva',
+      role: 'customer',
+      status: 'active',
+      impersonatorId: 'admin-real',
+    })
+    expect(h.get('x-auth-user-id')).toBe('aluno-1')
+    expect(h.get('x-auth-impersonator-id')).toBe('admin-real')
+  })
+
+  test('sessão normal (sem impersonatorId): x-auth-impersonator-id fica AUSENTE (entrada do cliente removida)', () => {
+    const h = new Headers({ 'x-auth-impersonator-id': 'admin-forjado' })
+    injectIdentityHeaders(h, {
+      id: 'conta-1',
+      email: 'pai@example.com',
+      firstName: 'Pai',
+      lastName: 'Silva',
+      role: 'customer',
+      status: 'active',
+    })
+    expect(h.get('x-auth-impersonator-id')).toBe(null)
+  })
 })
 
 describe('request-transform stage: credenciais de borda', () => {
@@ -151,6 +207,27 @@ describe('request-transform stage: credenciais de borda', () => {
     const stage = createRequestTransformStage({ getTransformers: () => [] })
     await stage.run(ctx)
     expect(ctx.upstreamHeaders.get('x-consumer-id')).toBe(null)
+  })
+
+  test('sessão de perfil: x-auth-account-id confiável é injetado e o spoof do cliente é descartado', async () => {
+    const ctx = makeContext({
+      method: 'GET',
+      headers: { 'x-auth-account-id': 'conta-forjada', 'x-auth-user-id': 'id-forjado' },
+    })
+    ctx.route = routeMatch({})
+    ctx.user = {
+      id: 'profile-1',
+      email: 'pai@example.com',
+      firstName: 'Pai',
+      lastName: 'Silva',
+      role: 'customer',
+      status: 'active',
+      accountId: 'conta-do-pai',
+    }
+    const stage = createRequestTransformStage({ getTransformers: () => [] })
+    await stage.run(ctx)
+    expect(ctx.upstreamHeaders.get('x-auth-user-id')).toBe('profile-1')
+    expect(ctx.upstreamHeaders.get('x-auth-account-id')).toBe('conta-do-pai')
   })
 
   test('x-internal-token do cliente é removido SEMPRE — inclusive em passthrough', async () => {

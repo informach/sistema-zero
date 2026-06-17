@@ -233,4 +233,22 @@ describe('Impersonação — exchange do handoff', () => {
       TargetNotImpersonableError,
     )
   })
+
+  test('ator REBAIXADO (admin→customer) entre o pedido e o exchange → 401 (matriz re-checada — F5)', async () => {
+    const { create, exchange, users, seedUser } = setup()
+    const admin = seedUser('admin')
+    const target = seedUser('customer')
+
+    const handoff = await create.execute({
+      actorId: admin.id,
+      actorRole: 'admin',
+      targetUserId: target.id,
+    })
+    // Rebaixado na janela (~60s): segue ATIVO, mas perdeu o direito de impersonar.
+    admin.changeRole('customer')
+    users.seed(admin)
+    await expect(exchange.execute({ token: handoff.token })).rejects.toBeInstanceOf(
+      InvalidImpersonationTokenError,
+    )
+  })
 })

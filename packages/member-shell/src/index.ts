@@ -7,6 +7,7 @@ import {
   createHubClient,
   createMembersClient,
   createPaymentsClient,
+  createProfilesClient,
   type MembersAudience,
 } from './server/clients'
 import { createGatewayModule } from './server/gateway'
@@ -48,12 +49,25 @@ export function createShell(cfg: ShellConfig) {
   const auth = createAuthClient(gateway)
   const members = createMembersClient(gateway, { audience: cfg.audience })
   const payments = createPaymentsClient(gateway)
+  const profiles = createProfilesClient(gateway)
   const hub = createHubClient(gateway, { audience: cfg.audience })
   const media = createMediaModule({ session, gateway })
   const routes = {
-    ...createShellRoutes({ session, gateway, auth, members, payments, media }),
+    ...createShellRoutes({ session, gateway, auth, members, payments, profiles, media }),
     ...createHubRoutes({ hub, media, session }),
   }
 
-  return { config: cfg, cookies, session, gateway, auth, members, payments, hub, media, routes }
+  return {
+    config: cfg,
+    cookies,
+    session,
+    gateway,
+    auth,
+    members,
+    payments,
+    profiles,
+    hub,
+    media,
+    routes,
+  }
 }

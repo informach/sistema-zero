@@ -75,9 +75,22 @@ export interface MemberCourseProgressView {
   percent: number
 }
 
-/** Detalhe do membro: matrículas (todos status) + progresso por curso. */
+/** Progresso de UM perfil (estilo Netflix) da conta, por curso. `userId` = profileId. */
+export interface MemberProfileProgressView {
+  userId: string
+  progress: MemberCourseProgressView[]
+}
+
+/**
+ * Detalhe do membro: matrículas (todos status) + progresso por curso. O `progress`
+ * é o da CONTA (`userId` — pré-perfis = o aprendiz único). Quando o painel passa os
+ * `profileIds` da conta (perfis estilo Netflix), vem TAMBÉM `profilesProgress` com o
+ * progresso de CADA perfil sobre os MESMOS cursos da família (o nome do perfil é
+ * hidratado pelo painel a partir do auth).
+ */
 export interface MemberDetailView {
   userId: string
   entitlements: AdminEntitlementView[]
   progress: MemberCourseProgressView[]
+  profilesProgress?: MemberProfileProgressView[]
 }

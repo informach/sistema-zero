@@ -96,7 +96,7 @@ export function contentRoutes(deps: ContentRoutesDeps) {
 
   return (
     new Elysia({ prefix: '/members/admin' })
-      .onBeforeHandle(({ headers }) =>
+      .onTransform(({ headers }) =>
         assertInternalCaller(headers['x-internal-token'], deps.internalToken),
       )
       // ── Cursos ──

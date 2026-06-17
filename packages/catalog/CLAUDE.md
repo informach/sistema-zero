@@ -51,6 +51,10 @@ Validado contra Hotmart, Kiwify, Teachable, Thinkific, Kajabi, Gumroad, Podia (+
    Os antigos `download`/`external`/`none` + `assets` foram REMOVIDOS do cadastro (entregas mortas —
    criavam acessos invisíveis ao aluno); e-book avulso = curso com bloco de livro 3D. Linhas legadas
    no JSONB carregam sem erro (o type descreve o que se ESCREVE). `community` (tiers) é fatia futura.
+   **`maxProfiles?` (06/2026, kids):** teto de PERFIS estilo Netflix liberado pela entrega
+   (planos "N perfis"); inteiro ≥ 1, JSONB (sem migração). Congela no snapshot da matrícula no
+   grant; o members resolve o teto efetivo da conta (MAX entre as matrículas kids ativas) e o
+   `auth` consome ao criar perfil. `assertCoherent` valida `maxProfiles ≥ 1` quando presente.
 8. **Coerência de cadastro validada no domínio** (`ProductAggregate.assertCoherent()`): produto
    `active` não-bundle exige fulfillment (`course`+courseRef OU `all_courses`); `bundle` exige
    fulfillment null e, `active`, ≥1 componente; não-bundle não aceita components; `draft`/`archived`

@@ -1,0 +1,1 @@
+ALTER TABLE "auth"."refresh_tokens" ADD COLUMN "active_profile_id" uuid;

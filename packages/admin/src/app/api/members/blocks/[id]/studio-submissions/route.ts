@@ -13,7 +13,12 @@ export async function GET(_req: Request, { params }: Ctx) {
   const { id } = await params
   const { status, body } = await listStudioSubmissions(id)
   if (status !== 200 || !body) {
-    return NextResponse.json(body ?? { error: { code: 'UPSTREAM_ERROR' } }, { status })
+    // 200 sem corpo NÃO pode vazar como sucesso: o client trataria 200 como ok e
+    // leria `submissions` undefined → `.map` quebra a tela. Remapeia p/ 502 (como
+    // as rotas irmãs `[userId]` e member-detail).
+    return NextResponse.json(body ?? { error: { code: 'UPSTREAM_ERROR' } }, {
+      status: status === 200 ? 502 : status,
+    })
   }
 
   const submissions = body.submissions

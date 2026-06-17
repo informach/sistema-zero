@@ -5,7 +5,12 @@ import type { MicroCache } from '../../infrastructure/cache/micro-cache'
 
 /** Ator resolvido dos headers `X-Auth-User-*` injetados pelo gateway. */
 export interface Actor {
+  /** Identidade de DADOS: autor de tópicos/comentários, reações, "novidades". Em
+   *  sessão de perfil (estilo Netflix) é o PERFIL de criança (x-auth-user-id). */
   userId: string
+  /** Conta do responsável para resolver o ACESSO (matrícula). Em sessão de perfil é
+   *  o `x-auth-account-id`; fora dela cai no próprio `userId` (a conta É o id). */
+  accountId: string
   role: string | undefined
   status: string | undefined
   /** Equipe interna (superadmin/admin/staff): bypass total de acesso. */
@@ -40,7 +45,7 @@ export class AccessResolutionService {
       ),
     ]
     const access = courseRefs.length
-      ? await this.resolveCourseAccess(actor.userId, courseRefs)
+      ? await this.resolveCourseAccess(actor.accountId, courseRefs)
       : { granted: new Set<string>(), hasMaster: false }
     return spaces.filter((s) => this.evaluate(s.accessConfig, actor, s.audience, access))
   }
@@ -64,7 +69,7 @@ export class AccessResolutionService {
     const gated = channels.filter((c) => c.accessConfig?.visibility === 'course_gated')
     const courseRefs = [...new Set(gated.flatMap((c) => c.accessConfig?.courses ?? []))]
     const access = courseRefs.length
-      ? await this.resolveCourseAccess(actor.userId, courseRefs)
+      ? await this.resolveCourseAccess(actor.accountId, courseRefs)
       : { granted: new Set<string>(), hasMaster: false }
     return channels.filter(
       (c) => !c.accessConfig || this.evaluate(c.accessConfig, actor, space.audience, access),
@@ -78,7 +83,8 @@ export class AccessResolutionService {
     audience: Audience,
   ): Promise<boolean> {
     if (access.visibility === 'course_gated') {
-      const ca = await this.resolveCourseAccess(actor.userId, access.courses)
+      // Acesso pela CONTA (sessão de perfil → x-auth-account-id); autoria pelo userId.
+      const ca = await this.resolveCourseAccess(actor.accountId, access.courses)
       return this.evaluate(access, actor, audience, ca)
     }
     return this.evaluate(access, actor, audience, { granted: new Set(), hasMaster: false })

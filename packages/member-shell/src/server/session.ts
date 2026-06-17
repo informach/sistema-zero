@@ -8,7 +8,7 @@ import {
   jwtVerify,
 } from 'jose'
 import { cookies } from 'next/headers'
-import { parseActClaim } from '../lib/act'
+import { parseActClaim, parseProfileClaim } from '../lib/act'
 import { expireCookieOptions, type SessionCookieNames } from '../lib/cookies'
 import { getEnv, isProd } from '../lib/env'
 import type { SessionUser } from '../lib/types'
@@ -89,6 +89,9 @@ function claimsToUser(payload: Record<string, unknown>): SessionUser | null {
   // aluno — liga o banner e bloqueia mutações de credenciais/perfil.
   const act = parseActClaim(payload.act)
   if (act) user.act = act
+  // Sessão de PERFIL (kids): a claim `pfl` traz a conta + nome do perfil ativo.
+  const pfl = parseProfileClaim(payload.pfl)
+  if (pfl) user.activeProfile = pfl
   return user
 }
 

@@ -52,6 +52,15 @@ export const IDENTITY_HEADERS = {
   status: 'x-auth-user-status',
   phone: 'x-auth-user-phone',
   signupSource: 'x-auth-user-source',
+  // Conta do responsável em sessão de PERFIL (claim `pfl.accountId`). Presente só
+  // quando `id` é um perfil de criança — o upstream resolve o ACESSO por esta conta.
+  // É de IDENTIDADE (auto-stripado da entrada + redigido no log, como os demais).
+  accountId: 'x-auth-account-id',
+  // Admin que está IMPERSONANDO (claim `act.sub`). Presente só em sessão de suporte.
+  // O upstream o usa p/ PRESERVAR o vínculo de impersonação ao derivar uma nova
+  // sessão (ex.: selecionar um perfil) — sem ele a impersonação seria "lavada" numa
+  // sessão normal. De IDENTIDADE (auto-stripado da entrada + redigido no log).
+  impersonatorId: 'x-auth-impersonator-id',
 } as const
 
 const IDENTITY_HEADER_NAMES = Object.values(IDENTITY_HEADERS)
@@ -66,6 +75,8 @@ export interface IdentityHeaderInput {
   status: string
   phone?: string
   signupSource?: string
+  accountId?: string
+  impersonatorId?: string
 }
 
 /** Remove quaisquer headers de identidade da entrada (anti-spoof do cliente). */
@@ -110,6 +121,13 @@ export function injectIdentityHeaders(headers: Headers, user: IdentityHeaderInpu
   if (user.phone) headers.set(IDENTITY_HEADERS.phone, headerSafeValue(user.phone))
   if (user.signupSource) {
     headers.set(IDENTITY_HEADERS.signupSource, headerSafeValue(user.signupSource))
+  }
+  // Só em sessão de perfil — sessão normal da conta NÃO injeta (compat: os upstreams
+  // tratam a ausência como "x-auth-user-id é a própria conta").
+  if (user.accountId) headers.set(IDENTITY_HEADERS.accountId, headerSafeValue(user.accountId))
+  // Só em sessão de impersonação — o upstream preserva o vínculo ao derivar sessões.
+  if (user.impersonatorId) {
+    headers.set(IDENTITY_HEADERS.impersonatorId, headerSafeValue(user.impersonatorId))
   }
 }
 

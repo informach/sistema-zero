@@ -7,7 +7,7 @@ import {
   resolveDownloadMedia,
   WATERMARK_MAX_BYTES,
 } from '../lib/download-mime'
-import type { AuthClient, MembersClient, PaymentsClient } from '../server/clients'
+import type { AuthClient, MembersClient, PaymentsClient, ProfilesClient } from '../server/clients'
 import type { GatewayModule, GatewayResponse } from '../server/gateway'
 import {
   IMAGE_MIME_TYPES,
@@ -37,6 +37,7 @@ export interface ShellRoutesDeps {
   auth: AuthClient
   members: MembersClient
   payments: PaymentsClient
+  profiles: ProfilesClient
   media: MediaModule
 }
 
@@ -109,6 +110,21 @@ const ResetOtpBody = z.object({
   newPassword: z.string().min(1).max(200),
 })
 
+// ── Perfis (estilo Netflix) — espelham os DTOs do auth ──────────────────────
+const ProfileName = z.string().trim().min(1).max(60)
+const ProfileWhatsapp = z.string().trim().max(20).nullable().optional()
+const CreateProfileBody = z.object({
+  name: ProfileName,
+  whatsapp: ProfileWhatsapp,
+})
+const UpdateProfileBody = z
+  .object({
+    name: ProfileName.optional(),
+    whatsapp: ProfileWhatsapp,
+  })
+  .refine((b) => b.name !== undefined || b.whatsapp !== undefined, 'Nada para atualizar')
+const ExitProfileBody = z.object({ password: z.string().min(1).max(200) })
+
 const FeedbackAnswer = z.enum(['yes', 'no', 'unsure'])
 
 // Espelha o TypeBox do members (CourseRatingBody): nota nos 9 valores válidos,
@@ -177,7 +193,7 @@ const invalidInput = () => NextResponse.json({ error: { code: 'INVALID_INPUT' } 
  * `export const { POST } = shell.routes.authLogin`.
  */
 export function createShellRoutes(deps: ShellRoutesDeps) {
-  const { session, gateway, auth, members, payments, media } = deps
+  const { session, gateway, auth, members, payments, profiles, media } = deps
 
   // ── Auth ──────────────────────────────────────────────────────────────────
 
@@ -756,6 +772,128 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     },
   }
 
+  // ── Perfis (estilo Netflix) ──────────────────────────────────────────────
+
+  /** Grade de perfis da conta (a gestão exige sessão da conta — o auth recusa perfil). */
+  const profilesList = {
+    GET: async () => {
+      const { status, body } = await profiles.list()
+      return NextResponse.json(body ?? { profiles: [] }, { status })
+    },
+  }
+
+  /** Cria um perfil de criança. O auth resolve o teto pela matrícula (409 se estourar). */
+  const profileCreate = {
+    POST: async (req: Request) => {
+      const parsed = CreateProfileBody.safeParse(await req.json().catch(() => null))
+      if (!parsed.success) return invalidInput()
+      const { status, body } = await profiles.create(parsed.data)
+      return NextResponse.json(body, { status })
+    },
+  }
+
+  const profileUpdate = {
+    PATCH: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      const { id } = await ctx.params
+      const parsed = UpdateProfileBody.safeParse(await req.json().catch(() => null))
+      if (!parsed.success) return invalidInput()
+      const { status, body } = await profiles.update(id, parsed.data)
+      return NextResponse.json(body, { status })
+    },
+  }
+
+  const profileArchive = {
+    DELETE: async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      const { id } = await ctx.params
+      const { status, body } = await profiles.archive(id)
+      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+    },
+  }
+
+  /**
+   * Entra/troca de perfil (1 clique, sem PIN): o auth emite a SESSÃO DE PERFIL e
+   * trocamos os cookies aqui (igual ao exchange de impersonação). O cliente faz
+   * full reload (o servidor passa a enxergar a sessão de perfil).
+   */
+  const profileSelect = {
+    POST: async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      const { id } = await ctx.params
+      const { status, body } = await profiles.select(id)
+      if (status === 200 && body?.tokens) {
+        await session.setSessionCookies(body.tokens)
+        return NextResponse.json({ ok: true, profile: body.profile })
+      }
+      return NextResponse.json(body ?? { error: { code: 'SELECT_FAILED' } }, {
+        status: status === 200 ? 502 : status,
+      })
+    },
+  }
+
+  /**
+   * Sai do perfil para a área dos pais — gateado pela SENHA do responsável (o auth
+   * valida). Em sucesso, emite a sessão da CONTA e trocamos os cookies.
+   */
+  const profileExit = {
+    POST: async (req: Request) => {
+      const parsed = ExitProfileBody.safeParse(await req.json().catch(() => null))
+      if (!parsed.success) return invalidInput()
+      // Captura o refresh da SESSÃO DE PERFIL ANTES de trocar os cookies: ele tem
+      // família PRÓPRIA (o exit emite uma família NOVA da conta), então sem revogá-lo
+      // a sessão de perfil seguiria válida até expirar — um token órfão após voltar à
+      // área dos pais (full review F3). Revoga só esse token (não toca a nova sessão).
+      const profileRefresh = await session.getRefreshToken()
+      const { status, body } = await profiles.exit(parsed.data.password)
+      if (status === 200 && body?.tokens) {
+        await session.setSessionCookies(body.tokens)
+        if (profileRefresh) await gateway.logoutRequest(profileRefresh) // best-effort
+        return NextResponse.json({ ok: true })
+      }
+      return NextResponse.json(body ?? { error: { code: 'EXIT_FAILED' } }, {
+        status: status === 200 ? 502 : status,
+      })
+    },
+  }
+
+  /**
+   * Foto do perfil: multipart (`file`) → sharp→WebP → R2 (por profileId) → PATCH
+   * /auth/profiles/:id com a URL. Mesma pipeline/guard do avatar do /me; o auth
+   * recusa (403) se a sessão for de perfil (a gestão é só da conta).
+   */
+  const profileAvatar = {
+    POST: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      const user = await media.requireUploadSession(req)
+      if (user instanceof NextResponse) return user
+      const { id } = await ctx.params
+      const oversized = rejectOversizedRequest(req, MAX_IMAGE_BYTES)
+      if (oversized) return oversized
+      try {
+        const form = await req.formData()
+        const file = form.get('file')
+        if (!(file instanceof File) || file.size === 0 || !IMAGE_MIME_TYPES.has(file.type)) {
+          return NextResponse.json(
+            { error: { code: 'VALIDATION_ERROR', message: 'Use uma imagem PNG, JPG ou WebP.' } },
+            { status: 400 },
+          )
+        }
+        if (file.size > MAX_IMAGE_BYTES) {
+          return NextResponse.json(
+            { error: { code: 'VALIDATION_ERROR', message: 'A foto deve ter no máximo 5MB.' } },
+            { status: 400 },
+          )
+        }
+        const stored = await optimizeAndStoreAvatar(file, id)
+        const { status, body } = await profiles.update(id, { avatarUrl: stored.url })
+        if (status !== 200) {
+          return NextResponse.json(body ?? { error: { code: 'UPDATE_FAILED' } }, { status })
+        }
+        await removeStaleAvatars(id, stored.key)
+        return NextResponse.json({ url: stored.url, profile: body?.profile })
+      } catch (error) {
+        return mediaErrorResponse(error)
+      }
+    },
+  }
+
   // ── Impersonação ─────────────────────────────────────────────────────────
 
   /**
@@ -816,6 +954,13 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     quizAttempts,
     studioSubmit,
     paymentsMy,
+    profilesList,
+    profileCreate,
+    profileUpdate,
+    profileArchive,
+    profileSelect,
+    profileExit,
+    profileAvatar,
     impersonate,
     healthz,
   }

@@ -270,7 +270,9 @@ src/
             slug.ts (slugify/skuify/offerSlugSuggestion/offerCodeSuggestion — kebab MINÚSCULO,
             espelha os VOs do catalog: Sku lowercase!; autogeração usa dirty-flag por campo)
   components/ catalog/* (offers-multi-select · components-editor · offer-items-editor ·
-            fulfillment-editor — courseRef = SLUG do curso do members) · admin/* (topbar/header/tabs/…)
+            fulfillment-editor — courseRef = SLUG do curso do members; **campo "Quantidade de perfis
+            (plataforma Kids)" → `fulfillment.maxProfiles`** (PR4, perfis estilo Netflix; vazio = sem
+            limite; `sanitizeFulfillment` preserva o campo)) · admin/* (topbar/header/tabs/…)
             ⚠️ Primitivos de UI (button/card/input/table/dialog/badge/select/info-tooltip/…) vivem
             no **`@sistemazero/ui`** (packages/ui, compartilhado com o community) — importe
             `@sistemazero/ui/<componente>`; NÃO recrie cópias locais. O Button espelha as classes
@@ -436,7 +438,12 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   truncada são PUROS em `src/lib/nfse.ts` (unit-testados). `amountInCents` é STRING (bigint) →
   `formatCentsStr`, como no payments. Adapter em `src/server/nfse.ts`; views em `src/lib/types.ts`.
 - Membros (via gateway, JWT+RBAC): `GET /members/admin/members` (`?status&courseRef&limit&offset`) →
-  `Paginated<MemberSummaryView>`; `GET /members/admin/members/:userId` → matrículas + progresso
+  `Paginated<MemberSummaryView>`; `GET /members/admin/members/:userId` → matrículas + progresso.
+  **Perfis estilo Netflix (suporte):** o BFF de `/api/members/:userId` busca os perfis da conta
+  em `GET /auth/admin/users/:id/profiles` (auth, `getUserProfiles`), repassa os ids ao members
+  (`getMember(userId, profileIds)` → `?profileIds=`) e junta nome (auth) + progresso por perfil
+  (members) em `MemberDetail.profiles`. A tela mostra a seção "Perfis e progresso" (uma grade por
+  perfil); conta sem perfis cai no progresso da conta (compat)
   (matrícula `all_courses` renderiza "Todos os cursos (chave-mestra)" — `ACCESS_LABELS`);
   `POST /members/admin/entitlements` (`{mode:'offer'|'course'|'all_courses', userId,
   offerRef|courseRef?, expiresAt?}`) → concessão manual; `PATCH /members/admin/entitlements/:id`

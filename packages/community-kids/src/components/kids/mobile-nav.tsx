@@ -34,7 +34,7 @@ export function MobileTopbar({
   )
 }
 
-/** Tab bar inferior do mobile (estilo Duolingo): 3 abas grandes ícone + label. */
+/** Tab bar inferior do mobile (estilo Duolingo): abas grandes ícone + label. */
 export function MobileTabbar() {
   const pathname = usePathname()
 

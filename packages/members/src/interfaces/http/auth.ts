@@ -51,7 +51,21 @@ export function resolveUserId(headers: Record<string, string | undefined>): stri
   if (!id || id.trim().length === 0) {
     throw new UnauthorizedError('Identidade ausente (x-auth-user-id)')
   }
-  return id
+  // Trim (como `resolveAccountId`): o id vira chave de DADOS (progresso/XP/conclusões).
+  return id.trim()
+}
+
+/**
+ * Conta do responsável para resolver o ACESSO (matrícula/entitlement). Em sessão de
+ * PERFIL (estilo Netflix) o gateway injeta `x-auth-account-id` (a conta) ALÉM do
+ * `x-auth-user-id` (o perfil de criança, usado para atribuir DADOS — progresso/XP).
+ * Ausente (sessão normal da conta / community adulto) → cai no `x-auth-user-id`
+ * (a conta É o próprio id), preservando o comportamento atual.
+ */
+export function resolveAccountId(headers: Record<string, string | undefined>): string {
+  const account = headers['x-auth-account-id']
+  if (account && account.trim().length > 0) return account.trim()
+  return resolveUserId(headers)
 }
 
 /** Comparação em tempo constante (evita timing attack no token interno). */

@@ -380,6 +380,45 @@ estender o streak). Atividade ANTERIOR às migrations não tem marco retroativo
   dia for pedido). Aluno com tudo 100% não tem fonte de XP p/ estender streak ("revisão
   conta?" = decisão futura, fora da v1).
 
+## Perfis kids (allowance — fatia 06/2026, PR1)
+
+Os perfis "estilo Netflix" vivem no **auth** (`auth.profiles`); o members é só a
+**fonte da verdade do TETO**: `GET /members/internal/profile-allowance?accountId=`
+(rota S2S interna, exige `x-internal-token`; consumida pelo `auth` ao criar perfil)
+devolve `{ maxProfiles }` = MÁXIMO de `snapshot.fulfillment.maxProfiles` entre as
+matrículas ATIVAS da conta (`GetProfileAllowanceService` sobre `listActiveByUser`).
+O campo `maxProfiles` (kids) entra no `FulfillmentSpec` do catálogo e **congela no
+snapshot** no grant — para isso o `parseFulfillment` do `catalog-http.gateway` passou
+a preservá-lo (antes descartava campos desconhecidos). Conta sem matrícula ativa → 0;
+matrícula ativa SEM o campo (legado) → `DEFAULT_KIDS_MAX_PROFILES` (env, default 1).
+Produtos adultos (sem o campo) contribuem 0 → o teto é naturalmente "kids-only" sem
+join de audiência.
+
+**Acesso por CONTA em sessão de perfil (PR3):** em sessão de perfil (estilo Netflix) o
+gateway injeta `x-auth-account-id` (a CONTA do responsável) além do `x-auth-user-id`
+(o PERFIL de criança). O `userId` segue identificando os DADOS (progresso/XP/conclusões/
+rating — keyados no perfil); o ACESSO/matrícula resolve pela CONTA. `resolveAccountId`
+(`interfaces/http/auth.ts`) = `x-auth-account-id ?? x-auth-user-id` (ausente → compat,
+a conta É o id). As rotas passam `accountId` aos casos de uso de conteúdo, que o usam
+SÓ no `CheckAccessService` (param opcional `accountId`, default → userId — zero
+regressão no community adulto); `ListMyCourses`/`ListCatalog` resolvem `hasAccess`/
+"meus cursos" pela conta e o PROGRESSO pelo perfil. O XP/streak/badges de
+`GET /gamification/me` são do PERFIL (keyados no userId); só a COORTE do ranking usa o
+accountId.
+
+**Ranking por PERFIL (PR3b):** `gamification_profiles.account_id` (migration `0014`,
+backfilled = user_id nas linhas legadas) é o elo perfil→conta. O award grava o
+account_id **só no INSERT** (é IMUTÁVEL por perfil — nunca no update; sobrescrever a
+cada award re-keyaria o perfil p/ si mesmo se uma chamada de sessão de perfil chegasse
+sem `x-auth-account-id`); threading accountId em mark-complete/submit-quiz → AwardInput.
+A coorte de `getRanking(userId, accountId, audience)` = PERFIS (não-equipe) da audiência
+cuja CONTA tem matrícula na audiência (`account_id IN contas-com-matrícula`). Conta sem
+matrícula na audiência → `null` (ranking omitido). Perfis-irmãos da MESMA conta competem
+juntos; requester sem perfil (XP 0) ainda é contado. Migration `0015`: `account_id` vira
+**NOT NULL** (com backfill defensivo) + índices `gamification_profiles_ranking_idx`
+(`audience, privileged, xp`) e `_account_idx` (`account_id`) — sem eles o cálculo do
+ranking varria a tabela inteira da vitrine.
+
 ## Admin (painel `@sistemazero/admin`)
 
 Gestão de acesso pelo operador. Caminho `/members/admin/*` (distinto da API do aluno).
@@ -396,8 +435,12 @@ que não passou pela borda → 403). Rotas em `interfaces/http/routes/admin.rout
   último grant). Identidade (nome/email) **não** vive aqui — o BFF hidrata do auth
   (`POST /auth/admin/users/batch`). `total` = nº de GRUPOS (subquery sobre o `GROUP BY`,
   nunca contar linhas); ordenação `max(granted_at) desc, user_id` (paginação estável).
-- `GET /members/admin/members/:userId` → todas as matrículas (qualquer status) + progresso
-  por curso. Usa `findCoursesBySlugs` (SEM filtro de status → admin vê draft/archived).
+- `GET /members/admin/members/:userId[?profileIds=<csv>]` → todas as matrículas (qualquer
+  status) + progresso por curso. Usa `findCoursesBySlugs` (SEM filtro de status → admin vê
+  draft/archived). **Perfis (estilo Netflix):** com `?profileIds=` (os perfis da conta, que o
+  painel busca no auth) devolve TAMBÉM `profilesProgress` = progresso de CADA perfil sobre os
+  MESMOS cursos da família (o nome do perfil é hidratado pelo painel). Ausente → só o progresso
+  da conta (compat). `parseProfileIds` valida uuid + capa em 50 na borda.
 - `POST /members/admin/entitlements` (body `{mode:'offer',offerRef}` | `{mode:'course',courseRef}`
   | `{mode:'all_courses'}`, + `userId`, `expiresAt?`) → concessão MANUAL. Reusa o agregado
   (`sourceKind:'manual'`, `sourceId:'manual'`, key `manual:${userId}:${productId}`; curso usa

@@ -97,6 +97,11 @@ const EnvSchema = z
     // role); o serviço confere os headers X-Auth-User-* (defesa em profundidade).
     // Em dev, fora do gateway, pode-se desligar a checagem.
     REQUIRE_ADMIN: optionalBool(true),
+
+    // Teto de perfis (kids, estilo Netflix) p/ contas com matrícula ativa mas SEM
+    // `maxProfiles` no snapshot (compradores legados, anteriores ao campo). O teto
+    // real vem do produto (catalog → snapshot); este é só o piso de compat/rollout.
+    DEFAULT_KIDS_MAX_PROFILES: z.coerce.number().int().positive().default(1),
   })
   .refine((env) => env.NODE_ENV !== 'production' || Boolean(env.INTERNAL_API_TOKEN), {
     message:

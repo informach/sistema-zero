@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { and, count, countDistinct, eq, gt, isNull, or, sql } from 'drizzle-orm'
+import { and, count, countDistinct, eq, gt, inArray, sql } from 'drizzle-orm'
 import type { CourseAudience } from '../../../domain/course/course'
 import type { BadgeSlug } from '../../../domain/gamification/badges'
 import {
@@ -138,6 +138,7 @@ export class DrizzleGamificationRepository implements GamificationRepository {
           .values({
             id: randomUUID(),
             userId: input.userId,
+            accountId: input.accountId,
             audience: input.audience,
             xp: totalXp,
             streakCurrent: streak.current,
@@ -149,6 +150,10 @@ export class DrizzleGamificationRepository implements GamificationRepository {
           })
           .onConflictDoUpdate({
             target: [gamificationProfiles.userId, gamificationProfiles.audience],
+            // `accountId` NÃO entra no update: é IMUTÁVEL por perfil (o elo da
+            // coorte do ranking) — gravado só no INSERT. Sobrescrever a cada award
+            // pelo valor derivado da request re-keyaria o perfil p/ si mesmo se uma
+            // chamada de sessão de perfil chegasse sem `x-auth-account-id`.
             set: {
               xp: totalXp,
               streakCurrent: streak.current,
@@ -216,38 +221,43 @@ export class DrizzleGamificationRepository implements GamificationRepository {
     return rows
   }
 
-  async getRanking(userId: string, audience: CourseAudience): Promise<GamificationRanking | null> {
-    // Coorte da vitrine: quem tem matrícula (qualquer status) em curso da
-    // audiência — o elo é `entitlements.course_ref = courses.slug` (convenção
-    // do pacote). Rankings adult/kids são SEPARADOS por construção, e EQUIPE
-    // (perfil `privileged`) fica fora — só cliente ranqueia.
-    const cohortJoin = and(eq(courses.slug, entitlements.courseRef), eq(courses.audience, audience))
-    // XP/perfil são POR VITRINE — o ranking kids compara só o XP kids.
-    const profileJoin = and(
-      eq(gamificationProfiles.userId, entitlements.userId),
-      eq(gamificationProfiles.audience, audience),
+  async getRanking(
+    userId: string,
+    accountId: string,
+    audience: CourseAudience,
+  ): Promise<GamificationRanking | null> {
+    // Elo matrícula→curso da audiência (convenção: entitlements.course_ref = courses.slug).
+    const entitlementInAudience = and(
+      eq(courses.slug, entitlements.courseRef),
+      eq(courses.audience, audience),
     )
 
-    // As 3 leituras num único snapshot (transação) — sob award concorrente, a
-    // posição e o total não divergem entre si.
+    // As leituras num único snapshot (transação) — sob award concorrente, posição
+    // e total não divergem entre si.
     return this.db.transaction(async (tx) => {
-      // O requester PERTENCE à coorte? (cliente com ≥1 matrícula na audiência).
-      // Senão devolve `null` — ranquear alguém fora da coorte daria "1º de 0" ou
-      // o colocaria entre pares dos quais não faz parte.
+      // A CONTA tem matrícula na audiência? (acesso → pertence à coorte). Sem isso
+      // o perfil não está na vitrine → `null` (o service omite o ranking).
       const [member] = await tx
         .select({ u: entitlements.userId })
         .from(entitlements)
-        .innerJoin(courses, cohortJoin)
-        .leftJoin(gamificationProfiles, profileJoin)
-        .where(
-          and(
-            eq(entitlements.userId, userId),
-            or(isNull(gamificationProfiles.userId), eq(gamificationProfiles.privileged, false)),
-          ),
-        )
+        .innerJoin(courses, entitlementInAudience)
+        .where(eq(entitlements.userId, accountId))
         .limit(1)
       if (!member) return null
 
+      // Coorte (estilo Netflix) = PERFIS (linhas de gamification_profiles, não-equipe)
+      // da audiência cuja CONTA (account_id) tem matrícula na audiência.
+      const accountsWithEntitlement = tx
+        .select({ accountId: entitlements.userId })
+        .from(entitlements)
+        .innerJoin(courses, entitlementInAudience)
+      const cohort = and(
+        eq(gamificationProfiles.audience, audience),
+        eq(gamificationProfiles.privileged, false),
+        inArray(gamificationProfiles.accountId, accountsWithEntitlement),
+      )
+
+      // XP do PERFIL requester (0 se ainda não pontuou).
       const [profile] = await tx
         .select({ xp: gamificationProfiles.xp })
         .from(gamificationProfiles)
@@ -257,24 +267,25 @@ export class DrizzleGamificationRepository implements GamificationRepository {
         .limit(1)
       const myXp = profile?.xp ?? 0
 
-      // Sem perfil = nunca pontuou → cliente por presunção (equipe só é
-      // conhecida quando pontua — members não consulta roles do auth).
       const [totalRow] = await tx
-        .select({ c: countDistinct(entitlements.userId) })
-        .from(entitlements)
-        .innerJoin(courses, cohortJoin)
-        .leftJoin(gamificationProfiles, profileJoin)
-        .where(or(isNull(gamificationProfiles.userId), eq(gamificationProfiles.privileged, false)))
-      // Competition ranking ("1224"): só XP ESTRITAMENTE maior conta — empate
-      // divide a posição (alunos sem perfil têm XP 0 e nunca ficam à frente).
+        .select({ c: countDistinct(gamificationProfiles.userId) })
+        .from(gamificationProfiles)
+        .where(cohort)
+      // O requester já está contado na coorte (tem perfil que pontuou)?
+      const [inCohortRow] = await tx
+        .select({ u: gamificationProfiles.userId })
+        .from(gamificationProfiles)
+        .where(and(cohort, eq(gamificationProfiles.userId, userId)))
+        .limit(1)
+      // Competition ranking ("1224"): só XP ESTRITAMENTE maior conta (empate divide).
       const [aheadRow] = await tx
-        .select({ c: countDistinct(entitlements.userId) })
-        .from(entitlements)
-        .innerJoin(courses, cohortJoin)
-        .innerJoin(gamificationProfiles, profileJoin)
-        .where(and(gt(gamificationProfiles.xp, myXp), eq(gamificationProfiles.privileged, false)))
+        .select({ c: countDistinct(gamificationProfiles.userId) })
+        .from(gamificationProfiles)
+        .where(and(cohort, gt(gamificationProfiles.xp, myXp)))
 
-      return { position: (aheadRow?.c ?? 0) + 1, totalStudents: totalRow?.c ?? 0 }
+      // Requester sem perfil (XP 0) ainda é contado como aluno (+1).
+      const totalStudents = (totalRow?.c ?? 0) + (inCohortRow ? 0 : 1)
+      return { position: (aheadRow?.c ?? 0) + 1, totalStudents }
     })
   }
 }

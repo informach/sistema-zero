@@ -15,7 +15,11 @@ import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { type ComponentDraft, ComponentsEditor } from '@/components/catalog/components-editor'
-import { type CourseOption, FulfillmentEditor } from '@/components/catalog/fulfillment-editor'
+import {
+  type CourseOption,
+  FulfillmentEditor,
+  MAX_KIDS_PROFILES,
+} from '@/components/catalog/fulfillment-editor'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { skuify, slugify } from '@/lib/slug'
 import type { CourseView, FulfillmentSpec, Paginated, ProductView } from '@/lib/types'
@@ -60,8 +64,19 @@ const EMPTY_FORM: FormState = {
  */
 function sanitizeFulfillment(spec: FulfillmentSpec | null): FulfillmentSpec | null {
   if (!spec) return null
+  // Teto de perfis (kids) sobrevive em ambos os tipos de entrega (1..50 ou some;
+  // espelha o cap do DTO do catálogo — clampa p/ não mandar um valor que o
+  // catálogo rejeitaria com 400 genérico).
+  const maxProfiles =
+    typeof spec.maxProfiles === 'number' && spec.maxProfiles >= 1
+      ? { maxProfiles: Math.min(Math.trunc(spec.maxProfiles), MAX_KIDS_PROFILES) }
+      : {}
   if (spec.accessType === 'all_courses') {
-    return { accessType: 'all_courses', ...(spec.release ? { release: spec.release } : {}) }
+    return {
+      accessType: 'all_courses',
+      ...(spec.release ? { release: spec.release } : {}),
+      ...maxProfiles,
+    }
   }
   // Sem curso e sem drip → sem entrega definida (mesma regra de colapso do editor).
   if (!spec.courseRef && (!spec.release || spec.release.mode === 'immediate')) return null
@@ -69,6 +84,7 @@ function sanitizeFulfillment(spec: FulfillmentSpec | null): FulfillmentSpec | nu
     accessType: 'course',
     ...(spec.courseRef ? { courseRef: spec.courseRef } : {}),
     ...(spec.release ? { release: spec.release } : {}),
+    ...maxProfiles,
   }
 }
 

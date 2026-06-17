@@ -107,12 +107,22 @@ export interface MemberCourseProgressView {
   percent: number
 }
 
+/** Um perfil (estilo Netflix) da conta + seu progresso (nome do auth, progresso do members). */
+export interface MemberProfileProgress {
+  id: string
+  name: string
+  avatarUrl: string | null
+  progress: MemberCourseProgressView[]
+}
+
 /** Detalhe do membro (members) + identidade hidratada (auth). */
 export interface MemberDetail {
   userId: string
   user: UserView | null
   entitlements: AdminEntitlementView[]
   progress: MemberCourseProgressView[]
+  /** Perfis da conta (estilo Netflix) com progresso por perfil — vazio = conta sem perfis. */
+  profiles?: MemberProfileProgress[]
 }
 
 // ── Autoria de conteúdo (espelha admin-content-views do @sistemazero/members) ──
@@ -334,6 +344,8 @@ export interface FulfillmentSpec {
   /** SLUG do curso na área de membros (obrigatório quando `accessType = course`). */
   courseRef?: string
   release?: ReleaseRule
+  /** Teto de PERFIS (estilo Netflix) liberado — plataforma Kids. Inteiro ≥ 1. */
+  maxProfiles?: number
 }
 
 /** Componente de um combo (produto `kind=bundle`). */

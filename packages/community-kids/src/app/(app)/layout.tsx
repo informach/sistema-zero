@@ -26,7 +26,17 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const [me, gam] = await Promise.all([getMeReadonly(), getGamificationReadonly()])
   const avatarUrl = me.status === 200 ? (me.body?.user?.avatarUrl ?? null) : null
   const gamification = gam.status === 200 ? (gam.body ?? null) : null
-  const user = { ...session, avatarUrl }
+  // Em sessão de PERFIL (estilo Netflix) a CRIANÇA deve se ver em toda a navegação:
+  // o token carrega o nome/foto da CONTA, mas o nome do perfil ativo vem na claim
+  // `pfl`. Sem foto do perfil nas claims → iniciais a partir do nome do perfil. Um
+  // único ponto de verdade alimenta sidebar/topbar/menu.
+  const profileName = session.activeProfile?.name
+  const user = {
+    ...session,
+    firstName: profileName ?? session.firstName,
+    lastName: profileName ? '' : session.lastName,
+    avatarUrl: profileName ? null : avatarUrl,
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-background">

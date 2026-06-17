@@ -155,6 +155,11 @@ src/
    NÃO é editável (vínculo com as compras no payments; troca futura exigirá
    verificação). `POST /auth/me/password` troca a senha exigindo a atual; ambos
    revogam nada/todas as sessões respectivamente (troca de senha → re-login).
+   **⚠️ `/me` é da CONTA — `PATCH /me` e `/me/password` RECUSAM sessão de PERFIL**
+   (claim `pfl` → 403): no perfil-PADRÃO o `sub` colide com o id da conta, então
+   sem esse guard a sessão de perfil escreveria na conta, furando o portão da "área
+   dos pais" (full review F1). A criança edita o PRÓPRIO perfil em
+   `PATCH /auth/profiles/:id` (ver Perfis); a senha da conta fica na área dos pais.
 10. **Impersonação (06/2026 — admin "entra como" um usuário na COMMUNITY, p/ suporte):**
     dois passos, origens distintas (admin e community não compartilham cookies).
     (a) `POST /auth/admin/users/:id/impersonate` (gateway: JWT + roles
@@ -200,6 +205,58 @@ src/
     `cause`; siga esse padrão em qualquer mapeamento novo de erro do Postgres.
     A busca `q` da listagem admin **escapa `%`/`_`/`\`** antes do ILIKE (busca
     literal, não padrão).
+
+## Perfis (estilo Netflix) — fatia 06/2026 (PR1)
+
+Uma CONTA do responsável tem **N perfis de crianças** (tabela `auth.profiles`,
+migration `0006`): `id` (vira o `x-auth-user-id` EFETIVO na sessão de perfil — PR2),
+`account_user_id`, `name`, `avatar_url` (http(s), fora das claims), `whatsapp`
+(opcional), `status` (`active|archived` — NUNCA DELETE físico, arquivar preserva o
+histórico keyado no id), `sort_order`. Rotas `/auth/profiles` (`profilesRoutes`,
+prefixo `/auth` com paths explícitos): `GET` lista os ativos, `POST` cria, `PATCH
+/:id` edita, `DELETE /:id` arquiva. O ator é a CONTA (`resolveGatewayActor` →
+`x-auth-user-id`) + `requireInternalToken` (defesa em profundidade); ownership por
+`profile.belongsTo(accountUserId)` → perfil de outra conta = **404** (não vaza).
+- **Teto vem do members** (matrícula = fonte da verdade): o `CreateProfileService`
+  chama `GET /members/internal/profile-allowance?accountId=` (S2S direto, `MEMBERS_*`
+  env) e o repositório faz a contagem + insert **atômicos** (advisory xact-lock por
+  conta — dois creates simultâneos não furam o teto → 409 `PROFILE_LIMIT_REACHED`).
+  `maxProfiles <= 0` = a conta não comprou. Validação de foto (http(s)) no agregado.
+- Envs novas (ver §env): `MEMBERS_BASE_URL`/`MEMBERS_REQUEST_TIMEOUT_MS`/
+  `MEMBERS_INTERNAL_TOKEN` (obrigatório em prod — o members exige o token na rota S2S).
+
+**Sessão de perfil (PR2 — claim `pfl`, espelha a impersonação):** selecionar um
+perfil EMITE uma sessão de perfil onde o access token tem `sub` = **profileId**
+(atribuição de dados — progresso/comunidade se atrelam ao perfil) e a claim **`pfl`**
+`{accountId, name}`; identidade/role/status seguem da CONTA (o perfil herda). O
+`refresh_tokens.active_profile_id` (migration `0007`) é a sobreposição na FAMÍLIA: o
+`userId` da linha é a CONTA, e a **rotação re-deriva `pfl`** do perfil ativo (perfil
+arquivado/sumido → CAI para sessão da conta — a criança volta à grade). Rotas:
+- `POST /auth/profiles/:id/select` — entra/troca de perfil (um clique, **sem PIN**);
+  aceita sessão da conta OU de outro perfil (trocar de irmão). Devolve `{profile, tokens}`.
+- `POST /auth/profile-session/exit` — volta à área dos pais; **gateado pela SENHA do
+  responsável** (a decisão de produto permite "PIN ou a senha"; o PIN curto é futuro).
+- **Guards:** **criar** e **arquivar** perfil RECUSAM a sessão de perfil (403) — detectada
+  pela presença do `x-auth-account-id` que o gateway injeta só quando há `pfl`. Mas
+  **editar** (`PATCH /:id`) usa `ownProfileEditContext`: a CONTA edita qualquer perfil
+  dela; a **sessão de PERFIL edita SÓ o próprio** (auto-serviço da criança — nome/foto/
+  telefone; o `:id` precisa ser o perfil ATIVO = `x-auth-user-id`, editar um IRMÃO → 403).
+  Listar e selecionar aceitam ambas. Nome do perfil exige **≥ 3 caracteres** (DTO
+  `PROFILE_NAME` + `assertProfileName` no agregado). (O gateway resolve `pfl.accountId` →
+  header `x-auth-account-id`, stripado da entrada/anti-spoof — ver api-gateway.)
+- **Impersonação propagada no select (full review F2):** se a sessão atual é de suporte
+  (o gateway injeta `x-auth-impersonator-id` = claim `act.sub`), `SelectProfileService`
+  re-deriva o `act` do ATOR e marca a família — a sessão de perfil HERDA o TTL curto e
+  morre com o ator (a rotação re-checa). Ator sumido/inativo no select → 403. Sem isso, o
+  select "lavaria" a impersonação numa sessão de perfil normal de 30 dias e sem rastro.
+- **Migração de produção (PR6) — `scripts/backfill-default-profiles.ts`** (`bun run
+  db:backfill-profiles [--dry-run]`): cria o **perfil-padrão por conta com matrícula KIDS
+  ativa** com `id = id da conta` — o progresso/gamificação/comunidade histórico (keyado no
+  `user_id` da conta, pré-perfis) fica atribuído ao perfil SEM re-keyar nada (migração
+  ADITIVA). Idempotente (ON CONFLICT no PK) e re-executável; cross-schema (lê
+  `members.entitlements`/`courses`, escreve `auth.profiles`). ⚠️ RODA UMA VEZ, MANUALMENTE,
+  ANTES de habilitar a UI de perfis (validar em staging primeiro) — NÃO é preDeploy. O
+  backfill de `gamification_profiles.account_id` já é da migration `0014` do members.
 
 ## Sentry (monitoramento de erros)
 

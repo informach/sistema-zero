@@ -1,7 +1,8 @@
 import type { Logger } from '@sistemazero/core/logging'
 import { sha256Hex } from '@sistemazero/core/security'
+import type { ProfileRepository } from '../../domain/ports/profile-repository.port'
 import type { RefreshTokenRepository } from '../../domain/ports/refresh-token-repository.port'
-import type { ActClaim } from '../../domain/ports/token-issuer.port'
+import type { ActClaim, ProfileClaim } from '../../domain/ports/token-issuer.port'
 import type { UserRepository } from '../../domain/ports/user-repository.port'
 import { InvalidRefreshTokenError, UserNotActiveError } from '../../domain/user/user.errors'
 import type { AuthTokenService, AuthTokens } from '../tokens/auth-token.service'
@@ -21,6 +22,7 @@ export class RefreshService {
     private readonly users: UserRepository,
     private readonly refreshTokens: RefreshTokenRepository,
     private readonly tokens: AuthTokenService,
+    private readonly profiles: ProfileRepository,
     private readonly logger: Logger,
   ) {}
 
@@ -66,6 +68,20 @@ export class RefreshService {
       act = { sub: actor.id, email: actor.email, name: actor.fullName }
     }
 
+    // Sessão de PERFIL: re-deriva a claim `pfl` do perfil ativo a cada rotação (o
+    // access é re-emitido da CONTA e a perderia). Perfil arquivado/sumido → a sessão
+    // CAI para a conta (sem `pfl`): a criança volta à grade na próxima carga (em vez
+    // de uma sessão presa a um perfil que não existe mais).
+    let activeProfileId: string | null = null
+    let profileClaim: ProfileClaim | null = null
+    if (record.activeProfileId) {
+      const profile = await this.profiles.findById(record.activeProfileId)
+      if (profile && profile.belongsTo(user.id) && !profile.isArchived) {
+        activeProfileId = profile.id
+        profileClaim = { accountId: user.id, name: profile.name }
+      }
+    }
+
     // Rotaciona com claim ATÔMICO: consome o token atual e emite um novo na MESMA
     // família. Perder o claim = outra requisição rotacionou este token entre o
     // findByHash e aqui — semanticamente é REUSO (o fast-path acima não enxerga a
@@ -85,6 +101,8 @@ export class RefreshService {
       ip: command.ip,
       impersonatorUserId: record.impersonatorUserId,
       impersonatorAct: act ?? null,
+      activeProfileId,
+      profileClaim,
     })
   }
 }

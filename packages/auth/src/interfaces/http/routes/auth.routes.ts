@@ -1,4 +1,4 @@
-import { UnauthorizedError } from '@sistemazero/core/http'
+import { ForbiddenError, UnauthorizedError } from '@sistemazero/core/http'
 import { Elysia } from 'elysia'
 import type { GetMeService } from '../../../application/get-me/get-me.service'
 import type { LoginService } from '../../../application/login/login.service'
@@ -216,11 +216,18 @@ export function authRoutes(deps: AuthRoutesDeps) {
     })
 }
 
-/** Exige um Bearer válido e devolve as claims (rotas self-service /me*). */
+/**
+ * Exige um Bearer válido de SESSÃO DA CONTA e devolve as claims (self-service /me*).
+ * RECUSA sessão de PERFIL (claim `pfl`): /me é da CONTA, e a criança edita o PRÓPRIO
+ * perfil em `/auth/profiles/:id`, nunca a conta do responsável. Sem este guard, no
+ * perfil-PADRÃO (cujo `sub` colide com o id da conta) a sessão de perfil escreveria
+ * na conta — furando o portão da "área dos pais" (full review F1).
+ */
 async function requireBearer(header: string | undefined, tokenIssuer: TokenIssuer) {
   const token = extractBearer(header)
   if (!token) throw new UnauthorizedError('Token de acesso ausente')
   const claims = await tokenIssuer.verifyAccessToken(token)
   if (!claims) throw new UnauthorizedError('Token inválido ou expirado')
+  if (claims.pfl) throw new ForbiddenError('Saia do perfil para gerenciar a conta')
   return claims
 }

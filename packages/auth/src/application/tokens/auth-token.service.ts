@@ -1,7 +1,7 @@
 import { randomBytes, randomUUID } from 'node:crypto'
 import { sha256Hex } from '@sistemazero/core/security'
 import type { RefreshTokenRepository } from '../../domain/ports/refresh-token-repository.port'
-import type { ActClaim, TokenIssuer } from '../../domain/ports/token-issuer.port'
+import type { ActClaim, ProfileClaim, TokenIssuer } from '../../domain/ports/token-issuer.port'
 import type { UserAggregate } from '../../domain/user/user.aggregate'
 
 /** Par de tokens devolvido ao cliente. O refresh é opaco (guardado só como hash). */
@@ -25,6 +25,14 @@ export interface IssueContext {
   impersonatorUserId?: string | null
   /** Claim `act` do access token (dados do ATOR p/ exibição). Acompanha o id acima. */
   impersonatorAct?: ActClaim | null
+  /**
+   * Sessão de PERFIL: id do perfil de criança ativo. O `user` desta emissão é a
+   * CONTA do responsável (identidade/role/status); `activeProfileId` persiste na
+   * FAMÍLIA (a rotação re-deriva `pfl` a partir dele). TTL é o NORMAL (uso diário).
+   */
+  activeProfileId?: string | null
+  /** Claim `pfl` do access token (conta + nome do perfil). Acompanha o id acima. */
+  profileClaim?: ProfileClaim | null
 }
 
 export interface AuthTokenServiceOptions {
@@ -64,10 +72,18 @@ export class AuthTokenService {
     ctx: IssueContext,
   ): Promise<AuthTokens> {
     const impersonating = ctx.impersonatorUserId != null
-    const { token: accessToken, expiresInSeconds } = await this.tokenIssuer.issueAccessToken(
-      user,
-      ctx.impersonatorAct ?? undefined,
-    )
+    const profileSession =
+      ctx.activeProfileId != null && ctx.profileClaim != null
+        ? {
+            profileId: ctx.activeProfileId,
+            accountId: ctx.profileClaim.accountId,
+            name: ctx.profileClaim.name,
+          }
+        : undefined
+    const { token: accessToken, expiresInSeconds } = await this.tokenIssuer.issueAccessToken(user, {
+      act: ctx.impersonatorAct ?? undefined,
+      profile: profileSession,
+    })
 
     const refreshExpiresIn = impersonating
       ? this.opts.impersonationRefreshTtlSeconds
@@ -82,6 +98,7 @@ export class AuthTokenService {
       userAgent: ctx.userAgent ?? null,
       ip: ctx.ip ?? null,
       impersonatorUserId: ctx.impersonatorUserId ?? null,
+      activeProfileId: ctx.activeProfileId ?? null,
     })
 
     return {

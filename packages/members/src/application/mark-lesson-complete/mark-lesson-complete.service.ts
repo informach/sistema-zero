@@ -31,11 +31,21 @@ export class MarkLessonCompleteService {
     private readonly clock: () => Date,
   ) {}
 
-  async execute(userId: string, lessonId: string, privileged = false): Promise<LessonCompleteView> {
+  async execute(
+    userId: string,
+    lessonId: string,
+    privileged = false,
+    accountId?: string,
+  ): Promise<LessonCompleteView> {
     const lesson = await this.courses.findLessonWithContent(lessonId)
     // Aula rascunho não pode ser concluída pelo aluno → 404 (consistente com o GET).
     if (!lesson?.isPublished) throw new LessonNotFoundError()
-    const { course } = await this.checkAccess.requireById(userId, lesson.courseId, privileged)
+    // Acesso pela CONTA (sessão de perfil); progresso/XP pelo userId (o perfil).
+    const { course } = await this.checkAccess.requireById(
+      accountId ?? userId,
+      lesson.courseId,
+      privileged,
+    )
 
     const completedIds = await this.progress.listCompletedLessonIds(userId, course.id)
     if (!completedIds.includes(lessonId)) {
@@ -90,6 +100,7 @@ export class MarkLessonCompleteService {
     // auto-cura o caso "conclusão gravada mas award perdido" (fail-open).
     const gamification = await this.gamification.awardLessonCompletion({
       userId,
+      accountId: accountId ?? userId,
       lessonId,
       moduleId: lesson.moduleId,
       courseId: course.id,

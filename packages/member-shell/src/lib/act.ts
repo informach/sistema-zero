@@ -1,4 +1,4 @@
-import type { ActClaim } from './types'
+import type { ActClaim, ProfileClaim } from './types'
 
 /**
  * Valida a claim `act` (impersonação) vinda do JWT. PURA e testável (a
@@ -21,4 +21,19 @@ export function parseActClaim(value: unknown): ActClaim | undefined {
 /** Nome exibível do ATOR no banner de impersonação (nome → e-mail → genérico). */
 export function actorLabel(act: ActClaim): string {
   return act.name ?? act.email ?? 'um administrador'
+}
+
+/**
+ * Valida a claim `pfl` (sessão de perfil estilo Netflix) do JWT. PURA/testável.
+ * Shape inválido → `undefined` (sessão tratada como da conta — a autorização real
+ * é do gateway/auth; a claim é informativa para a UI/proxy).
+ */
+export function parseProfileClaim(value: unknown): ProfileClaim | undefined {
+  if (typeof value !== 'object' || value === null) return undefined
+  const c = value as Record<string, unknown>
+  const accountId = typeof c.accountId === 'string' && c.accountId.length > 0 ? c.accountId : null
+  if (!accountId) return undefined
+  const pfl: ProfileClaim = { accountId }
+  if (typeof c.name === 'string' && c.name.length > 0) pfl.name = c.name
+  return pfl
 }

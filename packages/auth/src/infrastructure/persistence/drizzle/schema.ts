@@ -12,6 +12,7 @@ export const userStatusEnum = auth.enum('user_status', [
   'blocked',
 ])
 export const otpPurposeEnum = auth.enum('otp_purpose', ['sign_in', 'password_reset'])
+export const profileStatusEnum = auth.enum('profile_status', ['active', 'archived'])
 
 /** Usuários (identidade). A senha é guardada apenas como hash argon2id. */
 export const users = auth.table(
@@ -61,6 +62,11 @@ export const refreshTokens = auth.table(
     // `act` e o TTL curto a partir daqui — sem isso a rotação "esqueceria" a
     // impersonação (re-emite do UserAggregate) e esticaria o TTL de volta.
     impersonatorUserId: uuid('impersonator_user_id'),
+    // Sessão de PERFIL (estilo Netflix): id do perfil de criança ativo. O `userId`
+    // da linha é a CONTA do responsável; `active_profile_id` é a sobreposição que
+    // vira o `sub`/`pfl` do access token. Vive na FAMÍLIA: a rotação re-deriva a
+    // claim `pfl` daqui (perfil arquivado/sumido → cai p/ sessão da conta).
+    activeProfileId: uuid('active_profile_id'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
@@ -148,10 +154,40 @@ export const impersonationTokens = auth.table(
   ],
 )
 
+/**
+ * Perfis (estilo Netflix) de uma CONTA do responsável. Uma conta (`auth.users`) tem
+ * N perfis de crianças; o `id` do perfil vira a identidade EFETIVA (`x-auth-user-id`)
+ * quando a sessão de perfil está ativa — por isso progresso/gamificação/comunidade
+ * ficam atrelados a ele (sem mudar o data model de members/hub). A quantidade é
+ * limitada pelo que a conta comprou (teto resolvido S2S no members, ver
+ * `GetProfileAllowanceService`). NUNCA DELETE físico: arquivar (`status='archived'`)
+ * tira o perfil da grade mas preserva o histórico keyado no `id`.
+ */
+export const profiles = auth.table(
+  'profiles',
+  {
+    id: uuid('id').primaryKey(),
+    /** Responsável dono do perfil (`auth.users.id`). */
+    accountUserId: uuid('account_user_id').notNull(),
+    name: text('name').notNull(),
+    // URL pública da foto (só http(s); upload é do app cliente → R2; fora das claims).
+    avatarUrl: text('avatar_url'),
+    // WhatsApp de contato do perfil (opcional; sem envio automático na v1).
+    whatsapp: text('whatsapp'),
+    status: profileStatusEnum('status').notNull().default('active'),
+    sortOrder: integer('sort_order').notNull().default(0),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  // Lista da grade (perfis ativos da conta, em ordem) + contagem do limite.
+  (t) => [index('profiles_account_idx').on(t.accountUserId, t.sortOrder)],
+)
+
 export const schema = {
   users,
   refreshTokens,
   passwordResetTokens,
   otpCodes,
   impersonationTokens,
+  profiles,
 }

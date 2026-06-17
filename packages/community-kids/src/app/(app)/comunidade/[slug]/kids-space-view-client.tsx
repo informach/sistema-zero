@@ -27,6 +27,9 @@ import type {
 // Emojis da allowlist kids (o hub recusa fora dela).
 const QUICK_EMOJIS = ['👍', '❤️', '😂', '🎉', '⭐']
 
+// Slugs/ids vêm do servidor (slug/UUID), mas codificamos por consistência/segurança.
+const enc = encodeURIComponent
+
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime()
   const m = Math.floor(diff / 60000)
@@ -99,8 +102,8 @@ export function KidsSpaceViewClient({ slug, viewerId }: { slug: string; viewerId
   useEffect(() => {
     let alive = true
     Promise.all([
-      apiGet<HubSpaceView>(`/api/hub/spaces/${slug}`),
-      apiGet<{ items: HubChannelView[] }>(`/api/hub/spaces/${slug}/channels`),
+      apiGet<HubSpaceView>(`/api/hub/spaces/${enc(slug)}`),
+      apiGet<{ items: HubChannelView[] }>(`/api/hub/spaces/${enc(slug)}/channels`),
     ])
       .then(([sp, ch]) => {
         if (!alive) return
@@ -119,14 +122,18 @@ export function KidsSpaceViewClient({ slug, viewerId }: { slug: string; viewerId
 
   const loadThreads = useCallback(async (channelId: string) => {
     try {
-      const page = await apiGet<HubPage<HubThreadView>>(`/api/hub/channels/${channelId}/threads`)
+      const page = await apiGet<HubPage<HubThreadView>>(
+        `/api/hub/channels/${enc(channelId)}/threads`,
+      )
       setThreads(page.items)
       setThreadsCursor(page.nextCursor)
       setThreadsHasMore(page.hasMore)
     } catch (err) {
       toast.error((err as ApiError).message ?? 'Falha ao carregar as conversas.')
     }
-    apiSend(`/api/hub/channels/${channelId}/seen`, 'POST', {}).catch(() => {})
+    // Marca como visto e apaga o ponto de não-lido localmente (sem refetch dos canais).
+    apiSend(`/api/hub/channels/${enc(channelId)}/seen`, 'POST', {}).catch(() => {})
+    setChannels((prev) => prev.map((c) => (c.id === channelId ? { ...c, hasUnread: false } : c)))
   }, [])
 
   async function loadMoreThreads() {
@@ -134,7 +141,7 @@ export function KidsSpaceViewClient({ slug, viewerId }: { slug: string; viewerId
     setLoadingMoreThreads(true)
     try {
       const page = await apiGet<HubPage<HubThreadView>>(
-        `/api/hub/channels/${channel.id}/threads?cursor=${encodeURIComponent(threadsCursor)}`,
+        `/api/hub/channels/${enc(channel.id)}/threads?cursor=${enc(threadsCursor)}`,
       )
       setThreads((prev) => [...prev, ...page.items])
       setThreadsCursor(page.nextCursor)
@@ -155,7 +162,9 @@ export function KidsSpaceViewClient({ slug, viewerId }: { slug: string; viewerId
 
   const loadComments = useCallback(async (threadId: string) => {
     try {
-      const page = await apiGet<HubPage<HubCommentView>>(`/api/hub/threads/${threadId}/comments`)
+      const page = await apiGet<HubPage<HubCommentView>>(
+        `/api/hub/threads/${enc(threadId)}/comments`,
+      )
       setComments(page.items)
       setCommentsCursor(page.nextCursor)
       setCommentsHasMore(page.hasMore)
@@ -177,7 +186,7 @@ export function KidsSpaceViewClient({ slug, viewerId }: { slug: string; viewerId
     setLoadingMoreComments(true)
     try {
       const page = await apiGet<HubPage<HubCommentView>>(
-        `/api/hub/threads/${thread.id}/comments?after=${encodeURIComponent(commentsCursor)}`,
+        `/api/hub/threads/${enc(thread.id)}/comments?after=${enc(commentsCursor)}`,
       )
       setComments((prev) => [...prev, ...page.items])
       setCommentsCursor(page.nextCursor)
@@ -197,7 +206,7 @@ export function KidsSpaceViewClient({ slug, viewerId }: { slug: string; viewerId
     setBusy(true)
     try {
       const created = await apiSend<HubThreadView>(
-        `/api/hub/channels/${channel.id}/threads`,
+        `/api/hub/channels/${enc(channel.id)}/threads`,
         'POST',
         {
           title: newTitle.trim(),
@@ -227,7 +236,7 @@ export function KidsSpaceViewClient({ slug, viewerId }: { slug: string; viewerId
     setBusy(true)
     try {
       const created = await apiSend<HubCommentView>(
-        `/api/hub/threads/${thread.id}/comments`,
+        `/api/hub/threads/${enc(thread.id)}/comments`,
         'POST',
         { body: replyBody.trim(), attachmentIds: replyAttachments.map((a) => a.id) },
       )
@@ -260,9 +269,9 @@ export function KidsSpaceViewClient({ slug, viewerId }: { slug: string; viewerId
     }
     try {
       if (mine) {
-        await apiSend(`/api/hub/${target}/${id}/reactions/${encodeURIComponent(emoji)}`, 'DELETE')
+        await apiSend(`/api/hub/${target}/${enc(id)}/reactions/${enc(emoji)}`, 'DELETE')
       } else {
-        await apiSend(`/api/hub/${target}/${id}/reactions`, 'POST', { emoji })
+        await apiSend(`/api/hub/${target}/${enc(id)}/reactions`, 'POST', { emoji })
       }
     } catch (err) {
       setThread(prevThread)
@@ -285,7 +294,9 @@ export function KidsSpaceViewClient({ slug, viewerId }: { slug: string; viewerId
     }
     setReportBusy(true)
     try {
-      await apiSend(`/api/hub/${reportTarget.target}/${reportTarget.id}/report`, 'POST', { reason })
+      await apiSend(`/api/hub/${reportTarget.target}/${enc(reportTarget.id)}/report`, 'POST', {
+        reason,
+      })
       toast.success('Avisamos um professor. Obrigado! 💙')
       setReportTarget(null)
     } catch (err) {
@@ -637,7 +648,7 @@ function ThreadDetail({
               type="button"
               className="inline-flex items-center gap-1 rounded-2xl bg-primary px-4 py-2 font-bold text-primary-foreground text-sm disabled:opacity-60"
               onClick={onSend}
-              disabled={busy || (!replyBody.trim() && replyAttachments.length === 0)}
+              disabled={busy || !replyBody.trim()}
             >
               <Send className="size-4" /> Responder
             </button>

@@ -50,12 +50,18 @@ export class SubmitQuizAttemptService {
     blockId: string,
     answers: QuizAnswers,
     privileged = false,
+    accountId?: string,
   ): Promise<QuizAttemptResultView> {
     const lesson = await this.courses.findLessonWithContent(lessonId)
     // Aula rascunho é invisível ao aluno → também não aceita tentativas de quiz.
     if (!lesson?.isPublished) throw new LessonNotFoundError()
     // O curso dá a VITRINE do award (gamificação é segregada por audiência).
-    const { course } = await this.checkAccess.requireById(userId, lesson.courseId, privileged)
+    // Acesso pela CONTA (sessão de perfil); tentativa/XP pelo userId (o perfil).
+    const { course } = await this.checkAccess.requireById(
+      accountId ?? userId,
+      lesson.courseId,
+      privileged,
+    )
 
     const block = lesson.blocks.find((b) => b.id === blockId)
     if (block?.content.kind !== 'quiz') throw new QuizBlockNotFoundError()
@@ -102,6 +108,7 @@ export class SubmitQuizAttemptService {
     const gamification = grade.passed
       ? await this.gamification.awardQuizPassed({
           userId,
+          accountId: accountId ?? userId,
           blockId,
           score: grade.score,
           audience: course.audience,

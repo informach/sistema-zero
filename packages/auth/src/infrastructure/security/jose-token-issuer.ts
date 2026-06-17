@@ -1,5 +1,11 @@
 import { type JWTPayload, jwtVerify, SignJWT } from 'jose'
-import type { AccessTokenClaims, ActClaim, TokenIssuer } from '../../domain/ports/token-issuer.port'
+import type {
+  AccessTokenClaims,
+  ActClaim,
+  IssueAccessTokenOptions,
+  ProfileClaim,
+  TokenIssuer,
+} from '../../domain/ports/token-issuer.port'
 import type { UserAggregate } from '../../domain/user/user.aggregate'
 import type { SigningMaterial } from './keys'
 
@@ -19,7 +25,7 @@ export function createJoseTokenIssuer(opts: JoseTokenIssuerOptions): TokenIssuer
   const { signing, issuer, audience, accessTtlSeconds } = opts
 
   return {
-    async issueAccessToken(user: UserAggregate, act?: ActClaim) {
+    async issueAccessToken(user: UserAggregate, opts?: IssueAccessTokenOptions) {
       const nowSeconds = Math.floor(Date.now() / 1000)
       const claims: Record<string, unknown> = {
         email: user.email,
@@ -32,14 +38,22 @@ export function createJoseTokenIssuer(opts: JoseTokenIssuerOptions): TokenIssuer
       if (user.phone) claims.phone = user.phone
       if (user.signupSource) claims.signupSource = user.signupSource
       // Impersonação (RFC 8693): `sub` = alvo; `act.sub` = admin navegando como ele.
-      if (act) claims.act = act
+      if (opts?.act) claims.act = opts.act
+      // Sessão de perfil: `sub` = profileId; `pfl.accountId` = conta (x-auth-account-id).
+      // A identidade/role/status seguem do `user` (a CONTA) — o perfil só herda.
+      if (opts?.profile) {
+        const pfl: ProfileClaim = { accountId: opts.profile.accountId }
+        if (opts.profile.name) pfl.name = opts.profile.name
+        claims.pfl = pfl
+      }
+      const subject = opts?.profile?.profileId ?? user.id
 
       const header: { alg: string; kid?: string } = { alg: signing.alg }
       if (signing.kid) header.kid = signing.kid
 
       const token = await new SignJWT(claims)
         .setProtectedHeader(header)
-        .setSubject(user.id)
+        .setSubject(subject)
         .setIssuer(issuer)
         .setAudience(audience)
         .setIssuedAt(nowSeconds)
@@ -95,6 +109,7 @@ function toClaims(payload: JWTPayload): AccessTokenClaims | null {
     phone: asString(payload.phone),
     signupSource: asString(payload.signupSource),
     act: toActClaim(payload.act),
+    pfl: toProfileClaim(payload.pfl),
   }
 }
 
@@ -104,4 +119,12 @@ function toActClaim(value: unknown): ActClaim | undefined {
   const sub = asString(candidate.sub)
   if (!sub) return undefined
   return { sub, email: asString(candidate.email), name: asString(candidate.name) }
+}
+
+function toProfileClaim(value: unknown): ProfileClaim | undefined {
+  if (typeof value !== 'object' || value === null) return undefined
+  const candidate = value as Record<string, unknown>
+  const accountId = asString(candidate.accountId)
+  if (!accountId) return undefined
+  return { accountId, name: asString(candidate.name) }
 }

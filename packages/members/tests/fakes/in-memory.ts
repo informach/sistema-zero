@@ -854,6 +854,8 @@ interface XpEventRow extends XpEventInput {
 export class InMemoryGamificationRepository implements GamificationRepository {
   readonly events: XpEventRow[] = []
   readonly profiles = new Map<string, GamificationProfileRecord>()
+  /** Mirror da coluna `account_id` por perfil (chave `userId:audience` → conta). */
+  readonly accountIds = new Map<string, string>()
   readonly badges: {
     userId: string
     audience: CourseAudience
@@ -944,6 +946,7 @@ export class InMemoryGamificationRepository implements GamificationRepository {
         streakBest: streak.best,
         lastActivityDate: input.today,
       })
+      this.accountIds.set(key, input.accountId)
       if (input.privileged) this.privilegedUsers.add(input.userId)
       else this.privilegedUsers.delete(input.userId)
       for (const slug of streakBadgeSlugs(streak.current)) badgeCandidates.add(slug)
@@ -983,23 +986,39 @@ export class InMemoryGamificationRepository implements GamificationRepository {
       .map((b) => ({ badgeSlug: b.badgeSlug, unlockedAt: b.unlockedAt }))
   }
 
-  /** Mirror do SQL: coorte = matrícula (qualquer status) em curso da audiência, SEM equipe. */
-  async getRanking(userId: string, audience: CourseAudience): Promise<GamificationRanking | null> {
-    const cohort = new Set<string>()
+  /**
+   * Mirror do SQL (PR3b): coorte = PERFIS (linhas de gamification_profiles,
+   * não-equipe) da audiência cuja CONTA (account_id) tem matrícula na audiência.
+   * `null` se a conta do requester não tem matrícula (sem acesso). Requester sem
+   * perfil (XP 0) ainda é contado.
+   */
+  async getRanking(
+    userId: string,
+    accountId: string,
+    audience: CourseAudience,
+  ): Promise<GamificationRanking | null> {
+    const accountsWithEntitlement = new Set<string>()
     for (const e of this.sources?.entitlements.byId.values() ?? []) {
       const course = this.sources?.courses.courses.find((c) => c.slug === e.courseRef)
-      if (course?.audience === audience && !this.privilegedUsers.has(e.userId)) {
-        cohort.add(e.userId)
-      }
+      if (course?.audience === audience) accountsWithEntitlement.add(e.userId)
     }
-    // Fora da coorte (sem matrícula na audiência, ou equipe) → sem ranking.
-    if (!cohort.has(userId)) return null
+    if (!accountsWithEntitlement.has(accountId)) return null
+
+    const cohortXp: number[] = []
+    let requesterCounted = false
+    for (const [key, rec] of this.profiles) {
+      if (key !== this.profileKey(rec.userId, audience)) continue // só da audiência
+      if (this.privilegedUsers.has(rec.userId)) continue // equipe fora
+      const acc = this.accountIds.get(key)
+      if (!acc || !accountsWithEntitlement.has(acc)) continue
+      cohortXp.push(rec.xp)
+      if (rec.userId === userId) requesterCounted = true
+    }
     const myXp = this.profiles.get(this.profileKey(userId, audience))?.xp ?? 0
-    let ahead = 0
-    for (const uid of cohort) {
-      if ((this.profiles.get(this.profileKey(uid, audience))?.xp ?? 0) > myXp) ahead += 1
-    }
-    return { position: ahead + 1, totalStudents: cohort.size }
+    const ahead = cohortXp.filter((xp) => xp > myXp).length
+    // Requester sem perfil (XP 0) ainda conta como aluno (+1).
+    const totalStudents = cohortXp.length + (requesterCounted ? 0 : 1)
+    return { position: ahead + 1, totalStudents }
   }
 }
 

@@ -25,6 +25,17 @@ export function createClaimsUserResolver(): UserResolver {
       const status = str(claims.status)
       if (!id || !email || !firstName || !lastName || !role || !status) return null
 
+      // Sessão de perfil: `pfl.accountId` = conta do responsável (vira x-auth-account-id).
+      const pfl = claims.pfl
+      const accountId =
+        pfl && typeof pfl === 'object' ? str((pfl as Record<string, unknown>).accountId) : undefined
+
+      // Sessão de impersonação: `act.sub` = admin navegando como o usuário (vira
+      // x-auth-impersonator-id — o upstream preserva o vínculo ao derivar sessões).
+      const act = claims.act
+      const impersonatorId =
+        act && typeof act === 'object' ? str((act as Record<string, unknown>).sub) : undefined
+
       const user: AuthenticatedUser = {
         id,
         email,
@@ -34,6 +45,8 @@ export function createClaimsUserResolver(): UserResolver {
         status,
         ...(str(claims.phone) ? { phone: str(claims.phone) } : {}),
         ...(str(claims.signupSource) ? { signupSource: str(claims.signupSource) } : {}),
+        ...(accountId ? { accountId } : {}),
+        ...(impersonatorId ? { impersonatorId } : {}),
       }
       return user
     },
