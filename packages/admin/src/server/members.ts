@@ -27,22 +27,34 @@ export function listMembers(
   })
 }
 
+interface CourseProgress {
+  courseRef: string
+  title: string | null
+  status: string | null
+  completedLessons: number
+  totalLessons: number
+  percent: number
+}
+
 export interface MemberDetailResponse {
   userId: string
   entitlements: AdminEntitlementView[]
-  progress: {
-    courseRef: string
-    title: string | null
-    status: string | null
-    completedLessons: number
-    totalLessons: number
-    percent: number
-  }[]
+  progress: CourseProgress[]
+  /** Progresso POR PERFIL (estilo Netflix) — presente quando o painel passa `profileIds`. */
+  profilesProgress?: { userId: string; progress: CourseProgress[] }[]
 }
 
-/** Detalhe de um membro: `GET /members/admin/members/:userId`. */
-export function getMember(userId: string): Promise<GatewayResponse<MemberDetailResponse>> {
-  return gatewayFetch(`/members/admin/members/${encodeURIComponent(userId)}`)
+/**
+ * Detalhe de um membro: `GET /members/admin/members/:userId`. Com `profileIds` (os
+ * perfis da conta, do auth), o members devolve TAMBÉM o progresso de cada perfil.
+ */
+export function getMember(
+  userId: string,
+  profileIds: string[] = [],
+): Promise<GatewayResponse<MemberDetailResponse>> {
+  return gatewayFetch(`/members/admin/members/${encodeURIComponent(userId)}`, {
+    query: { profileIds: profileIds.length > 0 ? profileIds.join(',') : undefined },
+  })
 }
 
 /** Concessão manual de acesso: `POST /members/admin/entitlements` (oferta ou curso). */

@@ -81,4 +81,25 @@ describe('Sessão de perfil — acesso pela CONTA, dados pelo PERFIL', () => {
     }
     expect((await rank(other)).ranking).toBeUndefined()
   })
+
+  test('admin member-detail: progresso POR PERFIL (A concluiu 1, B zerado)', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const { slug, lessonIds } = seedSampleCourse(courses, 'kids-curso', 'published', 'kids')
+    grantLifetime(entitlements, { userId: ACCOUNT, courseRef: slug })
+    await post(app, `/members/lessons/${lessonIds[0]}/complete`, prof(PROFILE_A))
+
+    const detail = await readJson(
+      await get(app, `/members/admin/members/${ACCOUNT}?profileIds=${PROFILE_A},${PROFILE_B}`, {}),
+    )
+    const byId = new Map(
+      (
+        detail.profilesProgress as { userId: string; progress: { completedLessons: number }[] }[]
+      ).map((p) => [p.userId, p.progress]),
+    )
+    expect(byId.get(PROFILE_A)?.[0]?.completedLessons).toBe(1)
+    expect(byId.get(PROFILE_B)?.[0]?.completedLessons).toBe(0)
+    // Sem profileIds → comportamento de sempre (só progresso da conta, sem profilesProgress).
+    const plain = await readJson(await get(app, `/members/admin/members/${ACCOUNT}`, {}))
+    expect(plain.profilesProgress).toBeUndefined()
+  })
 })

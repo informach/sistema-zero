@@ -23,7 +23,7 @@ import { GrantAccessDialog } from '@/components/admin/grant-access-dialog'
 import { StatusBadge } from '@/components/admin/status-badge'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { formatDate } from '@/lib/format'
-import type { AdminEntitlementView, MemberDetail } from '@/lib/types'
+import type { AdminEntitlementView, MemberCourseProgressView, MemberDetail } from '@/lib/types'
 
 const SOURCE_LABELS: Record<string, string> = {
   payment: 'Pagamento',
@@ -161,24 +161,27 @@ export function MemberDetailClient({
         <Card className="py-10 text-center text-muted-foreground">Membro não encontrado.</Card>
       ) : (
         <>
-          {detail.progress.length > 0 ? (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {detail.progress.map((p) => (
-                <Card key={p.courseRef} className="space-y-2 p-4">
-                  <div className="font-medium">{p.title ?? p.courseRef}</div>
-                  <div className="text-xs text-muted-foreground">{p.courseRef}</div>
-                  <div className="h-2 overflow-hidden rounded-full bg-muted">
-                    <div
-                      className="h-2 rounded-full bg-[color:var(--primary)]"
-                      style={{ width: `${p.percent}%` }}
-                    />
+          {detail.profiles && detail.profiles.length > 0 ? (
+            // Conta com perfis (estilo Netflix): progresso POR PERFIL da criança.
+            <section className="space-y-5">
+              <h2 className="font-semibold text-muted-foreground text-sm">Perfis e progresso</h2>
+              {detail.profiles.map((profile) => (
+                <div key={profile.id} className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <ProfileAvatar name={profile.name} avatarUrl={profile.avatarUrl} />
+                    <span className="font-medium">{profile.name}</span>
                   </div>
-                  <div className="text-xs text-muted-foreground">
-                    {p.completedLessons}/{p.totalLessons} aulas · {p.percent}%
-                  </div>
-                </Card>
+                  {profile.progress.length > 0 ? (
+                    <ProgressGrid progress={profile.progress} />
+                  ) : (
+                    <p className="pl-9 text-muted-foreground text-xs">Sem progresso ainda.</p>
+                  )}
+                </div>
               ))}
-            </div>
+            </section>
+          ) : detail.progress.length > 0 ? (
+            // Conta sem perfis (legado/pré-migração): progresso da conta.
+            <ProgressGrid progress={detail.progress} />
           ) : null}
 
           <Card>
@@ -291,5 +294,48 @@ export function MemberDetailClient({
         </Field>
       </Dialog>
     </div>
+  )
+}
+
+/** Grade de cartões de progresso por curso (reusada pela conta e por cada perfil). */
+function ProgressGrid({ progress }: { progress: MemberCourseProgressView[] }) {
+  return (
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {progress.map((p) => (
+        <Card key={p.courseRef} className="space-y-2 p-4">
+          <div className="font-medium">{p.title ?? p.courseRef}</div>
+          <div className="text-muted-foreground text-xs">{p.courseRef}</div>
+          <div className="h-2 overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-2 rounded-full bg-[color:var(--primary)]"
+              style={{ width: `${p.percent}%` }}
+            />
+          </div>
+          <div className="text-muted-foreground text-xs">
+            {p.completedLessons}/{p.totalLessons} aulas · {p.percent}%
+          </div>
+        </Card>
+      ))}
+    </div>
+  )
+}
+
+/** Foto do perfil (estilo Netflix) ou a inicial do nome num círculo. */
+function ProfileAvatar({ name, avatarUrl }: { name: string; avatarUrl: string | null }) {
+  if (avatarUrl) {
+    // URL arbitrária do R2 → <img> simples (sem next/image; mesma decisão do member-shell).
+    return (
+      // biome-ignore lint/performance/noImgElement: avatar de R2 (URL externa arbitrária)
+      <img
+        src={avatarUrl}
+        alt={name}
+        className="size-7 rounded-full border border-border object-cover"
+      />
+    )
+  }
+  return (
+    <span className="flex size-7 items-center justify-center rounded-full bg-[color:var(--primary)]/15 font-semibold text-xs">
+      {name.trim().charAt(0).toUpperCase() || '?'}
+    </span>
   )
 }

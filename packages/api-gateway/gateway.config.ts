@@ -667,6 +667,18 @@ const config: GatewayConfigInput = {
       transforms: authInternalTransforms,
       rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
     },
+    // Perfis (estilo Netflix) de uma conta — o painel de membros hidrata o progresso
+    // por perfil. LEITURA staff+. 4 segmentos, literal `profiles` ≠ `impersonate`.
+    {
+      id: 'auth-admin-user-profiles',
+      methods: ['GET'],
+      pathPattern: '/auth/admin/users/:id/profiles',
+      service: 'auth',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: authInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
     // Exchange do handoff de impersonação (chamado pelo SERVIDOR da community, sem
     // Bearer — como o /login). A segurança é do próprio token (single-use, TTL 60s,
     // consumo atômico no auth); aqui só rate limit por IP contra brute-force.

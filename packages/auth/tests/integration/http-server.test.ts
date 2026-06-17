@@ -1656,4 +1656,20 @@ describe('Auth — sessão de perfil (PR2)', () => {
         .status,
     ).toBe(404)
   })
+
+  test('admin lista os perfis de uma conta (GET /auth/admin/users/:id/profiles)', async () => {
+    const { app, accountId } = await setup() // seeds PROFILE_ID na conta
+    const adminHeaders = {
+      'x-internal-token': INTERNAL_TOKEN,
+      'x-auth-user-id': '99999999-9999-4999-8999-999999999999',
+      'x-auth-user-role': 'admin',
+      'x-auth-user-status': 'active',
+    }
+    const res = await app.handle(
+      req('GET', `/auth/admin/users/${accountId}/profiles`, adminHeaders),
+    )
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as { profiles: { id: string; name: string }[] }
+    expect(body.profiles.map((p) => p.id)).toContain(PROFILE_ID)
+  })
 })

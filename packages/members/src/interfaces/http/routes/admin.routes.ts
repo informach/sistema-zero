@@ -13,6 +13,8 @@ import {
   IdParams,
   ListMembersQuery,
   ManageEntitlementBody,
+  MemberDetailQuery,
+  parseProfileIds,
   UserIdParams,
 } from '../dtos'
 
@@ -58,11 +60,12 @@ export function adminRoutes(deps: AdminRoutesDeps) {
     )
     .get(
       '/members/:userId',
-      async ({ params, headers }) => {
+      async ({ params, query, headers }) => {
         requireAdmin(headers, deps.requireAdminEnabled)
-        return deps.getMemberDetail.execute(params.userId)
+        // `?profileIds=<csv>` → progresso POR PERFIL (estilo Netflix); ausente → só a conta.
+        return deps.getMemberDetail.execute(params.userId, parseProfileIds(query.profileIds))
       },
-      { params: UserIdParams },
+      { params: UserIdParams, query: MemberDetailQuery },
     )
     .post(
       '/entitlements',

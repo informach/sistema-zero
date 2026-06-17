@@ -7,6 +7,7 @@ import type { ListUsersService } from '../../../application/admin/list-users/lis
 import type { UpdateUserService } from '../../../application/admin/update-user/update-user.service'
 import type { CreateImpersonationTokenService } from '../../../application/impersonation/create-impersonation-token.service'
 import { type PlatformUrls, resolvePlatformUrl } from '../../../application/platform'
+import type { ListProfilesService } from '../../../application/profiles/list-profiles.service'
 import { UserNotFoundError } from '../../../domain/user/user.errors'
 import type { UserRole } from '../../../domain/user/user.role'
 import { type GatewayActor, resolveGatewayActor } from '../auth'
@@ -29,6 +30,8 @@ export interface AdminRoutesDeps {
   updateUser: UpdateUserService
   batchGetUsers: BatchGetUsersService
   createImpersonationToken: CreateImpersonationTokenService
+  /** Lista os perfis (estilo Netflix) de uma conta — suporte vê o progresso por perfil. */
+  listProfiles: ListProfilesService
   /**
    * Bases públicas das plataformas (`COMMUNITY_URL`/`KIDS_COMMUNITY_URL`): o painel
    * admin (outra origem) recebe a URL pronta de `/impersonar` — não precisa
@@ -170,6 +173,16 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           }
         },
         { params: UserIdParams, query: PlatformQuery },
+      )
+      // Perfis (estilo Netflix) de uma conta — o painel hidrata o progresso por perfil
+      // do members. LEITURA (staff+). 4 segmentos, literal `profiles` ≠ `impersonate`.
+      .get(
+        '/users/:id/profiles',
+        async ({ headers, params }) => {
+          requireActor(headers, READ_ROLES)
+          return deps.listProfiles.execute(params.id)
+        },
+        { params: UserIdParams },
       )
   )
 }

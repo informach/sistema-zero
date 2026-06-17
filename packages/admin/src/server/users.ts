@@ -41,6 +41,22 @@ export function getUser(id: string): Promise<GatewayResponse<{ user: UserView }>
   return gatewayFetch(`/auth/admin/users/${encodeURIComponent(id)}`)
 }
 
+/** Perfil (estilo Netflix) de uma conta — só o que o painel exibe. */
+export interface AdminProfile {
+  id: string
+  name: string
+  avatarUrl: string | null
+  whatsapp: string | null
+  sortOrder: number
+}
+
+/** Perfis (estilo Netflix) de uma conta (admin): `GET /auth/admin/users/:id/profiles`. */
+export function getUserProfiles(
+  id: string,
+): Promise<GatewayResponse<{ profiles: AdminProfile[] }>> {
+  return gatewayFetch(`/auth/admin/users/${encodeURIComponent(id)}/profiles`)
+}
+
 /**
  * Hidratação de identidade em LOTE: `POST /auth/admin/users/batch` (≤100 ids).
  * Usada pela área de membros (lista userIds, precisa de nome/email) — evita N+1.

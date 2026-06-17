@@ -430,8 +430,12 @@ que não passou pela borda → 403). Rotas em `interfaces/http/routes/admin.rout
   último grant). Identidade (nome/email) **não** vive aqui — o BFF hidrata do auth
   (`POST /auth/admin/users/batch`). `total` = nº de GRUPOS (subquery sobre o `GROUP BY`,
   nunca contar linhas); ordenação `max(granted_at) desc, user_id` (paginação estável).
-- `GET /members/admin/members/:userId` → todas as matrículas (qualquer status) + progresso
-  por curso. Usa `findCoursesBySlugs` (SEM filtro de status → admin vê draft/archived).
+- `GET /members/admin/members/:userId[?profileIds=<csv>]` → todas as matrículas (qualquer
+  status) + progresso por curso. Usa `findCoursesBySlugs` (SEM filtro de status → admin vê
+  draft/archived). **Perfis (estilo Netflix):** com `?profileIds=` (os perfis da conta, que o
+  painel busca no auth) devolve TAMBÉM `profilesProgress` = progresso de CADA perfil sobre os
+  MESMOS cursos da família (o nome do perfil é hidratado pelo painel). Ausente → só o progresso
+  da conta (compat). `parseProfileIds` valida uuid + capa em 50 na borda.
 - `POST /members/admin/entitlements` (body `{mode:'offer',offerRef}` | `{mode:'course',courseRef}`
   | `{mode:'all_courses'}`, + `userId`, `expiresAt?`) → concessão MANUAL. Reusa o agregado
   (`sourceKind:'manual'`, `sourceId:'manual'`, key `manual:${userId}:${productId}`; curso usa
