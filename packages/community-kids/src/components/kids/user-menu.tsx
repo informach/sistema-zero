@@ -1,7 +1,7 @@
 'use client'
 
 import { UserAvatar } from '@sistemazero/member-shell/components/user-avatar'
-import { LogOut, Moon, Sun, User } from 'lucide-react'
+import { LogOut, Moon, Sun, User, Users } from 'lucide-react'
 import Link from 'next/link'
 import { useTheme } from 'next-themes'
 import { useEffect, useRef, useState } from 'react'
@@ -53,6 +53,10 @@ export function UserMenu({
   const itemClass =
     'flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm transition-colors hover:bg-muted'
 
+  // Em sessão de PERFIL o `user` já chega com a identidade da CRIANÇA (o layout
+  // troca nome/foto pelo perfil ativo). Aqui só rotulamos o subtítulo do cabeçalho.
+  const isProfile = Boolean(user.activeProfile)
+
   return (
     <div className="relative" ref={ref}>
       <button
@@ -75,7 +79,7 @@ export function UserMenu({
             direction === 'up' ? 'bottom-full left-0 mb-2' : 'right-0 mt-2'
           }`}
         >
-          {/* Cabeçalho: avatar à esquerda + nome/e-mail */}
+          {/* Cabeçalho: avatar à esquerda + nome (do perfil ativo, se houver) */}
           <div className="flex items-center gap-3 border-b border-border px-3 py-3">
             <UserAvatar
               avatarUrl={user.avatarUrl}
@@ -85,12 +89,19 @@ export function UserMenu({
               size="lg"
             />
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold">
+              <p className="truncate font-semibold text-sm">
                 {getUserDisplayName(user.firstName, user.lastName, user.email)}
               </p>
-              <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+              <p className="truncate text-muted-foreground text-xs">
+                {isProfile ? 'Perfil de criança' : user.email}
+              </p>
             </div>
           </div>
+          {/* Voltar à grade de perfis (trocar de criança / abrir a área dos pais). */}
+          <Link href="/perfis" onClick={() => setOpen(false)} className={itemClass}>
+            <Users className="size-4" />
+            Trocar de perfil
+          </Link>
           <Link href="/perfil" onClick={() => setOpen(false)} className={itemClass}>
             <User className="size-4" />
             Meu perfil
