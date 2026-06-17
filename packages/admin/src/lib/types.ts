@@ -334,6 +334,8 @@ export interface FulfillmentSpec {
   /** SLUG do curso na área de membros (obrigatório quando `accessType = course`). */
   courseRef?: string
   release?: ReleaseRule
+  /** Teto de PERFIS (estilo Netflix) liberado — plataforma Kids. Inteiro ≥ 1. */
+  maxProfiles?: number
 }
 
 /** Componente de um combo (produto `kind=bundle`). */

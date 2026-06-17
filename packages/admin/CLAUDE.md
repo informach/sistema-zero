@@ -270,7 +270,9 @@ src/
             slug.ts (slugify/skuify/offerSlugSuggestion/offerCodeSuggestion — kebab MINÚSCULO,
             espelha os VOs do catalog: Sku lowercase!; autogeração usa dirty-flag por campo)
   components/ catalog/* (offers-multi-select · components-editor · offer-items-editor ·
-            fulfillment-editor — courseRef = SLUG do curso do members) · admin/* (topbar/header/tabs/…)
+            fulfillment-editor — courseRef = SLUG do curso do members; **campo "Quantidade de perfis
+            (plataforma Kids)" → `fulfillment.maxProfiles`** (PR4, perfis estilo Netflix; vazio = sem
+            limite; `sanitizeFulfillment` preserva o campo)) · admin/* (topbar/header/tabs/…)
             ⚠️ Primitivos de UI (button/card/input/table/dialog/badge/select/info-tooltip/…) vivem
             no **`@sistemazero/ui`** (packages/ui, compartilhado com o community) — importe
             `@sistemazero/ui/<componente>`; NÃO recrie cópias locais. O Button espelha as classes

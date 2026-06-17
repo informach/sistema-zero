@@ -113,6 +113,23 @@ export function FulfillmentEditor({
         </p>
       )}
 
+      <Field
+        label="Quantidade de perfis (plataforma Kids)"
+        htmlFor="maxProfiles"
+        tooltip="Quantos perfis de criança (estilo Netflix) esta compra libera. O responsável cria até esse número de perfis. Deixe VAZIO fora da plataforma Kids. Inteiro ≥ 1."
+      >
+        <Input
+          id="maxProfiles"
+          inputMode="numeric"
+          placeholder="Ex.: 2 (vazio = sem limite de perfis)"
+          value={spec.maxProfiles != null ? String(spec.maxProfiles) : ''}
+          onChange={(e) => {
+            const n = Number.parseInt(e.target.value, 10)
+            update({ maxProfiles: Number.isFinite(n) && n >= 1 ? n : undefined })
+          }}
+        />
+      </Field>
+
       <div className="grid gap-4 sm:grid-cols-2">
         <Field
           label="Liberação"
