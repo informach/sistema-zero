@@ -165,3 +165,31 @@ export const UpdateUserBody = t.Object({
   // Concorrência otimista: a `version` que o cliente leu (rejeita edição defasada).
   version: t.Optional(t.Integer({ minimum: 0 })),
 })
+
+// ── Perfis (estilo Netflix) — gerenciados pelo responsável ──────────────────
+const PROFILE_NAME = t.String({ minLength: 1, maxLength: 60 })
+// URL da foto (validação de protocolo http(s) é do agregado) e WhatsApp opcional.
+const PROFILE_AVATAR = t.Union([t.String({ maxLength: 2048 }), t.Null()])
+const PROFILE_WHATSAPP = t.Union([t.String({ maxLength: 20 }), t.Null()])
+
+/** Params de `/auth/profiles/:id` (uuid — 400 na borda, não 500 no banco). */
+export const ProfileIdParams = t.Object({ id: t.String({ pattern: UUID_PATTERN }) })
+
+/** Corpo de `POST /auth/profiles` (criar perfil de criança). */
+export const CreateProfileBody = t.Object({
+  name: PROFILE_NAME,
+  avatarUrl: t.Optional(PROFILE_AVATAR),
+  whatsapp: t.Optional(PROFILE_WHATSAPP),
+})
+
+/** Corpo de `PATCH /auth/profiles/:id` (edição parcial). */
+export const UpdateProfileBody = t.Object({
+  name: t.Optional(PROFILE_NAME),
+  avatarUrl: t.Optional(PROFILE_AVATAR),
+  whatsapp: t.Optional(PROFILE_WHATSAPP),
+})
+
+/** Corpo de `POST /auth/profile-session/exit` — senha do responsável (gate da área dos pais). */
+export const ExitProfileSessionBody = t.Object({
+  password: t.String({ minLength: 1, maxLength: 200 }),
+})

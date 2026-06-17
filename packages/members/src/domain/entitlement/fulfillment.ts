@@ -43,4 +43,11 @@ export interface FulfillmentSpec {
   assets?: FulfillmentAsset[]
   courseRef?: string
   release?: ReleaseRule
+  /**
+   * Teto de PERFIS (estilo Netflix) liberado por esta compra — plataforma KIDS. O
+   * teto efetivo da conta é o MÁXIMO entre as matrículas kids ativas (ver
+   * GetProfileAllowanceService). Ausente = sem teto por esta entrega (aplica-se o
+   * default). Inteiro ≥ 1. Congelado no snapshot da matrícula no grant.
+   */
+  maxProfiles?: number
 }

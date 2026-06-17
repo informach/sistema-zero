@@ -681,6 +681,79 @@ const config: GatewayConfigInput = {
       rateLimit: { max: 20, windowMs: 60_000, by: 'ip' },
     },
 
+    // Perfis (estilo Netflix) gerenciados pelo RESPONSÁVEL — QUALQUER conta ATIVA
+    // (sem roles, igual ao `/payments/my`). O gateway injeta X-Auth-User-* +
+    // `x-internal-token` (`authInternalTransforms`); o auth lê o `accountUserId` daí
+    // e aplica o ownership. Path literal `/auth/profiles` (2 segmentos) não colide
+    // com `/auth/admin/*`. PR2 fará o auth recusar a gestão em sessão DE PERFIL.
+    {
+      id: 'auth-profiles-list',
+      methods: ['GET'],
+      pathPattern: '/auth/profiles',
+      service: 'auth',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: authInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'auth-profile-create',
+      methods: ['POST'],
+      pathPattern: '/auth/profiles',
+      service: 'auth',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: authInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'auth-profile-update',
+      methods: ['PATCH'],
+      pathPattern: '/auth/profiles/:id',
+      service: 'auth',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: authInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'auth-profile-archive',
+      methods: ['DELETE'],
+      pathPattern: '/auth/profiles/:id',
+      service: 'auth',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: authInternalTransforms,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+    },
+    // Entrar/trocar de perfil (a "troca de um clique"): emite a sessão de perfil.
+    // Aceita conta OU outra sessão de perfil (o auth resolve o accountUserId do
+    // x-auth-account-id/x-auth-user-id). 4 segmentos — não colide com `/auth/profiles/:id`.
+    {
+      id: 'auth-profile-select',
+      methods: ['POST'],
+      pathPattern: '/auth/profiles/:id/select',
+      service: 'auth',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: authInternalTransforms,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+    },
+    // Sair do perfil para a área dos pais (gateado pela senha do responsável no auth).
+    {
+      id: 'auth-profile-session-exit',
+      methods: ['POST'],
+      pathPattern: '/auth/profile-session/exit',
+      service: 'auth',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: authInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+    },
+
     // ── Catálogo (@sistemazero/catalog) ──────────────────────────────────────
     // LEITURA pública (dados de marketing, não sensíveis) — o funil consome via
     // gateway. ESCRITA exige JWT do auth + RBAC (admin/staff): o gateway verifica

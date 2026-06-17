@@ -31,6 +31,7 @@ import { authRoutes } from './routes/auth.routes'
 import { healthRoutes, type ReadinessProbe } from './routes/health.routes'
 import { impersonationRoutes } from './routes/impersonation.routes'
 import { internalRoutes } from './routes/internal.routes'
+import { type ProfilesRoutesDeps, profilesRoutes } from './routes/profiles.routes'
 
 export interface HttpDeps {
   env: Env
@@ -59,6 +60,8 @@ export interface HttpDeps {
   batchGetUsers: BatchGetUsersService
   createImpersonationToken: CreateImpersonationTokenService
   exchangeImpersonationToken: ExchangeImpersonationTokenService
+  /** Gerenciamento de perfis (estilo Netflix) pelo responsável. */
+  profiles: ProfilesRoutesDeps
 }
 
 /**
@@ -145,6 +148,7 @@ export function createServer(deps: HttpDeps) {
         exchange: deps.exchangeImpersonationToken,
       }),
     )
+    .use(profilesRoutes(deps.profiles))
     .use(
       adminRoutes({
         listUsers: deps.listUsers,

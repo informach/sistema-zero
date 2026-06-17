@@ -17,12 +17,18 @@ import type {
   PasswordResetTokenRecord,
   PasswordResetTokenRepository,
 } from '../../src/domain/ports/password-reset-token-repository.port'
+import type { ProfileAllowanceGateway } from '../../src/domain/ports/profile-allowance-gateway.port'
+import type {
+  CreateProfileOutcome,
+  ProfileRepository,
+} from '../../src/domain/ports/profile-repository.port'
 import type {
   CreateRefreshTokenInput,
   RefreshTokenRecord,
   RefreshTokenRepository,
 } from '../../src/domain/ports/refresh-token-repository.port'
 import type { ListUsersFilter, UserRepository } from '../../src/domain/ports/user-repository.port'
+import { ProfileAggregate, type ProfileSnapshot } from '../../src/domain/profile/profile.aggregate'
 import { UserAggregate } from '../../src/domain/user/user.aggregate'
 import { EmailAlreadyInUseError } from '../../src/domain/user/user.errors'
 
@@ -123,6 +129,7 @@ export class InMemoryRefreshTokenRepository implements RefreshTokenRepository {
       rotatedAt: null,
       revokedAt: null,
       impersonatorUserId: input.impersonatorUserId ?? null,
+      activeProfileId: input.activeProfileId ?? null,
     })
   }
 
@@ -342,6 +349,60 @@ export class InMemoryOtpCodeRepository implements OtpCodeRepository {
       }
     }
     return deleted
+  }
+}
+
+/** Repositório de perfis em memória (espelha o create atômico sob teto). */
+export class InMemoryProfileRepository implements ProfileRepository {
+  readonly byId = new Map<string, ProfileSnapshot>()
+
+  async listActiveByAccount(accountUserId: string): Promise<ProfileAggregate[]> {
+    return [...this.byId.values()]
+      .filter((p) => p.accountUserId === accountUserId && p.status === 'active')
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map((p) => ProfileAggregate.restore({ ...p }))
+  }
+
+  async findById(id: string): Promise<ProfileAggregate | null> {
+    const p = this.byId.get(id)
+    return p ? ProfileAggregate.restore({ ...p }) : null
+  }
+
+  async createWithinLimit(
+    profile: ProfileAggregate,
+    maxProfiles: number,
+  ): Promise<CreateProfileOutcome> {
+    const s = profile.toSnapshot()
+    // Single-thread no JS → a contagem + insert já são atômicas (espelha o lock).
+    const active = [...this.byId.values()].filter(
+      (p) => p.accountUserId === s.accountUserId && p.status === 'active',
+    )
+    if (active.length >= maxProfiles) return { outcome: 'limit_reached' }
+    const maxOrder = active.reduce((mx, p) => Math.max(mx, p.sortOrder), -1)
+    const stored: ProfileSnapshot = { ...s, sortOrder: maxOrder + 1 }
+    this.byId.set(stored.id, stored)
+    return { outcome: 'created', profile: ProfileAggregate.restore({ ...stored }) }
+  }
+
+  async update(profile: ProfileAggregate): Promise<boolean> {
+    const s = profile.toSnapshot()
+    if (!this.byId.has(s.id)) return false
+    this.byId.set(s.id, { ...s })
+    return true
+  }
+
+  /** Helper de teste: insere um agregado diretamente. */
+  seed(profile: ProfileAggregate): void {
+    const s = profile.toSnapshot()
+    this.byId.set(s.id, { ...s })
+  }
+}
+
+/** Gateway de allowance fake: o teste seta `maxProfiles` (teto vindo do members). */
+export class FakeProfileAllowanceGateway implements ProfileAllowanceGateway {
+  maxProfiles = 0
+  async getAllowance(): Promise<{ maxProfiles: number }> {
+    return { maxProfiles: this.maxProfiles }
   }
 }
 

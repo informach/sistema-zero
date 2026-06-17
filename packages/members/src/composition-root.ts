@@ -25,6 +25,7 @@ import { ListMembersService } from './application/list-members/list-members.serv
 import { ListMyCoursesService } from './application/list-my-courses/list-my-courses.service'
 import { ManageEntitlementService } from './application/manage-entitlement/manage-entitlement.service'
 import { MarkLessonCompleteService } from './application/mark-lesson-complete/mark-lesson-complete.service'
+import { GetProfileAllowanceService } from './application/profile-allowance/get-profile-allowance.service'
 import { RevokeEntitlementService } from './application/revoke-entitlement/revoke-entitlement.service'
 import { SaveCourseRatingService } from './application/save-course-rating/save-course-rating.service'
 import { SaveVideoPositionService } from './application/save-video-position/save-video-position.service'
@@ -104,6 +105,10 @@ export async function createApplication(env: Env): Promise<Application> {
   const checkAccess = new CheckAccessService(courses, entitlements, clock)
   // S2S: resolução de acesso em lote (consumido pela comunidade @sistemazero/hub).
   const accessCheck = new AccessCheckService(entitlements, clock)
+  // S2S: teto de perfis kids da conta (consumido pelo `auth` ao criar perfil).
+  const profileAllowance = new GetProfileAllowanceService(entitlements, clock, {
+    defaultMaxProfiles: env.DEFAULT_KIDS_MAX_PROFILES,
+  })
   const listMyCourses = new ListMyCoursesService(entitlements, courses, progress, positions, clock)
   const listCatalog = new ListCatalogService(courses, entitlements, clock)
   const getMyCourse = new GetMyCourseService(checkAccess, courses, progress, positions, ratings)
@@ -243,6 +248,7 @@ export async function createApplication(env: Env): Promise<Application> {
     },
     internal: {
       accessCheck,
+      profileAllowance,
       internalToken: env.INTERNAL_API_TOKEN,
     },
   })

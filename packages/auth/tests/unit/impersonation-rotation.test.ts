@@ -7,6 +7,7 @@ import { UserAggregate } from '../../src/domain/user/user.aggregate'
 import { InvalidRefreshTokenError } from '../../src/domain/user/user.errors'
 import { Email } from '../../src/domain/value-objects/email'
 import {
+  InMemoryProfileRepository,
   InMemoryRefreshTokenRepository,
   InMemoryUserRepository,
   silentLogger,
@@ -30,7 +31,13 @@ describe('Impersonação — emissão e rotação', () => {
       refreshTtlDays: 30,
       impersonationRefreshTtlSeconds: IMPERSONATION_TTL,
     })
-    const refresh = new RefreshService(users, refreshTokens, tokens, silentLogger)
+    const refresh = new RefreshService(
+      users,
+      refreshTokens,
+      tokens,
+      new InMemoryProfileRepository(),
+      silentLogger,
+    )
 
     const target = UserAggregate.register({
       id: randomUUID(),

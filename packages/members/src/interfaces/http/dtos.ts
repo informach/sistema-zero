@@ -68,6 +68,12 @@ export const AccessCheckBody = t.Object({
   courseRefs: t.Array(t.String({ minLength: 1, maxLength: 200 }), { maxItems: 200 }),
 })
 
+/**
+ * Query de `GET /members/internal/profile-allowance` (S2S — consumido pelo `auth`
+ * ao criar um perfil): quantos perfis de criança a CONTA (`accountId`) pode criar.
+ */
+export const ProfileAllowanceQuery = t.Object({ accountId: UUID })
+
 /** Corpo de `POST /members/webhooks/subscription` — ciclo de vida da assinatura. */
 export const SubscriptionWebhookBody = t.Object({
   event: t.Union([t.Literal('canceled'), t.Literal('expired')]),

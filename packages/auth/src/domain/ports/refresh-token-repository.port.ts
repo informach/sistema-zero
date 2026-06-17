@@ -10,6 +10,8 @@ export interface RefreshTokenRecord {
   revokedAt: Date | null
   /** Sessão de impersonação: admin navegando como `userId` (`null` = sessão normal). */
   impersonatorUserId: string | null
+  /** Sessão de perfil: perfil de criança ativo (`userId` = conta; `null` = sessão da conta). */
+  activeProfileId: string | null
 }
 
 export interface CreateRefreshTokenInput {
@@ -21,6 +23,7 @@ export interface CreateRefreshTokenInput {
   userAgent?: string | null
   ip?: string | null
   impersonatorUserId?: string | null
+  activeProfileId?: string | null
 }
 
 /**

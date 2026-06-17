@@ -380,6 +380,20 @@ estender o streak). Atividade ANTERIOR às migrations não tem marco retroativo
   dia for pedido). Aluno com tudo 100% não tem fonte de XP p/ estender streak ("revisão
   conta?" = decisão futura, fora da v1).
 
+## Perfis kids (allowance — fatia 06/2026, PR1)
+
+Os perfis "estilo Netflix" vivem no **auth** (`auth.profiles`); o members é só a
+**fonte da verdade do TETO**: `GET /members/internal/profile-allowance?accountId=`
+(rota S2S interna, exige `x-internal-token`; consumida pelo `auth` ao criar perfil)
+devolve `{ maxProfiles }` = MÁXIMO de `snapshot.fulfillment.maxProfiles` entre as
+matrículas ATIVAS da conta (`GetProfileAllowanceService` sobre `listActiveByUser`).
+O campo `maxProfiles` (kids) entra no `FulfillmentSpec` do catálogo e **congela no
+snapshot** no grant — para isso o `parseFulfillment` do `catalog-http.gateway` passou
+a preservá-lo (antes descartava campos desconhecidos). Conta sem matrícula ativa → 0;
+matrícula ativa SEM o campo (legado) → `DEFAULT_KIDS_MAX_PROFILES` (env, default 1).
+Produtos adultos (sem o campo) contribuem 0 → o teto é naturalmente "kids-only" sem
+join de audiência.
+
 ## Admin (painel `@sistemazero/admin`)
 
 Gestão de acesso pelo operador. Caminho `/members/admin/*` (distinto da API do aluno).

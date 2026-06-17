@@ -117,5 +117,10 @@ function parseFulfillment(value: unknown): FulfillmentSpec | null {
   if (Array.isArray(f.assets)) spec.assets = f.assets as FulfillmentSpec['assets']
   if (f.release && typeof f.release === 'object')
     spec.release = f.release as FulfillmentSpec['release']
+  // Teto de perfis (kids) — sem isto o campo seria DESCARTADO no parse e a conta
+  // resolveria 0 perfis. Só inteiro positivo (lixo é ignorado, vira sem-teto).
+  if (typeof f.maxProfiles === 'number' && Number.isInteger(f.maxProfiles) && f.maxProfiles > 0) {
+    spec.maxProfiles = f.maxProfiles
+  }
   return spec
 }

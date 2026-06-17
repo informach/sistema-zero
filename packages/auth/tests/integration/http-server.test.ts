@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { decodeJwt } from 'jose'
 import { BatchGetUsersService } from '../../src/application/admin/batch-get-users/batch-get-users.service'
 import { CreateUserService } from '../../src/application/admin/create-user/create-user.service'
 import { GetUserService } from '../../src/application/admin/get-user/get-user.service'
@@ -18,9 +19,16 @@ import { VerifyOtpService } from '../../src/application/otp/verify-otp.service'
 import { CreatePasswordTokenService } from '../../src/application/password-reset/create-password-token.service'
 import { ForgotPasswordService } from '../../src/application/password-reset/forgot-password.service'
 import { ResetPasswordService } from '../../src/application/password-reset/reset-password.service'
+import { ArchiveProfileService } from '../../src/application/profiles/archive-profile.service'
+import { CreateProfileService } from '../../src/application/profiles/create-profile.service'
+import { ExitProfileSessionService } from '../../src/application/profiles/exit-profile-session.service'
+import { ListProfilesService } from '../../src/application/profiles/list-profiles.service'
+import { SelectProfileService } from '../../src/application/profiles/select-profile.service'
+import { UpdateProfileDetailsService } from '../../src/application/profiles/update-profile.service'
 import { RefreshService } from '../../src/application/refresh/refresh.service'
 import { RegisterService } from '../../src/application/register/register.service'
 import { AuthTokenService } from '../../src/application/tokens/auth-token.service'
+import { ProfileAggregate } from '../../src/domain/profile/profile.aggregate'
 import { UserAggregate } from '../../src/domain/user/user.aggregate'
 import type { UserRole } from '../../src/domain/user/user.role'
 import type { UserStatus } from '../../src/domain/user/user.status'
@@ -29,10 +37,12 @@ import type { Env } from '../../src/infrastructure/config/env'
 import { createServer } from '../../src/interfaces/http/server'
 import {
   FakeMessagingClient,
+  FakeProfileAllowanceGateway,
   fakeHasher,
   InMemoryImpersonationTokenRepository,
   InMemoryOtpCodeRepository,
   InMemoryPasswordResetTokenRepository,
+  InMemoryProfileRepository,
   InMemoryRefreshTokenRepository,
   InMemoryUserRepository,
   silentLogger,
@@ -69,7 +79,8 @@ function buildApp(
     silentLogger,
   )
   const login = new LoginService(users, fakeHasher, authTokens, {})
-  const refresh = new RefreshService(users, refreshTokens, authTokens, silentLogger)
+  const profilesRepo = new InMemoryProfileRepository()
+  const refresh = new RefreshService(users, refreshTokens, authTokens, profilesRepo, silentLogger)
   const logout = new LogoutService(refreshTokens)
   const getMe = new GetMeService(users)
   const createPasswordToken = new CreatePasswordTokenService(users, resetTokens, {
@@ -137,6 +148,19 @@ function buildApp(
     authTokens,
     silentLogger,
   )
+  const allowance = new FakeProfileAllowanceGateway()
+  let profileSeq = 0
+  const listProfiles = new ListProfilesService(profilesRepo)
+  const createProfile = new CreateProfileService(
+    profilesRepo,
+    allowance,
+    () => `00000000-0000-4000-8000-${String(++profileSeq).padStart(12, '0')}`,
+    () => new Date(),
+  )
+  const updateProfileDetails = new UpdateProfileDetailsService(profilesRepo, () => new Date())
+  const archiveProfile = new ArchiveProfileService(profilesRepo, () => new Date())
+  const selectProfile = new SelectProfileService(profilesRepo, users, authTokens)
+  const exitProfileSession = new ExitProfileSessionService(users, fakeHasher, authTokens)
 
   const env = {
     MAX_REQUEST_BODY_BYTES: 16 * 1024,
@@ -177,10 +201,23 @@ function buildApp(
     batchGetUsers,
     createImpersonationToken,
     exchangeImpersonationToken,
+    profiles: {
+      listProfiles,
+      createProfile,
+      updateProfile: updateProfileDetails,
+      archiveProfile,
+      selectProfile,
+      exitProfileSession,
+      trustProxy: false,
+      trustedProxyHops: 1,
+      internalToken: INTERNAL_TOKEN,
+    },
   })
   return {
     app,
     users,
+    profilesRepo,
+    allowance,
     refreshTokens,
     resetTokens,
     otpCodes,
@@ -1348,5 +1385,275 @@ describe('Impersonação (rotas /auth/admin/users/:id/impersonate + /auth/impers
       (await app.handle(post('/auth/impersonate/exchange', { token: 'token-invalido-123456' })))
         .status,
     ).toBe(401)
+  })
+})
+
+describe('Auth — perfis (estilo Netflix)', () => {
+  const ACCOUNT = '11111111-1111-4111-8111-111111111111'
+  const OTHER = '22222222-2222-4222-8222-222222222222'
+
+  // Headers que o gateway injeta para uma conta de responsável (customer ativo) +
+  // o token interno que prova a origem.
+  function gw(accountId = ACCOUNT, extra: Record<string, string> = {}) {
+    return {
+      'x-internal-token': INTERNAL_TOKEN,
+      'x-auth-user-id': accountId,
+      'x-auth-user-role': 'customer',
+      'x-auth-user-status': 'active',
+      ...extra,
+    }
+  }
+  function req(
+    method: string,
+    path: string,
+    headers: Record<string, string>,
+    body?: unknown,
+  ): Request {
+    return new Request(`http://localhost${path}`, {
+      method,
+      headers: { 'content-type': 'application/json', ...headers },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    })
+  }
+  interface Profile {
+    id: string
+    name: string
+    avatarUrl: string | null
+    whatsapp: string | null
+    sortOrder: number
+  }
+
+  test('o teto vem do members: maxProfiles=0 → 409 (a conta não comprou)', async () => {
+    const { app, allowance } = buildApp()
+    allowance.maxProfiles = 0
+    const res = await app.handle(req('POST', '/auth/profiles', gw(), { name: 'Sofia' }))
+    expect(res.status).toBe(409)
+    expect(((await res.json()) as { error: { code: string } }).error.code).toBe(
+      'PROFILE_LIMIT_REACHED',
+    )
+  })
+
+  test('cria até o teto e barra o excedente; a lista volta ordenada', async () => {
+    const { app, allowance } = buildApp()
+    allowance.maxProfiles = 2
+    const a = await app.handle(req('POST', '/auth/profiles', gw(), { name: 'Sofia' }))
+    expect(a.status).toBe(201)
+    const b = await app.handle(req('POST', '/auth/profiles', gw(), { name: 'Théo' }))
+    expect(b.status).toBe(201)
+    const c = await app.handle(req('POST', '/auth/profiles', gw(), { name: 'Extra' }))
+    expect(c.status).toBe(409)
+
+    const list = (await (await app.handle(req('GET', '/auth/profiles', gw()))).json()) as {
+      profiles: Profile[]
+    }
+    expect(list.profiles.map((p) => p.name)).toEqual(['Sofia', 'Théo'])
+  })
+
+  test('editar e arquivar: arquivar libera um slot do teto', async () => {
+    const { app, allowance } = buildApp()
+    allowance.maxProfiles = 1
+    const created = (await (
+      await app.handle(req('POST', '/auth/profiles', gw(), { name: 'Sofia' }))
+    ).json()) as { profile: Profile }
+    const id = created.profile.id
+
+    // Editar nome + WhatsApp.
+    const patched = (await (
+      await app.handle(
+        req('PATCH', `/auth/profiles/${id}`, gw(), { name: 'Sofia Maria', whatsapp: '+55319' }),
+      )
+    ).json()) as { profile: Profile }
+    expect(patched.profile.name).toBe('Sofia Maria')
+    expect(patched.profile.whatsapp).toBe('+55319')
+
+    // No teto (1) — não cria outro.
+    expect((await app.handle(req('POST', '/auth/profiles', gw(), { name: 'Outro' }))).status).toBe(
+      409,
+    )
+    // Arquivar libera o slot.
+    expect((await app.handle(req('DELETE', `/auth/profiles/${id}`, gw()))).status).toBe(200)
+    const after = (await (await app.handle(req('GET', '/auth/profiles', gw()))).json()) as {
+      profiles: Profile[]
+    }
+    expect(after.profiles).toHaveLength(0)
+    expect((await app.handle(req('POST', '/auth/profiles', gw(), { name: 'Novo' }))).status).toBe(
+      201,
+    )
+  })
+
+  test('ownership: editar/arquivar perfil de OUTRA conta → 404 (não vaza)', async () => {
+    const { app, allowance } = buildApp()
+    allowance.maxProfiles = 1
+    const created = (await (
+      await app.handle(req('POST', '/auth/profiles', gw(ACCOUNT), { name: 'Sofia' }))
+    ).json()) as { profile: Profile }
+    const id = created.profile.id
+    expect(
+      (await app.handle(req('PATCH', `/auth/profiles/${id}`, gw(OTHER), { name: 'x' }))).status,
+    ).toBe(404)
+    expect((await app.handle(req('DELETE', `/auth/profiles/${id}`, gw(OTHER)))).status).toBe(404)
+    // E a conta de outro não vê o perfil.
+    const list = (await (await app.handle(req('GET', '/auth/profiles', gw(OTHER)))).json()) as {
+      profiles: Profile[]
+    }
+    expect(list.profiles).toHaveLength(0)
+  })
+
+  test('foto inválida (não http(s)) → 400', async () => {
+    const { app, allowance } = buildApp()
+    allowance.maxProfiles = 2
+    const res = await app.handle(
+      req('POST', '/auth/profiles', gw(), { name: 'Sofia', avatarUrl: 'javascript:alert(1)' }),
+    )
+    expect(res.status).toBe(400)
+  })
+
+  test('guardas de origem: sem token interno → 401; sem identidade → 401', async () => {
+    const { app, allowance } = buildApp()
+    allowance.maxProfiles = 2
+    // Sem x-internal-token (GET — sem schema de corpo, o guard de origem corre primeiro).
+    const noToken = await app.handle(
+      req('GET', '/auth/profiles', {
+        'x-auth-user-id': ACCOUNT,
+        'x-auth-user-role': 'customer',
+        'x-auth-user-status': 'active',
+      }),
+    )
+    expect(noToken.status).toBe(401)
+    // Com token interno mas sem identidade do gateway.
+    const noUser = await app.handle(
+      req('GET', '/auth/profiles', { 'x-internal-token': INTERNAL_TOKEN }),
+    )
+    expect(noUser.status).toBe(401)
+  })
+})
+
+describe('Auth — sessão de perfil (PR2)', () => {
+  const PROFILE_ID = '33333333-3333-4333-8333-333333333333'
+
+  function req(
+    method: string,
+    path: string,
+    headers: Record<string, string>,
+    body?: unknown,
+  ): Request {
+    return new Request(`http://localhost${path}`, {
+      method,
+      headers: { 'content-type': 'application/json', ...headers },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    })
+  }
+  // Headers que o gateway injeta numa sessão da CONTA (sem x-auth-account-id).
+  const gwAccount = (accountId: string) => ({
+    'x-internal-token': INTERNAL_TOKEN,
+    'x-auth-user-id': accountId,
+    'x-auth-user-role': 'customer',
+    'x-auth-user-status': 'active',
+  })
+  // ...e numa sessão de PERFIL (sub = perfil; x-auth-account-id = conta).
+  const gwProfile = (profileId: string, accountId: string) => ({
+    ...gwAccount(profileId),
+    'x-auth-account-id': accountId,
+  })
+
+  async function setup() {
+    const built = buildApp()
+    const reg = (await (await built.app.handle(post('/auth/register', REGISTER_BODY))).json()) as {
+      user: { id: string }
+    }
+    const accountId = reg.user.id
+    built.profilesRepo.seed(
+      ProfileAggregate.create({ id: PROFILE_ID, accountUserId: accountId, name: 'Sofia' }),
+    )
+    return { ...built, accountId }
+  }
+
+  test('selecionar perfil → sessão de perfil (sub = perfil, claim pfl = {conta, nome})', async () => {
+    const { app, accountId } = await setup()
+    const res = await app.handle(
+      req('POST', `/auth/profiles/${PROFILE_ID}/select`, gwAccount(accountId)),
+    )
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as { tokens: { accessToken: string } }
+    const payload = decodeJwt(body.tokens.accessToken)
+    expect(payload.sub).toBe(PROFILE_ID)
+    expect(payload.pfl).toEqual({ accountId, name: 'Sofia' })
+  })
+
+  test('gestão é BLOQUEADA na sessão de perfil (403); listar e selecionar são permitidos', async () => {
+    const { app, accountId } = await setup()
+    const ph = gwProfile(PROFILE_ID, accountId)
+    expect((await app.handle(req('POST', '/auth/profiles', ph, { name: 'Outro' }))).status).toBe(
+      403,
+    )
+    expect(
+      (await app.handle(req('PATCH', `/auth/profiles/${PROFILE_ID}`, ph, { name: 'x' }))).status,
+    ).toBe(403)
+    expect((await app.handle(req('DELETE', `/auth/profiles/${PROFILE_ID}`, ph))).status).toBe(403)
+    // Listar resolve a conta do x-auth-account-id → 200.
+    expect((await app.handle(req('GET', '/auth/profiles', ph))).status).toBe(200)
+    // Trocar de perfil (selecionar) também é livre a partir de uma sessão de perfil.
+    expect((await app.handle(req('POST', `/auth/profiles/${PROFILE_ID}/select`, ph))).status).toBe(
+      200,
+    )
+  })
+
+  test('sair do perfil: senha certa → sessão da conta (sem pfl); errada → 401; fora de perfil → 400', async () => {
+    const { app, accountId } = await setup()
+    const ph = gwProfile(PROFILE_ID, accountId)
+    expect(
+      (await app.handle(req('POST', '/auth/profile-session/exit', ph, { password: 'errada' })))
+        .status,
+    ).toBe(401)
+    // Sessão da conta (sem x-auth-account-id) não está "num perfil" → 400.
+    expect(
+      (
+        await app.handle(
+          req('POST', '/auth/profile-session/exit', gwAccount(accountId), {
+            password: REGISTER_BODY.password,
+          }),
+        )
+      ).status,
+    ).toBe(400)
+    const ok = await app.handle(
+      req('POST', '/auth/profile-session/exit', ph, { password: REGISTER_BODY.password }),
+    )
+    expect(ok.status).toBe(200)
+    const payload = decodeJwt(
+      ((await ok.json()) as { tokens: { accessToken: string } }).tokens.accessToken,
+    )
+    expect(payload.sub).toBe(accountId)
+    expect(payload.pfl).toBeUndefined()
+  })
+
+  test('rotação re-deriva pfl; perfil ARQUIVADO → cai para sessão da conta', async () => {
+    const { app, accountId, profilesRepo } = await setup()
+    const sel = (await (
+      await app.handle(req('POST', `/auth/profiles/${PROFILE_ID}/select`, gwAccount(accountId)))
+    ).json()) as { tokens: { refreshToken: string } }
+    const r1 = (await (
+      await app.handle(post('/auth/refresh', { refreshToken: sel.tokens.refreshToken }))
+    ).json()) as { tokens: { accessToken: string; refreshToken: string } }
+    expect(decodeJwt(r1.tokens.accessToken).sub).toBe(PROFILE_ID)
+    expect(decodeJwt(r1.tokens.accessToken).pfl).toMatchObject({ accountId })
+
+    // Arquiva o perfil e rotaciona de novo → a sessão cai para a conta (sem pfl).
+    const profile = await profilesRepo.findById(PROFILE_ID)
+    profile?.archive()
+    if (profile) await profilesRepo.update(profile)
+    const r2 = (await (
+      await app.handle(post('/auth/refresh', { refreshToken: r1.tokens.refreshToken }))
+    ).json()) as { tokens: { accessToken: string } }
+    expect(decodeJwt(r2.tokens.accessToken).sub).toBe(accountId)
+    expect(decodeJwt(r2.tokens.accessToken).pfl).toBeUndefined()
+  })
+
+  test('ownership: selecionar perfil de OUTRA conta → 404', async () => {
+    const { app } = await setup()
+    const OTHER = '44444444-4444-4444-8444-444444444444'
+    expect(
+      (await app.handle(req('POST', `/auth/profiles/${PROFILE_ID}/select`, gwAccount(OTHER))))
+        .status,
+    ).toBe(404)
   })
 })

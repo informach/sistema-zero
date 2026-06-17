@@ -14,6 +14,12 @@ export interface AuthenticatedUser {
   readonly status: string
   readonly phone?: string
   readonly signupSource?: string
+  /**
+   * Sessão de PERFIL (estilo Netflix): conta do responsável (claim `pfl.accountId`).
+   * Presente só quando `id` (= `sub`) é um perfil de criança — o upstream resolve o
+   * ACESSO/entitlement por esta conta enquanto atribui dados ao perfil (`id`).
+   */
+  readonly accountId?: string
 }
 
 /**

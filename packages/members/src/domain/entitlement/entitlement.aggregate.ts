@@ -202,6 +202,10 @@ export class EntitlementAggregate {
   get expiresAt(): Date | null {
     return this.state.expiresAt
   }
+  /** Snapshot CONGELADO do que a oferta concedeu no grant (resolução do catálogo). */
+  get snapshot(): EntitlementSnapshot {
+    return this.state.snapshot
+  }
 
   toSnapshot(): EntitlementState {
     return { ...this.state }

@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import { createLogger, type Logger } from '@sistemazero/core/logging'
 import { BatchGetUsersService } from './application/admin/batch-get-users/batch-get-users.service'
 import { CreateUserService } from './application/admin/create-user/create-user.service'
@@ -18,10 +19,17 @@ import { VerifyOtpService } from './application/otp/verify-otp.service'
 import { CreatePasswordTokenService } from './application/password-reset/create-password-token.service'
 import { ForgotPasswordService } from './application/password-reset/forgot-password.service'
 import { ResetPasswordService } from './application/password-reset/reset-password.service'
+import { ArchiveProfileService } from './application/profiles/archive-profile.service'
+import { CreateProfileService } from './application/profiles/create-profile.service'
+import { ExitProfileSessionService } from './application/profiles/exit-profile-session.service'
+import { ListProfilesService } from './application/profiles/list-profiles.service'
+import { SelectProfileService } from './application/profiles/select-profile.service'
+import { UpdateProfileDetailsService } from './application/profiles/update-profile.service'
 import { RefreshService } from './application/refresh/refresh.service'
 import { RegisterService } from './application/register/register.service'
 import { AuthTokenService } from './application/tokens/auth-token.service'
 import type { Env } from './infrastructure/config/env'
+import { createMembersAllowanceGateway } from './infrastructure/gateways/members-allowance.gateway'
 import {
   createGatewayMessagingClient,
   createNullMessagingClient,
@@ -31,6 +39,7 @@ import { createDbConnection, type DbConnection } from './infrastructure/persiste
 import { DrizzleImpersonationTokenRepository } from './infrastructure/persistence/drizzle/impersonation-token.repository'
 import { DrizzleOtpCodeRepository } from './infrastructure/persistence/drizzle/otp-code.repository'
 import { DrizzlePasswordResetTokenRepository } from './infrastructure/persistence/drizzle/password-reset-token.repository'
+import { DrizzleProfileRepository } from './infrastructure/persistence/drizzle/profile.repository'
 import { DrizzleRefreshTokenRepository } from './infrastructure/persistence/drizzle/refresh-token.repository'
 import { DrizzleUserRepository } from './infrastructure/persistence/drizzle/user.repository'
 import { createBunPasswordHasher } from './infrastructure/security/bun-password-hasher'
@@ -87,7 +96,15 @@ export async function createApplication(env: Env): Promise<Application> {
   const passwordResetTokens = new DrizzlePasswordResetTokenRepository(db)
   const otpCodes = new DrizzleOtpCodeRepository(db)
   const impersonationTokens = new DrizzleImpersonationTokenRepository(db)
+  const profilesRepo = new DrizzleProfileRepository(db)
   const hasher = createBunPasswordHasher()
+
+  // Teto de perfis (kids) resolvido S2S no members (matrícula = fonte da verdade).
+  const profileAllowance = createMembersAllowanceGateway({
+    baseUrl: env.MEMBERS_BASE_URL,
+    internalToken: env.MEMBERS_INTERNAL_TOKEN,
+    timeoutMs: env.MEMBERS_REQUEST_TIMEOUT_MS,
+  })
 
   // E-mail via gateway → messaging (HMAC). Sem config completa → no-op (best-effort).
   const messaging =
@@ -131,7 +148,7 @@ export async function createApplication(env: Env): Promise<Application> {
     { passwordMinLength: env.PASSWORD_MIN_LENGTH },
     logger,
   )
-  const refresh = new RefreshService(users, refreshTokens, authTokens, logger)
+  const refresh = new RefreshService(users, refreshTokens, authTokens, profilesRepo, logger)
   const logout = new LogoutService(refreshTokens)
   const getMe = new GetMeService(users)
   // Reset/definição de senha + self-service de perfil.
@@ -211,6 +228,18 @@ export async function createApplication(env: Env): Promise<Application> {
     authTokens,
     logger,
   )
+  // Perfis (estilo Netflix) gerenciados pelo responsável.
+  const listProfiles = new ListProfilesService(profilesRepo)
+  const createProfile = new CreateProfileService(
+    profilesRepo,
+    profileAllowance,
+    () => randomUUID(),
+    () => new Date(),
+  )
+  const updateProfileDetails = new UpdateProfileDetailsService(profilesRepo, () => new Date())
+  const archiveProfile = new ArchiveProfileService(profilesRepo, () => new Date())
+  const selectProfile = new SelectProfileService(profilesRepo, users, authTokens)
+  const exitProfileSession = new ExitProfileSessionService(users, hasher, authTokens)
 
   // Readiness (`/readyz`, healthcheck do Railway): a réplica só é promovida
   // quando o banco responde (sem banco não há login/refresh — não recebe tráfego).
@@ -250,6 +279,17 @@ export async function createApplication(env: Env): Promise<Application> {
     batchGetUsers,
     createImpersonationToken,
     exchangeImpersonationToken,
+    profiles: {
+      listProfiles,
+      createProfile,
+      updateProfile: updateProfileDetails,
+      archiveProfile,
+      selectProfile,
+      exitProfileSession,
+      trustProxy: env.TRUST_PROXY,
+      trustedProxyHops: env.TRUSTED_PROXY_HOPS,
+      internalToken: env.AUTH_INTERNAL_TOKEN,
+    },
   })
 
   // Purga periódica (fora do hot path): refresh tokens, tokens de reset e códigos

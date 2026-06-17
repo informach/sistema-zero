@@ -195,6 +195,12 @@ export class ProductAggregate extends AggregateRoot<string> {
     if (fulfillment.accessType === 'all_courses' && fulfillment.courseRef) {
       throw new ValidationError('Entrega "todos os cursos" não leva curso vinculado')
     }
+    if (
+      fulfillment.maxProfiles !== undefined &&
+      (!Number.isInteger(fulfillment.maxProfiles) || fulfillment.maxProfiles < 1)
+    ) {
+      throw new ValidationError('Quantidade de perfis deve ser um inteiro ≥ 1')
+    }
   }
 
   private touch(now?: Date): void {

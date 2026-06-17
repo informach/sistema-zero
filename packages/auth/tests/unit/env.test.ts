@@ -15,6 +15,8 @@ const PROD_BASE: Record<string, string> = {
   GATEWAY_URL: 'https://gateway.example.com',
   AUTH_HMAC_SECRET: 'segredo-hmac-de-producao!',
   COMMUNITY_URL: 'https://comunidade.example.com',
+  MEMBERS_BASE_URL: 'http://members.railway.internal:3004',
+  MEMBERS_INTERNAL_TOKEN: 'token-interno-members-de-producao',
 }
 
 describe('loadEnv', () => {
@@ -39,6 +41,17 @@ describe('loadEnv', () => {
   test('produção com config completa → ok', () => {
     const env = loadEnv(PROD_BASE)
     expect(env.AUTH_INTERNAL_TOKEN).toBe('token-interno-forte-de-producao')
+  })
+
+  test('produção SEM MEMBERS_INTERNAL_TOKEN → falha no boot (allowance S2S exige o token)', () => {
+    const { MEMBERS_INTERNAL_TOKEN: _omitted, ...rest } = PROD_BASE
+    expect(() => loadEnv(rest)).toThrow(/MEMBERS_INTERNAL_TOKEN/)
+  })
+
+  test('produção com MEMBERS_BASE_URL localhost → falha no boot', () => {
+    expect(() => loadEnv({ ...PROD_BASE, MEMBERS_BASE_URL: 'http://localhost:3004' })).toThrow(
+      /MEMBERS_BASE_URL/,
+    )
   })
 
   test('produção SEM messaging (GATEWAY_URL/AUTH_HMAC_SECRET) → falha no boot', () => {

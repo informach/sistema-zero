@@ -32,6 +32,8 @@ const FulfillmentSchema = t.Object({
   accessType: t.Union([t.Literal('course'), t.Literal('all_courses')]),
   courseRef: t.Optional(t.String({ maxLength: 200 })),
   release: t.Optional(ReleaseRuleSchema),
+  // Teto de perfis liberados (plataforma kids — planos "N perfis"). Inteiro ≥ 1.
+  maxProfiles: t.Optional(t.Integer({ minimum: 1, maximum: 50 })),
 })
 
 const MetadataSchema = t.Record(t.String(), t.Unknown())
