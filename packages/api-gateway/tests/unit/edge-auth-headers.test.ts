@@ -94,6 +94,34 @@ describe('headerSafeValue / injectIdentityHeaders', () => {
     })
     expect(h.get('x-auth-account-id')).toBe(null)
   })
+
+  test('sessão de IMPERSONAÇÃO: x-auth-impersonator-id é injetado; o valor forjado do cliente é descartado', () => {
+    const h = new Headers({ 'x-auth-impersonator-id': 'admin-forjado' })
+    injectIdentityHeaders(h, {
+      id: 'aluno-1', // sub = usuário-alvo
+      email: 'aluno@example.com',
+      firstName: 'Aluno',
+      lastName: 'Silva',
+      role: 'customer',
+      status: 'active',
+      impersonatorId: 'admin-real',
+    })
+    expect(h.get('x-auth-user-id')).toBe('aluno-1')
+    expect(h.get('x-auth-impersonator-id')).toBe('admin-real')
+  })
+
+  test('sessão normal (sem impersonatorId): x-auth-impersonator-id fica AUSENTE (entrada do cliente removida)', () => {
+    const h = new Headers({ 'x-auth-impersonator-id': 'admin-forjado' })
+    injectIdentityHeaders(h, {
+      id: 'conta-1',
+      email: 'pai@example.com',
+      firstName: 'Pai',
+      lastName: 'Silva',
+      role: 'customer',
+      status: 'active',
+    })
+    expect(h.get('x-auth-impersonator-id')).toBe(null)
+  })
 })
 
 describe('request-transform stage: credenciais de borda', () => {

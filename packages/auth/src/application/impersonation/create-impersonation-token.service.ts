@@ -6,6 +6,7 @@ import {
   ImpersonationForbiddenError,
   TargetNotImpersonableError,
 } from '../../domain/impersonation/impersonation.errors'
+import { canImpersonate } from '../../domain/impersonation/impersonation.policy'
 import type { ImpersonationTokenRepository } from '../../domain/ports/impersonation-token-repository.port'
 import type { UserRepository } from '../../domain/ports/user-repository.port'
 import { UserNotFoundError } from '../../domain/user/user.errors'
@@ -22,9 +23,6 @@ export interface CreateImpersonationTokenOptions {
   /** TTL do handoff (curtíssimo — o token só atravessa a URL admin→community). */
   ttlSeconds: number
 }
-
-/** Papéis que um `admin` pode impersonar (espelha o guard de edição do painel). */
-const ADMIN_IMPERSONABLE_ROLES: ReadonlySet<string> = new Set(['customer', 'staff'])
 
 /**
  * Emite o token de HANDOFF de impersonação (single-use, TTL curtíssimo). A MATRIZ
@@ -51,10 +49,7 @@ export class CreateImpersonationTokenService {
     if (!target) throw new UserNotFoundError()
     if (!target.isActive()) throw new TargetNotImpersonableError()
 
-    const allowed =
-      command.actorRole === 'superadmin' ||
-      (command.actorRole === 'admin' && ADMIN_IMPERSONABLE_ROLES.has(target.role))
-    if (!allowed) throw new ImpersonationForbiddenError()
+    if (!canImpersonate(command.actorRole, target.role)) throw new ImpersonationForbiddenError()
 
     const token = randomBytes(32).toString('base64url')
     const expiresAt = new Date(Date.now() + this.opts.ttlSeconds * 1000)

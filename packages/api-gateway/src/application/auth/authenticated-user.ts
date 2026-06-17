@@ -20,6 +20,13 @@ export interface AuthenticatedUser {
    * ACESSO/entitlement por esta conta enquanto atribui dados ao perfil (`id`).
    */
   readonly accountId?: string
+  /**
+   * Sessão de IMPERSONAÇÃO: admin navegando como o usuário (claim `act.sub`).
+   * Presente só em sessão de suporte — o upstream o usa p/ PRESERVAR a impersonação
+   * ao derivar uma nova sessão (ex.: selecionar um perfil de criança), evitando que
+   * o vínculo (TTL curto + ator) seja perdido numa sessão normal de longa duração.
+   */
+  readonly impersonatorId?: string
 }
 
 /**

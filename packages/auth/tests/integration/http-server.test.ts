@@ -1489,7 +1489,7 @@ describe('Auth — perfis (estilo Netflix)', () => {
     ).json()) as { profile: Profile }
     const id = created.profile.id
     expect(
-      (await app.handle(req('PATCH', `/auth/profiles/${id}`, gw(OTHER), { name: 'x' }))).status,
+      (await app.handle(req('PATCH', `/auth/profiles/${id}`, gw(OTHER), { name: 'Xyz' }))).status,
     ).toBe(404)
     expect((await app.handle(req('DELETE', `/auth/profiles/${id}`, gw(OTHER)))).status).toBe(404)
     // E a conta de outro não vê o perfil.
@@ -1580,22 +1580,65 @@ describe('Auth — sessão de perfil (PR2)', () => {
     expect(payload.pfl).toEqual({ accountId, name: 'Sofia' })
   })
 
-  test('gestão é BLOQUEADA na sessão de perfil (403); listar e selecionar são permitidos', async () => {
-    const { app, accountId } = await setup()
+  test('sessão de perfil: edita o PRÓPRIO perfil; NÃO cria/arquiva nem edita irmãos', async () => {
+    const { app, accountId, profilesRepo } = await setup()
     const ph = gwProfile(PROFILE_ID, accountId)
+    // Auto-serviço da criança: editar o PRÓPRIO perfil é permitido (nome/foto/telefone).
+    expect(
+      (await app.handle(req('PATCH', `/auth/profiles/${PROFILE_ID}`, ph, { name: 'Sofia Maria' })))
+        .status,
+    ).toBe(200)
+    // Criar e arquivar seguem só na área dos pais (sessão da conta).
     expect((await app.handle(req('POST', '/auth/profiles', ph, { name: 'Outro' }))).status).toBe(
       403,
     )
-    expect(
-      (await app.handle(req('PATCH', `/auth/profiles/${PROFILE_ID}`, ph, { name: 'x' }))).status,
-    ).toBe(403)
     expect((await app.handle(req('DELETE', `/auth/profiles/${PROFILE_ID}`, ph))).status).toBe(403)
-    // Listar resolve a conta do x-auth-account-id → 200.
+    // Editar o perfil de um IRMÃO (outro id) a partir da sessão de perfil → 403.
+    const SIBLING = '55555555-5555-4555-8555-555555555555'
+    profilesRepo.seed(
+      ProfileAggregate.create({ id: SIBLING, accountUserId: accountId, name: 'Irmão' }),
+    )
+    expect(
+      (await app.handle(req('PATCH', `/auth/profiles/${SIBLING}`, ph, { name: 'Hackeado' })))
+        .status,
+    ).toBe(403)
+    // Listar e selecionar seguem livres a partir de uma sessão de perfil.
     expect((await app.handle(req('GET', '/auth/profiles', ph))).status).toBe(200)
-    // Trocar de perfil (selecionar) também é livre a partir de uma sessão de perfil.
     expect((await app.handle(req('POST', `/auth/profiles/${PROFILE_ID}/select`, ph))).status).toBe(
       200,
     )
+  })
+
+  test('sessão de perfil NÃO escreve na CONTA: PATCH /auth/me e /me/password → 403', async () => {
+    const { app, accountId } = await setup()
+    // Emite uma sessão de perfil (access token com a claim `pfl`).
+    const sel = (await (
+      await app.handle(req('POST', `/auth/profiles/${PROFILE_ID}/select`, gwAccount(accountId)))
+    ).json()) as { tokens: { accessToken: string } }
+    const bearer = { authorization: `Bearer ${sel.tokens.accessToken}` }
+    // /me é self-service da CONTA — a sessão de perfil é recusada (a criança edita o
+    // perfil em /auth/profiles/:id; a conta fica na área dos pais). F1 do full review.
+    expect((await app.handle(req('PATCH', '/auth/me', bearer, { firstName: 'Hack' }))).status).toBe(
+      403,
+    )
+    expect(
+      (
+        await app.handle(
+          req('POST', '/auth/me/password', bearer, {
+            currentPassword: REGISTER_BODY.password,
+            newPassword: 'outraSenhaForte10',
+          }),
+        )
+      ).status,
+    ).toBe(403)
+  })
+
+  test('nome do perfil: mínimo de 3 caracteres (DTO) — abaixo disso → 400', async () => {
+    const { app, accountId } = await setup()
+    const ph = gwProfile(PROFILE_ID, accountId)
+    expect(
+      (await app.handle(req('PATCH', `/auth/profiles/${PROFILE_ID}`, ph, { name: 'ab' }))).status,
+    ).toBe(400)
   })
 
   test('sair do perfil: senha certa → sessão da conta (sem pfl); errada → 401; fora de perfil → 400', async () => {
@@ -1655,6 +1698,58 @@ describe('Auth — sessão de perfil (PR2)', () => {
       (await app.handle(req('POST', `/auth/profiles/${PROFILE_ID}/select`, gwAccount(OTHER))))
         .status,
     ).toBe(404)
+  })
+
+  test('impersonação: selecionar perfil PROPAGA o ator (claim act + TTL curto) — não lava a sessão', async () => {
+    const { app, accountId, users } = await setup()
+    const actorId = '99999999-9999-4999-8999-999999999999'
+    users.seed(
+      UserAggregate.restore({
+        id: actorId,
+        version: 0,
+        email: 'admin@example.com',
+        passwordHash: 'hashed:x',
+        firstName: 'Ana',
+        lastName: 'Admin',
+        role: 'admin',
+        status: 'active',
+        phone: null,
+        signupSource: null,
+        avatarUrl: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }),
+    )
+    // O gateway injeta `x-auth-impersonator-id` (claim `act.sub`) numa sessão de suporte.
+    const res = await app.handle(
+      req('POST', `/auth/profiles/${PROFILE_ID}/select`, {
+        ...gwAccount(accountId),
+        'x-auth-impersonator-id': actorId,
+      }),
+    )
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as {
+      tokens: { accessToken: string; refreshExpiresIn: number }
+    }
+    const payload = decodeJwt(body.tokens.accessToken)
+    expect(payload.sub).toBe(PROFILE_ID)
+    expect(payload.pfl).toMatchObject({ accountId })
+    // A claim `act` SOBREVIVE ao select (o banner de impersonação segue ligado).
+    expect(payload.act).toMatchObject({ sub: actorId })
+    // TTL CURTO da impersonação (7200s) — não os 30 dias normais: a sessão de
+    // suporte morre sozinha em vez de virar acesso longo e sem rastro do ator.
+    expect(body.tokens.refreshExpiresIn).toBe(7200)
+  })
+
+  test('impersonação: ator sumido/inativo no select → negado (403)', async () => {
+    const { app, accountId } = await setup()
+    const res = await app.handle(
+      req('POST', `/auth/profiles/${PROFILE_ID}/select`, {
+        ...gwAccount(accountId),
+        'x-auth-impersonator-id': 'ffffffff-ffff-4fff-8fff-ffffffffffff', // não existe no repo
+      }),
+    )
+    expect(res.status).toBe(403)
   })
 
   test('admin lista os perfis de uma conta (GET /auth/admin/users/:id/profiles)', async () => {

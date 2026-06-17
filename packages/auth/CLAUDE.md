@@ -155,6 +155,11 @@ src/
    NÃO é editável (vínculo com as compras no payments; troca futura exigirá
    verificação). `POST /auth/me/password` troca a senha exigindo a atual; ambos
    revogam nada/todas as sessões respectivamente (troca de senha → re-login).
+   **⚠️ `/me` é da CONTA — `PATCH /me` e `/me/password` RECUSAM sessão de PERFIL**
+   (claim `pfl` → 403): no perfil-PADRÃO o `sub` colide com o id da conta, então
+   sem esse guard a sessão de perfil escreveria na conta, furando o portão da "área
+   dos pais" (full review F1). A criança edita o PRÓPRIO perfil em
+   `PATCH /auth/profiles/:id` (ver Perfis); a senha da conta fica na área dos pais.
 10. **Impersonação (06/2026 — admin "entra como" um usuário na COMMUNITY, p/ suporte):**
     dois passos, origens distintas (admin e community não compartilham cookies).
     (a) `POST /auth/admin/users/:id/impersonate` (gateway: JWT + roles
@@ -231,10 +236,19 @@ arquivado/sumido → CAI para sessão da conta — a criança volta à grade). R
   aceita sessão da conta OU de outro perfil (trocar de irmão). Devolve `{profile, tokens}`.
 - `POST /auth/profile-session/exit` — volta à área dos pais; **gateado pela SENHA do
   responsável** (a decisão de produto permite "PIN ou a senha"; o PIN curto é futuro).
-- **Guards:** criar/editar/arquivar perfil RECUSAM a sessão de perfil (403) — detectada
-  pela presença do `x-auth-account-id` que o gateway injeta só quando há `pfl`. Listar e
-  selecionar aceitam ambas. (O gateway resolve `pfl.accountId` → header `x-auth-account-id`,
-  stripado da entrada/anti-spoof — ver api-gateway.)
+- **Guards:** **criar** e **arquivar** perfil RECUSAM a sessão de perfil (403) — detectada
+  pela presença do `x-auth-account-id` que o gateway injeta só quando há `pfl`. Mas
+  **editar** (`PATCH /:id`) usa `ownProfileEditContext`: a CONTA edita qualquer perfil
+  dela; a **sessão de PERFIL edita SÓ o próprio** (auto-serviço da criança — nome/foto/
+  telefone; o `:id` precisa ser o perfil ATIVO = `x-auth-user-id`, editar um IRMÃO → 403).
+  Listar e selecionar aceitam ambas. Nome do perfil exige **≥ 3 caracteres** (DTO
+  `PROFILE_NAME` + `assertProfileName` no agregado). (O gateway resolve `pfl.accountId` →
+  header `x-auth-account-id`, stripado da entrada/anti-spoof — ver api-gateway.)
+- **Impersonação propagada no select (full review F2):** se a sessão atual é de suporte
+  (o gateway injeta `x-auth-impersonator-id` = claim `act.sub`), `SelectProfileService`
+  re-deriva o `act` do ATOR e marca a família — a sessão de perfil HERDA o TTL curto e
+  morre com o ator (a rotação re-checa). Ator sumido/inativo no select → 403. Sem isso, o
+  select "lavaria" a impersonação numa sessão de perfil normal de 30 dias e sem rastro.
 - **Migração de produção (PR6) — `scripts/backfill-default-profiles.ts`** (`bun run
   db:backfill-profiles [--dry-run]`): cria o **perfil-padrão por conta com matrícula KIDS
   ativa** com `id = id da conta` — o progresso/gamificação/comunidade histórico (keyado no

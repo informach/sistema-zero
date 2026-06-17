@@ -167,7 +167,8 @@ export const UpdateUserBody = t.Object({
 })
 
 // ── Perfis (estilo Netflix) — gerenciados pelo responsável ──────────────────
-const PROFILE_NAME = t.String({ minLength: 1, maxLength: 60 })
+// Nome com ao menos 3 caracteres (não-vazio) — validação espelhada no agregado.
+const PROFILE_NAME = t.String({ minLength: 3, maxLength: 60 })
 // URL da foto (validação de protocolo http(s) é do agregado) e WhatsApp opcional.
 const PROFILE_AVATAR = t.Union([t.String({ maxLength: 2048 }), t.Null()])
 const PROFILE_WHATSAPP = t.Union([t.String({ maxLength: 20 }), t.Null()])

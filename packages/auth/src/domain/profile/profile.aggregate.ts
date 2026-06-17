@@ -34,8 +34,7 @@ export class ProfileAggregate {
 
   static create(input: CreateProfileInput): ProfileAggregate {
     const now = input.now ?? new Date()
-    const name = input.name.trim()
-    if (name.length === 0) throw new ValidationError('Nome do perfil é obrigatório')
+    const name = assertProfileName(input.name)
     const avatarUrl = normalizeOptional(input.avatarUrl)
     assertAvatarUrl(avatarUrl)
     return new ProfileAggregate({
@@ -98,8 +97,8 @@ export class ProfileAggregate {
     now: Date = new Date(),
   ): void {
     if (changes.name !== undefined) {
-      const next = changes.name.trim()
-      if (next.length > 0) this.props.name = next
+      // Nome informado precisa ser válido (≥ 3) — não silencia mais um valor curto.
+      this.props.name = assertProfileName(changes.name)
     }
     if (changes.avatarUrl !== undefined) {
       const next = normalizeOptional(changes.avatarUrl)
@@ -118,6 +117,15 @@ export class ProfileAggregate {
     this.props.status = 'archived'
     this.props.updatedAt = now
   }
+}
+
+/** Nome do perfil: trim + mínimo de 3 caracteres (espelha o DTO `PROFILE_NAME`). */
+function assertProfileName(value: string): string {
+  const name = value.trim()
+  if (name.length < 3) {
+    throw new ValidationError('Nome do perfil precisa de ao menos 3 caracteres')
+  }
+  return name
 }
 
 function normalizeOptional(value: string | null | undefined): string | null {

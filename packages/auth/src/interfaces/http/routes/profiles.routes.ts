@@ -74,6 +74,27 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
     return actor.id
   }
 
+  // Edição de UM perfil: a CONTA edita qualquer perfil dela; a sessão de PERFIL edita
+  // SÓ o próprio (auto-serviço da criança — nome/foto/telefone). O alvo precisa ser o
+  // perfil ATIVO (`x-auth-user-id` = sub); editar o perfil de um IRMÃO → 403. Criar/
+  // arquivar seguem só da conta (`requireAccountSession`). Devolve o accountUserId dono
+  // (o serviço ainda confere `belongsTo`). Espelha o `accountContext`, mas com o trava
+  // do "só o próprio" na sessão de perfil.
+  const ownProfileEditContext = (
+    headers: Record<string, string | undefined>,
+    targetProfileId: string,
+  ): string => {
+    const actor = ensureOrigin(headers)
+    const accountId = headers['x-auth-account-id']?.trim()
+    if (accountId) {
+      if (targetProfileId !== actor.id) {
+        throw new ForbiddenError('Você só pode editar o seu próprio perfil')
+      }
+      return accountId
+    }
+    return actor.id
+  }
+
   return (
     new Elysia({ prefix: '/auth' })
       .get('/profiles', ({ headers }) => deps.listProfiles.execute(accountContext(headers)))
@@ -97,7 +118,8 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
         '/profiles/:id',
         async ({ headers, params, body, request }) => {
           if (isOversizeBody(request)) throw new PayloadTooLargeError()
-          const accountUserId = requireAccountSession(headers)
+          // A criança edita o PRÓPRIO perfil (sessão de perfil); a conta edita qualquer um.
+          const accountUserId = ownProfileEditContext(headers, params.id)
           const profile = await deps.updateProfile.execute({
             accountUserId,
             profileId: params.id,
@@ -129,6 +151,9 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
             profileId: params.id,
             userAgent: headers['user-agent'] ?? null,
             ip: clientIp({ request, server, headers }),
+            // Sessão de impersonação: o gateway injeta o ATOR (claim `act.sub`) como
+            // `x-auth-impersonator-id` — propaga o vínculo p/ a sessão de perfil.
+            impersonatorUserId: headers['x-auth-impersonator-id']?.trim() || null,
           })
         },
         { params: ProfileIdParams },

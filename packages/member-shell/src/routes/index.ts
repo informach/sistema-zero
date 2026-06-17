@@ -837,9 +837,15 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     POST: async (req: Request) => {
       const parsed = ExitProfileBody.safeParse(await req.json().catch(() => null))
       if (!parsed.success) return invalidInput()
+      // Captura o refresh da SESSÃO DE PERFIL ANTES de trocar os cookies: ele tem
+      // família PRÓPRIA (o exit emite uma família NOVA da conta), então sem revogá-lo
+      // a sessão de perfil seguiria válida até expirar — um token órfão após voltar à
+      // área dos pais (full review F3). Revoga só esse token (não toca a nova sessão).
+      const profileRefresh = await session.getRefreshToken()
       const { status, body } = await profiles.exit(parsed.data.password)
       if (status === 200 && body?.tokens) {
         await session.setSessionCookies(body.tokens)
+        if (profileRefresh) await gateway.logoutRequest(profileRefresh) // best-effort
         return NextResponse.json({ ok: true })
       }
       return NextResponse.json(body ?? { error: { code: 'EXIT_FAILED' } }, {
