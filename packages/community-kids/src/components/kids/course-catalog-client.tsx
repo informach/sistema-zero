@@ -10,12 +10,10 @@ import { unitThemeAt } from './unit-theme'
 
 interface Props {
   courses: CatalogCourseView[]
-  /** Fallback da página de vendas (env FUNNEL_URL), resolvido no server. */
-  fallbackSalesUrl: string | null
 }
 
 /** Grid do catálogo com busca/filtros persistidos na URL (`?q=&acesso=&ordem=`). */
-export function CourseCatalogClient({ courses, fallbackSalesUrl }: Props) {
+export function CourseCatalogClient({ courses }: Props) {
   const { filters, filtered, setFilter, clearFilters, hasActiveFilters } =
     useCatalogFilters(courses)
 
@@ -43,7 +41,7 @@ export function CourseCatalogClient({ courses, fallbackSalesUrl }: Props) {
             <CatalogCourseCard
               key={course.courseSlug}
               course={course}
-              salesUrl={course.salesPageUrl ?? fallbackSalesUrl}
+              salesUrl={course.salesPageUrl}
               theme={unitThemeAt(i)}
             />
           ))}

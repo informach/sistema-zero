@@ -1,19 +1,18 @@
 import { CourseCatalogClient } from '@/components/kids/course-catalog-client'
 import { KidsMascot } from '@/components/kids/mascot'
-import { getEnv } from '@/lib/env'
 import { listCatalog } from '@/server/members'
 
 export const dynamic = 'force-dynamic'
 
 /**
  * "Todos os cursos": catálogo completo da plataforma. Com acesso → entra no
- * curso; sem acesso → cadeado e clique leva à página de vendas (funil) —
- * `metadata.salesPageUrl` do curso, com fallback na env `FUNNEL_URL`.
+ * curso; sem acesso → cadeado e clique leva à página de vendas do curso
+ * (`metadata.salesPageUrl`). Kids NÃO tem funil (v1): sem `salesPageUrl` o card
+ * fica não-clicável — por isso nenhum fallback de `FUNNEL_URL` aqui.
  */
 export default async function CatalogPage() {
   const { status, body } = await listCatalog()
   const courses = status === 200 ? (body?.courses ?? []) : []
-  const fallbackSalesUrl = getEnv().FUNNEL_URL ?? null
 
   return (
     <div className="flex flex-col gap-8">
@@ -32,7 +31,7 @@ export default async function CatalogPage() {
         </section>
       ) : (
         // Busca/filtros client-side persistidos na URL (?q=&acesso=&ordem=).
-        <CourseCatalogClient courses={courses} fallbackSalesUrl={fallbackSalesUrl} />
+        <CourseCatalogClient courses={courses} />
       )}
     </div>
   )

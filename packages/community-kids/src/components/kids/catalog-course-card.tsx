@@ -7,7 +7,7 @@ import { UNIT_THEME_CLASS, type UnitTheme } from './unit-theme'
 
 interface CatalogCourseCardProps {
   course: CatalogCourseView
-  /** URL final da página de vendas (metadata.salesPageUrl ?? FUNNEL_URL), resolvida no server. */
+  /** Página de vendas do curso (`metadata.salesPageUrl`); `null` = card não-clicável. */
   salesUrl: string | null
   /** Tema da unidade (o grid alterna por índice); bloqueado fica neutro. */
   theme?: UnitTheme
@@ -16,7 +16,8 @@ interface CatalogCourseCardProps {
 /**
  * Card de "Todos os cursos": desbloqueado → entra no curso (vestindo o tema
  * da unidade); bloqueado → cadeado, card neutro e clique leva à página de
- * vendas (funil). Rodapé ShieldCheck "Liberado" / Lock "Bloqueado".
+ * vendas do curso (sem `salesPageUrl` fica não-clicável — kids não tem funil).
+ * Rodapé ShieldCheck "Liberado" / Lock "Bloqueado".
  */
 export function CatalogCourseCard({ course, salesUrl, theme = 'cyan' }: CatalogCourseCardProps) {
   const body = (
