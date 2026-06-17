@@ -51,7 +51,8 @@ export function resolveUserId(headers: Record<string, string | undefined>): stri
   if (!id || id.trim().length === 0) {
     throw new UnauthorizedError('Identidade ausente (x-auth-user-id)')
   }
-  return id
+  // Trim (como `resolveAccountId`): o id vira chave de DADOS (progresso/XP/conclusões).
+  return id.trim()
 }
 
 /**

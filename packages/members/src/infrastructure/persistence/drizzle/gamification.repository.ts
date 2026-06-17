@@ -150,8 +150,11 @@ export class DrizzleGamificationRepository implements GamificationRepository {
           })
           .onConflictDoUpdate({
             target: [gamificationProfiles.userId, gamificationProfiles.audience],
+            // `accountId` NÃO entra no update: é IMUTÁVEL por perfil (o elo da
+            // coorte do ranking) — gravado só no INSERT. Sobrescrever a cada award
+            // pelo valor derivado da request re-keyaria o perfil p/ si mesmo se uma
+            // chamada de sessão de perfil chegasse sem `x-auth-account-id`.
             set: {
-              accountId: input.accountId,
               xp: totalXp,
               streakCurrent: streak.current,
               streakBest: streak.best,
