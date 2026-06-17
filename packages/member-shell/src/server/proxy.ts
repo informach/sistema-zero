@@ -12,6 +12,13 @@ export interface MemberProxyConfig {
   protectedPrefixes: string[]
   /** A raiz `/` exige sessão? (home dos apps de aluno é a própria raiz). */
   isRootProtected: boolean
+  /**
+   * Gate de PERFIL (estilo Netflix — só o kids usa). Quando setado (ex.: `/perfis`),
+   * uma sessão da CONTA (sem a claim `pfl`) acessando a área de aprender é
+   * redirecionada para ESTA rota (escolher um perfil); a própria rota e suas
+   * subrotas são isentas. Ausente = sem gate (community adulto).
+   */
+  requireProfileSelectPath?: string
 }
 
 /**
@@ -56,46 +63,78 @@ export function createMemberProxy(cfg: MemberProxyConfig) {
     const refresh = req.cookies.get(refreshCookie)?.value
     if (!refresh) return redirectToLogin(req)
 
-    // Access ainda válido → segue direto (caminho quente, sem rede).
-    if (!isAccessExpired(req.cookies.get(accessCookie)?.value)) {
-      return NextResponse.next()
-    }
+    const currentAccess = req.cookies.get(accessCookie)?.value
+    // O token VÁLIDO após esta etapa (do cookie ou recém-rotacionado) — alimenta o
+    // gate de perfil abaixo.
+    let validAccess = currentAccess
+    let response = NextResponse.next()
 
     // Access expirado → rotaciona AQUI (single-flight em globalThis, compartilhado
     // com o BFF — bundles separados, mesmo processo). Propaga a prova de origem
     // (rate limit por IP + auditoria do auth enxergam o aluno, não o host).
-    const result = await refreshTokens(refresh, forwardHeadersFrom(req))
-    if (result === 'invalid') {
-      // Sessão morta (refresh rejeitado) → limpa e manda logar de novo. A limpeza
-      // usa `set('', maxAge: 0)` com os atributos da escrita — `delete()` pelado
-      // (sem `Secure`) é REJEITADO pelo browser p/ `__Host-*` em prod e os cookies
-      // mortos sobreviveriam (loop /login ⇄ / até expirarem).
-      const res = redirectToLogin(req)
-      res.cookies.set(accessCookie, '', expireCookieOptions(isProd()))
-      res.cookies.set(refreshCookie, '', expireCookieOptions(isProd()))
-      return res
-    }
-    if (result === 'unavailable') {
+    if (isAccessExpired(currentAccess)) {
+      const result = await refreshTokens(refresh, forwardHeadersFrom(req))
+      if (result === 'invalid') {
+        // Sessão morta (refresh rejeitado) → limpa e manda logar de novo. A limpeza
+        // usa `set('', maxAge: 0)` com os atributos da escrita — `delete()` pelado
+        // (sem `Secure`) é REJEITADO pelo browser p/ `__Host-*` em prod e os cookies
+        // mortos sobreviveriam (loop /login ⇄ / até expirarem).
+        const res = redirectToLogin(req)
+        res.cookies.set(accessCookie, '', expireCookieOptions(isProd()))
+        res.cookies.set(refreshCookie, '', expireCookieOptions(isProd()))
+        return res
+      }
       // Gateway/rede fora: degrada (páginas usam fallbacks) em vez de deslogar.
-      return NextResponse.next()
+      if (result === 'unavailable') return NextResponse.next()
+
+      // Tokens novos: reescreve o cookie da REQUEST (o render já os enxerga via
+      // `cookies()`) e grava na RESPONSE (o browser persiste).
+      req.cookies.set(accessCookie, result.accessToken)
+      req.cookies.set(refreshCookie, result.refreshToken)
+      validAccess = result.accessToken
+      response = NextResponse.next({ request: { headers: req.headers } })
+      // `__Host-` (prod) exige Secure + Path=/ + sem Domain — este `base` cumpre.
+      const base = {
+        httpOnly: true,
+        sameSite: 'lax' as const,
+        secure: isProd(),
+        path: '/',
+        maxAge: result.refreshExpiresIn,
+      }
+      response.cookies.set(accessCookie, result.accessToken, base)
+      response.cookies.set(refreshCookie, result.refreshToken, base)
     }
 
-    // Tokens novos: reescreve o cookie da REQUEST (o render já os enxerga via
-    // `cookies()`) e grava na RESPONSE (o browser persiste).
-    req.cookies.set(accessCookie, result.accessToken)
-    req.cookies.set(refreshCookie, result.refreshToken)
-    const res = NextResponse.next({ request: { headers: req.headers } })
-    // `__Host-` (prod) exige Secure + Path=/ + sem Domain — este `base` cumpre.
-    const base = {
-      httpOnly: true,
-      sameSite: 'lax' as const,
-      secure: isProd(),
-      path: '/',
-      maxAge: result.refreshExpiresIn,
+    // Gate de PERFIL (kids): a conta logada SEM perfil selecionado (token sem a
+    // claim `pfl`) acessando a área de aprender → vai escolher um perfil. A rota de
+    // seleção e suas subrotas são isentas (e o `/api/*` segue livre — não é página).
+    if (
+      cfg.requireProfileSelectPath &&
+      !pathname.startsWith('/api/') &&
+      !pathname.startsWith(cfg.requireProfileSelectPath) &&
+      !hasProfileClaim(validAccess)
+    ) {
+      const url = req.nextUrl.clone()
+      url.pathname = cfg.requireProfileSelectPath
+      return NextResponse.redirect(url)
     }
-    res.cookies.set(accessCookie, result.accessToken, base)
-    res.cookies.set(refreshCookie, result.refreshToken, base)
-    return res
+
+    return response
+  }
+}
+
+/** A sessão tem a claim `pfl` (sessão de perfil ativo)? Lê o JWT sem verificar (já validado). */
+function hasProfileClaim(token: string | undefined): boolean {
+  if (!token) return false
+  try {
+    const pfl = decodeJwt(token).pfl
+    return (
+      typeof pfl === 'object' &&
+      pfl !== null &&
+      typeof (pfl as Record<string, unknown>).accountId === 'string'
+    )
+  } catch {
+    return false
   }
 }
 

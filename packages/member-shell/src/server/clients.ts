@@ -20,11 +20,13 @@ import type {
   MyCourseView,
   Paginated,
   PaymentView,
+  ProfileView,
   QuizAttemptResultView,
   StudioSubmissionResultView,
   UserView,
 } from '../lib/types'
 import { clientForwardHeaders, type GatewayModule, type GatewayResponse } from './gateway'
+import type { AuthTokens } from './session'
 
 const enc = encodeURIComponent
 
@@ -39,6 +41,49 @@ export type AuthClient = ReturnType<typeof createAuthClient>
 export type MembersClient = ReturnType<typeof createMembersClient>
 export type PaymentsClient = ReturnType<typeof createPaymentsClient>
 export type HubClient = ReturnType<typeof createHubClient>
+export type ProfilesClient = ReturnType<typeof createProfilesClient>
+
+/** Corpo da criação/edição de perfil (espelha os DTOs do auth). */
+export interface ProfileWriteInput {
+  name?: string
+  avatarUrl?: string | null
+  whatsapp?: string | null
+}
+
+/**
+ * Client dos perfis (estilo Netflix) no auth. Gestão (list/create/update/archive)
+ * exige sessão da CONTA — o auth recusa (403) sessão de perfil; `select`/`exit`
+ * EMITEM tokens novos (o handler troca os cookies). `select` aceita conta OU outro
+ * perfil (trocar de irmão); `exit` é gateado pela senha do responsável no auth.
+ */
+export function createProfilesClient(gw: GatewayModule) {
+  return {
+    list(): Promise<GatewayResponse<{ profiles: ProfileView[] }>> {
+      return gw.gatewayFetch('/auth/profiles')
+    },
+    listReadonly(): Promise<GatewayResponse<{ profiles: ProfileView[] }>> {
+      return gw.gatewayFetchReadonly('/auth/profiles')
+    },
+    create(body: ProfileWriteInput): Promise<GatewayResponse<{ profile: ProfileView }>> {
+      return gw.gatewayFetch('/auth/profiles', { method: 'POST', body })
+    },
+    update(
+      id: string,
+      body: ProfileWriteInput,
+    ): Promise<GatewayResponse<{ profile: ProfileView }>> {
+      return gw.gatewayFetch(`/auth/profiles/${enc(id)}`, { method: 'PATCH', body })
+    },
+    archive(id: string): Promise<GatewayResponse<{ archived: boolean }>> {
+      return gw.gatewayFetch(`/auth/profiles/${enc(id)}`, { method: 'DELETE' })
+    },
+    select(id: string): Promise<GatewayResponse<{ profile?: ProfileView; tokens?: AuthTokens }>> {
+      return gw.gatewayFetch(`/auth/profiles/${enc(id)}/select`, { method: 'POST' })
+    },
+    exit(password: string): Promise<GatewayResponse<{ tokens?: AuthTokens }>> {
+      return gw.gatewayFetch('/auth/profile-session/exit', { method: 'POST', body: { password } })
+    },
+  }
+}
 
 /**
  * Rotas PÚBLICAS (sem Bearer) — chamadas diretas ao gateway. Propaga a prova de

@@ -21,6 +21,16 @@ export interface ActClaim {
   name?: string
 }
 
+/**
+ * Claim de PERFIL (estilo Netflix `pfl`): a sessão age COMO um perfil de criança —
+ * `id` (sub) do JWT = o perfil; `accountId` = a conta do responsável; `name` = nome
+ * do perfil (a UI exibe em vez do nome da conta). Sessão da conta não tem a claim.
+ */
+export interface ProfileClaim {
+  accountId: string
+  name?: string
+}
+
 export interface SessionUser {
   id: string
   email: string
@@ -30,6 +40,17 @@ export interface SessionUser {
   status: string
   /** Sessão de impersonação (suporte). Ausente = sessão normal do aluno. */
   act?: ActClaim
+  /** Sessão de PERFIL (kids): conta do responsável + nome do perfil ativo. Ausente = sessão da conta. */
+  activeProfile?: ProfileClaim
+}
+
+/** Perfil (estilo Netflix) — a grade do responsável (view do `/auth/profiles`). */
+export interface ProfileView {
+  id: string
+  name: string
+  avatarUrl: string | null
+  whatsapp: string | null
+  sortOrder: number
 }
 
 /** Sessão + avatar fresco (claims não carregam foto — o layout hidrata via GET /auth/me). */

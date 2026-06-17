@@ -62,6 +62,20 @@ DOIS apps). Este app define apenas:
   trilha, celebração, catálogo, auth-shell).
 - Route handlers = 1-3 linhas sobre `shell.routes.*` (idênticos ao community, MENOS payments).
 
+## Perfis estilo Netflix (PR5) — quem vai aprender hoje?
+
+O RESPONSÁVEL faz login (sessão da CONTA) e a borda manda escolher um **perfil de criança**
+antes de entrar na área de aprender. `src/proxy.ts` seta `requireProfileSelectPath: '/perfis'`
+(conta sem a claim `pfl` → redireciona p/ a grade) e `/perfis` entra nos `protectedPrefixes`
+(isenta do gate, é a rota de seleção). A **grade** (`app/perfis/page.tsx` — FORA do grupo
+`(app)`, sem a sidebar kids — + `perfis-client.tsx`): rostinhos clicáveis (selecionar = 1
+clique → `/api/profiles/:id/select` → reload da home), **Área dos pais** (numa sessão de perfil
+pede a SENHA do responsável → `/api/profile-session/exit`; numa sessão da conta gerencia direto:
+criar/editar/arquivar + **foto** via `/api/profiles/:id/avatar`, multipart, FORA do matcher). O
+limite de perfis é do plano (criar acima → 409 no toast). Toda a lógica do BFF vive no
+**member-shell** (`shell.routes.profile*` + `shell.profiles`); os `route.ts` são shims de 1-3
+linhas. `getSession().activeProfile` indica a sessão de perfil ativa.
+
 ## Diferenças deliberadas vs o community (decisões da v1, 06/2026)
 
 1. **SEM `/compras`** (página, rota BFF e item do menu): compra é do RESPONSÁVEL — histórico
