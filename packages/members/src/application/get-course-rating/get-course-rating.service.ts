@@ -13,8 +13,14 @@ export class GetCourseRatingService {
     userId: string,
     courseSlug: string,
     privileged = false,
+    accountId?: string,
   ): Promise<CourseRatingView | null> {
-    const { course } = await this.checkAccess.requireBySlug(userId, courseSlug, privileged)
+    // Acesso pela CONTA (sessão de perfil → x-auth-account-id); dados pelo userId.
+    const { course } = await this.checkAccess.requireBySlug(
+      accountId ?? userId,
+      courseSlug,
+      privileged,
+    )
     const rating = await this.ratings.find(userId, course.id)
     return rating ? toCourseRatingView(rating) : null
   }

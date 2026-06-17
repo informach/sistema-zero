@@ -394,6 +394,20 @@ matrícula ativa SEM o campo (legado) → `DEFAULT_KIDS_MAX_PROFILES` (env, defa
 Produtos adultos (sem o campo) contribuem 0 → o teto é naturalmente "kids-only" sem
 join de audiência.
 
+**Acesso por CONTA em sessão de perfil (PR3):** em sessão de perfil (estilo Netflix) o
+gateway injeta `x-auth-account-id` (a CONTA do responsável) além do `x-auth-user-id`
+(o PERFIL de criança). O `userId` segue identificando os DADOS (progresso/XP/conclusões/
+rating — keyados no perfil); o ACESSO/matrícula resolve pela CONTA. `resolveAccountId`
+(`interfaces/http/auth.ts`) = `x-auth-account-id ?? x-auth-user-id` (ausente → compat,
+a conta É o id). As rotas passam `accountId` aos casos de uso de conteúdo, que o usam
+SÓ no `CheckAccessService` (param opcional `accountId`, default → userId — zero
+regressão no community adulto); `ListMyCourses`/`ListCatalog` resolvem `hasAccess`/
+"meus cursos" pela conta e o PROGRESSO pelo perfil. A gamificação `GET /gamification/me`
+NÃO usa accountId (o XP é da criança, keyado no perfil). ⚠️ **Ranking** ainda usa o
+join `gamificationProfiles.userId = entitlements.userId` — perfil-irmão não-default
+(sem entitlement próprio) tem o ranking OMITIDO até o cohort por `account_id` (PR3b);
+o perfil-padrão da migração (id = accountId) segue ranqueando.
+
 ## Admin (painel `@sistemazero/admin`)
 
 Gestão de acesso pelo operador. Caminho `/members/admin/*` (distinto da API do aluno).

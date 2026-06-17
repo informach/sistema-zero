@@ -23,8 +23,13 @@ export class SaveCourseRatingService {
     courseSlug: string,
     fields: CourseRatingUpsert,
     privileged = false,
+    accountId?: string,
   ): Promise<CourseRatingView> {
-    const { course } = await this.checkAccess.requireBySlug(userId, courseSlug, privileged)
+    const { course } = await this.checkAccess.requireBySlug(
+      accountId ?? userId,
+      courseSlug,
+      privileged,
+    )
     // Defesa em profundidade — o DTO TypeBox já restringe aos 9 valores válidos.
     if (!isValidRatingHalf(fields.ratingHalf)) {
       throw new ValidationError('Nota inválida: use 1 a 5 em passos de 0.5')

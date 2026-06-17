@@ -16,8 +16,13 @@ export class GetCourseProgressService {
     userId: string,
     courseSlug: string,
     privileged = false,
+    accountId?: string,
   ): Promise<CourseProgressView> {
-    const { course } = await this.checkAccess.requireBySlug(userId, courseSlug, privileged)
+    const { course } = await this.checkAccess.requireBySlug(
+      accountId ?? userId,
+      courseSlug,
+      privileged,
+    )
     // Numerador e denominador sobre o MESMO conjunto (aulas publicadas) — uma
     // conclusão de aula hoje despublicada não conta (senão o percentual infla).
     const [total, completed, last] = await Promise.all([

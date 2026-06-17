@@ -31,11 +31,21 @@ export class MarkLessonCompleteService {
     private readonly clock: () => Date,
   ) {}
 
-  async execute(userId: string, lessonId: string, privileged = false): Promise<LessonCompleteView> {
+  async execute(
+    userId: string,
+    lessonId: string,
+    privileged = false,
+    accountId?: string,
+  ): Promise<LessonCompleteView> {
     const lesson = await this.courses.findLessonWithContent(lessonId)
     // Aula rascunho não pode ser concluída pelo aluno → 404 (consistente com o GET).
     if (!lesson?.isPublished) throw new LessonNotFoundError()
-    const { course } = await this.checkAccess.requireById(userId, lesson.courseId, privileged)
+    // Acesso pela CONTA (sessão de perfil); progresso/XP pelo userId (o perfil).
+    const { course } = await this.checkAccess.requireById(
+      accountId ?? userId,
+      lesson.courseId,
+      privileged,
+    )
 
     const completedIds = await this.progress.listCompletedLessonIds(userId, course.id)
     if (!completedIds.includes(lessonId)) {

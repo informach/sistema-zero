@@ -63,10 +63,22 @@ export function resolveUserId(headers: Record<string, string | undefined>): stri
   return id
 }
 
+/**
+ * Conta do responsável para resolver o ACESSO (matrícula). Em sessão de PERFIL o
+ * gateway injeta `x-auth-account-id` (a conta) além do `x-auth-user-id` (o perfil,
+ * usado p/ AUTORIA). Ausente → cai no `x-auth-user-id` (a conta É o id), compat.
+ */
+export function resolveAccountId(headers: Record<string, string | undefined>): string {
+  const account = headers['x-auth-account-id']
+  if (account && account.trim().length > 0) return account.trim()
+  return resolveUserId(headers)
+}
+
 /** Monta o ator confiável a partir dos headers `X-Auth-User-*` (gateway). */
 export function resolveActor(headers: Record<string, string | undefined>): Actor {
   return {
     userId: resolveUserId(headers),
+    accountId: resolveAccountId(headers),
     role: headers['x-auth-user-role'],
     status: headers['x-auth-user-status'],
     privileged: isPrivilegedActor(headers),

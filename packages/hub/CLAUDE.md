@@ -204,7 +204,11 @@ download direto browser↔R2 são mintados pelo BFF (member-shell).
 **S2S members** (`infrastructure/gateways/members-http.gateway.ts`): para `course_gated`, o
 `AccessResolutionService` chama `POST {MEMBERS_BASE_URL}/members/internal/access-check`
 `{userId, courseRefs}` → `{granted[], hasMaster}`, com `x-internal-token = MEMBERS_INTERNAL_TOKEN`,
-timeout `MEMBERS_REQUEST_TIMEOUT_MS` (5s default) e **fail-closed** (erro → sem acesso). Resultado em
+timeout `MEMBERS_REQUEST_TIMEOUT_MS` (5s default) e **fail-closed** (erro → sem acesso).
+⚠️ **Sessão de perfil (PR3):** o `userId` enviado ao access-check é o **`Actor.accountId`**
+(`x-auth-account-id ?? x-auth-user-id` — a matrícula é da CONTA do responsável), NÃO o
+`Actor.userId` (que é o PERFIL de criança em sessão de perfil — usado só para AUTORIA de
+tópicos/comentários/reações). `resolveActor` preenche os dois; o course-gated usa `accountId`. Resultado em
 **micro-cache** por `(userId, spaceId/courseRefs)` com TTL `accessCacheTtlMs` (30s prod / 0 fora);
 `invalidateUser()` existe p/ o futuro webhook de grant/revoke.
 

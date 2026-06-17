@@ -29,11 +29,13 @@ export class SubmitStudioProjectService {
     blockId: string,
     project: unknown,
     privileged = false,
+    accountId?: string,
   ): Promise<StudioSubmissionResultView> {
     const lesson = await this.courses.findLessonWithContent(lessonId)
     // Aula rascunho é invisível ao aluno → não aceita entregas.
     if (!lesson?.isPublished) throw new LessonNotFoundError()
-    await this.checkAccess.requireById(userId, lesson.courseId, privileged)
+    // Acesso pela CONTA (sessão de perfil); a entrega fica no userId (o perfil).
+    await this.checkAccess.requireById(accountId ?? userId, lesson.courseId, privileged)
 
     const block = lesson.blocks.find((b) => b.id === blockId)
     if (block?.content.kind !== 'studio') throw new StudioBlockNotFoundError()

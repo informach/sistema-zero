@@ -13,7 +13,7 @@ import type { SaveCourseRatingService } from '../../../application/save-course-r
 import type { SaveVideoPositionService } from '../../../application/save-video-position/save-video-position.service'
 import type { SubmitQuizAttemptService } from '../../../application/submit-quiz-attempt/submit-quiz-attempt.service'
 import type { SubmitStudioProjectService } from '../../../application/submit-studio-project/submit-studio-project.service'
-import { assertInternalCaller, isPrivilegedActor, resolveUserId } from '../auth'
+import { assertInternalCaller, isPrivilegedActor, resolveAccountId, resolveUserId } from '../auth'
 import {
   AttachmentResolveParams,
   AudienceQuery,
@@ -50,10 +50,13 @@ export interface MembersRoutesDeps {
 
 /**
  * API de consumo do aluno. O `userId` vem do header `x-auth-user-id` (injetado
- * pelo gateway após verificar o JWT). Todo endpoint de conteúdo exige matrícula
- * ativa (403 sem vazar conteúdo) via `CheckAccessService` dentro dos casos de uso —
- * EXCETO equipe interna (`isPrivilegedActor`): superadmin/admin/staff navegam tudo
- * com chave-mestra virtual (rascunho continua 404, igual ao aluno com `all_courses`).
+ * pelo gateway após verificar o JWT) e identifica os DADOS (progresso/XP/comunidade).
+ * Em sessão de PERFIL (estilo Netflix) o `x-auth-user-id` é o PERFIL de criança e o
+ * gateway injeta também `x-auth-account-id` (a CONTA do responsável) — usado só para
+ * resolver o ACESSO/matrícula (`resolveAccountId`; ausente → cai no userId, compat).
+ * Todo endpoint de conteúdo exige matrícula ativa (403 sem vazar conteúdo) via
+ * `CheckAccessService` dentro dos casos de uso — EXCETO equipe interna
+ * (`isPrivilegedActor`): superadmin/admin/staff navegam tudo com chave-mestra virtual.
  * O `onBeforeHandle` confirma (em prod) que a chamada veio do gateway (token interno).
  */
 export function membersRoutes(deps: MembersRoutesDeps) {
@@ -72,6 +75,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
               userId,
               isPrivilegedActor(headers),
               query.audience ?? 'adult',
+              resolveAccountId(headers),
             ),
           }
         },
@@ -87,6 +91,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
               userId,
               isPrivilegedActor(headers),
               query.audience ?? 'adult',
+              resolveAccountId(headers),
             ),
           }
         },
@@ -95,6 +100,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
       // Perfil de gamificação do aluno NA VITRINE (`?audience=`, default adult —
       // XP/streak/badges são segregados por audiência) — recurso do PRÓPRIO
       // usuário (sem CheckAccess: qualquer conta ativa; sem perfil → zeros).
+      // É do PERFIL (userId) — não usa accountId; o XP é da criança, não da conta.
       // `?ranking=true` inclui a colocação no ranking de XP da mesma vitrine.
       .get(
         '/gamification/me',
@@ -109,11 +115,21 @@ export function membersRoutes(deps: MembersRoutesDeps) {
       )
       .get('/courses/:slug', async ({ headers, params }) => {
         const userId = resolveUserId(headers)
-        return deps.getMyCourse.execute(userId, params.slug, isPrivilegedActor(headers))
+        return deps.getMyCourse.execute(
+          userId,
+          params.slug,
+          isPrivilegedActor(headers),
+          resolveAccountId(headers),
+        )
       })
       .get('/courses/:slug/progress', async ({ headers, params }) => {
         const userId = resolveUserId(headers)
-        return deps.getProgress.execute(userId, params.slug, isPrivilegedActor(headers))
+        return deps.getProgress.execute(
+          userId,
+          params.slug,
+          isPrivilegedActor(headers),
+          resolveAccountId(headers),
+        )
       })
       // Classificação do curso (1 por aluno+curso; ver SaveCourseRatingService).
       .get('/courses/:slug/rating', async ({ headers, params }) => {
@@ -123,6 +139,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             userId,
             params.slug,
             isPrivilegedActor(headers),
+            resolveAccountId(headers),
           ),
         }
       })
@@ -140,6 +157,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
               feedbackAnswers: body.feedbackAnswers ?? null,
             },
             isPrivilegedActor(headers),
+            resolveAccountId(headers),
           )
         },
         { body: CourseRatingBody },
@@ -153,6 +171,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             params.slug,
             params.lessonId,
             isPrivilegedActor(headers),
+            resolveAccountId(headers),
           )
         },
         { params: SlugLessonParams },
@@ -169,6 +188,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             params.lessonId,
             params.attachmentId,
             isPrivilegedActor(headers),
+            resolveAccountId(headers),
           )
         },
         { params: AttachmentResolveParams },
@@ -185,6 +205,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             params.lessonId,
             params.blockId,
             isPrivilegedActor(headers),
+            resolveAccountId(headers),
           )
         },
         { params: EbookResolveParams },
@@ -193,7 +214,12 @@ export function membersRoutes(deps: MembersRoutesDeps) {
         '/lessons/:lessonId/complete',
         async ({ headers, params }) => {
           const userId = resolveUserId(headers)
-          return deps.markComplete.execute(userId, params.lessonId, isPrivilegedActor(headers))
+          return deps.markComplete.execute(
+            userId,
+            params.lessonId,
+            isPrivilegedActor(headers),
+            resolveAccountId(headers),
+          )
         },
         { params: LessonIdParams },
       )
@@ -207,6 +233,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             params.lessonId,
             body.positionSeconds,
             isPrivilegedActor(headers),
+            resolveAccountId(headers),
           )
         },
         { body: VideoPositionBody, params: SlugLessonParams },
@@ -222,6 +249,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             params.blockId,
             body.answers,
             isPrivilegedActor(headers),
+            resolveAccountId(headers),
           )
         },
         { body: QuizAttemptBody, params: QuizAttemptParams },
@@ -238,6 +266,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             params.blockId,
             body.project,
             isPrivilegedActor(headers),
+            resolveAccountId(headers),
           )
         },
         { body: StudioSubmissionBody, params: StudioSubmissionParams },

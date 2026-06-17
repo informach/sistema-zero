@@ -16,9 +16,15 @@ export class GetMyCourseService {
     private readonly ratings: CourseRatingRepository,
   ) {}
 
-  async execute(userId: string, courseSlug: string, privileged = false): Promise<CourseDetailView> {
+  async execute(
+    userId: string,
+    courseSlug: string,
+    privileged = false,
+    accountId?: string,
+  ): Promise<CourseDetailView> {
+    // Acesso pela CONTA (sessão de perfil → x-auth-account-id); progresso pelo userId.
     const { course, entitlement } = await this.checkAccess.requireBySlug(
-      userId,
+      accountId ?? userId,
       courseSlug,
       privileged,
     )

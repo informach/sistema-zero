@@ -29,10 +29,14 @@ export class ListMyCoursesService {
     userId: string,
     privileged = false,
     audience: CourseAudience = 'adult',
+    accountId?: string,
   ): Promise<MyCourseView[]> {
-    // Equipe interna (`privileged`) = chave-mestra VIRTUAL: lista todos os
-    // publicados sem consultar matrículas (mesmo comportamento da `all_courses` real).
-    const active = privileged ? [] : await this.entitlements.listActiveByUser(userId, this.clock())
+    // Acesso (matrícula) pela CONTA do responsável (sessão de perfil → accountId);
+    // progresso/última-aula pelo userId (o perfil). Equipe interna (`privileged`) =
+    // chave-mestra VIRTUAL: lista todos os publicados sem consultar matrículas.
+    const active = privileged
+      ? []
+      : await this.entitlements.listActiveByUser(accountId ?? userId, this.clock())
 
     // Matrículas de CURSO com courseRef ("mais forte" por curso se duplicada) +
     // a chave-mestra mais forte (se houver). A chave-mestra REAL cobre só cursos
