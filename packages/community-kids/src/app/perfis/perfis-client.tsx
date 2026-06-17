@@ -34,6 +34,7 @@ export function PerfisClient({
   const [managing, setManaging] = useState(false)
   const [busy, setBusy] = useState(false)
   const [gate, setGate] = useState(false) // modal de senha (sair do perfil)
+  const [changingPassword, setChangingPassword] = useState(false) // modal: trocar senha da conta
   const [editing, setEditing] = useState<Editing>(null)
 
   async function selectProfile(id: string) {
@@ -181,11 +182,17 @@ export function PerfisClient({
         ) : null}
       </ul>
 
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center justify-center gap-3">
         {managing ? (
-          <Button variant="secondary" onClick={() => setManaging(false)} disabled={busy}>
-            Concluir
-          </Button>
+          <>
+            {/* Senha É da CONTA (não do perfil): só aqui, na sessão do responsável. */}
+            <Button variant="ghost" onClick={() => setChangingPassword(true)} disabled={busy}>
+              Alterar senha do responsável
+            </Button>
+            <Button variant="secondary" onClick={() => setManaging(false)} disabled={busy}>
+              Concluir
+            </Button>
+          </>
         ) : (
           <Button variant="ghost" onClick={openParentArea} disabled={busy}>
             Área dos pais
@@ -195,6 +202,9 @@ export function PerfisClient({
 
       {gate ? (
         <ParentGate busy={busy} onCancel={() => setGate(false)} onConfirm={exitToParent} />
+      ) : null}
+      {changingPassword ? (
+        <ParentPasswordChange onCancel={() => setChangingPassword(false)} />
       ) : null}
     </main>
   )
@@ -332,6 +342,100 @@ function ProfileForm({
         </div>
       </div>
     </main>
+  )
+}
+
+/**
+ * Troca a senha da CONTA do responsável (Área dos pais — sessão da conta). É da
+ * CONTA, não do perfil: por isso fica aqui e NÃO na página "Meu perfil" da criança.
+ * Trocar a senha revoga TODAS as sessões no auth → re-login (navegação de documento).
+ */
+function ParentPasswordChange({ onCancel }: { onCancel: () => void }) {
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirm, setConfirm] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (newPassword.length < 10) {
+      setError('A nova senha precisa de ao menos 10 caracteres.')
+      return
+    }
+    if (newPassword !== confirm) {
+      setError('As senhas não coincidem.')
+      return
+    }
+    setError(null)
+    setSaving(true)
+    try {
+      const res = await fetch('/api/auth/me/password', {
+        method: 'POST',
+        headers: JSON_HEADERS,
+        body: JSON.stringify({ currentPassword, newPassword }),
+      })
+      if (res.ok) {
+        toast.success('Senha alterada! Entre novamente com a nova senha.')
+        window.location.replace('/login')
+        return
+      }
+      const data = (await res.json().catch(() => null)) as { error?: { code?: string } } | null
+      setError(
+        data?.error?.code === 'INVALID_CREDENTIALS'
+          ? 'Senha atual incorreta.'
+          : 'Não foi possível alterar a senha.',
+      )
+    } catch {
+      setError('Falha de rede. Tente novamente.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 p-4">
+      <div className="w-full max-w-sm rounded-2xl bg-card p-6 shadow-xl">
+        <h2 className="sz-display text-xl text-foreground">Alterar senha do responsável</h2>
+        <p className="mt-1 text-muted-foreground text-sm">
+          Por segurança, você será desconectado de todos os dispositivos.
+        </p>
+        <form className="mt-4 flex flex-col gap-4" onSubmit={onSubmit}>
+          <Field label="Senha atual" htmlFor="currentPassword">
+            <PasswordInput
+              id="currentPassword"
+              autoComplete="current-password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+            />
+          </Field>
+          <Field label="Nova senha" htmlFor="newPassword">
+            <PasswordInput
+              id="newPassword"
+              autoComplete="new-password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
+          </Field>
+          <Field label="Confirmar nova senha" htmlFor="confirmPassword" error={error ?? undefined}>
+            <PasswordInput
+              id="confirmPassword"
+              autoComplete="new-password"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+            />
+          </Field>
+          <div className="flex justify-end gap-3">
+            <Button type="button" variant="secondary" onClick={onCancel} disabled={saving}>
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={saving || !currentPassword || !newPassword}>
+              {saving ? <Spinner className="size-4" /> : 'Alterar'}
+            </Button>
+          </div>
+        </form>
+      </div>
+    </div>
   )
 }
 

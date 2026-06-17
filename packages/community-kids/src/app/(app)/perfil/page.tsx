@@ -1,37 +1,40 @@
+import { redirect } from 'next/navigation'
 import { BadgeShowcase } from '@/components/kids/badge-showcase'
-import { getMeReadonly } from '@/server/auth'
 import { getGamificationReadonly } from '@/server/members'
+import { listReadonly } from '@/server/profiles'
 import { getSession } from '@/server/session'
 import { ProfileClient } from './profile-client'
 
 export const dynamic = 'force-dynamic'
 
+/**
+ * "Meu perfil" do kids: a CRIANÇA edita o PRÓPRIO perfil (nome/foto/telefone) —
+ * nunca a conta do responsável (isso é da Área dos pais, em `/perfis`). A página é
+ * sempre uma sessão de perfil (o proxy manda a sessão da CONTA para `/perfis`); o
+ * perfil ativo é aquele cujo `id` == `sub` da sessão. Gamificação (ranking/badges)
+ * é best-effort: 401/erro → some.
+ */
 export default async function ProfilePage() {
-  // Dados frescos do banco (trazem `phone`); fallback nas claims da sessão.
-  // SOMENTE-LEITURA: página é Server Component (refresh/escrita de cookie aqui
-  // lança) — o proxy já renovou o access antes do render; 401 residual degrada.
-  // Gamificação é best-effort (401 → vitrine/ranking somem). `withRanking`
-  // pede a colocação no ranking de XP da vitrine kids (só esta página usa).
   const session = await getSession()
-  const [{ status, body }, gam] = await Promise.all([
-    getMeReadonly(),
+  if (!session) redirect('/login')
+
+  const [profilesRes, gam] = await Promise.all([
+    listReadonly(),
     getGamificationReadonly({ withRanking: true }),
   ])
-  const user =
-    status === 200 && body?.user ? body.user : session ? { ...session, phone: undefined } : null
+  const profiles = profilesRes.status === 200 ? (profilesRes.body?.profiles ?? []) : []
+  const profile = profiles.find((p) => p.id === session.id) ?? null
+  // Sessão da conta (sem perfil) ou perfil sumido → volta à grade de seleção.
+  if (!profile) redirect('/perfis')
   const gamification = gam.status === 200 ? (gam.body ?? null) : null
-
-  if (!user) return null
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
       <div>
         <h1 className="sz-display text-2xl">Meu perfil</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Seus dados de acesso e informações pessoais.
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">Seu nome, sua foto e seu telefone.</p>
       </div>
-      <ProfileClient user={user} ranking={gamification?.ranking ?? null} />
+      <ProfileClient profile={profile} ranking={gamification?.ranking ?? null} />
       {gamification ? <BadgeShowcase gamification={gamification} /> : null}
     </div>
   )
