@@ -353,7 +353,7 @@ export type CouponType = 'percent' | 'fixed'
 // Entrega EXCLUSIVAMENTE via área de membros: `course` (um curso),
 // `all_courses` (chave-mestra ADULTA) ou `all_kids_courses` (chave-mestra KIDS) —
 // cada chave-mestra cobre todos os cursos da SUA audiência (atuais e futuros).
-export type AccessType = 'course' | 'all_courses' | 'all_kids_courses'
+export type AccessType = 'course' | 'all_courses' | 'all_kids_courses' | 'community'
 export type ReleaseMode = 'immediate' | 'days_after_purchase' | 'fixed_date'
 
 export interface ReleaseRule {

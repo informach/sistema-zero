@@ -12,6 +12,7 @@ const ACCESS_TYPES: { value: AccessType; label: string }[] = [
   { value: 'course', label: 'Um curso específico' },
   { value: 'all_courses', label: 'Todos os cursos adultos (atuais e futuros)' },
   { value: 'all_kids_courses', label: 'Todos os cursos kids (atuais e futuros)' },
+  { value: 'community', label: 'Acesso à comunidade' },
 ]
 
 const RELEASE_MODES: { value: ReleaseMode; label: string }[] = [
@@ -62,8 +63,10 @@ export function FulfillmentEditor({
   }
 
   function setAccessType(accessType: AccessType) {
-    // Chave-mestra (adulta ou kids) não leva curso vinculado.
-    update({ accessType, ...(accessType !== 'course' ? { courseRef: undefined } : {}) })
+    // Chave-mestra (adulta ou kids) não leva ref; `course`/`community` usam o
+    // `courseRef` (slug do curso OU chave da comunidade) — preservado na troca.
+    const clearsRef = accessType === 'all_courses' || accessType === 'all_kids_courses'
+    update({ accessType, ...(clearsRef ? { courseRef: undefined } : {}) })
   }
 
   function setReleaseMode(mode: ReleaseMode) {
@@ -109,6 +112,19 @@ export function FulfillmentEditor({
               </option>
             ))}
           </Select>
+        </Field>
+      ) : spec.accessType === 'community' ? (
+        <Field
+          label="Chave da comunidade"
+          htmlFor="communityRef"
+          tooltip="Identificador do acesso de comunidade que esta compra libera. Use a MESMA chave nos espaços do hub (campo 'Chaves de comunidade' do servidor). Ex.: comunidade-vip."
+        >
+          <Input
+            id="communityRef"
+            value={spec.courseRef ?? ''}
+            placeholder="ex.: comunidade-vip"
+            onChange={(e) => update({ courseRef: e.target.value || undefined })}
+          />
         </Field>
       ) : (
         <p className="text-muted-foreground text-sm">

@@ -79,6 +79,16 @@ function sanitizeFulfillment(spec: FulfillmentSpec | null): FulfillmentSpec | nu
       ...maxProfiles,
     }
   }
+  // Comunidade: o `courseRef` guarda a CHAVE da comunidade (preservada). NÃO colapsa
+  // p/ null sem a chave — a validação de ATIVAÇÃO dá a mensagem certa (rascunho fica sem).
+  if (spec.accessType === 'community') {
+    return {
+      accessType: 'community',
+      ...(spec.courseRef ? { courseRef: spec.courseRef } : {}),
+      ...(spec.release ? { release: spec.release } : {}),
+      ...maxProfiles,
+    }
+  }
   // Sem curso e sem drip → sem entrega definida (mesma regra de colapso do editor).
   if (!spec.courseRef && (!spec.release || spec.release.mode === 'immediate')) return null
   return {
@@ -196,6 +206,10 @@ export function ProductFormClient({ productId }: { productId: string | null }) {
       }
       if (!isBundle && fulfillment?.accessType === 'course' && !fulfillment.courseRef) {
         toast.error('Selecione o curso vinculado (ou mude para "Todos os cursos").')
+        return
+      }
+      if (!isBundle && fulfillment?.accessType === 'community' && !fulfillment.courseRef) {
+        toast.error('Informe a chave da comunidade.')
         return
       }
     }
