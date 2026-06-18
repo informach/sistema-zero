@@ -18,6 +18,7 @@ import { GetEbookDownloadService } from '../src/application/get-ebook-download/g
 import { GetLessonService } from '../src/application/get-lesson/get-lesson.service'
 import { GetMemberDetailService } from '../src/application/get-member-detail/get-member-detail.service'
 import { GetMyCourseService } from '../src/application/get-my-course/get-my-course.service'
+import { GetStudioCarryoverService } from '../src/application/get-studio-carryover/get-studio-carryover.service'
 import { GrantEntitlementService } from '../src/application/grant-entitlement/grant-entitlement.service'
 import { GrantManualEntitlementService } from '../src/application/grant-manual-entitlement/grant-manual-entitlement.service'
 import { ListCatalogService } from '../src/application/list-catalog/list-catalog.service'
@@ -142,6 +143,7 @@ export function buildApp(
         () => randomUUID(),
         clock,
       ),
+      getStudioCarryover: new GetStudioCarryoverService(checkAccess, courses, studioSubmissions),
       getGamification: new GetGamificationService(gamification, clock),
       internalToken: opts.internalToken,
     },

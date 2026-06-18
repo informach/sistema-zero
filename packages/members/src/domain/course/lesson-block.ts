@@ -152,6 +152,15 @@ export interface StudioBlock {
    * no servidor (correção híbrida). Ver `studio-activity.ts`.
    */
   activity?: LessonActivity
+  /**
+   * Nome do PROJETO CONTÍNUO (cadeia). Aulas com o MESMO `chain` no mesmo curso
+   * formam uma sequência que constrói um único projeto (ex.: um jogo ao longo de N
+   * aulas): ao abrir, o Estúdio carrega a última entrega do aluno no bloco contínuo
+   * da aula anterior da cadeia (ver get-studio-carryover). Vazio/ausente = aula
+   * independente (começa do `initialProject`). Várias cadeias por curso não se
+   * misturam (resolução por nome).
+   */
+  chain?: string
 }
 
 /** União discriminada por `kind` — o conteúdo guardado na coluna `lesson_blocks.content`. */

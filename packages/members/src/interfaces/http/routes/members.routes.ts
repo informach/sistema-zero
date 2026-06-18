@@ -6,6 +6,7 @@ import type { GetCourseRatingService } from '../../../application/get-course-rat
 import type { GetEbookDownloadService } from '../../../application/get-ebook-download/get-ebook-download.service'
 import type { GetLessonService } from '../../../application/get-lesson/get-lesson.service'
 import type { GetMyCourseService } from '../../../application/get-my-course/get-my-course.service'
+import type { GetStudioCarryoverService } from '../../../application/get-studio-carryover/get-studio-carryover.service'
 import type { ListCatalogService } from '../../../application/list-catalog/list-catalog.service'
 import type { ListMyCoursesService } from '../../../application/list-my-courses/list-my-courses.service'
 import type { MarkLessonCompleteService } from '../../../application/mark-lesson-complete/mark-lesson-complete.service'
@@ -24,6 +25,7 @@ import {
   QuizAttemptBody,
   QuizAttemptParams,
   SlugLessonParams,
+  StudioCarryoverParams,
   StudioSubmissionBody,
   StudioSubmissionParams,
   VideoPositionBody,
@@ -41,6 +43,7 @@ export interface MembersRoutesDeps {
   savePosition: SaveVideoPositionService
   submitQuiz: SubmitQuizAttemptService
   submitStudio: SubmitStudioProjectService
+  getStudioCarryover: GetStudioCarryoverService
   getCourseRating: GetCourseRatingService
   saveCourseRating: SaveCourseRatingService
   getGamification: GetGamificationService
@@ -273,6 +276,23 @@ export function membersRoutes(deps: MembersRoutesDeps) {
           )
         },
         { body: StudioSubmissionBody, params: StudioSubmissionParams },
+      )
+      // Carrega o projeto da aula contínua anterior (mesma cadeia) p/ semear o editor
+      // na 1ª abertura. Lazy: o front só chama quando o bloco tem `chain` e não há
+      // rascunho local. `{ project: null }` = 1ª da cadeia / não enviou / independente.
+      .get(
+        '/lessons/:lessonId/blocks/:blockId/studio-carryover',
+        async ({ headers, params }) => {
+          const userId = resolveUserId(headers)
+          return deps.getStudioCarryover.execute(
+            userId,
+            params.lessonId,
+            params.blockId,
+            isPrivilegedActor(headers),
+            resolveAccountId(headers),
+          )
+        },
+        { params: StudioCarryoverParams },
       )
   )
 }

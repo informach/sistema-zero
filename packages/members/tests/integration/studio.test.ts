@@ -182,3 +182,253 @@ describe('Bloco Estúdio — gate de conclusão + entrega', () => {
     expect((await readJson(oneRes)).project.name).toBe('Minha entrega')
   })
 })
+
+// ── Carryover: continuar o projeto da aula contínua anterior (mesma cadeia) ──────
+const USER_B = '33333333-3333-3333-3333-333333333333'
+
+const TEMPLATE = {
+  name: 'Template',
+  files: { 'index.html': '', 'style.css': '', 'script.js': '' },
+}
+
+/** Anexa um bloco de estúdio com (opcional) nome de cadeia `chain` a uma aula. */
+function seedChainBlock(
+  courses: InMemoryCourseRepository,
+  lessonId: string,
+  chain?: string,
+  sortOrder = 20,
+): string {
+  const blockId = randomUUID()
+  courses.blocks.push({
+    id: blockId,
+    lessonId,
+    kind: 'studio',
+    sortOrder,
+    content: {
+      kind: 'studio',
+      level: 'iniciante',
+      initialProject: TEMPLATE,
+      ...(chain ? { chain } : {}),
+    },
+  })
+  return blockId
+}
+
+function addLesson(
+  courses: InMemoryCourseRepository,
+  courseId: string,
+  moduleId: string,
+  sortOrder: number,
+  published = true,
+): string {
+  const id = randomUUID()
+  courses.lessons.push({
+    id,
+    moduleId,
+    courseId,
+    slug: `aula-${sortOrder}-${id.slice(0, 4)}`,
+    title: `Aula ${sortOrder}`,
+    sortOrder,
+    estimatedMinutes: 5,
+    isPublished: published,
+  })
+  return id
+}
+
+function addModule(courses: InMemoryCourseRepository, courseId: string, sortOrder: number): string {
+  const id = randomUUID()
+  courses.modules.push({ id, courseId, title: `Módulo ${sortOrder}`, summary: null, sortOrder })
+  return id
+}
+
+const carryover = (
+  app: App,
+  lessonId: string,
+  blockId: string,
+  headers: Record<string, string> = authHeaders,
+) =>
+  app.handle(
+    new Request(`http://localhost/members/lessons/${lessonId}/blocks/${blockId}/studio-carryover`, {
+      headers,
+    }),
+  )
+
+const submitAs = (
+  app: App,
+  lessonId: string,
+  blockId: string,
+  project: unknown,
+  headers: Record<string, string>,
+) =>
+  app.handle(
+    new Request(
+      `http://localhost/members/lessons/${lessonId}/blocks/${blockId}/studio-submission`,
+      { method: 'POST', headers, body: JSON.stringify({ project }) },
+    ),
+  )
+
+describe('Bloco Estúdio — carryover de projeto contínuo', () => {
+  test('carrega o projeto enviado na aula contínua anterior (mesma cadeia)', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const { slug, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    const blockA = seedChainBlock(courses, lessonIds[0], 'jogo')
+    const blockB = seedChainBlock(courses, lessonIds[1], 'jogo')
+
+    await submit(app, lessonIds[0], blockA, STUDENT_PROJECT)
+    const res = await carryover(app, lessonIds[1], blockB)
+    expect(res.status).toBe(200)
+    const body = await readJson(res)
+    expect(body.project.name).toBe('Minha entrega')
+    expect(body.project.files['script.js']).toBe('console.log(1)')
+  })
+
+  test('a 1ª aula da cadeia não tem o que carregar (project null)', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const { slug, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    const blockA = seedChainBlock(courses, lessonIds[0], 'jogo')
+
+    await submit(app, lessonIds[0], blockA, STUDENT_PROJECT)
+    const body = await readJson(await carryover(app, lessonIds[0], blockA))
+    expect(body.project).toBeNull()
+  })
+
+  test('bloco sem nome de cadeia não carrega nada (curto-circuito)', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const { slug, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    const blockA = seedChainBlock(courses, lessonIds[0], 'jogo')
+    const blockB = seedChainBlock(courses, lessonIds[1]) // independente (sem chain)
+
+    await submit(app, lessonIds[0], blockA, STUDENT_PROJECT)
+    const body = await readJson(await carryover(app, lessonIds[1], blockB))
+    expect(body.project).toBeNull()
+  })
+
+  test('sem entrega na aula anterior → project null', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const { slug, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    seedChainBlock(courses, lessonIds[0], 'jogo') // NÃO enviado
+    const blockB = seedChainBlock(courses, lessonIds[1], 'jogo')
+
+    const body = await readJson(await carryover(app, lessonIds[1], blockB))
+    expect(body.project).toBeNull()
+  })
+
+  test('pula aulas sem studio da cadeia entre duas da mesma cadeia', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const { slug, courseId, moduleId, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    const blockA = seedChainBlock(courses, lessonIds[0], 'jogo')
+    // lessonIds[1] não tem bloco de estúdio (só teoria). Aula 3 retoma a cadeia.
+    const lesson3 = addLesson(courses, courseId, moduleId, 2)
+    const blockC = seedChainBlock(courses, lesson3, 'jogo')
+
+    await submit(app, lessonIds[0], blockA, STUDENT_PROJECT)
+    const body = await readJson(await carryover(app, lesson3, blockC))
+    expect(body.project.name).toBe('Minha entrega')
+  })
+
+  test('aula anterior despublicada é ignorada → project null', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const { slug, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    const blockA = seedChainBlock(courses, lessonIds[0], 'jogo')
+    const blockB = seedChainBlock(courses, lessonIds[1], 'jogo')
+
+    await submit(app, lessonIds[0], blockA, STUDENT_PROJECT)
+    const l1 = courses.lessons.find((l) => l.id === lessonIds[0])
+    if (l1) l1.isPublished = false
+
+    const body = await readJson(await carryover(app, lessonIds[1], blockB))
+    expect(body.project).toBeNull()
+  })
+
+  test('não vaza o projeto de outro aluno (keyado no x-auth-user-id)', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const { slug, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    grantLifetime(entitlements, { userId: USER_B, courseRef: slug })
+    const blockA = seedChainBlock(courses, lessonIds[0], 'jogo')
+    const blockB = seedChainBlock(courses, lessonIds[1], 'jogo')
+
+    await submit(app, lessonIds[0], blockA, STUDENT_PROJECT) // entrega do USER
+    const bHeaders = { 'x-auth-user-id': USER_B, 'content-type': 'application/json' }
+    const body = await readJson(await carryover(app, lessonIds[1], blockB, bHeaders))
+    expect(body.project).toBeNull()
+  })
+
+  test('sessão de perfil: acesso pela CONTA, projeto pelo PERFIL', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const { slug, lessonIds } = seedSampleCourse(courses)
+    const account = USER
+    const p1 = '44444444-4444-4444-4444-444444444444'
+    const p2 = '55555555-5555-5555-5555-555555555555'
+    // A matrícula é da CONTA (responsável); os perfis herdam o acesso.
+    grantLifetime(entitlements, { userId: account, courseRef: slug })
+    const blockA = seedChainBlock(courses, lessonIds[0], 'jogo')
+    const blockB = seedChainBlock(courses, lessonIds[1], 'jogo')
+
+    const p1Headers = {
+      'x-auth-user-id': p1,
+      'x-auth-account-id': account,
+      'content-type': 'application/json',
+    }
+    await submitAs(app, lessonIds[0], blockA, STUDENT_PROJECT, p1Headers) // entrega do PERFIL p1
+    // p1 carrega o próprio projeto…
+    const mine = await readJson(await carryover(app, lessonIds[1], blockB, p1Headers))
+    expect(mine.project.name).toBe('Minha entrega')
+    // …e o perfil-irmão p2 (mesma conta) não vê nada (entrega é por perfil).
+    const p2Headers = { ...p1Headers, 'x-auth-user-id': p2 }
+    const sibling = await readJson(await carryover(app, lessonIds[1], blockB, p2Headers))
+    expect(sibling.project).toBeNull()
+  })
+
+  test('bloco que não é estúdio → 404', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const { slug, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    const richText = courses.blocks.find(
+      (b) => b.lessonId === lessonIds[0] && b.kind === 'rich_text',
+    )
+    const res = await carryover(app, lessonIds[0], richText?.id ?? randomUUID())
+    expect(res.status).toBe(404)
+    expect((await readJson(res)).error.code).toBe('STUDIO_BLOCK_NOT_FOUND')
+  })
+
+  test('sem matrícula ativa → 403 (antes de qualquer leitura de entrega)', async () => {
+    const { app, courses } = buildApp()
+    const { lessonIds } = seedSampleCourse(courses)
+    const blockB = seedChainBlock(courses, lessonIds[1], 'jogo')
+    const res = await carryover(app, lessonIds[1], blockB)
+    expect(res.status).toBe(403)
+  })
+
+  test('resolve a aula anterior cruzando MÓDULOS (ordem tupla módulo→aula)', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const { slug, courseId, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    const blockA = seedChainBlock(courses, lessonIds[0], 'jogo') // módulo 0, aula 0
+    const mod1 = addModule(courses, courseId, 1)
+    const lessonX = addLesson(courses, courseId, mod1, 0) // módulo 1, aula 0
+    const blockX = seedChainBlock(courses, lessonX, 'jogo')
+
+    await submit(app, lessonIds[0], blockA, STUDENT_PROJECT)
+    const body = await readJson(await carryover(app, lessonX, blockX))
+    expect(body.project.name).toBe('Minha entrega')
+  })
+
+  test('duas cadeias no mesmo curso não se cruzam', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const { slug, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    const blockA = seedChainBlock(courses, lessonIds[0], 'jogo')
+    const blockB = seedChainBlock(courses, lessonIds[1], 'site') // cadeia diferente
+
+    await submit(app, lessonIds[0], blockA, STUDENT_PROJECT)
+    const body = await readJson(await carryover(app, lessonIds[1], blockB))
+    expect(body.project).toBeNull()
+  })
+})

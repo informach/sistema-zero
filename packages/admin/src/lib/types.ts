@@ -266,6 +266,8 @@ export interface StudioBlock {
   allowLevelReveal?: boolean
   /** Atividade com auto-correção (fase 2). Ausente = bloco só de entrega. */
   activity?: LessonActivity
+  /** Nome do projeto contínuo (cadeia). Aulas com o mesmo nome carregam o código entre si. */
+  chain?: string
 }
 export type LessonBlockContent =
   | RichTextBlock

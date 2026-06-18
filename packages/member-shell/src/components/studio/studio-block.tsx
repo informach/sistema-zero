@@ -6,7 +6,7 @@ import { Button } from '@sistemazero/ui/button'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { CheckCircle2, Maximize2, Minimize2, Send } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { type ApiError, apiSend } from '../../lib/api'
+import { type ApiError, apiGet, apiSend } from '../../lib/api'
 import { cn } from '../../lib/cn'
 import type { StudioBlock, StudioStateView, StudioSubmissionResultView } from '../../lib/types'
 import { useLessonPlayer } from '../lesson-player-context'
@@ -53,25 +53,46 @@ export function StudioBlockView({ blockId, content, studioState }: Props) {
   const handleRef = useRef<StudioHandle | null>(null)
   const containerRef = useRef<HTMLDivElement | null>(null)
 
-  // Client-only: carrega o editor e semeia do rascunho LOCAL (se houver) ou do
-  // projeto inicial do admin. Semear DEPOIS do read evita re-hidratar por cima do WIP.
+  // Client-only: carrega o editor e semeia na ordem rascunho LOCAL → carryover da
+  // aula contínua anterior → projeto inicial do admin. Semear DEPOIS do read evita
+  // re-hidratar por cima do WIP.
   useEffect(() => {
     let active = true
     void (async () => {
       const mod = await import('@sistemazero/studio')
       if (!active) return
       setStudioLesson(() => mod.StudioLesson)
+      // 1) Rascunho LOCAL sempre vence — nunca re-hidratar por cima do WIP.
       const existing = await mod
         .createLocalPersistenceAdapter()
         .load(projectId)
         .catch(() => null)
       if (!active) return
-      setSeed(existing ?? { ...(content.initialProject as Project), id: projectId })
+      if (existing) {
+        setSeed(existing)
+        return
+      }
+      // 2) Projeto contínuo (cadeia) e sem rascunho local: semeia do que o aluno
+      //    enviou na aula contínua anterior. Lazy + best-effort: falha de rede NÃO
+      //    trava o editor (cai no initialProject).
+      if (content.chain && lessonId) {
+        const carry = await apiGet<{ project: unknown | null }>(
+          `/api/members/lessons/${encodeURIComponent(lessonId)}/blocks/${encodeURIComponent(blockId)}/studio-carryover`,
+        ).catch(() => null)
+        if (!active) return
+        if (carry?.project) {
+          // id estável por bloco — o autosave local desta aula grava na chave certa.
+          setSeed({ ...(carry.project as Project), id: projectId })
+          return
+        }
+      }
+      // 3) 1ª da cadeia / não enviou ainda / aula independente → template do bloco.
+      setSeed({ ...(content.initialProject as Project), id: projectId })
     })()
     return () => {
       active = false
     }
-  }, [projectId, content.initialProject])
+  }, [projectId, content.initialProject, content.chain, lessonId, blockId])
 
   // Sincroniza o estado quando o fullscreen sai pelo Esc/gesto do SO.
   useEffect(() => {

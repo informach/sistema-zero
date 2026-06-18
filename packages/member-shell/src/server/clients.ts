@@ -301,6 +301,20 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         { method: 'POST', body: results === undefined ? { project } : { project, results } },
       )
     },
+
+    /**
+     * Projeto da aula contínua anterior (mesma cadeia) p/ semear o editor. `null`
+     * quando é a 1ª da cadeia, o aluno não enviou ainda, ou o bloco é independente.
+     */
+    getStudioCarryover(
+      lessonId: string,
+      blockId: string,
+    ): Promise<GatewayResponse<{ project: unknown | null }>> {
+      return gw.gatewayFetch(
+        `/members/lessons/${enc(lessonId)}/blocks/${enc(blockId)}/studio-carryover`,
+        { method: 'GET' },
+      )
+    },
   }
 }
 

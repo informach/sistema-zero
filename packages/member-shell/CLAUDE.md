@@ -14,6 +14,12 @@ reutilizável NUNCA é cópia por app). Consumido como **TS source** via `export
 precisam de `transpilePackages: ['@sistemazero/studio']` + `@source "../../../studio/src"` +
 `frame-src 'self' blob:` na CSP (Monaco/Blockly/preview; terminal OFF dispensa COOP/COEP). O handler
 de entrega é `shell.routes.studioSubmit` (`POST /api/members/lessons/:lessonId/blocks/:blockId/studio-submission`).
+**Projeto contínuo (carryover):** quando o bloco tem `chain` (nome da cadeia), o `studio-block`
+semeia o editor na ordem **rascunho LOCAL → carryover → initialProject** — o rascunho local SEMPRE
+vence (não re-hidrata o WIP); o carryover (`shell.routes.studioCarryover`, `GET …/studio-carryover`)
+traz a última entrega do aluno na aula contínua anterior, é best-effort (falha de rede → cai no
+initialProject) e roda SÓ na 1ª abertura sem rascunho local. Ao semear do carryover o `id` do
+projeto é trocado p/ a chave do bloco atual (`sz-lesson-studio:<blockId>`).
 
 ## O que vive aqui vs no app
 

@@ -127,6 +127,18 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    (esperados/`code`) VÃO ao aluno (feedback instantâneo) — plataforma formativa; o gate
    confiável é o `structure` server-side. As fixtures do `evaluateStructure*` PRECISAM casar
    com as do `structure.ts` do studio.
+   **PROJETO CONTÍNUO (cadeia, carryover):** o `StudioBlock` tem `chain?: string` (campo no
+   jsonb `content` — SEM migration). Aulas com o MESMO `chain` no mesmo curso formam uma
+   sequência que constrói um único projeto (ex.: um jogo). `GET /members/lessons/:lessonId/
+   blocks/:blockId/studio-carryover` → `{project|null}` devolve a ÚLTIMA entrega do aluno no
+   bloco studio `chain`-igual da aula PUBLICADA imediatamente anterior (ordem do curso:
+   `module.sortOrder`, depois `lesson.sortOrder` — `CourseRepository.findPreceding
+   StudioBlockInChain`, query única + `getOne`); o front semeia o editor SÓ na 1ª abertura
+   (sem rascunho local). `GetStudioCarryoverService`: acesso pela CONTA, projeto pelo PERFIL
+   (`getOne(userId,…)` — nunca vaza de outro aluno); bloco sem `chain`/1ª da cadeia/sem
+   entrega → `{project:null}` (cai no `initialProject`). Carrega a última entrega MESMO sem
+   ter batido a nota de corte (continuar o WIP). Várias cadeias por curso NÃO se misturam
+   (filtro por nome). O "salvar" é a própria ENTREGA — nada novo no save/colunas.
 7. **Quiz é corrigido NO SERVIDOR** (`quiz_attempts` guarda o histórico; score 0–100 por
    conjunto EXATO de choices). O GET da aula **NUNCA envia o gabarito** — a projeção
    member-facing (`toMemberFacingQuizContent`) remove `correctChoiceIds`/`explanation`

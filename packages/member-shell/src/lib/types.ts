@@ -254,6 +254,11 @@ export interface StudioBlock {
   allowLevelReveal?: boolean
   /** Atividade com auto-correção (fase 2). Vai ao aluno (feedback instantâneo). */
   activity?: LessonActivity
+  /**
+   * Nome do projeto contínuo (cadeia). Quando presente, o editor carrega a última
+   * entrega do aluno no bloco contínuo da aula anterior da mesma cadeia (carryover).
+   */
+  chain?: string
 }
 export type LessonBlockContent =
   | RichTextBlock

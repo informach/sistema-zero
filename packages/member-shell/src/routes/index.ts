@@ -770,6 +770,15 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     },
   }
 
+  /** Carrega o projeto da aula contínua anterior (cadeia) p/ semear o editor (lazy). */
+  const studioCarryover = {
+    GET: async (_req: Request, ctx: { params: Promise<{ lessonId: string; blockId: string }> }) => {
+      const { lessonId, blockId } = await ctx.params
+      const { status, body } = await members.getStudioCarryover(lessonId, blockId)
+      return NextResponse.json(body ?? { project: null }, { status })
+    },
+  }
+
   // ── Payments ──────────────────────────────────────────────────────────────
 
   /** Lista paginada das compras do aluno logado (filtro por e-mail é do backend). */
@@ -964,6 +973,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     lessonPosition,
     quizAttempts,
     studioSubmit,
+    studioCarryover,
     paymentsMy,
     profilesList,
     profileCreate,

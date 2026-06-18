@@ -1082,6 +1082,19 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
     },
+    // Carrega o projeto da aula contínua anterior (mesma cadeia) p/ semear o editor —
+    // GET lazy chamado SÓ na 1ª abertura sem rascunho local; a resposta pode trazer o
+    // projeto inteiro (cabe na resposta em streaming, sem teto de corpo de requisição).
+    {
+      id: 'members-studio-carryover',
+      methods: ['GET'],
+      pathPattern: '/members/lessons/:lessonId/blocks/:blockId/studio-carryover',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
     // Concessão/assinatura (funil → gateway → members): HMAC de borda do funil +
     // o gateway re-assina como consumer `gateway` (members verifica com GATEWAY_HMAC_SECRET).
     {

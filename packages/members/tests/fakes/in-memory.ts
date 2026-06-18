@@ -330,6 +330,31 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     return this.lessons.filter((l) => l.moduleId === moduleId && l.isPublished).map((l) => l.id)
   }
 
+  async findPrecedingStudioBlockInChain(
+    courseId: string,
+    lessonId: string,
+    chain: string,
+  ): Promise<{ blockId: string; lessonId: string } | null> {
+    // Espelha a query Drizzle: aulas publicadas do curso ordenadas por
+    // (module.sortOrder, lesson.sortOrder); varre para trás a partir da atual e,
+    // dentro de cada aula, pega o bloco studio da cadeia com maior sortOrder.
+    const ordered = this.lessons
+      .filter((l) => l.courseId === courseId && l.isPublished)
+      .map((l) => ({ l, modSort: this.modules.find((m) => m.id === l.moduleId)?.sortOrder ?? 0 }))
+      .sort((a, b) => a.modSort - b.modSort || a.l.sortOrder - b.l.sortOrder)
+    const curIdx = ordered.findIndex((x) => x.l.id === lessonId)
+    if (curIdx < 0) return null
+    // Da aula imediatamente anterior para trás (mesma ordem do `ORDER BY ... DESC`).
+    for (const { l } of ordered.slice(0, curIdx).reverse()) {
+      const block = this.blocks
+        .filter((b) => b.lessonId === l.id && b.kind === 'studio')
+        .sort((a, b) => b.sortOrder - a.sortOrder)
+        .find((b) => (b.content as { chain?: string }).chain === chain)
+      if (block) return { blockId: block.id, lessonId: l.id }
+    }
+    return null
+  }
+
   async countLessonsByCourseIds(courseIds: string[]): Promise<Map<string, number>> {
     const set = new Set(courseIds)
     const out = new Map<string, number>()

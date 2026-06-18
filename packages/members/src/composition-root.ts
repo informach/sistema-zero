@@ -18,6 +18,7 @@ import { GetEbookDownloadService } from './application/get-ebook-download/get-eb
 import { GetLessonService } from './application/get-lesson/get-lesson.service'
 import { GetMemberDetailService } from './application/get-member-detail/get-member-detail.service'
 import { GetMyCourseService } from './application/get-my-course/get-my-course.service'
+import { GetStudioCarryoverService } from './application/get-studio-carryover/get-studio-carryover.service'
 import { GrantEntitlementService } from './application/grant-entitlement/grant-entitlement.service'
 import { GrantManualEntitlementService } from './application/grant-manual-entitlement/grant-manual-entitlement.service'
 import { ListCatalogService } from './application/list-catalog/list-catalog.service'
@@ -154,6 +155,7 @@ export async function createApplication(env: Env): Promise<Application> {
     () => randomUUID(),
     clock,
   )
+  const getStudioCarryover = new GetStudioCarryoverService(checkAccess, courses, studioSubmissions)
   const studioSubmissionsAdmin = new StudioSubmissionsAdminService(studioSubmissions)
 
   // Motor de acesso (webhooks)
@@ -215,6 +217,7 @@ export async function createApplication(env: Env): Promise<Application> {
       savePosition,
       submitQuiz,
       submitStudio,
+      getStudioCarryover,
       getCourseRating,
       saveCourseRating,
       getGamification,

@@ -453,6 +453,8 @@ const StudioBlockSchema = t.Object({
   allowedModes: t.Optional(t.Array(StudioModeSchema, { maxItems: 3 })),
   allowLevelReveal: t.Optional(t.Boolean()),
   activity: t.Optional(StudioActivitySchema),
+  /** Nome do projeto contínuo (cadeia) — ver StudioBlock em domain/course/lesson-block.ts. */
+  chain: t.Optional(t.String({ maxLength: 80 })),
 })
 
 export const LessonBlockContentSchema = t.Union([
@@ -468,6 +470,8 @@ export const LessonBlockContentSchema = t.Union([
 
 /** Params da rota de entrega do Estúdio (aluno) — espelha o quiz-attempts. */
 export const StudioSubmissionParams = t.Object({ lessonId: UUID, blockId: UUID })
+/** Params da rota de carryover do Estúdio (carregar o projeto da aula contínua anterior). */
+export const StudioCarryoverParams = t.Object({ lessonId: UUID, blockId: UUID })
 /** Params da rota admin de UMA entrega (por bloco + aluno). `id` = blockId. */
 export const AdminStudioSubmissionParams = t.Object({ id: UUID, userId: UUID })
 

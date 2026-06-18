@@ -125,6 +125,8 @@ interface BlockForm {
   studioAllowBlocks: string[]
   /** Estúdio: atividade com auto-correção (fase 2). Vazia = bloco só de entrega. */
   studioActivity: LessonActivity
+  /** Estúdio: nome do projeto contínuo (cadeia). Vazio = aula independente. */
+  studioChain: string
 }
 
 const EMPTY_BLOCK: BlockForm = {
@@ -147,6 +149,7 @@ const EMPTY_BLOCK: BlockForm = {
   studioAllowReveal: true,
   studioAllowBlocks: [],
   studioActivity: EMPTY_ACTIVITY,
+  studioChain: '',
 }
 
 const num = (s: string): number | undefined => (s.trim() ? Number(s) : undefined)
@@ -172,6 +175,7 @@ function buildContent(f: BlockForm, studioProject?: Project): LessonBlockContent
           : {}),
         allowLevelReveal: f.studioAllowReveal,
         ...(hasActivity ? { activity: f.studioActivity } : {}),
+        ...(f.studioChain.trim() ? { chain: f.studioChain.trim() } : {}),
       }
     }
     case 'rich_text':
@@ -364,6 +368,7 @@ export function LessonEditorClient({
       studioAllowReveal: c.kind === 'studio' ? (c.allowLevelReveal ?? true) : true,
       studioAllowBlocks: c.kind === 'studio' ? (c.allowBlocks ?? []) : [],
       studioActivity: c.kind === 'studio' ? (c.activity ?? EMPTY_ACTIVITY) : EMPTY_ACTIVITY,
+      studioChain: c.kind === 'studio' ? (c.chain ?? '') : '',
     })
     setBlockOpen(true)
   }
@@ -873,6 +878,17 @@ export function LessonEditorClient({
                 />
                 Aluno pode revelar blocos avançados
               </label>
+              <Field
+                label="Projeto contínuo (nome)"
+                hint="Opcional. Dê o MESMO nome às aulas que constroem um único projeto (ex.: 'jogo-da-cobrinha'): o aluno abre cada aula com o código que enviou na anterior da cadeia. Vazio = aula independente."
+              >
+                <Input
+                  value={blockForm.studioChain}
+                  maxLength={80}
+                  placeholder="ex.: jogo-da-cobrinha"
+                  onChange={(e) => setBlockForm((f) => ({ ...f, studioChain: e.target.value }))}
+                />
+              </Field>
               <Field
                 label="Projeto inicial"
                 hint="Monte o tipo de projeto, o código de partida e o nome — é o que o aluno abre na aula."
