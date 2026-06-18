@@ -1,12 +1,14 @@
 import type { EntitlementRepository } from '../../domain/ports/entitlement-repository.port'
 
 export interface AccessCheckResult {
-  /** Subconjunto de `courseRefs` em que o usuário tem matrícula ATIVA específica. */
+  /** Subconjunto de `courseRefs` em que o usuário tem matrícula ATIVA específica (de CURSO). */
   grants: string[]
   /** Chave-mestra ADULTA (`all_courses`) ATIVA? Cobre só cursos adult — quem aplica é o chamador. */
   hasMaster: boolean
   /** Chave-mestra KIDS (`all_kids_courses`) ATIVA? Cobre só cursos kids — idem. */
   hasMasterKids: boolean
+  /** Chaves de COMUNIDADE ativas (entitlement `community`; o `courseRef` guarda a chave). */
+  communities: string[]
 }
 
 /**
@@ -25,11 +27,16 @@ export class AccessCheckService {
     const active = await this.entitlements.listActiveByUser(userId, this.clock())
     const hasMaster = active.some((e) => e.accessType === 'all_courses')
     const hasMasterKids = active.some((e) => e.accessType === 'all_kids_courses')
-    const owned = new Set(
-      active.map((e) => e.courseRef).filter((ref): ref is string => ref !== null),
-    )
+    // `courseRef` é a chave do recurso; separamos por accessType (curso × comunidade).
+    const refsByType = (type: string): string[] =>
+      active
+        .filter((e) => e.accessType === type)
+        .map((e) => e.courseRef)
+        .filter((ref): ref is string => ref !== null)
+    const owned = new Set(refsByType('course'))
+    const communities = [...new Set(refsByType('community'))]
     const wanted = new Set(courseRefs)
     const grants = [...wanted].filter((ref) => owned.has(ref))
-    return { grants, hasMaster, hasMasterKids }
+    return { grants, hasMaster, hasMasterKids, communities }
   }
 }

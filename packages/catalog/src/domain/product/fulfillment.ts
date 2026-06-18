@@ -22,12 +22,16 @@ export interface ReleaseRule {
   date?: string
 }
 
-export type AccessType = 'course' | 'all_courses' | 'all_kids_courses'
+export type AccessType = 'course' | 'all_courses' | 'all_kids_courses' | 'community'
 
 export interface FulfillmentSpec {
   /** Tipo de acesso que a área de membros deve conceder. */
   accessType: AccessType
-  /** Slug do curso na área de membros (obrigatório quando `accessType = course`). */
+  /**
+   * Chave do recurso liberado: SLUG do curso (`accessType = course`) OU a CHAVE da
+   * comunidade (`accessType = community` — casa com `communities[]` do espaço no hub).
+   * Vazio nas chaves-mestra (`all_courses`/`all_kids_courses`).
+   */
   courseRef?: string
   /** Regra de liberação (drip). Default implícito: imediata. ARMAZENADA, ainda não aplicada pelo members. */
   release?: ReleaseRule

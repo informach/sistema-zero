@@ -429,6 +429,46 @@ export function grantAllKidsCourses(
   return e
 }
 
+/**
+ * Concede um acesso de COMUNIDADE (`accessType:'community'`) — o `courseRef` guarda
+ * a CHAVE da comunidade (casa com `communities[]` do espaço no hub). Vitalício por padrão.
+ */
+export function grantCommunity(
+  entitlements: InMemoryEntitlementRepository,
+  opts: { userId: string; communityKey: string; now?: Date; expiresAt?: Date | null },
+): EntitlementAggregate {
+  const now = opts.now ?? new Date('2026-06-01T00:00:00.000Z')
+  const e = EntitlementAggregate.grant({
+    id: randomUUID(),
+    userId: opts.userId,
+    productId: randomUUID(),
+    productKind: 'community',
+    accessType: 'community',
+    courseRef: opts.communityKey,
+    offerId: randomUUID(),
+    snapshot: {
+      offerId: 'o',
+      offerSlug: 'o',
+      productId: 'p',
+      sku: 's',
+      name: 'Comunidade',
+      kind: 'community',
+      accessType: 'community',
+      courseRef: opts.communityKey,
+      fulfillment: { accessType: 'community', courseRef: opts.communityKey },
+      resolvedAt: now.toISOString(),
+    },
+    sourceKind: 'manual',
+    sourceId: 'seed',
+    subscriptionId: null,
+    grantedAt: now,
+    expiresAt: opts.expiresAt ?? null,
+    idempotencyKey: `manual:${opts.userId}:community-${randomUUID()}`,
+  })
+  entitlements.seed(e)
+  return e
+}
+
 /** Oferta resolvida (catálogo) cujo item entrega a chave-mestra (`all_courses`). */
 export function offerWithAllCourses(offerSlug: string): ResolvedOffer {
   return {

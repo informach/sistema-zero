@@ -143,7 +143,8 @@ export class InMemoryEntitlementRepository implements EntitlementRepository {
     let strongest: EntitlementState | null = null
     for (const s of this.byId.values()) {
       const covers =
-        s.courseRef === courseRef || (opts?.masterType != null && s.accessType === opts.masterType)
+        (s.accessType === 'course' && s.courseRef === courseRef) ||
+        (opts?.masterType != null && s.accessType === opts.masterType)
       if (s.userId === userId && covers && isActive(s, now)) {
         if (!strongest || isStrongerState(s, strongest)) strongest = s
       }

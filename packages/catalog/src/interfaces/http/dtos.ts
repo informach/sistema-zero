@@ -34,6 +34,7 @@ const FulfillmentSchema = t.Object({
     t.Literal('course'),
     t.Literal('all_courses'),
     t.Literal('all_kids_courses'),
+    t.Literal('community'),
   ]),
   courseRef: t.Optional(t.String({ maxLength: 200 })),
   release: t.Optional(ReleaseRuleSchema),

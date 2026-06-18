@@ -121,9 +121,15 @@ export class DrizzleEntitlementRepository implements EntitlementRepository {
     // Pode haver mais de uma ativa (ex.: vitalícia + assinatura + chave-mestra);
     // escolhe a "mais forte": vitalícia (expiresAt nulo) primeiro, senão a de
     // validade mais distante. `masterType` ausente/null → só a matrícula específica.
+    // Acesso por matrícula ESPECÍFICA é só de entitlement `course` (o `courseRef`
+    // de um `community` é a chave da comunidade — não casa curso). + master da audiência.
+    const ownCourse = and(
+      eq(entitlements.accessType, 'course'),
+      eq(entitlements.courseRef, courseRef),
+    )
     const coverage = opts?.masterType
-      ? or(eq(entitlements.courseRef, courseRef), eq(entitlements.accessType, opts.masterType))
-      : eq(entitlements.courseRef, courseRef)
+      ? or(ownCourse, eq(entitlements.accessType, opts.masterType))
+      : ownCourse
     const [row] = await this.db
       .select()
       .from(entitlements)
