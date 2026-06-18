@@ -24,6 +24,7 @@ import { AdminHeader } from '@/components/admin/admin-header'
 import { OverviewCard } from '@/components/admin/overview-card'
 import { PaymentsTabs } from '@/components/admin/payments-tabs'
 import { StatusBadge } from '@/components/admin/status-badge'
+import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { formatCentsStr, formatDate } from '@/lib/format'
 import {
@@ -260,11 +261,7 @@ export function TransactionsClient() {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow>
-                <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
-                  <Spinner className="mx-auto" />
-                </TableCell>
-              </TableRow>
+              <TableSkeletonRows columns={5} />
             ) : items.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">

@@ -5,7 +5,6 @@ import { Card } from '@sistemazero/ui/card'
 import { Input } from '@sistemazero/ui/input'
 import { Pagination } from '@sistemazero/ui/pagination'
 import { Select } from '@sistemazero/ui/select'
-import { Spinner } from '@sistemazero/ui/spinner'
 import {
   Table,
   TableBody,
@@ -20,6 +19,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { MembersTabs } from '@/components/admin/members-tabs'
+import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { type ApiError, apiGet } from '@/lib/api'
 import { formatDate } from '@/lib/format'
 import { ENTITLEMENT_STATUSES, type MemberRow, type Paginated } from '@/lib/types'
@@ -122,11 +122,7 @@ export function MembersClient() {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow>
-                <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
-                  <Spinner className="mx-auto" />
-                </TableCell>
-              </TableRow>
+              <TableSkeletonRows columns={5} />
             ) : error ? (
               <TableRow>
                 <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
