@@ -183,8 +183,16 @@ function StudioCoreBody({
     if (!sanitized) return
     hydrateProject(sanitized)
     setPreviewRunning(true)
-    return () => unloadProject()
-  }, [sanitized, hydrateProject, unloadProject, setPreviewRunning])
+    // Resultado da auto-correção é POR PROJETO: ao (re)hidratar — inclusive via
+    // handle.replaceProject() / carregar a próxima aula da cadeia — o último
+    // resultado não vale mais. Sem isto, getActivityResult() devolveria a nota de
+    // um projeto anterior e o host a anexaria no envio do novo (6º review, D).
+    checksStoreApi.getState().setResult(null)
+    return () => {
+      unloadProject()
+      checksStoreApi.getState().setResult(null)
+    }
+  }, [sanitized, hydrateProject, unloadProject, setPreviewRunning, checksStoreApi])
 
   useEffect(() => {
     const detach = persistence.attach()

@@ -3,6 +3,8 @@ import { Button } from '#ui'
 import { useActivityRunner } from '../../activity/useActivityRunner'
 import type { ActivityCheck } from '../../studio/activity'
 import { useStudioActivity } from '../../studio/activity'
+import { useStudioLayout } from '../../studio/layoutContext'
+import { renderLessonMarkdown } from './lessonMarkdown'
 
 /**
  * Painel da ATIVIDADE com auto-correção do `<StudioLesson>`.
@@ -15,17 +17,29 @@ import { useStudioActivity } from '../../studio/activity'
  * no IR, comportamento/teste/código no sandbox oculto) + o resultado por checagem
  * com a dica de como consertar. O resultado fica na `checksStore` para o host
  * anexar no envio (correção híbrida).
+ *
+ * Responsivo: no WIDE é uma coluna lateral (`w-80`, à esquerda do modo); no NARROW
+ * (kids no celular/embed estreito) vira uma faixa horizontal NO TOPO, com altura
+ * limitada — sem ela, o aluno em tela estreita ficava sem o "Verificar" e o gate
+ * reprovava em silêncio toda checagem não-estrutural (6º review, achado A).
  */
 export function ActivityPanel(): JSX.Element | null {
   const activity = useStudioActivity()
   const runner = useActivityRunner(activity ?? { instructions: '', checks: [] })
+  const isNarrow = useStudioLayout().isNarrow
   if (!activity) return null
 
   const checkById = new Map<string, ActivityCheck>(activity.checks.map((c) => [c.id, c]))
   const result = runner.result
 
   return (
-    <aside className="flex h-full w-80 shrink-0 flex-col overflow-y-auto border-r border-sz-border bg-sz-panel">
+    <aside
+      className={
+        isNarrow
+          ? 'flex max-h-[45%] w-full shrink-0 flex-col overflow-y-auto border-b border-sz-border bg-sz-panel'
+          : 'flex h-full w-80 shrink-0 flex-col overflow-y-auto border-r border-sz-border bg-sz-panel'
+      }
+    >
       <div className="flex items-center justify-between gap-2 border-b border-sz-border px-4 py-3">
         <h2 className="text-sm font-semibold text-sz-fg">Atividade</h2>
         {result ? (
@@ -40,9 +54,14 @@ export function ActivityPanel(): JSX.Element | null {
         ) : null}
       </div>
 
-      <div className="whitespace-pre-wrap px-4 py-3 text-sm text-sz-fg-soft">
-        {activity.instructions}
-      </div>
+      {/* Enunciado em markdown (autorado no admin via TipTap). renderLessonMarkdown
+          escapa todo HTML do autor e só reintroduz um subconjunto seguro — é
+          seguro para dangerouslySetInnerHTML (ver lessonMarkdown.ts). */}
+      <div
+        className="flex flex-col gap-2 px-4 py-3 text-sm text-sz-fg-soft"
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: HTML saneado por renderLessonMarkdown (escape-first + subconjunto seguro)
+        dangerouslySetInnerHTML={{ __html: renderLessonMarkdown(activity.instructions) }}
+      />
 
       <div className="px-4 pb-3">
         <Button

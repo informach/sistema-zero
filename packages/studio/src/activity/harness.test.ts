@@ -36,4 +36,21 @@ describe('buildCheckHarness', () => {
     const code = buildCheckHarness(evil)
     expect(code).not.toContain('</script>')
   })
+
+  it('NÃO usa eval/new Function (a CSP do preview bloqueia unsafe-eval)', () => {
+    // Regressão do 6º review: runCode usava `new Function('ctx', source)`, que a
+    // CSP (script-src sem 'unsafe-eval') BLOQUEIA → toda checagem `code` morria.
+    const code = buildCheckHarness(CHECKS)
+    expect(code).not.toContain('new Function(')
+    expect(code).not.toMatch(/\beval\s*\(/)
+  })
+
+  it('roda code/leitura de globais via <script> inline injetado', () => {
+    // 'unsafe-inline' é liberado pela CSP → executar o source num <script>
+    // injetado (textContent) alcança até globais léxicas (let/const de topo).
+    const code = buildCheckHarness(CHECKS)
+    expect(code).toContain("createElement('script')")
+    expect(code).toContain('.textContent')
+    expect(code).toContain('readGlobal') // window-first + fallback léxico
+  })
 })

@@ -15,9 +15,13 @@ export interface BuildHarnessOptions {
  * no `buildPreviewDoc`; o `scriptTag` já neutraliza `</script`). Sem imports.
  *
  * Roda no sandbox null-origin do aluno (loopGuard/CSP/permissionGuard valem). As
- * checagens entram como DADOS (JSON) — o `code.source` é uma STRING executada via
- * `new Function` em runtime, nunca concatenada na estrutura do harness (sem
- * injeção). O harness:
+ * checagens entram como DADOS (JSON). O `code.source` do professor roda num
+ * `<script>` INLINE injetado em runtime (a CSP libera `'unsafe-inline'`, mas NÃO
+ * `'unsafe-eval'` — `eval`/`new Function` estão BLOQUEADOS; ver `preview/csp.ts`).
+ * O corpo vai por `script.textContent` (não re-tokenizado como HTML → `</script>`
+ * é inócuo) e a leitura de globais usa o MESMO truque (`readGlobal`), porque
+ * `let`/`const` de topo do aluno são globais LÉXICAS, invisíveis em `window[...]`.
+ * O harness:
  *  1. captura `console.*` (para `consoleContains`) por cima do interceptor;
  *  2. no `load` + `delayMs`, roda cada checagem e posta um `checkResult` ao parent.
  *
@@ -82,6 +86,26 @@ export function buildCheckHarness(
       );
     } catch (e) {}
   }
+  function readGlobal(name) {
+    if (typeof name !== 'string') return undefined;
+    // var / function de topo / window.x = … são PROPRIEDADES de window.
+    if (name in window) return window[name];
+    // let/const/class de topo são globais LÉXICAS — NÃO viram propriedade de
+    // window. Só são alcançáveis por referência crua dentro de um <script>
+    // inline (a CSP do preview libera 'unsafe-inline', mas NÃO 'unsafe-eval';
+    // por isso eval/new Function estão fora — ver activity/sandbox + preview/csp).
+    if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(name)) return undefined;
+    try {
+      delete window.__szG;
+      var s = document.createElement('script');
+      s.textContent = 'try{window.__szG={v:(' + name + ')}}catch(e){}';
+      (document.head || document.documentElement).appendChild(s);
+      s.remove();
+      var box = window.__szG;
+      delete window.__szG;
+      return box ? box.v : undefined;
+    } catch (e) { return undefined; }
+  }
   function runBehavior(c) {
     var r = c.rule;
     if (r.type === 'consoleContains') return { passed: consoleText.join('\\n').indexOf(r.text) !== -1, message: 'console não contém o texto esperado' };
@@ -91,7 +115,7 @@ export function buildCheckHarness(
       var txt = el ? (el.textContent || '') : '';
       return { passed: !!el && txt.indexOf(r.text) !== -1, message: 'o elemento não contém o texto esperado' };
     }
-    if (r.type === 'globalEquals') return { passed: deepEqual(window[r.name], r.value), message: 'a variável global "' + r.name + '" não tem o valor esperado' };
+    if (r.type === 'globalEquals') return { passed: deepEqual(readGlobal(r.name), r.value), message: 'a variável global "' + r.name + '" não tem o valor esperado' };
     return { passed: false, message: 'regra de comportamento desconhecida' };
   }
   function runTestCase(c) {
@@ -111,20 +135,32 @@ export function buildCheckHarness(
     return { passed: true };
   }
   function runCode(c) {
-    var ctx = {
+    window.__szCtx = {
       doc: document,
       consoleText: consoleText.slice(),
-      getGlobal: function (name) { return window[name]; },
-      callFn: function (name) { var f = window[name]; var a = Array.prototype.slice.call(arguments, 1); return f.apply(null, a); },
+      getGlobal: readGlobal,
+      callFn: function (name) { var f = readGlobal(name); var a = Array.prototype.slice.call(arguments, 1); return f.apply(null, a); },
       assert: function (cond, msg) { if (!cond) throw new Error(msg || 'asserção falhou'); },
     };
+    // A asserção do professor roda num <script> INLINE (a CSP libera
+    // 'unsafe-inline'; new Function/eval exigiriam 'unsafe-eval', que NÃO é
+    // liberado). Rodar inline também dá acesso às globais LÉXICAS do aluno via
+    // ctx.getGlobal. textContent NÃO é re-tokenizado como HTML → um fechamento de
+    // script literal no corpo do professor é inócuo (sem necessidade de escape).
+    delete window.__szCodeOut;
+    var s = document.createElement('script');
+    s.textContent =
+      '(function(){var ctx=window.__szCtx;try{var __o=(function(){' + c.source +
+      '\\n})();window.__szCodeOut={ok:true,passed:__o===undefined?true:!!__o};}' +
+      'catch(e){window.__szCodeOut={ok:true,passed:false,msg:(e&&e.message)?e.message:String(e)};}})();';
     try {
-      var fn = new Function('ctx', c.source);
-      var out = fn(ctx);
-      return { passed: out === undefined ? true : !!out, message: 'a asserção retornou falso' };
-    } catch (e) {
-      return { passed: false, message: e && e.message ? e.message : String(e) };
-    }
+      (document.head || document.documentElement).appendChild(s);
+      s.remove();
+    } catch (e) {}
+    var out = window.__szCodeOut;
+    delete window.__szCodeOut;
+    if (!out || !out.ok) return { passed: false, message: 'a asserção não pôde ser avaliada (erro de sintaxe?)' };
+    return out.passed ? { passed: true } : { passed: false, message: out.msg || 'a asserção retornou falso' };
   }
   function runAll() {
     for (var i = 0; i < CHECKS.length; i++) {

@@ -86,12 +86,14 @@ export function Shell({ onExit, canToggleTheme }: ShellProps): JSX.Element {
                     {/* ActivityPanel é self-gating (null sem atividade): no
                         <StudioEditor> e nas aulas sem exercício não acrescenta
                         DOM, então o split do editor fica idêntico ao de antes.
-                        Quando a fase de auto-correção ligar a atividade, a raiz
-                        do modo é `w-full` — envolver o ModeArea em `flex-1 min-w-0`
-                        para ele dividir a largura com o painel (`w-72 shrink-0`). */}
+                        Com atividade, a raiz do modo é `w-full`, então o ModeArea
+                        vai num wrapper `min-w-0 flex-1` para dividir a largura com
+                        o painel (`w-80 shrink-0`) sem estourar o split. */}
                     <div key={projectId} className="flex h-full min-h-0 w-full">
                       <ActivityPanel />
-                      <ModeArea projectMode={projectMode} projectId={projectId} />
+                      <div className="h-full min-w-0 flex-1">
+                        <ModeArea projectMode={projectMode} projectId={projectId} />
+                      </div>
                     </div>
                   </Panel>
                   {hasBottomPanel && (
