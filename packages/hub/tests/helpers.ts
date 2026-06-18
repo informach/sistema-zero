@@ -67,6 +67,7 @@ export function buildApp(
     granted: Set<string>
     hasMaster: boolean
     hasMasterKids: boolean
+    communities: Set<string>
   }>(opts.accessCacheTtlMs ?? 0)
   const access = new AccessResolutionService(members, cache)
   const clock = opts.clock ?? (() => new Date())

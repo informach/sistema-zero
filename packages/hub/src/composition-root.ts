@@ -77,6 +77,7 @@ export async function createApplication(env: Env): Promise<Application> {
     granted: Set<string>
     hasMaster: boolean
     hasMasterKids: boolean
+    communities: Set<string>
   }>(accessCacheTtlMs(env))
   const limits = attachmentLimits(env)
 

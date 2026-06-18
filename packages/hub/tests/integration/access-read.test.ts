@@ -80,6 +80,41 @@ describe('leitura do aluno com resolução de acesso', () => {
     expect(await listKids(studentHeaders(adultMaster))).toEqual(new Set(['kids']))
   })
 
+  test('community_gated: só quem tem a CHAVE de comunidade enxerga', async () => {
+    // Comunidade como PRODUTO: o espaço exige a chave 'vip'.
+    await ctx.repo.createSpace(
+      space({
+        slug: 'comunidade-vip',
+        name: 'Comunidade VIP',
+        accessConfig: {
+          visibility: 'community_gated',
+          courses: [],
+          communities: ['vip'],
+          roles: [],
+        },
+      }),
+    )
+
+    // Sem o acesso de comunidade → não vê (só o público).
+    expect(new Set(await listSlugs(ctx.app, studentHeaders(randomUUID())))).toEqual(
+      new Set(['geral']),
+    )
+
+    // Com a chave 'vip' → vê a comunidade VIP (matrícula de curso NÃO basta).
+    const member = randomUUID()
+    ctx.members.communitiesByUser.set(member, new Set(['vip']))
+    expect(new Set(await listSlugs(ctx.app, studentHeaders(member)))).toEqual(
+      new Set(['geral', 'comunidade-vip']),
+    )
+
+    // Quem tem só matrícula de curso (não a comunidade) NÃO vê a VIP.
+    const courseOnly = randomUUID()
+    ctx.members.grantsByUser.set(courseOnly, new Set(['curso-a']))
+    expect(new Set(await listSlugs(ctx.app, studentHeaders(courseOnly)))).toEqual(
+      new Set(['geral', 'curso-a-srv']),
+    )
+  })
+
   test('staff/admin vê tudo (bypass) sem chamar o members', async () => {
     const slugs = await listSlugs(ctx.app, adminHeaders())
     expect(new Set(slugs)).toEqual(new Set(['geral', 'curso-a-srv']))

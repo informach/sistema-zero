@@ -5,6 +5,8 @@ export interface CourseAccessResult {
   hasMaster: boolean
   /** Chave-mestra KIDS (`all_kids_courses`) ATIVA? Cobre só cursos/espaços `kids`. */
   hasMasterKids: boolean
+  /** Chaves de COMUNIDADE ativas (entitlement `community`) — gatear `community_gated`. */
+  communities: string[]
 }
 
 /** Argumentos da checagem de elegibilidade da vitrine (Mural). */

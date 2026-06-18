@@ -32,11 +32,18 @@ const HTTPS_URL_PATTERN = '^https://'
 // accessConfig: a coerência (course_gated exige cursos; role_gated exige cargos) é
 // reforçada no service — aqui aceitamos arrays opcionais (default [] no mapper).
 const COURSE_REF = t.String({ minLength: 1, maxLength: 200 })
+const COMMUNITY_REF = t.String({ minLength: 1, maxLength: 200 })
 const ROLE = t.String({ minLength: 1, maxLength: 50 })
 export const AccessConfigSchema = t.Object(
   {
-    visibility: t.Union([t.Literal('public'), t.Literal('course_gated'), t.Literal('role_gated')]),
+    visibility: t.Union([
+      t.Literal('public'),
+      t.Literal('course_gated'),
+      t.Literal('community_gated'),
+      t.Literal('role_gated'),
+    ]),
     courses: t.Optional(t.Array(COURSE_REF, { maxItems: 200 })),
+    communities: t.Optional(t.Array(COMMUNITY_REF, { maxItems: 200 })),
     roles: t.Optional(t.Array(ROLE, { maxItems: 50 })),
   },
   { additionalProperties: false },

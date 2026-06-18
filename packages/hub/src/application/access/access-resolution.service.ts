@@ -25,13 +25,16 @@ interface CourseAccess {
   granted: Set<string>
   hasMaster: boolean
   hasMasterKids: boolean
+  /** Chaves de comunidade ativas do ator (entitlement `community`). */
+  communities: Set<string>
 }
 
-/** Acesso a cursos "vazio" (nenhum espaço course_gated pra resolver). */
+/** Acesso "vazio" (nenhum espaço gated pra resolver). */
 const NO_COURSE_ACCESS: CourseAccess = {
   granted: new Set<string>(),
   hasMaster: false,
   hasMasterKids: false,
+  communities: new Set<string>(),
 }
 
 /**
@@ -63,7 +66,14 @@ export class AccessResolutionService {
           .flatMap((s) => s.accessConfig.courses),
       ),
     ]
-    const access = courseRefs.length
+    // Espaços community_gated também precisam do access-check (ele devolve as
+    // `communities` do ator independentemente dos courseRefs pedidos).
+    const needsAccess = spaces.some(
+      (s) =>
+        s.accessConfig.visibility === 'course_gated' ||
+        s.accessConfig.visibility === 'community_gated',
+    )
+    const access = needsAccess
       ? await this.resolveCourseAccess(actor.accountId, courseRefs)
       : NO_COURSE_ACCESS
     return spaces.map((space) => ({
@@ -96,7 +106,12 @@ export class AccessResolutionService {
     if (actor.privileged) return channels
     const gated = channels.filter((c) => c.accessConfig?.visibility === 'course_gated')
     const courseRefs = [...new Set(gated.flatMap((c) => c.accessConfig?.courses ?? []))]
-    const access = courseRefs.length
+    const needsAccess = channels.some(
+      (c) =>
+        c.accessConfig?.visibility === 'course_gated' ||
+        c.accessConfig?.visibility === 'community_gated',
+    )
+    const access = needsAccess
       ? await this.resolveCourseAccess(actor.accountId, courseRefs)
       : NO_COURSE_ACCESS
     return channels.filter(
@@ -110,8 +125,9 @@ export class AccessResolutionService {
     actor: Actor,
     audience: Audience,
   ): Promise<boolean> {
-    if (access.visibility === 'course_gated') {
+    if (access.visibility === 'course_gated' || access.visibility === 'community_gated') {
       // Acesso pela CONTA (sessão de perfil → x-auth-account-id); autoria pelo userId.
+      // community_gated tem `courses` vazio — o access-check devolve as `communities`.
       const ca = await this.resolveCourseAccess(actor.accountId, access.courses)
       return this.evaluate(access, actor, audience, ca)
     }
@@ -138,6 +154,9 @@ export class AccessResolutionService {
           (courseAccess.hasMaster && audience === 'adult') ||
           (courseAccess.hasMasterKids && audience === 'kids')
         )
+      case 'community_gated':
+        // Tem o acesso de ALGUMA das comunidades exigidas (entitlement `community`).
+        return (access.communities ?? []).some((c) => courseAccess.communities.has(c))
     }
   }
 
@@ -150,6 +169,7 @@ export class AccessResolutionService {
       granted: new Set(res.granted),
       hasMaster: res.hasMaster,
       hasMasterKids: res.hasMasterKids,
+      communities: new Set(res.communities),
     }
     this.cache.set(key, value)
     return value
