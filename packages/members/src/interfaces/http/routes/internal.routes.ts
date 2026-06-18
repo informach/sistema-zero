@@ -1,16 +1,9 @@
 import { Elysia } from 'elysia'
 import type { AccessCheckService } from '../../../application/access-check/access-check.service'
-import type { GetChildrenStatsService } from '../../../application/children-stats/get-children-stats.service'
 import type { GetShowcasePayloadService } from '../../../application/get-showcase-payload/get-showcase-payload.service'
 import type { GetProfileAllowanceService } from '../../../application/profile-allowance/get-profile-allowance.service'
 import { assertInternalCaller } from '../auth'
-import {
-  AccessCheckBody,
-  ChildrenStatsQuery,
-  ProfileAllowanceQuery,
-  parseProfileIds,
-  ShowcaseEligibilityQuery,
-} from '../dtos'
+import { AccessCheckBody, ProfileAllowanceQuery, ShowcaseEligibilityQuery } from '../dtos'
 
 export interface InternalRoutesDeps {
   accessCheck: AccessCheckService
@@ -18,8 +11,6 @@ export interface InternalRoutesDeps {
   profileAllowance: GetProfileAllowanceService
   /** Elegibilidade + conteúdo autoritativo do Mural — consumido pelo `hub` ao publicar. */
   showcasePayload: GetShowcasePayloadService
-  /** Resumo de progresso dos filhos da conta — consumido pelo BFF da área dos pais (kids). */
-  childrenStats: GetChildrenStatsService
   /** Token interno (= INTERNAL_API_TOKEN). Exigido SEMPRE que setado (S2S, não passa pelo gateway). */
   internalToken?: string
 }
@@ -42,16 +33,6 @@ export function internalRoutes(deps: InternalRoutesDeps) {
       .get('/profile-allowance', ({ query }) => deps.profileAllowance.execute(query.accountId), {
         query: ProfileAllowanceQuery,
       })
-      // Resumo dos filhos (área dos pais): escopo-conta. O `accountId` vem do BFF (sessão
-      // da conta); os `profileIds` vêm do auth, e o members AINDA filtra por `account_id`.
-      .get(
-        '/children-stats',
-        ({ query }) =>
-          deps.childrenStats.execute(query.accountId, parseProfileIds(query.profileIds), {
-            audience: query.audience ?? 'kids',
-          }),
-        { query: ChildrenStatsQuery },
-      )
       // O hub re-valida a elegibilidade aqui (não confia no corpo da publicação): acesso
       // pela CONTA (`accountId`), entrega pelo PERFIL (`userId`). `privileged:false` — só
       // quem realmente concluiu o projeto publica (equipe testando não vai ao Mural real).

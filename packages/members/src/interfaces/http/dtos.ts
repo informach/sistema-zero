@@ -75,12 +75,12 @@ export const AccessCheckBody = t.Object({
 export const ProfileAllowanceQuery = t.Object({ accountId: UUID })
 
 /**
- * Query de `GET /members/internal/children-stats` (S2S — consumida pelo BFF da área
- * dos pais): resumo de progresso dos filhos da CONTA. `profileIds` = CSV de uuids
- * (os perfis da conta, vindos do auth; o members ainda filtra por `account_id`).
+ * Query de `GET /members/parents/children-stats` (aluno, via gateway): resumo de
+ * progresso dos filhos da CONTA. A conta vem do header confiável (`x-auth-user-id`),
+ * NÃO do cliente. `profileIds` = CSV de uuids dos perfis (vindos do auth; o members
+ * ainda filtra por `account_id`). `audience` ausente → `kids`.
  */
 export const ChildrenStatsQuery = t.Object({
-  accountId: UUID,
   profileIds: t.Optional(t.String({ maxLength: 2000 })),
   audience: t.Optional(AUDIENCE),
 })

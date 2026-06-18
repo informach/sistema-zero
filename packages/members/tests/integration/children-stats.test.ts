@@ -15,10 +15,15 @@ type ChildStats = {
   rankingPosition: number | null
 }
 
+// A CONTA vem do header confiável `x-auth-user-id` (o gateway o injeta após o JWT) —
+// NÃO de query. Em sessão de conta, x-auth-user-id = a conta do responsável.
 function statsRequest(accountId: string, profileIds: string[], token = TOKEN): Request {
-  const qs = new URLSearchParams({ accountId, profileIds: profileIds.join(','), audience: 'kids' })
-  return new Request(`http://local/members/internal/children-stats?${qs}`, {
-    headers: token ? { 'x-internal-token': token } : {},
+  const qs = new URLSearchParams({ profileIds: profileIds.join(','), audience: 'kids' })
+  return new Request(`http://local/members/parents/children-stats?${qs}`, {
+    headers: {
+      ...(token ? { 'x-internal-token': token } : {}),
+      'x-auth-user-id': accountId,
+    },
   })
 }
 
@@ -85,7 +90,7 @@ describe('GET /members/internal/children-stats', () => {
 
     const res = await ctx.app.handle(statsRequest(account, [profileA, profileB, profileC]))
     expect(res.status).toBe(200)
-    const body = (await res.json()) as ChildStats[]
+    const body = ((await res.json()) as { children: ChildStats[] }).children
 
     // Só A e B (C é de outra conta — autorização por account_id).
     expect(new Set(body.map((c) => c.profileId))).toEqual(new Set([profileA, profileB]))
@@ -120,7 +125,7 @@ describe('GET /members/internal/children-stats', () => {
       privileged: false,
     })
     const res = await ctx.app.handle(statsRequest(account, [profile]))
-    const body = (await res.json()) as ChildStats[]
+    const body = ((await res.json()) as { children: ChildStats[] }).children
     expect(body.map((c) => c.profileId)).toEqual([profile])
     expect(body[0]?.xp).toBe(10)
   })

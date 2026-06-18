@@ -961,6 +961,20 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
     },
+    // Resumo de progresso dos FILHOS (área dos pais, kids). A conta vem do header
+    // confiável `x-auth-user-id` (o members usa resolveUserId — não o accountId do
+    // cliente); o BFF chama atrás do portão de senha. Path literal `/members/parents/*`
+    // não colide com `/members/courses…` nem com o wildcard `/members/admin/*`.
+    {
+      id: 'members-children-stats',
+      methods: ['GET'],
+      pathPattern: '/members/parents/children-stats',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
     {
       id: 'members-course-detail',
       methods: ['GET'],

@@ -1,4 +1,5 @@
 import { Elysia } from 'elysia'
+import type { GetChildrenStatsService } from '../../../application/children-stats/get-children-stats.service'
 import type { GetGamificationService } from '../../../application/gamification/get-gamification.service'
 import type { GetAttachmentDownloadService } from '../../../application/get-attachment-download/get-attachment-download.service'
 import type { GetCourseProgressService } from '../../../application/get-course-progress/get-course-progress.service'
@@ -19,10 +20,12 @@ import { assertInternalCaller, isPrivilegedActor, resolveAccountId, resolveUserI
 import {
   AttachmentResolveParams,
   AudienceQuery,
+  ChildrenStatsQuery,
   CourseRatingBody,
   EbookResolveParams,
   GamificationQuery,
   LessonIdParams,
+  parseProfileIds,
   QuizAttemptBody,
   QuizAttemptParams,
   ShowcasePayloadParams,
@@ -50,6 +53,7 @@ export interface MembersRoutesDeps {
   getCourseRating: GetCourseRatingService
   saveCourseRating: SaveCourseRatingService
   getGamification: GetGamificationService
+  childrenStats: GetChildrenStatsService
   /** Token interno do gateway (defesa em profundidade). Vazio em dev → checagem desligada. */
   internalToken?: string
 }
@@ -120,6 +124,27 @@ export function membersRoutes(deps: MembersRoutesDeps) {
           })
         },
         { query: GamificationQuery },
+      )
+      // Resumo de progresso dos FILHOS (área dos pais, kids). A conta vem do header
+      // confiável `x-auth-user-id` (resolveUserId) — NÃO de query nem de resolveAccountId:
+      // em sessão de PERFIL (criança) o userId é o perfil → não bate com nenhum
+      // `account_id` → volta vazio (uma criança não enxerga os irmãos). O BFF chama isto
+      // atrás do portão de senha; os `profileIds` vêm do auth e o members filtra por conta.
+      .get(
+        '/parents/children-stats',
+        async ({ headers, query }) => {
+          const accountId = resolveUserId(headers)
+          return {
+            children: await deps.childrenStats.execute(
+              accountId,
+              parseProfileIds(query.profileIds),
+              {
+                audience: query.audience ?? 'kids',
+              },
+            ),
+          }
+        },
+        { query: ChildrenStatsQuery },
       )
       .get('/courses/:slug', async ({ headers, params }) => {
         const userId = resolveUserId(headers)

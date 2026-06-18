@@ -157,6 +157,12 @@ export function buildApp(
       getStudioCarryover: new GetStudioCarryoverService(checkAccess, courses, studioSubmissions),
       getShowcasePayload: new GetShowcasePayloadService(checkAccess, courses, studioSubmissions),
       getGamification: new GetGamificationService(gamification, clock),
+      childrenStats: new GetChildrenStatsService(
+        gamification,
+        courses,
+        progress,
+        studioSubmissions,
+      ),
       internalToken: opts.internalToken,
     },
     webhooks: {
@@ -202,12 +208,6 @@ export function buildApp(
         defaultMaxProfiles: 1,
       }),
       showcasePayload: new GetShowcasePayloadService(checkAccess, courses, studioSubmissions),
-      childrenStats: new GetChildrenStatsService(
-        gamification,
-        courses,
-        progress,
-        studioSubmissions,
-      ),
       internalToken: opts.internalToken,
     },
   })

@@ -243,6 +243,7 @@ export async function createApplication(env: Env): Promise<Application> {
       getCourseRating,
       saveCourseRating,
       getGamification,
+      childrenStats,
       internalToken: env.INTERNAL_API_TOKEN,
     },
     webhooks: {
@@ -278,7 +279,6 @@ export async function createApplication(env: Env): Promise<Application> {
       accessCheck,
       profileAllowance,
       showcasePayload: getShowcasePayload,
-      childrenStats,
       internalToken: env.INTERNAL_API_TOKEN,
     },
   })
