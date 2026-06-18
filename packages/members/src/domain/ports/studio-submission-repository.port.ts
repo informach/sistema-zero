@@ -63,4 +63,9 @@ export interface StudioSubmissionRepository {
   listByBlock(blockId: string): Promise<StudioSubmissionSummary[]>
   /** Entrega de um aluno num bloco (abrir no Estúdio do professor + correção). */
   getOne(userId: string, blockId: string): Promise<StudioSubmissionDetail | null>
+  /**
+   * Quantos projetos o aluno ENTREGOU (linhas de `studio_submissions` do usuário) —
+   * resumo do progresso na área dos pais (kids). Usa o índice `(user_id, block_id)`.
+   */
+  countByUser(userId: string): Promise<number>
 }

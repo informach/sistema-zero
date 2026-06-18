@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { createLogger, type Logger } from '@sistemazero/core/logging'
 import { CheckAccessService } from './application/access/check-access.service'
 import { AccessCheckService } from './application/access-check/access-check.service'
+import { GetChildrenStatsService } from './application/children-stats/get-children-stats.service'
 import {
   AttachmentAdminService,
   BlockAdminService,
@@ -122,6 +123,13 @@ export async function createApplication(env: Env): Promise<Application> {
   const profileAllowance = new GetProfileAllowanceService(entitlements, clock, {
     defaultMaxProfiles: env.DEFAULT_KIDS_MAX_PROFILES,
   })
+  // S2S: resumo de progresso dos filhos (consumido pelo BFF da área dos pais, kids).
+  const childrenStats = new GetChildrenStatsService(
+    gamificationRepo,
+    courses,
+    progress,
+    studioSubmissions,
+  )
   const listMyCourses = new ListMyCoursesService(entitlements, courses, progress, positions, clock)
   const listCatalog = new ListCatalogService(courses, entitlements, clock)
   const getMyCourse = new GetMyCourseService(checkAccess, courses, progress, positions, ratings)
@@ -270,6 +278,7 @@ export async function createApplication(env: Env): Promise<Application> {
       accessCheck,
       profileAllowance,
       showcasePayload: getShowcasePayload,
+      childrenStats,
       internalToken: env.INTERNAL_API_TOKEN,
     },
   })

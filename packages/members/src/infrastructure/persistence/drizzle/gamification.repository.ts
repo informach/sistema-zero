@@ -210,6 +210,31 @@ export class DrizzleGamificationRepository implements GamificationRepository {
     }
   }
 
+  async listByAccount(
+    accountId: string,
+    userIds: string[],
+    audience: CourseAudience,
+  ): Promise<GamificationProfileRecord[]> {
+    if (userIds.length === 0) return []
+    const rows = await this.db
+      .select()
+      .from(gamificationProfiles)
+      .where(
+        and(
+          eq(gamificationProfiles.accountId, accountId),
+          inArray(gamificationProfiles.userId, userIds),
+          eq(gamificationProfiles.audience, audience),
+        ),
+      )
+    return rows.map((row) => ({
+      userId: row.userId,
+      xp: row.xp,
+      streakCurrent: row.streakCurrent,
+      streakBest: row.streakBest,
+      lastActivityDate: row.lastActivityDate,
+    }))
+  }
+
   async listBadges(
     userId: string,
     audience: CourseAudience,

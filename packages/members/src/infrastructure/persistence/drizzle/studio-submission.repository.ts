@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray } from 'drizzle-orm'
+import { and, asc, count, eq, inArray } from 'drizzle-orm'
 import type { StudioCheckResult } from '../../../domain/course/studio-activity'
 import type {
   StudioSubmissionDetail,
@@ -111,5 +111,13 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
       checkedAt: row.checkedAt ?? null,
       passedAt: row.passedAt ?? null,
     }
+  }
+
+  async countByUser(userId: string): Promise<number> {
+    const [row] = await this.db
+      .select({ value: count() })
+      .from(studioSubmissions)
+      .where(eq(studioSubmissions.userId, userId))
+    return row?.value ?? 0
   }
 }

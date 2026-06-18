@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { canonicalHmacMessage, signHmac } from '@sistemazero/core/security'
 import { CheckAccessService } from '../src/application/access/check-access.service'
 import { AccessCheckService } from '../src/application/access-check/access-check.service'
+import { GetChildrenStatsService } from '../src/application/children-stats/get-children-stats.service'
 import {
   AttachmentAdminService,
   BlockAdminService,
@@ -201,6 +202,12 @@ export function buildApp(
         defaultMaxProfiles: 1,
       }),
       showcasePayload: new GetShowcasePayloadService(checkAccess, courses, studioSubmissions),
+      childrenStats: new GetChildrenStatsService(
+        gamification,
+        courses,
+        progress,
+        studioSubmissions,
+      ),
       internalToken: opts.internalToken,
     },
   })

@@ -75,6 +75,17 @@ export const AccessCheckBody = t.Object({
 export const ProfileAllowanceQuery = t.Object({ accountId: UUID })
 
 /**
+ * Query de `GET /members/internal/children-stats` (S2S — consumida pelo BFF da área
+ * dos pais): resumo de progresso dos filhos da CONTA. `profileIds` = CSV de uuids
+ * (os perfis da conta, vindos do auth; o members ainda filtra por `account_id`).
+ */
+export const ChildrenStatsQuery = t.Object({
+  accountId: UUID,
+  profileIds: t.Optional(t.String({ maxLength: 2000 })),
+  audience: t.Optional(AUDIENCE),
+})
+
+/**
  * Query da rota S2S `GET /members/internal/showcase-eligibility` (consumida pelo
  * `@sistemazero/hub` ao auto-publicar no Mural): elegibilidade + conteúdo AUTORITATIVO
  * do projeto. `accountId` resolve o ACESSO (conta), `userId` a ENTREGA (perfil).

@@ -97,4 +97,16 @@ export interface GamificationRepository {
     accountId: string,
     audience: CourseAudience,
   ): Promise<GamificationRanking | null>
+  /**
+   * Perfis de gamificação da audiência que pertencem À CONTA (`account_id`) entre os
+   * `userIds` pedidos — AUTORIZA + traz xp/streak num só passo (resumo dos filhos na
+   * área dos pais). Filtra pelo `account_id`: um `userId` de OUTRA conta não volta
+   * (defesa em profundidade); perfil sem atividade (sem linha) simplesmente não volta.
+   * Usa o índice `gamification_profiles_account_idx`.
+   */
+  listByAccount(
+    accountId: string,
+    userIds: string[],
+    audience: CourseAudience,
+  ): Promise<GamificationProfileRecord[]>
 }

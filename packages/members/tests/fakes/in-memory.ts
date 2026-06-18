@@ -897,6 +897,10 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
         }
       : null
   }
+
+  async countByUser(userId: string): Promise<number> {
+    return this.submissions.filter((s) => s.userId === userId).length
+  }
 }
 
 interface XpEventRow extends XpEventInput {
@@ -1033,6 +1037,21 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     audience: CourseAudience,
   ): Promise<GamificationProfileRecord | null> {
     return this.profiles.get(this.profileKey(userId, audience)) ?? null
+  }
+
+  async listByAccount(
+    accountId: string,
+    userIds: string[],
+    audience: CourseAudience,
+  ): Promise<GamificationProfileRecord[]> {
+    const out: GamificationProfileRecord[] = []
+    for (const userId of userIds) {
+      const key = this.profileKey(userId, audience)
+      const rec = this.profiles.get(key)
+      // Mirror do filtro SQL `account_id = ?` — perfil de outra conta não volta.
+      if (rec && this.accountIds.get(key) === accountId) out.push(rec)
+    }
+    return out
   }
 
   async listBadges(
