@@ -9,6 +9,7 @@ import { RichEditor } from '@sistemazero/member-shell/components/rich-editor'
 import { renderMarkdown } from '@sistemazero/member-shell/lib/markdown'
 import { Button } from '@sistemazero/ui/button'
 import { Dialog } from '@sistemazero/ui/dialog'
+import { Skeleton } from '@sistemazero/ui/skeleton'
 import { Textarea } from '@sistemazero/ui/textarea'
 import { ArrowLeft, Hash, Lock, MessageCircle, Plus, Send } from 'lucide-react'
 import { type ReactNode, useCallback, useEffect, useState } from 'react'
@@ -333,7 +334,7 @@ export function KidsSpaceViewClient({
     }
   }
 
-  if (loading) return <p className="px-4 py-8 text-muted-foreground">Carregando…</p>
+  if (loading) return <SpaceViewSkeleton isWall={isWall} />
   if (!space) return <p className="px-4 py-8 text-muted-foreground">Espaço não encontrado.</p>
   // Sem acesso (teaser): recado gentil, sem nenhum conteúdo.
   if (space.locked) return <KidsLockedSpace space={space} />
@@ -530,6 +531,60 @@ export function KidsSpaceViewClient({
         />
       </Dialog>
     </>
+  )
+}
+
+// Chaves estáveis dos placeholders (evita usar o índice do array como key).
+const CHANNEL_KEYS = ['c1', 'c2', 'c3', 'c4']
+const WALL_KEYS = ['w1', 'w2', 'w3', 'w4']
+const THREAD_KEYS = ['t1', 't2', 't3', 't4', 't5']
+
+/**
+ * Esqueleto da carga INICIAL do espaço (no lugar de "Carregando…"): espelha o layout
+ * real — Clube (`forum`) = canais na lateral + lista de conversas; Mural (`wall`) =
+ * grade de cards de projeto. Some assim que o space/canais chegam. `aria-busy` + sr-only.
+ */
+function SpaceViewSkeleton({ isWall }: { isWall: boolean }) {
+  return (
+    <div aria-busy="true" className="mx-auto w-full max-w-4xl px-4 py-6">
+      <span className="sr-only">Carregando…</span>
+      <Skeleton className="mb-2 h-7 w-48" />
+      <Skeleton className="mb-4 h-4 w-64 max-w-full" />
+      <div className={`grid gap-4 ${isWall ? '' : 'md:grid-cols-[200px_1fr]'}`}>
+        {!isWall ? (
+          <aside className="flex gap-2 overflow-x-auto md:flex-col md:gap-1.5">
+            {CHANNEL_KEYS.map((k) => (
+              <Skeleton key={k} className="h-10 w-32 shrink-0 rounded-2xl md:w-full" />
+            ))}
+          </aside>
+        ) : null}
+        <main className="min-w-0">
+          {isWall ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {WALL_KEYS.map((k) => (
+                <div key={k} className="overflow-hidden rounded-2xl border-2 border-border">
+                  <Skeleton className="aspect-video w-full rounded-none" />
+                  <div className="space-y-2 p-3">
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-3 w-1/3" />
+                    <Skeleton className="h-3 w-full" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {THREAD_KEYS.map((k) => (
+                <div key={k} className="space-y-2 rounded-2xl border-2 border-border p-3">
+                  <Skeleton className="h-4 w-2/3" />
+                  <Skeleton className="h-3 w-1/2" />
+                </div>
+              ))}
+            </div>
+          )}
+        </main>
+      </div>
+    </div>
   )
 }
 
