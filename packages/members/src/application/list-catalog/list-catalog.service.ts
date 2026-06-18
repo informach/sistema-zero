@@ -28,11 +28,11 @@ export class ListCatalogService {
       this.entitlements.listActiveByUser(accountId ?? userId, this.clock()),
     ])
 
-    // Chave-mestra (`all_courses`) destrava o catálogo ADULTO inteiro (atuais e
-    // futuros) — no catálogo kids ela não vale (curso kids = matrícula específica).
+    // Chave-mestra POR AUDIÊNCIA destrava a vitrine inteira (atuais e futuros):
+    // `all_courses` na adulta, `all_kids_courses` na kids (cada uma só na sua).
     // Equipe interna (`privileged`) destrava as duas — chave-mestra virtual.
-    const hasMaster =
-      privileged || (audience === 'adult' && active.some((e) => e.accessType === 'all_courses'))
+    const masterType = audience === 'adult' ? 'all_courses' : 'all_kids_courses'
+    const hasMaster = privileged || active.some((e) => e.accessType === masterType)
     const owned = new Set<string>()
     for (const e of active) {
       if (e.accessType === 'course' && e.courseRef) owned.add(e.courseRef)

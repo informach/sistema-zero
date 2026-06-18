@@ -58,6 +58,28 @@ describe('leitura do aluno com resolução de acesso', () => {
     expect(new Set(slugs)).toEqual(new Set(['geral', 'curso-a-srv']))
   })
 
+  test('chave-mestra KIDS cobre course_gated kids; a adulta não (cada uma na sua vitrine)', async () => {
+    // Servidor kids pago (course_gated) — a chave KIDS deve cobrir.
+    await ctx.repo.createSpace(
+      space({ slug: 'clube-gated', name: 'Clube', audience: 'kids', accessConfig: COURSE_A }),
+    )
+    const listKids = async (headers: Record<string, string>) => {
+      const res = await ctx.app.handle(jsonRequest('GET', '/hub/spaces?audience=kids', { headers }))
+      const body = (await res.json()) as { items: Array<{ slug: string }> }
+      return new Set(body.items.map((s) => s.slug))
+    }
+
+    // Chave-mestra KIDS → vê o clube gated (além do público kids).
+    const kid = randomUUID()
+    ctx.members.mastersKids.add(kid)
+    expect(await listKids(studentHeaders(kid))).toEqual(new Set(['kids', 'clube-gated']))
+
+    // Chave-mestra ADULTA não cobre espaço kids → só o público kids.
+    const adultMaster = randomUUID()
+    ctx.members.masters.add(adultMaster)
+    expect(await listKids(studentHeaders(adultMaster))).toEqual(new Set(['kids']))
+  })
+
   test('staff/admin vê tudo (bypass) sem chamar o members', async () => {
     const slugs = await listSlugs(ctx.app, adminHeaders())
     expect(new Set(slugs)).toEqual(new Set(['geral', 'curso-a-srv']))

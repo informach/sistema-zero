@@ -73,9 +73,11 @@ export async function createApplication(env: Env): Promise<Application> {
     internalToken: env.MEMBERS_INTERNAL_TOKEN,
     logger,
   })
-  const accessCache = new MicroCache<{ granted: Set<string>; hasMaster: boolean }>(
-    accessCacheTtlMs(env),
-  )
+  const accessCache = new MicroCache<{
+    granted: Set<string>
+    hasMaster: boolean
+    hasMasterKids: boolean
+  }>(accessCacheTtlMs(env))
   const limits = attachmentLimits(env)
 
   // Casos de uso (admin da estrutura)

@@ -24,6 +24,14 @@ export interface Actor {
 interface CourseAccess {
   granted: Set<string>
   hasMaster: boolean
+  hasMasterKids: boolean
+}
+
+/** Acesso a cursos "vazio" (nenhum espaço course_gated pra resolver). */
+const NO_COURSE_ACCESS: CourseAccess = {
+  granted: new Set<string>(),
+  hasMaster: false,
+  hasMasterKids: false,
 }
 
 /**
@@ -57,7 +65,7 @@ export class AccessResolutionService {
     ]
     const access = courseRefs.length
       ? await this.resolveCourseAccess(actor.accountId, courseRefs)
-      : { granted: new Set<string>(), hasMaster: false }
+      : NO_COURSE_ACCESS
     return spaces.map((space) => ({
       space,
       accessible: this.evaluate(space.accessConfig, actor, space.audience, access),
@@ -90,7 +98,7 @@ export class AccessResolutionService {
     const courseRefs = [...new Set(gated.flatMap((c) => c.accessConfig?.courses ?? []))]
     const access = courseRefs.length
       ? await this.resolveCourseAccess(actor.accountId, courseRefs)
-      : { granted: new Set<string>(), hasMaster: false }
+      : NO_COURSE_ACCESS
     return channels.filter(
       (c) => !c.accessConfig || this.evaluate(c.accessConfig, actor, space.audience, access),
     )
@@ -107,7 +115,7 @@ export class AccessResolutionService {
       const ca = await this.resolveCourseAccess(actor.accountId, access.courses)
       return this.evaluate(access, actor, audience, ca)
     }
-    return this.evaluate(access, actor, audience, { granted: new Set(), hasMaster: false })
+    return this.evaluate(access, actor, audience, NO_COURSE_ACCESS)
   }
 
   /** Avaliação PURA dado o resultado de acesso a cursos já carregado. */
@@ -125,8 +133,10 @@ export class AccessResolutionService {
       case 'course_gated':
         return (
           access.courses.some((c) => courseAccess.granted.has(c)) ||
-          // A chave-mestra cobre só a vitrine adult (regra do members).
-          (courseAccess.hasMaster && audience === 'adult')
+          // Cada chave-mestra cobre só a SUA vitrine (regra do members):
+          // `all_courses` na adult, `all_kids_courses` na kids.
+          (courseAccess.hasMaster && audience === 'adult') ||
+          (courseAccess.hasMasterKids && audience === 'kids')
         )
     }
   }
@@ -136,7 +146,11 @@ export class AccessResolutionService {
     const cached = this.cache.get(key)
     if (cached) return cached
     const res = await this.members.checkAccess(userId, courseRefs)
-    const value: CourseAccess = { granted: new Set(res.granted), hasMaster: res.hasMaster }
+    const value: CourseAccess = {
+      granted: new Set(res.granted),
+      hasMaster: res.hasMaster,
+      hasMasterKids: res.hasMasterKids,
+    }
     this.cache.set(key, value)
     return value
   }

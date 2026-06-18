@@ -120,6 +120,13 @@
       "when": 1781733079781,
       "tag": "0016_equal_abomination",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1781787098089,
+      "tag": "0017_perpetual_paladin",
+      "breakpoints": true
     }
   ]
 }

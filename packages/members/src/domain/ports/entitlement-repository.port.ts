@@ -1,5 +1,6 @@
 import type { EntitlementAggregate } from '../entitlement/entitlement.aggregate'
 import type { EntitlementStatus } from '../entitlement/entitlement.status'
+import type { AccessType } from '../entitlement/fulfillment'
 
 /** Sumário de um membro (1 linha = 1 usuário com ≥1 matrícula) para a listagem admin. */
 export interface MemberSummary {
@@ -44,16 +45,16 @@ export interface EntitlementRepository {
   update(entitlement: EntitlementAggregate): Promise<boolean>
   /**
    * Matrícula ATIVA (status + validade) que dá acesso ao curso: específica
-   * (`courseRef`) OU chave-mestra (`accessType='all_courses'`). Havendo mais de
-   * uma, devolve a "mais forte" (vitalícia > validade mais distante).
-   * `masterCovers: false` tira a chave-mestra do OR — usado quando o curso é
-   * `kids` (a `all_courses` cobre só cursos `adult`). Default `true` (compat).
+   * (`courseRef`) OU a chave-mestra da AUDIÊNCIA do curso (`masterType` =
+   * `all_courses` p/ adult, `all_kids_courses` p/ kids). Havendo mais de uma,
+   * devolve a "mais forte" (vitalícia > validade mais distante). `masterType`
+   * ausente/`null` tira a chave-mestra do OR (resta só a matrícula específica).
    */
   findActiveForCourse(
     userId: string,
     courseRef: string,
     now: Date,
-    opts?: { masterCovers?: boolean },
+    opts?: { masterType?: AccessType | null },
   ): Promise<EntitlementAggregate | null>
   /** Todas as matrículas ATIVAS do aluno (qualquer tipo). */
   listActiveByUser(userId: string, now: Date): Promise<EntitlementAggregate[]>

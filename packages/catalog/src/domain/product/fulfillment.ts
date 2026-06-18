@@ -4,9 +4,10 @@
  * a área de membros consome isto para liberar o acesso.
  *
  * Decisão (06/2026): a entrega é EXCLUSIVAMENTE via área de membros —
- * `course` libera UM curso (`courseRef` = slug) e `all_courses` é a chave-mestra
- * (todos os cursos publicados, atuais E futuros; a checagem de acesso no members
- * vira "chave do curso OU chave-mestra ativa"). Os antigos `download`/`external`/
+ * `course` libera UM curso (`courseRef` = slug), `all_courses` é a chave-mestra
+ * ADULTA e `all_kids_courses` a chave-mestra KIDS (cada uma cobre todos os cursos
+ * publicados da SUA audiência, atuais E futuros; a checagem no members vira "chave
+ * do curso OU chave-mestra da audiência ativa"). Os antigos `download`/`external`/
  * `none` + `assets` foram removidos do cadastro (entregas mortas — criavam
  * acessos invisíveis ao aluno). `community` (tiers) é fatia futura: entra no
  * union quando a comunidade real existir.
@@ -21,7 +22,7 @@ export interface ReleaseRule {
   date?: string
 }
 
-export type AccessType = 'course' | 'all_courses'
+export type AccessType = 'course' | 'all_courses' | 'all_kids_courses'
 
 export interface FulfillmentSpec {
   /** Tipo de acesso que a área de membros deve conceder. */

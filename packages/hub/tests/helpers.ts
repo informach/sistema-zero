@@ -63,9 +63,11 @@ export function buildApp(
   threadRepo.attachments = attachmentRepo
   const processedWebhookRepo = new InMemoryProcessedWebhookRepository()
   const members = new FakeMembersGateway()
-  const cache = new MicroCache<{ granted: Set<string>; hasMaster: boolean }>(
-    opts.accessCacheTtlMs ?? 0,
-  )
+  const cache = new MicroCache<{
+    granted: Set<string>
+    hasMaster: boolean
+    hasMasterKids: boolean
+  }>(opts.accessCacheTtlMs ?? 0)
   const access = new AccessResolutionService(members, cache)
   const clock = opts.clock ?? (() => new Date())
   const limits = TEST_ATTACHMENT_LIMITS

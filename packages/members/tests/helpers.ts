@@ -388,6 +388,47 @@ export function grantAllCourses(
   return e
 }
 
+/**
+ * Concede uma CHAVE-MESTRA KIDS (`accessType:'all_kids_courses'`) — cobre todos os
+ * cursos `kids` publicados, atuais e futuros (e SÓ os kids). Vitalícia por padrão.
+ */
+export function grantAllKidsCourses(
+  entitlements: InMemoryEntitlementRepository,
+  opts: { userId: string; now?: Date; expiresAt?: Date | null; subscriptionId?: string },
+): EntitlementAggregate {
+  const now = opts.now ?? new Date('2026-06-01T00:00:00.000Z')
+  const subscriptionId = opts.subscriptionId ?? null
+  const e = EntitlementAggregate.grant({
+    id: randomUUID(),
+    userId: opts.userId,
+    productId: randomUUID(),
+    productKind: 'course',
+    accessType: 'all_kids_courses',
+    courseRef: null,
+    offerId: randomUUID(),
+    snapshot: {
+      offerId: 'o',
+      offerSlug: 'o',
+      productId: 'p',
+      sku: 's',
+      name: 'Todos os cursos kids',
+      kind: 'course',
+      accessType: 'all_kids_courses',
+      courseRef: null,
+      fulfillment: { accessType: 'all_kids_courses' },
+      resolvedAt: now.toISOString(),
+    },
+    sourceKind: subscriptionId ? 'subscription' : 'manual',
+    sourceId: subscriptionId ?? 'seed',
+    subscriptionId,
+    grantedAt: now,
+    expiresAt: opts.expiresAt ?? null,
+    idempotencyKey: `manual:${opts.userId}:all-kids-courses-${randomUUID()}`,
+  })
+  entitlements.seed(e)
+  return e
+}
+
 /** Oferta resolvida (catálogo) cujo item entrega a chave-mestra (`all_courses`). */
 export function offerWithAllCourses(offerSlug: string): ResolvedOffer {
   return {

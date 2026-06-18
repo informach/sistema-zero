@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto'
 import {
   buildApp,
   grantAllCourses,
+  grantAllKidsCourses,
   grantLifetime,
   offerWithAllCourses,
   seedSampleCourse,
@@ -165,6 +166,64 @@ describe('Audiência (kids) — vitrines e chave-mestra', () => {
     seedSampleCourse(courses, 'curso-a')
     expect((await get(app, '/members/courses?audience=teen', authHeaders())).status).toBe(400)
     expect((await get(app, '/members/catalog?audience=foo', authHeaders())).status).toBe(400)
+  })
+})
+
+describe('Chave-mestra KIDS (all_kids_courses) — acesso por audiência', () => {
+  test('libera QUALQUER curso kids publicado (atuais e futuros); NÃO abre curso adult', async () => {
+    const { app, courses, entitlements } = buildApp()
+    seedSampleCourse(courses, 'kids-a', 'published', 'kids')
+    seedSampleCourse(courses, 'adulto-a') // adult
+    grantAllKidsCourses(entitlements, { userId: USER })
+    // Curso kids criado DEPOIS do grant já nasce liberado.
+    seedSampleCourse(courses, 'kids-novo', 'published', 'kids')
+
+    expect((await get(app, '/members/courses/kids-a', authHeaders())).status).toBe(200)
+    expect((await get(app, '/members/courses/kids-novo', authHeaders())).status).toBe(200)
+    // A chave KIDS não cobre cursos adult.
+    expect((await get(app, '/members/courses/adulto-a', authHeaders())).status).toBe(403)
+  })
+
+  test('chave ADULTA não abre kids; chave KIDS não abre adult (simétrico)', async () => {
+    const { app, courses, entitlements } = buildApp()
+    seedSampleCourse(courses, 'curso-kids', 'published', 'kids')
+    seedSampleCourse(courses, 'curso-adulto')
+    grantAllCourses(entitlements, { userId: USER }) // só adult
+
+    expect((await get(app, '/members/courses/curso-kids', authHeaders())).status).toBe(403)
+    expect((await get(app, '/members/courses/curso-adulto', authHeaders())).status).toBe(200)
+  })
+
+  test('catálogo e "meus cursos" kids destravam com a chave KIDS', async () => {
+    const { app, courses, entitlements } = buildApp()
+    seedSampleCourse(courses, 'curso-adulto')
+    seedSampleCourse(courses, 'curso-kids', 'published', 'kids')
+    grantAllKidsCourses(entitlements, { userId: USER })
+
+    // Catálogo kids: destravado; catálogo adult: a chave kids não conta como acesso.
+    const cat = await readJson(await get(app, '/members/catalog?audience=kids', authHeaders()))
+    expect(cat.courses.map((c: any) => c.courseSlug)).toEqual(['curso-kids'])
+    expect(cat.courses[0].hasAccess).toBe(true)
+    const catAdult = await readJson(await get(app, '/members/catalog', authHeaders()))
+    expect(catAdult.courses[0].hasAccess).toBe(false)
+
+    // "Meus cursos" kids lista todos os kids publicados.
+    const mine = await readJson(await get(app, '/members/courses?audience=kids', authHeaders()))
+    expect(mine.courses.map((c: any) => c.courseSlug)).toEqual(['curso-kids'])
+  })
+
+  test('manual (admin): mode all_kids_courses concede a chave kids', async () => {
+    const { app, courses } = buildApp()
+    seedSampleCourse(courses, 'curso-kids', 'published', 'kids')
+    const r = await send(app, '/members/admin/entitlements', 'POST', {
+      mode: 'all_kids_courses',
+      userId: USER,
+    })
+    expect(r.status).toBe(201)
+    const b = await readJson(r)
+    expect(b.granted[0]).toMatchObject({ accessType: 'all_kids_courses', courseRef: null })
+    // E o acesso ao curso kids funciona de ponta a ponta.
+    expect((await get(app, '/members/courses/curso-kids', authHeaders())).status).toBe(200)
   })
 })
 

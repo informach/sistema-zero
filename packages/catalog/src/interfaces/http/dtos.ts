@@ -26,10 +26,15 @@ const ReleaseRuleSchema = t.Object({
   date: t.Optional(t.String({ maxLength: 40 })),
 })
 
-// Entrega exclusivamente via área de membros: `course` (um curso, courseRef) ou
-// `all_courses` (chave-mestra — todos os cursos, atuais e futuros).
+// Entrega exclusivamente via área de membros: `course` (um curso, courseRef),
+// `all_courses` (chave-mestra ADULTA) ou `all_kids_courses` (chave-mestra KIDS) —
+// cada chave-mestra cobre todos os cursos da SUA audiência, atuais e futuros.
 const FulfillmentSchema = t.Object({
-  accessType: t.Union([t.Literal('course'), t.Literal('all_courses')]),
+  accessType: t.Union([
+    t.Literal('course'),
+    t.Literal('all_courses'),
+    t.Literal('all_kids_courses'),
+  ]),
   courseRef: t.Optional(t.String({ maxLength: 200 })),
   release: t.Optional(ReleaseRuleSchema),
   // Teto de perfis liberados (plataforma kids — planos "N perfis"). Inteiro ≥ 1.

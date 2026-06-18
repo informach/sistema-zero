@@ -18,7 +18,8 @@ import { type AdminEntitlementView, toAdminEntitlementView } from '../mappers/ad
  * (NÃO o motor de webhook, que tem `sourceKind` fixo). Três modalidades:
  * - `offer`: resolve a oferta no catálogo e congela o snapshot, igual a uma compra.
  * - `course`: concede direto um curso (sem oferta), com snapshot sintético.
- * - `all_courses`: chave-mestra (todos os cursos, atuais e futuros), sem oferta.
+ * - `all_courses`: chave-mestra ADULTA (todos os cursos adult, atuais e futuros), sem oferta.
+ * - `all_kids_courses`: chave-mestra KIDS (todos os cursos kids), sem oferta.
  *
  * Idempotente por `manual:${userId}:${productId}` (+ índice único user/product/source):
  * re-conceder o MESMO produto a um membro com matrícula manual ATIVA devolve a
@@ -28,14 +29,16 @@ export type GrantManualCommand =
   | { mode: 'offer'; userId: string; offerRef: string; expiresAt?: Date | null }
   | { mode: 'course'; userId: string; courseRef: string; expiresAt?: Date | null }
   | { mode: 'all_courses'; userId: string; expiresAt?: Date | null }
+  | { mode: 'all_kids_courses'; userId: string; expiresAt?: Date | null }
 
 /**
- * `product_id` sintético da chave-mestra MANUAL (a coluna é uuid NOT NULL e não há
- * produto do catálogo envolvido). Constante → o índice único user/product/source
- * deduplica re-concessões. Grants via OFERTA usam o productId REAL do produto
- * "acesso total" do catálogo — não colidem com este sentinel.
+ * `product_id` sintético das chaves-mestra MANUAIS (a coluna é uuid NOT NULL e não há
+ * produto do catálogo envolvido). Constantes DISTINTAS → o índice único user/product/
+ * source deduplica re-concessões de cada chave SEM as duas colidirem entre si. Grants
+ * via OFERTA usam o productId REAL do produto do catálogo — não colidem com estes sentinels.
  */
 export const MANUAL_ALL_COURSES_PRODUCT_ID = '00000000-0000-0000-0000-000000000000'
+export const MANUAL_ALL_KIDS_COURSES_PRODUCT_ID = '00000000-0000-0000-0000-000000000001'
 
 export interface GrantManualResult {
   granted: AdminEntitlementView[]
@@ -75,6 +78,8 @@ export class GrantManualEntitlementService {
         return this.grantByCourse(cmd.userId, cmd.courseRef, expiresAt, now)
       case 'all_courses':
         return this.grantAllCourses(cmd.userId, expiresAt, now)
+      case 'all_kids_courses':
+        return this.grantAllKidsCourses(cmd.userId, expiresAt, now)
     }
   }
 
@@ -194,6 +199,39 @@ export class GrantManualEntitlementService {
       now,
     })
     this.deps.logger?.info('grant.manual.all_courses', { userId })
+    return { granted: [view] }
+  }
+
+  private async grantAllKidsCourses(
+    userId: string,
+    expiresAt: Date | null,
+    now: Date,
+  ): Promise<GrantManualResult> {
+    // Chave-mestra KIDS de cortesia: cobre todos os cursos kids (atuais e futuros).
+    const snapshot: EntitlementSnapshot = {
+      offerId: '',
+      offerSlug: '',
+      productId: MANUAL_ALL_KIDS_COURSES_PRODUCT_ID,
+      sku: '',
+      name: 'Todos os cursos kids',
+      kind: 'course',
+      accessType: 'all_kids_courses',
+      courseRef: null,
+      fulfillment: { accessType: 'all_kids_courses' },
+      resolvedAt: now.toISOString(),
+    }
+    const view = await this.grantOne({
+      userId,
+      productId: MANUAL_ALL_KIDS_COURSES_PRODUCT_ID,
+      productKind: 'course',
+      accessType: 'all_kids_courses',
+      courseRef: null,
+      offerId: null,
+      snapshot,
+      expiresAt,
+      now,
+    })
+    this.deps.logger?.info('grant.manual.all_kids_courses', { userId })
     return { granted: [view] }
   }
 

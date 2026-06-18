@@ -1,8 +1,10 @@
 export interface CourseAccessResult {
   /** Subconjunto dos `courseRefs` pedidos em que o usuário tem matrícula ATIVA. */
   granted: string[]
-  /** O usuário tem uma chave-mestra (`all_courses`) ATIVA? (cobre só cursos adult). */
+  /** Chave-mestra ADULTA (`all_courses`) ATIVA? Cobre só cursos/espaços `adult`. */
   hasMaster: boolean
+  /** Chave-mestra KIDS (`all_kids_courses`) ATIVA? Cobre só cursos/espaços `kids`. */
+  hasMasterKids: boolean
 }
 
 /** Argumentos da checagem de elegibilidade da vitrine (Mural). */

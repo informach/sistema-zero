@@ -1,5 +1,6 @@
 import { and, asc, desc, eq, gt, isNull, ne, notInArray, or, type SQL, sql } from 'drizzle-orm'
 import { EntitlementAggregate } from '../../../domain/entitlement/entitlement.aggregate'
+import type { AccessType } from '../../../domain/entitlement/fulfillment'
 import type {
   EntitlementRepository,
   ListMembersFilter,
@@ -113,18 +114,16 @@ export class DrizzleEntitlementRepository implements EntitlementRepository {
     userId: string,
     courseRef: string,
     now: Date,
-    opts?: { masterCovers?: boolean },
+    opts?: { masterType?: AccessType | null },
   ): Promise<EntitlementAggregate | null> {
-    // Acesso ao curso = matrícula específica (courseRef) OU chave-mestra
-    // (accessType='all_courses'). Pode haver mais de uma ativa (ex.: vitalícia +
-    // assinatura + chave-mestra). Escolhe a "mais forte": vitalícia (expiresAt
-    // nulo) primeiro, senão a de validade mais distante.
-    // `masterCovers: false` (curso `kids`) tira o braço da chave-mestra do OR —
-    // a `all_courses` cobre só cursos `adult`.
-    const coverage =
-      opts?.masterCovers === false
-        ? eq(entitlements.courseRef, courseRef)
-        : or(eq(entitlements.courseRef, courseRef), eq(entitlements.accessType, 'all_courses'))
+    // Acesso ao curso = matrícula específica (courseRef) OU a chave-mestra da
+    // AUDIÊNCIA do curso (`all_courses` p/ adult, `all_kids_courses` p/ kids).
+    // Pode haver mais de uma ativa (ex.: vitalícia + assinatura + chave-mestra);
+    // escolhe a "mais forte": vitalícia (expiresAt nulo) primeiro, senão a de
+    // validade mais distante. `masterType` ausente/null → só a matrícula específica.
+    const coverage = opts?.masterType
+      ? or(eq(entitlements.courseRef, courseRef), eq(entitlements.accessType, opts.masterType))
+      : eq(entitlements.courseRef, courseRef)
     const [row] = await this.db
       .select()
       .from(entitlements)

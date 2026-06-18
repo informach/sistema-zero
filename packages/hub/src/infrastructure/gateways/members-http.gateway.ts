@@ -47,11 +47,16 @@ export function createMembersHttpGateway(opts: MembersHttpGatewayOptions): Membe
       if (!res.ok) {
         throw new Error(`members access-check respondeu ${res.status}`)
       }
-      // O members responde `{ grants, hasMaster }` (ver access-check.service).
-      const body = (await res.json()) as { grants?: unknown; hasMaster?: unknown }
+      // O members responde `{ grants, hasMaster, hasMasterKids }` (ver access-check.service).
+      const body = (await res.json()) as {
+        grants?: unknown
+        hasMaster?: unknown
+        hasMasterKids?: unknown
+      }
       return {
         granted: Array.isArray(body.grants) ? (body.grants as string[]) : [],
         hasMaster: Boolean(body.hasMaster),
+        hasMasterKids: Boolean(body.hasMasterKids),
       }
     },
 

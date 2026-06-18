@@ -79,7 +79,9 @@ export function adminRoutes(deps: AdminRoutesDeps) {
             ? { mode: 'offer', userId: body.userId, offerRef: body.offerRef, expiresAt }
             : body.mode === 'course'
               ? { mode: 'course', userId: body.userId, courseRef: body.courseRef, expiresAt }
-              : { mode: 'all_courses', userId: body.userId, expiresAt }
+              : body.mode === 'all_kids_courses'
+                ? { mode: 'all_kids_courses', userId: body.userId, expiresAt }
+                : { mode: 'all_courses', userId: body.userId, expiresAt }
         const result = await deps.grantManual.execute(cmd)
         set.status = 201
         return result

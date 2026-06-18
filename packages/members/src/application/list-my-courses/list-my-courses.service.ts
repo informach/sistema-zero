@@ -39,15 +39,16 @@ export class ListMyCoursesService {
       : await this.entitlements.listActiveByUser(accountId ?? userId, this.clock())
 
     // Matrículas de CURSO com courseRef ("mais forte" por curso se duplicada) +
-    // a chave-mestra mais forte (se houver). A chave-mestra REAL cobre só cursos
-    // `adult` — em vitrine `kids` ela é ignorada; a VIRTUAL (equipe) vale sempre.
+    // a chave-mestra mais forte (se houver). A chave-mestra REAL é POR AUDIÊNCIA
+    // (`all_courses` na adulta, `all_kids_courses` na kids) — a do outro tipo é
+    // ignorada nesta vitrine; a VIRTUAL (equipe) vale sempre.
+    const masterType = audience === 'adult' ? 'all_courses' : 'all_kids_courses'
     const byCourseRef = new Map<string, EntitlementAggregate>()
     let master: EntitlementAggregate | null = privileged
       ? EntitlementAggregate.virtualAllCourses(userId, this.clock())
       : null
     for (const e of active) {
-      if (e.accessType === 'all_courses') {
-        if (audience !== 'adult') continue
+      if (e.accessType === masterType) {
         if (!master || isStronger(e, master)) master = e
         continue
       }

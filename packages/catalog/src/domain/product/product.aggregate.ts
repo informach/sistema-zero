@@ -192,7 +192,10 @@ export class ProductAggregate extends AggregateRoot<string> {
     if (fulfillment.accessType === 'course' && !fulfillment.courseRef?.trim()) {
       throw new ValidationError('Produto ativo com entrega por curso precisa do curso vinculado')
     }
-    if (fulfillment.accessType === 'all_courses' && fulfillment.courseRef) {
+    if (
+      (fulfillment.accessType === 'all_courses' || fulfillment.accessType === 'all_kids_courses') &&
+      fulfillment.courseRef
+    ) {
       throw new ValidationError('Entrega "todos os cursos" não leva curso vinculado')
     }
     if (

@@ -18,6 +18,7 @@ import {
   EntitlementAggregate,
   type EntitlementState,
 } from '../../src/domain/entitlement/entitlement.aggregate'
+import type { AccessType } from '../../src/domain/entitlement/fulfillment'
 import type { BadgeSlug } from '../../src/domain/gamification/badges'
 import {
   advanceStreak,
@@ -135,15 +136,14 @@ export class InMemoryEntitlementRepository implements EntitlementRepository {
     userId: string,
     courseRef: string,
     now: Date,
-    opts?: { masterCovers?: boolean },
+    opts?: { masterType?: AccessType | null },
   ): Promise<EntitlementAggregate | null> {
-    // Mirror do SQL: matrícula específica OU chave-mestra (se `masterCovers`,
-    // default true — `false` = curso kids, fora da chave-mestra); a mais forte.
+    // Mirror do SQL: matrícula específica OU a chave-mestra da AUDIÊNCIA do curso
+    // (`masterType` = all_courses p/ adult, all_kids_courses p/ kids); a mais forte.
     let strongest: EntitlementState | null = null
     for (const s of this.byId.values()) {
       const covers =
-        s.courseRef === courseRef ||
-        (opts?.masterCovers !== false && s.accessType === 'all_courses')
+        s.courseRef === courseRef || (opts?.masterType != null && s.accessType === opts.masterType)
       if (s.userId === userId && covers && isActive(s, now)) {
         if (!strongest || isStrongerState(s, strongest)) strongest = s
       }

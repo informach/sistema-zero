@@ -1,0 +1,1 @@
+ALTER TYPE "members"."access_type" ADD VALUE 'all_kids_courses';

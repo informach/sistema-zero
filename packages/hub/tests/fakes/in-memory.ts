@@ -791,8 +791,10 @@ export class InMemoryProcessedWebhookRepository implements ProcessedWebhookRepos
 export class FakeMembersGateway implements MembersGateway {
   /** userId → cursos com matrícula ativa. */
   grantsByUser = new Map<string, Set<string>>()
-  /** userIds com chave-mestra ativa. */
+  /** userIds com chave-mestra ADULTA (all_courses) ativa. */
   masters = new Set<string>()
+  /** userIds com chave-mestra KIDS (all_kids_courses) ativa. */
+  mastersKids = new Set<string>()
   calls = 0
   /** Elegibilidade da vitrine: default ELEGÍVEL/kids; sobrescreva por teste. */
   showcaseEligibility: ShowcaseEligibilityResult = {
@@ -812,6 +814,7 @@ export class FakeMembersGateway implements MembersGateway {
     return {
       granted: courseRefs.filter((c) => owned.has(c)),
       hasMaster: this.masters.has(userId),
+      hasMasterKids: this.mastersKids.has(userId),
     }
   }
 
