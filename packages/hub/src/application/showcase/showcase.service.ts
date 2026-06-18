@@ -48,6 +48,13 @@ export class ShowcaseService {
     private readonly members: MembersGateway,
     private readonly clock: () => Date,
     private readonly newId: () => string,
+    /**
+     * Slugs dos servidores que SÃO paredes de vitrine (ex.: `mural-dos-criadores`).
+     * Restringe o destino a uma parede designada — não basta ser kids + `staff_only`
+     * (um futuro space curado kids seria alvo de injeção). Vazio = sem allowlist
+     * (fallback p/ a heurística antiga; em prod o composition-root sempre injeta).
+     */
+    private readonly showcaseWallSlugs: ReadonlySet<string> = new Set(),
   ) {}
 
   async create(
@@ -69,6 +76,11 @@ export class ShowcaseService {
     // admin) — barra injeção cross-vitrine (servidores adultos) e em canal de postagem livre.
     const space = await this.read.findActiveSpaceBySlug(cmd.spaceSlug)
     if (!space) throw new SpaceNotFoundError()
+    // Destino DESIGNADO (allowlist) — não basta ser kids + staff_only: trava injeção
+    // num futuro space curado kids que não seja a parede da vitrine.
+    if (this.showcaseWallSlugs.size > 0 && !this.showcaseWallSlugs.has(space.slug)) {
+      throw new PostingNotAllowedError('Destino não é uma parede de vitrine')
+    }
     if (space.audience !== 'kids') {
       throw new PostingNotAllowedError('A vitrine só publica em servidores kids')
     }
@@ -88,10 +100,17 @@ export class ShowcaseService {
       throw new PostingNotAllowedError('Nome do autor inválido')
     }
 
-    // 3. Capa capturada (BFF→R2) OU a padrão do admin (members). 4. Idempotência derivada.
-    const coverImageUrl = cmd.coverImageUrl ?? elig.defaultCoverUrl
+    // 3. Capa capturada (BFF→R2) OU a padrão do admin (members). A parede é infantil
+    // e servida em HTTPS — só aceitamos capa https (o `defaultCoverUrl` do members
+    // admite `http://`); capa não-https vira `null` (sem capa) em vez de mixed content.
+    const resolvedCover = cmd.coverImageUrl ?? elig.defaultCoverUrl
+    const coverImageUrl = resolvedCover?.startsWith('https://') ? resolvedCover : null
+    // 4. Idempotência derivada no servidor (sem chave forjável). Em projeto de CADEIA
+    // usamos o nome da cadeia (re-publicar a cadeia dedupe); em projeto AVULSO (sem
+    // cadeia) o `blockId` desambigua — senão dois avulsos do MESMO curso colidiriam
+    // na chave `autor:curso:` e o 2º some da parede (deduped silencioso).
     const idempotencyKey = createHash('sha256')
-      .update(`${actor.userId}:${elig.courseId}:${elig.chain ?? ''}`)
+      .update(`${actor.userId}:${elig.courseId}:${elig.chain ?? cmd.blockId}`)
       .digest('hex')
 
     const id = this.newId()

@@ -70,7 +70,11 @@ export async function runSandboxChecks(
 
   return new Promise<CheckResult[]>((resolve) => {
     const iframe = document.createElement('iframe')
-    iframe.setAttribute('sandbox', 'allow-scripts allow-modals')
+    // Runner OCULTO: SEM `allow-modals` — `alert/confirm/prompt` do código da criança
+    // (muito comum em 8-13 anos) abririam um modal síncrono e INVISÍVEL (iframe off-screen)
+    // que TRAVA a execução até o timeout, fazendo as checagens falharem em silêncio. Sem a
+    // permissão, esses dialogs viram no-op e o harness roda até o fim. (Só `allow-scripts`.)
+    iframe.setAttribute('sandbox', 'allow-scripts')
     iframe.setAttribute('aria-hidden', 'true')
     iframe.style.position = 'absolute'
     iframe.style.width = '1024px'

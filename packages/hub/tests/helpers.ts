@@ -51,6 +51,8 @@ export function buildApp(
     /** Relógio injetável (testes de ordenação/cursor incrementam manualmente). */
     clock?: () => Date
     readiness?: () => Promise<{ ready: boolean; checks: Record<string, string> }>
+    /** Allowlist de paredes de vitrine; vazio = sem restrição (default dos testes). */
+    showcaseWallSlugs?: string[]
   } = {},
 ) {
   const repo = new InMemoryCommunityAdminRepository()
@@ -118,7 +120,14 @@ export function buildApp(
       internalToken: opts.internalToken,
     },
     showcase: {
-      showcase: new ShowcaseService(repo, threadRepo, members, clock, () => randomUUID()),
+      showcase: new ShowcaseService(
+        repo,
+        threadRepo,
+        members,
+        clock,
+        () => randomUUID(),
+        new Set(opts.showcaseWallSlugs ?? []),
+      ),
       internalToken: opts.internalToken,
     },
     admin: {

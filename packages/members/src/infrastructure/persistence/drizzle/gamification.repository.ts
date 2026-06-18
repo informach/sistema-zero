@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { and, count, countDistinct, eq, gt, inArray, sql } from 'drizzle-orm'
+import { and, count, countDistinct, eq, gt, inArray, isNotNull, or, sql } from 'drizzle-orm'
 import type { CourseAudience } from '../../../domain/course/course'
 import type { BadgeSlug } from '../../../domain/gamification/badges'
 import {
@@ -256,26 +256,35 @@ export class DrizzleGamificationRepository implements GamificationRepository {
       eq(courses.slug, entitlements.courseRef),
       eq(courses.audience, audience),
     )
+    // Chave-mestra da audiência (kids `all_kids_courses`, adult `all_courses`) — tem
+    // courseRef NULL, então NÃO casa no join acima; é contada à parte. Sem este braço,
+    // uma conta cujo ÚNICO acesso à vitrine é a chave-mestra ficava FORA da coorte e o
+    // ranking sumia (full review 18/06) — espelha o OR de `findActiveForCourse`.
+    const masterType = audience === 'adult' ? 'all_courses' : 'all_kids_courses'
+    // `LEFT JOIN` + OR: matrícula específica de curso DA audiência (join casou →
+    // courses.id não-nulo) OU a chave-mestra da audiência.
+    const grantsAudienceAccess = or(isNotNull(courses.id), eq(entitlements.accessType, masterType))
 
     // As leituras num único snapshot (transação) — sob award concorrente, posição
     // e total não divergem entre si.
     return this.db.transaction(async (tx) => {
-      // A CONTA tem matrícula na audiência? (acesso → pertence à coorte). Sem isso
-      // o perfil não está na vitrine → `null` (o service omite o ranking).
+      // A CONTA tem acesso à audiência? (matrícula de curso OU chave-mestra → pertence
+      // à coorte). Sem isso o perfil não está na vitrine → `null` (o service omite).
       const [member] = await tx
         .select({ u: entitlements.userId })
         .from(entitlements)
-        .innerJoin(courses, entitlementInAudience)
-        .where(eq(entitlements.userId, accountId))
+        .leftJoin(courses, entitlementInAudience)
+        .where(and(eq(entitlements.userId, accountId), grantsAudienceAccess))
         .limit(1)
       if (!member) return null
 
       // Coorte (estilo Netflix) = PERFIS (linhas de gamification_profiles, não-equipe)
-      // da audiência cuja CONTA (account_id) tem matrícula na audiência.
+      // da audiência cuja CONTA (account_id) tem acesso à audiência.
       const accountsWithEntitlement = tx
         .select({ accountId: entitlements.userId })
         .from(entitlements)
-        .innerJoin(courses, entitlementInAudience)
+        .leftJoin(courses, entitlementInAudience)
+        .where(grantsAudienceAccess)
       const cohort = and(
         eq(gamificationProfiles.audience, audience),
         eq(gamificationProfiles.privileged, false),

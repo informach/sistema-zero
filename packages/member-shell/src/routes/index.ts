@@ -843,11 +843,21 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
 
   // ── Perfis (estilo Netflix) ──────────────────────────────────────────────
 
-  /** Grade de perfis da conta (a gestão exige sessão da conta — o auth recusa perfil). */
+  /**
+   * Grade de perfis da conta. A gestão (criar/editar/arquivar) exige sessão da conta
+   * — o auth recusa perfil. A LISTA, porém, vale também em sessão de perfil (a criança
+   * vê os rostinhos p/ TROCAR de perfil); nesse caso REDIGIMOS o telefone/nascimento
+   * dos irmãos (PII que a grade da criança não usa — só id/nome/avatar).
+   */
   const profilesList = {
     GET: async () => {
       const { status, body } = await profiles.list()
-      return NextResponse.json(body ?? { profiles: [] }, { status })
+      if (!body?.profiles) return NextResponse.json(body ?? { profiles: [] }, { status })
+      const current = await session.getSession()
+      const profilesOut = current?.activeProfile
+        ? body.profiles.map((p) => ({ ...p, whatsapp: null, birthDate: null }))
+        : body.profiles
+      return NextResponse.json({ profiles: profilesOut }, { status })
     },
   }
 

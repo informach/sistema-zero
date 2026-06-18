@@ -1,3 +1,4 @@
+import type { CourseAudience } from '../course/course'
 import type { StudioCheckResult } from '../course/studio-activity'
 
 /** Entrega do projeto do Estúdio (1 linha por aluno+bloco, upsert — último vence). */
@@ -64,8 +65,9 @@ export interface StudioSubmissionRepository {
   /** Entrega de um aluno num bloco (abrir no Estúdio do professor + correção). */
   getOne(userId: string, blockId: string): Promise<StudioSubmissionDetail | null>
   /**
-   * Quantos projetos o aluno ENTREGOU (linhas de `studio_submissions` do usuário) —
-   * resumo do progresso na área dos pais (kids). Usa o índice `(user_id, block_id)`.
+   * Quantos projetos o aluno ENTREGOU NA AUDIÊNCIA (linhas de `studio_submissions`
+   * do usuário cujo curso é da vitrine pedida) — resumo do progresso na área dos pais
+   * (kids). Escopado por audiência p/ paridade com xp/badges/cursos do dashboard.
    */
-  countByUser(userId: string): Promise<number>
+  countByUserAndAudience(userId: string, audience: CourseAudience): Promise<number>
 }

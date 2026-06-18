@@ -100,6 +100,9 @@ const EnvSchema = z
     // Anexos `pending_upload` nunca vinculados (upload abandonado) são podados após
     // estas horas — limpa a tabela; o objeto no R2 é coletado pelo BFF (dono do bucket).
     ATTACHMENT_ORPHAN_RETENTION_HOURS: z.coerce.number().int().positive().default(24),
+    // Slugs (CSV) dos servidores que SÃO paredes de vitrine — o destino da
+    // auto-publicação do Mural é restrito a eles (não basta ser kids + staff_only).
+    SHOWCASE_WALL_SLUGS: z.string().default('mural-dos-criadores'),
   })
   .refine((env) => env.NODE_ENV !== 'production' || Boolean(env.INTERNAL_API_TOKEN), {
     message: 'INTERNAL_API_TOKEN é obrigatório em produção (defesa em profundidade da API)',
@@ -112,6 +115,15 @@ const EnvSchema = z
   })
 
 export type Env = z.infer<typeof EnvSchema>
+
+/** Conjunto de slugs de parede de vitrine (CSV → Set, vazios descartados). */
+export function showcaseWallSlugs(env: Env): Set<string> {
+  return new Set(
+    env.SHOWCASE_WALL_SLUGS.split(',')
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0),
+  )
+}
 
 /** TTL efetivo do micro-cache de acesso (default: 30s em prod, 0 fora). */
 export function accessCacheTtlMs(env: Env): number {

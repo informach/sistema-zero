@@ -64,6 +64,16 @@ describe('admin de spaces/channels', () => {
     expect(((await res.json()) as { error: { code: string } }).error.code).toBe('VALIDATION_ERROR')
   })
 
+  test('community_gated sem comunidades → 400 VALIDATION_ERROR', async () => {
+    const { app } = buildApp()
+    const res = await createSpace(
+      app,
+      validSpace({ accessConfig: { visibility: 'community_gated', communities: [] } }),
+    )
+    expect(res.status).toBe(400)
+    expect(((await res.json()) as { error: { code: string } }).error.code).toBe('VALIDATION_ERROR')
+  })
+
   test('cria canal e reordena dentro do servidor', async () => {
     const { app } = buildApp()
     const space = (await (await createSpace(app, validSpace())).json()) as { id: string }

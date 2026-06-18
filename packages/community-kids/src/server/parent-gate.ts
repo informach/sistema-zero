@@ -60,6 +60,13 @@ type RouteHandler<Ctx> = (req: Request, ctx: Ctx) => Promise<Response> | Respons
  * Envolve um handler de gestão: sessão de PERFIL passa direto (auto-serviço da
  * criança, escopo travado no auth); sessão da CONTA exige o portão aberto. Sem
  * sessão → 401; conta sem o portão → 403 `PARENT_GATE_REQUIRED`.
+ *
+ * ⚠️ Use SÓ em recursos que o auth/backend já restringe ao PRÓPRIO perfil em
+ * sessão de perfil (ex.: children-stats — o members re-autoriza por `account_id`
+ * e devolve vazio p/ a criança). Para recursos escopados por outra chave que a
+ * sessão de perfil HERDA da conta (ex.: `/payments/my`, filtrado por e-MAIL — o
+ * token de perfil mantém o e-mail do responsável), use `requireParentGateAccountOnly`:
+ * deixar a criança passar vazaria o dado do responsável.
  */
 export function requireParentGate<Ctx>(handler: RouteHandler<Ctx>): RouteHandler<Ctx> {
   return async (req: Request, ctx: Ctx) => {
@@ -70,6 +77,30 @@ export function requireParentGate<Ctx>(handler: RouteHandler<Ctx>): RouteHandler
     // Sessão de perfil (a criança): o auth já restringe ao próprio perfil.
     if (session.activeProfile) return handler(req, ctx)
     // Sessão da conta: exige a senha verificada recentemente (portão aberto).
+    if (!(await isParentVerifiedFor(session.id))) {
+      return NextResponse.json({ error: { code: 'PARENT_GATE_REQUIRED' } }, { status: 403 })
+    }
+    return handler(req, ctx)
+  }
+}
+
+/**
+ * Variante ESTRITA: exige sessão da CONTA com o portão aberto e RECUSA a sessão
+ * de perfil (403 `ACCOUNT_SESSION_REQUIRED`). É o gate correto p/ dado do
+ * responsável que a criança herda da conta no token (e-mail → "minhas compras"):
+ * o `requireParentGate` deixaria a criança passar (premissa "o auth restringe ao
+ * perfil" só vale p/ recursos keyados no perfil, NÃO no e-mail/conta).
+ */
+export function requireParentGateAccountOnly<Ctx>(handler: RouteHandler<Ctx>): RouteHandler<Ctx> {
+  return async (req: Request, ctx: Ctx) => {
+    const session = await getSession()
+    if (!session) {
+      return NextResponse.json({ error: { code: 'UNAUTHENTICATED' } }, { status: 401 })
+    }
+    // A criança (sessão de perfil) NÃO acessa o histórico financeiro do responsável.
+    if (session.activeProfile) {
+      return NextResponse.json({ error: { code: 'ACCOUNT_SESSION_REQUIRED' } }, { status: 403 })
+    }
     if (!(await isParentVerifiedFor(session.id))) {
       return NextResponse.json({ error: { code: 'PARENT_GATE_REQUIRED' } }, { status: 403 })
     }

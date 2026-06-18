@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
-import { buildApp, grantLifetime, seedSampleCourse } from '../helpers'
+import { buildApp, grantAllKidsCourses, grantLifetime, seedSampleCourse } from '../helpers'
 
 const TOKEN = 'internal-token-16-chars!!'
 
@@ -40,7 +40,7 @@ describe('GET /members/internal/children-stats', () => {
     const profileC = randomUUID() // de OUTRA conta — não pode voltar
 
     // Matrícula kids ESPECÍFICA da conta → coloca a conta na coorte do ranking.
-    seedSampleCourse(ctx.courses, 'curso-kids', 'published', 'kids')
+    const kidsCourse = seedSampleCourse(ctx.courses, 'curso-kids', 'published', 'kids')
     grantLifetime(ctx.entitlements, { userId: account, courseRef: 'curso-kids' })
 
     // XP por perfil (kids): A=20 (2 aulas), B=10 (1 aula); C na outra conta.
@@ -75,14 +75,14 @@ describe('GET /members/internal/children-stats', () => {
       privileged: false,
     })
 
-    // 2 projetos do Estúdio entregues pelo perfil A.
+    // 2 projetos do Estúdio entregues pelo perfil A (no curso KIDS — contam na vitrine).
     for (const blockId of [randomUUID(), randomUUID()]) {
       await ctx.studioSubmissions.upsert({
         id: randomUUID(),
         userId: profileA,
         blockId,
         lessonId: randomUUID(),
-        courseId: randomUUID(),
+        courseId: kidsCourse.courseId,
         project: {},
         submittedAt: now,
       })
@@ -134,5 +134,67 @@ describe('GET /members/internal/children-stats', () => {
     const ctx = buildApp({ internalToken: TOKEN })
     const res = await ctx.app.handle(statsRequest(randomUUID(), [randomUUID()], ''))
     expect(res.status).toBe(401)
+  })
+
+  test('conta com SÓ a chave-mestra kids ainda entra na coorte (ranking não-nulo)', async () => {
+    const ctx = buildApp({ internalToken: TOKEN })
+    const account = randomUUID()
+    const profile = randomUUID()
+    // ACESSO só pela chave-mestra kids (courseRef null) — antes a coorte exigia
+    // matrícula de curso (join por slug) e o ranking sumia.
+    seedSampleCourse(ctx.courses, 'curso-kids', 'published', 'kids')
+    grantAllKidsCourses(ctx.entitlements, { userId: account })
+    await ctx.gamification.award({
+      userId: profile,
+      accountId: account,
+      audience: 'kids',
+      events: [{ sourceType: 'lesson_complete', sourceId: 'l1', amount: 10 }],
+      today,
+      now,
+      privileged: false,
+    })
+    const res = await ctx.app.handle(statsRequest(account, [profile]))
+    const body = ((await res.json()) as { children: ChildStats[] }).children
+    expect(body[0]?.rankingPosition).toBe(1) // único na coorte → não-nulo
+  })
+
+  test('projectsCount é só da audiência (entrega em curso adulto não conta no kids)', async () => {
+    const ctx = buildApp({ internalToken: TOKEN })
+    const account = randomUUID()
+    const profile = randomUUID()
+    const kids = seedSampleCourse(ctx.courses, 'curso-kids', 'published', 'kids')
+    const adult = seedSampleCourse(ctx.courses, 'curso-adulto', 'published', 'adult')
+    grantLifetime(ctx.entitlements, { userId: account, courseRef: 'curso-kids' })
+    await ctx.gamification.award({
+      userId: profile,
+      accountId: account,
+      audience: 'kids',
+      events: [{ sourceType: 'lesson_complete', sourceId: 'l1', amount: 10 }],
+      today,
+      now,
+      privileged: false,
+    })
+    // 1 entrega kids (conta) + 1 entrega adulta (NÃO conta no dashboard kids).
+    await ctx.studioSubmissions.upsert({
+      id: randomUUID(),
+      userId: profile,
+      blockId: randomUUID(),
+      lessonId: randomUUID(),
+      courseId: kids.courseId,
+      project: {},
+      submittedAt: now,
+    })
+    await ctx.studioSubmissions.upsert({
+      id: randomUUID(),
+      userId: profile,
+      blockId: randomUUID(),
+      lessonId: randomUUID(),
+      courseId: adult.courseId,
+      project: {},
+      submittedAt: now,
+    })
+    const res = await ctx.app.handle(statsRequest(account, [profile]))
+    const body = ((await res.json()) as { children: ChildStats[] }).children
+    expect(body[0]?.projectsCount).toBe(1) // só a entrega kids
   })
 })

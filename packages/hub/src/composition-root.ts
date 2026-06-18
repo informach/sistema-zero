@@ -14,7 +14,12 @@ import { ReadStateService } from './application/read-state/read-state.service'
 import { ShowcaseService } from './application/showcase/showcase.service'
 import { ThreadService } from './application/threads/thread.service'
 import { MicroCache } from './infrastructure/cache/micro-cache'
-import { accessCacheTtlMs, attachmentLimits, type Env } from './infrastructure/config/env'
+import {
+  accessCacheTtlMs,
+  attachmentLimits,
+  type Env,
+  showcaseWallSlugs,
+} from './infrastructure/config/env'
 import { createMembersHttpGateway } from './infrastructure/gateways/members-http.gateway'
 import { withSentryMirror } from './infrastructure/observability/sentry'
 import { DrizzleAttachmentRepository } from './infrastructure/persistence/drizzle/attachment.repository'
@@ -140,6 +145,7 @@ export async function createApplication(env: Env): Promise<Application> {
     members,
     () => new Date(),
     () => randomUUID(),
+    showcaseWallSlugs(env),
   )
   const moderationService = new ModerationService(threadRepo, moderationRepo, () => new Date())
 

@@ -1,4 +1,5 @@
 import { and, asc, count, eq, inArray } from 'drizzle-orm'
+import type { CourseAudience } from '../../../domain/course/course'
 import type { StudioCheckResult } from '../../../domain/course/studio-activity'
 import type {
   StudioSubmissionDetail,
@@ -8,7 +9,7 @@ import type {
   StudioSubmissionSummary,
 } from '../../../domain/ports/studio-submission-repository.port'
 import type { Database } from './db'
-import { studioSubmissions } from './schema'
+import { courses, studioSubmissions } from './schema'
 
 export class DrizzleStudioSubmissionRepository implements StudioSubmissionRepository {
   constructor(private readonly db: Database) {}
@@ -113,11 +114,14 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
     }
   }
 
-  async countByUser(userId: string): Promise<number> {
+  async countByUserAndAudience(userId: string, audience: CourseAudience): Promise<number> {
+    // Escopa por audiência via o curso da entrega (paridade com xp/badges/cursos do
+    // dashboard dos pais — um perfil que tocasse curso de outra vitrine não infla).
     const [row] = await this.db
       .select({ value: count() })
       .from(studioSubmissions)
-      .where(eq(studioSubmissions.userId, userId))
+      .innerJoin(courses, eq(courses.id, studioSubmissions.courseId))
+      .where(and(eq(studioSubmissions.userId, userId), eq(courses.audience, audience)))
     return row?.value ?? 0
   }
 }

@@ -831,6 +831,9 @@ export class InMemoryQuizAttemptRepository implements QuizAttemptRepository {
 export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepository {
   readonly submissions: StudioSubmissionRecord[] = []
 
+  /** Courses p/ resolver a audiência da entrega (countByUserAndAudience). */
+  constructor(private readonly courses?: InMemoryCourseRepository) {}
+
   /** Upsert por (user, block) — reenvio sobrescreve projeto/data/correção. */
   async upsert(submission: StudioSubmissionRecord): Promise<void> {
     const existing = this.submissions.find(
@@ -898,8 +901,12 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
       : null
   }
 
-  async countByUser(userId: string): Promise<number> {
-    return this.submissions.filter((s) => s.userId === userId).length
+  async countByUserAndAudience(userId: string, audience: CourseAudience): Promise<number> {
+    return this.submissions.filter((s) => {
+      if (s.userId !== userId) return false
+      const course = this.courses?.courses.find((c) => c.id === s.courseId)
+      return course?.audience === audience
+    }).length
   }
 }
 
@@ -1074,10 +1081,15 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     accountId: string,
     audience: CourseAudience,
   ): Promise<GamificationRanking | null> {
+    const masterType = audience === 'adult' ? 'all_courses' : 'all_kids_courses'
     const accountsWithEntitlement = new Set<string>()
     for (const e of this.sources?.entitlements.byId.values() ?? []) {
+      // Matrícula específica de curso DA audiência OU a chave-mestra da audiência
+      // (courseRef null — sem ela, conta com só a chave-mestra ficava fora da coorte).
       const course = this.sources?.courses.courses.find((c) => c.slug === e.courseRef)
-      if (course?.audience === audience) accountsWithEntitlement.add(e.userId)
+      if (course?.audience === audience || e.accessType === masterType) {
+        accountsWithEntitlement.add(e.userId)
+      }
     }
     if (!accountsWithEntitlement.has(accountId)) return null
 

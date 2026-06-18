@@ -62,7 +62,7 @@ export class GetChildrenStatsService {
           courseIds.length
             ? this.progress.countCompletedPublishedByCourseIds(profileId, courseIds)
             : Promise.resolve(new Map<string, number>()),
-          this.studio.countByUser(profileId),
+          this.studio.countByUserAndAudience(profileId, audience),
           this.gamification.getRanking(profileId, accountId, audience),
         ])
 

@@ -208,4 +208,89 @@ describe('vitrine (Mural dos Criadores)', () => {
     )
     expect(res.status).toBe(401)
   })
+
+  test('projetos AVULSOS (sem cadeia) do mesmo curso NÃO colidem na idempotência', async () => {
+    // Sem `chain` a chave caía em `autor:curso:` → 2 projetos avulsos do mesmo curso
+    // colidiam e o 2º sumia. Agora o blockId desambigua.
+    ctx.members.showcaseEligibility = { ...ctx.members.showcaseEligibility, chain: null }
+    const headers = child(randomUUID())
+    const blockA = '33333333-3333-3333-3333-333333333333'
+    const blockB = '44444444-4444-4444-4444-444444444444'
+    const pub = (blockId: string) =>
+      ctx.app
+        .handle(
+          jsonRequest('POST', '/hub/internal/showcase-thread', {
+            headers,
+            body: showcaseBody({ blockId }),
+          }),
+        )
+        .then((r) => r.json() as Promise<{ thread: { id: string }; deduped: boolean }>)
+
+    const a = await pub(blockA)
+    const b = await pub(blockB)
+    const aAgain = await pub(blockA)
+
+    expect(a.deduped).toBe(false)
+    expect(b.deduped).toBe(false)
+    expect(b.thread.id).not.toBe(a.thread.id) // dois projetos avulsos distintos
+    expect(aAgain.deduped).toBe(true) // re-publicar o MESMO avulso ainda dedupe
+    expect(aAgain.thread.id).toBe(a.thread.id)
+  })
+
+  test('capa padrão NÃO-https do members é descartada (parede infantil é HTTPS)', async () => {
+    ctx.members.showcaseEligibility = {
+      ...ctx.members.showcaseEligibility,
+      defaultCoverUrl: 'http://inseguro.example.com/capa.png',
+    }
+    const res = await ctx.app.handle(
+      jsonRequest('POST', '/hub/internal/showcase-thread', {
+        headers: child(randomUUID()),
+        body: showcaseBody({ coverImageUrl: null }),
+      }),
+    )
+    expect(res.status).toBe(200)
+    const { thread } = (await res.json()) as { thread: { coverImageUrl: string | null } }
+    expect(thread.coverImageUrl).toBeNull()
+  })
+
+  test('com allowlist de parede: recusa space kids staff_only que NÃO é a parede', async () => {
+    const gated = buildApp({ internalToken: INTERNAL, showcaseWallSlugs: ['mural-dos-criadores'] })
+    await seedMural(gated)
+    // Outra vitrine kids com canal staff_only — antes passaria pela heurística.
+    const outra = await gated.repo.createSpace({
+      slug: 'vitrine-curada',
+      name: 'Vitrine curada',
+      description: null,
+      iconUrl: null,
+      audience: 'kids',
+      accessConfig: PUBLIC,
+      requiresApproval: true,
+      teaserWhenLocked: false,
+      status: 'active',
+    })
+    await gated.repo.createChannel(outra.id, {
+      slug: 'parede',
+      name: 'Parede',
+      topic: null,
+      accessConfig: null,
+      postingPolicy: 'staff_only',
+      requiresApproval: null,
+      status: 'active',
+    })
+    const denied = await gated.app.handle(
+      jsonRequest('POST', '/hub/internal/showcase-thread', {
+        headers: child(randomUUID()),
+        body: showcaseBody({ spaceSlug: 'vitrine-curada' }),
+      }),
+    )
+    expect(denied.status).toBe(403)
+    // A parede designada segue passando.
+    const ok = await gated.app.handle(
+      jsonRequest('POST', '/hub/internal/showcase-thread', {
+        headers: child(randomUUID()),
+        body: showcaseBody(),
+      }),
+    )
+    expect(ok.status).toBe(200)
+  })
 })

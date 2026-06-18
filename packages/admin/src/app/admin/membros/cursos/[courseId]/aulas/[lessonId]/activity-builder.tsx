@@ -12,7 +12,7 @@ import { Button } from '@sistemazero/ui/button'
 import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
 import { Plus, Trash2 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { RichTextEditor } from '@/components/editor/rich-text-editor'
 
 /** Atividade vazia (default ao ligar a auto-correção num bloco). */
@@ -99,6 +99,17 @@ function JsonInput({
 }) {
   const [text, setText] = useState(() => JSON.stringify(value))
   const [invalid, setInvalid] = useState(false)
+  // Último valor que ESTE input emitiu — p/ distinguir o eco da própria digitação de
+  // uma troca EXTERNA do `value` (ex.: mudar o tipo de regra zera p/ null).
+  const lastEmitted = useRef<unknown>(value)
+  useEffect(() => {
+    // O parent trocou o value por fora → re-sincroniza o texto (senão fica obsoleto).
+    if (value !== lastEmitted.current) {
+      setText(JSON.stringify(value))
+      setInvalid(false)
+      lastEmitted.current = value
+    }
+  }, [value])
   return (
     <Input
       value={text}
@@ -108,7 +119,9 @@ function JsonInput({
         const t = e.target.value
         setText(t)
         try {
-          onChange(JSON.parse(t))
+          const parsed = JSON.parse(t)
+          lastEmitted.current = parsed
+          onChange(parsed)
           setInvalid(false)
         } catch {
           setInvalid(true)

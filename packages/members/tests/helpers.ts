@@ -75,7 +75,7 @@ export function buildApp(
   const progress = new InMemoryProgressRepository(courses)
   const positions = new InMemoryVideoPositionRepository()
   const quizAttempts = new InMemoryQuizAttemptRepository()
-  const studioSubmissions = new InMemoryStudioSubmissionRepository()
+  const studioSubmissions = new InMemoryStudioSubmissionRepository(courses)
   const ratings = new InMemoryCourseRatingRepository()
   const gamification = new InMemoryGamificationRepository({ entitlements, courses })
   const processed = new InMemoryProcessedWebhookRepository()

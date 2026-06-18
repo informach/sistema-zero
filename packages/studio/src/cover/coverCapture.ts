@@ -68,7 +68,9 @@ export async function captureCoverFromProject(
 
   return new Promise<string | null>((resolve) => {
     const iframe = document.createElement('iframe')
-    iframe.setAttribute('sandbox', 'allow-scripts allow-modals')
+    // SEM `allow-modals` (igual ao runner de checagem): um `alert/confirm/prompt` do
+    // projeto travaria a captura no iframe oculto até o timeout → capa `null` à toa.
+    iframe.setAttribute('sandbox', 'allow-scripts')
     iframe.setAttribute('aria-hidden', 'true')
     iframe.style.position = 'absolute'
     iframe.style.width = '1024px'

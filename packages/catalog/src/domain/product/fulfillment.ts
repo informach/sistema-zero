@@ -9,8 +9,10 @@
  * publicados da SUA audiência, atuais E futuros; a checagem no members vira "chave
  * do curso OU chave-mestra da audiência ativa"). Os antigos `download`/`external`/
  * `none` + `assets` foram removidos do cadastro (entregas mortas — criavam
- * acessos invisíveis ao aluno). `community` (tiers) é fatia futura: entra no
- * union quando a comunidade real existir.
+ * acessos invisíveis ao aluno). `community` libera o ACESSO de uma comunidade
+ * (`courseRef` = CHAVE da comunidade, casa com `communities[]` do espaço no hub —
+ * Fase 2b, ligado ponta a ponta: o members concede o entitlement `community` e o
+ * hub gateia `community_gated` por ela).
  */
 export type ReleaseMode = 'immediate' | 'days_after_purchase' | 'fixed_date'
 
