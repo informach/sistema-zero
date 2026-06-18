@@ -316,7 +316,7 @@ export function createApplication(env: Env): Application {
           const [row] = await gate`
             select pg_try_advisory_xact_lock(${RETENTION_ADVISORY_LOCK_KEY}::bigint) as locked
           `
-          if (!row?.['locked']) return // outra réplica está limpando neste ciclo
+          if (!row?.locked) return // outra réplica está limpando neste ciclo
           // ⚠️ A transação-gate fica idle enquanto os DELETEs rodam no pool — o
           // idle_in_transaction_session_timeout (30s) a mata se a limpeza passar
           // disso (o lock solta e outra réplica pode assumir; DELETEs são

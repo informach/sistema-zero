@@ -47,7 +47,7 @@ export class EmitInvoiceService {
       await this.backoffOrFail(invoice, `re-verificação no payments falhou: ${msg(error)}`)
       return
     }
-    if (!snapshot || snapshot.status !== 'PAID' || snapshot.refundedAt) {
+    if (snapshot?.status !== 'PAID' || snapshot.refundedAt) {
       await this.invoices.skip(
         invoice.id,
         SkipReason.PAYMENT_NOT_PAID_AT_EMISSION,

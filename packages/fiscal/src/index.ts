@@ -8,7 +8,7 @@ const env = loadEnv()
 const sentryEnabled = initSentry({
   dsn: env.SENTRY_DSN,
   environment: env.APP_ENV ?? env.NODE_ENV,
-  release: process.env['RAILWAY_GIT_COMMIT_SHA'],
+  release: process.env.RAILWAY_GIT_COMMIT_SHA,
 })
 const app = createApplication(env)
 if (sentryEnabled) app.logger.info('sentry.enabled', { environment: env.APP_ENV ?? env.NODE_ENV })

@@ -301,7 +301,7 @@ export async function createApplication(env: Env): Promise<Application> {
       const [row] = await gate`
         select pg_try_advisory_xact_lock(${PURGE_ADVISORY_LOCK_KEY}::bigint) as locked
       `
-      if (!row?.['locked']) return // outra réplica está purgando neste ciclo
+      if (!row?.locked) return // outra réplica está purgando neste ciclo
       const cutoff = new Date(Date.now() - PURGE_GRACE_MS)
       const [refresh, reset, otp, impersonation] = await Promise.all([
         refreshTokens.deleteExpired(cutoff),

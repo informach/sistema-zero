@@ -25,15 +25,15 @@ export class PaymentsHttpClient implements PaymentsClient {
     const id = expectString(body, 'id')
     const status = expectString(body, 'status')
     // amountInCents viaja como STRING na AdminPaymentView (bigint não é JSON).
-    const amountRaw = body['amountInCents']
+    const amountRaw = body.amountInCents
     const amountInCents =
       typeof amountRaw === 'string' || typeof amountRaw === 'number' ? BigInt(amountRaw) : null
     if (amountInCents === null) throw new Error('payments: amountInCents ausente na view')
 
-    const customer = (body['customer'] ?? null) as PaymentSnapshot['customer']
-    const metadata = (body['metadata'] ?? {}) as Record<string, unknown>
-    const paidAt = typeof body['paidAt'] === 'string' ? new Date(body['paidAt']) : null
-    const refundedRaw = body['refundedAt'] ?? metadata['refundedAt']
+    const customer = (body.customer ?? null) as PaymentSnapshot['customer']
+    const metadata = (body.metadata ?? {}) as Record<string, unknown>
+    const paidAt = typeof body.paidAt === 'string' ? new Date(body.paidAt) : null
+    const refundedRaw = body.refundedAt ?? metadata.refundedAt
     const refundedAt = typeof refundedRaw === 'string' ? new Date(refundedRaw) : null
 
     return { id, status, amountInCents, paidAt, customer, metadata, refundedAt }

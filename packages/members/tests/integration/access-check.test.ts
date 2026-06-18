@@ -4,11 +4,7 @@ import { buildApp, grantAllCourses, grantCommunity, grantLifetime } from '../hel
 
 const TOKEN = 'internal-token-16-chars!!'
 
-function post(
-  app: ReturnType<typeof buildApp>['app'],
-  body: unknown,
-  headers: Record<string, string> = {},
-): Request {
+function post(body: unknown, headers: Record<string, string> = {}): Request {
   return new Request('http://local/members/internal/access-check', {
     method: 'POST',
     headers: { 'content-type': 'application/json', ...headers },
@@ -24,7 +20,7 @@ describe('POST /members/internal/access-check', () => {
     grantAllCourses(entitlements, { userId })
 
     const res = await app.handle(
-      post(app, { userId, courseRefs: ['curso-a', 'curso-b'] }, { 'x-internal-token': TOKEN }),
+      post({ userId, courseRefs: ['curso-a', 'curso-b'] }, { 'x-internal-token': TOKEN }),
     )
     expect(res.status).toBe(200)
     const body = (await res.json()) as { grants: string[]; hasMaster: boolean }
@@ -35,7 +31,7 @@ describe('POST /members/internal/access-check', () => {
   test('sem matrícula → grants vazio, sem master', async () => {
     const { app } = buildApp({ internalToken: TOKEN })
     const res = await app.handle(
-      post(app, { userId: randomUUID(), courseRefs: ['curso-a'] }, { 'x-internal-token': TOKEN }),
+      post({ userId: randomUUID(), courseRefs: ['curso-a'] }, { 'x-internal-token': TOKEN }),
     )
     const body = (await res.json()) as { grants: string[]; hasMaster: boolean }
     expect(body.grants).toEqual([])
@@ -44,7 +40,7 @@ describe('POST /members/internal/access-check', () => {
 
   test('sem x-internal-token quando exigido → 401', async () => {
     const { app } = buildApp({ internalToken: TOKEN })
-    const res = await app.handle(post(app, { userId: randomUUID(), courseRefs: [] }))
+    const res = await app.handle(post({ userId: randomUUID(), courseRefs: [] }))
     expect(res.status).toBe(401)
   })
 
@@ -56,7 +52,7 @@ describe('POST /members/internal/access-check', () => {
     grantCommunity(entitlements, { userId, communityKey: 'curso-a' })
 
     const res = await app.handle(
-      post(app, { userId, courseRefs: ['curso-a'] }, { 'x-internal-token': TOKEN }),
+      post({ userId, courseRefs: ['curso-a'] }, { 'x-internal-token': TOKEN }),
     )
     const body = (await res.json()) as {
       grants: string[]
@@ -75,7 +71,7 @@ describe('POST /members/internal/access-check', () => {
     grantCommunity(entitlements, { userId, communityKey: 'vip' })
 
     const res = await app.handle(
-      post(app, { userId, courseRefs: ['curso-a', 'curso-b'] }, { 'x-internal-token': TOKEN }),
+      post({ userId, courseRefs: ['curso-a', 'curso-b'] }, { 'x-internal-token': TOKEN }),
     )
     const body = (await res.json()) as { grants: string[]; communities: string[] }
     expect(body.grants).toEqual(['curso-a'])

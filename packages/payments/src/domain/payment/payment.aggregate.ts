@@ -333,7 +333,7 @@ export class PaymentAggregate extends AggregateRoot<string> {
    * senão a reconciliação re-salvaria o mesmo flag a cada varredura).
    */
   flagAmountMismatch(info: { expectedInCents: bigint; paidInCents: bigint }): boolean {
-    if (this.state.metadata['amountMismatch']) return false
+    if (this.state.metadata.amountMismatch) return false
     this.state.metadata = {
       ...this.state.metadata,
       amountMismatch: {

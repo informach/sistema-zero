@@ -19,7 +19,7 @@ export class ArchiveProfileService {
 
   async execute(cmd: ArchiveProfileCommand): Promise<void> {
     const profile = await this.profiles.findById(cmd.profileId)
-    if (!profile || !profile.belongsTo(cmd.accountUserId)) throw new ProfileNotFoundError()
+    if (!profile?.belongsTo(cmd.accountUserId)) throw new ProfileNotFoundError()
     if (profile.isArchived) return
     profile.archive(this.clock())
     await this.profiles.update(profile)

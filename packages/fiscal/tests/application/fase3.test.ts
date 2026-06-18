@@ -76,8 +76,8 @@ describe('e-mail da nota (pós-emissão, best-effort)', () => {
     const sent = messaging.sent[0]!
     expect(sent.idempotencyKey).toBe(`nfse-${invoice.id}`)
     expect(sent.recipient).toEqual({ name: 'Maria', email: 'maria@example.com' })
-    expect(sent.variables['valor']).toBe('R$ 1.234,56')
-    expect(sent.variables['chave']).toBe('1'.repeat(50))
+    expect(sent.variables.valor).toBe('R$ 1.234,56')
+    expect(sent.variables.chave).toBe('1'.repeat(50))
     const after = await invoices.findById(invoice.id)
     expect((sent as unknown as { attachments: Array<{ url: string }> }).attachments[0]?.url).toBe(
       `http://fiscal.test:3009/fiscal/files/${after?.pdfToken}.pdf`,

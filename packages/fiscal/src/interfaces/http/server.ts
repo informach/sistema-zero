@@ -169,8 +169,7 @@ export function createServer(deps: HttpDeps) {
             }
 
             await deps.processedWebhooks.markProcessed(deliveryId, {
-              paymentId:
-                typeof payload['paymentId'] === 'string' ? payload['paymentId'] : undefined,
+              paymentId: typeof payload.paymentId === 'string' ? payload.paymentId : undefined,
               eventName,
             })
             return { ok: true }

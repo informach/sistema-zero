@@ -40,7 +40,7 @@ export class CreatePasswordTokenService {
   }): Promise<IssuedPasswordToken | null> {
     const email = Email.create(command.email)
     const user = await this.users.findByEmail(email.value)
-    if (!user || !user.isActive()) return null
+    if (!user?.isActive()) return null
 
     const now = command.now ?? new Date()
     // Cooldown por conta: emissão dentro da janela → null (o forgot-password

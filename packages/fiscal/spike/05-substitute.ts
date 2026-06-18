@@ -13,7 +13,7 @@ const cert = loadA1Certificate()
 const { sefin, ambiente, tpAmb } = baseUrls()
 if (ambiente === 'producao') throw new Error('Spike NÃO roda em produção.')
 
-const base = Number(process.env['NFSE_DPS_NUMERO'] ?? 1)
+const base = Number(process.env.NFSE_DPS_NUMERO ?? 1)
 const hoje = new Date().toISOString().slice(0, 10)
 
 async function emit(numero: number, descricao: string, substituicao?: { chaveOriginal: string }) {

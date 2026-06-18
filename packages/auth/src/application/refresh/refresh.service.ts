@@ -76,7 +76,7 @@ export class RefreshService {
     let profileClaim: ProfileClaim | null = null
     if (record.activeProfileId) {
       const profile = await this.profiles.findById(record.activeProfileId)
-      if (profile && profile.belongsTo(user.id) && !profile.isArchived) {
+      if (profile?.belongsTo(user.id) && !profile.isArchived) {
         activeProfileId = profile.id
         profileClaim = { accountId: user.id, name: profile.name }
       }

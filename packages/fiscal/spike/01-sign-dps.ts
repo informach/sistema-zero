@@ -11,18 +11,17 @@ import { signXml } from './lib/sign'
 const cert = loadA1Certificate()
 console.log('Assinando com:', cert.info.subject)
 
-const numero = Number(process.env['NFSE_DPS_NUMERO'] ?? 1)
+const numero = Number(process.env.NFSE_DPS_NUMERO ?? 1)
 const { xml, id } = buildDpsXml({
   numero,
-  dCompet: process.env['NFSE_DCOMPET'] ?? new Date().toISOString().slice(0, 10),
+  dCompet: process.env.NFSE_DCOMPET ?? new Date().toISOString().slice(0, 10),
   tomador: {
-    cpf: process.env['NFSE_TOMADOR_CPF'] ?? '52998224725', // CPF de teste válido (mesmo dos testes do payments)
-    nome: process.env['NFSE_TOMADOR_NOME'] ?? 'Comprador de Teste do Spike',
+    cpf: process.env.NFSE_TOMADOR_CPF ?? '52998224725', // CPF de teste válido (mesmo dos testes do payments)
+    nome: process.env.NFSE_TOMADOR_NOME ?? 'Comprador de Teste do Spike',
   },
-  valor: process.env['NFSE_VALOR'] ?? '37.00',
+  valor: process.env.NFSE_VALOR ?? '37.00',
   descricao:
-    process.env['NFSE_DESCRICAO'] ??
-    'Pack Do Zero ao Herói - curso online (TESTE produção restrita)',
+    process.env.NFSE_DESCRICAO ?? 'Pack Do Zero ao Herói - curso online (TESTE produção restrita)',
   tpAmb: '2',
 })
 

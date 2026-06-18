@@ -44,7 +44,7 @@ export class HandlePaymentWebhookService {
 
   async execute(delivery: WebhookDelivery): Promise<HandleResult> {
     const paymentId =
-      typeof delivery.payload['paymentId'] === 'string' ? delivery.payload['paymentId'] : null
+      typeof delivery.payload.paymentId === 'string' ? delivery.payload.paymentId : null
     if (!paymentId) {
       // Payload sem paymentId não é processável — consumir (re-entrega não conserta).
       this.logger.warn('fiscal.webhook_without_payment_id', { eventName: delivery.eventName })
@@ -94,8 +94,7 @@ export class HandlePaymentWebhookService {
       return { kind: 'ok' }
     }
 
-    const offerId =
-      typeof snapshot.metadata['offerId'] === 'string' ? snapshot.metadata['offerId'] : null
+    const offerId = typeof snapshot.metadata.offerId === 'string' ? snapshot.metadata.offerId : null
     let guaranteeDays: number | null = null
     let productName: string | null = null
     if (offerId) {

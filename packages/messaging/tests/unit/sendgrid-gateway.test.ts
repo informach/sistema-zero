@@ -56,7 +56,7 @@ describe('SendGridEmailGateway — imagens inline (cid:)', () => {
       disposition: 'inline',
       content_id: 'logo-sz-light',
     })
-    expect(body.attachments?.map((a) => a['content_id'])).not.toContain('nunca-usada')
+    expect(body.attachments?.map((a) => a.content_id)).not.toContain('nunca-usada')
   })
 
   it('html sem cid: → sem campo attachments', async () => {

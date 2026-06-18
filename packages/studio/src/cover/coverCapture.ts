@@ -94,7 +94,7 @@ export async function captureCoverFromProject(
       if (!iframe.contentWindow || ev.source !== iframe.contentWindow) return
       if (ev.origin !== 'null' && ev.origin !== parentOrigin) return
       const data = ev.data as { __szCover?: boolean; dataUrl?: unknown } | null
-      if (!data || data.__szCover !== true) return
+      if (data?.__szCover !== true) return
       const url = data.dataUrl
       finish(
         typeof url === 'string' &&

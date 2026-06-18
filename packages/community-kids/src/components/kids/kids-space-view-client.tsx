@@ -606,7 +606,6 @@ function ShowcaseCard({ thread, onOpen }: { thread: HubThreadView; onOpen: () =>
     >
       <div className="aspect-video w-full overflow-hidden bg-(--kids-cyan-tint)">
         {thread.coverImageUrl ? (
-          // biome-ignore lint/performance/noImgElement: capa é URL externa (R2/admin); o Next/Image exigiria allowlist de domínios.
           <img
             src={thread.coverImageUrl}
             alt={thread.title}
@@ -718,7 +717,6 @@ function ThreadDetail({
       <div className="space-y-3 rounded-2xl border-2 border-border bg-card p-4">
         {isWall && thread.coverImageUrl ? (
           <div className="aspect-video w-full overflow-hidden rounded-xl bg-(--kids-cyan-tint)">
-            {/* biome-ignore lint/performance/noImgElement: capa é URL externa (R2/admin). */}
             <img src={thread.coverImageUrl} alt={thread.title} className="size-full object-cover" />
           </div>
         ) : null}

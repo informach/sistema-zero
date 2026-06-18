@@ -41,7 +41,6 @@ export class InMemoryInvoiceRepository implements InvoiceRepository {
   /** Spy de teste: ids cujo lease foi renovado (touchClaim). */
   touched: string[] = []
   private counter = new Map<string, bigint>()
-  private seq = 0
 
   async findById(id: string): Promise<Invoice | null> {
     return this.invoices.get(id) ?? null
@@ -117,7 +116,6 @@ export class InMemoryInvoiceRepository implements InvoiceRepository {
       ? await this.findActiveSubstituteFor(input.substitutesId)
       : await this.findActiveByPaymentId(input.paymentId)
     if (existing) return existing
-    this.seq += 1
     const invoice: Invoice = {
       id: crypto.randomUUID(),
       version: 0,

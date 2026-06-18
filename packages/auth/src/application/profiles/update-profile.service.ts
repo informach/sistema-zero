@@ -28,7 +28,7 @@ export class UpdateProfileDetailsService {
 
   async execute(cmd: UpdateProfileDetailsCommand): Promise<ProfileView> {
     const profile = await this.profiles.findById(cmd.profileId)
-    if (!profile || !profile.belongsTo(cmd.accountUserId) || profile.isArchived) {
+    if (!profile?.belongsTo(cmd.accountUserId) || profile.isArchived) {
       throw new ProfileNotFoundError()
     }
     const now = this.clock()
