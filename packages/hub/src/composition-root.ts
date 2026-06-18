@@ -134,6 +134,7 @@ export async function createApplication(env: Env): Promise<Application> {
   const showcaseService = new ShowcaseService(
     communityRead,
     threadRepo,
+    members,
     () => new Date(),
     () => randomUUID(),
   )

@@ -115,7 +115,7 @@ export function buildApp(
       internalToken: opts.internalToken,
     },
     showcase: {
-      showcase: new ShowcaseService(repo, threadRepo, clock, () => randomUUID()),
+      showcase: new ShowcaseService(repo, threadRepo, members, clock, () => randomUUID()),
       internalToken: opts.internalToken,
     },
     admin: {

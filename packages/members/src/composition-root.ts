@@ -256,6 +256,7 @@ export async function createApplication(env: Env): Promise<Application> {
     internal: {
       accessCheck,
       profileAllowance,
+      showcasePayload: getShowcasePayload,
       internalToken: env.INTERNAL_API_TOKEN,
     },
   })

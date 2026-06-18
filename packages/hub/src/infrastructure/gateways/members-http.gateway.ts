@@ -1,5 +1,10 @@
 import type { Logger } from '@sistemazero/core/logging'
-import type { CourseAccessResult, MembersGateway } from '../../domain/ports/members-gateway.port'
+import type {
+  CourseAccessResult,
+  MembersGateway,
+  ShowcaseEligibilityArgs,
+  ShowcaseEligibilityResult,
+} from '../../domain/ports/members-gateway.port'
 
 export interface MembersHttpGatewayOptions {
   /** Base do members (ex.: http://localhost:3004). Sem `/members`. */
@@ -47,6 +52,33 @@ export function createMembersHttpGateway(opts: MembersHttpGatewayOptions): Membe
       return {
         granted: Array.isArray(body.grants) ? (body.grants as string[]) : [],
         hasMaster: Boolean(body.hasMaster),
+      }
+    },
+
+    async getShowcaseEligibility(
+      args: ShowcaseEligibilityArgs,
+    ): Promise<ShowcaseEligibilityResult> {
+      const qs = new URLSearchParams({
+        accountId: args.accountId,
+        userId: args.userId,
+        lessonId: args.lessonId,
+        blockId: args.blockId,
+      })
+      const res = await doFetch(`${base}/members/internal/showcase-eligibility?${qs}`, {
+        method: 'GET',
+        headers,
+        signal: AbortSignal.timeout(timeoutMs),
+      })
+      if (!res.ok) throw new Error(`members showcase-eligibility respondeu ${res.status}`)
+      const b = (await res.json()) as Partial<ShowcaseEligibilityResult>
+      return {
+        eligible: Boolean(b.eligible),
+        title: typeof b.title === 'string' ? b.title : '',
+        summary: typeof b.summary === 'string' ? b.summary : '',
+        defaultCoverUrl: typeof b.defaultCoverUrl === 'string' ? b.defaultCoverUrl : null,
+        chain: typeof b.chain === 'string' ? b.chain : null,
+        courseId: typeof b.courseId === 'string' ? b.courseId : '',
+        audience: b.audience === 'kids' ? 'kids' : 'adult',
       }
     },
   }

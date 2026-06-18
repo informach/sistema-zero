@@ -150,7 +150,10 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    :blockId/showcase-payload` (`GetShowcasePayloadService`, espelha o carryover — acesso pela CONTA,
    entrega pelo PERFIL): `{eligible, title, summary, defaultCoverUrl, chain, courseId, audience}`,
    `eligible:false` se o bloco não é vitrine/desabilitado/sem entrega. O BFF re-busca isso no
-   clique e publica no hub (`POST /hub/internal/showcase-thread`).
+   clique e publica no hub (`POST /hub/internal/showcase-thread`). ⚠️ O **HUB também re-valida** a
+   elegibilidade via `GET /members/internal/showcase-eligibility?accountId=&userId=&lessonId=&blockId=`
+   (rota S2S, MESMO `GetShowcasePayloadService`, `privileged:false`) — a rota de publicação é
+   alcançável na borda por qualquer conta ativa, então o hub não confia no corpo (full review 18/06).
 7. **Quiz é corrigido NO SERVIDOR** (`quiz_attempts` guarda o histórico; score 0–100 por
    conjunto EXATO de choices). O GET da aula **NUNCA envia o gabarito** — a projeção
    member-facing (`toMemberFacingQuizContent`) remove `correctChoiceIds`/`explanation`

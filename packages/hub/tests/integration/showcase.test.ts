@@ -5,6 +5,8 @@ import { buildApp, jsonRequest, studentHeaders } from '../helpers'
 
 const PUBLIC: AccessConfig = { visibility: 'public', courses: [], roles: [] }
 const INTERNAL = 'showcase-internal-token-0001'
+const LESSON_ID = '11111111-1111-1111-1111-111111111111'
+const BLOCK_ID = '22222222-2222-2222-2222-222222222222'
 
 /** Cria o servidor do Mural (público no teste) + 1 canal staff_only (a parede). */
 async function seedMural(ctx: ReturnType<typeof buildApp>) {
@@ -31,14 +33,14 @@ async function seedMural(ctx: ReturnType<typeof buildApp>) {
   return { space, channel }
 }
 
+// O corpo só diz QUAL projeto (lessonId/blockId) e a capa capturada. Título/resumo/
+// nome/idempotência são resolvidos no hub (members S2S + header de perfil do gateway).
 function showcaseBody(over: Record<string, unknown> = {}) {
   return {
     spaceSlug: 'mural-dos-criadores',
-    authorDisplayName: 'Sofia',
-    title: 'Meu joguinho',
-    summary: 'Um jogo de plataforma com a faísca pulando.',
+    lessonId: LESSON_ID,
+    blockId: BLOCK_ID,
     coverImageUrl: 'https://cdn.example.com/capa.png',
-    idempotencyKey: 'perfil-1:curso-1:cadeia-1',
     ...over,
   }
 }
@@ -50,9 +52,11 @@ describe('vitrine (Mural dos Criadores)', () => {
     await seedMural(ctx)
   })
 
-  const child = (id: string) => studentHeaders(id, { 'x-internal-token': INTERNAL })
+  // Criança: token interno (gateway) + nome do PERFIL no header confiável (x-auth-profile-name).
+  const child = (id: string) =>
+    studentHeaders(id, { 'x-internal-token': INTERNAL, 'x-auth-profile-name': 'Sofia' })
 
-  test('auto-publica o projeto: visível na hora, com autor e capa', async () => {
+  test('auto-publica o projeto: visível, autor do header de perfil, conteúdo do members', async () => {
     const res = await ctx.app.handle(
       jsonRequest('POST', '/hub/internal/showcase-thread', {
         headers: child(randomUUID()),
@@ -73,13 +77,31 @@ describe('vitrine (Mural dos Criadores)', () => {
     }
     expect(deduped).toBe(false)
     expect(thread.isShowcase).toBe(true)
+    // Nome vem do header de perfil (gateway), NÃO do corpo.
     expect(thread.authorDisplayName).toBe('Sofia')
+    // Título vem do members (autoritativo), não do corpo.
+    expect(thread.title).toBe('Meu joguinho')
+    // Capa capturada (corpo) prevalece sobre a padrão do members.
     expect(thread.coverImageUrl).toBe('https://cdn.example.com/capa.png')
     expect(thread.status).toBe('visible')
     expect(thread.pending).toBe(false)
+    // O hub RE-VALIDOU a elegibilidade no members (acesso pela conta, entrega pelo perfil).
+    expect(ctx.members.eligibilityCalls.length).toBe(1)
   })
 
-  test('idempotente: re-publicar a mesma cadeia devolve o post existente', async () => {
+  test('capa AUSENTE no corpo → cai na capa padrão do members', async () => {
+    const res = await ctx.app.handle(
+      jsonRequest('POST', '/hub/internal/showcase-thread', {
+        headers: child(randomUUID()),
+        body: showcaseBody({ coverImageUrl: null }),
+      }),
+    )
+    expect(res.status).toBe(200)
+    const { thread } = (await res.json()) as { thread: { coverImageUrl: string } }
+    expect(thread.coverImageUrl).toBe('https://cdn.example.com/capa-padrao.png')
+  })
+
+  test('idempotente: mesma criança/projeto devolve o post existente', async () => {
     const headers = child(randomUUID())
     const first = (await (
       await ctx.app.handle(
@@ -95,12 +117,21 @@ describe('vitrine (Mural dos Criadores)', () => {
     expect(second.thread.id).toBe(first.thread.id)
   })
 
+  test('projeto NÃO elegível (não concluído) → 403 (o hub re-valida, não confia no corpo)', async () => {
+    ctx.members.showcaseEligibility = { ...ctx.members.showcaseEligibility, eligible: false }
+    const res = await ctx.app.handle(
+      jsonRequest('POST', '/hub/internal/showcase-thread', {
+        headers: child(randomUUID()),
+        body: showcaseBody(),
+      }),
+    )
+    expect(res.status).toBe(403)
+  })
+
   test('canal staff_only barra post normal da criança, mas a vitrine passa', async () => {
-    // O canal já foi semeado no beforeEach; pega o id pela leitura.
     const sp = await ctx.repo.findActiveSpaceBySlug('mural-dos-criadores')
     const channels = await ctx.repo.listActiveChannels(sp!.id)
     const channelId = channels[0]?.id as string
-    // Criança tentando abrir tópico normal no canal staff_only → 403.
     const denied = await ctx.app.handle(
       jsonRequest('POST', `/hub/channels/${channelId}/threads`, {
         headers: child(randomUUID()),
@@ -108,18 +139,16 @@ describe('vitrine (Mural dos Criadores)', () => {
       }),
     )
     expect(denied.status).toBe(403)
-    // Mas a auto-publicação da vitrine cria o post mesmo assim.
     const ok = await ctx.app.handle(
       jsonRequest('POST', '/hub/internal/showcase-thread', {
         headers: child(randomUUID()),
-        body: showcaseBody({ idempotencyKey: 'perfil-2:curso-1:cadeia-1' }),
+        body: showcaseBody(),
       }),
     )
     expect(ok.status).toBe(200)
   })
 
   test('recusa publicar em servidor ADULTO (defesa em profundidade)', async () => {
-    // A rota é alcançável por qualquer conta ativa na borda; o hub barra spaces não-kids.
     await ctx.repo.createSpace({
       slug: 'forum-adulto',
       name: 'Fórum',
@@ -134,7 +163,7 @@ describe('vitrine (Mural dos Criadores)', () => {
     const res = await ctx.app.handle(
       jsonRequest('POST', '/hub/internal/showcase-thread', {
         headers: child(randomUUID()),
-        body: showcaseBody({ spaceSlug: 'forum-adulto', idempotencyKey: 'perfil:curso:adulto' }),
+        body: showcaseBody({ spaceSlug: 'forum-adulto' }),
       }),
     )
     expect(res.status).toBe(403)
@@ -164,7 +193,7 @@ describe('vitrine (Mural dos Criadores)', () => {
     const res = await ctx.app.handle(
       jsonRequest('POST', '/hub/internal/showcase-thread', {
         headers: child(randomUUID()),
-        body: showcaseBody({ spaceSlug: 'mural-aberto', idempotencyKey: 'perfil:curso:aberto' }),
+        body: showcaseBody({ spaceSlug: 'mural-aberto' }),
       }),
     )
     expect(res.status).toBe(403)
@@ -174,7 +203,7 @@ describe('vitrine (Mural dos Criadores)', () => {
     const res = await ctx.app.handle(
       jsonRequest('POST', '/hub/internal/showcase-thread', {
         headers: studentHeaders(randomUUID()),
-        body: showcaseBody({ idempotencyKey: 'perfil-3:curso-1:cadeia-1' }),
+        body: showcaseBody(),
       }),
     )
     expect(res.status).toBe(401)

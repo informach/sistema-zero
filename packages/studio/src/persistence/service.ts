@@ -297,8 +297,14 @@ export function createPersistenceService(
       schedule(state.project)
     })
     const flushOnPageExit = () => flushPending()
-    window.addEventListener('pagehide', flushOnPageExit)
-    window.addEventListener('beforeunload', flushOnPageExit)
+    // `pagehide`/`beforeunload` só existem no browser. O Studio é browser-only
+    // (`ssr:false`), mas instanciar o serviço fora do DOM (SSR, testes sem DOM)
+    // não pode lançar — cai no padrão "degrada sem a API ausente" do pacote.
+    const hasWindow = typeof window !== 'undefined'
+    if (hasWindow) {
+      window.addEventListener('pagehide', flushOnPageExit)
+      window.addEventListener('beforeunload', flushOnPageExit)
+    }
     liveServices.add(internals)
 
     return () => {
@@ -306,8 +312,10 @@ export function createPersistenceService(
       // Studio não pode perder a última edição.
       flushPending()
       unsub()
-      window.removeEventListener('pagehide', flushOnPageExit)
-      window.removeEventListener('beforeunload', flushOnPageExit)
+      if (hasWindow) {
+        window.removeEventListener('pagehide', flushOnPageExit)
+        window.removeEventListener('beforeunload', flushOnPageExit)
+      }
       liveServices.delete(internals)
       clearAllTimers()
     }

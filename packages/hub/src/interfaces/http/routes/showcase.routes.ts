@@ -23,13 +23,13 @@ export function showcaseRoutes(deps: ShowcaseRoutesDeps) {
     .post(
       '/hub/internal/showcase-thread',
       async ({ headers, body }) => {
+        // Conteúdo/elegibilidade/nome/idempotência são resolvidos no service (members
+        // S2S + header de perfil do gateway) — o corpo só diz QUAL projeto e a capa.
         const { thread, deduped } = await deps.showcase.create(resolveActor(headers), {
           spaceSlug: body.spaceSlug,
-          authorDisplayName: body.authorDisplayName,
-          title: body.title,
-          summary: body.summary,
+          lessonId: body.lessonId,
+          blockId: body.blockId,
           coverImageUrl: body.coverImageUrl ?? null,
-          idempotencyKey: body.idempotencyKey,
         })
         return { thread, deduped }
       },

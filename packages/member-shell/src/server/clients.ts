@@ -436,11 +436,11 @@ export function createHubClient(gw: GatewayModule, opts: { audience: MembersAudi
      */
     createShowcaseThread(body: {
       spaceSlug: string
-      authorDisplayName: string
-      title: string
-      summary: string
+      // O hub resolve título/resumo/nome-do-autor/idempotência (members S2S + header
+      // de perfil do gateway) — o corpo só diz QUAL projeto e a capa capturada.
+      lessonId: string
+      blockId: string
       coverImageUrl: string | null
-      idempotencyKey: string
     }): Promise<GatewayResponse<{ thread: HubThreadView; deduped: boolean }>> {
       return gw.gatewayFetch('/hub/internal/showcase-thread', { method: 'POST', body })
     },

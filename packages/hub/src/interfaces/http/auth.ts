@@ -74,11 +74,38 @@ export function resolveAccountId(headers: Record<string, string | undefined>): s
   return resolveUserId(headers)
 }
 
+/** Header de identidade pode chegar URI-encoded (acento → `headers.set` lança cru). */
+function decodeIdentity(value: string | undefined): string | undefined {
+  if (!value) return undefined
+  if (!value.includes('%')) return value
+  try {
+    return decodeURIComponent(value)
+  } catch {
+    return value
+  }
+}
+
+/**
+ * Primeiro nome do AUTOR para a vitrine (Mural). Em sessão de PERFIL o gateway injeta
+ * `x-auth-profile-name` (claim `pfl.name` — o nome da CRIANÇA); fora dela cai no nome
+ * da conta (`x-auth-user-name`). NUNCA vem do corpo — é a fonte confiável do nome.
+ */
+export function resolveDisplayName(headers: Record<string, string | undefined>): string {
+  const full = (
+    decodeIdentity(headers['x-auth-profile-name']) ??
+    decodeIdentity(headers['x-auth-user-name']) ??
+    ''
+  ).trim()
+  const first = full.split(/\s+/)[0] ?? ''
+  return first || 'Criador'
+}
+
 /** Monta o ator confiável a partir dos headers `X-Auth-User-*` (gateway). */
 export function resolveActor(headers: Record<string, string | undefined>): Actor {
   return {
     userId: resolveUserId(headers),
     accountId: resolveAccountId(headers),
+    displayName: resolveDisplayName(headers),
     role: headers['x-auth-user-role'],
     status: headers['x-auth-user-status'],
     privileged: isPrivilegedActor(headers),

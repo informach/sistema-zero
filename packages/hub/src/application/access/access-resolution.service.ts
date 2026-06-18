@@ -11,6 +11,10 @@ export interface Actor {
   /** Conta do responsável para resolver o ACESSO (matrícula). Em sessão de perfil é
    *  o `x-auth-account-id`; fora dela cai no próprio `userId` (a conta É o id). */
   accountId: string
+  /** Primeiro nome do AUTOR (perfil de criança) — do header confiável `x-auth-profile-name`
+   *  (injetado pelo gateway da claim `pfl.name`), cai no nome da conta. Usado na vitrine
+   *  (Mural) como `authorDisplayName` — NUNCA vindo do corpo da requisição. */
+  displayName: string
   role: string | undefined
   status: string | undefined
   /** Equipe interna (superadmin/admin/staff): bypass total de acesso. */

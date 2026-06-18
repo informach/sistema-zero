@@ -1,5 +1,5 @@
 import 'server-only'
-import { createHash, randomUUID } from 'node:crypto'
+import { randomUUID } from 'node:crypto'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import {
@@ -61,12 +61,6 @@ const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0
 /** Prefixo de chave do UGC por dono (namespacing). */
 function ugcKey(userId: string, ext: string): string {
   return `hub/${userId}/${randomUUID()}.${ext}`
-}
-
-/** Primeiro nome (a vitrine mostra só o 1º nome da criança como autor do projeto). */
-function firstName(name: string): string {
-  const first = name.trim().split(/\s+/)[0] ?? ''
-  return (first || 'Criador').slice(0, 60)
 }
 
 function num(raw: string | null): number | undefined {
@@ -472,11 +466,9 @@ export function createHubRoutes(deps: {
           { status: 409 },
         )
       }
-      const { title, summary, defaultCoverUrl, chain, courseId } = payload.body
-
-      // 2. Capa: print do jogo (file) → R2 PÚBLICO; senão a capa padrão do admin. A
-      //    capa é best-effort — falha no upload cai na capa padrão (não derruba o post).
-      let coverImageUrl = defaultCoverUrl
+      // 2. Capa: print do jogo (file) → R2 PÚBLICO; senão `null` (o hub cai na capa
+      //    padrão do admin). Best-effort — falha no upload mantém `null` (não derruba).
+      let coverImageUrl: string | null = null
       const file = form.get('file')
       if (
         file instanceof File &&
@@ -493,25 +485,18 @@ export function createHubRoutes(deps: {
           })
           coverImageUrl = stored.url
         } catch {
-          // best-effort: mantém a capa padrão.
+          // best-effort: deixa `null` → o hub usa a capa padrão.
         }
       }
 
-      // 3. Autor = primeiro nome do perfil ativo (kids) ou da conta.
-      const displayName = firstName(sess.activeProfile?.name ?? sess.firstName ?? 'Criador')
-
-      // 4. Idempotência: perfil:curso:cadeia (re-conclusão/duplo-clique não duplica).
-      const idempotencyKey = createHash('sha256')
-        .update(`${sess.id}:${courseId}:${chain ?? ''}`)
-        .digest('hex')
-
+      // 3. Título/resumo/nome-do-autor/idempotência NÃO são enviados: o hub os resolve
+      //    (S2S ao members + header de perfil do gateway) e re-valida a elegibilidade —
+      //    a rota é alcançável na borda, confiar no corpo era o furo do full review.
       const r = await hub.createShowcaseThread({
         spaceSlug: MURAL_SPACE_SLUG,
-        authorDisplayName: displayName,
-        title,
-        summary,
+        lessonId,
+        blockId,
         coverImageUrl,
-        idempotencyKey,
       })
       return ok(r)
     },

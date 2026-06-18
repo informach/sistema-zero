@@ -56,6 +56,10 @@ export const IDENTITY_HEADERS = {
   // quando `id` é um perfil de criança — o upstream resolve o ACESSO por esta conta.
   // É de IDENTIDADE (auto-stripado da entrada + redigido no log, como os demais).
   accountId: 'x-auth-account-id',
+  // Nome do perfil de criança em sessão de PERFIL (claim `pfl.name`). Nome de EXIBIÇÃO
+  // confiável do autor (ex.: vitrine "Mural" do kids) — o upstream NÃO confia num nome
+  // vindo do corpo. Pode chegar URI-encoded (acento). De IDENTIDADE (stripado/redigido).
+  profileName: 'x-auth-profile-name',
   // Admin que está IMPERSONANDO (claim `act.sub`). Presente só em sessão de suporte.
   // O upstream o usa p/ PRESERVAR o vínculo de impersonação ao derivar uma nova
   // sessão (ex.: selecionar um perfil) — sem ele a impersonação seria "lavada" numa
@@ -76,6 +80,7 @@ export interface IdentityHeaderInput {
   phone?: string
   signupSource?: string
   accountId?: string
+  profileName?: string
   impersonatorId?: string
 }
 
@@ -125,6 +130,10 @@ export function injectIdentityHeaders(headers: Headers, user: IdentityHeaderInpu
   // Só em sessão de perfil — sessão normal da conta NÃO injeta (compat: os upstreams
   // tratam a ausência como "x-auth-user-id é a própria conta").
   if (user.accountId) headers.set(IDENTITY_HEADERS.accountId, headerSafeValue(user.accountId))
+  // Nome de exibição do perfil (sessão de perfil) — URI-encode protege nomes com acento.
+  if (user.profileName) {
+    headers.set(IDENTITY_HEADERS.profileName, headerSafeValue(user.profileName))
+  }
   // Só em sessão de impersonação — o upstream preserva o vínculo ao derivar sessões.
   if (user.impersonatorId) {
     headers.set(IDENTITY_HEADERS.impersonatorId, headerSafeValue(user.impersonatorId))

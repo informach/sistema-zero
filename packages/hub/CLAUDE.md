@@ -76,17 +76,21 @@ Linguagem: **TS (ESM)**. Framework HTTP: **Elysia**. Porta **3010**.
    (UNIQUE = hash perfil:curso:cadeia; NULLs distintos → posts normais não colidem). Rota INTERNA
    `POST /hub/internal/showcase-thread` (`ShowcaseService` + `showcase.routes`): chamada pelo BFF em
    nome da criança (exige `x-internal-token`; `authorId` vem dos `X-Auth-User-*`), é criação de
-   SISTEMA → **ignora `postingPolicy: 'staff_only'`** do canal do Mural e **NÃO checa acesso da
-   criança** (publicar exige só CONCLUIR o projeto — elegibilidade validada no members upstream;
-   ver/comentar/reagir no Mural exige o produto). Nasce `visible` (decisão: aparece na hora; admin
-   oculta/edita-corpo/exclui pela moderação). Idempotente: re-publicar devolve o existente (`deduped`).
-   O Mural = 1 space kids `course_gated` + 1 canal `staff_only` (criança não posta livre, só comenta
-   moderado + reage). ⚠️ **Defesa em profundidade (a rota é alcançável por QUALQUER conta
-   ativa na borda — o BFF publica sem role, então o `x-internal-token` NÃO é fronteira de
-   confiança aqui):** o `ShowcaseService` EXIGE `space.audience === 'kids'` E canal
-   `postingPolicy === 'staff_only'` (senão `PostingNotAllowedError`→403) — barra injeção
-   cross-vitrine (servidores adultos) e em canal de postagem livre. `coverImageUrl` é
-   **https-only** no DTO (parede infantil). NÃO afrouxar esses guards.
+   SISTEMA → **ignora `postingPolicy: 'staff_only'`** do canal do Mural. O CORPO só diz QUAL projeto
+   (`lessonId`/`blockId`) e a capa; ver/comentar/reagir no Mural exige o produto. Nasce `visible`
+   (decisão: aparece na hora; admin oculta/edita-corpo/exclui pela moderação). Idempotente:
+   re-publicar devolve o existente (`deduped`). O Mural = 1 space kids `course_gated` + 1 canal
+   `staff_only` (criança não posta livre, só comenta moderado + reage). ⚠️ **Defesa em profundidade
+   — a rota é alcançável por QUALQUER conta ativa na borda (o BFF publica sem role → o
+   `x-internal-token` NÃO é fronteira de confiança aqui; full review 18/06), então o CORPO não é
+   confiável:** o `ShowcaseService` (1) **re-valida a ELEGIBILIDADE no members** via
+   `getShowcaseEligibility` (S2S `GET /members/internal/showcase-eligibility`, fail-closed) — só
+   publica quem REALMENTE concluiu o projeto; (2) usa título/resumo/audiência/curso/cadeia
+   AUTORITATIVOS de lá (o corpo não dita conteúdo); (3) tira o `authorDisplayName` do header confiável
+   **`x-auth-profile-name`** (claim `pfl.name` do gateway), nunca do corpo; (4) DERIVA a idempotência
+   (`autor:curso:cadeia`); e EXIGE `space.audience === 'kids'` E canal `postingPolicy === 'staff_only'`
+   (senão `PostingNotAllowedError`→403 — barra injeção cross-vitrine e em canal de postagem livre).
+   `coverImageUrl` é **https-only** no DTO (parede infantil). NÃO afrouxar esses guards.
 10. **Teaser "visível mas bloqueado" (06/2026):** `spaces.teaser_when_locked`. Quando ligado, um
    servidor que o aluno NÃO acessa aparece na listagem/detalhe com `locked:true` (só nome/ícone/
    descrição) em vez de sumir — `AccessResolutionService.resolveSpaceVisibility` ANOTA em vez de

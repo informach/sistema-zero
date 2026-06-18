@@ -111,19 +111,18 @@ export const CreateCommentBody = t.Object({
 export const EditBody = t.Object({ body: MARKDOWN_BODY })
 
 /**
- * Corpo de `POST /hub/internal/showcase-thread` (BFF → hub, em nome da criança).
- * Conteúdo é autoritativo (o BFF buscou no members + sessão); o `authorId` vem dos
- * headers confiáveis do gateway, não do corpo.
+ * Corpo de `POST /hub/internal/showcase-thread` (BFF → hub, em nome da criança). O
+ * corpo só diz QUAL projeto (`lessonId`/`blockId`) e a capa capturada; título, resumo,
+ * audiência, nome do autor e idempotência são resolvidos no hub (S2S ao members +
+ * header de perfil do gateway) — NUNCA confiados do corpo (a rota é alcançável na borda).
  */
 export const ShowcaseThreadBody = t.Object({
   spaceSlug: SLUG,
-  authorDisplayName: t.String({ minLength: 1, maxLength: 120 }),
-  title: t.String({ minLength: 1, maxLength: 300 }),
-  summary: MARKDOWN_BODY,
+  lessonId: UUID,
+  blockId: UUID,
   coverImageUrl: t.Optional(
     t.Union([t.String({ maxLength: 2000, pattern: HTTPS_URL_PATTERN }), t.Null()]),
   ),
-  idempotencyKey: t.String({ minLength: 8, maxLength: 200 }),
 })
 
 /** Paginação por cursor opaco (listagem de tópicos). */

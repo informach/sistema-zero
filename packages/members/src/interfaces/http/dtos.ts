@@ -75,6 +75,18 @@ export const AccessCheckBody = t.Object({
 export const ProfileAllowanceQuery = t.Object({ accountId: UUID })
 
 /**
+ * Query da rota S2S `GET /members/internal/showcase-eligibility` (consumida pelo
+ * `@sistemazero/hub` ao auto-publicar no Mural): elegibilidade + conteúdo AUTORITATIVO
+ * do projeto. `accountId` resolve o ACESSO (conta), `userId` a ENTREGA (perfil).
+ */
+export const ShowcaseEligibilityQuery = t.Object({
+  accountId: UUID,
+  userId: UUID,
+  lessonId: UUID,
+  blockId: UUID,
+})
+
+/**
  * Query de `GET /members/admin/members/:userId` — CSV opcional dos ids dos perfis
  * (estilo Netflix) da conta, p/ o progresso POR PERFIL. O handler valida o formato
  * uuid e limita a quantidade (perfis lixo/exagerados são descartados na borda).

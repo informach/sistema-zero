@@ -18,6 +18,8 @@ import type { CommunityReadRepository } from '../../src/domain/ports/community-r
 import type {
   CourseAccessResult,
   MembersGateway,
+  ShowcaseEligibilityArgs,
+  ShowcaseEligibilityResult,
 } from '../../src/domain/ports/members-gateway.port'
 import type {
   CreateMuteBanInput,
@@ -792,6 +794,17 @@ export class FakeMembersGateway implements MembersGateway {
   /** userIds com chave-mestra ativa. */
   masters = new Set<string>()
   calls = 0
+  /** Elegibilidade da vitrine: default ELEGÍVEL/kids; sobrescreva por teste. */
+  showcaseEligibility: ShowcaseEligibilityResult = {
+    eligible: true,
+    title: 'Meu joguinho',
+    summary: 'Um jogo de plataforma com a faísca pulando.',
+    defaultCoverUrl: 'https://cdn.example.com/capa-padrao.png',
+    chain: 'cadeia-1',
+    courseId: 'curso-1',
+    audience: 'kids',
+  }
+  eligibilityCalls: ShowcaseEligibilityArgs[] = []
 
   async checkAccess(userId: string, courseRefs: string[]): Promise<CourseAccessResult> {
     this.calls++
@@ -800,5 +813,10 @@ export class FakeMembersGateway implements MembersGateway {
       granted: courseRefs.filter((c) => owned.has(c)),
       hasMaster: this.masters.has(userId),
     }
+  }
+
+  async getShowcaseEligibility(args: ShowcaseEligibilityArgs): Promise<ShowcaseEligibilityResult> {
+    this.eligibilityCalls.push(args)
+    return this.showcaseEligibility
   }
 }

@@ -189,6 +189,7 @@ export function buildApp(
       profileAllowance: new GetProfileAllowanceService(entitlements, clock, {
         defaultMaxProfiles: 1,
       }),
+      showcasePayload: new GetShowcasePayloadService(checkAccess, courses, studioSubmissions),
       internalToken: opts.internalToken,
     },
   })
