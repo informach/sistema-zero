@@ -1,14 +1,25 @@
 'use client'
 
 import { UserAvatar } from '@sistemazero/member-shell/components/user-avatar'
-import type { ProfileView } from '@sistemazero/member-shell/lib/types'
+import type { ChildDashboardView, ProfileView } from '@sistemazero/member-shell/lib/types'
 import { Button } from '@sistemazero/ui/button'
 import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
 import { PasswordInput } from '@sistemazero/ui/password-input'
+import { Skeleton } from '@sistemazero/ui/skeleton'
 import { Spinner } from '@sistemazero/ui/spinner'
-import { Pencil, Plus, Trash2 } from 'lucide-react'
-import { useRef, useState } from 'react'
+import {
+  Award,
+  BookOpenCheck,
+  Flame,
+  Pencil,
+  Plus,
+  Sparkles,
+  Star,
+  Trash2,
+  Trophy,
+} from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { KidsMascot } from '@/components/kids/mascot'
 
@@ -209,6 +220,8 @@ export function PerfisClient({
         ) : null}
       </ul>
 
+      {managing ? <ChildrenDashboard /> : null}
+
       <div className="flex flex-wrap items-center justify-center gap-3">
         {managing ? (
           <>
@@ -240,6 +253,103 @@ export function PerfisClient({
         <ParentPasswordChange onCancel={() => setChangingPassword(false)} />
       ) : null}
     </main>
+  )
+}
+
+/**
+ * Resumo de progresso de cada filho (área dos pais). Busca `/api/parents/children-stats`
+ * ao montar — só renderiza no modo gestão, atrás do portão de senha. Esqueleto no load;
+ * falha é best-effort (some sem quebrar a gestão de perfis).
+ */
+function ChildrenDashboard() {
+  const [children, setChildren] = useState<ChildDashboardView[] | null>(null)
+  const [failed, setFailed] = useState(false)
+
+  useEffect(() => {
+    let alive = true
+    fetch('/api/parents/children-stats')
+      .then((res) => (res.ok ? res.json() : Promise.reject(res)))
+      .then((data: { children: ChildDashboardView[] }) => {
+        if (alive) setChildren(data.children)
+      })
+      .catch(() => {
+        if (alive) setFailed(true)
+      })
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  if (failed) return null
+  if (children !== null && children.length === 0) return null
+
+  return (
+    <section className="w-full max-w-2xl">
+      <h2 className="sz-display mb-3 text-center text-foreground text-xl">Progresso dos filhos</h2>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {children === null
+          ? [0, 1].map((i) => <Skeleton key={i} className="h-32 rounded-2xl" />)
+          : children.map((c) => <ChildStatsCard key={c.profileId} child={c} />)}
+      </div>
+    </section>
+  )
+}
+
+/** Card de stats de um filho (XP/ofensiva/medalhas/projetos/cursos + ranking). */
+function ChildStatsCard({ child }: { child: ChildDashboardView }) {
+  return (
+    <div className="flex flex-col gap-3 rounded-2xl border-2 border-border bg-card p-4">
+      <div className="flex items-center gap-3">
+        <UserAvatar avatarUrl={child.avatarUrl} firstName={child.name} size="lg" />
+        <div className="min-w-0">
+          <p className="truncate font-semibold text-foreground">{child.name}</p>
+          {child.rankingPosition !== null ? (
+            <p className="flex items-center gap-1 text-muted-foreground text-xs">
+              <Trophy className="size-3.5 text-[color:var(--sz-hot)]" />
+              {child.rankingPosition}º no ranking kids
+            </p>
+          ) : null}
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
+        <Stat icon={<Star className="size-4 text-primary" />} label="XP" value={child.xp} />
+        <Stat
+          icon={<Flame className="size-4 text-[color:var(--sz-hot)]" />}
+          label="dias de ofensiva"
+          value={child.streak.current}
+        />
+        <Stat
+          icon={<Award className="size-4 text-primary" />}
+          label="medalhas"
+          value={child.badgesCount}
+        />
+        <Stat
+          icon={<Sparkles className="size-4 text-primary" />}
+          label="projetos"
+          value={child.projectsCount}
+        />
+        <Stat
+          icon={<BookOpenCheck className="size-4 text-primary" />}
+          label="cursos concluídos"
+          value={child.coursesCompleted}
+        />
+        <Stat
+          icon={<BookOpenCheck className="size-4 text-muted-foreground" />}
+          label="em andamento"
+          value={child.coursesInProgress}
+        />
+      </div>
+    </div>
+  )
+}
+
+function Stat({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
+  return (
+    <div className="flex items-center gap-2">
+      {icon}
+      <span className="font-bold text-foreground">{value}</span>
+      <span className="text-muted-foreground text-xs">{label}</span>
+    </div>
   )
 }
 

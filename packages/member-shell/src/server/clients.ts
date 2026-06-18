@@ -3,6 +3,7 @@ import { getEnv } from '../lib/env'
 import type {
   AttachmentDownloadView,
   CatalogCourseView,
+  ChildStatsView,
   CourseDetailView,
   CourseFeedbackAnswers,
   CourseRatingView,
@@ -250,6 +251,20 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     }): Promise<GatewayResponse<GamificationMeView>> {
       return gw.gatewayFetchReadonly('/members/gamification/me', {
         query: { audience, ...(opts?.withRanking ? { ranking: 'true' } : {}) },
+      })
+    },
+
+    /**
+     * Resumo de progresso dos FILHOS da conta (área dos pais, kids). `profileIds` = os
+     * perfis da conta (vindos do auth); a CONTA vem do header confiável no members (não
+     * do cliente — uma sessão de perfil volta vazio). Route Handler (atrás do portão de
+     * senha do responsável no app).
+     */
+    getChildrenStats(
+      profileIds: string[],
+    ): Promise<GatewayResponse<{ children: ChildStatsView[] }>> {
+      return gw.gatewayFetch('/members/parents/children-stats', {
+        query: { audience, profileIds: profileIds.join(',') },
       })
     },
 

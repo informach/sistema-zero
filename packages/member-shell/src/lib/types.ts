@@ -361,6 +361,26 @@ export interface GamificationMeView {
   ranking?: { position: number; totalStudents: number }
 }
 
+/** Resumo de progresso de UM filho (perfil) — espelha a view do members. */
+export interface ChildStatsView {
+  profileId: string
+  xp: number
+  streak: { current: number; best: number }
+  badgesCount: number
+  coursesInProgress: number
+  coursesCompleted: number
+  /** Projetos do Estúdio que a criança entregou. */
+  projectsCount: number
+  /** Colocação no ranking da vitrine (null = conta sem matrícula). */
+  rankingPosition: number | null
+}
+
+/** Card do filho na área dos pais: stats do members + identidade do perfil (auth). */
+export interface ChildDashboardView extends ChildStatsView {
+  name: string
+  avatarUrl: string | null
+}
+
 /** Dica de vitrine (Mural): a aula concluída é ponto de auto-publicação. */
 export interface LessonCompleteShowcaseHint {
   /** Bloco de estúdio a publicar (o BFF re-busca o conteúdo autoritativo). */

@@ -7,6 +7,7 @@ import {
   resolveDownloadMedia,
   WATERMARK_MAX_BYTES,
 } from '../lib/download-mime'
+import type { ChildDashboardView } from '../lib/types'
 import type { AuthClient, MembersClient, PaymentsClient, ProfilesClient } from '../server/clients'
 import type { GatewayModule, GatewayResponse } from '../server/gateway'
 import {
@@ -715,6 +716,42 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
   }
 
   /**
+   * Resumo de progresso dos FILHOS p/ a área dos pais (kids). Junta a IDENTIDADE dos
+   * perfis (auth — nome/foto) com os STATS por perfil (members). A lista de perfis vem
+   * do auth (sessão da CONTA — em sessão de perfil o auth recusa com 403, propagado); o
+   * members AINDA filtra por conta (header confiável) — perfil sem atividade vira zeros.
+   */
+  const childrenStats = {
+    GET: async () => {
+      const list = await profiles.list()
+      if (list.status !== 200) {
+        return NextResponse.json(list.body ?? { children: [] }, { status: list.status })
+      }
+      const accountProfiles = list.body?.profiles ?? []
+      if (accountProfiles.length === 0) return NextResponse.json({ children: [] })
+
+      const { body } = await members.getChildrenStats(accountProfiles.map((p) => p.id))
+      const byId = new Map((body?.children ?? []).map((c) => [c.profileId, c]))
+      const children: ChildDashboardView[] = accountProfiles.map((p) => {
+        const s = byId.get(p.id)
+        return {
+          profileId: p.id,
+          name: p.name,
+          avatarUrl: p.avatarUrl,
+          xp: s?.xp ?? 0,
+          streak: s?.streak ?? { current: 0, best: 0 },
+          badgesCount: s?.badgesCount ?? 0,
+          coursesInProgress: s?.coursesInProgress ?? 0,
+          coursesCompleted: s?.coursesCompleted ?? 0,
+          projectsCount: s?.projectsCount ?? 0,
+          rankingPosition: s?.rankingPosition ?? null,
+        }
+      })
+      return NextResponse.json({ children })
+    },
+  }
+
+  /**
    * Persiste a posição do vídeo (throttled no client). Aceita também o corpo do
    * `navigator.sendBeacon` (que pode chegar como text/plain) — por isso o parse é
    * tolerante a content-type. POST (beacon não faz PUT); o BFF repassa como PUT.
@@ -982,6 +1019,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     courseRating,
     lessonComplete,
     gamificationMe,
+    childrenStats,
     lessonPosition,
     quizAttempts,
     studioSubmit,
