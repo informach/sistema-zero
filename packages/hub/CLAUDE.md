@@ -69,6 +69,25 @@ Linguagem: **TS (ESM)**. Framework HTTP: **Elysia**. Porta **3010**.
    `expiresAt = null` = permanente. O `ThreadService`/`ReactionService` vetam na escrita
    (`UserMuted`/`UserBanned` → 403).
 
+9. **Vitrine "Mural dos Criadores" (06/2026):** posts de PROJETO auto-publicados pela criança ao
+   concluir a última aula de uma cadeia do Estúdio. São THREADS com `is_showcase=true`,
+   `author_display_name` (snapshot do PRIMEIRO NOME — a vitrine EXIBE o autor, ao contrário do
+   fórum que redige terceiros), `cover_image_url` (capa pública) e `showcase_idempotency_key`
+   (UNIQUE = hash perfil:curso:cadeia; NULLs distintos → posts normais não colidem). Rota INTERNA
+   `POST /hub/internal/showcase-thread` (`ShowcaseService` + `showcase.routes`): chamada pelo BFF em
+   nome da criança (exige `x-internal-token`; `authorId` vem dos `X-Auth-User-*`), é criação de
+   SISTEMA → **ignora `postingPolicy: 'staff_only'`** do canal do Mural e **NÃO checa acesso da
+   criança** (publicar exige só CONCLUIR o projeto — elegibilidade validada no members upstream;
+   ver/comentar/reagir no Mural exige o produto). Nasce `visible` (decisão: aparece na hora; admin
+   oculta/edita-corpo/exclui pela moderação). Idempotente: re-publicar devolve o existente (`deduped`).
+   O Mural = 1 space kids `course_gated` + 1 canal `staff_only` (criança não posta livre, só comenta
+   moderado + reage).
+10. **Teaser "visível mas bloqueado" (06/2026):** `spaces.teaser_when_locked`. Quando ligado, um
+   servidor que o aluno NÃO acessa aparece na listagem/detalhe com `locked:true` (só nome/ícone/
+   descrição) em vez de sumir — `AccessResolutionService.resolveSpaceVisibility` ANOTA em vez de
+   filtrar; `listSpaces`/`getSpace` mostram o teaser. O CONTEÚDO segue gated: `canAccessSpace`/
+   `canAccessChannel`/`listChannels` NÃO mudam (403 em `/channels` quando locked — backstop à prova
+   de vazamento). Default `false` = comportamento clássico (some sem acesso) → zero regressão adulta.
 8. **Estados de conteúdo** (`content_status`): `pending` → `visible` (aprovar) / `rejected` (recusar);
    qualquer estado → `hidden` (oculta, reversível) / `deleted` (apaga, auditado). `pin`/`unpin` e
    `lock`/`unlock` são flags ortogonais (`is_pinned`/`is_locked`). Toda ação de moderação grava

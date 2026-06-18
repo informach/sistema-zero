@@ -16,6 +16,8 @@ export interface CreateProfileCommand {
   name: string
   avatarUrl?: string | null
   whatsapp?: string | null
+  /** Data de nascimento (`YYYY-MM-DD`) — controle de idade; só os pais informam. */
+  birthDate?: string | null
 }
 
 /** Teto efetivo da equipe interna — sem limite prático de perfis. */
@@ -44,6 +46,7 @@ export class CreateProfileService {
       name: cmd.name,
       avatarUrl: cmd.avatarUrl,
       whatsapp: cmd.whatsapp,
+      birthDate: cmd.birthDate,
       now: this.clock(),
     })
     const maxProfiles = cmd.privileged

@@ -13,6 +13,12 @@ export interface Thread {
   isLocked: boolean
   status: ContentStatus
   commentCount: number
+  /** Post de PROJETO da vitrine (Mural dos Criadores) — auto-publicado pela criança. */
+  isShowcase: boolean
+  /** Nome de exibição do autor (snapshot) — só na vitrine; o fórum redige terceiros. */
+  authorDisplayName: string | null
+  /** Capa do projeto (URL pública) — só na vitrine. */
+  coverImageUrl: string | null
   lastActivityAt: Date
   createdAt: Date
   editedAt: Date | null

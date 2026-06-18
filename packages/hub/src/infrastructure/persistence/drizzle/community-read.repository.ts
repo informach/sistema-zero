@@ -14,6 +14,7 @@ const toSpace = (r: SpaceRow): Space => ({
   audience: r.audience,
   accessConfig: r.accessConfig,
   requiresApproval: r.requiresApproval,
+  teaserWhenLocked: r.teaserWhenLocked,
   sortOrder: r.sortOrder,
   status: r.status,
   createdAt: r.createdAt,

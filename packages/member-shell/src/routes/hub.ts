@@ -1,5 +1,5 @@
 import 'server-only'
-import { randomUUID } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import {
@@ -13,11 +13,11 @@ import {
 } from '../lib/hub-attachments'
 import { redactAuthors } from '../lib/hub-redact'
 import type { HubAttachmentKind } from '../lib/types'
-import type { HubClient } from '../server/clients'
+import type { HubClient, MembersClient } from '../server/clients'
 import type { GatewayResponse } from '../server/gateway'
 import { optimizeImage } from '../server/image-optimizer'
 import { type MediaModule, mediaErrorResponse, rejectOversizedRequest } from '../server/media'
-import { r2PresignGetUgc, r2PresignPutUgc, r2PutObjectUgc } from '../server/r2'
+import { r2PresignGetUgc, r2PresignPutUgc, r2PutObject, r2PutObjectUgc } from '../server/r2'
 import type { SessionModule } from '../server/session'
 
 export type HubRoutes = ReturnType<typeof createHubRoutes>
@@ -54,9 +54,19 @@ const PresignBody = z.object({
 
 const R2_UGC_PREFIX = 'r2ugc:'
 
+/** Slug do servidor do Mural (kids). Fixo — o app adulto não chama esta rota. */
+const MURAL_SPACE_SLUG = 'mural-dos-criadores'
+const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
+
 /** Prefixo de chave do UGC por dono (namespacing). */
 function ugcKey(userId: string, ext: string): string {
   return `hub/${userId}/${randomUUID()}.${ext}`
+}
+
+/** Primeiro nome (a vitrine mostra só o 1º nome da criança como autor do projeto). */
+function firstName(name: string): string {
+  const first = name.trim().split(/\s+/)[0] ?? ''
+  return (first || 'Criador').slice(0, 60)
 }
 
 function num(raw: string | null): number | undefined {
@@ -77,10 +87,11 @@ async function readJson(req: Request): Promise<unknown> {
  */
 export function createHubRoutes(deps: {
   hub: HubClient
+  members: MembersClient
   media: MediaModule
   session: SessionModule
 }) {
-  const { hub, media, session } = deps
+  const { hub, members, media, session } = deps
   // Id do viewer p/ redigir o autor de terceiros (null = sem sessão → tudo redigido).
   const viewerId = async (): Promise<string | null> => (await session.getSession())?.id ?? null
 
@@ -416,6 +427,96 @@ export function createHubRoutes(deps: {
     },
   }
 
+  /**
+   * Publica o projeto concluído no Mural dos Criadores. Multipart: `lessonId`,
+   * `blockId` e (opcional) `file` = print do jogo capturado no cliente. O conteúdo
+   * (título/resumo/capa padrão) é AUTORITATIVO do members (não confia no cliente); o
+   * autor é o PRIMEIRO NOME da sessão. A capa do print sobe ao R2 público; sem print
+   * (projeto web) ou falha → cai na capa padrão do admin. Idempotente no hub.
+   */
+  const hubShowcase = {
+    POST: async (req: Request) => {
+      // Multipart fora do matcher do proxy → guard próprio (sessão estrita + anti-CSRF).
+      const sess = await media.requireUploadSession(req)
+      if (sess instanceof NextResponse) return sess
+
+      const maxBytes = HUB_ATTACHMENT_LIMITS.maxBytesByKind.image
+      const oversized = rejectOversizedRequest(req, maxBytes)
+      if (oversized) return oversized
+
+      let form: FormData
+      try {
+        form = await req.formData()
+      } catch {
+        return invalid()
+      }
+      const lessonId = String(form.get('lessonId') ?? '')
+      const blockId = String(form.get('blockId') ?? '')
+      if (!UUID_RE.test(lessonId) || !UUID_RE.test(blockId)) return invalid()
+
+      // 1. Conteúdo autoritativo + elegibilidade (o members confere acesso + entrega).
+      const payload = await members.getShowcasePayload(lessonId, blockId)
+      if (payload.status !== 200 || !payload.body) {
+        return NextResponse.json(payload.body ?? { error: { code: 'SHOWCASE_FAILED' } }, {
+          status: payload.status === 200 ? 502 : payload.status,
+        })
+      }
+      if (!payload.body.eligible) {
+        return NextResponse.json(
+          {
+            error: {
+              code: 'SHOWCASE_NOT_ELIGIBLE',
+              message: 'Este projeto ainda não pode ir para o Mural.',
+            },
+          },
+          { status: 409 },
+        )
+      }
+      const { title, summary, defaultCoverUrl, chain, courseId } = payload.body
+
+      // 2. Capa: print do jogo (file) → R2 PÚBLICO; senão a capa padrão do admin. A
+      //    capa é best-effort — falha no upload cai na capa padrão (não derruba o post).
+      let coverImageUrl = defaultCoverUrl
+      const file = form.get('file')
+      if (
+        file instanceof File &&
+        file.size > 0 &&
+        file.size <= maxBytes &&
+        UGC_IMAGE_INPUT_MIME.has(file.type)
+      ) {
+        try {
+          const optimized = await optimizeImage(await file.arrayBuffer(), 'ugc')
+          const stored = await r2PutObject({
+            key: `hub/showcase/${sess.id}/${randomUUID()}.${optimized.extension}`,
+            body: optimized.buffer,
+            contentType: optimized.contentType,
+          })
+          coverImageUrl = stored.url
+        } catch {
+          // best-effort: mantém a capa padrão.
+        }
+      }
+
+      // 3. Autor = primeiro nome do perfil ativo (kids) ou da conta.
+      const displayName = firstName(sess.activeProfile?.name ?? sess.firstName ?? 'Criador')
+
+      // 4. Idempotência: perfil:curso:cadeia (re-conclusão/duplo-clique não duplica).
+      const idempotencyKey = createHash('sha256')
+        .update(`${sess.id}:${courseId}:${chain ?? ''}`)
+        .digest('hex')
+
+      const r = await hub.createShowcaseThread({
+        spaceSlug: MURAL_SPACE_SLUG,
+        authorDisplayName: displayName,
+        title,
+        summary,
+        coverImageUrl,
+        idempotencyKey,
+      })
+      return ok(r)
+    },
+  }
+
   return {
     hubSpaces,
     hubSpace,
@@ -431,6 +532,7 @@ export function createHubRoutes(deps: {
     hubChannelSeen,
     hubThreadReport,
     hubCommentReport,
+    hubShowcase,
     hubUploadPresign,
     hubUploadImage,
     hubAttachmentServe,

@@ -6,6 +6,7 @@ import type { GetCourseRatingService } from '../../../application/get-course-rat
 import type { GetEbookDownloadService } from '../../../application/get-ebook-download/get-ebook-download.service'
 import type { GetLessonService } from '../../../application/get-lesson/get-lesson.service'
 import type { GetMyCourseService } from '../../../application/get-my-course/get-my-course.service'
+import type { GetShowcasePayloadService } from '../../../application/get-showcase-payload/get-showcase-payload.service'
 import type { GetStudioCarryoverService } from '../../../application/get-studio-carryover/get-studio-carryover.service'
 import type { ListCatalogService } from '../../../application/list-catalog/list-catalog.service'
 import type { ListMyCoursesService } from '../../../application/list-my-courses/list-my-courses.service'
@@ -24,6 +25,7 @@ import {
   LessonIdParams,
   QuizAttemptBody,
   QuizAttemptParams,
+  ShowcasePayloadParams,
   SlugLessonParams,
   StudioCarryoverParams,
   StudioSubmissionBody,
@@ -44,6 +46,7 @@ export interface MembersRoutesDeps {
   submitQuiz: SubmitQuizAttemptService
   submitStudio: SubmitStudioProjectService
   getStudioCarryover: GetStudioCarryoverService
+  getShowcasePayload: GetShowcasePayloadService
   getCourseRating: GetCourseRatingService
   saveCourseRating: SaveCourseRatingService
   getGamification: GetGamificationService
@@ -293,6 +296,23 @@ export function membersRoutes(deps: MembersRoutesDeps) {
           )
         },
         { params: StudioCarryoverParams },
+      )
+      // Payload AUTORITATIVO da vitrine (Mural): o BFF chama no clique "Publicar no
+      // Mural" p/ montar o post (título/resumo do admin) sem confiar no cliente.
+      // `{ eligible:false }` = bloco não é vitrine / desabilitado / aluno não enviou.
+      .get(
+        '/lessons/:lessonId/blocks/:blockId/showcase-payload',
+        async ({ headers, params }) => {
+          const userId = resolveUserId(headers)
+          return deps.getShowcasePayload.execute(
+            userId,
+            params.lessonId,
+            params.blockId,
+            isPrivilegedActor(headers),
+            resolveAccountId(headers),
+          )
+        },
+        { params: ShowcasePayloadParams },
       )
   )
 }

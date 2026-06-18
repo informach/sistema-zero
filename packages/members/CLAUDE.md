@@ -139,6 +139,15 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    entrega → `{project:null}` (cai no `initialProject`). Carrega a última entrega MESMO sem
    ter batido a nota de corte (continuar o WIP). Várias cadeias por curso NÃO se misturam
    (filtro por nome). O "salvar" é a própria ENTREGA — nada novo no save/colunas.
+   **VITRINE (Mural dos Criadores, 06/2026):** o `StudioBlock` ganha `showcase?` (`{enabled,
+   title?, summary?, defaultCoverUrl?}`, no jsonb `content` — SEM migration). O admin liga
+   `enabled` no bloco da ÚLTIMA aula do projeto; ao concluí-la, o `LessonCompleteView` traz
+   `showcase: {blockId, title}` (aditivo) → o front kids mostra o botão "Publicar no Mural". O
+   conteúdo AUTORITATIVO (a criança não escreve) vem de `GET /members/lessons/:lessonId/blocks/
+   :blockId/showcase-payload` (`GetShowcasePayloadService`, espelha o carryover — acesso pela CONTA,
+   entrega pelo PERFIL): `{eligible, title, summary, defaultCoverUrl, chain, courseId, audience}`,
+   `eligible:false` se o bloco não é vitrine/desabilitado/sem entrega. O BFF re-busca isso no
+   clique e publica no hub (`POST /hub/internal/showcase-thread`).
 7. **Quiz é corrigido NO SERVIDOR** (`quiz_attempts` guarda o histórico; score 0–100 por
    conjunto EXATO de choices). O GET da aula **NUNCA envia o gabarito** — a projeção
    member-facing (`toMemberFacingQuizContent`) remove `correctChoiceIds`/`explanation`

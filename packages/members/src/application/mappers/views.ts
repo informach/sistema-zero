@@ -56,9 +56,23 @@ export function toGamificationDeltaView(result: AwardResult): GamificationDeltaV
   }
 }
 
+/** Dica de vitrine (Mural): a aula concluída é ponto de auto-publicação. */
+export interface LessonCompleteShowcaseHint {
+  /** Bloco de estúdio a publicar (o BFF re-busca o conteúdo autoritativo). */
+  blockId: string
+  /** Título do projeto (preview do botão "Publicar no Mural"). */
+  title: string
+}
+
 /** Resposta do complete da aula: progresso + delta de gamificação (aditivo). */
 export interface LessonCompleteView extends CourseProgressView {
   gamification: GamificationDeltaView | null
+  /**
+   * Aula é ponto de VITRINE (bloco de estúdio com `showcase.enabled`): o front
+   * mostra o botão "Publicar no Mural". `null` quando a aula não publica nada
+   * (aditivo — o community adulto ignora).
+   */
+  showcase: LessonCompleteShowcaseHint | null
 }
 
 /** Perfil de gamificação do aluno (widgets/perfil — `GET /members/gamification/me`). */

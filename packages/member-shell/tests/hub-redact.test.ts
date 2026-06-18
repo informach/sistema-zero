@@ -61,4 +61,21 @@ describe('redactAuthors', () => {
     const input = { authorId: ME }
     expect(redactAuthors(input, ME)).toBe(input)
   })
+
+  test('vitrine: redige o authorId de terceiro MAS preserva o authorDisplayName (nome do autor)', () => {
+    const out = redactAuthors(
+      {
+        id: 'p1',
+        authorId: OTHER,
+        isShowcase: true,
+        authorDisplayName: 'Sofia',
+        title: 'Meu Jogo',
+      },
+      ME,
+    )
+    // O UUID some (privacidade), mas o primeiro nome do autor da vitrine permanece.
+    expect(out.authorId).toBeNull()
+    expect(out.authorDisplayName).toBe('Sofia')
+    expect(out.title).toBe('Meu Jogo')
+  })
 })

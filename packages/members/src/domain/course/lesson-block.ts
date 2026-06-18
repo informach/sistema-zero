@@ -161,6 +161,23 @@ export interface StudioBlock {
    * misturam (resolução por nome).
    */
   chain?: string
+  /**
+   * VITRINE (Mural dos Criadores): o admin marca `enabled` no bloco da ÚLTIMA aula do
+   * projeto. Ao concluí-la, o aluno ganha o botão "Publicar no Mural" (a conclusão
+   * devolve o `showcase` no `LessonCompleteView`) e o post é montado com este `title`/
+   * `summary` (autorados pelo admin — a criança NÃO escreve) + a capa (print do jogo
+   * capturado no cliente, ou `defaultCoverUrl` para projetos web/fallback). Ausente/
+   * `enabled:false` = a aula não publica nada.
+   */
+  showcase?: {
+    enabled: boolean
+    /** Título do post (default: título da aula). */
+    title?: string
+    /** Resumo do projeto (Markdown). */
+    summary?: string
+    /** Capa padrão (URL pública http(s)) p/ projetos web e fallback do print. */
+    defaultCoverUrl?: string
+  }
 }
 
 /** União discriminada por `kind` — o conteúdo guardado na coluna `lesson_blocks.content`. */

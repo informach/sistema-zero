@@ -14,6 +14,7 @@ function space(over: Partial<SpaceFields> & { slug: string; name: string }): Spa
     audience: 'adult',
     accessConfig: PUBLIC,
     requiresApproval: false,
+    teaserWhenLocked: false,
     status: 'active',
     ...over,
   }
@@ -76,6 +77,41 @@ describe('leitura do aluno com resolução de acesso', () => {
       jsonRequest('GET', '/hub/spaces/nao-existe', { headers: studentHeaders(randomUUID()) }),
     )
     expect(res.status).toBe(404)
+  })
+
+  test('teaser: gated com teaserWhenLocked aparece BLOQUEADO; conteúdo segue gated', async () => {
+    // Servidor pago com vitrine: sem acesso, aparece bloqueado em vez de sumir.
+    await ctx.repo.createSpace(
+      space({
+        slug: 'clube',
+        name: 'Clube dos Criadores',
+        audience: 'kids',
+        accessConfig: COURSE_A,
+        teaserWhenLocked: true,
+      }),
+    )
+    const headers = studentHeaders(randomUUID())
+    // Listagem kids: o clube aparece com locked:true.
+    const res = await ctx.app.handle(jsonRequest('GET', '/hub/spaces?audience=kids', { headers }))
+    const list = (await res.json()) as { items: Array<{ slug: string; locked: boolean }> }
+    const clube = list.items.find((s) => s.slug === 'clube')
+    expect(clube?.locked).toBe(true)
+    // Detalhe (teaser) responde 200 com locked:true (só metadados).
+    const detail = await ctx.app.handle(jsonRequest('GET', '/hub/spaces/clube', { headers }))
+    expect(detail.status).toBe(200)
+    expect(((await detail.json()) as { locked: boolean }).locked).toBe(true)
+    // Mas o CONTEÚDO (canais) segue gated → 403 (backstop à prova de vazamento).
+    const channels = await ctx.app.handle(
+      jsonRequest('GET', '/hub/spaces/clube/channels', { headers }),
+    )
+    expect(channels.status).toBe(403)
+    // Com matrícula no curso, deixa de ser locked.
+    const userId = randomUUID()
+    ctx.members.grantsByUser.set(userId, new Set(['curso-a']))
+    const okDetail = await ctx.app.handle(
+      jsonRequest('GET', '/hub/spaces/clube', { headers: studentHeaders(userId) }),
+    )
+    expect(((await okDetail.json()) as { locked: boolean }).locked).toBe(false)
   })
 
   test('canal com gate próprio estreita o acesso (AND com o space)', async () => {

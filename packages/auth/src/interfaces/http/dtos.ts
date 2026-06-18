@@ -172,6 +172,9 @@ const PROFILE_NAME = t.String({ minLength: 3, maxLength: 60 })
 // URL da foto (validação de protocolo http(s) é do agregado) e WhatsApp opcional.
 const PROFILE_AVATAR = t.Union([t.String({ maxLength: 2048 }), t.Null()])
 const PROFILE_WHATSAPP = t.Union([t.String({ maxLength: 20 }), t.Null()])
+// Data de nascimento (AAAA-MM-DD; sanidade/faixa de idade são do agregado). Só os
+// pais editam — a rota barra a sessão de perfil da criança (área dos pais).
+const PROFILE_BIRTH_DATE = t.Union([t.String({ pattern: '^\\d{4}-\\d{2}-\\d{2}$' }), t.Null()])
 
 /** Params de `/auth/profiles/:id` (uuid — 400 na borda, não 500 no banco). */
 export const ProfileIdParams = t.Object({ id: t.String({ pattern: UUID_PATTERN }) })
@@ -181,6 +184,7 @@ export const CreateProfileBody = t.Object({
   name: PROFILE_NAME,
   avatarUrl: t.Optional(PROFILE_AVATAR),
   whatsapp: t.Optional(PROFILE_WHATSAPP),
+  birthDate: t.Optional(PROFILE_BIRTH_DATE),
 })
 
 /** Corpo de `PATCH /auth/profiles/:id` (edição parcial). */
@@ -188,6 +192,7 @@ export const UpdateProfileBody = t.Object({
   name: t.Optional(PROFILE_NAME),
   avatarUrl: t.Optional(PROFILE_AVATAR),
   whatsapp: t.Optional(PROFILE_WHATSAPP),
+  birthDate: t.Optional(PROFILE_BIRTH_DATE),
 })
 
 /** Corpo de `POST /auth/profile-session/exit` — senha do responsável (gate da área dos pais). */

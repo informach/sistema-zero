@@ -94,18 +94,21 @@ export function PerfisClient({
     toast.error(res.status === 401 ? 'Senha incorreta.' : 'Não foi possível abrir a área dos pais.')
   }
 
-  async function saveProfile(name: string, existing?: ProfileView) {
+  async function saveProfile(name: string, birthDate: string | null, existing?: ProfileView) {
     setBusy(true)
+    // A data de nascimento só é editável pelos pais (sessão da conta) — esta tela é a
+    // Área dos pais. O auth recusa `birthDate` em sessão de perfil (defesa em profundidade).
+    const payload = { name, birthDate }
     const res = existing
       ? await fetch(`/api/profiles/${existing.id}`, {
           method: 'PATCH',
           headers: JSON_HEADERS,
-          body: JSON.stringify({ name }),
+          body: JSON.stringify(payload),
         })
       : await fetch('/api/profiles', {
           method: 'POST',
           headers: JSON_HEADERS,
-          body: JSON.stringify({ name }),
+          body: JSON.stringify(payload),
         })
     const body = (await res.json().catch(() => null)) as { profile?: ProfileView } | null
     setBusy(false)
@@ -293,14 +296,17 @@ function ProfileForm({
   editing: { mode: 'create' } | { mode: 'edit'; profile: ProfileView }
   busy: boolean
   onCancel: () => void
-  onSave: (name: string, existing?: ProfileView) => void
+  onSave: (name: string, birthDate: string | null, existing?: ProfileView) => void
   onArchive: (p: ProfileView) => void
   onAvatar: (p: ProfileView, file: File) => void
 }) {
   const isEdit = editing.mode === 'edit'
   const profile = isEdit ? editing.profile : null
   const [name, setName] = useState(profile?.name ?? '')
+  const [birthDate, setBirthDate] = useState(profile?.birthDate ?? '')
   const fileRef = useRef<HTMLInputElement>(null)
+  // `max` do seletor = hoje (nascimento não pode ser no futuro).
+  const today = new Date().toISOString().slice(0, 10)
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center gap-6 px-4 py-12">
@@ -346,6 +352,19 @@ function ProfileForm({
         />
       </Field>
 
+      <Field label="Data de nascimento da criança" htmlFor="profileBirthDate">
+        <Input
+          id="profileBirthDate"
+          type="date"
+          value={birthDate}
+          max={today}
+          onChange={(e) => setBirthDate(e.target.value)}
+        />
+        <p className="mt-1 text-muted-foreground text-xs">
+          Só os responsáveis editam. Ajuda a gente a cuidar da idade certa. 💙
+        </p>
+      </Field>
+
       <div className="flex items-center justify-between gap-3">
         {profile ? (
           <Button
@@ -364,7 +383,7 @@ function ProfileForm({
             Cancelar
           </Button>
           <Button
-            onClick={() => onSave(name.trim(), profile ?? undefined)}
+            onClick={() => onSave(name.trim(), birthDate || null, profile ?? undefined)}
             disabled={busy || name.trim().length === 0}
           >
             {busy ? <Spinner className="size-4" /> : 'Salvar'}

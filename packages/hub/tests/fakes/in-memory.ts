@@ -37,6 +37,7 @@ import type {
 import type { ReadStateRepository } from '../../src/domain/ports/read-state-repository.port'
 import type {
   CreateCommentInput,
+  CreateShowcaseThreadInput,
   CreateThreadInput,
   ListCommentsOpts,
   ListThreadsOpts,
@@ -244,6 +245,9 @@ export class InMemoryThreadRepository implements ThreadRepository {
       isLocked: false,
       status: input.status,
       commentCount: 0,
+      isShowcase: false,
+      authorDisplayName: null,
+      coverImageUrl: null,
       lastActivityAt: input.now,
       createdAt: input.now,
       editedAt: null,
@@ -253,6 +257,41 @@ export class InMemoryThreadRepository implements ThreadRepository {
       this.attachments?.linkMany(input.attachmentIds, { threadId: thread.id })
     }
     return thread
+  }
+
+  /** Dedupe da vitrine: chave de idempotência → id do tópico (a chave não é do domínio). */
+  private readonly showcaseKeys = new Map<string, string>()
+
+  async createShowcaseThread(
+    input: CreateShowcaseThreadInput,
+  ): Promise<{ thread: Thread; deduped: boolean }> {
+    const existingId = this.showcaseKeys.get(input.idempotencyKey)
+    if (existingId) {
+      const existing = this.threads.find((t) => t.id === existingId)
+      if (existing) return { thread: existing, deduped: true }
+    }
+    const thread: Thread = {
+      id: input.id,
+      version: 0,
+      channelId: input.channelId,
+      authorId: input.authorId,
+      title: input.title,
+      slug: input.slug,
+      body: input.body,
+      isPinned: false,
+      isLocked: false,
+      status: 'visible',
+      commentCount: 0,
+      isShowcase: true,
+      authorDisplayName: input.authorDisplayName,
+      coverImageUrl: input.coverImageUrl,
+      lastActivityAt: input.now,
+      createdAt: input.now,
+      editedAt: null,
+    }
+    this.threads.push(thread)
+    this.showcaseKeys.set(input.idempotencyKey, thread.id)
+    return { thread, deduped: false }
   }
 
   async findThreadById(id: string): Promise<Thread | null> {

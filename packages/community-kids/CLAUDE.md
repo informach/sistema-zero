@@ -80,7 +80,27 @@ A página **"Meu perfil"** (`app/(app)/perfil`, sempre em sessão de perfil) edi
 (nome ≥ 3 / foto / telefone) via `/api/profiles/:id` — NUNCA a conta (full review F1: o auth recusa
 `/auth/me` de escrita em sessão de perfil).
 
-## Comunidade / "Turma" (hub/fórum)
+## Clube dos Criadores + Mural dos Criadores (hub/fórum + vitrine)
+
+**Renome (06/2026):** a antiga "Turma" (`/comunidade`) virou **Clube dos Criadores**
+(`/clube-dos-criadores`, modo fórum) e ganhou um irmão **Mural dos Criadores**
+(`/mural-dos-criadores`, modo `wall` = vitrine). Ambos são SERVIDORES do hub `course_gated`
+(produto à parte) com `teaserWhenLocked` ON → aparecem no menu (`nav.ts`: itens "Clube" e "Mural")
+mesmo sem acesso, e a UI mostra `KidsLockedSpace` (recado gentil, sem conteúdo) quando
+`space.locked`. A rota antiga `/comunidade` foi REMOVIDA sem redirect (não há usuário real em prod
+ainda — decisão do usuário). O componente único `components/kids/kids-space-view-client.tsx` (movido
+de `app/(app)/comunidade`)
+recebe `slug` + `mode`: no `wall` esconde o composer/sidebar e renderiza CARDS de projeto (capa +
+título + resumo + "por {authorDisplayName}"); a criança só comenta (moderado) e reage. **Vitrine
+(Mural):** os posts são auto-publicados ao concluir a última aula de um projeto — a
+`LessonCelebration` ganha o botão "Publicar no Mural" (`PublishToMural`) que captura o print do jogo
+no cliente (`@sistemazero/studio` `captureCoverFromProject` lendo o rascunho local
+`sz-lesson-studio:<blockId>`) e faz `POST /api/hub/showcase` (multipart, FORA do matcher do proxy —
+guard próprio via `requireUploadSession`); `lesson-player-client` propaga o `showcase` da resposta do
+complete. **Data de nascimento (controle de idade):** os pais informam no `ProfileForm` da Área dos
+pais (`app/perfis`) — `<input type=date>`; só a CONTA edita (o auth recusa em sessão de perfil).
+
+### Hub/fórum (compartilhado)
 
 Porta kids do fórum compartilhado (`@sistemazero/hub` via member-shell). A LÓGICA do
 BFF (clients do hub, **redação do `authorId` de terceiros**, validação Zod de

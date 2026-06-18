@@ -432,3 +432,89 @@ describe('Bloco Estúdio — carryover de projeto contínuo', () => {
     expect(body.project).toBeNull()
   })
 })
+
+// ── Vitrine: auto-publicação no Mural dos Criadores ─────────────────────────────
+interface ShowcaseConfig {
+  enabled: boolean
+  title?: string
+  summary?: string
+  defaultCoverUrl?: string
+}
+
+/** Bloco de estúdio com config de vitrine (`showcase`) e cadeia opcional. */
+function seedShowcaseBlock(
+  courses: InMemoryCourseRepository,
+  lessonId: string,
+  showcase: ShowcaseConfig,
+  chain = 'jogo',
+): string {
+  const blockId = randomUUID()
+  courses.blocks.push({
+    id: blockId,
+    lessonId,
+    kind: 'studio',
+    sortOrder: 30,
+    content: { kind: 'studio', level: 'iniciante', initialProject: TEMPLATE, chain, showcase },
+  })
+  return blockId
+}
+
+const showcasePayload = (app: App, lessonId: string, blockId: string) =>
+  app.handle(
+    new Request(`http://localhost/members/lessons/${lessonId}/blocks/${blockId}/showcase-payload`, {
+      headers: authHeaders,
+    }),
+  )
+
+describe('Bloco Estúdio — vitrine (Mural dos Criadores)', () => {
+  test('o complete devolve a dica de showcase quando a aula é ponto de vitrine', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const { slug, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    const blockId = seedShowcaseBlock(courses, lessonIds[0], {
+      enabled: true,
+      title: 'Meu Jogo',
+      summary: 'Um jogo bacana',
+    })
+    await submit(app, lessonIds[0], blockId, STUDENT_PROJECT)
+    const res = await complete(app, lessonIds[0])
+    expect(res.status).toBe(200)
+    const body = await readJson(res)
+    expect(body.showcase).not.toBeNull()
+    expect(body.showcase.blockId).toBe(blockId)
+    expect(body.showcase.title).toBe('Meu Jogo')
+  })
+
+  test('payload autoritativo: elegível só APÓS enviar a entrega', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const { slug, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    const blockId = seedShowcaseBlock(courses, lessonIds[0], {
+      enabled: true,
+      title: 'Meu Jogo',
+      summary: 'Um jogo bacana',
+      defaultCoverUrl: 'https://cdn.example.com/capa.png',
+    })
+
+    // Antes de enviar → não elegível (não há projeto a mostrar).
+    const before = await readJson(await showcasePayload(app, lessonIds[0], blockId))
+    expect(before.eligible).toBe(false)
+
+    await submit(app, lessonIds[0], blockId, STUDENT_PROJECT)
+    const after = await readJson(await showcasePayload(app, lessonIds[0], blockId))
+    expect(after.eligible).toBe(true)
+    expect(after.title).toBe('Meu Jogo')
+    expect(after.summary).toBe('Um jogo bacana')
+    expect(after.defaultCoverUrl).toBe('https://cdn.example.com/capa.png')
+  })
+
+  test('bloco de estúdio SEM showcase.enabled → não elegível', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const { slug, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    const blockId = seedChainBlock(courses, lessonIds[0], 'jogo') // sem showcase
+    await submit(app, lessonIds[0], blockId, STUDENT_PROJECT)
+    const body = await readJson(await showcasePayload(app, lessonIds[0], blockId))
+    expect(body.eligible).toBe(false)
+  })
+})

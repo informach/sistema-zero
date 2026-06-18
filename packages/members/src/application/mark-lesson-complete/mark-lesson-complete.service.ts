@@ -117,6 +117,23 @@ export class MarkLessonCompleteService {
       privileged,
     })
 
-    return { ...toCourseProgressView(computeProgress(completed, total), last), gamification }
+    // Vitrine (Mural): a aula tem um bloco de estúdio marcado p/ publicação? Então o
+    // front mostra o botão "Publicar no Mural" (o BFF re-busca o conteúdo autoritativo).
+    const showcaseBlock = lesson.blocks.find(
+      (b) => b.content.kind === 'studio' && b.content.showcase?.enabled === true,
+    )
+    const showcase =
+      showcaseBlock && showcaseBlock.content.kind === 'studio'
+        ? {
+            blockId: showcaseBlock.id,
+            title: showcaseBlock.content.showcase?.title?.trim() || lesson.title,
+          }
+        : null
+
+    return {
+      ...toCourseProgressView(computeProgress(completed, total), last),
+      gamification,
+      showcase,
+    }
   }
 }

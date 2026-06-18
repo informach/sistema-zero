@@ -11,7 +11,6 @@ import { Button } from '@sistemazero/ui/button'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { Textarea } from '@sistemazero/ui/textarea'
 import { ArrowLeft, Hash, Lock, MessageCircle, Plus, Send } from 'lucide-react'
-import Link from 'next/link'
 import { type ReactNode, useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
@@ -23,6 +22,10 @@ import type {
   HubSpaceView,
   HubThreadView,
 } from '@/lib/types'
+import { KidsLockedSpace } from './kids-locked-space'
+
+/** Modo de apresentação: fórum (Clube — conversa) ou vitrine (Mural — cards de projeto). */
+export type SpaceViewMode = 'forum' | 'wall'
 
 // Emojis da allowlist kids (o hub recusa fora dela).
 const QUICK_EMOJIS = ['👍', '❤️', '😂', '🎉', '⭐']
@@ -47,6 +50,15 @@ function postingError(e: ApiError): string {
   return e.message ?? 'Não consegui enviar. Tente de novo!'
 }
 
+/** Nome do autor para EXIBIÇÃO: na vitrine mostra o 1º nome; no fórum, Você/Colega. */
+function displayAuthor(
+  item: { isShowcase?: boolean; authorDisplayName?: string | null; authorId: string | null },
+  viewerId: string,
+): string {
+  if (item.isShowcase && item.authorDisplayName) return `por ${item.authorDisplayName}`
+  return item.authorId === viewerId ? 'Você' : 'Colega'
+}
+
 /** Alterna otimisticamente a reação do viewer no agregado por emoji (sem refetch). */
 function toggleReaction(reactions: HubReaction[], emoji: string, mine: boolean): HubReaction[] {
   const idx = reactions.findIndex((r) => r.emoji === emoji)
@@ -61,7 +73,16 @@ function toggleReaction(reactions: HubReaction[], emoji: string, mine: boolean):
   return reactions.map((r, i) => (i === idx ? { ...r, count: r.count + 1, reactedByMe: true } : r))
 }
 
-export function KidsSpaceViewClient({ slug, viewerId }: { slug: string; viewerId: string }) {
+export function KidsSpaceViewClient({
+  slug,
+  viewerId,
+  mode = 'forum',
+}: {
+  slug: string
+  viewerId: string
+  mode?: SpaceViewMode
+}) {
+  const isWall = mode === 'wall'
   const [space, setSpace] = useState<HubSpaceView | null>(null)
   const [channels, setChannels] = useState<HubChannelView[]>([])
   const [channel, setChannel] = useState<HubChannelView | null>(null)
@@ -78,7 +99,7 @@ export function KidsSpaceViewClient({ slug, viewerId }: { slug: string; viewerId
   const [replyBody, setReplyBody] = useState('')
   const [replyAttachments, setReplyAttachments] = useState<UploadedAttachment[]>([])
 
-  // Paginação por cursor — a Turma pode acumular conversas/respostas além da 1ª página.
+  // Paginação por cursor — espaços acumulam conversas/respostas além da 1ª página.
   const [threadsCursor, setThreadsCursor] = useState<string | null>(null)
   const [threadsHasMore, setThreadsHasMore] = useState(false)
   const [loadingMoreThreads, setLoadingMoreThreads] = useState(false)
@@ -95,26 +116,33 @@ export function KidsSpaceViewClient({ slug, viewerId }: { slug: string; viewerId
   const [reportBusy, setReportBusy] = useState(false)
 
   const authorLabel = useCallback(
-    (id: string | null) => (id === viewerId ? 'Você' : 'Colega'),
+    (item: { isShowcase?: boolean; authorDisplayName?: string | null; authorId: string | null }) =>
+      displayAuthor(item, viewerId),
     [viewerId],
   )
 
   useEffect(() => {
     let alive = true
-    Promise.all([
-      apiGet<HubSpaceView>(`/api/hub/spaces/${enc(slug)}`),
-      apiGet<{ items: HubChannelView[] }>(`/api/hub/spaces/${enc(slug)}/channels`),
-    ])
-      .then(([sp, ch]) => {
+    ;(async () => {
+      try {
+        const sp = await apiGet<HubSpaceView>(`/api/hub/spaces/${enc(slug)}`)
         if (!alive) return
         setSpace(sp)
+        // Bloqueado (sem acesso): mostra o recado e NÃO carrega os canais (o backend
+        // recusa /channels em 403 — backstop à prova de vazamento).
+        if (sp.locked) return
+        const ch = await apiGet<{ items: HubChannelView[] }>(
+          `/api/hub/spaces/${enc(slug)}/channels`,
+        )
+        if (!alive) return
         setChannels(ch.items)
         setChannel(ch.items[0] ?? null)
-      })
-      .catch((err) => {
-        if (alive) toast.error((err as ApiError).message ?? 'Não consegui abrir a turma.')
-      })
-      .finally(() => alive && setLoading(false))
+      } catch (err) {
+        if (alive) toast.error((err as ApiError).message ?? 'Não consegui abrir este espaço.')
+      } finally {
+        if (alive) setLoading(false)
+      }
+    })()
     return () => {
       alive = false
     }
@@ -129,7 +157,7 @@ export function KidsSpaceViewClient({ slug, viewerId }: { slug: string; viewerId
       setThreadsCursor(page.nextCursor)
       setThreadsHasMore(page.hasMore)
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao carregar as conversas.')
+      toast.error((err as ApiError).message ?? 'Falha ao carregar.')
     }
     // Marca como visto e apaga o ponto de não-lido localmente (sem refetch dos canais).
     apiSend(`/api/hub/channels/${enc(channelId)}/seen`, 'POST', {}).catch(() => {})
@@ -147,7 +175,7 @@ export function KidsSpaceViewClient({ slug, viewerId }: { slug: string; viewerId
       setThreadsCursor(page.nextCursor)
       setThreadsHasMore(page.hasMore)
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao carregar mais conversas.')
+      toast.error((err as ApiError).message ?? 'Falha ao carregar mais.')
     } finally {
       setLoadingMoreThreads(false)
     }
@@ -253,7 +281,6 @@ export function KidsSpaceViewClient({ slug, viewerId }: { slug: string; viewerId
 
   async function react(target: 'threads' | 'comments', id: string, emoji: string, mine: boolean) {
     // Otimismo local: alterna a reação na hora e SÓ desfaz se o servidor recusar.
-    // (Não recarrega a lista de comentários — preserva o "carregar mais".)
     const prevThread = thread
     const prevComments = comments
     if (target === 'threads') {
@@ -307,42 +334,45 @@ export function KidsSpaceViewClient({ slug, viewerId }: { slug: string; viewerId
   }
 
   if (loading) return <p className="px-4 py-8 text-muted-foreground">Carregando…</p>
-  if (!space) return <p className="px-4 py-8 text-muted-foreground">Turma não encontrada.</p>
+  if (!space) return <p className="px-4 py-8 text-muted-foreground">Espaço não encontrado.</p>
+  // Sem acesso (teaser): recado gentil, sem nenhum conteúdo.
+  if (space.locked) return <KidsLockedSpace space={space} />
 
   return (
     <>
       <div className="mx-auto w-full max-w-4xl px-4 py-6">
-        <Link
-          href="/comunidade"
-          className="mb-3 inline-flex items-center gap-1 text-muted-foreground text-sm hover:text-foreground"
-        >
-          <ArrowLeft className="size-4" /> Turma
-        </Link>
-        <h1 className="mb-4 [font-family:var(--font-display)] font-bold text-2xl">{space.name}</h1>
+        <h1 className="mb-1 [font-family:var(--font-display)] font-bold text-2xl">{space.name}</h1>
+        {space.description ? (
+          <p className="mb-4 text-muted-foreground text-sm">{space.description}</p>
+        ) : (
+          <div className="mb-4" />
+        )}
 
-        <div className="grid gap-4 md:grid-cols-[200px_1fr]">
-          <aside className="flex gap-2 overflow-x-auto md:flex-col md:gap-1.5">
-            {channels.map((c) => (
-              <button
-                type="button"
-                key={c.id}
-                onClick={() => setChannel(c)}
-                className={`flex shrink-0 items-center gap-2 rounded-2xl border-2 px-3 py-2 text-left text-sm transition-colors ${
-                  channel?.id === c.id
-                    ? 'border-primary bg-(--kids-cyan-tint) font-bold text-primary'
-                    : 'border-transparent text-muted-foreground hover:bg-muted/60'
-                }`}
-              >
-                {c.postingPolicy === 'staff_only' ? (
-                  <Lock className="size-4 shrink-0" />
-                ) : (
-                  <Hash className="size-4 shrink-0" />
-                )}
-                <span className="truncate">{c.name}</span>
-                {c.hasUnread ? <span className="ml-auto size-2 rounded-full bg-primary" /> : null}
-              </button>
-            ))}
-          </aside>
+        <div className={`grid gap-4 ${isWall ? '' : 'md:grid-cols-[200px_1fr]'}`}>
+          {!isWall ? (
+            <aside className="flex gap-2 overflow-x-auto md:flex-col md:gap-1.5">
+              {channels.map((c) => (
+                <button
+                  type="button"
+                  key={c.id}
+                  onClick={() => setChannel(c)}
+                  className={`flex shrink-0 items-center gap-2 rounded-2xl border-2 px-3 py-2 text-left text-sm transition-colors ${
+                    channel?.id === c.id
+                      ? 'border-primary bg-(--kids-cyan-tint) font-bold text-primary'
+                      : 'border-transparent text-muted-foreground hover:bg-muted/60'
+                  }`}
+                >
+                  {c.postingPolicy === 'staff_only' ? (
+                    <Lock className="size-4 shrink-0" />
+                  ) : (
+                    <Hash className="size-4 shrink-0" />
+                  )}
+                  <span className="truncate">{c.name}</span>
+                  {c.hasUnread ? <span className="ml-auto size-2 rounded-full bg-primary" /> : null}
+                </button>
+              ))}
+            </aside>
+          ) : null}
 
           <main className="min-w-0">
             {thread ? (
@@ -350,6 +380,7 @@ export function KidsSpaceViewClient({ slug, viewerId }: { slug: string; viewerId
                 thread={thread}
                 comments={comments}
                 busy={busy}
+                isWall={isWall}
                 replyBody={replyBody}
                 setReplyBody={setReplyBody}
                 replyAttachments={replyAttachments}
@@ -365,22 +396,25 @@ export function KidsSpaceViewClient({ slug, viewerId }: { slug: string; viewerId
               />
             ) : (
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <p className="text-muted-foreground text-sm">
-                    {channel ? channel.topic || `#${channel.slug}` : 'Escolha um canal'}
-                  </p>
-                  {channel ? (
-                    <button
-                      type="button"
-                      onClick={() => setShowNew((v) => !v)}
-                      className="inline-flex items-center gap-1 rounded-2xl bg-primary px-4 py-2 font-bold text-primary-foreground text-sm"
-                    >
-                      <Plus className="size-4" /> Começar conversa
-                    </button>
-                  ) : null}
-                </div>
+                {/* O Mural é só leitura+reação+comentário: sem composer de tópico. */}
+                {!isWall ? (
+                  <div className="flex items-center justify-between">
+                    <p className="text-muted-foreground text-sm">
+                      {channel ? channel.topic || `#${channel.slug}` : 'Escolha um canal'}
+                    </p>
+                    {channel ? (
+                      <button
+                        type="button"
+                        onClick={() => setShowNew((v) => !v)}
+                        className="inline-flex items-center gap-1 rounded-2xl bg-primary px-4 py-2 font-bold text-primary-foreground text-sm"
+                      >
+                        <Plus className="size-4" /> Começar conversa
+                      </button>
+                    ) : null}
+                  </div>
+                ) : null}
 
-                {showNew ? (
+                {!isWall && showNew ? (
                   <div className="space-y-2 rounded-2xl border-2 border-border bg-card p-3">
                     <input
                       className="w-full rounded-xl border-2 border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
@@ -416,7 +450,15 @@ export function KidsSpaceViewClient({ slug, viewerId }: { slug: string; viewerId
 
                 {threads.length === 0 ? (
                   <div className="rounded-2xl border-2 border-border border-dashed p-6 text-center text-muted-foreground text-sm">
-                    Nenhuma conversa ainda. Comece a primeira! ✨
+                    {isWall
+                      ? 'Os projetos dos criadores vão aparecer aqui! 🎨'
+                      : 'Nenhuma conversa ainda. Comece a primeira! ✨'}
+                  </div>
+                ) : isWall ? (
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {threads.map((t) => (
+                      <ShowcaseCard key={t.id} thread={t} onOpen={() => openThread(t)} />
+                    ))}
                   </div>
                 ) : (
                   threads.map((t) => (
@@ -432,7 +474,7 @@ export function KidsSpaceViewClient({ slug, viewerId }: { slug: string; viewerId
                         <span className="truncate font-bold">{t.title}</span>
                       </div>
                       <p className="flex items-center gap-3 text-muted-foreground text-xs">
-                        <span>{authorLabel(t.authorId)}</span>
+                        <span>{authorLabel(t)}</span>
                         <span className="inline-flex items-center gap-1">
                           <MessageCircle className="size-3" /> {t.commentCount}
                         </span>
@@ -448,7 +490,11 @@ export function KidsSpaceViewClient({ slug, viewerId }: { slug: string; viewerId
                     disabled={loadingMoreThreads}
                     className="w-full rounded-2xl border-2 border-border border-dashed p-2.5 text-center font-bold text-muted-foreground text-sm transition-colors hover:border-primary hover:text-primary disabled:opacity-60"
                   >
-                    {loadingMoreThreads ? 'Carregando…' : 'Carregar mais conversas'}
+                    {loadingMoreThreads
+                      ? 'Carregando…'
+                      : isWall
+                        ? 'Carregar mais projetos'
+                        : 'Carregar mais conversas'}
                   </button>
                 ) : null}
               </div>
@@ -495,6 +541,41 @@ function Tag({ children }: { children: ReactNode }) {
   )
 }
 
+/** Card de projeto no Mural: capa + título + resumo + autor (1º nome da criança). */
+function ShowcaseCard({ thread, onOpen }: { thread: HubThreadView; onOpen: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="group flex w-full flex-col overflow-hidden rounded-2xl border-2 border-border bg-card text-left transition-colors hover:border-primary"
+    >
+      <div className="aspect-video w-full overflow-hidden bg-(--kids-cyan-tint)">
+        {thread.coverImageUrl ? (
+          // biome-ignore lint/performance/noImgElement: capa é URL externa (R2/admin); o Next/Image exigiria allowlist de domínios.
+          <img
+            src={thread.coverImageUrl}
+            alt={thread.title}
+            className="size-full object-cover transition-transform group-hover:scale-105"
+            loading="lazy"
+          />
+        ) : (
+          <div className="grid size-full place-items-center text-3xl">🎮</div>
+        )}
+      </div>
+      <div className="space-y-1 p-3">
+        <p className="truncate font-bold">{thread.title}</p>
+        {thread.authorDisplayName ? (
+          <p className="text-muted-foreground text-xs">por {thread.authorDisplayName}</p>
+        ) : null}
+        <p className="line-clamp-2 text-muted-foreground text-sm">{thread.body}</p>
+        <p className="flex items-center gap-1 pt-1 text-muted-foreground text-xs">
+          <MessageCircle className="size-3" /> {thread.commentCount}
+        </p>
+      </div>
+    </button>
+  )
+}
+
 function ReactionBar({
   target,
   id,
@@ -534,6 +615,7 @@ function ThreadDetail({
   thread,
   comments,
   busy,
+  isWall,
   replyBody,
   setReplyBody,
   replyAttachments,
@@ -550,6 +632,7 @@ function ThreadDetail({
   thread: HubThreadView
   comments: HubCommentView[]
   busy: boolean
+  isWall: boolean
   replyBody: string
   setReplyBody: (v: string) => void
   replyAttachments: UploadedAttachment[]
@@ -561,7 +644,11 @@ function ThreadDetail({
   onSend: () => void
   onReact: (target: 'threads' | 'comments', id: string, emoji: string, mine: boolean) => void
   onReport: (target: 'threads' | 'comments', id: string) => void
-  authorLabel: (id: string | null) => string
+  authorLabel: (item: {
+    isShowcase?: boolean
+    authorDisplayName?: string | null
+    authorId: string | null
+  }) => string
 }) {
   return (
     <div className="space-y-4">
@@ -570,12 +657,18 @@ function ThreadDetail({
         onClick={onBack}
         className="inline-flex items-center gap-1 text-muted-foreground text-sm hover:text-foreground"
       >
-        <ArrowLeft className="size-4" /> Conversas
+        <ArrowLeft className="size-4" /> {isWall ? 'Projetos' : 'Conversas'}
       </button>
 
       <div className="space-y-3 rounded-2xl border-2 border-border bg-card p-4">
+        {isWall && thread.coverImageUrl ? (
+          <div className="aspect-video w-full overflow-hidden rounded-xl bg-(--kids-cyan-tint)">
+            {/* biome-ignore lint/performance/noImgElement: capa é URL externa (R2/admin). */}
+            <img src={thread.coverImageUrl} alt={thread.title} className="size-full object-cover" />
+          </div>
+        ) : null}
         <h2 className="[font-family:var(--font-display)] font-bold text-lg">{thread.title}</h2>
-        <p className="text-muted-foreground text-xs">{authorLabel(thread.authorId)}</p>
+        <p className="text-muted-foreground text-xs">{authorLabel(thread)}</p>
         <div className="lesson-prose">{renderMarkdown(thread.body)}</div>
         <AttachmentList attachments={thread.attachments} />
         <div className="flex items-center justify-between">
@@ -602,7 +695,7 @@ function ThreadDetail({
         {comments.map((c) => (
           <div key={c.id} className="space-y-2 rounded-2xl border-2 border-border bg-card p-3">
             <p className="text-muted-foreground text-xs">
-              {authorLabel(c.authorId)}
+              {authorLabel(c)}
               {c.pending ? ' · aguardando ✅' : ''}
             </p>
             <div className="lesson-prose">{renderMarkdown(c.body)}</div>
@@ -650,7 +743,7 @@ function ThreadDetail({
               onClick={onSend}
               disabled={busy || !replyBody.trim()}
             >
-              <Send className="size-4" /> Responder
+              <Send className="size-4" /> {isWall ? 'Comentar' : 'Responder'}
             </button>
           </div>
         </div>

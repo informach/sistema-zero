@@ -43,9 +43,21 @@ aluno (NÃO regredir):** o BFF **redige o `authorId` de TERCEIROS** nas views de
 (`okRedacted` → `lib/hub-redact`, puro/testado em `tests/hub-redact.test.ts`) — só o id do PRÓPRIO
 viewer chega ao browser (por isso `HubThreadView/HubCommentView.authorId` é `string | null`); os
 apps comparam o id apenas p/ rotular "Você"/"Colega", ninguém EXIBE o id. Por isso
-`createHubRoutes` recebe `{ hub, media, session }` (o `session` resolve o viewer p/ a redação). Os
+`createHubRoutes` recebe `{ hub, members, media, session }` (o `session` resolve o viewer p/ a
+redação; `members` é p/ a vitrine — ver abaixo). Os
 helpers PUROS de anexo (`lib/hub-attachments`: allowlist de MIME, limites, `sanitizeFilename`,
 `extForMime`, `isInlineKind`) têm cobertura em `tests/hub-attachments.test.ts`.
+
+**Vitrine "Mural dos Criadores" (06/2026):** `hubShowcase` (`POST /api/hub/showcase`, multipart
+`lessonId`/`blockId`/`file?`): no clique "Publicar no Mural" o BFF (1) busca o payload AUTORITATIVO no
+members (`members.getShowcasePayload` — título/resumo do admin + capa padrão + elegibilidade; NÃO
+confia no cliente), (2) sobe o print do jogo (quando veio `file`) re-encodado no R2 **público**
+(`r2PutObject` → URL) ou cai na capa padrão, (3) resolve o autor = PRIMEIRO NOME
+(`session.activeProfile.name` ?? firstName) e (4) chama `hub.createShowcaseThread` (slug fixo
+`mural-dos-criadores`, `idempotencyKey = sha256(perfil:curso:cadeia)`). **Privacidade:** o
+`redactAuthors` zera o `authorId` de terceiros mas PRESERVA o `authorDisplayName` (só a vitrine tem
+esse campo) — a parede mostra "por {nome}", os comentários seguem "Você"/"Colega". `HubSpaceView.locked`
+(teaser "visível mas bloqueado") flui sem redação.
 
 **Gamificação (06/2026):** tipos em `lib/types.ts` (`GamificationDelta`/`GamificationMeView`/
 `LessonCompleteResult`/`BadgeSlug` — mirror das views do members; `QuizAttemptResultView.gamification?`),

@@ -27,6 +27,8 @@ export interface HubSpaceView {
   audience: HubAudience
   accessConfig: HubAccessConfig
   requiresApproval: boolean
+  /** Aparece BLOQUEADO no menu sem acesso (vitrine), em vez de sumir. */
+  teaserWhenLocked: boolean
   sortOrder: number
   status: HubSpaceStatus
   createdAt: string

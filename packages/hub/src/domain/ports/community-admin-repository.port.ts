@@ -9,6 +9,7 @@ export interface SpaceFields {
   audience: Audience
   accessConfig: AccessConfig
   requiresApproval: boolean
+  teaserWhenLocked: boolean
   status: SpaceStatus
 }
 

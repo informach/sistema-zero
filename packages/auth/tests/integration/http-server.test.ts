@@ -1420,6 +1420,7 @@ describe('Auth — perfis (estilo Netflix)', () => {
     name: string
     avatarUrl: string | null
     whatsapp: string | null
+    birthDate: string | null
     sortOrder: number
   }
 
@@ -1527,6 +1528,50 @@ describe('Auth — perfis (estilo Netflix)', () => {
       req('POST', '/auth/profiles', gw(), { name: 'Sofia', avatarUrl: 'javascript:alert(1)' }),
     )
     expect(res.status).toBe(400)
+  })
+
+  test('data de nascimento: a CONTA grava/edita; a sessão de PERFIL é barrada (403)', async () => {
+    const { app, allowance } = buildApp()
+    allowance.maxProfiles = 1
+    // A conta (responsável) cria o perfil JÁ com a data de nascimento.
+    const created = (await (
+      await app.handle(
+        req('POST', '/auth/profiles', gw(), { name: 'Sofia', birthDate: '2015-04-10' }),
+      )
+    ).json()) as { profile: Profile }
+    expect(created.profile.birthDate).toBe('2015-04-10')
+    const id = created.profile.id
+
+    // A conta edita a data de nascimento → ok.
+    const patched = (await (
+      await app.handle(req('PATCH', `/auth/profiles/${id}`, gw(), { birthDate: '2015-05-20' }))
+    ).json()) as { profile: Profile }
+    expect(patched.profile.birthDate).toBe('2015-05-20')
+
+    // Sessão de PERFIL (a própria criança): o gateway injeta x-auth-account-id.
+    const profileSession = { 'x-auth-user-id': id, 'x-auth-account-id': ACCOUNT }
+    // Editar o próprio nome segue permitido (auto-serviço).
+    expect(
+      (
+        await app.handle(
+          req('PATCH', `/auth/profiles/${id}`, gw(id, profileSession), { name: 'Sofia S' }),
+        )
+      ).status,
+    ).toBe(200)
+    // Mas tentar mexer na data de nascimento → 403 (só os pais).
+    expect(
+      (
+        await app.handle(
+          req('PATCH', `/auth/profiles/${id}`, gw(id, profileSession), { birthDate: '2010-01-01' }),
+        )
+      ).status,
+    ).toBe(403)
+
+    // Data futura → 400 (sanidade do agregado).
+    expect(
+      (await app.handle(req('PATCH', `/auth/profiles/${id}`, gw(), { birthDate: '3000-01-01' })))
+        .status,
+    ).toBe(400)
   })
 
   test('guardas de origem: sem token interno → 401; sem identidade → 401', async () => {

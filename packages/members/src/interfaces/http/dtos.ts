@@ -455,6 +455,16 @@ const StudioBlockSchema = t.Object({
   activity: t.Optional(StudioActivitySchema),
   /** Nome do projeto contínuo (cadeia) — ver StudioBlock em domain/course/lesson-block.ts. */
   chain: t.Optional(t.String({ maxLength: 80 })),
+  /** Vitrine (Mural dos Criadores) — config da auto-publicação; ver StudioBlock. */
+  showcase: t.Optional(
+    t.Object({
+      enabled: t.Boolean(),
+      title: t.Optional(t.String({ maxLength: 300 })),
+      summary: t.Optional(t.String({ maxLength: 2000 })),
+      // Capa padrão: SÓ http(s) (renderizada como `src` na vitrine).
+      defaultCoverUrl: t.Optional(t.String({ maxLength: 2000, pattern: '^https?://' })),
+    }),
+  ),
 })
 
 export const LessonBlockContentSchema = t.Union([
@@ -472,6 +482,8 @@ export const LessonBlockContentSchema = t.Union([
 export const StudioSubmissionParams = t.Object({ lessonId: UUID, blockId: UUID })
 /** Params da rota de carryover do Estúdio (carregar o projeto da aula contínua anterior). */
 export const StudioCarryoverParams = t.Object({ lessonId: UUID, blockId: UUID })
+/** Params da rota de payload da vitrine (Mural) — elegibilidade + conteúdo do post. */
+export const ShowcasePayloadParams = t.Object({ lessonId: UUID, blockId: UUID })
 /** Params da rota admin de UMA entrega (por bloco + aluno). `id` = blockId. */
 export const AdminStudioSubmissionParams = t.Object({ id: UUID, userId: UUID })
 

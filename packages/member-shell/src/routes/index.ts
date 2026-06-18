@@ -113,16 +113,28 @@ const ResetOtpBody = z.object({
 // ── Perfis (estilo Netflix) — espelham os DTOs do auth ──────────────────────
 const ProfileName = z.string().trim().min(1).max(60)
 const ProfileWhatsapp = z.string().trim().max(20).nullable().optional()
+// Data de nascimento (AAAA-MM-DD; sanidade/faixa de idade são do auth). A
+// autorização "só os pais" é da rota do auth — aqui é só pass-through validado.
+const ProfileBirthDate = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/)
+  .nullable()
+  .optional()
 const CreateProfileBody = z.object({
   name: ProfileName,
   whatsapp: ProfileWhatsapp,
+  birthDate: ProfileBirthDate,
 })
 const UpdateProfileBody = z
   .object({
     name: ProfileName.optional(),
     whatsapp: ProfileWhatsapp,
+    birthDate: ProfileBirthDate,
   })
-  .refine((b) => b.name !== undefined || b.whatsapp !== undefined, 'Nada para atualizar')
+  .refine(
+    (b) => b.name !== undefined || b.whatsapp !== undefined || b.birthDate !== undefined,
+    'Nada para atualizar',
+  )
 const ExitProfileBody = z.object({ password: z.string().min(1).max(200) })
 
 const FeedbackAnswer = z.enum(['yes', 'no', 'unsure'])

@@ -6,6 +6,7 @@ export interface ProfileView {
   name: string
   avatarUrl: string | null
   whatsapp: string | null
+  birthDate: string | null
   sortOrder: number
 }
 
@@ -15,6 +16,7 @@ export function toProfileView(p: ProfileAggregate): ProfileView {
     name: p.name,
     avatarUrl: p.avatarUrl,
     whatsapp: p.whatsapp,
+    birthDate: p.birthDate,
     sortOrder: p.sortOrder,
   }
 }

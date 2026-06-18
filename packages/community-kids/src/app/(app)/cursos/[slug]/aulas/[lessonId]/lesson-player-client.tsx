@@ -25,6 +25,7 @@ import type {
   CourseProgressView,
   GamificationDelta,
   LessonCompleteResult,
+  LessonCompleteShowcaseHint,
   LessonDetailView,
   QuizBlock,
 } from '@/lib/types'
@@ -61,6 +62,7 @@ export function LessonPlayer({
   const [celebration, setCelebration] = useState<{
     progress: CourseProgressView
     gamification: GamificationDelta | null
+    showcase: LessonCompleteShowcaseHint | null
   } | null>(null)
   const courseHref = `/cursos/${encodeURIComponent(course.slug)}`
 
@@ -172,6 +174,7 @@ export function LessonPlayer({
         )
         completedRef.current = true
         const gamification = res?.gamification ?? null
+        const showcase = res?.showcase ?? null
         if (opts.silent) {
           // Auto-conclusão a ~90% do vídeo: só o toast (com o XP ganho) —
           // interromper o vídeo com um overlay no meio da reprodução seria hostil.
@@ -180,7 +183,7 @@ export function LessonPlayer({
         } else {
           // Celebração assume a navegação (snapshot ANTES do refresh — as
           // props de progresso mudam quando o server re-renderiza).
-          setCelebration({ progress: course.progress, gamification })
+          setCelebration({ progress: course.progress, gamification, showcase })
         }
         router.refresh()
       } catch (err) {
@@ -394,6 +397,8 @@ export function LessonPlayer({
         <LessonCelebration
           progressBefore={celebration.progress}
           gamification={celebration.gamification}
+          showcase={celebration.showcase}
+          lessonId={lesson.id}
           nextHref={nextHref}
           courseHref={courseHref}
           onClose={() => setCelebration(null)}

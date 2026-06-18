@@ -73,6 +73,9 @@ export const spaces = hub.table(
     // Pré-moderação: conteúdo de não-staff nasce `pending`. Default true p/ kids
     // (a rota seta na criação do space conforme a audiência).
     requiresApproval: boolean('requires_approval').notNull().default(false),
+    // Aparece BLOQUEADO no menu sem acesso (vitrine), em vez de sumir. O conteúdo
+    // segue gated — isto só afeta a LISTAGEM/detalhe-teaser. Default false.
+    teaserWhenLocked: boolean('teaser_when_locked').notNull().default(false),
     sortOrder: integer('sort_order').notNull().default(0),
     status: spaceStatusEnum('status').notNull().default('active'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
@@ -130,6 +133,16 @@ export const threads = hub.table(
     isLocked: boolean('is_locked').notNull().default(false),
     status: contentStatusEnum('status').notNull().default('visible'),
     commentCount: integer('comment_count').notNull().default(0),
+    // ── Vitrine (Mural dos Criadores) ──
+    // Post de PROJETO auto-publicado pela criança. O fórum redige o `authorId` de
+    // terceiros (privacidade); a vitrine mostra o PRIMEIRO NOME via este snapshot.
+    isShowcase: boolean('is_showcase').notNull().default(false),
+    authorDisplayName: text('author_display_name'),
+    // Capa do projeto (URL pública http(s)) — print do jogo ou capa padrão do admin.
+    coverImageUrl: text('cover_image_url'),
+    // Idempotência da auto-publicação: hash(perfil:curso:cadeia). UNIQUE (NULLs são
+    // distintos no Postgres → posts normais não colidem). Re-publicar = devolve o existente.
+    showcaseIdempotencyKey: text('showcase_idempotency_key'),
     lastActivityAt: timestamp('last_activity_at', { withTimezone: true }).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     editedAt: timestamp('edited_at', { withTimezone: true }),
@@ -140,6 +153,8 @@ export const threads = hub.table(
     index('threads_channel_status_activity_idx').on(t.channelId, t.status, t.lastActivityAt),
     // Fila de aprovação por autor (ver os próprios pendentes).
     index('threads_author_status_idx').on(t.authorId, t.status),
+    // Dedupe da auto-publicação da vitrine (NULL = posts normais, distintos).
+    uniqueIndex('threads_showcase_key_uq').on(t.showcaseIdempotencyKey),
   ],
 )
 

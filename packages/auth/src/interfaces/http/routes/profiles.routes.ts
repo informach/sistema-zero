@@ -111,6 +111,8 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
             name: body.name,
             avatarUrl: body.avatarUrl,
             whatsapp: body.whatsapp,
+            // Data de nascimento só entra na CRIAÇÃO pela conta (rota já é parent-only).
+            birthDate: body.birthDate,
           })
           set.status = 201
           return { profile }
@@ -123,12 +125,18 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
           if (isOversizeBody(request)) throw new PayloadTooLargeError()
           // A criança edita o PRÓPRIO perfil (sessão de perfil); a conta edita qualquer um.
           const accountUserId = ownProfileEditContext(headers, params.id)
+          // Data de nascimento é EDITÁVEL SÓ PELOS PAIS (sessão da conta). Numa sessão
+          // de perfil (a criança) o gateway injeta `x-auth-account-id` → recusa a alteração.
+          if (body.birthDate !== undefined && headers['x-auth-account-id']?.trim()) {
+            throw new ForbiddenError('A data de nascimento só pode ser editada pelos responsáveis')
+          }
           const profile = await deps.updateProfile.execute({
             accountUserId,
             profileId: params.id,
             name: body.name,
             avatarUrl: body.avatarUrl,
             whatsapp: body.whatsapp,
+            birthDate: body.birthDate,
           })
           return { profile }
         },

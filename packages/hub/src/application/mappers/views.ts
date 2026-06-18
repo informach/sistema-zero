@@ -14,6 +14,11 @@ export interface SpacePublicView {
   description: string | null
   iconUrl: string | null
   audience: Audience
+  /**
+   * O aluno NÃO tem acesso mas o servidor aparece como "bloqueado" (teaser). A UI
+   * mostra um recado gentil; o CONTEÚDO (canais) não é carregado quando `locked`.
+   */
+  locked: boolean
 }
 
 /** Canal visto pelo aluno. `requiresApproval` é o efetivo (canal ?? space). */
@@ -29,7 +34,7 @@ export interface ChannelPublicView {
   hasUnread: boolean
 }
 
-export function toSpacePublicView(s: Space): SpacePublicView {
+export function toSpacePublicView(s: Space, locked = false): SpacePublicView {
   return {
     id: s.id,
     slug: s.slug,
@@ -37,6 +42,7 @@ export function toSpacePublicView(s: Space): SpacePublicView {
     description: s.description,
     iconUrl: s.iconUrl,
     audience: s.audience,
+    locked,
   }
 }
 

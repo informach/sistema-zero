@@ -34,9 +34,16 @@ export class AccessResolutionService {
     private readonly cache: MicroCache<CourseAccess>,
   ) {}
 
-  /** Filtra uma LISTA de servidores numa só ida ao members (batch dos courseRefs). */
-  async filterVisibleSpaces(actor: Actor, spaces: Space[]): Promise<Space[]> {
-    if (actor.privileged) return spaces
+  /**
+   * Anota cada servidor com `accessible` numa só ida ao members (batch dos
+   * courseRefs) — SEM filtrar. A listagem decide se mostra um inacessível como
+   * "bloqueado" (teaser) ou se o esconde.
+   */
+  async resolveSpaceVisibility(
+    actor: Actor,
+    spaces: Space[],
+  ): Promise<{ space: Space; accessible: boolean }[]> {
+    if (actor.privileged) return spaces.map((space) => ({ space, accessible: true }))
     const courseRefs = [
       ...new Set(
         spaces
@@ -47,7 +54,16 @@ export class AccessResolutionService {
     const access = courseRefs.length
       ? await this.resolveCourseAccess(actor.accountId, courseRefs)
       : { granted: new Set<string>(), hasMaster: false }
-    return spaces.filter((s) => this.evaluate(s.accessConfig, actor, s.audience, access))
+    return spaces.map((space) => ({
+      space,
+      accessible: this.evaluate(space.accessConfig, actor, space.audience, access),
+    }))
+  }
+
+  /** Filtra uma LISTA de servidores numa só ida ao members (batch dos courseRefs). */
+  async filterVisibleSpaces(actor: Actor, spaces: Space[]): Promise<Space[]> {
+    const annotated = await this.resolveSpaceVisibility(actor, spaces)
+    return annotated.filter((a) => a.accessible).map((a) => a.space)
   }
 
   async canAccessSpace(actor: Actor, space: Space): Promise<boolean> {

@@ -24,6 +24,7 @@ import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
 import { Select } from '@sistemazero/ui/select'
 import { Spinner } from '@sistemazero/ui/spinner'
+import { Textarea } from '@sistemazero/ui/textarea'
 import { ArrowLeft, GripVertical, Pencil, Plus, Users } from 'lucide-react'
 import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -127,6 +128,11 @@ interface BlockForm {
   studioActivity: LessonActivity
   /** Estúdio: nome do projeto contínuo (cadeia). Vazio = aula independente. */
   studioChain: string
+  /** Estúdio: vitrine (Mural) — auto-publicar o projeto ao concluir esta aula. */
+  studioShowcaseEnabled: boolean
+  studioShowcaseTitle: string
+  studioShowcaseSummary: string
+  studioShowcaseCover: string
 }
 
 const EMPTY_BLOCK: BlockForm = {
@@ -150,6 +156,10 @@ const EMPTY_BLOCK: BlockForm = {
   studioAllowBlocks: [],
   studioActivity: EMPTY_ACTIVITY,
   studioChain: '',
+  studioShowcaseEnabled: false,
+  studioShowcaseTitle: '',
+  studioShowcaseSummary: '',
+  studioShowcaseCover: '',
 }
 
 const num = (s: string): number | undefined => (s.trim() ? Number(s) : undefined)
@@ -176,6 +186,20 @@ function buildContent(f: BlockForm, studioProject?: Project): LessonBlockContent
         allowLevelReveal: f.studioAllowReveal,
         ...(hasActivity ? { activity: f.studioActivity } : {}),
         ...(f.studioChain.trim() ? { chain: f.studioChain.trim() } : {}),
+        ...(f.studioShowcaseEnabled
+          ? {
+              showcase: {
+                enabled: true,
+                ...(f.studioShowcaseTitle.trim() ? { title: f.studioShowcaseTitle.trim() } : {}),
+                ...(f.studioShowcaseSummary.trim()
+                  ? { summary: f.studioShowcaseSummary.trim() }
+                  : {}),
+                ...(f.studioShowcaseCover.trim()
+                  ? { defaultCoverUrl: f.studioShowcaseCover.trim() }
+                  : {}),
+              },
+            }
+          : {}),
       }
     }
     case 'rich_text':
@@ -369,6 +393,10 @@ export function LessonEditorClient({
       studioAllowBlocks: c.kind === 'studio' ? (c.allowBlocks ?? []) : [],
       studioActivity: c.kind === 'studio' ? (c.activity ?? EMPTY_ACTIVITY) : EMPTY_ACTIVITY,
       studioChain: c.kind === 'studio' ? (c.chain ?? '') : '',
+      studioShowcaseEnabled: c.kind === 'studio' ? (c.showcase?.enabled ?? false) : false,
+      studioShowcaseTitle: c.kind === 'studio' ? (c.showcase?.title ?? '') : '',
+      studioShowcaseSummary: c.kind === 'studio' ? (c.showcase?.summary ?? '') : '',
+      studioShowcaseCover: c.kind === 'studio' ? (c.showcase?.defaultCoverUrl ?? '') : '',
     })
     setBlockOpen(true)
   }
@@ -889,6 +917,68 @@ export function LessonEditorClient({
                   onChange={(e) => setBlockForm((f) => ({ ...f, studioChain: e.target.value }))}
                 />
               </Field>
+              <fieldset className="rounded-lg border border-border p-3">
+                <legend className="px-1 text-xs text-muted-foreground">
+                  Mural dos Criadores (vitrine)
+                </legend>
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    className="size-4 accent-primary"
+                    checked={blockForm.studioShowcaseEnabled}
+                    onChange={(e) =>
+                      setBlockForm((f) => ({ ...f, studioShowcaseEnabled: e.target.checked }))
+                    }
+                  />
+                  Publicar no Mural ao concluir esta aula
+                </label>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Ligue no bloco da ÚLTIMA aula do projeto: a criança ganha o botão "Publicar no
+                  Mural" e o post é montado com o título/resumo abaixo + um print do projeto (jogos)
+                  ou a capa padrão.
+                </p>
+                {blockForm.studioShowcaseEnabled ? (
+                  <div className="mt-3 flex flex-col gap-3">
+                    <Field label="Título do post" htmlFor="bk-showcase-title">
+                      <Input
+                        id="bk-showcase-title"
+                        value={blockForm.studioShowcaseTitle}
+                        maxLength={300}
+                        placeholder="Ex.: Meu jogo da cobrinha"
+                        onChange={(e) =>
+                          setBlockForm((f) => ({ ...f, studioShowcaseTitle: e.target.value }))
+                        }
+                      />
+                    </Field>
+                    <Field
+                      label="Resumo do projeto"
+                      hint="Aparece no card do Mural. A criança não escreve — você define aqui."
+                    >
+                      <Textarea
+                        value={blockForm.studioShowcaseSummary}
+                        maxLength={2000}
+                        placeholder="Um breve resumo do que se trata o projeto."
+                        onChange={(e) =>
+                          setBlockForm((f) => ({ ...f, studioShowcaseSummary: e.target.value }))
+                        }
+                      />
+                    </Field>
+                    <Field
+                      label="Capa padrão"
+                      hint="Usada em projetos web (e como reserva quando o print do jogo falha)."
+                    >
+                      <ImageUploader
+                        scope="block"
+                        allowManualUrl={false}
+                        value={blockForm.studioShowcaseCover}
+                        onChange={(url) =>
+                          setBlockForm((f) => ({ ...f, studioShowcaseCover: url }))
+                        }
+                      />
+                    </Field>
+                  </div>
+                ) : null}
+              </fieldset>
               <Field
                 label="Projeto inicial"
                 hint="Monte o tipo de projeto, o código de partida e o nome — é o que o aluno abre na aula."

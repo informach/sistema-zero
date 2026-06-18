@@ -12,7 +12,13 @@ export const proxy = createMemberProxy({
   cookies: { accessCookie: ACCESS_COOKIE, refreshCookie: REFRESH_COOKIE },
   // `/perfis` (grade estilo Netflix) exige sessão (conta OU perfil), mas é a rota
   // de SELEÇÃO — isenta do gate de perfil abaixo.
-  protectedPrefixes: ['/cursos', '/perfil', '/comunidade', '/perfis'],
+  protectedPrefixes: [
+    '/cursos',
+    '/perfil',
+    '/clube-dos-criadores',
+    '/mural-dos-criadores',
+    '/perfis',
+  ],
   isRootProtected: true,
   // Conta logada SEM perfil selecionado (token sem `pfl`) → escolher um perfil
   // antes de entrar na área de aprender (estilo Netflix).
@@ -25,6 +31,6 @@ export const config = {
   // proxy copiaria o corpo à toa; todas têm guard próprio (sessão estrita + a MESMA
   // checagem anti-CSRF dentro do `requireUploadSession`).
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|api/me/avatar|api/hub/uploads/image|api/profiles/[^/]+/avatar).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/me/avatar|api/hub/uploads/image|api/hub/showcase|api/profiles/[^/]+/avatar).*)',
   ],
 }

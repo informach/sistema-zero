@@ -8,6 +8,11 @@ export interface UpdateProfileDetailsCommand {
   name?: string
   avatarUrl?: string | null
   whatsapp?: string | null
+  /**
+   * Data de nascimento (`YYYY-MM-DD`; `null` limpa). A AUTORIZAÇÃO (só os pais) é da
+   * rota — quando chega aqui já está liberada. `undefined` = não mexe.
+   */
+  birthDate?: string | null
 }
 
 /**
@@ -26,10 +31,10 @@ export class UpdateProfileDetailsService {
     if (!profile || !profile.belongsTo(cmd.accountUserId) || profile.isArchived) {
       throw new ProfileNotFoundError()
     }
-    profile.updateDetails(
-      { name: cmd.name, avatarUrl: cmd.avatarUrl, whatsapp: cmd.whatsapp },
-      this.clock(),
-    )
+    const now = this.clock()
+    profile.updateDetails({ name: cmd.name, avatarUrl: cmd.avatarUrl, whatsapp: cmd.whatsapp }, now)
+    // birthDate tem caminho próprio (autorização parent-only na rota; `undefined` = não mexe).
+    if (cmd.birthDate !== undefined) profile.setBirthDate(cmd.birthDate, now)
     const ok = await this.profiles.update(profile)
     if (!ok) throw new ProfileNotFoundError()
     return toProfileView(profile)

@@ -1095,6 +1095,18 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
+    // Payload autoritativo da vitrine (Mural): o BFF chama no clique "Publicar no
+    // Mural" p/ montar o post (título/resumo do admin) sem confiar no cliente.
+    {
+      id: 'members-showcase-payload',
+      methods: ['GET'],
+      pathPattern: '/members/lessons/:lessonId/blocks/:blockId/showcase-payload',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
     // Concessão/assinatura (funil → gateway → members): HMAC de borda do funil +
     // o gateway re-assina como consumer `gateway` (members verifica com GATEWAY_HMAC_SECRET).
     {
@@ -1519,6 +1531,21 @@ const config: GatewayConfigInput = {
       transforms: hubInternalTransforms,
       maxBodyBytes: SMALL_JSON_BODY_BYTES,
       rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+    },
+    // Auto-publicação de projeto no Mural (BFF → hub, em nome da criança). O hub trata
+    // como criação de sistema (bypass staff_only, idempotente); JWT da criança + token
+    // interno injetado. Corpo pequeno (título/resumo/capa-URL/chave). 4 segmentos —
+    // `/hub/internal/...` não colide com as rotas do aluno nem com `/hub/admin/*`.
+    {
+      id: 'hub-showcase-create',
+      methods: ['POST'],
+      pathPattern: '/hub/internal/showcase-thread',
+      service: 'hub',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
     },
     {
       id: 'hub-comment-edit',

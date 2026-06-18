@@ -50,6 +50,8 @@ export interface ProfileView {
   name: string
   avatarUrl: string | null
   whatsapp: string | null
+  /** Data de nascimento (`YYYY-MM-DD`) — só os pais editam (controle de idade). */
+  birthDate: string | null
   sortOrder: number
 }
 
@@ -359,9 +361,19 @@ export interface GamificationMeView {
   ranking?: { position: number; totalStudents: number }
 }
 
+/** Dica de vitrine (Mural): a aula concluída é ponto de auto-publicação. */
+export interface LessonCompleteShowcaseHint {
+  /** Bloco de estúdio a publicar (o BFF re-busca o conteúdo autoritativo). */
+  blockId: string
+  /** Título do projeto (preview do botão "Publicar no Mural"). */
+  title: string
+}
+
 /** `POST /members/lessons/:lessonId/complete` — progresso + delta de gamificação. */
 export interface LessonCompleteResult extends CourseProgressView {
   gamification: GamificationDelta | null
+  /** Aula é ponto de vitrine (bloco de estúdio com `showcase.enabled`); `null` se não. */
+  showcase: LessonCompleteShowcaseHint | null
 }
 
 /** `POST /members/lessons/:lessonId/blocks/:blockId/quiz-attempts`. */
@@ -488,6 +500,8 @@ export interface HubSpaceView {
   description: string | null
   iconUrl: string | null
   audience: 'adult' | 'kids'
+  /** Aparece BLOQUEADO no menu (sem acesso): a UI mostra um recado e NÃO carrega canais. */
+  locked: boolean
 }
 
 /** Canal (fórum) visto pelo aluno. `requiresApproval` é o efetivo (canal ?? space). */
@@ -553,11 +567,28 @@ export interface HubThreadView {
   /** Aguardando aprovação (só o autor/staff enxerga). */
   pending: boolean
   commentCount: number
+  /** Post de PROJETO da vitrine (Mural) — a UI renderiza como card com capa/autor. */
+  isShowcase: boolean
+  /** Nome do autor (só na vitrine; NÃO é redigido — diferente do `authorId`). */
+  authorDisplayName: string | null
+  /** Capa do projeto (URL pública) — só na vitrine. */
+  coverImageUrl: string | null
   reactions: HubReaction[]
   attachments: HubAttachmentView[]
   lastActivityAt: string
   createdAt: string
   editedAt: string | null
+}
+
+/** Payload autoritativo da vitrine (members) — o BFF monta o post a partir dele. */
+export interface ShowcasePayloadView {
+  eligible: boolean
+  title: string
+  summary: string
+  defaultCoverUrl: string | null
+  chain: string | null
+  courseId: string
+  audience: 'adult' | 'kids'
 }
 
 export interface HubCommentView {

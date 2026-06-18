@@ -2,6 +2,7 @@ import { and, asc, desc, eq, inArray, max, or, type SQL, sql } from 'drizzle-orm
 import { DuplicateSlugError } from '../../../domain/hub-errors'
 import type {
   CreateCommentInput,
+  CreateShowcaseThreadInput,
   CreateThreadInput,
   ListCommentsOpts,
   ListThreadsOpts,
@@ -24,6 +25,9 @@ const toThread = (r: ThreadRow): Thread => ({
   isLocked: r.isLocked,
   status: r.status,
   commentCount: r.commentCount,
+  isShowcase: r.isShowcase,
+  authorDisplayName: r.authorDisplayName,
+  coverImageUrl: r.coverImageUrl,
   lastActivityAt: r.lastActivityAt,
   createdAt: r.createdAt,
   editedAt: r.editedAt,
@@ -101,6 +105,45 @@ export class DrizzleThreadRepository implements ThreadRepository {
       if (isUniqueViolation(error)) throw new DuplicateSlugError()
       throw error
     }
+  }
+
+  async createShowcaseThread(
+    input: CreateShowcaseThreadInput,
+  ): Promise<{ thread: Thread; deduped: boolean }> {
+    // Idempotente pela chave: dois publish concorrentes (duplo-clique/re-conclusão)
+    // → só um insere; o outro recupera o existente. NASCE `visible` (aparece na hora).
+    const inserted = await this.db
+      .insert(threads)
+      .values({
+        id: input.id,
+        version: 0,
+        channelId: input.channelId,
+        authorId: input.authorId,
+        title: input.title,
+        slug: input.slug,
+        body: input.body,
+        isPinned: false,
+        isLocked: false,
+        status: 'visible',
+        commentCount: 0,
+        isShowcase: true,
+        authorDisplayName: input.authorDisplayName,
+        coverImageUrl: input.coverImageUrl,
+        showcaseIdempotencyKey: input.idempotencyKey,
+        lastActivityAt: input.now,
+        createdAt: input.now,
+        editedAt: null,
+      })
+      .onConflictDoNothing({ target: threads.showcaseIdempotencyKey })
+      .returning()
+    if (inserted.length > 0) return { thread: toThread(inserted[0] as ThreadRow), deduped: false }
+    // Conflito na chave → já publicado; devolve o original.
+    const [existing] = await this.db
+      .select()
+      .from(threads)
+      .where(eq(threads.showcaseIdempotencyKey, input.idempotencyKey))
+      .limit(1)
+    return { thread: toThread(existing as ThreadRow), deduped: true }
   }
 
   async findThreadById(id: string): Promise<Thread | null> {

@@ -45,6 +45,7 @@ const spaceFields = (b: SpaceInput): SpaceFields => ({
   }),
   // Pré-moderação: kids nasce ligada por padrão (decisão de segurança).
   requiresApproval: b.requiresApproval ?? b.audience === 'kids',
+  teaserWhenLocked: b.teaserWhenLocked ?? false,
   status: b.status ?? 'active',
 })
 

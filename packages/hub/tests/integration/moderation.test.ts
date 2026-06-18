@@ -21,6 +21,7 @@ async function seed(
     audience: 'adult',
     accessConfig: PUBLIC,
     requiresApproval: false,
+    teaserWhenLocked: false,
     status: 'active',
     ...over.space,
   })

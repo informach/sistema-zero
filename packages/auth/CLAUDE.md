@@ -211,8 +211,16 @@ src/
 Uma CONTA do responsável tem **N perfis de crianças** (tabela `auth.profiles`,
 migration `0006`): `id` (vira o `x-auth-user-id` EFETIVO na sessão de perfil — PR2),
 `account_user_id`, `name`, `avatar_url` (http(s), fora das claims), `whatsapp`
-(opcional), `status` (`active|archived` — NUNCA DELETE físico, arquivar preserva o
-histórico keyado no id), `sort_order`. Rotas `/auth/profiles` (`profilesRoutes`,
+(opcional), `birth_date` (data de nascimento `YYYY-MM-DD`, opcional — controle de
+idade, migration `0008`; `mode:'string'` evita shift UTC), `status`
+(`active|archived` — NUNCA DELETE físico, arquivar preserva o histórico keyado no id),
+`sort_order`.
+- **Data de nascimento é EDITÁVEL SÓ PELOS PAIS** (06/2026): tem caminho próprio no
+  agregado (`setBirthDate`, fora do `updateDetails`) e a rota `PATCH /:id` RECUSA (403)
+  qualquer `birthDate` numa **sessão de perfil** (a criança) — detectada pelo
+  `x-auth-account-id`. O `CreateProfileBody`/`UpdateProfileBody` ganham `birthDate?`
+  (`AAAA-MM-DD`); sanidade (data real, não-futura, faixa ≤18 anos) é do agregado
+  (`assertBirthDate`). `ProfileView.birthDate` flui ao painel/apps. Rotas `/auth/profiles` (`profilesRoutes`,
 prefixo `/auth` com paths explícitos): `GET` lista os ativos, `POST` cria, `PATCH
 /:id` edita, `DELETE /:id` arquiva. O ator é a CONTA (`resolveGatewayActor` →
 `x-auth-user-id`) + `requireInternalToken` (defesa em profundidade); ownership por

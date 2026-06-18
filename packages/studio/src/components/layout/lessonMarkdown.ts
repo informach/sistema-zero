@@ -31,7 +31,10 @@ function isSafeHref(url: string): boolean {
 function renderInline(escaped: string): string {
   let out = escaped
   // Código inline `x` (não reescala o conteúdo — já está escapado).
-  out = out.replace(/`([^`]+)`/g, (_m, code) => `<code class="rounded bg-sz-bg px-1">${code}</code>`)
+  out = out.replace(
+    /`([^`]+)`/g,
+    (_m, code) => `<code class="rounded bg-sz-bg px-1">${code}</code>`,
+  )
   // Links [rótulo](url). O `url` já está escapado (aspas viraram &quot;), então
   // não escapa do atributo; ainda assim só vira âncora se o esquema for seguro.
   out = out.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (whole, label, url) => {
@@ -58,9 +61,7 @@ export function renderLessonMarkdown(src: string): string {
     const lines = block.split('\n')
     // Lista não-ordenada: TODAS as linhas começam com "- " ou "* ".
     if (lines.every((l) => /^[-*]\s+/.test(l))) {
-      const items = lines
-        .map((l) => `<li>${renderInline(l.replace(/^[-*]\s+/, ''))}</li>`)
-        .join('')
+      const items = lines.map((l) => `<li>${renderInline(l.replace(/^[-*]\s+/, ''))}</li>`).join('')
       html.push(`<ul class="list-disc pl-5">${items}</ul>`)
       continue
     }

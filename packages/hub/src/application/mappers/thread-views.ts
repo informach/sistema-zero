@@ -49,6 +49,12 @@ export interface ThreadView {
   /** Conveniência p/ a UI: aguardando aprovação (só o autor/staff enxerga). */
   pending: boolean
   commentCount: number
+  /** Post de projeto da vitrine (Mural) — a UI renderiza como card com capa/autor. */
+  isShowcase: boolean
+  /** Nome do autor (só na vitrine; o BFF NÃO o redige — diferente do `authorId`). */
+  authorDisplayName: string | null
+  /** Capa do projeto (URL pública) — só na vitrine. */
+  coverImageUrl: string | null
   reactions: ReactionSummaryItem[]
   attachments: AttachmentView[]
   lastActivityAt: string
@@ -93,6 +99,9 @@ export function toThreadView(
     status: t.status,
     pending: t.status === 'pending',
     commentCount: t.commentCount,
+    isShowcase: t.isShowcase,
+    authorDisplayName: t.authorDisplayName,
+    coverImageUrl: t.coverImageUrl,
     reactions,
     attachments,
     lastActivityAt: t.lastActivityAt.toISOString(),

@@ -14,6 +14,7 @@ const spaceFields = (over: Partial<SpaceFields> & { slug: string }): SpaceFields
   audience: 'adult',
   accessConfig: GATED,
   requiresApproval: false,
+  teaserWhenLocked: false,
   status: 'active',
   ...over,
 })

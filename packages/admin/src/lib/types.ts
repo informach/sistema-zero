@@ -268,6 +268,13 @@ export interface StudioBlock {
   activity?: LessonActivity
   /** Nome do projeto contínuo (cadeia). Aulas com o mesmo nome carregam o código entre si. */
   chain?: string
+  /** Vitrine (Mural dos Criadores): config da auto-publicação ao concluir a última aula. */
+  showcase?: {
+    enabled: boolean
+    title?: string
+    summary?: string
+    defaultCoverUrl?: string
+  }
 }
 export type LessonBlockContent =
   | RichTextBlock

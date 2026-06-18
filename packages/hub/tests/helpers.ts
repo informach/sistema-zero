@@ -10,6 +10,7 @@ import { ReportService } from '../src/application/moderation/report.service'
 import { ReactionService } from '../src/application/reactions/reaction.service'
 import { ReadCommunityService } from '../src/application/read-community/read-community.service'
 import { ReadStateService } from '../src/application/read-state/read-state.service'
+import { ShowcaseService } from '../src/application/showcase/showcase.service'
 import { ThreadService } from '../src/application/threads/thread.service'
 import type { AttachmentLimits } from '../src/domain/attachment/attachment'
 import { MicroCache } from '../src/infrastructure/cache/micro-cache'
@@ -111,6 +112,10 @@ export function buildApp(
     },
     report: {
       report: new ReportService(repo, access, threadRepo, moderationRepo, clock),
+      internalToken: opts.internalToken,
+    },
+    showcase: {
+      showcase: new ShowcaseService(repo, threadRepo, clock, () => randomUUID()),
       internalToken: opts.internalToken,
     },
     admin: {

@@ -22,6 +22,7 @@ import type {
   PaymentView,
   ProfileView,
   QuizAttemptResultView,
+  ShowcasePayloadView,
   StudioSubmissionResultView,
   UserView,
 } from '../lib/types'
@@ -48,6 +49,8 @@ export interface ProfileWriteInput {
   name?: string
   avatarUrl?: string | null
   whatsapp?: string | null
+  /** Data de nascimento (`YYYY-MM-DD`) — o auth recusa edição em sessão de perfil. */
+  birthDate?: string | null
 }
 
 /**
@@ -315,6 +318,21 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         { method: 'GET' },
       )
     },
+
+    /**
+     * Payload AUTORITATIVO da vitrine (Mural): título/resumo do admin + capa padrão +
+     * elegibilidade (a criança enviou a entrega). O BFF usa no clique "Publicar no
+     * Mural" — o conteúdo NÃO vem do cliente.
+     */
+    getShowcasePayload(
+      lessonId: string,
+      blockId: string,
+    ): Promise<GatewayResponse<ShowcasePayloadView>> {
+      return gw.gatewayFetch(
+        `/members/lessons/${enc(lessonId)}/blocks/${enc(blockId)}/showcase-payload`,
+        { method: 'GET' },
+      )
+    },
   }
 }
 
@@ -410,6 +428,21 @@ export function createHubClient(gw: GatewayModule, opts: { audience: MembersAudi
     /** Autoriza e resolve a `storageRef` de um anexo (consumido só pela rota de serve). */
     resolveAttachment(id: string): Promise<GatewayResponse<HubResolvedAttachment>> {
       return gw.gatewayFetch(`/hub/attachments/${enc(id)}/resolve`)
+    },
+    /**
+     * Auto-publica um projeto no Mural (em nome da criança). O hub trata como criação
+     * de sistema (bypass staff_only, idempotente pela `idempotencyKey`). Conteúdo já
+     * é autoritativo (vem do members + sessão), não do cliente.
+     */
+    createShowcaseThread(body: {
+      spaceSlug: string
+      authorDisplayName: string
+      title: string
+      summary: string
+      coverImageUrl: string | null
+      idempotencyKey: string
+    }): Promise<GatewayResponse<{ thread: HubThreadView; deduped: boolean }>> {
+      return gw.gatewayFetch('/hub/internal/showcase-thread', { method: 'POST', body })
     },
     report(
       target: 'thread' | 'comment',

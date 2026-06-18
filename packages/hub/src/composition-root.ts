@@ -11,6 +11,7 @@ import { ReportService } from './application/moderation/report.service'
 import { ReactionService } from './application/reactions/reaction.service'
 import { ReadCommunityService } from './application/read-community/read-community.service'
 import { ReadStateService } from './application/read-state/read-state.service'
+import { ShowcaseService } from './application/showcase/showcase.service'
 import { ThreadService } from './application/threads/thread.service'
 import { MicroCache } from './infrastructure/cache/micro-cache'
 import { accessCacheTtlMs, attachmentLimits, type Env } from './infrastructure/config/env'
@@ -130,6 +131,12 @@ export async function createApplication(env: Env): Promise<Application> {
     moderationRepo,
     () => new Date(),
   )
+  const showcaseService = new ShowcaseService(
+    communityRead,
+    threadRepo,
+    () => new Date(),
+    () => randomUUID(),
+  )
   const moderationService = new ModerationService(threadRepo, moderationRepo, () => new Date())
 
   // Readiness (`/readyz`, healthcheck do Railway): só promove a réplica quando o
@@ -168,6 +175,10 @@ export async function createApplication(env: Env): Promise<Application> {
     },
     report: {
       report: reportService,
+      internalToken: env.INTERNAL_API_TOKEN,
+    },
+    showcase: {
+      showcase: showcaseService,
       internalToken: env.INTERNAL_API_TOKEN,
     },
     admin: {

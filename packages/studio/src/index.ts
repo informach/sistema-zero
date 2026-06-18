@@ -24,6 +24,10 @@ export {
   PRO_TEMPLATES,
   type ProTemplate,
 } from './components/code/pro-templates'
+export {
+  type CaptureCoverOptions,
+  captureCoverFromProject,
+} from './cover/coverCapture'
 export { createLocalPersistenceAdapter } from './persistence/local'
 export type { StudioPersistence, StudioPersistenceAdapter } from './persistence/types'
 export { ProjectList, type ProjectListProps } from './projects/ProjectList'

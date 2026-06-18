@@ -48,6 +48,8 @@ export const SpaceBody = t.Object({
   accessConfig: AccessConfigSchema,
   // Ausente → default por audiência (kids = true) no mapper.
   requiresApproval: t.Optional(t.Boolean()),
+  // Aparece bloqueado no menu sem acesso (vitrine). Ausente → false no mapper.
+  teaserWhenLocked: t.Optional(t.Boolean()),
   status: t.Optional(SPACE_STATUS),
 })
 
@@ -103,6 +105,22 @@ export const CreateCommentBody = t.Object({
 
 /** Edição (autor): só o corpo Markdown. */
 export const EditBody = t.Object({ body: MARKDOWN_BODY })
+
+/**
+ * Corpo de `POST /hub/internal/showcase-thread` (BFF → hub, em nome da criança).
+ * Conteúdo é autoritativo (o BFF buscou no members + sessão); o `authorId` vem dos
+ * headers confiáveis do gateway, não do corpo.
+ */
+export const ShowcaseThreadBody = t.Object({
+  spaceSlug: SLUG,
+  authorDisplayName: t.String({ minLength: 1, maxLength: 120 }),
+  title: t.String({ minLength: 1, maxLength: 300 }),
+  summary: MARKDOWN_BODY,
+  coverImageUrl: t.Optional(
+    t.Union([t.String({ maxLength: 2000, pattern: HTTP_URL_PATTERN }), t.Null()]),
+  ),
+  idempotencyKey: t.String({ minLength: 8, maxLength: 200 }),
+})
 
 /** Paginação por cursor opaco (listagem de tópicos). */
 export const ThreadListQuery = t.Object({

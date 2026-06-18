@@ -418,6 +418,7 @@ function SpaceEditButton({
     iconUrl: tree.iconUrl ?? '',
     accessConfig: tree.accessConfig,
     requiresApproval: tree.requiresApproval,
+    teaserWhenLocked: tree.teaserWhenLocked,
     status: tree.status,
   })
 
@@ -434,6 +435,7 @@ function SpaceEditButton({
         iconUrl: form.iconUrl.trim() || null,
         accessConfig: form.accessConfig,
         requiresApproval: form.requiresApproval,
+        teaserWhenLocked: form.teaserWhenLocked,
         status: form.status,
       })
       toast.success('Servidor atualizado.')
@@ -504,6 +506,14 @@ function SpaceEditButton({
               onChange={(e) => setForm((f) => ({ ...f, requiresApproval: e.target.checked }))}
             />
             Exigir aprovação (pré-moderação)
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={form.teaserWhenLocked}
+              onChange={(e) => setForm((f) => ({ ...f, teaserWhenLocked: e.target.checked }))}
+            />
+            Aparecer bloqueado no menu sem acesso (vitrine)
           </label>
         </div>
       </Dialog>

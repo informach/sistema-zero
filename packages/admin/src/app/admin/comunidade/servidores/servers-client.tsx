@@ -44,6 +44,7 @@ interface SpaceForm {
   iconUrl: string
   accessConfig: HubAccessConfig
   requiresApproval: boolean
+  teaserWhenLocked: boolean
   status: 'active' | 'archived'
 }
 
@@ -55,6 +56,7 @@ const emptyForm = (): SpaceForm => ({
   iconUrl: '',
   accessConfig: { ...PUBLIC_ACCESS },
   requiresApproval: false,
+  teaserWhenLocked: false,
   status: 'active',
 })
 
@@ -102,6 +104,7 @@ export function ServersClient({ currentRole }: { currentRole: string }) {
         iconUrl: form.iconUrl.trim() || null,
         accessConfig: form.accessConfig,
         requiresApproval: form.requiresApproval,
+        teaserWhenLocked: form.teaserWhenLocked,
         status: form.status,
       })
       toast.success('Servidor criado.')
@@ -270,6 +273,18 @@ export function ServersClient({ currentRole }: { currentRole: string }) {
             <Switch
               checked={form.requiresApproval}
               onCheckedChange={(requiresApproval) => setForm((f) => ({ ...f, requiresApproval }))}
+            />
+          </label>
+          <label className="flex items-center justify-between gap-3 text-sm">
+            <span>
+              Aparecer bloqueado no menu (vitrine)
+              <span className="block text-xs text-muted-foreground">
+                Sem acesso, o servidor aparece com cadeado e um recado — em vez de sumir.
+              </span>
+            </span>
+            <Switch
+              checked={form.teaserWhenLocked}
+              onCheckedChange={(teaserWhenLocked) => setForm((f) => ({ ...f, teaserWhenLocked }))}
             />
           </label>
         </div>
