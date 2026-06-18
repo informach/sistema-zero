@@ -254,7 +254,7 @@ describe('Members HTTP — consumo do aluno', () => {
 
 describe('Members HTTP — webhooks', () => {
   test('grant assinado concede acesso; reentrega (mesmo delivery) deduplica', async () => {
-    const { app, courses, catalog } = buildApp()
+    const { app, courses, catalog, hubCalls } = buildApp()
     const course = seedSampleCourse(courses)
     catalog.set('offer-x', offerWithCourse('offer-x', course.slug))
     const body = JSON.stringify({ userId: USER, offerRef: 'offer-x', paymentId: 'pay-1' })
@@ -280,6 +280,9 @@ describe('Members HTTP — webhooks', () => {
       }),
     )
     expect((await readJson(r2)).deduped).toBe(true)
+
+    // O hub é notificado UMA vez (no grant); a reentrega deduplicada sai antes do notify.
+    expect(hubCalls).toEqual([{ userId: USER, event: 'grant' }])
   })
 
   test('grant de oferta não resolvida → 502 e NÃO deduplica (retry re-tenta)', async () => {

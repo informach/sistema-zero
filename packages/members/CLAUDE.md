@@ -253,6 +253,18 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   a crash-safety — um crash entre o claim e a conclusão deduparia para sempre uma concessão
   que nunca completou (comprador sem acesso). A idempotência cobre a corrida; o
   marcar-após-sucesso cobre o crash. (Full review 06/2026.)
+- **Notifica o HUB (comunidade) no GRANT** (06/2026): após uma concessão por webhook
+  (`/webhooks/grant`, caminho do funil) E no grant manual do admin, o members chama
+  `POST /hub/webhooks/grant` `{userId, event:'grant'}` — assinado com HMAC (mesmo canônico
+  `<MÉTODO>.<path>.<corpo>` + `GATEWAY_HMAC_SECRET` que o hub verifica) + `x-delivery-id`
+  (uuid) p/ dedupe — DIRETO na rede interna (`HUB_BASE_URL`). É **best-effort** (o
+  `HubGateway`/`createHubHttpGateway` engole erro/timeout e LOGA `hub.notify_*` — a
+  concessão NUNCA falha por causa do hub) e faz o hub invalidar o micro-cache de acesso
+  NA HORA, liberando espaços `community_gated`/`course_gated` sem esperar o TTL (~30s).
+  Sem `HUB_BASE_URL` (dev/local) → `noopHubGateway` (não notifica). ⚠️ **REVOKES** (admin
+  manage + cancel/expire de assinatura) NÃO notificam o hub hoje — a `AdminEntitlementView`
+  não traz `userId` e o revoke de assinatura é set-based (sem userIds); a perda de acesso
+  na comunidade ocorre dentro do TTL do hub (rede de segurança aceita).
 - **Grant de oferta não resolvida** (catálogo 404) → `/webhooks/grant` devolve **502
   `OFFER_UNRESOLVED` e NÃO marca a entrega** (auto-cura uma corrida; uma divergência
   de slug permanente aflora como falhas repetidas em vez de sumir). Oferta resolvida
@@ -588,7 +600,11 @@ obrigatório em prod), `CATALOG_INTERNAL_TOKEN` (= `INTERNAL_API_TOKEN` do catal
 **`CATALOG_BASE_URL=http://catalog.railway.internal:3003`** (default `localhost:3003`; em
 **produção o boot FALHA** se ainda apontar p/ localhost — refine 06/2026, antes quebrava só o
 grant em runtime) e `SENTRY_DSN` (projeto
-`sistema-zero-members` — ver §Sentry). Opcional: `MAX_STUDIO_BODY_BYTES` (default 2 MB — teto
+`sistema-zero-members` — ver §Sentry). **`HUB_BASE_URL`** (opcional; ex.:
+`http://hub.railway.internal:3010`) liga a notificação ao hub no grant (best-effort, assina
+com o `GATEWAY_HMAC_SECRET`; ausente = não notifica, o TTL do hub cobre; em prod, se setado,
+NÃO pode ser localhost — refine) + `HUB_REQUEST_TIMEOUT_MS` (default 4s). Opcional:
+`MAX_STUDIO_BODY_BYTES` (default 2 MB — teto
 de corpo das rotas de Estúdio; ver §Conceito 6) e `DATABASE_SSL` (default `false`; `true` →
 `ssl:'require'` se o Postgres passar a exigir TLS — hoje rede privada sem TLS). No GATEWAY:
 `MEMBERS_URL=http://members.railway.internal:3004` + `MEMBERS_INTERNAL_TOKEN`. Ler tokens dos

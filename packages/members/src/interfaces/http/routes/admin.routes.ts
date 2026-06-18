@@ -7,6 +7,7 @@ import type {
 import type { ListMembersService } from '../../../application/list-members/list-members.service'
 import type { ManageEntitlementService } from '../../../application/manage-entitlement/manage-entitlement.service'
 import { InvalidEntitlementCommandError } from '../../../domain/entitlement/entitlement.errors'
+import type { HubGateway } from '../../../domain/ports/hub-gateway.port'
 import { assertInternalCaller, requireAdmin } from '../auth'
 import {
   GrantEntitlementBody,
@@ -29,6 +30,8 @@ export interface AdminRoutesDeps {
   getMemberDetail: GetMemberDetailService
   grantManual: GrantManualEntitlementService
   manageEntitlement: ManageEntitlementService
+  /** Notifica o hub (comunidade) na concessão manual → invalida o cache de acesso na hora. */
+  hub: HubGateway
 }
 
 /**
@@ -83,6 +86,8 @@ export function adminRoutes(deps: AdminRoutesDeps) {
                 ? { mode: 'all_kids_courses', userId: body.userId, expiresAt }
                 : { mode: 'all_courses', userId: body.userId, expiresAt }
         const result = await deps.grantManual.execute(cmd)
+        // Comunidade: avisa o hub p/ liberar espaços gated na hora (best-effort).
+        await deps.hub.notifyAccessChanged(body.userId, 'grant')
         set.status = 201
         return result
       },

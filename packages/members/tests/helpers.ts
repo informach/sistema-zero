@@ -37,6 +37,7 @@ import { SubmitStudioProjectService } from '../src/application/submit-studio-pro
 import type { CourseAudience, CourseStatus } from '../src/domain/course/course'
 import { EntitlementAggregate } from '../src/domain/entitlement/entitlement.aggregate'
 import type { ResolvedOffer } from '../src/domain/ports/catalog-gateway.port'
+import type { HubGateway } from '../src/domain/ports/hub-gateway.port'
 import type { Env } from '../src/infrastructure/config/env'
 import { createServer } from '../src/interfaces/http/server'
 import {
@@ -89,6 +90,14 @@ export function buildApp(
     logger: silentLogger,
   })
   const revoke = new RevokeEntitlementService({ entitlements, clock, logger: silentLogger })
+
+  // Fake do hub: registra as notificações de mudança de acesso (grant) p/ asserção.
+  const hubCalls: { userId: string; event: string }[] = []
+  const hub: HubGateway = {
+    async notifyAccessChanged(userId, event) {
+      hubCalls.push({ userId, event })
+    },
+  }
 
   const env = {
     NODE_ENV: 'test',
@@ -153,6 +162,7 @@ export function buildApp(
       grant,
       revoke,
       processed,
+      hub,
       webhookSecret: WEBHOOK_SECRET,
       toleranceSeconds: 300,
       now: clock,
@@ -172,6 +182,7 @@ export function buildApp(
         logger: silentLogger,
       }),
       manageEntitlement: new ManageEntitlementService(entitlements, clock),
+      hub,
     },
     content: {
       requireAdminEnabled: opts.requireAdmin ?? false,
@@ -207,6 +218,7 @@ export function buildApp(
     processed,
     catalog,
     clockRef,
+    hubCalls,
   }
 }
 

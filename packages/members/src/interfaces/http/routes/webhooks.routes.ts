@@ -3,6 +3,7 @@ import type { Logger } from '@sistemazero/core/logging'
 import { Elysia } from 'elysia'
 import type { GrantEntitlementService } from '../../../application/grant-entitlement/grant-entitlement.service'
 import type { RevokeEntitlementService } from '../../../application/revoke-entitlement/revoke-entitlement.service'
+import type { HubGateway } from '../../../domain/ports/hub-gateway.port'
 import type { ProcessedWebhookRepository } from '../../../domain/ports/processed-webhook-repository.port'
 import { ValidationError } from '../../../domain/shared/errors'
 import { GrantWebhookBody, SubscriptionWebhookBody } from '../dtos'
@@ -27,6 +28,8 @@ export interface WebhooksRoutesDeps {
   grant: GrantEntitlementService
   revoke: RevokeEntitlementService
   processed: ProcessedWebhookRepository
+  /** Notifica o hub (comunidade) no grant → invalida o cache de acesso na hora. */
+  hub: HubGateway
   webhookSecret: string
   toleranceSeconds: number
   now: () => Date
@@ -102,6 +105,9 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
         }
 
         if (deliveryId) await deps.processed.markProcessed(deliveryId, 'grant')
+        // Comunidade: avisa o hub p/ liberar espaços community_gated/course_gated NA
+        // HORA (best-effort — nunca lança; o TTL do cache de acesso do hub cobre se falhar).
+        await deps.hub.notifyAccessChanged(body.userId, 'grant')
         return { ok: true, granted: result.granted }
       },
       { body: GrantWebhookBody },

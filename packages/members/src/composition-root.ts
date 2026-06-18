@@ -36,6 +36,7 @@ import { SubmitQuizAttemptService } from './application/submit-quiz-attempt/subm
 import { SubmitStudioProjectService } from './application/submit-studio-project/submit-studio-project.service'
 import type { Env } from './infrastructure/config/env'
 import { createCatalogHttpGateway } from './infrastructure/gateways/catalog-http.gateway'
+import { createHubHttpGateway, noopHubGateway } from './infrastructure/gateways/hub-http.gateway'
 import { withSentryMirror } from './infrastructure/observability/sentry'
 import { DrizzleContentAdminRepository } from './infrastructure/persistence/drizzle/content-admin.repository'
 import { DrizzleCourseRepository } from './infrastructure/persistence/drizzle/course.repository'
@@ -102,6 +103,16 @@ export async function createApplication(env: Env): Promise<Application> {
     internalToken: env.CATALOG_INTERNAL_TOKEN,
     logger,
   })
+  // Notificador do hub (comunidade) no grant — best-effort. Sem HUB_BASE_URL (dev/local
+  // ou hub não configurado) cai no no-op; o TTL do micro-cache do hub cobre.
+  const hub = env.HUB_BASE_URL
+    ? createHubHttpGateway({
+        baseUrl: env.HUB_BASE_URL,
+        hmacSecret: env.GATEWAY_HMAC_SECRET,
+        timeoutMs: env.HUB_REQUEST_TIMEOUT_MS,
+        logger,
+      })
+    : noopHubGateway
 
   // Casos de uso do aluno
   const checkAccess = new CheckAccessService(courses, entitlements, clock)
@@ -230,6 +241,7 @@ export async function createApplication(env: Env): Promise<Application> {
       grant,
       revoke,
       processed,
+      hub,
       webhookSecret: env.GATEWAY_HMAC_SECRET,
       toleranceSeconds: env.HMAC_TOLERANCE_SECONDS,
       now: clock,
@@ -242,6 +254,7 @@ export async function createApplication(env: Env): Promise<Application> {
       getMemberDetail,
       grantManual,
       manageEntitlement,
+      hub,
     },
     content: {
       requireAdminEnabled: env.REQUIRE_ADMIN,

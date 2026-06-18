@@ -70,6 +70,13 @@ const EnvSchema = z
     GATEWAY_HMAC_SECRET: z.string().min(16, 'GATEWAY_HMAC_SECRET deve ter ao menos 16 caracteres'),
     HMAC_TOLERANCE_SECONDS: z.coerce.number().int().positive().default(300),
 
+    // Notificação ao HUB (comunidade) quando o acesso muda (grant) → o hub invalida o
+    // micro-cache de acesso na hora, sem esperar o TTL. Chamada S2S DIRETA na rede interna,
+    // assinada com o `GATEWAY_HMAC_SECRET` acima (o hub verifica com ele). OPCIONAL
+    // (ausente = não notifica; o TTL do hub, ~30s, cobre como rede de segurança).
+    HUB_BASE_URL: z.string().url().optional(),
+    HUB_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(4_000),
+
     // Defesa em profundidade da API do ALUNO: o gateway injeta `x-internal-token` com
     // ESTE valor (header-inject) e o members o exige nas rotas do aluno — garante que a
     // chamada veio do gateway (o `x-auth-user-id` confiável só vale se passou por ele).
@@ -127,6 +134,20 @@ const EnvSchema = z
       message:
         'CATALOG_BASE_URL não pode apontar para localhost em produção (defina o host interno, ex.: http://catalog.railway.internal:3003)',
       path: ['CATALOG_BASE_URL'],
+    },
+  )
+  // Mesma régua p/ o HUB_BASE_URL (quando configurado): em produção precisa do host
+  // interno, não localhost. Ausente é OK (notificação é best-effort; o TTL do hub cobre).
+  .refine(
+    (env) => {
+      if (env.NODE_ENV !== 'production' || !env.HUB_BASE_URL) return true
+      const host = new URL(env.HUB_BASE_URL).hostname
+      return host !== 'localhost' && host !== '127.0.0.1' && host !== '::1'
+    },
+    {
+      message:
+        'HUB_BASE_URL não pode apontar para localhost em produção (defina o host interno, ex.: http://hub.railway.internal:3010)',
+      path: ['HUB_BASE_URL'],
     },
   )
 
