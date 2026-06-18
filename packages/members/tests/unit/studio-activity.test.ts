@@ -120,6 +120,36 @@ describe('validateStudioActivityAuthoring', () => {
     expect(validateStudioActivityAuthoring(base([], 100))).toContain('checagem')
   })
 
+  it('nota de corte só com checagens client-trusted (sem structure) → erro', () => {
+    // behavior/testcase/code são reportados pelo cliente e burláveis; um gate sem
+    // structure (recalculada no servidor) seria trivialmente forjável.
+    expect(
+      validateStudioActivityAuthoring(
+        base(
+          [
+            {
+              id: 'b',
+              label: 'x',
+              kind: 'behavior',
+              rule: { type: 'consoleContains', text: 'oi' },
+            },
+          ],
+          100,
+        ),
+      ),
+    ).toContain('estrutura')
+  })
+
+  it('atividade FORMATIVA (sem nota de corte) aceita só checagens client-trusted', () => {
+    expect(
+      validateStudioActivityAuthoring(
+        base([
+          { id: 'b', label: 'x', kind: 'behavior', rule: { type: 'consoleContains', text: 'oi' } },
+        ]),
+      ),
+    ).toBeNull()
+  })
+
   it('id duplicado → erro', () => {
     expect(
       validateStudioActivityAuthoring(

@@ -126,7 +126,10 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    exige aprovação (`STUDIO_GATE_NOT_PASSED`→409); sem nota = só envio. ⚠️ as definições
    (esperados/`code`) VÃO ao aluno (feedback instantâneo) — plataforma formativa; o gate
    confiável é o `structure` server-side. As fixtures do `evaluateStructure*` PRECISAM casar
-   com as do `structure.ts` do studio.
+   com as do `structure.ts` do studio. ⚠️ Como behavior/testcase/code são REPORTADOS pelo
+   cliente (burláveis), `validateStudioActivityAuthoring` EXIGE ≥1 checagem `structure` quando
+   há `passingScore` (gate gated sem structure seria forjável) — espelha "quiz gated precisa
+   de ≥1 questão". Atividade FORMATIVA (sem nota) aceita só checagens client-trusted.
    **PROJETO CONTÍNUO (cadeia, carryover):** o `StudioBlock` tem `chain?: string` (campo no
    jsonb `content` — SEM migration). Aulas com o MESMO `chain` no mesmo curso formam uma
    sequência que constrói um único projeto (ex.: um jogo). `GET /members/lessons/:lessonId/

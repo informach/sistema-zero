@@ -89,7 +89,14 @@ export function evaluateStructureRule(
   }
 }
 
-/** Avalia todas as checagens de estrutura → resultados (verifiedBy: 'server' no servidor). */
+/**
+ * Avalia as checagens de estrutura no CLIENTE (preview do botão "Verificar") →
+ * resultados `verifiedBy:'client'`. NÃO é a fonte da verdade: o servidor (members)
+ * RECALCULA `structure` sobre o IR submetido e sobrescreve com `verifiedBy:'server'`
+ * — é esse recálculo que vale para o gate (anti-fraude), com as MESMAS regras
+ * (`evaluateStructureRule`). Aqui o label é 'client' de propósito (é computado no
+ * cliente); a autoridade é o espelho server-side.
+ */
 export function evaluateStructureChecks(
   ir: SZIR | null,
   blocksState: unknown,

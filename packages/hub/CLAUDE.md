@@ -81,7 +81,12 @@ Linguagem: **TS (ESM)**. Framework HTTP: **Elysia**. Porta **3010**.
    ver/comentar/reagir no Mural exige o produto). Nasce `visible` (decisão: aparece na hora; admin
    oculta/edita-corpo/exclui pela moderação). Idempotente: re-publicar devolve o existente (`deduped`).
    O Mural = 1 space kids `course_gated` + 1 canal `staff_only` (criança não posta livre, só comenta
-   moderado + reage).
+   moderado + reage). ⚠️ **Defesa em profundidade (a rota é alcançável por QUALQUER conta
+   ativa na borda — o BFF publica sem role, então o `x-internal-token` NÃO é fronteira de
+   confiança aqui):** o `ShowcaseService` EXIGE `space.audience === 'kids'` E canal
+   `postingPolicy === 'staff_only'` (senão `PostingNotAllowedError`→403) — barra injeção
+   cross-vitrine (servidores adultos) e em canal de postagem livre. `coverImageUrl` é
+   **https-only** no DTO (parede infantil). NÃO afrouxar esses guards.
 10. **Teaser "visível mas bloqueado" (06/2026):** `spaces.teaser_when_locked`. Quando ligado, um
    servidor que o aluno NÃO acessa aparece na listagem/detalhe com `locked:true` (só nome/ícone/
    descrição) em vez de sumir — `AccessResolutionService.resolveSpaceVisibility` ANOTA em vez de
@@ -265,6 +270,12 @@ Boot: `loadEnv` (fail-fast) → `createApplication` → `start` (listen `::`), c
 `processed_webhooks` num ciclo de 6h sob **advisory xact-lock `51020304050607081`** (único no banco
 compartilhado — members=`30792297…`, payments=`8103081227979411315`; nunca reusar a chave). `/readyz`
 só promove a réplica quando o `select 1` responde.
+
+**Seed dos servidores kids (`scripts/seed-community-spaces.ts`, `bun run db:seed-community`, 06/2026):**
+cria IDEMPOTENTEmente o **Clube dos Criadores** (canal `geral` members) e o **Mural dos Criadores**
+(canal `parede` staff_only) com os SLUGS FIXOS que o community-kids consome — sem eles, clicar no menu
+dá 404 `SPACE_NOT_FOUND`. Nascem `course_gated` (slug = courseRef) + `teaserWhenLocked`; `SEED_PUBLIC=true`
+deixa públicos p/ smoke test. Postgres é privado → rodar via `railway ssh` no serviço hub. Re-rodar é seguro.
 
 ## Testes (31, `bun test`)
 

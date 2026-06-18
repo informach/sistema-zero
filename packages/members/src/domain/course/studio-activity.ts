@@ -225,8 +225,17 @@ export function gradeStudioActivity(
 export function validateStudioActivityAuthoring(activity: LessonActivity): string | null {
   // Atividade COM nota de corte PRECISA de ≥1 checagem (senão a nota é sempre 100
   // e o gate seria vácuo) — espelha o quiz com passingScore sem questões.
-  if (activity.passingScore !== undefined && activity.checks.length === 0) {
-    return 'Uma atividade com nota de corte precisa de ao menos uma checagem'
+  if (activity.passingScore !== undefined) {
+    if (activity.checks.length === 0) {
+      return 'Uma atividade com nota de corte precisa de ao menos uma checagem'
+    }
+    // O gate confiável é o `structure` (recalculado no servidor); behavior/testcase/
+    // code são REPORTADOS pelo cliente (os checkIds vão ao aluno) e burláveis. Uma
+    // atividade GATED sem nenhuma checagem de estrutura teria a aprovação trivialmente
+    // forjável — exige ≥1 `structure` (espelha "quiz gated precisa de ≥1 questão").
+    if (!activity.checks.some((c) => c.kind === 'structure')) {
+      return 'Uma atividade com nota de corte precisa de ao menos uma checagem de estrutura (a única à prova de fraude)'
+    }
   }
   const ids = new Set<string>()
   for (const check of activity.checks) {

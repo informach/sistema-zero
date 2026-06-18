@@ -118,6 +118,58 @@ describe('vitrine (Mural dos Criadores)', () => {
     expect(ok.status).toBe(200)
   })
 
+  test('recusa publicar em servidor ADULTO (defesa em profundidade)', async () => {
+    // A rota é alcançável por qualquer conta ativa na borda; o hub barra spaces não-kids.
+    await ctx.repo.createSpace({
+      slug: 'forum-adulto',
+      name: 'Fórum',
+      description: null,
+      iconUrl: null,
+      audience: 'adult',
+      accessConfig: PUBLIC,
+      requiresApproval: false,
+      teaserWhenLocked: false,
+      status: 'active',
+    })
+    const res = await ctx.app.handle(
+      jsonRequest('POST', '/hub/internal/showcase-thread', {
+        headers: child(randomUUID()),
+        body: showcaseBody({ spaceSlug: 'forum-adulto', idempotencyKey: 'perfil:curso:adulto' }),
+      }),
+    )
+    expect(res.status).toBe(403)
+  })
+
+  test('recusa publicar em canal de postagem livre (não staff_only)', async () => {
+    const sp = await ctx.repo.createSpace({
+      slug: 'mural-aberto',
+      name: 'Aberto',
+      description: null,
+      iconUrl: null,
+      audience: 'kids',
+      accessConfig: PUBLIC,
+      requiresApproval: true,
+      teaserWhenLocked: false,
+      status: 'active',
+    })
+    await ctx.repo.createChannel(sp.id, {
+      slug: 'geral',
+      name: 'Geral',
+      topic: null,
+      accessConfig: null,
+      postingPolicy: 'members',
+      requiresApproval: null,
+      status: 'active',
+    })
+    const res = await ctx.app.handle(
+      jsonRequest('POST', '/hub/internal/showcase-thread', {
+        headers: child(randomUUID()),
+        body: showcaseBody({ spaceSlug: 'mural-aberto', idempotencyKey: 'perfil:curso:aberto' }),
+      }),
+    )
+    expect(res.status).toBe(403)
+  })
+
   test('sem x-internal-token → 401 (chamada interna)', async () => {
     const res = await ctx.app.handle(
       jsonRequest('POST', '/hub/internal/showcase-thread', {

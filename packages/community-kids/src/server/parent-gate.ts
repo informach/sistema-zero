@@ -91,3 +91,19 @@ export function withParentVerifiedOnExit<Ctx>(handler: RouteHandler<Ctx>): Route
     return res
   }
 }
+
+/**
+ * Envolve o `auth/logout`: ao sair da conta, REVOGA o portão dos pais. O cookie
+ * `sz_kids_parent` sobreviveria ao logout — atado ao accountId, não vaza p/ OUTRA
+ * conta, mas a MESMA conta reentrada dentro da janela de 15 min (ex.: a criança
+ * loga por OTP no e-mail dos pais num dispositivo compartilhado) herdaria a gestão
+ * ABERTA sem provar a senha. Logout deve fechar o portão. Limpa SEMPRE (idempotente,
+ * mesmo se o logout falhar).
+ */
+export function withParentClearedOnLogout<Ctx>(handler: RouteHandler<Ctx>): RouteHandler<Ctx> {
+  return async (req: Request, ctx: Ctx) => {
+    const res = await handler(req, ctx)
+    await clearParentVerified()
+    return res
+  }
+}

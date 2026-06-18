@@ -51,10 +51,23 @@ export class ShowcaseService {
   ): Promise<{ thread: ThreadView; deduped: boolean }> {
     const space = await this.read.findActiveSpaceBySlug(cmd.spaceSlug)
     if (!space) throw new SpaceNotFoundError()
+    // ⚠️ Defesa em profundidade: a rota /hub/internal/showcase-thread é alcançável por
+    // QUALQUER conta ativa na borda (o BFF publica em nome da criança, sem role), então
+    // o `x-internal-token` injetado pelo gateway NÃO é uma fronteira de confiança real
+    // aqui — o `spaceSlug` vem do corpo. O hub se defende SOZINHO: a auto-publicação só
+    // vale para o MURAL — um space KIDS cuja parede é um canal `staff_only` (curado pelo
+    // admin). Isso barra injeção cross-vitrine (servidores ADULTOS) e em canais de
+    // postagem livre, onde o bypass de pré-moderação/staff_only seria abuso de moderação.
+    if (space.audience !== 'kids') {
+      throw new PostingNotAllowedError('A vitrine só publica em servidores kids')
+    }
     // O Mural tem UM canal (a parede). Pega o primeiro ativo (menor sortOrder).
     const channels = await this.read.listActiveChannels(space.id)
     const channel = channels[0]
     if (!channel) throw new ChannelNotFoundError()
+    if (channel.postingPolicy !== 'staff_only') {
+      throw new PostingNotAllowedError('A vitrine só publica na parede curada (staff_only)')
+    }
 
     const title = cmd.title.trim()
     const body = cmd.summary.trim()

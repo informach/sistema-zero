@@ -175,7 +175,9 @@ function assertBirthDate(value: string | null, now: Date): void {
   }
   const ageMs = now.getTime() - parsed.getTime()
   const years = ageMs / (365.25 * 24 * 60 * 60 * 1000)
-  if (years > 18) {
+  // Faixa plausível 3–18 (a plataforma Kids é 8–13, com folga). O piso pega o typo
+  // comum de ano corrente / data de poucos meses atrás; o teto barra conta de adulto.
+  if (years < 3 || years > 18) {
     throw new ValidationError('Data de nascimento fora da faixa de idade da plataforma')
   }
 }

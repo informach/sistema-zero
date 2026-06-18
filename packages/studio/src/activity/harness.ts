@@ -119,7 +119,10 @@ export function buildCheckHarness(
     return { passed: false, message: 'regra de comportamento desconhecida' };
   }
   function runTestCase(c) {
-    var fn = window[c.functionName];
+    // readGlobal (não window[...]): funções escritas em modo Código (let/const/
+    // function expression de topo) são globais LÉXICAS e NÃO viram propriedade de
+    // window — pegá-las só por window[...] dava falso-negativo "função não definida".
+    var fn = readGlobal(c.functionName);
     if (typeof fn !== 'function') return { passed: false, message: 'a função "' + c.functionName + '" não foi definida' };
     for (var i = 0; i < c.cases.length; i++) {
       var tc = c.cases[i];

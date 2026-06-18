@@ -24,6 +24,10 @@ const HTTP_URL_PATTERN = '^https?://'
 const NULLABLE_URL = t.Optional(
   t.Union([t.String({ maxLength: 2000, pattern: HTTP_URL_PATTERN }), t.Null()]),
 )
+// A capa da vitrine é renderizada como `<img src>` numa parede INFANTIL → só https
+// (sem `http://` mixed-content). O conteúdo é produzido pelo BFF (URL pública do R2
+// ou capa padrão do admin); o pino de esquema é a defesa de borda do hub.
+const HTTPS_URL_PATTERN = '^https://'
 
 // accessConfig: a coerência (course_gated exige cursos; role_gated exige cargos) é
 // reforçada no service — aqui aceitamos arrays opcionais (default [] no mapper).
@@ -117,7 +121,7 @@ export const ShowcaseThreadBody = t.Object({
   title: t.String({ minLength: 1, maxLength: 300 }),
   summary: MARKDOWN_BODY,
   coverImageUrl: t.Optional(
-    t.Union([t.String({ maxLength: 2000, pattern: HTTP_URL_PATTERN }), t.Null()]),
+    t.Union([t.String({ maxLength: 2000, pattern: HTTPS_URL_PATTERN }), t.Null()]),
   ),
   idempotencyKey: t.String({ minLength: 8, maxLength: 200 }),
 })
