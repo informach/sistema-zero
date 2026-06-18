@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import { isParentVerifiedFor } from '@/server/parent-gate'
 import { listReadonly } from '@/server/profiles'
 import { getSession } from '@/server/session'
 import { PerfisClient } from './perfis-client'
@@ -16,7 +17,15 @@ export default async function PerfisPage() {
   if (!session) redirect('/login')
   const res = await listReadonly()
   const profiles = res.status === 200 ? (res.body?.profiles ?? []) : []
+  const isProfileSession = Boolean(session.activeProfile)
+  // Sessão da conta com o portão já aberto (senha verificada há pouco) → a Área
+  // dos pais abre sem re-pedir a senha (ex.: logo após sair de um perfil).
+  const parentVerified = !isProfileSession && (await isParentVerifiedFor(session.id))
   return (
-    <PerfisClient initialProfiles={profiles} isProfileSession={Boolean(session.activeProfile)} />
+    <PerfisClient
+      initialProfiles={profiles}
+      isProfileSession={isProfileSession}
+      parentVerified={parentVerified}
+    />
   )
 }

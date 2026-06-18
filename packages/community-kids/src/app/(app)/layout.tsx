@@ -22,8 +22,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // SOMENTE-LEITURA (layout é Server Component: refresh/escrita de cookie aqui
   // LANÇA — "Cookies can only be modified in a Server Action or Route Handler").
   // Access expirado/gateway fora → 401 → header cai no fallback de iniciais.
-  // Gamificação segue a mesma régua: best-effort, 401 → widget some.
-  const [me, gam] = await Promise.all([getMeReadonly(), getGamificationReadonly()])
+  // Gamificação segue a mesma régua: best-effort, 401 → widget some. `withRanking`
+  // traz a colocação no ranking p/ o menu/rodapé do avatar (substitui o e-mail).
+  const [me, gam] = await Promise.all([
+    getMeReadonly(),
+    getGamificationReadonly({ withRanking: true }),
+  ])
   const avatarUrl = me.status === 200 ? (me.body?.user?.avatarUrl ?? null) : null
   const gamification = gam.status === 200 ? (gam.body ?? null) : null
   // Em sessão de PERFIL (estilo Netflix) a CRIANÇA deve se ver em toda a navegação:

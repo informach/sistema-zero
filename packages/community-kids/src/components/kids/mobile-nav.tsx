@@ -28,7 +28,7 @@ export function MobileTopbar({
       </Link>
       <div className="flex items-center gap-3">
         {gamification ? <StreakWidget gamification={gamification} compact /> : null}
-        <UserMenu user={user} />
+        <UserMenu user={user} gamification={gamification} />
       </div>
     </header>
   )

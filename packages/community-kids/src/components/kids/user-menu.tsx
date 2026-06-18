@@ -5,20 +5,24 @@ import { LogOut, Moon, Sun, User, Users } from 'lucide-react'
 import Link from 'next/link'
 import { useTheme } from 'next-themes'
 import { useEffect, useRef, useState } from 'react'
-import type { SessionUserWithAvatar } from '@/lib/types'
+import { profileMenuSubtitle } from '@/lib/gamification-label'
+import type { GamificationMeView, SessionUserWithAvatar } from '@/lib/types'
 import { getUserDisplayName } from '@/lib/user-display'
 
 /**
- * Menu do avatar: cabeçalho com foto + nome + e-mail, itens Meu perfil/Mudar
- * tema e Sair. SEM "Compras" (decisão da v1 kids: a compra é do RESPONSÁVEL —
- * histórico financeiro não aparece na área da criança). Dropdown custom;
- * `direction="up"` abre PARA CIMA (rodapé da sidebar do desktop).
+ * Menu do avatar: cabeçalho com foto + nome + colocação no ranking/XP (NÃO o
+ * e-mail dos pais — decisão 06/2026), itens Meu perfil/Mudar tema e Sair. SEM
+ * "Compras" (decisão da v1 kids: a compra é do RESPONSÁVEL — histórico financeiro
+ * não aparece na área da criança). Dropdown custom; `direction="up"` abre PARA
+ * CIMA (rodapé da sidebar do desktop).
  */
 export function UserMenu({
   user,
+  gamification = null,
   direction = 'down',
 }: {
   user: SessionUserWithAvatar
+  gamification?: GamificationMeView | null
   direction?: 'up' | 'down'
 }) {
   const [open, setOpen] = useState(false)
@@ -54,8 +58,9 @@ export function UserMenu({
     'flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm transition-colors hover:bg-muted'
 
   // Em sessão de PERFIL o `user` já chega com a identidade da CRIANÇA (o layout
-  // troca nome/foto pelo perfil ativo). Aqui só rotulamos o subtítulo do cabeçalho.
+  // troca nome/foto pelo perfil ativo). O subtítulo mostra ranking/XP (não o e-mail).
   const isProfile = Boolean(user.activeProfile)
+  const subtitle = profileMenuSubtitle(gamification, isProfile)
 
   return (
     <div className="relative" ref={ref}>
@@ -92,9 +97,9 @@ export function UserMenu({
               <p className="truncate font-semibold text-sm">
                 {getUserDisplayName(user.firstName, user.lastName, user.email)}
               </p>
-              <p className="truncate text-muted-foreground text-xs">
-                {isProfile ? 'Perfil de criança' : user.email}
-              </p>
+              {subtitle ? (
+                <p className="truncate text-muted-foreground text-xs">{subtitle}</p>
+              ) : null}
             </div>
           </div>
           {/* Voltar à grade de perfis (trocar de criança / abrir a área dos pais). */}

@@ -18,22 +18,26 @@ type Editing = { mode: 'create' } | { mode: 'edit'; profile: ProfileView } | nul
 
 /**
  * Grade de perfis estilo Netflix. **Selecionar** entra no perfil (1 clique, sem
- * PIN) → emite a sessão de perfil e recarrega a home. **Área dos pais** abre a
- * gestão: numa sessão de perfil, pede a SENHA do responsável (sai para a conta);
- * numa sessão da conta, gerencia direto (criar/editar/arquivar/foto). O limite de
- * perfis é do plano — criar acima dele devolve 409 (toast).
+ * PIN) → emite a sessão de perfil e recarrega a home. **Área dos pais** SEMPRE pede
+ * a SENHA do responsável (decisão 06/2026 — a criança pode estar numa sessão da
+ * conta): numa sessão de perfil o submit SAI do perfil (`/api/profile-session/exit`);
+ * numa sessão da conta VERIFICA a senha (`/api/parents/verify`) e abre o portão. Se
+ * o portão já está aberto (`parentVerified`), gerencia direto. O limite de perfis é
+ * do plano — criar acima dele devolve 409 (toast).
  */
 export function PerfisClient({
   initialProfiles,
   isProfileSession,
+  parentVerified,
 }: {
   initialProfiles: ProfileView[]
   isProfileSession: boolean
+  parentVerified: boolean
 }) {
   const [profiles, setProfiles] = useState(initialProfiles)
   const [managing, setManaging] = useState(false)
   const [busy, setBusy] = useState(false)
-  const [gate, setGate] = useState(false) // modal de senha (sair do perfil)
+  const [gate, setGate] = useState(false) // modal de senha (abrir a área dos pais)
   const [changingPassword, setChangingPassword] = useState(false) // modal: trocar senha da conta
   const [editing, setEditing] = useState<Editing>(null)
 
@@ -50,9 +54,13 @@ export function PerfisClient({
   }
 
   function openParentArea() {
-    // Gerenciar exige sessão da CONTA. Numa sessão de perfil, pede a senha (sair).
-    if (isProfileSession) setGate(true)
-    else setManaging(true)
+    // Portão já aberto (senha verificada há pouco) → gerencia direto.
+    if (parentVerified) {
+      setManaging(true)
+      return
+    }
+    // Caso contrário, SEMPRE pede a senha (a criança pode estar logada na conta).
+    setGate(true)
   }
 
   async function exitToParent(password: string) {
@@ -64,7 +72,23 @@ export function PerfisClient({
     })
     setBusy(false)
     if (res.ok) {
-      window.location.replace('/perfis') // recarrega como sessão da conta → gestão liberada
+      window.location.replace('/perfis') // recarrega como sessão da conta (portão aberto)
+      return
+    }
+    toast.error(res.status === 401 ? 'Senha incorreta.' : 'Não foi possível abrir a área dos pais.')
+  }
+
+  async function verifyParent(password: string) {
+    setBusy(true)
+    const res = await fetch('/api/parents/verify', {
+      method: 'POST',
+      headers: JSON_HEADERS,
+      body: JSON.stringify({ password }),
+    })
+    setBusy(false)
+    if (res.ok) {
+      setGate(false)
+      setManaging(true) // portão aberto no servidor (cookie) → libera a gestão
       return
     }
     toast.error(res.status === 401 ? 'Senha incorreta.' : 'Não foi possível abrir a área dos pais.')
@@ -201,7 +225,13 @@ export function PerfisClient({
       </div>
 
       {gate ? (
-        <ParentGate busy={busy} onCancel={() => setGate(false)} onConfirm={exitToParent} />
+        // Sessão de perfil → sai do perfil (volta à conta, valida a senha no auth);
+        // sessão de conta → verifica a senha e abre o portão sem recarregar.
+        <ParentGate
+          busy={busy}
+          onCancel={() => setGate(false)}
+          onConfirm={isProfileSession ? exitToParent : verifyParent}
+        />
       ) : null}
       {changingPassword ? (
         <ParentPasswordChange onCancel={() => setChangingPassword(false)} />

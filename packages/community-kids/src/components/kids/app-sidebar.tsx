@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/cn'
+import { profileMenuSubtitle } from '@/lib/gamification-label'
 import type { GamificationMeView, SessionUserWithAvatar } from '@/lib/types'
 import { KidsLogo } from './kids-logo'
 import { NAV_ITEMS } from './nav'
@@ -74,10 +75,16 @@ export function AppSidebar({
           !gamification && 'mt-auto',
         )}
       >
-        <UserMenu user={user} direction="up" />
+        <UserMenu user={user} gamification={gamification} direction="up" />
         <div className="min-w-0 flex-1">
           <p className="truncate font-semibold text-sm">{user.firstName || 'Aluno'}</p>
-          <p className="truncate text-muted-foreground text-xs">{user.email}</p>
+          {(() => {
+            // Ranking/XP no lugar do e-mail do responsável (decisão 06/2026).
+            const subtitle = profileMenuSubtitle(gamification, Boolean(user.activeProfile))
+            return subtitle ? (
+              <p className="truncate text-muted-foreground text-xs">{subtitle}</p>
+            ) : null
+          })()}
         </div>
       </div>
     </aside>

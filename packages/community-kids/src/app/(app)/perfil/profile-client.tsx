@@ -156,9 +156,17 @@ function IdentityCard({
                 <span className="font-bold [font-family:var(--font-display)]">
                   {ranking.position}º lugar
                 </span>
-                <span className="text-muted-foreground">no ranking</span>
+                <span className="text-muted-foreground">
+                  no ranking{ranking.totalStudents ? ` de ${ranking.totalStudents}` : ''}
+                </span>
               </p>
-            ) : null}
+            ) : (
+              // Sem colocação ainda (sem XP / vitrine sem ranking) → convite, não vazio.
+              <p className="mt-1.5 flex items-center gap-1.5 text-muted-foreground text-sm">
+                <Trophy className="size-4 shrink-0" />
+                <span>Continue praticando para entrar no ranking!</span>
+              </p>
+            )}
           </div>
           <input
             ref={fileInputRef}
