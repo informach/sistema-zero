@@ -23,6 +23,7 @@ import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { CatalogTabs } from '@/components/admin/catalog-tabs'
 import { StatusBadge } from '@/components/admin/status-badge'
+import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { type OfferItemDraft, OfferItemsEditor } from '@/components/catalog/offer-items-editor'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { formatCents, reaisToCents } from '@/lib/format'
@@ -280,11 +281,7 @@ export function OffersClient() {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow>
-                <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
-                  <Spinner className="mx-auto" />
-                </TableCell>
-              </TableRow>
+              <TableSkeletonRows columns={6} />
             ) : items.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
