@@ -66,10 +66,12 @@ export function renderLessonMarkdown(src: string): string {
     }
     // Título: bloco de UMA linha começando com #, ##, ### (escapado vira &#35;? não:
     // `#` não é caractere especial de HTML, então sobrevive ao escape).
-    const heading = lines.length === 1 ? lines[0].match(/^(#{1,3})\s+(.*)$/) : null
+    const heading = lines.length === 1 ? (lines[0] ?? '').match(/^(#{1,3})\s+(.*)$/) : null
     if (heading) {
-      const tag = HEADING_TAG[heading[1].length]
-      html.push(`<${tag} class="font-semibold text-sz-fg">${renderInline(heading[2])}</${tag}>`)
+      const tag = HEADING_TAG[(heading[1] ?? '').length]
+      html.push(
+        `<${tag} class="font-semibold text-sz-fg">${renderInline(heading[2] ?? '')}</${tag}>`,
+      )
       continue
     }
     // Parágrafo: quebras simples viram <br>.
