@@ -71,9 +71,10 @@ function sanitizeFulfillment(spec: FulfillmentSpec | null): FulfillmentSpec | nu
     typeof spec.maxProfiles === 'number' && spec.maxProfiles >= 1
       ? { maxProfiles: Math.min(Math.trunc(spec.maxProfiles), MAX_KIDS_PROFILES) }
       : {}
-  if (spec.accessType === 'all_courses') {
+  // Chaves-mestra (adulta ou kids): não levam curso vinculado.
+  if (spec.accessType === 'all_courses' || spec.accessType === 'all_kids_courses') {
     return {
-      accessType: 'all_courses',
+      accessType: spec.accessType,
       ...(spec.release ? { release: spec.release } : {}),
       ...maxProfiles,
     }

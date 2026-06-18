@@ -10,7 +10,8 @@ export const MAX_KIDS_PROFILES = 50
 
 const ACCESS_TYPES: { value: AccessType; label: string }[] = [
   { value: 'course', label: 'Um curso específico' },
-  { value: 'all_courses', label: 'Todos os cursos (atuais e futuros)' },
+  { value: 'all_courses', label: 'Todos os cursos adultos (atuais e futuros)' },
+  { value: 'all_kids_courses', label: 'Todos os cursos kids (atuais e futuros)' },
 ]
 
 const RELEASE_MODES: { value: ReleaseMode; label: string }[] = [
@@ -61,8 +62,8 @@ export function FulfillmentEditor({
   }
 
   function setAccessType(accessType: AccessType) {
-    // Chave-mestra não leva curso vinculado.
-    update({ accessType, ...(accessType === 'all_courses' ? { courseRef: undefined } : {}) })
+    // Chave-mestra (adulta ou kids) não leva curso vinculado.
+    update({ accessType, ...(accessType !== 'course' ? { courseRef: undefined } : {}) })
   }
 
   function setReleaseMode(mode: ReleaseMode) {
@@ -111,8 +112,9 @@ export function FulfillmentEditor({
         </Field>
       ) : (
         <p className="text-muted-foreground text-sm">
-          O comprador ganha acesso a todos os cursos publicados — inclusive os lançados depois da
-          compra. Nenhuma configuração extra.
+          O comprador ganha acesso a todos os cursos{' '}
+          {spec.accessType === 'all_kids_courses' ? 'kids' : 'adultos'} publicados — inclusive os
+          lançados depois da compra. Nenhuma configuração extra.
         </p>
       )}
 
