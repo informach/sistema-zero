@@ -1,6 +1,7 @@
 import {
   LessonNotFoundError,
   QuizGateNotPassedError,
+  StudioGateNotPassedError,
   StudioGateNotSubmittedError,
 } from '../../domain/course/course.errors'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
@@ -67,15 +68,21 @@ export class MarkLessonCompleteService {
         if (!allPassed) throw new QuizGateNotPassedError()
       }
 
-      // Mesmo gate do quiz, para o bloco Estúdio: a aula só conclui depois que o
-      // aluno ENVIA o projeto (qualquer bloco studio sem entrega → 409).
-      const gatedStudioIds = lesson.blocks
-        .filter((b) => b.content.kind === 'studio')
-        .map((b) => b.id)
-      if (gatedStudioIds.length > 0) {
-        const submitted = await this.studioSubmissions.listSubmittedBlockIds(userId, gatedStudioIds)
-        if (!gatedStudioIds.every((id) => submitted.has(id))) {
-          throw new StudioGateNotSubmittedError()
+      // Gate do bloco Estúdio: sem atividade (ou atividade sem nota de corte) =
+      // exige ENVIO (igual à fase 1). Atividade COM `passingScore` = exige
+      // APROVAÇÃO (passed_at sticky), espelhando o gate do quiz.
+      const studioBlocks = lesson.blocks.filter((b) => b.content.kind === 'studio')
+      if (studioBlocks.length > 0) {
+        const states = await this.studioSubmissions.summarizeByBlockIds(
+          userId,
+          studioBlocks.map((b) => b.id),
+        )
+        for (const b of studioBlocks) {
+          const state = states.get(b.id)
+          if (!state) throw new StudioGateNotSubmittedError()
+          const gated =
+            b.content.kind === 'studio' && b.content.activity?.passingScore !== undefined
+          if (gated && !state.passed) throw new StudioGateNotPassedError()
         }
       }
     }

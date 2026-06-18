@@ -6,7 +6,7 @@
  */
 
 // Tipos do editor embarcável (bloco `studio`) — type-only (erasado em runtime).
-import type { BlockLevel, IDEMode, Project } from '@sistemazero/studio'
+import type { BlockLevel, CheckResult, IDEMode, LessonActivity, Project } from '@sistemazero/studio'
 
 // ── Sessão / usuário (claims do JWT do auth) ────────────────────────────────
 
@@ -252,6 +252,8 @@ export interface StudioBlock {
   allowCategories?: string[]
   allowedModes?: IDEMode[]
   allowLevelReveal?: boolean
+  /** Atividade com auto-correção (fase 2). Vai ao aluno (feedback instantâneo). */
+  activity?: LessonActivity
 }
 export type LessonBlockContent =
   | RichTextBlock
@@ -277,11 +279,20 @@ export interface StudioStateView {
   submitted: boolean
   /** ISO da última entrega; `null` se ainda não enviou. */
   submittedAt: string | null
+  /** Nota da última correção (atividade); `null` sem atividade ou sem entrega. */
+  lastScore?: number | null
+  /** Atingiu a nota de corte (sticky). */
+  passed?: boolean
 }
 
 /** `POST /members/lessons/:lessonId/blocks/:blockId/studio-submission`. */
 export interface StudioSubmissionResultView {
   submittedAt: string
+  /** Auto-correção (presentes só quando o bloco tem atividade). */
+  score?: number
+  passed?: boolean
+  results?: CheckResult[]
+  gamification?: GamificationDelta | null
 }
 
 /** Correção por questão — devolvida SÓ pelo submit do quiz. */

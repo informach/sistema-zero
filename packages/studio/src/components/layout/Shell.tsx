@@ -7,6 +7,7 @@ import { useProjectStore } from '../../state/projectStore'
 import { useUIStore } from '../../state/uiStore'
 import { useStudioConfig } from '../../studio/config'
 import { StudioLayoutProvider, useStudioWidth } from '../../studio/layoutContext'
+import { ActivityPanel } from './ActivityPanel'
 import { BottomPanel } from './BottomPanel'
 import { useVisibleBottomTabs } from './bottomTabs'
 import { ConvertLegacyPrompt } from './ConvertLegacyPrompt'
@@ -82,7 +83,14 @@ export function Shell({ onExit, canToggleTheme }: ShellProps): JSX.Element {
                   debounced e refs começam já com o conteúdo do novo projeto, sem
                   mostrar/renderizar o projeto anterior no primeiro instante. */}
                   <Panel id="sz-editor" order={1} defaultSize={70} minSize={30}>
+                    {/* ActivityPanel é self-gating (null sem atividade): no
+                        <StudioEditor> e nas aulas sem exercício não acrescenta
+                        DOM, então o split do editor fica idêntico ao de antes.
+                        Quando a fase de auto-correção ligar a atividade, a raiz
+                        do modo é `w-full` — envolver o ModeArea em `flex-1 min-w-0`
+                        para ele dividir a largura com o painel (`w-72 shrink-0`). */}
                     <div key={projectId} className="flex h-full min-h-0 w-full">
+                      <ActivityPanel />
                       <ModeArea projectMode={projectMode} projectId={projectId} />
                     </div>
                   </Panel>

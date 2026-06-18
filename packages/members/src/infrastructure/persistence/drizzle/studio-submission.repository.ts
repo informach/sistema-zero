@@ -1,7 +1,10 @@
 import { and, asc, eq, inArray } from 'drizzle-orm'
+import type { StudioCheckResult } from '../../../domain/course/studio-activity'
 import type {
+  StudioSubmissionDetail,
   StudioSubmissionRecord,
   StudioSubmissionRepository,
+  StudioSubmissionState,
   StudioSubmissionSummary,
 } from '../../../domain/ports/studio-submission-repository.port'
 import type { Database } from './db'
@@ -11,45 +14,102 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
   constructor(private readonly db: Database) {}
 
   async upsert(submission: StudioSubmissionRecord): Promise<void> {
-    // Reenvio = último vence: atualiza o projeto + a data, preservando a linha
-    // (e o id) já existente. UNIQUE (user_id, block_id).
+    // Reenvio = último vence: atualiza projeto + data + correção, preservando a
+    // linha (e o id). `passed_at` é STICKY — o service já calcula o valor a
+    // gravar (existente ?? agora-se-passou), então o set abaixo só persiste.
+    const values = {
+      ...submission,
+      score: submission.score ?? null,
+      results: submission.results ?? null,
+      checkedAt: submission.checkedAt ?? null,
+      passedAt: submission.passedAt ?? null,
+    }
     await this.db
       .insert(studioSubmissions)
-      .values(submission)
+      .values(values)
       .onConflictDoUpdate({
         target: [studioSubmissions.userId, studioSubmissions.blockId],
-        set: { project: submission.project, submittedAt: submission.submittedAt },
+        set: {
+          project: values.project,
+          submittedAt: values.submittedAt,
+          score: values.score,
+          results: values.results,
+          checkedAt: values.checkedAt,
+          passedAt: values.passedAt,
+        },
       })
   }
 
-  async listSubmittedBlockIds(userId: string, blockIds: string[]): Promise<Set<string>> {
-    if (blockIds.length === 0) return new Set()
+  async summarizeByBlockIds(
+    userId: string,
+    blockIds: string[],
+  ): Promise<Map<string, StudioSubmissionState>> {
+    if (blockIds.length === 0) return new Map()
     const rows = await this.db
-      .select({ blockId: studioSubmissions.blockId })
+      .select({
+        blockId: studioSubmissions.blockId,
+        submittedAt: studioSubmissions.submittedAt,
+        score: studioSubmissions.score,
+        passedAt: studioSubmissions.passedAt,
+      })
       .from(studioSubmissions)
       .where(
         and(eq(studioSubmissions.userId, userId), inArray(studioSubmissions.blockId, blockIds)),
       )
-    return new Set(rows.map((r) => r.blockId))
+    const map = new Map<string, StudioSubmissionState>()
+    for (const r of rows) {
+      map.set(r.blockId, {
+        submittedAt: r.submittedAt,
+        score: r.score ?? null,
+        passed: r.passedAt != null,
+      })
+    }
+    return map
   }
 
   async listByBlock(blockId: string): Promise<StudioSubmissionSummary[]> {
-    return this.db
-      .select({ userId: studioSubmissions.userId, submittedAt: studioSubmissions.submittedAt })
+    const rows = await this.db
+      .select({
+        userId: studioSubmissions.userId,
+        submittedAt: studioSubmissions.submittedAt,
+        score: studioSubmissions.score,
+        checkedAt: studioSubmissions.checkedAt,
+        passedAt: studioSubmissions.passedAt,
+      })
       .from(studioSubmissions)
       .where(eq(studioSubmissions.blockId, blockId))
       .orderBy(asc(studioSubmissions.submittedAt))
+    return rows.map((r) => ({
+      userId: r.userId,
+      submittedAt: r.submittedAt,
+      score: r.score ?? null,
+      checkedAt: r.checkedAt ?? null,
+      passed: r.passedAt != null,
+    }))
   }
 
-  async getOne(
-    userId: string,
-    blockId: string,
-  ): Promise<{ project: unknown; submittedAt: Date } | null> {
+  async getOne(userId: string, blockId: string): Promise<StudioSubmissionDetail | null> {
     const rows = await this.db
-      .select({ project: studioSubmissions.project, submittedAt: studioSubmissions.submittedAt })
+      .select({
+        project: studioSubmissions.project,
+        submittedAt: studioSubmissions.submittedAt,
+        score: studioSubmissions.score,
+        results: studioSubmissions.results,
+        checkedAt: studioSubmissions.checkedAt,
+        passedAt: studioSubmissions.passedAt,
+      })
       .from(studioSubmissions)
       .where(and(eq(studioSubmissions.userId, userId), eq(studioSubmissions.blockId, blockId)))
       .limit(1)
-    return rows[0] ?? null
+    const row = rows[0]
+    if (!row) return null
+    return {
+      project: row.project,
+      submittedAt: row.submittedAt,
+      score: row.score ?? null,
+      results: (row.results as StudioCheckResult[] | null) ?? null,
+      checkedAt: row.checkedAt ?? null,
+      passedAt: row.passedAt ?? null,
+    }
   }
 }

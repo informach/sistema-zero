@@ -1,3 +1,5 @@
+import type { LessonActivity } from './studio-activity'
+
 /**
  * Conteúdo de uma aula é uma lista ORDENADA de blocos tipados. Uma aula "composta"
  * (ex.: vídeo + interativo + texto) é simplesmente uma aula com vários blocos. Cada
@@ -143,6 +145,13 @@ export interface StudioBlock {
   allowedModes?: StudioMode[]
   /** Aluno pode revelar blocos avançados (default true). */
   allowLevelReveal?: boolean
+  /**
+   * Atividade com auto-correção (fase 2). Ausente = bloco só de entrega (gate =
+   * enviou). Com `passingScore` = gate por nota (ver mark-lesson-complete). As
+   * definições vão ao aluno (feedback instantâneo); só `structure` é recalculado
+   * no servidor (correção híbrida). Ver `studio-activity.ts`.
+   */
+  activity?: LessonActivity
 }
 
 /** União discriminada por `kind` — o conteúdo guardado na coluna `lesson_blocks.content`. */

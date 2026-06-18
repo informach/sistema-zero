@@ -752,9 +752,20 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
   const studioSubmit = {
     POST: async (req: Request, ctx: { params: Promise<{ lessonId: string; blockId: string }> }) => {
       const { lessonId, blockId } = await ctx.params
-      const project = extractStudioProject(await req.json().catch(() => null))
+      const raw = await req.json().catch(() => null)
+      const project = extractStudioProject(raw)
       if (!project) return invalidInput()
-      const { status, body } = await members.submitStudioProject(lessonId, blockId, project)
+      // Resultados das checagens rodadas no cliente (correção híbrida). Repassa como
+      // veio; o members revalida o shape (DTO) e RECALCULA a estrutura no servidor.
+      const results = Array.isArray((raw as { results?: unknown })?.results)
+        ? (raw as { results?: unknown[] }).results
+        : undefined
+      const { status, body } = await members.submitStudioProject(
+        lessonId,
+        blockId,
+        project,
+        results,
+      )
       return NextResponse.json(body ?? { ok: status === 200 }, { status })
     },
   }

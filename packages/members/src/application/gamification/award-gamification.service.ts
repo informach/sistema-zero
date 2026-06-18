@@ -79,6 +79,24 @@ export class AwardGamificationService {
     return this.award(input.userId, input.accountId, input.audience, events, input.privileged)
   }
 
+  async awardStudioPassed(input: {
+    userId: string
+    /** CONTA do responsável (sessão de perfil). Default → userId no caller. */
+    accountId: string
+    blockId: string
+    score: number
+    /** Vitrine do CURSO — TODA a gamificação é segregada por audiência. */
+    audience: CourseAudience
+    privileged: boolean
+  }): Promise<GamificationDeltaView | null> {
+    // Mesma régua do quiz aprovado (base + bônus por nota); fonte distinta no
+    // ledger (`studio_passed`) → idempotente por bloco, independente do quiz.
+    const events: XpEventInput[] = [
+      { sourceType: 'studio_passed', sourceId: input.blockId, amount: quizPassedXp(input.score) },
+    ]
+    return this.award(input.userId, input.accountId, input.audience, events, input.privileged)
+  }
+
   private async award(
     userId: string,
     accountId: string,

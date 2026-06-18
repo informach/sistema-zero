@@ -5,7 +5,7 @@ import type { Project, StudioFeatures, StudioHandle } from '@sistemazero/studio'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { type RefObject, useEffect, useState } from 'react'
 
-type StudioComponent = typeof import('@sistemazero/studio')['Studio']
+type StudioComponent = typeof import('@sistemazero/studio')['StudioLesson']
 
 interface Props {
   /** Projeto inicial; ausente → cria um vazio (autoria de bloco novo). */
@@ -31,7 +31,7 @@ export function StudioEmbed({
   features,
   className = 'h-[32rem]',
 }: Props) {
-  const [Studio, setStudio] = useState<StudioComponent | null>(null)
+  const [StudioLesson, setStudioLesson] = useState<StudioComponent | null>(null)
   const [seed, setSeed] = useState<Project | null>(initialProject ?? null)
 
   useEffect(() => {
@@ -39,7 +39,7 @@ export function StudioEmbed({
     void (async () => {
       const mod = await import('@sistemazero/studio')
       if (!active) return
-      setStudio(() => mod.Studio)
+      setStudioLesson(() => mod.StudioLesson)
       setSeed(
         (prev) =>
           prev ?? initialProject ?? mod.createEmptyProject(crypto.randomUUID(), defaultName),
@@ -50,7 +50,7 @@ export function StudioEmbed({
     }
   }, [initialProject, defaultName])
 
-  if (!Studio || !seed) {
+  if (!StudioLesson || !seed) {
     return (
       <div className={className}>
         <div className="flex h-full items-center justify-center gap-2 rounded-lg border border-border bg-muted text-sm text-muted-foreground">
@@ -62,11 +62,13 @@ export function StudioEmbed({
 
   return (
     <div className={`${className} overflow-hidden rounded-lg border border-border bg-muted`}>
-      <Studio
+      {/* StudioLesson já aplica os defaults restritos (terminal/IA/profissional/
+          export OFF); `features` undefined cai neles. */}
+      <StudioLesson
         ref={handleRef}
         initialProject={seed}
         persistence="none"
-        features={features ?? { terminal: false, ai: false, professional: false, export: false }}
+        features={features}
         blockUnloadWhenDirty={false}
       />
     </div>

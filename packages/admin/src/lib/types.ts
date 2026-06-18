@@ -5,7 +5,11 @@
  */
 
 // Tipos do editor embarcável (bloco `studio`) — type-only (erasado em runtime).
-import type { BlockLevel, IDEMode, Project } from '@sistemazero/studio'
+// As atividades (auto-correção) reusam os tipos PÚBLICOS do @sistemazero/studio
+// (sem mirror próprio — evita drift; o members tem o espelho do lado servidor).
+import type { BlockLevel, CheckResult, IDEMode, LessonActivity, Project } from '@sistemazero/studio'
+
+export type { ActivityCheck, CheckResult, LessonActivity } from '@sistemazero/studio'
 
 export interface SessionUser {
   id: string
@@ -260,6 +264,8 @@ export interface StudioBlock {
   allowCategories?: string[]
   allowedModes?: IDEMode[]
   allowLevelReveal?: boolean
+  /** Atividade com auto-correção (fase 2). Ausente = bloco só de entrega. */
+  activity?: LessonActivity
 }
 export type LessonBlockContent =
   | RichTextBlock
@@ -277,12 +283,21 @@ export interface StudioSubmissionRow {
   submittedAt: string
   name: string | null
   email: string | null
+  /** Correção automática (atividade): nota/aprovado; `null` sem atividade. */
+  score: number | null
+  checkedAt: string | null
+  passed: boolean
 }
 
-/** Projeto enviado por um aluno (abrir no Estúdio embutido do admin). */
+/** Projeto enviado por um aluno (abrir no Estúdio embutido do admin) + correção. */
 export interface StudioSubmissionDetailView {
   project: Project
   submittedAt: string
+  score: number | null
+  /** Resultado por checagem (`verifiedBy`: server recalculado × client reportado). */
+  results: CheckResult[] | null
+  checkedAt: string | null
+  passed: boolean
 }
 
 export interface BlockView {

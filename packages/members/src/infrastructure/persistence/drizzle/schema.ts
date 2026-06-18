@@ -277,6 +277,15 @@ export const studioSubmissions = members.table(
     /** Snapshot `Project` do Estúdio enviado pelo aluno (importável no Estúdio do professor). */
     project: jsonb('project').$type<unknown>().notNull(),
     submittedAt: timestamp('submitted_at', { withTimezone: true }).notNull(),
+    // ── Auto-correção (fase 2; null quando o bloco não tem atividade) ──────────
+    /** Nota 0–100 da última entrega gradeada. */
+    score: integer('score'),
+    /** Resultado por checagem (StudioCheckResult[] — server+client). */
+    results: jsonb('results').$type<unknown>(),
+    /** Quando a correção rodou. */
+    checkedAt: timestamp('checked_at', { withTimezone: true }),
+    /** STICKY: 1ª vez que atingiu a nota de corte (gate "aprovou uma vez = destrava"). */
+    passedAt: timestamp('passed_at', { withTimezone: true }),
   },
   (t) => [
     uniqueIndex('studio_submissions_user_block_uq').on(t.userId, t.blockId),
@@ -313,6 +322,8 @@ export const xpSourceTypeEnum = members.enum('xp_source_type', [
   // curso 100% (course-complete/-2/-3) e quiz com nota 100 (quiz-perfect/-10/-30).
   'course_complete',
   'quiz_perfect',
+  // Atividade do Estúdio aprovada (auto-correção, fase 2) — XP, não é marco.
+  'studio_passed',
 ])
 
 // Perfil agregado (1 linha por aluno POR VITRINE — XP/streak kids e adult são

@@ -380,6 +380,69 @@ const StudioProjectSchema = t.Object(
   },
   { additionalProperties: true },
 )
+// ── Atividade com auto-correção (fase 2) ────────────────────────────────────
+// Base de toda checagem. Valores esperados (testcase/globalEquals) são `Unknown`
+// (dados opacos echoados ao cliente; o teto de tamanho é do corpo/jsonb).
+const ActivityCheckBase = {
+  id: t.String({ minLength: 1, maxLength: 64 }),
+  label: t.String({ minLength: 1, maxLength: 200 }),
+  hint: t.Optional(t.String({ maxLength: 1000 })),
+  weight: t.Optional(t.Number({ exclusiveMinimum: 0 })),
+}
+const StructureRuleSchema = t.Union([
+  t.Object({ type: t.Literal('usesLoop') }),
+  t.Object({
+    type: t.Literal('declaresVariable'),
+    name: t.String({ minLength: 1, maxLength: 80 }),
+  }),
+  t.Object({ type: t.Literal('definesFunction'), name: t.String({ minLength: 1, maxLength: 80 }) }),
+  t.Object({ type: t.Literal('callsFunction'), name: t.String({ minLength: 1, maxLength: 80 }) }),
+  t.Object({ type: t.Literal('usesBlock'), blockType: t.String({ minLength: 1, maxLength: 80 }) }),
+])
+const BehaviorRuleSchema = t.Union([
+  t.Object({ type: t.Literal('consoleContains'), text: t.String({ maxLength: 2000 }) }),
+  t.Object({ type: t.Literal('domSelectorExists'), selector: t.String({ maxLength: 500 }) }),
+  t.Object({
+    type: t.Literal('domSelectorText'),
+    selector: t.String({ maxLength: 500 }),
+    text: t.String({ maxLength: 2000 }),
+  }),
+  t.Object({
+    type: t.Literal('globalEquals'),
+    name: t.String({ maxLength: 80 }),
+    value: t.Unknown(),
+  }),
+])
+const ActivityCheckSchema = t.Union([
+  t.Object({ ...ActivityCheckBase, kind: t.Literal('structure'), rule: StructureRuleSchema }),
+  t.Object({ ...ActivityCheckBase, kind: t.Literal('behavior'), rule: BehaviorRuleSchema }),
+  t.Object({
+    ...ActivityCheckBase,
+    kind: t.Literal('testcase'),
+    functionName: t.String({ minLength: 1, maxLength: 80 }),
+    cases: t.Array(
+      t.Object({
+        id: t.Optional(t.String({ maxLength: 64 })),
+        args: t.Array(t.Unknown(), { maxItems: 20 }),
+        expected: t.Unknown(),
+      }),
+      {
+        maxItems: 50,
+      },
+    ),
+  }),
+  t.Object({
+    ...ActivityCheckBase,
+    kind: t.Literal('code'),
+    source: t.String({ maxLength: 20_000 }),
+  }),
+])
+const StudioActivitySchema = t.Object({
+  instructions: t.String({ maxLength: 20_000 }),
+  checks: t.Array(ActivityCheckSchema, { maxItems: 50 }),
+  passingScore: t.Optional(t.Integer({ minimum: 0, maximum: 100 })),
+})
+
 /** Bloco Estúdio: editor pré-configurado embutido na aula (ver domain/course/lesson-block.ts). */
 const StudioBlockSchema = t.Object({
   kind: t.Literal('studio'),
@@ -389,6 +452,7 @@ const StudioBlockSchema = t.Object({
   allowCategories: t.Optional(t.Array(t.String({ maxLength: 80 }), { maxItems: 100 })),
   allowedModes: t.Optional(t.Array(StudioModeSchema, { maxItems: 3 })),
   allowLevelReveal: t.Optional(t.Boolean()),
+  activity: t.Optional(StudioActivitySchema),
 })
 
 export const LessonBlockContentSchema = t.Union([
@@ -407,8 +471,18 @@ export const StudioSubmissionParams = t.Object({ lessonId: UUID, blockId: UUID }
 /** Params da rota admin de UMA entrega (por bloco + aluno). `id` = blockId. */
 export const AdminStudioSubmissionParams = t.Object({ id: UUID, userId: UUID })
 
+/** Resultado reportado pelo cliente p/ uma checagem (correção híbrida). */
+const ClientCheckResultSchema = t.Object({
+  checkId: t.String({ maxLength: 64 }),
+  passed: t.Boolean(),
+  message: t.Optional(t.String({ maxLength: 2000 })),
+})
 /** Corpo de `POST /members/lessons/:lessonId/blocks/:blockId/studio-submission` (aluno). */
-export const StudioSubmissionBody = t.Object({ project: StudioProjectSchema })
+export const StudioSubmissionBody = t.Object({
+  project: StudioProjectSchema,
+  /** Resultados das checagens rodadas no cliente (behavior/testcase/code). */
+  results: t.Optional(t.Array(ClientCheckResultSchema, { maxItems: 50 })),
+})
 
 /** Corpo de `POST/PATCH /members/admin/...blocks`. */
 export const BlockBody = t.Object({ content: LessonBlockContentSchema })

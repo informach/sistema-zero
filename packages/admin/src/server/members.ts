@@ -189,15 +189,32 @@ export function deleteAttachment(id: string): Promise<GatewayResponse<unknown>> 
 
 // ── Entregas do Estúdio (acompanhamento do professor) ──
 /** Lista as entregas de um bloco de estúdio: `GET /members/admin/blocks/:id/studio-submissions`. */
-export function listStudioSubmissions(
-  blockId: string,
-): Promise<GatewayResponse<{ submissions: { userId: string; submittedAt: string }[] }>> {
+export function listStudioSubmissions(blockId: string): Promise<
+  GatewayResponse<{
+    submissions: {
+      userId: string
+      submittedAt: string
+      score: number | null
+      checkedAt: string | null
+      passed: boolean
+    }[]
+  }>
+> {
   return gatewayFetch(`/members/admin/blocks/${enc(blockId)}/studio-submissions`)
 }
-/** Projeto de UMA entrega: `GET /members/admin/blocks/:id/studio-submissions/:userId`. */
+/** Projeto + correção de UMA entrega: `GET /members/admin/blocks/:id/studio-submissions/:userId`. */
 export function getStudioSubmission(
   blockId: string,
   userId: string,
-): Promise<GatewayResponse<{ project: unknown; submittedAt: string }>> {
+): Promise<
+  GatewayResponse<{
+    project: unknown
+    submittedAt: string
+    score: number | null
+    results: unknown
+    checkedAt: string | null
+    passed: boolean
+  }>
+> {
   return gatewayFetch(`/members/admin/blocks/${enc(blockId)}/studio-submissions/${enc(userId)}`)
 }

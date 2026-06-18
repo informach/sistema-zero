@@ -18,7 +18,7 @@ interface Props {
   studioState: StudioStateView | null
 }
 
-type StudioComponent = typeof import('@sistemazero/studio')['Studio']
+type StudioComponent = typeof import('@sistemazero/studio')['StudioLesson']
 
 /**
  * Bloco Estúdio: renderiza o @sistemazero/studio pré-configurado pelo admin (versão
@@ -36,13 +36,19 @@ export function StudioBlockView({ blockId, content, studioState }: Props) {
   // Id estável por bloco — o autosave local retoma o WIP no mesmo navegador.
   const projectId = `sz-lesson-studio:${blockId}`
 
-  const [Studio, setStudio] = useState<StudioComponent | null>(null)
+  const [StudioLesson, setStudioLesson] = useState<StudioComponent | null>(null)
   const [seed, setSeed] = useState<Project | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(studioState?.submitted ?? false)
   const [submittedAt, setSubmittedAt] = useState<string | null>(studioState?.submittedAt ?? null)
+  const [score, setScore] = useState<number | null>(studioState?.lastScore ?? null)
+  const [passed, setPassed] = useState<boolean>(studioState?.passed ?? false)
+  const [xp, setXp] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [fullscreen, setFullscreen] = useState(false)
+
+  const activity = content.activity
+  const passingScore = activity?.passingScore
 
   const handleRef = useRef<StudioHandle | null>(null)
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -54,7 +60,7 @@ export function StudioBlockView({ blockId, content, studioState }: Props) {
     void (async () => {
       const mod = await import('@sistemazero/studio')
       if (!active) return
-      setStudio(() => mod.Studio)
+      setStudioLesson(() => mod.StudioLesson)
       const existing = await mod
         .createLocalPersistenceAdapter()
         .load(projectId)
@@ -87,13 +93,22 @@ export function StudioBlockView({ blockId, content, studioState }: Props) {
     setSubmitting(true)
     setError(null)
     try {
+      // Resultado da auto-correção rodada no editor (correção híbrida): o servidor
+      // RECALCULA a estrutura e registra estes p/ comportamento/teste/código.
+      const run = handleRef.current?.getActivityResult() ?? null
+      const results = run
+        ? run.results.map((r) => ({ checkId: r.checkId, passed: r.passed, message: r.message }))
+        : undefined
       const res = await apiSend<StudioSubmissionResultView>(
         `/api/members/lessons/${encodeURIComponent(lessonId)}/blocks/${encodeURIComponent(blockId)}/studio-submission`,
         'POST',
-        { project },
+        activity ? { project, results } : { project },
       )
       setSubmitted(true)
       setSubmittedAt(res.submittedAt)
+      if (res.score !== undefined) setScore(res.score)
+      if (res.passed !== undefined) setPassed(res.passed)
+      setXp(res.gamification?.xpAwarded ?? null)
       // Destrava o "Concluir aula" (gate do backend) → re-render da página.
       player?.refreshAfterStudio?.()
     } catch (err) {
@@ -106,9 +121,9 @@ export function StudioBlockView({ blockId, content, studioState }: Props) {
     } finally {
       setSubmitting(false)
     }
-  }, [lessonId, blockId, player])
+  }, [lessonId, blockId, player, activity])
 
-  const ready = Studio !== null && seed !== null
+  const ready = StudioLesson !== null && seed !== null
 
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4">
@@ -134,7 +149,9 @@ export function StudioBlockView({ blockId, content, studioState }: Props) {
         )}
       >
         {ready ? (
-          <Studio
+          // StudioLesson já desliga terminal/IA/profissional/export; aqui o
+          // aluno corta também as extensões (editor enxuto na aula).
+          <StudioLesson
             ref={handleRef}
             initialProject={seed as Project}
             persistence="local"
@@ -143,13 +160,8 @@ export function StudioBlockView({ blockId, content, studioState }: Props) {
             allowCategories={content.allowCategories}
             allowedModes={content.allowedModes}
             allowLevelReveal={content.allowLevelReveal}
-            features={{
-              terminal: false,
-              ai: false,
-              professional: false,
-              export: false,
-              extensions: false,
-            }}
+            activity={content.activity}
+            features={{ extensions: false }}
             blockUnloadWhenDirty={false}
           />
         ) : (
@@ -160,6 +172,23 @@ export function StudioBlockView({ blockId, content, studioState }: Props) {
       </div>
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
+
+      {/* Nota da auto-correção (quando o bloco tem atividade). O feedback POR
+          checagem é instantâneo no painel do editor (botão "Verificar"). */}
+      {activity && score !== null ? (
+        <p className="inline-flex flex-wrap items-center gap-2 text-sm">
+          <span className="font-medium">Sua nota: {score}/100</span>
+          {passingScore !== undefined ? (
+            <span className={passed ? 'text-accent dark:text-primary' : 'text-muted-foreground'}>
+              {passed
+                ? '· você atingiu a nota mínima'
+                : `· precisa de ${passingScore} para concluir`}
+            </span>
+          ) : null}
+          {xp ? <span className="text-accent dark:text-primary">· +{xp} XP</span> : null}
+        </p>
+      ) : null}
+
       {submitted ? (
         <p className="inline-flex items-center gap-2 text-sm text-accent dark:text-primary">
           <CheckCircle2 className="size-4" />
@@ -168,7 +197,9 @@ export function StudioBlockView({ blockId, content, studioState }: Props) {
         </p>
       ) : (
         <p className="text-xs text-muted-foreground">
-          Envie seu projeto ao professor para poder concluir a aula.
+          {passingScore !== undefined
+            ? 'Use "Verificar" no editor e envie ao professor — atinja a nota mínima para concluir a aula.'
+            : 'Envie seu projeto ao professor para poder concluir a aula.'}
         </p>
       )}
     </div>

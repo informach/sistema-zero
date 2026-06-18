@@ -150,6 +150,7 @@ export async function createApplication(env: Env): Promise<Application> {
     checkAccess,
     courses,
     studioSubmissions,
+    awardGamification,
     () => randomUUID(),
     clock,
   )

@@ -29,8 +29,33 @@ export type { StudioPersistence, StudioPersistenceAdapter } from './persistence/
 export { ProjectList, type ProjectListProps } from './projects/ProjectList'
 export type { ProjectSummary } from './state/persistence'
 export type { StudioLimits } from './state/projectStore'
+export type {
+  ActivityCheck,
+  ActivityCheckBase,
+  ActivityCheckKind,
+  ActivityRunResult,
+  BehaviorCheck,
+  BehaviorRule,
+  CheckResult,
+  CheckVerifiedBy,
+  CodeCheck,
+  JsonValue,
+  LessonActivity,
+  StructureCheck,
+  StructureRule,
+  TestCaseCheck,
+} from './studio/activity'
 export type { StudioAIConfig, StudioFeatures } from './studio/config'
 export { prefetchStudioModes } from './studio/prefetch'
+/** @deprecated Use {@link StudioEditor} ou {@link StudioLesson}. */
 export { Studio } from './studio/Studio'
+export { StudioEditor } from './studio/StudioEditor'
+export { StudioLesson } from './studio/StudioLesson'
 export type { StudioTheme } from './studio/theme'
-export type { StudioHandle, StudioLocale, StudioProps } from './studio/types'
+export type {
+  StudioEditorProps,
+  StudioHandle,
+  StudioLessonProps,
+  StudioLocale,
+  StudioProps,
+} from './studio/types'

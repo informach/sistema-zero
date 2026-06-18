@@ -4,7 +4,7 @@ import {
   type Project,
   ProjectList,
   prefetchStudioModes,
-  Studio,
+  StudioEditor,
 } from '@sistemazero/studio'
 import type { JSX } from 'react'
 import { useEffect, useMemo, useState } from 'react'
@@ -74,7 +74,7 @@ function EditorScreen({
   }
   const isPro = state.project.kind === 'pro'
   return (
-    <Studio
+    <StudioEditor
       initialProject={state.project}
       onExit={onExit}
       // Experiência completa no playground (defaults embarcados: terminal/IA OFF).
@@ -100,10 +100,10 @@ function DualView(): JSX.Element {
   return (
     <div className="grid h-full grid-cols-2 gap-2 p-2" style={{ background: '#333' }}>
       <div className="h-full min-h-0 overflow-hidden rounded">
-        <Studio initialProject={a} theme="dark" />
+        <StudioEditor initialProject={a} theme="dark" />
       </div>
       <div className="h-full min-h-0 overflow-hidden rounded">
-        <Studio initialProject={b} theme="light" />
+        <StudioEditor initialProject={b} theme="light" />
       </div>
     </div>
   )

@@ -40,9 +40,10 @@ function downloadProjectJson(project: Project): void {
 export function StudioSubmissionsDialog({ blockId, open, onClose }: Props) {
   const [loading, setLoading] = useState(false)
   const [rows, setRows] = useState<StudioSubmissionRow[]>([])
-  const [selected, setSelected] = useState<{ row: StudioSubmissionRow; project: Project } | null>(
-    null,
-  )
+  const [selected, setSelected] = useState<{
+    row: StudioSubmissionRow
+    detail: StudioSubmissionDetailView
+  } | null>(null)
   const [opening, setOpening] = useState<string | null>(null)
   // Handle exigido pelo StudioEmbed; na inspeção é só leitura (não usamos getProject).
   const viewerRef = useRef<StudioHandle | null>(null)
@@ -75,7 +76,7 @@ export function StudioSubmissionsDialog({ blockId, open, onClose }: Props) {
         const res = await apiGet<StudioSubmissionDetailView>(
           `/api/members/blocks/${blockId}/studio-submissions/${row.userId}`,
         )
-        setSelected({ row, project: res.project })
+        setSelected({ row, detail: res })
       } catch (err) {
         toast.error((err as ApiError).message ?? 'Falha ao abrir a entrega.')
       } finally {
@@ -103,15 +104,46 @@ export function StudioSubmissionsDialog({ blockId, open, onClose }: Props) {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => downloadProjectJson(selected.project)}
+              onClick={() => downloadProjectJson(selected.detail.project)}
             >
               <Download className="size-4" /> Baixar .szproject.json
             </Button>
           </div>
+
+          {/* Correção automática (atividade). Sem atividade → score null, omite. */}
+          {selected.detail.score !== null ? (
+            <Card className="space-y-2 p-3">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <span>Correção automática: {selected.detail.score}/100</span>
+                <span className={selected.detail.passed ? 'text-success' : 'text-destructive'}>
+                  {selected.detail.passed ? '· aprovado' : '· não aprovado'}
+                </span>
+              </div>
+              {selected.detail.results?.length ? (
+                <ul className="flex flex-col gap-1">
+                  {selected.detail.results.map((r) => (
+                    <li key={r.checkId} className="flex items-start gap-2 text-xs">
+                      <span className={r.passed ? 'text-success' : 'text-destructive'} aria-hidden>
+                        {r.passed ? '✓' : '✗'}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        {r.checkId}
+                        {r.message ? ` — ${r.message}` : ''}
+                      </span>
+                      <span className="shrink-0 text-muted-foreground">
+                        {r.verifiedBy === 'server' ? 'servidor' : 'cliente'}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </Card>
+          ) : null}
+
           {/* key por aluno: remonta o editor (re-semeia) ao trocar de entrega. */}
           <StudioEmbed
             key={selected.row.userId}
-            initialProject={selected.project}
+            initialProject={selected.detail.project}
             handleRef={viewerRef}
             features={{
               terminal: false,
@@ -135,7 +167,20 @@ export function StudioSubmissionsDialog({ blockId, open, onClose }: Props) {
           {rows.map((r) => (
             <Card key={r.userId} className="flex items-center justify-between gap-3 p-3">
               <div className="min-w-0">
-                <div className="truncate text-sm font-medium">{studentName(r)}</div>
+                <div className="flex items-center gap-2">
+                  <span className="truncate text-sm font-medium">{studentName(r)}</span>
+                  {r.score !== null ? (
+                    <span
+                      className={`shrink-0 rounded px-1.5 py-0.5 text-xs ${
+                        r.passed
+                          ? 'bg-success/15 text-success-foreground'
+                          : 'bg-muted text-muted-foreground'
+                      }`}
+                    >
+                      {r.score}/100
+                    </span>
+                  ) : null}
+                </div>
                 <div className="truncate text-xs text-muted-foreground">
                   Enviado em {new Date(r.submittedAt).toLocaleString('pt-BR')}
                 </div>

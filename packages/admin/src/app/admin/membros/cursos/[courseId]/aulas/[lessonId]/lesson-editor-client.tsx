@@ -9,7 +9,13 @@ import {
   useSensors,
 } from '@dnd-kit/core'
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
-import type { BlockLevel, IDEMode, Project, StudioHandle } from '@sistemazero/studio'
+import type {
+  BlockLevel,
+  IDEMode,
+  LessonActivity,
+  Project,
+  StudioHandle,
+} from '@sistemazero/studio'
 import { Badge } from '@sistemazero/ui/badge'
 import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
@@ -41,6 +47,7 @@ import {
   type LessonBlockKind,
   type LessonContentView,
 } from '@/lib/types'
+import { ActivityBuilder, EMPTY_ACTIVITY, validateStudioActivity } from './activity-builder'
 import { QuizBuilder, type QuizValue, validateQuiz } from './quiz-builder'
 import { StudioSubmissionsDialog } from './studio-submissions-dialog'
 
@@ -116,6 +123,8 @@ interface BlockForm {
    * não ser APAGADA ao editar+salvar um bloco que a tenha (seed/import; achado do review).
    */
   studioAllowBlocks: string[]
+  /** Estúdio: atividade com auto-correção (fase 2). Vazia = bloco só de entrega. */
+  studioActivity: LessonActivity
 }
 
 const EMPTY_BLOCK: BlockForm = {
@@ -137,6 +146,7 @@ const EMPTY_BLOCK: BlockForm = {
   studioModes: ['blocks', 'bridge', 'code'],
   studioAllowReveal: true,
   studioAllowBlocks: [],
+  studioActivity: EMPTY_ACTIVITY,
 }
 
 const num = (s: string): number | undefined => (s.trim() ? Number(s) : undefined)
@@ -146,8 +156,11 @@ const opt = (s: string): string | undefined => (s.trim() ? s.trim() : undefined)
 function buildContent(f: BlockForm, studioProject?: Project): LessonBlockContent {
   const dur = num(f.durationSeconds)
   switch (f.kind) {
-    case 'studio':
+    case 'studio': {
       // `studioProject` é garantido não-nulo no saveBlock (validação antes de chamar).
+      // Atividade só entra se tiver checagens OU enunciado (atividade vazia = omitida).
+      const hasActivity =
+        f.studioActivity.checks.length > 0 || f.studioActivity.instructions.trim() !== ''
       return {
         kind: 'studio',
         initialProject: studioProject as Project,
@@ -158,7 +171,9 @@ function buildContent(f: BlockForm, studioProject?: Project): LessonBlockContent
           ? { allowedModes: f.studioModes }
           : {}),
         allowLevelReveal: f.studioAllowReveal,
+        ...(hasActivity ? { activity: f.studioActivity } : {}),
       }
+    }
     case 'rich_text':
       return {
         kind: 'rich_text',
@@ -213,11 +228,14 @@ function validateBlock(f: BlockForm): string | null {
       return f.html.trim() ? null : 'Escreva o HTML do conteúdo interativo.'
     case 'ebook':
       return f.pdfUrl.trim() ? null : 'Envie o PDF do e-book antes de salvar.'
-    case 'studio':
+    case 'studio': {
       // O projeto inicial vem do editor embutido (validado no saveBlock). Aqui só
       // barramos "zero modos" — que, omitido no payload, viraria "todos liberados"
       // (o OPOSTO da intenção do autor; achado do review).
-      return f.studioModes.length > 0 ? null : 'Selecione ao menos um modo do Estúdio.'
+      if (f.studioModes.length === 0) return 'Selecione ao menos um modo do Estúdio.'
+      // Atividade (auto-correção): coerência espelhando o members.
+      return validateStudioActivity(f.studioActivity)
+    }
     default:
       return null
   }
@@ -345,6 +363,7 @@ export function LessonEditorClient({
           : ['blocks', 'bridge', 'code'],
       studioAllowReveal: c.kind === 'studio' ? (c.allowLevelReveal ?? true) : true,
       studioAllowBlocks: c.kind === 'studio' ? (c.allowBlocks ?? []) : [],
+      studioActivity: c.kind === 'studio' ? (c.activity ?? EMPTY_ACTIVITY) : EMPTY_ACTIVITY,
     })
     setBlockOpen(true)
   }
@@ -867,6 +886,15 @@ export function LessonEditorClient({
                   }
                   handleRef={studioHandleRef}
                   features={{ terminal: false, ai: false, professional: false, export: false }}
+                />
+              </Field>
+              <Field
+                label="Atividade (auto-correção)"
+                hint="Opcional. Defina checagens que o editor corrige na hora; com nota de corte, viram gate da aula. Só 'estrutura' é reverificada no servidor."
+              >
+                <ActivityBuilder
+                  value={blockForm.studioActivity}
+                  onChange={(studioActivity) => setBlockForm((f) => ({ ...f, studioActivity }))}
                 />
               </Field>
             </div>

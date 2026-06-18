@@ -138,6 +138,7 @@ export function buildApp(
         checkAccess,
         courses,
         studioSubmissions,
+        awardGamification,
         () => randomUUID(),
         clock,
       ),

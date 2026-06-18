@@ -60,8 +60,10 @@ import type {
   QuizAttemptRepository,
 } from '../../src/domain/ports/quiz-attempt-repository.port'
 import type {
+  StudioSubmissionDetail,
   StudioSubmissionRecord,
   StudioSubmissionRepository,
+  StudioSubmissionState,
   StudioSubmissionSummary,
 } from '../../src/domain/ports/studio-submission-repository.port'
 import type { VideoPositionRepository } from '../../src/domain/ports/video-position-repository.port'
@@ -803,7 +805,7 @@ export class InMemoryQuizAttemptRepository implements QuizAttemptRepository {
 export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepository {
   readonly submissions: StudioSubmissionRecord[] = []
 
-  /** Upsert por (user, block) — reenvio sobrescreve o projeto + a data. */
+  /** Upsert por (user, block) — reenvio sobrescreve projeto/data/correção. */
   async upsert(submission: StudioSubmissionRecord): Promise<void> {
     const existing = this.submissions.find(
       (s) => s.userId === submission.userId && s.blockId === submission.blockId,
@@ -811,33 +813,63 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
     if (existing) {
       existing.project = submission.project
       existing.submittedAt = submission.submittedAt
+      existing.score = submission.score ?? null
+      existing.results = submission.results ?? null
+      existing.checkedAt = submission.checkedAt ?? null
+      existing.passedAt = submission.passedAt ?? null
     } else {
-      this.submissions.push({ ...submission })
+      this.submissions.push({
+        ...submission,
+        score: submission.score ?? null,
+        results: submission.results ?? null,
+        checkedAt: submission.checkedAt ?? null,
+        passedAt: submission.passedAt ?? null,
+      })
     }
   }
 
-  async listSubmittedBlockIds(userId: string, blockIds: string[]): Promise<Set<string>> {
+  async summarizeByBlockIds(
+    userId: string,
+    blockIds: string[],
+  ): Promise<Map<string, StudioSubmissionState>> {
     const set = new Set(blockIds)
-    return new Set(
-      this.submissions
-        .filter((s) => s.userId === userId && set.has(s.blockId))
-        .map((s) => s.blockId),
-    )
+    const map = new Map<string, StudioSubmissionState>()
+    for (const s of this.submissions) {
+      if (s.userId !== userId || !set.has(s.blockId)) continue
+      map.set(s.blockId, {
+        submittedAt: s.submittedAt,
+        score: s.score ?? null,
+        passed: s.passedAt != null,
+      })
+    }
+    return map
   }
 
   async listByBlock(blockId: string): Promise<StudioSubmissionSummary[]> {
     return this.submissions
       .filter((s) => s.blockId === blockId)
       .sort((a, b) => a.submittedAt.getTime() - b.submittedAt.getTime())
-      .map((s) => ({ userId: s.userId, submittedAt: s.submittedAt }))
+      .map((s) => ({
+        userId: s.userId,
+        submittedAt: s.submittedAt,
+        score: s.score ?? null,
+        checkedAt: s.checkedAt ?? null,
+        passed: s.passedAt != null,
+      }))
   }
 
-  async getOne(
-    userId: string,
-    blockId: string,
-  ): Promise<{ project: unknown; submittedAt: Date } | null> {
+  async getOne(userId: string, blockId: string): Promise<StudioSubmissionDetail | null> {
     const s = this.submissions.find((x) => x.userId === userId && x.blockId === blockId)
-    return s ? { project: s.project, submittedAt: s.submittedAt } : null
+    return s
+      ? {
+          project: s.project,
+          submittedAt: s.submittedAt,
+          score: s.score ?? null,
+          results: s.results ?? null,
+          checkedAt: s.checkedAt ?? null,
+          passedAt: s.passedAt ?? null,
+        }
+      : null
   }
 }
 

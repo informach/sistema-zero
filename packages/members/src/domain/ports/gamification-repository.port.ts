@@ -12,6 +12,8 @@ export type XpSourceType =
   | 'unit_complete'
   | 'course_complete'
   | 'quiz_perfect'
+  // Atividade do Estúdio aprovada (auto-correção, fase 2). XP igual ao quiz.
+  | 'studio_passed'
 
 export interface XpEventInput {
   sourceType: XpSourceType

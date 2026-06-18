@@ -289,15 +289,16 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       )
     },
 
-    /** Entrega o projeto do Estúdio (mesmo JSON do "Exportar projeto"). */
+    /** Entrega o projeto do Estúdio + resultados reportados pelo cliente (correção híbrida). */
     submitStudioProject(
       lessonId: string,
       blockId: string,
       project: unknown,
+      results?: unknown,
     ): Promise<GatewayResponse<StudioSubmissionResultView>> {
       return gw.gatewayFetch(
         `/members/lessons/${enc(lessonId)}/blocks/${enc(blockId)}/studio-submission`,
-        { method: 'POST', body: { project } },
+        { method: 'POST', body: results === undefined ? { project } : { project, results } },
       )
     },
   }

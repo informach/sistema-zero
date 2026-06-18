@@ -111,9 +111,22 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    barravam o oversize, as rotas de aluno caíam em 422 confuso com `{}`).
    **bloqueia a conclusão da aula até enviar** (`STUDIO_GATE_NOT_SUBMITTED`→409, espelha o
    gate do quiz — ver mark-lesson-complete). A projeção member-facing anexa
-   `studioState {submitted, submittedAt}` (como o `quizState`). Admin acompanha em
-   `GET /members/admin/blocks/:id/studio-submissions[/:userId]` (lista + projeto inteiro p/
-   abrir no Estúdio do professor). Sem nota.
+   `studioState {submitted, submittedAt, lastScore?, passed?}` (como o `quizState`). Admin
+   acompanha em `GET /members/admin/blocks/:id/studio-submissions[/:userId]` (lista + projeto
+   inteiro + nota/resultado p/ abrir no Estúdio do professor).
+   **AUTO-CORREÇÃO (fase 2, migration `0016`):** o `StudioBlock` ganha `activity?`
+   (enunciado + `checks[]` união `structure`/`behavior`/`testcase`/`code` + `passingScore?`)
+   — `domain/course/studio-activity.ts` (PURO: `gradeStudioActivity`/`evaluateStructureRule`/
+   `validateStudioActivityAuthoring`, espelha `quiz.ts`). **Correção HÍBRIDA:** o cliente
+   (@sistemazero/studio) roda TUDO e manda `results` no submit; o servidor **RECALCULA só
+   `structure`** andando o IR submetido (`verifiedBy:'server'`) e REGISTRA o reportado p/
+   behavior/testcase/code (`verifiedBy:'client'`) — só `structure` é à prova de fraude.
+   Colunas novas em `studio_submissions`: `score`/`results`/`checked_at`/`passed_at` (STICKY).
+   Award `studio_passed` (XP = quiz, idempotente por bloco). Gate: `activity.passingScore`
+   exige aprovação (`STUDIO_GATE_NOT_PASSED`→409); sem nota = só envio. ⚠️ as definições
+   (esperados/`code`) VÃO ao aluno (feedback instantâneo) — plataforma formativa; o gate
+   confiável é o `structure` server-side. As fixtures do `evaluateStructure*` PRECISAM casar
+   com as do `structure.ts` do studio.
 7. **Quiz é corrigido NO SERVIDOR** (`quiz_attempts` guarda o histórico; score 0–100 por
    conjunto EXATO de choices). O GET da aula **NUNCA envia o gabarito** — a projeção
    member-facing (`toMemberFacingQuizContent`) remove `correctChoiceIds`/`explanation`

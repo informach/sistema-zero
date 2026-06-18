@@ -248,11 +248,15 @@ export interface QuizStateView {
   retryAvailableAt: string | null
 }
 
-/** Estado da entrega do aluno num bloco de estúdio (já enviou? quando?). */
+/** Estado da entrega do aluno num bloco de estúdio (já enviou? quando? nota?). */
 export interface StudioStateView {
   submitted: boolean
   /** ISO da última entrega; `null` se ainda não enviou. */
   submittedAt: string | null
+  /** Nota da última correção (atividade); `null` sem atividade ou sem entrega. */
+  lastScore?: number | null
+  /** Atingiu a nota de corte (sticky). `false` sem atividade/entrega. */
+  passed?: boolean
 }
 
 export interface LessonBlockView {

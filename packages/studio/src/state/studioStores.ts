@@ -2,6 +2,7 @@ import { useContext } from 'react'
 import { createLocalPersistenceAdapter } from '../persistence/local'
 import { createPersistenceService, type PersistenceService } from '../persistence/service'
 import { resolvePersistenceAdapter, type StudioPersistence } from '../persistence/types'
+import { createChecksStore } from './checksStore'
 import { createHighlightStore } from './highlightStore'
 import { createLogsStore } from './logsStore'
 import { createProjectStore, type StudioLimits, useProjectStore } from './projectStore'
@@ -25,6 +26,7 @@ export interface StudioStores {
   highlight: ReturnType<typeof createHighlightStore>
   logs: ReturnType<typeof createLogsStore>
   sourcemap: ReturnType<typeof createSourcemapStore>
+  checks: ReturnType<typeof createChecksStore>
   persistence: PersistenceService
 }
 
@@ -47,6 +49,7 @@ export function createStudioStores(options: CreateStudioStoresOptions = {}): Stu
     highlight: createHighlightStore(),
     logs: createLogsStore(),
     sourcemap: createSourcemapStore(),
+    checks: createChecksStore(),
     persistence: createPersistenceService(project, adapter),
   }
 }

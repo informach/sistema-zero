@@ -267,6 +267,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             params.lessonId,
             params.blockId,
             body.project,
+            body.results ?? [],
             isPrivilegedActor(headers),
             resolveAccountId(headers),
           )
