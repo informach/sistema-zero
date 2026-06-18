@@ -1,7 +1,6 @@
 'use client'
 
 import { UserAvatar } from '@sistemazero/member-shell/components/user-avatar'
-import type { ChildDashboardView, ProfileView } from '@sistemazero/member-shell/lib/types'
 import { Button } from '@sistemazero/ui/button'
 import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
@@ -9,19 +8,31 @@ import { PasswordInput } from '@sistemazero/ui/password-input'
 import { Skeleton } from '@sistemazero/ui/skeleton'
 import { Spinner } from '@sistemazero/ui/spinner'
 import {
+  ArrowLeft,
   Award,
   BookOpenCheck,
   Flame,
   Pencil,
   Plus,
+  Receipt,
   Sparkles,
   Star,
   Trash2,
   Trophy,
 } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { KidsMascot } from '@/components/kids/mascot'
+import { apiGet } from '@/lib/api'
+import { formatCentsStr, formatDate } from '@/lib/format'
+import {
+  type ChildDashboardView,
+  PAYMENT_METHOD_LABELS,
+  PAYMENT_STATUS_LABELS,
+  type Paginated,
+  type PaymentView,
+  type ProfileView,
+} from '@/lib/types'
 
 const JSON_HEADERS = { 'content-type': 'application/json' }
 
@@ -51,6 +62,7 @@ export function PerfisClient({
   const [gate, setGate] = useState(false) // modal de senha (abrir a área dos pais)
   const [changingPassword, setChangingPassword] = useState(false) // modal: trocar senha da conta
   const [editing, setEditing] = useState<Editing>(null)
+  const [showPurchases, setShowPurchases] = useState(false) // sub-tela "Minhas compras"
 
   async function selectProfile(id: string) {
     if (busy) return
@@ -182,6 +194,10 @@ export function PerfisClient({
     )
   }
 
+  if (showPurchases) {
+    return <PurchasesView onBack={() => setShowPurchases(false)} />
+  }
+
   return (
     <main className="mx-auto flex min-h-dvh max-w-3xl flex-col items-center justify-center gap-8 px-4 py-12">
       <div className="flex flex-col items-center gap-3 text-center">
@@ -225,6 +241,9 @@ export function PerfisClient({
       <div className="flex flex-wrap items-center justify-center gap-3">
         {managing ? (
           <>
+            <Button variant="ghost" onClick={() => setShowPurchases(true)} disabled={busy}>
+              <Receipt className="size-4" /> Minhas compras
+            </Button>
             {/* Senha É da CONTA (não do perfil): só aqui, na sessão do responsável. */}
             <Button variant="ghost" onClick={() => setChangingPassword(true)} disabled={busy}>
               Alterar senha do responsável
@@ -350,6 +369,113 @@ function Stat({ icon, label, value }: { icon: React.ReactNode; label: string; va
       <span className="font-bold text-foreground">{value}</span>
       <span className="text-muted-foreground text-xs">{label}</span>
     </div>
+  )
+}
+
+/**
+ * "Minhas compras" do RESPONSÁVEL (área dos pais). Lista paginada por "Carregar mais"
+ * (busca `/api/payments/my`, gateada pela senha no shim). É da CONTA — fica aqui, não
+ * no menu da criança.
+ */
+function PurchasesView({ onBack }: { onBack: () => void }) {
+  const [items, setItems] = useState<PaymentView[] | null>(null)
+  const [total, setTotal] = useState(0)
+  const [loading, setLoading] = useState(false)
+
+  const load = useCallback(async (offset: number) => {
+    setLoading(true)
+    try {
+      const page = await apiGet<Paginated<PaymentView>>(
+        `/api/payments/my?limit=20&offset=${offset}`,
+      )
+      setItems((prev) => (offset === 0 ? page.items : [...(prev ?? []), ...page.items]))
+      setTotal(page.total)
+    } catch {
+      toast.error('Não foi possível carregar as compras.')
+      setItems((prev) => prev ?? [])
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    void load(0)
+  }, [load])
+
+  return (
+    <main className="mx-auto flex min-h-dvh max-w-xl flex-col gap-6 px-4 py-12">
+      <div>
+        <Button variant="ghost" onClick={onBack}>
+          <ArrowLeft className="size-4" /> Voltar
+        </Button>
+      </div>
+      <div>
+        <h1 className="sz-display text-2xl text-foreground">Minhas compras</h1>
+        <p className="mt-1 text-muted-foreground text-sm">
+          Histórico das compras feitas com o e-mail desta conta.
+        </p>
+      </div>
+
+      {items === null ? (
+        <div className="flex flex-col gap-3">
+          {[0, 1, 2].map((i) => (
+            <Skeleton key={i} className="h-20 rounded-2xl" />
+          ))}
+        </div>
+      ) : items.length === 0 ? (
+        <div className="flex flex-col items-center gap-2 rounded-2xl border-2 border-border border-dashed py-12 text-center">
+          <Receipt className="size-8 text-muted-foreground" />
+          <p className="font-semibold text-foreground">Nenhuma compra ainda</p>
+          <p className="text-muted-foreground text-sm">
+            As compras feitas com o e-mail desta conta aparecem aqui.
+          </p>
+        </div>
+      ) : (
+        <ul className="flex flex-col gap-3">
+          {items.map((p) => (
+            <PurchaseCard key={p.id} payment={p} />
+          ))}
+        </ul>
+      )}
+
+      {items && items.length < total ? (
+        <Button variant="secondary" onClick={() => void load(items.length)} disabled={loading}>
+          {loading ? <Spinner className="size-4" /> : 'Carregar mais'}
+        </Button>
+      ) : null}
+    </main>
+  )
+}
+
+const STATUS_TONE: Record<string, string> = {
+  PAID: 'text-primary',
+  PENDING: 'text-[color:var(--sz-hot)]',
+  FAILED: 'text-destructive',
+  EXPIRED: 'text-destructive',
+  CANCELED: 'text-muted-foreground',
+  REFUNDED: 'text-muted-foreground',
+}
+
+/** Card de uma compra (descrição + data/método + valor + status). */
+function PurchaseCard({ payment }: { payment: PaymentView }) {
+  return (
+    <li className="flex items-center justify-between gap-3 rounded-2xl border-2 border-border bg-card p-4">
+      <div className="min-w-0">
+        <p className="truncate font-semibold text-foreground">{payment.description ?? 'Compra'}</p>
+        <p className="text-muted-foreground text-xs">
+          {formatDate(payment.paidAt ?? payment.createdAt)} ·{' '}
+          {PAYMENT_METHOD_LABELS[payment.method] ?? payment.method}
+        </p>
+      </div>
+      <div className="shrink-0 text-right">
+        <p className="sz-display text-foreground">{formatCentsStr(payment.amountInCents)}</p>
+        <span
+          className={`font-semibold text-xs ${STATUS_TONE[payment.status] ?? 'text-muted-foreground'}`}
+        >
+          {PAYMENT_STATUS_LABELS[payment.status] ?? payment.status}
+        </span>
+      </div>
+    </li>
   )
 }
 

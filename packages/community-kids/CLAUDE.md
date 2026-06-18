@@ -121,8 +121,11 @@ anexo (o servidor recusaria).
 
 ## Diferenças deliberadas vs o community (decisões da v1, 06/2026)
 
-1. **SEM `/compras`** (página, rota BFF e item do menu): compra é do RESPONSÁVEL — histórico
-   financeiro não aparece na área da criança.
+1. **Compras só na ÁREA DOS PAIS** (não no menu da criança): NÃO há página `/compras` nem item
+   de menu, mas o RESPONSÁVEL vê o histórico numa sub-tela de `/perfis` (modo gestão, atrás do
+   portão de senha) — shim `app/api/payments/my` gateado por `requireParentGate` sobre
+   `shell.routes.paymentsMy`; UI `PurchasesView` no `perfis-client` (Fase 3b, 06/2026). Antes
+   o kids não tinha NADA de compras; agora tem, mas escopado ao responsável.
 2. **Classificação do curso INCLUÍDA (decisão do usuário, 06/2026)**: porta kids do fluxo de 5
    modais do community (`course-rating-flow.tsx` próprio, copy em tom kids + mascote; rota shim
    `/api/members/courses/[slug]/rating` compartilhada). Compartilhar usa SÓ `salesPageUrl` do
