@@ -29,6 +29,7 @@ function makeSendService() {
     suppressions,
     clock,
     () => `id-${++counter}`,
+    5,
   )
   return { service, templates, messages, senders }
 }

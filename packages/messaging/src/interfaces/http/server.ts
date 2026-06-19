@@ -100,18 +100,22 @@ export function createServer(deps: HttpDeps) {
       const declared = Number(request.headers.get('content-length') ?? '0')
       if (Number.isFinite(declared) && declared > maxBytes) {
         markOversizeBody(request)
-        return undefined
+        return {}
       }
+
+      const rawBody = await request.text()
+      if (Buffer.byteLength(rawBody, 'utf8') > maxBytes) {
+        markOversizeBody(request)
+        return {}
+      }
+
+      if (rawBody.length === 0) return contentType?.includes('application/json') ? {} : undefined
+      storeRawBody(request, rawBody)
       if (contentType?.includes('application/json')) {
-        const text = await request.text()
-        if (Buffer.byteLength(text, 'utf8') > maxBytes) {
-          markOversizeBody(request)
-          return {}
-        }
-        storeRawBody(request, text)
-        return text.length > 0 ? JSON.parse(text) : {}
+        return JSON.parse(rawBody)
       }
-      return undefined
+
+      return rawBody
     })
     // onTransform roda ANTES da validação de schema — senão o corpo gigante
     // viraria 400 (body inválido) em vez do 413 correto.
