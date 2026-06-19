@@ -146,6 +146,27 @@ describe('UpdateUserService — guards hierárquicos', () => {
     expect(view.role).toBe('staff')
   })
 
+  test('alterar papel revoga as sessões vigentes do alvo', async () => {
+    const target = makeUser({ role: 'admin', status: 'active' })
+    users.seed(target)
+    await refreshTokens.create({
+      id: crypto.randomUUID(),
+      userId: target.id,
+      familyId: crypto.randomUUID(),
+      tokenHash: 'hash-role-change',
+      expiresAt: new Date(Date.now() + 86_400_000),
+    })
+
+    await service.execute({
+      targetId: target.id,
+      actor: superadmin,
+      changes: { role: 'staff' },
+    })
+
+    const record = await refreshTokens.findByHash('hash-role-change')
+    expect(record?.revokedAt).not.toBeNull()
+  })
+
   test('bloquear/suspender revoga as sessões vigentes do alvo', async () => {
     const target = makeUser({ role: 'customer', status: 'active' })
     users.seed(target)

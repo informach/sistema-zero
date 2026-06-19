@@ -7,7 +7,8 @@ import { assertInternalCaller } from './internal-auth'
  * gateway injeta — defesa em profundidade (o serviço nunca deve ser exposto
  * diretamente, só atrás do gateway). Espelha `packages/catalog/.../http/auth.ts`.
  */
-const ADMIN_ROLES = new Set(['superadmin', 'admin', 'staff'])
+const ADMIN_READ_ROLES = new Set(['superadmin', 'admin', 'staff'])
+const ADMIN_WRITE_ROLES = new Set(['superadmin', 'admin'])
 
 /**
  * Garante que a requisição vem de um usuário admin/staff ATIVO **via gateway**:
@@ -18,6 +19,24 @@ const ADMIN_ROLES = new Set(['superadmin', 'admin', 'staff'])
 export function requireAdmin(
   headers: Record<string, string | undefined>,
   requireAdminEnabled: boolean,
+  internalToken?: string,
+): void {
+  requireAdminRole(headers, requireAdminEnabled, ADMIN_READ_ROLES, internalToken)
+}
+
+/** Escrita financeira no painel: staff pode acompanhar, mas não mutar pagamentos. */
+export function requireAdminWrite(
+  headers: Record<string, string | undefined>,
+  requireAdminEnabled: boolean,
+  internalToken?: string,
+): void {
+  requireAdminRole(headers, requireAdminEnabled, ADMIN_WRITE_ROLES, internalToken)
+}
+
+function requireAdminRole(
+  headers: Record<string, string | undefined>,
+  requireAdminEnabled: boolean,
+  allowedRoles: ReadonlySet<string>,
   internalToken?: string,
 ): void {
   if (!requireAdminEnabled) return
@@ -32,5 +51,5 @@ export function requireAdmin(
   const status = headers['x-auth-user-status']
   if (!status) throw new UnauthorizedError('Autenticação necessária')
   if (status !== 'active') throw new ForbiddenError('Conta inativa')
-  if (!ADMIN_ROLES.has(role)) throw new ForbiddenError('Permissão insuficiente')
+  if (!allowedRoles.has(role)) throw new ForbiddenError('Permissão insuficiente')
 }

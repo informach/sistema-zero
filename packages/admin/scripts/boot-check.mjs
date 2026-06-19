@@ -11,8 +11,11 @@
  *
  * Mantenha as regras em sincronia com `src/instrumentation.ts`.
  */
-const prod = process.env.NODE_ENV === 'production'
 const problems = []
+
+if (process.env.NODE_ENV !== 'production') {
+  problems.push('NODE_ENV=production (este launcher é exclusivo do runtime de produção)')
+}
 
 const hs256 = process.env.JWT_HS256_SECRET?.trim()
 const jwksUrl = process.env.JWT_JWKS_URL?.trim()
@@ -23,7 +26,7 @@ if (!hs256 && !jwksUrl) {
 }
 if (hs256 && hs256.length < 16) problems.push('JWT_HS256_SECRET com menos de 16 chars')
 
-if (prod) {
+if (process.env.NODE_ENV === 'production') {
   // Mesma régua que o gateway impõe a si mesmo em prod.
   if (!process.env.GATEWAY_URL?.trim()) {
     problems.push('GATEWAY_URL explícito (o default localhost não vale em produção)')

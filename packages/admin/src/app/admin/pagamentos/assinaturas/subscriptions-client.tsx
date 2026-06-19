@@ -39,7 +39,8 @@ function intervalLabel(months: number): string {
   return `${months} meses`
 }
 
-export function SubscriptionsClient() {
+export function SubscriptionsClient({ currentRole }: { currentRole: string }) {
+  const canWrite = currentRole === 'superadmin' || currentRole === 'admin'
   const [items, setItems] = useState<SubscriptionView[]>([])
   const [total, setTotal] = useState(0)
   const [offset, setOffset] = useState(0)
@@ -97,7 +98,11 @@ export function SubscriptionsClient() {
     <div className="space-y-6">
       <AdminHeader
         title="Pagamentos"
-        description="Assinaturas recorrentes (cartão) — acompanhar e cancelar."
+        description={
+          canWrite
+            ? 'Assinaturas recorrentes (cartão) — acompanhar e cancelar.'
+            : 'Assinaturas recorrentes (cartão) — acompanhar.'
+        }
       />
       <PaymentsTabs />
 
@@ -194,7 +199,7 @@ export function SubscriptionsClient() {
         }}
         title="Detalhe da assinatura"
         footer={
-          selected && canCancel(selected) ? (
+          selected && canWrite && canCancel(selected) ? (
             confirmingCancel ? (
               <>
                 <Button

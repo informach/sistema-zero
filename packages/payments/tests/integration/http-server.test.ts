@@ -1112,6 +1112,34 @@ describe('Rotas admin (/payments/admin/*)', () => {
     expect(res.status).toBe(200)
   })
 
+  test('requireAdmin ligado: staff lê, mas não executa escrita financeira', async () => {
+    const { app } = buildApp({ requireAdmin: true })
+    const ID = '00000000-0000-0000-0000-000000000000'
+
+    const read = await app.handle(
+      new Request('http://localhost/payments/admin/payments', {
+        headers: adminHeaders('staff'),
+      }),
+    )
+    expect(read.status).toBe(200)
+
+    const refund = await app.handle(
+      new Request(`http://localhost/payments/admin/payments/${ID}/refund`, {
+        method: 'POST',
+        headers: adminHeaders('staff'),
+      }),
+    )
+    expect(refund.status).toBe(403)
+
+    const cancel = await app.handle(
+      new Request(`http://localhost/payments/admin/subscriptions/${ID}`, {
+        method: 'DELETE',
+        headers: adminHeaders('staff'),
+      }),
+    )
+    expect(cancel.status).toBe(403)
+  })
+
   test('requireAdmin + internalToken: sem x-internal-token → 401 (mesmo com role admin)', async () => {
     const { app } = buildApp({ requireAdmin: true, internalToken: 'tok-interno-de-teste-16' })
     const res = await app.handle(

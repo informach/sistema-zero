@@ -37,7 +37,8 @@ import { ManualInvoiceDialog } from './manual-invoice-dialog'
 
 const LIMIT = 20
 
-export function InvoicesClient() {
+export function InvoicesClient({ currentRole }: { currentRole: string }) {
+  const canWrite = currentRole === 'superadmin' || currentRole === 'admin'
   const [items, setItems] = useState<InvoiceView[]>([])
   const [total, setTotal] = useState(0)
   const [offset, setOffset] = useState(0)
@@ -92,11 +93,17 @@ export function InvoicesClient() {
     <div className="space-y-6">
       <AdminHeader
         title="Notas fiscais"
-        description="NFS-e emitidas automaticamente após a garantia — acompanhar, baixar, cancelar e substituir."
+        description={
+          canWrite
+            ? 'NFS-e emitidas automaticamente após a garantia — acompanhar, baixar, cancelar e substituir.'
+            : 'NFS-e emitidas automaticamente após a garantia — acompanhar e baixar.'
+        }
         action={
-          <Button onClick={() => setManualOpen(true)}>
-            <FilePlus2 className="size-4" /> Emitir manualmente
-          </Button>
+          canWrite ? (
+            <Button onClick={() => setManualOpen(true)}>
+              <FilePlus2 className="size-4" /> Emitir manualmente
+            </Button>
+          ) : null
         }
       />
 
@@ -243,20 +250,23 @@ export function InvoicesClient() {
 
       <InvoiceDetailDialog
         invoiceId={selectedId}
+        canWrite={canWrite}
         onClose={() => setSelectedId(null)}
         onNavigate={setSelectedId}
         onChanged={refresh}
       />
 
-      <ManualInvoiceDialog
-        open={manualOpen}
-        onClose={() => setManualOpen(false)}
-        onCreated={async (id) => {
-          setSelectedId(id)
-          await refresh()
-        }}
-        onOpenInvoice={setSelectedId}
-      />
+      {canWrite ? (
+        <ManualInvoiceDialog
+          open={manualOpen}
+          onClose={() => setManualOpen(false)}
+          onCreated={async (id) => {
+            setSelectedId(id)
+            await refresh()
+          }}
+          onOpenInvoice={setSelectedId}
+        />
+      ) : null}
     </div>
   )
 }

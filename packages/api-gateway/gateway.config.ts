@@ -355,15 +355,15 @@ const config: GatewayConfigInput = {
       transforms: paymentsInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
-    // Ações (escrita): estorno e cancelamento. Mesmos papéis das leituras (alinha
-    // com `isAdminRole` do painel → evita botão que 403). Rate limit mais baixo.
+    // Ações (escrita): estorno e cancelamento. Admin+; staff acompanha, mas não
+    // executa mutações financeiras. Rate limit mais baixo.
     {
       id: 'payments-admin-refund',
       methods: ['POST'],
       pathPattern: '/payments/admin/payments/:id/refund',
       service: 'payments',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
-      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
       transforms: paymentsInternalTransforms,
       rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
     },
@@ -373,7 +373,7 @@ const config: GatewayConfigInput = {
       pathPattern: '/payments/admin/subscriptions/:id',
       service: 'payments',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
-      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
       transforms: paymentsInternalTransforms,
       rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
     },

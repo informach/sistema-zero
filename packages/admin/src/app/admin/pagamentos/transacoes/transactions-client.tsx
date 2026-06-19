@@ -69,7 +69,8 @@ function GuaranteeBadge({ payment: p }: { payment: PaymentRow }) {
   )
 }
 
-export function TransactionsClient() {
+export function TransactionsClient({ currentRole }: { currentRole: string }) {
+  const canWrite = currentRole === 'superadmin' || currentRole === 'admin'
   const [items, setItems] = useState<PaymentRow[]>([])
   const [total, setTotal] = useState(0)
   const [offset, setOffset] = useState(0)
@@ -153,7 +154,11 @@ export function TransactionsClient() {
     <div className="space-y-6">
       <AdminHeader
         title="Pagamentos"
-        description="Transações de Pix, boleto e cartão — listar, filtrar e estornar."
+        description={
+          canWrite
+            ? 'Transações de Pix, boleto e cartão — listar, filtrar e estornar.'
+            : 'Transações de Pix, boleto e cartão — listar e filtrar.'
+        }
       />
       <PaymentsTabs />
 
@@ -308,7 +313,7 @@ export function TransactionsClient() {
         title="Detalhe da transação"
         description={selected ? methodLabel(selected.method) : undefined}
         footer={
-          selected && canRefund(selected) ? (
+          selected && canWrite && canRefund(selected) ? (
             <div className="flex w-full flex-col gap-2">
               {selected.guarantee?.expired ? (
                 <p className="text-right text-xs text-destructive">
