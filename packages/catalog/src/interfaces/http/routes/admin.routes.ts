@@ -7,6 +7,9 @@ import type { CreateProductService } from '../../../application/create-product/c
 import type { UpdateCouponService } from '../../../application/update-coupon/update-coupon.service'
 import type { UpdateOfferService } from '../../../application/update-offer/update-offer.service'
 import type { UpdateProductService } from '../../../application/update-product/update-product.service'
+import type { OfferView } from '../../../application/mappers/offer-view'
+import type { PublicProductView } from '../../../application/mappers/product-view'
+import { MicroCache } from '../../../infrastructure/cache/micro-cache'
 import { assertInternalCaller, requireAdmin } from '../auth'
 import {
   CreateCouponBody,
@@ -29,6 +32,8 @@ export interface AdminRoutesDeps {
   updateOffer: UpdateOfferService
   createCoupon: CreateCouponService
   updateCoupon: UpdateCouponService
+  offerCache: MicroCache<OfferView | null>
+  productCache: MicroCache<PublicProductView | null>
 }
 
 /**
@@ -49,6 +54,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
       async ({ body, headers, set }) => {
         requireAdmin(headers, deps.requireAdminEnabled)
         const view = await deps.createProduct.execute(body)
+        deps.productCache.clear()
         set.status = 201
         return view
       },
@@ -62,7 +68,10 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           set.status = 404
           return envelope('PRODUCT_NOT_FOUND', 'Produto não encontrado')
         }
-        return deps.updateProduct.execute({ id: params.id, ...body })
+        const result = await deps.updateProduct.execute({ id: params.id, ...body })
+        deps.productCache.clear()
+        deps.offerCache.clear()
+        return result
       },
       { body: UpdateProductBody },
     )
@@ -89,6 +98,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           status: body.status,
           items: body.items,
         })
+        deps.offerCache.clear()
         set.status = 201
         return view
       },
@@ -102,7 +112,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           set.status = 404
           return envelope('OFFER_NOT_FOUND', 'Oferta não encontrada')
         }
-        return deps.updateOffer.execute({
+        const result = await deps.updateOffer.execute({
           id: params.id,
           name: body.name,
           priceCents: body.priceCents,
@@ -118,6 +128,8 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           status: body.status,
           items: body.items,
         })
+        deps.offerCache.clear()
+        return result
       },
       { body: UpdateOfferBody },
     )

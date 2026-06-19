@@ -183,6 +183,22 @@ export const couponOffers = catalog.table(
   ],
 )
 
+export const couponRedemptions = catalog.table(
+  'coupon_redemptions',
+  {
+    id: uuid('id').primaryKey(),
+    couponId: uuid('coupon_id')
+      .notNull()
+      .references(() => coupons.id, { onDelete: 'cascade' }),
+    idempotencyKey: text('idempotency_key').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('coupon_redemptions_uq').on(t.couponId, t.idempotencyKey),
+    index('coupon_redemptions_coupon_idx').on(t.couponId),
+  ],
+)
+
 export const schema = {
   products,
   productComponents,
@@ -190,4 +206,5 @@ export const schema = {
   offerItems,
   coupons,
   couponOffers,
+  couponRedemptions,
 }

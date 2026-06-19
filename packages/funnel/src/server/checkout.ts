@@ -402,7 +402,7 @@ export async function startCard(request: Request, deps: CheckoutDeps): Promise<R
     if (newlyPaid) {
       await deps.repo.insertEvent(lead.id, 'pagamento_confirmado', 'checkout_card')
       // Cartão é síncrono → registra o uso do cupom só na transição p/ pago (exactly-once).
-      await redeemCouponBestEffort(deps.gateway, charge.couponCode)
+      await redeemCouponBestEffort(deps.gateway, charge.couponCode, view.id, deps.log)
     }
     await runPostPayment(lead.id, deps)
   }
@@ -471,7 +471,12 @@ export async function pixStatus(
       // markPaid), lendo o cupom DA COBRANÇA PAGA (lead_payments) — o
       // `lead.couponCode` é só o contexto do último checkout e podia estar
       // obsoleto (cupom removido numa re-cotação, cobrança antiga etc.).
-      await redeemCouponBestEffort(deps.gateway, await deps.repo.couponForPayment(paymentId))
+      await redeemCouponBestEffort(
+        deps.gateway,
+        await deps.repo.couponForPayment(paymentId),
+        paymentId,
+        deps.log,
+      )
     }
     await runPostPayment(lead.id, deps)
   }

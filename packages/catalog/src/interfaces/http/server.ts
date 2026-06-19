@@ -22,6 +22,9 @@ import { adminRoutes } from './routes/admin.routes'
 import { adminReadRoutes } from './routes/admin-read.routes'
 import { catalogRoutes } from './routes/catalog.routes'
 import { healthRoutes, type ReadinessProbe } from './routes/health.routes'
+import { MicroCache } from '../infrastructure/cache/micro-cache'
+import type { OfferView } from '../application/mappers/offer-view'
+import type { PublicProductView } from '../application/mappers/product-view'
 
 export interface HttpDeps {
   env: Env
@@ -103,6 +106,8 @@ export function createServer(deps: HttpDeps) {
   // veem edição refletida na hora; testes determinísticos).
   const publicCacheTtlMs =
     deps.env.PUBLIC_CACHE_TTL_MS ?? (deps.env.NODE_ENV === 'production' ? 30_000 : 0)
+  const offerCache = new MicroCache<OfferView | null>(publicCacheTtlMs)
+  const productCache = new MicroCache<PublicProductView | null>(publicCacheTtlMs)
 
   return app
     .use(healthRoutes(deps.readiness))
@@ -115,6 +120,8 @@ export function createServer(deps: HttpDeps) {
         redeemCoupon: deps.redeemCoupon,
         internalToken: deps.env.INTERNAL_API_TOKEN,
         publicCacheTtlMs,
+        offerCache,
+        productCache,
       }),
     )
     .use(
@@ -127,6 +134,8 @@ export function createServer(deps: HttpDeps) {
         updateOffer: deps.updateOffer,
         createCoupon: deps.createCoupon,
         updateCoupon: deps.updateCoupon,
+        offerCache,
+        productCache,
       }),
     )
     .use(

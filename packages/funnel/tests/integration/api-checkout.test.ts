@@ -164,7 +164,8 @@ describe('POST /api/checkout/pix', () => {
     expect(gw.calls.redeem).toHaveLength(0) // ainda não pago
     gw.setStatus('PAID')
     await pixStatus(req('GET', cookieFor(id)), 'pay-1', deps(repo, gw))
-    expect(gw.calls.redeem).toContain('PROMO10')
+    expect(gw.calls.redeem.some((entry) => entry.code === 'PROMO10')).toBe(true)
+    expect(gw.calls.redeem[0]?.idempotencyKey).toBe('pay-1')
   })
 
   test('400 sem os dados pessoais no corpo (Pix não é gerado sem contato)', async () => {
@@ -505,13 +506,13 @@ describe('cupom: contexto do lead × cobrança (full review 06/2026)', () => {
     await repo.setPayment(id, 'pay-old', 'PROMO10')
     await repo.setPayment(id, 'pay-new', null)
 
-    const redeemed: Array<string | null> = []
+    const redeemed: Array<{ code: string | null; paymentId: string }> = []
     const webhookDeps = {
       repo,
       internalToken: WEBHOOK_TOKEN,
       fulfill: makeFulfill({ repo, gateway: gw.gateway }),
-      redeemCoupon: async (code: string | null) => {
-        redeemed.push(code)
+      redeemCoupon: async (code: string | null, paymentId: string) => {
+        redeemed.push({ code, paymentId })
       },
     }
     const whReq = (paymentId: string, deliveryId: string) =>
@@ -528,7 +529,7 @@ describe('cupom: contexto do lead × cobrança (full review 06/2026)', () => {
     // …e o comprador paga o BOLETO antigo: redime o cupom DELE, não o do lead.
     const res = await handlePaymentWebhook(whReq('pay-old', 'd1'), webhookDeps)
     expect(res.status).toBe(200)
-    expect(redeemed).toEqual(['PROMO10'])
+    expect(redeemed).toEqual([{ code: 'PROMO10', paymentId: 'pay-old' }])
   })
 })
 

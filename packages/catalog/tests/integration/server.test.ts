@@ -225,6 +225,7 @@ describe('catalog HTTP', () => {
         name: 'Oferta',
         priceCents: 3700,
         status: 'active',
+        content: { allowsCoupon: true },
       })
       await app.handle(
         req('POST', '/catalog/coupons', {
@@ -264,6 +265,46 @@ describe('catalog HTTP', () => {
       expect(q.discountCents).toBe(370)
       expect(q.finalPriceCents).toBe(3330)
       expect(q.coupon.code).toBe('PROMO10')
+    })
+
+    it('quote com cupom em oferta com allowsCoupon=false retorna 422', async () => {
+      const built = build()
+      const product2 = await built.createProduct.execute({
+        sku: 'ncia-b',
+        slug: 'ncia-b',
+        name: 'NCIA B',
+        kind: 'ebook',
+        status: 'active',
+        fulfillment: { accessType: 'course', courseRef: 'ncia-b' },
+      })
+      const offerNoCoupon = await built.createOffer.execute({
+        productId: product2.id,
+        code: 'ncia-of-b',
+        slug: 'ncia-b',
+        name: 'Oferta sem cupom',
+        priceCents: 3700,
+        status: 'active',
+        content: { allowsCoupon: false },
+      })
+      await built.app.handle(
+        req('POST', '/catalog/coupons', {
+          headers: ADMIN,
+          body: {
+            code: 'BLOCK',
+            type: 'fixed',
+            amountOffCents: 500,
+            appliesToAll: false,
+            offerIds: [offerNoCoupon.id],
+          },
+        }),
+      )
+      const res = await built.app.handle(
+        req('POST', '/catalog/offers/ncia-b/quote', { body: { couponCode: 'BLOCK' } }),
+      )
+      expect(res.status).toBe(422)
+      expect((await res.json()) as { error: { code: string } }).toMatchObject({
+        error: { code: 'COUPON_NOT_APPLICABLE' },
+      })
     })
 
     it('quote com cupom inexistente → 404', async () => {
@@ -314,6 +355,79 @@ describe('catalog HTTP', () => {
       const first = await app.handle(req('POST', '/catalog/coupons/once/redeem', { body: {} }))
       expect(first.status).toBe(200)
       const second = await app.handle(req('POST', '/catalog/coupons/once/redeem', { body: {} }))
+      expect(second.status).toBe(422)
+      expect((await second.json()) as { error: { code: string } }).toMatchObject({
+        error: { code: 'COUPON_EXHAUSTED' },
+      })
+    })
+
+    it('redeem com idempotency-key repetida não duplica a contagem', async () => {
+      await app.handle(
+        req('POST', '/catalog/coupons', {
+          headers: ADMIN,
+          body: {
+            code: 'ONCE',
+            type: 'fixed',
+            amountOffCents: 500,
+            appliesToAll: true,
+            maxRedemptions: 1,
+          },
+        }),
+      )
+      const key = 'payment-1'
+      const first = await app.handle(
+        req('POST', '/catalog/coupons/once/redeem', {
+          headers: { 'idempotency-key': key },
+        }),
+      )
+      expect(first.status).toBe(200)
+      const second = await app.handle(
+        req('POST', '/catalog/coupons/once/redeem', {
+          headers: { 'idempotency-key': key },
+        }),
+      )
+      expect(second.status).toBe(200)
+      const third = await app.handle(
+        req('POST', '/catalog/coupons/once/redeem', {
+          headers: { 'idempotency-key': 'payment-2' },
+        }),
+      )
+      expect(third.status).toBe(422)
+      expect((await third.json()) as { error: { code: string } }).toMatchObject({
+        error: { code: 'COUPON_EXHAUSTED' },
+      })
+    })
+
+    it('idempotency-key não converte falha em sucesso no retry de cupom inativo', async () => {
+      await app.handle(
+        req('POST', '/catalog/coupons', {
+          headers: ADMIN,
+          body: {
+            code: 'BLOCKED',
+            type: 'fixed',
+            amountOffCents: 500,
+            appliesToAll: true,
+            status: 'inactive',
+          },
+        }),
+      )
+      const key = 'payment-inactive'
+      const first = await app.handle(
+        req('POST', '/catalog/coupons/blocked/redeem', {
+          headers: { 'idempotency-key': key },
+          body: {},
+        }),
+      )
+      expect(first.status).toBe(422)
+      expect((await first.json()) as { error: { code: string } }).toMatchObject({
+        error: { code: 'COUPON_EXHAUSTED' },
+      })
+      const second = await app.handle(
+        req('POST', '/catalog/coupons/blocked/redeem', {
+          headers: { 'idempotency-key': key },
+          body: {},
+        }),
+      )
       expect(second.status).toBe(422)
       expect((await second.json()) as { error: { code: string } }).toMatchObject({
         error: { code: 'COUPON_EXHAUSTED' },
@@ -531,7 +645,7 @@ describe('catalog HTTP', () => {
       PUBLIC_CACHE_TTL_MS: '60000',
     })
 
-    it('GET público serve do cache dentro do TTL; quote segue autoritativa (sem cache)', async () => {
+    it('GET público atualiza no write e quote segue autoritativa (sem cache)', async () => {
       const built = build({ env: cacheEnv })
       const product = await built.createProduct.execute({
         sku: 'cache-p',
@@ -563,9 +677,9 @@ describe('catalog HTTP', () => {
       )
       expect(patch.status).toBe(200)
 
-      // Leitura pública ainda vê o valor cacheado (staleness ≤ TTL, aceito)...
+      // Com invalidação imediata em escrita, o valor não fica stale após PATCH.
       const cached = await built.app.handle(req('GET', '/catalog/offers/cache-of'))
-      expect(((await cached.json()) as { priceCents: number }).priceCents).toBe(3700)
+      expect(((await cached.json()) as { priceCents: number }).priceCents).toBe(5000)
 
       // ...mas a quote (gate de cobrança) NUNCA é cacheada: já cobra o preço novo.
       const quote = await built.app.handle(

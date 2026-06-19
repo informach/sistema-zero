@@ -43,6 +43,9 @@ export class QuoteOfferService {
 
     const coupon = await this.coupons.findByCode(code)
     if (!coupon) throw new CouponNotFoundError()
+    if (offer.content?.allowsCoupon !== true) {
+      throw new CouponNotApplicableError('Cupom desabilitado para esta oferta')
+    }
     coupon.assertApplicable(offer.id, priceCents)
 
     const discountCents = coupon.computeDiscountCents(priceCents)

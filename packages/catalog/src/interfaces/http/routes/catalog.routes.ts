@@ -21,6 +21,8 @@ export interface CatalogRoutesDeps {
   internalToken?: string
   /** TTL do micro-cache das leituras públicas por slug. 0/ausente → desligado. */
   publicCacheTtlMs?: number
+  offerCache: MicroCache<OfferView | null>
+  productCache: MicroCache<PublicProductView | null>
 }
 
 /**
@@ -36,9 +38,8 @@ export interface CatalogRoutesDeps {
  * valor autoritativo de cobrança).
  */
 export function catalogRoutes(deps: CatalogRoutesDeps) {
-  const ttl = deps.publicCacheTtlMs ?? 0
-  const offerCache = new MicroCache<OfferView | null>(ttl)
-  const productCache = new MicroCache<PublicProductView | null>(ttl)
+  const offerCache = deps.offerCache
+  const productCache = deps.productCache
 
   return (
     new Elysia({ prefix: '/catalog' })
@@ -102,7 +103,8 @@ export function catalogRoutes(deps: CatalogRoutesDeps) {
       // gateway) prova que a chamada passou por lá.
       .post('/coupons/:code/redeem', async ({ params, headers }) => {
         assertInternalCaller(headers['x-internal-token'], deps.internalToken)
-        await deps.redeemCoupon.execute(params.code)
+        const idempotencyKey = headers['idempotency-key']
+        await deps.redeemCoupon.execute(params.code, idempotencyKey)
         return { ok: true }
       })
   )

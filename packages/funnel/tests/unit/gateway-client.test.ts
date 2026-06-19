@@ -47,6 +47,44 @@ describe('createGatewayClient (assinatura HMAC de borda)', () => {
     expect(verdict.valid).toBe(true)
   })
 
+  test('redeemCoupon assina POST /catalog/coupons/:code/redeem com idempotency-key', async () => {
+    let captured: { url: string; init: RequestInit } | undefined
+    const fetchImpl = (async (url: string, init: RequestInit) => {
+      captured = { url, init }
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      })
+    }) as unknown as typeof fetch
+
+    const gw = createGatewayClient({
+      baseUrl: 'http://gateway',
+      consumerId: 'funnel',
+      hmacSecret: SECRET,
+      fetchImpl,
+    })
+
+    await gw.redeemCoupon('PROMO10', 'redeem-pay-123')
+    const headers = captured?.init.headers as Record<string, string>
+    const rawBody = captured?.init.body as string
+    expect(headers['idempotency-key']).toBe('redeem-pay-123')
+    expect(captured?.url).toBe('http://gateway/catalog/coupons/PROMO10/redeem')
+
+    const verdict = verifyHmacSignature({
+      secret: SECRET,
+      body: canonicalHmacMessage({
+        method: 'POST',
+        path: '/catalog/coupons/PROMO10/redeem',
+        idempotencyKey: 'redeem-pay-123',
+        body: rawBody,
+      }),
+      signatureHeader: headers['x-signature'],
+      nowSeconds: Math.floor(Date.now() / 1000),
+      toleranceSeconds: 300,
+    })
+    expect(verdict.valid).toBe(true)
+  })
+
   test('GET assina "<ts>.GET.<path>." (corpo vazio, sem idempotency-key)', async () => {
     let captured: { url: string; init: RequestInit } | undefined
     const fetchImpl = (async (url: string, init: RequestInit) => {

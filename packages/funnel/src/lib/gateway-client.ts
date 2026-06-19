@@ -217,12 +217,12 @@ export function createGatewayClient(opts: GatewayClientOptions) {
      * POST /catalog/coupons/:code/redeem — registra um uso do cupom (na confirmação do
      * pagamento). A rota exige HMAC de borda do funil (por isso assina o corpo).
      */
-    async redeemCoupon(code: string): Promise<GatewayResult> {
+    async redeemCoupon(code: string, idempotencyKey?: string): Promise<GatewayResult> {
       const rawBody = '{}'
       const path = `/catalog/coupons/${encodeURIComponent(code)}/redeem`
       return requestJson(
         `${opts.baseUrl}${path}`,
-        { method: 'POST', headers: buildHeaders('POST', path, rawBody), body: rawBody },
+        { method: 'POST', headers: buildHeaders('POST', path, rawBody, idempotencyKey), body: rawBody },
         timeoutMs,
       )
     },

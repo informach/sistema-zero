@@ -6,16 +6,9 @@ import type { CouponRepository } from '../../domain/ports/coupon-repository.port
  * limite). Chamado pelo funil na confirmação do pagamento. Lança
  * `CouponExhaustedError`/`CouponNotFoundError` quando aplicável.
  *
- * TRADE-OFF CONHECIDO (intencional — ver CLAUDE.md "Pontos em aberto"):
- * - **`maxRedemptions` é teto MOLE, não garantia.** O desconto é aplicado na cobrança
- *   (no `quote`), mas contado só aqui, na confirmação. Sob concorrência, mais descontos
- *   podem ser concedidos do que o limite (a 1ª transação ganha o desconto; a contagem
- *   só capa o contador, não os descontos já cobrados).
- * - **Sem idempotência própria.** O incremento NÃO deduplica por chave de uso. Hoje é
- *   seguro porque o funil só chama atrás do `markPaid` exactly-once (e best-effort:
- *   engole erro); uma rechamada fora desse gate duplicaria a contagem.
- * Para uma garantia DURA, materializar um ledger `coupon_redemptions` (chave única por
- * pagamento/lead) e contar a partir dele — item futuro.
+ * Idempotência: o funil repassa `idempotency-key` do pagamento e o serviço
+ * repassa para o repositório, evitando duplicação na re-apresentação do
+ * pagamento pago (especialmente em `polling`).
  */
 export class RedeemCouponService {
   constructor(
@@ -23,8 +16,8 @@ export class RedeemCouponService {
     private readonly logger: Logger,
   ) {}
 
-  async execute(code: string): Promise<void> {
-    await this.coupons.incrementRedemption(code)
+  async execute(code: string, idempotencyKey?: string): Promise<void> {
+    await this.coupons.incrementRedemption(code, idempotencyKey)
     this.logger.info('coupon.redeemed', { code: code.trim().toUpperCase() })
   }
 }

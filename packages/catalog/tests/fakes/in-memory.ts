@@ -155,6 +155,7 @@ export class InMemoryOfferRepository implements OfferRepository {
 /** Repositório de cupons em memória (testes). */
 export class InMemoryCouponRepository implements CouponRepository {
   private readonly store = new Map<string, CouponSnapshot>()
+  private readonly redemptions = new Map<string, Set<string>>()
 
   async findById(id: string): Promise<CouponAggregate | null> {
     const s = this.store.get(id)
@@ -196,13 +197,23 @@ export class InMemoryCouponRepository implements CouponRepository {
     this.store.set(s.id, clone({ ...s, version: s.version + 1 }))
   }
 
-  async incrementRedemption(code: string): Promise<void> {
+  async incrementRedemption(code: string, idempotencyKey?: string): Promise<void> {
     const normalized = code.trim().toUpperCase()
     for (const s of this.store.values()) {
       if (s.code !== normalized) continue
+      if (idempotencyKey && (this.redemptions.get(s.id)?.has(idempotencyKey) ?? false)) {
+        return
+      }
+
       if (s.status !== 'active') throw new CouponExhaustedError('Cupom esgotado ou inativo')
       if (s.maxRedemptions !== null && s.timesRedeemed >= s.maxRedemptions) {
         throw new CouponExhaustedError()
+      }
+
+      if (idempotencyKey) {
+        const seen = this.redemptions.get(s.id) ?? new Set<string>()
+        seen.add(idempotencyKey)
+        this.redemptions.set(s.id, seen)
       }
       this.store.set(s.id, clone({ ...s, timesRedeemed: s.timesRedeemed + 1 }))
       return

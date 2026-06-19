@@ -46,4 +46,13 @@ export class MicroCache<V> {
     }
     this.entries.set(key, { value, expiresAt: Date.now() + this.ttlMs })
   }
+
+  delete(key: string): void {
+    if (this.ttlMs <= 0) return
+    this.entries.delete(key)
+  }
+
+  clear(): void {
+    this.entries.clear()
+  }
 }

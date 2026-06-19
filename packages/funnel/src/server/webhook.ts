@@ -10,7 +10,7 @@ export interface WebhookDeps {
   /** Registra o comprador no IdP após confirmar o pagamento. */
   fulfill: (lead: Lead) => Promise<void>
   /** Registra o uso do cupom (best-effort) na confirmação. Opcional (no-op em testes). */
-  redeemCoupon?: (couponCode: string | null) => Promise<void>
+  redeemCoupon?: (couponCode: string | null, paymentId: string) => Promise<void>
   /** Concede o acesso na área de membros (após o registro do comprador). Opcional. */
   grantMembers?: (lead: Lead) => Promise<void>
   /** Boas-vindas (e-mail + WhatsApp) + link de definir senha (best-effort; NUNCA lança). Opcional. */
@@ -67,7 +67,7 @@ export async function handlePaymentWebhook(request: Request, deps: WebhookDeps):
         // `lead.couponCode` é o contexto do ÚLTIMO checkout e podia estar
         // obsoleto (re-cotação sem cupom; boleto antigo com cupom pago depois).
         if (deps.redeemCoupon) {
-          await deps.redeemCoupon(await deps.repo.couponForPayment(paymentId))
+          await deps.redeemCoupon(await deps.repo.couponForPayment(paymentId), paymentId)
         }
       }
 
