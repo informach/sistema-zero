@@ -101,6 +101,33 @@ describe('vitrine (Mural dos Criadores)', () => {
     expect(thread.coverImageUrl).toBe('https://cdn.example.com/capa-padrao.png')
   })
 
+  test('publica no canal parede mesmo quando outro canal vem antes na ordenação', async () => {
+    const sp = await ctx.repo.findActiveSpaceBySlug('mural-dos-criadores')
+    const extra = await ctx.repo.createChannel(sp!.id, {
+      slug: 'avisos',
+      name: 'Avisos',
+      topic: null,
+      accessConfig: null,
+      postingPolicy: 'staff_only',
+      requiresApproval: null,
+      status: 'active',
+    })
+    const storedExtra = ctx.repo.channels.find((c) => c.id === extra.id)
+    if (storedExtra) storedExtra.sortOrder = -1
+    const parede = ctx.repo.channels.find((c) => c.spaceId === sp!.id && c.slug === 'parede')
+    if (!parede) throw new Error('canal parede ausente no teste')
+
+    const res = await ctx.app.handle(
+      jsonRequest('POST', '/hub/internal/showcase-thread', {
+        headers: child(randomUUID()),
+        body: showcaseBody(),
+      }),
+    )
+    expect(res.status).toBe(200)
+    const { thread } = (await res.json()) as { thread: { channelId: string } }
+    expect(thread.channelId).toBe(parede.id)
+  })
+
   test('idempotente: mesma criança/projeto devolve o post existente', async () => {
     const headers = child(randomUUID())
     const first = (await (
@@ -182,7 +209,7 @@ describe('vitrine (Mural dos Criadores)', () => {
       status: 'active',
     })
     await ctx.repo.createChannel(sp.id, {
-      slug: 'geral',
+      slug: 'parede',
       name: 'Geral',
       topic: null,
       accessConfig: null,

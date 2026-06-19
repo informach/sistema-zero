@@ -55,6 +55,8 @@ export class ShowcaseService {
      * (fallback p/ a heurística antiga; em prod o composition-root sempre injeta).
      */
     private readonly showcaseWallSlugs: ReadonlySet<string> = new Set(),
+    /** Slug do canal que recebe os posts de vitrine dentro do servidor designado. */
+    private readonly showcaseChannelSlug = 'parede',
   ) {}
 
   async create(
@@ -85,7 +87,7 @@ export class ShowcaseService {
       throw new PostingNotAllowedError('A vitrine só publica em servidores kids')
     }
     const channels = await this.read.listActiveChannels(space.id)
-    const channel = channels[0]
+    const channel = channels.find((c) => c.slug === this.showcaseChannelSlug)
     if (!channel) throw new ChannelNotFoundError()
     if (channel.postingPolicy !== 'staff_only') {
       throw new PostingNotAllowedError('A vitrine só publica na parede curada (staff_only)')

@@ -89,7 +89,7 @@ export class AccessResolutionService {
         s.accessConfig.visibility === 'community_gated',
     )
     const access = needsAccess
-      ? await this.resolveCourseAccess(actor.accountId, courseRefs, communityRefs)
+      ? await this.resolveCourseAccessFailClosed(actor.accountId, courseRefs, communityRefs)
       : NO_COURSE_ACCESS
     return spaces.map((space) => ({
       space,
@@ -131,7 +131,7 @@ export class AccessResolutionService {
         .filter((c): c is AccessConfig => c !== null && c !== undefined),
     )
     const access = needsAccess
-      ? await this.resolveCourseAccess(actor.accountId, courseRefs, communityRefs)
+      ? await this.resolveCourseAccessFailClosed(actor.accountId, courseRefs, communityRefs)
       : NO_COURSE_ACCESS
     return channels.filter(
       (c) => !c.accessConfig || this.evaluate(c.accessConfig, actor, space.audience, access),
@@ -147,10 +147,10 @@ export class AccessResolutionService {
     if (access.visibility === 'course_gated' || access.visibility === 'community_gated') {
       // Acesso pela CONTA (sessão de perfil → x-auth-account-id); autoria pelo userId.
       // community_gated usa `access.communities` para entitlement `community`.
-      const ca = await this.resolveCourseAccess(
+      const ca = await this.resolveCourseAccessFailClosed(
         actor.accountId,
         access.visibility === 'course_gated' ? access.courses : [],
-        access.visibility === 'community_gated' ? access.communities ?? [] : [],
+        access.visibility === 'community_gated' ? (access.communities ?? []) : [],
       )
       return this.evaluate(access, actor, audience, ca)
     }
@@ -202,6 +202,20 @@ export class AccessResolutionService {
     }
     this.cache.set(key, value)
     return value
+  }
+
+  private async resolveCourseAccessFailClosed(
+    userId: string,
+    courseRefs: string[],
+    communityRefs: string[],
+  ): Promise<CourseAccess> {
+    try {
+      return await this.resolveCourseAccess(userId, courseRefs, communityRefs)
+    } catch {
+      // Fail-closed: uma falha transitória no members não libera conteúdo gated,
+      // mas também não derruba espaços públicos/role_gated na mesma resposta.
+      return NO_COURSE_ACCESS
+    }
   }
 
   /** Invalida o cache de um usuário (webhook de grant). */

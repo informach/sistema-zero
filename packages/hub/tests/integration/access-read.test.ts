@@ -44,6 +44,20 @@ describe('leitura do aluno com resolução de acesso', () => {
     expect(slugs).toEqual(['geral'])
   })
 
+  test('falha do members não derruba públicos e nega gated em fail-closed', async () => {
+    ctx.members.checkAccess = async () => {
+      throw new Error('members indisponível')
+    }
+    const headers = studentHeaders(randomUUID())
+    const list = await ctx.app.handle(jsonRequest('GET', '/hub/spaces?audience=adult', { headers }))
+    expect(list.status).toBe(200)
+    const body = (await list.json()) as { items: Array<{ slug: string }> }
+    expect(body.items.map((s) => s.slug)).toEqual(['geral'])
+
+    const detail = await ctx.app.handle(jsonRequest('GET', '/hub/spaces/curso-a-srv', { headers }))
+    expect(detail.status).toBe(403)
+  })
+
   test('aluno com matrícula no curso vê o servidor course_gated', async () => {
     const userId = randomUUID()
     ctx.members.grantsByUser.set(userId, new Set(['curso-a']))

@@ -18,6 +18,7 @@ import {
   accessCacheTtlMs,
   attachmentLimits,
   type Env,
+  showcaseWallChannelSlug,
   showcaseWallSlugs,
 } from './infrastructure/config/env'
 import { createMembersHttpGateway } from './infrastructure/gateways/members-http.gateway'
@@ -146,6 +147,7 @@ export async function createApplication(env: Env): Promise<Application> {
     () => new Date(),
     () => randomUUID(),
     showcaseWallSlugs(env),
+    showcaseWallChannelSlug(env),
   )
   const moderationService = new ModerationService(threadRepo, moderationRepo, () => new Date())
 

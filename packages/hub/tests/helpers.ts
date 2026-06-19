@@ -54,6 +54,8 @@ export function buildApp(
     readiness?: () => Promise<{ ready: boolean; checks: Record<string, string> }>
     /** Allowlist de paredes de vitrine; vazio = sem restrição (default dos testes). */
     showcaseWallSlugs?: string[]
+    /** Slug do canal da parede dentro do servidor de vitrine. */
+    showcaseWallChannelSlug?: string
   } = {},
 ) {
   const repo = new InMemoryCommunityAdminRepository()
@@ -129,6 +131,7 @@ export function buildApp(
         clock,
         () => randomUUID(),
         new Set(opts.showcaseWallSlugs ?? []),
+        opts.showcaseWallChannelSlug ?? 'parede',
       ),
       internalToken,
     },
