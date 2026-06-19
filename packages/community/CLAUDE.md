@@ -113,7 +113,8 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
   estáticos): CSP (frame-src allowlist youtube-nocookie+vimeo, worker-src blob p/ pdf.js,
   `https:` em script/style/font/connect/img/media porque o **iframe `srcDoc` do embed HERDA a CSP
   do pai** — a fronteira real do embed é o sandbox), XFO DENY, nosniff, Referrer-Policy,
-  Permissions-Policy, `X-Robots-Tag: noindex` e **HSTS em prod**.
+  Permissions-Policy, **COOP `same-origin` + CORP `same-site`** (full review 19/06 — COEP fica OFF,
+  quebraria os iframes cross-origin de vídeo), `X-Robots-Tag: noindex` e **HSTS em prod**.
 - **Impersonação (06/2026 — suporte "entra como" o aluno):** o painel admin abre
   **`GET /impersonar?token=...`** (route handler; fora dos prefixos protegidos do proxy) →
   `exchangeImpersonation` (gateway `POST /auth/impersonate/exchange`, token no CORPO, sem Bearer)
@@ -192,6 +193,10 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
    (`*x*`/`_x_`), links e **imagens `![alt](url)`** (links e imagens SÓ com esquema http(s) —
    `javascript:`/`data:` caem como texto literal; a CSP já libera `img-src https:`). É o ALVO do
    editor TipTap do admin (saída markdown) — token novo na toolbar de lá exige suporte aqui (e teste).
+   ⚠️ **Full review 19/06 (UGC do fórum):** corpo de tópico/comentário do ALUNO renderiza por
+   **`renderUgcMarkdown`** (modo restrito — SEM `<img>` externo, que seria pixel-rastreador vazando o
+   IP de quem lê, e link só como TEXTO) + strip de imagem no write do hub; `renderMarkdown` cru (com
+   imagem/`<a>`) fica SÓ p/ conteúdo do ADMIN (rich_text/quiz).
 6. **Capas/imagens de curso usam `<img>`** (URLs externas arbitrárias da autoria — evita configurar
    `images.remotePatterns` por domínio). `noImgElement` está off no biome p/ este package.
 
@@ -326,8 +331,8 @@ valida e só então importa o `server.js` standalone).
   `output: 'standalone'` + `poweredByHeader: false` no `next.config.ts`.
 - `/api/healthz` é liveness puro (sem auth, sem tocar upstream). **Security headers + CSP vivem
   no `next.config.ts`** (`headers()`, cobrem TODAS as rotas incl. `/api/me/avatar` e estáticos):
-  XFO DENY, nosniff, Referrer-Policy, Permissions-Policy, `X-Robots-Tag: noindex`, **HSTS em
-  prod** e CSP (frame-src allowlist + worker-src blob + base-uri/form-action/frame-ancestors;
+  XFO DENY, nosniff, Referrer-Policy, Permissions-Policy, **COOP/CORP**, `X-Robots-Tag: noindex`,
+  **HSTS em prod** e CSP (frame-src allowlist + worker-src blob + base-uri/form-action/frame-ancestors;
   `https:` em script/style/font/connect/img/media — o srcDoc do embed herda a CSP do pai).
 - ⚠️ **RÉPLICA ÚNICA (não escalar horizontalmente sem refatorar):** o single-flight do refresh
   (`refresh.ts`) e o gate da marca d'água (`watermark-queue.ts`) vivem em `globalThis` — POR

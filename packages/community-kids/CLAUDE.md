@@ -73,7 +73,11 @@ clique → `/api/profiles/:id/select` → reload da home), **Área dos pais** (n
 pede a SENHA do responsável → `/api/profile-session/exit`; numa sessão da conta gerencia direto:
 criar/editar/arquivar + **foto** via `/api/profiles/:id/avatar`, multipart, FORA do matcher + a
 **troca de senha da CONTA** — `ParentPasswordChange` → `/api/auth/me/password`, só na sessão da
-conta, pois senha é da CONTA, não do perfil). O limite de perfis é do plano (criar acima → 409 no
+conta, pois senha é da CONTA, não do perfil). ⚠️ **Full review 19/06: TODA mutação da CONTA exige o
+portão** — `PATCH /api/auth/me` (nome/telefone) e `POST /api/me/avatar` (foto da conta) agora são
+`requireParentGate` (antes eram shims pelados → uma criança numa sessão de conta desfigurava a
+identidade do responsável); a troca de senha **FECHA o portão no sucesso** (`withParentClearedOnPasswordChange`);
+`/api/parents/verify` ganhou cooldown por conta (5 erros → 60s). O limite de perfis é do plano (criar acima → 409 no
 toast). Toda a lógica do BFF vive no **member-shell** (`shell.routes.profile*` + `shell.profiles`);
 os `route.ts` são shims de 1-3 linhas. `getSession().activeProfile` indica a sessão de perfil ativa.
 A página **"Meu perfil"** (`app/(app)/perfil`, sempre em sessão de perfil) edita o PRÓPRIO perfil
@@ -115,7 +119,10 @@ professor" por modal — sem `window.prompt` —, anexos via `AttachmentUploader
 **`after`** p/ respostas — casam com os route handlers). **Privacidade (NÃO
 regredir):** o BFF redige o `authorId` de terceiros; a UI só rotula "Você"/"Colega"
 comparando com o `viewerId` da sessão (ninguém EXIBE id). Corpo de tópico/resposta =
-`renderMarkdown` controlado (mesma superfície XSS-sensível dos blocos). Item "Turma"
+**`renderUgcMarkdown`** (modo RESTRITO — full review 19/06: SEM `<img>` externo, que seria
+pixel-rastreador entre crianças, e links só como TEXTO; o write do hub ainda strippa `![](…)` na
+origem). Imagem legítima segue pelo anexo re-encodado. ⚠️ Em corpo de ALUNO use `renderUgcMarkdown`,
+NUNCA `renderMarkdown` direto (este é p/ conteúdo do admin: rich_text/quiz, com imagem liberada). Item "Turma"
 no `nav.ts` (sidebar + tab bar). ⚠️ **Corpo é OBRIGATÓRIO** no envio (schema do hub
 `body.min(1)`): o botão "Responder" exige `replyBody.trim()` — não habilitar só com
 anexo (o servidor recusaria).
@@ -124,7 +131,8 @@ anexo (o servidor recusaria).
 
 1. **Compras só na ÁREA DOS PAIS** (não no menu da criança): NÃO há página `/compras` nem item
    de menu, mas o RESPONSÁVEL vê o histórico numa sub-tela de `/perfis` (modo gestão, atrás do
-   portão de senha) — shim `app/api/payments/my` gateado por `requireParentGate` sobre
+   portão de senha) — shim `app/api/payments/my` gateado por **`requireParentGateAccountOnly`**
+   (estrito: a sessão de perfil herda o e-mail do responsável → a criança é RECUSADA, 403) sobre
    `shell.routes.paymentsMy`; UI `PurchasesView` no `perfis-client` (Fase 3b, 06/2026). Antes
    o kids não tinha NADA de compras; agora tem, mas escopado ao responsável.
 2. **Classificação do curso INCLUÍDA (decisão do usuário, 06/2026)**: porta kids do fluxo de 5
@@ -192,6 +200,31 @@ do avatar: 401 → widget some); rota BFF `/api/members/gamification/me` = 1 lin
 
 **Backlog da gamificação:** ligas (precisa de massa de alunos), revisão de aula estende streak?,
 vitrine no community adulto (campos já chegam — decisão de produto).
+
+## Full review (segurança + desempenho — lente infantil) — 19/06/2026
+
+Auditoria focada em segurança/desempenho de uma comunidade com área de membros para crianças
+9–13. TODOS os achados corrigidos (a maioria no member-shell compartilhado → roda nos DOIS apps;
+verde no typecheck/test/check dos três pacotes). Mudanças de COMPORTAMENTO/contrato:
+
+- **UGC sem pixel-rastreador (HIGH):** corpo de tópico/comentário do hub renderiza por
+  `renderUgcMarkdown` (sem `<img>` externo nem link clicável) + strip de imagem no write
+  (`stripImageMarkdown`). Ver "### Hub/fórum".
+- **Nada de PII de criança a terceiro:** o Sentry redige `path` (UUID do perfil → `:id`, sem query)
+  e mensagem/stack — `redactPii`/`scrubPath` (member-shell).
+- **Portão dos pais cobre TODA mutação da conta** (auth/me, me/avatar, me/password — que fecha o
+  portão no sucesso —, payments/my + children-stats estritos, verify com cooldown). Ver "Perfis…".
+- **`profileAvatar` autoriza ANTES de gravar no R2** (criança só troca a própria foto; UUID validado).
+- **Borda:** UUID validado em todos os path ids de perfil/hub; headers **COOP/CORP** nos dois apps;
+  `watermarkImage` com `limitInputPixels` (anti OOM da réplica única).
+- **Desempenho:** `React.cache()` deduplica `getMeReadonly`/`getGamificationReadonly` por request; o
+  **layout transmite o `loading.tsx` via `<Suspense>`** (chrome de avatar/gamificação carrega atrás,
+  mantendo `withRanking` — o menu do avatar usa o ranking no lugar do e-mail); busca do catálogo com
+  **debounce** (`use-catalog-filters` — estado local instantâneo, URL espelhada com atraso);
+  `ReactionBar`/`CommentRow` memoizados; `<img>` de aula com `aspect-ratio` (sem CLS); "Avisar
+  professor" com alvo de toque ≥44px + ícone.
+- **Produto (não-bug, decisão pendente):** perfis irmãos NÃO têm PIN (1 clique troca de perfil);
+  PIN numérico segue como futuro.
 
 ## Comandos
 

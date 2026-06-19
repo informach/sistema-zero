@@ -104,7 +104,11 @@ function fittingBadge(
  */
 export async function watermarkImage(buffer: Buffer, mime: string, email: string): Promise<Buffer> {
   const animated = mime === 'image/gif'
-  const base = sharp(buffer, { animated })
+  // `limitInputPixels` (≈50MP, igual ao image-optimizer): uma imagem ≤20MB pode
+  // declarar centenas de MP e estourar a RAM da réplica ÚNICA na decodificação
+  // (OOM derruba o app p/ TODAS as crianças). Excedeu → throw, e o attachmentDownload
+  // já serve o original sem marca (degradação graciosa).
+  const base = sharp(buffer, { animated, limitInputPixels: 50_000_000 })
   const meta = await base.metadata()
   const frameWidth = meta.width ?? 0
   const frameHeight = meta.pageHeight ?? meta.height ?? 0

@@ -6,12 +6,12 @@ import {
   type UploadedAttachment,
 } from '@sistemazero/member-shell/components/attachment-uploader'
 import { RichEditor } from '@sistemazero/member-shell/components/rich-editor'
-import { renderMarkdown } from '@sistemazero/member-shell/lib/markdown'
+import { renderUgcMarkdown } from '@sistemazero/member-shell/lib/markdown'
 import { Button } from '@sistemazero/ui/button'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { Textarea } from '@sistemazero/ui/textarea'
-import { ArrowLeft, Hash, Lock, MessageCircle, Plus, Send } from 'lucide-react'
-import { type ReactNode, useCallback, useEffect, useState } from 'react'
+import { ArrowLeft, Flag, Hash, Lock, MessageCircle, Plus, Send } from 'lucide-react'
+import { memo, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { KidsSpaceSkeleton } from '@/components/kids/kids-space-skeleton'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
@@ -116,6 +116,16 @@ export function KidsSpaceViewClient({
   } | null>(null)
   const [reportReason, setReportReason] = useState('')
   const [reportBusy, setReportBusy] = useState(false)
+
+  // Refs espelham o estado p/ os callbacks de reação/denúncia ficarem com
+  // IDENTIDADE ESTÁVEL (deps vazias) — sem isso, um toque numa reação re-renderiza
+  // TODA a thread (cada comentário re-parseia o markdown). Com `react` estável +
+  // `CommentRow` memoizado, só o item tocado re-renderiza. Lidos só em handlers
+  // assíncronos (nunca durante o render), então a escrita em render é segura.
+  const threadRef = useRef(thread)
+  const commentsRef = useRef(comments)
+  threadRef.current = thread
+  commentsRef.current = comments
 
   const authorLabel = useCallback(
     (item: { isShowcase?: boolean; authorDisplayName?: string | null; authorId: string | null }) =>
@@ -281,38 +291,42 @@ export function KidsSpaceViewClient({
     }
   }
 
-  async function react(target: 'threads' | 'comments', id: string, emoji: string, mine: boolean) {
-    // Otimismo local: alterna a reação na hora e SÓ desfaz se o servidor recusar.
-    const prevThread = thread
-    const prevComments = comments
-    if (target === 'threads') {
-      setThread((t) =>
-        t && t.id === id ? { ...t, reactions: toggleReaction(t.reactions, emoji, mine) } : t,
-      )
-    } else {
-      setComments((cs) =>
-        cs.map((c) =>
-          c.id === id ? { ...c, reactions: toggleReaction(c.reactions, emoji, mine) } : c,
-        ),
-      )
-    }
-    try {
-      if (mine) {
-        await apiSend(`/api/hub/${target}/${enc(id)}/reactions/${enc(emoji)}`, 'DELETE')
+  const react = useCallback(
+    async (target: 'threads' | 'comments', id: string, emoji: string, mine: boolean) => {
+      // Otimismo local: alterna a reação na hora e SÓ desfaz se o servidor recusar.
+      // Snapshot p/ rollback vem dos refs (estado atual) — mantém identidade estável.
+      const prevThread = threadRef.current
+      const prevComments = commentsRef.current
+      if (target === 'threads') {
+        setThread((t) =>
+          t && t.id === id ? { ...t, reactions: toggleReaction(t.reactions, emoji, mine) } : t,
+        )
       } else {
-        await apiSend(`/api/hub/${target}/${enc(id)}/reactions`, 'POST', { emoji })
+        setComments((cs) =>
+          cs.map((c) =>
+            c.id === id ? { ...c, reactions: toggleReaction(c.reactions, emoji, mine) } : c,
+          ),
+        )
       }
-    } catch (err) {
-      setThread(prevThread)
-      setComments(prevComments)
-      toast.error((err as ApiError).message ?? 'Não consegui reagir.')
-    }
-  }
+      try {
+        if (mine) {
+          await apiSend(`/api/hub/${target}/${enc(id)}/reactions/${enc(emoji)}`, 'DELETE')
+        } else {
+          await apiSend(`/api/hub/${target}/${enc(id)}/reactions`, 'POST', { emoji })
+        }
+      } catch (err) {
+        setThread(prevThread)
+        setComments(prevComments)
+        toast.error((err as ApiError).message ?? 'Não consegui reagir.')
+      }
+    },
+    [],
+  )
 
-  function report(target: 'threads' | 'comments', id: string) {
+  const report = useCallback((target: 'threads' | 'comments', id: string) => {
     setReportReason('')
     setReportTarget({ target, id })
-  }
+  }, [])
 
   async function submitReport() {
     if (!reportTarget) return
@@ -577,7 +591,9 @@ function ShowcaseCard({ thread, onOpen }: { thread: HubThreadView; onOpen: () =>
   )
 }
 
-function ReactionBar({
+// memo: numa reação só o item tocado muda de referência; com `onReact` estável os
+// demais ReactionBar/CommentRow pulam o re-render (e o re-parse do markdown).
+const ReactionBar = memo(function ReactionBar({
   target,
   id,
   reactions,
@@ -588,7 +604,7 @@ function ReactionBar({
   reactions: HubThreadView['reactions']
   onReact: (target: 'threads' | 'comments', id: string, emoji: string, mine: boolean) => void
 }) {
-  const byEmoji = new Map(reactions.map((r) => [r.emoji, r]))
+  const byEmoji = useMemo(() => new Map(reactions.map((r) => [r.emoji, r])), [reactions])
   return (
     <div className="flex flex-wrap items-center gap-1">
       {QUICK_EMOJIS.map((emoji) => {
@@ -599,7 +615,7 @@ function ReactionBar({
             type="button"
             key={emoji}
             onClick={() => onReact(target, id, emoji, mine)}
-            className={`inline-flex items-center gap-1 rounded-full border-2 px-2 py-0.5 text-sm transition-colors ${
+            className={`inline-flex min-h-[36px] items-center gap-1 rounded-full border-2 px-2.5 py-1 text-sm transition-colors ${
               mine ? 'border-primary bg-(--kids-cyan-tint)' : 'border-border hover:bg-muted/60'
             }`}
           >
@@ -610,7 +626,58 @@ function ReactionBar({
       })}
     </div>
   )
+})
+
+/**
+ * Botão "Avisar professor" — o controle de segurança MAIS importante do fórum kids.
+ * Alvo de toque ≥44px + ícone (a11y): não pode ser o link minúsculo que era, perdido
+ * entre as reações coloridas, para uma criança aflita que precisa denunciar algo.
+ */
+function ReportButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-3 text-muted-foreground text-sm transition-colors hover:bg-muted/60 hover:text-foreground"
+    >
+      <Flag className="size-4" /> Avisar professor
+    </button>
+  )
 }
+
+// memo: isola o re-parse de markdown + AttachmentList ao comentário que mudou.
+const CommentRow = memo(function CommentRow({
+  comment,
+  label,
+  onReact,
+  onReport,
+}: {
+  comment: HubCommentView
+  label: string
+  onReact: (target: 'threads' | 'comments', id: string, emoji: string, mine: boolean) => void
+  onReport: (target: 'threads' | 'comments', id: string) => void
+}) {
+  const body = useMemo(() => renderUgcMarkdown(comment.body), [comment.body])
+  return (
+    <div className="space-y-2 rounded-2xl border-2 border-border bg-card p-3">
+      <p className="text-muted-foreground text-xs">
+        {label}
+        {comment.pending ? ' · aguardando ✅' : ''}
+      </p>
+      <div className="lesson-prose">{body}</div>
+      <AttachmentList attachments={comment.attachments} />
+      <div className="flex items-center justify-between">
+        <ReactionBar
+          target="comments"
+          id={comment.id}
+          reactions={comment.reactions}
+          onReact={onReact}
+        />
+        <ReportButton onClick={() => onReport('comments', comment.id)} />
+      </div>
+    </div>
+  )
+})
 
 function ThreadDetail({
   thread,
@@ -651,6 +718,8 @@ function ThreadDetail({
     authorId: string | null
   }) => string
 }) {
+  // memo: o corpo do tópico não muda quando um comentário recebe reação.
+  const threadBody = useMemo(() => renderUgcMarkdown(thread.body), [thread.body])
   return (
     <div className="space-y-4">
       <button
@@ -669,7 +738,7 @@ function ThreadDetail({
         ) : null}
         <h2 className="[font-family:var(--font-display)] font-bold text-lg">{thread.title}</h2>
         <p className="text-muted-foreground text-xs">{authorLabel(thread)}</p>
-        <div className="lesson-prose">{renderMarkdown(thread.body)}</div>
+        <div className="lesson-prose">{threadBody}</div>
         <AttachmentList attachments={thread.attachments} />
         <div className="flex items-center justify-between">
           <ReactionBar
@@ -678,13 +747,7 @@ function ThreadDetail({
             reactions={thread.reactions}
             onReact={onReact}
           />
-          <button
-            type="button"
-            onClick={() => onReport('threads', thread.id)}
-            className="text-muted-foreground text-xs hover:text-foreground"
-          >
-            Avisar professor
-          </button>
+          <ReportButton onClick={() => onReport('threads', thread.id)} />
         </div>
       </div>
 
@@ -693,24 +756,13 @@ function ThreadDetail({
           {comments.length} resposta{comments.length === 1 ? '' : 's'}
         </h3>
         {comments.map((c) => (
-          <div key={c.id} className="space-y-2 rounded-2xl border-2 border-border bg-card p-3">
-            <p className="text-muted-foreground text-xs">
-              {authorLabel(c)}
-              {c.pending ? ' · aguardando ✅' : ''}
-            </p>
-            <div className="lesson-prose">{renderMarkdown(c.body)}</div>
-            <AttachmentList attachments={c.attachments} />
-            <div className="flex items-center justify-between">
-              <ReactionBar target="comments" id={c.id} reactions={c.reactions} onReact={onReact} />
-              <button
-                type="button"
-                onClick={() => onReport('comments', c.id)}
-                className="text-muted-foreground text-xs hover:text-foreground"
-              >
-                Avisar professor
-              </button>
-            </div>
-          </div>
+          <CommentRow
+            key={c.id}
+            comment={c}
+            label={authorLabel(c)}
+            onReact={onReact}
+            onReport={onReport}
+          />
         ))}
         {commentsHasMore ? (
           <button

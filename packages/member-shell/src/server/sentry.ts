@@ -78,6 +78,28 @@ export function buildEnvelope(input: {
 
 const INGEST_TIMEOUT_MS = 4000
 
+// ── Redação de PII (kids: NUNCA mandar identificador de criança a um terceiro) ──
+// O Sentry é um terceiro. `request.path` do `onRequestError` é o caminho RESOLVIDO
+// (com query string), então carrega o UUID do PERFIL da criança em rotas como
+// /api/profiles/<uuid>/select|avatar — um identificador estável que recorreria
+// entre eventos (re-identificação dentro do Sentry). A mensagem de erro também pode
+// interpolar dados no futuro. Redigimos os dois antes do envelope. PURO/testável.
+const UUID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi
+const EMAIL_RE = /[\w.+-]+@[\w-]+\.[\w.-]+/gi
+const LONG_NUM_RE = /\d{7,}/g
+const MAX_VALUE_LEN = 500
+const MAX_STACK_LEN = 4000
+
+/** e-mail → [email], UUID → :id, sequência longa de dígitos → :num. */
+export function redactPii(value: string): string {
+  return value.replace(EMAIL_RE, '[email]').replace(UUID_RE, ':id').replace(LONG_NUM_RE, ':num')
+}
+
+/** Caminho seguro p/ telemetria: sem query string + ids redigidos (≈ template). */
+export function scrubPath(path: string): string {
+  return redactPii(path.split('?')[0] ?? path)
+}
+
 function errorParts(error: unknown): { type: string; value: string; stack?: string } {
   if (error instanceof Error) {
     return { type: error.name || 'Error', value: error.message, stack: error.stack }
@@ -94,13 +116,19 @@ export function captureServerException(error: unknown, context?: Record<string, 
     const dsn = parseDsn(process.env.SENTRY_DSN?.trim())
     if (!dsn) return
     const { type, value, stack } = errorParts(error)
+    // `path` (do onRequestError) carrega o UUID do perfil → redige + tira query.
+    const safeContext =
+      context && typeof context.path === 'string'
+        ? { ...context, path: scrubPath(context.path) }
+        : context
     const body = buildEnvelope({
       eventId: randomUUID().replace(/-/g, ''),
       sentAt: new Date().toISOString(),
       errorType: type,
-      errorValue: value,
-      stack,
-      context,
+      // Redige + limita a mensagem (e o stack) — defesa contra PII em `throw` futuro.
+      errorValue: redactPii(value).slice(0, MAX_VALUE_LEN),
+      stack: stack ? redactPii(stack).slice(0, MAX_STACK_LEN) : undefined,
+      context: safeContext,
     })
     void fetch(dsn.ingestUrl, {
       method: 'POST',

@@ -1,4 +1,5 @@
 import 'server-only'
+import { cache } from 'react'
 import { getEnv } from '../lib/env'
 import type {
   AttachmentDownloadView,
@@ -115,6 +116,12 @@ async function publicPost(path: string, body: unknown): Promise<GatewayResponse>
 
 /** Client das rotas de AUTH consumidas pelos apps de aluno (self-service + públicas). */
 export function createAuthClient(gw: GatewayModule) {
+  // Dedup por request (React cache): layout + página chamam getMeReadonly no MESMO
+  // render → 1 só ida ao gateway (a aula re-buscava /auth/me que o layout já buscou).
+  // Request-scoped — não cruza requests/usuários (seguro p/ dado de sessão).
+  const getMeReadonly = cache(
+    (): Promise<GatewayResponse<{ user: UserView }>> => gw.gatewayFetchReadonly('/auth/me'),
+  )
   return {
     /** Usuário fresco do banco (traz `phone`, que pode não estar nas claims). */
     getMe(): Promise<GatewayResponse<{ user: UserView }>> {
@@ -124,10 +131,9 @@ export function createAuthClient(gw: GatewayModule) {
     /**
      * Usuário fresco SEM refresh/escrita de cookie — único seguro em Server
      * Components (layout/page). Access expirado → 401 (caller usa fallback).
+     * Memoizado por request (React cache) — ver const acima.
      */
-    getMeReadonly(): Promise<GatewayResponse<{ user: UserView }>> {
-      return gw.gatewayFetchReadonly('/auth/me')
-    },
+    getMeReadonly,
 
     updateMe(body: {
       firstName?: string
@@ -176,6 +182,15 @@ export function createAuthClient(gw: GatewayModule) {
  */
 export function createMembersClient(gw: GatewayModule, opts: { audience: MembersAudience }) {
   const { audience } = opts
+  // Dedup por request (React cache) — chave é o BOOLEANO `withRanking` (um objeto
+  // literal teria referência diferente por chamada → não deduparia). layout + home/
+  // perfil pedem no mesmo render. Request-scoped (não cruza requests/usuários).
+  const gamificationReadonlyCached = cache(
+    (withRanking: boolean): Promise<GatewayResponse<GamificationMeView>> =>
+      gw.gatewayFetchReadonly('/members/gamification/me', {
+        query: { audience, ...(withRanking ? { ranking: 'true' } : {}) },
+      }),
+  )
   return {
     /** Cursos com matrícula ativa do aluno logado (vitrine do app). */
     listMyCourses(): Promise<GatewayResponse<{ courses: MyCourseView[] }>> {
@@ -256,9 +271,7 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     getGamificationReadonly(opts?: {
       withRanking?: boolean
     }): Promise<GatewayResponse<GamificationMeView>> {
-      return gw.gatewayFetchReadonly('/members/gamification/me', {
-        query: { audience, ...(opts?.withRanking ? { ranking: 'true' } : {}) },
-      })
+      return gamificationReadonlyCached(opts?.withRanking ?? false)
     },
 
     /**

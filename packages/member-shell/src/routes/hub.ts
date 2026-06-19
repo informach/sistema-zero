@@ -12,6 +12,7 @@ import {
   UGC_IMAGE_INPUT_MIME,
 } from '../lib/hub-attachments'
 import { redactAuthors } from '../lib/hub-redact'
+import { stripImageMarkdown } from '../lib/markdown'
 import type { HubAttachmentKind } from '../lib/types'
 import type { HubClient, MembersClient } from '../server/clients'
 import type { GatewayResponse } from '../server/gateway'
@@ -74,6 +75,16 @@ async function readJson(req: Request): Promise<unknown> {
 }
 
 /**
+ * Resolve+valida o id de path como UUID (fail-fast na borda; espelha o
+ * `hubShowcase`). Não-uuid → `null` → o handler responde 400 em vez de mandar lixo
+ * ao gateway. A autorização real (matrícula/role no alvo) segue no hub.
+ */
+async function idFrom(ctx: { params: Promise<{ id: string }> }): Promise<string | null> {
+  const { id } = await ctx.params
+  return UUID_RE.test(id) ? id : null
+}
+
+/**
  * Route handlers `/api/hub/*` dos apps de aluno (community + community-kids). A
  * lógica vive aqui; cada `route.ts` do app vira 1-3 linhas
  * (`export const { GET, POST } = shell.routes.hubThreads`). Espelha o
@@ -121,7 +132,8 @@ export function createHubRoutes(deps: {
 
   const hubChannelThreads = {
     GET: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
-      const { id } = await ctx.params
+      const id = await idFrom(ctx)
+      if (!id) return invalid()
       const url = new URL(req.url)
       const [r, vid] = await Promise.all([
         hub.listThreads(id, {
@@ -137,9 +149,12 @@ export function createHubRoutes(deps: {
       if (readonly) return readonly
       const parsed = CreateThread.safeParse(await readJson(req))
       if (!parsed.success) return invalid()
-      const r = await hub.createThread((await ctx.params).id, {
+      const id = await idFrom(ctx)
+      if (!id) return invalid()
+      const r = await hub.createThread(id, {
         title: parsed.data.title,
-        body: parsed.data.body,
+        // Neutraliza imagem externa no corpo de UGC (pixel-rastreador) já na origem.
+        body: stripImageMarkdown(parsed.data.body),
         attachmentIds: parsed.data.attachmentIds,
       })
       return okRedacted(r, await viewerId())
@@ -148,7 +163,9 @@ export function createHubRoutes(deps: {
 
   const hubThread = {
     GET: async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
-      const [r, vid] = await Promise.all([hub.getThread((await ctx.params).id), viewerId()])
+      const id = await idFrom(ctx)
+      if (!id) return invalid()
+      const [r, vid] = await Promise.all([hub.getThread(id), viewerId()])
       return okRedacted(r, vid)
     },
     PATCH: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
@@ -156,14 +173,17 @@ export function createHubRoutes(deps: {
       if (readonly) return readonly
       const parsed = EditBody.safeParse(await readJson(req))
       if (!parsed.success) return invalid()
-      const r = await hub.editThread((await ctx.params).id, parsed.data.body)
+      const id = await idFrom(ctx)
+      if (!id) return invalid()
+      const r = await hub.editThread(id, stripImageMarkdown(parsed.data.body))
       return okRedacted(r, await viewerId())
     },
   }
 
   const hubThreadComments = {
     GET: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
-      const { id } = await ctx.params
+      const id = await idFrom(ctx)
+      if (!id) return invalid()
       const url = new URL(req.url)
       const [r, vid] = await Promise.all([
         hub.listComments(id, {
@@ -179,8 +199,11 @@ export function createHubRoutes(deps: {
       if (readonly) return readonly
       const parsed = CreateComment.safeParse(await readJson(req))
       if (!parsed.success) return invalid()
-      const r = await hub.createComment((await ctx.params).id, {
-        body: parsed.data.body,
+      const id = await idFrom(ctx)
+      if (!id) return invalid()
+      const r = await hub.createComment(id, {
+        // Neutraliza imagem externa no corpo de UGC (pixel-rastreador) já na origem.
+        body: stripImageMarkdown(parsed.data.body),
         replyToId: parsed.data.replyToId ?? null,
         attachmentIds: parsed.data.attachmentIds,
       })
@@ -194,7 +217,9 @@ export function createHubRoutes(deps: {
       if (readonly) return readonly
       const parsed = EditBody.safeParse(await readJson(req))
       if (!parsed.success) return invalid()
-      const r = await hub.editComment((await ctx.params).id, parsed.data.body)
+      const id = await idFrom(ctx)
+      if (!id) return invalid()
+      const r = await hub.editComment(id, stripImageMarkdown(parsed.data.body))
       return okRedacted(r, await viewerId())
     },
   }
@@ -205,7 +230,9 @@ export function createHubRoutes(deps: {
       if (readonly) return readonly
       const parsed = ReactBody.safeParse(await readJson(req))
       if (!parsed.success) return invalid()
-      return ok(await hub.react('thread', (await ctx.params).id, parsed.data.emoji))
+      const id = await idFrom(ctx)
+      if (!id) return invalid()
+      return ok(await hub.react('thread', id, parsed.data.emoji))
     },
   }
 
@@ -214,6 +241,7 @@ export function createHubRoutes(deps: {
       const readonly = await requireWritableSession()
       if (readonly) return readonly
       const p = await ctx.params
+      if (!UUID_RE.test(p.id)) return invalid()
       return ok(await hub.unreact('thread', p.id, p.emoji))
     },
   }
@@ -224,7 +252,9 @@ export function createHubRoutes(deps: {
       if (readonly) return readonly
       const parsed = ReactBody.safeParse(await readJson(req))
       if (!parsed.success) return invalid()
-      return ok(await hub.react('comment', (await ctx.params).id, parsed.data.emoji))
+      const id = await idFrom(ctx)
+      if (!id) return invalid()
+      return ok(await hub.react('comment', id, parsed.data.emoji))
     },
   }
 
@@ -233,6 +263,7 @@ export function createHubRoutes(deps: {
       const readonly = await requireWritableSession()
       if (readonly) return readonly
       const p = await ctx.params
+      if (!UUID_RE.test(p.id)) return invalid()
       return ok(await hub.unreact('comment', p.id, p.emoji))
     },
   }
@@ -241,7 +272,9 @@ export function createHubRoutes(deps: {
     POST: async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
       const readonly = await requireWritableSession()
       if (readonly) return readonly
-      return ok(await hub.markSeen((await ctx.params).id))
+      const id = await idFrom(ctx)
+      if (!id) return invalid()
+      return ok(await hub.markSeen(id))
     },
   }
 
@@ -251,7 +284,9 @@ export function createHubRoutes(deps: {
       if (readonly) return readonly
       const parsed = ReportBody.safeParse(await readJson(req))
       if (!parsed.success) return invalid()
-      return ok(await hub.report('thread', (await ctx.params).id, parsed.data.reason))
+      const id = await idFrom(ctx)
+      if (!id) return invalid()
+      return ok(await hub.report('thread', id, parsed.data.reason))
     },
   }
 
@@ -261,7 +296,9 @@ export function createHubRoutes(deps: {
       if (readonly) return readonly
       const parsed = ReportBody.safeParse(await readJson(req))
       if (!parsed.success) return invalid()
-      return ok(await hub.report('comment', (await ctx.params).id, parsed.data.reason))
+      const id = await idFrom(ctx)
+      if (!id) return invalid()
+      return ok(await hub.report('comment', id, parsed.data.reason))
     },
   }
 
@@ -273,6 +310,14 @@ export function createHubRoutes(deps: {
    * (fonte da verdade dos limites) e mina o PUT pré-assinado com Content-Length/
    * Content-Type ASSINADOS — o cliente não consegue subir mais bytes nem outro
    * tipo do que foi autorizado. Imagens NÃO usam esta rota (vão re-encodadas).
+   *
+   * ⚠️ Os BYTES do anexo NÃO são inspecionados (o BFF nunca os vê — vão direto ao
+   * R2): o `mime` declarado é só validado contra a allowlist, então um arquivo pode
+   * conter conteúdo que não casa com o tipo declarado. Sem risco de XSS — `text/html`/
+   * `image/svg+xml` ficam FORA da allowlist, documentos são servidos com
+   * `Content-Disposition: attachment`, e o serve é um 302 p/ origem do R2 (cross-origin,
+   * fora da origem do app). Mas é content-spoofing num fórum infantil: a MODERAÇÃO
+   * deve tratar os bytes do anexo como NÃO CONFIÁVEIS (pré-aprovação + report/hide).
    */
   const hubUploadPresign = {
     POST: async (req: Request) => {

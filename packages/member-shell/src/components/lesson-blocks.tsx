@@ -156,12 +156,11 @@ function ImageView({ content }: { content: ImageBlock }) {
   if (!content.url) return null
   return (
     <figure>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={content.url}
-        alt={content.alt ?? ''}
-        className="w-full rounded-lg border border-border"
-      />
+      {/* aspect-ratio reserva a altura ANTES do load → sem layout shift (CLS). */}
+      <div className="aspect-[4/3] w-full overflow-hidden rounded-lg border border-border">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={content.url} alt={content.alt ?? ''} className="size-full object-contain" />
+      </div>
       {content.caption ? (
         <figcaption className="mt-2 text-center text-xs text-muted-foreground">
           {content.caption}

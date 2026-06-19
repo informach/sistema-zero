@@ -6,7 +6,7 @@ import {
   type UploadedAttachment,
 } from '@sistemazero/member-shell/components/attachment-uploader'
 import { RichEditor } from '@sistemazero/member-shell/components/rich-editor'
-import { renderMarkdown } from '@sistemazero/member-shell/lib/markdown'
+import { renderUgcMarkdown } from '@sistemazero/member-shell/lib/markdown'
 import { Badge } from '@sistemazero/ui/badge'
 import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
@@ -555,7 +555,7 @@ function CommentCard({
         {authorLabel(comment.authorId)}
         {comment.pending ? ' · aguardando aprovação' : ''}
       </p>
-      <div className="lesson-prose">{renderMarkdown(comment.body)}</div>
+      <div className="lesson-prose">{renderUgcMarkdown(comment.body)}</div>
       <AttachmentList attachments={comment.attachments} />
       <div className="flex items-center justify-between">
         <ReactionBar
@@ -625,7 +625,7 @@ function ThreadDetail({
       <Card className="space-y-3 p-4">
         <h2 className="text-lg font-bold">{thread.title}</h2>
         <p className="text-xs text-muted-foreground">{authorLabel(thread.authorId)}</p>
-        <div className="lesson-prose">{renderMarkdown(thread.body)}</div>
+        <div className="lesson-prose">{renderUgcMarkdown(thread.body)}</div>
         <AttachmentList attachments={thread.attachments} />
         <div className="flex items-center justify-between">
           <ReactionBar

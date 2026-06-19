@@ -1,5 +1,8 @@
-import { requireParentGate } from '@/server/parent-gate'
+import { requireParentGateAccountOnly } from '@/server/parent-gate'
 import { shell } from '@/server/shell'
 
-// Resumo de progresso dos filhos — só atrás do portão de senha do responsável.
-export const GET = requireParentGate(shell.routes.childrenStats.GET)
+// Painel de progresso dos filhos — EXCLUSIVO dos pais (sessão da CONTA + portão de
+// senha). `requireParentGateAccountOnly` RECUSA a sessão de perfil: a criança não
+// alcança a grade de identidade dos irmãos por esta rota (os stats já viriam zerados,
+// mas é tela dos pais — mesma régua de `/api/payments/my`).
+export const GET = requireParentGateAccountOnly(shell.routes.childrenStats.GET)

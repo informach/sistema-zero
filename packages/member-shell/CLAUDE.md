@@ -48,6 +48,14 @@ redação; `members` é p/ a vitrine — ver abaixo). Os
 helpers PUROS de anexo (`lib/hub-attachments`: allowlist de MIME, limites, `sanitizeFilename`,
 `extForMime`, `isInlineKind`) têm cobertura em `tests/hub-attachments.test.ts`.
 
+**Markdown de UGC (full review 19/06 — NÃO regredir):** o corpo de tópico/comentário é conteúdo NÃO
+confiável de criança p/ criança. Renderize com **`renderUgcMarkdown`** (`lib/markdown`: modo restrito
+— SEM `<img>` externo, que seria pixel-rastreador vazando o IP de quem LÊ, e links só como TEXTO) e o
+WRITE strippa imagem na origem (`stripImageMarkdown`, aplicado em create/edit de tópico e comentário).
+`renderMarkdown` cru (com `![](…)` e `<a>`) é SÓ p/ conteúdo do ADMIN (rich_text/quiz). Os path ids
+do hub/perfil (thread/comment/canal/profileId) são validados como UUID na borda (`idFrom`/`UUID_RE`,
+espelhando o `hubShowcase`). Cobertura em `tests/markdown.test.tsx`.
+
 **Vitrine "Mural dos Criadores" (06/2026):** `hubShowcase` (`POST /api/hub/showcase`, multipart
 `lessonId`/`blockId`/`file?`): no clique "Publicar no Mural" o BFF (1) confere a elegibilidade no
 members (`members.getShowcasePayload` — UX 409 antecipado), (2) sobe o print do jogo (quando veio
@@ -105,7 +113,12 @@ do `/me` (sharp→WebP→R2 por `profileId`) — fica FORA do matcher do proxy (
    desloga), single-flight do refresh (reuse-detection do auth revoga a família), anti-CSRF
    same-origin via Sec-Fetch-Site, guard de mídia ESTRITO (exp NÃO autoriza), gate de concorrência
    da marca d'água (OOM), arquivos >20MB = 302 pré-assinado (downloads-zumbi), storageRef NUNCA ao
-   browser. **Fix aqui = fix nos dois apps; mudança aqui RODA NOS DOIS — rode as suítes dos dois.**
+   browser. **+ full review 19/06 (lente infantil):** UGC do hub renderizado restrito + strip de
+   imagem no write (pixel-rastreador entre crianças); scrub de PII no Sentry (UUID do perfil/e-mail);
+   `profileAvatar` AUTORIZA o dono ANTES de gravar no R2 (criança só troca a própria foto; UUID
+   validado); `watermarkImage` com `limitInputPixels` (anti OOM); `getMeReadonly`/`getGamificationReadonly`
+   memoizados por request via `React.cache()` (dedup layout×página). **Fix aqui = fix nos dois apps;
+   mudança aqui RODA NOS DOIS — rode as suítes dos dois.**
 5. Réplica ÚNICA por app (single-flight/gate em `globalThis` são por processo).
 6. **`vimeo-player`: o SDK é o DONO do iframe** (`new Player(divHost, { id })`). NUNCA voltar ao
    padrão "iframe no JSX + `new Player(iframe)`": `destroy()` REMOVE o iframe do DOM real sem o
@@ -118,7 +131,7 @@ do `/me` (sharp→WebP→R2 por `profileId`) — fica FORA do matcher do proxy (
 
 ## Comandos
 
-`bun run typecheck` · `bun test` (10 suítes — as movidas do community) · `bun run check[:fix]`.
+`bun run typecheck` · `bun test` (15 suítes) · `bun run check[:fix]`.
 Os railway.json do community (e do kids) têm `/packages/member-shell/**` nos watchPatterns e o
 ci.yml mapeia `packages/member-shell/*` → deploy dos apps consumidores — mudou aqui, redeploya lá.
 

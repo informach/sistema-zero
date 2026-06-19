@@ -138,3 +138,21 @@ export function withParentClearedOnLogout<Ctx>(handler: RouteHandler<Ctx>): Rout
     return res
   }
 }
+
+/**
+ * Envolve o `auth/me/password` (troca de senha da CONTA): ao trocar com SUCESSO, o
+ * auth revoga TODAS as sessões e o handler limpa os cookies de sessão — mas o portão
+ * (`sz_kids_parent`, atado ao accountId, 15 min) sobreviveria. A MESMA conta reentrada
+ * dentro da janela herdaria a gestão ABERTA sem reprovar a senha NOVA. Fecha o portão
+ * no sucesso (espelha o `withParentClearedOnLogout`; em falha mantém — o pai segue
+ * gerindo sem reprovar a senha à toa).
+ */
+export function withParentClearedOnPasswordChange<Ctx>(
+  handler: RouteHandler<Ctx>,
+): RouteHandler<Ctx> {
+  return async (req: Request, ctx: Ctx) => {
+    const res = await handler(req, ctx)
+    if (res.ok) await clearParentVerified()
+    return res
+  }
+}

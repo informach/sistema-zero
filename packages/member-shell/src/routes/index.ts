@@ -200,6 +200,10 @@ function extractStudioProject(raw: unknown): Record<string, unknown> | null {
 
 const invalidInput = () => NextResponse.json({ error: { code: 'INVALID_INPUT' } }, { status: 400 })
 
+/** Valida ids de path (perfil etc.) ANTES de tocar gateway/R2 — fail-fast e não
+ * deixa um id forjado virar prefixo de chave no R2 (ver profileAvatar). */
+const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
+
 /**
  * Handlers dos Route Handlers `/api/*` dos apps de área do aluno — a LÓGICA
  * inteira vive aqui (community e community-kids consomem os MESMOS handlers; um
@@ -734,9 +738,15 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
 
   /**
    * Resumo de progresso dos FILHOS p/ a área dos pais (kids). Junta a IDENTIDADE dos
-   * perfis (auth — nome/foto) com os STATS por perfil (members). A lista de perfis vem
-   * do auth (sessão da CONTA — em sessão de perfil o auth recusa com 403, propagado); o
-   * members AINDA filtra por conta (header confiável) — perfil sem atividade vira zeros.
+   * perfis (auth — nome/foto) com os STATS por perfil (members).
+   *
+   * ⚠️ `profiles.list()` usa o `accountContext` do auth, que ACEITA tanto sessão de
+   * conta quanto de perfil (resolve pela conta) — NÃO recusa 403 numa sessão de perfil.
+   * Os STATS, porém, ficam zerados p/ a criança: o members keya por `x-auth-user-id`
+   * (= profileId numa sessão de perfil), que não casa nenhum `account_id` → tudo 0
+   * (intencional). Mesmo assim, p/ o portão ser coerente o shim do KIDS gateia esta
+   * rota com `requireParentGateAccountOnly` (recusa sessão de perfil), então a criança
+   * não chega aqui — é uma tela exclusiva dos pais.
    */
   const childrenStats = {
     GET: async () => {
@@ -902,6 +912,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
       const readonly = await requireWritableSession()
       if (readonly) return readonly
       const { id } = await ctx.params
+      if (!UUID_RE.test(id)) return invalidInput()
       const parsed = UpdateProfileBody.safeParse(await req.json().catch(() => null))
       if (!parsed.success) return invalidInput()
       const { status, body } = await profiles.update(id, parsed.data)
@@ -914,6 +925,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
       const readonly = await requireWritableSession()
       if (readonly) return readonly
       const { id } = await ctx.params
+      if (!UUID_RE.test(id)) return invalidInput()
       const { status, body } = await profiles.archive(id)
       return NextResponse.json(body ?? { ok: status === 200 }, { status })
     },
@@ -927,6 +939,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
   const profileSelect = {
     POST: async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
       const { id } = await ctx.params
+      if (!UUID_RE.test(id)) return invalidInput()
       const { status, body } = await profiles.select(id)
       if (status === 200 && body?.tokens) {
         await session.setSessionCookies(body.tokens)
@@ -973,6 +986,18 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
       const user = await media.requireUploadSession(req)
       if (user instanceof NextResponse) return user
       const { id } = await ctx.params
+      if (!UUID_RE.test(id)) return invalidInput()
+      // AUTORIZA ANTES de escrever no R2: a criança (sessão de perfil) só troca a
+      // PRÓPRIA foto. Sem isso, um `id` forjado viraria prefixo de chave no bucket
+      // compartilhado (objeto órfão sob outro perfil) — o auth bloqueava só o PATCH
+      // de metadado DEPOIS do upload. A conta (sem activeProfile) segue gerindo
+      // qualquer filho próprio (o auth re-checa belongsTo no profiles.update).
+      if (user.activeProfile && user.id !== id) {
+        return NextResponse.json(
+          { error: { code: 'FORBIDDEN', message: 'Você só pode trocar a sua própria foto.' } },
+          { status: 403 },
+        )
+      }
       const oversized = rejectOversizedRequest(req, MAX_IMAGE_BYTES)
       if (oversized) return oversized
       try {

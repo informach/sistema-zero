@@ -49,6 +49,13 @@ const securityHeaders = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
   { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+  // Isolamento de janela/recurso (defesa em profundidade). COOP corta a referência
+  // de janela de um abridor cross-origin; CORP barra que outra origem embuta as
+  // respostas autenticadas como subrecurso (sondagem por timing). COEP fica OFF de
+  // propósito: quebraria os iframes cross-origin de vídeo (youtube-nocookie/vimeo) e
+  // só é preciso p/ SharedArrayBuffer (terminal off).
+  { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
+  { key: 'Cross-Origin-Resource-Policy', value: 'same-site' },
   // Área do aluno é privada: nunca indexável por buscadores (espelha o admin).
   { key: 'X-Robots-Tag', value: 'noindex, nofollow' },
   // HSTS só em produção (TLS termina na borda do Railway; dev local é http).

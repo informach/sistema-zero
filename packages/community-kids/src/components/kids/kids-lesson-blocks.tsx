@@ -218,12 +218,12 @@ function ImageView({ content }: { content: ImageBlock }) {
   if (!content.url) return null
   return (
     <figure className="kids-unit-lime">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={content.url}
-        alt={content.alt ?? ''}
-        className="w-full rounded-3xl border-(--unit) border-4 shadow-[0_5px_0_color-mix(in_oklch,var(--unit)_45%,transparent)]"
-      />
+      {/* aspect-ratio reserva a altura ANTES do load → sem layout shift (CLS) empurrando
+          o texto/botão "Concluir aula" enquanto a imagem baixa no tablet da criança. */}
+      <div className="aspect-[4/3] w-full overflow-hidden rounded-3xl border-(--unit) border-4 shadow-[0_5px_0_color-mix(in_oklch,var(--unit)_45%,transparent)]">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={content.url} alt={content.alt ?? ''} className="size-full object-contain" />
+      </div>
       {content.caption ? (
         <figcaption className="mt-3 text-center font-semibold text-muted-foreground text-sm [font-family:var(--font-display)]">
           {content.caption}
