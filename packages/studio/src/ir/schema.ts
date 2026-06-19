@@ -63,6 +63,9 @@ export type JSExpr =
       whenFalse: JSExpr
     })
   | (JSExprCommon & { type: 'call'; name: string; args: JSExpr[] })
+  // Game 2D — perguntas (booleanos): tecla apertada e sprites se encostando.
+  | (JSExprCommon & { type: 'g2d:keyDown'; key: string })
+  | (JSExprCommon & { type: 'g2d:touches'; aVar: string; bVar: string })
   // Função matemática de um valor (Math.round/floor/ceil/abs/sqrt) e
   // trigonometria de um valor em radianos (Math.sin/cos/tan/asin/acos/atan).
   | (JSExprCommon & {
@@ -178,6 +181,13 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
       type: z.literal('call'),
       name: irText(),
       args: z.array(JSExprSchema),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:keyDown'), key: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:touches'),
+      aVar: irText(),
+      bVar: irText(),
       ...idField,
     }),
     z.object({
@@ -754,6 +764,16 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'g2d:collides'; aVar: string; bVar: string; varName: string })
   | (JSStatementCommon & { type: 'g2d:score'; varName: string; initial: number })
   | (JSStatementCommon & { type: 'g2d:gameOver'; ctxVar: string; text: string })
+  // Palco implícito: limpa a tela do runtime (sem o aluno carregar o "pincel").
+  | (JSStatementCommon & { type: 'g2d:clear' })
+  // Eventos "Quando…" (hats): tecla apertada e sobreposição de sprites.
+  | (JSStatementCommon & { type: 'g2d:onKey'; key: string; body: JSStatement[] })
+  | (JSStatementCommon & {
+      type: 'g2d:onOverlap'
+      aVar: string
+      bVar: string
+      body: JSStatement[]
+    })
   | (JSStatementCommon & { type: 'g2d:updateEachFrame'; body: JSStatement[] })
   // Física: gravidade do mundo, integração de velocidade, ricochete nas bordas,
   // colisão por círculo.
@@ -1294,6 +1314,20 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('g2d:gameOver'),
       ctxVar: irText(),
       text: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:clear'), ...idField }),
+    z.object({
+      type: z.literal('g2d:onKey'),
+      key: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:onOverlap'),
+      aVar: irText(),
+      bVar: irText(),
+      body: z.array(JSStatementSchema),
       ...idField,
     }),
     z.object({ type: z.literal('g2d:setGravity'), value: z.number(), ...idField }),

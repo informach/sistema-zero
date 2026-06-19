@@ -2,11 +2,11 @@ import * as Blockly from 'blockly/core'
 import 'blockly/blocks'
 import { ADVANCED_BLOCKS } from './advanced'
 import { CANVAS_BLOCKS } from './canvas'
-import { CSS_BLOCKS } from './css'
+import { CSS_BLOCKS, CSS_GROUPS } from './css'
 import { DOM_BLOCKS } from './dom'
 import { FUNCTION_BLOCKS } from './functions'
-import { HTML_BLOCKS } from './html'
-import { JS_BLOCKS } from './js'
+import { HTML_BLOCKS, HTML_GROUPS } from './html'
+import { JS_BLOCKS, JS_GROUPS } from './js'
 import { MATH_BLOCKS } from './math'
 import { OBJECT_BLOCKS } from './objects'
 import { OOP_BLOCKS } from './oop'
@@ -18,10 +18,13 @@ export {
   ADVANCED_BLOCKS,
   CANVAS_BLOCKS,
   CSS_BLOCKS,
+  CSS_GROUPS,
   DOM_BLOCKS,
   FUNCTION_BLOCKS,
   HTML_BLOCKS,
+  HTML_GROUPS,
   JS_BLOCKS,
+  JS_GROUPS,
   MATH_BLOCKS,
   OBJECT_BLOCKS,
   OOP_BLOCKS,

@@ -610,9 +610,106 @@ export const gameTwoDRuntime = `(function () {
     }
   }
 
+  // ---- Eventos "Quando…" ----
+  /** Roda fn toda vez que a tecla é apertada (compara e.key e e.code). */
+  function onKey(key, fn) {
+    if (typeof fn !== 'function' || !key) return;
+    window.addEventListener('keydown', function (e) {
+      var hit = e.key === key || e.code === key ||
+        (key === 'Space' && (e.key === ' ' || e.code === 'Space'));
+      if (!hit) return;
+      try { fn(); } catch (err) { console.error(err && err.message ? err.message : err); }
+    });
+  }
+  // Sobreposição: registra pares (getA, getB, fn) e checa num rAF interno (começa
+  // sob demanda). Edge-triggered: dispara UMA vez quando começam a encostar. Os
+  // sprites entram como thunks (() => sprite) — resolvidos no disparo, então a
+  // ordem dos blocos no topo não causa erro de "antes de declarar".
+  var overlapHandlers = [];
+  var MAX_OVERLAP_HANDLERS = 32;
+  var overlapLoopStarted = false;
+  function overlapTick() {
+    for (var i = 0; i < overlapHandlers.length; i++) {
+      var h = overlapHandlers[i];
+      var a = null, b = null;
+      try { a = h.getA(); b = h.getB(); } catch (e) { h.wasOverlapping = false; continue; }
+      var over = isColliding(a, b);
+      if (over && !h.wasOverlapping) {
+        try { h.fn(); } catch (err) { console.error(err && err.message ? err.message : err); }
+      }
+      h.wasOverlapping = over;
+    }
+    requestAnimationFrame(overlapTick);
+  }
+  function onOverlap(getA, getB, fn) {
+    if (typeof getA !== 'function' || typeof getB !== 'function' || typeof fn !== 'function') return;
+    if (overlapHandlers.length >= MAX_OVERLAP_HANDLERS) return;
+    overlapHandlers.push({ getA: getA, getB: getB, fn: fn, wasOverlapping: false });
+    if (!overlapLoopStarted) { overlapLoopStarted = true; requestAnimationFrame(overlapTick); }
+  }
+
+  // ---- Perguntas (booleanos): "tecla apertada?" e "sprites se tocando?" ----
+  // Estado de TODAS as teclas seguradas (o "keys" lá de cima só cobre as setas).
+  var pressedKeys = Object.create(null);
+  window.addEventListener('keydown', function (e) { pressedKeys[e.key] = true; pressedKeys[e.code] = true; });
+  window.addEventListener('keyup', function (e) { pressedKeys[e.key] = false; pressedKeys[e.code] = false; });
+  /** Verdadeiro enquanto a tecla está segurada (compara e.key e e.code). */
+  function keyDown(key) {
+    if (key === 'Space') return !!(pressedKeys[' '] || pressedKeys['Space']);
+    return !!pressedKeys[key];
+  }
+  /** Verdadeiro enquanto os dois sprites se tocam (alias de isColliding). */
+  function touches(a, b) { return isColliding(a, b); }
+
+  // ---- Palco implícito: o runtime é DONO de um canvas + contexto 2D ----
+  // Assim os blocos de jogo não precisam mais mostrar "o pincel (ctx)": o código
+  // gerado referencia 'ctx'/'tela' (definidos aqui) sem o aluno montar o canvas na
+  // mão. Se a página já tiver um <canvas>, usamos ele; senão criamos um. Tudo
+  // PREGUIÇOSO (lazy): este script roda no <head>, antes de o <body> existir.
+  var _stageCanvas = null;
+  var _stageCtx = null;
+  function ensureStage() {
+    if (_stageCtx) return _stageCtx;
+    var c = null;
+    try { c = document.querySelector('canvas'); } catch (e) {}
+    if (!c) {
+      c = document.createElement('canvas');
+      c.width = 320;
+      c.height = 480;
+      c.style.background = '#11172a';
+      c.style.display = 'block';
+      if (document.body) document.body.appendChild(c);
+    }
+    _stageCanvas = c;
+    try { _stageCtx = c.getContext('2d'); } catch (e) {}
+    return _stageCtx;
+  }
+  /** Limpa a tela inteira do palco (use no começo de cada quadro). */
+  function clear() {
+    var c = ensureStage();
+    if (c && c.canvas) c.clearRect(0, 0, c.canvas.width, c.canvas.height);
+  }
+  // Expõe 'ctx' e 'tela' como globais preguiçosos. O setter REDEFINE a propriedade
+  // como um valor normal — assim um eventual 'const ctx = ...' antigo (canvasSetup)
+  // ou uma atribuição direta continuam funcionando sem conflito.
+  function defineLazyGlobal(nameKey, getter) {
+    try {
+      Object.defineProperty(window, nameKey, {
+        configurable: true,
+        get: getter,
+        set: function (v) {
+          Object.defineProperty(window, nameKey, { configurable: true, writable: true, value: v });
+        }
+      });
+    } catch (e) {}
+  }
+  defineLazyGlobal('ctx', function () { return ensureStage(); });
+  defineLazyGlobal('tela', function () { ensureStage(); return _stageCanvas; });
+
   window.SZGame2D = {
     createSprite: createSprite,
     drawSprite: drawSprite,
+    clear: clear,
     isColliding: isColliding,
     gameLoop: gameLoop,
     keys: keys,
@@ -622,6 +719,10 @@ export const gameTwoDRuntime = `(function () {
     circleCollides: circleCollides,
     playSound: playSound,
     onPointer: onPointer,
+    onKey: onKey,
+    onOverlap: onOverlap,
+    keyDown: keyDown,
+    touches: touches,
     pointer: pointer,
     // Imagens / spritesheet / animação (v0.3.0).
     loadImage: loadImage,

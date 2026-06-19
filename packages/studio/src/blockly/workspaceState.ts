@@ -1032,12 +1032,7 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         stmt.__id,
       )
     case 'g2d:drawSprite':
-      return block(
-        'sz_g2d_draw_sprite',
-        { SPRITE: stmt.spriteVar, CTX: stmt.ctxVar },
-        {},
-        stmt.__id,
-      )
+      return block('sz_g2d_draw_sprite', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
     case 'g2d:setPosition': {
       const x = numberExpr(stmt.x)
       const y = numberExpr(stmt.y)
@@ -1062,7 +1057,9 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
     case 'g2d:score':
       return block('sz_g2d_score', { NAME: stmt.varName, INITIAL: stmt.initial }, {}, stmt.__id)
     case 'g2d:gameOver':
-      return block('sz_g2d_game_over', { CTX: stmt.ctxVar, TEXT: stmt.text }, {}, stmt.__id)
+      return block('sz_g2d_game_over', { TEXT: stmt.text }, {}, stmt.__id)
+    case 'g2d:clear':
+      return block('sz_g2d_clear', {}, {}, stmt.__id)
     case 'g2d:updateEachFrame':
       return block(
         'sz_g2d_update_each_frame',
@@ -1075,12 +1072,7 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
     case 'g2d:applyVelocity':
       return block('sz_g2d_apply_velocity', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
     case 'g2d:bounceOnEdges':
-      return block(
-        'sz_g2d_bounce_edges',
-        { SPRITE: stmt.spriteVar, CTX: stmt.ctxVar },
-        {},
-        stmt.__id,
-      )
+      return block('sz_g2d_bounce_edges', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
     case 'g2d:circleCollides':
       return block(
         'sz_g2d_circle_collides',
@@ -1094,6 +1086,20 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       return block(
         'sz_g2d_on_pointer',
         { PX: stmt.xName, PY: stmt.yName },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'g2d:onKey':
+      return block(
+        'sz_g2d_on_key',
+        { KEY: stmt.key },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'g2d:onOverlap':
+      return block(
+        'sz_g2d_on_overlap',
+        { A: stmt.aVar, B: stmt.bVar },
         { BODY: statementsToBlocks(stmt.body) },
         stmt.__id,
       )
@@ -1132,7 +1138,6 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         {
           INDEX: stmt.index,
           SHEET: stmt.sheetVar,
-          CTX: stmt.ctxVar,
           X: stmt.x,
           Y: stmt.y,
           W: stmt.w,
@@ -1144,7 +1149,7 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
     case 'g2d:platformer':
       return block(
         'sz_g2d_platformer',
-        { SPRITE: stmt.spriteVar, CTX: stmt.ctxVar, SPEED: stmt.speed, JUMP: stmt.jump },
+        { SPRITE: stmt.spriteVar, SPEED: stmt.speed, JUMP: stmt.jump },
         {},
         stmt.__id,
       )
@@ -1158,16 +1163,11 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         stmt.__id,
       )
     case 'g2d:clampToScreen':
-      return block(
-        'sz_g2d_clamp_to_screen',
-        { SPRITE: stmt.spriteVar, CTX: stmt.ctxVar },
-        {},
-        stmt.__id,
-      )
+      return block('sz_g2d_clamp_to_screen', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
     case 'g2d:flash':
-      return block('sz_g2d_flash', { COLOR: stmt.color, CTX: stmt.ctxVar }, {}, stmt.__id)
+      return block('sz_g2d_flash', { COLOR: stmt.color }, {}, stmt.__id)
     case 'g2d:shake':
-      return block('sz_g2d_shake', { CTX: stmt.ctxVar, INTENSITY: stmt.intensity }, {}, stmt.__id)
+      return block('sz_g2d_shake', { INTENSITY: stmt.intensity }, {}, stmt.__id)
     case 'g2d:emitParticles':
       return block(
         'sz_g2d_emit_particles',
@@ -1176,7 +1176,7 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         stmt.__id,
       )
     case 'g2d:drawParticles':
-      return block('sz_g2d_draw_particles', { CTX: stmt.ctxVar }, {}, stmt.__id)
+      return block('sz_g2d_draw_particles', {}, {}, stmt.__id)
     case 'g2d:createTileMap':
       return block(
         'sz_g2d_create_tilemap',
@@ -1191,12 +1191,7 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         stmt.__id,
       )
     case 'g2d:drawTileMap':
-      return block(
-        'sz_g2d_draw_tilemap',
-        { MAP: stmt.mapVar, CTX: stmt.ctxVar, X: stmt.x, Y: stmt.y },
-        {},
-        stmt.__id,
-      )
+      return block('sz_g2d_draw_tilemap', { MAP: stmt.mapVar, X: stmt.x, Y: stmt.y }, {}, stmt.__id)
     case 'g2d:tileMapCollide':
       return block(
         'sz_g2d_tilemap_collide',
@@ -1500,6 +1495,10 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_val_variable', { NAME: expr.name })
     case 'bool':
       return block('sz_val_bool', { VALUE: expr.value ? 'true' : 'false' })
+    case 'g2d:keyDown':
+      return block('sz_g2d_key_down', { KEY: expr.key })
+    case 'g2d:touches':
+      return block('sz_g2d_touches', { A: expr.aVar, B: expr.bVar })
     case 'global':
       return block(expr.kind === 'innerWidth' ? 'sz_val_window_width' : 'sz_val_window_height')
     case 'canvasDim':

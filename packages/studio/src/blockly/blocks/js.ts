@@ -358,3 +358,65 @@ export const JS_BLOCKS: BlockDefinition[] = [
       'Busca dados de uma URL e converte para JSON. Os dados ficam na variável "quando chegar"; um erro fica na variável "se der erro". Precisa de permissão de rede no preview (o professor libera a origem).',
   },
 ]
+
+/**
+ * Sub-categorias da LINGUAGEM JavaScript (à la Scratch/MakeCode): cada grupo tem
+ * ÍCONE e uma cor da FAMÍLIA do JS (tons de amarelo/âmbar/ouro), preservando a
+ * identidade "JS é amarelo". Cada bloco herda a cor do grupo. (Não há grupo de
+ * "Texto" porque os valores de texto vivem na categoria "Valores".)
+ */
+export const JS_GROUPS: { name: string; colour: string; types: string[] }[] = [
+  {
+    name: '🏷️ Variáveis',
+    colour: '#fbbf24',
+    types: [
+      'sz_js_var_declare',
+      'sz_js_var_create',
+      'sz_js_const_create',
+      'sz_js_var_assign',
+      'sz_js_var_increment',
+    ],
+  },
+  { name: '❓ Lógica & Se', colour: '#fde047', types: ['sz_js_if_else', 'sz_js_try_catch'] },
+  {
+    name: '🔁 Repetições',
+    colour: '#facc15',
+    types: [
+      'sz_js_repeat',
+      'sz_js_while',
+      'sz_js_do_while',
+      'sz_js_break',
+      'sz_js_continue',
+      'sz_js_for_of',
+      'sz_js_for_range',
+      'sz_js_for_each',
+      'sz_js_set_timeout',
+      'sz_js_set_interval',
+    ],
+  },
+  {
+    name: '📋 Listas',
+    colour: '#eab308',
+    types: ['sz_js_array_push', 'sz_js_array_remove', 'sz_js_array_splice'],
+  },
+  {
+    name: '🖥️ Console & Avisos',
+    colour: '#fcd34d',
+    types: [
+      'sz_js_console_log_text',
+      'sz_js_console_log_var',
+      'sz_js_alert_text',
+      'sz_js_alert_var',
+    ],
+  },
+  { name: '💾 Dados & Web', colour: '#ca8a04', types: ['sz_js_storage_set', 'sz_js_fetch_json'] },
+]
+
+// Cor = navegação: pinta cada bloco com a cor do seu grupo.
+const JS_COLOUR_BY_TYPE = new Map<string, string>(
+  JS_GROUPS.flatMap((g) => g.types.map((t) => [t, g.colour] as const)),
+)
+for (const b of JS_BLOCKS) {
+  const colour = JS_COLOUR_BY_TYPE.get(b.type)
+  if (colour) b.colour = colour
+}

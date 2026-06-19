@@ -443,3 +443,73 @@ export const CSS_BLOCKS: BlockDefinition[] = [
       'Cria uma animação, do estado inicial ao final. Para usar, ligue essa animação a um elemento numa Regra CSS.',
   },
 ]
+
+/**
+ * Sub-categorias da paleta de CSS (à la Scratch/MakeCode): cada grupo tem ÍCONE e
+ * uma cor da FAMÍLIA do CSS (tons de roxo/violeta/rosa), preservando a identidade
+ * "CSS é roxo" e ainda dando navegação por cor. Cada bloco herda a cor do grupo.
+ */
+export const CSS_GROUPS: { name: string; colour: string; types: string[] }[] = [
+  { name: '🧰 Regra', colour: '#a78bfa', types: ['sz_css_rule', 'sz_css_decl'] },
+  {
+    name: '🎨 Cores & Fundo',
+    colour: '#c084fc',
+    types: [
+      'sz_css_body_background',
+      'sz_css_body_text_color',
+      'sz_css_text_color',
+      'sz_css_background_color',
+      'sz_css_gradient',
+    ],
+  },
+  {
+    name: '🔤 Texto',
+    colour: '#b794f6',
+    types: [
+      'sz_css_font_size',
+      'sz_css_font_weight',
+      'sz_css_text_align',
+      'sz_css_text_transform',
+      'sz_css_text_decoration',
+      'sz_css_letter_spacing',
+    ],
+  },
+  {
+    name: '📐 Tamanho & Caixa',
+    colour: '#8b5cf6',
+    types: [
+      'sz_css_width',
+      'sz_css_height',
+      'sz_css_max_width',
+      'sz_css_width_percent',
+      'sz_css_padding',
+      'sz_css_margin',
+      'sz_css_border',
+      'sz_css_border_radius',
+      'sz_css_shadow',
+    ],
+  },
+  {
+    name: '🧩 Layout',
+    colour: '#818cf8',
+    types: [
+      'sz_css_body_center',
+      'sz_css_display_flex',
+      'sz_css_gap',
+      'sz_css_justify',
+      'sz_css_align',
+      'sz_css_grid',
+    ],
+  },
+  { name: '✨ Efeitos', colour: '#e879f9', types: ['sz_css_transition', 'sz_css_keyframes'] },
+  { name: '📱 Responsivo', colour: '#f472b6', types: ['sz_css_media_query'] },
+]
+
+// Cor = navegação: pinta cada bloco com a cor do seu grupo.
+const CSS_COLOUR_BY_TYPE = new Map<string, string>(
+  CSS_GROUPS.flatMap((g) => g.types.map((t) => [t, g.colour] as const)),
+)
+for (const b of CSS_BLOCKS) {
+  const colour = CSS_COLOUR_BY_TYPE.get(b.type)
+  if (colour) b.colour = colour
+}

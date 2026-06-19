@@ -283,6 +283,10 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'var', name: f(block, 'NAME') }
     case 'sz_val_bool':
       return { type: 'bool', value: f(block, 'VALUE') === 'true' }
+    case 'sz_g2d_key_down':
+      return { type: 'g2d:keyDown', key: f(block, 'KEY') || 'ArrowRight' }
+    case 'sz_g2d_touches':
+      return { type: 'g2d:touches', aVar: f(block, 'A'), bVar: f(block, 'B') }
     case 'sz_val_window_width':
       return { type: 'global', kind: 'innerWidth' }
     case 'sz_val_window_height':
@@ -1719,7 +1723,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       seen.add('game-2d')
       return {
         kind: 'js',
-        value: { type: 'g2d:drawSprite', spriteVar: f(block, 'SPRITE'), ctxVar: f(block, 'CTX') },
+        value: { type: 'g2d:drawSprite', spriteVar: f(block, 'SPRITE'), ctxVar: 'ctx' },
       }
     case 'sz_g2d_set_position':
       seen.add('game-2d')
@@ -1764,8 +1768,11 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       seen.add('game-2d')
       return {
         kind: 'js',
-        value: { type: 'g2d:gameOver', ctxVar: f(block, 'CTX'), text: f(block, 'TEXT') },
+        value: { type: 'g2d:gameOver', ctxVar: 'ctx', text: f(block, 'TEXT') },
       }
+    case 'sz_g2d_clear':
+      seen.add('game-2d')
+      return { kind: 'js', value: { type: 'g2d:clear' } }
     case 'sz_g2d_update_each_frame':
       seen.add('game-2d')
       return {
@@ -1788,7 +1795,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:bounceOnEdges',
           spriteVar: f(block, 'SPRITE'),
-          ctxVar: f(block, 'CTX'),
+          ctxVar: 'ctx',
         },
       }
     case 'sz_g2d_circle_collides':
@@ -1820,6 +1827,27 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g2d:onPointer',
           xName: f(block, 'PX') || 'px',
           yName: f(block, 'PY') || 'py',
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_g2d_on_key':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:onKey',
+          key: f(block, 'KEY') || 'ArrowRight',
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_g2d_on_overlap':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:onOverlap',
+          aVar: f(block, 'A'),
+          bVar: f(block, 'B'),
           body: getStatementChildren(block, 'BODY', seen),
         },
       }
@@ -1875,7 +1903,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:drawFrame',
           sheetVar: f(block, 'SHEET'),
-          ctxVar: f(block, 'CTX'),
+          ctxVar: 'ctx',
           index: fn(block, 'INDEX', 0),
           x: fn(block, 'X'),
           y: fn(block, 'Y'),
@@ -1890,7 +1918,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:platformer',
           spriteVar: f(block, 'SPRITE'),
-          ctxVar: f(block, 'CTX'),
+          ctxVar: 'ctx',
           speed: fn(block, 'SPEED', 4),
           jump: fn(block, 'JUMP', 11),
         },
@@ -1918,20 +1946,20 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:clampToScreen',
           spriteVar: f(block, 'SPRITE'),
-          ctxVar: f(block, 'CTX'),
+          ctxVar: 'ctx',
         },
       }
     case 'sz_g2d_flash':
       seen.add('game-2d')
       return {
         kind: 'js',
-        value: { type: 'g2d:flash', color: f(block, 'COLOR'), ctxVar: f(block, 'CTX') },
+        value: { type: 'g2d:flash', color: f(block, 'COLOR'), ctxVar: 'ctx' },
       }
     case 'sz_g2d_shake':
       seen.add('game-2d')
       return {
         kind: 'js',
-        value: { type: 'g2d:shake', ctxVar: f(block, 'CTX'), intensity: fn(block, 'INTENSITY', 8) },
+        value: { type: 'g2d:shake', ctxVar: 'ctx', intensity: fn(block, 'INTENSITY', 8) },
       }
     case 'sz_g2d_emit_particles':
       seen.add('game-2d')
@@ -1947,7 +1975,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       }
     case 'sz_g2d_draw_particles':
       seen.add('game-2d')
-      return { kind: 'js', value: { type: 'g2d:drawParticles', ctxVar: f(block, 'CTX') } }
+      return { kind: 'js', value: { type: 'g2d:drawParticles', ctxVar: 'ctx' } }
 
     case 'sz_g2d_create_tilemap':
       seen.add('game-2d')
@@ -1969,7 +1997,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:drawTileMap',
           mapVar: f(block, 'MAP'),
-          ctxVar: f(block, 'CTX'),
+          ctxVar: 'ctx',
           x: fn(block, 'X'),
           y: fn(block, 'Y'),
         },

@@ -13,6 +13,7 @@ import { registerObjectMutator } from './blocks/objectMutator'
 import { registerParamsMutator } from './blocks/paramsMutator'
 import { registerFieldAssetPicker } from './fields/FieldAssetPicker'
 import { registerFieldColourSZ } from './fields/FieldColourSZ'
+import { registerFieldSpritePicker } from './fields/FieldSpritePicker'
 import { organizeBlocks } from './organize'
 import { registerPtSearchCategory } from './searchCategory'
 import { szTheme } from './theme'
@@ -53,6 +54,9 @@ export function ensureBlocklyInitialized(): void {
   // definição dos blocos da extensão (que rodam na instalação) — senão Blockly
   // falha ao ver o tipo `field_asset_picker`.
   registerFieldAssetPicker()
+  // Campo de seleção de SPRITE (lista os sprites já criados, com miniatura) — mesma
+  // exigência de ordem do asset picker: registrado antes dos blocos da extensão.
+  registerFieldSpritePicker()
   // Os mutators precisam estar registrados antes de qualquer instância dos
   // blocos que os usam ser criada (init aplica o mutator pelo nome).
   registerAnimLoopMutator()

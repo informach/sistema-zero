@@ -663,6 +663,8 @@ function compileStatementCode(
         `${pad}${identifiers.get(stmt.ctxVar)}.font = '32px sans-serif';`,
         `${pad}${identifiers.get(stmt.ctxVar)}.fillText(${JSON.stringify(stmt.text)}, 40, 80);`,
       ].join('\n')
+    case 'g2d:clear':
+      return `${pad}SZGame2D.clear();`
     case 'g2d:setGravity':
       return `${pad}SZGame2D.setGravity(${stmt.value});`
     case 'g2d:applyVelocity':
@@ -681,6 +683,26 @@ function compileStatementCode(
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
       return `${pad}SZGame2D.onPointer((${identifiers.get(stmt.xName)}, ${identifiers.get(stmt.yName)}) => {\n${body}\n${pad}});`
+    }
+    case 'g2d:onKey': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGame2D.onKey(${JSON.stringify(stmt.key)}, function () {\n${body}\n${pad}});`
+    }
+    case 'g2d:onOverlap': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      // Sprites passados como thunks (() => sprite) para resolver no DISPARO, não no
+      // registro — assim a ordem dos blocos no topo não causa TDZ (const léxico).
+      return `${pad}SZGame2D.onOverlap(() => ${identifiers.get(stmt.aVar)}, () => ${identifiers.get(stmt.bVar)}, function () {\n${body}\n${pad}});`
     }
     case 'g2d:createImageSprite': {
       const v = identifiers.get(stmt.varName)

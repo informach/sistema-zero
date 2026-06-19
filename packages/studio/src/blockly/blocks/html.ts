@@ -323,3 +323,57 @@ export const HTML_BLOCKS: BlockDefinition[] = [
     tooltip: 'Cria um campo de texto longo.',
   },
 ]
+
+/**
+ * Sub-categorias da paleta de HTML (à la Scratch/MakeCode): cada grupo tem ÍCONE
+ * e uma cor da FAMÍLIA do HTML (tons de ciano/azul/teal), preservando a identidade
+ * "HTML é ciano" e ainda dando navegação por cor. Cada bloco herda a cor do grupo.
+ */
+export const HTML_GROUPS: { name: string; colour: string; types: string[] }[] = [
+  {
+    name: '📝 Texto',
+    colour: '#22d3ee',
+    types: [
+      'sz_html_h1',
+      'sz_html_h2',
+      'sz_html_h3',
+      'sz_html_p',
+      'sz_html_span',
+      'sz_html_strong',
+      'sz_html_em',
+      'sz_html_text',
+    ],
+  },
+  {
+    name: '📦 Estrutura',
+    colour: '#38bdf8',
+    types: [
+      'sz_html_div',
+      'sz_html_header',
+      'sz_html_nav',
+      'sz_html_section',
+      'sz_html_main',
+      'sz_html_footer',
+    ],
+  },
+  { name: '📋 Listas', colour: '#2dd4bf', types: ['sz_html_ul', 'sz_html_li'] },
+  {
+    name: '🖼️ Mídia & Links',
+    colour: '#60a5fa',
+    types: ['sz_html_image', 'sz_html_link', 'sz_html_canvas'],
+  },
+  {
+    name: '✏️ Formulário',
+    colour: '#818cf8',
+    types: ['sz_html_form', 'sz_html_input', 'sz_html_textarea', 'sz_html_button', 'sz_html_label'],
+  },
+]
+
+// Cor = navegação: pinta cada bloco com a cor do seu grupo.
+const HTML_COLOUR_BY_TYPE = new Map<string, string>(
+  HTML_GROUPS.flatMap((g) => g.types.map((t) => [t, g.colour] as const)),
+)
+for (const b of HTML_BLOCKS) {
+  const colour = HTML_COLOUR_BY_TYPE.get(b.type)
+  if (colour) b.colour = colour
+}

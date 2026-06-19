@@ -198,6 +198,10 @@ export function compileExpr(
       const args = expr.args.map((a) => compileExpr(a, 0, identifiers, rec)).join(', ')
       return `${identifiers.get(expr.name)}(${args})`
     }
+    case 'g2d:keyDown':
+      return `SZGame2D.keyDown(${JSON.stringify(expr.key)})`
+    case 'g2d:touches':
+      return `SZGame2D.touches(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
     case 'now':
       switch (expr.kind) {
         case 'year':

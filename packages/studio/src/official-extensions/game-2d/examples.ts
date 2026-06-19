@@ -27,7 +27,6 @@ export const pongExample: ExtensionExample = {
       },
     ],
     js: [
-      { type: 'canvasSetup', canvasId: 'tela', varName: 'ctx' },
       {
         type: 'g2d:createSprite',
         varName: 'jogador',
@@ -55,7 +54,7 @@ export const pongExample: ExtensionExample = {
       {
         type: 'g2d:updateEachFrame',
         body: [
-          { type: 'canvasClear', ctxVar: 'ctx', canvasVar: 'ctx' },
+          { type: 'g2d:clear' },
           { type: 'g2d:topDown', spriteVar: 'jogador', speed: 4 },
           { type: 'g2d:drawSprite', spriteVar: 'jogador', ctxVar: 'ctx' },
           // Física da bola com os blocos do próprio motor (em vez de JS cru, que
@@ -117,7 +116,6 @@ export const animatedHeroExample: ExtensionExample = {
       },
     ],
     js: [
-      { type: 'canvasSetup', canvasId: 'tela', varName: 'ctx' },
       {
         type: 'g2d:createImageSprite',
         varName: 'heroi',
@@ -145,7 +143,7 @@ export const animatedHeroExample: ExtensionExample = {
       {
         type: 'g2d:updateEachFrame',
         body: [
-          { type: 'canvasClear', ctxVar: 'ctx', canvasVar: 'ctx' },
+          { type: 'g2d:clear' },
           { type: 'g2d:topDown', spriteVar: 'heroi', speed: 3 },
           { type: 'g2d:drawSprite', spriteVar: 'heroi', ctxVar: 'ctx' },
         ],
@@ -183,7 +181,6 @@ export const platformerExample: ExtensionExample = {
       },
     ],
     js: [
-      { type: 'canvasSetup', canvasId: 'tela', varName: 'ctx' },
       {
         type: 'g2d:createSprite',
         varName: 'heroi',
@@ -196,7 +193,7 @@ export const platformerExample: ExtensionExample = {
       {
         type: 'g2d:updateEachFrame',
         body: [
-          { type: 'canvasClear', ctxVar: 'ctx', canvasVar: 'ctx' },
+          { type: 'g2d:clear' },
           { type: 'g2d:platformer', spriteVar: 'heroi', ctxVar: 'ctx', speed: 4, jump: 11 },
           { type: 'g2d:clampToScreen', spriteVar: 'heroi', ctxVar: 'ctx' },
           { type: 'g2d:drawSprite', spriteVar: 'heroi', ctxVar: 'ctx' },
@@ -237,7 +234,6 @@ export const tilemapExample: ExtensionExample = {
       },
     ],
     js: [
-      { type: 'canvasSetup', canvasId: 'tela', varName: 'ctx' },
       {
         type: 'g2d:createTileMap',
         varName: 'mapa',
@@ -258,7 +254,7 @@ export const tilemapExample: ExtensionExample = {
       {
         type: 'g2d:updateEachFrame',
         body: [
-          { type: 'canvasClear', ctxVar: 'ctx', canvasVar: 'ctx' },
+          { type: 'g2d:clear' },
           { type: 'g2d:drawTileMap', mapVar: 'mapa', ctxVar: 'ctx', x: 0, y: 0 },
           { type: 'g2d:topDown', spriteVar: 'heroi', speed: 3 },
           { type: 'g2d:tileMapCollide', spriteVar: 'heroi', mapVar: 'mapa' },

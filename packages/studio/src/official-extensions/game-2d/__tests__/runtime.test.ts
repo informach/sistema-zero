@@ -63,6 +63,20 @@ describe('gameTwoDRuntime', () => {
   })
 })
 
+describe('gameTwoDRuntime — palco implícito (ctx escondido)', () => {
+  it('expõe SZGame2D.clear() e o global lazy "ctx" sem lançar', () => {
+    const win = loadRuntime() as unknown as {
+      SZGame2D: { clear: () => void }
+      ctx: unknown
+    }
+    expect(typeof win.SZGame2D.clear).toBe('function')
+    // ensureStage cria/acha o canvas e limpa; em happy-dom (sem contexto 2D real)
+    // é defensivo e não lança.
+    expect(() => win.SZGame2D.clear()).not.toThrow()
+    expect(() => win.ctx).not.toThrow()
+  })
+})
+
 describe('gameTwoDRuntime — imagens / spritesheet / animação', () => {
   interface FakeImg {
     onload: (() => void) | null

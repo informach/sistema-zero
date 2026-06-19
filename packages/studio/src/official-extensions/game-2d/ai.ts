@@ -1,16 +1,29 @@
 export const gameTwoDPromptContext = `Extensão: Jogo 2D (id: game-2d)
 
+PALCO IMPLÍCITO: o runtime é dono do canvas. As globais 'ctx' (contexto 2D) e
+'tela' (o <canvas>) já existem — o aluno NÃO precisa criar canvas nem chamar
+getContext. Se a página não tiver <canvas>, o runtime cria um. Nos BLOCOS o 'ctx'
+fica escondido; no código gerado ele aparece como argumento (válido e reversível).
+
 API global injetada como window.SZGame2D:
 - createSprite({ x, y, w, h, color }) -> { x, y, w, h, color, vx, vy }
 - drawSprite(ctx, sprite): desenha como fillRect.
+- clear(): limpa a tela inteira (use no começo de cada quadro, antes de desenhar).
 - isColliding(a, b): AABB.
 - gameLoop(fn): chama fn a cada requestAnimationFrame.
 - keys: estado das setas { left, right, up, down }.
 - setGravity(g) / applyVelocity(sprite): física simples (vy += gravidade).
-- bounceOnEdges(sprite, ctx): ricochete nas bordas do canvas.
+- bounceOnEdges(sprite, ctx): quica nas bordas do canvas.
 - circleCollides(a, b): colisão por círculo.
 - playSound(freq, ms): bip sintetizado (Web Audio).
 - onPointer((x, y) => {…}): callback a cada clique/toque; pointer = { x, y, down }.
+
+Eventos "Quando…" e perguntas (booleanos) — o modelo Scratch/MakeCode:
+- onKey('ArrowRight', fn): roda fn a cada vez que a tecla é apertada (keydown).
+- onOverlap(() => a, () => b, fn): roda fn quando os sprites a/b COMEÇAM a se tocar
+  (edge-triggered, num loop interno). Os sprites entram como thunks (() => sprite).
+- keyDown('ArrowRight'): true enquanto a tecla está segurada — use dentro de if/gameLoop.
+- touches(a, b): true enquanto os dois sprites se tocam — use dentro de if.
 
 Imagens e animação (v0.3.0) — as imagens vivem como ASSETS do projeto (aba Assets);
 nos blocos/código você usa o NOME do asset (string):
@@ -39,7 +52,10 @@ Tiles e tilemaps (v0.5.0) — cenários a partir de um tileset (asset com vário
 - tileAt(map, px, py): índice do tile no pixel (px,py) — -1 se vazio/fora.
 
 Quando ajudar o aluno com jogos 2D:
-- Sempre lembre que o canvas precisa ser criado em HTML primeiro.
+- O canvas é IMPLÍCITO ('ctx'/'tela' já existem) — não peça para criar canvas/getContext.
+- Use SZGame2D.clear() no começo do gameLoop para limpar a tela.
+- Prefira os eventos "Quando…" (onKey/onOverlap) e as perguntas (keyDown/touches) a
+  ficar lendo o estado das teclas na mão — é mais próximo de como a criança pensa.
 - Mostre que sprites são apenas objetos JS com x/y/w/h.
 - Para imagens, lembre que o aluno precisa ADICIONAR o asset na aba Assets e usar o nome dele.
 - Enquanto a imagem carrega (ou se faltar), o sprite cai num retângulo (placeholder) — nunca quebra.

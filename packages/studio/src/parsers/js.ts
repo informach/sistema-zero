@@ -1085,6 +1085,12 @@ function identifierName(node: Node): string | null {
   return node?.type === 'Identifier' ? (node.name as string) : null
 }
 
+/** `() => x` (arrow com corpo de identificador) → 'x'; senão null. */
+function arrowReturnIdentifier(node: Node): string | null {
+  if (node?.type !== 'ArrowFunctionExpression') return null
+  return node.body?.type === 'Identifier' ? (node.body.name as string) : null
+}
+
 /** Literal numérico (aceita `-N`); senão null. */
 function numericLiteralValue(node: Node): number | null {
   if (node?.type === 'NumericLiteral') return node.value as number
@@ -1106,6 +1112,22 @@ function asSZGame2DCall(expr: Node): { method: string; args: Node[] } | null {
   if (callee.object?.type !== 'Identifier' || callee.object.name !== 'SZGame2D') return null
   if (callee.property?.type !== 'Identifier') return null
   return { method: callee.property.name as string, args: expr.arguments ?? [] }
+}
+
+/** SZGame2D.keyDown("…") / SZGame2D.touches(a, b) em posição de VALOR (booleano). */
+function matchGame2DExpr(node: Node): JSExpr | null {
+  const call = asSZGame2DCall(node)
+  if (!call) return null
+  const { method, args } = call
+  if (method === 'keyDown' && args[0]?.type === 'StringLiteral') {
+    return { type: 'g2d:keyDown', key: args[0].value as string }
+  }
+  if (method === 'touches') {
+    const aVar = identifierName(args[0])
+    const bVar = identifierName(args[1])
+    if (aVar && bVar) return { type: 'g2d:touches', aVar, bVar }
+  }
+  return null
 }
 
 /**
@@ -1201,12 +1223,31 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
         body: bodyOfFn(args[0], source, ctx),
       }
     }
+    case 'onKey': {
+      // generator: SZGame2D.onKey("ArrowRight", function(){…})
+      if (args[0]?.type !== 'StringLiteral' || !isFn(args[1])) return null
+      return {
+        type: 'g2d:onKey',
+        key: args[0].value as string,
+        body: bodyOfFn(args[1], source, ctx),
+      }
+    }
+    case 'onOverlap': {
+      // generator: SZGame2D.onOverlap(() => a, () => b, function(){…})
+      const aVar = arrowReturnIdentifier(args[0])
+      const bVar = arrowReturnIdentifier(args[1])
+      if (!aVar || !bVar || !isFn(args[2])) return null
+      return { type: 'g2d:onOverlap', aVar, bVar, body: bodyOfFn(args[2], source, ctx) }
+    }
     case 'drawSprite': {
       // generator: SZGame2D.drawSprite(ctx, sprite)
       const ctxVar = identifierName(args[0])
       const spriteVar = identifierName(args[1])
       return ctxVar && spriteVar ? { type: 'g2d:drawSprite', spriteVar, ctxVar } : null
     }
+    case 'clear':
+      // generator: SZGame2D.clear()  (palco implícito — sem ctx)
+      return { type: 'g2d:clear' }
     case 'applyVelocity': {
       const spriteVar = identifierName(args[0])
       return spriteVar ? { type: 'g2d:applyVelocity', spriteVar } : null
@@ -2423,6 +2464,9 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
           }
         }
       }
+      // SZGame2D.keyDown("…") / SZGame2D.touches(a, b) → perguntas (booleanos).
+      const g2dExpr = matchGame2DExpr(node)
+      if (g2dExpr) return g2dExpr
       const now = matchNow(node)
       if (now) return now
       // Math.random() cru → decimal aleatório de 0 a 1 (sz_val_random_float).
@@ -2543,6 +2587,9 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
       return expr.args.every(isSimpleValue)
     case 'call':
       return expr.args.every(isSimpleValue)
+    case 'g2d:keyDown':
+    case 'g2d:touches':
+      return true
     case 'datasetGet':
     case 'classContains':
     case 'shuffle':
