@@ -24,6 +24,7 @@ import type {
   HubThreadView,
 } from '@/lib/types'
 import { KidsLockedSpace } from './kids-locked-space'
+import { pickInitialChannel } from './space-channel'
 
 /** Modo de apresentação: fórum (Clube — conversa) ou vitrine (Mural — cards de projeto). */
 export type SpaceViewMode = 'forum' | 'wall'
@@ -137,7 +138,7 @@ export function KidsSpaceViewClient({
         )
         if (!alive) return
         setChannels(ch.items)
-        setChannel(ch.items[0] ?? null)
+        setChannel(pickInitialChannel(ch.items, mode))
       } catch (err) {
         if (alive) toast.error((err as ApiError).message ?? 'Não consegui abrir este espaço.')
       } finally {
@@ -147,7 +148,7 @@ export function KidsSpaceViewClient({
     return () => {
       alive = false
     }
-  }, [slug])
+  }, [slug, mode])
 
   const loadThreads = useCallback(async (channelId: string) => {
     try {

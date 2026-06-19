@@ -7,6 +7,7 @@ import {
   resolveDownloadMedia,
   WATERMARK_MAX_BYTES,
 } from '../lib/download-mime'
+import { redactProfilesForProfileSession } from '../lib/profile-redaction'
 import type { ChildDashboardView } from '../lib/types'
 import type { AuthClient, MembersClient, PaymentsClient, ProfilesClient } from '../server/clients'
 import type { GatewayModule, GatewayResponse } from '../server/gateway'
@@ -868,17 +869,18 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
   /**
    * Grade de perfis da conta. A gestão (criar/editar/arquivar) exige sessão da conta
    * — o auth recusa perfil. A LISTA, porém, vale também em sessão de perfil (a criança
-   * vê os rostinhos p/ TROCAR de perfil); nesse caso REDIGIMOS o telefone/nascimento
-   * dos irmãos (PII que a grade da criança não usa — só id/nome/avatar).
+   * vê os rostinhos p/ TROCAR de perfil); nesse caso REDIGIMOS telefone/nascimento
+   * dos irmãos, preservando os campos do perfil ativo para o "Meu perfil".
    */
   const profilesList = {
     GET: async () => {
       const { status, body } = await profiles.list()
       if (!body?.profiles) return NextResponse.json(body ?? { profiles: [] }, { status })
       const current = await session.getSession()
-      const profilesOut = current?.activeProfile
-        ? body.profiles.map((p) => ({ ...p, whatsapp: null, birthDate: null }))
-        : body.profiles
+      const profilesOut = redactProfilesForProfileSession(
+        body.profiles,
+        current?.activeProfile ? current.id : null,
+      )
       return NextResponse.json({ profiles: profilesOut }, { status })
     },
   }

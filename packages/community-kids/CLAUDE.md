@@ -105,9 +105,10 @@ pais (`app/perfis`) — `<input type=date>`; só a CONTA edita (o auth recusa em
 Porta kids do fórum compartilhado (`@sistemazero/hub` via member-shell). A LÓGICA do
 BFF (clients do hub, **redação do `authorId` de terceiros**, validação Zod de
 título/corpo/emoji/motivo) vive no **member-shell** (`createHubRoutes`); os `route.ts`
-em `src/app/api/hub/*` são shims de 3 linhas e `/comunidade` entra nos
-`protectedPrefixes` do `proxy.ts`. A UI é PRÓPRIA (tom kids): `app/(app)/comunidade/
-page.tsx` (grade de "Turmas") + `[slug]/page.tsx` → `kids-space-view-client.tsx`
+em `src/app/api/hub/*` são shims de 3 linhas e `/clube-dos-criadores` +
+`/mural-dos-criadores` entram nos `protectedPrefixes` do `proxy.ts`. A UI é PRÓPRIA
+(tom kids): `app/(app)/clube-dos-criadores/page.tsx` e
+`app/(app)/mural-dos-criadores/page.tsx` → `kids-space-view-client.tsx`
 (canais, tópicos, respostas, reações OTIMISTAS com allowlist de emojis, "Avisar
 professor" por modal — sem `window.prompt` —, anexos via `AttachmentUploader`/
 `AttachmentList` do shell, paginação por cursor: query **`cursor`** p/ tópicos e
