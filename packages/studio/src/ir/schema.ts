@@ -66,6 +66,13 @@ export type JSExpr =
   // Game 2D — perguntas (booleanos): tecla apertada e sprites se encostando.
   | (JSExprCommon & { type: 'g2d:keyDown'; key: string })
   | (JSExprCommon & { type: 'g2d:touches'; aVar: string; bVar: string })
+  // Game 2D — quantidade de sprites num grupo (valor numérico).
+  | (JSExprCommon & { type: 'g2d:countGroup'; groupVar: string })
+  // Game 2D — a cena/tela atual é "name"? (valor booleano).
+  | (JSExprCommon & { type: 'g2d:sceneIs'; name: string })
+  // Entrada (caminho "na mão"): tecla apertada (bool) e posição do ponteiro (núm).
+  | (JSExprCommon & { type: 'inputKeyPressed'; key: string })
+  | (JSExprCommon & { type: 'inputPointer'; axis: 'x' | 'y' })
   // Função matemática de um valor (Math.round/floor/ceil/abs/sqrt) e
   // trigonometria de um valor em radianos (Math.sin/cos/tan/asin/acos/atan).
   | (JSExprCommon & {
@@ -190,6 +197,10 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
       bVar: irText(),
       ...idField,
     }),
+    z.object({ type: z.literal('g2d:countGroup'), groupVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:sceneIs'), name: irText(), ...idField }),
+    z.object({ type: z.literal('inputKeyPressed'), key: irText(), ...idField }),
+    z.object({ type: z.literal('inputPointer'), axis: z.enum(['x', 'y']), ...idField }),
     z.object({
       type: z.literal('mathUnary'),
       fn: z.enum([
@@ -748,6 +759,22 @@ export type JSStatement =
       y1: JSExpr
       stops: Array<{ offset: number; color: string }>
     })
+  // Canvas — traçado/contorno, fonte e transparência (caminho "na mão", v0.6.0).
+  | (JSStatementCommon & { type: 'canvasBeginPath'; ctxVar: string })
+  | (JSStatementCommon & { type: 'canvasClosePath'; ctxVar: string })
+  | (JSStatementCommon & { type: 'canvasStroke'; ctxVar: string })
+  | (JSStatementCommon & { type: 'canvasFill'; ctxVar: string })
+  | (JSStatementCommon & { type: 'canvasMoveTo'; ctxVar: string; x: JSExpr; y: JSExpr })
+  | (JSStatementCommon & { type: 'canvasLineTo'; ctxVar: string; x: JSExpr; y: JSExpr })
+  | (JSStatementCommon & { type: 'canvasStrokeStyle'; ctxVar: string; color: JSExpr })
+  | (JSStatementCommon & { type: 'canvasLineWidth'; ctxVar: string; width: JSExpr })
+  | (JSStatementCommon & { type: 'canvasGlobalAlpha'; ctxVar: string; alpha: JSExpr })
+  | (JSStatementCommon & { type: 'canvasFont'; ctxVar: string; size: number; family: string })
+  | (JSStatementCommon & {
+      type: 'canvasTextAlign'
+      ctxVar: string
+      align: 'left' | 'center' | 'right'
+    })
   // Game 2D extension
   | (JSStatementCommon & {
       type: 'g2d:createSprite'
@@ -872,6 +899,161 @@ export type JSStatement =
       y: number
     })
   | (JSStatementCommon & { type: 'g2d:tileMapCollide'; spriteVar: string; mapVar: string })
+  // Grupos de sprites (v0.6.0): MUITOS sprites (tiros, inimigos, estrelas). Um
+  // grupo é uma lista gerenciada de sprites. x/y/vx/vy são expressões (aceitam
+  // aleatório/contas); w/h números; color/image strings (nomes de asset).
+  | (JSStatementCommon & { type: 'g2d:createGroup'; varName: string })
+  | (JSStatementCommon & {
+      type: 'g2d:spawnInGroup'
+      groupVar: string
+      x: JSExpr
+      y: JSExpr
+      w: number
+      h: number
+      color: string
+      vx: JSExpr
+      vy: JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:spawnImageInGroup'
+      groupVar: string
+      x: JSExpr
+      y: JSExpr
+      w: number
+      h: number
+      image: string
+      vx: JSExpr
+      vy: JSExpr
+    })
+  | (JSStatementCommon & { type: 'g2d:updateGroup'; groupVar: string })
+  | (JSStatementCommon & { type: 'g2d:drawGroup'; groupVar: string; ctxVar: string })
+  | (JSStatementCommon & {
+      type: 'g2d:forEachInGroup'
+      groupVar: string
+      itemName: string
+      body: JSStatement[]
+    })
+  | (JSStatementCommon & { type: 'g2d:clearGroup'; groupVar: string })
+  | (JSStatementCommon & {
+      type: 'g2d:pruneOffscreen'
+      groupVar: string
+      ctxVar: string
+      itemName: string
+      body: JSStatement[]
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:onGroupOverlap'
+      aGroup: string
+      aName: string
+      bGroup: string
+      bName: string
+      body: JSStatement[]
+    })
+  | (JSStatementCommon & { type: 'g2d:removeFromGroup'; spriteVar: string; groupVar: string })
+  // Temporizadores: "a cada N quadros/segundos" — vira if (SZGame2D.everyX(...)).
+  | (JSStatementCommon & { type: 'g2d:everyFrames'; n: JSExpr; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'g2d:everySeconds'; seconds: number; body: JSStatement[] })
+  // HUD no canvas (v0.6.0): placar, texto, vidas (corações) e barra.
+  | (JSStatementCommon & {
+      type: 'g2d:drawScore'
+      ctxVar: string
+      label: string
+      value: JSExpr
+      x: number
+      y: number
+      color: string
+      size: number
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:drawLabel'
+      ctxVar: string
+      text: string
+      x: number
+      y: number
+      color: string
+      size: number
+      align: 'left' | 'center' | 'right'
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:drawHearts'
+      ctxVar: string
+      count: JSExpr
+      x: number
+      y: number
+      size: number
+      color: string
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:drawBar'
+      ctxVar: string
+      value: JSExpr
+      max: JSExpr
+      x: number
+      y: number
+      w: number
+      h: number
+      color: string
+    })
+  // Estado/telas (cenas): trocar de tela, overlay de tela cheia e reiniciar.
+  | (JSStatementCommon & { type: 'g2d:setScene'; name: string })
+  | (JSStatementCommon & {
+      type: 'g2d:showScreen'
+      ctxVar: string
+      title: string
+      subtitle: string
+      hint: string
+      bg: string
+    })
+  | (JSStatementCommon & { type: 'g2d:restart' })
+  // Tela: faz o canvas preencher ~percent% da janela (mantendo a proporção).
+  | (JSStatementCommon & { type: 'g2d:fitScreen'; percent: number })
+  // Tiro redondo com brilho num grupo; mover com setas; piscar (invencibilidade).
+  | (JSStatementCommon & {
+      type: 'g2d:spawnBullet'
+      groupVar: string
+      x: JSExpr
+      y: JSExpr
+      radius: number
+      color: string
+      vx: JSExpr
+      vy: JSExpr
+    })
+  | (JSStatementCommon & { type: 'g2d:arrowsX'; spriteVar: string; speed: number })
+  | (JSStatementCommon & { type: 'g2d:blinkSprite'; spriteVar: string; frames: number })
+  // Cenário: fundo de estrelas rolando; arrastar a nave com o dedo (eixo X).
+  | (JSStatementCommon & { type: 'g2d:starfield'; ctxVar: string; speed: number })
+  | (JSStatementCommon & { type: 'g2d:dragX'; spriteVar: string })
+  // Kit "Nave & Asteroides" (v0.7.0): desenhos prontos + efeitos + colisão sprite×grupo.
+  | (JSStatementCommon & {
+      type: 'g2d:createShip'
+      varName: string
+      x: number
+      y: number
+      w: number
+      h: number
+      bodyColor: string
+      wingColor: string
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:spawnAsteroid'
+      groupVar: string
+      x: JSExpr
+      y: JSExpr
+      size: number
+      color: string
+      vx: JSExpr
+      vy: JSExpr
+    })
+  | (JSStatementCommon & { type: 'g2d:explode'; spriteVar: string; color: string })
+  | (JSStatementCommon & { type: 'g2d:playShoot' })
+  | (JSStatementCommon & { type: 'g2d:playExplosion' })
+  | (JSStatementCommon & {
+      type: 'g2d:onSpriteGroupOverlap'
+      spriteVar: string
+      groupVar: string
+      itemName: string
+      body: JSStatement[]
+    })
   // ---- Game 3D (extensão game-3d, Three.js via window.SZGame3D) ----
   | (JSStatementCommon & { type: 'g3d:createScene'; canvasId: string; varName: string })
   | (JSStatementCommon & { type: 'g3d:setBackground'; worldVar: string; color: string })
@@ -1267,6 +1449,55 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       stops: z.array(z.object({ offset: z.number(), color: irText() })),
       ...idField,
     }),
+    z.object({ type: z.literal('canvasBeginPath'), ctxVar: irText(), ...idField }),
+    z.object({ type: z.literal('canvasClosePath'), ctxVar: irText(), ...idField }),
+    z.object({ type: z.literal('canvasStroke'), ctxVar: irText(), ...idField }),
+    z.object({ type: z.literal('canvasFill'), ctxVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('canvasMoveTo'),
+      ctxVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasLineTo'),
+      ctxVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasStrokeStyle'),
+      ctxVar: irText(),
+      color: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasLineWidth'),
+      ctxVar: irText(),
+      width: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasGlobalAlpha'),
+      ctxVar: irText(),
+      alpha: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasFont'),
+      ctxVar: irText(),
+      size: z.number(),
+      family: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasTextAlign'),
+      ctxVar: irText(),
+      align: z.enum(['left', 'center', 'right']),
+      ...idField,
+    }),
     z.object({
       type: z.literal('g2d:createSprite'),
       varName: irText(),
@@ -1465,6 +1696,200 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('g2d:tileMapCollide'),
       spriteVar: irText(),
       mapVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:createGroup'), varName: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:spawnInGroup'),
+      groupVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      w: z.number(),
+      h: z.number(),
+      color: irText(),
+      vx: JSExprSchema,
+      vy: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:spawnImageInGroup'),
+      groupVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      w: z.number(),
+      h: z.number(),
+      image: irText(),
+      vx: JSExprSchema,
+      vy: JSExprSchema,
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:updateGroup'), groupVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:drawGroup'),
+      groupVar: irText(),
+      ctxVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:forEachInGroup'),
+      groupVar: irText(),
+      itemName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:clearGroup'), groupVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:pruneOffscreen'),
+      groupVar: irText(),
+      ctxVar: irText(),
+      itemName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:onGroupOverlap'),
+      aGroup: irText(),
+      aName: irText(),
+      bGroup: irText(),
+      bName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:removeFromGroup'),
+      spriteVar: irText(),
+      groupVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:everyFrames'),
+      n: JSExprSchema,
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:everySeconds'),
+      seconds: z.number(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:drawScore'),
+      ctxVar: irText(),
+      label: irText(),
+      value: JSExprSchema,
+      x: z.number(),
+      y: z.number(),
+      color: irText(),
+      size: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:drawLabel'),
+      ctxVar: irText(),
+      text: irText(),
+      x: z.number(),
+      y: z.number(),
+      color: irText(),
+      size: z.number(),
+      align: z.enum(['left', 'center', 'right']),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:drawHearts'),
+      ctxVar: irText(),
+      count: JSExprSchema,
+      x: z.number(),
+      y: z.number(),
+      size: z.number(),
+      color: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:drawBar'),
+      ctxVar: irText(),
+      value: JSExprSchema,
+      max: JSExprSchema,
+      x: z.number(),
+      y: z.number(),
+      w: z.number(),
+      h: z.number(),
+      color: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:setScene'), name: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:showScreen'),
+      ctxVar: irText(),
+      title: irText(),
+      subtitle: irText(),
+      hint: irText(),
+      bg: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:restart'), ...idField }),
+    z.object({
+      type: z.literal('g2d:starfield'),
+      ctxVar: irText(),
+      speed: z.number(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:dragX'), spriteVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:fitScreen'), percent: z.number(), ...idField }),
+    z.object({
+      type: z.literal('g2d:spawnBullet'),
+      groupVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      radius: z.number(),
+      color: irText(),
+      vx: JSExprSchema,
+      vy: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:arrowsX'),
+      spriteVar: irText(),
+      speed: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:blinkSprite'),
+      spriteVar: irText(),
+      frames: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:createShip'),
+      varName: irText(),
+      x: z.number(),
+      y: z.number(),
+      w: z.number(),
+      h: z.number(),
+      bodyColor: irText(),
+      wingColor: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:spawnAsteroid'),
+      groupVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      size: z.number(),
+      color: irText(),
+      vx: JSExprSchema,
+      vy: JSExprSchema,
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:explode'), spriteVar: irText(), color: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:playShoot'), ...idField }),
+    z.object({ type: z.literal('g2d:playExplosion'), ...idField }),
+    z.object({
+      type: z.literal('g2d:onSpriteGroupOverlap'),
+      spriteVar: irText(),
+      groupVar: irText(),
+      itemName: irText(),
+      body: z.array(JSStatementSchema),
       ...idField,
     }),
     z.object({
@@ -1761,6 +2186,37 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:createTileMap',
   'g2d:drawTileMap',
   'g2d:tileMapCollide',
+  'g2d:createGroup',
+  'g2d:spawnInGroup',
+  'g2d:spawnImageInGroup',
+  'g2d:updateGroup',
+  'g2d:drawGroup',
+  'g2d:forEachInGroup',
+  'g2d:clearGroup',
+  'g2d:pruneOffscreen',
+  'g2d:onGroupOverlap',
+  'g2d:removeFromGroup',
+  'g2d:everyFrames',
+  'g2d:everySeconds',
+  'g2d:drawScore',
+  'g2d:drawLabel',
+  'g2d:drawHearts',
+  'g2d:drawBar',
+  'g2d:setScene',
+  'g2d:showScreen',
+  'g2d:restart',
+  'g2d:starfield',
+  'g2d:dragX',
+  'g2d:fitScreen',
+  'g2d:spawnBullet',
+  'g2d:arrowsX',
+  'g2d:blinkSprite',
+  'g2d:createShip',
+  'g2d:spawnAsteroid',
+  'g2d:explode',
+  'g2d:playShoot',
+  'g2d:playExplosion',
+  'g2d:onSpriteGroupOverlap',
 ])
 
 export const G3D_STATEMENT_TYPES = new Set([

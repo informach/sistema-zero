@@ -1017,6 +1017,53 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         stmt.__id,
       )
     }
+    case 'canvasBeginPath':
+      return block('sz_canvas_begin_path', { CTX: stmt.ctxVar }, {}, stmt.__id)
+    case 'canvasClosePath':
+      return block('sz_canvas_close_path', { CTX: stmt.ctxVar }, {}, stmt.__id)
+    case 'canvasStroke':
+      return block('sz_canvas_stroke', { CTX: stmt.ctxVar }, {}, stmt.__id)
+    case 'canvasFill':
+      return block('sz_canvas_fill', { CTX: stmt.ctxVar }, {}, stmt.__id)
+    case 'canvasMoveTo': {
+      const vs = valueBlocks({ X: stmt.x, Y: stmt.y })
+      return vs === null
+        ? rawJSBlock(stmt)
+        : block('sz_canvas_move_to', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
+    }
+    case 'canvasLineTo': {
+      const vs = valueBlocks({ X: stmt.x, Y: stmt.y })
+      return vs === null
+        ? rawJSBlock(stmt)
+        : block('sz_canvas_line_to', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
+    }
+    case 'canvasStrokeStyle': {
+      const vs = valueBlocks({ COLOR: stmt.color })
+      return vs === null
+        ? rawJSBlock(stmt)
+        : block('sz_canvas_stroke_style', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
+    }
+    case 'canvasLineWidth': {
+      const vs = valueBlocks({ WIDTH: stmt.width })
+      return vs === null
+        ? rawJSBlock(stmt)
+        : block('sz_canvas_line_width', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
+    }
+    case 'canvasGlobalAlpha': {
+      const vs = valueBlocks({ ALPHA: stmt.alpha })
+      return vs === null
+        ? rawJSBlock(stmt)
+        : block('sz_canvas_global_alpha', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
+    }
+    case 'canvasFont':
+      return block(
+        'sz_canvas_font',
+        { CTX: stmt.ctxVar, SIZE: stmt.size, FAMILY: stmt.family },
+        {},
+        stmt.__id,
+      )
+    case 'canvasTextAlign':
+      return block('sz_canvas_text_align', { CTX: stmt.ctxVar, ALIGN: stmt.align }, {}, stmt.__id)
     case 'g2d:createSprite':
       return block(
         'sz_g2d_create_sprite',
@@ -1197,6 +1244,209 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         'sz_g2d_tilemap_collide',
         { SPRITE: stmt.spriteVar, MAP: stmt.mapVar },
         {},
+        stmt.__id,
+      )
+    case 'g2d:createGroup':
+      return block('sz_g2d_create_group', { NAME: stmt.varName }, {}, stmt.__id)
+    case 'g2d:spawnInGroup': {
+      const x = exprToValueBlock(stmt.x)
+      const y = exprToValueBlock(stmt.y)
+      const vx = exprToValueBlock(stmt.vx)
+      const vy = exprToValueBlock(stmt.vy)
+      if (!x || !y || !vx || !vy) return rawJSBlock(stmt)
+      return block(
+        'sz_g2d_spawn_in_group',
+        { GROUP: stmt.groupVar, W: stmt.w, H: stmt.h, COLOR: stmt.color },
+        {},
+        stmt.__id,
+        { X: x, Y: y, VX: vx, VY: vy },
+      )
+    }
+    case 'g2d:spawnImageInGroup': {
+      const x = exprToValueBlock(stmt.x)
+      const y = exprToValueBlock(stmt.y)
+      const vx = exprToValueBlock(stmt.vx)
+      const vy = exprToValueBlock(stmt.vy)
+      if (!x || !y || !vx || !vy) return rawJSBlock(stmt)
+      return block(
+        'sz_g2d_spawn_image_in_group',
+        { GROUP: stmt.groupVar, W: stmt.w, H: stmt.h, IMAGE: stmt.image },
+        {},
+        stmt.__id,
+        { X: x, Y: y, VX: vx, VY: vy },
+      )
+    }
+    case 'g2d:updateGroup':
+      return block('sz_g2d_update_group', { GROUP: stmt.groupVar }, {}, stmt.__id)
+    case 'g2d:drawGroup':
+      return block('sz_g2d_draw_group', { GROUP: stmt.groupVar }, {}, stmt.__id)
+    case 'g2d:forEachInGroup':
+      return block(
+        'sz_g2d_for_each_in_group',
+        { ITEM: stmt.itemName, GROUP: stmt.groupVar },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'g2d:clearGroup':
+      return block('sz_g2d_clear_group', { GROUP: stmt.groupVar }, {}, stmt.__id)
+    case 'g2d:pruneOffscreen':
+      return block(
+        'sz_g2d_prune_offscreen',
+        { GROUP: stmt.groupVar, ITEM: stmt.itemName },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'g2d:onGroupOverlap':
+      return block(
+        'sz_g2d_on_group_overlap',
+        { A: stmt.aGroup, ANAME: stmt.aName, B: stmt.bGroup, BNAME: stmt.bName },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'g2d:removeFromGroup':
+      return block(
+        'sz_g2d_remove_from_group',
+        { SPRITE: stmt.spriteVar, GROUP: stmt.groupVar },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:everyFrames': {
+      const n = exprToValueBlock(stmt.n)
+      if (!n) return rawJSBlock(stmt)
+      return block('sz_g2d_every_frames', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id, {
+        N: n,
+      })
+    }
+    case 'g2d:everySeconds':
+      return block(
+        'sz_g2d_every_seconds',
+        { SECS: stmt.seconds },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'g2d:drawScore': {
+      const value = exprToValueBlock(stmt.value)
+      if (!value) return rawJSBlock(stmt)
+      return block(
+        'sz_g2d_draw_score',
+        { LABEL: stmt.label, X: stmt.x, Y: stmt.y, COLOR: stmt.color, SIZE: stmt.size },
+        {},
+        stmt.__id,
+        { VALUE: value },
+      )
+    }
+    case 'g2d:drawLabel':
+      return block(
+        'sz_g2d_draw_label',
+        {
+          TEXT: stmt.text,
+          X: stmt.x,
+          Y: stmt.y,
+          COLOR: stmt.color,
+          SIZE: stmt.size,
+          ALIGN: stmt.align,
+        },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:drawHearts': {
+      const count = exprToValueBlock(stmt.count)
+      if (!count) return rawJSBlock(stmt)
+      return block(
+        'sz_g2d_draw_hearts',
+        { X: stmt.x, Y: stmt.y, SIZE: stmt.size, COLOR: stmt.color },
+        {},
+        stmt.__id,
+        { COUNT: count },
+      )
+    }
+    case 'g2d:drawBar': {
+      const value = exprToValueBlock(stmt.value)
+      const max = exprToValueBlock(stmt.max)
+      if (!value || !max) return rawJSBlock(stmt)
+      return block(
+        'sz_g2d_draw_bar',
+        { X: stmt.x, Y: stmt.y, W: stmt.w, H: stmt.h, COLOR: stmt.color },
+        {},
+        stmt.__id,
+        { VALUE: value, MAX: max },
+      )
+    }
+    case 'g2d:setScene':
+      return block('sz_g2d_set_scene', { SCENE: stmt.name }, {}, stmt.__id)
+    case 'g2d:showScreen':
+      return block(
+        'sz_g2d_show_screen',
+        { TITLE: stmt.title, SUBTITLE: stmt.subtitle, HINT: stmt.hint, BG: stmt.bg },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:restart':
+      return block('sz_g2d_restart', {}, {}, stmt.__id)
+    case 'g2d:starfield':
+      return block('sz_g2d_starfield', { SPEED: stmt.speed }, {}, stmt.__id)
+    case 'g2d:dragX':
+      return block('sz_g2d_drag_x', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
+    case 'g2d:fitScreen':
+      return block('sz_g2d_fit_screen', { PERCENT: stmt.percent }, {}, stmt.__id)
+    case 'g2d:spawnBullet': {
+      const x = exprToValueBlock(stmt.x)
+      const y = exprToValueBlock(stmt.y)
+      const vx = exprToValueBlock(stmt.vx)
+      const vy = exprToValueBlock(stmt.vy)
+      if (!x || !y || !vx || !vy) return rawJSBlock(stmt)
+      return block(
+        'sz_g2d_spawn_bullet',
+        { GROUP: stmt.groupVar, R: stmt.radius, COLOR: stmt.color },
+        {},
+        stmt.__id,
+        { X: x, Y: y, VX: vx, VY: vy },
+      )
+    }
+    case 'g2d:arrowsX':
+      return block('sz_g2d_arrows_x', { SPRITE: stmt.spriteVar, SPEED: stmt.speed }, {}, stmt.__id)
+    case 'g2d:blinkSprite':
+      return block('sz_g2d_blink', { SPRITE: stmt.spriteVar, FRAMES: stmt.frames }, {}, stmt.__id)
+    case 'g2d:createShip':
+      return block(
+        'sz_g2d_create_ship',
+        {
+          NAME: stmt.varName,
+          X: stmt.x,
+          Y: stmt.y,
+          W: stmt.w,
+          H: stmt.h,
+          BODY: stmt.bodyColor,
+          WINGS: stmt.wingColor,
+        },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:spawnAsteroid': {
+      const x = exprToValueBlock(stmt.x)
+      const y = exprToValueBlock(stmt.y)
+      const vx = exprToValueBlock(stmt.vx)
+      const vy = exprToValueBlock(stmt.vy)
+      if (!x || !y || !vx || !vy) return rawJSBlock(stmt)
+      return block(
+        'sz_g2d_spawn_asteroid',
+        { GROUP: stmt.groupVar, SIZE: stmt.size, COLOR: stmt.color },
+        {},
+        stmt.__id,
+        { X: x, Y: y, VX: vx, VY: vy },
+      )
+    }
+    case 'g2d:explode':
+      return block('sz_g2d_explode', { SPRITE: stmt.spriteVar, COLOR: stmt.color }, {}, stmt.__id)
+    case 'g2d:playShoot':
+      return block('sz_g2d_play_shoot', {}, {}, stmt.__id)
+    case 'g2d:playExplosion':
+      return block('sz_g2d_play_explosion', {}, {}, stmt.__id)
+    case 'g2d:onSpriteGroupOverlap':
+      return block(
+        'sz_g2d_on_sprite_group_overlap',
+        { SPRITE: stmt.spriteVar, GROUP: stmt.groupVar, ANAME: stmt.itemName },
+        { BODY: statementsToBlocks(stmt.body) },
         stmt.__id,
       )
     case 'g3d:createScene':
@@ -1499,6 +1749,14 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_g2d_key_down', { KEY: expr.key })
     case 'g2d:touches':
       return block('sz_g2d_touches', { A: expr.aVar, B: expr.bVar })
+    case 'g2d:countGroup':
+      return block('sz_g2d_count_group', { GROUP: expr.groupVar })
+    case 'g2d:sceneIs':
+      return block('sz_g2d_scene_is', { SCENE: expr.name })
+    case 'inputKeyPressed':
+      return block('sz_input_key_pressed', { KEY: expr.key })
+    case 'inputPointer':
+      return block(expr.axis === 'y' ? 'sz_input_pointer_y' : 'sz_input_pointer_x')
     case 'global':
       return block(expr.kind === 'innerWidth' ? 'sz_val_window_width' : 'sz_val_window_height')
     case 'canvasDim':

@@ -287,6 +287,16 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'g2d:keyDown', key: f(block, 'KEY') || 'ArrowRight' }
     case 'sz_g2d_touches':
       return { type: 'g2d:touches', aVar: f(block, 'A'), bVar: f(block, 'B') }
+    case 'sz_g2d_count_group':
+      return { type: 'g2d:countGroup', groupVar: f(block, 'GROUP') }
+    case 'sz_g2d_scene_is':
+      return { type: 'g2d:sceneIs', name: f(block, 'SCENE') || 'inicio' }
+    case 'sz_input_key_pressed':
+      return { type: 'inputKeyPressed', key: f(block, 'KEY') || 'ArrowRight' }
+    case 'sz_input_pointer_x':
+      return { type: 'inputPointer', axis: 'x' }
+    case 'sz_input_pointer_y':
+      return { type: 'inputPointer', axis: 'y' }
     case 'sz_val_window_width':
       return { type: 'global', kind: 'innerWidth' }
     case 'sz_val_window_height':
@@ -1599,6 +1609,82 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         },
       }
 
+    // ---- Canvas: traçado/contorno, fonte e transparência (caminho "na mão") ----
+    case 'sz_canvas_begin_path':
+      return { kind: 'js', value: { type: 'canvasBeginPath', ctxVar: f(block, 'CTX') } }
+    case 'sz_canvas_close_path':
+      return { kind: 'js', value: { type: 'canvasClosePath', ctxVar: f(block, 'CTX') } }
+    case 'sz_canvas_stroke':
+      return { kind: 'js', value: { type: 'canvasStroke', ctxVar: f(block, 'CTX') } }
+    case 'sz_canvas_fill':
+      return { kind: 'js', value: { type: 'canvasFill', ctxVar: f(block, 'CTX') } }
+    case 'sz_canvas_move_to':
+      return {
+        kind: 'js',
+        value: {
+          type: 'canvasMoveTo',
+          ctxVar: f(block, 'CTX'),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_canvas_line_to':
+      return {
+        kind: 'js',
+        value: {
+          type: 'canvasLineTo',
+          ctxVar: f(block, 'CTX'),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_canvas_stroke_style':
+      return {
+        kind: 'js',
+        value: {
+          type: 'canvasStrokeStyle',
+          ctxVar: f(block, 'CTX'),
+          color: exprInput(block, 'COLOR', { type: 'color', value: '#000000' }),
+        },
+      }
+    case 'sz_canvas_line_width':
+      return {
+        kind: 'js',
+        value: {
+          type: 'canvasLineWidth',
+          ctxVar: f(block, 'CTX'),
+          width: exprInput(block, 'WIDTH', { type: 'num', value: 1 }),
+        },
+      }
+    case 'sz_canvas_global_alpha':
+      return {
+        kind: 'js',
+        value: {
+          type: 'canvasGlobalAlpha',
+          ctxVar: f(block, 'CTX'),
+          alpha: exprInput(block, 'ALPHA', { type: 'num', value: 1 }),
+        },
+      }
+    case 'sz_canvas_font':
+      return {
+        kind: 'js',
+        value: {
+          type: 'canvasFont',
+          ctxVar: f(block, 'CTX'),
+          size: fn(block, 'SIZE', 20),
+          family: f(block, 'FAMILY') || 'sans-serif',
+        },
+      }
+    case 'sz_canvas_text_align':
+      return {
+        kind: 'js',
+        value: {
+          type: 'canvasTextAlign',
+          ctxVar: f(block, 'CTX'),
+          align: (f(block, 'ALIGN') || 'left') as 'left' | 'center' | 'right',
+        },
+      }
+
     // ---- Orientação a objetos ----
     case 'sz_js_class': {
       const members = getClassMembers(block, seen)
@@ -2010,6 +2096,301 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g2d:tileMapCollide',
           spriteVar: f(block, 'SPRITE'),
           mapVar: f(block, 'MAP'),
+        },
+      }
+
+    // ---- Grupos de sprites + temporizadores (v0.6.0) ----
+    case 'sz_g2d_create_group':
+      seen.add('game-2d')
+      return { kind: 'js', value: { type: 'g2d:createGroup', varName: f(block, 'NAME') } }
+    case 'sz_g2d_spawn_in_group':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:spawnInGroup',
+          groupVar: f(block, 'GROUP'),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+          w: fn(block, 'W', 20),
+          h: fn(block, 'H', 20),
+          color: f(block, 'COLOR'),
+          vx: exprInput(block, 'VX', { type: 'num', value: 0 }),
+          vy: exprInput(block, 'VY', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_g2d_spawn_image_in_group':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:spawnImageInGroup',
+          groupVar: f(block, 'GROUP'),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+          w: fn(block, 'W', 20),
+          h: fn(block, 'H', 20),
+          image: f(block, 'IMAGE'),
+          vx: exprInput(block, 'VX', { type: 'num', value: 0 }),
+          vy: exprInput(block, 'VY', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_g2d_update_group':
+      seen.add('game-2d')
+      return { kind: 'js', value: { type: 'g2d:updateGroup', groupVar: f(block, 'GROUP') } }
+    case 'sz_g2d_draw_group':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: { type: 'g2d:drawGroup', groupVar: f(block, 'GROUP'), ctxVar: 'ctx' },
+      }
+    case 'sz_g2d_for_each_in_group':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:forEachInGroup',
+          itemName: f(block, 'ITEM') || 'sprite',
+          groupVar: f(block, 'GROUP'),
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_g2d_clear_group':
+      seen.add('game-2d')
+      return { kind: 'js', value: { type: 'g2d:clearGroup', groupVar: f(block, 'GROUP') } }
+    case 'sz_g2d_prune_offscreen':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:pruneOffscreen',
+          groupVar: f(block, 'GROUP'),
+          ctxVar: 'ctx',
+          itemName: f(block, 'ITEM') || 'sprite',
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_g2d_on_group_overlap':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:onGroupOverlap',
+          aGroup: f(block, 'A'),
+          aName: f(block, 'ANAME') || 'a',
+          bGroup: f(block, 'B'),
+          bName: f(block, 'BNAME') || 'b',
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_g2d_remove_from_group':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:removeFromGroup',
+          spriteVar: f(block, 'SPRITE'),
+          groupVar: f(block, 'GROUP'),
+        },
+      }
+    case 'sz_g2d_every_frames':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:everyFrames',
+          n: exprInput(block, 'N', { type: 'num', value: 30 }),
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_g2d_every_seconds':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:everySeconds',
+          seconds: fn(block, 'SECS', 2),
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+
+    // ---- HUD no canvas + estado/telas (v0.6.0) ----
+    case 'sz_g2d_draw_score':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:drawScore',
+          ctxVar: 'ctx',
+          label: f(block, 'LABEL'),
+          value: exprInput(block, 'VALUE', { type: 'num', value: 0 }),
+          x: fn(block, 'X', 10),
+          y: fn(block, 'Y', 30),
+          color: f(block, 'COLOR'),
+          size: fn(block, 'SIZE', 24),
+        },
+      }
+    case 'sz_g2d_draw_label':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:drawLabel',
+          ctxVar: 'ctx',
+          text: f(block, 'TEXT'),
+          x: fn(block, 'X', 10),
+          y: fn(block, 'Y', 30),
+          color: f(block, 'COLOR'),
+          size: fn(block, 'SIZE', 20),
+          align: (f(block, 'ALIGN') || 'left') as 'left' | 'center' | 'right',
+        },
+      }
+    case 'sz_g2d_draw_hearts':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:drawHearts',
+          ctxVar: 'ctx',
+          count: exprInput(block, 'COUNT', { type: 'num', value: 3 }),
+          x: fn(block, 'X', 10),
+          y: fn(block, 'Y', 10),
+          size: fn(block, 'SIZE', 22),
+          color: f(block, 'COLOR'),
+        },
+      }
+    case 'sz_g2d_draw_bar':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:drawBar',
+          ctxVar: 'ctx',
+          value: exprInput(block, 'VALUE', { type: 'num', value: 0 }),
+          max: exprInput(block, 'MAX', { type: 'num', value: 100 }),
+          x: fn(block, 'X', 10),
+          y: fn(block, 'Y', 10),
+          w: fn(block, 'W', 120),
+          h: fn(block, 'H', 14),
+          color: f(block, 'COLOR'),
+        },
+      }
+    case 'sz_g2d_set_scene':
+      seen.add('game-2d')
+      return { kind: 'js', value: { type: 'g2d:setScene', name: f(block, 'SCENE') || 'inicio' } }
+    case 'sz_g2d_show_screen':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:showScreen',
+          ctxVar: 'ctx',
+          title: f(block, 'TITLE'),
+          subtitle: f(block, 'SUBTITLE'),
+          hint: f(block, 'HINT'),
+          bg: f(block, 'BG'),
+        },
+      }
+    case 'sz_g2d_restart':
+      seen.add('game-2d')
+      return { kind: 'js', value: { type: 'g2d:restart' } }
+    case 'sz_g2d_starfield':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: { type: 'g2d:starfield', ctxVar: 'ctx', speed: fn(block, 'SPEED', 1) },
+      }
+    case 'sz_g2d_drag_x':
+      seen.add('game-2d')
+      return { kind: 'js', value: { type: 'g2d:dragX', spriteVar: f(block, 'SPRITE') } }
+    case 'sz_g2d_fit_screen':
+      seen.add('game-2d')
+      return { kind: 'js', value: { type: 'g2d:fitScreen', percent: fn(block, 'PERCENT', 100) } }
+
+    // ---- Kit Nave & Asteroides (v0.7.0) ----
+    case 'sz_g2d_spawn_bullet':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:spawnBullet',
+          groupVar: f(block, 'GROUP'),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+          radius: fn(block, 'R', 5),
+          color: f(block, 'COLOR'),
+          vx: exprInput(block, 'VX', { type: 'num', value: 0 }),
+          vy: exprInput(block, 'VY', { type: 'num', value: -7 }),
+        },
+      }
+    case 'sz_g2d_arrows_x':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: { type: 'g2d:arrowsX', spriteVar: f(block, 'SPRITE'), speed: fn(block, 'SPEED', 6) },
+      }
+    case 'sz_g2d_blink':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:blinkSprite',
+          spriteVar: f(block, 'SPRITE'),
+          frames: fn(block, 'FRAMES', 60),
+        },
+      }
+    case 'sz_g2d_create_ship':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:createShip',
+          varName: f(block, 'NAME'),
+          x: fn(block, 'X', 100),
+          y: fn(block, 'Y', 250),
+          w: fn(block, 'W', 54),
+          h: fn(block, 'H', 62),
+          bodyColor: f(block, 'BODY'),
+          wingColor: f(block, 'WINGS'),
+        },
+      }
+    case 'sz_g2d_spawn_asteroid':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:spawnAsteroid',
+          groupVar: f(block, 'GROUP'),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+          size: fn(block, 'SIZE', 36),
+          color: f(block, 'COLOR'),
+          vx: exprInput(block, 'VX', { type: 'num', value: 0 }),
+          vy: exprInput(block, 'VY', { type: 'num', value: 3 }),
+        },
+      }
+    case 'sz_g2d_explode':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: { type: 'g2d:explode', spriteVar: f(block, 'SPRITE'), color: f(block, 'COLOR') },
+      }
+    case 'sz_g2d_play_shoot':
+      seen.add('game-2d')
+      return { kind: 'js', value: { type: 'g2d:playShoot' } }
+    case 'sz_g2d_play_explosion':
+      seen.add('game-2d')
+      return { kind: 'js', value: { type: 'g2d:playExplosion' } }
+    case 'sz_g2d_on_sprite_group_overlap':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:onSpriteGroupOverlap',
+          spriteVar: f(block, 'SPRITE'),
+          groupVar: f(block, 'GROUP'),
+          itemName: f(block, 'ANAME') || 'inimigo',
+          body: getStatementChildren(block, 'BODY', seen),
         },
       }
 
