@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ApiError, apiGet, apiPost } from '../lib/api-fetch'
 import type { CheckoutContactInput } from '../lib/checkout-schema'
 
@@ -28,6 +28,16 @@ const GENERIC_RETRY_DELAY_MS = 4_000
 const IN_PROGRESS_MAX_CYCLES = 8
 const IN_PROGRESS_RETRY_DELAY_MS = 7_000
 
+function pixChargeKey(contact: CheckoutContactInput | null, couponCode?: string): string {
+  if (!contact) return `no-contact|${couponCode ?? ''}`
+  return [
+    contact.nome.trim(),
+    contact.email.trim().toLowerCase(),
+    contact.cpf.replace(/\D/g, ''),
+    couponCode ?? '',
+  ].join('|')
+}
+
 /**
  * Painel do Pix. O QR NÃO é gerado automaticamente: o usuário clica em "Gerar
  * código Pix" (desabilitado até os dados pessoais estarem válidos) — assim a
@@ -49,7 +59,8 @@ export default function PixCheckout({
   const [aguardando, setAguardando] = useState(false)
   const [copiado, setCopiado] = useState(false)
   const [expirado, setExpirado] = useState(false)
-  const lastCoupon = useRef<string | null | undefined>(couponCode)
+  const chargeKey = useMemo(() => pixChargeKey(contact, couponCode), [contact, couponCode])
+  const lastChargeKey = useRef(chargeKey)
   const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const genericAttempts = useRef(0)
   const inProgressCycles = useRef(0)
@@ -71,6 +82,7 @@ export default function PixCheckout({
         ...(couponCode ? { couponCode } : {}),
       })
         .then((r) => {
+          if (lastChargeKey.current !== chargeKey) return
           genericAttempts.current = 0
           inProgressCycles.current = 0
           setAguardando(false)
@@ -80,6 +92,7 @@ export default function PixCheckout({
         .catch((e) => {
           const inProgress =
             e instanceof ApiError && e.status === 409 && e.code === 'PAYMENT_IN_PROGRESS'
+          if (lastChargeKey.current !== chargeKey) return
           if (inProgress && inProgressCycles.current < IN_PROGRESS_MAX_CYCLES) {
             inProgressCycles.current += 1
             setAguardando(true)
@@ -95,13 +108,14 @@ export default function PixCheckout({
           setErro('Não foi possível gerar o Pix. Tente novamente.')
         })
     },
-    [couponCode, contact],
+    [chargeKey, couponCode, contact],
   )
 
   // Gera (ou re-gera) a cobrança Pix do zero: usado pelo botão "Gerar código
   // Pix" e pelo "Tentar de novo" — reseta os budgets de retry.
   const createPix = useCallback(() => {
     clearRetryTimer()
+    lastChargeKey.current = chargeKey
     genericAttempts.current = 0
     inProgressCycles.current = 0
     setStarted(true)
@@ -111,13 +125,13 @@ export default function PixCheckout({
     setAguardando(false)
     setExpirado(false)
     requestPix()
-  }, [requestPix, clearRetryTimer])
+  }, [chargeKey, requestPix, clearRetryTimer])
 
-  // Cupom mudou (o valor da cobrança muda): volta ao estado inicial para o
-  // usuário gerar de novo — NUNCA regenera sozinho.
+  // Dados que compõem a cobrança mudaram (contato ou cupom): volta ao estado
+  // inicial para o usuário gerar de novo — NUNCA regenera sozinho.
   useEffect(() => {
-    if (lastCoupon.current === couponCode) return
-    lastCoupon.current = couponCode
+    if (lastChargeKey.current === chargeKey) return
+    lastChargeKey.current = chargeKey
     if (!started) return
     clearRetryTimer()
     setStarted(false)
@@ -126,7 +140,7 @@ export default function PixCheckout({
     setErro(null)
     setAguardando(false)
     setExpirado(false)
-  }, [couponCode, started, clearRetryTimer])
+  }, [chargeKey, started, clearRetryTimer])
 
   // Cancela retries pendentes no unmount (troca de método, navegação).
   useEffect(() => clearRetryTimer, [clearRetryTimer])

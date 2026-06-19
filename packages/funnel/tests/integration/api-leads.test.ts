@@ -41,6 +41,13 @@ describe('POST /api/leads', () => {
     expect(((await again.json()) as { id: string }).id).toBe(id)
     expect(await repo.countLeads()).toBe(1)
   })
+
+  test('cookie de lead malformado é tratado como sessão ausente', async () => {
+    const { repo } = createFakeRepo()
+    const res = await createLead(req('POST', undefined, `${LEAD_COOKIE}=%`), deps(repo))
+    expect(res.status).toBe(201)
+    expect(await repo.countLeads()).toBe(1)
+  })
 })
 
 describe('POST /api/events (whitelist de eventos do cliente)', () => {
@@ -181,6 +188,12 @@ describe('GET /api/leads', () => {
   test('401 sem cookie', async () => {
     const { repo } = createFakeRepo()
     const res = await getLeadView(req('GET'), deps(repo))
+    expect(res.status).toBe(401)
+  })
+
+  test('401 com cookie de lead malformado', async () => {
+    const { repo } = createFakeRepo()
+    const res = await getLeadView(req('GET', undefined, `${LEAD_COOKIE}=%`), deps(repo))
     expect(res.status).toBe(401)
   })
 })

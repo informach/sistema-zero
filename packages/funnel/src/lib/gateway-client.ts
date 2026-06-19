@@ -222,7 +222,11 @@ export function createGatewayClient(opts: GatewayClientOptions) {
       const path = `/catalog/coupons/${encodeURIComponent(code)}/redeem`
       return requestJson(
         `${opts.baseUrl}${path}`,
-        { method: 'POST', headers: buildHeaders('POST', path, rawBody, idempotencyKey), body: rawBody },
+        {
+          method: 'POST',
+          headers: buildHeaders('POST', path, rawBody, idempotencyKey),
+          body: rawBody,
+        },
         timeoutMs,
       )
     },

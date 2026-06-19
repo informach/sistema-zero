@@ -13,8 +13,12 @@ export function getLeadId(request: Request): string | null {
     if (eq < 0) continue
     const name = part.slice(0, eq).trim()
     if (name === LEAD_COOKIE) {
-      const value = decodeURIComponent(part.slice(eq + 1).trim())
-      return value || null
+      try {
+        const value = decodeURIComponent(part.slice(eq + 1).trim())
+        return value || null
+      } catch {
+        return null
+      }
     }
   }
   return null
