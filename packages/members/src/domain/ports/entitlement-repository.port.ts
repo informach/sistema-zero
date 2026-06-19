@@ -31,6 +31,13 @@ export interface ListMembersResult {
   total: number
 }
 
+export interface SubscriptionStatusUpdateResult {
+  /** Nº de matrículas alteradas. */
+  affected: number
+  /** Usuários distintos afetados — usado para invalidar caches downstream. */
+  userIds: string[]
+}
+
 /**
  * Persistência da matrícula. `save` é uma inserção idempotente (ON CONFLICT DO
  * NOTHING na `idempotencyKey`); `update` usa concorrência otimista (`version`).
@@ -41,6 +48,11 @@ export interface EntitlementRepository {
   findById(id: string): Promise<EntitlementAggregate | null>
   /** Insere; se a `idempotencyKey` já existe, NÃO faz nada e retorna `false`. */
   save(entitlement: EntitlementAggregate): Promise<boolean>
+  /**
+   * Insere todas as matrículas numa única unidade atômica. Se qualquer índice único
+   * conflitar, nenhuma linha nova fica persistida e retorna `false`.
+   */
+  saveMany(entitlements: EntitlementAggregate[]): Promise<boolean>
   /** `UPDATE ... WHERE id = ? AND version = ?` → `false` se houve conflito de versão. */
   update(entitlement: EntitlementAggregate): Promise<boolean>
   /**
@@ -70,12 +82,12 @@ export interface EntitlementRepository {
    * Revoga (corte imediato) TODAS as matrículas da assinatura num único UPDATE
    * atômico — sem load-mutate-save por linha (evita lost-update sob concorrência
    * com um grant de renovação). Idempotente: não toca em quem já está `revoked`.
-   * Retorna o nº de linhas afetadas.
+   * Retorna linhas afetadas e usuários alterados para invalidação de cache.
    */
-  revokeBySubscriptionId(subscriptionId: string, now: Date): Promise<number>
+  revokeBySubscriptionId(subscriptionId: string, now: Date): Promise<SubscriptionStatusUpdateResult>
   /**
    * Expira (fim natural) TODAS as matrículas da assinatura num único UPDATE
    * atômico. Idempotente: não rebaixa `revoked` nem reexpira `expired`.
    */
-  expireBySubscriptionId(subscriptionId: string, now: Date): Promise<number>
+  expireBySubscriptionId(subscriptionId: string, now: Date): Promise<SubscriptionStatusUpdateResult>
 }

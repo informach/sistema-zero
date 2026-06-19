@@ -39,6 +39,7 @@ export type GrantManualCommand =
  */
 export const MANUAL_ALL_COURSES_PRODUCT_ID = '00000000-0000-0000-0000-000000000000'
 export const MANUAL_ALL_KIDS_COURSES_PRODUCT_ID = '00000000-0000-0000-0000-000000000001'
+const MANUAL_SAVE_MAX_ATTEMPTS = 2
 
 export interface GrantManualResult {
   granted: AdminEntitlementView[]
@@ -100,6 +101,7 @@ export class GrantManualEntitlementService {
     }
 
     const granted: AdminEntitlementView[] = []
+    const grants: GrantOneInput[] = []
     for (const item of offer.items) {
       const snapshot: EntitlementSnapshot = {
         offerId: offer.offerId,
@@ -113,20 +115,19 @@ export class GrantManualEntitlementService {
         fulfillment: item.fulfillment,
         resolvedAt: now.toISOString(),
       }
-      granted.push(
-        await this.grantOne({
-          userId,
-          productId: item.productId,
-          productKind: item.kind,
-          accessType: snapshot.accessType,
-          courseRef: snapshot.courseRef,
-          offerId: offer.offerId,
-          snapshot,
-          expiresAt,
-          now,
-        }),
-      )
+      grants.push({
+        userId,
+        productId: item.productId,
+        productKind: item.kind,
+        accessType: snapshot.accessType,
+        courseRef: snapshot.courseRef,
+        offerId: offer.offerId,
+        snapshot,
+        expiresAt,
+        now,
+      })
     }
+    granted.push(...(await this.grantMany(grants)))
     this.deps.logger?.info('grant.manual.offer', { userId, offerRef, granted: granted.length })
     return { granted }
   }
@@ -236,31 +237,79 @@ export class GrantManualEntitlementService {
   }
 
   private async grantOne(p: GrantOneInput): Promise<AdminEntitlementView> {
-    const idempotencyKey = `manual:${p.userId}:${p.productId}`
-    const entitlement = EntitlementAggregate.grant({
-      id: this.deps.newId(),
-      userId: p.userId,
-      productId: p.productId,
-      productKind: p.productKind,
-      accessType: p.accessType,
-      courseRef: p.courseRef,
-      offerId: p.offerId,
-      snapshot: p.snapshot,
-      sourceKind: 'manual',
-      sourceId: 'manual',
-      subscriptionId: null,
-      grantedAt: p.now,
-      expiresAt: p.expiresAt,
-      idempotencyKey,
-    })
-
-    if (await this.deps.entitlements.save(entitlement)) return toAdminEntitlementView(entitlement)
-
-    // Conflito num dos índices únicos → já existe uma matrícula manual p/ user+product.
-    const existing = await this.deps.entitlements.findByIdempotencyKey(idempotencyKey)
-    if (existing && existing.status === 'active') return toAdminEntitlementView(existing)
-    throw new EntitlementConflictError(
-      'Já existe uma matrícula manual para este produto (revogada/expirada). Use estender para reativar.',
-    )
+    const [view] = await this.grantMany([p])
+    if (!view) {
+      throw new EntitlementConflictError('Não foi possível conceder a matrícula manual')
+    }
+    return view
   }
+
+  private async grantMany(grants: GrantOneInput[]): Promise<AdminEntitlementView[]> {
+    for (let attempt = 0; attempt < MANUAL_SAVE_MAX_ATTEMPTS; attempt++) {
+      const views: AdminEntitlementView[] = []
+      const pending: EntitlementAggregate[] = []
+
+      for (const grant of grants) {
+        const idempotencyKey = manualIdempotencyKey(grant)
+        const existing = await this.deps.entitlements.findByIdempotencyKey(idempotencyKey)
+        if (existing) {
+          if (existing.isActiveAt(grant.now)) {
+            views.push(toAdminEntitlementView(existing))
+            continue
+          }
+          throwManualConflict()
+        }
+
+        const entitlement = buildManualEntitlement(grant, idempotencyKey, this.deps.newId())
+        pending.push(entitlement)
+        views.push(toAdminEntitlementView(entitlement))
+      }
+
+      if (pending.length === 0) return views
+      if (await this.deps.entitlements.saveMany(pending)) return views
+
+      // Corrida com outro grant manual: nenhum item do lote ficou persistido
+      // (`saveMany` é transacional), então recarrega e tenta classificar de novo
+      // como idempotente ativo ou conflito real.
+      this.deps.logger?.warn('grant.manual.save_conflict', {
+        attempt,
+        items: grants.length,
+      })
+    }
+
+    throw new EntitlementConflictError('Conflito de concorrência ao conceder a matrícula manual')
+  }
+}
+
+function manualIdempotencyKey(p: GrantOneInput): string {
+  return `manual:${p.userId}:${p.productId}`
+}
+
+function buildManualEntitlement(
+  p: GrantOneInput,
+  idempotencyKey: string,
+  id: string,
+): EntitlementAggregate {
+  return EntitlementAggregate.grant({
+    id,
+    userId: p.userId,
+    productId: p.productId,
+    productKind: p.productKind,
+    accessType: p.accessType,
+    courseRef: p.courseRef,
+    offerId: p.offerId,
+    snapshot: p.snapshot,
+    sourceKind: 'manual',
+    sourceId: 'manual',
+    subscriptionId: null,
+    grantedAt: p.now,
+    expiresAt: p.expiresAt,
+    idempotencyKey,
+  })
+}
+
+function throwManualConflict(): never {
+  throw new EntitlementConflictError(
+    'Já existe uma matrícula manual para este produto (revogada/expirada). Use estender para reativar.',
+  )
 }

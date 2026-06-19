@@ -97,11 +97,15 @@ export function adminRoutes(deps: AdminRoutesDeps) {
       '/entitlements/:id',
       async ({ body, params, headers }) => {
         requireAdmin(headers, deps.requireAdminEnabled)
-        return deps.manageEntitlement.execute({
+        const result = await deps.manageEntitlement.execute({
           id: params.id,
           action: body.action,
           expiresAt: parseDate(body.expiresAt) ?? undefined,
         })
+        // Mudança manual de acesso também invalida o micro-cache do hub
+        // (revogar/expirar corta acesso; estender/reativar libera).
+        await deps.hub.notifyAccessChanged(result.userId, body.action)
+        return result
       },
       { body: ManageEntitlementBody, params: IdParams },
     )

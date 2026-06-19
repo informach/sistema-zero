@@ -27,7 +27,8 @@ function resolveDeliveryId(headers: Record<string, string | undefined>): string 
 function parsePaidAt(value: string | undefined): Date | null {
   if (!value) return null
   const d = new Date(value)
-  if (Number.isNaN(d.getTime())) throw new ValidationError('paidAt inválido (deve ser uma data ISO-8601 válida)')
+  if (Number.isNaN(d.getTime()))
+    throw new ValidationError('paidAt inválido (deve ser uma data ISO-8601 válida)')
   return d
 }
 
@@ -131,6 +132,9 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
             : await deps.revoke.expire(body.subscriptionId)
 
         if (deliveryId) await deps.processed.markProcessed(deliveryId, `subscription.${body.event}`)
+        for (const userId of result.userIds) {
+          await deps.hub.notifyAccessChanged(userId, body.event)
+        }
         return { ok: true, affected: result.affected }
       },
       { body: SubscriptionWebhookBody },

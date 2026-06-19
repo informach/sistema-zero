@@ -93,21 +93,23 @@ export class SubmitStudioProjectService {
     // reenvio pior). O repositório mantém o valor existente com bloqueio advisory.
     const passedAt = grade.passed ? submittedAt : null
 
-    await this.submissions.upsert({
-      // id só vale no INSERT novo; no conflito o onConflictDoUpdate preserva a linha.
-      id: this.newId(),
-      userId,
-      blockId,
-      lessonId,
-      courseId: lesson.courseId,
-      project,
-      submittedAt,
-      score: grade.score,
-      results: grade.results,
-      checkedAt: submittedAt,
-      passedAt,
-    }, { preservePassedAt: true })
-    })
+    await this.submissions.upsert(
+      {
+        // id só vale no INSERT novo; no conflito o onConflictDoUpdate preserva a linha.
+        id: this.newId(),
+        userId,
+        blockId,
+        lessonId,
+        courseId: lesson.courseId,
+        project,
+        submittedAt,
+        score: grade.score,
+        results: grade.results,
+        checkedAt: submittedAt,
+        passedAt,
+      },
+      { preservePassedAt: true },
+    )
 
     // Award SÓ quando passou agora (idempotente por bloco no ledger).
     const gamification = grade.passed

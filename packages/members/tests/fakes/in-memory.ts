@@ -85,6 +85,16 @@ function isActive(s: EntitlementState, now: Date): boolean {
   return s.status === 'active' && (s.expiresAt === null || s.expiresAt.getTime() > now.getTime())
 }
 
+function hasEntitlementUniqueConflict(a: EntitlementState, b: EntitlementState): boolean {
+  return (
+    a.idempotencyKey === b.idempotencyKey ||
+    (a.userId === b.userId &&
+      a.productId === b.productId &&
+      a.sourceKind === b.sourceKind &&
+      a.sourceId === b.sourceId)
+  )
+}
+
 /** Vitalícia (expiresAt nulo) > validade mais distante. Espelha a ordenação do SQL. */
 function isStrongerState(a: EntitlementState, b: EntitlementState): boolean {
   if (a.expiresAt === null) return true
@@ -112,15 +122,25 @@ export class InMemoryEntitlementRepository implements EntitlementRepository {
     // Espelha os DOIS índices únicos do schema: idempotency_key E
     // (user_id, product_id, source_kind, source_id). Conflito em qualquer → no-op.
     for (const x of this.byId.values()) {
-      const dup =
-        x.idempotencyKey === s.idempotencyKey ||
-        (x.userId === s.userId &&
-          x.productId === s.productId &&
-          x.sourceKind === s.sourceKind &&
-          x.sourceId === s.sourceId)
-      if (dup) return false
+      if (hasEntitlementUniqueConflict(x, s)) return false
     }
     this.byId.set(s.id, cloneState(s))
+    return true
+  }
+
+  async saveMany(items: EntitlementAggregate[]): Promise<boolean> {
+    const snapshots = items.map((e) => e.toSnapshot())
+    const staged: EntitlementState[] = []
+    for (const s of snapshots) {
+      for (const x of this.byId.values()) {
+        if (hasEntitlementUniqueConflict(x, s)) return false
+      }
+      for (const x of staged) {
+        if (hasEntitlementUniqueConflict(x, s)) return false
+      }
+      staged.push(s)
+    }
+    for (const s of staged) this.byId.set(s.id, cloneState(s))
     return true
   }
 
@@ -212,8 +232,12 @@ export class InMemoryEntitlementRepository implements EntitlementRepository {
     }
   }
 
-  async revokeBySubscriptionId(subscriptionId: string, now: Date): Promise<number> {
+  async revokeBySubscriptionId(
+    subscriptionId: string,
+    now: Date,
+  ): Promise<{ affected: number; userIds: string[] }> {
     let affected = 0
+    const userIds = new Set<string>()
     for (const s of this.byId.values()) {
       if (s.subscriptionId === subscriptionId && s.status !== 'revoked') {
         this.byId.set(s.id, {
@@ -224,20 +248,26 @@ export class InMemoryEntitlementRepository implements EntitlementRepository {
           version: s.version + 1,
         })
         affected += 1
+        userIds.add(s.userId)
       }
     }
-    return affected
+    return { affected, userIds: [...userIds] }
   }
 
-  async expireBySubscriptionId(subscriptionId: string, now: Date): Promise<number> {
+  async expireBySubscriptionId(
+    subscriptionId: string,
+    now: Date,
+  ): Promise<{ affected: number; userIds: string[] }> {
     let affected = 0
+    const userIds = new Set<string>()
     for (const s of this.byId.values()) {
       if (s.subscriptionId === subscriptionId && s.status !== 'revoked' && s.status !== 'expired') {
         this.byId.set(s.id, { ...s, status: 'expired', updatedAt: now, version: s.version + 1 })
         affected += 1
+        userIds.add(s.userId)
       }
     }
-    return affected
+    return { affected, userIds: [...userIds] }
   }
 
   seed(e: EntitlementAggregate): void {
@@ -835,7 +865,10 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
   constructor(private readonly courses?: InMemoryCourseRepository) {}
 
   /** Upsert por (user, block) — reenvio sobrescreve projeto/data/correção. */
-  async upsert(submission: StudioSubmissionRecord): Promise<void> {
+  async upsert(
+    submission: StudioSubmissionRecord,
+    options?: { preservePassedAt?: boolean },
+  ): Promise<void> {
     const existing = this.submissions.find(
       (s) => s.userId === submission.userId && s.blockId === submission.blockId,
     )
@@ -845,7 +878,10 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
       existing.score = submission.score ?? null
       existing.results = submission.results ?? null
       existing.checkedAt = submission.checkedAt ?? null
-      existing.passedAt = submission.passedAt ?? null
+      existing.passedAt =
+        options?.preservePassedAt && existing.passedAt
+          ? existing.passedAt
+          : (submission.passedAt ?? null)
     } else {
       this.submissions.push({
         ...submission,

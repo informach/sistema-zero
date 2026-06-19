@@ -10,6 +10,13 @@ import type { Database } from './db'
 import { entitlements } from './schema'
 
 type Row = typeof entitlements.$inferSelect
+type InsertRow = typeof entitlements.$inferInsert
+
+class EntitlementBatchConflict extends Error {
+  constructor() {
+    super('entitlement batch conflict')
+  }
+}
 
 function fromRow(row: Row): EntitlementAggregate {
   return EntitlementAggregate.restore({
@@ -44,6 +51,31 @@ function activePredicate(userId: string, now: Date) {
   )
 }
 
+function toInsertRow(entitlement: EntitlementAggregate): InsertRow {
+  const s = entitlement.toSnapshot()
+  return {
+    id: s.id,
+    version: s.version,
+    userId: s.userId,
+    productId: s.productId,
+    productKind: s.productKind,
+    accessType: s.accessType,
+    courseRef: s.courseRef,
+    offerId: s.offerId,
+    snapshot: s.snapshot,
+    status: s.status,
+    sourceKind: s.sourceKind,
+    sourceId: s.sourceId,
+    subscriptionId: s.subscriptionId,
+    grantedAt: s.grantedAt,
+    expiresAt: s.expiresAt,
+    revokedAt: s.revokedAt,
+    idempotencyKey: s.idempotencyKey,
+    createdAt: s.createdAt,
+    updatedAt: s.updatedAt,
+  }
+}
+
 export class DrizzleEntitlementRepository implements EntitlementRepository {
   constructor(private readonly db: Database) {}
 
@@ -62,36 +94,37 @@ export class DrizzleEntitlementRepository implements EntitlementRepository {
   }
 
   async save(entitlement: EntitlementAggregate): Promise<boolean> {
-    const s = entitlement.toSnapshot()
     const inserted = await this.db
       .insert(entitlements)
-      .values({
-        id: s.id,
-        version: s.version,
-        userId: s.userId,
-        productId: s.productId,
-        productKind: s.productKind,
-        accessType: s.accessType,
-        courseRef: s.courseRef,
-        offerId: s.offerId,
-        snapshot: s.snapshot,
-        status: s.status,
-        sourceKind: s.sourceKind,
-        sourceId: s.sourceId,
-        subscriptionId: s.subscriptionId,
-        grantedAt: s.grantedAt,
-        expiresAt: s.expiresAt,
-        revokedAt: s.revokedAt,
-        idempotencyKey: s.idempotencyKey,
-        createdAt: s.createdAt,
-        updatedAt: s.updatedAt,
-      })
+      .values(toInsertRow(entitlement))
       // Sem alvo: cobre QUALQUER índice único (idempotency_key E
       // user_product_source) — um conflito em qualquer um vira no-op (false), não
       // exceção. Defesa contra um caminho futuro que derive a idempotencyKey diferente.
       .onConflictDoNothing()
       .returning({ id: entitlements.id })
     return inserted.length > 0
+  }
+
+  async saveMany(items: EntitlementAggregate[]): Promise<boolean> {
+    if (items.length === 0) return true
+    try {
+      await this.db.transaction(async (tx) => {
+        for (const item of items) {
+          const inserted = await tx
+            .insert(entitlements)
+            .values(toInsertRow(item))
+            // Mesmo perfil do `save`: qualquer índice único conflitante aborta
+            // o lote inteiro (rollback da transaction via exceção controlada).
+            .onConflictDoNothing()
+            .returning({ id: entitlements.id })
+          if (inserted.length === 0) throw new EntitlementBatchConflict()
+        }
+      })
+      return true
+    } catch (error) {
+      if (error instanceof EntitlementBatchConflict) return false
+      throw error
+    }
   }
 
   async update(entitlement: EntitlementAggregate): Promise<boolean> {
@@ -211,7 +244,10 @@ export class DrizzleEntitlementRepository implements EntitlementRepository {
     }
   }
 
-  async revokeBySubscriptionId(subscriptionId: string, now: Date): Promise<number> {
+  async revokeBySubscriptionId(
+    subscriptionId: string,
+    now: Date,
+  ): Promise<{ affected: number; userIds: string[] }> {
     const updated = await this.db
       .update(entitlements)
       .set({
@@ -223,11 +259,14 @@ export class DrizzleEntitlementRepository implements EntitlementRepository {
       .where(
         and(eq(entitlements.subscriptionId, subscriptionId), ne(entitlements.status, 'revoked')),
       )
-      .returning({ id: entitlements.id })
-    return updated.length
+      .returning({ userId: entitlements.userId })
+    return { affected: updated.length, userIds: [...new Set(updated.map((r) => r.userId))] }
   }
 
-  async expireBySubscriptionId(subscriptionId: string, now: Date): Promise<number> {
+  async expireBySubscriptionId(
+    subscriptionId: string,
+    now: Date,
+  ): Promise<{ affected: number; userIds: string[] }> {
     const updated = await this.db
       .update(entitlements)
       .set({ status: 'expired', updatedAt: now, version: sql`${entitlements.version} + 1` })
@@ -237,7 +276,7 @@ export class DrizzleEntitlementRepository implements EntitlementRepository {
           notInArray(entitlements.status, ['revoked', 'expired']),
         ),
       )
-      .returning({ id: entitlements.id })
-    return updated.length
+      .returning({ userId: entitlements.userId })
+    return { affected: updated.length, userIds: [...new Set(updated.map((r) => r.userId))] }
   }
 }

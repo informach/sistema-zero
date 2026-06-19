@@ -57,7 +57,10 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
         .select({ passedAt: studioSubmissions.passedAt })
         .from(studioSubmissions)
         .where(
-          and(eq(studioSubmissions.userId, submission.userId), eq(studioSubmissions.blockId, submission.blockId)),
+          and(
+            eq(studioSubmissions.userId, submission.userId),
+            eq(studioSubmissions.blockId, submission.blockId),
+          ),
         )
         .limit(1)
 

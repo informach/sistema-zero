@@ -347,7 +347,7 @@ describe('Members HTTP — webhooks', () => {
   })
 
   test('cancelamento de assinatura revoga o acesso do aluno', async () => {
-    const { app, courses, catalog } = buildApp()
+    const { app, courses, catalog, hubCalls } = buildApp()
     const course = seedSampleCourse(courses)
     catalog.set('offer-sub', offerWithCourse('offer-sub', course.slug))
 
@@ -378,5 +378,6 @@ describe('Members HTTP — webhooks', () => {
     expect((await readJson(cancel)).affected).toBe(1)
 
     expect((await get(app, `/members/courses/${course.slug}`, authHeaders())).status).toBe(403)
+    expect(hubCalls).toContainEqual({ userId: USER, event: 'canceled' })
   })
 })
