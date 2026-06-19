@@ -5,7 +5,7 @@ import type {
   PixWebhookItem,
 } from '../../../application/handle-provider-webhook/handle-provider-webhook.service'
 import type { Logger } from '../../../infrastructure/logging/logger'
-import type { InMemoryRateLimiter } from '../../../infrastructure/security/rate-limiter'
+import type { RateLimiter } from '../../../infrastructure/security/rate-limiter'
 import { PayloadTooLargeError, TooManyRequestsError } from '../errors'
 import { isOversizeBody } from '../raw-body'
 import { safeEqual } from '../safe-equal'
@@ -27,7 +27,7 @@ export interface WebhooksRoutesDeps {
    * Efí; sem teto, payloads forjados em volume esgotam pool/budget da Efí. Um 429
    * não perde pagamento: a Efí re-tenta e a reconciliação é a rede de segurança.
    */
-  rateLimiter: InMemoryRateLimiter
+  rateLimiter: RateLimiter
 }
 
 /** Chave única do rate limit global dos webhooks (limite agregado da rota). */
@@ -46,15 +46,15 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
     return !!token && safeEqual(token, deps.webhookSecret)
   }
 
-  const checkRateLimit = () => {
-    const limit = deps.rateLimiter.check(WEBHOOK_RATE_KEY)
+  const checkRateLimit = async () => {
+    const limit = await deps.rateLimiter.check(WEBHOOK_RATE_KEY)
     if (!limit.allowed) throw new TooManyRequestsError(limit.retryAfterSeconds)
   }
 
   return (
     new Elysia({ prefix: '/webhooks' })
       .post('/efi/pix', async ({ body, set, query, headers, request }) => {
-        checkRateLimit()
+        await checkRateLimit()
         if (isOversizeBody(request)) throw new PayloadTooLargeError()
         if (!checkSecret(query, headers)) {
           deps.logger.warn('webhook.unauthorized')
@@ -76,7 +76,7 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
       // a re-consulta na Efí é a âncora de confiança (como no Pix). Aceita o token
       // por JSON `{notification}`, form-urlencoded `notification=<t>` ou `?token=`.
       .post('/efi/cobrancas', async ({ body, set, query, headers, request }) => {
-        checkRateLimit()
+        await checkRateLimit()
         if (isOversizeBody(request)) throw new PayloadTooLargeError()
         if (!checkSecret(query, headers)) {
           deps.logger.warn('webhook.unauthorized')

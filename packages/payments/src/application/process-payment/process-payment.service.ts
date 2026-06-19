@@ -77,7 +77,8 @@ export class ProcessPaymentService {
 
     const { reservationId } = reservation
     // Rastreia se já houve efeito colateral irreversível (cobrança no provedor ou
-    // persistência do agregado). Em caso afirmativo NÃO liberamos a reserva no erro.
+    // persistência do agregado). Em caso afirmativo, tentamos recuperar o objeto gravado
+    // e concluir a idempotência; se não houver recuperação, liberamos a reserva.
     const sideEffects = { committed: false }
     try {
       const view = await this.process(command, sideEffects)
@@ -93,18 +94,37 @@ export class ProcessPaymentService {
       return view
     } catch (error) {
       if (sideEffects.committed) {
-        // A cobrança/persistência já pode ter surtido efeito. Liberar a reserva
-        // permitiria que um retry com a MESMA chave gerasse um NOVO paymentId →
-        // NOVO txid/boleto → cobrança DUPLICADA (nem o txid determinístico do Pix
-        // protege, pois o id muda a cada tentativa). Mantemos a reserva IN_FLIGHT:
-        // retries veem 409 até o TTL curto reciclá-la (recuperação de crash).
-        // TODO: concluir a idempotência na MESMA transação do save() fecha de vez
-        // a janela pós-TTL (mudança maior — ver revisão).
-        this.logger.error('payment.failed_after_side_effect', {
+        const recovered = await this.payments.findByIdempotencyKey(
+          command.consumerId,
+          command.idempotencyKey,
+        )
+
+        if (recovered) {
+          const view = toPaymentView(recovered)
+          await this.idempotency.complete({
+            consumerId: command.consumerId,
+            key: command.idempotencyKey,
+            reservationId,
+            responseStatus: view.pix || view.boleto || view.card ? 201 : 202,
+            responseBody: view,
+            ttlSeconds: this.config.idempotencyTtlSeconds,
+          })
+
+          this.logger.info('payment.recovered_from_side_effect', {
+            consumerId: command.consumerId,
+            idempotencyKey: command.idempotencyKey,
+            paymentId: recovered.id,
+          })
+
+          return view
+        }
+
+        this.logger.error('payment.failed_after_side_effect_no_recovery', {
           consumerId: command.consumerId,
           idempotencyKey: command.idempotencyKey,
           error: error instanceof Error ? error.message : String(error),
         })
+        await this.idempotency.release(command.consumerId, command.idempotencyKey, reservationId)
       } else {
         // Falha ANTES de qualquer efeito colateral (validação, método não suportado,
         // conflito): seguro liberar para permitir nova tentativa.

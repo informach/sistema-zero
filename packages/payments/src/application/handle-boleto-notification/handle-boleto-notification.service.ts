@@ -6,6 +6,7 @@ import type { PaymentRepository } from '../../domain/ports/payment-repository.po
 import type { WebhookInbox } from '../../domain/ports/webhook-inbox.port'
 import type { Logger } from '../../infrastructure/logging/logger'
 import type { HandleSubscriptionNotificationService } from '../handle-subscription-notification/handle-subscription-notification.service'
+import { TooManyRequestsError } from '@sistemazero/core/http'
 
 export interface HandleBoletoNotificationInput {
   /** Token que a Efí POSTa ao `notification_url` (resolvido na fonte). */
@@ -49,15 +50,14 @@ export class HandleBoletoNotificationService {
       notification.entries && notification.entries.length > 0
         ? notification.entries
         : notification.chargeIds.map((chargeId) => ({ chargeId }))
-    const entries = all.slice(0, MAX_CHARGES_PER_NOTIFICATION)
     if (all.length > MAX_CHARGES_PER_NOTIFICATION) {
-      this.logger.warn('cobrancas.notification.charges_truncated', {
+      this.logger.warn('cobrancas.notification.too_many_entries', {
         received: all.length,
-        processed: entries.length,
+        max: MAX_CHARGES_PER_NOTIFICATION,
       })
+      throw new TooManyRequestsError()
     }
-
-    for (const entry of entries) {
+    for (const entry of all) {
       // Isolamento por cobrança: um erro não derruba o lote nem consome o dedupe.
       try {
         if (entry.subscriptionId && this.subscriptions) {
