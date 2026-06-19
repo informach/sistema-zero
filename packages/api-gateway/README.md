@@ -5,8 +5,8 @@ Faz roteamento/proxy, autenticação plugável (HMAC, JWT, sessão), rate limiti
 balancing, CORS e transformação de requisições — tudo dirigido por uma **config
 declarativa** e de forma **stateless** (pronto para escalar em N réplicas).
 
-> **Estado atual:** borda de **6 serviços** — roteia para `payments`, `auth`,
-> `catalog`, `members`, `messaging` e `funnel` (e serve de upstream aos BFFs
+> **Estado atual:** borda de **8 serviços** — roteia para `payments`, `auth`,
+> `catalog`, `members`, `messaging`, `funnel`, `fiscal` e `hub` (e serve de upstream aos BFFs
 > `admin`/`community`). É o **BFF de pagamentos do funil** (HMAC de borda +
 > re-assina ao `payments`) e o **ponto de verificação/autorização**: a auth **JWT está
 > ligada** (verifica tokens do **[@sistemazero/auth](../auth)** em HS256 e/ou RS256 via
@@ -69,7 +69,7 @@ bun install
 
 # 2. Configure o ambiente
 cp .env.example .env
-# edite .env: URLs dos upstreams e os segredos HMAC (>= 16 chars)
+# edite .env: URLs dos upstreams e os segredos HMAC (>= 16 chars; HS256 >= 32)
 
 # 3. Suba o gateway em modo dev
 bun run dev
@@ -90,20 +90,23 @@ principais:
 | `STATE_BACKEND` | `memory` (1 réplica) ou `redis` (escala) |
 | `REDIS_URL` | obrigatória quando `STATE_BACKEND=redis` |
 | `TRUST_PROXY` / `TRUSTED_PROXY_HOPS` | resolução do IP do cliente atrás de proxy/LB |
-| `PAYMENTS_URL` / `AUTH_URL` / `CATALOG_URL` / `MEMBERS_URL` / `MESSAGING_URL` / `FUNNEL_URL` | URLs dos upstreams (lidas pela `gateway.config.ts`) |
+| `PAYMENTS_URL` / `AUTH_URL` / `CATALOG_URL` / `MEMBERS_URL` / `MESSAGING_URL` / `FUNNEL_URL` / `FISCAL_URL` / `HUB_URL` | URLs dos upstreams (lidas pela `gateway.config.ts`; em produção não podem ser loopback) |
 | `GATEWAY_CONSUMER_ID` / `GATEWAY_HMAC_SECRET` | credenciais do gateway para re-assinar ao upstream (`resign`) |
 | `FUNNEL_HMAC_SECRET` | segredo HMAC de borda do consumidor `funnel` |
 | `FUNNEL_INTERNAL_TOKEN` | token interno injetado ao repassar o webhook |
-| `AUTH_HMAC_SECRET` | segredo HMAC de borda do consumidor `auth` (e-mail de reset via `/messaging/send`; vazio = consumer não cadastrado) |
+| `AUTH_HMAC_SECRET` | segredo HMAC de borda do consumidor `auth` (e-mail de reset via `/messaging/send`; vazio só dev/local; obrigatório em produção) |
 | `AUTH_INTERNAL_TOKEN` | token interno injetado nas rotas S2S `/auth/internal/*` — = `AUTH_INTERNAL_TOKEN` do auth (vazio = só dev) |
 | `RATE_LIMIT_*` | rate limit global default |
 | `JWT_HS256_SECRET` | segredo HS256 compartilhado com o `auth` (verifica tokens HS256 sem JWKS) |
 | `JWT_JWKS_URL` / `JWT_ISSUER` / `JWT_AUDIENCE` / `JWT_ALGORITHMS` | auth JWT via JWKS (RS256). Aponte p/ `<auth>/auth/.well-known/jwks.json` |
 | `MEMBERS_INTERNAL_TOKEN` | token interno injetado nas rotas do aluno (members) — = `INTERNAL_API_TOKEN` do members (prova que a chamada veio do gateway; vazio = só dev) |
 | `MESSAGING_INTERNAL_TOKEN` | token interno injetado nas rotas de envio (`/messaging/send`) — = `MESSAGING_INTERNAL_TOKEN` do messaging (vazio = só dev) |
+| `FISCAL_INTERNAL_TOKEN` / `FISCAL_HMAC_SECRET` | token interno das rotas admin fiscais e consumer HMAC `fiscal` para mensageria |
+| `HUB_INTERNAL_TOKEN` | token interno injetado nas rotas do hub — = `INTERNAL_API_TOKEN` do hub |
 
 > ⚠️ Segredos HMAC precisam de **≥ 16 caracteres** — um valor vazio/curto **falha
-> no boot** (evita auth com chave efetivamente vazia).
+> no boot** (evita auth com chave efetivamente vazia). `JWT_HS256_SECRET` precisa
+> de **≥ 32 caracteres** quando configurado.
 
 ## Comandos
 

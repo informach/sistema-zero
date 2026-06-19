@@ -13,6 +13,17 @@ const HOP_BY_HOP = new Set([
   'upgrade',
 ])
 
+function connectionHeaderNames(headers: Headers): Set<string> {
+  const names = new Set<string>()
+  const connection = headers.get('connection')
+  if (!connection) return names
+  for (const token of connection.split(',')) {
+    const name = token.trim().toLowerCase()
+    if (name) names.add(name)
+  }
+  return names
+}
+
 /**
  * Credenciais de BORDA (cliente → gateway): consumidas pelo gateway e que NÃO
  * devem vazar para o upstream. Em rotas `resign`, o gateway re-injeta as suas
@@ -179,9 +190,10 @@ export interface ForwardHeaderContext {
 /** Constrói os headers da requisição para o upstream (remove hop-by-hop, adiciona X-Forwarded-*). */
 export function sanitizeRequestHeaders(incoming: Headers, ctx: ForwardHeaderContext): Headers {
   const out = new Headers()
+  const connectionSpecific = connectionHeaderNames(incoming)
   incoming.forEach((value, key) => {
     const lower = key.toLowerCase()
-    if (HOP_BY_HOP.has(lower)) return
+    if (HOP_BY_HOP.has(lower) || connectionSpecific.has(lower)) return
     if (lower === 'host' || lower === 'content-length') return // recomputados pelo fetch
     out.set(key, value)
   })
@@ -200,9 +212,10 @@ export function sanitizeRequestHeaders(incoming: Headers, ctx: ForwardHeaderCont
 /** Constrói os headers da resposta para o cliente (remove hop-by-hop, preserva Set-Cookie). */
 export function sanitizeResponseHeaders(upstream: Headers): Headers {
   const out = new Headers()
+  const connectionSpecific = connectionHeaderNames(upstream)
   upstream.forEach((value, key) => {
     const lower = key.toLowerCase()
-    if (HOP_BY_HOP.has(lower)) return
+    if (HOP_BY_HOP.has(lower) || connectionSpecific.has(lower)) return
     // Set-Cookie é tratado à parte: o forEach junta múltiplos cookies num só valor.
     if (lower === 'set-cookie') return
     out.set(key, value)
