@@ -265,3 +265,294 @@ export const tilemapExample: ExtensionExample = {
     extensions: [{ extensionId: 'game-2d' }],
   },
 }
+
+/**
+ * Exemplo "Nave contra Asteroides" (v0.6.0): jogo de tiro completo montado só com
+ * blocos — grupos de sprites (tiros, asteroides), spawner por tempo, colisão de
+ * grupo, HUD no canvas (placar + vidas) e telas de início/vitória/derrota. Mostra
+ * o padrão recomendado: setup no TOPO (visível ao loop) + um único "a cada quadro"
+ * que despacha por cena com "se a tela atual é X". Sprites coloridos (sem asset).
+ */
+export const asteroidsExample: ExtensionExample = {
+  name: 'Nave contra Asteroides',
+  description:
+    'Jogo de tiro: atire nos asteroides, ganhe pontos e sobreviva. Tem telas de início, vitória e derrota. Setas/dedo movem; Espaço atira; Enter começa.',
+  ir: {
+    html: [{ type: 'canvas', id: 'tela', width: 400, height: 320 }],
+    css: [
+      {
+        selector: 'body',
+        declarations: {
+          background: '#020611',
+          display: 'flex',
+          'align-items': 'center',
+          'justify-content': 'center',
+          'min-height': '100vh',
+          margin: '0',
+        },
+      },
+      {
+        selector: 'canvas',
+        declarations: { border: '2px solid #35e8ff', background: '#06101f' },
+      },
+    ],
+    js: [
+      // --- Setup (no TOPO: assim o "a cada quadro" enxerga estas variáveis) ---
+      { type: 'g2d:fitScreen', percent: 100 },
+      {
+        type: 'g2d:createShip',
+        varName: 'nave',
+        x: 180,
+        y: 250,
+        w: 54,
+        h: 62,
+        bodyColor: '#35e8ff',
+        wingColor: '#2568ff',
+      },
+      { type: 'g2d:createGroup', varName: 'tiros' },
+      { type: 'g2d:createGroup', varName: 'asteroides' },
+      { type: 'var', name: 'pontos', value: { type: 'num', value: 0 } },
+      { type: 'var', name: 'vidas', value: { type: 'num', value: 3 } },
+      { type: 'g2d:setScene', name: 'inicio' },
+      // --- Enter: começar / reiniciar ---
+      {
+        type: 'g2d:onKey',
+        key: 'Enter',
+        body: [
+          {
+            type: 'if',
+            cond: { type: 'g2d:sceneIs', name: 'inicio' },
+            then: [{ type: 'g2d:setScene', name: 'jogando' }],
+          },
+          {
+            type: 'if',
+            cond: { type: 'g2d:sceneIs', name: 'perdeu' },
+            then: [{ type: 'g2d:restart' }],
+          },
+          {
+            type: 'if',
+            cond: { type: 'g2d:sceneIs', name: 'ganhou' },
+            then: [{ type: 'g2d:restart' }],
+          },
+        ],
+      },
+      // --- Espaço: atirar (só quando está jogando) ---
+      {
+        type: 'g2d:onKey',
+        key: 'Space',
+        body: [
+          {
+            type: 'if',
+            cond: { type: 'g2d:sceneIs', name: 'jogando' },
+            then: [
+              {
+                type: 'g2d:spawnInGroup',
+                groupVar: 'tiros',
+                x: {
+                  type: 'binop',
+                  op: '+',
+                  left: { type: 'memberGet', object: { type: 'var', name: 'nave' }, name: 'x' },
+                  right: { type: 'num', value: 24 },
+                },
+                y: { type: 'memberGet', object: { type: 'var', name: 'nave' }, name: 'y' },
+                w: 6,
+                h: 14,
+                color: '#9cff57',
+                vx: { type: 'num', value: 0 },
+                vy: { type: 'num', value: -7 },
+              },
+              { type: 'g2d:playShoot' },
+            ],
+          },
+        ],
+      },
+      // --- Loop principal: limpa, desenha o fundo e despacha por cena ---
+      {
+        type: 'g2d:updateEachFrame',
+        body: [
+          { type: 'g2d:clear' },
+          { type: 'g2d:starfield', ctxVar: 'ctx', speed: 1 },
+          {
+            type: 'if',
+            cond: { type: 'g2d:sceneIs', name: 'inicio' },
+            then: [
+              {
+                type: 'g2d:showScreen',
+                ctxVar: 'ctx',
+                title: 'Nave contra Asteroides',
+                subtitle: 'Atire nos asteroides e sobreviva!',
+                hint: 'Aperte Enter para começar',
+                bg: '#02111f',
+              },
+            ],
+          },
+          {
+            type: 'if',
+            cond: { type: 'g2d:sceneIs', name: 'jogando' },
+            then: [
+              { type: 'g2d:dragX', spriteVar: 'nave' },
+              { type: 'g2d:clampToScreen', spriteVar: 'nave', ctxVar: 'ctx' },
+              { type: 'g2d:drawSprite', spriteVar: 'nave', ctxVar: 'ctx' },
+              {
+                type: 'g2d:everyFrames',
+                n: { type: 'num', value: 40 },
+                body: [
+                  {
+                    type: 'g2d:spawnAsteroid',
+                    groupVar: 'asteroides',
+                    x: {
+                      type: 'random',
+                      min: { type: 'num', value: 10 },
+                      max: { type: 'num', value: 360 },
+                    },
+                    y: { type: 'num', value: -30 },
+                    size: 40,
+                    color: '#8d8f9b',
+                    vx: { type: 'num', value: 0 },
+                    vy: { type: 'num', value: 3 },
+                  },
+                ],
+              },
+              { type: 'g2d:updateGroup', groupVar: 'tiros' },
+              { type: 'g2d:updateGroup', groupVar: 'asteroides' },
+              { type: 'g2d:drawGroup', groupVar: 'tiros', ctxVar: 'ctx' },
+              { type: 'g2d:drawGroup', groupVar: 'asteroides', ctxVar: 'ctx' },
+              {
+                type: 'g2d:onGroupOverlap',
+                aGroup: 'tiros',
+                aName: 'tiro',
+                bGroup: 'asteroides',
+                bName: 'asteroide',
+                body: [
+                  { type: 'g2d:removeFromGroup', spriteVar: 'tiro', groupVar: 'tiros' },
+                  { type: 'g2d:removeFromGroup', spriteVar: 'asteroide', groupVar: 'asteroides' },
+                  {
+                    type: 'assign',
+                    name: 'pontos',
+                    value: {
+                      type: 'binop',
+                      op: '+',
+                      left: { type: 'var', name: 'pontos' },
+                      right: { type: 'num', value: 1 },
+                    },
+                  },
+                  { type: 'g2d:explode', spriteVar: 'asteroide', color: '#ffb13b' },
+                  { type: 'g2d:playExplosion' },
+                  { type: 'g2d:shake', ctxVar: 'ctx', intensity: 5 },
+                ],
+              },
+              {
+                type: 'g2d:onSpriteGroupOverlap',
+                spriteVar: 'nave',
+                groupVar: 'asteroides',
+                itemName: 'asteroide',
+                body: [
+                  { type: 'g2d:removeFromGroup', spriteVar: 'asteroide', groupVar: 'asteroides' },
+                  { type: 'g2d:explode', spriteVar: 'asteroide', color: '#ff5d3d' },
+                  { type: 'g2d:playExplosion' },
+                  { type: 'g2d:shake', ctxVar: 'ctx', intensity: 8 },
+                  {
+                    type: 'assign',
+                    name: 'vidas',
+                    value: {
+                      type: 'binop',
+                      op: '-',
+                      left: { type: 'var', name: 'vidas' },
+                      right: { type: 'num', value: 1 },
+                    },
+                  },
+                ],
+              },
+              {
+                type: 'g2d:pruneOffscreen',
+                groupVar: 'asteroides',
+                ctxVar: 'ctx',
+                itemName: 'a',
+                body: [
+                  {
+                    type: 'assign',
+                    name: 'vidas',
+                    value: {
+                      type: 'binop',
+                      op: '-',
+                      left: { type: 'var', name: 'vidas' },
+                      right: { type: 'num', value: 1 },
+                    },
+                  },
+                ],
+              },
+              {
+                type: 'g2d:drawScore',
+                ctxVar: 'ctx',
+                label: 'Pontos:',
+                value: { type: 'var', name: 'pontos' },
+                x: 12,
+                y: 26,
+                color: '#ffffff',
+                size: 22,
+              },
+              {
+                type: 'g2d:drawHearts',
+                ctxVar: 'ctx',
+                count: { type: 'var', name: 'vidas' },
+                x: 12,
+                y: 40,
+                size: 16,
+                color: '#ff5d5d',
+              },
+              {
+                type: 'if',
+                cond: {
+                  type: 'binop',
+                  op: '>=',
+                  left: { type: 'var', name: 'pontos' },
+                  right: { type: 'num', value: 25 },
+                },
+                then: [{ type: 'g2d:setScene', name: 'ganhou' }],
+              },
+              {
+                type: 'if',
+                cond: {
+                  type: 'binop',
+                  op: '<=',
+                  left: { type: 'var', name: 'vidas' },
+                  right: { type: 'num', value: 0 },
+                },
+                then: [{ type: 'g2d:setScene', name: 'perdeu' }],
+              },
+            ],
+          },
+          {
+            type: 'if',
+            cond: { type: 'g2d:sceneIs', name: 'ganhou' },
+            then: [
+              {
+                type: 'g2d:showScreen',
+                ctxVar: 'ctx',
+                title: 'Você venceu!',
+                subtitle: 'Missão cumprida: a galáxia está segura!',
+                hint: 'Aperte Enter para jogar de novo',
+                bg: '#063018',
+              },
+            ],
+          },
+          {
+            type: 'if',
+            cond: { type: 'g2d:sceneIs', name: 'perdeu' },
+            then: [
+              {
+                type: 'g2d:showScreen',
+                ctxVar: 'ctx',
+                title: 'Fim de jogo',
+                subtitle: 'Os asteroides passaram pela defesa!',
+                hint: 'Aperte Enter para tentar de novo',
+                bg: '#300a0a',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    extensions: [{ extensionId: 'game-2d' }],
+  },
+}

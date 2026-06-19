@@ -726,6 +726,44 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
       if (color) return { type: 'canvasFillStyle', ctxVar: expr.left.object.name, color }
       return asRaw(source, node)
     }
+    // ctx.strokeStyle / lineWidth / globalAlpha / textAlign / font = … (caminho "na mão")
+    if (
+      (expr.left?.type === 'MemberExpression' || expr.left?.type === 'OptionalMemberExpression') &&
+      !expr.left.computed &&
+      expr.left.object?.type === 'Identifier' &&
+      ctx.ctxVars.has(expr.left.object.name) &&
+      typeof expr.left.property?.name === 'string'
+    ) {
+      const ctxVar: string = expr.left.object.name
+      const prop: string = expr.left.property.name
+      if (prop === 'strokeStyle') {
+        const color = toExpr(expr.right, ctx)
+        if (isSimpleValue(color)) return { type: 'canvasStrokeStyle', ctxVar, color }
+        return asRaw(source, node)
+      }
+      if (prop === 'lineWidth') {
+        const width = toExpr(expr.right, ctx)
+        if (isSimpleValue(width)) return { type: 'canvasLineWidth', ctxVar, width }
+        return asRaw(source, node)
+      }
+      if (prop === 'globalAlpha') {
+        const alpha = toExpr(expr.right, ctx)
+        if (isSimpleValue(alpha)) return { type: 'canvasGlobalAlpha', ctxVar, alpha }
+        return asRaw(source, node)
+      }
+      if (prop === 'textAlign' && expr.right?.type === 'StringLiteral') {
+        const a = expr.right.value as string
+        if (a === 'left' || a === 'center' || a === 'right') {
+          return { type: 'canvasTextAlign', ctxVar, align: a }
+        }
+        return asRaw(source, node)
+      }
+      if (prop === 'font' && expr.right?.type === 'StringLiteral') {
+        const m = /^(\d+)px (.+)$/.exec(expr.right.value as string)
+        if (m?.[1] && m[2]) return { type: 'canvasFont', ctxVar, size: Number(m[1]), family: m[2] }
+        return asRaw(source, node)
+      }
+    }
     // el.dataset.chave = <simples>
     const dataset = tryMatchSetDataset(expr, ctx)
     if (dataset) return dataset
@@ -1127,6 +1165,13 @@ function matchGame2DExpr(node: Node): JSExpr | null {
     const bVar = identifierName(args[1])
     if (aVar && bVar) return { type: 'g2d:touches', aVar, bVar }
   }
+  if (method === 'countGroup') {
+    const groupVar = identifierName(args[0])
+    if (groupVar) return { type: 'g2d:countGroup', groupVar }
+  }
+  if (method === 'sceneIs' && args[0]?.type === 'StringLiteral') {
+    return { type: 'g2d:sceneIs', name: args[0].value as string }
+  }
   return null
 }
 
@@ -1198,6 +1243,177 @@ function readTileMapOptions(
   }
   if (result.image === null || result.tile === null) return null
   return { image: result.image, tile: result.tile, solid: result.solid, grid: result.grid }
+}
+
+/**
+ * Lê o objeto de `SZGame2D.spawn(grupo, { x, y, w, h, color|image, vx, vy })`.
+ * x/y/vx/vy são EXPRESSÕES (aceitam aleatório/contas); w/h números; color/image
+ * strings. `image` presente → spawn de imagem. null se alguma chave não-casar.
+ */
+function readSpawnOptions(
+  obj: Node,
+  ctx: ParseCtx,
+): {
+  x: JSExpr
+  y: JSExpr
+  vx: JSExpr
+  vy: JSExpr
+  w: number
+  h: number
+  color: string
+  image: string | null
+} | null {
+  const num0: JSExpr = { type: 'num', value: 0 }
+  const out = {
+    x: num0 as JSExpr,
+    y: num0 as JSExpr,
+    vx: num0 as JSExpr,
+    vy: num0 as JSExpr,
+    w: 20,
+    h: 20,
+    color: '#22d3ee',
+    image: null as string | null,
+  }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'x' || key === 'y' || key === 'vx' || key === 'vy') {
+      const v = toExpr(prop.value, ctx)
+      if (!isSimpleValue(v)) return null
+      out[key] = v
+    } else if (key === 'w' || key === 'h') {
+      const v = numericLiteralValue(prop.value)
+      if (v === null) return null
+      out[key] = v
+    } else if (key === 'color') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      out.color = prop.value.value as string
+    } else if (key === 'image') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      out.image = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return out
+}
+
+/**
+ * Lê `{ x, y, w, h, body, wings }` de `SZGame2D.createShip({...})`. x/y/w/h números;
+ * body/wings cores (strings). null se alguma chave não casar.
+ */
+function readShipOptions(
+  obj: Node,
+): { x: number; y: number; w: number; h: number; body: string; wings: string } | null {
+  const out = { x: 0, y: 0, w: 54, h: 62, body: '#35e8ff', wings: '#2568ff' }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'x' || key === 'y' || key === 'w' || key === 'h') {
+      const v = numericLiteralValue(prop.value)
+      if (v === null) return null
+      out[key] = v
+    } else if (key === 'body' || key === 'wings') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      out[key] = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return out
+}
+
+/**
+ * Lê `{ x, y, size, color, vx, vy }` de `SZGame2D.spawnAsteroid(g, {...})`. x/y/vx/vy
+ * são expressões; size número; color string. null se alguma chave não casar.
+ */
+function readAsteroidOptions(
+  obj: Node,
+  ctx: ParseCtx,
+): { x: JSExpr; y: JSExpr; vx: JSExpr; vy: JSExpr; size: number; color: string } | null {
+  const num0: JSExpr = { type: 'num', value: 0 }
+  const out = {
+    x: num0 as JSExpr,
+    y: num0 as JSExpr,
+    vx: num0 as JSExpr,
+    vy: num0 as JSExpr,
+    size: 36,
+    color: '#8d8f9b',
+  }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'x' || key === 'y' || key === 'vx' || key === 'vy') {
+      const v = toExpr(prop.value, ctx)
+      if (!isSimpleValue(v)) return null
+      out[key] = v
+    } else if (key === 'size') {
+      const v = numericLiteralValue(prop.value)
+      if (v === null) return null
+      out.size = v
+    } else if (key === 'color') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      out.color = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return out
+}
+
+/** Lê { x, y, radius, color, vx, vy } do SZGame2D.spawnBullet(g, {...}). */
+function readBulletOptions(
+  obj: Node,
+  ctx: ParseCtx,
+): { x: JSExpr; y: JSExpr; vx: JSExpr; vy: JSExpr; radius: number; color: string } | null {
+  const num0: JSExpr = { type: 'num', value: 0 }
+  const out = {
+    x: num0 as JSExpr,
+    y: num0 as JSExpr,
+    vx: num0 as JSExpr,
+    vy: num0 as JSExpr,
+    radius: 5,
+    color: '#9cff57',
+  }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'x' || key === 'y' || key === 'vx' || key === 'vy') {
+      const v = toExpr(prop.value, ctx)
+      if (!isSimpleValue(v)) return null
+      out[key] = v
+    } else if (key === 'radius') {
+      const v = numericLiteralValue(prop.value)
+      if (v === null) return null
+      out.radius = v
+    } else if (key === 'color') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      out.color = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return out
 }
 
 /** SZGame2D.gameLoop/onPointer/drawSprite/applyVelocity/bounceOnEdges/setGravity/playSound. */
@@ -1370,6 +1586,298 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       const mapVar = identifierName(args[1])
       return spriteVar && mapVar ? { type: 'g2d:tileMapCollide', spriteVar, mapVar } : null
     }
+    case 'spawn': {
+      // generator: SZGame2D.spawn(g, { x, y, w, h, color|image, vx, vy })
+      const groupVar = identifierName(args[0])
+      if (!groupVar || args[1]?.type !== 'ObjectExpression') return null
+      const opts = readSpawnOptions(args[1], ctx)
+      if (!opts) return null
+      if (opts.image != null) {
+        const { x, y, w, h, image, vx, vy } = opts
+        return { type: 'g2d:spawnImageInGroup', groupVar, x, y, w, h, image, vx, vy }
+      }
+      const { x, y, w, h, color, vx, vy } = opts
+      return { type: 'g2d:spawnInGroup', groupVar, x, y, w, h, color, vx, vy }
+    }
+    case 'updateGroup': {
+      const groupVar = identifierName(args[0])
+      return groupVar ? { type: 'g2d:updateGroup', groupVar } : null
+    }
+    case 'drawGroup': {
+      // generator: SZGame2D.drawGroup(ctx, g)
+      const ctxVar = identifierName(args[0])
+      const groupVar = identifierName(args[1])
+      return ctxVar && groupVar ? { type: 'g2d:drawGroup', groupVar, ctxVar } : null
+    }
+    case 'forEachInGroup': {
+      // generator: SZGame2D.forEachInGroup(g, function (item) {…})
+      const groupVar = identifierName(args[0])
+      if (!groupVar || !isFn(args[1])) return null
+      const itemName = identifierName(args[1].params?.[0]) ?? 'sprite'
+      ctx.spriteVars.add(itemName)
+      return {
+        type: 'g2d:forEachInGroup',
+        groupVar,
+        itemName,
+        body: bodyOfFn(args[1], source, ctx),
+      }
+    }
+    case 'clearGroup': {
+      const groupVar = identifierName(args[0])
+      return groupVar ? { type: 'g2d:clearGroup', groupVar } : null
+    }
+    case 'pruneOffscreen': {
+      // generator: SZGame2D.pruneOffscreen(ctx, g, 40, function (item) {…})
+      const ctxVar = identifierName(args[0])
+      const groupVar = identifierName(args[1])
+      if (!ctxVar || !groupVar || !isFn(args[3])) return null
+      const itemName = identifierName(args[3].params?.[0]) ?? 'sprite'
+      ctx.spriteVars.add(itemName)
+      return {
+        type: 'g2d:pruneOffscreen',
+        groupVar,
+        ctxVar,
+        itemName,
+        body: bodyOfFn(args[3], source, ctx),
+      }
+    }
+    case 'overlapGroups': {
+      // generator: SZGame2D.overlapGroups(a, b, function (x, y) {…})
+      const aGroup = identifierName(args[0])
+      const bGroup = identifierName(args[1])
+      if (!aGroup || !bGroup || !isFn(args[2])) return null
+      const params = args[2].params ?? []
+      const aName = identifierName(params[0]) ?? 'a'
+      const bName = identifierName(params[1]) ?? 'b'
+      ctx.spriteVars.add(aName)
+      ctx.spriteVars.add(bName)
+      return {
+        type: 'g2d:onGroupOverlap',
+        aGroup,
+        aName,
+        bGroup,
+        bName,
+        body: bodyOfFn(args[2], source, ctx),
+      }
+    }
+    case 'removeFromGroup': {
+      // generator: SZGame2D.removeFromGroup(g, sprite)
+      const groupVar = identifierName(args[0])
+      const spriteVar = identifierName(args[1])
+      return groupVar && spriteVar ? { type: 'g2d:removeFromGroup', spriteVar, groupVar } : null
+    }
+    case 'drawScore': {
+      // generator: SZGame2D.drawScore(ctx, "label", value, x, y, "color", size)
+      const ctxVar = identifierName(args[0])
+      const value = toExpr(args[2], ctx)
+      const x = numericLiteralValue(args[3])
+      const y = numericLiteralValue(args[4])
+      const size = numericLiteralValue(args[6])
+      if (
+        !ctxVar ||
+        args[1]?.type !== 'StringLiteral' ||
+        !isSimpleValue(value) ||
+        x === null ||
+        y === null ||
+        args[5]?.type !== 'StringLiteral' ||
+        size === null
+      ) {
+        return null
+      }
+      return {
+        type: 'g2d:drawScore',
+        ctxVar,
+        label: args[1].value as string,
+        value,
+        x,
+        y,
+        color: args[5].value as string,
+        size,
+      }
+    }
+    case 'drawLabel': {
+      // generator: SZGame2D.drawLabel(ctx, "text", x, y, "color", size, "align")
+      const ctxVar = identifierName(args[0])
+      const x = numericLiteralValue(args[2])
+      const y = numericLiteralValue(args[3])
+      const size = numericLiteralValue(args[5])
+      if (
+        !ctxVar ||
+        args[1]?.type !== 'StringLiteral' ||
+        x === null ||
+        y === null ||
+        args[4]?.type !== 'StringLiteral' ||
+        size === null ||
+        args[6]?.type !== 'StringLiteral'
+      ) {
+        return null
+      }
+      const align = args[6].value as string
+      return {
+        type: 'g2d:drawLabel',
+        ctxVar,
+        text: args[1].value as string,
+        x,
+        y,
+        color: args[4].value as string,
+        size,
+        align: align === 'center' || align === 'right' ? align : 'left',
+      }
+    }
+    case 'drawHearts': {
+      // generator: SZGame2D.drawHearts(ctx, count, x, y, size, "color")
+      const ctxVar = identifierName(args[0])
+      const count = toExpr(args[1], ctx)
+      const x = numericLiteralValue(args[2])
+      const y = numericLiteralValue(args[3])
+      const size = numericLiteralValue(args[4])
+      if (
+        !ctxVar ||
+        !isSimpleValue(count) ||
+        x === null ||
+        y === null ||
+        size === null ||
+        args[5]?.type !== 'StringLiteral'
+      ) {
+        return null
+      }
+      return { type: 'g2d:drawHearts', ctxVar, count, x, y, size, color: args[5].value as string }
+    }
+    case 'drawBar': {
+      // generator: SZGame2D.drawBar(ctx, value, max, x, y, w, h, "color")
+      const ctxVar = identifierName(args[0])
+      const value = toExpr(args[1], ctx)
+      const max = toExpr(args[2], ctx)
+      const x = numericLiteralValue(args[3])
+      const y = numericLiteralValue(args[4])
+      const w = numericLiteralValue(args[5])
+      const h = numericLiteralValue(args[6])
+      if (
+        !ctxVar ||
+        !isSimpleValue(value) ||
+        !isSimpleValue(max) ||
+        x === null ||
+        y === null ||
+        w === null ||
+        h === null ||
+        args[7]?.type !== 'StringLiteral'
+      ) {
+        return null
+      }
+      return { type: 'g2d:drawBar', ctxVar, value, max, x, y, w, h, color: args[7].value as string }
+    }
+    case 'setScene': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'g2d:setScene', name: args[0].value as string }
+    }
+    case 'showScreen': {
+      // generator: SZGame2D.showScreen(ctx, "title", "subtitle", "hint", "bg")
+      const ctxVar = identifierName(args[0])
+      if (
+        !ctxVar ||
+        args[1]?.type !== 'StringLiteral' ||
+        args[2]?.type !== 'StringLiteral' ||
+        args[3]?.type !== 'StringLiteral' ||
+        args[4]?.type !== 'StringLiteral'
+      ) {
+        return null
+      }
+      return {
+        type: 'g2d:showScreen',
+        ctxVar,
+        title: args[1].value as string,
+        subtitle: args[2].value as string,
+        hint: args[3].value as string,
+        bg: args[4].value as string,
+      }
+    }
+    case 'restart':
+      return { type: 'g2d:restart' }
+    case 'drawStarfield': {
+      // generator: SZGame2D.drawStarfield(ctx, speed)
+      const ctxVar = identifierName(args[0])
+      const speed = numericLiteralValue(args[1])
+      return ctxVar && speed !== null ? { type: 'g2d:starfield', ctxVar, speed } : null
+    }
+    case 'dragX': {
+      const spriteVar = identifierName(args[0])
+      return spriteVar ? { type: 'g2d:dragX', spriteVar } : null
+    }
+    case 'fitScreen': {
+      const percent = numericLiteralValue(args[0])
+      return percent !== null ? { type: 'g2d:fitScreen', percent } : null
+    }
+    case 'spawnAsteroid': {
+      // generator: SZGame2D.spawnAsteroid(g, { x, y, size, color, vx, vy })
+      const groupVar = identifierName(args[0])
+      if (!groupVar || args[1]?.type !== 'ObjectExpression') return null
+      const o = readAsteroidOptions(args[1], ctx)
+      if (!o) return null
+      return {
+        type: 'g2d:spawnAsteroid',
+        groupVar,
+        x: o.x,
+        y: o.y,
+        size: o.size,
+        color: o.color,
+        vx: o.vx,
+        vy: o.vy,
+      }
+    }
+    case 'spawnBullet': {
+      // generator: SZGame2D.spawnBullet(g, { x, y, radius, color, vx, vy })
+      const groupVar = identifierName(args[0])
+      if (!groupVar || args[1]?.type !== 'ObjectExpression') return null
+      const o = readBulletOptions(args[1], ctx)
+      if (!o) return null
+      return {
+        type: 'g2d:spawnBullet',
+        groupVar,
+        x: o.x,
+        y: o.y,
+        radius: o.radius,
+        color: o.color,
+        vx: o.vx,
+        vy: o.vy,
+      }
+    }
+    case 'arrowsX': {
+      // generator: SZGame2D.arrowsX(sprite, speed)
+      const spriteVar = identifierName(args[0])
+      const speed = numericLiteralValue(args[1])
+      return spriteVar && speed !== null ? { type: 'g2d:arrowsX', spriteVar, speed } : null
+    }
+    case 'blink': {
+      // generator: SZGame2D.blink(sprite, frames)
+      const spriteVar = identifierName(args[0])
+      const frames = numericLiteralValue(args[1])
+      return spriteVar && frames !== null ? { type: 'g2d:blinkSprite', spriteVar, frames } : null
+    }
+    case 'explodeSprite': {
+      // generator: SZGame2D.explodeSprite(sprite, "color")
+      const spriteVar = identifierName(args[0])
+      if (!spriteVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'g2d:explode', spriteVar, color: args[1].value as string }
+    }
+    case 'playShoot':
+      return { type: 'g2d:playShoot' }
+    case 'playExplosion':
+      return { type: 'g2d:playExplosion' }
+    case 'overlapSpriteGroup': {
+      // generator: SZGame2D.overlapSpriteGroup(() => sprite, grupo, function (item) {…})
+      const spriteVar = arrowReturnIdentifier(args[0])
+      const groupVar = identifierName(args[1])
+      if (!spriteVar || !groupVar || !isFn(args[2])) return null
+      const itemName = identifierName(args[2].params?.[0]) ?? 'inimigo'
+      ctx.spriteVars.add(itemName)
+      return {
+        type: 'g2d:onSpriteGroupOverlap',
+        spriteVar,
+        groupVar,
+        itemName,
+        body: bodyOfFn(args[2], source, ctx),
+      }
+    }
     default:
       // createSprite/isColliding/circleCollides/loadSpriteSheet são var-init
       // (tryMatchGame2DVarInit); como chamada solta caem no método genérico.
@@ -1402,6 +1910,27 @@ function tryMatchGame2DVarInit(name: string, init: Node, ctx: ParseCtx): JSState
     }
     const { x, y, w, h, color } = sprite
     return { type: 'g2d:createSprite', varName: name, x, y, w, h, color }
+  }
+  if (method === 'createGroup') {
+    // generator: const g = SZGame2D.createGroup()
+    return { type: 'g2d:createGroup', varName: name }
+  }
+  if (method === 'createShip') {
+    // generator: const nave = SZGame2D.createShip({ x, y, w, h, body, wings })
+    if (args[0]?.type !== 'ObjectExpression') return null
+    const o = readShipOptions(args[0])
+    if (!o) return null
+    ctx.spriteVars.add(name)
+    return {
+      type: 'g2d:createShip',
+      varName: name,
+      x: o.x,
+      y: o.y,
+      w: o.w,
+      h: o.h,
+      bodyColor: o.body,
+      wingColor: o.wings,
+    }
   }
   if (method === 'loadSpriteSheet') {
     // generator: const v = SZGame2D.loadSpriteSheet('nome', fw, fh)
@@ -1706,6 +2235,22 @@ function tryMatchCanvasCall(expr: Node, ctx: ParseCtx): JSStatement | null {
     case 'scale': {
       const [sx, sy] = mapArgs(args, 2, ctx)
       return sx && sy ? { type: 'canvasScale', ctxVar, sx, sy } : null
+    }
+    case 'beginPath':
+      return args.length === 0 ? { type: 'canvasBeginPath', ctxVar } : null
+    case 'closePath':
+      return args.length === 0 ? { type: 'canvasClosePath', ctxVar } : null
+    case 'stroke':
+      return args.length === 0 ? { type: 'canvasStroke', ctxVar } : null
+    case 'fill':
+      return args.length === 0 ? { type: 'canvasFill', ctxVar } : null
+    case 'moveTo': {
+      const [x, y] = mapArgs(args, 2, ctx)
+      return x && y ? { type: 'canvasMoveTo', ctxVar, x, y } : null
+    }
+    case 'lineTo': {
+      const [x, y] = mapArgs(args, 2, ctx)
+      return x && y ? { type: 'canvasLineTo', ctxVar, x, y } : null
     }
     default:
       return null
@@ -2084,7 +2629,33 @@ function matchGetProperty(
   return { targetId: target.id, ...targetKindField(target), property: propName }
 }
 
+/**
+ * `if (SZGame2D.everyFrames("chave", N)) { … }` / `everySeconds` → bloco
+ * "a cada N quadros/segundos". A chave (literal estável que o gerador cria) é
+ * descartada no parse e recriada no gerar — round-trip continua estável. Só casa
+ * SEM `else` (o bloco não tem ramo senão).
+ */
+function tryMatchEvery(node: Node, source: string, ctx: ParseCtx): JSStatement | null {
+  if (node.alternate) return null
+  const call = asSZGame2DCall(node.test)
+  if (!call) return null
+  if (call.method === 'everyFrames') {
+    const n = toExpr(call.args[1], ctx)
+    if (!isSimpleValue(n)) return null
+    return { type: 'g2d:everyFrames', n, body: bodyOfBlock(node.consequent, source, ctx) }
+  }
+  if (call.method === 'everySeconds') {
+    const seconds = numericLiteralValue(call.args[1])
+    if (seconds === null) return null
+    return { type: 'g2d:everySeconds', seconds, body: bodyOfBlock(node.consequent, source, ctx) }
+  }
+  return null
+}
+
 function mapIf(node: Node, source: string, ctx: ParseCtx): JSStatement {
+  // "a cada N quadros/segundos" tem prioridade — é um if (SZGame2D.everyX(...)).
+  const every = tryMatchEvery(node, source, ctx)
+  if (every) return every
   // if (<condição>) { ... } else { ... } — a condição é qualquer valor
   // representável por bloco (comparação, lógico &&/||, classList.contains,
   // .length, variável…); senão a linha inteira vira código avançado.
@@ -2253,6 +2824,17 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
       if (!Number.isFinite(node.value)) return null
       return { type: 'num', value: node.value }
     }
+    // Número negativo: o Babel parseia `-7` como `UnaryExpression(-, 7)`, não como
+    // literal. Mapeamos para um `num` negativo (ex.: velocidade do tiro vy = -7, y
+    // de spawn fora da tela = -26). Sem isto, qualquer valor negativo cairia em
+    // código avançado. Só literais numéricos finitos; outras unárias seguem nulas.
+    case 'UnaryExpression': {
+      if (node.operator === '-' && node.argument?.type === 'NumericLiteral') {
+        const v = node.argument.value as number
+        if (Number.isFinite(v)) return { type: 'num', value: -v }
+      }
+      return null
+    }
     case 'StringLiteral': {
       // `rgba(r, g, b, a)` → cor com transparência (bloco sz_val_color_alpha).
       const rgba = /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*([\d.]+)\s*\)$/.exec(
@@ -2288,6 +2870,16 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     case 'ThisExpression':
       return { type: 'thisRef' }
     case 'MemberExpression': {
+      // __szInput.x / __szInput.y — posição do mouse/dedo (caminho "na mão").
+      if (
+        !node.computed &&
+        node.object?.type === 'Identifier' &&
+        node.object.name === '__szInput' &&
+        node.property?.type === 'Identifier' &&
+        (node.property.name === 'x' || node.property.name === 'y')
+      ) {
+        return { type: 'inputPointer', axis: node.property.name }
+      }
       // this.<prop> — usado dentro de métodos/construtor.
       if (
         !node.computed &&
@@ -2467,6 +3059,18 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
       // SZGame2D.keyDown("…") / SZGame2D.touches(a, b) → perguntas (booleanos).
       const g2dExpr = matchGame2DExpr(node)
       if (g2dExpr) return g2dExpr
+      // __szInput.key("ArrowRight") → "a tecla … está apertada?" (caminho "na mão").
+      if (
+        node.type === 'CallExpression' &&
+        node.callee?.type === 'MemberExpression' &&
+        !node.callee.computed &&
+        node.callee.object?.type === 'Identifier' &&
+        node.callee.object.name === '__szInput' &&
+        node.callee.property?.name === 'key' &&
+        node.arguments?.[0]?.type === 'StringLiteral'
+      ) {
+        return { type: 'inputKeyPressed', key: node.arguments[0].value as string }
+      }
       const now = matchNow(node)
       if (now) return now
       // Math.random() cru → decimal aleatório de 0 a 1 (sz_val_random_float).
@@ -2589,6 +3193,10 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
       return expr.args.every(isSimpleValue)
     case 'g2d:keyDown':
     case 'g2d:touches':
+    case 'g2d:countGroup':
+    case 'g2d:sceneIs':
+    case 'inputKeyPressed':
+    case 'inputPointer':
       return true
     case 'datasetGet':
     case 'classContains':

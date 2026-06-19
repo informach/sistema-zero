@@ -1,12 +1,18 @@
 import type { ExtensionManifest } from '#extensions'
-import { animatedHeroExample, platformerExample, pongExample, tilemapExample } from './examples'
+import {
+  animatedHeroExample,
+  asteroidsExample,
+  platformerExample,
+  pongExample,
+  tilemapExample,
+} from './examples'
 
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.5.0',
+  version: '0.8.0',
   description:
-    'Blocos e comandos para criar jogos 2D usando Canvas API: sprites com imagem e animação (spritesheet), movimento (plataforma, top-down, seguir o ponteiro), efeitos (clarão, tremor de tela, partículas), tiles/tilemaps com colisão, loop de jogo, teclado, mouse/toque, física, som e pontuação.',
+    'Blocos para criar jogos 2D no Canvas: sprites (cor/imagem/animação), grupos de MUITOS sprites com spawner e colisão de grupo, movimento, física, efeitos (clarão, tremor, partículas), tiles/tilemaps, HUD (placar/vidas/barra), telas/cenas, som, e KITS por tema — o 1º é o Kit espaço (nave, asteroides, estrelas, explosões e sons).',
   category: 'games',
   official: true,
   enabledByDefault: false,
@@ -80,6 +86,47 @@ quadros (o **tileset**) — escolha um da aba **Assets** (ex.: \`tileset\`).
 
 Enquanto o tileset carrega (ou se faltar), os tiles aparecem como retângulos — o jogo
 nunca quebra por falta de imagem.
+
+### Grupos, HUD e telas (v0.6.0)
+
+Para jogos com MUITOS sprites (tiros, inimigos, estrelas) e telas de início/vitória/derrota:
+
+- **Grupos** — \`Criar grupo\`, \`Criar no grupo … um sprite\` (x/y/vx/vy aceitam número
+  aleatório), \`Atualizar/Desenhar o grupo\`, \`Para cada sprite do grupo\`, \`quantos
+  sprites tem no grupo\`, \`Esvaziar/Tirar do grupo\`, \`Tirar do grupo quem sair da tela\`.
+- **Colisão de grupo** — \`Quando um sprite do grupo A encostar num do grupo B\` roda o
+  "fazer" com os dois sprites (use dentro do "a cada quadro").
+- **Temporizadores** — \`A cada N quadros/segundos fazer\` (ótimo para criar inimigos).
+- **HUD no canvas** — \`Mostrar placar\`, \`Escrever\`, \`Desenhar vidas (corações)\`, \`Barra de … / …\`.
+- **Telas/cenas** — \`Ir para a tela\`, \`a tela atual é … ?\`, \`Mostrar tela (título/subtítulo/dica)\`,
+  \`Reiniciar o jogo\`. O setup (grupos, sprites, variáveis) fica no TOPO do programa, fora do
+  "a cada quadro", para o loop conseguir enxergá-lo; um único "a cada quadro" decide o que
+  desenhar com "se a tela atual é X".
+- **Cenário** — \`Desenhar fundo de estrelas\` e \`Mover o sprite com o dedo (só na horizontal)\`.
+
+### Kit espaço (v0.7.0)
+
+A categoria **🚀 Kit espaço** reúne atalhos PRONTOS (não genéricos) para jogos de nave
+espacial — os desenhos, efeitos e sons já vêm feitos: criar nave (cabine + foguinho animado,
+cores do corpo e das asas escolhidas), criar asteroide no grupo (pedra que gira), desenhar
+fundo de estrelas (céu com gradiente e estrelas que cintilam), soltar
+explosão e tocar som de tiro/explosão. Os blocos genéricos seguem nas categorias normais —
+a ideia é ir somando KITS de outros temas (corrida, fazenda…).
+
+### Acabamentos (v0.8.0)
+
+- **Criar tiro no grupo** — um tiro redondo com brilho (em vez de retângulo).
+- **Mover o sprite com as setas** — anda só na horizontal com ← → (1 bloco).
+- **Fazer o sprite piscar** — o sprite fica intermitente por N quadros (ex.: invencibilidade).
+- **A cada N quadros** agora aceita um número OU uma variável (spawn que acelera por fase).
+- Asteroides nascem com tamanhos variados sozinhos; a tela de início/fim escurece de leve
+  (o jogo aparece atrás) e quebra o subtítulo em linhas.
+
+### Tela responsiva
+
+O bloco **Fazer a tela preencher N% da janela** (genérico) deixa o canvas grande, nítido e responsivo: ocupa quase toda a janela e se reajusta sozinho quando ela muda de tamanho, mantendo a proporção. As coordenadas do jogo continuam as mesmas, mas o desenho passa a ser feito na resolução REAL da tela — fica grande E nítido (sem borrar), em qualquer tamanho.
+
+Veja o exemplo **"Nave contra Asteroides"** para um jogo de tiro completo montado só com blocos.
 `,
-  examples: [pongExample, animatedHeroExample, platformerExample, tilemapExample],
+  examples: [pongExample, animatedHeroExample, platformerExample, tilemapExample, asteroidsExample],
 }

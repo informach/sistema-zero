@@ -54,6 +54,14 @@ function jsChildBodies(stmt: JSStatement): JSStatement[][] {
     case 'animationLoop':
     case 'g2d:updateEachFrame':
     case 'g2d:onPointer':
+    case 'g2d:onKey':
+    case 'g2d:onOverlap':
+    case 'g2d:forEachInGroup':
+    case 'g2d:pruneOffscreen':
+    case 'g2d:onGroupOverlap':
+    case 'g2d:onSpriteGroupOverlap':
+    case 'g2d:everyFrames':
+    case 'g2d:everySeconds':
     case 'g3d:animate':
     case 'funcDecl':
     case 'forEach':
@@ -618,6 +626,28 @@ function compileStatementCode(
         stops,
       ].join('\n')
     }
+    case 'canvasBeginPath':
+      return `${pad}${identifiers.get(stmt.ctxVar)}.beginPath();`
+    case 'canvasClosePath':
+      return `${pad}${identifiers.get(stmt.ctxVar)}.closePath();`
+    case 'canvasStroke':
+      return `${pad}${identifiers.get(stmt.ctxVar)}.stroke();`
+    case 'canvasFill':
+      return `${pad}${identifiers.get(stmt.ctxVar)}.fill();`
+    case 'canvasMoveTo':
+      return `${pad}${identifiers.get(stmt.ctxVar)}.moveTo(${compileExpr(stmt.x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base))});`
+    case 'canvasLineTo':
+      return `${pad}${identifiers.get(stmt.ctxVar)}.lineTo(${compileExpr(stmt.x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base))});`
+    case 'canvasStrokeStyle':
+      return `${pad}${identifiers.get(stmt.ctxVar)}.strokeStyle = ${compileExpr(stmt.color, 0, identifiers, recAt(base))};`
+    case 'canvasLineWidth':
+      return `${pad}${identifiers.get(stmt.ctxVar)}.lineWidth = ${compileExpr(stmt.width, 0, identifiers, recAt(base))};`
+    case 'canvasGlobalAlpha':
+      return `${pad}${identifiers.get(stmt.ctxVar)}.globalAlpha = ${compileExpr(stmt.alpha, 0, identifiers, recAt(base))};`
+    case 'canvasFont':
+      return `${pad}${identifiers.get(stmt.ctxVar)}.font = ${JSON.stringify(`${stmt.size}px ${stmt.family}`)};`
+    case 'canvasTextAlign':
+      return `${pad}${identifiers.get(stmt.ctxVar)}.textAlign = ${JSON.stringify(stmt.align)};`
     case 'keyboardSimple': {
       const v = identifiers.get(stmt.varName)
       return [
@@ -742,6 +772,120 @@ function compileStatementCode(
       return `${pad}SZGame2D.drawTileMap(${identifiers.get(stmt.ctxVar)}, ${identifiers.get(stmt.mapVar)}, ${stmt.x}, ${stmt.y});`
     case 'g2d:tileMapCollide':
       return `${pad}SZGame2D.collideTileMap(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.mapVar)});`
+    case 'g2d:createGroup':
+      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createGroup();`
+    case 'g2d:spawnInGroup':
+      return `${pad}SZGame2D.spawn(${identifiers.get(stmt.groupVar)}, { x: ${compileExpr(stmt.x, 0, identifiers, recAt(base))}, y: ${compileExpr(stmt.y, 0, identifiers, recAt(base))}, w: ${stmt.w}, h: ${stmt.h}, color: ${JSON.stringify(stmt.color)}, vx: ${compileExpr(stmt.vx, 0, identifiers, recAt(base))}, vy: ${compileExpr(stmt.vy, 0, identifiers, recAt(base))} });`
+    case 'g2d:spawnImageInGroup':
+      return `${pad}SZGame2D.spawn(${identifiers.get(stmt.groupVar)}, { x: ${compileExpr(stmt.x, 0, identifiers, recAt(base))}, y: ${compileExpr(stmt.y, 0, identifiers, recAt(base))}, w: ${stmt.w}, h: ${stmt.h}, image: ${JSON.stringify(stmt.image)}, vx: ${compileExpr(stmt.vx, 0, identifiers, recAt(base))}, vy: ${compileExpr(stmt.vy, 0, identifiers, recAt(base))} });`
+    case 'g2d:spawnBullet':
+      return `${pad}SZGame2D.spawnBullet(${identifiers.get(stmt.groupVar)}, { x: ${compileExpr(stmt.x, 0, identifiers, recAt(base))}, y: ${compileExpr(stmt.y, 0, identifiers, recAt(base))}, radius: ${stmt.radius}, color: ${JSON.stringify(stmt.color)}, vx: ${compileExpr(stmt.vx, 0, identifiers, recAt(base))}, vy: ${compileExpr(stmt.vy, 0, identifiers, recAt(base))} });`
+    case 'g2d:arrowsX':
+      return `${pad}SZGame2D.arrowsX(${identifiers.get(stmt.spriteVar)}, ${stmt.speed});`
+    case 'g2d:blinkSprite':
+      return `${pad}SZGame2D.blink(${identifiers.get(stmt.spriteVar)}, ${stmt.frames});`
+    case 'g2d:updateGroup':
+      return `${pad}SZGame2D.updateGroup(${identifiers.get(stmt.groupVar)});`
+    case 'g2d:drawGroup':
+      return `${pad}SZGame2D.drawGroup(${identifiers.get(stmt.ctxVar)}, ${identifiers.get(stmt.groupVar)});`
+    case 'g2d:forEachInGroup': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGame2D.forEachInGroup(${identifiers.get(stmt.groupVar)}, function (${identifiers.get(stmt.itemName)}) {\n${body}\n${pad}});`
+    }
+    case 'g2d:clearGroup':
+      return `${pad}SZGame2D.clearGroup(${identifiers.get(stmt.groupVar)});`
+    case 'g2d:pruneOffscreen': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGame2D.pruneOffscreen(${identifiers.get(stmt.ctxVar)}, ${identifiers.get(stmt.groupVar)}, 40, function (${identifiers.get(stmt.itemName)}) {\n${body}\n${pad}});`
+    }
+    case 'g2d:onGroupOverlap': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGame2D.overlapGroups(${identifiers.get(stmt.aGroup)}, ${identifiers.get(stmt.bGroup)}, function (${identifiers.get(stmt.aName)}, ${identifiers.get(stmt.bName)}) {\n${body}\n${pad}});`
+    }
+    case 'g2d:removeFromGroup':
+      return `${pad}SZGame2D.removeFromGroup(${identifiers.get(stmt.groupVar)}, ${identifiers.get(stmt.spriteVar)});`
+    case 'g2d:everyFrames': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      const key = identifiers.reserveInternal('cada')
+      return [
+        `${pad}if (SZGame2D.everyFrames(${JSON.stringify(key)}, ${compileExpr(stmt.n, 0, identifiers, recAt(base))})) {`,
+        body,
+        `${pad}}`,
+      ].join('\n')
+    }
+    case 'g2d:everySeconds': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      const key = identifiers.reserveInternal('cada')
+      return [
+        `${pad}if (SZGame2D.everySeconds(${JSON.stringify(key)}, ${stmt.seconds})) {`,
+        body,
+        `${pad}}`,
+      ].join('\n')
+    }
+    case 'g2d:drawScore':
+      return `${pad}SZGame2D.drawScore(${identifiers.get(stmt.ctxVar)}, ${JSON.stringify(stmt.label)}, ${compileExpr(stmt.value, 0, identifiers, recAt(base))}, ${stmt.x}, ${stmt.y}, ${JSON.stringify(stmt.color)}, ${stmt.size});`
+    case 'g2d:drawLabel':
+      return `${pad}SZGame2D.drawLabel(${identifiers.get(stmt.ctxVar)}, ${JSON.stringify(stmt.text)}, ${stmt.x}, ${stmt.y}, ${JSON.stringify(stmt.color)}, ${stmt.size}, ${JSON.stringify(stmt.align)});`
+    case 'g2d:drawHearts':
+      return `${pad}SZGame2D.drawHearts(${identifiers.get(stmt.ctxVar)}, ${compileExpr(stmt.count, 0, identifiers, recAt(base))}, ${stmt.x}, ${stmt.y}, ${stmt.size}, ${JSON.stringify(stmt.color)});`
+    case 'g2d:drawBar':
+      return `${pad}SZGame2D.drawBar(${identifiers.get(stmt.ctxVar)}, ${compileExpr(stmt.value, 0, identifiers, recAt(base))}, ${compileExpr(stmt.max, 0, identifiers, recAt(base))}, ${stmt.x}, ${stmt.y}, ${stmt.w}, ${stmt.h}, ${JSON.stringify(stmt.color)});`
+    case 'g2d:setScene':
+      return `${pad}SZGame2D.setScene(${JSON.stringify(stmt.name)});`
+    case 'g2d:showScreen':
+      return `${pad}SZGame2D.showScreen(${identifiers.get(stmt.ctxVar)}, ${JSON.stringify(stmt.title)}, ${JSON.stringify(stmt.subtitle)}, ${JSON.stringify(stmt.hint)}, ${JSON.stringify(stmt.bg)});`
+    case 'g2d:restart':
+      return `${pad}SZGame2D.restart();`
+    case 'g2d:starfield':
+      return `${pad}SZGame2D.drawStarfield(${identifiers.get(stmt.ctxVar)}, ${stmt.speed});`
+    case 'g2d:dragX':
+      return `${pad}SZGame2D.dragX(${identifiers.get(stmt.spriteVar)});`
+    case 'g2d:fitScreen':
+      return `${pad}SZGame2D.fitScreen(${stmt.percent});`
+    case 'g2d:createShip':
+      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createShip({ x: ${stmt.x}, y: ${stmt.y}, w: ${stmt.w}, h: ${stmt.h}, body: ${JSON.stringify(stmt.bodyColor)}, wings: ${JSON.stringify(stmt.wingColor)} });`
+    case 'g2d:spawnAsteroid':
+      return `${pad}SZGame2D.spawnAsteroid(${identifiers.get(stmt.groupVar)}, { x: ${compileExpr(stmt.x, 0, identifiers, recAt(base))}, y: ${compileExpr(stmt.y, 0, identifiers, recAt(base))}, size: ${stmt.size}, color: ${JSON.stringify(stmt.color)}, vx: ${compileExpr(stmt.vx, 0, identifiers, recAt(base))}, vy: ${compileExpr(stmt.vy, 0, identifiers, recAt(base))} });`
+    case 'g2d:explode':
+      return `${pad}SZGame2D.explodeSprite(${identifiers.get(stmt.spriteVar)}, ${JSON.stringify(stmt.color)});`
+    case 'g2d:playShoot':
+      return `${pad}SZGame2D.playShoot();`
+    case 'g2d:playExplosion':
+      return `${pad}SZGame2D.playExplosion();`
+    case 'g2d:onSpriteGroupOverlap': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGame2D.overlapSpriteGroup(() => ${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.groupVar)}, function (${identifiers.get(stmt.itemName)}) {\n${body}\n${pad}});`
+    }
     case 'g2d:updateEachFrame': {
       const body = compileStatements(
         stmt.body,
@@ -993,6 +1137,14 @@ function reserveClassNames(statements: JSStatement[], scope: IdentifierScope): v
       case 'animationLoop':
       case 'g2d:updateEachFrame':
       case 'g2d:onPointer':
+      case 'g2d:onKey':
+      case 'g2d:onOverlap':
+      case 'g2d:forEachInGroup':
+      case 'g2d:pruneOffscreen':
+      case 'g2d:onGroupOverlap':
+      case 'g2d:onSpriteGroupOverlap':
+      case 'g2d:everyFrames':
+      case 'g2d:everySeconds':
       case 'g3d:animate':
         reserveClassNames(stmt.body, scope)
         break
@@ -1034,6 +1186,14 @@ function reserveCanvasElements(statements: JSStatement[], scope: IdentifierScope
       case 'animationLoop':
       case 'g2d:updateEachFrame':
       case 'g2d:onPointer':
+      case 'g2d:onKey':
+      case 'g2d:onOverlap':
+      case 'g2d:forEachInGroup':
+      case 'g2d:pruneOffscreen':
+      case 'g2d:onGroupOverlap':
+      case 'g2d:onSpriteGroupOverlap':
+      case 'g2d:everyFrames':
+      case 'g2d:everySeconds':
       case 'g3d:animate':
         reserveCanvasElements(stmt.body, scope)
         break
@@ -1216,6 +1376,32 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(stmt.x1, names)
       collectExprIdentifiers(stmt.y1, names)
       return
+    case 'canvasBeginPath':
+    case 'canvasClosePath':
+    case 'canvasStroke':
+    case 'canvasFill':
+    case 'canvasFont':
+    case 'canvasTextAlign':
+      names.add(stmt.ctxVar)
+      return
+    case 'canvasMoveTo':
+    case 'canvasLineTo':
+      names.add(stmt.ctxVar)
+      collectExprIdentifiers(stmt.x, names)
+      collectExprIdentifiers(stmt.y, names)
+      return
+    case 'canvasStrokeStyle':
+      names.add(stmt.ctxVar)
+      collectExprIdentifiers(stmt.color, names)
+      return
+    case 'canvasLineWidth':
+      names.add(stmt.ctxVar)
+      collectExprIdentifiers(stmt.width, names)
+      return
+    case 'canvasGlobalAlpha':
+      names.add(stmt.ctxVar)
+      collectExprIdentifiers(stmt.alpha, names)
+      return
     case 'g2d:createSprite':
     case 'g2d:score':
       names.add(stmt.varName)
@@ -1261,6 +1447,119 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       names.add(stmt.xName)
       names.add(stmt.yName)
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'g2d:onKey':
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'g2d:onOverlap':
+      names.add(stmt.aVar)
+      names.add(stmt.bVar)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'g2d:createGroup':
+      names.add(stmt.varName)
+      return
+    case 'g2d:spawnInGroup':
+    case 'g2d:spawnImageInGroup':
+      names.add(stmt.groupVar)
+      collectExprIdentifiers(stmt.x, names)
+      collectExprIdentifiers(stmt.y, names)
+      collectExprIdentifiers(stmt.vx, names)
+      collectExprIdentifiers(stmt.vy, names)
+      return
+    case 'g2d:updateGroup':
+    case 'g2d:clearGroup':
+      names.add(stmt.groupVar)
+      return
+    case 'g2d:drawGroup':
+      names.add(stmt.groupVar)
+      names.add(stmt.ctxVar)
+      return
+    case 'g2d:forEachInGroup':
+      names.add(stmt.groupVar)
+      names.add(stmt.itemName)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'g2d:pruneOffscreen':
+      names.add(stmt.groupVar)
+      names.add(stmt.ctxVar)
+      names.add(stmt.itemName)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'g2d:onGroupOverlap':
+      names.add(stmt.aGroup)
+      names.add(stmt.bGroup)
+      names.add(stmt.aName)
+      names.add(stmt.bName)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'g2d:removeFromGroup':
+      names.add(stmt.groupVar)
+      names.add(stmt.spriteVar)
+      return
+    case 'g2d:everyFrames':
+      collectExprIdentifiers(stmt.n, names)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'g2d:everySeconds':
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'g2d:spawnBullet':
+      names.add(stmt.groupVar)
+      collectExprIdentifiers(stmt.x, names)
+      collectExprIdentifiers(stmt.y, names)
+      collectExprIdentifiers(stmt.vx, names)
+      collectExprIdentifiers(stmt.vy, names)
+      return
+    case 'g2d:arrowsX':
+    case 'g2d:blinkSprite':
+      names.add(stmt.spriteVar)
+      return
+    case 'g2d:drawScore':
+      names.add(stmt.ctxVar)
+      collectExprIdentifiers(stmt.value, names)
+      return
+    case 'g2d:drawLabel':
+      names.add(stmt.ctxVar)
+      return
+    case 'g2d:drawHearts':
+      names.add(stmt.ctxVar)
+      collectExprIdentifiers(stmt.count, names)
+      return
+    case 'g2d:drawBar':
+      names.add(stmt.ctxVar)
+      collectExprIdentifiers(stmt.value, names)
+      collectExprIdentifiers(stmt.max, names)
+      return
+    case 'g2d:showScreen':
+    case 'g2d:starfield':
+      names.add(stmt.ctxVar)
+      return
+    case 'g2d:dragX':
+    case 'g2d:explode':
+      names.add(stmt.spriteVar)
+      return
+    case 'g2d:createShip':
+      names.add(stmt.varName)
+      return
+    case 'g2d:spawnAsteroid':
+      names.add(stmt.groupVar)
+      collectExprIdentifiers(stmt.x, names)
+      collectExprIdentifiers(stmt.y, names)
+      collectExprIdentifiers(stmt.vx, names)
+      collectExprIdentifiers(stmt.vy, names)
+      return
+    case 'g2d:onSpriteGroupOverlap':
+      names.add(stmt.spriteVar)
+      names.add(stmt.groupVar)
+      names.add(stmt.itemName)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'g2d:setScene':
+    case 'g2d:restart':
+    case 'g2d:playShoot':
+    case 'g2d:playExplosion':
+    case 'g2d:fitScreen':
       return
     case 'g2d:createImageSprite':
       names.add(stmt.varName)
@@ -1496,6 +1795,9 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
       collectExprIdentifiers(expr.h, names)
       collectExprIdentifiers(expr.s, names)
       collectExprIdentifiers(expr.l, names)
+      return
+    case 'g2d:countGroup':
+      names.add(expr.groupVar)
       return
     default:
       return

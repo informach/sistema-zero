@@ -147,8 +147,29 @@ export const gameTwoDRuntime = `(function () {
    * não houver imagem). Mantém o comportamento antigo (só fillRect) para sprites
    * sem imagem — retrocompatível.
    */
+  // Wrapper público: aplica o "piscar" (invencibilidade) e delega o desenho real.
   function drawSprite(ctx, sprite) {
     if (!ctx || !sprite) return;
+    if (sprite.blinkFrames > 0) {
+      sprite.blinkFrames--;
+      if (Math.floor(sprite.blinkFrames / 6) % 2 === 0) {
+        var pa = ctx.globalAlpha;
+        ctx.globalAlpha = 0.35;
+        _drawSpriteRaw(ctx, sprite);
+        ctx.globalAlpha = pa;
+        return;
+      }
+    }
+    _drawSpriteRaw(ctx, sprite);
+  }
+  function _drawSpriteRaw(ctx, sprite) {
+    if (!ctx || !sprite) return;
+    // Desenhos prontos (skins): nave, asteroide e tiro têm forma própria.
+    if (sprite.skin) {
+      if (sprite.skin.kind === 'ship') { drawShip(ctx, sprite); return; }
+      if (sprite.skin.kind === 'asteroid') { drawAsteroidSprite(ctx, sprite); return; }
+      if (sprite.skin.kind === 'bullet') { drawBullet(ctx, sprite); return; }
+    }
     var a = sprite.anim;
     if (a && a.sheet && a.sheet.image && a.sheet.image.loaded) {
       var frames = (a.to - a.from) + 1;
@@ -236,7 +257,7 @@ export const gameTwoDRuntime = `(function () {
   /** Faz o sprite ricochetear nas bordas do canvas (invertendo a velocidade). */
   function bounceOnEdges(s, ctx) {
     if (!s || !ctx || !ctx.canvas) return;
-    var w = ctx.canvas.width, h = ctx.canvas.height;
+    var w = stageW(ctx), h = stageH(ctx);
     if (s.x < 0) { s.x = 0; s.vx = Math.abs(s.vx || 0); }
     else if (s.x + s.w > w) { s.x = w - s.w; s.vx = -Math.abs(s.vx || 0); }
     if (s.y < 0) { s.y = 0; s.vy = Math.abs(s.vy || 0); }
@@ -296,8 +317,14 @@ export const gameTwoDRuntime = `(function () {
   var pointerLimitWarned = false;
   function pointerXY(e) {
     var c = document.querySelector('canvas');
-    var rect = c ? c.getBoundingClientRect() : { left: 0, top: 0 };
-    return { x: (e.clientX || 0) - rect.left, y: (e.clientY || 0) - rect.top };
+    if (!c) return { x: e.clientX || 0, y: e.clientY || 0 };
+    var rect = c.getBoundingClientRect();
+    // Mapeia a posição na TELA para as coordenadas internas do canvas: quando ele
+    // é exibido maior/menor que a resolução (ex.: "preencher a janela"), display ≠
+    // interno, então escalamos — senão o ponteiro (dragX/onPointer) fica torto.
+    var sx = rect.width ? (_logicalW || c.width) / rect.width : 1;
+    var sy = rect.height ? (_logicalH || c.height) / rect.height : 1;
+    return { x: ((e.clientX || 0) - rect.left) * sx, y: ((e.clientY || 0) - rect.top) * sy };
   }
   window.addEventListener('pointermove', function (e) {
     var p = pointerXY(e); pointer.x = p.x; pointer.y = p.y;
@@ -355,7 +382,7 @@ export const gameTwoDRuntime = `(function () {
     if (keys.right) sprite.x += s;
     sprite.vy = (sprite.vy || 0) + 0.6; // gravidade
     sprite.y += sprite.vy;
-    var floor = ctx.canvas.height - sprite.h;
+    var floor = stageH(ctx) - sprite.h;
     var onGround = false;
     if (sprite.y >= floor) { sprite.y = floor; sprite.vy = 0; onGround = true; }
     if (keys.up && onGround) sprite.vy = -j;
@@ -386,7 +413,7 @@ export const gameTwoDRuntime = `(function () {
   /** Gruda o sprite nas bordas do canvas (não deixa sair da tela). */
   function clampToScreen(sprite, ctx) {
     if (!sprite || !ctx || !ctx.canvas) return;
-    var w = ctx.canvas.width, h = ctx.canvas.height;
+    var w = stageW(ctx), h = stageH(ctx);
     if (sprite.x < 0) sprite.x = 0;
     if (sprite.y < 0) sprite.y = 0;
     if (sprite.x + sprite.w > w) sprite.x = w - sprite.w;
@@ -400,7 +427,7 @@ export const gameTwoDRuntime = `(function () {
     ctx.save();
     ctx.globalAlpha = 0.4;
     ctx.fillStyle = color || '#ffffff';
-    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.fillRect(0, 0, stageW(ctx), stageH(ctx));
     ctx.restore();
   }
 
@@ -661,6 +688,545 @@ export const gameTwoDRuntime = `(function () {
   /** Verdadeiro enquanto os dois sprites se tocam (alias de isColliding). */
   function touches(a, b) { return isColliding(a, b); }
 
+  // ---- Grupos de sprites: MUITOS sprites (tiros, inimigos, estrelas) ----
+  // Um grupo é só uma LISTA gerenciada de sprites — os mesmos objetos de
+  // createSprite. Assim drawSprite/applyVelocity/isColliding já funcionam em
+  // cada item, sem motor novo. Teto rígido p/ não vazar memória se o aluno
+  // criar sprites sem parar (ex.: um tiro por quadro).
+  var MAX_GROUP = 400;
+  /** Cria um grupo vazio. */
+  function createGroup() { return { items: [] }; }
+  /**
+   * Cria um sprite (colorido OU com imagem, conforme opts) e o coloca no grupo.
+   * Devolve o sprite. Acima do teto, descarta silenciosamente (nunca lança).
+   */
+  function spawn(group, opts) {
+    if (!group || !group.items) return null;
+    if (group.items.length >= MAX_GROUP) return null;
+    var s = createSprite(opts);
+    group.items.push(s);
+    return s;
+  }
+  // Cria um TIRO (bolinha brilhante) no grupo. x/y = CENTRO; raio em px.
+  function spawnBullet(group, opts) {
+    if (!group || !group.items) return null;
+    if (group.items.length >= MAX_GROUP) return null;
+    opts = opts || {};
+    var r = (typeof opts.radius === 'number' && opts.radius > 0) ? opts.radius : 5;
+    var s = createSprite({
+      x: (opts.x || 0) - r,
+      y: (opts.y || 0) - r,
+      w: r * 2,
+      h: r * 2,
+      color: opts.color,
+      vx: opts.vx,
+      vy: opts.vy
+    });
+    s.skin = { kind: 'bullet', color: opts.color || '#9cff57' };
+    group.items.push(s);
+    return s;
+  }
+  /** Desenha o tiro: bolinha com brilho (glow). */
+  function drawBullet(ctx, sprite) {
+    var r = (sprite.w || 10) / 2;
+    var cx = sprite.x + sprite.w / 2;
+    var cy = sprite.y + sprite.h / 2;
+    var col = (sprite.skin && sprite.skin.color) || sprite.color || '#9cff57';
+    ctx.save();
+    ctx.fillStyle = col;
+    ctx.shadowColor = col;
+    ctx.shadowBlur = 14;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.restore();
+  }
+  // Move o sprite SÓ na horizontal com as setas ← → (não sai sozinho da tela:
+  // combine com "prender o sprite na tela").
+  function arrowsX(sprite, speed) {
+    if (!sprite) return;
+    var sp = (typeof speed === 'number') ? speed : 5;
+    if (keys.left) sprite.x -= sp;
+    if (keys.right) sprite.x += sp;
+  }
+  // Faz o sprite PISCAR por N quadros (ex.: invencibilidade ao levar dano).
+  function blink(sprite, frames) {
+    if (!sprite) return;
+    sprite.blinkFrames = (typeof frames === 'number' && frames > 0) ? Math.floor(frames) : 60;
+  }
+  /** Move cada sprite do grupo pela sua velocidade (e gravidade do mundo). */
+  function updateGroup(group) {
+    if (!group || !group.items) return;
+    for (var i = 0; i < group.items.length; i++) applyVelocity(group.items[i]);
+  }
+  /** Desenha todos os sprites do grupo. */
+  function drawGroup(ctx, group) {
+    if (!ctx || !group || !group.items) return;
+    for (var i = 0; i < group.items.length; i++) drawSprite(ctx, group.items[i]);
+  }
+  /**
+   * Roda fn(sprite, i) para cada sprite. Itera em ordem REVERSA para que o
+   * corpo possa remover o item atual (com "tirar do grupo") sem pular nenhum.
+   */
+  function forEachInGroup(group, fn) {
+    if (!group || !group.items || typeof fn !== 'function') return;
+    for (var i = group.items.length - 1; i >= 0; i--) {
+      try { fn(group.items[i], i); } catch (e) { console.error(e && e.message ? e.message : e); }
+    }
+  }
+  /** Quantos sprites o grupo tem agora. */
+  function countGroup(group) { return (group && group.items) ? group.items.length : 0; }
+  /** Esvazia o grupo (tira todos os sprites). */
+  function clearGroup(group) { if (group && group.items) group.items.length = 0; }
+  /** Tira um sprite específico do grupo (por referência). */
+  function removeFromGroup(group, sprite) {
+    if (!group || !group.items) return;
+    var idx = group.items.indexOf(sprite);
+    if (idx !== -1) group.items.splice(idx, 1);
+  }
+  /**
+   * Remove do grupo os sprites que saíram da tela (com uma margem). Para cada
+   * um que sai, chama onLeave(sprite) — é assim que "asteroide escapou = perde
+   * vida". Roda dentro do "a cada quadro" do aluno; sem RAF próprio.
+   */
+  function pruneOffscreen(ctx, group, margin, onLeave) {
+    if (!ctx || !ctx.canvas || !group || !group.items) return;
+    var m = typeof margin === 'number' ? margin : 40;
+    var w = stageW(ctx), h = stageH(ctx);
+    for (var i = group.items.length - 1; i >= 0; i--) {
+      var s = group.items[i];
+      if (!s) { group.items.splice(i, 1); continue; }
+      if (s.x + s.w < -m || s.x > w + m || s.y + s.h < -m || s.y > h + m) {
+        group.items.splice(i, 1);
+        if (typeof onLeave === 'function') {
+          try { onLeave(s); } catch (e) { console.error(e && e.message ? e.message : e); }
+        }
+      }
+    }
+  }
+  /**
+   * Para cada par (sprite do grupo A, sprite do grupo B) que se encosta, chama
+   * fn(a, b). Varredura por quadro (NÃO registra handler como onOverlap — sem
+   * teto de 32 e sem edge-trigger): use dentro do "a cada quadro". Itera em
+   * ordem reversa p/ tolerar remoção dos sprites no corpo (tiro some, inimigo
+   * explode). Custo O(N×M) por quadro — os tetos de grupo seguram o tamanho.
+   */
+  function overlapGroups(a, b, fn) {
+    if (!a || !a.items || !b || !b.items || typeof fn !== 'function') return;
+    for (var i = a.items.length - 1; i >= 0; i--) {
+      var ai = a.items[i];
+      if (!ai) continue;
+      for (var j = b.items.length - 1; j >= 0; j--) {
+        var bj = b.items[j];
+        if (!bj) continue;
+        if (isColliding(ai, bj)) {
+          try { fn(ai, bj); } catch (e) { console.error(e && e.message ? e.message : e); }
+        }
+      }
+    }
+  }
+
+  // ---- Temporizadores didáticos: "a cada N quadros / segundos" ----
+  // Sem RAF próprio: contadores por CHAVE estável (o gerador passa uma chave
+  // literal por bloco). everyFrames conta quadros; everySeconds usa o relógio.
+  // O aluno chama dentro do "a cada quadro": if (SZGame2D.everyFrames('k', 30)) {…}.
+  var frameCounters = Object.create(null);
+  function everyFrames(key, n) {
+    var step = (typeof n === 'number' && n > 0) ? Math.floor(n) : 1;
+    var c = (frameCounters[key] || 0) + 1;
+    frameCounters[key] = c;
+    return c % step === 0;
+  }
+  var secondTimers = Object.create(null);
+  function everySeconds(key, secs) {
+    var period = (typeof secs === 'number' && secs > 0) ? secs * 1000 : 1000;
+    var t = now();
+    var last = secondTimers[key];
+    if (last === undefined) { secondTimers[key] = t; return false; }
+    if (t - last >= period) { secondTimers[key] = t; return true; }
+    return false;
+  }
+
+  // ---- Kit "Nave & Asteroides" (v0.7.0): desenhos prontos + efeitos ----
+  // Um sprite pode ter um "skin" (sprite.skin) que muda o jeito que ele é
+  // desenhado. drawSprite despacha: skin 'ship' -> nave; 'asteroid' -> asteroide.
+  // Assim o mesmo modelo de sprite (x/y/w/h/vx/vy) ganha o visual do jogo.
+
+  /** Cria uma nave (corpo + asas customizáveis; cabine e foguinho fixos, animados). */
+  function createShip(opts) {
+    opts = opts || {};
+    var s = createSprite({ x: opts.x, y: opts.y, w: opts.w, h: opts.h, color: opts.body });
+    s.skin = { kind: 'ship', body: opts.body || '#35e8ff', wings: opts.wings || '#2568ff' };
+    return s;
+  }
+  /**
+   * Desenha a nave centrada na caixa do sprite, na escala da largura (w=54 => 1:1
+   * com o desenho de referência). O foguinho pulsa com o tempo (animação embutida);
+   * o corpo usa a cor "body" e as asas a cor "wings"; cabine fixa.
+   */
+  function drawShip(ctx, sprite) {
+    var sk = sprite.skin || {};
+    var cx = sprite.x + sprite.w / 2;
+    var cy = sprite.y + sprite.h / 2;
+    // Escala para a nave INTEIRA (ponta de asa a ponta de asa = 96 no desenho de
+    // referência) caber na largura da caixa — assim ela fica proporcional aos
+    // outros objetos (não estoura a própria caixa) e a colisão bate com o visual.
+    var s = (sprite.w || 54) / 96;
+    var oy = -17; // desloca o desenho de referência p/ centralizar na caixa
+    var flame = 22 + Math.sin(now() * 0.015) * 5;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.scale(s, s);
+    // foguinho (laranja)
+    ctx.fillStyle = '#ffb13b';
+    ctx.beginPath();
+    ctx.moveTo(0, oy + 42);
+    ctx.lineTo(-11, oy + 66);
+    ctx.lineTo(11, oy + 66);
+    ctx.closePath();
+    ctx.fill();
+    // foguinho (vermelho, pulsando)
+    ctx.fillStyle = '#ff5d3d';
+    ctx.beginPath();
+    ctx.moveTo(0, oy + 45);
+    ctx.lineTo(-7, oy + flame + 58);
+    ctx.lineTo(7, oy + flame + 58);
+    ctx.closePath();
+    ctx.fill();
+    // corpo (cor customizada)
+    ctx.fillStyle = sk.body || '#35e8ff';
+    ctx.beginPath();
+    ctx.moveTo(0, oy - 32);
+    ctx.lineTo(-28, oy + 38);
+    ctx.quadraticCurveTo(0, oy + 58, 28, oy + 38);
+    ctx.closePath();
+    ctx.fill();
+    // asas (cor customizada)
+    ctx.fillStyle = sk.wings || '#2568ff';
+    ctx.beginPath();
+    ctx.moveTo(-20, oy + 16);
+    ctx.lineTo(-48, oy + 46);
+    ctx.lineTo(-18, oy + 42);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(20, oy + 16);
+    ctx.lineTo(48, oy + 46);
+    ctx.lineTo(18, oy + 42);
+    ctx.closePath();
+    ctx.fill();
+    // cabine
+    ctx.fillStyle = '#dffcff';
+    ctx.beginPath();
+    ctx.ellipse(0, oy + 2, 13, 19, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
+    ctx.beginPath();
+    ctx.ellipse(-4, oy - 4, 4, 7, -0.4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  /** Coloca no grupo um asteroide (polígono irregular que gira), com forma única. */
+  function spawnAsteroid(group, opts) {
+    if (!group || !group.items) return null;
+    if (group.items.length >= MAX_GROUP) return null;
+    opts = opts || {};
+    var base = (typeof opts.size === 'number' && opts.size > 0) ? opts.size : 36;
+    // Cada asteroide nasce com um tamanho um pouco diferente (variedade automática).
+    var size = Math.round(base * (0.65 + Math.random() * 0.5));
+    var s = createSprite({ x: opts.x, y: opts.y, w: size, h: size, color: opts.color, vx: opts.vx, vy: opts.vy });
+    s.skin = {
+      kind: 'asteroid',
+      color: opts.color || '#8d8f9b',
+      sides: 7 + Math.floor(Math.random() * 3),
+      spin: Math.random() * Math.PI * 2,
+      spinSpeed: (Math.random() - 0.5) * 0.002
+    };
+    group.items.push(s);
+    return s;
+  }
+  /** Desenha o asteroide: polígono irregular (com "calombos") girando + crateras. */
+  function drawAsteroidSprite(ctx, sprite) {
+    var sk = sprite.skin || {};
+    var cx = sprite.x + sprite.w / 2;
+    var cy = sprite.y + sprite.h / 2;
+    var radius = Math.min(sprite.w, sprite.h) / 2;
+    var sides = sk.sides || 8;
+    var angle = (sk.spin || 0) + now() * (sk.spinSpeed || 0);
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(angle);
+    ctx.fillStyle = sk.color || '#8d8f9b';
+    ctx.strokeStyle = '#d6d7df';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (var i = 0; i < sides; i++) {
+      var a = (Math.PI * 2 / sides) * i;
+      var bump = 0.78 + Math.sin(i * 12.98 + radius) * 0.22;
+      var r = radius * bump;
+      var px = Math.cos(a) * r;
+      var py = Math.sin(a) * r;
+      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.22)';
+    ctx.beginPath();
+    ctx.arc(-radius * 0.25, -radius * 0.1, radius * 0.18, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(radius * 0.25, radius * 0.18, radius * 0.12, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  /** Explosão temática no centro do sprite (jato da cor + estilhaços cinza). */
+  function explodeSprite(sprite, color) {
+    if (!sprite) return;
+    var cx = sprite.x + (sprite.w || 0) / 2, cy = sprite.y + (sprite.h || 0) / 2;
+    emitParticles(cx, cy, 18, color || '#ffb13b');
+    emitParticles(cx, cy, 10, '#d6d7df');
+  }
+
+  /** Som de tiro: blip curto descendo de tom. */
+  function playShoot() {
+    var ctx = ensureAudio();
+    if (!ctx) return;
+    try {
+      if (ctx.state === 'suspended' && ctx.resume) ctx.resume();
+      var osc = ctx.createOscillator(), gain = ctx.createGain();
+      osc.type = 'square';
+      var t = ctx.currentTime;
+      osc.frequency.setValueAtTime(880, t);
+      osc.frequency.exponentialRampToValueAtTime(220, t + 0.08);
+      gain.gain.setValueAtTime(0.08, t);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.1);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(t); osc.stop(t + 0.1);
+    } catch (e) {}
+  }
+  /** Som de explosão: rajada de ruído filtrado que decai. */
+  function playExplosion() {
+    var ctx = ensureAudio();
+    if (!ctx) return;
+    try {
+      if (ctx.state === 'suspended' && ctx.resume) ctx.resume();
+      var dur = 0.3;
+      var rate = ctx.sampleRate || 44100;
+      var len = Math.floor(rate * dur);
+      var buffer = ctx.createBuffer(1, len, rate);
+      var data = buffer.getChannelData(0);
+      for (var i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / len);
+      var src = ctx.createBufferSource();
+      src.buffer = buffer;
+      var filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 1200;
+      var gain = ctx.createGain();
+      var t = ctx.currentTime;
+      gain.gain.setValueAtTime(0.25, t);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      src.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+      src.start();
+    } catch (e) {}
+  }
+
+  /**
+   * Para cada sprite do grupo que encosta no sprite dado, roda fn(item). O sprite
+   * entra como thunk (() => sprite). Varredura por quadro (use no "a cada quadro").
+   */
+  function overlapSpriteGroup(getSprite, group, fn) {
+    if (typeof getSprite !== 'function' || !group || !group.items || typeof fn !== 'function') return;
+    var sprite = null;
+    try { sprite = getSprite(); } catch (e) { return; }
+    if (!sprite) return;
+    for (var i = group.items.length - 1; i >= 0; i--) {
+      var it = group.items[i];
+      if (it && isColliding(sprite, it)) {
+        try { fn(it); } catch (err) { console.error(err && err.message ? err.message : err); }
+      }
+    }
+  }
+
+  // ---- HUD no canvas: placar, texto, vidas (corações) e barra ----
+  /** Escreve "rótulo valor" (ex.: "Pontos: 5") na tela. */
+  function drawScore(ctx, label, value, x, y, color, size) {
+    if (!ctx) return;
+    ctx.save();
+    ctx.fillStyle = color || '#ffffff';
+    ctx.font = 'bold ' + ((typeof size === 'number' && size > 0) ? size : 20) + 'px sans-serif';
+    ctx.textAlign = 'left';
+    var text = (label === undefined || label === null || label === '') ? String(value)
+      : String(label) + ' ' + String(value);
+    ctx.fillText(text, x || 0, y || 0);
+    ctx.restore();
+  }
+  /** Escreve um texto na tela (com alinhamento esquerda/centro/direita). */
+  function drawLabel(ctx, text, x, y, color, size, align) {
+    if (!ctx) return;
+    ctx.save();
+    ctx.fillStyle = color || '#ffffff';
+    ctx.font = 'bold ' + ((typeof size === 'number' && size > 0) ? size : 20) + 'px sans-serif';
+    ctx.textAlign = align || 'left';
+    ctx.fillText(String(text === undefined || text === null ? '' : text), x || 0, y || 0);
+    ctx.restore();
+  }
+  /** Desenha UM coração de tamanho s, canto superior-esquerdo em (x,y). */
+  function drawHeart(ctx, x, y, s) {
+    var top = s * 0.3;
+    ctx.beginPath();
+    ctx.moveTo(x + s / 2, y + top);
+    ctx.bezierCurveTo(x + s / 2, y, x, y, x, y + top);
+    ctx.bezierCurveTo(x, y + (s + top) / 2, x + s / 2, y + (s + top) / 2, x + s / 2, y + s);
+    ctx.bezierCurveTo(x + s / 2, y + (s + top) / 2, x + s, y + (s + top) / 2, x + s, y + top);
+    ctx.bezierCurveTo(x + s, y, x + s / 2, y, x + s / 2, y + top);
+    ctx.closePath();
+    ctx.fill();
+  }
+  /** Desenha "count" corações em linha (ex.: vidas). Teto de 20. */
+  function drawHearts(ctx, count, x, y, size, color) {
+    if (!ctx) return;
+    var n = Math.max(0, Math.min(typeof count === 'number' ? Math.floor(count) : 0, 20));
+    var s = (typeof size === 'number' && size > 0) ? size : 22;
+    ctx.save();
+    ctx.fillStyle = color || '#ff5d5d';
+    for (var i = 0; i < n; i++) drawHeart(ctx, (x || 0) + i * (s + 6), y || 0, s);
+    ctx.restore();
+  }
+  /** Barra de progresso/vida: fundo + preenchimento proporcional a value/max. */
+  function drawBar(ctx, value, max, x, y, w, h, color) {
+    if (!ctx) return;
+    var m = (typeof max === 'number' && max > 0) ? max : 1;
+    var v = (typeof value === 'number') ? value : 0;
+    var frac = Math.max(0, Math.min(v / m, 1));
+    var bw = (typeof w === 'number' && w > 0) ? w : 100;
+    var bh = (typeof h === 'number' && h > 0) ? h : 12;
+    ctx.save();
+    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+    ctx.fillRect(x || 0, y || 0, bw, bh);
+    ctx.fillStyle = color || '#9cff57';
+    ctx.fillRect(x || 0, y || 0, bw * frac, bh);
+    ctx.restore();
+  }
+
+  // ---- Estado do jogo (cenas): início → jogando → ganhou → perdeu ----
+  var _scene = 'inicio';
+  /** Troca a tela/cena atual. */
+  function setScene(name) { _scene = String(name || 'inicio'); }
+  /** Cena atual (string). */
+  function getScene() { return _scene; }
+  /** Verdadeiro se a cena atual é "name". Use dentro de um "se". */
+  function sceneIs(name) { return _scene === String(name); }
+  /** Overlay de tela cheia com título, subtítulo e dica (centralizados). */
+  // Quebra o texto em várias linhas para caber em maxWidth (centralizado).
+  function _wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+    var str = String(text);
+    if (!ctx.measureText) { ctx.fillText(str, x, y); return y; }
+    var words = str.split(' ');
+    var line = '';
+    var yy = y;
+    for (var i = 0; i < words.length; i++) {
+      var test = line + words[i] + ' ';
+      if (ctx.measureText(test).width > maxWidth && i > 0) {
+        ctx.fillText(line.trim(), x, yy);
+        line = words[i] + ' ';
+        yy += lineHeight;
+      } else {
+        line = test;
+      }
+    }
+    ctx.fillText(line.replace(/ +$/, ''), x, yy);
+    return yy;
+  }
+  function showScreen(ctx, title, subtitle, hint, bg) {
+    if (!ctx || !ctx.canvas) return;
+    var w = stageW(ctx), h = stageH(ctx);
+    var sc = Math.max(0.7, Math.min(2, w / 640));
+    ctx.save();
+    // Overlay SEMITRANSPARENTE: o jogo continua aparecendo por trás (à la referência).
+    ctx.globalAlpha = 0.8;
+    ctx.fillStyle = bg || '#02111f';
+    ctx.fillRect(0, 0, w, h);
+    ctx.globalAlpha = 1;
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold ' + Math.round(36 * sc) + 'px sans-serif';
+    ctx.fillText(String(title || ''), w / 2, h / 2 - 24 * sc);
+    var afterY = h / 2 + 12 * sc;
+    if (subtitle) {
+      ctx.font = Math.round(20 * sc) + 'px sans-serif';
+      ctx.fillStyle = 'rgba(255,255,255,0.85)';
+      afterY = _wrapText(ctx, subtitle, w / 2, afterY, Math.min(w * 0.8, 640), 30 * sc);
+    }
+    if (hint) {
+      ctx.font = Math.round(16 * sc) + 'px sans-serif';
+      ctx.fillStyle = 'rgba(255,255,255,0.7)';
+      ctx.fillText(String(hint), w / 2, afterY + 40 * sc);
+    }
+    ctx.restore();
+  }
+  /** Reinicia o jogo do zero (recarrega a página do preview). */
+  function restart() {
+    try { location.reload(); } catch (e) {}
+  }
+
+  // ---- Cenário: fundo de estrelas rolando + arrastar nave com o dedo ----
+  var _stars = null;
+  function ensureStars(ctx) {
+    if (_stars) return _stars;
+    _stars = [];
+    var w = stageW(ctx), h = stageH(ctx);
+    for (var i = 0; i < 100; i++) {
+      _stars.push({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        r: Math.random() * 1.8 + 0.4,
+        s: Math.random() * 0.7 + 0.2,
+        alpha: Math.random() * 0.6 + 0.4,
+        phase: Math.random() * Math.PI * 2
+      });
+    }
+    return _stars;
+  }
+  /**
+   * Fundo espacial completo (à la "Nave contra Asteroides"): gradiente vertical do
+   * céu + 100 estrelas que ROLAM para baixo e CINTILAM (twinkle). Use no começo do
+   * "a cada quadro" (depois de limpar a tela) — ele já pinta o fundo todo.
+   */
+  function drawStarfield(ctx, speed) {
+    if (!ctx || !ctx.canvas) return;
+    var sp = (typeof speed === 'number') ? speed : 1;
+    var w = stageW(ctx), h = stageH(ctx);
+    ctx.save();
+    var grad = ctx.createLinearGradient(0, 0, 0, h);
+    grad.addColorStop(0, '#071b3a');
+    grad.addColorStop(0.55, '#06101f');
+    grad.addColorStop(1, '#020611');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+    var stars = ensureStars(ctx);
+    for (var i = 0; i < stars.length; i++) {
+      var st = stars[i];
+      var tw = st.alpha + Math.sin(now() * 0.003 + st.phase) * 0.25;
+      ctx.globalAlpha = Math.max(0.1, Math.min(1, tw));
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(st.x, st.y, st.r, 0, Math.PI * 2);
+      ctx.fill();
+      st.y += st.s * sp;
+      if (st.y > h) { st.y = 0; st.x = Math.random() * w; }
+    }
+    ctx.restore();
+  }
+  /** Faz o sprite seguir o dedo/mouse SÓ na horizontal (ótimo p/ nave no celular). */
+  function dragX(sprite) {
+    if (!sprite) return;
+    sprite.x = pointer.x - sprite.w / 2;
+  }
+
   // ---- Palco implícito: o runtime é DONO de um canvas + contexto 2D ----
   // Assim os blocos de jogo não precisam mais mostrar "o pincel (ctx)": o código
   // gerado referencia 'ctx'/'tela' (definidos aqui) sem o aluno montar o canvas na
@@ -684,10 +1250,68 @@ export const gameTwoDRuntime = `(function () {
     try { _stageCtx = c.getContext('2d'); } catch (e) {}
     return _stageCtx;
   }
+  var _logicalW = 0, _logicalH = 0, _resizeHooked = false;
+  // Tamanho LÓGICO do palco (coordenadas do jogo). Sem fitScreen, é o tamanho do
+  // próprio canvas; com fitScreen, fica FIXO enquanto o canvas REAL cresce para a
+  // resolução da tela (nitidez) — os helpers usam o lógico para não dependerem disso.
+  function stageW(ctx) { return _logicalW || (ctx && ctx.canvas ? ctx.canvas.width : 0); }
+  function stageH(ctx) { return _logicalH || (ctx && ctx.canvas ? ctx.canvas.height : 0); }
+  function _applyBaseTransform() {
+    if (!_stageCtx || !_logicalW || !_stageCanvas) return;
+    try { _stageCtx.setTransform(_stageCanvas.width / _logicalW, 0, 0, _stageCanvas.height / _logicalH, 0, 0); } catch (e) {}
+  }
+  function _resizeBacking() {
+    var c = _stageCanvas;
+    if (!c || !_logicalW || !c.getBoundingClientRect) return;
+    var rect = c.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    var dpr = window.devicePixelRatio || 1;
+    var bw = Math.max(1, Math.round(rect.width * dpr));
+    var bh = Math.max(1, Math.round(rect.height * dpr));
+    if (c.width !== bw || c.height !== bh) { c.width = bw; c.height = bh; }
+    _applyBaseTransform();
+  }
   /** Limpa a tela inteira do palco (use no começo de cada quadro). */
   function clear() {
     var c = ensureStage();
-    if (c && c.canvas) c.clearRect(0, 0, c.canvas.width, c.canvas.height);
+    if (!c || !c.canvas) return;
+    if (_logicalW) {
+      try { c.setTransform(1, 0, 0, 1, 0, 0); } catch (e) {}
+      c.clearRect(0, 0, c.canvas.width, c.canvas.height);
+      _applyBaseTransform();
+    } else {
+      c.clearRect(0, 0, c.canvas.width, c.canvas.height);
+    }
+  }
+  /**
+   * Faz o canvas PREENCHER ~percent% da janela, MANTENDO a proporção do jogo. A
+   * resolução interna (coordenadas do jogo) NÃO muda — só o tamanho de exibição
+   * (CSS), então todos os desenhos escalam juntos e o navegador re-encaixa sozinho
+   * ao redimensionar a janela. Sem distorção: numa tela de formato diferente do
+   * jogo, sobra um espaço escuro nas laterais (ou em cima/baixo). Chame uma vez no
+   * começo do programa. width = min(P vw, P*proporção vh) garante caber nos dois
+   * eixos; box-sizing inclui a borda p/ não criar barra de rolagem.
+   */
+  function fitScreen(percent) {
+    ensureStage();
+    var c = _stageCanvas;
+    if (!c) { try { c = document.querySelector('canvas'); } catch (e) {} }
+    if (!c) return;
+    if (!_logicalW) { _logicalW = c.width || 4; _logicalH = c.height || 3; }
+    var p = (typeof percent === 'number' && percent > 0 && percent <= 100) ? percent : 100;
+    var ar = _logicalW / _logicalH;
+    c.style.width = 'min(' + p + 'vw, ' + (p * ar) + 'vh)';
+    c.style.height = 'auto';
+    c.style.aspectRatio = _logicalW + ' / ' + _logicalH;
+    c.style.maxWidth = '100%';
+    c.style.boxSizing = 'border-box';
+    c.style.display = 'block';
+    _resizeBacking();
+    try { requestAnimationFrame(_resizeBacking); } catch (e) {}
+    if (!_resizeHooked) {
+      _resizeHooked = true;
+      try { window.addEventListener('resize', function () { try { requestAnimationFrame(_resizeBacking); } catch (e) { _resizeBacking(); } }); } catch (e) {}
+    }
   }
   // Expõe 'ctx' e 'tela' como globais preguiçosos. O setter REDEFINE a propriedade
   // como um valor normal — assim um eventual 'const ctx = ...' antigo (canvasSetup)
@@ -710,6 +1334,10 @@ export const gameTwoDRuntime = `(function () {
     createSprite: createSprite,
     drawSprite: drawSprite,
     clear: clear,
+    fitScreen: fitScreen,
+    spawnBullet: spawnBullet,
+    arrowsX: arrowsX,
+    blink: blink,
     isColliding: isColliding,
     gameLoop: gameLoop,
     keys: keys,
@@ -743,6 +1371,38 @@ export const gameTwoDRuntime = `(function () {
     createTileMap: createTileMap,
     drawTileMap: drawTileMap,
     collideTileMap: collideTileMap,
-    tileAt: tileAt
+    tileAt: tileAt,
+    // Grupos de sprites + temporizadores (v0.6.0).
+    createGroup: createGroup,
+    spawn: spawn,
+    updateGroup: updateGroup,
+    drawGroup: drawGroup,
+    forEachInGroup: forEachInGroup,
+    countGroup: countGroup,
+    clearGroup: clearGroup,
+    removeFromGroup: removeFromGroup,
+    pruneOffscreen: pruneOffscreen,
+    overlapGroups: overlapGroups,
+    everyFrames: everyFrames,
+    everySeconds: everySeconds,
+    // HUD + estado/cenas (v0.6.0).
+    drawScore: drawScore,
+    drawLabel: drawLabel,
+    drawHearts: drawHearts,
+    drawBar: drawBar,
+    setScene: setScene,
+    getScene: getScene,
+    sceneIs: sceneIs,
+    showScreen: showScreen,
+    restart: restart,
+    drawStarfield: drawStarfield,
+    dragX: dragX,
+    // Kit Nave & Asteroides (v0.7.0).
+    createShip: createShip,
+    spawnAsteroid: spawnAsteroid,
+    explodeSprite: explodeSprite,
+    playShoot: playShoot,
+    playExplosion: playExplosion,
+    overlapSpriteGroup: overlapSpriteGroup
   };
 })();`

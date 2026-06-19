@@ -718,3 +718,366 @@ describe('gameTwoDRuntime.onPointer', () => {
     expect(counts).toEqual([1, 1, 1, 1])
   })
 })
+
+describe('gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0)', () => {
+  interface Sprite {
+    x: number
+    y: number
+    w: number
+    h: number
+    vx: number
+    vy: number
+  }
+  interface Group {
+    items: Sprite[]
+  }
+  interface GroupApi {
+    createGroup: () => Group
+    spawn: (g: Group, o: Partial<Sprite> & { color?: string; image?: string }) => Sprite | null
+    updateGroup: (g: Group) => void
+    drawGroup: (ctx: unknown, g: Group) => void
+    forEachInGroup: (g: Group, fn: (s: Sprite, i: number) => void) => void
+    countGroup: (g: Group) => number
+    clearGroup: (g: Group) => void
+    removeFromGroup: (g: Group, s: Sprite) => void
+    pruneOffscreen: (
+      ctx: { canvas: { width: number; height: number } },
+      g: Group,
+      margin: number,
+      onLeave?: (s: Sprite) => void,
+    ) => void
+    overlapGroups: (a: Group, b: Group, fn: (a: Sprite, b: Sprite) => void) => void
+    everyFrames: (key: string, n: number) => boolean
+    everySeconds: (key: string, secs: number) => boolean
+    drawSprite: (ctx: unknown, s: unknown) => void
+  }
+
+  let clock = 0
+  function load(): GroupApi {
+    clock = 0
+    const win = {
+      addEventListener() {},
+      SZGame2D: undefined,
+      performance: { now: () => clock },
+    } as unknown as Record<string, unknown>
+    new Function('window', 'requestAnimationFrame', gameTwoDRuntime)(win, () => 0)
+    return (win as unknown as { SZGame2D: GroupApi }).SZGame2D
+  }
+
+  it('createGroup começa vazio; spawn adiciona sprites e devolve cada um', () => {
+    const api = load()
+    const g = api.createGroup()
+    expect(api.countGroup(g)).toBe(0)
+    const s = api.spawn(g, { x: 10, y: 20, w: 8, h: 8, color: '#fff', vx: 0, vy: 3 })
+    expect(api.countGroup(g)).toBe(1)
+    expect(s?.x).toBe(10)
+    expect(s?.vy).toBe(3)
+  })
+
+  it('updateGroup move cada sprite pela velocidade; clear/remove tiram do grupo', () => {
+    const api = load()
+    const g = api.createGroup()
+    const s = api.spawn(g, { x: 0, y: 0, w: 4, h: 4, color: '#fff', vx: 2, vy: 5 })
+    api.updateGroup(g)
+    expect(s?.x).toBe(2)
+    expect(s?.y).toBe(5)
+    if (s) api.removeFromGroup(g, s)
+    expect(api.countGroup(g)).toBe(0)
+    api.spawn(g, { x: 0, y: 0, color: '#fff' })
+    api.spawn(g, { x: 0, y: 0, color: '#fff' })
+    api.clearGroup(g)
+    expect(api.countGroup(g)).toBe(0)
+  })
+
+  it('forEachInGroup roda em ordem reversa e tolera remoção no corpo', () => {
+    const api = load()
+    const g = api.createGroup()
+    for (let i = 0; i < 3; i++) api.spawn(g, { x: i, y: 0, color: '#fff' })
+    // Remove TODOS de dentro do forEach — a iteração reversa não pula nenhum.
+    api.forEachInGroup(g, (s) => api.removeFromGroup(g, s))
+    expect(api.countGroup(g)).toBe(0)
+  })
+
+  it('pruneOffscreen tira quem saiu da tela e chama onLeave para cada um', () => {
+    const api = load()
+    const g = api.createGroup()
+    const ctx = { canvas: { width: 200, height: 200 } }
+    api.spawn(g, { x: 50, y: 50, w: 10, h: 10, color: '#fff' }) // dentro
+    api.spawn(g, { x: 0, y: 400, w: 10, h: 10, color: '#fff' }) // bem abaixo (fora)
+    let escaped = 0
+    api.pruneOffscreen(ctx, g, 40, () => {
+      escaped += 1
+    })
+    expect(escaped).toBe(1)
+    expect(api.countGroup(g)).toBe(1)
+  })
+
+  it('overlapGroups chama fn para cada par que se encosta', () => {
+    const api = load()
+    const a = api.createGroup()
+    const b = api.createGroup()
+    api.spawn(a, { x: 0, y: 0, w: 10, h: 10, color: '#fff' })
+    api.spawn(b, { x: 5, y: 5, w: 10, h: 10, color: '#fff' }) // encosta no de cima
+    api.spawn(b, { x: 100, y: 100, w: 10, h: 10, color: '#fff' }) // longe
+    let pares = 0
+    api.overlapGroups(a, b, () => {
+      pares += 1
+    })
+    expect(pares).toBe(1)
+  })
+
+  it('everyFrames dispara a cada N quadros (por chave)', () => {
+    const api = load()
+    const hits: number[] = []
+    for (let frame = 1; frame <= 6; frame++) {
+      if (api.everyFrames('k', 3)) hits.push(frame)
+    }
+    // dispara no 3º e no 6º quadro.
+    expect(hits).toEqual([3, 6])
+  })
+
+  it('everySeconds respeita o relógio (1ª chamada arma; dispara após o período)', () => {
+    const api = load()
+    clock = 1000
+    expect(api.everySeconds('k', 2)).toBe(false) // arma em t=1000
+    clock = 2000
+    expect(api.everySeconds('k', 2)).toBe(false) // só 1s passou
+    clock = 3000
+    expect(api.everySeconds('k', 2)).toBe(true) // 2s passaram → dispara
+  })
+})
+
+describe('gameTwoDRuntime — HUD no canvas + estado/cenas (v0.6.0)', () => {
+  interface HudApi {
+    drawScore: (
+      ctx: unknown,
+      label: string,
+      value: unknown,
+      x: number,
+      y: number,
+      color: string,
+      size: number,
+    ) => void
+    drawLabel: (
+      ctx: unknown,
+      text: string,
+      x: number,
+      y: number,
+      color: string,
+      size: number,
+      align: string,
+    ) => void
+    drawHearts: (
+      ctx: unknown,
+      count: number,
+      x: number,
+      y: number,
+      size: number,
+      color: string,
+    ) => void
+    drawBar: (
+      ctx: unknown,
+      value: number,
+      max: number,
+      x: number,
+      y: number,
+      w: number,
+      h: number,
+      color: string,
+    ) => void
+    setScene: (name: string) => void
+    sceneIs: (name: string) => boolean
+    getScene: () => string
+    showScreen: (ctx: unknown, t: string, s: string, h: string, bg: string) => void
+  }
+
+  function load(): HudApi {
+    const win = { addEventListener() {}, SZGame2D: undefined } as unknown as Record<string, unknown>
+    new Function('window', 'requestAnimationFrame', gameTwoDRuntime)(win, () => 0)
+    return (win as unknown as { SZGame2D: HudApi }).SZGame2D
+  }
+
+  function fakeCtx(w = 320, h = 200) {
+    const texts: string[] = []
+    const fills: Array<[number, number, number, number]> = []
+    let fillShapes = 0
+    const ctx = {
+      canvas: { width: w, height: h },
+      save() {},
+      restore() {},
+      fillStyle: '',
+      font: '',
+      textAlign: '',
+      fillText: (t: string) => texts.push(t),
+      fillRect: (x: number, y: number, fw: number, fh: number) => fills.push([x, y, fw, fh]),
+      beginPath() {},
+      moveTo() {},
+      bezierCurveTo() {},
+      closePath() {},
+      fill() {
+        fillShapes += 1
+      },
+    }
+    return { ctx, texts, fills, getShapes: () => fillShapes }
+  }
+
+  it('drawScore escreve "rótulo valor" na tela', () => {
+    const api = load()
+    const { ctx, texts } = fakeCtx()
+    api.drawScore(ctx, 'Pontos:', 5, 10, 30, '#fff', 24)
+    expect(texts).toEqual(['Pontos: 5'])
+  })
+
+  it('drawHearts desenha um coração por vida (cap 20)', () => {
+    const api = load()
+    const { ctx, getShapes } = fakeCtx()
+    api.drawHearts(ctx, 3, 10, 10, 20, '#f00')
+    expect(getShapes()).toBe(3)
+    // acima do teto não estoura.
+    const c2 = fakeCtx()
+    api.drawHearts(c2.ctx, 999, 0, 0, 10, '#f00')
+    expect(c2.getShapes()).toBe(20)
+  })
+
+  it('drawBar desenha fundo + preenchimento proporcional (value/max)', () => {
+    const api = load()
+    const { ctx, fills } = fakeCtx()
+    api.drawBar(ctx, 50, 100, 10, 10, 200, 12, '#0f0')
+    // 2 retângulos: fundo (largura cheia) e preenchimento (metade).
+    expect(fills).toHaveLength(2)
+    expect(fills[0]?.[2]).toBe(200)
+    expect(fills[1]?.[2]).toBe(100)
+  })
+
+  it('setScene / sceneIs controlam a cena atual', () => {
+    const api = load()
+    expect(api.sceneIs('inicio')).toBe(true) // cena inicial
+    api.setScene('jogando')
+    expect(api.sceneIs('jogando')).toBe(true)
+    expect(api.sceneIs('inicio')).toBe(false)
+    expect(api.getScene()).toBe('jogando')
+  })
+
+  it('showScreen cobre a tela e escreve o título (sem lançar)', () => {
+    const api = load()
+    const { ctx, texts, fills } = fakeCtx(300, 150)
+    expect(() => api.showScreen(ctx, 'Fim', 'Tente de novo', 'Enter', '#000')).not.toThrow()
+    expect(fills[0]).toEqual([0, 0, 300, 150]) // overlay de tela cheia
+    expect(texts).toContain('Fim')
+  })
+})
+
+describe('gameTwoDRuntime — Kit espaço (v0.7.0): nave, asteroide, explosão, colisão sprite×grupo', () => {
+  interface KitApi {
+    createShip: (o: Record<string, unknown>) => {
+      skin: { kind: string; body: string; wings: string }
+    }
+    createGroup: () => { items: unknown[] }
+    spawnAsteroid: (
+      g: { items: unknown[] },
+      o: Record<string, unknown>,
+    ) => { skin: { kind: string; sides: number } }
+    drawSprite: (ctx: unknown, s: unknown) => void
+    drawGroup: (ctx: unknown, g: unknown) => void
+    explodeSprite: (s: unknown, color: string) => void
+    drawParticles: (ctx: unknown) => void
+    overlapSpriteGroup: (
+      get: () => unknown,
+      g: { items: unknown[] },
+      fn: (it: unknown) => void,
+    ) => void
+  }
+
+  function load(): KitApi {
+    const win = { addEventListener() {}, SZGame2D: undefined } as unknown as Record<string, unknown>
+    new Function('window', 'requestAnimationFrame', gameTwoDRuntime)(win, () => 0)
+    return (win as unknown as { SZGame2D: KitApi }).SZGame2D
+  }
+
+  // ctx que registra as chamadas de desenho (sem renderizar de verdade).
+  function fakeCtx(w = 320, h = 240) {
+    const calls: string[] = []
+    const ctx = {
+      canvas: { width: w, height: h },
+      save() {},
+      restore() {},
+      translate() {},
+      scale() {},
+      rotate() {},
+      beginPath() {},
+      moveTo() {},
+      lineTo() {},
+      quadraticCurveTo() {},
+      bezierCurveTo() {},
+      arc() {},
+      ellipse() {},
+      closePath() {},
+      fillStyle: '',
+      strokeStyle: '',
+      lineWidth: 1,
+      globalAlpha: 1,
+      fill() {
+        calls.push('fill')
+      },
+      stroke() {
+        calls.push('stroke')
+      },
+      fillRect() {
+        calls.push('fillRect')
+      },
+    }
+    return { ctx, calls }
+  }
+
+  it('createShip cria um sprite com skin de nave (cores guardadas)', () => {
+    const api = load()
+    const nave = api.createShip({ x: 10, y: 20, w: 54, h: 62, body: '#0ff', wings: '#00f' })
+    expect(nave.skin.kind).toBe('ship')
+    expect(nave.skin.body).toBe('#0ff')
+    expect(nave.skin.wings).toBe('#00f')
+    // drawSprite desenha a nave (preenche várias formas) sem lançar.
+    const { ctx, calls } = fakeCtx()
+    expect(() => api.drawSprite(ctx, nave)).not.toThrow()
+    expect(calls.filter((c) => c === 'fill').length).toBeGreaterThan(3)
+  })
+
+  it('spawnAsteroid coloca um asteroide no grupo e drawGroup o desenha (polígono + crateras)', () => {
+    const api = load()
+    const g = api.createGroup()
+    const a = api.spawnAsteroid(g, { x: 0, y: 0, size: 40, color: '#999', vx: 0, vy: 3 })
+    expect(a.skin.kind).toBe('asteroid')
+    expect(a.skin.sides).toBeGreaterThanOrEqual(7)
+    expect(g.items).toHaveLength(1)
+    const { ctx, calls } = fakeCtx()
+    expect(() => api.drawGroup(ctx, g)).not.toThrow()
+    // polígono preenchido + contornado.
+    expect(calls).toContain('fill')
+    expect(calls).toContain('stroke')
+  })
+
+  it('explodeSprite solta partículas no centro do sprite', () => {
+    const api = load()
+    const { ctx, calls } = fakeCtx()
+    api.explodeSprite({ x: 50, y: 50, w: 20, h: 20 }, '#ffb13b')
+    api.drawParticles(ctx)
+    // 18 + 10 partículas emitidas → desenha vários fillRect.
+    expect(calls.filter((c) => c === 'fillRect').length).toBeGreaterThan(10)
+  })
+
+  it('overlapSpriteGroup chama fn para cada sprite do grupo que encosta na nave', () => {
+    const api = load()
+    const nave = api.createShip({ x: 0, y: 0, w: 40, h: 40, body: '#0ff', wings: '#00f' })
+    const g = api.createGroup()
+    api.spawnAsteroid(g, { x: 10, y: 10, size: 20, color: '#999', vx: 0, vy: 0 }) // encosta
+    api.spawnAsteroid(g, { x: 200, y: 200, size: 20, color: '#999', vx: 0, vy: 0 }) // longe
+    let hits = 0
+    api.overlapSpriteGroup(
+      () => nave,
+      g,
+      () => {
+        hits += 1
+      },
+    )
+    expect(hits).toBe(1)
+  })
+})

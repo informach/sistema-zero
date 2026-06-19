@@ -99,6 +99,14 @@ function childStatementBodies(stmt: JSStatement): JSStatement[][] {
     case 'animationLoop':
     case 'g2d:updateEachFrame':
     case 'g2d:onPointer':
+    case 'g2d:onKey':
+    case 'g2d:onOverlap':
+    case 'g2d:forEachInGroup':
+    case 'g2d:pruneOffscreen':
+    case 'g2d:onGroupOverlap':
+    case 'g2d:onSpriteGroupOverlap':
+    case 'g2d:everyFrames':
+    case 'g2d:everySeconds':
     case 'g3d:animate':
     case 'funcDecl':
     case 'forEach':

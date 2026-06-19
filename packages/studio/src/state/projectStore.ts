@@ -179,6 +179,20 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_canvas_set_size',
   'sz_canvas_setup',
   'sz_canvas_translate',
+  'sz_canvas_begin_path',
+  'sz_canvas_close_path',
+  'sz_canvas_stroke',
+  'sz_canvas_fill',
+  'sz_canvas_move_to',
+  'sz_canvas_line_to',
+  'sz_canvas_stroke_style',
+  'sz_canvas_line_width',
+  'sz_canvas_global_alpha',
+  'sz_canvas_font',
+  'sz_canvas_text_align',
+  'sz_input_key_pressed',
+  'sz_input_pointer_x',
+  'sz_input_pointer_y',
   'sz_css_align',
   'sz_css_background_color',
   'sz_css_body_background',
@@ -380,6 +394,39 @@ export const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> 
     'sz_g2d_create_tilemap',
     'sz_g2d_draw_tilemap',
     'sz_g2d_tilemap_collide',
+    'sz_g2d_create_group',
+    'sz_g2d_spawn_in_group',
+    'sz_g2d_spawn_image_in_group',
+    'sz_g2d_update_group',
+    'sz_g2d_draw_group',
+    'sz_g2d_for_each_in_group',
+    'sz_g2d_count_group',
+    'sz_g2d_clear_group',
+    'sz_g2d_prune_offscreen',
+    'sz_g2d_on_group_overlap',
+    'sz_g2d_remove_from_group',
+    'sz_g2d_every_frames',
+    'sz_g2d_every_seconds',
+    'sz_g2d_draw_score',
+    'sz_g2d_draw_label',
+    'sz_g2d_draw_hearts',
+    'sz_g2d_draw_bar',
+    'sz_g2d_set_scene',
+    'sz_g2d_scene_is',
+    'sz_g2d_show_screen',
+    'sz_g2d_restart',
+    'sz_g2d_starfield',
+    'sz_g2d_drag_x',
+    'sz_g2d_fit_screen',
+    'sz_g2d_spawn_bullet',
+    'sz_g2d_arrows_x',
+    'sz_g2d_blink',
+    'sz_g2d_create_ship',
+    'sz_g2d_spawn_asteroid',
+    'sz_g2d_explode',
+    'sz_g2d_play_shoot',
+    'sz_g2d_play_explosion',
+    'sz_g2d_on_sprite_group_overlap',
   ]),
   'game-3d': new Set([
     'sz_g3d_create_scene',
@@ -1320,8 +1367,31 @@ function countJSStatement(statement: JSStatement): number {
     case 'animationLoop':
     case 'g2d:updateEachFrame':
     case 'g2d:onPointer':
+    case 'g2d:onKey':
+    case 'g2d:onOverlap':
+    case 'g2d:forEachInGroup':
+    case 'g2d:pruneOffscreen':
+    case 'g2d:onGroupOverlap':
+    case 'g2d:onSpriteGroupOverlap':
+    case 'g2d:everyFrames':
+    case 'g2d:everySeconds':
     case 'g3d:animate':
       return 1 + statement.body.reduce((total, child) => total + countJSStatement(child), 0)
+    case 'g2d:spawnInGroup':
+    case 'g2d:spawnImageInGroup':
+    case 'g2d:spawnAsteroid':
+      return (
+        1 +
+        countJSExpr(statement.x) +
+        countJSExpr(statement.y) +
+        countJSExpr(statement.vx) +
+        countJSExpr(statement.vy)
+      )
+    case 'g2d:drawScore':
+    case 'g2d:drawHearts':
+      return 1 + countJSExpr(statement.type === 'g2d:drawScore' ? statement.value : statement.count)
+    case 'g2d:drawBar':
+      return 1 + countJSExpr(statement.value) + countJSExpr(statement.max)
     case 'var':
     case 'assign':
       return 1 + countJSExpr(statement.value)

@@ -3,6 +3,7 @@ import type { ExtensionPermission } from '#extensions'
 import { escapeScriptContent, escapeStyleContent } from '../generators/escape'
 import { buildAssetsRuntime } from './assetsBridge'
 import { buildPreviewCSPMetaTag } from './csp'
+import { buildInputBridgeRuntime } from './inputBridge'
 import { buildInterceptorScript } from './interceptors'
 import { buildLoopGuardRuntime, instrumentLoops } from './loopGuard'
 import { buildPermissionGuardRuntime } from './permissionGuard'
@@ -211,6 +212,10 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
   })
   const permissionGuardTag = permissionGuard ? scriptTag(permissionGuard) : ''
   const loopGuardTag = scriptTag(buildLoopGuardRuntime(input.loopBudgetMs))
+  // Bridge de entrada: window.__szInput (teclado + ponteiro) — sempre presente,
+  // para os blocos "a tecla … está apertada?" e "x/y do mouse/dedo" do caminho
+  // "na mão" funcionarem em qualquer projeto, sem a extensão Jogo 2D.
+  const inputBridgeTag = scriptTag(buildInputBridgeRuntime())
   // Bridge de armazenamento: shima localStorage/sessionStorage (a origem opaca do
   // sandbox os faria LANÇAR) e espelha o store `local` ao parent. Vem antes do
   // importmap/extensões/aluno para que `localStorage` já exista quando rodarem.
@@ -238,6 +243,7 @@ ${cspMeta}
 ${scriptTag(buildInterceptorScript(input.parentOrigin))}
 ${permissionGuardTag}
 ${loopGuardTag}
+${inputBridgeTag}
 ${storageBridgeTag}
 ${assetsBridgeTag}
 ${importmapTag}

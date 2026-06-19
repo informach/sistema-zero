@@ -202,6 +202,14 @@ export function compileExpr(
       return `SZGame2D.keyDown(${JSON.stringify(expr.key)})`
     case 'g2d:touches':
       return `SZGame2D.touches(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
+    case 'g2d:countGroup':
+      return `SZGame2D.countGroup(${identifiers.get(expr.groupVar)})`
+    case 'g2d:sceneIs':
+      return `SZGame2D.sceneIs(${JSON.stringify(expr.name)})`
+    case 'inputKeyPressed':
+      return `__szInput.key(${JSON.stringify(expr.key)})`
+    case 'inputPointer':
+      return `__szInput.${expr.axis}`
     case 'now':
       switch (expr.kind) {
         case 'year':

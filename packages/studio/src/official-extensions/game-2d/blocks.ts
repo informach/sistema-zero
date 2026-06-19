@@ -472,6 +472,486 @@ export const gameTwoDBlocks = [
     tooltip:
       'O sprite não atravessa os tiles marcados como sólidos: ele pousa sobre o chão e bate nas paredes. Use a cada quadro, depois de mover o sprite.',
   },
+
+  // ---- Grupos de sprites: MUITOS sprites (v0.6.0) ----
+  {
+    type: 'sz_g2d_create_group',
+    message0: 'Criar grupo de sprites %1',
+    args0: [{ type: 'field_input', name: 'NAME', text: 'asteroides' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Cria um grupo vazio para guardar MUITOS sprites do mesmo tipo (tiros, inimigos, estrelas).',
+  },
+  {
+    type: 'sz_g2d_spawn_in_group',
+    message0:
+      'No grupo %1 criar um sprite em x %2 y %3 largura %4 altura %5 cor %6 com vx %7 vy %8',
+    args0: [
+      { type: 'field_input', name: 'GROUP', text: 'asteroides' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'field_number', name: 'W', value: 24, min: 1 },
+      { type: 'field_number', name: 'H', value: 24, min: 1 },
+      { type: 'field_colour_sz', name: 'COLOR', colour: '#9ca3af' },
+      { type: 'input_value', name: 'VX', check: 'JSValue' },
+      { type: 'input_value', name: 'VY', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Cria um sprite colorido e coloca no grupo. Use x/y com "número aleatório" para nascer em lugares diferentes; vx/vy dão a velocidade.',
+  },
+  {
+    type: 'sz_g2d_spawn_image_in_group',
+    message0:
+      'No grupo %1 criar um sprite em x %2 y %3 largura %4 altura %5 com imagem %6 vx %7 vy %8',
+    args0: [
+      { type: 'field_input', name: 'GROUP', text: 'inimigos' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'field_number', name: 'W', value: 32, min: 1 },
+      { type: 'field_number', name: 'H', value: 32, min: 1 },
+      { type: 'field_asset_picker', name: 'IMAGE', text: 'inimigo' },
+      { type: 'input_value', name: 'VX', check: 'JSValue' },
+      { type: 'input_value', name: 'VY', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Como "criar no grupo", mas o sprite mostra uma imagem da sua biblioteca (use o nome do asset).',
+  },
+  {
+    type: 'sz_g2d_update_group',
+    message0: 'Atualizar (mover) o grupo %1',
+    args0: [{ type: 'field_input', name: 'GROUP', text: 'asteroides' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Move cada sprite do grupo pela sua velocidade (vx/vy). Use a cada quadro.',
+  },
+  {
+    type: 'sz_g2d_draw_group',
+    message0: 'Desenhar o grupo %1',
+    args0: [{ type: 'field_input', name: 'GROUP', text: 'asteroides' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Desenha todos os sprites do grupo. Use a cada quadro, depois de mover.',
+  },
+  {
+    type: 'sz_g2d_for_each_in_group',
+    message0: 'Para cada sprite %1 do grupo %2 fazer %3',
+    args0: [
+      { type: 'field_input', name: 'ITEM', text: 'sprite' },
+      { type: 'field_input', name: 'GROUP', text: 'asteroides' },
+      { type: 'input_statement', name: 'BODY' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda o que está dentro para cada sprite do grupo (o sprite da vez fica no nome que você escolher).',
+  },
+  {
+    type: 'sz_g2d_count_group',
+    message0: 'quantos sprites tem no grupo %1',
+    args0: [{ type: 'field_input', name: 'GROUP', text: 'asteroides' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Quantidade de sprites no grupo agora. Use dentro de um "se" ou numa conta.',
+  },
+  {
+    type: 'sz_g2d_clear_group',
+    message0: 'Esvaziar o grupo %1',
+    args0: [{ type: 'field_input', name: 'GROUP', text: 'asteroides' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Tira todos os sprites do grupo de uma vez (ex.: ao reiniciar a fase).',
+  },
+  {
+    type: 'sz_g2d_prune_offscreen',
+    message0: 'Tirar do grupo %1 quem sair da tela — para cada um (chamado %2) fazer %3',
+    args0: [
+      { type: 'field_input', name: 'GROUP', text: 'asteroides' },
+      { type: 'field_input', name: 'ITEM', text: 'sprite' },
+      { type: 'input_statement', name: 'BODY' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Remove do grupo os sprites que saíram da tela e roda o "fazer" para cada um (ex.: perder uma vida quando um asteroide escapa).',
+  },
+  {
+    type: 'sz_g2d_remove_from_group',
+    message0: 'Tirar o sprite %1 do grupo %2',
+    args0: [
+      { type: 'field_input', name: 'SPRITE', text: 'asteroide' },
+      { type: 'field_input', name: 'GROUP', text: 'asteroides' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Tira um sprite do grupo (ex.: o asteroide que foi atingido). Use o nome do sprite da vez.',
+  },
+
+  // ---- Colisão de grupo + temporizadores (hats/eventos) ----
+  {
+    type: 'sz_g2d_on_group_overlap',
+    message0:
+      'Quando um sprite do grupo %1 (chamado %2) encostar num do grupo %3 (chamado %4) fazer %5',
+    args0: [
+      { type: 'field_input', name: 'A', text: 'tiros' },
+      { type: 'field_input', name: 'ANAME', text: 'tiro' },
+      { type: 'field_input', name: 'B', text: 'asteroides' },
+      { type: 'field_input', name: 'BNAME', text: 'asteroide' },
+      { type: 'input_statement', name: 'BODY' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: EVENT_C,
+    tooltip:
+      'Para cada par de sprites (um de cada grupo) que se encostam, roda o "fazer" com os dois sprites. Use dentro do "a cada quadro".',
+  },
+  {
+    type: 'sz_g2d_every_frames',
+    message0: 'A cada %1 quadros fazer %2',
+    args0: [
+      { type: 'input_value', name: 'N', check: 'JSValue' },
+      { type: 'input_statement', name: 'BODY' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: EVENT_C,
+    tooltip:
+      'Roda o "fazer" de tempos em tempos (a cada N quadros). Ótimo para criar inimigos sem parar. Use dentro do "a cada quadro".',
+  },
+  {
+    type: 'sz_g2d_every_seconds',
+    message0: 'A cada %1 segundos fazer %2',
+    args0: [
+      { type: 'field_number', name: 'SECS', value: 2, min: 0, precision: 0.1 },
+      { type: 'input_statement', name: 'BODY' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: EVENT_C,
+    tooltip: 'Roda o "fazer" a cada X segundos. Use dentro do "a cada quadro".',
+  },
+
+  // ---- HUD no canvas: placar, texto, vidas e barra (v0.6.0) ----
+  {
+    type: 'sz_g2d_draw_score',
+    message0: 'Mostrar placar %1 valor %2 em x %3 y %4 cor %5 tamanho %6',
+    args0: [
+      { type: 'field_input', name: 'LABEL', text: 'Pontos:' },
+      { type: 'input_value', name: 'VALUE', check: 'JSValue' },
+      { type: 'field_number', name: 'X', value: 12 },
+      { type: 'field_number', name: 'Y', value: 30 },
+      { type: 'field_colour_sz', name: 'COLOR', colour: '#ffffff' },
+      { type: 'field_number', name: 'SIZE', value: 24, min: 6 },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Escreve "rótulo valor" (ex.: Pontos: 5) na tela. Ligue o valor à variável do placar.',
+  },
+  {
+    type: 'sz_g2d_draw_label',
+    message0: 'Escrever %1 em x %2 y %3 cor %4 tamanho %5 alinhado %6',
+    args0: [
+      { type: 'field_input', name: 'TEXT', text: 'Nave contra Asteroides' },
+      { type: 'field_number', name: 'X', value: 12 },
+      { type: 'field_number', name: 'Y', value: 30 },
+      { type: 'field_colour_sz', name: 'COLOR', colour: '#ffffff' },
+      { type: 'field_number', name: 'SIZE', value: 20, min: 6 },
+      {
+        type: 'field_dropdown',
+        name: 'ALIGN',
+        options: [
+          ['à esquerda', 'left'],
+          ['no centro', 'center'],
+          ['à direita', 'right'],
+        ],
+      },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Escreve um texto fixo na tela (ex.: um título). Escolha o alinhamento.',
+  },
+  {
+    type: 'sz_g2d_draw_hearts',
+    message0: 'Desenhar %1 vidas (corações) em x %2 y %3 tamanho %4 cor %5',
+    args0: [
+      { type: 'input_value', name: 'COUNT', check: 'JSValue' },
+      { type: 'field_number', name: 'X', value: 12 },
+      { type: 'field_number', name: 'Y', value: 48 },
+      { type: 'field_number', name: 'SIZE', value: 22, min: 4 },
+      { type: 'field_colour_sz', name: 'COLOR', colour: '#ff5d5d' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Desenha uma fileira de corações (ligue a "quantidade" à variável de vidas).',
+  },
+  {
+    type: 'sz_g2d_draw_bar',
+    message0: 'Barra de %1 / %2 em x %3 y %4 largura %5 altura %6 cor %7',
+    args0: [
+      { type: 'input_value', name: 'VALUE', check: 'JSValue' },
+      { type: 'input_value', name: 'MAX', check: 'JSValue' },
+      { type: 'field_number', name: 'X', value: 12 },
+      { type: 'field_number', name: 'Y', value: 48 },
+      { type: 'field_number', name: 'W', value: 160, min: 1 },
+      { type: 'field_number', name: 'H', value: 14, min: 1 },
+      { type: 'field_colour_sz', name: 'COLOR', colour: '#35e8ff' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Barra de progresso/vida: o preenchimento é a fração valor / máximo.',
+  },
+
+  // ---- Estado / telas (cenas) ----
+  {
+    type: 'sz_g2d_set_scene',
+    message0: 'Ir para a tela %1',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'SCENE',
+        options: [
+          ['início', 'inicio'],
+          ['jogando', 'jogando'],
+          ['ganhou', 'ganhou'],
+          ['perdeu', 'perdeu'],
+        ],
+      },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Muda a tela atual do jogo (início, jogando, ganhou, perdeu).',
+  },
+  {
+    type: 'sz_g2d_scene_is',
+    message0: 'a tela atual é %1 ?',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'SCENE',
+        options: [
+          ['início', 'inicio'],
+          ['jogando', 'jogando'],
+          ['ganhou', 'ganhou'],
+          ['perdeu', 'perdeu'],
+        ],
+      },
+    ],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Verdadeiro se o jogo está naquela tela. Use dentro de um "se".',
+  },
+  {
+    type: 'sz_g2d_show_screen',
+    message0: 'Mostrar tela com título %1 subtítulo %2 dica %3 fundo %4',
+    args0: [
+      { type: 'field_input', name: 'TITLE', text: 'Nave contra Asteroides' },
+      { type: 'field_input', name: 'SUBTITLE', text: 'Destrua os asteroides!' },
+      { type: 'field_input', name: 'HINT', text: 'Aperte Enter para começar' },
+      { type: 'field_colour_sz', name: 'BG', colour: '#02111f' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Cobre a tela com um aviso central (título + subtítulo + dica). Ótimo para as telas de início, vitória e derrota.',
+  },
+  {
+    type: 'sz_g2d_restart',
+    message0: 'Reiniciar o jogo',
+    args0: [],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Começa o jogo do zero (recarrega tudo).',
+  },
+
+  // ---- Cenário: fundo de estrelas + arrastar com o dedo (v0.6.0) ----
+  {
+    type: 'sz_g2d_starfield',
+    message0: 'Desenhar fundo de estrelas (velocidade %1)',
+    args0: [{ type: 'field_number', name: 'SPEED', value: 1, min: 0, precision: 0.1 }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Desenha um céu de estrelas que rola para baixo (fundo de jogo espacial). Use no começo do "a cada quadro", depois de limpar a tela.',
+  },
+  {
+    type: 'sz_g2d_drag_x',
+    message0: 'Mover o sprite %1 com o dedo/mouse (só na horizontal)',
+    args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'A nave acompanha o dedo/mouse no eixo X — ótimo para jogar no celular.',
+  },
+
+  // ---- Kit "Nave & Asteroides": desenhos prontos + efeitos (v0.7.0) ----
+  {
+    type: 'sz_g2d_fit_screen',
+    message0: 'Fazer a tela preencher %1% da janela (mantendo a proporção)',
+    args0: [{ type: 'field_number', name: 'PERCENT', value: 100, min: 10, max: 100 }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Faz o canvas ocupar quase toda a janela e se reajustar sozinho quando ela muda de tamanho; os desenhos escalam juntos, sem distorcer. Use uma vez no começo.',
+  },
+
+  {
+    type: 'sz_g2d_spawn_bullet',
+    message0: 'Criar tiro no grupo %1 em x %2 y %3 raio %4 cor %5 vx %6 vy %7',
+    args0: [
+      { type: 'field_input', name: 'GROUP', text: 'tiros' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'field_number', name: 'R', value: 5, min: 1 },
+      { type: 'field_colour_sz', name: 'COLOR', colour: '#9cff57' },
+      { type: 'input_value', name: 'VX', check: 'JSValue' },
+      { type: 'input_value', name: 'VY', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Cria um tiro (bolinha brilhante) no grupo, no ponto x/y, indo na velocidade vx/vy (vy negativo = sobe).',
+  },
+  {
+    type: 'sz_g2d_arrows_x',
+    message0: 'Mover o sprite %1 com as setas <- -> (velocidade %2)',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' },
+      { type: 'field_number', name: 'SPEED', value: 6, min: 1 },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Move o sprite só na horizontal com as setas esquerda/direita. Combine com "prender o sprite na tela".',
+  },
+  {
+    type: 'sz_g2d_blink',
+    message0: 'Fazer o sprite %1 piscar por %2 quadros',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' },
+      { type: 'field_number', name: 'FRAMES', value: 60, min: 1 },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O sprite pisca (fica intermitente) por N quadros - ótimo para a invencibilidade depois de levar dano.',
+  },
+
+  {
+    type: 'sz_g2d_create_ship',
+    message0: 'Criar nave %1 em x %2 y %3 largura %4 altura %5 — cor do corpo %6 cor das asas %7',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'nave' },
+      { type: 'field_number', name: 'X', value: 180 },
+      { type: 'field_number', name: 'Y', value: 250 },
+      { type: 'field_number', name: 'W', value: 54, min: 1 },
+      { type: 'field_number', name: 'H', value: 62, min: 1 },
+      { type: 'field_colour_sz', name: 'BODY', colour: '#35e8ff' },
+      { type: 'field_colour_sz', name: 'WINGS', colour: '#2568ff' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Cria uma nave desenhada (corpo + asas com as cores que você escolher, cabine e foguinho que pulsa sozinho). O foguinho já vem animado.',
+  },
+  {
+    type: 'sz_g2d_spawn_asteroid',
+    message0: 'No grupo %1 criar um asteroide em x %2 y %3 tamanho %4 cor %5 com vx %6 vy %7',
+    args0: [
+      { type: 'field_input', name: 'GROUP', text: 'asteroides' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'field_number', name: 'SIZE', value: 40, min: 4 },
+      { type: 'field_colour_sz', name: 'COLOR', colour: '#8d8f9b' },
+      { type: 'input_value', name: 'VX', check: 'JSValue' },
+      { type: 'input_value', name: 'VY', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Cria um asteroide já desenhado (pedra irregular que gira, com crateras) e coloca no grupo. Cada um nasce com um formato único.',
+  },
+  {
+    type: 'sz_g2d_explode',
+    message0: 'Soltar explosão no sprite %1 cor %2',
+    args0: [
+      { type: 'field_input', name: 'SPRITE', text: 'asteroide' },
+      { type: 'field_colour_sz', name: 'COLOR', colour: '#ffb13b' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Solta um jato de partículas (da cor escolhida + estilhaços cinza) no centro do sprite.',
+  },
+  {
+    type: 'sz_g2d_play_shoot',
+    message0: 'Tocar som de tiro',
+    args0: [],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Um "pew" curto (som sintetizado, sem precisar de arquivo).',
+  },
+  {
+    type: 'sz_g2d_play_explosion',
+    message0: 'Tocar som de explosão',
+    args0: [],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Um "bum" de ruído que decai (som sintetizado, sem precisar de arquivo).',
+  },
+  {
+    type: 'sz_g2d_on_sprite_group_overlap',
+    message0: 'Quando o sprite %1 encostar num do grupo %2 (chamado %3) fazer %4',
+    args0: [
+      { type: 'field_input', name: 'SPRITE', text: 'nave' },
+      { type: 'field_input', name: 'GROUP', text: 'asteroides' },
+      { type: 'field_input', name: 'ANAME', text: 'inimigo' },
+      { type: 'input_statement', name: 'BODY' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: EVENT_C,
+    tooltip:
+      'Para cada sprite do grupo que encostar no seu sprite (ex.: a nave), roda o "fazer" com aquele sprite. Use dentro do "a cada quadro".',
+  },
 ]
 
 /**
@@ -494,22 +974,50 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     ],
   },
   {
+    name: '🪐 Muitos (grupos)',
+    colour: '#3373cc',
+    types: [
+      'sz_g2d_create_group',
+      'sz_g2d_spawn_in_group',
+      'sz_g2d_spawn_image_in_group',
+      'sz_g2d_spawn_bullet',
+      'sz_g2d_update_group',
+      'sz_g2d_draw_group',
+      'sz_g2d_for_each_in_group',
+      'sz_g2d_count_group',
+      'sz_g2d_clear_group',
+      'sz_g2d_prune_offscreen',
+      'sz_g2d_remove_from_group',
+    ],
+  },
+  {
     name: '🕹️ Movimento',
     colour: '#4cbfe6',
     types: [
       'sz_g2d_platformer',
       'sz_g2d_top_down',
+      'sz_g2d_arrows_x',
       'sz_g2d_follow_pointer',
       'sz_g2d_clamp_to_screen',
       'sz_g2d_apply_velocity',
       'sz_g2d_set_gravity',
       'sz_g2d_bounce_edges',
+      'sz_g2d_drag_x',
     ],
   },
   {
     name: '⏱️ Quando…',
     colour: '#ffbf00',
-    types: ['sz_g2d_update_each_frame', 'sz_g2d_on_key', 'sz_g2d_on_overlap', 'sz_g2d_on_pointer'],
+    types: [
+      'sz_g2d_update_each_frame',
+      'sz_g2d_on_key',
+      'sz_g2d_on_overlap',
+      'sz_g2d_on_group_overlap',
+      'sz_g2d_on_sprite_group_overlap',
+      'sz_g2d_on_pointer',
+      'sz_g2d_every_frames',
+      'sz_g2d_every_seconds',
+    ],
   },
   {
     name: '❓ Perguntas',
@@ -521,6 +1029,8 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     colour: '#9966ff',
     types: [
       'sz_g2d_clear',
+      'sz_g2d_fit_screen',
+      'sz_g2d_blink',
       'sz_g2d_flash',
       'sz_g2d_shake',
       'sz_g2d_emit_particles',
@@ -534,11 +1044,42 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     types: ['sz_g2d_load_spritesheet', 'sz_g2d_animate_sprite', 'sz_g2d_draw_frame'],
   },
   { name: '🔊 Som', colour: '#d65cd6', types: ['sz_g2d_play_sound'] },
-  { name: '🏆 Placar', colour: '#ff6680', types: ['sz_g2d_score'] },
+  {
+    name: '🏆 Placar e HUD',
+    colour: '#ff6680',
+    types: [
+      'sz_g2d_score',
+      'sz_g2d_draw_score',
+      'sz_g2d_draw_label',
+      'sz_g2d_draw_hearts',
+      'sz_g2d_draw_bar',
+    ],
+  },
+  {
+    name: '🎬 Telas e cenas',
+    colour: '#1098ad',
+    types: ['sz_g2d_set_scene', 'sz_g2d_scene_is', 'sz_g2d_show_screen', 'sz_g2d_restart'],
+  },
   {
     name: '🗺️ Mapa',
     colour: '#59c059',
     types: ['sz_g2d_create_tilemap', 'sz_g2d_draw_tilemap', 'sz_g2d_tilemap_collide'],
+  },
+  // KITS POR TEMA: blocos prontos e NÃO genéricos, feitos para um tipo de jogo
+  // específico (desenhos/efeitos/sons daquele tema). Os blocos genéricos seguem
+  // nas categorias acima; aqui ficam só os "atalhos temáticos". O 1º kit é o de
+  // jogo de nave espacial — dá para ir somando outros kits (corrida, fazenda…).
+  {
+    name: '🚀 Kit espaço',
+    colour: '#7950f2',
+    types: [
+      'sz_g2d_create_ship',
+      'sz_g2d_spawn_asteroid',
+      'sz_g2d_starfield',
+      'sz_g2d_explode',
+      'sz_g2d_play_shoot',
+      'sz_g2d_play_explosion',
+    ],
   },
 ]
 
