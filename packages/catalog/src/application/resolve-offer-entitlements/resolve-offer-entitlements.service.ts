@@ -5,8 +5,9 @@ import {
   type ResolvedEntitlement,
   resolveEntitlements,
 } from '../../domain/services/resolve-entitlements'
+import { ValidationError } from '../../domain/shared/errors'
 
-const MAX_CLOSURE_ROUNDS = 8
+const MAX_CLOSURE_ROUNDS = 9
 
 /**
  * Resolve os entitlements de uma oferta: carrega o FECHAMENTO do grafo de produtos
@@ -45,6 +46,10 @@ export class ResolveOfferEntitlementsService {
         }
       }
       frontier = dedupe(next)
+    }
+
+    if (frontier.some((id) => !closure.has(id))) {
+      throw new ValidationError('Profundidade máxima de combo excedida (possível ciclo)')
     }
 
     return closure

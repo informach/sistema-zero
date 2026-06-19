@@ -61,6 +61,7 @@ export class InMemoryProductRepository implements ProductRepository {
         sku: s.sku,
         name: s.name,
         kind: s.kind,
+        status: s.status,
         fulfillment: s.fulfillment,
         components: s.components.map((c) => ({
           productId: c.componentProductId,

@@ -7,6 +7,7 @@ import type { OfferRepository } from '../../domain/ports/offer-repository.port'
 import type { ProductRepository } from '../../domain/ports/product-repository.port'
 import { ProductNotFoundError } from '../../domain/product/product.errors'
 import {
+  assertActiveOfferDeliverable,
   assertItemsExist,
   normalizeItems,
   type OfferItemInput,
@@ -83,12 +84,12 @@ export class UpdateOfferService {
 
     if (command.status !== undefined) offer.setStatus(command.status)
 
-    await this.offers.update(offer)
-    for (const event of offer.pullEvents()) this.logger.info(event.eventName, event.toPayload())
-
     const product = await this.products.findById(offer.productId)
     if (!product) throw new ProductNotFoundError('Produto principal da oferta não encontrado')
-    const resolved = await this.resolver.execute(offer)
+    const resolved = await assertActiveOfferDeliverable(offer, product, this.resolver)
+
+    await this.offers.update(offer)
+    for (const event of offer.pullEvents()) this.logger.info(event.eventName, event.toPayload())
     return toOfferView(offer, toProductSummary(product), resolved.map(toEntitlementItemView))
   }
 }

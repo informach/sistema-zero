@@ -7,7 +7,7 @@ import type { OfferView } from '../../../application/mappers/offer-view'
 import type { PublicProductView } from '../../../application/mappers/product-view'
 import type { QuoteOfferService } from '../../../application/quote-offer/quote-offer.service'
 import type { RedeemCouponService } from '../../../application/redeem-coupon/redeem-coupon.service'
-import { MicroCache } from '../../../infrastructure/cache/micro-cache'
+import type { MicroCache } from '../../../infrastructure/cache/micro-cache'
 import { assertInternalCaller } from '../auth'
 import { QuoteOfferBody } from '../dtos'
 

@@ -8,7 +8,9 @@ import type { OfferStatus } from '../../domain/offer/offer.status'
 import type { PricingMode } from '../../domain/offer/pricing-mode'
 import type { OfferRepository } from '../../domain/ports/offer-repository.port'
 import type { ProductRepository } from '../../domain/ports/product-repository.port'
+import type { ProductAggregate } from '../../domain/product/product.aggregate'
 import { ProductNotFoundError } from '../../domain/product/product.errors'
+import type { ResolvedEntitlement } from '../../domain/services/resolve-entitlements'
 import { ValidationError } from '../../domain/shared/errors'
 import type { Currency } from '../../domain/value-objects/money'
 import { Sku } from '../../domain/value-objects/sku'
@@ -83,10 +85,10 @@ export class CreateOfferService {
       items,
     })
 
+    const resolved = await assertActiveOfferDeliverable(offer, product, this.resolver)
+
     await this.offers.create(offer)
     for (const event of offer.pullEvents()) this.logger.info(event.eventName, event.toPayload())
-
-    const resolved = await this.resolver.execute(offer)
     return toOfferView(offer, toProductSummary(product), resolved.map(toEntitlementItemView))
   }
 }
@@ -110,4 +112,49 @@ export async function assertItemsExist(
   if (missing.length > 0) {
     throw new ValidationError(`Produtos de oferta inexistentes: ${missing.join(', ')}`)
   }
+}
+
+export async function assertActiveOfferDeliverable(
+  offer: OfferAggregate,
+  product: ProductAggregate,
+  resolver: ResolveOfferEntitlementsService,
+): Promise<ResolvedEntitlement[]> {
+  const resolved = await resolver.execute(offer)
+  if (offer.status !== 'active') return resolved
+
+  if (product.status !== 'active') {
+    throw new ValidationError('Oferta ativa exige produto principal ativo')
+  }
+  if (resolved.length === 0) {
+    throw new ValidationError('Oferta ativa precisa resolver ao menos um produto entregável')
+  }
+
+  const invalid = resolved.filter(
+    (item) => item.status !== 'active' || !hasDeliverableFulfillment(item),
+  )
+  if (invalid.length > 0) {
+    throw new ValidationError(
+      `Oferta ativa inclui produtos sem entrega ativa: ${invalid.map((i) => i.name).join(', ')}`,
+    )
+  }
+
+  return resolved
+}
+
+function hasDeliverableFulfillment(item: ResolvedEntitlement): boolean {
+  const fulfillment = item.fulfillment
+  if (!fulfillment) return false
+  if (
+    (fulfillment.accessType === 'course' || fulfillment.accessType === 'community') &&
+    !fulfillment.courseRef?.trim()
+  ) {
+    return false
+  }
+  if (
+    (fulfillment.accessType === 'all_courses' || fulfillment.accessType === 'all_kids_courses') &&
+    fulfillment.courseRef
+  ) {
+    return false
+  }
+  return true
 }

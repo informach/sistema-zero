@@ -6,13 +6,29 @@ import {
 
 // Helpers para montar o grafo de nós.
 function leaf(id: string): EntitlementNode {
-  return { productId: id, sku: id, name: id, kind: 'ebook', fulfillment: null, components: [] }
+  return {
+    productId: id,
+    sku: id,
+    name: id,
+    kind: 'ebook',
+    status: 'active',
+    fulfillment: null,
+    components: [],
+  }
 }
 function bundle(
   id: string,
   components: { productId: string; sortOrder: number; isPrimary: boolean }[],
 ): EntitlementNode {
-  return { productId: id, sku: id, name: id, kind: 'bundle', fulfillment: null, components }
+  return {
+    productId: id,
+    sku: id,
+    name: id,
+    kind: 'bundle',
+    status: 'active',
+    fulfillment: null,
+    components,
+  }
 }
 function lookupFrom(nodes: EntitlementNode[]) {
   const map = new Map(nodes.map((n) => [n.productId, n]))

@@ -24,7 +24,9 @@ produtos entregáveis). É consumido pelo **funil** (preço + "o que está inclu
 > INDIRETO de combo barrado na ESCRITA, invariante `compareAt ≥ preço` revalidado no PATCH só de
 > preço, janela `availableFrom/Until` validada (create+update), cupom que ZERA o preço → 422 na
 > quote, micro-cache TTL das leituras públicas (`PUBLIC_CACHE_TTL_MS`), log próprio do S2S de
-> entitlements — **102 testes**.
+> entitlements. **4º full review (06/2026)**: serviço volta a compilar, oferta ativa exige
+> produto principal ativo + todos os entregáveis ativos com `fulfillment`, preço de oferta > 0,
+> grafo de entitlements profundo demais falha explicitamente, gateway usa `/readyz` — **112 testes**.
 
 ## Modelo (decisões de design — leia antes de mexer)
 
@@ -150,8 +152,9 @@ src/
   Público + rate-limit por IP; é o valor AUTORITATIVO que o funil cobra. **Só cota oferta disponível**
   (`isAvailable()`: status `active` + dentro da janela) — pausar/arquivar interrompe a venda
   (`OFFER_NOT_AVAILABLE`→409). A resolução de entitlements (pós-pagamento) NÃO é gated por isso.
-  **Cupom que ZERA o preço → 422 `COUPON_NOT_APPLICABLE`** (cobrança de R$ 0,00 não existe — a Efí
-  rejeita; melhor 422 legível do que o checkout quebrar na criação da cobrança).
+  **Preço de oferta precisa ser > 0** e **cupom que ZERA o preço → 422 `COUPON_NOT_APPLICABLE`**
+  (cobrança de R$ 0,00 não existe — a Efí rejeita; melhor erro legível aqui do que o checkout
+  quebrar na criação da cobrança).
 
 **Cupons:** desconto (percentual ou fixo) sobre o preço da oferta, com escopo (todas/ofertas específicas),
 validade, mínimo e limite de usos. `POST/PATCH /catalog/coupons` (admin). `POST /catalog/coupons/:code/redeem`
@@ -167,6 +170,9 @@ registra um uso ATÔMICO na confirmação do pagamento. O funil consome: `quote`
 processo que alcançasse o serviço direto forjaria um admin. `:id` dos `PATCH` valida **uuid** (non-UUID →
 404 direto, não 22P02→500); ids referenciados nos DTOs (`productId`, `componentProductId`, `items[].productId`,
 `offerIds`) validam uuid por pattern (→ 400 na borda).
+Oferta em `draft`/`paused` pode ser montada progressivamente; para ficar `active`, o backend revalida
+que o produto principal está ativo e que a resolução de entitlements produz pelo menos um produto-folha
+ativo com `fulfillment` válido. Isso evita checkout pago que viraria matrícula `none` no members.
 
 **Leitura admin (listagens paginadas — painel `@sistemazero/admin`):** `GET /catalog/admin/{products,offers,coupons}`
 (`?q&status&limit&offset`; offers aceita `?productId` — uuid validado na borda) + `GET /catalog/admin/products/:id`
@@ -236,22 +242,19 @@ gateway E no members — 3 hosts, 1 token; ler com `railway variables --kv`).
 **Reconciliação de combo alterado pós-venda** (Teachable-style: adicionar curso a combo já vendido →
 re-conceder aos compradores; hoje o snapshot é congelado — workaround: grant manual) ·
 **estorno → revogação automática da matrícula** (hoje são 2 passos manuais no admin) ·
-drip (`release` é armazenado mas o members não aplica) · tiers de comunidade (`accessType
-'community'` volta ao union quando a comunidade real existir) · order bumps/upsells ·
-**ledger de resgates de cupom** (`coupon_redemptions`, chave única por pagamento/lead): hoje
-`max_redemptions` é **teto MOLE** — o desconto é aplicado na cobrança (`quote`) e contado só na
-confirmação (`redeem`, best-effort, sem idempotência própria), então sob concorrência os descontos
-concedidos podem passar do limite e o contador pode sub-contar (erro engolido). O ledger daria
-garantia dura + idempotência. Mitigado hoje pelo gate exactly-once (`markPaid`) do funil ·
+drip (`release` é armazenado mas o members não aplica) · order bumps/upsells ·
+**reserva de cupom no checkout**: `coupon_redemptions` dá idempotência/limite duro no `redeem`, mas a
+`quote` ainda não reserva uso; se muitas cobranças forem criadas antes da confirmação, descontos podem
+passar do limite comercial embora o contador final não duplique ·
 **rate-limit próprio na `quote`** (risco ACEITO no 3º review): o limite por IP vive só no gateway;
 acesso direto na rede interna enumeraria códigos de cupom sem teto (rede privada do Railway +
 cupons de baixo valor — não vale a complexidade hoje) · **`/metrics`** (espelhar o payments quando
 houver dashboard; o gateway já loga/metrifica o tráfego roteado).
 
 > O **funil já consome** o catálogo (preço/inclusões via gateway, `metadata.offerId`/`couponCode` no
-> checkout, `quote`/`redeem` de cupom). A contagem de uso do cupom (`redeem`) é **best-effort** na
-> confirmação (o desconto já foi aplicado na cobrança autoritativa) — `max_redemptions` é teto MOLE
-> (ver "Pontos em aberto"). A `quote` é o gate de cobrança: só cota oferta **disponível**.
+> checkout, `quote`/`redeem` de cupom). O `redeem` é atômico e idempotente por pagamento quando recebe
+> `idempotency-key`; no funil ele segue best-effort porque o desconto já foi aplicado na cobrança.
+> A `quote` é o gate de cobrança: só cota oferta **disponível** e com preço cobrável.
 
 ## Checklist antes de finalizar
 

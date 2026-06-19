@@ -35,6 +35,12 @@ describe('OfferAggregate', () => {
     expect(() => makeOffer({ priceCents: -1 })).toThrow(ValidationError)
   })
 
+  it('rejeita preço zero', () => {
+    expect(() => makeOffer({ priceCents: 0 })).toThrow(ValidationError)
+    const offer = makeOffer()
+    expect(() => offer.updateDetails({ priceCents: 0 })).toThrow(ValidationError)
+  })
+
   it('rejeita compareAt menor que o preço de venda', () => {
     expect(() => makeOffer({ priceCents: 3700, compareAtPriceCents: 1000 })).toThrow(
       ValidationError,

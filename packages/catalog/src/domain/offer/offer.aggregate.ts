@@ -138,8 +138,7 @@ export class OfferAggregate extends AggregateRoot<string> {
     if (!input.productId) throw new ValidationError('Oferta exige um produto principal')
 
     const currency = input.currency ?? 'BRL'
-    // Valida o preço (inteiro ≥ 0) via Money.
-    Money.fromCents(input.priceCents, currency)
+    assertPositivePrice(input.priceCents, currency)
     assertCompareAt(input.compareAtPriceCents, input.priceCents, currency)
     assertAvailabilityWindow(input.availableFrom ?? null, input.availableUntil ?? null)
 
@@ -192,7 +191,7 @@ export class OfferAggregate extends AggregateRoot<string> {
       this.props.name = name
     }
     if (details.priceCents !== undefined) {
-      Money.fromCents(details.priceCents, this.props.currency)
+      assertPositivePrice(details.priceCents, this.props.currency)
       this.props.priceCents = details.priceCents
     }
     if (details.compareAtPriceCents !== undefined) {
@@ -325,6 +324,13 @@ function assertCompareAt(
   Money.fromCents(compareAt, currency)
   if (compareAt < price) {
     throw new ValidationError('O preço "de" (compareAt) não pode ser menor que o preço de venda')
+  }
+}
+
+function assertPositivePrice(price: number, currency: Currency): void {
+  const money = Money.fromCents(price, currency)
+  if (!money.isPositive()) {
+    throw new ValidationError('Preço da oferta precisa ser maior que zero')
   }
 }
 

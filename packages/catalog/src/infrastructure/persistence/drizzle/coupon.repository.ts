@@ -144,8 +144,9 @@ export class DrizzleCouponRepository implements CouponRepository {
       .from(coupons)
       .where(eq(coupons.code, normalized))
       .limit(1)
-    if (found.length === 0) throw new CouponNotFoundError()
-    const couponId = found[0].id
+    const couponRow = found[0]
+    if (!couponRow) throw new CouponNotFoundError()
+    const couponId = couponRow.id
 
     await this.db.transaction(async (tx) => {
       const inserted = await tx
@@ -156,7 +157,9 @@ export class DrizzleCouponRepository implements CouponRepository {
           idempotencyKey,
           createdAt: new Date(),
         })
-        .onConflictDoNothing({ target: [couponRedemptions.couponId, couponRedemptions.idempotencyKey] })
+        .onConflictDoNothing({
+          target: [couponRedemptions.couponId, couponRedemptions.idempotencyKey],
+        })
         .returning({ id: couponRedemptions.id })
       if (inserted.length === 0) return
 
@@ -173,7 +176,6 @@ export class DrizzleCouponRepository implements CouponRepository {
         .returning({ id: coupons.id })
       if (updated.length === 0) throw new CouponExhaustedError('Cupom esgotado ou inativo')
     })
-
   }
 
   private async hydrate(row: CouponRow): Promise<CouponAggregate> {

@@ -210,7 +210,7 @@ const config: GatewayConfigInput = {
     catalog: {
       name: 'catalog',
       upstreamGroups: {
-        default: [{ url: CATALOG_URL, healthCheckPath: '/health' }],
+        default: [{ url: CATALOG_URL, healthCheckPath: '/readyz' }],
       },
       ...sharedResilience,
     },

@@ -135,7 +135,7 @@ export const CreateOfferBody = t.Object({
   code: SKU,
   slug: SLUG,
   name: NAME,
-  priceCents: t.Integer({ minimum: 0, maximum: 2_000_000_000 }),
+  priceCents: t.Integer({ minimum: 1, maximum: 2_000_000_000 }),
   compareAtPriceCents: t.Optional(t.Integer({ minimum: 0, maximum: 2_000_000_000 })),
   currency: t.Optional(t.Literal('BRL')),
   pricingMode: t.Optional(pricingModeSchema),
@@ -190,7 +190,7 @@ export const UpdateCouponBody = t.Object({
 /** Corpo de `PATCH /catalog/offers/:id`. Todos os campos opcionais. */
 export const UpdateOfferBody = t.Object({
   name: t.Optional(NAME),
-  priceCents: t.Optional(t.Integer({ minimum: 0, maximum: 2_000_000_000 })),
+  priceCents: t.Optional(t.Integer({ minimum: 1, maximum: 2_000_000_000 })),
   compareAtPriceCents: t.Optional(
     t.Union([t.Integer({ minimum: 0, maximum: 2_000_000_000 }), t.Null()]),
   ),

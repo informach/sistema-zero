@@ -28,6 +28,7 @@ export class QuoteOfferService {
     if (!offer.isAvailable()) throw new OfferNotAvailableError()
 
     const priceCents = offer.priceCents
+    if (priceCents <= 0) throw new OfferNotAvailableError('Oferta sem preço cobrável')
     const base: OfferQuoteView = {
       offerId: offer.id,
       offerSlug: offer.slug,

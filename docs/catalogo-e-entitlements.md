@@ -112,6 +112,10 @@ O rascunho é livre (cadastro progressivo). **Ativar** um produto exige ele pron
   chave-mestra).
 - Combo ativo → precisa de **≥1 componente**; combo nunca tem entrega própria.
 - Produto não-combo não aceita componentes.
+- Oferta ativa → preço maior que zero, produto principal ativo e todos os produtos
+  entregues pela oferta (componentes do combo + bônus/itens extras) ativos e com
+  entrega definida. Oferta em rascunho pode apontar para cadastro incompleto até
+  ficar pronta.
 
 O formulário bloqueia com aviso e o backend valida de novo (defesa em profundidade).
 

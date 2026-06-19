@@ -116,6 +116,8 @@ describe('catalog HTTP', () => {
         slug: 'x',
         name: 'X',
         kind: 'ebook',
+        status: 'active',
+        fulfillment: { accessType: 'course', courseRef: 'x' },
       })
       // resolve o id do produto principal a partir da view
       const main = await app.handle(req('GET', '/catalog/products/no-comando-da-ia'))
@@ -201,6 +203,124 @@ describe('catalog HTTP', () => {
       expect((await res.json()) as { error: { code: string } }).toMatchObject({
         error: { code: 'DUPLICATE_PRODUCT' },
       })
+    })
+  })
+
+  describe('coerência de oferta ativa', () => {
+    it('POST /catalog/offers ativo com produto principal em draft → 400', async () => {
+      const built = build()
+      const product = await built.createProduct.execute({
+        sku: 'draft-main',
+        slug: 'draft-main',
+        name: 'Draft main',
+        kind: 'ebook',
+      })
+      const res = await built.app.handle(
+        req('POST', '/catalog/offers', {
+          headers: ADMIN,
+          body: {
+            productId: product.id,
+            code: 'draft-main-of',
+            slug: 'draft-main-of',
+            name: 'Oferta inválida',
+            priceCents: 1000,
+            status: 'active',
+          },
+        }),
+      )
+      expect(res.status).toBe(400)
+      expect((await res.json()) as { error: { code: string } }).toMatchObject({
+        error: { code: 'VALIDATION_ERROR' },
+      })
+    })
+
+    it('POST /catalog/offers ativo com item sem fulfillment → 400', async () => {
+      const built = build()
+      const main = await built.createProduct.execute({
+        sku: 'main-ok',
+        slug: 'main-ok',
+        name: 'Main OK',
+        kind: 'ebook',
+        status: 'active',
+        fulfillment: { accessType: 'course', courseRef: 'main-ok' },
+      })
+      const bonus = await built.createProduct.execute({
+        sku: 'bonus-draft',
+        slug: 'bonus-draft',
+        name: 'Bonus Draft',
+        kind: 'ebook',
+      })
+      const res = await built.app.handle(
+        req('POST', '/catalog/offers', {
+          headers: ADMIN,
+          body: {
+            productId: main.id,
+            code: 'main-ok-of',
+            slug: 'main-ok-of',
+            name: 'Oferta com bônus inválido',
+            priceCents: 1000,
+            status: 'active',
+            items: [{ productId: bonus.id }],
+          },
+        }),
+      )
+      expect(res.status).toBe(400)
+      expect((await res.json()) as { error: { code: string } }).toMatchObject({
+        error: { code: 'VALIDATION_ERROR' },
+      })
+    })
+
+    it('PATCH /catalog/offers/:id para active revalida a entrega', async () => {
+      const built = build()
+      const product = await built.createProduct.execute({
+        sku: 'draft-activation',
+        slug: 'draft-activation',
+        name: 'Draft Activation',
+        kind: 'ebook',
+      })
+      const offer = await built.createOffer.execute({
+        productId: product.id,
+        code: 'draft-activation-of',
+        slug: 'draft-activation-of',
+        name: 'Oferta em rascunho',
+        priceCents: 1000,
+      })
+      const res = await built.app.handle(
+        req('PATCH', `/catalog/offers/${offer.id}`, {
+          headers: ADMIN,
+          body: { status: 'active' },
+        }),
+      )
+      expect(res.status).toBe(400)
+      expect((await res.json()) as { error: { code: string } }).toMatchObject({
+        error: { code: 'VALIDATION_ERROR' },
+      })
+    })
+
+    it('POST /catalog/offers com priceCents zero → 400', async () => {
+      const built = build()
+      const product = await built.createProduct.execute({
+        sku: 'zero-price-p',
+        slug: 'zero-price-p',
+        name: 'Zero price product',
+        kind: 'ebook',
+        status: 'active',
+        fulfillment: { accessType: 'course', courseRef: 'zero-price-p' },
+      })
+      const res = await built.app.handle(
+        req('POST', '/catalog/offers', {
+          headers: ADMIN,
+          body: {
+            productId: product.id,
+            code: 'zero-price-of',
+            slug: 'zero-price-of',
+            name: 'Oferta zero',
+            priceCents: 0,
+            status: 'active',
+          },
+        }),
+      )
+      expect(res.status).toBe(400)
     })
   })
 
@@ -450,7 +570,8 @@ describe('catalog HTTP', () => {
         slug: 'ebook-ia',
         name: 'Ebook de IA',
         kind: 'ebook',
-        status: 'draft',
+        status: 'active',
+        fulfillment: { accessType: 'course', courseRef: 'ebook-ia' },
       })
       await built.createOffer.execute({
         productId: p1.id,
@@ -498,8 +619,8 @@ describe('catalog HTTP', () => {
         req('GET', '/catalog/admin/products?status=active', { headers: ADMIN }),
       )
       const page = (await res.json()) as { items: { slug: string }[]; total: number }
-      expect(page.total).toBe(1)
-      expect(page.items[0]?.slug).toBe('curso-ia')
+      expect(page.total).toBe(2)
+      expect(page.items.map((item) => item.slug).sort()).toEqual(['curso-ia', 'ebook-ia'])
     })
 
     it('GET /catalog/admin/products?q=ebook busca por nome/slug', async () => {
