@@ -65,14 +65,14 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
         type: 'field_dropdown',
         name: 'VALUE',
         options: [
-          ['verdadeiro (true)', 'true'],
-          ['falso (false)', 'false'],
+          ['verdadeiro', 'true'],
+          ['falso', 'false'],
         ],
       },
     ],
     output: 'JSValue',
     colour: C,
-    tooltip: 'Um valor lógico: verdadeiro ou falso (true/false).',
+    tooltip: 'Um valor lógico: verdadeiro ou falso.',
   },
   {
     type: 'sz_val_compare',
@@ -98,7 +98,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     inputsInline: true,
     output: 'JSValue',
     colour: C,
-    tooltip: 'Compara dois valores e devolve verdadeiro ou falso (ex.: a === b).',
+    tooltip: 'Compara dois valores e devolve verdadeiro ou falso.',
   },
   {
     type: 'sz_val_logic',
@@ -109,8 +109,8 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
         type: 'field_dropdown',
         name: 'OP',
         options: [
-          ['e (&&)', '&&'],
-          ['ou (||)', '||'],
+          ['e', '&&'],
+          ['ou', '||'],
         ],
       },
       { type: 'input_value', name: 'RIGHT', check: 'JSValue' },
@@ -131,22 +131,21 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     inputsInline: true,
     output: 'JSValue',
     colour: C,
-    tooltip:
-      'Escolhe entre dois valores conforme uma condição (operador ternário: condição ? valor se verdadeiro : valor se falso).',
+    tooltip: 'Escolhe entre dois valores conforme uma condição.',
   },
   {
     type: 'sz_val_window_width',
     message0: 'largura da janela',
     output: 'JSValue',
     colour: C,
-    tooltip: 'A largura da área visível do navegador (window.innerWidth).',
+    tooltip: 'A largura da área visível do navegador.',
   },
   {
     type: 'sz_val_window_height',
     message0: 'altura da janela',
     output: 'JSValue',
     colour: C,
-    tooltip: 'A altura da área visível do navegador (window.innerHeight).',
+    tooltip: 'A altura da área visível do navegador.',
   },
   {
     type: 'sz_val_canvas_width',
@@ -154,7 +153,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     args0: [{ type: 'field_input', name: 'CTX', text: 'ctx' }],
     output: 'JSValue',
     colour: C,
-    tooltip: 'A largura do canvas associado ao pincel/contexto (canvas.width).',
+    tooltip: 'A largura da tela de desenho ligada ao pincel.',
   },
   {
     type: 'sz_val_canvas_height',
@@ -162,7 +161,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     args0: [{ type: 'field_input', name: 'CTX', text: 'ctx' }],
     output: 'JSValue',
     colour: C,
-    tooltip: 'A altura do canvas associado ao pincel/contexto (canvas.height).',
+    tooltip: 'A altura da tela de desenho ligada ao pincel.',
   },
   {
     type: 'sz_val_random',
@@ -195,14 +194,14 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     message0: 'número aleatório (0 a 1)',
     output: 'JSValue',
     colour: C,
-    tooltip: 'Um número decimal sorteado de 0 (inclusive) até 1 (exclusivo) — Math.random().',
+    tooltip: 'Um número decimal sorteado de 0 (inclusive) até 1 (exclusivo).',
   },
   {
     type: 'sz_val_math_pi',
     message0: 'π (pi)',
     output: 'JSValue',
     colour: C,
-    tooltip: 'A constante pi (Math.PI ≈ 3,14159), útil em círculos e ângulos.',
+    tooltip: 'A constante pi (≈ 3,14159), útil em círculos e ângulos.',
   },
   {
     type: 'sz_val_event_pos',
@@ -219,8 +218,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     ],
     output: 'JSValue',
     colour: C,
-    tooltip:
-      'A posição (em pixels) do clique do mouse. Só funciona dentro de um bloco de clique (event.clientX / event.clientY).',
+    tooltip: 'A posição (em pixels) do clique do mouse. Só funciona dentro de um bloco de clique.',
   },
   {
     type: 'sz_val_vector2d',
@@ -233,7 +231,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Um vetor com componentes x e y (objeto { x, y }). Guarde numa variável e leia x/y com o bloco "propriedade … do objeto".',
+      'Um vetor com componentes x e y. Guarde numa variável e leia x/y com o bloco "propriedade … do objeto".',
   },
   {
     type: 'sz_val_vector3d',
@@ -246,7 +244,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     inputsInline: true,
     output: 'JSValue',
     colour: C,
-    tooltip: 'Um vetor com componentes x, y e z (objeto { x, y, z }).',
+    tooltip: 'Um vetor com componentes x, y e z.',
   },
   {
     // Os espaços de valor (ITEM0, ITEM1, …) e os botões +/− são criados pelo
@@ -258,7 +256,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     colour: C,
     mutator: 'sz_array_mutator',
     tooltip:
-      'Cria uma lista (array) de valores. Começa vazia; use os botões + e − para adicionar ou tirar itens. Pode ir numa variável ou em qualquer tomada de valor.',
+      'Cria uma lista de valores. Começa vazia; use os botões + e − para adicionar ou tirar itens. Pode ir numa variável ou em qualquer tomada de valor.',
   },
   {
     type: 'sz_val_array_length',
@@ -266,7 +264,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     args0: [{ type: 'field_input', name: 'NAME', text: 'lista' }],
     output: 'JSValue',
     colour: C,
-    tooltip: 'Quantos itens a lista tem (arr.length).',
+    tooltip: 'Quantos itens a lista tem.',
   },
   {
     // Os espaços (ITEM0, ITEM1, …) e os botões +/− vêm do `sz_array_mutator`.
@@ -277,7 +275,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     colour: C,
     mutator: 'sz_array_mutator',
     tooltip:
-      'Junta vários pedaços (texto fixo e valores) num só texto. Use + para adicionar pedaços. Vira um template literal de texto.',
+      'Junta vários pedaços (texto fixo e valores) num só texto. Use + para adicionar pedaços.',
   },
   {
     type: 'sz_val_array_index',
@@ -289,7 +287,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     inputsInline: true,
     output: 'JSValue',
     colour: C,
-    tooltip: 'Pega um item da lista pela posição (arr[i]). A primeira posição é 0.',
+    tooltip: 'Pega um item da lista pela posição. A primeira posição é 0.',
   },
   {
     // Espaços ITEM0.. via `sz_array_mutator`: cada um é uma lista a juntar.
@@ -299,7 +297,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     output: 'JSValue',
     colour: C,
     mutator: 'sz_array_mutator',
-    tooltip: 'Cria uma nova lista juntando outras listas ([...a, ...b]).',
+    tooltip: 'Cria uma nova lista juntando outras listas.',
   },
   {
     type: 'sz_val_shuffle',
@@ -307,8 +305,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     args0: [{ type: 'field_input', name: 'NAME', text: 'lista' }],
     output: 'JSValue',
     colour: C,
-    tooltip:
-      'Devolve a lista com os itens em ordem aleatória (arr.sort(() => Math.random() - 0.5)).',
+    tooltip: 'Devolve a lista com os itens em ordem aleatória.',
   },
   {
     type: 'sz_val_dataset',
@@ -319,7 +316,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     ],
     output: 'JSValue',
     colour: C,
-    tooltip: 'Lê um data-attribute guardado num elemento (el.dataset.chave).',
+    tooltip: 'Lê um dado guardado num elemento.',
   },
   {
     type: 'sz_val_storage_get',
@@ -329,8 +326,8 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
         type: 'field_dropdown',
         name: 'STORE',
         options: [
-          ['localStorage', 'local'],
-          ['sessionStorage', 'session'],
+          ['permanente (fica entre visitas)', 'local'],
+          ['só nesta sessão (zera ao fechar)', 'session'],
         ],
       },
       { type: 'field_input', name: 'KEY', text: 'nome' },
@@ -338,7 +335,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     output: 'JSValue',
     colour: C,
     level: 'iniciante',
-    tooltip: 'Lê um valor salvo no navegador (localStorage.getItem). Devolve texto ou nulo.',
+    tooltip: 'Lê um valor salvo no navegador. Devolve texto ou nulo.',
   },
   {
     type: 'sz_val_class_contains',
@@ -350,7 +347,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
         options: [
           ['id', 'id'],
           ['variável', 'var'],
-          ['atual (this)', 'this'],
+          ['atual', 'this'],
         ],
       },
       { type: 'field_input', name: 'TARGET', text: 'elemento' },
@@ -358,14 +355,13 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     ],
     output: 'JSValue',
     colour: C,
-    tooltip: 'Verdadeiro se o elemento tem a classe (el.classList.contains).',
+    tooltip: 'Verdadeiro se o elemento tem a classe.',
   },
   {
     type: 'sz_val_this',
-    message0: 'elemento atual (this)',
+    message0: 'elemento atual',
     output: 'JSValue',
     colour: C,
-    tooltip:
-      'O elemento que disparou o evento atual (this). Use dentro de uma função usada como listener.',
+    tooltip: 'O elemento que disparou o evento atual. Use dentro de uma função ligada a um evento.',
   },
 ]

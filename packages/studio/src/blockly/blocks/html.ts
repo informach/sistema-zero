@@ -34,18 +34,18 @@ const classMsg2: Pick<BlockDefinition, 'message2' | 'args2'> = {
 export const HTML_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_html_h1',
-    message0: 'Criar título (h1) com texto %1',
+    message0: 'Criar título com texto %1',
     args0: [{ type: 'field_input', name: 'TEXT', text: 'Olá mundo' }],
     ...inlineChildren,
     ...classMsg2,
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,
-    tooltip: 'Cria um elemento <h1>.',
+    tooltip: 'Cria o título principal da página.',
   },
   {
     type: 'sz_html_p',
-    message0: 'Criar parágrafo (p) com texto %1',
+    message0: 'Criar parágrafo com texto %1',
     args0: [{ type: 'field_input', name: 'TEXT', text: 'Um texto qualquer' }],
     ...inlineChildren,
     ...classMsg2,
@@ -55,7 +55,7 @@ export const HTML_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_html_button',
-    message0: 'Criar botão (button) id %1 com texto %2',
+    message0: 'Criar botão id %1 com texto %2',
     args0: [
       { type: 'field_input', name: 'ID', text: 'meuBotao' },
       { type: 'field_input', name: 'TEXT', text: 'Clique' },
@@ -67,7 +67,7 @@ export const HTML_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_html_div',
-    message0: 'Criar caixa (div) id %1',
+    message0: 'Criar caixa id %1',
     args0: [{ type: 'field_input', name: 'ID', text: 'caixa' }],
     message1: 'conteúdo %1',
     args1: [{ type: 'input_statement', name: 'CHILDREN', check: 'HTMLNode' }],
@@ -75,23 +75,23 @@ export const HTML_BLOCKS: BlockDefinition[] = [
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,
-    tooltip: 'Cria uma <div> que pode conter outros blocos dentro.',
+    tooltip: 'Cria uma caixa que pode conter outros blocos dentro.',
   },
   {
     type: 'sz_html_canvas',
-    message0: 'Criar tela de desenho (canvas) id %1',
+    message0: 'Criar tela de desenho id %1',
     args0: [{ type: 'field_input', name: 'ID', text: 'tela' }],
     ...classMsg1,
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,
-    tooltip: 'Cria um <canvas>. O tamanho é definido nos blocos de Canvas (JavaScript).',
+    tooltip: 'Cria uma tela de desenho. O tamanho é definido nos blocos de desenho.',
   },
 
   // ---- Estrutura semântica (containers que seguram filhos) ----
   {
     type: 'sz_html_header',
-    message0: 'Criar cabeçalho (header) id %1',
+    message0: 'Criar cabeçalho id %1',
     args0: [{ type: 'field_input', name: 'ID', text: 'cabecalho' }],
     message1: 'conteúdo %1',
     args1: [{ type: 'input_statement', name: 'CHILDREN', check: 'HTMLNode' }],
@@ -99,11 +99,11 @@ export const HTML_BLOCKS: BlockDefinition[] = [
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,
-    tooltip: 'Cria um <header> (topo da página). Pode conter outros blocos.',
+    tooltip: 'Cria o cabeçalho (topo da página). Pode conter outros blocos.',
   },
   {
     type: 'sz_html_nav',
-    message0: 'Criar menu (nav) id %1',
+    message0: 'Criar menu id %1',
     args0: [{ type: 'field_input', name: 'ID', text: 'menu' }],
     message1: 'links %1',
     args1: [{ type: 'input_statement', name: 'CHILDREN', check: 'HTMLNode' }],
@@ -111,11 +111,11 @@ export const HTML_BLOCKS: BlockDefinition[] = [
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,
-    tooltip: 'Cria um <nav> (navegação). Geralmente contém links.',
+    tooltip: 'Cria um menu (navegação). Geralmente contém links.',
   },
   {
     type: 'sz_html_section',
-    message0: 'Criar seção (section) id %1',
+    message0: 'Criar seção id %1',
     args0: [{ type: 'field_input', name: 'ID', text: 'secao' }],
     message1: 'conteúdo %1',
     args1: [{ type: 'input_statement', name: 'CHILDREN', check: 'HTMLNode' }],
@@ -123,11 +123,11 @@ export const HTML_BLOCKS: BlockDefinition[] = [
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,
-    tooltip: 'Cria uma <section> (bloco da página). Pode conter outros blocos.',
+    tooltip: 'Cria uma seção (um bloco da página). Pode conter outros blocos.',
   },
   {
     type: 'sz_html_main',
-    message0: 'Criar conteúdo principal (main) id %1',
+    message0: 'Criar conteúdo principal id %1',
     args0: [{ type: 'field_input', name: 'ID', text: 'principal' }],
     message1: 'conteúdo %1',
     args1: [{ type: 'input_statement', name: 'CHILDREN', check: 'HTMLNode' }],
@@ -135,11 +135,11 @@ export const HTML_BLOCKS: BlockDefinition[] = [
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,
-    tooltip: 'Cria o <main> (conteúdo principal). Pode conter outros blocos.',
+    tooltip: 'Cria o conteúdo principal. Pode conter outros blocos.',
   },
   {
     type: 'sz_html_footer',
-    message0: 'Criar rodapé (footer) id %1',
+    message0: 'Criar rodapé id %1',
     args0: [{ type: 'field_input', name: 'ID', text: 'rodape' }],
     message1: 'conteúdo %1',
     args1: [{ type: 'input_statement', name: 'CHILDREN', check: 'HTMLNode' }],
@@ -147,11 +147,11 @@ export const HTML_BLOCKS: BlockDefinition[] = [
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,
-    tooltip: 'Cria um <footer> (rodapé da página). Pode conter outros blocos.',
+    tooltip: 'Cria o rodapé da página. Pode conter outros blocos.',
   },
   {
     type: 'sz_html_ul',
-    message0: 'Criar lista (ul) id %1',
+    message0: 'Criar lista id %1',
     args0: [{ type: 'field_input', name: 'ID', text: 'lista' }],
     message1: 'itens %1',
     args1: [{ type: 'input_statement', name: 'CHILDREN', check: 'HTMLNode' }],
@@ -159,11 +159,11 @@ export const HTML_BLOCKS: BlockDefinition[] = [
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,
-    tooltip: 'Cria uma lista <ul>. Coloque blocos "item de lista" dentro.',
+    tooltip: 'Cria uma lista. Coloque blocos "item de lista" dentro.',
   },
   {
     type: 'sz_html_form',
-    message0: 'Criar formulário (form) id %1',
+    message0: 'Criar formulário id %1',
     args0: [{ type: 'field_input', name: 'ID', text: 'formulario' }],
     message1: 'campos %1',
     args1: [{ type: 'input_statement', name: 'CHILDREN', check: 'HTMLNode' }],
@@ -171,13 +171,13 @@ export const HTML_BLOCKS: BlockDefinition[] = [
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,
-    tooltip: 'Cria um <form>. Coloque campos, rótulos e botões dentro.',
+    tooltip: 'Cria um formulário. Coloque campos, rótulos e botões dentro.',
   },
 
   // ---- Conteúdo (folhas de texto) ----
   {
     type: 'sz_html_h2',
-    message0: 'Criar subtítulo (h2) com texto %1',
+    message0: 'Criar subtítulo com texto %1',
     args0: [{ type: 'field_input', name: 'TEXT', text: 'Subtítulo' }],
     ...inlineChildren,
     ...classMsg2,
@@ -187,7 +187,7 @@ export const HTML_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_html_h3',
-    message0: 'Criar subtítulo menor (h3) com texto %1',
+    message0: 'Criar subtítulo menor com texto %1',
     args0: [{ type: 'field_input', name: 'TEXT', text: 'Seção' }],
     ...inlineChildren,
     ...classMsg2,
@@ -197,7 +197,7 @@ export const HTML_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_html_span',
-    message0: 'Criar trecho (span) com texto %1',
+    message0: 'Criar trecho com texto %1',
     args0: [{ type: 'field_input', name: 'TEXT', text: 'destaque' }],
     ...inlineChildren,
     ...classMsg2,
@@ -207,29 +207,29 @@ export const HTML_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_html_strong',
-    message0: 'Criar texto em negrito (strong) %1',
+    message0: 'Criar texto em negrito %1',
     args0: [{ type: 'field_input', name: 'TEXT', text: 'importante' }],
     ...inlineChildren,
     ...classMsg2,
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,
-    tooltip: 'Cria um <strong> (texto com ênfase forte, normalmente negrito).',
+    tooltip: 'Cria um texto com ênfase forte (normalmente negrito).',
   },
   {
     type: 'sz_html_em',
-    message0: 'Criar texto em itálico (em) %1',
+    message0: 'Criar texto em itálico %1',
     args0: [{ type: 'field_input', name: 'TEXT', text: 'ênfase' }],
     ...inlineChildren,
     ...classMsg2,
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,
-    tooltip: 'Cria um <em> (texto com ênfase, normalmente itálico).',
+    tooltip: 'Cria um texto com ênfase (normalmente itálico).',
   },
   {
     type: 'sz_html_li',
-    message0: 'Criar item de lista (li) com texto %1',
+    message0: 'Criar item de lista com texto %1',
     args0: [{ type: 'field_input', name: 'TEXT', text: 'Item da lista' }],
     ...inlineChildren,
     ...classMsg2,
@@ -239,7 +239,7 @@ export const HTML_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_html_label',
-    message0: 'Criar rótulo (label) com texto %1',
+    message0: 'Criar rótulo com texto %1',
     args0: [{ type: 'field_input', name: 'TEXT', text: 'Seu nome' }],
     ...inlineChildren,
     ...classMsg2,
@@ -254,13 +254,13 @@ export const HTML_BLOCKS: BlockDefinition[] = [
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,
-    tooltip: 'Um pedaço de texto solto (sem tag). Use dentro de um parágrafo, título, etc.',
+    tooltip: 'Um pedaço de texto solto. Use dentro de um parágrafo, título, etc.',
   },
 
   // ---- Mídia e links ----
   {
     type: 'sz_html_link',
-    message0: 'Criar link (a) para %1 com texto %2',
+    message0: 'Criar link para %1 com texto %2',
     args0: [
       { type: 'field_input', name: 'HREF', text: '#' },
       { type: 'field_input', name: 'TEXT', text: 'Saiba mais' },
@@ -269,11 +269,11 @@ export const HTML_BLOCKS: BlockDefinition[] = [
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,
-    tooltip: 'Cria um link <a href="...">.',
+    tooltip: 'Cria um link clicável.',
   },
   {
     type: 'sz_html_image',
-    message0: 'Criar imagem (img) de %1 (descrição %2)',
+    message0: 'Criar imagem de %1 (descrição %2)',
     args0: [
       { type: 'field_input', name: 'SRC', text: 'https://picsum.photos/600/400' },
       { type: 'field_input', name: 'ALT', text: 'imagem' },
@@ -282,13 +282,13 @@ export const HTML_BLOCKS: BlockDefinition[] = [
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,
-    tooltip: 'Cria uma <img>. A descrição (alt) ajuda na acessibilidade.',
+    tooltip: 'Cria uma imagem. A descrição ajuda na acessibilidade.',
   },
 
   // ---- Formulário (campos) ----
   {
     type: 'sz_html_input',
-    message0: 'Criar campo (input) id %1 tipo %2 dica %3',
+    message0: 'Criar campo id %1 tipo %2 dica %3',
     args0: [
       { type: 'field_input', name: 'ID', text: 'campo' },
       {
@@ -307,11 +307,11 @@ export const HTML_BLOCKS: BlockDefinition[] = [
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,
-    tooltip: 'Cria um campo <input>.',
+    tooltip: 'Cria um campo para a pessoa digitar.',
   },
   {
     type: 'sz_html_textarea',
-    message0: 'Criar área de texto (textarea) id %1 dica %2',
+    message0: 'Criar área de texto id %1 dica %2',
     args0: [
       { type: 'field_input', name: 'ID', text: 'mensagem' },
       { type: 'field_input', name: 'PLACEHOLDER', text: 'Sua mensagem' },
@@ -320,6 +320,6 @@ export const HTML_BLOCKS: BlockDefinition[] = [
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,
-    tooltip: 'Cria uma <textarea> (campo de texto longo).',
+    tooltip: 'Cria um campo de texto longo.',
   },
 ]

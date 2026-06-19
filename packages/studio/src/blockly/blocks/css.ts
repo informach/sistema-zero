@@ -27,11 +27,11 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'CSSDecl',
     nextStatement: 'CSSDecl',
     colour: C,
-    tooltip: 'Uma propriedade CSS (ex.: display: grid). Vai dentro de uma "Regra CSS".',
+    tooltip: 'Uma propriedade CSS. Vai dentro de uma "Regra CSS".',
   },
   {
     type: 'sz_css_body_background',
-    message0: 'Cor de fundo do body (background) %1',
+    message0: 'Cor de fundo do body %1',
     args0: [{ type: 'field_colour_sz', name: 'COLOR', colour: '#0b1020' }],
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
@@ -39,7 +39,7 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_css_body_text_color',
-    message0: 'Cor do texto do body (color) %1',
+    message0: 'Cor do texto do body %1',
     args0: [{ type: 'field_colour_sz', name: 'COLOR', colour: '#e6e9f5' }],
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
@@ -54,7 +54,7 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_css_width',
-    message0: 'Largura (width) do seletor %1 como %2 px',
+    message0: 'Largura do seletor %1 como %2 px',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       { type: 'field_number', name: 'VALUE', value: 200, min: 0 },
@@ -65,7 +65,7 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_css_height',
-    message0: 'Altura (height) do seletor %1 como %2 px',
+    message0: 'Altura do seletor %1 como %2 px',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       { type: 'field_number', name: 'VALUE', value: 200, min: 0 },
@@ -76,7 +76,7 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_css_border',
-    message0: 'Borda (border) do seletor %1 com %2 px sólida na cor %3',
+    message0: 'Borda do seletor %1 com %2 px sólida na cor %3',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       { type: 'field_number', name: 'WIDTH', value: 2, min: 0 },
@@ -88,7 +88,7 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_css_padding',
-    message0: 'Espaçamento interno (padding) do seletor %1 como %2 px',
+    message0: 'Espaçamento interno do seletor %1 como %2 px',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       { type: 'field_number', name: 'VALUE', value: 8, min: 0 },
@@ -99,7 +99,7 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_css_margin',
-    message0: 'Espaçamento externo (margin) do seletor %1 como %2 px',
+    message0: 'Espaçamento externo do seletor %1 como %2 px',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       { type: 'field_number', name: 'VALUE', value: 8, min: 0 },
@@ -112,7 +112,7 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   // ---- Layout flex ----
   {
     type: 'sz_css_display_flex',
-    message0: 'Usar flex (display: flex) no seletor %1 na direção %2',
+    message0: 'Usar flex no seletor %1 na direção %2',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       {
@@ -127,11 +127,11 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
-    tooltip: 'Ativa display:flex e define a direção dos itens.',
+    tooltip: 'Coloca os itens em linha ou coluna (modo flex).',
   },
   {
     type: 'sz_css_gap',
-    message0: 'Espaço entre itens (gap) do seletor %1 como %2 px',
+    message0: 'Espaço entre itens do seletor %1 como %2 px',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       { type: 'field_number', name: 'VALUE', value: 16, min: 0 },
@@ -142,7 +142,7 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_css_justify',
-    message0: 'Alinhar na horizontal (justify-content) do seletor %1 como %2',
+    message0: 'Alinhar na horizontal do seletor %1 como %2',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       {
@@ -163,7 +163,7 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_css_align',
-    message0: 'Alinhar na vertical (align-items) do seletor %1 como %2',
+    message0: 'Alinhar na vertical do seletor %1 como %2',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       {
@@ -185,7 +185,7 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   // ---- Tipografia ----
   {
     type: 'sz_css_font_size',
-    message0: 'Tamanho da fonte (font-size) do seletor %1 como %2 px',
+    message0: 'Tamanho da fonte do seletor %1 como %2 px',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       { type: 'field_number', name: 'VALUE', value: 16, min: 1 },
@@ -196,7 +196,7 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_css_font_weight',
-    message0: 'Peso da fonte (font-weight) do seletor %1 como %2',
+    message0: 'Peso da fonte do seletor %1 como %2',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       {
@@ -214,7 +214,7 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_css_text_align',
-    message0: 'Alinhar texto (text-align) do seletor %1 como %2',
+    message0: 'Alinhar texto do seletor %1 como %2',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       {
@@ -233,7 +233,7 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_css_text_color',
-    message0: 'Cor do texto (color) do seletor %1 como %2',
+    message0: 'Cor do texto do seletor %1 como %2',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       { type: 'field_colour_sz', name: 'COLOR', colour: '#e6e9f5' },
@@ -244,7 +244,7 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_css_text_transform',
-    message0: 'Caixa do texto (text-transform) do seletor %1 como %2',
+    message0: 'Caixa do texto do seletor %1 como %2',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#menu a' },
       {
@@ -261,11 +261,11 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
-    tooltip: 'Deixa o texto em MAIÚSCULAS, minúsculas, etc. (text-transform).',
+    tooltip: 'Deixa o texto em MAIÚSCULAS, minúsculas, etc.',
   },
   {
     type: 'sz_css_text_decoration',
-    message0: 'Sublinhado (text-decoration) do seletor %1 %2',
+    message0: 'Sublinhado do seletor %1 %2',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#menu a' },
       {
@@ -284,7 +284,7 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_css_letter_spacing',
-    message0: 'Espaço entre letras (letter-spacing) do seletor %1 como %2 px',
+    message0: 'Espaço entre letras do seletor %1 como %2 px',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#menu a' },
       { type: 'field_number', name: 'VALUE', value: 1, min: 0 },
@@ -292,13 +292,13 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
-    tooltip: 'Aumenta o espaço entre as letras (letter-spacing).',
+    tooltip: 'Aumenta o espaço entre as letras.',
   },
 
   // ---- Fundo e cor ----
   {
     type: 'sz_css_background_color',
-    message0: 'Cor de fundo (background-color) do seletor %1 como %2',
+    message0: 'Cor de fundo do seletor %1 como %2',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       { type: 'field_colour_sz', name: 'COLOR', colour: '#11162b' },
@@ -309,7 +309,7 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_css_gradient',
-    message0: 'Fundo gradiente (linear-gradient) do seletor %1 de %2 até %3',
+    message0: 'Fundo gradiente do seletor %1 de %2 até %3',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       { type: 'field_colour_sz', name: 'C1', colour: '#22d3ee' },
@@ -324,7 +324,7 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   // ---- Caixa e espaço ----
   {
     type: 'sz_css_border_radius',
-    message0: 'Arredondar cantos (border-radius) do seletor %1 como %2 px',
+    message0: 'Arredondar cantos do seletor %1 como %2 px',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       { type: 'field_number', name: 'VALUE', value: 12, min: 0 },
@@ -335,7 +335,7 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_css_shadow',
-    message0: 'Sombra (box-shadow) no seletor %1 com intensidade %2',
+    message0: 'Sombra no seletor %1 com intensidade %2',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       {
@@ -354,7 +354,7 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_css_max_width',
-    message0: 'Largura máxima (max-width) do seletor %1 como %2 px',
+    message0: 'Largura máxima do seletor %1 como %2 px',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       { type: 'field_number', name: 'VALUE', value: 1100, min: 0 },
@@ -365,7 +365,7 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_css_width_percent',
-    message0: 'Largura em % (width) do seletor %1 como %2 %',
+    message0: 'Largura em % do seletor %1 como %2 %',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       { type: 'field_number', name: 'VALUE', value: 100, min: 0, max: 100 },
@@ -396,13 +396,13 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     nextStatement: 'CSSEntry',
     colour: C,
     tooltip:
-      'Regras CSS que só valem quando a tela é menor (no máximo) ou maior (no mínimo) que o tamanho dado — @media. Use para responsividade. Coloque blocos de CSS dentro.',
+      'Regras CSS que só valem quando a tela é menor (no máximo) ou maior (no mínimo) que o tamanho dado. Use para responsividade. Coloque blocos de CSS dentro.',
   },
 
   // ---- CSS moderno ----
   {
     type: 'sz_css_transition',
-    message0: 'transição suave (transition) do seletor %1 por %2 ms',
+    message0: 'transição suave do seletor %1 por %2 ms',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       { type: 'field_number', name: 'MS', value: 300, min: 0 },
@@ -411,11 +411,11 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     nextStatement: 'CSSEntry',
     colour: C,
     level: 'intermediario',
-    tooltip: 'Anima suavemente as mudanças de estilo do elemento (transition: all Nms ease).',
+    tooltip: 'Anima suavemente as mudanças de estilo do elemento.',
   },
   {
     type: 'sz_css_grid',
-    message0: 'grade (grid) do seletor %1 com %2 colunas e espaço %3 px',
+    message0: 'grade do seletor %1 com %2 colunas e espaço %3 px',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       { type: 'field_number', name: 'COLS', value: 3, min: 1 },
@@ -425,21 +425,21 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     nextStatement: 'CSSEntry',
     colour: C,
     level: 'intermediario',
-    tooltip: 'Layout em grade: display:grid com N colunas iguais (1fr) e espaço entre elas.',
+    tooltip: 'Organiza o conteúdo em grade, com N colunas iguais e espaço entre elas.',
   },
   {
     type: 'sz_css_keyframes',
     message0: 'animação chamada %1',
     args0: [{ type: 'field_input', name: 'NAME', text: 'aparecer' }],
-    message1: 'no início (from) %1',
+    message1: 'no início %1',
     args1: [{ type: 'input_statement', name: 'FROM', check: 'CSSDecl' }],
-    message2: 'no fim (to) %1',
+    message2: 'no fim %1',
     args2: [{ type: 'input_statement', name: 'TO', check: 'CSSDecl' }],
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
     level: 'avancado',
     tooltip:
-      'Cria uma animação CSS (@keyframes) do estado inicial (from) ao final (to). Para usar, aplique "animation: nome 1s" numa Regra CSS do elemento.',
+      'Cria uma animação, do estado inicial ao final. Para usar, ligue essa animação a um elemento numa Regra CSS.',
   },
 ]

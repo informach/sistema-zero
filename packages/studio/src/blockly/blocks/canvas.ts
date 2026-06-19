@@ -114,7 +114,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Para o loop de animação, cancelando o id guardado por "A cada frame fazer".',
+    tooltip: 'Para a animação, cancelando o id guardado por "A cada frame fazer".',
   },
   {
     type: 'sz_canvas_keyboard',

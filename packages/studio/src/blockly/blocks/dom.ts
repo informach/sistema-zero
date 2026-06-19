@@ -19,7 +19,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   // ---- Eventos ----
   {
     type: 'sz_js_on_click',
-    message0: 'Quando clicarem (click) %1 %2',
+    message0: 'Quando clicarem %1 %2',
     args0: [
       {
         type: 'field_dropdown',
@@ -46,11 +46,11 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Reage a um clique em qualquer parte da página (document). Use "posição do clique" para saber onde clicaram.',
+      'Reage a um clique em qualquer parte da página. Use "posição do clique" para saber onde clicaram.',
   },
   {
     type: 'sz_js_on_mouseover',
-    message0: 'Quando o mouse passar (mouseover) %1 %2',
+    message0: 'Quando o mouse passar %1 %2',
     args0: [
       {
         type: 'field_dropdown',
@@ -70,7 +70,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_on_input',
-    message0: 'Quando digitar (input) %1 %2',
+    message0: 'Quando digitar %1 %2',
     args0: [
       {
         type: 'field_dropdown',
@@ -90,7 +90,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_on_submit',
-    message0: 'Quando enviar (submit) %1 %2',
+    message0: 'Quando enviar %1 %2',
     args0: [
       {
         type: 'field_dropdown',
@@ -116,14 +116,14 @@ export const DOM_BLOCKS: BlockDefinition[] = [
         type: 'field_dropdown',
         name: 'EVENT',
         options: [
-          ['clicar (click)', 'click'],
-          ['passar o mouse (mouseover)', 'mouseover'],
-          ['tirar o mouse (mouseout)', 'mouseout'],
-          ['enviar (submit)', 'submit'],
-          ['digitar (input)', 'input'],
-          ['mudar (change)', 'change'],
-          ['apertar tecla (keydown)', 'keydown'],
-          ['soltar tecla (keyup)', 'keyup'],
+          ['clicar', 'click'],
+          ['passar o mouse', 'mouseover'],
+          ['tirar o mouse', 'mouseout'],
+          ['enviar', 'submit'],
+          ['digitar', 'input'],
+          ['mudar', 'change'],
+          ['apertar tecla', 'keydown'],
+          ['soltar tecla', 'keyup'],
         ],
       },
       {
@@ -142,7 +142,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Liga um evento a uma função já criada (el.addEventListener("click", funcao)). Dentro da função, "elemento atual (this)" é o elemento que disparou.',
+      'Liga um evento a uma função já criada. Dentro da função, "elemento atual" é o elemento que disparou.',
   },
   {
     type: 'sz_js_event_method',
@@ -152,8 +152,8 @@ export const DOM_BLOCKS: BlockDefinition[] = [
         type: 'field_dropdown',
         name: 'METHOD',
         options: [
-          ['cancelar a ação padrão (preventDefault)', 'preventDefault'],
-          ['parar a propagação (stopPropagation)', 'stopPropagation'],
+          ['cancelar a ação padrão', 'preventDefault'],
+          ['parar a propagação', 'stopPropagation'],
         ],
       },
     ],
@@ -167,7 +167,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   // ---- Buscar elementos ----
   {
     type: 'sz_js_get_element_by_id',
-    message0: 'Pegar elemento (getElementById) id %1 e guardar em %2',
+    message0: 'Pegar elemento id %1 e guardar em %2',
     args0: [
       { type: 'field_input', name: 'ID', text: 'meuBotao' },
       { type: 'field_input', name: 'NAME', text: 'meuBotao' },
@@ -175,11 +175,11 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Guarda o elemento de um id numa variável (document.getElementById).',
+    tooltip: 'Guarda o elemento de um id numa variável.',
   },
   {
     type: 'sz_js_query_selector',
-    message0: 'Pegar elemento (querySelector) via seletor %1 e guardar em %2',
+    message0: 'Pegar elemento via seletor %1 e guardar em %2',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       { type: 'field_input', name: 'NAME', text: 'caixa' },
@@ -190,7 +190,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_query_selector_all',
-    message0: 'Pegar TODOS os elementos (querySelectorAll) via seletor %1 e guardar em %2',
+    message0: 'Pegar TODOS os elementos via seletor %1 e guardar em %2',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '.item' },
       { type: 'field_input', name: 'NAME', text: 'itens' },
@@ -211,9 +211,9 @@ export const DOM_BLOCKS: BlockDefinition[] = [
         type: 'field_dropdown',
         name: 'PROP',
         options: [
-          ['o texto (textContent)', 'textContent'],
-          ['o valor (value)', 'value'],
-          ['o conteúdo HTML (innerHTML)', 'innerHTML'],
+          ['o texto', 'textContent'],
+          ['o valor', 'value'],
+          ['o conteúdo HTML', 'innerHTML'],
         ],
       },
       {
@@ -241,9 +241,9 @@ export const DOM_BLOCKS: BlockDefinition[] = [
         type: 'field_dropdown',
         name: 'PROP',
         options: [
-          ['o texto (textContent)', 'textContent'],
-          ['o valor (value)', 'value'],
-          ['o conteúdo HTML (innerHTML)', 'innerHTML'],
+          ['o texto', 'textContent'],
+          ['o valor', 'value'],
+          ['o conteúdo HTML', 'innerHTML'],
         ],
       },
       {
@@ -272,9 +272,9 @@ export const DOM_BLOCKS: BlockDefinition[] = [
         type: 'field_dropdown',
         name: 'PROP',
         options: [
-          ['o texto (textContent)', 'textContent'],
-          ['o valor (value)', 'value'],
-          ['o conteúdo HTML (innerHTML)', 'innerHTML'],
+          ['o texto', 'textContent'],
+          ['o valor', 'value'],
+          ['o conteúdo HTML', 'innerHTML'],
         ],
       },
       {
@@ -301,9 +301,9 @@ export const DOM_BLOCKS: BlockDefinition[] = [
         type: 'field_dropdown',
         name: 'PROP',
         options: [
-          ['o texto (textContent)', 'textContent'],
-          ['o valor (value)', 'value'],
-          ['o conteúdo HTML (innerHTML)', 'innerHTML'],
+          ['o texto', 'textContent'],
+          ['o valor', 'value'],
+          ['o conteúdo HTML', 'innerHTML'],
         ],
       },
       {
@@ -319,9 +319,9 @@ export const DOM_BLOCKS: BlockDefinition[] = [
         type: 'field_dropdown',
         name: 'CALC',
         options: [
-          ['o ano atual (new Date().getFullYear())', 'year'],
-          ['a data de hoje (toLocaleDateString)', 'date'],
-          ['a hora agora (toLocaleTimeString)', 'time'],
+          ['o ano atual', 'year'],
+          ['a data de hoje', 'date'],
+          ['a hora agora', 'time'],
         ],
       },
     ],
@@ -339,9 +339,9 @@ export const DOM_BLOCKS: BlockDefinition[] = [
         type: 'field_dropdown',
         name: 'PROP',
         options: [
-          ['o texto (textContent)', 'textContent'],
-          ['o valor (value)', 'value'],
-          ['o conteúdo HTML (innerHTML)', 'innerHTML'],
+          ['o texto', 'textContent'],
+          ['o valor', 'value'],
+          ['o conteúdo HTML', 'innerHTML'],
         ],
       },
       {
@@ -365,7 +365,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     // Legado: substituído por sz_js_set_property_text. Mantido (oculto da
     // paleta) para que projetos antigos salvos com este bloco ainda carreguem.
     type: 'sz_js_set_text',
-    message0: 'Alterar texto (textContent) do elemento id %1 para %2',
+    message0: 'Alterar texto do elemento id %1 para %2',
     args0: [
       { type: 'field_input', name: 'TARGET', text: 'saida' },
       { type: 'field_input', name: 'VALUE', text: 'Novo texto' },
@@ -378,7 +378,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   // ---- Classes e dados ----
   {
     type: 'sz_js_class_op',
-    message0: '%1 classe (classList) %2 %3 %4',
+    message0: '%1 classe %2 %3 %4',
     args0: [
       {
         type: 'field_dropdown',
@@ -396,7 +396,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
         options: [
           ['no elemento id', 'id'],
           ['na variável', 'var'],
-          ['no elemento atual (this)', 'this'],
+          ['no elemento atual', 'this'],
         ],
       },
       { type: 'field_input', name: 'TARGET', text: 'meuElemento' },
@@ -425,7 +425,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Guarda um valor num data-attribute do elemento (el.dataset.chave = valor).',
+    tooltip: 'Guarda um valor num dado próprio do elemento.',
   },
   // ---- Criar/inserir elementos ----
   {
@@ -439,8 +439,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip:
-      'Cria um novo elemento HTML em memória e guarda numa variável (document.createElement).',
+    tooltip: 'Cria um novo elemento HTML em memória e guarda numa variável.',
   },
   {
     type: 'sz_js_append_child',
@@ -453,6 +452,6 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Coloca um elemento dentro de outro (pai.appendChild(filho)).',
+    tooltip: 'Coloca um elemento dentro de outro.',
   },
 ]

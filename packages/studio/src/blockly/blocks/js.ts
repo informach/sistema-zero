@@ -21,7 +21,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Acrescenta um valor ao fim da lista (arr.push(valor)).',
+    tooltip: 'Acrescenta um valor ao fim da lista.',
   },
   {
     type: 'sz_js_array_remove',
@@ -41,7 +41,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Remove o último (pop) ou o primeiro (shift) item da lista.',
+    tooltip: 'Remove o último ou o primeiro item da lista.',
   },
   {
     type: 'sz_js_array_splice',
@@ -55,12 +55,11 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip:
-      'Remove uma quantidade de itens da lista a partir de uma posição (arr.splice(início, qtd)).',
+    tooltip: 'Remove uma quantidade de itens da lista a partir de uma posição.',
   },
   {
     type: 'sz_js_console_log_text',
-    message0: 'Mostrar texto no console (console.log) %1',
+    message0: 'Mostrar texto no console %1',
     args0: [{ type: 'field_input', name: 'VALUE', text: 'Olá' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -68,7 +67,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_console_log_var',
-    message0: 'Mostrar valor da variável %1 no console (console.log)',
+    message0: 'Mostrar valor da variável %1 no console',
     args0: [{ type: 'field_input', name: 'NAME', text: 'contador' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -76,21 +75,21 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_alert_text',
-    message0: 'Mostrar aviso (alert) com texto %1',
+    message0: 'Mostrar aviso com texto %1',
     args0: [{ type: 'field_input', name: 'VALUE', text: 'Olá!' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Mostra uma janelinha de aviso na tela (alert).',
+    tooltip: 'Mostra uma janelinha de aviso na tela.',
   },
   {
     type: 'sz_js_alert_var',
-    message0: 'Mostrar aviso (alert) com valor da variável %1',
+    message0: 'Mostrar aviso com valor da variável %1',
     args0: [{ type: 'field_input', name: 'NAME', text: 'contador' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Mostra uma janelinha de aviso com o valor de uma variável (alert).',
+    tooltip: 'Mostra uma janelinha de aviso com o valor de uma variável.',
   },
   {
     type: 'sz_js_var_declare',
@@ -99,7 +98,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Declara uma variável (let) sem valor inicial — gera `let x;`.',
+    tooltip: 'Declara uma variável sem valor inicial.',
   },
   {
     type: 'sz_js_var_create',
@@ -112,7 +111,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Cria uma variável (let) e guarda nela um valor — número, conta, aleatório, etc.',
+    tooltip: 'Cria uma variável e guarda nela um valor — número, conta, aleatório, etc.',
   },
   {
     type: 'sz_js_const_create',
@@ -125,7 +124,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Cria uma constante (const): um valor que não muda depois de criado.',
+    tooltip: 'Cria uma constante: um valor que não muda depois de criado.',
   },
   {
     type: 'sz_js_var_assign',
@@ -153,7 +152,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_if_else',
-    message0: 'Se (if) %1',
+    message0: 'Se %1',
     args0: [{ type: 'input_value', name: 'COND', check: 'JSValue' }],
     message1: 'então %1',
     args1: [{ type: 'input_statement', name: 'THEN' }],
@@ -167,7 +166,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_repeat',
-    message0: 'Repetir (for) %1 vezes',
+    message0: 'Repetir %1 vezes',
     args0: [{ type: 'field_number', name: 'TIMES', value: 5, min: 0 }],
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
@@ -177,7 +176,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_while',
-    message0: 'enquanto (while) %1',
+    message0: 'enquanto %1',
     args0: [{ type: 'input_value', name: 'COND', check: 'JSValue' }],
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
@@ -193,7 +192,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     type: 'sz_js_do_while',
     message0: 'fazer %1',
     args0: [{ type: 'input_statement', name: 'DO' }],
-    message1: 'enquanto (do...while) %1',
+    message1: 'enquanto %1',
     args1: [{ type: 'input_value', name: 'COND', check: 'JSValue' }],
     inputsInline: true,
     previousStatement: 'JSStmt',
@@ -204,7 +203,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_break',
-    message0: 'sair do laço (break)',
+    message0: 'sair do laço',
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -213,7 +212,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_continue',
-    message0: 'pular para a próxima volta (continue)',
+    message0: 'pular para a próxima volta',
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -222,7 +221,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_for_of',
-    message0: 'para cada %1 de (for...of) %2',
+    message0: 'para cada %1 de %2',
     args0: [
       { type: 'field_input', name: 'ITEM', text: 'item' },
       { type: 'field_input', name: 'NAME', text: 'lista' },
@@ -235,7 +234,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     colour: C,
     level: 'intermediario',
     tooltip:
-      'Percorre cada item de uma lista (for...of). Sem posição/índice — use "para cada item" se precisar do índice.',
+      'Percorre cada item de uma lista. Sem posição/índice — use "para cada item" se precisar do índice.',
   },
   {
     type: 'sz_js_for_range',
@@ -253,19 +252,18 @@ export const JS_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     level: 'intermediario',
-    tooltip:
-      'Laço de contagem (for clássico): vai de "de" até "até" (exclusivo) somando o passo a cada volta.',
+    tooltip: 'Laço de contagem: vai de "de" até "até" (exclusivo) somando o passo a cada volta.',
   },
   {
     type: 'sz_js_try_catch',
-    message0: 'tentar (try) %1',
+    message0: 'tentar %1',
     args0: [{ type: 'input_statement', name: 'BODY' }],
-    message1: 'se der erro %1 fazer (catch) %2',
+    message1: 'se der erro %1 fazer %2',
     args1: [
       { type: 'field_input', name: 'ERR', text: 'erro' },
       { type: 'input_statement', name: 'HANDLER' },
     ],
-    message2: 'no fim, sempre (finally) %1',
+    message2: 'no fim, sempre %1',
     args2: [{ type: 'input_statement', name: 'FINALLY' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -289,7 +287,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Repete o "fazer" para cada item da lista (arr.forEach). Deixe a posição em branco se não precisar dela.',
+      'Repete o "fazer" para cada item da lista. Deixe a posição em branco se não precisar dela.',
   },
   {
     type: 'sz_js_set_timeout',
@@ -301,7 +299,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Espera um tempo (em milissegundos) e então executa o "fazer" (setTimeout).',
+    tooltip: 'Espera um tempo (em milissegundos) e então executa o "fazer".',
   },
   {
     type: 'sz_js_set_interval',
@@ -313,7 +311,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Repete o "fazer" a cada intervalo de tempo em milissegundos (setInterval).',
+    tooltip: 'Repete o "fazer" a cada intervalo de tempo em milissegundos.',
   },
   {
     type: 'sz_js_storage_set',
@@ -323,8 +321,8 @@ export const JS_BLOCKS: BlockDefinition[] = [
         type: 'field_dropdown',
         name: 'STORE',
         options: [
-          ['localStorage (permanente)', 'local'],
-          ['sessionStorage (só nesta sessão)', 'session'],
+          ['permanente (fica entre visitas)', 'local'],
+          ['só nesta sessão (zera ao fechar)', 'session'],
         ],
       },
       { type: 'field_input', name: 'KEY', text: 'nome' },
@@ -336,11 +334,11 @@ export const JS_BLOCKS: BlockDefinition[] = [
     colour: C,
     level: 'iniciante',
     tooltip:
-      'Salva um valor no navegador. localStorage fica salvo entre visitas; sessionStorage só nesta aba/sessão.',
+      'Salva um valor no navegador. O permanente fica salvo entre visitas; o da sessão só vale nesta aba.',
   },
   {
     type: 'sz_js_fetch_json',
-    message0: 'buscar JSON (fetch) da URL %1',
+    message0: 'buscar JSON da URL %1',
     args0: [{ type: 'field_input', name: 'URL', text: 'https://api.exemplo.com/dados' }],
     message1: 'quando chegar, guardar em %1 e fazer %2',
     args1: [
@@ -357,6 +355,6 @@ export const JS_BLOCKS: BlockDefinition[] = [
     colour: C,
     level: 'avancado',
     tooltip:
-      'Busca dados de uma URL e converte para JSON (fetch). Os dados ficam na variável "quando chegar"; um erro fica na variável "se der erro". Precisa de permissão de rede no preview (o professor libera a origem).',
+      'Busca dados de uma URL e converte para JSON. Os dados ficam na variável "quando chegar"; um erro fica na variável "se der erro". Precisa de permissão de rede no preview (o professor libera a origem).',
   },
 ]

@@ -36,7 +36,7 @@ export const OBJECT_BLOCKS: BlockDefinition[] = [
     inputsInline: true,
     output: 'JSValue',
     colour: C,
-    tooltip: 'Lê uma propriedade de um objeto (objeto.nome). Encaixe o objeto na tomada.',
+    tooltip: 'Lê uma propriedade de um objeto. Encaixe o objeto na tomada.',
   },
   {
     type: 'sz_js_member_set',
@@ -50,7 +50,7 @@ export const OBJECT_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Escreve uma propriedade de um objeto (objeto.nome = valor).',
+    tooltip: 'Escreve uma propriedade de um objeto.',
   },
   {
     type: 'sz_val_method_on',
@@ -63,7 +63,7 @@ export const OBJECT_BLOCKS: BlockDefinition[] = [
     output: 'JSValue',
     colour: C,
     mutator: 'sz_args_mutator',
-    tooltip: 'Chama um método que devolve um valor (objeto.metodo(...)) para usar numa tomada.',
+    tooltip: 'Chama um método que devolve um valor para usar numa tomada.',
   },
   {
     type: 'sz_js_method_on',
@@ -77,6 +77,6 @@ export const OBJECT_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     mutator: 'sz_args_mutator',
-    tooltip: 'Chama um método de um objeto, como comando (objeto.metodo(...)).',
+    tooltip: 'Chama um método de um objeto, como comando.',
   },
 ]
