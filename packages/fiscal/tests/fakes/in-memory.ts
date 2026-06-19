@@ -192,14 +192,15 @@ export class InMemoryInvoiceRepository implements InvoiceRepository {
     return due
   }
 
-  async failExhausted(maxAttempts: number): Promise<number> {
+  async failExhausted(opts: { maxAttempts: number; staleMs: number }): Promise<number> {
     const now = Date.now()
     let count = 0
     for (const inv of this.invoices.values()) {
       if (
         inv.status === 'SCHEDULED' &&
         inv.scheduledFor.getTime() <= now &&
-        inv.attempts > maxAttempts
+        inv.attempts > opts.maxAttempts &&
+        (!inv.claimedAt || now - inv.claimedAt.getTime() >= opts.staleMs)
       ) {
         inv.status = 'FAILED'
         inv.lastError =
@@ -429,6 +430,38 @@ export class InMemoryInvoiceRepository implements InvoiceRepository {
   async markEmailSent(id: string): Promise<void> {
     const inv = this.invoices.get(id)
     if (inv) inv.emailSentAt = new Date()
+  }
+
+  async claimEmittedNeedingDelivery(opts: {
+    batchSize: number
+    staleMs: number
+  }): Promise<Invoice[]> {
+    const now = Date.now()
+    const due = [...this.invoices.values()]
+      .filter(
+        (inv) =>
+          inv.status === 'EMITTED' &&
+          Boolean(inv.accessKey && inv.pdfToken) &&
+          (!inv.pdfStoredAt || (!inv.emailSentAt && inv.customer.email)) &&
+          (!inv.nextAttemptAt || inv.nextAttemptAt.getTime() <= now) &&
+          (!inv.claimedAt || now - inv.claimedAt.getTime() >= opts.staleMs),
+      )
+      .sort((a, b) => (a.emittedAt?.getTime() ?? 0) - (b.emittedAt?.getTime() ?? 0))
+      .slice(0, opts.batchSize)
+    for (const inv of due) inv.claimedAt = new Date(now)
+    return due
+  }
+
+  async releaseDeliveryRetry(id: string, nextAttemptAt: Date, lastError: string): Promise<void> {
+    const inv = this.invoices.get(id)
+    if (inv?.status === 'EMITTED') Object.assign(inv, { claimedAt: null, nextAttemptAt, lastError })
+  }
+
+  async markDeliveryComplete(id: string): Promise<void> {
+    const inv = this.invoices.get(id)
+    if (inv?.status === 'EMITTED') {
+      Object.assign(inv, { claimedAt: null, nextAttemptAt: null, lastError: null })
+    }
   }
 }
 

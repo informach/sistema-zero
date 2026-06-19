@@ -90,6 +90,12 @@ const EnvSchema = z
     NFSE_WORKER_INTERVAL_MS: z.coerce.number().int().positive().default(30_000),
     NFSE_WORKER_BATCH_SIZE: z.coerce.number().int().positive().default(10),
     NFSE_MAX_ATTEMPTS: z.coerce.number().int().positive().default(10),
+    /** Backoff dos efeitos pós-emissão (DANFSe/e-mail) sem reemitir a DPS. */
+    NFSE_DELIVERY_RETRY_DELAY_MS: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(15 * 60_000),
     /** Lease do claim — réplica só re-reivindica após a outra ter parado. */
     NFSE_CLAIM_STALE_MS: z.coerce.number().int().positive().default(120_000),
     NFSE_CANCEL_WINDOW_DAYS: z.coerce.number().int().positive().default(180),

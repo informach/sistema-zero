@@ -26,7 +26,7 @@ const profile: EmitterProfile = {
   pTotTribSN: '8.24',
 }
 
-function build() {
+function build(opts: { staleMs?: number } = {}) {
   const invoices = new InMemoryInvoiceRepository()
   const payments = new FakePaymentsClient()
   const sefin = new ScriptedSefinGateway()
@@ -47,7 +47,7 @@ function build() {
   const worker = new EmissionWorker(invoices, service, silentLogger, {
     intervalMs: 30_000,
     batchSize: 10,
-    staleMs: 0,
+    staleMs: opts.staleMs ?? 0,
     maxAttempts: 10,
   })
   return { invoices, payments, sefin, service, worker }
@@ -125,6 +125,21 @@ describe('EmissionWorker', () => {
     const after = await invoices.findById(stuck.id)
     expect(after?.status).toBe('FAILED')
     expect(after?.lastError).toContain('esgotadas')
+  })
+
+  test('coletor respeita lease vivo: tentativa final em andamento NÃO vira FAILED por outra réplica', async () => {
+    const { invoices, worker } = build({ staleMs: 120_000 })
+    const inFlight = await invoices.schedule(due('pay-1'))
+    Object.assign(inFlight, { attempts: 11, claimedAt: new Date() })
+
+    await worker.tick()
+
+    expect((await invoices.findById(inFlight.id))?.status).toBe('SCHEDULED')
+
+    Object.assign(inFlight, { claimedAt: new Date(Date.now() - 121_000) })
+    await worker.tick()
+
+    expect((await invoices.findById(inFlight.id))?.status).toBe('FAILED')
   })
 })
 
