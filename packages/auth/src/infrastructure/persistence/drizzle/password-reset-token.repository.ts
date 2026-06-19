@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, isNull, lt } from 'drizzle-orm'
+import { and, desc, eq, inArray, isNull, lt, sql } from 'drizzle-orm'
 import type {
   CreatePasswordResetTokenInput,
   PasswordResetTokenRecord,
@@ -25,6 +25,46 @@ export class DrizzlePasswordResetTokenRepository implements PasswordResetTokenRe
     })
   }
 
+  async createReplacingActive(
+    input: CreatePasswordResetTokenInput,
+    at: Date,
+    cooldownSeconds = 0,
+  ): Promise<boolean> {
+    return await this.db.transaction(async (tx) => {
+      await tx.execute(
+        sql`select pg_advisory_xact_lock(hashtextextended(${`password-reset:${input.userId}`}, 0))`,
+      )
+
+      if (cooldownSeconds > 0) {
+        const [last] = await tx
+          .select({ createdAt: passwordResetTokens.createdAt })
+          .from(passwordResetTokens)
+          .where(eq(passwordResetTokens.userId, input.userId))
+          .orderBy(desc(passwordResetTokens.createdAt))
+          .limit(1)
+        if (last && at.getTime() - last.createdAt.getTime() < cooldownSeconds * 1000) {
+          return false
+        }
+      }
+
+      await tx
+        .update(passwordResetTokens)
+        .set({ consumedAt: at })
+        .where(
+          and(eq(passwordResetTokens.userId, input.userId), isNull(passwordResetTokens.consumedAt)),
+        )
+
+      await tx.insert(passwordResetTokens).values({
+        id: input.id,
+        userId: input.userId,
+        tokenHash: input.tokenHash,
+        expiresAt: input.expiresAt,
+        createdAt: at,
+      })
+      return true
+    })
+  }
+
   async findByHash(tokenHash: string): Promise<PasswordResetTokenRecord | null> {
     const [row] = await this.db
       .select()
@@ -34,11 +74,13 @@ export class DrizzlePasswordResetTokenRepository implements PasswordResetTokenRe
     return row ? toRecord(row) : null
   }
 
-  async consume(id: string, at: Date): Promise<void> {
-    await this.db
+  async consume(id: string, at: Date): Promise<boolean> {
+    const consumed = await this.db
       .update(passwordResetTokens)
       .set({ consumedAt: at })
       .where(and(eq(passwordResetTokens.id, id), isNull(passwordResetTokens.consumedAt)))
+      .returning({ id: passwordResetTokens.id })
+    return consumed.length === 1
   }
 
   async consumeAllForUser(userId: string, at: Date): Promise<void> {

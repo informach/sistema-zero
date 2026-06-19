@@ -21,12 +21,12 @@ export interface InternalRoutesDeps {
  * comprador recorrente. Tudo só trafega S2S — nunca chega ao browser por aqui.
  */
 export function internalRoutes(deps: InternalRoutesDeps) {
-    return new Elysia({ prefix: '/auth/internal' })
-      .post(
-        '/password-tokens',
-        async ({ body, headers, set }) => {
-          requireInternalToken(headers, deps.internalToken)
-          const issued = await deps.createPasswordToken.execute({ email: body.email })
+  return new Elysia({ prefix: '/auth/internal' })
+    .post(
+      '/password-tokens',
+      async ({ body, headers, set }) => {
+        requireInternalToken(headers, deps.internalToken)
+        const issued = await deps.createPasswordToken.execute({ email: body.email })
         // Usuário inexistente/inativo → 404 (S2S; sem risco de enumeração pelo browser).
         if (!issued) throw new UserNotFoundError()
         set.status = 201
@@ -34,12 +34,12 @@ export function internalRoutes(deps: InternalRoutesDeps) {
       },
       { body: CreatePasswordTokenBody },
     )
-      .post(
-        '/ensure-buyer',
-        async ({ body, headers, set }) => {
-          requireInternalToken(headers, deps.internalToken)
-          const result = await deps.ensureBuyer.execute({
-            email: body.email,
+    .post(
+      '/ensure-buyer',
+      async ({ body, headers, set }) => {
+        requireInternalToken(headers, deps.internalToken)
+        const result = await deps.ensureBuyer.execute({
+          email: body.email,
           password: body.password,
           firstName: body.firstName,
           lastName: body.lastName,

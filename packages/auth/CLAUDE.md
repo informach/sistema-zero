@@ -112,7 +112,7 @@ src/
    **Logout `allSessions: true` = `revokeAllForUser`** (TODAS as famílias/
    dispositivos — revogar só a família do token apresentado deixaria os outros
    dispositivos logados). **Fail-fast de produção no env:** além do
-   `AUTH_INTERNAL_TOKEN`, produção exige `GATEWAY_URL` + `AUTH_HMAC_SECRET`
+   `AUTH_INTERNAL_TOKEN`, produção exige `GATEWAY_URL` não-localhost + `AUTH_HMAC_SECRET`
    (sem eles o messaging é NO-OP silencioso — reset/OTP/convite responderiam 200
    sem nunca enviar e-mail) e `COMMUNITY_URL` não-localhost (links de e-mail).
    Login com senha errada loga `auth.login.failed` (userId + ip — auditoria de
@@ -128,7 +128,8 @@ src/
    (60); emitir um novo **consome os pendentes** (1 token vivo/usuário).
    `POST /auth/forgot-password` responde **SEMPRE 200** (anti-enumeração) e envia o
    e-mail `password-reset` via **gateway → messaging** (HMAC de borda, consumer `auth`
-   — `GATEWAY_URL`+`AUTH_HMAC_SECRET`; sem eles o envio é no-op) com link
+   — `GATEWAY_URL`+`AUTH_HMAC_SECRET`; timeout por `GATEWAY_REQUEST_TIMEOUT_MS`;
+   sem URL/segredo o envio é no-op) com link
    `${COMMUNITY_URL}/redefinir-senha?token=...` — envio **best-effort** (falha só loga).
    `POST /auth/reset-password` troca a senha e **revoga TODAS as sessões**.
    `POST /auth/internal/password-tokens` (S2S; HMAC do funil no gateway +

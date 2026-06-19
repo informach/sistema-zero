@@ -1,3 +1,4 @@
+import { ValidationError } from '@sistemazero/core/errors'
 import type { Logger } from '@sistemazero/core/logging'
 import { sha256Hex } from '@sistemazero/core/security'
 import type { MessagingClient } from '../../domain/ports/messaging-client.port'
@@ -41,8 +42,11 @@ export class ForgotPasswordService {
         email: command.email,
         cooldownSeconds: this.opts.cooldownSeconds,
       })
-    } catch {
+    } catch (error) {
       // E-mail malformado etc. — silencia (mesma resposta de sucesso, anti-enumeração).
+      // Falha de infra (banco indisponível, erro inesperado no repositório) precisa
+      // subir para o error-handler; caso contrário o reset fica quebrado com 200 mudo.
+      if (!(error instanceof ValidationError)) throw error
       return
     }
     if (!issued) return

@@ -28,10 +28,23 @@ export interface CreateOtpCodeInput {
  */
 export interface OtpCodeRepository {
   create(input: CreateOtpCodeInput): Promise<void>
+  /**
+   * Emite um novo código de forma ATÔMICA: serializa por (usuário, finalidade),
+   * aplica cooldown, consome os pendentes e cria a nova linha. Retorna `false`
+   * quando o cooldown barra a emissão.
+   */
+  createReplacingActive(
+    input: CreateOtpCodeInput,
+    at: Date,
+    cooldownSeconds?: number,
+  ): Promise<boolean>
   /** O código ativo (não consumido, não expirado) do usuário p/ a finalidade. */
   findActive(userId: string, purpose: OtpPurpose, now: Date): Promise<OtpCodeRecord | null>
-  /** Marca o código como consumido (uso único). Idempotente. */
-  consume(id: string, at: Date): Promise<void>
+  /**
+   * Marca o código como consumido de forma ATÔMICA. Retorna `false` quando outra
+   * requisição já consumiu o mesmo código.
+   */
+  consume(id: string, at: Date): Promise<boolean>
   /** Consome os pendentes do usuário p/ a finalidade (ao emitir um novo). Idempotente. */
   consumeAllForUser(userId: string, purpose: OtpPurpose, at: Date): Promise<void>
   /** Incrementa o contador de tentativas e devolve o novo total. */

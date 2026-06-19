@@ -27,6 +27,51 @@ export class DrizzleOtpCodeRepository implements OtpCodeRepository {
     })
   }
 
+  async createReplacingActive(
+    input: CreateOtpCodeInput,
+    at: Date,
+    cooldownSeconds = 0,
+  ): Promise<boolean> {
+    return await this.db.transaction(async (tx) => {
+      await tx.execute(
+        sql`select pg_advisory_xact_lock(hashtextextended(${`otp:${input.userId}:${input.purpose}`}, 0))`,
+      )
+
+      if (cooldownSeconds > 0) {
+        const [last] = await tx
+          .select({ createdAt: otpCodes.createdAt })
+          .from(otpCodes)
+          .where(and(eq(otpCodes.userId, input.userId), eq(otpCodes.purpose, input.purpose)))
+          .orderBy(desc(otpCodes.createdAt))
+          .limit(1)
+        if (last && at.getTime() - last.createdAt.getTime() < cooldownSeconds * 1000) {
+          return false
+        }
+      }
+
+      await tx
+        .update(otpCodes)
+        .set({ consumedAt: at })
+        .where(
+          and(
+            eq(otpCodes.userId, input.userId),
+            eq(otpCodes.purpose, input.purpose),
+            isNull(otpCodes.consumedAt),
+          ),
+        )
+
+      await tx.insert(otpCodes).values({
+        id: input.id,
+        userId: input.userId,
+        purpose: input.purpose,
+        codeHash: input.codeHash,
+        expiresAt: input.expiresAt,
+        createdAt: at,
+      })
+      return true
+    })
+  }
+
   async findActive(userId: string, purpose: OtpPurpose, now: Date): Promise<OtpCodeRecord | null> {
     const [row] = await this.db
       .select()
@@ -44,11 +89,13 @@ export class DrizzleOtpCodeRepository implements OtpCodeRepository {
     return row ? toRecord(row) : null
   }
 
-  async consume(id: string, at: Date): Promise<void> {
-    await this.db
+  async consume(id: string, at: Date): Promise<boolean> {
+    const consumed = await this.db
       .update(otpCodes)
       .set({ consumedAt: at })
       .where(and(eq(otpCodes.id, id), isNull(otpCodes.consumedAt)))
+      .returning({ id: otpCodes.id })
+    return consumed.length === 1
   }
 
   async consumeAllForUser(userId: string, purpose: OtpPurpose, at: Date): Promise<void> {
@@ -68,7 +115,7 @@ export class DrizzleOtpCodeRepository implements OtpCodeRepository {
     const [row] = await this.db
       .update(otpCodes)
       .set({ attempts: sql`${otpCodes.attempts} + 1` })
-      .where(eq(otpCodes.id, id))
+      .where(and(eq(otpCodes.id, id), isNull(otpCodes.consumedAt)))
       .returning({ attempts: otpCodes.attempts })
     return row?.attempts ?? 0
   }

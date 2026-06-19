@@ -557,6 +557,29 @@ describe('Password reset + perfil self-service', () => {
     expect(reuse.status).toBe(401)
   })
 
+  test('reset-password concorrente com o mesmo token → só uma troca é aceita', async () => {
+    const { app, messaging } = buildApp()
+    await app.handle(post('/auth/register', REGISTER_BODY))
+    await app.handle(post('/auth/forgot-password', { email: 'maria@example.com' }))
+    const token = tokenFromEmail(messaging)
+
+    const responses = await Promise.all([
+      app.handle(post('/auth/reset-password', { token, newPassword: 'nova-senha-race-a-123' })),
+      app.handle(post('/auth/reset-password', { token, newPassword: 'nova-senha-race-b-123' })),
+    ])
+
+    expect(responses.map((res) => res.status).sort((a, b) => a - b)).toEqual([200, 401])
+
+    const loginStatuses = await Promise.all(
+      ['nova-senha-race-a-123', 'nova-senha-race-b-123'].map(async (password) => {
+        const res = await app.handle(post('/auth/login', { email: 'maria@example.com', password }))
+        return res.status
+      }),
+    )
+    expect(loginStatuses.filter((status) => status === 200)).toHaveLength(1)
+    expect(loginStatuses.filter((status) => status === 401)).toHaveLength(1)
+  })
+
   test('reset-password com token desconhecido → 401; senha curta → 400', async () => {
     const { app, messaging } = buildApp()
     await app.handle(post('/auth/register', REGISTER_BODY))
@@ -896,6 +919,19 @@ describe('Auth OTP (login passwordless + recuperação por código)', () => {
     ).toBe(401)
   })
 
+  test('verificação OTP concorrente com o mesmo código → só uma sessão é emitida', async () => {
+    const { app, messaging } = buildApp()
+    await app.handle(post('/auth/register', REGISTER_BODY))
+    const code = await requestCode(app, messaging, 'maria@example.com', 'sign_in')
+
+    const responses = await Promise.all([
+      app.handle(post('/auth/otp/verify', { email: 'maria@example.com', code })),
+      app.handle(post('/auth/otp/verify', { email: 'maria@example.com', code })),
+    ])
+
+    expect(responses.map((res) => res.status).sort((a, b) => a - b)).toEqual([200, 401])
+  })
+
   test('código errado → 401; trava após o teto de tentativas (código certo deixa de valer)', async () => {
     const { app, messaging } = buildApp()
     await app.handle(post('/auth/register', REGISTER_BODY))
@@ -946,6 +982,40 @@ describe('Auth OTP (login passwordless + recuperação por código)', () => {
     ).toBe(200)
     // A senha antiga não vale mais.
     expect((await app.handle(post('/auth/login', REGISTER_BODY))).status).toBe(401)
+  })
+
+  test('reset por OTP concorrente com o mesmo código → só uma senha vence', async () => {
+    const { app, messaging } = buildApp()
+    await app.handle(post('/auth/register', REGISTER_BODY))
+    const code = await requestCode(app, messaging, 'maria@example.com', 'password_reset')
+
+    const responses = await Promise.all([
+      app.handle(
+        post('/auth/password/reset-otp', {
+          email: 'maria@example.com',
+          code,
+          newPassword: 'nova-senha-otp-race-a-123',
+        }),
+      ),
+      app.handle(
+        post('/auth/password/reset-otp', {
+          email: 'maria@example.com',
+          code,
+          newPassword: 'nova-senha-otp-race-b-123',
+        }),
+      ),
+    ])
+
+    expect(responses.map((res) => res.status).sort((a, b) => a - b)).toEqual([200, 401])
+
+    const loginStatuses = await Promise.all(
+      ['nova-senha-otp-race-a-123', 'nova-senha-otp-race-b-123'].map(async (password) => {
+        const res = await app.handle(post('/auth/login', { email: 'maria@example.com', password }))
+        return res.status
+      }),
+    )
+    expect(loginStatuses.filter((status) => status === 200)).toHaveLength(1)
+    expect(loginStatuses.filter((status) => status === 401)).toHaveLength(1)
   })
 
   test('OTP de sign_in não serve p/ reset (finalidades isoladas)', async () => {
@@ -1207,6 +1277,19 @@ describe('Correções do full review (readyz / cooldown / 413)', () => {
     expect(messaging.sent.filter((s) => s.templateKey === 'otp')).toHaveLength(2)
   })
 
+  test('cooldown do OTP sob corrida: dois pedidos simultâneos emitem um único código', async () => {
+    const { app, messaging } = buildApp({ otpCooldownSeconds: 60 })
+    await app.handle(post('/auth/register', REGISTER_BODY))
+
+    const responses = await Promise.all([
+      app.handle(post('/auth/otp/request', { email: 'maria@example.com', purpose: 'sign_in' })),
+      app.handle(post('/auth/otp/request', { email: 'maria@example.com', purpose: 'sign_in' })),
+    ])
+
+    expect(responses.map((res) => res.status)).toEqual([200, 200])
+    expect(messaging.sent.filter((s) => s.templateKey === 'otp')).toHaveLength(1)
+  })
+
   test('cooldown do forgot-password: re-pedido na janela não re-envia nem invalida o token', async () => {
     const { app, messaging } = buildApp({ resetCooldownSeconds: 60 })
     await app.handle(post('/auth/register', REGISTER_BODY))
@@ -1227,6 +1310,19 @@ describe('Correções do full review (readyz / cooldown / 413)', () => {
       post('/auth/reset-password', { token, newPassword: 'senha-nova-pos-cooldown-1' }),
     )
     expect(reset.status).toBe(200)
+  })
+
+  test('cooldown do forgot-password sob corrida: dois pedidos simultâneos enviam um único link', async () => {
+    const { app, messaging } = buildApp({ resetCooldownSeconds: 60 })
+    await app.handle(post('/auth/register', REGISTER_BODY))
+
+    const responses = await Promise.all([
+      app.handle(post('/auth/forgot-password', { email: 'maria@example.com' })),
+      app.handle(post('/auth/forgot-password', { email: 'maria@example.com' })),
+    ])
+
+    expect(responses.map((res) => res.status)).toEqual([200, 200])
+    expect(messaging.sent.filter((s) => s.templateKey === 'password-reset')).toHaveLength(1)
   })
 
   test('corpo acima do limite em /refresh e /logout → 413', async () => {

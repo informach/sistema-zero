@@ -14,6 +14,18 @@ const optionalBool = (def: boolean) =>
     })
     .transform((v) => (v === undefined ? def : v.toLowerCase() === 'true' || v === '1'))
 
+function isLocalhostUrl(value: string | undefined): boolean {
+  if (!value) return false
+  const host = new URL(value).hostname
+  return (
+    host === 'localhost' ||
+    host === '127.0.0.1' ||
+    host === '::1' ||
+    host === '[::1]' ||
+    host === '0.0.0.0'
+  )
+}
+
 const EnvSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
@@ -96,6 +108,7 @@ const EnvSchema = z
     // Envio de e-mail via gateway → messaging (HMAC de borda, consumer `auth`).
     // Sem GATEWAY_URL + AUTH_HMAC_SECRET, o cliente vira no-op (envio desligado).
     GATEWAY_URL: z.string().url().optional(),
+    GATEWAY_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
     AUTH_CONSUMER_ID: z.string().min(1).default('auth'),
     AUTH_HMAC_SECRET: z.string().min(16).optional(),
   })
@@ -133,9 +146,16 @@ const EnvSchema = z
       'GATEWAY_URL e AUTH_HMAC_SECRET são obrigatórios em produção — sem eles o envio de e-mail (reset/OTP/convite) é um no-op silencioso',
     path: ['GATEWAY_URL'],
   })
+  // Em produção, o auth roda em outro container: localhost aponta para ele mesmo,
+  // não para o gateway. Isso deixaria reset/OTP/convite presos em erro/timeout.
+  .refine((e) => e.NODE_ENV !== 'production' || !isLocalhostUrl(e.GATEWAY_URL), {
+    message:
+      'GATEWAY_URL não pode apontar para localhost em produção (defina o host interno do gateway)',
+    path: ['GATEWAY_URL'],
+  })
   // Os links de e-mail apontam para o COMMUNITY_URL — o default localhost em
   // produção entregaria links quebrados (reset/convite inutilizáveis).
-  .refine((e) => e.NODE_ENV !== 'production' || !/localhost|127\.0\.0\.1/.test(e.COMMUNITY_URL), {
+  .refine((e) => e.NODE_ENV !== 'production' || !isLocalhostUrl(e.COMMUNITY_URL), {
     message:
       'COMMUNITY_URL é obrigatória em produção (o default localhost geraria links de e-mail quebrados)',
     path: ['COMMUNITY_URL'],
@@ -143,9 +163,7 @@ const EnvSchema = z
   // Mesma régua para a plataforma kids — mas só quando a env estiver setada.
   .refine(
     (e) =>
-      e.NODE_ENV !== 'production' ||
-      !e.KIDS_COMMUNITY_URL ||
-      !/localhost|127\.0\.0\.1/.test(e.KIDS_COMMUNITY_URL),
+      e.NODE_ENV !== 'production' || !e.KIDS_COMMUNITY_URL || !isLocalhostUrl(e.KIDS_COMMUNITY_URL),
     {
       message:
         'KIDS_COMMUNITY_URL em produção não pode apontar para localhost (links de e-mail quebrados)',
@@ -165,8 +183,7 @@ const EnvSchema = z
   .refine(
     (e) => {
       if (e.NODE_ENV !== 'production') return true
-      const host = new URL(e.MEMBERS_BASE_URL).hostname
-      return host !== 'localhost' && host !== '127.0.0.1' && host !== '::1'
+      return !isLocalhostUrl(e.MEMBERS_BASE_URL)
     },
     {
       message:

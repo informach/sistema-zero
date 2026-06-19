@@ -113,6 +113,7 @@ export async function createApplication(env: Env): Promise<Application> {
           gatewayUrl: env.GATEWAY_URL,
           consumerId: env.AUTH_CONSUMER_ID,
           hmacSecret: env.AUTH_HMAC_SECRET,
+          timeoutMs: env.GATEWAY_REQUEST_TIMEOUT_MS,
         })
       : createNullMessagingClient(logger)
 

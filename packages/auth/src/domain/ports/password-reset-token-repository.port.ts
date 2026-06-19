@@ -21,9 +21,22 @@ export interface CreatePasswordResetTokenInput {
  */
 export interface PasswordResetTokenRepository {
   create(input: CreatePasswordResetTokenInput): Promise<void>
+  /**
+   * Emite um novo token de forma ATÔMICA: serializa por usuário, aplica cooldown,
+   * consome os pendentes e cria a nova linha. Retorna `false` quando o cooldown
+   * barra a emissão.
+   */
+  createReplacingActive(
+    input: CreatePasswordResetTokenInput,
+    at: Date,
+    cooldownSeconds?: number,
+  ): Promise<boolean>
   findByHash(tokenHash: string): Promise<PasswordResetTokenRecord | null>
-  /** Marca o token como consumido (após a troca de senha). Idempotente. */
-  consume(id: string, at: Date): Promise<void>
+  /**
+   * Marca o token como consumido de forma ATÔMICA. Retorna `false` quando outra
+   * requisição já consumiu o mesmo token.
+   */
+  consume(id: string, at: Date): Promise<boolean>
   /** Consome TODOS os tokens vigentes do usuário (emissão de um novo). Idempotente. */
   consumeAllForUser(userId: string, at: Date): Promise<void>
   /**

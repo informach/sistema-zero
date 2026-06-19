@@ -44,24 +44,23 @@ export class RequestOtpService {
     if (!user?.isActive()) return
 
     const now = new Date()
-    // Cooldown por conta: pedido dentro da janela → no-op silencioso (mesma
-    // resposta 200; não consome o código vigente nem envia outro e-mail).
-    if (this.opts.cooldownSeconds > 0) {
-      const last = await this.otpCodes.lastIssuedAt(user.id, command.purpose)
-      if (last && now.getTime() - last.getTime() < this.opts.cooldownSeconds * 1000) return
-    }
-    await this.otpCodes.consumeAllForUser(user.id, command.purpose, now)
-
     const code = generateOtpCode()
     const recordId = randomUUID()
     const expiresAt = new Date(now.getTime() + this.opts.ttlMinutes * 60_000)
-    await this.otpCodes.create({
-      id: recordId,
-      userId: user.id,
-      purpose: command.purpose,
-      codeHash: sha256Hex(code),
-      expiresAt,
-    })
+    const issued = await this.otpCodes.createReplacingActive(
+      {
+        id: recordId,
+        userId: user.id,
+        purpose: command.purpose,
+        codeHash: sha256Hex(code),
+        expiresAt,
+      },
+      now,
+      this.opts.cooldownSeconds,
+    )
+    // Cooldown por conta: pedido dentro da janela → no-op silencioso (mesma
+    // resposta 200; não consome o código vigente nem envia outro e-mail).
+    if (!issued) return
 
     try {
       await this.messaging.sendEmail({
