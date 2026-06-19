@@ -54,13 +54,13 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
   return (
     new Elysia({ prefix: '/webhooks' })
       .post('/efi/pix', async ({ body, set, query, headers, request }) => {
-        await checkRateLimit()
         if (isOversizeBody(request)) throw new PayloadTooLargeError()
         if (!checkSecret(query, headers)) {
           deps.logger.warn('webhook.unauthorized')
           set.status = 401
           return { error: { code: 'UNAUTHORIZED', message: 'Token de webhook inválido' } }
         }
+        await checkRateLimit()
 
         const items = extractPixItems(body)
         if (items.length > 0) {
@@ -76,13 +76,13 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
       // a re-consulta na Efí é a âncora de confiança (como no Pix). Aceita o token
       // por JSON `{notification}`, form-urlencoded `notification=<t>` ou `?token=`.
       .post('/efi/cobrancas', async ({ body, set, query, headers, request }) => {
-        await checkRateLimit()
         if (isOversizeBody(request)) throw new PayloadTooLargeError()
         if (!checkSecret(query, headers)) {
           deps.logger.warn('webhook.unauthorized')
           set.status = 401
           return { error: { code: 'UNAUTHORIZED', message: 'Token de webhook inválido' } }
         }
+        await checkRateLimit()
 
         const token = extractNotificationToken(body, query)
         if (token) {

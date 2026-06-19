@@ -111,7 +111,7 @@ export class DrizzleWebhookInbox implements WebhookInbox {
 }
 
 function parseProcessingStartedAt(value: Record<string, unknown> | null): Date | null {
-  if (!value || typeof value['__processingStartedAt'] !== 'string') return null
-  const date = new Date(value['__processingStartedAt'])
+  if (!value || typeof value.__processingStartedAt !== 'string') return null
+  const date = new Date(value.__processingStartedAt)
   return Number.isNaN(date.getTime()) ? null : date
 }

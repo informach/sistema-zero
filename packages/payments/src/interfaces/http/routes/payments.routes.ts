@@ -4,7 +4,7 @@ import type { ProcessPaymentCommand } from '../../../application/process-payment
 import type { ProcessPaymentService } from '../../../application/process-payment/process-payment.service'
 import { ValidationError } from '../../../domain/shared/errors'
 import { sha256Hex } from '../../../infrastructure/security/hash'
-import type { InMemoryRateLimiter } from '../../../infrastructure/security/rate-limiter'
+import type { RateLimiter } from '../../../infrastructure/security/rate-limiter'
 import { type AuthDeps, authenticateConsumer } from '../auth'
 import { ProcessPaymentBody } from '../dtos'
 import { PayloadTooLargeError, TooManyRequestsError } from '../errors'
@@ -12,7 +12,7 @@ import { getRawBody, isOversizeBody } from '../raw-body'
 
 export interface PaymentsRoutesDeps {
   auth: AuthDeps
-  rateLimiter: InMemoryRateLimiter
+  rateLimiter: RateLimiter
   processPayment: ProcessPaymentService
   getPayment: GetPaymentService
 }
@@ -26,7 +26,7 @@ export function paymentsRoutes(deps: PaymentsRoutesDeps) {
     .derive(async ({ request, server, headers }) => {
       if (isOversizeBody(request)) throw new PayloadTooLargeError()
       const consumer = await authenticateConsumer(deps.auth, { request, server, headers })
-      const limit = deps.rateLimiter.check(consumer.id)
+      const limit = await deps.rateLimiter.check(consumer.id)
       if (!limit.allowed) throw new TooManyRequestsError(limit.retryAfterSeconds)
       return { consumer }
     })

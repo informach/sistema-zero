@@ -423,6 +423,38 @@ describe('HTTP server', () => {
     expect(cobrancas.status).toBe(429)
   })
 
+  test('webhook com token inválido não consome o rate limit global', async () => {
+    const secret = 'segredo-webhook-forte'
+    const { app } = buildApp({ webhookRateLimit: 1, webhookSecret: secret })
+
+    const invalid = await app.handle(
+      new Request('http://localhost/webhooks/efi/pix?token=errado', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ pix: [] }),
+      }),
+    )
+    expect(invalid.status).toBe(401)
+
+    const valid = await app.handle(
+      new Request(`http://localhost/webhooks/efi/pix?token=${secret}`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ pix: [] }),
+      }),
+    )
+    expect(valid.status).toBe(200)
+
+    const limited = await app.handle(
+      new Request(`http://localhost/webhooks/efi/pix?token=${secret}`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ pix: [] }),
+      }),
+    )
+    expect(limited.status).toBe(429)
+  })
+
   test('POST /payments sem autenticação → 401', async () => {
     const { app } = buildApp()
     const res = await app.handle(

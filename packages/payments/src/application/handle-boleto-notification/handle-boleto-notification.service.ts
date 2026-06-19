@@ -1,3 +1,4 @@
+import { TooManyRequestsError } from '@sistemazero/core/http'
 import type {
   PaymentGateway,
   ProviderNotificationEntry,
@@ -6,7 +7,6 @@ import type { PaymentRepository } from '../../domain/ports/payment-repository.po
 import type { WebhookInbox } from '../../domain/ports/webhook-inbox.port'
 import type { Logger } from '../../infrastructure/logging/logger'
 import type { HandleSubscriptionNotificationService } from '../handle-subscription-notification/handle-subscription-notification.service'
-import { TooManyRequestsError } from '@sistemazero/core/http'
 
 export interface HandleBoletoNotificationInput {
   /** Token que a Efí POSTa ao `notification_url` (resolvido na fonte). */

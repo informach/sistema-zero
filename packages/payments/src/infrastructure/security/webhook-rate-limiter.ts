@@ -1,8 +1,7 @@
 import { sql } from 'drizzle-orm'
 import type { Database } from '../persistence/drizzle/db'
 import { webhookEvents } from '../persistence/drizzle/schema'
-import type { RateLimitResult } from './rate-limiter'
-import type { RateLimiter } from './rate-limiter'
+import type { RateLimiter, RateLimitResult } from './rate-limiter'
 
 interface RateLimitWindowPayload {
   count?: number | string
@@ -43,7 +42,11 @@ export class WebhookRateLimiter implements RateLimiter {
         provider: this.provider,
         providerEventId: bucketId,
         eventType: 'webhook.rate-limit',
-        payload: { count: 1, lastAllowed: true, windowStart: new Date(windowStartMs).toISOString() },
+        payload: {
+          count: 1,
+          lastAllowed: true,
+          windowStart: new Date(windowStartMs).toISOString(),
+        },
         processedAt: now,
       })
       .onConflictDoUpdate({
@@ -80,14 +83,11 @@ export class WebhookRateLimiter implements RateLimiter {
       .returning({ payload: webhookEvents.payload })
 
     const payload = inserted[0]?.payload ?? {}
-    const count = parseWindowCount(payload as RateLimitWindowPayload)
     const allowed = parseWindowAllowed(payload as RateLimitWindowPayload, this.limit)
 
     return {
       allowed,
-      retryAfterSeconds: allowed
-        ? undefined
-        : Math.ceil((resetAt.getTime() - nowMs) / 1000),
+      retryAfterSeconds: allowed ? undefined : Math.ceil((resetAt.getTime() - nowMs) / 1000),
     }
   }
 }

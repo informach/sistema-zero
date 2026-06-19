@@ -77,8 +77,9 @@ export class ProcessPaymentService {
 
     const { reservationId } = reservation
     // Rastreia se já houve efeito colateral irreversível (cobrança no provedor ou
-    // persistência do agregado). Em caso afirmativo, tentamos recuperar o objeto gravado
-    // e concluir a idempotência; se não houver recuperação, liberamos a reserva.
+    // persistência do agregado). Em caso afirmativo, tentamos recuperar o objeto
+    // gravado e concluir a idempotência; sem recuperação, mantemos a reserva
+    // IN_FLIGHT até o TTL para bloquear retries imediatos que poderiam cobrar de novo.
     const sideEffects = { committed: false }
     try {
       const view = await this.process(command, sideEffects)
@@ -124,7 +125,6 @@ export class ProcessPaymentService {
           idempotencyKey: command.idempotencyKey,
           error: error instanceof Error ? error.message : String(error),
         })
-        await this.idempotency.release(command.consumerId, command.idempotencyKey, reservationId)
       } else {
         // Falha ANTES de qualquer efeito colateral (validação, método não suportado,
         // conflito): seguro liberar para permitir nova tentativa.

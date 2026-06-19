@@ -1,8 +1,8 @@
+import { TooManyRequestsError } from '@sistemazero/core/http'
 import type { PaymentGateway } from '../../domain/ports/payment-gateway.port'
 import type { PaymentRepository } from '../../domain/ports/payment-repository.port'
 import type { WebhookInbox } from '../../domain/ports/webhook-inbox.port'
 import type { Logger } from '../../infrastructure/logging/logger'
-import { TooManyRequestsError } from '@sistemazero/core/http'
 
 export interface PixWebhookItem {
   txid: string

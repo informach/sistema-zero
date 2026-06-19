@@ -63,7 +63,8 @@ export class CreateSubscriptionService {
     const { reservationId } = reservation
     // Efeito colateral irreversível: criar plano/assinatura na Efí é NÃO idempotente.
     // Em falha após o efeito, tentamos recuperar o objeto gravado e concluir a
-    // idempotência; se não houver recuperação, liberamos a reserva para novo retry.
+    // idempotência; sem recuperação, mantemos a reserva IN_FLIGHT até o TTL para
+    // bloquear retries imediatos que poderiam criar uma segunda assinatura.
     const sideEffects = { committed: false }
     try {
       const view = await this.process(command, sideEffects)
@@ -108,7 +109,6 @@ export class CreateSubscriptionService {
           idempotencyKey: command.idempotencyKey,
           error: error instanceof Error ? error.message : String(error),
         })
-        await this.idempotency.release(command.consumerId, command.idempotencyKey, reservationId)
       } else {
         await this.idempotency.release(command.consumerId, command.idempotencyKey, reservationId)
       }
