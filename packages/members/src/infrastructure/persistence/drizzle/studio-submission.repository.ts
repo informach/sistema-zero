@@ -1,4 +1,4 @@
-import { and, asc, count, eq, inArray } from 'drizzle-orm'
+import { and, asc, count, eq, inArray, sql } from 'drizzle-orm'
 import type { CourseAudience } from '../../../domain/course/course'
 import type { StudioCheckResult } from '../../../domain/course/studio-activity'
 import type {
@@ -14,7 +14,10 @@ import { courses, studioSubmissions } from './schema'
 export class DrizzleStudioSubmissionRepository implements StudioSubmissionRepository {
   constructor(private readonly db: Database) {}
 
-  async upsert(submission: StudioSubmissionRecord): Promise<void> {
+  async upsert(
+    submission: StudioSubmissionRecord,
+    options?: { preservePassedAt?: boolean },
+  ): Promise<void> {
     // Reenvio = último vence: atualiza projeto + data + correção, preservando a
     // linha (e o id). `passed_at` é STICKY — o service já calcula o valor a
     // gravar (existente ?? agora-se-passou), então o set abaixo só persiste.
@@ -25,20 +28,56 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
       checkedAt: submission.checkedAt ?? null,
       passedAt: submission.passedAt ?? null,
     }
-    await this.db
-      .insert(studioSubmissions)
-      .values(values)
-      .onConflictDoUpdate({
-        target: [studioSubmissions.userId, studioSubmissions.blockId],
-        set: {
-          project: values.project,
-          submittedAt: values.submittedAt,
-          score: values.score,
-          results: values.results,
-          checkedAt: values.checkedAt,
-          passedAt: values.passedAt,
-        },
-      })
+
+    if (!options?.preservePassedAt) {
+      await this.db
+        .insert(studioSubmissions)
+        .values(values)
+        .onConflictDoUpdate({
+          target: [studioSubmissions.userId, studioSubmissions.blockId],
+          set: {
+            project: values.project,
+            submittedAt: values.submittedAt,
+            score: values.score,
+            results: values.results,
+            checkedAt: values.checkedAt,
+            passedAt: values.passedAt,
+          },
+        })
+      return
+    }
+
+    await this.db.transaction(async (tx) => {
+      // serializa concorrência de submit por aluno+bloco; evita perda de `passedAt` sticky.
+      await tx.execute(
+        sql`select pg_advisory_xact_lock(hashtextextended(${`${submission.userId}:${submission.blockId}`}, 0))`,
+      )
+
+      const rows = await tx
+        .select({ passedAt: studioSubmissions.passedAt })
+        .from(studioSubmissions)
+        .where(
+          and(eq(studioSubmissions.userId, submission.userId), eq(studioSubmissions.blockId, submission.blockId)),
+        )
+        .limit(1)
+
+      const nextPassedAt = rows[0]?.passedAt ?? values.passedAt ?? null
+
+      await tx
+        .insert(studioSubmissions)
+        .values({ ...values, passedAt: nextPassedAt })
+        .onConflictDoUpdate({
+          target: [studioSubmissions.userId, studioSubmissions.blockId],
+          set: {
+            project: values.project,
+            submittedAt: values.submittedAt,
+            score: values.score,
+            results: values.results,
+            checkedAt: values.checkedAt,
+            passedAt: nextPassedAt,
+          },
+        })
+    })
   }
 
   async summarizeByBlockIds(

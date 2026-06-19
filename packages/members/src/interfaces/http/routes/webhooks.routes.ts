@@ -24,6 +24,13 @@ function resolveDeliveryId(headers: Record<string, string | undefined>): string 
   return id
 }
 
+function parsePaidAt(value: string | undefined): Date | null {
+  if (!value) return null
+  const d = new Date(value)
+  if (Number.isNaN(d.getTime())) throw new ValidationError('paidAt inválido (deve ser uma data ISO-8601 válida)')
+  return d
+}
+
 export interface WebhooksRoutesDeps {
   grant: GrantEntitlementService
   revoke: RevokeEntitlementService
@@ -73,9 +80,7 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
           return { ok: true, deduped: true }
         }
 
-        const parsedPaidAt = body.paidAt ? new Date(body.paidAt) : null
-        const grantedAt =
-          parsedPaidAt && !Number.isNaN(parsedPaidAt.getTime()) ? parsedPaidAt : deps.now()
+        const grantedAt = parsePaidAt(body.paidAt) ?? deps.now()
 
         const result = await deps.grant.execute({
           userId: body.userId,

@@ -185,8 +185,24 @@ const EXTEND_MAX_ATTEMPTS = 3
  * fim de mês — ex.: 31/jan + 1 mês cai em mar via overflow do `setUTCMonth`).
  */
 export function computeExpiry(grantedAt: Date, intervalMonths: number, graceDays: number): Date {
-  const d = new Date(grantedAt.getTime())
-  d.setUTCMonth(d.getUTCMonth() + intervalMonths)
+  const totalMonths = grantedAt.getUTCFullYear() * 12 + grantedAt.getUTCMonth() + intervalMonths
+  const targetMonth = totalMonths % 12
+  const targetYear = (totalMonths - targetMonth) / 12
+
+  const targetMonthDays = new Date(Date.UTC(targetYear, targetMonth + 1, 0)).getUTCDate()
+  const targetDay = Math.min(grantedAt.getUTCDate(), targetMonthDays)
+
+  const d = new Date(
+    Date.UTC(
+      targetYear,
+      targetMonth,
+      targetDay,
+      grantedAt.getUTCHours(),
+      grantedAt.getUTCMinutes(),
+      grantedAt.getUTCSeconds(),
+      grantedAt.getUTCMilliseconds(),
+    ),
+  )
   d.setUTCDate(d.getUTCDate() + graceDays)
   return d
 }

@@ -89,11 +89,9 @@ export class SubmitStudioProjectService {
 
     // Com atividade: gradeia (structure recalc no servidor + reportado do cliente).
     const grade = gradeStudioActivity(activity, project, clientResults)
-    // `passed_at` é STICKY: aprovou uma vez = destrava p/ sempre (não regride no
-    // reenvio pior). ⚠️ getOne+upsert não é atômico — corrida benigna numa
-    // plataforma formativa (sem o advisory lock do quiz).
-    const existing = await this.submissions.getOne(userId, blockId)
-    const passedAt = existing?.passedAt ?? (grade.passed ? submittedAt : null)
+    // `passed_at` é STICKY: aprovou uma vez = destrava para sempre (não regride no
+    // reenvio pior). O repositório mantém o valor existente com bloqueio advisory.
+    const passedAt = grade.passed ? submittedAt : null
 
     await this.submissions.upsert({
       // id só vale no INSERT novo; no conflito o onConflictDoUpdate preserva a linha.
@@ -108,6 +106,7 @@ export class SubmitStudioProjectService {
       results: grade.results,
       checkedAt: submittedAt,
       passedAt,
+    }, { preservePassedAt: true })
     })
 
     // Award SÓ quando passou agora (idempotente por bloco no ledger).

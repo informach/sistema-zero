@@ -51,7 +51,13 @@ export interface StudioSubmissionDetail {
 
 export interface StudioSubmissionRepository {
   /** Insere/atualiza a entrega do aluno no bloco (UNIQUE user+block). */
-  upsert(submission: StudioSubmissionRecord): Promise<void>
+  upsert(
+    submission: StudioSubmissionRecord,
+    options?: {
+      /** Mantém `passedAt` existente (STICKY) se já houver, sem sobrescrever por `null`. */
+      preservePassedAt?: boolean
+    },
+  ): Promise<void>
   /**
    * Estado das entregas do aluno nos `blockIds` — usado pelo gate da conclusão
    * (submitted = tem entrada; passed = `passed_at`). Lote por aula.
