@@ -19,9 +19,7 @@ import {
   UpdateUserBody,
   UserIdParams,
 } from '../dtos'
-import { PayloadTooLargeError } from '../errors'
 import { requireInternalToken } from '../internal-auth'
-import { isOversizeBody } from '../raw-body'
 
 export interface AdminRoutesDeps {
   listUsers: ListUsersService
@@ -92,8 +90,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
       )
       .post(
         '/users',
-        async ({ headers, body, request, set }) => {
-          if (isOversizeBody(request)) throw new PayloadTooLargeError()
+        async ({ headers, body, set }) => {
           const actor = requireActor(headers, WRITE_ROLES)
           const result = await deps.createUser.execute({
             actor: { id: actor.id, role: actor.role },
@@ -111,8 +108,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
       )
       .post(
         '/users/batch',
-        async ({ headers, body, request }) => {
-          if (isOversizeBody(request)) throw new PayloadTooLargeError()
+        async ({ headers, body }) => {
           requireActor(headers, READ_ROLES)
           return deps.batchGetUsers.execute(body.ids)
         },
@@ -130,8 +126,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
       )
       .patch(
         '/users/:id',
-        async ({ headers, params, body, request }) => {
-          if (isOversizeBody(request)) throw new PayloadTooLargeError()
+        async ({ headers, params, body }) => {
           const actor = requireActor(headers, WRITE_ROLES)
           const user = await deps.updateUser.execute({
             targetId: params.id,

@@ -25,7 +25,8 @@ import type { RegisterService } from '../../application/register/register.servic
 import type { TokenIssuer } from '../../domain/ports/token-issuer.port'
 import type { Env } from '../../infrastructure/config/env'
 import { buildErrorResponse } from './error-handler'
-import { markOversizeBody } from './raw-body'
+import { isOversizeBody, markOversizeBody } from './raw-body'
+import { PayloadTooLargeError } from './errors'
 import { adminRoutes } from './routes/admin.routes'
 import { authRoutes } from './routes/auth.routes'
 import { healthRoutes, type ReadinessProbe } from './routes/health.routes'
@@ -89,6 +90,9 @@ export function createServer(deps: HttpDeps) {
         return text.length > 0 ? JSON.parse(text) : {}
       }
       return undefined
+    })
+    .onTransform({ as: 'global' }, ({ request }) => {
+      if (isOversizeBody(request)) throw new PayloadTooLargeError()
     })
     .onError({ as: 'global' }, ({ code, error, set }) => {
       const { status, body } = buildErrorResponse({ code, error, logger: deps.logger })

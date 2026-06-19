@@ -2,8 +2,6 @@ import { Elysia } from 'elysia'
 import type { ExchangeImpersonationTokenService } from '../../../application/impersonation/exchange-impersonation-token.service'
 import { type AuthContext, resolveClientIp } from '../auth'
 import { ImpersonateExchangeBody } from '../dtos'
-import { PayloadTooLargeError } from '../errors'
-import { isOversizeBody } from '../raw-body'
 
 export interface ImpersonationRoutesDeps {
   trustProxy: boolean
@@ -24,7 +22,6 @@ export function impersonationRoutes(deps: ImpersonationRoutesDeps) {
   return new Elysia({ prefix: '/auth/impersonate' }).post(
     '/exchange',
     async ({ body, request, server, headers }) => {
-      if (isOversizeBody(request)) throw new PayloadTooLargeError()
       return deps.exchange.execute({
         token: body.token,
         userAgent: headers['user-agent'] ?? null,

@@ -14,9 +14,7 @@ import {
   ProfileIdParams,
   UpdateProfileBody,
 } from '../dtos'
-import { PayloadTooLargeError } from '../errors'
 import { requireInternalToken } from '../internal-auth'
-import { isOversizeBody } from '../raw-body'
 
 export interface ProfilesRoutesDeps {
   listProfiles: ListProfilesService
@@ -101,8 +99,7 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
       .get('/profiles', ({ headers }) => deps.listProfiles.execute(accountContext(headers)))
       .post(
         '/profiles',
-        async ({ headers, body, request, set }) => {
-          if (isOversizeBody(request)) throw new PayloadTooLargeError()
+        async ({ headers, body, set }) => {
           const actor = requireAccountSession(headers)
           const profile = await deps.createProfile.execute({
             accountUserId: actor.id,
@@ -121,8 +118,7 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
       )
       .patch(
         '/profiles/:id',
-        async ({ headers, params, body, request }) => {
-          if (isOversizeBody(request)) throw new PayloadTooLargeError()
+        async ({ headers, params, body }) => {
           // A criança edita o PRÓPRIO perfil (sessão de perfil); a conta edita qualquer um.
           const accountUserId = ownProfileEditContext(headers, params.id)
           // Data de nascimento é EDITÁVEL SÓ PELOS PAIS (sessão da conta). Numa sessão
@@ -173,7 +169,6 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
       .post(
         '/profile-session/exit',
         async ({ headers, body, request, server }) => {
-          if (isOversizeBody(request)) throw new PayloadTooLargeError()
           ensureOrigin(headers)
           const accountUserId = headers['x-auth-account-id']?.trim()
           if (!accountUserId) throw new ValidationError('Não está em uma sessão de perfil')

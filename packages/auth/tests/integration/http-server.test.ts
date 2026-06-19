@@ -1246,6 +1246,24 @@ describe('Correções do full review (readyz / cooldown / 413)', () => {
     expect((await app.handle(oversize('/auth/refresh'))).status).toBe(413)
     expect((await app.handle(oversize('/auth/logout'))).status).toBe(413)
   })
+
+  test('corpo acima do limite sem content-length → 413 (fallback no onParse/onTransform)', async () => {
+    const { app } = buildApp()
+    const body = JSON.stringify({
+      refreshToken: 'x',
+      junk: 'A'.repeat(20_000),
+    })
+
+    const res = await app.handle(
+      new Request('http://localhost/auth/refresh', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body,
+      }),
+    )
+
+    expect(res.status).toBe(413)
+  })
 })
 
 describe('Impersonação (rotas /auth/admin/users/:id/impersonate + /auth/impersonate/exchange)', () => {
