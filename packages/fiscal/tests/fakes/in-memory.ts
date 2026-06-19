@@ -438,6 +438,9 @@ export class InMemoryProcessedWebhookStore implements ProcessedWebhookStore {
   async isProcessed(deliveryId: string): Promise<boolean> {
     return this.processed.has(deliveryId)
   }
+  async withDeliveryLock<T>(_: string, fn: () => Promise<T>): Promise<T> {
+    return fn()
+  }
   async markProcessed(
     deliveryId: string,
     meta: { paymentId?: string; eventName?: string },

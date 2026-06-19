@@ -223,6 +223,7 @@ export function createApplication(env: Env): Application {
       }
 
       // Retenção do dedupe (advisory lock — 1 réplica por ciclo) + saúde do cert.
+      checkCertHealth()
       retentionTimer = setInterval(() => {
         checkCertHealth()
         void withAdvisoryLock(connection.db, FISCAL_RETENTION_LOCK_KEY, async () => {

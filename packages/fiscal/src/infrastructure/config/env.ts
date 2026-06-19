@@ -119,6 +119,9 @@ const EnvSchema = z
   .refine((env) => env.NODE_ENV !== 'production' || Boolean(env.APP_ENV), {
     message: 'APP_ENV (staging|production) é obrigatório quando NODE_ENV=production',
   })
+  .refine((env) => env.NODE_ENV !== 'production' || env.REQUIRE_ADMIN, {
+    message: 'REQUIRE_ADMIN deve estar habilitado em produção',
+  })
   .refine((env) => env.APP_ENV !== 'production' || env.NFSE_AMBIENTE === 'producao', {
     message: 'APP_ENV=production exige NFSE_AMBIENTE=producao (senão nenhuma nota real é emitida)',
   })
