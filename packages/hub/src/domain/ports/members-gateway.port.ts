@@ -37,7 +37,11 @@ export interface ShowcaseEligibilityResult {
  * HTTP em `infrastructure/gateways/members-http.gateway.ts`.
  */
 export interface MembersGateway {
-  checkAccess(userId: string, courseRefs: string[]): Promise<CourseAccessResult>
+  checkAccess(
+    userId: string,
+    courseRefs: string[],
+    communityRefs?: string[],
+  ): Promise<CourseAccessResult>
   /** `GET /members/internal/showcase-eligibility`. Erro/timeout → lança (fail-closed). */
   getShowcaseEligibility(args: ShowcaseEligibilityArgs): Promise<ShowcaseEligibilityResult>
 }

@@ -5,7 +5,13 @@ import type {
   ChannelFields,
   SpaceFields,
 } from '../../src/domain/ports/community-admin-repository.port'
-import { adminHeaders, buildApp, jsonRequest, studentHeaders } from '../helpers'
+import {
+  adminHeaders,
+  buildApp,
+  jsonRequest,
+  studentHeaders,
+  TEST_INTERNAL_API_TOKEN,
+} from '../helpers'
 
 const PUBLIC: AccessConfig = { visibility: 'public', courses: [], roles: [] }
 
@@ -109,6 +115,7 @@ describe('endurecimento (achados do full review)', () => {
           'content-type': 'application/json',
           'x-auth-user-id': randomUUID(),
           'x-auth-user-role': 'admin',
+          'x-internal-token': TEST_INTERNAL_API_TOKEN,
           // sem x-auth-user-status
         },
       }),

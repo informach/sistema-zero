@@ -37,11 +37,15 @@ export function createMembersHttpGateway(opts: MembersHttpGatewayOptions): Membe
   if (opts.internalToken) headers['x-internal-token'] = opts.internalToken
 
   return {
-    async checkAccess(userId: string, courseRefs: string[]): Promise<CourseAccessResult> {
+    async checkAccess(
+      userId: string,
+      courseRefs: string[],
+      communityRefs: string[] = [],
+    ): Promise<CourseAccessResult> {
       const res = await doFetch(`${base}/members/internal/access-check`, {
         method: 'POST',
         headers,
-        body: JSON.stringify({ userId, courseRefs }),
+        body: JSON.stringify({ userId, courseRefs, communityRefs }),
         signal: AbortSignal.timeout(timeoutMs),
       })
       if (!res.ok) {

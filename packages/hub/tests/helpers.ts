@@ -30,6 +30,7 @@ import {
 
 /** Segredo HMAC dos webhooks nos testes (o gateway re-assina como consumer `gateway`). */
 export const TEST_WEBHOOK_SECRET = 'test-gateway-hmac-secret-0001'
+export const TEST_INTERNAL_API_TOKEN = 'test-hub-internal-token-0001'
 
 /** Limites de anexo dos testes (pequenos p/ exercitar os erros de tamanho). */
 const TEST_ATTACHMENT_LIMITS: AttachmentLimits = {
@@ -65,6 +66,7 @@ export function buildApp(
   threadRepo.attachments = attachmentRepo
   const processedWebhookRepo = new InMemoryProcessedWebhookRepository()
   const members = new FakeMembersGateway()
+  const internalToken = opts.internalToken ?? TEST_INTERNAL_API_TOKEN
   const cache = new MicroCache<{
     granted: Set<string>
     hasMaster: boolean
@@ -82,7 +84,7 @@ export function buildApp(
     readiness: opts.readiness ?? (async () => ({ ready: true, checks: { db: 'ok' } })),
     spaces: {
       read: new ReadCommunityService(repo, access, readStateRepo, threadRepo),
-      internalToken: opts.internalToken,
+      internalToken,
     },
     threads: {
       threads: new ThreadService(
@@ -96,7 +98,7 @@ export function buildApp(
         clock,
         () => randomUUID(),
       ),
-      internalToken: opts.internalToken,
+      internalToken,
     },
     attachments: {
       attachments: new AttachmentService(
@@ -108,16 +110,16 @@ export function buildApp(
         clock,
         () => randomUUID(),
       ),
-      internalToken: opts.internalToken,
+      internalToken,
     },
     reactions: {
       reactions: new ReactionService(repo, access, threadRepo, reactionRepo, moderationRepo, clock),
       readState: new ReadStateService(repo, access, readStateRepo, clock),
-      internalToken: opts.internalToken,
+      internalToken,
     },
     report: {
       report: new ReportService(repo, access, threadRepo, moderationRepo, clock),
-      internalToken: opts.internalToken,
+      internalToken,
     },
     showcase: {
       showcase: new ShowcaseService(
@@ -128,17 +130,17 @@ export function buildApp(
         () => randomUUID(),
         new Set(opts.showcaseWallSlugs ?? []),
       ),
-      internalToken: opts.internalToken,
+      internalToken,
     },
     admin: {
       requireAdminEnabled: opts.requireAdmin ?? false,
-      internalToken: opts.internalToken,
+      internalToken,
       spaces: new SpaceAdminService(repo),
       channels: new ChannelAdminService(repo),
     },
     moderation: {
       requireAdminEnabled: opts.requireAdmin ?? false,
-      internalToken: opts.internalToken,
+      internalToken,
       moderation: new ModerationService(threadRepo, moderationRepo, clock),
     },
     webhooks: {
@@ -170,6 +172,7 @@ export function adminHeaders(extra: Record<string, string> = {}): Record<string,
     'x-auth-user-id': '11111111-1111-1111-1111-111111111111',
     'x-auth-user-role': 'admin',
     'x-auth-user-status': 'active',
+    'x-internal-token': TEST_INTERNAL_API_TOKEN,
     ...extra,
   }
 }
@@ -184,6 +187,7 @@ export function studentHeaders(
     'x-auth-user-id': userId,
     'x-auth-user-role': 'customer',
     'x-auth-user-status': 'active',
+    'x-internal-token': TEST_INTERNAL_API_TOKEN,
     ...extra,
   }
 }

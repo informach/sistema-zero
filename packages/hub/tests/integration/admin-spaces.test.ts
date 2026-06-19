@@ -128,7 +128,10 @@ describe('admin de spaces/channels', () => {
   test('guard de admin: token interno exigido quando configurado', async () => {
     const { app } = buildApp({ internalToken: 'tok-interno-16-chars!!' })
     const res = await app.handle(
-      jsonRequest('POST', '/hub/admin/spaces', { headers: adminHeaders(), body: validSpace() }),
+      jsonRequest('POST', '/hub/admin/spaces', {
+        headers: adminHeaders({ 'x-internal-token': '' }),
+        body: validSpace(),
+      }),
     )
     expect(res.status).toBe(401) // sem x-internal-token
   })

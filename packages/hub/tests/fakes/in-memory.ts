@@ -810,7 +810,11 @@ export class FakeMembersGateway implements MembersGateway {
   }
   eligibilityCalls: ShowcaseEligibilityArgs[] = []
 
-  async checkAccess(userId: string, courseRefs: string[]): Promise<CourseAccessResult> {
+  async checkAccess(
+    userId: string,
+    courseRefs: string[],
+    _communityRefs: string[] = [],
+  ): Promise<CourseAccessResult> {
     this.calls++
     const owned = this.grantsByUser.get(userId) ?? new Set<string>()
     return {

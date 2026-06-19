@@ -11,6 +11,12 @@ describe('members-http.gateway', () => {
     const fetchImpl = (async (url: string, init?: RequestInit) => {
       expect(String(url)).toContain('/members/internal/access-check')
       expect(init?.method).toBe('POST')
+      const body = JSON.parse(String(init?.body))
+      expect(body).toEqual({
+        userId: 'user-1',
+        courseRefs: ['curso-1', 'curso-2'],
+        communityRefs: ['comunidade-1'],
+      })
       return new Response(JSON.stringify({ grants: ['curso-1'], hasMaster: true }), {
         status: 200,
         headers: { 'content-type': 'application/json' },
@@ -18,7 +24,7 @@ describe('members-http.gateway', () => {
     }) as unknown as typeof fetch
 
     const gw = createMembersHttpGateway({ baseUrl: 'http://members:3004', fetchImpl })
-    const res = await gw.checkAccess('user-1', ['curso-1', 'curso-2'])
+    const res = await gw.checkAccess('user-1', ['curso-1', 'curso-2'], ['comunidade-1'])
     expect(res.granted).toEqual(['curso-1'])
     expect(res.hasMaster).toBe(true)
   })

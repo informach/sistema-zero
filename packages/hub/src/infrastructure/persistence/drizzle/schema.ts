@@ -20,7 +20,12 @@ export const hub = pgSchema('hub')
 // ── Enums ────────────────────────────────────────────────────────────────────
 export const audienceEnum = hub.enum('audience', ['adult', 'kids'])
 export const spaceStatusEnum = hub.enum('space_status', ['active', 'archived'])
-export const visibilityEnum = hub.enum('visibility', ['public', 'course_gated', 'role_gated'])
+export const visibilityEnum = hub.enum('visibility', [
+  'public',
+  'course_gated',
+  'community_gated',
+  'role_gated',
+])
 export const postingPolicyEnum = hub.enum('posting_policy', ['members', 'staff_only'])
 // Conteúdo (tópico/comentário): `pending` = criado por não-staff em recurso que
 // exige aprovação (some p/ os colegas até um staff aprovar); `rejected` = recusado.

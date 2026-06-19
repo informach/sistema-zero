@@ -122,13 +122,15 @@ function safeEqual(a: string, b: string): boolean {
 /**
  * Defesa em profundidade: confirma que a chamada veio do gateway. O gateway injeta
  * `x-internal-token` (header-inject, sobrescrevendo qualquer valor do cliente); o
- * hub o exige nas rotas do aluno e admin. Sem `expected` (dev/local sem gateway) → no-op.
+ * hub o exige nas rotas do aluno e admin.
  */
 export function assertInternalCaller(
   provided: string | undefined,
   expected: string | undefined,
 ): void {
-  if (!expected) return
+  if (!expected) {
+    throw new UnauthorizedError('Chamada não autorizada (token interno ausente/inválido)')
+  }
   if (!provided || !safeEqual(provided, expected)) {
     throw new UnauthorizedError('Chamada não autorizada (token interno ausente/inválido)')
   }

@@ -202,7 +202,7 @@ describe('vitrine (Mural dos Criadores)', () => {
   test('sem x-internal-token → 401 (chamada interna)', async () => {
     const res = await ctx.app.handle(
       jsonRequest('POST', '/hub/internal/showcase-thread', {
-        headers: studentHeaders(randomUUID()),
+        headers: studentHeaders(randomUUID(), { 'x-internal-token': '' }),
         body: showcaseBody(),
       }),
     )

@@ -29,6 +29,11 @@ interface CourseAccess {
   communities: Set<string>
 }
 
+type AccessRefs = {
+  courseRefs: string[]
+  communityRefs: string[]
+}
+
 /** Acesso "vazio" (nenhum espaço gated pra resolver). */
 const NO_COURSE_ACCESS: CourseAccess = {
   granted: new Set<string>(),
@@ -49,6 +54,22 @@ export class AccessResolutionService {
     private readonly cache: MicroCache<CourseAccess>,
   ) {}
 
+  private collectAccessRefs(
+    items: Array<Pick<AccessConfig, 'visibility' | 'courses' | 'communities'>>,
+  ): AccessRefs {
+    const courseRefs = new Set<string>()
+    const communityRefs = new Set<string>()
+    for (const item of items) {
+      if (item.visibility === 'course_gated') {
+        for (const course of item.courses) courseRefs.add(course)
+      }
+      if (item.visibility === 'community_gated') {
+        for (const community of item.communities ?? []) communityRefs.add(community)
+      }
+    }
+    return { courseRefs: [...courseRefs], communityRefs: [...communityRefs] }
+  }
+
   /**
    * Anota cada servidor com `accessible` numa só ida ao members (batch dos
    * courseRefs) — SEM filtrar. A listagem decide se mostra um inacessível como
@@ -59,22 +80,16 @@ export class AccessResolutionService {
     spaces: Space[],
   ): Promise<{ space: Space; accessible: boolean }[]> {
     if (actor.privileged) return spaces.map((space) => ({ space, accessible: true }))
-    const courseRefs = [
-      ...new Set(
-        spaces
-          .filter((s) => s.accessConfig.visibility === 'course_gated')
-          .flatMap((s) => s.accessConfig.courses),
-      ),
-    ]
+    const { courseRefs, communityRefs } = this.collectAccessRefs(spaces.map((s) => s.accessConfig))
     // Espaços community_gated também precisam do access-check (ele devolve as
-    // `communities` do ator independentemente dos courseRefs pedidos).
+    // `communities` do ator; `courseRefs` pode ficar vazio nesse caso).
     const needsAccess = spaces.some(
       (s) =>
         s.accessConfig.visibility === 'course_gated' ||
         s.accessConfig.visibility === 'community_gated',
     )
     const access = needsAccess
-      ? await this.resolveCourseAccess(actor.accountId, courseRefs)
+      ? await this.resolveCourseAccess(actor.accountId, courseRefs, communityRefs)
       : NO_COURSE_ACCESS
     return spaces.map((space) => ({
       space,
@@ -104,15 +119,19 @@ export class AccessResolutionService {
   /** Filtra os canais de um servidor visível (o space já foi liberado pelo chamador). */
   async filterVisibleChannels(actor: Actor, space: Space, channels: Channel[]): Promise<Channel[]> {
     if (actor.privileged) return channels
-    const gated = channels.filter((c) => c.accessConfig?.visibility === 'course_gated')
-    const courseRefs = [...new Set(gated.flatMap((c) => c.accessConfig?.courses ?? []))]
-    const needsAccess = channels.some(
+    const gated = channels.filter(
       (c) =>
         c.accessConfig?.visibility === 'course_gated' ||
         c.accessConfig?.visibility === 'community_gated',
     )
+    const needsAccess = gated.length > 0
+    const { courseRefs, communityRefs } = this.collectAccessRefs(
+      gated
+        .map((c) => c.accessConfig)
+        .filter((c): c is AccessConfig => c !== null && c !== undefined),
+    )
     const access = needsAccess
-      ? await this.resolveCourseAccess(actor.accountId, courseRefs)
+      ? await this.resolveCourseAccess(actor.accountId, courseRefs, communityRefs)
       : NO_COURSE_ACCESS
     return channels.filter(
       (c) => !c.accessConfig || this.evaluate(c.accessConfig, actor, space.audience, access),
@@ -127,8 +146,12 @@ export class AccessResolutionService {
   ): Promise<boolean> {
     if (access.visibility === 'course_gated' || access.visibility === 'community_gated') {
       // Acesso pela CONTA (sessão de perfil → x-auth-account-id); autoria pelo userId.
-      // community_gated tem `courses` vazio — o access-check devolve as `communities`.
-      const ca = await this.resolveCourseAccess(actor.accountId, access.courses)
+      // community_gated usa `access.communities` para entitlement `community`.
+      const ca = await this.resolveCourseAccess(
+        actor.accountId,
+        access.visibility === 'course_gated' ? access.courses : [],
+        access.visibility === 'community_gated' ? access.communities ?? [] : [],
+      )
       return this.evaluate(access, actor, audience, ca)
     }
     return this.evaluate(access, actor, audience, NO_COURSE_ACCESS)
@@ -160,11 +183,17 @@ export class AccessResolutionService {
     }
   }
 
-  private async resolveCourseAccess(userId: string, courseRefs: string[]): Promise<CourseAccess> {
-    const key = `${userId}|${[...courseRefs].sort().join(',')}`
+  private async resolveCourseAccess(
+    userId: string,
+    courseRefs: string[],
+    communityRefs: string[],
+  ): Promise<CourseAccess> {
+    const orderedCourses = [...new Set(courseRefs)].sort()
+    const orderedCommunities = [...new Set(communityRefs)].sort()
+    const key = `${userId}|c=${orderedCourses.join(',')}|m=${orderedCommunities.join(',')}`
     const cached = this.cache.get(key)
     if (cached) return cached
-    const res = await this.members.checkAccess(userId, courseRefs)
+    const res = await this.members.checkAccess(userId, orderedCourses, orderedCommunities)
     const value: CourseAccess = {
       granted: new Set(res.granted),
       hasMaster: res.hasMaster,
