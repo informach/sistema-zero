@@ -3,26 +3,34 @@ import { adminHeaders, buildApp, get, postJson } from '../helpers'
 
 type App = ReturnType<typeof buildApp>['app']
 
-async function seedEmailTemplate(app: App): Promise<void> {
+async function seedEmailTemplate(app: App, headers: Record<string, string> = {}): Promise<void> {
   await app.handle(
-    postJson('/messaging/admin/templates', {
-      key: 'welcome',
-      channel: 'email',
-      name: 'Boas-vindas',
-      subject: 'Bem-vindo, {{nome}}',
-      body: '<p>Olá {{nome}}, sua senha: {{senha}}</p>',
-      variables: ['nome', 'senha'],
-    }),
+    postJson(
+      '/messaging/admin/templates',
+      {
+        key: 'welcome',
+        channel: 'email',
+        name: 'Boas-vindas',
+        subject: 'Bem-vindo, {{nome}}',
+        body: '<p>Olá {{nome}}, sua senha: {{senha}}</p>',
+        variables: ['nome', 'senha'],
+      },
+      headers,
+    ),
   )
 }
 
-async function seedDefaultSender(app: App): Promise<void> {
+async function seedDefaultSender(app: App, headers: Record<string, string> = {}): Promise<void> {
   await app.handle(
-    postJson('/messaging/admin/senders', {
-      fromEmail: 'no-reply@sistemazero.com',
-      fromName: 'Sistema Zero',
-      isDefault: true,
-    }),
+    postJson(
+      '/messaging/admin/senders',
+      {
+        fromEmail: 'no-reply@sistemazero.com',
+        fromName: 'Sistema Zero',
+        isDefault: true,
+      },
+      headers,
+    ),
   )
 }
 
@@ -78,6 +86,19 @@ describe('POST /messaging/send (e-mail)', () => {
       }),
     )
     expect(res.status).toBe(404)
+  })
+
+  it('400 quando senderId é malformado (não chega ao cast UUID do banco)', async () => {
+    const res = await ctx.app.handle(
+      postJson('/messaging/send', {
+        channel: 'email',
+        templateKey: 'welcome',
+        recipient: { name: 'A', email: 'a@b.com' },
+        variables: { nome: 'A', senha: 'abc' },
+        senderId: 'nao-e-uuid',
+      }),
+    )
+    expect(res.status).toBe(400)
   })
 
   it('400 quando falta variável obrigatória', async () => {
@@ -249,6 +270,48 @@ describe('GET /messaging/messages/:id', () => {
     const malformed = await ctx.app.handle(get('/messaging/messages/nope'))
     expect(malformed.status).toBe(400)
   })
+
+  it('escopa a consulta pelo consumer HMAC autenticado', async () => {
+    const ctx = buildApp({ internalToken: 'tok-interno-16' })
+    const funnelHeaders = { 'x-internal-token': 'tok-interno-16', 'x-consumer-id': 'funnel' }
+    await seedEmailTemplate(ctx.app, funnelHeaders)
+    await seedDefaultSender(ctx.app, funnelHeaders)
+    const created = (await (
+      await ctx.app.handle(
+        postJson(
+          '/messaging/send',
+          {
+            channel: 'email',
+            templateKey: 'welcome',
+            recipient: { name: 'Helena', email: 'helena@example.com' },
+            variables: { nome: 'Helena', senha: 'abc' },
+          },
+          funnelHeaders,
+        ),
+      )
+    ).json()) as { id: string }
+
+    expect(
+      (await ctx.app.handle(get(`/messaging/messages/${created.id}`, funnelHeaders))).status,
+    ).toBe(200)
+    expect(
+      (
+        await ctx.app.handle(
+          get(`/messaging/messages/${created.id}`, {
+            'x-internal-token': 'tok-interno-16',
+            'x-consumer-id': 'auth',
+          }),
+        )
+      ).status,
+    ).toBe(404)
+    expect(
+      (
+        await ctx.app.handle(
+          get(`/messaging/messages/${created.id}`, { 'x-internal-token': 'tok-interno-16' }),
+        )
+      ).status,
+    ).toBe(401)
+  })
 })
 
 describe('WhatsApp send', () => {
@@ -329,6 +392,20 @@ describe('Auth', () => {
       ),
     )
     expect(write.status).toBe(403)
+  })
+})
+
+describe('Admin WhatsApp instances', () => {
+  it('duplicidade de instanceName retorna 409', async () => {
+    const ctx = buildApp()
+    const payload = { instanceName: 'vendas', phoneNumber: '5511999999999' }
+
+    expect(
+      (await ctx.app.handle(postJson('/messaging/admin/whatsapp-instances', payload))).status,
+    ).toBe(200)
+    expect(
+      (await ctx.app.handle(postJson('/messaging/admin/whatsapp-instances', payload))).status,
+    ).toBe(409)
   })
 })
 

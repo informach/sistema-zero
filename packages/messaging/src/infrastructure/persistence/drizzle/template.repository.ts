@@ -5,10 +5,10 @@ import type {
 } from '../../../domain/ports/template-repository.port'
 import type { Channel } from '../../../domain/shared/channel'
 import { Template, type TemplateProps } from '../../../domain/template/template.aggregate'
+import { TemplateAlreadyExistsError } from '../../../domain/template/template.errors'
 import { ConcurrencyConflictError } from './concurrency.error'
 import type { Database } from './db'
 import { messageTemplates } from './schema'
-import { TemplateAlreadyExistsError } from '../../../domain/template/template.errors'
 
 /**
  * 23505 (unique_violation) pode vir encapsulado em vários níveis (ex.: drizzle)

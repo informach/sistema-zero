@@ -165,7 +165,8 @@ entrada, marca DEPOIS de aplicar. `connection.update` NÃO sobrescreve `PAUSED`/
 admin prevalece sobre reconexão da Evolution).
 
 **Fail-closed em produção (refines no `env.ts`):** `MESSAGING_INTERNAL_TOKEN`,
-`MESSAGING_WEBHOOK_TOKEN`, `METRICS_TOKEN` (≥16) e `REQUIRE_ADMIN=true` são OBRIGATÓRIOS;
+`MESSAGING_WEBHOOK_TOKEN`, `METRICS_TOKEN` (todos ≥16) e `REQUIRE_ADMIN=true` são OBRIGATÓRIOS;
+`ATTACHMENT_FETCH_ALLOWED_HOSTS` precisa ter pelo menos um hostname permitido (anti-SSRF);
 `SENDGRID_WEBHOOK_PUBLIC_KEY` obrigatória quando `SENDGRID_API_KEY` está setada;
 `EVOLUTION_URL`⟺`EVOLUTION_API_KEY` andam em par (qualquer ambiente).
 

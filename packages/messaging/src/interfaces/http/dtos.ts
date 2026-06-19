@@ -23,7 +23,7 @@ export const SendBody = t.Object({
   }),
   variables: t.Optional(t.Record(t.String(), t.String())),
   attachments: t.Optional(t.Array(SendAttachment, { maxItems: 3 })),
-  senderId: t.Optional(t.String({ maxLength: 64 })),
+  senderId: t.Optional(t.String({ format: 'uuid' })),
   scheduledAt: t.Optional(t.String({ format: 'date-time' })),
   priority: t.Optional(t.Integer({ minimum: 0, maximum: 100 })),
 })

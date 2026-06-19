@@ -1,11 +1,13 @@
-import { WhatsAppInstanceNotFoundError } from '../../domain/lane/lane.errors'
+import {
+  WhatsAppInstanceAlreadyExistsError,
+  WhatsAppInstanceNotFoundError,
+} from '../../domain/lane/lane.errors'
 import {
   type InstanceStatus,
   WhatsAppInstance,
 } from '../../domain/lane/whatsapp-instance.aggregate'
 import type { Clock } from '../../domain/ports/clock.port'
 import type { WhatsAppInstanceRepository } from '../../domain/ports/whatsapp-instance-repository.port'
-import { ValidationError } from '../../domain/shared/errors'
 import { type InstanceView, toInstanceView } from '../mappers/instance-view'
 
 export interface CreateInstanceInput {
@@ -32,7 +34,8 @@ export class CreateInstanceService {
 
   async execute(input: CreateInstanceInput): Promise<InstanceView> {
     const existing = await this.instances.findByInstanceName(input.instanceName)
-    if (existing) throw new ValidationError(`Instância ${input.instanceName} já existe`)
+    if (existing)
+      throw new WhatsAppInstanceAlreadyExistsError(`Instância ${input.instanceName} já existe`)
     const instance = WhatsAppInstance.create({ id: this.idGen(), ...input, now: this.clock.now() })
     await this.instances.create(instance)
     return toInstanceView(instance)
