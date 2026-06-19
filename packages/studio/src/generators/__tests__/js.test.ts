@@ -518,14 +518,14 @@ describe('generateJS', () => {
     )
   })
 
-  it('emite g2d:moveByKeys e drawSprite', () => {
+  it('emite g2d:topDown e drawSprite', () => {
     const code = generateJS({
       statements: [
-        { type: 'g2d:moveByKeys', spriteVar: 'jogador', speed: 4 },
+        { type: 'g2d:topDown', spriteVar: 'jogador', speed: 4 },
         { type: 'g2d:drawSprite', spriteVar: 'jogador', ctxVar: 'ctx' },
       ],
     })
-    expect(code).toContain('SZGame2D.moveByKeys(jogador, 4);')
+    expect(code).toContain('SZGame2D.topDown(jogador, 4);')
     expect(code).toContain('SZGame2D.drawSprite(ctx, jogador);')
   })
 

@@ -1,6 +1,7 @@
 import { isReservedProjectFileName, normalizeExtraFileName } from '#core'
 import type { ExtensionPermission } from '#extensions'
 import { escapeScriptContent, escapeStyleContent } from '../generators/escape'
+import { buildAssetsRuntime } from './assetsBridge'
 import { buildPreviewCSPMetaTag } from './csp'
 import { buildInterceptorScript } from './interceptors'
 import { buildLoopGuardRuntime, instrumentLoops } from './loopGuard'
@@ -45,6 +46,12 @@ export interface BuildPreviewDocInput {
   localStorageSnapshot?: Record<string, string>
   /** Projeto deste doc — carimbado nas mensagens de escrita do bridge. */
   storageProjectId?: string
+  /**
+   * Manifesto de assets embutidos do projeto (`nome → data:URL`), semeado em
+   * `window.__SZGAME_ASSETS` pelo assetsBridge para os blocos de imagem do
+   * game-2d. Ausente/vazio = sem assets (jogos só-fillRect seguem funcionando).
+   */
+  assets?: Record<string, string>
   /**
    * Módulos ESM de extensões instaladas (`specifier → URL`, ex.:
    * `{ three: 'https://esm.sh/three@0.180.0' }`). Entram no importmap e suas
@@ -188,8 +195,9 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
   // Camadas de segurança no <head>, em ordem (defesa em profundidade):
   // CSP → interceptor (console/erros/heartbeat) → permissionGuard (rede) →
   // loopGuard (runtime do __szLoopTick) → storageBridge (localStorage shim) →
-  // IMPORTMAP → scripts de extensão (NÃO instrumentados) → estilos → conteúdo do
-  // <head> do aluno → corpo → código do aluno. ⚠️ O importmap PRECISA vir antes
+  // assetsBridge (window.__SZGAME_ASSETS) → IMPORTMAP → scripts de extensão (NÃO
+  // instrumentados) → estilos → conteúdo do <head> do aluno → corpo → código do
+  // aluno. ⚠️ O importmap PRECISA vir antes
   // de QUALQUER `<script type="module">`
   // (extScripts viram module quando há extensionImports) — senão o `import ...
   // from 'three'` falha com "Failed to resolve module specifier".
@@ -213,6 +221,14 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
       projectId: input.storageProjectId,
     }),
   )
+  // Manifesto de assets (`window.__SZGAME_ASSETS`). Vem ANTES de importmap/extensões/
+  // aluno para que os blocos de imagem (runtime SZGame2D) já o enxerguem. Semeadura
+  // one-way (igual ao storageBridge): sem postMessage/targetOrigin. Omitido quando
+  // não há assets (mantém o doc enxuto e idêntico para jogos legados só-fillRect).
+  const assetsBridgeTag =
+    input.assets && Object.keys(input.assets).length > 0
+      ? scriptTag(buildAssetsRuntime(input.assets))
+      : ''
 
   return `<!doctype html>
 <html lang="pt-BR">
@@ -223,6 +239,7 @@ ${scriptTag(buildInterceptorScript(input.parentOrigin))}
 ${permissionGuardTag}
 ${loopGuardTag}
 ${storageBridgeTag}
+${assetsBridgeTag}
 ${importmapTag}
 ${extScripts}
 ${styleTag}

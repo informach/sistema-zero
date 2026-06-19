@@ -894,8 +894,8 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
   if (interval) return interval
 
   // game-2d: SZGame2D.gameLoop(function update(){…}) / onPointer((px,py)=>{…}) e
-  // helpers de uma linha (drawSprite, moveByKeys, applyVelocity, bounceOnEdges,
-  // setGravity, playSound). ANTES do método genérico — senão viram memberCall.
+  // helpers de uma linha (drawSprite, applyVelocity, bounceOnEdges, setGravity,
+  // playSound). ANTES do método genérico — senão viram memberCall.
   const g2dCall = tryMatchGame2DCall(expr, source, ctx)
   if (g2dCall) return g2dCall
 
@@ -1108,11 +1108,15 @@ function asSZGame2DCall(expr: Node): { method: string; args: Node[] } | null {
   return { method: callee.property.name as string, args: expr.arguments ?? [] }
 }
 
-/** Lê `{ x, y, w, h, color }` de um literal de objeto. null se alguma chave for não-literal/desconhecida. */
+/**
+ * Lê `{ x, y, w, h, color, image }` de um literal de objeto. `image` é opcional
+ * (nome do asset) — quando presente, o var-init vira `g2d:createImageSprite` em
+ * vez de `g2d:createSprite`. null se alguma chave for não-literal/desconhecida.
+ */
 function readSpriteOptions(
   obj: Node,
-): { x: number; y: number; w: number; h: number; color: string } | null {
-  const result = { x: 0, y: 0, w: 32, h: 32, color: '#22d3ee' }
+): { x: number; y: number; w: number; h: number; color: string; image: string | null } | null {
+  const result = { x: 0, y: 0, w: 32, h: 32, color: '#22d3ee', image: null as string | null }
   for (const prop of obj.properties ?? []) {
     if (prop?.type !== 'ObjectProperty' || prop.computed) return null
     const key =
@@ -1128,6 +1132,9 @@ function readSpriteOptions(
     } else if (key === 'color') {
       if (prop.value?.type !== 'StringLiteral') return null
       result.color = prop.value.value as string
+    } else if (key === 'image') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      result.image = prop.value.value as string
     } else if (key === 'vx' || key === 'vy') {
       // createSprite aceita vx/vy no runtime, mas o bloco não os guarda. Tolera
       // se forem literais (ignora); não-literal não é representável → bail.
@@ -1139,7 +1146,39 @@ function readSpriteOptions(
   return result
 }
 
-/** SZGame2D.gameLoop/onPointer/drawSprite/moveByKeys/applyVelocity/bounceOnEdges/setGravity/playSound. */
+/**
+ * Lê `{ image, tile, solid, grid }` de um literal de objeto (createTileMap).
+ * image/solid/grid são strings; tile é número. null se alguma chave faltar/for
+ * não-literal/desconhecida — o caminho cai no helper genérico.
+ */
+function readTileMapOptions(
+  obj: Node,
+): { image: string; tile: number; solid: string; grid: string } | null {
+  const result = { image: null as string | null, tile: null as number | null, solid: '', grid: '' }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'tile') {
+      const v = numericLiteralValue(prop.value)
+      if (v === null) return null
+      result.tile = v
+    } else if (key === 'image' || key === 'solid' || key === 'grid') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      result[key] = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  if (result.image === null || result.tile === null) return null
+  return { image: result.image, tile: result.tile, solid: result.solid, grid: result.grid }
+}
+
+/** SZGame2D.gameLoop/onPointer/drawSprite/applyVelocity/bounceOnEdges/setGravity/playSound. */
 function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatement | null {
   const call = asSZGame2DCall(expr)
   if (!call) return null
@@ -1168,11 +1207,6 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       const spriteVar = identifierName(args[1])
       return ctxVar && spriteVar ? { type: 'g2d:drawSprite', spriteVar, ctxVar } : null
     }
-    case 'moveByKeys': {
-      const spriteVar = identifierName(args[0])
-      const speed = numericLiteralValue(args[1])
-      return spriteVar && speed !== null ? { type: 'g2d:moveByKeys', spriteVar, speed } : null
-    }
     case 'applyVelocity': {
       const spriteVar = identifierName(args[0])
       return spriteVar ? { type: 'g2d:applyVelocity', spriteVar } : null
@@ -1194,9 +1228,110 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
         ? { type: 'g2d:playSound', freq, durationMs }
         : null
     }
+    case 'setImage': {
+      // generator: SZGame2D.setImage(sprite, 'nome')
+      const spriteVar = identifierName(args[0])
+      if (!spriteVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'g2d:setImage', spriteVar, image: args[1].value as string }
+    }
+    case 'setAnimation': {
+      // generator: SZGame2D.setAnimation(sprite, sheet, from, to, fps)
+      const spriteVar = identifierName(args[0])
+      const sheetVar = identifierName(args[1])
+      const from = numericLiteralValue(args[2])
+      const to = numericLiteralValue(args[3])
+      const fps = numericLiteralValue(args[4])
+      return spriteVar && sheetVar && from !== null && to !== null && fps !== null
+        ? { type: 'g2d:animateSprite', spriteVar, sheetVar, from, to, fps }
+        : null
+    }
+    case 'drawFrame': {
+      // generator: SZGame2D.drawFrame(ctx, sheet, index, x, y, w, h)
+      const ctxVar = identifierName(args[0])
+      const sheetVar = identifierName(args[1])
+      const index = numericLiteralValue(args[2])
+      const x = numericLiteralValue(args[3])
+      const y = numericLiteralValue(args[4])
+      const w = numericLiteralValue(args[5])
+      const h = numericLiteralValue(args[6])
+      return ctxVar &&
+        sheetVar &&
+        index !== null &&
+        x !== null &&
+        y !== null &&
+        w !== null &&
+        h !== null
+        ? { type: 'g2d:drawFrame', ctxVar, sheetVar, index, x, y, w, h }
+        : null
+    }
+    case 'platformer': {
+      // generator: SZGame2D.platformer(sprite, ctx, speed, jump)
+      const spriteVar = identifierName(args[0])
+      const ctxVar = identifierName(args[1])
+      const speed = numericLiteralValue(args[2])
+      const jump = numericLiteralValue(args[3])
+      return spriteVar && ctxVar && speed !== null && jump !== null
+        ? { type: 'g2d:platformer', spriteVar, ctxVar, speed, jump }
+        : null
+    }
+    case 'topDown': {
+      const spriteVar = identifierName(args[0])
+      const speed = numericLiteralValue(args[1])
+      return spriteVar && speed !== null ? { type: 'g2d:topDown', spriteVar, speed } : null
+    }
+    case 'followPointer': {
+      const spriteVar = identifierName(args[0])
+      const speed = numericLiteralValue(args[1])
+      return spriteVar && speed !== null ? { type: 'g2d:followPointer', spriteVar, speed } : null
+    }
+    case 'clampToScreen': {
+      const spriteVar = identifierName(args[0])
+      const ctxVar = identifierName(args[1])
+      return spriteVar && ctxVar ? { type: 'g2d:clampToScreen', spriteVar, ctxVar } : null
+    }
+    case 'flash': {
+      // generator: SZGame2D.flash(ctx, "color")
+      const ctxVar = identifierName(args[0])
+      if (!ctxVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'g2d:flash', ctxVar, color: args[1].value as string }
+    }
+    case 'shake': {
+      const ctxVar = identifierName(args[0])
+      const intensity = numericLiteralValue(args[1])
+      return ctxVar && intensity !== null ? { type: 'g2d:shake', ctxVar, intensity } : null
+    }
+    case 'emitParticles': {
+      // generator: SZGame2D.emitParticles(x, y, count, "color")
+      const x = numericLiteralValue(args[0])
+      const y = numericLiteralValue(args[1])
+      const count = numericLiteralValue(args[2])
+      if (x === null || y === null || count === null || args[3]?.type !== 'StringLiteral')
+        return null
+      return { type: 'g2d:emitParticles', x, y, count, color: args[3].value as string }
+    }
+    case 'drawParticles': {
+      const ctxVar = identifierName(args[0])
+      return ctxVar ? { type: 'g2d:drawParticles', ctxVar } : null
+    }
+    case 'drawTileMap': {
+      // generator: SZGame2D.drawTileMap(ctx, map, x, y)
+      const ctxVar = identifierName(args[0])
+      const mapVar = identifierName(args[1])
+      const x = numericLiteralValue(args[2])
+      const y = numericLiteralValue(args[3])
+      return ctxVar && mapVar && x !== null && y !== null
+        ? { type: 'g2d:drawTileMap', ctxVar, mapVar, x, y }
+        : null
+    }
+    case 'collideTileMap': {
+      // generator: SZGame2D.collideTileMap(sprite, map)
+      const spriteVar = identifierName(args[0])
+      const mapVar = identifierName(args[1])
+      return spriteVar && mapVar ? { type: 'g2d:tileMapCollide', spriteVar, mapVar } : null
+    }
     default:
-      // createSprite/isColliding/circleCollides são var-init (tryMatchGame2DVarInit);
-      // como chamada solta caem no método genérico.
+      // createSprite/isColliding/circleCollides/loadSpriteSheet são var-init
+      // (tryMatchGame2DVarInit); como chamada solta caem no método genérico.
       return null
   }
 }
@@ -1218,7 +1353,35 @@ function tryMatchGame2DVarInit(name: string, init: Node, ctx: ParseCtx): JSState
     const sprite = readSpriteOptions(args[0])
     if (!sprite) return null
     ctx.spriteVars.add(name)
-    return { type: 'g2d:createSprite', varName: name, ...sprite }
+    // Com `image` → sprite de imagem (o bloco colorido não tem essa chave); o
+    // color do default é descartado nesse caminho.
+    if (sprite.image != null) {
+      const { x, y, w, h, image } = sprite
+      return { type: 'g2d:createImageSprite', varName: name, x, y, w, h, image }
+    }
+    const { x, y, w, h, color } = sprite
+    return { type: 'g2d:createSprite', varName: name, x, y, w, h, color }
+  }
+  if (method === 'loadSpriteSheet') {
+    // generator: const v = SZGame2D.loadSpriteSheet('nome', fw, fh)
+    if (args[0]?.type !== 'StringLiteral') return null
+    const frameW = numericLiteralValue(args[1])
+    const frameH = numericLiteralValue(args[2])
+    if (frameW === null || frameH === null) return null
+    return {
+      type: 'g2d:loadSpritesheet',
+      varName: name,
+      image: args[0].value as string,
+      frameW,
+      frameH,
+    }
+  }
+  if (method === 'createTileMap') {
+    // generator: const map = SZGame2D.createTileMap({ image, tile, solid, grid })
+    if (args[0]?.type !== 'ObjectExpression') return null
+    const opts = readTileMapOptions(args[0])
+    if (!opts) return null
+    return { type: 'g2d:createTileMap', varName: name, ...opts }
   }
   return null
 }

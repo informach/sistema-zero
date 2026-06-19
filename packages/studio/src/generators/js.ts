@@ -649,8 +649,6 @@ function compileStatementCode(
     }
     case 'g2d:drawSprite':
       return `${pad}SZGame2D.drawSprite(${identifiers.get(stmt.ctxVar)}, ${identifiers.get(stmt.spriteVar)});`
-    case 'g2d:moveByKeys':
-      return `${pad}SZGame2D.moveByKeys(${identifiers.get(stmt.spriteVar)}, ${stmt.speed});`
     case 'g2d:setPosition':
       return `${pad}${identifiers.get(stmt.spriteVar)}.x = ${compileExpr(stmt.x, 0, identifiers, recAt(base))}; ${identifiers.get(stmt.spriteVar)}.y = ${compileExpr(stmt.y, 0, identifiers, recAt(base))};`
     case 'g2d:setVelocity':
@@ -684,6 +682,44 @@ function compileStatementCode(
       )
       return `${pad}SZGame2D.onPointer((${identifiers.get(stmt.xName)}, ${identifiers.get(stmt.yName)}) => {\n${body}\n${pad}});`
     }
+    case 'g2d:createImageSprite': {
+      const v = identifiers.get(stmt.varName)
+      return `${pad}const ${v} = SZGame2D.createSprite({ x: ${stmt.x}, y: ${stmt.y}, w: ${stmt.w}, h: ${stmt.h}, image: ${JSON.stringify(stmt.image)} });`
+    }
+    case 'g2d:setImage':
+      return `${pad}SZGame2D.setImage(${identifiers.get(stmt.spriteVar)}, ${JSON.stringify(stmt.image)});`
+    case 'g2d:loadSpritesheet': {
+      const v = identifiers.get(stmt.varName)
+      return `${pad}const ${v} = SZGame2D.loadSpriteSheet(${JSON.stringify(stmt.image)}, ${stmt.frameW}, ${stmt.frameH});`
+    }
+    case 'g2d:animateSprite':
+      return `${pad}SZGame2D.setAnimation(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.sheetVar)}, ${stmt.from}, ${stmt.to}, ${stmt.fps});`
+    case 'g2d:drawFrame':
+      return `${pad}SZGame2D.drawFrame(${identifiers.get(stmt.ctxVar)}, ${identifiers.get(stmt.sheetVar)}, ${stmt.index}, ${stmt.x}, ${stmt.y}, ${stmt.w}, ${stmt.h});`
+    case 'g2d:platformer':
+      return `${pad}SZGame2D.platformer(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.ctxVar)}, ${stmt.speed}, ${stmt.jump});`
+    case 'g2d:topDown':
+      return `${pad}SZGame2D.topDown(${identifiers.get(stmt.spriteVar)}, ${stmt.speed});`
+    case 'g2d:followPointer':
+      return `${pad}SZGame2D.followPointer(${identifiers.get(stmt.spriteVar)}, ${stmt.speed});`
+    case 'g2d:clampToScreen':
+      return `${pad}SZGame2D.clampToScreen(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.ctxVar)});`
+    case 'g2d:flash':
+      return `${pad}SZGame2D.flash(${identifiers.get(stmt.ctxVar)}, ${JSON.stringify(stmt.color)});`
+    case 'g2d:shake':
+      return `${pad}SZGame2D.shake(${identifiers.get(stmt.ctxVar)}, ${stmt.intensity});`
+    case 'g2d:emitParticles':
+      return `${pad}SZGame2D.emitParticles(${stmt.x}, ${stmt.y}, ${stmt.count}, ${JSON.stringify(stmt.color)});`
+    case 'g2d:drawParticles':
+      return `${pad}SZGame2D.drawParticles(${identifiers.get(stmt.ctxVar)});`
+    case 'g2d:createTileMap': {
+      const v = identifiers.get(stmt.varName)
+      return `${pad}const ${v} = SZGame2D.createTileMap({ image: ${JSON.stringify(stmt.image)}, tile: ${stmt.tile}, solid: ${JSON.stringify(stmt.solid)}, grid: ${JSON.stringify(stmt.grid)} });`
+    }
+    case 'g2d:drawTileMap':
+      return `${pad}SZGame2D.drawTileMap(${identifiers.get(stmt.ctxVar)}, ${identifiers.get(stmt.mapVar)}, ${stmt.x}, ${stmt.y});`
+    case 'g2d:tileMapCollide':
+      return `${pad}SZGame2D.collideTileMap(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.mapVar)});`
     case 'g2d:updateEachFrame': {
       const body = compileStatements(
         stmt.body,
@@ -1166,9 +1202,6 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       names.add(stmt.ctxVar)
       names.add(stmt.spriteVar)
       return
-    case 'g2d:moveByKeys':
-      names.add(stmt.spriteVar)
-      return
     case 'g2d:setPosition':
       names.add(stmt.spriteVar)
       collectExprIdentifiers(stmt.x, names)
@@ -1206,6 +1239,50 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       names.add(stmt.xName)
       names.add(stmt.yName)
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'g2d:createImageSprite':
+      names.add(stmt.varName)
+      return
+    case 'g2d:setImage':
+      names.add(stmt.spriteVar)
+      return
+    case 'g2d:loadSpritesheet':
+      names.add(stmt.varName)
+      return
+    case 'g2d:animateSprite':
+      names.add(stmt.spriteVar)
+      names.add(stmt.sheetVar)
+      return
+    case 'g2d:drawFrame':
+      names.add(stmt.ctxVar)
+      names.add(stmt.sheetVar)
+      return
+    case 'g2d:platformer':
+    case 'g2d:clampToScreen':
+      names.add(stmt.spriteVar)
+      names.add(stmt.ctxVar)
+      return
+    case 'g2d:topDown':
+    case 'g2d:followPointer':
+      names.add(stmt.spriteVar)
+      return
+    case 'g2d:flash':
+    case 'g2d:shake':
+    case 'g2d:drawParticles':
+      names.add(stmt.ctxVar)
+      return
+    case 'g2d:emitParticles':
+      return
+    case 'g2d:createTileMap':
+      names.add(stmt.varName)
+      return
+    case 'g2d:drawTileMap':
+      names.add(stmt.mapVar)
+      names.add(stmt.ctxVar)
+      return
+    case 'g2d:tileMapCollide':
+      names.add(stmt.spriteVar)
+      names.add(stmt.mapVar)
       return
     case 'g3d:createScene':
       names.add(stmt.varName)

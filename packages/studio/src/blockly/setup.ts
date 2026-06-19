@@ -11,6 +11,7 @@ import { registerArrayMutator } from './blocks/arrayMutator'
 import { registerExtendsMutator } from './blocks/extendsMutator'
 import { registerObjectMutator } from './blocks/objectMutator'
 import { registerParamsMutator } from './blocks/paramsMutator'
+import { registerFieldAssetPicker } from './fields/FieldAssetPicker'
 import { registerFieldColourSZ } from './fields/FieldColourSZ'
 import { organizeBlocks } from './organize'
 import { registerPtSearchCategory } from './searchCategory'
@@ -48,6 +49,10 @@ export function ensureBlocklyInitialized(): void {
   // adicionamos `field_colour_sz` com paleta MakeCode + input HEX.
   registerFieldColour()
   registerFieldColourSZ()
+  // Campo de seleção de imagem (asset) dos blocos de Jogo 2D. Registrado ANTES da
+  // definição dos blocos da extensão (que rodam na instalação) — senão Blockly
+  // falha ao ver o tipo `field_asset_picker`.
+  registerFieldAssetPicker()
   // Os mutators precisam estar registrados antes de qualquer instância dos
   // blocos que os usam ser criada (init aplica o mutator pelo nome).
   registerAnimLoopMutator()

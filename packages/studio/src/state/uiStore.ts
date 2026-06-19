@@ -10,6 +10,9 @@ interface UIStore {
   setBottomTab: (t: BottomTab) => void
   showExtensions: boolean
   setShowExtensions: (b: boolean) => void
+  /** Abre o gerenciador de Assets (imagens/sprites) — overlay, espelho do showExtensions. */
+  showAssets: boolean
+  setShowAssets: (b: boolean) => void
   showPreview: boolean
   setShowPreview: (b: boolean) => void
   // Visibilidade dos painéis inferiores, no mesmo espírito do `showPreview`: o
@@ -36,6 +39,8 @@ export function createUIStore(): StoreApi<UIStore> {
     setBottomTab: (bottomTab) => set({ bottomTab }),
     showExtensions: false,
     setShowExtensions: (showExtensions) => set({ showExtensions }),
+    showAssets: false,
+    setShowAssets: (showAssets) => set({ showAssets }),
     showPreview: true,
     setShowPreview: (showPreview) => set({ showPreview }),
     showConsole: true,

@@ -749,7 +749,6 @@ export type JSStatement =
       color: string
     })
   | (JSStatementCommon & { type: 'g2d:drawSprite'; spriteVar: string; ctxVar: string })
-  | (JSStatementCommon & { type: 'g2d:moveByKeys'; spriteVar: string; speed: number })
   | (JSStatementCommon & { type: 'g2d:setPosition'; spriteVar: string; x: JSExpr; y: JSExpr })
   | (JSStatementCommon & { type: 'g2d:setVelocity'; spriteVar: string; vx: JSExpr; vy: JSExpr })
   | (JSStatementCommon & { type: 'g2d:collides'; aVar: string; bVar: string; varName: string })
@@ -776,6 +775,83 @@ export type JSStatement =
       yName: string
       body: JSStatement[]
     })
+  // Imagens / spritesheet / animação (v0.3.0). `image`/`sheetVar` são nomes de
+  // asset/variável (strings); coords e quadros são números (mantém os blocos e o
+  // round-trip simples). O runtime resolve o nome do asset no manifesto.
+  | (JSStatementCommon & {
+      type: 'g2d:createImageSprite'
+      varName: string
+      x: number
+      y: number
+      w: number
+      h: number
+      image: string
+    })
+  | (JSStatementCommon & { type: 'g2d:setImage'; spriteVar: string; image: string })
+  | (JSStatementCommon & {
+      type: 'g2d:loadSpritesheet'
+      varName: string
+      image: string
+      frameW: number
+      frameH: number
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:animateSprite'
+      spriteVar: string
+      sheetVar: string
+      from: number
+      to: number
+      fps: number
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:drawFrame'
+      sheetVar: string
+      ctxVar: string
+      index: number
+      x: number
+      y: number
+      w: number
+      h: number
+    })
+  // Movimento + efeitos (v0.4.0).
+  | (JSStatementCommon & {
+      type: 'g2d:platformer'
+      spriteVar: string
+      ctxVar: string
+      speed: number
+      jump: number
+    })
+  | (JSStatementCommon & { type: 'g2d:topDown'; spriteVar: string; speed: number })
+  | (JSStatementCommon & { type: 'g2d:followPointer'; spriteVar: string; speed: number })
+  | (JSStatementCommon & { type: 'g2d:clampToScreen'; spriteVar: string; ctxVar: string })
+  | (JSStatementCommon & { type: 'g2d:flash'; color: string; ctxVar: string })
+  | (JSStatementCommon & { type: 'g2d:shake'; ctxVar: string; intensity: number })
+  | (JSStatementCommon & {
+      type: 'g2d:emitParticles'
+      count: number
+      color: string
+      x: number
+      y: number
+    })
+  | (JSStatementCommon & { type: 'g2d:drawParticles'; ctxVar: string })
+  // Tiles / tilemaps (v0.5.0). image = nome do asset do tileset (string); grid e
+  // solid são texto editável (linhas/índices); tile/x/y são números.
+  | (JSStatementCommon & {
+      type: 'g2d:createTileMap'
+      varName: string
+      image: string
+      tile: number
+      solid: string
+      grid: string
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:drawTileMap'
+      mapVar: string
+      ctxVar: string
+      x: number
+      y: number
+    })
+  | (JSStatementCommon & { type: 'g2d:tileMapCollide'; spriteVar: string; mapVar: string })
   // ---- Game 3D (extensão game-3d, Three.js via window.SZGame3D) ----
   | (JSStatementCommon & { type: 'g3d:createScene'; canvasId: string; varName: string })
   | (JSStatementCommon & { type: 'g3d:setBackground'; worldVar: string; color: string })
@@ -1188,12 +1264,6 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
-      type: z.literal('g2d:moveByKeys'),
-      spriteVar: irText(),
-      speed: z.number(),
-      ...idField,
-    }),
-    z.object({
       type: z.literal('g2d:setPosition'),
       spriteVar: irText(),
       x: JSExprSchema,
@@ -1252,6 +1322,115 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       xName: irText(),
       yName: irText(),
       body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:createImageSprite'),
+      varName: irText(),
+      x: z.number(),
+      y: z.number(),
+      w: z.number(),
+      h: z.number(),
+      image: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:setImage'),
+      spriteVar: irText(),
+      image: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:loadSpritesheet'),
+      varName: irText(),
+      image: irText(),
+      frameW: z.number(),
+      frameH: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:animateSprite'),
+      spriteVar: irText(),
+      sheetVar: irText(),
+      from: z.number(),
+      to: z.number(),
+      fps: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:drawFrame'),
+      sheetVar: irText(),
+      ctxVar: irText(),
+      index: z.number(),
+      x: z.number(),
+      y: z.number(),
+      w: z.number(),
+      h: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:platformer'),
+      spriteVar: irText(),
+      ctxVar: irText(),
+      speed: z.number(),
+      jump: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:topDown'),
+      spriteVar: irText(),
+      speed: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:followPointer'),
+      spriteVar: irText(),
+      speed: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:clampToScreen'),
+      spriteVar: irText(),
+      ctxVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:flash'), color: irText(), ctxVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:shake'),
+      ctxVar: irText(),
+      intensity: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:emitParticles'),
+      count: z.number(),
+      color: irText(),
+      x: z.number(),
+      y: z.number(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:drawParticles'), ctxVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:createTileMap'),
+      varName: irText(),
+      image: irText(),
+      tile: z.number(),
+      solid: irText(),
+      grid: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:drawTileMap'),
+      mapVar: irText(),
+      ctxVar: irText(),
+      x: z.number(),
+      y: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:tileMapCollide'),
+      spriteVar: irText(),
+      mapVar: irText(),
       ...idField,
     }),
     z.object({
@@ -1520,7 +1699,6 @@ export function isAdvancedJS(stmt: JSStatement): stmt is Extract<JSStatement, { 
 export const G2D_STATEMENT_TYPES = new Set([
   'g2d:createSprite',
   'g2d:drawSprite',
-  'g2d:moveByKeys',
   'g2d:setPosition',
   'g2d:setVelocity',
   'g2d:collides',
@@ -1533,6 +1711,22 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:circleCollides',
   'g2d:playSound',
   'g2d:onPointer',
+  'g2d:createImageSprite',
+  'g2d:setImage',
+  'g2d:loadSpritesheet',
+  'g2d:animateSprite',
+  'g2d:drawFrame',
+  'g2d:platformer',
+  'g2d:topDown',
+  'g2d:followPointer',
+  'g2d:clampToScreen',
+  'g2d:flash',
+  'g2d:shake',
+  'g2d:emitParticles',
+  'g2d:drawParticles',
+  'g2d:createTileMap',
+  'g2d:drawTileMap',
+  'g2d:tileMapCollide',
 ])
 
 export const G3D_STATEMENT_TYPES = new Set([

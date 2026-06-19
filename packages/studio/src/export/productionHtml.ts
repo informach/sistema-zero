@@ -33,6 +33,13 @@ export interface BuildProductionHtmlInput {
   extraCssHrefs: string[]
   /** Fragmentos de HTML extra a inserir no `<body>`. */
   extraHtmlFragments: string[]
+  /**
+   * Caminho do arquivo que semeia `window.__SZGAME_ASSETS` (ex.: `sz-assets.js`).
+   * Vazio/ausente = projeto sem assets. É um `<script>` CLÁSSICO (sem imports),
+   * injetado PRIMEIRO no `<head>` → roda no parse, antes dos bootstraps de
+   * extensão (module ou clássico) e do código do aluno, que o consomem.
+   */
+  assetsScriptSrc?: string
 }
 
 export function buildProductionIndexHtml(input: BuildProductionHtmlInput): string {
@@ -58,7 +65,16 @@ export function buildProductionIndexHtml(input: BuildProductionHtmlInput): strin
     .map((href) => `<link rel="stylesheet" href="${escapeAttr(href)}" />`)
     .join('\n')
 
-  const headBlock = [importmapTag, extScriptsTag, extraCssTags].filter(Boolean).join('\n')
+  // Manifesto de assets: script CLÁSSICO standalone, PRIMEIRO no <head>, para que
+  // `window.__SZGAME_ASSETS` exista antes de qualquer consumidor (não precisa do
+  // importmap por não ser module).
+  const assetsScriptTag = input.assetsScriptSrc
+    ? `<script src="${escapeAttr(input.assetsScriptSrc)}"></script>`
+    : ''
+
+  const headBlock = [assetsScriptTag, importmapTag, extScriptsTag, extraCssTags]
+    .filter(Boolean)
+    .join('\n')
   const bodyBlock = input.extraHtmlFragments.filter(Boolean).join('\n')
 
   let out = input.html

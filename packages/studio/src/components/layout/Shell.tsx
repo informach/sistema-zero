@@ -19,6 +19,9 @@ import { Topbar } from './Topbar'
 const ExtensionsPanel = lazy(() =>
   import('../extensions/ExtensionsPanel').then((m) => ({ default: m.ExtensionsPanel })),
 )
+const AssetsPanel = lazy(() =>
+  import('../assets/AssetsPanel').then((m) => ({ default: m.AssetsPanel })),
+)
 
 export interface ShellProps {
   /** Sai do editor (ex.: volta à lista de projetos do host). Sem ela, a Topbar esconde a navegação. */
@@ -37,6 +40,8 @@ export function Shell({ onExit, canToggleTheme }: ShellProps): JSX.Element {
   )
   const showExtensions = useUIStore((s) => s.showExtensions)
   const setShowExtensions = useUIStore((s) => s.setShowExtensions)
+  const showAssets = useUIStore((s) => s.showAssets)
+  const setShowAssets = useUIStore((s) => s.setShowAssets)
   const config = useStudioConfig()
   // A barra inferior (wide) só existe quando há ALGUMA aba inferior visível — as
   // features do host cruzadas com o contexto de modo e com as preferências de
@@ -117,6 +122,19 @@ export function Shell({ onExit, canToggleTheme }: ShellProps): JSX.Element {
               >
                 <Suspense fallback={null}>
                   <ExtensionsPanel open={showExtensions} onClose={() => setShowExtensions(false)} />
+                </Suspense>
+              </ErrorBoundary>
+            )}
+            {showAssets && (
+              <ErrorBoundary
+                label="imagens"
+                resetKeys={[showAssets]}
+                fallback={(p) => (
+                  <SectionErrorFallback {...p} title="Não foi possível abrir as imagens" />
+                )}
+              >
+                <Suspense fallback={null}>
+                  <AssetsPanel open={showAssets} onClose={() => setShowAssets(false)} />
                 </Suspense>
               </ErrorBoundary>
             )}

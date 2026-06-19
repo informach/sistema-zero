@@ -588,6 +588,11 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
       toolbox: initialToolbox,
     })
     appliedToolboxRef.current = initialToolbox
+    // Acessor POR INSTÂNCIA dos assets do projeto, lido pelo FieldAssetPicker ao
+    // abrir o seletor de imagem (multi-instância: nada de global). `projectStoreApi`
+    // é estável (store desta instância), então o efeito segue rodando uma vez.
+    ;(injected as unknown as { __szAssets?: () => unknown }).__szAssets = () =>
+      projectStoreApi.getState().project?.assets ?? []
     setWorkspace(injected)
 
     return () => {
@@ -597,7 +602,7 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
       injected.dispose()
       appliedToolboxRef.current = null
     }
-  }, [])
+  }, [projectStoreApi])
 
   // Troca de tema ao vivo (toggle do Topbar/host): o Theme cobre workspace,
   // toolbox e flyout; só a cor da grade fica da injeção inicial (detalhe sutil).

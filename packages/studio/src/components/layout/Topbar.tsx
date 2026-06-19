@@ -13,6 +13,7 @@ import {
   IconEyeOff,
   IconGraduation,
   IconGrid,
+  IconImage,
   IconMessageSquare,
   IconMoon,
   IconMore,
@@ -91,6 +92,8 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
   const rename = useProjectStore((s) => s.rename)
   const showExtensions = useUIStore((s) => s.showExtensions)
   const setShowExtensions = useUIStore((s) => s.setShowExtensions)
+  const showAssets = useUIStore((s) => s.showAssets)
+  const setShowAssets = useUIStore((s) => s.setShowAssets)
   const showPreview = useUIStore((s) => s.showPreview)
   const setShowPreview = useUIStore((s) => s.setShowPreview)
   const showConsole = useUIStore((s) => s.showConsole)
@@ -215,6 +218,17 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
       icon: <IconPuzzle />,
       active: showExtensions,
       onSelect: () => setShowExtensions(!showExtensions),
+    })
+  }
+  // Gerenciador de imagens (assets) — disponível no editor básico (jogos). Pro
+  // gerencia arquivos direto na árvore, não precisa do painel.
+  if (projectMode !== 'code') {
+    viewItems.push({
+      id: 'assets',
+      label: 'Imagens',
+      icon: <IconImage />,
+      active: showAssets,
+      onSelect: () => setShowAssets(!showAssets),
     })
   }
 

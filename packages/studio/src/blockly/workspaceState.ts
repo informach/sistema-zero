@@ -1038,13 +1038,6 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         {},
         stmt.__id,
       )
-    case 'g2d:moveByKeys':
-      return block(
-        'sz_g2d_move_by_keys',
-        { SPRITE: stmt.spriteVar, SPEED: stmt.speed },
-        {},
-        stmt.__id,
-      )
     case 'g2d:setPosition': {
       const x = numberExpr(stmt.x)
       const y = numberExpr(stmt.y)
@@ -1102,6 +1095,113 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         'sz_g2d_on_pointer',
         { PX: stmt.xName, PY: stmt.yName },
         { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'g2d:createImageSprite':
+      return block(
+        'sz_g2d_create_image_sprite',
+        { NAME: stmt.varName, X: stmt.x, Y: stmt.y, W: stmt.w, H: stmt.h, IMAGE: stmt.image },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:setImage':
+      return block('sz_g2d_set_image', { SPRITE: stmt.spriteVar, IMAGE: stmt.image }, {}, stmt.__id)
+    case 'g2d:loadSpritesheet':
+      return block(
+        'sz_g2d_load_spritesheet',
+        { NAME: stmt.varName, IMAGE: stmt.image, FW: stmt.frameW, FH: stmt.frameH },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:animateSprite':
+      return block(
+        'sz_g2d_animate_sprite',
+        {
+          SPRITE: stmt.spriteVar,
+          SHEET: stmt.sheetVar,
+          FROM: stmt.from,
+          TO: stmt.to,
+          FPS: stmt.fps,
+        },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:drawFrame':
+      return block(
+        'sz_g2d_draw_frame',
+        {
+          INDEX: stmt.index,
+          SHEET: stmt.sheetVar,
+          CTX: stmt.ctxVar,
+          X: stmt.x,
+          Y: stmt.y,
+          W: stmt.w,
+          H: stmt.h,
+        },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:platformer':
+      return block(
+        'sz_g2d_platformer',
+        { SPRITE: stmt.spriteVar, CTX: stmt.ctxVar, SPEED: stmt.speed, JUMP: stmt.jump },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:topDown':
+      return block('sz_g2d_top_down', { SPRITE: stmt.spriteVar, SPEED: stmt.speed }, {}, stmt.__id)
+    case 'g2d:followPointer':
+      return block(
+        'sz_g2d_follow_pointer',
+        { SPRITE: stmt.spriteVar, SPEED: stmt.speed },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:clampToScreen':
+      return block(
+        'sz_g2d_clamp_to_screen',
+        { SPRITE: stmt.spriteVar, CTX: stmt.ctxVar },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:flash':
+      return block('sz_g2d_flash', { COLOR: stmt.color, CTX: stmt.ctxVar }, {}, stmt.__id)
+    case 'g2d:shake':
+      return block('sz_g2d_shake', { CTX: stmt.ctxVar, INTENSITY: stmt.intensity }, {}, stmt.__id)
+    case 'g2d:emitParticles':
+      return block(
+        'sz_g2d_emit_particles',
+        { COUNT: stmt.count, COLOR: stmt.color, X: stmt.x, Y: stmt.y },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:drawParticles':
+      return block('sz_g2d_draw_particles', { CTX: stmt.ctxVar }, {}, stmt.__id)
+    case 'g2d:createTileMap':
+      return block(
+        'sz_g2d_create_tilemap',
+        {
+          NAME: stmt.varName,
+          IMAGE: stmt.image,
+          TILE: stmt.tile,
+          SOLID: stmt.solid,
+          GRID: stmt.grid,
+        },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:drawTileMap':
+      return block(
+        'sz_g2d_draw_tilemap',
+        { MAP: stmt.mapVar, CTX: stmt.ctxVar, X: stmt.x, Y: stmt.y },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:tileMapCollide':
+      return block(
+        'sz_g2d_tilemap_collide',
+        { SPRITE: stmt.spriteVar, MAP: stmt.mapVar },
+        {},
         stmt.__id,
       )
     case 'g3d:createScene':

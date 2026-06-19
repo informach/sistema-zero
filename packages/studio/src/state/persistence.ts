@@ -7,11 +7,16 @@ const LEGACY_PROJECT_KEY_PREFIX = 'sz:project:'
 const PROJECT_META_KEY_PREFIX = 'sz:project-meta:'
 const PROJECT_FILES_KEY_PREFIX = 'sz:project-files:'
 const PROJECT_STATE_KEY_PREFIX = 'sz:project-state:'
+// 4ª partição: assets embutidos (imagens/sprites como data: URL). São GRANDES e
+// mudam POUCO — partição própria para não inchar o autosave debounced de `files`,
+// que reescreve a cada tecla. Ausente em projetos legados (load é tolerante).
+const PROJECT_ASSETS_KEY_PREFIX = 'sz:project-assets:'
 const MAX_PROJECT_SUMMARY_NAME_CHARS = 200
 const legacyProjectKey = (id: string) => `${LEGACY_PROJECT_KEY_PREFIX}${id}`
 const projectMetaKey = (id: string) => `${PROJECT_META_KEY_PREFIX}${id}`
 const projectFilesKey = (id: string) => `${PROJECT_FILES_KEY_PREFIX}${id}`
 const projectStateKey = (id: string) => `${PROJECT_STATE_KEY_PREFIX}${id}`
+const projectAssetsKey = (id: string) => `${PROJECT_ASSETS_KEY_PREFIX}${id}`
 
 let store: ReturnType<typeof createStore> | null = null
 
@@ -64,6 +69,7 @@ export async function persistProject(project: Project): Promise<void> {
         [projectMetaKey(project.id), projectToMetaRecord(project)],
         [projectFilesKey(project.id), projectToFilesRecord(project)],
         [projectStateKey(project.id), projectToStateRecord(project)],
+        [projectAssetsKey(project.id), projectToAssetsRecord(project)],
       ],
       getStore(),
     ),
@@ -72,12 +78,13 @@ export async function persistProject(project: Project): Promise<void> {
 
 export async function loadProjectById(id: string): Promise<Project | null> {
   const kvStore = getStore()
-  const [meta, files, state] = await getMany<unknown[]>(
-    [projectMetaKey(id), projectFilesKey(id), projectStateKey(id)],
+  const [meta, files, state, assets] = await getMany<unknown[]>(
+    [projectMetaKey(id), projectFilesKey(id), projectStateKey(id), projectAssetsKey(id)],
     kvStore,
   )
   if (meta && files && state) {
-    return assembleProjectRecord(id, meta, files, state)
+    // `assets` é a 4ª partição (opcional): ausente em projetos legados/pré-feature.
+    return assembleProjectRecord(id, meta, files, state, assets)
   }
 
   return ((await get<Project>(legacyProjectKey(id), kvStore)) ?? null) as Project | null
@@ -136,6 +143,7 @@ export async function deleteProject(id: string): Promise<void> {
         projectMetaKey(id),
         projectFilesKey(id),
         projectStateKey(id),
+        projectAssetsKey(id),
         legacyProjectKey(id),
         // Armazenamento do programa do aluno (blocos "guardar/ler") deste projeto.
         gameStorageKey(id),
@@ -279,11 +287,21 @@ function projectToStateRecord(project: Project): Pick<Project, 'id' | 'ir' | 'bl
   }
 }
 
+function projectToAssetsRecord(project: Project): Pick<Project, 'id' | 'assets'> {
+  return {
+    id: project.id,
+    // Assets embutidos (imagens). Ausente/undefined em projetos sem assets — o
+    // structured clone do IDB preserva undefined, e o load é tolerante.
+    assets: project.assets,
+  }
+}
+
 function assembleProjectRecord(
   id: string,
   meta: unknown,
   files: unknown,
   state: unknown,
+  assets?: unknown,
 ): Project | null {
   if (!meta || typeof meta !== 'object' || Array.isArray(meta)) return null
   if (!files || typeof files !== 'object' || Array.isArray(files)) return null
@@ -292,6 +310,11 @@ function assembleProjectRecord(
     ...(meta as Record<string, unknown>),
     ...(files as Record<string, unknown>),
     ...(state as Record<string, unknown>),
+    // Partição de assets (opcional): mescla só se for um registro válido. O
+    // sanitizer do projectStore valida o conteúdo de `assets` depois.
+    ...(assets && typeof assets === 'object' && !Array.isArray(assets)
+      ? (assets as Record<string, unknown>)
+      : {}),
     id,
   } as Project
 }

@@ -119,6 +119,8 @@ describe('PersistenceService', () => {
         'sz:project-meta:project-1',
         'sz:project-files:project-1',
         'sz:project-state:project-1',
+        // 4ª partição: assets embutidos (imagens/sprites).
+        'sz:project-assets:project-1',
         'sz:project:project-1',
         // Armazenamento do programa do aluno (blocos "guardar/ler") deste projeto.
         'sz:game-storage:project-1',

@@ -1,7 +1,7 @@
 import type { JSX } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
-import type { ExtraFile, InstalledExtension } from '#core'
+import { assetManifest, type ExtraFile, type InstalledExtension, type ProjectAsset } from '#core'
 import type { ExtensionPermission } from '#extensions'
 import { findExtension } from '#official-extensions'
 import {
@@ -27,6 +27,7 @@ import {
 
 const EMPTY_EXTRA_FILES: ExtraFile[] = []
 const EMPTY_INSTALLED_EXTENSIONS: InstalledExtension[] = []
+const EMPTY_ASSETS: ProjectAsset[] = []
 
 /**
  * Abaixo desta largura do PRÓPRIO painel de preview, a barra de ferramentas
@@ -37,7 +38,7 @@ const EMPTY_INSTALLED_EXTENSIONS: InstalledExtension[] = []
 const PREVIEW_TOOLBAR_COMPACT_MAX_PX = 400
 
 export function PreviewIframe(): JSX.Element {
-  const { projectId, html, css, js, projectName, installedExtensions, extraFiles } =
+  const { projectId, html, css, js, projectName, installedExtensions, extraFiles, assets } =
     useProjectStore(
       useShallow((s) => ({
         projectId: s.project?.id ?? null,
@@ -47,6 +48,7 @@ export function PreviewIframe(): JSX.Element {
         projectName: s.project?.name ?? '',
         installedExtensions: s.project?.installedExtensions ?? EMPTY_INSTALLED_EXTENSIONS,
         extraFiles: s.project?.extraFiles ?? EMPTY_EXTRA_FILES,
+        assets: s.project?.assets ?? EMPTY_ASSETS,
       })),
     )
   const pushLog = useLogsStore((s) => s.push)
@@ -59,6 +61,12 @@ export function PreviewIframe(): JSX.Element {
   const toolbarWidth = useMeasuredWidth(rootRef)
   const compactToolbar = toolbarWidth > 0 && toolbarWidth < PREVIEW_TOOLBAR_COMPACT_MAX_PX
   const iframeRef = useRef<HTMLIFrameElement>(null)
+  // Quando o aluno clica EXPLICITAMENTE em Reproduzir/Atualizar, focamos o iframe
+  // assim que ele recarrega — senão o foco fica no botão (no parent) e as setas do
+  // teclado nunca chegam ao jogo (o iframe sandbox só recebe teclado com FOCO no
+  // conteúdo). Só em ação explícita: um reload por auto-debounce durante a edição
+  // NÃO rouba o foco do editor de blocos.
+  const focusOnLoadRef = useRef(false)
   // Watchdog de heartbeat (Camada B): se o thread do iframe travar num cálculo
   // síncrono, o interceptor para de emitir heartbeats e mostramos o aviso.
   const lastHeartbeatRef = useRef(0)
@@ -185,6 +193,7 @@ export function PreviewIframe(): JSX.Element {
     processStorageNow()
     markCurrentProjectStarted()
     setPreviewRunning(true)
+    focusOnLoadRef.current = true // Play explícito → foca o jogo p/ o teclado funcionar
     rerenderPreview()
   }
 
@@ -194,6 +203,7 @@ export function PreviewIframe(): JSX.Element {
     processStorageNow()
     markCurrentProjectStarted()
     if (!previewRunning) setPreviewRunning(true)
+    focusOnLoadRef.current = true // ação explícita → foca o jogo (teclado)
     rerenderPreview()
   }
 
@@ -249,6 +259,12 @@ export function PreviewIframe(): JSX.Element {
     }
     return Array.from(perms)
   }, [debouncedIds])
+
+  // Manifesto de assets (nome → dataUrl) semeado no preview. Recomputa só quando a
+  // lista de assets muda (add/remover/renomear) — não a cada tecla. Não entra no
+  // orçamento de render: assets são dados PASSIVOS (decode de imagem), não custo de
+  // CPU do código do aluno, então não devem disparar o "preview pausado".
+  const assetsManifest = useMemo(() => assetManifest(assets), [assets])
 
   const previewBudgetInput = useMemo(
     () => ({
@@ -306,6 +322,9 @@ export function PreviewIframe(): JSX.Element {
       // — uma escrita não deve reconstruir o doc e recarregar o preview).
       localStorageSnapshot: gameStorageRef.current,
       storageProjectId: projectId ?? undefined,
+      // Manifesto de assets: ESTE entra nas deps (adicionar/remover imagem deve
+      // reconstruir o doc para o sprite aparecer/sumir no preview).
+      assets: assetsManifest,
     })
     // O botão "Atualizar" muda `renderNonce`. Embutimos o nonce no próprio documento
     // para que o `srcDoc` mude e o iframe recarregue (re-executando o código) mesmo
@@ -326,6 +345,7 @@ export function PreviewIframe(): JSX.Element {
     debouncedExtraFiles,
     installedPermissions,
     extensionImports,
+    assetsManifest,
     previewSecurity,
     renderNonce,
   ])
@@ -474,6 +494,13 @@ export function PreviewIframe(): JSX.Element {
           setLoadedSrcDoc(iframeRef.current?.getAttribute('srcdoc') ?? null)
           lastHeartbeatRef.current = Date.now()
           setPreviewStalled(false)
+          // Foca o jogo após um Play/Atualizar explícito, para que as setas do
+          // teclado cheguem ao iframe sem o aluno precisar clicar no canvas. Só
+          // após ação explícita (a flag não é setada em reload por edição).
+          if (focusOnLoadRef.current) {
+            focusOnLoadRef.current = false
+            iframeRef.current?.focus()
+          }
         }}
         sandbox="allow-scripts allow-modals"
         className="h-full w-full flex-1 bg-white"

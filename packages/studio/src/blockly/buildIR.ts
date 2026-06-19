@@ -1721,16 +1721,6 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         kind: 'js',
         value: { type: 'g2d:drawSprite', spriteVar: f(block, 'SPRITE'), ctxVar: f(block, 'CTX') },
       }
-    case 'sz_g2d_move_by_keys':
-      seen.add('game-2d')
-      return {
-        kind: 'js',
-        value: {
-          type: 'g2d:moveByKeys',
-          spriteVar: f(block, 'SPRITE'),
-          speed: fn(block, 'SPEED', 3),
-        },
-      }
     case 'sz_g2d_set_position':
       seen.add('game-2d')
       return {
@@ -1831,6 +1821,167 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           xName: f(block, 'PX') || 'px',
           yName: f(block, 'PY') || 'py',
           body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_g2d_create_image_sprite':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:createImageSprite',
+          varName: f(block, 'NAME'),
+          x: fn(block, 'X'),
+          y: fn(block, 'Y'),
+          w: fn(block, 'W'),
+          h: fn(block, 'H'),
+          image: f(block, 'IMAGE'),
+        },
+      }
+    case 'sz_g2d_set_image':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: { type: 'g2d:setImage', spriteVar: f(block, 'SPRITE'), image: f(block, 'IMAGE') },
+      }
+    case 'sz_g2d_load_spritesheet':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:loadSpritesheet',
+          varName: f(block, 'NAME'),
+          image: f(block, 'IMAGE'),
+          frameW: fn(block, 'FW', 32),
+          frameH: fn(block, 'FH', 32),
+        },
+      }
+    case 'sz_g2d_animate_sprite':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:animateSprite',
+          spriteVar: f(block, 'SPRITE'),
+          sheetVar: f(block, 'SHEET'),
+          from: fn(block, 'FROM', 0),
+          to: fn(block, 'TO', 0),
+          fps: fn(block, 'FPS', 8),
+        },
+      }
+    case 'sz_g2d_draw_frame':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:drawFrame',
+          sheetVar: f(block, 'SHEET'),
+          ctxVar: f(block, 'CTX'),
+          index: fn(block, 'INDEX', 0),
+          x: fn(block, 'X'),
+          y: fn(block, 'Y'),
+          w: fn(block, 'W'),
+          h: fn(block, 'H'),
+        },
+      }
+    case 'sz_g2d_platformer':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:platformer',
+          spriteVar: f(block, 'SPRITE'),
+          ctxVar: f(block, 'CTX'),
+          speed: fn(block, 'SPEED', 4),
+          jump: fn(block, 'JUMP', 11),
+        },
+      }
+    case 'sz_g2d_top_down':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: { type: 'g2d:topDown', spriteVar: f(block, 'SPRITE'), speed: fn(block, 'SPEED', 3) },
+      }
+    case 'sz_g2d_follow_pointer':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:followPointer',
+          spriteVar: f(block, 'SPRITE'),
+          speed: fn(block, 'SPEED', 3),
+        },
+      }
+    case 'sz_g2d_clamp_to_screen':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:clampToScreen',
+          spriteVar: f(block, 'SPRITE'),
+          ctxVar: f(block, 'CTX'),
+        },
+      }
+    case 'sz_g2d_flash':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: { type: 'g2d:flash', color: f(block, 'COLOR'), ctxVar: f(block, 'CTX') },
+      }
+    case 'sz_g2d_shake':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: { type: 'g2d:shake', ctxVar: f(block, 'CTX'), intensity: fn(block, 'INTENSITY', 8) },
+      }
+    case 'sz_g2d_emit_particles':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:emitParticles',
+          count: fn(block, 'COUNT', 14),
+          color: f(block, 'COLOR'),
+          x: fn(block, 'X'),
+          y: fn(block, 'Y'),
+        },
+      }
+    case 'sz_g2d_draw_particles':
+      seen.add('game-2d')
+      return { kind: 'js', value: { type: 'g2d:drawParticles', ctxVar: f(block, 'CTX') } }
+
+    case 'sz_g2d_create_tilemap':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:createTileMap',
+          varName: f(block, 'NAME'),
+          image: f(block, 'IMAGE'),
+          tile: fn(block, 'TILE', 32),
+          solid: f(block, 'SOLID'),
+          grid: f(block, 'GRID'),
+        },
+      }
+    case 'sz_g2d_draw_tilemap':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:drawTileMap',
+          mapVar: f(block, 'MAP'),
+          ctxVar: f(block, 'CTX'),
+          x: fn(block, 'X'),
+          y: fn(block, 'Y'),
+        },
+      }
+    case 'sz_g2d_tilemap_collide':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:tileMapCollide',
+          spriteVar: f(block, 'SPRITE'),
+          mapVar: f(block, 'MAP'),
         },
       }
 

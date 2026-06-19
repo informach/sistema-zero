@@ -1,4 +1,4 @@
-import type { Project } from '#core'
+import { assetManifest, type Project } from '#core'
 import type { ExtensionPermission } from '#extensions'
 import { findExtension } from '#official-extensions'
 import { buildPreviewDoc, isCheckResultMessage } from '#preview'
@@ -57,6 +57,8 @@ export async function runSandboxChecks(
     // O harness vai POR ÚLTIMO: roda no `load`, depois das extensões e do aluno.
     extensionScripts: [...extensionScripts, harness],
     extraFiles: project.extraFiles,
+    // Semeia os assets para a auto-correção rodar o jogo com imagem como o aluno vê.
+    assets: assetManifest(project.assets),
     parentOrigin,
     installedPermissions: Array.from(permissions),
     fetchAllowedOrigins: security.fetchAllowedOrigins,

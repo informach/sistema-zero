@@ -11,13 +11,18 @@ import {
   type InstalledExtension,
   inferExtraLanguage,
   isReservedProjectFileName,
+  isValidAssetDataUrl,
   modesForKind,
+  normalizeAssetName,
   normalizeClassicMode,
   normalizeExtraFileName,
+  PROJECT_ASSET_LIMITS,
   type Project,
+  type ProjectAsset,
   type ProjectFiles,
   type ProjectTree,
   type ProProjectMeta,
+  sanitizeProjectAssets,
 } from '#core'
 import {
   type CSSEntry,
@@ -79,6 +84,12 @@ interface ProjectStore {
   setExtraFile: (name: string, content: string) => void
   renameExtraFile: (oldName: string, newName: string) => string | null
   removeExtraFile: (name: string) => void
+  // --- Assets embutidos (imagens/sprites) ---
+  /** Adiciona um asset (já reduzido/comprimido pela UI). Devolve erro ou null. */
+  addAsset: (input: NewAssetInput) => string | null
+  removeAsset: (id: string) => void
+  /** Renomeia um asset. Devolve erro ou null. */
+  renameAsset: (id: string, newName: string) => string | null
   // --- Modo profissional (project.kind === 'pro') ---
   /** Cria arquivo na árvore pro. Devolve mensagem de erro ou null se ok. */
   addProFile: (path: string) => string | null
@@ -95,6 +106,19 @@ interface ProjectStatePatch {
   ir?: SZIR | null
   blocksState?: unknown | null
   installedExtensions?: InstalledExtension[]
+}
+
+/**
+ * Entrada de `addAsset`: a UI já fez downscale/compressão no canvas e produziu o
+ * `data:` URL. O store gera o `id`, normaliza o nome e valida o orçamento.
+ */
+export interface NewAssetInput {
+  name: string
+  dataUrl: string
+  width?: number
+  height?: number
+  source?: 'upload' | 'library'
+  libId?: string
 }
 
 function bump<T extends Project>(p: T): T {
@@ -325,7 +349,6 @@ export const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> 
     'sz_g2d_create_sprite',
     'sz_g2d_draw_sprite',
     'sz_g2d_game_over',
-    'sz_g2d_move_by_keys',
     'sz_g2d_score',
     'sz_g2d_set_position',
     'sz_g2d_set_velocity',
@@ -336,6 +359,22 @@ export const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> 
     'sz_g2d_circle_collides',
     'sz_g2d_play_sound',
     'sz_g2d_on_pointer',
+    'sz_g2d_create_image_sprite',
+    'sz_g2d_set_image',
+    'sz_g2d_load_spritesheet',
+    'sz_g2d_animate_sprite',
+    'sz_g2d_draw_frame',
+    'sz_g2d_platformer',
+    'sz_g2d_top_down',
+    'sz_g2d_follow_pointer',
+    'sz_g2d_clamp_to_screen',
+    'sz_g2d_flash',
+    'sz_g2d_shake',
+    'sz_g2d_emit_particles',
+    'sz_g2d_draw_particles',
+    'sz_g2d_create_tilemap',
+    'sz_g2d_draw_tilemap',
+    'sz_g2d_tilemap_collide',
   ]),
   'game-3d': new Set([
     'sz_g3d_create_scene',
@@ -839,6 +878,7 @@ function sanitizeStoredProject(raw: unknown, requestedId?: string): Project | nu
     ir: sanitizeStoredIR(r.ir),
     blocksState: sanitizeStoredBlocksState(r.blocksState, installedExtensions),
     installedExtensions,
+    assets: sanitizeProjectAssets(r.assets),
     createdAt,
     updatedAt,
     ...(isPro ? { kind: 'pro' as const, tree, proMeta } : {}),
@@ -1470,6 +1510,7 @@ export function createProjectStore(
         // sem isso a soma podia passar de 8 MB e o primeiro reopen derrubaria
         // extras em silêncio, divergindo o registro no disco do que foi aberto.
         extraFiles: limitCombinedExtraFiles(files, sanitizeImportedExtraFiles(r.extraFiles)),
+        assets: sanitizeProjectAssets(r.assets),
         mode,
         ir: ir ?? base.ir,
         blocksState,
@@ -1703,6 +1744,57 @@ export function createProjectStore(
         isDirty: true,
         saveError: null,
       })
+    },
+    addAsset: (input) => {
+      const p = get().project
+      if (!p) return 'Nenhum projeto carregado.'
+      const name = normalizeAssetName(input.name)
+      if (!name) return 'Use um nome simples (letras, números e hífen).'
+      // A UI já reduziu/comprimiu; aqui revalidamos o teto e o esquema data:image/.
+      if (!isValidAssetDataUrl(input.dataUrl)) return 'Imagem inválida ou grande demais.'
+      const assets = p.assets ?? []
+      if (assets.length >= PROJECT_ASSET_LIMITS.maxAssetsCount) {
+        return `Limite de ${PROJECT_ASSET_LIMITS.maxAssetsCount} imagens por projeto.`
+      }
+      if (assets.some((a) => a.name === name)) return 'Já existe uma imagem com esse nome.'
+      const totalChars = assets.reduce((sum, a) => sum + a.dataUrl.length, 0) + input.dataUrl.length
+      if (totalChars > PROJECT_ASSET_LIMITS.maxAssetsTotalChars) {
+        return 'As imagens do projeto excedem o tamanho total permitido.'
+      }
+      const asset: ProjectAsset = {
+        id: ulid(),
+        name,
+        kind: 'image',
+        dataUrl: input.dataUrl,
+        source: input.source === 'library' ? 'library' : 'upload',
+        ...(typeof input.width === 'number' && input.width > 0 ? { width: input.width } : {}),
+        ...(typeof input.height === 'number' && input.height > 0 ? { height: input.height } : {}),
+        ...(input.source === 'library' && input.libId ? { libId: input.libId } : {}),
+      }
+      set({ project: bump({ ...p, assets: [...assets, asset] }), isDirty: true, saveError: null })
+      return null
+    },
+    removeAsset: (id) => {
+      const p = get().project
+      if (!p?.assets) return
+      const next = p.assets.filter((a) => a.id !== id)
+      if (next.length === p.assets.length) return
+      set({ project: bump({ ...p, assets: next }), isDirty: true, saveError: null })
+    },
+    renameAsset: (id, newName) => {
+      const p = get().project
+      if (!p?.assets) return 'Sem imagens no projeto.'
+      const name = normalizeAssetName(newName)
+      if (!name) return 'Use um nome simples (letras, números e hífen).'
+      const target = p.assets.find((a) => a.id === id)
+      if (!target) return 'Imagem não encontrada.'
+      if (p.assets.some((a) => a.id !== id && a.name === name)) {
+        return 'Já existe uma imagem com esse nome.'
+      }
+      if (target.name === name) return null
+      const next = p.assets.map((a) => (a.id === id ? { ...a, name } : a))
+      set({ project: bump({ ...p, assets: next }), isDirty: true, saveError: null })
+      return null
     },
     addProFile: (path) => {
       const p = get().project

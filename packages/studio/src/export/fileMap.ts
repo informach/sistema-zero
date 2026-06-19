@@ -1,5 +1,11 @@
-import { isReservedProjectFileName, normalizeExtraFileName, type Project } from '#core'
+import {
+  assetManifest,
+  isReservedProjectFileName,
+  normalizeExtraFileName,
+  type Project,
+} from '#core'
 import { findExtension } from '#official-extensions'
+import { buildAssetsRuntime } from '../preview/assetsBridge'
 import { transpileExtra } from '../preview/transpile'
 import type { Minifiers } from './minify'
 import { buildProductionIndexHtml } from './productionHtml'
@@ -155,6 +161,17 @@ export async function buildClassicFileMap(
     )
   }
 
+  // Assets embutidos → arquivo `sz-assets.js` que semeia `window.__SZGAME_ASSETS`.
+  // Reusa o MESMO runtime do preview (assetsBridge) para garantir paridade. Não
+  // minificamos: é quase só um literal JSON gigante (data: URLs) — terser não ganha
+  // nada e gastaria tempo mastigando megabytes de base64.
+  const manifest = assetManifest(project.assets)
+  let assetsScriptSrc: string | undefined
+  if (Object.keys(manifest).length > 0) {
+    assetsScriptSrc = 'sz-assets.js'
+    files['public/sz-assets.js'] = buildAssetsRuntime(manifest)
+  }
+
   const indexHtml = buildProductionIndexHtml({
     html: rawHtml,
     hasExternalCss,
@@ -164,6 +181,7 @@ export async function buildClassicFileMap(
     extensionScriptSrcs,
     extraCssHrefs,
     extraHtmlFragments,
+    assetsScriptSrc,
   })
   files['public/index.html'] = minifiers.html(indexHtml)
 
