@@ -208,6 +208,22 @@ const invalidInput = () => NextResponse.json({ error: { code: 'INVALID_INPUT' } 
 export function createShellRoutes(deps: ShellRoutesDeps) {
   const { session, gateway, auth, members, payments, profiles, media } = deps
 
+  const impersonationReadonly = () =>
+    NextResponse.json(
+      {
+        error: {
+          code: 'IMPERSONATION_READONLY',
+          message: 'Sessão de suporte é somente-leitura.',
+        },
+      },
+      { status: 403 },
+    )
+
+  async function requireWritableSession(): Promise<NextResponse | null> {
+    const user = await session.getSession()
+    return user?.act ? impersonationReadonly() : null
+  }
+
   // ── Auth ──────────────────────────────────────────────────────────────────
 
   /**
@@ -255,10 +271,8 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     PATCH: async (req: Request) => {
       // Sessão de IMPERSONAÇÃO (claim `act`) é SOMENTE-LEITURA p/ dados do aluno:
       // suporte não altera perfil/credenciais de quem está sendo atendido.
-      const user = await session.getSession()
-      if (user?.act) {
-        return NextResponse.json({ error: { code: 'IMPERSONATION_READONLY' } }, { status: 403 })
-      }
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const parsed = UpdateMeBody.safeParse(await req.json().catch(() => null))
       if (!parsed.success) return invalidInput()
       const { status, body } = await auth.updateMe(parsed.data)
@@ -274,10 +288,8 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     POST: async (req: Request) => {
       // Sessão de IMPERSONAÇÃO é SOMENTE-LEITURA: suporte não troca a senha do
       // aluno (trocar credenciais alheias seria takeover).
-      const user = await session.getSession()
-      if (user?.act) {
-        return NextResponse.json({ error: { code: 'IMPERSONATION_READONLY' } }, { status: 403 })
-      }
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const parsed = ChangePasswordBody.safeParse(await req.json().catch(() => null))
       if (!parsed.success) return invalidInput()
       const { status, body } = await auth.changeMyPassword(parsed.data)
@@ -685,6 +697,8 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
    */
   const courseRating = {
     PUT: async (req: Request, ctx: { params: Promise<{ slug: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const { slug } = await ctx.params
       const parsed = CourseRatingBody.safeParse(await req.json().catch(() => null))
       if (!parsed.success) {
@@ -701,6 +715,8 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
   /** Única mutação do player: marca a aula como concluída (idempotente no members). */
   const lessonComplete = {
     POST: async (_req: Request, ctx: { params: Promise<{ lessonId: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const { lessonId } = await ctx.params
       const { status, body } = await members.markLessonComplete(lessonId)
       return NextResponse.json(body ?? { ok: status === 200 }, { status })
@@ -758,6 +774,8 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
    */
   const lessonPosition = {
     POST: async (req: Request, ctx: { params: Promise<{ lessonId: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const { lessonId } = await ctx.params
       let parsed: z.infer<typeof VideoPositionBody>
       try {
@@ -780,6 +798,8 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
   /** Submete o quiz ao members (score no servidor; gabarito SÓ na resposta). */
   const quizAttempts = {
     POST: async (req: Request, ctx: { params: Promise<{ lessonId: string; blockId: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const { lessonId, blockId } = await ctx.params
       const parsed = QuizAttemptBody.safeParse(await req.json().catch(() => null))
       if (!parsed.success) {
@@ -800,6 +820,8 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
   /** Entrega do projeto do Estúdio ao members (destrava a conclusão da aula). */
   const studioSubmit = {
     POST: async (req: Request, ctx: { params: Promise<{ lessonId: string; blockId: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const { lessonId, blockId } = await ctx.params
       const raw = await req.json().catch(() => null)
       const project = extractStudioProject(raw)
@@ -864,6 +886,8 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
   /** Cria um perfil de criança. O auth resolve o teto pela matrícula (409 se estourar). */
   const profileCreate = {
     POST: async (req: Request) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const parsed = CreateProfileBody.safeParse(await req.json().catch(() => null))
       if (!parsed.success) return invalidInput()
       const { status, body } = await profiles.create(parsed.data)
@@ -873,6 +897,8 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
 
   const profileUpdate = {
     PATCH: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const { id } = await ctx.params
       const parsed = UpdateProfileBody.safeParse(await req.json().catch(() => null))
       if (!parsed.success) return invalidInput()
@@ -883,6 +909,8 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
 
   const profileArchive = {
     DELETE: async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const { id } = await ctx.params
       const { status, body } = await profiles.archive(id)
       return NextResponse.json(body ?? { ok: status === 200 }, { status })

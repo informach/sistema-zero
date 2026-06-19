@@ -79,14 +79,23 @@ async function readJson<T>(res: Response): Promise<T> {
 /** POST público (sem Bearer) numa rota de auth do gateway — login/OTP/exchange. */
 async function publicAuthPost<T>(path: string, body: unknown): Promise<GatewayResponse<T>> {
   const env = getEnv()
-  const res = await fetch(new URL(path, env.GATEWAY_URL), {
-    method: 'POST',
-    headers: { 'content-type': 'application/json', ...(await clientForwardHeaders()) },
-    body: JSON.stringify(body),
-    cache: 'no-store',
-    signal: AbortSignal.timeout(AUTH_TIMEOUT_MS),
-  })
-  return { status: res.status, body: await readJson<T>(res) }
+  try {
+    const res = await fetch(new URL(path, env.GATEWAY_URL), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', ...(await clientForwardHeaders()) },
+      body: JSON.stringify(body),
+      cache: 'no-store',
+      signal: AbortSignal.timeout(AUTH_TIMEOUT_MS),
+    })
+    return { status: res.status, body: await readJson<T>(res) }
+  } catch {
+    return {
+      status: 503,
+      body: {
+        error: { code: 'SERVICE_UNAVAILABLE', message: 'Serviço indisponível.' },
+      } as T,
+    }
+  }
 }
 
 /**

@@ -89,6 +89,22 @@ export function createHubRoutes(deps: {
   // Id do viewer p/ redigir o autor de terceiros (null = sem sessão → tudo redigido).
   const viewerId = async (): Promise<string | null> => (await session.getSession())?.id ?? null
 
+  const impersonationReadonly = () =>
+    NextResponse.json(
+      {
+        error: {
+          code: 'IMPERSONATION_READONLY',
+          message: 'Sessão de suporte é somente-leitura.',
+        },
+      },
+      { status: 403 },
+    )
+
+  async function requireWritableSession(): Promise<NextResponse | null> {
+    const user = await session.getSession()
+    return user?.act ? impersonationReadonly() : null
+  }
+
   const hubSpaces = {
     GET: async () => ok(await hub.listSpaces()),
   }
@@ -117,6 +133,8 @@ export function createHubRoutes(deps: {
       return okRedacted(r, vid)
     },
     POST: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const parsed = CreateThread.safeParse(await readJson(req))
       if (!parsed.success) return invalid()
       const r = await hub.createThread((await ctx.params).id, {
@@ -134,6 +152,8 @@ export function createHubRoutes(deps: {
       return okRedacted(r, vid)
     },
     PATCH: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const parsed = EditBody.safeParse(await readJson(req))
       if (!parsed.success) return invalid()
       const r = await hub.editThread((await ctx.params).id, parsed.data.body)
@@ -155,6 +175,8 @@ export function createHubRoutes(deps: {
       return okRedacted(r, vid)
     },
     POST: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const parsed = CreateComment.safeParse(await readJson(req))
       if (!parsed.success) return invalid()
       const r = await hub.createComment((await ctx.params).id, {
@@ -168,6 +190,8 @@ export function createHubRoutes(deps: {
 
   const hubComment = {
     PATCH: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const parsed = EditBody.safeParse(await readJson(req))
       if (!parsed.success) return invalid()
       const r = await hub.editComment((await ctx.params).id, parsed.data.body)
@@ -177,6 +201,8 @@ export function createHubRoutes(deps: {
 
   const hubThreadReactions = {
     POST: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const parsed = ReactBody.safeParse(await readJson(req))
       if (!parsed.success) return invalid()
       return ok(await hub.react('thread', (await ctx.params).id, parsed.data.emoji))
@@ -185,6 +211,8 @@ export function createHubRoutes(deps: {
 
   const hubThreadReactionDelete = {
     DELETE: async (_req: Request, ctx: { params: Promise<{ id: string; emoji: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const p = await ctx.params
       return ok(await hub.unreact('thread', p.id, p.emoji))
     },
@@ -192,6 +220,8 @@ export function createHubRoutes(deps: {
 
   const hubCommentReactions = {
     POST: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const parsed = ReactBody.safeParse(await readJson(req))
       if (!parsed.success) return invalid()
       return ok(await hub.react('comment', (await ctx.params).id, parsed.data.emoji))
@@ -200,18 +230,25 @@ export function createHubRoutes(deps: {
 
   const hubCommentReactionDelete = {
     DELETE: async (_req: Request, ctx: { params: Promise<{ id: string; emoji: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const p = await ctx.params
       return ok(await hub.unreact('comment', p.id, p.emoji))
     },
   }
 
   const hubChannelSeen = {
-    POST: async (_req: Request, ctx: { params: Promise<{ id: string }> }) =>
-      ok(await hub.markSeen((await ctx.params).id)),
+    POST: async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      return ok(await hub.markSeen((await ctx.params).id))
+    },
   }
 
   const hubThreadReport = {
     POST: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const parsed = ReportBody.safeParse(await readJson(req))
       if (!parsed.success) return invalid()
       return ok(await hub.report('thread', (await ctx.params).id, parsed.data.reason))
@@ -220,6 +257,8 @@ export function createHubRoutes(deps: {
 
   const hubCommentReport = {
     POST: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const parsed = ReportBody.safeParse(await readJson(req))
       if (!parsed.success) return invalid()
       return ok(await hub.report('comment', (await ctx.params).id, parsed.data.reason))

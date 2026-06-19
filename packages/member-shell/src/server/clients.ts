@@ -96,14 +96,21 @@ export function createProfilesClient(gw: GatewayModule) {
  */
 async function publicPost(path: string, body: unknown): Promise<GatewayResponse> {
   const env = getEnv()
-  const res = await fetch(new URL(path, env.GATEWAY_URL), {
-    method: 'POST',
-    headers: { 'content-type': 'application/json', ...(await clientForwardHeaders()) },
-    body: JSON.stringify(body),
-    cache: 'no-store',
-    signal: AbortSignal.timeout(AUTH_TIMEOUT_MS),
-  })
-  return { status: res.status, body: await res.json().catch(() => null) }
+  try {
+    const res = await fetch(new URL(path, env.GATEWAY_URL), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', ...(await clientForwardHeaders()) },
+      body: JSON.stringify(body),
+      cache: 'no-store',
+      signal: AbortSignal.timeout(AUTH_TIMEOUT_MS),
+    })
+    return { status: res.status, body: await res.json().catch(() => null) }
+  } catch {
+    return {
+      status: 503,
+      body: { error: { code: 'SERVICE_UNAVAILABLE', message: 'Serviço indisponível.' } },
+    }
+  }
 }
 
 /** Client das rotas de AUTH consumidas pelos apps de aluno (self-service + públicas). */
