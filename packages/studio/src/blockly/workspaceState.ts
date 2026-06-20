@@ -58,6 +58,9 @@ const ID_FIELD_TAGS = new Set([
   'button',
   'input',
   'textarea',
+  'svg',
+  'g',
+  'path',
 ])
 
 /** Atributos representados por um campo do bloco (logo, não vão para `data`). */
@@ -66,6 +69,13 @@ const FIELD_ATTRS: Record<string, readonly string[]> = {
   img: ['src', 'alt'],
   input: ['type', 'placeholder'],
   textarea: ['placeholder'],
+  svg: ['width', 'height', 'viewBox'],
+  g: ['transform'],
+  path: ['d', 'fill', 'stroke', 'transform'],
+  circle: ['cx', 'cy', 'r', 'fill'],
+  rect: ['x', 'y', 'width', 'height', 'fill'],
+  line: ['x1', 'y1', 'x2', 'y2', 'stroke'],
+  use: ['href', 'transform'],
 }
 
 /**
@@ -330,6 +340,91 @@ function htmlNodeToBlockInner(node: SZIR['html'][number]): SerializedBlocklyBloc
     return block(
       'sz_html_textarea',
       { ID: node.id ?? '', PLACEHOLDER: node.attrs?.placeholder ?? '' },
+      {},
+      node.__id,
+    )
+  }
+  // ---- SVG ----
+  if (node.tag === 'svg') {
+    return block(
+      'sz_html_svg',
+      {
+        ID: node.id ?? '',
+        WIDTH: node.attrs?.width ?? '',
+        HEIGHT: node.attrs?.height ?? '',
+        VIEWBOX: node.attrs?.viewBox ?? '',
+      },
+      { CHILDREN: (node.children ?? []).map(htmlNodeToBlock) },
+      node.__id,
+    )
+  }
+  if (node.tag === 'g') {
+    return block(
+      'sz_svg_group',
+      { ID: node.id ?? '', TRANSFORM: node.attrs?.transform ?? '' },
+      { CHILDREN: (node.children ?? []).map(htmlNodeToBlock) },
+      node.__id,
+    )
+  }
+  if (node.tag === 'path') {
+    return block(
+      'sz_svg_path',
+      {
+        ID: node.id ?? '',
+        D: node.attrs?.d ?? '',
+        FILL: node.attrs?.fill ?? '',
+        STROKE: node.attrs?.stroke ?? '',
+        TRANSFORM: node.attrs?.transform ?? '',
+      },
+      {},
+      node.__id,
+    )
+  }
+  if (node.tag === 'circle') {
+    return block(
+      'sz_svg_circle',
+      {
+        CX: node.attrs?.cx ?? '0',
+        CY: node.attrs?.cy ?? '0',
+        R: node.attrs?.r ?? '8',
+        FILL: node.attrs?.fill ?? '',
+      },
+      {},
+      node.__id,
+    )
+  }
+  if (node.tag === 'rect') {
+    return block(
+      'sz_svg_rect',
+      {
+        X: node.attrs?.x ?? '0',
+        Y: node.attrs?.y ?? '0',
+        WIDTH: node.attrs?.width ?? '20',
+        HEIGHT: node.attrs?.height ?? '20',
+        FILL: node.attrs?.fill ?? '',
+      },
+      {},
+      node.__id,
+    )
+  }
+  if (node.tag === 'line') {
+    return block(
+      'sz_svg_line',
+      {
+        X1: node.attrs?.x1 ?? '0',
+        Y1: node.attrs?.y1 ?? '0',
+        X2: node.attrs?.x2 ?? '10',
+        Y2: node.attrs?.y2 ?? '10',
+        STROKE: node.attrs?.stroke ?? 'black',
+      },
+      {},
+      node.__id,
+    )
+  }
+  if (node.tag === 'use') {
+    return block(
+      'sz_svg_use',
+      { HREF: node.attrs?.href ?? '#minhaForma', TRANSFORM: node.attrs?.transform ?? '' },
       {},
       node.__id,
     )
@@ -644,6 +739,25 @@ function statementsToBlocks(statements: JSStatement[]): SerializedBlocklyBlock[]
   return statements.map(statementToBlock).filter(isBlock)
 }
 
+// Propriedades de estilo com opção no dropdown do bloco `sz_js_set_style`; uma
+// fora desta lista vai para o campo livre CUSTOM (ex.: animationDuration).
+const STYLE_PROP_VALUES: ReadonlySet<string> = new Set([
+  'left',
+  'top',
+  'right',
+  'bottom',
+  'width',
+  'height',
+  'opacity',
+  'visibility',
+  'display',
+  'cursor',
+  'transform',
+  'background',
+  'color',
+  'zIndex',
+])
+
 function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
   switch (stmt.type) {
     case 'event': {
@@ -665,11 +779,12 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
           stmt.__id,
         )
       }
-      // Eventos globais sem alvo de elemento (mouse na tela / janela).
+      // Eventos globais sem alvo de elemento (mouse na tela / janela / tela cheia).
       const globalMap: Partial<Record<string, string>> = {
         mousemove: 'sz_js_on_mousemove',
         load: 'sz_js_on_load',
         resize: 'sz_js_on_resize',
+        fullscreenchange: 'sz_js_on_fullscreen_change',
       }
       const globalType = globalMap[stmt.event]
       if (globalType) {
@@ -690,6 +805,12 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         stmt.__id,
       )
     }
+    case 'requestFullscreen':
+      return block('sz_js_request_fullscreen', {}, {}, stmt.__id)
+    case 'exitFullscreen':
+      return block('sz_js_exit_fullscreen', {}, {}, stmt.__id)
+    case 'toggleFullscreen':
+      return block('sz_js_toggle_fullscreen', {}, {}, stmt.__id)
     case 'consoleLog': {
       const text = stringExpr(stmt.value)
       if (text !== null) return block('sz_js_console_log_text', { VALUE: text }, {}, stmt.__id)
@@ -752,6 +873,37 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
           { VALUE: valueBlock },
         )
       return rawJSBlock(stmt)
+    }
+    case 'setStyle': {
+      // 'this' não tem opção no dropdown → mantém como código avançado.
+      if (stmt.targetKind === 'this') return rawJSBlock(stmt)
+      const valueBlock = exprToValueBlock(stmt.value)
+      if (!valueBlock) return rawJSBlock(stmt)
+      const known = STYLE_PROP_VALUES.has(stmt.property)
+      return block(
+        'sz_js_set_style',
+        {
+          PROP: known ? stmt.property : 'left',
+          CUSTOM: known ? '' : stmt.property,
+          TARGET_KIND: stmt.targetKind ?? 'id',
+          TARGET: stmt.targetId,
+        },
+        {},
+        stmt.__id,
+        { VALUE: valueBlock },
+      )
+    }
+    case 'setAttribute': {
+      if (stmt.targetKind === 'this') return rawJSBlock(stmt)
+      const valueBlock = exprToValueBlock(stmt.value)
+      if (!valueBlock) return rawJSBlock(stmt)
+      return block(
+        'sz_js_set_attribute',
+        { NAME: stmt.name, TARGET_KIND: stmt.targetKind ?? 'id', TARGET: stmt.targetId },
+        {},
+        stmt.__id,
+        { VALUE: valueBlock },
+      )
     }
     case 'setText': {
       const value = stringExpr(stmt.value)
@@ -1158,6 +1310,14 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       return block('sz_canvas_stroke', { CTX: stmt.ctxVar }, {}, stmt.__id)
     case 'canvasFill':
       return block('sz_canvas_fill', { CTX: stmt.ctxVar }, {}, stmt.__id)
+    case 'canvasRect': {
+      const vs = valueBlocks({ X: stmt.x, Y: stmt.y, W: stmt.w, H: stmt.h })
+      return vs === null
+        ? rawJSBlock(stmt)
+        : block('sz_canvas_rect', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
+    }
+    case 'canvasClip':
+      return block('sz_canvas_clip', { CTX: stmt.ctxVar }, {}, stmt.__id)
     case 'canvasMoveTo': {
       const vs = valueBlocks({ X: stmt.x, Y: stmt.y })
       return vs === null
@@ -1668,6 +1828,47 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       return block('sz_g2d_play_dino_hurt', {}, {}, stmt.__id)
     case 'g2d:playCollect':
       return block('sz_g2d_play_collect', {}, {}, stmt.__id)
+    case 'g2d:createCity':
+      return block('sz_g2d_create_city', { NAME: stmt.varName }, {}, stmt.__id)
+    case 'g2d:drawCity':
+      return block('sz_g2d_draw_city', { CITY: stmt.cityVar }, {}, stmt.__id)
+    case 'g2d:placeThrower':
+      return block(
+        'sz_g2d_place_thrower',
+        { NAME: stmt.varName, CITY: stmt.cityVar, SIDE: stmt.side, COLOR: stmt.color },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:newWind':
+      return block('sz_g2d_new_wind', { CITY: stmt.cityVar }, {}, stmt.__id)
+    case 'g2d:drawWind':
+      return block('sz_g2d_draw_wind', { CITY: stmt.cityVar }, {}, stmt.__id)
+    case 'g2d:aimDrag':
+      return block('sz_g2d_aim_drag', { THROWER: stmt.throwerVar }, {}, stmt.__id)
+    case 'g2d:throwBanana':
+      return block(
+        'sz_g2d_throw_banana',
+        { THROWER: stmt.throwerVar, CITY: stmt.cityVar },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:updateBanana':
+      return block('sz_g2d_update_banana', { CITY: stmt.cityVar }, {}, stmt.__id)
+    case 'g2d:drawBanana':
+      return block('sz_g2d_draw_banana', { CITY: stmt.cityVar }, {}, stmt.__id)
+    case 'g2d:playWhistle':
+      return block('sz_g2d_play_whistle', {}, {}, stmt.__id)
+    case 'g2d:playBoom':
+      return block('sz_g2d_play_boom', {}, {}, stmt.__id)
+    case 'g2d:computerTurn':
+      return block(
+        'sz_g2d_computer_turn',
+        { THROWER: stmt.throwerVar, CITY: stmt.cityVar, ENEMY: stmt.enemyVar },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:drawAimReadout':
+      return block('sz_g2d_draw_aim_readout', {}, {}, stmt.__id)
     case 'g3d:createScene':
       return block(
         'sz_g3d_create_scene',
@@ -1902,6 +2103,84 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       return block('sz_g3d_run_rivals', { WORLD: stmt.worldVar }, {}, stmt.__id)
     case 'g3d:raceReset':
       return block('sz_g3d_race_reset', { OBJ: stmt.objVar, WORLD: stmt.worldVar }, {}, stmt.__id)
+    case 'g3d:fall':
+      return block('sz_g3d_fall', { OBJ: stmt.objVar }, {}, stmt.__id)
+    case 'g3d:slideBetween':
+      return block(
+        'sz_g3d_slide_between',
+        { OBJ: stmt.objVar, AXIS: stmt.axis, MIN: stmt.min, MAX: stmt.max, SPEED: stmt.speed },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:spin':
+      return block(
+        'sz_g3d_spin',
+        { OBJ: stmt.objVar, AXIS: stmt.axis, SPEED: stmt.speed },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:createStackScene':
+      return block(
+        'sz_g3d_create_stack_scene',
+        { CANVAS: stmt.canvasId, NAME: stmt.varName },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:createStackTower':
+      return block('sz_g3d_create_stack_tower', { WORLD: stmt.worldVar }, {}, stmt.__id)
+    case 'g3d:stackDrop':
+      return block('sz_g3d_stack_drop', { WORLD: stmt.worldVar }, {}, stmt.__id)
+    case 'g3d:stackStep':
+      return block('sz_g3d_stack_step', { WORLD: stmt.worldVar }, {}, stmt.__id)
+    case 'g3d:stackReset':
+      return block('sz_g3d_stack_reset', { WORLD: stmt.worldVar }, {}, stmt.__id)
+    case 'g3d:moveBy': {
+      const x = exprToValueBlock(stmt.x)
+      const y = exprToValueBlock(stmt.y)
+      const z = exprToValueBlock(stmt.z)
+      if (!x || !y || !z) return rawJSBlock(stmt)
+      return block('sz_g3d_move_by', { OBJ: stmt.objVar }, {}, stmt.__id, { X: x, Y: y, Z: z })
+    }
+    case 'g3d:rotateBy': {
+      const amount = exprToValueBlock(stmt.amount)
+      if (!amount) return rawJSBlock(stmt)
+      return block('sz_g3d_rotate_by', { OBJ: stmt.objVar, AXIS: stmt.axis }, {}, stmt.__id, {
+        AMOUNT: amount,
+      })
+    }
+    case 'g3d:moveTowards': {
+      const x = exprToValueBlock(stmt.x)
+      const y = exprToValueBlock(stmt.y)
+      const z = exprToValueBlock(stmt.z)
+      if (!x || !y || !z) return rawJSBlock(stmt)
+      return block(
+        'sz_g3d_move_towards',
+        { OBJ: stmt.objVar, FACTOR: stmt.factor },
+        {},
+        stmt.__id,
+        { X: x, Y: y, Z: z },
+      )
+    }
+    case 'g3d:lookAtObject':
+      return block('sz_g3d_look_at_object', { A: stmt.aVar, B: stmt.bVar }, {}, stmt.__id)
+    case 'g3d:lookAtPoint': {
+      const x = exprToValueBlock(stmt.x)
+      const y = exprToValueBlock(stmt.y)
+      const z = exprToValueBlock(stmt.z)
+      if (!x || !y || !z) return rawJSBlock(stmt)
+      return block('sz_g3d_look_at_point', { OBJ: stmt.objVar }, {}, stmt.__id, {
+        X: x,
+        Y: y,
+        Z: z,
+      })
+    }
+    case 'g3d:moveForward': {
+      const dist = exprToValueBlock(stmt.dist)
+      if (!dist) return rawJSBlock(stmt)
+      return block('sz_g3d_move_forward', { OBJ: stmt.objVar }, {}, stmt.__id, { DIST: dist })
+    }
+    case 'g3d:faceVelocity':
+      return block('sz_g3d_face_velocity', { OBJ: stmt.objVar }, {}, stmt.__id)
     case 'classDecl': {
       const members: SerializedBlocklyBlock[] = []
       // Construtor só vira bloco se há parâmetros ou corpo (espelha o gerador).
@@ -2148,6 +2427,12 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_g2d_sprite_angle', { SPRITE: expr.spriteVar })
     case 'g2d:sceneIs':
       return block('sz_g2d_scene_is', { SCENE: expr.name })
+    case 'g2d:aimReleased':
+      return block('sz_g2d_aim_released', { THROWER: expr.throwerVar })
+    case 'g2d:bananaHitThrower':
+      return block('sz_g2d_banana_hit_thrower', { CITY: expr.cityVar, THROWER: expr.throwerVar })
+    case 'g2d:bananaHitCity':
+      return block('sz_g2d_banana_hit_city', { CITY: expr.cityVar })
     case 'g3d:keyDown':
       return block('sz_g3d_key_down', { KEY: expr.key })
     case 'g3d:collides':
@@ -2168,12 +2453,48 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_g3d_race_hit', { OBJ: expr.objVar, WORLD: expr.worldVar })
     case 'g3d:raceLaps':
       return block('sz_g3d_race_laps', { OBJ: expr.objVar })
+    case 'g3d:stackScore':
+      return block('sz_g3d_stack_score', { WORLD: expr.worldVar })
+    case 'g3d:stackGameOver':
+      return block('sz_g3d_stack_game_over', { WORLD: expr.worldVar })
+    case 'g3d:getPos':
+      return block('sz_g3d_get_pos', { OBJ: expr.objVar, AXIS: expr.axis })
+    case 'g3d:getRot':
+      return block('sz_g3d_get_rot', { OBJ: expr.objVar, AXIS: expr.axis })
+    case 'g3d:getScale':
+      return block('sz_g3d_get_scale', { OBJ: expr.objVar })
+    case 'g3d:dt':
+      return block('sz_g3d_dt', { WORLD: expr.worldVar })
+    case 'g3d:angleTo':
+      return block('sz_g3d_angle_to', { A: expr.aVar, B: expr.bVar })
+    case 'g3d:pickAtMouse':
+      return block('sz_g3d_pick_at_mouse', { WORLD: expr.worldVar })
+    case 'g3d:pointerOver':
+      return block('sz_g3d_pointer_over', { WORLD: expr.worldVar, OBJ: expr.objVar })
+    case 'g3d:aimAhead':
+      return block('sz_g3d_aim_ahead', { WORLD: expr.worldVar, OBJ: expr.objVar, DIST: expr.dist })
+    case 'g3d:onGround':
+      return block('sz_g3d_on_ground', { WORLD: expr.worldVar, OBJ: expr.objVar })
+    case 'g3d:groundHeight':
+      return block('sz_g3d_ground_height', { WORLD: expr.worldVar, OBJ: expr.objVar })
     case 'inputKeyPressed':
       return block('sz_input_key_pressed', { KEY: expr.key })
     case 'inputPointer':
       return block(expr.axis === 'y' ? 'sz_input_pointer_y' : 'sz_input_pointer_x')
+    case 'isFullscreen':
+      return block('sz_val_is_fullscreen')
+    case 'systemDark':
+      return block('sz_val_system_dark')
     case 'global':
-      return block(expr.kind === 'innerWidth' ? 'sz_val_window_width' : 'sz_val_window_height')
+      switch (expr.kind) {
+        case 'innerWidth':
+          return block('sz_val_window_width')
+        case 'innerHeight':
+          return block('sz_val_window_height')
+        case 'devicePixelRatio':
+          return block('sz_val_device_pixel_ratio')
+      }
+      return block('sz_val_window_width')
     case 'canvasDim':
       return block(expr.dim === 'width' ? 'sz_val_canvas_width' : 'sz_val_canvas_height', {
         CTX: expr.ctxVar,
@@ -2183,6 +2504,18 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return t === null
         ? null
         : block('sz_canvas_measure_text', { CTX: expr.ctxVar }, {}, expr.__id, { TEXT: t })
+    }
+    case 'canvasIsPointInPath': {
+      const vs = valueBlocks({ X: expr.x, Y: expr.y })
+      return vs === null
+        ? null
+        : block('sz_canvas_point_in_path', { CTX: expr.ctxVar }, {}, expr.__id, vs)
+    }
+    case 'canvasIsPointInStroke': {
+      const vs = valueBlocks({ X: expr.x, Y: expr.y })
+      return vs === null
+        ? null
+        : block('sz_canvas_point_in_stroke', { CTX: expr.ctxVar }, {}, expr.__id, vs)
     }
     case 'random': {
       const min = exprToValueBlock(expr.min)

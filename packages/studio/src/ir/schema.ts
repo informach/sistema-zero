@@ -74,6 +74,10 @@ export type JSExpr =
   | (JSExprCommon & { type: 'g2d:spriteAngle'; spriteVar: string })
   // Game 2D — a cena/tela atual é "name"? (valor booleano).
   | (JSExprCommon & { type: 'g2d:sceneIs'; name: string })
+  // Game 2D — Kit gorilas: perguntas (booleanos) da batalha de bananas.
+  | (JSExprCommon & { type: 'g2d:aimReleased'; throwerVar: string })
+  | (JSExprCommon & { type: 'g2d:bananaHitThrower'; cityVar: string; throwerVar: string })
+  | (JSExprCommon & { type: 'g2d:bananaHitCity'; cityVar: string })
   // Game 3D — perguntas (booleanos): tecla apertada, dois objetos se encostando
   // (AABB) e colisão contra um grupo inteiro de inimigos.
   | (JSExprCommon & { type: 'g3d:keyDown'; key: string })
@@ -89,6 +93,21 @@ export type JSExpr =
   | (JSExprCommon & { type: 'g3d:isNear'; aVar: string; bVar: string; dist: number })
   | (JSExprCommon & { type: 'g3d:raceHit'; objVar: string; worldVar: string })
   | (JSExprCommon & { type: 'g3d:raceLaps'; objVar: string })
+  // Game 3D — Kit Empilhar: pontuação (andares) e a torre caiu (fim de jogo)?
+  | (JSExprCommon & { type: 'g3d:stackScore'; worldVar: string })
+  | (JSExprCommon & { type: 'g3d:stackGameOver'; worldVar: string })
+  // Game 3D — genéricos: ler posição/rotação (por eixo), escala e o tempo do quadro.
+  | (JSExprCommon & { type: 'g3d:getPos'; objVar: string; axis: string })
+  | (JSExprCommon & { type: 'g3d:getRot'; objVar: string; axis: string })
+  | (JSExprCommon & { type: 'g3d:getScale'; objVar: string })
+  | (JSExprCommon & { type: 'g3d:dt'; worldVar: string })
+  | (JSExprCommon & { type: 'g3d:angleTo'; aVar: string; bVar: string })
+  // Game 3D — mira & clique (raycast): seleção, mira à frente, sensor de chão.
+  | (JSExprCommon & { type: 'g3d:pickAtMouse'; worldVar: string })
+  | (JSExprCommon & { type: 'g3d:pointerOver'; worldVar: string; objVar: string })
+  | (JSExprCommon & { type: 'g3d:aimAhead'; worldVar: string; objVar: string; dist: number })
+  | (JSExprCommon & { type: 'g3d:onGround'; worldVar: string; objVar: string })
+  | (JSExprCommon & { type: 'g3d:groundHeight'; worldVar: string; objVar: string })
   // Entrada (caminho "na mão"): tecla apertada (bool) e posição do ponteiro (núm).
   | (JSExprCommon & { type: 'inputKeyPressed'; key: string })
   | (JSExprCommon & { type: 'inputPointer'; axis: 'x' | 'y' })
@@ -136,11 +155,19 @@ export type JSExpr =
   | (JSExprCommon & { type: 'arrayLength'; arrayVar: string })
   // Valor calculado a partir da data/hora atual (ex.: ano no rodapé).
   | (JSExprCommon & { type: 'now'; kind: 'year' | 'date' | 'time' })
-  // Largura/altura da viewport (window.innerWidth / window.innerHeight).
-  | (JSExprCommon & { type: 'global'; kind: 'innerWidth' | 'innerHeight' })
+  // Largura/altura da viewport e densidade de pixels (window.innerWidth /
+  // window.innerHeight / window.devicePixelRatio).
+  | (JSExprCommon & { type: 'global'; kind: 'innerWidth' | 'innerHeight' | 'devicePixelRatio' })
+  // O sistema está no modo escuro? (window.matchMedia('(prefers-color-scheme: dark)').matches)
+  | (JSExprCommon & { type: 'systemDark' })
+  // Está em tela cheia? (Fullscreen API) → document.fullscreenElement != null.
+  | (JSExprCommon & { type: 'isFullscreen' })
   // Largura/altura do elemento canvas associado a um contexto (canvas.width).
   | (JSExprCommon & { type: 'canvasDim'; ctxVar: string; dim: 'width' | 'height' })
   | (JSExprCommon & { type: 'canvasMeasureText'; ctxVar: string; text: JSExpr })
+  // Canvas — "o ponto (x,y) está dentro do traçado / na linha do traçado?" (booleanos).
+  | (JSExprCommon & { type: 'canvasIsPointInPath'; ctxVar: string; x: JSExpr; y: JSExpr })
+  | (JSExprCommon & { type: 'canvasIsPointInStroke'; ctxVar: string; x: JSExpr; y: JSExpr })
   // Inteiro aleatório no intervalo [min, max].
   | (JSExprCommon & { type: 'random'; min: JSExpr; max: JSExpr })
   // Cor HSL. Gera o template `hsl(${h}, ${s}%, ${l}%)`; h/s/l podem ser número,
@@ -221,6 +248,14 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('g2d:countGroup'), groupVar: irText(), ...idField }),
     z.object({ type: z.literal('g2d:spriteAngle'), spriteVar: irText(), ...idField }),
     z.object({ type: z.literal('g2d:sceneIs'), name: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:aimReleased'), throwerVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:bananaHitThrower'),
+      cityVar: irText(),
+      throwerVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:bananaHitCity'), cityVar: irText(), ...idField }),
     z.object({ type: z.literal('g3d:keyDown'), key: irText(), ...idField }),
     z.object({ type: z.literal('g3d:collides'), aVar: irText(), bVar: irText(), ...idField }),
     z.object({ type: z.literal('g3d:hitAny'), objVar: irText(), groupVar: irText(), ...idField }),
@@ -247,8 +282,38 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     }),
     z.object({ type: z.literal('g3d:raceHit'), objVar: irText(), worldVar: irText(), ...idField }),
     z.object({ type: z.literal('g3d:raceLaps'), objVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:stackScore'), worldVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:stackGameOver'), worldVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:getPos'), objVar: irText(), axis: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:getRot'), objVar: irText(), axis: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:getScale'), objVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:dt'), worldVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:angleTo'), aVar: irText(), bVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:pickAtMouse'), worldVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3d:pointerOver'),
+      worldVar: irText(),
+      objVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:aimAhead'),
+      worldVar: irText(),
+      objVar: irText(),
+      dist: z.number(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3d:onGround'), worldVar: irText(), objVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3d:groundHeight'),
+      worldVar: irText(),
+      objVar: irText(),
+      ...idField,
+    }),
     z.object({ type: z.literal('inputKeyPressed'), key: irText(), ...idField }),
     z.object({ type: z.literal('inputPointer'), axis: z.enum(['x', 'y']), ...idField }),
+    z.object({ type: z.literal('isFullscreen'), ...idField }),
+    z.object({ type: z.literal('systemDark'), ...idField }),
     z.object({
       type: z.literal('mathUnary'),
       fn: z.enum([
@@ -306,7 +371,7 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('now'), kind: z.enum(['year', 'date', 'time']), ...idField }),
     z.object({
       type: z.literal('global'),
-      kind: z.enum(['innerWidth', 'innerHeight']),
+      kind: z.enum(['innerWidth', 'innerHeight', 'devicePixelRatio']),
       ...idField,
     }),
     z.object({
@@ -319,6 +384,20 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
       type: z.literal('canvasMeasureText'),
       ctxVar: irText(),
       text: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasIsPointInPath'),
+      ctxVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasIsPointInStroke'),
+      ctxVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
       ...idField,
     }),
     z.object({ type: z.literal('random'), min: JSExprSchema, max: JSExprSchema, ...idField }),
@@ -403,6 +482,16 @@ export const HTMLTagSchema = z.enum([
   'input',
   'textarea',
   'label',
+  // SVG (gráficos vetoriais): o gerador HTML é genérico, então estas tags
+  // viram <tag attrs> normalmente; os atributos (d/transform/cx/cy/r/href/…) são
+  // preservados por collectAllAttrs no parse e por FIELD_ATTRS/data no round-trip.
+  'svg',
+  'g',
+  'path',
+  'circle',
+  'line',
+  'rect',
+  'use',
 ])
 export type HTMLTag = z.infer<typeof HTMLTagSchema>
 
@@ -644,11 +733,15 @@ const eventKindSchema = z.enum([
   'mouseover',
   'mouseout',
   'mousemove',
+  'mousedown',
+  'mouseup',
   'submit',
   'input',
   'change',
   'load',
   'resize',
+  // Entrou/saiu da tela cheia (Fullscreen API). Evento global no documento.
+  'fullscreenchange',
 ])
 export type EventKind = z.infer<typeof eventKindSchema>
 
@@ -739,10 +832,31 @@ export type JSStatement =
       property: 'textContent' | 'value' | 'innerHTML'
       varName: string
     })
+  // Estilo inline por código (`el.style.left = valor` / `el.style['z-index'] = valor`).
+  | (JSStatementCommon & {
+      type: 'setStyle'
+      targetId: string
+      targetKind?: 'id' | 'var' | 'this'
+      property: string
+      value: JSExpr
+    })
+  // Atributo por código (`el.setAttribute('stroke', valor)`).
+  | (JSStatementCommon & {
+      type: 'setAttribute'
+      targetId: string
+      targetKind?: 'id' | 'var' | 'this'
+      name: string
+      value: JSExpr
+    })
   // Cria um elemento e guarda numa variável (`const x = document.createElement('div')`).
   | (JSStatementCommon & { type: 'createElement'; tag: string; varName: string })
   // Adiciona um elemento dentro de outro (`pai.appendChild(filho)`).
   | (JSStatementCommon & { type: 'appendChild'; parentVar: string; childVar: string })
+  // Tela cheia (Fullscreen API) na PÁGINA inteira (document.documentElement).
+  // Entrar/sair/alternar — sem campos (o alvo é fixo = a página).
+  | (JSStatementCommon & { type: 'requestFullscreen' })
+  | (JSStatementCommon & { type: 'exitFullscreen' })
+  | (JSStatementCommon & { type: 'toggleFullscreen' })
   // Escreve um data-attribute (`el.dataset.chave = valor`).
   | (JSStatementCommon & {
       type: 'setDataset'
@@ -921,6 +1035,16 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'canvasFill'; ctxVar: string })
   | (JSStatementCommon & { type: 'canvasMoveTo'; ctxVar: string; x: JSExpr; y: JSExpr })
   | (JSStatementCommon & { type: 'canvasLineTo'; ctxVar: string; x: JSExpr; y: JSExpr })
+  // Canvas — adicionar retângulo ao traçado e recortar o desenho pelo traçado.
+  | (JSStatementCommon & {
+      type: 'canvasRect'
+      ctxVar: string
+      x: JSExpr
+      y: JSExpr
+      w: JSExpr
+      h: JSExpr
+    })
+  | (JSStatementCommon & { type: 'canvasClip'; ctxVar: string })
   | (JSStatementCommon & { type: 'canvasStrokeStyle'; ctxVar: string; color: JSExpr })
   | (JSStatementCommon & { type: 'canvasLineWidth'; ctxVar: string; width: JSExpr })
   | (JSStatementCommon & { type: 'canvasGlobalAlpha'; ctxVar: string; alpha: JSExpr })
@@ -1281,6 +1405,31 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'g2d:playJump' })
   | (JSStatementCommon & { type: 'g2d:playDinoHurt' })
   | (JSStatementCommon & { type: 'g2d:playCollect' })
+  // ---- Kit gorilas: batalha de bananas (artilharia) ----
+  | (JSStatementCommon & { type: 'g2d:createCity'; varName: string })
+  | (JSStatementCommon & { type: 'g2d:drawCity'; cityVar: string; ctxVar: string })
+  | (JSStatementCommon & {
+      type: 'g2d:placeThrower'
+      varName: string
+      cityVar: string
+      side: 'left' | 'right'
+      color: string
+    })
+  | (JSStatementCommon & { type: 'g2d:newWind'; cityVar: string })
+  | (JSStatementCommon & { type: 'g2d:drawWind'; cityVar: string; ctxVar: string })
+  | (JSStatementCommon & { type: 'g2d:aimDrag'; throwerVar: string; ctxVar: string })
+  | (JSStatementCommon & { type: 'g2d:throwBanana'; throwerVar: string; cityVar: string })
+  | (JSStatementCommon & { type: 'g2d:updateBanana'; cityVar: string })
+  | (JSStatementCommon & { type: 'g2d:drawBanana'; cityVar: string; ctxVar: string })
+  | (JSStatementCommon & { type: 'g2d:playWhistle' })
+  | (JSStatementCommon & { type: 'g2d:playBoom' })
+  | (JSStatementCommon & {
+      type: 'g2d:computerTurn'
+      throwerVar: string
+      cityVar: string
+      enemyVar: string
+    })
+  | (JSStatementCommon & { type: 'g2d:drawAimReadout'; ctxVar: string })
   // ---- Game 3D (extensão game-3d, Three.js via window.SZGame3D) ----
   | (JSStatementCommon & { type: 'g3d:createScene'; canvasId: string; varName: string })
   | (JSStatementCommon & { type: 'g3d:setBackground'; worldVar: string; color: string })
@@ -1408,6 +1557,44 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'g3d:raceControl'; objVar: string; mode: string })
   | (JSStatementCommon & { type: 'g3d:runRivals'; worldVar: string })
   | (JSStatementCommon & { type: 'g3d:raceReset'; objVar: string; worldVar: string })
+  // ---- Game 3D — genéricos de movimento/física (sem lib) e Kit Empilhar (Stack) ----
+  | (JSStatementCommon & { type: 'g3d:fall'; objVar: string })
+  | (JSStatementCommon & {
+      type: 'g3d:slideBetween'
+      objVar: string
+      axis: string
+      min: number
+      max: number
+      speed: number
+    })
+  | (JSStatementCommon & { type: 'g3d:spin'; objVar: string; axis: string; speed: number })
+  | (JSStatementCommon & { type: 'g3d:createStackScene'; canvasId: string; varName: string })
+  | (JSStatementCommon & { type: 'g3d:createStackTower'; worldVar: string })
+  | (JSStatementCommon & { type: 'g3d:stackDrop'; worldVar: string })
+  | (JSStatementCommon & { type: 'g3d:stackStep'; worldVar: string })
+  | (JSStatementCommon & { type: 'g3d:stackReset'; worldVar: string })
+  // ---- Game 3D — genéricos: mover/girar relativo + suavizar (lerp) ----
+  | (JSStatementCommon & { type: 'g3d:moveBy'; objVar: string; x: JSExpr; y: JSExpr; z: JSExpr })
+  | (JSStatementCommon & { type: 'g3d:rotateBy'; objVar: string; axis: string; amount: JSExpr })
+  | (JSStatementCommon & {
+      type: 'g3d:moveTowards'
+      objVar: string
+      x: JSExpr
+      y: JSExpr
+      z: JSExpr
+      factor: number
+    })
+  // ---- Game 3D — genéricos: olhar/apontar/andar para frente ----
+  | (JSStatementCommon & { type: 'g3d:lookAtObject'; aVar: string; bVar: string })
+  | (JSStatementCommon & {
+      type: 'g3d:lookAtPoint'
+      objVar: string
+      x: JSExpr
+      y: JSExpr
+      z: JSExpr
+    })
+  | (JSStatementCommon & { type: 'g3d:moveForward'; objVar: string; dist: JSExpr })
+  | (JSStatementCommon & { type: 'g3d:faceVelocity'; objVar: string })
   // Orientação a objetos
   | (JSStatementCommon & {
       type: 'classDecl'
@@ -1591,6 +1778,22 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('setStyle'),
+      targetId: irText(),
+      targetKind: z.enum(['id', 'var', 'this']).optional(),
+      property: irText(),
+      value: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('setAttribute'),
+      targetId: irText(),
+      targetKind: z.enum(['id', 'var', 'this']).optional(),
+      name: irText(),
+      value: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
       type: z.literal('createElement'),
       tag: irText(),
       varName: irText(),
@@ -1602,6 +1805,9 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       childVar: irText(),
       ...idField,
     }),
+    z.object({ type: z.literal('requestFullscreen'), ...idField }),
+    z.object({ type: z.literal('exitFullscreen'), ...idField }),
+    z.object({ type: z.literal('toggleFullscreen'), ...idField }),
     z.object({
       type: z.literal('setDataset'),
       targetId: irText(),
@@ -1875,6 +2081,16 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       y: JSExprSchema,
       ...idField,
     }),
+    z.object({
+      type: z.literal('canvasRect'),
+      ctxVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      w: JSExprSchema,
+      h: JSExprSchema,
+      ...idField,
+    }),
+    z.object({ type: z.literal('canvasClip'), ctxVar: irText(), ...idField }),
     z.object({
       type: z.literal('canvasStrokeStyle'),
       ctxVar: irText(),
@@ -2393,6 +2609,47 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({ type: z.literal('g2d:playJump'), ...idField }),
     z.object({ type: z.literal('g2d:playDinoHurt'), ...idField }),
     z.object({ type: z.literal('g2d:playCollect'), ...idField }),
+    z.object({ type: z.literal('g2d:createCity'), varName: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:drawCity'), cityVar: irText(), ctxVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:placeThrower'),
+      varName: irText(),
+      cityVar: irText(),
+      side: z.enum(['left', 'right']),
+      color: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:newWind'), cityVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:drawWind'), cityVar: irText(), ctxVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:aimDrag'),
+      throwerVar: irText(),
+      ctxVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:throwBanana'),
+      throwerVar: irText(),
+      cityVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:updateBanana'), cityVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:drawBanana'),
+      cityVar: irText(),
+      ctxVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:playWhistle'), ...idField }),
+    z.object({ type: z.literal('g2d:playBoom'), ...idField }),
+    z.object({
+      type: z.literal('g2d:computerTurn'),
+      throwerVar: irText(),
+      cityVar: irText(),
+      enemyVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:drawAimReadout'), ctxVar: irText(), ...idField }),
     z.object({
       type: z.literal('g3d:createScene'),
       canvasId: irText(),
@@ -2580,7 +2837,12 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       max: z.number(),
       ...idField,
     }),
-    z.object({ type: z.literal('g3d:topCamera'), worldVar: irText(), followVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3d:topCamera'),
+      worldVar: irText(),
+      followVar: irText(),
+      ...idField,
+    }),
     z.object({
       type: z.literal('g3d:moveInCircle'),
       objVar: irText(),
@@ -2605,7 +2867,79 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({ type: z.literal('g3d:raceStep'), objVar: irText(), worldVar: irText(), ...idField }),
     z.object({ type: z.literal('g3d:raceControl'), objVar: irText(), mode: irText(), ...idField }),
     z.object({ type: z.literal('g3d:runRivals'), worldVar: irText(), ...idField }),
-    z.object({ type: z.literal('g3d:raceReset'), objVar: irText(), worldVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3d:raceReset'),
+      objVar: irText(),
+      worldVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3d:fall'), objVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3d:slideBetween'),
+      objVar: irText(),
+      axis: irText(),
+      min: z.number(),
+      max: z.number(),
+      speed: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:spin'),
+      objVar: irText(),
+      axis: irText(),
+      speed: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:createStackScene'),
+      canvasId: irText(),
+      varName: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3d:createStackTower'), worldVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:stackDrop'), worldVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:stackStep'), worldVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:stackReset'), worldVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3d:moveBy'),
+      objVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      z: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:rotateBy'),
+      objVar: irText(),
+      axis: irText(),
+      amount: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:moveTowards'),
+      objVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      z: JSExprSchema,
+      factor: z.number(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3d:lookAtObject'), aVar: irText(), bVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3d:lookAtPoint'),
+      objVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      z: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:moveForward'),
+      objVar: irText(),
+      dist: JSExprSchema,
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3d:faceVelocity'), objVar: irText(), ...idField }),
     z.object({
       type: z.literal('g2d:updateEachFrame'),
       body: z.array(JSStatementSchema),
@@ -2901,6 +3235,19 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:playJump',
   'g2d:playDinoHurt',
   'g2d:playCollect',
+  'g2d:createCity',
+  'g2d:drawCity',
+  'g2d:placeThrower',
+  'g2d:newWind',
+  'g2d:drawWind',
+  'g2d:aimDrag',
+  'g2d:throwBanana',
+  'g2d:updateBanana',
+  'g2d:drawBanana',
+  'g2d:playWhistle',
+  'g2d:playBoom',
+  'g2d:computerTurn',
+  'g2d:drawAimReadout',
 ])
 
 export const G3D_STATEMENT_TYPES = new Set([
@@ -2944,6 +3291,21 @@ export const G3D_STATEMENT_TYPES = new Set([
   'g3d:raceControl',
   'g3d:runRivals',
   'g3d:raceReset',
+  'g3d:fall',
+  'g3d:slideBetween',
+  'g3d:spin',
+  'g3d:createStackScene',
+  'g3d:createStackTower',
+  'g3d:stackDrop',
+  'g3d:stackStep',
+  'g3d:stackReset',
+  'g3d:moveBy',
+  'g3d:rotateBy',
+  'g3d:moveTowards',
+  'g3d:lookAtObject',
+  'g3d:lookAtPoint',
+  'g3d:moveForward',
+  'g3d:faceVelocity',
 ])
 
 export function statementIsExtension(stmt: JSStatement, extensionId: string): boolean {

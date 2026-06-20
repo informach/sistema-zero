@@ -322,6 +322,120 @@ export const HTML_BLOCKS: BlockDefinition[] = [
     colour: C,
     tooltip: 'Cria um campo de texto longo.',
   },
+
+  // ---- SVG (desenho vetorial: ótimo para um moinho/cata-vento que gira por CSS) ----
+  {
+    type: 'sz_html_svg',
+    message0: 'Criar SVG id %1 largura %2 altura %3 viewBox %4',
+    args0: [
+      { type: 'field_input', name: 'ID', text: '' },
+      { type: 'field_input', name: 'WIDTH', text: '200' },
+      { type: 'field_input', name: 'HEIGHT', text: '200' },
+      { type: 'field_input', name: 'VIEWBOX', text: '' },
+    ],
+    message1: 'formas dentro %1',
+    args1: [{ type: 'input_statement', name: 'CHILDREN', check: 'HTMLNode' }],
+    ...classMsg2,
+    previousStatement: 'HTMLNode',
+    nextStatement: 'HTMLNode',
+    colour: C,
+    tooltip:
+      'Caixa de desenho vetorial. Coloque caminhos/círculos/grupos dentro. viewBox (opcional) define o sistema de coordenadas, ex.: "0 0 100 100".',
+  },
+  {
+    type: 'sz_svg_group',
+    message0: 'Criar grupo SVG id %1 transformar %2',
+    args0: [
+      { type: 'field_input', name: 'ID', text: '' },
+      { type: 'field_input', name: 'TRANSFORM', text: 'translate(100, 100)' },
+    ],
+    message1: 'formas dentro %1',
+    args1: [{ type: 'input_statement', name: 'CHILDREN', check: 'HTMLNode' }],
+    ...classMsg2,
+    previousStatement: 'HTMLNode',
+    nextStatement: 'HTMLNode',
+    colour: C,
+    tooltip:
+      'Agrupa formas SVG e as transforma juntas (mover/girar/escalar). Dê uma classe e gire por CSS (@keyframes) para fazer um moinho rodar.',
+  },
+  {
+    type: 'sz_svg_path',
+    message0: 'Criar caminho SVG id %1 forma (d) %2 preenchimento %3 contorno %4 transformar %5',
+    args0: [
+      { type: 'field_input', name: 'ID', text: '' },
+      { type: 'field_input', name: 'D', text: 'M 0 0 L 10 0 L 5 10 Z' },
+      { type: 'field_input', name: 'FILL', text: '' },
+      { type: 'field_input', name: 'STROKE', text: '' },
+      { type: 'field_input', name: 'TRANSFORM', text: '' },
+    ],
+    ...classMsg1,
+    previousStatement: 'HTMLNode',
+    nextStatement: 'HTMLNode',
+    colour: C,
+    tooltip:
+      'Uma forma livre desenhada pelo atributo "d" (M = mover, L = linha, C = curva, Z = fechar). Deixe preenchimento/contorno em branco para usar a cor do CSS.',
+  },
+  {
+    type: 'sz_svg_circle',
+    message0: 'Criar círculo SVG cx %1 cy %2 raio %3 preenchimento %4',
+    args0: [
+      { type: 'field_input', name: 'CX', text: '0' },
+      { type: 'field_input', name: 'CY', text: '0' },
+      { type: 'field_input', name: 'R', text: '8' },
+      { type: 'field_input', name: 'FILL', text: '' },
+    ],
+    ...classMsg1,
+    previousStatement: 'HTMLNode',
+    nextStatement: 'HTMLNode',
+    colour: C,
+    tooltip: 'Um círculo no centro (cx, cy) com raio r.',
+  },
+  {
+    type: 'sz_svg_rect',
+    message0: 'Criar retângulo SVG x %1 y %2 largura %3 altura %4 preenchimento %5',
+    args0: [
+      { type: 'field_input', name: 'X', text: '0' },
+      { type: 'field_input', name: 'Y', text: '0' },
+      { type: 'field_input', name: 'WIDTH', text: '20' },
+      { type: 'field_input', name: 'HEIGHT', text: '20' },
+      { type: 'field_input', name: 'FILL', text: '' },
+    ],
+    ...classMsg1,
+    previousStatement: 'HTMLNode',
+    nextStatement: 'HTMLNode',
+    colour: C,
+    tooltip: 'Um retângulo vetorial.',
+  },
+  {
+    type: 'sz_svg_line',
+    message0: 'Criar linha SVG de x %1 y %2 até x %3 y %4 contorno %5',
+    args0: [
+      { type: 'field_input', name: 'X1', text: '0' },
+      { type: 'field_input', name: 'Y1', text: '0' },
+      { type: 'field_input', name: 'X2', text: '10' },
+      { type: 'field_input', name: 'Y2', text: '10' },
+      { type: 'field_input', name: 'STROKE', text: 'black' },
+    ],
+    ...classMsg1,
+    previousStatement: 'HTMLNode',
+    nextStatement: 'HTMLNode',
+    colour: C,
+    tooltip: 'Uma linha reta entre dois pontos (precisa de um contorno para aparecer).',
+  },
+  {
+    type: 'sz_svg_use',
+    message0: 'Reusar forma SVG (href %1) transformar %2',
+    args0: [
+      { type: 'field_input', name: 'HREF', text: '#minhaForma' },
+      { type: 'field_input', name: 'TRANSFORM', text: '' },
+    ],
+    ...classMsg1,
+    previousStatement: 'HTMLNode',
+    nextStatement: 'HTMLNode',
+    colour: C,
+    tooltip:
+      'Reusa uma forma que tem um id (ex.: um caminho dentro de <defs>), opcionalmente transformada — bom para repetir as pás de um moinho.',
+  },
 ]
 
 /**
@@ -366,6 +480,19 @@ export const HTML_GROUPS: { name: string; colour: string; types: string[] }[] = 
     name: '✏️ Formulário',
     colour: '#818cf8',
     types: ['sz_html_form', 'sz_html_input', 'sz_html_textarea', 'sz_html_button', 'sz_html_label'],
+  },
+  {
+    name: '🎨 SVG (vetorial)',
+    colour: '#0ea5e9',
+    types: [
+      'sz_html_svg',
+      'sz_svg_group',
+      'sz_svg_path',
+      'sz_svg_circle',
+      'sz_svg_rect',
+      'sz_svg_line',
+      'sz_svg_use',
+    ],
   },
 ]
 

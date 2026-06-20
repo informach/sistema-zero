@@ -1184,6 +1184,182 @@ export const gameTwoDBlocks = [
     tooltip:
       'Solta um asteroide vindo de uma das bordas da tela (sorteada), já indo em direção ao centro. Use dentro de "a cada X segundos" para nascerem sem parar.',
   },
+
+  // ---- Kit gorilas (v0.11.0): batalha de bananas (artilharia) ----
+  {
+    type: 'sz_g2d_create_city',
+    message0: 'Criar cidade de prédios %1',
+    args0: [{ type: 'field_input', name: 'NAME', text: 'cidade' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Sorteia uma cidade de prédios (com janelas e vento) e guarda numa variável. É nela que os gorilas ficam e a banana abre crateras.',
+  },
+  {
+    type: 'sz_g2d_draw_city',
+    message0: 'Desenhar a cidade %1',
+    args0: [{ type: 'field_input', name: 'CITY', text: 'cidade' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Desenha o céu, a lua e os prédios com janelas — já com as crateras "furadas". Use no começo do "a cada quadro", depois de limpar a tela.',
+  },
+  {
+    type: 'sz_g2d_place_thrower',
+    message0: 'Pôr o gorila %1 na cidade %2 no lado %3 cor %4',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'gorila1' },
+      { type: 'field_input', name: 'CITY', text: 'cidade' },
+      {
+        type: 'field_dropdown',
+        name: 'SIDE',
+        options: [
+          ['esquerdo', 'left'],
+          ['direito', 'right'],
+        ],
+      },
+      { type: 'field_colour_sz', name: 'COLOR', colour: '#6b4a2b' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Cria um gorila no alto de um prédio perto da ponta (esquerda ou direita) e guarda numa variável. Faça um para cada jogador.',
+  },
+  {
+    type: 'sz_g2d_new_wind',
+    message0: 'Sortear o vento da cidade %1',
+    args0: [{ type: 'field_input', name: 'CITY', text: 'cidade' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Sorteia um novo vento (empurra a banana para um lado). Use a cada troca de turno.',
+  },
+  {
+    type: 'sz_g2d_draw_wind',
+    message0: 'Desenhar a seta do vento da cidade %1',
+    args0: [{ type: 'field_input', name: 'CITY', text: 'cidade' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Desenha uma seta no topo: o tamanho mostra a força do vento e o lado mostra a direção. Use no "a cada quadro".',
+  },
+  {
+    type: 'sz_g2d_aim_drag',
+    message0: 'Mirar arrastando a partir do gorila %1',
+    args0: [{ type: 'field_sprite_picker', name: 'THROWER', text: 'gorila1' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Enquanto segura o mouse/dedo, aponte para onde quer jogar (mais longe = mais forte) e veja a linha pontilhada da trajetória. Solte para lançar. Use no gorila da vez, no "a cada quadro".',
+  },
+  {
+    type: 'sz_g2d_aim_released',
+    message0: 'soltou a mira do gorila %1 ?',
+    args0: [{ type: 'field_sprite_picker', name: 'THROWER', text: 'gorila1' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Verdadeiro no instante em que a criança SOLTA a mira (depois de arrastar). Use num "se" para então "Jogar a banana".',
+  },
+  {
+    type: 'sz_g2d_throw_banana',
+    message0: 'Jogar a banana do gorila %1 na cidade %2',
+    args0: [
+      { type: 'field_sprite_picker', name: 'THROWER', text: 'gorila1' },
+      { type: 'field_input', name: 'CITY', text: 'cidade' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Lança a banana do gorila com a mira atual. Só dá pra ter uma banana voando por vez.',
+  },
+  {
+    type: 'sz_g2d_update_banana',
+    message0: 'Mover a banana da cidade %1',
+    args0: [{ type: 'field_input', name: 'CITY', text: 'cidade' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Move a banana um pouquinho: a gravidade puxa para baixo e o vento da cidade empurra para o lado. Use no "a cada quadro".',
+  },
+  {
+    type: 'sz_g2d_draw_banana',
+    message0: 'Desenhar a banana da cidade %1',
+    args0: [{ type: 'field_input', name: 'CITY', text: 'cidade' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Desenha a banana voando (com um rastro). Use no "a cada quadro".',
+  },
+  {
+    type: 'sz_g2d_banana_hit_thrower',
+    message0: 'a banana da cidade %1 acertou o gorila %2 ?',
+    args0: [
+      { type: 'field_input', name: 'CITY', text: 'cidade' },
+      { type: 'field_sprite_picker', name: 'THROWER', text: 'gorila2' },
+    ],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Verdadeiro se a banana encostou no gorila (acerto = vitória). Passe o gorila INIMIGO. Use num "se".',
+  },
+  {
+    type: 'sz_g2d_banana_hit_city',
+    message0: 'a banana da cidade %1 bateu num prédio ?',
+    args0: [{ type: 'field_input', name: 'CITY', text: 'cidade' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Verdadeiro quando a banana bate num prédio (abre uma cratera) ou sai da tela. É a hora de TROCAR de turno. Atenção: já abre o buraco e some com a banana.',
+  },
+  {
+    type: 'sz_g2d_play_whistle',
+    message0: 'Tocar som de banana caindo',
+    args0: [],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Um assobio que desce de tom (som sintetizado, sem precisar de arquivo).',
+  },
+  {
+    type: 'sz_g2d_play_boom',
+    message0: 'Tocar som de explosão',
+    args0: [],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Um "bum" curto de explosão (som sintetizado) — ótimo quando a banana acerta.',
+  },
+  {
+    type: 'sz_g2d_computer_turn',
+    message0: 'O robô do gorila %1 joga na cidade %2 mirando no %3',
+    args0: [
+      { type: 'field_sprite_picker', name: 'THROWER', text: 'gorila2' },
+      { type: 'field_input', name: 'CITY', text: 'cidade' },
+      { type: 'field_sprite_picker', name: 'ENEMY', text: 'gorila1' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O robô mira sozinho (simula vários lançamentos e escolhe o melhor), pensa um instante e joga a banana. Use no "a cada quadro", na vez do robô. Um tiro por vez. Passe o gorila INIMIGO no último campo.',
+  },
+  {
+    type: 'sz_g2d_draw_aim_readout',
+    message0: 'Mostrar ângulo e força da mira',
+    args0: [],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Mostra no canto o ângulo (graus) e a força do último arremesso/mira — bom para acompanhar o que o robô escolheu.',
+  },
 ]
 
 /**
@@ -1334,6 +1510,28 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g2d_play_jump',
       'sz_g2d_play_dino_hurt',
       'sz_g2d_play_collect',
+    ],
+  },
+  {
+    name: '🦍 Kit gorilas',
+    colour: '#a8632e',
+    types: [
+      'sz_g2d_create_city',
+      'sz_g2d_draw_city',
+      'sz_g2d_place_thrower',
+      'sz_g2d_new_wind',
+      'sz_g2d_draw_wind',
+      'sz_g2d_aim_drag',
+      'sz_g2d_aim_released',
+      'sz_g2d_throw_banana',
+      'sz_g2d_update_banana',
+      'sz_g2d_draw_banana',
+      'sz_g2d_banana_hit_thrower',
+      'sz_g2d_banana_hit_city',
+      'sz_g2d_play_whistle',
+      'sz_g2d_play_boom',
+      'sz_g2d_computer_turn',
+      'sz_g2d_draw_aim_readout',
     ],
   },
 ]

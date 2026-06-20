@@ -157,6 +157,22 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     tooltip: 'A altura da área visível do navegador.',
   },
   {
+    type: 'sz_val_device_pixel_ratio',
+    message0: 'densidade de pixels da tela',
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Quantos pixels reais cabem em 1 pixel de CSS (window.devicePixelRatio). Multiplique o tamanho do canvas por isto para um desenho nítido em telas Retina/2x.',
+  },
+  {
+    type: 'sz_val_system_dark',
+    message0: 'o sistema está no modo escuro?',
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Verdadeiro se o aparelho/navegador está no tema escuro (prefers-color-scheme: dark). Use num "se" para escolher as cores.',
+  },
+  {
     type: 'sz_val_canvas_width',
     message0: 'largura do canvas %1',
     args0: [{ type: 'field_input', name: 'CTX', text: 'ctx' }],

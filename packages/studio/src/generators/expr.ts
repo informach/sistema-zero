@@ -229,6 +229,12 @@ export function compileExpr(
       return `SZGame2D.spriteAngleDeg(${identifiers.get(expr.spriteVar)})`
     case 'g2d:sceneIs':
       return `SZGame2D.sceneIs(${JSON.stringify(expr.name)})`
+    case 'g2d:aimReleased':
+      return `SZGame2D.aimReleased(${identifiers.get(expr.throwerVar)})`
+    case 'g2d:bananaHitThrower':
+      return `SZGame2D.bananaHitThrower(${identifiers.get(expr.cityVar)}, ${identifiers.get(expr.throwerVar)})`
+    case 'g2d:bananaHitCity':
+      return `SZGame2D.bananaHitCity(${identifiers.get(expr.cityVar)})`
     case 'g3d:keyDown':
       return `SZGame3D.keyDown(${JSON.stringify(expr.key)})`
     case 'g3d:collides':
@@ -249,10 +255,36 @@ export function compileExpr(
       return `SZGame3D.raceHit(${identifiers.get(expr.objVar)}, ${identifiers.get(expr.worldVar)})`
     case 'g3d:raceLaps':
       return `SZGame3D.raceLaps(${identifiers.get(expr.objVar)})`
+    case 'g3d:stackScore':
+      return `SZGame3D.stackScore(${identifiers.get(expr.worldVar)})`
+    case 'g3d:stackGameOver':
+      return `SZGame3D.stackGameOver(${identifiers.get(expr.worldVar)})`
+    case 'g3d:getPos':
+      return `SZGame3D.getPos(${identifiers.get(expr.objVar)}, ${JSON.stringify(expr.axis)})`
+    case 'g3d:getRot':
+      return `SZGame3D.getRot(${identifiers.get(expr.objVar)}, ${JSON.stringify(expr.axis)})`
+    case 'g3d:getScale':
+      return `SZGame3D.getScale(${identifiers.get(expr.objVar)})`
+    case 'g3d:dt':
+      return `SZGame3D.dt(${identifiers.get(expr.worldVar)})`
+    case 'g3d:angleTo':
+      return `SZGame3D.angleTo(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
+    case 'g3d:pickAtMouse':
+      return `SZGame3D.pickAtMouse(${identifiers.get(expr.worldVar)})`
+    case 'g3d:pointerOver':
+      return `SZGame3D.pointerOver(${identifiers.get(expr.worldVar)}, ${identifiers.get(expr.objVar)})`
+    case 'g3d:aimAhead':
+      return `SZGame3D.aimAhead(${identifiers.get(expr.worldVar)}, ${identifiers.get(expr.objVar)}, ${expr.dist})`
+    case 'g3d:onGround':
+      return `SZGame3D.onGround(${identifiers.get(expr.worldVar)}, ${identifiers.get(expr.objVar)})`
+    case 'g3d:groundHeight':
+      return `SZGame3D.groundHeight(${identifiers.get(expr.worldVar)}, ${identifiers.get(expr.objVar)})`
     case 'inputKeyPressed':
       return `__szInput.key(${JSON.stringify(expr.key)})`
     case 'inputPointer':
       return `__szInput.${expr.axis}`
+    case 'isFullscreen':
+      return 'document.fullscreenElement != null'
     case 'now':
       switch (expr.kind) {
         case 'year':
@@ -264,11 +296,25 @@ export function compileExpr(
       }
       return ''
     case 'global':
-      return expr.kind === 'innerWidth' ? 'window.innerWidth' : 'window.innerHeight'
+      switch (expr.kind) {
+        case 'innerWidth':
+          return 'window.innerWidth'
+        case 'innerHeight':
+          return 'window.innerHeight'
+        case 'devicePixelRatio':
+          return 'window.devicePixelRatio'
+      }
+      return ''
+    case 'systemDark':
+      return "window.matchMedia('(prefers-color-scheme: dark)').matches"
     case 'canvasDim':
       return `${identifiers.getCanvasElement(expr.ctxVar)}.${expr.dim}`
     case 'canvasMeasureText':
       return `${identifiers.get(expr.ctxVar)}.measureText(${compileExpr(expr.text, 0, identifiers, rec)}).width`
+    case 'canvasIsPointInPath':
+      return `${identifiers.get(expr.ctxVar)}.isPointInPath(${compileExpr(expr.x, 0, identifiers, rec)}, ${compileExpr(expr.y, 0, identifiers, rec)})`
+    case 'canvasIsPointInStroke':
+      return `${identifiers.get(expr.ctxVar)}.isPointInStroke(${compileExpr(expr.x, 0, identifiers, rec)}, ${compileExpr(expr.y, 0, identifiers, rec)})`
     case 'random': {
       const min = compileExpr(expr.min, 0, identifiers, rec)
       const max = compileExpr(expr.max, 0, identifiers, rec)

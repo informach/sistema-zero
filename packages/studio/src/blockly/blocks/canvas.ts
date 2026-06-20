@@ -279,6 +279,33 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     tooltip: 'Pinta o interior do traçado com a cor do pincel (a nave, um asteroide…).',
   },
   {
+    type: 'sz_canvas_rect',
+    message0: 'Adicionar retângulo ao traçado %1 em x %2 y %3 largura %4 altura %5',
+    args0: [
+      { type: 'field_input', name: 'CTX', text: 'ctx' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'input_value', name: 'W', check: 'JSValue' },
+      { type: 'input_value', name: 'H', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Adiciona um retângulo ao traçado atual (não desenha sozinho). Útil junto com "recortar" para fazer buracos: traçado da tela inteira + um círculo.',
+  },
+  {
+    type: 'sz_canvas_clip',
+    message0: 'Recortar o desenho pelo traçado (pincel %1)',
+    args0: [{ type: 'field_input', name: 'CTX', text: 'ctx' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Daqui pra frente, só desenha DENTRO do traçado atual (o resto fica escondido). Combine com "salvar"/"restaurar" para soltar o recorte depois. Ótimo para crateras/máscaras.',
+  },
+  {
     type: 'sz_canvas_stroke_style',
     message0: 'Definir cor do contorno do pincel %1 como %2',
     args0: [
@@ -535,6 +562,33 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     colour: C,
     tooltip: 'Quantos pixels de largura o texto ocupa com a fonte atual (use para centralizar).',
   },
+  {
+    type: 'sz_canvas_point_in_path',
+    message0: 'o ponto x %1 y %2 está dentro do traçado (pincel %3) ?',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'field_input', name: 'CTX', text: 'ctx' },
+    ],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Verdadeiro se o ponto (x, y) cai DENTRO do traçado atual (o desenhado por último). Ótimo para saber se o clique acertou uma forma.',
+  },
+  {
+    type: 'sz_canvas_point_in_stroke',
+    message0: 'o ponto x %1 y %2 está na linha do traçado (pincel %3) ?',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'field_input', name: 'CTX', text: 'ctx' },
+    ],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Verdadeiro se o ponto (x, y) cai EM CIMA da linha (contorno) do traçado atual.',
+  },
   // ---- Entrada na mão: tecla apertada? e posição do mouse/dedo ----
   {
     type: 'sz_input_key_pressed',
@@ -617,9 +671,13 @@ export const CANVAS_GROUPS: { name: string; colour: string; types: string[] }[] 
       'sz_canvas_line_to',
       'sz_canvas_quadratic_curve',
       'sz_canvas_bezier_curve',
+      'sz_canvas_rect',
       'sz_canvas_close_path',
       'sz_canvas_stroke',
       'sz_canvas_fill',
+      'sz_canvas_clip',
+      'sz_canvas_point_in_path',
+      'sz_canvas_point_in_stroke',
     ],
   },
   {

@@ -1317,3 +1317,126 @@ describe('gameTwoDRuntime — nave clássica: girar + impulsionar (v0.10.0)', ()
     expect(Math.abs(a?.vx ?? 0) + Math.abs(a?.vy ?? 0)).toBeCloseTo(2, 6)
   })
 })
+
+describe('gameTwoDRuntime — Kit gorilas (v0.11.0)', () => {
+  interface City {
+    buildings: { x: number; w: number; h: number; color: string }[]
+    holes: { x: number; y: number; r: number }[]
+    wind: number
+    W: number
+    H: number
+  }
+  interface Gorilla {
+    x: number
+    y: number
+    w: number
+    h: number
+    skin: { kind: string; color: string; side: string }
+  }
+  interface GorillaSZ {
+    createCity(): City
+    placeThrower(city: City, o: { side: string; color: string }): Gorilla
+    newWind(city: City): void
+    throwBanana(thrower: Gorilla, city: City): void
+    updateBanana(city: City): void
+    bananaHitCity(city: City): boolean
+    bananaHitThrower(city: City, thrower: Gorilla): boolean
+    computerTurn(thrower: Gorilla, city: City, enemy: Gorilla): void
+  }
+
+  function gz(): GorillaSZ {
+    return loadRuntime().SZGame2D as unknown as GorillaSZ
+  }
+
+  it('expõe as funções do kit gorilas', () => {
+    const sz = loadRuntime().SZGame2D as unknown as Record<string, unknown>
+    for (const fn of [
+      'createCity',
+      'drawCity',
+      'placeThrower',
+      'newWind',
+      'drawWind',
+      'aimDrag',
+      'aimReleased',
+      'throwBanana',
+      'updateBanana',
+      'drawBanana',
+      'bananaHitThrower',
+      'bananaHitCity',
+      'playWhistle',
+      'playBoom',
+      'computerTurn',
+      'drawAimReadout',
+    ]) {
+      expect(typeof sz[fn]).toBe('function')
+    }
+  })
+
+  it('o robô (computerTurn) mira e joga sozinho — a banana resolve', () => {
+    const sz = gz()
+    const city = sz.createCity()
+    const robot = sz.placeThrower(city, { side: 'right', color: '#6b4a2b' })
+    const enemy = sz.placeThrower(city, { side: 'left', color: '#6b4a2b' })
+    // Roda a vez do robô a cada quadro: ele pensa ~48 quadros e joga; a banana
+    // voa e em algum momento bate num prédio ou no inimigo (one of the checks).
+    let resolved = false
+    for (let i = 0; i < 900 && !resolved; i++) {
+      sz.computerTurn(robot, city, enemy)
+      sz.updateBanana(city)
+      if (sz.bananaHitThrower(city, enemy) || sz.bananaHitCity(city)) resolved = true
+    }
+    expect(resolved).toBe(true)
+  })
+
+  it('createCity gera uma fileira de prédios (com largura/altura)', () => {
+    const city = gz().createCity()
+    expect(Array.isArray(city.buildings)).toBe(true)
+    expect(city.buildings.length).toBeGreaterThan(0)
+    expect(Array.isArray(city.holes)).toBe(true)
+    expect(city.holes.length).toBe(0)
+    expect(city.W).toBeGreaterThan(0)
+    expect(city.H).toBeGreaterThan(0)
+  })
+
+  it('newWind sorteia um vento dentro do limite', () => {
+    const sz = gz()
+    const city = sz.createCity()
+    sz.newWind(city)
+    expect(typeof city.wind).toBe('number')
+    expect(Math.abs(city.wind)).toBeLessThanOrEqual(0.06 + 1e-9)
+  })
+
+  it('placeThrower devolve um gorila no lado pedido', () => {
+    const sz = gz()
+    const city = sz.createCity()
+    const g = sz.placeThrower(city, { side: 'right', color: '#6b4a2b' })
+    expect(g.skin.kind).toBe('gorilla')
+    expect(g.skin.side).toBe('right')
+  })
+
+  it('bananaHitCity abre uma cratera quando a banana cai no prédio', () => {
+    const sz = gz()
+    const city = sz.createCity()
+    const g = sz.placeThrower(city, { side: 'left', color: '#6b4a2b' })
+    // sem mira, a banana sai parada da mão e a gravidade a derruba no prédio.
+    sz.throwBanana(g, city)
+    let hit = false
+    for (let i = 0; i < 400 && !hit; i++) {
+      sz.updateBanana(city)
+      hit = sz.bananaHitCity(city)
+    }
+    expect(hit).toBe(true)
+    expect(city.holes.length).toBeGreaterThan(0)
+  })
+
+  it('bananaHitThrower acerta o gorila e some com a banana (uma vez)', () => {
+    const sz = gz()
+    const city = sz.createCity()
+    const g = sz.placeThrower(city, { side: 'left', color: '#6b4a2b' })
+    // a banana nasce na mão do gorila → encosta nele.
+    sz.throwBanana(g, city)
+    expect(sz.bananaHitThrower(city, g)).toBe(true)
+    // já zerou: não acerta de novo.
+    expect(sz.bananaHitThrower(city, g)).toBe(false)
+  })
+})

@@ -38,6 +38,33 @@ describe('parseHTML', () => {
     ])
   })
 
+  it('extrai SVG (svg/g/path/circle) como elementos com atributos (NÃO rawHTML)', () => {
+    const ir = parseHTML(
+      '<svg id="moinho" width="200" height="250"><g class="cata" transform="translate(100,100)"><circle r="8"></circle><path d="M -7 -20 L 2 -80"></path></g></svg>',
+    )
+    expect(ir).toEqual([
+      {
+        type: 'element',
+        tag: 'svg',
+        id: 'moinho',
+        attrs: { width: '200', height: '250' },
+        children: [
+          {
+            type: 'element',
+            tag: 'g',
+            attrs: { class: 'cata', transform: 'translate(100,100)' },
+            children: [
+              { type: 'element', tag: 'circle', text: '', attrs: { r: '8' } },
+              { type: 'element', tag: 'path', text: '', attrs: { d: 'M -7 -20 L 2 -80' } },
+            ],
+          },
+        ],
+      },
+    ])
+    // nada virou "código avançado"
+    expect(JSON.stringify(ir)).not.toContain('rawHTML')
+  })
+
   it('mapeia container com filhos recursivamente (aninhamento)', () => {
     const ir = parseHTML('<section id="hero"><h1>x</h1><p>y</p></section>')
     expect(ir[0]).toEqual({

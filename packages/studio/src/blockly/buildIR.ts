@@ -293,6 +293,16 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'g2d:spriteAngle', spriteVar: f(block, 'SPRITE') }
     case 'sz_g2d_scene_is':
       return { type: 'g2d:sceneIs', name: f(block, 'SCENE') || 'inicio' }
+    case 'sz_g2d_aim_released':
+      return { type: 'g2d:aimReleased', throwerVar: f(block, 'THROWER') }
+    case 'sz_g2d_banana_hit_thrower':
+      return {
+        type: 'g2d:bananaHitThrower',
+        cityVar: f(block, 'CITY'),
+        throwerVar: f(block, 'THROWER'),
+      }
+    case 'sz_g2d_banana_hit_city':
+      return { type: 'g2d:bananaHitCity', cityVar: f(block, 'CITY') }
     case 'sz_g3d_key_down':
       return { type: 'g3d:keyDown', key: f(block, 'KEY') || 'KeyW' }
     case 'sz_g3d_collides':
@@ -308,17 +318,57 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
     case 'sz_g3d_distance_to':
       return { type: 'g3d:distanceTo', aVar: f(block, 'A'), bVar: f(block, 'B') }
     case 'sz_g3d_is_near':
-      return { type: 'g3d:isNear', aVar: f(block, 'A'), bVar: f(block, 'B'), dist: fn(block, 'DIST', 2) }
+      return {
+        type: 'g3d:isNear',
+        aVar: f(block, 'A'),
+        bVar: f(block, 'B'),
+        dist: fn(block, 'DIST', 2),
+      }
     case 'sz_g3d_race_hit':
       return { type: 'g3d:raceHit', objVar: f(block, 'OBJ'), worldVar: f(block, 'WORLD') }
     case 'sz_g3d_race_laps':
       return { type: 'g3d:raceLaps', objVar: f(block, 'OBJ') }
+    case 'sz_g3d_stack_score':
+      return { type: 'g3d:stackScore', worldVar: f(block, 'WORLD') }
+    case 'sz_g3d_stack_game_over':
+      return { type: 'g3d:stackGameOver', worldVar: f(block, 'WORLD') }
+    case 'sz_g3d_get_pos':
+      return { type: 'g3d:getPos', objVar: f(block, 'OBJ'), axis: f(block, 'AXIS') || 'x' }
+    case 'sz_g3d_get_rot':
+      return { type: 'g3d:getRot', objVar: f(block, 'OBJ'), axis: f(block, 'AXIS') || 'x' }
+    case 'sz_g3d_get_scale':
+      return { type: 'g3d:getScale', objVar: f(block, 'OBJ') }
+    case 'sz_g3d_dt':
+      return { type: 'g3d:dt', worldVar: f(block, 'WORLD') }
+    case 'sz_g3d_angle_to':
+      return { type: 'g3d:angleTo', aVar: f(block, 'A'), bVar: f(block, 'B') }
+    case 'sz_g3d_pick_at_mouse':
+      return { type: 'g3d:pickAtMouse', worldVar: f(block, 'WORLD') }
+    case 'sz_g3d_pointer_over':
+      return { type: 'g3d:pointerOver', worldVar: f(block, 'WORLD'), objVar: f(block, 'OBJ') }
+    case 'sz_g3d_aim_ahead':
+      return {
+        type: 'g3d:aimAhead',
+        worldVar: f(block, 'WORLD'),
+        objVar: f(block, 'OBJ'),
+        dist: fn(block, 'DIST', 100),
+      }
+    case 'sz_g3d_on_ground':
+      return { type: 'g3d:onGround', worldVar: f(block, 'WORLD'), objVar: f(block, 'OBJ') }
+    case 'sz_g3d_ground_height':
+      return { type: 'g3d:groundHeight', worldVar: f(block, 'WORLD'), objVar: f(block, 'OBJ') }
     case 'sz_input_key_pressed':
       return { type: 'inputKeyPressed', key: f(block, 'KEY') || 'ArrowRight' }
     case 'sz_input_pointer_x':
       return { type: 'inputPointer', axis: 'x' }
     case 'sz_input_pointer_y':
       return { type: 'inputPointer', axis: 'y' }
+    case 'sz_val_is_fullscreen':
+      return { type: 'isFullscreen' }
+    case 'sz_val_device_pixel_ratio':
+      return { type: 'global', kind: 'devicePixelRatio' }
+    case 'sz_val_system_dark':
+      return { type: 'systemDark' }
     case 'sz_val_window_width':
       return { type: 'global', kind: 'innerWidth' }
     case 'sz_val_window_height':
@@ -332,6 +382,20 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
         type: 'canvasMeasureText',
         ctxVar: f(block, 'CTX'),
         text: exprInput(block, 'TEXT', { type: 'str', value: '' }),
+      }
+    case 'sz_canvas_point_in_path':
+      return {
+        type: 'canvasIsPointInPath',
+        ctxVar: f(block, 'CTX'),
+        x: exprInput(block, 'X', { type: 'num', value: 0 }),
+        y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+      }
+    case 'sz_canvas_point_in_stroke':
+      return {
+        type: 'canvasIsPointInStroke',
+        ctxVar: f(block, 'CTX'),
+        x: exprInput(block, 'X', { type: 'num', value: 0 }),
+        y: exprInput(block, 'Y', { type: 'num', value: 0 }),
       }
     case 'sz_val_random':
       return {
@@ -793,6 +857,108 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
     }
     case 'sz_html_text':
       return { kind: 'html', value: { type: 'text', text: f(block, 'TEXT') } }
+    case 'sz_html_svg': {
+      const id = f(block, 'ID')
+      const attrs: Record<string, string> = {}
+      for (const [k, field] of [
+        ['width', 'WIDTH'],
+        ['height', 'HEIGHT'],
+        ['viewBox', 'VIEWBOX'],
+      ] as const) {
+        const v = f(block, field)
+        if (v) attrs[k] = v
+      }
+      return {
+        kind: 'html',
+        value: {
+          type: 'element',
+          tag: 'svg',
+          ...(id ? { id } : {}),
+          ...(Object.keys(attrs).length ? { attrs } : {}),
+          children: getHtmlChildren(block, 'CHILDREN', seen),
+        },
+      }
+    }
+    case 'sz_svg_group': {
+      const id = f(block, 'ID')
+      const tr = f(block, 'TRANSFORM')
+      return {
+        kind: 'html',
+        value: {
+          type: 'element',
+          tag: 'g',
+          ...(id ? { id } : {}),
+          ...(tr ? { attrs: { transform: tr } } : {}),
+          children: getHtmlChildren(block, 'CHILDREN', seen),
+        },
+      }
+    }
+    case 'sz_svg_path': {
+      const id = f(block, 'ID')
+      const attrs: Record<string, string> = {}
+      for (const [k, field] of [
+        ['d', 'D'],
+        ['fill', 'FILL'],
+        ['stroke', 'STROKE'],
+        ['transform', 'TRANSFORM'],
+      ] as const) {
+        const v = f(block, field)
+        if (v) attrs[k] = v
+      }
+      return {
+        kind: 'html',
+        value: { type: 'element', tag: 'path', ...(id ? { id } : {}), attrs },
+      }
+    }
+    case 'sz_svg_circle': {
+      const attrs: Record<string, string> = {}
+      for (const [k, field] of [
+        ['cx', 'CX'],
+        ['cy', 'CY'],
+        ['r', 'R'],
+        ['fill', 'FILL'],
+      ] as const) {
+        const v = f(block, field)
+        if (v) attrs[k] = v
+      }
+      return { kind: 'html', value: { type: 'element', tag: 'circle', attrs } }
+    }
+    case 'sz_svg_rect': {
+      const attrs: Record<string, string> = {}
+      for (const [k, field] of [
+        ['x', 'X'],
+        ['y', 'Y'],
+        ['width', 'WIDTH'],
+        ['height', 'HEIGHT'],
+        ['fill', 'FILL'],
+      ] as const) {
+        const v = f(block, field)
+        if (v) attrs[k] = v
+      }
+      return { kind: 'html', value: { type: 'element', tag: 'rect', attrs } }
+    }
+    case 'sz_svg_line': {
+      const attrs: Record<string, string> = {}
+      for (const [k, field] of [
+        ['x1', 'X1'],
+        ['y1', 'Y1'],
+        ['x2', 'X2'],
+        ['y2', 'Y2'],
+        ['stroke', 'STROKE'],
+      ] as const) {
+        const v = f(block, field)
+        if (v) attrs[k] = v
+      }
+      return { kind: 'html', value: { type: 'element', tag: 'line', attrs } }
+    }
+    case 'sz_svg_use': {
+      const attrs: Record<string, string> = {}
+      const href = f(block, 'HREF')
+      if (href) attrs.href = href
+      const tr = f(block, 'TRANSFORM')
+      if (tr) attrs.transform = tr
+      return { kind: 'html', value: { type: 'element', tag: 'use', attrs } }
+    }
     case 'sz_adv_raw_html':
       return { kind: 'html', value: { type: 'rawHTML', html: f(block, 'CODE'), advanced: true } }
 
@@ -1136,6 +1302,23 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           body: getStatementChildren(block, 'DO', seen),
         },
       }
+    case 'sz_js_on_fullscreen_change':
+      return {
+        kind: 'js',
+        value: {
+          type: 'event',
+          target: 'document',
+          targetKind: 'document',
+          event: 'fullscreenchange',
+          body: getStatementChildren(block, 'DO', seen),
+        },
+      }
+    case 'sz_js_request_fullscreen':
+      return { kind: 'js', value: { type: 'requestFullscreen' } }
+    case 'sz_js_exit_fullscreen':
+      return { kind: 'js', value: { type: 'exitFullscreen' } }
+    case 'sz_js_toggle_fullscreen':
+      return { kind: 'js', value: { type: 'toggleFullscreen' } }
     case 'sz_js_array_push':
       return {
         kind: 'js',
@@ -1237,6 +1420,30 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           ...targetKindField(block),
           property: f(block, 'PROP') as 'textContent' | 'value' | 'innerHTML',
           value: exprInput(block, 'VALUE', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_js_set_style': {
+      const custom = f(block, 'CUSTOM').trim()
+      return {
+        kind: 'js',
+        value: {
+          type: 'setStyle',
+          targetId: f(block, 'TARGET'),
+          ...targetKindField(block),
+          property: custom || f(block, 'PROP') || 'left',
+          value: exprInput(block, 'VALUE', { type: 'str', value: '' }),
+        },
+      }
+    }
+    case 'sz_js_set_attribute':
+      return {
+        kind: 'js',
+        value: {
+          type: 'setAttribute',
+          targetId: f(block, 'TARGET'),
+          ...targetKindField(block),
+          name: f(block, 'NAME') || 'stroke',
+          value: exprInput(block, 'VALUE', { type: 'str', value: '' }),
         },
       }
     case 'sz_js_set_text':
@@ -1843,6 +2050,20 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       return { kind: 'js', value: { type: 'canvasStroke', ctxVar: f(block, 'CTX') } }
     case 'sz_canvas_fill':
       return { kind: 'js', value: { type: 'canvasFill', ctxVar: f(block, 'CTX') } }
+    case 'sz_canvas_rect':
+      return {
+        kind: 'js',
+        value: {
+          type: 'canvasRect',
+          ctxVar: f(block, 'CTX'),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+          w: exprInput(block, 'W', { type: 'num', value: 100 }),
+          h: exprInput(block, 'H', { type: 'num', value: 100 }),
+        },
+      }
+    case 'sz_canvas_clip':
+      return { kind: 'js', value: { type: 'canvasClip', ctxVar: f(block, 'CTX') } }
     case 'sz_canvas_move_to':
       return {
         kind: 'js',
@@ -2773,6 +2994,83 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       seen.add('game-2d')
       return { kind: 'js', value: { type: 'g2d:playCollect' } }
 
+    // ---- Kit gorilas: batalha de bananas ----
+    case 'sz_g2d_create_city':
+      seen.add('game-2d')
+      return { kind: 'js', value: { type: 'g2d:createCity', varName: f(block, 'NAME') } }
+    case 'sz_g2d_draw_city':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: { type: 'g2d:drawCity', cityVar: f(block, 'CITY'), ctxVar: 'ctx' },
+      }
+    case 'sz_g2d_place_thrower':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:placeThrower',
+          varName: f(block, 'NAME'),
+          cityVar: f(block, 'CITY'),
+          side: f(block, 'SIDE') === 'right' ? 'right' : 'left',
+          color: f(block, 'COLOR'),
+        },
+      }
+    case 'sz_g2d_new_wind':
+      seen.add('game-2d')
+      return { kind: 'js', value: { type: 'g2d:newWind', cityVar: f(block, 'CITY') } }
+    case 'sz_g2d_draw_wind':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: { type: 'g2d:drawWind', cityVar: f(block, 'CITY'), ctxVar: 'ctx' },
+      }
+    case 'sz_g2d_aim_drag':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: { type: 'g2d:aimDrag', throwerVar: f(block, 'THROWER'), ctxVar: 'ctx' },
+      }
+    case 'sz_g2d_throw_banana':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:throwBanana',
+          throwerVar: f(block, 'THROWER'),
+          cityVar: f(block, 'CITY'),
+        },
+      }
+    case 'sz_g2d_update_banana':
+      seen.add('game-2d')
+      return { kind: 'js', value: { type: 'g2d:updateBanana', cityVar: f(block, 'CITY') } }
+    case 'sz_g2d_draw_banana':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: { type: 'g2d:drawBanana', cityVar: f(block, 'CITY'), ctxVar: 'ctx' },
+      }
+    case 'sz_g2d_play_whistle':
+      seen.add('game-2d')
+      return { kind: 'js', value: { type: 'g2d:playWhistle' } }
+    case 'sz_g2d_play_boom':
+      seen.add('game-2d')
+      return { kind: 'js', value: { type: 'g2d:playBoom' } }
+    case 'sz_g2d_computer_turn':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:computerTurn',
+          throwerVar: f(block, 'THROWER'),
+          cityVar: f(block, 'CITY'),
+          enemyVar: f(block, 'ENEMY'),
+        },
+      }
+    case 'sz_g2d_draw_aim_readout':
+      seen.add('game-2d')
+      return { kind: 'js', value: { type: 'g2d:drawAimReadout', ctxVar: 'ctx' } }
+
     // ---- Game 3D (extension blocks) ----
     case 'sz_g3d_create_scene':
       seen.add('game-3d')
@@ -3063,7 +3361,11 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       seen.add('game-3d')
       return {
         kind: 'js',
-        value: { type: 'g3d:topCamera', worldVar: f(block, 'WORLD'), followVar: f(block, 'FOLLOW') },
+        value: {
+          type: 'g3d:topCamera',
+          worldVar: f(block, 'WORLD'),
+          followVar: f(block, 'FOLLOW'),
+        },
       }
     case 'sz_g3d_move_in_circle':
       seen.add('game-3d')
@@ -3080,7 +3382,11 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       seen.add('game-3d')
       return {
         kind: 'js',
-        value: { type: 'g3d:createRaceScene', canvasId: f(block, 'CANVAS'), varName: f(block, 'NAME') },
+        value: {
+          type: 'g3d:createRaceScene',
+          canvasId: f(block, 'CANVAS'),
+          varName: f(block, 'NAME'),
+        },
       }
     case 'sz_g3d_create_race_track':
       seen.add('game-3d')
@@ -3106,7 +3412,11 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       seen.add('game-3d')
       return {
         kind: 'js',
-        value: { type: 'g3d:raceControl', objVar: f(block, 'OBJ'), mode: f(block, 'MODE') || 'normal' },
+        value: {
+          type: 'g3d:raceControl',
+          objVar: f(block, 'OBJ'),
+          mode: f(block, 'MODE') || 'normal',
+        },
       }
     case 'sz_g3d_run_rivals':
       seen.add('game-3d')
@@ -3117,6 +3427,122 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         kind: 'js',
         value: { type: 'g3d:raceReset', objVar: f(block, 'OBJ'), worldVar: f(block, 'WORLD') },
       }
+    case 'sz_g3d_fall':
+      seen.add('game-3d')
+      return { kind: 'js', value: { type: 'g3d:fall', objVar: f(block, 'OBJ') } }
+    case 'sz_g3d_slide_between':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3d:slideBetween',
+          objVar: f(block, 'OBJ'),
+          axis: f(block, 'AXIS') || 'x',
+          min: fn(block, 'MIN', -5),
+          max: fn(block, 'MAX', 5),
+          speed: fn(block, 'SPEED', 0.05),
+        },
+      }
+    case 'sz_g3d_spin':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3d:spin',
+          objVar: f(block, 'OBJ'),
+          axis: f(block, 'AXIS') || 'y',
+          speed: fn(block, 'SPEED', 0.03),
+        },
+      }
+    case 'sz_g3d_create_stack_scene':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3d:createStackScene',
+          canvasId: f(block, 'CANVAS'),
+          varName: f(block, 'NAME'),
+        },
+      }
+    case 'sz_g3d_create_stack_tower':
+      seen.add('game-3d')
+      return { kind: 'js', value: { type: 'g3d:createStackTower', worldVar: f(block, 'WORLD') } }
+    case 'sz_g3d_stack_drop':
+      seen.add('game-3d')
+      return { kind: 'js', value: { type: 'g3d:stackDrop', worldVar: f(block, 'WORLD') } }
+    case 'sz_g3d_stack_step':
+      seen.add('game-3d')
+      return { kind: 'js', value: { type: 'g3d:stackStep', worldVar: f(block, 'WORLD') } }
+    case 'sz_g3d_stack_reset':
+      seen.add('game-3d')
+      return { kind: 'js', value: { type: 'g3d:stackReset', worldVar: f(block, 'WORLD') } }
+    case 'sz_g3d_move_by':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3d:moveBy',
+          objVar: f(block, 'OBJ'),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_g3d_rotate_by':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3d:rotateBy',
+          objVar: f(block, 'OBJ'),
+          axis: f(block, 'AXIS') || 'y',
+          amount: exprInput(block, 'AMOUNT', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_g3d_move_towards':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3d:moveTowards',
+          objVar: f(block, 'OBJ'),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 0 }),
+          factor: fn(block, 'FACTOR', 0.1),
+        },
+      }
+    case 'sz_g3d_look_at_object':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: { type: 'g3d:lookAtObject', aVar: f(block, 'A'), bVar: f(block, 'B') },
+      }
+    case 'sz_g3d_look_at_point':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3d:lookAtPoint',
+          objVar: f(block, 'OBJ'),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_g3d_move_forward':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3d:moveForward',
+          objVar: f(block, 'OBJ'),
+          dist: exprInput(block, 'DIST', { type: 'num', value: 0.1 }),
+        },
+      }
+    case 'sz_g3d_face_velocity':
+      seen.add('game-3d')
+      return { kind: 'js', value: { type: 'g3d:faceVelocity', objVar: f(block, 'OBJ') } }
 
     default:
       // Bloco desconhecido — não devemos chegar aqui em uso normal. Loga e ignora.

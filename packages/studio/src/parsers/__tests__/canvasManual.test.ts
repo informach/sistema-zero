@@ -65,6 +65,57 @@ describe('canvas — traçado/contorno/fonte/transparência (caminho na mão)', 
     }
   })
 
+  it('round-trip: retângulo + recorte (clip) e ponto-no-traçado/na-linha (booleanos)', () => {
+    const ir: JSStatement[] = [
+      { type: 'canvasSetup', canvasId: 'tela', varName: 'ctx' },
+      { type: 'canvasBeginPath', ctxVar: 'ctx' },
+      {
+        type: 'canvasRect',
+        ctxVar: 'ctx',
+        x: { type: 'num', value: 0 },
+        y: { type: 'num', value: 0 },
+        w: { type: 'num', value: 300 },
+        h: { type: 'num', value: 200 },
+      },
+      { type: 'canvasClip', ctxVar: 'ctx' },
+      {
+        type: 'if',
+        cond: {
+          type: 'canvasIsPointInPath',
+          ctxVar: 'ctx',
+          x: { type: 'num', value: 10 },
+          y: { type: 'num', value: 20 },
+        },
+        then: [{ type: 'canvasFill', ctxVar: 'ctx' }],
+      },
+      {
+        type: 'if',
+        cond: {
+          type: 'canvasIsPointInStroke',
+          ctxVar: 'ctx',
+          x: { type: 'num', value: 10 },
+          y: { type: 'num', value: 20 },
+        },
+        then: [{ type: 'canvasStroke', ctxVar: 'ctx' }],
+      },
+    ]
+    const code = compileStatements(ir, 0)
+    expect(code).toContain('ctx.rect(0, 0, 300, 200);')
+    expect(code).toContain('ctx.clip();')
+    expect(code).toContain('ctx.isPointInPath(10, 20)')
+    expect(code).toContain('ctx.isPointInStroke(10, 20)')
+    const types = collectTypes(parseJS(code))
+    expect(types.has('rawJS')).toBe(false)
+    for (const expected of [
+      'canvasRect',
+      'canvasClip',
+      'canvasIsPointInPath',
+      'canvasIsPointInStroke',
+    ]) {
+      expect(types.has(expected)).toBe(true)
+    }
+  })
+
   it('gera o ctx.font no formato "<size>px <family>" e volta a tamanho+família', () => {
     const code = compileStatements(
       [

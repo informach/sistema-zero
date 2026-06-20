@@ -4,6 +4,8 @@ import {
   asteroidsClassicExample,
   asteroidsExample,
   dinoRunExample,
+  gorilasExample,
+  gorilasVsRobotExample,
   platformerExample,
   pongExample,
   tilemapExample,
@@ -12,9 +14,9 @@ import {
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.10.0',
+  version: '0.12.0',
   description:
-    'Blocos para criar jogos 2D no Canvas: sprites (cor/imagem/animação), grupos de MUITOS sprites com spawner e colisão de grupo, movimento, física, efeitos (clarão, tremor, partículas), tiles/tilemaps, HUD (placar/vidas/barra), telas/cenas, som, e KITS por tema — Kit espaço (nave, asteroides, estrelas, explosões e sons) e Kit dino (dinossauro que corre/pula/abaixa, obstáculos, ovos de bônus e fundo de floresta com parallax).',
+    'Blocos para criar jogos 2D no Canvas: sprites (cor/imagem/animação), grupos de muitos sprites, movimento, física, efeitos, tiles/tilemaps, HUD, telas/cenas, som, e KITS por tema — Kit espaço (nave e asteroides), Kit dino (corrida com obstáculos) e Kit gorilas (batalha de bananas por turnos: cidade destrutível, vento e mira por arrastar e soltar).',
   category: 'games',
   official: true,
   enabledByDefault: false,
@@ -160,6 +162,40 @@ Para jogos de **corrida** (estilo "Dino Run"), em que o personagem não anda par
   (\`localStorage\`), não precisa de bloco novo.
 
 Veja o exemplo **"Nave contra Asteroides"** para um jogo de tiro e **"Dino Run"** para um jogo de corrida — ambos completos, montados só com blocos.
+
+### Kit gorilas: batalha de bananas (v0.11.0)
+
+A categoria **🦍 Kit gorilas** monta um jogo de artilharia por turnos (estilo "Gorillas") para **2 jogadores** no mesmo aparelho — toda a parte difícil (cidade, física, crateras) já vem pronta:
+
+- **Criar cidade de prédios** — sorteia o cenário (prédios com janelas + vento) numa variável; é nela que tudo acontece.
+- **Desenhar a cidade** — desenha céu, lua e prédios, já com as crateras "furadas" (use no começo do "a cada quadro", depois de limpar).
+- **Pôr o gorila … no lado …** — cria um gorila no alto de um prédio da ponta (faça um para cada jogador).
+- **Sortear o vento** / **Desenhar a seta do vento** — o vento empurra a banana; re-sorteie a cada troca de turno.
+- **Mirar arrastando a partir do gorila** — arraste apontando para onde quer jogar (mais longe = mais forte) e veja a trajetória pontilhada; **solte para lançar**. Use no gorila da vez.
+- **soltou a mira do gorila … ?** — verdadeiro no instante em que solta; use num "se" para então **Jogar a banana**.
+- **Mover a banana** / **Desenhar a banana** — a gravidade e o vento entortam a parábola.
+- **a banana acertou o gorila … ?** — acerto no inimigo = vitória. **a banana bateu num prédio ?** — abre a cratera, some com a banana e é a hora de **trocar de turno** (\`vez = 1 - vez\`).
+- **sons** de banana caindo (assobio) e de explosão.
+
+Tem também novos blocos GENÉRICOS de canvas (em ✏️ Traçado) úteis para fazer crateras/máscaras na mão: **adicionar retângulo ao traçado**, **recortar o desenho pelo traçado** (clip) e as perguntas **o ponto x/y está dentro do traçado / na linha do traçado?**. E os eventos **apertar o mouse / soltar o mouse** para mira por arrastar na programação normal.
+
+Veja o exemplo **"Guerra de Gorilas"** — completo, montado só com blocos.
+
+### Kit gorilas: robô adversário (v0.12.0)
+
+- **O robô do gorila … joga na cidade … mirando no …** — um lançador **computador (IA)**: ele simula vários arremessos, escolhe o melhor, "pensa" um instante e joga sozinho. Use no "a cada quadro", na vez do robô, passando o gorila INIMIGO. Dá pra fazer **1 jogador vs computador** (troque o ramo de um gorila por este bloco) ou **autoplay** (troque os dois). Veja o exemplo **"Guerra de Gorilas vs Robô"**.
+- **Mostrar ângulo e força da mira** — escreve no canto o ângulo (graus) e a força do último arremesso; bom para ver o que o robô escolheu.
+
+### Fazer jogos parecidos "na mão" (sem o facilitador, v0.12.0)
+
+Dá pra montar jogos deste estilo **só com blocos genéricos** (HTML + CSS + Programação/Canvas), sem a extensão. Para isso entraram blocos novos no núcleo:
+
+- **Mudar o estilo do elemento por código** (elemento.style.x = …) e **Definir atributo** — posicionar/mover/mostrar/esconder painéis e formas, ou mudar stroke/fill/etc. de um SVG por código.
+- **Blocos de SVG** (categoria **🎨 SVG**): caixa SVG, grupo, caminho (d), círculo, retângulo, linha e "reusar" — bom para um **moinho/cata-vento que gira por CSS** (@keyframes).
+- **o sistema está no modo escuro?** (lê prefers-color-scheme) e **densidade de pixels da tela** (devicePixelRatio) — para temas claro/escuro e canvas nítido.
+- A **tela cheia** já existia (entrar/sair/alternar e "está em tela cheia?").
+
+Veja o exemplo clássico **"Cidade & Moinho (na mão)"** (no painel de Extensões → "Exemplos clássicos") — um mini-Gorillas montado SÓ com esses blocos: arrastar a bomba, vento, moinho SVG girando, painel de HTML e botão de tela cheia.
 `,
   examples: [
     pongExample,
@@ -169,5 +205,7 @@ Veja o exemplo **"Nave contra Asteroides"** para um jogo de tiro e **"Dino Run"*
     asteroidsExample,
     asteroidsClassicExample,
     dinoRunExample,
+    gorilasExample,
+    gorilasVsRobotExample,
   ],
 }

@@ -122,4 +122,19 @@ KIT DINO (v0.9.0) — categoria "🦕 Kit dino" com atalhos PRONTOS (não genér
 - drawForest(ctx, velocidade): fundo de FLORESTA com parallax (céu, sol, nuvens, morros e grama que rola) — chame logo após clear(). O dino corre sobre a grama.
 - playJump()/playDinoHurt()/playCollect(): sons de pulo, dano e coletar (sintetizados).
 - Recorde que PERSISTE: use os blocos genéricos de armazenamento (storageSet/storageGet, localStorage) — não há bloco específico de recorde. Existe o exemplo pronto "Dino Run" mostrando tudo junto.
+
+KIT GORILAS (v0.11.0) — categoria "🦍 Kit gorilas" com atalhos PRONTOS para um jogo de artilharia por TURNOS estilo "Gorillas", para 2 jogadores no mesmo aparelho. O estado pesado (cidade, banana, mira) mora no runtime; a criança só guarda a cidade, os gorilas e uma variável "vez" (0/1). Coordenadas de tela normais (Y para baixo); NÃO precisa de flip de Y nem fullscreen.
+- createCity(): sorteia uma cidade { buildings, holes, wind, W, H } (prédios com janelas + vento). Guarde numa variável (ex.: cidade). É nela que os gorilas ficam e a banana abre crateras.
+- drawCity(ctx, city): desenha céu, lua e prédios — JÁ com as crateras "furadas" (usa rect+arc+clip internamente). Use no começo do gameLoop, após clear().
+- placeThrower(city, { side, color }): cria um gorila (sprite normal, drawSprite desenha) no alto de um prédio perto da ponta ('left'/'right'). Faça um por jogador.
+- newWind(city): sorteia um novo vento (empurra a banana). drawWind(ctx, city): seta no topo (tamanho = força, lado = direção). Re-sorteie a cada troca de turno.
+- aimDrag(ctx, thrower): mira ARRASTANDO — enquanto segura o mouse/dedo, aponte para onde quer jogar (mais longe = mais forte) e veja a trajetória pontilhada; ao SOLTAR, congela a mira. Não faz nada enquanto uma banana está voando (um tiro por vez). Use no gorila da VEZ, no gameLoop.
+- aimReleased(thrower): valor (booleano) — verdadeiro no instante em que solta a mira. Use num "se" para então throwBanana.
+- throwBanana(thrower, city): lança a banana com a mira atual. updateBanana(city): move a banana (gravidade + vento). drawBanana(ctx, city): desenha a banana voando com rastro. Só existe UMA banana por vez.
+- bananaHitThrower(city, thrower): valor — a banana acertou o gorila? (passe o INIMIGO; acerto = vitória; some com a banana). bananaHitCity(city): valor — a banana bateu num prédio (abre cratera) ou saiu da tela? (some com a banana; é a hora de trocar a vez: vez = 1 - vez e newWind).
+- playWhistle()/playBoom(): assobio de banana caindo e explosão (sintetizados). Existe o exemplo pronto "Guerra de Gorilas" mostrando tudo junto.
+- computerTurn(thrower, city, enemy): vez do ROBÔ (IA). Use no gameLoop, na vez dele. Simula vários arremessos (mesma física da banana, sem ctx), escolhe o melhor mira no inimigo, "pensa" ~0,8s e joga sozinho. Respeita _banana (um tiro por vez). Para 1-jogador-vs-computador troque o ramo de um gorila por este bloco; para autoplay, os dois. Veja "Guerra de Gorilas vs Robô".
+- drawAimReadout(ctx): desenha "angulo X / forca Y" no canto (lê _aim) — útil para ver a escolha do robô.
+
+CANVAS NA MÃO (genérico) — novos blocos de ✏️ Traçado úteis para crateras/máscaras: ctx.rect(x,y,w,h) adiciona um retângulo ao traçado; ctx.clip() recorta o desenho pelo traçado atual; ctx.isPointInPath(x,y)/ctx.isPointInStroke(x,y) são perguntas (o ponto está dentro/na linha do traçado?). Para "furar" um buraco: traçado com o retângulo da tela inteira + um arco no sentido anti-horário, depois clip. Há também os eventos "apertar o mouse"/"soltar o mouse" (mousedown/mouseup) na programação normal, para mira por arrastar.
 `

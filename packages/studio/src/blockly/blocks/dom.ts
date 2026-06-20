@@ -119,6 +119,8 @@ export const DOM_BLOCKS: BlockDefinition[] = [
           ['clicar', 'click'],
           ['passar o mouse', 'mouseover'],
           ['tirar o mouse', 'mouseout'],
+          ['apertar o mouse', 'mousedown'],
+          ['soltar o mouse', 'mouseup'],
           ['enviar', 'submit'],
           ['digitar', 'input'],
           ['mudar', 'change'],
@@ -219,6 +221,52 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     tooltip:
       'Roda o "fazer" quando a janela do navegador muda de tamanho. Vira window.addEventListener("resize", (event) => { ... }).',
   },
+  {
+    type: 'sz_js_on_fullscreen_change',
+    message0: 'Quando a tela cheia mudar',
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'DO' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda o "fazer" quando a página entra OU sai da tela cheia (inclusive quando apertam ESC). Use junto de "está em tela cheia?" para trocar o ícone do botão. Vira document.addEventListener("fullscreenchange", (event) => { ... }).',
+  },
+  // ---- Tela cheia (Fullscreen API) ----
+  {
+    type: 'sz_js_request_fullscreen',
+    message0: 'entrar em tela cheia',
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Faz a página inteira ocupar a tela toda. Só funciona a partir de um clique ou tecla — use dentro de um "Quando clicarem". Vira document.documentElement.requestFullscreen().',
+  },
+  {
+    type: 'sz_js_exit_fullscreen',
+    message0: 'sair da tela cheia',
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Volta do modo tela cheia para a janela normal. Vira document.exitFullscreen().',
+  },
+  {
+    type: 'sz_js_toggle_fullscreen',
+    message0: 'alternar tela cheia',
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Liga/desliga a tela cheia: entra se estiver normal, sai se já estiver cheia. Ótimo para um botão — use dentro de um "Quando clicarem".',
+  },
+  {
+    type: 'sz_val_is_fullscreen',
+    message0: 'está em tela cheia?',
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Verdadeiro quando a página está em tela cheia. Use dentro de um "se" para trocar o ícone do botão (⛶ / ✕).',
+  },
   // ---- Buscar elementos ----
   {
     type: 'sz_js_get_element_by_id',
@@ -318,6 +366,72 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     colour: C,
     tooltip:
       'Escreve uma propriedade do elemento com qualquer valor (texto montado, conta, etc.). Use "juntar texto" para montar HTML.',
+  },
+  {
+    type: 'sz_js_set_style',
+    message0: 'Mudar o estilo %1 %2 %3 (ou %4) para %5',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'PROP',
+        options: [
+          ['esquerda (left)', 'left'],
+          ['topo (top)', 'top'],
+          ['direita (right)', 'right'],
+          ['baixo (bottom)', 'bottom'],
+          ['largura (width)', 'width'],
+          ['altura (height)', 'height'],
+          ['transparência (opacity)', 'opacity'],
+          ['visibilidade (visibility)', 'visibility'],
+          ['exibição (display)', 'display'],
+          ['cursor', 'cursor'],
+          ['transformação (transform)', 'transform'],
+          ['fundo (background)', 'background'],
+          ['cor (color)', 'color'],
+          ['camada (z-index)', 'zIndex'],
+        ],
+      },
+      {
+        type: 'field_dropdown',
+        name: 'TARGET_KIND',
+        options: [
+          ['do elemento id', 'id'],
+          ['da variável', 'var'],
+        ],
+      },
+      { type: 'field_input', name: 'TARGET', text: 'caixa' },
+      { type: 'field_input', name: 'CUSTOM', text: '' },
+      { type: 'input_value', name: 'VALUE', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Muda UMA propriedade de estilo do elemento por código (ex.: position/left/top para posicionar, opacity/visibility para mostrar/esconder). Vira el.style.left = valor. Escreva no campo livre para um estilo fora da lista (ex.: animationDuration). Lembre da unidade ("120px").',
+  },
+  {
+    type: 'sz_js_set_attribute',
+    message0: 'Definir o atributo %1 %2 %3 como %4',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'stroke' },
+      {
+        type: 'field_dropdown',
+        name: 'TARGET_KIND',
+        options: [
+          ['do elemento id', 'id'],
+          ['da variável', 'var'],
+        ],
+      },
+      { type: 'field_input', name: 'TARGET', text: 'forma' },
+      { type: 'input_value', name: 'VALUE', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Escreve um atributo do elemento por código (ex.: stroke/fill de um SVG, href, data-…). Vira el.setAttribute("nome", valor).',
   },
   {
     type: 'sz_js_set_property_var',

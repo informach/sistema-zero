@@ -5,6 +5,8 @@ import {
   asteroidsClassicExample,
   asteroidsExample,
   dinoRunExample,
+  gorilasExample,
+  gorilasVsRobotExample,
   platformerExample,
   pongExample,
   tilemapExample,
@@ -766,6 +768,118 @@ describe('parseJS — Kit dino + pulo no chão (v0.9.0)', () => {
     expect(parseJS('SZGame2D.playJump();')).toEqual([{ type: 'g2d:playJump' }])
     expect(parseJS('SZGame2D.playDinoHurt();')).toEqual([{ type: 'g2d:playDinoHurt' }])
     expect(parseJS('SZGame2D.playCollect();')).toEqual([{ type: 'g2d:playCollect' }])
+  })
+})
+
+describe('parseJS — Kit gorilas (v0.11.0)', () => {
+  it('reconhece a cidade e os gorilas como var-init', () => {
+    expect(parseJS('const cidade = SZGame2D.createCity();')).toEqual([
+      { type: 'g2d:createCity', varName: 'cidade' },
+    ])
+    expect(
+      parseJS('const gorila1 = SZGame2D.placeThrower(cidade, { side: "left", color: "#6b4a2b" });'),
+    ).toEqual([
+      {
+        type: 'g2d:placeThrower',
+        varName: 'gorila1',
+        cityVar: 'cidade',
+        side: 'left',
+        color: '#6b4a2b',
+      },
+    ])
+  })
+
+  it('reconhece os comandos do kit (ordem dos argumentos do gerador)', () => {
+    expect(parseJS('SZGame2D.drawCity(ctx, cidade);')).toEqual([
+      { type: 'g2d:drawCity', cityVar: 'cidade', ctxVar: 'ctx' },
+    ])
+    expect(parseJS('SZGame2D.newWind(cidade);')).toEqual([
+      { type: 'g2d:newWind', cityVar: 'cidade' },
+    ])
+    expect(parseJS('SZGame2D.drawWind(ctx, cidade);')).toEqual([
+      { type: 'g2d:drawWind', cityVar: 'cidade', ctxVar: 'ctx' },
+    ])
+    expect(parseJS('SZGame2D.aimDrag(ctx, gorila1);')).toEqual([
+      { type: 'g2d:aimDrag', throwerVar: 'gorila1', ctxVar: 'ctx' },
+    ])
+    expect(parseJS('SZGame2D.throwBanana(gorila1, cidade);')).toEqual([
+      { type: 'g2d:throwBanana', throwerVar: 'gorila1', cityVar: 'cidade' },
+    ])
+    expect(parseJS('SZGame2D.updateBanana(cidade);')).toEqual([
+      { type: 'g2d:updateBanana', cityVar: 'cidade' },
+    ])
+    expect(parseJS('SZGame2D.drawBanana(ctx, cidade);')).toEqual([
+      { type: 'g2d:drawBanana', cityVar: 'cidade', ctxVar: 'ctx' },
+    ])
+    expect(parseJS('SZGame2D.playWhistle();')).toEqual([{ type: 'g2d:playWhistle' }])
+    expect(parseJS('SZGame2D.playBoom();')).toEqual([{ type: 'g2d:playBoom' }])
+  })
+
+  it('reconhece as perguntas (booleanos) do kit dentro de um se', () => {
+    expect(
+      parseJS('if (SZGame2D.aimReleased(gorila1)) { SZGame2D.playWhistle(); }')[0],
+    ).toMatchObject({ type: 'if', cond: { type: 'g2d:aimReleased', throwerVar: 'gorila1' } })
+    expect(
+      parseJS('if (SZGame2D.bananaHitThrower(cidade, gorila2)) { SZGame2D.playBoom(); }')[0],
+    ).toMatchObject({
+      type: 'if',
+      cond: { type: 'g2d:bananaHitThrower', cityVar: 'cidade', throwerVar: 'gorila2' },
+    })
+    expect(
+      parseJS('if (SZGame2D.bananaHitCity(cidade)) { SZGame2D.newWind(cidade); }')[0],
+    ).toMatchObject({ type: 'if', cond: { type: 'g2d:bananaHitCity', cityVar: 'cidade' } })
+  })
+})
+
+describe('roundtrip do gorilasExample (batalha de bananas completa)', () => {
+  it('o código gerado volta a virar blocos (sem rawJS), com o Kit gorilas', () => {
+    const code = compileStatements(gorilasExample.ir.js, 0)
+    const ir = parseJS(code)
+    const types = collectTypes(ir)
+    expect(types.has('rawJS')).toBe(false)
+    for (const expected of [
+      'g2d:createCity',
+      'g2d:placeThrower',
+      'g2d:drawCity',
+      'g2d:newWind',
+      'g2d:drawWind',
+      'g2d:aimDrag',
+      'g2d:aimReleased',
+      'g2d:throwBanana',
+      'g2d:updateBanana',
+      'g2d:drawBanana',
+      'g2d:bananaHitThrower',
+      'g2d:bananaHitCity',
+      'g2d:playWhistle',
+      'g2d:playBoom',
+      'g2d:updateEachFrame',
+      'g2d:onKey',
+      'g2d:setScene',
+      'g2d:sceneIs',
+      'g2d:showScreen',
+      'g2d:drawScore',
+    ]) {
+      expect(types.has(expected)).toBe(true)
+    }
+  })
+})
+
+describe('parseJS — Kit gorilas robô (v0.12.0)', () => {
+  it('reconhece computerTurn e drawAimReadout', () => {
+    expect(parseJS('SZGame2D.computerTurn(gorila2, cidade, gorila1);')).toEqual([
+      { type: 'g2d:computerTurn', throwerVar: 'gorila2', cityVar: 'cidade', enemyVar: 'gorila1' },
+    ])
+    expect(parseJS('SZGame2D.drawAimReadout(ctx);')).toEqual([
+      { type: 'g2d:drawAimReadout', ctxVar: 'ctx' },
+    ])
+  })
+
+  it('roundtrip do gorilasVsRobotExample sem rawJS, com o robô', () => {
+    const code = compileStatements(gorilasVsRobotExample.ir.js, 0)
+    const types = collectTypes(parseJS(code))
+    expect(types.has('rawJS')).toBe(false)
+    expect(types.has('g2d:computerTurn')).toBe(true)
+    expect(types.has('g2d:drawAimReadout')).toBe(true)
   })
 })
 

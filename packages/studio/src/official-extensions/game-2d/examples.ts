@@ -849,6 +849,551 @@ export const dinoRunExample: ExtensionExample = {
 }
 
 /**
+ * Exemplo "Guerra de Gorilas" (v0.11.0): dois gorilas no alto dos prédios jogam
+ * bananas um no outro. Arraste a partir do gorila da vez para mirar (mais longe =
+ * mais forte) e SOLTE para lançar; o vento e a gravidade entortam a parábola e a
+ * banana abre crateras. Acertar o gorila inimigo vence; errar passa a vez (e
+ * sorteia um novo vento). 2 jogadores no mesmo aparelho. Mostra o Kit gorilas.
+ */
+export const gorilasExample: ExtensionExample = {
+  name: 'Guerra de Gorilas',
+  description:
+    'Dois gorilas no alto dos prédios jogam bananas um no outro. Arraste a partir do gorila da vez para mirar (mais longe = mais forte) e solte para lançar; o vento e a gravidade entortam a parábola e a banana abre crateras nos prédios. Acertar o inimigo vence; errar passa a vez. 2 jogadores. Enter começa.',
+  ir: {
+    html: [{ type: 'canvas', id: 'tela', width: 480, height: 270 }],
+    css: [
+      {
+        selector: 'body',
+        declarations: {
+          background: '#10162e',
+          display: 'flex',
+          'align-items': 'center',
+          'justify-content': 'center',
+          'min-height': '100vh',
+          margin: '0',
+        },
+      },
+      {
+        selector: 'canvas',
+        declarations: {
+          border: '3px solid #ffffff',
+          'border-radius': '18px',
+          background: '#10162e',
+          cursor: 'crosshair',
+        },
+      },
+    ],
+    js: [
+      // --- Setup (no TOPO: o "a cada quadro" enxerga estas variáveis) ---
+      { type: 'g2d:fitScreen', percent: 100 },
+      { type: 'g2d:createCity', varName: 'cidade' },
+      {
+        type: 'g2d:placeThrower',
+        varName: 'gorila1',
+        cityVar: 'cidade',
+        side: 'left',
+        color: '#6b4a2b',
+      },
+      {
+        type: 'g2d:placeThrower',
+        varName: 'gorila2',
+        cityVar: 'cidade',
+        side: 'right',
+        color: '#7b5e3b',
+      },
+      { type: 'var', name: 'vez', value: { type: 'num', value: 0 } },
+      { type: 'g2d:newWind', cityVar: 'cidade' },
+      { type: 'g2d:setScene', name: 'inicio' },
+      // --- Enter: começar / reiniciar ---
+      {
+        type: 'g2d:onKey',
+        key: 'Enter',
+        body: [
+          {
+            type: 'if',
+            cond: { type: 'g2d:sceneIs', name: 'inicio' },
+            then: [{ type: 'g2d:setScene', name: 'jogando' }],
+          },
+          {
+            type: 'if',
+            cond: { type: 'g2d:sceneIs', name: 'ganhou1' },
+            then: [{ type: 'g2d:restart' }],
+          },
+          {
+            type: 'if',
+            cond: { type: 'g2d:sceneIs', name: 'ganhou2' },
+            then: [{ type: 'g2d:restart' }],
+          },
+        ],
+      },
+      // --- Loop principal: limpa, desenha a cidade e despacha por cena ---
+      {
+        type: 'g2d:updateEachFrame',
+        body: [
+          { type: 'g2d:clear' },
+          { type: 'g2d:drawCity', cityVar: 'cidade', ctxVar: 'ctx' },
+          // tela de início
+          {
+            type: 'if',
+            cond: { type: 'g2d:sceneIs', name: 'inicio' },
+            then: [
+              {
+                type: 'g2d:showScreen',
+                ctxVar: 'ctx',
+                title: 'Guerra de Gorilas',
+                subtitle:
+                  'Arraste a partir do gorila da vez para mirar e solte para jogar a banana. 2 jogadores!',
+                hint: 'Aperte Enter para começar',
+                bg: '#1b2a4a',
+              },
+            ],
+          },
+          // jogando
+          {
+            type: 'if',
+            cond: { type: 'g2d:sceneIs', name: 'jogando' },
+            then: [
+              { type: 'g2d:drawWind', cityVar: 'cidade', ctxVar: 'ctx' },
+              { type: 'g2d:drawSprite', spriteVar: 'gorila1', ctxVar: 'ctx' },
+              { type: 'g2d:drawSprite', spriteVar: 'gorila2', ctxVar: 'ctx' },
+              // vez do jogador 1 (esquerda): mira e lança
+              {
+                type: 'if',
+                cond: {
+                  type: 'binop',
+                  op: '==',
+                  left: { type: 'var', name: 'vez' },
+                  right: { type: 'num', value: 0 },
+                },
+                then: [
+                  { type: 'g2d:aimDrag', throwerVar: 'gorila1', ctxVar: 'ctx' },
+                  {
+                    type: 'if',
+                    cond: { type: 'g2d:aimReleased', throwerVar: 'gorila1' },
+                    then: [
+                      { type: 'g2d:throwBanana', throwerVar: 'gorila1', cityVar: 'cidade' },
+                      { type: 'g2d:playWhistle' },
+                    ],
+                  },
+                ],
+              },
+              // vez do jogador 2 (direita): mira e lança
+              {
+                type: 'if',
+                cond: {
+                  type: 'binop',
+                  op: '==',
+                  left: { type: 'var', name: 'vez' },
+                  right: { type: 'num', value: 1 },
+                },
+                then: [
+                  { type: 'g2d:aimDrag', throwerVar: 'gorila2', ctxVar: 'ctx' },
+                  {
+                    type: 'if',
+                    cond: { type: 'g2d:aimReleased', throwerVar: 'gorila2' },
+                    then: [
+                      { type: 'g2d:throwBanana', throwerVar: 'gorila2', cityVar: 'cidade' },
+                      { type: 'g2d:playWhistle' },
+                    ],
+                  },
+                ],
+              },
+              // a banana voa (gravidade + vento) e aparece
+              { type: 'g2d:updateBanana', cityVar: 'cidade' },
+              { type: 'g2d:drawBanana', cityVar: 'cidade', ctxVar: 'ctx' },
+              // a banana do jogador 1 acertou o gorila 2? (vitória)
+              {
+                type: 'if',
+                cond: {
+                  type: 'binop',
+                  op: '==',
+                  left: { type: 'var', name: 'vez' },
+                  right: { type: 'num', value: 0 },
+                },
+                then: [
+                  {
+                    type: 'if',
+                    cond: {
+                      type: 'g2d:bananaHitThrower',
+                      cityVar: 'cidade',
+                      throwerVar: 'gorila2',
+                    },
+                    then: [
+                      { type: 'g2d:explode', spriteVar: 'gorila2', color: '#ffd23f' },
+                      { type: 'g2d:playBoom' },
+                      { type: 'g2d:shake', ctxVar: 'ctx', intensity: 10 },
+                      { type: 'g2d:setScene', name: 'ganhou1' },
+                    ],
+                  },
+                ],
+              },
+              // a banana do jogador 2 acertou o gorila 1? (vitória)
+              {
+                type: 'if',
+                cond: {
+                  type: 'binop',
+                  op: '==',
+                  left: { type: 'var', name: 'vez' },
+                  right: { type: 'num', value: 1 },
+                },
+                then: [
+                  {
+                    type: 'if',
+                    cond: {
+                      type: 'g2d:bananaHitThrower',
+                      cityVar: 'cidade',
+                      throwerVar: 'gorila1',
+                    },
+                    then: [
+                      { type: 'g2d:explode', spriteVar: 'gorila1', color: '#ffd23f' },
+                      { type: 'g2d:playBoom' },
+                      { type: 'g2d:shake', ctxVar: 'ctx', intensity: 10 },
+                      { type: 'g2d:setScene', name: 'ganhou2' },
+                    ],
+                  },
+                ],
+              },
+              // errou (bateu num prédio ou saiu da tela): troca de turno + novo vento
+              {
+                type: 'if',
+                cond: { type: 'g2d:bananaHitCity', cityVar: 'cidade' },
+                then: [
+                  { type: 'g2d:playBoom' },
+                  { type: 'g2d:shake', ctxVar: 'ctx', intensity: 5 },
+                  {
+                    type: 'assign',
+                    name: 'vez',
+                    value: {
+                      type: 'binop',
+                      op: '-',
+                      left: { type: 'num', value: 1 },
+                      right: { type: 'var', name: 'vez' },
+                    },
+                  },
+                  { type: 'g2d:newWind', cityVar: 'cidade' },
+                ],
+              },
+              // HUD: de quem é a vez (vez + 1)
+              {
+                type: 'g2d:drawScore',
+                ctxVar: 'ctx',
+                label: 'Jogador da vez:',
+                value: {
+                  type: 'binop',
+                  op: '+',
+                  left: { type: 'var', name: 'vez' },
+                  right: { type: 'num', value: 1 },
+                },
+                x: 12,
+                y: 26,
+                color: '#ffffff',
+                size: 18,
+              },
+            ],
+          },
+          // vitória do jogador 1
+          {
+            type: 'if',
+            cond: { type: 'g2d:sceneIs', name: 'ganhou1' },
+            then: [
+              {
+                type: 'g2d:showScreen',
+                ctxVar: 'ctx',
+                title: 'Jogador 1 venceu!',
+                subtitle: 'Mira certeira!',
+                hint: 'Aperte Enter para jogar de novo',
+                bg: '#143a1f',
+              },
+            ],
+          },
+          // vitória do jogador 2
+          {
+            type: 'if',
+            cond: { type: 'g2d:sceneIs', name: 'ganhou2' },
+            then: [
+              {
+                type: 'g2d:showScreen',
+                ctxVar: 'ctx',
+                title: 'Jogador 2 venceu!',
+                subtitle: 'Mira certeira!',
+                hint: 'Aperte Enter para jogar de novo',
+                bg: '#143a1f',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    extensions: [{ extensionId: 'game-2d' }],
+  },
+}
+
+/**
+ * Exemplo "Guerra de Gorilas vs Robô" (v0.12.0): igual ao "Guerra de Gorilas",
+ * mas o jogador 2 é o COMPUTADOR (IA). Você arrasta para mirar; o robô mira
+ * sozinho (simula vários lançamentos e escolhe o melhor) e joga. Mostra o bloco
+ * do robô + a leitura de ângulo/força. (Autoplay = trocar também o seu ramo por
+ * "O robô do gorila 1 …".)
+ */
+export const gorilasVsRobotExample: ExtensionExample = {
+  name: 'Guerra de Gorilas vs Robô',
+  description:
+    'Jogue contra o COMPUTADOR: você arrasta para mirar e o robô mira e joga sozinho (simula lançamentos e escolhe o melhor). Vento e gravidade entortam a banana; acertar o inimigo vence. Enter começa.',
+  ir: {
+    html: [{ type: 'canvas', id: 'tela', width: 480, height: 270 }],
+    css: [
+      {
+        selector: 'body',
+        declarations: {
+          background: '#10162e',
+          display: 'flex',
+          'align-items': 'center',
+          'justify-content': 'center',
+          'min-height': '100vh',
+          margin: '0',
+        },
+      },
+      {
+        selector: 'canvas',
+        declarations: {
+          border: '3px solid #ffffff',
+          'border-radius': '18px',
+          background: '#10162e',
+          cursor: 'crosshair',
+        },
+      },
+    ],
+    js: [
+      { type: 'g2d:fitScreen', percent: 100 },
+      { type: 'g2d:createCity', varName: 'cidade' },
+      {
+        type: 'g2d:placeThrower',
+        varName: 'gorila1',
+        cityVar: 'cidade',
+        side: 'left',
+        color: '#6b4a2b',
+      },
+      {
+        type: 'g2d:placeThrower',
+        varName: 'gorila2',
+        cityVar: 'cidade',
+        side: 'right',
+        color: '#7b5e3b',
+      },
+      { type: 'var', name: 'vez', value: { type: 'num', value: 0 } },
+      { type: 'g2d:newWind', cityVar: 'cidade' },
+      { type: 'g2d:setScene', name: 'inicio' },
+      {
+        type: 'g2d:onKey',
+        key: 'Enter',
+        body: [
+          {
+            type: 'if',
+            cond: { type: 'g2d:sceneIs', name: 'inicio' },
+            then: [{ type: 'g2d:setScene', name: 'jogando' }],
+          },
+          {
+            type: 'if',
+            cond: { type: 'g2d:sceneIs', name: 'ganhou1' },
+            then: [{ type: 'g2d:restart' }],
+          },
+          {
+            type: 'if',
+            cond: { type: 'g2d:sceneIs', name: 'ganhou2' },
+            then: [{ type: 'g2d:restart' }],
+          },
+        ],
+      },
+      {
+        type: 'g2d:updateEachFrame',
+        body: [
+          { type: 'g2d:clear' },
+          { type: 'g2d:drawCity', cityVar: 'cidade', ctxVar: 'ctx' },
+          {
+            type: 'if',
+            cond: { type: 'g2d:sceneIs', name: 'inicio' },
+            then: [
+              {
+                type: 'g2d:showScreen',
+                ctxVar: 'ctx',
+                title: 'Guerra de Gorilas vs Robô',
+                subtitle: 'Você é o gorila da esquerda. Arraste para mirar e solte para jogar!',
+                hint: 'Aperte Enter para começar',
+                bg: '#1b2a4a',
+              },
+            ],
+          },
+          {
+            type: 'if',
+            cond: { type: 'g2d:sceneIs', name: 'jogando' },
+            then: [
+              { type: 'g2d:drawWind', cityVar: 'cidade', ctxVar: 'ctx' },
+              { type: 'g2d:drawSprite', spriteVar: 'gorila1', ctxVar: 'ctx' },
+              { type: 'g2d:drawSprite', spriteVar: 'gorila2', ctxVar: 'ctx' },
+              // vez do jogador 1 (você): mira arrastando e lança
+              {
+                type: 'if',
+                cond: {
+                  type: 'binop',
+                  op: '==',
+                  left: { type: 'var', name: 'vez' },
+                  right: { type: 'num', value: 0 },
+                },
+                then: [
+                  { type: 'g2d:aimDrag', throwerVar: 'gorila1', ctxVar: 'ctx' },
+                  {
+                    type: 'if',
+                    cond: { type: 'g2d:aimReleased', throwerVar: 'gorila1' },
+                    then: [
+                      { type: 'g2d:throwBanana', throwerVar: 'gorila1', cityVar: 'cidade' },
+                      { type: 'g2d:playWhistle' },
+                    ],
+                  },
+                ],
+              },
+              // vez do jogador 2: o ROBÔ joga sozinho mirando no gorila 1
+              {
+                type: 'if',
+                cond: {
+                  type: 'binop',
+                  op: '==',
+                  left: { type: 'var', name: 'vez' },
+                  right: { type: 'num', value: 1 },
+                },
+                then: [
+                  {
+                    type: 'g2d:computerTurn',
+                    throwerVar: 'gorila2',
+                    cityVar: 'cidade',
+                    enemyVar: 'gorila1',
+                  },
+                ],
+              },
+              { type: 'g2d:updateBanana', cityVar: 'cidade' },
+              { type: 'g2d:drawBanana', cityVar: 'cidade', ctxVar: 'ctx' },
+              { type: 'g2d:drawAimReadout', ctxVar: 'ctx' },
+              {
+                type: 'if',
+                cond: {
+                  type: 'binop',
+                  op: '==',
+                  left: { type: 'var', name: 'vez' },
+                  right: { type: 'num', value: 0 },
+                },
+                then: [
+                  {
+                    type: 'if',
+                    cond: {
+                      type: 'g2d:bananaHitThrower',
+                      cityVar: 'cidade',
+                      throwerVar: 'gorila2',
+                    },
+                    then: [
+                      { type: 'g2d:explode', spriteVar: 'gorila2', color: '#ffd23f' },
+                      { type: 'g2d:playBoom' },
+                      { type: 'g2d:shake', ctxVar: 'ctx', intensity: 10 },
+                      { type: 'g2d:setScene', name: 'ganhou1' },
+                    ],
+                  },
+                ],
+              },
+              {
+                type: 'if',
+                cond: {
+                  type: 'binop',
+                  op: '==',
+                  left: { type: 'var', name: 'vez' },
+                  right: { type: 'num', value: 1 },
+                },
+                then: [
+                  {
+                    type: 'if',
+                    cond: {
+                      type: 'g2d:bananaHitThrower',
+                      cityVar: 'cidade',
+                      throwerVar: 'gorila1',
+                    },
+                    then: [
+                      { type: 'g2d:explode', spriteVar: 'gorila1', color: '#ffd23f' },
+                      { type: 'g2d:playBoom' },
+                      { type: 'g2d:shake', ctxVar: 'ctx', intensity: 10 },
+                      { type: 'g2d:setScene', name: 'ganhou2' },
+                    ],
+                  },
+                ],
+              },
+              {
+                type: 'if',
+                cond: { type: 'g2d:bananaHitCity', cityVar: 'cidade' },
+                then: [
+                  { type: 'g2d:playBoom' },
+                  { type: 'g2d:shake', ctxVar: 'ctx', intensity: 5 },
+                  {
+                    type: 'assign',
+                    name: 'vez',
+                    value: {
+                      type: 'binop',
+                      op: '-',
+                      left: { type: 'num', value: 1 },
+                      right: { type: 'var', name: 'vez' },
+                    },
+                  },
+                  { type: 'g2d:newWind', cityVar: 'cidade' },
+                ],
+              },
+              {
+                type: 'g2d:drawScore',
+                ctxVar: 'ctx',
+                label: 'Vez:',
+                value: {
+                  type: 'binop',
+                  op: '+',
+                  left: { type: 'var', name: 'vez' },
+                  right: { type: 'num', value: 1 },
+                },
+                x: 12,
+                y: 26,
+                color: '#ffffff',
+                size: 18,
+              },
+            ],
+          },
+          {
+            type: 'if',
+            cond: { type: 'g2d:sceneIs', name: 'ganhou1' },
+            then: [
+              {
+                type: 'g2d:showScreen',
+                ctxVar: 'ctx',
+                title: 'Você venceu!',
+                subtitle: 'Mira certeira contra o robô!',
+                hint: 'Aperte Enter para jogar de novo',
+                bg: '#143a1f',
+              },
+            ],
+          },
+          {
+            type: 'if',
+            cond: { type: 'g2d:sceneIs', name: 'ganhou2' },
+            then: [
+              {
+                type: 'g2d:showScreen',
+                ctxVar: 'ctx',
+                title: 'O robô venceu!',
+                subtitle: 'Tente de novo!',
+                hint: 'Aperte Enter para jogar de novo',
+                bg: '#3a1414',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    extensions: [{ extensionId: 'game-2d' }],
+  },
+}
+
+/**
  * Exemplo "Asteroides clássico" (v0.10.0): a nave GIRA com as setas ← → (ou A/D),
  * IMPULSIONA na direção apontada com ↑ (ou W) e desliza com atrito; atira PARA A
  * FRENTE com Espaço; asteroides nascem das bordas rumo ao centro. Colisão de tiro

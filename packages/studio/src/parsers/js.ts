@@ -134,11 +134,14 @@ const KNOWN_EVENT_KINDS: ReadonlySet<EventKind> = new Set([
   'mouseover',
   'mouseout',
   'mousemove',
+  'mousedown',
+  'mouseup',
   'submit',
   'input',
   'change',
   'load',
   'resize',
+  'fullscreenchange',
 ])
 
 function snippet(source: string, node: Node): string {
@@ -777,6 +780,9 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
     // el.dataset.chave = <simples>
     const dataset = tryMatchSetDataset(expr, ctx)
     if (dataset) return dataset
+    // el.style.prop = <simples>  |  el.style['prop'] = <simples>
+    const style = tryMatchSetStyle(expr, ctx)
+    if (style) return style
     // x.textContent = <simples> | x.value = <simples> | x.innerHTML = <simples>
     // (ou document.getElementById('id').textContent = …)
     if (
@@ -913,9 +919,17 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
     }
   }
 
+  // el.setAttribute('nome', <simples>)
+  const setAttr = tryMatchSetAttribute(expr, ctx)
+  if (setAttr) return setAttr
+
   // cancelAnimationFrame(id) — para o loop de animação.
   const cancelAnim = tryMatchCancelAnimationFrame(expr, ctx)
   if (cancelAnim) return cancelAnim
+
+  // document.documentElement.requestFullscreen() / document.exitFullscreen()
+  const fullscreen = tryMatchFullscreen(expr)
+  if (fullscreen) return fullscreen
 
   // Métodos de canvas de uma linha: ctx.fillRect(...), ctx.save(), etc.
   const canvasCall = tryMatchCanvasCall(expr, ctx)
@@ -989,6 +1003,109 @@ function tryMatchAppendChild(expr: Node, ctx: ParseCtx): JSStatement | null {
   }
 }
 
+// ---------- Tela cheia (Fullscreen API) ----------
+
+/** `document.exitFullscreen()` (sem argumentos). */
+function isExitFullscreenCall(expr: Node): boolean {
+  if (expr?.type !== 'CallExpression' && expr?.type !== 'OptionalCallExpression') return false
+  if (expr.arguments?.length) return false
+  const callee = expr.callee
+  if (
+    (callee?.type !== 'MemberExpression' && callee?.type !== 'OptionalMemberExpression') ||
+    callee.computed
+  ) {
+    return false
+  }
+  return (
+    callee.object?.type === 'Identifier' &&
+    callee.object.name === 'document' &&
+    callee.property?.name === 'exitFullscreen'
+  )
+}
+
+/** `document.documentElement.requestFullscreen()` (sem argumentos). */
+function isRequestFullscreenCall(expr: Node): boolean {
+  if (expr?.type !== 'CallExpression' && expr?.type !== 'OptionalCallExpression') return false
+  if (expr.arguments?.length) return false
+  const callee = expr.callee
+  if (
+    (callee?.type !== 'MemberExpression' && callee?.type !== 'OptionalMemberExpression') ||
+    callee.computed ||
+    callee.property?.name !== 'requestFullscreen'
+  ) {
+    return false
+  }
+  const obj = callee.object
+  return (
+    (obj?.type === 'MemberExpression' || obj?.type === 'OptionalMemberExpression') &&
+    !obj.computed &&
+    obj.object?.type === 'Identifier' &&
+    obj.object.name === 'document' &&
+    obj.property?.name === 'documentElement'
+  )
+}
+
+/**
+ * `document.documentElement.requestFullscreen()` → entrar em tela cheia;
+ * `document.exitFullscreen()` → sair. (O "alternar" é um if/else casado em `mapIf`.)
+ */
+function tryMatchFullscreen(expr: Node): JSStatement | null {
+  if (isExitFullscreenCall(expr)) return { type: 'exitFullscreen' }
+  if (isRequestFullscreenCall(expr)) return { type: 'requestFullscreen' }
+  return null
+}
+
+/** Desembrulha um bloco de UM statement (ou um statement solto) e testa a chamada. */
+function isSingleCallStatement(node: Node, pred: (expr: Node) => boolean): boolean {
+  let stmt: Node | null = node
+  if (node?.type === 'BlockStatement') {
+    if (node.body?.length !== 1) return false
+    stmt = node.body[0]
+  }
+  return stmt?.type === 'ExpressionStatement' && pred(stmt.expression)
+}
+
+/**
+ * `if (document.fullscreenElement) { document.exitFullscreen() } else {
+ * document.documentElement.requestFullscreen() }` → "alternar tela cheia". Roda
+ * ANTES do if genérico (que tornaria a condição em código avançado, pois
+ * `document` é objeto global).
+ */
+function tryMatchToggleFullscreen(node: Node): JSStatement | null {
+  if (node?.type !== 'IfStatement' || !node.alternate) return null
+  const test = node.test
+  if (
+    (test?.type !== 'MemberExpression' && test?.type !== 'OptionalMemberExpression') ||
+    test.computed ||
+    test.object?.type !== 'Identifier' ||
+    test.object.name !== 'document' ||
+    test.property?.name !== 'fullscreenElement'
+  ) {
+    return null
+  }
+  if (!isSingleCallStatement(node.consequent, isExitFullscreenCall)) return null
+  if (!isSingleCallStatement(node.alternate, isRequestFullscreenCall)) return null
+  return { type: 'toggleFullscreen' }
+}
+
+/** `document.fullscreenElement != null` (ou `!== null`) → "está em tela cheia?". */
+function tryMatchIsFullscreen(node: Node): JSExpr | null {
+  if (node?.type !== 'BinaryExpression') return null
+  if (node.operator !== '!=' && node.operator !== '!==') return null
+  if (node.right?.type !== 'NullLiteral') return null
+  const left = node.left
+  if (
+    (left?.type !== 'MemberExpression' && left?.type !== 'OptionalMemberExpression') ||
+    left.computed ||
+    left.object?.type !== 'Identifier' ||
+    left.object.name !== 'document' ||
+    left.property?.name !== 'fullscreenElement'
+  ) {
+    return null
+  }
+  return { type: 'isFullscreen' }
+}
+
 /** `<alvo>.dataset.chave = <simples>` → `setDataset`; senão `null`. */
 function tryMatchSetDataset(expr: Node, ctx: ParseCtx): JSStatement | null {
   const left = expr.left
@@ -1014,6 +1131,63 @@ function tryMatchSetDataset(expr: Node, ctx: ParseCtx): JSStatement | null {
     targetId: target.id,
     ...targetKindField(target),
     key: left.property.name,
+    value,
+  }
+}
+
+/** `<alvo>.style.prop = <simples>` / `<alvo>.style['prop'] = <simples>` → `setStyle`. */
+function tryMatchSetStyle(expr: Node, ctx: ParseCtx): JSStatement | null {
+  const left = expr.left
+  if (!left || (left.type !== 'MemberExpression' && left.type !== 'OptionalMemberExpression')) {
+    return null
+  }
+  const obj = left.object
+  if (!obj || (obj.type !== 'MemberExpression' && obj.type !== 'OptionalMemberExpression')) {
+    return null
+  }
+  if (obj.property?.name !== 'style') return null
+  let property: string | null = null
+  if (!left.computed && left.property?.type === 'Identifier')
+    property = left.property.name as string
+  else if (left.computed && left.property?.type === 'StringLiteral')
+    property = left.property.value as string
+  if (!property) return null
+  const target = extractTarget(obj.object, ctx)
+  if (!target) return null
+  const value = toExpr(expr.right, ctx)
+  if (!isSimpleValue(value)) return null
+  return {
+    type: 'setStyle',
+    targetId: target.id,
+    ...classTargetKindField(target),
+    property,
+    value,
+  }
+}
+
+/** `<alvo>.setAttribute('nome', <simples>)` → `setAttribute`. */
+function tryMatchSetAttribute(expr: Node, ctx: ParseCtx): JSStatement | null {
+  if (!expr || (expr.type !== 'CallExpression' && expr.type !== 'OptionalCallExpression')) {
+    return null
+  }
+  const callee = expr.callee
+  if (
+    !callee ||
+    (callee.type !== 'MemberExpression' && callee.type !== 'OptionalMemberExpression')
+  ) {
+    return null
+  }
+  if (callee.property?.name !== 'setAttribute') return null
+  const target = extractTarget(callee.object, ctx)
+  if (!target) return null
+  if (expr.arguments?.length !== 2 || expr.arguments[0].type !== 'StringLiteral') return null
+  const value = toExpr(expr.arguments[1], ctx)
+  if (!isSimpleValue(value)) return null
+  return {
+    type: 'setAttribute',
+    targetId: target.id,
+    ...classTargetKindField(target),
+    name: expr.arguments[0].value as string,
     value,
   }
 }
@@ -1208,6 +1382,19 @@ function matchGame2DExpr(node: Node): JSExpr | null {
   }
   if (method === 'sceneIs' && args[0]?.type === 'StringLiteral') {
     return { type: 'g2d:sceneIs', name: args[0].value as string }
+  }
+  if (method === 'aimReleased') {
+    const throwerVar = identifierName(args[0])
+    if (throwerVar) return { type: 'g2d:aimReleased', throwerVar }
+  }
+  if (method === 'bananaHitThrower') {
+    const cityVar = identifierName(args[0])
+    const throwerVar = identifierName(args[1])
+    if (cityVar && throwerVar) return { type: 'g2d:bananaHitThrower', cityVar, throwerVar }
+  }
+  if (method === 'bananaHitCity') {
+    const cityVar = identifierName(args[0])
+    if (cityVar) return { type: 'g2d:bananaHitCity', cityVar }
   }
   return null
 }
@@ -1461,6 +1648,31 @@ function readAsteroidEdgeOptions(obj: Node): { size: number; color: string; spee
     }
   }
   return out
+}
+
+/** Lê `{ side, color }` de `SZGame2D.placeThrower(city, {...})`. side 'left'/'right'. */
+function readThrowerOptions(obj: Node): { side: 'left' | 'right'; color: string } | null {
+  let side: 'left' | 'right' = 'left'
+  let color = '#6b4a2b'
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'side') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      side = prop.value.value === 'right' ? 'right' : 'left'
+    } else if (key === 'color') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      color = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return { side, color }
 }
 
 /**
@@ -2140,6 +2352,61 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       return { type: 'g2d:playDinoHurt' }
     case 'playCollect':
       return { type: 'g2d:playCollect' }
+    case 'drawCity': {
+      // generator: SZGame2D.drawCity(ctx, city)
+      const ctxVar = identifierName(args[0])
+      const cityVar = identifierName(args[1])
+      return ctxVar && cityVar ? { type: 'g2d:drawCity', cityVar, ctxVar } : null
+    }
+    case 'newWind': {
+      const cityVar = identifierName(args[0])
+      return cityVar ? { type: 'g2d:newWind', cityVar } : null
+    }
+    case 'drawWind': {
+      // generator: SZGame2D.drawWind(ctx, city)
+      const ctxVar = identifierName(args[0])
+      const cityVar = identifierName(args[1])
+      return ctxVar && cityVar ? { type: 'g2d:drawWind', cityVar, ctxVar } : null
+    }
+    case 'aimDrag': {
+      // generator: SZGame2D.aimDrag(ctx, thrower)
+      const ctxVar = identifierName(args[0])
+      const throwerVar = identifierName(args[1])
+      return ctxVar && throwerVar ? { type: 'g2d:aimDrag', throwerVar, ctxVar } : null
+    }
+    case 'throwBanana': {
+      // generator: SZGame2D.throwBanana(thrower, city)
+      const throwerVar = identifierName(args[0])
+      const cityVar = identifierName(args[1])
+      return throwerVar && cityVar ? { type: 'g2d:throwBanana', throwerVar, cityVar } : null
+    }
+    case 'updateBanana': {
+      const cityVar = identifierName(args[0])
+      return cityVar ? { type: 'g2d:updateBanana', cityVar } : null
+    }
+    case 'drawBanana': {
+      // generator: SZGame2D.drawBanana(ctx, city)
+      const ctxVar = identifierName(args[0])
+      const cityVar = identifierName(args[1])
+      return ctxVar && cityVar ? { type: 'g2d:drawBanana', cityVar, ctxVar } : null
+    }
+    case 'playWhistle':
+      return { type: 'g2d:playWhistle' }
+    case 'playBoom':
+      return { type: 'g2d:playBoom' }
+    case 'computerTurn': {
+      // generator: SZGame2D.computerTurn(thrower, city, enemy)
+      const throwerVar = identifierName(args[0])
+      const cityVar = identifierName(args[1])
+      const enemyVar = identifierName(args[2])
+      return throwerVar && cityVar && enemyVar
+        ? { type: 'g2d:computerTurn', throwerVar, cityVar, enemyVar }
+        : null
+    }
+    case 'drawAimReadout': {
+      const ctxVar = identifierName(args[0])
+      return ctxVar ? { type: 'g2d:drawAimReadout', ctxVar } : null
+    }
     case 'overlapSpriteGroup': {
       // generator: SZGame2D.overlapSpriteGroup(() => sprite, grupo, function (item) {…})
       const spriteVar = arrowReturnIdentifier(args[0])
@@ -2216,6 +2483,19 @@ function tryMatchGame2DVarInit(name: string, init: Node, ctx: ParseCtx): JSState
     if (!o) return null
     ctx.spriteVars.add(name)
     return { type: 'g2d:createDino', varName: name, x: o.x, y: o.y, size: o.size, color: o.color }
+  }
+  if (method === 'createCity') {
+    // generator: const cidade = SZGame2D.createCity()
+    return { type: 'g2d:createCity', varName: name }
+  }
+  if (method === 'placeThrower') {
+    // generator: const g = SZGame2D.placeThrower(city, { side, color })
+    const cityVar = identifierName(args[0])
+    if (!cityVar || args[1]?.type !== 'ObjectExpression') return null
+    const o = readThrowerOptions(args[1])
+    if (!o) return null
+    ctx.spriteVars.add(name)
+    return { type: 'g2d:placeThrower', varName: name, cityVar, side: o.side, color: o.color }
   }
   if (method === 'loadSpriteSheet') {
     // generator: const v = SZGame2D.loadSpriteSheet('nome', fw, fh)
@@ -2616,6 +2896,107 @@ function tryMatchGame3DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       if (!objVar || !worldVar) return null
       return { type: 'g3d:raceReset', objVar, worldVar }
     }
+    case 'fall': {
+      const objVar = identifierName(args[0])
+      if (!objVar) return null
+      return { type: 'g3d:fall', objVar }
+    }
+    case 'slideBetween': {
+      // generator: SZGame3D.slideBetween(obj, "x", min, max, speed)
+      const objVar = identifierName(args[0])
+      const min = numericLiteralValue(args[2])
+      const max = numericLiteralValue(args[3])
+      const speed = numericLiteralValue(args[4])
+      if (
+        !objVar ||
+        args[1]?.type !== 'StringLiteral' ||
+        min === null ||
+        max === null ||
+        speed === null
+      )
+        return null
+      return { type: 'g3d:slideBetween', objVar, axis: args[1].value as string, min, max, speed }
+    }
+    case 'spin': {
+      // generator: SZGame3D.spin(obj, "y", speed)
+      const objVar = identifierName(args[0])
+      const speed = numericLiteralValue(args[2])
+      if (!objVar || args[1]?.type !== 'StringLiteral' || speed === null) return null
+      return { type: 'g3d:spin', objVar, axis: args[1].value as string, speed }
+    }
+    case 'createStackTower': {
+      const worldVar = identifierName(args[0])
+      if (!worldVar) return null
+      return { type: 'g3d:createStackTower', worldVar }
+    }
+    case 'stackDrop': {
+      const worldVar = identifierName(args[0])
+      if (!worldVar) return null
+      return { type: 'g3d:stackDrop', worldVar }
+    }
+    case 'stackStep': {
+      const worldVar = identifierName(args[0])
+      if (!worldVar) return null
+      return { type: 'g3d:stackStep', worldVar }
+    }
+    case 'stackReset': {
+      const worldVar = identifierName(args[0])
+      if (!worldVar) return null
+      return { type: 'g3d:stackReset', worldVar }
+    }
+    case 'moveBy': {
+      // generator: SZGame3D.moveBy(obj, x, y, z)
+      const objVar = identifierName(args[0])
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      const z = toExpr(args[3], ctx)
+      if (!objVar || !isSimpleValue(x) || !isSimpleValue(y) || !isSimpleValue(z)) return null
+      return { type: 'g3d:moveBy', objVar, x, y, z }
+    }
+    case 'rotateBy': {
+      // generator: SZGame3D.rotateBy(obj, "y", amount)
+      const objVar = identifierName(args[0])
+      const amount = toExpr(args[2], ctx)
+      if (!objVar || args[1]?.type !== 'StringLiteral' || !isSimpleValue(amount)) return null
+      return { type: 'g3d:rotateBy', objVar, axis: args[1].value as string, amount }
+    }
+    case 'moveTowards': {
+      // generator: SZGame3D.moveTowards(obj, x, y, z, factor)
+      const objVar = identifierName(args[0])
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      const z = toExpr(args[3], ctx)
+      const factor = numericLiteralValue(args[4])
+      if (!objVar || !isSimpleValue(x) || !isSimpleValue(y) || !isSimpleValue(z) || factor === null)
+        return null
+      return { type: 'g3d:moveTowards', objVar, x, y, z, factor }
+    }
+    case 'lookAtObject': {
+      const aVar = identifierName(args[0])
+      const bVar = identifierName(args[1])
+      if (!aVar || !bVar) return null
+      return { type: 'g3d:lookAtObject', aVar, bVar }
+    }
+    case 'lookAtPoint': {
+      // generator: SZGame3D.lookAtPoint(obj, x, y, z)
+      const objVar = identifierName(args[0])
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      const z = toExpr(args[3], ctx)
+      if (!objVar || !isSimpleValue(x) || !isSimpleValue(y) || !isSimpleValue(z)) return null
+      return { type: 'g3d:lookAtPoint', objVar, x, y, z }
+    }
+    case 'moveForward': {
+      const objVar = identifierName(args[0])
+      const dist = toExpr(args[1], ctx)
+      if (!objVar || !isSimpleValue(dist)) return null
+      return { type: 'g3d:moveForward', objVar, dist }
+    }
+    case 'faceVelocity': {
+      const objVar = identifierName(args[0])
+      if (!objVar) return null
+      return { type: 'g3d:faceVelocity', objVar }
+    }
     default:
       // createScene/createBox/createSphere/createBlock/createGroup são var-init
       // (tryMatchGame3DVarInit); como chamada solta caem no método genérico.
@@ -2709,6 +3090,10 @@ function tryMatchGame3DVarInit(name: string, init: Node, _ctx: ParseCtx): JSStat
     }
     return { type: 'g3d:createRaceCar', varName: name, worldVar, color }
   }
+  if (method === 'createStackScene') {
+    if (args[0]?.type !== 'StringLiteral') return null
+    return { type: 'g3d:createStackScene', canvasId: args[0].value as string, varName: name }
+  }
   return null
 }
 
@@ -2763,6 +3148,64 @@ function matchGame3DExpr(node: Node): JSExpr | null {
   if (method === 'raceLaps') {
     const objVar = identifierName(args[0])
     if (objVar) return { type: 'g3d:raceLaps', objVar }
+  }
+  if (method === 'stackScore') {
+    const worldVar = identifierName(args[0])
+    if (worldVar) return { type: 'g3d:stackScore', worldVar }
+  }
+  if (method === 'stackGameOver') {
+    const worldVar = identifierName(args[0])
+    if (worldVar) return { type: 'g3d:stackGameOver', worldVar }
+  }
+  if (method === 'getPos') {
+    const objVar = identifierName(args[0])
+    if (objVar && args[1]?.type === 'StringLiteral') {
+      return { type: 'g3d:getPos', objVar, axis: args[1].value as string }
+    }
+  }
+  if (method === 'getRot') {
+    const objVar = identifierName(args[0])
+    if (objVar && args[1]?.type === 'StringLiteral') {
+      return { type: 'g3d:getRot', objVar, axis: args[1].value as string }
+    }
+  }
+  if (method === 'getScale') {
+    const objVar = identifierName(args[0])
+    if (objVar) return { type: 'g3d:getScale', objVar }
+  }
+  if (method === 'dt') {
+    const worldVar = identifierName(args[0])
+    if (worldVar) return { type: 'g3d:dt', worldVar }
+  }
+  if (method === 'angleTo') {
+    const aVar = identifierName(args[0])
+    const bVar = identifierName(args[1])
+    if (aVar && bVar) return { type: 'g3d:angleTo', aVar, bVar }
+  }
+  if (method === 'pickAtMouse') {
+    const worldVar = identifierName(args[0])
+    if (worldVar) return { type: 'g3d:pickAtMouse', worldVar }
+  }
+  if (method === 'pointerOver') {
+    const worldVar = identifierName(args[0])
+    const objVar = identifierName(args[1])
+    if (worldVar && objVar) return { type: 'g3d:pointerOver', worldVar, objVar }
+  }
+  if (method === 'aimAhead') {
+    const worldVar = identifierName(args[0])
+    const objVar = identifierName(args[1])
+    const dist = numericLiteralValue(args[2])
+    if (worldVar && objVar && dist !== null) return { type: 'g3d:aimAhead', worldVar, objVar, dist }
+  }
+  if (method === 'onGround') {
+    const worldVar = identifierName(args[0])
+    const objVar = identifierName(args[1])
+    if (worldVar && objVar) return { type: 'g3d:onGround', worldVar, objVar }
+  }
+  if (method === 'groundHeight') {
+    const worldVar = identifierName(args[0])
+    const objVar = identifierName(args[1])
+    if (worldVar && objVar) return { type: 'g3d:groundHeight', worldVar, objVar }
   }
   return null
 }
@@ -2843,6 +3286,12 @@ function tryMatchCanvasCall(expr: Node, ctx: ParseCtx): JSStatement | null {
       return args.length === 0 ? { type: 'canvasSave', ctxVar } : null
     case 'restore':
       return args.length === 0 ? { type: 'canvasRestore', ctxVar } : null
+    case 'rect': {
+      const [x, y, w, h] = mapArgs(args, 4, ctx)
+      return x && y && w && h ? { type: 'canvasRect', ctxVar, x, y, w, h } : null
+    }
+    case 'clip':
+      return args.length === 0 ? { type: 'canvasClip', ctxVar } : null
     case 'translate': {
       const [x, y] = mapArgs(args, 2, ctx)
       return x && y ? { type: 'canvasTranslate', ctxVar, x, y } : null
@@ -3440,6 +3889,10 @@ function tryMatchEvery(node: Node, source: string, ctx: ParseCtx): JSStatement |
 }
 
 function mapIf(node: Node, source: string, ctx: ParseCtx): JSStatement {
+  // "alternar tela cheia" → if (document.fullscreenElement) sair; senão entrar.
+  // ANTES do if genérico (a condição usa o objeto global `document`).
+  const toggleFs = tryMatchToggleFullscreen(node)
+  if (toggleFs) return toggleFs
   // "a cada N quadros/segundos" tem prioridade — é um if (SZGame2D.everyX(...)).
   const every = tryMatchEvery(node, source, ctx)
   if (every) return every
@@ -3689,6 +4142,23 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
       ) {
         if (node.property.name === 'innerWidth') return { type: 'global', kind: 'innerWidth' }
         if (node.property.name === 'innerHeight') return { type: 'global', kind: 'innerHeight' }
+        if (node.property.name === 'devicePixelRatio')
+          return { type: 'global', kind: 'devicePixelRatio' }
+      }
+      // window.matchMedia('(prefers-color-scheme: dark)').matches → modo escuro do sistema.
+      if (
+        !node.computed &&
+        node.property?.type === 'Identifier' &&
+        node.property.name === 'matches' &&
+        node.object?.type === 'CallExpression' &&
+        node.object.callee?.type === 'MemberExpression' &&
+        !node.object.callee.computed &&
+        node.object.callee.property?.type === 'Identifier' &&
+        node.object.callee.property.name === 'matchMedia' &&
+        node.object.arguments?.[0]?.type === 'StringLiteral' &&
+        /prefers-color-scheme:\s*dark/.test(node.object.arguments[0].value as string)
+      ) {
+        return { type: 'systemDark' }
       }
       // event.clientX/clientY → posição do clique (sz_val_event_pos);
       // event.key/code → tecla do evento (sz_val_event_key).
@@ -3788,6 +4258,9 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
       return null
     }
     case 'BinaryExpression': {
+      // document.fullscreenElement != null → "está em tela cheia?".
+      const fs = tryMatchIsFullscreen(node)
+      if (fs) return fs
       // (arg * Math.PI / 180) / (arg * 180 / Math.PI) → conversão de ângulo.
       const angle = matchAngleConvert(node, ctx)
       if (angle) return angle
@@ -3877,6 +4350,33 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
       // SZGame3D.keyDown / collides / hitAny → perguntas 3D (booleanos).
       const g3dExpr = matchGame3DExpr(node)
       if (g3dExpr) return g3dExpr
+      // ctx.isPointInPath(x, y) / ctx.isPointInStroke(x, y) → perguntas de traçado.
+      if (
+        ctx &&
+        node.type === 'CallExpression' &&
+        node.callee?.type === 'MemberExpression' &&
+        !node.callee.computed &&
+        node.callee.object?.type === 'Identifier' &&
+        ctx.ctxVars.has(node.callee.object.name) &&
+        node.callee.property?.type === 'Identifier' &&
+        (node.callee.property.name === 'isPointInPath' ||
+          node.callee.property.name === 'isPointInStroke') &&
+        node.arguments?.length === 2
+      ) {
+        const px = toExpr(node.arguments[0], ctx)
+        const py = toExpr(node.arguments[1], ctx)
+        if (isSimpleValue(px) && isSimpleValue(py)) {
+          return {
+            type:
+              node.callee.property.name === 'isPointInStroke'
+                ? 'canvasIsPointInStroke'
+                : 'canvasIsPointInPath',
+            ctxVar: node.callee.object.name,
+            x: px,
+            y: py,
+          }
+        }
+      }
       // __szInput.key("ArrowRight") → "a tecla … está apertada?" (caminho "na mão").
       if (
         node.type === 'CallExpression' &&
@@ -3999,6 +4499,9 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
       return true
     case 'canvasMeasureText':
       return isSimpleValue(expr.text)
+    case 'canvasIsPointInPath':
+    case 'canvasIsPointInStroke':
+      return isSimpleValue(expr.x) && isSimpleValue(expr.y)
     case 'storageGet':
       return isSimpleValue(expr.key)
     case 'random':
@@ -4018,6 +4521,9 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'g2d:countGroup':
     case 'g2d:spriteAngle':
     case 'g2d:sceneIs':
+    case 'g2d:aimReleased':
+    case 'g2d:bananaHitThrower':
+    case 'g2d:bananaHitCity':
     case 'g3d:keyDown':
     case 'g3d:collides':
     case 'g3d:hitAny':
@@ -4028,8 +4534,22 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'g3d:isNear':
     case 'g3d:raceHit':
     case 'g3d:raceLaps':
+    case 'g3d:stackScore':
+    case 'g3d:stackGameOver':
+    case 'g3d:getPos':
+    case 'g3d:getRot':
+    case 'g3d:getScale':
+    case 'g3d:dt':
+    case 'g3d:angleTo':
+    case 'g3d:pickAtMouse':
+    case 'g3d:pointerOver':
+    case 'g3d:aimAhead':
+    case 'g3d:onGround':
+    case 'g3d:groundHeight':
     case 'inputKeyPressed':
     case 'inputPointer':
+    case 'isFullscreen':
+    case 'systemDark':
       return true
     case 'datasetGet':
     case 'classContains':

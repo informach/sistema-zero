@@ -33,6 +33,13 @@ const SUPPORTED_TAGS: ReadonlySet<HTMLTag> = new Set([
   'input',
   'textarea',
   'label',
+  'svg',
+  'g',
+  'path',
+  'circle',
+  'line',
+  'rect',
+  'use',
 ])
 
 /** Tags que seguram filhos — mapeadas recursivamente. */
@@ -45,6 +52,8 @@ const CONTAINER_TAGS: ReadonlySet<HTMLTag> = new Set([
   'main',
   'ul',
   'form',
+  'svg',
+  'g',
 ])
 
 /** Tags sem conteúdo (self-closing). */
