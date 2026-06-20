@@ -1,4 +1,5 @@
 import type { CourseAudience } from '../course/course'
+import type { MissionGoalType } from '../gamification/missions'
 
 /**
  * Origem de um evento de XP — par (sourceType, sourceId) é a chave de
@@ -20,16 +21,52 @@ export interface XpEventInput {
   /** lessonId | blockId | moduleId | courseId — snapshot, sem FK (XP é histórico). */
   sourceId: string
   amount: number
+  /**
+   * Moedas Zappy (faucet de rotina) que ESTE evento de aprendizado concede —
+   * só faz sentido em eventos de XP real (amount > 0). Ausente/0 nos marcos
+   * (course_complete/quiz_perfect não dão moeda). O repo aplica o teto diário;
+   * o `coin_event` reusa o MESMO `(sourceType, sourceId)` (idempotência alinhada ao XP).
+   */
+  coins?: number
 }
 
 export interface GamificationProfileRecord {
   userId: string
+  /** CONTA dona do perfil (elo da coorte do ranking) — usada p/ ranquear o perfil público. */
+  accountId: string
   xp: number
   streakCurrent: number
   streakBest: number
   /** Data civil SP (`YYYY-MM-DD`) da última atividade que rendeu XP. */
   lastActivityDate: string | null
+  /** Saldo da carteira Zappy Coins (0 sem perfil/atividade). */
+  coinBalance: number
+  /** Protetores de sequência disponíveis (streak-freeze). */
+  streakFreezes: number
+  /** Janela de FÉRIAS (data civil SP) — `null` = sem férias agendadas. */
+  vacationFrom: string | null
+  vacationTo: string | null
 }
+
+/** Motivo (= source_type do `coin_event`) de um gasto de moeda — sempre cosmético. */
+export type CoinSpendReason = 'spend_cosmetic' | 'spend_room' | 'spend_streak_freeze'
+
+export interface SpendCoinsInput {
+  userId: string
+  audience: CourseAudience
+  /** Valor a debitar (> 0). */
+  amount: number
+  reason: CoinSpendReason
+  /** Chave estável da compra → `coin_event.source_id` (idempotência: duplo-clique não cobra 2×). */
+  idempotencyKey: string
+  now: Date
+}
+
+export type SpendCoinsResult =
+  | { ok: true; balanceAfter: number }
+  // Gasto sem saldo é erro de negócio (fail-CLOSED). `ALREADY_SPENT` = a MESMA
+  // compra (reason+key) já debitou antes → o caller trata como sucesso idempotente.
+  | { ok: false; code: 'INSUFFICIENT_BALANCE' | 'ALREADY_SPENT'; balance: number }
 
 export interface AwardInput {
   userId: string
@@ -63,6 +100,12 @@ export interface AwardResult {
   /** Eventos que entraram no ledger NESTA chamada (p/ o caller sinalizar baú etc). */
   newEvents: XpEventInput[]
   badgesUnlocked: { slug: string; unlockedAt: Date }[]
+  /** Moedas Zappy concedidas NESTA ação (já com teto diário aplicado). */
+  coinsAwarded: number
+  /** Saldo da carteira após a ação. */
+  coinBalance: number
+  /** `true` quando o teto diário cortou parte do ganho (feedback gentil). */
+  coinsCapped: boolean
 }
 
 export interface GamificationRanking {
@@ -79,6 +122,15 @@ export interface GamificationRepository {
    * atividade que rende XP conta) — mas badges candidatas ainda concedem.
    */
   award(input: AwardInput): Promise<AwardResult>
+  /**
+   * Debita moeda da carteira numa transação serializada POR ALUNO (mesmo advisory
+   * lock do award). Fail-CLOSED em saldo insuficiente. Idempotente por
+   * `(reason, idempotencyKey)`: a MESMA compra nunca debita 2× (duplo-clique/retry).
+   * É o primitivo que as lojinhas de avatar/quarto consomem.
+   */
+  spendCoins(input: SpendCoinsInput): Promise<SpendCoinsResult>
+  /** Saldo da carteira Zappy da vitrine (0 sem perfil). Leitura para a lojinha. */
+  getBalance(userId: string, audience: CourseAudience): Promise<number>
   getProfile(userId: string, audience: CourseAudience): Promise<GamificationProfileRecord | null>
   listBadges(
     userId: string,
@@ -96,7 +148,10 @@ export interface GamificationRepository {
     userId: string,
     accountId: string,
     audience: CourseAudience,
+    now: Date,
   ): Promise<GamificationRanking | null>
+  /** A conta tem matrícula ativa que libera a vitrine informada? */
+  hasActiveAudienceAccess(accountId: string, audience: CourseAudience, now: Date): Promise<boolean>
   /**
    * Perfis de gamificação da audiência que pertencem À CONTA (`account_id`) entre os
    * `userIds` pedidos — AUTORIZA + traz xp/streak num só passo (resumo dos filhos na
@@ -109,4 +164,113 @@ export interface GamificationRepository {
     userIds: string[],
     audience: CourseAudience,
   ): Promise<GamificationProfileRecord[]>
+
+  // ── Missões (progresso DERIVADO do ledger; claim idempotente) ─────────────
+  /** Conta eventos de XP do tipo dado na janela `[from, to)` (progresso da missão). */
+  countEventsInPeriod(
+    userId: string,
+    audience: CourseAudience,
+    sourceTypes: MissionGoalType[],
+    from: Date,
+    to: Date,
+  ): Promise<number>
+  /** Missões já resgatadas nos períodos dados → set de `<slug>:<periodKey>`. */
+  listClaimedMissions(
+    userId: string,
+    audience: CourseAudience,
+    periodKeys: string[],
+  ): Promise<Set<string>>
+  /**
+   * Resgata o prêmio de uma missão CONCLUÍDA (o service revalida a conclusão antes).
+   * Atômico sob o advisory lock: grava o claim (idempotente por slug+período) e, SÓ se
+   * novo, credita XP + moedas (com teto diário). `claimed:false` = já resgatado.
+   */
+  claimMission(input: ClaimMissionInput): Promise<ClaimMissionResult>
+
+  // ── Proteção de sequência (streak-freeze + férias) ────────────────────────
+  /** Compra 1 protetor de sequência com moedas (idempotente por chave; máx por aluno). */
+  buyStreakFreeze(input: BuyStreakFreezeInput): Promise<BuyStreakFreezeResult>
+  /** Define (ou limpa, com `from=to=null`) a janela de férias do perfil. */
+  setVacation(
+    userId: string,
+    accountId: string,
+    audience: CourseAudience,
+    from: string | null,
+    to: string | null,
+    now: Date,
+  ): Promise<void>
+
+  // ── Ligas semanais (tier por semana; XP da semana DERIVADO do ledger) ─────
+  /** Membership do perfil naquela semana (`null` = ainda não resolvida). */
+  getLeagueMembership(
+    userId: string,
+    audience: CourseAudience,
+    weekKey: string,
+  ): Promise<LeagueMembershipRecord | null>
+  /** Membership MAIS RECENTE do perfil ANTES de `beforeWeekKey` (p/ resolver o tier). */
+  getMostRecentLeagueMembership(
+    userId: string,
+    audience: CourseAudience,
+    beforeWeekKey: string,
+  ): Promise<LeagueMembershipRecord | null>
+  /** Cria a membership da semana (idempotente — corrida de resoluções não duplica). */
+  createLeagueMembership(
+    userId: string,
+    accountId: string,
+    audience: CourseAudience,
+    weekKey: string,
+    tier: string,
+    now: Date,
+  ): Promise<void>
+  /** userIds da coorte (audiência, semana, tier), filtrando matrícula ativa da conta. */
+  listLeagueCohort(
+    audience: CourseAudience,
+    weekKey: string,
+    tier: string,
+    now: Date,
+  ): Promise<string[]>
+  /** Soma de XP por perfil na janela `[from, to)` (XP da semana, do ledger). */
+  sumWeeklyXp(
+    audience: CourseAudience,
+    userIds: string[],
+    from: Date,
+    to: Date,
+  ): Promise<Map<string, number>>
 }
+
+export interface LeagueMembershipRecord {
+  weekKey: string
+  tier: string
+}
+
+export interface ClaimMissionInput {
+  userId: string
+  audience: CourseAudience
+  missionSlug: string
+  periodKey: string
+  rewardXp: number
+  rewardCoins: number
+  /** Data civil SP (teto diário das moedas do prêmio). */
+  today: string
+  now: Date
+}
+export interface ClaimMissionResult {
+  claimed: boolean
+  xpAwarded: number
+  coinsAwarded: number
+  coinBalance: number
+}
+
+/** Teto de protetores acumuláveis (anti-hoarding) — espelha o plano. */
+export const MAX_STREAK_FREEZES = 5
+
+export interface BuyStreakFreezeInput {
+  userId: string
+  audience: CourseAudience
+  price: number
+  idempotencyKey: string
+  now: Date
+}
+export type BuyStreakFreezeResult =
+  | { ok: true; freezes: number; balance: number }
+  | { ok: false; code: 'INSUFFICIENT_BALANCE' | 'MAX_FREEZES'; freezes: number; balance: number }

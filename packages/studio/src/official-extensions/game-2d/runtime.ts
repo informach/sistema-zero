@@ -164,6 +164,20 @@ export const gameTwoDRuntime = `(function () {
   }
   function _drawSpriteRaw(ctx, sprite) {
     if (!ctx || !sprite) return;
+    var ang = (typeof sprite.angle === 'number') ? sprite.angle : 0;
+    if (!ang) { _drawSpriteBody(ctx, sprite); return; }
+    // Gira o desenho em torno do CENTRO do sprite (o corpo segue em coordenadas
+    // absolutas — mesmo truque translate/rotate/translate da referência).
+    var cx = sprite.x + (sprite.w || 0) / 2, cy = sprite.y + (sprite.h || 0) / 2;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(ang);
+    ctx.translate(-cx, -cy);
+    _drawSpriteBody(ctx, sprite);
+    ctx.restore();
+  }
+  function _drawSpriteBody(ctx, sprite) {
+    if (!ctx || !sprite) return;
     // Desenhos prontos (skins): nave, asteroide e tiro têm forma própria.
     if (sprite.skin) {
       if (sprite.skin.kind === 'ship') { drawShip(ctx, sprite); return; }
@@ -421,6 +435,104 @@ export const gameTwoDRuntime = `(function () {
     if (sprite.y < 0) sprite.y = 0;
     if (sprite.x + sprite.w > w) sprite.x = w - sprite.w;
     if (sprite.y + sprite.h > h) sprite.y = h - sprite.h;
+  }
+
+  // ---- Nave clássica: girar + impulsionar na direção apontada (v0.10.0) ----
+  // Ângulo do sprite em RADIANOS; 0 = apontando pra cima; positivo = horário.
+  // "Pra frente" = (sin a, -cos a). Os blocos falam em GRAUS; convertemos aqui.
+  var DEG = Math.PI / 180;
+  function _ensureAngle(s) { if (typeof s.angle !== 'number') s.angle = 0; return s.angle; }
+  function _forward(s) {
+    var a = (typeof s.angle === 'number') ? s.angle : 0;
+    return { x: Math.sin(a), y: -Math.cos(a) };
+  }
+  /** Gira o sprite em N GRAUS (positivo = horário; negativo = anti-horário). */
+  function rotateSprite(s, deg) {
+    if (!s) return;
+    _ensureAngle(s);
+    s.angle += (typeof deg === 'number' ? deg : 0) * DEG;
+  }
+  /** Aponta o sprite para um ângulo em GRAUS (0 = pra cima, horário). */
+  function pointSprite(s, deg) {
+    if (!s) return;
+    s.angle = (typeof deg === 'number' ? deg : 0) * DEG;
+  }
+  /** Soma força à velocidade na direção apontada (impulso pra frente). */
+  function thrust(s, force) {
+    if (!s) return;
+    var f = (typeof force === 'number') ? force : 0.1;
+    var d = _forward(s);
+    s.vx = (s.vx || 0) + d.x * f;
+    s.vy = (s.vy || 0) + d.y * f;
+  }
+  /** Freia o sprite aos poucos: multiplica a velocidade pelo fator (0..1). */
+  function applyFriction(s, factor) {
+    if (!s) return;
+    var k = (typeof factor === 'number') ? factor : 0.97;
+    s.vx = (s.vx || 0) * k;
+    s.vy = (s.vy || 0) * k;
+  }
+  /**
+   * Controle estilo NAVE (asteroids): vira com esquerda/A e direita/D, acelera
+   * com cima/W na direção apontada e desliza com atrito ao soltar. Integra a
+   * posição (move o sprite pela velocidade). Use a cada quadro.
+   */
+  function steerThrust(sprite, speed, turnDeg) {
+    if (!sprite) return;
+    _ensureAngle(sprite);
+    var sp = (typeof speed === 'number') ? speed : 3;
+    var turn = (typeof turnDeg === 'number') ? turnDeg : 3;
+    if (keys.left) sprite.angle -= turn * DEG;
+    if (keys.right) sprite.angle += turn * DEG;
+    var d = _forward(sprite);
+    if (keys.up) { sprite.vx = d.x * sp; sprite.vy = d.y * sp; }
+    else { sprite.vx = (sprite.vx || 0) * 0.97; sprite.vy = (sprite.vy || 0) * 0.97; }
+    sprite.x += sprite.vx || 0;
+    sprite.y += sprite.vy || 0;
+  }
+  /** Devolve a direção (em GRAUS) que o sprite está apontando. */
+  function spriteAngleDeg(s) {
+    if (!s || typeof s.angle !== 'number') return 0;
+    return s.angle / DEG;
+  }
+  /**
+   * Atira do sprite PARA A FRENTE: cria um tiro na ponta do sprite, com
+   * velocidade na direção apontada. Reusa o tiro brilhante (spawnBullet).
+   */
+  function shootFrom(sprite, group, opts) {
+    if (!sprite || !group) return null;
+    opts = opts || {};
+    var speed = (typeof opts.speed === 'number') ? opts.speed : 6;
+    var d = _forward(sprite);
+    var cx = sprite.x + (sprite.w || 0) / 2, cy = sprite.y + (sprite.h || 0) / 2;
+    var nose = Math.max(sprite.w || 0, sprite.h || 0) / 2 + 4;
+    return spawnBullet(group, {
+      x: cx + d.x * nose, y: cy + d.y * nose,
+      radius: opts.radius, color: opts.color,
+      vx: d.x * speed, vy: d.y * speed
+    });
+  }
+  /**
+   * Solta um asteroide vindo de uma BORDA aleatória da tela, rumo ao centro.
+   * Sorteia um dos 4 lados, nasce logo fora dele e ganha velocidade pra dentro.
+   * Reusa o asteroide desenhado (spawnAsteroid).
+   */
+  function spawnAsteroidFromEdge(group, opts) {
+    if (!group) return null;
+    opts = opts || {};
+    var ctx = ensureStage();
+    var W = stageW(ctx) || 360;
+    var H = stageH(ctx) || 360;
+    var speed = (typeof opts.speed === 'number') ? opts.speed : 1.5;
+    var base = (typeof opts.size === 'number' && opts.size > 0) ? opts.size : 40;
+    var m = base;
+    var side = Math.floor(Math.random() * 4);
+    var x, y, vx, vy;
+    if (side === 0) { x = -m; y = Math.random() * H; vx = speed; vy = 0; }
+    else if (side === 1) { x = Math.random() * W; y = H + m; vx = 0; vy = -speed; }
+    else if (side === 2) { x = W + m; y = Math.random() * H; vx = -speed; vy = 0; }
+    else { x = Math.random() * W; y = -m; vx = 0; vy = speed; }
+    return spawnAsteroid(group, { x: x, y: y, size: base, color: opts.color, vx: vx, vy: vy });
   }
 
   // ---- Efeitos visuais (v0.4.0) ----
@@ -1863,6 +1975,15 @@ export const gameTwoDRuntime = `(function () {
     playShoot: playShoot,
     playExplosion: playExplosion,
     overlapSpriteGroup: overlapSpriteGroup,
+    // Nave clássica: girar + impulsionar na direção apontada (v0.10.0).
+    rotateSprite: rotateSprite,
+    pointSprite: pointSprite,
+    thrust: thrust,
+    applyFriction: applyFriction,
+    steerThrust: steerThrust,
+    spriteAngleDeg: spriteAngleDeg,
+    shootFrom: shootFrom,
+    spawnAsteroidFromEdge: spawnAsteroidFromEdge,
     // Pulo genérico + Kit dino (v0.9.0).
     jumpOnGround: jumpOnGround,
     createDino: createDino,

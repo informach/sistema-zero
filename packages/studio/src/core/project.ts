@@ -49,15 +49,15 @@ export interface ProjectAsset {
 /** Teto defensivo de nome (a UI já normaliza; aqui é só anti-lixo). */
 const MAX_ASSET_NAME_CHARS = 48
 /**
- * Teto do `dataUrl` de UM asset (chars do data: URL). ~400 mil chars ≈ 290 KB de
- * binário após o inflar do base64 — folga sobre o alvo de ~256 KB do plano (a UI
- * faz downscale/compressão antes; isto é a cerca anti-inchaço do save/quota).
+ * Teto do `dataUrl` de UM asset (chars do data: URL). ~800 mil chars ≈ 580 KB de
+ * binário após o inflar do base64 (a UI faz downscale/compressão antes; isto é a
+ * cerca anti-inchaço do save/quota). Subido ~2x (2026-06) p/ projetos maiores.
  */
-const MAX_ASSET_DATA_URL_CHARS = 400_000
-/** Orçamento total de assets do projeto (~4 MB de binário inflado em base64). */
-const MAX_ASSETS_TOTAL_CHARS = 5_600_000
+const MAX_ASSET_DATA_URL_CHARS = 800_000
+/** Orçamento total de assets do projeto (~8 MB de binário inflado em base64). */
+const MAX_ASSETS_TOTAL_CHARS = 11_200_000
 /** Teto de quantidade de assets por projeto (defesa anti-DoS no load). */
-const MAX_ASSETS_COUNT = 64
+const MAX_ASSETS_COUNT = 128
 
 const ASSET_NAME_PATTERN = /^[a-z0-9][a-z0-9-]*$/
 const ASSET_DATA_URL_PREFIX = 'data:image/'

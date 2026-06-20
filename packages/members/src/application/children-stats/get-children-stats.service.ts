@@ -31,6 +31,7 @@ export class GetChildrenStatsService {
     private readonly courses: CourseRepository,
     private readonly progress: ProgressRepository,
     private readonly studio: StudioSubmissionRepository,
+    private readonly clock: () => Date,
   ) {}
 
   async execute(
@@ -54,6 +55,7 @@ export class GetChildrenStatsService {
       : new Map<string, number>()
 
     // 3) Por filho (em paralelo): badges + progresso + projetos + ranking.
+    const now = this.clock()
     return Promise.all(
       authorized.map(async (rec) => {
         const profileId = rec.userId
@@ -63,7 +65,7 @@ export class GetChildrenStatsService {
             ? this.progress.countCompletedPublishedByCourseIds(profileId, courseIds)
             : Promise.resolve(new Map<string, number>()),
           this.studio.countByUserAndAudience(profileId, audience),
-          this.gamification.getRanking(profileId, accountId, audience),
+          this.gamification.getRanking(profileId, accountId, audience, now),
         ])
 
         let coursesInProgress = 0

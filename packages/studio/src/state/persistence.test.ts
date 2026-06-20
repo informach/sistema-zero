@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
-import { createEmptyProject } from '#core'
+import { createEmptyProject, PROJECT_ASSET_LIMITS } from '#core'
 
 // bun:test não hoista mocks (sem vi.hoisted): declara o objeto antes do
 // mock.module e importa os módulos sob teste DEPOIS, dinamicamente.
@@ -37,7 +37,8 @@ mock.module('idb-keyval', () => ({
 }))
 
 const { listAllProjects, persistProject, renameProjectMeta } = await import('./persistence')
-const { createProjectStore, PROJECT_FILE_LIMITS, useProjectStore } = await import('./projectStore')
+const { createProjectStore, MAX_BLOCKSTATE_BLOCKS, PROJECT_FILE_LIMITS, useProjectStore } =
+  await import('./projectStore')
 const { cancelPendingAutosavesFor, createPersistenceService, setAutosaveDelayForTests } =
   await import('../persistence/service')
 const { createLocalPersistenceAdapter } = await import('../persistence/local')
@@ -402,7 +403,7 @@ describe('importProjectFromJSON', () => {
       },
     }
 
-    const imported = await useProjectStore.getState().importProjectFromJSON({
+    const { project: imported } = await useProjectStore.getState().importProjectFromJSON({
       name: 'Projeto com blocos',
       files: {
         'index.html': '<h1>ok</h1>',
@@ -415,8 +416,8 @@ describe('importProjectFromJSON', () => {
     expect(imported.blocksState).toEqual(blocksState)
   })
 
-  it('descarta blocksState importado com tipo de bloco desconhecido', async () => {
-    const imported = await useProjectStore.getState().importProjectFromJSON({
+  it('descarta blocksState importado com tipo de bloco desconhecido (com aviso)', async () => {
+    const { project: imported, warnings } = await useProjectStore.getState().importProjectFromJSON({
       name: 'Projeto com bloco inválido',
       files: {
         'index.html': '<h1>ok</h1>',
@@ -432,13 +433,38 @@ describe('importProjectFromJSON', () => {
     })
 
     expect(imported.blocksState).toBeNull()
+    // O descarte (silencioso antes) agora vira aviso para a UI mostrar.
+    expect(warnings.some((w) => w.includes('blocos não foram carregados'))).toBe(true)
+  })
+
+  it('avisa quando imagens não cabem; importa o resto; sem avisos quando tudo cabe', async () => {
+    // Mais imagens que o teto de quantidade → as excedentes caem com aviso.
+    const tiny = 'data:image/png;base64,AAAA'
+    const over = PROJECT_ASSET_LIMITS.maxAssetsCount + 5
+    const many = await useProjectStore.getState().importProjectFromJSON({
+      name: 'Muitas imagens',
+      files: { 'index.html': '<h1>ok</h1>', 'style.css': '', 'script.js': '' },
+      assets: Array.from({ length: over }, (_, i) => ({
+        kind: 'image',
+        name: `img-${i}`,
+        dataUrl: tiny,
+      })),
+    })
+    expect(many.project.assets.length).toBe(PROJECT_ASSET_LIMITS.maxAssetsCount)
+    expect(many.warnings.some((w) => w.includes('imagem'))).toBe(true)
+
+    const clean = await useProjectStore.getState().importProjectFromJSON({
+      name: 'Projeto simples',
+      files: { 'index.html': '<h1>ok</h1>', 'style.css': '', 'script.js': '' },
+    })
+    expect(clean.warnings).toEqual([])
   })
 
   it('preserva kind/tree/proMeta de um projeto profissional no export→import', async () => {
     // Regressão: importProjectFromJSON dropava kind/tree/proMeta, rebaixando todo
     // projeto pro exportado para classic vazio. Agora reconstrói via os mesmos
     // sanitizers do load (sanitizeProTree/sanitizeProMeta).
-    const imported = await useProjectStore.getState().importProjectFromJSON({
+    const { project: imported } = await useProjectStore.getState().importProjectFromJSON({
       name: 'Pro exportado',
       kind: 'pro',
       mode: 'blocks', // ignorado: pro força 'code'
@@ -467,7 +493,7 @@ describe('importProjectFromJSON', () => {
   })
 
   it('rebaixa para classic um pro importado com tree inválida (node_modules)', async () => {
-    const imported = await useProjectStore.getState().importProjectFromJSON({
+    const { project: imported } = await useProjectStore.getState().importProjectFromJSON({
       name: 'Pro quebrado',
       kind: 'pro',
       tree: { 'node_modules/evil.js': { kind: 'file', content: 'x' } },
@@ -484,7 +510,7 @@ describe('importProjectFromJSON', () => {
   })
 
   it('rejeita blocksState importado com blocos demais antes de persistir', async () => {
-    const blocks = Array.from({ length: 5_001 }, (_, index) => ({
+    const blocks = Array.from({ length: MAX_BLOCKSTATE_BLOCKS + 1 }, (_, index) => ({
       type: 'sz_js_console_log_text',
       id: `log_${index}`,
       fields: { VALUE: 'oi' },
@@ -610,10 +636,14 @@ describe('live project mutation limits', () => {
       'style.css': 'b'.repeat(PROJECT_FILE_LIMITS.maxFileChars),
       'script.js': 'c'.repeat(PROJECT_FILE_LIMITS.maxFileChars),
     })
-    useProjectStore.getState().setExtraFile('helper.js', 'd'.repeat(1_500_000))
+    // Quase enche o espaço restante do teto combinado com o 1º extra (dinâmico
+    // sobre os tetos, com folga p/ não esbarrar no limite por-arquivo), de modo que
+    // o 2º extra (maior que a folga) estoure o limite combinado.
+    const room = PROJECT_FILE_LIMITS.maxTotalChars - 3 * PROJECT_FILE_LIMITS.maxFileChars
+    useProjectStore.getState().setExtraFile('helper.js', 'd'.repeat(room - 1000))
     useProjectStore.setState({ isDirty: false, saveError: null })
 
-    useProjectStore.getState().setExtraFile('more.js', 'e'.repeat(1_500_000))
+    useProjectStore.getState().setExtraFile('more.js', 'e'.repeat(2000))
 
     const state = useProjectStore.getState()
     expect(state.project?.extraFiles?.find((file) => file.name === 'more.js')?.content).toBe(

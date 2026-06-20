@@ -101,7 +101,58 @@ SEMPRE `?audience=<a do app>` — **a gamificação inteira é segregada por vit
 badges/ranking kids e adult não se misturam; `{withRanking}` soma `?ranking=true`) e handler
 passthrough `shell.routes.gamificationMe` (`GET /api/members/gamification/me`). `markLessonComplete`/
 `submitQuizAttempt` agora são TIPADOS (a resposta carrega o delta `gamification` — aditivo; o
-community adulto ignora, a vitrine v1 é o kids).
+community adulto ignora, a vitrine v1 é o kids). `GamificationMeView.streak` ganhou
+`freezesAvailable?`/`onVacation?`/`vacationUntil?` e `coins?:{balance}` (todos OPCIONAIS p/ tolerar
+members antigo).
+
+**Expansão Zappy + avatar/quarto/missões/ligas (06/2026 — 6 fases):** o shell virou o BFF de TODA a
+gamificação kids. Tipos novos em `lib/types.ts` (mirror das views do members): `MissionView`/
+`MissionsMeView`/`MissionClaimResult`, `StreakFreezeResult`/`VacationResult`, `LeagueEntryView`/
+`LeagueMeView`, `AvatarConfigInput`/`AvatarPartView`/`AvatarStateView`/`AvatarPurchaseResult`/
+`AvatarEquipResult`, `RoomPlacedItem`/`RoomStateView`/`RoomItemView`/`RoomThemeView`/`RoomEditorView`/
+`RoomBuyResult`, `PublicProfileIdentity`/`PublicProfileGameView`/`PublicProfileDTO`. Todos seguem o
+padrão "view larga/forward-compat" (campos opcionais, `layer`/`category` como `string`) p/ tolerar
+catálogo novo no members sem rebuild do shell.
+
+Clients (`server/clients.ts`, sempre `?audience=<a do app>`) + variantes **`*Readonly()`** (RSC,
+memoizadas por request via `React.cache()` — dedup layout×página, sem refresh de cookie):
+- **Missões:** `getMissions()`/`getMissionsReadonly()` (`GET /members/gamification/missions/me`) +
+  `claimMission(slug)` (`POST …/missions/:slug/claim` — idempotente; o members revalida a conclusão).
+- **Proteção de sequência:** `buyStreakFreeze()` (`POST …/streak-freeze/buy` — compra com moedas;
+  sem saldo → 402) + `setVacation(from,to)` (`POST …/vacation` — janela de férias; `null/null` limpa).
+- **Liga semanal:** `getLeagueReadonly()` (`GET …/league/me` — board SEM PII, só `position`/`weeklyXp`/
+  `isMe`).
+- **Avatar (guarda-roupa por camadas):** `getAvatar()`/`getAvatarReadonly()` (`GET /members/avatar`) +
+  `buyAvatarPart(id)` (`POST /members/avatar/parts/:id/buy`, idempotente, 402 sem saldo) +
+  `equipAvatar(config)` (`PUT /members/avatar` — o members é ESTRITO: só peça grátis OU possuída).
+- **Quarto virtual:** `getRoom()`/`getRoomReadonly()` (`GET /members/room`) + `saveRoom(state)`
+  (`PUT /members/room` — last-write-wins, o members canonicaliza contra o inventário) +
+  `buyRoomItem(id)` (`POST /members/room/items/:id/buy` — item OU tema pago, idempotente, 402/404/400).
+- **Perfil público de OUTRA criança:** `getPublicProfileIdentity(profileId)` (auth S2S → nome + flag
+  `publicProfileEnabled`, nunca PII) + `getPublicProfile(profileId)` (members → xp/ranking/conquistas/
+  avatar/quarto SEM identidade). O BFF junta os dois no `PublicProfileDTO` p/ a página `/crianca/[id]`;
+  o perfil público VIVO é o portão (404 se os pais desligarem) — não confiar em snapshot velho.
+
+Handlers (`createShellRoutes`, espalhados no `index.ts` como `routes.*`): `gamificationMe`,
+`missionsGet`/`missionClaim`, `streakFreezeBuy`/`vacationSet` (Zod `VacationSchema`), `avatarGet`/
+`avatarBuy`/`avatarEquip` (Zod `AvatarConfigSchema` — só forma; posse/camada é portão do members),
+`roomGet`/`roomSave`/`roomBuy` (Zod `RoomStateSchema`), e `childrenStats` (área dos pais: junta
+identidade dos perfis do auth com os stats por perfil do members; gateado por
+`requireParentGateAccountOnly` no shim do KIDS). Toda escrita passa por `requireWritableSession`
+(impersonação read-only); ids de path validados como UUID na borda.
+
+**Privacidade — `authorProfileId` (perfil público, 06/2026):** o `redactAuthors` (`lib/hub-redact`)
+continua zerando o `authorId` cru de TERCEIROS, MAS quando o autor é PÚBLICO (`authorPublic` —
+opt-in dos pais, snapshot no hub) expõe um **`authorProfileId`** (o id do perfil) como ALVO do link
+p/ `/crianca/[id]`, preservando o `authorDisplayName`. Perfil não público → sem `authorProfileId`
+(o fórum cai em "Colega"; o Mural mostra o nome sem link). É só estrutural e sobrevive à redação;
+o portão VIVO é o próprio perfil público (404 se desligarem depois). Cobertura em
+`tests/hub-redact.test.ts`.
+
+> **Fonte da verdade da gamificação** (valores exatos de XP/moedas/marcos, catálogos de avatar/quarto/
+> missões, regras de streak/freeze/férias/ligas, modelo de dados e gotchas): **`../../docs/gamificacao.md`**.
+> Os tipos/clients/handlers daqui são só o mirror do BFF — qualquer mudança de contrato começa no members
+> e se reflete nesse doc.
 
 **Perfis estilo Netflix (PR5, kids):** o shell expõe o **client de perfis**
 (`createProfilesClient` em `server/clients.ts` → `/auth/profiles*` no auth) e os **route

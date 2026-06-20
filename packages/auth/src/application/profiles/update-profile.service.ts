@@ -13,6 +13,8 @@ export interface UpdateProfileDetailsCommand {
    * rota — quando chega aqui já está liberada. `undefined` = não mexe.
    */
   birthDate?: string | null
+  /** Perfil público (opt-in). AUTORIZAÇÃO parent-only é da rota; `undefined` = não mexe. */
+  publicProfileEnabled?: boolean
 }
 
 /**
@@ -35,6 +37,10 @@ export class UpdateProfileDetailsService {
     profile.updateDetails({ name: cmd.name, avatarUrl: cmd.avatarUrl, whatsapp: cmd.whatsapp }, now)
     // birthDate tem caminho próprio (autorização parent-only na rota; `undefined` = não mexe).
     if (cmd.birthDate !== undefined) profile.setBirthDate(cmd.birthDate, now)
+    // Perfil público: idem (parent-only na rota).
+    if (cmd.publicProfileEnabled !== undefined) {
+      profile.setPublicProfileEnabled(cmd.publicProfileEnabled, now)
+    }
     const ok = await this.profiles.update(profile)
     if (!ok) throw new ProfileNotFoundError()
     return toProfileView(profile)

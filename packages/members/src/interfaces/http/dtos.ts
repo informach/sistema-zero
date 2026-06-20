@@ -41,6 +41,50 @@ export const GamificationQuery = t.Object({
   ranking: t.Optional(t.Literal('true')),
 })
 
+// ── Avatar (guarda-roupa por camadas) ───────────────────────────────────────
+// `partId`/`parts` são SLUGS do catálogo em código (não uuid): `^[a-z0-9-]+$`.
+const AVATAR_SLUG = t.String({ minLength: 1, maxLength: 64, pattern: '^[a-z0-9-]+$' })
+
+export const AvatarPartParams = t.Object({ partId: AVATAR_SLUG })
+
+/** Params de `GET /members/profiles/:profileId/public` (uuid na borda). */
+export const PublicProfileParams = t.Object({ profileId: UUID })
+
+// ── Missões + proteção de sequência ──────────────────────────────────────────
+export const MissionSlugParams = t.Object({ slug: AVATAR_SLUG })
+
+const ISO_DATE = t.String({ minLength: 10, maxLength: 10, pattern: '^\\d{4}-\\d{2}-\\d{2}$' })
+/** Corpo de `PUT /members/gamification/vacation` — janela (ou null/null p/ limpar). */
+export const VacationBody = t.Object({
+  from: t.Union([ISO_DATE, t.Null()]),
+  to: t.Union([ISO_DATE, t.Null()]),
+})
+
+// ── Quarto virtual ──────────────────────────────────────────────────────────
+export const RoomItemParams = t.Object({ itemId: AVATAR_SLUG })
+
+/** Corpo de `PUT /members/room` — estado montado (o serviço valida posse/grade). */
+export const RoomStateBody = t.Object({
+  theme: AVATAR_SLUG,
+  placedItems: t.Array(
+    t.Object({
+      itemId: AVATAR_SLUG,
+      x: t.Integer({ minimum: 0, maximum: 64 }),
+      y: t.Integer({ minimum: 0, maximum: 64 }),
+    }),
+    { maxItems: 60 },
+  ),
+  pet: t.Union([AVATAR_SLUG, t.Null()]),
+})
+
+/** Corpo de `PUT /members/avatar` — config equipada (camada → peça). */
+export const AvatarConfigBody = t.Object({
+  style: t.Optional(t.String({ maxLength: 40 })),
+  // Record camada→peça; chaves/valores capados; o serviço valida semanticamente
+  // (camada/peça desconhecida → 400; peça paga não possuída → 403).
+  parts: t.Record(t.String({ maxLength: 40 }), AVATAR_SLUG),
+})
+
 /**
  * Corpo de `POST /members/webhooks/grant` — concessão de acesso (funil → gateway →
  * members). `subscription` presente = acesso por assinatura; ausente = compra única.

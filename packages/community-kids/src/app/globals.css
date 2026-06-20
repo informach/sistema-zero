@@ -799,6 +799,90 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
 }
 
 /* Acessibilidade: animações desligam p/ quem pediu menos movimento */
+/* ===== Quarto virtual (animações leves; o bloco reduced-motion abaixo as desliga) ===== */
+@keyframes kid-room-grow {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.12);
+  }
+}
+@keyframes kid-room-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12%);
+  }
+}
+@keyframes kid-room-twinkle {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.82);
+  }
+}
+@keyframes kid-room-flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  45% {
+    opacity: 0.68;
+  }
+  55% {
+    opacity: 0.92;
+  }
+}
+@keyframes kid-room-walk {
+  0% {
+    left: 4%;
+    transform: scaleX(1);
+  }
+  48% {
+    left: 82%;
+    transform: scaleX(1);
+  }
+  50% {
+    left: 82%;
+    transform: scaleX(-1);
+  }
+  98% {
+    left: 4%;
+    transform: scaleX(-1);
+  }
+  100% {
+    left: 4%;
+    transform: scaleX(1);
+  }
+}
+.kid-room-anim {
+  display: inline-block;
+}
+.kid-room-grow {
+  transform-origin: bottom center;
+  animation: kid-room-grow 3.5s ease-in-out infinite;
+}
+.kid-room-float {
+  animation: kid-room-float 4s ease-in-out infinite;
+}
+.kid-room-twinkle {
+  animation: kid-room-twinkle 2.6s ease-in-out infinite;
+}
+.kid-room-flicker {
+  animation: kid-room-flicker 1.2s ease-in-out infinite;
+}
+.kid-room-walk {
+  animation: kid-room-walk 10s linear infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   ::before,

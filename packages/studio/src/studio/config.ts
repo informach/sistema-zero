@@ -29,6 +29,8 @@ export interface StudioFeatures {
   extensions?: boolean
   /** Botão "Exportar" na Topbar (gera o ZIP de deploy). Default: true. */
   export?: boolean
+  /** Botão "Baixar" na Topbar (ZIP da FONTE, para continuar no VSCode). Default: true. */
+  download?: boolean
   /** Aba Terminal (WebContainer). Default: false — exige COOP/COEP no host. */
   terminal?: boolean
   /** Aba/painel de IA. `true` = BYOK (mock até ter chave); objeto configura. Default: false. */
@@ -109,6 +111,7 @@ export interface ResolvedStudioConfig {
   console: boolean
   extensions: boolean
   export: boolean
+  download: boolean
   terminal: boolean
   ai: boolean
   /** Modo profissional ligado (dev-server WebContainer). */
@@ -148,6 +151,7 @@ export function resolveStudioConfig(
     console: features?.console ?? true,
     extensions: features?.extensions ?? true,
     export: features?.export ?? true,
+    download: features?.download ?? true,
     // Profissional EXIGE o terminal (é onde roda o dev-server).
     terminal: professional ? true : (features?.terminal ?? false),
     ai: ai !== false,
@@ -168,6 +172,7 @@ const STANDALONE_CONFIG: ResolvedStudioConfig = {
   console: true,
   extensions: true,
   export: true,
+  download: true,
   terminal: true,
   ai: true,
   professional: false,

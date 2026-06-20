@@ -1,22 +1,93 @@
 import { randomUUID } from 'node:crypto'
-import { and, count, countDistinct, eq, gt, inArray, isNotNull, or, sql } from 'drizzle-orm'
+import {
+  and,
+  count,
+  countDistinct,
+  desc,
+  eq,
+  gt,
+  gte,
+  inArray,
+  isNotNull,
+  isNull,
+  lt,
+  or,
+  sql,
+  sum,
+} from 'drizzle-orm'
 import type { CourseAudience } from '../../../domain/course/course'
 import type { BadgeSlug } from '../../../domain/gamification/badges'
 import {
+  applyDailyCap,
+  DAILY_COIN_CAP,
+  streakMilestoneCoins,
+} from '../../../domain/gamification/coins'
+import {
   advanceStreak,
+  coinsSaverBadgeSlugs,
   courseBadgeSlugs,
   quizPerfectBadgeSlugs,
   streakBadgeSlugs,
+  studioMasteryBadgeSlugs,
 } from '../../../domain/gamification/gamification'
-import type {
-  AwardInput,
-  AwardResult,
-  GamificationProfileRecord,
-  GamificationRanking,
-  GamificationRepository,
+import type { MissionGoalType } from '../../../domain/gamification/missions'
+import {
+  type AwardInput,
+  type AwardResult,
+  type BuyStreakFreezeInput,
+  type BuyStreakFreezeResult,
+  type ClaimMissionInput,
+  type ClaimMissionResult,
+  type GamificationProfileRecord,
+  type GamificationRanking,
+  type GamificationRepository,
+  type LeagueMembershipRecord,
+  MAX_STREAK_FREEZES,
+  type SpendCoinsInput,
+  type SpendCoinsResult,
+  type XpSourceType,
 } from '../../../domain/ports/gamification-repository.port'
 import type { Database } from './db'
-import { courses, entitlements, gamificationProfiles, userBadges, xpEvents } from './schema'
+import {
+  coinEvents,
+  courses,
+  entitlements,
+  gamificationProfiles,
+  leagueMembership,
+  missionClaims,
+  userBadges,
+  xpEvents,
+} from './schema'
+
+type CoinSourceTypeValue = (typeof coinEvents.sourceType.enumValues)[number]
+
+// Tipo de XP (faucet de rotina) → tipo de moeda. Marcos (course_complete/
+// quiz_perfect) não dão moeda e não aparecem aqui.
+const COIN_TYPE_FOR_XP: Partial<Record<XpSourceType, CoinSourceTypeValue>> = {
+  lesson_complete: 'lesson_complete',
+  quiz_passed: 'quiz_passed',
+  unit_complete: 'unit_complete',
+  studio_passed: 'studio_passed',
+}
+
+function masterAccessType(audience: CourseAudience): 'all_courses' | 'all_kids_courses' {
+  return audience === 'adult' ? 'all_courses' : 'all_kids_courses'
+}
+
+function entitlementInAudience(audience: CourseAudience) {
+  return and(eq(courses.slug, entitlements.courseRef), eq(courses.audience, audience))
+}
+
+function activeAudienceAccessPredicate(audience: CourseAudience, now: Date) {
+  return and(
+    eq(entitlements.status, 'active'),
+    or(isNull(entitlements.expiresAt), gt(entitlements.expiresAt, now)),
+    or(
+      and(eq(entitlements.accessType, 'course'), isNotNull(courses.id)),
+      eq(entitlements.accessType, masterAccessType(audience)),
+    ),
+  )
+}
 
 export class DrizzleGamificationRepository implements GamificationRepository {
   constructor(private readonly db: Database) {}
@@ -99,6 +170,13 @@ export class DrizzleGamificationRepository implements GamificationRepository {
         }
       }
 
+      // Badges de MAESTRIA do Estúdio: ledger `studio_passed` (projetos aprovados).
+      if (newEvents.some((e) => e.sourceType === 'studio_passed')) {
+        for (const slug of studioMasteryBadgeSlugs(await countByType('studio_passed'))) {
+          badgeCandidates.add(slug)
+        }
+      }
+
       const [profile] = await tx
         .select()
         .from(gamificationProfiles)
@@ -116,21 +194,109 @@ export class DrizzleGamificationRepository implements GamificationRepository {
         current: profile?.streakCurrent ?? 0,
         best: profile?.streakBest ?? 0,
         extended: false,
+        freezesConsumed: 0,
       }
+      let coinsAwarded = 0
+      let coinBalance = profile?.coinBalance ?? 0
+      let coinsCapped = false
 
       // Streak/lastActivityDate só avançam com evento novo de XP REAL (amount
       // > 0) — MARCOS (course_complete/quiz_perfect, amount 0) não movem streak
       // (regra: "só atividade que rende XP conta"); badges concedem mesmo assim.
+      // A carteira Zappy também só ganha AQUI (faucets têm amount > 0; marcos não dão moeda).
       if (newEvents.some((e) => e.amount > 0)) {
+        // Freeze GRÁTIS do mês (lazy/idempotente): +1 na 1ª atividade de cada mês civil.
+        const monthKey = input.today.slice(0, 7)
+        const freezesBefore =
+          (profile?.streakFreezes ?? 0) + (profile?.freezeGrantedMonth !== monthKey ? 1 : 0)
         streak = advanceStreak(
           {
             streakCurrent: profile?.streakCurrent ?? 0,
             streakBest: profile?.streakBest ?? 0,
             lastActivityDate: profile?.lastActivityDate ?? null,
+            freezes: freezesBefore,
+            vacationFrom: profile?.vacationFrom ?? null,
+            vacationTo: profile?.vacationTo ?? null,
           },
           input.today,
         )
+        const freezesAfter = freezesBefore - streak.freezesConsumed
         totalXp += xpAwarded
+
+        // ── Carteira Zappy: faucet desta ação, sob o MESMO advisory lock ───────
+        // ROTINA (conta no teto): cada evento novo com `coins`. MARCO de streak
+        // (EXEMPTO do teto — raro, não-grindável) só quando o streak avançou.
+        // `newEvents` vem do RETURNING (sem `coins`) → reidrata pelo input por source.
+        const coinsBySource = new Map(
+          input.events.map((e) => [`${e.sourceType}:${e.sourceId}`, e.coins ?? 0]),
+        )
+        const routine = newEvents.flatMap((e) => {
+          const coinType = COIN_TYPE_FOR_XP[e.sourceType]
+          const coins = coinsBySource.get(`${e.sourceType}:${e.sourceId}`) ?? 0
+          return coinType && coins > 0
+            ? [{ sourceType: coinType, sourceId: e.sourceId, amount: coins }]
+            : []
+        })
+        const milestones = streak.extended
+          ? streakMilestoneCoins(streak.current).map((m) => ({
+              sourceType: 'streak_milestone' as const,
+              sourceId: m.sourceId,
+              amount: m.amount,
+            }))
+          : []
+        // Teto diário: reseta o acumulado se virou o dia civil SP; aplica só à rotina.
+        const earnedTodayBase =
+          profile?.coinsEarnedDate === input.today ? (profile?.coinsEarnedToday ?? 0) : 0
+        const cap = applyDailyCap(
+          routine.map((c) => c.amount),
+          earnedTodayBase,
+          DAILY_COIN_CAP,
+        )
+        coinsCapped = cap.capped
+        const grants: { sourceType: CoinSourceTypeValue; sourceId: string; amount: number }[] = []
+        routine.forEach((c, i) => {
+          const give = cap.granted[i] ?? 0
+          if (give > 0) grants.push({ ...c, amount: give })
+        })
+        grants.push(...milestones)
+
+        // `balance_after` é AUDITORIA (a verdade é `coin_balance` no perfil): soma
+        // corrente dos grants. O ledger dedupa por (user, audience, source_type,
+        // source_id) — só os novos retornam; `coinsAwarded`/saldo saem do RETURNING.
+        let running = coinBalance
+        const coinRows = grants.map((g) => {
+          running += g.amount
+          return {
+            id: randomUUID(),
+            userId: input.userId,
+            audience: input.audience,
+            sourceType: g.sourceType,
+            sourceId: g.sourceId,
+            amount: g.amount,
+            balanceAfter: running,
+            createdAt: input.now,
+          }
+        })
+        const insertedCoins =
+          coinRows.length > 0
+            ? await tx
+                .insert(coinEvents)
+                .values(coinRows)
+                .onConflictDoNothing({
+                  target: [
+                    coinEvents.userId,
+                    coinEvents.audience,
+                    coinEvents.sourceType,
+                    coinEvents.sourceId,
+                  ],
+                })
+                .returning({ amount: coinEvents.amount })
+            : []
+        coinsAwarded = insertedCoins.reduce((sum, r) => sum + r.amount, 0)
+        coinBalance = (profile?.coinBalance ?? 0) + coinsAwarded
+        const earnedTodayNext = earnedTodayBase + cap.totalGranted
+        const newLifetime = (profile?.lifetimeCoinsEarned ?? 0) + coinsAwarded
+
         // Valores absolutos calculados sob o lock — o upsert não precisa de
         // incremento relativo no banco.
         await tx
@@ -145,6 +311,12 @@ export class DrizzleGamificationRepository implements GamificationRepository {
             streakBest: streak.best,
             lastActivityDate: input.today,
             privileged: input.privileged,
+            coinBalance,
+            coinsEarnedToday: earnedTodayNext,
+            coinsEarnedDate: input.today,
+            lifetimeCoinsEarned: newLifetime,
+            streakFreezes: freezesAfter,
+            freezeGrantedMonth: monthKey,
             createdAt: input.now,
             updatedAt: input.now,
           })
@@ -160,10 +332,17 @@ export class DrizzleGamificationRepository implements GamificationRepository {
               streakBest: streak.best,
               lastActivityDate: input.today,
               privileged: input.privileged,
+              coinBalance,
+              coinsEarnedToday: earnedTodayNext,
+              coinsEarnedDate: input.today,
+              lifetimeCoinsEarned: newLifetime,
+              streakFreezes: freezesAfter,
+              freezeGrantedMonth: monthKey,
               updatedAt: input.now,
             },
           })
         for (const slug of streakBadgeSlugs(streak.current)) badgeCandidates.add(slug)
+        for (const slug of coinsSaverBadgeSlugs(newLifetime)) badgeCandidates.add(slug)
       }
 
       const badgesUnlocked =
@@ -185,8 +364,87 @@ export class DrizzleGamificationRepository implements GamificationRepository {
               .returning({ slug: userBadges.badgeSlug, unlockedAt: userBadges.unlockedAt })
           : []
 
-      return { xpAwarded, totalXp, streak, newEvents, badgesUnlocked }
+      return {
+        xpAwarded,
+        totalXp,
+        streak,
+        newEvents,
+        badgesUnlocked,
+        coinsAwarded,
+        coinBalance,
+        coinsCapped,
+      }
     })
+  }
+
+  async spendCoins(input: SpendCoinsInput): Promise<SpendCoinsResult> {
+    return this.db.transaction(async (tx) => {
+      // MESMO lock por aluno do award — serializa o read-then-write do saldo
+      // (dois gastos simultâneos não furam o saldo).
+      await tx.execute(
+        sql`select pg_advisory_xact_lock(hashtextextended(${`gamification:${input.userId}`}, 0))`,
+      )
+      // Idempotência: a MESMA compra (reason + key) já debitou? (duplo-clique/retry).
+      const [existing] = await tx
+        .select({ id: coinEvents.id })
+        .from(coinEvents)
+        .where(
+          and(
+            eq(coinEvents.userId, input.userId),
+            eq(coinEvents.audience, input.audience),
+            eq(coinEvents.sourceType, input.reason),
+            eq(coinEvents.sourceId, input.idempotencyKey),
+          ),
+        )
+        .limit(1)
+      const [profile] = await tx
+        .select({ balance: gamificationProfiles.coinBalance })
+        .from(gamificationProfiles)
+        .where(
+          and(
+            eq(gamificationProfiles.userId, input.userId),
+            eq(gamificationProfiles.audience, input.audience),
+          ),
+        )
+        .limit(1)
+      const balance = profile?.balance ?? 0
+      if (existing) return { ok: false, code: 'ALREADY_SPENT', balance }
+      if (balance < input.amount) return { ok: false, code: 'INSUFFICIENT_BALANCE', balance }
+
+      const balanceAfter = balance - input.amount
+      await tx.insert(coinEvents).values({
+        id: randomUUID(),
+        userId: input.userId,
+        audience: input.audience,
+        sourceType: input.reason,
+        sourceId: input.idempotencyKey,
+        amount: -input.amount,
+        balanceAfter,
+        createdAt: input.now,
+      })
+      // O perfil existe (balance ≥ amount > 0 implica linha): atualiza só o saldo.
+      await tx
+        .update(gamificationProfiles)
+        .set({ coinBalance: balanceAfter, updatedAt: input.now })
+        .where(
+          and(
+            eq(gamificationProfiles.userId, input.userId),
+            eq(gamificationProfiles.audience, input.audience),
+          ),
+        )
+      return { ok: true, balanceAfter }
+    })
+  }
+
+  async getBalance(userId: string, audience: CourseAudience): Promise<number> {
+    const [row] = await this.db
+      .select({ balance: gamificationProfiles.coinBalance })
+      .from(gamificationProfiles)
+      .where(
+        and(eq(gamificationProfiles.userId, userId), eq(gamificationProfiles.audience, audience)),
+      )
+      .limit(1)
+    return row?.balance ?? 0
   }
 
   async getProfile(
@@ -203,10 +461,15 @@ export class DrizzleGamificationRepository implements GamificationRepository {
     if (!row) return null
     return {
       userId: row.userId,
+      accountId: row.accountId,
       xp: row.xp,
       streakCurrent: row.streakCurrent,
       streakBest: row.streakBest,
       lastActivityDate: row.lastActivityDate,
+      coinBalance: row.coinBalance,
+      streakFreezes: row.streakFreezes,
+      vacationFrom: row.vacationFrom,
+      vacationTo: row.vacationTo,
     }
   }
 
@@ -228,10 +491,15 @@ export class DrizzleGamificationRepository implements GamificationRepository {
       )
     return rows.map((row) => ({
       userId: row.userId,
+      accountId: row.accountId,
       xp: row.xp,
       streakCurrent: row.streakCurrent,
       streakBest: row.streakBest,
       lastActivityDate: row.lastActivityDate,
+      coinBalance: row.coinBalance,
+      streakFreezes: row.streakFreezes,
+      vacationFrom: row.vacationFrom,
+      vacationTo: row.vacationTo,
     }))
   }
 
@@ -250,20 +518,10 @@ export class DrizzleGamificationRepository implements GamificationRepository {
     userId: string,
     accountId: string,
     audience: CourseAudience,
+    now: Date,
   ): Promise<GamificationRanking | null> {
-    // Elo matrícula→curso da audiência (convenção: entitlements.course_ref = courses.slug).
-    const entitlementInAudience = and(
-      eq(courses.slug, entitlements.courseRef),
-      eq(courses.audience, audience),
-    )
-    // Chave-mestra da audiência (kids `all_kids_courses`, adult `all_courses`) — tem
-    // courseRef NULL, então NÃO casa no join acima; é contada à parte. Sem este braço,
-    // uma conta cujo ÚNICO acesso à vitrine é a chave-mestra ficava FORA da coorte e o
-    // ranking sumia (full review 18/06) — espelha o OR de `findActiveForCourse`.
-    const masterType = audience === 'adult' ? 'all_courses' : 'all_kids_courses'
-    // `LEFT JOIN` + OR: matrícula específica de curso DA audiência (join casou →
-    // courses.id não-nulo) OU a chave-mestra da audiência.
-    const grantsAudienceAccess = or(isNotNull(courses.id), eq(entitlements.accessType, masterType))
+    const joinCourseInAudience = entitlementInAudience(audience)
+    const grantsActiveAudienceAccess = activeAudienceAccessPredicate(audience, now)
 
     // As leituras num único snapshot (transação) — sob award concorrente, posição
     // e total não divergem entre si.
@@ -273,8 +531,8 @@ export class DrizzleGamificationRepository implements GamificationRepository {
       const [member] = await tx
         .select({ u: entitlements.userId })
         .from(entitlements)
-        .leftJoin(courses, entitlementInAudience)
-        .where(and(eq(entitlements.userId, accountId), grantsAudienceAccess))
+        .leftJoin(courses, joinCourseInAudience)
+        .where(and(eq(entitlements.userId, accountId), grantsActiveAudienceAccess))
         .limit(1)
       if (!member) return null
 
@@ -283,8 +541,8 @@ export class DrizzleGamificationRepository implements GamificationRepository {
       const accountsWithEntitlement = tx
         .select({ accountId: entitlements.userId })
         .from(entitlements)
-        .leftJoin(courses, entitlementInAudience)
-        .where(grantsAudienceAccess)
+        .leftJoin(courses, joinCourseInAudience)
+        .where(grantsActiveAudienceAccess)
       const cohort = and(
         eq(gamificationProfiles.audience, audience),
         eq(gamificationProfiles.privileged, false),
@@ -321,5 +579,354 @@ export class DrizzleGamificationRepository implements GamificationRepository {
       const totalStudents = (totalRow?.c ?? 0) + (inCohortRow ? 0 : 1)
       return { position: (aheadRow?.c ?? 0) + 1, totalStudents }
     })
+  }
+
+  async hasActiveAudienceAccess(
+    accountId: string,
+    audience: CourseAudience,
+    now: Date,
+  ): Promise<boolean> {
+    const [row] = await this.db
+      .select({ id: entitlements.id })
+      .from(entitlements)
+      .leftJoin(courses, entitlementInAudience(audience))
+      .where(and(eq(entitlements.userId, accountId), activeAudienceAccessPredicate(audience, now)))
+      .limit(1)
+    return !!row
+  }
+
+  async countEventsInPeriod(
+    userId: string,
+    audience: CourseAudience,
+    sourceTypes: MissionGoalType[],
+    from: Date,
+    to: Date,
+  ): Promise<number> {
+    if (sourceTypes.length === 0) return 0
+    const [row] = await this.db
+      .select({ c: count() })
+      .from(xpEvents)
+      .where(
+        and(
+          eq(xpEvents.userId, userId),
+          eq(xpEvents.audience, audience),
+          inArray(xpEvents.sourceType, sourceTypes),
+          gte(xpEvents.createdAt, from),
+          lt(xpEvents.createdAt, to),
+        ),
+      )
+    return row?.c ?? 0
+  }
+
+  async listClaimedMissions(
+    userId: string,
+    audience: CourseAudience,
+    periodKeys: string[],
+  ): Promise<Set<string>> {
+    if (periodKeys.length === 0) return new Set()
+    const rows = await this.db
+      .select({ slug: missionClaims.missionSlug, period: missionClaims.periodKey })
+      .from(missionClaims)
+      .where(
+        and(
+          eq(missionClaims.userId, userId),
+          eq(missionClaims.audience, audience),
+          inArray(missionClaims.periodKey, periodKeys),
+        ),
+      )
+    return new Set(rows.map((r) => `${r.slug}:${r.period}`))
+  }
+
+  async claimMission(input: ClaimMissionInput): Promise<ClaimMissionResult> {
+    return this.db.transaction(async (tx) => {
+      await tx.execute(
+        sql`select pg_advisory_xact_lock(hashtextextended(${`gamification:${input.userId}`}, 0))`,
+      )
+      // Idempotência do PRÊMIO: 1 linha por (perfil, missão, período). Conflito = já resgatou.
+      const claimed = await tx
+        .insert(missionClaims)
+        .values({
+          id: randomUUID(),
+          userId: input.userId,
+          audience: input.audience,
+          missionSlug: input.missionSlug,
+          periodKey: input.periodKey,
+          claimedAt: input.now,
+        })
+        .onConflictDoNothing({
+          target: [
+            missionClaims.userId,
+            missionClaims.audience,
+            missionClaims.missionSlug,
+            missionClaims.periodKey,
+          ],
+        })
+        .returning({ id: missionClaims.id })
+
+      const [profile] = await tx
+        .select({
+          coinBalance: gamificationProfiles.coinBalance,
+          coinsEarnedToday: gamificationProfiles.coinsEarnedToday,
+          coinsEarnedDate: gamificationProfiles.coinsEarnedDate,
+          lifetimeCoinsEarned: gamificationProfiles.lifetimeCoinsEarned,
+        })
+        .from(gamificationProfiles)
+        .where(
+          and(
+            eq(gamificationProfiles.userId, input.userId),
+            eq(gamificationProfiles.audience, input.audience),
+          ),
+        )
+        .limit(1)
+      const balance = profile?.coinBalance ?? 0
+      if (claimed.length === 0) {
+        return { claimed: false, xpAwarded: 0, coinsAwarded: 0, coinBalance: balance }
+      }
+
+      // Moedas do prêmio CONTAM no teto diário (anti-bypass ético).
+      const earnedTodayBase =
+        profile?.coinsEarnedDate === input.today ? (profile?.coinsEarnedToday ?? 0) : 0
+      const cap = applyDailyCap([input.rewardCoins], earnedTodayBase, DAILY_COIN_CAP)
+      const coinsAwarded = cap.totalGranted
+      const coinBalance = balance + coinsAwarded
+      if (coinsAwarded > 0) {
+        await tx.insert(coinEvents).values({
+          id: randomUUID(),
+          userId: input.userId,
+          audience: input.audience,
+          sourceType: 'mission_reward',
+          sourceId: `${input.missionSlug}:${input.periodKey}`,
+          amount: coinsAwarded,
+          balanceAfter: coinBalance,
+          createdAt: input.now,
+        })
+      }
+      // XP do prêmio é absoluto no perfil (idempotência = o claim). NÃO mexe no streak.
+      await tx
+        .update(gamificationProfiles)
+        .set({
+          xp: sql`${gamificationProfiles.xp} + ${input.rewardXp}`,
+          coinBalance,
+          coinsEarnedToday: earnedTodayBase + coinsAwarded,
+          coinsEarnedDate: input.today,
+          lifetimeCoinsEarned: (profile?.lifetimeCoinsEarned ?? 0) + coinsAwarded,
+          updatedAt: input.now,
+        })
+        .where(
+          and(
+            eq(gamificationProfiles.userId, input.userId),
+            eq(gamificationProfiles.audience, input.audience),
+          ),
+        )
+      return { claimed: true, xpAwarded: input.rewardXp, coinsAwarded, coinBalance }
+    })
+  }
+
+  async buyStreakFreeze(input: BuyStreakFreezeInput): Promise<BuyStreakFreezeResult> {
+    return this.db.transaction(async (tx) => {
+      await tx.execute(
+        sql`select pg_advisory_xact_lock(hashtextextended(${`gamification:${input.userId}`}, 0))`,
+      )
+      const [profile] = await tx
+        .select({
+          balance: gamificationProfiles.coinBalance,
+          freezes: gamificationProfiles.streakFreezes,
+        })
+        .from(gamificationProfiles)
+        .where(
+          and(
+            eq(gamificationProfiles.userId, input.userId),
+            eq(gamificationProfiles.audience, input.audience),
+          ),
+        )
+        .limit(1)
+      const balance = profile?.balance ?? 0
+      const freezes = profile?.freezes ?? 0
+      if (freezes >= MAX_STREAK_FREEZES) {
+        return { ok: false, code: 'MAX_FREEZES', freezes, balance }
+      }
+      // Idempotência: a MESMA compra já debitou? (duplo-clique). Reusa o ledger de moeda.
+      const [existing] = await tx
+        .select({ id: coinEvents.id })
+        .from(coinEvents)
+        .where(
+          and(
+            eq(coinEvents.userId, input.userId),
+            eq(coinEvents.audience, input.audience),
+            eq(coinEvents.sourceType, 'spend_streak_freeze'),
+            eq(coinEvents.sourceId, input.idempotencyKey),
+          ),
+        )
+        .limit(1)
+      if (existing) return { ok: true, freezes, balance }
+      if (balance < input.price)
+        return { ok: false, code: 'INSUFFICIENT_BALANCE', freezes, balance }
+
+      const balanceAfter = balance - input.price
+      await tx.insert(coinEvents).values({
+        id: randomUUID(),
+        userId: input.userId,
+        audience: input.audience,
+        sourceType: 'spend_streak_freeze',
+        sourceId: input.idempotencyKey,
+        amount: -input.price,
+        balanceAfter,
+        createdAt: input.now,
+      })
+      await tx
+        .update(gamificationProfiles)
+        .set({ coinBalance: balanceAfter, streakFreezes: freezes + 1, updatedAt: input.now })
+        .where(
+          and(
+            eq(gamificationProfiles.userId, input.userId),
+            eq(gamificationProfiles.audience, input.audience),
+          ),
+        )
+      return { ok: true, freezes: freezes + 1, balance: balanceAfter }
+    })
+  }
+
+  async setVacation(
+    userId: string,
+    accountId: string,
+    audience: CourseAudience,
+    from: string | null,
+    to: string | null,
+    now: Date,
+  ): Promise<void> {
+    // O perfil pode não existir ainda (criança que nunca pontuou querendo agendar férias):
+    // upsert garante a linha. `accountId` imutável (só no INSERT).
+    await this.db
+      .insert(gamificationProfiles)
+      .values({
+        id: randomUUID(),
+        userId,
+        accountId,
+        audience,
+        xp: 0,
+        streakCurrent: 0,
+        streakBest: 0,
+        lastActivityDate: null,
+        privileged: false,
+        vacationFrom: from,
+        vacationTo: to,
+        createdAt: now,
+        updatedAt: now,
+      })
+      .onConflictDoUpdate({
+        target: [gamificationProfiles.userId, gamificationProfiles.audience],
+        set: { vacationFrom: from, vacationTo: to, updatedAt: now },
+      })
+  }
+
+  async getLeagueMembership(
+    userId: string,
+    audience: CourseAudience,
+    weekKey: string,
+  ): Promise<LeagueMembershipRecord | null> {
+    const [row] = await this.db
+      .select({ weekKey: leagueMembership.weekKey, tier: leagueMembership.tier })
+      .from(leagueMembership)
+      .where(
+        and(
+          eq(leagueMembership.userId, userId),
+          eq(leagueMembership.audience, audience),
+          eq(leagueMembership.weekKey, weekKey),
+        ),
+      )
+      .limit(1)
+    return row ?? null
+  }
+
+  async getMostRecentLeagueMembership(
+    userId: string,
+    audience: CourseAudience,
+    beforeWeekKey: string,
+  ): Promise<LeagueMembershipRecord | null> {
+    // weekKey = `w:YYYY-MM-DD` → ordem lexicográfica == cronológica (data ISO fixa).
+    const [row] = await this.db
+      .select({ weekKey: leagueMembership.weekKey, tier: leagueMembership.tier })
+      .from(leagueMembership)
+      .where(
+        and(
+          eq(leagueMembership.userId, userId),
+          eq(leagueMembership.audience, audience),
+          lt(leagueMembership.weekKey, beforeWeekKey),
+        ),
+      )
+      .orderBy(desc(leagueMembership.weekKey))
+      .limit(1)
+    return row ?? null
+  }
+
+  async createLeagueMembership(
+    userId: string,
+    accountId: string,
+    audience: CourseAudience,
+    weekKey: string,
+    tier: string,
+    now: Date,
+  ): Promise<void> {
+    await this.db
+      .insert(leagueMembership)
+      .values({ id: randomUUID(), userId, accountId, audience, weekKey, tier, createdAt: now })
+      .onConflictDoNothing({
+        target: [leagueMembership.userId, leagueMembership.audience, leagueMembership.weekKey],
+      })
+  }
+
+  async listLeagueCohort(
+    audience: CourseAudience,
+    weekKey: string,
+    tier: string,
+    now: Date,
+  ): Promise<string[]> {
+    const accountsWithEntitlement = this.db
+      .select({ accountId: entitlements.userId })
+      .from(entitlements)
+      .leftJoin(courses, entitlementInAudience(audience))
+      .where(activeAudienceAccessPredicate(audience, now))
+    const rows = await this.db
+      .select({ userId: leagueMembership.userId })
+      .from(leagueMembership)
+      .leftJoin(
+        gamificationProfiles,
+        and(
+          eq(gamificationProfiles.userId, leagueMembership.userId),
+          eq(gamificationProfiles.audience, audience),
+        ),
+      )
+      .where(
+        and(
+          eq(leagueMembership.audience, audience),
+          eq(leagueMembership.weekKey, weekKey),
+          eq(leagueMembership.tier, tier),
+          inArray(leagueMembership.accountId, accountsWithEntitlement),
+          or(isNull(gamificationProfiles.userId), eq(gamificationProfiles.privileged, false)),
+        ),
+      )
+    return rows.map((r) => r.userId)
+  }
+
+  async sumWeeklyXp(
+    audience: CourseAudience,
+    userIds: string[],
+    from: Date,
+    to: Date,
+  ): Promise<Map<string, number>> {
+    if (userIds.length === 0) return new Map()
+    const rows = await this.db
+      .select({ userId: xpEvents.userId, total: sum(xpEvents.amount) })
+      .from(xpEvents)
+      .where(
+        and(
+          eq(xpEvents.audience, audience),
+          inArray(xpEvents.userId, userIds),
+          gte(xpEvents.createdAt, from),
+          lt(xpEvents.createdAt, to),
+        ),
+      )
+      .groupBy(xpEvents.userId)
+    return new Map(rows.map((r) => [r.userId, Number(r.total ?? 0)]))
   }
 }

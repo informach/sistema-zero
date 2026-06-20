@@ -22,6 +22,11 @@ export interface ActClaim {
 export interface ProfileClaim {
   accountId: string
   name?: string
+  /**
+   * Perfil PÚBLICO entre crianças (opt-in dos pais). O gateway o injeta como
+   * `x-auth-profile-public` → o hub usa p/ decidir se o nome do autor vira link.
+   */
+  pub?: boolean
 }
 
 /** Claims de identidade carregadas no access token (lidas pelo gateway p/ resolver o usuário). */
@@ -44,7 +49,7 @@ export interface AccessTokenClaims {
 export interface IssueAccessTokenOptions {
   act?: ActClaim
   /** Sessão de perfil: sobrescreve `sub` por `profileId` e adiciona a claim `pfl`. */
-  profile?: { profileId: string; accountId: string; name?: string }
+  profile?: { profileId: string; accountId: string; name?: string; pub?: boolean }
 }
 
 /** Conjunto de chaves públicas (JWKS) para verificação externa (RS256). Vazio em HS256. */

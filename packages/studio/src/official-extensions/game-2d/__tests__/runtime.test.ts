@@ -1204,3 +1204,116 @@ describe('gameTwoDRuntime — Kit espaço (v0.7.0): nave, asteroide, explosão, 
     expect(hits).toBe(1)
   })
 })
+
+describe('gameTwoDRuntime — nave clássica: girar + impulsionar (v0.10.0)', () => {
+  interface ShipSprite {
+    x: number
+    y: number
+    w: number
+    h: number
+    vx: number
+    vy: number
+    angle?: number
+  }
+  interface NaveApi {
+    createSprite: (o: Partial<ShipSprite> & { color?: string }) => ShipSprite
+    createGroup: () => { items: ShipSprite[] }
+    rotateSprite: (s: ShipSprite, deg: number) => void
+    pointSprite: (s: ShipSprite, deg: number) => void
+    thrust: (s: ShipSprite, force: number) => void
+    applyFriction: (s: ShipSprite, factor: number) => void
+    steerThrust: (s: ShipSprite, speed: number, turnDeg: number) => void
+    spriteAngleDeg: (s: ShipSprite) => number
+    shootFrom: (
+      s: ShipSprite,
+      g: { items: ShipSprite[] },
+      o: { speed?: number; color?: string },
+    ) => ShipSprite | null
+    spawnAsteroidFromEdge: (
+      g: { items: ShipSprite[] },
+      o: { size?: number; color?: string; speed?: number },
+    ) => ShipSprite | null
+    keys: { left: boolean; right: boolean; up: boolean; down: boolean }
+  }
+
+  function load(): NaveApi {
+    const win = { addEventListener() {}, SZGame2D: undefined } as unknown as Record<string, unknown>
+    new Function('window', 'requestAnimationFrame', gameTwoDRuntime)(win, () => 0)
+    return (win as unknown as { SZGame2D: NaveApi }).SZGame2D
+  }
+
+  const RAD = Math.PI / 180
+
+  it('rotateSprite acumula em graus (horário) e pointSprite fixa o ângulo', () => {
+    const api = load()
+    const s = api.createSprite({ x: 0, y: 0 })
+    api.rotateSprite(s, 90)
+    expect(s.angle).toBeCloseTo(90 * RAD, 6)
+    api.rotateSprite(s, 90)
+    expect(s.angle).toBeCloseTo(180 * RAD, 6)
+    api.pointSprite(s, 45)
+    expect(s.angle).toBeCloseTo(45 * RAD, 6)
+    expect(api.spriteAngleDeg(s)).toBeCloseTo(45, 6)
+  })
+
+  it('thrust acelera na direção apontada (0=cima, 90=direita)', () => {
+    const api = load()
+    const s = api.createSprite({ x: 0, y: 0 })
+    api.pointSprite(s, 0) // pra cima → frente (0, -1)
+    api.thrust(s, 2)
+    expect(s.vx).toBeCloseTo(0, 6)
+    expect(s.vy).toBeCloseTo(-2, 6)
+    const s2 = api.createSprite({ x: 0, y: 0 })
+    api.pointSprite(s2, 90) // pra direita → frente (1, 0)
+    api.thrust(s2, 2)
+    expect(s2.vx).toBeCloseTo(2, 6)
+    expect(s2.vy).toBeCloseTo(0, 6)
+  })
+
+  it('applyFriction multiplica a velocidade pelo fator', () => {
+    const api = load()
+    const s = api.createSprite({ x: 0, y: 0 })
+    s.vx = 10
+    s.vy = -4
+    api.applyFriction(s, 0.5)
+    expect(s.vx).toBeCloseTo(5, 6)
+    expect(s.vy).toBeCloseTo(-2, 6)
+  })
+
+  it('steerThrust: ↑ acelera na frente e integra a posição; ← → giram', () => {
+    const api = load()
+    const s = api.createSprite({ x: 100, y: 100 })
+    api.pointSprite(s, 0) // pra cima
+    api.keys.up = true
+    api.steerThrust(s, 3, 4)
+    // velocidade = frente*speed = (0, -3); posição move junto
+    expect(s.vy).toBeCloseTo(-3, 6)
+    expect(s.y).toBeCloseTo(97, 6)
+    api.keys.up = false
+    api.keys.right = true
+    const before = s.angle ?? 0
+    api.steerThrust(s, 3, 4)
+    expect((s.angle ?? 0) - before).toBeCloseTo(4 * RAD, 6) // virou à direita
+  })
+
+  it('shootFrom cria o tiro na frente do sprite, com velocidade pra frente', () => {
+    const api = load()
+    const nave = api.createSprite({ x: 100, y: 100, w: 40, h: 40 })
+    api.pointSprite(nave, 90) // pra direita → frente (1, 0)
+    const g = api.createGroup()
+    const tiro = api.shootFrom(nave, g, { speed: 5, color: '#9cff57' })
+    expect(g.items.length).toBe(1)
+    // velocidade do tiro aponta pra direita (vx>0, vy≈0)
+    expect(tiro?.vx ?? 0).toBeGreaterThan(0)
+    expect(Math.abs(tiro?.vy ?? 0)).toBeLessThan(0.001)
+  })
+
+  it('spawnAsteroidFromEdge nasce numa borda e vai rumo ao centro', () => {
+    const api = load()
+    const g = api.createGroup()
+    const a = api.spawnAsteroidFromEdge(g, { size: 30, color: '#8d8f9b', speed: 2 })
+    expect(g.items.length).toBe(1)
+    // a velocidade tem magnitude = speed num único eixo (entra na tela reto)
+    expect(Math.abs(a?.vx ?? 0) + Math.abs(a?.vy ?? 0)).toBeCloseTo(2, 6)
+  })
+})

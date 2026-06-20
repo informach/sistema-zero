@@ -37,6 +37,11 @@ export interface StreakState {
   streakBest: number
   /** Data civil SP da última atividade que rendeu XP — `null` = nunca. */
   lastActivityDate: string | null
+  /** Protetores de sequência disponíveis (cobrem dias perdidos fora de férias). */
+  freezes?: number
+  /** Janela de FÉRIAS (data civil SP) — dias dentro dela não quebram a sequência. */
+  vacationFrom?: string | null
+  vacationTo?: string | null
 }
 
 export interface StreakAdvance {
@@ -44,32 +49,78 @@ export interface StreakAdvance {
   best: number
   /** `true` quando ESTA atividade moveu o streak (1ª do dia). */
   extended: boolean
+  /** Protetores consumidos p/ cobrir os dias perdidos (o repo debita). */
+  freezesConsumed: number
+}
+
+/** Dia `d` (YYYY-MM-DD) está dentro da janela de férias [from, to] (inclusiva)? */
+function inVacation(d: string, from?: string | null, to?: string | null): boolean {
+  return from != null && to != null && d >= from && d <= to
 }
 
 /**
- * Avança o streak por uma atividade que rendeu XP `today` (data civil SP):
- * mesmo dia → mantém; ontem → +1; gap (ou 1ª vez) → recomeça em 1. `best`
- * nunca regride.
+ * Dias civis ESTRITAMENTE entre `a` e `b` (a < b) — os "perdidos" entre a última
+ * atividade e hoje. Limitado a `cap` (gap maior já não é cobrível por freezes →
+ * o chamador trata como quebra), evitando laços longos.
+ */
+function missedDaysBetween(a: string, b: string, cap = 400): string[] {
+  const out: string[] = []
+  let cur = previousDay(b)
+  while (cur > a && out.length < cap) {
+    out.push(cur)
+    cur = previousDay(cur)
+  }
+  return out
+}
+
+/** Quantos dias perdidos precisam de FREEZE (não cobertos pelas férias). */
+function freezesNeeded(state: StreakState, today: string): number {
+  if (!state.lastActivityDate) return 0
+  return missedDaysBetween(state.lastActivityDate, today).filter(
+    (d) => !inVacation(d, state.vacationFrom, state.vacationTo),
+  ).length
+}
+
+/**
+ * Avança o streak por uma atividade que rendeu XP `today` (data civil SP): mesmo dia →
+ * mantém; ontem → +1; gap → +1 SE os dias perdidos forem cobertos por férias OU por
+ * freezes (consome 1 por dia perdido fora de férias), senão recomeça em 1. `best`
+ * nunca regride. Ética: a sequência só quebra quando NEM férias NEM freezes cobrem.
  */
 export function advanceStreak(state: StreakState, today: string): StreakAdvance {
   if (state.lastActivityDate === today) {
-    return { current: state.streakCurrent, best: state.streakBest, extended: false }
+    return {
+      current: state.streakCurrent,
+      best: state.streakBest,
+      extended: false,
+      freezesConsumed: 0,
+    }
   }
-  const current = state.lastActivityDate === previousDay(today) ? state.streakCurrent + 1 : 1
-  return { current, best: Math.max(state.streakBest, current), extended: true }
+  if (!state.lastActivityDate) {
+    return { current: 1, best: Math.max(state.streakBest, 1), extended: true, freezesConsumed: 0 }
+  }
+  const need = freezesNeeded(state, today)
+  if (need <= (state.freezes ?? 0)) {
+    const current = state.streakCurrent + 1
+    return {
+      current,
+      best: Math.max(state.streakBest, current),
+      extended: true,
+      freezesConsumed: need,
+    }
+  }
+  return { current: 1, best: Math.max(state.streakBest, 1), extended: true, freezesConsumed: 0 }
 }
 
 /**
- * Streak para EXIBIÇÃO: o valor armazenado só vale enquanto a última atividade
- * foi hoje ou ontem (ainda dá para manter a sequência); antes disso, quebrou → 0.
- * O valor persistido não é zerado — `advanceStreak` recomeça na próxima atividade.
+ * Streak para EXIBIÇÃO: vale enquanto os dias perdidos desde a última atividade são
+ * cobertos por férias OU pelos freezes DISPONÍVEIS (não consome — só projeta); senão 0.
+ * O valor persistido não é zerado — `advanceStreak` recomeça/consome na próxima atividade.
  */
 export function effectiveStreak(state: StreakState, today: string): number {
   if (!state.lastActivityDate) return 0
-  if (state.lastActivityDate === today || state.lastActivityDate === previousDay(today)) {
-    return state.streakCurrent
-  }
-  return 0
+  if (state.lastActivityDate === today) return state.streakCurrent
+  return freezesNeeded(state, today) <= (state.freezes ?? 0) ? state.streakCurrent : 0
 }
 
 /** Marcos de streak (dias → badge). 180 ≈ 6 meses; 365 = 1 ano. */
@@ -101,5 +152,22 @@ export function quizPerfectBadgeSlugs(perfectQuizzes: number): BadgeSlug[] {
   if (perfectQuizzes >= 1) slugs.push('quiz-perfect')
   if (perfectQuizzes >= 10) slugs.push('quiz-perfect-10')
   if (perfectQuizzes >= 30) slugs.push('quiz-perfect-30')
+  return slugs
+}
+
+/** Badges de maestria do Estúdio (contado pelo ledger `studio_passed`). */
+export function studioMasteryBadgeSlugs(passed: number): BadgeSlug[] {
+  const slugs: BadgeSlug[] = []
+  if (passed >= 1) slugs.push('studio-first')
+  if (passed >= 3) slugs.push('studio-master-3')
+  if (passed >= 10) slugs.push('studio-master-10')
+  return slugs
+}
+
+/** Badges de poupador (moedas Zappy ganhas na vida — `lifetime_coins_earned`). */
+export function coinsSaverBadgeSlugs(lifetimeCoins: number): BadgeSlug[] {
+  const slugs: BadgeSlug[] = []
+  if (lifetimeCoins >= 300) slugs.push('coins-saver-300')
+  if (lifetimeCoins >= 1000) slugs.push('coins-saver-1000')
   return slugs
 }

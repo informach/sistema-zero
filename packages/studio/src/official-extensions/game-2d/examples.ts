@@ -847,3 +847,215 @@ export const dinoRunExample: ExtensionExample = {
     extensions: [{ extensionId: 'game-2d' }],
   },
 }
+
+/**
+ * Exemplo "Asteroides clássico" (v0.10.0): a nave GIRA com as setas ← → (ou A/D),
+ * IMPULSIONA na direção apontada com ↑ (ou W) e desliza com atrito; atira PARA A
+ * FRENTE com Espaço; asteroides nascem das bordas rumo ao centro. Colisão de tiro
+ * destrói o asteroide (+1); a nave encostando num asteroide é fim de jogo. Mostra
+ * os blocos novos de nave clássica (girar/impulsionar/atirar-pra-frente/borda).
+ */
+export const asteroidsClassicExample: ExtensionExample = {
+  name: 'Asteroides clássico',
+  description:
+    'Pilote a nave girando e impulsionando como no Asteroids clássico: ← → giram, ↑ acelera na direção apontada, Espaço atira pra frente. Desvie e atire nos asteroides que vêm das bordas. Enter começa.',
+  ir: {
+    html: [{ type: 'canvas', id: 'tela', width: 400, height: 320 }],
+    css: [
+      {
+        selector: 'body',
+        declarations: {
+          background: '#020611',
+          display: 'flex',
+          'align-items': 'center',
+          'justify-content': 'center',
+          'min-height': '100vh',
+          margin: '0',
+        },
+      },
+      {
+        selector: 'canvas',
+        declarations: { border: '2px solid #35e8ff', background: '#06101f' },
+      },
+    ],
+    js: [
+      // --- Setup (no TOPO: assim o "a cada quadro" enxerga estas variáveis) ---
+      { type: 'g2d:fitScreen', percent: 100 },
+      {
+        type: 'g2d:createShip',
+        varName: 'nave',
+        x: 180,
+        y: 150,
+        w: 54,
+        h: 62,
+        bodyColor: '#35e8ff',
+        wingColor: '#2568ff',
+      },
+      { type: 'g2d:createGroup', varName: 'tiros' },
+      { type: 'g2d:createGroup', varName: 'asteroides' },
+      { type: 'var', name: 'pontos', value: { type: 'num', value: 0 } },
+      { type: 'g2d:setScene', name: 'inicio' },
+      // --- Enter: começar / reiniciar ---
+      {
+        type: 'g2d:onKey',
+        key: 'Enter',
+        body: [
+          {
+            type: 'if',
+            cond: { type: 'g2d:sceneIs', name: 'inicio' },
+            then: [{ type: 'g2d:setScene', name: 'jogando' }],
+          },
+          {
+            type: 'if',
+            cond: { type: 'g2d:sceneIs', name: 'perdeu' },
+            then: [{ type: 'g2d:restart' }],
+          },
+        ],
+      },
+      // --- Espaço: atirar PARA A FRENTE (só quando está jogando) ---
+      {
+        type: 'g2d:onKey',
+        key: 'Space',
+        body: [
+          {
+            type: 'if',
+            cond: { type: 'g2d:sceneIs', name: 'jogando' },
+            then: [
+              {
+                type: 'g2d:shootFrom',
+                spriteVar: 'nave',
+                groupVar: 'tiros',
+                speed: 6,
+                color: '#9cff57',
+              },
+              { type: 'g2d:playShoot' },
+            ],
+          },
+        ],
+      },
+      // --- Loop principal: limpa, desenha o fundo e despacha por cena ---
+      {
+        type: 'g2d:updateEachFrame',
+        body: [
+          { type: 'g2d:clear' },
+          { type: 'g2d:starfield', ctxVar: 'ctx', speed: 1 },
+          {
+            type: 'if',
+            cond: { type: 'g2d:sceneIs', name: 'inicio' },
+            then: [
+              {
+                type: 'g2d:showScreen',
+                ctxVar: 'ctx',
+                title: 'Asteroides clássico',
+                subtitle: 'Gire com ← →, acelere com ↑ e atire com Espaço!',
+                hint: 'Aperte Enter para começar',
+                bg: '#02111f',
+              },
+            ],
+          },
+          {
+            type: 'if',
+            cond: { type: 'g2d:sceneIs', name: 'jogando' },
+            then: [
+              { type: 'g2d:steerThrust', spriteVar: 'nave', speed: 3, turn: 4 },
+              { type: 'g2d:clampToScreen', spriteVar: 'nave', ctxVar: 'ctx' },
+              { type: 'g2d:drawSprite', spriteVar: 'nave', ctxVar: 'ctx' },
+              {
+                type: 'g2d:everySeconds',
+                seconds: 3,
+                body: [
+                  {
+                    type: 'g2d:spawnAsteroidEdge',
+                    groupVar: 'asteroides',
+                    size: 40,
+                    color: '#8d8f9b',
+                    speed: 1.5,
+                  },
+                ],
+              },
+              { type: 'g2d:updateGroup', groupVar: 'tiros' },
+              { type: 'g2d:updateGroup', groupVar: 'asteroides' },
+              { type: 'g2d:drawGroup', groupVar: 'tiros', ctxVar: 'ctx' },
+              { type: 'g2d:drawGroup', groupVar: 'asteroides', ctxVar: 'ctx' },
+              {
+                type: 'g2d:onGroupOverlap',
+                aGroup: 'tiros',
+                aName: 'tiro',
+                bGroup: 'asteroides',
+                bName: 'asteroide',
+                body: [
+                  { type: 'g2d:removeFromGroup', spriteVar: 'tiro', groupVar: 'tiros' },
+                  { type: 'g2d:removeFromGroup', spriteVar: 'asteroide', groupVar: 'asteroides' },
+                  {
+                    type: 'assign',
+                    name: 'pontos',
+                    value: {
+                      type: 'binop',
+                      op: '+',
+                      left: { type: 'var', name: 'pontos' },
+                      right: { type: 'num', value: 1 },
+                    },
+                  },
+                  { type: 'g2d:explode', spriteVar: 'asteroide', color: '#ffb13b' },
+                  { type: 'g2d:playExplosion' },
+                  { type: 'g2d:shake', ctxVar: 'ctx', intensity: 5 },
+                ],
+              },
+              {
+                type: 'g2d:onSpriteGroupOverlap',
+                spriteVar: 'nave',
+                groupVar: 'asteroides',
+                itemName: 'asteroide',
+                body: [
+                  { type: 'g2d:explode', spriteVar: 'nave', color: '#ff5d3d' },
+                  { type: 'g2d:playExplosion' },
+                  { type: 'g2d:shake', ctxVar: 'ctx', intensity: 10 },
+                  { type: 'g2d:setScene', name: 'perdeu' },
+                ],
+              },
+              {
+                type: 'g2d:pruneOffscreen',
+                groupVar: 'tiros',
+                ctxVar: 'ctx',
+                itemName: 't',
+                body: [],
+              },
+              {
+                type: 'g2d:pruneOffscreen',
+                groupVar: 'asteroides',
+                ctxVar: 'ctx',
+                itemName: 'a',
+                body: [],
+              },
+              {
+                type: 'g2d:drawScore',
+                ctxVar: 'ctx',
+                label: 'Pontos:',
+                value: { type: 'var', name: 'pontos' },
+                x: 12,
+                y: 26,
+                color: '#ffffff',
+                size: 22,
+              },
+            ],
+          },
+          {
+            type: 'if',
+            cond: { type: 'g2d:sceneIs', name: 'perdeu' },
+            then: [
+              {
+                type: 'g2d:showScreen',
+                ctxVar: 'ctx',
+                title: 'Fim de jogo',
+                subtitle: 'A nave foi atingida por um asteroide!',
+                hint: 'Aperte Enter para tentar de novo',
+                bg: '#300a0a',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    extensions: [{ extensionId: 'game-2d' }],
+  },
+}

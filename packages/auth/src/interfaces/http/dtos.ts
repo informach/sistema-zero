@@ -193,6 +193,8 @@ export const UpdateProfileBody = t.Object({
   avatarUrl: t.Optional(PROFILE_AVATAR),
   whatsapp: t.Optional(PROFILE_WHATSAPP),
   birthDate: t.Optional(PROFILE_BIRTH_DATE),
+  // Perfil público entre crianças — SÓ os pais editam (a rota barra sessão de perfil).
+  publicProfileEnabled: t.Optional(t.Boolean()),
 })
 
 /** Corpo de `POST /auth/profile-session/exit` — senha do responsável (gate da área dos pais). */

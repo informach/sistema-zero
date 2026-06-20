@@ -8,7 +8,7 @@ IDE educacional embarcável (Sistema Zero Studio) — biblioteca INTERNA do mono
 
 Editor com 3 modos — Blocos (Blockly), Código (Monaco) e Ponte (sync bidirecional blocos⇄código via worker de reverse-parse) — + preview sandbox, console, terminal (WebContainer), painel de IA (OpenRouter) e extensões.
 
-**API pública** (`src/index.ts` — TUDO fora dela é interno): DOIS componentes finos sobre um **núcleo comum** (`StudioCore`, interno) — `<StudioEditor>` (editor COMPLETO independente; sem conceito de aula) e `<StudioLesson>` (bloco de AULA configurável: curadoria de aprendizado `level`/`allowBlocks`/`allowCategories`/`allowLevelReveal` + defaults restritos terminal/IA/profissional/export OFF + prop `activity` fiada p/ a auto-correção). Ambos uncontrolled (`initialProject` + `onChange`/`onSave`/`onError`; `persistence: 'local'|'none'|adapter`; `allowedModes`/`initialMode`; `theme`/`locale`; `limits`; **`share?: StudioShareAdapter`** (liga o botão Compartilhar); `ref` → `StudioHandle`). `<Studio>` (+ `StudioProps`) **@deprecated** = alias do `StudioCore` (compat; migrar p/ Editor/Lesson). Também: `<ProjectList>` (IndexedDB local), `createLocalPersistenceAdapter`, `createEmptyProject`, `prefetchStudioModes`, os tipos `LessonActivity`/`ActivityCheck`, **`captureCoverFromProject(project)`** (capa PNG da vitrine "Mural dos Criadores" — `src/cover/coverCapture.ts`: roda o projeto num iframe OCULTO via `buildPreviewDoc` + harness que lê o MAIOR `<canvas>` com `toDataURL` e posta ao parent autenticado por `ev.source`; SÓ jogos canvas — projeto web/canvas tainted/timeout → `null`, o chamador cai na capa padrão; mesmos invariantes do `runSandboxChecks`, NUNCA `allow-same-origin`/`targetOrigin` no postMessage; happy-dom não roda o iframe → verificar em BROWSER real), **`<StudioProjectPlayer project>`** +
+**API pública** (`src/index.ts` — TUDO fora dela é interno): DOIS componentes finos sobre um **núcleo comum** (`StudioCore`, interno) — `<StudioEditor>` (editor COMPLETO independente; sem conceito de aula) e `<StudioLesson>` (bloco de AULA configurável: curadoria de aprendizado `level`/`allowBlocks`/`allowCategories`/`allowLevelReveal` + defaults restritos terminal/IA/profissional/export/download OFF + prop `activity` fiada p/ a auto-correção). Ambos uncontrolled (`initialProject` + `onChange`/`onSave`/`onError`; `persistence: 'local'|'none'|adapter`; `allowedModes`/`initialMode`; `theme`/`locale`; `limits`; **`share?: StudioShareAdapter`** (liga o botão Compartilhar); `ref` → `StudioHandle`). `<Studio>` (+ `StudioProps`) **@deprecated** = alias do `StudioCore` (compat; migrar p/ Editor/Lesson). Também: `<ProjectList>` (IndexedDB local), `createLocalPersistenceAdapter`, `createEmptyProject`, `prefetchStudioModes`, os tipos `LessonActivity`/`ActivityCheck`, **`captureCoverFromProject(project)`** (capa PNG da vitrine "Mural dos Criadores" — `src/cover/coverCapture.ts`: roda o projeto num iframe OCULTO via `buildPreviewDoc` + harness que lê o MAIOR `<canvas>` com `toDataURL` e posta ao parent autenticado por `ev.source`; SÓ jogos canvas — projeto web/canvas tainted/timeout → `null`, o chamador cai na capa padrão; mesmos invariantes do `runSandboxChecks`, NUNCA `allow-same-origin`/`targetOrigin` no postMessage; happy-dom não roda o iframe → verificar em BROWSER real), **`<StudioProjectPlayer project>`** +
 **`renderProjectToPreviewDoc(project)`** (player AUTÔNOMO do jogo — só roda o jogo num iframe sandbox,
 autostart, SEM editor — para a página PÚBLICA de jogar do community-kids; subpath LEVE
 **`@sistemazero/studio/player`** = só a cadeia de preview, sem Monaco/Blockly), o adapter
@@ -58,6 +58,13 @@ Monaco/Preview podem estar estreitos mesmo num Studio largo. Cada um mede a pró
 `MonacoTabs` < 480px → botão "Formatar" vira ícone; `PreviewIframe` < 400px → botões só-ícone + esconde
 "Executando/Parado". `useStudioWidth` (root) decide só a ESTRUTURA (Shell wide×narrow, identidade da
 Topbar); as seções NÃO herdam `isNarrow` do root.
+
+⚠️ **Monaco precisa de `min-h-0` para ENCOLHER na vertical**: a raiz do `MonacoTabs` (`flex h-full
+flex-col`) e o contêiner do `<Editor>` (`flex-1`) levam `min-h-0`. Em coluna flex, `flex-1` tem
+`min-height:auto` e se recusa a encolher abaixo da altura do conteúdo — sem o `min-h-0` o editor TRANSBORDA
+e CORTA o código de baixo quando o painel encolhe (ex.: ao subir o console inferior). Com ele, o
+`automaticLayout:true` do Monaco relayout-a sozinho (não trocar por `editor.layout()` manual — ver comentário
+no arquivo). Blocos (ResizeObserver→`svgResize`) e preview (iframe) não dependiam disso.
 
 ⚠️ **GATE de medição (regra 12)**: o `Shell` NÃO monta nenhum dos dois layouts enquanto `layout.width === 0`
 (estado inicial = wide). Sem o gate, a 1ª pintura cairia no wide e o frame seguinte (já medido) trocaria
@@ -115,12 +122,30 @@ Três guardas ortogonais ao sandbox do iframe, todas testadas (`src/preview/__te
 
 ## Exportar & Virar profissional
 
-- **Exportar** (`src/export/`, Topbar → `ExportDialog`): `exportProject(project, opts)` monta um **ZIP
-  pronto p/ deploy** (`fflate`, carregado sob demanda) com `onProgress`. Clássico → `public/` minificado
-  + index.html de produção; profissional → árvore Vite real + templates de deploy
-  (`deployTemplates.ts`). **Minificadores são injetáveis** (`defaultMinifiers()` = terser/csso reais;
-  testes usam `identityMinifiers` no-op). Nome de arquivo saneado (`sanitize.ts`); avisos não-fatais
-  (extra quebrado, lib 3D via CDN) são exibidos APÓS o download. Deps novas: `terser`/`csso`/`fflate`.
+- **Exportar (deploy)** (`src/export/`, Topbar → menu ⋯ → `ExportDialog`): `exportProject(project, opts)`
+  monta um **ZIP pronto p/ deploy** (`fflate`, carregado sob demanda) com `onProgress`. Clássico →
+  `public/` minificado + index.html de produção + Dockerfile/railway.json; profissional → árvore Vite real
+  + templates de deploy (`deployTemplates.ts`). **Minificadores são injetáveis** (`defaultMinifiers()` =
+  terser/csso reais; testes usam `identityMinifiers` no-op). Nome saneado (`sanitize.ts`); avisos não-fatais
+  (extra quebrado, lib 3D via CDN) exibidos APÓS o download. Deps: `terser`/`csso`/`fflate`. Gated por
+  `features.export`.
+- **Baixar (fonte p/ continuar no VSCode)** (`src/export/sourceExport.ts`, Topbar → botão "Baixar" ao lado
+  do Salvar, gated por `features.download` — ON no `<StudioEditor>`, OFF no `<StudioLesson>`):
+  `exportProjectSource(project)` / `buildSourceFiles(project)` reusam `buildClassicFileMap` SEM minificar e
+  **removem o prefixo `public/`** (as referências do index.html já são relativas) → ZIP de FONTE legível na
+  RAIZ (index.html/style.css/script.js + `sz-ext/<id>.js` dos runtimes de extensão + `sz-assets.js` das
+  imagens embutidas) + `LEIA-ME.txt`, SEM Dockerfile/railway. Pro → árvore Vite (`buildProFileMap`). Nome
+  `<slug>.zip` (sem `-deploy`). Roda e edita; é o "abrir no editor", distinto do "Exportar" (publicar).
+- **Exportar/Importar JSON (lista de projetos)** (`ProjectCard.downloadAsJSON` → `*.szproject.json` = o
+  `Project` inteiro: files/extras/assets `data:`URL/extensões/ir/blocksState/tree; `importProjectFromJSON`
+  no `projectStore`): o import cria um projeto NOVO (ulid novo, `createdAt`/`updatedAt` zerados) e SANEIA
+  tudo pelos MESMOS tetos do load — as constantes de cota são **COMPARTILHADAS import↔load↔save↔preview**
+  (`projectStore.ts` ~l.135 + `core/project.ts`; subir uma sobe em todos sem re-recorte ao reabrir).
+  Devolve **`{ project, warnings }`**: descartes silenciosos (imagem/extra/extensão fora da cota, blocos com
+  tipo desconhecido, pro→classic) viram avisos que o `ImportButton` mostra. ⚠️ `blocksState` é
+  **tudo-ou-nada** (`sanitizeImportedBlocksState`): um bloco fora de `CORE_BLOCKLY_BLOCK_TYPES` (ou da
+  allowlist da extensão) zera TODOS os blocos — todo bloco novo PRECISA entrar no allowlist (guardado pelo
+  drift `blockAllowlist.test.ts`).
 - **Virar profissional** (`src/state/convertToPro.ts` → `convertClassicToProTree`, ação `convertToPro`
   no `projectStore`): graduação **one-way** do básico (3 arquivos) p/ a árvore Vite — reusa
   `buildClassicFileMap` SEM minificar (é código que o aluno vai editar), index.html na raiz, assets p/

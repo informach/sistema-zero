@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'bun:test'
 import { buildWorkspaceStateFromIR } from '#blockly'
 import type { SZIR } from '#ir'
-import { sanitizeImportedBlocksState, sanitizeProjectForHost } from './projectStore'
+import {
+  MAX_BLOCKSTATE_BLOCKS,
+  sanitizeImportedBlocksState,
+  sanitizeProjectForHost,
+} from './projectStore'
 
 /**
  * Regressão do bug "código no Monaco mas nenhum bloco": o sanitizador do projeto
@@ -122,7 +126,7 @@ describe('sanitizeImportedBlocksState — aceita estado gerado pela Ponte', () =
   })
 
   it('descarta blocksState grande ao rehidratar projeto salvo, mantendo import externo rígido', () => {
-    const blocks = Array.from({ length: 5_001 }, (_, index) => ({
+    const blocks = Array.from({ length: MAX_BLOCKSTATE_BLOCKS + 1 }, (_, index) => ({
       type: 'sz_js_console_log_text',
       id: `log_${index}`,
       fields: { VALUE: 'oi' },

@@ -37,15 +37,26 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > **uuid validado nas bordas** — params TypeBox + `userId` dos webhooks/grant manual,
 > id lixo → 400 e nunca 22P02→500; URLs do admin exigem `http(s)` —
 > `r2priv:` permitido em anexo/ebook — barrando `javascript:` na borda; cap de 200
-> chars no `x-delivery-id`) + **gamificação (XP/streak/badges — fatia 06/2026, ver
-> §Gamificação)** — **177 testes**.
+> chars no `x-delivery-id`) + **gamificação kids COMPLETA — XP/streak/badges + Zappy Coins
+> + avatar + quarto + missões + streak-freeze/férias + ligas + perfil público/ranking
+> (06/2026, ver §Gamificação; fonte DETALHADA em
+> [`docs/gamificacao.md`](../../docs/gamificacao.md))** — **~317 testes**.
 > Migrations `0000` (schema `members`), `0001` (`lesson_progress`), `0002`
 > (`quiz_attempts`), `0003` (`lessons.is_published`), `0004` (`course_ratings`), `0005`
 > (enum `lesson_block_kind` + `'ebook'`), `0006` (enum `access_type` + `'all_courses'`),
 > `0007` (índice `processed_webhooks_processed_at_idx`), `0008` (enum
-> `course_audience` + coluna `courses.audience`, default `adult` — plataforma kids) e
+> `course_audience` + coluna `courses.audience`, default `adult` — plataforma kids),
 > `0009` (gamificação: enum `xp_source_type` + `gamification_profiles`/`xp_events`/
-> `user_badges`) — **aplicadas** no Postgres compartilhado (`sistemazero`, :5433).
+> `user_badges`), `0010`/`0011` (marcos pelo ledger `course_complete`/`quiz_perfect` +
+> coluna `privileged`), `0012` (coluna `audience` — segregação por vitrine),
+> `0013` (bloco `studio`), `0014`/`0015` (`gamification_profiles.account_id` +
+> índices de ranking), `0016` (auto-correção do studio), `0017` (`access_type`
+> `'all_kids_courses'`), `0018` (Zappy Coins: enum `coin_source_type` +
+> `coin_events` + carteira em `gamification_profiles`), `0019` (avatar:
+> `avatar_configs`/`avatar_inventory`), `0020` (quarto: `room_state`/`room_inventory`),
+> `0021` (missões + freeze/férias: `mission_claims` + `streak_freezes`/
+> `freeze_granted_month`/`vacation_from`/`vacation_to`) e `0022` (ligas semanais:
+> `league_membership`) — **aplicadas** no Postgres compartilhado (`sistemazero`, :5433).
 
 ## Conceito central (decisões travadas com o usuário)
 
@@ -358,12 +369,24 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   transação serializada por (aluno, bloco) via `pg_advisory_xact_lock(hashtextextended)`
   — dois submits simultâneos não furam a janela (o perdedor leva 429 sem gravar).
 
-## Gamificação (XP/streak/badges — fatia 06/2026, vitrine v1 = community-kids)
+## Gamificação (kids — fatia 06/2026, vitrine v1 = community-kids)
+
+> 📖 **Fonte DETALHADA (valores exatos de cada subsistema, regras e gotchas):**
+> [`docs/gamificacao.md`](../../docs/gamificacao.md). Esta seção é o resumo operacional;
+> mudou regra de XP/moeda/missão/streak/loja? Atualize o manual também.
+>
+> A expansão 06/2026 (6 fases) somou ao núcleo XP/streak/badges os subsistemas:
+> **Zappy Coins** (moeda, migration `0018`), **avatar** DiceBear (`0019`), **quarto**
+> virtual (`0020`), **missões** diárias/semanais + **streak-freeze/férias** (`0021`) e
+> **ligas semanais** (`0022`), além de **badges de maestria do Estúdio** + **perfil
+> público com `getRanking`**.
 
 **TUDO é SEGREGADO POR VITRINE** (decisão do usuário 12/06: XP/streak/badges/ranking kids
 e adult NÃO se misturam; a audiência vem do CURSO no momento do award — migration `0012`).
 Estado em `gamification_profiles` (1/aluno **POR AUDIÊNCIA** — UNIQUE user+audience: xp,
-streak, `last_activity_date` = **data civil de São Paulo** `YYYY-MM-DD`), `xp_events`
+streak, `last_activity_date` = **data civil de São Paulo** `YYYY-MM-DD`, + carteira Zappy
+`coin_balance`/`coins_earned_today`/`coins_earned_date`/`lifetime_coins_earned` e
+freeze/férias `streak_freezes`/`freeze_granted_month`/`vacation_from`/`vacation_to`), `xp_events`
 (ledger **idempotente por UNIQUE (user_id, source_type, source_id)** — re-complete/replay
 NUNCA duplica XP; source_id é snapshot SEM FK; coluna `audience` segmenta as CONTAGENS —
 um source pertence a um curso, logo a uma audiência) e `user_badges` (UNIQUE
@@ -372,10 +395,12 @@ user+audience+slug — a "1ª aula" do kids é independente da do adult). Domain
 `effectiveStreak` — timezone FIXA America/Sao_Paulo, cálculo SEMPRE no backend; o "dia"
 vira às 03:00Z). Decisões travadas com o usuário (06/2026): **SEM corações/vidas**;
 XP = aula 10 · quiz aprovado 20 + bônus `round(score/10)` cap +10 · baú de unidade 25;
-**catálogo de badges EM CÓDIGO** (`BADGE_SLUGS`, 12 na v1: first-lesson,
-streak-7/30/60/180/365, course-complete/-2/-3, quiz-perfect/-10/-30 — sem tabela/seed:
-preDeploy de prod roda só `db:migrate` e o catálogo muda junto com o código que o detecta);
-ligas/lojinha = fora. **Marcos são contados pelo LEDGER** (migrations `0010`/`0011`):
+**catálogo de badges EM CÓDIGO** (`BADGE_SLUGS`, **17** com a expansão: first-lesson,
+streak-7/30/60/180/365, course-complete/-2/-3, quiz-perfect/-10/-30, **studio-first/
+studio-master-3/studio-master-10** (maestria do Estúdio, ledger `studio_passed`) e
+**coins-saver-300/coins-saver-1000** (poupador, por `lifetime_coins_earned`) — sem
+tabela/seed: preDeploy de prod roda só `db:migrate` e o catálogo muda junto com o código que
+o detecta). **Marcos são contados pelo LEDGER** (migrations `0010`/`0011`):
 curso 100% gera `course_complete` (sourceId = courseId) e quiz com nota 100 gera
 `quiz_perfect` (sourceId = blockId) — eventos-marco de **amount 0**, dedupe por source;
 o repo deriva as badges do count (1/2/3 cursos; 1/10/30 notas mil). ⚠️ **Marco NÃO move
@@ -428,6 +453,44 @@ estender o streak). Atividade ANTERIOR às migrations não tem marco retroativo
 - **Impersonação/equipe**: XP credita no aluno do `x-auth-user-id` — consistente com as
   completions (que já são gravadas); suporte "fazendo aula" pelo aluno gera XP real
   (trade-off aceito, igual ao rating de equipe).
+- **Zappy Coins** (moeda, migration `0018`): enum `coin_source_type` + ledger `coin_events`
+  (UNIQUE user+audience+source) + carteira em `gamification_profiles` (`coin_balance`,
+  `coins_earned_today`/`coins_earned_date`, `lifetime_coins_earned`). Faucets ganham moeda
+  junto com o XP (aula/quiz/baú/studio) **com TETO DIÁRIO** (`DAILY_COIN_CAP` = 100, dia civil
+  SP; `applyDailyCap` em `domain/gamification/coins.ts`); **marcos de streak** dão bônus
+  one-time EXEMPTO do teto (7→20, 30→50, 60→80, 180→150, 365→300, `sourceId streak:<dias>`).
+  Gastos via `spendCoins` (`spend_cosmetic`/`spend_room`/`spend_streak_freeze`) com
+  `idempotencyKey` — saldo insuficiente → `InsufficientCoinsError` (402). A verdade do saldo é
+  `gamification_profiles.coin_balance` (`coin_events.balanceAfter` é auditoria).
+- **Streak-freeze + férias** (migration `0021`, colunas `streak_freezes`/
+  `freeze_granted_month`/`vacation_from`/`vacation_to` em `gamification_profiles`): a sequência
+  só QUEBRA quando NEM férias NEM protetores cobrem o gap. Janela de férias é INCLUSIVA
+  `[from, to]` (`setVacation`); **+1 freeze GRÁTIS por mês civil** (lazy/idempotente na 1ª
+  atividade do mês via `freeze_granted_month`); compra de freeze via `buyStreakFreeze`
+  (`STREAK_FREEZE_PRICE`, teto `MAX_STREAK_FREEZES` = 5). `advanceStreak`/`effectiveStreak`/
+  `freezesNeeded`/`inVacation` no domain puro consomem/projetam os protetores; `effectiveStreak`
+  é o streak de EXIBIÇÃO (projeta 0 quando a cobertura acabou, sem zerar o persistido).
+- **Avatar** DiceBear (migration `0019`, `avatar_configs`/`avatar_inventory`): peças grátis ou
+  compradas com moedas; compra charge-first idempotente (`BuyAvatarPartService`, espelha o
+  quarto). Members é a fonte da verdade de existência/preço/posse; a apresentação vive no
+  community-kids. Cosmético puro.
+- **Quarto virtual** (migration `0020`, `room_state` jsonb last-write-wins + `room_inventory`):
+  grade 12×8, tema de fundo + móveis/decoração/plantas/luzes posicionáveis + 1 pet. Sink
+  cosmético de moedas. `canonicalizeRoomState` (domain) é o ÚNICO portão — roda na leitura
+  (`GetRoomService`) E na escrita (`SaveRoomService`) e descarta o que não é possuído/não cabe;
+  compra via `BuyRoomItemService` (charge-first idempotente, `reason:'spend_room'`).
+  Endpoints BFF kids: `GET|PUT /api/members/room` + `POST /api/members/room/items/:id/buy`.
+- **Missões diárias/semanais** (migration `0021`, `mission_claims`): estilo Duolingo,
+  content-driven — catálogo EM CÓDIGO (`DAILY_MISSIONS` 5 / `WEEKLY_MISSIONS` 3 em
+  `domain/gamification/missions.ts`; sem seed, igual badges). Atribuição DETERMINÍSTICA por
+  (userId, período) via FNV-1a (`DAILY_SET_SIZE` 3, `WEEKLY_SET_SIZE` 2; semana começa na
+  SEGUNDA). Progresso é DERIVADO na leitura contando eventos do ledger `xp_events`
+  (`countEventsInPeriod`, SEM hook no award); o prêmio (XP + moedas) é resgatado por
+  `claimMission` IDEMPOTENTE (UNIQUE user+audience+slug+período) que **REVALIDA a conclusão no
+  servidor** (`count >= target`), credita XP direto no perfil + moedas COM o teto diário, e
+  **NÃO move o streak**. `GET /members/gamification/missions/me` + `POST …/missions/:slug/claim`.
+- **Ligas semanais** (migration `0022`, `league_membership`): coorte competitiva semanal por
+  audiência. (Detalhes de tiers/promoção/rebaixamento em `docs/gamificacao.md`.)
 - Sem backfill: histórico anterior ao deploy não gera XP retroativo (script manual se um
   dia for pedido). Aluno com tudo 100% não tem fonte de XP p/ estender streak ("revisão
   conta?" = decisão futura, fora da v1).
@@ -566,7 +629,11 @@ entre pacotes (a dedupe por `created_at` pularia migrations). A migration faz
 `lesson_attachments`, `entitlements`, `lesson_completions`, `lesson_progress` (posição
 de vídeo/last-accessed — migration `0001`), `quiz_attempts` (histórico de quiz —
 migration `0002`), `course_ratings` (classificação do curso, UNIQUE user+course —
-migration `0004`), `processed_webhooks`.
+migration `0004`), `processed_webhooks`, `studio_submissions` (entrega do Estúdio,
+migrations `0013`/`0016`) e a **gamificação**: `gamification_profiles`/`xp_events`/
+`user_badges` (`0009`–`0015`), `coin_events` (Zappy Coins, `0018`), `avatar_configs`/
+`avatar_inventory` (`0019`), `room_state`/`room_inventory` (`0020`), `mission_claims`
+(`0021`) e `league_membership` (ligas, `0022`).
 
 ## Sentry (monitoramento de erros)
 

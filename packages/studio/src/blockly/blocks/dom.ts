@@ -164,6 +164,61 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     tooltip:
       'Use dentro de um "quando ... fazer": cancela a ação padrão do navegador (ex.: enviar formulário) ou para a propagação do evento.',
   },
+  // ---- Eventos de teclado / mouse / janela (corpo embutido) ----
+  {
+    type: 'sz_js_on_key',
+    message0: 'Quando %1',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'WHEN',
+        options: [
+          ['apertar a tecla', 'keydown'],
+          ['soltar a tecla', 'keyup'],
+        ],
+      },
+    ],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'DO' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda o "fazer" quando qualquer tecla é apertada (ou solta). Dentro, use "o código da tecla do evento" para saber qual foi, ex.: se ( o código da tecla = "KeyW" ). Vira document.addEventListener("keydown", (event) => { ... }).',
+  },
+  {
+    type: 'sz_js_on_mousemove',
+    message0: 'Quando mover o mouse/dedo',
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'DO' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda o "fazer" toda vez que o mouse/dedo se move. Use "x do mouse/dedo" e "y do mouse/dedo" para a posição atual.',
+  },
+  {
+    type: 'sz_js_on_load',
+    message0: 'Quando a página terminar de carregar',
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'DO' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda o "fazer" quando a página termina de carregar (tudo já pronto na tela). Vira window.addEventListener("load", (event) => { ... }).',
+  },
+  {
+    type: 'sz_js_on_resize',
+    message0: 'Quando a janela mudar de tamanho',
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'DO' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda o "fazer" quando a janela do navegador muda de tamanho. Vira window.addEventListener("resize", (event) => { ... }).',
+  },
   // ---- Buscar elementos ----
   {
     type: 'sz_js_get_element_by_id',

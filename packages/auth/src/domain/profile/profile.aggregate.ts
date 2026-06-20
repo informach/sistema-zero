@@ -11,6 +11,8 @@ export interface ProfileSnapshot {
   whatsapp: string | null
   /** Data de nascimento (`YYYY-MM-DD`) — controle de idade; só os pais editam. */
   birthDate: string | null
+  /** Perfil público entre crianças da comunidade (opt-in dos pais; default false). */
+  publicProfileEnabled: boolean
   status: ProfileStatus
   sortOrder: number
   createdAt: Date
@@ -49,6 +51,8 @@ export class ProfileAggregate {
       avatarUrl,
       whatsapp: normalizeOptional(input.whatsapp),
       birthDate,
+      // Novo perfil nasce PRIVADO (opt-in dos pais).
+      publicProfileEnabled: false,
       status: 'active',
       sortOrder: 0,
       createdAt: now,
@@ -81,6 +85,9 @@ export class ProfileAggregate {
   }
   get birthDate(): string | null {
     return this.props.birthDate
+  }
+  get publicProfileEnabled(): boolean {
+    return this.props.publicProfileEnabled
   }
   get status(): ProfileStatus {
     return this.props.status
@@ -129,6 +136,16 @@ export class ProfileAggregate {
     const next = normalizeOptional(value)
     assertBirthDate(next, now)
     this.props.birthDate = next
+    this.props.updatedAt = now
+  }
+
+  /**
+   * Liga/desliga o perfil PÚBLICO (visível/clicável entre crianças da comunidade).
+   * Separado de `updateDetails` DE PROPÓSITO: a autorização é da rota (SÓ os pais —
+   * a sessão de perfil da criança é barrada antes de chegar aqui), como o birthDate.
+   */
+  setPublicProfileEnabled(value: boolean, now: Date = new Date()): void {
+    this.props.publicProfileEnabled = value
     this.props.updatedAt = now
   }
 

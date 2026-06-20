@@ -22,6 +22,29 @@ function categoryNames(profile?: LearningProfile): string[] {
   return collectNames(buildCoreToolbox([], profile).contents)
 }
 
+type Cat = { kind?: string; name?: string; contents?: readonly unknown[] }
+
+/** Acha a 1ª categoria com o nome dado, em qualquer profundidade. */
+function findCategory(contents: readonly unknown[], name: string): Cat | null {
+  for (const c of contents) {
+    const cat = c as Cat
+    if (cat?.kind === 'category' && cat.name === name) return cat
+    if (Array.isArray(cat?.contents)) {
+      const found = findCategory(cat.contents, name)
+      if (found) return found
+    }
+  }
+  return null
+}
+
+/** Tipos de bloco DIRETOS de uma categoria (não recursivo). */
+function blockTypesIn(cat: Cat | null): string[] {
+  if (!cat || !Array.isArray(cat.contents)) return []
+  return cat.contents
+    .filter((e) => (e as { kind?: string }).kind === 'block')
+    .map((e) => (e as { type: string }).type)
+}
+
 describe('buildCoreToolbox — divulgação progressiva', () => {
   it('sem perfil mostra todas as categorias (incl. sub-categorias)', () => {
     const names = categoryNames()
@@ -52,10 +75,28 @@ describe('buildCoreToolbox — divulgação progressiva', () => {
     expect(names).not.toContain('Avançado')
   })
 
-  it('"Programação" vem depois de CSS e contém a Página (DOM)', () => {
+  it('"Programação" vem depois de CSS e contém a Página (DOM) e os Eventos', () => {
     const names = categoryNames({ level: 'iniciante' })
     expect(names.indexOf('CSS')).toBeLessThan(names.indexOf('Programação'))
     expect(names).toContain('🌐 Página')
+    expect(names).toContain('⚡ Eventos')
+  })
+
+  it('os listeners "Quando…" ficam em ⚡ Eventos, não mais na 🌐 Página', () => {
+    const toolbox = buildCoreToolbox([])
+    const pagina = findCategory(toolbox.contents, '🌐 Página')
+    const eventos = findCategory(toolbox.contents, '⚡ Eventos')
+    const paginaTypes = blockTypesIn(pagina)
+    const eventosTypes = blockTypesIn(eventos)
+    // Teclado e clique-na-tela são eventos; pegar elemento por id é Página.
+    expect(eventosTypes).toContain('sz_js_on_key')
+    expect(eventosTypes).toContain('sz_js_on_click_anywhere')
+    expect(eventosTypes).toContain('sz_js_on_resize')
+    expect(eventosTypes).toContain('sz_js_set_interval_seconds')
+    expect(eventosTypes).toContain('sz_val_event_key')
+    expect(paginaTypes).not.toContain('sz_js_on_key')
+    expect(paginaTypes).not.toContain('sz_js_on_click_anywhere')
+    expect(paginaTypes).toContain('sz_js_get_element_by_id')
   })
 
   it('intermediario mostra Canvas/Funções/Objetos, mas não Classes/Avançado', () => {

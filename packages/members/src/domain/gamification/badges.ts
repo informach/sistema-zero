@@ -18,6 +18,12 @@ export const BADGE_SLUGS = [
   'quiz-perfect',
   'quiz-perfect-10',
   'quiz-perfect-30',
+  // Maestria (06/2026): projetos do Estúdio aprovados + poupador de moedas Zappy.
+  'studio-first',
+  'studio-master-3',
+  'studio-master-10',
+  'coins-saver-300',
+  'coins-saver-1000',
 ] as const
 
 export type BadgeSlug = (typeof BADGE_SLUGS)[number]

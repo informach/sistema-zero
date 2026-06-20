@@ -15,6 +15,9 @@ export interface Actor {
    *  (injetado pelo gateway da claim `pfl.name`), cai no nome da conta. Usado na vitrine
    *  (Mural) como `authorDisplayName` — NUNCA vindo do corpo da requisição. */
   displayName: string
+  /** Perfil do autor é PÚBLICO (opt-in dos pais — header `x-auth-profile-public`). Snapshot
+   *  no create do tópico/comentário p/ a UI decidir se o nome vira link p/ o perfil público. */
+  profilePublic: boolean
   role: string | undefined
   status: string | undefined
   /** Equipe interna (superadmin/admin/staff): bypass total de acesso. */

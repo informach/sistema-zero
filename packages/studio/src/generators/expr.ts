@@ -225,8 +225,22 @@ export function compileExpr(
       return `SZGame2D.touches(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
     case 'g2d:countGroup':
       return `SZGame2D.countGroup(${identifiers.get(expr.groupVar)})`
+    case 'g2d:spriteAngle':
+      return `SZGame2D.spriteAngleDeg(${identifiers.get(expr.spriteVar)})`
     case 'g2d:sceneIs':
       return `SZGame2D.sceneIs(${JSON.stringify(expr.name)})`
+    case 'g3d:keyDown':
+      return `SZGame3D.keyDown(${JSON.stringify(expr.key)})`
+    case 'g3d:collides':
+      return `SZGame3D.collides(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
+    case 'g3d:hitAny':
+      return `SZGame3D.hitAny(${identifiers.get(expr.objVar)}, ${identifiers.get(expr.groupVar)})`
+    case 'g3d:crosserHit':
+      return `SZGame3D.crosserHit(${identifiers.get(expr.objVar)}, ${identifiers.get(expr.worldVar)})`
+    case 'g3d:crosserRow':
+      return `SZGame3D.crosserRow(${identifiers.get(expr.objVar)})`
+    case 'g3d:touchesBox':
+      return `SZGame3D.touchesBox(${identifiers.get(expr.objVar)}, ${identifiers.get(expr.groupVar)})`
     case 'inputKeyPressed':
       return `__szInput.key(${JSON.stringify(expr.key)})`
     case 'inputPointer':

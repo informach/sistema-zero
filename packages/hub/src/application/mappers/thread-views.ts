@@ -51,8 +51,10 @@ export interface ThreadView {
   commentCount: number
   /** Post de projeto da vitrine (Mural) — a UI renderiza como card com capa/autor. */
   isShowcase: boolean
-  /** Nome do autor (só na vitrine; o BFF NÃO o redige — diferente do `authorId`). */
+  /** Primeiro nome do autor (snapshot) — exibido/clicável; o BFF decide o link pela flag. */
   authorDisplayName: string | null
+  /** Perfil do autor é público (opt-in dos pais) — o BFF expõe o link só quando true. */
+  authorPublic: boolean
   /** Capa do projeto (URL pública) — só na vitrine. */
   coverImageUrl: string | null
   /** Id público do artefato jogável (UUID) — só na vitrine do Estúdio; o BFF deriva o link /jogar. */
@@ -68,6 +70,10 @@ export interface CommentView {
   id: string
   threadId: string
   authorId: string
+  /** Primeiro nome do autor (snapshot) — exibido/clicável; o BFF decide o link pela flag. */
+  authorDisplayName: string | null
+  /** Perfil do autor é público (opt-in dos pais) — o BFF expõe o link só quando true. */
+  authorPublic: boolean
   body: string
   status: ContentStatus
   pending: boolean
@@ -103,6 +109,7 @@ export function toThreadView(
     commentCount: t.commentCount,
     isShowcase: t.isShowcase,
     authorDisplayName: t.authorDisplayName,
+    authorPublic: t.authorPublic,
     coverImageUrl: t.coverImageUrl,
     playId: t.playId,
     reactions,
@@ -122,6 +129,8 @@ export function toCommentView(
     id: c.id,
     threadId: c.threadId,
     authorId: c.authorId,
+    authorDisplayName: c.authorDisplayName,
+    authorPublic: c.authorPublic,
     body: c.body,
     status: c.status,
     pending: c.status === 'pending',

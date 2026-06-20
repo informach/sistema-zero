@@ -11,6 +11,7 @@ import { Button } from '@sistemazero/ui/button'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { Textarea } from '@sistemazero/ui/textarea'
 import { ArrowLeft, Copy, Flag, Hash, Lock, MessageCircle, Play, Plus, Send } from 'lucide-react'
+import Link from 'next/link'
 import { memo, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { KidsSpaceSkeleton } from '@/components/kids/kids-space-skeleton'
@@ -52,13 +53,47 @@ function postingError(e: ApiError): string {
   return e.message ?? 'Não consegui enviar. Tente de novo!'
 }
 
-/** Nome do autor para EXIBIÇÃO: na vitrine mostra o 1º nome; no fórum, Você/Colega. */
-function displayAuthor(
-  item: { isShowcase?: boolean; authorDisplayName?: string | null; authorId: string | null },
-  viewerId: string,
-): string {
-  if (item.isShowcase && item.authorDisplayName) return `por ${item.authorDisplayName}`
-  return item.authorId === viewerId ? 'Você' : 'Colega'
+/** Item com a identidade redigida do autor (do BFF) p/ o rótulo/link. */
+interface AuthorItem {
+  isShowcase?: boolean
+  authorDisplayName?: string | null
+  authorId: string | null
+  /** Id do perfil p/ o link público — presente só quando o autor é PÚBLICO (opt-in dos pais). */
+  authorProfileId?: string | null
+}
+
+/**
+ * Rótulo do autor para EXIBIÇÃO: "Você" (próprio), o nome CLICÁVEL → perfil público
+ * (`/crianca/[id]`) quando o autor é público, ou texto simples. No fórum, autor
+ * não-público vira "Colega"; na vitrine (Mural) o nome aparece sempre ("por …").
+ */
+function displayAuthor(item: AuthorItem, viewerId: string): ReactNode {
+  if (item.authorId === viewerId) return 'Você'
+  const name = item.authorDisplayName
+  if (item.authorProfileId && name) {
+    const text = item.isShowcase ? `por ${name}` : name
+    return (
+      <Link
+        href={`/crianca/${encodeURIComponent(item.authorProfileId)}`}
+        className="font-semibold text-primary transition-colors hover:text-foreground hover:underline"
+      >
+        {text}
+      </Link>
+    )
+  }
+  if (item.isShowcase && name) return `por ${name}`
+  return 'Colega'
+}
+
+/**
+ * Versão TEXTO (sem link) para contextos que já são `<button>` (lista de tópicos,
+ * card do Mural) — âncora não pode aninhar em button. Autor público mostra o nome;
+ * senão "Colega". O nome vira link DENTRO do post aberto (`displayAuthor`).
+ */
+function authorText(item: AuthorItem, viewerId: string): string {
+  if (item.authorId === viewerId) return 'Você'
+  if (item.authorProfileId && item.authorDisplayName) return item.authorDisplayName
+  return 'Colega'
 }
 
 /** Alterna otimisticamente a reação do viewer no agregado por emoji (sem refetch). */
@@ -128,8 +163,7 @@ export function KidsSpaceViewClient({
   commentsRef.current = comments
 
   const authorLabel = useCallback(
-    (item: { isShowcase?: boolean; authorDisplayName?: string | null; authorId: string | null }) =>
-      displayAuthor(item, viewerId),
+    (item: AuthorItem): ReactNode => displayAuthor(item, viewerId),
     [viewerId],
   )
 
@@ -490,7 +524,7 @@ export function KidsSpaceViewClient({
                         <span className="truncate font-bold">{t.title}</span>
                       </div>
                       <p className="flex items-center gap-3 text-muted-foreground text-xs">
-                        <span>{authorLabel(t)}</span>
+                        <span>{authorText(t, viewerId)}</span>
                         <span className="inline-flex items-center gap-1">
                           <MessageCircle className="size-3" /> {t.commentCount}
                         </span>
@@ -628,6 +662,8 @@ function ShowcaseCard({ thread, onOpen }: { thread: HubThreadView; onOpen: () =>
         </div>
         <div className="space-y-1 p-3">
           <p className="truncate font-bold">{thread.title}</p>
+          {/* Card é um <button> (abre o post) → não aninhar âncora aqui; o nome vira
+              link clicável DENTRO do post aberto (ThreadDetail) e nos comentários. */}
           {thread.authorDisplayName ? (
             <p className="text-muted-foreground text-xs">por {thread.authorDisplayName}</p>
           ) : null}
@@ -704,7 +740,7 @@ const CommentRow = memo(function CommentRow({
   onReport,
 }: {
   comment: HubCommentView
-  label: string
+  label: ReactNode
   onReact: (target: 'threads' | 'comments', id: string, emoji: string, mine: boolean) => void
   onReport: (target: 'threads' | 'comments', id: string) => void
 }) {
@@ -763,11 +799,7 @@ function ThreadDetail({
   onSend: () => void
   onReact: (target: 'threads' | 'comments', id: string, emoji: string, mine: boolean) => void
   onReport: (target: 'threads' | 'comments', id: string) => void
-  authorLabel: (item: {
-    isShowcase?: boolean
-    authorDisplayName?: string | null
-    authorId: string | null
-  }) => string
+  authorLabel: (item: AuthorItem) => ReactNode
 }) {
   // memo: o corpo do tópico não muda quando um comentário recebe reação.
   const threadBody = useMemo(() => renderUgcMarkdown(thread.body), [thread.body])

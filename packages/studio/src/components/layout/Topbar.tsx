@@ -1,5 +1,5 @@
 import type { JSX, ReactNode } from 'react'
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { MODE_LABELS, modesForKind, t } from '#core'
 import {
@@ -27,8 +27,11 @@ import {
   type MenuItem,
   type MenuSection,
 } from '#ui'
+import { exportProjectSource } from '../../export'
+import { triggerDownload } from '../../export/download'
 import { useProjectStore } from '../../state/projectStore'
 import { useSettingsStore } from '../../state/settingsStore'
+import { StudioStoresContext } from '../../state/storesContext'
 import { useStudioPersistence } from '../../state/studioStores'
 import { useUIStore } from '../../state/uiStore'
 import { useStudioConfig } from '../../studio/config'
@@ -110,10 +113,15 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
   const theme = useStudioTheme()
   const setTheme = useSettingsStore((s) => s.setTheme)
   const share = useStudioShare()
+  // Stores da INSTÂNCIA: usados só para LER o projeto sob demanda (no clique do
+  // Baixar), sem assinar re-render a cada edição. Fora de um <Studio> (null), o
+  // fallback lê a store default via a estática. Ver storesContext.ts.
+  const stores = useContext(StudioStoresContext)
 
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(projectName)
   const [saving, setSaving] = useState(false)
+  const [downloading, setDownloading] = useState(false)
   const [showShare, setShowShare] = useState(false)
   const [showExport, setShowExport] = useState(false)
   const [showConvert, setShowConvert] = useState(false)
@@ -149,6 +157,25 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
       // O erro persistente é exibido no badge; evita rejection não tratada no evento.
     } finally {
       setSaving(false)
+    }
+  }
+
+  // Baixar a FONTE do projeto (ZIP para continuar no VSCode). Lê o projeto da
+  // instância sob demanda (sem assinar re-render). Avisos não-fatais (ex.: um
+  // extra .ts que não compilou) vão ao console — o arquivo é baixado mesmo assim.
+  const handleDownload = async () => {
+    if (downloading) return
+    const project = stores ? stores.project.getState().project : useProjectStore.getState().project
+    if (!project) return
+    setDownloading(true)
+    try {
+      const { blob, filename, warnings } = await exportProjectSource(project)
+      triggerDownload(blob, filename)
+      if (warnings.length > 0) console.warn('Baixar projeto:', ...warnings)
+    } catch (err) {
+      console.error('Falha ao baixar o projeto:', err)
+    } finally {
+      setDownloading(false)
     }
   }
 
@@ -412,6 +439,24 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
               <span className="text-sm">{saving ? t('topbar.saving') : t('topbar.save')}</span>
             )}
           </button>
+          {config.download && (
+            <button
+              type="button"
+              onClick={handleDownload}
+              disabled={downloading}
+              title={t('topbar.downloadHint')}
+              aria-label={t('topbar.downloadHint')}
+              style={{ touchAction: 'manipulation' }}
+              className="inline-flex h-9 items-center gap-1.5 rounded-md px-2.5 text-sz-fg-soft transition-colors hover:bg-sz-bg hover:text-sz-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60 disabled:opacity-50"
+            >
+              <IconDownload />
+              {!isCompact && (
+                <span className="text-sm">
+                  {downloading ? t('topbar.downloading') : t('topbar.download')}
+                </span>
+              )}
+            </button>
+          )}
           {config.preview && (
             <IconButton
               label={showPreview ? t('topbar.hidePreview') : t('topbar.showPreview')}

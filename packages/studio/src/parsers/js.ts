@@ -133,9 +133,12 @@ const KNOWN_EVENT_KINDS: ReadonlySet<EventKind> = new Set([
   'keyup',
   'mouseover',
   'mouseout',
+  'mousemove',
   'submit',
   'input',
   'change',
+  'load',
+  'resize',
 ])
 
 function snippet(source: string, node: Node): string {
@@ -1040,30 +1043,53 @@ function tryMatchForEach(expr: Node, source: string, ctx: ParseCtx): JSStatement
   }
 }
 
-/** `setTimeout(() => { … }, ms)` → `setTimeout`. Callback sem parâmetros. */
+/**
+ * Lê o argumento de atraso de um timer, distinguindo SEGUNDOS de milissegundos.
+ * O bloco "em segundos" gera `<E> * 1000`; quando o AST do atraso é exatamente
+ * essa multiplicação por 1000, devolvemos `unit: 'seconds'` com a expressão `<E>`.
+ * Caso contrário é ms cru. Inspecionamos o nó do AST (não o `toExpr` do todo)
+ * para que `3 * 1000` NÃO seja dobrado em `3000` antes de detectarmos os segundos.
+ */
+function readTimerDelay(
+  arg: Node,
+  ctx: ParseCtx,
+): { unit: 'ms' | 'seconds'; delay: JSExpr } | null {
+  if (
+    arg?.type === 'BinaryExpression' &&
+    arg.operator === '*' &&
+    isNumericLiteral(arg.right, 1000)
+  ) {
+    const delay = toExpr(arg.left, ctx)
+    return isSimpleValue(delay) ? { unit: 'seconds', delay } : null
+  }
+  const delay = toExpr(arg, ctx)
+  return isSimpleValue(delay) ? { unit: 'ms', delay } : null
+}
+
+/** `setTimeout(() => { … }, ms|s*1000)` → `setTimeout`/`setTimeoutSeconds`. */
 function tryMatchSetTimeout(expr: Node, source: string, ctx: ParseCtx): JSStatement | null {
   if (expr?.type !== 'CallExpression' || expr.callee?.type !== 'Identifier') return null
   if (expr.callee.name !== 'setTimeout' || expr.arguments?.length !== 2) return null
   const cb = expr.arguments[0]
   if (cb.type !== 'ArrowFunctionExpression' && cb.type !== 'FunctionExpression') return null
   if ((cb.params?.length ?? 0) !== 0) return null
-  const delay = toExpr(expr.arguments[1], ctx)
-  if (!isSimpleValue(delay)) return null
+  const d = readTimerDelay(expr.arguments[1], ctx)
+  if (!d) return null
   const body = bodyOfFn(cb, source, ctx)
-  return { type: 'setTimeout', delay, body }
+  return { type: d.unit === 'seconds' ? 'setTimeoutSeconds' : 'setTimeout', delay: d.delay, body }
 }
 
-/** `setInterval(() => { … }, ms)` → `setInterval`. Callback sem parâmetros. */
+/** `setInterval(() => { … }, ms|s*1000)` → `setInterval`/`setIntervalSeconds`. */
 function tryMatchSetInterval(expr: Node, source: string, ctx: ParseCtx): JSStatement | null {
   if (expr?.type !== 'CallExpression' || expr.callee?.type !== 'Identifier') return null
   if (expr.callee.name !== 'setInterval' || expr.arguments?.length !== 2) return null
   const cb = expr.arguments[0]
   if (cb.type !== 'ArrowFunctionExpression' && cb.type !== 'FunctionExpression') return null
   if ((cb.params?.length ?? 0) !== 0) return null
-  const delay = toExpr(expr.arguments[1], ctx)
-  if (!isSimpleValue(delay)) return null
+  const d = readTimerDelay(expr.arguments[1], ctx)
+  if (!d) return null
   const body = bodyOfFn(cb, source, ctx)
-  return { type: 'setInterval', delay, body }
+  return { type: d.unit === 'seconds' ? 'setIntervalSeconds' : 'setInterval', delay: d.delay, body }
 }
 
 /**
@@ -1175,6 +1201,10 @@ function matchGame2DExpr(node: Node): JSExpr | null {
   if (method === 'countGroup') {
     const groupVar = identifierName(args[0])
     if (groupVar) return { type: 'g2d:countGroup', groupVar }
+  }
+  if (method === 'spriteAngleDeg') {
+    const spriteVar = identifierName(args[0])
+    if (spriteVar) return { type: 'g2d:spriteAngle', spriteVar }
   }
   if (method === 'sceneIs' && args[0]?.type === 'StringLiteral') {
     return { type: 'g2d:sceneIs', name: args[0].value as string }
@@ -1373,6 +1403,56 @@ function readAsteroidOptions(
       const v = numericLiteralValue(prop.value)
       if (v === null) return null
       out.size = v
+    } else if (key === 'color') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      out.color = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return out
+}
+
+/** Lê `{ speed, color }` de `SZGame2D.shootFrom(s, g, {...})` (números/string). */
+function readShootFromOptions(obj: Node): { speed: number; color: string } | null {
+  const out = { speed: 6, color: '#9cff57' }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'speed') {
+      const v = numericLiteralValue(prop.value)
+      if (v === null) return null
+      out.speed = v
+    } else if (key === 'color') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      out.color = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return out
+}
+
+/** Lê `{ size, color, speed }` de `SZGame2D.spawnAsteroidFromEdge(g, {...})`. */
+function readAsteroidEdgeOptions(obj: Node): { size: number; color: string; speed: number } | null {
+  const out = { size: 40, color: '#8d8f9b', speed: 1.5 }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'size' || key === 'speed') {
+      const v = numericLiteralValue(prop.value)
+      if (v === null) return null
+      out[key] = v
     } else if (key === 'color') {
       if (prop.value?.type !== 'StringLiteral') return null
       out.color = prop.value.value as string
@@ -1639,6 +1719,54 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       const spriteVar = identifierName(args[0])
       const ctxVar = identifierName(args[1])
       return spriteVar && ctxVar ? { type: 'g2d:clampToScreen', spriteVar, ctxVar } : null
+    }
+    case 'steerThrust': {
+      // generator: SZGame2D.steerThrust(sprite, speed, turn)
+      const spriteVar = identifierName(args[0])
+      const speed = numericLiteralValue(args[1])
+      const turn = numericLiteralValue(args[2])
+      return spriteVar && speed !== null && turn !== null
+        ? { type: 'g2d:steerThrust', spriteVar, speed, turn }
+        : null
+    }
+    case 'rotateSprite': {
+      const spriteVar = identifierName(args[0])
+      const deg = numericLiteralValue(args[1])
+      return spriteVar && deg !== null ? { type: 'g2d:rotateSprite', spriteVar, deg } : null
+    }
+    case 'pointSprite': {
+      const spriteVar = identifierName(args[0])
+      const deg = numericLiteralValue(args[1])
+      return spriteVar && deg !== null ? { type: 'g2d:pointSprite', spriteVar, deg } : null
+    }
+    case 'thrust': {
+      const spriteVar = identifierName(args[0])
+      const force = numericLiteralValue(args[1])
+      return spriteVar && force !== null ? { type: 'g2d:thrust', spriteVar, force } : null
+    }
+    case 'applyFriction': {
+      const spriteVar = identifierName(args[0])
+      const factor = numericLiteralValue(args[1])
+      return spriteVar && factor !== null ? { type: 'g2d:applyFriction', spriteVar, factor } : null
+    }
+    case 'shootFrom': {
+      // generator: SZGame2D.shootFrom(sprite, group, { speed, color })
+      const spriteVar = identifierName(args[0])
+      const groupVar = identifierName(args[1])
+      if (!spriteVar || !groupVar || args[2]?.type !== 'ObjectExpression') return null
+      const o = readShootFromOptions(args[2])
+      return o
+        ? { type: 'g2d:shootFrom', spriteVar, groupVar, speed: o.speed, color: o.color }
+        : null
+    }
+    case 'spawnAsteroidFromEdge': {
+      // generator: SZGame2D.spawnAsteroidFromEdge(group, { size, color, speed })
+      const groupVar = identifierName(args[0])
+      if (!groupVar || args[1]?.type !== 'ObjectExpression') return null
+      const o = readAsteroidEdgeOptions(args[1])
+      return o
+        ? { type: 'g2d:spawnAsteroidEdge', groupVar, size: o.size, color: o.color, speed: o.speed }
+        : null
     }
     case 'flash': {
       // generator: SZGame2D.flash(ctx, "color")
@@ -2225,10 +2353,38 @@ function readSphereOptions(obj: Node): { radius: number; color: string } | null 
   return result
 }
 
+/** Lê `{ width, height, depth, color }` de um literal de objeto. null se chave não-literal/desconhecida. */
+function readBlockOptions(
+  obj: Node,
+): { width: number; height: number; depth: number; color: string } | null {
+  const result = { width: 1, height: 1, depth: 1, color: '#22d3ee' }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'width' || key === 'height' || key === 'depth') {
+      const v = numericLiteralValue(prop.value)
+      if (v === null) return null
+      result[key] = v
+    } else if (key === 'color') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      result.color = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return result
+}
+
 /**
- * SZGame3D.setBackground/setCameraPosition/setPosition/setRotation/animate como
- * statement. ANTES do método genérico — senão viram memberCall. As coordenadas
- * (x/y/z) precisam ser valores representáveis; senão a linha cai em código avançado.
+ * SZGame3D.* como statement: setBackground/setCameraPosition/setPosition/setRotation/animate
+ * e a física/kit (setVelocity/jump/applyGravity/controlWithKeys/setScale/cameraFollow/runEnemies/stop).
+ * ANTES do método genérico — senão viram memberCall. As coordenadas (x/y/z/força/escala)
+ * precisam ser valores representáveis; senão a linha cai em código avançado.
  */
 function tryMatchGame3DCall(expr: Node, source: string, ctx: ParseCtx): JSStatement | null {
   const call = asSZGame3DCall(expr)
@@ -2277,9 +2433,152 @@ function tryMatchGame3DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       if (!worldVar || !isFn(args[1])) return null
       return { type: 'g3d:animate', worldVar, body: bodyOfFn(args[1], source, ctx) }
     }
+    case 'setVelocity': {
+      // generator: SZGame3D.setVelocity(obj, x, y, z)
+      const objVar = identifierName(args[0])
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      const z = toExpr(args[3], ctx)
+      if (!objVar || !isSimpleValue(x) || !isSimpleValue(y) || !isSimpleValue(z)) return null
+      return { type: 'g3d:setVelocity', objVar, x, y, z }
+    }
+    case 'jump': {
+      // generator: SZGame3D.jump(obj, force)
+      const objVar = identifierName(args[0])
+      const force = toExpr(args[1], ctx)
+      if (!objVar || !isSimpleValue(force)) return null
+      return { type: 'g3d:jump', objVar, force }
+    }
+    case 'setScale': {
+      // generator: SZGame3D.setScale(obj, factor)
+      const objVar = identifierName(args[0])
+      const factor = toExpr(args[1], ctx)
+      if (!objVar || !isSimpleValue(factor)) return null
+      return { type: 'g3d:setScale', objVar, factor }
+    }
+    case 'applyGravity': {
+      // generator: SZGame3D.applyGravity(obj, ground)
+      const objVar = identifierName(args[0])
+      const groundVar = identifierName(args[1])
+      if (!objVar || !groundVar) return null
+      return { type: 'g3d:applyGravity', objVar, groundVar }
+    }
+    case 'controlWithKeys': {
+      // generator: SZGame3D.controlWithKeys(obj, speed)
+      const objVar = identifierName(args[0])
+      const speed = numericLiteralValue(args[1])
+      if (!objVar || speed === null) return null
+      return { type: 'g3d:controlWithKeys', objVar, speed }
+    }
+    case 'cameraFollow': {
+      // generator: SZGame3D.cameraFollow(world, obj)
+      const worldVar = identifierName(args[0])
+      const objVar = identifierName(args[1])
+      if (!worldVar || !objVar) return null
+      return { type: 'g3d:cameraFollow', worldVar, objVar }
+    }
+    case 'runEnemies': {
+      // generator: SZGame3D.runEnemies(world, group, ground, every, speed)
+      const worldVar = identifierName(args[0])
+      const groupVar = identifierName(args[1])
+      const groundVar = identifierName(args[2])
+      const every = numericLiteralValue(args[3])
+      const speed = numericLiteralValue(args[4])
+      if (!worldVar || !groupVar || !groundVar || every === null || speed === null) return null
+      return { type: 'g3d:runEnemies', worldVar, groupVar, groundVar, every, speed }
+    }
+    case 'stop': {
+      // generator: SZGame3D.stop(world)
+      const worldVar = identifierName(args[0])
+      if (!worldVar) return null
+      return { type: 'g3d:stop', worldVar }
+    }
+    case 'crosserMove': {
+      const objVar = identifierName(args[0])
+      if (!objVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'g3d:crosserMove', objVar, direction: args[1].value as string }
+    }
+    case 'gridMove': {
+      const objVar = identifierName(args[0])
+      if (!objVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'g3d:gridMove', objVar, direction: args[1].value as string }
+    }
+    case 'crosserStep': {
+      const objVar = identifierName(args[0])
+      const worldVar = identifierName(args[1])
+      if (!objVar || !worldVar) return null
+      return { type: 'g3d:crosserStep', objVar, worldVar }
+    }
+    case 'crosserReset': {
+      const objVar = identifierName(args[0])
+      const worldVar = identifierName(args[1])
+      if (!objVar || !worldVar) return null
+      return { type: 'g3d:crosserReset', objVar, worldVar }
+    }
+    case 'gridStep': {
+      const objVar = identifierName(args[0])
+      if (!objVar) return null
+      return { type: 'g3d:gridStep', objVar }
+    }
+    case 'moveTraffic': {
+      const worldVar = identifierName(args[0])
+      if (!worldVar) return null
+      return { type: 'g3d:moveTraffic', worldVar }
+    }
+    case 'generateRows': {
+      const worldVar = identifierName(args[0])
+      const count = numericLiteralValue(args[1])
+      if (!worldVar || count === null) return null
+      return { type: 'g3d:generateRows', worldVar, count }
+    }
+    case 'addRow': {
+      // generator: SZGame3D.addRow(world, rowIndex, "kind", "dir", speed)
+      const worldVar = identifierName(args[0])
+      const rowIndex = toExpr(args[1], ctx)
+      const speed = numericLiteralValue(args[4])
+      if (
+        !worldVar ||
+        !isSimpleValue(rowIndex) ||
+        args[2]?.type !== 'StringLiteral' ||
+        args[3]?.type !== 'StringLiteral' ||
+        speed === null
+      )
+        return null
+      return {
+        type: 'g3d:addRow',
+        worldVar,
+        rowIndex,
+        kind: args[2].value as string,
+        direction: args[3].value as string,
+        speed,
+      }
+    }
+    case 'isometricCamera': {
+      // generator: SZGame3D.isometricCamera(world, followObj | null)
+      const worldVar = identifierName(args[0])
+      if (!worldVar) return null
+      return { type: 'g3d:isometricCamera', worldVar, followVar: identifierName(args[1]) || '' }
+    }
+    case 'moveAcross': {
+      // generator: SZGame3D.moveAcross(group, speed, min, max)
+      const groupVar = identifierName(args[0])
+      const speed = numericLiteralValue(args[1])
+      const min = numericLiteralValue(args[2])
+      const max = numericLiteralValue(args[3])
+      if (!groupVar || speed === null || min === null || max === null) return null
+      return { type: 'g3d:moveAcross', groupVar, speed, min, max }
+    }
+    case 'gridPosition': {
+      // generator: SZGame3D.gridPosition(obj, row, col)
+      const objVar = identifierName(args[0])
+      const row = toExpr(args[1], ctx)
+      const col = toExpr(args[2], ctx)
+      if (!objVar || !isSimpleValue(row) || !isSimpleValue(col)) return null
+      return { type: 'g3d:gridPosition', objVar, row, col }
+    }
     default:
-      // createScene/createBox/createSphere são var-init (tryMatchGame3DVarInit);
-      // como chamada solta caem no método genérico.
+      // createScene/createBox/createSphere/createBlock/createGroup são var-init
+      // (tryMatchGame3DVarInit); como chamada solta caem no método genérico.
       return null
   }
 }
@@ -2306,6 +2605,78 @@ function tryMatchGame3DVarInit(name: string, init: Node, _ctx: ParseCtx): JSStat
     const sphere = readSphereOptions(args[1])
     if (!sphere) return null
     return { type: 'g3d:createSphere', varName: name, worldVar, ...sphere }
+  }
+  if (method === 'createBlock') {
+    const worldVar = identifierName(args[0])
+    if (!worldVar || args[1]?.type !== 'ObjectExpression') return null
+    const b = readBlockOptions(args[1])
+    if (!b) return null
+    return { type: 'g3d:createBlock', varName: name, worldVar, ...b }
+  }
+  if (method === 'createGroup') {
+    // generator: const inimigos = SZGame3D.createGroup()
+    return { type: 'g3d:createGroup', varName: name }
+  }
+  if (method === 'createCrossingScene') {
+    if (args[0]?.type !== 'StringLiteral') return null
+    return { type: 'g3d:createCrossingScene', canvasId: args[0].value as string, varName: name }
+  }
+  if (method === 'createCrosser') {
+    // generator: const P = SZGame3D.createCrosser(world, { color: "#fff" })
+    const worldVar = identifierName(args[0])
+    if (!worldVar || args[1]?.type !== 'ObjectExpression') return null
+    let color = '#ffffff'
+    for (const prop of args[1].properties ?? []) {
+      if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+      const key =
+        prop.key?.type === 'Identifier'
+          ? (prop.key.name as string)
+          : prop.key?.type === 'StringLiteral'
+            ? (prop.key.value as string)
+            : null
+      if (key === 'color') {
+        if (prop.value?.type !== 'StringLiteral') return null
+        color = prop.value.value as string
+      } else {
+        return null
+      }
+    }
+    return { type: 'g3d:createCrosser', varName: name, worldVar, color }
+  }
+  return null
+}
+
+/** SZGame3D.keyDown("…") / collides(a, b) / hitAny(obj, group) em posição de VALOR (booleano). */
+function matchGame3DExpr(node: Node): JSExpr | null {
+  const call = asSZGame3DCall(node)
+  if (!call) return null
+  const { method, args } = call
+  if (method === 'keyDown' && args[0]?.type === 'StringLiteral') {
+    return { type: 'g3d:keyDown', key: args[0].value as string }
+  }
+  if (method === 'collides') {
+    const aVar = identifierName(args[0])
+    const bVar = identifierName(args[1])
+    if (aVar && bVar) return { type: 'g3d:collides', aVar, bVar }
+  }
+  if (method === 'hitAny') {
+    const objVar = identifierName(args[0])
+    const groupVar = identifierName(args[1])
+    if (objVar && groupVar) return { type: 'g3d:hitAny', objVar, groupVar }
+  }
+  if (method === 'touchesBox') {
+    const objVar = identifierName(args[0])
+    const groupVar = identifierName(args[1])
+    if (objVar && groupVar) return { type: 'g3d:touchesBox', objVar, groupVar }
+  }
+  if (method === 'crosserHit') {
+    const objVar = identifierName(args[0])
+    const worldVar = identifierName(args[1])
+    if (objVar && worldVar) return { type: 'g3d:crosserHit', objVar, worldVar }
+  }
+  if (method === 'crosserRow') {
+    const objVar = identifierName(args[0])
+    if (objVar) return { type: 'g3d:crosserRow', objVar }
   }
   return null
 }
@@ -3233,13 +3604,17 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
         if (node.property.name === 'innerWidth') return { type: 'global', kind: 'innerWidth' }
         if (node.property.name === 'innerHeight') return { type: 'global', kind: 'innerHeight' }
       }
-      // event.clientX / event.clientY → posição do clique (sz_val_event_pos).
+      // event.clientX/clientY → posição do clique (sz_val_event_pos);
+      // event.key/code → tecla do evento (sz_val_event_key).
       if (
         !node.computed &&
         node.object?.type === 'Identifier' &&
         node.object.name === 'event' &&
         node.property?.type === 'Identifier' &&
-        (node.property.name === 'clientX' || node.property.name === 'clientY')
+        (node.property.name === 'clientX' ||
+          node.property.name === 'clientY' ||
+          node.property.name === 'key' ||
+          node.property.name === 'code')
       ) {
         return { type: 'eventProp', prop: node.property.name }
       }
@@ -3413,6 +3788,9 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
       // SZGame2D.keyDown("…") / SZGame2D.touches(a, b) → perguntas (booleanos).
       const g2dExpr = matchGame2DExpr(node)
       if (g2dExpr) return g2dExpr
+      // SZGame3D.keyDown / collides / hitAny → perguntas 3D (booleanos).
+      const g3dExpr = matchGame3DExpr(node)
+      if (g3dExpr) return g3dExpr
       // __szInput.key("ArrowRight") → "a tecla … está apertada?" (caminho "na mão").
       if (
         node.type === 'CallExpression' &&
@@ -3552,7 +3930,14 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'g2d:keyDown':
     case 'g2d:touches':
     case 'g2d:countGroup':
+    case 'g2d:spriteAngle':
     case 'g2d:sceneIs':
+    case 'g3d:keyDown':
+    case 'g3d:collides':
+    case 'g3d:hitAny':
+    case 'g3d:touchesBox':
+    case 'g3d:crosserHit':
+    case 'g3d:crosserRow':
     case 'inputKeyPressed':
     case 'inputPointer':
       return true
@@ -3885,7 +4270,7 @@ function matchObjectLiteral(node: Node, ctx?: ParseCtx): JSExpr | null {
 
 interface MatchedListener {
   target: string
-  targetKind?: 'var' | 'document'
+  targetKind?: 'var' | 'document' | 'window'
   event: EventKind
   /** Callback inline (arrow/função anônima) — vira corpo de `event`. */
   callback?: Node
@@ -3917,6 +4302,17 @@ function tryMatchEventListener(expr: Node, ctx: ParseCtx): MatchedListener | nul
   if (!isFn && !isNamed) return null
   const handler = isNamed ? { handlerName: cbArg.name as string } : { callback: cbArg }
 
+  // Escuta global na janela: `window.addEventListener(...)`. Para teclado e mouse,
+  // window e document são equivalentes (eventos borbulham); aceitamos os dois e
+  // normalizamos para o targetKind correspondente (load/resize são da janela).
+  if (callee.object?.type === 'Identifier' && callee.object.name === 'window') {
+    return {
+      target: 'window',
+      targetKind: 'window',
+      event: eventArg.value as EventKind,
+      ...handler,
+    }
+  }
   // Escuta global no documento: `document.addEventListener(...)`.
   if (callee.object?.type === 'Identifier' && callee.object.name === 'document') {
     return {

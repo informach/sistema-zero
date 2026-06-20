@@ -5,6 +5,7 @@ import {
   createEmptyProject,
   isValidAssetDataUrl,
   normalizeAssetName,
+  PROJECT_ASSET_LIMITS,
   type ProjectAsset,
   sanitizeProjectAssets,
 } from '../project'
@@ -36,7 +37,12 @@ describe('isValidAssetDataUrl', () => {
     expect(isValidAssetDataUrl(PNG)).toBe(true)
     expect(isValidAssetDataUrl('http://x/img.png')).toBe(false)
     expect(isValidAssetDataUrl('data:text/html;base64,AAAA')).toBe(false)
-    expect(isValidAssetDataUrl(`data:image/png;base64,${'A'.repeat(500_000)}`)).toBe(false)
+    // Estoura o teto por-imagem (dinâmico p/ sobreviver a aumentos de cota).
+    expect(
+      isValidAssetDataUrl(
+        `data:image/png;base64,${'A'.repeat(PROJECT_ASSET_LIMITS.maxAssetDataUrlChars)}`,
+      ),
+    ).toBe(false)
   })
 })
 
@@ -65,15 +71,23 @@ describe('sanitizeProjectAssets', () => {
   })
 
   it('respeita o orçamento total (descarta o que estoura)', () => {
-    const big = `data:image/png;base64,${'A'.repeat(350_000)}`
-    const many = Array.from({ length: 30 }, (_, i) => ({
+    // Dinâmico sobre os tetos: cada imagem ~metade do limite por-imagem (válida),
+    // e quantidade suficiente para a SOMA estourar o orçamento total — sem encostar
+    // no teto de QUANTIDADE (senão seria esse o limitante, não o orçamento).
+    const each = Math.floor(PROJECT_ASSET_LIMITS.maxAssetDataUrlChars / 2)
+    const big = `data:image/png;base64,${'A'.repeat(each)}`
+    const count = Math.min(
+      PROJECT_ASSET_LIMITS.maxAssetsCount,
+      Math.ceil(PROJECT_ASSET_LIMITS.maxAssetsTotalChars / big.length) + 4,
+    )
+    const many = Array.from({ length: count }, (_, i) => ({
       kind: 'image' as const,
       name: `img-${i}`,
       dataUrl: big,
     }))
     const out = sanitizeProjectAssets(many)
-    // ~5.6 MB de orçamento / ~350 KB cada → não cabem todos os 30.
-    expect(out.length).toBeLessThan(30)
+    // A soma estoura o orçamento → não cabem todos.
+    expect(out.length).toBeLessThan(count)
     expect(out.length).toBeGreaterThan(0)
   })
 

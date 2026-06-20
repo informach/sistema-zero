@@ -46,7 +46,7 @@ describe('import: consentimento de permissões de extensão', () => {
 
   it('mantém extensão oficial que declara só permissões da baseline (game-2d)', async () => {
     // game-2d declara canvas/keyboard/mouse/audio — tudo baseline → preservada.
-    const imported = await useProjectStore.getState().importProjectFromJSON({
+    const { project: imported } = await useProjectStore.getState().importProjectFromJSON({
       name: 'Com jogo 2D',
       files: baseFiles,
       installedExtensions: [{ id: 'game-2d', version: '1.0.0' }],
@@ -57,7 +57,7 @@ describe('import: consentimento de permissões de extensão', () => {
 
   it('mantém id de extensão desconhecido (inerte — o preview o ignora)', async () => {
     // Sem manifesto = nenhuma permissão declarada → passa (não é vetor sem runtime).
-    const imported = await useProjectStore.getState().importProjectFromJSON({
+    const { project: imported } = await useProjectStore.getState().importProjectFromJSON({
       name: 'Com id solto',
       files: baseFiles,
       installedExtensions: [{ id: 'extensao-inexistente', version: '9.9.9' }],
@@ -73,7 +73,7 @@ describe('import: consentimento de permissões de extensão', () => {
       id === 'rede-futura' ? fakeExtension('rede-futura', ['canvas', 'network']) : undefined,
     )
 
-    const imported = await useProjectStore.getState().importProjectFromJSON({
+    const { project: imported } = await useProjectStore.getState().importProjectFromJSON({
       name: 'Com extensão de rede',
       files: baseFiles,
       installedExtensions: [

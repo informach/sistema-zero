@@ -907,6 +907,88 @@ describe('generateJS', () => {
   })
 })
 
+describe('generateJS — eventos de teclado/mouse/janela + temporizadores em segundos', () => {
+  it('teclado: keydown vira document.addEventListener + event.code', () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'event',
+          target: 'document',
+          targetKind: 'document',
+          event: 'keydown',
+          body: [{ type: 'var', name: 'tecla', value: { type: 'eventProp', prop: 'code' } }],
+        },
+      ],
+    })
+    expect(code).toContain('document.addEventListener("keydown", (event) => {')
+    expect(code).toContain('let tecla = event.code;')
+  })
+
+  it('mousemove vira document.addEventListener', () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'event',
+          target: 'document',
+          targetKind: 'document',
+          event: 'mousemove',
+          body: [{ type: 'consoleLog', value: str('movendo') }],
+        },
+      ],
+    })
+    expect(code).toContain('document.addEventListener("mousemove", (event) => {')
+  })
+
+  it('load/resize viram window.addEventListener', () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'event',
+          target: 'window',
+          targetKind: 'window',
+          event: 'resize',
+          body: [{ type: 'consoleLog', value: str('mudou') }],
+        },
+      ],
+    })
+    expect(code).toContain('window.addEventListener("resize", (event) => {')
+  })
+
+  it('temporizadores em segundos emitem delay × 1000', () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'setIntervalSeconds',
+          delay: num(3),
+          body: [{ type: 'consoleLog', value: str('tick') }],
+        },
+        {
+          type: 'setTimeoutSeconds',
+          delay: num(1),
+          body: [{ type: 'consoleLog', value: str('depois') }],
+        },
+      ],
+    })
+    expect(code).toContain('setInterval(() => {')
+    expect(code).toContain('}, 3 * 1000);')
+    expect(code).toContain('setTimeout(() => {')
+    expect(code).toContain('}, 1 * 1000);')
+  })
+
+  it('segundos com delay composto sai parentizado: (a + b) * 1000', () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'setTimeoutSeconds',
+          delay: { type: 'binop', op: '+', left: variable('a'), right: variable('b') },
+          body: [{ type: 'consoleLog', value: str('x') }],
+        },
+      ],
+    })
+    expect(code).toContain('}, (a + b) * 1000);')
+  })
+})
+
 describe('objectLiteral / objectKey', () => {
   const objVar = (entries: Array<{ key: string; value: JSExpr }>): JSStatement => ({
     type: 'var',

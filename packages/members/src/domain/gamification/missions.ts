@@ -1,0 +1,170 @@
+import type { BadgeSlug } from './badges'
+
+/**
+ * Missões diárias/semanais (catálogo EM CÓDIGO — como badges; prod sem seed). São
+ * CONTENT-DRIVEN: cada missão conta eventos REAIS do ledger de XP (aula/quiz/estúdio/
+ * unidade) num período — o progresso é DERIVADO na leitura (sem hook no award), e o
+ * prêmio (XP + moedas) é resgatado explicitamente (claim idempotente por mission_claims).
+ * Atribuição DETERMINÍSTICA por (userId, período) — sem `Date.now`/random.
+ */
+
+/** Tipos de evento do ledger que uma missão pode contar (== xp_source_type contáveis). */
+export type MissionGoalType = 'lesson_complete' | 'quiz_passed' | 'studio_passed' | 'unit_complete'
+
+export interface MissionDef {
+  slug: string
+  cadence: 'daily' | 'weekly'
+  goalType: MissionGoalType
+  target: number
+  rewardXp: number
+  rewardCoins: number
+  rewardBadge?: BadgeSlug
+}
+
+export const DAILY_MISSIONS: readonly MissionDef[] = [
+  {
+    slug: 'daily-aula',
+    cadence: 'daily',
+    goalType: 'lesson_complete',
+    target: 1,
+    rewardXp: 10,
+    rewardCoins: 10,
+  },
+  {
+    slug: 'daily-aulas-3',
+    cadence: 'daily',
+    goalType: 'lesson_complete',
+    target: 3,
+    rewardXp: 20,
+    rewardCoins: 20,
+  },
+  {
+    slug: 'daily-quiz',
+    cadence: 'daily',
+    goalType: 'quiz_passed',
+    target: 1,
+    rewardXp: 15,
+    rewardCoins: 15,
+  },
+  {
+    slug: 'daily-estudio',
+    cadence: 'daily',
+    goalType: 'studio_passed',
+    target: 1,
+    rewardXp: 20,
+    rewardCoins: 25,
+  },
+  {
+    slug: 'daily-bau',
+    cadence: 'daily',
+    goalType: 'unit_complete',
+    target: 1,
+    rewardXp: 15,
+    rewardCoins: 15,
+  },
+]
+
+export const WEEKLY_MISSIONS: readonly MissionDef[] = [
+  {
+    slug: 'weekly-aulas-10',
+    cadence: 'weekly',
+    goalType: 'lesson_complete',
+    target: 10,
+    rewardXp: 60,
+    rewardCoins: 75,
+  },
+  {
+    slug: 'weekly-quizzes-5',
+    cadence: 'weekly',
+    goalType: 'quiz_passed',
+    target: 5,
+    rewardXp: 50,
+    rewardCoins: 60,
+  },
+  {
+    slug: 'weekly-estudio-3',
+    cadence: 'weekly',
+    goalType: 'studio_passed',
+    target: 3,
+    rewardXp: 75,
+    rewardCoins: 80,
+  },
+]
+
+export const MISSIONS_BY_SLUG: ReadonlyMap<string, MissionDef> = new Map(
+  [...DAILY_MISSIONS, ...WEEKLY_MISSIONS].map((m) => [m.slug, m]),
+)
+
+export const DAILY_SET_SIZE = 3
+export const WEEKLY_SET_SIZE = 2
+
+/** FNV-1a 32-bit (determinístico, puro) — semente da atribuição. */
+function fnv1a(str: string): number {
+  let h = 0x811c9dc5
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i)
+    h = Math.imul(h, 0x01000193)
+  }
+  return h >>> 0
+}
+
+/** Escolhe `count` missões distintas do pool, rotacionando a partir da semente. */
+function pick(pool: readonly MissionDef[], count: number, seed: number): MissionDef[] {
+  const n = Math.min(count, pool.length)
+  const start = pool.length > 0 ? seed % pool.length : 0
+  const out: MissionDef[] = []
+  for (let i = 0; i < n; i++) {
+    const m = pool[(start + i) % pool.length]
+    if (m) out.push(m)
+  }
+  return out
+}
+
+/** Set diário do aluno (estável por dia/criança). */
+export function assignDailyMissions(userId: string, dayKey: string): MissionDef[] {
+  return pick(DAILY_MISSIONS, DAILY_SET_SIZE, fnv1a(`${userId}:${dayKey}`))
+}
+
+/** Set semanal do aluno (estável por semana/criança). */
+export function assignWeeklyMissions(userId: string, weekKey: string): MissionDef[] {
+  return pick(WEEKLY_MISSIONS, WEEKLY_SET_SIZE, fnv1a(`${userId}:${weekKey}`))
+}
+
+/** Chave do período semanal: segunda-feira civil SP da semana de `dayKey` (`w:YYYY-MM-DD`). */
+export function weeklyPeriodKey(dayKey: string): string {
+  const d = new Date(`${dayKey}T00:00:00Z`)
+  const dow = d.getUTCDay() // 0=domingo … 6=sábado
+  const sinceMonday = (dow + 6) % 7
+  d.setUTCDate(d.getUTCDate() - sinceMonday)
+  return `w:${d.toISOString().slice(0, 10)}`
+}
+
+/**
+ * Janela UTC de um dia civil SP (`YYYY-MM-DD`). SP é fixo UTC-3 (sem DST desde 2019),
+ * então o dia civil começa às 03:00Z. Usada para contar eventos do dia no ledger.
+ */
+export function dayBoundsUtc(dayKey: string): { from: Date; to: Date } {
+  const from = new Date(`${dayKey}T03:00:00Z`)
+  const to = new Date(from)
+  to.setUTCDate(to.getUTCDate() + 1)
+  return { from, to }
+}
+
+/** Janela UTC da semana (segunda 03:00Z → segunda seguinte 03:00Z) a partir do `weekKey`. */
+export function weekBoundsUtc(weekKey: string): { from: Date; to: Date } {
+  const monday = weekKey.replace(/^w:/, '')
+  const from = new Date(`${monday}T03:00:00Z`)
+  const to = new Date(from)
+  to.setUTCDate(to.getUTCDate() + 7)
+  return { from, to }
+}
+
+/** Janela do período de uma missão (diária = o dia; semanal = a semana). */
+export function periodBoundsFor(mission: MissionDef, dayKey: string): { from: Date; to: Date } {
+  return mission.cadence === 'daily' ? dayBoundsUtc(dayKey) : weekBoundsUtc(weeklyPeriodKey(dayKey))
+}
+
+/** Chave de período de uma missão (diária = dayKey; semanal = weekKey). */
+export function periodKeyFor(mission: MissionDef, dayKey: string): string {
+  return mission.cadence === 'daily' ? dayKey : weeklyPeriodKey(dayKey)
+}

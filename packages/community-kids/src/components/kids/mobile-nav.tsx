@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import type { AvatarConfig } from '@/lib/avatar-catalog'
 import { cn } from '@/lib/cn'
 import type { GamificationMeView, SessionUserWithAvatar } from '@/lib/types'
 import { isNavActive } from './app-sidebar'
@@ -17,9 +18,11 @@ import { UserMenu } from './user-menu'
 export function MobileTopbar({
   user,
   gamification,
+  avatarConfig = null,
 }: {
   user: SessionUserWithAvatar
   gamification: GamificationMeView | null
+  avatarConfig?: AvatarConfig | null
 }) {
   return (
     <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-border border-b bg-background/80 px-4 backdrop-blur md:hidden">
@@ -28,7 +31,7 @@ export function MobileTopbar({
       </Link>
       <div className="flex items-center gap-3">
         {gamification ? <StreakWidget gamification={gamification} compact /> : null}
-        <UserMenu user={user} gamification={gamification} />
+        <UserMenu user={user} gamification={gamification} avatarConfig={avatarConfig} />
       </div>
     </header>
   )

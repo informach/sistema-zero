@@ -17,6 +17,7 @@ function fromRow(row: Row): ProfileAggregate {
     avatarUrl: row.avatarUrl,
     whatsapp: row.whatsapp,
     birthDate: row.birthDate,
+    publicProfileEnabled: row.publicProfileEnabled,
     status: row.status,
     sortOrder: row.sortOrder,
     createdAt: row.createdAt,
@@ -70,6 +71,7 @@ export class DrizzleProfileRepository implements ProfileRepository {
           avatarUrl: s.avatarUrl,
           whatsapp: s.whatsapp,
           birthDate: s.birthDate,
+          publicProfileEnabled: s.publicProfileEnabled,
           status: s.status,
           sortOrder: (agg?.maxOrder ?? -1) + 1,
           createdAt: s.createdAt,
@@ -90,6 +92,7 @@ export class DrizzleProfileRepository implements ProfileRepository {
         avatarUrl: s.avatarUrl,
         whatsapp: s.whatsapp,
         birthDate: s.birthDate,
+        publicProfileEnabled: s.publicProfileEnabled,
         status: s.status,
         updatedAt: s.updatedAt,
       })

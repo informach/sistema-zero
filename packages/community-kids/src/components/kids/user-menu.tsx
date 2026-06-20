@@ -5,9 +5,11 @@ import { LogOut, Moon, Sun, User, Users } from 'lucide-react'
 import Link from 'next/link'
 import { useTheme } from 'next-themes'
 import { useEffect, useRef, useState } from 'react'
+import type { AvatarConfig } from '@/lib/avatar-catalog'
 import { profileMenuSubtitle } from '@/lib/gamification-label'
 import type { GamificationMeView, SessionUserWithAvatar } from '@/lib/types'
 import { getUserDisplayName } from '@/lib/user-display'
+import { KidsAvatar } from './kids-avatar'
 
 /**
  * Menu do avatar: cabeçalho com foto + nome + colocação no ranking/XP (NÃO o
@@ -19,10 +21,13 @@ import { getUserDisplayName } from '@/lib/user-display'
 export function UserMenu({
   user,
   gamification = null,
+  avatarConfig = null,
   direction = 'down',
 }: {
   user: SessionUserWithAvatar
   gamification?: GamificationMeView | null
+  /** Avatar montado por camadas (sessão de perfil). `null` → cai na foto/iniciais. */
+  avatarConfig?: AvatarConfig | null
   direction?: 'up' | 'down'
 }) {
   const [open, setOpen] = useState(false)
@@ -70,13 +75,17 @@ export function UserMenu({
         aria-label="Conta"
         aria-expanded={open}
       >
-        <UserAvatar
-          avatarUrl={user.avatarUrl}
-          firstName={user.firstName}
-          lastName={user.lastName}
-          email={user.email}
-          size="sm"
-        />
+        {avatarConfig ? (
+          <KidsAvatar config={avatarConfig} size="sm" />
+        ) : (
+          <UserAvatar
+            avatarUrl={user.avatarUrl}
+            firstName={user.firstName}
+            lastName={user.lastName}
+            email={user.email}
+            size="sm"
+          />
+        )}
       </button>
       {open ? (
         <div
@@ -86,13 +95,17 @@ export function UserMenu({
         >
           {/* Cabeçalho: avatar à esquerda + nome (do perfil ativo, se houver) */}
           <div className="flex items-center gap-3 border-b border-border px-3 py-3">
-            <UserAvatar
-              avatarUrl={user.avatarUrl}
-              firstName={user.firstName}
-              lastName={user.lastName}
-              email={user.email}
-              size="lg"
-            />
+            {avatarConfig ? (
+              <KidsAvatar config={avatarConfig} size="md" />
+            ) : (
+              <UserAvatar
+                avatarUrl={user.avatarUrl}
+                firstName={user.firstName}
+                lastName={user.lastName}
+                email={user.email}
+                size="lg"
+              />
+            )}
             <div className="min-w-0 flex-1">
               <p className="truncate font-semibold text-sm">
                 {getUserDisplayName(user.firstName, user.lastName, user.email)}

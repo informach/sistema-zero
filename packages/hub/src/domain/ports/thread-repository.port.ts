@@ -5,6 +5,10 @@ export interface CreateThreadInput {
   id: string
   channelId: string
   authorId: string
+  /** Primeiro nome do autor (snapshot exibido/clicável) ou `null`. */
+  authorDisplayName: string | null
+  /** Perfil do autor é público (opt-in dos pais) — snapshot p/ decidir o link do nome. */
+  authorPublic: boolean
   title: string
   slug: string
   body: string
@@ -22,6 +26,8 @@ export interface CreateShowcaseThreadInput {
   authorId: string
   /** Primeiro nome da criança (snapshot exibido na vitrine). */
   authorDisplayName: string
+  /** Perfil do autor é público (opt-in dos pais) — snapshot p/ o link do nome. */
+  authorPublic: boolean
   title: string
   slug: string
   /** Resumo do projeto (Markdown). */
@@ -39,6 +45,10 @@ export interface CreateCommentInput {
   id: string
   threadId: string
   authorId: string
+  /** Primeiro nome do autor (snapshot exibido/clicável) ou `null`. */
+  authorDisplayName: string | null
+  /** Perfil do autor é público (opt-in dos pais) — snapshot p/ o link do nome. */
+  authorPublic: boolean
   body: string
   status: ContentStatus
   replyToId: string | null

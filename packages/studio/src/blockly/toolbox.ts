@@ -27,6 +27,53 @@ import { CATEGORY_COLORS } from './theme'
 /** Shadow anexado a um slot `input_value` (número editável ou seletor de cor). */
 type ShadowInput = SocketShadow
 
+// Eventos (listeners "Quando…") vivem em DOM_BLOCKS mas, na toolbox, saem da
+// subcategoria 🌐 Página e formam a 📡 ⚡ Eventos. Esta é a lista que define o
+// que é "evento" (sai da Página).
+const EVENT_LISTENER_TYPES: ReadonlySet<string> = new Set([
+  'sz_js_on_click',
+  'sz_js_on_click_anywhere',
+  'sz_js_on_mouseover',
+  'sz_js_on_input',
+  'sz_js_on_submit',
+  'sz_js_on_event_named',
+  'sz_js_event_method',
+  'sz_js_on_key',
+  'sz_js_on_mousemove',
+  'sz_js_on_load',
+  'sz_js_on_resize',
+])
+
+// Ordem dos blocos DENTRO da subcategoria ⚡ Eventos (teclado → mouse/clique →
+// formulário → janela → tempo → ligar-a-função). Reúne blocos de DOM, JS (timers)
+// e Valores (leitores do evento); um mesmo bloco pode aparecer aqui E na sua
+// categoria de origem (timers em 🔁 Repetições, leitores em 🔣 Valores).
+const EVENTOS_TYPE_ORDER: readonly string[] = [
+  // ⌨️ Teclado
+  'sz_js_on_key',
+  'sz_val_event_key',
+  // 🖱️ Mouse / clique
+  'sz_js_on_click',
+  'sz_js_on_click_anywhere',
+  'sz_js_on_mouseover',
+  'sz_js_on_mousemove',
+  'sz_val_event_pos',
+  // 📝 Formulário
+  'sz_js_on_input',
+  'sz_js_on_submit',
+  // 🪟 Página / janela
+  'sz_js_on_load',
+  'sz_js_on_resize',
+  // ⏱️ Tempo
+  'sz_js_set_timeout',
+  'sz_js_set_interval',
+  'sz_js_set_timeout_seconds',
+  'sz_js_set_interval_seconds',
+  // 🔧 Avançado: ligar a uma função nomeada + método do evento
+  'sz_js_on_event_named',
+  'sz_js_event_method',
+]
+
 export interface ToolboxBlockEntry {
   kind: 'block'
   type: string
@@ -219,7 +266,19 @@ export function buildCoreToolbox(
   }
   pushSub('Matemática', '🔢 Matemática', CATEGORY_COLORS.math, 'iniciante', MATH_BLOCKS)
   pushSub('Valores', '🔣 Valores', CATEGORY_COLORS.values, 'iniciante', VALUE_BLOCKS)
-  pushSub('DOM', '🌐 Página', CATEGORY_COLORS.dom, 'iniciante', DOM_BLOCKS)
+  // Página: só os blocos de ELEMENTO (os "Quando…" saem para ⚡ Eventos).
+  const paginaBlocks = DOM_BLOCKS.filter((b) => !EVENT_LISTENER_TYPES.has(b.type))
+  pushSub('DOM', '🌐 Página', CATEGORY_COLORS.dom, 'iniciante', paginaBlocks)
+  // ⚡ Eventos: listeners + leitores do evento + temporizadores, na ordem curada.
+  // Gateada por 'DOM' (preserva o allowCategories das aulas). Resolve cada tipo a
+  // partir das três origens; tipos inexistentes (ex.: nível) são ignorados.
+  const eventosByType = new Map(
+    [...DOM_BLOCKS, ...JS_BLOCKS, ...VALUE_BLOCKS].map((b) => [b.type, b] as const),
+  )
+  const eventosBlocks = EVENTOS_TYPE_ORDER.map((t) => eventosByType.get(t)).filter(
+    (b): b is BlockDefinition => Boolean(b),
+  )
+  pushSub('DOM', '⚡ Eventos', CATEGORY_COLORS.events, 'iniciante', eventosBlocks)
   pushSubCustom('Funções', '🧩 Funções', CATEGORY_COLORS.functions, 'intermediario', 'SZ_FUNCTIONS')
   pushSubCustom('Classes', '🏛️ Classes', CATEGORY_COLORS.classes, 'avancado', 'SZ_CLASSES')
   pushSub('Objetos', '📦 Objetos', CATEGORY_COLORS.objects, 'intermediario', OBJECT_BLOCKS)

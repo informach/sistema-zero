@@ -15,6 +15,8 @@ export const proxy = createMemberProxy({
   protectedPrefixes: [
     '/cursos',
     '/perfil',
+    '/quarto',
+    '/crianca',
     '/clube-dos-criadores',
     '/mural-dos-criadores',
     '/perfis',

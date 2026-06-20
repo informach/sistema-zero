@@ -71,6 +71,10 @@ export const IDENTITY_HEADERS = {
   // confiável do autor (ex.: vitrine "Mural" do kids) — o upstream NÃO confia num nome
   // vindo do corpo. Pode chegar URI-encoded (acento). De IDENTIDADE (stripado/redigido).
   profileName: 'x-auth-profile-name',
+  // Perfil PÚBLICO entre crianças (opt-in dos pais — claim `pfl.pub`). 'true'/'false',
+  // presente só em sessão de perfil. O hub o usa p/ decidir se o nome do autor vira
+  // link p/ o perfil público. De IDENTIDADE (auto-stripado da entrada/anti-spoof).
+  profilePublic: 'x-auth-profile-public',
   // Admin que está IMPERSONANDO (claim `act.sub`). Presente só em sessão de suporte.
   // O upstream o usa p/ PRESERVAR o vínculo de impersonação ao derivar uma nova
   // sessão (ex.: selecionar um perfil) — sem ele a impersonação seria "lavada" numa
@@ -92,6 +96,7 @@ export interface IdentityHeaderInput {
   signupSource?: string
   accountId?: string
   profileName?: string
+  profilePublic?: boolean
   impersonatorId?: string
 }
 
@@ -144,6 +149,10 @@ export function injectIdentityHeaders(headers: Headers, user: IdentityHeaderInpu
   // Nome de exibição do perfil (sessão de perfil) — URI-encode protege nomes com acento.
   if (user.profileName) {
     headers.set(IDENTITY_HEADERS.profileName, headerSafeValue(user.profileName))
+  }
+  // Flag de perfil público (sessão de perfil) — 'true'/'false'.
+  if (user.profilePublic !== undefined) {
+    headers.set(IDENTITY_HEADERS.profilePublic, user.profilePublic ? 'true' : 'false')
   }
   // Só em sessão de impersonação — o upstream preserva o vínculo ao derivar sessões.
   if (user.impersonatorId) {

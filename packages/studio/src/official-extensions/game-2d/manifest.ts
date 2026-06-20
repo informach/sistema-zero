@@ -1,6 +1,7 @@
 import type { ExtensionManifest } from '#extensions'
 import {
   animatedHeroExample,
+  asteroidsClassicExample,
   asteroidsExample,
   dinoRunExample,
   platformerExample,
@@ -11,7 +12,7 @@ import {
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.9.0',
+  version: '0.10.0',
   description:
     'Blocos para criar jogos 2D no Canvas: sprites (cor/imagem/animação), grupos de MUITOS sprites com spawner e colisão de grupo, movimento, física, efeitos (clarão, tremor, partículas), tiles/tilemaps, HUD (placar/vidas/barra), telas/cenas, som, e KITS por tema — Kit espaço (nave, asteroides, estrelas, explosões e sons) e Kit dino (dinossauro que corre/pula/abaixa, obstáculos, ovos de bônus e fundo de floresta com parallax).',
   category: 'games',
@@ -114,6 +115,23 @@ fundo de estrelas (céu com gradiente e estrelas que cintilam), soltar
 explosão e tocar som de tiro/explosão. Os blocos genéricos seguem nas categorias normais —
 a ideia é ir somando KITS de outros temas (corrida, fazenda…).
 
+### Nave clássica: girar + impulsionar (v0.10.0)
+
+Para o **Asteroids clássico** (a nave GIRA e ACELERA para onde aponta). Os sprites passam a ter
+um **ângulo em graus** (0 = pra cima, sentido horário) que o desenho respeita — a nave aparece
+girada na direção apontada.
+
+- **Controlar o sprite como nave** (Movimento) — vira com ← → (ou A/D), acelera com ↑ (ou W) na
+  direção apontada e desliza com atrito ao soltar. Um bloco só já pilota a nave.
+- **Girar o sprite N graus** / **Apontar o sprite para N graus** / **Impulsionar para a frente** /
+  **Frear aos poucos (atrito)** / **a direção do sprite** — os tijolinhos para montar o controle
+  na mão ou inventar variações.
+- **Atirar do sprite para a frente, no grupo** (Kit espaço) — cria o tiro na ponta da nave, indo
+  na direção apontada (use no "quando apertar Espaço").
+- **No grupo soltar um asteroide de uma borda** (Kit espaço) — o asteroide nasce numa borda
+  sorteada e vem rumo ao centro (use no "a cada X segundos"). Veja o exemplo **"Asteroides
+  clássico"**.
+
 ### Acabamentos (v0.8.0)
 
 - **Criar tiro no grupo** — um tiro redondo com brilho (em vez de retângulo).
@@ -149,6 +167,7 @@ Veja o exemplo **"Nave contra Asteroides"** para um jogo de tiro e **"Dino Run"*
     platformerExample,
     tilemapExample,
     asteroidsExample,
+    asteroidsClassicExample,
     dinoRunExample,
   ],
 }

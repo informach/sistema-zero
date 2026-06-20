@@ -1,6 +1,14 @@
 import { Elysia } from 'elysia'
+import type { BuyAvatarPartService } from '../../../application/avatar/buy-avatar-part.service'
+import type { EquipAvatarService } from '../../../application/avatar/equip-avatar.service'
+import type { GetAvatarService } from '../../../application/avatar/get-avatar.service'
 import type { GetChildrenStatsService } from '../../../application/children-stats/get-children-stats.service'
+import type { BuyStreakFreezeService } from '../../../application/gamification/buy-streak-freeze.service'
+import type { ClaimMissionService } from '../../../application/gamification/claim-mission.service'
 import type { GetGamificationService } from '../../../application/gamification/get-gamification.service'
+import type { GetLeagueService } from '../../../application/gamification/get-league.service'
+import type { GetMissionsService } from '../../../application/gamification/get-missions.service'
+import type { SetVacationService } from '../../../application/gamification/set-vacation.service'
 import type { GetAttachmentDownloadService } from '../../../application/get-attachment-download/get-attachment-download.service'
 import type { GetCourseProgressService } from '../../../application/get-course-progress/get-course-progress.service'
 import type { GetCourseRatingService } from '../../../application/get-course-rating/get-course-rating.service'
@@ -12,27 +20,39 @@ import type { GetStudioCarryoverService } from '../../../application/get-studio-
 import type { ListCatalogService } from '../../../application/list-catalog/list-catalog.service'
 import type { ListMyCoursesService } from '../../../application/list-my-courses/list-my-courses.service'
 import type { MarkLessonCompleteService } from '../../../application/mark-lesson-complete/mark-lesson-complete.service'
+import type { GetPublicProfileService } from '../../../application/profiles/get-public-profile.service'
+import type { BuyRoomItemService } from '../../../application/room/buy-room-item.service'
+import type { GetRoomService } from '../../../application/room/get-room.service'
+import type { SaveRoomService } from '../../../application/room/save-room.service'
 import type { SaveCourseRatingService } from '../../../application/save-course-rating/save-course-rating.service'
 import type { SaveVideoPositionService } from '../../../application/save-video-position/save-video-position.service'
 import type { SubmitQuizAttemptService } from '../../../application/submit-quiz-attempt/submit-quiz-attempt.service'
 import type { SubmitStudioProjectService } from '../../../application/submit-studio-project/submit-studio-project.service'
+import { AVATAR_STYLE } from '../../../domain/avatar/parts-catalog'
 import { assertInternalCaller, isPrivilegedActor, resolveAccountId, resolveUserId } from '../auth'
 import {
   AttachmentResolveParams,
   AudienceQuery,
+  AvatarConfigBody,
+  AvatarPartParams,
   ChildrenStatsQuery,
   CourseRatingBody,
   EbookResolveParams,
   GamificationQuery,
   LessonIdParams,
+  MissionSlugParams,
+  PublicProfileParams,
   parseProfileIds,
   QuizAttemptBody,
   QuizAttemptParams,
+  RoomItemParams,
+  RoomStateBody,
   ShowcasePayloadParams,
   SlugLessonParams,
   StudioCarryoverParams,
   StudioSubmissionBody,
   StudioSubmissionParams,
+  VacationBody,
   VideoPositionBody,
 } from '../dtos'
 
@@ -53,7 +73,19 @@ export interface MembersRoutesDeps {
   getCourseRating: GetCourseRatingService
   saveCourseRating: SaveCourseRatingService
   getGamification: GetGamificationService
+  getMissions: GetMissionsService
+  claimMission: ClaimMissionService
+  buyStreakFreeze: BuyStreakFreezeService
+  setVacation: SetVacationService
+  getLeague: GetLeagueService
   childrenStats: GetChildrenStatsService
+  getAvatar: GetAvatarService
+  buyAvatarPart: BuyAvatarPartService
+  equipAvatar: EquipAvatarService
+  getPublicProfile: GetPublicProfileService
+  getRoom: GetRoomService
+  saveRoom: SaveRoomService
+  buyRoomItem: BuyRoomItemService
   /** Token interno do gateway (defesa em profundidade). Vazio em dev → checagem desligada. */
   internalToken?: string
 }
@@ -124,6 +156,126 @@ export function membersRoutes(deps: MembersRoutesDeps) {
           })
         },
         { query: GamificationQuery },
+      )
+      // ── Missões (diárias/semanais) — recurso do PRÓPRIO perfil ──────────────
+      .get(
+        '/gamification/missions/me',
+        async ({ headers, query }) =>
+          deps.getMissions.execute(resolveUserId(headers), query.audience ?? 'kids'),
+        { query: AudienceQuery },
+      )
+      // Resgata o prêmio (XP+moedas) de uma missão concluída (idempotente; 409 se não concluiu).
+      .post(
+        '/gamification/missions/:slug/claim',
+        async ({ headers, params, query }) =>
+          deps.claimMission.execute(resolveUserId(headers), query.audience ?? 'kids', params.slug),
+        { params: MissionSlugParams, query: AudienceQuery },
+      )
+      // Compra 1 protetor de sequência com moedas (idempotente; 402 sem saldo; 409 no máximo).
+      .post(
+        '/gamification/streak-freeze/buy',
+        async ({ headers, query }) =>
+          deps.buyStreakFreeze.execute(resolveUserId(headers), query.audience ?? 'kids'),
+        { query: AudienceQuery },
+      )
+      // Agenda/limpa as férias (pausa a sequência sem culpa). `from=to=null` limpa.
+      .put(
+        '/gamification/vacation',
+        async ({ headers, body, query }) =>
+          deps.setVacation.execute(
+            resolveUserId(headers),
+            resolveAccountId(headers),
+            query.audience ?? 'kids',
+            body.from,
+            body.to,
+          ),
+        { body: VacationBody, query: AudienceQuery },
+      )
+      // Liga semanal: tier (resolvido lazy) + board da coorte por XP da semana.
+      .get(
+        '/gamification/league/me',
+        async ({ headers, query }) =>
+          deps.getLeague.execute(
+            resolveUserId(headers),
+            resolveAccountId(headers),
+            query.audience ?? 'kids',
+            isPrivilegedActor(headers),
+          ),
+        { query: AudienceQuery },
+      )
+      // ── Avatar (guarda-roupa por camadas) — recurso do PRÓPRIO perfil ───────
+      // Estado: equipado + catálogo (owned/locked/price) + saldo Zappy (a lojinha).
+      .get(
+        '/avatar',
+        async ({ headers, query }) => {
+          const userId = resolveUserId(headers)
+          return deps.getAvatar.execute(userId, query.audience ?? 'kids')
+        },
+        { query: AudienceQuery },
+      )
+      // Compra uma peça PAGA com moedas (idempotente; já possuída → no-op; sem saldo → 402).
+      .post(
+        '/avatar/parts/:partId/buy',
+        async ({ headers, params, query }) => {
+          const userId = resolveUserId(headers)
+          return deps.buyAvatarPart.execute(userId, query.audience ?? 'kids', params.partId)
+        },
+        { params: AvatarPartParams, query: AudienceQuery },
+      )
+      // Salva a config equipada (ESTRITO: toda peça grátis OU possuída → senão 403/400).
+      .put(
+        '/avatar',
+        async ({ headers, body, query }) => {
+          const userId = resolveUserId(headers)
+          const equipped = await deps.equipAvatar.execute(
+            userId,
+            resolveAccountId(headers),
+            query.audience ?? 'kids',
+            { style: body.style ?? AVATAR_STYLE, parts: body.parts },
+          )
+          return { equipped: equipped.parts, style: equipped.style }
+        },
+        { body: AvatarConfigBody, query: AudienceQuery },
+      )
+      // Perfil PÚBLICO de OUTRA criança (peer-viewable: qualquer aluno ativo lê). NÃO usa
+      // CheckAccess — é recurso público da comunidade; o alvo é o `:profileId` (não o
+      // viewer). Só dado de jogo (XP/ranking/conquistas-que-tem/avatar/quarto); o nome é
+      // juntado pelo BFF (auth) e a flag dos pais gateia lá (404 se off).
+      .get(
+        '/profiles/:profileId/public',
+        async ({ params, query }) =>
+          deps.getPublicProfile.execute(params.profileId, query.audience ?? 'kids'),
+        { params: PublicProfileParams, query: AudienceQuery },
+      )
+      // ── Quarto virtual (decore-do-seu-jeito) — recurso do PRÓPRIO perfil ────
+      .get(
+        '/room',
+        async ({ headers, query }) =>
+          deps.getRoom.execute(resolveUserId(headers), query.audience ?? 'kids'),
+        { query: AudienceQuery },
+      )
+      // Salva o quarto montado (canonicalizado contra o inventário; só itens possuídos).
+      .put(
+        '/room',
+        async ({ headers, body, query }) =>
+          deps.saveRoom.execute(
+            resolveUserId(headers),
+            resolveAccountId(headers),
+            query.audience ?? 'kids',
+            {
+              theme: body.theme,
+              placedItems: body.placedItems,
+              pet: body.pet,
+            },
+          ),
+        { body: RoomStateBody, query: AudienceQuery },
+      )
+      // Compra um item/tema PAGO do quarto com moedas (idempotente; sem saldo → 402).
+      .post(
+        '/room/items/:itemId/buy',
+        async ({ headers, params, query }) =>
+          deps.buyRoomItem.execute(resolveUserId(headers), query.audience ?? 'kids', params.itemId),
+        { params: RoomItemParams, query: AudienceQuery },
       )
       // Resumo de progresso dos FILHOS (área dos pais, kids). A conta vem do header
       // confiável `x-auth-user-id` (resolveUserId) — NÃO de query nem de resolveAccountId:

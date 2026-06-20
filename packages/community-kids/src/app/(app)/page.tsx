@@ -1,6 +1,7 @@
 import { ContinueHero } from '@/components/kids/continue-hero'
 import { CourseCard } from '@/components/kids/course-card'
 import { KidsMascot } from '@/components/kids/mascot'
+import { MissionsPanel } from '@/components/kids/missions-panel'
 import { StreakCard } from '@/components/kids/streak-card'
 import { unitThemeAt } from '@/components/kids/unit-theme'
 import { getGamificationReadonly, listMyCourses } from '@/server/members'
@@ -38,6 +39,9 @@ export default async function HomePage() {
       <ContinueHero courses={courses} />
 
       {gamification && courses.length > 0 ? <StreakCard gamification={gamification} /> : null}
+
+      {/* Missões diárias/semanais (busca client-side; some se a gamificação estiver fora). */}
+      {courses.length > 0 ? <MissionsPanel /> : null}
 
       <section className="flex flex-col gap-4">
         <h2 className="sz-display text-xl">Meus cursos</h2>

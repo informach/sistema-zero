@@ -3,6 +3,10 @@ import { cache } from 'react'
 import { getEnv } from '../lib/env'
 import type {
   AttachmentDownloadView,
+  AvatarConfigInput,
+  AvatarEquipResult,
+  AvatarPurchaseResult,
+  AvatarStateView,
   CatalogCourseView,
   ChildStatsView,
   CourseDetailView,
@@ -17,16 +21,26 @@ import type {
   HubResolvedAttachment,
   HubSpaceView,
   HubThreadView,
+  LeagueMeView,
   LessonCompleteResult,
   LessonDetailView,
+  MissionClaimResult,
+  MissionsMeView,
   MyCourseView,
   Paginated,
   PaymentView,
   ProfileView,
+  PublicProfileGameView,
+  PublicProfileIdentity,
   QuizAttemptResultView,
+  RoomBuyResult,
+  RoomEditorView,
+  RoomStateView,
   ShowcasePayloadView,
+  StreakFreezeResult,
   StudioSubmissionResultView,
   UserView,
+  VacationResult,
 } from '../lib/types'
 import { clientForwardHeaders, type GatewayModule, type GatewayResponse } from './gateway'
 import type { AuthTokens } from './session'
@@ -164,6 +178,15 @@ export function createAuthClient(gw: GatewayModule) {
       return publicPost('/auth/otp/request', { email, purpose })
     },
 
+    /**
+     * Identidade PÚBLICA de OUTRO perfil (S2S via gateway) p/ o perfil público kids:
+     * só nome + flag de visibilidade (nunca e-mail/telefone/nascimento/conta). O BFF
+     * gateia pela flag. SEM refresh de cookie (Server Component).
+     */
+    getPublicProfileIdentity(profileId: string): Promise<GatewayResponse<PublicProfileIdentity>> {
+      return gw.gatewayFetchReadonly(`/auth/internal/profiles/${enc(profileId)}/public`)
+    },
+
     /** Redefine a senha consumindo um código OTP de recuperação. */
     resetPasswordWithOtp(
       email: string,
@@ -190,6 +213,24 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       gw.gatewayFetchReadonly('/members/gamification/me', {
         query: { audience, ...(withRanking ? { ranking: 'true' } : {}) },
       }),
+  )
+  const missionsReadonlyCached = cache(
+    (): Promise<GatewayResponse<MissionsMeView>> =>
+      gw.gatewayFetchReadonly('/members/gamification/missions/me', { query: { audience } }),
+  )
+  const leagueReadonlyCached = cache(
+    (): Promise<GatewayResponse<LeagueMeView>> =>
+      gw.gatewayFetchReadonly('/members/gamification/league/me', { query: { audience } }),
+  )
+  // Avatar do perfil ativo — dedup por request (layout busca o chrome; a página de
+  // perfil também). Sem argumento → uma chave estável.
+  const avatarReadonlyCached = cache(
+    (): Promise<GatewayResponse<AvatarStateView>> =>
+      gw.gatewayFetchReadonly('/members/avatar', { query: { audience } }),
+  )
+  const roomReadonlyCached = cache(
+    (): Promise<GatewayResponse<RoomEditorView>> =>
+      gw.gatewayFetchReadonly('/members/room', { query: { audience } }),
   )
   return {
     /** Cursos com matrícula ativa do aluno logado (vitrine do app). */
@@ -272,6 +313,100 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       withRanking?: boolean
     }): Promise<GatewayResponse<GamificationMeView>> {
       return gamificationReadonlyCached(opts?.withRanking ?? false)
+    },
+
+    // ── Missões + proteção de sequência ──────────────────────────────────────
+    /** Missões do aluno (diárias/semanais) — Server Component (sem refresh). */
+    getMissionsReadonly(): Promise<GatewayResponse<MissionsMeView>> {
+      return missionsReadonlyCached()
+    },
+    /** Missões — Route Handler (com refresh). */
+    getMissions(): Promise<GatewayResponse<MissionsMeView>> {
+      return gw.gatewayFetch('/members/gamification/missions/me', { query: { audience } })
+    },
+    /** Liga semanal do aluno (board + tier) — Server Component (sem refresh). */
+    getLeagueReadonly(): Promise<GatewayResponse<LeagueMeView>> {
+      return leagueReadonlyCached()
+    },
+    /** Resgata o prêmio de uma missão concluída (idempotente). */
+    claimMission(slug: string): Promise<GatewayResponse<MissionClaimResult>> {
+      return gw.gatewayFetch(`/members/gamification/missions/${enc(slug)}/claim`, {
+        method: 'POST',
+        query: { audience },
+      })
+    },
+    /** Compra 1 protetor de sequência com moedas (sem saldo → 402; máximo → 409). */
+    buyStreakFreeze(): Promise<GatewayResponse<StreakFreezeResult>> {
+      return gw.gatewayFetch('/members/gamification/streak-freeze/buy', {
+        method: 'POST',
+        query: { audience },
+      })
+    },
+    /** Agenda/limpa as férias (pausa a sequência sem culpa). */
+    setVacation(from: string | null, to: string | null): Promise<GatewayResponse<VacationResult>> {
+      return gw.gatewayFetch('/members/gamification/vacation', {
+        method: 'PUT',
+        query: { audience },
+        body: { from, to },
+      })
+    },
+
+    /** Estado do avatar do perfil (equipado + catálogo + saldo) — Route Handler. */
+    getAvatar(): Promise<GatewayResponse<AvatarStateView>> {
+      return gw.gatewayFetch('/members/avatar', { query: { audience } })
+    },
+
+    /** Avatar SEM refresh de cookie — Server Components (loadChrome/perfil). */
+    getAvatarReadonly(): Promise<GatewayResponse<AvatarStateView>> {
+      return avatarReadonlyCached()
+    },
+
+    /** Compra uma peça paga do avatar com moedas (idempotente; sem saldo → 402). */
+    buyAvatarPart(partId: string): Promise<GatewayResponse<AvatarPurchaseResult>> {
+      return gw.gatewayFetch(`/members/avatar/parts/${enc(partId)}/buy`, {
+        method: 'POST',
+        query: { audience },
+      })
+    },
+
+    /** Salva a config equipada do avatar (estrito no members: peça grátis OU possuída). */
+    equipAvatar(config: AvatarConfigInput): Promise<GatewayResponse<AvatarEquipResult>> {
+      return gw.gatewayFetch('/members/avatar', {
+        method: 'PUT',
+        query: { audience },
+        body: config,
+      })
+    },
+
+    /**
+     * Dado de jogo do perfil PÚBLICO de OUTRA criança (xp/ranking/conquistas/avatar/
+     * quarto). Peer-viewable; o BFF junta com a identidade do auth. SEM refresh (SC).
+     */
+    getPublicProfile(profileId: string): Promise<GatewayResponse<PublicProfileGameView>> {
+      return gw.gatewayFetchReadonly(`/members/profiles/${enc(profileId)}/public`, {
+        query: { audience },
+      })
+    },
+
+    // ── Quarto virtual ──────────────────────────────────────────────────────
+    /** Estado do quarto (montado + catálogo + saldo) — editor/lojinha client-side. */
+    getRoom(): Promise<GatewayResponse<RoomEditorView>> {
+      return gw.gatewayFetch('/members/room', { query: { audience } })
+    },
+    /** Quarto SEM refresh de cookie — Server Components (página do quarto). */
+    getRoomReadonly(): Promise<GatewayResponse<RoomEditorView>> {
+      return roomReadonlyCached()
+    },
+    /** Salva o quarto montado (o members canonicaliza contra o inventário). */
+    saveRoom(state: RoomStateView): Promise<GatewayResponse<RoomStateView>> {
+      return gw.gatewayFetch('/members/room', { method: 'PUT', query: { audience }, body: state })
+    },
+    /** Compra um item/tema pago do quarto com moedas (idempotente; sem saldo → 402). */
+    buyRoomItem(itemId: string): Promise<GatewayResponse<RoomBuyResult>> {
+      return gw.gatewayFetch(`/members/room/items/${enc(itemId)}/buy`, {
+        method: 'POST',
+        query: { audience },
+      })
     },
 
     /**

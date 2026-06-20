@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test'
 import { compileStatements } from '#generators'
 import {
   animatedHeroExample,
+  asteroidsClassicExample,
   asteroidsExample,
   dinoRunExample,
   platformerExample,
@@ -835,5 +836,156 @@ describe('parseJS — lacunas fechadas (tiro redondo, setas, piscar, intervalo v
         body: [{ type: 'g2d:playShoot' }],
       },
     ])
+  })
+})
+
+describe('parseJS — nave clássica (v0.10.0): girar + impulsionar + atirar pra frente', () => {
+  it('reconhece os blocos de uma linha como blocos g2d', () => {
+    expect(parseJS('SZGame2D.steerThrust(nave, 3, 4);')).toEqual([
+      { type: 'g2d:steerThrust', spriteVar: 'nave', speed: 3, turn: 4 },
+    ])
+    expect(parseJS('SZGame2D.rotateSprite(nave, 15);')).toEqual([
+      { type: 'g2d:rotateSprite', spriteVar: 'nave', deg: 15 },
+    ])
+    expect(parseJS('SZGame2D.pointSprite(nave, 90);')).toEqual([
+      { type: 'g2d:pointSprite', spriteVar: 'nave', deg: 90 },
+    ])
+    expect(parseJS('SZGame2D.thrust(nave, 0.2);')).toEqual([
+      { type: 'g2d:thrust', spriteVar: 'nave', force: 0.2 },
+    ])
+    expect(parseJS('SZGame2D.applyFriction(nave, 0.97);')).toEqual([
+      { type: 'g2d:applyFriction', spriteVar: 'nave', factor: 0.97 },
+    ])
+  })
+
+  it('reconhece atirar pra frente (shootFrom) e asteroide de borda (spawnAsteroidFromEdge)', () => {
+    expect(parseJS('SZGame2D.shootFrom(nave, tiros, { speed: 6, color: "#9cff57" });')).toEqual([
+      { type: 'g2d:shootFrom', spriteVar: 'nave', groupVar: 'tiros', speed: 6, color: '#9cff57' },
+    ])
+    expect(
+      parseJS(
+        'SZGame2D.spawnAsteroidFromEdge(asteroides, { size: 40, color: "#8d8f9b", speed: 1.5 });',
+      ),
+    ).toEqual([
+      {
+        type: 'g2d:spawnAsteroidEdge',
+        groupVar: 'asteroides',
+        size: 40,
+        color: '#8d8f9b',
+        speed: 1.5,
+      },
+    ])
+  })
+
+  it('reconhece a direção do sprite (spriteAngleDeg) como valor num "se"', () => {
+    expect(
+      parseJS('if (SZGame2D.spriteAngleDeg(nave) >= 180) { SZGame2D.pointSprite(nave, 0); }'),
+    ).toEqual([
+      {
+        type: 'if',
+        cond: {
+          type: 'binop',
+          op: '>=',
+          left: { type: 'g2d:spriteAngle', spriteVar: 'nave' },
+          right: { type: 'num', value: 180 },
+        },
+        then: [{ type: 'g2d:pointSprite', spriteVar: 'nave', deg: 0 }],
+      },
+    ])
+  })
+})
+
+describe('roundtrip da nave clássica (gerar → parsear, sem rawJS)', () => {
+  it('todos os blocos de nave clássica voltam a virar blocos', () => {
+    const ir: import('#ir').JSStatement[] = [
+      {
+        type: 'g2d:createShip',
+        varName: 'nave',
+        x: 180,
+        y: 150,
+        w: 54,
+        h: 62,
+        bodyColor: '#35e8ff',
+        wingColor: '#2568ff',
+      },
+      { type: 'g2d:createGroup', varName: 'tiros' },
+      { type: 'g2d:createGroup', varName: 'asteroides' },
+      {
+        type: 'g2d:updateEachFrame',
+        body: [
+          { type: 'g2d:steerThrust', spriteVar: 'nave', speed: 3, turn: 4 },
+          { type: 'g2d:rotateSprite', spriteVar: 'nave', deg: 15 },
+          { type: 'g2d:pointSprite', spriteVar: 'nave', deg: 0 },
+          { type: 'g2d:thrust', spriteVar: 'nave', force: 0.2 },
+          { type: 'g2d:applyFriction', spriteVar: 'nave', factor: 0.97 },
+          {
+            type: 'g2d:shootFrom',
+            spriteVar: 'nave',
+            groupVar: 'tiros',
+            speed: 6,
+            color: '#9cff57',
+          },
+          {
+            type: 'g2d:spawnAsteroidEdge',
+            groupVar: 'asteroides',
+            size: 40,
+            color: '#8d8f9b',
+            speed: 1.5,
+          },
+          {
+            type: 'if',
+            cond: {
+              type: 'binop',
+              op: '>=',
+              left: { type: 'g2d:spriteAngle', spriteVar: 'nave' },
+              right: { type: 'num', value: 180 },
+            },
+            then: [{ type: 'g2d:pointSprite', spriteVar: 'nave', deg: 0 }],
+          },
+        ],
+      },
+    ]
+    const types = collectTypes(parseJS(compileStatements(ir, 0)))
+    expect(types.has('rawJS')).toBe(false)
+    for (const expected of [
+      'g2d:steerThrust',
+      'g2d:rotateSprite',
+      'g2d:pointSprite',
+      'g2d:thrust',
+      'g2d:applyFriction',
+      'g2d:shootFrom',
+      'g2d:spawnAsteroidEdge',
+      'g2d:spriteAngle',
+    ]) {
+      expect(types.has(expected)).toBe(true)
+    }
+  })
+})
+
+describe('roundtrip do asteroidsClassicExample (girar + impulsionar completo)', () => {
+  it('o código gerado volta a virar blocos (sem rawJS), com a nave clássica', () => {
+    const code = compileStatements(asteroidsClassicExample.ir.js, 0)
+    const types = collectTypes(parseJS(code))
+    expect(types.has('rawJS')).toBe(false)
+    for (const expected of [
+      'g2d:createShip',
+      'g2d:createGroup',
+      'g2d:updateEachFrame',
+      'g2d:onKey',
+      'g2d:steerThrust',
+      'g2d:shootFrom',
+      'g2d:spawnAsteroidEdge',
+      'g2d:everySeconds',
+      'g2d:onGroupOverlap',
+      'g2d:onSpriteGroupOverlap',
+      'g2d:pruneOffscreen',
+      'g2d:drawScore',
+      'g2d:setScene',
+      'g2d:sceneIs',
+      'g2d:showScreen',
+      'g2d:restart',
+    ]) {
+      expect(types.has(expected)).toBe(true)
+    }
   })
 })

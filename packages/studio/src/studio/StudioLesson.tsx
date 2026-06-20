@@ -10,7 +10,7 @@ import type { StudioLessonProps } from './types'
  * (member-shell). Para edição autônoma sem conceito de aula, use `<StudioEditor>`.
  *
  * Wrapper fino sobre o `StudioCore`: aplica os DEFAULTS RESTRITOS da aula
- * (terminal/IA/profissional/export desligados) e repassa as props de
+ * (terminal/IA/profissional/export/download desligados) e repassa as props de
  * aprendizado + `activity`. O chamador ainda pode religar item a item via
  * `features` (ex.: o aluno desliga também `extensions`). Renderizar SOMENTE no
  * client (Monaco/Blockly/IndexedDB).
@@ -24,6 +24,7 @@ export function StudioLesson({ features, ...rest }: StudioLessonProps): JSX.Elem
     ai: false,
     professional: false,
     export: false,
+    download: false,
     ...features,
   }
   return <StudioCore {...rest} features={lessonFeatures} />

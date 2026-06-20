@@ -63,6 +63,7 @@ export const CATEGORY_COLORS = {
   html: '#22d3ee',
   css: '#a78bfa',
   dom: '#38bdf8',
+  events: '#f0abfc',
   js: '#fbbf24',
   canvas: '#34d399',
   values: '#2dd4bf',

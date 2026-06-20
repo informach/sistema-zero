@@ -78,7 +78,8 @@ export class RefreshService {
       const profile = await this.profiles.findById(record.activeProfileId)
       if (profile?.belongsTo(user.id) && !profile.isArchived) {
         activeProfileId = profile.id
-        profileClaim = { accountId: user.id, name: profile.name }
+        // Re-deriva a flag a cada rotação → o pai liga/desliga e a próxima carga reflete.
+        profileClaim = { accountId: user.id, name: profile.name, pub: profile.publicProfileEnabled }
       }
     }
 

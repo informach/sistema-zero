@@ -230,7 +230,8 @@ function canvasTag(node: Extract<HTMLNode, { type: 'canvas' }>): string {
   // pelos blocos de Canvas no JavaScript (ex.: canvas.width = largura da janela).
   const w = node.width !== undefined ? ` width="${node.width}"` : ''
   const h = node.height !== undefined ? ` height="${node.height}"` : ''
-  return `<canvas id="${escapeAttr(node.id)}"${w}${h}></canvas>`
+  const cls = node.class ? ` class="${escapeAttr(node.class)}"` : ''
+  return `<canvas id="${escapeAttr(node.id)}"${cls}${w}${h}></canvas>`
 }
 
 function renderNodesWithMap(

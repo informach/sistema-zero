@@ -230,6 +230,24 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     tooltip: 'A posição (em pixels) do clique do mouse. Só funciona dentro de um bloco de clique.',
   },
   {
+    type: 'sz_val_event_key',
+    message0: '%1 do evento',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'PROP',
+        options: [
+          ['a tecla', 'key'],
+          ['o código da tecla', 'code'],
+        ],
+      },
+    ],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'A tecla do evento de teclado. "a tecla" = a letra/seta (ex.: "w", "ArrowUp"); "o código da tecla" = a posição física, independente do idioma (ex.: "KeyW", "Space"). Só funciona dentro de um bloco de evento de teclado.',
+  },
+  {
     type: 'sz_val_vector2d',
     message0: 'vetor 2D x %1 y %2',
     args0: [

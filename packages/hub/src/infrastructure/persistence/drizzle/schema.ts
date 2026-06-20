@@ -143,6 +143,9 @@ export const threads = hub.table(
     // terceiros (privacidade); a vitrine mostra o PRIMEIRO NOME via este snapshot.
     isShowcase: boolean('is_showcase').notNull().default(false),
     authorDisplayName: text('author_display_name'),
+    // Perfil do autor é PÚBLICO (opt-in dos pais, snapshot no create) — o BFF expõe o
+    // link do nome p/ o perfil público só quando true. Default false (segurança infantil).
+    authorPublic: boolean('author_public').notNull().default(false),
     // Capa do projeto (URL pública http(s)) — print do jogo ou capa padrão do admin.
     coverImageUrl: text('cover_image_url'),
     // Idempotência da auto-publicação: hash(perfil:curso:cadeia). UNIQUE (NULLs são
@@ -176,6 +179,9 @@ export const comments = hub.table(
       .notNull()
       .references(() => threads.id, { onDelete: 'cascade' }),
     authorId: uuid('author_id').notNull(),
+    // Snapshot do primeiro nome + flag pública do autor (exibido/clicável no fórum).
+    authorDisplayName: text('author_display_name'),
+    authorPublic: boolean('author_public').notNull().default(false),
     body: text('body').notNull(),
     status: contentStatusEnum('status').notNull().default('visible'),
     replyToId: uuid('reply_to_id'),

@@ -14,4 +14,9 @@ export const {
   submitQuizAttempt,
   getGamification,
   getGamificationReadonly,
+  getAvatarReadonly,
+  getPublicProfile,
+  getRoomReadonly,
+  getMissionsReadonly,
+  getLeagueReadonly,
 } = shell.members

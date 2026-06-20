@@ -25,15 +25,22 @@ export class GetGamificationService {
   ): Promise<GamificationMeView> {
     // XP/streak/badges são do PERFIL (`userId`); o ranking precisa da CONTA
     // (`accountId`) para a pertinência à coorte (acesso da conta na audiência).
+    const now = this.clock()
     const [profile, badges, ranking] = await Promise.all([
       this.repo.getProfile(userId, opts.audience),
       this.repo.listBadges(userId, opts.audience),
-      opts.withRanking ? this.repo.getRanking(userId, accountId, opts.audience) : null,
+      opts.withRanking ? this.repo.getRanking(userId, accountId, opts.audience, now) : null,
     ])
-    const today = localDateSaoPaulo(this.clock())
+    const today = localDateSaoPaulo(now)
     const unlockedBySlug = new Map(badges.map((b) => [b.badgeSlug, b.unlockedAt]))
+    const onVacation =
+      profile?.vacationFrom != null &&
+      profile?.vacationTo != null &&
+      today >= profile.vacationFrom &&
+      today <= profile.vacationTo
     return {
       xp: profile?.xp ?? 0,
+      coins: { balance: profile?.coinBalance ?? 0 },
       streak: {
         current: profile
           ? effectiveStreak(
@@ -41,12 +48,19 @@ export class GetGamificationService {
                 streakCurrent: profile.streakCurrent,
                 streakBest: profile.streakBest,
                 lastActivityDate: profile.lastActivityDate,
+                freezes: profile.streakFreezes,
+                vacationFrom: profile.vacationFrom,
+                vacationTo: profile.vacationTo,
               },
               today,
             )
           : 0,
         best: profile?.streakBest ?? 0,
         activeToday: profile?.lastActivityDate === today,
+        // Contrato guilt-free: a UI mostra "protegido"/"de férias" sem nunca culpar.
+        freezesAvailable: profile?.streakFreezes ?? 0,
+        onVacation,
+        vacationUntil: onVacation ? (profile?.vacationTo ?? null) : null,
       },
       badges: BADGE_SLUGS.map((slug) => ({
         slug,

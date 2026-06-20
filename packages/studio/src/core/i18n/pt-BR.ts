@@ -10,8 +10,11 @@ export const ptBR: Record<string, string> = {
   'topbar.preview': 'Pré-visualizar',
   'topbar.save': 'Salvar',
   'topbar.saving': 'Salvando…',
+  'topbar.download': 'Baixar',
+  'topbar.downloading': 'Baixando…',
+  'topbar.downloadHint': 'Baixar o projeto (.zip) para continuar no VSCode',
   'topbar.extensions': 'Extensões',
-  'topbar.export': 'Exportar',
+  'topbar.export': 'Exportar para publicar',
   'topbar.convertPro': 'Virar profissional',
   'topbar.ai': 'IA',
   'topbar.rename': 'Renomear projeto',
@@ -84,6 +87,19 @@ export const ptBR: Record<string, string> = {
   'projects.importError': 'Não foi possível importar: {reason}',
   'projects.importNotJson':
     'Esse arquivo não parece ser um projeto do Studio. Escolha um arquivo .json que você exportou aqui.',
+  'projects.importWarn.title': 'Projeto importado, mas fique atento:',
+  'projects.importWarn.dismiss': 'Entendi',
+  'projects.importWarn.assets':
+    '{count} imagem(ns) não couberam (limite de tamanho ou de quantidade).',
+  'projects.importWarn.extraFiles': '{count} arquivo(s) extra(s) não couberam.',
+  'projects.importWarn.extensions':
+    '{count} extensão(ões) foram ignoradas (pedem permissões não liberadas).',
+  'projects.importWarn.blocks':
+    'Os blocos não foram carregados porque o projeto usa um recurso que esta versão não reconhece ({reason}). O código foi mantido.',
+  'projects.importWarn.program':
+    'Parte da programação salva não pôde ser lida e o projeto abriu vazio.',
+  'projects.importWarn.proDowngrade':
+    'Projeto profissional foi aberto como clássico (a estrutura de pastas não pôde ser lida).',
 
   'editor.fontSize.increase': 'Aumentar fonte do editor',
   'editor.fontSize.decrease': 'Diminuir fonte do editor',

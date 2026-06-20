@@ -22,6 +22,7 @@ import { ResetPasswordService } from '../../src/application/password-reset/reset
 import { ArchiveProfileService } from '../../src/application/profiles/archive-profile.service'
 import { CreateProfileService } from '../../src/application/profiles/create-profile.service'
 import { ExitProfileSessionService } from '../../src/application/profiles/exit-profile-session.service'
+import { GetPublicProfileService } from '../../src/application/profiles/get-public-profile.service'
 import { ListProfilesService } from '../../src/application/profiles/list-profiles.service'
 import { SelectProfileService } from '../../src/application/profiles/select-profile.service'
 import { UpdateProfileDetailsService } from '../../src/application/profiles/update-profile.service'
@@ -161,6 +162,7 @@ function buildApp(
   const archiveProfile = new ArchiveProfileService(profilesRepo, () => new Date())
   const selectProfile = new SelectProfileService(profilesRepo, users, authTokens)
   const exitProfileSession = new ExitProfileSessionService(users, fakeHasher, authTokens)
+  const getPublicProfile = new GetPublicProfileService(profilesRepo)
 
   const env = {
     MAX_REQUEST_BODY_BYTES: 16 * 1024,
@@ -208,6 +210,7 @@ function buildApp(
       archiveProfile,
       selectProfile,
       exitProfileSession,
+      getPublicProfile,
       trustProxy: false,
       trustedProxyHops: 1,
       internalToken: INTERNAL_TOKEN,
@@ -1535,6 +1538,7 @@ describe('Auth — perfis (estilo Netflix)', () => {
     avatarUrl: string | null
     whatsapp: string | null
     birthDate: string | null
+    publicProfileEnabled: boolean
     sortOrder: number
   }
 
@@ -1688,6 +1692,52 @@ describe('Auth — perfis (estilo Netflix)', () => {
     ).toBe(400)
   })
 
+  test('perfil público: a CONTA liga/desliga; a sessão de PERFIL é barrada (403); rota interna devolve nome+flag', async () => {
+    const { app, allowance } = buildApp()
+    allowance.maxProfiles = 1
+    const created = (await (
+      await app.handle(req('POST', '/auth/profiles', gw(), { name: 'Sofia' }))
+    ).json()) as { profile: Profile }
+    const id = created.profile.id
+    expect(created.profile.publicProfileEnabled).toBe(false) // nasce privado (opt-in)
+
+    // Privado por padrão: a rota S2S também não devolve o nome.
+    const privateProfile = await app.handle(
+      req('GET', `/auth/internal/profiles/${id}/public`, { 'x-internal-token': INTERNAL_TOKEN }),
+    )
+    expect(privateProfile.status).toBe(404)
+
+    // A conta (responsável) liga o perfil público → ok.
+    const patched = (await (
+      await app.handle(req('PATCH', `/auth/profiles/${id}`, gw(), { publicProfileEnabled: true }))
+    ).json()) as { profile: Profile }
+    expect(patched.profile.publicProfileEnabled).toBe(true)
+
+    // Sessão de PERFIL (a criança): tentar mexer na visibilidade → 403 (só os pais).
+    const profileSession = { 'x-auth-user-id': id, 'x-auth-account-id': ACCOUNT }
+    expect(
+      (
+        await app.handle(
+          req('PATCH', `/auth/profiles/${id}`, gw(id, profileSession), {
+            publicProfileEnabled: false,
+          }),
+        )
+      ).status,
+    ).toBe(403)
+
+    // Rota interna S2S: nome + flag somente com opt-in (sem PII); token errado → 401.
+    const bad = await app.handle(
+      req('GET', `/auth/internal/profiles/${id}/public`, { 'x-internal-token': 'errado' }),
+    )
+    expect(bad.status).toBe(401)
+    const ok = (await (
+      await app.handle(
+        req('GET', `/auth/internal/profiles/${id}/public`, { 'x-internal-token': INTERNAL_TOKEN }),
+      )
+    ).json()) as { name: string; publicProfileEnabled: boolean }
+    expect(ok).toEqual({ name: 'Sofia', publicProfileEnabled: true })
+  })
+
   test('guardas de origem: sem token interno → 401; sem identidade → 401', async () => {
     const { app, allowance } = buildApp()
     allowance.maxProfiles = 2
@@ -1757,7 +1807,7 @@ describe('Auth — sessão de perfil (PR2)', () => {
     const body = (await res.json()) as { tokens: { accessToken: string } }
     const payload = decodeJwt(body.tokens.accessToken)
     expect(payload.sub).toBe(PROFILE_ID)
-    expect(payload.pfl).toEqual({ accountId, name: 'Sofia' })
+    expect(payload.pfl).toEqual({ accountId, name: 'Sofia', pub: false })
   })
 
   test('sessão de perfil: edita o PRÓPRIO perfil; NÃO cria/arquiva nem edita irmãos', async () => {

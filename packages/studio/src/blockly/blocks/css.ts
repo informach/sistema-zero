@@ -378,14 +378,16 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   // ---- Responsividade (media query) ----
   {
     type: 'sz_css_media_query',
-    message0: 'Responsivo: quando a largura da tela for %1 %2 px',
+    message0: 'Responsivo: quando a tela tiver %1 %2 px',
     args0: [
       {
         type: 'field_dropdown',
         name: 'DIR',
         options: [
-          ['no máximo', 'max-width'],
-          ['no mínimo', 'min-width'],
+          ['largura máxima', 'max-width'],
+          ['largura mínima', 'min-width'],
+          ['altura máxima', 'max-height'],
+          ['altura mínima', 'min-height'],
         ],
       },
       { type: 'field_number', name: 'PX', value: 768, min: 0 },
@@ -397,6 +399,18 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     colour: C,
     tooltip:
       'Regras CSS que só valem quando a tela é menor (no máximo) ou maior (no mínimo) que o tamanho dado. Use para responsividade. Coloque blocos de CSS dentro.',
+  },
+
+  // ---- Fonte do Google ----
+  {
+    type: 'sz_css_google_font',
+    message0: 'usar a fonte do Google %1',
+    args0: [{ type: 'field_input', name: 'FONT', text: 'Press Start 2P' }],
+    previousStatement: 'CSSEntry',
+    nextStatement: 'CSSEntry',
+    colour: C,
+    tooltip:
+      'Importa uma fonte do Google Fonts (ex.: "Press Start 2P"). Depois aplique com uma regra de font-family no body.',
   },
 
   // ---- CSS moderno ----
@@ -501,7 +515,11 @@ export const CSS_GROUPS: { name: string; colour: string; types: string[] }[] = [
       'sz_css_grid',
     ],
   },
-  { name: '✨ Efeitos', colour: '#e879f9', types: ['sz_css_transition', 'sz_css_keyframes'] },
+  {
+    name: '✨ Efeitos',
+    colour: '#e879f9',
+    types: ['sz_css_transition', 'sz_css_keyframes', 'sz_css_google_font'],
+  },
   { name: '📱 Responsivo', colour: '#f472b6', types: ['sz_css_media_query'] },
 ]
 

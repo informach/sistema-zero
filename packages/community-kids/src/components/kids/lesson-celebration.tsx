@@ -1,7 +1,7 @@
 'use client'
 
 import { ProgressBar } from '@sistemazero/member-shell/components/progress-bar'
-import { Flame, Gift, Sparkles, Trophy } from 'lucide-react'
+import { Coins, Flame, Gift, Sparkles, Trophy } from 'lucide-react'
 import Link from 'next/link'
 import { type CSSProperties, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
@@ -227,9 +227,10 @@ function PublishToMural({
   )
 }
 
-/** Seção de recompensas REAIS do backend: +XP, fogo do streak, baú e badges. */
+/** Seção de recompensas REAIS do backend: +XP, +moedas, fogo do streak, baú e badges. */
 function GamificationDeltaPanel({ gamification }: { gamification: GamificationDelta }) {
   const { xpAwarded, streak, unitCompleted, badgesUnlocked } = gamification
+  const coinsAwarded = gamification.coinsAwarded ?? 0
   const badges = badgesUnlocked
     .map((b) => ({ slug: b.slug, info: badgeInfo(b.slug) }))
     .filter((b): b is { slug: string; info: NonNullable<ReturnType<typeof badgeInfo>> } =>
@@ -242,6 +243,11 @@ function GamificationDeltaPanel({ gamification }: { gamification: GamificationDe
         <span className="kid-pop inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 [background-image:var(--sz-gradient)] [font-family:var(--font-display)] font-bold text-(--sz-primary-fg) text-base">
           <Sparkles className="size-4" />+{xpAwarded} XP
         </span>
+        {coinsAwarded > 0 ? (
+          <span className="kid-pop inline-flex items-center gap-1.5 rounded-full bg-(--kids-lime-tint) px-4 py-1.5 [font-family:var(--font-display)] font-bold text-base text-foreground">
+            <Coins className="size-4" />+{coinsAwarded}
+          </span>
+        ) : null}
         <span
           className={cn(
             'inline-flex items-center gap-1.5 rounded-full border-2 px-4 py-1.5 [font-family:var(--font-display)] font-bold text-sm',
@@ -254,6 +260,12 @@ function GamificationDeltaPanel({ gamification }: { gamification: GamificationDe
           {streak.current} {streak.current === 1 ? 'dia' : 'dias'}
         </span>
       </div>
+
+      {gamification.coinsCapped ? (
+        <p className="text-muted-foreground text-xs">
+          Você já pegou o máximo de moedas de hoje — amanhã tem mais! 😄
+        </p>
+      ) : null}
 
       {unitCompleted ? (
         <p className="inline-flex items-center gap-1.5 font-semibold text-sm">

@@ -166,20 +166,30 @@ anexo (o servidor recusaria).
    marca (letras desenhadas em paths, nunca `<text>`). Favicons herdados do community DE
    PROPÓSITO (decisão: mesmo favicon).
 
-## Gamificação estilo Duolingo (Fase 2 — IMPLEMENTADA 11/06/2026)
+## Gamificação estilo Duolingo (Fase 2 + expansão Zappy/avatar — 6 fases)
 
-Streak diário + XP + badges + baús, **estado 100% no members** (tabelas/regras/idempotência no
-[CLAUDE.md de lá](../members/CLAUDE.md), §Gamificação — fonte da verdade do contrato). Decisões
-do usuário: **SEM corações/vidas**; XP = aula 10 · quiz aprovado 20+bônus por nota (cap +10) ·
-baú de unidade 25; ligas/lojinha = fora. Streak em **America/Sao_Paulo**, SEMPRE no backend;
-conta qualquer atividade que rende XP.
+> **Fonte da verdade do contrato/regras/idempotência:** o [CLAUDE.md do members](../members/CLAUDE.md)
+> (§Gamificação) e a doc transversal **[`../../docs/gamificacao.md`](../../docs/gamificacao.md)**
+> (visão das 6 fases ponta a ponta). Aqui fica só a APRESENTAÇÃO kids.
+
+Streak diário + XP + badges + baús (núcleo, IMPLEMENTADO 11/06/2026), **estado 100% no members**.
+Decisões do usuário: **SEM corações/vidas**; XP = aula 10 · quiz aprovado 20+bônus por nota (cap
++10) · baú de unidade 25. Streak em **America/Sao_Paulo** (dia vira ~03:00Z), SEMPRE no backend;
+conta qualquer atividade que rende XP (MARCOS de `amount 0` destravam badge mas NÃO movem streak).
+
+A **expansão (6 fases)** transformou a §"ligas/lojinha = fora" em recursos reais: moeda **Zappy**
+(carteira/sink cosmético), **avatar** customizável, **quarto** virtual, **missões** diárias/semanais,
+**proteção de sequência** (férias + protetores/freezes), **liga** semanal e **perfil público** +
+nomes clicáveis no Mural + **badges de maestria** (Estúdio, poupador). Tudo segregado POR VITRINE
+(kids ≠ adult) e o members continua sendo o portão único.
 
 **Fluxo de dados:** o delta vem NA RESPOSTA das ações (complete/quiz →
-`gamification: {xpAwarded, totalXp, streak, badgesUnlocked[], unitCompleted}`; `null` = award
-falhou, fail-open — a UI degrada para o comportamento antigo) + `GET /members/gamification/me`
-p/ widgets. Server Components usam **`getGamificationReadonly()`** (best-effort, mesmo padrão
-do avatar: 401 → widget some); rota BFF `/api/members/gamification/me` = 1 linha sobre
-`shell.routes.gamificationMe`. Rota nova no gateway: `members-gamification-me`.
+`gamification: {xpAwarded, totalXp, streak, badgesUnlocked[], unitCompleted}` — `streak.extended`
+acende o fogo, marcos de streak rendem moeda; `null` = award falhou, fail-open — a UI degrada para o
+comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Components usam
+**`getGamificationReadonly()`** (best-effort, mesmo padrão do avatar: 401 → widget some); rota BFF
+`/api/members/gamification/me` = 1 linha sobre `shell.routes.gamificationMe`. Rota nova no gateway:
+`members-gamification-me`.
 
 **Onde a UI vive (tudo com tokens da marca + `prefers-reduced-motion`):**
 - `badges.ts` — APRESENTAÇÃO das badges (`BADGE_INFO` título/copy/ícone por `BadgeSlug`); o
@@ -200,7 +210,31 @@ do avatar: 401 → widget some); rota BFF `/api/members/gamification/me` = 1 lin
   `--sz-hot`) quando `activeToday` + XP total. O layout busca via `Promise.all` com o avatar.
 - `streak-card.tsx` — card da home (só com cursos liberados E gamificação disponível).
 - `badge-showcase.tsx` — vitrine do perfil: catálogo completo, bloqueada = tracejada+cadeado,
-  desbloqueada = cor da marca + data.
+  desbloqueada = cor da marca + data. Inclui as **badges de MAESTRIA** da expansão
+  (`studio-first`/`-master-3`/`-master-10` do Estúdio; `coins-saver-300`/`-1000` de poupador de
+  Zappy) — copy/ícone em `badges.ts`, detecção no members.
+- **Avatar (DiceBear) — `kids-avatar.tsx` + `avatar-editor.tsx`:** retrato customizável; o editor
+  monta/compra peças cosméticas com moedas **Zappy** (`POST /api/members/avatar/parts/:id/buy`,
+  cobrança charge-first idempotente no members). O `kids-avatar.tsx` é o renderer reusado em todo
+  lugar (menu, quarto, perfil público, cards). Catálogo espelhado: members = existência/preço/posse,
+  kids = apresentação.
+- **Quarto virtual — `room/room-builder.tsx` + `room/room-canvas.tsx`** (rota `/quarto`): sink
+  cosmético das Zappy; grade 12×8, tema de fundo + móveis/decoração/plantas/luzes arrastáveis + 1
+  pet animado. `GET/PUT /api/members/room` (estado last-write-wins) + `POST
+  /api/members/room/items/:id/buy`. O **members é o único portão** (`canonicalizeRoomState` descarta
+  o não-possuído/fora-da-grade na leitura E na escrita); o `room-catalog.ts` do kids é só
+  apresentação (labelPt/emoji/anim/bg) e **DEVE casar por id + w/h** com o do members. ⚠️ arcades no
+  quarto foram DESCARTADOS — cosmético puro, sem efeito de jogo.
+- **Missões diárias/semanais — `missions-panel.tsx`** (na home): painel estilo Duolingo com as
+  missões do dia ("Hoje") e da semana ("Esta semana"); busca `GET
+  /api/members/gamification/missions/me` e resgata `POST /api/members/gamification/missions/:slug/claim`
+  (idempotente; **o servidor REVALIDA a conclusão** — o cliente nunca decide). Prêmio = XP + Zappy
+  (com teto diário); claim NÃO move streak. Degrada em silêncio se a gamificação estiver indisponível.
+- **Proteção de sequência — `streak-protection.tsx`** (no perfil): mostra/gerencia **férias**
+  (janela que não exige presença) e **protetores/freezes** (1 grátis por mês + compráveis com Zappy,
+  teto 5) — a sequência só QUEBRA quando NEM férias NEM freezes cobrem o gap.
+- **Liga semanal — `league-board.tsx`** (no perfil): ranking da coorte da semana (sobe/desce de
+  divisão), a versão real do antigo backlog "ligas".
 - **Perfil = "Meu perfil" da CRIANÇA (full review F1, 06/2026):** a página edita o PRÓPRIO
   PERFIL (não a conta). 1 card de identidade — foto CLICÁVEL (único caminho de troca, via
   `/api/profiles/:id/avatar`), nome + telefone do perfil + **colocação no ranking kids**
@@ -208,10 +242,17 @@ do avatar: 401 → widget some); rota BFF `/api/members/gamification/me` = 1 lin
   adult/kids separados) — e botão "Editar perfil" abrindo um Dialog com nome (≥ 3) + telefone,
   que PATCHa `/api/profiles/:id`. O perfil ativo é resolvido de `listReadonly()` por `id ==
   session.id`. **E-mail e SENHA da conta saíram daqui** (são da CONTA): a troca de senha vive na
-  **Área dos pais** (`/perfis`, sessão da conta → `ParentPasswordChange`).
+  **Área dos pais** (`/perfis`, sessão da conta → `ParentPasswordChange`). A página também HOSPEDA o
+  `badge-showcase`, a `streak-protection` (férias/protetores) e o `league-board` (liga da semana).
+- **Perfil PÚBLICO — `public-profile-view.tsx`** (rota `/crianca/[profileId]`): vitrine pública de
+  uma criança (avatar + apelido + badges + projetos do Mural), SEM dados sensíveis. Os **nomes do
+  autor no Mural viraram clicáveis** (`kids-space-view-client.tsx`: "por {authorDisplayName}" → link
+  p/ `/crianca/<profileId>`), respeitando a redação de `authorId` de terceiros (o link usa o
+  identificador público do perfil, não o id interno).
 
-**Backlog da gamificação:** ligas (precisa de massa de alunos), revisão de aula estende streak?,
-vitrine no community adulto (campos já chegam — decisão de produto).
+**Backlog da gamificação:** revisão de aula estende streak? · vitrine de gamificação no community
+adulto (campos já chegam — decisão de produto). *(Ligas, lojinha/Zappy, avatar, quarto, missões e
+proteção de sequência saíram do backlog — entregues na expansão de 6 fases.)*
 
 ## Full review (segurança + desempenho — lente infantil) — 19/06/2026
 

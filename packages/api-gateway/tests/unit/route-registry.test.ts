@@ -15,6 +15,36 @@ const registry = new RouteRegistry([
   r({ id: 'members-courses', methods: ['GET'], pathPattern: '/members/courses' }),
   r({ id: 'members-course-detail', methods: ['GET'], pathPattern: '/members/courses/:slug' }),
   r({ id: 'gamification-me', methods: ['GET'], pathPattern: '/members/gamification/me' }),
+  r({ id: 'avatar-get', methods: ['GET'], pathPattern: '/members/avatar' }),
+  r({ id: 'avatar-equip', methods: ['PUT'], pathPattern: '/members/avatar' }),
+  r({ id: 'avatar-buy', methods: ['POST'], pathPattern: '/members/avatar/parts/:partId/buy' }),
+  r({ id: 'room-get', methods: ['GET'], pathPattern: '/members/room' }),
+  r({ id: 'room-save', methods: ['PUT'], pathPattern: '/members/room' }),
+  r({ id: 'room-buy', methods: ['POST'], pathPattern: '/members/room/items/:itemId/buy' }),
+  r({ id: 'missions-me', methods: ['GET'], pathPattern: '/members/gamification/missions/me' }),
+  r({
+    id: 'mission-claim',
+    methods: ['POST'],
+    pathPattern: '/members/gamification/missions/:slug/claim',
+  }),
+  r({
+    id: 'freeze-buy',
+    methods: ['POST'],
+    pathPattern: '/members/gamification/streak-freeze/buy',
+  }),
+  r({ id: 'vacation', methods: ['PUT'], pathPattern: '/members/gamification/vacation' }),
+  r({ id: 'league-me', methods: ['GET'], pathPattern: '/members/gamification/league/me' }),
+  r({
+    id: 'members-profile-public',
+    methods: ['GET'],
+    pathPattern: '/members/profiles/:profileId/public',
+  }),
+  r({ id: 'profile-select', methods: ['POST'], pathPattern: '/auth/profiles/:id/select' }),
+  r({
+    id: 'auth-internal-profile-public',
+    methods: ['GET'],
+    pathPattern: '/auth/internal/profiles/:id/public',
+  }),
   r({ id: 'user-get', methods: ['GET'], pathPattern: '/auth/admin/users/:id' }),
   r({
     id: 'user-impersonate',
@@ -81,6 +111,55 @@ describe('RouteRegistry', () => {
     )
     // Sem POST/PUT declarados → método não exposto.
     expect(registry.resolve('POST', '/members/gamification/me', 'v1')).toBeUndefined()
+  })
+
+  test('/members/avatar resolve por método; /parts/:id/buy (4 seg) não colide', () => {
+    expect(registry.resolve('GET', '/members/avatar', 'v1')?.route.id).toBe('avatar-get')
+    expect(registry.resolve('PUT', '/members/avatar', 'v1')?.route.id).toBe('avatar-equip')
+    const buy = registry.resolve('POST', '/members/avatar/parts/cabelo-cacheado/buy', 'v1')
+    expect(buy?.route.id).toBe('avatar-buy')
+    expect(buy?.params.partId).toBe('cabelo-cacheado')
+    // 2 segmentos (avatar) nunca caem no buy de 4 segmentos.
+    expect(registry.resolve('POST', '/members/avatar', 'v1')).toBeUndefined()
+  })
+
+  test('/members/room resolve por método; /items/:id/buy (4 seg) não colide', () => {
+    expect(registry.resolve('GET', '/members/room', 'v1')?.route.id).toBe('room-get')
+    expect(registry.resolve('PUT', '/members/room', 'v1')?.route.id).toBe('room-save')
+    const buy = registry.resolve('POST', '/members/room/items/sofa/buy', 'v1')
+    expect(buy?.route.id).toBe('room-buy')
+    expect(buy?.params.itemId).toBe('sofa')
+  })
+
+  test('missões: /missions/me (estático) vence /missions/:slug/claim; rotas distintas', () => {
+    expect(registry.resolve('GET', '/members/gamification/missions/me', 'v1')?.route.id).toBe(
+      'missions-me',
+    )
+    const claim = registry.resolve('POST', '/members/gamification/missions/daily-quiz/claim', 'v1')
+    expect(claim?.route.id).toBe('mission-claim')
+    expect(claim?.params.slug).toBe('daily-quiz')
+    expect(
+      registry.resolve('POST', '/members/gamification/streak-freeze/buy', 'v1')?.route.id,
+    ).toBe('freeze-buy')
+    expect(registry.resolve('PUT', '/members/gamification/vacation', 'v1')?.route.id).toBe(
+      'vacation',
+    )
+    expect(registry.resolve('GET', '/members/gamification/league/me', 'v1')?.route.id).toBe(
+      'league-me',
+    )
+  })
+
+  test('perfil público: /members/profiles/:id/public e /auth/internal/profiles/:id/public', () => {
+    const m = registry.resolve('GET', '/members/profiles/abc-123/public', 'v1')
+    expect(m?.route.id).toBe('members-profile-public')
+    expect(m?.params.profileId).toBe('abc-123')
+    // O auth-internal (5 seg) não colide com /auth/profiles/:id/select (4 seg).
+    const a = registry.resolve('GET', '/auth/internal/profiles/abc-123/public', 'v1')
+    expect(a?.route.id).toBe('auth-internal-profile-public')
+    expect(a?.params.id).toBe('abc-123')
+    expect(registry.resolve('POST', '/auth/profiles/abc-123/select', 'v1')?.route.id).toBe(
+      'profile-select',
+    )
   })
 
   test('showcase-thread-studio (kid-driven) NÃO colide com showcase-thread', () => {

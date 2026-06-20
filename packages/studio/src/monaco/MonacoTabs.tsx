@@ -467,7 +467,10 @@ export function MonacoTabs({
   }
 
   return (
-    <div ref={rootRef} className={['flex h-full flex-col', className].filter(Boolean).join(' ')}>
+    <div
+      ref={rootRef}
+      className={['flex h-full min-h-0 flex-col', className].filter(Boolean).join(' ')}
+    >
       <div className="flex items-stretch border-b border-sz-border bg-sz-panel">
         <div className="flex flex-1 overflow-x-auto">
           {files.map((f) => {
@@ -527,7 +530,7 @@ export function MonacoTabs({
           <div className="flex items-center border-l border-sz-border px-2">{tabsRightSlot}</div>
         )}
       </div>
-      <div className="flex-1">
+      <div className="min-h-0 flex-1">
         <Editor
           height="100%"
           theme={monacoThemeName(theme)}

@@ -2,6 +2,9 @@ import { randomUUID } from 'node:crypto'
 import { canonicalHmacMessage, signHmac } from '@sistemazero/core/security'
 import { CheckAccessService } from '../src/application/access/check-access.service'
 import { AccessCheckService } from '../src/application/access-check/access-check.service'
+import { BuyAvatarPartService } from '../src/application/avatar/buy-avatar-part.service'
+import { EquipAvatarService } from '../src/application/avatar/equip-avatar.service'
+import { GetAvatarService } from '../src/application/avatar/get-avatar.service'
 import { GetChildrenStatsService } from '../src/application/children-stats/get-children-stats.service'
 import {
   AttachmentAdminService,
@@ -11,7 +14,12 @@ import {
   ModuleAdminService,
 } from '../src/application/content-admin/content-admin.service'
 import { AwardGamificationService } from '../src/application/gamification/award-gamification.service'
+import { BuyStreakFreezeService } from '../src/application/gamification/buy-streak-freeze.service'
+import { ClaimMissionService } from '../src/application/gamification/claim-mission.service'
 import { GetGamificationService } from '../src/application/gamification/get-gamification.service'
+import { GetLeagueService } from '../src/application/gamification/get-league.service'
+import { GetMissionsService } from '../src/application/gamification/get-missions.service'
+import { SetVacationService } from '../src/application/gamification/set-vacation.service'
 import { GetAttachmentDownloadService } from '../src/application/get-attachment-download/get-attachment-download.service'
 import { GetCourseProgressService } from '../src/application/get-course-progress/get-course-progress.service'
 import { GetCourseRatingService } from '../src/application/get-course-rating/get-course-rating.service'
@@ -29,7 +37,11 @@ import { ListMyCoursesService } from '../src/application/list-my-courses/list-my
 import { ManageEntitlementService } from '../src/application/manage-entitlement/manage-entitlement.service'
 import { MarkLessonCompleteService } from '../src/application/mark-lesson-complete/mark-lesson-complete.service'
 import { GetProfileAllowanceService } from '../src/application/profile-allowance/get-profile-allowance.service'
+import { GetPublicProfileService } from '../src/application/profiles/get-public-profile.service'
 import { RevokeEntitlementService } from '../src/application/revoke-entitlement/revoke-entitlement.service'
+import { BuyRoomItemService } from '../src/application/room/buy-room-item.service'
+import { GetRoomService } from '../src/application/room/get-room.service'
+import { SaveRoomService } from '../src/application/room/save-room.service'
 import { SaveCourseRatingService } from '../src/application/save-course-rating/save-course-rating.service'
 import { SaveVideoPositionService } from '../src/application/save-video-position/save-video-position.service'
 import { StudioSubmissionsAdminService } from '../src/application/studio-submissions-admin/studio-submissions-admin.service'
@@ -43,6 +55,7 @@ import type { Env } from '../src/infrastructure/config/env'
 import { createServer } from '../src/interfaces/http/server'
 import {
   FakeCatalogGateway,
+  InMemoryAvatarRepository,
   InMemoryCourseRatingRepository,
   InMemoryCourseRepository,
   InMemoryEntitlementRepository,
@@ -50,6 +63,7 @@ import {
   InMemoryProcessedWebhookRepository,
   InMemoryProgressRepository,
   InMemoryQuizAttemptRepository,
+  InMemoryRoomRepository,
   InMemoryStudioSubmissionRepository,
   InMemoryVideoPositionRepository,
   silentLogger,
@@ -78,6 +92,8 @@ export function buildApp(
   const studioSubmissions = new InMemoryStudioSubmissionRepository(courses)
   const ratings = new InMemoryCourseRatingRepository()
   const gamification = new InMemoryGamificationRepository({ entitlements, courses })
+  const avatar = new InMemoryAvatarRepository()
+  const room = new InMemoryRoomRepository()
   const processed = new InMemoryProcessedWebhookRepository()
   const catalog = new FakeCatalogGateway()
 
@@ -157,12 +173,25 @@ export function buildApp(
       getStudioCarryover: new GetStudioCarryoverService(checkAccess, courses, studioSubmissions),
       getShowcasePayload: new GetShowcasePayloadService(checkAccess, courses, studioSubmissions),
       getGamification: new GetGamificationService(gamification, clock),
+      getMissions: new GetMissionsService(gamification, clock),
+      claimMission: new ClaimMissionService(gamification, clock),
+      buyStreakFreeze: new BuyStreakFreezeService(gamification, clock),
+      setVacation: new SetVacationService(gamification, clock),
+      getLeague: new GetLeagueService(gamification, clock),
       childrenStats: new GetChildrenStatsService(
         gamification,
         courses,
         progress,
         studioSubmissions,
+        clock,
       ),
+      getAvatar: new GetAvatarService(avatar, gamification),
+      buyAvatarPart: new BuyAvatarPartService(avatar, gamification, clock),
+      equipAvatar: new EquipAvatarService(avatar, clock),
+      getPublicProfile: new GetPublicProfileService(gamification, avatar, room, clock),
+      getRoom: new GetRoomService(room, gamification),
+      saveRoom: new SaveRoomService(room, clock),
+      buyRoomItem: new BuyRoomItemService(room, gamification, clock),
       internalToken: opts.internalToken,
     },
     webhooks: {
@@ -222,6 +251,8 @@ export function buildApp(
     studioSubmissions,
     ratings,
     gamification,
+    avatar,
+    room,
     processed,
     catalog,
     clockRef,

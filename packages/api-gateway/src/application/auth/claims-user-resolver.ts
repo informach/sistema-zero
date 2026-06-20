@@ -31,6 +31,9 @@ export function createClaimsUserResolver(): UserResolver {
       const pflObj = pfl && typeof pfl === 'object' ? (pfl as Record<string, unknown>) : undefined
       const accountId = pflObj ? str(pflObj.accountId) : undefined
       const profileName = pflObj ? str(pflObj.name) : undefined
+      // Perfil PÚBLICO (opt-in dos pais — claim `pfl.pub`): vira x-auth-profile-public.
+      // Definido (true/false) só em sessão de perfil; o hub o usa p/ decidir o link do autor.
+      const profilePublic = pflObj ? pflObj.pub === true : undefined
 
       // Sessão de impersonação: `act.sub` = admin navegando como o usuário (vira
       // x-auth-impersonator-id — o upstream preserva o vínculo ao derivar sessões).
@@ -49,6 +52,7 @@ export function createClaimsUserResolver(): UserResolver {
         ...(str(claims.signupSource) ? { signupSource: str(claims.signupSource) } : {}),
         ...(accountId ? { accountId } : {}),
         ...(profileName ? { profileName } : {}),
+        ...(profilePublic !== undefined ? { profilePublic } : {}),
         ...(impersonatorId ? { impersonatorId } : {}),
       }
       return user

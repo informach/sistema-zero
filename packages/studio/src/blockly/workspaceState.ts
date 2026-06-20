@@ -260,7 +260,9 @@ function htmlNodeToBlockInner(node: SZIR['html'][number]): SerializedBlocklyBloc
     // width/height (ex.: `<canvas width=200 height=100>` vindo do HTML), os
     // guardamos no `data` do bloco (mesma estratégia do `extraData`) para que o
     // round-trip blocos→código não os perca. `buildIR` os recupera de `data`.
-    const built = block('sz_html_canvas', { ID: node.id }, {}, node.__id)
+    const canvasFields: Record<string, string> = { ID: node.id }
+    if (node.class) canvasFields.CLASS = node.class
+    const built = block('sz_html_canvas', canvasFields, {}, node.__id)
     const extra: Record<string, number> = {}
     if (node.width !== undefined) extra.width = node.width
     if (node.height !== undefined) extra.height = node.height
@@ -399,6 +401,9 @@ function cssEntryToBlocks(entry: CSSEntry): SerializedBlocklyBlock[] {
   }
   if ('type' in entry && entry.type === 'keyframes') {
     return [keyframesToBlock(entry)]
+  }
+  if ('type' in entry && entry.type === 'googleFont') {
+    return [block('sz_css_google_font', { FONT: entry.family }, {}, entry.__id)]
   }
 
   const blocks: SerializedBlocklyBlock[] = []
@@ -651,6 +656,25 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
           stmt.__id,
         )
       }
+      // Teclado global → "Quando apertar/soltar a tecla" (corpo embutido).
+      if (stmt.event === 'keydown' || stmt.event === 'keyup') {
+        return block(
+          'sz_js_on_key',
+          { WHEN: stmt.event },
+          { DO: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
+      }
+      // Eventos globais sem alvo de elemento (mouse na tela / janela).
+      const globalMap: Partial<Record<string, string>> = {
+        mousemove: 'sz_js_on_mousemove',
+        load: 'sz_js_on_load',
+        resize: 'sz_js_on_resize',
+      }
+      const globalType = globalMap[stmt.event]
+      if (globalType) {
+        return block(globalType, {}, { DO: statementsToBlocks(stmt.body) }, stmt.__id)
+      }
       const map: Partial<Record<string, string>> = {
         click: 'sz_js_on_click',
         mouseover: 'sz_js_on_mouseover',
@@ -839,6 +863,30 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       return vs === null
         ? rawJSBlock(stmt)
         : block('sz_js_set_interval', {}, { DO: statementsToBlocks(stmt.body) }, stmt.__id, vs)
+    }
+    case 'setTimeoutSeconds': {
+      const vs = valueBlocks({ S: stmt.delay })
+      return vs === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_js_set_timeout_seconds',
+            {},
+            { DO: statementsToBlocks(stmt.body) },
+            stmt.__id,
+            vs,
+          )
+    }
+    case 'setIntervalSeconds': {
+      const vs = valueBlocks({ S: stmt.delay })
+      return vs === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_js_set_interval_seconds',
+            {},
+            { DO: statementsToBlocks(stmt.body) },
+            stmt.__id,
+            vs,
+          )
     }
     case 'canvasSetup':
       return block(
@@ -1534,6 +1582,40 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         { BODY: statementsToBlocks(stmt.body) },
         stmt.__id,
       )
+    case 'g2d:steerThrust':
+      return block(
+        'sz_g2d_steer_thrust',
+        { SPRITE: stmt.spriteVar, SPEED: stmt.speed, TURN: stmt.turn },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:rotateSprite':
+      return block('sz_g2d_rotate_sprite', { SPRITE: stmt.spriteVar, DEG: stmt.deg }, {}, stmt.__id)
+    case 'g2d:pointSprite':
+      return block('sz_g2d_point_sprite', { SPRITE: stmt.spriteVar, DEG: stmt.deg }, {}, stmt.__id)
+    case 'g2d:thrust':
+      return block('sz_g2d_thrust', { SPRITE: stmt.spriteVar, FORCE: stmt.force }, {}, stmt.__id)
+    case 'g2d:applyFriction':
+      return block(
+        'sz_g2d_apply_friction',
+        { SPRITE: stmt.spriteVar, FACTOR: stmt.factor },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:shootFrom':
+      return block(
+        'sz_g2d_shoot_from',
+        { SPRITE: stmt.spriteVar, GROUP: stmt.groupVar, SPEED: stmt.speed, COLOR: stmt.color },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:spawnAsteroidEdge':
+      return block(
+        'sz_g2d_spawn_asteroid_edge',
+        { GROUP: stmt.groupVar, SIZE: stmt.size, COLOR: stmt.color, SPEED: stmt.speed },
+        {},
+        stmt.__id,
+      )
     case 'g2d:jumpOnGround':
       return block(
         'sz_g2d_jump_on_ground',
@@ -1646,6 +1728,142 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         { BODY: statementsToBlocks(stmt.body) },
         stmt.__id,
       )
+    case 'g3d:createBlock':
+      return block(
+        'sz_g3d_create_block',
+        {
+          NAME: stmt.varName,
+          WORLD: stmt.worldVar,
+          W: stmt.width,
+          H: stmt.height,
+          D: stmt.depth,
+          COLOR: stmt.color,
+        },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:setVelocity': {
+      const x = exprToValueBlock(stmt.x)
+      const y = exprToValueBlock(stmt.y)
+      const z = exprToValueBlock(stmt.z)
+      if (!x || !y || !z) return rawJSBlock(stmt)
+      return block('sz_g3d_set_velocity', { OBJ: stmt.objVar }, {}, stmt.__id, { X: x, Y: y, Z: z })
+    }
+    case 'g3d:jump': {
+      const force = exprToValueBlock(stmt.force)
+      if (!force) return rawJSBlock(stmt)
+      return block('sz_g3d_jump', { OBJ: stmt.objVar }, {}, stmt.__id, { FORCE: force })
+    }
+    case 'g3d:setScale': {
+      const factor = exprToValueBlock(stmt.factor)
+      if (!factor) return rawJSBlock(stmt)
+      return block('sz_g3d_set_scale', { OBJ: stmt.objVar }, {}, stmt.__id, { FACTOR: factor })
+    }
+    case 'g3d:applyGravity':
+      return block(
+        'sz_g3d_apply_gravity',
+        { OBJ: stmt.objVar, GROUND: stmt.groundVar },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:controlWithKeys':
+      return block('sz_g3d_control_keys', { OBJ: stmt.objVar, SPEED: stmt.speed }, {}, stmt.__id)
+    case 'g3d:cameraFollow':
+      return block(
+        'sz_g3d_camera_follow',
+        { WORLD: stmt.worldVar, OBJ: stmt.objVar },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:createGroup':
+      return block('sz_g3d_create_group', { NAME: stmt.varName }, {}, stmt.__id)
+    case 'g3d:runEnemies':
+      return block(
+        'sz_g3d_run_enemies',
+        {
+          WORLD: stmt.worldVar,
+          GROUP: stmt.groupVar,
+          GROUND: stmt.groundVar,
+          EVERY: stmt.every,
+          SPEED: stmt.speed,
+        },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:stop':
+      return block('sz_g3d_stop', { WORLD: stmt.worldVar }, {}, stmt.__id)
+    case 'g3d:createCrossingScene':
+      return block(
+        'sz_g3d_create_crossing_scene',
+        { CANVAS: stmt.canvasId, NAME: stmt.varName },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:createCrosser':
+      return block(
+        'sz_g3d_create_crosser',
+        { NAME: stmt.varName, WORLD: stmt.worldVar, COLOR: stmt.color },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:crosserMove':
+      return block('sz_g3d_crosser_move', { OBJ: stmt.objVar, DIR: stmt.direction }, {}, stmt.__id)
+    case 'g3d:crosserStep':
+      return block('sz_g3d_crosser_step', { OBJ: stmt.objVar, WORLD: stmt.worldVar }, {}, stmt.__id)
+    case 'g3d:crosserReset':
+      return block(
+        'sz_g3d_crosser_reset',
+        { OBJ: stmt.objVar, WORLD: stmt.worldVar },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:addRow': {
+      const row = exprToValueBlock(stmt.rowIndex)
+      if (!row) return rawJSBlock(stmt)
+      return block(
+        'sz_g3d_add_row',
+        { WORLD: stmt.worldVar, KIND: stmt.kind, DIR: stmt.direction, SPEED: stmt.speed },
+        {},
+        stmt.__id,
+        { ROW: row },
+      )
+    }
+    case 'g3d:generateRows':
+      return block(
+        'sz_g3d_generate_rows',
+        { WORLD: stmt.worldVar, COUNT: stmt.count },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:moveTraffic':
+      return block('sz_g3d_move_traffic', { WORLD: stmt.worldVar }, {}, stmt.__id)
+    case 'g3d:isometricCamera':
+      return block(
+        'sz_g3d_isometric_camera',
+        { WORLD: stmt.worldVar, FOLLOW: stmt.followVar },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:gridStep':
+      return block('sz_g3d_grid_step', { OBJ: stmt.objVar }, {}, stmt.__id)
+    case 'g3d:gridMove':
+      return block('sz_g3d_grid_move', { OBJ: stmt.objVar, DIR: stmt.direction }, {}, stmt.__id)
+    case 'g3d:moveAcross':
+      return block(
+        'sz_g3d_move_across',
+        { GROUP: stmt.groupVar, SPEED: stmt.speed, MIN: stmt.min, MAX: stmt.max },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:gridPosition': {
+      const row = exprToValueBlock(stmt.row)
+      const col = exprToValueBlock(stmt.col)
+      if (!row || !col) return rawJSBlock(stmt)
+      return block('sz_g3d_grid_position', { OBJ: stmt.objVar }, {}, stmt.__id, {
+        ROW: row,
+        COL: col,
+      })
+    }
     case 'classDecl': {
       const members: SerializedBlocklyBlock[] = []
       // Construtor só vira bloco se há parâmetros ou corpo (espelha o gerador).
@@ -1888,8 +2106,22 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_g2d_touches', { A: expr.aVar, B: expr.bVar })
     case 'g2d:countGroup':
       return block('sz_g2d_count_group', { GROUP: expr.groupVar })
+    case 'g2d:spriteAngle':
+      return block('sz_g2d_sprite_angle', { SPRITE: expr.spriteVar })
     case 'g2d:sceneIs':
       return block('sz_g2d_scene_is', { SCENE: expr.name })
+    case 'g3d:keyDown':
+      return block('sz_g3d_key_down', { KEY: expr.key })
+    case 'g3d:collides':
+      return block('sz_g3d_collides', { A: expr.aVar, B: expr.bVar })
+    case 'g3d:hitAny':
+      return block('sz_g3d_hit_any', { OBJ: expr.objVar, GROUP: expr.groupVar })
+    case 'g3d:crosserHit':
+      return block('sz_g3d_crosser_hit', { OBJ: expr.objVar, WORLD: expr.worldVar })
+    case 'g3d:crosserRow':
+      return block('sz_g3d_crosser_row', { OBJ: expr.objVar })
+    case 'g3d:touchesBox':
+      return block('sz_g3d_touches_box', { OBJ: expr.objVar, GROUP: expr.groupVar })
     case 'inputKeyPressed':
       return block('sz_input_key_pressed', { KEY: expr.key })
     case 'inputPointer':
@@ -1990,7 +2222,9 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
         : null
     }
     case 'eventProp':
-      return block('sz_val_event_pos', { AXIS: expr.prop })
+      return expr.prop === 'key' || expr.prop === 'code'
+        ? block('sz_val_event_key', { PROP: expr.prop })
+        : block('sz_val_event_pos', { AXIS: expr.prop })
     case 'vec2': {
       const x = exprToValueBlock(expr.x)
       const y = exprToValueBlock(expr.y)

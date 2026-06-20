@@ -103,6 +103,21 @@ Linguagem: **TS (ESM)**. Framework HTTP: **Elysia**. Porta **3010**.
    publicado é IMUTÁVEL e INDEPENDENTE do projeto que a criança continua editando no editor). Rota NOVA em
    `showcase.routes.ts` (mesma guarda de `x-internal-token`, mesmo `showcaseService`); gateway
    `hub-showcase-create-studio`.
+11. **Snapshot de autor + nomes clicáveis (06/2026):** todo tópico/comentário guarda no CREATE um
+   snapshot do **primeiro nome** (`author_display_name`) e da **flag pública** (`author_public`) do
+   autor — alimenta os **nomes clicáveis** do Mural e do fórum kids (clube). A fonte é SEMPRE
+   confiável (headers do gateway), nunca o corpo: `resolveDisplayName` tira o nome de
+   `x-auth-profile-name` (claim `pfl.name` — nome da CRIANÇA em sessão de perfil) com fallback em
+   `x-auth-user-name`, e fica só o 1º token (default `'Criador'`); `resolveProfilePublic` lê
+   `x-auth-profile-public === 'true'` (claim `pfl.pub` — opt-in dos pais), default `false`
+   (segurança infantil). Ambos viram `Actor.displayName`/`Actor.profilePublic` (em `auth.ts`),
+   gravados pelo `ThreadService` em `authorDisplayName`/`authorPublic` na criação de thread E de
+   comment. As views (`thread-views.ts`) e os tipos de domínio (`thread.ts`) expõem
+   `authorDisplayName`/`authorPublic`; **o hub só transporta o snapshot — quem decide se o nome
+   vira LINK p/ o perfil público é o BFF** (expõe o link só quando `authorPublic === true`). É
+   SNAPSHOT no create: renomear/trocar a privacidade depois NÃO reescreve posts antigos (histórico
+   imutável, como `authorId`).
+
 10. **Teaser "visível mas bloqueado" (06/2026):** `spaces.teaser_when_locked`. Quando ligado, um
    servidor que o aluno NÃO acessa aparece na listagem/detalhe com `locked:true` (só nome/ícone/
    descrição) em vez de sumir — `AccessResolutionService.resolveSpaceVisibility` ANOTA em vez de
@@ -224,11 +239,13 @@ download direto browser↔R2 são mintados pelo BFF (member-shell).
 - **`channels`** — canal (FK→space cascade, `slug` único no space, `accessConfig` **nullable=herda**,
   `postingPolicy members|staff_only`, `requiresApproval` **nullable=herda**, `version`).
 - **`threads`** — tópico (FK→channel, `authorId`, `title`, `slug` único no canal, `body` Markdown,
-  `isPinned`, `isLocked`, `status`, `commentCount`, `lastActivityAt`, `version`). Vitrine:
-  `is_showcase`, `author_display_name`, `cover_image_url`, `showcase_idempotency_key` (UNIQUE) e
+  `isPinned`, `isLocked`, `status`, `commentCount`, `lastActivityAt`, `version`). Autor (snapshot p/
+  nomes clicáveis): `author_display_name` (1º nome) e **`author_public`** (bool, default `false`).
+  Vitrine: `is_showcase`, `cover_image_url`, `showcase_idempotency_key` (UNIQUE) e
   **`play_id`** (UUID do artefato jogável — só na vitrine do Estúdio; alimenta o "Jogar" público). Índices:
   `(channel,status,lastActivity)` p/ listagem, `(author,status)` p/ "meus pendentes".
-- **`comments`** — comentário (FK→thread, `authorId`, `body`, `status`, `replyToId`, `version`).
+- **`comments`** — comentário (FK→thread, `authorId`, `body`, `status`, `replyToId`, `version`) +
+  snapshot de autor `author_display_name` + `author_public` (bool, default `false`) p/ nome clicável.
 - **`attachments`** — metadado UGC (`ownerId`, `threadId`/`commentId` nullable, `kind`,
   `storageRef = r2ugc:<key>` — nunca exposto ao browser, `mime`/`sizeBytes`/dims/`durationSeconds`,
   `status pending_upload|ready`).
@@ -286,9 +303,13 @@ Segredos que precisam **bater entre serviços** (ver `.env.example` quando criad
 `schemaFilter: ['hub']` + journal próprio `hub_migrations` (NÃO compartilhe `__drizzle_migrations`).
 ⚠️ **Migrations (06/2026):** `0002` (`community_gated`) existia mas NÃO estava no `meta/_journal.json` —
 um fresh DB pulava o enum. Consertado: `0002` virou `ADD VALUE IF NOT EXISTS` (re-rodar é no-op) +
-`0002`/`0003` journaled. `0003_add_play_id` (`ADD COLUMN IF NOT EXISTS play_id`). `db:migrate` aplica os
-dois de forma idempotente (gateado pelo `when` do journal). Ao adicionar migration nova, CONFIRA o journal
-antes de gerar.
+`0002`/`0003` journaled. `0003_add_play_id` (`ADD COLUMN IF NOT EXISTS play_id`).
+`0004_add_author_display_public` (`ADD COLUMN IF NOT EXISTS` de `comments.author_display_name` +
+`comments.author_public` + `threads.author_public` — snapshot de autor p/ nomes clicáveis; o
+`threads.author_display_name` já vinha da `0001`). ⚠️ O `db:generate` re-emite as linhas de `play_id`
+(0003) e `community_gated` (0002) por DRIFT do snapshot — REMOVA-as do SQL gerado (já aplicadas).
+`db:migrate` aplica tudo de forma idempotente (gateado pelo `when` do journal). Ao adicionar migration
+nova, CONFIRA o journal antes de gerar.
 Boot: `loadEnv` (fail-fast) → `createApplication` → `start` (listen `::`), com retenção do
 `processed_webhooks` num ciclo de 6h sob **advisory xact-lock `51020304050607081`** (único no banco
 compartilhado — members=`30792297…`, payments=`8103081227979411315`; nunca reusar a chave). `/readyz`
@@ -323,3 +344,8 @@ in-memory das portas em `tests/fakes/in-memory.ts`; montagem via `tests/helpers.
    (`/hub/attachments*`) e `webhooksRoutes` (`/hub/webhooks/grant`); suítes `attachments`/`webhooks`.
    O `storageRef` (`r2ugc:<key>`) NUNCA vai ao browser — só o BFF (member-shell) o resolve para
    mintar o presign. Falta a UI admin de moderação e o deploy no Railway.
+8. **Snapshot de autor (`authorDisplayName`/`authorPublic`) é no CREATE, de header confiável.** O nome
+   sai de `resolveDisplayName` (`x-auth-profile-name` → `x-auth-user-name`, só 1º token) e a flag de
+   `resolveProfilePublic` (`x-auth-profile-public === 'true'`) — NUNCA do corpo. Gravado uma vez em
+   thread/comment; não reescreve posts antigos. O hub só TRANSPORTA `authorPublic`; o link p/ o perfil
+   público é decisão do BFF (só quando `true`) — não vire o snapshot em "fonte do link" no hub.

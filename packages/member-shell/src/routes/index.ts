@@ -33,6 +33,35 @@ import { watermarkGate } from '../server/watermark-queue'
 
 const R2_PRIVATE_PREFIX = 'r2priv:'
 
+/** Config equipada do avatar (camada→peça). O members valida posse/camada — aqui só forma. */
+const AVATAR_SLUG = z.string().regex(/^[a-z0-9-]{1,64}$/)
+const AvatarConfigSchema = z.object({
+  style: z.string().max(40).optional(),
+  parts: z.record(z.string().max(40), AVATAR_SLUG),
+})
+
+/** Estado do quarto (o members canonicaliza contra o inventário — aqui só forma). */
+const RoomStateSchema = z.object({
+  theme: AVATAR_SLUG,
+  placedItems: z
+    .array(
+      z.object({
+        itemId: AVATAR_SLUG,
+        x: z.number().int().min(0).max(64),
+        y: z.number().int().min(0).max(64),
+      }),
+    )
+    .max(60),
+  pet: AVATAR_SLUG.nullable(),
+})
+
+/** Janela de férias (ou null/null p/ limpar) — o members revalida ordem/teto. */
+const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/
+const VacationSchema = z.object({
+  from: z.string().regex(ISO_DATE_RE).nullable(),
+  to: z.string().regex(ISO_DATE_RE).nullable(),
+})
+
 export interface ShellRoutesDeps {
   session: SessionModule
   gateway: GatewayModule
@@ -736,6 +765,127 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     },
   }
 
+  // ── Avatar (guarda-roupa por camadas) ────────────────────────────────────
+  /** Estado do avatar (equipado + catálogo + saldo) — editor/lojinha client-side. */
+  const avatarGet = {
+    GET: async () => {
+      const { status, body } = await members.getAvatar()
+      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+    },
+  }
+
+  /** Compra uma peça paga do avatar com moedas (idempotente; sem saldo → 402). */
+  const avatarBuy = {
+    POST: async (_req: Request, ctx: { params: Promise<{ partId: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const { partId } = await ctx.params
+      const { status, body } = await members.buyAvatarPart(partId)
+      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+    },
+  }
+
+  /** Salva a config equipada do avatar (o members valida posse/camada — estrito). */
+  const avatarEquip = {
+    PUT: async (req: Request) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const parsed = AvatarConfigSchema.safeParse(await req.json().catch(() => null))
+      if (!parsed.success) {
+        return NextResponse.json(
+          { error: { code: 'VALIDATION_ERROR', message: 'Avatar inválido' } },
+          { status: 400 },
+        )
+      }
+      const { status, body } = await members.equipAvatar(parsed.data)
+      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+    },
+  }
+
+  // ── Quarto virtual ────────────────────────────────────────────────────────
+  /** Estado do quarto (montado + catálogo + saldo) — editor/lojinha client-side. */
+  const roomGet = {
+    GET: async () => {
+      const { status, body } = await members.getRoom()
+      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+    },
+  }
+
+  /** Salva o quarto montado (o members canonicaliza contra o inventário). */
+  const roomSave = {
+    PUT: async (req: Request) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const parsed = RoomStateSchema.safeParse(await req.json().catch(() => null))
+      if (!parsed.success) {
+        return NextResponse.json(
+          { error: { code: 'VALIDATION_ERROR', message: 'Quarto inválido' } },
+          { status: 400 },
+        )
+      }
+      const { status, body } = await members.saveRoom(parsed.data)
+      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+    },
+  }
+
+  /** Compra um item/tema pago do quarto com moedas (idempotente; sem saldo → 402). */
+  const roomBuy = {
+    POST: async (_req: Request, ctx: { params: Promise<{ itemId: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const { itemId } = await ctx.params
+      const { status, body } = await members.buyRoomItem(itemId)
+      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+    },
+  }
+
+  // ── Missões + proteção de sequência ─────────────────────────────────────────
+  /** Missões do aluno (diárias/semanais) — passthrough leve. */
+  const missionsGet = {
+    GET: async () => {
+      const { status, body } = await members.getMissions()
+      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+    },
+  }
+
+  /** Resgata o prêmio de uma missão concluída (idempotente; escrita → exige sessão). */
+  const missionClaim = {
+    POST: async (_req: Request, ctx: { params: Promise<{ slug: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const { slug } = await ctx.params
+      const { status, body } = await members.claimMission(slug)
+      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+    },
+  }
+
+  /** Compra 1 protetor de sequência com moedas (sem saldo → 402; no máximo → 409). */
+  const streakFreezeBuy = {
+    POST: async () => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const { status, body } = await members.buyStreakFreeze()
+      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+    },
+  }
+
+  /** Agenda/limpa as férias (pausa a sequência sem culpa). */
+  const vacationSet = {
+    PUT: async (req: Request) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const parsed = VacationSchema.safeParse(await req.json().catch(() => null))
+      if (!parsed.success) {
+        return NextResponse.json(
+          { error: { code: 'VALIDATION_ERROR', message: 'Período inválido' } },
+          { status: 400 },
+        )
+      }
+      const { status, body } = await members.setVacation(parsed.data.from, parsed.data.to)
+      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+    },
+  }
+
   /**
    * Resumo de progresso dos FILHOS p/ a área dos pais (kids). Junta a IDENTIDADE dos
    * perfis (auth — nome/foto) com os STATS por perfil (members).
@@ -1084,6 +1234,16 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     courseRating,
     lessonComplete,
     gamificationMe,
+    avatarGet,
+    avatarBuy,
+    avatarEquip,
+    roomGet,
+    roomSave,
+    roomBuy,
+    missionsGet,
+    missionClaim,
+    streakFreezeBuy,
+    vacationSet,
     childrenStats,
     lessonPosition,
     quizAttempts,

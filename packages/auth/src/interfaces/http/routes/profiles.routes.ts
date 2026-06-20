@@ -4,6 +4,7 @@ import { Elysia } from 'elysia'
 import type { ArchiveProfileService } from '../../../application/profiles/archive-profile.service'
 import type { CreateProfileService } from '../../../application/profiles/create-profile.service'
 import type { ExitProfileSessionService } from '../../../application/profiles/exit-profile-session.service'
+import type { GetPublicProfileService } from '../../../application/profiles/get-public-profile.service'
 import type { ListProfilesService } from '../../../application/profiles/list-profiles.service'
 import type { SelectProfileService } from '../../../application/profiles/select-profile.service'
 import type { UpdateProfileDetailsService } from '../../../application/profiles/update-profile.service'
@@ -23,6 +24,7 @@ export interface ProfilesRoutesDeps {
   archiveProfile: ArchiveProfileService
   selectProfile: SelectProfileService
   exitProfileSession: ExitProfileSessionService
+  getPublicProfile: GetPublicProfileService
   trustProxy: boolean
   trustedProxyHops: number
   /**
@@ -126,6 +128,12 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
           if (body.birthDate !== undefined && headers['x-auth-account-id']?.trim()) {
             throw new ForbiddenError('A data de nascimento só pode ser editada pelos responsáveis')
           }
+          // Visibilidade pública: idem (segurança infantil — opt-in só dos pais).
+          if (body.publicProfileEnabled !== undefined && headers['x-auth-account-id']?.trim()) {
+            throw new ForbiddenError(
+              'A visibilidade do perfil só pode ser alterada pelos responsáveis',
+            )
+          }
           const profile = await deps.updateProfile.execute({
             accountUserId,
             profileId: params.id,
@@ -133,6 +141,7 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
             avatarUrl: body.avatarUrl,
             whatsapp: body.whatsapp,
             birthDate: body.birthDate,
+            publicProfileEnabled: body.publicProfileEnabled,
           })
           return { profile }
         },
@@ -180,6 +189,17 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
           })
         },
         { body: ExitProfileSessionBody },
+      )
+      // Identidade PÚBLICA de um perfil (S2S — só `x-internal-token`): nome + flag de
+      // visibilidade, p/ o BFF do perfil público kids. NUNCA e-mail/telefone/nascimento/
+      // conta. Perfil inexistente/arquivado/privado → 404.
+      .get(
+        '/internal/profiles/:id/public',
+        ({ headers, params }) => {
+          requireInternalToken(headers, deps.internalToken)
+          return deps.getPublicProfile.execute(params.id)
+        },
+        { params: ProfileIdParams },
       )
   )
 }

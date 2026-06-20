@@ -23,6 +23,7 @@ import {
   type ProjectTree,
   type ProProjectMeta,
   sanitizeProjectAssets,
+  t,
 } from '#core'
 import {
   type CSSEntry,
@@ -70,7 +71,7 @@ interface ProjectStore {
   duplicateProject: (id: string) => Promise<Project | null>
   deleteProject: (id: string) => Promise<void>
   renameProject: (id: string, name: string) => Promise<void>
-  importProjectFromJSON: (raw: unknown) => Promise<Project>
+  importProjectFromJSON: (raw: unknown) => Promise<{ project: Project; warnings: string[] }>
   setProject: (p: Project) => void
   setMode: (mode: IDEMode) => void
   /** Gradua um projeto básico para profissional (Vite). One-way. */
@@ -132,14 +133,19 @@ function bump<T extends Project>(p: T): T {
 }
 
 // Limites de import para evitar DoS (arquivos gigantes) e corrupção de state.
-export const MAX_PROJECT_IMPORT_CHARS = 12_000_000
+// Cotas subidas ~2x (2026-06) para permitir projetos maiores. IMPORTANTE: estes
+// tetos são COMPARTILHADOS entre importar / abrir (load) / salvar / preview — subir
+// aqui sobe em todos os caminhos de forma consistente (sem re-recorte ao reabrir).
+// `MAX_PROJECT_IMPORT_CHARS` precisa ser ≥ a soma dos sub-limites (arquivos +
+// blocksState + IR + assets) para um projeto cheio conseguir reimportar.
+export const MAX_PROJECT_IMPORT_CHARS = 48_000_000
 const MAX_PROJECT_NAME_CHARS = 200
-const MAX_FILE_CHARS = 2_000_000 // ~2 MB por arquivo de texto
-const MAX_TOTAL_CHARS = 8_000_000 // soma de todos os arquivos
+const MAX_FILE_CHARS = 4_000_000 // ~4 MB por arquivo de texto
+const MAX_TOTAL_CHARS = 16_000_000 // soma de todos os arquivos
 const MAX_EXTRA_FILES = 200
-const MAX_BLOCKSTATE_CHARS = 4_000_000
-const MAX_BLOCKSTATE_BLOCKS = 5_000
-const MAX_BLOCKSTATE_CONTAINER_NODES = 25_000
+const MAX_BLOCKSTATE_CHARS = 8_000_000
+export const MAX_BLOCKSTATE_BLOCKS = 10_000
+const MAX_BLOCKSTATE_CONTAINER_NODES = 50_000
 const MAX_BLOCKSTATE_FIELD_CHARS = MAX_FILE_CHARS
 const MAX_MUTATOR_ITEMS = 32
 const MAX_MUTATOR_PARAMS = 32
@@ -148,10 +154,10 @@ const MAX_MUTATOR_NAME_CHARS = 80
 // razão é uma string curta; o limite generoso aqui é só pra defesa anti-DoS.
 const MAX_DISABLED_REASONS = 16
 const MAX_INSTALLED_EXTENSIONS = 100
-const MAX_IR_CHARS = 4_000_000
-const MAX_IR_NODES = 20_000
+const MAX_IR_CHARS = 8_000_000
+const MAX_IR_NODES = 40_000
 const MAX_JSON_IMPORT_DEPTH = 80
-const MAX_JSON_ARRAY_ITEMS = 25_000
+const MAX_JSON_ARRAY_ITEMS = 50_000
 const MAX_JSON_OBJECT_KEYS = 250
 
 interface BlocksStateSanitizeLimits {
@@ -249,6 +255,7 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_css_font_size',
   'sz_css_font_weight',
   'sz_css_gap',
+  'sz_css_google_font',
   'sz_css_grid',
   'sz_css_keyframes',
   'sz_css_transition',
@@ -310,6 +317,10 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_js_on_mouseover',
   'sz_js_on_submit',
   'sz_js_on_event_named',
+  'sz_js_on_key',
+  'sz_js_on_mousemove',
+  'sz_js_on_load',
+  'sz_js_on_resize',
   'sz_js_query_selector',
   'sz_js_query_selector_all',
   'sz_js_storage_set',
@@ -326,6 +337,8 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_js_for_each',
   'sz_js_set_timeout',
   'sz_js_set_interval',
+  'sz_js_set_timeout_seconds',
+  'sz_js_set_interval_seconds',
   'sz_js_create_element',
   'sz_js_append_child',
   'sz_js_set_dataset',
@@ -378,6 +391,7 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_val_color_alpha',
   'sz_val_color_hsl',
   'sz_val_event_pos',
+  'sz_val_event_key',
   'sz_val_math_pi',
   'sz_val_number',
   'sz_val_random',
@@ -481,6 +495,14 @@ export const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> 
     'sz_g2d_play_jump',
     'sz_g2d_play_dino_hurt',
     'sz_g2d_play_collect',
+    'sz_g2d_steer_thrust',
+    'sz_g2d_rotate_sprite',
+    'sz_g2d_point_sprite',
+    'sz_g2d_thrust',
+    'sz_g2d_apply_friction',
+    'sz_g2d_sprite_angle',
+    'sz_g2d_shoot_from',
+    'sz_g2d_spawn_asteroid_edge',
   ]),
   'game-3d': new Set([
     'sz_g3d_create_scene',
@@ -488,9 +510,38 @@ export const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> 
     'sz_g3d_set_camera',
     'sz_g3d_create_box',
     'sz_g3d_create_sphere',
+    'sz_g3d_create_block',
     'sz_g3d_set_position',
     'sz_g3d_set_rotation',
+    'sz_g3d_set_scale',
     'sz_g3d_animate',
+    'sz_g3d_control_keys',
+    'sz_g3d_set_velocity',
+    'sz_g3d_jump',
+    'sz_g3d_apply_gravity',
+    'sz_g3d_camera_follow',
+    'sz_g3d_key_down',
+    'sz_g3d_collides',
+    'sz_g3d_hit_any',
+    'sz_g3d_create_group',
+    'sz_g3d_run_enemies',
+    'sz_g3d_stop',
+    'sz_g3d_isometric_camera',
+    'sz_g3d_grid_position',
+    'sz_g3d_grid_step',
+    'sz_g3d_grid_move',
+    'sz_g3d_move_across',
+    'sz_g3d_touches_box',
+    'sz_g3d_create_crossing_scene',
+    'sz_g3d_create_crosser',
+    'sz_g3d_crosser_move',
+    'sz_g3d_crosser_step',
+    'sz_g3d_crosser_reset',
+    'sz_g3d_add_row',
+    'sz_g3d_generate_rows',
+    'sz_g3d_move_traffic',
+    'sz_g3d_crosser_hit',
+    'sz_g3d_crosser_row',
   ]),
 }
 
@@ -1779,14 +1830,16 @@ export function createProjectStore(
       const now = Date.now()
       const base = createEmptyProject(ulid(), sanitizeProjectName(r.name))
       const mode: IDEMode = isPro ? 'code' : normalizeClassicMode(r.mode)
+      const extraFiles = limitCombinedExtraFiles(files, sanitizeImportedExtraFiles(r.extraFiles))
+      const assets = sanitizeProjectAssets(r.assets)
       const imported: Project = {
         ...base,
         files,
         // Espelha o teto COMBINADO do load (canônicos + extras ≤ MAX_TOTAL_CHARS):
         // sem isso a soma podia passar de 8 MB e o primeiro reopen derrubaria
         // extras em silêncio, divergindo o registro no disco do que foi aberto.
-        extraFiles: limitCombinedExtraFiles(files, sanitizeImportedExtraFiles(r.extraFiles)),
-        assets: sanitizeProjectAssets(r.assets),
+        extraFiles,
+        assets,
         mode,
         ir: ir ?? base.ir,
         blocksState,
@@ -1797,7 +1850,31 @@ export function createProjectStore(
         ...(isPro ? { kind: 'pro' as const, tree, proMeta } : {}),
       }
       await persistProject(imported)
-      return imported
+
+      // Avisos não-fatais: o projeto FOI importado, mas alguns sanitizers cortaram
+      // partes em silêncio (cota/permissão/bloco desconhecido). Comparamos a entrada
+      // crua com o resultado e devolvemos a lista p/ a UI mostrar (em vez de sumir
+      // calado). Os estouros que LANÇAM acima (arquivos/IR/shape de blocos) já viram
+      // erro fatal e nem chegam aqui.
+      const warnings: string[] = []
+      const inLen = (v: unknown) => (Array.isArray(v) ? v.length : 0)
+      const droppedAssets = inLen(r.assets) - assets.length
+      if (droppedAssets > 0)
+        warnings.push(t('projects.importWarn.assets', { count: droppedAssets }))
+      const droppedExtras = inLen(r.extraFiles) - extraFiles.length
+      if (droppedExtras > 0)
+        warnings.push(t('projects.importWarn.extraFiles', { count: droppedExtras }))
+      const droppedExt = inLen(r.installedExtensions) - installedExtensions.length
+      if (droppedExt > 0) warnings.push(t('projects.importWarn.extensions', { count: droppedExt }))
+      if (r.blocksState != null && blocksState == null) {
+        const reason = describeBlocklyValidationFailure(r.blocksState, installedExtensions)
+        warnings.push(t('projects.importWarn.blocks', { reason: reason ?? '—' }))
+      } else if (r.ir != null && ir == null && blocksState == null) {
+        warnings.push(t('projects.importWarn.program'))
+      }
+      if (r.kind === 'pro' && !isPro) warnings.push(t('projects.importWarn.proDowngrade'))
+
+      return { project: imported, warnings }
     },
     setProject: (p) => set({ project: p, isDirty: true, saveError: null }),
     setMode: (mode) => {

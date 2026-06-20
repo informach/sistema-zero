@@ -1077,6 +1077,113 @@ export const gameTwoDBlocks = [
     colour: C,
     tooltip: 'Duas notinhas alegres (som sintetizado) — ótimo ao pegar o ovo bônus.',
   },
+
+  // ---- Nave clássica: girar + impulsionar na direção apontada (v0.10.0) ----
+  {
+    type: 'sz_g2d_steer_thrust',
+    message0: 'Controlar o sprite %1 como nave — velocidade %2 giro %3',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' },
+      { type: 'field_number', name: 'SPEED', value: 3, min: 0, precision: 0.1 },
+      { type: 'field_number', name: 'TURN', value: 3, min: 0, precision: 0.1 },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Controle clássico de nave: vira com as setas ← → (ou A/D), acelera na direção apontada com a seta ↑ (ou W) e desliza com atrito ao soltar. "giro" é quantos graus ela vira por quadro. Use a cada quadro.',
+  },
+  {
+    type: 'sz_g2d_rotate_sprite',
+    message0: 'Girar o sprite %1 em %2 graus',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' },
+      { type: 'field_number', name: 'DEG', value: 15 },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Gira o sprite alguns graus (positivo = sentido horário, negativo = anti-horário). 0 graus = apontando pra cima.',
+  },
+  {
+    type: 'sz_g2d_point_sprite',
+    message0: 'Apontar o sprite %1 para %2 graus',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' },
+      { type: 'field_number', name: 'DEG', value: 0 },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Vira o sprite direto para um ângulo (0 = pra cima, 90 = pra direita, 180 = pra baixo, 270 = pra esquerda).',
+  },
+  {
+    type: 'sz_g2d_thrust',
+    message0: 'Impulsionar o sprite %1 para a frente, força %2',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' },
+      { type: 'field_number', name: 'FORCE', value: 0.1, min: 0, precision: 0.01 },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Acelera o sprite na direção que ele está apontando (soma à velocidade). Combine com "aplicar velocidade" e "frear aos poucos" para o efeito de nave no espaço.',
+  },
+  {
+    type: 'sz_g2d_apply_friction',
+    message0: 'Frear o sprite %1 aos poucos (atrito %2)',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' },
+      { type: 'field_number', name: 'FACTOR', value: 0.97, min: 0, max: 1, precision: 0.01 },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Vai diminuindo a velocidade do sprite (multiplica por um fator entre 0 e 1). Perto de 1 desliza bastante; menor freia rápido.',
+  },
+  {
+    type: 'sz_g2d_sprite_angle',
+    message0: 'a direção (em graus) do sprite %1',
+    args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'O ângulo que o sprite está apontando, em graus (0 = pra cima, horário). Use numa conta ou num "se".',
+  },
+  {
+    type: 'sz_g2d_shoot_from',
+    message0: 'Atirar do sprite %1 para a frente, no grupo %2 — velocidade %3 cor %4',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' },
+      { type: 'field_input', name: 'GROUP', text: 'tiros' },
+      { type: 'field_number', name: 'SPEED', value: 6, min: 1, precision: 0.1 },
+      { type: 'field_colour_sz', name: 'COLOR', colour: '#9cff57' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Cria um tiro na ponta do sprite, saindo na direção que ele aponta. Use no "quando apertar a tecla Espaço".',
+  },
+  {
+    type: 'sz_g2d_spawn_asteroid_edge',
+    message0: 'No grupo %1 soltar um asteroide de uma borda — tamanho %2 cor %3 velocidade %4',
+    args0: [
+      { type: 'field_input', name: 'GROUP', text: 'asteroides' },
+      { type: 'field_number', name: 'SIZE', value: 40, min: 4 },
+      { type: 'field_colour_sz', name: 'COLOR', colour: '#8d8f9b' },
+      { type: 'field_number', name: 'SPEED', value: 1.5, min: 0, precision: 0.1 },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Solta um asteroide vindo de uma das bordas da tela (sorteada), já indo em direção ao centro. Use dentro de "a cada X segundos" para nascerem sem parar.',
+  },
 ]
 
 /**
@@ -1129,6 +1236,12 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g2d_bounce_edges',
       'sz_g2d_drag_x',
       'sz_g2d_jump_on_ground',
+      'sz_g2d_steer_thrust',
+      'sz_g2d_rotate_sprite',
+      'sz_g2d_point_sprite',
+      'sz_g2d_thrust',
+      'sz_g2d_apply_friction',
+      'sz_g2d_sprite_angle',
     ],
   },
   {
@@ -1201,6 +1314,8 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     types: [
       'sz_g2d_create_ship',
       'sz_g2d_spawn_asteroid',
+      'sz_g2d_spawn_asteroid_edge',
+      'sz_g2d_shoot_from',
       'sz_g2d_starfield',
       'sz_g2d_explode',
       'sz_g2d_play_shoot',

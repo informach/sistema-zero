@@ -100,12 +100,21 @@ export function resolveDisplayName(headers: Record<string, string | undefined>):
   return first || 'Criador'
 }
 
+/**
+ * Perfil do autor é PÚBLICO? Em sessão de perfil o gateway injeta `x-auth-profile-public`
+ * ('true'/'false', da claim `pfl.pub`); ausente/`false` → privado. Snapshot no create.
+ */
+export function resolveProfilePublic(headers: Record<string, string | undefined>): boolean {
+  return headers['x-auth-profile-public'] === 'true'
+}
+
 /** Monta o ator confiável a partir dos headers `X-Auth-User-*` (gateway). */
 export function resolveActor(headers: Record<string, string | undefined>): Actor {
   return {
     userId: resolveUserId(headers),
     accountId: resolveAccountId(headers),
     displayName: resolveDisplayName(headers),
+    profilePublic: resolveProfilePublic(headers),
     role: headers['x-auth-user-role'],
     status: headers['x-auth-user-status'],
     privileged: isPrivilegedActor(headers),

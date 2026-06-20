@@ -106,6 +106,11 @@ KIT ESPAÇO (v0.7.0) — categoria "🚀 Kit espaço" com atalhos PRONTOS (não 
 - explodeSprite(sprite, "cor"): explosão de partículas no centro do sprite. playShoot()/playExplosion(): sons de tiro e explosão.
 - overlapSpriteGroup(() => nave, grupo, (item) => {…}): genérico — para cada sprite do grupo que encosta na nave, roda o corpo (ex.: tirar vida). Use no gameLoop.
 
+NAVE CLÁSSICA — girar + impulsionar na direção apontada (v0.10.0), para o Asteroids clássico (a nave gira e acelera pra onde aponta). Os sprites ganham um ÂNGULO em GRAUS (0 = pra cima, horário) que o desenho passa a respeitar (a nave/sprite aparece girada):
+- steerThrust(sprite, velocidade, giro): controle pronto de nave — vira com ←/A e →/D, acelera com ↑/W na direção apontada e desliza com atrito ao soltar; já move o sprite. Bloco "Controlar o sprite como nave". É o atalho recomendado para a criança.
+- rotateSprite(sprite, graus) / pointSprite(sprite, graus): girar o sprite um tanto / apontar direto para um ângulo. thrust(sprite, força): acelerar na direção apontada (soma à velocidade — combine com applyVelocity). applyFriction(sprite, fator): frear aos poucos (multiplica a velocidade por 0..1). spriteAngleDeg(sprite): valor — a direção atual em graus.
+- shootFrom(sprite, grupo, { speed, color }): cria um tiro na PONTA do sprite, indo na direção que ele aponta (use no "quando apertar Espaço"). spawnAsteroidFromEdge(grupo, { size, color, speed }): solta um asteroide de uma borda aleatória rumo ao centro (use no "a cada X segundos"). Existe o exemplo pronto "Asteroides clássico" mostrando tudo junto.
+
 PULO NO CHÃO (genérico, v0.9.0) — para jogos de corrida/pulo SEM andar para os lados:
 - jumpOnGround(sprite, ctx, força): aplica gravidade, pousa o sprite na BASE da tela e pula com ↑/Espaço/W OU um toque. Use dentro do gameLoop. Bloco "Fazer o sprite pular no chão". Diferente do platformer (que também anda esquerda/direita).
 

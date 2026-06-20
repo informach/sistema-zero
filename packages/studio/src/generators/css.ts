@@ -1,4 +1,4 @@
-import type { CSSEntry, CSSRule, KeyframesCSS, MediaQueryCSS } from '#ir'
+import type { CSSEntry, CSSRule, GoogleFontCSS, KeyframesCSS, MediaQueryCSS } from '#ir'
 import { assertGeneratorDepth } from './js'
 import { countLines, SourceMapBuilder } from './sourceMap'
 
@@ -77,7 +77,13 @@ export function generateCSSWithMap(entries: CSSEntry[]): GenerateCSSWithMapResul
   // muda. Dentro do grupo, mantemos um SEGMENTO por `CSSRule` original para
   // que o realce por bloco mire apenas as declarações daquele bloco.
   const groups: RenderGroup[] = []
+  // @imports do Google Fonts são coletados e emitidos no TOPO (regra do @import).
+  const fontImports: { id?: string; code: string }[] = []
   for (const entry of entries) {
+    if (isGoogleFont(entry)) {
+      fontImports.push({ id: entry.__id, code: googleFontImport(entry.family) })
+      continue
+    }
     if (isRawCSS(entry)) {
       groups.push({ kind: 'raw', ids: entry.__id ? [entry.__id] : [], code: entry.code.trim() })
       continue
@@ -100,6 +106,14 @@ export function generateCSSWithMap(entries: CSSEntry[]): GenerateCSSWithMapResul
     } else {
       groups.push({ kind: 'rule', selector: entry.selector, segments: [segment] })
     }
+  }
+
+  if (fontImports.length > 0) {
+    groups.unshift({
+      kind: 'raw',
+      ids: fontImports.map((f) => f.id).filter((x): x is string => !!x),
+      code: fontImports.map((f) => f.code).join('\n'),
+    })
   }
 
   const pieces: string[] = []
@@ -273,6 +287,16 @@ function renderKeyframes(entry: KeyframesCSS): string {
     })
     .join('\n')
   return `@keyframes ${stripBraces(entry.name)} {\n${steps}\n}`
+}
+
+function isGoogleFont(entry: CSSEntry): entry is GoogleFontCSS {
+  return 'type' in entry && entry.type === 'googleFont'
+}
+
+/** Monta o @import do Google Fonts (espaços viram +, ex.: "Press Start 2P"). */
+function googleFontImport(family: string): string {
+  const fam = family.trim().replace(/\s+/g, '+')
+  return '@import url("https://fonts.googleapis.com/css?family=' + fam + '");'
 }
 
 function isRawCSS(entry: CSSEntry): entry is Extract<CSSEntry, { type: 'rawCSS' }> {

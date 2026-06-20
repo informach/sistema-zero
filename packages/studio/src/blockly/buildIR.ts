@@ -289,8 +289,22 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'g2d:touches', aVar: f(block, 'A'), bVar: f(block, 'B') }
     case 'sz_g2d_count_group':
       return { type: 'g2d:countGroup', groupVar: f(block, 'GROUP') }
+    case 'sz_g2d_sprite_angle':
+      return { type: 'g2d:spriteAngle', spriteVar: f(block, 'SPRITE') }
     case 'sz_g2d_scene_is':
       return { type: 'g2d:sceneIs', name: f(block, 'SCENE') || 'inicio' }
+    case 'sz_g3d_key_down':
+      return { type: 'g3d:keyDown', key: f(block, 'KEY') || 'KeyW' }
+    case 'sz_g3d_collides':
+      return { type: 'g3d:collides', aVar: f(block, 'A'), bVar: f(block, 'B') }
+    case 'sz_g3d_hit_any':
+      return { type: 'g3d:hitAny', objVar: f(block, 'OBJ'), groupVar: f(block, 'GROUP') }
+    case 'sz_g3d_crosser_hit':
+      return { type: 'g3d:crosserHit', objVar: f(block, 'OBJ'), worldVar: f(block, 'WORLD') }
+    case 'sz_g3d_crosser_row':
+      return { type: 'g3d:crosserRow', objVar: f(block, 'OBJ') }
+    case 'sz_g3d_touches_box':
+      return { type: 'g3d:touchesBox', objVar: f(block, 'OBJ'), groupVar: f(block, 'GROUP') }
     case 'sz_input_key_pressed':
       return { type: 'inputKeyPressed', key: f(block, 'KEY') || 'ArrowRight' }
     case 'sz_input_pointer_x':
@@ -408,6 +422,8 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'mathConst', name: 'PI' }
     case 'sz_val_event_pos':
       return { type: 'eventProp', prop: f(block, 'AXIS') as 'clientX' | 'clientY' }
+    case 'sz_val_event_key':
+      return { type: 'eventProp', prop: f(block, 'PROP') as 'key' | 'code' }
     case 'sz_val_vector2d':
       return {
         type: 'vec2',
@@ -760,6 +776,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       // (ex.: `<canvas width=200 height=100>`), o workspaceState os guardou no
       // `data` do bloco; recuperamos daqui para o round-trip não os perder.
       const node: Extract<HTMLNode, { type: 'canvas' }> = { type: 'canvas', id: f(block, 'ID') }
+      const cls = f(block, 'CLASS')
+      if (cls) node.class = cls
       const dims = parseCanvasData((block as unknown as { data?: string | null }).data)
       if (dims.width != null) node.width = dims.width
       if (dims.height != null) node.height = dims.height
@@ -988,12 +1006,19 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         },
       }
     }
+    case 'sz_css_google_font':
+      return { kind: 'css', value: { type: 'googleFont', family: f(block, 'FONT') || 'Roboto' } }
     case 'sz_css_media_query':
       return {
         kind: 'css',
         value: {
           type: 'mediaQuery',
-          feature: f(block, 'DIR') === 'min-width' ? 'min-width' : 'max-width',
+          feature:
+            f(block, 'DIR') === 'min-width' ||
+            f(block, 'DIR') === 'max-height' ||
+            f(block, 'DIR') === 'min-height'
+              ? (f(block, 'DIR') as 'min-width' | 'max-height' | 'min-height')
+              : 'max-width',
           px: fn(block, 'PX', 768),
           rules: getCssEntryChildren(block, 'RULES', seen),
         },
@@ -1056,6 +1081,50 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           target: 'document',
           targetKind: 'document',
           event: 'click',
+          body: getStatementChildren(block, 'DO', seen),
+        },
+      }
+    case 'sz_js_on_key':
+      return {
+        kind: 'js',
+        value: {
+          type: 'event',
+          target: 'document',
+          targetKind: 'document',
+          event: f(block, 'WHEN') as 'keydown' | 'keyup',
+          body: getStatementChildren(block, 'DO', seen),
+        },
+      }
+    case 'sz_js_on_mousemove':
+      return {
+        kind: 'js',
+        value: {
+          type: 'event',
+          target: 'document',
+          targetKind: 'document',
+          event: 'mousemove',
+          body: getStatementChildren(block, 'DO', seen),
+        },
+      }
+    case 'sz_js_on_load':
+      return {
+        kind: 'js',
+        value: {
+          type: 'event',
+          target: 'window',
+          targetKind: 'window',
+          event: 'load',
+          body: getStatementChildren(block, 'DO', seen),
+        },
+      }
+    case 'sz_js_on_resize':
+      return {
+        kind: 'js',
+        value: {
+          type: 'event',
+          target: 'window',
+          targetKind: 'window',
+          event: 'resize',
           body: getStatementChildren(block, 'DO', seen),
         },
       }
@@ -1323,6 +1392,24 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'setInterval',
           delay: exprInput(block, 'MS', { type: 'num', value: 1000 }),
+          body: getStatementChildren(block, 'DO', seen),
+        },
+      }
+    case 'sz_js_set_timeout_seconds':
+      return {
+        kind: 'js',
+        value: {
+          type: 'setTimeoutSeconds',
+          delay: exprInput(block, 'S', { type: 'num', value: 1 }),
+          body: getStatementChildren(block, 'DO', seen),
+        },
+      }
+    case 'sz_js_set_interval_seconds':
+      return {
+        kind: 'js',
+        value: {
+          type: 'setIntervalSeconds',
+          delay: exprInput(block, 'S', { type: 'num', value: 1 }),
           body: getStatementChildren(block, 'DO', seen),
         },
       }
@@ -2527,6 +2614,79 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         },
       }
 
+    // ---- Nave clássica: girar + impulsionar na direção apontada (v0.10.0) ----
+    case 'sz_g2d_steer_thrust':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:steerThrust',
+          spriteVar: f(block, 'SPRITE'),
+          speed: fn(block, 'SPEED', 3),
+          turn: fn(block, 'TURN', 3),
+        },
+      }
+    case 'sz_g2d_rotate_sprite':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:rotateSprite',
+          spriteVar: f(block, 'SPRITE'),
+          deg: fn(block, 'DEG', 15),
+        },
+      }
+    case 'sz_g2d_point_sprite':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: { type: 'g2d:pointSprite', spriteVar: f(block, 'SPRITE'), deg: fn(block, 'DEG', 0) },
+      }
+    case 'sz_g2d_thrust':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:thrust',
+          spriteVar: f(block, 'SPRITE'),
+          force: fn(block, 'FORCE', 0.1),
+        },
+      }
+    case 'sz_g2d_apply_friction':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:applyFriction',
+          spriteVar: f(block, 'SPRITE'),
+          factor: fn(block, 'FACTOR', 0.97),
+        },
+      }
+    case 'sz_g2d_shoot_from':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:shootFrom',
+          spriteVar: f(block, 'SPRITE'),
+          groupVar: f(block, 'GROUP'),
+          speed: fn(block, 'SPEED', 6),
+          color: f(block, 'COLOR'),
+        },
+      }
+    case 'sz_g2d_spawn_asteroid_edge':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:spawnAsteroidEdge',
+          groupVar: f(block, 'GROUP'),
+          size: fn(block, 'SIZE', 40),
+          color: f(block, 'COLOR'),
+          speed: fn(block, 'SPEED', 1.5),
+        },
+      }
+
     // ---- Pulo genérico + Kit dino (v0.9.0) ----
     case 'sz_g2d_jump_on_ground':
       seen.add('game-2d')
@@ -2686,6 +2846,209 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g3d:animate',
           worldVar: f(block, 'WORLD'),
           body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_g3d_create_block':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3d:createBlock',
+          varName: f(block, 'NAME'),
+          worldVar: f(block, 'WORLD'),
+          width: fn(block, 'W', 1),
+          height: fn(block, 'H', 1),
+          depth: fn(block, 'D', 1),
+          color: f(block, 'COLOR'),
+        },
+      }
+    case 'sz_g3d_set_velocity':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3d:setVelocity',
+          objVar: f(block, 'OBJ'),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_g3d_jump':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3d:jump',
+          objVar: f(block, 'OBJ'),
+          force: exprInput(block, 'FORCE', { type: 'num', value: 0.08 }),
+        },
+      }
+    case 'sz_g3d_apply_gravity':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: { type: 'g3d:applyGravity', objVar: f(block, 'OBJ'), groundVar: f(block, 'GROUND') },
+      }
+    case 'sz_g3d_control_keys':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3d:controlWithKeys',
+          objVar: f(block, 'OBJ'),
+          speed: fn(block, 'SPEED', 0.05),
+        },
+      }
+    case 'sz_g3d_set_scale':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3d:setScale',
+          objVar: f(block, 'OBJ'),
+          factor: exprInput(block, 'FACTOR', { type: 'num', value: 1 }),
+        },
+      }
+    case 'sz_g3d_camera_follow':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: { type: 'g3d:cameraFollow', worldVar: f(block, 'WORLD'), objVar: f(block, 'OBJ') },
+      }
+    case 'sz_g3d_create_group':
+      seen.add('game-3d')
+      return { kind: 'js', value: { type: 'g3d:createGroup', varName: f(block, 'NAME') } }
+    case 'sz_g3d_run_enemies':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3d:runEnemies',
+          worldVar: f(block, 'WORLD'),
+          groupVar: f(block, 'GROUP'),
+          groundVar: f(block, 'GROUND'),
+          every: fn(block, 'EVERY', 200),
+          speed: fn(block, 'SPEED', 0.02),
+        },
+      }
+    case 'sz_g3d_stop':
+      seen.add('game-3d')
+      return { kind: 'js', value: { type: 'g3d:stop', worldVar: f(block, 'WORLD') } }
+    // ---- Travessia: cena/personagem/mapa/tráfego (kit) + grade/iso/esteira (genéricos) ----
+    case 'sz_g3d_create_crossing_scene':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3d:createCrossingScene',
+          canvasId: f(block, 'CANVAS'),
+          varName: f(block, 'NAME'),
+        },
+      }
+    case 'sz_g3d_create_crosser':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3d:createCrosser',
+          varName: f(block, 'NAME'),
+          worldVar: f(block, 'WORLD'),
+          color: f(block, 'COLOR'),
+        },
+      }
+    case 'sz_g3d_crosser_move':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3d:crosserMove',
+          objVar: f(block, 'OBJ'),
+          direction: f(block, 'DIR') || 'forward',
+        },
+      }
+    case 'sz_g3d_crosser_step':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: { type: 'g3d:crosserStep', objVar: f(block, 'OBJ'), worldVar: f(block, 'WORLD') },
+      }
+    case 'sz_g3d_crosser_reset':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: { type: 'g3d:crosserReset', objVar: f(block, 'OBJ'), worldVar: f(block, 'WORLD') },
+      }
+    case 'sz_g3d_add_row':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3d:addRow',
+          worldVar: f(block, 'WORLD'),
+          rowIndex: exprInput(block, 'ROW', { type: 'num', value: 1 }),
+          kind: f(block, 'KIND') || 'car',
+          direction: f(block, 'DIR') || 'right',
+          speed: fn(block, 'SPEED', 150),
+        },
+      }
+    case 'sz_g3d_generate_rows':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3d:generateRows',
+          worldVar: f(block, 'WORLD'),
+          count: fn(block, 'COUNT', 20),
+        },
+      }
+    case 'sz_g3d_move_traffic':
+      seen.add('game-3d')
+      return { kind: 'js', value: { type: 'g3d:moveTraffic', worldVar: f(block, 'WORLD') } }
+    case 'sz_g3d_isometric_camera':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3d:isometricCamera',
+          worldVar: f(block, 'WORLD'),
+          followVar: f(block, 'FOLLOW'),
+        },
+      }
+    case 'sz_g3d_grid_step':
+      seen.add('game-3d')
+      return { kind: 'js', value: { type: 'g3d:gridStep', objVar: f(block, 'OBJ') } }
+    case 'sz_g3d_grid_move':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3d:gridMove',
+          objVar: f(block, 'OBJ'),
+          direction: f(block, 'DIR') || 'forward',
+        },
+      }
+    case 'sz_g3d_move_across':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3d:moveAcross',
+          groupVar: f(block, 'GROUP'),
+          speed: fn(block, 'SPEED', 0.1),
+          min: fn(block, 'MIN', -10),
+          max: fn(block, 'MAX', 10),
+        },
+      }
+    case 'sz_g3d_grid_position':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3d:gridPosition',
+          objVar: f(block, 'OBJ'),
+          row: exprInput(block, 'ROW', { type: 'num', value: 0 }),
+          col: exprInput(block, 'COL', { type: 'num', value: 0 }),
         },
       }
 

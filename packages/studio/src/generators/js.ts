@@ -68,6 +68,8 @@ function jsChildBodies(stmt: JSStatement): JSStatement[][] {
     case 'forEach':
     case 'setTimeout':
     case 'setInterval':
+    case 'setTimeoutSeconds':
+    case 'setIntervalSeconds':
       return [stmt.body]
     case 'tryCatch':
       return [stmt.body, stmt.handler, stmt.finalizer ?? []]
@@ -219,6 +221,8 @@ function stripNestedAnimationLoops(stmt: JSStatement, hoisted: JSStatement[]): J
     case 'forEach':
     case 'setTimeout':
     case 'setInterval':
+    case 'setTimeoutSeconds':
+    case 'setIntervalSeconds':
       return { ...stmt, body: extractAnimationLoops(stmt.body, hoisted) }
     case 'animationLoop':
       return { ...stmt, body: extractAnimationLoops(stmt.body, hoisted) }
@@ -465,6 +469,11 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
+      // Escuta global na JANELA: eventos da página inteira (load/resize) — ou
+      // qualquer evento marcado explicitamente como targetKind 'window'.
+      if (stmt.targetKind === 'window' || stmt.event === 'load' || stmt.event === 'resize') {
+        return `${pad}window.addEventListener(${JSON.stringify(stmt.event)}, (event) => {\n${body}\n${pad}});`
+      }
       // Eventos que pegam um alvo (target) — vão para o elemento:
       const elementBound: ReadonlySet<string> = new Set([
         'click',
@@ -475,7 +484,7 @@ function compileStatementCode(
         'change',
       ])
       // Escuta global no documento: clique em qualquer lugar (targetKind
-      // 'document') ou eventos de teclado (keydown/keyup).
+      // 'document'), eventos de teclado (keydown/keyup) ou mover o mouse.
       if (stmt.targetKind === 'document' || !elementBound.has(stmt.event)) {
         return `${pad}document.addEventListener(${JSON.stringify(stmt.event)}, (event) => {\n${body}\n${pad}});`
       }
@@ -939,6 +948,20 @@ function compileStatementCode(
       )
       return `${pad}SZGame2D.overlapSpriteGroup(() => ${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.groupVar)}, function (${identifiers.get(stmt.itemName)}) {\n${body}\n${pad}});`
     }
+    case 'g2d:steerThrust':
+      return `${pad}SZGame2D.steerThrust(${identifiers.get(stmt.spriteVar)}, ${stmt.speed}, ${stmt.turn});`
+    case 'g2d:rotateSprite':
+      return `${pad}SZGame2D.rotateSprite(${identifiers.get(stmt.spriteVar)}, ${stmt.deg});`
+    case 'g2d:pointSprite':
+      return `${pad}SZGame2D.pointSprite(${identifiers.get(stmt.spriteVar)}, ${stmt.deg});`
+    case 'g2d:thrust':
+      return `${pad}SZGame2D.thrust(${identifiers.get(stmt.spriteVar)}, ${stmt.force});`
+    case 'g2d:applyFriction':
+      return `${pad}SZGame2D.applyFriction(${identifiers.get(stmt.spriteVar)}, ${stmt.factor});`
+    case 'g2d:shootFrom':
+      return `${pad}SZGame2D.shootFrom(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.groupVar)}, { speed: ${stmt.speed}, color: ${JSON.stringify(stmt.color)} });`
+    case 'g2d:spawnAsteroidEdge':
+      return `${pad}SZGame2D.spawnAsteroidFromEdge(${identifiers.get(stmt.groupVar)}, { size: ${stmt.size}, color: ${JSON.stringify(stmt.color)}, speed: ${stmt.speed} });`
     case 'g2d:jumpOnGround':
       return `${pad}SZGame2D.jumpOnGround(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.ctxVar)}, ${stmt.jump});`
     case 'g2d:createDino':
@@ -990,6 +1013,52 @@ function compileStatementCode(
       )
       return `${pad}SZGame3D.animate(${identifiers.get(stmt.worldVar)}, () => {\n${body}\n${pad}});`
     }
+    case 'g3d:createBlock':
+      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame3D.createBlock(${identifiers.get(stmt.worldVar)}, { width: ${stmt.width}, height: ${stmt.height}, depth: ${stmt.depth}, color: ${JSON.stringify(stmt.color)} });`
+    case 'g3d:setVelocity':
+      return `${pad}SZGame3D.setVelocity(${identifiers.get(stmt.objVar)}, ${compileExpr(stmt.x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base))}, ${compileExpr(stmt.z, 0, identifiers, recAt(base))});`
+    case 'g3d:jump':
+      return `${pad}SZGame3D.jump(${identifiers.get(stmt.objVar)}, ${compileExpr(stmt.force, 0, identifiers, recAt(base))});`
+    case 'g3d:applyGravity':
+      return `${pad}SZGame3D.applyGravity(${identifiers.get(stmt.objVar)}, ${identifiers.get(stmt.groundVar)});`
+    case 'g3d:controlWithKeys':
+      return `${pad}SZGame3D.controlWithKeys(${identifiers.get(stmt.objVar)}, ${stmt.speed});`
+    case 'g3d:setScale':
+      return `${pad}SZGame3D.setScale(${identifiers.get(stmt.objVar)}, ${compileExpr(stmt.factor, 0, identifiers, recAt(base))});`
+    case 'g3d:cameraFollow':
+      return `${pad}SZGame3D.cameraFollow(${identifiers.get(stmt.worldVar)}, ${identifiers.get(stmt.objVar)});`
+    case 'g3d:createGroup':
+      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame3D.createGroup();`
+    case 'g3d:runEnemies':
+      return `${pad}SZGame3D.runEnemies(${identifiers.get(stmt.worldVar)}, ${identifiers.get(stmt.groupVar)}, ${identifiers.get(stmt.groundVar)}, ${stmt.every}, ${stmt.speed});`
+    case 'g3d:stop':
+      return `${pad}SZGame3D.stop(${identifiers.get(stmt.worldVar)});`
+    case 'g3d:createCrossingScene':
+      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame3D.createCrossingScene(${JSON.stringify(stmt.canvasId)});`
+    case 'g3d:createCrosser':
+      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame3D.createCrosser(${identifiers.get(stmt.worldVar)}, { color: ${JSON.stringify(stmt.color)} });`
+    case 'g3d:crosserMove':
+      return `${pad}SZGame3D.crosserMove(${identifiers.get(stmt.objVar)}, ${JSON.stringify(stmt.direction)});`
+    case 'g3d:crosserStep':
+      return `${pad}SZGame3D.crosserStep(${identifiers.get(stmt.objVar)}, ${identifiers.get(stmt.worldVar)});`
+    case 'g3d:crosserReset':
+      return `${pad}SZGame3D.crosserReset(${identifiers.get(stmt.objVar)}, ${identifiers.get(stmt.worldVar)});`
+    case 'g3d:addRow':
+      return `${pad}SZGame3D.addRow(${identifiers.get(stmt.worldVar)}, ${compileExpr(stmt.rowIndex, 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.kind)}, ${JSON.stringify(stmt.direction)}, ${stmt.speed});`
+    case 'g3d:generateRows':
+      return `${pad}SZGame3D.generateRows(${identifiers.get(stmt.worldVar)}, ${stmt.count});`
+    case 'g3d:moveTraffic':
+      return `${pad}SZGame3D.moveTraffic(${identifiers.get(stmt.worldVar)});`
+    case 'g3d:isometricCamera':
+      return `${pad}SZGame3D.isometricCamera(${identifiers.get(stmt.worldVar)}, ${stmt.followVar ? identifiers.get(stmt.followVar) : 'null'});`
+    case 'g3d:gridStep':
+      return `${pad}SZGame3D.gridStep(${identifiers.get(stmt.objVar)});`
+    case 'g3d:gridMove':
+      return `${pad}SZGame3D.gridMove(${identifiers.get(stmt.objVar)}, ${JSON.stringify(stmt.direction)});`
+    case 'g3d:moveAcross':
+      return `${pad}SZGame3D.moveAcross(${identifiers.get(stmt.groupVar)}, ${stmt.speed}, ${stmt.min}, ${stmt.max});`
+    case 'g3d:gridPosition':
+      return `${pad}SZGame3D.gridPosition(${identifiers.get(stmt.objVar)}, ${compileExpr(stmt.row, 0, identifiers, recAt(base))}, ${compileExpr(stmt.col, 0, identifiers, recAt(base))});`
     case 'classDecl': {
       const className = identifiers.declareClassName(classKey(stmt), stmt.name)
       const superClause = stmt.superClass
@@ -1059,6 +1128,9 @@ function compileStatementCode(
     }
     case 'eventHandler': {
       const handler = identifiers.get(stmt.handlerName)
+      if (stmt.targetKind === 'window') {
+        return `${pad}window.addEventListener(${JSON.stringify(stmt.event)}, ${handler});`
+      }
       if (stmt.targetKind === 'document') {
         return `${pad}document.addEventListener(${JSON.stringify(stmt.event)}, ${handler});`
       }
@@ -1125,6 +1197,28 @@ function compileStatementCode(
       // `}, <delay>);` é a última linha: base + 1 (abertura) + linhas do corpo.
       const delayLine = base + 1 + countLines(body)
       return `${pad}setInterval(() => {\n${body}\n${pad}}, ${compileExpr(stmt.delay, 0, identifiers, recAt(delayLine))});`
+    }
+    case 'setTimeoutSeconds': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      // Segundos → milissegundos no código: `<delay> * 1000`. A precedência 6 (`*`)
+      // garante que um delay composto (ex.: `a + b`) saia parentizado: `(a + b) * 1000`.
+      const delayLine = base + 1 + countLines(body)
+      return `${pad}setTimeout(() => {\n${body}\n${pad}}, ${compileExpr(stmt.delay, 6, identifiers, recAt(delayLine))} * 1000);`
+    }
+    case 'setIntervalSeconds': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      const delayLine = base + 1 + countLines(body)
+      return `${pad}setInterval(() => {\n${body}\n${pad}}, ${compileExpr(stmt.delay, 6, identifiers, recAt(delayLine))} * 1000);`
     }
     case 'rawJS': {
       // Indenta APENAS a 1ª linha física (e só se ela não for vazia). As linhas
@@ -1217,6 +1311,8 @@ function reserveClassNames(statements: JSStatement[], scope: IdentifierScope): v
       case 'forEach':
       case 'setTimeout':
       case 'setInterval':
+      case 'setTimeoutSeconds':
+      case 'setIntervalSeconds':
       case 'animationLoop':
       case 'g2d:updateEachFrame':
       case 'g2d:onPointer':
@@ -1266,6 +1362,8 @@ function reserveCanvasElements(statements: JSStatement[], scope: IdentifierScope
       case 'forEach':
       case 'setTimeout':
       case 'setInterval':
+      case 'setTimeoutSeconds':
+      case 'setIntervalSeconds':
       case 'animationLoop':
       case 'g2d:updateEachFrame':
       case 'g2d:onPointer':
@@ -1707,6 +1805,20 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       names.add(stmt.itemName)
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
+    case 'g2d:steerThrust':
+    case 'g2d:rotateSprite':
+    case 'g2d:pointSprite':
+    case 'g2d:thrust':
+    case 'g2d:applyFriction':
+      names.add(stmt.spriteVar)
+      return
+    case 'g2d:shootFrom':
+      names.add(stmt.spriteVar)
+      names.add(stmt.groupVar)
+      return
+    case 'g2d:spawnAsteroidEdge':
+      names.add(stmt.groupVar)
+      return
     case 'g2d:jumpOnGround':
     case 'g2d:controlDino':
       names.add(stmt.spriteVar)
@@ -1811,6 +1923,83 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       names.add(stmt.worldVar)
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
+    case 'g3d:createBlock':
+      names.add(stmt.varName)
+      names.add(stmt.worldVar)
+      return
+    case 'g3d:setVelocity':
+      names.add(stmt.objVar)
+      collectExprIdentifiers(stmt.x, names)
+      collectExprIdentifiers(stmt.y, names)
+      collectExprIdentifiers(stmt.z, names)
+      return
+    case 'g3d:jump':
+      names.add(stmt.objVar)
+      collectExprIdentifiers(stmt.force, names)
+      return
+    case 'g3d:setScale':
+      names.add(stmt.objVar)
+      collectExprIdentifiers(stmt.factor, names)
+      return
+    case 'g3d:applyGravity':
+      names.add(stmt.objVar)
+      names.add(stmt.groundVar)
+      return
+    case 'g3d:controlWithKeys':
+      names.add(stmt.objVar)
+      return
+    case 'g3d:cameraFollow':
+      names.add(stmt.worldVar)
+      names.add(stmt.objVar)
+      return
+    case 'g3d:createGroup':
+      names.add(stmt.varName)
+      return
+    case 'g3d:runEnemies':
+      names.add(stmt.worldVar)
+      names.add(stmt.groupVar)
+      names.add(stmt.groundVar)
+      return
+    case 'g3d:stop':
+      names.add(stmt.worldVar)
+      return
+    case 'g3d:createCrossingScene':
+      names.add(stmt.varName)
+      return
+    case 'g3d:createCrosser':
+      names.add(stmt.varName)
+      names.add(stmt.worldVar)
+      return
+    case 'g3d:crosserMove':
+    case 'g3d:gridStep':
+    case 'g3d:gridMove':
+      names.add(stmt.objVar)
+      return
+    case 'g3d:crosserStep':
+    case 'g3d:crosserReset':
+      names.add(stmt.objVar)
+      names.add(stmt.worldVar)
+      return
+    case 'g3d:addRow':
+      names.add(stmt.worldVar)
+      collectExprIdentifiers(stmt.rowIndex, names)
+      return
+    case 'g3d:generateRows':
+    case 'g3d:moveTraffic':
+      names.add(stmt.worldVar)
+      return
+    case 'g3d:isometricCamera':
+      names.add(stmt.worldVar)
+      if (stmt.followVar) names.add(stmt.followVar)
+      return
+    case 'g3d:moveAcross':
+      names.add(stmt.groupVar)
+      return
+    case 'g3d:gridPosition':
+      names.add(stmt.objVar)
+      collectExprIdentifiers(stmt.row, names)
+      collectExprIdentifiers(stmt.col, names)
+      return
     case 'classDecl':
       for (const param of stmt.ctorParams ?? []) names.add(param)
       for (const child of stmt.ctorBody) collectStatementIdentifiers(child, names)
@@ -1866,6 +2055,8 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'setTimeout':
     case 'setInterval':
+    case 'setTimeoutSeconds':
+    case 'setIntervalSeconds':
       collectExprIdentifiers(stmt.delay, names)
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
@@ -1979,6 +2170,9 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
       return
     case 'g2d:countGroup':
       names.add(expr.groupVar)
+      return
+    case 'g2d:spriteAngle':
+      names.add(expr.spriteVar)
       return
     case 'canvasMeasureText':
       collectExprIdentifiers(expr.text, names)
