@@ -24,7 +24,7 @@ describe('evaluateStructureRule (recálculo no servidor)', () => {
 
   it('declaresVariable / definesFunction / callsFunction casam por nome', () => {
     const p = project([
-      { type: 'var', name: 'pontos' },
+      { type: 'var', name: 'pontos', value: { type: 'num', value: 0 } },
       { type: 'funcDecl', name: 'somar', body: [] },
       { type: 'callFunction', name: 'somar', args: [] },
     ])
@@ -32,6 +32,9 @@ describe('evaluateStructureRule (recálculo no servidor)', () => {
     expect(evaluateStructureRule({ type: 'definesFunction', name: 'somar' }, p)).toBe(true)
     expect(evaluateStructureRule({ type: 'callsFunction', name: 'somar' }, p)).toBe(true)
     expect(evaluateStructureRule({ type: 'callsFunction', name: 'nope' }, p)).toBe(false)
+    // Uma REFERÊNCIA (var sem `value`) NÃO conta como declaração (espelha o studio).
+    const refOnly = project([{ type: 'assign', name: 'x', value: { type: 'var', name: 'pontos' } }])
+    expect(evaluateStructureRule({ type: 'declaresVariable', name: 'pontos' }, refOnly)).toBe(false)
   })
 
   it('usesBlock anda o blocksState', () => {

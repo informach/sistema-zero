@@ -9,6 +9,11 @@ import type { ProjectSummary } from '../state/persistence'
 export interface StudioPersistenceAdapter {
   /** Carrega um projeto por id (usado pelo host/ProjectList; o Studio em si recebe initialProject). */
   load(id: string): Promise<Project | null>
+  /**
+   * Opcional: restaura partes pesadas que o load rápido pode ter omitido.
+   * O adapter deve devolver somente um blocksState já confiável/sanitizado.
+   */
+  loadBlocksState?(project: Project): Promise<Project['blocksState']>
   /** Persiste o snapshot completo. Chamado no debounce do autosave e no salvar explícito. */
   save(project: Project): Promise<void>
   // Opcionais — exigidos só pelo <ProjectList>:

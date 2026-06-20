@@ -2,6 +2,7 @@ import {
   assetManifest,
   isReservedProjectFileName,
   normalizeExtraFileName,
+  normalizeProPath,
   type Project,
 } from '#core'
 import { findExtension } from '#official-extensions'
@@ -195,19 +196,32 @@ export interface ProFileMapResult {
 }
 
 /**
- * Monta os arquivos de um projeto PRO: a árvore inteira como arquivos reais
- * (pula `node_modules`). Não minifica — o Vite minifica no build do deploy.
+ * Monta os arquivos de um projeto PRO: a árvore inteira como arquivos reais,
+ * revalidando cada caminho cru com `normalizeProPath` no limite do ZIP (pula
+ * `node_modules`, caminhos absolutos e travessias `..`). Não minifica — o Vite
+ * minifica no build do deploy.
  */
 export function buildProFileMap(project: Project): ProFileMapResult {
   const files: ExportFileMap = {}
+  const warnings: string[] = []
   const tree = project.tree ?? {}
   for (const [path, node] of Object.entries(tree)) {
     if (node.kind !== 'file') continue
-    if (path.split('/').includes('node_modules')) continue
+    // Zip-slip em profundidade no LIMITE do ZIP: revalida o caminho cru da árvore
+    // antes de gravar. `normalizeProPath` já rejeita `node_modules`, caminhos
+    // absolutos e `..` (então isto SUBSTITUI o antigo skip de node_modules) e
+    // normaliza barras; gravamos só quando o caminho já está canônico (norm === path).
+    // Espelha o padrão de "pular + avisar" das colisões de nome de saída acima.
+    const norm = normalizeProPath(path)
+    if (norm === null || norm !== path) {
+      warnings.push(
+        `O arquivo "${path}" ficou de fora do pacote de deploy porque o caminho não é seguro para o ZIP.`,
+      )
+      continue
+    }
     files[path] = node.content
   }
 
-  const warnings: string[] = []
   const pkgRaw =
     typeof files['package.json'] === 'string' ? (files['package.json'] as string) : null
   if (!pkgRaw) {

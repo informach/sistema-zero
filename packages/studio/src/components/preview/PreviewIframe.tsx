@@ -218,16 +218,18 @@ export function PreviewIframe(): JSX.Element {
   // Título do documento (tag <title> do index.html), exibido no cabeçalho do
   // preview — é o mesmo nome que apareceria na guia do navegador. Cai para o
   // nome do projeto quando o HTML não tem <title>.
-  const documentTitle = useMemo(() => {
-    try {
-      const parsed = new DOMParser().parseFromString(debouncedHtml, 'text/html')
-      const title = parsed.querySelector('title')?.textContent?.trim()
-      if (title) return title
-    } catch {
-      // HTML malformado: ignora e usa o fallback.
-    }
-    return projectName
-  }, [debouncedHtml, projectName])
+  //
+  // Antes montávamos um DOCUMENTO inteiro com `DOMParser` só para ler uma tag —
+  // o `doc` (build do preview) e a Ponte já parseiam o MESMO HTML, mas nenhum
+  // desses parses é acessível daqui (BridgeMode/`buildPreviewDoc` ficam em outros
+  // módulos). Em vez de uma 3ª árvore de DOM completa por mudança de HTML, isolamos
+  // o miolo do `<title>` por regex e DECODIFICAMOS as entidades (&amp; etc.) num
+  // único `<textarea>` descartável — mesma saída de `textContent`, sem construir o
+  // documento todo. `extractDocumentTitle` é pura e testável.
+  const documentTitle = useMemo(
+    () => extractDocumentTitle(debouncedHtml) ?? projectName,
+    [debouncedHtml, projectName],
+  )
 
   const extensionScripts = useMemo(() => {
     const ids = debouncedIds ? debouncedIds.split(',') : []
@@ -569,4 +571,48 @@ const MESSAGE_RATE_MAX_PER_WINDOW = 240
 function formatPreviewSize(chars: number): string {
   if (chars >= 1_000_000) return `${(chars / 1_000_000).toFixed(1)} M caracteres`
   return `${Math.ceil(chars / 1_000)} mil caracteres`
+}
+
+// Casa o PRIMEIRO `<title>` (qualquer atributo, qualquer caixa, conteúdo em
+// múltiplas linhas) — espelha o que `document.querySelector('title')` pegaria
+// (primeiro em ordem de documento). `<title>` é elemento de TEXTO BRUTO no HTML:
+// entidades são decodificadas, mas tags internas ficam literais — exatamente o
+// que `textContent` devolveria.
+// `<title>` ou `<title ...atributos>` (exige limite de tag real após o nome —
+// não casa `<titlexyz>`, igual a `querySelector('title')`).
+const TITLE_TAG_RE = /<title(?:\s[^>]*)?>([\s\S]*?)<\/title\s*>/i
+// Pré-filtro barato e CASE-INSENSITIVE (`<TITLE>` é válido): só dispara o regex
+// completo quando a abertura existe — evita rodar o casamento no HTML sem título.
+const TITLE_OPEN_RE = /<title[\s>]/i
+
+function decodeHtmlEntities(raw: string): string {
+  // Sem entidades não há o que decodificar — evita até tocar no DOM.
+  if (!raw.includes('&')) return raw
+  if (typeof DOMParser === 'undefined') return raw
+  // Decodifica via documento INERTE do DOMParser (sem browsing context): NÃO
+  // executa script nem CARREGA subrecursos. Antes era `<textarea>.innerHTML = raw`
+  // num nó VIVO do documento do EDITOR — um título forjado como
+  // `</textarea><img src=x onerror=...>` quebrava o RCDATA do textarea e o <img>
+  // disparava fetch/onerror na origem 1ª-parte do editor. Parsear só o fragmento
+  // do título é barato e inerte (um <img> aqui não carrega nada).
+  const doc = new DOMParser().parseFromString(`<title>${raw}</title>`, 'text/html')
+  return doc.querySelector('title')?.textContent ?? raw
+}
+
+/**
+ * Lê o conteúdo do `<title>` do HTML sem construir uma árvore de DOM completa.
+ * Devolve o título com `trim`, ou `null` quando não há `<title>` (o chamador cai
+ * no nome do projeto). Mesma saída de `querySelector('title')?.textContent?.trim()`,
+ * porém sem o custo de parsear o documento inteiro só para uma tag. Exportada para
+ * teste de paridade.
+ */
+export function extractDocumentTitle(html: string): string | null {
+  // Pré-checagem barata: sem a abertura `<title` nem rodamos o regex completo
+  // (caso comum de HTML sem `<title>`, onde o parser antigo montava o documento
+  // todo à toa).
+  if (!TITLE_OPEN_RE.test(html)) return null
+  const match = TITLE_TAG_RE.exec(html)
+  if (!match) return null
+  const title = decodeHtmlEntities(match[1] ?? '').trim()
+  return title ? title : null
 }

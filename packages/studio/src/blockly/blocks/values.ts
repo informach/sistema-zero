@@ -121,6 +121,15 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     tooltip: 'Combina duas condições: "e" (ambas) ou "ou" (qualquer uma).',
   },
   {
+    type: 'sz_val_not',
+    message0: 'não %1',
+    args0: [{ type: 'input_value', name: 'VALUE', check: 'JSValue' }],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Inverte uma condição: verdadeiro vira falso e falso vira verdadeiro.',
+  },
+  {
     type: 'sz_val_ternary',
     message0: 'se %1 então %2 senão %3',
     args0: [

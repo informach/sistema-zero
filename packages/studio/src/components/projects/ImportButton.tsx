@@ -27,7 +27,19 @@ export function ImportButton({ onImported }: ImportButtonProps): JSX.Element {
       if (text.length > MAX_PROJECT_IMPORT_CHARS) {
         throw new Error('arquivo excede o tamanho máximo permitido')
       }
-      const parsed = JSON.parse(text)
+      // O JSON.parse fica no SEU PRÓPRIO try/catch: um arquivo que não é JSON
+      // (ex.: uma imagem, um .txt) estoura um SyntaxError com texto em inglês
+      // ("Unexpected token o in JSON") que não diz nada a uma criança. Aqui
+      // trocamos por uma frase fixa em português que aponta o próximo passo.
+      // Erros de JSON-válido-mas-projeto-inválido continuam vindo do store (já
+      // em português) e NÃO são engolidos por este catch.
+      let parsed: unknown
+      try {
+        parsed = JSON.parse(text)
+      } catch {
+        setError(t('projects.importNotJson'))
+        return
+      }
       const imported = await importFromJSON(parsed)
       onImported(imported.id)
     } catch (err) {

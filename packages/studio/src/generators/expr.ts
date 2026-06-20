@@ -8,6 +8,24 @@ import type { SourceMapBuilder } from './sourceMap'
 export { normalizeIdentifier, safeIdent }
 
 /**
+ * Erro lançado quando o gerador encontra um nó de IR que NENHUM `case` do
+ * `switch` cobre — ou seja, uma variante fora do esquema conhecido (ex.: IR de um
+ * JSON importado por um estranho, ou uma variante nova sem `case` correspondente).
+ * Sem ele, o `switch` "caía pela borda" e devolvia `undefined`, que era
+ * interpolado como a STRING literal `"undefined"` no código gerado — um bug
+ * silencioso. Tipado e capturável (irmão de `GeneratorDepthError`), para que os
+ * chamadores na thread principal possam distingui-lo de um bug do gerador e
+ * degradar com elegância em vez de emitir código quebrado. Vive AQUI (módulo
+ * "de baixo") para que `js.ts` possa importá-lo sem criar dependência circular.
+ */
+export class GeneratorError extends Error {
+  constructor(message = 'Nó de IR fora do esquema suportado pelo gerador') {
+    super(message)
+    this.name = 'GeneratorError'
+  }
+}
+
+/**
  * Contexto opcional de source map para expressões. Como `compileExpr` nunca
  * emite `\n`, toda (sub)expressão vive numa única linha — basta registrar
  * `__id → linha`. A linha é a mesma para a expressão e seus filhos.
@@ -184,6 +202,9 @@ export function compileExpr(
       const out = `${left} ${expr.op} ${right}`
       return p < parentPrecedence ? `(${out})` : out
     }
+    case 'logicalNot':
+      // Operando em alta precedência: `!a`, `!fn()`, mas `!(a && b)`.
+      return `!${compileExpr(expr.value, 20, identifiers, rec)}`
     case 'ternary': {
       // A condição não pode ser ela própria um ternário sem parênteses (só liga
       // até `||`); por isso compila com precedência de `||`. Os ramos aceitam
@@ -224,6 +245,8 @@ export function compileExpr(
       return expr.kind === 'innerWidth' ? 'window.innerWidth' : 'window.innerHeight'
     case 'canvasDim':
       return `${identifiers.getCanvasElement(expr.ctxVar)}.${expr.dim}`
+    case 'canvasMeasureText':
+      return `${identifiers.get(expr.ctxVar)}.measureText(${compileExpr(expr.text, 0, identifiers, rec)}).width`
     case 'random': {
       const min = compileExpr(expr.min, 0, identifiers, rec)
       const max = compileExpr(expr.max, 0, identifiers, rec)
@@ -343,6 +366,19 @@ export function compileExpr(
       const args = expr.args.map((a) => compileExpr(a, 0, identifiers, rec)).join(', ')
       return `${compileExpr(expr.object, MEMBER_PRECEDENCE, identifiers, rec)}.${normalizeIdentifier(expr.method)}(${args})`
     }
+    default: {
+      // Sem este ramo, uma expressão fora do esquema (ex.: IR de um JSON
+      // importado por um estranho) caía pela borda do `switch` e `compileExpr`
+      // devolvia `undefined`, interpolado como a STRING `"undefined"` no código
+      // gerado — bug silencioso. A atribuição a `never` é o verdadeiro valor:
+      // se um dia surgir uma variante de `JSExpr` sem `case` aqui, ela vira
+      // ERRO DE COMPILAÇÃO (TS reclama que o tipo não é `never`), forçando o
+      // autor a tratá-la. Em runtime, lança erro tipado e capturável.
+      const _never: never = expr
+      throw new GeneratorError(
+        `Expressão de IR não suportada: ${JSON.stringify((_never as { type?: unknown }).type)}`,
+      )
+    }
   }
 }
 
@@ -374,9 +410,13 @@ function isPureExpr(expr: JSExpr): boolean {
     case 'datasetGet':
     case 'classContains':
       return true
+    case 'canvasMeasureText':
+      return isPureExpr(expr.text)
     case 'binop':
     case 'logical':
       return isPureExpr(expr.left) && isPureExpr(expr.right)
+    case 'logicalNot':
+      return isPureExpr(expr.value)
     case 'ternary':
       return isPureExpr(expr.condition) && isPureExpr(expr.whenTrue) && isPureExpr(expr.whenFalse)
     case 'mathUnary':
@@ -421,6 +461,13 @@ const MEMBER_PRECEDENCE = 20
 
 /** Chave de objeto literal: nome cru se for identificador válido, senão entre aspas. */
 function objectKey(key: string): string {
+  // `__proto__` casa o regex de identificador, mas como chave CRUA num literal
+  // (`{ __proto__: v }`) ela é especial: define o PROTÓTIPO do objeto em vez de
+  // uma propriedade própria — `obj.__proto__` não enumera e o objeto herda de
+  // `v`. Forçar as aspas (`{ "__proto__": v }`) volta a ser uma propriedade
+  // própria normal, que é o que o aluno espera. `constructor`/`prototype` não
+  // têm esse tratamento especial em literais e não precisam de ajuste.
+  if (key === '__proto__') return JSON.stringify(key)
   return /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key) ? key : JSON.stringify(key)
 }
 

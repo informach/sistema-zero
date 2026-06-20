@@ -2,6 +2,26 @@ import type { WebContainer } from '@webcontainer/api'
 
 let bootPromise: Promise<WebContainer> | null = null
 
+/**
+ * O WebContainer SÓ roda em página cross-origin isolada (o host precisa enviar
+ * COOP/COEP — ver docs/embedding.md). Quando `crossOriginIsolated === false`,
+ * bootar é FUTIL: o `import('@webcontainer/api')` é pesado (megabytes) e o boot
+ * sempre falharia. Esta checagem barata permite curto-circuitar ANTES do import
+ * dinâmico, mostrando uma mensagem amigável em vez de baixar o runtime à toa.
+ *
+ * Retorna `true` quando dá para tentar (isolado, OU o navegador não expõe a
+ * flag — caso em que deixamos o boot decidir). Retorna `false` SÓ quando a flag
+ * existe e é `false`. Em SSR (`window` ausente) retorna `true` para não
+ * falso-disparar no servidor; o gate real acontece no cliente. Não distinguimos
+ * "host esqueceu os headers" de "navegador sem SharedArrayBuffer" — a flag não
+ * separa os dois —, então a mensagem ao aluno é genérica.
+ */
+export function canBootWebContainer(): boolean {
+  if (typeof window === 'undefined') return true
+  if (typeof crossOriginIsolated === 'undefined') return true
+  return crossOriginIsolated !== false
+}
+
 // O WebContainer é um SINGLETON por aba e seu sistema de arquivos é ÚNICO: tanto
 // o terminal clássico (que monta na raiz após `resetWebContainerFs`) quanto o
 // modo profissional (`useWebContainerSync.ensureMounted`) escrevem no MESMO FS.

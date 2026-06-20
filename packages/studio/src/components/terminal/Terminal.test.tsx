@@ -37,7 +37,12 @@ const fakeWebContainer = {
   fs: { writeFile: async () => undefined, rm: async () => undefined },
 }
 
+// Controla o precheck de cross-origin isolation por teste: por default deixamos
+// bootar (caminho feliz); o teste de "indisponível" flipa para false.
+let canBoot = true
+
 mock.module('./webContainerClient', () => ({
+  canBootWebContainer: () => canBoot,
   getWebContainer: async () => fakeWebContainer,
   resetWebContainerFs: async () => {
     resetCalls += 1
@@ -85,6 +90,7 @@ function setClassicProject(): void {
 describe('Terminal single-owner do FS clássico (#9)', () => {
   beforeEach(() => {
     resetCalls = 0
+    canBoot = true
     setClassicProject()
   })
 
@@ -97,7 +103,7 @@ describe('Terminal single-owner do FS clássico (#9)', () => {
     const a = render(<Terminal />)
     fireEvent.click(a.getByText('Carregar terminal real'))
     // Primeira instância vira dona e monta o FS (reset chamado 1x).
-    await waitFor(() => expect(a.getByText('Reiniciar')).toBeTruthy())
+    await waitFor(() => expect(a.getByText('Travou? Reiniciar terminal')).toBeTruthy())
     expect(resetCalls).toBe(1)
 
     // Segunda instância clássica na MESMA aba: deve recusar.
@@ -110,7 +116,38 @@ describe('Terminal single-owner do FS clássico (#9)', () => {
     // Ao desmontar a primeira (libera o token), a segunda consegue carregar.
     a.unmount()
     fireEvent.click(b.getByText('Tentar novamente'))
-    await waitFor(() => expect(b.getByText('Reiniciar')).toBeTruthy())
+    await waitFor(() => expect(b.getByText('Travou? Reiniciar terminal')).toBeTruthy())
     expect(resetCalls).toBe(2)
+  })
+
+  it('mostra a dica de Ctrl-C quando o terminal está pronto', async () => {
+    const a = render(<Terminal />)
+    fireEvent.click(a.getByText('Carregar terminal real'))
+    await waitFor(() => expect(a.getByText('Travou? Reiniciar terminal')).toBeTruthy())
+    expect(a.getByText(/interromper o programa/i)).toBeTruthy()
+  })
+})
+
+describe('Terminal precheck de cross-origin isolation', () => {
+  beforeEach(() => {
+    resetCalls = 0
+    canBoot = true
+    setClassicProject()
+  })
+
+  afterEach(() => {
+    cleanup()
+    useProjectStore.setState({ project: null, isDirty: false, saveError: null })
+  })
+
+  it('sem isolamento: mostra "indisponível" SEM bootar nem oferecer retry', async () => {
+    canBoot = false
+    const a = render(<Terminal />)
+    fireEvent.click(a.getByText('Carregar terminal real'))
+    await waitFor(() => expect(a.getByText(/não está disponível aqui ainda/i)).toBeTruthy())
+    // Curto-circuitou ANTES do reset/mount do FS — nada foi tocado.
+    expect(resetCalls).toBe(0)
+    // Sem "Tentar novamente": recarregar é o único remédio.
+    expect(a.queryByText('Tentar novamente')).toBeNull()
   })
 })

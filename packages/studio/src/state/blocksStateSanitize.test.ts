@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import { buildWorkspaceStateFromIR } from '#blockly'
 import type { SZIR } from '#ir'
-import { sanitizeImportedBlocksState } from './projectStore'
+import { sanitizeImportedBlocksState, sanitizeProjectForHost } from './projectStore'
 
 /**
  * Regressão do bug "código no Monaco mas nenhum bloco": o sanitizador do projeto
@@ -67,6 +67,27 @@ describe('sanitizeImportedBlocksState — aceita estado gerado pela Ponte', () =
     expect(sanitizeImportedBlocksState(state, [])).not.toBeNull()
   })
 
+  it('preserva pilhas longas serializadas por next.block', () => {
+    const head = {
+      type: 'sz_js_console_log_text',
+      id: 'log_0',
+      fields: { VALUE: 'oi' },
+    }
+    let current = head as typeof head & { next?: { block: typeof head } }
+    for (let index = 1; index < 120; index += 1) {
+      const next = {
+        type: 'sz_js_console_log_text',
+        id: `log_${index}`,
+        fields: { VALUE: 'oi' },
+      }
+      current.next = { block: next }
+      current = next
+    }
+    const state = { blocks: { languageVersion: 0, blocks: [head] } }
+
+    expect(sanitizeImportedBlocksState(state, [])).toEqual(state)
+  })
+
   it('descarta extraState de mutator que tentaria criar milhares de inputs', () => {
     const state = {
       blocks: {
@@ -98,5 +119,33 @@ describe('sanitizeImportedBlocksState — aceita estado gerado pela Ponte', () =
     }
 
     expect(sanitizeImportedBlocksState(state, [])).toBeNull()
+  })
+
+  it('descarta blocksState grande ao rehidratar projeto salvo, mantendo import externo rígido', () => {
+    const blocks = Array.from({ length: 5_001 }, (_, index) => ({
+      type: 'sz_js_console_log_text',
+      id: `log_${index}`,
+      fields: { VALUE: 'oi' },
+    }))
+    const blocksState = { blocks: { languageVersion: 0, blocks } }
+
+    expect(() => sanitizeImportedBlocksState(blocksState, [])).toThrow(
+      'blocksState excede o tamanho ou a complexidade máxima',
+    )
+
+    const project = sanitizeProjectForHost({
+      id: 'local-big-blocks',
+      name: 'Projeto grande',
+      files: {
+        'index.html': '<h1>ok</h1>',
+        'style.css': '',
+        'script.js': '',
+      },
+      ir: { html: [], css: [], js: [], extensions: [] },
+      blocksState,
+      installedExtensions: [],
+    })
+
+    expect(project?.blocksState).toBeNull()
   })
 })

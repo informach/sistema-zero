@@ -236,16 +236,40 @@ describe('buildClassicFileMap', () => {
 })
 
 describe('buildProFileMap', () => {
-  it('emite a arvore inteira, pula node_modules, sem warnings quando ha build', () => {
+  it('emite a arvore inteira, sem warnings quando os caminhos sao seguros e ha build', () => {
     const project = createProProject('02', 'App Pro', 'vanilla-vite')
-    // injeta um node_modules que deve ser ignorado
-    project.tree = { ...project.tree, 'node_modules/x/index.js': { kind: 'file', content: 'x' } }
     const { files, warnings } = buildProFileMap(project)
     expect(files['package.json']).toBeDefined()
     expect(files['vite.config.ts']).toBeDefined()
     expect(files['src/main.ts']).toBeDefined()
-    expect(files['node_modules/x/index.js']).toBeUndefined()
     expect(warnings).toEqual([])
+  })
+
+  it('pula node_modules (subsumido por normalizeProPath) com aviso nao-fatal', () => {
+    const project = createProProject('02b', 'App Pro', 'vanilla-vite')
+    // injeta um node_modules que deve ser ignorado pela guarda de caminho
+    project.tree = { ...project.tree, 'node_modules/x/index.js': { kind: 'file', content: 'x' } }
+    const { files, warnings } = buildProFileMap(project)
+    expect(files['package.json']).toBeDefined()
+    expect(files['node_modules/x/index.js']).toBeUndefined()
+    expect(warnings.some((w) => w.includes('node_modules/x/index.js'))).toBe(true)
+  })
+
+  it('zip-slip: caminho com .. (e absoluto) fica de fora do pacote com aviso', () => {
+    const project = createProProject('02c', 'App Pro', 'vanilla-vite')
+    // Caminhos cruus perigosos no limite do ZIP: travessia e absoluto. normalizeProPath
+    // rejeita ambos (null), entao a guarda de defesa em profundidade os descarta.
+    project.tree = {
+      ...project.tree,
+      '../escapa.js': { kind: 'file', content: 'MALICIOSO()' },
+      '/etc/passwd': { kind: 'file', content: 'MALICIOSO()' },
+    }
+    const { files, warnings } = buildProFileMap(project)
+    expect(files['../escapa.js']).toBeUndefined()
+    expect(files['/etc/passwd']).toBeUndefined()
+    expect(files['package.json']).toBeDefined()
+    expect(warnings.some((w) => w.includes('../escapa.js'))).toBe(true)
+    expect(warnings.some((w) => w.includes('/etc/passwd'))).toBe(true)
   })
 
   it('avisa quando o package.json nao tem script de build', () => {

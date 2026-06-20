@@ -6,6 +6,7 @@ import { buildPreviewCSPMetaTag } from './csp'
 import { buildInputBridgeRuntime } from './inputBridge'
 import { buildInterceptorScript } from './interceptors'
 import { buildLoopGuardRuntime, instrumentLoops } from './loopGuard'
+import { buildModalGuardRuntime } from './modalGuard'
 import { buildPermissionGuardRuntime } from './permissionGuard'
 import { buildStorageBridgeRuntime } from './storageBridge'
 import { transpileExtra } from './transpile'
@@ -195,10 +196,11 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
 
   // Camadas de segurança no <head>, em ordem (defesa em profundidade):
   // CSP → interceptor (console/erros/heartbeat) → permissionGuard (rede) →
-  // loopGuard (runtime do __szLoopTick) → storageBridge (localStorage shim) →
-  // assetsBridge (window.__SZGAME_ASSETS) → IMPORTMAP → scripts de extensão (NÃO
-  // instrumentados) → estilos → conteúdo do <head> do aluno → corpo → código do
-  // aluno. ⚠️ O importmap PRECISA vir antes
+  // loopGuard (runtime do __szLoopTick) → modalGuard (rate-limit de alert/confirm/
+  // prompt) → inputBridge → storageBridge (localStorage shim) → assetsBridge
+  // (window.__SZGAME_ASSETS) → IMPORTMAP → scripts de extensão (NÃO instrumentados)
+  // → estilos → conteúdo do <head> do aluno → corpo → código do aluno. ⚠️ O
+  // importmap PRECISA vir antes
   // de QUALQUER `<script type="module">`
   // (extScripts viram module quando há extensionImports) — senão o `import ...
   // from 'three'` falha com "Failed to resolve module specifier".
@@ -212,6 +214,10 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
   })
   const permissionGuardTag = permissionGuard ? scriptTag(permissionGuard) : ''
   const loopGuardTag = scriptTag(buildLoopGuardRuntime(input.loopBudgetMs))
+  // Guarda de modais (1st-party): limita a taxa de alert/confirm/prompt para uma
+  // enxurrada não travar a aba — sem REMOVER a permissão (`alert` é bloco ensinado,
+  // o `allow-modals` continua). Vem DEPOIS do loopGuard e ANTES de extensões/aluno.
+  const modalGuardTag = scriptTag(buildModalGuardRuntime())
   // Bridge de entrada: window.__szInput (teclado + ponteiro) — sempre presente,
   // para os blocos "a tecla … está apertada?" e "x/y do mouse/dedo" do caminho
   // "na mão" funcionarem em qualquer projeto, sem a extensão Jogo 2D.
@@ -243,6 +249,7 @@ ${cspMeta}
 ${scriptTag(buildInterceptorScript(input.parentOrigin))}
 ${permissionGuardTag}
 ${loopGuardTag}
+${modalGuardTag}
 ${inputBridgeTag}
 ${storageBridgeTag}
 ${assetsBridgeTag}
@@ -276,25 +283,33 @@ ${userScript}
  */
 function instrumentInlineScripts(html: string): string {
   if (!html || !/<script\b/i.test(html)) return html
-  return html.replace(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi, (full, rawAttrs, content) => {
-    const attrs = String(rawAttrs)
-    if (/[\s"']src\s*=/i.test(attrs)) return full
-    const type = (attrs.match(/\btype\s*=\s*["']?([^"'\s>]*)/i)?.[1] ?? '').toLowerCase()
-    const isClassic = type === '' || type === 'text/javascript' || type === 'application/javascript'
-    const isModule = type === 'module'
-    if (!isClassic && !isModule) return full
-    const code = String(content)
-    if (!code.trim()) return full
-    const dataUrl = `data:text/javascript;base64,${base64Encode(instrumentLoops(code))}`
-    // Preserva atributos que não sejam `type`/`src`; reemite `type="module"`
-    // quando for o caso (mantém o deferimento e o escopo de módulo).
-    const keptAttrs = attrs
-      .replace(/\btype\s*=\s*["']?[^"'\s>]*["']?/i, '')
-      .replace(/\s+/g, ' ')
-      .trim()
-    const typeAttr = isModule ? ' type="module"' : ''
-    return `<script${typeAttr}${keptAttrs ? ` ${keptAttrs}` : ''} src="${dataUrl}"></script>`
-  })
+  // O fechamento casa o que o TOKENIZER de HTML aceita como fim de <script>:
+  // `</script` seguido de espaço/tab/quebra, `/` ou `>` (ex.: `</script >`,
+  // `</script\n>`, `</script/>`). Só `<\/script>` deixava um `<script>while(true){}
+  // </script >` ESCAPAR a instrumentação do loopGuard e congelar a aba.
+  return html.replace(
+    /<script\b([^>]*)>([\s\S]*?)<\/script\s*\/?\s*>/gi,
+    (full, rawAttrs, content) => {
+      const attrs = String(rawAttrs)
+      if (/[\s"']src\s*=/i.test(attrs)) return full
+      const type = (attrs.match(/\btype\s*=\s*["']?([^"'\s>]*)/i)?.[1] ?? '').toLowerCase()
+      const isClassic =
+        type === '' || type === 'text/javascript' || type === 'application/javascript'
+      const isModule = type === 'module'
+      if (!isClassic && !isModule) return full
+      const code = String(content)
+      if (!code.trim()) return full
+      const dataUrl = `data:text/javascript;base64,${base64Encode(instrumentLoops(code))}`
+      // Preserva atributos que não sejam `type`/`src`; reemite `type="module"`
+      // quando for o caso (mantém o deferimento e o escopo de módulo).
+      const keptAttrs = attrs
+        .replace(/\btype\s*=\s*["']?[^"'\s>]*["']?/i, '')
+        .replace(/\s+/g, ' ')
+        .trim()
+      const typeAttr = isModule ? ' type="module"' : ''
+      return `<script${typeAttr}${keptAttrs ? ` ${keptAttrs}` : ''} src="${dataUrl}"></script>`
+    },
+  )
 }
 
 function splitHtml(html: string): { headInner: string; bodyInner: string } {

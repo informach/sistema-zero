@@ -8,6 +8,7 @@ import {
 import {
   ADVANCED_BLOCKS,
   CANVAS_BLOCKS,
+  CANVAS_GROUPS,
   CSS_BLOCKS,
   CSS_GROUPS,
   DOM_BLOCKS,
@@ -232,7 +233,7 @@ export function buildCoreToolbox(
   }
 
   // Canvas: categoria PRÓPRIA (fora da Programação) — desenho, será incrementada.
-  pushContent('Canvas', CATEGORY_COLORS.canvas, CANVAS_BLOCKS)
+  pushGrouped('Canvas', CATEGORY_COLORS.canvas, CANVAS_BLOCKS, CANVAS_GROUPS)
   // Extensões: o caller já filtra por nível (minLevel) antes de passar.
   contents.push(...extraCategories)
   pushContent('Avançado', CATEGORY_COLORS.advanced, ADVANCED_BLOCKS)

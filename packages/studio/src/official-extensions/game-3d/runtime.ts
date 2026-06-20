@@ -17,6 +17,13 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   // para descartar tudo no fechamento/refresh da página.
   var worlds = [];
 
+  // Teto rígido de objetos por mundo. Geometrias/materiais 3D são pesados na GPU:
+  // se o aluno chamar createBox/createSphere DENTRO do "a cada quadro", o cenário
+  // cresceria ~60 objetos/segundo e vazaria memória de GPU até o navegador perder
+  // o contexto WebGL (cena preta). Acima do teto, addMesh devolve null em SILÊNCIO
+  // (nunca lança — setPosition/setRotation já ignoram null) e avisa UMA vez.
+  var MAX_OBJECTS = 300;
+
   function createScene(canvasId) {
     var canvas = document.getElementById(canvasId);
     // Mesmo canvas, novo "Atualizar"/recriar: descarta o mundo anterior ANTES
@@ -60,12 +67,21 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   }
 
   function addMesh(world, geo, color) {
+    if (!world || !world.scene) return null;
+    // Acima do teto: descarta a geometria recém-criada e devolve null. Sem isto,
+    // criar objetos a cada quadro encheria a GPU até a cena ficar preta.
+    if (world._objects.length >= MAX_OBJECTS) {
+      if (geo && geo.dispose) try { geo.dispose(); } catch (e) {}
+      if (!world._objectLimitWarned) {
+        world._objectLimitWarned = true;
+        console.warn("Crie os objetos UMA vez, fora do bloco 'a cada quadro' — o cenário 3D parou de crescer para não travar.");
+      }
+      return null;
+    }
     var mat = new THREE.MeshStandardMaterial({ color: color || '#22d3ee' });
     var mesh = new THREE.Mesh(geo, mat);
-    if (world && world.scene) {
-      world.scene.add(mesh);
-      world._objects.push(mesh);
-    }
+    world.scene.add(mesh);
+    world._objects.push(mesh);
     return mesh;
   }
   function createBox(world, opts) {

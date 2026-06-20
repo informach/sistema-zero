@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test'
-import type { JSStatement } from '#ir'
+import type { JSExpr, JSStatement } from '#ir'
 import { num, str, variable } from '#ir'
+import { GeneratorError } from '../expr'
 import { GeneratorDepthError, generateJS, MAX_GENERATOR_DEPTH } from '../js'
 
 describe('generateJS', () => {
@@ -682,7 +683,10 @@ describe('generateJS', () => {
       ],
     })
     expect(code).toContain('new Image()')
-    expect(code).toContain('ctxImg.src = "https://exemplo.com/img.png"')
+    // O src agora resolve o nome pelo manifesto de assets (biblioteca), com a URL/nome como fallback.
+    expect(code).toContain(
+      'ctxImg.src = window.__SZGAME_ASSETS?.["https://exemplo.com/img.png"] ?? "https://exemplo.com/img.png"',
+    )
     expect(code).toContain('ctx.drawImage(ctxImg, 0, 0, 100, 100)')
   })
 
@@ -900,5 +904,67 @@ describe('generateJS', () => {
       nested = { type: 'if', cond: { type: 'bool', value: true }, then: [nested] }
     }
     expect(() => generateJS({ statements: [nested] })).not.toThrow()
+  })
+})
+
+describe('objectLiteral / objectKey', () => {
+  const objVar = (entries: Array<{ key: string; value: JSExpr }>): JSStatement => ({
+    type: 'var',
+    kind: 'const',
+    name: 'obj',
+    value: { type: 'objectLiteral', entries },
+  })
+
+  it('força aspas na chave __proto__ (propriedade própria, não prototype)', () => {
+    const code = generateJS({ statements: [objVar([{ key: '__proto__', value: num(1) }])] })
+    // Com aspas, `{ "__proto__": 1 }` é uma propriedade PRÓPRIA normal — não
+    // define o protótipo do objeto (o que `{ __proto__: 1 }` faria).
+    expect(code).toContain('{ "__proto__": 1 }')
+    expect(code).not.toContain('{ __proto__: 1 }')
+  })
+
+  it('mantém constructor/prototype como chaves CRUAS (sem tratamento especial)', () => {
+    const code = generateJS({
+      statements: [
+        objVar([
+          { key: 'constructor', value: num(1) },
+          { key: 'prototype', value: num(2) },
+          { key: 'comum', value: str('x') },
+        ]),
+      ],
+    })
+    expect(code).toContain('constructor: 1')
+    expect(code).toContain('prototype: 2')
+    expect(code).toContain('comum: "x"')
+  })
+
+  it('coloca entre aspas chaves que não são identificadores', () => {
+    const code = generateJS({
+      statements: [objVar([{ key: 'tem espaço', value: num(1) }])] as JSStatement[],
+    })
+    expect(code).toContain('"tem espaço": 1')
+  })
+})
+
+describe('ramos default exaustivos (nó fora do esquema)', () => {
+  it('compileStatementCode lança GeneratorError (não emite "undefined")', () => {
+    // Statement com `type` que NENHUM case cobre (ex.: IR de um JSON importado de
+    // um estranho). Sem o default, o switch caía pela borda e o gerador emitia a
+    // string literal "undefined". Agora é erro tipado e capturável.
+    const bogus = { type: 'naoExiste', __id: 'b1' } as unknown as JSStatement
+    expect(() => generateJS({ statements: [bogus] })).toThrow(GeneratorError)
+    let emitted = ''
+    try {
+      emitted = generateJS({ statements: [bogus] })
+    } catch {
+      /* esperado */
+    }
+    expect(emitted).not.toContain('undefined')
+  })
+
+  it('compileExpr lança GeneratorError para expressão fora do esquema', () => {
+    const bogusExpr = { type: 'exprFantasma' } as unknown as JSExpr
+    const stmt: JSStatement = { type: 'consoleLog', value: bogusExpr }
+    expect(() => generateJS({ statements: [stmt] })).toThrow(GeneratorError)
   })
 })

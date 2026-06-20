@@ -32,10 +32,14 @@ import {
   type SZIR,
   SZIRSchema,
 } from '#ir'
+import { findExtension } from '#official-extensions'
 import { createProProject as createProProjectFromTemplate } from '../components/code/pro-templates'
+import { STUDENT_BASELINE_PERMISSIONS } from '../preview/permissionGuard'
 import {
   deleteProject as deleteProjectFromDB,
+  loadProjectBlocksById,
   loadProjectById,
+  loadProjectShellById,
   persistProject,
   renameProjectMeta,
 } from './persistence'
@@ -57,6 +61,8 @@ interface ProjectStore {
   loadProject: (id: string) => Promise<Project | null>
   /** Hidrata um projeto já sanitizado (host/<Studio>) SEM marcar como sujo. */
   hydrateProject: (p: Project) => void
+  /** Mescla estado derivado do load/rehydrate SEM marcar como edição do aluno. */
+  hydrateProjectState: (patch: ProjectStatePatch) => void
   unloadProject: () => void
   createProject: (name: string) => Promise<Project>
   /** Cria e persiste um projeto PROFISSIONAL a partir de um template. */
@@ -148,6 +154,33 @@ const MAX_JSON_IMPORT_DEPTH = 80
 const MAX_JSON_ARRAY_ITEMS = 25_000
 const MAX_JSON_OBJECT_KEYS = 250
 
+interface BlocksStateSanitizeLimits {
+  maxChars: number
+  maxContainerNodes: number
+  maxDepth: number
+  maxBlocks: number
+  checkJsonShape: boolean
+}
+
+const IMPORT_BLOCKSTATE_LIMITS: BlocksStateSanitizeLimits = {
+  maxChars: MAX_BLOCKSTATE_CHARS,
+  maxContainerNodes: MAX_BLOCKSTATE_CONTAINER_NODES,
+  maxDepth: MAX_BLOCKSTATE_BLOCKS * 4 + 16,
+  maxBlocks: MAX_BLOCKSTATE_BLOCKS,
+  checkJsonShape: true,
+}
+
+// Projetos já persistidos/localmente rehidratados podem ter sido produzidos pelo
+// próprio Studio antes dos tetos atuais. Mantemos limite anti-DoS, mas mais alto
+// que o caminho de import de JSON externo para não inutilizar projetos grandes.
+const STORED_BLOCKSTATE_LIMITS: BlocksStateSanitizeLimits = {
+  maxChars: MAX_BLOCKSTATE_CHARS,
+  maxContainerNodes: MAX_BLOCKSTATE_CONTAINER_NODES,
+  maxDepth: MAX_BLOCKSTATE_BLOCKS * 4 + 16,
+  maxBlocks: MAX_BLOCKSTATE_BLOCKS,
+  checkJsonShape: true,
+}
+
 export const PROJECT_FILE_LIMITS = {
   maxFileChars: MAX_FILE_CHARS,
   maxTotalChars: MAX_TOTAL_CHARS,
@@ -164,6 +197,17 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_adv_raw_js',
   'sz_canvas_anim_loop',
   'sz_canvas_arc',
+  'sz_canvas_stroke_rect',
+  'sz_canvas_clear_rect',
+  'sz_canvas_round_rect',
+  'sz_canvas_ellipse',
+  'sz_canvas_arc_slice',
+  'sz_canvas_quadratic_curve',
+  'sz_canvas_bezier_curve',
+  'sz_canvas_shadow',
+  'sz_canvas_stroke_text',
+  'sz_canvas_line_dash',
+  'sz_canvas_measure_text',
   'sz_canvas_cancel_anim',
   'sz_canvas_clear',
   'sz_canvas_draw_image',
@@ -327,6 +371,7 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_val_dataset',
   'sz_val_join',
   'sz_val_logic',
+  'sz_val_not',
   'sz_val_shuffle',
   'sz_val_this',
   'sz_val_color',
@@ -573,6 +618,24 @@ function limitCombinedExtraFiles(files: ProjectFiles, extraFiles: ExtraFile[]): 
   return trimmed
 }
 
+// Baseline de permissões que o aluno SEMPRE tem (canvas/teclado/mouse/áudio/
+// storage — não são vetor de exfil). Espelha o guard de runtime do preview.
+const BASELINE_PERMISSIONS = new Set<string>(STUDENT_BASELINE_PERMISSIONS)
+
+/**
+ * Uma extensão (resolvida pelo id no catálogo oficial) declara SÓ permissões da
+ * baseline? Uma extensão desconhecida (sem manifesto) não declara nada — o
+ * preview a ignora —, então passa. Uma extensão cujo manifesto declare `network`
+ * (ou qualquer permissão fora da baseline) NÃO passa: ao importar um projeto de
+ * um estranho, o aluno não pode habilitar silenciosamente uma capacidade
+ * sensível sem consentimento (hoje game-2d/3d só declaram baseline → no-op).
+ */
+function declaresOnlyBaselinePermissions(id: string): boolean {
+  const ext = findExtension(id)
+  if (!ext) return true
+  return ext.manifest.permissions.every((p) => BASELINE_PERMISSIONS.has(p))
+}
+
 /** Valida `installedExtensions` vindos de um JSON não confiável. */
 function sanitizeImportedExtensions(raw: unknown): InstalledExtension[] {
   if (!Array.isArray(raw)) return []
@@ -582,6 +645,10 @@ function sanitizeImportedExtensions(raw: unknown): InstalledExtension[] {
     if (!item || typeof item !== 'object') continue
     const e = item as Record<string, unknown>
     if (typeof e.id !== 'string' || typeof e.version !== 'string') continue
+    // Fail-closed do consentimento: descarta extensões que declarem permissão
+    // fora da baseline (ex.: uma futura extensão `network`). Abrir o .json de um
+    // estranho não pode conceder capacidades sensíveis sem o aluno consentir.
+    if (!declaresOnlyBaselinePermissions(e.id)) continue
     out.push({
       id: e.id,
       version: e.version,
@@ -609,67 +676,85 @@ function isPlainRecord(value: object): value is Record<string, unknown> {
 }
 
 function isJsonShapeWithinLimits(value: unknown, limits: JsonShapeLimits): boolean {
+  return describeJsonShapeLimitFailure(value, limits) == null
+}
+
+function describeJsonShapeLimitFailure(value: unknown, limits: JsonShapeLimits): string | null {
   const stack: Array<{ value: unknown; depth: number }> = [{ value, depth: 0 }]
   const seen = new WeakSet<object>()
   let chars = 0
   let containerNodes = 0
 
-  const addChars = (amount: number): boolean => {
+  const addChars = (amount: number): string | null => {
     chars += amount
     return chars <= limits.maxChars
+      ? null
+      : `tamanho estimado ${chars.toLocaleString('pt-BR')} > ${limits.maxChars.toLocaleString('pt-BR')} chars`
   }
 
   while (stack.length > 0) {
     const current = stack.pop()
     if (!current) continue
     const { value: item, depth } = current
-    if (depth > limits.maxDepth) return false
+    if (depth > limits.maxDepth) return `profundidade ${depth} > ${limits.maxDepth}`
 
     if (item == null) continue
 
     if (typeof item === 'string') {
-      if (limits.maxStringChars != null && item.length > limits.maxStringChars) return false
-      if (!addChars(item.length)) return false
+      if (limits.maxStringChars != null && item.length > limits.maxStringChars) {
+        return `string com ${item.length.toLocaleString('pt-BR')} chars > ${limits.maxStringChars.toLocaleString('pt-BR')}`
+      }
+      const charsFailure = addChars(item.length)
+      if (charsFailure) return charsFailure
       continue
     }
 
     if (typeof item === 'number') {
-      if (!Number.isFinite(item)) return false
-      if (!addChars(String(item).length)) return false
+      if (!Number.isFinite(item)) return 'número não-finito'
+      const charsFailure = addChars(String(item).length)
+      if (charsFailure) return charsFailure
       continue
     }
 
     if (typeof item === 'boolean') {
-      if (!addChars(item ? 4 : 5)) return false
+      const charsFailure = addChars(item ? 4 : 5)
+      if (charsFailure) return charsFailure
       continue
     }
 
-    if (typeof item !== 'object') return false
-    if (seen.has(item)) return false
+    if (typeof item !== 'object') return `tipo não-JSON: ${typeof item}`
+    if (seen.has(item)) return 'referência circular'
     seen.add(item)
 
     containerNodes += 1
-    if (containerNodes > limits.maxContainerNodes) return false
+    if (containerNodes > limits.maxContainerNodes) {
+      return `containers ${containerNodes.toLocaleString('pt-BR')} > ${limits.maxContainerNodes.toLocaleString('pt-BR')}`
+    }
 
     if (Array.isArray(item)) {
-      if (item.length > limits.maxArrayItems) return false
+      if (item.length > limits.maxArrayItems) {
+        return `array com ${item.length.toLocaleString('pt-BR')} itens > ${limits.maxArrayItems.toLocaleString('pt-BR')}`
+      }
       for (let index = item.length - 1; index >= 0; index -= 1) {
         stack.push({ value: item[index], depth: depth + 1 })
       }
       continue
     }
 
-    if (!isPlainRecord(item)) return false
+    if (!isPlainRecord(item)) return 'objeto não-plano'
 
     const entries = Object.entries(item)
-    if (entries.length > limits.maxObjectKeys) return false
+    if (entries.length > limits.maxObjectKeys) {
+      return `objeto com ${entries.length.toLocaleString('pt-BR')} chaves > ${limits.maxObjectKeys.toLocaleString('pt-BR')}`
+    }
     for (const [key, child] of entries) {
-      if (!addChars(key.length)) return false
+      const charsFailure = addChars(key.length)
+      if (charsFailure) return charsFailure
       stack.push({ value: child, depth: depth + 1 })
     }
   }
 
-  return true
+  return null
 }
 
 function sanitizeImportedIR(raw: unknown): SZIR | null {
@@ -697,23 +782,33 @@ export function sanitizeImportedBlocksState(
   raw: unknown,
   installedExtensions: InstalledExtension[],
 ): Project['blocksState'] {
+  return sanitizeBlocksState(raw, installedExtensions, IMPORT_BLOCKSTATE_LIMITS)
+}
+
+function sanitizeBlocksState(
+  raw: unknown,
+  installedExtensions: InstalledExtension[],
+  limits: BlocksStateSanitizeLimits,
+): Project['blocksState'] {
   if (raw == null) return null
-  const isSmallEnough = isJsonShapeWithinLimits(raw, {
-    maxChars: MAX_BLOCKSTATE_CHARS,
-    maxContainerNodes: MAX_BLOCKSTATE_CONTAINER_NODES,
-    maxDepth: MAX_JSON_IMPORT_DEPTH,
-    maxArrayItems: MAX_BLOCKSTATE_BLOCKS,
-    maxObjectKeys: MAX_JSON_OBJECT_KEYS,
-    maxStringChars: MAX_BLOCKSTATE_FIELD_CHARS,
-  })
-  if (!isSmallEnough) {
-    throw new Error(
-      'Arquivo inválido: blocksState excede o tamanho ou a complexidade máxima permitida.',
-    )
+  if (limits.checkJsonShape) {
+    const limitFailure = describeJsonShapeLimitFailure(raw, {
+      maxChars: limits.maxChars,
+      maxContainerNodes: limits.maxContainerNodes,
+      maxDepth: limits.maxDepth,
+      maxArrayItems: limits.maxBlocks,
+      maxObjectKeys: MAX_JSON_OBJECT_KEYS,
+      maxStringChars: MAX_BLOCKSTATE_FIELD_CHARS,
+    })
+    if (limitFailure) {
+      throw new Error(
+        `Arquivo inválido: blocksState excede o tamanho ou a complexidade máxima permitida (${limitFailure}).`,
+      )
+    }
   }
 
   const allowedTypes = getAllowedBlocklyBlockTypes(installedExtensions)
-  return isSupportedBlocklyWorkspaceState(raw, allowedTypes) ? raw : null
+  return isSupportedBlocklyWorkspaceState(raw, allowedTypes, limits) ? raw : null
 }
 
 function sanitizeStoredIR(raw: unknown): SZIR | null {
@@ -759,7 +854,12 @@ function describeBlocklyValidationFailure(
     (k) => k !== 'languageVersion' && k !== 'blocks',
   )
   if (extraSection) return `chave inesperada em "blocks": "${extraSection}"`
-  if (!isSupportedBlocklyVariables((raw as { variables?: unknown }).variables)) {
+  if (
+    !isSupportedBlocklyVariables(
+      (raw as { variables?: unknown }).variables,
+      STORED_BLOCKSTATE_LIMITS,
+    )
+  ) {
     return 'seção "variables" inválida'
   }
 
@@ -855,12 +955,22 @@ function describeBlockFailure(
   return null
 }
 
+function formatCaughtError(err: unknown): string {
+  if (err instanceof Error) return err.message || err.name
+  if (typeof err === 'string') return err
+  try {
+    return JSON.stringify(err)
+  } catch {
+    return String(err)
+  }
+}
+
 function sanitizeStoredBlocksState(
   raw: unknown,
   installedExtensions: InstalledExtension[],
 ): Project['blocksState'] {
   try {
-    const out = sanitizeImportedBlocksState(raw, installedExtensions)
+    const out = sanitizeBlocksState(raw, installedExtensions, STORED_BLOCKSTATE_LIMITS)
     if (raw != null && out == null) {
       // Antes era um drop silencioso: o blocksState está no disco mas alguma chave
       // ou limite não passou na allowlist, então o load cai para `null` e o modo
@@ -874,9 +984,40 @@ function sanitizeStoredBlocksState(
     }
     return out
   } catch (err) {
-    console.warn('[sz] blocksState rejeitado pelo sanitizer (exception):', err)
+    console.warn(
+      `[sz] blocksState rejeitado pelo sanitizer (exception): ${formatCaughtError(err)}`,
+      err,
+    )
     return null
   }
+}
+
+// Teto do id de projeto vindo do corpo do JSON. Os ids que mintamos são ulids
+// (26 chars Crockford base32); o teto generoso tolera ids legados/de host sem
+// abrir espaço para um id patológico (megabytes ou bytes esquisitos) virar chave
+// de IndexedDB / parte de chave de game-storage.
+const MAX_PROJECT_ID_CHARS = 128
+// Charset seguro p/ id: alfanumérico + hífen/sublinhado (cobre ulid e uuid). Um
+// id fora disso é REJEITADO e substituído por um ulid fresco — igual ao caminho
+// de import, que sempre minta um ulid novo.
+const SAFE_PROJECT_ID_RE = /^[A-Za-z0-9_-]+$/
+
+/**
+ * Limita o id vindo do corpo do JSON (host `initialProject`): string não-vazia,
+ * dentro do teto de tamanho e no charset seguro. Caso contrário minta um ulid
+ * fresco (espelha o caminho de import). NÃO aplicado ao `requestedId` interno —
+ * esse já é uma chave de IndexedDB que nós produzimos.
+ */
+function boundProjectIdFromBody(raw: unknown): string {
+  if (
+    typeof raw === 'string' &&
+    raw.length > 0 &&
+    raw.length <= MAX_PROJECT_ID_CHARS &&
+    SAFE_PROJECT_ID_RE.test(raw)
+  ) {
+    return raw
+  }
+  return ulid()
 }
 
 function sanitizeStoredProject(raw: unknown, requestedId?: string): Project | null {
@@ -884,7 +1025,10 @@ function sanitizeStoredProject(raw: unknown, requestedId?: string): Project | nu
     return null
   }
   const r = raw as Record<string, unknown>
-  const id = requestedId ?? (typeof r.id === 'string' && r.id.trim() ? r.id : null)
+  // `requestedId` (load por chave interna do IndexedDB) é confiável — usado como
+  // está. Sem ele (caminho do host `initialProject`/`sanitizeProjectForHost`), o
+  // id vem do corpo NÃO confiável e precisa ser limitado/saneado.
+  const id = requestedId ?? boundProjectIdFromBody(r.id)
   if (!id) return null
 
   const files = sanitizeCanonicalProjectFiles(r.files)
@@ -941,6 +1085,21 @@ export async function loadSanitizedProjectById(id: string): Promise<Project | nu
   return sanitizeStoredProject(await loadProjectById(id), id)
 }
 
+export async function loadSanitizedProjectShellById(id: string): Promise<Project | null> {
+  return sanitizeStoredProject(await loadProjectShellById(id), id)
+}
+
+export async function loadSanitizedProjectBlocksStateById(
+  id: string,
+  installedExtensions: InstalledExtension[] = [],
+): Promise<Project['blocksState']> {
+  const raw = await loadProjectBlocksById(id)
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw) || !isPlainRecord(raw)) return null
+  const record = raw as Record<string, unknown>
+  if (record.id != null && record.id !== id) return null
+  return sanitizeStoredBlocksState(record.blocksState, installedExtensions)
+}
+
 /**
  * Sanitiza um Project vindo do HOST (prop `initialProject` do <Studio>) com as
  * mesmas regras aplicadas a projetos persistidos — protege contra JSON
@@ -965,6 +1124,7 @@ function getAllowedBlocklyBlockTypes(
 function isSupportedBlocklyWorkspaceState(
   raw: unknown,
   allowedTypes: ReadonlySet<string>,
+  limits: BlocksStateSanitizeLimits,
 ): raw is Record<string, unknown> {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw) || !isPlainRecord(raw)) return false
   const rootKeys = Object.keys(raw)
@@ -982,18 +1142,18 @@ function isSupportedBlocklyWorkspaceState(
 
   if (blocksSection.languageVersion !== 0) return false
   if (!Array.isArray(blocksSection.blocks)) return false
-  if (blocksSection.blocks.length > MAX_BLOCKSTATE_BLOCKS) return false
+  if (blocksSection.blocks.length > limits.maxBlocks) return false
   if (Object.keys(blocksSection).some((key) => key !== 'languageVersion' && key !== 'blocks')) {
     return false
   }
-  if (!isSupportedBlocklyVariables(raw.variables)) return false
+  if (!isSupportedBlocklyVariables(raw.variables, limits)) return false
 
-  return areSupportedBlocklyBlocks(blocksSection.blocks, allowedTypes)
+  return areSupportedBlocklyBlocks(blocksSection.blocks, allowedTypes, limits)
 }
 
-function isSupportedBlocklyVariables(raw: unknown): boolean {
+function isSupportedBlocklyVariables(raw: unknown, limits: BlocksStateSanitizeLimits): boolean {
   if (raw == null) return true
-  if (!Array.isArray(raw) || raw.length > MAX_BLOCKSTATE_BLOCKS) return false
+  if (!Array.isArray(raw) || raw.length > limits.maxBlocks) return false
   for (const variable of raw) {
     if (!variable || typeof variable !== 'object' || Array.isArray(variable)) return false
     if (!isPlainRecord(variable)) return false
@@ -1006,24 +1166,36 @@ function isSupportedBlocklyVariables(raw: unknown): boolean {
   return true
 }
 
-function areSupportedBlocklyBlocks(blocks: unknown[], allowedTypes: ReadonlySet<string>): boolean {
+function areSupportedBlocklyBlocks(
+  blocks: unknown[],
+  allowedTypes: ReadonlySet<string>,
+  limits: BlocksStateSanitizeLimits,
+): boolean {
   const stack: Array<{ block: unknown; depth: number }> = blocks.map((block) => ({
     block,
     depth: 0,
   }))
+  const seen = new WeakSet<object>()
   let blockCount = 0
 
   while (stack.length > 0) {
     const current = stack.pop()
     if (!current) continue
     const { block, depth } = current
-    if (depth > MAX_JSON_IMPORT_DEPTH) return false
+    // Profundidade de ANINHAMENTO (não a contagem total): comparar com `maxDepth`,
+    // não com `maxBlocks`. Como `depth <= blockCount` e `blockCount` já é limitado
+    // por `maxBlocks`, comparar com `maxBlocks` deixava este guard MORTO — uma
+    // pilha de blocos fundo passava na sanitização e só estourava (GeneratorDepthError)
+    // na geração. `maxDepth` (MAX_BLOCKSTATE_BLOCKS*4+16) é o bound de profundidade.
+    if (depth > limits.maxDepth) return false
     if (!block || typeof block !== 'object' || Array.isArray(block) || !isPlainRecord(block)) {
       return false
     }
+    if (seen.has(block)) return false
+    seen.add(block)
 
     blockCount += 1
-    if (blockCount > MAX_BLOCKSTATE_BLOCKS) return false
+    if (blockCount > limits.maxBlocks) return false
 
     if (!isSupportedBlocklyBlockShape(block, allowedTypes)) return false
 
@@ -1495,6 +1667,26 @@ export function createProjectStore(
       return existing
     },
     hydrateProject: (p) => set({ project: p, isDirty: false, saveError: null }),
+    hydrateProjectState: (patch) => {
+      const p = get().project
+      if (!p) return
+      const nextFiles = patch.files ? { ...p.files, ...patch.files } : p.files
+      const limitError = projectFilesLimitError(nextFiles, p.extraFiles ?? [], limits)
+      if (limitError) {
+        set({ saveError: limitError })
+        return
+      }
+      set({
+        project: {
+          ...p,
+          files: nextFiles,
+          ir: 'ir' in patch ? (patch.ir ?? null) : p.ir,
+          blocksState: 'blocksState' in patch ? (patch.blocksState ?? null) : p.blocksState,
+          installedExtensions: patch.installedExtensions ?? p.installedExtensions,
+        },
+        saveError: null,
+      })
+    },
     unloadProject: () => set({ project: null, isDirty: false, saveError: null }),
     createProject: async (name) => {
       const p = createEmptyProject(ulid(), sanitizeProjectName(name))

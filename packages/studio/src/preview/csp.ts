@@ -26,6 +26,15 @@
  * imagens/fontes/mídia remotas valem mais que fechar esse vetor. Um host que
  * precise blindar isso pediria um opt-in para zerar img/media/font/frame-src
  * (ver backlog em docs/embedding.md). NÃO alterar o comportamento da CSP aqui.
+ *
+ * ⚠️ `frame-src https:` NÃO inclui `data:`/`blob:` (de propósito): um subframe
+ * `data:`/`blob:` (`<iframe src="data:text/html,<script>while(true){}</script>">`)
+ * rodaria UNINSTRUMENTADO no mesmo thread (fora do alcance do loopGuard, que só
+ * instrumenta o JS canônico) E não herdaria esta meta-CSP — reabrindo o furo de
+ * `worker-src` num documento filho. O pipeline do preview nunca precisa de
+ * subframe `data:`/`blob:` legítimo (o importmap é um `<script>` e o JS do aluno é
+ * um script `data:text/javascript` governado por `script-src`, não por
+ * `frame-src`), então liberamos só `https:` aqui.
  */
 
 export interface PreviewCSPOptions {
@@ -66,7 +75,12 @@ export function buildPreviewCSP(options: PreviewCSPOptions = {}): string {
     'media-src data: blob: https:',
     'font-src data: https:',
     `connect-src ${connectSrc}`,
-    'frame-src https: data: blob:',
+    // `frame-src https:` SEM data:/blob: — um subframe data:/blob: rodaria
+    // uninstrumentado no mesmo thread (fora do loopGuard) e não herdaria esta
+    // meta-CSP (reabrindo o furo de worker-src no filho). O preview nunca precisa
+    // de subframe data:/blob: (importmap é script; JS do aluno é data:text/javascript
+    // governado por script-src, não frame-src). Ver o comentário do header.
+    'frame-src https:',
     // Sem worker-src, os Workers cairiam no `script-src` (que libera data:/blob:)
     // e o aluno poderia criar Workers NÃO instrumentados (fora do alcance do
     // loopGuard, que só roda no thread principal) com `while(true){}` — laços

@@ -97,6 +97,7 @@ Quando ajudar o aluno com jogos 2D:
 - Para imagens, lembre que o aluno precisa ADICIONAR o asset na aba Assets e usar o nome dele.
 - Enquanto a imagem carrega (ou se faltar), o sprite cai num retângulo (placeholder) — nunca quebra.
 - Prefira pequenas iterações didáticas — não despeje o jogo pronto.
+- DESEMPENHO: crie sprites/grupos/objetos UMA vez no TOPO do programa, fora do "a cada quadro". Criar dentro do loop enche a memória (no Jogo 3D pode até apagar a tela). Dentro do loop, use spawn/createSprite só de propósito (ex.: um tiro a cada N quadros) e SEMPRE remova da tela os objetos que já saíram, com pruneOffscreen, para o grupo não crescer sem fim e a colisão (overlapGroups) não ficar lenta.
 
 KIT ESPAÇO (v0.7.0) — categoria "🚀 Kit espaço" com atalhos PRONTOS (não genéricos) para jogos de nave espacial; os blocos genéricos seguem nas categorias normais:
 - createShip({ x, y, w, h, body, wings }): nave desenhada (cabine + foguinho que pulsa sozinho); body = cor do corpo, wings = cor das asas. É um sprite normal (drawSprite desenha a nave).

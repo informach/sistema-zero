@@ -67,6 +67,12 @@ export const VALUE_SOCKETS: Record<string, Record<string, number>> = {
  */
 export const COLOR_SOCKETS: Record<string, Record<string, string>> = {
   sz_canvas_fill_style: { COLOR: '#22d3ee' },
+  // Os outros dois blocos com slot COLOR também pré-enchem um seletor de cor (senão
+  // o slot vinha VAZIO da paleta, sem o chip clicável do fill_style). O default
+  // espelha o fallback do buildIR (#000000) p/ o round-trip ficar idêntico quando
+  // o aluno não mexe na cor.
+  sz_canvas_stroke_style: { COLOR: '#000000' },
+  sz_canvas_shadow: { COLOR: '#000000' },
 }
 
 /** Sombra de um slot de valor: número editável, seletor de cor, ou comparação. */

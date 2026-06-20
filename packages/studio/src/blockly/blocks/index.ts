@@ -1,7 +1,7 @@
 import * as Blockly from 'blockly/core'
 import 'blockly/blocks'
 import { ADVANCED_BLOCKS } from './advanced'
-import { CANVAS_BLOCKS } from './canvas'
+import { CANVAS_BLOCKS, CANVAS_GROUPS } from './canvas'
 import { CSS_BLOCKS, CSS_GROUPS } from './css'
 import { DOM_BLOCKS } from './dom'
 import { FUNCTION_BLOCKS } from './functions'
@@ -17,6 +17,7 @@ export type { BlockDefinition }
 export {
   ADVANCED_BLOCKS,
   CANVAS_BLOCKS,
+  CANVAS_GROUPS,
   CSS_BLOCKS,
   CSS_GROUPS,
   DOM_BLOCKS,

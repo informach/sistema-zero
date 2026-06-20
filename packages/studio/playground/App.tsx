@@ -43,10 +43,19 @@ function EditorScreen({
   useEffect(() => {
     let cancelled = false
     setState({ status: 'loading' })
-    void adapter.load(projectId).then((project) => {
-      if (cancelled) return
-      setState(project ? { status: 'ready', project } : { status: 'not-found' })
-    })
+    adapter
+      .load(projectId)
+      .then((project) => {
+        if (cancelled) return
+        setState(project ? { status: 'ready', project } : { status: 'not-found' })
+      })
+      .catch((err) => {
+        // Sem o catch, uma falha no load deixava a tela "Carregando projeto…" presa
+        // para sempre (a Promise rejeitada nunca chamava setState).
+        if (cancelled) return
+        console.error('[host] falha ao carregar projeto', err)
+        setState({ status: 'not-found' })
+      })
     return () => {
       cancelled = true
     }

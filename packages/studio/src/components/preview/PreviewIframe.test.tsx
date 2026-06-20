@@ -3,7 +3,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-libra
 import { createEmptyProject, type Project } from '#core'
 import { useProjectStore } from '../../state/projectStore'
 import { useUIStore } from '../../state/uiStore'
-import { PreviewIframe } from './PreviewIframe'
+import { extractDocumentTitle, PreviewIframe } from './PreviewIframe'
 
 const PAUSED_PREVIEW_DOC = '<!doctype html><html lang="pt-BR"><body></body></html>'
 
@@ -86,6 +86,57 @@ describe('PreviewIframe', () => {
       expect(doc).toMatch(/<!-- r:\d+ -->/)
     })
   })
+})
+
+// Comportamento ANTERIOR (referência): montar o documento todo e ler o <title>.
+// O `extractDocumentTitle` deve devolver EXATAMENTE o mesmo, sem parsear tudo.
+function titleViaFullParse(html: string): string | null {
+  try {
+    const parsed = new DOMParser().parseFromString(html, 'text/html')
+    const title = parsed.querySelector('title')?.textContent?.trim()
+    if (title) return title
+  } catch {
+    // HTML malformado: cai para null (o componente usa o nome do projeto).
+  }
+  return null
+}
+
+describe('extractDocumentTitle (paridade com o parse completo)', () => {
+  const cases: string[] = [
+    // Sem título → null (caminho comum, antes montava o documento à toa).
+    '<!doctype html><html><body><h1>oi</h1></body></html>',
+    '',
+    '   ',
+    // Título simples.
+    '<!doctype html><html><head><title>Meu Jogo</title></head><body></body></html>',
+    // Espaços ao redor (devem ser aparados).
+    '<head><title>   Espaçado   </title></head>',
+    // Entidades HTML (precisam ser decodificadas como textContent faria).
+    '<head><title>Frutas &amp; Verduras</title></head>',
+    '<head><title>5 &lt; 10 &amp;&amp; 10 &gt; 5</title></head>',
+    '<head><title>Aspas &quot;duplas&quot; e &#39;simples&#39;</title></head>',
+    // Atributos na tag title.
+    '<head><title lang="pt-BR">Com Atributo</title></head>',
+    // Caixa alta (HTML é case-insensitive).
+    '<head><TITLE>Maiúsculo</TITLE></head>',
+    // Múltiplos títulos → vence o primeiro (igual querySelector).
+    '<head><title>Primeiro</title><title>Segundo</title></head>',
+    // Título vazio / só espaços → null.
+    '<head><title></title></head>',
+    '<head><title>   </title></head>',
+    // Quebra de linha dentro do título.
+    '<head><title>Linha 1\n  Linha 2</title></head>',
+    // Não confundir com uma tag parecida.
+    '<head><titlebar>Não é título</titlebar></head>',
+    // Título no body (querySelector acharia mesmo assim).
+    '<body><title>No Corpo</title></body>',
+  ]
+
+  for (const html of cases) {
+    it(`casa o parse completo para: ${JSON.stringify(html).slice(0, 50)}`, () => {
+      expect(extractDocumentTitle(html)).toBe(titleViaFullParse(html))
+    })
+  }
 })
 
 function createPreviewProject(): Project {

@@ -3,6 +3,7 @@ import {
   compileExpr,
   createIdentifierScope,
   type ExprMapContext,
+  GeneratorError,
   type IdentifierScope,
   normalizeIdentifier,
 } from './expr'
@@ -547,6 +548,58 @@ function compileStatementCode(
         `${pad}${ctx}.fill();`,
       ].join('\n')
     }
+    case 'canvasStrokeRect':
+      return `${pad}${identifiers.get(stmt.ctxVar)}.strokeRect(${compileExpr(stmt.x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base))}, ${compileExpr(stmt.w, 0, identifiers, recAt(base))}, ${compileExpr(stmt.h, 0, identifiers, recAt(base))});`
+    case 'canvasClearRect':
+      return `${pad}${identifiers.get(stmt.ctxVar)}.clearRect(${compileExpr(stmt.x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base))}, ${compileExpr(stmt.w, 0, identifiers, recAt(base))}, ${compileExpr(stmt.h, 0, identifiers, recAt(base))});`
+    case 'canvasRoundRect': {
+      const ctxRR = identifiers.get(stmt.ctxVar)
+      return [
+        `${pad}${ctxRR}.beginPath();`,
+        `${pad}${ctxRR}.roundRect(${compileExpr(stmt.x, 0, identifiers, recAt(base + 1))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base + 1))}, ${compileExpr(stmt.w, 0, identifiers, recAt(base + 1))}, ${compileExpr(stmt.h, 0, identifiers, recAt(base + 1))}, ${compileExpr(stmt.r, 0, identifiers, recAt(base + 1))});`,
+        `${pad}${ctxRR}.fill();`,
+      ].join('\n')
+    }
+    case 'canvasEllipse': {
+      const ctxEl = identifiers.get(stmt.ctxVar)
+      return [
+        `${pad}${ctxEl}.beginPath();`,
+        `${pad}${ctxEl}.ellipse(${compileExpr(stmt.x, 0, identifiers, recAt(base + 1))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base + 1))}, ${compileExpr(stmt.rx, 0, identifiers, recAt(base + 1))}, ${compileExpr(stmt.ry, 0, identifiers, recAt(base + 1))}, 0, 0, Math.PI * 2);`,
+        `${pad}${ctxEl}.fill();`,
+      ].join('\n')
+    }
+    case 'canvasArcSlice': {
+      const ctxAs = identifiers.get(stmt.ctxVar)
+      return [
+        `${pad}${ctxAs}.beginPath();`,
+        `${pad}${ctxAs}.moveTo(${compileExpr(stmt.x, 0, identifiers, recAt(base + 1))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base + 1))});`,
+        `${pad}${ctxAs}.arc(${compileExpr(stmt.x, 0, identifiers, recAt(base + 2))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base + 2))}, ${compileExpr(stmt.r, 0, identifiers, recAt(base + 2))}, ${compileExpr(stmt.start, 0, identifiers, recAt(base + 2))}, ${compileExpr(stmt.end, 0, identifiers, recAt(base + 2))});`,
+        `${pad}${ctxAs}.closePath();`,
+        `${pad}${ctxAs}.fill();`,
+      ].join('\n')
+    }
+    case 'canvasQuadraticCurve':
+      return `${pad}${identifiers.get(stmt.ctxVar)}.quadraticCurveTo(${compileExpr(stmt.cpx, 0, identifiers, recAt(base))}, ${compileExpr(stmt.cpy, 0, identifiers, recAt(base))}, ${compileExpr(stmt.x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base))});`
+    case 'canvasBezierCurve':
+      return `${pad}${identifiers.get(stmt.ctxVar)}.bezierCurveTo(${compileExpr(stmt.cp1x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.cp1y, 0, identifiers, recAt(base))}, ${compileExpr(stmt.cp2x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.cp2y, 0, identifiers, recAt(base))}, ${compileExpr(stmt.x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base))});`
+    case 'canvasShadow': {
+      const ctxSh = identifiers.get(stmt.ctxVar)
+      return [
+        `${pad}${ctxSh}.shadowColor = ${compileExpr(stmt.color, 0, identifiers, recAt(base))};`,
+        `${pad}${ctxSh}.shadowBlur = ${compileExpr(stmt.blur, 0, identifiers, recAt(base + 1))};`,
+      ].join('\n')
+    }
+    case 'canvasStrokeText':
+      return `${pad}${identifiers.get(stmt.ctxVar)}.strokeText(${compileExpr(stmt.text, 0, identifiers, recAt(base))}, ${compileExpr(stmt.x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base))});`
+    case 'canvasLineDash': {
+      // Um único valor de traço (traço = espaço). Emite [seg], não [seg, seg]: o
+      // canvas DUPLICA arrays de tamanho ímpar (então [seg] já é traço=espaço=seg)
+      // e, se `seg` for impuro (ex.: número aleatório / medida de texto), não é
+      // avaliado DUAS vezes nem com valores divergentes. O parser lê elements[0],
+      // então o round-trip continua estável.
+      const seg = compileExpr(stmt.segment, 0, identifiers, recAt(base))
+      return `${pad}${identifiers.get(stmt.ctxVar)}.setLineDash([${seg}]);`
+    }
     case 'canvasFillText':
       return `${pad}${identifiers.get(stmt.ctxVar)}.fillText(${compileExpr(stmt.text, 0, identifiers, recAt(base))}, ${compileExpr(stmt.x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base))});`
     case 'animationLoop': {
@@ -600,7 +653,7 @@ function compileStatementCode(
       return [
         `${pad}{`,
         `${pad}  const ${image} = new Image();`,
-        `${pad}  ${image}.src = ${JSON.stringify(stmt.src)};`,
+        `${pad}  ${image}.src = window.__SZGAME_ASSETS?.[${JSON.stringify(stmt.src)}] ?? ${JSON.stringify(stmt.src)};`,
         `${pad}  ${image}.onload = () => ${ctx}.drawImage(${image}, ${compileExpr(stmt.x, 0, identifiers, recAt(base + 3))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base + 3))}, ${compileExpr(stmt.w, 0, identifiers, recAt(base + 3))}, ${compileExpr(stmt.h, 0, identifiers, recAt(base + 3))});`,
         `${pad}}`,
       ].join('\n')
@@ -645,7 +698,7 @@ function compileStatementCode(
     case 'canvasGlobalAlpha':
       return `${pad}${identifiers.get(stmt.ctxVar)}.globalAlpha = ${compileExpr(stmt.alpha, 0, identifiers, recAt(base))};`
     case 'canvasFont':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.font = ${JSON.stringify(`${stmt.size}px ${stmt.family}`)};`
+      return `${pad}${identifiers.get(stmt.ctxVar)}.font = ${JSON.stringify(`${stmt.weight ? `${stmt.weight} ` : ''}${stmt.size}px ${stmt.family}`)};`
     case 'canvasTextAlign':
       return `${pad}${identifiers.get(stmt.ctxVar)}.textAlign = ${JSON.stringify(stmt.align)};`
     case 'keyboardSimple': {
@@ -1066,6 +1119,18 @@ function compileStatementCode(
       if (!firstLine.length) return stmt.code
       return pad + stmt.code
     }
+    default: {
+      // Espelha o default de `compileExpr`: um statement fora do esquema (ex.:
+      // IR de um JSON importado por um estranho) caía pela borda do `switch` e
+      // `compileStatementCode` devolvia `undefined`, que vazava como a STRING
+      // `"undefined"` no script gerado. A atribuição a `never` é o valor real:
+      // uma variante nova de `JSStatement` sem `case` aqui passa a ser ERRO DE
+      // COMPILAÇÃO. Em runtime, lança erro tipado e capturável.
+      const _never: never = stmt
+      throw new GeneratorError(
+        `Statement de IR não suportado: ${JSON.stringify((_never as { type?: unknown }).type)}`,
+      )
+    }
   }
 }
 
@@ -1337,6 +1402,75 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(stmt.y, names)
       collectExprIdentifiers(stmt.r, names)
       return
+    case 'canvasStrokeRect':
+      names.add(stmt.ctxVar)
+      collectExprIdentifiers(stmt.x, names)
+      collectExprIdentifiers(stmt.y, names)
+      collectExprIdentifiers(stmt.w, names)
+      collectExprIdentifiers(stmt.h, names)
+      return
+    case 'canvasClearRect':
+      names.add(stmt.ctxVar)
+      collectExprIdentifiers(stmt.x, names)
+      collectExprIdentifiers(stmt.y, names)
+      collectExprIdentifiers(stmt.w, names)
+      collectExprIdentifiers(stmt.h, names)
+      return
+    case 'canvasRoundRect':
+      names.add(stmt.ctxVar)
+      collectExprIdentifiers(stmt.x, names)
+      collectExprIdentifiers(stmt.y, names)
+      collectExprIdentifiers(stmt.w, names)
+      collectExprIdentifiers(stmt.h, names)
+      collectExprIdentifiers(stmt.r, names)
+      return
+    case 'canvasEllipse':
+      names.add(stmt.ctxVar)
+      collectExprIdentifiers(stmt.x, names)
+      collectExprIdentifiers(stmt.y, names)
+      collectExprIdentifiers(stmt.rx, names)
+      collectExprIdentifiers(stmt.ry, names)
+      return
+    case 'canvasArcSlice':
+      names.add(stmt.ctxVar)
+      collectExprIdentifiers(stmt.x, names)
+      collectExprIdentifiers(stmt.y, names)
+      collectExprIdentifiers(stmt.r, names)
+      collectExprIdentifiers(stmt.start, names)
+      collectExprIdentifiers(stmt.end, names)
+      return
+    case 'canvasQuadraticCurve':
+      names.add(stmt.ctxVar)
+      collectExprIdentifiers(stmt.cpx, names)
+      collectExprIdentifiers(stmt.cpy, names)
+      collectExprIdentifiers(stmt.x, names)
+      collectExprIdentifiers(stmt.y, names)
+      return
+    case 'canvasBezierCurve':
+      names.add(stmt.ctxVar)
+      collectExprIdentifiers(stmt.cp1x, names)
+      collectExprIdentifiers(stmt.cp1y, names)
+      collectExprIdentifiers(stmt.cp2x, names)
+      collectExprIdentifiers(stmt.cp2y, names)
+      collectExprIdentifiers(stmt.x, names)
+      collectExprIdentifiers(stmt.y, names)
+      return
+    case 'canvasShadow':
+      names.add(stmt.ctxVar)
+      collectExprIdentifiers(stmt.color, names)
+      collectExprIdentifiers(stmt.blur, names)
+      return
+    case 'canvasStrokeText':
+      names.add(stmt.ctxVar)
+      collectExprIdentifiers(stmt.text, names)
+      collectExprIdentifiers(stmt.x, names)
+      collectExprIdentifiers(stmt.y, names)
+      return
+    case 'canvasLineDash':
+      names.add(stmt.ctxVar)
+      collectExprIdentifiers(stmt.segment, names)
+      return
+
     case 'canvasFillText':
       names.add(stmt.ctxVar)
       collectExprIdentifiers(stmt.text, names)
@@ -1719,6 +1853,9 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
       collectExprIdentifiers(expr.left, names)
       collectExprIdentifiers(expr.right, names)
       return
+    case 'logicalNot':
+      collectExprIdentifiers(expr.value, names)
+      return
     case 'ternary':
       collectExprIdentifiers(expr.condition, names)
       collectExprIdentifiers(expr.whenTrue, names)
@@ -1798,6 +1935,9 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
       return
     case 'g2d:countGroup':
       names.add(expr.groupVar)
+      return
+    case 'canvasMeasureText':
+      collectExprIdentifiers(expr.text, names)
       return
     default:
       return

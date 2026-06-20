@@ -129,7 +129,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     type: 'sz_canvas_draw_image',
     message0: 'Desenhar imagem %1 no pincel %2 em x %3 y %4 largura %5 altura %6',
     args0: [
-      { type: 'field_input', name: 'SRC', text: 'https://exemplo.com/img.png' },
+      { type: 'field_asset_picker', name: 'SRC', text: 'foto' },
       { type: 'field_input', name: 'CTX', text: 'ctx' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
@@ -319,11 +319,21 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_canvas_font',
-    message0: 'Definir fonte do pincel %1 tamanho %2 px família %3',
+    message0: 'Definir fonte do pincel %1 tamanho %2 px família %3 estilo %4',
     args0: [
       { type: 'field_input', name: 'CTX', text: 'ctx' },
       { type: 'field_number', name: 'SIZE', value: 20, min: 1 },
       { type: 'field_input', name: 'FAMILY', text: 'sans-serif' },
+      {
+        type: 'field_dropdown',
+        name: 'WEIGHT',
+        options: [
+          ['normal', ''],
+          ['negrito', 'bold'],
+          ['itálico', 'italic'],
+          ['negrito itálico', 'italic bold'],
+        ],
+      },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -351,6 +361,180 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     tooltip: 'De que lado o texto fica em relação ao ponto x (esquerda, centro ou direita).',
   },
 
+  // ---- Formas e traçado extras (subcategorias) ----
+  {
+    type: 'sz_canvas_stroke_rect',
+    message0: 'Desenhar contorno de retângulo %1 em x %2 y %3 largura %4 altura %5',
+    args0: [
+      { type: 'field_input', name: 'CTX', text: 'ctx' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'input_value', name: 'W', check: 'JSValue' },
+      { type: 'input_value', name: 'H', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Desenha só o contorno de um retângulo (sem preencher).',
+  },
+  {
+    type: 'sz_canvas_clear_rect',
+    message0: 'Limpar área %1 em x %2 y %3 largura %4 altura %5',
+    args0: [
+      { type: 'field_input', name: 'CTX', text: 'ctx' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'input_value', name: 'W', check: 'JSValue' },
+      { type: 'input_value', name: 'H', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Apaga só um pedaço retangular da tela (deixa transparente).',
+  },
+  {
+    type: 'sz_canvas_round_rect',
+    message0: 'Desenhar retângulo arredondado %1 em x %2 y %3 largura %4 altura %5 raio %6',
+    args0: [
+      { type: 'field_input', name: 'CTX', text: 'ctx' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'input_value', name: 'W', check: 'JSValue' },
+      { type: 'input_value', name: 'H', check: 'JSValue' },
+      { type: 'input_value', name: 'R', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Desenha um retângulo de cantos arredondados, preenchido (ótimo para caixas e botões).',
+  },
+  {
+    type: 'sz_canvas_ellipse',
+    message0: 'Desenhar elipse %1 em x %2 y %3 raio-x %4 raio-y %5',
+    args0: [
+      { type: 'field_input', name: 'CTX', text: 'ctx' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'input_value', name: 'RX', check: 'JSValue' },
+      { type: 'input_value', name: 'RY', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Desenha uma elipse preenchida (raio horizontal e vertical diferentes = oval).',
+  },
+  {
+    type: 'sz_canvas_arc_slice',
+    message0: 'Desenhar fatia %1 em x %2 y %3 raio %4 de %5 até %6 (radianos)',
+    args0: [
+      { type: 'field_input', name: 'CTX', text: 'ctx' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'input_value', name: 'R', check: 'JSValue' },
+      { type: 'input_value', name: 'START', check: 'JSValue' },
+      { type: 'input_value', name: 'END', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Desenha uma fatia/pizza: um pedaço de círculo entre dois ângulos (em radianos).',
+  },
+  {
+    type: 'sz_canvas_quadratic_curve',
+    message0: 'Curva no pincel %1 passando pelo controle x %2 y %3 até x %4 y %5',
+    args0: [
+      { type: 'field_input', name: 'CTX', text: 'ctx' },
+      { type: 'input_value', name: 'CPX', check: 'JSValue' },
+      { type: 'input_value', name: 'CPY', check: 'JSValue' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Continua o traçado com uma curva suave (um ponto de controle puxa a curva). Use entre "começar traçado" e "preencher/contornar".',
+  },
+  {
+    type: 'sz_canvas_bezier_curve',
+    message0: 'Curva dupla no pincel %1 controles (x %2 y %3) e (x %4 y %5) até x %6 y %7',
+    args0: [
+      { type: 'field_input', name: 'CTX', text: 'ctx' },
+      { type: 'input_value', name: 'CP1X', check: 'JSValue' },
+      { type: 'input_value', name: 'CP1Y', check: 'JSValue' },
+      { type: 'input_value', name: 'CP2X', check: 'JSValue' },
+      { type: 'input_value', name: 'CP2Y', check: 'JSValue' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Curva com dois pontos de controle (curva em S). Use dentro de um traçado.',
+  },
+  {
+    type: 'sz_canvas_shadow',
+    message0: 'Brilho/sombra do pincel %1 cor %2 desfoque %3',
+    args0: [
+      { type: 'field_input', name: 'CTX', text: 'ctx' },
+      { type: 'input_value', name: 'COLOR', check: 'JSValue' },
+      { type: 'input_value', name: 'BLUR', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Liga um brilho/sombra colorido no que for desenhado depois (desfoque 0 = sem brilho).',
+  },
+  {
+    type: 'sz_canvas_stroke_text',
+    message0: 'Escrever contorno %1 com pincel %2 em x %3 y %4',
+    args0: [
+      { type: 'input_value', name: 'TEXT', check: 'JSValue' },
+      { type: 'field_input', name: 'CTX', text: 'ctx' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Escreve um texto só com o contorno (usa a cor do contorno).',
+  },
+  {
+    type: 'sz_canvas_line_dash',
+    message0: 'Traço tracejado do pincel %1 tamanho %2',
+    args0: [
+      { type: 'field_input', name: 'CTX', text: 'ctx' },
+      { type: 'input_value', name: 'SEGMENT', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Deixa as linhas tracejadas (pontilhadas). Tamanho 0 volta a ser linha contínua.',
+  },
+  {
+    type: 'sz_canvas_measure_text',
+    message0: 'largura do texto %1 no pincel %2',
+    args0: [
+      { type: 'input_value', name: 'TEXT', check: 'JSValue' },
+      { type: 'field_input', name: 'CTX', text: 'ctx' },
+    ],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Quantos pixels de largura o texto ocupa com a fonte atual (use para centralizar).',
+  },
   // ---- Entrada na mão: tecla apertada? e posição do mouse/dedo ----
   {
     type: 'sz_input_key_pressed',
@@ -390,3 +574,96 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     tooltip: 'Posição vertical do mouse/dedo dentro do canvas.',
   },
 ]
+
+// Sub-categorias do Canvas (estilo Programação/Jogo 2D). Tipos ainda não
+// definidos (blocos novos) são ignorados pelo toolbox até existirem.
+export const CANVAS_GROUPS: { name: string; colour: string; types: string[] }[] = [
+  {
+    name: '🖼️ Tela',
+    colour: '#34d399',
+    types: ['sz_canvas_setup', 'sz_canvas_set_size', 'sz_canvas_clear', 'sz_canvas_clear_rect'],
+  },
+  {
+    name: '🎨 Pincel',
+    colour: '#22d3ee',
+    types: [
+      'sz_canvas_fill_style',
+      'sz_canvas_stroke_style',
+      'sz_canvas_line_width',
+      'sz_canvas_global_alpha',
+      'sz_canvas_gradient',
+      'sz_canvas_shadow',
+      'sz_canvas_line_dash',
+    ],
+  },
+  {
+    name: '⬛ Formas',
+    colour: '#4ade80',
+    types: [
+      'sz_canvas_fill_rect',
+      'sz_canvas_stroke_rect',
+      'sz_canvas_round_rect',
+      'sz_canvas_arc',
+      'sz_canvas_ellipse',
+      'sz_canvas_arc_slice',
+    ],
+  },
+  {
+    name: '✏️ Traçado',
+    colour: '#38bdf8',
+    types: [
+      'sz_canvas_begin_path',
+      'sz_canvas_move_to',
+      'sz_canvas_line_to',
+      'sz_canvas_quadratic_curve',
+      'sz_canvas_bezier_curve',
+      'sz_canvas_close_path',
+      'sz_canvas_stroke',
+      'sz_canvas_fill',
+    ],
+  },
+  {
+    name: '🔤 Texto',
+    colour: '#818cf8',
+    types: [
+      'sz_canvas_font',
+      'sz_canvas_text_align',
+      'sz_canvas_fill_text',
+      'sz_canvas_stroke_text',
+      'sz_canvas_measure_text',
+    ],
+  },
+  {
+    name: '🔄 Transformar',
+    colour: '#a78bfa',
+    types: [
+      'sz_canvas_save',
+      'sz_canvas_restore',
+      'sz_canvas_translate',
+      'sz_canvas_rotate',
+      'sz_canvas_scale',
+    ],
+  },
+  { name: '🖼️ Imagem', colour: '#f472b6', types: ['sz_canvas_draw_image'] },
+  {
+    name: '🎞️ Animação & entrada',
+    colour: '#fbbf24',
+    types: [
+      'sz_canvas_anim_loop',
+      'sz_canvas_cancel_anim',
+      'sz_canvas_keyboard',
+      'sz_input_key_pressed',
+      'sz_input_pointer_x',
+      'sz_input_pointer_y',
+    ],
+  },
+]
+
+// Cor = navegação: pinta cada bloco com a cor do seu grupo.
+const CANVAS_COLOUR_BY_TYPE = new Map<string, string>(
+  CANVAS_GROUPS.flatMap((g) => g.types.map((t) => [t, g.colour] as const)),
+)
+for (const b of CANVAS_BLOCKS) {
+  const colour = CANVAS_COLOUR_BY_TYPE.get(b.type)
+  if (colour) b.colour = colour
+}

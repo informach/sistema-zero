@@ -213,12 +213,44 @@ describe('parseHTML', () => {
   })
 
   it('aninhamento patologicamente profundo não crasha (degrada ou parseia)', () => {
-    // A recursão mapNode↔mapChildren não tem guarda de profundidade; o contrato
-    // de não-crashar precisa valer mesmo para entradas patológicas.
+    // A guarda de profundidade EXPLÍCITA (MAX_HTML_NESTING) precisa honrar o
+    // contrato de não-crashar mesmo para entradas patológicas.
     const depth = 20000
     const source = `<body>${'<div>'.repeat(depth)}x${'</div>'.repeat(depth)}</body>`
     const ir = parseHTML(source)
     expect(Array.isArray(ir)).toBe(true)
+  })
+
+  it('limita a profundidade de forma PREVISÍVEL: o trecho fundo vira rawHTML advanced', () => {
+    // Abaixo do limite (64) tudo é estruturado; o nó MAIS FUNDO que cruza o
+    // limite degrada para um único `rawHTML advanced` verbatim (via outerHTML),
+    // sem perder nada e sem depender de catch de RangeError.
+    const depth = 200
+    const source = `<body>${'<div>'.repeat(depth)}fundo${'</div>'.repeat(depth)}</body>`
+    const ir = parseHTML(source)
+    expect(ir).toHaveLength(1)
+
+    // Desce pelos containers estruturados e confirma que, em algum ponto, a
+    // subárvore foi preservada como avançado (limite atingido) — e que o texto
+    // mais fundo não se perdeu.
+    let node = ir[0]
+    let sawAdvanced = false
+    let structuredLevels = 0
+    while (node) {
+      if (node.type === 'rawHTML') {
+        sawAdvanced = true
+        expect(node.advanced).toBe(true)
+        expect(node.html).toContain('fundo')
+        break
+      }
+      if (node.type !== 'element' || !node.children) break
+      structuredLevels += 1
+      node = node.children.find((c) => c.type === 'element' || c.type === 'rawHTML')
+    }
+    expect(sawAdvanced).toBe(true)
+    // A estruturação parou perto do limite, não percorreu os 200 níveis.
+    expect(structuredLevels).toBeLessThanOrEqual(66)
+    expect(structuredLevels).toBeGreaterThan(60)
   })
 })
 

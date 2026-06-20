@@ -119,6 +119,7 @@ describe('PersistenceService', () => {
         'sz:project-meta:project-1',
         'sz:project-files:project-1',
         'sz:project-state:project-1',
+        'sz:project-blocks:project-1',
         // 4ª partição: assets embutidos (imagens/sprites).
         'sz:project-assets:project-1',
         'sz:project:project-1',
@@ -744,6 +745,155 @@ describe('loadProject', () => {
     expect(loaded?.tree?.['src/main.ts']?.kind).toBe('file')
   })
 
+  it('persiste blocksState fora do registro leve de state', async () => {
+    const blocksState = {
+      blocks: {
+        languageVersion: 0,
+        blocks: [{ type: 'sz_js_console_log_text', fields: { VALUE: 'oi' } }],
+      },
+    }
+    await persistProject({ ...createEmptyProject('split-blocks', 'Projeto'), blocksState })
+
+    const lastArgs = idb.setMany.mock.calls.at(-1) as unknown as unknown[]
+    const records = (lastArgs?.[0] ?? []) as [string, Record<string, unknown>][]
+    const byKey = new Map(records.map(([key, value]) => [key, value]))
+
+    expect(byKey.get('sz:project-meta:split-blocks')?.storageVersion).toBe(2)
+    expect(byKey.get('sz:project-state:split-blocks')).toMatchObject({
+      id: 'split-blocks',
+      ir: expect.anything(),
+    })
+    expect(byKey.get('sz:project-state:split-blocks')).not.toHaveProperty('blocksState')
+    expect(byKey.get('sz:project-blocks:split-blocks')?.blocksState).toEqual(blocksState)
+  })
+
+  it('load rápido local não lê state/blocks pesados e preserva o modo salvo', async () => {
+    // Abertura rápida: ir/blocksState voltam null (restaurados em segundo plano por
+    // hydrateAfterLoad). Ler o blocksState (enorme) aqui travava "Carregando projeto…".
+    idb.getMany.mockResolvedValueOnce([
+      {
+        id: 'fast-open',
+        name: 'Projeto rápido',
+        createdAt: 10,
+        updatedAt: 20,
+        mode: 'blocks',
+        installedExtensions: [],
+      },
+      {
+        id: 'fast-open',
+        files: {
+          'index.html': '<h1>ok</h1>',
+          'style.css': '',
+          'script.js': '',
+        },
+        extraFiles: [],
+      },
+      undefined,
+    ])
+
+    const loaded = await createLocalPersistenceAdapter().load('fast-open')
+
+    expect(idb.getMany).toHaveBeenCalledWith(
+      ['sz:project-meta:fast-open', 'sz:project-files:fast-open', 'sz:project-assets:fast-open'],
+      expect.anything(),
+    )
+    expect(loaded).toMatchObject({
+      id: 'fast-open',
+      mode: 'blocks',
+      ir: null,
+      blocksState: null,
+      files: {
+        'index.html': '<h1>ok</h1>',
+        'style.css': '',
+        'script.js': '',
+      },
+    })
+  })
+
+  it('load rápido local não lê state mesmo no storage v2', async () => {
+    idb.getMany.mockResolvedValueOnce([
+      {
+        id: 'fast-open-v2',
+        name: 'Projeto rápido v2',
+        createdAt: 10,
+        updatedAt: 20,
+        mode: 'blocks',
+        installedExtensions: [],
+        storageVersion: 2,
+      },
+      {
+        id: 'fast-open-v2',
+        files: {
+          'index.html': '<h1>ok</h1>',
+          'style.css': '',
+          'script.js': '',
+        },
+        extraFiles: [],
+      },
+      undefined,
+    ])
+
+    const loaded = await createLocalPersistenceAdapter().load('fast-open-v2')
+
+    expect(idb.getMany).toHaveBeenCalledWith(
+      [
+        'sz:project-meta:fast-open-v2',
+        'sz:project-files:fast-open-v2',
+        'sz:project-assets:fast-open-v2',
+      ],
+      expect.anything(),
+    )
+    expect(idb.get).not.toHaveBeenCalled()
+    expect(loaded).toMatchObject({
+      id: 'fast-open-v2',
+      mode: 'blocks',
+      ir: null,
+      blocksState: null,
+    })
+  })
+
+  it('restore em segundo plano recupera blocksState de projeto LEGADO (junto do IR)', async () => {
+    // Projetos salvos ANTES do split guardam blocksState dentro de sz:project-state.
+    // O fallback do loadBlocksState evita que o restore devolva null (e o autosave
+    // seguinte grave vazio por cima, perdendo os blocos do aluno).
+    const blocksState = {
+      blocks: {
+        languageVersion: 0,
+        blocks: [{ type: 'sz_js_console_log_text', fields: { VALUE: 'oi' }, x: 0, y: 0 }],
+      },
+    }
+    // 1º get (partição nova sz:project-blocks) ausente; 2º get (sz:project-state legado) tem o blocksState.
+    idb.get.mockResolvedValueOnce(undefined)
+    idb.get.mockResolvedValueOnce({ id: 'legacy-blocks', ir: null, blocksState })
+
+    const restored = await createLocalPersistenceAdapter().loadBlocksState?.({
+      ...createEmptyProject('legacy-blocks', 'Legado'),
+      blocksState: null,
+    })
+
+    expect(idb.get).toHaveBeenCalledWith('sz:project-blocks:legacy-blocks', expect.anything())
+    expect(idb.get).toHaveBeenCalledWith('sz:project-state:legacy-blocks', expect.anything())
+    expect(restored).toEqual(blocksState)
+  })
+
+  it('adapter local restaura blocksState pela partição separada', async () => {
+    const blocksState = {
+      blocks: {
+        languageVersion: 0,
+        blocks: [{ type: 'sz_js_console_log_text', fields: { VALUE: 'oi' }, x: 320, y: 180 }],
+      },
+    }
+    idb.get.mockResolvedValueOnce({ id: 'fast-open-blocks', blocksState })
+
+    const restored = await createLocalPersistenceAdapter().loadBlocksState?.({
+      ...createEmptyProject('fast-open-blocks', 'Projeto'),
+      blocksState: null,
+    })
+
+    expect(idb.get).toHaveBeenCalledWith('sz:project-blocks:fast-open-blocks', expect.anything())
+    expect(restored).toEqual(blocksState)
+  })
+
   it('loads sobrepostos: o mais NOVO vence mesmo resolvendo por último (guard de geração)', async () => {
     // Store próprio: o contador de geração vive no closure do factory (por
     // instância), então isolamos do default para o teste ser determinístico.
@@ -869,5 +1019,67 @@ describe('listAllProjects', () => {
       { id: 'legacy', name: 'Legado', createdAt: 1, updatedAt: 2, mode: 'blocks' },
     ])
     expect(idb.getMany).toHaveBeenCalledWith(['sz:project:legacy'], expect.anything())
+  })
+})
+
+describe('persistProject — assets só reescritos quando a referência muda', () => {
+  beforeEach(() => {
+    idb.setMany.mockClear()
+  })
+
+  // Chaves passadas no ÚLTIMO setMany (cada par é [chave, registro]).
+  const lastSetManyKeys = (): string[] => {
+    const args = idb.setMany.mock.calls.at(-1) as unknown as unknown[]
+    const pairs = (args?.[0] ?? []) as [string, unknown][]
+    return pairs.map(([key]) => key)
+  }
+
+  it('1ª gravação SEMPRE materializa a partição de assets', async () => {
+    const project = createEmptyProject('assets-first', 'Projeto')
+    await persistProject(project)
+
+    expect(lastSetManyKeys()).toContain('sz:project-assets:assets-first')
+  })
+
+  it('reescreve meta/files/state mas NÃO assets quando a referência de assets não mudou', async () => {
+    const project = createEmptyProject('assets-stable', 'Projeto')
+    await persistProject(project)
+    idb.setMany.mockClear()
+
+    // Mesma referência de `assets` (mesmo objeto Project): só uma edição de texto.
+    await persistProject({ ...project, updatedAt: project.updatedAt + 1 })
+
+    const keys = lastSetManyKeys()
+    expect(keys).toContain('sz:project-meta:assets-stable')
+    expect(keys).toContain('sz:project-files:assets-stable')
+    expect(keys).toContain('sz:project-state:assets-stable')
+    // A partição grande NÃO é reescrita à toa no autosave debounced.
+    expect(keys).not.toContain('sz:project-assets:assets-stable')
+  })
+
+  it('reescreve a partição de assets quando a referência muda (edição de imagem)', async () => {
+    const project = createEmptyProject('assets-changed', 'Projeto')
+    await persistProject(project)
+    idb.setMany.mockClear()
+
+    // `addAsset`/`removeAsset` substituem `assets` por uma NOVA referência: o
+    // dirty-check por referência detecta e reescreve a partição.
+    const withNewAssets = { ...project, assets: [...(project.assets ?? [])] }
+    await persistProject(withNewAssets)
+
+    expect(lastSetManyKeys()).toContain('sz:project-assets:assets-changed')
+  })
+
+  it('reescreve a partição de assets na 1ª gravação após uma falha de write (ref não registrada)', async () => {
+    const project = createEmptyProject('assets-retry', 'Projeto')
+    // 1º write falha (ex.: quota): a referência NÃO é registrada, então o retry
+    // precisa reescrever a partição de assets.
+    idb.setMany.mockRejectedValueOnce(new Error('QuotaExceededError'))
+    await expect(persistProject(project)).rejects.toThrow('QuotaExceededError')
+    idb.setMany.mockClear()
+
+    await persistProject({ ...project, updatedAt: project.updatedAt + 1 })
+
+    expect(lastSetManyKeys()).toContain('sz:project-assets:assets-retry')
   })
 })

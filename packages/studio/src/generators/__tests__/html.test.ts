@@ -233,4 +233,110 @@ describe('generateHTML', () => {
     }
     expect(() => generateHTML({ title: 'X', body: [node] })).toThrow(GeneratorDepthError)
   })
+
+  describe('chokepoint de atributos (handlers inline + URLs)', () => {
+    it('DESCARTA handlers inline on* (onclick/onerror/onload/onmouseover)', () => {
+      const html = generateHTML({
+        title: 'X',
+        body: [
+          {
+            type: 'element',
+            tag: 'button',
+            text: 'Clica',
+            attrs: {
+              onclick: 'alert(1)',
+              ONERROR: 'alert(2)',
+              onLoad: 'alert(3)',
+              onmouseover: 'alert(4)',
+              'data-ok': 'sim',
+            },
+          },
+        ],
+      })
+      expect(html).not.toContain('onclick')
+      expect(html).not.toContain('ONERROR')
+      expect(html).not.toContain('onLoad')
+      expect(html).not.toContain('onmouseover')
+      expect(html).not.toContain('alert(')
+      // Atributo legítimo permanece.
+      expect(html).toContain('data-ok="sim"')
+    })
+
+    it('REJEITA href javascript:/vbscript: (e variações com controle/maiúscula)', () => {
+      const html = generateHTML({
+        title: 'X',
+        body: [
+          { type: 'element', tag: 'a', text: 'um', attrs: { href: 'javascript:alert(1)' } },
+          { type: 'element', tag: 'a', text: 'dois', attrs: { href: 'JavaScript:alert(2)' } },
+          { type: 'element', tag: 'a', text: 'três', attrs: { href: '  javascript:alert(3)' } },
+          { type: 'element', tag: 'a', text: 'quatro', attrs: { href: 'java\tscript:alert(4)' } },
+          { type: 'element', tag: 'a', text: 'cinco', attrs: { href: 'vbscript:msgbox(5)' } },
+        ],
+      })
+      expect(html.toLowerCase()).not.toContain('javascript:')
+      expect(html.toLowerCase()).not.toContain('vbscript:')
+      expect(html).not.toContain('alert(')
+      // O texto do link continua presente (só o atributo perigoso some).
+      expect(html).toContain('>um<')
+    })
+
+    it('REJEITA data:text/html em href mas MANTÉM data:image em src', () => {
+      const html = generateHTML({
+        title: 'X',
+        body: [
+          {
+            type: 'element',
+            tag: 'a',
+            text: 'mau',
+            attrs: { href: 'data:text/html,<script>alert(1)</script>' },
+          },
+          {
+            type: 'element',
+            tag: 'img',
+            attrs: { src: 'data:image/png;base64,iVBORw0KGgo=', alt: 'pixel' },
+          },
+        ],
+      })
+      expect(html).not.toContain('data:text/html')
+      expect(html).toContain('src="data:image/png;base64,iVBORw0KGgo="')
+    })
+
+    it('MANTÉM href http/https/relativo/âncora/protocolo-relativo', () => {
+      const html = generateHTML({
+        title: 'X',
+        body: [
+          { type: 'element', tag: 'a', text: 'http', attrs: { href: 'http://exemplo.com' } },
+          { type: 'element', tag: 'a', text: 'https', attrs: { href: 'https://exemplo.com/p' } },
+          { type: 'element', tag: 'a', text: 'rel', attrs: { href: 'pagina/sobre.html' } },
+          { type: 'element', tag: 'a', text: 'anc', attrs: { href: '#secao' } },
+          { type: 'element', tag: 'a', text: 'pr', attrs: { href: '//cdn.exemplo.com/x' } },
+          { type: 'element', tag: 'a', text: 'mail', attrs: { href: 'mailto:oi@exemplo.com' } },
+        ],
+      })
+      expect(html).toContain('href="http://exemplo.com"')
+      expect(html).toContain('href="https://exemplo.com/p"')
+      expect(html).toContain('href="pagina/sobre.html"')
+      expect(html).toContain('href="#secao"')
+      expect(html).toContain('href="//cdn.exemplo.com/x"')
+      expect(html).toContain('href="mailto:oi@exemplo.com"')
+    })
+
+    it('aplica o filtro em outros atributos de URL (formaction/action/poster)', () => {
+      const html = generateHTML({
+        title: 'X',
+        body: [
+          {
+            type: 'element',
+            tag: 'button',
+            text: 'go',
+            attrs: { formaction: 'javascript:alert(1)' },
+          },
+          { type: 'element', tag: 'form', attrs: { action: 'javascript:alert(2)' } },
+          { type: 'element', tag: 'div', attrs: { poster: 'javascript:alert(3)' } },
+        ],
+      })
+      expect(html.toLowerCase()).not.toContain('javascript:')
+      expect(html).not.toContain('alert(')
+    })
+  })
 })

@@ -873,6 +873,74 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         ? rawJSBlock(stmt)
         : block('sz_canvas_arc', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
     }
+    case 'canvasStrokeRect': {
+      const vs = valueBlocks({ X: stmt.x, Y: stmt.y, W: stmt.w, H: stmt.h })
+      return vs === null
+        ? rawJSBlock(stmt)
+        : block('sz_canvas_stroke_rect', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
+    }
+    case 'canvasClearRect': {
+      const vs = valueBlocks({ X: stmt.x, Y: stmt.y, W: stmt.w, H: stmt.h })
+      return vs === null
+        ? rawJSBlock(stmt)
+        : block('sz_canvas_clear_rect', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
+    }
+    case 'canvasRoundRect': {
+      const vs = valueBlocks({ X: stmt.x, Y: stmt.y, W: stmt.w, H: stmt.h, R: stmt.r })
+      return vs === null
+        ? rawJSBlock(stmt)
+        : block('sz_canvas_round_rect', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
+    }
+    case 'canvasEllipse': {
+      const vs = valueBlocks({ X: stmt.x, Y: stmt.y, RX: stmt.rx, RY: stmt.ry })
+      return vs === null
+        ? rawJSBlock(stmt)
+        : block('sz_canvas_ellipse', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
+    }
+    case 'canvasArcSlice': {
+      const vs = valueBlocks({ X: stmt.x, Y: stmt.y, R: stmt.r, START: stmt.start, END: stmt.end })
+      return vs === null
+        ? rawJSBlock(stmt)
+        : block('sz_canvas_arc_slice', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
+    }
+    case 'canvasQuadraticCurve': {
+      const vs = valueBlocks({ CPX: stmt.cpx, CPY: stmt.cpy, X: stmt.x, Y: stmt.y })
+      return vs === null
+        ? rawJSBlock(stmt)
+        : block('sz_canvas_quadratic_curve', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
+    }
+    case 'canvasBezierCurve': {
+      const vs = valueBlocks({
+        CP1X: stmt.cp1x,
+        CP1Y: stmt.cp1y,
+        CP2X: stmt.cp2x,
+        CP2Y: stmt.cp2y,
+        X: stmt.x,
+        Y: stmt.y,
+      })
+      return vs === null
+        ? rawJSBlock(stmt)
+        : block('sz_canvas_bezier_curve', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
+    }
+    case 'canvasShadow': {
+      const vs = valueBlocks({ COLOR: stmt.color, BLUR: stmt.blur })
+      return vs === null
+        ? rawJSBlock(stmt)
+        : block('sz_canvas_shadow', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
+    }
+    case 'canvasStrokeText': {
+      const vs = valueBlocks({ TEXT: stmt.text, X: stmt.x, Y: stmt.y })
+      return vs === null
+        ? rawJSBlock(stmt)
+        : block('sz_canvas_stroke_text', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
+    }
+    case 'canvasLineDash': {
+      const vs = valueBlocks({ SEGMENT: stmt.segment })
+      return vs === null
+        ? rawJSBlock(stmt)
+        : block('sz_canvas_line_dash', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
+    }
+
     case 'canvasFillText': {
       const text = stringExpr(stmt.text)
       const vs = valueBlocks({ X: stmt.x, Y: stmt.y })
@@ -994,8 +1062,25 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         : block('sz_canvas_scale', { CTX: stmt.ctxVar, SX: sx, SY: sy }, {}, stmt.__id)
     }
     case 'canvasGradient': {
-      // Bloco visual suporta apenas 2 stops; se a IR tiver mais, marca avançado.
-      if (stmt.stops.length !== 2) return rawJSBlock(stmt)
+      // O bloco visual só representa FIELMENTE 2 stops nos offsets 0 e 1 com cor
+      // hex de 6 dígitos (o seletor de cor a re-emite igual). Qualquer outra forma
+      // — mais stops, offsets custom (0.3/0.8 viravam 0/1) ou cores nomeadas/rgba
+      // (forçadas à paleta) — seria promovida COM PERDA, mudando o desenho do aluno
+      // num round-trip blocos⇄código. Fica como rawJS, igual à disciplina de
+      // cssEntryToBlocks (só promove quando regenera verbatim).
+      const c0 = stmt.stops[0]?.color
+      const c1 = stmt.stops[1]?.color
+      if (
+        stmt.stops.length !== 2 ||
+        stmt.stops[0]?.offset !== 0 ||
+        stmt.stops[1]?.offset !== 1 ||
+        !c0 ||
+        !c1 ||
+        !isLosslessColor(c0) ||
+        !isLosslessColor(c1)
+      ) {
+        return rawJSBlock(stmt)
+      }
       const x0 = numberExpr(stmt.x0)
       const y0 = numberExpr(stmt.y0)
       const x1 = numberExpr(stmt.x1)
@@ -1010,8 +1095,8 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
           Y0: y0,
           X1: x1,
           Y1: y1,
-          C0: stmt.stops[0]?.color ?? '#000000',
-          C1: stmt.stops[1]?.color ?? '#ffffff',
+          C0: c0,
+          C1: c1,
         },
         {},
         stmt.__id,
@@ -1058,7 +1143,7 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
     case 'canvasFont':
       return block(
         'sz_canvas_font',
-        { CTX: stmt.ctxVar, SIZE: stmt.size, FAMILY: stmt.family },
+        { CTX: stmt.ctxVar, SIZE: stmt.size, FAMILY: stmt.family, WEIGHT: stmt.weight ?? '' },
         {},
         stmt.__id,
       )
@@ -1763,6 +1848,12 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block(expr.dim === 'width' ? 'sz_val_canvas_width' : 'sz_val_canvas_height', {
         CTX: expr.ctxVar,
       })
+    case 'canvasMeasureText': {
+      const t = exprToValueBlock(expr.text)
+      return t === null
+        ? null
+        : block('sz_canvas_measure_text', { CTX: expr.ctxVar }, {}, expr.__id, { TEXT: t })
+    }
     case 'random': {
       const min = exprToValueBlock(expr.min)
       const max = exprToValueBlock(expr.max)
@@ -1795,6 +1886,10 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return a && b
         ? block('sz_val_logic', { OP: expr.op }, {}, undefined, { LEFT: a, RIGHT: b })
         : null
+    }
+    case 'logicalNot': {
+      const v = exprToValueBlock(expr.value)
+      return v ? block('sz_val_not', {}, {}, undefined, { VALUE: v }) : null
     }
     case 'ternary': {
       const cond = exprToValueBlock(expr.condition)

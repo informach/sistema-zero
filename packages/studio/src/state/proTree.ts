@@ -51,6 +51,22 @@ function caseInsensitiveCollision(tree: ProjectTree, path: string, ignore?: stri
   return null
 }
 
+/**
+ * Algum ANCESTRAL de `path` (que `withParents`/o rename materializariam como `dir`)
+ * colide só na CAIXA com uma pasta já existente? Sem esta checagem,
+ * `addProFile('src/x.ts')` com um `Src/` já presente criaria `Src` E `src` lado a
+ * lado — variantes que COLAPSAM no FS case-insensitivo do WebContainer (macOS/
+ * Windows) e corrompem o sync. Ancestral presente VERBATIM é reusado (sem conflito).
+ */
+function ancestorCaseConflict(tree: ProjectTree, path: string, ignore?: string): string | null {
+  for (const dir of parentDirs(path)) {
+    if (tree[dir]) continue
+    const conflict = caseInsensitiveCollision(tree, dir, ignore)
+    if (conflict) return conflict
+  }
+  return null
+}
+
 /** Copia a árvore criando como `dir` toda pasta-pai ausente do `path`. */
 function withParents(tree: ProjectTree, path: string): ProjectTree {
   const next: ProjectTree = { ...tree }
@@ -66,6 +82,8 @@ export function addProFile(tree: ProjectTree, path: string): ProTreeResult {
   if (tree[norm]) return { error: 'Já existe um arquivo ou pasta com esse caminho.' }
   const caseConflict = caseInsensitiveCollision(tree, norm)
   if (caseConflict) return { error: caseConflict }
+  const ancestorConflict = ancestorCaseConflict(tree, norm)
+  if (ancestorConflict) return { error: ancestorConflict }
   const conflict = parentFileConflict(tree, norm)
   if (conflict) return { error: conflict }
   const next = withParents(tree, norm)
@@ -79,6 +97,8 @@ export function addProDir(tree: ProjectTree, path: string): ProTreeResult {
   if (tree[norm]) return { error: 'Já existe um arquivo ou pasta com esse caminho.' }
   const caseConflict = caseInsensitiveCollision(tree, norm)
   if (caseConflict) return { error: caseConflict }
+  const ancestorConflict = ancestorCaseConflict(tree, norm)
+  if (ancestorConflict) return { error: ancestorConflict }
   const conflict = parentFileConflict(tree, norm)
   if (conflict) return { error: conflict }
   const next = withParents(tree, norm)
@@ -109,6 +129,8 @@ export function renameProNode(tree: ProjectTree, from: string, to: string): ProT
   // (`app.tsx` → `App.tsx`) é intencional e permitido; colidir com OUTRO nó não.
   const caseConflict = caseInsensitiveCollision(tree, norm, from)
   if (caseConflict) return { error: caseConflict }
+  const ancestorConflict = ancestorCaseConflict(tree, norm, from)
+  if (ancestorConflict) return { error: ancestorConflict }
   const conflict = parentFileConflict(tree, norm)
   if (conflict) return { error: conflict }
 
@@ -207,6 +229,16 @@ export function sanitizeProTree(raw: unknown, limits: ProTreeLimits = {}): Proje
         return null
       }
     }
+  }
+
+  // Rejeita VARIANTES DE CAIXA (o FS do WebContainer é case-insensitivo): dois
+  // caminhos que só diferem na caixa — sejam irmãos explícitos (`Src/a` + `src/b`)
+  // ou um ancestral materializado — colapsam num só e corrompem o sync.
+  const seenLower = new Set<string>()
+  for (const key of Object.keys(out)) {
+    const lower = key.toLowerCase()
+    if (seenLower.has(lower)) return null
+    seenLower.add(lower)
   }
 
   return Object.keys(out).length > 0 ? out : null

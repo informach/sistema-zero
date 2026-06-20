@@ -42,6 +42,16 @@ export interface BuildProductionHtmlInput {
   assetsScriptSrc?: string
 }
 
+/**
+ * Endurecimento MÍNIMO e NÃO-QUEBRA-NADA do site exportado (achado "sem CSP num
+ * domínio real"). NÃO é a CSP restritiva do preview de dev (que bloquearia o
+ * código inline do aluno, imagens externas e a 3D via CDN). Só duas diretivas
+ * inofensivas para um site normal de criança, que ainda assim barram abuso de
+ * plugin (`object-src 'none'`) e de `<base>` (`base-uri 'self'`). Para uma
+ * proteção mais forte, o README recomenda o host configurar cabeçalhos reais.
+ */
+const HARDENING_META = `<meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'">`
+
 export function buildProductionIndexHtml(input: BuildProductionHtmlInput): string {
   const needsModules = Object.keys(input.importmap).length > 0
 
@@ -78,6 +88,9 @@ export function buildProductionIndexHtml(input: BuildProductionHtmlInput): strin
   const bodyBlock = input.extraHtmlFragments.filter(Boolean).join('\n')
 
   let out = input.html
+  // Endurecimento mínimo PRIMEIRO, perto do topo do <head> (logo após a abertura),
+  // para valer cedo no parse. Não quebra nada que um site de criança use.
+  out = injectAfterHeadStart(out, HARDENING_META)
   if (headBlock) out = injectBeforeHeadEnd(out, headBlock)
   if (bodyBlock) out = injectBeforeBodyEnd(out, bodyBlock)
 
@@ -114,10 +127,22 @@ export function buildProductionIndexHtml(input: BuildProductionHtmlInput): strin
   return out
 }
 
+/** Insere `block` logo APÓS a abertura `<head ...>` (perto do topo). */
+function injectAfterHeadStart(html: string, block: string): string {
+  // Logo após a abertura <head ...> (preserva atributos do <head> do aluno).
+  if (/<head(?=[\s/>])[^>]*>/i.test(html))
+    return html.replace(/(<head(?=[\s/>])[^>]*>)/i, `$1\n${block}`)
+  // Sem <head>: tenta logo após <html ...>.
+  if (/<html[^>]*>/i.test(html)) return html.replace(/(<html[^>]*>)/i, `$1\n${block}`)
+  // Documento sem <head> nem <html>: prepende (fallback raro).
+  return `${block}\n${html}`
+}
+
 function injectBeforeHeadEnd(html: string, block: string): string {
   if (/<\/head>/i.test(html)) return html.replace(/<\/head>/i, `${block}\n</head>`)
   // Sem </head>: tenta logo após a abertura <head ...>.
-  if (/<head[^>]*>/i.test(html)) return html.replace(/(<head[^>]*>)/i, `$1\n${block}`)
+  if (/<head(?=[\s/>])[^>]*>/i.test(html))
+    return html.replace(/(<head(?=[\s/>])[^>]*>)/i, `$1\n${block}`)
   // Documento sem <head>: prepende o bloco (fallback raro).
   return `${block}\n${html}`
 }

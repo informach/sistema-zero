@@ -24,10 +24,17 @@ export function RootErrorFallback({
           A IDE encontrou um erro inesperado. Seu trabalho recente é salvo automaticamente. Tente
           recarregar; se persistir, volte à lista de projetos.
         </p>
+        {/* Detalhe técnico SECUNDÁRIO: a mensagem crua costuma vir em inglês.
+            Fica clara como "opcional" (rótulo + texto apagado) para a criança não
+            confundir com o recado principal — mas continua aqui para copiar/colar
+            numa IA ou busca. */}
         {error.message && (
-          <p className="mt-3 break-words rounded bg-sz-bg p-2 text-left font-mono text-xs text-sz-fg-soft">
-            {error.message}
-          </p>
+          <details className="mt-3 text-left">
+            <summary className="cursor-pointer text-xs text-sz-fg-mute">Detalhe técnico</summary>
+            <p className="mt-1 break-words rounded bg-sz-bg p-2 font-mono text-xs text-sz-fg-mute">
+              {error.message}
+            </p>
+          </details>
         )}
         <div className="mt-4 flex justify-center gap-2">
           <Button size="sm" variant="primary" onClick={() => window.location.reload()}>
@@ -66,10 +73,16 @@ export function SectionErrorFallback({
       <p className="max-w-sm text-xs text-sz-fg-soft">
         Pode ter sido uma falha de rede ao baixar este recurso. Verifique a conexão e tente de novo.
       </p>
+      {/* Detalhe técnico SECUNDÁRIO (igual ao fallback de tela cheia): rótulo +
+          texto apagado, recolhível, para não competir com o recado principal —
+          mas disponível para copiar/colar numa IA ou busca. */}
       {error.message && (
-        <p className="max-w-sm break-words rounded bg-sz-panel p-2 font-mono text-xs text-sz-fg-soft">
-          {error.message}
-        </p>
+        <details className="max-w-sm text-left">
+          <summary className="cursor-pointer text-xs text-sz-fg-mute">Detalhe técnico</summary>
+          <p className="mt-1 break-words rounded bg-sz-panel p-2 font-mono text-xs text-sz-fg-mute">
+            {error.message}
+          </p>
+        </details>
       )}
       <Button size="sm" variant="primary" onClick={reset}>
         Tentar de novo

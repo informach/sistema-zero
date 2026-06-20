@@ -1,8 +1,20 @@
 import { describe, expect, it } from 'bun:test'
+import { PROJECT_ASSET_LIMITS } from '#core'
 import { buildAssetsRuntime } from '../assetsBridge'
 import { buildPreviewDoc } from '../bootstrap'
 
 const PNG = 'data:image/png;base64,AAAA'
+
+/**
+ * Executa o IIFE do runtime num `window` falso e devolve o `__SZGAME_ASSETS`
+ * semeado (mais fiel que regex: roda o mesmo JSON.parse doubly-encoded em runtime).
+ */
+function seededManifest(runtime: string): Record<string, string> {
+  const win = {} as { __SZGAME_ASSETS?: Record<string, string> }
+  // eslint-disable-next-line no-new-func
+  new Function('window', runtime)(win)
+  return win.__SZGAME_ASSETS ?? {}
+}
 
 describe('buildAssetsRuntime', () => {
   it('semeia window.__SZGAME_ASSETS via JSON.parse (não objeto literal)', () => {
@@ -17,6 +29,30 @@ describe('buildAssetsRuntime', () => {
     const runtime = buildAssetsRuntime({ ok: PNG, mau: 'http://evil/x.png' })
     expect(runtime).toContain('AAAA')
     expect(runtime).not.toContain('evil')
+  })
+
+  it('clampa a QUANTIDADE de assets ao teto do projeto (mirror sanitizeProjectAssets)', () => {
+    const many: Record<string, string> = {}
+    const over = PROJECT_ASSET_LIMITS.maxAssetsCount + 25
+    for (let i = 0; i < over; i++) many[`a${i}`] = `data:image/png;base64,AAAA${i}`
+    const manifest = seededManifest(buildAssetsRuntime(many))
+    expect(Object.keys(manifest).length).toBe(PROJECT_ASSET_LIMITS.maxAssetsCount)
+  })
+
+  it('clampa o TOTAL de caracteres (manifesto exagerado não incha o srcdoc)', () => {
+    // Duas imagens grandes: a 2ª estoura o orçamento total e é descartada.
+    const half = Math.floor(PROJECT_ASSET_LIMITS.maxAssetsTotalChars / 2) + 100
+    const big = `data:image/png;base64,${'A'.repeat(half)}`
+    const manifest = seededManifest(buildAssetsRuntime({ um: big, dois: big }))
+    expect(Object.keys(manifest)).toEqual(['um'])
+    expect(manifest.dois).toBeUndefined()
+  })
+
+  it('mantém o filtro data:image/ junto do clamp (entrada inválida não conta no orçamento)', () => {
+    const manifest = seededManifest(
+      buildAssetsRuntime({ ok: PNG, mau: 'http://evil/x.png', ok2: PNG }),
+    )
+    expect(Object.keys(manifest).sort()).toEqual(['ok', 'ok2'])
   })
 })
 

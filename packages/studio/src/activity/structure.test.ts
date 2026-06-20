@@ -23,14 +23,32 @@ describe('evaluateStructureRule', () => {
     expect(evaluateStructureRule({ type: 'usesLoop' }, nested, null)).toBe(true)
   })
 
-  it('declaresVariable casa por nome', () => {
-    const tree = ir([{ type: 'var', name: 'pontos' }])
+  it('declaresVariable casa DECLARAÇÃO por nome (não referência)', () => {
+    const tree = ir([{ type: 'var', name: 'pontos', value: { type: 'num', value: 0 } }])
     expect(evaluateStructureRule({ type: 'declaresVariable', name: 'pontos' }, tree, null)).toBe(
       true,
     )
     expect(evaluateStructureRule({ type: 'declaresVariable', name: 'vidas' }, tree, null)).toBe(
       false,
     )
+    // declareVar (declaração SEM valor) também conta.
+    expect(
+      evaluateStructureRule(
+        { type: 'declaresVariable', name: 'placar' },
+        ir([{ type: 'declareVar', name: 'placar' }]),
+        null,
+      ),
+    ).toBe(true)
+    // Uma REFERÊNCIA (var sem `value`, ex.: usar a variável numa expressão) NÃO
+    // conta como declaração — senão o aluno passaria só USANDO o nome (o anti-cola
+    // é recalculado no servidor e este predicado é espelhado lá).
+    expect(
+      evaluateStructureRule(
+        { type: 'declaresVariable', name: 'pontos' },
+        ir([{ type: 'assign', name: 'x', value: { type: 'var', name: 'pontos' } }]),
+        null,
+      ),
+    ).toBe(false)
   })
 
   it('definesFunction e callsFunction casam por nome', () => {

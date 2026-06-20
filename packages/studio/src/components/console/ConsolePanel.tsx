@@ -2,7 +2,15 @@ import type { JSX } from 'react'
 import { memo, useLayoutEffect, useRef } from 'react'
 import { t } from '#core'
 import { Button } from '#ui'
+import { glossErrorMessage } from '../../state/errorGloss'
 import { type LogEntry, useLogsStore } from '../../state/logsStore'
+
+// Tipos de log que representam ERRO — só neles tentamos a dica em português.
+const ERROR_KINDS: ReadonlySet<LogEntry['kind']> = new Set([
+  'error',
+  'runtimeError',
+  'unhandledRejection',
+])
 
 // Margem (px) para considerar o scroll "no fim": pequenas folgas de
 // arredondamento/subpixel não devem desligar o auto-scroll.
@@ -89,11 +97,22 @@ export function ConsolePanel(): JSX.Element {
 // é estável — só o item recém-adicionado precisa renderizar (evita re-render dos
 // até 500 itens a cada console.log).
 const LogEntryItem = memo(function LogEntryItem({ entry }: { entry: LogEntry }) {
+  // Dica em português SÓ para entradas de erro (a linha original em inglês fica
+  // intacta logo acima — a criança aprende a mensagem real e pode colá-la numa
+  // IA/busca). `null` quando o padrão não é reconhecido (mostra só o original).
+  const gloss = ERROR_KINDS.has(entry.kind) ? glossErrorMessage(entry.text) : null
   return (
-    <div className={`flex gap-2 ${COLORS[entry.kind]}`}>
-      <span className="shrink-0 text-sz-fg-mute">{formatTime(entry.timestamp)}</span>
-      <span className="shrink-0 uppercase text-xs text-sz-fg-mute">{KIND_LABEL[entry.kind]}</span>
-      <span className="whitespace-pre-wrap break-all">{entry.text}</span>
+    <div>
+      <div className={`flex gap-2 ${COLORS[entry.kind]}`}>
+        <span className="shrink-0 text-sz-fg-mute">{formatTime(entry.timestamp)}</span>
+        <span className="shrink-0 uppercase text-xs text-sz-fg-mute">{KIND_LABEL[entry.kind]}</span>
+        <span className="whitespace-pre-wrap break-all">{entry.text}</span>
+      </div>
+      {gloss && (
+        <p className="ml-2 mt-0.5 whitespace-pre-wrap break-words border-l-2 border-sz-accent pl-2 text-sz-fg-soft">
+          {gloss}
+        </p>
+      )}
     </div>
   )
 })

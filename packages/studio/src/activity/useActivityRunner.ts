@@ -27,12 +27,18 @@ export function useActivityRunner(activity: LessonActivity): ActivityRunnerHandl
   const run = useCallback(async (): Promise<ActivityRunResult | null> => {
     const project = projectApi.getState().project
     if (!project) return null
+    const runProjectId = project.id
     checksApi.getState().setRunning(true)
     try {
       const r = await runActivity(project, activity, {
         fetchAllowedOrigins: previewSecurity.fetchAllowedOrigins,
         loopBudgetMs: previewSecurity.loopBudgetMs,
       })
+      // O host pode ter trocado de projeto/aula (replaceProject / próxima aula)
+      // DURANTE a verificação — o sandbox leva segundos. Não publicamos a nota da
+      // rodada antiga sobre o projeto novo (vazaria a nota de A no envio de B). O
+      // StudioCore já zera o lastResult ao (re)hidratar.
+      if (projectApi.getState().project?.id !== runProjectId) return r
       checksApi.getState().setResult(r)
       return r
     } finally {

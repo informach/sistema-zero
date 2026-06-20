@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import { compileStatements } from '#generators'
 import { SZIRSchema } from '#ir'
-import { pongExample } from '../examples'
+import { asteroidsExample, pongExample } from '../examples'
 import { gameTwoDExtension } from '../index'
 
 describe('game-2d — definição da extensão', () => {
@@ -31,6 +31,20 @@ describe('pongExample (game-2d)', () => {
   it('NÃO usa bloco de código avançado (rawJS) — tudo vira bloco', () => {
     const types = collectTypes(pongExample.ir)
     expect(types.has('rawJS')).toBe(false)
+  })
+})
+
+describe('asteroidsExample (game-2d) — perf do SZIRSchema', () => {
+  // Guarda de regressão do freeze de ~11s: com `z.union` (não-discriminada) o
+  // safeParse desta IR ~107 nós fazia BACKTRACKING exponencial e congelava o
+  // editor na carga/import. Com `z.discriminatedUnion('type', …)` é O(nós).
+  // Teto FOLGADO (2s) p/ não flakar em CI lento, mas pega a regressão (era ~15s).
+  it('valida e parseia em tempo linear (< 2s, não exponencial)', () => {
+    const t0 = performance.now()
+    const result = SZIRSchema.safeParse(asteroidsExample.ir)
+    const elapsed = performance.now() - t0
+    expect(result.success).toBe(true)
+    expect(elapsed).toBeLessThan(2000)
   })
 
   it('a física usa os blocos do motor + if/memberSet (gera o código esperado)', () => {

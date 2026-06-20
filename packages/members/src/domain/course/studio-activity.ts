@@ -103,7 +103,6 @@ const LOOP_TYPES: ReadonlySet<string> = new Set([
   'forRange',
   'forEach',
 ])
-const VAR_DECL_TYPES: ReadonlySet<string> = new Set(['var', 'declareVar'])
 const CALL_TYPES: ReadonlySet<string> = new Set(['callFunction', 'call'])
 const MAX_WALK_NODES = 200_000
 
@@ -160,7 +159,15 @@ export function evaluateStructureRule(rule: StructureRule, project: unknown): bo
     case 'usesLoop':
       return someJsNode(js, (n) => LOOP_TYPES.has(n.type as string))
     case 'declaresVariable':
-      return someJsNode(js, (n) => VAR_DECL_TYPES.has(n.type as string) && n.name === rule.name)
+      // SÓ DECLARAÇÃO, não referência (espelha studio/src/activity/structure.ts):
+      // no IR há `type:'var'` STATEMENT (tem `value`) e EXPRESSÃO de referência (sem
+      // `value`); `declareVar` é a declaração sem valor. Sem o `'value' in n`, usar a
+      // variável passava no check — e este é o ÚNICO check à prova de fraude.
+      return someJsNode(
+        js,
+        (n) =>
+          (n.type === 'declareVar' || (n.type === 'var' && 'value' in n)) && n.name === rule.name,
+      )
     case 'definesFunction':
       return someJsNode(js, (n) => n.type === 'funcDecl' && n.name === rule.name)
     case 'callsFunction':

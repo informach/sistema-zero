@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'bun:test'
 import { buildStorageBridgeRuntime } from '../storageBridge'
-import { PREVIEW_STORAGE_MAX_KEY_CHARS } from '../types'
+import {
+  PREVIEW_STORAGE_MAX_KEY_CHARS,
+  PREVIEW_STORAGE_MAX_KEYS,
+  PREVIEW_STORAGE_MAX_TOTAL_CHARS,
+} from '../types'
 
 interface CapturedMessage {
   msg: {
@@ -130,6 +134,60 @@ describe('buildStorageBridgeRuntime', () => {
     win.localStorage.setItem('fome', '3')
     expect(win.localStorage.getItem('fome')).toBe('3')
     expect(posted).toHaveLength(0)
+  })
+
+  it('os literais de limite inlinados espelham types.ts (MAX_KEYS/MAX_TOTAL_CHARS)', () => {
+    const runtime = buildStorageBridgeRuntime()
+    expect(runtime).toContain(`var MAX_KEYS = ${PREVIEW_STORAGE_MAX_KEYS};`)
+    expect(runtime).toContain(`var MAX_TOTAL_CHARS = ${PREVIEW_STORAGE_MAX_TOTAL_CHARS};`)
+  })
+
+  it('setItem lança QuotaExceededError ao estourar a quantidade de chaves', () => {
+    const { win } = runBridge(buildStorageBridgeRuntime())
+    for (let i = 0; i < PREVIEW_STORAGE_MAX_KEYS; i++) win.localStorage.setItem(`k${i}`, '')
+    expect(win.localStorage.length).toBe(PREVIEW_STORAGE_MAX_KEYS)
+    let thrown: unknown
+    try {
+      win.localStorage.setItem('overflow', 'x')
+    } catch (e) {
+      thrown = e
+    }
+    expect((thrown as { name?: string })?.name).toBe('QuotaExceededError')
+    // A chave que estourou NÃO entrou (estado preservado).
+    expect(win.localStorage.getItem('overflow')).toBeNull()
+    expect(win.localStorage.length).toBe(PREVIEW_STORAGE_MAX_KEYS)
+  })
+
+  it('substituir uma chave existente NÃO conta como chave nova (não estoura por contagem)', () => {
+    const { win } = runBridge(buildStorageBridgeRuntime())
+    for (let i = 0; i < PREVIEW_STORAGE_MAX_KEYS; i++) win.localStorage.setItem(`k${i}`, '')
+    // Reescrever uma chave já presente é permitido mesmo no limite de contagem.
+    expect(() => win.localStorage.setItem('k0', 'novo')).not.toThrow()
+    expect(win.localStorage.getItem('k0')).toBe('novo')
+  })
+
+  it('setItem lança QuotaExceededError ao estourar o total de caracteres', () => {
+    const { win } = runBridge(buildStorageBridgeRuntime())
+    // Um valor único maior que o orçamento total → estoura na hora.
+    const huge = 'a'.repeat(PREVIEW_STORAGE_MAX_TOTAL_CHARS + 1)
+    let thrown: unknown
+    try {
+      win.localStorage.setItem('grande', huge)
+    } catch (e) {
+      thrown = e
+    }
+    expect((thrown as { name?: string })?.name).toBe('QuotaExceededError')
+    expect(win.localStorage.getItem('grande')).toBeNull()
+  })
+
+  it('o cap de total desconta o valor antigo ao substituir (troca por valor menor cabe)', () => {
+    const { win } = runBridge(buildStorageBridgeRuntime())
+    // Enche perto do teto com uma chave só.
+    const big = 'a'.repeat(PREVIEW_STORAGE_MAX_TOTAL_CHARS - 10)
+    win.localStorage.setItem('grande', big)
+    // Substituir por algo MENOR não pode estourar (o valor antigo sai da conta).
+    expect(() => win.localStorage.setItem('grande', 'pequeno')).not.toThrow()
+    expect(win.localStorage.getItem('grande')).toBe('pequeno')
   })
 
   it('preserva uma chave literal "__proto__" no seed e no espelho', () => {

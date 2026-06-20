@@ -17,22 +17,35 @@
  * bootstrap (este runtime é emitido via `scriptTag`, igual ao storageBridge).
  */
 
+import { PROJECT_ASSET_LIMITS } from '#core'
+
 const ASSET_DATA_URL_PREFIX = 'data:image/'
 
 /**
  * Constrói o `<script>` (string) que define `window.__SZGAME_ASSETS`. Filtra para
  * só aceitar valores `data:image/...` — defesa em profundidade caso um chamador
- * passe um manifesto não saneado.
+ * passe um manifesto não saneado — e CLAMPA quantidade + total de caracteres
+ * (espelha `sanitizeProjectAssets` em core/project.ts via `PROJECT_ASSET_LIMITS`)
+ * para que um manifesto exagerado não inche o srcdoc. Este é o ponto único do
+ * preview ao vivo + export + capa + atividade, então o teto vale para todos.
  */
 export function buildAssetsRuntime(assets: Record<string, string> = {}): string {
   const safe: Record<string, string> = {}
+  let count = 0
+  let totalChars = 0
   for (const [name, url] of Object.entries(assets)) {
+    if (count >= PROJECT_ASSET_LIMITS.maxAssetsCount) break
     if (
       typeof name === 'string' &&
       typeof url === 'string' &&
       url.startsWith(ASSET_DATA_URL_PREFIX)
     ) {
+      // Conta nome + dataUrl no orçamento total; pula o que estouraria (sem cortar
+      // um dataUrl ao meio — uma imagem truncada não decodificaria de qualquer jeito).
+      if (totalChars + name.length + url.length > PROJECT_ASSET_LIMITS.maxAssetsTotalChars) continue
       safe[name] = url
+      totalChars += name.length + url.length
+      count++
     }
   }
   // Doubly-encoded: o seed entra como STRING JSON + JSON.parse em runtime (não como

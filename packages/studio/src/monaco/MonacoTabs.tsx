@@ -291,9 +291,21 @@ export function MonacoTabs({
     [activeFile, onActiveFileChange],
   )
 
-  const handleChange: OnChange = (value) => {
-    if (file) onChange(file.name, value ?? '')
-  }
+  // onChange e nome do arquivo ativo num ref → `handleChange` ESTÁVEL. Sem isto,
+  // @monaco-editor/react descarta e re-assina o listener onDidChangeModelContent a
+  // CADA render (a chave do efeito é a identidade do onChange). Espelha onCursorChangeRef.
+  const onChangeRef = useRef(onChange)
+  useEffect(() => {
+    onChangeRef.current = onChange
+  }, [onChange])
+  const activeFileNameRef = useRef(file?.name)
+  useEffect(() => {
+    activeFileNameRef.current = file?.name
+  }, [file?.name])
+  const handleChange = useCallback<OnChange>((value) => {
+    const name = activeFileNameRef.current
+    if (name !== undefined) onChangeRef.current(name, value ?? '')
+  }, [])
 
   const handleFormat = useCallback(() => {
     editorRef.current?.getAction('editor.action.formatDocument')?.run()
@@ -303,6 +315,45 @@ export function MonacoTabs({
     editorRef.current = editor
     setMountedEditor(editor)
   }, [])
+
+  // Opções memoizadas: todo campo é constante MENOS `fontSize`. Com um literal
+  // inline, @monaco-editor/react chamava editor.updateOptions() a CADA render (o
+  // efeito de opções é chaveado pela IDENTIDADE do objeto) — desperdício em Ponte,
+  // onde o editor re-renderiza muito enquanto o aluno digita.
+  const editorOptions = useMemo<monacoNs.editor.IStandaloneEditorConstructionOptions>(
+    () => ({
+      minimap: { enabled: false },
+      scrollBeyondLastLine: false,
+      wordWrap: 'on',
+      fontSize,
+      fontFamily: "'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, monospace",
+      tabSize: 2,
+      // Mantido `true` DE PROPÓSITO. Sim, ele adiciona um observador de tamanho por
+      // editor que em parte se sobrepõe ao nosso `useMeasuredWidth` (ResizeObserver da
+      // seção). Mas trocar por `false` + `editor.layout()` manual exigiria um sinal
+      // CONFIÁVEL para TODOS os relayouts, e o que temos aqui é só LARGURA:
+      // `useMeasuredWidth` ignora mudança de ALTURA (split vertical do PanelGroup no
+      // wide) e não dispara no mostrar/esconder de aba (o TabStrip alterna `hidden`,
+      // indo de 0 ao tamanho real). Sem cobrir esses casos, o editor relayout-aria
+      // errado (gutter/scroll desalinhados). O custo do polling do Monaco é baixo; o
+      // risco de quebrar o layout numa IDE infantil não vale a micro-otimização.
+      automaticLayout: true,
+      // Formatação (Shift+Alt+F continua disponível); evitamos formatOnType
+      // por ser intrusivo enquanto o aluno digita.
+      formatOnPaste: true,
+      // Autocomplete responsivo.
+      quickSuggestions: true,
+      suggestOnTriggerCharacters: true,
+      tabCompletion: 'on',
+      parameterHints: { enabled: true },
+      // UX de edição.
+      bracketPairColorization: { enabled: true },
+      guides: { bracketPairs: true, indentation: true },
+      autoIndent: 'full',
+      autoClosingBrackets: 'languageDefined',
+    }),
+    [fontSize],
+  )
 
   const applyHighlightToCurrentModel = useCallback(
     (target: MonacoHighlight): boolean => {
@@ -485,28 +536,13 @@ export function MonacoTabs({
           value={file.value}
           onChange={handleChange}
           onMount={handleMount}
-          options={{
-            minimap: { enabled: false },
-            scrollBeyondLastLine: false,
-            wordWrap: 'on',
-            fontSize,
-            fontFamily: "'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, monospace",
-            tabSize: 2,
-            automaticLayout: true,
-            // Formatação (Shift+Alt+F continua disponível); evitamos formatOnType
-            // por ser intrusivo enquanto o aluno digita.
-            formatOnPaste: true,
-            // Autocomplete responsivo.
-            quickSuggestions: true,
-            suggestOnTriggerCharacters: true,
-            tabCompletion: 'on',
-            parameterHints: { enabled: true },
-            // UX de edição.
-            bracketPairColorization: { enabled: true },
-            guides: { bracketPairs: true, indentation: true },
-            autoIndent: 'full',
-            autoClosingBrackets: 'languageDefined',
-          }}
+          // Cada projeto/instância recebe um path de model salgado e NUNCA reusado, então
+          // a restauração de view-state entre projetos nunca casa. Com o default `true`, o
+          // Map interno (global, sem .delete) do @monaco-editor/react acumularia um
+          // view-state por projeto aberto pela vida da aba. `false` corta esse vazamento
+          // sem perder nada funcional (os models por arquivo já são estáveis na sessão).
+          saveViewState={false}
+          options={editorOptions}
         />
       </div>
     </div>

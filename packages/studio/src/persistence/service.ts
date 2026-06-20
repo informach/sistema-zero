@@ -31,6 +31,8 @@ export interface PersistenceService {
   handlers: PersistenceHandlers
   /** Liga autosave (subscribe no store) + flush em pagehide/beforeunload. Devolve o detach. */
   attach(): () => void
+  /** Restaura partes pesadas omitidas pelo load rápido, sem bloquear a abertura. */
+  hydrateAfterLoad(project: Project): void
   /** Salvar explícito (botão Salvar / handle.save()): cancela o debounce e persiste já. */
   save(): Promise<void>
   /** Tem onde persistir? false = persistence 'none' (host salva via onChange/onSave). */
@@ -186,6 +188,7 @@ export function createPersistenceService(
   const service: PersistenceService = {
     handlers: {},
     attach,
+    hydrateAfterLoad,
     save,
     get hasAdapter() {
       return adapter !== null
@@ -207,6 +210,29 @@ export function createPersistenceService(
     } catch (err) {
       console.warn('[sz] onError do host lançou:', err)
     }
+  }
+
+  function hydrateAfterLoad(project: Project): void {
+    if (!adapter?.loadBlocksState) return
+    if (project.kind === 'pro') return
+    if (project.blocksState != null) return
+    void adapter
+      .loadBlocksState(project)
+      .then((blocksState) => {
+        if (blocksState == null) return
+        const current = store.getState()
+        if (current.project?.id !== project.id) return
+        // Se o aluno editou enquanto a partição pesada vinha do IndexedDB, não
+        // sobrescrevemos a edição viva com um layout salvo mais antigo.
+        if (current.isDirty) return
+        current.hydrateProjectState({ blocksState })
+      })
+      .catch((err) => {
+        console.warn(
+          '[sz] não foi possível restaurar o layout salvo dos blocos:',
+          err instanceof Error ? err.message : err,
+        )
+      })
   }
 
   function persistAndMark(project: Project): Promise<void> {

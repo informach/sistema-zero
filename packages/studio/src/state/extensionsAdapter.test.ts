@@ -62,6 +62,65 @@ describe('extensionsAdapter', () => {
     ).toBe(0)
   })
 
+  it('remove nós g2d ANINHADOS em laços/try/fetch, não só no topo (#18)', () => {
+    const g2d = {
+      type: 'g2d:createSprite',
+      varName: 'inimigo',
+      x: 0,
+      y: 0,
+      w: 10,
+      h: 10,
+      color: '#ff0000',
+    } as const
+    const keep = { type: 'consoleLog', value: { type: 'str', value: 'fica' } } as const
+    const ir = {
+      html: [],
+      css: [],
+      js: [
+        {
+          type: 'forRange',
+          varName: 'i',
+          from: { type: 'num', value: 0 },
+          to: { type: 'num', value: 3 },
+          step: { type: 'num', value: 1 },
+          body: [g2d, keep],
+        },
+        { type: 'while', cond: { type: 'bool', value: true }, body: [g2d] },
+        { type: 'tryCatch', body: [g2d], handler: [keep], finalizer: [g2d] },
+        {
+          type: 'fetchJson',
+          url: { type: 'str', value: 'x' },
+          okName: 'r',
+          body: [g2d],
+          catchBody: [keep],
+        },
+      ],
+      extensions: [{ extensionId: 'game-2d' }],
+    } as unknown as SZIR
+    const project = {
+      ...createEmptyProject('p1', 'Projeto'),
+      ir,
+      blocksState: null,
+      installedExtensions: [{ id: 'game-2d', version: '0.1.0', installedAt: 1 }],
+    }
+
+    const cleaned = removeExtensionArtifacts(project, 'game-2d')
+    // Nenhum nó g2d:* sobra em NENHUM corpo aninhado.
+    const types = new Set<string>()
+    const walk = (v: unknown): void => {
+      if (Array.isArray(v)) for (const x of v) walk(x)
+      else if (v && typeof v === 'object') {
+        const o = v as Record<string, unknown>
+        if (typeof o.type === 'string') types.add(o.type)
+        for (const x of Object.values(o)) walk(x)
+      }
+    }
+    walk(cleaned.ir?.js)
+    expect([...types].some((t) => t.startsWith('g2d:'))).toBe(false)
+    // E os statements não-extensão (consoleLog) sobrevivem.
+    expect(types.has('consoleLog')).toBe(true)
+  })
+
   it('conta e limpa blocos de extensão dentro de slots de sombra', () => {
     // Bloco de extensão (`sz_g2d_set_velocity`) escondido num wrapper `shadow`
     // de um input — antes era ignorado (só seguia `.block`), miscontado e

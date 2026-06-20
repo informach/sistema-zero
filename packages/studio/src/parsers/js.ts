@@ -493,6 +493,10 @@ function mapStatementList(nodes: Node[], source: string, ctx: ParseCtx): JSState
     const fused =
       tryFuseCanvasSetSize(nodes, i, ctx) ??
       tryFuseCanvasArc(nodes, i, ctx) ??
+      tryFuseCanvasRoundRect(nodes, i, ctx) ??
+      tryFuseCanvasEllipse(nodes, i, ctx) ??
+      tryFuseCanvasArcSlice(nodes, i, ctx) ??
+      tryFuseCanvasShadow(nodes, i, ctx) ??
       tryFuseCanvasGradient(nodes, i, ctx) ??
       tryFuseAnimationLoop(nodes, i, source, ctx) ??
       tryFuseGame2DSpriteAssign(nodes, i, ctx) ??
@@ -759,8 +763,11 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
         return asRaw(source, node)
       }
       if (prop === 'font' && expr.right?.type === 'StringLiteral') {
-        const m = /^(\d+)px (.+)$/.exec(expr.right.value as string)
-        if (m?.[1] && m[2]) return { type: 'canvasFont', ctxVar, size: Number(m[1]), family: m[2] }
+        const m = /^(?:(bold|italic|italic bold) )?(\d+)px (.+)$/.exec(expr.right.value as string)
+        if (m?.[2] && m[3]) {
+          const base = { type: 'canvasFont' as const, ctxVar, size: Number(m[2]), family: m[3] }
+          return m[1] ? { ...base, weight: m[1] as 'bold' | 'italic' | 'italic bold' } : base
+        }
         return asRaw(source, node)
       }
     }
@@ -2216,9 +2223,14 @@ function tryMatchCanvasCall(expr: Node, ctx: ParseCtx): JSStatement | null {
       return text && x && y ? { type: 'canvasFillText', ctxVar, text, x, y } : null
     }
     case 'clearRect': {
-      // ctx.clearRect(0, 0, <canvas>.width, <canvas>.height)
+      // ctx.clearRect(0, 0, <canvas>.width, <canvas>.height) → limpar a tela inteira
       const canvasVar = matchClearRectArgs(args)
-      return canvasVar ? { type: 'canvasClear', ctxVar, canvasVar } : null
+      if (canvasVar) return { type: 'canvasClear', ctxVar, canvasVar }
+      // clearRect com coordenadas quaisquer → limpar uma área
+      const [crx, cry, crw, crh] = mapArgs(args, 4, ctx)
+      return crx && cry && crw && crh
+        ? { type: 'canvasClearRect', ctxVar, x: crx, y: cry, w: crw, h: crh }
+        : null
     }
     case 'save':
       return args.length === 0 ? { type: 'canvasSave', ctxVar } : null
@@ -2251,6 +2263,38 @@ function tryMatchCanvasCall(expr: Node, ctx: ParseCtx): JSStatement | null {
     case 'lineTo': {
       const [x, y] = mapArgs(args, 2, ctx)
       return x && y ? { type: 'canvasLineTo', ctxVar, x, y } : null
+    }
+    case 'strokeRect': {
+      const [x, y, w, h] = mapArgs(args, 4, ctx)
+      return x && y && w && h ? { type: 'canvasStrokeRect', ctxVar, x, y, w, h } : null
+    }
+    case 'quadraticCurveTo': {
+      const [cpx, cpy, x, y] = mapArgs(args, 4, ctx)
+      return cpx && cpy && x && y ? { type: 'canvasQuadraticCurve', ctxVar, cpx, cpy, x, y } : null
+    }
+    case 'bezierCurveTo': {
+      const [cp1x, cp1y, cp2x, cp2y, x, y] = mapArgs(args, 6, ctx)
+      return cp1x && cp1y && cp2x && cp2y && x && y
+        ? { type: 'canvasBezierCurve', ctxVar, cp1x, cp1y, cp2x, cp2y, x, y }
+        : null
+    }
+    case 'strokeText': {
+      const [text, x, y] = mapArgs(args, 3, ctx)
+      return text && x && y ? { type: 'canvasStrokeText', ctxVar, text, x, y } : null
+    }
+    case 'setLineDash': {
+      // Só funde um traço UNIFORME (`[seg]` — exatamente o que o gerador re-emite).
+      // Um padrão não-uniforme (`[5, 10]`, traço≠espaço) não tem bloco e perderia
+      // tudo menos o 1º valor; então fica como rawJS.
+      if (
+        args.length !== 1 ||
+        args[0]?.type !== 'ArrayExpression' ||
+        args[0].elements?.length !== 1
+      ) {
+        return null
+      }
+      const seg = toExpr(args[0].elements?.[0], ctx)
+      return seg ? { type: 'canvasLineDash', ctxVar, segment: seg } : null
     }
     default:
       return null
@@ -2301,8 +2345,13 @@ function tryMatchDrawImage(block: Node, ctx: ParseCtx): JSStatement | null {
   const srcAssign = srcStmt.expression
   if (srcAssign?.type !== 'AssignmentExpression' || srcAssign.operator !== '=') return null
   if (memberObjName(srcAssign.left, 'src') !== img) return null
-  if (srcAssign.right?.type !== 'StringLiteral') return null
-  const src = srcAssign.right.value as string
+  // src direto (URL/dataUrl) OU resolução de asset `__SZGAME_ASSETS?.["nome"] ?? "nome"`.
+  const srcRight = srcAssign.right
+  let src: string | null = null
+  if (srcRight?.type === 'StringLiteral') src = srcRight.value as string
+  else if (srcRight?.type === 'LogicalExpression' && srcRight.right?.type === 'StringLiteral')
+    src = srcRight.right.value as string
+  if (src === null) return null
 
   // 3) img.onload = () => ctx.drawImage(img, x, y, w, h);
   const onloadStmt = body[2]
@@ -2360,6 +2409,32 @@ function tryFuseCanvasSetSize(nodes: Node[], i: number, ctx: ParseCtx): FusedSta
   return { stmt: { type: 'canvasSetSize', ctxVar, w: w.value, h: h.value }, consumed: 2 }
 }
 
+/** `Math.PI` (membro estático, não-computado). */
+function isMathPi(node: Node): boolean {
+  return (
+    node?.type === 'MemberExpression' &&
+    !node.computed &&
+    node.object?.type === 'Identifier' &&
+    node.object.name === 'Math' &&
+    node.property?.type === 'Identifier' &&
+    node.property.name === 'PI'
+  )
+}
+
+/**
+ * Ângulo de volta COMPLETA (`Math.PI * 2` ou `2 * Math.PI`) — a forma que o gerador
+ * re-emite p/ arco/elipse CHEIOS. Só essa forma é fundida em bloco; um ângulo
+ * PARCIAL (pizza/semicírculo) ou uma elipse GIRADA não têm bloco e seriam recriados
+ * como círculo/elipse cheios (perda silenciosa do desenho), então a fusão é recusada.
+ */
+function isFullCircleAngle(node: Node): boolean {
+  if (node?.type !== 'BinaryExpression' || node.operator !== '*') return false
+  return (
+    (isMathPi(node.left) && numericLiteralValue(node.right) === 2) ||
+    (numericLiteralValue(node.left) === 2 && isMathPi(node.right))
+  )
+}
+
 /** `ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();` → `canvasArc`. */
 function tryFuseCanvasArc(nodes: Node[], i: number, ctx: ParseCtx): FusedStatement | null {
   const begin = matchCtxCallNode(nodes[i], ctx, 'beginPath')
@@ -2369,11 +2444,116 @@ function tryFuseCanvasArc(nodes: Node[], i: number, ctx: ParseCtx): FusedStateme
   const fill = matchCtxCallNode(nodes[i + 2], ctx, 'fill')
   if (!fill || fill.ctxVar !== begin.ctxVar) return null
   if (arc.args.length < 3) return null
+  // Só o círculo CHEIO que o gerador re-emite (`…, 0, Math.PI * 2`). Um arco PARCIAL
+  // (ângulos próprios) viraria círculo cheio na volta — perda silenciosa; recusa a
+  // fusão e o trecho fica como rawJS, preservando os ângulos do aluno.
+  if (
+    arc.args.length >= 4 &&
+    (numericLiteralValue(arc.args[3]) !== 0 || !isFullCircleAngle(arc.args[4]))
+  ) {
+    return null
+  }
   const x = toExpr(arc.args[0], ctx)
   const y = toExpr(arc.args[1], ctx)
   const r = toExpr(arc.args[2], ctx)
   if (!x || !y || !r) return null
   return { stmt: { type: 'canvasArc', ctxVar: begin.ctxVar, x, y, r }, consumed: 3 }
+}
+
+/** `ctx.beginPath(); ctx.roundRect(x,y,w,h,r); ctx.fill();` → `canvasRoundRect`. */
+function tryFuseCanvasRoundRect(nodes: Node[], i: number, ctx: ParseCtx): FusedStatement | null {
+  const begin = matchCtxCallNode(nodes[i], ctx, 'beginPath')
+  if (!begin) return null
+  const rr = matchCtxCallNode(nodes[i + 1], ctx, 'roundRect')
+  if (!rr || rr.ctxVar !== begin.ctxVar || rr.args.length < 5) return null
+  const fill = matchCtxCallNode(nodes[i + 2], ctx, 'fill')
+  if (!fill || fill.ctxVar !== begin.ctxVar) return null
+  const x = toExpr(rr.args[0], ctx)
+  const y = toExpr(rr.args[1], ctx)
+  const w = toExpr(rr.args[2], ctx)
+  const h = toExpr(rr.args[3], ctx)
+  const r = toExpr(rr.args[4], ctx)
+  if (!x || !y || !w || !h || !r) return null
+  return { stmt: { type: 'canvasRoundRect', ctxVar: begin.ctxVar, x, y, w, h, r }, consumed: 3 }
+}
+
+/** `ctx.beginPath(); ctx.ellipse(x,y,rx,ry,0,0,2π); ctx.fill();` → `canvasEllipse`. */
+function tryFuseCanvasEllipse(nodes: Node[], i: number, ctx: ParseCtx): FusedStatement | null {
+  const begin = matchCtxCallNode(nodes[i], ctx, 'beginPath')
+  if (!begin) return null
+  const el = matchCtxCallNode(nodes[i + 1], ctx, 'ellipse')
+  if (!el || el.ctxVar !== begin.ctxVar || el.args.length < 4) return null
+  const fill = matchCtxCallNode(nodes[i + 2], ctx, 'fill')
+  if (!fill || fill.ctxVar !== begin.ctxVar) return null
+  // Só a elipse CHEIA e SEM rotação que o gerador re-emite (`…, 0, 0, Math.PI * 2`).
+  // Rotação ou arco parcial não têm bloco e seriam recriados como elipse cheia —
+  // perda silenciosa; recusa a fusão (vira rawJS, preservando rotação/ângulos).
+  if (
+    el.args.length >= 5 &&
+    (numericLiteralValue(el.args[4]) !== 0 ||
+      numericLiteralValue(el.args[5]) !== 0 ||
+      !isFullCircleAngle(el.args[6]))
+  ) {
+    return null
+  }
+  const x = toExpr(el.args[0], ctx)
+  const y = toExpr(el.args[1], ctx)
+  const rx = toExpr(el.args[2], ctx)
+  const ry = toExpr(el.args[3], ctx)
+  if (!x || !y || !rx || !ry) return null
+  return { stmt: { type: 'canvasEllipse', ctxVar: begin.ctxVar, x, y, rx, ry }, consumed: 3 }
+}
+
+/** `beginPath(); moveTo(x,y); arc(x,y,r,start,end); closePath(); fill();` → `canvasArcSlice`. */
+function tryFuseCanvasArcSlice(nodes: Node[], i: number, ctx: ParseCtx): FusedStatement | null {
+  const begin = matchCtxCallNode(nodes[i], ctx, 'beginPath')
+  if (!begin) return null
+  const move = matchCtxCallNode(nodes[i + 1], ctx, 'moveTo')
+  if (!move || move.ctxVar !== begin.ctxVar) return null
+  const arc = matchCtxCallNode(nodes[i + 2], ctx, 'arc')
+  if (!arc || arc.ctxVar !== begin.ctxVar || arc.args.length < 5) return null
+  const close = matchCtxCallNode(nodes[i + 3], ctx, 'closePath')
+  if (!close || close.ctxVar !== begin.ctxVar) return null
+  const fill = matchCtxCallNode(nodes[i + 4], ctx, 'fill')
+  if (!fill || fill.ctxVar !== begin.ctxVar) return null
+  const x = toExpr(arc.args[0], ctx)
+  const y = toExpr(arc.args[1], ctx)
+  const r = toExpr(arc.args[2], ctx)
+  const start = toExpr(arc.args[3], ctx)
+  const end = toExpr(arc.args[4], ctx)
+  if (!x || !y || !r || !start || !end) return null
+  return {
+    stmt: { type: 'canvasArcSlice', ctxVar: begin.ctxVar, x, y, r, start, end },
+    consumed: 5,
+  }
+}
+
+/** `<ctx>.<prop> = <value>` quando `<ctx>` é um contexto de canvas conhecido. */
+function matchCtxPropAssign(
+  node: Node,
+  ctx: ParseCtx,
+  prop: string,
+): { ctxVar: string; value: Node } | null {
+  if (node?.type !== 'ExpressionStatement') return null
+  const e = node.expression
+  if (e?.type !== 'AssignmentExpression' || e.operator !== '=') return null
+  const left = e.left
+  if (left?.type !== 'MemberExpression' || left.computed) return null
+  if (left.object?.type !== 'Identifier' || !ctx.ctxVars.has(left.object.name)) return null
+  if (left.property?.type !== 'Identifier' || left.property.name !== prop) return null
+  return { ctxVar: left.object.name, value: e.right }
+}
+
+/** `ctx.shadowColor = "cor"; ctx.shadowBlur = N;` → `canvasShadow`. */
+function tryFuseCanvasShadow(nodes: Node[], i: number, ctx: ParseCtx): FusedStatement | null {
+  const c = matchCtxPropAssign(nodes[i], ctx, 'shadowColor')
+  if (!c) return null
+  const b = matchCtxPropAssign(nodes[i + 1], ctx, 'shadowBlur')
+  if (!b || b.ctxVar !== c.ctxVar) return null
+  const color = toExpr(c.value, ctx)
+  const blur = toExpr(b.value, ctx)
+  if (!color || !blur) return null
+  return { stmt: { type: 'canvasShadow', ctxVar: c.ctxVar, color, blur }, consumed: 2 }
 }
 
 /** `g.addColorStop(offset, "#cor");` referenciando a variável do gradiente. */
@@ -2833,6 +3013,11 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
         const v = node.argument.value as number
         if (Number.isFinite(v)) return { type: 'num', value: -v }
       }
+      // Negação booleana `!x` → bloco "não".
+      if (node.operator === '!') {
+        const inner = toExpr(node.argument, ctx)
+        if (inner) return { type: 'logicalNot', value: inner }
+      }
       return null
     }
     case 'StringLiteral': {
@@ -2943,6 +3128,25 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
           type: 'canvasDim',
           ctxVar: ctx.elementToCtx.get(node.object.name) as string,
           dim: node.property.name,
+        }
+      }
+      // ctx.measureText("texto").width → largura do texto (sz_canvas_measure_text)
+      if (
+        ctx &&
+        !node.computed &&
+        node.property?.type === 'Identifier' &&
+        node.property.name === 'width' &&
+        node.object?.type === 'CallExpression' &&
+        node.object.callee?.type === 'MemberExpression' &&
+        !node.object.callee.computed &&
+        node.object.callee.property?.type === 'Identifier' &&
+        node.object.callee.property.name === 'measureText' &&
+        node.object.callee.object?.type === 'Identifier' &&
+        ctx.ctxVars.has(node.object.callee.object.name)
+      ) {
+        const mtText = toExpr(node.object.arguments?.[0], ctx)
+        if (mtText) {
+          return { type: 'canvasMeasureText', ctxVar: node.object.callee.object.name, text: mtText }
         }
       }
       // `arr[i]` → item da lista por índice (sz_val_array_index).
@@ -3179,10 +3383,14 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'mathConst':
     case 'eventProp':
       return true
+    case 'canvasMeasureText':
+      return isSimpleValue(expr.text)
     case 'storageGet':
       return isSimpleValue(expr.key)
     case 'random':
       return isSimpleValue(expr.min) && isSimpleValue(expr.max)
+    case 'logicalNot':
+      return isSimpleValue(expr.value)
     case 'hslColor':
       return isSimpleValue(expr.h) && isSimpleValue(expr.s) && isSimpleValue(expr.l)
     case 'randomFloat':
@@ -3704,12 +3912,23 @@ function bodyOfBlock(node: Node, source: string, ctx: ParseCtx): JSStatement[] {
 function bodyOfFn(fn: Node, source: string, ctx: ParseCtx): JSStatement[] {
   if (!fn?.body) return []
   if (fn.body.type === 'BlockStatement') return bodyOfBlock(fn.body, source, ctx)
-  // Arrow function com expressão direta (sem chaves): trata como statement
-  return bodyOfBlock(
-    { type: 'BlockStatement', body: [{ type: 'ExpressionStatement', expression: fn.body }] },
-    source,
-    ctx,
-  )
+  // Arrow function com expressão direta (sem chaves): trata o corpo como UM
+  // statement. O ExpressionStatement sintético PRECISA herdar as posições de
+  // origem (start/end/loc/range) do corpo: sem elas, qualquer statement que caia
+  // em `asRaw` — ex.: `b => b.y -= b.speed`, cujo alvo é um MEMBRO (não um
+  // Identifier, então não casa o atalho de "+=/-=") — seria fatiado de `source`
+  // com `start` indefinido → `snippet` devolve '' → o statement SUMIA do
+  // round-trip (era o bug do "tiro que não anda": `bullets.forEach(b => b.y -=
+  // b.speed)` virava um forEach de corpo vazio).
+  const exprStatement: Node = {
+    type: 'ExpressionStatement',
+    expression: fn.body,
+    start: fn.body.start,
+    end: fn.body.end,
+    loc: fn.body.loc,
+    range: fn.body.range,
+  }
+  return bodyOfBlock({ type: 'BlockStatement', body: [exprStatement] }, source, ctx)
 }
 
 function errorMessage(error: unknown): string {

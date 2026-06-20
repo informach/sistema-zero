@@ -27,6 +27,11 @@ describe('buildCoreToolbox — divulgação progressiva', () => {
     const names = categoryNames()
     expect(names).toContain('HTML')
     expect(names).toContain('Canvas')
+    // Canvas agora tem sub-categorias (igual HTML/Programação).
+    expect(names).toContain('🖼️ Tela')
+    expect(names).toContain('⬛ Formas')
+    expect(names).toContain('✏️ Traçado')
+    expect(names).toContain('🔄 Transformar')
     expect(names).toContain('Programação')
     expect(names).toContain('🧩 Funções')
     expect(names).toContain('🏛️ Classes')

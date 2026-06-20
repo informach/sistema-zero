@@ -347,12 +347,83 @@ function renderInline(node: HTMLNode): string {
 // mas um nome não validado poderia injetar tokens fora do par chave="valor".
 const VALID_ATTR_NAME = /^[A-Za-z_:][A-Za-z0-9_:.-]*$/
 
+/**
+ * Atributos que carregam URL: o VALOR é navegado/baixado pelo navegador, então
+ * um esquema `javascript:`/`vbscript:`/`data:text/html` ali EXECUTA código. O
+ * escape de `&"<>` não protege contra isso (a URL é um valor válido), por isso
+ * o esquema é filtrado por allowlist em `renderAttrs`. Lista derivada dos
+ * atributos URL do HTML (e SVG `xlink:href`/`href`) que disparam navegação,
+ * submissão ou fetch de recurso.
+ */
+const URL_ATTRS: ReadonlySet<string> = new Set([
+  'href',
+  'src',
+  'xlink:href',
+  'formaction',
+  'action',
+  'poster',
+  'background',
+  'cite',
+  'longdesc',
+  'data',
+  'srcset',
+  'ping',
+  'manifest',
+])
+
+/**
+ * Esquema (protocolo) NÃO permitido num valor de URL. `javascript:`/`vbscript:`
+ * executam código; `data:text/html`/`data:application/xhtml` renderizam markup
+ * com script no contexto do documento. Tudo barrado ANTES de comparar (a URL é
+ * só descartada). Aceitamos data: de IMAGEM (`data:image/...`), comum em ícones.
+ */
+function isDangerousUrl(value: string): boolean {
+  // Esquema = sequência antes do primeiro ':' SEM '/', '?' ou '#' no caminho —
+  // assim `caminho/arq.png`, `#ancora`, `//cdn/x` e `?q=1` (relativos) passam.
+  // Caracteres de controle (incl. \t \n \r, que o navegador IGNORA dentro do
+  // esquema: `java\tscript:`) são removidos antes de medir o esquema.
+  // biome-ignore lint/suspicious/noControlCharactersInRegex: intencional - remover os caracteres de controle (que o navegador ignora no esquema) e o que fecha o bypass java<TAB>script:
+  const cleaned = value.replace(/[\u0000-\u0020]/g, '').toLowerCase()
+  const schemeMatch = /^([a-z][a-z0-9+.-]*):/.exec(cleaned)
+  if (!schemeMatch) return false // relativo / âncora / protocolo-relativo `//` → ok
+  const scheme = schemeMatch[1]
+  if (scheme === 'http' || scheme === 'https' || scheme === 'mailto' || scheme === 'tel') {
+    return false
+  }
+  if (scheme === 'data') {
+    // Só data: de imagem é aceito (ícone embutido); data:text/html etc. barrado.
+    return !cleaned.startsWith('data:image/')
+  }
+  // Qualquer outro esquema (javascript:, vbscript:, file:, blob:, …) é barrado.
+  return true
+}
+
+/**
+ * CHOKEPOINT DE SEGURANÇA: todo atributo de elemento emitido nos arquivos do
+ * aluno (preview de origem nula E site exportado para uma origem real) passa por
+ * aqui — qualquer que seja a FONTE da IR (blocos locais OU JSON importado de um
+ * estranho). Duas defesas, além do escape de `&"<>` do valor:
+ * 1. DESCARTA handlers inline (`on*`: onclick/onerror/onload/…) — eles executam
+ *    JS e o escape do valor não os neutraliza (o nome é que é perigoso).
+ * 2. Para atributos que carregam URL (ver {@link URL_ATTRS}), REJEITA valores
+ *    cujo esquema não esteja na allowlist ({@link isDangerousUrl}) — barra
+ *    `javascript:`/`vbscript:`/`data:text/html`, preservando URLs http(s),
+ *    relativas, âncoras (`#x`) e protocolo-relativas (`//cdn`).
+ * O escape-hatch AUDITADO para markup avançado continua sendo o nó `rawHTML`
+ * (modo avançado, autorado pelo aluno) — NÃO tentamos sanear `rawHTML` por regex
+ * aqui; ele tem seu próprio caminho de confiança.
+ */
 function renderAttrs(node: Extract<HTMLNode, { type: 'element' }>): string {
   const parts: string[] = []
   if (node.id) parts.push(`id="${escapeAttr(node.id)}"`)
   if (node.attrs) {
     for (const [k, v] of Object.entries(node.attrs)) {
       if (!VALID_ATTR_NAME.test(k)) continue
+      // Handler inline (onclick, onerror, onload, …): descartado sempre.
+      if (/^on/i.test(k)) continue
+      // Atributo de URL com esquema perigoso (javascript:, data:text/html, …):
+      // descartado. Comparação case-insensitive no nome (HTML não diferencia).
+      if (URL_ATTRS.has(k.toLowerCase()) && isDangerousUrl(v)) continue
       parts.push(`${k}="${escapeAttr(v)}"`)
     }
   }

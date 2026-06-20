@@ -18,7 +18,7 @@ const idField = { __id: z.string().optional() }
 
 // ---------- Expressions ----------
 
-const jsExprBase = z.union([
+const jsExprBase = z.discriminatedUnion('type', [
   z.object({ type: z.literal('num'), value: z.number(), ...idField }),
   z.object({ type: z.literal('str'), value: irText(), ...idField }),
   z.object({ type: z.literal('color'), value: irText(), ...idField }),
@@ -55,6 +55,8 @@ export type JSExpr =
       left: JSExpr
       right: JSExpr
     })
+  // Negação booleana (`!x`).
+  | (JSExprCommon & { type: 'logicalNot'; value: JSExpr })
   // Operador ternário (`condição ? seVerdadeiro : seFalso`).
   | (JSExprCommon & {
       type: 'ternary'
@@ -121,6 +123,7 @@ export type JSExpr =
   | (JSExprCommon & { type: 'global'; kind: 'innerWidth' | 'innerHeight' })
   // Largura/altura do elemento canvas associado a um contexto (canvas.width).
   | (JSExprCommon & { type: 'canvasDim'; ctxVar: string; dim: 'width' | 'height' })
+  | (JSExprCommon & { type: 'canvasMeasureText'; ctxVar: string; text: JSExpr })
   // Inteiro aleatório no intervalo [min, max].
   | (JSExprCommon & { type: 'random'; min: JSExpr; max: JSExpr })
   // Cor HSL. Gera o template `hsl(${h}, ${s}%, ${l}%)`; h/s/l podem ser número,
@@ -161,7 +164,7 @@ export type JSExpr =
   | (JSExprCommon & { type: 'memberCallExpr'; object: JSExpr; method: string; args: JSExpr[] })
 
 export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
-  z.union([
+  z.discriminatedUnion('type', [
     jsExprBase,
     z.object({
       type: z.literal('binop'),
@@ -177,6 +180,7 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
       right: JSExprSchema,
       ...idField,
     }),
+    z.object({ type: z.literal('logicalNot'), value: JSExprSchema, ...idField }),
     z.object({
       type: z.literal('ternary'),
       condition: JSExprSchema,
@@ -261,6 +265,12 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
       type: z.literal('canvasDim'),
       ctxVar: irText(),
       dim: z.enum(['width', 'height']),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasMeasureText'),
+      ctxVar: irText(),
+      text: JSExprSchema,
       ...idField,
     }),
     z.object({ type: z.literal('random'), min: JSExprSchema, max: JSExprSchema, ...idField }),
@@ -369,7 +379,7 @@ export type HTMLNode =
   | (HTMLNodeCommon & { type: 'rawHTML'; html: string; advanced: true })
 
 export const HTMLNodeSchema: z.ZodType<HTMLNode> = z.lazy(() =>
-  z.union([
+  z.discriminatedUnion('type', [
     z.object({
       type: z.literal('element'),
       tag: HTMLTagSchema,
@@ -709,6 +719,75 @@ export type JSStatement =
       x: JSExpr
       y: JSExpr
     })
+  | (JSStatementCommon & {
+      type: 'canvasStrokeRect'
+      ctxVar: string
+      x: JSExpr
+      y: JSExpr
+      w: JSExpr
+      h: JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'canvasClearRect'
+      ctxVar: string
+      x: JSExpr
+      y: JSExpr
+      w: JSExpr
+      h: JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'canvasRoundRect'
+      ctxVar: string
+      x: JSExpr
+      y: JSExpr
+      w: JSExpr
+      h: JSExpr
+      r: JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'canvasEllipse'
+      ctxVar: string
+      x: JSExpr
+      y: JSExpr
+      rx: JSExpr
+      ry: JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'canvasArcSlice'
+      ctxVar: string
+      x: JSExpr
+      y: JSExpr
+      r: JSExpr
+      start: JSExpr
+      end: JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'canvasQuadraticCurve'
+      ctxVar: string
+      cpx: JSExpr
+      cpy: JSExpr
+      x: JSExpr
+      y: JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'canvasBezierCurve'
+      ctxVar: string
+      cp1x: JSExpr
+      cp1y: JSExpr
+      cp2x: JSExpr
+      cp2y: JSExpr
+      x: JSExpr
+      y: JSExpr
+    })
+  | (JSStatementCommon & { type: 'canvasShadow'; ctxVar: string; color: JSExpr; blur: JSExpr })
+  | (JSStatementCommon & {
+      type: 'canvasStrokeText'
+      ctxVar: string
+      text: JSExpr
+      x: JSExpr
+      y: JSExpr
+    })
+  | (JSStatementCommon & { type: 'canvasLineDash'; ctxVar: string; segment: JSExpr })
   | (JSStatementCommon & { type: 'animationLoop'; body: JSStatement[]; handle?: string })
   // Para o loop de animação: cancelAnimationFrame(handle).
   | (JSStatementCommon & { type: 'cancelAnimationFrame'; handle: JSExpr })
@@ -769,7 +848,13 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'canvasStrokeStyle'; ctxVar: string; color: JSExpr })
   | (JSStatementCommon & { type: 'canvasLineWidth'; ctxVar: string; width: JSExpr })
   | (JSStatementCommon & { type: 'canvasGlobalAlpha'; ctxVar: string; alpha: JSExpr })
-  | (JSStatementCommon & { type: 'canvasFont'; ctxVar: string; size: number; family: string })
+  | (JSStatementCommon & {
+      type: 'canvasFont'
+      ctxVar: string
+      weight?: 'bold' | 'italic' | 'italic bold'
+      size: number
+      family: string
+    })
   | (JSStatementCommon & {
       type: 'canvasTextAlign'
       ctxVar: string
@@ -1169,7 +1254,7 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'rawJS'; code: string; advanced: true })
 
 export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
-  z.union([
+  z.discriminatedUnion('type', [
     z.object({
       type: z.literal('var'),
       name: irText(),
@@ -1380,6 +1465,95 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('canvasStrokeRect'),
+      ctxVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      w: JSExprSchema,
+      h: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasClearRect'),
+      ctxVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      w: JSExprSchema,
+      h: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasRoundRect'),
+      ctxVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      w: JSExprSchema,
+      h: JSExprSchema,
+      r: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasEllipse'),
+      ctxVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      rx: JSExprSchema,
+      ry: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasArcSlice'),
+      ctxVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      r: JSExprSchema,
+      start: JSExprSchema,
+      end: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasQuadraticCurve'),
+      ctxVar: irText(),
+      cpx: JSExprSchema,
+      cpy: JSExprSchema,
+      x: JSExprSchema,
+      y: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasBezierCurve'),
+      ctxVar: irText(),
+      cp1x: JSExprSchema,
+      cp1y: JSExprSchema,
+      cp2x: JSExprSchema,
+      cp2y: JSExprSchema,
+      x: JSExprSchema,
+      y: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasShadow'),
+      ctxVar: irText(),
+      color: JSExprSchema,
+      blur: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasStrokeText'),
+      ctxVar: irText(),
+      text: JSExprSchema,
+      x: JSExprSchema,
+      y: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasLineDash'),
+      ctxVar: irText(),
+      segment: JSExprSchema,
+      ...idField,
+    }),
+
+    z.object({
       type: z.literal('animationLoop'),
       body: z.array(JSStatementSchema),
       handle: irText().optional(),
@@ -1488,6 +1662,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('canvasFont'),
       ctxVar: irText(),
+      weight: z.enum(['bold', 'italic', 'italic bold']).optional(),
       size: z.number(),
       family: irText(),
       ...idField,

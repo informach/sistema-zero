@@ -92,20 +92,19 @@ function StudioCoreBody({
   // inline não re-renderiza o painel. Default `null` (sem atividade).
   const [activityValue] = useState(() => activity ?? null)
 
-  // Chave PRIMITIVA estável dos modos: um literal inline `allowedModes` muda de
-  // referência a cada render do host, mas o conteúdo é o mesmo. Memorizar a
-  // config/sanitização por esta string (e não pelo array) evita que um
-  // re-render do host re-rode `resolveStudioConfig` → derive um novo
-  // `config.allowedModes` → re-sanitize o projeto → re-hidrate, descartando as
-  // edições não salvas do aluno. Prop omitida → '' (cai na constante IDE_MODES).
-  const allowedModesKey = allowedModes ? [...allowedModes].sort().join('|') : ''
-  // Dep é a chave primitiva estável `allowedModesKey`, NÃO o array `allowedModes`
-  // (literal inline muda de referência a cada render do host).
-  // biome-ignore lint/correctness/useExhaustiveDependencies: ver acima — allowedModesKey é a forma estável de allowedModes
-  const baseConfig = useMemo(
-    () => resolveStudioConfig(features, allowedModes),
-    [features, allowedModesKey],
-  )
+  // `features` e `allowedModes` chegam como literais inline do host
+  // (`features={{ extensions: false }}`) — nova REFERÊNCIA a cada render, mesmo
+  // conteúdo. `resolveStudioConfig` é puro e barato; resolvê-lo a cada render e
+  // memoizar o resultado pela sua forma SERIALIZADA mantém a IDENTIDADE de
+  // `baseConfig` (e do `config` do contexto) ESTÁVEL entre re-renders do host que
+  // não mudam features/modos — senão os ~17 consumidores de `useStudioConfig`
+  // re-renderizavam à toa. A chave já cobre `allowedModes` (entra no resultado),
+  // dispensando uma chave separada. NÃO re-hidrata: o sourceProject depende de
+  // `resolvedModesKey` (abaixo), não da identidade de `config`.
+  const resolvedBaseConfig = resolveStudioConfig(features, allowedModes)
+  const baseConfigKey = JSON.stringify(resolvedBaseConfig)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: baseConfigKey é a forma estável (serializada) de resolvedBaseConfig (resolveStudioConfig é puro)
+  const baseConfig = useMemo(() => resolvedBaseConfig, [baseConfigKey])
   // `limits` é estático por instância (lido só na criação das stores). Resolve a
   // política de segurança do preview UMA vez para não re-derivar o config a cada
   // render do host (o que re-sanitizaria/re-hidrataria o projeto — ver acima).
@@ -182,6 +181,11 @@ function StudioCoreBody({
   useEffect(() => {
     if (!sanitized) return
     hydrateProject(sanitized)
+    // Restaura, EM SEGUNDO PLANO, o `blocksState` pesado que a abertura rápida
+    // (shell load) omitiu — sem isto o editor abria com o workspace VAZIO (os
+    // blocos só voltavam ao forçar um reparse na Ponte). No-op quando o projeto já
+    // veio com blocksState (host passou o projeto completo) ou sem adapter.
+    persistence.hydrateAfterLoad(sanitized)
     setPreviewRunning(true)
     // Resultado da auto-correção é POR PROJETO: ao (re)hidratar — inclusive via
     // handle.replaceProject() / carregar a próxima aula da cadeia — o último
@@ -192,7 +196,7 @@ function StudioCoreBody({
       unloadProject()
       checksStoreApi.getState().setResult(null)
     }
-  }, [sanitized, hydrateProject, unloadProject, setPreviewRunning, checksStoreApi])
+  }, [sanitized, hydrateProject, unloadProject, setPreviewRunning, checksStoreApi, persistence])
 
   useEffect(() => {
     const detach = persistence.attach()

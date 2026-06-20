@@ -19,7 +19,6 @@ const LOOP_TYPES: ReadonlySet<string> = new Set([
   'forEach',
 ])
 
-const VAR_DECL_TYPES: ReadonlySet<string> = new Set(['var', 'declareVar'])
 const CALL_TYPES: ReadonlySet<string> = new Set(['callFunction', 'call'])
 
 // Trava de profundidade (espelha o espírito do MAX_GENERATOR_DEPTH): IR
@@ -79,7 +78,16 @@ export function evaluateStructureRule(
     case 'usesLoop':
       return someJsNode(js, (n) => LOOP_TYPES.has(n.type as string))
     case 'declaresVariable':
-      return someJsNode(js, (n) => VAR_DECL_TYPES.has(n.type as string) && n.name === rule.name)
+      // SÓ conta como DECLARAÇÃO, não uma referência. No IR há dois nós `type:'var'`:
+      // o STATEMENT de declaração (tem `value`) e a EXPRESSÃO de referência (sem
+      // `value`). `declareVar` é a declaração sem valor. Sem o `'value' in n`, um
+      // aluno que apenas USA a variável passava no check (anti-cola recalculado no
+      // servidor — members espelha este predicado).
+      return someJsNode(
+        js,
+        (n) =>
+          (n.type === 'declareVar' || (n.type === 'var' && 'value' in n)) && n.name === rule.name,
+      )
     case 'definesFunction':
       return someJsNode(js, (n) => n.type === 'funcDecl' && n.name === rule.name)
     case 'callsFunction':

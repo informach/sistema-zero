@@ -305,6 +305,12 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'canvasDim', ctxVar: f(block, 'CTX'), dim: 'width' }
     case 'sz_val_canvas_height':
       return { type: 'canvasDim', ctxVar: f(block, 'CTX'), dim: 'height' }
+    case 'sz_canvas_measure_text':
+      return {
+        type: 'canvasMeasureText',
+        ctxVar: f(block, 'CTX'),
+        text: exprInput(block, 'TEXT', { type: 'str', value: '' }),
+      }
     case 'sz_val_random':
       return {
         type: 'random',
@@ -340,6 +346,11 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
         op: f(block, 'OP') as '&&' | '||',
         left: exprInput(block, 'LEFT', { type: 'bool', value: true }),
         right: exprInput(block, 'RIGHT', { type: 'bool', value: true }),
+      }
+    case 'sz_val_not':
+      return {
+        type: 'logicalNot',
+        value: exprInput(block, 'VALUE', { type: 'bool', value: true }),
       }
     case 'sz_val_ternary':
       return {
@@ -1511,6 +1522,125 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           r: exprInput(block, 'R', { type: 'num', value: 20 }),
         },
       }
+    case 'sz_canvas_stroke_rect':
+      return {
+        kind: 'js',
+        value: {
+          type: 'canvasStrokeRect',
+          ctxVar: f(block, 'CTX'),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+          w: exprInput(block, 'W', { type: 'num', value: 0 }),
+          h: exprInput(block, 'H', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_canvas_clear_rect':
+      return {
+        kind: 'js',
+        value: {
+          type: 'canvasClearRect',
+          ctxVar: f(block, 'CTX'),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+          w: exprInput(block, 'W', { type: 'num', value: 0 }),
+          h: exprInput(block, 'H', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_canvas_round_rect':
+      return {
+        kind: 'js',
+        value: {
+          type: 'canvasRoundRect',
+          ctxVar: f(block, 'CTX'),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+          w: exprInput(block, 'W', { type: 'num', value: 0 }),
+          h: exprInput(block, 'H', { type: 'num', value: 0 }),
+          r: exprInput(block, 'R', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_canvas_ellipse':
+      return {
+        kind: 'js',
+        value: {
+          type: 'canvasEllipse',
+          ctxVar: f(block, 'CTX'),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+          rx: exprInput(block, 'RX', { type: 'num', value: 0 }),
+          ry: exprInput(block, 'RY', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_canvas_arc_slice':
+      return {
+        kind: 'js',
+        value: {
+          type: 'canvasArcSlice',
+          ctxVar: f(block, 'CTX'),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+          r: exprInput(block, 'R', { type: 'num', value: 0 }),
+          start: exprInput(block, 'START', { type: 'num', value: 0 }),
+          end: exprInput(block, 'END', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_canvas_quadratic_curve':
+      return {
+        kind: 'js',
+        value: {
+          type: 'canvasQuadraticCurve',
+          ctxVar: f(block, 'CTX'),
+          cpx: exprInput(block, 'CPX', { type: 'num', value: 0 }),
+          cpy: exprInput(block, 'CPY', { type: 'num', value: 0 }),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_canvas_bezier_curve':
+      return {
+        kind: 'js',
+        value: {
+          type: 'canvasBezierCurve',
+          ctxVar: f(block, 'CTX'),
+          cp1x: exprInput(block, 'CP1X', { type: 'num', value: 0 }),
+          cp1y: exprInput(block, 'CP1Y', { type: 'num', value: 0 }),
+          cp2x: exprInput(block, 'CP2X', { type: 'num', value: 0 }),
+          cp2y: exprInput(block, 'CP2Y', { type: 'num', value: 0 }),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_canvas_shadow':
+      return {
+        kind: 'js',
+        value: {
+          type: 'canvasShadow',
+          ctxVar: f(block, 'CTX'),
+          color: exprInput(block, 'COLOR', { type: 'color', value: '#000000' }),
+          blur: exprInput(block, 'BLUR', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_canvas_stroke_text':
+      return {
+        kind: 'js',
+        value: {
+          type: 'canvasStrokeText',
+          ctxVar: f(block, 'CTX'),
+          text: exprInput(block, 'TEXT', { type: 'str', value: '' }),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_canvas_line_dash':
+      return {
+        kind: 'js',
+        value: {
+          type: 'canvasLineDash',
+          ctxVar: f(block, 'CTX'),
+          segment: exprInput(block, 'SEGMENT', { type: 'num', value: 8 }),
+        },
+      }
+
     case 'sz_canvas_fill_text':
       return {
         kind: 'js',
@@ -1665,7 +1795,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           alpha: exprInput(block, 'ALPHA', { type: 'num', value: 1 }),
         },
       }
-    case 'sz_canvas_font':
+    case 'sz_canvas_font': {
+      const weight = f(block, 'WEIGHT')
       return {
         kind: 'js',
         value: {
@@ -1673,8 +1804,10 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           ctxVar: f(block, 'CTX'),
           size: fn(block, 'SIZE', 20),
           family: f(block, 'FAMILY') || 'sans-serif',
+          ...(weight ? { weight: weight as 'bold' | 'italic' | 'italic bold' } : {}),
         },
       }
+    }
     case 'sz_canvas_text_align':
       return {
         kind: 'js',

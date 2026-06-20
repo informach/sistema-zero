@@ -82,6 +82,8 @@ export const ptBR: Record<string, string> = {
   'projects.newModal.create': 'Criar e abrir',
   'projects.newModal.cancel': 'Cancelar',
   'projects.importError': 'Não foi possível importar: {reason}',
+  'projects.importNotJson':
+    'Esse arquivo não parece ser um projeto do Studio. Escolha um arquivo .json que você exportou aqui.',
 
   'editor.fontSize.increase': 'Aumentar fonte do editor',
   'editor.fontSize.decrease': 'Diminuir fonte do editor',

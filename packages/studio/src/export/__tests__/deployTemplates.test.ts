@@ -34,3 +34,24 @@ describe('proDeployTemplates', () => {
     expect(files['README.md']).not.toContain('—')
   })
 })
+
+describe('higiene do nome no titulo do README', () => {
+  it('classic: tira crase/< />, preserva acentos e espacos', () => {
+    const files = classicDeployTemplates('Meu `Jogo` <script> João')
+    // Crase, < e > foram removidos do titulo Markdown; acentos/espacos ficam.
+    expect(files['README.md']).toContain('# Meu Jogo script João')
+    expect(files['README.md']).not.toContain('`Jogo`')
+    expect(files['README.md']).not.toContain('<script>')
+  })
+
+  it('pro: tira crase/< />, preserva acentos e espacos', () => {
+    const files = proDeployTemplates('App `Pro` <b> Coração')
+    expect(files['README.md']).toContain('# App Pro b Coração')
+    expect(files['README.md']).not.toContain('<b>')
+  })
+
+  it('README recomenda configurar cabecalhos de seguranca no host', () => {
+    expect(classicDeployTemplates('X')['README.md']).toContain('cabecalhos de seguranca')
+    expect(proDeployTemplates('X')['README.md']).toContain('cabecalhos de seguranca')
+  })
+})

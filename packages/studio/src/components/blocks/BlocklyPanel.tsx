@@ -514,19 +514,28 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
     }
     const serialized = JSON.stringify(blocksState)
     if (serialized === lastSerializedRef.current) return
-    // Guarda onde estão as pilhas antes de recarregar; serão restauradas no
-    // FINISHED_LOADING para os blocos não pularem para as colunas padrão.
-    preservedPositionsRef.current = captureStackPositions(workspace)
-    isApplyingStateRef.current = true
-    lastSerializedRef.current = serialized
     setIsLoadingWorkspace(true)
 
     // Adia o `workspaces.load` (render síncrono de TODOS os blocos) um frame,
     // para o overlay de "carregando" pintar primeiro e a aba não congelar antes
-    // do feedback. O guard `isApplyingStateRef`/snapshot já está armado acima.
+    // do feedback.
+    //
+    // ⚠️ Os efeitos colaterais (snapshot `lastSerializedRef`, guard
+    // `isApplyingStateRef`, captura de posições) ficam DENTRO do rAF, NÃO antes.
+    // Antes, `lastSerializedRef = serialized` era setado ANTES do load; se o efeito
+    // re-rodasse e CANCELASSE este rAF (cleanup) antes do frame, o workspace nunca
+    // era carregado, mas o snapshot já "mentia" que aquele estado estava aplicado —
+    // então a re-execução caía no early-return (serialized === snapshot) e os blocos
+    // NUNCA carregavam, com o spinner preso para sempre ("loading na área de blocos,
+    // mas não carrega"). Mantendo tudo no rAF, um rAF cancelado é um no-op total e a
+    // próxima execução recarrega corretamente; o cleanup ainda solta o spinner.
     let cancelled = false
     const handle = requestAnimationFrame(() => {
       if (cancelled) return
+      // Guarda onde estão as pilhas antes de recarregar; restauradas no FINISHED_LOADING.
+      preservedPositionsRef.current = captureStackPositions(workspace)
+      isApplyingStateRef.current = true
+      lastSerializedRef.current = serialized
       try {
         // Cerca de carga: o `load` emite N BLOCK_CREATE antes do FINISHED_LOADING
         // final. A cerca faz os blocos-mutador ignorarem os eventos
@@ -574,6 +583,9 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
     return () => {
       cancelled = true
       cancelAnimationFrame(handle)
+      // rAF cancelado antes de rodar: solta o spinner (o `finally` dentro do rAF
+      // nunca correrá). Sem isto o overlay "carregando" ficava preso.
+      setIsLoadingWorkspace(false)
     }
   }, [workspace, blocksState, projectMode, regenerateFromBlocks])
 
