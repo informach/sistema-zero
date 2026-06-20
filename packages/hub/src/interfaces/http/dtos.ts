@@ -132,6 +132,26 @@ export const ShowcaseThreadBody = t.Object({
   ),
 })
 
+/**
+ * Corpo de `POST /hub/internal/showcase-thread-studio` (BFF → hub, em nome da
+ * criança) — variação KID-DRIVEN do "Compartilhar" do Estúdio: a `description` é
+ * escrita/editada pela criança e o projeto ganha um `playId` (link público de
+ * jogar). Título/elegibilidade/nome continuam autoritativos do members/header (a
+ * rota é alcançável na borda — o corpo não é confiável). `clientIdempotencyKey`
+ * dedup-a duplo-clique; republicar depois = post novo (imutável).
+ */
+export const ShowcaseThreadStudioBody = t.Object({
+  spaceSlug: SLUG,
+  lessonId: UUID,
+  blockId: UUID,
+  description: t.String({ minLength: 1, maxLength: 280 }),
+  coverImageUrl: t.Optional(
+    t.Union([t.String({ maxLength: 2000, pattern: HTTPS_URL_PATTERN }), t.Null()]),
+  ),
+  playId: UUID,
+  clientIdempotencyKey: UUID,
+})
+
 /** Paginação por cursor opaco (listagem de tópicos). */
 export const ThreadListQuery = t.Object({
   cursor: t.Optional(t.String({ maxLength: 500 })),

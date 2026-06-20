@@ -479,6 +479,22 @@ export function createHubClient(gw: GatewayModule, opts: { audience: MembersAudi
     }): Promise<GatewayResponse<{ thread: HubThreadView; deduped: boolean }>> {
       return gw.gatewayFetch('/hub/internal/showcase-thread', { method: 'POST', body })
     },
+    /**
+     * Variação KID-DRIVEN ("Compartilhar" do Estúdio): a `description` é escrita pela
+     * criança e o projeto ganha um `playId` (link público de jogar). Título/elegibilidade
+     * continuam autoritativos do members; `clientIdempotencyKey` dedup-a duplo-clique.
+     */
+    createShowcaseThreadStudio(body: {
+      spaceSlug: string
+      lessonId: string
+      blockId: string
+      coverImageUrl: string | null
+      description: string
+      playId: string
+      clientIdempotencyKey: string
+    }): Promise<GatewayResponse<{ thread: HubThreadView; deduped: boolean }>> {
+      return gw.gatewayFetch('/hub/internal/showcase-thread-studio', { method: 'POST', body })
+    },
     report(
       target: 'thread' | 'comment',
       id: string,

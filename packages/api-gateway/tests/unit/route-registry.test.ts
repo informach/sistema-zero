@@ -83,6 +83,22 @@ describe('RouteRegistry', () => {
     expect(registry.resolve('POST', '/members/gamification/me', 'v1')).toBeUndefined()
   })
 
+  test('showcase-thread-studio (kid-driven) NÃO colide com showcase-thread', () => {
+    // Dois literais distintos de 3 segmentos — o matcher resolve cada um no seu id.
+    const reg = new RouteRegistry([
+      r({ id: 'sc', methods: ['POST'], pathPattern: '/hub/internal/showcase-thread' }),
+      r({
+        id: 'sc-studio',
+        methods: ['POST'],
+        pathPattern: '/hub/internal/showcase-thread-studio',
+      }),
+    ])
+    expect(reg.resolve('POST', '/hub/internal/showcase-thread', 'v1')?.route.id).toBe('sc')
+    expect(reg.resolve('POST', '/hub/internal/showcase-thread-studio', 'v1')?.route.id).toBe(
+      'sc-studio',
+    )
+  })
+
   test('%-encoding malformado num param NÃO lança (vira o valor bruto, não 500)', () => {
     // decodeURIComponent('%zz') lançaria URIError → o pipeline viraria 500 +
     // log de erro alertável a cada request de scanner. O valor fica como veio.

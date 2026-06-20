@@ -148,6 +148,9 @@ export const threads = hub.table(
     // Idempotência da auto-publicação: hash(perfil:curso:cadeia). UNIQUE (NULLs são
     // distintos no Postgres → posts normais não colidem). Re-publicar = devolve o existente.
     showcaseIdempotencyKey: text('showcase_idempotency_key'),
+    // Id PÚBLICO do artefato jogável (UUID). Quando presente, o card do Mural ganha
+    // "Acessar" → página pública /jogar/<play_id> (sem login). Só na vitrine do Estúdio.
+    playId: text('play_id'),
     lastActivityAt: timestamp('last_activity_at', { withTimezone: true }).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     editedAt: timestamp('edited_at', { withTimezone: true }),

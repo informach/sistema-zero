@@ -78,4 +78,13 @@ describe('redactAuthors', () => {
     expect(out.authorDisplayName).toBe('Sofia')
     expect(out.title).toBe('Meu Jogo')
   })
+
+  test('vitrine do Estúdio: o playId sobrevive à redação (alimenta o "Acessar")', () => {
+    const out = redactAuthors(
+      { id: 'p1', authorId: OTHER, isShowcase: true, playId: 'play-uuid' },
+      ME,
+    )
+    expect(out.authorId).toBeNull()
+    expect(out.playId).toBe('play-uuid')
+  })
 })

@@ -28,7 +28,9 @@ export interface CreateShowcaseThreadInput {
   body: string
   /** Capa do projeto (URL pública) ou `null` (a UI cai num placeholder). */
   coverImageUrl: string | null
-  /** Chave de idempotência (hash perfil:curso:cadeia) — UNIQUE; conflito devolve o existente. */
+  /** Id público do artefato jogável (UUID) ou `null` — alimenta o "Acessar" do card. */
+  playId: string | null
+  /** Chave de idempotência (hash perfil:curso:cadeia[:clientKey]) — UNIQUE; conflito devolve o existente. */
   idempotencyKey: string
   now: Date
 }

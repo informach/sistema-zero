@@ -69,6 +69,30 @@ members (S2S), usa o título/resumo AUTORITATIVOS de lá, tira o nome do autor d
 esse campo) — a parede mostra "por {nome}", os comentários seguem "Você"/"Colega". `HubSpaceView.locked`
 (teaser "visível mas bloqueado") flui sem redação.
 
+**"Compartilhar" do Estúdio + link público jogável (06/2026):** `createStudioRoutes` (`routes/studio.ts`,
+montado no `createShell` como `routes.studio*`) expõe três rotas consumidas pelo botão "Compartilhar" do
+`@sistemazero/studio`:
+- **`POST /api/studio/describe`** — rascunho da descrição via **OpenRouter no SERVIDOR**
+  (`server/openrouter.ts`, chave `OPENROUTER_API_KEY`/`OPENROUTER_MODEL` no `lib/env.ts`, OPCIONAIS).
+  Recebe SÓ os 3 arquivos canônicos (clampados, NÃO o projeto com assets); prompt com cláusula de segurança
+  infantil; saída sanitizada + truncada (280). **FAIL-SOFT**: sem chave/timeout/não-2xx → `{description:'',
+  fallback:true}` (a criança escreve). Rate-limit in-process por sessão (`globalThis`, réplica única).
+- **`POST /api/studio/publish`** (multipart, FORA do matcher do proxy — guard próprio `requireUploadSession`):
+  print → R2 **PÚBLICO** (`r2PutObject`, WebP); projeto inteiro (JSON auto-suficiente, assets data URLs) →
+  R2 **PRIVADO** `studio/play/<uuid>.json` (`r2PutObjectPrivate`); chama
+  `hub.createShowcaseThreadStudio` (gateway → hub); devolve `{ muralUrl, playUrl }`.
+- **`GET /api/studio/play/:id`** — **PÚBLICA (sem login)**: stream do projeto do R2 privado
+  (`r2GetObjectPrivate`), MESMA ORIGEM (sem CORS), `Cache-Control immutable`, 404 no miss. É o que a página
+  `/jogar/:id` do community-kids consome (renderiza o `StudioProjectPlayer` — só o jogo, sem o nome da
+  criança).
+
+`HubThreadView` ganhou **`playId`** (sobrevive ao `redactAuthors` — só estrutural; teste em
+`tests/hub-redact.test.ts`). O **`StudioBlockView`** ganhou a prop `enableShare?` (só o KIDS passa `true`):
+quando ligada, constrói o `StudioShareAdapter` (descreve via `/api/studio/describe`, publica multipart via
+`/api/studio/publish`) e o passa ao `<StudioLesson share>` — o botão aparece na Topbar do editor. ⚠️ A
+elegibilidade real é do backend (publish 409 `SHOWCASE_NOT_ELIGIBLE` quando o bloco não é de vitrine). O
+post publicado é um **snapshot IMUTÁVEL e INDEPENDENTE** do rascunho que a criança continua editando.
+
 **Gamificação (06/2026):** tipos em `lib/types.ts` (`GamificationDelta`/`GamificationMeView`/
 `LessonCompleteResult`/`BadgeSlug` — mirror das views do members; `QuizAttemptResultView.gamification?`),
 client `members.getGamification()` + variante **`getGamificationReadonly()`** (Server Components —

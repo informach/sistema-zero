@@ -29,8 +29,11 @@ export const config = {
   // `api/me/avatar`, o upload de imagem do hub (`api/hub/uploads/image`) e a FOTO
   // DO PERFIL (`api/profiles/:id/avatar`) ficam FORA do matcher: são multipart e o
   // proxy copiaria o corpo à toa; todas têm guard próprio (sessão estrita + a MESMA
-  // checagem anti-CSRF dentro do `requireUploadSession`).
+  // checagem anti-CSRF dentro do `requireUploadSession`). Idem `api/studio/publish`
+  // (multipart: print + projeto inteiro) e `api/studio/play/:id` (PÚBLICA: stream do
+  // JSON do projeto — fora do buffer do proxy e sem gate de sessão). `api/studio/describe`
+  // FICA no matcher (JSON pequeno: ganha o anti-CSRF same-origin do proxy).
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|api/me/avatar|api/hub/uploads/image|api/hub/showcase|api/profiles/[^/]+/avatar).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/me/avatar|api/hub/uploads/image|api/hub/showcase|api/studio/publish|api/studio/play|api/profiles/[^/]+/avatar).*)',
   ],
 }

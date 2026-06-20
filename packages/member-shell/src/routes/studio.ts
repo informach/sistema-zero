@@ -1,0 +1,240 @@
+import 'server-only'
+import { randomUUID } from 'node:crypto'
+import { NextResponse } from 'next/server'
+import { z } from 'zod'
+import { UGC_IMAGE_INPUT_MIME } from '../lib/hub-attachments'
+import type { HubClient, MembersClient } from '../server/clients'
+import { optimizeImage } from '../server/image-optimizer'
+import { type MediaModule, mediaErrorResponse, rejectOversizedRequest } from '../server/media'
+import { generateProjectDescription } from '../server/openrouter'
+import { r2GetObjectPrivate, r2PutObject, r2PutObjectPrivate } from '../server/r2'
+
+export type StudioRoutes = ReturnType<typeof createStudioRoutes>
+
+const invalid = () => NextResponse.json({ error: { code: 'INVALID_INPUT' } }, { status: 400 })
+
+/** Slug do servidor do Mural (kids). Só a vitrine kids chama estas rotas. */
+const MURAL_SPACE_SLUG = 'mural-dos-criadores'
+const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
+
+const COVER_MAX_BYTES = 4 * 1024 * 1024 // print do jogo (WebP/PNG)
+const PROJECT_MAX_BYTES = 6 * 1024 * 1024 // projeto auto-suficiente (assets data URLs)
+const PUBLISH_MAX_BYTES = 8 * 1024 * 1024 // teto do multipart inteiro (cover + projeto + campos)
+/** Prefixo do artefato jogável no bucket PRIVADO (servido só via /api/studio/play/:id). */
+const PLAY_KEY = (id: string) => `studio/play/${id}.json`
+
+// Descrição: só os 3 arquivos canônicos (clampados) — NÃO o projeto com assets.
+const DescribeBody = z.object({
+  files: z.object({
+    html: z.string().max(20_000).optional(),
+    css: z.string().max(20_000).optional(),
+    js: z.string().max(40_000).optional(),
+  }),
+  title: z.string().max(200).optional(),
+})
+
+// Rate-limit in-process por sessão (réplica única do kids; estado em globalThis).
+const RL_KEY = Symbol.for('@sistemazero/member-shell/studio-describe-rl')
+type RlMap = Map<string, { count: number; resetAt: number }>
+const rlSlot = globalThis as Record<symbol, unknown>
+if (!rlSlot[RL_KEY]) rlSlot[RL_KEY] = new Map<string, { count: number; resetAt: number }>()
+const rlStore = rlSlot[RL_KEY] as RlMap
+function describeRateLimited(key: string): boolean {
+  const now = Date.now()
+  const e = rlStore.get(key)
+  if (!e || e.resetAt <= now) {
+    rlStore.set(key, { count: 1, resetAt: now + 60_000 })
+    return false
+  }
+  if (e.count >= 10) return true
+  e.count += 1
+  return false
+}
+
+/**
+ * Rotas do "Compartilhar" do Estúdio (consumidas pelo community-kids):
+ * - `POST /api/studio/describe` — rascunho da descrição via OpenRouter (servidor), fail-soft.
+ * - `POST /api/studio/publish` — print→R2 público, projeto→R2 privado, post no Mural + link de jogar.
+ * - `GET  /api/studio/play/:id` — PÚBLICO (sem login): stream do projeto do R2 (mesma origem).
+ */
+export function createStudioRoutes(deps: {
+  hub: HubClient
+  members: MembersClient
+  media: MediaModule
+}) {
+  const { hub, members, media } = deps
+
+  const studioDescribe = {
+    POST: async (req: Request) => {
+      const sess = await media.requireUploadSession(req)
+      if (sess instanceof NextResponse) return sess
+      if (describeRateLimited(sess.id)) {
+        return NextResponse.json({ error: { code: 'RATE_LIMITED' } }, { status: 429 })
+      }
+      let json: unknown
+      try {
+        json = await req.json()
+      } catch {
+        return invalid()
+      }
+      const parsed = DescribeBody.safeParse(json)
+      if (!parsed.success) return invalid()
+      const { files, title } = parsed.data
+      const total = (files.html?.length ?? 0) + (files.css?.length ?? 0) + (files.js?.length ?? 0)
+      if (total > 80_000) return invalid()
+      // Fail-soft: erro/sem chave → { description:'', fallback:true } (criança escreve).
+      const result = await generateProjectDescription({ files, title })
+      return NextResponse.json(result, { status: 200 })
+    },
+  }
+
+  const studioPublish = {
+    POST: async (req: Request) => {
+      // Multipart fora do matcher do proxy → guard próprio (sessão estrita + anti-CSRF).
+      const sess = await media.requireUploadSession(req)
+      if (sess instanceof NextResponse) return sess
+
+      const oversized = rejectOversizedRequest(req, PUBLISH_MAX_BYTES)
+      if (oversized) return oversized
+
+      let form: FormData
+      try {
+        form = await req.formData()
+      } catch {
+        return invalid()
+      }
+
+      const lessonId = String(form.get('lessonId') ?? '')
+      const blockId = String(form.get('blockId') ?? '')
+      const clientIdempotencyKey = String(form.get('clientIdempotencyKey') ?? '')
+      const description = String(form.get('description') ?? '').trim()
+      if (!UUID_RE.test(lessonId) || !UUID_RE.test(blockId)) return invalid()
+      if (!UUID_RE.test(clientIdempotencyKey)) return invalid()
+      if (description.length < 1 || description.length > 280) return invalid()
+
+      // Projeto auto-suficiente (JSON com assets data URLs). Valida que parseia + forma mínima.
+      const projectPart = form.get('project')
+      if (!(projectPart instanceof File) || projectPart.size === 0) return invalid()
+      if (projectPart.size > PROJECT_MAX_BYTES) {
+        return NextResponse.json({ error: { code: 'PROJECT_TOO_LARGE' } }, { status: 413 })
+      }
+      const projectBytes = Buffer.from(await projectPart.arrayBuffer())
+      try {
+        const obj = JSON.parse(projectBytes.toString('utf-8')) as {
+          name?: unknown
+          files?: unknown
+        }
+        if (typeof obj.name !== 'string' || typeof obj.files !== 'object' || obj.files === null) {
+          return invalid()
+        }
+      } catch {
+        return invalid()
+      }
+
+      // 1. Elegibilidade (UX antecipado — o hub re-valida de forma autoritativa).
+      const payload = await members.getShowcasePayload(lessonId, blockId)
+      if (payload.status !== 200 || !payload.body) {
+        return NextResponse.json(payload.body ?? { error: { code: 'SHOWCASE_FAILED' } }, {
+          status: payload.status === 200 ? 502 : payload.status,
+        })
+      }
+      if (!payload.body.eligible) {
+        return NextResponse.json(
+          {
+            error: {
+              code: 'SHOWCASE_NOT_ELIGIBLE',
+              message: 'Este projeto ainda não pode ir para o Mural.',
+            },
+          },
+          { status: 409 },
+        )
+      }
+
+      // 2. Capa (print) → R2 PÚBLICO (best-effort → null = capa padrão do admin).
+      let coverImageUrl: string | null = null
+      const cover = form.get('cover')
+      if (
+        cover instanceof File &&
+        cover.size > 0 &&
+        cover.size <= COVER_MAX_BYTES &&
+        UGC_IMAGE_INPUT_MIME.has(cover.type)
+      ) {
+        try {
+          const optimized = await optimizeImage(await cover.arrayBuffer(), 'ugc')
+          const stored = await r2PutObject({
+            key: `studio/cover/${sess.id}/${randomUUID()}.${optimized.extension}`,
+            body: optimized.buffer,
+            contentType: optimized.contentType,
+          })
+          coverImageUrl = stored.url
+        } catch {
+          // best-effort: deixa null.
+        }
+      }
+
+      // 3. Projeto jogável → R2 PRIVADO (servido só via /api/studio/play/:id; sem URL pública).
+      const playId = randomUUID()
+      try {
+        await r2PutObjectPrivate({
+          key: PLAY_KEY(playId),
+          body: projectBytes,
+          contentType: 'application/json',
+        })
+      } catch (error) {
+        return mediaErrorResponse(error)
+      }
+
+      // 4. Cria o post no Mural (o hub re-valida elegibilidade + autor do header).
+      const r = await hub.createShowcaseThreadStudio({
+        spaceSlug: MURAL_SPACE_SLUG,
+        lessonId,
+        blockId,
+        coverImageUrl,
+        description,
+        playId,
+        clientIdempotencyKey,
+      })
+      if (r.status !== 200 || !r.body) {
+        return NextResponse.json(r.body ?? { error: { code: 'SHOWCASE_FAILED' } }, {
+          status: r.status,
+        })
+      }
+      const threadId = r.body.thread.id
+      // O playId real é o do post DEVOLVIDO (dedupe pode trazer um post anterior).
+      const resolvedPlayId = r.body.thread.playId ?? playId
+      return NextResponse.json(
+        {
+          muralUrl: `/${MURAL_SPACE_SLUG}?thread=${encodeURIComponent(threadId)}`,
+          playUrl: `/jogar/${resolvedPlayId}`,
+          deduped: r.body.deduped,
+        },
+        { status: 200 },
+      )
+    },
+  }
+
+  const studioPlay = {
+    // PÚBLICO (sem login): stream do projeto do R2 privado, MESMA ORIGEM (sem CORS).
+    GET: async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      const { id } = await ctx.params
+      if (!UUID_RE.test(id))
+        return NextResponse.json({ error: { code: 'NOT_FOUND' } }, { status: 404 })
+      try {
+        const obj = await r2GetObjectPrivate(PLAY_KEY(id))
+        return new NextResponse(obj.body, {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+            'Cache-Control': 'public, max-age=31536000, immutable',
+            'X-Content-Type-Options': 'nosniff',
+          },
+        })
+      } catch {
+        // Artefato imutável por UUID: erro = inexistente (404), não vaza detalhe.
+        return NextResponse.json({ error: { code: 'NOT_FOUND' } }, { status: 404 })
+      }
+    },
+  }
+
+  return { studioDescribe, studioPublish, studioPlay }
+}

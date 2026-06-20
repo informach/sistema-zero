@@ -280,6 +280,101 @@ describe('vitrine (Mural dos Criadores)', () => {
     expect(thread.coverImageUrl).toBeNull()
   })
 
+  // ── Variação KID-DRIVEN (botão "Compartilhar" do Estúdio) ──
+  const studioBody = (over: Record<string, unknown> = {}) => ({
+    spaceSlug: 'mural-dos-criadores',
+    lessonId: LESSON_ID,
+    blockId: BLOCK_ID,
+    description: 'Um jogo de nave que desvia de asteroides.',
+    coverImageUrl: 'https://cdn.example.com/capa.png',
+    playId: randomUUID(),
+    clientIdempotencyKey: randomUUID(),
+    ...over,
+  })
+
+  test('studio: corpo = descrição da criança, título do members, playId persistido', async () => {
+    const res = await ctx.app.handle(
+      jsonRequest('POST', '/hub/internal/showcase-thread-studio', {
+        headers: child(randomUUID()),
+        body: studioBody({ playId: '55555555-5555-5555-5555-555555555555' }),
+      }),
+    )
+    expect(res.status).toBe(200)
+    const { thread, deduped } = (await res.json()) as {
+      thread: {
+        isShowcase: boolean
+        title: string
+        body: string
+        authorDisplayName: string
+        playId: string | null
+        status: string
+      }
+      deduped: boolean
+    }
+    expect(deduped).toBe(false)
+    expect(thread.isShowcase).toBe(true)
+    // Descrição da criança vira o body; título continua autoritativo do members.
+    expect(thread.body).toBe('Um jogo de nave que desvia de asteroides.')
+    expect(thread.title).toBe('Meu joguinho')
+    expect(thread.authorDisplayName).toBe('Sofia')
+    expect(thread.playId).toBe('55555555-5555-5555-5555-555555555555')
+    expect(thread.status).toBe('visible')
+  })
+
+  test('studio: mesmo clientIdempotencyKey dedup-a; novo key = post NOVO (republicar)', async () => {
+    const headers = child(randomUUID())
+    const sameKey = randomUUID()
+    const first = (await (
+      await ctx.app.handle(
+        jsonRequest('POST', '/hub/internal/showcase-thread-studio', {
+          headers,
+          body: studioBody({ clientIdempotencyKey: sameKey }),
+        }),
+      )
+    ).json()) as { thread: { id: string }; deduped: boolean }
+    const retry = (await (
+      await ctx.app.handle(
+        jsonRequest('POST', '/hub/internal/showcase-thread-studio', {
+          headers,
+          body: studioBody({ clientIdempotencyKey: sameKey }),
+        }),
+      )
+    ).json()) as { thread: { id: string }; deduped: boolean }
+    const republish = (await (
+      await ctx.app.handle(
+        jsonRequest('POST', '/hub/internal/showcase-thread-studio', {
+          headers,
+          body: studioBody({ clientIdempotencyKey: randomUUID() }),
+        }),
+      )
+    ).json()) as { thread: { id: string }; deduped: boolean }
+    expect(retry.deduped).toBe(true)
+    expect(retry.thread.id).toBe(first.thread.id)
+    expect(republish.deduped).toBe(false)
+    expect(republish.thread.id).not.toBe(first.thread.id)
+  })
+
+  test('studio: projeto NÃO elegível → 403 (re-valida no members)', async () => {
+    ctx.members.showcaseEligibility = { ...ctx.members.showcaseEligibility, eligible: false }
+    const res = await ctx.app.handle(
+      jsonRequest('POST', '/hub/internal/showcase-thread-studio', {
+        headers: child(randomUUID()),
+        body: studioBody(),
+      }),
+    )
+    expect(res.status).toBe(403)
+  })
+
+  test('studio: sem x-internal-token → 401', async () => {
+    const res = await ctx.app.handle(
+      jsonRequest('POST', '/hub/internal/showcase-thread-studio', {
+        headers: studentHeaders(randomUUID(), { 'x-internal-token': '' }),
+        body: studioBody(),
+      }),
+    )
+    expect(res.status).toBe(401)
+  })
+
   test('com allowlist de parede: recusa space kids staff_only que NÃO é a parede', async () => {
     const gated = buildApp({ internalToken: INTERNAL, showcaseWallSlugs: ['mural-dos-criadores'] })
     await seedMural(gated)

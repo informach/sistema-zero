@@ -1561,6 +1561,20 @@ const config: GatewayConfigInput = {
       maxBodyBytes: SMALL_JSON_BODY_BYTES,
       rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
     },
+    // Variação KID-DRIVEN do "Compartilhar" do Estúdio: descrição da criança +
+    // link público de jogar (playId). 4 segmentos — não colide com showcase-thread
+    // nem com /hub/admin/*. O hub re-valida elegibilidade (S2S members) e autoria.
+    {
+      id: 'hub-showcase-create-studio',
+      methods: ['POST'],
+      pathPattern: '/hub/internal/showcase-thread-studio',
+      service: 'hub',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+    },
     {
       id: 'hub-comment-edit',
       methods: ['PATCH'],

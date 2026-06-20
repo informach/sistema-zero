@@ -14,6 +14,8 @@ import { threadSlug } from '../slug'
 const MAX_TITLE = 300
 const MAX_BODY = 50_000
 const MAX_DISPLAY_NAME = 120
+/** Descrição kid-driven no card da parede (plain text, ≤1 parágrafo). */
+const MAX_STUDIO_DESCRIPTION = 280
 
 export interface CreateShowcaseCommand {
   /** Slug do servidor do Mural (ex.: `mural-dos-criadores`). */
@@ -23,6 +25,19 @@ export interface CreateShowcaseCommand {
   blockId: string
   /** Capa CAPTURADA (print do jogo) já no R2 público; `null` → cai na capa padrão do members. */
   coverImageUrl: string | null
+}
+
+export interface CreateShowcaseFromStudioCommand {
+  spaceSlug: string
+  lessonId: string
+  blockId: string
+  coverImageUrl: string | null
+  /** Descrição escrita/editada pela criança (≤280 chars). Vira o `body` do post. */
+  description: string
+  /** Id público do artefato jogável (UUID) — vira o link /jogar/<playId>. */
+  playId: string
+  /** Chave de idempotência gerada no cliente (UUID) — dedup-a duplo-clique/retry. */
+  clientIdempotencyKey: string
 }
 
 /**
@@ -125,6 +140,86 @@ export class ShowcaseService {
       slug: threadSlug(title, id),
       body,
       coverImageUrl,
+      playId: null,
+      idempotencyKey,
+      now: this.clock(),
+    })
+    return { thread: toThreadView(thread), deduped }
+  }
+
+  /**
+   * Publicação KID-DRIVEN a partir do botão "Compartilhar" do Estúdio: a criança
+   * escreve a DESCRIÇÃO (rascunho da IA, editado) e o projeto ganha um LINK PÚBLICO
+   * de jogar (`playId`). Reusa TODAS as guardas de `create` (elegibilidade S2S
+   * fail-closed, destino kids+parede curada, autor do header) — NÃO afrouxar. Duas
+   * divergências DELIBERADAS: o `body` é a descrição da criança (não o resumo do
+   * admin) e a idempotência inclui o `clientIdempotencyKey` (re-publicar depois =
+   * post NOVO, imutável; duplo-clique/retry do MESMO ato dedup-a). O TÍTULO continua
+   * AUTORITATIVO do members (defesa em profundidade — a parede é curada).
+   */
+  async createFromStudio(
+    actor: Actor,
+    cmd: CreateShowcaseFromStudioCommand,
+  ): Promise<{ thread: ThreadView; deduped: boolean }> {
+    const elig = await this.members.getShowcaseEligibility({
+      userId: actor.userId,
+      accountId: actor.accountId,
+      lessonId: cmd.lessonId,
+      blockId: cmd.blockId,
+    })
+    if (!elig.eligible) throw new PostingNotAllowedError('Projeto não elegível para o Mural')
+    if (elig.audience !== 'kids')
+      throw new PostingNotAllowedError('A vitrine é só da plataforma kids')
+
+    const space = await this.read.findActiveSpaceBySlug(cmd.spaceSlug)
+    if (!space) throw new SpaceNotFoundError()
+    if (this.showcaseWallSlugs.size > 0 && !this.showcaseWallSlugs.has(space.slug)) {
+      throw new PostingNotAllowedError('Destino não é uma parede de vitrine')
+    }
+    if (space.audience !== 'kids') {
+      throw new PostingNotAllowedError('A vitrine só publica em servidores kids')
+    }
+    const channels = await this.read.listActiveChannels(space.id)
+    const channel = channels.find((c) => c.slug === this.showcaseChannelSlug)
+    if (!channel) throw new ChannelNotFoundError()
+    if (channel.postingPolicy !== 'staff_only') {
+      throw new PostingNotAllowedError('A vitrine só publica na parede curada (staff_only)')
+    }
+
+    // Título AUTORITATIVO do admin; corpo = descrição da criança (limitada).
+    const title = elig.title.trim()
+    const body = cmd.description.trim()
+    const displayName = actor.displayName.trim()
+    if (!title || title.length > MAX_TITLE) throw new PostingNotAllowedError('Título inválido')
+    if (!body || body.length > MAX_STUDIO_DESCRIPTION) {
+      throw new PostingNotAllowedError('Descrição inválida')
+    }
+    if (!displayName || displayName.length > MAX_DISPLAY_NAME) {
+      throw new PostingNotAllowedError('Nome do autor inválido')
+    }
+
+    const resolvedCover = cmd.coverImageUrl ?? elig.defaultCoverUrl
+    const coverImageUrl = resolvedCover?.startsWith('https://') ? resolvedCover : null
+
+    // Idempotência inclui o clientKey: duplo-clique/retry do MESMO ato dedup-a;
+    // republicar depois (clientKey novo) = post NOVO (imutabilidade = post novo).
+    const idempotencyKey = createHash('sha256')
+      .update(
+        `${actor.userId}:${elig.courseId}:${elig.chain ?? cmd.blockId}:${cmd.clientIdempotencyKey}`,
+      )
+      .digest('hex')
+
+    const id = this.newId()
+    const { thread, deduped } = await this.threads.createShowcaseThread({
+      id,
+      channelId: channel.id,
+      authorId: actor.userId,
+      authorDisplayName: displayName,
+      title,
+      slug: threadSlug(title, id),
+      body,
+      coverImageUrl,
+      playId: cmd.playId,
       idempotencyKey,
       now: this.clock(),
     })

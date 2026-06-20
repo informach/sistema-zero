@@ -129,3 +129,39 @@ Regras NÃO-NEGOCIÁVEIS:
 - **Persistência**: só o código-fonte é salvo (a árvore `tree`); `node_modules` **nunca** é persistido nem aceito no load (o sanitizer rebaixa para projeto básico qualquer árvore com `node_modules`).
 
 Um único sincronizador (`ProWebContainerProvider`) escreve no FS do container; o Terminal em modo profissional só abre o shell sobre o FS já montado (dois escritores corromperiam os arquivos).
+
+## 8. Compartilhar (Mural) + player público
+
+Botão **"Compartilhar"** na Topbar (ao lado do Salvar) que publica o projeto e gera um link público de jogar. **Opt-in**: só aparece quando o host passa a prop `share`. O Studio só ORQUESTRA a UX (confirmação, descrição editável, print via `captureCoverFromProject`); a rede/IA-de-servidor/storage vive 100% no host, atrás de duas funções do adapter.
+
+```tsx
+import type { StudioShareAdapter } from '@sistemazero/studio'
+
+const share: StudioShareAdapter = {
+  // Rascunho curto da descrição (SERVIDOR — nunca a BYOK do aluno). Pode voltar vazio/rejeitar:
+  // o dialog cai no modo "escreva você mesmo", sem travar a publicação.
+  async generateDescription({ project, title }) {
+    const r = await fetch('/api/studio/describe', { method: 'POST', /* ...3 arquivos + título */ })
+    return (await r.json()).description ?? ''
+  },
+  // Publica e devolve os links mostrados na tela de sucesso.
+  async publish({ project, coverDataUrl, title, description }) {
+    // ...sobe o print + o projeto, cria o post... 
+    return { muralUrl: '/mural?thread=…', playUrl: '/jogar/…' }
+  },
+}
+
+<Studio initialProject={project} share={share} />
+```
+
+O que foi publicado é um **SNAPSHOT imutável e INDEPENDENTE**: a criança continua editando o projeto no editor e a versão publicada NÃO muda (republicar gera um post novo). O dialog avisa isso no passo de confirmação.
+
+**Player público** (página de jogar SEM login, fora do editor): use o subpath LEVE `@sistemazero/studio/player` (só a cadeia de preview — sem Monaco/Blockly):
+
+```tsx
+import { StudioProjectPlayer } from '@sistemazero/studio/player' // dynamic ssr:false
+
+<StudioProjectPlayer project={projetoBuscadoDoServidor} />       // roda SÓ o jogo, autostart
+```
+
+Também exportado no index principal (`StudioProjectPlayer` + a função pura `renderProjectToPreviewDoc(project): string`, caso o host queira montar o srcdoc por conta própria). O iframe usa `sandbox="allow-scripts allow-modals"` e a CSP/guards viajam dentro do doc — o host só precisa de `frame-src 'self' blob:` na própria CSP.

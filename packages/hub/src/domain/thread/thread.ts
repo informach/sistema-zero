@@ -19,6 +19,8 @@ export interface Thread {
   authorDisplayName: string | null
   /** Capa do projeto (URL pública) — só na vitrine. */
   coverImageUrl: string | null
+  /** Id público do artefato jogável (UUID) — só na vitrine do Estúdio; `null` = sem link de jogar. */
+  playId: string | null
   lastActivityAt: Date
   createdAt: Date
   editedAt: Date | null

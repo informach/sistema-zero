@@ -101,7 +101,19 @@ título + resumo + "por {authorDisplayName}"); a criança só comenta (moderado)
 no cliente (`@sistemazero/studio` `captureCoverFromProject` lendo o rascunho local
 `sz-lesson-studio:<blockId>`) e faz `POST /api/hub/showcase` (multipart, FORA do matcher do proxy —
 guard próprio via `requireUploadSession`); `lesson-player-client` propaga o `showcase` da resposta do
-complete. **Data de nascimento (controle de idade):** os pais informam no `ProfileForm` da Área dos
+complete. **Compartilhar do Estúdio + link público jogável (06/2026):** o `StudioBlockView` da aula é
+renderizado com `enableShare` (kids-only) → o editor ganha o botão **"Compartilhar"** na Topbar (publica no
+Mural com **descrição gerada por IA** que a criança edita + um **link público de jogar**; o post é um
+SNAPSHOT imutável e independente do rascunho que ela continua editando). O card do Mural
+(`kids-space-view-client.tsx` `ShowcaseCard`/`ThreadDetail`) ganhou, quando há `thread.playId`, os botões
+**"Jogar"** (abre `/jogar/<playId>` em nova aba) + **"Copiar link"** (`navigator.share` com fallback
+clipboard) — a raiz do card deixou de ser `<button>` (âncora não aninha em button). A **página PÚBLICA**
+`app/jogar/[id]/page.tsx` (FORA do grupo `(app)`, sem login, igual a `/perfis`) renderiza o
+`StudioProjectPlayer` (subpath `@sistemazero/studio/player`, `ssr:false`) buscando o projeto em
+`/api/studio/play/:id` — mostra SÓ o jogo + título, NUNCA o nome da criança. As rotas `/api/studio/{describe,
+publish,play/[id]}` são shims sobre `shell.routes.studio*`; o `proxy.ts` exclui `api/studio/publish`
+(multipart) e `api/studio/play` (stream público) do matcher (`api/studio/describe` FICA no matcher — ganha
+o anti-CSRF same-origin). **Data de nascimento (controle de idade):** os pais informam no `ProfileForm` da Área dos
 pais (`app/perfis`) — `<input type=date>`; só a CONTA edita (o auth recusa em sessão de perfil).
 
 ### Hub/fórum (compartilhado)
@@ -242,7 +254,8 @@ Serviço `community-kids` (id `fc8a1b29-ac14-4dc9-a7b3-03d497b8bf4f`) NO AR nos 
 CLAUDE.md de lá): `GATEWAY_URL`, `JWT_JWKS_URL` (prod EXIGE; HS256 RECUSADO),
 `JWT_ISSUER/AUDIENCE`, `R2_*` (staging `testes`/`testes-privado`; prod
 `comunidade-sistema-zero`/`-privado` — MESMOS buckets, avatar compartilhado por usuário),
-`SENTRY_DSN` opcional. **SEM FUNNEL_URL.** Porta 3008; réplica ÚNICA (globalThis no shell);
+`SENTRY_DSN` opcional, **`OPENROUTER_API_KEY` + `OPENROUTER_MODEL`** (opcionais — descrição IA do
+"Compartilhar"; ausentes → fallback, a criança escreve). **SEM FUNNEL_URL.** Porta 3008; réplica ÚNICA (globalThis no shell);
 healthcheck `/api/healthz`.
 
 **Pendências de infra (não bloqueiam):** domínio definitivo `kids.sistemazero.com.br`

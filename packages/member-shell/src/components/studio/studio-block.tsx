@@ -1,11 +1,11 @@
 'use client'
 
 import '@sistemazero/studio/styles.css'
-import type { Project, StudioHandle } from '@sistemazero/studio'
+import type { Project, StudioHandle, StudioShareAdapter } from '@sistemazero/studio'
 import { Button } from '@sistemazero/ui/button'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { CheckCircle2, Maximize2, Minimize2, Send } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { type ApiError, apiGet, apiSend } from '../../lib/api'
 import { cn } from '../../lib/cn'
 import type { StudioBlock, StudioStateView, StudioSubmissionResultView } from '../../lib/types'
@@ -16,6 +16,12 @@ interface Props {
   content: StudioBlock
   /** Estado da entrega vindo do GET da aula (já enviou? quando?). */
   studioState: StudioStateView | null
+  /**
+   * Liga o botão "Compartilhar" (publicar no Mural) na Topbar do editor. Só o app
+   * KIDS passa `true` (o Mural é da vitrine kids); a elegibilidade real é do backend
+   * (o publish 409 quando o bloco não é de vitrine). Default OFF.
+   */
+  enableShare?: boolean
 }
 
 type StudioComponent = typeof import('@sistemazero/studio')['StudioLesson']
@@ -30,7 +36,7 @@ type StudioComponent = typeof import('@sistemazero/studio')['StudioLesson']
  * Carregado SÓ no client (Monaco/Blockly/IndexedDB não existem no SSR): o import
  * dinâmico do editor roda dentro de um effect — o server renderiza só o placeholder.
  */
-export function StudioBlockView({ blockId, content, studioState }: Props) {
+export function StudioBlockView({ blockId, content, studioState, enableShare }: Props) {
   const player = useLessonPlayer()
   const lessonId = player?.lessonId ?? ''
   // Id estável por bloco — o autosave local retoma o WIP no mesmo navegador.
@@ -144,6 +150,57 @@ export function StudioBlockView({ blockId, content, studioState }: Props) {
     }
   }, [lessonId, blockId, player, activity])
 
+  // Adapter de COMPARTILHAR (Mural) — só no kids (`enableShare`). O Studio o LATCHA
+  // uma vez, então memoizamos por (lessonId, blockId): I/O do servidor vive aqui, a
+  // UX no editor. `generateDescription` manda só os 3 arquivos (sem assets); `publish`
+  // sobe o projeto inteiro + print por multipart e devolve os links.
+  const share = useMemo<StudioShareAdapter | undefined>(() => {
+    if (!enableShare || !lessonId) return undefined
+    return {
+      async generateDescription({ project, title }) {
+        try {
+          const res = await apiSend<{ description?: string }>('/api/studio/describe', 'POST', {
+            files: {
+              html: project.files['index.html'],
+              css: project.files['style.css'],
+              js: project.files['script.js'],
+            },
+            title,
+          })
+          return res.description ?? ''
+        } catch {
+          return '' // fail-soft: a criança escreve do zero
+        }
+      },
+      async publish({ project, coverDataUrl, title, description }) {
+        const form = new FormData()
+        form.set('lessonId', lessonId)
+        form.set('blockId', blockId)
+        form.set('description', description)
+        form.set('title', title)
+        form.set('clientIdempotencyKey', crypto.randomUUID())
+        form.set(
+          'project',
+          new File([JSON.stringify(project)], 'project.json', { type: 'application/json' }),
+        )
+        if (coverDataUrl) {
+          const blob = await (await fetch(coverDataUrl)).blob()
+          form.set('cover', new File([blob], 'cover', { type: blob.type || 'image/png' }))
+        }
+        const res = await fetch('/api/studio/publish', { method: 'POST', body: form })
+        const body = (await res.json().catch(() => null)) as {
+          muralUrl?: string
+          playUrl?: string
+          error?: { message?: string }
+        } | null
+        if (!res.ok) {
+          throw new Error(body?.error?.message ?? 'Não foi possível publicar agora.')
+        }
+        return { muralUrl: body?.muralUrl, playUrl: body?.playUrl }
+      },
+    }
+  }, [enableShare, lessonId, blockId])
+
   const ready = StudioLesson !== null && seed !== null
 
   return (
@@ -183,6 +240,7 @@ export function StudioBlockView({ blockId, content, studioState }: Props) {
             allowLevelReveal={content.allowLevelReveal}
             activity={content.activity}
             features={{ extensions: false }}
+            share={share}
             blockUnloadWhenDirty={false}
           />
         ) : (

@@ -19,6 +19,7 @@ import {
   IconMore,
   IconPuzzle,
   IconSave,
+  IconShare,
   IconSparkles,
   IconSun,
   IconTerminal,
@@ -32,8 +33,10 @@ import { useStudioPersistence } from '../../state/studioStores'
 import { useUIStore } from '../../state/uiStore'
 import { useStudioConfig } from '../../studio/config'
 import { useStudioLayout } from '../../studio/layoutContext'
+import { useStudioShare } from '../../studio/share'
 import { useStudioTheme } from '../../studio/theme'
 import { ExportDialog } from './ExportDialog'
+import { ShareDialog } from './ShareDialog'
 
 export interface TopbarProps {
   /** Sai do editor (host decide o destino). Sem ela, logo vira estático e o item "Projetos" some. */
@@ -106,10 +109,12 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
   const { isNarrow, isCompact } = useStudioLayout()
   const theme = useStudioTheme()
   const setTheme = useSettingsStore((s) => s.setTheme)
+  const share = useStudioShare()
 
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(projectName)
   const [saving, setSaving] = useState(false)
+  const [showShare, setShowShare] = useState(false)
   const [showExport, setShowExport] = useState(false)
   const [showConvert, setShowConvert] = useState(false)
   const [converting, setConverting] = useState(false)
@@ -380,6 +385,19 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
         <div
           className={cn('ml-auto flex shrink-0 items-center', isCompact ? 'gap-0.5' : 'gap-1.5')}
         >
+          {share && (
+            <button
+              type="button"
+              onClick={() => setShowShare(true)}
+              title={t('share.action')}
+              aria-label={t('share.action')}
+              style={{ touchAction: 'manipulation' }}
+              className="inline-flex h-9 items-center gap-1.5 rounded-md px-2.5 text-sz-accent transition-colors hover:bg-sz-accent/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60"
+            >
+              <IconShare />
+              {!isCompact && <span className="text-sm font-medium">{t('share.action')}</span>}
+            </button>
+          )}
           <button
             type="button"
             onClick={handleSave}
@@ -408,6 +426,7 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
           )}
         </div>
       </header>
+      <ShareDialog open={showShare} onClose={() => setShowShare(false)} adapter={share} />
       <ExportDialog open={showExport} onClose={() => setShowExport(false)} />
       <ConfirmDialog
         open={showConvert}

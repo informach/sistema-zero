@@ -91,6 +91,18 @@ Linguagem: **TS (ESM)**. Framework HTTP: **Elysia**. Porta **3010**.
    (`autor:curso:cadeia`); e EXIGE `space.audience === 'kids'` E canal `postingPolicy === 'staff_only'`
    (senão `PostingNotAllowedError`→403 — barra injeção cross-vitrine e em canal de postagem livre).
    `coverImageUrl` é **https-only** no DTO (parede infantil). NÃO afrouxar esses guards.
+   **Variação KID-DRIVEN — "Compartilhar" do Estúdio (06/2026):** rota irmã
+   `POST /hub/internal/showcase-thread-studio` (`ShowcaseThreadStudioBody` + `ShowcaseService.createFromStudio`)
+   onde a CRIANÇA escreve a **descrição** (rascunho da IA, editado → vira o `body`) e o projeto ganha um
+   **link público de jogar** (coluna `threads.play_id`, UUID do artefato → o card mostra "Jogar" →
+   `/jogar/<play_id>`). REUSA TODAS as guardas do `create` (elegibilidade S2S fail-closed, destino kids +
+   parede `staff_only` + allowlist, autor do header `x-auth-profile-name`) — NÃO afrouxar. Duas divergências
+   DELIBERADAS: o `body` é a descrição da criança (não o `summary` do admin), mas o **TÍTULO continua
+   AUTORITATIVO do members** (defesa em profundidade — a parede é curada); e a idempotência inclui o
+   `clientIdempotencyKey` (duplo-clique/retry dedup-a; **republicar depois = post NOVO**, pois o snapshot
+   publicado é IMUTÁVEL e INDEPENDENTE do projeto que a criança continua editando no editor). Rota NOVA em
+   `showcase.routes.ts` (mesma guarda de `x-internal-token`, mesmo `showcaseService`); gateway
+   `hub-showcase-create-studio`.
 10. **Teaser "visível mas bloqueado" (06/2026):** `spaces.teaser_when_locked`. Quando ligado, um
    servidor que o aluno NÃO acessa aparece na listagem/detalhe com `locked:true` (só nome/ícone/
    descrição) em vez de sumir — `AccessResolutionService.resolveSpaceVisibility` ANOTA em vez de
@@ -212,7 +224,9 @@ download direto browser↔R2 são mintados pelo BFF (member-shell).
 - **`channels`** — canal (FK→space cascade, `slug` único no space, `accessConfig` **nullable=herda**,
   `postingPolicy members|staff_only`, `requiresApproval` **nullable=herda**, `version`).
 - **`threads`** — tópico (FK→channel, `authorId`, `title`, `slug` único no canal, `body` Markdown,
-  `isPinned`, `isLocked`, `status`, `commentCount`, `lastActivityAt`, `version`). Índices:
+  `isPinned`, `isLocked`, `status`, `commentCount`, `lastActivityAt`, `version`). Vitrine:
+  `is_showcase`, `author_display_name`, `cover_image_url`, `showcase_idempotency_key` (UNIQUE) e
+  **`play_id`** (UUID do artefato jogável — só na vitrine do Estúdio; alimenta o "Jogar" público). Índices:
   `(channel,status,lastActivity)` p/ listagem, `(author,status)` p/ "meus pendentes".
 - **`comments`** — comentário (FK→thread, `authorId`, `body`, `status`, `replyToId`, `version`).
 - **`attachments`** — metadado UGC (`ownerId`, `threadId`/`commentId` nullable, `kind`,
@@ -270,6 +284,11 @@ Segredos que precisam **bater entre serviços** (ver `.env.example` quando criad
 `Dockerfile` (oven/bun, context = raiz do repo) + `railway.json` (`healthcheckPath: /readyz`,
 `preDeployCommand: db:migrate`, watchPatterns hub+core). `drizzle.config.ts` usa
 `schemaFilter: ['hub']` + journal próprio `hub_migrations` (NÃO compartilhe `__drizzle_migrations`).
+⚠️ **Migrations (06/2026):** `0002` (`community_gated`) existia mas NÃO estava no `meta/_journal.json` —
+um fresh DB pulava o enum. Consertado: `0002` virou `ADD VALUE IF NOT EXISTS` (re-rodar é no-op) +
+`0002`/`0003` journaled. `0003_add_play_id` (`ADD COLUMN IF NOT EXISTS play_id`). `db:migrate` aplica os
+dois de forma idempotente (gateado pelo `when` do journal). Ao adicionar migration nova, CONFIRA o journal
+antes de gerar.
 Boot: `loadEnv` (fail-fast) → `createApplication` → `start` (listen `::`), com retenção do
 `processed_webhooks` num ciclo de 6h sob **advisory xact-lock `51020304050607081`** (único no banco
 compartilhado — members=`30792297…`, payments=`8103081227979411315`; nunca reusar a chave). `/readyz`

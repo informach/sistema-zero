@@ -4,6 +4,7 @@ import type { StudioPersistence } from '../persistence/types'
 import type { StudioLimits } from '../state/projectStore'
 import type { ActivityRunResult, LessonActivity } from './activity'
 import type { StudioFeatures } from './config'
+import type { StudioShareAdapter } from './share'
 import type { StudioTheme } from './theme'
 
 export type StudioLocale = Locale
@@ -99,6 +100,14 @@ export interface StudioCommonProps {
    * Hosts SPA com navegação própria podem desligar e usar handle.isDirty().
    */
   blockUnloadWhenDirty?: boolean
+  /**
+   * Adapter de "Compartilhar" (publicar no Mural dos Criadores). Quando
+   * presente, a Topbar mostra o botão Compartilhar ao lado do Salvar; o host
+   * implementa `generateDescription` (servidor) + `publish`. Ausente (default)
+   * → sem botão. Estável por instância (latchado, igual à `activity`). Serve
+   * ao estúdio de aula (hoje) e ao estúdio completo (produto futuro).
+   */
+  share?: StudioShareAdapter
   /** Classes extras no root. O Studio preenche 100% do container do host. */
   className?: string
   style?: CSSProperties

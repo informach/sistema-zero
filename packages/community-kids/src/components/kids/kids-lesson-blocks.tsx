@@ -112,6 +112,9 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
             blockId={block.id}
             content={content as unknown as StudioBlock}
             studioState={(block.studioState as StudioStateView | null | undefined) ?? null}
+            // Kids: liga o botão "Compartilhar no Mural" na Topbar do editor (a
+            // elegibilidade real é do backend — publish 409 se não for de vitrine).
+            enableShare
           />
         </div>
       )

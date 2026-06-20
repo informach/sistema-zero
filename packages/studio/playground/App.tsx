@@ -5,6 +5,7 @@ import {
   ProjectList,
   prefetchStudioModes,
   StudioEditor,
+  type StudioShareAdapter,
 } from '@sistemazero/studio'
 import type { JSX } from 'react'
 import { useEffect, useMemo, useState } from 'react'
@@ -39,6 +40,29 @@ function EditorScreen({
 }): JSX.Element {
   const adapter = useMemo(() => createLocalPersistenceAdapter(), [])
   const [state, setState] = useState<EditorState>({ status: 'loading' })
+
+  // Adapter de COMPARTILHAR de DEMONSTRAÇÃO: liga o botão "Compartilhar" na Topbar
+  // e simula o servidor (a IA e o publish são mockados; o PRINT é capturado de
+  // verdade no browser via captureCoverFromProject). No app real (community-kids),
+  // o adapter chama /api/studio/describe e /api/studio/publish.
+  const shareDemo = useMemo<StudioShareAdapter>(
+    () => ({
+      async generateDescription({ title }) {
+        await new Promise((r) => setTimeout(r, 600))
+        return `Um joguinho chamado "${title}", feito no Sistema Zero Studio. (Descrição de demonstração do playground.)`
+      },
+      async publish({ title, description, coverDataUrl }) {
+        await new Promise((r) => setTimeout(r, 800))
+        console.debug('[host] publish (demo)', {
+          title,
+          description,
+          hasCover: Boolean(coverDataUrl),
+        })
+        return { muralUrl: '#mural-demo', playUrl: '#jogar-demo' }
+      },
+    }),
+    [],
+  )
 
   useEffect(() => {
     let cancelled = false
@@ -86,6 +110,8 @@ function EditorScreen({
     <StudioEditor
       initialProject={state.project}
       onExit={onExit}
+      // Liga o botão "Compartilhar" (publicar no Mural) com um adapter de demo.
+      share={shareDemo}
       // Experiência completa no playground (defaults embarcados: terminal/IA OFF).
       // Projeto profissional força terminal + allowedModes:['code'] via a flag.
       features={isPro ? { professional: true, ai: true } : { terminal: true, ai: true }}

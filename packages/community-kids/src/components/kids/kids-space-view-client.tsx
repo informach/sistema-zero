@@ -10,7 +10,7 @@ import { renderUgcMarkdown } from '@sistemazero/member-shell/lib/markdown'
 import { Button } from '@sistemazero/ui/button'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { Textarea } from '@sistemazero/ui/textarea'
-import { ArrowLeft, Flag, Hash, Lock, MessageCircle, Plus, Send } from 'lucide-react'
+import { ArrowLeft, Copy, Flag, Hash, Lock, MessageCircle, Play, Plus, Send } from 'lucide-react'
 import { memo, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { KidsSpaceSkeleton } from '@/components/kids/kids-space-skeleton'
@@ -558,36 +558,87 @@ function Tag({ children }: { children: ReactNode }) {
 }
 
 /** Card de projeto no Mural: capa + título + resumo + autor (1º nome da criança). */
-function ShowcaseCard({ thread, onOpen }: { thread: HubThreadView; onOpen: () => void }) {
+/** Caminho da página PÚBLICA de jogar (sem login) a partir do `playId` do post. */
+function playPathFor(thread: HubThreadView): string | null {
+  return thread.playId ? `/jogar/${enc(thread.playId)}` : null
+}
+
+/**
+ * "Jogar" (abre a página pública em nova aba) + "Copiar link" (Web Share API com
+ * fallback p/ a área de transferência). A criança manda esse link para a família e
+ * os amigos jogarem — sem login, só o jogo.
+ */
+function PlayLinkActions({ playUrl, title }: { playUrl: string; title: string }) {
+  const shareOrCopy = useCallback(async () => {
+    const abs =
+      typeof window !== 'undefined' ? new URL(playUrl, window.location.origin).href : playUrl
+    try {
+      if (typeof navigator !== 'undefined' && navigator.share) {
+        await navigator.share({ title, url: abs })
+        return
+      }
+    } catch {
+      // share nativo cancelado/indisponível → cai para copiar
+    }
+    try {
+      await navigator.clipboard?.writeText(abs)
+      toast.success('Link copiado! 🔗')
+    } catch {
+      toast.error('Não consegui copiar o link.')
+    }
+  }, [playUrl, title])
+
   return (
-    <button
-      type="button"
-      onClick={onOpen}
-      className="group flex w-full flex-col overflow-hidden rounded-2xl border-2 border-border bg-card text-left transition-colors hover:border-primary"
-    >
-      <div className="aspect-video w-full overflow-hidden bg-(--kids-cyan-tint)">
-        {thread.coverImageUrl ? (
-          <img
-            src={thread.coverImageUrl}
-            alt={thread.title}
-            className="size-full object-cover transition-transform group-hover:scale-105"
-            loading="lazy"
-          />
-        ) : (
-          <div className="grid size-full place-items-center text-3xl">🎮</div>
-        )}
-      </div>
-      <div className="space-y-1 p-3">
-        <p className="truncate font-bold">{thread.title}</p>
-        {thread.authorDisplayName ? (
-          <p className="text-muted-foreground text-xs">por {thread.authorDisplayName}</p>
-        ) : null}
-        <p className="line-clamp-2 text-muted-foreground text-sm">{thread.body}</p>
-        <p className="flex items-center gap-1 pt-1 text-muted-foreground text-xs">
-          <MessageCircle className="size-3" /> {thread.commentCount}
-        </p>
-      </div>
-    </button>
+    <div className="flex items-center gap-2 border-border border-t-2 p-3">
+      <a
+        href={playUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex min-h-[40px] flex-1 items-center justify-center gap-1.5 rounded-xl bg-primary px-3 font-bold text-primary-foreground text-sm"
+      >
+        <Play className="size-4" /> Jogar
+      </a>
+      <button
+        type="button"
+        onClick={shareOrCopy}
+        className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border-2 border-border px-3 font-bold text-sm transition-colors hover:bg-muted/60"
+      >
+        <Copy className="size-4" /> Copiar link
+      </button>
+    </div>
+  )
+}
+
+function ShowcaseCard({ thread, onOpen }: { thread: HubThreadView; onOpen: () => void }) {
+  const playUrl = playPathFor(thread)
+  return (
+    <article className="group flex w-full flex-col overflow-hidden rounded-2xl border-2 border-border bg-card transition-colors hover:border-primary">
+      <button type="button" onClick={onOpen} className="flex w-full flex-col text-left">
+        <div className="aspect-video w-full overflow-hidden bg-(--kids-cyan-tint)">
+          {thread.coverImageUrl ? (
+            <img
+              src={thread.coverImageUrl}
+              alt={thread.title}
+              className="size-full object-cover transition-transform group-hover:scale-105"
+              loading="lazy"
+            />
+          ) : (
+            <div className="grid size-full place-items-center text-3xl">🎮</div>
+          )}
+        </div>
+        <div className="space-y-1 p-3">
+          <p className="truncate font-bold">{thread.title}</p>
+          {thread.authorDisplayName ? (
+            <p className="text-muted-foreground text-xs">por {thread.authorDisplayName}</p>
+          ) : null}
+          <p className="line-clamp-2 text-muted-foreground text-sm">{thread.body}</p>
+          <p className="flex items-center gap-1 pt-1 text-muted-foreground text-xs">
+            <MessageCircle className="size-3" /> {thread.commentCount}
+          </p>
+        </div>
+      </button>
+      {playUrl ? <PlayLinkActions playUrl={playUrl} title={thread.title} /> : null}
+    </article>
   )
 }
 
@@ -739,6 +790,9 @@ function ThreadDetail({
         <h2 className="[font-family:var(--font-display)] font-bold text-lg">{thread.title}</h2>
         <p className="text-muted-foreground text-xs">{authorLabel(thread)}</p>
         <div className="lesson-prose">{threadBody}</div>
+        {isWall && thread.playId ? (
+          <PlayLinkActions playUrl={`/jogar/${enc(thread.playId)}`} title={thread.title} />
+        ) : null}
         <AttachmentList attachments={thread.attachments} />
         <div className="flex items-center justify-between">
           <ReactionBar

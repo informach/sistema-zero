@@ -55,6 +55,8 @@ export interface ThreadView {
   authorDisplayName: string | null
   /** Capa do projeto (URL pública) — só na vitrine. */
   coverImageUrl: string | null
+  /** Id público do artefato jogável (UUID) — só na vitrine do Estúdio; o BFF deriva o link /jogar. */
+  playId: string | null
   reactions: ReactionSummaryItem[]
   attachments: AttachmentView[]
   lastActivityAt: string
@@ -102,6 +104,7 @@ export function toThreadView(
     isShowcase: t.isShowcase,
     authorDisplayName: t.authorDisplayName,
     coverImageUrl: t.coverImageUrl,
+    playId: t.playId,
     reactions,
     attachments,
     lastActivityAt: t.lastActivityAt.toISOString(),

@@ -15,6 +15,20 @@
       "when": 1781779636709,
       "tag": "0001_flippant_spiral",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1781779636710,
+      "tag": "0002_nimble_cascade",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1786000000000,
+      "tag": "0003_add_play_id",
+      "breakpoints": true
     }
   ]
 }

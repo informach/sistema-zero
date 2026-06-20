@@ -593,6 +593,12 @@ export interface HubThreadView {
   authorDisplayName: string | null
   /** Capa do projeto (URL pública) — só na vitrine. */
   coverImageUrl: string | null
+  /**
+   * Id público do artefato jogável (UUID) — só na vitrine do Estúdio. Quando
+   * presente, o card do Mural mostra "Acessar" → `/jogar/<playId>` (página pública
+   * sem login). `null` = sem link jogável (posts antigos / fluxo da aula).
+   */
+  playId: string | null
   reactions: HubReaction[]
   attachments: HubAttachmentView[]
   lastActivityAt: string

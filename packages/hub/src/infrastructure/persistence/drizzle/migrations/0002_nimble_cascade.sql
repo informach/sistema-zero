@@ -1,1 +1,1 @@
-ALTER TYPE "hub"."visibility" ADD VALUE 'community_gated';
+ALTER TYPE "hub"."visibility" ADD VALUE IF NOT EXISTS 'community_gated';

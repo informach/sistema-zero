@@ -25,11 +25,16 @@ export {
   type ProTemplate,
 } from './components/code/pro-templates'
 export {
+  StudioProjectPlayer,
+  type StudioProjectPlayerProps,
+} from './components/preview/StudioProjectPlayer'
+export {
   type CaptureCoverOptions,
   captureCoverFromProject,
 } from './cover/coverCapture'
 export { createLocalPersistenceAdapter } from './persistence/local'
 export type { StudioPersistence, StudioPersistenceAdapter } from './persistence/types'
+export { type RenderProjectOptions, renderProjectToPreviewDoc } from './preview/renderProject'
 export { ProjectList, type ProjectListProps } from './projects/ProjectList'
 export type { ProjectSummary } from './state/persistence'
 export type { StudioLimits } from './state/projectStore'
@@ -55,6 +60,12 @@ export { prefetchStudioModes } from './studio/prefetch'
 export { Studio } from './studio/Studio'
 export { StudioEditor } from './studio/StudioEditor'
 export { StudioLesson } from './studio/StudioLesson'
+export type {
+  StudioShareAdapter,
+  StudioShareGenerateInput,
+  StudioSharePublishInput,
+  StudioShareResult,
+} from './studio/share'
 export type { StudioTheme } from './studio/theme'
 export type {
   StudioEditorProps,
