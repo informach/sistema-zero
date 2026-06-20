@@ -450,7 +450,7 @@ describe('importProjectFromJSON', () => {
         dataUrl: tiny,
       })),
     })
-    expect(many.project.assets.length).toBe(PROJECT_ASSET_LIMITS.maxAssetsCount)
+    expect(many.project.assets?.length).toBe(PROJECT_ASSET_LIMITS.maxAssetsCount)
     expect(many.warnings.some((w) => w.includes('imagem'))).toBe(true)
 
     const clean = await useProjectStore.getState().importProjectFromJSON({

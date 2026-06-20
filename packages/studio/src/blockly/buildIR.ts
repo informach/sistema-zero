@@ -305,6 +305,14 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'g3d:crosserRow', objVar: f(block, 'OBJ') }
     case 'sz_g3d_touches_box':
       return { type: 'g3d:touchesBox', objVar: f(block, 'OBJ'), groupVar: f(block, 'GROUP') }
+    case 'sz_g3d_distance_to':
+      return { type: 'g3d:distanceTo', aVar: f(block, 'A'), bVar: f(block, 'B') }
+    case 'sz_g3d_is_near':
+      return { type: 'g3d:isNear', aVar: f(block, 'A'), bVar: f(block, 'B'), dist: fn(block, 'DIST', 2) }
+    case 'sz_g3d_race_hit':
+      return { type: 'g3d:raceHit', objVar: f(block, 'OBJ'), worldVar: f(block, 'WORLD') }
+    case 'sz_g3d_race_laps':
+      return { type: 'g3d:raceLaps', objVar: f(block, 'OBJ') }
     case 'sz_input_key_pressed':
       return { type: 'inputKeyPressed', key: f(block, 'KEY') || 'ArrowRight' }
     case 'sz_input_pointer_x':
@@ -3050,6 +3058,64 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           row: exprInput(block, 'ROW', { type: 'num', value: 0 }),
           col: exprInput(block, 'COL', { type: 'num', value: 0 }),
         },
+      }
+    case 'sz_g3d_top_camera':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: { type: 'g3d:topCamera', worldVar: f(block, 'WORLD'), followVar: f(block, 'FOLLOW') },
+      }
+    case 'sz_g3d_move_in_circle':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3d:moveInCircle',
+          objVar: f(block, 'OBJ'),
+          radius: fn(block, 'RADIUS', 7),
+          speed: fn(block, 'SPEED', 0.02),
+        },
+      }
+    case 'sz_g3d_create_race_scene':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: { type: 'g3d:createRaceScene', canvasId: f(block, 'CANVAS'), varName: f(block, 'NAME') },
+      }
+    case 'sz_g3d_create_race_track':
+      seen.add('game-3d')
+      return { kind: 'js', value: { type: 'g3d:createRaceTrack', worldVar: f(block, 'WORLD') } }
+    case 'sz_g3d_create_race_car':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3d:createRaceCar',
+          varName: f(block, 'NAME'),
+          worldVar: f(block, 'WORLD'),
+          color: f(block, 'COLOR'),
+        },
+      }
+    case 'sz_g3d_race_step':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: { type: 'g3d:raceStep', objVar: f(block, 'OBJ'), worldVar: f(block, 'WORLD') },
+      }
+    case 'sz_g3d_race_control':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: { type: 'g3d:raceControl', objVar: f(block, 'OBJ'), mode: f(block, 'MODE') || 'normal' },
+      }
+    case 'sz_g3d_run_rivals':
+      seen.add('game-3d')
+      return { kind: 'js', value: { type: 'g3d:runRivals', worldVar: f(block, 'WORLD') } }
+    case 'sz_g3d_race_reset':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: { type: 'g3d:raceReset', objVar: f(block, 'OBJ'), worldVar: f(block, 'WORLD') },
       }
 
     default:

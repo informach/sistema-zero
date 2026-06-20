@@ -1059,6 +1059,24 @@ function compileStatementCode(
       return `${pad}SZGame3D.moveAcross(${identifiers.get(stmt.groupVar)}, ${stmt.speed}, ${stmt.min}, ${stmt.max});`
     case 'g3d:gridPosition':
       return `${pad}SZGame3D.gridPosition(${identifiers.get(stmt.objVar)}, ${compileExpr(stmt.row, 0, identifiers, recAt(base))}, ${compileExpr(stmt.col, 0, identifiers, recAt(base))});`
+    case 'g3d:topCamera':
+      return `${pad}SZGame3D.topCamera(${identifiers.get(stmt.worldVar)}, ${stmt.followVar ? identifiers.get(stmt.followVar) : 'null'});`
+    case 'g3d:moveInCircle':
+      return `${pad}SZGame3D.moveInCircle(${identifiers.get(stmt.objVar)}, ${stmt.radius}, ${stmt.speed});`
+    case 'g3d:createRaceScene':
+      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame3D.createRaceScene(${JSON.stringify(stmt.canvasId)});`
+    case 'g3d:createRaceTrack':
+      return `${pad}SZGame3D.createRaceTrack(${identifiers.get(stmt.worldVar)});`
+    case 'g3d:createRaceCar':
+      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame3D.createRaceCar(${identifiers.get(stmt.worldVar)}, { color: ${JSON.stringify(stmt.color)} });`
+    case 'g3d:raceStep':
+      return `${pad}SZGame3D.raceStep(${identifiers.get(stmt.objVar)}, ${identifiers.get(stmt.worldVar)});`
+    case 'g3d:raceControl':
+      return `${pad}SZGame3D.raceControl(${identifiers.get(stmt.objVar)}, ${JSON.stringify(stmt.mode)});`
+    case 'g3d:runRivals':
+      return `${pad}SZGame3D.runRivals(${identifiers.get(stmt.worldVar)});`
+    case 'g3d:raceReset':
+      return `${pad}SZGame3D.raceReset(${identifiers.get(stmt.objVar)}, ${identifiers.get(stmt.worldVar)});`
     case 'classDecl': {
       const className = identifiers.declareClassName(classKey(stmt), stmt.name)
       const superClause = stmt.superClass
@@ -1999,6 +2017,32 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       names.add(stmt.objVar)
       collectExprIdentifiers(stmt.row, names)
       collectExprIdentifiers(stmt.col, names)
+      return
+    case 'g3d:topCamera':
+      names.add(stmt.worldVar)
+      if (stmt.followVar) names.add(stmt.followVar)
+      return
+    case 'g3d:moveInCircle':
+      names.add(stmt.objVar)
+      return
+    case 'g3d:createRaceScene':
+      names.add(stmt.varName)
+      return
+    case 'g3d:createRaceCar':
+      names.add(stmt.varName)
+      names.add(stmt.worldVar)
+      return
+    case 'g3d:createRaceTrack':
+    case 'g3d:runRivals':
+      names.add(stmt.worldVar)
+      return
+    case 'g3d:raceStep':
+    case 'g3d:raceReset':
+      names.add(stmt.objVar)
+      names.add(stmt.worldVar)
+      return
+    case 'g3d:raceControl':
+      names.add(stmt.objVar)
       return
     case 'classDecl':
       for (const param of stmt.ctorParams ?? []) names.add(param)

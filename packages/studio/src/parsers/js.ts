@@ -2576,6 +2576,46 @@ function tryMatchGame3DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       if (!objVar || !isSimpleValue(row) || !isSimpleValue(col)) return null
       return { type: 'g3d:gridPosition', objVar, row, col }
     }
+    case 'topCamera': {
+      // generator: SZGame3D.topCamera(world, followObj | null)
+      const worldVar = identifierName(args[0])
+      if (!worldVar) return null
+      return { type: 'g3d:topCamera', worldVar, followVar: identifierName(args[1]) || '' }
+    }
+    case 'moveInCircle': {
+      const objVar = identifierName(args[0])
+      const radius = numericLiteralValue(args[1])
+      const speed = numericLiteralValue(args[2])
+      if (!objVar || radius === null || speed === null) return null
+      return { type: 'g3d:moveInCircle', objVar, radius, speed }
+    }
+    case 'createRaceTrack': {
+      const worldVar = identifierName(args[0])
+      if (!worldVar) return null
+      return { type: 'g3d:createRaceTrack', worldVar }
+    }
+    case 'raceStep': {
+      const objVar = identifierName(args[0])
+      const worldVar = identifierName(args[1])
+      if (!objVar || !worldVar) return null
+      return { type: 'g3d:raceStep', objVar, worldVar }
+    }
+    case 'raceControl': {
+      const objVar = identifierName(args[0])
+      if (!objVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'g3d:raceControl', objVar, mode: args[1].value as string }
+    }
+    case 'runRivals': {
+      const worldVar = identifierName(args[0])
+      if (!worldVar) return null
+      return { type: 'g3d:runRivals', worldVar }
+    }
+    case 'raceReset': {
+      const objVar = identifierName(args[0])
+      const worldVar = identifierName(args[1])
+      if (!objVar || !worldVar) return null
+      return { type: 'g3d:raceReset', objVar, worldVar }
+    }
     default:
       // createScene/createBox/createSphere/createBlock/createGroup são var-init
       // (tryMatchGame3DVarInit); como chamada solta caem no método genérico.
@@ -2643,6 +2683,32 @@ function tryMatchGame3DVarInit(name: string, init: Node, _ctx: ParseCtx): JSStat
     }
     return { type: 'g3d:createCrosser', varName: name, worldVar, color }
   }
+  if (method === 'createRaceScene') {
+    if (args[0]?.type !== 'StringLiteral') return null
+    return { type: 'g3d:createRaceScene', canvasId: args[0].value as string, varName: name }
+  }
+  if (method === 'createRaceCar') {
+    // generator: const C = SZGame3D.createRaceCar(world, { color: "#fff" })
+    const worldVar = identifierName(args[0])
+    if (!worldVar || args[1]?.type !== 'ObjectExpression') return null
+    let color = '#ffffff'
+    for (const prop of args[1].properties ?? []) {
+      if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+      const key =
+        prop.key?.type === 'Identifier'
+          ? (prop.key.name as string)
+          : prop.key?.type === 'StringLiteral'
+            ? (prop.key.value as string)
+            : null
+      if (key === 'color') {
+        if (prop.value?.type !== 'StringLiteral') return null
+        color = prop.value.value as string
+      } else {
+        return null
+      }
+    }
+    return { type: 'g3d:createRaceCar', varName: name, worldVar, color }
+  }
   return null
 }
 
@@ -2677,6 +2743,26 @@ function matchGame3DExpr(node: Node): JSExpr | null {
   if (method === 'crosserRow') {
     const objVar = identifierName(args[0])
     if (objVar) return { type: 'g3d:crosserRow', objVar }
+  }
+  if (method === 'distanceTo') {
+    const aVar = identifierName(args[0])
+    const bVar = identifierName(args[1])
+    if (aVar && bVar) return { type: 'g3d:distanceTo', aVar, bVar }
+  }
+  if (method === 'isNear') {
+    const aVar = identifierName(args[0])
+    const bVar = identifierName(args[1])
+    const dist = numericLiteralValue(args[2])
+    if (aVar && bVar && dist !== null) return { type: 'g3d:isNear', aVar, bVar, dist }
+  }
+  if (method === 'raceHit') {
+    const objVar = identifierName(args[0])
+    const worldVar = identifierName(args[1])
+    if (objVar && worldVar) return { type: 'g3d:raceHit', objVar, worldVar }
+  }
+  if (method === 'raceLaps') {
+    const objVar = identifierName(args[0])
+    if (objVar) return { type: 'g3d:raceLaps', objVar }
   }
   return null
 }
@@ -3938,6 +4024,10 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'g3d:touchesBox':
     case 'g3d:crosserHit':
     case 'g3d:crosserRow':
+    case 'g3d:distanceTo':
+    case 'g3d:isNear':
+    case 'g3d:raceHit':
+    case 'g3d:raceLaps':
     case 'inputKeyPressed':
     case 'inputPointer':
       return true

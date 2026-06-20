@@ -8,6 +8,8 @@ const KIT_C = '#fb7185'
 // Genéricos de grade/isométrico (azul) e Kit Travessia (verde grama).
 const GRID_C = '#38bdf8'
 const KIT2_C = '#84cc16'
+// Kit Corrida (laranja).
+const RACE_C = '#fb923c'
 
 export const gameThreeDBlocks = [
   {
@@ -539,6 +541,169 @@ export const gameThreeDBlocks = [
     colour: EVENT_C,
     tooltip:
       'Quantas linhas o personagem avançou (a pontuação). Use num "se" ou para mostrar o placar.',
+  },
+
+  // ---- GENÉRICOS: câmera aérea + movimento circular + distância ----
+  {
+    type: 'sz_g3d_top_camera',
+    message0: 'Câmera aérea (de cima) na cena %1 seguindo o objeto %2',
+    args0: [
+      { type: 'field_input', name: 'WORLD', text: 'cena' },
+      { type: 'field_input', name: 'FOLLOW', text: '' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: GRID_C,
+    tooltip:
+      'Vê a cena de cima (vista aérea). Deixe o objeto em branco para a câmera ficar parada mostrando tudo.',
+  },
+  {
+    type: 'sz_g3d_move_in_circle',
+    message0: 'Mover %1 em círculo: raio %2 velocidade %3',
+    args0: [
+      { type: 'field_input', name: 'OBJ', text: 'carro' },
+      { type: 'field_number', name: 'RADIUS', value: 7, min: 0.1 },
+      { type: 'field_number', name: 'SPEED', value: 0.02 },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Faz o objeto girar numa circunferência (centro no meio da cena), virado para a direção do movimento. Use dentro de "A cada frame 3D".',
+  },
+  {
+    type: 'sz_g3d_distance_to',
+    message0: 'a distância entre %1 e %2',
+    args0: [
+      { type: 'field_input', name: 'A', text: 'carro' },
+      { type: 'field_input', name: 'B', text: 'rival' },
+    ],
+    output: 'JSValue',
+    colour: EVENT_C,
+    tooltip: 'A distância entre dois objetos (no chão). Use numa conta ou num "se".',
+  },
+  {
+    type: 'sz_g3d_is_near',
+    message0: 'o objeto %1 está perto de %2 (menos de %3)?',
+    args0: [
+      { type: 'field_input', name: 'A', text: 'carro' },
+      { type: 'field_input', name: 'B', text: 'rival' },
+      { type: 'field_number', name: 'DIST', value: 2, min: 0 },
+    ],
+    output: 'JSValue',
+    colour: EVENT_C,
+    tooltip: 'Verdadeiro quando os dois objetos estão a menos da distância dada. Use num "se".',
+  },
+
+  // ---- Kit Corrida (correr numa pista) ----
+  {
+    type: 'sz_g3d_create_race_scene',
+    message0: 'Criar mundo de corrida no canvas %1 e guardar em %2',
+    args0: [
+      { type: 'field_input', name: 'CANVAS', text: 'pista' },
+      { type: 'field_input', name: 'NAME', text: 'mundo' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: RACE_C,
+    tooltip:
+      'Monta a cena com câmera aérea e luz, pronta para a corrida. Crie um <canvas> no HTML antes.',
+  },
+  {
+    type: 'sz_g3d_create_race_track',
+    message0: 'No mundo %1, criar a pista de corrida',
+    args0: [{ type: 'field_input', name: 'WORLD', text: 'mundo' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: RACE_C,
+    tooltip: 'Cria a pista oval (grama + asfalto + árvores).',
+  },
+  {
+    type: 'sz_g3d_create_race_car',
+    message0: 'Criar carro do jogador no mundo %1 cor %2 e guardar em %3',
+    args0: [
+      { type: 'field_input', name: 'WORLD', text: 'mundo' },
+      { type: 'field_colour', name: 'COLOR', colour: '#ef2d56' },
+      { type: 'field_input', name: 'NAME', text: 'carro' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: RACE_C,
+    tooltip: 'Cria o carro do jogador na largada da pista.',
+  },
+  {
+    type: 'sz_g3d_race_step',
+    message0: 'Dirigir o carro %1 no mundo %2 (a cada frame)',
+    args0: [
+      { type: 'field_input', name: 'OBJ', text: 'carro' },
+      { type: 'field_input', name: 'WORLD', text: 'mundo' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: RACE_C,
+    tooltip:
+      'Dá voltas na pista: ↑ acelera, ↓ freia. Conta as voltas. Use dentro de "A cada frame 3D".',
+  },
+  {
+    type: 'sz_g3d_race_control',
+    message0: 'Carro %1: %2',
+    args0: [
+      { type: 'field_input', name: 'OBJ', text: 'carro' },
+      {
+        type: 'field_dropdown',
+        name: 'MODE',
+        options: [
+          ['acelerar', 'accelerate'],
+          ['frear', 'decelerate'],
+          ['velocidade normal', 'normal'],
+        ],
+      },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: RACE_C,
+    tooltip: 'Muda a marcha do carro (ótimo para botões na tela).',
+  },
+  {
+    type: 'sz_g3d_run_rivals',
+    message0: 'No mundo %1, soltar e mover os carros rivais',
+    args0: [{ type: 'field_input', name: 'WORLD', text: 'mundo' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: RACE_C,
+    tooltip: 'Cria e move carros/caminhões rivais pela pista. Use dentro de "A cada frame 3D".',
+  },
+  {
+    type: 'sz_g3d_race_reset',
+    message0: 'Recomeçar a corrida: carro %1 no mundo %2',
+    args0: [
+      { type: 'field_input', name: 'OBJ', text: 'carro' },
+      { type: 'field_input', name: 'WORLD', text: 'mundo' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: RACE_C,
+    tooltip: 'Volta o carro à largada e limpa os rivais (botão Recomeçar).',
+  },
+  {
+    type: 'sz_g3d_race_hit',
+    message0: 'o carro %1 bateu num rival? (mundo %2)',
+    args0: [
+      { type: 'field_input', name: 'OBJ', text: 'carro' },
+      { type: 'field_input', name: 'WORLD', text: 'mundo' },
+    ],
+    output: 'JSValue',
+    colour: EVENT_C,
+    tooltip: 'Verdadeiro quando o carro encosta num rival. Use num "se" para mostrar o fim de jogo.',
+  },
+  {
+    type: 'sz_g3d_race_laps',
+    message0: 'as voltas (pontuação) do carro %1',
+    args0: [{ type: 'field_input', name: 'OBJ', text: 'carro' }],
+    output: 'JSValue',
+    colour: EVENT_C,
+    tooltip:
+      'Quantas voltas o carro completou (a pontuação). Use num "se" ou para mostrar o placar.',
   },
 ]
 

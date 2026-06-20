@@ -84,6 +84,11 @@ export type JSExpr =
   | (JSExprCommon & { type: 'g3d:crosserRow'; objVar: string })
   // Game 3D — genérico: objeto encosta em algum de um grupo (caixa real Box3).
   | (JSExprCommon & { type: 'g3d:touchesBox'; objVar: string; groupVar: string })
+  // Game 3D — Corrida/genérico: distância, proximidade, bateu num rival?, voltas.
+  | (JSExprCommon & { type: 'g3d:distanceTo'; aVar: string; bVar: string })
+  | (JSExprCommon & { type: 'g3d:isNear'; aVar: string; bVar: string; dist: number })
+  | (JSExprCommon & { type: 'g3d:raceHit'; objVar: string; worldVar: string })
+  | (JSExprCommon & { type: 'g3d:raceLaps'; objVar: string })
   // Entrada (caminho "na mão"): tecla apertada (bool) e posição do ponteiro (núm).
   | (JSExprCommon & { type: 'inputKeyPressed'; key: string })
   | (JSExprCommon & { type: 'inputPointer'; axis: 'x' | 'y' })
@@ -232,6 +237,16 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
       groupVar: irText(),
       ...idField,
     }),
+    z.object({ type: z.literal('g3d:distanceTo'), aVar: irText(), bVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3d:isNear'),
+      aVar: irText(),
+      bVar: irText(),
+      dist: z.number(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3d:raceHit'), objVar: irText(), worldVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:raceLaps'), objVar: irText(), ...idField }),
     z.object({ type: z.literal('inputKeyPressed'), key: irText(), ...idField }),
     z.object({ type: z.literal('inputPointer'), axis: z.enum(['x', 'y']), ...idField }),
     z.object({
@@ -1373,6 +1388,26 @@ export type JSStatement =
       min: number
       max: number
     })
+  // ---- Game 3D — câmera aérea + movimento circular (genéricos) e Kit Corrida ----
+  | (JSStatementCommon & { type: 'g3d:topCamera'; worldVar: string; followVar: string })
+  | (JSStatementCommon & {
+      type: 'g3d:moveInCircle'
+      objVar: string
+      radius: number
+      speed: number
+    })
+  | (JSStatementCommon & { type: 'g3d:createRaceScene'; canvasId: string; varName: string })
+  | (JSStatementCommon & { type: 'g3d:createRaceTrack'; worldVar: string })
+  | (JSStatementCommon & {
+      type: 'g3d:createRaceCar'
+      varName: string
+      worldVar: string
+      color: string
+    })
+  | (JSStatementCommon & { type: 'g3d:raceStep'; objVar: string; worldVar: string })
+  | (JSStatementCommon & { type: 'g3d:raceControl'; objVar: string; mode: string })
+  | (JSStatementCommon & { type: 'g3d:runRivals'; worldVar: string })
+  | (JSStatementCommon & { type: 'g3d:raceReset'; objVar: string; worldVar: string })
   // Orientação a objetos
   | (JSStatementCommon & {
       type: 'classDecl'
@@ -2545,6 +2580,32 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       max: z.number(),
       ...idField,
     }),
+    z.object({ type: z.literal('g3d:topCamera'), worldVar: irText(), followVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3d:moveInCircle'),
+      objVar: irText(),
+      radius: z.number(),
+      speed: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:createRaceScene'),
+      canvasId: irText(),
+      varName: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3d:createRaceTrack'), worldVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3d:createRaceCar'),
+      varName: irText(),
+      worldVar: irText(),
+      color: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3d:raceStep'), objVar: irText(), worldVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:raceControl'), objVar: irText(), mode: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:runRivals'), worldVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:raceReset'), objVar: irText(), worldVar: irText(), ...idField }),
     z.object({
       type: z.literal('g2d:updateEachFrame'),
       body: z.array(JSStatementSchema),
@@ -2874,6 +2935,15 @@ export const G3D_STATEMENT_TYPES = new Set([
   'g3d:gridStep',
   'g3d:gridMove',
   'g3d:moveAcross',
+  'g3d:topCamera',
+  'g3d:moveInCircle',
+  'g3d:createRaceScene',
+  'g3d:createRaceTrack',
+  'g3d:createRaceCar',
+  'g3d:raceStep',
+  'g3d:raceControl',
+  'g3d:runRivals',
+  'g3d:raceReset',
 ])
 
 export function statementIsExtension(stmt: JSStatement, extensionId: string): boolean {

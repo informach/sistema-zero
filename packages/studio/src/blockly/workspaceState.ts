@@ -1864,6 +1864,44 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         COL: col,
       })
     }
+    case 'g3d:topCamera':
+      return block(
+        'sz_g3d_top_camera',
+        { WORLD: stmt.worldVar, FOLLOW: stmt.followVar },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:moveInCircle':
+      return block(
+        'sz_g3d_move_in_circle',
+        { OBJ: stmt.objVar, RADIUS: stmt.radius, SPEED: stmt.speed },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:createRaceScene':
+      return block(
+        'sz_g3d_create_race_scene',
+        { CANVAS: stmt.canvasId, NAME: stmt.varName },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:createRaceTrack':
+      return block('sz_g3d_create_race_track', { WORLD: stmt.worldVar }, {}, stmt.__id)
+    case 'g3d:createRaceCar':
+      return block(
+        'sz_g3d_create_race_car',
+        { NAME: stmt.varName, WORLD: stmt.worldVar, COLOR: stmt.color },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:raceStep':
+      return block('sz_g3d_race_step', { OBJ: stmt.objVar, WORLD: stmt.worldVar }, {}, stmt.__id)
+    case 'g3d:raceControl':
+      return block('sz_g3d_race_control', { OBJ: stmt.objVar, MODE: stmt.mode }, {}, stmt.__id)
+    case 'g3d:runRivals':
+      return block('sz_g3d_run_rivals', { WORLD: stmt.worldVar }, {}, stmt.__id)
+    case 'g3d:raceReset':
+      return block('sz_g3d_race_reset', { OBJ: stmt.objVar, WORLD: stmt.worldVar }, {}, stmt.__id)
     case 'classDecl': {
       const members: SerializedBlocklyBlock[] = []
       // Construtor só vira bloco se há parâmetros ou corpo (espelha o gerador).
@@ -2122,6 +2160,14 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_g3d_crosser_row', { OBJ: expr.objVar })
     case 'g3d:touchesBox':
       return block('sz_g3d_touches_box', { OBJ: expr.objVar, GROUP: expr.groupVar })
+    case 'g3d:distanceTo':
+      return block('sz_g3d_distance_to', { A: expr.aVar, B: expr.bVar })
+    case 'g3d:isNear':
+      return block('sz_g3d_is_near', { A: expr.aVar, B: expr.bVar, DIST: expr.dist })
+    case 'g3d:raceHit':
+      return block('sz_g3d_race_hit', { OBJ: expr.objVar, WORLD: expr.worldVar })
+    case 'g3d:raceLaps':
+      return block('sz_g3d_race_laps', { OBJ: expr.objVar })
     case 'inputKeyPressed':
       return block('sz_input_key_pressed', { KEY: expr.key })
     case 'inputPointer':

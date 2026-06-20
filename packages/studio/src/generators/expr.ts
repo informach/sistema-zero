@@ -241,6 +241,14 @@ export function compileExpr(
       return `SZGame3D.crosserRow(${identifiers.get(expr.objVar)})`
     case 'g3d:touchesBox':
       return `SZGame3D.touchesBox(${identifiers.get(expr.objVar)}, ${identifiers.get(expr.groupVar)})`
+    case 'g3d:distanceTo':
+      return `SZGame3D.distanceTo(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
+    case 'g3d:isNear':
+      return `SZGame3D.isNear(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)}, ${expr.dist})`
+    case 'g3d:raceHit':
+      return `SZGame3D.raceHit(${identifiers.get(expr.objVar)}, ${identifiers.get(expr.worldVar)})`
+    case 'g3d:raceLaps':
+      return `SZGame3D.raceLaps(${identifiers.get(expr.objVar)})`
     case 'inputKeyPressed':
       return `__szInput.key(${JSON.stringify(expr.key)})`
     case 'inputPointer':
