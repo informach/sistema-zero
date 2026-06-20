@@ -105,4 +105,16 @@ KIT ESPAÇO (v0.7.0) — categoria "🚀 Kit espaço" com atalhos PRONTOS (não 
 - drawStarfield(ctx, velocidade): fundo espacial (gradiente + estrelas que cintilam/rolam) — chame logo após clear().
 - explodeSprite(sprite, "cor"): explosão de partículas no centro do sprite. playShoot()/playExplosion(): sons de tiro e explosão.
 - overlapSpriteGroup(() => nave, grupo, (item) => {…}): genérico — para cada sprite do grupo que encosta na nave, roda o corpo (ex.: tirar vida). Use no gameLoop.
+
+PULO NO CHÃO (genérico, v0.9.0) — para jogos de corrida/pulo SEM andar para os lados:
+- jumpOnGround(sprite, ctx, força): aplica gravidade, pousa o sprite na BASE da tela e pula com ↑/Espaço/W OU um toque. Use dentro do gameLoop. Bloco "Fazer o sprite pular no chão". Diferente do platformer (que também anda esquerda/direita).
+
+KIT DINO (v0.9.0) — categoria "🦕 Kit dino" com atalhos PRONTOS (não genéricos) para um jogo de corrida estilo "Dino Run"; os blocos genéricos seguem nas categorias normais:
+- createDino({ x, y, size, color }): dinossauro desenhado (perninhas que correm sozinhas; a pose muda no pulo/agachar). É um sprite normal (drawSprite desenha o dino).
+- controlDino(dino, ctx, força): controla o dino estilo corrida — pula com ↑/Espaço ou toque na metade de CIMA; abaixa com ↓ ou segurando o dedo embaixo. Já vem com gravidade, chão (linha um pouco acima da base, sobre a grama) e poeira. Use no gameLoop.
+- spawnObstacle(grupo, ctx, { type, x, size, vx }): coloca no grupo um obstáculo desenhado. type = 'cactus'/'rock' (no chão, pule por cima), 'bird' (no alto, abaixe por baixo) ou 'random' (sorteia). O y é automático pelo tipo; ligue x na borda direita e vx negativo. updateGroup/drawGroup tratam como sprite normal.
+- spawnEgg(grupo, { x, y, vx }): coloca no grupo um OVO (item de bônus). Quando o dino encosta, dê pontos extras e remova o ovo.
+- drawForest(ctx, velocidade): fundo de FLORESTA com parallax (céu, sol, nuvens, morros e grama que rola) — chame logo após clear(). O dino corre sobre a grama.
+- playJump()/playDinoHurt()/playCollect(): sons de pulo, dano e coletar (sintetizados).
+- Recorde que PERSISTE: use os blocos genéricos de armazenamento (storageSet/storageGet, localStorage) — não há bloco específico de recorde. Existe o exemplo pronto "Dino Run" mostrando tudo junto.
 `

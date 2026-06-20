@@ -1534,6 +1534,58 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         { BODY: statementsToBlocks(stmt.body) },
         stmt.__id,
       )
+    case 'g2d:jumpOnGround':
+      return block(
+        'sz_g2d_jump_on_ground',
+        { SPRITE: stmt.spriteVar, JUMP: stmt.jump },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:createDino':
+      return block(
+        'sz_g2d_create_dino',
+        { NAME: stmt.varName, X: stmt.x, Y: stmt.y, SIZE: stmt.size, COLOR: stmt.color },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:controlDino':
+      return block(
+        'sz_g2d_control_dino',
+        { SPRITE: stmt.spriteVar, JUMP: stmt.jump },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:spawnObstacle': {
+      const x = exprToValueBlock(stmt.x)
+      const vx = exprToValueBlock(stmt.vx)
+      if (!x || !vx) return rawJSBlock(stmt)
+      return block(
+        'sz_g2d_spawn_obstacle',
+        { GROUP: stmt.groupVar, SHAPE: stmt.shape, SIZE: stmt.size },
+        {},
+        stmt.__id,
+        { X: x, VX: vx },
+      )
+    }
+    case 'g2d:spawnEgg': {
+      const x = exprToValueBlock(stmt.x)
+      const y = exprToValueBlock(stmt.y)
+      const vx = exprToValueBlock(stmt.vx)
+      if (!x || !y || !vx) return rawJSBlock(stmt)
+      return block('sz_g2d_spawn_egg', { GROUP: stmt.groupVar }, {}, stmt.__id, {
+        X: x,
+        Y: y,
+        VX: vx,
+      })
+    }
+    case 'g2d:forest':
+      return block('sz_g2d_forest', { SPEED: stmt.speed }, {}, stmt.__id)
+    case 'g2d:playJump':
+      return block('sz_g2d_play_jump', {}, {}, stmt.__id)
+    case 'g2d:playDinoHurt':
+      return block('sz_g2d_play_dino_hurt', {}, {}, stmt.__id)
+    case 'g2d:playCollect':
+      return block('sz_g2d_play_collect', {}, {}, stmt.__id)
     case 'g3d:createScene':
       return block(
         'sz_g3d_create_scene',

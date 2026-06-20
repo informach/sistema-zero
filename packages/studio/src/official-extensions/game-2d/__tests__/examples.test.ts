@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import { compileStatements } from '#generators'
 import { SZIRSchema } from '#ir'
-import { asteroidsExample, pongExample } from '../examples'
+import { asteroidsExample, dinoRunExample, pongExample } from '../examples'
 import { gameTwoDExtension } from '../index'
 
 describe('game-2d — definição da extensão', () => {
@@ -55,5 +55,29 @@ describe('asteroidsExample (game-2d) — perf do SZIRSchema', () => {
     expect(code).toContain('bola.vx = Math.abs(bola.vx)')
     // A física crua antiga (integração manual da velocidade) sumiu.
     expect(code).not.toContain('bola.x += bola.vx')
+  })
+})
+
+describe('dinoRunExample (game-2d) — Kit dino', () => {
+  it('tem IR válido contra o SZIRSchema', () => {
+    expect(SZIRSchema.safeParse(dinoRunExample.ir).success).toBe(true)
+  })
+
+  it('NÃO usa bloco de código avançado (rawJS) — tudo vira bloco', () => {
+    expect(collectTypes(dinoRunExample.ir).has('rawJS')).toBe(false)
+  })
+
+  it('gera as chamadas do Kit dino + recorde persistente (localStorage)', () => {
+    const code = compileStatements(dinoRunExample.ir.js, 0)
+    expect(code).toContain('SZGame2D.createDino(')
+    expect(code).toContain('SZGame2D.controlDino(dino, ctx, 15)')
+    expect(code).toContain('SZGame2D.spawnObstacle(obstaculos, ctx,')
+    expect(code).toContain('SZGame2D.spawnEgg(ovos,')
+    expect(code).toContain('SZGame2D.drawForest(ctx, 5)')
+    expect(code).toContain('SZGame2D.playDinoHurt()')
+    expect(code).toContain('SZGame2D.playCollect()')
+    // recorde persiste com os blocos genéricos de armazenamento (sem bloco novo).
+    expect(code).toContain('localStorage.getItem("dinoRecorde")')
+    expect(code).toContain('localStorage.setItem("dinoRecorde"')
   })
 })

@@ -1139,6 +1139,47 @@ export type JSStatement =
       itemName: string
       body: JSStatement[]
     })
+  // ---- Pulo genérico + Kit dino (v0.9.0) ----
+  | (JSStatementCommon & {
+      type: 'g2d:jumpOnGround'
+      spriteVar: string
+      ctxVar: string
+      jump: number
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:createDino'
+      varName: string
+      x: number
+      y: number
+      size: number
+      color: string
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:controlDino'
+      spriteVar: string
+      ctxVar: string
+      jump: number
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:spawnObstacle'
+      groupVar: string
+      ctxVar: string
+      shape: string
+      x: JSExpr
+      size: number
+      vx: JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:spawnEgg'
+      groupVar: string
+      x: JSExpr
+      y: JSExpr
+      vx: JSExpr
+    })
+  | (JSStatementCommon & { type: 'g2d:forest'; ctxVar: string; speed: number })
+  | (JSStatementCommon & { type: 'g2d:playJump' })
+  | (JSStatementCommon & { type: 'g2d:playDinoHurt' })
+  | (JSStatementCommon & { type: 'g2d:playCollect' })
   // ---- Game 3D (extensão game-3d, Three.js via window.SZGame3D) ----
   | (JSStatementCommon & { type: 'g3d:createScene'; canvasId: string; varName: string })
   | (JSStatementCommon & { type: 'g3d:setBackground'; worldVar: string; color: string })
@@ -2068,6 +2109,56 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('g2d:jumpOnGround'),
+      spriteVar: irText(),
+      ctxVar: irText(),
+      jump: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:createDino'),
+      varName: irText(),
+      x: z.number(),
+      y: z.number(),
+      size: z.number(),
+      color: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:controlDino'),
+      spriteVar: irText(),
+      ctxVar: irText(),
+      jump: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:spawnObstacle'),
+      groupVar: irText(),
+      ctxVar: irText(),
+      shape: irText(),
+      x: JSExprSchema,
+      size: z.number(),
+      vx: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:spawnEgg'),
+      groupVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      vx: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:forest'),
+      ctxVar: irText(),
+      speed: z.number(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:playJump'), ...idField }),
+    z.object({ type: z.literal('g2d:playDinoHurt'), ...idField }),
+    z.object({ type: z.literal('g2d:playCollect'), ...idField }),
+    z.object({
       type: z.literal('g3d:createScene'),
       canvasId: irText(),
       varName: irText(),
@@ -2392,6 +2483,15 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:playShoot',
   'g2d:playExplosion',
   'g2d:onSpriteGroupOverlap',
+  'g2d:jumpOnGround',
+  'g2d:createDino',
+  'g2d:controlDino',
+  'g2d:spawnObstacle',
+  'g2d:spawnEgg',
+  'g2d:forest',
+  'g2d:playJump',
+  'g2d:playDinoHurt',
+  'g2d:playCollect',
 ])
 
 export const G3D_STATEMENT_TYPES = new Set([

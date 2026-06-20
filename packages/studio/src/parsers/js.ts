@@ -1383,6 +1383,93 @@ function readAsteroidOptions(
   return out
 }
 
+/**
+ * Lê `{ x, y, size, color }` de `SZGame2D.createDino({...})`. x/y/size números;
+ * color string. null se alguma chave não casar.
+ */
+function readDinoOptions(obj: Node): { x: number; y: number; size: number; color: string } | null {
+  const out = { x: 0, y: 0, size: 64, color: '#5fb45f' }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'x' || key === 'y' || key === 'size') {
+      const v = numericLiteralValue(prop.value)
+      if (v === null) return null
+      out[key] = v
+    } else if (key === 'color') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      out.color = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return out
+}
+
+/**
+ * Lê `{ type, x, size, vx }` de `SZGame2D.spawnObstacle(g, ctx, {...})`. x/vx são
+ * expressões; size número; type string. null se alguma chave não casar.
+ */
+function readObstacleOptions(
+  obj: Node,
+  ctx: ParseCtx,
+): { shape: string; x: JSExpr; vx: JSExpr; size: number } | null {
+  const num0: JSExpr = { type: 'num', value: 0 }
+  const out = { shape: 'cactus', x: num0 as JSExpr, vx: num0 as JSExpr, size: 44 }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'x' || key === 'vx') {
+      const v = toExpr(prop.value, ctx)
+      if (!isSimpleValue(v)) return null
+      out[key] = v
+    } else if (key === 'size') {
+      const v = numericLiteralValue(prop.value)
+      if (v === null) return null
+      out.size = v
+    } else if (key === 'type') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      out.shape = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return out
+}
+
+/** Lê `{ x, y, vx }` de `SZGame2D.spawnEgg(g, {...})`. Todas expressões simples. */
+function readEggOptions(obj: Node, ctx: ParseCtx): { x: JSExpr; y: JSExpr; vx: JSExpr } | null {
+  const num0: JSExpr = { type: 'num', value: 0 }
+  const out = { x: num0 as JSExpr, y: num0 as JSExpr, vx: num0 as JSExpr }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'x' || key === 'y' || key === 'vx') {
+      const v = toExpr(prop.value, ctx)
+      if (!isSimpleValue(v)) return null
+      out[key] = v
+    } else {
+      return null
+    }
+  }
+  return out
+}
+
 /** Lê { x, y, radius, color, vx, vy } do SZGame2D.spawnBullet(g, {...}). */
 function readBulletOptions(
   obj: Node,
@@ -1870,6 +1957,61 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       return { type: 'g2d:playShoot' }
     case 'playExplosion':
       return { type: 'g2d:playExplosion' }
+    case 'jumpOnGround': {
+      // generator: SZGame2D.jumpOnGround(sprite, ctx, jump)
+      const spriteVar = identifierName(args[0])
+      const ctxVar = identifierName(args[1])
+      const jump = numericLiteralValue(args[2])
+      return spriteVar && ctxVar && jump !== null
+        ? { type: 'g2d:jumpOnGround', spriteVar, ctxVar, jump }
+        : null
+    }
+    case 'controlDino': {
+      // generator: SZGame2D.controlDino(sprite, ctx, jump)
+      const spriteVar = identifierName(args[0])
+      const ctxVar = identifierName(args[1])
+      const jump = numericLiteralValue(args[2])
+      return spriteVar && ctxVar && jump !== null
+        ? { type: 'g2d:controlDino', spriteVar, ctxVar, jump }
+        : null
+    }
+    case 'spawnObstacle': {
+      // generator: SZGame2D.spawnObstacle(group, ctx, { type, x, size, vx })
+      const groupVar = identifierName(args[0])
+      const ctxVar = identifierName(args[1])
+      if (!groupVar || !ctxVar || args[2]?.type !== 'ObjectExpression') return null
+      const o = readObstacleOptions(args[2], ctx)
+      if (!o) return null
+      return {
+        type: 'g2d:spawnObstacle',
+        groupVar,
+        ctxVar,
+        shape: o.shape,
+        x: o.x,
+        size: o.size,
+        vx: o.vx,
+      }
+    }
+    case 'spawnEgg': {
+      // generator: SZGame2D.spawnEgg(group, { x, y, vx })
+      const groupVar = identifierName(args[0])
+      if (!groupVar || args[1]?.type !== 'ObjectExpression') return null
+      const o = readEggOptions(args[1], ctx)
+      if (!o) return null
+      return { type: 'g2d:spawnEgg', groupVar, x: o.x, y: o.y, vx: o.vx }
+    }
+    case 'drawForest': {
+      // generator: SZGame2D.drawForest(ctx, speed)
+      const ctxVar = identifierName(args[0])
+      const speed = numericLiteralValue(args[1])
+      return ctxVar && speed !== null ? { type: 'g2d:forest', ctxVar, speed } : null
+    }
+    case 'playJump':
+      return { type: 'g2d:playJump' }
+    case 'playDinoHurt':
+      return { type: 'g2d:playDinoHurt' }
+    case 'playCollect':
+      return { type: 'g2d:playCollect' }
     case 'overlapSpriteGroup': {
       // generator: SZGame2D.overlapSpriteGroup(() => sprite, grupo, function (item) {…})
       const spriteVar = arrowReturnIdentifier(args[0])
@@ -1938,6 +2080,14 @@ function tryMatchGame2DVarInit(name: string, init: Node, ctx: ParseCtx): JSState
       bodyColor: o.body,
       wingColor: o.wings,
     }
+  }
+  if (method === 'createDino') {
+    // generator: const dino = SZGame2D.createDino({ x, y, size, color })
+    if (args[0]?.type !== 'ObjectExpression') return null
+    const o = readDinoOptions(args[0])
+    if (!o) return null
+    ctx.spriteVars.add(name)
+    return { type: 'g2d:createDino', varName: name, x: o.x, y: o.y, size: o.size, color: o.color }
   }
   if (method === 'loadSpriteSheet') {
     // generator: const v = SZGame2D.loadSpriteSheet('nome', fw, fh)

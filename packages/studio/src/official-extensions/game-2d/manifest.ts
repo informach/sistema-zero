@@ -2,6 +2,7 @@ import type { ExtensionManifest } from '#extensions'
 import {
   animatedHeroExample,
   asteroidsExample,
+  dinoRunExample,
   platformerExample,
   pongExample,
   tilemapExample,
@@ -10,9 +11,9 @@ import {
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.8.0',
+  version: '0.9.0',
   description:
-    'Blocos para criar jogos 2D no Canvas: sprites (cor/imagem/animação), grupos de MUITOS sprites com spawner e colisão de grupo, movimento, física, efeitos (clarão, tremor, partículas), tiles/tilemaps, HUD (placar/vidas/barra), telas/cenas, som, e KITS por tema — o 1º é o Kit espaço (nave, asteroides, estrelas, explosões e sons).',
+    'Blocos para criar jogos 2D no Canvas: sprites (cor/imagem/animação), grupos de MUITOS sprites com spawner e colisão de grupo, movimento, física, efeitos (clarão, tremor, partículas), tiles/tilemaps, HUD (placar/vidas/barra), telas/cenas, som, e KITS por tema — Kit espaço (nave, asteroides, estrelas, explosões e sons) e Kit dino (dinossauro que corre/pula/abaixa, obstáculos, ovos de bônus e fundo de floresta com parallax).',
   category: 'games',
   official: true,
   enabledByDefault: false,
@@ -126,7 +127,28 @@ a ideia é ir somando KITS de outros temas (corrida, fazenda…).
 
 O bloco **Fazer a tela preencher N% da janela** (genérico) deixa o canvas grande, nítido e responsivo: ocupa quase toda a janela e se reajusta sozinho quando ela muda de tamanho, mantendo a proporção. As coordenadas do jogo continuam as mesmas, mas o desenho passa a ser feito na resolução REAL da tela — fica grande E nítido (sem borrar), em qualquer tamanho.
 
-Veja o exemplo **"Nave contra Asteroides"** para um jogo de tiro completo montado só com blocos.
+### Pulo no chão e Kit dino (v0.9.0)
+
+Para jogos de **corrida** (estilo "Dino Run"), em que o personagem não anda para os lados, só pula e abaixa:
+
+- **Fazer o sprite pular no chão** (genérico, em Movimento) — gravidade + pouso na base da tela + pulo
+  com ↑/Espaço/W ou um toque. Serve a qualquer jogo de pulo.
+- A categoria **🦕 Kit dino** reúne atalhos PRONTOS: **criar dinossauro** (desenhado, com perninhas que
+  correm sozinhas), **controlar o dinossauro** (pula e abaixa, com gravidade/chão/poeira já embutidos),
+  **criar obstáculo no grupo** (cacto/pedra no chão para pular, pássaro no alto para abaixar, ou sorteado),
+  **criar ovo de bônus no grupo** (item para coletar), **desenhar fundo de floresta** (céu, sol, nuvens,
+  morros e grama que rola — parallax), e **sons** de pulo, dano e coletar.
+- O **recorde** (maior pontuação) que persiste entre partidas usa os blocos genéricos de armazenamento
+  (\`localStorage\`), não precisa de bloco novo.
+
+Veja o exemplo **"Nave contra Asteroides"** para um jogo de tiro e **"Dino Run"** para um jogo de corrida — ambos completos, montados só com blocos.
 `,
-  examples: [pongExample, animatedHeroExample, platformerExample, tilemapExample, asteroidsExample],
+  examples: [
+    pongExample,
+    animatedHeroExample,
+    platformerExample,
+    tilemapExample,
+    asteroidsExample,
+    dinoRunExample,
+  ],
 }

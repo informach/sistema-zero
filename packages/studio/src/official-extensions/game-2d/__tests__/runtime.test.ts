@@ -63,6 +63,129 @@ describe('gameTwoDRuntime', () => {
   })
 })
 
+describe('gameTwoDRuntime — Kit dino + pulo no chão (v0.9.0)', () => {
+  interface DinoSprite {
+    x: number
+    y: number
+    w: number
+    h: number
+    color: string
+    vy: number
+    skin: { kind: string; shape?: string; fullH?: number; onGround?: boolean }
+  }
+  interface DinoGroup {
+    items: DinoSprite[]
+  }
+  interface DinoSZ {
+    createDino(o: { x: number; y: number; size: number; color: string }): DinoSprite
+    controlDino(s: DinoSprite, ctx: unknown, jump: number): void
+    jumpOnGround(s: unknown, ctx: unknown, jump: number): void
+    spawnObstacle(
+      g: DinoGroup,
+      ctx: unknown,
+      o: { type: string; x: number; size: number; vx: number },
+    ): DinoSprite
+    spawnEgg(g: DinoGroup, o: { x: number; y: number; vx: number }): DinoSprite
+    drawForest(ctx: unknown, speed: number): void
+    drawSprite(ctx: unknown, s: unknown): void
+    createGroup(): DinoGroup
+    createSprite(o: Partial<DinoSprite>): DinoSprite
+  }
+
+  function dinoApi(): DinoSZ {
+    return loadRuntime().SZGame2D as unknown as DinoSZ
+  }
+
+  // ctx falso "tudo no-op" (Proxy): cobre createLinearGradient/ellipse/roundRect…
+  // sem mockar cada método. `canvas` devolve as dimensões lógicas do palco.
+  function fakeDinoCtx(w = 480, h = 270): unknown {
+    const noop = () => ({ addColorStop() {} })
+    return new Proxy(
+      {},
+      {
+        get(_t, prop) {
+          if (prop === 'canvas') return { width: w, height: h }
+          return noop
+        },
+        set() {
+          return true
+        },
+      },
+    )
+  }
+
+  it('expõe as funções do kit dino e do pulo genérico', () => {
+    const sz = loadRuntime().SZGame2D as unknown as Record<string, unknown>
+    for (const fn of [
+      'jumpOnGround',
+      'createDino',
+      'controlDino',
+      'spawnObstacle',
+      'spawnEgg',
+      'drawForest',
+      'playJump',
+      'playDinoHurt',
+      'playCollect',
+    ]) {
+      expect(typeof sz[fn]).toBe('function')
+    }
+  })
+
+  it('createDino cria um sprite com skin de dino', () => {
+    const d = dinoApi().createDino({ x: 10, y: 20, size: 64, color: '#5fb45f' })
+    expect(d.skin.kind).toBe('dino')
+    expect(d.skin.fullH).toBe(64)
+    expect(d.h).toBe(64)
+    expect(d.color).toBe('#5fb45f')
+  })
+
+  it('spawnObstacle põe o obstáculo no grupo; o pássaro nasce mais alto que o cacto', () => {
+    const sz = dinoApi()
+    const ctx = fakeDinoCtx()
+    const g = sz.createGroup()
+    const cacto = sz.spawnObstacle(g, ctx, { type: 'cactus', x: 500, size: 44, vx: -6 })
+    const passaro = sz.spawnObstacle(g, ctx, { type: 'bird', x: 500, size: 44, vx: -6 })
+    expect(g.items.length).toBe(2)
+    expect(cacto.skin.kind).toBe('obstacle')
+    expect(cacto.skin.shape).toBe('cactus')
+    expect(passaro.skin.shape).toBe('bird')
+    expect(passaro.y).toBeLessThan(cacto.y)
+  })
+
+  it('spawnEgg põe um ovo (bônus) no grupo', () => {
+    const sz = dinoApi()
+    const g = sz.createGroup()
+    const ovo = sz.spawnEgg(g, { x: 500, y: 115, vx: -6 })
+    expect(g.items.length).toBe(1)
+    expect(ovo.skin.kind).toBe('egg')
+  })
+
+  it('drawSprite desenha dino/obstáculo/ovo e drawForest roda sem lançar', () => {
+    const sz = dinoApi()
+    const ctx = fakeDinoCtx()
+    const g = sz.createGroup()
+    const dino = sz.createDino({ x: 0, y: 0, size: 64, color: '#5fb45f' })
+    const cacto = sz.spawnObstacle(g, ctx, { type: 'cactus', x: 10, size: 44, vx: -6 })
+    const passaro = sz.spawnObstacle(g, ctx, { type: 'bird', x: 10, size: 44, vx: -6 })
+    const ovo = sz.spawnEgg(g, { x: 10, y: 10, vx: -6 })
+    expect(() => sz.drawSprite(ctx, dino)).not.toThrow()
+    expect(() => sz.drawSprite(ctx, cacto)).not.toThrow()
+    expect(() => sz.drawSprite(ctx, passaro)).not.toThrow()
+    expect(() => sz.drawSprite(ctx, ovo)).not.toThrow()
+    expect(() => sz.drawForest(ctx, 5)).not.toThrow()
+  })
+
+  it('controlDino aplica gravidade e pousa na linha do chão (não atravessa o piso)', () => {
+    const sz = dinoApi()
+    const ctx = fakeDinoCtx(480, 270)
+    const dino = sz.createDino({ x: 100, y: 0, size: 64, color: '#5fb45f' })
+    for (let i = 0; i < 200; i++) sz.controlDino(dino, ctx, 15)
+    // chão do dino = 270 - round(270*0.16) = 227; os pés (y+h) param em 227.
+    expect(dino.y + dino.h).toBe(227)
+    expect(dino.skin.onGround).toBe(true)
+  })
+})
+
 describe('gameTwoDRuntime — palco implícito (ctx escondido)', () => {
   it('expõe SZGame2D.clear() e o global lazy "ctx" sem lançar', () => {
     const win = loadRuntime() as unknown as {

@@ -939,6 +939,24 @@ function compileStatementCode(
       )
       return `${pad}SZGame2D.overlapSpriteGroup(() => ${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.groupVar)}, function (${identifiers.get(stmt.itemName)}) {\n${body}\n${pad}});`
     }
+    case 'g2d:jumpOnGround':
+      return `${pad}SZGame2D.jumpOnGround(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.ctxVar)}, ${stmt.jump});`
+    case 'g2d:createDino':
+      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createDino({ x: ${stmt.x}, y: ${stmt.y}, size: ${stmt.size}, color: ${JSON.stringify(stmt.color)} });`
+    case 'g2d:controlDino':
+      return `${pad}SZGame2D.controlDino(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.ctxVar)}, ${stmt.jump});`
+    case 'g2d:spawnObstacle':
+      return `${pad}SZGame2D.spawnObstacle(${identifiers.get(stmt.groupVar)}, ${identifiers.get(stmt.ctxVar)}, { type: ${JSON.stringify(stmt.shape)}, x: ${compileExpr(stmt.x, 0, identifiers, recAt(base))}, size: ${stmt.size}, vx: ${compileExpr(stmt.vx, 0, identifiers, recAt(base))} });`
+    case 'g2d:spawnEgg':
+      return `${pad}SZGame2D.spawnEgg(${identifiers.get(stmt.groupVar)}, { x: ${compileExpr(stmt.x, 0, identifiers, recAt(base))}, y: ${compileExpr(stmt.y, 0, identifiers, recAt(base))}, vx: ${compileExpr(stmt.vx, 0, identifiers, recAt(base))} });`
+    case 'g2d:forest':
+      return `${pad}SZGame2D.drawForest(${identifiers.get(stmt.ctxVar)}, ${stmt.speed});`
+    case 'g2d:playJump':
+      return `${pad}SZGame2D.playJump();`
+    case 'g2d:playDinoHurt':
+      return `${pad}SZGame2D.playDinoHurt();`
+    case 'g2d:playCollect':
+      return `${pad}SZGame2D.playCollect();`
     case 'g2d:updateEachFrame': {
       const body = compileStatements(
         stmt.body,
@@ -1689,10 +1707,36 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       names.add(stmt.itemName)
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
+    case 'g2d:jumpOnGround':
+    case 'g2d:controlDino':
+      names.add(stmt.spriteVar)
+      names.add(stmt.ctxVar)
+      return
+    case 'g2d:createDino':
+      names.add(stmt.varName)
+      return
+    case 'g2d:spawnObstacle':
+      names.add(stmt.groupVar)
+      names.add(stmt.ctxVar)
+      collectExprIdentifiers(stmt.x, names)
+      collectExprIdentifiers(stmt.vx, names)
+      return
+    case 'g2d:spawnEgg':
+      names.add(stmt.groupVar)
+      collectExprIdentifiers(stmt.x, names)
+      collectExprIdentifiers(stmt.y, names)
+      collectExprIdentifiers(stmt.vx, names)
+      return
+    case 'g2d:forest':
+      names.add(stmt.ctxVar)
+      return
     case 'g2d:setScene':
     case 'g2d:restart':
     case 'g2d:playShoot':
     case 'g2d:playExplosion':
+    case 'g2d:playJump':
+    case 'g2d:playDinoHurt':
+    case 'g2d:playCollect':
     case 'g2d:fitScreen':
       return
     case 'g2d:createImageSprite':

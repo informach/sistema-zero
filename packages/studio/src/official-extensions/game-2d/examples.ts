@@ -556,3 +556,294 @@ export const asteroidsExample: ExtensionExample = {
     extensions: [{ extensionId: 'game-2d' }],
   },
 }
+
+/**
+ * Exemplo bundlado: "Dino Run" (Kit dino, v0.9.0). Jogo de corrida: o dinossauro
+ * corre, pula os obstáculos do chão (cacto/pedra), abaixa do pássaro, pega ovos
+ * de bônus e tem vidas, pontos e RECORDE que persiste (localStorage). Telas de
+ * início e fim. Mostra o Kit dino + pulo no chão + grupos + HUD + cenas juntos.
+ */
+export const dinoRunExample: ExtensionExample = {
+  name: 'Dino Run',
+  description:
+    'Jogo de corrida: pule os obstáculos (cacto/pedra), abaixe do pássaro e pegue os ovos de bônus. Tem vidas, pontos e recorde que continua salvo. Pule com ↑/Espaço/toque; abaixe com ↓; Enter começa.',
+  ir: {
+    html: [{ type: 'canvas', id: 'tela', width: 480, height: 270 }],
+    css: [
+      {
+        selector: 'body',
+        declarations: {
+          background: '#bdf4ff',
+          display: 'flex',
+          'align-items': 'center',
+          'justify-content': 'center',
+          'min-height': '100vh',
+          margin: '0',
+        },
+      },
+      {
+        selector: 'canvas',
+        declarations: {
+          border: '3px solid #ffffff',
+          'border-radius': '18px',
+          background: '#bdf4ff',
+        },
+      },
+    ],
+    js: [
+      // --- Setup (no TOPO: o "a cada quadro" enxerga estas variáveis) ---
+      { type: 'g2d:fitScreen', percent: 100 },
+      { type: 'g2d:createDino', varName: 'dino', x: 120, y: 150, size: 64, color: '#5fb45f' },
+      { type: 'g2d:createGroup', varName: 'obstaculos' },
+      { type: 'g2d:createGroup', varName: 'ovos' },
+      { type: 'var', name: 'pontos', value: { type: 'num', value: 0 } },
+      { type: 'var', name: 'vidas', value: { type: 'num', value: 3 } },
+      // recorde salvo no navegador (Math.floor transforma o texto/null em número).
+      {
+        type: 'var',
+        name: 'recorde',
+        value: {
+          type: 'mathUnary',
+          fn: 'floor',
+          arg: { type: 'storageGet', store: 'local', key: { type: 'str', value: 'dinoRecorde' } },
+        },
+      },
+      { type: 'g2d:setScene', name: 'inicio' },
+      // --- Enter: começar / reiniciar ---
+      {
+        type: 'g2d:onKey',
+        key: 'Enter',
+        body: [
+          {
+            type: 'if',
+            cond: { type: 'g2d:sceneIs', name: 'inicio' },
+            then: [{ type: 'g2d:setScene', name: 'jogando' }],
+          },
+          {
+            type: 'if',
+            cond: { type: 'g2d:sceneIs', name: 'perdeu' },
+            then: [{ type: 'g2d:restart' }],
+          },
+        ],
+      },
+      // --- Loop principal: limpa, desenha a floresta e despacha por cena ---
+      {
+        type: 'g2d:updateEachFrame',
+        body: [
+          { type: 'g2d:clear' },
+          { type: 'g2d:forest', ctxVar: 'ctx', speed: 5 },
+          {
+            type: 'if',
+            cond: { type: 'g2d:sceneIs', name: 'inicio' },
+            then: [
+              {
+                type: 'g2d:showScreen',
+                ctxVar: 'ctx',
+                title: 'Dino Run',
+                subtitle: 'Pule os obstáculos, abaixe do pássaro e pegue os ovos!',
+                hint: 'Aperte Enter para começar',
+                bg: '#185078',
+              },
+            ],
+          },
+          {
+            type: 'if',
+            cond: { type: 'g2d:sceneIs', name: 'jogando' },
+            then: [
+              { type: 'g2d:controlDino', spriteVar: 'dino', ctxVar: 'ctx', jump: 15 },
+              { type: 'g2d:drawSprite', spriteVar: 'dino', ctxVar: 'ctx' },
+              // a cada 1,3s nasce um obstáculo aleatório na borda direita
+              {
+                type: 'g2d:everySeconds',
+                seconds: 1.3,
+                body: [
+                  {
+                    type: 'g2d:spawnObstacle',
+                    groupVar: 'obstaculos',
+                    ctxVar: 'ctx',
+                    shape: 'random',
+                    x: { type: 'num', value: 500 },
+                    size: 44,
+                    vx: { type: 'num', value: -6 },
+                  },
+                ],
+              },
+              // a cada 4s nasce um ovo de bônus (no alto: precisa pular)
+              {
+                type: 'g2d:everySeconds',
+                seconds: 4,
+                body: [
+                  {
+                    type: 'g2d:spawnEgg',
+                    groupVar: 'ovos',
+                    x: { type: 'num', value: 500 },
+                    y: { type: 'num', value: 115 },
+                    vx: { type: 'num', value: -6 },
+                  },
+                ],
+              },
+              { type: 'g2d:updateGroup', groupVar: 'obstaculos' },
+              { type: 'g2d:updateGroup', groupVar: 'ovos' },
+              { type: 'g2d:drawGroup', groupVar: 'obstaculos', ctxVar: 'ctx' },
+              { type: 'g2d:drawGroup', groupVar: 'ovos', ctxVar: 'ctx' },
+              // bateu num obstáculo: perde vida + pisca + tremor
+              {
+                type: 'g2d:onSpriteGroupOverlap',
+                spriteVar: 'dino',
+                groupVar: 'obstaculos',
+                itemName: 'obs',
+                body: [
+                  { type: 'g2d:removeFromGroup', spriteVar: 'obs', groupVar: 'obstaculos' },
+                  { type: 'g2d:explode', spriteVar: 'obs', color: '#ff5d3d' },
+                  { type: 'g2d:playDinoHurt' },
+                  { type: 'g2d:shake', ctxVar: 'ctx', intensity: 8 },
+                  { type: 'g2d:blinkSprite', spriteVar: 'dino', frames: 80 },
+                  {
+                    type: 'assign',
+                    name: 'vidas',
+                    value: {
+                      type: 'binop',
+                      op: '-',
+                      left: { type: 'var', name: 'vidas' },
+                      right: { type: 'num', value: 1 },
+                    },
+                  },
+                ],
+              },
+              // pegou um ovo: ganha pontos de bônus
+              {
+                type: 'g2d:onSpriteGroupOverlap',
+                spriteVar: 'dino',
+                groupVar: 'ovos',
+                itemName: 'ovo',
+                body: [
+                  { type: 'g2d:removeFromGroup', spriteVar: 'ovo', groupVar: 'ovos' },
+                  { type: 'g2d:explode', spriteVar: 'ovo', color: '#ffd54a' },
+                  { type: 'g2d:playCollect' },
+                  {
+                    type: 'assign',
+                    name: 'pontos',
+                    value: {
+                      type: 'binop',
+                      op: '+',
+                      left: { type: 'var', name: 'pontos' },
+                      right: { type: 'num', value: 10 },
+                    },
+                  },
+                ],
+              },
+              // tira da tela quem já passou (o dino escapou: sem punição)
+              {
+                type: 'g2d:pruneOffscreen',
+                groupVar: 'obstaculos',
+                ctxVar: 'ctx',
+                itemName: 'a',
+                body: [],
+              },
+              {
+                type: 'g2d:pruneOffscreen',
+                groupVar: 'ovos',
+                ctxVar: 'ctx',
+                itemName: 'b',
+                body: [],
+              },
+              // pontos sobem com o tempo (a cada 6 quadros, +1)
+              {
+                type: 'g2d:everyFrames',
+                n: { type: 'num', value: 6 },
+                body: [
+                  {
+                    type: 'assign',
+                    name: 'pontos',
+                    value: {
+                      type: 'binop',
+                      op: '+',
+                      left: { type: 'var', name: 'pontos' },
+                      right: { type: 'num', value: 1 },
+                    },
+                  },
+                ],
+              },
+              // HUD: pontos, recorde e vidas
+              {
+                type: 'g2d:drawScore',
+                ctxVar: 'ctx',
+                label: 'Pontos:',
+                value: { type: 'var', name: 'pontos' },
+                x: 12,
+                y: 28,
+                color: '#20415c',
+                size: 22,
+              },
+              {
+                type: 'g2d:drawScore',
+                ctxVar: 'ctx',
+                label: 'Recorde:',
+                value: { type: 'var', name: 'recorde' },
+                x: 12,
+                y: 52,
+                color: '#20415c',
+                size: 16,
+              },
+              {
+                type: 'g2d:drawHearts',
+                ctxVar: 'ctx',
+                count: { type: 'var', name: 'vidas' },
+                x: 372,
+                y: 22,
+                size: 16,
+                color: '#ff4f7a',
+              },
+              // acabaram as vidas: salva o recorde e vai pra tela de fim
+              {
+                type: 'if',
+                cond: {
+                  type: 'binop',
+                  op: '<=',
+                  left: { type: 'var', name: 'vidas' },
+                  right: { type: 'num', value: 0 },
+                },
+                then: [
+                  {
+                    type: 'if',
+                    cond: {
+                      type: 'binop',
+                      op: '>',
+                      left: { type: 'var', name: 'pontos' },
+                      right: { type: 'var', name: 'recorde' },
+                    },
+                    then: [
+                      { type: 'assign', name: 'recorde', value: { type: 'var', name: 'pontos' } },
+                      {
+                        type: 'storageSet',
+                        store: 'local',
+                        key: { type: 'str', value: 'dinoRecorde' },
+                        value: { type: 'var', name: 'pontos' },
+                      },
+                    ],
+                  },
+                  { type: 'g2d:setScene', name: 'perdeu' },
+                ],
+              },
+            ],
+          },
+          {
+            type: 'if',
+            cond: { type: 'g2d:sceneIs', name: 'perdeu' },
+            then: [
+              {
+                type: 'g2d:showScreen',
+                ctxVar: 'ctx',
+                title: 'Fim de jogo',
+                subtitle: 'Você tropeçou! Tente bater o seu recorde.',
+                hint: 'Aperte Enter para jogar de novo',
+                bg: '#5a2a2a',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    extensions: [{ extensionId: 'game-2d' }],
+  },
+}

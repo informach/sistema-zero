@@ -3,6 +3,7 @@ import { compileStatements } from '#generators'
 import {
   animatedHeroExample,
   asteroidsExample,
+  dinoRunExample,
   platformerExample,
   pongExample,
   tilemapExample,
@@ -709,6 +710,95 @@ describe('parseJS — tela responsiva (fitScreen)', () => {
   it('reconhece SZGame2D.fitScreen(percent)', () => {
     expect(parseJS('SZGame2D.fitScreen(100);')).toEqual([{ type: 'g2d:fitScreen', percent: 100 }])
     expect(parseJS('SZGame2D.fitScreen(90);')).toEqual([{ type: 'g2d:fitScreen', percent: 90 }])
+  })
+})
+
+describe('parseJS — Kit dino + pulo no chão (v0.9.0)', () => {
+  it('reconhece pular no chão e controlar o dino', () => {
+    expect(parseJS('SZGame2D.jumpOnGround(dino, ctx, 14);')).toEqual([
+      { type: 'g2d:jumpOnGround', spriteVar: 'dino', ctxVar: 'ctx', jump: 14 },
+    ])
+    expect(parseJS('SZGame2D.controlDino(dino, ctx, 15);')).toEqual([
+      { type: 'g2d:controlDino', spriteVar: 'dino', ctxVar: 'ctx', jump: 15 },
+    ])
+  })
+
+  it('reconhece o dino (createDino) como var-init', () => {
+    expect(
+      parseJS('const dino = SZGame2D.createDino({ x: 120, y: 150, size: 64, color: "#5fb45f" });'),
+    ).toEqual([
+      { type: 'g2d:createDino', varName: 'dino', x: 120, y: 150, size: 64, color: '#5fb45f' },
+    ])
+  })
+
+  it('reconhece obstáculo (com a forma do dropdown) e ovo do grupo', () => {
+    expect(
+      parseJS(
+        'SZGame2D.spawnObstacle(obstaculos, ctx, { type: "bird", x: 500, size: 44, vx: -6 });',
+      ),
+    ).toEqual([
+      {
+        type: 'g2d:spawnObstacle',
+        groupVar: 'obstaculos',
+        ctxVar: 'ctx',
+        shape: 'bird',
+        x: { type: 'num', value: 500 },
+        size: 44,
+        vx: { type: 'num', value: -6 },
+      },
+    ])
+    expect(parseJS('SZGame2D.spawnEgg(ovos, { x: 500, y: 115, vx: -6 });')).toEqual([
+      {
+        type: 'g2d:spawnEgg',
+        groupVar: 'ovos',
+        x: { type: 'num', value: 500 },
+        y: { type: 'num', value: 115 },
+        vx: { type: 'num', value: -6 },
+      },
+    ])
+  })
+
+  it('reconhece o fundo de floresta e os sons do kit', () => {
+    expect(parseJS('SZGame2D.drawForest(ctx, 5);')).toEqual([
+      { type: 'g2d:forest', ctxVar: 'ctx', speed: 5 },
+    ])
+    expect(parseJS('SZGame2D.playJump();')).toEqual([{ type: 'g2d:playJump' }])
+    expect(parseJS('SZGame2D.playDinoHurt();')).toEqual([{ type: 'g2d:playDinoHurt' }])
+    expect(parseJS('SZGame2D.playCollect();')).toEqual([{ type: 'g2d:playCollect' }])
+  })
+})
+
+describe('roundtrip do dinoRunExample (jogo de corrida completo)', () => {
+  it('o código gerado volta a virar blocos (sem rawJS), com Kit dino + grupos + HUD + cenas + recorde', () => {
+    const code = compileStatements(dinoRunExample.ir.js, 0)
+    const ir = parseJS(code)
+    const types = collectTypes(ir)
+    expect(types.has('rawJS')).toBe(false)
+    for (const expected of [
+      'g2d:createDino',
+      'g2d:controlDino',
+      'g2d:createGroup',
+      'g2d:updateEachFrame',
+      'g2d:onKey',
+      'g2d:everySeconds',
+      'g2d:spawnObstacle',
+      'g2d:spawnEgg',
+      'g2d:onSpriteGroupOverlap',
+      'g2d:playDinoHurt',
+      'g2d:playCollect',
+      'g2d:pruneOffscreen',
+      'g2d:drawScore',
+      'g2d:drawHearts',
+      'g2d:forest',
+      'g2d:setScene',
+      'g2d:sceneIs',
+      'g2d:showScreen',
+      'g2d:restart',
+      'storageGet',
+      'storageSet',
+    ]) {
+      expect(types.has(expected)).toBe(true)
+    }
   })
 })
 

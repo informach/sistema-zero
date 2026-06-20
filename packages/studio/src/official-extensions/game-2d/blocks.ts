@@ -952,6 +952,131 @@ export const gameTwoDBlocks = [
     tooltip:
       'Para cada sprite do grupo que encostar no seu sprite (ex.: a nave), roda o "fazer" com aquele sprite. Use dentro do "a cada quadro".',
   },
+
+  // ---- Pulo no chão (genérico, Movimento) ----
+  {
+    type: 'sz_g2d_jump_on_ground',
+    message0: 'Fazer o sprite %1 pular no chão — força do pulo %2',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'dino' },
+      { type: 'field_number', name: 'JUMP', value: 14, min: 1 },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Pula com ↑/Espaço/W ou um toque na tela, com gravidade e pouso no chão (a base da tela). Ótimo para jogos de corrida e de pulo. Use dentro do "a cada quadro".',
+  },
+
+  // ---- Kit dino (v0.9.0): desenhos prontos + sons para um jogo de corrida ----
+  {
+    type: 'sz_g2d_create_dino',
+    message0: 'Criar dinossauro %1 em x %2 y %3 tamanho %4 cor %5',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'dino' },
+      { type: 'field_number', name: 'X', value: 120 },
+      { type: 'field_number', name: 'Y', value: 150 },
+      { type: 'field_number', name: 'SIZE', value: 64, min: 8 },
+      { type: 'field_colour_sz', name: 'COLOR', colour: '#5fb45f' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Cria um dinossauro desenhado (com perninhas que correm sozinhas). A pose muda quando ele pula ou abaixa.',
+  },
+  {
+    type: 'sz_g2d_control_dino',
+    message0: 'Controlar o dinossauro %1 — força do pulo %2',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'dino' },
+      { type: 'field_number', name: 'JUMP', value: 15, min: 1 },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Pula com ↑/Espaço ou toque na metade de cima da tela; abaixa com ↓ ou segurando o dedo embaixo. Já vem com gravidade, chão e poeira. Use dentro do "a cada quadro".',
+  },
+  {
+    type: 'sz_g2d_spawn_obstacle',
+    message0: 'No grupo %1 criar obstáculo %2 em x %3 tamanho %4 com vx %5',
+    args0: [
+      { type: 'field_input', name: 'GROUP', text: 'obstaculos' },
+      {
+        type: 'field_dropdown',
+        name: 'SHAPE',
+        options: [
+          ['cacto', 'cactus'],
+          ['pedra', 'rock'],
+          ['pássaro (voa alto)', 'bird'],
+          ['surpresa (sorteia)', 'random'],
+        ],
+      },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'field_number', name: 'SIZE', value: 44, min: 8 },
+      { type: 'input_value', name: 'VX', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Cria um obstáculo desenhado e coloca no grupo. Cacto e pedra nascem no chão (pule por cima); o pássaro vem no alto (abaixe por baixo). Ligue o x na borda direita e um vx negativo para ele vir vindo.',
+  },
+  {
+    type: 'sz_g2d_spawn_egg',
+    message0: 'No grupo %1 criar um ovo (bônus) em x %2 y %3 com vx %4',
+    args0: [
+      { type: 'field_input', name: 'GROUP', text: 'ovos' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'input_value', name: 'VX', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Cria um ovo desenhado (item de bônus) e coloca no grupo. Quando o dino encostar, dá pontos extras.',
+  },
+  {
+    type: 'sz_g2d_forest',
+    message0: 'Desenhar fundo de floresta (velocidade %1)',
+    args0: [{ type: 'field_number', name: 'SPEED', value: 4, min: 0, precision: 0.1 }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Desenha um céu com sol, nuvens, morros e uma faixa de grama que rola (parallax). Use no começo do "a cada quadro", depois de limpar a tela. O dino corre sobre a grama.',
+  },
+  {
+    type: 'sz_g2d_play_jump',
+    message0: 'Tocar som de pulo',
+    args0: [],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Um "biip" curto subindo de tom (som sintetizado, sem precisar de arquivo).',
+  },
+  {
+    type: 'sz_g2d_play_dino_hurt',
+    message0: 'Tocar som de dano',
+    args0: [],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Um rosnado grave que decai (som sintetizado, sem precisar de arquivo).',
+  },
+  {
+    type: 'sz_g2d_play_collect',
+    message0: 'Tocar som de coletar',
+    args0: [],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Duas notinhas alegres (som sintetizado) — ótimo ao pegar o ovo bônus.',
+  },
 ]
 
 /**
@@ -1003,6 +1128,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g2d_set_gravity',
       'sz_g2d_bounce_edges',
       'sz_g2d_drag_x',
+      'sz_g2d_jump_on_ground',
     ],
   },
   {
@@ -1079,6 +1205,20 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g2d_explode',
       'sz_g2d_play_shoot',
       'sz_g2d_play_explosion',
+    ],
+  },
+  {
+    name: '🦕 Kit dino',
+    colour: '#5fa844',
+    types: [
+      'sz_g2d_create_dino',
+      'sz_g2d_control_dino',
+      'sz_g2d_spawn_obstacle',
+      'sz_g2d_spawn_egg',
+      'sz_g2d_forest',
+      'sz_g2d_play_jump',
+      'sz_g2d_play_dino_hurt',
+      'sz_g2d_play_collect',
     ],
   },
 ]

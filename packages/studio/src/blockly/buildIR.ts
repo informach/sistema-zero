@@ -2527,6 +2527,84 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         },
       }
 
+    // ---- Pulo genérico + Kit dino (v0.9.0) ----
+    case 'sz_g2d_jump_on_ground':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:jumpOnGround',
+          spriteVar: f(block, 'SPRITE'),
+          ctxVar: 'ctx',
+          jump: fn(block, 'JUMP', 14),
+        },
+      }
+    case 'sz_g2d_create_dino':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:createDino',
+          varName: f(block, 'NAME'),
+          x: fn(block, 'X', 120),
+          y: fn(block, 'Y', 150),
+          size: fn(block, 'SIZE', 64),
+          color: f(block, 'COLOR'),
+        },
+      }
+    case 'sz_g2d_control_dino':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:controlDino',
+          spriteVar: f(block, 'SPRITE'),
+          ctxVar: 'ctx',
+          jump: fn(block, 'JUMP', 15),
+        },
+      }
+    case 'sz_g2d_spawn_obstacle':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:spawnObstacle',
+          groupVar: f(block, 'GROUP'),
+          ctxVar: 'ctx',
+          shape: f(block, 'SHAPE') || 'cactus',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          size: fn(block, 'SIZE', 44),
+          vx: exprInput(block, 'VX', { type: 'num', value: -6 }),
+        },
+      }
+    case 'sz_g2d_spawn_egg':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:spawnEgg',
+          groupVar: f(block, 'GROUP'),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+          vx: exprInput(block, 'VX', { type: 'num', value: -6 }),
+        },
+      }
+    case 'sz_g2d_forest':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: { type: 'g2d:forest', ctxVar: 'ctx', speed: fn(block, 'SPEED', 4) },
+      }
+    case 'sz_g2d_play_jump':
+      seen.add('game-2d')
+      return { kind: 'js', value: { type: 'g2d:playJump' } }
+    case 'sz_g2d_play_dino_hurt':
+      seen.add('game-2d')
+      return { kind: 'js', value: { type: 'g2d:playDinoHurt' } }
+    case 'sz_g2d_play_collect':
+      seen.add('game-2d')
+      return { kind: 'js', value: { type: 'g2d:playCollect' } }
+
     // ---- Game 3D (extension blocks) ----
     case 'sz_g3d_create_scene':
       seen.add('game-3d')
