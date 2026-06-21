@@ -1,4 +1,4 @@
-import { CATEGORY_COLORS } from '../theme'
+import { CATEGORY_COLORS, categoryShades } from '../theme'
 import type { BlockDefinition } from './types'
 
 const C = CATEGORY_COLORS.css
@@ -546,10 +546,10 @@ export const CSS_BLOCKS: BlockDefinition[] = [
  * "CSS é roxo" e ainda dando navegação por cor. Cada bloco herda a cor do grupo.
  */
 export const CSS_GROUPS: { name: string; colour: string; types: string[] }[] = [
-  { name: '🧰 Regra', colour: '#a78bfa', types: ['sz_css_rule', 'sz_css_decl', 'sz_css_var'] },
+  { name: '🧰 Regra', colour: '#7c4dff', types: ['sz_css_rule', 'sz_css_decl', 'sz_css_var'] },
   {
     name: '🎨 Cores & Fundo',
-    colour: '#c084fc',
+    colour: '#9466ff',
     types: [
       'sz_css_body_background',
       'sz_css_body_text_color',
@@ -560,7 +560,7 @@ export const CSS_GROUPS: { name: string; colour: string; types: string[] }[] = [
   },
   {
     name: '🔤 Texto',
-    colour: '#b794f6',
+    colour: '#6a3df0',
     types: [
       'sz_css_font_size',
       'sz_css_font_weight',
@@ -572,7 +572,7 @@ export const CSS_GROUPS: { name: string; colour: string; types: string[] }[] = [
   },
   {
     name: '📐 Tamanho & Caixa',
-    colour: '#8b5cf6',
+    colour: '#a87cff',
     types: [
       'sz_css_width',
       'sz_css_height',
@@ -587,7 +587,7 @@ export const CSS_GROUPS: { name: string; colour: string; types: string[] }[] = [
   },
   {
     name: '🧩 Layout',
-    colour: '#818cf8',
+    colour: '#5a2fe0',
     types: [
       'sz_css_body_center',
       'sz_css_display_flex',
@@ -600,7 +600,7 @@ export const CSS_GROUPS: { name: string; colour: string; types: string[] }[] = [
   },
   {
     name: '✨ Efeitos',
-    colour: '#e879f9',
+    colour: '#b88cff',
     types: [
       'sz_css_transition',
       'sz_css_transform',
@@ -611,10 +611,15 @@ export const CSS_GROUPS: { name: string; colour: string; types: string[] }[] = [
       'sz_css_google_font',
     ],
   },
-  { name: '📱 Responsivo', colour: '#f472b6', types: ['sz_css_media_query'] },
+  { name: '📱 Responsivo', colour: '#8b5cf6', types: ['sz_css_media_query'] },
 ]
 
-// Cor = navegação: pinta cada bloco com a cor do seu grupo.
+// IDENTIDADE: cada sub-grupo recebe um TOM da cor base da categoria (CSS),
+// derivado claro→escuro (categoryShades) — os literais em CSS_GROUPS são placeholders.
+const CSS_SHADES = categoryShades(CATEGORY_COLORS.css, CSS_GROUPS.length)
+CSS_GROUPS.forEach((g, i) => {
+  g.colour = CSS_SHADES[i] ?? CATEGORY_COLORS.css
+})
 const CSS_COLOUR_BY_TYPE = new Map<string, string>(
   CSS_GROUPS.flatMap((g) => g.types.map((t) => [t, g.colour] as const)),
 )

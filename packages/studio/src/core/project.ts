@@ -229,7 +229,21 @@ export function createEmptyProject(id: string, name: string): Project {
     extraFiles: [],
     assets: [],
     ir: { html: [], css: [], js: [], extensions: [] },
-    blocksState: null,
+    // Projeto novo já nasce com os 3 blocos-CONTAINER vazios na tela (como o
+    // `on start` do MakeCode): a criança coloca HTML dentro da 🧱 Estrutura, CSS
+    // na 🎨 Aparência e o passo a passo no ⚙️ Comportamento. Shape = o que
+    // buildWorkspaceStateFromIR produz para IR vazio (frames sem CHILDREN); os
+    // tipos espelham FRAME_BLOCKS em blockly/blocks/frames.ts.
+    blocksState: {
+      blocks: {
+        languageVersion: 0,
+        blocks: [
+          { type: 'sz_frame_structure', x: 32, y: 32 },
+          { type: 'sz_frame_appearance', x: 452, y: 32 },
+          { type: 'sz_frame_behavior', x: 872, y: 32 },
+        ],
+      },
+    },
     installedExtensions: [],
   }
 }

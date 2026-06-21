@@ -17,9 +17,9 @@ import {
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.16.0',
+  version: '0.17.0',
   description:
-    'Blocos para criar jogos 2D no Canvas: sprites (cor/imagem/animação), grupos de muitos sprites, movimento, física, efeitos, tiles/tilemaps, HUD, telas/cenas, som, e KITS por tema — Kit espaço (nave e asteroides), Kit dino (corrida com obstáculos), Kit gorilas (batalha de bananas por turnos), Kit equilibrista (estica o bastão e atravessa, estilo Stick Hero) e Kit balão (sobe segurando o mouse e economiza combustível).',
+    'Blocos para criar jogos 2D no Canvas: tela cheia responsiva (com cor de fundo), sprites (cor/imagem/animação), grupos de muitos sprites, movimento, física, efeitos, tiles/tilemaps, HUD, telas/cenas, som, e KITS por tema — Kit espaço (nave e asteroides), Kit dino (corrida com obstáculos), Kit gorilas (batalha de bananas por turnos), Kit equilibrista (estica o bastão e atravessa, estilo Stick Hero) e Kit balão (sobe segurando o mouse e economiza combustível).',
   category: 'games',
   official: true,
   enabledByDefault: false,
@@ -34,6 +34,7 @@ chamadas explícitas para \`SZGame2D.createSprite(...)\` e \`SZGame2D.gameLoop(.
 
 ### Blocos disponíveis
 
+- **Preparar o jogo em tela cheia** — atalho para começar: prepara a tela (largura × altura) ocupando a janela, responsiva (mantém a proporção e redimensiona sozinha), **centralizada**, com uma **cor de fundo** que combina com o jogo (vai no canvas e na sobra ao redor). Não precisa criar o canvas no HTML. Os blocos individuais continuam disponíveis para montar na mão.
 - **Criar sprite** — define um objeto com \`x\`, \`y\`, \`largura\`, \`altura\`, \`cor\`.
 - **Desenhar sprite** — desenha o sprite no contexto do canvas.
 - **Mover em 4 direções** — move o sprite com as setas do teclado (ver "Movimento" abaixo).
@@ -149,6 +150,8 @@ girada na direção apontada.
 ### Tela responsiva
 
 O bloco **Fazer a tela preencher N% da janela** (genérico) deixa o canvas grande, nítido e responsivo: ocupa quase toda a janela e se reajusta sozinho quando ela muda de tamanho, mantendo a proporção. As coordenadas do jogo continuam as mesmas, mas o desenho passa a ser feito na resolução REAL da tela — fica grande E nítido (sem borrar), em qualquer tamanho.
+
+Para começar rápido, o bloco **Preparar o jogo em tela cheia** (no grupo ✨ Aparência) já faz tudo isso de uma vez — cria a tela com o tamanho escolhido, centraliza na janela e pinta o fundo (canvas e a sobra ao redor) com a cor do jogo — sem precisar criar o canvas no HTML. Os blocos individuais (criar a tela, preencher %) continuam disponíveis para quem quer montar na mão.
 
 ### Pulo no chão e Kit dino (v0.9.0)
 

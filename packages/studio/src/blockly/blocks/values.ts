@@ -75,6 +75,14 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     tooltip: 'Um valor lógico: verdadeiro ou falso.',
   },
   {
+    type: 'sz_val_null',
+    message0: 'nada',
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'O valor "nada": a ausência de um objeto ou valor. Use quando uma variável ainda não aponta para nada (por exemplo, nenhum alvo). No modo código aparece como null.',
+  },
+  {
     type: 'sz_val_compare',
     message0: '%1 %2 %3',
     args0: [

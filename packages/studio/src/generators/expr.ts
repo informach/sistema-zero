@@ -186,6 +186,8 @@ export function compileExpr(
     }
     case 'bool':
       return expr.value ? 'true' : 'false'
+    case 'null':
+      return 'null'
     case 'var':
       return identifiers.get(expr.name)
     case 'binop': {
@@ -521,6 +523,7 @@ function isPureExpr(expr: JSExpr): boolean {
     case 'color':
     case 'colorAlpha':
     case 'bool':
+    case 'null':
     case 'var':
     case 'thisRef':
     case 'thisProp':

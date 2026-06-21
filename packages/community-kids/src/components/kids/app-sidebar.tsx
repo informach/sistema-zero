@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import type { AvatarConfig } from '@/lib/avatar-catalog'
 import { cn } from '@/lib/cn'
 import { profileMenuSubtitle } from '@/lib/gamification-label'
 import type { GamificationMeView, SessionUserWithAvatar } from '@/lib/types'
@@ -28,11 +27,12 @@ export function isNavActive(pathname: string, href: string, match?: string): boo
 export function AppSidebar({
   user,
   gamification,
-  avatarConfig = null,
+  avatarPhotoUrl = null,
 }: {
   user: SessionUserWithAvatar
   gamification: GamificationMeView | null
-  avatarConfig?: AvatarConfig | null
+  /** Foto (snapshot) do avatar 3D do perfil ativo — `null` mostra o personagem padrão. */
+  avatarPhotoUrl?: string | null
 }) {
   const pathname = usePathname()
 
@@ -81,7 +81,7 @@ export function AppSidebar({
         <UserMenu
           user={user}
           gamification={gamification}
-          avatarConfig={avatarConfig}
+          avatarPhotoUrl={avatarPhotoUrl}
           direction="up"
         />
         <div className="min-w-0 flex-1">

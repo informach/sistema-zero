@@ -25,6 +25,7 @@ const jsExprBase = z.discriminatedUnion('type', [
   z.object({ type: z.literal('colorAlpha'), hex: irText(), alpha: z.number(), ...idField }),
   z.object({ type: z.literal('bool'), value: z.boolean(), ...idField }),
   z.object({ type: z.literal('var'), name: irText(), ...idField }),
+  z.object({ type: z.literal('null'), ...idField }),
 ])
 
 interface JSExprCommon {
@@ -42,6 +43,8 @@ export type JSExpr =
   | (JSExprCommon & { type: 'colorAlpha'; hex: string; alpha: number })
   | (JSExprCommon & { type: 'bool'; value: boolean })
   | (JSExprCommon & { type: 'var'; name: string })
+  // Valor nulo (`null`): "nada / nenhum objeto". Bloco sz_val_null.
+  | (JSExprCommon & { type: 'null' })
   | (JSExprCommon & {
       type: 'binop'
       op: '+' | '-' | '*' | '/' | '%' | '**' | '>' | '<' | '>=' | '<=' | '==' | '!=' | '===' | '!=='
@@ -1468,6 +1471,8 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'g2d:restart' })
   // Tela: faz o canvas preencher ~percent% da janela (mantendo a proporção).
   | (JSStatementCommon & { type: 'g2d:fitScreen'; percent: number })
+  // Atalho de início: prepara o palco (tamanho do mundo) em tela cheia responsiva.
+  | (JSStatementCommon & { type: 'g2d:setupStage'; width: number; height: number; bg: string })
   // Tiro redondo com brilho num grupo; mover com setas; piscar (invencibilidade).
   | (JSStatementCommon & {
       type: 'g2d:spawnBullet'
@@ -1615,6 +1620,7 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'g2d:drawAimReadout'; ctxVar: string })
   // ---- Game 3D (extensão game-3d, Three.js via window.SZGame3D) ----
   | (JSStatementCommon & { type: 'g3d:createScene'; canvasId: string; varName: string })
+  | (JSStatementCommon & { type: 'g3d:createFullscreenScene'; varName: string; bg: string })
   | (JSStatementCommon & { type: 'g3d:setBackground'; worldVar: string; color: string })
   | (JSStatementCommon & {
       type: 'g3d:setCameraPosition'
@@ -2937,6 +2943,13 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({ type: z.literal('g2d:dragX'), spriteVar: irText(), ...idField }),
     z.object({ type: z.literal('g2d:fitScreen'), percent: z.number(), ...idField }),
     z.object({
+      type: z.literal('g2d:setupStage'),
+      width: z.number(),
+      height: z.number(),
+      bg: irText(),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('g2d:spawnBullet'),
       groupVar: irText(),
       x: JSExprSchema,
@@ -3145,6 +3158,12 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('g3d:createScene'),
       canvasId: irText(),
       varName: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:createFullscreenScene'),
+      varName: irText(),
+      bg: irText(),
       ...idField,
     }),
     z.object({
@@ -3918,6 +3937,7 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:starfield',
   'g2d:dragX',
   'g2d:fitScreen',
+  'g2d:setupStage',
   'g2d:spawnBullet',
   'g2d:arrowsX',
   'g2d:blinkSprite',
@@ -3966,6 +3986,7 @@ export const G2D_STATEMENT_TYPES = new Set([
 
 export const G3D_STATEMENT_TYPES = new Set([
   'g3d:createScene',
+  'g3d:createFullscreenScene',
   'g3d:setBackground',
   'g3d:setCameraPosition',
   'g3d:createBox',

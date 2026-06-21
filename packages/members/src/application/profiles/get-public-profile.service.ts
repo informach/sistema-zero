@@ -23,13 +23,15 @@ export class GetPublicProfileService {
   ) {}
 
   async execute(profileId: string, audience: CourseAudience): Promise<PublicProfileView> {
-    const [profile, badges, avatarConfig, roomRaw, roomInventory] = await Promise.all([
-      this.gamification.getProfile(profileId, audience),
-      this.gamification.listBadges(profileId, audience),
-      this.avatar.getConfig(profileId, audience),
-      this.room.getState(profileId, audience),
-      this.room.listInventory(profileId, audience),
-    ])
+    const [profile, badges, avatarConfig, avatarPhotoUrl, roomRaw, roomInventory] =
+      await Promise.all([
+        this.gamification.getProfile(profileId, audience),
+        this.gamification.listBadges(profileId, audience),
+        this.avatar.getConfig(profileId, audience),
+        this.avatar.getPhotoUrl(profileId, audience),
+        this.room.getState(profileId, audience),
+        this.room.listInventory(profileId, audience),
+      ])
     // Ranking só faz sentido com perfil (XP); a coorte usa a conta dona do perfil.
     const ranking = profile
       ? await this.gamification.getRanking(profileId, profile.accountId, audience, this.clock())
@@ -43,7 +45,8 @@ export class GetPublicProfileService {
       ranking,
       // listBadges já devolve SÓ as conquistadas (≠ do /gamification/me, que traz o catálogo).
       badges: badges.map((b) => ({ slug: b.badgeSlug, unlockedAt: b.unlockedAt.toISOString() })),
-      avatar: { style: equipped.style, parts: equipped.parts },
+      avatar: { style: equipped.style, slots: equipped.slots },
+      avatarPhotoUrl,
       room,
     }
   }

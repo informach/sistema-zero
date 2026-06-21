@@ -5,7 +5,6 @@ import { LogOut, Moon, Sun, User, Users } from 'lucide-react'
 import Link from 'next/link'
 import { useTheme } from 'next-themes'
 import { useEffect, useRef, useState } from 'react'
-import type { AvatarConfig } from '@/lib/avatar-catalog'
 import { profileMenuSubtitle } from '@/lib/gamification-label'
 import type { GamificationMeView, SessionUserWithAvatar } from '@/lib/types'
 import { getUserDisplayName } from '@/lib/user-display'
@@ -21,13 +20,14 @@ import { KidsAvatar } from './kids-avatar'
 export function UserMenu({
   user,
   gamification = null,
-  avatarConfig = null,
+  avatarPhotoUrl = null,
   direction = 'down',
 }: {
   user: SessionUserWithAvatar
   gamification?: GamificationMeView | null
-  /** Avatar montado por camadas (sessão de perfil). `null` → cai na foto/iniciais. */
-  avatarConfig?: AvatarConfig | null
+  /** Foto (snapshot) do avatar 3D do perfil. Em sessão de perfil mostra sempre o KidsAvatar
+   *  (foto OU personagem padrão); na conta cai na foto/iniciais do responsável. */
+  avatarPhotoUrl?: string | null
   direction?: 'up' | 'down'
 }) {
   const [open, setOpen] = useState(false)
@@ -75,8 +75,8 @@ export function UserMenu({
         aria-label="Conta"
         aria-expanded={open}
       >
-        {avatarConfig ? (
-          <KidsAvatar config={avatarConfig} size="sm" />
+        {isProfile ? (
+          <KidsAvatar photoUrl={avatarPhotoUrl} size="sm" />
         ) : (
           <UserAvatar
             avatarUrl={user.avatarUrl}
@@ -95,8 +95,8 @@ export function UserMenu({
         >
           {/* Cabeçalho: avatar à esquerda + nome (do perfil ativo, se houver) */}
           <div className="flex items-center gap-3 border-b border-border px-3 py-3">
-            {avatarConfig ? (
-              <KidsAvatar config={avatarConfig} size="md" />
+            {isProfile ? (
+              <KidsAvatar photoUrl={avatarPhotoUrl} size="md" />
             ) : (
               <UserAvatar
                 avatarUrl={user.avatarUrl}

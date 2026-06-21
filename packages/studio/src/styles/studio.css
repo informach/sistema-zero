@@ -36,8 +36,8 @@
   --color-sz-error: oklch(0.64 0.215 27); /* destructive */
   --color-sz-success: #34d399;
   --font-family-sans:
-    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    "Baloo 2", "Nunito", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
   --font-family-mono:
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
     monospace;
@@ -45,12 +45,12 @@
 
 /* Tema claro — override por atributo data-sz-theme="light" no root do Studio. */
 [data-sz-theme="light"] {
-  --color-sz-bg: oklch(0.985 0.004 100); /* background off-white */
-  --color-sz-bg-soft: oklch(0.97 0.004 255);
-  --color-sz-panel: oklch(1 0 0); /* card = branco puro */
-  --color-sz-panel-soft: oklch(0.955 0.004 255); /* secondary/muted */
-  --color-sz-border: oklch(0.9 0.005 255);
-  --color-sz-border-soft: oklch(0.93 0.005 255);
+  --color-sz-bg: oklch(0.975 0.012 85); /* creme MakeCode (#fef9ef) */
+  --color-sz-bg-soft: oklch(0.955 0.012 85); /* #f4ecdc */
+  --color-sz-panel: oklch(0.995 0.006 85); /* card quase-branco quente (#fffdf8) */
+  --color-sz-panel-soft: oklch(0.945 0.012 85); /* secondary/muted (#efe6d6) */
+  --color-sz-border: oklch(0.89 0.018 80); /* #e6d8c2 */
+  --color-sz-border-soft: oklch(0.92 0.015 80); /* #eee2d0 */
   --color-sz-fg: oklch(0.105 0.01 265);
   --color-sz-fg-soft: oklch(0.5 0.01 255); /* muted-foreground */
   --color-sz-fg-mute: oklch(0.62 0.008 255);
@@ -96,12 +96,56 @@
 .blocklyToolboxCategory:focus {
   outline: none;
 }
-.blocklyToolboxCategory {
-  box-sizing: border-box;
-  border-radius: 0 4px 4px 0;
+
+/*
+ * Toolbox colorida estilo MakeCode: cada categoria vira um "chip" arredondado.
+ * A FAIXA colorida (border-left: 8px solid <cor da categoria>) já vem INLINE do
+ * Blockly (ToolboxCategory.addColourBorder_), então o CSS só arredonda o chip,
+ * engorda o alvo de toque (≥40px, dedo de criança), troca o rótulo p/ a fonte
+ * redonda e destaca hover/selecionado com o accent. Os seletores são prefixados
+ * com [data-sz-theme] para VENCER por especificidade o CSS que o Blockly injeta
+ * em runtime (sem !important) sem vazar p/ outro Blockly do host.
+ */
+[data-sz-theme] .blocklyToolboxCategoryGroup {
+  padding: 4px 6px;
 }
-.blocklyToolboxSelected {
+[data-sz-theme] .blocklyToolboxCategory {
+  box-sizing: border-box;
+  min-height: 40px;
+  margin-bottom: 6px;
+  padding: 7px 10px;
+  border-radius: 12px;
+  background: var(--color-sz-panel-soft);
+  transition:
+    background-color 120ms ease,
+    transform 80ms ease;
+  cursor: pointer;
+}
+[data-sz-theme] .blocklyToolboxCategory:not(.blocklyToolboxSelected):hover {
+  background: color-mix(in srgb, var(--color-sz-accent) 12%, var(--color-sz-panel-soft));
+  transform: translateX(2px);
+}
+[data-sz-theme] .blocklyToolboxCategoryLabel {
+  font-family: "Baloo 2", "Nunito", ui-sans-serif, system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-sz-fg);
+  padding: 0 6px;
+}
+/*
+ * Selecionado: o Blockly pinta a linha INLINE com a cor da categoria
+ * (ToolboxCategory.setSelected → rowDiv.style.backgroundColor), igual ao
+ * MakeCode — o inline vence o CSS, então aqui só tiramos a sombra padrão e
+ * deixamos o rótulo BRANCO para contrastar com qualquer cor de categoria.
+ */
+[data-sz-theme] .blocklyToolboxSelected {
   box-shadow: none;
+}
+[data-sz-theme] .blocklyToolboxSelected .blocklyToolboxCategoryLabel {
+  color: #ffffff;
+  font-weight: 700;
+  /* legível em QUALQUER cor de categoria (clara como o âmbar ou escura). */
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
 }
 
 /*

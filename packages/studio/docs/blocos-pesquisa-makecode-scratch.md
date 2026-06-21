@@ -90,6 +90,13 @@ Problemas de usabilidade infantil identificados:
    maiores pra toque.
 7. **PT didático**: "Quicar nas bordas", "encosta em", "folha de quadros", "Mudar/Botar"; som por nota
    (Dó/Ré/Mi…) + duração (curta/média/longa) em vez de Hz/ms.
+8. **Áreas-container "só o que está dentro roda"** (estilo MakeCode `on start`): 3 blocos-CONTAINER —
+   🧱 Estrutura (HTML→index.html), 🎨 Aparência (CSS→style.css), ⚙️ Comportamento (passo a passo JS→
+   script.js). A criança põe cada coisa na sua área; o que fica SOLTO fora delas é RASCUNHO (não roda).
+   Tira a dependência de ordem/posição no canvas e deixa visualmente claro "o que é o quê". Projeto novo já
+   nasce com as 3 áreas; "Organizar blocos" as põe lado a lado (HTML | CSS | Comportamento). Funções/
+   classes/eventos seguem por ora DENTRO do Comportamento — viram chapéus injetados FORA dele numa fase
+   seguinte. Impl.: `blockly/blocks/frames.ts`; coleta por contêiner em `buildIRFromWorkspace` (ver CLAUDE.md).
 
 ## 5. Inegociável: a Ponte continua perfeita
 
@@ -107,6 +114,12 @@ Projetos clássicos persistem **arquivos** (html/css/js) + IR + `blocksState`. B
 blocos: ao detectar versão velha/bloco obsoleto, descartar `blocksState` e re-derivar de
 `buildWorkspaceStateFromIR(parse(arquivos))`. O JS é a fonte da verdade; o parser aceita as assinaturas
 antigas (`SZGame2D.x(ctx, …)`).
+
+**Áreas-container (migração transparente):** ao adotar os 3 blocos-container, um projeto LEGADO (blocos
+soltos, sem áreas) é auto-embrulhado nas 3 áreas SEM perder o programa — `normalizeBlocksStateToFrames`
+(`blockly/normalizeFrames.ts`) carrega o estado num workspace headless, deriva a IR PLANA
+(`collectFlatFromWorkspace`, o modelo antigo) e re-emite via `buildWorkspaceStateFromIR` (que agora frama).
+Preserva a saída byte-a-byte; idempotente.
 
 ## 7. Fontes
 

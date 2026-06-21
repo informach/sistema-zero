@@ -61,22 +61,11 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   function halfY(o, s) { return s.hh * (o.scale ? o.scale.y : 1); }
   function halfZ(o, s) { return s.hd * (o.scale ? o.scale.z : 1); }
 
-  function createScene(canvasId) {
-    var canvas = document.getElementById(canvasId);
-    // Mesmo canvas, novo "Atualizar"/recriar: descarta o mundo anterior ANTES
-    // de instanciar outro WebGLRenderer sobre o MESMO canvas, senão o contexto
-    // antigo fica vivo no registro e o navegador acaba forçando perda de
-    // contexto (cena preta) ao estourar o limite de ~16 contextos WebGL.
-    if (canvas) {
-      for (var k = worlds.length - 1; k >= 0; k--) {
-        if (worlds[k] && worlds[k]._canvas === canvas) {
-          try { dispose(worlds[k]); } catch (e) {}
-        }
-      }
-    }
+  // Monta renderer + cena + câmera + luzes a partir de um canvas e tamanho.
+  // Compartilhado por createScene (canvas do HTML) e createFullscreenScene
+  // (canvas criado em tela cheia). NÃO muda o comportamento do createScene.
+  function _setupWorld(canvas, w, h) {
     var renderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvas || undefined });
-    var w = canvas && canvas.width ? canvas.width : 400;
-    var h = canvas && canvas.height ? canvas.height : 300;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.setSize(w, h, false);
     // Sombras suaves dão profundidade ao 3D (o chão recebe a sombra do jogador).
@@ -105,6 +94,67 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     scene.add(dir);
     var world = { scene: scene, camera: camera, renderer: renderer, _objects: [], _canvas: canvas || null, _camFollow: null };
     worlds.push(world);
+    return world;
+  }
+
+  function createScene(canvasId) {
+    var canvas = document.getElementById(canvasId);
+    // Mesmo canvas, novo "Atualizar"/recriar: descarta o mundo anterior ANTES
+    // de instanciar outro WebGLRenderer sobre o MESMO canvas, senão o contexto
+    // antigo fica vivo no registro e o navegador acaba forçando perda de
+    // contexto (cena preta) ao estourar o limite de ~16 contextos WebGL.
+    if (canvas) {
+      for (var k = worlds.length - 1; k >= 0; k--) {
+        if (worlds[k] && worlds[k]._canvas === canvas) {
+          try { dispose(worlds[k]); } catch (e) {}
+        }
+      }
+    }
+    var w = canvas && canvas.width ? canvas.width : 400;
+    var h = canvas && canvas.height ? canvas.height : 300;
+    return _setupWorld(canvas, w, h);
+  }
+
+  // Facilitador: cria um canvas que preenche a janela inteira, já responsivo,
+  // sem precisar de <canvas> no HTML. É o bloco "criar cena 3D em tela cheia".
+  function createFullscreenScene(bg) {
+    var color = (typeof bg === 'string' && bg) ? bg : '#0b1020';
+    var canvas = document.createElement('canvas');
+    // Convenção do studio: a tela tem id "tela" (achável por getElementById).
+    canvas.id = 'tela';
+    canvas.style.position = 'fixed';
+    canvas.style.top = '0';
+    canvas.style.left = '0';
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    canvas.style.display = 'block';
+    canvas.style.zIndex = '0';
+    if (document.body) {
+      document.body.style.margin = '0';
+      // Mesma cor no fundo da janela (defesa contra flash branco antes do render).
+      document.body.style.background = color;
+      if (document.documentElement && document.documentElement.style) {
+        document.documentElement.style.overflow = 'hidden';
+      }
+      // Primeiro filho do body: um HUD em HTML (que vier depois) fica POR CIMA.
+      if (document.body.firstChild) document.body.insertBefore(canvas, document.body.firstChild);
+      else document.body.appendChild(canvas);
+    }
+    var world = _setupWorld(canvas, window.innerWidth || 800, window.innerHeight || 600);
+    // Cor de fundo da CENA 3D (o que aparece atrás dos objetos), escolhida no bloco.
+    if (world.scene && THREE.Color) world.scene.background = new THREE.Color(color);
+    world._ownsCanvas = true;
+    // Redimensiona renderer + câmera sempre que a janela muda de tamanho.
+    world._resizeHandler = function () {
+      var nw = window.innerWidth || 800;
+      var nh = window.innerHeight || 600;
+      if (world.renderer) world.renderer.setSize(nw, nh, false);
+      if (world.camera) {
+        world.camera.aspect = nw / nh;
+        if (world.camera.updateProjectionMatrix) world.camera.updateProjectionMatrix();
+      }
+    };
+    if (window.addEventListener) window.addEventListener('resize', world._resizeHandler);
     return world;
   }
 
@@ -953,6 +1003,14 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     // Tira o mundo do registro mesmo que o descarte abaixo falhe.
     var idx = worlds.indexOf(world);
     if (idx !== -1) worlds.splice(idx, 1);
+    // Tela cheia: solta o listener de resize e remove o canvas que criamos.
+    if (world._resizeHandler && window.removeEventListener) {
+      try { window.removeEventListener('resize', world._resizeHandler); } catch (e) {}
+      world._resizeHandler = null;
+    }
+    if (world._ownsCanvas && world._canvas && world._canvas.parentNode) {
+      try { world._canvas.parentNode.removeChild(world._canvas); } catch (e) {}
+    }
     if (world.renderer) {
       world.renderer.setAnimationLoop(null);
       try { world.renderer.dispose(); } catch (e) {}
@@ -1943,6 +2001,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
 
   window.SZGame3D = {
     createScene: createScene,
+    createFullscreenScene: createFullscreenScene,
     setBackground: setBackground,
     setCameraPosition: setCameraPosition,
     createBox: createBox,

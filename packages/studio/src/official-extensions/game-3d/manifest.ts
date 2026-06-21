@@ -13,9 +13,9 @@ import {
 export const gameThreeDManifest: ExtensionManifest = {
   id: 'game-3d',
   name: 'Jogo 3D',
-  version: '0.9.0',
+  version: '0.10.0',
   description:
-    'Blocos e comandos para criar jogos 3D com Three.js: cena/câmera/luz, cubos/esferas/caixas, posição/rotação/escala, física (velocidade, gravidade, pulo, colisão), teclado, câmera que segue, genéricos de grade isométrica e de movimento (círculo, distância, cair girando, deslizar, girar) e Kits prontos: "Desvie", "Travessia", "Corrida" e "Empilhar". Three.js carrega de um CDN fixado.',
+    'Blocos e comandos para criar jogos 3D com Three.js: cena/câmera/luz (e cena em tela cheia responsiva), cubos/esferas/caixas, posição/rotação/escala, física (velocidade, gravidade, pulo, colisão), teclado, câmera que segue, genéricos de grade isométrica e de movimento (círculo, distância, cair girando, deslizar, girar) e Kits prontos: "Desvie", "Travessia", "Corrida" e "Empilhar". Three.js carrega de um CDN fixado.',
   category: 'games',
   official: true,
   enabledByDefault: false,
@@ -32,6 +32,7 @@ cenas e **jogos** 3D sobre WebGL. O Three.js é carregado de um CDN **fixado**
 ### Cena & objetos
 
 - **Criar cena 3D** — cena + câmera + luz + renderizador num \`<canvas>\`.
+- **Criar cena 3D em tela cheia** — atalho para começar rápido: cria o canvas ocupando a janela inteira (responsivo, redimensiona sozinho) + cena/câmera/luz, com uma **cor de fundo** (o que aparece atrás dos objetos da cena), sem precisar de \`<canvas>\` no HTML. Os blocos individuais continuam disponíveis para montar na mão.
 - **Cor de fundo** / **Posicionar câmera**.
 - **Criar cubo** / **Criar esfera** / **Criar caixa** (largura/altura/profundidade — ótima p/ o chão).
 - **Posição** / **Rotação** (radianos) / **Tamanho (escala)** do objeto.
@@ -86,7 +87,7 @@ cenas e **jogos** 3D sobre WebGL. O Three.js é carregado de um CDN **fixado**
 
 ### Observações
 
-- Crie o \`<canvas>\` no HTML primeiro (mesmo padrão do Jogo 2D).
+- Para começar rápido, use **Criar cena 3D em tela cheia** (cria o canvas sozinho). Para mais controle (HUD próprio, layout), crie o \`<canvas>\` no HTML primeiro e use **Criar cena 3D no canvas** (mesmo padrão do Jogo 2D).
 - Crie os objetos UMA vez (fora do "A cada frame 3D"); dentro do loop só mova/anime.
 - Eixos: x = direita, y = cima, z = em direção à câmera. Rotação em radianos.
 - É um nível **avançado**: aparece na paleta a partir do nível avançado.

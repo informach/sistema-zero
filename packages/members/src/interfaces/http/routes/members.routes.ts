@@ -3,6 +3,7 @@ import type { AccessCheckService } from '../../../application/access-check/acces
 import type { BuyAvatarPartService } from '../../../application/avatar/buy-avatar-part.service'
 import type { EquipAvatarService } from '../../../application/avatar/equip-avatar.service'
 import type { GetAvatarService } from '../../../application/avatar/get-avatar.service'
+import type { SetAvatarPhotoService } from '../../../application/avatar/set-avatar-photo.service'
 import type { GetChildrenStatsService } from '../../../application/children-stats/get-children-stats.service'
 import type { BuyStreakFreezeService } from '../../../application/gamification/buy-streak-freeze.service'
 import type { ClaimMissionService } from '../../../application/gamification/claim-mission.service'
@@ -29,7 +30,8 @@ import type { SaveCourseRatingService } from '../../../application/save-course-r
 import type { SaveVideoPositionService } from '../../../application/save-video-position/save-video-position.service'
 import type { SubmitQuizAttemptService } from '../../../application/submit-quiz-attempt/submit-quiz-attempt.service'
 import type { SubmitStudioProjectService } from '../../../application/submit-studio-project/submit-studio-project.service'
-import { AVATAR_STYLE } from '../../../domain/avatar/parts-catalog'
+import { AVATAR_CHAR_STYLE } from '../../../domain/avatar/avatar3d-catalog'
+import type { RoomState } from '../../../domain/room/room-catalog'
 import { assertInternalCaller, isPrivilegedActor, resolveAccountId, resolveUserId } from '../auth'
 import {
   AccessQuery,
@@ -37,6 +39,7 @@ import {
   AudienceQuery,
   AvatarConfigBody,
   AvatarPartParams,
+  AvatarPhotoBody,
   ChildrenStatsQuery,
   CourseRatingBody,
   EbookResolveParams,
@@ -87,6 +90,7 @@ export interface MembersRoutesDeps {
   getAvatar: GetAvatarService
   buyAvatarPart: BuyAvatarPartService
   equipAvatar: EquipAvatarService
+  setAvatarPhoto: SetAvatarPhotoService
   getPublicProfile: GetPublicProfileService
   getRoom: GetRoomService
   saveRoom: SaveRoomService
@@ -268,11 +272,23 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             userId,
             resolveAccountId(headers),
             query.audience ?? 'kids',
-            { style: body.style ?? AVATAR_STYLE, parts: body.parts },
+            { version: 2, style: body.style ?? AVATAR_CHAR_STYLE, slots: body.slots },
           )
-          return { equipped: equipped.parts, style: equipped.style }
+          return { equipped: equipped.slots, style: equipped.style }
         },
         { body: AvatarConfigBody, query: AudienceQuery },
+      )
+      // Salva a URL do snapshot (a "foto" do avatar) — o BFF sobe o PNG p/ o R2 e manda a URL.
+      .put(
+        '/avatar/photo',
+        async ({ headers, body, query }) =>
+          deps.setAvatarPhoto.execute(
+            resolveUserId(headers),
+            resolveAccountId(headers),
+            query.audience ?? 'kids',
+            body.photoUrl,
+          ),
+        { body: AvatarPhotoBody, query: AudienceQuery },
       )
       // Perfil PÚBLICO de OUTRA criança (peer-viewable: qualquer aluno ativo lê). NÃO usa
       // CheckAccess — é recurso público da comunidade; o alvo é o `:profileId` (não o
@@ -299,11 +315,9 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             resolveUserId(headers),
             resolveAccountId(headers),
             query.audience ?? 'kids',
-            {
-              theme: body.theme,
-              placedItems: body.placedItems,
-              pet: body.pet,
-            },
+            // `rot`/cores/piso/luz chegam frouxos (number/string) — `canonicalizeRoomState`
+            // é o portão (normaliza rot, valida a paleta e a posse). Repassa o corpo inteiro.
+            body as RoomState,
           ),
         { body: RoomStateBody, query: AudienceQuery },
       )

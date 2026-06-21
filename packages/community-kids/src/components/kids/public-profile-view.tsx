@@ -23,7 +23,7 @@ export function PublicProfileView({ profile }: { profile: PublicProfileDTO }) {
         <CardContent className="pt-6">
           <div className="flex flex-col items-center gap-3 text-center sm:flex-row sm:text-left">
             <KidsAvatar
-              config={{ style: profile.avatar.style, parts: profile.avatar.parts }}
+              photoUrl={profile.avatarPhotoUrl ?? null}
               size="xl"
               label={`Avatar de ${profile.name}`}
             />
@@ -56,7 +56,7 @@ export function PublicProfileView({ profile }: { profile: PublicProfileDTO }) {
           <RoomCanvas
             state={profile.room}
             mode="view"
-            avatarConfig={{ style: profile.avatar.style, parts: profile.avatar.parts }}
+            avatarPhotoUrl={profile.avatarPhotoUrl ?? null}
           />
         </section>
       ) : null}

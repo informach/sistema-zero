@@ -7,6 +7,7 @@ import {
   buildCoreToolbox,
   buildIRFromWorkspace,
   ensureBlocklyInitialized,
+  normalizeBlocksStateToFrames,
   registerClassesFlyout,
   registerFunctionsFlyout,
   setSearchProfileForWorkspace,
@@ -512,7 +513,12 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
       })
       return
     }
-    const serialized = JSON.stringify(blocksState)
+    // Migração transparente p/ o modelo CONTAINER: um projeto LEGADO (blocos
+    // soltos, sem frames) é re-embrulhado nos 3 frames preservando a saída.
+    // Idempotente (no-op se já tem frame). As extensões já foram re-registradas no
+    // efeito acima, então o load headless da migração enxerga os blocos delas.
+    const stateToLoad = normalizeBlocksStateToFrames(blocksState)
+    const serialized = JSON.stringify(stateToLoad)
     if (serialized === lastSerializedRef.current) return
     setIsLoadingWorkspace(true)
 
@@ -542,7 +548,7 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
         // intermediários (deixando passar só o FINISHED_LOADING, onde resolvem a
         // assinatura uma única vez) — evita o O(N·M) ao abrir projetos grandes.
         withWorkspaceLoad(() =>
-          Blockly.serialization.workspaces.load(blocksState as Record<string, unknown>, workspace),
+          Blockly.serialization.workspaces.load(stateToLoad as Record<string, unknown>, workspace),
         )
         scheduleBlocklyResize(workspace as Blockly.WorkspaceSvg)
         // `FINISHED_LOADING` é quem normalmente zera o guard e ressincroniza o

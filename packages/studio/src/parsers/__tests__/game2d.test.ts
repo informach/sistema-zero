@@ -722,6 +722,16 @@ describe('parseJS — tela responsiva (fitScreen)', () => {
     expect(parseJS('SZGame2D.fitScreen(100);')).toEqual([{ type: 'g2d:fitScreen', percent: 100 }])
     expect(parseJS('SZGame2D.fitScreen(90);')).toEqual([{ type: 'g2d:fitScreen', percent: 90 }])
   })
+
+  it('reconhece SZGame2D.setupStage(largura, altura, fundo)', () => {
+    expect(parseJS('SZGame2D.setupStage(800, 480, "#0b1020");')).toEqual([
+      { type: 'g2d:setupStage', width: 800, height: 480, bg: '#0b1020' },
+    ])
+    // Código antigo de 2 argumentos: a cor de fundo cai no padrão.
+    expect(parseJS('SZGame2D.setupStage(800, 480);')).toEqual([
+      { type: 'g2d:setupStage', width: 800, height: 480, bg: '#0b1020' },
+    ])
+  })
 })
 
 describe('parseJS — Kit dino + pulo no chão (v0.9.0)', () => {

@@ -3,20 +3,26 @@ import { InsufficientCoinsError } from '../../domain/gamification/coins.errors'
 import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
 import type { RoomRepository } from '../../domain/ports/room-repository.port'
 import { RoomItemFreeError, RoomItemNotFoundError } from '../../domain/room/room.errors'
-import { ROOM_ITEMS_BY_ID, ROOM_THEMES_BY_ID } from '../../domain/room/room-catalog'
+import {
+  ROOM_FLOORS_BY_ID,
+  ROOM_ITEMS_BY_ID,
+  ROOM_LIGHTINGS_BY_ID,
+  ROOM_THEMES_BY_ID,
+} from '../../domain/room/room-catalog'
 
 export interface BuyRoomItemResult {
   alreadyOwned: boolean
   balance: number
 }
 
-/** Item OU tema do quarto (catálogos distintos, ids sem colisão). */
+/** Item, tema, piso OU luz do quarto (catálogos distintos, ids sem colisão). */
 function roomThing(id: string): { tier: 'free' | 'coins'; price: number } | null {
-  const item = ROOM_ITEMS_BY_ID.get(id)
-  if (item) return { tier: item.tier, price: item.price }
-  const theme = ROOM_THEMES_BY_ID.get(id)
-  if (theme) return { tier: theme.tier, price: theme.price }
-  return null
+  const found =
+    ROOM_ITEMS_BY_ID.get(id) ??
+    ROOM_THEMES_BY_ID.get(id) ??
+    ROOM_FLOORS_BY_ID.get(id) ??
+    ROOM_LIGHTINGS_BY_ID.get(id)
+  return found ? { tier: found.tier, price: found.price } : null
 }
 
 /**

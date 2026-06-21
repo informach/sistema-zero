@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import type { Logger } from '@sistemazero/core/logging'
-import type { AvatarConfig } from '../../src/domain/avatar/avatar-config'
+import { type AvatarConfig, defaultAvatarConfig } from '../../src/domain/avatar/avatar-config'
 import {
   type Course,
   type CourseAudience,
@@ -1625,6 +1625,7 @@ export class InMemoryAvatarRepository implements AvatarRepository {
   readonly configs = new Map<string, AvatarConfig>()
   /** Mirror da coluna `account_id` (gravada SÓ no insert da config). */
   readonly accountIds = new Map<string, string>()
+  readonly photoUrls = new Map<string, string>()
   readonly inventory: { userId: string; audience: CourseAudience; partId: string }[] = []
 
   private key(userId: string, audience: CourseAudience): string {
@@ -1665,6 +1666,25 @@ export class InMemoryAvatarRepository implements AvatarRepository {
     if (dup) return { added: false }
     this.inventory.push({ userId, audience, partId })
     return { added: true }
+  }
+
+  async getPhotoUrl(userId: string, audience: CourseAudience): Promise<string | null> {
+    return this.photoUrls.get(this.key(userId, audience)) ?? null
+  }
+
+  async setPhotoUrl(
+    userId: string,
+    accountId: string,
+    audience: CourseAudience,
+    photoUrl: string,
+    _now: Date,
+  ): Promise<void> {
+    const k = this.key(userId, audience)
+    if (!this.configs.has(k)) {
+      this.accountIds.set(k, accountId)
+      this.configs.set(k, defaultAvatarConfig())
+    }
+    this.photoUrls.set(k, photoUrl)
   }
 }
 

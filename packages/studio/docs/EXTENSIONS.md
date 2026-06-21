@@ -130,6 +130,16 @@ antes de o código do aluno rodar). Regras:
       sobrescreveria silenciosamente a definição de outra extensão.
 - [ ] O `toolboxCategory.contents` referencia exatamente os `type` definidos em
       `blocks` — sem órfãos.
+- [ ] **Cor = identidade da categoria** (paleta arco-íris, igual ao núcleo): a
+      extensão tem 1 cor base e as SUB-categorias são TONS dela via
+      `categoryShades(base, n)` (`blockly/colorShades.ts`). Um loop
+      `COLOUR_BY_TYPE` pinta cada bloco com o tom da sua sub-categoria — NÃO
+      hardcode hex por bloco (game-3d já teve uma sub-cat presa em rosa por
+      faltar o loop). O texto do bloco é BRANCO, então os tons não podem clarear
+      demais (o `categoryShades` já é viés-escuro).
+- [ ] Blocos de comando da extensão usam `previousStatement`/`nextStatement:
+      'JSStmt'` — assim encaixam dentro da área ⚙️ **Comportamento** (modelo de
+      blocos-container; ver CLAUDE.md). A geração coleta o que está DENTRO dela.
 
 ### 5. Re-registro e remoção (invariante #5)
 

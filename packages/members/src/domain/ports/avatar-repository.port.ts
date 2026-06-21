@@ -26,4 +26,17 @@ export interface AvatarRepository {
     partId: string,
     now: Date,
   ): Promise<{ added: boolean }>
+  /** URL pública do snapshot (a "foto" do avatar 3D) — `null` se nunca tirou foto. */
+  getPhotoUrl(userId: string, audience: CourseAudience): Promise<string | null>
+  /**
+   * Define a URL do snapshot (upsert): cria a linha com a config default se ainda não
+   * existir (a criança pode salvar a foto antes de equipar). `accountId` só no INSERT.
+   */
+  setPhotoUrl(
+    userId: string,
+    accountId: string,
+    audience: CourseAudience,
+    photoUrl: string,
+    now: Date,
+  ): Promise<void>
 }

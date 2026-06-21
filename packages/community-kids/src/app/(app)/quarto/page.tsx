@@ -1,5 +1,4 @@
 import { RoomBuilder } from '@/components/kids/room/room-builder'
-import type { AvatarConfig } from '@/lib/avatar-catalog'
 import { getAvatarReadonly } from '@/server/members'
 
 export const dynamic = 'force-dynamic'
@@ -10,10 +9,8 @@ export const dynamic = 'force-dynamic'
  */
 export default async function QuartoPage() {
   const avatarRes = await getAvatarReadonly()
-  const avatarConfig: AvatarConfig | null =
-    avatarRes.status === 200 && avatarRes.body
-      ? { style: avatarRes.body.style, parts: avatarRes.body.equipped }
-      : null
+  const avatarPhotoUrl =
+    avatarRes.status === 200 && avatarRes.body ? (avatarRes.body.photoUrl ?? null) : null
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
@@ -23,7 +20,7 @@ export default async function QuartoPage() {
           Monte do seu jeito! Arraste as peças e deixe tudo com a sua cara. 🏠
         </p>
       </div>
-      <RoomBuilder avatarConfig={avatarConfig} />
+      <RoomBuilder avatarPhotoUrl={avatarPhotoUrl} />
     </div>
   )
 }

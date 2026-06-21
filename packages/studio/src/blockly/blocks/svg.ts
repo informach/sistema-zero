@@ -1,4 +1,4 @@
-import { CATEGORY_COLORS } from '../theme'
+import { CATEGORY_COLORS, categoryShades } from '../theme'
 import type { BlockDefinition } from './types'
 
 const C = CATEGORY_COLORS.svg
@@ -303,12 +303,12 @@ export const SVG_BLOCKS: BlockDefinition[] = [
 export const SVG_GROUPS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '🖼️ Estrutura',
-    colour: '#0284c7',
+    colour: '#2f6df0',
     types: ['sz_html_svg', 'sz_svg_group', 'sz_svg_use'],
   },
   {
     name: '⬛ Formas',
-    colour: '#0ea5e9',
+    colour: '#1f5be0',
     types: [
       'sz_svg_circle',
       'sz_svg_ellipse',
@@ -319,10 +319,10 @@ export const SVG_GROUPS: { name: string; colour: string; types: string[] }[] = [
       'sz_svg_path',
     ],
   },
-  { name: '🔤 Texto', colour: '#38bdf8', types: ['sz_svg_text'] },
+  { name: '🔤 Texto', colour: '#5188f5', types: ['sz_svg_text'] },
   {
     name: '🎨 Aparência',
-    colour: '#7dd3fc',
+    colour: '#7aa3f7',
     types: [
       'sz_css_fill',
       'sz_css_stroke',
@@ -334,7 +334,12 @@ export const SVG_GROUPS: { name: string; colour: string; types: string[] }[] = [
   },
 ]
 
-// Cor = navegação: pinta cada bloco com a cor do seu grupo.
+// IDENTIDADE: cada sub-grupo recebe um TOM da cor base da categoria (SVG),
+// derivado claro→escuro (categoryShades) — os literais em SVG_GROUPS são placeholders.
+const SVG_SHADES = categoryShades(CATEGORY_COLORS.svg, SVG_GROUPS.length)
+SVG_GROUPS.forEach((g, i) => {
+  g.colour = SVG_SHADES[i] ?? CATEGORY_COLORS.svg
+})
 const SVG_COLOUR_BY_TYPE = new Map<string, string>(
   SVG_GROUPS.flatMap((g) => g.types.map((t) => [t, g.colour] as const)),
 )

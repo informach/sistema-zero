@@ -61,6 +61,25 @@ describe('gameTwoDRuntime', () => {
     expect(api.isColliding(a, b)).toBe(true)
     expect(api.isColliding(a, c)).toBe(false)
   })
+
+  it('setupStage cria a tela com id "tela", centraliza e aplica a cor de fundo', () => {
+    document.body.innerHTML = ''
+    ;(api as unknown as { setupStage: (w: number, h: number, bg: string) => void }).setupStage(
+      800,
+      480,
+      '#123456',
+    )
+    const canvas = document.getElementById('tela') as HTMLCanvasElement | null
+    expect(canvas).not.toBeNull()
+    expect(canvas?.tagName.toLowerCase()).toBe('canvas')
+    // Centralizado via flex no body (a sobra fica igual dos dois lados).
+    expect(document.body.style.display).toBe('flex')
+    expect(document.body.style.alignItems).toBe('center')
+    expect(document.body.style.justifyContent).toBe('center')
+    // Cor de fundo aplicada no body (a sobra) e no canvas.
+    expect(document.body.style.background).toContain('#123456')
+    expect(canvas?.style.background).toContain('#123456')
+  })
 })
 
 describe('gameTwoDRuntime — Kit dino + pulo no chão (v0.9.0)', () => {

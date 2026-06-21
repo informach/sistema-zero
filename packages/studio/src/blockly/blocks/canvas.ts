@@ -1,4 +1,4 @@
-import { CATEGORY_COLORS } from '../theme'
+import { CATEGORY_COLORS, categoryShades } from '../theme'
 import type { BlockDefinition } from './types'
 
 const C = CATEGORY_COLORS.canvas
@@ -687,7 +687,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
 export const CANVAS_GROUPS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '🖼️ Tela',
-    colour: '#34d399',
+    colour: '#16b87a',
     types: [
       'sz_html_canvas',
       'sz_canvas_setup',
@@ -698,7 +698,7 @@ export const CANVAS_GROUPS: { name: string; colour: string; types: string[] }[] 
   },
   {
     name: '🎨 Pincel',
-    colour: '#22d3ee',
+    colour: '#22c98a',
     types: [
       'sz_canvas_fill_style',
       'sz_canvas_stroke_style',
@@ -711,7 +711,7 @@ export const CANVAS_GROUPS: { name: string; colour: string; types: string[] }[] 
   },
   {
     name: '⬛ Formas',
-    colour: '#4ade80',
+    colour: '#0f9d66',
     types: [
       'sz_canvas_fill_rect',
       'sz_canvas_stroke_rect',
@@ -723,7 +723,7 @@ export const CANVAS_GROUPS: { name: string; colour: string; types: string[] }[] 
   },
   {
     name: '✏️ Traçado',
-    colour: '#38bdf8',
+    colour: '#2ed69a',
     types: [
       'sz_canvas_begin_path',
       'sz_canvas_move_to',
@@ -742,7 +742,7 @@ export const CANVAS_GROUPS: { name: string; colour: string; types: string[] }[] 
   },
   {
     name: '🔤 Texto',
-    colour: '#818cf8',
+    colour: '#138f5e',
     types: [
       'sz_canvas_font',
       'sz_canvas_text_align',
@@ -754,7 +754,7 @@ export const CANVAS_GROUPS: { name: string; colour: string; types: string[] }[] 
   },
   {
     name: '🔄 Transformar',
-    colour: '#a78bfa',
+    colour: '#3ad9a3',
     types: [
       'sz_canvas_save',
       'sz_canvas_restore',
@@ -763,10 +763,10 @@ export const CANVAS_GROUPS: { name: string; colour: string; types: string[] }[] 
       'sz_canvas_scale',
     ],
   },
-  { name: '🖼️ Imagem', colour: '#f472b6', types: ['sz_canvas_draw_image'] },
+  { name: '🖼️ Imagem', colour: '#1aa870', types: ['sz_canvas_draw_image'] },
   {
     name: '🎞️ Animação & entrada',
-    colour: '#fbbf24',
+    colour: '#0d7d50',
     types: [
       'sz_canvas_anim_loop',
       'sz_canvas_cancel_anim',
@@ -778,7 +778,12 @@ export const CANVAS_GROUPS: { name: string; colour: string; types: string[] }[] 
   },
 ]
 
-// Cor = navegação: pinta cada bloco com a cor do seu grupo.
+// IDENTIDADE: cada sub-grupo recebe um TOM da cor base da categoria (Canvas),
+// derivado claro→escuro (categoryShades) — os literais em CANVAS_GROUPS são placeholders.
+const CANVAS_SHADES = categoryShades(CATEGORY_COLORS.canvas, CANVAS_GROUPS.length)
+CANVAS_GROUPS.forEach((g, i) => {
+  g.colour = CANVAS_SHADES[i] ?? CATEGORY_COLORS.canvas
+})
 const CANVAS_COLOUR_BY_TYPE = new Map<string, string>(
   CANVAS_GROUPS.flatMap((g) => g.types.map((t) => [t, g.colour] as const)),
 )

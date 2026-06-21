@@ -13,6 +13,11 @@ const COLUMN_ORDER: readonly Category[] = ['html', 'css', 'js']
 
 /** Classifica um bloco top-level pela categoria a partir do seu tipo. */
 function categoryOf(type: string): Category {
+  // Os 3 blocos-CONTAINER vão para a coluna da sua categoria → Estrutura | Aparência
+  // | Comportamento ficam lado a lado (HTML | CSS | JS), nessa ordem.
+  if (type === 'sz_frame_structure') return 'html'
+  if (type === 'sz_frame_appearance') return 'css'
+  if (type === 'sz_frame_behavior') return 'js'
   if (type.startsWith('sz_html_') || type === 'sz_adv_raw_html') return 'html'
   if (type.startsWith('sz_css_') || type === 'sz_adv_raw_css') return 'css'
   // JS, Canvas, extensões e o "código avançado JS" caem na coluna de JS.
@@ -55,6 +60,11 @@ export function organizeBlocks(workspace: Blockly.Workspace | null | undefined):
     for (const category of COLUMN_ORDER) {
       const group = groups[category]
       if (group.length === 0) continue
+      // O bloco-CONTAINER (frame) fica no topo da coluna; rascunhos soltos da mesma
+      // categoria descem abaixo dele.
+      group.sort(
+        (a, b) => Number(b.type.startsWith('sz_frame_')) - Number(a.type.startsWith('sz_frame_')),
+      )
       let y = START_Y
       let colWidth = 0
       for (const top of group) {

@@ -4,6 +4,7 @@ import { ADVANCED_BLOCKS } from './advanced'
 import { CANVAS_BLOCKS, CANVAS_GROUPS } from './canvas'
 import { CSS_BLOCKS, CSS_GROUPS } from './css'
 import { DOM_BLOCKS } from './dom'
+import { FRAME_BLOCKS } from './frames'
 import { FUNCTION_BLOCKS } from './functions'
 import { HTML_BLOCKS, HTML_GROUPS } from './html'
 import { JS_BLOCKS, JS_GROUPS } from './js'
@@ -22,6 +23,7 @@ export {
   CSS_BLOCKS,
   CSS_GROUPS,
   DOM_BLOCKS,
+  FRAME_BLOCKS,
   FUNCTION_BLOCKS,
   HTML_BLOCKS,
   HTML_GROUPS,
@@ -36,6 +38,7 @@ export {
 }
 
 export const CORE_BLOCKS: BlockDefinition[] = [
+  ...FRAME_BLOCKS,
   ...HTML_BLOCKS,
   ...SVG_BLOCKS,
   ...CSS_BLOCKS,

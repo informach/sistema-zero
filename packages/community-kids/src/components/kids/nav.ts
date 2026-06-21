@@ -6,6 +6,7 @@ import {
   House,
   Images,
   MessagesSquare,
+  Smile,
 } from 'lucide-react'
 
 export interface NavItem {
@@ -34,6 +35,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   { href: '/mural-dos-criadores', label: 'Mural', icon: Images, match: '/mural-dos-criadores' },
   { href: '/estudio', label: 'Estúdio', icon: Blocks, match: '/estudio' },
+  { href: '/meu-avatar', label: 'Avatar', icon: Smile, match: '/meu-avatar' },
   { href: '/quarto', label: 'Quarto', icon: House },
   { href: '/perfil', label: 'Perfil', icon: CircleUserRound },
 ]

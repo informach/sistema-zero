@@ -3,25 +3,54 @@ import type { CSSEntry, HTMLNode, HTMLTag, JSExpr, JSStatement, SZIR } from '#ir
 import { getSuperName } from './blocks/extendsMutator'
 import { getParamNames } from './blocks/paramsMutator'
 
+/** Tipos dos 3 blocos-frame (containers estilo MakeCode). */
+export const FRAME_STRUCTURE = 'sz_frame_structure'
+export const FRAME_APPEARANCE = 'sz_frame_appearance'
+export const FRAME_BEHAVIOR = 'sz_frame_behavior'
+
 /**
- * Percorre o workspace e devolve a SZ-IR. Mantém os blocos top-level em ordem
- * de empilhamento vertical, e dentro de cada pilha caminha pela cadeia
- * `getNextBlock`.
+ * Percorre o workspace e devolve a SZ-IR — modelo CONTAINER (estilo MakeCode `on
+ * start`): SÓ o que está DENTRO de um frame gera. Pega os filhos da 🧱 Estrutura
+ * (→ ir.html), da 🎨 Aparência (→ ir.css) e do ⚙️ Comportamento (→ ir.js, na ORDEM
+ * da pilha). **Bloco solto fora dos frames é RASCUNHO** (ignorado pela geração).
+ * A inclusão é por CONTÊINER, não por posição/ordem no canvas.
  *
- * Blocos não-reconhecidos viram entradas de "modo avançado" para que nada se
- * perca durante a edição.
+ * Defensivo: se houver frames duplicados (a trava de "1 por projeto" é da Fase 3),
+ * usa o PRIMEIRO de cada tipo, de forma determinística.
+ *
+ * Blocos não-reconhecidos DENTRO de um frame viram "modo avançado" (nada se perde).
  */
 export function buildIRFromWorkspace(workspace: Blockly.Workspace): SZIR {
   const ir: SZIR = { html: [], css: [], js: [], extensions: [] }
-  const tops = sortTopBlocksReadingOrder(workspace.getTopBlocks(true))
-  const seenExtensions = new Set<string>()
+  const seen = new Set<string>()
+  const tops = workspace.getTopBlocks(true).filter((b) => !b.isInsertionMarker())
+  const firstOf = (type: string): Blockly.Block | null => tops.find((b) => b.type === type) ?? null
 
-  for (const top of tops) {
+  const structure = firstOf(FRAME_STRUCTURE)
+  if (structure) ir.html.push(...getHtmlChildren(structure, 'CHILDREN', seen))
+  const appearance = firstOf(FRAME_APPEARANCE)
+  if (appearance) ir.css.push(...getCssEntryChildren(appearance, 'CHILDREN', seen))
+  const behavior = firstOf(FRAME_BEHAVIOR)
+  if (behavior) ir.js.push(...getStatementChildren(behavior, 'CHILDREN', seen))
+
+  ir.extensions = Array.from(seen).map((id) => ({ extensionId: id }))
+  return ir
+}
+
+/**
+ * Coleta PLANA (modelo ANTIGO, pré-frames): anda TODOS os blocos top-level em
+ * ordem de leitura e roteia por tipo (HTML/CSS/JS). Usada SÓ pela MIGRAÇÃO
+ * (`normalizeBlocksStateToFrames`) para reproduzir a saída de projetos legados
+ * (sem frames) antes de re-emiti-los já framados — preserva o programa da criança.
+ */
+export function collectFlatFromWorkspace(workspace: Blockly.Workspace): SZIR {
+  const ir: SZIR = { html: [], css: [], js: [], extensions: [] }
+  const seen = new Set<string>()
+  for (const top of sortTopBlocksReadingOrder(workspace.getTopBlocks(true))) {
     if (top.isInsertionMarker()) continue
-    visitStack(top, ir, seenExtensions)
+    visitStack(top, ir, seen)
   }
-
-  ir.extensions = Array.from(seenExtensions).map((id) => ({ extensionId: id }))
+  ir.extensions = Array.from(seen).map((id) => ({ extensionId: id }))
   return ir
 }
 
@@ -307,6 +336,8 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'var', name: f(block, 'NAME') }
     case 'sz_val_bool':
       return { type: 'bool', value: f(block, 'VALUE') === 'true' }
+    case 'sz_val_null':
+      return { type: 'null' }
     case 'sz_g2d_key_down':
       return { type: 'g2d:keyDown', key: f(block, 'KEY') || 'ArrowRight' }
     case 'sz_g2d_touches':
@@ -3300,6 +3331,17 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
     case 'sz_g2d_fit_screen':
       seen.add('game-2d')
       return { kind: 'js', value: { type: 'g2d:fitScreen', percent: fn(block, 'PERCENT', 100) } }
+    case 'sz_g2d_setup_stage':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:setupStage',
+          width: fn(block, 'W', 800),
+          height: fn(block, 'H', 480),
+          bg: f(block, 'BG'),
+        },
+      }
 
     // ---- Kit Nave & Asteroides (v0.7.0) ----
     case 'sz_g2d_spawn_bullet':
@@ -3646,6 +3688,12 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       return {
         kind: 'js',
         value: { type: 'g3d:createScene', canvasId: f(block, 'CANVAS'), varName: f(block, 'NAME') },
+      }
+    case 'sz_g3d_create_fullscreen_scene':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: { type: 'g3d:createFullscreenScene', varName: f(block, 'NAME'), bg: f(block, 'BG') },
       }
     case 'sz_g3d_set_background':
       seen.add('game-3d')

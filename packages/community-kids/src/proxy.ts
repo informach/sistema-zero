@@ -15,6 +15,7 @@ export const proxy = createMemberProxy({
   protectedPrefixes: [
     '/cursos',
     '/perfil',
+    '/meu-avatar',
     '/quarto',
     '/crianca',
     '/clube-dos-criadores',
@@ -39,6 +40,6 @@ export const config = {
   // (o "Compartilhar" do Estúdio Completo, multipart, com `requireUploadSession` próprio).
   // `api/studio/describe` FICA no matcher (JSON pequeno: ganha o anti-CSRF same-origin do proxy).
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|api/me/avatar|api/hub/uploads/image|api/hub/showcase|api/studio/publish|api/studio/play|api/profiles/[^/]+/avatar).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/me/avatar|api/members/avatar/snapshot|api/hub/uploads/image|api/hub/showcase|api/studio/publish|api/studio/play|api/profiles/[^/]+/avatar).*)',
   ],
 }

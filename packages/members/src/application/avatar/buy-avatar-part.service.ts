@@ -1,5 +1,5 @@
 import { AvatarPartFreeError, AvatarPartNotFoundError } from '../../domain/avatar/avatar.errors'
-import { AVATAR_PARTS_BY_ID } from '../../domain/avatar/parts-catalog'
+import { AVATAR3D_PARTS_BY_ID } from '../../domain/avatar/avatar3d-catalog'
 import type { CourseAudience } from '../../domain/course/course'
 import { InsufficientCoinsError } from '../../domain/gamification/coins.errors'
 import type { AvatarRepository } from '../../domain/ports/avatar-repository.port'
@@ -30,7 +30,7 @@ export class BuyAvatarPartService {
     audience: CourseAudience,
     partId: string,
   ): Promise<BuyAvatarPartResult> {
-    const part = AVATAR_PARTS_BY_ID.get(partId)
+    const part = AVATAR3D_PARTS_BY_ID.get(partId)
     if (!part) throw new AvatarPartNotFoundError()
     if (part.tier === 'free') throw new AvatarPartFreeError()
 

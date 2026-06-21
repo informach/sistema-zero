@@ -437,28 +437,42 @@ export interface LeagueMeView {
   myPosition: number
 }
 
-// ── Avatar (guarda-roupa por camadas) — espelha as views do members ─────────
-/** Config equipada enviada ao salvar (`PUT /members/avatar`). `parts` = camada→peça. */
-export interface AvatarConfigInput {
-  style?: string
-  parts: Record<string, string>
+// ── Avatar 3D (configurador por categorias) — espelha as views do members ───
+/** Peça+cor equipada por categoria (`color` ausente em categoria sem paleta). */
+export interface AvatarSlotView {
+  asset: string
+  color?: string
 }
 
-/** Uma peça do catálogo na visão do aluno (lojinha/editor). `layer` largo (forward-compat). */
+/** Config equipada enviada ao salvar (`PUT /members/avatar`). `slots` = categoria→peça+cor. */
+export interface AvatarConfigInput {
+  style?: string
+  slots: Record<string, AvatarSlotView>
+}
+
+/** Uma peça do catálogo na visão do aluno (lojinha). `category` largo (forward-compat). */
 export interface AvatarPartView {
   id: string
-  layer: string
+  category: string
   tier: 'free' | 'coins'
   price: number
   owned: boolean
   locked: boolean
 }
 
-/** `GET /members/avatar` — equipado + catálogo + saldo Zappy. */
+/** `GET /members/avatar` — equipado + catálogo + paletas + foto + saldo Zappy. */
 export interface AvatarStateView {
   style: string
-  equipped: Record<string, string>
+  equipped: Record<string, AvatarSlotView>
   parts: AvatarPartView[]
+  /** Paleta de cores por categoria (categoria sem cor é omitida). */
+  palettes?: Record<string, string[]>
+  /** Oclusão de render (chapéu real esconde o cabelo). */
+  hideGroups?: Record<string, string[]>
+  /** Categoria removível → id da peça "nenhum". */
+  removable?: Record<string, string>
+  /** Foto (snapshot) atual do avatar 3D — `null` se ainda não salvou. */
+  photoUrl?: string | null
   balance: number
 }
 
@@ -470,8 +484,13 @@ export interface AvatarPurchaseResult {
 
 /** Resposta de salvar a config (`PUT /members/avatar`). */
 export interface AvatarEquipResult {
-  equipped: Record<string, string>
+  equipped: Record<string, AvatarSlotView>
   style: string
+}
+
+/** Resposta de salvar a foto/snapshot (`POST /api/members/avatar/snapshot`). */
+export interface AvatarSnapshotResult {
+  url: string
 }
 
 // ── Quarto virtual ──────────────────────────────────────────────────────────
@@ -479,12 +498,22 @@ export interface RoomPlacedItem {
   itemId: string
   x: number
   y: number
+  /** Rotação em quartos de volta (0=0°, 1=90°, 2=180°, 3=270°). Ausente = 0. */
+  rot?: 0 | 1 | 2 | 3
 }
-/** Estado montado do quarto (tema + itens posicionados + pet). Serializável. */
+/** Cor de cada parede do recorte em "L" (hex da paleta). Lado ausente = default do tema. */
+export interface RoomWallColors {
+  left?: string
+  right?: string
+}
+/** Estado montado do quarto (tema + itens + pet + paredes/piso/luz). Serializável. */
 export interface RoomStateView {
   theme: string
   placedItems: RoomPlacedItem[]
   pet: string | null
+  wallColors?: RoomWallColors
+  floor?: string
+  lighting?: string
 }
 /** Item/tema do catálogo do quarto (lojinha/editor). `category` largo (forward-compat). */
 export interface RoomItemView {
@@ -507,6 +536,9 @@ export interface RoomEditorView {
   state: RoomStateView
   items: RoomItemView[]
   themes: RoomThemeView[]
+  /** Pisos e presets de iluminação/clima (mesmo shape de tema). */
+  floors: RoomThemeView[]
+  lightings: RoomThemeView[]
   balance: number
 }
 export interface RoomBuyResult {
@@ -527,7 +559,9 @@ export interface PublicProfileGameView {
   ranking: { position: number; totalStudents: number } | null
   /** SÓ as conquistas que a criança tem (não o catálogo). */
   badges: { slug: string; unlockedAt: string }[]
-  avatar: { style: string; parts: Record<string, string> }
+  avatar: { style: string; slots: Record<string, AvatarSlotView> }
+  /** Foto (snapshot) do avatar 3D — mostrada no card público; `null` se nunca tirou. */
+  avatarPhotoUrl?: string | null
   /** Quarto virtual (modo visualização) — `null` se a criança nunca montou. */
   room: RoomStateView | null
 }

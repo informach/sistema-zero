@@ -55,8 +55,9 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > `coin_events` + carteira em `gamification_profiles`), `0019` (avatar:
 > `avatar_configs`/`avatar_inventory`), `0020` (quarto: `room_state`/`room_inventory`),
 > `0021` (missões + freeze/férias: `mission_claims` + `streak_freezes`/
-> `freeze_granted_month`/`vacation_from`/`vacation_to`) e `0022` (ligas semanais:
-> `league_membership`) — **aplicadas** no Postgres compartilhado (`sistemazero`, :5433).
+> `freeze_granted_month`/`vacation_from`/`vacation_to`), `0022` (ligas semanais:
+> `league_membership`) e `0023` (avatar 3D: `avatar_configs.photo_url` — a foto/snapshot)
+> — **aplicadas** no Postgres compartilhado (`sistemazero`, :5433).
 
 ## Conceito central (decisões travadas com o usuário)
 
@@ -389,7 +390,7 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
 > mudou regra de XP/moeda/missão/streak/loja? Atualize o manual também.
 >
 > A expansão 06/2026 (6 fases) somou ao núcleo XP/streak/badges os subsistemas:
-> **Zappy Coins** (moeda, migration `0018`), **avatar** DiceBear (`0019`), **quarto**
+> **Zappy Coins** (moeda, migration `0018`), **avatar** 3D (`0019`+`0023`), **quarto**
 > virtual (`0020`), **missões** diárias/semanais + **streak-freeze/férias** (`0021`) e
 > **ligas semanais** (`0022`), além de **badges de maestria do Estúdio** + **perfil
 > público com `getRanking`**.
@@ -487,16 +488,34 @@ estender o streak). Atividade ANTERIOR às migrations não tem marco retroativo
   (`STREAK_FREEZE_PRICE`, teto `MAX_STREAK_FREEZES` = 5). `advanceStreak`/`effectiveStreak`/
   `freezesNeeded`/`inVacation` no domain puro consomem/projetam os protetores; `effectiveStreak`
   é o streak de EXIBIÇÃO (projeta 0 quando a cobertura acabou, sem zerar o persistido).
-- **Avatar** DiceBear (migration `0019`, `avatar_configs`/`avatar_inventory`): peças grátis ou
-  compradas com moedas; compra charge-first idempotente (`BuyAvatarPartService`, espelha o
-  quarto). Members é a fonte da verdade de existência/preço/posse; a apresentação vive no
-  community-kids. Cosmético puro.
+- **Avatar 3D** (migrations `0019` `avatar_configs`/`avatar_inventory` + `0023`
+  `avatar_configs.photo_url`): personagem por CATEGORIAS (`domain/avatar/avatar3d-catalog.ts`:
+  12 categorias — head/hair/eyes/eyebrows/nose/facialHair/glasses/hat/top/bottom/shoes/accessory
+  —, ~62 peças, paletas de COR por categoria, defaults grátis, mapa de oclusão `hat→hair`).
+  `AvatarConfig` v2 (`{version:2, style, slots: cat→{asset,color?}}` em `equipped` jsonb):
+  `canonicalize` TOLERANTE (config DiceBear legada/null → default 3D, sem migração) +
+  `assertEquippableConfig` ESTRITO (peça existe/categoria certa/grátis OU possuída + cor ∈
+  paleta). Cor é GRÁTIS (possuir a peça libera a paleta); compra de peça charge-first
+  idempotente (`BuyAvatarPartService`, `reason:'spend_cosmetic'`). A FOTO (snapshot do canvas
+  3D) é a imagem do avatar em todo o app: o BFF sobe o PNG p/ o R2 e grava a URL via
+  **`PUT /members/avatar/photo`** (`SetAvatarPhotoService`, valida http(s)); `AvatarStateView`
+  traz `equipped`/`parts`/`palettes`/`hideGroups`/`removable`/`photoUrl`/`balance` e
+  `PublicProfileView` traz `avatarPhotoUrl`. Members é a fonte da verdade de existência/preço/
+  posse/paleta; a APRESENTAÇÃO (rótulo PT) vive no community-kids (`lib/avatar3d-catalog.ts`),
+  travada por `tests/unit/catalog-conformance.test.ts`. Cosmético puro; kids-only (v1). O
+  render 3D (GLB real — Quaternius CC0 via pack do WawaSensei — R3F) vive no community-kids; os
+  ids casam 1:1 com `public/avatar3d/parts/<id>.glb` — aqui é só o portão.
 - **Quarto virtual** (migration `0020`, `room_state` jsonb last-write-wins + `room_inventory`):
-  grade 12×8, tema de fundo + móveis/decoração/plantas/luzes posicionáveis + 1 pet. Sink
-  cosmético de moedas. `canonicalizeRoomState` (domain) é o ÚNICO portão — roda na leitura
-  (`GetRoomService`) E na escrita (`SaveRoomService`) e descarta o que não é possuído/não cabe;
-  compra via `BuyRoomItemService` (charge-first idempotente, `reason:'spend_room'`).
-  Endpoints BFF kids: `GET|PUT /api/members/room` + `POST /api/members/room/items/:id/buy`.
+  grade 12×8, tema + móveis/decoração/plantas/luzes posicionáveis + 1 pet. **Visual 3D no kids
+  (06/2026)** — o members ganhou catálogos À PARTE `ROOM_FLOORS` (pisos) e `ROOM_LIGHTINGS`
+  (iluminação/clima) + paleta `ROOM_WALL_PALETTE` (pintar paredes, grátis), e o estado JSONB ganhou
+  campos OPCIONAIS `placedItems[].rot` (0–3), `wallColors`, `floor`, `lighting` (SEM migração).
+  Sink cosmético de moedas. `canonicalizeRoomState` (domain) é o ÚNICO portão — leitura
+  (`GetRoomService`, que projeta `items/themes/floors/lightings`) E escrita (`SaveRoomService`):
+  descarta não-possuído/fora-da-grade (footprint GIRADO), `rot`→0..3, cor fora da paleta e piso/luz
+  não-possuído omitidos. Compra via `BuyRoomItemService` (`roomThing` resolve item/tema/piso/luz;
+  charge-first idempotente, `reason:'spend_room'`). DTO `RoomStateBody` + rota alargados p/ os campos
+  novos. Endpoints BFF kids: `GET|PUT /api/members/room` + `POST /api/members/room/items/:id/buy`.
 - **Missões diárias/semanais** (migration `0021`, `mission_claims`): estilo Duolingo,
   content-driven — catálogo EM CÓDIGO (`DAILY_MISSIONS` 5 / `WEEKLY_MISSIONS` 3 em
   `domain/gamification/missions.ts`; sem seed, igual badges). Atribuição DETERMINÍSTICA por
@@ -651,9 +670,9 @@ de vídeo/last-accessed — migration `0001`), `quiz_attempts` (histórico de qu
 migration `0002`), `course_ratings` (classificação do curso, UNIQUE user+course —
 migration `0004`), `processed_webhooks`, `studio_submissions` (entrega do Estúdio,
 migrations `0013`/`0016`) e a **gamificação**: `gamification_profiles`/`xp_events`/
-`user_badges` (`0009`–`0015`), `coin_events` (Zappy Coins, `0018`), `avatar_configs`/
-`avatar_inventory` (`0019`), `room_state`/`room_inventory` (`0020`), `mission_claims`
-(`0021`) e `league_membership` (ligas, `0022`).
+`user_badges` (`0009`–`0015`), `coin_events` (Zappy Coins, `0018`), `avatar_configs`
+(`0019` + `photo_url` no `0023`)/`avatar_inventory` (`0019`), `room_state`/`room_inventory`
+(`0020`), `mission_claims` (`0021`) e `league_membership` (ligas, `0022`).
 
 ## Sentry (monitoramento de erros)
 

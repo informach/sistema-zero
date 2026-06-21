@@ -162,6 +162,13 @@
       "when": 1781978338544,
       "tag": "0022_add_league",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1782047617208,
+      "tag": "0023_adorable_warhawk",
+      "breakpoints": true
     }
   ]
 }

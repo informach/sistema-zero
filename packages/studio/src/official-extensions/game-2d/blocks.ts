@@ -1,9 +1,12 @@
 import type { ExtensionToolboxCategory } from '#extensions'
+import { categoryShades } from '../../blockly/colorShades'
 
-const C = '#f472b6'
-// Eventos "Quando…" (hats) ganham uma cor própria (dourado), à la Scratch, para
-// se destacarem como gatilhos. Sem previousStatement/nextStatement: são chapéus.
-const EVENT_C = '#fbbf24'
+// Jogo 2D = UMA cor da categoria: ROSA. As sub-categorias são TONS de rosa
+// (derivados por categoryShades mais abaixo).
+const C = '#ec4899'
+// Eventos "Quando…" (hats): também em rosa (o loop de cor abaixo dá a eles o tom
+// da sub-categoria "Quando…"; este valor só vale p/ um hat fora de qualquer grupo).
+const EVENT_C = '#f06bb0'
 
 export const gameTwoDBlocks = [
   {
@@ -1267,6 +1270,21 @@ export const gameTwoDBlocks = [
     tooltip: 'A nave acompanha o dedo/mouse no eixo X — ótimo para jogar no celular.',
   },
 
+  {
+    type: 'sz_g2d_setup_stage',
+    message0: 'Preparar o jogo em tela cheia, tela %1 × %2, fundo %3',
+    args0: [
+      { type: 'field_number', name: 'W', value: 800, min: 1 },
+      { type: 'field_number', name: 'H', value: 480, min: 1 },
+      { type: 'field_colour_sz', name: 'BG', colour: '#0b1020' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Atalho para começar: prepara a tela do jogo (largura × altura) para ocupar a janela inteira, mantendo a proporção e se reajustando sozinha, e centralizada. A cor do fundo combina com o jogo — fica no canvas e na sobra ao redor. Use uma vez no começo. Não precisa criar a tela de desenho no HTML.',
+  },
+
   // ---- Kit "Nave & Asteroides": desenhos prontos + efeitos (v0.7.0) ----
   {
     type: 'sz_g2d_fit_screen',
@@ -2038,6 +2056,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     colour: '#9966ff',
     types: [
       'sz_g2d_clear',
+      'sz_g2d_setup_stage',
       'sz_g2d_fit_screen',
       'sz_g2d_blink',
       'sz_g2d_flash',
@@ -2189,6 +2208,12 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   },
 ]
 
+// Cada sub-categoria recebe um TOM do ciano da categoria (claro→escuro),
+// derivado da cor base por categoryShades — sobrepõe os literais de SUBCATS.
+const SUBCAT_SHADES = categoryShades(C, SUBCATS.length)
+SUBCATS.forEach((sc, i) => {
+  sc.colour = SUBCAT_SHADES[i] ?? C
+})
 // Cor = navegação: pinta cada bloco com a cor do seu grupo (sobrepõe o C/EVENT_C
 // usado na definição). Mantém os dois em sincronia automaticamente.
 const COLOUR_BY_TYPE = new Map<string, string>(

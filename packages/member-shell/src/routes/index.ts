@@ -33,14 +33,19 @@ import { watermarkGate } from '../server/watermark-queue'
 
 const R2_PRIVATE_PREFIX = 'r2priv:'
 
-/** Config equipada do avatar (camada→peça). O members valida posse/camada — aqui só forma. */
+/** Config 3D do avatar (categoria→{peça,cor}). O members valida posse/categoria/paleta — aqui só forma. */
 const AVATAR_SLUG = z.string().regex(/^[a-z0-9-]{1,64}$/)
+const AVATAR_HEX = z.string().regex(/^#[0-9a-fA-F]{6}$/)
 const AvatarConfigSchema = z.object({
   style: z.string().max(40).optional(),
-  parts: z.record(z.string().max(40), AVATAR_SLUG),
+  slots: z.record(
+    z.string().max(40),
+    z.object({ asset: AVATAR_SLUG, color: AVATAR_HEX.optional() }),
+  ),
 })
 
-/** Estado do quarto (o members canonicaliza contra o inventário — aqui só forma). */
+/** Estado do quarto (o members canonicaliza contra o inventário/paleta — aqui só forma). */
+const HEX_COLOR = z.string().regex(/^#[0-9a-fA-F]{6}$/)
 const RoomStateSchema = z.object({
   theme: AVATAR_SLUG,
   placedItems: z
@@ -49,10 +54,15 @@ const RoomStateSchema = z.object({
         itemId: AVATAR_SLUG,
         x: z.number().int().min(0).max(64),
         y: z.number().int().min(0).max(64),
+        // União de literais (não z.number) → o tipo inferido é 0|1|2|3, casando RoomPlacedItem.
+        rot: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]).optional(),
       }),
     )
     .max(60),
   pet: AVATAR_SLUG.nullable(),
+  wallColors: z.object({ left: HEX_COLOR.optional(), right: HEX_COLOR.optional() }).optional(),
+  floor: AVATAR_SLUG.optional(),
+  lighting: AVATAR_SLUG.optional(),
 })
 
 /** Janela de férias (ou null/null p/ limpar) — o members revalida ordem/teto. */
@@ -782,8 +792,8 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     },
   }
 
-  // ── Avatar (guarda-roupa por camadas) ────────────────────────────────────
-  /** Estado do avatar (equipado + catálogo + saldo) — editor/lojinha client-side. */
+  // ── Avatar 3D (configurador por categorias) ──────────────────────────────
+  /** Estado do avatar (equipado + catálogo + paletas + foto + saldo) — configurador client-side. */
   const avatarGet = {
     GET: async () => {
       const { status, body } = await members.getAvatar()
@@ -816,6 +826,56 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
       }
       const { status, body } = await members.equipAvatar(parsed.data)
       return NextResponse.json(body ?? { ok: status === 200 }, { status })
+    },
+  }
+
+  /**
+   * Salva a FOTO (snapshot) do avatar 3D: multipart (`file` PNG do canvas) → sharp→WebP
+   * → R2 (namespace `avatar3d`, por perfil) → `PUT /members/avatar/photo` com a URL.
+   * Diferente do `/me/avatar` (foto da CONTA), AQUI a sessão de PERFIL é PERMITIDA — é a
+   * criança salvando o PRÓPRIO avatar gamificado. Reusa a pipeline endurecida do avatar
+   * (sessão estrita + anti-CSRF same-origin no `requireUploadSession`). FORA do matcher.
+   */
+  const avatarSnapshot = {
+    POST: async (req: Request) => {
+      const user = await media.requireUploadSession(req)
+      if (user instanceof NextResponse) return user
+
+      const oversized = rejectOversizedRequest(req, MAX_IMAGE_BYTES)
+      if (oversized) return oversized
+
+      try {
+        const form = await req.formData()
+        const file = form.get('file')
+        if (!(file instanceof File) || file.size === 0) {
+          return NextResponse.json(
+            { error: { code: 'VALIDATION_ERROR', message: 'Envie a foto do avatar.' } },
+            { status: 400 },
+          )
+        }
+        if (!IMAGE_MIME_TYPES.has(file.type)) {
+          return NextResponse.json(
+            { error: { code: 'VALIDATION_ERROR', message: 'Formato inválido. Use PNG ou WebP.' } },
+            { status: 400 },
+          )
+        }
+        if (file.size > MAX_IMAGE_BYTES) {
+          return NextResponse.json(
+            { error: { code: 'VALIDATION_ERROR', message: 'A foto deve ter no máximo 5MB.' } },
+            { status: 400 },
+          )
+        }
+
+        const stored = await optimizeAndStoreAvatar(file, user.id, 'avatar3d')
+        const { status, body } = await members.setAvatarPhoto(stored.url)
+        if (status !== 200) {
+          return NextResponse.json(body ?? { error: { code: 'UPDATE_FAILED' } }, { status })
+        }
+        await removeStaleAvatars(user.id, stored.key, 'avatar3d')
+        return NextResponse.json({ url: stored.url })
+      } catch (error) {
+        return mediaErrorResponse(error)
+      }
     },
   }
 
@@ -1254,6 +1314,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     avatarGet,
     avatarBuy,
     avatarEquip,
+    avatarSnapshot,
     roomGet,
     roomSave,
     roomBuy,

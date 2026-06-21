@@ -1,16 +1,68 @@
 'use client'
 
-import { Coins, Lock, Trash2 } from 'lucide-react'
+import {
+  Coins,
+  Frame,
+  LayoutGrid,
+  Lightbulb,
+  Lock,
+  Paintbrush,
+  Palette,
+  PawPrint,
+  RotateCw,
+  Sofa,
+  Sprout,
+  Sun,
+  Trash2,
+} from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import type { AvatarConfig } from '@/lib/avatar-catalog'
 import { cn } from '@/lib/cn'
-import { ROOM_GRID, ROOM_ITEM_INFO, ROOM_THEME_INFO } from '@/lib/room-catalog'
-import type { RoomEditorView, RoomItemView, RoomStateView } from '@/lib/types'
+import {
+  floorInfo,
+  lightingPreset,
+  ROOM_GRID,
+  ROOM_ITEM_INFO,
+  ROOM_THEME_INFO,
+  ROOM_WALL_PALETTE,
+  resolveRoomAppearance,
+} from '@/lib/room-catalog'
+import type { RoomEditorView, RoomItemView, RoomStateView, RoomThemeView } from '@/lib/types'
 import { KidsMascot } from '../mascot'
+import { effectiveFootprint, type Rot } from './coords'
 import { RoomCanvas } from './room-canvas'
 
 const PLACEABLE: ReadonlySet<string> = new Set(['furniture', 'decor', 'plant', 'light'])
+
+type TabId =
+  | 'moveis'
+  | 'enfeites'
+  | 'plantas'
+  | 'luzes'
+  | 'piso'
+  | 'parede'
+  | 'clima'
+  | 'bichinho'
+  | 'tema'
+
+const TABS: { id: TabId; label: string; icon: typeof Sofa }[] = [
+  { id: 'moveis', label: 'Móveis', icon: Sofa },
+  { id: 'enfeites', label: 'Enfeites', icon: Frame },
+  { id: 'plantas', label: 'Plantas', icon: Sprout },
+  { id: 'luzes', label: 'Luzes', icon: Lightbulb },
+  { id: 'piso', label: 'Piso', icon: LayoutGrid },
+  { id: 'parede', label: 'Parede', icon: Paintbrush },
+  { id: 'clima', label: 'Clima', icon: Sun },
+  { id: 'bichinho', label: 'Bichinho', icon: PawPrint },
+  { id: 'tema', label: 'Tema', icon: Palette },
+]
+
+const CAT_BY_TAB: Partial<Record<TabId, string>> = {
+  moveis: 'furniture',
+  enfeites: 'decor',
+  plantas: 'plant',
+  luzes: 'light',
+}
 
 /** Posição inicial (escalonada) de um item novo, clampada à grade. */
 function nextSlot(count: number, w: number): { x: number; y: number } {
@@ -18,8 +70,8 @@ function nextSlot(count: number, w: number): { x: number; y: number } {
   return { x: Math.min(maxX, (count * 2) % (maxX + 1)), y: 1 }
 }
 
-/** Editor do quarto: tela ao vivo + lojinha (móveis/temas/bichinho). Salva via PUT. */
-export function RoomBuilder({ avatarConfig }: { avatarConfig?: AvatarConfig | null }) {
+/** Editor do quarto 3D: cena ao vivo + barra de categorias (móveis/piso/parede/clima/…). */
+export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null }) {
   const [data, setData] = useState<RoomEditorView | null>(null)
   const [draft, setDraft] = useState<RoomStateView>({
     theme: 'aconchego',
@@ -30,6 +82,8 @@ export function RoomBuilder({ avatarConfig }: { avatarConfig?: AvatarConfig | nu
   const [selected, setSelected] = useState<number | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const [tab, setTab] = useState<TabId>('moveis')
+  const [brush, setBrush] = useState<string>(ROOM_WALL_PALETTE[0]?.hex ?? '#f3ede1')
 
   useEffect(() => {
     let alive = true
@@ -49,6 +103,8 @@ export function RoomBuilder({ avatarConfig }: { avatarConfig?: AvatarConfig | nu
 
   const ownedById = useMemo(() => new Map((data?.items ?? []).map((i) => [i.id, i.owned])), [data])
   const isOwned = (id: string) => ownedById.get(id) ?? false
+  const appearance = resolveRoomAppearance(draft)
+  const paintColor = tab === 'parede' ? brush : null
 
   function moveItem(index: number, x: number, y: number) {
     setDraft((d) => {
@@ -56,8 +112,9 @@ export function RoomBuilder({ avatarConfig }: { avatarConfig?: AvatarConfig | nu
       if (!it) return d
       const info = ROOM_ITEM_INFO[it.itemId]
       if (!info) return d
-      const nx = Math.max(0, Math.min(ROOM_GRID.cols - info.w, x))
-      const ny = Math.max(0, Math.min(ROOM_GRID.rows - info.h, y))
+      const fp = effectiveFootprint(info.w, info.h, (it.rot ?? 0) as Rot)
+      const nx = Math.max(0, Math.min(ROOM_GRID.cols - fp.w, x))
+      const ny = Math.max(0, Math.min(ROOM_GRID.rows - fp.h, y))
       const placedItems = d.placedItems.map((p, i) => (i === index ? { ...p, x: nx, y: ny } : p))
       return { ...d, placedItems }
     })
@@ -81,6 +138,35 @@ export function RoomBuilder({ avatarConfig }: { avatarConfig?: AvatarConfig | nu
     setSelected(null)
   }
 
+  function rotateSelected() {
+    if (selected === null) return
+    setDraft((d) => {
+      const it = d.placedItems[selected]
+      if (!it) return d
+      const info = ROOM_ITEM_INFO[it.itemId]
+      if (!info) return d
+      const rot = (((it.rot ?? 0) + 1) % 4) as Rot
+      const fp = effectiveFootprint(info.w, info.h, rot)
+      const x = Math.max(0, Math.min(ROOM_GRID.cols - fp.w, it.x))
+      const y = Math.max(0, Math.min(ROOM_GRID.rows - fp.h, it.y))
+      const placedItems = d.placedItems.map((p, i) => (i === selected ? { ...p, rot, x, y } : p))
+      return { ...d, placedItems }
+    })
+  }
+
+  function paintWall(wall: 'left' | 'right', color: string) {
+    setDraft((d) => ({ ...d, wallColors: { ...d.wallColors, [wall]: color } }))
+  }
+
+  function applyTheme(id: string) {
+    // Tema reseta os overrides → mostra a aparência bundle do preset (a criança ajusta depois).
+    setDraft((d) => ({
+      theme: id,
+      placedItems: d.placedItems,
+      pet: d.pet,
+    }))
+  }
+
   async function buy(id: string) {
     if (busy) return
     setBusy(id)
@@ -95,12 +181,16 @@ export function RoomBuilder({ avatarConfig }: { avatarConfig?: AvatarConfig | nu
         )
         return
       }
+      const own = (list: RoomThemeView[] | undefined) =>
+        (list ?? []).map((t) => (t.id === id ? { ...t, owned: true, locked: false } : t))
       setData((s) =>
         s
           ? {
               ...s,
               items: s.items.map((i) => (i.id === id ? { ...i, owned: true, locked: false } : i)),
-              themes: s.themes.map((t) => (t.id === id ? { ...t, owned: true, locked: false } : t)),
+              themes: own(s.themes),
+              floors: own(s.floors),
+              lightings: own(s.lightings),
             }
           : s,
       )
@@ -131,9 +221,6 @@ export function RoomBuilder({ avatarConfig }: { avatarConfig?: AvatarConfig | nu
     }
   }
 
-  const decor = (data?.items ?? []).filter((i) => PLACEABLE.has(i.category))
-  const pets = (data?.items ?? []).filter((i) => i.category === 'pet')
-
   return (
     <div className="flex flex-col gap-4">
       <div className="relative">
@@ -141,10 +228,12 @@ export function RoomBuilder({ avatarConfig }: { avatarConfig?: AvatarConfig | nu
           <RoomCanvas
             state={draft}
             mode="edit"
-            avatarConfig={avatarConfig}
+            avatarPhotoUrl={avatarPhotoUrl}
             selectedIndex={selected}
             onSelect={setSelected}
             onMove={moveItem}
+            onPaintWall={paintWall}
+            paintColor={paintColor}
           />
         ) : (
           <div className="grid aspect-[3/2] w-full place-items-center rounded-2xl border-2 border-border bg-muted">
@@ -152,13 +241,22 @@ export function RoomBuilder({ avatarConfig }: { avatarConfig?: AvatarConfig | nu
           </div>
         )}
         {selected !== null ? (
-          <button
-            type="button"
-            onClick={removeSelected}
-            className="absolute top-2 right-2 inline-flex items-center gap-1 rounded-full bg-(--sz-hot) px-3 py-1.5 font-bold text-white text-xs shadow"
-          >
-            <Trash2 className="size-3.5" /> Tirar
-          </button>
+          <div className="absolute top-2 right-2 flex gap-2">
+            <button
+              type="button"
+              onClick={rotateSelected}
+              className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 font-bold text-primary-foreground text-xs shadow"
+            >
+              <RotateCw className="size-3.5" /> Girar
+            </button>
+            <button
+              type="button"
+              onClick={removeSelected}
+              className="inline-flex items-center gap-1 rounded-full bg-(--sz-hot) px-3 py-1.5 font-bold text-white text-xs shadow"
+            >
+              <Trash2 className="size-3.5" /> Tirar
+            </button>
+          </div>
         ) : null}
       </div>
 
@@ -176,97 +274,116 @@ export function RoomBuilder({ avatarConfig }: { avatarConfig?: AvatarConfig | nu
         </button>
       </div>
 
-      <Section title="Móveis e enfeites">
-        <ShopGrid items={decor} owned={isOwned} busy={busy} onPick={addItem} onBuy={buy} />
-      </Section>
+      {/* Barra de categorias (estilo MyDreamRoom) */}
+      <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1">
+        {TABS.map((t) => {
+          const Icon = t.icon
+          const active = tab === t.id
+          return (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setTab(t.id)}
+              aria-pressed={active}
+              className={cn(
+                'flex min-w-16 shrink-0 flex-col items-center gap-1 rounded-2xl border-2 px-3 py-2 font-semibold text-xs transition-colors',
+                active ? 'border-primary bg-primary/10' : 'border-border',
+              )}
+            >
+              <Icon className="size-5" />
+              {t.label}
+            </button>
+          )
+        })}
+      </div>
 
-      <Section title="Temas">
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
-          {(data?.themes ?? []).map((t) => {
-            const info = ROOM_THEME_INFO[t.id]
-            if (!info) return null
-            return (
-              <button
-                key={t.id}
-                type="button"
-                disabled={!!busy && t.locked}
-                onClick={() => (t.owned ? setDraft((d) => ({ ...d, theme: t.id })) : buy(t.id))}
-                className={cn(
-                  'flex flex-col items-center gap-1 rounded-2xl border-2 p-2 text-xs transition-colors',
-                  draft.theme === t.id ? 'border-primary' : 'border-border',
-                )}
-              >
-                <span
-                  className="h-8 w-full rounded-lg"
-                  style={{ background: info.bg }}
-                  aria-hidden="true"
-                />
-                <span className="font-semibold">{info.labelPt}</span>
-                {t.locked ? (
-                  <span className="inline-flex items-center gap-0.5 text-muted-foreground">
-                    <Lock className="size-3" /> {t.price}
-                  </span>
-                ) : null}
-              </button>
-            )
-          })}
-        </div>
-      </Section>
-
-      <Section title="Bichinho">
-        <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
-          <button
-            type="button"
-            onClick={() => setDraft((d) => ({ ...d, pet: null }))}
-            className={cn(
-              'flex flex-col items-center gap-1 rounded-2xl border-2 p-2 text-xs',
-              draft.pet === null ? 'border-primary' : 'border-border',
-            )}
-          >
-            <span className="text-2xl" aria-hidden="true">
-              🚫
-            </span>
-            <span className="font-semibold">Nenhum</span>
-          </button>
-          {pets.map((p) => {
-            const info = ROOM_ITEM_INFO[p.id]
-            if (!info) return null
-            return (
-              <button
-                key={p.id}
-                type="button"
-                disabled={!!busy && p.locked}
-                onClick={() => (p.owned ? setDraft((d) => ({ ...d, pet: p.id })) : buy(p.id))}
-                className={cn(
-                  'flex flex-col items-center gap-1 rounded-2xl border-2 p-2 text-xs',
-                  draft.pet === p.id ? 'border-primary' : 'border-border',
-                )}
-              >
-                <span className="text-2xl" aria-hidden="true">
-                  {info.emoji}
-                </span>
-                <span className="font-semibold">{info.labelPt}</span>
-                {p.locked ? (
-                  <span className="inline-flex items-center gap-0.5 text-muted-foreground">
-                    <Lock className="size-3" /> {p.price}
-                  </span>
-                ) : null}
-              </button>
-            )
-          })}
-        </div>
-      </Section>
+      {/* Bandeja da categoria ativa */}
+      <div>{data ? renderTray() : null}</div>
     </div>
   )
-}
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section>
-      <h2 className="sz-display mb-2 text-base">{title}</h2>
-      {children}
-    </section>
-  )
+  function renderTray() {
+    if (!data) return null
+    const cat = CAT_BY_TAB[tab]
+    if (cat) {
+      const items = data.items.filter((i) => PLACEABLE.has(i.category) && i.category === cat)
+      return <ShopGrid items={items} owned={isOwned} busy={busy} onPick={addItem} onBuy={buy} />
+    }
+    if (tab === 'piso') {
+      return (
+        <ChoiceGrid
+          choices={data.floors}
+          activeId={appearance.floorId}
+          busy={busy}
+          onApply={(id) => setDraft((d) => ({ ...d, floor: id }))}
+          onBuy={buy}
+          label={(id) => floorInfo(id).labelPt}
+          preview={(id) => {
+            const f = floorInfo(id)
+            return (
+              <span
+                className="block h-8 w-full rounded-lg border-2"
+                style={{ background: f.color, borderColor: f.color2 }}
+                aria-hidden="true"
+              />
+            )
+          }}
+        />
+      )
+    }
+    if (tab === 'clima') {
+      return (
+        <ChoiceGrid
+          choices={data.lightings}
+          activeId={appearance.lightingId}
+          busy={busy}
+          onApply={(id) => setDraft((d) => ({ ...d, lighting: id }))}
+          onBuy={buy}
+          label={(id) => lightingPreset(id).labelPt}
+          preview={(id) => (
+            <span
+              className="block h-8 w-full rounded-lg"
+              style={{ background: lightingPreset(id).background }}
+              aria-hidden="true"
+            />
+          )}
+        />
+      )
+    }
+    if (tab === 'tema') {
+      return (
+        <ChoiceGrid
+          choices={data.themes}
+          activeId={draft.theme}
+          busy={busy}
+          onApply={applyTheme}
+          onBuy={buy}
+          label={(id) => ROOM_THEME_INFO[id]?.labelPt ?? id}
+          preview={(id) => (
+            <span
+              className="block h-8 w-full rounded-lg"
+              style={{ background: ROOM_THEME_INFO[id]?.bg ?? '#eee' }}
+              aria-hidden="true"
+            />
+          )}
+        />
+      )
+    }
+    if (tab === 'parede') {
+      return <WallTray brush={brush} onPick={setBrush} />
+    }
+    // bichinho
+    const pets = data.items.filter((i) => i.category === 'pet')
+    return (
+      <PetTray
+        pets={pets}
+        current={draft.pet}
+        busy={busy}
+        onPick={(id) => setDraft((d) => ({ ...d, pet: id }))}
+        onBuy={buy}
+      />
+    )
+  }
 }
 
 function ShopGrid({
@@ -282,6 +399,7 @@ function ShopGrid({
   onPick: (item: RoomItemView) => void
   onBuy: (id: string) => void
 }) {
+  if (items.length === 0) return <Empty />
   return (
     <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
       {items.map((it) => {
@@ -292,8 +410,6 @@ function ShopGrid({
           <button
             key={it.id}
             type="button"
-            // Durante uma compra, desabilita os OUTROS itens travados (evita
-            // dead-click sem feedback); item já possuído segue selecionável.
             disabled={!!busy && locked}
             onClick={() => (locked ? onBuy(it.id) : onPick(it))}
             className="flex flex-col items-center gap-1 rounded-2xl border-2 border-border p-2 text-xs transition-colors hover:border-primary disabled:opacity-60"
@@ -312,4 +428,135 @@ function ShopGrid({
       })}
     </div>
   )
+}
+
+function ChoiceGrid({
+  choices,
+  activeId,
+  busy,
+  onApply,
+  onBuy,
+  label,
+  preview,
+}: {
+  choices: RoomThemeView[]
+  activeId: string
+  busy: string | null
+  onApply: (id: string) => void
+  onBuy: (id: string) => void
+  label: (id: string) => string
+  preview: (id: string) => React.ReactNode
+}) {
+  return (
+    <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+      {choices.map((c) => (
+        <button
+          key={c.id}
+          type="button"
+          disabled={!!busy && c.locked}
+          onClick={() => (c.locked ? onBuy(c.id) : onApply(c.id))}
+          className={cn(
+            'flex flex-col items-center gap-1 rounded-2xl border-2 p-2 text-xs transition-colors',
+            activeId === c.id ? 'border-primary' : 'border-border',
+          )}
+        >
+          {preview(c.id)}
+          <span className="truncate font-semibold">{label(c.id)}</span>
+          {c.locked ? (
+            <span className="inline-flex items-center gap-0.5 text-muted-foreground">
+              <Lock className="size-3" /> {c.price}
+            </span>
+          ) : null}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function WallTray({ brush, onPick }: { brush: string; onPick: (hex: string) => void }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="font-semibold text-muted-foreground text-sm">
+        Escolha uma cor e toque numa parede 🖌️
+      </p>
+      <div className="grid grid-cols-6 gap-2 sm:grid-cols-9">
+        {ROOM_WALL_PALETTE.map((c) => (
+          <button
+            key={c.hex}
+            type="button"
+            aria-label={`Pintar de ${c.labelPt}`}
+            aria-pressed={brush === c.hex}
+            onClick={() => onPick(c.hex)}
+            className={cn(
+              'aspect-square rounded-full border-2 transition-transform hover:scale-110',
+              brush === c.hex ? 'border-foreground ring-2 ring-primary' : 'border-border',
+            )}
+            style={{ background: c.hex }}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function PetTray({
+  pets,
+  current,
+  busy,
+  onPick,
+  onBuy,
+}: {
+  pets: RoomItemView[]
+  current: string | null
+  busy: string | null
+  onPick: (id: string | null) => void
+  onBuy: (id: string) => void
+}) {
+  return (
+    <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
+      <button
+        type="button"
+        onClick={() => onPick(null)}
+        className={cn(
+          'flex flex-col items-center gap-1 rounded-2xl border-2 p-2 text-xs',
+          current === null ? 'border-primary' : 'border-border',
+        )}
+      >
+        <span className="text-2xl" aria-hidden="true">
+          🚫
+        </span>
+        <span className="font-semibold">Nenhum</span>
+      </button>
+      {pets.map((p) => {
+        const info = ROOM_ITEM_INFO[p.id]
+        if (!info) return null
+        return (
+          <button
+            key={p.id}
+            type="button"
+            disabled={!!busy && p.locked}
+            onClick={() => (p.locked ? onBuy(p.id) : onPick(p.id))}
+            className={cn(
+              'flex flex-col items-center gap-1 rounded-2xl border-2 p-2 text-xs',
+              current === p.id ? 'border-primary' : 'border-border',
+            )}
+          >
+            <span className="text-2xl" aria-hidden="true">
+              {info.emoji}
+            </span>
+            <span className="font-semibold">{info.labelPt}</span>
+            {p.locked ? (
+              <span className="inline-flex items-center gap-0.5 text-muted-foreground">
+                <Lock className="size-3" /> {p.price}
+              </span>
+            ) : null}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+function Empty() {
+  return <p className="py-4 text-center text-muted-foreground text-sm">Nada por aqui ainda.</p>
 }

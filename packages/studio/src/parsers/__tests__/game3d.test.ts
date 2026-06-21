@@ -39,6 +39,18 @@ describe('parseJS — helpers SZGame3D.* (game-3d)', () => {
     ])
   })
 
+  it('createFullscreenScene: var-init com cor e round-trip (gerar → parsear)', () => {
+    expect(parseJS('const cena = SZGame3D.createFullscreenScene("#102030");')).toEqual([
+      { type: 'g3d:createFullscreenScene', varName: 'cena', bg: '#102030' },
+    ])
+    // Sem o argumento de cor (código antigo) → cor de fundo padrão.
+    const ir = parseJS('const cena = SZGame3D.createFullscreenScene();')
+    expect(ir).toEqual([{ type: 'g3d:createFullscreenScene', varName: 'cena', bg: '#0b1020' }])
+    const code = compileStatements(ir, 0)
+    expect(code).toContain('SZGame3D.createFullscreenScene("#0b1020")')
+    expect(parseJS(code)).toEqual(ir)
+  })
+
   it('reconhece os comandos de uma linha (setBackground/setCameraPosition/setPosition/setRotation)', () => {
     expect(parseJS('SZGame3D.setBackground(cena, "#0b1020");')).toEqual([
       { type: 'g3d:setBackground', worldVar: 'cena', color: '#0b1020' },

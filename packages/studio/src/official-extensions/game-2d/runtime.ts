@@ -2353,6 +2353,10 @@ export const gameTwoDRuntime = `(function () {
       c.style.display = 'block';
       if (document.body) document.body.appendChild(c);
     }
+    // Convenção do studio: a tela tem id "tela". Garante que o canvas criado pelo
+    // facilitador (setupStage) seja achável por getElementById("tela") — senão o
+    // bloco "pegar tela de desenho" devolve null.
+    if (c && !c.id) c.id = 'tela';
     _stageCanvas = c;
     try { _stageCtx = c.getContext('2d'); } catch (e) {}
     return _stageCtx;
@@ -2419,6 +2423,37 @@ export const gameTwoDRuntime = `(function () {
       _resizeHooked = true;
       try { window.addEventListener('resize', function () { try { requestAnimationFrame(_resizeBacking); } catch (e) { _resizeBacking(); } }); } catch (e) {}
     }
+  }
+  // Facilitador: prepara o palco em tela cheia (responsivo) num passo só. Define o
+  // tamanho do "mundo" do jogo (w x h) e chama fitScreen para o canvas ocupar a
+  // janela mantendo a proporção. É o bloco "preparar o jogo em tela cheia".
+  function setupStage(w, h, bg) {
+    ensureStage();
+    var c = _stageCanvas;
+    if (!c) { try { c = document.querySelector('canvas'); } catch (e) {} }
+    if (c && typeof w === 'number' && w > 0 && typeof h === 'number' && h > 0) {
+      c.width = Math.round(w);
+      c.height = Math.round(h);
+      // Recongela o tamanho lógico no novo tamanho quando o fitScreen rodar.
+      _logicalW = 0; _logicalH = 0;
+    }
+    // Cor de fundo escolhida no bloco: vai no canvas E no fundo da janela (a sobra
+    // ao redor do canvas centralizado), para a tela inteira combinar com o jogo.
+    var color = (typeof bg === 'string' && bg) ? bg : '#0b1020';
+    if (c) c.style.background = color;
+    if (document.body) {
+      document.body.style.margin = '0';
+      document.body.style.background = color;
+      // Centraliza o canvas na janela: quando a proporção da TELA não bate com a
+      // do jogo (ex.: jogo 800x480 numa janela 800x600), o espaço que sobra fica
+      // igual dos dois lados, em vez de tudo num canto. O clique continua certo
+      // porque o mapeamento do ponteiro usa getBoundingClientRect (posição real).
+      document.body.style.minHeight = '100vh';
+      document.body.style.display = 'flex';
+      document.body.style.alignItems = 'center';
+      document.body.style.justifyContent = 'center';
+    }
+    fitScreen(100);
   }
   // Expõe 'ctx' e 'tela' como globais preguiçosos. O setter REDEFINE a propriedade
   // como um valor normal — assim um eventual 'const ctx = ...' antigo (canvasSetup)
@@ -3094,6 +3129,7 @@ export const gameTwoDRuntime = `(function () {
     drawSprite: _camWrap(drawSprite),
     clear: clear,
     fitScreen: fitScreen,
+    setupStage: setupStage,
     spawnBullet: spawnBullet,
     arrowsX: arrowsX,
     blink: blink,

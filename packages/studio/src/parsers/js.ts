@@ -719,6 +719,9 @@ function mapDeclarator(decl: Node, node: Node, ctx: ParseCtx): JSStatement[] | n
   if (init?.type === 'BooleanLiteral') {
     return [{ type: 'var', name, value: { type: 'bool', value: init.value }, ...kindField }]
   }
+  if (init?.type === 'NullLiteral') {
+    return [{ type: 'var', name, value: { type: 'null' }, ...kindField }]
+  }
   // Demais inicializadores (contas, Math.*, variável, etc.): viram um `var`
   // se o valor for representável por um bloco; senão preserva como avançado.
   const value = toExpr(init, ctx)
@@ -2512,6 +2515,15 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       const percent = numericLiteralValue(args[0])
       return percent !== null ? { type: 'g2d:fitScreen', percent } : null
     }
+    case 'setupStage': {
+      const width = numericLiteralValue(args[0])
+      const height = numericLiteralValue(args[1])
+      // 3º argumento (cor de fundo) é opcional: código antigo de 2 args cai no padrão.
+      const bg = args[2]?.type === 'StringLiteral' ? (args[2].value as string) : '#0b1020'
+      return width !== null && height !== null
+        ? { type: 'g2d:setupStage', width, height, bg }
+        : null
+    }
     case 'spawnAsteroid': {
       // generator: SZGame2D.spawnAsteroid(g, { x, y, size, color, vx, vy })
       const groupVar = identifierName(args[0])
@@ -3550,6 +3562,11 @@ function tryMatchGame3DVarInit(name: string, init: Node, _ctx: ParseCtx): JSStat
   if (method === 'createScene') {
     if (args[0]?.type !== 'StringLiteral') return null
     return { type: 'g3d:createScene', canvasId: args[0].value as string, varName: name }
+  }
+  if (method === 'createFullscreenScene') {
+    // Argumento de cor opcional: código antigo sem cor cai no padrão.
+    const bg = args[0]?.type === 'StringLiteral' ? (args[0].value as string) : '#0b1020'
+    return { type: 'g3d:createFullscreenScene', varName: name, bg }
   }
   if (method === 'createBox') {
     const worldVar = identifierName(args[0])
@@ -4729,6 +4746,8 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     }
     case 'BooleanLiteral':
       return { type: 'bool', value: node.value }
+    case 'NullLiteral':
+      return { type: 'null' }
     case 'Identifier':
       return { type: 'var', name: node.name }
     // `this` (o elemento atual dentro de um handler).
@@ -5180,6 +5199,7 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'color':
     case 'colorAlpha':
     case 'bool':
+    case 'null':
     case 'var':
     case 'global':
     case 'canvasDim':

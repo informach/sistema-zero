@@ -72,7 +72,7 @@ function IconButton({
       onClick={onClick}
       style={{ touchAction: 'manipulation' }}
       className={cn(
-        'inline-flex h-9 w-9 items-center justify-center rounded-md text-sz-fg-soft transition-colors hover:bg-sz-bg hover:text-sz-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60 disabled:cursor-not-allowed disabled:opacity-50',
+        'inline-flex h-9 w-9 items-center justify-center rounded-xl text-sz-fg-soft transition-colors hover:bg-sz-bg hover:text-sz-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60 disabled:cursor-not-allowed disabled:opacity-50',
         active && 'bg-sz-accent/15 text-sz-accent hover:bg-sz-accent/20',
       )}
     >
@@ -367,7 +367,7 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
               }
             }}
             className={cn(
-              'min-w-0 rounded border border-sz-border bg-sz-bg px-2.5 py-1 text-sm text-sz-fg',
+              'min-w-0 rounded-lg border border-sz-border bg-sz-bg px-2.5 py-1 text-sm text-sz-fg',
               nameMaxW,
             )}
           />
@@ -405,7 +405,7 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
         {availableModes.length > 0 && (
           <div
             className={cn(
-              'flex shrink-0 rounded-md border border-sz-border bg-sz-bg p-0.5',
+              'flex shrink-0 rounded-xl border border-sz-border bg-sz-bg p-0.5',
               isCompact ? 'ml-0.5' : 'ml-4',
             )}
           >
@@ -419,7 +419,7 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
                   onClick={() => setMode(m)}
                   style={{ touchAction: 'manipulation' }}
                   className={cn(
-                    'rounded text-sm font-medium leading-none transition-colors',
+                    'rounded-lg text-sm font-medium leading-none transition-colors',
                     isCompact ? 'px-2.5 py-1.5' : 'px-4 py-1.5',
                     active ? 'bg-sz-accent text-sz-bg' : 'text-sz-fg-soft hover:text-sz-fg',
                   )}
@@ -441,7 +441,7 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
               title={t('share.action')}
               aria-label={t('share.action')}
               style={{ touchAction: 'manipulation' }}
-              className="inline-flex h-9 items-center gap-1.5 rounded-md px-2.5 text-sz-accent transition-colors hover:bg-sz-accent/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60"
+              className="inline-flex h-9 items-center gap-1.5 rounded-xl px-2.5 text-sz-accent transition-colors hover:bg-sz-accent/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60"
             >
               <IconShare />
               {!isCompact && <span className="text-sm font-medium">{t('share.action')}</span>}

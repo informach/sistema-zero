@@ -1,6 +1,6 @@
 import { compileStatements } from '#generators'
 import type { CSSEntry, JSExpr, JSStatement, KeyframesCSS, SZIR } from '#ir'
-import { readingOrderIndices, SHADOW_PRESETS } from './buildIR'
+import { FRAME_APPEARANCE, FRAME_BEHAVIOR, FRAME_STRUCTURE, SHADOW_PRESETS } from './buildIR'
 
 /** Tags container (têm input CHILDREN) → tipo de bloco. */
 const CONTAINER_BLOCK: Partial<Record<string, string>> = {
@@ -108,31 +108,11 @@ export interface SerializedBlocklyWorkspace {
   }
 }
 
-/** Uma pilha top-level de uma categoria: onde começa (índice no array de blocos) e onde fica. */
-export interface StackPlacement {
-  startIndex: number
-  x: number
-  y: number
-}
-
-/** Agrupamento das colunas por categoria, derivado do `blocksState` anterior. */
-export interface StacksLayout {
-  html: StackPlacement[]
-  css: StackPlacement[]
-  js: StackPlacement[]
-}
-
 export interface BuildWorkspaceStateOptions {
   startX?: number
   startY?: number
-  /** Distância horizontal entre as colunas de HTML, CSS e JS. */
+  /** Distância horizontal entre as colunas dos 3 frames. */
   colGap?: number
-  /**
-   * Layout a preservar (várias pilhas/colunas do mesmo tipo). Quando ausente,
-   * cada categoria vira uma única pilha nas colunas padrão. Ver
-   * {@link layoutFromBlocksState}.
-   */
-  layout?: StacksLayout | null
 }
 
 export function buildWorkspaceStateFromIR(
@@ -141,73 +121,39 @@ export function buildWorkspaceStateFromIR(
 ): SerializedBlocklyWorkspace {
   const startX = options.startX ?? 32
   const startY = options.startY ?? 32
-  // Cada categoria vai para a SUA coluna (HTML | CSS | JS). Antes HTML e CSS
-  // dividiam a mesma coluna e, numa landing page grande, a pilha de HTML cobria
-  // a de CSS. Em colunas separadas as pilhas crescem para baixo sem se sobrepor.
+  // Modelo CONTAINER (estilo MakeCode): cada categoria vira UM frame — 🧱 Estrutura
+  // (HTML) | 🎨 Aparência (CSS) | ⚙️ Comportamento (JS) — com os blocos da categoria
+  // DENTRO. É o inverso EXATO de buildIRFromWorkspace (que lê os filhos de cada
+  // frame), então blocos→IR→blocos é estável. Uma coluna por frame.
   const colGap = options.colGap ?? 420
-  const layout = options.layout
-  const stacks: SerializedBlocklyBlock[] = []
 
-  const htmlBlocks = ir.html.map(htmlNodeToBlock).filter(isBlock)
-  stacks.push(...splitIntoStacks(htmlBlocks, layout?.html, startX, startY))
+  const htmlChildren = ir.html.map(htmlNodeToBlock).filter(isBlock)
+  const cssChildren = ir.css.flatMap(cssEntryToBlocks)
+  const jsChildren = statementsToBlocks(ir.js)
 
-  const cssBlocks = ir.css.flatMap(cssEntryToBlocks)
-  stacks.push(...splitIntoStacks(cssBlocks, layout?.css, startX + colGap, startY))
+  const structure = position(block(FRAME_STRUCTURE, {}, { CHILDREN: htmlChildren }), startX, startY)
+  const appearance = position(
+    block(FRAME_APPEARANCE, {}, { CHILDREN: cssChildren }),
+    startX + colGap,
+    startY,
+  )
+  const behavior = position(
+    block(FRAME_BEHAVIOR, {}, { CHILDREN: jsChildren }),
+    startX + colGap * 2,
+    startY,
+  )
 
-  const jsBlocks = statementsToBlocks(ir.js)
-  stacks.push(...splitIntoStacks(jsBlocks, layout?.js, startX + colGap * 2, startY))
-
-  return { blocks: { languageVersion: 0, blocks: stacks } }
+  return { blocks: { languageVersion: 0, blocks: [structure, appearance, behavior] } }
 }
 
 /**
- * Divide os blocos de uma categoria em pilhas top-level. Sem `placements`, vira
- * UMA pilha na coluna padrão (comportamento histórico). Com `placements` (do
- * layout preservado), fatia o array nos `startIndex` e posiciona cada pilha onde
- * o aluno a deixou. A cobertura é completa (nenhum bloco se perde): a 1ª fatia
- * começa em 0 e a última vai até o fim; blocos a mais (statements adicionados)
- * entram na última pilha.
+ * `blocksState` com os 3 frames VAZIOS — semeia o projeto novo (`createEmptyProject`)
+ * já com 🧱 Estrutura / 🎨 Aparência / ⚙️ Comportamento na tela, como o `on start` do
+ * MakeCode. (O `BlocksMode` faz short-circuit quando o IR está todo vazio, por isso o
+ * projeto novo precisa do `blocksState`, não só do IR.)
  */
-function splitIntoStacks(
-  blocks: SerializedBlocklyBlock[],
-  placements: StackPlacement[] | undefined,
-  defaultX: number,
-  defaultY: number,
-): SerializedBlocklyBlock[] {
-  if (!placements || placements.length === 0) {
-    const head = chain(blocks)
-    return head ? [position(head, defaultX, defaultY)] : []
-  }
-  const out: SerializedBlocklyBlock[] = []
-  for (let i = 0; i < placements.length; i++) {
-    const start = i === 0 ? 0 : Math.min(placements[i]?.startIndex ?? 0, blocks.length)
-    const end =
-      i + 1 < placements.length
-        ? Math.min(placements[i + 1]?.startIndex ?? blocks.length, blocks.length)
-        : blocks.length
-    if (start >= end) continue
-    const head = chain(blocks.slice(start, end))
-    if (head) out.push(position(head, placements[i]?.x ?? defaultX, placements[i]?.y ?? defaultY))
-  }
-  return out
-}
-
-/** Categoria de uma pilha top-level a partir do tipo do bloco (espelha organize.ts). */
-function categoryOf(type: string): keyof StacksLayout {
-  if (type.startsWith('sz_html_') || type === 'sz_adv_raw_html') return 'html'
-  if (type.startsWith('sz_css_') || type === 'sz_adv_raw_css') return 'css'
-  return 'js'
-}
-
-/** Tamanho da pilha (nº de blocos na cadeia `.next`) a partir do bloco serializado. */
-function chainLength(block: SerializedBlocklyBlock): number {
-  let count = 0
-  let cur: SerializedBlocklyBlock | undefined = block
-  while (cur) {
-    count += 1
-    cur = cur.next?.block
-  }
-  return count
+export function emptyFramesBlocksState(): SerializedBlocklyWorkspace {
+  return buildWorkspaceStateFromIR({ html: [], css: [], js: [], extensions: [] })
 }
 
 /**
@@ -220,34 +166,6 @@ function chainLength(block: SerializedBlocklyBlock): number {
 export function isBlocksStateEmpty(state: unknown): boolean {
   const tops = (state as SerializedBlocklyWorkspace | null | undefined)?.blocks?.blocks
   return !Array.isArray(tops) || tops.length === 0
-}
-
-/**
- * Deriva o {@link StacksLayout} a partir de um `blocksState` (serialização do
- * Blockly: x/y + cadeia `.next`). Usado pela Ponte para preservar as colunas do
- * aluno ao reconstruir o workspace numa edição de código. Devolve `null` apenas
- * quando o workspace está vazio (sem blocos top-level) — qualquer arranjo, mesmo
- * com uma única pilha por categoria, conta como custom e tem suas posições
- * preservadas. (Antes esta função descartava layouts "triviais" achando que eram
- * o default; mas um aluno pode ter movido a pilha única para uma posição custom,
- * e descartar mandava o rebuild aplicar os defaults `x = 32, 452, 872`.)
- */
-export function layoutFromBlocksState(state: unknown): StacksLayout | null {
-  const tops = (state as SerializedBlocklyWorkspace | null | undefined)?.blocks?.blocks
-  if (!Array.isArray(tops) || tops.length === 0) return null
-
-  const order = readingOrderIndices(tops.map((t) => ({ x: t.x ?? 0, y: t.y ?? 0 })))
-  const layout: StacksLayout = { html: [], css: [], js: [] }
-  const counts: Record<keyof StacksLayout, number> = { html: 0, css: 0, js: 0 }
-  for (const i of order) {
-    const top = tops[i]
-    if (!top) continue
-    const category = categoryOf(top.type)
-    layout[category].push({ startIndex: counts[category], x: top.x ?? 0, y: top.y ?? 0 })
-    counts[category] += chainLength(top)
-  }
-
-  return layout
 }
 
 function htmlNodeToBlock(node: SZIR['html'][number]): SerializedBlocklyBlock {
@@ -1932,6 +1850,13 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       return block('sz_g2d_drag_x', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
     case 'g2d:fitScreen':
       return block('sz_g2d_fit_screen', { PERCENT: stmt.percent }, {}, stmt.__id)
+    case 'g2d:setupStage':
+      return block(
+        'sz_g2d_setup_stage',
+        { W: stmt.width, H: stmt.height, BG: stmt.bg },
+        {},
+        stmt.__id,
+      )
     case 'g2d:spawnBullet': {
       const x = exprToValueBlock(stmt.x)
       const y = exprToValueBlock(stmt.y)
@@ -2140,6 +2065,13 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       return block(
         'sz_g3d_create_scene',
         { CANVAS: stmt.canvasId, NAME: stmt.varName },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:createFullscreenScene':
+      return block(
+        'sz_g3d_create_fullscreen_scene',
+        { NAME: stmt.varName, BG: stmt.bg },
         {},
         stmt.__id,
       )
@@ -2892,6 +2824,8 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_val_variable', { NAME: expr.name })
     case 'bool':
       return block('sz_val_bool', { VALUE: expr.value ? 'true' : 'false' })
+    case 'null':
+      return block('sz_val_null')
     case 'g2d:keyDown':
       return block('sz_g2d_key_down', { KEY: expr.key })
     case 'g2d:touches':

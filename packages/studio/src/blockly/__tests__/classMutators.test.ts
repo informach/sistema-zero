@@ -1,9 +1,9 @@
 import * as Blockly from 'blockly/core'
 import 'blockly/blocks'
 import { beforeAll, describe, expect, it } from 'bun:test'
-import { buildIRFromWorkspace } from '../buildIR'
 import { withWorkspaceLoad } from '../loadFence'
 import { ensureBlocklyInitialized } from '../setup'
+import { irInFrame } from './frameTestUtils'
 
 interface ExtendsApi extends Blockly.Block {
   addExtends_(): void
@@ -16,7 +16,7 @@ interface ArgsApi extends Blockly.Block {
 }
 
 function classDeclOf(ws: Blockly.Workspace) {
-  const ir = buildIRFromWorkspace(ws)
+  const ir = irInFrame(ws)
   const decl = ir.js.find((s) => s.type === 'classDecl')
   if (decl?.type !== 'classDecl') throw new Error('sem classDecl')
   return decl
@@ -88,7 +88,7 @@ describe('mutators de classe — + adiciona herança e parâmetros', () => {
     marker.setFieldValue('Pessoa', 'NAME')
     marker.setInsertionMarker(true)
 
-    const ir = buildIRFromWorkspace(ws)
+    const ir = irInFrame(ws)
     expect(ir.js.filter((s) => s.type === 'classDecl')).toHaveLength(1)
   })
 
@@ -441,7 +441,7 @@ function connectStatement(parent: Blockly.Block, input: string, child: Blockly.B
 
 /** Lê os argumentos do `newInstance` (único) da IR, sem o `__id` dos blocos. */
 function argsOf(ws: Blockly.Workspace): Array<Record<string, unknown>> {
-  const ir = buildIRFromWorkspace(ws)
+  const ir = irInFrame(ws)
   const novo = ir.js.find((s) => s.type === 'newInstance')
   if (novo?.type !== 'newInstance') throw new Error('sem newInstance')
   return (novo.args ?? []).map((a) => {

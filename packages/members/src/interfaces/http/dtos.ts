@@ -47,6 +47,11 @@ const AVATAR_SLUG = t.String({ minLength: 1, maxLength: 64, pattern: '^[a-z0-9-]
 
 export const AvatarPartParams = t.Object({ partId: AVATAR_SLUG })
 
+/** Corpo de `PUT /members/avatar/photo` — URL do snapshot (só http(s); o BFF sobe o R2). */
+export const AvatarPhotoBody = t.Object({
+  photoUrl: t.String({ minLength: 1, maxLength: 2000, pattern: '^https?://' }),
+})
+
 /** Params de `GET /members/profiles/:profileId/public` (uuid na borda). */
 export const PublicProfileParams = t.Object({ profileId: UUID })
 
@@ -63,7 +68,11 @@ export const VacationBody = t.Object({
 // ── Quarto virtual ──────────────────────────────────────────────────────────
 export const RoomItemParams = t.Object({ itemId: AVATAR_SLUG })
 
-/** Corpo de `PUT /members/room` — estado montado (o serviço valida posse/grade). */
+// Cor de parede: hex de 6 dígitos na BORDA; a PALETA curada é checada no domínio
+// (`canonicalizeRoomState` descarta cor fora dela — borda valida formato, domínio semântica).
+const HEX_COLOR = t.String({ pattern: '^#[0-9a-fA-F]{6}$' })
+
+/** Corpo de `PUT /members/room` — estado montado (o serviço valida posse/grade/paleta). */
 export const RoomStateBody = t.Object({
   theme: AVATAR_SLUG,
   placedItems: t.Array(
@@ -71,18 +80,28 @@ export const RoomStateBody = t.Object({
       itemId: AVATAR_SLUG,
       x: t.Integer({ minimum: 0, maximum: 64 }),
       y: t.Integer({ minimum: 0, maximum: 64 }),
+      // Rotação em quartos de volta (0–3). Ausente = 0; o domínio re-normaliza.
+      rot: t.Optional(t.Integer({ minimum: 0, maximum: 3 })),
     }),
     { maxItems: 60 },
   ),
   pet: t.Union([AVATAR_SLUG, t.Null()]),
+  // Pintar paredes (cada lado opcional). Piso/luz como slug do catálogo (posse no domínio).
+  wallColors: t.Optional(t.Object({ left: t.Optional(HEX_COLOR), right: t.Optional(HEX_COLOR) })),
+  floor: t.Optional(AVATAR_SLUG),
+  lighting: t.Optional(AVATAR_SLUG),
 })
 
-/** Corpo de `PUT /members/avatar` — config equipada (camada → peça). */
+/** Corpo de `PUT /members/avatar` — config 3D equipada (categoria → {peça, cor?}). */
 export const AvatarConfigBody = t.Object({
   style: t.Optional(t.String({ maxLength: 40 })),
-  // Record camada→peça; chaves/valores capados; o serviço valida semanticamente
-  // (camada/peça desconhecida → 400; peça paga não possuída → 403).
-  parts: t.Record(t.String({ maxLength: 40 }), AVATAR_SLUG),
+  // Record categoria→{asset, color?}; o serviço valida semanticamente (categoria/peça
+  // desconhecida → 400; peça paga não possuída → 403; cor fora da paleta → 400). HEX_COLOR
+  // valida só o FORMATO na borda; a PALETA curada é checada no domínio.
+  slots: t.Record(
+    t.String({ maxLength: 40 }),
+    t.Object({ asset: AVATAR_SLUG, color: t.Optional(HEX_COLOR) }),
+  ),
 })
 
 /**

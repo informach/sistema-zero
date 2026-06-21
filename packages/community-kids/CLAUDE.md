@@ -238,18 +238,45 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   desbloqueada = cor da marca + data. Inclui as **badges de MAESTRIA** da expansão
   (`studio-first`/`-master-3`/`-master-10` do Estúdio; `coins-saver-300`/`-1000` de poupador de
   Zappy) — copy/ícone em `badges.ts`, detecção no members.
-- **Avatar (DiceBear) — `kids-avatar.tsx` + `avatar-editor.tsx`:** retrato customizável; o editor
-  monta/compra peças cosméticas com moedas **Zappy** (`POST /api/members/avatar/parts/:id/buy`,
-  cobrança charge-first idempotente no members). O `kids-avatar.tsx` é o renderer reusado em todo
-  lugar (menu, quarto, perfil público, cards). Catálogo espelhado: members = existência/preço/posse,
-  kids = apresentação.
-- **Quarto virtual — `room/room-builder.tsx` + `room/room-canvas.tsx`** (rota `/quarto`): sink
-  cosmético das Zappy; grade 12×8, tema de fundo + móveis/decoração/plantas/luzes arrastáveis + 1
-  pet animado. `GET/PUT /api/members/room` (estado last-write-wins) + `POST
-  /api/members/room/items/:id/buy`. O **members é o único portão** (`canonicalizeRoomState` descarta
-  o não-possuído/fora-da-grade na leitura E na escrita); o `room-catalog.ts` do kids é só
-  apresentação (labelPt/emoji/anim/bg) e **DEVE casar por id + w/h** com o do members. ⚠️ arcades no
-  quarto foram DESCARTADOS — cosmético puro, sem efeito de jogo.
+- **Avatar 3D — `components/kids/avatar3d/*` (rota `/meu-avatar`, tela cheia IMERSIVA fora do
+  grupo `(app)`):** configurador de personagem 3D (substituiu o DiceBear). `configurator-client.tsx`
+  (`dynamic ssr:false` — three/fiber/drei só no cliente, espelha o `studio-full-client`) → `configurator.tsx`
+  (estado + loja por categoria + paleta de cor + "Salvar") + `avatar-scene.tsx` (`<Canvas>` R3F) +
+  `avatar-rig.tsx` + `asset-part.tsx`. ⚠️ **Personagem GLB REAL (Quaternius CC0, via pack do WawaSensei):**
+  1 esqueleto compartilhado (`base/Armature.glb`, ossos `mixamorig:*`) + 1 GLB skinned por peça equipada
+  (`useGLTF` → `<skinnedMesh skeleton={compartilhado}>`); material `Color_*` recebe a cor da peça, `Skin_*`
+  usa o material de pele compartilhado (cor do slot `head`); oclusão `hat→hair`; poses opcionais do
+  `base/Poses.glb`. **GLB SIMPLES (sem Draco/KTX2/meshopt → sem WASM, CSP-safe)** — a `<Canvas>` precisa de
+  `preserveDrawingBuffer` (snapshot) e os assets vivem em **`public/avatar3d/{parts,base}/`** (~13MB,
+  same-origin, `connect-src 'self'`; ids 1:1 com o catálogo). ⚠️ É a 1ª carga de GLB sob a CSP — QA no
+  navegador deve confirmar **zero `.wasm`** + montagem/skinning. Ao
+  **Salvar**: `PUT /api/members/avatar` (config 3D) + captura o canvas (`preserveDrawingBuffer` + `gl.render`
+  forçado → `toBlob` 512²) e sobe via **`POST /api/members/avatar/snapshot`** (multipart, FORA do matcher
+  do proxy — shim sobre `shell.routes.avatarSnapshot`, R2 namespace `avatar3d`). A **FOTO** (snapshot) é o
+  avatar em TODO lugar: `kids-avatar.tsx` virou só um `<img src={photoUrl}>` (zero WebGL fora do configurador
+  — avatares aparecem em listas/rankings) + personagem padrão SVG inline quando sem foto. O `photoUrl` flui
+  de `getAvatarReadonly().photoUrl` (chrome/perfil/quarto) e `PublicProfileDTO.avatarPhotoUrl` (perfil
+  público). Catálogo espelhado por id (`lib/avatar3d-catalog.ts`, PURO): members = existência/preço/posse/
+  paleta, kids = apresentação (travado pela conformância do members). Item "Avatar" no `nav.ts`; `/meu-avatar`
+  em `protectedPrefixes` + `api/members/avatar/snapshot` no negative-lookahead do matcher.
+- **Quarto virtual 3D (06/2026) — `room/room-canvas.tsx` (wrapper `dynamic ssr:false`) +
+  `room/room-canvas-3d.tsx` (`<Canvas>` react-three-fiber) + `room/room-builder.tsx`** (rota
+  `/quarto`): sink cosmético das Zappy. Cena ISOMÉTRICA low-poly construída EM CÓDIGO
+  (`furniture-models.tsx`/`prims.tsx`, sem GLTF) — paredes PINTÁVEIS (`walls.tsx`), pisos
+  (`floor.tsx`, CanvasTexture), iluminação/clima dia/noite/neon/festa (`room-lights.tsx`), móveis
+  que GIRAM e pet 3D (`pet-3d.tsx`). Câmera ortográfica FIXA; `frameloop` demand → always só com
+  pet/festa, gateado por `useReducedMotion`; drag por raycast no plano y=0 (robusto a oclusão);
+  `coords.ts` é PURO/testado (`tests/room-coords.test.ts`). `three`/RTF/drei já vinham (livro 3D).
+  `GET/PUT /api/members/room` + `POST /api/members/room/items/:id/buy`. O **members é o único portão**
+  (`canonicalizeRoomState` na leitura E na escrita); o `room-catalog.ts` do kids é só apresentação
+  (item: labelPt/emoji + w/h; pisos `ROOM_FLOOR_INFO`; clima `LIGHTING_PRESETS`; paleta de paredes
+  GRÁTIS `ROOM_WALL_PALETTE`; presets de tema `THEME_PRESETS`; `resolveRoomAppearance` mistura
+  tema+overrides) e **DEVE casar por id** com o members (conformância). Item posicionável NOVO precisa
+  de um `case` em `furniture-models.tsx` (senão cai na caixa neutra). Estado novo (JSONB, sem migração):
+  `placedItems[].rot`, `wallColors`, `floor`, `lighting`. Câmera com **órbita REDUZIDA** (drei
+  OrbitControls travado num cone, sem pan/zoom, **desligada enquanto arrasta uma peça**) + **pet com
+  COLISÃO** (grade `occupied` derivada dos `placedItems` → o bichinho desvia de móveis/paredes, não
+  atravessa). Cama é de SOLTEIRO (2×3). ⚠️ arcades no quarto foram DESCARTADOS.
 - **Missões diárias/semanais — `missions-panel.tsx`** (na home): painel estilo Duolingo com as
   missões do dia ("Hoje") e da semana ("Esta semana"); busca `GET
   /api/members/gamification/missions/me` e resgata `POST /api/members/gamification/missions/:slug/claim`

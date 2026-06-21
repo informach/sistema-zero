@@ -5,6 +5,7 @@ import { AccessCheckService } from '../src/application/access-check/access-check
 import { BuyAvatarPartService } from '../src/application/avatar/buy-avatar-part.service'
 import { EquipAvatarService } from '../src/application/avatar/equip-avatar.service'
 import { GetAvatarService } from '../src/application/avatar/get-avatar.service'
+import { SetAvatarPhotoService } from '../src/application/avatar/set-avatar-photo.service'
 import { GetChildrenStatsService } from '../src/application/children-stats/get-children-stats.service'
 import {
   AttachmentAdminService,
@@ -189,6 +190,7 @@ export function buildApp(
       getAvatar: new GetAvatarService(avatar, gamification),
       buyAvatarPart: new BuyAvatarPartService(avatar, gamification, clock),
       equipAvatar: new EquipAvatarService(avatar, clock),
+      setAvatarPhoto: new SetAvatarPhotoService(avatar, clock),
       getPublicProfile: new GetPublicProfileService(gamification, avatar, room, clock),
       getRoom: new GetRoomService(room, gamification),
       saveRoom: new SaveRoomService(room, clock),

@@ -482,6 +482,9 @@ export const avatarConfigs = members.table(
     accountId: uuid('account_id').notNull(),
     audience: courseAudienceEnum('audience').notNull().default('kids'),
     equipped: jsonb('equipped').$type<AvatarConfig>().notNull(),
+    // URL pública do snapshot 3D (a "foto" do avatar, mostrada em todo o app). NULL até
+    // a criança salvar a 1ª foto. O BFF (member-shell) sobe o PNG p/ o R2 e grava a URL.
+    photoUrl: text('photo_url'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },

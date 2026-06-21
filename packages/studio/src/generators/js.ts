@@ -1053,6 +1053,8 @@ function compileStatementCode(
       return `${pad}SZGame2D.dragX(${identifiers.get(stmt.spriteVar)});`
     case 'g2d:fitScreen':
       return `${pad}SZGame2D.fitScreen(${stmt.percent});`
+    case 'g2d:setupStage':
+      return `${pad}SZGame2D.setupStage(${stmt.width}, ${stmt.height}, ${JSON.stringify(stmt.bg)});`
     case 'g2d:createShip':
       return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createShip({ x: ${stmt.x}, y: ${stmt.y}, w: ${stmt.w}, h: ${stmt.h}, body: ${JSON.stringify(stmt.bodyColor)}, wings: ${JSON.stringify(stmt.wingColor)} });`
     case 'g2d:spawnAsteroid':
@@ -1154,6 +1156,8 @@ function compileStatementCode(
     }
     case 'g3d:createScene':
       return `${pad}const ${identifiers.get(stmt.varName)} = SZGame3D.createScene(${JSON.stringify(stmt.canvasId)});`
+    case 'g3d:createFullscreenScene':
+      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame3D.createFullscreenScene(${JSON.stringify(stmt.bg)});`
     case 'g3d:setBackground':
       return `${pad}SZGame3D.setBackground(${identifiers.get(stmt.worldVar)}, ${JSON.stringify(stmt.color)});`
     case 'g3d:setCameraPosition':
@@ -2266,6 +2270,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'g2d:playWhistle':
     case 'g2d:playBoom':
     case 'g2d:fitScreen':
+    case 'g2d:setupStage':
       return
     case 'g2d:computerTurn':
       names.add(stmt.throwerVar)
@@ -2320,6 +2325,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       names.add(stmt.mapVar)
       return
     case 'g3d:createScene':
+    case 'g3d:createFullscreenScene':
       names.add(stmt.varName)
       return
     case 'g3d:setBackground':

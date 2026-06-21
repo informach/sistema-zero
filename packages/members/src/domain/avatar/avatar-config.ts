@@ -1,67 +1,109 @@
 import { AvatarInvalidError, AvatarPartNotOwnedError } from './avatar.errors'
 import {
-  AVATAR_LAYERS,
-  AVATAR_PARTS_BY_ID,
-  AVATAR_STYLE,
-  type AvatarLayer,
-  DEFAULT_AVATAR_PART_IDS,
-} from './parts-catalog'
+  AVATAR_CATEGORIES,
+  AVATAR_CATEGORY_SET,
+  AVATAR_CHAR_STYLE,
+  AVATAR_PALETTE_SETS,
+  AVATAR3D_PARTS_BY_ID,
+  type AvatarCategory,
+  type AvatarSlot,
+  DEFAULT_AVATAR_SLOTS,
+} from './avatar3d-catalog'
 
 /**
- * Config EQUIPADA do avatar: estilo (DiceBear, mantido p/ forward-compat) + uma
- * peça escolhida por camada. JSON opaco persistido em `avatar_configs.equipped`.
- * Leitura é TOLERANTE (camada faltando/ id desconhecido → cai no default no render);
- * escrita é ESTRITA (`assertEquippableConfig`).
+ * Config EQUIPADA do avatar 3D: estilo (versão do personagem base, p/ forward-compat)
+ * + uma peça (e cor) escolhida por categoria. JSON opaco persistido em
+ * `avatar_configs.equipped`. Leitura é TOLERANTE (categoria faltando/peça ou cor
+ * desconhecida → cai no default no render); escrita é ESTRITA (`assertEquippableConfig`).
+ *
+ * `version: 2` discrimina o config 3D do legado DiceBear (`{style:'adventurer',parts}`):
+ * `canonicalize` trata qualquer coisa sem `version:2` como legado → default 3D (sem
+ * migração de dados; o JSON velho é inócuo até ser sobrescrito na 1ª gravação).
  */
 export interface AvatarConfig {
+  version: 2
   style: string
-  parts: Partial<Record<AvatarLayer, string>>
+  slots: Partial<Record<AvatarCategory, AvatarSlot>>
 }
 
 /** Avatar inicial GRÁTIS — determinístico (sem `Date.now`/random). */
 export function defaultAvatarConfig(): AvatarConfig {
-  return { style: AVATAR_STYLE, parts: { ...DEFAULT_AVATAR_PART_IDS } }
+  return { version: 2, style: AVATAR_CHAR_STYLE, slots: cloneDefaultSlots() }
 }
 
-const LAYER_SET = new Set<string>(AVATAR_LAYERS)
+function cloneDefaultSlots(): Partial<Record<AvatarCategory, AvatarSlot>> {
+  const slots: Partial<Record<AvatarCategory, AvatarSlot>> = {}
+  for (const category of AVATAR_CATEGORIES) {
+    const def = DEFAULT_AVATAR_SLOTS[category]
+    slots[category] =
+      def.color !== undefined ? { asset: def.asset, color: def.color } : { asset: def.asset }
+  }
+  return slots
+}
+
+/** Forma TOLERANTE de leitura (config v2, legado DiceBear, null ou lixo do banco). */
+type UnknownConfig = {
+  version?: unknown
+  slots?: Record<string, { asset?: unknown; color?: unknown } | null | undefined>
+} | null
 
 /**
- * Valida (ESCRITA) que toda peça equipada existe no catálogo, está na camada certa
- * e é grátis OU possuída. Estrito de propósito: o servidor é o portão — uma peça
- * paga só entra na config se o inventário a tiver. `ownedPartIds` = inventário do aluno
- * (peças grátis NÃO precisam estar lá — são implicitamente possuídas).
+ * Valida (ESCRITA) que toda peça equipada existe no catálogo, está na categoria certa,
+ * é grátis OU possuída, e (se houver cor) a cor está na paleta da categoria. Estrito de
+ * propósito: o servidor é o portão — uma peça paga só entra na config se o inventário a
+ * tiver. `ownedPartIds` = inventário do aluno (peças grátis NÃO precisam estar lá).
  */
 export function assertEquippableConfig(
   config: AvatarConfig,
   ownedPartIds: ReadonlySet<string>,
 ): void {
-  for (const [layer, partId] of Object.entries(config.parts)) {
-    if (!partId) continue
-    if (!LAYER_SET.has(layer)) {
-      throw new AvatarInvalidError(`Camada de avatar desconhecida: ${layer}`)
+  for (const [category, slot] of Object.entries(config.slots)) {
+    if (!slot) continue
+    if (!AVATAR_CATEGORY_SET.has(category)) {
+      throw new AvatarInvalidError(`Categoria de avatar desconhecida: ${category}`)
     }
-    const part = AVATAR_PARTS_BY_ID.get(partId)
-    if (!part) throw new AvatarInvalidError(`Peça de avatar desconhecida: ${partId}`)
-    if (part.layer !== layer) {
-      throw new AvatarInvalidError(`Peça ${partId} não pertence à camada ${layer}`)
+    const part = AVATAR3D_PARTS_BY_ID.get(slot.asset)
+    if (!part) throw new AvatarInvalidError(`Peça de avatar desconhecida: ${slot.asset}`)
+    if (part.category !== category) {
+      throw new AvatarInvalidError(`Peça ${slot.asset} não pertence à categoria ${category}`)
     }
-    if (part.tier === 'coins' && !ownedPartIds.has(partId)) {
+    if (part.tier === 'coins' && !ownedPartIds.has(slot.asset)) {
       throw new AvatarPartNotOwnedError()
+    }
+    if (slot.color !== undefined) {
+      const palette = AVATAR_PALETTE_SETS[category as AvatarCategory]
+      if (!palette) throw new AvatarInvalidError(`A categoria ${category} não aceita cor`)
+      if (!palette.has(slot.color.toLowerCase())) {
+        throw new AvatarInvalidError(`Cor inválida para ${category}: ${slot.color}`)
+      }
     }
   }
 }
 
 /**
- * Normaliza uma config crua (do banco/cliente) para render: descarta camadas/peças
- * desconhecidas e preenche o que falta com o default GRÁTIS — o avatar nunca quebra
- * (forward-compat, espelha `badgeInfo()` devolvendo null).
+ * Normaliza uma config crua (do banco/cliente) para render: descarta categorias/peças/
+ * cores desconhecidas e preenche o que falta com o default GRÁTIS — o avatar nunca quebra
+ * (forward-compat). Config sem `version:2` (legado DiceBear/null/lixo) → default 3D inteiro.
  */
 export function canonicalizeAvatarConfig(raw: AvatarConfig | null): AvatarConfig {
-  const parts: Partial<Record<AvatarLayer, string>> = {}
-  for (const layer of AVATAR_LAYERS) {
-    const candidate = raw?.parts?.[layer]
-    const part = candidate ? AVATAR_PARTS_BY_ID.get(candidate) : undefined
-    parts[layer] = part && part.layer === layer ? candidate : DEFAULT_AVATAR_PART_IDS[layer]
+  const unknown = raw as UnknownConfig
+  const rawSlots = unknown && unknown.version === 2 ? unknown.slots : undefined
+  const slots: Partial<Record<AvatarCategory, AvatarSlot>> = {}
+  for (const category of AVATAR_CATEGORIES) {
+    const def = DEFAULT_AVATAR_SLOTS[category]
+    const candidate = rawSlots?.[category]
+    const candAsset = typeof candidate?.asset === 'string' ? candidate.asset : undefined
+    const part = candAsset ? AVATAR3D_PARTS_BY_ID.get(candAsset) : undefined
+    const asset = part && part.category === category ? (candAsset as string) : def.asset
+
+    const palette = AVATAR_PALETTE_SETS[category]
+    let color: string | undefined
+    if (palette) {
+      const candColor =
+        typeof candidate?.color === 'string' ? candidate.color.toLowerCase() : undefined
+      color = candColor && palette.has(candColor) ? candColor : def.color
+    }
+    slots[category] = color !== undefined ? { asset, color } : { asset }
   }
-  return { style: AVATAR_STYLE, parts }
+  return { version: 2, style: AVATAR_CHAR_STYLE, slots }
 }

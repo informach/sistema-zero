@@ -1,17 +1,15 @@
 import type { ExtensionToolboxCategory } from '#extensions'
+import { categoryShades } from '../../blockly/colorShades'
 
-// Cor base da extensão (cena/objetos/física). Perguntas usam dourado (como o
-// Jogo 2D) e o Kit "Desvie" usa um tom de inimigo (rosa/vermelho).
-const C = '#a78bfa'
-const EVENT_C = '#fbbf24'
-const KIT_C = '#fb7185'
-// Genéricos de grade/isométrico (azul) e Kit Travessia (verde grama).
-const GRID_C = '#38bdf8'
-const KIT2_C = '#84cc16'
-// Kit Corrida (laranja).
-const RACE_C = '#fb923c'
-// Kit Empilhar (verde-azulado).
-const STACK_C = '#2dd4bf'
+// Jogo 3D = UMA cor da categoria: AMARELO/dourado. A categoria inteira fica em
+// TONS de amarelo, variando por área/kit.
+const C = '#f0b80a' // base (cena/objetos/física)
+const EVENT_C = '#f8d23f' // perguntas/eventos
+const KIT_C = '#d49e00' // Kit Desvie
+const GRID_C = '#fae07a' // grade/isométrico
+const KIT2_C = '#e6ad00' // Kit Travessia
+const RACE_C = '#b88700' // Kit Corrida
+const STACK_C = '#ffe89a' // Kit Empilhar
 
 export const gameThreeDBlocks = [
   {
@@ -26,6 +24,19 @@ export const gameThreeDBlocks = [
     colour: C,
     tooltip:
       'Cria cena + câmera + renderizador + luz, prontos para desenhar. Crie um <canvas> no HTML antes.',
+  },
+  {
+    type: 'sz_g3d_create_fullscreen_scene',
+    message0: 'Criar cena 3D em tela cheia e guardar em %1, fundo %2',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'cena' },
+      { type: 'field_colour', name: 'BG', colour: '#0b1020' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Atalho: cria a tela (canvas) ocupando a janela inteira, já responsiva, mais a cena + câmera + luz. A cor do fundo fica atrás dos objetos da cena. Não precisa criar a tela de desenho no HTML.',
   },
   {
     type: 'sz_g3d_set_background',
@@ -1597,6 +1608,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     colour: C,
     types: [
       'sz_g3d_create_scene',
+      'sz_g3d_create_fullscreen_scene',
       'sz_g3d_set_background',
       'sz_g3d_set_camera',
       'sz_g3d_create_box',
@@ -1799,6 +1811,24 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     ],
   },
 ]
+
+// Cada sub-categoria recebe um TOM do amarelo da categoria (derivado da base C por
+// categoryShades) — sobrepõe os consts/hex dos SUBCATS, inclusive o "Enxames & som"
+// que estava com ROSA hardcoded (#f472b6) e fugia da família amarela.
+const SUBCAT_SHADES = categoryShades(C, SUBCATS.length)
+SUBCATS.forEach((sc, i) => {
+  sc.colour = SUBCAT_SHADES[i] ?? C
+})
+// Cor = navegação: pinta cada bloco com o TOM da sua sub-categoria, sobrepondo o
+// const usado na definição — sem isto o bloco não seguia a cor do seu grupo
+// (game-2d já fazia; o game-3d não tinha este loop).
+const COLOUR_BY_TYPE = new Map<string, string>(
+  SUBCATS.flatMap((sc) => sc.types.map((t) => [t, sc.colour] as const)),
+)
+for (const b of gameThreeDBlocks) {
+  const colour = COLOUR_BY_TYPE.get(b.type)
+  if (colour) b.colour = colour
+}
 
 const CATEGORIZED = new Set(SUBCATS.flatMap((sc) => sc.types))
 const leftover = gameThreeDBlocks.map((b) => b.type).filter((t) => !CATEGORIZED.has(t))

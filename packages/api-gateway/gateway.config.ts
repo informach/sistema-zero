@@ -1082,6 +1082,19 @@ const config: GatewayConfigInput = {
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
       maxBodyBytes: 4096,
     },
+    {
+      // Salva a URL do snapshot (foto) do avatar 3D — corpo pequeno (só a URL). 3 segmentos:
+      // não colide com `/members/avatar` (2 seg, get/equip) nem com o buy (4 seg).
+      id: 'members-avatar-photo',
+      methods: ['PUT'],
+      pathPattern: '/members/avatar/photo',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 4096,
+    },
     // Perfil PÚBLICO de outra criança (gamificação: xp/ranking/conquistas/avatar/quarto)
     // — qualquer conta ATIVA da comunidade lê (peer-viewable). O BFF junta com a
     // identidade do auth e GATEIA pela flag dos pais. `/members/profiles/*` (3 segmentos)

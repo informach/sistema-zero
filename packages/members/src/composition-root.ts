@@ -5,6 +5,7 @@ import { AccessCheckService } from './application/access-check/access-check.serv
 import { BuyAvatarPartService } from './application/avatar/buy-avatar-part.service'
 import { EquipAvatarService } from './application/avatar/equip-avatar.service'
 import { GetAvatarService } from './application/avatar/get-avatar.service'
+import { SetAvatarPhotoService } from './application/avatar/set-avatar-photo.service'
 import { GetChildrenStatsService } from './application/children-stats/get-children-stats.service'
 import {
   AttachmentAdminService,
@@ -165,6 +166,7 @@ export async function createApplication(env: Env): Promise<Application> {
   const getAvatar = new GetAvatarService(avatarRepo, gamificationRepo)
   const buyAvatarPart = new BuyAvatarPartService(avatarRepo, gamificationRepo, clock)
   const equipAvatar = new EquipAvatarService(avatarRepo, clock)
+  const setAvatarPhoto = new SetAvatarPhotoService(avatarRepo, clock)
   const roomRepo = new DrizzleRoomRepository(db)
   const getRoom = new GetRoomService(roomRepo, gamificationRepo)
   const saveRoom = new SaveRoomService(roomRepo, clock)
@@ -287,6 +289,7 @@ export async function createApplication(env: Env): Promise<Application> {
       getAvatar,
       buyAvatarPart,
       equipAvatar,
+      setAvatarPhoto,
       getPublicProfile,
       getRoom,
       saveRoom,

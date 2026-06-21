@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { and, eq } from 'drizzle-orm'
-import type { AvatarConfig } from '../../../domain/avatar/avatar-config'
+import { type AvatarConfig, defaultAvatarConfig } from '../../../domain/avatar/avatar-config'
 import type { CourseAudience } from '../../../domain/course/course'
 import type { AvatarRepository } from '../../../domain/ports/avatar-repository.port'
 import type { Database } from './db'
@@ -65,5 +65,41 @@ export class DrizzleAvatarRepository implements AvatarRepository {
       })
       .returning({ id: avatarInventory.id })
     return { added: inserted.length > 0 }
+  }
+
+  async getPhotoUrl(userId: string, audience: CourseAudience): Promise<string | null> {
+    const [row] = await this.db
+      .select({ photoUrl: avatarConfigs.photoUrl })
+      .from(avatarConfigs)
+      .where(and(eq(avatarConfigs.userId, userId), eq(avatarConfigs.audience, audience)))
+      .limit(1)
+    return row?.photoUrl ?? null
+  }
+
+  async setPhotoUrl(
+    userId: string,
+    accountId: string,
+    audience: CourseAudience,
+    photoUrl: string,
+    now: Date,
+  ): Promise<void> {
+    await this.db
+      .insert(avatarConfigs)
+      .values({
+        id: randomUUID(),
+        userId,
+        accountId,
+        audience,
+        // A linha pode nascer pela FOTO (antes de equipar) → semeia a config default.
+        equipped: defaultAvatarConfig(),
+        photoUrl,
+        createdAt: now,
+        updatedAt: now,
+      })
+      .onConflictDoUpdate({
+        target: [avatarConfigs.userId, avatarConfigs.audience],
+        // Só a foto: NÃO toca `equipped` (preserva o que a criança montou) nem `accountId`.
+        set: { photoUrl, updatedAt: now },
+      })
   }
 }
