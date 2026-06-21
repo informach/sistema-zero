@@ -150,7 +150,7 @@ jobs:
                   packages/community-kids/*) add community-kids ;;
                   packages/hub/*) add hub ;; # backend da comunidade (Clube/Mural) — serviço próprio
                   packages/fiscal/*) add fiscal ;;
-                  packages/studio/*) ;; # lib interna (sem serviço deployado); quando um app a consumir, somar o consumer aqui
+                  packages/studio/*) add community; add community-kids ;; # lib embarcada pelos 2 apps de aluno (editor/player)
                 esac
               done <<< "$CHANGED"
             fi
