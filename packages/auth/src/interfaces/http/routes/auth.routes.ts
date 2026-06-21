@@ -27,8 +27,6 @@ import {
   UpdateMeBody,
   VerifyOtpBody,
 } from '../dtos'
-import { PayloadTooLargeError } from '../errors'
-import { isOversizeBody } from '../raw-body'
 
 export interface AuthRoutesDeps {
   trustProxy: boolean
@@ -61,7 +59,6 @@ export function authRoutes(deps: AuthRoutesDeps) {
     .post(
       '/register',
       async ({ body, request, server, headers, set }) => {
-        if (isOversizeBody(request)) throw new PayloadTooLargeError()
         const result = await deps.register.execute({
           email: body.email,
           password: body.password,
@@ -80,7 +77,6 @@ export function authRoutes(deps: AuthRoutesDeps) {
     .post(
       '/login',
       async ({ body, request, server, headers }) => {
-        if (isOversizeBody(request)) throw new PayloadTooLargeError()
         return deps.login.execute({
           email: body.email,
           password: body.password,
@@ -93,7 +89,6 @@ export function authRoutes(deps: AuthRoutesDeps) {
     .post(
       '/refresh',
       async ({ body, request, server, headers }) => {
-        if (isOversizeBody(request)) throw new PayloadTooLargeError()
         const tokens = await deps.refresh.execute({
           refreshToken: body.refreshToken,
           userAgent: headers['user-agent'] ?? null,
@@ -105,8 +100,7 @@ export function authRoutes(deps: AuthRoutesDeps) {
     )
     .post(
       '/logout',
-      async ({ body, request }) => {
-        if (isOversizeBody(request)) throw new PayloadTooLargeError()
+      async ({ body }) => {
         await deps.logout.execute({
           refreshToken: body.refreshToken,
           allSessions: body.allSessions,
@@ -117,8 +111,7 @@ export function authRoutes(deps: AuthRoutesDeps) {
     )
     .post(
       '/forgot-password',
-      async ({ body, request }) => {
-        if (isOversizeBody(request)) throw new PayloadTooLargeError()
+      async ({ body }) => {
         // SEMPRE 200, exista a conta ou não (anti-enumeração). O e-mail é best-effort.
         // `platform` decide a base do link (community vs kids) — kids sem env → 400.
         await deps.forgotPassword.execute({ email: body.email, platform: body.platform })
@@ -128,16 +121,14 @@ export function authRoutes(deps: AuthRoutesDeps) {
     )
     .post(
       '/reset-password',
-      async ({ body, request }) => {
-        if (isOversizeBody(request)) throw new PayloadTooLargeError()
+      async ({ body }) => {
         return deps.resetPassword.execute({ token: body.token, newPassword: body.newPassword })
       },
       { body: ResetPasswordBody },
     )
     .post(
       '/otp/request',
-      async ({ body, request }) => {
-        if (isOversizeBody(request)) throw new PayloadTooLargeError()
+      async ({ body }) => {
         // SEMPRE 200, exista a conta ou não (anti-enumeração). O e-mail é best-effort.
         await deps.requestOtp.execute({ email: body.email, purpose: body.purpose })
         return { ok: true }
@@ -147,7 +138,6 @@ export function authRoutes(deps: AuthRoutesDeps) {
     .post(
       '/otp/verify',
       async ({ body, request, server, headers }) => {
-        if (isOversizeBody(request)) throw new PayloadTooLargeError()
         // Login por código → mesmo retorno do `/auth/login` (`{ user, tokens }`).
         return deps.verifyOtp.execute({
           email: body.email,
@@ -160,8 +150,7 @@ export function authRoutes(deps: AuthRoutesDeps) {
     )
     .post(
       '/password/reset-otp',
-      async ({ body, request }) => {
-        if (isOversizeBody(request)) throw new PayloadTooLargeError()
+      async ({ body }) => {
         return deps.resetPasswordWithOtp.execute({
           email: body.email,
           code: body.code,
@@ -182,8 +171,7 @@ export function authRoutes(deps: AuthRoutesDeps) {
     })
     .patch(
       '/me',
-      async ({ body, headers, request }) => {
-        if (isOversizeBody(request)) throw new PayloadTooLargeError()
+      async ({ body, headers }) => {
         const claims = await requireBearer(headers.authorization, deps.tokenIssuer)
         const user = await deps.updateProfile.execute({
           userId: claims.sub,
@@ -198,8 +186,7 @@ export function authRoutes(deps: AuthRoutesDeps) {
     )
     .post(
       '/me/password',
-      async ({ body, headers, request }) => {
-        if (isOversizeBody(request)) throw new PayloadTooLargeError()
+      async ({ body, headers }) => {
         const claims = await requireBearer(headers.authorization, deps.tokenIssuer)
         return deps.changeMyPassword.execute({
           userId: claims.sub,

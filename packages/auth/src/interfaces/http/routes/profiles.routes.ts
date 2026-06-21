@@ -4,19 +4,18 @@ import { Elysia } from 'elysia'
 import type { ArchiveProfileService } from '../../../application/profiles/archive-profile.service'
 import type { CreateProfileService } from '../../../application/profiles/create-profile.service'
 import type { ExitProfileSessionService } from '../../../application/profiles/exit-profile-session.service'
+import type { GetPublicProfileService } from '../../../application/profiles/get-public-profile.service'
 import type { ListProfilesService } from '../../../application/profiles/list-profiles.service'
 import type { SelectProfileService } from '../../../application/profiles/select-profile.service'
 import type { UpdateProfileDetailsService } from '../../../application/profiles/update-profile.service'
-import { type AuthContext, resolveClientIp, resolveGatewayActor } from '../auth'
+import { type AuthContext, isPrivilegedRole, resolveClientIp, resolveGatewayActor } from '../auth'
 import {
   CreateProfileBody,
   ExitProfileSessionBody,
   ProfileIdParams,
   UpdateProfileBody,
 } from '../dtos'
-import { PayloadTooLargeError } from '../errors'
 import { requireInternalToken } from '../internal-auth'
-import { isOversizeBody } from '../raw-body'
 
 export interface ProfilesRoutesDeps {
   listProfiles: ListProfilesService
@@ -25,6 +24,7 @@ export interface ProfilesRoutesDeps {
   archiveProfile: ArchiveProfileService
   selectProfile: SelectProfileService
   exitProfileSession: ExitProfileSessionService
+  getPublicProfile: GetPublicProfileService
   trustProxy: boolean
   trustedProxyHops: number
   /**
@@ -66,12 +66,13 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
   }
 
   // Gestão: exige sessão da CONTA (sem `pfl`). Sessão de perfil → 403 (área dos pais).
-  const requireAccountSession = (headers: Record<string, string | undefined>): string => {
+  // Devolve o ATOR (id + role) — o role decide o teto de perfis (equipe = ilimitado).
+  const requireAccountSession = (headers: Record<string, string | undefined>) => {
     const actor = ensureOrigin(headers)
     if (headers['x-auth-account-id']?.trim()) {
       throw new ForbiddenError('Gerencie os perfis na área dos pais (saia do perfil primeiro)')
     }
-    return actor.id
+    return actor
   }
 
   // Edição de UM perfil: a CONTA edita qualquer perfil dela; a sessão de PERFIL edita
@@ -100,14 +101,17 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
       .get('/profiles', ({ headers }) => deps.listProfiles.execute(accountContext(headers)))
       .post(
         '/profiles',
-        async ({ headers, body, request, set }) => {
-          if (isOversizeBody(request)) throw new PayloadTooLargeError()
-          const accountUserId = requireAccountSession(headers)
+        async ({ headers, body, set }) => {
+          const actor = requireAccountSession(headers)
           const profile = await deps.createProfile.execute({
-            accountUserId,
+            accountUserId: actor.id,
+            // Equipe interna (superadmin/admin/staff) cria perfis ILIMITADOS p/ testar.
+            privileged: isPrivilegedRole(actor.role),
             name: body.name,
             avatarUrl: body.avatarUrl,
             whatsapp: body.whatsapp,
+            // Data de nascimento só entra na CRIAÇÃO pela conta (rota já é parent-only).
+            birthDate: body.birthDate,
           })
           set.status = 201
           return { profile }
@@ -116,16 +120,28 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
       )
       .patch(
         '/profiles/:id',
-        async ({ headers, params, body, request }) => {
-          if (isOversizeBody(request)) throw new PayloadTooLargeError()
+        async ({ headers, params, body }) => {
           // A criança edita o PRÓPRIO perfil (sessão de perfil); a conta edita qualquer um.
           const accountUserId = ownProfileEditContext(headers, params.id)
+          // Data de nascimento é EDITÁVEL SÓ PELOS PAIS (sessão da conta). Numa sessão
+          // de perfil (a criança) o gateway injeta `x-auth-account-id` → recusa a alteração.
+          if (body.birthDate !== undefined && headers['x-auth-account-id']?.trim()) {
+            throw new ForbiddenError('A data de nascimento só pode ser editada pelos responsáveis')
+          }
+          // Visibilidade pública: idem (segurança infantil — opt-in só dos pais).
+          if (body.publicProfileEnabled !== undefined && headers['x-auth-account-id']?.trim()) {
+            throw new ForbiddenError(
+              'A visibilidade do perfil só pode ser alterada pelos responsáveis',
+            )
+          }
           const profile = await deps.updateProfile.execute({
             accountUserId,
             profileId: params.id,
             name: body.name,
             avatarUrl: body.avatarUrl,
             whatsapp: body.whatsapp,
+            birthDate: body.birthDate,
+            publicProfileEnabled: body.publicProfileEnabled,
           })
           return { profile }
         },
@@ -134,7 +150,7 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
       .delete(
         '/profiles/:id',
         async ({ headers, params }) => {
-          const accountUserId = requireAccountSession(headers)
+          const accountUserId = requireAccountSession(headers).id
           await deps.archiveProfile.execute({ accountUserId, profileId: params.id })
           return { archived: true }
         },
@@ -162,7 +178,6 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
       .post(
         '/profile-session/exit',
         async ({ headers, body, request, server }) => {
-          if (isOversizeBody(request)) throw new PayloadTooLargeError()
           ensureOrigin(headers)
           const accountUserId = headers['x-auth-account-id']?.trim()
           if (!accountUserId) throw new ValidationError('Não está em uma sessão de perfil')
@@ -174,6 +189,17 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
           })
         },
         { body: ExitProfileSessionBody },
+      )
+      // Identidade PÚBLICA de um perfil (S2S — só `x-internal-token`): nome + flag de
+      // visibilidade, p/ o BFF do perfil público kids. NUNCA e-mail/telefone/nascimento/
+      // conta. Perfil inexistente/arquivado/privado → 404.
+      .get(
+        '/internal/profiles/:id/public',
+        ({ headers, params }) => {
+          requireInternalToken(headers, deps.internalToken)
+          return deps.getPublicProfile.execute(params.id)
+        },
+        { params: ProfileIdParams },
       )
   )
 }

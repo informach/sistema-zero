@@ -159,5 +159,50 @@ describe.skipIf(!testDatabaseUrl)(
       expect(recorded).toBe(false) // não casou → o chamador reconcilia (não perde a chave)
       expect((await repo.findById(invoice.id))?.status).toBe('SKIPPED')
     })
+
+    test('failExhausted respeita o lease: tentativa acima do teto só falha depois de stale', async () => {
+      const invoice = await repo.schedule(scheduleInput({ scheduledFor: new Date() }))
+      await conn.sql`
+        UPDATE fiscal.invoices
+        SET attempts = 11, claimed_at = now()
+        WHERE id = ${invoice.id}
+      `
+
+      expect(await repo.failExhausted({ maxAttempts: 10, staleMs: 120_000 })).toBe(0)
+      expect((await repo.findById(invoice.id))?.status).toBe('SCHEDULED')
+
+      await conn.sql`
+        UPDATE fiscal.invoices
+        SET claimed_at = now() - interval '3 minutes'
+        WHERE id = ${invoice.id}
+      `
+      expect(await repo.failExhausted({ maxAttempts: 10, staleMs: 120_000 })).toBe(1)
+      expect((await repo.findById(invoice.id))?.status).toBe('FAILED')
+    })
+
+    test('claimEmittedNeedingDelivery reivindica EMITTED com PDF/e-mail pendente e respeita backoff', async () => {
+      const invoice = await repo.schedule(scheduleInput({ scheduledFor: new Date() }))
+      await repo.markEmitted(invoice.id, {
+        dpsXml: '<DPS/>',
+        nfseXml: '<NFSe/>',
+        accessKey: '2'.repeat(50),
+        competenceDate: '2026-06-19',
+        pdfToken: 'b'.repeat(64),
+      })
+
+      const [first] = await repo.claimEmittedNeedingDelivery({ batchSize: 10, staleMs: 0 })
+      expect(first?.id).toBe(invoice.id)
+
+      await repo.releaseDeliveryRetry(invoice.id, new Date(Date.now() + 60_000), 'DANFSe down')
+      expect(await repo.claimEmittedNeedingDelivery({ batchSize: 10, staleMs: 0 })).toHaveLength(0)
+
+      await conn.sql`
+        UPDATE fiscal.invoices
+        SET next_attempt_at = now() - interval '1 second'
+        WHERE id = ${invoice.id}
+      `
+      const [afterBackoff] = await repo.claimEmittedNeedingDelivery({ batchSize: 10, staleMs: 0 })
+      expect(afterBackoff?.id).toBe(invoice.id)
+    })
   },
 )

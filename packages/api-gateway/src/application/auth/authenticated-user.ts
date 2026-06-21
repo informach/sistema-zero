@@ -21,6 +21,18 @@ export interface AuthenticatedUser {
    */
   readonly accountId?: string
   /**
+   * Sessão de PERFIL: nome do perfil de criança (claim `pfl.name`). Presente só junto
+   * com `accountId` — o upstream o usa como nome de EXIBIÇÃO do autor (ex.: vitrine
+   * "Mural" do kids) sem confiar num nome vindo do corpo da requisição.
+   */
+  readonly profileName?: string
+  /**
+   * Sessão de PERFIL: o perfil é PÚBLICO entre crianças (opt-in dos pais — claim
+   * `pfl.pub`). Definido (true/false) só junto com `accountId` — o upstream (hub) o
+   * usa p/ decidir se o nome do autor vira link p/ o perfil público.
+   */
+  readonly profilePublic?: boolean
+  /**
    * Sessão de IMPERSONAÇÃO: admin navegando como o usuário (claim `act.sub`).
    * Presente só em sessão de suporte — o upstream o usa p/ PRESERVAR a impersonação
    * ao derivar uma nova sessão (ex.: selecionar um perfil de criança), evitando que

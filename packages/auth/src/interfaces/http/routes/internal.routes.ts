@@ -3,9 +3,7 @@ import type { EnsureBuyerService } from '../../../application/ensure-buyer/ensur
 import type { CreatePasswordTokenService } from '../../../application/password-reset/create-password-token.service'
 import { UserNotFoundError } from '../../../domain/user/user.errors'
 import { CreatePasswordTokenBody, EnsureBuyerBody } from '../dtos'
-import { PayloadTooLargeError } from '../errors'
 import { requireInternalToken } from '../internal-auth'
-import { isOversizeBody } from '../raw-body'
 
 export interface InternalRoutesDeps {
   createPasswordToken: CreatePasswordTokenService
@@ -26,8 +24,7 @@ export function internalRoutes(deps: InternalRoutesDeps) {
   return new Elysia({ prefix: '/auth/internal' })
     .post(
       '/password-tokens',
-      async ({ body, headers, request, set }) => {
-        if (isOversizeBody(request)) throw new PayloadTooLargeError()
+      async ({ body, headers, set }) => {
         requireInternalToken(headers, deps.internalToken)
         const issued = await deps.createPasswordToken.execute({ email: body.email })
         // Usuário inexistente/inativo → 404 (S2S; sem risco de enumeração pelo browser).
@@ -39,8 +36,7 @@ export function internalRoutes(deps: InternalRoutesDeps) {
     )
     .post(
       '/ensure-buyer',
-      async ({ body, headers, request, set }) => {
-        if (isOversizeBody(request)) throw new PayloadTooLargeError()
+      async ({ body, headers, set }) => {
         requireInternalToken(headers, deps.internalToken)
         const result = await deps.ensureBuyer.execute({
           email: body.email,

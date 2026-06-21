@@ -4,6 +4,7 @@ import { shell } from './shell'
 export const {
   listMyCourses,
   listCatalog,
+  checkStudioAccessReadonly,
   getMyCourse,
   getLesson,
   resolveAttachment,
@@ -14,4 +15,9 @@ export const {
   submitQuizAttempt,
   getGamification,
   getGamificationReadonly,
+  getAvatarReadonly,
+  getPublicProfile,
+  getRoomReadonly,
+  getMissionsReadonly,
+  getLeagueReadonly,
 } = shell.members

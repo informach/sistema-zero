@@ -423,6 +423,38 @@ describe('HTTP server', () => {
     expect(cobrancas.status).toBe(429)
   })
 
+  test('webhook com token inválido não consome o rate limit global', async () => {
+    const secret = 'segredo-webhook-forte'
+    const { app } = buildApp({ webhookRateLimit: 1, webhookSecret: secret })
+
+    const invalid = await app.handle(
+      new Request('http://localhost/webhooks/efi/pix?token=errado', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ pix: [] }),
+      }),
+    )
+    expect(invalid.status).toBe(401)
+
+    const valid = await app.handle(
+      new Request(`http://localhost/webhooks/efi/pix?token=${secret}`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ pix: [] }),
+      }),
+    )
+    expect(valid.status).toBe(200)
+
+    const limited = await app.handle(
+      new Request(`http://localhost/webhooks/efi/pix?token=${secret}`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ pix: [] }),
+      }),
+    )
+    expect(limited.status).toBe(429)
+  })
+
   test('POST /payments sem autenticação → 401', async () => {
     const { app } = buildApp()
     const res = await app.handle(
@@ -1078,6 +1110,34 @@ describe('Rotas admin (/payments/admin/*)', () => {
       new Request('http://localhost/payments/admin/payments', { headers: adminHeaders() }),
     )
     expect(res.status).toBe(200)
+  })
+
+  test('requireAdmin ligado: staff lê, mas não executa escrita financeira', async () => {
+    const { app } = buildApp({ requireAdmin: true })
+    const ID = '00000000-0000-0000-0000-000000000000'
+
+    const read = await app.handle(
+      new Request('http://localhost/payments/admin/payments', {
+        headers: adminHeaders('staff'),
+      }),
+    )
+    expect(read.status).toBe(200)
+
+    const refund = await app.handle(
+      new Request(`http://localhost/payments/admin/payments/${ID}/refund`, {
+        method: 'POST',
+        headers: adminHeaders('staff'),
+      }),
+    )
+    expect(refund.status).toBe(403)
+
+    const cancel = await app.handle(
+      new Request(`http://localhost/payments/admin/subscriptions/${ID}`, {
+        method: 'DELETE',
+        headers: adminHeaders('staff'),
+      }),
+    )
+    expect(cancel.status).toBe(403)
   })
 
   test('requireAdmin + internalToken: sem x-internal-token → 401 (mesmo com role admin)', async () => {

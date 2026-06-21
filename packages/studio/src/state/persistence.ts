@@ -7,11 +7,19 @@ const LEGACY_PROJECT_KEY_PREFIX = 'sz:project:'
 const PROJECT_META_KEY_PREFIX = 'sz:project-meta:'
 const PROJECT_FILES_KEY_PREFIX = 'sz:project-files:'
 const PROJECT_STATE_KEY_PREFIX = 'sz:project-state:'
+const PROJECT_BLOCKS_KEY_PREFIX = 'sz:project-blocks:'
+// 4ª partição: assets embutidos (imagens/sprites como data: URL). São GRANDES e
+// mudam POUCO — partição própria para não inchar o autosave debounced de `files`,
+// que reescreve a cada tecla. Ausente em projetos legados (load é tolerante).
+const PROJECT_ASSETS_KEY_PREFIX = 'sz:project-assets:'
+const PROJECT_STORAGE_VERSION = 2
 const MAX_PROJECT_SUMMARY_NAME_CHARS = 200
 const legacyProjectKey = (id: string) => `${LEGACY_PROJECT_KEY_PREFIX}${id}`
 const projectMetaKey = (id: string) => `${PROJECT_META_KEY_PREFIX}${id}`
 const projectFilesKey = (id: string) => `${PROJECT_FILES_KEY_PREFIX}${id}`
 const projectStateKey = (id: string) => `${PROJECT_STATE_KEY_PREFIX}${id}`
+const projectBlocksKey = (id: string) => `${PROJECT_BLOCKS_KEY_PREFIX}${id}`
+const projectAssetsKey = (id: string) => `${PROJECT_ASSETS_KEY_PREFIX}${id}`
 
 let store: ReturnType<typeof createStore> | null = null
 
@@ -57,30 +65,118 @@ export function runSerializedWrite(id: string, task: () => Promise<void>): Promi
   return next
 }
 
+// Última referência de `assets` PERSISTIDA por id. Os assets embutidos (até
+// ~5,6 MB de base64) ganharam partição própria (ver comentário do prefixo) JUSTO
+// porque mudam pouco — mas o `persistProject` reescrevia os 4 pares a cada
+// autosave debounced (~1s), inchando o write com a partição grande mesmo quando
+// nenhuma imagem foi tocada. O `projectStore` SEMPRE substitui `assets` por
+// referência nova ao editar (addAsset/removeAsset/renameAsset e o spread do
+// import/load), então igualdade de referência é um dirty-check seguro: se a ref
+// não mudou desde o último persist deste id, a partição de assets não é
+// reescrita. Map por id, limpo no delete (a partição vai junto no delMany).
+const lastPersistedAssetsRef = new Map<string, Project['assets']>()
+
 export async function persistProject(project: Project): Promise<void> {
-  await runSerializedWrite(project.id, () =>
-    setMany(
-      [
-        [projectMetaKey(project.id), projectToMetaRecord(project)],
-        [projectFilesKey(project.id), projectToFilesRecord(project)],
-        [projectStateKey(project.id), projectToStateRecord(project)],
-      ],
-      getStore(),
-    ),
-  )
+  await runSerializedWrite(project.id, () => {
+    const id = project.id
+    // meta/files/state são pequenos e mudam a cada tecla — sempre reescritos.
+    // `blocksState` fica em partição própria: pode ser enorme e não deve inchar
+    // a leitura inicial do projeto nem o registro leve de IR.
+    const pairs: Array<[string, unknown]> = [
+      [projectMetaKey(id), projectToMetaRecord(project)],
+      [projectFilesKey(id), projectToFilesRecord(project)],
+      [projectStateKey(id), projectToStateRecord(project)],
+    ]
+    // `blocksState` é restaurado em SEGUNDO PLANO depois da abertura rápida, então
+    // fica `null` na memória até chegar. NUNCA gravamos null por cima da partição
+    // salva — apagaria os blocos do aluno na janela entre abrir e restaurar (e se o
+    // aluno editar antes do restore, o autosave gravaria vazio). Só persistimos a
+    // partição de blocos quando há blocksState de fato; um workspace VAZIO serializa
+    // como objeto (não null), então limpar de propósito continua sendo salvo.
+    if (project.blocksState != null) {
+      pairs.push([projectBlocksKey(id), projectToBlocksRecord(project)])
+    }
+    // Assets: só reescreve quando a referência mudou desde o último persist deste
+    // id (ou na 1ª gravação, quando ainda não há referência registrada). `has`
+    // distingue "nunca persistido" de "persistido como undefined" — sem isso, um
+    // projeto sem assets nunca gravaria a partição (irrelevante hoje, mas o `has`
+    // mantém o invariante: a 1ª gravação SEMPRE materializa a partição).
+    if (!lastPersistedAssetsRef.has(id) || lastPersistedAssetsRef.get(id) !== project.assets) {
+      pairs.push([projectAssetsKey(id), projectToAssetsRecord(project)])
+    }
+    return setMany(pairs, getStore()).then(() => {
+      // Só registra a referência DEPOIS do write resolver: se o setMany falhar
+      // (quota cheia), a partição não foi gravada e a próxima tentativa precisa
+      // reescrevê-la — manter a ref antiga (ou não registrar) garante isso.
+      lastPersistedAssetsRef.set(id, project.assets)
+    })
+  })
 }
 
 export async function loadProjectById(id: string): Promise<Project | null> {
   const kvStore = getStore()
-  const [meta, files, state] = await getMany<unknown[]>(
-    [projectMetaKey(id), projectFilesKey(id), projectStateKey(id)],
+  const [meta, files, state, blocks, assets] = await getMany<unknown[]>(
+    [
+      projectMetaKey(id),
+      projectFilesKey(id),
+      projectStateKey(id),
+      projectBlocksKey(id),
+      projectAssetsKey(id),
+    ],
     kvStore,
   )
   if (meta && files && state) {
-    return assembleProjectRecord(id, meta, files, state)
+    // `assets` é a 4ª partição (opcional): ausente em projetos legados/pré-feature.
+    return assembleProjectRecord(id, meta, files, state, assets, blocks)
   }
 
   return ((await get<Project>(legacyProjectKey(id), kvStore)) ?? null) as Project | null
+}
+
+/**
+ * Leitura rápida para abrir o editor local: NÃO lê `project-state` nem
+ * `project-blocks`, pois projetos antigos guardavam `blocksState` gigante junto
+ * do IR e o structured clone do IndexedDB travava a tela de "Carregando".
+ *
+ * O editor abre com arquivos/metadados e preserva o modo salvo. A partição de
+ * blocos pode ser restaurada em segundo plano pelo adapter local.
+ */
+export async function loadProjectShellById(id: string): Promise<Project | null> {
+  const kvStore = getStore()
+  const [meta, files, assets] = await getMany<unknown[]>(
+    [projectMetaKey(id), projectFilesKey(id), projectAssetsKey(id)],
+    kvStore,
+  )
+  if (meta && files) {
+    return assembleProjectRecord(id, meta, files, { id, ir: null, blocksState: null }, assets)
+  }
+
+  return ((await get<Project>(legacyProjectKey(id), kvStore)) ?? null) as Project | null
+}
+
+export async function loadProjectBlocksById(id: string): Promise<unknown | null> {
+  const kvStore = getStore()
+  const fromPartition = await get<unknown>(projectBlocksKey(id), kvStore)
+  if (fromPartition != null) return fromPartition
+  // Fallback p/ projetos LEGADOS (salvos ANTES do split de partições): o
+  // `blocksState` ficava DENTRO de `sz:project-state` (junto do IR) ou no doc único
+  // `sz:project`. Sem este fallback, o restore em segundo plano devolveria null e o
+  // 1º autosave gravaria vazio por cima — perdendo os blocos de projetos antigos.
+  // Devolve o registro INTEIRO; o chamador lê `record.blocksState` e valida `id`.
+  const state = await get<Record<string, unknown>>(projectStateKey(id), kvStore)
+  if (state && typeof state === 'object' && !Array.isArray(state) && state.blocksState != null) {
+    return state
+  }
+  const legacy = await get<Record<string, unknown>>(legacyProjectKey(id), kvStore)
+  if (
+    legacy &&
+    typeof legacy === 'object' &&
+    !Array.isArray(legacy) &&
+    legacy.blocksState != null
+  ) {
+    return legacy
+  }
+  return null
 }
 
 // CERCA de exclusão do armazenamento do programa do aluno (blocos guardar/ler).
@@ -128,6 +224,11 @@ export async function deleteProject(id: string): Promise<void> {
   // Cerca o armazenamento do programa do aluno ANTES do delMany: um flush do
   // preview já em voo (writeGameStorage) que chegue depois é descartado.
   fenceGameStorageDelete(id)
+  // Esquece a referência de assets persistida deste id: o delMany apaga a
+  // partição, e se o id voltar (improvável, mas duplicate/import mintam ulid
+  // novo) o 1º persist precisa re-materializar a partição de assets. Também
+  // evita o Map crescer sem limite por exclusão.
+  lastPersistedAssetsRef.delete(id)
   // No MESMO mutex de escrita do id: o delMany não pode intercalar com um
   // persist/rename em voo do mesmo projeto.
   await runSerializedWrite(id, () =>
@@ -136,6 +237,8 @@ export async function deleteProject(id: string): Promise<void> {
         projectMetaKey(id),
         projectFilesKey(id),
         projectStateKey(id),
+        projectBlocksKey(id),
+        projectAssetsKey(id),
         legacyProjectKey(id),
         // Armazenamento do programa do aluno (blocos "guardar/ler") deste projeto.
         gameStorageKey(id),
@@ -244,7 +347,7 @@ function projectToMetaRecord(
 ): Pick<
   Project,
   'id' | 'name' | 'createdAt' | 'updatedAt' | 'mode' | 'installedExtensions' | 'kind' | 'proMeta'
-> {
+> & { storageVersion: number } {
   return {
     id: project.id,
     name: project.name,
@@ -252,6 +355,7 @@ function projectToMetaRecord(
     updatedAt: project.updatedAt,
     mode: project.mode,
     installedExtensions: project.installedExtensions,
+    storageVersion: PROJECT_STORAGE_VERSION,
     // Modo profissional: discriminante + metadados do dev-server. Ausentes em
     // projetos classic (undefined é preservado pelo structured clone do IDB).
     kind: project.kind,
@@ -271,11 +375,26 @@ function projectToFilesRecord(
   }
 }
 
-function projectToStateRecord(project: Project): Pick<Project, 'id' | 'ir' | 'blocksState'> {
+function projectToStateRecord(project: Project): Pick<Project, 'id' | 'ir'> {
   return {
     id: project.id,
     ir: project.ir,
+  }
+}
+
+function projectToBlocksRecord(project: Project): Pick<Project, 'id' | 'blocksState'> {
+  return {
+    id: project.id,
     blocksState: project.blocksState,
+  }
+}
+
+function projectToAssetsRecord(project: Project): Pick<Project, 'id' | 'assets'> {
+  return {
+    id: project.id,
+    // Assets embutidos (imagens). Ausente/undefined em projetos sem assets — o
+    // structured clone do IDB preserva undefined, e o load é tolerante.
+    assets: project.assets,
   }
 }
 
@@ -284,6 +403,8 @@ function assembleProjectRecord(
   meta: unknown,
   files: unknown,
   state: unknown,
+  assets?: unknown,
+  blocks?: unknown,
 ): Project | null {
   if (!meta || typeof meta !== 'object' || Array.isArray(meta)) return null
   if (!files || typeof files !== 'object' || Array.isArray(files)) return null
@@ -292,6 +413,14 @@ function assembleProjectRecord(
     ...(meta as Record<string, unknown>),
     ...(files as Record<string, unknown>),
     ...(state as Record<string, unknown>),
+    ...(blocks && typeof blocks === 'object' && !Array.isArray(blocks)
+      ? (blocks as Record<string, unknown>)
+      : {}),
+    // Partição de assets (opcional): mescla só se for um registro válido. O
+    // sanitizer do projectStore valida o conteúdo de `assets` depois.
+    ...(assets && typeof assets === 'object' && !Array.isArray(assets)
+      ? (assets as Record<string, unknown>)
+      : {}),
     id,
   } as Project
 }

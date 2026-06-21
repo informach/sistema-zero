@@ -210,7 +210,7 @@ const config: GatewayConfigInput = {
     catalog: {
       name: 'catalog',
       upstreamGroups: {
-        default: [{ url: CATALOG_URL, healthCheckPath: '/health' }],
+        default: [{ url: CATALOG_URL, healthCheckPath: '/readyz' }],
       },
       ...sharedResilience,
     },
@@ -355,15 +355,15 @@ const config: GatewayConfigInput = {
       transforms: paymentsInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
-    // Ações (escrita): estorno e cancelamento. Mesmos papéis das leituras (alinha
-    // com `isAdminRole` do painel → evita botão que 403). Rate limit mais baixo.
+    // Ações (escrita): estorno e cancelamento. Admin+; staff acompanha, mas não
+    // executa mutações financeiras. Rate limit mais baixo.
     {
       id: 'payments-admin-refund',
       methods: ['POST'],
       pathPattern: '/payments/admin/payments/:id/refund',
       service: 'payments',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
-      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
       transforms: paymentsInternalTransforms,
       rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
     },
@@ -373,7 +373,7 @@ const config: GatewayConfigInput = {
       pathPattern: '/payments/admin/subscriptions/:id',
       service: 'payments',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
-      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
       transforms: paymentsInternalTransforms,
       rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
     },
@@ -765,6 +765,20 @@ const config: GatewayConfigInput = {
       maxBodyBytes: SMALL_JSON_BODY_BYTES,
       rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
     },
+    // Identidade PÚBLICA de um perfil (BFF do perfil público kids): nome + flag de
+    // visibilidade — o auth NÃO devolve PII. JWT + conta ativa (o visitante) +
+    // `x-internal-token`. 5 segmentos (`/auth/internal/profiles/:id/public`) — não
+    // colide com `/auth/profiles/:id` nem `/auth/profiles/:id/select`.
+    {
+      id: 'auth-internal-profile-public',
+      methods: ['GET'],
+      pathPattern: '/auth/internal/profiles/:id/public',
+      service: 'auth',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: authInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
 
     // ── Catálogo (@sistemazero/catalog) ──────────────────────────────────────
     // LEITURA pública (dados de marketing, não sensíveis) — o funil consome via
@@ -949,6 +963,19 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
+    // "Esta conta tem acesso a estes produtos?" (`?refs=`) — gate de produto que NÃO é
+    // curso de trilha (ex.: o Estúdio Completo vendável). O app kids busca num Server
+    // Component ao abrir /estudio; resposta pequena, recurso do próprio usuário.
+    {
+      id: 'members-access',
+      methods: ['GET'],
+      pathPattern: '/members/access',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
     // Perfil de gamificação do aluno (XP/streak/badges) — widgets do kids buscam
     // a cada render de página (layout + home), por isso o teto generoso.
     {
@@ -960,6 +987,163 @@ const config: GatewayConfigInput = {
       authorize: { statuses: ['active'] },
       transforms: membersInternalTransforms,
       rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
+    // Missões (diárias/semanais) + proteção de sequência — recurso do PRÓPRIO perfil
+    // (kids). `/missions/me` (3 seg), `/missions/:slug/claim` (4 seg), `/streak-freeze/buy`
+    // (3 seg) e `/vacation` (2 seg) NÃO colidem entre si nem com `/gamification/me`.
+    {
+      id: 'members-missions-me',
+      methods: ['GET'],
+      pathPattern: '/members/gamification/missions/me',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'members-mission-claim',
+      methods: ['POST'],
+      pathPattern: '/members/gamification/missions/:slug/claim',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 1024,
+    },
+    {
+      id: 'members-streak-freeze-buy',
+      methods: ['POST'],
+      pathPattern: '/members/gamification/streak-freeze/buy',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 1024,
+    },
+    {
+      id: 'members-vacation',
+      methods: ['PUT'],
+      pathPattern: '/members/gamification/vacation',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+    },
+    // Liga semanal (board + tier resolvido lazy). `/league/me` (3 seg) não colide com
+    // `/missions/me` nem com `/gamification/me`.
+    {
+      id: 'members-league-me',
+      methods: ['GET'],
+      pathPattern: '/members/gamification/league/me',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    // Avatar (guarda-roupa por camadas) — recurso do PRÓPRIO perfil (kids). Estado +
+    // lojinha (GET), compra de peça com moedas (POST) e salvar a config equipada (PUT).
+    // `/members/avatar` (2 segmentos) não colide com `/members/courses…` nem com o
+    // wildcard `/members/admin/*`; `/members/avatar/parts/:id/buy` (4 segmentos) idem.
+    {
+      id: 'members-avatar-get',
+      methods: ['GET'],
+      pathPattern: '/members/avatar',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'members-avatar-buy',
+      methods: ['POST'],
+      pathPattern: '/members/avatar/parts/:partId/buy',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 1024,
+    },
+    {
+      id: 'members-avatar-equip',
+      methods: ['PUT'],
+      pathPattern: '/members/avatar',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 4096,
+    },
+    // Perfil PÚBLICO de outra criança (gamificação: xp/ranking/conquistas/avatar/quarto)
+    // — qualquer conta ATIVA da comunidade lê (peer-viewable). O BFF junta com a
+    // identidade do auth e GATEIA pela flag dos pais. `/members/profiles/*` (3 segmentos)
+    // não colide com `/members/courses…` nem com o wildcard `/members/admin/*`.
+    {
+      id: 'members-profile-public',
+      methods: ['GET'],
+      pathPattern: '/members/profiles/:profileId/public',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    // Quarto virtual (decore-do-seu-jeito) — recurso do PRÓPRIO perfil (kids). Estado +
+    // lojinha (GET), salvar o quarto montado (PUT) e comprar item/tema (POST).
+    // `/members/room` (2 seg) não colide; `/members/room/items/:id/buy` (4 seg) idem.
+    {
+      id: 'members-room-get',
+      methods: ['GET'],
+      pathPattern: '/members/room',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'members-room-save',
+      methods: ['PUT'],
+      pathPattern: '/members/room',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+    },
+    {
+      id: 'members-room-buy',
+      methods: ['POST'],
+      pathPattern: '/members/room/items/:itemId/buy',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 1024,
+    },
+    // Resumo de progresso dos FILHOS (área dos pais, kids). A conta vem do header
+    // confiável `x-auth-user-id` (o members usa resolveUserId — não o accountId do
+    // cliente); o BFF chama atrás do portão de senha. Path literal `/members/parents/*`
+    // não colide com `/members/courses…` nem com o wildcard `/members/admin/*`.
+    {
+      id: 'members-children-stats',
+      methods: ['GET'],
+      pathPattern: '/members/parents/children-stats',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
     {
       id: 'members-course-detail',
@@ -1081,6 +1265,31 @@ const config: GatewayConfigInput = {
       authorize: { statuses: ['active'] },
       transforms: membersInternalTransforms,
       rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+    },
+    // Carrega o projeto da aula contínua anterior (mesma cadeia) p/ semear o editor —
+    // GET lazy chamado SÓ na 1ª abertura sem rascunho local; a resposta pode trazer o
+    // projeto inteiro (cabe na resposta em streaming, sem teto de corpo de requisição).
+    {
+      id: 'members-studio-carryover',
+      methods: ['GET'],
+      pathPattern: '/members/lessons/:lessonId/blocks/:blockId/studio-carryover',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    // Payload autoritativo da vitrine (Mural): o BFF chama no clique "Publicar no
+    // Mural" p/ montar o post (título/resumo do admin) sem confiar no cliente.
+    {
+      id: 'members-showcase-payload',
+      methods: ['GET'],
+      pathPattern: '/members/lessons/:lessonId/blocks/:blockId/showcase-payload',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
     // Concessão/assinatura (funil → gateway → members): HMAC de borda do funil +
     // o gateway re-assina como consumer `gateway` (members verifica com GATEWAY_HMAC_SECRET).
@@ -1506,6 +1715,50 @@ const config: GatewayConfigInput = {
       transforms: hubInternalTransforms,
       maxBodyBytes: SMALL_JSON_BODY_BYTES,
       rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+    },
+    // Auto-publicação de projeto no Mural (BFF → hub, em nome da criança). O hub trata
+    // como criação de sistema (bypass staff_only, idempotente); JWT da criança + token
+    // interno injetado. Corpo pequeno (título/resumo/capa-URL/chave). 4 segmentos —
+    // `/hub/internal/...` não colide com as rotas do aluno nem com `/hub/admin/*`.
+    {
+      id: 'hub-showcase-create',
+      methods: ['POST'],
+      pathPattern: '/hub/internal/showcase-thread',
+      service: 'hub',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+    },
+    // Variação KID-DRIVEN do "Compartilhar" do Estúdio: descrição da criança +
+    // link público de jogar (playId). 4 segmentos — não colide com showcase-thread
+    // nem com /hub/admin/*. O hub re-valida elegibilidade (S2S members) e autoria.
+    {
+      id: 'hub-showcase-create-studio',
+      methods: ['POST'],
+      pathPattern: '/hub/internal/showcase-thread-studio',
+      service: 'hub',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+    },
+    // "Compartilhar" do ESTÚDIO COMPLETO (produto vendável, SEM aula): título +
+    // descrição da criança + playId. O hub re-valida a POSSE do produto (S2S members).
+    // `showcase-thread-studio-standalone` é segmento literal distinto de
+    // `showcase-thread-studio` (sem colisão de prefixo no matcher).
+    {
+      id: 'hub-showcase-create-studio-standalone',
+      methods: ['POST'],
+      pathPattern: '/hub/internal/showcase-thread-studio-standalone',
+      service: 'hub',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
     },
     {
       id: 'hub-comment-edit',

@@ -1,5 +1,12 @@
-import { isReservedProjectFileName, normalizeExtraFileName, type Project } from '#core'
+import {
+  assetManifest,
+  isReservedProjectFileName,
+  normalizeExtraFileName,
+  normalizeProPath,
+  type Project,
+} from '#core'
 import { findExtension } from '#official-extensions'
+import { buildAssetsRuntime } from '../preview/assetsBridge'
 import { transpileExtra } from '../preview/transpile'
 import type { Minifiers } from './minify'
 import { buildProductionIndexHtml } from './productionHtml'
@@ -155,6 +162,17 @@ export async function buildClassicFileMap(
     )
   }
 
+  // Assets embutidos → arquivo `sz-assets.js` que semeia `window.__SZGAME_ASSETS`.
+  // Reusa o MESMO runtime do preview (assetsBridge) para garantir paridade. Não
+  // minificamos: é quase só um literal JSON gigante (data: URLs) — terser não ganha
+  // nada e gastaria tempo mastigando megabytes de base64.
+  const manifest = assetManifest(project.assets)
+  let assetsScriptSrc: string | undefined
+  if (Object.keys(manifest).length > 0) {
+    assetsScriptSrc = 'sz-assets.js'
+    files['public/sz-assets.js'] = buildAssetsRuntime(manifest)
+  }
+
   const indexHtml = buildProductionIndexHtml({
     html: rawHtml,
     hasExternalCss,
@@ -164,6 +182,7 @@ export async function buildClassicFileMap(
     extensionScriptSrcs,
     extraCssHrefs,
     extraHtmlFragments,
+    assetsScriptSrc,
   })
   files['public/index.html'] = minifiers.html(indexHtml)
 
@@ -177,19 +196,32 @@ export interface ProFileMapResult {
 }
 
 /**
- * Monta os arquivos de um projeto PRO: a árvore inteira como arquivos reais
- * (pula `node_modules`). Não minifica — o Vite minifica no build do deploy.
+ * Monta os arquivos de um projeto PRO: a árvore inteira como arquivos reais,
+ * revalidando cada caminho cru com `normalizeProPath` no limite do ZIP (pula
+ * `node_modules`, caminhos absolutos e travessias `..`). Não minifica — o Vite
+ * minifica no build do deploy.
  */
 export function buildProFileMap(project: Project): ProFileMapResult {
   const files: ExportFileMap = {}
+  const warnings: string[] = []
   const tree = project.tree ?? {}
   for (const [path, node] of Object.entries(tree)) {
     if (node.kind !== 'file') continue
-    if (path.split('/').includes('node_modules')) continue
+    // Zip-slip em profundidade no LIMITE do ZIP: revalida o caminho cru da árvore
+    // antes de gravar. `normalizeProPath` já rejeita `node_modules`, caminhos
+    // absolutos e `..` (então isto SUBSTITUI o antigo skip de node_modules) e
+    // normaliza barras; gravamos só quando o caminho já está canônico (norm === path).
+    // Espelha o padrão de "pular + avisar" das colisões de nome de saída acima.
+    const norm = normalizeProPath(path)
+    if (norm === null || norm !== path) {
+      warnings.push(
+        `O arquivo "${path}" ficou de fora do pacote de deploy porque o caminho não é seguro para o ZIP.`,
+      )
+      continue
+    }
     files[path] = node.content
   }
 
-  const warnings: string[] = []
   const pkgRaw =
     typeof files['package.json'] === 'string' ? (files['package.json'] as string) : null
   if (!pkgRaw) {

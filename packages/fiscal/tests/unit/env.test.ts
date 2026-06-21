@@ -72,6 +72,10 @@ describe('env — regime de ambientes (CORAÇÃO do serviço)', () => {
   test('production sem APP_ENV falha', () => {
     fails(prodEnv({ APP_ENV: undefined }))
   })
+
+  test('produção exige REQUIRE_ADMIN=true', () => {
+    fails(prodEnv({ REQUIRE_ADMIN: 'false' }))
+  })
 })
 
 describe('env — segredos e integrações obrigatórias em produção', () => {

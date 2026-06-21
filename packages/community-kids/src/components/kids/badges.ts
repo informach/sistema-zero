@@ -1,4 +1,15 @@
-import { Crown, Flame, GraduationCap, type LucideIcon, Medal, Sparkles, Target } from 'lucide-react'
+import {
+  Coins,
+  Crown,
+  Flame,
+  Gamepad2,
+  GraduationCap,
+  type LucideIcon,
+  Medal,
+  PiggyBank,
+  Sparkles,
+  Target,
+} from 'lucide-react'
 import type { BadgeSlug } from '@/lib/types'
 
 /**
@@ -71,6 +82,31 @@ export const BADGE_INFO: Record<BadgeSlug, BadgeInfo> = {
     title: '30 notas mil',
     description: 'Tirou 100% em 30 quizzes. Mestre!',
     icon: Crown,
+  },
+  'studio-first': {
+    title: 'Criador de jogos',
+    description: 'Você criou o seu primeiro projeto no Estúdio!',
+    icon: Gamepad2,
+  },
+  'studio-master-3': {
+    title: 'Oficina de jogos',
+    description: 'Três projetos criados no Estúdio!',
+    icon: Gamepad2,
+  },
+  'studio-master-10': {
+    title: 'Mestre do Estúdio',
+    description: 'Dez projetos criados. Você é um game designer!',
+    icon: Crown,
+  },
+  'coins-saver-300': {
+    title: 'Cofrinho cheio',
+    description: 'Você já juntou 300 moedas Zappy!',
+    icon: Coins,
+  },
+  'coins-saver-1000': {
+    title: 'Magnata Zappy',
+    description: 'Mil moedas Zappy conquistadas. Uau!',
+    icon: PiggyBank,
   },
 }
 

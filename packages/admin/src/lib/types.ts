@@ -5,7 +5,11 @@
  */
 
 // Tipos do editor embarcável (bloco `studio`) — type-only (erasado em runtime).
-import type { BlockLevel, IDEMode, Project } from '@sistemazero/studio'
+// As atividades (auto-correção) reusam os tipos PÚBLICOS do @sistemazero/studio
+// (sem mirror próprio — evita drift; o members tem o espelho do lado servidor).
+import type { BlockLevel, CheckResult, IDEMode, LessonActivity, Project } from '@sistemazero/studio'
+
+export type { ActivityCheck, CheckResult, LessonActivity } from '@sistemazero/studio'
 
 export interface SessionUser {
   id: string
@@ -260,6 +264,17 @@ export interface StudioBlock {
   allowCategories?: string[]
   allowedModes?: IDEMode[]
   allowLevelReveal?: boolean
+  /** Atividade com auto-correção (fase 2). Ausente = bloco só de entrega. */
+  activity?: LessonActivity
+  /** Nome do projeto contínuo (cadeia). Aulas com o mesmo nome carregam o código entre si. */
+  chain?: string
+  /** Vitrine (Mural dos Criadores): config da auto-publicação ao concluir a última aula. */
+  showcase?: {
+    enabled: boolean
+    title?: string
+    summary?: string
+    defaultCoverUrl?: string
+  }
 }
 export type LessonBlockContent =
   | RichTextBlock
@@ -277,12 +292,21 @@ export interface StudioSubmissionRow {
   submittedAt: string
   name: string | null
   email: string | null
+  /** Correção automática (atividade): nota/aprovado; `null` sem atividade. */
+  score: number | null
+  checkedAt: string | null
+  passed: boolean
 }
 
-/** Projeto enviado por um aluno (abrir no Estúdio embutido do admin). */
+/** Projeto enviado por um aluno (abrir no Estúdio embutido do admin) + correção. */
 export interface StudioSubmissionDetailView {
   project: Project
   submittedAt: string
+  score: number | null
+  /** Resultado por checagem (`verifiedBy`: server recalculado × client reportado). */
+  results: CheckResult[] | null
+  checkedAt: string | null
+  passed: boolean
 }
 
 export interface BlockView {
@@ -326,9 +350,10 @@ export type PricingMode = 'one_time' | 'subscription'
 export type CouponType = 'percent' | 'fixed'
 
 // Fulfillment (entrega/acesso): espelha `domain/product/fulfillment.ts` do catalog.
-// Entrega EXCLUSIVAMENTE via área de membros: `course` (um curso) ou
-// `all_courses` (chave-mestra — todos os cursos, atuais e futuros).
-export type AccessType = 'course' | 'all_courses'
+// Entrega EXCLUSIVAMENTE via área de membros: `course` (um curso),
+// `all_courses` (chave-mestra ADULTA) ou `all_kids_courses` (chave-mestra KIDS) —
+// cada chave-mestra cobre todos os cursos da SUA audiência (atuais e futuros).
+export type AccessType = 'course' | 'all_courses' | 'all_kids_courses' | 'community'
 export type ReleaseMode = 'immediate' | 'days_after_purchase' | 'fixed_date'
 
 export interface ReleaseRule {

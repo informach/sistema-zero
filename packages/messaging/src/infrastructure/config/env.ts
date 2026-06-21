@@ -14,6 +14,15 @@ const optionalBool = (def: boolean) =>
     })
     .transform((v) => (v === undefined ? def : v.toLowerCase() === 'true' || v === '1'))
 
+const optionalSecret = (name: string, minLength = 16) =>
+  z
+    .string()
+    .optional()
+    .transform((v) => (v === undefined || v.length === 0 ? undefined : v))
+    .refine((v) => v === undefined || v.length >= minLength, {
+      message: `${name} deve ter pelo menos ${minLength} caracteres`,
+    })
+
 const EnvSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
@@ -45,7 +54,7 @@ const EnvSchema = z
     REQUIRE_ADMIN: optionalBool(true),
     // Token interno injetado pelo gateway nas rotas de envio (S2S), espelhando o
     // padrão do members. Quando AUSENTE/vazio, a checagem é desligada (dev).
-    MESSAGING_INTERNAL_TOKEN: z.string().optional(),
+    MESSAGING_INTERNAL_TOKEN: optionalSecret('MESSAGING_INTERNAL_TOKEN'),
 
     // ── Provedores (opcionais no boot; o worker falha o envio se faltar) ────────
     SENDGRID_API_KEY: z.string().optional(),
@@ -54,10 +63,7 @@ const EnvSchema = z
     EVOLUTION_API_KEY: z.string().optional(),
     // Segredo `?token=` exigido nos webhooks de status (defesa extra). Ausente = desligado
     // (só em dev — em produção é OBRIGATÓRIO, ver refines no fim).
-    MESSAGING_WEBHOOK_TOKEN: z
-      .string()
-      .min(1, 'MESSAGING_WEBHOOK_TOKEN não pode ser vazia; remova para desabilitar')
-      .optional(),
+    MESSAGING_WEBHOOK_TOKEN: optionalSecret('MESSAGING_WEBHOOK_TOKEN'),
     // Janela de tolerância do timestamp assinado do webhook do SendGrid (anti-replay).
     WEBHOOK_TIMESTAMP_TOLERANCE_SECONDS: z.coerce.number().int().positive().default(600),
 
@@ -80,7 +86,7 @@ const EnvSchema = z
     MESSAGES_RETENTION_DAYS: z.coerce.number().int().positive().default(90),
     // Token do GET /metrics (header x-metrics-token ou Bearer). Obrigatório em
     // produção (refine) — espelha o payments.
-    METRICS_TOKEN: z.string().min(16).optional(),
+    METRICS_TOKEN: optionalSecret('METRICS_TOKEN'),
     // Sentry (erros). Ausente = desligado (no-op) — espelha o payments.
     SENTRY_DSN: z.string().url().optional(),
 
@@ -150,6 +156,11 @@ const EnvSchema = z
   .refine((e) => !(e.NODE_ENV === 'production' && !e.METRICS_TOKEN), {
     message: 'Em produção METRICS_TOKEN (≥16 chars) é obrigatório — /metrics não fica aberto',
     path: ['METRICS_TOKEN'],
+  })
+  .refine((e) => !(e.NODE_ENV === 'production' && e.ATTACHMENT_FETCH_ALLOWED_HOSTS.length === 0), {
+    message:
+      'Em produção ATTACHMENT_FETCH_ALLOWED_HOSTS é obrigatório (anti-SSRF para anexos por URL)',
+    path: ['ATTACHMENT_FETCH_ALLOWED_HOSTS'],
   })
   // EVOLUTION_URL e EVOLUTION_API_KEY andam em PAR: um sem o outro = envio de
   // WhatsApp falhando em silêncio até esgotar tentativas.

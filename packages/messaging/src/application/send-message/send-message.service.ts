@@ -43,6 +43,7 @@ export class SendMessageService {
     private readonly suppressions: SuppressionRepository,
     private readonly clock: Clock,
     private readonly idGen: () => string,
+    private readonly maxSendAttempts: number,
   ) {}
 
   async execute(input: SendMessageInput): Promise<MessageView> {
@@ -85,6 +86,7 @@ export class SendMessageService {
       senderId,
       priority: input.priority,
       scheduledAt: input.scheduledAt,
+      maxAttempts: this.maxSendAttempts,
       consumerId,
       idempotencyKey,
       now: this.clock.now(),

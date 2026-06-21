@@ -26,15 +26,24 @@ export class ReadCommunityService {
 
   async listSpaces(actor: Actor, audience: Audience): Promise<{ items: SpacePublicView[] }> {
     const spaces = await this.read.listActiveSpaces(audience)
-    const visible = await this.access.filterVisibleSpaces(actor, spaces)
-    return { items: visible.map(toSpacePublicView) }
+    const annotated = await this.access.resolveSpaceVisibility(actor, spaces)
+    // Inacessível só aparece (como "bloqueado") quando o space opta por teaser; os
+    // demais somem (comportamento clássico — zero regressão na vitrine adulta).
+    const items = annotated
+      .filter((a) => a.accessible || a.space.teaserWhenLocked)
+      .map((a) => toSpacePublicView(a.space, !a.accessible))
+    return { items }
   }
 
   async getSpace(actor: Actor, slug: string): Promise<SpacePublicView> {
     const space = await this.read.findActiveSpaceBySlug(slug)
     if (!space) throw new SpaceNotFoundError()
-    if (!(await this.access.canAccessSpace(actor, space))) throw new AccessDeniedError()
-    return toSpacePublicView(space)
+    if (!(await this.access.canAccessSpace(actor, space))) {
+      // Sem acesso: teaser → devolve só os metadados com `locked:true`; senão 403.
+      if (space.teaserWhenLocked) return toSpacePublicView(space, true)
+      throw new AccessDeniedError()
+    }
+    return toSpacePublicView(space, false)
   }
 
   async listChannels(actor: Actor, slug: string): Promise<{ items: ChannelPublicView[] }> {

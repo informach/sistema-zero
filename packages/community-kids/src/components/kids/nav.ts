@@ -1,4 +1,12 @@
-import { CircleUserRound, GraduationCap, Home, MessagesSquare } from 'lucide-react'
+import {
+  Blocks,
+  CircleUserRound,
+  GraduationCap,
+  Home,
+  House,
+  Images,
+  MessagesSquare,
+} from 'lucide-react'
 
 export interface NavItem {
   href: string
@@ -18,6 +26,14 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { href: '/', label: 'Início', icon: Home },
   { href: '/cursos', label: 'Cursos', icon: GraduationCap, match: '/cursos' },
-  { href: '/comunidade', label: 'Turma', icon: MessagesSquare, match: '/comunidade' },
+  {
+    href: '/clube-dos-criadores',
+    label: 'Clube',
+    icon: MessagesSquare,
+    match: '/clube-dos-criadores',
+  },
+  { href: '/mural-dos-criadores', label: 'Mural', icon: Images, match: '/mural-dos-criadores' },
+  { href: '/estudio', label: 'Estúdio', icon: Blocks, match: '/estudio' },
+  { href: '/quarto', label: 'Quarto', icon: House },
   { href: '/perfil', label: 'Perfil', icon: CircleUserRound },
 ]

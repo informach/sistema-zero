@@ -4,9 +4,11 @@ import type { Database } from './db'
 import { webhookEvents } from './schema'
 
 /**
- * Dedupe de webhooks via constraint única `(provider, provider_event_id)`. O
- * `INSERT ... ON CONFLICT DO NOTHING RETURNING` é atômico: se nada retornou, o
- * evento já havia sido recebido.
+ * Dedupe de webhooks via constraint única `(provider, provider_event_id)`. Usa
+ * lease no `payload` para impedir concorrência entre réplicas no mesmo evento:
+ * uma linha recém-criada recebe `__processingStartedAt` e uma segunda entrega que
+ * chega enquanto o processamento da primeira ainda está em andamento retorna `false`
+ * sem disputar o evento novamente.
  *
  * O token de dedupe só é "consumido" por `markProcessed` (que grava `processedAt`):
  * uma linha registrada mas ainda **não processada** (`processed_at IS NULL`)
@@ -23,33 +25,69 @@ export class DrizzleWebhookInbox implements WebhookInbox {
     eventType: string
     payload: Record<string, unknown>
   }): Promise<boolean> {
-    const inserted = await this.db
-      .insert(webhookEvents)
-      .values({
-        provider: input.provider,
-        providerEventId: input.eventId,
-        eventType: input.eventType,
-        payload: input.payload,
-      })
-      .onConflictDoNothing({ target: [webhookEvents.provider, webhookEvents.providerEventId] })
-      .returning({ id: webhookEvents.id })
+    const now = new Date()
+    const claimedPayload = { ...input.payload, __processingStartedAt: now.toISOString() }
+    const staleMs = 60_000
 
-    if (inserted.length > 0) return true // primeira vez → processar
+    return this.db.transaction(async (tx) => {
+      const inserted = await tx
+        .insert(webhookEvents)
+        .values({
+          provider: input.provider,
+          providerEventId: input.eventId,
+          eventType: input.eventType,
+          payload: claimedPayload,
+        })
+        .onConflictDoNothing({ target: [webhookEvents.provider, webhookEvents.providerEventId] })
+        .returning({ id: webhookEvents.id })
 
-    // Já existe: só é duplicado (ignorar) se JÁ foi processado com sucesso.
-    const [row] = await this.db
-      .select({ processedAt: webhookEvents.processedAt })
-      .from(webhookEvents)
-      .where(
-        and(
-          eq(webhookEvents.provider, input.provider),
-          eq(webhookEvents.providerEventId, input.eventId),
-        ),
+      if (inserted.length > 0) return true // primeira vez → processar
+
+      // Já existe: só é duplicado (ignorar) se JÁ foi processado com sucesso.
+      const [row] = await tx
+        .select({
+          processedAt: webhookEvents.processedAt,
+          payload: webhookEvents.payload,
+        })
+        .from(webhookEvents)
+        .where(
+          and(
+            eq(webhookEvents.provider, input.provider),
+            eq(webhookEvents.providerEventId, input.eventId),
+          ),
+        )
+        .for('update')
+        .limit(1)
+
+      // Linha sumiu entre o insert e o select (corrida rara) → trata como novo.
+      if (!row) return true
+
+      if (row.processedAt) return false
+
+      const processingStartedAt = parseProcessingStartedAt(
+        row.payload as Record<string, unknown> | null,
       )
-      .limit(1)
 
-    // Linha sumiu entre o insert e o select (corrida rara) → trata como novo.
-    return row ? row.processedAt === null : true
+      if (processingStartedAt === null || now.getTime() - processingStartedAt.getTime() > staleMs) {
+        await tx
+          .update(webhookEvents)
+          .set({
+            payload: {
+              ...(row.payload as Record<string, unknown>),
+              __processingStartedAt: now.toISOString(),
+            },
+          })
+          .where(
+            and(
+              eq(webhookEvents.provider, input.provider),
+              eq(webhookEvents.providerEventId, input.eventId),
+            ),
+          )
+        return true
+      }
+
+      return false
+    })
   }
 
   async markProcessed(provider: string, eventId: string): Promise<void> {
@@ -70,4 +108,10 @@ export class DrizzleWebhookInbox implements WebhookInbox {
       .returning({ id: webhookEvents.id })
     return deleted.length
   }
+}
+
+function parseProcessingStartedAt(value: Record<string, unknown> | null): Date | null {
+  if (!value || typeof value.__processingStartedAt !== 'string') return null
+  const date = new Date(value.__processingStartedAt)
+  return Number.isNaN(date.getTime()) ? null : date
 }

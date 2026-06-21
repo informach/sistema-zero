@@ -17,6 +17,12 @@ import { DrizzleProductRepository } from '../src/infrastructure/persistence/driz
 const PRODUCT_SKU = 'no-comando-da-ia'
 const OFFER_SLUG = 'no-comando-da-ia'
 
+// Estúdio Completo (kids) — produto vendável que libera o editor standalone na
+// comunidade kids. Entrega via `community` (a CHAVE casa com o `/members/access` e a
+// re-validação do publish no hub; NÃO é curso de trilha, então fica fora das listagens).
+const STUDIO_SKU = 'estudio-completo'
+const STUDIO_OFFER_SLUG = 'estudio-completo'
+
 const env = loadEnv()
 const logger = createLogger({ level: 'info', pretty: env.NODE_ENV !== 'production' })
 const connection = createDbConnection(env.DATABASE_URL, { max: env.DATABASE_POOL_MAX })
@@ -72,6 +78,54 @@ async function main(): Promise<void> {
       guaranteeDays: 7,
       status: 'active',
       content: { badge: 'Ebook + kit prático', ctaLabel: 'Quero meu acesso' },
+    })
+    logger.info('seed.offer_created', { id: view.id, slug: view.slug, priceCents: view.priceCents })
+  }
+
+  // ── Estúdio Completo (kids) ───────────────────────────────────────────────
+  let studio = await products.findBySku(STUDIO_SKU)
+  if (studio) {
+    logger.info('seed.product_exists', { id: studio.id, sku: studio.sku })
+  } else {
+    const view = await createProduct.execute({
+      sku: STUDIO_SKU,
+      slug: STUDIO_SKU,
+      name: 'Estúdio Completo',
+      kind: 'community',
+      status: 'active',
+      sellable: true,
+      description:
+        'O editor completo do Sistema Zero (blocos, ponte e código) liberado para a criança criar seus próprios jogos e apps na comunidade kids.',
+      // Entrega via `community`: o `courseRef` é a CHAVE de acesso (não um curso de
+      // trilha). Casa com o `/members/access?refs=estudio-completo` e a re-validação
+      // do publish no hub (`STUDIO_STANDALONE_ACCESS_REF`).
+      fulfillment: {
+        accessType: 'community',
+        courseRef: STUDIO_SKU,
+        release: { mode: 'immediate' },
+      },
+    })
+    logger.info('seed.product_created', { id: view.id, sku: view.sku })
+    studio = await products.findById(view.id)
+  }
+  if (!studio) throw new Error('Produto do Estúdio não encontrado após a criação')
+
+  const existingStudioOffer = await offers.findBySlug(STUDIO_OFFER_SLUG)
+  if (existingStudioOffer) {
+    logger.info('seed.offer_exists', { id: existingStudioOffer.id, slug: existingStudioOffer.slug })
+  } else {
+    const view = await createOffer.execute({
+      productId: studio.id,
+      code: 'estudio-padrao',
+      slug: STUDIO_OFFER_SLUG,
+      name: 'Estúdio Completo — Oferta padrão',
+      priceCents: 9700,
+      currency: 'BRL',
+      pricingMode: 'one_time',
+      installmentsMax: 12,
+      guaranteeDays: 7,
+      status: 'active',
+      content: { badge: 'Crie seus próprios jogos', ctaLabel: 'Quero o Estúdio' },
     })
     logger.info('seed.offer_created', { id: view.id, slug: view.slug, priceCents: view.priceCents })
   }

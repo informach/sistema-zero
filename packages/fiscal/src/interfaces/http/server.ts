@@ -156,23 +156,36 @@ export function createServer(deps: HttpDeps) {
           const payload = (parsed.data ?? {}) as Record<string, unknown>
 
           try {
-            if (await deps.processedWebhooks.isProcessed(deliveryId)) {
-              return { ok: true, deduped: true }
-            }
+            const processed = await deps.processedWebhooks.withDeliveryLock(
+              deliveryId,
+              async () => {
+                if (await deps.processedWebhooks.isProcessed(deliveryId)) {
+                  return { deduped: true }
+                }
 
-            const result = await deps.handleWebhook.execute({ deliveryId, eventName, payload })
-            if (result.kind === 'retryable') {
-              // NÃO marca processado — o payments re-entrega com backoff.
-              deps.logger.warn('fiscal.webhook_retryable', { deliveryId, reason: result.reason })
+                const result = await deps.handleWebhook.execute({ deliveryId, eventName, payload })
+                if (result.kind === 'retryable') {
+                  // NÃO marca processado — o payments re-entrega com backoff.
+                  deps.logger.warn('fiscal.webhook_retryable', {
+                    deliveryId,
+                    reason: result.reason,
+                  })
+                  return { retryable: true, reason: result.reason }
+                }
+
+                await deps.processedWebhooks.markProcessed(deliveryId, {
+                  paymentId: typeof payload.paymentId === 'string' ? payload.paymentId : undefined,
+                  eventName,
+                })
+                return { deduped: false }
+              },
+            )
+
+            if (processed.deduped) return { ok: true, deduped: true }
+            if ('retryable' in processed) {
               set.status = 502
-              return { error: result.reason }
+              return { error: processed.reason }
             }
-
-            await deps.processedWebhooks.markProcessed(deliveryId, {
-              paymentId:
-                typeof payload['paymentId'] === 'string' ? payload['paymentId'] : undefined,
-              eventName,
-            })
             return { ok: true }
           } catch (error) {
             deps.logger.error('fiscal.webhook_failed', { deliveryId, error: serializeError(error) })

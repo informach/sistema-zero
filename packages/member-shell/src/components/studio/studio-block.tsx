@@ -1,12 +1,12 @@
 'use client'
 
 import '@sistemazero/studio/styles.css'
-import type { Project, StudioHandle } from '@sistemazero/studio'
+import type { Project, StudioHandle, StudioShareAdapter } from '@sistemazero/studio'
 import { Button } from '@sistemazero/ui/button'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { CheckCircle2, Maximize2, Minimize2, Send } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { type ApiError, apiSend } from '../../lib/api'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { type ApiError, apiGet, apiSend } from '../../lib/api'
 import { cn } from '../../lib/cn'
 import type { StudioBlock, StudioStateView, StudioSubmissionResultView } from '../../lib/types'
 import { useLessonPlayer } from '../lesson-player-context'
@@ -16,9 +16,15 @@ interface Props {
   content: StudioBlock
   /** Estado da entrega vindo do GET da aula (já enviou? quando?). */
   studioState: StudioStateView | null
+  /**
+   * Liga o botão "Compartilhar" (publicar no Mural) na Topbar do editor. Só o app
+   * KIDS passa `true` (o Mural é da vitrine kids); a elegibilidade real é do backend
+   * (o publish 409 quando o bloco não é de vitrine). Default OFF.
+   */
+  enableShare?: boolean
 }
 
-type StudioComponent = typeof import('@sistemazero/studio')['Studio']
+type StudioComponent = typeof import('@sistemazero/studio')['StudioLesson']
 
 /**
  * Bloco Estúdio: renderiza o @sistemazero/studio pré-configurado pelo admin (versão
@@ -30,42 +36,69 @@ type StudioComponent = typeof import('@sistemazero/studio')['Studio']
  * Carregado SÓ no client (Monaco/Blockly/IndexedDB não existem no SSR): o import
  * dinâmico do editor roda dentro de um effect — o server renderiza só o placeholder.
  */
-export function StudioBlockView({ blockId, content, studioState }: Props) {
+export function StudioBlockView({ blockId, content, studioState, enableShare }: Props) {
   const player = useLessonPlayer()
   const lessonId = player?.lessonId ?? ''
   // Id estável por bloco — o autosave local retoma o WIP no mesmo navegador.
   const projectId = `sz-lesson-studio:${blockId}`
 
-  const [Studio, setStudio] = useState<StudioComponent | null>(null)
+  const [StudioLesson, setStudioLesson] = useState<StudioComponent | null>(null)
   const [seed, setSeed] = useState<Project | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(studioState?.submitted ?? false)
   const [submittedAt, setSubmittedAt] = useState<string | null>(studioState?.submittedAt ?? null)
+  const [score, setScore] = useState<number | null>(studioState?.lastScore ?? null)
+  const [passed, setPassed] = useState<boolean>(studioState?.passed ?? false)
+  const [xp, setXp] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [fullscreen, setFullscreen] = useState(false)
+
+  const activity = content.activity
+  const passingScore = activity?.passingScore
 
   const handleRef = useRef<StudioHandle | null>(null)
   const containerRef = useRef<HTMLDivElement | null>(null)
 
-  // Client-only: carrega o editor e semeia do rascunho LOCAL (se houver) ou do
-  // projeto inicial do admin. Semear DEPOIS do read evita re-hidratar por cima do WIP.
+  // Client-only: carrega o editor e semeia na ordem rascunho LOCAL → carryover da
+  // aula contínua anterior → projeto inicial do admin. Semear DEPOIS do read evita
+  // re-hidratar por cima do WIP.
   useEffect(() => {
     let active = true
     void (async () => {
       const mod = await import('@sistemazero/studio')
       if (!active) return
-      setStudio(() => mod.Studio)
+      setStudioLesson(() => mod.StudioLesson)
+      // 1) Rascunho LOCAL sempre vence — nunca re-hidratar por cima do WIP.
       const existing = await mod
         .createLocalPersistenceAdapter()
         .load(projectId)
         .catch(() => null)
       if (!active) return
-      setSeed(existing ?? { ...(content.initialProject as Project), id: projectId })
+      if (existing) {
+        setSeed(existing)
+        return
+      }
+      // 2) Projeto contínuo (cadeia) e sem rascunho local: semeia do que o aluno
+      //    enviou na aula contínua anterior. Lazy + best-effort: falha de rede NÃO
+      //    trava o editor (cai no initialProject).
+      if (content.chain && lessonId) {
+        const carry = await apiGet<{ project: unknown | null }>(
+          `/api/members/lessons/${encodeURIComponent(lessonId)}/blocks/${encodeURIComponent(blockId)}/studio-carryover`,
+        ).catch(() => null)
+        if (!active) return
+        if (carry?.project) {
+          // id estável por bloco — o autosave local desta aula grava na chave certa.
+          setSeed({ ...(carry.project as Project), id: projectId })
+          return
+        }
+      }
+      // 3) 1ª da cadeia / não enviou ainda / aula independente → template do bloco.
+      setSeed({ ...(content.initialProject as Project), id: projectId })
     })()
     return () => {
       active = false
     }
-  }, [projectId, content.initialProject])
+  }, [projectId, content.initialProject, content.chain, lessonId, blockId])
 
   // Sincroniza o estado quando o fullscreen sai pelo Esc/gesto do SO.
   useEffect(() => {
@@ -87,13 +120,22 @@ export function StudioBlockView({ blockId, content, studioState }: Props) {
     setSubmitting(true)
     setError(null)
     try {
+      // Resultado da auto-correção rodada no editor (correção híbrida): o servidor
+      // RECALCULA a estrutura e registra estes p/ comportamento/teste/código.
+      const run = handleRef.current?.getActivityResult() ?? null
+      const results = run
+        ? run.results.map((r) => ({ checkId: r.checkId, passed: r.passed, message: r.message }))
+        : undefined
       const res = await apiSend<StudioSubmissionResultView>(
         `/api/members/lessons/${encodeURIComponent(lessonId)}/blocks/${encodeURIComponent(blockId)}/studio-submission`,
         'POST',
-        { project },
+        activity ? { project, results } : { project },
       )
       setSubmitted(true)
       setSubmittedAt(res.submittedAt)
+      if (res.score !== undefined) setScore(res.score)
+      if (res.passed !== undefined) setPassed(res.passed)
+      setXp(res.gamification?.xpAwarded ?? null)
       // Destrava o "Concluir aula" (gate do backend) → re-render da página.
       player?.refreshAfterStudio?.()
     } catch (err) {
@@ -106,9 +148,60 @@ export function StudioBlockView({ blockId, content, studioState }: Props) {
     } finally {
       setSubmitting(false)
     }
-  }, [lessonId, blockId, player])
+  }, [lessonId, blockId, player, activity])
 
-  const ready = Studio !== null && seed !== null
+  // Adapter de COMPARTILHAR (Mural) — só no kids (`enableShare`). O Studio o LATCHA
+  // uma vez, então memoizamos por (lessonId, blockId): I/O do servidor vive aqui, a
+  // UX no editor. `generateDescription` manda só os 3 arquivos (sem assets); `publish`
+  // sobe o projeto inteiro + print por multipart e devolve os links.
+  const share = useMemo<StudioShareAdapter | undefined>(() => {
+    if (!enableShare || !lessonId) return undefined
+    return {
+      async generateDescription({ project, title }) {
+        try {
+          const res = await apiSend<{ description?: string }>('/api/studio/describe', 'POST', {
+            files: {
+              html: project.files['index.html'],
+              css: project.files['style.css'],
+              js: project.files['script.js'],
+            },
+            title,
+          })
+          return res.description ?? ''
+        } catch {
+          return '' // fail-soft: a criança escreve do zero
+        }
+      },
+      async publish({ project, coverDataUrl, title, description }) {
+        const form = new FormData()
+        form.set('lessonId', lessonId)
+        form.set('blockId', blockId)
+        form.set('description', description)
+        form.set('title', title)
+        form.set('clientIdempotencyKey', crypto.randomUUID())
+        form.set(
+          'project',
+          new File([JSON.stringify(project)], 'project.json', { type: 'application/json' }),
+        )
+        if (coverDataUrl) {
+          const blob = await (await fetch(coverDataUrl)).blob()
+          form.set('cover', new File([blob], 'cover', { type: blob.type || 'image/png' }))
+        }
+        const res = await fetch('/api/studio/publish', { method: 'POST', body: form })
+        const body = (await res.json().catch(() => null)) as {
+          muralUrl?: string
+          playUrl?: string
+          error?: { message?: string }
+        } | null
+        if (!res.ok) {
+          throw new Error(body?.error?.message ?? 'Não foi possível publicar agora.')
+        }
+        return { muralUrl: body?.muralUrl, playUrl: body?.playUrl }
+      },
+    }
+  }, [enableShare, lessonId, blockId])
+
+  const ready = StudioLesson !== null && seed !== null
 
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4">
@@ -134,7 +227,9 @@ export function StudioBlockView({ blockId, content, studioState }: Props) {
         )}
       >
         {ready ? (
-          <Studio
+          // StudioLesson já desliga terminal/IA/profissional/export; aqui o
+          // aluno corta também as extensões (editor enxuto na aula).
+          <StudioLesson
             ref={handleRef}
             initialProject={seed as Project}
             persistence="local"
@@ -143,13 +238,9 @@ export function StudioBlockView({ blockId, content, studioState }: Props) {
             allowCategories={content.allowCategories}
             allowedModes={content.allowedModes}
             allowLevelReveal={content.allowLevelReveal}
-            features={{
-              terminal: false,
-              ai: false,
-              professional: false,
-              export: false,
-              extensions: false,
-            }}
+            activity={content.activity}
+            features={{ extensions: false }}
+            share={share}
             blockUnloadWhenDirty={false}
           />
         ) : (
@@ -160,6 +251,23 @@ export function StudioBlockView({ blockId, content, studioState }: Props) {
       </div>
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
+
+      {/* Nota da auto-correção (quando o bloco tem atividade). O feedback POR
+          checagem é instantâneo no painel do editor (botão "Verificar"). */}
+      {activity && score !== null ? (
+        <p className="inline-flex flex-wrap items-center gap-2 text-sm">
+          <span className="font-medium">Sua nota: {score}/100</span>
+          {passingScore !== undefined ? (
+            <span className={passed ? 'text-accent dark:text-primary' : 'text-muted-foreground'}>
+              {passed
+                ? '· você atingiu a nota mínima'
+                : `· precisa de ${passingScore} para concluir`}
+            </span>
+          ) : null}
+          {xp ? <span className="text-accent dark:text-primary">· +{xp} XP</span> : null}
+        </p>
+      ) : null}
+
       {submitted ? (
         <p className="inline-flex items-center gap-2 text-sm text-accent dark:text-primary">
           <CheckCircle2 className="size-4" />
@@ -168,7 +276,9 @@ export function StudioBlockView({ blockId, content, studioState }: Props) {
         </p>
       ) : (
         <p className="text-xs text-muted-foreground">
-          Envie seu projeto ao professor para poder concluir a aula.
+          {passingScore !== undefined
+            ? 'Use "Verificar" no editor e envie ao professor — atinja a nota mínima para concluir a aula.'
+            : 'Envie seu projeto ao professor para poder concluir a aula.'}
         </p>
       )}
     </div>

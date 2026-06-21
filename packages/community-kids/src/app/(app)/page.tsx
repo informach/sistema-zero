@@ -1,9 +1,10 @@
 import { ContinueHero } from '@/components/kids/continue-hero'
 import { CourseCard } from '@/components/kids/course-card'
 import { KidsMascot } from '@/components/kids/mascot'
+import { MissionsPanel } from '@/components/kids/missions-panel'
 import { StreakCard } from '@/components/kids/streak-card'
 import { unitThemeAt } from '@/components/kids/unit-theme'
-import { getGamificationReadonly, listMyCourses } from '@/server/members'
+import { getGamificationReadonly, getMissionsReadonly, listMyCourses } from '@/server/members'
 import { getSession } from '@/server/session'
 
 export const dynamic = 'force-dynamic'
@@ -13,10 +14,19 @@ export default async function HomePage() {
   // Numa sessão de PERFIL a saudação é para a CRIANÇA (nome do perfil ativo); o
   // token carrega o nome da CONTA, então o perfil tem prioridade.
   const greetName = user?.activeProfile?.name ?? user?.firstName
-  // Gamificação é best-effort (401/gateway fora → card some), igual ao layout.
-  const [{ status, body }, gam] = await Promise.all([listMyCourses(), getGamificationReadonly()])
+  // Gamificação + missões são best-effort (401/gateway fora → seções somem). A
+  // gamificação pede `withRanking: true` p/ casar a chave do React.cache com a do
+  // layout (clients.ts memoiza por esse booleano) — uma ÚNICA ida ao gateway por
+  // render nesta rota, a mais acessada. Missões antes vinham de um fetch client
+  // pós-hidratação (waterfall); agora entram no Promise.all do servidor.
+  const [{ status, body }, gam, missions] = await Promise.all([
+    listMyCourses(),
+    getGamificationReadonly({ withRanking: true }),
+    getMissionsReadonly(),
+  ])
   const courses = status === 200 ? (body?.courses ?? []) : []
   const gamification = gam.status === 200 ? (gam.body ?? null) : null
+  const missionsData = missions.status === 200 ? (missions.body ?? null) : null
 
   return (
     <div className="flex flex-col gap-8">
@@ -38,6 +48,9 @@ export default async function HomePage() {
       <ContinueHero courses={courses} />
 
       {gamification && courses.length > 0 ? <StreakCard gamification={gamification} /> : null}
+
+      {/* Missões diárias/semanais (dados do servidor; some se a gamificação estiver fora). */}
+      {courses.length > 0 ? <MissionsPanel initial={missionsData} /> : null}
 
       <section className="flex flex-col gap-4">
         <h2 className="sz-display text-xl">Meus cursos</h2>

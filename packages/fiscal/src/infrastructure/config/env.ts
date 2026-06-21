@@ -90,6 +90,12 @@ const EnvSchema = z
     NFSE_WORKER_INTERVAL_MS: z.coerce.number().int().positive().default(30_000),
     NFSE_WORKER_BATCH_SIZE: z.coerce.number().int().positive().default(10),
     NFSE_MAX_ATTEMPTS: z.coerce.number().int().positive().default(10),
+    /** Backoff dos efeitos pós-emissão (DANFSe/e-mail) sem reemitir a DPS. */
+    NFSE_DELIVERY_RETRY_DELAY_MS: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(15 * 60_000),
     /** Lease do claim — réplica só re-reivindica após a outra ter parado. */
     NFSE_CLAIM_STALE_MS: z.coerce.number().int().positive().default(120_000),
     NFSE_CANCEL_WINDOW_DAYS: z.coerce.number().int().positive().default(180),
@@ -118,6 +124,9 @@ const EnvSchema = z
   })
   .refine((env) => env.NODE_ENV !== 'production' || Boolean(env.APP_ENV), {
     message: 'APP_ENV (staging|production) é obrigatório quando NODE_ENV=production',
+  })
+  .refine((env) => env.NODE_ENV !== 'production' || env.REQUIRE_ADMIN, {
+    message: 'REQUIRE_ADMIN deve estar habilitado em produção',
   })
   .refine((env) => env.APP_ENV !== 'production' || env.NFSE_AMBIENTE === 'producao', {
     message: 'APP_ENV=production exige NFSE_AMBIENTE=producao (senão nenhuma nota real é emitida)',

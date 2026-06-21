@@ -112,7 +112,7 @@ src/
    **Logout `allSessions: true` = `revokeAllForUser`** (TODAS as famílias/
    dispositivos — revogar só a família do token apresentado deixaria os outros
    dispositivos logados). **Fail-fast de produção no env:** além do
-   `AUTH_INTERNAL_TOKEN`, produção exige `GATEWAY_URL` + `AUTH_HMAC_SECRET`
+   `AUTH_INTERNAL_TOKEN`, produção exige `GATEWAY_URL` não-localhost + `AUTH_HMAC_SECRET`
    (sem eles o messaging é NO-OP silencioso — reset/OTP/convite responderiam 200
    sem nunca enviar e-mail) e `COMMUNITY_URL` não-localhost (links de e-mail).
    Login com senha errada loga `auth.login.failed` (userId + ip — auditoria de
@@ -128,7 +128,8 @@ src/
    (60); emitir um novo **consome os pendentes** (1 token vivo/usuário).
    `POST /auth/forgot-password` responde **SEMPRE 200** (anti-enumeração) e envia o
    e-mail `password-reset` via **gateway → messaging** (HMAC de borda, consumer `auth`
-   — `GATEWAY_URL`+`AUTH_HMAC_SECRET`; sem eles o envio é no-op) com link
+   — `GATEWAY_URL`+`AUTH_HMAC_SECRET`; timeout por `GATEWAY_REQUEST_TIMEOUT_MS`;
+   sem URL/segredo o envio é no-op) com link
    `${COMMUNITY_URL}/redefinir-senha?token=...` — envio **best-effort** (falha só loga).
    `POST /auth/reset-password` troca a senha e **revoga TODAS as sessões**.
    `POST /auth/internal/password-tokens` (S2S; HMAC do funil no gateway +
@@ -211,8 +212,27 @@ src/
 Uma CONTA do responsável tem **N perfis de crianças** (tabela `auth.profiles`,
 migration `0006`): `id` (vira o `x-auth-user-id` EFETIVO na sessão de perfil — PR2),
 `account_user_id`, `name`, `avatar_url` (http(s), fora das claims), `whatsapp`
-(opcional), `status` (`active|archived` — NUNCA DELETE físico, arquivar preserva o
-histórico keyado no id), `sort_order`. Rotas `/auth/profiles` (`profilesRoutes`,
+(opcional), `birth_date` (data de nascimento `YYYY-MM-DD`, opcional — controle de
+idade, migration `0008`; `mode:'string'` evita shift UTC), `public_profile_enabled`
+(bool, **default `false`/OFF** — opt-in dos pais p/ o perfil público da criança no
+hub/kids: nome clicável + página pública; migration `0009`), `status`
+(`active|archived` — NUNCA DELETE físico, arquivar preserva o histórico keyado no id),
+`sort_order`.
+- **Data de nascimento é EDITÁVEL SÓ PELOS PAIS** (06/2026): tem caminho próprio no
+  agregado (`setBirthDate`, fora do `updateDetails`) e a rota `PATCH /:id` RECUSA (403)
+  qualquer `birthDate` numa **sessão de perfil** (a criança) — detectada pelo
+  `x-auth-account-id`. O `CreateProfileBody`/`UpdateProfileBody` ganham `birthDate?`
+  (`AAAA-MM-DD`); sanidade (data real, não-futura, faixa ≤18 anos) é do agregado
+  (`assertBirthDate`). `ProfileView.birthDate` flui ao painel/apps.
+- **Perfil público é OPT-IN dos pais e EDITÁVEL SÓ PELOS PAIS** (gamificação,
+  06/2026): a flag `public_profile_enabled` nasce **OFF** (default `false`) e tem
+  caminho próprio no agregado (`setPublicProfileEnabled`, fora do `updateDetails`) — a
+  rota `PATCH /:id` RECUSA (403) qualquer `publicProfileEnabled` numa **sessão de
+  perfil** (a criança), o MESMO guard do `birthDate` (detectado pelo
+  `x-auth-account-id`). O `CreateProfileBody`/`UpdateProfileBody` ganham
+  `publicProfileEnabled?`; `ProfileView.publicProfileEnabled` flui à área dos pais. Só
+  com a flag LIGADA o nome da criança vira clicável e a página pública existe no
+  hub/kids. Rotas `/auth/profiles` (`profilesRoutes`,
 prefixo `/auth` com paths explícitos): `GET` lista os ativos, `POST` cria, `PATCH
 /:id` edita, `DELETE /:id` arquiva. O ator é a CONTA (`resolveGatewayActor` →
 `x-auth-user-id`) + `requireInternalToken` (defesa em profundidade); ownership por
@@ -222,13 +242,21 @@ prefixo `/auth` com paths explícitos): `GET` lista os ativos, `POST` cria, `PAT
   env) e o repositório faz a contagem + insert **atômicos** (advisory xact-lock por
   conta — dois creates simultâneos não furam o teto → 409 `PROFILE_LIMIT_REACHED`).
   `maxProfiles <= 0` = a conta não comprou. Validação de foto (http(s)) no agregado.
+- **Equipe interna = perfis ILIMITADOS** (06/2026): se o ator é privilegiado
+  (`superadmin`/`admin`/`staff` — `isPrivilegedRole`, detectado na borda da rota a
+  partir do `x-auth-user-role`), o `CreateProfileService` recebe `privileged: true`,
+  **pula o S2S** do members e usa teto ilimitado (mantendo o insert atômico). É o
+  espelho, p/ perfis, do acesso irrestrito de conteúdo da equipe — testar/verificar o
+  Kids sem matrícula. O `customer` segue limitado pelo plano (sem regressão).
 - Envs novas (ver §env): `MEMBERS_BASE_URL`/`MEMBERS_REQUEST_TIMEOUT_MS`/
   `MEMBERS_INTERNAL_TOKEN` (obrigatório em prod — o members exige o token na rota S2S).
 
 **Sessão de perfil (PR2 — claim `pfl`, espelha a impersonação):** selecionar um
 perfil EMITE uma sessão de perfil onde o access token tem `sub` = **profileId**
 (atribuição de dados — progresso/comunidade se atrelam ao perfil) e a claim **`pfl`**
-`{accountId, name}`; identidade/role/status seguem da CONTA (o perfil herda). O
+`{accountId, name, pub}` (**`pub`** = `public_profile_enabled` do perfil, p/ o hub/kids
+gatear nome clicável + perfil público sem round-trip; a rotação re-deriva `pub` do
+perfil ativo); identidade/role/status seguem da CONTA (o perfil herda). O
 `refresh_tokens.active_profile_id` (migration `0007`) é a sobreposição na FAMÍLIA: o
 `userId` da linha é a CONTA, e a **rotação re-deriva `pfl`** do perfil ativo (perfil
 arquivado/sumido → CAI para sessão da conta — a criança volta à grade). Rotas:
@@ -236,6 +264,12 @@ arquivado/sumido → CAI para sessão da conta — a criança volta à grade). R
   aceita sessão da conta OU de outro perfil (trocar de irmão). Devolve `{profile, tokens}`.
 - `POST /auth/profile-session/exit` — volta à área dos pais; **gateado pela SENHA do
   responsável** (a decisão de produto permite "PIN ou a senha"; o PIN curto é futuro).
+- `GET /auth/internal/profiles/:id/public` — **S2S** (gamificação/hub, mesma proteção
+  `x-internal-token` = `AUTH_INTERNAL_TOKEN`; SEM sessão de usuário): resolve um perfil
+  por id e devolve **só nome + flag** `{ name, publicProfileEnabled }` — o MÍNIMO p/ o
+  hub/kids exibir o nome clicável de um autor/ranqueado SEM expor conta, foto, telefone
+  ou nascimento. `publicProfileEnabled === false` → o consumidor anonimiza (não vaza o
+  nome); perfil inexistente/arquivado → 404 (não enumera).
 - **Guards:** **criar** e **arquivar** perfil RECUSAM a sessão de perfil (403) — detectada
   pela presença do `x-auth-account-id` que o gateway injeta só quando há `pfl`. Mas
   **editar** (`PATCH /:id`) usa `ownProfileEditContext`: a CONTA edita qualquer perfil

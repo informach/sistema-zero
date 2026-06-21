@@ -33,7 +33,22 @@ const DOMAIN_STATUS: Record<string, number> = {
   NO_PUBLISHED_LESSON: 409,
   QUIZ_GATE_NOT_PASSED: 409,
   STUDIO_GATE_NOT_SUBMITTED: 409,
+  STUDIO_GATE_NOT_PASSED: 409,
   QUIZ_COOLDOWN: 429,
+  // Avatar / carteira Zappy.
+  AVATAR_INVALID: 400,
+  AVATAR_PART_FREE: 400,
+  AVATAR_PART_NOT_OWNED: 403,
+  AVATAR_PART_NOT_FOUND: 404,
+  INSUFFICIENT_COINS: 402,
+  // Quarto virtual.
+  ROOM_ITEM_FREE: 400,
+  ROOM_ITEM_NOT_FOUND: 404,
+  // Missões + proteção de sequência.
+  MISSION_NOT_FOUND: 404,
+  MISSION_NOT_COMPLETED: 409,
+  MAX_FREEZES: 409,
+  VACATION_INVALID: 400,
 }
 
 /** Traduz qualquer erro num par status + corpo padronizado. */

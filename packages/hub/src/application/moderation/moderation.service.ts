@@ -5,10 +5,12 @@ import {
 } from '../../domain/hub-errors'
 import type { MuteBanKind } from '../../domain/moderation/mute-ban'
 import type {
+  ModerationActionInput,
   ModerationRepository,
   ReportStatus,
 } from '../../domain/ports/moderation-repository.port'
 import type { ThreadRepository } from '../../domain/ports/thread-repository.port'
+import { ValidationError } from '../../domain/shared/errors'
 import {
   type MuteBanView,
   type PendingItemView,
@@ -24,6 +26,15 @@ export interface MuteBanCommand {
   channelId?: string | null
   expiresAt?: string | null
   reason?: string | null
+}
+
+function parseExpiresAt(raw: string | null | undefined): Date | null {
+  if (!raw) return null
+  const expiresAt = new Date(raw)
+  if (Number.isNaN(expiresAt.getTime())) {
+    throw new ValidationError('expiresAt inválido')
+  }
+  return expiresAt
 }
 
 /**
@@ -155,7 +166,7 @@ export class ModerationService {
     kind: MuteBanKind,
     cmd: MuteBanCommand,
   ): Promise<MuteBanView> {
-    const expiresAt = cmd.expiresAt ? new Date(cmd.expiresAt) : null
+    const expiresAt = parseExpiresAt(cmd.expiresAt)
     const mb = await this.mod.createMuteBan({
       userId: cmd.userId,
       spaceId: cmd.spaceId,
@@ -166,7 +177,7 @@ export class ModerationService {
       createdBy: moderatorId,
       now: this.clock(),
     })
-    await this.mod.logAction({
+    await this.logActionBestEffort({
       kind,
       spaceId: cmd.spaceId,
       channelId: cmd.channelId ?? null,
@@ -187,7 +198,7 @@ export class ModerationService {
     spaceId: string,
   ): Promise<{ ok: true }> {
     await this.mod.removeMuteBan(userId, spaceId, kind, this.clock())
-    await this.mod.logAction({
+    await this.logActionBestEffort({
       kind: kind === 'mute' ? 'unmute' : 'unban',
       spaceId,
       channelId: null,
@@ -211,7 +222,7 @@ export class ModerationService {
     moderatorId: string,
     targetId: string,
   ): Promise<void> {
-    await this.mod.logAction({
+    await this.logActionBestEffort({
       kind,
       spaceId: null,
       channelId: null,
@@ -222,5 +233,14 @@ export class ModerationService {
       expiresAt: null,
       now: this.clock(),
     })
+  }
+
+  private async logActionBestEffort(input: ModerationActionInput): Promise<void> {
+    try {
+      await this.mod.logAction(input)
+    } catch {
+      // A decisão de moderação já foi aplicada. Auditoria é best-effort neste
+      // serviço; não transforme sucesso operacional em 500 para o operador.
+    }
   }
 }

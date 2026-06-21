@@ -119,6 +119,49 @@ export function sanitizePreviewStorageData(raw: unknown): Record<string, string>
   return out
 }
 
+// Limites do canal de auto-correção (atividade do <StudioLesson>). O harness
+// injetado no sandbox posta UM `checkResult` por checagem; o id casa com a
+// checagem definida pelo professor.
+export const PREVIEW_CHECK_MAX_ID_CHARS = 64
+export const PREVIEW_CHECK_MAX_MESSAGE_CHARS = 2_000
+
+/**
+ * Resultado de UMA checagem de atividade, postado pelo harness (dentro do iframe
+ * OCULTO do runner) ao parent. `behavior`/`testcase`/`code` rodam no sandbox; o
+ * `structure` é calculado no parent (não passa por aqui).
+ */
+export interface CheckResultMessage {
+  source: 'sz-preview'
+  kind: 'checkResult'
+  checkId: string
+  passed: boolean
+  message?: string
+  timestamp: number
+}
+
+/**
+ * Guard ESTRUTURAL do envelope `checkResult` (código do aluno/professor roda no
+ * sandbox não confiável — valida casca + clampa tamanhos). O receptor é o
+ * listener do iframe oculto do runner, NÃO o PreviewIframe.
+ */
+export function isCheckResultMessage(value: unknown): value is CheckResultMessage {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false
+  const raw = value as Record<string, unknown>
+  if (raw.source !== PREVIEW_MESSAGE_SOURCE) return false
+  if (raw.kind !== 'checkResult') return false
+  if (typeof raw.checkId !== 'string' || raw.checkId.length > PREVIEW_CHECK_MAX_ID_CHARS)
+    return false
+  if (typeof raw.passed !== 'boolean') return false
+  if (
+    raw.message != null &&
+    (typeof raw.message !== 'string' || raw.message.length > PREVIEW_CHECK_MAX_MESSAGE_CHARS)
+  ) {
+    return false
+  }
+  if (typeof raw.timestamp !== 'number' || !Number.isFinite(raw.timestamp)) return false
+  return true
+}
+
 export function isPreviewMessage(value: unknown): value is PreviewMessage {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false
   const raw = value as Record<string, unknown>

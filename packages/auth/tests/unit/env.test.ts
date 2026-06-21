@@ -63,6 +63,12 @@ describe('loadEnv', () => {
     expect(() => loadEnv(semSecret)).toThrow(/GATEWAY_URL e AUTH_HMAC_SECRET/)
   })
 
+  test('produção com GATEWAY_URL localhost → falha no boot', () => {
+    expect(() => loadEnv({ ...PROD_BASE, GATEWAY_URL: 'http://localhost:3000' })).toThrow(
+      /GATEWAY_URL/,
+    )
+  })
+
   test('produção com COMMUNITY_URL default (localhost) → falha no boot', () => {
     const { COMMUNITY_URL: _c, ...semCommunity } = PROD_BASE
     expect(() => loadEnv(semCommunity)).toThrow(/COMMUNITY_URL/)

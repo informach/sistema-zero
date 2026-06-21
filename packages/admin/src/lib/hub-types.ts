@@ -5,7 +5,7 @@
 
 export type HubAudience = 'adult' | 'kids'
 export type HubSpaceStatus = 'active' | 'archived'
-export type HubVisibility = 'public' | 'course_gated' | 'role_gated'
+export type HubVisibility = 'public' | 'course_gated' | 'community_gated' | 'role_gated'
 export type HubPostingPolicy = 'members' | 'staff_only'
 export type HubModeratableTarget = 'thread' | 'comment'
 export type HubReportStatus = 'open' | 'resolved' | 'dismissed'
@@ -14,6 +14,8 @@ export type HubMuteBanKind = 'mute' | 'ban'
 export interface HubAccessConfig {
   visibility: HubVisibility
   courses: string[]
+  /** Chaves de comunidade quando `visibility = 'community_gated'`. */
+  communities?: string[]
   roles: string[]
 }
 
@@ -27,6 +29,8 @@ export interface HubSpaceView {
   audience: HubAudience
   accessConfig: HubAccessConfig
   requiresApproval: boolean
+  /** Aparece BLOQUEADO no menu sem acesso (vitrine), em vez de sumir. */
+  teaserWhenLocked: boolean
   sortOrder: number
   status: HubSpaceStatus
   createdAt: string

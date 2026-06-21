@@ -25,8 +25,9 @@ happy/celebrating/thinking/sleeping; `useId` p/ o gradiente). **Página de aula 
 mini-trilha numerada por unidade, e FORKS DE APRESENTAÇÃO dos renderers do member-shell —
 `kids-lesson-blocks.tsx` (chips de atividade Assista/Escute/Brinque/Leia o livro/**Crie** + molduras;
 o bloco **`studio`** (chip "Crie") REUSA o `StudioBlockView` do member-shell — editor embarcado,
-rascunho local, "Enviar para o professor" + gate de conclusão `STUDIO_GATE_NOT_SUBMITTED` (mesmo do
-quiz, tratado no `lesson-player-client`); exige `@sistemazero/studio` em transpilePackages + `@source`
+rascunho local, "Enviar para o professor" + gate de conclusão `STUDIO_GATE_NOT_SUBMITTED` (sem envio)
+ou `STUDIO_GATE_NOT_PASSED` (atividade enviada, mas abaixo da nota mínima); o `lesson-player-client`
+distingue os dois no toast/botão. Exige `@sistemazero/studio` em transpilePackages + `@source`
 + `frame-src blob:`;
 ⚠️ invariantes de segurança COPIADOS do shell: URL canônica de vídeo, sandbox SEM
 allow-same-origin, markdown controlado — mexeu na segurança de bloco, replique nos DOIS
@@ -73,36 +74,104 @@ clique → `/api/profiles/:id/select` → reload da home), **Área dos pais** (n
 pede a SENHA do responsável → `/api/profile-session/exit`; numa sessão da conta gerencia direto:
 criar/editar/arquivar + **foto** via `/api/profiles/:id/avatar`, multipart, FORA do matcher + a
 **troca de senha da CONTA** — `ParentPasswordChange` → `/api/auth/me/password`, só na sessão da
-conta, pois senha é da CONTA, não do perfil). O limite de perfis é do plano (criar acima → 409 no
+conta, pois senha é da CONTA, não do perfil). ⚠️ **Full review 19/06: TODA mutação da CONTA exige o
+portão** — `PATCH /api/auth/me` (nome/telefone) e `POST /api/me/avatar` (foto da conta) agora são
+`requireParentGate` (antes eram shims pelados → uma criança numa sessão de conta desfigurava a
+identidade do responsável); a troca de senha **FECHA o portão no sucesso** (`withParentClearedOnPasswordChange`);
+`/api/parents/verify` ganhou cooldown por conta (5 erros → 60s). O limite de perfis é do plano (criar acima → 409 no
 toast). Toda a lógica do BFF vive no **member-shell** (`shell.routes.profile*` + `shell.profiles`);
 os `route.ts` são shims de 1-3 linhas. `getSession().activeProfile` indica a sessão de perfil ativa.
 A página **"Meu perfil"** (`app/(app)/perfil`, sempre em sessão de perfil) edita o PRÓPRIO perfil
 (nome ≥ 3 / foto / telefone) via `/api/profiles/:id` — NUNCA a conta (full review F1: o auth recusa
 `/auth/me` de escrita em sessão de perfil).
 
-## Comunidade / "Turma" (hub/fórum)
+## Clube dos Criadores + Mural dos Criadores (hub/fórum + vitrine)
+
+**Renome (06/2026):** a antiga "Turma" (`/comunidade`) virou **Clube dos Criadores**
+(`/clube-dos-criadores`, modo fórum) e ganhou um irmão **Mural dos Criadores**
+(`/mural-dos-criadores`, modo `wall` = vitrine). Ambos são SERVIDORES do hub `course_gated`
+(produto à parte) com `teaserWhenLocked` ON → aparecem no menu (`nav.ts`: itens "Clube" e "Mural")
+mesmo sem acesso, e a UI mostra `KidsLockedSpace` (recado gentil, sem conteúdo) quando
+`space.locked`. A rota antiga `/comunidade` foi REMOVIDA sem redirect (não há usuário real em prod
+ainda — decisão do usuário). O componente único `components/kids/kids-space-view-client.tsx` (movido
+de `app/(app)/comunidade`)
+recebe `slug` + `mode`: no `wall` esconde o composer/sidebar e renderiza CARDS de projeto (capa +
+título + resumo + "por {authorDisplayName}"); a criança só comenta (moderado) e reage. **Vitrine
+(Mural):** os posts são auto-publicados ao concluir a última aula de um projeto — a
+`LessonCelebration` ganha o botão "Publicar no Mural" (`PublishToMural`) que captura o print do jogo
+no cliente (`@sistemazero/studio` `captureCoverFromProject` lendo o rascunho local
+`sz-lesson-studio:<blockId>`) e faz `POST /api/hub/showcase` (multipart, FORA do matcher do proxy —
+guard próprio via `requireUploadSession`); `lesson-player-client` propaga o `showcase` da resposta do
+complete. **Compartilhar do Estúdio + link público jogável (06/2026):** o `StudioBlockView` da aula é
+renderizado com `enableShare` (kids-only) → o editor ganha o botão **"Compartilhar"** na Topbar (publica no
+Mural com **descrição gerada por IA** que a criança edita + um **link público de jogar**; o post é um
+SNAPSHOT imutável e independente do rascunho que ela continua editando, e o member-shell normaliza o
+JSON jogável antes de persistir no R2 privado). O card do Mural
+(`kids-space-view-client.tsx` `ShowcaseCard`/`ThreadDetail`) ganhou, quando há `thread.playId`, os botões
+**"Jogar"** (abre `/jogar/<playId>` em nova aba) + **"Copiar link"** (`navigator.share` com fallback
+clipboard) — a raiz do card deixou de ser `<button>` (âncora não aninha em button). A **página PÚBLICA**
+`app/jogar/[id]/page.tsx` (FORA do grupo `(app)`, sem login, igual a `/perfis`) renderiza o
+`StudioProjectPlayer` (subpath `@sistemazero/studio/player`, `ssr:false`) buscando o projeto em
+`/api/studio/play/:id` — mostra SÓ o jogo + título, NUNCA o nome da criança, e tolera snapshots
+legados/incompletos sem derrubar a página pública. As rotas `/api/studio/{describe,
+publish,play/[id]}` são shims sobre `shell.routes.studio*`; o `proxy.ts` exclui `api/studio/publish`
+(multipart) e `api/studio/play` (stream público) do matcher (`api/studio/describe` FICA no matcher — ganha
+o anti-CSRF same-origin). **Data de nascimento (controle de idade):** os pais informam no `ProfileForm` da Área dos
+pais (`app/perfis`) — `<input type=date>`; só a CONTA edita (o auth recusa em sessão de perfil).
+
+## Estúdio Completo (produto vendável — 06/2026)
+
+O **estúdio completo** (`@sistemazero/studio`) virou um PRODUTO vendável, ao lado do Mural/Clube:
+item **"Estúdio"** no `nav.ts` (perto de Mural/Quarto) → rota `/estudio` (`protectedPrefixes`). O
+gate é resolvido no SERVIDOR: `app/(app)/estudio/page.tsx` chama
+`checkStudioAccessReadonly()` (`GET /members/access?refs=estudio-completo`, acesso pela CONTA) com
+**3 estados** (full review 3ª passada): members RESPONDEU 200 e não tem o produto → `KidsLockedStudio`
+(recado gentil, mascote `thinking`, "peça a um responsável"; sem link de venda — kids não tem funil);
+COM acesso → `StudioFullClient` (o editor pesado nem carrega p/ quem não comprou); **status ≠ 200
+(gateway/token soluçou) → `KidsStudioUnavailable` ("tente de novo" + `router.refresh()`)** — não mostrar
+"ainda não liberado" a quem JÁ comprou num erro transitório (mentiria que não tem acesso). `studio-full-client.tsx` (`'use client'`, import dinâmico do package no
+effect — Monaco/Blockly/IndexedDB não rodam no SSR) hospeda a navegação **lista ⇄ editor** (estado
+local; o package não tem router) com `<ProjectList>` + `<StudioEditor persistence="local">` — recursos
+CLÁSSICOS (NÃO passa `features`: o `StudioEditor` já vem com terminal/IA/profissional OFF → sem
+COOP/COEP, sem conflito com os vídeos das aulas). O botão **"Compartilhar"** usa um `share` adapter
+próprio → `/api/studio/describe` + **`/api/studio/publish-standalone`** (shim sobre
+`shell.routes.studioPublishStandalone`; o hub re-valida a posse do produto). ⚠️ **Persistência LOCAL
+por NAVEGADOR (v1):** projetos no IndexedDB do aparelho — perfis irmãos no MESMO navegador compartilham
+a lista (acesso é por CONTA; isolamento por perfil = follow-up). Largura limitada ao `max-w-5xl` do
+layout; altura `calc(100dvh-8rem)` p/ ocupar o máximo. `api/studio/publish-standalone` fica FORA do
+matcher do proxy (multipart) — coberto pelo prefixo `api/studio/publish` no negative-lookahead.
+
+### Hub/fórum (compartilhado)
 
 Porta kids do fórum compartilhado (`@sistemazero/hub` via member-shell). A LÓGICA do
 BFF (clients do hub, **redação do `authorId` de terceiros**, validação Zod de
 título/corpo/emoji/motivo) vive no **member-shell** (`createHubRoutes`); os `route.ts`
-em `src/app/api/hub/*` são shims de 3 linhas e `/comunidade` entra nos
-`protectedPrefixes` do `proxy.ts`. A UI é PRÓPRIA (tom kids): `app/(app)/comunidade/
-page.tsx` (grade de "Turmas") + `[slug]/page.tsx` → `kids-space-view-client.tsx`
+em `src/app/api/hub/*` são shims de 3 linhas e `/clube-dos-criadores` +
+`/mural-dos-criadores` entram nos `protectedPrefixes` do `proxy.ts`. A UI é PRÓPRIA
+(tom kids): `app/(app)/clube-dos-criadores/page.tsx` e
+`app/(app)/mural-dos-criadores/page.tsx` → `kids-space-view-client.tsx`
 (canais, tópicos, respostas, reações OTIMISTAS com allowlist de emojis, "Avisar
 professor" por modal — sem `window.prompt` —, anexos via `AttachmentUploader`/
 `AttachmentList` do shell, paginação por cursor: query **`cursor`** p/ tópicos e
 **`after`** p/ respostas — casam com os route handlers). **Privacidade (NÃO
 regredir):** o BFF redige o `authorId` de terceiros; a UI só rotula "Você"/"Colega"
 comparando com o `viewerId` da sessão (ninguém EXIBE id). Corpo de tópico/resposta =
-`renderMarkdown` controlado (mesma superfície XSS-sensível dos blocos). Item "Turma"
+**`renderUgcMarkdown`** (modo RESTRITO — full review 19/06: SEM `<img>` externo, que seria
+pixel-rastreador entre crianças, e links só como TEXTO; o write do hub ainda strippa `![](…)` na
+origem). Imagem legítima segue pelo anexo re-encodado. ⚠️ Em corpo de ALUNO use `renderUgcMarkdown`,
+NUNCA `renderMarkdown` direto (este é p/ conteúdo do admin: rich_text/quiz, com imagem liberada). Item "Turma"
 no `nav.ts` (sidebar + tab bar). ⚠️ **Corpo é OBRIGATÓRIO** no envio (schema do hub
 `body.min(1)`): o botão "Responder" exige `replyBody.trim()` — não habilitar só com
 anexo (o servidor recusaria).
 
 ## Diferenças deliberadas vs o community (decisões da v1, 06/2026)
 
-1. **SEM `/compras`** (página, rota BFF e item do menu): compra é do RESPONSÁVEL — histórico
-   financeiro não aparece na área da criança.
+1. **Compras só na ÁREA DOS PAIS** (não no menu da criança): NÃO há página `/compras` nem item
+   de menu, mas o RESPONSÁVEL vê o histórico numa sub-tela de `/perfis` (modo gestão, atrás do
+   portão de senha) — shim `app/api/payments/my` gateado por **`requireParentGateAccountOnly`**
+   (estrito: a sessão de perfil herda o e-mail do responsável → a criança é RECUSADA, 403) sobre
+   `shell.routes.paymentsMy`; UI `PurchasesView` no `perfis-client` (Fase 3b, 06/2026). Antes
+   o kids não tinha NADA de compras; agora tem, mas escopado ao responsável.
 2. **Classificação do curso INCLUÍDA (decisão do usuário, 06/2026)**: porta kids do fluxo de 5
    modais do community (`course-rating-flow.tsx` próprio, copy em tom kids + mascote; rota shim
    `/api/members/courses/[slug]/rating` compartilhada). Compartilhar usa SÓ `salesPageUrl` do
@@ -122,20 +191,30 @@ anexo (o servidor recusaria).
    marca (letras desenhadas em paths, nunca `<text>`). Favicons herdados do community DE
    PROPÓSITO (decisão: mesmo favicon).
 
-## Gamificação estilo Duolingo (Fase 2 — IMPLEMENTADA 11/06/2026)
+## Gamificação estilo Duolingo (Fase 2 + expansão Zappy/avatar — 6 fases)
 
-Streak diário + XP + badges + baús, **estado 100% no members** (tabelas/regras/idempotência no
-[CLAUDE.md de lá](../members/CLAUDE.md), §Gamificação — fonte da verdade do contrato). Decisões
-do usuário: **SEM corações/vidas**; XP = aula 10 · quiz aprovado 20+bônus por nota (cap +10) ·
-baú de unidade 25; ligas/lojinha = fora. Streak em **America/Sao_Paulo**, SEMPRE no backend;
-conta qualquer atividade que rende XP.
+> **Fonte da verdade do contrato/regras/idempotência:** o [CLAUDE.md do members](../members/CLAUDE.md)
+> (§Gamificação) e a doc transversal **[`../../docs/gamificacao.md`](../../docs/gamificacao.md)**
+> (visão das 6 fases ponta a ponta). Aqui fica só a APRESENTAÇÃO kids.
+
+Streak diário + XP + badges + baús (núcleo, IMPLEMENTADO 11/06/2026), **estado 100% no members**.
+Decisões do usuário: **SEM corações/vidas**; XP = aula 10 · quiz aprovado 20+bônus por nota (cap
++10) · baú de unidade 25. Streak em **America/Sao_Paulo** (dia vira ~03:00Z), SEMPRE no backend;
+conta qualquer atividade que rende XP (MARCOS de `amount 0` destravam badge mas NÃO movem streak).
+
+A **expansão (6 fases)** transformou a §"ligas/lojinha = fora" em recursos reais: moeda **Zappy**
+(carteira/sink cosmético), **avatar** customizável, **quarto** virtual, **missões** diárias/semanais,
+**proteção de sequência** (férias + protetores/freezes), **liga** semanal e **perfil público** +
+nomes clicáveis no Mural + **badges de maestria** (Estúdio, poupador). Tudo segregado POR VITRINE
+(kids ≠ adult) e o members continua sendo o portão único.
 
 **Fluxo de dados:** o delta vem NA RESPOSTA das ações (complete/quiz →
-`gamification: {xpAwarded, totalXp, streak, badgesUnlocked[], unitCompleted}`; `null` = award
-falhou, fail-open — a UI degrada para o comportamento antigo) + `GET /members/gamification/me`
-p/ widgets. Server Components usam **`getGamificationReadonly()`** (best-effort, mesmo padrão
-do avatar: 401 → widget some); rota BFF `/api/members/gamification/me` = 1 linha sobre
-`shell.routes.gamificationMe`. Rota nova no gateway: `members-gamification-me`.
+`gamification: {xpAwarded, totalXp, streak, badgesUnlocked[], unitCompleted}` — `streak.extended`
+acende o fogo, marcos de streak rendem moeda; `null` = award falhou, fail-open — a UI degrada para o
+comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Components usam
+**`getGamificationReadonly()`** (best-effort, mesmo padrão do avatar: 401 → widget some); rota BFF
+`/api/members/gamification/me` = 1 linha sobre `shell.routes.gamificationMe`. Rota nova no gateway:
+`members-gamification-me`.
 
 **Onde a UI vive (tudo com tokens da marca + `prefers-reduced-motion`):**
 - `badges.ts` — APRESENTAÇÃO das badges (`BADGE_INFO` título/copy/ícone por `BadgeSlug`); o
@@ -156,7 +235,31 @@ do avatar: 401 → widget some); rota BFF `/api/members/gamification/me` = 1 lin
   `--sz-hot`) quando `activeToday` + XP total. O layout busca via `Promise.all` com o avatar.
 - `streak-card.tsx` — card da home (só com cursos liberados E gamificação disponível).
 - `badge-showcase.tsx` — vitrine do perfil: catálogo completo, bloqueada = tracejada+cadeado,
-  desbloqueada = cor da marca + data.
+  desbloqueada = cor da marca + data. Inclui as **badges de MAESTRIA** da expansão
+  (`studio-first`/`-master-3`/`-master-10` do Estúdio; `coins-saver-300`/`-1000` de poupador de
+  Zappy) — copy/ícone em `badges.ts`, detecção no members.
+- **Avatar (DiceBear) — `kids-avatar.tsx` + `avatar-editor.tsx`:** retrato customizável; o editor
+  monta/compra peças cosméticas com moedas **Zappy** (`POST /api/members/avatar/parts/:id/buy`,
+  cobrança charge-first idempotente no members). O `kids-avatar.tsx` é o renderer reusado em todo
+  lugar (menu, quarto, perfil público, cards). Catálogo espelhado: members = existência/preço/posse,
+  kids = apresentação.
+- **Quarto virtual — `room/room-builder.tsx` + `room/room-canvas.tsx`** (rota `/quarto`): sink
+  cosmético das Zappy; grade 12×8, tema de fundo + móveis/decoração/plantas/luzes arrastáveis + 1
+  pet animado. `GET/PUT /api/members/room` (estado last-write-wins) + `POST
+  /api/members/room/items/:id/buy`. O **members é o único portão** (`canonicalizeRoomState` descarta
+  o não-possuído/fora-da-grade na leitura E na escrita); o `room-catalog.ts` do kids é só
+  apresentação (labelPt/emoji/anim/bg) e **DEVE casar por id + w/h** com o do members. ⚠️ arcades no
+  quarto foram DESCARTADOS — cosmético puro, sem efeito de jogo.
+- **Missões diárias/semanais — `missions-panel.tsx`** (na home): painel estilo Duolingo com as
+  missões do dia ("Hoje") e da semana ("Esta semana"); busca `GET
+  /api/members/gamification/missions/me` e resgata `POST /api/members/gamification/missions/:slug/claim`
+  (idempotente; **o servidor REVALIDA a conclusão** — o cliente nunca decide). Prêmio = XP + Zappy
+  (com teto diário); claim NÃO move streak. Degrada em silêncio se a gamificação estiver indisponível.
+- **Proteção de sequência — `streak-protection.tsx`** (no perfil): mostra/gerencia **férias**
+  (janela que não exige presença) e **protetores/freezes** (1 grátis por mês + compráveis com Zappy,
+  teto 5) — a sequência só QUEBRA quando NEM férias NEM freezes cobrem o gap.
+- **Liga semanal — `league-board.tsx`** (no perfil): ranking da coorte da semana (sobe/desce de
+  divisão), a versão real do antigo backlog "ligas".
 - **Perfil = "Meu perfil" da CRIANÇA (full review F1, 06/2026):** a página edita o PRÓPRIO
   PERFIL (não a conta). 1 card de identidade — foto CLICÁVEL (único caminho de troca, via
   `/api/profiles/:id/avatar`), nome + telefone do perfil + **colocação no ranking kids**
@@ -164,10 +267,95 @@ do avatar: 401 → widget some); rota BFF `/api/members/gamification/me` = 1 lin
   adult/kids separados) — e botão "Editar perfil" abrindo um Dialog com nome (≥ 3) + telefone,
   que PATCHa `/api/profiles/:id`. O perfil ativo é resolvido de `listReadonly()` por `id ==
   session.id`. **E-mail e SENHA da conta saíram daqui** (são da CONTA): a troca de senha vive na
-  **Área dos pais** (`/perfis`, sessão da conta → `ParentPasswordChange`).
+  **Área dos pais** (`/perfis`, sessão da conta → `ParentPasswordChange`). A página também HOSPEDA o
+  `badge-showcase`, a `streak-protection` (férias/protetores) e o `league-board` (liga da semana).
+- **Perfil PÚBLICO — `public-profile-view.tsx`** (rota `/crianca/[profileId]`): vitrine pública de
+  uma criança (avatar + apelido + badges + projetos do Mural), SEM dados sensíveis. Os **nomes do
+  autor no Mural viraram clicáveis** (`kids-space-view-client.tsx`: "por {authorDisplayName}" → link
+  p/ `/crianca/<profileId>`), respeitando a redação de `authorId` de terceiros (o link usa o
+  identificador público do perfil, não o id interno).
 
-**Backlog da gamificação:** ligas (precisa de massa de alunos), revisão de aula estende streak?,
-vitrine no community adulto (campos já chegam — decisão de produto).
+**Backlog da gamificação:** revisão de aula estende streak? · vitrine de gamificação no community
+adulto (campos já chegam — decisão de produto). *(Ligas, lojinha/Zappy, avatar, quarto, missões e
+proteção de sequência saíram do backlog — entregues na expansão de 6 fases.)*
+
+## Full review (segurança + desempenho — lente infantil) — 19/06/2026
+
+Auditoria focada em segurança/desempenho de uma comunidade com área de membros para crianças
+9–13. TODOS os achados corrigidos (a maioria no member-shell compartilhado → roda nos DOIS apps;
+verde no typecheck/test/check dos três pacotes). Mudanças de COMPORTAMENTO/contrato:
+
+- **UGC sem pixel-rastreador (HIGH):** corpo de tópico/comentário do hub renderiza por
+  `renderUgcMarkdown` (sem `<img>` externo nem link clicável) + strip de imagem no write
+  (`stripImageMarkdown`). Ver "### Hub/fórum".
+- **Nada de PII de criança a terceiro:** o Sentry redige `path` (UUID do perfil → `:id`, sem query)
+  e mensagem/stack — `redactPii`/`scrubPath` (member-shell).
+- **Portão dos pais cobre TODA mutação da conta** (auth/me, me/avatar, me/password — que fecha o
+  portão no sucesso —, payments/my + children-stats estritos, verify com cooldown). Ver "Perfis…".
+- **`profileAvatar` autoriza ANTES de gravar no R2** (criança só troca a própria foto; UUID validado).
+- **Borda:** UUID validado em todos os path ids de perfil/hub; headers **COOP/CORP** nos dois apps;
+  `watermarkImage` com `limitInputPixels` (anti OOM da réplica única).
+- **Desempenho:** `React.cache()` deduplica `getMeReadonly`/`getGamificationReadonly` por request; o
+  **layout transmite o `loading.tsx` via `<Suspense>`** (chrome de avatar/gamificação carrega atrás,
+  mantendo `withRanking` — o menu do avatar usa o ranking no lugar do e-mail); busca do catálogo com
+  **debounce** (`use-catalog-filters` — estado local instantâneo, URL espelhada com atraso);
+  `ReactionBar`/`CommentRow` memoizados; `<img>` de aula com `aspect-ratio` (sem CLS); "Avisar
+  professor" com alvo de toque ≥44px + ícone.
+- **Produto (não-bug, decisão pendente):** perfis irmãos NÃO têm PIN (1 clique troca de perfil);
+  PIN numérico segue como futuro.
+
+## Full review (correções) — 20/06/2026
+
+2ª auditoria multi-agente (segurança/correção/perf/a11y, lente infantil) — todos os achados
+acionáveis corrigidos; verde no typecheck/test/check dos 4 pacotes + `build:kids`.
+
+- **Error boundaries (antes não existia nenhum):** `app/global-error.tsx` (raiz, `<html>`/`<body>`
+  próprios + estilos inline — não recebe globals.css), `app/(app)/error.tsx` e
+  `app/jogar/[id]/error.tsx` — todos `'use client'`, tom kids (mascote + Baloo + `reset()`). O
+  caminho crítico era a PÚBLICA `/jogar/[id]`: o `<Player>` renderiza fora do try/catch da carga.
+  Member-shell não exporta arquivos de rota → cada app precisa dos seus (o community também).
+  **Telemetria (3ª passada):** as boundaries só faziam `console.error` — o `onRequestError` da
+  instrumentation só vê erros de SERVIDOR, então um crash de render no CLIENTE escapava do Sentry.
+  Agora chamam `reportClientError` (`lib/report-error.ts`) → beacon `POST /api/client-error`
+  (`fetch` `keepalive`, sobrevive ao `reset()`) que espelha p/ o Sentry via `captureServerException`
+  (MESMA redação de PII). A rota fica DENTRO do matcher (anti-CSRF same-origin), sem gate de sessão
+  (vale p/ a anônima `/jogar` e p/ o `global-error`), com teto GLOBAL in-process (60/min, réplica
+  única) e responde 204 sempre. No-op sem `SENTRY_DSN` — armado p/ quando o projeto Sentry do kids ligar.
+- **`prefers-reduced-motion` (fotossensibilidade):** o bloco do `globals.css` ganhou
+  `animation-iteration-count: 1 !important` (+ `scroll-behavior:auto`) — animações INFINITAS
+  (pulse/twinkle/flicker/float/bob) paravam de fato em vez de cintilar a ~0ms.
+- **Portão dos pais = cookie ASSINADO:** `server/parent-gate.ts` grava `accountId.HMAC` (segredo
+  aleatório por processo em `globalThis`/`Symbol.for`, mesmo padrão de estado compartilhado do
+  member-shell) e verifica a assinatura (timing-safe) — o accountId não é segredo, então o valor
+  pelado seria forjável. TTL 15 min preservado.
+- **`/api/me/avatar` recusa sessão de perfil** (foto da conta é account-only): fix no
+  **member-shell** (`meAvatar.POST` → 403 `ACCOUNT_SESSION_REQUIRED` ANTES da escrita no R2;
+  antes a criança deixava objeto R2 órfão) — **roda nos dois apps**.
+- **Missões via SSR:** a home busca `getMissionsReadonly()` no `Promise.all` e passa
+  `initial` ao `MissionsPanel` (era `useEffect` pós-hidratação = waterfall). A home também pede
+  `getGamificationReadonly({ withRanking: true })` p/ casar a chave do `React.cache` com o
+  layout (1 ida ao gateway, não 2).
+- **a11y/UX:** seta de promoção da liga usa `--success-foreground` (era invisível no dark);
+  botões do editor de avatar `size-11` (≥44px); itens do quarto em modo edição viraram `<button>`
+  focável (setas movem, Enter seleciona → "Tirar" alcançável por teclado); `not-found.tsx` em tom
+  kids; capas do catálogo `loading="lazy"`; compras (quarto/avatar) desabilitam os outros botões
+  travados durante uma compra (sem dead-click); `streak-protection` ganhou `catch` + toast.
+- **`/jogar/[id]` não-indexável:** `robots:{index:false}` no metadata + `app/robots.ts`. ⚠️ **3ª
+  passada:** o `robots.ts` era `Disallow: /` puro, que ESCONDE o `noindex` per-page do `/jogar` (o
+  Google não lê um `noindex` de uma URL que não pode buscar → a URL linkada de fora podia ser
+  indexada "às cegas"). Virou `Allow: /jogar/` + `Disallow: /`: o bot busca `/jogar` e honra o
+  `noindex`; o resto (login-gated) segue barrado.
+- **Anti-drift dos catálogos:** preço do protetor centralizado em `lib/gamification-prices.ts`
+  (`STREAK_FREEZE_PRICE`); a conformidade kids×members de quarto/avatar/preço é TRAVADA por
+  `packages/members/tests/unit/catalog-conformance.test.ts` (kids não depende de members → o teste
+  vive no members, que alcança o kids por caminho relativo). Drift → CI vermelho.
+- **member-shell (roda nos dois apps):** `watermarkCacheKey` agora usa `sha256(srcKey)` (injetivo —
+  a substituição lossy podia colidir e servir o arquivo errado ao MESMO aluno) e `watermarkImage`
+  ganhou teto de pixels TOTAIS p/ animados (não só por frame).
+- **Não alterados (decisão consciente):** o portão lê `getSession()` (tolera token expirado, mas a
+  assinatura é válida e a mutação é re-autorizada upstream — trocar p/ estrito quebraria o
+  refresh-on-401); capa do Mural é best-effort (lê rascunho local — só cosmético); nome no perfil
+  PÚBLICO é opt-in dos pais (nota de produto: incentivar apelido, não é bug).
 
 ## Comandos
 
@@ -185,7 +373,8 @@ Serviço `community-kids` (id `fc8a1b29-ac14-4dc9-a7b3-03d497b8bf4f`) NO AR nos 
 CLAUDE.md de lá): `GATEWAY_URL`, `JWT_JWKS_URL` (prod EXIGE; HS256 RECUSADO),
 `JWT_ISSUER/AUDIENCE`, `R2_*` (staging `testes`/`testes-privado`; prod
 `comunidade-sistema-zero`/`-privado` — MESMOS buckets, avatar compartilhado por usuário),
-`SENTRY_DSN` opcional. **SEM FUNNEL_URL.** Porta 3008; réplica ÚNICA (globalThis no shell);
+`SENTRY_DSN` opcional, **`OPENROUTER_API_KEY` + `OPENROUTER_MODEL`** (opcionais — descrição IA do
+"Compartilhar"; ausentes → fallback, a criança escreve). **SEM FUNNEL_URL.** Porta 3008; réplica ÚNICA (globalThis no shell);
 healthcheck `/api/healthz`.
 
 **Pendências de infra (não bloqueiam):** domínio definitivo `kids.sistemazero.com.br`

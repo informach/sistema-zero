@@ -21,6 +21,7 @@ async function seed(
     audience: 'adult',
     accessConfig: PUBLIC,
     requiresApproval: false,
+    teaserWhenLocked: false,
     status: 'active',
     ...over.space,
   })
@@ -83,6 +84,27 @@ describe('moderação', () => {
       )
     ).json()) as { items: unknown[] }
     expect(others.items).toHaveLength(1)
+  })
+
+  test('falha de auditoria não transforma aprovação aplicada em 500', async () => {
+    const ctx = buildApp()
+    const { channelId } = await seed(ctx, {
+      space: { audience: 'kids', requiresApproval: true },
+    })
+    const threadId = (
+      (await (await postThread(ctx, channelId, studentHeaders(randomUUID()))).json()) as {
+        id: string
+      }
+    ).id
+    ctx.moderationRepo.logAction = async () => {
+      throw new Error('auditoria indisponível')
+    }
+
+    const approve = await ctx.app.handle(
+      jsonRequest('POST', `/hub/admin/threads/${threadId}/approve`, { headers: adminHeaders() }),
+    )
+    expect(approve.status).toBe(200)
+    expect((await ctx.threadRepo.findThreadById(threadId))?.status).toBe('visible')
   })
 
   test('denúncia + resolver', async () => {
@@ -213,5 +235,18 @@ describe('moderação', () => {
       }),
     )
     expect(bannedReact.status).toBe(403)
+  })
+
+  test('silenciar com expiresAt inválido → 400', async () => {
+    const ctx = buildApp()
+    const { spaceId } = await seed(ctx)
+    const res = await ctx.app.handle(
+      jsonRequest('POST', '/hub/admin/mutes', {
+        headers: adminHeaders(),
+        body: { userId: randomUUID(), spaceId, expiresAt: 'not-a-date' },
+      }),
+    )
+    expect(res.status).toBe(400)
+    expect(((await res.json()) as { error: { code: string } }).error.code).toBe('VALIDATION_ERROR')
   })
 })

@@ -27,7 +27,9 @@ describe('parseProjectFilesWithDiagnostics', () => {
       // @font-face tem estrutura que o parser não modela → rawCSS advanced.
       // (@keyframes virou estruturado na Fase 3 — não degrada mais.)
       'style.css': '@font-face { font-family: "X"; src: url(x.woff2); }',
-      'script.js': 'throw new Error("falha");',
+      // `debugger` não é modelado → rawJS advanced. (throw/switch viraram
+      // estruturados na Fase 4 — não degradam mais.)
+      'script.js': 'debugger;',
     })
 
     expect(result.diagnostics.filter((diagnostic) => diagnostic.kind === 'advanced')).toHaveLength(

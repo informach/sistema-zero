@@ -237,6 +237,34 @@ export class InMemoryPasswordResetTokenRepository implements PasswordResetTokenR
     this.issuedAt.set(input.id, new Date())
   }
 
+  async createReplacingActive(
+    input: CreatePasswordResetTokenInput,
+    at: Date,
+    cooldownSeconds = 0,
+  ): Promise<boolean> {
+    if (cooldownSeconds > 0) {
+      let last: Date | null = null
+      for (const record of this.byId.values()) {
+        if (record.userId !== input.userId) continue
+        const issuedAt = this.issuedAt.get(record.id)
+        if (issuedAt && (!last || issuedAt.getTime() > last.getTime())) last = issuedAt
+      }
+      if (last && at.getTime() - last.getTime() < cooldownSeconds * 1000) return false
+    }
+    for (const record of this.byId.values()) {
+      if (record.userId === input.userId && record.consumedAt === null) record.consumedAt = at
+    }
+    this.byId.set(input.id, {
+      id: input.id,
+      userId: input.userId,
+      tokenHash: input.tokenHash,
+      expiresAt: input.expiresAt,
+      consumedAt: null,
+    })
+    this.issuedAt.set(input.id, at)
+    return true
+  }
+
   async findByHash(tokenHash: string): Promise<PasswordResetTokenRecord | null> {
     for (const record of this.byId.values()) {
       if (record.tokenHash === tokenHash) return { ...record }
@@ -244,9 +272,11 @@ export class InMemoryPasswordResetTokenRepository implements PasswordResetTokenR
     return null
   }
 
-  async consume(id: string, at: Date): Promise<void> {
+  async consume(id: string, at: Date): Promise<boolean> {
     const record = this.byId.get(id)
-    if (record && record.consumedAt === null) record.consumedAt = at
+    if (!record || record.consumedAt !== null) return false
+    record.consumedAt = at
+    return true
   }
 
   async consumeAllForUser(userId: string, at: Date): Promise<void> {
@@ -297,6 +327,42 @@ export class InMemoryOtpCodeRepository implements OtpCodeRepository {
     this.issuedAt.set(input.id, new Date())
   }
 
+  async createReplacingActive(
+    input: CreateOtpCodeInput,
+    at: Date,
+    cooldownSeconds = 0,
+  ): Promise<boolean> {
+    if (cooldownSeconds > 0) {
+      let last: Date | null = null
+      for (const record of this.byId.values()) {
+        if (record.userId !== input.userId || record.purpose !== input.purpose) continue
+        const issuedAt = this.issuedAt.get(record.id)
+        if (issuedAt && (!last || issuedAt.getTime() > last.getTime())) last = issuedAt
+      }
+      if (last && at.getTime() - last.getTime() < cooldownSeconds * 1000) return false
+    }
+    for (const record of this.byId.values()) {
+      if (
+        record.userId === input.userId &&
+        record.purpose === input.purpose &&
+        record.consumedAt === null
+      ) {
+        record.consumedAt = at
+      }
+    }
+    this.byId.set(input.id, {
+      id: input.id,
+      userId: input.userId,
+      purpose: input.purpose,
+      codeHash: input.codeHash,
+      expiresAt: input.expiresAt,
+      consumedAt: null,
+      attempts: 0,
+    })
+    this.issuedAt.set(input.id, at)
+    return true
+  }
+
   async findActive(userId: string, purpose: OtpPurpose, now: Date): Promise<OtpCodeRecord | null> {
     const active = [...this.byId.values()].filter(
       (r) =>
@@ -309,9 +375,11 @@ export class InMemoryOtpCodeRepository implements OtpCodeRepository {
     return active.length > 0 ? { ...active[active.length - 1]! } : null
   }
 
-  async consume(id: string, at: Date): Promise<void> {
+  async consume(id: string, at: Date): Promise<boolean> {
     const record = this.byId.get(id)
-    if (record && record.consumedAt === null) record.consumedAt = at
+    if (!record || record.consumedAt !== null) return false
+    record.consumedAt = at
+    return true
   }
 
   async consumeAllForUser(userId: string, purpose: OtpPurpose, at: Date): Promise<void> {
@@ -324,7 +392,7 @@ export class InMemoryOtpCodeRepository implements OtpCodeRepository {
 
   async incrementAttempts(id: string): Promise<number> {
     const record = this.byId.get(id)
-    if (!record) return 0
+    if (!record || record.consumedAt !== null) return 0
     record.attempts += 1
     return record.attempts
   }
@@ -401,7 +469,10 @@ export class InMemoryProfileRepository implements ProfileRepository {
 /** Gateway de allowance fake: o teste seta `maxProfiles` (teto vindo do members). */
 export class FakeProfileAllowanceGateway implements ProfileAllowanceGateway {
   maxProfiles = 0
+  /** Quantas vezes o teto foi consultado — a equipe interna não deve consultar (sem S2S). */
+  calls = 0
   async getAllowance(): Promise<{ maxProfiles: number }> {
+    this.calls++
     return { maxProfiles: this.maxProfiles }
   }
 }

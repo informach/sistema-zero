@@ -57,6 +57,20 @@
       "when": 1781657664607,
       "tag": "0007_superb_stepford_cuckoos",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1781778816992,
+      "tag": "0008_modern_warbound",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1781971849878,
+      "tag": "0009_add_public_profile_enabled",
+      "breakpoints": true
     }
   ]
 }

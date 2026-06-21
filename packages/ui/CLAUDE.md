@@ -40,7 +40,10 @@ tema). O design espelha o projeto de referência `C:\Users\tocha\projects\comuni
 badge (variant `success` usa tokens `--success/*`) · button (+`buttonVariants` p/ Links) · card ·
 dialog (props opcionais `titleAlign: 'left'|'center'` e `onBack` — fluxos multi-passo estilo
 Udemy; X/Voltar são absolutos no header) · info-tooltip · input · label (`Field` com `tooltip?`) ·
-pagination · password-input · progress · select · spinner · star-rating (display + input com MEIA
+pagination · password-input · progress · select · **skeleton** (`@sistemazero/ui/skeleton` —
+placeholder animado `animate-pulse`/`bg-muted` no lugar de "Carregando…"; molde por `className`,
+componha p/ cards/linhas; use em `loading.tsx` de rota e em estados de fetch client) · spinner ·
+star-rating (display + input com MEIA
 estrela 1–5: radios nativos sr-only sobre as metades — 1ª estrela é alvo inteiro —, hover preview,
 âmbar `fill-amber-400`; sem `onChange` = read-only) · switch · table · textarea · `cn`
 (clsx + tailwind-merge) · **`phone`** (`@sistemazero/ui/phone`, módulo PURO sem React:

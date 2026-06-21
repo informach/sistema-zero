@@ -1,4 +1,4 @@
-import { and, asc, count, eq, inArray } from 'drizzle-orm'
+import { and, asc, count, desc, eq, inArray, sql } from 'drizzle-orm'
 import type {
   Course,
   CourseAudience,
@@ -187,6 +187,44 @@ export class DrizzleCourseRepository implements CourseRepository {
       .from(lessons)
       .where(and(eq(lessons.moduleId, moduleId), eq(lessons.isPublished, true)))
     return rows.map((r) => r.id)
+  }
+
+  async findPrecedingStudioBlockInChain(
+    courseId: string,
+    lessonId: string,
+    chain: string,
+  ): Promise<{ blockId: string; lessonId: string } | null> {
+    // Posição da aula atual no curso: (module.sortOrder, lesson.sortOrder).
+    const [cur] = await this.db
+      .select({ modSort: modules.sortOrder, lessonSort: lessons.sortOrder })
+      .from(lessons)
+      .innerJoin(modules, eq(lessons.moduleId, modules.id))
+      .where(eq(lessons.id, lessonId))
+      .limit(1)
+    if (!cur) return null
+
+    // Bloco studio da MESMA cadeia, em aula PUBLICADA do curso, ANTES da posição
+    // atual (comparação de tupla row-value do Postgres). O mais próximo "para trás".
+    const [row] = await this.db
+      .select({ blockId: lessonBlocks.id, lessonId: lessons.id })
+      .from(lessonBlocks)
+      .innerJoin(lessons, eq(lessonBlocks.lessonId, lessons.id))
+      .innerJoin(modules, eq(lessons.moduleId, modules.id))
+      .where(
+        and(
+          eq(lessons.courseId, courseId),
+          eq(lessons.isPublished, true),
+          eq(lessonBlocks.kind, 'studio'),
+          // `trim` nos DOIS lados: o `chain` do serviço já vem trimado; sem o `trim` no
+          // valor armazenado, um `chain` autorado com espaço sobrando nunca casaria e o
+          // carryover cairia silenciosamente no `initialProject` (perdendo o WIP do aluno).
+          sql`trim(${lessonBlocks.content}->>'chain') = ${chain}`,
+          sql`(${modules.sortOrder}, ${lessons.sortOrder}) < (${cur.modSort}, ${cur.lessonSort})`,
+        ),
+      )
+      .orderBy(desc(modules.sortOrder), desc(lessons.sortOrder), desc(lessonBlocks.sortOrder))
+      .limit(1)
+    return row ? { blockId: row.blockId, lessonId: row.lessonId } : null
   }
 
   async countLessonsByCourseIds(courseIds: string[]): Promise<Map<string, number>> {

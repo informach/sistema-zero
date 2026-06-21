@@ -13,7 +13,7 @@ import { ConcurrencyConflictError } from '../../../domain/shared/concurrency.err
 import type { Currency } from '../../../domain/value-objects/money'
 import type { Database } from './db'
 import { escapeLike, isUniqueViolation } from './pg-errors'
-import { couponOffers, coupons } from './schema'
+import { couponOffers, couponRedemptions, coupons } from './schema'
 
 type CouponRow = typeof coupons.$inferSelect
 type CouponOfferRow = typeof couponOffers.$inferSelect
@@ -114,28 +114,68 @@ export class DrizzleCouponRepository implements CouponRepository {
     }
   }
 
-  // Incremento ATÔMICO e condicional (status active + abaixo do limite) num único
-  // UPDATE — não há corrida no contador em si. Mas NÃO deduplica por chave de uso:
-  // a idempotência/garantia dura depende de quem chama (hoje, o gate exactly-once do
-  // funil). Ver o trade-off em RedeemCouponService.
-  async incrementRedemption(code: string): Promise<void> {
+  // Incremento ATÔMICO e condicional (status active + abaixo do limite) num UPDATE.
+  // Com `idempotencyKey`, a operação torna-se idempotente para um pagamento:
+  // reprocessamento do mesmo webhook/repito não duplica o contador.
+  async incrementRedemption(code: string, idempotencyKey?: string): Promise<void> {
     const normalized = code.trim().toUpperCase()
-    const updated = await this.db
-      .update(coupons)
-      .set({ timesRedeemed: sql`${coupons.timesRedeemed} + 1`, updatedAt: new Date() })
-      .where(
-        and(
-          eq(coupons.code, normalized),
-          eq(coupons.status, 'active'),
-          sql`(${coupons.maxRedemptions} IS NULL OR ${coupons.timesRedeemed} < ${coupons.maxRedemptions})`,
-        ),
-      )
-      .returning({ id: coupons.id })
-    if (updated.length === 0) {
-      const existing = await this.findByCode(normalized)
-      if (!existing) throw new CouponNotFoundError()
-      throw new CouponExhaustedError('Cupom esgotado ou inativo')
+    if (!idempotencyKey) {
+      const updated = await this.db
+        .update(coupons)
+        .set({ timesRedeemed: sql`${coupons.timesRedeemed} + 1`, updatedAt: new Date() })
+        .where(
+          and(
+            eq(coupons.code, normalized),
+            eq(coupons.status, 'active'),
+            sql`(${coupons.maxRedemptions} IS NULL OR ${coupons.timesRedeemed} < ${coupons.maxRedemptions})`,
+          ),
+        )
+        .returning({ id: coupons.id })
+      if (updated.length === 0) {
+        const existing = await this.findByCode(normalized)
+        if (!existing) throw new CouponNotFoundError()
+        throw new CouponExhaustedError('Cupom esgotado ou inativo')
+      }
+      return
     }
+
+    const found = await this.db
+      .select({ id: coupons.id })
+      .from(coupons)
+      .where(eq(coupons.code, normalized))
+      .limit(1)
+    const couponRow = found[0]
+    if (!couponRow) throw new CouponNotFoundError()
+    const couponId = couponRow.id
+
+    await this.db.transaction(async (tx) => {
+      const inserted = await tx
+        .insert(couponRedemptions)
+        .values({
+          id: crypto.randomUUID(),
+          couponId,
+          idempotencyKey,
+          createdAt: new Date(),
+        })
+        .onConflictDoNothing({
+          target: [couponRedemptions.couponId, couponRedemptions.idempotencyKey],
+        })
+        .returning({ id: couponRedemptions.id })
+      if (inserted.length === 0) return
+
+      const updated = await tx
+        .update(coupons)
+        .set({ timesRedeemed: sql`${coupons.timesRedeemed} + 1`, updatedAt: new Date() })
+        .where(
+          and(
+            eq(coupons.id, couponId),
+            eq(coupons.status, 'active'),
+            sql`(${coupons.maxRedemptions} IS NULL OR ${coupons.timesRedeemed} < ${coupons.maxRedemptions})`,
+          ),
+        )
+        .returning({ id: coupons.id })
+      if (updated.length === 0) throw new CouponExhaustedError('Cupom esgotado ou inativo')
+    })
   }
 
   private async hydrate(row: CouponRow): Promise<CouponAggregate> {

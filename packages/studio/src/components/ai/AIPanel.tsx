@@ -3,6 +3,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { type InstalledExtension, t } from '#core'
 import { Badge, Button } from '#ui'
+import { OpenRouterError } from '../../ai/providers/openRouterProvider'
 import { useAIProvider } from '../../state/aiAdapter'
 import { useHighlightStore } from '../../state/highlightStore'
 import { useLogsStore } from '../../state/logsStore'
@@ -25,6 +26,55 @@ const AI_EMPTY_RESPONSE_PLACEHOLDER = 'A IA não retornou conteúdo. Tente novam
 const EMPTY_INSTALLED_EXTENSIONS: InstalledExtension[] = []
 /** Folga (px) dentro da qual consideramos o aluno "no fim" do transcript. */
 const STICKY_BOTTOM_THRESHOLD_PX = 48
+/**
+ * Intervalo mínimo (ms) entre dois envios disparados pela criança. As ações já
+ * são serializadas por `busy`, mas um pré-envio termina rápido e o `busy` cai —
+ * uma criança "metralhando" os botões poderia drenar a chave BYOK. Este espaço
+ * é um amortecedor amigável, NUNCA um erro.
+ */
+const MIN_REQUEST_INTERVAL_MS = 1500
+/** Aviso gentil quando o aluno tenta enviar rápido demais (cooldown). */
+const COOLDOWN_MESSAGE = 'Calma! Espere um instante antes de perguntar de novo.'
+
+/**
+ * Resultado de {@link describeAIError}: texto amigável em PT + se devemos
+ * oferecer abrir as configurações de IA (chave inválida).
+ */
+export interface FriendlyAIError {
+  /** Mensagem calma e legível para criança, sempre com um próximo passo. */
+  text: string
+  /** Quando true, o painel oferece um botão "Configurar IA". */
+  offerSettings: boolean
+}
+
+/**
+ * Traduz um erro do provider para uma mensagem calma em PT-BR COM próximo passo.
+ * Mapeia por `status`/`name` (NÃO por texto da mensagem) — nunca vaza JSON cru
+ * do upstream para a criança. Pura: testável sem renderizar o painel.
+ */
+export function describeAIError(err: unknown): FriendlyAIError {
+  if (err instanceof OpenRouterError) {
+    if (err.status === 401 || err.status === 403) {
+      return {
+        text: 'Sua chave de IA parece inválida. Toque em "Configurar IA" para revisar a chave.',
+        offerSettings: true,
+      }
+    }
+    if (err.status === 429) {
+      return {
+        text: 'Muitas perguntas seguidas. Tente de novo em instantes.',
+        offerSettings: false,
+      }
+    }
+  }
+  if (err instanceof Error && err.name === 'TimeoutError') {
+    return { text: 'A IA demorou demais. Tenta de novo.', offerSettings: false }
+  }
+  return {
+    text: 'Não consegui falar com a IA agora. Respira fundo e tenta de novo em instantes.',
+    offerSettings: false,
+  }
+}
 
 /**
  * Decide se o auto-scroll deve grudar no rodapé: só quando o leitor já estava
@@ -72,7 +122,10 @@ export function AIPanel(): JSX.Element {
   )
   const { provider, isReal, mode } = useAIProvider()
 
-  const [messages, setMessages] = useState<ChatMessage[]>([
+  // Inicializador LAZY: a função (e o `nextId++`) roda só na 1ª render. Com o
+  // array inline, `nextId++` era avaliado a CADA render (React descarta o valor,
+  // mas o efeito colateral no contador persistia, abrindo buracos nos ids).
+  const [messages, setMessages] = useState<ChatMessage[]>(() => [
     {
       id: nextId++,
       who: 'ia',
@@ -84,6 +137,12 @@ export function AIPanel(): JSX.Element {
   const [draft, setDraft] = useState('')
   const [busy, setBusy] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  // Quando o último erro foi "chave inválida", oferecemos um atalho p/ abrir as
+  // configurações de IA. Limpo a cada novo envio bem-sucedido/tentativa.
+  const [offerSettingsFix, setOfferSettingsFix] = useState(false)
+  // Carimbo do último envio disparado, p/ o cooldown leve (anti-mash). Ref, não
+  // estado: não precisa re-renderizar e o valor tem que ser lido de forma síncrona.
+  const lastSendAtRef = useRef(0)
   const activeRequestRef = useRef(0)
   const activeAbortRef = useRef<AbortController | null>(null)
   const streamBufferRef = useRef<{ messageId: number; text: string } | null>(null)
@@ -162,6 +221,18 @@ export function AIPanel(): JSX.Element {
         maxTokens: number
       }) => Promise<string>,
     ) => {
+      // Cooldown leve (anti-mash): se o último envio foi há menos de
+      // MIN_REQUEST_INTERVAL_MS, NÃO dispara a request — só um aviso gentil.
+      // Protege a chave BYOK de uma criança metralhando os botões. Nunca um erro.
+      const now = Date.now()
+      if (now - lastSendAtRef.current < MIN_REQUEST_INTERVAL_MS) {
+        setMessages((m) =>
+          appendChatMessages(m, { id: nextId++, who: 'ia', text: COOLDOWN_MESSAGE }),
+        )
+        return
+      }
+      lastSendAtRef.current = now
+      setOfferSettingsFix(false)
       flushStreamBuffer()
       activeAbortRef.current?.abort()
       const abortController = new AbortController()
@@ -204,12 +275,16 @@ export function AIPanel(): JSX.Element {
         if (activeRequestRef.current !== requestId) return
         if (abortController.signal.aborted) return
         flushStreamBuffer()
-        const message = err instanceof Error ? err.message : String(err)
+        // Erro traduzido para PT-BR calmo COM próximo passo (mapeado por
+        // status/name, nunca por texto cru). Se já chegou algum token, mantemos
+        // o que veio; senão exibimos a mensagem amigável.
+        const friendly = describeAIError(err)
+        setOfferSettingsFix(friendly.offerSettings)
         setMessages((m) =>
           updateChatMessage(m, id, (msg) => ({
             ...msg,
             streaming: false,
-            text: msg.text || `Erro: ${message}`,
+            text: msg.text || friendly.text,
           })),
         )
       } finally {
@@ -335,6 +410,23 @@ export function AIPanel(): JSX.Element {
             <ChatMessageItem key={m.id} message={m} />
           ))}
         </div>
+        {/* Atalho contextual: quando o último erro foi "chave inválida" (401/403),
+            oferecemos abrir as configurações de IA — sem becos sem saída. */}
+        {offerSettingsFix && (
+          <div className="flex items-center justify-between gap-2 border-t border-sz-border-soft bg-sz-panel-soft px-3 py-1.5 text-xs text-sz-fg-mute">
+            <span>Precisa revisar sua chave de IA?</span>
+            <Button
+              size="sm"
+              variant="subtle"
+              onClick={() => {
+                setOfferSettingsFix(false)
+                setSettingsOpen(true)
+              }}
+            >
+              Configurar IA
+            </Button>
+          </div>
+        )}
         <footer className="flex items-center gap-2 border-t border-sz-border-soft px-3 py-2">
           <input
             name="ai-message"

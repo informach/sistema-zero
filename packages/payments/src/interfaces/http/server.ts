@@ -21,7 +21,7 @@ import type { ConsumerRepository } from '../../domain/ports/consumer-repository.
 import type { Env } from '../../infrastructure/config/env'
 import type { Logger } from '../../infrastructure/logging/logger'
 import type { MetricsSnapshot } from '../../infrastructure/persistence/drizzle/metrics.repository'
-import type { InMemoryRateLimiter } from '../../infrastructure/security/rate-limiter'
+import type { RateLimiter } from '../../infrastructure/security/rate-limiter'
 import { buildErrorResponse } from './error-handler'
 import { TooManyRequestsError } from './errors'
 import { markOversizeBody, storeRawBody } from './raw-body'
@@ -38,9 +38,9 @@ export interface HttpDeps {
   env: Env
   logger: Logger
   consumers: ConsumerRepository
-  rateLimiter: InMemoryRateLimiter
+  rateLimiter: RateLimiter
   /** Teto global de backpressure das rotas de webhook da Efí (separado do limiter por consumidor). */
-  webhookRateLimiter: InMemoryRateLimiter
+  webhookRateLimiter: RateLimiter
   /** Probe de readiness (`/readyz`): banco alcançável + warm-up da Efí concluído. */
   readiness: ReadinessProbe
   processPayment: ProcessPaymentService

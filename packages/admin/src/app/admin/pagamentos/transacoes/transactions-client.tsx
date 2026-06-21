@@ -24,6 +24,7 @@ import { AdminHeader } from '@/components/admin/admin-header'
 import { OverviewCard } from '@/components/admin/overview-card'
 import { PaymentsTabs } from '@/components/admin/payments-tabs'
 import { StatusBadge } from '@/components/admin/status-badge'
+import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { formatCentsStr, formatDate } from '@/lib/format'
 import {
@@ -68,7 +69,8 @@ function GuaranteeBadge({ payment: p }: { payment: PaymentRow }) {
   )
 }
 
-export function TransactionsClient() {
+export function TransactionsClient({ currentRole }: { currentRole: string }) {
+  const canWrite = currentRole === 'superadmin' || currentRole === 'admin'
   const [items, setItems] = useState<PaymentRow[]>([])
   const [total, setTotal] = useState(0)
   const [offset, setOffset] = useState(0)
@@ -152,7 +154,11 @@ export function TransactionsClient() {
     <div className="space-y-6">
       <AdminHeader
         title="Pagamentos"
-        description="Transações de Pix, boleto e cartão — listar, filtrar e estornar."
+        description={
+          canWrite
+            ? 'Transações de Pix, boleto e cartão — listar, filtrar e estornar.'
+            : 'Transações de Pix, boleto e cartão — listar e filtrar.'
+        }
       />
       <PaymentsTabs />
 
@@ -260,11 +266,7 @@ export function TransactionsClient() {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow>
-                <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
-                  <Spinner className="mx-auto" />
-                </TableCell>
-              </TableRow>
+              <TableSkeletonRows columns={5} />
             ) : items.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
@@ -311,7 +313,7 @@ export function TransactionsClient() {
         title="Detalhe da transação"
         description={selected ? methodLabel(selected.method) : undefined}
         footer={
-          selected && canRefund(selected) ? (
+          selected && canWrite && canRefund(selected) ? (
             <div className="flex w-full flex-col gap-2">
               {selected.guarantee?.expired ? (
                 <p className="text-right text-xs text-destructive">

@@ -5,6 +5,10 @@ export interface CreateThreadInput {
   id: string
   channelId: string
   authorId: string
+  /** Primeiro nome do autor (snapshot exibido/clicável) ou `null`. */
+  authorDisplayName: string | null
+  /** Perfil do autor é público (opt-in dos pais) — snapshot p/ decidir o link do nome. */
+  authorPublic: boolean
   title: string
   slug: string
   body: string
@@ -14,10 +18,37 @@ export interface CreateThreadInput {
   now: Date
 }
 
+/** Criação de um post de VITRINE (Mural) — auto-publicado pela criança (idempotente). */
+export interface CreateShowcaseThreadInput {
+  id: string
+  channelId: string
+  /** Perfil da criança (identidade de DADOS — o `authorId` do thread). */
+  authorId: string
+  /** Primeiro nome da criança (snapshot exibido na vitrine). */
+  authorDisplayName: string
+  /** Perfil do autor é público (opt-in dos pais) — snapshot p/ o link do nome. */
+  authorPublic: boolean
+  title: string
+  slug: string
+  /** Resumo do projeto (Markdown). */
+  body: string
+  /** Capa do projeto (URL pública) ou `null` (a UI cai num placeholder). */
+  coverImageUrl: string | null
+  /** Id público do artefato jogável (UUID) ou `null` — alimenta o "Acessar" do card. */
+  playId: string | null
+  /** Chave de idempotência (hash perfil:curso:cadeia[:clientKey]) — UNIQUE; conflito devolve o existente. */
+  idempotencyKey: string
+  now: Date
+}
+
 export interface CreateCommentInput {
   id: string
   threadId: string
   authorId: string
+  /** Primeiro nome do autor (snapshot exibido/clicável) ou `null`. */
+  authorDisplayName: string | null
+  /** Perfil do autor é público (opt-in dos pais) — snapshot p/ o link do nome. */
+  authorPublic: boolean
   body: string
   status: ContentStatus
   replyToId: string | null
@@ -44,6 +75,14 @@ export interface ListCommentsOpts {
 
 export interface ThreadRepository {
   createThread(input: CreateThreadInput): Promise<Thread>
+  /**
+   * Cria (ou recupera) um post de vitrine de forma IDEMPOTENTE pela `idempotencyKey`.
+   * `deduped: true` = já existia (re-conclusão/duplo-clique) → devolve o original.
+   * Nasce sempre `visible` (decisão: aparece na hora) e `isShowcase: true`.
+   */
+  createShowcaseThread(
+    input: CreateShowcaseThreadInput,
+  ): Promise<{ thread: Thread; deduped: boolean }>
   findThreadById(id: string): Promise<Thread | null>
   /** Página de tópicos (pinned primeiro, depois lastActivityAt desc). `hasMore` se veio `limit+1`. */
   listThreads(

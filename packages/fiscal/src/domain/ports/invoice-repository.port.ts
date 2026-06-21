@@ -116,7 +116,7 @@ export interface InvoiceRepository {
    * o claim e a transição terminal): força FAILED p/ não somem do radar. Retorna
    * quantas foram coletadas. Chamado pelo worker no início de cada ciclo.
    */
-  failExhausted(maxAttempts: number): Promise<number>
+  failExhausted(opts: { maxAttempts: number; staleMs: number }): Promise<number>
 
   /**
    * Renova o lease (claimed_at = agora) da nota em processamento. Chamado pelos
@@ -221,4 +221,13 @@ export interface InvoiceRepository {
     token: string,
   ): Promise<{ invoiceId: string; content: Uint8Array; contentType: string } | null>
   markEmailSent(id: string): Promise<void>
+
+  /**
+   * Claim de notas EMITTED que ainda precisam do DANFSe e/ou e-mail. Reusa
+   * claimed_at/next_attempt_at como lease/backoff de pós-emissão; emissão e
+   * cancelamento filtram por status, então não disputam a mesma linha.
+   */
+  claimEmittedNeedingDelivery(opts: { batchSize: number; staleMs: number }): Promise<Invoice[]>
+  releaseDeliveryRetry(id: string, nextAttemptAt: Date, lastError: string): Promise<void>
+  markDeliveryComplete(id: string): Promise<void>
 }

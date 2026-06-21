@@ -19,6 +19,25 @@ describe('buildPreviewDoc', () => {
     expect(decoded).toContain('while')
   })
 
+  it.each([
+    '</script >',
+    '</script\n>',
+    '</script\t>',
+    '</script/>',
+  ])('instrumenta <script> fechado com %j (tokenizer fecha, regex antiga não casava)', (closeTag) => {
+    const doc = buildPreviewDoc({
+      html: `<body><script>while(true){}${closeTag}</body>`,
+      css: '',
+      js: '',
+    })
+    // Não pode sobrar o while CRU no doc (rodaria fora do loopGuard, congelando a aba).
+    expect(doc).not.toContain('<script>while(true){}')
+    const match = doc.match(/<script[^>]*src="data:text\/javascript;base64,([^"]+)"/i)
+    expect(match).not.toBeNull()
+    const decoded = Buffer.from(match?.[1] ?? '', 'base64').toString('utf-8')
+    expect(decoded).toContain('__szLoopTick')
+  })
+
   it('preserva type="module" ao instrumentar um <script type=module> inline — 5º review #9', () => {
     const doc = buildPreviewDoc({
       html: '<body><script type="module">for(;;){}</script></body>',
@@ -35,6 +54,24 @@ describe('buildPreviewDoc', () => {
       js: '',
     })
     expect(doc).toContain('<script type="importmap">{"imports":{}}</script>')
+  })
+
+  it('injeta a guarda de modais DEPOIS do loopGuard e ANTES de extensões/aluno', () => {
+    const doc = buildPreviewDoc({
+      html: '<body></body>',
+      css: '',
+      js: 'alert("oi");',
+      extensionScripts: ['window.__EXT_MARKER__ = 1;'],
+    })
+    // Marca exclusiva da guarda de modais (wrap de alert/confirm/prompt).
+    const idxModal = doc.indexOf("wrap('alert'")
+    const idxLoop = doc.indexOf('__szLoopTick')
+    const idxExt = doc.indexOf('__EXT_MARKER__')
+    expect(idxModal).toBeGreaterThan(-1)
+    // Depois do loopGuard...
+    expect(idxModal).toBeGreaterThan(idxLoop)
+    // ...e antes dos scripts de extensão (e, portanto, do código do aluno).
+    expect(idxModal).toBeLessThan(idxExt)
   })
 
   it('inclui o interceptor antes de scripts da extensão', () => {

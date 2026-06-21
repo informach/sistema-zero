@@ -2,11 +2,16 @@
 // `lib/` p/ ser testável (o `routes/hub.ts` é `server-only` e não importa em teste).
 
 /**
- * Esconde o `authorId` de TERCEIROS antes de a thread/comentário chegar ao browser.
- * Os apps de aluno (community/community-kids) comparam o id SÓ com o do próprio
- * viewer p/ rotular "Você"/"Colega" — ninguém EXIBE o id; então o de outras pessoas
- * vira `null` (o UUID opaco nunca sai do servidor). O id do PRÓPRIO viewer é mantido
- * (ele já o conhece — está no seu JWT). Sem viewer (sessão ausente) → tudo redigido.
+ * Esconde o `authorId` CRU de TERCEIROS antes de a thread/comentário chegar ao browser
+ * (o UUID opaco nunca sai do servidor para outras pessoas). O id do PRÓPRIO viewer é
+ * mantido (ele já o conhece — está no seu JWT) → a UI rotula "Você".
+ *
+ * **Perfil público (06/2026):** quando o autor é PÚBLICO (`authorPublic` — opt-in dos
+ * pais, snapshot no hub), expõe um `authorProfileId` (o id do perfil) como ALVO do link
+ * p/ `/crianca/[id]`, mantendo o `authorDisplayName`. Perfil NÃO público → sem
+ * `authorProfileId` e sem `authorDisplayName` (a UI cai em "Colega"/sem byline).
+ * O perfil público em si é o portão VIVO (404 se os pais desligarem depois) — defesa em
+ * profundidade contra snapshot velho.
  *
  * Estrutural e tolerante: trata página (`{ items: [...] }`), item único (com
  * `authorId`) e deixa intacto qualquer outra coisa (envelopes de erro, `null` etc.).
@@ -22,9 +27,21 @@ export function redactAuthors<T>(body: T, viewerId: string | null): T {
 
   // Thread/comentário: mantém só se for do próprio viewer.
   if ('authorId' in body) {
-    const item = body as unknown as { authorId: string | null }
+    const item = body as unknown as {
+      authorId: string | null
+      authorPublic?: boolean
+      authorDisplayName?: string | null
+    }
     if (viewerId !== null && item.authorId === viewerId) return body
-    return { ...item, authorId: null } as unknown as T
+    // Terceiro: zera o id cru; expõe o alvo do link SÓ quando o perfil é público.
+    const isPublic = item.authorPublic === true
+    const authorProfileId = isPublic && item.authorId ? item.authorId : null
+    return {
+      ...item,
+      authorId: null,
+      authorProfileId,
+      authorDisplayName: isPublic ? (item.authorDisplayName ?? null) : null,
+    } as unknown as T
   }
 
   return body

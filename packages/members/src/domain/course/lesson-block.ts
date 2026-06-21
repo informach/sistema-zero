@@ -1,3 +1,5 @@
+import type { LessonActivity } from './studio-activity'
+
 /**
  * Conteúdo de uma aula é uma lista ORDENADA de blocos tipados. Uma aula "composta"
  * (ex.: vídeo + interativo + texto) é simplesmente uma aula com vários blocos. Cada
@@ -143,6 +145,39 @@ export interface StudioBlock {
   allowedModes?: StudioMode[]
   /** Aluno pode revelar blocos avançados (default true). */
   allowLevelReveal?: boolean
+  /**
+   * Atividade com auto-correção (fase 2). Ausente = bloco só de entrega (gate =
+   * enviou). Com `passingScore` = gate por nota (ver mark-lesson-complete). As
+   * definições vão ao aluno (feedback instantâneo); só `structure` é recalculado
+   * no servidor (correção híbrida). Ver `studio-activity.ts`.
+   */
+  activity?: LessonActivity
+  /**
+   * Nome do PROJETO CONTÍNUO (cadeia). Aulas com o MESMO `chain` no mesmo curso
+   * formam uma sequência que constrói um único projeto (ex.: um jogo ao longo de N
+   * aulas): ao abrir, o Estúdio carrega a última entrega do aluno no bloco contínuo
+   * da aula anterior da cadeia (ver get-studio-carryover). Vazio/ausente = aula
+   * independente (começa do `initialProject`). Várias cadeias por curso não se
+   * misturam (resolução por nome).
+   */
+  chain?: string
+  /**
+   * VITRINE (Mural dos Criadores): o admin marca `enabled` no bloco da ÚLTIMA aula do
+   * projeto. Ao concluí-la, o aluno ganha o botão "Publicar no Mural" (a conclusão
+   * devolve o `showcase` no `LessonCompleteView`) e o post é montado com este `title`/
+   * `summary` (autorados pelo admin — a criança NÃO escreve) + a capa (print do jogo
+   * capturado no cliente, ou `defaultCoverUrl` para projetos web/fallback). Ausente/
+   * `enabled:false` = a aula não publica nada.
+   */
+  showcase?: {
+    enabled: boolean
+    /** Título do post (default: título da aula). */
+    title?: string
+    /** Resumo do projeto (Markdown). */
+    summary?: string
+    /** Capa padrão (URL pública http(s)) p/ projetos web e fallback do print. */
+    defaultCoverUrl?: string
+  }
 }
 
 /** União discriminada por `kind` — o conteúdo guardado na coluna `lesson_blocks.content`. */

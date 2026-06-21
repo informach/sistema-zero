@@ -44,6 +44,9 @@ export async function GET(_req: Request, { params }: Ctx) {
       submittedAt: s.submittedAt,
       name: name || null,
       email: u?.email ?? null,
+      score: s.score,
+      checkedAt: s.checkedAt,
+      passed: s.passed,
     }
   })
   return NextResponse.json({ submissions: rows }, { status: 200 })

@@ -172,6 +172,17 @@ export function buildLoopGuardRuntime(budgetMs: number = DEFAULT_LOOP_BUDGET_MS)
   var schedule = (typeof window !== 'undefined' && window.setTimeout)
     ? window.setTimeout.bind(window)
     : setTimeout;
+  // O orçamento RESETA a cada macrotask (o pump de setTimeout(0) zera o start),
+  // de propósito: assim um game loop legítimo (requestAnimationFrame/setInterval),
+  // que CEDE o thread entre ticks, nunca é cortado.
+  //
+  // CASO MOLE ACEITO (sem cutoff cumulativo): um laço assíncrono que CEDE o thread
+  // mas faz trabalho síncrono pesado a cada tick (recursão de setTimeout/rAF dentro
+  // do orçamento) sustenta CPU alta SEM congelar a aba — cada tick fica abaixo do
+  // budget, então a guarda (que mede tempo SÍNCRONO contínuo, não acúmulo) não
+  // dispara. NÃO adicionamos um corte cumulativo duro aqui: ele daria falso-positivo
+  // em game loops legítimos de rAF. É a mesma limitação de "roda no mesmo thread"
+  // já documentada nas outras camadas — e o botão Parar (Camada B) recupera a aba.
   function reset() { start = null; try { schedule(reset, 0); } catch (e) {} }
   try { schedule(reset, 0); } catch (e) {}
   // CAPTURA o relógio UMA VEZ, na instalação da guarda (este IIFE roda no <head>

@@ -88,7 +88,7 @@ describe('HandleProviderWebhookService (Pix)', () => {
     // Flag DURÁVEL p/ revisão manual: alimenta o contador amountMismatchPending
     // do /metrics//ops e aparece no detalhe do pagamento no admin.
     const payment = await repo.findById(paymentId)
-    expect(payment?.metadata['amountMismatch']).toMatchObject({
+    expect(payment?.metadata.amountMismatch).toMatchObject({
       expected: '1000',
       got: '999',
     })
@@ -100,10 +100,10 @@ describe('HandleProviderWebhookService (Pix)', () => {
     gateway.chargeStatus = 'PAID'
     gateway.overrideAmountInCents = 999n
     await webhook.execute({ items: [{ txid, endToEndId: 'E2E-MM-1' }] })
-    const first = (await repo.findById(paymentId))?.metadata['amountMismatch']
+    const first = (await repo.findById(paymentId))?.metadata.amountMismatch
     // Nova notificação (outro eventId) do MESMO mismatch → no-op no flag.
     await webhook.execute({ items: [{ txid, endToEndId: 'E2E-MM-2' }] })
-    const second = (await repo.findById(paymentId))?.metadata['amountMismatch']
+    const second = (await repo.findById(paymentId))?.metadata.amountMismatch
     expect(second).toEqual(first)
   })
 

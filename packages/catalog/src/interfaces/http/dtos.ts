@@ -26,10 +26,16 @@ const ReleaseRuleSchema = t.Object({
   date: t.Optional(t.String({ maxLength: 40 })),
 })
 
-// Entrega exclusivamente via área de membros: `course` (um curso, courseRef) ou
-// `all_courses` (chave-mestra — todos os cursos, atuais e futuros).
+// Entrega exclusivamente via área de membros: `course` (um curso, courseRef),
+// `all_courses` (chave-mestra ADULTA) ou `all_kids_courses` (chave-mestra KIDS) —
+// cada chave-mestra cobre todos os cursos da SUA audiência, atuais e futuros.
 const FulfillmentSchema = t.Object({
-  accessType: t.Union([t.Literal('course'), t.Literal('all_courses')]),
+  accessType: t.Union([
+    t.Literal('course'),
+    t.Literal('all_courses'),
+    t.Literal('all_kids_courses'),
+    t.Literal('community'),
+  ]),
   courseRef: t.Optional(t.String({ maxLength: 200 })),
   release: t.Optional(ReleaseRuleSchema),
   // Teto de perfis liberados (plataforma kids — planos "N perfis"). Inteiro ≥ 1.
@@ -129,7 +135,7 @@ export const CreateOfferBody = t.Object({
   code: SKU,
   slug: SLUG,
   name: NAME,
-  priceCents: t.Integer({ minimum: 0, maximum: 2_000_000_000 }),
+  priceCents: t.Integer({ minimum: 1, maximum: 2_000_000_000 }),
   compareAtPriceCents: t.Optional(t.Integer({ minimum: 0, maximum: 2_000_000_000 })),
   currency: t.Optional(t.Literal('BRL')),
   pricingMode: t.Optional(pricingModeSchema),
@@ -184,7 +190,7 @@ export const UpdateCouponBody = t.Object({
 /** Corpo de `PATCH /catalog/offers/:id`. Todos os campos opcionais. */
 export const UpdateOfferBody = t.Object({
   name: t.Optional(NAME),
-  priceCents: t.Optional(t.Integer({ minimum: 0, maximum: 2_000_000_000 })),
+  priceCents: t.Optional(t.Integer({ minimum: 1, maximum: 2_000_000_000 })),
   compareAtPriceCents: t.Optional(
     t.Union([t.Integer({ minimum: 0, maximum: 2_000_000_000 }), t.Null()]),
   ),

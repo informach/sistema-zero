@@ -12,6 +12,12 @@ export function ImportButton({ onImported }: ImportButtonProps): JSX.Element {
   const inputRef = useRef<HTMLInputElement | null>(null)
   const importFromJSON = useProjectStore((s) => s.importProjectFromJSON)
   const [error, setError] = useState<string | null>(null)
+  // Avisos não-fatais do import (cota/permissão/bloco desconhecido): o projeto FOI
+  // criado, mas mostramos o que ficou de fora antes de abrir. A navegação
+  // (`onImported`) só acontece quando o aluno fecha o aviso — senão a tela trocaria
+  // e a lista de avisos sumiria.
+  const [warnings, setWarnings] = useState<string[] | null>(null)
+  const [pendingId, setPendingId] = useState<string | null>(null)
 
   const handleFile = async (file: File) => {
     try {
@@ -27,14 +33,43 @@ export function ImportButton({ onImported }: ImportButtonProps): JSX.Element {
       if (text.length > MAX_PROJECT_IMPORT_CHARS) {
         throw new Error('arquivo excede o tamanho máximo permitido')
       }
-      const parsed = JSON.parse(text)
-      const imported = await importFromJSON(parsed)
-      onImported(imported.id)
+      // O JSON.parse fica no SEU PRÓPRIO try/catch: um arquivo que não é JSON
+      // (ex.: uma imagem, um .txt) estoura um SyntaxError com texto em inglês
+      // ("Unexpected token o in JSON") que não diz nada a uma criança. Aqui
+      // trocamos por uma frase fixa em português que aponta o próximo passo.
+      // Erros de JSON-válido-mas-projeto-inválido continuam vindo do store (já
+      // em português) e NÃO são engolidos por este catch.
+      let parsed: unknown
+      try {
+        parsed = JSON.parse(text)
+      } catch {
+        setError(t('projects.importNotJson'))
+        return
+      }
+      const { project, warnings: warns } = await importFromJSON(parsed)
+      if (warns.length > 0) {
+        // Segura a navegação até o aluno ler os avisos (ver dismiss()).
+        setWarnings(warns)
+        setPendingId(project.id)
+      } else {
+        onImported(project.id)
+      }
     } catch (err) {
       const reason = err instanceof Error ? err.message : 'arquivo inválido'
       setError(t('projects.importError', { reason }))
     }
   }
+
+  // Fecha o modal. Se havia avisos, o projeto foi importado: navega AGORA.
+  const dismiss = () => {
+    setError(null)
+    const id = pendingId
+    setWarnings(null)
+    setPendingId(null)
+    if (id) onImported(id)
+  }
+
+  const open = error !== null || warnings !== null
 
   return (
     <>
@@ -54,16 +89,27 @@ export function ImportButton({ onImported }: ImportButtonProps): JSX.Element {
         {t('projects.import')}
       </Button>
       <Modal
-        open={error !== null}
-        onClose={() => setError(null)}
+        open={open}
+        onClose={dismiss}
         title="Importação"
         footer={
-          <Button variant="primary" size="sm" onClick={() => setError(null)}>
-            Entendi
+          <Button variant="primary" size="sm" onClick={dismiss}>
+            {t('projects.importWarn.dismiss')}
           </Button>
         }
       >
-        {error}
+        {error !== null ? (
+          error
+        ) : warnings !== null ? (
+          <div role="status">
+            <p className="mb-1 font-medium text-sz-fg">{t('projects.importWarn.title')}</p>
+            <ul className="list-disc space-y-1 pl-5 text-sz-fg-soft">
+              {warnings.map((w) => (
+                <li key={w}>{w}</li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
       </Modal>
     </>
   )

@@ -227,7 +227,7 @@ describe('GET /metrics', () => {
     )
     expect(ok.status).toBe(200)
     const body = (await ok.json()) as { byStatus: Record<string, number> }
-    expect(body.byStatus['SCHEDULED']).toBe(1)
+    expect(body.byStatus.SCHEDULED).toBe(1)
   })
 })
 
@@ -466,8 +466,8 @@ describe('Rotas admin (/fiscal/admin/*)', () => {
       new Request('http://localhost/fiscal/admin/stats', { headers: ADMIN }),
     )
     const body = (await res.json()) as { byStatus: Record<string, number> }
-    expect(body.byStatus['EMITTED']).toBe(1)
-    expect(body.byStatus['FAILED']).toBe(1)
+    expect(body.byStatus.EMITTED).toBe(1)
+    expect(body.byStatus.FAILED).toBe(1)
   })
 })
 

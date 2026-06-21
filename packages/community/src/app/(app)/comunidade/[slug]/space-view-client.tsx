@@ -6,11 +6,12 @@ import {
   type UploadedAttachment,
 } from '@sistemazero/member-shell/components/attachment-uploader'
 import { RichEditor } from '@sistemazero/member-shell/components/rich-editor'
-import { renderMarkdown } from '@sistemazero/member-shell/lib/markdown'
+import { renderUgcMarkdown } from '@sistemazero/member-shell/lib/markdown'
 import { Badge } from '@sistemazero/ui/badge'
 import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Input } from '@sistemazero/ui/input'
+import { Skeleton } from '@sistemazero/ui/skeleton'
 import { ArrowLeft, Hash, Lock, MessageCircle, Plus, Send } from 'lucide-react'
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
@@ -317,9 +318,7 @@ export function SpaceViewClient({ slug, viewerId }: { slug: string; viewerId: st
     }
   }
 
-  if (loading) {
-    return <p className="px-4 py-8 text-sm text-muted-foreground">Carregando…</p>
-  }
+  if (loading) return <SpaceViewSkeleton />
   if (!space) {
     return <p className="px-4 py-8 text-sm text-muted-foreground">Comunidade não encontrada.</p>
   }
@@ -471,6 +470,39 @@ export function SpaceViewClient({ slug, viewerId }: { slug: string; viewerId: st
   )
 }
 
+// Chaves estáveis dos placeholders do esqueleto.
+const SK_CHANNEL_KEYS = ['c1', 'c2', 'c3', 'c4']
+const SK_THREAD_KEYS = ['t1', 't2', 't3', 't4', 't5']
+
+/**
+ * Esqueleto da carga INICIAL da comunidade (no lugar de "Carregando…"): espelha o
+ * layout — canais na lateral + lista de conversas. `aria-busy` + sr-only.
+ */
+function SpaceViewSkeleton() {
+  return (
+    <div aria-busy="true" className="mx-auto w-full max-w-5xl px-4 py-6">
+      <span className="sr-only">Carregando…</span>
+      <Skeleton className="mb-3 h-4 w-28" />
+      <Skeleton className="mb-4 h-6 w-56" />
+      <div className="grid gap-4 md:grid-cols-[200px_1fr]">
+        <aside className="space-y-1">
+          {SK_CHANNEL_KEYS.map((k) => (
+            <Skeleton key={k} className="h-9 w-full rounded-lg" />
+          ))}
+        </aside>
+        <div className="space-y-3">
+          {SK_THREAD_KEYS.map((k) => (
+            <div key={k} className="space-y-2 rounded-lg border border-border p-3">
+              <Skeleton className="h-4 w-2/3" />
+              <Skeleton className="h-3 w-1/2" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function ReactionBar({
   target,
   id,
@@ -523,7 +555,7 @@ function CommentCard({
         {authorLabel(comment.authorId)}
         {comment.pending ? ' · aguardando aprovação' : ''}
       </p>
-      <div className="lesson-prose">{renderMarkdown(comment.body)}</div>
+      <div className="lesson-prose">{renderUgcMarkdown(comment.body)}</div>
       <AttachmentList attachments={comment.attachments} />
       <div className="flex items-center justify-between">
         <ReactionBar
@@ -593,7 +625,7 @@ function ThreadDetail({
       <Card className="space-y-3 p-4">
         <h2 className="text-lg font-bold">{thread.title}</h2>
         <p className="text-xs text-muted-foreground">{authorLabel(thread.authorId)}</p>
-        <div className="lesson-prose">{renderMarkdown(thread.body)}</div>
+        <div className="lesson-prose">{renderUgcMarkdown(thread.body)}</div>
         <AttachmentList attachments={thread.attachments} />
         <div className="flex items-center justify-between">
           <ReactionBar

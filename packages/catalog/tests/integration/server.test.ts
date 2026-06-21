@@ -116,6 +116,8 @@ describe('catalog HTTP', () => {
         slug: 'x',
         name: 'X',
         kind: 'ebook',
+        status: 'active',
+        fulfillment: { accessType: 'course', courseRef: 'x' },
       })
       // resolve o id do produto principal a partir da view
       const main = await app.handle(req('GET', '/catalog/products/no-comando-da-ia'))
@@ -204,6 +206,124 @@ describe('catalog HTTP', () => {
     })
   })
 
+  describe('coerência de oferta ativa', () => {
+    it('POST /catalog/offers ativo com produto principal em draft → 400', async () => {
+      const built = build()
+      const product = await built.createProduct.execute({
+        sku: 'draft-main',
+        slug: 'draft-main',
+        name: 'Draft main',
+        kind: 'ebook',
+      })
+      const res = await built.app.handle(
+        req('POST', '/catalog/offers', {
+          headers: ADMIN,
+          body: {
+            productId: product.id,
+            code: 'draft-main-of',
+            slug: 'draft-main-of',
+            name: 'Oferta inválida',
+            priceCents: 1000,
+            status: 'active',
+          },
+        }),
+      )
+      expect(res.status).toBe(400)
+      expect((await res.json()) as { error: { code: string } }).toMatchObject({
+        error: { code: 'VALIDATION_ERROR' },
+      })
+    })
+
+    it('POST /catalog/offers ativo com item sem fulfillment → 400', async () => {
+      const built = build()
+      const main = await built.createProduct.execute({
+        sku: 'main-ok',
+        slug: 'main-ok',
+        name: 'Main OK',
+        kind: 'ebook',
+        status: 'active',
+        fulfillment: { accessType: 'course', courseRef: 'main-ok' },
+      })
+      const bonus = await built.createProduct.execute({
+        sku: 'bonus-draft',
+        slug: 'bonus-draft',
+        name: 'Bonus Draft',
+        kind: 'ebook',
+      })
+      const res = await built.app.handle(
+        req('POST', '/catalog/offers', {
+          headers: ADMIN,
+          body: {
+            productId: main.id,
+            code: 'main-ok-of',
+            slug: 'main-ok-of',
+            name: 'Oferta com bônus inválido',
+            priceCents: 1000,
+            status: 'active',
+            items: [{ productId: bonus.id }],
+          },
+        }),
+      )
+      expect(res.status).toBe(400)
+      expect((await res.json()) as { error: { code: string } }).toMatchObject({
+        error: { code: 'VALIDATION_ERROR' },
+      })
+    })
+
+    it('PATCH /catalog/offers/:id para active revalida a entrega', async () => {
+      const built = build()
+      const product = await built.createProduct.execute({
+        sku: 'draft-activation',
+        slug: 'draft-activation',
+        name: 'Draft Activation',
+        kind: 'ebook',
+      })
+      const offer = await built.createOffer.execute({
+        productId: product.id,
+        code: 'draft-activation-of',
+        slug: 'draft-activation-of',
+        name: 'Oferta em rascunho',
+        priceCents: 1000,
+      })
+      const res = await built.app.handle(
+        req('PATCH', `/catalog/offers/${offer.id}`, {
+          headers: ADMIN,
+          body: { status: 'active' },
+        }),
+      )
+      expect(res.status).toBe(400)
+      expect((await res.json()) as { error: { code: string } }).toMatchObject({
+        error: { code: 'VALIDATION_ERROR' },
+      })
+    })
+
+    it('POST /catalog/offers com priceCents zero → 400', async () => {
+      const built = build()
+      const product = await built.createProduct.execute({
+        sku: 'zero-price-p',
+        slug: 'zero-price-p',
+        name: 'Zero price product',
+        kind: 'ebook',
+        status: 'active',
+        fulfillment: { accessType: 'course', courseRef: 'zero-price-p' },
+      })
+      const res = await built.app.handle(
+        req('POST', '/catalog/offers', {
+          headers: ADMIN,
+          body: {
+            productId: product.id,
+            code: 'zero-price-of',
+            slug: 'zero-price-of',
+            name: 'Oferta zero',
+            priceCents: 0,
+            status: 'active',
+          },
+        }),
+      )
+      expect(res.status).toBe(400)
+    })
+  })
+
   describe('cupons (desconto na oferta)', () => {
     let app: ReturnType<typeof build>['app']
 
@@ -225,6 +345,7 @@ describe('catalog HTTP', () => {
         name: 'Oferta',
         priceCents: 3700,
         status: 'active',
+        content: { allowsCoupon: true },
       })
       await app.handle(
         req('POST', '/catalog/coupons', {
@@ -264,6 +385,46 @@ describe('catalog HTTP', () => {
       expect(q.discountCents).toBe(370)
       expect(q.finalPriceCents).toBe(3330)
       expect(q.coupon.code).toBe('PROMO10')
+    })
+
+    it('quote com cupom em oferta com allowsCoupon=false retorna 422', async () => {
+      const built = build()
+      const product2 = await built.createProduct.execute({
+        sku: 'ncia-b',
+        slug: 'ncia-b',
+        name: 'NCIA B',
+        kind: 'ebook',
+        status: 'active',
+        fulfillment: { accessType: 'course', courseRef: 'ncia-b' },
+      })
+      const offerNoCoupon = await built.createOffer.execute({
+        productId: product2.id,
+        code: 'ncia-of-b',
+        slug: 'ncia-b',
+        name: 'Oferta sem cupom',
+        priceCents: 3700,
+        status: 'active',
+        content: { allowsCoupon: false },
+      })
+      await built.app.handle(
+        req('POST', '/catalog/coupons', {
+          headers: ADMIN,
+          body: {
+            code: 'BLOCK',
+            type: 'fixed',
+            amountOffCents: 500,
+            appliesToAll: false,
+            offerIds: [offerNoCoupon.id],
+          },
+        }),
+      )
+      const res = await built.app.handle(
+        req('POST', '/catalog/offers/ncia-b/quote', { body: { couponCode: 'BLOCK' } }),
+      )
+      expect(res.status).toBe(422)
+      expect((await res.json()) as { error: { code: string } }).toMatchObject({
+        error: { code: 'COUPON_NOT_APPLICABLE' },
+      })
     })
 
     it('quote com cupom inexistente → 404', async () => {
@@ -319,6 +480,79 @@ describe('catalog HTTP', () => {
         error: { code: 'COUPON_EXHAUSTED' },
       })
     })
+
+    it('redeem com idempotency-key repetida não duplica a contagem', async () => {
+      await app.handle(
+        req('POST', '/catalog/coupons', {
+          headers: ADMIN,
+          body: {
+            code: 'ONCE',
+            type: 'fixed',
+            amountOffCents: 500,
+            appliesToAll: true,
+            maxRedemptions: 1,
+          },
+        }),
+      )
+      const key = 'payment-1'
+      const first = await app.handle(
+        req('POST', '/catalog/coupons/once/redeem', {
+          headers: { 'idempotency-key': key },
+        }),
+      )
+      expect(first.status).toBe(200)
+      const second = await app.handle(
+        req('POST', '/catalog/coupons/once/redeem', {
+          headers: { 'idempotency-key': key },
+        }),
+      )
+      expect(second.status).toBe(200)
+      const third = await app.handle(
+        req('POST', '/catalog/coupons/once/redeem', {
+          headers: { 'idempotency-key': 'payment-2' },
+        }),
+      )
+      expect(third.status).toBe(422)
+      expect((await third.json()) as { error: { code: string } }).toMatchObject({
+        error: { code: 'COUPON_EXHAUSTED' },
+      })
+    })
+
+    it('idempotency-key não converte falha em sucesso no retry de cupom inativo', async () => {
+      await app.handle(
+        req('POST', '/catalog/coupons', {
+          headers: ADMIN,
+          body: {
+            code: 'BLOCKED',
+            type: 'fixed',
+            amountOffCents: 500,
+            appliesToAll: true,
+            status: 'inactive',
+          },
+        }),
+      )
+      const key = 'payment-inactive'
+      const first = await app.handle(
+        req('POST', '/catalog/coupons/blocked/redeem', {
+          headers: { 'idempotency-key': key },
+          body: {},
+        }),
+      )
+      expect(first.status).toBe(422)
+      expect((await first.json()) as { error: { code: string } }).toMatchObject({
+        error: { code: 'COUPON_EXHAUSTED' },
+      })
+      const second = await app.handle(
+        req('POST', '/catalog/coupons/blocked/redeem', {
+          headers: { 'idempotency-key': key },
+          body: {},
+        }),
+      )
+      expect(second.status).toBe(422)
+      expect((await second.json()) as { error: { code: string } }).toMatchObject({
+        error: { code: 'COUPON_EXHAUSTED' },
+      })
+    })
   })
 
   describe('leitura admin (listagens paginadas)', () => {
@@ -336,7 +570,8 @@ describe('catalog HTTP', () => {
         slug: 'ebook-ia',
         name: 'Ebook de IA',
         kind: 'ebook',
-        status: 'draft',
+        status: 'active',
+        fulfillment: { accessType: 'course', courseRef: 'ebook-ia' },
       })
       await built.createOffer.execute({
         productId: p1.id,
@@ -384,8 +619,8 @@ describe('catalog HTTP', () => {
         req('GET', '/catalog/admin/products?status=active', { headers: ADMIN }),
       )
       const page = (await res.json()) as { items: { slug: string }[]; total: number }
-      expect(page.total).toBe(1)
-      expect(page.items[0]?.slug).toBe('curso-ia')
+      expect(page.total).toBe(2)
+      expect(page.items.map((item) => item.slug).sort()).toEqual(['curso-ia', 'ebook-ia'])
     })
 
     it('GET /catalog/admin/products?q=ebook busca por nome/slug', async () => {
@@ -531,7 +766,7 @@ describe('catalog HTTP', () => {
       PUBLIC_CACHE_TTL_MS: '60000',
     })
 
-    it('GET público serve do cache dentro do TTL; quote segue autoritativa (sem cache)', async () => {
+    it('GET público atualiza no write e quote segue autoritativa (sem cache)', async () => {
       const built = build({ env: cacheEnv })
       const product = await built.createProduct.execute({
         sku: 'cache-p',
@@ -563,9 +798,9 @@ describe('catalog HTTP', () => {
       )
       expect(patch.status).toBe(200)
 
-      // Leitura pública ainda vê o valor cacheado (staleness ≤ TTL, aceito)...
+      // Com invalidação imediata em escrita, o valor não fica stale após PATCH.
       const cached = await built.app.handle(req('GET', '/catalog/offers/cache-of'))
-      expect(((await cached.json()) as { priceCents: number }).priceCents).toBe(3700)
+      expect(((await cached.json()) as { priceCents: number }).priceCents).toBe(5000)
 
       // ...mas a quote (gate de cobrança) NUNCA é cacheada: já cobra o preço novo.
       const quote = await built.app.handle(

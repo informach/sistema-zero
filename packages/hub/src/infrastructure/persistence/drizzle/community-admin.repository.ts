@@ -37,6 +37,7 @@ const toSpace = (r: SpaceRow): Space => ({
   audience: r.audience,
   accessConfig: r.accessConfig,
   requiresApproval: r.requiresApproval,
+  teaserWhenLocked: r.teaserWhenLocked,
   sortOrder: r.sortOrder,
   status: r.status,
   createdAt: r.createdAt,
@@ -107,6 +108,7 @@ export class DrizzleCommunityAdminRepository implements CommunityAdminRepository
           audience: fields.audience,
           accessConfig: fields.accessConfig,
           requiresApproval: fields.requiresApproval,
+          teaserWhenLocked: fields.teaserWhenLocked,
           // `max+1` dentro do INSERT (1 statement) — ordena por audiência.
           sortOrder: sql`coalesce((select max(${spaces.sortOrder}) + 1 from ${spaces} where ${spaces.audience} = ${fields.audience}), 0)`,
           status: fields.status,
@@ -133,6 +135,7 @@ export class DrizzleCommunityAdminRepository implements CommunityAdminRepository
           audience: space.audience,
           accessConfig: space.accessConfig,
           requiresApproval: space.requiresApproval,
+          teaserWhenLocked: space.teaserWhenLocked,
           status: space.status,
           version: space.version + 1,
           updatedAt: new Date(),

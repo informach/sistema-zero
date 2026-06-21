@@ -20,9 +20,9 @@ const id = preId(chave, '101101')
 
 // pedRegEvento conforme XSD (pedRegEvento_v1.01.xsd + tiposEventos_v1.01.xsd):
 // cMotivo do e101101: 1=Erro na Emissão · 2=Serviço não Prestado · 9=Outros
-const cMotivo = process.env['NFSE_CANCEL_MOTIVO'] ?? '2'
+const cMotivo = process.env.NFSE_CANCEL_MOTIVO ?? '2'
 const xMotivo =
-  process.env['NFSE_CANCEL_DESC'] ??
+  process.env.NFSE_CANCEL_DESC ??
   'Compra reembolsada ao consumidor dentro da garantia (teste spike)'
 
 const xml =

@@ -10,8 +10,11 @@ export const ptBR: Record<string, string> = {
   'topbar.preview': 'Pré-visualizar',
   'topbar.save': 'Salvar',
   'topbar.saving': 'Salvando…',
+  'topbar.download': 'Baixar',
+  'topbar.downloading': 'Baixando…',
+  'topbar.downloadHint': 'Baixar o projeto (.zip) para continuar no VSCode',
   'topbar.extensions': 'Extensões',
-  'topbar.export': 'Exportar',
+  'topbar.export': 'Exportar para publicar',
   'topbar.convertPro': 'Virar profissional',
   'topbar.ai': 'IA',
   'topbar.rename': 'Renomear projeto',
@@ -82,6 +85,21 @@ export const ptBR: Record<string, string> = {
   'projects.newModal.create': 'Criar e abrir',
   'projects.newModal.cancel': 'Cancelar',
   'projects.importError': 'Não foi possível importar: {reason}',
+  'projects.importNotJson':
+    'Esse arquivo não parece ser um projeto do Studio. Escolha um arquivo .json que você exportou aqui.',
+  'projects.importWarn.title': 'Projeto importado, mas fique atento:',
+  'projects.importWarn.dismiss': 'Entendi',
+  'projects.importWarn.assets':
+    '{count} imagem(ns) não couberam (limite de tamanho ou de quantidade).',
+  'projects.importWarn.extraFiles': '{count} arquivo(s) extra(s) não couberam.',
+  'projects.importWarn.extensions':
+    '{count} extensão(ões) foram ignoradas (pedem permissões não liberadas).',
+  'projects.importWarn.blocks':
+    'Os blocos não foram carregados porque o projeto usa um recurso que esta versão não reconhece ({reason}). O código foi mantido.',
+  'projects.importWarn.program':
+    'Parte da programação salva não pôde ser lida e o projeto abriu vazio.',
+  'projects.importWarn.proDowngrade':
+    'Projeto profissional foi aberto como clássico (a estrutura de pastas não pôde ser lida).',
 
   'editor.fontSize.increase': 'Aumentar fonte do editor',
   'editor.fontSize.decrease': 'Diminuir fonte do editor',
@@ -117,4 +135,48 @@ export const ptBR: Record<string, string> = {
   'convert.cancel': 'Cancelar',
   'convert.later': 'Agora não',
   'convert.working': 'Transformando…',
+
+  'share.action': 'Compartilhar',
+  'share.title': 'Compartilhar no Mural dos Criadores',
+  'share.step.confirm.heading': 'Tudo pronto para publicar?',
+  'share.step.confirm.intro':
+    'Quando você publica, o seu projeto aparece no Mural para a comunidade ver e ganha um link para você mostrar para a família e os amigos jogarem.',
+  'share.step.confirm.concluded': 'Meu projeto está pronto e funcionando.',
+  'share.step.confirm.kidsLanguage':
+    'Os textos do meu projeto estão em português e são adequados para todo mundo.',
+  'share.step.confirm.irreversible':
+    'A versão publicada fica salva no Mural do jeito que está agora. Se você mudar o projeto aqui depois, a do Mural não muda — são cópias separadas.',
+  'share.step.describe.heading': 'Conte o que o seu projeto faz',
+  'share.step.describe.help':
+    'A gente preparou um rascunho para você. Leia, mude o que quiser e deixe do seu jeito (no máximo um parágrafo).',
+  'share.step.describe.label': 'Descrição do projeto',
+  'share.step.describe.placeholder':
+    'Ex.: Um jogo de nave que desvia dos asteroides para fazer pontos.',
+  'share.step.describe.generate': 'Escrever com ajuda da IA',
+  'share.step.describe.regenerate': 'Escrever de novo',
+  'share.step.describe.generating': 'Escrevendo…',
+  'share.step.describe.failed':
+    'Não consegui escrever sozinho agora. Sem problema: escreva você mesmo aí em cima.',
+  'share.step.cover.heading': 'A foto do seu projeto',
+  'share.step.cover.capturing': 'Tirando uma foto do seu projeto…',
+  'share.step.cover.none':
+    'Não deu para tirar uma foto automática deste projeto. Tudo bem, ele vai usar uma capa padrão no Mural.',
+  'share.step.cover.retry': 'Tirar a foto de novo',
+  'share.step.title.heading': 'Nome do projeto no Mural',
+  'share.step.title.label': 'Título',
+  'share.step.review.heading': 'Confira antes de publicar',
+  'share.publishing': 'Publicando…',
+  'share.success.heading': 'Publicado! 🎉',
+  'share.success.body': 'Seu projeto já está no Mural dos Criadores.',
+  'share.success.openMural': 'Ver no Mural',
+  'share.success.openPlay': 'Abrir o jogo',
+  'share.success.copyLink': 'Copiar link',
+  'share.success.copied': 'Link copiado!',
+  'share.error': 'Não foi possível publicar: {reason}',
+  'share.cancel': 'Cancelar',
+  'share.back': 'Voltar',
+  'share.next': 'Avançar',
+  'share.publish': 'Publicar',
+  'share.retry': 'Tentar de novo',
+  'share.close': 'Fechar',
 }

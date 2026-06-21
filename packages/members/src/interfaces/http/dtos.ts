@@ -41,6 +41,50 @@ export const GamificationQuery = t.Object({
   ranking: t.Optional(t.Literal('true')),
 })
 
+// ── Avatar (guarda-roupa por camadas) ───────────────────────────────────────
+// `partId`/`parts` são SLUGS do catálogo em código (não uuid): `^[a-z0-9-]+$`.
+const AVATAR_SLUG = t.String({ minLength: 1, maxLength: 64, pattern: '^[a-z0-9-]+$' })
+
+export const AvatarPartParams = t.Object({ partId: AVATAR_SLUG })
+
+/** Params de `GET /members/profiles/:profileId/public` (uuid na borda). */
+export const PublicProfileParams = t.Object({ profileId: UUID })
+
+// ── Missões + proteção de sequência ──────────────────────────────────────────
+export const MissionSlugParams = t.Object({ slug: AVATAR_SLUG })
+
+const ISO_DATE = t.String({ minLength: 10, maxLength: 10, pattern: '^\\d{4}-\\d{2}-\\d{2}$' })
+/** Corpo de `PUT /members/gamification/vacation` — janela (ou null/null p/ limpar). */
+export const VacationBody = t.Object({
+  from: t.Union([ISO_DATE, t.Null()]),
+  to: t.Union([ISO_DATE, t.Null()]),
+})
+
+// ── Quarto virtual ──────────────────────────────────────────────────────────
+export const RoomItemParams = t.Object({ itemId: AVATAR_SLUG })
+
+/** Corpo de `PUT /members/room` — estado montado (o serviço valida posse/grade). */
+export const RoomStateBody = t.Object({
+  theme: AVATAR_SLUG,
+  placedItems: t.Array(
+    t.Object({
+      itemId: AVATAR_SLUG,
+      x: t.Integer({ minimum: 0, maximum: 64 }),
+      y: t.Integer({ minimum: 0, maximum: 64 }),
+    }),
+    { maxItems: 60 },
+  ),
+  pet: t.Union([AVATAR_SLUG, t.Null()]),
+})
+
+/** Corpo de `PUT /members/avatar` — config equipada (camada → peça). */
+export const AvatarConfigBody = t.Object({
+  style: t.Optional(t.String({ maxLength: 40 })),
+  // Record camada→peça; chaves/valores capados; o serviço valida semanticamente
+  // (camada/peça desconhecida → 400; peça paga não possuída → 403).
+  parts: t.Record(t.String({ maxLength: 40 }), AVATAR_SLUG),
+})
+
 /**
  * Corpo de `POST /members/webhooks/grant` — concessão de acesso (funil → gateway →
  * members). `subscription` presente = acesso por assinatura; ausente = compra única.
@@ -73,6 +117,62 @@ export const AccessCheckBody = t.Object({
  * ao criar um perfil): quantos perfis de criança a CONTA (`accountId`) pode criar.
  */
 export const ProfileAllowanceQuery = t.Object({ accountId: UUID })
+
+/**
+ * Query de `GET /members/access` (aluno, via gateway): "esta CONTA tem acesso a
+ * estes produtos/refs?". `refs` = CSV de refs de curso/comunidade (slugs do
+ * catálogo, ex.: `estudio-completo`); `audience` decide qual chave-mestra cobre
+ * (ausente → `kids` — o único consumidor hoje é a vitrine kids).
+ */
+export const AccessQuery = t.Object({
+  refs: t.String({ minLength: 1, maxLength: 2000 }),
+  audience: t.Optional(AUDIENCE),
+})
+
+const ACCESS_REF_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+/** Uma ref tem formato de slug de catálogo válido? (só estas vão ao motor de acesso/DB). */
+function isValidAccessRef(ref: string): boolean {
+  return ref.length <= 200 && ACCESS_REF_RE.test(ref)
+}
+/**
+ * Refs PEDIDAS no CSV (split/trim/não-vazias, teto de 50). Mantém TODAS as pedidas —
+ * inclusive as de formato inválido — para a rota poder devolver `false` EXPLÍCITO a cada
+ * uma, em vez de a ref sumir do mapa (deixando o chamador sem distinguir negado de descartado).
+ */
+export function splitRequestedRefs(csv: string): string[] {
+  return csv
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0)
+    .slice(0, 50)
+}
+/** Slugs VÁLIDOS do CSV (subconjunto de `splitRequestedRefs` — só estes vão à query). */
+export function parseAccessRefs(csv: string): string[] {
+  return splitRequestedRefs(csv).filter(isValidAccessRef)
+}
+
+/**
+ * Query de `GET /members/parents/children-stats` (aluno, via gateway): resumo de
+ * progresso dos filhos da CONTA. A conta vem do header confiável (`x-auth-user-id`),
+ * NÃO do cliente. `profileIds` = CSV de uuids dos perfis (vindos do auth; o members
+ * ainda filtra por `account_id`). `audience` ausente → `kids`.
+ */
+export const ChildrenStatsQuery = t.Object({
+  profileIds: t.Optional(t.String({ maxLength: 2000 })),
+  audience: t.Optional(AUDIENCE),
+})
+
+/**
+ * Query da rota S2S `GET /members/internal/showcase-eligibility` (consumida pelo
+ * `@sistemazero/hub` ao auto-publicar no Mural): elegibilidade + conteúdo AUTORITATIVO
+ * do projeto. `accountId` resolve o ACESSO (conta), `userId` a ENTREGA (perfil).
+ */
+export const ShowcaseEligibilityQuery = t.Object({
+  accountId: UUID,
+  userId: UUID,
+  lessonId: UUID,
+  blockId: UUID,
+})
 
 /**
  * Query de `GET /members/admin/members/:userId` — CSV opcional dos ids dos perfis
@@ -183,8 +283,8 @@ const EXPIRES_AT = t.Optional(t.Union([t.String({ maxLength: 40 }), t.Null()]))
 
 /**
  * Corpo de `POST /members/admin/entitlements` — concessão manual. União discriminada
- * por `mode`: `offer` (resolve a oferta no catálogo), `course` (direto por curso) ou
- * `all_courses` (chave-mestra — todos os cursos, atuais e futuros).
+ * por `mode`: `offer` (resolve a oferta no catálogo), `course` (direto por curso),
+ * `all_courses` (chave-mestra ADULTA) ou `all_kids_courses` (chave-mestra KIDS).
  */
 export const GrantEntitlementBody = t.Union([
   t.Object({
@@ -201,6 +301,11 @@ export const GrantEntitlementBody = t.Union([
   }),
   t.Object({
     mode: t.Literal('all_courses'),
+    userId: USER_ID,
+    expiresAt: EXPIRES_AT,
+  }),
+  t.Object({
+    mode: t.Literal('all_kids_courses'),
     userId: USER_ID,
     expiresAt: EXPIRES_AT,
   }),
@@ -380,6 +485,69 @@ const StudioProjectSchema = t.Object(
   },
   { additionalProperties: true },
 )
+// ── Atividade com auto-correção (fase 2) ────────────────────────────────────
+// Base de toda checagem. Valores esperados (testcase/globalEquals) são `Unknown`
+// (dados opacos echoados ao cliente; o teto de tamanho é do corpo/jsonb).
+const ActivityCheckBase = {
+  id: t.String({ minLength: 1, maxLength: 64 }),
+  label: t.String({ minLength: 1, maxLength: 200 }),
+  hint: t.Optional(t.String({ maxLength: 1000 })),
+  weight: t.Optional(t.Number({ exclusiveMinimum: 0 })),
+}
+const StructureRuleSchema = t.Union([
+  t.Object({ type: t.Literal('usesLoop') }),
+  t.Object({
+    type: t.Literal('declaresVariable'),
+    name: t.String({ minLength: 1, maxLength: 80 }),
+  }),
+  t.Object({ type: t.Literal('definesFunction'), name: t.String({ minLength: 1, maxLength: 80 }) }),
+  t.Object({ type: t.Literal('callsFunction'), name: t.String({ minLength: 1, maxLength: 80 }) }),
+  t.Object({ type: t.Literal('usesBlock'), blockType: t.String({ minLength: 1, maxLength: 80 }) }),
+])
+const BehaviorRuleSchema = t.Union([
+  t.Object({ type: t.Literal('consoleContains'), text: t.String({ maxLength: 2000 }) }),
+  t.Object({ type: t.Literal('domSelectorExists'), selector: t.String({ maxLength: 500 }) }),
+  t.Object({
+    type: t.Literal('domSelectorText'),
+    selector: t.String({ maxLength: 500 }),
+    text: t.String({ maxLength: 2000 }),
+  }),
+  t.Object({
+    type: t.Literal('globalEquals'),
+    name: t.String({ maxLength: 80 }),
+    value: t.Unknown(),
+  }),
+])
+const ActivityCheckSchema = t.Union([
+  t.Object({ ...ActivityCheckBase, kind: t.Literal('structure'), rule: StructureRuleSchema }),
+  t.Object({ ...ActivityCheckBase, kind: t.Literal('behavior'), rule: BehaviorRuleSchema }),
+  t.Object({
+    ...ActivityCheckBase,
+    kind: t.Literal('testcase'),
+    functionName: t.String({ minLength: 1, maxLength: 80 }),
+    cases: t.Array(
+      t.Object({
+        id: t.Optional(t.String({ maxLength: 64 })),
+        args: t.Array(t.Unknown(), { maxItems: 20 }),
+        expected: t.Unknown(),
+      }),
+      {
+        maxItems: 50,
+      },
+    ),
+  }),
+  t.Object({
+    ...ActivityCheckBase,
+    kind: t.Literal('code'),
+    source: t.String({ maxLength: 20_000 }),
+  }),
+])
+const StudioActivitySchema = t.Object({
+  instructions: t.String({ maxLength: 20_000 }),
+  checks: t.Array(ActivityCheckSchema, { maxItems: 50 }),
+  passingScore: t.Optional(t.Integer({ minimum: 0, maximum: 100 })),
+})
+
 /** Bloco Estúdio: editor pré-configurado embutido na aula (ver domain/course/lesson-block.ts). */
 const StudioBlockSchema = t.Object({
   kind: t.Literal('studio'),
@@ -389,6 +557,19 @@ const StudioBlockSchema = t.Object({
   allowCategories: t.Optional(t.Array(t.String({ maxLength: 80 }), { maxItems: 100 })),
   allowedModes: t.Optional(t.Array(StudioModeSchema, { maxItems: 3 })),
   allowLevelReveal: t.Optional(t.Boolean()),
+  activity: t.Optional(StudioActivitySchema),
+  /** Nome do projeto contínuo (cadeia) — ver StudioBlock em domain/course/lesson-block.ts. */
+  chain: t.Optional(t.String({ maxLength: 80 })),
+  /** Vitrine (Mural dos Criadores) — config da auto-publicação; ver StudioBlock. */
+  showcase: t.Optional(
+    t.Object({
+      enabled: t.Boolean(),
+      title: t.Optional(t.String({ maxLength: 300 })),
+      summary: t.Optional(t.String({ maxLength: 2000 })),
+      // Capa padrão: SÓ http(s) (renderizada como `src` na vitrine).
+      defaultCoverUrl: t.Optional(t.String({ maxLength: 2000, pattern: '^https?://' })),
+    }),
+  ),
 })
 
 export const LessonBlockContentSchema = t.Union([
@@ -404,11 +585,25 @@ export const LessonBlockContentSchema = t.Union([
 
 /** Params da rota de entrega do Estúdio (aluno) — espelha o quiz-attempts. */
 export const StudioSubmissionParams = t.Object({ lessonId: UUID, blockId: UUID })
+/** Params da rota de carryover do Estúdio (carregar o projeto da aula contínua anterior). */
+export const StudioCarryoverParams = t.Object({ lessonId: UUID, blockId: UUID })
+/** Params da rota de payload da vitrine (Mural) — elegibilidade + conteúdo do post. */
+export const ShowcasePayloadParams = t.Object({ lessonId: UUID, blockId: UUID })
 /** Params da rota admin de UMA entrega (por bloco + aluno). `id` = blockId. */
 export const AdminStudioSubmissionParams = t.Object({ id: UUID, userId: UUID })
 
+/** Resultado reportado pelo cliente p/ uma checagem (correção híbrida). */
+const ClientCheckResultSchema = t.Object({
+  checkId: t.String({ maxLength: 64 }),
+  passed: t.Boolean(),
+  message: t.Optional(t.String({ maxLength: 2000 })),
+})
 /** Corpo de `POST /members/lessons/:lessonId/blocks/:blockId/studio-submission` (aluno). */
-export const StudioSubmissionBody = t.Object({ project: StudioProjectSchema })
+export const StudioSubmissionBody = t.Object({
+  project: StudioProjectSchema,
+  /** Resultados das checagens rodadas no cliente (behavior/testcase/code). */
+  results: t.Optional(t.Array(ClientCheckResultSchema, { maxItems: 50 })),
+})
 
 /** Corpo de `POST/PATCH /members/admin/...blocks`. */
 export const BlockBody = t.Object({ content: LessonBlockContentSchema })

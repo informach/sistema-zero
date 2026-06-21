@@ -7,6 +7,7 @@ import type {
 import type { ListMembersService } from '../../../application/list-members/list-members.service'
 import type { ManageEntitlementService } from '../../../application/manage-entitlement/manage-entitlement.service'
 import { InvalidEntitlementCommandError } from '../../../domain/entitlement/entitlement.errors'
+import type { HubGateway } from '../../../domain/ports/hub-gateway.port'
 import { assertInternalCaller, requireAdmin } from '../auth'
 import {
   GrantEntitlementBody,
@@ -29,6 +30,8 @@ export interface AdminRoutesDeps {
   getMemberDetail: GetMemberDetailService
   grantManual: GrantManualEntitlementService
   manageEntitlement: ManageEntitlementService
+  /** Notifica o hub (comunidade) na concessão manual → invalida o cache de acesso na hora. */
+  hub: HubGateway
 }
 
 /**
@@ -79,8 +82,12 @@ export function adminRoutes(deps: AdminRoutesDeps) {
             ? { mode: 'offer', userId: body.userId, offerRef: body.offerRef, expiresAt }
             : body.mode === 'course'
               ? { mode: 'course', userId: body.userId, courseRef: body.courseRef, expiresAt }
-              : { mode: 'all_courses', userId: body.userId, expiresAt }
+              : body.mode === 'all_kids_courses'
+                ? { mode: 'all_kids_courses', userId: body.userId, expiresAt }
+                : { mode: 'all_courses', userId: body.userId, expiresAt }
         const result = await deps.grantManual.execute(cmd)
+        // Comunidade: avisa o hub p/ liberar espaços gated na hora (best-effort).
+        await deps.hub.notifyAccessChanged(body.userId, 'grant')
         set.status = 201
         return result
       },
@@ -90,11 +97,15 @@ export function adminRoutes(deps: AdminRoutesDeps) {
       '/entitlements/:id',
       async ({ body, params, headers }) => {
         requireAdmin(headers, deps.requireAdminEnabled)
-        return deps.manageEntitlement.execute({
+        const result = await deps.manageEntitlement.execute({
           id: params.id,
           action: body.action,
           expiresAt: parseDate(body.expiresAt) ?? undefined,
         })
+        // Mudança manual de acesso também invalida o micro-cache do hub
+        // (revogar/expirar corta acesso; estender/reativar libera).
+        await deps.hub.notifyAccessChanged(result.userId, body.action)
+        return result
       },
       { body: ManageEntitlementBody, params: IdParams },
     )

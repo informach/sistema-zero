@@ -43,6 +43,34 @@ export function IconSave(p: IconProps): JSX.Element {
   )
 }
 
+export function IconShare(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+      <polyline points="16 6 12 2 8 6" />
+      <line x1="12" x2="12" y1="2" y2="15" />
+    </Base>
+  )
+}
+
+export function IconLink(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+    </Base>
+  )
+}
+
+export function IconCheckCircle(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="M21.801 10A10 10 0 1 1 17 3.335" />
+      <path d="m9 11 3 3L22 4" />
+    </Base>
+  )
+}
+
 export function IconEye(p: IconProps): JSX.Element {
   return (
     <Base {...p}>
@@ -77,6 +105,16 @@ export function IconPuzzle(p: IconProps): JSX.Element {
   return (
     <Base {...p}>
       <path d="M15.39 4.39a1 1 0 0 0 1.68-.474 2.5 2.5 0 1 1 3.014 3.015 1 1 0 0 0-.474 1.68l1.683 1.682a2.414 2.414 0 0 1 0 3.414L19.61 19.61a2.414 2.414 0 0 1-3.414 0l-1.683-1.682a1 1 0 0 0-1.68.473 2.5 2.5 0 1 1-3.014-3.015 1 1 0 0 0 .474-1.68l-1.683-1.682a2.414 2.414 0 0 1 0-3.414L10.3 6.61a2.414 2.414 0 0 1 3.414 0z" />
+    </Base>
+  )
+}
+
+export function IconImage(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+      <circle cx="9" cy="9" r="2" />
+      <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
     </Base>
   )
 }

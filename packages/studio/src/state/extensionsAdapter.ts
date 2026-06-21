@@ -114,7 +114,20 @@ function removeExtensionStatements(statements: JSStatement[], extId: string): JS
   const cleaned: JSStatement[] = []
   for (const statement of statements) {
     if (statementIsExtension(statement, extId)) continue
-    if (statement.type === 'event') {
+    // Recursão em TODOS os tipos que carregam corpos de statements aninhados.
+    // Sem isto, um bloco de extensão (g2d:/g3d:) solto DENTRO de um laço/try/fetch
+    // sobrevivia à desinstalação: o preview re-emitia chamadas do runtime já
+    // removido (quebra) e o blocksState rebuildado ficava com tipos fora da
+    // allowlist. Espelha os tipos-contêiner de `countJSStatement` (projectStore).
+    if (
+      statement.type === 'event' ||
+      statement.type === 'repeat' ||
+      statement.type === 'animationLoop' ||
+      statement.type === 'while' ||
+      statement.type === 'doWhile' ||
+      statement.type === 'forOf' ||
+      statement.type === 'forRange'
+    ) {
       cleaned.push({ ...statement, body: removeExtensionStatements(statement.body, extId) })
       continue
     }
@@ -126,12 +139,25 @@ function removeExtensionStatements(statements: JSStatement[], extId: string): JS
       })
       continue
     }
-    if (statement.type === 'repeat') {
-      cleaned.push({ ...statement, body: removeExtensionStatements(statement.body, extId) })
+    if (statement.type === 'tryCatch') {
+      cleaned.push({
+        ...statement,
+        body: removeExtensionStatements(statement.body, extId),
+        handler: removeExtensionStatements(statement.handler, extId),
+        finalizer: statement.finalizer
+          ? removeExtensionStatements(statement.finalizer, extId)
+          : undefined,
+      })
       continue
     }
-    if (statement.type === 'animationLoop') {
-      cleaned.push({ ...statement, body: removeExtensionStatements(statement.body, extId) })
+    if (statement.type === 'fetchJson') {
+      cleaned.push({
+        ...statement,
+        body: removeExtensionStatements(statement.body, extId),
+        catchBody: statement.catchBody
+          ? removeExtensionStatements(statement.catchBody, extId)
+          : undefined,
+      })
       continue
     }
     cleaned.push(statement)

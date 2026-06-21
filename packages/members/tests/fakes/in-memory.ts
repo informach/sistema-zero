@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import type { Logger } from '@sistemazero/core/logging'
+import type { AvatarConfig } from '../../src/domain/avatar/avatar-config'
 import {
   type Course,
   type CourseAudience,
@@ -18,13 +19,23 @@ import {
   EntitlementAggregate,
   type EntitlementState,
 } from '../../src/domain/entitlement/entitlement.aggregate'
+import type { AccessType } from '../../src/domain/entitlement/fulfillment'
 import type { BadgeSlug } from '../../src/domain/gamification/badges'
 import {
+  applyDailyCap,
+  DAILY_COIN_CAP,
+  streakMilestoneCoins,
+} from '../../src/domain/gamification/coins'
+import {
   advanceStreak,
+  coinsSaverBadgeSlugs,
   courseBadgeSlugs,
   quizPerfectBadgeSlugs,
   streakBadgeSlugs,
+  studioMasteryBadgeSlugs,
 } from '../../src/domain/gamification/gamification'
+import type { MissionGoalType } from '../../src/domain/gamification/missions'
+import type { AvatarRepository } from '../../src/domain/ports/avatar-repository.port'
 import type { CatalogGateway, ResolvedOffer } from '../../src/domain/ports/catalog-gateway.port'
 import type {
   AttachmentFields,
@@ -45,13 +56,21 @@ import type {
   ListMembersResult,
   MemberSummary,
 } from '../../src/domain/ports/entitlement-repository.port'
-import type {
-  AwardInput,
-  AwardResult,
-  GamificationProfileRecord,
-  GamificationRanking,
-  GamificationRepository,
-  XpEventInput,
+import {
+  type AwardInput,
+  type AwardResult,
+  type BuyStreakFreezeInput,
+  type BuyStreakFreezeResult,
+  type ClaimMissionInput,
+  type ClaimMissionResult,
+  type GamificationProfileRecord,
+  type GamificationRanking,
+  type GamificationRepository,
+  type LeagueMembershipRecord,
+  MAX_STREAK_FREEZES,
+  type SpendCoinsInput,
+  type SpendCoinsResult,
+  type XpEventInput,
 } from '../../src/domain/ports/gamification-repository.port'
 import type { ProcessedWebhookRepository } from '../../src/domain/ports/processed-webhook-repository.port'
 import type { ProgressRepository } from '../../src/domain/ports/progress-repository.port'
@@ -59,13 +78,17 @@ import type {
   QuizAttemptRecord,
   QuizAttemptRepository,
 } from '../../src/domain/ports/quiz-attempt-repository.port'
+import type { RoomRepository } from '../../src/domain/ports/room-repository.port'
 import type {
+  StudioSubmissionDetail,
   StudioSubmissionRecord,
   StudioSubmissionRepository,
+  StudioSubmissionState,
   StudioSubmissionSummary,
 } from '../../src/domain/ports/studio-submission-repository.port'
 import type { VideoPositionRepository } from '../../src/domain/ports/video-position-repository.port'
 import type { CourseRating } from '../../src/domain/rating/course-rating'
+import type { RoomState } from '../../src/domain/room/room-catalog'
 
 export const silentLogger: Logger = {
   debug() {},
@@ -80,6 +103,16 @@ function cloneState(s: EntitlementState): EntitlementState {
 
 function isActive(s: EntitlementState, now: Date): boolean {
   return s.status === 'active' && (s.expiresAt === null || s.expiresAt.getTime() > now.getTime())
+}
+
+function hasEntitlementUniqueConflict(a: EntitlementState, b: EntitlementState): boolean {
+  return (
+    a.idempotencyKey === b.idempotencyKey ||
+    (a.userId === b.userId &&
+      a.productId === b.productId &&
+      a.sourceKind === b.sourceKind &&
+      a.sourceId === b.sourceId)
+  )
 }
 
 /** Vitalícia (expiresAt nulo) > validade mais distante. Espelha a ordenação do SQL. */
@@ -109,15 +142,25 @@ export class InMemoryEntitlementRepository implements EntitlementRepository {
     // Espelha os DOIS índices únicos do schema: idempotency_key E
     // (user_id, product_id, source_kind, source_id). Conflito em qualquer → no-op.
     for (const x of this.byId.values()) {
-      const dup =
-        x.idempotencyKey === s.idempotencyKey ||
-        (x.userId === s.userId &&
-          x.productId === s.productId &&
-          x.sourceKind === s.sourceKind &&
-          x.sourceId === s.sourceId)
-      if (dup) return false
+      if (hasEntitlementUniqueConflict(x, s)) return false
     }
     this.byId.set(s.id, cloneState(s))
+    return true
+  }
+
+  async saveMany(items: EntitlementAggregate[]): Promise<boolean> {
+    const snapshots = items.map((e) => e.toSnapshot())
+    const staged: EntitlementState[] = []
+    for (const s of snapshots) {
+      for (const x of this.byId.values()) {
+        if (hasEntitlementUniqueConflict(x, s)) return false
+      }
+      for (const x of staged) {
+        if (hasEntitlementUniqueConflict(x, s)) return false
+      }
+      staged.push(s)
+    }
+    for (const s of staged) this.byId.set(s.id, cloneState(s))
     return true
   }
 
@@ -133,15 +176,15 @@ export class InMemoryEntitlementRepository implements EntitlementRepository {
     userId: string,
     courseRef: string,
     now: Date,
-    opts?: { masterCovers?: boolean },
+    opts?: { masterType?: AccessType | null },
   ): Promise<EntitlementAggregate | null> {
-    // Mirror do SQL: matrícula específica OU chave-mestra (se `masterCovers`,
-    // default true — `false` = curso kids, fora da chave-mestra); a mais forte.
+    // Mirror do SQL: matrícula específica OU a chave-mestra da AUDIÊNCIA do curso
+    // (`masterType` = all_courses p/ adult, all_kids_courses p/ kids); a mais forte.
     let strongest: EntitlementState | null = null
     for (const s of this.byId.values()) {
       const covers =
-        s.courseRef === courseRef ||
-        (opts?.masterCovers !== false && s.accessType === 'all_courses')
+        (s.accessType === 'course' && s.courseRef === courseRef) ||
+        (opts?.masterType != null && s.accessType === opts.masterType)
       if (s.userId === userId && covers && isActive(s, now)) {
         if (!strongest || isStrongerState(s, strongest)) strongest = s
       }
@@ -209,8 +252,12 @@ export class InMemoryEntitlementRepository implements EntitlementRepository {
     }
   }
 
-  async revokeBySubscriptionId(subscriptionId: string, now: Date): Promise<number> {
+  async revokeBySubscriptionId(
+    subscriptionId: string,
+    now: Date,
+  ): Promise<{ affected: number; userIds: string[] }> {
     let affected = 0
+    const userIds = new Set<string>()
     for (const s of this.byId.values()) {
       if (s.subscriptionId === subscriptionId && s.status !== 'revoked') {
         this.byId.set(s.id, {
@@ -221,20 +268,26 @@ export class InMemoryEntitlementRepository implements EntitlementRepository {
           version: s.version + 1,
         })
         affected += 1
+        userIds.add(s.userId)
       }
     }
-    return affected
+    return { affected, userIds: [...userIds] }
   }
 
-  async expireBySubscriptionId(subscriptionId: string, now: Date): Promise<number> {
+  async expireBySubscriptionId(
+    subscriptionId: string,
+    now: Date,
+  ): Promise<{ affected: number; userIds: string[] }> {
     let affected = 0
+    const userIds = new Set<string>()
     for (const s of this.byId.values()) {
       if (s.subscriptionId === subscriptionId && s.status !== 'revoked' && s.status !== 'expired') {
         this.byId.set(s.id, { ...s, status: 'expired', updatedAt: now, version: s.version + 1 })
         affected += 1
+        userIds.add(s.userId)
       }
     }
-    return affected
+    return { affected, userIds: [...userIds] }
   }
 
   seed(e: EntitlementAggregate): void {
@@ -326,6 +379,32 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
 
   async listPublishedLessonIds(moduleId: string): Promise<string[]> {
     return this.lessons.filter((l) => l.moduleId === moduleId && l.isPublished).map((l) => l.id)
+  }
+
+  async findPrecedingStudioBlockInChain(
+    courseId: string,
+    lessonId: string,
+    chain: string,
+  ): Promise<{ blockId: string; lessonId: string } | null> {
+    // Espelha a query Drizzle: aulas publicadas do curso ordenadas por
+    // (module.sortOrder, lesson.sortOrder); varre para trás a partir da atual e,
+    // dentro de cada aula, pega o bloco studio da cadeia com maior sortOrder.
+    const ordered = this.lessons
+      .filter((l) => l.courseId === courseId && l.isPublished)
+      .map((l) => ({ l, modSort: this.modules.find((m) => m.id === l.moduleId)?.sortOrder ?? 0 }))
+      .sort((a, b) => a.modSort - b.modSort || a.l.sortOrder - b.l.sortOrder)
+    const curIdx = ordered.findIndex((x) => x.l.id === lessonId)
+    if (curIdx < 0) return null
+    // Da aula imediatamente anterior para trás (mesma ordem do `ORDER BY ... DESC`).
+    for (const { l } of ordered.slice(0, curIdx).reverse()) {
+      const block = this.blocks
+        .filter((b) => b.lessonId === l.id && b.kind === 'studio')
+        .sort((a, b) => b.sortOrder - a.sortOrder)
+        // `trim` no valor armazenado (o serviço já passa `chain` trimado) — mirror do SQL.
+        .find((b) => (b.content as { chain?: string }).chain?.trim() === chain)
+      if (block) return { blockId: block.id, lessonId: l.id }
+    }
+    return null
   }
 
   async countLessonsByCourseIds(courseIds: string[]): Promise<Map<string, number>> {
@@ -803,41 +882,88 @@ export class InMemoryQuizAttemptRepository implements QuizAttemptRepository {
 export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepository {
   readonly submissions: StudioSubmissionRecord[] = []
 
-  /** Upsert por (user, block) — reenvio sobrescreve o projeto + a data. */
-  async upsert(submission: StudioSubmissionRecord): Promise<void> {
+  /** Courses p/ resolver a audiência da entrega (countByUserAndAudience). */
+  constructor(private readonly courses?: InMemoryCourseRepository) {}
+
+  /** Upsert por (user, block) — reenvio sobrescreve projeto/data/correção. */
+  async upsert(
+    submission: StudioSubmissionRecord,
+    options?: { preservePassedAt?: boolean },
+  ): Promise<void> {
     const existing = this.submissions.find(
       (s) => s.userId === submission.userId && s.blockId === submission.blockId,
     )
     if (existing) {
       existing.project = submission.project
       existing.submittedAt = submission.submittedAt
+      existing.score = submission.score ?? null
+      existing.results = submission.results ?? null
+      existing.checkedAt = submission.checkedAt ?? null
+      existing.passedAt =
+        options?.preservePassedAt && existing.passedAt
+          ? existing.passedAt
+          : (submission.passedAt ?? null)
     } else {
-      this.submissions.push({ ...submission })
+      this.submissions.push({
+        ...submission,
+        score: submission.score ?? null,
+        results: submission.results ?? null,
+        checkedAt: submission.checkedAt ?? null,
+        passedAt: submission.passedAt ?? null,
+      })
     }
   }
 
-  async listSubmittedBlockIds(userId: string, blockIds: string[]): Promise<Set<string>> {
+  async summarizeByBlockIds(
+    userId: string,
+    blockIds: string[],
+  ): Promise<Map<string, StudioSubmissionState>> {
     const set = new Set(blockIds)
-    return new Set(
-      this.submissions
-        .filter((s) => s.userId === userId && set.has(s.blockId))
-        .map((s) => s.blockId),
-    )
+    const map = new Map<string, StudioSubmissionState>()
+    for (const s of this.submissions) {
+      if (s.userId !== userId || !set.has(s.blockId)) continue
+      map.set(s.blockId, {
+        submittedAt: s.submittedAt,
+        score: s.score ?? null,
+        passed: s.passedAt != null,
+      })
+    }
+    return map
   }
 
   async listByBlock(blockId: string): Promise<StudioSubmissionSummary[]> {
     return this.submissions
       .filter((s) => s.blockId === blockId)
       .sort((a, b) => a.submittedAt.getTime() - b.submittedAt.getTime())
-      .map((s) => ({ userId: s.userId, submittedAt: s.submittedAt }))
+      .map((s) => ({
+        userId: s.userId,
+        submittedAt: s.submittedAt,
+        score: s.score ?? null,
+        checkedAt: s.checkedAt ?? null,
+        passed: s.passedAt != null,
+      }))
   }
 
-  async getOne(
-    userId: string,
-    blockId: string,
-  ): Promise<{ project: unknown; submittedAt: Date } | null> {
+  async getOne(userId: string, blockId: string): Promise<StudioSubmissionDetail | null> {
     const s = this.submissions.find((x) => x.userId === userId && x.blockId === blockId)
-    return s ? { project: s.project, submittedAt: s.submittedAt } : null
+    return s
+      ? {
+          project: s.project,
+          submittedAt: s.submittedAt,
+          score: s.score ?? null,
+          results: s.results ?? null,
+          checkedAt: s.checkedAt ?? null,
+          passedAt: s.passedAt ?? null,
+        }
+      : null
+  }
+
+  async countByUserAndAudience(userId: string, audience: CourseAudience): Promise<number> {
+    return this.submissions.filter((s) => {
+      if (s.userId !== userId) return false
+      const course = this.courses?.courses.find((c) => c.id === s.courseId)
+      return course?.audience === audience
+    }).length
   }
 }
 
@@ -847,6 +973,24 @@ interface XpEventRow extends XpEventInput {
   createdAt: Date
 }
 
+interface CoinEventRow {
+  userId: string
+  audience: CourseAudience
+  sourceType: string
+  sourceId: string
+  amount: number
+  balanceAfter: number
+  createdAt: Date
+}
+
+// Mirror do COIN_TYPE_FOR_XP do Drizzle (tipo de XP de rotina → tipo de moeda).
+const COIN_TYPE_FOR_XP: Partial<Record<XpEventInput['sourceType'], string>> = {
+  lesson_complete: 'lesson_complete',
+  quiz_passed: 'quiz_passed',
+  unit_complete: 'unit_complete',
+  studio_passed: 'studio_passed',
+}
+
 /**
  * Mirror da transação do Drizzle: ledger idempotente + streak + badges —
  * TUDO segregado por vitrine (perfil/badges/contagens chaveiam user+audience).
@@ -854,8 +998,27 @@ interface XpEventRow extends XpEventInput {
 export class InMemoryGamificationRepository implements GamificationRepository {
   readonly events: XpEventRow[] = []
   readonly profiles = new Map<string, GamificationProfileRecord>()
+  /** Ledger de moeda (faucet + sink) — espelha `coin_events` (idempotência/saldo). */
+  readonly coinEvents: CoinEventRow[] = []
+  /** Acumulado do teto diário + lifetime por perfil (chave `userId:audience`). */
+  readonly wallets = new Map<
+    string,
+    { earnedToday: number; earnedDate: string | null; lifetime: number }
+  >()
   /** Mirror da coluna `account_id` por perfil (chave `userId:audience` → conta). */
   readonly accountIds = new Map<string, string>()
+  /** Mês do último freeze grátis concedido (`freeze_granted_month`), por perfil. */
+  readonly freezeMonths = new Map<string, string>()
+  /** Resgates de missão (`<slug>:<periodKey>` por perfil) — idempotência do prêmio. */
+  readonly missionClaims = new Map<string, Set<string>>()
+  /** Memberships de liga (tier por semana) — espelha `league_membership`. */
+  readonly leagueMemberships: {
+    userId: string
+    accountId: string
+    audience: CourseAudience
+    weekKey: string
+    tier: string
+  }[] = []
   readonly badges: {
     userId: string
     audience: CourseAudience
@@ -877,6 +1040,24 @@ export class InMemoryGamificationRepository implements GamificationRepository {
 
   private profileKey(userId: string, audience: CourseAudience): string {
     return `${userId}:${audience}`
+  }
+
+  private accountHasActiveAudienceAccess(
+    accountId: string,
+    audience: CourseAudience,
+    now: Date,
+  ): boolean {
+    const masterType = audience === 'adult' ? 'all_courses' : 'all_kids_courses'
+    for (const e of this.sources?.entitlements.byId.values() ?? []) {
+      if (e.userId !== accountId || !isActive(e, now)) continue
+      const course = this.sources?.courses.courses.find((c) => c.slug === e.courseRef)
+      if (
+        (e.accessType === 'course' && course?.audience === audience) ||
+        e.accessType === masterType
+      )
+        return true
+    }
+    return false
   }
 
   async award(input: AwardInput): Promise<AwardResult> {
@@ -917,6 +1098,11 @@ export class InMemoryGamificationRepository implements GamificationRepository {
         badgeCandidates.add(slug)
       }
     }
+    if (newEvents.some((e) => e.sourceType === 'studio_passed')) {
+      for (const slug of studioMasteryBadgeSlugs(countByType('studio_passed'))) {
+        badgeCandidates.add(slug)
+      }
+    }
 
     const key = this.profileKey(input.userId, input.audience)
     const profile = this.profiles.get(key)
@@ -926,30 +1112,113 @@ export class InMemoryGamificationRepository implements GamificationRepository {
       current: profile?.streakCurrent ?? 0,
       best: profile?.streakBest ?? 0,
       extended: false,
+      freezesConsumed: 0,
     }
+    let coinsAwarded = 0
+    let coinBalance = profile?.coinBalance ?? 0
+    let coinsCapped = false
 
     // Streak só com XP REAL novo (amount > 0) — MARCO não move (mirror do SQL).
+    // A carteira Zappy também só ganha aqui (faucets têm amount > 0).
     if (newEvents.some((e) => e.amount > 0)) {
+      // Freeze grátis do mês (lazy/idempotente; só entra se houver espaço no teto, e o
+      // mês só é MARCADO quando entra) — mirror do Drizzle.
+      const monthKey = input.today.slice(0, 7)
+      const currentFreezes = profile?.streakFreezes ?? 0
+      const grantsFreeFreeze =
+        this.freezeMonths.get(key) !== monthKey && currentFreezes < MAX_STREAK_FREEZES
+      const freezesBefore = currentFreezes + (grantsFreeFreeze ? 1 : 0)
       streak = advanceStreak(
         {
           streakCurrent: profile?.streakCurrent ?? 0,
           streakBest: profile?.streakBest ?? 0,
           lastActivityDate: profile?.lastActivityDate ?? null,
+          freezes: freezesBefore,
+          vacationFrom: profile?.vacationFrom ?? null,
+          vacationTo: profile?.vacationTo ?? null,
         },
         input.today,
       )
+      const freezesAfter = freezesBefore - streak.freezesConsumed
+      if (grantsFreeFreeze) this.freezeMonths.set(key, monthKey)
       totalXp += xpAwarded
+
+      // Carteira Zappy (mirror do Drizzle): rotina (conta no teto) + marco de streak (exempto).
+      const routine = newEvents.flatMap((e) => {
+        const coinType = COIN_TYPE_FOR_XP[e.sourceType]
+        return coinType && (e.coins ?? 0) > 0
+          ? [{ sourceType: coinType, sourceId: e.sourceId, amount: e.coins as number }]
+          : []
+      })
+      const milestones = streak.extended
+        ? streakMilestoneCoins(streak.current).map((m) => ({
+            sourceType: 'streak_milestone',
+            sourceId: m.sourceId,
+            amount: m.amount,
+          }))
+        : []
+      const wallet = this.wallets.get(key) ?? { earnedToday: 0, earnedDate: null, lifetime: 0 }
+      const earnedTodayBase = wallet.earnedDate === input.today ? wallet.earnedToday : 0
+      const cap = applyDailyCap(
+        routine.map((c) => c.amount),
+        earnedTodayBase,
+        DAILY_COIN_CAP,
+      )
+      coinsCapped = cap.capped
+      const grants: { sourceType: string; sourceId: string; amount: number }[] = []
+      routine.forEach((c, i) => {
+        const give = cap.granted[i] ?? 0
+        if (give > 0) grants.push({ ...c, amount: give })
+      })
+      grants.push(...milestones)
+      let running = profile?.coinBalance ?? 0
+      for (const g of grants) {
+        const dup = this.coinEvents.some(
+          (ce) =>
+            ce.userId === input.userId &&
+            ce.audience === input.audience &&
+            ce.sourceType === g.sourceType &&
+            ce.sourceId === g.sourceId,
+        )
+        if (dup) continue
+        running += g.amount
+        coinsAwarded += g.amount
+        this.coinEvents.push({
+          userId: input.userId,
+          audience: input.audience,
+          sourceType: g.sourceType,
+          sourceId: g.sourceId,
+          amount: g.amount,
+          balanceAfter: running,
+          createdAt: input.now,
+        })
+      }
+      coinBalance = (profile?.coinBalance ?? 0) + coinsAwarded
+      const newLifetime = wallet.lifetime + coinsAwarded
+      this.wallets.set(key, {
+        earnedToday: earnedTodayBase + cap.totalGranted,
+        earnedDate: input.today,
+        lifetime: newLifetime,
+      })
+
       this.profiles.set(key, {
         userId: input.userId,
+        accountId: input.accountId,
         xp: totalXp,
         streakCurrent: streak.current,
         streakBest: streak.best,
         lastActivityDate: input.today,
+        coinBalance,
+        streakFreezes: freezesAfter,
+        // Férias é preservada (set/limpa só via setVacation) — award nunca a altera.
+        vacationFrom: profile?.vacationFrom ?? null,
+        vacationTo: profile?.vacationTo ?? null,
       })
       this.accountIds.set(key, input.accountId)
       if (input.privileged) this.privilegedUsers.add(input.userId)
       else this.privilegedUsers.delete(input.userId)
       for (const slug of streakBadgeSlugs(streak.current)) badgeCandidates.add(slug)
+      for (const slug of coinsSaverBadgeSlugs(newLifetime)) badgeCandidates.add(slug)
     }
 
     const badgesUnlocked: { slug: string; unlockedAt: Date }[] = []
@@ -967,14 +1236,74 @@ export class InMemoryGamificationRepository implements GamificationRepository {
       badgesUnlocked.push({ slug, unlockedAt: input.now })
     }
 
-    return { xpAwarded, totalXp, streak, newEvents, badgesUnlocked }
+    return {
+      xpAwarded,
+      totalXp,
+      streak,
+      newEvents,
+      badgesUnlocked,
+      coinsAwarded,
+      coinBalance,
+      coinsCapped,
+    }
+  }
+
+  async spendCoins(input: SpendCoinsInput): Promise<SpendCoinsResult> {
+    const key = this.profileKey(input.userId, input.audience)
+    const existing = this.coinEvents.some(
+      (ce) =>
+        ce.userId === input.userId &&
+        ce.audience === input.audience &&
+        ce.sourceType === input.reason &&
+        ce.sourceId === input.idempotencyKey,
+    )
+    const profile = this.profiles.get(key)
+    const balance = profile?.coinBalance ?? 0
+    if (existing) return { ok: false, code: 'ALREADY_SPENT', balance }
+    if (balance < input.amount) return { ok: false, code: 'INSUFFICIENT_BALANCE', balance }
+    const balanceAfter = balance - input.amount
+    this.coinEvents.push({
+      userId: input.userId,
+      audience: input.audience,
+      sourceType: input.reason,
+      sourceId: input.idempotencyKey,
+      amount: -input.amount,
+      balanceAfter,
+      createdAt: input.now,
+    })
+    // profile existe (balance ≥ amount > 0).
+    this.profiles.set(key, { ...(profile as GamificationProfileRecord), coinBalance: balanceAfter })
+    return { ok: true, balanceAfter }
+  }
+
+  async getBalance(userId: string, audience: CourseAudience): Promise<number> {
+    return this.profiles.get(this.profileKey(userId, audience))?.coinBalance ?? 0
   }
 
   async getProfile(
     userId: string,
     audience: CourseAudience,
   ): Promise<GamificationProfileRecord | null> {
-    return this.profiles.get(this.profileKey(userId, audience)) ?? null
+    const key = this.profileKey(userId, audience)
+    const rec = this.profiles.get(key)
+    if (!rec) return null
+    // `freezeGrantedMonth` mora num mapa à parte no fake — mirror do que o Drizzle lê da coluna.
+    return { ...rec, freezeGrantedMonth: this.freezeMonths.get(key) ?? null }
+  }
+
+  async listByAccount(
+    accountId: string,
+    userIds: string[],
+    audience: CourseAudience,
+  ): Promise<GamificationProfileRecord[]> {
+    const out: GamificationProfileRecord[] = []
+    for (const userId of userIds) {
+      const key = this.profileKey(userId, audience)
+      const rec = this.profiles.get(key)
+      // Mirror do filtro SQL `account_id = ?` — perfil de outra conta não volta.
+      if (rec && this.accountIds.get(key) === accountId) out.push(rec)
+    }
+    return out
   }
 
   async listBadges(
@@ -996,11 +1325,13 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     userId: string,
     accountId: string,
     audience: CourseAudience,
+    now: Date,
   ): Promise<GamificationRanking | null> {
     const accountsWithEntitlement = new Set<string>()
     for (const e of this.sources?.entitlements.byId.values() ?? []) {
-      const course = this.sources?.courses.courses.find((c) => c.slug === e.courseRef)
-      if (course?.audience === audience) accountsWithEntitlement.add(e.userId)
+      if (this.accountHasActiveAudienceAccess(e.userId, audience, now)) {
+        accountsWithEntitlement.add(e.userId)
+      }
     }
     if (!accountsWithEntitlement.has(accountId)) return null
 
@@ -1019,6 +1350,367 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     // Requester sem perfil (XP 0) ainda conta como aluno (+1).
     const totalStudents = cohortXp.length + (requesterCounted ? 0 : 1)
     return { position: ahead + 1, totalStudents }
+  }
+
+  /** Mirror do `rankProfiles` do Drizzle: coorte resolvida 1×, ranqueia cada perfil em memória. */
+  async rankProfiles(
+    accountId: string,
+    profileIds: string[],
+    audience: CourseAudience,
+    now: Date,
+  ): Promise<Map<string, number>> {
+    if (profileIds.length === 0) return new Map()
+    const accountsWithEntitlement = new Set<string>()
+    for (const e of this.sources?.entitlements.byId.values() ?? []) {
+      if (this.accountHasActiveAudienceAccess(e.userId, audience, now)) {
+        accountsWithEntitlement.add(e.userId)
+      }
+    }
+    if (!accountsWithEntitlement.has(accountId)) return new Map()
+
+    const cohortXp: number[] = []
+    const xpByUser = new Map<string, number>()
+    for (const [key, rec] of this.profiles) {
+      if (key !== this.profileKey(rec.userId, audience)) continue
+      if (this.privilegedUsers.has(rec.userId)) continue
+      const acc = this.accountIds.get(key)
+      if (!acc || !accountsWithEntitlement.has(acc)) continue
+      cohortXp.push(rec.xp)
+      xpByUser.set(rec.userId, rec.xp)
+    }
+    const out = new Map<string, number>()
+    for (const profileId of profileIds) {
+      const myXp = xpByUser.get(profileId) ?? 0
+      out.set(profileId, cohortXp.filter((xp) => xp > myXp).length + 1)
+    }
+    return out
+  }
+
+  async hasActiveAudienceAccess(
+    accountId: string,
+    audience: CourseAudience,
+    now: Date,
+  ): Promise<boolean> {
+    return this.accountHasActiveAudienceAccess(accountId, audience, now)
+  }
+
+  async countEventsInPeriod(
+    userId: string,
+    audience: CourseAudience,
+    sourceTypes: MissionGoalType[],
+    from: Date,
+    to: Date,
+  ): Promise<number> {
+    const set = new Set<string>(sourceTypes)
+    return this.events.filter(
+      (e) =>
+        e.userId === userId &&
+        e.audience === audience &&
+        set.has(e.sourceType) &&
+        e.createdAt >= from &&
+        e.createdAt < to,
+    ).length
+  }
+
+  async listClaimedMissions(
+    userId: string,
+    audience: CourseAudience,
+    periodKeys: string[],
+  ): Promise<Set<string>> {
+    const all = this.missionClaims.get(this.profileKey(userId, audience)) ?? new Set()
+    const periods = new Set(periodKeys)
+    const out = new Set<string>()
+    for (const entry of all) {
+      const period = entry.slice(entry.indexOf(':') + 1)
+      if (periods.has(period)) out.add(entry)
+    }
+    return out
+  }
+
+  async claimMission(input: ClaimMissionInput): Promise<ClaimMissionResult> {
+    const key = this.profileKey(input.userId, input.audience)
+    const claims = this.missionClaims.get(key) ?? new Set<string>()
+    const entry = `${input.missionSlug}:${input.periodKey}`
+    const profile = this.profiles.get(key)
+    const balance = profile?.coinBalance ?? 0
+    if (claims.has(entry)) {
+      return { claimed: false, xpAwarded: 0, coinsAwarded: 0, coinBalance: balance }
+    }
+    claims.add(entry)
+    this.missionClaims.set(key, claims)
+
+    const wallet = this.wallets.get(key) ?? { earnedToday: 0, earnedDate: null, lifetime: 0 }
+    const earnedTodayBase = wallet.earnedDate === input.today ? wallet.earnedToday : 0
+    const cap = applyDailyCap([input.rewardCoins], earnedTodayBase, DAILY_COIN_CAP)
+    const coinsAwarded = cap.totalGranted
+    const coinBalance = balance + coinsAwarded
+    const newLifetime = wallet.lifetime + coinsAwarded
+    if (coinsAwarded > 0) {
+      this.coinEvents.push({
+        userId: input.userId,
+        audience: input.audience,
+        sourceType: 'mission_reward',
+        sourceId: entry,
+        amount: coinsAwarded,
+        balanceAfter: coinBalance,
+        createdAt: input.now,
+      })
+    }
+    this.wallets.set(key, {
+      earnedToday: earnedTodayBase + coinsAwarded,
+      earnedDate: input.today,
+      lifetime: newLifetime,
+    })
+    if (profile) {
+      this.profiles.set(key, {
+        ...profile,
+        xp: profile.xp + input.rewardXp,
+        coinBalance,
+      })
+    }
+    for (const slug of coinsSaverBadgeSlugs(newLifetime)) {
+      const dup = this.badges.some(
+        (b) => b.userId === input.userId && b.audience === input.audience && b.badgeSlug === slug,
+      )
+      if (!dup) {
+        this.badges.push({
+          userId: input.userId,
+          audience: input.audience,
+          badgeSlug: slug,
+          unlockedAt: input.now,
+        })
+      }
+    }
+    return { claimed: true, xpAwarded: input.rewardXp, coinsAwarded, coinBalance }
+  }
+
+  async buyStreakFreeze(input: BuyStreakFreezeInput): Promise<BuyStreakFreezeResult> {
+    const key = this.profileKey(input.userId, input.audience)
+    const profile = this.profiles.get(key)
+    const balance = profile?.coinBalance ?? 0
+    const freezes = profile?.streakFreezes ?? 0
+    if (freezes >= MAX_STREAK_FREEZES) return { ok: false, code: 'MAX_FREEZES', freezes, balance }
+    const existing = this.coinEvents.some(
+      (ce) =>
+        ce.userId === input.userId &&
+        ce.audience === input.audience &&
+        ce.sourceType === 'spend_streak_freeze' &&
+        ce.sourceId === input.idempotencyKey,
+    )
+    if (existing) return { ok: true, freezes, balance }
+    if (balance < input.price) return { ok: false, code: 'INSUFFICIENT_BALANCE', freezes, balance }
+    const balanceAfter = balance - input.price
+    this.coinEvents.push({
+      userId: input.userId,
+      audience: input.audience,
+      sourceType: 'spend_streak_freeze',
+      sourceId: input.idempotencyKey,
+      amount: -input.price,
+      balanceAfter,
+      createdAt: input.now,
+    })
+    if (profile) {
+      this.profiles.set(key, {
+        ...profile,
+        coinBalance: balanceAfter,
+        streakFreezes: freezes + 1,
+      })
+    }
+    return { ok: true, freezes: freezes + 1, balance: balanceAfter }
+  }
+
+  async setVacation(
+    userId: string,
+    accountId: string,
+    audience: CourseAudience,
+    from: string | null,
+    to: string | null,
+    _now: Date,
+  ): Promise<void> {
+    const key = this.profileKey(userId, audience)
+    const profile = this.profiles.get(key)
+    if (profile) {
+      this.profiles.set(key, { ...profile, vacationFrom: from, vacationTo: to })
+    } else {
+      this.profiles.set(key, {
+        userId,
+        accountId,
+        xp: 0,
+        streakCurrent: 0,
+        streakBest: 0,
+        lastActivityDate: null,
+        coinBalance: 0,
+        streakFreezes: 0,
+        vacationFrom: from,
+        vacationTo: to,
+      })
+      this.accountIds.set(key, accountId)
+    }
+  }
+
+  async getLeagueMembership(
+    userId: string,
+    audience: CourseAudience,
+    weekKey: string,
+  ): Promise<LeagueMembershipRecord | null> {
+    const m = this.leagueMemberships.find(
+      (x) => x.userId === userId && x.audience === audience && x.weekKey === weekKey,
+    )
+    return m ? { weekKey: m.weekKey, tier: m.tier } : null
+  }
+
+  async getMostRecentLeagueMembership(
+    userId: string,
+    audience: CourseAudience,
+    beforeWeekKey: string,
+  ): Promise<LeagueMembershipRecord | null> {
+    const prior = this.leagueMemberships
+      .filter((x) => x.userId === userId && x.audience === audience && x.weekKey < beforeWeekKey)
+      .sort((a, b) => (a.weekKey < b.weekKey ? 1 : -1)) // mais recente primeiro
+    const m = prior[0]
+    return m ? { weekKey: m.weekKey, tier: m.tier } : null
+  }
+
+  async createLeagueMembership(
+    userId: string,
+    accountId: string,
+    audience: CourseAudience,
+    weekKey: string,
+    tier: string,
+    _now: Date,
+  ): Promise<void> {
+    const dup = this.leagueMemberships.some(
+      (x) => x.userId === userId && x.audience === audience && x.weekKey === weekKey,
+    )
+    if (dup) return
+    this.leagueMemberships.push({ userId, accountId, audience, weekKey, tier })
+  }
+
+  async listLeagueCohort(
+    audience: CourseAudience,
+    weekKey: string,
+    tier: string,
+    now: Date,
+  ): Promise<string[]> {
+    return this.leagueMemberships
+      .filter(
+        (x) =>
+          x.audience === audience &&
+          x.weekKey === weekKey &&
+          x.tier === tier &&
+          this.accountHasActiveAudienceAccess(x.accountId, audience, now) &&
+          !this.privilegedUsers.has(x.userId),
+      )
+      .map((x) => x.userId)
+  }
+
+  async sumWeeklyXp(
+    audience: CourseAudience,
+    userIds: string[],
+    from: Date,
+    to: Date,
+  ): Promise<Map<string, number>> {
+    const set = new Set(userIds)
+    const out = new Map<string, number>()
+    for (const e of this.events) {
+      if (e.audience !== audience || !set.has(e.userId)) continue
+      if (e.createdAt < from || e.createdAt >= to) continue
+      out.set(e.userId, (out.get(e.userId) ?? 0) + e.amount)
+    }
+    return out
+  }
+}
+
+export class InMemoryAvatarRepository implements AvatarRepository {
+  readonly configs = new Map<string, AvatarConfig>()
+  /** Mirror da coluna `account_id` (gravada SÓ no insert da config). */
+  readonly accountIds = new Map<string, string>()
+  readonly inventory: { userId: string; audience: CourseAudience; partId: string }[] = []
+
+  private key(userId: string, audience: CourseAudience): string {
+    return `${userId}:${audience}`
+  }
+
+  async getConfig(userId: string, audience: CourseAudience): Promise<AvatarConfig | null> {
+    return this.configs.get(this.key(userId, audience)) ?? null
+  }
+
+  async upsertConfig(
+    userId: string,
+    accountId: string,
+    audience: CourseAudience,
+    config: AvatarConfig,
+    _now: Date,
+  ): Promise<void> {
+    const k = this.key(userId, audience)
+    if (!this.configs.has(k)) this.accountIds.set(k, accountId) // imutável: só no insert
+    this.configs.set(k, config)
+  }
+
+  async listInventory(userId: string, audience: CourseAudience): Promise<string[]> {
+    return this.inventory
+      .filter((i) => i.userId === userId && i.audience === audience)
+      .map((i) => i.partId)
+  }
+
+  async addToInventory(
+    userId: string,
+    audience: CourseAudience,
+    partId: string,
+    _now: Date,
+  ): Promise<{ added: boolean }> {
+    const dup = this.inventory.some(
+      (i) => i.userId === userId && i.audience === audience && i.partId === partId,
+    )
+    if (dup) return { added: false }
+    this.inventory.push({ userId, audience, partId })
+    return { added: true }
+  }
+}
+
+export class InMemoryRoomRepository implements RoomRepository {
+  readonly states = new Map<string, RoomState>()
+  readonly accountIds = new Map<string, string>()
+  readonly inventory: { userId: string; audience: CourseAudience; itemId: string }[] = []
+
+  private key(userId: string, audience: CourseAudience): string {
+    return `${userId}:${audience}`
+  }
+
+  async getState(userId: string, audience: CourseAudience): Promise<RoomState | null> {
+    return this.states.get(this.key(userId, audience)) ?? null
+  }
+
+  async upsertState(
+    userId: string,
+    accountId: string,
+    audience: CourseAudience,
+    state: RoomState,
+    _now: Date,
+  ): Promise<void> {
+    const k = this.key(userId, audience)
+    if (!this.states.has(k)) this.accountIds.set(k, accountId) // imutável: só no insert
+    this.states.set(k, state)
+  }
+
+  async listInventory(userId: string, audience: CourseAudience): Promise<string[]> {
+    return this.inventory
+      .filter((i) => i.userId === userId && i.audience === audience)
+      .map((i) => i.itemId)
+  }
+
+  async addToInventory(
+    userId: string,
+    audience: CourseAudience,
+    itemId: string,
+    _now: Date,
+  ): Promise<{ added: boolean }> {
+    const dup = this.inventory.some(
+      (i) => i.userId === userId && i.audience === audience && i.itemId === itemId,
+    )
+    if (dup) return { added: false }
+    this.inventory.push({ userId, audience, itemId })
+    return { added: true }
   }
 }
 

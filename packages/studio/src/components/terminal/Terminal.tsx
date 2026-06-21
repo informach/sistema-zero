@@ -15,6 +15,7 @@ import {
 } from './terminalProjectFiles'
 import {
   CLASSIC_TEMPLATE_ID,
+  canBootWebContainer,
   claimFsOwnership,
   getWebContainer,
   releaseFsOwnership,
@@ -24,7 +25,11 @@ import {
   waitForProFsMounted,
 } from './webContainerClient'
 
-type Status = 'idle' | 'loading' | 'ready' | 'error' | 'busy'
+// 'unavailable' = página não cross-origin isolada (sem COOP/COEP): o terminal
+// real NUNCA vai bootar aqui, então mostramos um estado amigável SEM o botão
+// "Tentar novamente" (recarregar a página é o único remédio, não rechamar o
+// load). 'error' continua oferecendo retry — cobre falhas transitórias de boot.
+type Status = 'idle' | 'loading' | 'ready' | 'error' | 'busy' | 'unavailable'
 const TERMINAL_SYNC_DELAY_MS = 150
 
 // O WebContainer é um SINGLETON por aba e a montagem do modo clássico escreve na
@@ -122,6 +127,15 @@ export function Terminal(): JSX.Element {
 
   const handleLoad = useCallback(async () => {
     cleanupRuntime()
+    // PRECHECK de isolamento: se a página não é cross-origin isolada, o
+    // WebContainer nunca boota aqui. Curto-circuita ANTES do import dinâmico
+    // pesado de @webcontainer/api (evita baixar megabytes à toa) e mostra um
+    // estado amigável SEM o botão de retry (recarregar é o único remédio).
+    if (!canBootWebContainer()) {
+      setStatus('unavailable')
+      setError(null)
+      return
+    }
     setStatus('loading')
     setError(null)
 
@@ -353,15 +367,25 @@ export function Terminal(): JSX.Element {
 
       {status === 'ready' && (
         // O shell interativo (jsh) NUNCA é morto por timeout; só por aqui (ou
-        // pela troca de projeto). Reiniciar remonta o FS e abre um novo shell.
-        <button
-          type="button"
-          onClick={handleLoad}
-          title="Reiniciar terminal"
-          className="absolute right-2 top-2 z-10 rounded border border-sz-border bg-sz-panel/80 px-2 py-1 text-xs text-sz-fg-soft hover:text-sz-accent"
-        >
-          Reiniciar
-        </button>
+        // pela troca de projeto). Um jsh interativo não dá para instrumentar com
+        // um kill-timer (não é um loop), então a recuperação de "travei" precisa
+        // ser ÓBVIA para uma criança: o botão diz explicitamente que serve para
+        // destravar, e a dica lembra que Ctrl-C interrompe o programa antes de
+        // recorrer ao reinício (que remonta o FS e abre um novo shell).
+        <div className="absolute right-2 top-2 z-10 flex flex-col items-end gap-1">
+          <button
+            type="button"
+            onClick={handleLoad}
+            title="Reiniciar o terminal se ele travar"
+            className="rounded border border-sz-border bg-sz-panel/80 px-2 py-1 text-xs text-sz-fg-soft hover:text-sz-accent"
+          >
+            Travou? Reiniciar terminal
+          </button>
+          <p className="rounded bg-sz-panel/80 px-2 py-0.5 text-[10px] text-sz-fg-mute">
+            Dica: aperte <kbd className="font-mono text-sz-fg-soft">Ctrl</kbd>+
+            <kbd className="font-mono text-sz-fg-soft">C</kbd> para interromper o programa
+          </p>
+        </div>
       )}
 
       {status === 'idle' && (
@@ -398,6 +422,21 @@ export function Terminal(): JSX.Element {
           <Button variant="ghost" size="sm" onClick={handleLoad}>
             Tentar novamente
           </Button>
+        </TerminalOverlay>
+      )}
+
+      {status === 'unavailable' && (
+        // Página não cross-origin isolada (sem COOP/COEP): o terminal real não
+        // boota aqui. SEM "Tentar novamente" — recarregar a página é o único
+        // remédio, então não oferecemos um retry inútil que sempre cairia aqui.
+        <TerminalOverlay>
+          <p className="max-w-md text-sz-fg-soft">
+            O terminal real não está disponível aqui ainda.
+          </p>
+          <p className="max-w-md text-sz-fg-mute">
+            Ele precisa de um navegador atualizado e de uma página preparada para isso. Tente abrir
+            o Studio de novo mais tarde ou peça ajuda a uma pessoa adulta.
+          </p>
         </TerminalOverlay>
       )}
 

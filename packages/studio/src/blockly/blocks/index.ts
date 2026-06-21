@@ -1,15 +1,16 @@
 import * as Blockly from 'blockly/core'
 import 'blockly/blocks'
 import { ADVANCED_BLOCKS } from './advanced'
-import { CANVAS_BLOCKS } from './canvas'
-import { CSS_BLOCKS } from './css'
+import { CANVAS_BLOCKS, CANVAS_GROUPS } from './canvas'
+import { CSS_BLOCKS, CSS_GROUPS } from './css'
 import { DOM_BLOCKS } from './dom'
 import { FUNCTION_BLOCKS } from './functions'
-import { HTML_BLOCKS } from './html'
-import { JS_BLOCKS } from './js'
+import { HTML_BLOCKS, HTML_GROUPS } from './html'
+import { JS_BLOCKS, JS_GROUPS } from './js'
 import { MATH_BLOCKS } from './math'
 import { OBJECT_BLOCKS } from './objects'
 import { OOP_BLOCKS } from './oop'
+import { SVG_BLOCKS, SVG_GROUPS } from './svg'
 import type { BlockDefinition } from './types'
 import { VALUE_BLOCKS } from './values'
 
@@ -17,19 +18,26 @@ export type { BlockDefinition }
 export {
   ADVANCED_BLOCKS,
   CANVAS_BLOCKS,
+  CANVAS_GROUPS,
   CSS_BLOCKS,
+  CSS_GROUPS,
   DOM_BLOCKS,
   FUNCTION_BLOCKS,
   HTML_BLOCKS,
+  HTML_GROUPS,
   JS_BLOCKS,
+  JS_GROUPS,
   MATH_BLOCKS,
   OBJECT_BLOCKS,
   OOP_BLOCKS,
+  SVG_BLOCKS,
+  SVG_GROUPS,
   VALUE_BLOCKS,
 }
 
 export const CORE_BLOCKS: BlockDefinition[] = [
   ...HTML_BLOCKS,
+  ...SVG_BLOCKS,
   ...CSS_BLOCKS,
   ...DOM_BLOCKS,
   ...JS_BLOCKS,

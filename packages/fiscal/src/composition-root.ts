@@ -26,6 +26,7 @@ import {
   withAdvisoryLock,
 } from './infrastructure/persistence/drizzle/processed-webhook.store'
 import { CancellationWorker } from './infrastructure/workers/cancellation-worker'
+import { DeliveryWorker } from './infrastructure/workers/delivery-worker'
 import { EmissionWorker } from './infrastructure/workers/emission-worker'
 import { createServer } from './interfaces/http/server'
 
@@ -133,14 +134,14 @@ export function createApplication(env: Env): Application {
   )
 
   // E-mail da nota via gateway → messaging (best-effort; no-op sem credenciais).
-  const messaging =
-    env.GATEWAY_URL && env.FISCAL_HMAC_SECRET
-      ? createGatewayMessagingClient({
-          gatewayUrl: env.GATEWAY_URL,
-          hmacSecret: env.FISCAL_HMAC_SECRET,
-          timeoutMs: env.S2S_TIMEOUT_MS,
-        })
-      : createNullMessagingClient(logger)
+  const messagingEnabled = Boolean(env.GATEWAY_URL && env.FISCAL_HMAC_SECRET)
+  const messaging = messagingEnabled
+    ? createGatewayMessagingClient({
+        gatewayUrl: env.GATEWAY_URL!,
+        hmacSecret: env.FISCAL_HMAC_SECRET!,
+        timeoutMs: env.S2S_TIMEOUT_MS,
+      })
+    : createNullMessagingClient(logger)
 
   const emitInvoice = new EmitInvoiceService(
     invoices,
@@ -168,6 +169,13 @@ export function createApplication(env: Env): Application {
     intervalMs: env.NFSE_WORKER_INTERVAL_MS,
     batchSize: env.NFSE_WORKER_BATCH_SIZE,
     staleMs: env.NFSE_CLAIM_STALE_MS,
+  })
+
+  const deliveryWorker = new DeliveryWorker(invoices, emitInvoice, logger, {
+    intervalMs: env.NFSE_WORKER_INTERVAL_MS,
+    batchSize: env.NFSE_WORKER_BATCH_SIZE,
+    staleMs: env.NFSE_CLAIM_STALE_MS,
+    retryDelayMs: env.NFSE_DELIVERY_RETRY_DELAY_MS,
   })
 
   const app = createServer({
@@ -199,6 +207,7 @@ export function createApplication(env: Env): Application {
       server = app.listen({ hostname: env.HOST, port: env.PORT })
       emissionWorker.start()
       cancellationWorker.start()
+      if (messagingEnabled) deliveryWorker.start()
       // Saúde do certificado (por-réplica, FORA do advisory lock — cada réplica
       // tem o MESMO cert e precisa parar a sua própria emissão se ele expirar).
       const checkCertHealth = () => {
@@ -214,6 +223,7 @@ export function createApplication(env: Env): Application {
           })
           emissionWorker.stop()
           cancellationWorker.stop()
+          deliveryWorker.stop()
         } else if (daysLeft < env.NFSE_CERT_WARN_DAYS) {
           logger.error('fiscal.cert_expiring', {
             daysLeft,
@@ -223,6 +233,7 @@ export function createApplication(env: Env): Application {
       }
 
       // Retenção do dedupe (advisory lock — 1 réplica por ciclo) + saúde do cert.
+      checkCertHealth()
       retentionTimer = setInterval(() => {
         checkCertHealth()
         void withAdvisoryLock(connection.db, FISCAL_RETENTION_LOCK_KEY, async () => {
@@ -239,6 +250,7 @@ export function createApplication(env: Env): Application {
     async stop() {
       emissionWorker.stop()
       cancellationWorker.stop()
+      deliveryWorker.stop()
       if (retentionTimer) clearInterval(retentionTimer)
       await server?.stop()
       await connection.close()

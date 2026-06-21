@@ -1,0 +1,69 @@
+import { randomUUID } from 'node:crypto'
+import { and, eq } from 'drizzle-orm'
+import type { AvatarConfig } from '../../../domain/avatar/avatar-config'
+import type { CourseAudience } from '../../../domain/course/course'
+import type { AvatarRepository } from '../../../domain/ports/avatar-repository.port'
+import type { Database } from './db'
+import { avatarConfigs, avatarInventory } from './schema'
+
+export class DrizzleAvatarRepository implements AvatarRepository {
+  constructor(private readonly db: Database) {}
+
+  async getConfig(userId: string, audience: CourseAudience): Promise<AvatarConfig | null> {
+    const [row] = await this.db
+      .select({ equipped: avatarConfigs.equipped })
+      .from(avatarConfigs)
+      .where(and(eq(avatarConfigs.userId, userId), eq(avatarConfigs.audience, audience)))
+      .limit(1)
+    return row?.equipped ?? null
+  }
+
+  async upsertConfig(
+    userId: string,
+    accountId: string,
+    audience: CourseAudience,
+    config: AvatarConfig,
+    now: Date,
+  ): Promise<void> {
+    await this.db
+      .insert(avatarConfigs)
+      .values({
+        id: randomUUID(),
+        userId,
+        accountId,
+        audience,
+        equipped: config,
+        createdAt: now,
+        updatedAt: now,
+      })
+      .onConflictDoUpdate({
+        target: [avatarConfigs.userId, avatarConfigs.audience],
+        // `accountId` fica de fora do update: IMUTÁVEL por perfil (gravado só no INSERT).
+        set: { equipped: config, updatedAt: now },
+      })
+  }
+
+  async listInventory(userId: string, audience: CourseAudience): Promise<string[]> {
+    const rows = await this.db
+      .select({ partId: avatarInventory.partId })
+      .from(avatarInventory)
+      .where(and(eq(avatarInventory.userId, userId), eq(avatarInventory.audience, audience)))
+    return rows.map((r) => r.partId)
+  }
+
+  async addToInventory(
+    userId: string,
+    audience: CourseAudience,
+    partId: string,
+    now: Date,
+  ): Promise<{ added: boolean }> {
+    const inserted = await this.db
+      .insert(avatarInventory)
+      .values({ id: randomUUID(), userId, audience, partId, acquiredAt: now })
+      .onConflictDoNothing({
+        target: [avatarInventory.userId, avatarInventory.audience, avatarInventory.partId],
+      })
+      .returning({ id: avatarInventory.id })
+    return { added: inserted.length > 0 }
+  }
+}

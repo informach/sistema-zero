@@ -1,0 +1,1 @@
+ALTER TABLE "auth"."profiles" ADD COLUMN "public_profile_enabled" boolean DEFAULT false NOT NULL;

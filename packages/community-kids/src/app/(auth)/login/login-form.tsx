@@ -25,9 +25,14 @@ const ERROR_MESSAGES: Record<string, string> = {
 type Mode = 'password' | 'otp'
 type Errors = { email?: string; password?: string; code?: string }
 
-/** Login do aluno: por SENHA (padrão) ou por CÓDIGO (OTP por e-mail, passwordless). */
+/**
+ * Login do aluno KIDS: por CÓDIGO (OTP por e-mail, passwordless) por PADRÃO — a
+ * criança não precisa decorar senha, recebe o código no e-mail do responsável. O
+ * toggle "Entrar com senha" segue disponível para os pais. (No community adulto o
+ * padrão continua senha — login-form é POR APP.)
+ */
 export function LoginForm() {
-  const [mode, setMode] = useState<Mode>('password')
+  const [mode, setMode] = useState<Mode>('otp')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [code, setCode] = useState('')

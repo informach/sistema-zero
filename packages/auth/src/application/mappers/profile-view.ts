@@ -6,6 +6,9 @@ export interface ProfileView {
   name: string
   avatarUrl: string | null
   whatsapp: string | null
+  birthDate: string | null
+  /** Perfil público entre crianças (opt-in dos pais). A grade/área dos pais exibe o toggle. */
+  publicProfileEnabled: boolean
   sortOrder: number
 }
 
@@ -15,6 +18,8 @@ export function toProfileView(p: ProfileAggregate): ProfileView {
     name: p.name,
     avatarUrl: p.avatarUrl,
     whatsapp: p.whatsapp,
+    birthDate: p.birthDate,
+    publicProfileEnabled: p.publicProfileEnabled,
     sortOrder: p.sortOrder,
   }
 }

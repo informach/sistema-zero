@@ -106,3 +106,11 @@ export class StudioGateNotSubmittedError extends DomainError {
     super(message)
   }
 }
+
+/** Aula tem atividade do Estúdio com nota de corte ainda não atingida — conclusão bloqueada. → 409. */
+export class StudioGateNotPassedError extends DomainError {
+  readonly code = 'STUDIO_GATE_NOT_PASSED'
+  constructor(message = 'Atinja a nota mínima da atividade do Estúdio para concluir a aula') {
+    super(message)
+  }
+}

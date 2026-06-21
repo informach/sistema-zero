@@ -248,6 +248,65 @@ describe('PersistenceService — ctx.reason do onChange', () => {
   })
 })
 
+describe('PersistenceService — hidratação pós-load', () => {
+  afterEach(() => {
+    useProjectStore.setState({ project: null, isDirty: false, saveError: null })
+  })
+
+  it('restaura blocksState pesado sem marcar o projeto como sujo', async () => {
+    const blocksState = {
+      blocks: {
+        languageVersion: 0,
+        blocks: [{ type: 'sz_js_console_log_text', x: 320, y: 180 }],
+      },
+    }
+    const adapter: StudioPersistenceAdapter = {
+      load: async () => null,
+      loadBlocksState: mock(async () => blocksState),
+      save: mock(async () => undefined),
+    }
+    const service = createPersistenceService(useProjectStore, adapter)
+    const project = { ...createEmptyProject('hydrate-blocks', 'Projeto'), blocksState: null }
+
+    useProjectStore.getState().hydrateProject(project)
+    service.hydrateAfterLoad(project)
+    await Bun.sleep(0)
+
+    expect(useProjectStore.getState().project?.blocksState).toEqual(blocksState)
+    expect(useProjectStore.getState().isDirty).toBe(false)
+    expect(adapter.save).not.toHaveBeenCalled()
+  })
+
+  it('não sobrescreve o projeto se ele ficou sujo enquanto blocksState carregava', async () => {
+    const blocksState = {
+      blocks: {
+        languageVersion: 0,
+        blocks: [{ type: 'sz_js_console_log_text', x: 320, y: 180 }],
+      },
+    }
+    let resolveBlocks: ((value: Project['blocksState']) => void) | undefined
+    const adapter: StudioPersistenceAdapter = {
+      load: async () => null,
+      loadBlocksState: () =>
+        new Promise((resolve) => {
+          resolveBlocks = resolve
+        }),
+      save: mock(async () => undefined),
+    }
+    const service = createPersistenceService(useProjectStore, adapter)
+    const project = { ...createEmptyProject('hydrate-dirty', 'Projeto'), blocksState: null }
+
+    useProjectStore.getState().hydrateProject(project)
+    service.hydrateAfterLoad(project)
+    useProjectStore.getState().setFile('script.js', 'console.log("editado");\n')
+    resolveBlocks?.(blocksState)
+    await Bun.sleep(0)
+
+    expect(useProjectStore.getState().project?.blocksState).toBeNull()
+    expect(useProjectStore.getState().isDirty).toBe(true)
+  })
+})
+
 describe('PersistenceService — exclusão cross-instância (sem ressurreição)', () => {
   afterEach(() => {
     setAutosaveDelayForTests(null)

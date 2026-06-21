@@ -44,6 +44,8 @@ export function createJoseTokenIssuer(opts: JoseTokenIssuerOptions): TokenIssuer
       if (opts?.profile) {
         const pfl: ProfileClaim = { accountId: opts.profile.accountId }
         if (opts.profile.name) pfl.name = opts.profile.name
+        // Sempre booleano numa sessão de perfil → o gateway injeta o header definido.
+        pfl.pub = opts.profile.pub === true
         claims.pfl = pfl
       }
       const subject = opts?.profile?.profileId ?? user.id
@@ -90,7 +92,7 @@ function toClaims(payload: JWTPayload): AccessTokenClaims | null {
   // Pina o TIPO do token: só `typ: 'access'` vale como access token. Hoje é o
   // único JWT emitido, mas qualquer tipo futuro (ex.: verificação de e-mail)
   // assinado pela mesma chave NÃO pode ser replayado como access token.
-  if (payload['typ'] !== 'access') return null
+  if (payload.typ !== 'access') return null
   const sub = asString(payload.sub)
   const email = asString(payload.email)
   const firstName = asString(payload.firstName)
@@ -126,5 +128,5 @@ function toProfileClaim(value: unknown): ProfileClaim | undefined {
   const candidate = value as Record<string, unknown>
   const accountId = asString(candidate.accountId)
   if (!accountId) return undefined
-  return { accountId, name: asString(candidate.name) }
+  return { accountId, name: asString(candidate.name), pub: candidate.pub === true }
 }

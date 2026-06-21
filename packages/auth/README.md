@@ -70,8 +70,9 @@ Veja [`.env.example`](./.env.example). Principais: `DATABASE_URL`, `DATABASE_POO
 `JWT_AUDIENCE`, `ACCESS_TOKEN_TTL_SECONDS`, `REFRESH_TOKEN_TTL_DAYS`,
 `PASSWORD_MIN_LENGTH`, `TRUST_PROXY`/`TRUSTED_PROXY_HOPS`, `MAX_REQUEST_BODY_BYTES`.
 Reset de senha/e-mail: `RESET_TOKEN_TTL_MINUTES`, `COMMUNITY_URL` (base dos links),
-`GATEWAY_URL` + `AUTH_HMAC_SECRET` (envio via gateway → messaging; sem eles o envio
-é no-op) e `AUTH_INTERNAL_TOKEN` (rotas internas S2S, injetado pelo gateway).
+`GATEWAY_URL` + `AUTH_HMAC_SECRET` + `GATEWAY_REQUEST_TIMEOUT_MS` (envio via
+gateway → messaging; sem URL/segredo o envio é no-op) e `AUTH_INTERNAL_TOKEN`
+(rotas internas S2S, injetado pelo gateway).
 
 ## Comandos
 

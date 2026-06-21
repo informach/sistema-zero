@@ -60,6 +60,13 @@ export function buildStorageBridgeRuntime(options: StorageBridgeOptions = {}): s
   var PROJECT_ID = ${JSON.stringify(options.projectId ?? null)};
   var SEED;
   try { SEED = JSON.parse(${seedLiteral}); } catch (e) { SEED = {}; }
+  // Limites do store — ESPELHAM src/preview/types.ts (PREVIEW_STORAGE_MAX_KEYS,
+  // PREVIEW_STORAGE_MAX_TOTAL_CHARS), inlinados como literais porque este runtime é
+  // string pura (sem imports). Mantê-los em SINCRONIA com types.ts: o parent clampa
+  // o mirror com os mesmos números; aqui dentro lançamos QuotaExceededError ao
+  // estourar (semântica do localStorage real — também didático).
+  var MAX_KEYS = 500;
+  var MAX_TOTAL_CHARS = 1000000;
   function makeStore(initial, persistKind) {
     var data = Object.create(null);
     if (initial) {
@@ -80,12 +87,41 @@ export function buildStorageBridgeRuntime(options: StorageBridgeOptions = {}): s
         parent.postMessage({ source: SRC, kind: 'storageWrite', store: persistKind, projectId: PROJECT_ID, data: out, timestamp: Date.now() }, TARGET);
       } catch (e) {}
     }
+    function totalChars() {
+      var n = 0;
+      for (var tk in data) {
+        if (Object.prototype.hasOwnProperty.call(data, tk)) n += tk.length + data[tk].length;
+      }
+      return n;
+    }
+    function quotaError() {
+      // Espelha o localStorage real: estourar a cota LANÇA QuotaExceededError. Onde
+      // houver DOMException usamos ela (instanceof/name corretos); senão, um Error
+      // com name marcado — o aluno aprende a tratar a cota como no navegador.
+      try { return new DOMException('Cota do armazenamento excedida.', 'QuotaExceededError'); }
+      catch (e) {
+        var err = new Error('Cota do armazenamento excedida.');
+        err.name = 'QuotaExceededError';
+        return err;
+      }
+    }
     var store = {
       getItem: function (key) {
         var k = String(key);
         return Object.prototype.hasOwnProperty.call(data, k) ? data[k] : null;
       },
-      setItem: function (key, value) { data[String(key)] = String(value); notify(); },
+      setItem: function (key, value) {
+        var k = String(key);
+        var v = String(value);
+        var existed = Object.prototype.hasOwnProperty.call(data, k);
+        // Cap de quantidade: só barra CHAVE NOVA (substituir uma existente não cresce
+        // a contagem). Cap de total: desconta o valor antigo da chave que será trocada.
+        if (!existed && Object.keys(data).length >= MAX_KEYS) throw quotaError();
+        var prevLen = existed ? data[k].length : 0;
+        if (totalChars() - prevLen + k.length + v.length > MAX_TOTAL_CHARS) throw quotaError();
+        data[k] = v;
+        notify();
+      },
       removeItem: function (key) { delete data[String(key)]; notify(); },
       clear: function () { data = Object.create(null); notify(); },
       key: function (i) {

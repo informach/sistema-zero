@@ -1,5 +1,6 @@
 import type { FulfillmentSpec } from '../product/fulfillment'
 import type { ProductKind } from '../product/product.kind'
+import type { ProductStatus } from '../product/product.status'
 import { ValidationError } from '../shared/errors'
 
 /**
@@ -12,6 +13,7 @@ export interface EntitlementNode {
   sku: string
   name: string
   kind: ProductKind
+  status: ProductStatus
   fulfillment: FulfillmentSpec | null
   components: { productId: string; sortOrder: number; isPrimary: boolean }[]
 }
@@ -22,6 +24,7 @@ export interface ResolvedEntitlement {
   sku: string
   name: string
   kind: ProductKind
+  status: ProductStatus
   fulfillment: FulfillmentSpec | null
   /** O "principal" (destacado na página de vendas). Exatamente um, quando há. */
   isPrimary: boolean
@@ -85,6 +88,7 @@ function collect(
           sku: node.sku,
           name: node.name,
           kind: node.kind,
+          status: node.status,
           fulfillment: node.fulfillment,
           isPrimary: false,
         })

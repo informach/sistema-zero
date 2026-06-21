@@ -78,6 +78,7 @@ export class AuthTokenService {
             profileId: ctx.activeProfileId,
             accountId: ctx.profileClaim.accountId,
             name: ctx.profileClaim.name,
+            pub: ctx.profileClaim.pub,
           }
         : undefined
     const { token: accessToken, expiresInSeconds } = await this.tokenIssuer.issueAccessToken(user, {

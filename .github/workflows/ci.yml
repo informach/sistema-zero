@@ -1,8 +1,9 @@
 # CI do monorepo: roda em TODO PR para a main (check obrigatório no ruleset
 # `protege-main`) e em push na staging (canário — quebra aparece antes do PR).
-# Sem Postgres de propósito: as suítes usam fakes; os tests/db do auth se
-# auto-pulam sem banco (ficam verdes). Sem `.env` aqui — testes não podem
-# depender de env local (handlers recebem tudo por deps).
+# O passo global roda sem Postgres na porta local padrão, então os tests/db dos
+# pacotes continuam auto-pulando. O fiscal tem um passo explícito com Postgres
+# real em porta dedicada para provar as invariantes de concorrência críticas.
+# Sem `.env` aqui — testes não podem depender de env local (handlers recebem tudo por deps).
 #
 # Push na STAGING também faz o DEPLOY do ambiente staging do Railway (job
 # `deploy-staging`, depois do CI verde) — substitui o trigger nativo do Railway,
@@ -32,6 +33,19 @@ jobs:
     name: ci
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    services:
+      fiscal-postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: sistemazero
+        ports:
+          - 55432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d sistemazero"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
 
@@ -48,6 +62,11 @@ jobs:
 
       - name: Testes (todos os pacotes)
         run: bun run --filter '*' test
+
+      - name: Testes DB fiscal (Postgres real)
+        run: cd packages/fiscal && bun test tests/db
+        env:
+          TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sistemazero
 
       - name: Typecheck (todos os pacotes)
         run: bun run --filter '*' typecheck
@@ -87,6 +106,7 @@ jobs:
             [admin]=e00eca0b-5323-4424-9b58-fdb073cfce82
             [community]=9df1b493-4cea-4b36-bec8-7299f054c17d
             [community-kids]=fc8a1b29-ac14-4dc9-a7b3-03d497b8bf4f
+            [hub]=00b27b18-0587-460b-ba90-b6b24c423e45
             [fiscal]=2ea11afd-bdfd-4736-b400-c3db13fd8a0e
           )
 
@@ -115,7 +135,7 @@ jobs:
                 case "$f" in
                   bun.lock|package.json|.dockerignore) add_all ;;
                   railway.json) add payments ;; # o railway.json da RAIZ é do payments
-                  packages/core/*) for s in api-gateway auth catalog payments members messaging funnel fiscal; do add "$s"; done ;;
+                  packages/core/*) for s in api-gateway auth catalog payments members messaging funnel fiscal hub; do add "$s"; done ;;
                   packages/ui/*) add admin; add community; add community-kids; add funnel ;;
                   packages/api-gateway/*) add api-gateway ;;
                   packages/auth/*) add auth ;;
@@ -128,8 +148,9 @@ jobs:
                   packages/community/*) add community ;;
                   packages/member-shell/*) add community; add community-kids ;; # BFF compartilhado pelos 2 apps de aluno
                   packages/community-kids/*) add community-kids ;;
+                  packages/hub/*) add hub ;; # backend da comunidade (Clube/Mural) — serviço próprio
                   packages/fiscal/*) add fiscal ;;
-                  packages/studio/*) ;; # lib interna (sem serviço deployado); quando um app a consumir, somar o consumer aqui
+                  packages/studio/*) add community; add community-kids ;; # lib embarcada pelos 2 apps de aluno (editor/player)
                 esac
               done <<< "$CHANGED"
             fi

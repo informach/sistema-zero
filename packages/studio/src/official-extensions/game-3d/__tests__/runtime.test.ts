@@ -23,21 +23,34 @@ interface World {
   _objects: unknown[]
 }
 
+interface FakeGeometry {
+  disposed: boolean
+  dispose: () => void
+}
+
 interface SZGame3DSurface {
   createScene: (canvasId: string) => World
   dispose: (world: World) => void
   disposeAll: () => void
+  createBox: (world: World, opts?: { size?: number; color?: string }) => unknown
+  createSphere: (world: World, opts?: { radius?: number; color?: string }) => unknown
+  setPosition: (obj: unknown, x: number, y: number, z: number) => void
 }
 
 interface LoadedRuntime {
   api: SZGame3DSurface
   fireEvent: (name: string) => void
   listenerCount: (name: string) => number
+  geometries: FakeGeometry[]
 }
 
 function loadRuntime(getElementById?: (id: string) => unknown): LoadedRuntime {
   type Listener = (ev: unknown) => void
   const listeners: Record<string, Listener[]> = {}
+  // Cada geometria criada registra-se aqui e marca disposed=true no dispose() —
+  // assim o teste do teto confirma que a geometria órfã (acima do limite) é
+  // liberada em vez de vazar na GPU.
+  const geometries: FakeGeometry[] = []
 
   // Stub mínimo de Three.js: só o que createScene/dispose tocam. O renderer
   // registra quantas vezes dispose()/forceContextLoss() foram chamados.
@@ -87,6 +100,32 @@ function loadRuntime(getElementById?: (id: string) => unknown): LoadedRuntime {
     DirectionalLight: class {
       position = new Vec3()
     },
+    MeshStandardMaterial: class {},
+    Mesh: class {
+      position = new Vec3()
+      rotation = new Vec3()
+      constructor(public geometry: unknown) {}
+    },
+    // Geometrias registram dispose() para o teste do teto verificar que a órfã é
+    // descartada. Box e Sphere compartilham a mesma classe instrumentada.
+    BoxGeometry: class implements FakeGeometry {
+      disposed = false
+      constructor() {
+        geometries.push(this)
+      }
+      dispose() {
+        this.disposed = true
+      }
+    },
+    SphereGeometry: class implements FakeGeometry {
+      disposed = false
+      constructor() {
+        geometries.push(this)
+      }
+      dispose() {
+        this.disposed = true
+      }
+    },
   }
 
   const win = {
@@ -111,6 +150,7 @@ function loadRuntime(getElementById?: (id: string) => unknown): LoadedRuntime {
       for (const fn of listeners[name] ?? []) fn({})
     },
     listenerCount: (name: string) => (listeners[name] ?? []).length,
+    geometries,
   }
 }
 
@@ -221,5 +261,68 @@ describe('gameThreeDRuntime — higiene de GPU', () => {
     fireEvent('pagehide')
     // Não conta de novo: já saiu do registro no dispose() manual.
     expect(world.renderer.forceContextLossCalls).toBe(1)
+  })
+})
+
+describe('gameThreeDRuntime — teto de objetos (anti-vazamento de GPU)', () => {
+  it('createBox/createSphere devolvem um mesh e o registram no mundo', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const box = api.createBox(world, { size: 1 })
+    expect(box).not.toBeNull()
+    expect(world._objects).toHaveLength(1)
+    const sphere = api.createSphere(world, { radius: 0.5 })
+    expect(sphere).not.toBeNull()
+    expect(world._objects).toHaveLength(2)
+  })
+
+  it('para de crescer no teto (300): novas criações devolvem null em silêncio', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    for (let i = 0; i < 300; i++) {
+      expect(api.createBox(world)).not.toBeNull()
+    }
+    expect(world._objects).toHaveLength(300)
+    // Acima do teto: null e o mundo NÃO cresce mais (o cenário parou de crescer).
+    const overflow = api.createBox(world)
+    expect(overflow).toBeNull()
+    expect(world._objects).toHaveLength(300)
+  })
+
+  it('descarta a geometria órfã criada acima do teto (não vaza GPU)', () => {
+    const { api, geometries } = loadRuntime()
+    const world = api.createScene('tela')
+    for (let i = 0; i < 300; i++) api.createBox(world)
+    const beforeOverflow = geometries.length
+    api.createBox(world) // acima do teto → geometria criada, mas logo descartada
+    const orphan = geometries[beforeOverflow]
+    expect(orphan?.disposed).toBe(true)
+  })
+
+  it('avisa no console UMA vez ao estourar o teto, em português', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const originalWarn = console.warn
+    let warnCount = 0
+    let warnMsg = ''
+    console.warn = (msg?: unknown) => {
+      warnCount += 1
+      warnMsg = String(msg)
+    }
+    try {
+      for (let i = 0; i < 320; i++) api.createBox(world) // 20 acima do teto
+    } finally {
+      console.warn = originalWarn
+    }
+    expect(warnCount).toBe(1)
+    expect(warnMsg).toContain("'a cada quadro'")
+  })
+
+  it('setPosition tolera o null devolvido acima do teto (não lança)', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    for (let i = 0; i < 300; i++) api.createBox(world)
+    const overflow = api.createBox(world)
+    expect(() => api.setPosition(overflow, 1, 2, 3)).not.toThrow()
   })
 })

@@ -5,6 +5,8 @@
  */
 export interface ProcessedWebhookStore {
   isProcessed(deliveryId: string): Promise<boolean>
+  /** Serializa o processamento concorrente por `deliveryId`, evitando duplicate deliverys. */
+  withDeliveryLock<T>(deliveryId: string, fn: () => Promise<T>): Promise<T>
   markProcessed(deliveryId: string, meta: { paymentId?: string; eventName?: string }): Promise<void>
   /** Retenção (cron): apaga marcas mais antigas que `days`. Retorna nº de linhas. */
   pruneOlderThan(days: number): Promise<number>

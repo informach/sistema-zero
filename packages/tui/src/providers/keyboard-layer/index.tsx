@@ -63,7 +63,7 @@ export function KeyboardLayerProvider({ children }: { children: React.ReactNode 
     for (let i = currentStack.length - 1; i >= 0; i--) {
       const layerId = currentStack[i]!
       const responder = responders.current.get(layerId)
-      if (responder && responder()) {
+      if (responder?.()) {
         return
       }
     }

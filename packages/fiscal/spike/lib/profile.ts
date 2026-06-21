@@ -14,11 +14,11 @@ export const EMITTER = {
   cLocEmi: '3106200',
   /** Inscrição Municipal em BH — OBRIGATÓRIA na DPS (E0116, exigência do CNC de BH).
    *  Formato: só dígitos; se a IM de BH termina em "X", o verificador vira "0". */
-  im: process.env['NFSE_IM'] ?? '',
+  im: process.env.NFSE_IM ?? '',
   /** 1=CPF, 2=CNPJ (Anexo I — regra do Id da DPS) */
   tipoInscricaoFederal: '2',
   /** Série PRÓPRIA do sistema (Emissor Web usa a dele) — confirmar no spike 02. */
-  serie: process.env['NFSE_DPS_SERIE'] ?? '2',
+  serie: process.env.NFSE_DPS_SERIE ?? '2',
   verAplic: 'sz-fiscal-spike/0.1',
   /** opSimpNac 3 = Optante Simples Nacional ME/EPP */
   opSimpNac: '3',
@@ -28,10 +28,10 @@ export const EMITTER = {
   /** regEspTrib 0 = Nenhum */
   regEspTrib: '0',
   cTribNac: '080201',
-  cTribMun: process.env['NFSE_CTRIB_MUN'] ?? '001',
+  cTribMun: process.env.NFSE_CTRIB_MUN ?? '001',
   cNBS: '122051900',
   /** Alíquota efetiva do Simples p/ Lei 12.741 (pTotTribSN) — atualizável. */
-  pTotTribSN: process.env['NFSE_PTOTTRIB_SN'] ?? '8.24',
+  pTotTribSN: process.env.NFSE_PTOTTRIB_SN ?? '8.24',
 } as const
 
 /** Id determinístico da DPS: "DPS" + CódMun(7) + TipoInscr(1) + Inscr(14) + Série(5) + Núm(15). */

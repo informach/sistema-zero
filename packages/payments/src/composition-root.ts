@@ -43,6 +43,7 @@ import { DrizzleSubscriptionPlanRegistry } from './infrastructure/persistence/dr
 import { DrizzleWebhookDeliveryRepository } from './infrastructure/persistence/drizzle/webhook-delivery.repository'
 import { DrizzleWebhookInbox } from './infrastructure/persistence/drizzle/webhook-inbox.repository'
 import { InMemoryRateLimiter } from './infrastructure/security/rate-limiter'
+import { WebhookRateLimiter } from './infrastructure/security/webhook-rate-limiter'
 import { ChargeCreationWorker } from './infrastructure/workers/charge-creation-worker'
 import { ReconciliationWorker } from './infrastructure/workers/reconciliation-worker'
 import { WebhookDeliveryWorker } from './infrastructure/workers/webhook-delivery-worker'
@@ -150,7 +151,7 @@ export function createApplication(env: Env): Application {
 
   const rateLimiter = new InMemoryRateLimiter(env.RATE_LIMIT_PER_MINUTE)
   // Teto global das rotas de webhook (chave única, não por consumidor/IP).
-  const webhookRateLimiter = new InMemoryRateLimiter(env.WEBHOOK_RATE_LIMIT_PER_MINUTE)
+  const webhookRateLimiter = new WebhookRateLimiter(db, env.WEBHOOK_RATE_LIMIT_PER_MINUTE)
 
   // Worker do modo assíncrono (só roda quando ASYNC_CHARGE_CREATION=true).
   const chargeWorker = new ChargeCreationWorker(payments, gateway, logger, {
@@ -316,7 +317,7 @@ export function createApplication(env: Env): Application {
           const [row] = await gate`
             select pg_try_advisory_xact_lock(${RETENTION_ADVISORY_LOCK_KEY}::bigint) as locked
           `
-          if (!row?.['locked']) return // outra réplica está limpando neste ciclo
+          if (!row?.locked) return // outra réplica está limpando neste ciclo
           // ⚠️ A transação-gate fica idle enquanto os DELETEs rodam no pool — o
           // idle_in_transaction_session_timeout (30s) a mata se a limpeza passar
           // disso (o lock solta e outra réplica pode assumir; DELETEs são

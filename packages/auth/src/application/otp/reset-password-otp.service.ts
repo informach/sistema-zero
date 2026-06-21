@@ -49,13 +49,15 @@ export class ResetPasswordWithOtpService {
       throw new InvalidOtpError()
     }
 
+    const consumed = await this.otpCodes.consume(record.id, now)
+    if (!consumed) throw new InvalidOtpError()
+
     const baseVersion = user.version
     user.changePassword(await this.hasher.hash(command.newPassword), now)
     const updated = await this.users.update(user, baseVersion)
     if (!updated) throw new VersionConflictError()
 
     await this.refreshTokens.revokeAllForUser(user.id)
-    await this.otpCodes.consume(record.id, now)
     return { ok: true }
   }
 }

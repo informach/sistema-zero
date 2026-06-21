@@ -12,12 +12,17 @@ export interface GatewayMessagingClientOptions {
   gatewayUrl: string
   consumerId: string
   hmacSecret: string
+  /** Timeout por chamada ao gateway (ms). */
+  timeoutMs?: number
   /** Injetável em testes; default = fetch global. */
   fetchImpl?: typeof fetch
 }
 
+const DEFAULT_TIMEOUT_MS = 10_000
+
 export function createGatewayMessagingClient(opts: GatewayMessagingClientOptions): MessagingClient {
   const doFetch = opts.fetchImpl ?? fetch
+  const timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS
 
   return {
     async sendEmail(input: SendEmailInput): Promise<void> {
@@ -45,6 +50,7 @@ export function createGatewayMessagingClient(opts: GatewayMessagingClientOptions
           'idempotency-key': input.idempotencyKey,
         },
         body: rawBody,
+        signal: AbortSignal.timeout(timeoutMs),
       })
       if (!res.ok) {
         const body = await res.text().catch(() => '')

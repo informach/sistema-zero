@@ -8,6 +8,7 @@ import type { MemberSummary } from '../../domain/ports/entitlement-repository.po
  */
 export interface AdminEntitlementView {
   id: string
+  userId: string
   version: number
   status: string
   accessType: string
@@ -29,6 +30,7 @@ export function toAdminEntitlementView(e: EntitlementAggregate): AdminEntitlemen
   const s = e.toSnapshot()
   return {
     id: s.id,
+    userId: s.userId,
     version: s.version,
     status: s.status,
     accessType: s.accessType,

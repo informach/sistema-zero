@@ -9,7 +9,13 @@ import {
   useSensors,
 } from '@dnd-kit/core'
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
-import type { BlockLevel, IDEMode, Project, StudioHandle } from '@sistemazero/studio'
+import type {
+  BlockLevel,
+  IDEMode,
+  LessonActivity,
+  Project,
+  StudioHandle,
+} from '@sistemazero/studio'
 import { Badge } from '@sistemazero/ui/badge'
 import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
@@ -18,6 +24,7 @@ import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
 import { Select } from '@sistemazero/ui/select'
 import { Spinner } from '@sistemazero/ui/spinner'
+import { Textarea } from '@sistemazero/ui/textarea'
 import { ArrowLeft, GripVertical, Pencil, Plus, Users } from 'lucide-react'
 import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -41,6 +48,7 @@ import {
   type LessonBlockKind,
   type LessonContentView,
 } from '@/lib/types'
+import { ActivityBuilder, EMPTY_ACTIVITY, validateStudioActivity } from './activity-builder'
 import { QuizBuilder, type QuizValue, validateQuiz } from './quiz-builder'
 import { StudioSubmissionsDialog } from './studio-submissions-dialog'
 
@@ -116,6 +124,15 @@ interface BlockForm {
    * não ser APAGADA ao editar+salvar um bloco que a tenha (seed/import; achado do review).
    */
   studioAllowBlocks: string[]
+  /** Estúdio: atividade com auto-correção (fase 2). Vazia = bloco só de entrega. */
+  studioActivity: LessonActivity
+  /** Estúdio: nome do projeto contínuo (cadeia). Vazio = aula independente. */
+  studioChain: string
+  /** Estúdio: vitrine (Mural) — auto-publicar o projeto ao concluir esta aula. */
+  studioShowcaseEnabled: boolean
+  studioShowcaseTitle: string
+  studioShowcaseSummary: string
+  studioShowcaseCover: string
 }
 
 const EMPTY_BLOCK: BlockForm = {
@@ -137,6 +154,12 @@ const EMPTY_BLOCK: BlockForm = {
   studioModes: ['blocks', 'bridge', 'code'],
   studioAllowReveal: true,
   studioAllowBlocks: [],
+  studioActivity: EMPTY_ACTIVITY,
+  studioChain: '',
+  studioShowcaseEnabled: false,
+  studioShowcaseTitle: '',
+  studioShowcaseSummary: '',
+  studioShowcaseCover: '',
 }
 
 const num = (s: string): number | undefined => (s.trim() ? Number(s) : undefined)
@@ -146,8 +169,11 @@ const opt = (s: string): string | undefined => (s.trim() ? s.trim() : undefined)
 function buildContent(f: BlockForm, studioProject?: Project): LessonBlockContent {
   const dur = num(f.durationSeconds)
   switch (f.kind) {
-    case 'studio':
+    case 'studio': {
       // `studioProject` é garantido não-nulo no saveBlock (validação antes de chamar).
+      // Atividade só entra se tiver checagens OU enunciado (atividade vazia = omitida).
+      const hasActivity =
+        f.studioActivity.checks.length > 0 || f.studioActivity.instructions.trim() !== ''
       return {
         kind: 'studio',
         initialProject: studioProject as Project,
@@ -158,7 +184,24 @@ function buildContent(f: BlockForm, studioProject?: Project): LessonBlockContent
           ? { allowedModes: f.studioModes }
           : {}),
         allowLevelReveal: f.studioAllowReveal,
+        ...(hasActivity ? { activity: f.studioActivity } : {}),
+        ...(f.studioChain.trim() ? { chain: f.studioChain.trim() } : {}),
+        ...(f.studioShowcaseEnabled
+          ? {
+              showcase: {
+                enabled: true,
+                ...(f.studioShowcaseTitle.trim() ? { title: f.studioShowcaseTitle.trim() } : {}),
+                ...(f.studioShowcaseSummary.trim()
+                  ? { summary: f.studioShowcaseSummary.trim() }
+                  : {}),
+                ...(f.studioShowcaseCover.trim()
+                  ? { defaultCoverUrl: f.studioShowcaseCover.trim() }
+                  : {}),
+              },
+            }
+          : {}),
       }
+    }
     case 'rich_text':
       return {
         kind: 'rich_text',
@@ -213,11 +256,14 @@ function validateBlock(f: BlockForm): string | null {
       return f.html.trim() ? null : 'Escreva o HTML do conteúdo interativo.'
     case 'ebook':
       return f.pdfUrl.trim() ? null : 'Envie o PDF do e-book antes de salvar.'
-    case 'studio':
+    case 'studio': {
       // O projeto inicial vem do editor embutido (validado no saveBlock). Aqui só
       // barramos "zero modos" — que, omitido no payload, viraria "todos liberados"
       // (o OPOSTO da intenção do autor; achado do review).
-      return f.studioModes.length > 0 ? null : 'Selecione ao menos um modo do Estúdio.'
+      if (f.studioModes.length === 0) return 'Selecione ao menos um modo do Estúdio.'
+      // Atividade (auto-correção): coerência espelhando o members.
+      return validateStudioActivity(f.studioActivity)
+    }
     default:
       return null
   }
@@ -345,6 +391,12 @@ export function LessonEditorClient({
           : ['blocks', 'bridge', 'code'],
       studioAllowReveal: c.kind === 'studio' ? (c.allowLevelReveal ?? true) : true,
       studioAllowBlocks: c.kind === 'studio' ? (c.allowBlocks ?? []) : [],
+      studioActivity: c.kind === 'studio' ? (c.activity ?? EMPTY_ACTIVITY) : EMPTY_ACTIVITY,
+      studioChain: c.kind === 'studio' ? (c.chain ?? '') : '',
+      studioShowcaseEnabled: c.kind === 'studio' ? (c.showcase?.enabled ?? false) : false,
+      studioShowcaseTitle: c.kind === 'studio' ? (c.showcase?.title ?? '') : '',
+      studioShowcaseSummary: c.kind === 'studio' ? (c.showcase?.summary ?? '') : '',
+      studioShowcaseCover: c.kind === 'studio' ? (c.showcase?.defaultCoverUrl ?? '') : '',
     })
     setBlockOpen(true)
   }
@@ -855,6 +907,79 @@ export function LessonEditorClient({
                 Aluno pode revelar blocos avançados
               </label>
               <Field
+                label="Projeto contínuo (nome)"
+                hint="Opcional. Dê o MESMO nome às aulas que constroem um único projeto (ex.: 'jogo-da-cobrinha'): o aluno abre cada aula com o código que enviou na anterior da cadeia. Vazio = aula independente."
+              >
+                <Input
+                  value={blockForm.studioChain}
+                  maxLength={80}
+                  placeholder="ex.: jogo-da-cobrinha"
+                  onChange={(e) => setBlockForm((f) => ({ ...f, studioChain: e.target.value }))}
+                />
+              </Field>
+              <fieldset className="rounded-lg border border-border p-3">
+                <legend className="px-1 text-xs text-muted-foreground">
+                  Mural dos Criadores (vitrine)
+                </legend>
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    className="size-4 accent-primary"
+                    checked={blockForm.studioShowcaseEnabled}
+                    onChange={(e) =>
+                      setBlockForm((f) => ({ ...f, studioShowcaseEnabled: e.target.checked }))
+                    }
+                  />
+                  Publicar no Mural ao concluir esta aula
+                </label>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Ligue no bloco da ÚLTIMA aula do projeto: a criança ganha o botão "Publicar no
+                  Mural" e o post é montado com o título/resumo abaixo + um print do projeto (jogos)
+                  ou a capa padrão.
+                </p>
+                {blockForm.studioShowcaseEnabled ? (
+                  <div className="mt-3 flex flex-col gap-3">
+                    <Field label="Título do post" htmlFor="bk-showcase-title">
+                      <Input
+                        id="bk-showcase-title"
+                        value={blockForm.studioShowcaseTitle}
+                        maxLength={300}
+                        placeholder="Ex.: Meu jogo da cobrinha"
+                        onChange={(e) =>
+                          setBlockForm((f) => ({ ...f, studioShowcaseTitle: e.target.value }))
+                        }
+                      />
+                    </Field>
+                    <Field
+                      label="Resumo do projeto"
+                      hint="Aparece no card do Mural. A criança não escreve — você define aqui."
+                    >
+                      <Textarea
+                        value={blockForm.studioShowcaseSummary}
+                        maxLength={2000}
+                        placeholder="Um breve resumo do que se trata o projeto."
+                        onChange={(e) =>
+                          setBlockForm((f) => ({ ...f, studioShowcaseSummary: e.target.value }))
+                        }
+                      />
+                    </Field>
+                    <Field
+                      label="Capa padrão"
+                      hint="Usada em projetos web (e como reserva quando o print do jogo falha)."
+                    >
+                      <ImageUploader
+                        scope="block"
+                        allowManualUrl={false}
+                        value={blockForm.studioShowcaseCover}
+                        onChange={(url) =>
+                          setBlockForm((f) => ({ ...f, studioShowcaseCover: url }))
+                        }
+                      />
+                    </Field>
+                  </div>
+                ) : null}
+              </fieldset>
+              <Field
                 label="Projeto inicial"
                 hint="Monte o tipo de projeto, o código de partida e o nome — é o que o aluno abre na aula."
               >
@@ -867,6 +992,15 @@ export function LessonEditorClient({
                   }
                   handleRef={studioHandleRef}
                   features={{ terminal: false, ai: false, professional: false, export: false }}
+                />
+              </Field>
+              <Field
+                label="Atividade (auto-correção)"
+                hint="Opcional. Defina checagens que o editor corrige na hora; com nota de corte, viram gate da aula. Só 'estrutura' é reverificada no servidor."
+              >
+                <ActivityBuilder
+                  value={blockForm.studioActivity}
+                  onChange={(studioActivity) => setBlockForm((f) => ({ ...f, studioActivity }))}
                 />
               </Field>
             </div>

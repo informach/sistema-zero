@@ -17,9 +17,9 @@ export interface A1Certificate {
  * memória com node-forge e o PEM vai no `tls` do fetch (mTLS sob Bun).
  */
 export function loadA1Certificate(): A1Certificate {
-  const base64 = process.env['NFSE_CERT_PFX_BASE64']?.trim()
-  const path = process.env['NFSE_CERT_PFX_PATH']?.trim()
-  const password = process.env['NFSE_CERT_PASSWORD'] ?? ''
+  const base64 = process.env.NFSE_CERT_PFX_BASE64?.trim()
+  const path = process.env.NFSE_CERT_PFX_PATH?.trim()
+  const password = process.env.NFSE_CERT_PASSWORD ?? ''
 
   const buffer = base64 ? Buffer.from(base64, 'base64') : path ? readFileSync(path) : null
   if (!buffer) {

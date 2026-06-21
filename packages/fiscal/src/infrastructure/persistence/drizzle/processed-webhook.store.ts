@@ -15,6 +15,17 @@ export class DrizzleProcessedWebhookStore implements ProcessedWebhookStore {
     return Boolean(row)
   }
 
+  async withDeliveryLock<T>(deliveryId: string, fn: () => Promise<T>): Promise<T> {
+    // Hash estável de 64 bits para não conflitar com outro delivery; o lock é
+    // mantido por transação enquanto o callback roda.
+    const lockId = sql`(('x' || substr(md5(${deliveryId}), 1, 16))::bit(64)::bigint)`
+
+    return this.db.transaction(async (tx) => {
+      await tx.execute(sql`SELECT pg_advisory_xact_lock(${lockId})`)
+      return fn()
+    })
+  }
+
   async markProcessed(
     deliveryId: string,
     meta: { paymentId?: string; eventName?: string },

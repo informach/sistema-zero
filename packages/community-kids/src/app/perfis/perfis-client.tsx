@@ -1,16 +1,38 @@
 'use client'
 
 import { UserAvatar } from '@sistemazero/member-shell/components/user-avatar'
-import type { ProfileView } from '@sistemazero/member-shell/lib/types'
 import { Button } from '@sistemazero/ui/button'
 import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
 import { PasswordInput } from '@sistemazero/ui/password-input'
+import { Skeleton } from '@sistemazero/ui/skeleton'
 import { Spinner } from '@sistemazero/ui/spinner'
-import { Pencil, Plus, Trash2 } from 'lucide-react'
-import { useRef, useState } from 'react'
+import {
+  ArrowLeft,
+  Award,
+  BookOpenCheck,
+  Flame,
+  Pencil,
+  Plus,
+  Receipt,
+  Sparkles,
+  Star,
+  Trash2,
+  Trophy,
+} from 'lucide-react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { KidsMascot } from '@/components/kids/mascot'
+import { apiGet } from '@/lib/api'
+import { formatCentsStr, formatDate } from '@/lib/format'
+import {
+  type ChildDashboardView,
+  PAYMENT_METHOD_LABELS,
+  PAYMENT_STATUS_LABELS,
+  type Paginated,
+  type PaymentView,
+  type ProfileView,
+} from '@/lib/types'
 
 const JSON_HEADERS = { 'content-type': 'application/json' }
 
@@ -18,24 +40,29 @@ type Editing = { mode: 'create' } | { mode: 'edit'; profile: ProfileView } | nul
 
 /**
  * Grade de perfis estilo Netflix. **Selecionar** entra no perfil (1 clique, sem
- * PIN) → emite a sessão de perfil e recarrega a home. **Área dos pais** abre a
- * gestão: numa sessão de perfil, pede a SENHA do responsável (sai para a conta);
- * numa sessão da conta, gerencia direto (criar/editar/arquivar/foto). O limite de
- * perfis é do plano — criar acima dele devolve 409 (toast).
+ * PIN) → emite a sessão de perfil e recarrega a home. **Área dos pais** SEMPRE pede
+ * a SENHA do responsável (decisão 06/2026 — a criança pode estar numa sessão da
+ * conta): numa sessão de perfil o submit SAI do perfil (`/api/profile-session/exit`);
+ * numa sessão da conta VERIFICA a senha (`/api/parents/verify`) e abre o portão. Se
+ * o portão já está aberto (`parentVerified`), gerencia direto. O limite de perfis é
+ * do plano — criar acima dele devolve 409 (toast).
  */
 export function PerfisClient({
   initialProfiles,
   isProfileSession,
+  parentVerified,
 }: {
   initialProfiles: ProfileView[]
   isProfileSession: boolean
+  parentVerified: boolean
 }) {
   const [profiles, setProfiles] = useState(initialProfiles)
   const [managing, setManaging] = useState(false)
   const [busy, setBusy] = useState(false)
-  const [gate, setGate] = useState(false) // modal de senha (sair do perfil)
+  const [gate, setGate] = useState(false) // modal de senha (abrir a área dos pais)
   const [changingPassword, setChangingPassword] = useState(false) // modal: trocar senha da conta
   const [editing, setEditing] = useState<Editing>(null)
+  const [showPurchases, setShowPurchases] = useState(false) // sub-tela "Minhas compras"
 
   async function selectProfile(id: string) {
     if (busy) return
@@ -50,9 +77,13 @@ export function PerfisClient({
   }
 
   function openParentArea() {
-    // Gerenciar exige sessão da CONTA. Numa sessão de perfil, pede a senha (sair).
-    if (isProfileSession) setGate(true)
-    else setManaging(true)
+    // Portão já aberto (senha verificada há pouco) → gerencia direto.
+    if (parentVerified) {
+      setManaging(true)
+      return
+    }
+    // Caso contrário, SEMPRE pede a senha (a criança pode estar logada na conta).
+    setGate(true)
   }
 
   async function exitToParent(password: string) {
@@ -64,24 +95,43 @@ export function PerfisClient({
     })
     setBusy(false)
     if (res.ok) {
-      window.location.replace('/perfis') // recarrega como sessão da conta → gestão liberada
+      window.location.replace('/perfis') // recarrega como sessão da conta (portão aberto)
       return
     }
     toast.error(res.status === 401 ? 'Senha incorreta.' : 'Não foi possível abrir a área dos pais.')
   }
 
-  async function saveProfile(name: string, existing?: ProfileView) {
+  async function verifyParent(password: string) {
     setBusy(true)
+    const res = await fetch('/api/parents/verify', {
+      method: 'POST',
+      headers: JSON_HEADERS,
+      body: JSON.stringify({ password }),
+    })
+    setBusy(false)
+    if (res.ok) {
+      setGate(false)
+      setManaging(true) // portão aberto no servidor (cookie) → libera a gestão
+      return
+    }
+    toast.error(res.status === 401 ? 'Senha incorreta.' : 'Não foi possível abrir a área dos pais.')
+  }
+
+  async function saveProfile(name: string, birthDate: string | null, existing?: ProfileView) {
+    setBusy(true)
+    // A data de nascimento só é editável pelos pais (sessão da conta) — esta tela é a
+    // Área dos pais. O auth recusa `birthDate` em sessão de perfil (defesa em profundidade).
+    const payload = { name, birthDate }
     const res = existing
       ? await fetch(`/api/profiles/${existing.id}`, {
           method: 'PATCH',
           headers: JSON_HEADERS,
-          body: JSON.stringify({ name }),
+          body: JSON.stringify(payload),
         })
       : await fetch('/api/profiles', {
           method: 'POST',
           headers: JSON_HEADERS,
-          body: JSON.stringify({ name }),
+          body: JSON.stringify(payload),
         })
     const body = (await res.json().catch(() => null)) as { profile?: ProfileView } | null
     setBusy(false)
@@ -144,6 +194,10 @@ export function PerfisClient({
     )
   }
 
+  if (showPurchases) {
+    return <PurchasesView onBack={() => setShowPurchases(false)} />
+  }
+
   return (
     <main className="mx-auto flex min-h-dvh max-w-3xl flex-col items-center justify-center gap-8 px-4 py-12">
       <div className="flex flex-col items-center gap-3 text-center">
@@ -182,9 +236,14 @@ export function PerfisClient({
         ) : null}
       </ul>
 
+      {managing ? <ChildrenDashboard /> : null}
+
       <div className="flex flex-wrap items-center justify-center gap-3">
         {managing ? (
           <>
+            <Button variant="ghost" onClick={() => setShowPurchases(true)} disabled={busy}>
+              <Receipt className="size-4" /> Minhas compras
+            </Button>
             {/* Senha É da CONTA (não do perfil): só aqui, na sessão do responsável. */}
             <Button variant="ghost" onClick={() => setChangingPassword(true)} disabled={busy}>
               Alterar senha do responsável
@@ -201,12 +260,222 @@ export function PerfisClient({
       </div>
 
       {gate ? (
-        <ParentGate busy={busy} onCancel={() => setGate(false)} onConfirm={exitToParent} />
+        // Sessão de perfil → sai do perfil (volta à conta, valida a senha no auth);
+        // sessão de conta → verifica a senha e abre o portão sem recarregar.
+        <ParentGate
+          busy={busy}
+          onCancel={() => setGate(false)}
+          onConfirm={isProfileSession ? exitToParent : verifyParent}
+        />
       ) : null}
       {changingPassword ? (
         <ParentPasswordChange onCancel={() => setChangingPassword(false)} />
       ) : null}
     </main>
+  )
+}
+
+/**
+ * Resumo de progresso de cada filho (área dos pais). Busca `/api/parents/children-stats`
+ * ao montar — só renderiza no modo gestão, atrás do portão de senha. Esqueleto no load;
+ * falha é best-effort (some sem quebrar a gestão de perfis).
+ */
+function ChildrenDashboard() {
+  const [children, setChildren] = useState<ChildDashboardView[] | null>(null)
+  const [failed, setFailed] = useState(false)
+
+  useEffect(() => {
+    let alive = true
+    fetch('/api/parents/children-stats')
+      .then((res) => (res.ok ? res.json() : Promise.reject(res)))
+      .then((data: { children: ChildDashboardView[] }) => {
+        if (alive) setChildren(data.children)
+      })
+      .catch(() => {
+        if (alive) setFailed(true)
+      })
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  if (failed) return null
+  if (children !== null && children.length === 0) return null
+
+  return (
+    <section className="w-full max-w-2xl">
+      <h2 className="sz-display mb-3 text-center text-foreground text-xl">Progresso dos filhos</h2>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {children === null
+          ? [0, 1].map((i) => <Skeleton key={i} className="h-32 rounded-2xl" />)
+          : children.map((c) => <ChildStatsCard key={c.profileId} child={c} />)}
+      </div>
+    </section>
+  )
+}
+
+/** Card de stats de um filho (XP/ofensiva/medalhas/projetos/cursos + ranking). */
+function ChildStatsCard({ child }: { child: ChildDashboardView }) {
+  return (
+    <div className="flex flex-col gap-3 rounded-2xl border-2 border-border bg-card p-4">
+      <div className="flex items-center gap-3">
+        <UserAvatar avatarUrl={child.avatarUrl} firstName={child.name} size="lg" />
+        <div className="min-w-0">
+          <p className="truncate font-semibold text-foreground">{child.name}</p>
+          {child.rankingPosition !== null ? (
+            <p className="flex items-center gap-1 text-muted-foreground text-xs">
+              <Trophy className="size-3.5 text-[color:var(--sz-hot)]" />
+              {child.rankingPosition}º no ranking kids
+            </p>
+          ) : null}
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
+        <Stat icon={<Star className="size-4 text-primary" />} label="XP" value={child.xp} />
+        <Stat
+          icon={<Flame className="size-4 text-[color:var(--sz-hot)]" />}
+          label="dias de ofensiva"
+          value={child.streak.current}
+        />
+        <Stat
+          icon={<Award className="size-4 text-primary" />}
+          label="medalhas"
+          value={child.badgesCount}
+        />
+        <Stat
+          icon={<Sparkles className="size-4 text-primary" />}
+          label="projetos"
+          value={child.projectsCount}
+        />
+        <Stat
+          icon={<BookOpenCheck className="size-4 text-primary" />}
+          label="cursos concluídos"
+          value={child.coursesCompleted}
+        />
+        <Stat
+          icon={<BookOpenCheck className="size-4 text-muted-foreground" />}
+          label="em andamento"
+          value={child.coursesInProgress}
+        />
+      </div>
+    </div>
+  )
+}
+
+function Stat({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
+  return (
+    <div className="flex items-center gap-2">
+      {icon}
+      <span className="font-bold text-foreground">{value}</span>
+      <span className="text-muted-foreground text-xs">{label}</span>
+    </div>
+  )
+}
+
+/**
+ * "Minhas compras" do RESPONSÁVEL (área dos pais). Lista paginada por "Carregar mais"
+ * (busca `/api/payments/my`, gateada pela senha no shim). É da CONTA — fica aqui, não
+ * no menu da criança.
+ */
+function PurchasesView({ onBack }: { onBack: () => void }) {
+  const [items, setItems] = useState<PaymentView[] | null>(null)
+  const [total, setTotal] = useState(0)
+  const [loading, setLoading] = useState(false)
+
+  const load = useCallback(async (offset: number) => {
+    setLoading(true)
+    try {
+      const page = await apiGet<Paginated<PaymentView>>(
+        `/api/payments/my?limit=20&offset=${offset}`,
+      )
+      setItems((prev) => (offset === 0 ? page.items : [...(prev ?? []), ...page.items]))
+      setTotal(page.total)
+    } catch {
+      toast.error('Não foi possível carregar as compras.')
+      setItems((prev) => prev ?? [])
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    void load(0)
+  }, [load])
+
+  return (
+    <main className="mx-auto flex min-h-dvh max-w-xl flex-col gap-6 px-4 py-12">
+      <div>
+        <Button variant="ghost" onClick={onBack}>
+          <ArrowLeft className="size-4" /> Voltar
+        </Button>
+      </div>
+      <div>
+        <h1 className="sz-display text-2xl text-foreground">Minhas compras</h1>
+        <p className="mt-1 text-muted-foreground text-sm">
+          Histórico das compras feitas com o e-mail desta conta.
+        </p>
+      </div>
+
+      {items === null ? (
+        <div className="flex flex-col gap-3">
+          {[0, 1, 2].map((i) => (
+            <Skeleton key={i} className="h-20 rounded-2xl" />
+          ))}
+        </div>
+      ) : items.length === 0 ? (
+        <div className="flex flex-col items-center gap-2 rounded-2xl border-2 border-border border-dashed py-12 text-center">
+          <Receipt className="size-8 text-muted-foreground" />
+          <p className="font-semibold text-foreground">Nenhuma compra ainda</p>
+          <p className="text-muted-foreground text-sm">
+            As compras feitas com o e-mail desta conta aparecem aqui.
+          </p>
+        </div>
+      ) : (
+        <ul className="flex flex-col gap-3">
+          {items.map((p) => (
+            <PurchaseCard key={p.id} payment={p} />
+          ))}
+        </ul>
+      )}
+
+      {items && items.length < total ? (
+        <Button variant="secondary" onClick={() => void load(items.length)} disabled={loading}>
+          {loading ? <Spinner className="size-4" /> : 'Carregar mais'}
+        </Button>
+      ) : null}
+    </main>
+  )
+}
+
+const STATUS_TONE: Record<string, string> = {
+  PAID: 'text-primary',
+  PENDING: 'text-[color:var(--sz-hot)]',
+  FAILED: 'text-destructive',
+  EXPIRED: 'text-destructive',
+  CANCELED: 'text-muted-foreground',
+  REFUNDED: 'text-muted-foreground',
+}
+
+/** Card de uma compra (descrição + data/método + valor + status). */
+function PurchaseCard({ payment }: { payment: PaymentView }) {
+  return (
+    <li className="flex items-center justify-between gap-3 rounded-2xl border-2 border-border bg-card p-4">
+      <div className="min-w-0">
+        <p className="truncate font-semibold text-foreground">{payment.description ?? 'Compra'}</p>
+        <p className="text-muted-foreground text-xs">
+          {formatDate(payment.paidAt ?? payment.createdAt)} ·{' '}
+          {PAYMENT_METHOD_LABELS[payment.method] ?? payment.method}
+        </p>
+      </div>
+      <div className="shrink-0 text-right">
+        <p className="sz-display text-foreground">{formatCentsStr(payment.amountInCents)}</p>
+        <span
+          className={`font-semibold text-xs ${STATUS_TONE[payment.status] ?? 'text-muted-foreground'}`}
+        >
+          {PAYMENT_STATUS_LABELS[payment.status] ?? payment.status}
+        </span>
+      </div>
+    </li>
   )
 }
 
@@ -263,14 +532,17 @@ function ProfileForm({
   editing: { mode: 'create' } | { mode: 'edit'; profile: ProfileView }
   busy: boolean
   onCancel: () => void
-  onSave: (name: string, existing?: ProfileView) => void
+  onSave: (name: string, birthDate: string | null, existing?: ProfileView) => void
   onArchive: (p: ProfileView) => void
   onAvatar: (p: ProfileView, file: File) => void
 }) {
   const isEdit = editing.mode === 'edit'
   const profile = isEdit ? editing.profile : null
   const [name, setName] = useState(profile?.name ?? '')
+  const [birthDate, setBirthDate] = useState(profile?.birthDate ?? '')
   const fileRef = useRef<HTMLInputElement>(null)
+  // `max` do seletor = hoje (nascimento não pode ser no futuro).
+  const today = new Date().toISOString().slice(0, 10)
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center gap-6 px-4 py-12">
@@ -316,6 +588,19 @@ function ProfileForm({
         />
       </Field>
 
+      <Field label="Data de nascimento da criança" htmlFor="profileBirthDate">
+        <Input
+          id="profileBirthDate"
+          type="date"
+          value={birthDate}
+          max={today}
+          onChange={(e) => setBirthDate(e.target.value)}
+        />
+        <p className="mt-1 text-muted-foreground text-xs">
+          Só os responsáveis editam. Ajuda a gente a cuidar da idade certa. 💙
+        </p>
+      </Field>
+
       <div className="flex items-center justify-between gap-3">
         {profile ? (
           <Button
@@ -334,7 +619,7 @@ function ProfileForm({
             Cancelar
           </Button>
           <Button
-            onClick={() => onSave(name.trim(), profile ?? undefined)}
+            onClick={() => onSave(name.trim(), birthDate || null, profile ?? undefined)}
             disabled={busy || name.trim().length === 0}
           >
             {busy ? <Spinner className="size-4" /> : 'Salvar'}

@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from 'bun:test'
 import type { WebContainer } from '@webcontainer/api'
 import {
   CLASSIC_TEMPLATE_ID,
+  canBootWebContainer,
   claimFsOwnership,
   currentFsOwner,
   getMountedTemplateId,
@@ -207,5 +208,41 @@ describe('resetWebContainerFs — preservação de node_modules por template', (
     const { wc, removed } = fakeWc(['index.html', 'node_modules'])
     await resetWebContainerFs(wc, { templateId: CLASSIC_TEMPLATE_ID })
     expect(removed).not.toContain('/node_modules')
+  })
+})
+
+describe('canBootWebContainer — precheck de cross-origin isolation', () => {
+  // `crossOriginIsolated` é uma global do escopo do worker/janela; no happy-dom
+  // ela não existe por default. Mexemos no globalThis para simular cada caso e
+  // restauramos o descritor original depois.
+  const KEY = 'crossOriginIsolated'
+  const original = Object.getOwnPropertyDescriptor(globalThis, KEY)
+
+  function setIsolation(value: boolean | undefined): void {
+    if (value === undefined) {
+      delete (globalThis as Record<string, unknown>)[KEY]
+      return
+    }
+    Object.defineProperty(globalThis, KEY, { value, configurable: true, writable: true })
+  }
+
+  afterEach(() => {
+    if (original) Object.defineProperty(globalThis, KEY, original)
+    else delete (globalThis as Record<string, unknown>)[KEY]
+  })
+
+  it('isolado (true): pode bootar', () => {
+    setIsolation(true)
+    expect(canBootWebContainer()).toBe(true)
+  })
+
+  it('NÃO isolado (false): NÃO pode bootar (curto-circuita antes do import pesado)', () => {
+    setIsolation(false)
+    expect(canBootWebContainer()).toBe(false)
+  })
+
+  it('flag ausente (navegador antigo): deixa o boot decidir (true)', () => {
+    setIsolation(undefined)
+    expect(canBootWebContainer()).toBe(true)
   })
 })

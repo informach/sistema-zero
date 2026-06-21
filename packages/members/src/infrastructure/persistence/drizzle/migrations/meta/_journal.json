@@ -113,6 +113,55 @@
       "when": 1781716745977,
       "tag": "0015_nostalgic_wolfpack",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1781733079781,
+      "tag": "0016_equal_abomination",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1781787098089,
+      "tag": "0017_perpetual_paladin",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1781966817102,
+      "tag": "0018_add_zappy_coins",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1781968014939,
+      "tag": "0019_add_avatar_wardrobe",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1781974372291,
+      "tag": "0020_add_room",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1781976862521,
+      "tag": "0021_add_missions_and_freeze",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1781978338544,
+      "tag": "0022_add_league",
+      "breakpoints": true
     }
   ]
 }

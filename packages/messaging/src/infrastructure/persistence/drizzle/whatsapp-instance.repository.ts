@@ -1,4 +1,5 @@
 import { and, asc, count, desc, eq, lte, sql } from 'drizzle-orm'
+import { WhatsAppInstanceAlreadyExistsError } from '../../../domain/lane/lane.errors'
 import {
   WhatsAppInstance,
   type WhatsAppInstanceProps,
@@ -14,6 +15,15 @@ import type { Database } from './db'
 import { whatsappInstances } from './schema'
 
 type InstanceRow = typeof whatsappInstances.$inferSelect
+
+function isUniqueViolation(error: unknown): boolean {
+  let current: unknown = error
+  for (let depth = 0; depth < 5 && typeof current === 'object' && current !== null; depth++) {
+    if ((current as { code?: unknown }).code === '23505') return true
+    current = (current as { cause?: unknown }).cause
+  }
+  return false
+}
 
 function toRow(i: WhatsAppInstance): typeof whatsappInstances.$inferInsert {
   const p = i.state
@@ -58,7 +68,16 @@ export class DrizzleWhatsAppInstanceRepository implements WhatsAppInstanceReposi
   constructor(private readonly db: Database) {}
 
   async create(instance: WhatsAppInstance): Promise<void> {
-    await this.db.insert(whatsappInstances).values(toRow(instance))
+    try {
+      await this.db.insert(whatsappInstances).values(toRow(instance))
+    } catch (error) {
+      if (isUniqueViolation(error)) {
+        throw new WhatsAppInstanceAlreadyExistsError(
+          `Instância ${instance.state.instanceName} já existe`,
+        )
+      }
+      throw error
+    }
   }
 
   async update(instance: WhatsAppInstance): Promise<void> {

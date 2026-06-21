@@ -2,12 +2,14 @@ import type { CSSProperties, Ref } from 'react'
 import type { BlockLevel, IDEMode, Locale, Project } from '#core'
 import type { StudioPersistence } from '../persistence/types'
 import type { StudioLimits } from '../state/projectStore'
+import type { ActivityRunResult, LessonActivity } from './activity'
 import type { StudioFeatures } from './config'
+import type { StudioShareAdapter } from './share'
 import type { StudioTheme } from './theme'
 
 export type StudioLocale = Locale
 
-/** Acesso imperativo à instância (prop `ref` do <Studio> — React 19). */
+/** Acesso imperativo à instância (prop `ref` do Studio — React 19). */
 export interface StudioHandle {
   /** Snapshot atual do projeto (síncrono). */
   getProject(): Project | null
@@ -17,9 +19,20 @@ export interface StudioHandle {
   replaceProject(project: Project): void
   setMode(mode: IDEMode): void
   isDirty(): boolean
+  /**
+   * Último resultado da auto-correção da atividade (`null` se ainda não rodou ou
+   * não há atividade). O host (member-shell) anexa este resultado reportado no
+   * envio — o servidor recalcula só as checagens de estrutura (correção híbrida).
+   */
+  getActivityResult(): ActivityRunResult | null
 }
 
-export interface StudioProps {
+/**
+ * Props de EDITOR — comuns ao núcleo e aos dois componentes públicos
+ * (<StudioEditor> e <StudioLesson>). NÃO inclui curadoria de aprendizado (essa
+ * vive só no <StudioLesson> via {@link StudioLearningProps}).
+ */
+export interface StudioCommonProps {
   /**
    * Projeto inicial (uncontrolled: o Studio é dono do estado a partir daqui).
    * É sanitizado com as mesmas regras de projetos persistidos; um payload
@@ -46,21 +59,6 @@ export interface StudioProps {
   allowedModes?: readonly IDEMode[]
   /** Abre neste modo (sobrepõe o modo salvo no projeto, sem marcar sujo). */
   initialMode?: IDEMode
-  /**
-   * Nível de aprendizado FIXADO pelo professor (divulgação progressiva): cura a
-   * paleta de blocos por dificuldade. Default: 'avancado' (mostra tudo).
-   * Estático por instância. Ver `allowBlocks`/`allowCategories`/`allowLevelReveal`.
-   */
-  level?: BlockLevel
-  /** Tipos de bloco sempre visíveis, independente do nível (allowlist da aula). */
-  allowBlocks?: readonly string[]
-  /** Nomes de categoria sempre visíveis, independente do nível. */
-  allowCategories?: readonly string[]
-  /**
-   * Permite o aluno revelar blocos avançados (toggle nas configurações). Default
-   * true. O professor pode desligar para travar a paleta no nível definido.
-   */
-  allowLevelReveal?: boolean
   /**
    * Limites de política (tamanho de arquivo/projeto, nº de extras). Defaults
    * generosos; anti-DoS profundos continuam internos. Estático por instância.
@@ -102,8 +100,66 @@ export interface StudioProps {
    * Hosts SPA com navegação própria podem desligar e usar handle.isDirty().
    */
   blockUnloadWhenDirty?: boolean
+  /**
+   * Adapter de "Compartilhar" (publicar no Mural dos Criadores). Quando
+   * presente, a Topbar mostra o botão Compartilhar ao lado do Salvar; o host
+   * implementa `generateDescription` (servidor) + `publish`. Ausente (default)
+   * → sem botão. Estável por instância (latchado, igual à `activity`). Serve
+   * ao estúdio de aula (hoje) e ao estúdio completo (produto futuro).
+   */
+  share?: StudioShareAdapter
   /** Classes extras no root. O Studio preenche 100% do container do host. */
   className?: string
   style?: CSSProperties
   ref?: Ref<StudioHandle>
 }
+
+/**
+ * Curadoria de aprendizado FIXADA pelo professor (divulgação progressiva) —
+ * exclusiva do <StudioLesson>. Mantida fora do editor puro de propósito.
+ */
+export interface StudioLearningProps {
+  /**
+   * Nível de aprendizado: cura a paleta de blocos por dificuldade. Default:
+   * 'avancado' (mostra tudo). Estático por instância.
+   */
+  level?: BlockLevel
+  /** Tipos de bloco sempre visíveis, independente do nível (allowlist da aula). */
+  allowBlocks?: readonly string[]
+  /** Nomes de categoria sempre visíveis, independente do nível. */
+  allowCategories?: readonly string[]
+  /**
+   * Permite o aluno revelar blocos avançados (toggle nas configurações). Default
+   * true. O professor pode desligar para travar a paleta no nível definido.
+   */
+  allowLevelReveal?: boolean
+}
+
+/**
+ * Props do motor {@link StudioCore} — superconjunto: editor + aprendizado +
+ * atividade. Os dois componentes públicos repassam um subconjunto destas.
+ */
+export type StudioCoreProps = StudioCommonProps &
+  StudioLearningProps & {
+    /**
+     * Atividade com auto-correção (fiada para a fase seguinte; ver
+     * `studio/activity.ts`). Ausente → o painel de atividade não renderiza nada.
+     */
+    activity?: LessonActivity | null
+  }
+
+/** Props do <StudioEditor> — editor completo independente (sem conceito de aula). */
+export type StudioEditorProps = StudioCommonProps
+
+/**
+ * Props do <StudioLesson> — editor configurável de aula: editor + curadoria de
+ * aprendizado + atividade (auto-correção).
+ */
+export type StudioLessonProps = StudioCommonProps &
+  StudioLearningProps & {
+    /** Atividade com auto-correção (fiada para a fase seguinte). */
+    activity?: LessonActivity | null
+  }
+
+/** @deprecated Use {@link StudioEditorProps} ou {@link StudioLessonProps}. Alias do {@link StudioCoreProps}. */
+export type StudioProps = StudioCoreProps

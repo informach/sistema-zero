@@ -33,7 +33,7 @@ export const OOP_BLOCKS: BlockDefinition[] = [
     colour: C,
     mutator: 'sz_extends_mutator',
     tooltip:
-      'Cria uma classe. Use + para herdar de outra classe (extends). Encaixe um construtor e métodos dentro dela.',
+      'Cria uma classe. Use + para herdar de outra classe. Encaixe um construtor e métodos dentro dela.',
   },
   {
     type: 'sz_js_constructor',
@@ -69,15 +69,15 @@ export const OOP_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Devolve um valor de dentro de um método (return).',
+    tooltip: 'Devolve um valor de dentro de um método.',
   },
   {
     type: 'sz_js_return_void',
-    message0: 'sair / parar aqui (return)',
+    message0: 'sair / parar aqui',
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Sai da função imediatamente, sem devolver valor (return;).',
+    tooltip: 'Sai da função imediatamente, sem devolver valor.',
   },
   {
     type: 'sz_js_new_var',
@@ -92,7 +92,7 @@ export const OOP_BLOCKS: BlockDefinition[] = [
     colour: C,
     mutator: 'sz_args_mutator',
     tooltip:
-      'Cria um novo objeto da classe e guarda numa variável (const x = new Classe(...)). Os espaços de valor se rotulam pela classe.',
+      'Cria um novo objeto da classe e guarda numa variável. Os espaços de valor se rotulam pela classe.',
   },
   {
     type: 'sz_js_call_method',
@@ -106,7 +106,7 @@ export const OOP_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     mutator: 'sz_args_mutator',
-    tooltip: 'Chama um método de um objeto, como comando (objeto.metodo(...)).',
+    tooltip: 'Chama um método de um objeto, como comando.',
   },
   {
     type: 'sz_val_call_method',
@@ -119,7 +119,7 @@ export const OOP_BLOCKS: BlockDefinition[] = [
     output: 'JSValue',
     colour: C,
     mutator: 'sz_args_mutator',
-    tooltip: 'Chama um método que devolve um valor (objeto.metodo(...)) para usar numa tomada.',
+    tooltip: 'Chama um método que devolve um valor para usar numa tomada.',
   },
   {
     type: 'sz_js_set_this_prop',
@@ -132,7 +132,7 @@ export const OOP_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Escreve uma propriedade do próprio objeto, dentro de um método (this.nome = valor).',
+    tooltip: 'Escreve uma propriedade do próprio objeto, dentro de um método.',
   },
   {
     type: 'sz_js_set_prop',
@@ -146,7 +146,7 @@ export const OOP_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Escreve a propriedade de um objeto (objeto.nome = valor).',
+    tooltip: 'Escreve a propriedade de um objeto.',
   },
   {
     type: 'sz_val_this_prop',
@@ -154,7 +154,7 @@ export const OOP_BLOCKS: BlockDefinition[] = [
     args0: [{ type: 'field_input', name: 'NAME', text: 'nome' }],
     output: 'JSValue',
     colour: C,
-    tooltip: 'Lê uma propriedade do próprio objeto, dentro de um método (this.nome).',
+    tooltip: 'Lê uma propriedade do próprio objeto, dentro de um método.',
   },
   {
     type: 'sz_val_get_prop',
@@ -165,7 +165,7 @@ export const OOP_BLOCKS: BlockDefinition[] = [
     ],
     output: 'JSValue',
     colour: C,
-    tooltip: 'Lê a propriedade de um objeto (objeto.nome).',
+    tooltip: 'Lê a propriedade de um objeto.',
   },
   {
     // Bloco-relator de parâmetro (estilo MakeCode): o valor de um parâmetro do

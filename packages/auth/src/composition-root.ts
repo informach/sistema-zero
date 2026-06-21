@@ -22,6 +22,7 @@ import { ResetPasswordService } from './application/password-reset/reset-passwor
 import { ArchiveProfileService } from './application/profiles/archive-profile.service'
 import { CreateProfileService } from './application/profiles/create-profile.service'
 import { ExitProfileSessionService } from './application/profiles/exit-profile-session.service'
+import { GetPublicProfileService } from './application/profiles/get-public-profile.service'
 import { ListProfilesService } from './application/profiles/list-profiles.service'
 import { SelectProfileService } from './application/profiles/select-profile.service'
 import { UpdateProfileDetailsService } from './application/profiles/update-profile.service'
@@ -113,6 +114,7 @@ export async function createApplication(env: Env): Promise<Application> {
           gatewayUrl: env.GATEWAY_URL,
           consumerId: env.AUTH_CONSUMER_ID,
           hmacSecret: env.AUTH_HMAC_SECRET,
+          timeoutMs: env.GATEWAY_REQUEST_TIMEOUT_MS,
         })
       : createNullMessagingClient(logger)
 
@@ -240,6 +242,7 @@ export async function createApplication(env: Env): Promise<Application> {
   const archiveProfile = new ArchiveProfileService(profilesRepo, () => new Date())
   const selectProfile = new SelectProfileService(profilesRepo, users, authTokens)
   const exitProfileSession = new ExitProfileSessionService(users, hasher, authTokens)
+  const getPublicProfile = new GetPublicProfileService(profilesRepo)
 
   // Readiness (`/readyz`, healthcheck do Railway): a réplica só é promovida
   // quando o banco responde (sem banco não há login/refresh — não recebe tráfego).
@@ -286,6 +289,7 @@ export async function createApplication(env: Env): Promise<Application> {
       archiveProfile,
       selectProfile,
       exitProfileSession,
+      getPublicProfile,
       trustProxy: env.TRUST_PROXY,
       trustedProxyHops: env.TRUSTED_PROXY_HOPS,
       internalToken: env.AUTH_INTERNAL_TOKEN,
@@ -301,7 +305,7 @@ export async function createApplication(env: Env): Promise<Application> {
       const [row] = await gate`
         select pg_try_advisory_xact_lock(${PURGE_ADVISORY_LOCK_KEY}::bigint) as locked
       `
-      if (!row?.['locked']) return // outra réplica está purgando neste ciclo
+      if (!row?.locked) return // outra réplica está purgando neste ciclo
       const cutoff = new Date(Date.now() - PURGE_GRACE_MS)
       const [refresh, reset, otp, impersonation] = await Promise.all([
         refreshTokens.deleteExpired(cutoff),

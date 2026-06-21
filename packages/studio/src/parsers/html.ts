@@ -1,5 +1,15 @@
 import type { AssetPlacement, HTMLNode, HTMLShell, HTMLTag } from '#ir'
 
+/**
+ * Profundidade máxima de aninhamento que mapeamos recursivamente. Elementos mais
+ * fundos que isto degradam para `rawHTML advanced` (preservados verbatim via
+ * `outerHTML`) em vez de continuar a recursão `mapNode → mapChildren → mapNode`,
+ * que num aninhamento patológico estouraria a pilha (RangeError). É um LIMITE
+ * EXPLÍCITO e previsível — antes confiávamos só no `try/catch` do RangeError.
+ * Mesmo espírito (e mesmo valor) da guarda de profundidade do `parsers/css.ts`.
+ */
+const MAX_HTML_NESTING = 64
+
 const SUPPORTED_TAGS: ReadonlySet<HTMLTag> = new Set([
   'h1',
   'h2',
@@ -23,6 +33,17 @@ const SUPPORTED_TAGS: ReadonlySet<HTMLTag> = new Set([
   'input',
   'textarea',
   'label',
+  'svg',
+  'g',
+  'path',
+  'circle',
+  'ellipse',
+  'line',
+  'rect',
+  'polyline',
+  'polygon',
+  'text',
+  'use',
 ])
 
 /** Tags que seguram filhos — mapeadas recursivamente. */
@@ -35,6 +56,8 @@ const CONTAINER_TAGS: ReadonlySet<HTMLTag> = new Set([
   'main',
   'ul',
   'form',
+  'svg',
+  'g',
 ])
 
 /** Tags sem conteúdo (self-closing). */
@@ -98,7 +121,7 @@ function parseBodyNodes(doc: Document): HTMLNode[] {
   if (!body) return []
   const out: HTMLNode[] = []
   for (const child of Array.from(body.childNodes)) {
-    const node = mapNode(child)
+    const node = mapNode(child, 0)
     if (node) out.push(node)
   }
   return out
@@ -314,7 +337,7 @@ export function extractInlineAssets(
  * para fidelidade); espaços-em-branco puros são descartados; elementos são
  * mapeados recursivamente.
  */
-function mapChildren(el: Element): HTMLNode[] {
+function mapChildren(el: Element, depth: number): HTMLNode[] {
   const children: HTMLNode[] = []
   for (const child of Array.from(el.childNodes)) {
     if (child.nodeType === Node.TEXT_NODE) {
@@ -323,13 +346,13 @@ function mapChildren(el: Element): HTMLNode[] {
       children.push({ type: 'text', text: raw })
       continue
     }
-    const c = mapNode(child)
+    const c = mapNode(child, depth + 1)
     if (c) children.push(c)
   }
   return children
 }
 
-function mapNode(node: Node): HTMLNode | null {
+function mapNode(node: Node, depth: number): HTMLNode | null {
   if (node.nodeType === Node.TEXT_NODE) {
     const text = node.textContent ?? ''
     if (!text.trim()) return null
@@ -347,6 +370,14 @@ function mapNode(node: Node): HTMLNode | null {
   const tag = el.tagName.toLowerCase()
 
   if (isCanonicalWiring(el)) return null
+
+  // GUARDA DE PROFUNDIDADE: acima do limite paramos de descer e preservamos o
+  // elemento INTEIRO verbatim como avançado (o `outerHTML` já carrega toda a
+  // subárvore, então nada se perde — "código é sagrado"). Limite explícito e
+  // previsível, em vez de depender de catch de RangeError.
+  if (depth > MAX_HTML_NESTING) {
+    return { type: 'rawHTML', html: el.outerHTML, advanced: true }
+  }
 
   if (tag === 'canvas') {
     const w = Number.parseInt(el.getAttribute('width') ?? '0', 10)
@@ -377,7 +408,7 @@ function mapNode(node: Node): HTMLNode | null {
       const node: Extract<HTMLNode, { type: 'element' }> = {
         type: 'element',
         tag: t,
-        children: mapChildren(el),
+        children: mapChildren(el, depth),
       }
       if (id) node.id = id
       if (attrs) node.attrs = attrs
@@ -398,7 +429,7 @@ function mapNode(node: Node): HTMLNode | null {
       const node: Extract<HTMLNode, { type: 'element' }> = {
         type: 'element',
         tag: t,
-        children: mapChildren(el),
+        children: mapChildren(el, depth),
       }
       if (id) node.id = id
       if (attrs) node.attrs = attrs

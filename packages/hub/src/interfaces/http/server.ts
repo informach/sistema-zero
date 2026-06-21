@@ -11,6 +11,7 @@ import { healthRoutes, type ReadinessProbe } from './routes/health.routes'
 import { type ModerationRoutesDeps, moderationRoutes } from './routes/moderation.routes'
 import { type ReactionsRoutesDeps, reactionsRoutes } from './routes/reactions.routes'
 import { type ReportRoutesDeps, reportRoutes } from './routes/report.routes'
+import { type ShowcaseRoutesDeps, showcaseRoutes } from './routes/showcase.routes'
 import { type SpacesRoutesDeps, spacesRoutes } from './routes/spaces.routes'
 import { type ThreadsRoutesDeps, threadsRoutes } from './routes/threads.routes'
 import { type WebhooksRoutesDeps, webhooksRoutes } from './routes/webhooks.routes'
@@ -25,6 +26,7 @@ export interface HttpDeps {
   attachments: AttachmentsRoutesDeps
   reactions: ReactionsRoutesDeps
   report: ReportRoutesDeps
+  showcase: ShowcaseRoutesDeps
   admin: AdminRoutesDeps
   moderation: ModerationRoutesDeps
   webhooks: WebhooksRoutesDeps
@@ -93,6 +95,7 @@ export function createServer(deps: HttpDeps) {
     .use(attachmentsRoutes(deps.attachments))
     .use(reactionsRoutes(deps.reactions))
     .use(reportRoutes(deps.report))
+    .use(showcaseRoutes(deps.showcase))
     .use(adminRoutes(deps.admin))
     .use(moderationRoutes(deps.moderation))
     .use(webhooksRoutes(deps.webhooks))

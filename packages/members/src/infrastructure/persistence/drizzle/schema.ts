@@ -11,10 +11,12 @@ import {
   uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core'
+import type { AvatarConfig } from '../../../domain/avatar/avatar-config'
 import type { LessonBlockContent } from '../../../domain/course/lesson-block'
 import type { QuizAnswers } from '../../../domain/course/quiz'
 import type { EntitlementSnapshot } from '../../../domain/entitlement/entitlement-snapshot'
 import type { CourseFeedbackAnswers } from '../../../domain/rating/course-rating'
+import type { RoomState } from '../../../domain/room/room-catalog'
 
 // Compartilha o MESMO Postgres do payments/auth/catalog/funnel, mas é dono do
 // schema `members` (isolamento por `pgSchema`). Todo o DDL gerado fica em `members.*`.
@@ -43,8 +45,10 @@ export const accessTypeEnum = members.enum('access_type', [
   'community',
   'external',
   'none',
-  // Chave-mestra: 1 matrícula cobre TODOS os cursos publicados (atuais e futuros).
+  // Chave-mestra ADULTA: 1 matrícula cobre TODOS os cursos `adult` (atuais e futuros).
   'all_courses',
+  // Chave-mestra KIDS: idem para os cursos `kids` (cada chave cobre só a sua vitrine).
+  'all_kids_courses',
 ])
 export const entitlementStatusEnum = members.enum('entitlement_status', [
   'active',
@@ -277,6 +281,15 @@ export const studioSubmissions = members.table(
     /** Snapshot `Project` do Estúdio enviado pelo aluno (importável no Estúdio do professor). */
     project: jsonb('project').$type<unknown>().notNull(),
     submittedAt: timestamp('submitted_at', { withTimezone: true }).notNull(),
+    // ── Auto-correção (fase 2; null quando o bloco não tem atividade) ──────────
+    /** Nota 0–100 da última entrega gradeada. */
+    score: integer('score'),
+    /** Resultado por checagem (StudioCheckResult[] — server+client). */
+    results: jsonb('results').$type<unknown>(),
+    /** Quando a correção rodou. */
+    checkedAt: timestamp('checked_at', { withTimezone: true }),
+    /** STICKY: 1ª vez que atingiu a nota de corte (gate "aprovou uma vez = destrava"). */
+    passedAt: timestamp('passed_at', { withTimezone: true }),
   },
   (t) => [
     uniqueIndex('studio_submissions_user_block_uq').on(t.userId, t.blockId),
@@ -313,6 +326,26 @@ export const xpSourceTypeEnum = members.enum('xp_source_type', [
   // curso 100% (course-complete/-2/-3) e quiz com nota 100 (quiz-perfect/-10/-30).
   'course_complete',
   'quiz_perfect',
+  // Atividade do Estúdio aprovada (auto-correção, fase 2) — XP, não é marco.
+  'studio_passed',
+])
+
+// Origem de um evento de moeda Zappy (carteira, fatia 06/2026). Faucets (ganho)
+// espelham os tipos de XP + marco de streak/missão/liga; sinks (gasto, amount < 0)
+// são cosméticos (avatar/quarto/streak-freeze). `admin_adjust` = ajuste manual de
+// suporte. Regras/valores vivem em CÓDIGO (domain/gamification/coins.ts).
+export const coinSourceTypeEnum = members.enum('coin_source_type', [
+  'lesson_complete',
+  'quiz_passed',
+  'unit_complete',
+  'studio_passed',
+  'streak_milestone',
+  'mission_reward',
+  'league_reward',
+  'spend_cosmetic',
+  'spend_room',
+  'spend_streak_freeze',
+  'admin_adjust',
 ])
 
 // Perfil agregado (1 linha por aluno POR VITRINE — XP/streak kids e adult são
@@ -340,6 +373,25 @@ export const gamificationProfiles = members.table(
     // Ator é EQUIPE (superadmin/admin/staff)? Snapshot do último award — o
     // ranking conta SÓ clientes (members não conhece roles; o gateway injeta).
     privileged: boolean('privileged').notNull().default(false),
+    // ── Carteira Zappy Coins (moeda ganhável; v1 earn-only) ──────────────────
+    // `coin_balance` = soma materializada do `coin_events` (leitura O(1)).
+    // `coins_earned_today` + `coins_earned_date` (data civil SP) aplicam o TETO
+    // DIÁRIO de GANHO (anti-grind) sob o MESMO advisory lock do award — o teto
+    // limita o ganho, nunca o saldo. `lifetime_coins_earned` alimenta a badge de
+    // poupador (nunca decresce com gasto). Tudo segregado por audiência (o perfil já é).
+    coinBalance: integer('coin_balance').notNull().default(0),
+    coinsEarnedToday: integer('coins_earned_today').notNull().default(0),
+    coinsEarnedDate: date('coins_earned_date', { mode: 'string' }),
+    lifetimeCoinsEarned: integer('lifetime_coins_earned').notNull().default(0),
+    // ── Proteção de sequência (streak-freeze + modo férias — fatia 06/2026) ──
+    // `streak_freezes`: protetores disponíveis (1 grátis/mês lazy + compráveis); o
+    // award consome 1 por dia perdido fora de férias. `freeze_granted_month`: 'YYYY-MM'
+    // do último grátis (idempotência sem cron). Férias [from,to]: pausa a sequência
+    // (dias na janela não quebram nem estendem). Ética: nunca envergonha a quebra.
+    streakFreezes: integer('streak_freezes').notNull().default(0),
+    freezeGrantedMonth: text('freeze_granted_month'),
+    vacationFrom: date('vacation_from', { mode: 'string' }),
+    vacationTo: date('vacation_to', { mode: 'string' }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },
@@ -391,6 +443,143 @@ export const userBadges = members.table(
   (t) => [uniqueIndex('user_badges_user_audience_badge_uq').on(t.userId, t.audience, t.badgeSlug)],
 )
 
+// Ledger da moeda Zappy. O UNIQUE (user, audience, source_type, source_id) é a
+// IDEMPOTÊNCIA: faucet usa o MESMO sourceId do xp_event (lessonId/blockId/moduleId);
+// marco de streak usa `streak:<dias>` (one-time); SINK (gasto) usa a idempotencyKey
+// da compra. `source_id` é TEXT (não uuid) p/ caber esses formatos. `amount` é
+// + (faucet) ou − (sink); `balance_after` materializa o saldo p/ auditoria. A
+// `audience` ENTRA no UNIQUE: ao contrário do `xp_events` (sourceId = uuid, único por
+// curso → audiência), aqui o sourceId textual (`streak:7`) poderia colidir entre
+// vitrines do mesmo userId.
+export const coinEvents = members.table(
+  'coin_events',
+  {
+    id: uuid('id').primaryKey(),
+    userId: uuid('user_id').notNull(),
+    audience: courseAudienceEnum('audience').notNull().default('adult'),
+    sourceType: coinSourceTypeEnum('source_type').notNull(),
+    sourceId: text('source_id').notNull(),
+    amount: integer('amount').notNull(),
+    balanceAfter: integer('balance_after').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('coin_events_user_source_uq').on(t.userId, t.audience, t.sourceType, t.sourceId),
+    index('coin_events_user_created_idx').on(t.userId, t.createdAt),
+  ],
+)
+
+// ── Avatar (guarda-roupa por camadas — fatia 06/2026) ───────────────────────
+// Config EQUIPADA (1 linha/perfil POR VITRINE) + inventário de peças PAGAS possuídas.
+// Peça grátis é IMPLICITAMENTE possuída (não vai ao inventário). `account_id` é
+// IMUTÁVEL (gravado só no INSERT, como em gamification_profiles). O catálogo de peças
+// vive EM CÓDIGO (domain/avatar/parts-catalog.ts) → `part_id` é snapshot sem FK.
+export const avatarConfigs = members.table(
+  'avatar_configs',
+  {
+    id: uuid('id').primaryKey(),
+    userId: uuid('user_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    audience: courseAudienceEnum('audience').notNull().default('kids'),
+    equipped: jsonb('equipped').$type<AvatarConfig>().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [uniqueIndex('avatar_configs_user_audience_uq').on(t.userId, t.audience)],
+)
+
+export const avatarInventory = members.table(
+  'avatar_inventory',
+  {
+    id: uuid('id').primaryKey(),
+    userId: uuid('user_id').notNull(),
+    audience: courseAudienceEnum('audience').notNull().default('kids'),
+    partId: text('part_id').notNull(),
+    acquiredAt: timestamp('acquired_at', { withTimezone: true }).notNull(),
+  },
+  // Âncora de idempotência da COMPRA: re-comprar a mesma peça é no-op (onConflictDoNothing).
+  (t) => [uniqueIndex('avatar_inventory_user_part_uq').on(t.userId, t.audience, t.partId)],
+)
+
+// ── Missões (diárias/semanais — claim idempotente, fatia 06/2026) ───────────
+// O PROGRESSO é DERIVADO do `xp_events` na leitura (sem hook no award); esta tabela
+// só registra o RESGATE (1 linha por missão+período resgatado = idempotência do prêmio).
+// `period_key` = dia civil SP ('YYYY-MM-DD') na diária, 'w:<segunda>' na semanal.
+export const missionClaims = members.table(
+  'mission_claims',
+  {
+    id: uuid('id').primaryKey(),
+    userId: uuid('user_id').notNull(),
+    audience: courseAudienceEnum('audience').notNull().default('kids'),
+    missionSlug: text('mission_slug').notNull(),
+    periodKey: text('period_key').notNull(),
+    claimedAt: timestamp('claimed_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('mission_claims_user_mission_period_uq').on(
+      t.userId,
+      t.audience,
+      t.missionSlug,
+      t.periodKey,
+    ),
+    index('mission_claims_user_period_idx').on(t.userId, t.audience, t.periodKey),
+  ],
+)
+
+// ── Ligas/divisões semanais (fatia 06/2026) ─────────────────────────────────
+// 1 linha por (perfil, vitrine, SEMANA) guardando SÓ o `tier` daquela semana — o XP
+// da semana é DERIVADO do `xp_events` na leitura (sem coluna acumulada/hook no award).
+// O tier é resolvido LAZY (sem cron) na 1ª leitura da semana. `account_id` IMUTÁVEL.
+export const leagueMembership = members.table(
+  'league_membership',
+  {
+    id: uuid('id').primaryKey(),
+    userId: uuid('user_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    audience: courseAudienceEnum('audience').notNull().default('kids'),
+    weekKey: text('week_key').notNull(),
+    tier: text('tier').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('league_membership_user_week_uq').on(t.userId, t.audience, t.weekKey),
+    // Coorte da semana (audiência, semana, tier) — o board e o fechamento varrem por aqui.
+    index('league_membership_cohort_idx').on(t.audience, t.weekKey, t.tier),
+  ],
+)
+
+// ── Quarto virtual (decore-do-seu-jeito — fatia 06/2026) ────────────────────
+// Estado decorado (1 linha/perfil POR VITRINE; tema + itens posicionados + pet) +
+// inventário de itens/temas PAGOS possuídos (grátis é implícito). `account_id` IMUTÁVEL
+// (só no INSERT). Catálogo de itens/temas EM CÓDIGO (domain/room/room-catalog.ts) →
+// `item_id` é snapshot sem FK. Last-write-wins (sem version — dono único).
+export const roomState = members.table(
+  'room_state',
+  {
+    id: uuid('id').primaryKey(),
+    userId: uuid('user_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    audience: courseAudienceEnum('audience').notNull().default('kids'),
+    state: jsonb('state').$type<RoomState>().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [uniqueIndex('room_state_user_audience_uq').on(t.userId, t.audience)],
+)
+
+export const roomInventory = members.table(
+  'room_inventory',
+  {
+    id: uuid('id').primaryKey(),
+    userId: uuid('user_id').notNull(),
+    audience: courseAudienceEnum('audience').notNull().default('kids'),
+    itemId: text('item_id').notNull(),
+    acquiredAt: timestamp('acquired_at', { withTimezone: true }).notNull(),
+  },
+  // Âncora de idempotência da COMPRA (re-comprar = no-op via onConflictDoNothing).
+  (t) => [uniqueIndex('room_inventory_user_item_uq').on(t.userId, t.audience, t.itemId)],
+)
+
 // ── Deduplicação de webhooks de entrada ─────────────────────────────────────
 export const processedWebhooks = members.table(
   'processed_webhooks',
@@ -419,6 +608,13 @@ export const schema = {
   gamificationProfiles,
   xpEvents,
   userBadges,
+  coinEvents,
+  avatarConfigs,
+  avatarInventory,
+  missionClaims,
+  leagueMembership,
+  roomState,
+  roomInventory,
   processedWebhooks,
 }
 

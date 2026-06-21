@@ -7,6 +7,7 @@ import { useProjectStore } from '../../state/projectStore'
 import { useUIStore } from '../../state/uiStore'
 import { useStudioConfig } from '../../studio/config'
 import { StudioLayoutProvider, useStudioWidth } from '../../studio/layoutContext'
+import { ActivityPanel } from './ActivityPanel'
 import { BottomPanel } from './BottomPanel'
 import { useVisibleBottomTabs } from './bottomTabs'
 import { ConvertLegacyPrompt } from './ConvertLegacyPrompt'
@@ -17,6 +18,9 @@ import { Topbar } from './Topbar'
 
 const ExtensionsPanel = lazy(() =>
   import('../extensions/ExtensionsPanel').then((m) => ({ default: m.ExtensionsPanel })),
+)
+const AssetsPanel = lazy(() =>
+  import('../assets/AssetsPanel').then((m) => ({ default: m.AssetsPanel })),
 )
 
 export interface ShellProps {
@@ -36,6 +40,8 @@ export function Shell({ onExit, canToggleTheme }: ShellProps): JSX.Element {
   )
   const showExtensions = useUIStore((s) => s.showExtensions)
   const setShowExtensions = useUIStore((s) => s.setShowExtensions)
+  const showAssets = useUIStore((s) => s.showAssets)
+  const setShowAssets = useUIStore((s) => s.setShowAssets)
   const config = useStudioConfig()
   // A barra inferior (wide) só existe quando há ALGUMA aba inferior visível — as
   // features do host cruzadas com o contexto de modo e com as preferências de
@@ -82,8 +88,17 @@ export function Shell({ onExit, canToggleTheme }: ShellProps): JSX.Element {
                   debounced e refs começam já com o conteúdo do novo projeto, sem
                   mostrar/renderizar o projeto anterior no primeiro instante. */}
                   <Panel id="sz-editor" order={1} defaultSize={70} minSize={30}>
+                    {/* ActivityPanel é self-gating (null sem atividade): no
+                        <StudioEditor> e nas aulas sem exercício não acrescenta
+                        DOM, então o split do editor fica idêntico ao de antes.
+                        Com atividade, a raiz do modo é `w-full`, então o ModeArea
+                        vai num wrapper `min-w-0 flex-1` para dividir a largura com
+                        o painel (`w-80 shrink-0`) sem estourar o split. */}
                     <div key={projectId} className="flex h-full min-h-0 w-full">
-                      <ModeArea projectMode={projectMode} projectId={projectId} />
+                      <ActivityPanel />
+                      <div className="h-full min-w-0 flex-1">
+                        <ModeArea projectMode={projectMode} projectId={projectId} />
+                      </div>
                     </div>
                   </Panel>
                   {hasBottomPanel && (
@@ -107,6 +122,19 @@ export function Shell({ onExit, canToggleTheme }: ShellProps): JSX.Element {
               >
                 <Suspense fallback={null}>
                   <ExtensionsPanel open={showExtensions} onClose={() => setShowExtensions(false)} />
+                </Suspense>
+              </ErrorBoundary>
+            )}
+            {showAssets && (
+              <ErrorBoundary
+                label="imagens"
+                resetKeys={[showAssets]}
+                fallback={(p) => (
+                  <SectionErrorFallback {...p} title="Não foi possível abrir as imagens" />
+                )}
+              >
+                <Suspense fallback={null}>
+                  <AssetsPanel open={showAssets} onClose={() => setShowAssets(false)} />
                 </Suspense>
               </ErrorBoundary>
             )}

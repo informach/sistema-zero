@@ -9,6 +9,10 @@ export interface ProfileSnapshot {
   name: string
   avatarUrl: string | null
   whatsapp: string | null
+  /** Data de nascimento (`YYYY-MM-DD`) — controle de idade; só os pais editam. */
+  birthDate: string | null
+  /** Perfil público entre crianças da comunidade (opt-in dos pais; default false). */
+  publicProfileEnabled: boolean
   status: ProfileStatus
   sortOrder: number
   createdAt: Date
@@ -21,6 +25,7 @@ export interface CreateProfileInput {
   name: string
   avatarUrl?: string | null
   whatsapp?: string | null
+  birthDate?: string | null
   now?: Date
 }
 
@@ -37,12 +42,17 @@ export class ProfileAggregate {
     const name = assertProfileName(input.name)
     const avatarUrl = normalizeOptional(input.avatarUrl)
     assertAvatarUrl(avatarUrl)
+    const birthDate = normalizeOptional(input.birthDate)
+    assertBirthDate(birthDate, now)
     return new ProfileAggregate({
       id: input.id,
       accountUserId: input.accountUserId,
       name,
       avatarUrl,
       whatsapp: normalizeOptional(input.whatsapp),
+      birthDate,
+      // Novo perfil nasce PRIVADO (opt-in dos pais).
+      publicProfileEnabled: false,
       status: 'active',
       sortOrder: 0,
       createdAt: now,
@@ -72,6 +82,12 @@ export class ProfileAggregate {
   }
   get whatsapp(): string | null {
     return this.props.whatsapp
+  }
+  get birthDate(): string | null {
+    return this.props.birthDate
+  }
+  get publicProfileEnabled(): boolean {
+    return this.props.publicProfileEnabled
   }
   get status(): ProfileStatus {
     return this.props.status
@@ -111,6 +127,28 @@ export class ProfileAggregate {
     this.props.updatedAt = now
   }
 
+  /**
+   * Define a data de nascimento (`YYYY-MM-DD`; `null` limpa). Separado de
+   * `updateDetails` DE PROPÓSITO: a autorização é da rota (SÓ os pais editam — a
+   * sessão de perfil da criança é barrada antes de chegar aqui).
+   */
+  setBirthDate(value: string | null, now: Date = new Date()): void {
+    const next = normalizeOptional(value)
+    assertBirthDate(next, now)
+    this.props.birthDate = next
+    this.props.updatedAt = now
+  }
+
+  /**
+   * Liga/desliga o perfil PÚBLICO (visível/clicável entre crianças da comunidade).
+   * Separado de `updateDetails` DE PROPÓSITO: a autorização é da rota (SÓ os pais —
+   * a sessão de perfil da criança é barrada antes de chegar aqui), como o birthDate.
+   */
+  setPublicProfileEnabled(value: boolean, now: Date = new Date()): void {
+    this.props.publicProfileEnabled = value
+    this.props.updatedAt = now
+  }
+
   /** Arquiva (some da grade; o histórico keyado no id sobrevive). Idempotente. */
   archive(now: Date = new Date()): void {
     if (this.props.status === 'archived') return
@@ -132,6 +170,34 @@ function normalizeOptional(value: string | null | undefined): string | null {
   if (value === null || value === undefined) return null
   const trimmed = value.trim()
   return trimmed.length > 0 ? trimmed : null
+}
+
+/**
+ * Data de nascimento: `YYYY-MM-DD` real, não-futura e numa faixa de idade plausível
+ * (3–18 anos — a plataforma Kids é 8–13, com folga). `null` é permitido (campo
+ * opcional). A autorização "só os pais" é da rota; aqui é só a sanidade do valor.
+ */
+function assertBirthDate(value: string | null, now: Date): void {
+  if (value === null) return
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    throw new ValidationError('Data de nascimento deve estar no formato AAAA-MM-DD')
+  }
+  const parsed = new Date(`${value}T00:00:00Z`)
+  // Rejeita datas inválidas (ex.: 2020-02-31 normaliza e não bate a string de volta).
+  if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== value) {
+    throw new ValidationError('Data de nascimento inválida')
+  }
+  if (parsed.getTime() > now.getTime()) {
+    throw new ValidationError('Data de nascimento não pode estar no futuro')
+  }
+  const ageMs = now.getTime() - parsed.getTime()
+  const years = ageMs / (365.25 * 24 * 60 * 60 * 1000)
+  // Só o TETO (≤18): barra conta de adulto (a plataforma é infantil). Sem piso — um
+  // piso rígido (antes 3) rejeitava o cadastro legítimo de um filho mais novo; a data
+  // não-futura já é garantida acima e a idade é informativa (controle, não gate).
+  if (years > 18) {
+    throw new ValidationError('Data de nascimento fora da faixa de idade da plataforma')
+  }
 }
 
 /** A foto é renderizada como `src` pelos apps — só http(s) (sem `javascript:`/`data:`). */

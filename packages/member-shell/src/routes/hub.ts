@@ -12,12 +12,13 @@ import {
   UGC_IMAGE_INPUT_MIME,
 } from '../lib/hub-attachments'
 import { redactAuthors } from '../lib/hub-redact'
+import { stripImageMarkdown } from '../lib/markdown'
 import type { HubAttachmentKind } from '../lib/types'
-import type { HubClient } from '../server/clients'
+import type { HubClient, MembersClient } from '../server/clients'
 import type { GatewayResponse } from '../server/gateway'
 import { optimizeImage } from '../server/image-optimizer'
 import { type MediaModule, mediaErrorResponse, rejectOversizedRequest } from '../server/media'
-import { r2PresignGetUgc, r2PresignPutUgc, r2PutObjectUgc } from '../server/r2'
+import { r2PresignGetUgc, r2PresignPutUgc, r2PutObject, r2PutObjectUgc } from '../server/r2'
 import type { SessionModule } from '../server/session'
 
 export type HubRoutes = ReturnType<typeof createHubRoutes>
@@ -54,6 +55,10 @@ const PresignBody = z.object({
 
 const R2_UGC_PREFIX = 'r2ugc:'
 
+/** Slug do servidor do Mural (kids). Fixo — o app adulto não chama esta rota. */
+const MURAL_SPACE_SLUG = 'mural-dos-criadores'
+const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
+
 /** Prefixo de chave do UGC por dono (namespacing). */
 function ugcKey(userId: string, ext: string): string {
   return `hub/${userId}/${randomUUID()}.${ext}`
@@ -70,6 +75,16 @@ async function readJson(req: Request): Promise<unknown> {
 }
 
 /**
+ * Resolve+valida o id de path como UUID (fail-fast na borda; espelha o
+ * `hubShowcase`). Não-uuid → `null` → o handler responde 400 em vez de mandar lixo
+ * ao gateway. A autorização real (matrícula/role no alvo) segue no hub.
+ */
+async function idFrom(ctx: { params: Promise<{ id: string }> }): Promise<string | null> {
+  const { id } = await ctx.params
+  return UUID_RE.test(id) ? id : null
+}
+
+/**
  * Route handlers `/api/hub/*` dos apps de aluno (community + community-kids). A
  * lógica vive aqui; cada `route.ts` do app vira 1-3 linhas
  * (`export const { GET, POST } = shell.routes.hubThreads`). Espelha o
@@ -77,12 +92,29 @@ async function readJson(req: Request): Promise<unknown> {
  */
 export function createHubRoutes(deps: {
   hub: HubClient
+  members: MembersClient
   media: MediaModule
   session: SessionModule
 }) {
-  const { hub, media, session } = deps
+  const { hub, members, media, session } = deps
   // Id do viewer p/ redigir o autor de terceiros (null = sem sessão → tudo redigido).
   const viewerId = async (): Promise<string | null> => (await session.getSession())?.id ?? null
+
+  const impersonationReadonly = () =>
+    NextResponse.json(
+      {
+        error: {
+          code: 'IMPERSONATION_READONLY',
+          message: 'Sessão de suporte é somente-leitura.',
+        },
+      },
+      { status: 403 },
+    )
+
+  async function requireWritableSession(): Promise<NextResponse | null> {
+    const user = await session.getSession()
+    return user?.act ? impersonationReadonly() : null
+  }
 
   const hubSpaces = {
     GET: async () => ok(await hub.listSpaces()),
@@ -100,7 +132,8 @@ export function createHubRoutes(deps: {
 
   const hubChannelThreads = {
     GET: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
-      const { id } = await ctx.params
+      const id = await idFrom(ctx)
+      if (!id) return invalid()
       const url = new URL(req.url)
       const [r, vid] = await Promise.all([
         hub.listThreads(id, {
@@ -112,11 +145,16 @@ export function createHubRoutes(deps: {
       return okRedacted(r, vid)
     },
     POST: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const parsed = CreateThread.safeParse(await readJson(req))
       if (!parsed.success) return invalid()
-      const r = await hub.createThread((await ctx.params).id, {
+      const id = await idFrom(ctx)
+      if (!id) return invalid()
+      const r = await hub.createThread(id, {
         title: parsed.data.title,
-        body: parsed.data.body,
+        // Neutraliza imagem externa no corpo de UGC (pixel-rastreador) já na origem.
+        body: stripImageMarkdown(parsed.data.body),
         attachmentIds: parsed.data.attachmentIds,
       })
       return okRedacted(r, await viewerId())
@@ -125,20 +163,27 @@ export function createHubRoutes(deps: {
 
   const hubThread = {
     GET: async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
-      const [r, vid] = await Promise.all([hub.getThread((await ctx.params).id), viewerId()])
+      const id = await idFrom(ctx)
+      if (!id) return invalid()
+      const [r, vid] = await Promise.all([hub.getThread(id), viewerId()])
       return okRedacted(r, vid)
     },
     PATCH: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const parsed = EditBody.safeParse(await readJson(req))
       if (!parsed.success) return invalid()
-      const r = await hub.editThread((await ctx.params).id, parsed.data.body)
+      const id = await idFrom(ctx)
+      if (!id) return invalid()
+      const r = await hub.editThread(id, stripImageMarkdown(parsed.data.body))
       return okRedacted(r, await viewerId())
     },
   }
 
   const hubThreadComments = {
     GET: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
-      const { id } = await ctx.params
+      const id = await idFrom(ctx)
+      if (!id) return invalid()
       const url = new URL(req.url)
       const [r, vid] = await Promise.all([
         hub.listComments(id, {
@@ -150,10 +195,15 @@ export function createHubRoutes(deps: {
       return okRedacted(r, vid)
     },
     POST: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const parsed = CreateComment.safeParse(await readJson(req))
       if (!parsed.success) return invalid()
-      const r = await hub.createComment((await ctx.params).id, {
-        body: parsed.data.body,
+      const id = await idFrom(ctx)
+      if (!id) return invalid()
+      const r = await hub.createComment(id, {
+        // Neutraliza imagem externa no corpo de UGC (pixel-rastreador) já na origem.
+        body: stripImageMarkdown(parsed.data.body),
         replyToId: parsed.data.replyToId ?? null,
         attachmentIds: parsed.data.attachmentIds,
       })
@@ -163,61 +213,92 @@ export function createHubRoutes(deps: {
 
   const hubComment = {
     PATCH: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const parsed = EditBody.safeParse(await readJson(req))
       if (!parsed.success) return invalid()
-      const r = await hub.editComment((await ctx.params).id, parsed.data.body)
+      const id = await idFrom(ctx)
+      if (!id) return invalid()
+      const r = await hub.editComment(id, stripImageMarkdown(parsed.data.body))
       return okRedacted(r, await viewerId())
     },
   }
 
   const hubThreadReactions = {
     POST: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const parsed = ReactBody.safeParse(await readJson(req))
       if (!parsed.success) return invalid()
-      return ok(await hub.react('thread', (await ctx.params).id, parsed.data.emoji))
+      const id = await idFrom(ctx)
+      if (!id) return invalid()
+      return ok(await hub.react('thread', id, parsed.data.emoji))
     },
   }
 
   const hubThreadReactionDelete = {
     DELETE: async (_req: Request, ctx: { params: Promise<{ id: string; emoji: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const p = await ctx.params
+      if (!UUID_RE.test(p.id)) return invalid()
       return ok(await hub.unreact('thread', p.id, p.emoji))
     },
   }
 
   const hubCommentReactions = {
     POST: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const parsed = ReactBody.safeParse(await readJson(req))
       if (!parsed.success) return invalid()
-      return ok(await hub.react('comment', (await ctx.params).id, parsed.data.emoji))
+      const id = await idFrom(ctx)
+      if (!id) return invalid()
+      return ok(await hub.react('comment', id, parsed.data.emoji))
     },
   }
 
   const hubCommentReactionDelete = {
     DELETE: async (_req: Request, ctx: { params: Promise<{ id: string; emoji: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const p = await ctx.params
+      if (!UUID_RE.test(p.id)) return invalid()
       return ok(await hub.unreact('comment', p.id, p.emoji))
     },
   }
 
   const hubChannelSeen = {
-    POST: async (_req: Request, ctx: { params: Promise<{ id: string }> }) =>
-      ok(await hub.markSeen((await ctx.params).id)),
+    POST: async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const id = await idFrom(ctx)
+      if (!id) return invalid()
+      return ok(await hub.markSeen(id))
+    },
   }
 
   const hubThreadReport = {
     POST: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const parsed = ReportBody.safeParse(await readJson(req))
       if (!parsed.success) return invalid()
-      return ok(await hub.report('thread', (await ctx.params).id, parsed.data.reason))
+      const id = await idFrom(ctx)
+      if (!id) return invalid()
+      return ok(await hub.report('thread', id, parsed.data.reason))
     },
   }
 
   const hubCommentReport = {
     POST: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const parsed = ReportBody.safeParse(await readJson(req))
       if (!parsed.success) return invalid()
-      return ok(await hub.report('comment', (await ctx.params).id, parsed.data.reason))
+      const id = await idFrom(ctx)
+      if (!id) return invalid()
+      return ok(await hub.report('comment', id, parsed.data.reason))
     },
   }
 
@@ -229,6 +310,14 @@ export function createHubRoutes(deps: {
    * (fonte da verdade dos limites) e mina o PUT pré-assinado com Content-Length/
    * Content-Type ASSINADOS — o cliente não consegue subir mais bytes nem outro
    * tipo do que foi autorizado. Imagens NÃO usam esta rota (vão re-encodadas).
+   *
+   * ⚠️ Os BYTES do anexo NÃO são inspecionados (o BFF nunca os vê — vão direto ao
+   * R2): o `mime` declarado é só validado contra a allowlist, então um arquivo pode
+   * conter conteúdo que não casa com o tipo declarado. Sem risco de XSS — `text/html`/
+   * `image/svg+xml` ficam FORA da allowlist, documentos são servidos com
+   * `Content-Disposition: attachment`, e o serve é um 302 p/ origem do R2 (cross-origin,
+   * fora da origem do app). Mas é content-spoofing num fórum infantil: a MODERAÇÃO
+   * deve tratar os bytes do anexo como NÃO CONFIÁVEIS (pré-aprovação + report/hide).
    */
   const hubUploadPresign = {
     POST: async (req: Request) => {
@@ -416,6 +505,87 @@ export function createHubRoutes(deps: {
     },
   }
 
+  /**
+   * Publica o projeto concluído no Mural dos Criadores. Multipart: `lessonId`,
+   * `blockId` e (opcional) `file` = print do jogo capturado no cliente. O conteúdo
+   * (título/resumo/capa padrão) é AUTORITATIVO do members (não confia no cliente); o
+   * autor é o PRIMEIRO NOME da sessão. A capa do print sobe ao R2 público; sem print
+   * (projeto web) ou falha → cai na capa padrão do admin. Idempotente no hub.
+   */
+  const hubShowcase = {
+    POST: async (req: Request) => {
+      // Multipart fora do matcher do proxy → guard próprio (sessão estrita + anti-CSRF).
+      const sess = await media.requireUploadSession(req)
+      if (sess instanceof NextResponse) return sess
+
+      const maxBytes = HUB_ATTACHMENT_LIMITS.maxBytesByKind.image
+      const oversized = rejectOversizedRequest(req, maxBytes)
+      if (oversized) return oversized
+
+      let form: FormData
+      try {
+        form = await req.formData()
+      } catch {
+        return invalid()
+      }
+      const lessonId = String(form.get('lessonId') ?? '')
+      const blockId = String(form.get('blockId') ?? '')
+      if (!UUID_RE.test(lessonId) || !UUID_RE.test(blockId)) return invalid()
+
+      // 1. Conteúdo autoritativo + elegibilidade (o members confere acesso + entrega).
+      const payload = await members.getShowcasePayload(lessonId, blockId)
+      if (payload.status !== 200 || !payload.body) {
+        return NextResponse.json(payload.body ?? { error: { code: 'SHOWCASE_FAILED' } }, {
+          status: payload.status === 200 ? 502 : payload.status,
+        })
+      }
+      if (!payload.body.eligible) {
+        return NextResponse.json(
+          {
+            error: {
+              code: 'SHOWCASE_NOT_ELIGIBLE',
+              message: 'Este projeto ainda não pode ir para o Mural.',
+            },
+          },
+          { status: 409 },
+        )
+      }
+      // 2. Capa: print do jogo (file) → R2 PÚBLICO; senão `null` (o hub cai na capa
+      //    padrão do admin). Best-effort — falha no upload mantém `null` (não derruba).
+      let coverImageUrl: string | null = null
+      const file = form.get('file')
+      if (
+        file instanceof File &&
+        file.size > 0 &&
+        file.size <= maxBytes &&
+        UGC_IMAGE_INPUT_MIME.has(file.type)
+      ) {
+        try {
+          const optimized = await optimizeImage(await file.arrayBuffer(), 'ugc')
+          const stored = await r2PutObject({
+            key: `hub/showcase/${sess.id}/${randomUUID()}.${optimized.extension}`,
+            body: optimized.buffer,
+            contentType: optimized.contentType,
+          })
+          coverImageUrl = stored.url
+        } catch {
+          // best-effort: deixa `null` → o hub usa a capa padrão.
+        }
+      }
+
+      // 3. Título/resumo/nome-do-autor/idempotência NÃO são enviados: o hub os resolve
+      //    (S2S ao members + header de perfil do gateway) e re-valida a elegibilidade —
+      //    a rota é alcançável na borda, confiar no corpo era o furo do full review.
+      const r = await hub.createShowcaseThread({
+        spaceSlug: MURAL_SPACE_SLUG,
+        lessonId,
+        blockId,
+        coverImageUrl,
+      })
+      return ok(r)
+    },
+  }
+
   return {
     hubSpaces,
     hubSpace,
@@ -431,6 +601,7 @@ export function createHubRoutes(deps: {
     hubChannelSeen,
     hubThreadReport,
     hubCommentReport,
+    hubShowcase,
     hubUploadPresign,
     hubUploadImage,
     hubAttachmentServe,

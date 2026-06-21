@@ -8,9 +8,10 @@ const BASE = {
 const PROD_OK = {
   ...BASE,
   NODE_ENV: 'production',
-  MESSAGING_INTERNAL_TOKEN: 'token-interno',
-  MESSAGING_WEBHOOK_TOKEN: 'token-webhook',
+  MESSAGING_INTERNAL_TOKEN: 'token-interno-16',
+  MESSAGING_WEBHOOK_TOKEN: 'token-webhook-16',
   METRICS_TOKEN: 'token-de-metricas-16',
+  ATTACHMENT_FETCH_ALLOWED_HOSTS: 'fiscal.railway.internal',
 }
 
 describe('loadEnv — fail-closed em produção', () => {
@@ -45,6 +46,20 @@ describe('loadEnv — fail-closed em produção', () => {
   it('produção sem METRICS_TOKEN → falha no boot', () => {
     const { METRICS_TOKEN: _omit, ...semMetrics } = PROD_OK
     expect(() => loadEnv(semMetrics)).toThrow(/METRICS_TOKEN/)
+  })
+
+  it('produção com token curto → falha no boot', () => {
+    expect(() => loadEnv({ ...PROD_OK, MESSAGING_WEBHOOK_TOKEN: 'curto' })).toThrow(
+      /MESSAGING_WEBHOOK_TOKEN/,
+    )
+    expect(() => loadEnv({ ...PROD_OK, MESSAGING_INTERNAL_TOKEN: 'curto' })).toThrow(
+      /MESSAGING_INTERNAL_TOKEN/,
+    )
+  })
+
+  it('produção sem allowlist de anexos → falha no boot', () => {
+    const { ATTACHMENT_FETCH_ALLOWED_HOSTS: _omit, ...semAllowlist } = PROD_OK
+    expect(() => loadEnv(semAllowlist)).toThrow(/ATTACHMENT_FETCH_ALLOWED_HOSTS/)
   })
 
   it('EVOLUTION_URL sem EVOLUTION_API_KEY (e vice-versa) → falha no boot', () => {

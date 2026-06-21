@@ -8,7 +8,7 @@ import type { GetPaymentsOpsService } from '../../../application/payments-ops/ge
 import type { GetDailyPaymentsStatsService } from '../../../application/payments-stats/get-daily-payments-stats.service'
 import type { GetPaymentsStatsService } from '../../../application/payments-stats/get-payments-stats.service'
 import type { RefundPaymentService } from '../../../application/refund-payment/refund-payment.service'
-import { requireAdmin } from '../admin-auth'
+import { requireAdmin, requireAdminWrite } from '../admin-auth'
 import {
   AdminIdParam,
   ListPaymentsQuery,
@@ -42,7 +42,7 @@ export interface AdminRoutesDeps {
 
 /**
  * Rotas de LEITURA admin (painel @sistemazero/admin). O RBAC real é do gateway
- * (JWT + role admin/staff); aqui conferimos os headers `X-Auth-User-*` confiáveis
+ * (JWT + role admin/staff para leitura); aqui conferimos os headers `X-Auth-User-*` confiáveis
  * (`requireAdmin`, defesa em profundidade). Caminho `/payments/admin/*` distinto
  * das rotas consumer (`/payments`, `/payments/:id`) p/ gating inequívoco no gateway.
  * Sem auth de consumidor (HMAC) — só chega aqui quem passou pelo gateway.
@@ -132,7 +132,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
       .post(
         '/payments/:id/refund',
         async ({ params, headers }) => {
-          requireAdmin(headers, deps.requireAdminEnabled, deps.internalToken)
+          requireAdminWrite(headers, deps.requireAdminEnabled, deps.internalToken)
           return deps.refundPayment.execute(params.id)
         },
         { params: AdminIdParam },
@@ -140,7 +140,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
       .delete(
         '/subscriptions/:id',
         async ({ params, headers }) => {
-          requireAdmin(headers, deps.requireAdminEnabled, deps.internalToken)
+          requireAdminWrite(headers, deps.requireAdminEnabled, deps.internalToken)
           return deps.cancelSubscription.executeAdmin(params.id)
         },
         { params: AdminIdParam },

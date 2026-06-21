@@ -5,7 +5,6 @@ import { Card } from '@sistemazero/ui/card'
 import { Input } from '@sistemazero/ui/input'
 import { Pagination } from '@sistemazero/ui/pagination'
 import { Select } from '@sistemazero/ui/select'
-import { Spinner } from '@sistemazero/ui/spinner'
 import {
   Table,
   TableBody,
@@ -21,6 +20,7 @@ import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { CatalogTabs } from '@/components/admin/catalog-tabs'
 import { StatusBadge } from '@/components/admin/status-badge'
+import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { type ApiError, apiGet } from '@/lib/api'
 import type { Paginated, ProductView } from '@/lib/types'
 
@@ -124,11 +124,7 @@ export function ProductsClient() {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow>
-                <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
-                  <Spinner className="mx-auto" />
-                </TableCell>
-              </TableRow>
+              <TableSkeletonRows columns={5} />
             ) : items.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">

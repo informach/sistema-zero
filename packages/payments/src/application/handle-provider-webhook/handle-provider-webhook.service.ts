@@ -1,3 +1,4 @@
+import { TooManyRequestsError } from '@sistemazero/core/http'
 import type { PaymentGateway } from '../../domain/ports/payment-gateway.port'
 import type { PaymentRepository } from '../../domain/ports/payment-repository.port'
 import type { WebhookInbox } from '../../domain/ports/webhook-inbox.port'
@@ -34,15 +35,15 @@ export class HandleProviderWebhookService {
   ) {}
 
   async execute(input: HandlePixWebhookInput): Promise<void> {
-    const items = input.items.slice(0, MAX_ITEMS_PER_NOTIFICATION)
     if (input.items.length > MAX_ITEMS_PER_NOTIFICATION) {
-      this.logger.warn('webhook.items_truncated', {
+      this.logger.warn('webhook.too_many_items', {
         received: input.items.length,
-        processed: items.length,
+        max: MAX_ITEMS_PER_NOTIFICATION,
       })
+      throw new TooManyRequestsError()
     }
 
-    for (const item of items) {
+    for (const item of input.items) {
       // Isolamento por item: um erro não derruba o lote nem consome o dedupe
       // (markProcessed só roda no sucesso → a reentrega da Efí reprocessa).
       try {

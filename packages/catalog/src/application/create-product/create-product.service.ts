@@ -85,7 +85,7 @@ export async function assertComponentsExist(
 
 // Espelha o MAX_CLOSURE_ROUNDS/maxDepth do resolvedor: um grafo mais fundo que
 // isso já não resolve na leitura, então não há ciclo legítimo além desse teto.
-const MAX_CYCLE_SCAN_ROUNDS = 8
+const MAX_CYCLE_SCAN_ROUNDS = 9
 
 /**
  * Barra ciclo INDIRETO de combos na ESCRITA (A inclui B … que inclui A). A guarda
@@ -116,5 +116,8 @@ export async function assertNoComponentCycle(
     for (const id of pending) visited.add(id)
     const nodes = await products.findNodesByIds(pending)
     frontier = [...new Set(nodes.flatMap((n) => n.components.map((c) => c.productId)))]
+  }
+  if (frontier.length > 0) {
+    throw new ValidationError('Profundidade máxima de combo excedida (possível ciclo)')
   }
 }

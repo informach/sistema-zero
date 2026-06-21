@@ -162,12 +162,18 @@ describe('Members HTTP — consumo do aluno', () => {
     const res = await get(
       app,
       `/members/courses/${course.slug}/lessons/${course.lessonIds[0]}`,
-      authHeaders('outro-user'),
+      authHeaders('99999999-9999-9999-9999-999999999999'),
     )
     expect(res.status).toBe(403)
     const body = await readJson(res)
     expect(body.error.code).toBe('ACCESS_DENIED')
     expect(body.blocks).toBeUndefined()
+  })
+
+  test('x-auth-user-id malformado (não-uuid) → 400 na borda (não 500 por 22P02)', async () => {
+    const { app } = buildApp()
+    const res = await get(app, '/members/courses', authHeaders('lixo-nao-uuid'))
+    expect(res.status).toBe(400)
   })
 
   test('aula rascunho é invisível ao aluno: some do outline, 404 por URL, progresso conta só publicadas', async () => {
@@ -254,7 +260,7 @@ describe('Members HTTP — consumo do aluno', () => {
 
 describe('Members HTTP — webhooks', () => {
   test('grant assinado concede acesso; reentrega (mesmo delivery) deduplica', async () => {
-    const { app, courses, catalog } = buildApp()
+    const { app, courses, catalog, hubCalls } = buildApp()
     const course = seedSampleCourse(courses)
     catalog.set('offer-x', offerWithCourse('offer-x', course.slug))
     const body = JSON.stringify({ userId: USER, offerRef: 'offer-x', paymentId: 'pay-1' })
@@ -280,6 +286,9 @@ describe('Members HTTP — webhooks', () => {
       }),
     )
     expect((await readJson(r2)).deduped).toBe(true)
+
+    // O hub é notificado UMA vez (no grant); a reentrega deduplicada sai antes do notify.
+    expect(hubCalls).toEqual([{ userId: USER, event: 'grant' }])
   })
 
   test('grant de oferta não resolvida → 502 e NÃO deduplica (retry re-tenta)', async () => {
@@ -344,7 +353,7 @@ describe('Members HTTP — webhooks', () => {
   })
 
   test('cancelamento de assinatura revoga o acesso do aluno', async () => {
-    const { app, courses, catalog } = buildApp()
+    const { app, courses, catalog, hubCalls } = buildApp()
     const course = seedSampleCourse(courses)
     catalog.set('offer-sub', offerWithCourse('offer-sub', course.slug))
 
@@ -375,5 +384,6 @@ describe('Members HTTP — webhooks', () => {
     expect((await readJson(cancel)).affected).toBe(1)
 
     expect((await get(app, `/members/courses/${course.slug}`, authHeaders())).status).toBe(403)
+    expect(hubCalls).toContainEqual({ userId: USER, event: 'canceled' })
   })
 })

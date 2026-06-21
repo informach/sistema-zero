@@ -41,10 +41,12 @@ const spaceFields = (b: SpaceInput): SpaceFields => ({
   accessConfig: normalizeAccessConfig({
     visibility: b.accessConfig.visibility,
     courses: b.accessConfig.courses ?? [],
+    communities: b.accessConfig.communities ?? [],
     roles: b.accessConfig.roles ?? [],
   }),
   // Pré-moderação: kids nasce ligada por padrão (decisão de segurança).
   requiresApproval: b.requiresApproval ?? b.audience === 'kids',
+  teaserWhenLocked: b.teaserWhenLocked ?? false,
   status: b.status ?? 'active',
 })
 
@@ -56,6 +58,7 @@ const channelFields = (b: ChannelInput): ChannelFields => ({
     ? normalizeAccessConfig({
         visibility: b.accessConfig.visibility,
         courses: b.accessConfig.courses ?? [],
+        communities: b.accessConfig.communities ?? [],
         roles: b.accessConfig.roles ?? [],
       })
     : null,

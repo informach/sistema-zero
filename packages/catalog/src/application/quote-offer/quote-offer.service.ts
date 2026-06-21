@@ -28,6 +28,7 @@ export class QuoteOfferService {
     if (!offer.isAvailable()) throw new OfferNotAvailableError()
 
     const priceCents = offer.priceCents
+    if (priceCents <= 0) throw new OfferNotAvailableError('Oferta sem preço cobrável')
     const base: OfferQuoteView = {
       offerId: offer.id,
       offerSlug: offer.slug,
@@ -43,6 +44,9 @@ export class QuoteOfferService {
 
     const coupon = await this.coupons.findByCode(code)
     if (!coupon) throw new CouponNotFoundError()
+    if (offer.content?.allowsCoupon !== true) {
+      throw new CouponNotApplicableError('Cupom desabilitado para esta oferta')
+    }
     coupon.assertApplicable(offer.id, priceCents)
 
     const discountCents = coupon.computeDiscountCents(priceCents)

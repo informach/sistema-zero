@@ -19,13 +19,51 @@ const optionalBool = (def: boolean) =>
  * gateway.config.ts); quando presente, exige ≥16 chars (segredo curto = auth
  * efetivamente desabilitada).
  */
-const optionalSecret = z
+const optionalSecretWithMin = (min: number) =>
+  z
+    .string()
+    .optional()
+    .transform((v) => v?.trim() || undefined)
+    .refine((v) => v === undefined || v.length >= min, {
+      message: `deve ter ao menos ${min} caracteres`,
+    })
+
+const optionalSecret = optionalSecretWithMin(16)
+const optionalStrongSecret = optionalSecretWithMin(32)
+
+/** URL aponta p/ loopback? Invalida conexoes entre containers em deploy. */
+function isLoopbackUrl(value: string | undefined): boolean {
+  if (!value) return false
+  try {
+    const host = new URL(value).hostname.toLowerCase().replace(/^\[|\]$/g, '')
+    return (
+      host === 'localhost' ||
+      host === '127.0.0.1' ||
+      host === '::1' ||
+      host === '0.0.0.0' ||
+      host.endsWith('.localhost')
+    )
+  } catch {
+    return false
+  }
+}
+
+const nonLoopbackProdUrls: ReadonlyArray<{ key: string; why: string }> = [
+  { key: 'PAYMENTS_URL', why: 'upstream payments' },
+  { key: 'AUTH_URL', why: 'upstream auth' },
+  { key: 'FUNNEL_URL', why: 'upstream funnel' },
+  { key: 'CATALOG_URL', why: 'upstream catalog' },
+  { key: 'MEMBERS_URL', why: 'upstream members' },
+  { key: 'MESSAGING_URL', why: 'upstream messaging' },
+  { key: 'FISCAL_URL', why: 'upstream fiscal' },
+  { key: 'HUB_URL', why: 'upstream hub' },
+]
+
+const nonEmptyString = z
   .string()
   .optional()
   .transform((v) => v?.trim() || undefined)
-  .refine((v) => v === undefined || v.length >= 16, {
-    message: 'deve ter ao menos 16 caracteres',
-  })
+  .refine((v) => v === undefined || v.length > 0, { message: 'nao pode ser vazio' })
 
 /** Segredos opcionais em dev que viram OBRIGATÓRIOS em produção (fail-fast no boot). */
 const PROD_REQUIRED_SECRETS: ReadonlyArray<{ key: string; why: string }> = [
@@ -33,11 +71,14 @@ const PROD_REQUIRED_SECRETS: ReadonlyArray<{ key: string; why: string }> = [
   { key: 'MEMBERS_INTERNAL_TOKEN', why: 'prova ao members que a chamada veio do gateway' },
   { key: 'CATALOG_INTERNAL_TOKEN', why: 'prova ao catalog que a chamada veio do gateway' },
   { key: 'MESSAGING_INTERNAL_TOKEN', why: 'prova ao messaging que a chamada veio do gateway' },
+  { key: 'AUTH_HMAC_SECRET', why: 'cadastra o auth como consumer HMAC da mensageria' },
   { key: 'AUTH_INTERNAL_TOKEN', why: 'prova ao auth que a chamada veio do gateway' },
   {
     key: 'PAYMENTS_INTERNAL_TOKEN',
     why: 'prova ao payments que a chamada veio do gateway (admin + minhas compras)',
   },
+  { key: 'FISCAL_INTERNAL_TOKEN', why: 'prova ao fiscal que a chamada veio do gateway' },
+  { key: 'FISCAL_HMAC_SECRET', why: 'cadastra o fiscal como consumer HMAC da mensageria' },
   { key: 'HUB_INTERNAL_TOKEN', why: 'prova ao hub (comunidade) que a chamada veio do gateway' },
 ]
 
@@ -90,7 +131,7 @@ const EnvSchema = z
     JWT_AUDIENCE: z.string().optional(),
     JWT_JWKS_URL: z.string().optional(),
     // Segredo HS256 compartilhado com o emissor (auth) — verifica tokens HS256 sem JWKS.
-    JWT_HS256_SECRET: z.string().optional(),
+    JWT_HS256_SECRET: optionalStrongSecret,
     // Algoritmos aceitos (CSV). Pin contra alg-confusion/downgrade. Default: RS256.
     JWT_ALGORITHMS: z
       .string()
@@ -106,8 +147,8 @@ const EnvSchema = z
     HMAC_TOLERANCE_SECONDS: z.coerce.number().int().positive().default(300),
 
     // Credenciais do gateway como consumer de um upstream (rotas upstreamAuth=resign).
-    GATEWAY_CONSUMER_ID: z.string().optional(),
-    GATEWAY_HMAC_SECRET: z.string().optional(),
+    GATEWAY_CONSUMER_ID: nonEmptyString,
+    GATEWAY_HMAC_SECRET: optionalSecret,
 
     // Token do GET /metrics e do snapshot do /readyz (o gateway é a BORDA pública).
     // Header `x-metrics-token` ou `Authorization: Bearer`. OBRIGATÓRIO em produção.
@@ -125,6 +166,7 @@ const EnvSchema = z
     MESSAGING_INTERNAL_TOKEN: optionalSecret,
     AUTH_INTERNAL_TOKEN: optionalSecret,
     PAYMENTS_INTERNAL_TOKEN: optionalSecret,
+    FISCAL_INTERNAL_TOKEN: optionalSecret,
     HUB_INTERNAL_TOKEN: optionalSecret,
 
     // Resiliência.
@@ -143,12 +185,33 @@ const EnvSchema = z
     // URL do serviço de identidade (@sistemazero/auth) — lida pelo gateway.config.ts.
     AUTH_URL: z.string().default('http://localhost:3002'),
 
+    // URL do catalog (@sistemazero/catalog) — lida pelo gateway.config.ts.
+    CATALOG_URL: z.string().default('http://localhost:3003'),
+
+    // URL do members (@sistemazero/members) — lida pelo gateway.config.ts.
+    MEMBERS_URL: z.string().default('http://localhost:3004'),
+
+    // URL do messaging (@sistemazero/messaging) — lida pelo gateway.config.ts.
+    MESSAGING_URL: z.string().default('http://localhost:3006'),
+
+    // URL do fiscal (@sistemazero/fiscal) — lida pelo gateway.config.ts.
+    FISCAL_URL: z.string().default('http://localhost:3009'),
+    FISCAL_HMAC_SECRET: optionalSecret,
+    FISCAL_ALLOWED_CIDRS: z.string().optional(),
+
+    // URL do hub (@sistemazero/hub) — lida pelo gateway.config.ts.
+    HUB_URL: z.string().default('http://localhost:3010'),
+
     // Funil (@sistemazero/funnel) como upstream + cliente HMAC de borda (BFF de
     // pagamentos). Lidas pelo gateway.config.ts.
     FUNNEL_URL: z.string().default('http://localhost:4321'),
     FUNNEL_HMAC_SECRET: z.string().optional(),
     FUNNEL_INTERNAL_TOKEN: z.string().optional(),
     FUNNEL_ALLOWED_CIDRS: z.string().optional(),
+
+    // Consumer HMAC do auth (reset/OTP/convite via /messaging/send).
+    AUTH_HMAC_SECRET: optionalSecret,
+    AUTH_ALLOWED_CIDRS: z.string().optional(),
   })
   .refine((e) => e.STATE_BACKEND !== 'redis' || Boolean(e.REDIS_URL?.trim()), {
     message: 'REDIS_URL é obrigatória quando STATE_BACKEND=redis',
@@ -159,6 +222,16 @@ const EnvSchema = z
     for (const { key, why } of PROD_REQUIRED_SECRETS) {
       if (!(e as Record<string, unknown>)[key]) {
         ctx.addIssue({ code: 'custom', path: [key], message: `obrigatório em produção (${why})` })
+      }
+    }
+    for (const { key, why } of nonLoopbackProdUrls) {
+      const value = (e as Record<string, unknown>)[key]
+      if (typeof value === 'string' && isLoopbackUrl(value)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: [key],
+          message: `${key} nao pode apontar para localhost/loopback em produção (${why})`,
+        })
       }
     }
   })

@@ -8,6 +8,24 @@ import type { SourceMapBuilder } from './sourceMap'
 export { normalizeIdentifier, safeIdent }
 
 /**
+ * Erro lançado quando o gerador encontra um nó de IR que NENHUM `case` do
+ * `switch` cobre — ou seja, uma variante fora do esquema conhecido (ex.: IR de um
+ * JSON importado por um estranho, ou uma variante nova sem `case` correspondente).
+ * Sem ele, o `switch` "caía pela borda" e devolvia `undefined`, que era
+ * interpolado como a STRING literal `"undefined"` no código gerado — um bug
+ * silencioso. Tipado e capturável (irmão de `GeneratorDepthError`), para que os
+ * chamadores na thread principal possam distingui-lo de um bug do gerador e
+ * degradar com elegância em vez de emitir código quebrado. Vive AQUI (módulo
+ * "de baixo") para que `js.ts` possa importá-lo sem criar dependência circular.
+ */
+export class GeneratorError extends Error {
+  constructor(message = 'Nó de IR fora do esquema suportado pelo gerador') {
+    super(message)
+    this.name = 'GeneratorError'
+  }
+}
+
+/**
  * Contexto opcional de source map para expressões. Como `compileExpr` nunca
  * emite `\n`, toda (sub)expressão vive numa única linha — basta registrar
  * `__id → linha`. A linha é a mesma para a expressão e seus filhos.
@@ -184,6 +202,9 @@ export function compileExpr(
       const out = `${left} ${expr.op} ${right}`
       return p < parentPrecedence ? `(${out})` : out
     }
+    case 'logicalNot':
+      // Operando em alta precedência: `!a`, `!fn()`, mas `!(a && b)`.
+      return `!${compileExpr(expr.value, 20, identifiers, rec)}`
     case 'ternary': {
       // A condição não pode ser ela própria um ternário sem parênteses (só liga
       // até `||`); por isso compila com precedência de `||`. Os ramos aceitam
@@ -198,6 +219,104 @@ export function compileExpr(
       const args = expr.args.map((a) => compileExpr(a, 0, identifiers, rec)).join(', ')
       return `${identifiers.get(expr.name)}(${args})`
     }
+    case 'g2d:keyDown':
+      return `SZGame2D.keyDown(${JSON.stringify(expr.key)})`
+    case 'g2d:touches':
+      return `SZGame2D.touches(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
+    case 'g2d:countGroup':
+      return `SZGame2D.countGroup(${identifiers.get(expr.groupVar)})`
+    case 'g2d:spriteAngle':
+      return `SZGame2D.spriteAngleDeg(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:distance':
+      return `SZGame2D.distance(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
+    case 'g2d:angleTo':
+      return `SZGame2D.angleTo(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
+    case 'g2d:getHealth':
+      return `SZGame2D.getHealth(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:randomBetween':
+      return `SZGame2D.randomBetween(${expr.min}, ${expr.max})`
+    case 'g2d:randomChance':
+      return `SZGame2D.randomChance(${expr.percent})`
+    case 'g2d:hasHealth':
+      return `SZGame2D.hasHealth(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:cooldownReady':
+      return `SZGame2D.cooldownReady(${identifiers.get(expr.spriteVar)}, ${expr.frames})`
+    case 'g2d:isPaused':
+      return 'SZGame2D.isPaused()'
+    case 'g2d:cameraX':
+      return 'SZGame2D.cameraX()'
+    case 'g2d:cameraY':
+      return 'SZGame2D.cameraY()'
+    case 'g2d:tileAtSprite':
+      return `SZGame2D.tileAtSprite(${identifiers.get(expr.mapVar)}, ${identifiers.get(expr.spriteVar)})`
+    case 'g2d:sceneIs':
+      return `SZGame2D.sceneIs(${JSON.stringify(expr.name)})`
+    case 'g2d:stickHeroScore':
+      return `SZGame2D.stickHeroScore(${identifiers.get(expr.gameVar)})`
+    case 'g2d:stickHeroOver':
+      return `SZGame2D.stickHeroOver(${identifiers.get(expr.gameVar)})`
+    case 'g2d:balloonScore':
+      return `SZGame2D.balloonScore(${identifiers.get(expr.gameVar)})`
+    case 'g2d:balloonFuel':
+      return `SZGame2D.balloonFuel(${identifiers.get(expr.gameVar)})`
+    case 'g2d:balloonOver':
+      return `SZGame2D.balloonOver(${identifiers.get(expr.gameVar)})`
+    case 'g2d:aimReleased':
+      return `SZGame2D.aimReleased(${identifiers.get(expr.throwerVar)})`
+    case 'g2d:bananaHitThrower':
+      return `SZGame2D.bananaHitThrower(${identifiers.get(expr.cityVar)}, ${identifiers.get(expr.throwerVar)})`
+    case 'g2d:bananaHitCity':
+      return `SZGame2D.bananaHitCity(${identifiers.get(expr.cityVar)})`
+    case 'g3d:keyDown':
+      return `SZGame3D.keyDown(${JSON.stringify(expr.key)})`
+    case 'g3d:collides':
+      return `SZGame3D.collides(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
+    case 'g3d:hitAny':
+      return `SZGame3D.hitAny(${identifiers.get(expr.objVar)}, ${identifiers.get(expr.groupVar)})`
+    case 'g3d:crosserHit':
+      return `SZGame3D.crosserHit(${identifiers.get(expr.objVar)}, ${identifiers.get(expr.worldVar)})`
+    case 'g3d:crosserRow':
+      return `SZGame3D.crosserRow(${identifiers.get(expr.objVar)})`
+    case 'g3d:touchesBox':
+      return `SZGame3D.touchesBox(${identifiers.get(expr.objVar)}, ${identifiers.get(expr.groupVar)})`
+    case 'g3d:distanceTo':
+      return `SZGame3D.distanceTo(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
+    case 'g3d:isNear':
+      return `SZGame3D.isNear(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)}, ${expr.dist})`
+    case 'g3d:raceHit':
+      return `SZGame3D.raceHit(${identifiers.get(expr.objVar)}, ${identifiers.get(expr.worldVar)})`
+    case 'g3d:raceLaps':
+      return `SZGame3D.raceLaps(${identifiers.get(expr.objVar)})`
+    case 'g3d:stackScore':
+      return `SZGame3D.stackScore(${identifiers.get(expr.worldVar)})`
+    case 'g3d:stackGameOver':
+      return `SZGame3D.stackGameOver(${identifiers.get(expr.worldVar)})`
+    case 'g3d:getPos':
+      return `SZGame3D.getPos(${identifiers.get(expr.objVar)}, ${JSON.stringify(expr.axis)})`
+    case 'g3d:getRot':
+      return `SZGame3D.getRot(${identifiers.get(expr.objVar)}, ${JSON.stringify(expr.axis)})`
+    case 'g3d:getScale':
+      return `SZGame3D.getScale(${identifiers.get(expr.objVar)})`
+    case 'g3d:dt':
+      return `SZGame3D.dt(${identifiers.get(expr.worldVar)})`
+    case 'g3d:angleTo':
+      return `SZGame3D.angleTo(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
+    case 'g3d:pickAtMouse':
+      return `SZGame3D.pickAtMouse(${identifiers.get(expr.worldVar)})`
+    case 'g3d:pointerOver':
+      return `SZGame3D.pointerOver(${identifiers.get(expr.worldVar)}, ${identifiers.get(expr.objVar)})`
+    case 'g3d:aimAhead':
+      return `SZGame3D.aimAhead(${identifiers.get(expr.worldVar)}, ${identifiers.get(expr.objVar)}, ${expr.dist})`
+    case 'g3d:onGround':
+      return `SZGame3D.onGround(${identifiers.get(expr.worldVar)}, ${identifiers.get(expr.objVar)})`
+    case 'g3d:groundHeight':
+      return `SZGame3D.groundHeight(${identifiers.get(expr.worldVar)}, ${identifiers.get(expr.objVar)})`
+    case 'inputKeyPressed':
+      return `__szInput.key(${JSON.stringify(expr.key)})`
+    case 'inputPointer':
+      return `__szInput.${expr.axis}`
+    case 'isFullscreen':
+      return 'document.fullscreenElement != null'
     case 'now':
       switch (expr.kind) {
         case 'year':
@@ -208,10 +327,41 @@ export function compileExpr(
           return 'new Date().toLocaleTimeString()'
       }
       return ''
+    case 'dateGet': {
+      const method = {
+        year: 'getFullYear',
+        month: 'getMonth',
+        dayOfMonth: 'getDate',
+        weekday: 'getDay',
+        hours: 'getHours',
+        minutes: 'getMinutes',
+        seconds: 'getSeconds',
+        ms: 'getMilliseconds',
+      }[expr.part]
+      return `new Date().${method}()`
+    }
     case 'global':
-      return expr.kind === 'innerWidth' ? 'window.innerWidth' : 'window.innerHeight'
+      switch (expr.kind) {
+        case 'innerWidth':
+          return 'window.innerWidth'
+        case 'innerHeight':
+          return 'window.innerHeight'
+        case 'devicePixelRatio':
+          return 'window.devicePixelRatio'
+      }
+      return ''
+    case 'systemDark':
+      return "window.matchMedia('(prefers-color-scheme: dark)').matches"
+    case 'perfNow':
+      return 'performance.now()'
     case 'canvasDim':
       return `${identifiers.getCanvasElement(expr.ctxVar)}.${expr.dim}`
+    case 'canvasMeasureText':
+      return `${identifiers.get(expr.ctxVar)}.measureText(${compileExpr(expr.text, 0, identifiers, rec)}).width`
+    case 'canvasIsPointInPath':
+      return `${identifiers.get(expr.ctxVar)}.isPointInPath(${compileExpr(expr.x, 0, identifiers, rec)}, ${compileExpr(expr.y, 0, identifiers, rec)})`
+    case 'canvasIsPointInStroke':
+      return `${identifiers.get(expr.ctxVar)}.isPointInStroke(${compileExpr(expr.x, 0, identifiers, rec)}, ${compileExpr(expr.y, 0, identifiers, rec)})`
     case 'random': {
       const min = compileExpr(expr.min, 0, identifiers, rec)
       const max = compileExpr(expr.max, 0, identifiers, rec)
@@ -251,6 +401,8 @@ export function compileExpr(
       return `Math.${expr.fn}(${compileExpr(expr.arg, 0, identifiers, rec)})`
     case 'mathBinary':
       return `Math.${expr.fn}(${compileExpr(expr.a, 0, identifiers, rec)}, ${compileExpr(expr.b, 0, identifiers, rec)})`
+    case 'arrayMap':
+      return `${identifiers.get(expr.arrayVar)}.map((${identifiers.get(expr.itemName)}) => ${compileExpr(expr.transform, 0, identifiers, rec)})`
     case 'distance': {
       if (isPureExpr(expr.a) && isPureExpr(expr.b)) {
         // Operandos sem efeito colateral: forma inline legível (cada operando
@@ -314,6 +466,12 @@ export function compileExpr(
     }
     case 'index':
       return `${identifiers.get(expr.arrayVar)}[${compileExpr(expr.index, 0, identifiers, rec)}]`
+    case 'arrayLast': {
+      const a = identifiers.get(expr.arrayVar)
+      return `${a}[${a}.length - 1]`
+    }
+    case 'arrayFind':
+      return `${identifiers.get(expr.arrayVar)}.find((${identifiers.get(expr.itemName)}) => ${compileExpr(expr.cond, 0, identifiers, rec)})`
     case 'concatArrays':
       return `[${expr.parts.map((p) => `...${compileExpr(p, 0, identifiers, rec)}`).join(', ')}]`
     case 'shuffle':
@@ -330,6 +488,19 @@ export function compileExpr(
     case 'memberCallExpr': {
       const args = expr.args.map((a) => compileExpr(a, 0, identifiers, rec)).join(', ')
       return `${compileExpr(expr.object, MEMBER_PRECEDENCE, identifiers, rec)}.${normalizeIdentifier(expr.method)}(${args})`
+    }
+    default: {
+      // Sem este ramo, uma expressão fora do esquema (ex.: IR de um JSON
+      // importado por um estranho) caía pela borda do `switch` e `compileExpr`
+      // devolvia `undefined`, interpolado como a STRING `"undefined"` no código
+      // gerado — bug silencioso. A atribuição a `never` é o verdadeiro valor:
+      // se um dia surgir uma variante de `JSExpr` sem `case` aqui, ela vira
+      // ERRO DE COMPILAÇÃO (TS reclama que o tipo não é `never`), forçando o
+      // autor a tratá-la. Em runtime, lança erro tipado e capturável.
+      const _never: never = expr
+      throw new GeneratorError(
+        `Expressão de IR não suportada: ${JSON.stringify((_never as { type?: unknown }).type)}`,
+      )
     }
   }
 }
@@ -362,15 +533,21 @@ function isPureExpr(expr: JSExpr): boolean {
     case 'datasetGet':
     case 'classContains':
       return true
+    case 'canvasMeasureText':
+      return isPureExpr(expr.text)
     case 'binop':
     case 'logical':
       return isPureExpr(expr.left) && isPureExpr(expr.right)
+    case 'logicalNot':
+      return isPureExpr(expr.value)
     case 'ternary':
       return isPureExpr(expr.condition) && isPureExpr(expr.whenTrue) && isPureExpr(expr.whenFalse)
     case 'mathUnary':
       return isPureExpr(expr.arg)
     case 'mathBinary':
       return isPureExpr(expr.a) && isPureExpr(expr.b)
+    case 'arrayMap':
+      return false
     case 'distance':
       return isPureExpr(expr.a) && isPureExpr(expr.b)
     case 'angleConvert':
@@ -409,6 +586,13 @@ const MEMBER_PRECEDENCE = 20
 
 /** Chave de objeto literal: nome cru se for identificador válido, senão entre aspas. */
 function objectKey(key: string): string {
+  // `__proto__` casa o regex de identificador, mas como chave CRUA num literal
+  // (`{ __proto__: v }`) ela é especial: define o PROTÓTIPO do objeto em vez de
+  // uma propriedade própria — `obj.__proto__` não enumera e o objeto herda de
+  // `v`. Forçar as aspas (`{ "__proto__": v }`) volta a ser uma propriedade
+  // própria normal, que é o que o aluno espera. `constructor`/`prototype` não
+  // têm esse tratamento especial em literais e não precisam de ajuste.
+  if (key === '__proto__') return JSON.stringify(key)
   return /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key) ? key : JSON.stringify(key)
 }
 

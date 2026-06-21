@@ -13,6 +13,17 @@ const HOP_BY_HOP = new Set([
   'upgrade',
 ])
 
+function connectionHeaderNames(headers: Headers): Set<string> {
+  const names = new Set<string>()
+  const connection = headers.get('connection')
+  if (!connection) return names
+  for (const token of connection.split(',')) {
+    const name = token.trim().toLowerCase()
+    if (name) names.add(name)
+  }
+  return names
+}
+
 /**
  * Credenciais de BORDA (cliente → gateway): consumidas pelo gateway e que NÃO
  * devem vazar para o upstream. Em rotas `resign`, o gateway re-injeta as suas
@@ -56,6 +67,14 @@ export const IDENTITY_HEADERS = {
   // quando `id` é um perfil de criança — o upstream resolve o ACESSO por esta conta.
   // É de IDENTIDADE (auto-stripado da entrada + redigido no log, como os demais).
   accountId: 'x-auth-account-id',
+  // Nome do perfil de criança em sessão de PERFIL (claim `pfl.name`). Nome de EXIBIÇÃO
+  // confiável do autor (ex.: vitrine "Mural" do kids) — o upstream NÃO confia num nome
+  // vindo do corpo. Pode chegar URI-encoded (acento). De IDENTIDADE (stripado/redigido).
+  profileName: 'x-auth-profile-name',
+  // Perfil PÚBLICO entre crianças (opt-in dos pais — claim `pfl.pub`). 'true'/'false',
+  // presente só em sessão de perfil. O hub o usa p/ decidir se o nome do autor vira
+  // link p/ o perfil público. De IDENTIDADE (auto-stripado da entrada/anti-spoof).
+  profilePublic: 'x-auth-profile-public',
   // Admin que está IMPERSONANDO (claim `act.sub`). Presente só em sessão de suporte.
   // O upstream o usa p/ PRESERVAR o vínculo de impersonação ao derivar uma nova
   // sessão (ex.: selecionar um perfil) — sem ele a impersonação seria "lavada" numa
@@ -76,6 +95,8 @@ export interface IdentityHeaderInput {
   phone?: string
   signupSource?: string
   accountId?: string
+  profileName?: string
+  profilePublic?: boolean
   impersonatorId?: string
 }
 
@@ -125,6 +146,14 @@ export function injectIdentityHeaders(headers: Headers, user: IdentityHeaderInpu
   // Só em sessão de perfil — sessão normal da conta NÃO injeta (compat: os upstreams
   // tratam a ausência como "x-auth-user-id é a própria conta").
   if (user.accountId) headers.set(IDENTITY_HEADERS.accountId, headerSafeValue(user.accountId))
+  // Nome de exibição do perfil (sessão de perfil) — URI-encode protege nomes com acento.
+  if (user.profileName) {
+    headers.set(IDENTITY_HEADERS.profileName, headerSafeValue(user.profileName))
+  }
+  // Flag de perfil público (sessão de perfil) — 'true'/'false'.
+  if (user.profilePublic !== undefined) {
+    headers.set(IDENTITY_HEADERS.profilePublic, user.profilePublic ? 'true' : 'false')
+  }
   // Só em sessão de impersonação — o upstream preserva o vínculo ao derivar sessões.
   if (user.impersonatorId) {
     headers.set(IDENTITY_HEADERS.impersonatorId, headerSafeValue(user.impersonatorId))
@@ -170,9 +199,10 @@ export interface ForwardHeaderContext {
 /** Constrói os headers da requisição para o upstream (remove hop-by-hop, adiciona X-Forwarded-*). */
 export function sanitizeRequestHeaders(incoming: Headers, ctx: ForwardHeaderContext): Headers {
   const out = new Headers()
+  const connectionSpecific = connectionHeaderNames(incoming)
   incoming.forEach((value, key) => {
     const lower = key.toLowerCase()
-    if (HOP_BY_HOP.has(lower)) return
+    if (HOP_BY_HOP.has(lower) || connectionSpecific.has(lower)) return
     if (lower === 'host' || lower === 'content-length') return // recomputados pelo fetch
     out.set(key, value)
   })
@@ -191,9 +221,10 @@ export function sanitizeRequestHeaders(incoming: Headers, ctx: ForwardHeaderCont
 /** Constrói os headers da resposta para o cliente (remove hop-by-hop, preserva Set-Cookie). */
 export function sanitizeResponseHeaders(upstream: Headers): Headers {
   const out = new Headers()
+  const connectionSpecific = connectionHeaderNames(upstream)
   upstream.forEach((value, key) => {
     const lower = key.toLowerCase()
-    if (HOP_BY_HOP.has(lower)) return
+    if (HOP_BY_HOP.has(lower) || connectionSpecific.has(lower)) return
     // Set-Cookie é tratado à parte: o forEach junta múltiplos cookies num só valor.
     if (lower === 'set-cookie') return
     out.set(key, value)

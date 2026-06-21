@@ -36,11 +36,13 @@ import { InvoiceStatusBadge } from './invoice-status-badge'
  */
 export function InvoiceDetailDialog({
   invoiceId,
+  canWrite,
   onClose,
   onNavigate,
   onChanged,
 }: {
   invoiceId: string | null
+  canWrite: boolean
   onClose: () => void
   /** Troca a nota exibida (links substitui/substituída). */
   onNavigate: (id: string) => void
@@ -152,7 +154,7 @@ export function InvoiceDetailDialog({
                   <FileDown className="size-4" /> Baixar PDF
                 </Button>
               ) : null}
-              {canEmitNow(invoice) ? (
+              {canWrite && canEmitNow(invoice) ? (
                 confirmingEmitNow ? (
                   <>
                     <p className="w-full text-right text-xs text-muted-foreground">
@@ -177,7 +179,7 @@ export function InvoiceDetailDialog({
                   </Button>
                 )
               ) : null}
-              {canRetryInvoice(invoice) ? (
+              {canWrite && canRetryInvoice(invoice) ? (
                 confirmingRetry ? (
                   <>
                     <Button
@@ -198,12 +200,12 @@ export function InvoiceDetailDialog({
                   </Button>
                 )
               ) : null}
-              {canSubstituteInvoice(invoice) ? (
+              {canWrite && canSubstituteInvoice(invoice) ? (
                 <Button variant="outline" onClick={() => setSubstituteOpen(true)}>
                   <Replace className="size-4" /> Substituir
                 </Button>
               ) : null}
-              {canCancelInvoice(invoice) ? (
+              {canWrite && canCancelInvoice(invoice) ? (
                 <Button variant="destructive" onClick={() => setCancelOpen(true)}>
                   <Ban className="size-4" /> Cancelar
                 </Button>
@@ -221,7 +223,7 @@ export function InvoiceDetailDialog({
         )}
       </Dialog>
 
-      {invoice ? (
+      {invoice && canWrite ? (
         <CancelInvoiceDialog
           invoice={invoice}
           open={cancelOpen}
@@ -229,7 +231,7 @@ export function InvoiceDetailDialog({
           onDone={afterMutation}
         />
       ) : null}
-      {invoice ? (
+      {invoice && canWrite ? (
         <SubstituteInvoiceDialog
           invoice={invoice}
           open={substituteOpen}

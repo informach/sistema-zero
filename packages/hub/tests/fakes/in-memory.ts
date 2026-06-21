@@ -18,6 +18,8 @@ import type { CommunityReadRepository } from '../../src/domain/ports/community-r
 import type {
   CourseAccessResult,
   MembersGateway,
+  ShowcaseEligibilityArgs,
+  ShowcaseEligibilityResult,
 } from '../../src/domain/ports/members-gateway.port'
 import type {
   CreateMuteBanInput,
@@ -37,6 +39,7 @@ import type {
 import type { ReadStateRepository } from '../../src/domain/ports/read-state-repository.port'
 import type {
   CreateCommentInput,
+  CreateShowcaseThreadInput,
   CreateThreadInput,
   ListCommentsOpts,
   ListThreadsOpts,
@@ -244,6 +247,11 @@ export class InMemoryThreadRepository implements ThreadRepository {
       isLocked: false,
       status: input.status,
       commentCount: 0,
+      isShowcase: false,
+      authorDisplayName: input.authorDisplayName,
+      authorPublic: input.authorPublic,
+      coverImageUrl: null,
+      playId: null,
       lastActivityAt: input.now,
       createdAt: input.now,
       editedAt: null,
@@ -253,6 +261,43 @@ export class InMemoryThreadRepository implements ThreadRepository {
       this.attachments?.linkMany(input.attachmentIds, { threadId: thread.id })
     }
     return thread
+  }
+
+  /** Dedupe da vitrine: chave de idempotência → id do tópico (a chave não é do domínio). */
+  private readonly showcaseKeys = new Map<string, string>()
+
+  async createShowcaseThread(
+    input: CreateShowcaseThreadInput,
+  ): Promise<{ thread: Thread; deduped: boolean }> {
+    const existingId = this.showcaseKeys.get(input.idempotencyKey)
+    if (existingId) {
+      const existing = this.threads.find((t) => t.id === existingId)
+      if (existing) return { thread: existing, deduped: true }
+    }
+    const thread: Thread = {
+      id: input.id,
+      version: 0,
+      channelId: input.channelId,
+      authorId: input.authorId,
+      title: input.title,
+      slug: input.slug,
+      body: input.body,
+      isPinned: false,
+      isLocked: false,
+      status: 'visible',
+      commentCount: 0,
+      isShowcase: true,
+      authorDisplayName: input.authorDisplayName,
+      authorPublic: input.authorPublic,
+      coverImageUrl: input.coverImageUrl,
+      playId: input.playId,
+      lastActivityAt: input.now,
+      createdAt: input.now,
+      editedAt: null,
+    }
+    this.threads.push(thread)
+    this.showcaseKeys.set(input.idempotencyKey, thread.id)
+    return { thread, deduped: false }
   }
 
   async findThreadById(id: string): Promise<Thread | null> {
@@ -348,6 +393,8 @@ export class InMemoryThreadRepository implements ThreadRepository {
       version: 0,
       threadId: input.threadId,
       authorId: input.authorId,
+      authorDisplayName: input.authorDisplayName,
+      authorPublic: input.authorPublic,
       body: input.body,
       status: input.status,
       replyToId: input.replyToId,
@@ -750,16 +797,42 @@ export class InMemoryProcessedWebhookRepository implements ProcessedWebhookRepos
 export class FakeMembersGateway implements MembersGateway {
   /** userId → cursos com matrícula ativa. */
   grantsByUser = new Map<string, Set<string>>()
-  /** userIds com chave-mestra ativa. */
+  /** userIds com chave-mestra ADULTA (all_courses) ativa. */
   masters = new Set<string>()
+  /** userIds com chave-mestra KIDS (all_kids_courses) ativa. */
+  mastersKids = new Set<string>()
+  /** userId → chaves de comunidade ativas (entitlement `community`). */
+  communitiesByUser = new Map<string, Set<string>>()
   calls = 0
+  /** Elegibilidade da vitrine: default ELEGÍVEL/kids; sobrescreva por teste. */
+  showcaseEligibility: ShowcaseEligibilityResult = {
+    eligible: true,
+    title: 'Meu joguinho',
+    summary: 'Um jogo de plataforma com a faísca pulando.',
+    defaultCoverUrl: 'https://cdn.example.com/capa-padrao.png',
+    chain: 'cadeia-1',
+    courseId: 'curso-1',
+    audience: 'kids',
+  }
+  eligibilityCalls: ShowcaseEligibilityArgs[] = []
 
-  async checkAccess(userId: string, courseRefs: string[]): Promise<CourseAccessResult> {
+  async checkAccess(
+    userId: string,
+    courseRefs: string[],
+    _communityRefs: string[] = [],
+  ): Promise<CourseAccessResult> {
     this.calls++
     const owned = this.grantsByUser.get(userId) ?? new Set<string>()
     return {
       granted: courseRefs.filter((c) => owned.has(c)),
       hasMaster: this.masters.has(userId),
+      hasMasterKids: this.mastersKids.has(userId),
+      communities: [...(this.communitiesByUser.get(userId) ?? [])],
     }
+  }
+
+  async getShowcaseEligibility(args: ShowcaseEligibilityArgs): Promise<ShowcaseEligibilityResult> {
+    this.eligibilityCalls.push(args)
+    return this.showcaseEligibility
   }
 }

@@ -9,9 +9,20 @@ const PROD_OK: Record<string, string> = {
   MEMBERS_INTERNAL_TOKEN: 'members-internal-16chars',
   CATALOG_INTERNAL_TOKEN: 'catalog-internal-16chars',
   MESSAGING_INTERNAL_TOKEN: 'messaging-internal-16ch',
+  AUTH_HMAC_SECRET: 'auth-hmac-secret-16chrs',
   AUTH_INTERNAL_TOKEN: 'auth-internal-16-chars!',
   PAYMENTS_INTERNAL_TOKEN: 'payments-internal-16chrs',
+  FISCAL_INTERNAL_TOKEN: 'fiscal-internal-16chrs',
+  FISCAL_HMAC_SECRET: 'fiscal-hmac-secret-16chrs',
   HUB_INTERNAL_TOKEN: 'hub-internal-16-chars-ok',
+  PAYMENTS_URL: 'http://payments.railway.internal:3001',
+  AUTH_URL: 'http://auth.railway.internal:3002',
+  FUNNEL_URL: 'http://funnel.railway.internal:4321',
+  CATALOG_URL: 'http://catalog.railway.internal:3003',
+  MEMBERS_URL: 'http://members.railway.internal:3004',
+  MESSAGING_URL: 'http://messaging.railway.internal:3006',
+  FISCAL_URL: 'http://fiscal.railway.internal:3009',
+  HUB_URL: 'http://hub.railway.internal:3010',
 }
 
 describe('loadEnv — defaults de dev', () => {
@@ -31,6 +42,11 @@ describe('loadEnv — defaults de dev', () => {
   test('token interno curto (<16) falha mesmo em dev', () => {
     expect(() => loadEnv({ MESSAGING_INTERNAL_TOKEN: 'curto' })).toThrow(/16 caracteres/)
   })
+
+  test('segredos de assinatura fracos falham no boot', () => {
+    expect(() => loadEnv({ GATEWAY_HMAC_SECRET: 'curto' })).toThrow(/16 caracteres/)
+    expect(() => loadEnv({ JWT_HS256_SECRET: 'curto' })).toThrow(/32 caracteres/)
+  })
 })
 
 describe('loadEnv — fail-fast de produção', () => {
@@ -49,8 +65,11 @@ describe('loadEnv — fail-fast de produção', () => {
     'MEMBERS_INTERNAL_TOKEN',
     'CATALOG_INTERNAL_TOKEN',
     'MESSAGING_INTERNAL_TOKEN',
+    'AUTH_HMAC_SECRET',
     'AUTH_INTERNAL_TOKEN',
     'PAYMENTS_INTERNAL_TOKEN',
+    'FISCAL_INTERNAL_TOKEN',
+    'FISCAL_HMAC_SECRET',
     'HUB_INTERNAL_TOKEN',
   ])('sem %s → falha (injeção silenciosamente desligada não sobe em prod)', (key) => {
     const source = { ...PROD_OK }
@@ -66,6 +85,15 @@ describe('loadEnv — fail-fast de produção', () => {
   test('TRUST_PROXY=false EXPLÍCITO em produção → ok (tráfego direto/rede privada)', () => {
     const env = loadEnv({ ...PROD_OK, TRUST_PROXY: 'false' })
     expect(env.TRUST_PROXY).toBe(false)
+  })
+
+  test('URL de upstream em loopback em produção → falha no boot', () => {
+    expect(() => loadEnv({ ...PROD_OK, MEMBERS_URL: 'http://localhost:3004' })).toThrow(
+      /MEMBERS_URL.*loopback/,
+    )
+    expect(() => loadEnv({ ...PROD_OK, FISCAL_URL: 'http://127.0.0.1:3009' })).toThrow(
+      /FISCAL_URL.*loopback/,
+    )
   })
 
   test('SHUTDOWN_DRAIN_MS sem env em produção → default 5s (drain do SIGTERM precisa valer)', () => {

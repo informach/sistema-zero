@@ -14,6 +14,12 @@ reutilizável NUNCA é cópia por app). Consumido como **TS source** via `export
 precisam de `transpilePackages: ['@sistemazero/studio']` + `@source "../../../studio/src"` +
 `frame-src 'self' blob:` na CSP (Monaco/Blockly/preview; terminal OFF dispensa COOP/COEP). O handler
 de entrega é `shell.routes.studioSubmit` (`POST /api/members/lessons/:lessonId/blocks/:blockId/studio-submission`).
+**Projeto contínuo (carryover):** quando o bloco tem `chain` (nome da cadeia), o `studio-block`
+semeia o editor na ordem **rascunho LOCAL → carryover → initialProject** — o rascunho local SEMPRE
+vence (não re-hidrata o WIP); o carryover (`shell.routes.studioCarryover`, `GET …/studio-carryover`)
+traz a última entrega do aluno na aula contínua anterior, é best-effort (falha de rede → cai no
+initialProject) e roda SÓ na 1ª abertura sem rascunho local. Ao semear do carryover o `id` do
+projeto é trocado p/ a chave do bloco atual (`sz-lesson-studio:<blockId>`).
 
 ## O que vive aqui vs no app
 
@@ -37,9 +43,71 @@ aluno (NÃO regredir):** o BFF **redige o `authorId` de TERCEIROS** nas views de
 (`okRedacted` → `lib/hub-redact`, puro/testado em `tests/hub-redact.test.ts`) — só o id do PRÓPRIO
 viewer chega ao browser (por isso `HubThreadView/HubCommentView.authorId` é `string | null`); os
 apps comparam o id apenas p/ rotular "Você"/"Colega", ninguém EXIBE o id. Por isso
-`createHubRoutes` recebe `{ hub, media, session }` (o `session` resolve o viewer p/ a redação). Os
+`createHubRoutes` recebe `{ hub, members, media, session }` (o `session` resolve o viewer p/ a
+redação; `members` é p/ a vitrine — ver abaixo). Os
 helpers PUROS de anexo (`lib/hub-attachments`: allowlist de MIME, limites, `sanitizeFilename`,
 `extForMime`, `isInlineKind`) têm cobertura em `tests/hub-attachments.test.ts`.
+
+**Markdown de UGC (full review 19/06 — NÃO regredir):** o corpo de tópico/comentário é conteúdo NÃO
+confiável de criança p/ criança. Renderize com **`renderUgcMarkdown`** (`lib/markdown`: modo restrito
+— SEM `<img>` externo, que seria pixel-rastreador vazando o IP de quem LÊ, e links só como TEXTO) e o
+WRITE strippa imagem na origem (`stripImageMarkdown`, aplicado em create/edit de tópico e comentário).
+`renderMarkdown` cru (com `![](…)` e `<a>`) é SÓ p/ conteúdo do ADMIN (rich_text/quiz). Os path ids
+do hub/perfil (thread/comment/canal/profileId) são validados como UUID na borda (`idFrom`/`UUID_RE`,
+espelhando o `hubShowcase`). Cobertura em `tests/markdown.test.tsx`.
+
+**Vitrine "Mural dos Criadores" (06/2026):** `hubShowcase` (`POST /api/hub/showcase`, multipart
+`lessonId`/`blockId`/`file?`): no clique "Publicar no Mural" o BFF (1) confere a elegibilidade no
+members (`members.getShowcasePayload` — UX 409 antecipado), (2) sobe o print do jogo (quando veio
+`file`) re-encodado no R2 **público** (`r2PutObject` → URL) ou deixa `null`, e (3) chama
+`hub.createShowcaseThread({ spaceSlug, lessonId, blockId, coverImageUrl })`. ⚠️ **O BFF NÃO envia mais
+título/resumo/nome-do-autor/idempotência** — a rota do hub é alcançável por qualquer conta ativa na
+borda, então confiar no corpo era um furo (full review 18/06): o HUB re-valida a elegibilidade no
+members (S2S), usa o título/resumo AUTORITATIVOS de lá, tira o nome do autor do header confiável
+`x-auth-profile-name` (claim `pfl.name`, injetado pelo gateway) e DERIVA a idempotência. **Privacidade:** o
+`redactAuthors` zera o `authorId` de terceiros mas PRESERVA o `authorDisplayName` (só a vitrine tem
+esse campo) — a parede mostra "por {nome}", os comentários seguem "Você"/"Colega". `HubSpaceView.locked`
+(teaser "visível mas bloqueado") flui sem redação.
+
+**"Compartilhar" do Estúdio + link público jogável (06/2026):** `createStudioRoutes` (`routes/studio.ts`,
+montado no `createShell` como `routes.studio*`) expõe três rotas consumidas pelo botão "Compartilhar" do
+`@sistemazero/studio`:
+- **`POST /api/studio/describe`** — rascunho da descrição via **OpenRouter no SERVIDOR**
+  (`server/openrouter.ts`, chave `OPENROUTER_API_KEY`/`OPENROUTER_MODEL` no `lib/env.ts`, OPCIONAIS).
+  Recebe SÓ os 3 arquivos canônicos (clampados, NÃO o projeto com assets); prompt com cláusula de segurança
+  infantil; saída sanitizada + truncada (280). **FAIL-SOFT**: sem chave/timeout/não-2xx → `{description:'',
+  fallback:true}` (a criança escreve). Rate-limit in-process por sessão (`globalThis`, réplica única).
+- **`POST /api/studio/publish`** (multipart, FORA do matcher do proxy — guard próprio `requireUploadSession`):
+  print → R2 **PÚBLICO** (`r2PutObject`, WebP); projeto inteiro (JSON auto-suficiente, assets data URLs)
+  passa por parse + `sanitizePlayableProject` ANTES de persistir (contrato mínimo: `files` canônicos
+  obrigatórios; `extraFiles`/`assets`/`installedExtensions` sempre arrays seguros; limites de tamanho
+  rechecados após normalização; JSON inválido → 400, excedente → 413) →
+  R2 **PRIVADO** `studio/play/<uuid>.json` (`r2PutObjectPrivate`); chama
+  `hub.createShowcaseThreadStudio` (gateway → hub); devolve `{ muralUrl, playUrl }`.
+- **`GET /api/studio/play/:id`** — **PÚBLICA (sem login)**: stream do projeto do R2 privado
+  (`r2GetObjectPrivate`), MESMA ORIGEM (sem CORS), `Cache-Control immutable`, 404 no miss. É o que a página
+  `/jogar/:id` do community-kids consome (renderiza o `StudioProjectPlayer` — só o jogo, sem o nome da
+  criança).
+- **`POST /api/studio/publish-standalone`** (multipart, FORA do matcher — coberto pelo prefixo
+  `api/studio/publish` no negative-lookahead) — o "Compartilhar" do **Estúdio Completo** (produto vendável
+  da vitrine kids, SEM aula). Mesma mecânica do `publish` (sessão estrita, `sanitizePlayableProject`,
+  capa→R2 público, jogável→R2 privado) MENOS o acoplamento de aula: SEM `lessonId/blockId` e SEM
+  `getShowcasePayload`; `title` + `description` vêm da criança. Chama `hub.createShowcaseThreadStudioStandalone`
+  — o HUB re-valida a POSSE do produto (S2S `members.checkAccess`). Exposto como `routes.studioPublishStandalone`.
+
+**Estúdio Completo como produto (06/2026):** além do publish acima, o BFF ganhou o gate de acesso —
+`members.checkStudioAccessReadonly()` (`GET /members/access?refs=estudio-completo`, RSC sem refresh →
+`ProductAccessView { access }`) que o community-kids consome em `/estudio` para decidir entre o editor e o
+recado de bloqueado; e o client `hub.createShowcaseThreadStudioStandalone`. A ref do produto é a const
+exportada `STUDIO_ACCESS_REF` (`server/clients.ts`, = `estudio-completo`) — TEM que casar com o
+`STUDIO_STANDALONE_ACCESS_REF` do hub e o slug do produto no catálogo.
+
+`HubThreadView` ganhou **`playId`** (sobrevive ao `redactAuthors` — só estrutural; teste em
+`tests/hub-redact.test.ts`). O **`StudioBlockView`** ganhou a prop `enableShare?` (só o KIDS passa `true`):
+quando ligada, constrói o `StudioShareAdapter` (descreve via `/api/studio/describe`, publica multipart via
+`/api/studio/publish`) e o passa ao `<StudioLesson share>` — o botão aparece na Topbar do editor. ⚠️ A
+elegibilidade real é do backend (publish 409 `SHOWCASE_NOT_ELIGIBLE` quando o bloco não é de vitrine). O
+post publicado é um **snapshot IMUTÁVEL e INDEPENDENTE** do rascunho que a criança continua editando.
 
 **Gamificação (06/2026):** tipos em `lib/types.ts` (`GamificationDelta`/`GamificationMeView`/
 `LessonCompleteResult`/`BadgeSlug` — mirror das views do members; `QuizAttemptResultView.gamification?`),
@@ -49,7 +117,58 @@ SEMPRE `?audience=<a do app>` — **a gamificação inteira é segregada por vit
 badges/ranking kids e adult não se misturam; `{withRanking}` soma `?ranking=true`) e handler
 passthrough `shell.routes.gamificationMe` (`GET /api/members/gamification/me`). `markLessonComplete`/
 `submitQuizAttempt` agora são TIPADOS (a resposta carrega o delta `gamification` — aditivo; o
-community adulto ignora, a vitrine v1 é o kids).
+community adulto ignora, a vitrine v1 é o kids). `GamificationMeView.streak` ganhou
+`freezesAvailable?`/`onVacation?`/`vacationUntil?` e `coins?:{balance}` (todos OPCIONAIS p/ tolerar
+members antigo).
+
+**Expansão Zappy + avatar/quarto/missões/ligas (06/2026 — 6 fases):** o shell virou o BFF de TODA a
+gamificação kids. Tipos novos em `lib/types.ts` (mirror das views do members): `MissionView`/
+`MissionsMeView`/`MissionClaimResult`, `StreakFreezeResult`/`VacationResult`, `LeagueEntryView`/
+`LeagueMeView`, `AvatarConfigInput`/`AvatarPartView`/`AvatarStateView`/`AvatarPurchaseResult`/
+`AvatarEquipResult`, `RoomPlacedItem`/`RoomStateView`/`RoomItemView`/`RoomThemeView`/`RoomEditorView`/
+`RoomBuyResult`, `PublicProfileIdentity`/`PublicProfileGameView`/`PublicProfileDTO`. Todos seguem o
+padrão "view larga/forward-compat" (campos opcionais, `layer`/`category` como `string`) p/ tolerar
+catálogo novo no members sem rebuild do shell.
+
+Clients (`server/clients.ts`, sempre `?audience=<a do app>`) + variantes **`*Readonly()`** (RSC,
+memoizadas por request via `React.cache()` — dedup layout×página, sem refresh de cookie):
+- **Missões:** `getMissions()`/`getMissionsReadonly()` (`GET /members/gamification/missions/me`) +
+  `claimMission(slug)` (`POST …/missions/:slug/claim` — idempotente; o members revalida a conclusão).
+- **Proteção de sequência:** `buyStreakFreeze()` (`POST …/streak-freeze/buy` — compra com moedas;
+  sem saldo → 402) + `setVacation(from,to)` (`POST …/vacation` — janela de férias; `null/null` limpa).
+- **Liga semanal:** `getLeagueReadonly()` (`GET …/league/me` — board SEM PII, só `position`/`weeklyXp`/
+  `isMe`).
+- **Avatar (guarda-roupa por camadas):** `getAvatar()`/`getAvatarReadonly()` (`GET /members/avatar`) +
+  `buyAvatarPart(id)` (`POST /members/avatar/parts/:id/buy`, idempotente, 402 sem saldo) +
+  `equipAvatar(config)` (`PUT /members/avatar` — o members é ESTRITO: só peça grátis OU possuída).
+- **Quarto virtual:** `getRoom()`/`getRoomReadonly()` (`GET /members/room`) + `saveRoom(state)`
+  (`PUT /members/room` — last-write-wins, o members canonicaliza contra o inventário) +
+  `buyRoomItem(id)` (`POST /members/room/items/:id/buy` — item OU tema pago, idempotente, 402/404/400).
+- **Perfil público de OUTRA criança:** `getPublicProfileIdentity(profileId)` (auth S2S → nome + flag
+  `publicProfileEnabled`, nunca PII) + `getPublicProfile(profileId)` (members → xp/ranking/conquistas/
+  avatar/quarto SEM identidade). O BFF junta os dois no `PublicProfileDTO` p/ a página `/crianca/[id]`;
+  o perfil público VIVO é o portão (404 se os pais desligarem) — não confiar em snapshot velho.
+
+Handlers (`createShellRoutes`, espalhados no `index.ts` como `routes.*`): `gamificationMe`,
+`missionsGet`/`missionClaim`, `streakFreezeBuy`/`vacationSet` (Zod `VacationSchema`), `avatarGet`/
+`avatarBuy`/`avatarEquip` (Zod `AvatarConfigSchema` — só forma; posse/camada é portão do members),
+`roomGet`/`roomSave`/`roomBuy` (Zod `RoomStateSchema`), e `childrenStats` (área dos pais: junta
+identidade dos perfis do auth com os stats por perfil do members; gateado por
+`requireParentGateAccountOnly` no shim do KIDS). Toda escrita passa por `requireWritableSession`
+(impersonação read-only); ids de path validados como UUID na borda.
+
+**Privacidade — `authorProfileId` (perfil público, 06/2026):** o `redactAuthors` (`lib/hub-redact`)
+continua zerando o `authorId` cru de TERCEIROS, MAS quando o autor é PÚBLICO (`authorPublic` —
+opt-in dos pais, snapshot no hub) expõe um **`authorProfileId`** (o id do perfil) como ALVO do link
+p/ `/crianca/[id]`, preservando o `authorDisplayName`. Perfil não público → sem `authorProfileId`
+(o fórum cai em "Colega"; o Mural mostra o nome sem link). É só estrutural e sobrevive à redação;
+o portão VIVO é o próprio perfil público (404 se desligarem depois). Cobertura em
+`tests/hub-redact.test.ts`.
+
+> **Fonte da verdade da gamificação** (valores exatos de XP/moedas/marcos, catálogos de avatar/quarto/
+> missões, regras de streak/freeze/férias/ligas, modelo de dados e gotchas): **`../../docs/gamificacao.md`**.
+> Os tipos/clients/handlers daqui são só o mirror do BFF — qualquer mudança de contrato começa no members
+> e se reflete nesse doc.
 
 **Perfis estilo Netflix (PR5, kids):** o shell expõe o **client de perfis**
 (`createProfilesClient` em `server/clients.ts` → `/auth/profiles*` no auth) e os **route
@@ -85,7 +204,17 @@ do `/me` (sharp→WebP→R2 por `profileId`) — fica FORA do matcher do proxy (
    desloga), single-flight do refresh (reuse-detection do auth revoga a família), anti-CSRF
    same-origin via Sec-Fetch-Site, guard de mídia ESTRITO (exp NÃO autoriza), gate de concorrência
    da marca d'água (OOM), arquivos >20MB = 302 pré-assinado (downloads-zumbi), storageRef NUNCA ao
-   browser. **Fix aqui = fix nos dois apps; mudança aqui RODA NOS DOIS — rode as suítes dos dois.**
+   browser. **+ full review 19/06 (lente infantil):** UGC do hub renderizado restrito + strip de
+   imagem no write (pixel-rastreador entre crianças); scrub de PII no Sentry (UUID do perfil/e-mail);
+   `profileAvatar` AUTORIZA o dono ANTES de gravar no R2 (criança só troca a própria foto; UUID
+   validado); `watermarkImage` com `limitInputPixels` (anti OOM); `getMeReadonly`/`getGamificationReadonly`
+   memoizados por request via `React.cache()` (dedup layout×página). **+ full review 20/06:**
+   `meAvatar.POST` recusa sessão de PERFIL (403 `ACCOUNT_SESSION_REQUIRED`) ANTES da escrita no R2
+   — a foto do `/me` é da CONTA; sem isto a criança deixava objeto R2 órfão (espelha o
+   authorize-before-write do `profileAvatar`); `watermarkCacheKey` virou `sha256(srcKey)` (INJETIVO
+   — a substituição lossy podia colidir e servir o PDF errado ao MESMO aluno) e `watermarkImage`
+   ganhou teto de pixels TOTAIS p/ animados (não só por frame). **Fix aqui = fix nos dois apps;
+   mudança aqui RODA NOS DOIS — rode as suítes dos dois.**
 5. Réplica ÚNICA por app (single-flight/gate em `globalThis` são por processo).
 6. **`vimeo-player`: o SDK é o DONO do iframe** (`new Player(divHost, { id })`). NUNCA voltar ao
    padrão "iframe no JSX + `new Player(iframe)`": `destroy()` REMOVE o iframe do DOM real sem o
@@ -98,7 +227,7 @@ do `/me` (sharp→WebP→R2 por `profileId`) — fica FORA do matcher do proxy (
 
 ## Comandos
 
-`bun run typecheck` · `bun test` (10 suítes — as movidas do community) · `bun run check[:fix]`.
+`bun run typecheck` · `bun test` (15 suítes) · `bun run check[:fix]`.
 Os railway.json do community (e do kids) têm `/packages/member-shell/**` nos watchPatterns e o
 ci.yml mapeia `packages/member-shell/*` → deploy dos apps consumidores — mudou aqui, redeploya lá.
 

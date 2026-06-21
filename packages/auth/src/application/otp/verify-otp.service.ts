@@ -50,7 +50,8 @@ export class VerifyOtpService {
     // Código correto, mas conta inativa → não consome (não pode logar mesmo).
     if (!user.isActive()) throw new UserNotActiveError('Conta inativa')
 
-    await this.otpCodes.consume(record.id, now)
+    const consumed = await this.otpCodes.consume(record.id, now)
+    if (!consumed) throw new InvalidOtpError()
     const tokens = await this.tokens.issueForUser(user, {
       userAgent: command.userAgent,
       ip: command.ip,

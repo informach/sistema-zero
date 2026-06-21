@@ -256,8 +256,8 @@ export class DrizzleMessageRepository implements MessageRepository {
   async cleanup(olderThan: Date): Promise<number> {
     const result = await this.db.delete(messages).where(
       and(
-        // NUNCA toca em pendentes — só estados que não voltam à fila.
-        inArray(messages.status, ['SENT', 'DELIVERED', 'READ', 'FAILED', 'SUPPRESSED']),
+        // NUNCA toca pendentes nem SENT — webhooks de entrega/leitura podem chegar tarde.
+        inArray(messages.status, ['DELIVERED', 'READ', 'FAILED', 'SUPPRESSED']),
         lt(messages.createdAt, olderThan),
       ),
     )

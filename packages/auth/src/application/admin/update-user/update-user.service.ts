@@ -19,7 +19,8 @@ const INACTIVE_STATUSES: ReadonlySet<UserStatus> = new Set<UserStatus>(['suspend
  *  - ninguém altera o PRÓPRIO papel/status (anti-lockout);
  *  - `admin` não toca em alvo `admin`/`superadmin`, nem promove a esses papéis;
  *  - `superadmin` não tem trava de hierarquia.
- * Suspender/bloquear revoga as sessões vigentes. Concorrência otimista por `version`.
+ * Suspender/bloquear ou alterar papel revoga as sessões vigentes. Concorrência
+ * otimista por `version`.
  */
 export class UpdateUserService {
   constructor(
@@ -42,6 +43,7 @@ export class UpdateUserService {
     this.authorize(actor, targetId, user.role, changes)
 
     const baseVersion = user.version
+    const previousRole = user.role
     const previousStatus = user.status
 
     if (changes.role !== undefined) user.changeRole(changes.role)
@@ -58,12 +60,19 @@ export class UpdateUserService {
     const saved = await this.users.update(user, baseVersion)
     if (!saved) throw new VersionConflictError()
 
-    // Suspender/bloquear derruba as sessões vigentes (não podem mais renovar).
-    if (user.status !== previousStatus && INACTIVE_STATUSES.has(user.status)) {
+    // Suspender/bloquear ou trocar papel derruba sessões vigentes. O access token
+    // antigo pode carregar permissões obsoletas até expirar; revogar refresh reduz
+    // a janela ao TTL do access token e força nova sessão.
+    const roleChanged = user.role !== previousRole
+    const becameInactive = user.status !== previousStatus && INACTIVE_STATUSES.has(user.status)
+    if (roleChanged || becameInactive) {
       await this.refreshTokens.revokeAllForUser(user.id)
       this.logger.info('admin.user.sessions_revoked', {
         userId: user.id,
+        previousRole,
+        role: user.role,
         status: user.status,
+        reason: roleChanged ? 'role_changed' : 'inactive_status',
         by: actor.id,
       })
     }

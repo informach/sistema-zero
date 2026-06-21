@@ -26,7 +26,7 @@ const ENVELOPED = 'http://www.w3.org/2000/09/xmldsig#enveloped-signature'
  *   como irmã (append no elemento raiz), conforme o XSD (DPS/pedRegEvento).
  */
 export function signXml(xml: string, refElementLocalName: string, cert: A1Certificate): string {
-  const algo = ALGOS[(process.env['NFSE_SIG_ALGO'] as keyof typeof ALGOS) ?? 'sha1']
+  const algo = ALGOS[(process.env.NFSE_SIG_ALGO as keyof typeof ALGOS) ?? 'sha1']
 
   const sig = new SignedXml({
     privateKey: cert.key,

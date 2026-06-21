@@ -5,9 +5,24 @@ import type {
 } from '../../../domain/ports/template-repository.port'
 import type { Channel } from '../../../domain/shared/channel'
 import { Template, type TemplateProps } from '../../../domain/template/template.aggregate'
+import { TemplateAlreadyExistsError } from '../../../domain/template/template.errors'
 import { ConcurrencyConflictError } from './concurrency.error'
 import type { Database } from './db'
 import { messageTemplates } from './schema'
+
+/**
+ * 23505 (unique_violation) pode vir encapsulado em vários níveis (ex.: drizzle)
+ * — subimos a causa para identificar a violação real sem depender do tipo do
+ * driver.
+ */
+function isUniqueViolation(error: unknown): boolean {
+  let current: unknown = error
+  for (let depth = 0; depth < 5 && typeof current === 'object' && current !== null; depth++) {
+    if ((current as { code?: unknown }).code === '23505') return true
+    current = (current as { cause?: unknown }).cause
+  }
+  return false
+}
 
 type TemplateRow = typeof messageTemplates.$inferSelect
 
@@ -48,7 +63,16 @@ export class DrizzleTemplateRepository implements TemplateRepository {
   constructor(private readonly db: Database) {}
 
   async create(template: Template): Promise<void> {
-    await this.db.insert(messageTemplates).values(toRow(template))
+    try {
+      await this.db.insert(messageTemplates).values(toRow(template))
+    } catch (error) {
+      if (isUniqueViolation(error)) {
+        throw new TemplateAlreadyExistsError(
+          `Já existe template ${template.state.channel}/${template.state.key}`,
+        )
+      }
+      throw error
+    }
   }
 
   async update(template: Template): Promise<void> {

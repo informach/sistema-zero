@@ -214,12 +214,13 @@ function readErrorCode(body: unknown): string | null {
 export async function redeemCouponBestEffort(
   gateway: GatewayClient,
   couponCode: string | null,
+  idempotencyKey?: string,
   log?: (msg: string, meta?: Record<string, unknown>) => void,
 ): Promise<void> {
   if (!couponCode) return
   try {
-    const { status } = await gateway.redeemCoupon(couponCode)
-    log?.('coupon.redeem', { couponCode, status })
+    const { status } = await gateway.redeemCoupon(couponCode, idempotencyKey)
+    log?.('coupon.redeem', { couponCode, idempotencyKey, status })
   } catch {
     /* contagem de uso é best-effort; o desconto já foi aplicado na cobrança */
   }

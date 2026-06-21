@@ -14,6 +14,7 @@ const toSpace = (r: SpaceRow): Space => ({
   audience: r.audience,
   accessConfig: r.accessConfig,
   requiresApproval: r.requiresApproval,
+  teaserWhenLocked: r.teaserWhenLocked,
   sortOrder: r.sortOrder,
   status: r.status,
   createdAt: r.createdAt,
@@ -71,7 +72,10 @@ export class DrizzleCommunityReadRepository implements CommunityReadRepository {
       .select()
       .from(channels)
       .where(and(eq(channels.spaceId, spaceId), eq(channels.status, 'active')))
-      .orderBy(asc(channels.sortOrder))
+      // Desempate ESTÁVEL: sem ele, canais com o mesmo sortOrder vinham em ordem
+      // arbitrária do Postgres → `channels[0]` (a "parede" do Mural) ficava não
+      // determinístico se o space ganhasse um 2º canal no sortOrder default.
+      .orderBy(asc(channels.sortOrder), asc(channels.createdAt), asc(channels.id))
     return rows.map(toChannel)
   }
 

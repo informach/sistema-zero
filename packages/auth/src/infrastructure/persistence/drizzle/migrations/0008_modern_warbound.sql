@@ -1,0 +1,1 @@
+ALTER TABLE "auth"."profiles" ADD COLUMN "birth_date" date;

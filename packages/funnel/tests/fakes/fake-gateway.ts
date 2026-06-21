@@ -32,7 +32,7 @@ export interface FakeGatewayState {
     get: string[]
     ensureBuyer: Array<{ input: RegisterBuyerInput }>
     quote: Array<{ slug: string; couponCode?: string }>
-    redeem: string[]
+    redeem: Array<{ code: string; idempotencyKey?: string }>
     grant: Array<{ input: unknown }>
     login: Array<{ email: string }>
     logout: string[]
@@ -194,8 +194,8 @@ export function createFakeGateway(): FakeGatewayState {
         },
       }
     },
-    async redeemCoupon(code): Promise<GatewayResult> {
-      calls.redeem.push(code)
+    async redeemCoupon(code, idempotencyKey): Promise<GatewayResult> {
+      calls.redeem.push({ code, idempotencyKey })
       return { status: 200, body: { ok: true } }
     },
     async ensureBuyer(input): Promise<GatewayResult> {

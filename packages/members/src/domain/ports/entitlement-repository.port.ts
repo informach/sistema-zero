@@ -1,5 +1,6 @@
 import type { EntitlementAggregate } from '../entitlement/entitlement.aggregate'
 import type { EntitlementStatus } from '../entitlement/entitlement.status'
+import type { AccessType } from '../entitlement/fulfillment'
 
 /** Sumário de um membro (1 linha = 1 usuário com ≥1 matrícula) para a listagem admin. */
 export interface MemberSummary {
@@ -30,6 +31,13 @@ export interface ListMembersResult {
   total: number
 }
 
+export interface SubscriptionStatusUpdateResult {
+  /** Nº de matrículas alteradas. */
+  affected: number
+  /** Usuários distintos afetados — usado para invalidar caches downstream. */
+  userIds: string[]
+}
+
 /**
  * Persistência da matrícula. `save` é uma inserção idempotente (ON CONFLICT DO
  * NOTHING na `idempotencyKey`); `update` usa concorrência otimista (`version`).
@@ -40,20 +48,25 @@ export interface EntitlementRepository {
   findById(id: string): Promise<EntitlementAggregate | null>
   /** Insere; se a `idempotencyKey` já existe, NÃO faz nada e retorna `false`. */
   save(entitlement: EntitlementAggregate): Promise<boolean>
+  /**
+   * Insere todas as matrículas numa única unidade atômica. Se qualquer índice único
+   * conflitar, nenhuma linha nova fica persistida e retorna `false`.
+   */
+  saveMany(entitlements: EntitlementAggregate[]): Promise<boolean>
   /** `UPDATE ... WHERE id = ? AND version = ?` → `false` se houve conflito de versão. */
   update(entitlement: EntitlementAggregate): Promise<boolean>
   /**
    * Matrícula ATIVA (status + validade) que dá acesso ao curso: específica
-   * (`courseRef`) OU chave-mestra (`accessType='all_courses'`). Havendo mais de
-   * uma, devolve a "mais forte" (vitalícia > validade mais distante).
-   * `masterCovers: false` tira a chave-mestra do OR — usado quando o curso é
-   * `kids` (a `all_courses` cobre só cursos `adult`). Default `true` (compat).
+   * (`courseRef`) OU a chave-mestra da AUDIÊNCIA do curso (`masterType` =
+   * `all_courses` p/ adult, `all_kids_courses` p/ kids). Havendo mais de uma,
+   * devolve a "mais forte" (vitalícia > validade mais distante). `masterType`
+   * ausente/`null` tira a chave-mestra do OR (resta só a matrícula específica).
    */
   findActiveForCourse(
     userId: string,
     courseRef: string,
     now: Date,
-    opts?: { masterCovers?: boolean },
+    opts?: { masterType?: AccessType | null },
   ): Promise<EntitlementAggregate | null>
   /** Todas as matrículas ATIVAS do aluno (qualquer tipo). */
   listActiveByUser(userId: string, now: Date): Promise<EntitlementAggregate[]>
@@ -69,12 +82,12 @@ export interface EntitlementRepository {
    * Revoga (corte imediato) TODAS as matrículas da assinatura num único UPDATE
    * atômico — sem load-mutate-save por linha (evita lost-update sob concorrência
    * com um grant de renovação). Idempotente: não toca em quem já está `revoked`.
-   * Retorna o nº de linhas afetadas.
+   * Retorna linhas afetadas e usuários alterados para invalidação de cache.
    */
-  revokeBySubscriptionId(subscriptionId: string, now: Date): Promise<number>
+  revokeBySubscriptionId(subscriptionId: string, now: Date): Promise<SubscriptionStatusUpdateResult>
   /**
    * Expira (fim natural) TODAS as matrículas da assinatura num único UPDATE
    * atômico. Idempotente: não rebaixa `revoked` nem reexpira `expired`.
    */
-  expireBySubscriptionId(subscriptionId: string, now: Date): Promise<number>
+  expireBySubscriptionId(subscriptionId: string, now: Date): Promise<SubscriptionStatusUpdateResult>
 }

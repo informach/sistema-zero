@@ -389,9 +389,11 @@ campo.value = nome;`
     ])
   })
 
-  it('mantém textContent com expressão não modelada (getMonth) como rawJS', () => {
+  it('mantém textContent com expressão não modelada (getTime) como rawJS', () => {
+    // getTime() NÃO é uma das partes do sz_val_date_part (horas/minutos/… e getMonth
+    // agora SÃO modeladas como dateGet); serve para checar o fallback rawJS.
     const code = `const ano = document.getElementById("ano");
-ano.textContent = new Date().getMonth();`
+ano.textContent = new Date().getTime();`
     const ir = parseJS(code)
     expect(ir[0]).toMatchObject({ type: 'getElementById', id: 'ano' })
     expect(ir[1]?.type).toBe('rawJS')
@@ -1503,5 +1505,93 @@ document.addEventListener('keyup', (e) => {
         },
       ])
     })
+  })
+})
+
+describe('parseJS — ⚡ Eventos: teclado, mouse, janela e tempo em segundos (round-trip)', () => {
+  it('document.addEventListener("keydown", (event) => {…}) → event keydown + event.code', () => {
+    const code = `document.addEventListener("keydown", (event) => {\n  let t = event.code;\n});`
+    expect(parseJS(code)).toEqual([
+      {
+        type: 'event',
+        target: 'document',
+        targetKind: 'document',
+        event: 'keydown',
+        body: [{ type: 'var', name: 't', value: { type: 'eventProp', prop: 'code' } }],
+      },
+    ])
+  })
+
+  it('ACEITA window.addEventListener para teclado (equivalente a document)', () => {
+    const code = `window.addEventListener("keyup", (event) => {\n  let k = event.key;\n});`
+    expect(parseJS(code)).toEqual([
+      {
+        type: 'event',
+        target: 'window',
+        targetKind: 'window',
+        event: 'keyup',
+        body: [{ type: 'var', name: 'k', value: { type: 'eventProp', prop: 'key' } }],
+      },
+    ])
+  })
+
+  it('window.addEventListener("resize"/"load", …) → event de janela', () => {
+    for (const evt of ['load', 'resize']) {
+      const code = `window.addEventListener("${evt}", (event) => { console.log("x"); });`
+      expect(parseJS(code)[0]).toMatchObject({ type: 'event', event: evt, targetKind: 'window' })
+    }
+  })
+
+  it('mousemove no documento → event mousemove', () => {
+    const code = `document.addEventListener("mousemove", (event) => { console.log("m"); });`
+    expect(parseJS(code)[0]).toMatchObject({
+      type: 'event',
+      event: 'mousemove',
+      targetKind: 'document',
+    })
+  })
+
+  it('setInterval(cb, N * 1000) → setIntervalSeconds(N); ms cru fica setInterval', () => {
+    expect(parseJS('setInterval(() => { console.log("t"); }, 3 * 1000);')).toEqual([
+      {
+        type: 'setIntervalSeconds',
+        delay: { type: 'num', value: 3 },
+        body: [{ type: 'consoleLog', value: { type: 'str', value: 't' } }],
+      },
+    ])
+    expect(parseJS('setTimeout(() => { console.log("t"); }, 200);')).toEqual([
+      {
+        type: 'setTimeout',
+        delay: { type: 'num', value: 200 },
+        body: [{ type: 'consoleLog', value: { type: 'str', value: 't' } }],
+      },
+    ])
+  })
+
+  it('round-trip: cada bloco novo volta a virar bloco (IR→código→IR estável)', () => {
+    const irs: import('#ir').JSStatement[] = [
+      {
+        type: 'event',
+        target: 'document',
+        targetKind: 'document',
+        event: 'keydown',
+        body: [{ type: 'consoleLog', value: { type: 'str', value: 'k' } }],
+      },
+      {
+        type: 'event',
+        target: 'window',
+        targetKind: 'window',
+        event: 'resize',
+        body: [{ type: 'consoleLog', value: { type: 'str', value: 'r' } }],
+      },
+      {
+        type: 'setTimeoutSeconds',
+        delay: { type: 'num', value: 2 },
+        body: [{ type: 'consoleLog', value: { type: 'str', value: 's' } }],
+      },
+    ]
+    for (const ir of irs) {
+      expect(parseJS(generateJS({ statements: [ir] }))).toEqual([ir])
+    }
   })
 })

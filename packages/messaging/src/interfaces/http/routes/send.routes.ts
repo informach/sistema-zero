@@ -1,3 +1,4 @@
+import { UnauthorizedError } from '@sistemazero/core/http'
 import { Elysia } from 'elysia'
 import type { GetMessageService } from '../../../application/get-message/get-message.service'
 import type { SendMessageService } from '../../../application/send-message/send-message.service'
@@ -56,7 +57,11 @@ export function sendRoutes(deps: SendRoutesDeps) {
       '/messaging/messages/:id',
       async ({ params, headers }) => {
         requireInternalToken(headers, deps.internalToken)
-        return deps.getMessage.execute(params.id)
+        const consumerId = headers['x-consumer-id'] ?? null
+        if (deps.internalToken && !consumerId) {
+          throw new UnauthorizedError('Consumer autenticado ausente')
+        }
+        return deps.getMessage.execute(params.id, consumerId)
       },
       { params: IdParams },
     )

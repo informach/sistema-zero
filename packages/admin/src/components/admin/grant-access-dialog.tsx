@@ -23,7 +23,7 @@ const VALIDITY_PRESETS = [
 ] as const
 
 interface GrantForm {
-  mode: 'offer' | 'course' | 'all_courses'
+  mode: 'offer' | 'course' | 'all_courses' | 'all_kids_courses'
   offerId: string
   courseRef: string
   preset: string
@@ -123,7 +123,9 @@ export function GrantAccessDialog({
           ? { mode: 'offer', userId, offerRef: form.offerId, expiresAt }
           : form.mode === 'course'
             ? { mode: 'course', userId, courseRef: form.courseRef, expiresAt }
-            : { mode: 'all_courses', userId, expiresAt }
+            : form.mode === 'all_kids_courses'
+              ? { mode: 'all_kids_courses', userId, expiresAt }
+              : { mode: 'all_courses', userId, expiresAt }
       await apiSend('/api/members/entitlements', 'POST', body)
       toast.success('Acesso concedido.')
       setForm(EMPTY_FORM)
@@ -169,14 +171,16 @@ export function GrantAccessDialog({
             <option value="course">Por curso</option>
             <option value="offer">Por oferta do catálogo</option>
             <option value="all_courses">Todos os cursos adultos (chave-mestra)</option>
+            <option value="all_kids_courses">Todos os cursos kids (chave-mestra)</option>
           </Select>
         </Field>
 
-        {form.mode === 'all_courses' ? (
+        {form.mode === 'all_courses' || form.mode === 'all_kids_courses' ? (
           <p className="text-muted-foreground text-sm">
-            Concede acesso a TODOS os cursos ADULTOS publicados — inclusive os lançados depois.
-            Cursos Kids ficam fora (conceda por curso). Uma única matrícula, revogável/extensível
-            como qualquer outra.
+            Concede acesso a TODOS os cursos {form.mode === 'all_kids_courses' ? 'KIDS' : 'ADULTOS'}{' '}
+            publicados — inclusive os lançados depois. A outra vitrine fica fora (conceda por curso
+            ou use a chave-mestra dela). Uma única matrícula, revogável/extensível como qualquer
+            outra.
           </p>
         ) : form.mode === 'course' ? (
           <Field label="Curso" htmlFor="grant-course">

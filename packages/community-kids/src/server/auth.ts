@@ -10,4 +10,5 @@ export const {
   resetPassword,
   requestOtp,
   resetPasswordWithOtp,
+  getPublicProfileIdentity,
 } = shell.auth

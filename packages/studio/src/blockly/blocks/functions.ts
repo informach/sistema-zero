@@ -40,7 +40,7 @@ export const FUNCTION_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     mutator: 'sz_args_mutator',
-    tooltip: 'Executa uma função já criada, como comando (nome(...)).',
+    tooltip: 'Executa uma função já criada, como comando.',
   },
   {
     type: 'sz_val_call_function',
@@ -50,6 +50,6 @@ export const FUNCTION_BLOCKS: BlockDefinition[] = [
     output: 'JSValue',
     colour: C,
     mutator: 'sz_args_mutator',
-    tooltip: 'Usa o valor que uma função devolve (nome(...)) numa tomada de valor.',
+    tooltip: 'Usa o valor que uma função devolve numa tomada de valor.',
   },
 ]

@@ -1,5 +1,6 @@
 'use client'
 
+import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
 import { Select } from '@sistemazero/ui/select'
 import { useEffect, useState } from 'react'
@@ -57,9 +58,33 @@ export function HubAccessFields({
         >
           <option value="public">Público (todo aluno ativo)</option>
           <option value="course_gated">Por curso (liberado pela matrícula)</option>
+          <option value="community_gated">Por comunidade (produto de comunidade)</option>
           <option value="role_gated">Por cargo (equipe/papel)</option>
         </Select>
       </Field>
+
+      {value.visibility === 'community_gated' ? (
+        <Field
+          label="Chaves de comunidade que liberam o acesso"
+          htmlFor="hub-communities"
+          tooltip="Chave do produto de comunidade — a MESMA do campo 'Chave da comunidade' no produto do catálogo. Separe por vírgula p/ aceitar mais de uma."
+        >
+          <Input
+            id="hub-communities"
+            value={(value.communities ?? []).join(', ')}
+            placeholder="ex.: comunidade-vip"
+            onChange={(e) =>
+              onChange({
+                ...value,
+                communities: e.target.value
+                  .split(',')
+                  .map((s) => s.trim())
+                  .filter(Boolean),
+              })
+            }
+          />
+        </Field>
+      ) : null}
 
       {value.visibility === 'course_gated' ? (
         <fieldset className="rounded-lg border border-border p-3">

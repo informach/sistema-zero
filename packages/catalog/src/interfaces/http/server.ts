@@ -10,11 +10,14 @@ import type { GetProductService } from '../../application/get-product/get-produc
 import type { ListCouponsService } from '../../application/list-coupons/list-coupons.service'
 import type { ListOffersService } from '../../application/list-offers/list-offers.service'
 import type { ListProductsService } from '../../application/list-products/list-products.service'
+import type { OfferView } from '../../application/mappers/offer-view'
+import type { PublicProductView } from '../../application/mappers/product-view'
 import type { QuoteOfferService } from '../../application/quote-offer/quote-offer.service'
 import type { RedeemCouponService } from '../../application/redeem-coupon/redeem-coupon.service'
 import type { UpdateCouponService } from '../../application/update-coupon/update-coupon.service'
 import type { UpdateOfferService } from '../../application/update-offer/update-offer.service'
 import type { UpdateProductService } from '../../application/update-product/update-product.service'
+import { MicroCache } from '../../infrastructure/cache/micro-cache'
 import type { Env } from '../../infrastructure/config/env'
 import { buildErrorResponse } from './error-handler'
 import { isOversizeBody, markOversizeBody } from './raw-body'
@@ -103,6 +106,8 @@ export function createServer(deps: HttpDeps) {
   // veem edição refletida na hora; testes determinísticos).
   const publicCacheTtlMs =
     deps.env.PUBLIC_CACHE_TTL_MS ?? (deps.env.NODE_ENV === 'production' ? 30_000 : 0)
+  const offerCache = new MicroCache<OfferView | null>(publicCacheTtlMs)
+  const productCache = new MicroCache<PublicProductView | null>(publicCacheTtlMs)
 
   return app
     .use(healthRoutes(deps.readiness))
@@ -115,6 +120,8 @@ export function createServer(deps: HttpDeps) {
         redeemCoupon: deps.redeemCoupon,
         internalToken: deps.env.INTERNAL_API_TOKEN,
         publicCacheTtlMs,
+        offerCache,
+        productCache,
       }),
     )
     .use(
@@ -127,6 +134,8 @@ export function createServer(deps: HttpDeps) {
         updateOffer: deps.updateOffer,
         createCoupon: deps.createCoupon,
         updateCoupon: deps.updateCoupon,
+        offerCache,
+        productCache,
       }),
     )
     .use(

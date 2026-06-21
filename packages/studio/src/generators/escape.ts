@@ -16,26 +16,30 @@
 /**
  * Escapa o conteúdo de um `<script>` inline.
  *
- * Neutraliza APENAS a sequência de FECHAMENTO `</script` (case-insensitive) —
- * a única que de fato encerra o elemento `<script>` cedo e corromperia o
- * documento persistido / truncaria o JS na Ponte. A barra invertida é
- * transparente para o JS (`<\/script` ≡ `</script` numa string ou regex), então
- * o conteúdo do aluno continua válido.
+ * O que esta função DE FATO neutraliza: APENAS a sequência de FECHAMENTO
+ * `</script` (case-insensitive). Ela NÃO toca em `<!--` nem na ABERTURA
+ * `<script` — as duas aberturas que ativam o estado "script data double escaped"
+ * do parser de HTML. A barra invertida é transparente para o JS
+ * (`<\/script` ≡ `</script` numa string ou regex), então o conteúdo do aluno
+ * continua válido.
  *
- * Por que NÃO mexer em `<!--`/`<script` (aberturas do estado "double escaped"):
- * reescrevê-las QUEBRAVA regex literais legítimos do aluno no script PERSISTIDO
- * — `/<!--/u` virava `/<\!--/u` (SyntaxError sob a flag `u`) e `/<script>/`
- * mudava de significado. O estado de duplo-escape só se ATIVA com um `<!--` e um
- * `<script` CRUS no fluxo, mas para fechar o elemento o parser de fechamento
- * casa `</script`; como já o neutralizamos, o `</script>` REAL do gerador
- * sempre fecha — o documento nunca "escorrega" para dentro do script. Logo,
- * neutralizar só o fechamento é suficiente E preserva os regexes.
+ * Por que isso BASTA para o uso desta função (e por que NÃO mexemos em
+ * `<!--`/`<script`): reescrever as aberturas QUEBRARIA regex literais legítimos
+ * do aluno no script persistido — `/<!--/u` viraria `/<\!--/u` (SyntaxError sob a
+ * flag `u`) e `/<script>/` mudaria de significado. Os clientes desta função são
+ * código NOSSO/persistido que não depende do estado de duplo-escape para
+ * delimitar o elemento: como o `</script` é sempre neutralizado, o `</script>`
+ * REAL do gerador é o único token de fechamento que o parser casa, então o
+ * elemento sempre fecha no lugar certo e o documento não "escorrega" para dentro
+ * do script. Esta função NÃO é uma sanitização geral contra o estado de
+ * duplo-escape para conteúdo arbitrário/adversário — é uma narrow deliberada.
  *
- * Esta função cobre o `index.html` PERSISTIDO (`generators/html.ts`) e os
- * scripts 1ª-parte do preview (interceptor/permissionGuard/loopGuard/extensões),
- * que são código nosso e não trazem esses regexes — a narrow é segura para eles.
- * O JS do aluno no preview já é emitido como script EXTERNO via `data:` URL e
- * não passa por aqui.
+ * Cobre o `index.html` PERSISTIDO (`generators/html.ts`) e os scripts 1ª-parte
+ * do preview (interceptor/permissionGuard/loopGuard/extensões), que são código
+ * nosso e não trazem esses regexes. O caminho CANÔNICO do JS do aluno no preview
+ * EVITA injeção inline por completo: ele é emitido como script EXTERNO via
+ * `data:` URL (ver `preview/bootstrap.ts`), não passa por aqui e nunca vira texto
+ * dentro de um `<script>` inline.
  */
 export function escapeScriptContent(code: string): string {
   return code.replace(/<\/script/gi, '<\\/script')

@@ -121,6 +121,10 @@ export class ThreadService {
       id,
       channelId,
       authorId: actor.userId,
+      // Snapshot do nome + flag pública do AUTOR (confiáveis, do gateway) — o nome vira
+      // link p/ o perfil público quando os pais liberaram (`profilePublic`).
+      authorDisplayName: actor.displayName,
+      authorPublic: actor.profilePublic,
       title,
       slug: threadSlug(title, id),
       body,
@@ -202,6 +206,8 @@ export class ThreadService {
       id: this.newId(),
       threadId,
       authorId: actor.userId,
+      authorDisplayName: actor.displayName,
+      authorPublic: actor.profilePublic,
       body,
       status,
       replyToId: cmd.replyToId ?? null,

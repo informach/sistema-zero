@@ -44,7 +44,10 @@ export class EmissionWorker {
     try {
       // Coleta notas presas em SCHEDULED após crash (attempts > maxAttempts): sem
       // isto ficariam invisíveis no /metrics (contadas como "agendadas") p/ sempre.
-      const reaped = await this.invoices.failExhausted(this.opts.maxAttempts)
+      const reaped = await this.invoices.failExhausted({
+        maxAttempts: this.opts.maxAttempts,
+        staleMs: this.opts.staleMs,
+      })
       if (reaped > 0) this.logger.error('fiscal.emit_reaped_stuck', { count: reaped })
 
       const claimed = await this.invoices.claimDueForEmission({

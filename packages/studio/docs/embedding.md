@@ -65,6 +65,11 @@ import { createEmptyProject, type StudioHandle } from '@sistemazero/studio'
 
 Props ESTÁTICAS por instância (trocar exige remount): `persistence`, `limits`, `locale`.
 
+**Botões de saída do projeto** (controlados por `features`, default ON; o `<StudioLesson>` desliga
+`export` e `download`): **Salvar** (persiste + dispara `onSave`), **Baixar** (`features.download`) gera um ZIP
+de FONTE legível pra continuar no VSCode, e **Exportar** (`features.export`, no menu ⋯) gera o ZIP de deploy
+(Railway). Os três são independentes; o autosave (IndexedDB, ~1s) é separado do Salvar.
+
 **Adapters remotos e flush no fechamento:** `onChange` recebe um 2º argumento OPCIONAL `ctx?: { reason: 'autosave' | 'flush' }`. No fechamento da aba (pagehide/beforeunload), no unmount e no "Salvar" explícito o Studio emite com `reason: 'flush'` — e um `fetch` normal é ABORTADO pela navegação, perdendo a última edição. Para um backend remoto, use um transporte com keepalive no flush:
 
 ```tsx
@@ -77,7 +82,7 @@ onChange={(p, ctx) =>
 
 A biblioteca não chama `sendBeacon` sozinha (endpoint/credenciais são do host). Hosts `persistence="local"` não precisam disso (o IndexedDB já ordena as escritas).
 
-`<ProjectList onOpenProject={(id) => ...} />` — lista/gerência de projetos do IndexedDB local (por ora acoplada ao adapter local; hosts com backend devem listar pelos próprios dados).
+`<ProjectList onOpenProject={(id) => ...} />` — lista/gerência de projetos do IndexedDB local (por ora acoplada ao adapter local; hosts com backend devem listar pelos próprios dados). Tem **Exportar** (baixa o projeto inteiro como `*.szproject.json`) e **Importar** (lê o JSON e cria um projeto NOVO). O import saneia tudo pelas mesmas cotas do load e mostra **avisos** quando algo não cabe (imagens/extras/extensões fora da cota, ou blocos de uma versão mais nova) — o projeto importa mesmo assim, sem perder o resto em silêncio.
 
 `prefetchStudioModes()` — aquece os chunks pesados (Blockly/Monaco) no hover do link que abre o editor.
 
@@ -129,3 +134,41 @@ Regras NÃO-NEGOCIÁVEIS:
 - **Persistência**: só o código-fonte é salvo (a árvore `tree`); `node_modules` **nunca** é persistido nem aceito no load (o sanitizer rebaixa para projeto básico qualquer árvore com `node_modules`).
 
 Um único sincronizador (`ProWebContainerProvider`) escreve no FS do container; o Terminal em modo profissional só abre o shell sobre o FS já montado (dois escritores corromperiam os arquivos).
+
+## 8. Compartilhar (Mural) + player público
+
+Botão **"Compartilhar"** na Topbar (ao lado do Salvar) que publica o projeto e gera um link público de jogar. **Opt-in**: só aparece quando o host passa a prop `share`. O Studio só ORQUESTRA a UX (confirmação, descrição editável, print via `captureCoverFromProject`); a rede/IA-de-servidor/storage vive 100% no host, atrás de duas funções do adapter.
+
+```tsx
+import type { StudioShareAdapter } from '@sistemazero/studio'
+
+const share: StudioShareAdapter = {
+  // Rascunho curto da descrição (SERVIDOR — nunca a BYOK do aluno). Pode voltar vazio/rejeitar:
+  // o dialog cai no modo "escreva você mesmo", sem travar a publicação.
+  async generateDescription({ project, title }) {
+    const r = await fetch('/api/studio/describe', { method: 'POST', /* ...3 arquivos + título */ })
+    return (await r.json()).description ?? ''
+  },
+  // Publica e devolve os links mostrados na tela de sucesso.
+  async publish({ project, coverDataUrl, title, description }) {
+    // ...sobe o print + o projeto, cria o post... 
+    return { muralUrl: '/mural?thread=…', playUrl: '/jogar/…' }
+  },
+}
+
+<Studio initialProject={project} share={share} />
+```
+
+O que foi publicado é um **SNAPSHOT imutável e INDEPENDENTE**: a criança continua editando o projeto no editor e a versão publicada NÃO muda (republicar gera um post novo). O dialog avisa isso no passo de confirmação.
+Hosts que servem link público devem persistir um `Project` normalizado; o player é defensivo para
+snapshots legados (ex.: arrays opcionais ausentes), mas o publish deve preferir o contrato completo.
+
+**Player público** (página de jogar SEM login, fora do editor): use o subpath LEVE `@sistemazero/studio/player` (só a cadeia de preview — sem Monaco/Blockly):
+
+```tsx
+import { StudioProjectPlayer } from '@sistemazero/studio/player' // dynamic ssr:false
+
+<StudioProjectPlayer project={projetoBuscadoDoServidor} />       // roda SÓ o jogo, autostart
+```
+
+Também exportado no index principal (`StudioProjectPlayer` + a função pura `renderProjectToPreviewDoc(project): string`, caso o host queira montar o srcdoc por conta própria). `renderProjectToPreviewDoc` tolera `files` ausente e `installedExtensions`/`extraFiles`/`assets` não-array, usando defaults vazios para não quebrar páginas públicas antigas. O iframe usa `sandbox="allow-scripts allow-modals"` e a CSP/guards viajam dentro do doc — o host só precisa de `frame-src 'self' blob:` na própria CSP.

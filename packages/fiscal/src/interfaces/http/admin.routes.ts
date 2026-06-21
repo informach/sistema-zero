@@ -210,7 +210,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
             set.status = 502
             return envelope('PAYMENTS_UNAVAILABLE', 'Payments indisponível — tente de novo')
           }
-          if (!snapshot || snapshot.status !== 'PAID' || snapshot.refundedAt) {
+          if (snapshot?.status !== 'PAID' || snapshot.refundedAt) {
             set.status = 409
             return envelope(
               'PAYMENT_NOT_PAID',
@@ -321,7 +321,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           }
 
           const offerId =
-            typeof snapshot.metadata['offerId'] === 'string' ? snapshot.metadata['offerId'] : null
+            typeof snapshot.metadata.offerId === 'string' ? snapshot.metadata.offerId : null
           let productName: string | null = null
           let guaranteeDays: number | null = null
           if (offerId) {

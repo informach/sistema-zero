@@ -24,15 +24,26 @@ const HTTP_URL_PATTERN = '^https?://'
 const NULLABLE_URL = t.Optional(
   t.Union([t.String({ maxLength: 2000, pattern: HTTP_URL_PATTERN }), t.Null()]),
 )
+// A capa da vitrine é renderizada como `<img src>` numa parede INFANTIL → só https
+// (sem `http://` mixed-content). O conteúdo é produzido pelo BFF (URL pública do R2
+// ou capa padrão do admin); o pino de esquema é a defesa de borda do hub.
+const HTTPS_URL_PATTERN = '^https://'
 
 // accessConfig: a coerência (course_gated exige cursos; role_gated exige cargos) é
 // reforçada no service — aqui aceitamos arrays opcionais (default [] no mapper).
 const COURSE_REF = t.String({ minLength: 1, maxLength: 200 })
+const COMMUNITY_REF = t.String({ minLength: 1, maxLength: 200 })
 const ROLE = t.String({ minLength: 1, maxLength: 50 })
 export const AccessConfigSchema = t.Object(
   {
-    visibility: t.Union([t.Literal('public'), t.Literal('course_gated'), t.Literal('role_gated')]),
+    visibility: t.Union([
+      t.Literal('public'),
+      t.Literal('course_gated'),
+      t.Literal('community_gated'),
+      t.Literal('role_gated'),
+    ]),
     courses: t.Optional(t.Array(COURSE_REF, { maxItems: 200 })),
+    communities: t.Optional(t.Array(COMMUNITY_REF, { maxItems: 200 })),
     roles: t.Optional(t.Array(ROLE, { maxItems: 50 })),
   },
   { additionalProperties: false },
@@ -48,6 +59,8 @@ export const SpaceBody = t.Object({
   accessConfig: AccessConfigSchema,
   // Ausente → default por audiência (kids = true) no mapper.
   requiresApproval: t.Optional(t.Boolean()),
+  // Aparece bloqueado no menu sem acesso (vitrine). Ausente → false no mapper.
+  teaserWhenLocked: t.Optional(t.Boolean()),
   status: t.Optional(SPACE_STATUS),
 })
 
@@ -103,6 +116,60 @@ export const CreateCommentBody = t.Object({
 
 /** Edição (autor): só o corpo Markdown. */
 export const EditBody = t.Object({ body: MARKDOWN_BODY })
+
+/**
+ * Corpo de `POST /hub/internal/showcase-thread` (BFF → hub, em nome da criança). O
+ * corpo só diz QUAL projeto (`lessonId`/`blockId`) e a capa capturada; título, resumo,
+ * audiência, nome do autor e idempotência são resolvidos no hub (S2S ao members +
+ * header de perfil do gateway) — NUNCA confiados do corpo (a rota é alcançável na borda).
+ */
+export const ShowcaseThreadBody = t.Object({
+  spaceSlug: SLUG,
+  lessonId: UUID,
+  blockId: UUID,
+  coverImageUrl: t.Optional(
+    t.Union([t.String({ maxLength: 2000, pattern: HTTPS_URL_PATTERN }), t.Null()]),
+  ),
+})
+
+/**
+ * Corpo de `POST /hub/internal/showcase-thread-studio` (BFF → hub, em nome da
+ * criança) — variação KID-DRIVEN do "Compartilhar" do Estúdio: a `description` é
+ * escrita/editada pela criança e o projeto ganha um `playId` (link público de
+ * jogar). Título/elegibilidade/nome continuam autoritativos do members/header (a
+ * rota é alcançável na borda — o corpo não é confiável). `clientIdempotencyKey`
+ * dedup-a duplo-clique; republicar depois = post novo (imutável).
+ */
+export const ShowcaseThreadStudioBody = t.Object({
+  spaceSlug: SLUG,
+  lessonId: UUID,
+  blockId: UUID,
+  description: t.String({ minLength: 1, maxLength: 280 }),
+  coverImageUrl: t.Optional(
+    t.Union([t.String({ maxLength: 2000, pattern: HTTPS_URL_PATTERN }), t.Null()]),
+  ),
+  playId: UUID,
+  clientIdempotencyKey: UUID,
+})
+
+/**
+ * Corpo de `POST /hub/internal/showcase-thread-studio-standalone` (BFF → hub) — o
+ * "Compartilhar" do ESTÚDIO COMPLETO (produto vendável, SEM aula): não há
+ * `lessonId`/`blockId` nem payload autoritativo do members, então `title` e
+ * `description` vêm da criança (sanitizados). A elegibilidade é "a CONTA possui o
+ * produto do Estúdio" (re-validada no hub via `members.checkAccess`); nome do autor
+ * do header confiável; `clientIdempotencyKey` dedup-a duplo-clique (republicar = post novo).
+ */
+export const ShowcaseThreadStudioStandaloneBody = t.Object({
+  spaceSlug: SLUG,
+  title: t.String({ minLength: 1, maxLength: 200 }),
+  description: t.String({ minLength: 1, maxLength: 280 }),
+  coverImageUrl: t.Optional(
+    t.Union([t.String({ maxLength: 2000, pattern: HTTPS_URL_PATTERN }), t.Null()]),
+  ),
+  playId: UUID,
+  clientIdempotencyKey: UUID,
+})
 
 /** Paginação por cursor opaco (listagem de tópicos). */
 export const ThreadListQuery = t.Object({

@@ -17,6 +17,15 @@ describe('buildPreviewCSP', () => {
     expect(csp).toContain('font-src data: https:')
   })
 
+  it('frame-src libera só https: (sem data:/blob: — anti subframe uninstrumentado)', () => {
+    // Um subframe data:/blob: rodaria fora do loopGuard e não herdaria a meta-CSP,
+    // reabrindo o furo de worker-src. Só `https:` é liberado.
+    const csp = buildPreviewCSP()
+    expect(csp).toContain('frame-src https:')
+    expect(csp).not.toMatch(/frame-src[^;]*\bdata:/)
+    expect(csp).not.toMatch(/frame-src[^;]*\bblob:/)
+  })
+
   it("trava workers (worker-src 'none')", () => {
     // Sem worker-src, Workers cairiam no script-src (data:/blob:) e o aluno
     // poderia criar laços imortais fora do alcance do loopGuard.

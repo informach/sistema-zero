@@ -7,6 +7,8 @@
  * silêncio nem virar um header `content-type` inválido.
  */
 
+import { createHash } from 'node:crypto'
+
 export type WatermarkKind = 'pdf' | 'image' | null
 
 export interface DownloadMedia {
@@ -39,16 +41,19 @@ export const WATERMARK_MAX_BYTES = 200 * 1024 * 1024 // 200MB
 export const DIRECT_DELIVERY_MIN_BYTES = 20 * 1024 * 1024 // 20MB
 
 /**
- * Key do cache do PDF marcado por (arquivo, aluno) no bucket privado — livre de
- * colisão por construção (key de origem inteira + userId entram na key). Trocar
- * o PDF do bloco gera key de origem nova (uuid) → cache antigo nunca é servido
- * por engano. O prefixo `watermarked/` tem regra de lifecycle no bucket (expira
- * sozinho — re-gerar é barato).
+ * Key do cache do PDF marcado por (arquivo, aluno) no bucket privado. A origem entra
+ * como **sha256 da key inteira** (INJETIVO): a substituição lossy anterior
+ * (`[^a-zA-Z0-9._-]+ → _`) podia COLIDIR duas keys distintas (ex.: `report v1.pdf` e
+ * `report-v1.pdf`) → a mesma key de cache, e o serve fazia HEAD e devolvia o objeto
+ * cacheado sem reconferir a origem (mesmo aluno, arquivo ERRADO — o admin controla o
+ * nome). O hash elimina a colisão na raiz. Trocar o PDF do bloco gera key de origem
+ * nova → hash novo → cache antigo nunca é servido por engano. O prefixo
+ * `watermarked/` tem regra de lifecycle no bucket (expira sozinho — re-gerar é barato).
  */
 export function watermarkCacheKey(srcKey: string, userId: string): string {
-  const safeSrc = srcKey.replace(/^\/+/, '').replace(/[^a-zA-Z0-9._-]+/g, '_')
+  const srcHash = createHash('sha256').update(srcKey).digest('hex')
   const safeUser = userId.replace(/[^a-zA-Z0-9-]+/g, '_')
-  return `watermarked/${safeSrc}/${safeUser}.pdf`
+  return `watermarked/${srcHash}/${safeUser}.pdf`
 }
 
 const WATERMARKABLE_IMAGE_MIMES = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/gif'])

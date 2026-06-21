@@ -74,11 +74,47 @@ export function resolveAccountId(headers: Record<string, string | undefined>): s
   return resolveUserId(headers)
 }
 
+/** Header de identidade pode chegar URI-encoded (acento → `headers.set` lança cru). */
+function decodeIdentity(value: string | undefined): string | undefined {
+  if (!value) return undefined
+  if (!value.includes('%')) return value
+  try {
+    return decodeURIComponent(value)
+  } catch {
+    return value
+  }
+}
+
+/**
+ * Primeiro nome do AUTOR para a vitrine (Mural). Em sessão de PERFIL o gateway injeta
+ * `x-auth-profile-name` (claim `pfl.name` — o nome da CRIANÇA); fora dela cai no nome
+ * da conta (`x-auth-user-name`). NUNCA vem do corpo — é a fonte confiável do nome.
+ */
+export function resolveDisplayName(headers: Record<string, string | undefined>): string {
+  const full = (
+    decodeIdentity(headers['x-auth-profile-name']) ??
+    decodeIdentity(headers['x-auth-user-name']) ??
+    ''
+  ).trim()
+  const first = full.split(/\s+/)[0] ?? ''
+  return first || 'Criador'
+}
+
+/**
+ * Perfil do autor é PÚBLICO? Em sessão de perfil o gateway injeta `x-auth-profile-public`
+ * ('true'/'false', da claim `pfl.pub`); ausente/`false` → privado. Snapshot no create.
+ */
+export function resolveProfilePublic(headers: Record<string, string | undefined>): boolean {
+  return headers['x-auth-profile-public'] === 'true'
+}
+
 /** Monta o ator confiável a partir dos headers `X-Auth-User-*` (gateway). */
 export function resolveActor(headers: Record<string, string | undefined>): Actor {
   return {
     userId: resolveUserId(headers),
     accountId: resolveAccountId(headers),
+    displayName: resolveDisplayName(headers),
+    profilePublic: resolveProfilePublic(headers),
     role: headers['x-auth-user-role'],
     status: headers['x-auth-user-status'],
     privileged: isPrivilegedActor(headers),
@@ -95,13 +131,15 @@ function safeEqual(a: string, b: string): boolean {
 /**
  * Defesa em profundidade: confirma que a chamada veio do gateway. O gateway injeta
  * `x-internal-token` (header-inject, sobrescrevendo qualquer valor do cliente); o
- * hub o exige nas rotas do aluno e admin. Sem `expected` (dev/local sem gateway) → no-op.
+ * hub o exige nas rotas do aluno e admin.
  */
 export function assertInternalCaller(
   provided: string | undefined,
   expected: string | undefined,
 ): void {
-  if (!expected) return
+  if (!expected) {
+    throw new UnauthorizedError('Chamada não autorizada (token interno ausente/inválido)')
+  }
   if (!provided || !safeEqual(provided, expected)) {
     throw new UnauthorizedError('Chamada não autorizada (token interno ausente/inválido)')
   }

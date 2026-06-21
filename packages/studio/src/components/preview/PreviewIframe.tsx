@@ -1,7 +1,7 @@
 import type { JSX } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
-import type { ExtraFile, InstalledExtension } from '#core'
+import { assetManifest, type ExtraFile, type InstalledExtension, type ProjectAsset } from '#core'
 import type { ExtensionPermission } from '#extensions'
 import { findExtension } from '#official-extensions'
 import {
@@ -27,6 +27,7 @@ import {
 
 const EMPTY_EXTRA_FILES: ExtraFile[] = []
 const EMPTY_INSTALLED_EXTENSIONS: InstalledExtension[] = []
+const EMPTY_ASSETS: ProjectAsset[] = []
 
 /**
  * Abaixo desta largura do PRÓPRIO painel de preview, a barra de ferramentas
@@ -37,7 +38,7 @@ const EMPTY_INSTALLED_EXTENSIONS: InstalledExtension[] = []
 const PREVIEW_TOOLBAR_COMPACT_MAX_PX = 400
 
 export function PreviewIframe(): JSX.Element {
-  const { projectId, html, css, js, projectName, installedExtensions, extraFiles } =
+  const { projectId, html, css, js, projectName, installedExtensions, extraFiles, assets } =
     useProjectStore(
       useShallow((s) => ({
         projectId: s.project?.id ?? null,
@@ -47,6 +48,7 @@ export function PreviewIframe(): JSX.Element {
         projectName: s.project?.name ?? '',
         installedExtensions: s.project?.installedExtensions ?? EMPTY_INSTALLED_EXTENSIONS,
         extraFiles: s.project?.extraFiles ?? EMPTY_EXTRA_FILES,
+        assets: s.project?.assets ?? EMPTY_ASSETS,
       })),
     )
   const pushLog = useLogsStore((s) => s.push)
@@ -59,6 +61,12 @@ export function PreviewIframe(): JSX.Element {
   const toolbarWidth = useMeasuredWidth(rootRef)
   const compactToolbar = toolbarWidth > 0 && toolbarWidth < PREVIEW_TOOLBAR_COMPACT_MAX_PX
   const iframeRef = useRef<HTMLIFrameElement>(null)
+  // Quando o aluno clica EXPLICITAMENTE em Reproduzir/Atualizar, focamos o iframe
+  // assim que ele recarrega — senão o foco fica no botão (no parent) e as setas do
+  // teclado nunca chegam ao jogo (o iframe sandbox só recebe teclado com FOCO no
+  // conteúdo). Só em ação explícita: um reload por auto-debounce durante a edição
+  // NÃO rouba o foco do editor de blocos.
+  const focusOnLoadRef = useRef(false)
   // Watchdog de heartbeat (Camada B): se o thread do iframe travar num cálculo
   // síncrono, o interceptor para de emitir heartbeats e mostramos o aviso.
   const lastHeartbeatRef = useRef(0)
@@ -185,6 +193,7 @@ export function PreviewIframe(): JSX.Element {
     processStorageNow()
     markCurrentProjectStarted()
     setPreviewRunning(true)
+    focusOnLoadRef.current = true // Play explícito → foca o jogo p/ o teclado funcionar
     rerenderPreview()
   }
 
@@ -194,6 +203,7 @@ export function PreviewIframe(): JSX.Element {
     processStorageNow()
     markCurrentProjectStarted()
     if (!previewRunning) setPreviewRunning(true)
+    focusOnLoadRef.current = true // ação explícita → foca o jogo (teclado)
     rerenderPreview()
   }
 
@@ -208,16 +218,18 @@ export function PreviewIframe(): JSX.Element {
   // Título do documento (tag <title> do index.html), exibido no cabeçalho do
   // preview — é o mesmo nome que apareceria na guia do navegador. Cai para o
   // nome do projeto quando o HTML não tem <title>.
-  const documentTitle = useMemo(() => {
-    try {
-      const parsed = new DOMParser().parseFromString(debouncedHtml, 'text/html')
-      const title = parsed.querySelector('title')?.textContent?.trim()
-      if (title) return title
-    } catch {
-      // HTML malformado: ignora e usa o fallback.
-    }
-    return projectName
-  }, [debouncedHtml, projectName])
+  //
+  // Antes montávamos um DOCUMENTO inteiro com `DOMParser` só para ler uma tag —
+  // o `doc` (build do preview) e a Ponte já parseiam o MESMO HTML, mas nenhum
+  // desses parses é acessível daqui (BridgeMode/`buildPreviewDoc` ficam em outros
+  // módulos). Em vez de uma 3ª árvore de DOM completa por mudança de HTML, isolamos
+  // o miolo do `<title>` por regex e DECODIFICAMOS as entidades (&amp; etc.) num
+  // único `<textarea>` descartável — mesma saída de `textContent`, sem construir o
+  // documento todo. `extractDocumentTitle` é pura e testável.
+  const documentTitle = useMemo(
+    () => extractDocumentTitle(debouncedHtml) ?? projectName,
+    [debouncedHtml, projectName],
+  )
 
   const extensionScripts = useMemo(() => {
     const ids = debouncedIds ? debouncedIds.split(',') : []
@@ -249,6 +261,12 @@ export function PreviewIframe(): JSX.Element {
     }
     return Array.from(perms)
   }, [debouncedIds])
+
+  // Manifesto de assets (nome → dataUrl) semeado no preview. Recomputa só quando a
+  // lista de assets muda (add/remover/renomear) — não a cada tecla. Não entra no
+  // orçamento de render: assets são dados PASSIVOS (decode de imagem), não custo de
+  // CPU do código do aluno, então não devem disparar o "preview pausado".
+  const assetsManifest = useMemo(() => assetManifest(assets), [assets])
 
   const previewBudgetInput = useMemo(
     () => ({
@@ -306,6 +324,9 @@ export function PreviewIframe(): JSX.Element {
       // — uma escrita não deve reconstruir o doc e recarregar o preview).
       localStorageSnapshot: gameStorageRef.current,
       storageProjectId: projectId ?? undefined,
+      // Manifesto de assets: ESTE entra nas deps (adicionar/remover imagem deve
+      // reconstruir o doc para o sprite aparecer/sumir no preview).
+      assets: assetsManifest,
     })
     // O botão "Atualizar" muda `renderNonce`. Embutimos o nonce no próprio documento
     // para que o `srcDoc` mude e o iframe recarregue (re-executando o código) mesmo
@@ -326,6 +347,7 @@ export function PreviewIframe(): JSX.Element {
     debouncedExtraFiles,
     installedPermissions,
     extensionImports,
+    assetsManifest,
     previewSecurity,
     renderNonce,
   ])
@@ -474,8 +496,19 @@ export function PreviewIframe(): JSX.Element {
           setLoadedSrcDoc(iframeRef.current?.getAttribute('srcdoc') ?? null)
           lastHeartbeatRef.current = Date.now()
           setPreviewStalled(false)
+          // Foca o jogo após um Play/Atualizar explícito, para que as setas do
+          // teclado cheguem ao iframe sem o aluno precisar clicar no canvas. Só
+          // após ação explícita (a flag não é setada em reload por edição).
+          if (focusOnLoadRef.current) {
+            focusOnLoadRef.current = false
+            iframeRef.current?.focus()
+          }
         }}
         sandbox="allow-scripts allow-modals"
+        // Libera a Fullscreen API DENTRO do iframe (blocos de "tela cheia"). Sem
+        // isso requestFullscreen() é rejeitado silenciosamente. Não afeta o sandbox.
+        allow="fullscreen"
+        allowFullScreen
         className="h-full w-full flex-1 bg-white"
       />
       {previewPaused && (
@@ -542,4 +575,48 @@ const MESSAGE_RATE_MAX_PER_WINDOW = 240
 function formatPreviewSize(chars: number): string {
   if (chars >= 1_000_000) return `${(chars / 1_000_000).toFixed(1)} M caracteres`
   return `${Math.ceil(chars / 1_000)} mil caracteres`
+}
+
+// Casa o PRIMEIRO `<title>` (qualquer atributo, qualquer caixa, conteúdo em
+// múltiplas linhas) — espelha o que `document.querySelector('title')` pegaria
+// (primeiro em ordem de documento). `<title>` é elemento de TEXTO BRUTO no HTML:
+// entidades são decodificadas, mas tags internas ficam literais — exatamente o
+// que `textContent` devolveria.
+// `<title>` ou `<title ...atributos>` (exige limite de tag real após o nome —
+// não casa `<titlexyz>`, igual a `querySelector('title')`).
+const TITLE_TAG_RE = /<title(?:\s[^>]*)?>([\s\S]*?)<\/title\s*>/i
+// Pré-filtro barato e CASE-INSENSITIVE (`<TITLE>` é válido): só dispara o regex
+// completo quando a abertura existe — evita rodar o casamento no HTML sem título.
+const TITLE_OPEN_RE = /<title[\s>]/i
+
+function decodeHtmlEntities(raw: string): string {
+  // Sem entidades não há o que decodificar — evita até tocar no DOM.
+  if (!raw.includes('&')) return raw
+  if (typeof DOMParser === 'undefined') return raw
+  // Decodifica via documento INERTE do DOMParser (sem browsing context): NÃO
+  // executa script nem CARREGA subrecursos. Antes era `<textarea>.innerHTML = raw`
+  // num nó VIVO do documento do EDITOR — um título forjado como
+  // `</textarea><img src=x onerror=...>` quebrava o RCDATA do textarea e o <img>
+  // disparava fetch/onerror na origem 1ª-parte do editor. Parsear só o fragmento
+  // do título é barato e inerte (um <img> aqui não carrega nada).
+  const doc = new DOMParser().parseFromString(`<title>${raw}</title>`, 'text/html')
+  return doc.querySelector('title')?.textContent ?? raw
+}
+
+/**
+ * Lê o conteúdo do `<title>` do HTML sem construir uma árvore de DOM completa.
+ * Devolve o título com `trim`, ou `null` quando não há `<title>` (o chamador cai
+ * no nome do projeto). Mesma saída de `querySelector('title')?.textContent?.trim()`,
+ * porém sem o custo de parsear o documento inteiro só para uma tag. Exportada para
+ * teste de paridade.
+ */
+export function extractDocumentTitle(html: string): string | null {
+  // Pré-checagem barata: sem a abertura `<title` nem rodamos o regex completo
+  // (caso comum de HTML sem `<title>`, onde o parser antigo montava o documento
+  // todo à toa).
+  if (!TITLE_OPEN_RE.test(html)) return null
+  const match = TITLE_TAG_RE.exec(html)
+  if (!match) return null
+  const title = decodeHtmlEntities(match[1] ?? '').trim()
+  return title ? title : null
 }

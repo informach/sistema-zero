@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'bun:test'
 import { ResolveOfferEntitlementsService } from '../../src/application/resolve-offer-entitlements/resolve-offer-entitlements.service'
 import { OfferAggregate } from '../../src/domain/offer/offer.aggregate'
 import { ProductAggregate } from '../../src/domain/product/product.aggregate'
+import { ValidationError } from '../../src/domain/shared/errors'
 import { Sku } from '../../src/domain/value-objects/sku'
 import { Slug } from '../../src/domain/value-objects/slug'
 import { InMemoryProductRepository } from '../fakes/in-memory'
@@ -55,5 +56,25 @@ describe('ResolveOfferEntitlementsService (carrega o fechamento e resolve)', () 
     expect(ids).toEqual(['brinde', 'ebook', 'kit'])
     expect(result.find((r) => r.productId === 'ebook')?.isPrimary).toBe(true)
     expect(result.find((r) => r.productId === 'brinde')?.isPrimary).toBe(false)
+  })
+
+  it('falha explicitamente quando o grafo passa da profundidade máxima', async () => {
+    await products.create(product('p9'))
+    for (let i = 8; i >= 0; i--) {
+      await products.create(
+        product(`p${i}`, [{ componentProductId: `p${i + 1}`, sortOrder: 0, isPrimary: true }]),
+      )
+    }
+
+    const offer = OfferAggregate.create({
+      id: 'offer-deep',
+      productId: 'p0',
+      code: Sku.create('deep-offer'),
+      slug: Slug.create('deep-offer'),
+      name: 'Deep Offer',
+      priceCents: 9700,
+    })
+
+    await expect(resolver.execute(offer)).rejects.toThrow(ValidationError)
   })
 })

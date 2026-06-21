@@ -1,5 +1,11 @@
 import { timingSafeEqual } from 'node:crypto'
+import { ValidationError } from '@sistemazero/core/errors'
 import { ForbiddenError, UnauthorizedError } from '@sistemazero/core/http'
+
+// Os ids de identidade vão a colunas `uuid` (gamification_profiles.user_id/account_id,
+// lesson_progress, course_ratings, …). Validar o FORMATO na borda (como os params em
+// dtos.ts) — um id lixo chegaria ao Postgres como 22P02 e viraria 500 em vez de 400.
+const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
 
 /**
  * Papéis com acesso ao painel admin. O RBAC REAL é do gateway (JWT + `authorize.roles`);
@@ -52,7 +58,11 @@ export function resolveUserId(headers: Record<string, string | undefined>): stri
     throw new UnauthorizedError('Identidade ausente (x-auth-user-id)')
   }
   // Trim (como `resolveAccountId`): o id vira chave de DADOS (progresso/XP/conclusões).
-  return id.trim()
+  const trimmed = id.trim()
+  if (!UUID_RE.test(trimmed)) {
+    throw new ValidationError('Identidade inválida (x-auth-user-id não é um uuid)')
+  }
+  return trimmed
 }
 
 /**
@@ -64,7 +74,13 @@ export function resolveUserId(headers: Record<string, string | undefined>): stri
  */
 export function resolveAccountId(headers: Record<string, string | undefined>): string {
   const account = headers['x-auth-account-id']
-  if (account && account.trim().length > 0) return account.trim()
+  if (account && account.trim().length > 0) {
+    const trimmed = account.trim()
+    if (!UUID_RE.test(trimmed)) {
+      throw new ValidationError('Conta inválida (x-auth-account-id não é um uuid)')
+    }
+    return trimmed
+  }
   return resolveUserId(headers)
 }
 
@@ -85,7 +101,16 @@ export function assertInternalCaller(
   provided: string | undefined,
   expected: string | undefined,
 ): void {
-  if (!expected) return
+  if (!expected) {
+    // Sem token configurado: no-op SÓ fora de produção (dev/local sem gateway). Em
+    // produção é fail-CLOSED — defesa em profundidade que NÃO depende só do refine do
+    // env: um deploy que perdesse o token jamais deve aceitar `X-Auth-*` forjado vindo
+    // direto da rede interna (o gateway é a única origem confiável dessas claims).
+    if (process.env.NODE_ENV === 'production') {
+      throw new UnauthorizedError('Token interno não configurado — chamada rejeitada em produção')
+    }
+    return
+  }
   if (!provided || !safeEqual(provided, expected)) {
     throw new UnauthorizedError('Chamada não autorizada (token interno ausente/inválido)')
   }

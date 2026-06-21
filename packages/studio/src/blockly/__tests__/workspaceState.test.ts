@@ -366,6 +366,45 @@ describe('buildWorkspaceStateFromIR', () => {
     expect(types).not.toContain('sz_adv_raw_js')
   })
 
+  it('faz roundtrip texto→blocos dos eventos novos (teclado/janela/segundos)', () => {
+    const source: SZIR = {
+      html: [],
+      css: [],
+      js: [
+        {
+          type: 'event',
+          target: 'document',
+          targetKind: 'document',
+          event: 'keydown',
+          body: [{ type: 'var', name: 't', value: { type: 'eventProp', prop: 'code' } }],
+        },
+        {
+          type: 'event',
+          target: 'window',
+          targetKind: 'window',
+          event: 'resize',
+          body: [{ type: 'consoleLog', value: { type: 'str', value: 'r' } }],
+        },
+        {
+          type: 'setIntervalSeconds',
+          delay: { type: 'num', value: 3 },
+          body: [{ type: 'consoleLog', value: { type: 'str', value: 's' } }],
+        },
+      ],
+      extensions: [],
+    }
+
+    const files = generateProjectFiles({ ir: source, projectName: 'Eventos' })
+    const parsed = parseProjectFiles(files)
+    const types = collectTypes(buildWorkspaceStateFromIR(parsed).blocks.blocks)
+
+    expect(types).toContain('sz_js_on_key')
+    expect(types).toContain('sz_val_event_key')
+    expect(types).toContain('sz_js_on_resize')
+    expect(types).toContain('sz_js_set_interval_seconds')
+    expect(types).not.toContain('sz_adv_raw_js')
+  })
+
   it('faz roundtrip texto→blocos de lista (array): criar, tamanho, adicionar e remover', () => {
     const source: SZIR = {
       html: [],

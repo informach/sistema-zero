@@ -3,7 +3,7 @@
 import { Card } from '@sistemazero/ui/card'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { Pagination } from '@sistemazero/ui/pagination'
-import { Spinner } from '@sistemazero/ui/spinner'
+import { Skeleton } from '@sistemazero/ui/skeleton'
 import {
   Table,
   TableBody,
@@ -47,13 +47,7 @@ export function PurchasesClient() {
     void load(0)
   }, [load])
 
-  if (loading && !page) {
-    return (
-      <div className="flex items-center justify-center py-16">
-        <Spinner />
-      </div>
-    )
-  }
+  if (loading && !page) return <PurchasesSkeleton />
 
   const items = page?.items ?? []
 
@@ -171,6 +165,27 @@ function PurchaseDetail({
         </div>
       ) : null}
     </Dialog>
+  )
+}
+
+// Chaves estáveis das linhas-fantasma da tabela.
+const ROW_KEYS = ['r1', 'r2', 'r3', 'r4', 'r5', 'r6']
+
+/** Esqueleto da tabela de compras (no lugar do spinner) — 5 colunas × algumas linhas. */
+function PurchasesSkeleton() {
+  return (
+    <Card aria-busy="true" className="flex flex-col gap-3 p-4">
+      <span className="sr-only">Carregando…</span>
+      {ROW_KEYS.map((k) => (
+        <div key={k} className="grid grid-cols-[1fr_2fr_1fr_1fr_1fr] items-center gap-3">
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-4 w-40 max-w-full" />
+          <Skeleton className="h-4 w-16" />
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-5 w-16 rounded-full" />
+        </div>
+      ))}
+    </Card>
   )
 }
 

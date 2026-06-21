@@ -6,6 +6,7 @@ import {
   INFORMACH_BASE,
 } from '../../src/domain/dps/emitter-profile'
 import { CancellationWorker } from '../../src/infrastructure/workers/cancellation-worker'
+import { DeliveryWorker } from '../../src/infrastructure/workers/delivery-worker'
 import {
   FakePaymentsClient,
   InMemoryInvoiceRepository,
@@ -76,8 +77,8 @@ describe('e-mail da nota (pós-emissão, best-effort)', () => {
     const sent = messaging.sent[0]!
     expect(sent.idempotencyKey).toBe(`nfse-${invoice.id}`)
     expect(sent.recipient).toEqual({ name: 'Maria', email: 'maria@example.com' })
-    expect(sent.variables['valor']).toBe('R$ 1.234,56')
-    expect(sent.variables['chave']).toBe('1'.repeat(50))
+    expect(sent.variables.valor).toBe('R$ 1.234,56')
+    expect(sent.variables.chave).toBe('1'.repeat(50))
     const after = await invoices.findById(invoice.id)
     expect((sent as unknown as { attachments: Array<{ url: string }> }).attachments[0]?.url).toBe(
       `http://fiscal.test:3009/fiscal/files/${after?.pdfToken}.pdf`,
@@ -108,6 +109,63 @@ describe('e-mail da nota (pós-emissão, best-effort)', () => {
     const after = await invoices.findById(invoice.id)
     expect(after?.status).toBe('EMITTED')
     expect(after?.emailSentAt).toBeNull()
+  })
+
+  test('DeliveryWorker recupera DANFSe/e-mail pendentes sem reemitir a nota', async () => {
+    const { invoices, payments, danfse, messaging, sefin, service } = build()
+    payments.set(paidSnapshot())
+    danfse.failWith = new Error('DANFSe fora do ar')
+    const invoice = await claimed(invoices)
+
+    await service.execute(invoice)
+    const afterEmission = await invoices.findById(invoice.id)
+    expect(afterEmission?.status).toBe('EMITTED')
+    expect(invoices.pdfs.has(invoice.id)).toBe(false)
+    expect(messaging.sent).toHaveLength(0)
+    expect(sefin.emitted).toHaveLength(1)
+
+    danfse.failWith = null
+    Object.assign(afterEmission!, { nextAttemptAt: null, claimedAt: null })
+    const worker = new DeliveryWorker(invoices, service, silentLogger, {
+      intervalMs: 60_000,
+      batchSize: 10,
+      staleMs: 0,
+      retryDelayMs: 60_000,
+    })
+
+    await worker.tick()
+
+    const afterRetry = await invoices.findById(invoice.id)
+    expect(invoices.pdfs.has(invoice.id)).toBe(true)
+    expect(messaging.sent).toHaveLength(1)
+    expect(afterRetry?.emailSentAt).not.toBeNull()
+    expect(sefin.emitted).toHaveLength(1) // não reemite DPS
+  })
+
+  test('DeliveryWorker reenvia e-mail pendente quando o PDF já está armazenado', async () => {
+    const { invoices, payments, messaging, service } = build()
+    payments.set(paidSnapshot())
+    messaging.failWith = new Error('gateway 503')
+    const invoice = await claimed(invoices)
+
+    await service.execute(invoice)
+    const afterEmission = await invoices.findById(invoice.id)
+    expect(invoices.pdfs.has(invoice.id)).toBe(true)
+    expect(afterEmission?.emailSentAt).toBeNull()
+
+    messaging.failWith = null
+    Object.assign(afterEmission!, { nextAttemptAt: null, claimedAt: null })
+    const worker = new DeliveryWorker(invoices, service, silentLogger, {
+      intervalMs: 60_000,
+      batchSize: 10,
+      staleMs: 0,
+      retryDelayMs: 60_000,
+    })
+
+    await worker.tick()
+
+    expect(messaging.sent).toHaveLength(1)
+    expect((await invoices.findById(invoice.id))?.emailSentAt).not.toBeNull()
   })
 })
 

@@ -1,5 +1,10 @@
 import type { Logger } from '@sistemazero/core/logging'
-import type { CourseAccessResult, MembersGateway } from '../../domain/ports/members-gateway.port'
+import type {
+  CourseAccessResult,
+  MembersGateway,
+  ShowcaseEligibilityArgs,
+  ShowcaseEligibilityResult,
+} from '../../domain/ports/members-gateway.port'
 
 export interface MembersHttpGatewayOptions {
   /** Base do members (ex.: http://localhost:3004). Sem `/members`. */
@@ -32,21 +37,59 @@ export function createMembersHttpGateway(opts: MembersHttpGatewayOptions): Membe
   if (opts.internalToken) headers['x-internal-token'] = opts.internalToken
 
   return {
-    async checkAccess(userId: string, courseRefs: string[]): Promise<CourseAccessResult> {
+    async checkAccess(
+      userId: string,
+      courseRefs: string[],
+      communityRefs: string[] = [],
+    ): Promise<CourseAccessResult> {
       const res = await doFetch(`${base}/members/internal/access-check`, {
         method: 'POST',
         headers,
-        body: JSON.stringify({ userId, courseRefs }),
+        body: JSON.stringify({ userId, courseRefs, communityRefs }),
         signal: AbortSignal.timeout(timeoutMs),
       })
       if (!res.ok) {
         throw new Error(`members access-check respondeu ${res.status}`)
       }
-      // O members responde `{ grants, hasMaster }` (ver access-check.service).
-      const body = (await res.json()) as { grants?: unknown; hasMaster?: unknown }
+      // O members responde `{ grants, hasMaster, hasMasterKids, communities }` (access-check.service).
+      const body = (await res.json()) as {
+        grants?: unknown
+        hasMaster?: unknown
+        hasMasterKids?: unknown
+        communities?: unknown
+      }
       return {
         granted: Array.isArray(body.grants) ? (body.grants as string[]) : [],
         hasMaster: Boolean(body.hasMaster),
+        hasMasterKids: Boolean(body.hasMasterKids),
+        communities: Array.isArray(body.communities) ? (body.communities as string[]) : [],
+      }
+    },
+
+    async getShowcaseEligibility(
+      args: ShowcaseEligibilityArgs,
+    ): Promise<ShowcaseEligibilityResult> {
+      const qs = new URLSearchParams({
+        accountId: args.accountId,
+        userId: args.userId,
+        lessonId: args.lessonId,
+        blockId: args.blockId,
+      })
+      const res = await doFetch(`${base}/members/internal/showcase-eligibility?${qs}`, {
+        method: 'GET',
+        headers,
+        signal: AbortSignal.timeout(timeoutMs),
+      })
+      if (!res.ok) throw new Error(`members showcase-eligibility respondeu ${res.status}`)
+      const b = (await res.json()) as Partial<ShowcaseEligibilityResult>
+      return {
+        eligible: Boolean(b.eligible),
+        title: typeof b.title === 'string' ? b.title : '',
+        summary: typeof b.summary === 'string' ? b.summary : '',
+        defaultCoverUrl: typeof b.defaultCoverUrl === 'string' ? b.defaultCoverUrl : null,
+        chain: typeof b.chain === 'string' ? b.chain : null,
+        courseId: typeof b.courseId === 'string' ? b.courseId : '',
+        audience: b.audience === 'kids' ? 'kids' : 'adult',
       }
     },
   }

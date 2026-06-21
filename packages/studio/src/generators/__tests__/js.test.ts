@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test'
-import type { JSStatement } from '#ir'
+import type { JSExpr, JSStatement } from '#ir'
 import { num, str, variable } from '#ir'
+import { GeneratorError } from '../expr'
 import { GeneratorDepthError, generateJS, MAX_GENERATOR_DEPTH } from '../js'
 
 describe('generateJS', () => {
@@ -518,14 +519,14 @@ describe('generateJS', () => {
     )
   })
 
-  it('emite g2d:moveByKeys e drawSprite', () => {
+  it('emite g2d:topDown e drawSprite', () => {
     const code = generateJS({
       statements: [
-        { type: 'g2d:moveByKeys', spriteVar: 'jogador', speed: 4 },
+        { type: 'g2d:topDown', spriteVar: 'jogador', speed: 4 },
         { type: 'g2d:drawSprite', spriteVar: 'jogador', ctxVar: 'ctx' },
       ],
     })
-    expect(code).toContain('SZGame2D.moveByKeys(jogador, 4);')
+    expect(code).toContain('SZGame2D.topDown(jogador, 4);')
     expect(code).toContain('SZGame2D.drawSprite(ctx, jogador);')
   })
 
@@ -682,7 +683,10 @@ describe('generateJS', () => {
       ],
     })
     expect(code).toContain('new Image()')
-    expect(code).toContain('ctxImg.src = "https://exemplo.com/img.png"')
+    // O src agora resolve o nome pelo manifesto de assets (biblioteca), com a URL/nome como fallback.
+    expect(code).toContain(
+      'ctxImg.src = window.__SZGAME_ASSETS?.["https://exemplo.com/img.png"] ?? "https://exemplo.com/img.png"',
+    )
     expect(code).toContain('ctx.drawImage(ctxImg, 0, 0, 100, 100)')
   })
 
@@ -900,5 +904,149 @@ describe('generateJS', () => {
       nested = { type: 'if', cond: { type: 'bool', value: true }, then: [nested] }
     }
     expect(() => generateJS({ statements: [nested] })).not.toThrow()
+  })
+})
+
+describe('generateJS — eventos de teclado/mouse/janela + temporizadores em segundos', () => {
+  it('teclado: keydown vira document.addEventListener + event.code', () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'event',
+          target: 'document',
+          targetKind: 'document',
+          event: 'keydown',
+          body: [{ type: 'var', name: 'tecla', value: { type: 'eventProp', prop: 'code' } }],
+        },
+      ],
+    })
+    expect(code).toContain('document.addEventListener("keydown", (event) => {')
+    expect(code).toContain('let tecla = event.code;')
+  })
+
+  it('mousemove vira document.addEventListener', () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'event',
+          target: 'document',
+          targetKind: 'document',
+          event: 'mousemove',
+          body: [{ type: 'consoleLog', value: str('movendo') }],
+        },
+      ],
+    })
+    expect(code).toContain('document.addEventListener("mousemove", (event) => {')
+  })
+
+  it('load/resize viram window.addEventListener', () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'event',
+          target: 'window',
+          targetKind: 'window',
+          event: 'resize',
+          body: [{ type: 'consoleLog', value: str('mudou') }],
+        },
+      ],
+    })
+    expect(code).toContain('window.addEventListener("resize", (event) => {')
+  })
+
+  it('temporizadores em segundos emitem delay × 1000', () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'setIntervalSeconds',
+          delay: num(3),
+          body: [{ type: 'consoleLog', value: str('tick') }],
+        },
+        {
+          type: 'setTimeoutSeconds',
+          delay: num(1),
+          body: [{ type: 'consoleLog', value: str('depois') }],
+        },
+      ],
+    })
+    expect(code).toContain('setInterval(() => {')
+    expect(code).toContain('}, 3 * 1000);')
+    expect(code).toContain('setTimeout(() => {')
+    expect(code).toContain('}, 1 * 1000);')
+  })
+
+  it('segundos com delay composto sai parentizado: (a + b) * 1000', () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'setTimeoutSeconds',
+          delay: { type: 'binop', op: '+', left: variable('a'), right: variable('b') },
+          body: [{ type: 'consoleLog', value: str('x') }],
+        },
+      ],
+    })
+    expect(code).toContain('}, (a + b) * 1000);')
+  })
+})
+
+describe('objectLiteral / objectKey', () => {
+  const objVar = (entries: Array<{ key: string; value: JSExpr }>): JSStatement => ({
+    type: 'var',
+    kind: 'const',
+    name: 'obj',
+    value: { type: 'objectLiteral', entries },
+  })
+
+  it('força aspas na chave __proto__ (propriedade própria, não prototype)', () => {
+    const code = generateJS({ statements: [objVar([{ key: '__proto__', value: num(1) }])] })
+    // Com aspas, `{ "__proto__": 1 }` é uma propriedade PRÓPRIA normal — não
+    // define o protótipo do objeto (o que `{ __proto__: 1 }` faria).
+    expect(code).toContain('{ "__proto__": 1 }')
+    expect(code).not.toContain('{ __proto__: 1 }')
+  })
+
+  it('mantém constructor/prototype como chaves CRUAS (sem tratamento especial)', () => {
+    const code = generateJS({
+      statements: [
+        objVar([
+          { key: 'constructor', value: num(1) },
+          { key: 'prototype', value: num(2) },
+          { key: 'comum', value: str('x') },
+        ]),
+      ],
+    })
+    expect(code).toContain('constructor: 1')
+    expect(code).toContain('prototype: 2')
+    expect(code).toContain('comum: "x"')
+  })
+
+  it('coloca entre aspas chaves que não são identificadores', () => {
+    const code = generateJS({
+      statements: [objVar([{ key: 'tem espaço', value: num(1) }])] as JSStatement[],
+    })
+    expect(code).toContain('"tem espaço": 1')
+  })
+})
+
+describe('ramos default exaustivos (nó fora do esquema)', () => {
+  it('compileStatementCode lança GeneratorError (não emite "undefined")', () => {
+    // Statement com `type` que NENHUM case cobre (ex.: IR de um JSON importado de
+    // um estranho). Sem o default, o switch caía pela borda e o gerador emitia a
+    // string literal "undefined". Agora é erro tipado e capturável.
+    const bogus = { type: 'naoExiste', __id: 'b1' } as unknown as JSStatement
+    expect(() => generateJS({ statements: [bogus] })).toThrow(GeneratorError)
+    let emitted = ''
+    try {
+      emitted = generateJS({ statements: [bogus] })
+    } catch {
+      /* esperado */
+    }
+    expect(emitted).not.toContain('undefined')
+  })
+
+  it('compileExpr lança GeneratorError para expressão fora do esquema', () => {
+    const bogusExpr = { type: 'exprFantasma' } as unknown as JSExpr
+    const stmt: JSStatement = { type: 'consoleLog', value: bogusExpr }
+    expect(() => generateJS({ statements: [stmt] })).toThrow(GeneratorError)
   })
 })

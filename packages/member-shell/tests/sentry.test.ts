@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { buildEnvelope, parseDsn } from '../src/server/sentry'
+import { buildEnvelope, parseDsn, redactPii, scrubPath } from '../src/server/sentry'
 
 describe('parseDsn', () => {
   test('decompõe um DSN padrão na URL de ingestão de envelopes', () => {
@@ -48,5 +48,25 @@ describe('buildEnvelope', () => {
     expect(event.exception.values[0]).toEqual({ type: 'TypeError', value: 'x is not a function' })
     expect(event.extra.area).toBe('media')
     expect(event.extra.stack).toContain('at foo')
+  })
+})
+
+describe('redactPii / scrubPath (kids: nada de PII a terceiro)', () => {
+  test('redige e-mail, UUID e sequência longa de dígitos', () => {
+    expect(
+      redactPii(
+        'login joao@pais.com perfil 11111111-2222-3333-4444-555555555555 tel 5511999998888',
+      ),
+    ).toBe('login [email] perfil :id tel :num')
+  })
+
+  test('scrubPath tira a query string e troca o UUID do perfil por :id', () => {
+    expect(scrubPath('/api/profiles/11111111-2222-3333-4444-555555555555/select?x=1')).toBe(
+      '/api/profiles/:id/select',
+    )
+  })
+
+  test('path sem id fica intacto', () => {
+    expect(scrubPath('/api/healthz')).toBe('/api/healthz')
   })
 })

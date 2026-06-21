@@ -1,5 +1,5 @@
 import type { JSX, ReactNode } from 'react'
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { MODE_LABELS, modesForKind, t } from '#core'
 import {
@@ -13,11 +13,13 @@ import {
   IconEyeOff,
   IconGraduation,
   IconGrid,
+  IconImage,
   IconMessageSquare,
   IconMoon,
   IconMore,
   IconPuzzle,
   IconSave,
+  IconShare,
   IconSparkles,
   IconSun,
   IconTerminal,
@@ -25,14 +27,19 @@ import {
   type MenuItem,
   type MenuSection,
 } from '#ui'
+import { exportProjectSource } from '../../export'
+import { triggerDownload } from '../../export/download'
 import { useProjectStore } from '../../state/projectStore'
 import { useSettingsStore } from '../../state/settingsStore'
+import { StudioStoresContext } from '../../state/storesContext'
 import { useStudioPersistence } from '../../state/studioStores'
 import { useUIStore } from '../../state/uiStore'
 import { useStudioConfig } from '../../studio/config'
 import { useStudioLayout } from '../../studio/layoutContext'
+import { useStudioShare } from '../../studio/share'
 import { useStudioTheme } from '../../studio/theme'
 import { ExportDialog } from './ExportDialog'
+import { ShareDialog } from './ShareDialog'
 
 export interface TopbarProps {
   /** Sai do editor (host decide o destino). Sem ela, logo vira estático e o item "Projetos" some. */
@@ -91,6 +98,8 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
   const rename = useProjectStore((s) => s.rename)
   const showExtensions = useUIStore((s) => s.showExtensions)
   const setShowExtensions = useUIStore((s) => s.setShowExtensions)
+  const showAssets = useUIStore((s) => s.showAssets)
+  const setShowAssets = useUIStore((s) => s.setShowAssets)
   const showPreview = useUIStore((s) => s.showPreview)
   const setShowPreview = useUIStore((s) => s.setShowPreview)
   const showConsole = useUIStore((s) => s.showConsole)
@@ -103,10 +112,17 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
   const { isNarrow, isCompact } = useStudioLayout()
   const theme = useStudioTheme()
   const setTheme = useSettingsStore((s) => s.setTheme)
+  const share = useStudioShare()
+  // Stores da INSTÂNCIA: usados só para LER o projeto sob demanda (no clique do
+  // Baixar), sem assinar re-render a cada edição. Fora de um <Studio> (null), o
+  // fallback lê a store default via a estática. Ver storesContext.ts.
+  const stores = useContext(StudioStoresContext)
 
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(projectName)
   const [saving, setSaving] = useState(false)
+  const [downloading, setDownloading] = useState(false)
+  const [showShare, setShowShare] = useState(false)
   const [showExport, setShowExport] = useState(false)
   const [showConvert, setShowConvert] = useState(false)
   const [converting, setConverting] = useState(false)
@@ -144,6 +160,25 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
     }
   }
 
+  // Baixar a FONTE do projeto (ZIP para continuar no VSCode). Lê o projeto da
+  // instância sob demanda (sem assinar re-render). Avisos não-fatais (ex.: um
+  // extra .ts que não compilou) vão ao console — o arquivo é baixado mesmo assim.
+  const handleDownload = async () => {
+    if (downloading) return
+    const project = stores ? stores.project.getState().project : useProjectStore.getState().project
+    if (!project) return
+    setDownloading(true)
+    try {
+      const { blob, filename, warnings } = await exportProjectSource(project)
+      triggerDownload(blob, filename)
+      if (warnings.length > 0) console.warn('Baixar projeto:', ...warnings)
+    } catch (err) {
+      console.error('Falha ao baixar o projeto:', err)
+    } finally {
+      setDownloading(false)
+    }
+  }
+
   const handleConvert = async () => {
     setConverting(true)
     try {
@@ -157,7 +192,29 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
   // Menu "⋯" agrupado: Arquivo / Exibição / Conta. Cada item dispara a MESMA
   // ação de store dos botões antigos. (Preview NÃO entra: no wide é ícone
   // primário; no narrow vira aba no NarrowLayout.)
-  const fileItems: MenuItem[] = []
+  // Salvar e Baixar VIVEM aqui (no menu) — só o "Compartilhar" fica solto na Topbar
+  // (decisão de UX: a Topbar do estúdio-produto exibe só a ação principal). O badge
+  // de status ("Salvo"/"Não salvo") continua na Topbar comunicando o estado.
+  const fileItems: MenuItem[] = [
+    {
+      id: 'save',
+      label: saving ? t('topbar.saving') : t('topbar.save'),
+      icon: <IconSave />,
+      onSelect: () => {
+        if (!saving) void handleSave()
+      },
+    },
+  ]
+  if (config.download) {
+    fileItems.push({
+      id: 'download',
+      label: downloading ? t('topbar.downloading') : t('topbar.download'),
+      icon: <IconDownload />,
+      onSelect: () => {
+        if (!downloading) void handleDownload()
+      },
+    })
+  }
   if (config.export) {
     fileItems.push({
       id: 'export',
@@ -215,6 +272,17 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
       icon: <IconPuzzle />,
       active: showExtensions,
       onSelect: () => setShowExtensions(!showExtensions),
+    })
+  }
+  // Gerenciador de imagens (assets) — disponível no editor básico (jogos). Pro
+  // gerencia arquivos direto na árvore, não precisa do painel.
+  if (projectMode !== 'code') {
+    viewItems.push({
+      id: 'assets',
+      label: 'Imagens',
+      icon: <IconImage />,
+      active: showAssets,
+      onSelect: () => setShowAssets(!showAssets),
     })
   }
 
@@ -366,20 +434,19 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
         <div
           className={cn('ml-auto flex shrink-0 items-center', isCompact ? 'gap-0.5' : 'gap-1.5')}
         >
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={saving}
-            title={t('topbar.save')}
-            aria-label={t('topbar.save')}
-            style={{ touchAction: 'manipulation' }}
-            className="inline-flex h-9 items-center gap-1.5 rounded-md px-2.5 text-sz-fg-soft transition-colors hover:bg-sz-bg hover:text-sz-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60 disabled:opacity-50"
-          >
-            <IconSave />
-            {!isCompact && (
-              <span className="text-sm">{saving ? t('topbar.saving') : t('topbar.save')}</span>
-            )}
-          </button>
+          {share && (
+            <button
+              type="button"
+              onClick={() => setShowShare(true)}
+              title={t('share.action')}
+              aria-label={t('share.action')}
+              style={{ touchAction: 'manipulation' }}
+              className="inline-flex h-9 items-center gap-1.5 rounded-md px-2.5 text-sz-accent transition-colors hover:bg-sz-accent/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60"
+            >
+              <IconShare />
+              {!isCompact && <span className="text-sm font-medium">{t('share.action')}</span>}
+            </button>
+          )}
           {config.preview && (
             <IconButton
               label={showPreview ? t('topbar.hidePreview') : t('topbar.showPreview')}
@@ -394,6 +461,7 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
           )}
         </div>
       </header>
+      <ShareDialog open={showShare} onClose={() => setShowShare(false)} adapter={share} />
       <ExportDialog open={showExport} onClose={() => setShowExport(false)} />
       <ConfirmDialog
         open={showConvert}

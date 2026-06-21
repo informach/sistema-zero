@@ -16,22 +16,28 @@ export class RevokeEntitlementService {
   constructor(private readonly deps: RevokeEntitlementDeps) {}
 
   /** Cancelamento → corte imediato (status `revoked`). UPDATE atômico, sem race. */
-  async cancel(subscriptionId: string): Promise<{ affected: number }> {
-    const affected = await this.deps.entitlements.revokeBySubscriptionId(
+  async cancel(subscriptionId: string): Promise<{ affected: number; userIds: string[] }> {
+    const result = await this.deps.entitlements.revokeBySubscriptionId(
       subscriptionId,
       this.deps.clock(),
     )
-    this.deps.logger?.info('subscription.cancel', { subscriptionId, affected })
-    return { affected }
+    this.deps.logger?.info('subscription.cancel', {
+      subscriptionId,
+      affected: result.affected,
+    })
+    return result
   }
 
   /** Expiração natural (status `expired`). UPDATE atômico, sem race. */
-  async expire(subscriptionId: string): Promise<{ affected: number }> {
-    const affected = await this.deps.entitlements.expireBySubscriptionId(
+  async expire(subscriptionId: string): Promise<{ affected: number; userIds: string[] }> {
+    const result = await this.deps.entitlements.expireBySubscriptionId(
       subscriptionId,
       this.deps.clock(),
     )
-    this.deps.logger?.info('subscription.expire', { subscriptionId, affected })
-    return { affected }
+    this.deps.logger?.info('subscription.expire', {
+      subscriptionId,
+      affected: result.affected,
+    })
+    return result
   }
 }

@@ -30,13 +30,15 @@ export interface ExtensionExample {
 }
 
 /**
- * Toolbox category contract — equivalente ao formato Blockly mas tipado.
+ * Toolbox category contract — equivalente ao formato Blockly mas tipado. O
+ * `contents` aceita blocos OU sub-categorias aninhadas (grupos coloridos por
+ * domínio, à la Scratch/MakeCode — ex.: Jogo 2D → Sprites/Movimento/Quando…).
  */
 export interface ExtensionToolboxCategory {
   kind: 'category'
   name: string
   colour: string
-  contents: Array<{ kind: 'block'; type: string }>
+  contents: Array<{ kind: 'block'; type: string } | ExtensionToolboxCategory>
 }
 
 /**

@@ -6,7 +6,7 @@
  */
 
 // Tipos do editor embarcável (bloco `studio`) — type-only (erasado em runtime).
-import type { BlockLevel, IDEMode, Project } from '@sistemazero/studio'
+import type { BlockLevel, CheckResult, IDEMode, LessonActivity, Project } from '@sistemazero/studio'
 
 // ── Sessão / usuário (claims do JWT do auth) ────────────────────────────────
 
@@ -50,6 +50,8 @@ export interface ProfileView {
   name: string
   avatarUrl: string | null
   whatsapp: string | null
+  /** Data de nascimento (`YYYY-MM-DD`) — só os pais editam (controle de idade). */
+  birthDate: string | null
   sortOrder: number
 }
 
@@ -100,6 +102,15 @@ export interface CatalogCourseView {
   hasAccess: boolean
   /** URL da página de vendas (funil); `null` → fallback FUNNEL_URL no server. */
   salesPageUrl: string | null
+}
+
+/**
+ * `GET /members/access?refs=` → mapa ref→tem-acesso. Gate de produtos que NÃO são
+ * curso de trilha (ex.: o Estúdio Completo vendável). Distinto do `AccessView` acima
+ * (matrícula de curso) — este é a resposta da checagem de acesso por ref.
+ */
+export interface ProductAccessView {
+  access: Record<string, boolean>
 }
 
 /** Item de `GET /members/courses` → `{ courses: MyCourseView[] }`. */
@@ -252,6 +263,13 @@ export interface StudioBlock {
   allowCategories?: string[]
   allowedModes?: IDEMode[]
   allowLevelReveal?: boolean
+  /** Atividade com auto-correção (fase 2). Vai ao aluno (feedback instantâneo). */
+  activity?: LessonActivity
+  /**
+   * Nome do projeto contínuo (cadeia). Quando presente, o editor carrega a última
+   * entrega do aluno no bloco contínuo da aula anterior da mesma cadeia (carryover).
+   */
+  chain?: string
 }
 export type LessonBlockContent =
   | RichTextBlock
@@ -277,11 +295,20 @@ export interface StudioStateView {
   submitted: boolean
   /** ISO da última entrega; `null` se ainda não enviou. */
   submittedAt: string | null
+  /** Nota da última correção (atividade); `null` sem atividade ou sem entrega. */
+  lastScore?: number | null
+  /** Atingiu a nota de corte (sticky). */
+  passed?: boolean
 }
 
 /** `POST /members/lessons/:lessonId/blocks/:blockId/studio-submission`. */
 export interface StudioSubmissionResultView {
   submittedAt: string
+  /** Auto-correção (presentes só quando o bloco tem atividade). */
+  score?: number
+  passed?: boolean
+  results?: CheckResult[]
+  gamification?: GamificationDelta | null
 }
 
 /** Correção por questão — devolvida SÓ pelo submit do quiz. */
@@ -307,6 +334,12 @@ export type BadgeSlug =
   | 'quiz-perfect'
   | 'quiz-perfect-10'
   | 'quiz-perfect-30'
+  // Maestria (06/2026): projetos do Estúdio + poupador de moedas.
+  | 'studio-first'
+  | 'studio-master-3'
+  | 'studio-master-10'
+  | 'coins-saver-300'
+  | 'coins-saver-1000'
 
 /**
  * Delta de UMA ação (complete/quiz aprovado) — vem NA resposta da ação (a UI
@@ -322,17 +355,31 @@ export interface GamificationDelta {
   badgesUnlocked: { slug: string; unlockedAt: string }[]
   /** `true` quando ESTA ação fechou a unidade (baú já incluído no xpAwarded). */
   unitCompleted: boolean
+  /** Moedas Zappy ganhas nesta ação (já com teto diário). `?? 0` p/ members antigo. */
+  coinsAwarded?: number
+  /** Saldo da carteira Zappy após a ação. */
+  coinBalance?: number
+  /** `true` quando o teto diário cortou parte do ganho (feedback gentil). */
+  coinsCapped?: boolean
 }
 
 /** `GET /members/gamification/me` — widgets (sidebar/home) e vitrine do perfil. */
 export interface GamificationMeView {
   xp: number
+  /** Carteira Zappy Coins (saldo gastável). Opcional p/ tolerar members antigo. */
+  coins?: { balance: number }
   streak: {
     /** Streak de exibição: 0 quando quebrado. */
     current: number
     best: number
     /** Já houve atividade com XP hoje (dia civil de São Paulo). */
     activeToday: boolean
+    /** Protetores de sequência disponíveis (opcional p/ tolerar members antigo). */
+    freezesAvailable?: number
+    /** Hoje está em férias (sequência pausada sem culpa). */
+    onVacation?: boolean
+    /** Fim das férias quando `onVacation` (data civil SP). */
+    vacationUntil?: string | null
   }
   /** Catálogo COMPLETO na ordem do members — bloqueada tem `unlockedAt: null`. */
   badges: { slug: string; unlockedAt: string | null }[]
@@ -343,9 +390,186 @@ export interface GamificationMeView {
   ranking?: { position: number; totalStudents: number }
 }
 
+// ── Missões + proteção de sequência — espelham as views do members ──────────
+export interface MissionView {
+  slug: string
+  cadence: 'daily' | 'weekly'
+  goalType: string
+  target: number
+  progress: number
+  completed: boolean
+  claimed: boolean
+  rewardXp: number
+  rewardCoins: number
+  periodKey: string
+}
+export interface MissionsMeView {
+  daily: MissionView[]
+  weekly: MissionView[]
+}
+export interface MissionClaimResult {
+  claimed: boolean
+  xpAwarded: number
+  coinsAwarded: number
+  coinBalance: number
+}
+export interface StreakFreezeResult {
+  freezes: number
+  balance: number
+}
+export interface VacationResult {
+  vacationFrom: string | null
+  vacationTo: string | null
+}
+
+// ── Liga semanal — espelha as views do members (board SEM PII) ──────────────
+export interface LeagueEntryView {
+  position: number
+  weeklyXp: number
+  isMe: boolean
+}
+export interface LeagueMeView {
+  tier: string
+  weekKey: string
+  promotionCount: number
+  relegationCount: number
+  entries: LeagueEntryView[]
+  myPosition: number
+}
+
+// ── Avatar (guarda-roupa por camadas) — espelha as views do members ─────────
+/** Config equipada enviada ao salvar (`PUT /members/avatar`). `parts` = camada→peça. */
+export interface AvatarConfigInput {
+  style?: string
+  parts: Record<string, string>
+}
+
+/** Uma peça do catálogo na visão do aluno (lojinha/editor). `layer` largo (forward-compat). */
+export interface AvatarPartView {
+  id: string
+  layer: string
+  tier: 'free' | 'coins'
+  price: number
+  owned: boolean
+  locked: boolean
+}
+
+/** `GET /members/avatar` — equipado + catálogo + saldo Zappy. */
+export interface AvatarStateView {
+  style: string
+  equipped: Record<string, string>
+  parts: AvatarPartView[]
+  balance: number
+}
+
+/** Resposta da compra de peça (`POST /members/avatar/parts/:id/buy`). */
+export interface AvatarPurchaseResult {
+  alreadyOwned: boolean
+  balance: number
+}
+
+/** Resposta de salvar a config (`PUT /members/avatar`). */
+export interface AvatarEquipResult {
+  equipped: Record<string, string>
+  style: string
+}
+
+// ── Quarto virtual ──────────────────────────────────────────────────────────
+export interface RoomPlacedItem {
+  itemId: string
+  x: number
+  y: number
+}
+/** Estado montado do quarto (tema + itens posicionados + pet). Serializável. */
+export interface RoomStateView {
+  theme: string
+  placedItems: RoomPlacedItem[]
+  pet: string | null
+}
+/** Item/tema do catálogo do quarto (lojinha/editor). `category` largo (forward-compat). */
+export interface RoomItemView {
+  id: string
+  category: string
+  tier: 'free' | 'coins'
+  price: number
+  owned: boolean
+  locked: boolean
+}
+export interface RoomThemeView {
+  id: string
+  tier: 'free' | 'coins'
+  price: number
+  owned: boolean
+  locked: boolean
+}
+/** `GET /members/room` — quarto montado + catálogo + saldo. */
+export interface RoomEditorView {
+  state: RoomStateView
+  items: RoomItemView[]
+  themes: RoomThemeView[]
+  balance: number
+}
+export interface RoomBuyResult {
+  alreadyOwned: boolean
+  balance: number
+}
+
+/** Identidade pública de um perfil (auth S2S) — só nome + flag (nunca PII). */
+export interface PublicProfileIdentity {
+  name: string
+  publicProfileEnabled: boolean
+}
+
+/** Dado de jogo do perfil público (members) — sem identidade. */
+export interface PublicProfileGameView {
+  profileId: string
+  xp: number
+  ranking: { position: number; totalStudents: number } | null
+  /** SÓ as conquistas que a criança tem (não o catálogo). */
+  badges: { slug: string; unlockedAt: string }[]
+  avatar: { style: string; parts: Record<string, string> }
+  /** Quarto virtual (modo visualização) — `null` se a criança nunca montou. */
+  room: RoomStateView | null
+}
+
+/** Perfil público COMPLETO (BFF junta nome do auth + dado de jogo do members). */
+export interface PublicProfileDTO extends PublicProfileGameView {
+  name: string
+}
+
+/** Resumo de progresso de UM filho (perfil) — espelha a view do members. */
+export interface ChildStatsView {
+  profileId: string
+  xp: number
+  streak: { current: number; best: number }
+  badgesCount: number
+  coursesInProgress: number
+  coursesCompleted: number
+  /** Projetos do Estúdio que a criança entregou. */
+  projectsCount: number
+  /** Colocação no ranking da vitrine (null = conta sem matrícula). */
+  rankingPosition: number | null
+}
+
+/** Card do filho na área dos pais: stats do members + identidade do perfil (auth). */
+export interface ChildDashboardView extends ChildStatsView {
+  name: string
+  avatarUrl: string | null
+}
+
+/** Dica de vitrine (Mural): a aula concluída é ponto de auto-publicação. */
+export interface LessonCompleteShowcaseHint {
+  /** Bloco de estúdio a publicar (o BFF re-busca o conteúdo autoritativo). */
+  blockId: string
+  /** Título do projeto (preview do botão "Publicar no Mural"). */
+  title: string
+}
+
 /** `POST /members/lessons/:lessonId/complete` — progresso + delta de gamificação. */
 export interface LessonCompleteResult extends CourseProgressView {
   gamification: GamificationDelta | null
+  /** Aula é ponto de vitrine (bloco de estúdio com `showcase.enabled`); `null` se não. */
+  showcase: LessonCompleteShowcaseHint | null
 }
 
 /** `POST /members/lessons/:lessonId/blocks/:blockId/quiz-attempts`. */
@@ -472,6 +696,8 @@ export interface HubSpaceView {
   description: string | null
   iconUrl: string | null
   audience: 'adult' | 'kids'
+  /** Aparece BLOQUEADO no menu (sem acesso): a UI mostra um recado e NÃO carrega canais. */
+  locked: boolean
 }
 
 /** Canal (fórum) visto pelo aluno. `requiresApproval` é o efetivo (canal ?? space). */
@@ -528,6 +754,12 @@ export interface HubThreadView {
   channelId: string
   /** `null` quando NÃO é do viewer — o BFF redige o id de terceiros (ver `hub-redact`). */
   authorId: string | null
+  /**
+   * Id do PERFIL do autor p/ o link ao perfil público (`/crianca/[id]`) — presente SÓ
+   * quando o autor é PÚBLICO (opt-in dos pais). `null`/ausente → sem link (a UI cai em
+   * "Colega" no fórum; o Mural mostra o nome sem link).
+   */
+  authorProfileId?: string | null
   title: string
   slug: string
   body: string
@@ -537,6 +769,20 @@ export interface HubThreadView {
   /** Aguardando aprovação (só o autor/staff enxerga). */
   pending: boolean
   commentCount: number
+  /** Post de PROJETO da vitrine (Mural) — a UI renderiza como card com capa/autor. */
+  isShowcase: boolean
+  /** Primeiro nome do autor (snapshot) — exibido na vitrine e no fórum (clicável se público). */
+  authorDisplayName: string | null
+  /** Perfil do autor é público (opt-in dos pais) — a UI decide o link. */
+  authorPublic?: boolean
+  /** Capa do projeto (URL pública) — só na vitrine. */
+  coverImageUrl: string | null
+  /**
+   * Id público do artefato jogável (UUID) — só na vitrine do Estúdio. Quando
+   * presente, o card do Mural mostra "Acessar" → `/jogar/<playId>` (página pública
+   * sem login). `null` = sem link jogável (posts antigos / fluxo da aula).
+   */
+  playId: string | null
   reactions: HubReaction[]
   attachments: HubAttachmentView[]
   lastActivityAt: string
@@ -544,11 +790,28 @@ export interface HubThreadView {
   editedAt: string | null
 }
 
+/** Payload autoritativo da vitrine (members) — o BFF monta o post a partir dele. */
+export interface ShowcasePayloadView {
+  eligible: boolean
+  title: string
+  summary: string
+  defaultCoverUrl: string | null
+  chain: string | null
+  courseId: string
+  audience: 'adult' | 'kids'
+}
+
 export interface HubCommentView {
   id: string
   threadId: string
   /** `null` quando NÃO é do viewer — o BFF redige o id de terceiros (ver `hub-redact`). */
   authorId: string | null
+  /** Id do perfil do autor p/ o link (`/crianca/[id]`) — só quando público. Ver `HubThreadView`. */
+  authorProfileId?: string | null
+  /** Primeiro nome do autor (snapshot) — exibido/clicável no fórum (se público). */
+  authorDisplayName?: string | null
+  /** Perfil do autor é público (opt-in dos pais) — a UI decide o link. */
+  authorPublic?: boolean
   body: string
   status: HubContentStatus
   pending: boolean

@@ -7,6 +7,7 @@ import type { ExtensionDefinition } from '#extensions'
 import { generateProjectFiles } from '#generators'
 import { OFFICIAL_CATALOG } from '#official-extensions'
 import { Badge, Button, Modal } from '#ui'
+import { CORE_EXAMPLES, type CoreExample } from '../../examples/core'
 import {
   countExtensionBlocksInProject,
   installExtension,
@@ -84,10 +85,10 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
     })
   }
 
-  const handleLoadExample = (ext: ExtensionDefinition) => {
+  const handleLoadExample = (ext: ExtensionDefinition, exampleIndex: number) => {
     const project = projectStoreApi.getState().project
     if (!project) return
-    const example = ext.manifest.examples[0]
+    const example = ext.manifest.examples[exampleIndex]
     if (!example) return
     const isInstalled = project.installedExtensions.some(
       (extension) => extension.id === ext.manifest.id,
@@ -106,6 +107,18 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
         ir: example.ir,
         projectName: project.name,
       }),
+    })
+  }
+
+  // Exemplo CLÁSSICO (sem extensão): aplica a IR direto, sem registrar extensão.
+  const handleLoadCoreExample = (example: CoreExample) => {
+    const project = projectStoreApi.getState().project
+    if (!project) return
+    applyProjectState({
+      ir: example.ir,
+      blocksState: buildWorkspaceStateFromIR(example.ir),
+      installedExtensions: project.installedExtensions,
+      files: generateProjectFiles({ ir: example.ir, projectName: project.name }),
     })
   }
 
@@ -166,17 +179,55 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
                         {t('extensions.install')}
                       </Button>
                     )}
-                    {ext.manifest.examples.length > 0 && (
-                      <Button variant="ghost" size="sm" onClick={() => handleLoadExample(ext)}>
-                        {t('extensions.loadExample')}
-                      </Button>
-                    )}
                   </div>
                 </div>
+                {ext.manifest.examples.length > 0 && (
+                  <div className="mt-2 border-t border-sz-border pt-2">
+                    <span className="text-xs uppercase text-sz-fg-mute">
+                      {t('extensions.loadExample')}:
+                    </span>
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {ext.manifest.examples.map((example, i) => (
+                        <Button
+                          key={example.name}
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleLoadExample(ext, i)}
+                        >
+                          {example.name}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </li>
             )
           })}
         </ul>
+
+        {CORE_EXAMPLES.length > 0 && (
+          <div className="mt-5">
+            <p className="text-xs font-semibold uppercase text-sz-fg-mute">
+              Exemplos clássicos (sem extensão)
+            </p>
+            <ul className="mt-2 space-y-2">
+              {CORE_EXAMPLES.map((example: CoreExample) => (
+                <li
+                  key={example.name}
+                  className="flex items-center justify-between gap-3 rounded-md border border-sz-border bg-sz-panel-soft p-3"
+                >
+                  <div className="min-w-0 flex-1">
+                    <strong className="text-sm text-sz-fg">{example.name}</strong>
+                    <p className="mt-1 text-xs text-sz-fg-soft">{example.description}</p>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={() => handleLoadCoreExample(example)}>
+                    Abrir
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </Modal>
 
       <Modal

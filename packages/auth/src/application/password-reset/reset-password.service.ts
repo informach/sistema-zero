@@ -39,6 +39,9 @@ export class ResetPasswordService {
     const user = await this.users.findById(record.userId)
     if (!user) throw new InvalidResetTokenError()
 
+    const consumed = await this.tokens.consume(record.id, now)
+    if (!consumed) throw new InvalidResetTokenError()
+
     const baseVersion = user.version
     user.changePassword(await this.hasher.hash(command.newPassword), now)
     const updated = await this.users.update(user, baseVersion)
@@ -46,7 +49,6 @@ export class ResetPasswordService {
 
     // Senha trocada = sessões antigas não valem mais (mitiga conta comprometida).
     await this.refreshTokens.revokeAllForUser(user.id)
-    await this.tokens.consume(record.id, now)
     return { ok: true }
   }
 }

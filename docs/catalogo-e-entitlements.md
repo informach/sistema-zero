@@ -41,6 +41,13 @@ são anexos das aulas. No cadastro do produto há uma única pergunta:
   cobre TODOS os cursos **da plataforma principal (adultos)** publicados, **inclusive
   os lançados depois da compra**, sem nenhum reprocessamento. Use para "acesso total"
   (Black Friday, plano anual, plano da comunidade).
+- **Acesso a um recurso da comunidade** (uma *ferramenta* ou um *espaço*, **não** um
+  curso de trilha) → a entrega **"comunidade"**: a compra concede uma **CHAVE de acesso**
+  (não um curso). É como o **Estúdio Completo** (kids) é vendido — quem tem a chave
+  `estudio-completo` vê o editor completo na comunidade kids (item **"Estúdio"** no menu);
+  quem não tem vê um recado gentil de "ainda não liberado". Recursos assim **NÃO aparecem
+  em "Meus cursos"** (não são curso) e a chave-mestra **Kids** (`all_kids_courses`) também
+  os cobre, se você vender um "acesso total kids".
 
 > ⚠️ **Cursos Kids ficam FORA da chave-mestra** (decisão de 06/2026). Cada curso tem
 > uma **Audiência** (campo no cadastro do curso): **Adulto** (plataforma principal,
@@ -112,6 +119,10 @@ O rascunho é livre (cadastro progressivo). **Ativar** um produto exige ele pron
   chave-mestra).
 - Combo ativo → precisa de **≥1 componente**; combo nunca tem entrega própria.
 - Produto não-combo não aceita componentes.
+- Oferta ativa → preço maior que zero, produto principal ativo e todos os produtos
+  entregues pela oferta (componentes do combo + bônus/itens extras) ativos e com
+  entrega definida. Oferta em rascunho pode apontar para cadastro incompleto até
+  ficar pronta.
 
 O formulário bloqueia com aviso e o backend valida de novo (defesa em profundidade).
 
@@ -130,6 +141,13 @@ e cobra sempre pela cotação do servidor. Três camadas:
 
 Promoção do dia a dia = editar o preço da oferta ou criar **cupom** (quem já comprou mantém o
 acesso — snapshot congelado). Trocar a env é só quando o funil muda de **produto**.
+
+> ⚠️ **Plataforma Kids não tem funil (hoje).** Produtos kids — como o **Estúdio Completo** — são
+> cadastrados normalmente no catálogo (produto + oferta), mas o acesso é liberado por **concessão
+> manual no admin** (Membros → aluno → conceder, ou Usuários → "Conceder acesso"), já que não há
+> checkout kids. A oferta existe no catálogo para guardar preço/condição comercial e para quando
+> houver um funil kids. O recado de "ainda não liberado" no app **não leva a uma página de vendas**
+> (não há `FUNNEL_URL` no kids) — orienta a criança a pedir para um responsável.
 
 ## A página de vendas do curso (o cadeado do catálogo)
 

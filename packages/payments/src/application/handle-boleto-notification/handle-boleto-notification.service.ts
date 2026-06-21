@@ -1,3 +1,4 @@
+import { TooManyRequestsError } from '@sistemazero/core/http'
 import type {
   PaymentGateway,
   ProviderNotificationEntry,
@@ -49,15 +50,14 @@ export class HandleBoletoNotificationService {
       notification.entries && notification.entries.length > 0
         ? notification.entries
         : notification.chargeIds.map((chargeId) => ({ chargeId }))
-    const entries = all.slice(0, MAX_CHARGES_PER_NOTIFICATION)
     if (all.length > MAX_CHARGES_PER_NOTIFICATION) {
-      this.logger.warn('cobrancas.notification.charges_truncated', {
+      this.logger.warn('cobrancas.notification.too_many_entries', {
         received: all.length,
-        processed: entries.length,
+        max: MAX_CHARGES_PER_NOTIFICATION,
       })
+      throw new TooManyRequestsError()
     }
-
-    for (const entry of entries) {
+    for (const entry of all) {
       // Isolamento por cobrança: um erro não derruba o lote nem consome o dedupe.
       try {
         if (entry.subscriptionId && this.subscriptions) {

@@ -1,4 +1,14 @@
-import { index, integer, pgSchema, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core'
+import {
+  boolean,
+  date,
+  index,
+  integer,
+  pgSchema,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+} from 'drizzle-orm/pg-core'
 
 // Este package compartilha o MESMO Postgres do payments/funnel, mas é dono do
 // schema `auth` (isolamento por `pgSchema`). Todo o DDL gerado fica em `auth.*`.
@@ -174,6 +184,14 @@ export const profiles = auth.table(
     avatarUrl: text('avatar_url'),
     // WhatsApp de contato do perfil (opcional; sem envio automático na v1).
     whatsapp: text('whatsapp'),
+    // Data de nascimento da criança (controle de idade). SÓ os pais editam (a
+    // criança em sessão de perfil é barrada na rota). `mode: 'string'` (YYYY-MM-DD)
+    // evita o deslocamento de dia do round-trip Date↔UTC.
+    birthDate: date('birth_date', { mode: 'string' }),
+    // Perfil PÚBLICO entre crianças da comunidade (nome+avatar+ranking+conquistas
+    // clicável no Mural). OPT-IN dos pais (default false, segurança infantil); SÓ os
+    // pais editam (a sessão de perfil da criança é barrada na rota, como o birthDate).
+    publicProfileEnabled: boolean('public_profile_enabled').notNull().default(false),
     status: profileStatusEnum('status').notNull().default('active'),
     sortOrder: integer('sort_order').notNull().default(0),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),

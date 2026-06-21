@@ -11,6 +11,7 @@ export interface SpaceView {
   audience: Audience
   accessConfig: AccessConfig
   requiresApproval: boolean
+  teaserWhenLocked: boolean
   sortOrder: number
   status: SpaceStatus
   createdAt: string
@@ -49,6 +50,7 @@ export function toSpaceView(s: Space): SpaceView {
     audience: s.audience,
     accessConfig: s.accessConfig,
     requiresApproval: s.requiresApproval,
+    teaserWhenLocked: s.teaserWhenLocked,
     sortOrder: s.sortOrder,
     status: s.status,
     createdAt: s.createdAt.toISOString(),

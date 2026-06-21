@@ -42,7 +42,8 @@ Achados implementados (correção/fiscal/segurança/concorrência):
 - **Cancelamento**: `xMotivo` = TSMotivo do XSD = **15–255** chars (borda valida; worker normaliza
   defensivamente). Antes minLength 3/maxLength 500 → Sefin rejeitava → nota presa em CANCEL_PENDING.
 - **Coletor de presas** (`failExhausted`, no início do tick): nota SCHEDULED com `attempts > maxAttempts`
-  (crash entre claim e transição) vira FAILED — não some do `/metrics` p/ sempre.
+  E lease expirado (crash entre claim e transição) vira FAILED — não derruba emissão ainda em andamento
+  noutra réplica e não some do `/metrics` p/ sempre.
 - **Idempotência por pagamento** (`findAnyByPaymentId`): re-entrega do `paid` após SKIPPED/FAILED não
   cria 2ª nota. Oferta paga 404 no catalog → **retryable** (não emite cedo com garantia default).
 - **Cert**: `leafCertPem` explícito (não o 1º bloco da cadeia — bag order pode pôr CA antes do leaf).
@@ -79,7 +80,8 @@ A Produção Restrita usa o MESMO certificado real e **não gera nota com valida
 2. **`EmissionWorker`** (30s, claim SKIP LOCKED + lease, attempts++ NO claim): **re-verifica o
    pagamento NO MOMENTO da emissão** (fail-closed) → aloca número/série UMA vez (retry REUSA — re-POST
    vira `duplicate` recuperado por `GET /dps/{id}`, nunca nota dobrada) → emite → EMITTED → DANFSe em
-   bytea (best-effort) → (Fase 3: e-mail). Rejeição determinística → FAILED direto; rede → backoff
+   bytea (best-effort) → e-mail. Se DANFSe/e-mail falhar depois da NFS-e real, o `DeliveryWorker`
+   reprocessa só esses efeitos pós-emissão, sem reemitir a DPS. Rejeição determinística → FAILED direto; rede → backoff
    exponencial (1min×2^n, teto 6h) até `NFSE_MAX_ATTEMPTS`.
 3. **Competência (`dCompet`) = data da EMISSÃO em BRT** (decisão do usuário 12/06), NÃO a do pagamento.
    **Discriminação** = `NFSE_SERVICE_DESC_PREFIX` ("Treinamento on-line") + " - " + nome REAL do

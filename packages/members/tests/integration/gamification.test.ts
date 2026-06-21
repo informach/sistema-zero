@@ -1,5 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
+import { BADGE_SLUGS } from '../../src/domain/gamification/badges'
+import { DAILY_COIN_CAP } from '../../src/domain/gamification/coins'
 import type { InMemoryCourseRepository } from '../fakes/in-memory'
 import { buildApp, grantLifetime, seedSampleCourse } from '../helpers'
 
@@ -195,8 +197,10 @@ describe('Gamificação — streak diário (America/Sao_Paulo)', () => {
     const c = await readJson(await complete(app, c2.lessonIds[0]))
     expect(c.gamification.streak).toEqual({ current: 2, best: 2, extended: true })
 
-    // Gap (pula o dia 4) → recomeça em 1, best preservado.
-    clockRef.now = new Date('2026-06-05T12:00:00.000Z')
+    // Gap GRANDE (06-07, pulou 04/05/06 = 3 dias) > o único freeze grátis do mês →
+    // recomeça em 1, best preservado. (1 dia perdido seria coberto pelo freeze — ver
+    // o teste de streak-freeze; aqui o gap supera a proteção.)
+    clockRef.now = new Date('2026-06-07T12:00:00.000Z')
     const d = await readJson(await complete(app, c2.lessonIds[1]))
     expect(d.gamification.streak).toEqual({ current: 1, best: 2, extended: true })
   })
@@ -323,21 +327,17 @@ describe('Gamificação — GET /members/gamification/me', () => {
     const body = await readJson(res)
     expect(body).toEqual({
       xp: 0,
-      streak: { current: 0, best: 0, activeToday: false },
-      badges: [
-        { slug: 'first-lesson', unlockedAt: null },
-        { slug: 'streak-7', unlockedAt: null },
-        { slug: 'streak-30', unlockedAt: null },
-        { slug: 'streak-60', unlockedAt: null },
-        { slug: 'streak-180', unlockedAt: null },
-        { slug: 'streak-365', unlockedAt: null },
-        { slug: 'course-complete', unlockedAt: null },
-        { slug: 'course-complete-2', unlockedAt: null },
-        { slug: 'course-complete-3', unlockedAt: null },
-        { slug: 'quiz-perfect', unlockedAt: null },
-        { slug: 'quiz-perfect-10', unlockedAt: null },
-        { slug: 'quiz-perfect-30', unlockedAt: null },
-      ],
+      coins: { balance: 0 },
+      streak: {
+        current: 0,
+        best: 0,
+        activeToday: false,
+        freezesAvailable: 0,
+        onVacation: false,
+        vacationUntil: null,
+      },
+      // Catálogo completo do domain, todo bloqueado (derivado — robusto a novos slugs).
+      badges: BADGE_SLUGS.map((slug) => ({ slug, unlockedAt: null })),
     })
   })
 
@@ -349,18 +349,28 @@ describe('Gamificação — GET /members/gamification/me', () => {
 
     const active = await readJson(await getMe(app))
     expect(active.xp).toBe(10)
-    expect(active.streak).toEqual({ current: 1, best: 1, activeToday: true })
+    // A 1ª atividade do mês também concede o freeze grátis (freezesAvailable: 1).
+    expect(active.streak).toEqual({
+      current: 1,
+      best: 1,
+      activeToday: true,
+      freezesAvailable: 1,
+      onVacation: false,
+      vacationUntil: null,
+    })
     const first = active.badges.find((b: { slug: string }) => b.slug === 'first-lesson')
     expect(first.unlockedAt).not.toBeNull()
 
-    // Ontem ainda mantém a sequência (dá p/ estender hoje); anteontem quebra.
+    // Ontem ainda mantém; e o freeze grátis cobriria até 1 dia perdido.
     clockRef.now = new Date('2026-06-03T12:00:00.000Z')
     const next = await readJson(await getMe(app))
-    expect(next.streak).toEqual({ current: 1, best: 1, activeToday: false })
+    expect(next.streak.current).toBe(1)
 
-    clockRef.now = new Date('2026-06-04T12:00:00.000Z')
+    // Gap GRANDE (06-10, 7 dias perdidos) supera o único freeze grátis → exibição zera.
+    clockRef.now = new Date('2026-06-10T12:00:00.000Z')
     const broken = await readJson(await getMe(app))
-    expect(broken.streak).toEqual({ current: 0, best: 1, activeToday: false })
+    expect(broken.streak.current).toBe(0)
+    expect(broken.streak.best).toBe(1)
   })
 
   test('sem identidade → 401', async () => {
@@ -471,6 +481,45 @@ describe('Gamificação — ranking por vitrine (?audience= + ?ranking=true)', (
     expect(adult.ranking).toBeUndefined()
   })
 
+  test('matrícula expirada não libera nem compõe ranking', async () => {
+    const { app, courses, entitlements, gamification } = buildApp()
+    const kidsCourse = seedSampleCourse(courses, 'curso-kids', 'published', 'kids')
+    const EXPIRED = '55555555-5555-5555-5555-555555555555'
+    grantLifetime(entitlements, { userId: USER, courseRef: kidsCourse.slug })
+    grantLifetime(entitlements, {
+      userId: EXPIRED,
+      courseRef: kidsCourse.slug,
+      expiresAt: new Date('2026-06-01T00:00:00.000Z'),
+    })
+    await gamification.award({
+      userId: EXPIRED,
+      accountId: EXPIRED,
+      audience: 'kids',
+      events: [{ sourceType: 'lesson_complete', sourceId: randomUUID(), amount: 100, coins: 0 }],
+      today: '2026-06-02',
+      now: new Date('2026-06-02T12:00:00.000Z'),
+      privileged: false,
+    })
+
+    const mine = await readJson(
+      await app.handle(
+        new Request('http://localhost/members/gamification/me?audience=kids&ranking=true', {
+          headers: authHeaders,
+        }),
+      ),
+    )
+    expect(mine.ranking).toEqual({ position: 1, totalStudents: 1 })
+
+    const expired = await readJson(
+      await app.handle(
+        new Request('http://localhost/members/gamification/me?audience=kids&ranking=true', {
+          headers: { 'x-auth-user-id': EXPIRED },
+        }),
+      ),
+    )
+    expect(expired.ranking).toBeUndefined()
+  })
+
   test('equipe (admin/staff/superadmin) fica FORA do ranking — só cliente conta', async () => {
     const { app, courses, entitlements } = buildApp()
     const kidsCourse = seedSampleCourse(courses, 'curso-kids', 'published', 'kids')
@@ -557,5 +606,372 @@ describe('Gamificação — resiliência e impersonação', () => {
     expect(res.status).toBe(200)
     const body = await readJson(res)
     expect(body.gamification).toMatchObject({ xpAwarded: 10, streak: { current: 1 } })
+  })
+})
+
+describe('Gamificação — Zappy Coins (carteira)', () => {
+  test('complete concede moedas (faucet); saldo aparece no /me; re-complete não duplica', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const course = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
+
+    const first = await readJson(await complete(app, course.lessonIds[0]))
+    expect(first.gamification.coinsAwarded).toBe(5) // COIN_VALUES.LESSON_COMPLETE
+    expect(first.gamification.coinBalance).toBe(5)
+    expect(first.gamification.coinsCapped).toBe(false)
+
+    const me = await readJson(await getMe(app))
+    expect(me.coins).toEqual({ balance: 5 })
+
+    const again = await readJson(await complete(app, course.lessonIds[0]))
+    expect(again.gamification.coinsAwarded).toBe(0)
+    expect(again.gamification.coinBalance).toBe(5)
+  })
+
+  test('baú de unidade soma moedas (aula 5 + baú 15) na ação que fecha o módulo', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const course = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
+    await complete(app, course.lessonIds[0])
+    const done = await readJson(await complete(app, course.lessonIds[1]))
+    expect(done.gamification.coinsAwarded).toBe(20) // 5 (aula) + 15 (baú)
+    expect(done.gamification.coinBalance).toBe(25)
+  })
+
+  test('quiz aprovado nota 100 → +15 moedas (10 base + 5 bônus)', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const course = seedSampleCourse(courses)
+    const blockId = seedQuizBlock(courses, course.lessonIds[0], { passingScore: 60 })
+    grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
+    const res = await readJson(await submitQuiz(app, course.lessonIds[0], blockId, { q1: ['b'] }))
+    expect(res.gamification.coinsAwarded).toBe(15)
+  })
+
+  test('spendCoins: debita; ALREADY_SPENT (idempotente) não cobra 2×; saldo insuficiente fail-closed', async () => {
+    const { app, courses, entitlements, gamification } = buildApp()
+    const course = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
+    await complete(app, course.lessonIds[0])
+    await complete(app, course.lessonIds[1])
+    expect(await gamification.getBalance(USER, 'adult')).toBe(25)
+
+    const now = new Date('2026-06-02T12:00:00.000Z')
+    const buy = {
+      userId: USER,
+      audience: 'adult' as const,
+      amount: 10,
+      reason: 'spend_cosmetic' as const,
+      idempotencyKey: 'avatar-buy:hair-1',
+      now,
+    }
+    expect(await gamification.spendCoins(buy)).toEqual({ ok: true, balanceAfter: 15 })
+    expect(await gamification.getBalance(USER, 'adult')).toBe(15)
+
+    // Mesma compra (duplo-clique/retry) → ALREADY_SPENT, sem debitar de novo.
+    expect(await gamification.spendCoins(buy)).toEqual({
+      ok: false,
+      code: 'ALREADY_SPENT',
+      balance: 15,
+    })
+    expect(await gamification.getBalance(USER, 'adult')).toBe(15)
+
+    // Saldo insuficiente é erro de negócio (fail-closed).
+    expect(
+      await gamification.spendCoins({
+        userId: USER,
+        audience: 'adult',
+        amount: 999,
+        reason: 'spend_room',
+        idempotencyKey: 'room-buy:cama',
+        now,
+      }),
+    ).toEqual({ ok: false, code: 'INSUFFICIENT_BALANCE', balance: 15 })
+  })
+
+  test('teto diário: ganho do dia para em DAILY_COIN_CAP; novo dia reseta', async () => {
+    const { gamification } = buildApp()
+    const award = (today: string, now: Date) =>
+      gamification.award({
+        userId: USER,
+        accountId: USER,
+        audience: 'kids',
+        events: [{ sourceType: 'lesson_complete', sourceId: randomUUID(), amount: 10, coins: 20 }],
+        today,
+        now,
+        privileged: false,
+      })
+
+    const d1 = new Date('2026-06-02T12:00:00.000Z')
+    for (let i = 0; i < 5; i++) await award('2026-06-02', d1) // 5 × 20 = 100 (= teto)
+    const sixth = await award('2026-06-02', d1) // estoura o teto
+    expect(await gamification.getBalance(USER, 'kids')).toBe(DAILY_COIN_CAP)
+    expect(sixth.coinsAwarded).toBe(0)
+    expect(sixth.coinsCapped).toBe(true)
+
+    // Novo dia civil → o acumulado reseta e ganha de novo.
+    const next = await award('2026-06-03', new Date('2026-06-03T12:00:00.000Z'))
+    expect(next.coinsAwarded).toBe(20)
+    expect(await gamification.getBalance(USER, 'kids')).toBe(DAILY_COIN_CAP + 20)
+  })
+
+  test('marco de streak concede bônus de moeda EXEMPTO do teto', async () => {
+    const { gamification } = buildApp()
+    const awardDay = (day: string) =>
+      gamification.award({
+        userId: USER,
+        accountId: USER,
+        audience: 'kids',
+        events: [{ sourceType: 'lesson_complete', sourceId: randomUUID(), amount: 10, coins: 5 }],
+        today: day,
+        now: new Date(`${day}T12:00:00.000Z`),
+        privileged: false,
+      })
+
+    for (let d = 2; d <= 7; d++) await awardDay(`2026-06-0${d}`) // streak 1..6
+    const day7 = await awardDay('2026-06-08') // 7º dia → cruza o marco streak:7
+    expect(day7.streak.current).toBe(7)
+    expect(day7.coinsAwarded).toBe(25) // 5 (aula) + 20 (marco streak:7, exempto do teto)
+    expect(
+      gamification.coinEvents.some(
+        (ce) => ce.sourceType === 'streak_milestone' && ce.sourceId === 'streak:7',
+      ),
+    ).toBe(true)
+  })
+})
+
+// ── Fase 4: missões + streak-freeze + férias (audiência adult p/ casar com o seed) ──
+const AUD = '?audience=adult'
+const getMissions = (app: App) =>
+  app.handle(
+    new Request(`http://localhost/members/gamification/missions/me${AUD}`, {
+      headers: authHeaders,
+    }),
+  )
+const claimMission = (app: App, slug: string) =>
+  app.handle(
+    new Request(`http://localhost/members/gamification/missions/${slug}/claim${AUD}`, {
+      method: 'POST',
+      headers: authHeaders,
+    }),
+  )
+const buyFreeze = (app: App) =>
+  app.handle(
+    new Request(`http://localhost/members/gamification/streak-freeze/buy${AUD}`, {
+      method: 'POST',
+      headers: authHeaders,
+    }),
+  )
+const setVacation = (app: App, body: { from: string | null; to: string | null }) =>
+  app.handle(
+    new Request(`http://localhost/members/gamification/vacation${AUD}`, {
+      method: 'PUT',
+      headers: authHeaders,
+      body: JSON.stringify(body),
+    }),
+  )
+const seedCoins = (gamification: ReturnType<typeof buildApp>['gamification'], coins: number) =>
+  gamification.award({
+    userId: USER,
+    accountId: USER,
+    audience: 'adult',
+    events: [{ sourceType: 'lesson_complete', sourceId: randomUUID(), amount: 10, coins }],
+    today: '2026-06-02',
+    now: new Date('2026-06-02T12:00:00.000Z'),
+    privileged: false,
+  })
+
+describe('Missões — progresso derivado + claim', () => {
+  test('passar 1 quiz conclui a missão diária de quiz; claim concede e é idempotente', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const course = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
+
+    const before = await readJson(await getMissions(app))
+    // Set determinístico do USER em 2026-06-02 (computado): 3 diárias, 2 semanais.
+    expect(before.daily.length).toBe(3)
+    expect(before.weekly.length).toBe(2)
+    expect(before.daily.every((m: { completed: boolean }) => !m.completed)).toBe(true)
+
+    const blockId = seedQuizBlock(courses, course.lessonIds[0])
+    await submitQuiz(app, course.lessonIds[0], blockId, { q1: ['b'] })
+
+    const after = await readJson(await getMissions(app))
+    const quiz = after.daily.find((m: { slug: string }) => m.slug === 'daily-quiz')
+    expect(quiz).toMatchObject({ progress: 1, completed: true, claimed: false })
+
+    const claim = await readJson(await claimMission(app, 'daily-quiz'))
+    expect(claim).toMatchObject({ claimed: true, xpAwarded: 15 })
+    expect(claim.coinsAwarded).toBeGreaterThan(0)
+
+    // 2º claim → idempotente (não concede de novo).
+    expect((await readJson(await claimMission(app, 'daily-quiz'))).claimed).toBe(false)
+    const final = await readJson(await getMissions(app))
+    expect(final.daily.find((m: { slug: string }) => m.slug === 'daily-quiz').claimed).toBe(true)
+  })
+
+  test('claim de missão que cruza lifetime coins destrava badge de poupador', async () => {
+    const { app, courses, entitlements, gamification } = buildApp()
+    const course = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
+
+    for (const [today, coins] of [
+      ['2026-05-30', 100],
+      ['2026-05-31', 100],
+      ['2026-06-01', 70],
+    ] as const) {
+      await gamification.award({
+        userId: USER,
+        accountId: USER,
+        audience: 'adult',
+        events: [{ sourceType: 'lesson_complete', sourceId: randomUUID(), amount: 1, coins }],
+        today,
+        now: new Date(`${today}T12:00:00.000Z`),
+        privileged: false,
+      })
+    }
+
+    const blockId = seedQuizBlock(courses, course.lessonIds[0])
+    await submitQuiz(app, course.lessonIds[0], blockId, { q1: ['b'] })
+
+    const before = await readJson(await getMe(app))
+    expect(before.coins.balance).toBe(285)
+    expect(
+      before.badges.find((b: { slug: string }) => b.slug === 'coins-saver-300').unlockedAt,
+    ).toBeNull()
+
+    const claim = await readJson(await claimMission(app, 'daily-quiz'))
+    expect(claim).toMatchObject({ claimed: true, coinsAwarded: 15, coinBalance: 300 })
+
+    const after = await readJson(await getMe(app))
+    expect(
+      after.badges.find((b: { slug: string }) => b.slug === 'coins-saver-300').unlockedAt,
+    ).not.toBeNull()
+  })
+
+  test('claim de missão NÃO concluída → 409; inexistente → 404', async () => {
+    const { app } = buildApp()
+    expect((await claimMission(app, 'daily-quiz')).status).toBe(409)
+    expect((await claimMission(app, 'missao-fantasma')).status).toBe(404)
+  })
+})
+
+describe('Streak-freeze + férias', () => {
+  test('1ª atividade do mês dá 1 freeze grátis; comprar debita 80 e +1; sem saldo → 402', async () => {
+    const { app, gamification } = buildApp()
+    await seedCoins(gamification, 100)
+    const me = await readJson(await getMe(app))
+    expect(me.streak.freezesAvailable).toBe(1) // grátis do mês
+
+    const buy = await readJson(await buyFreeze(app))
+    expect(buy).toEqual({ freezes: 2, balance: 20 }) // 100 - 80
+
+    // saldo 20 < 80 → 402
+    expect((await buyFreeze(app)).status).toBe(402)
+  })
+
+  test('agendar férias reflete em onVacation/vacationUntil; null limpa; inválida → 400', async () => {
+    const { app } = buildApp() // clock 2026-06-02
+    const set = await readJson(await setVacation(app, { from: '2026-06-01', to: '2026-06-10' }))
+    expect(set).toEqual({ vacationFrom: '2026-06-01', vacationTo: '2026-06-10' })
+
+    const me = await readJson(await getMe(app))
+    expect(me.streak.onVacation).toBe(true)
+    expect(me.streak.vacationUntil).toBe('2026-06-10')
+
+    await setVacation(app, { from: null, to: null })
+    expect((await readJson(await getMe(app))).streak.onVacation).toBe(false)
+
+    // Janela inclusiva: 30 dias passa, 31 dias é bloqueado.
+    expect((await setVacation(app, { from: '2026-06-02', to: '2026-07-01' })).status).toBe(200)
+    expect((await setVacation(app, { from: '2026-06-02', to: '2026-07-02' })).status).toBe(400)
+
+    // fim antes do início → 400
+    expect((await setVacation(app, { from: '2026-06-10', to: '2026-06-01' })).status).toBe(400)
+  })
+})
+
+describe('Gamificação — correções do full review (freeze/streak display/ranking de equipe)', () => {
+  test('freeze grátis do mês é CLAMPADO no teto (não passa de MAX_STREAK_FREEZES)', async () => {
+    const ctx = buildApp({ now: new Date('2026-06-01T12:00:00.000Z') })
+    const { app, courses, entitlements, gamification } = ctx
+    const kids = seedSampleCourse(courses, 'curso-kids', 'published', 'kids')
+    grantLifetime(entitlements, { userId: USER, courseRef: kids.slug })
+    // Perfil já no TETO (5 freezes), freeze grátis de MAIO concedido, ativo ONTEM.
+    const key = `${USER}:kids`
+    gamification.profiles.set(key, {
+      userId: USER,
+      accountId: USER,
+      xp: 100,
+      streakCurrent: 3,
+      streakBest: 3,
+      lastActivityDate: '2026-05-31',
+      coinBalance: 0,
+      streakFreezes: 5,
+      vacationFrom: null,
+      vacationTo: null,
+    })
+    gamification.accountIds.set(key, USER)
+    gamification.freezeMonths.set(key, '2026-05')
+
+    // Atividade no 1º dia de JUNHO → tenta o +1 grátis, mas já está no teto.
+    await complete(app, kids.lessonIds[0])
+    const profile = await gamification.getProfile(USER, 'kids')
+    expect(profile?.streakFreezes).toBe(5) // clampado — sem o fix seria 6
+    // E o mês NÃO é marcado como concedido (estava no teto): o grátis de junho continua
+    // disponível p/ quando houver espaço — antes o marcador avançava e queimava o benefício.
+    expect(profile?.freezeGrantedMonth).toBe('2026-05')
+  })
+
+  test('streak de exibição projeta o freeze grátis do mês (não mostra 0 na 1ª lacuna do mês)', async () => {
+    const ctx = buildApp({ now: new Date('2026-06-02T12:00:00.000Z') })
+    const { app, courses, entitlements, gamification } = ctx
+    const kids = seedSampleCourse(courses, 'curso-kids', 'published', 'kids')
+    grantLifetime(entitlements, { userId: USER, courseRef: kids.slug })
+    // streak 10, SEM freezes persistidos, freeze grátis de MAIO já usado; pulou 01/06.
+    const key = `${USER}:kids`
+    gamification.profiles.set(key, {
+      userId: USER,
+      accountId: USER,
+      xp: 100,
+      streakCurrent: 10,
+      streakBest: 10,
+      lastActivityDate: '2026-05-31',
+      coinBalance: 0,
+      streakFreezes: 0,
+      vacationFrom: null,
+      vacationTo: null,
+    })
+    gamification.accountIds.set(key, USER)
+    gamification.freezeMonths.set(key, '2026-05')
+
+    // GET em 02/06 ANTES de qualquer atividade: a lacuna de 01/06 é coberta pelo freeze
+    // grátis prestes a ser concedido → exibe 10, não 0 (contrato guilt-free).
+    const me = await readJson(
+      await app.handle(
+        new Request('http://localhost/members/gamification/me?audience=kids', {
+          headers: authHeaders,
+        }),
+      ),
+    )
+    expect(me.streak.current).toBe(10)
+  })
+
+  test('equipe COM matrícula real: pede o próprio ranking → omitido (equipe não ranqueia)', async () => {
+    const ctx = buildApp()
+    const { app, courses, entitlements } = ctx
+    const kids = seedSampleCourse(courses, 'curso-kids', 'published', 'kids')
+    const STAFF = '66666666-6666-6666-6666-666666666666'
+    grantLifetime(entitlements, { userId: STAFF, courseRef: kids.slug })
+    const staffHeaders = { 'x-auth-user-id': STAFF, 'x-auth-user-role': 'staff' }
+    await complete(app, kids.lessonIds[0], staffHeaders) // pontua como equipe (privileged)
+
+    const me = await readJson(
+      await app.handle(
+        new Request('http://localhost/members/gamification/me?audience=kids&ranking=true', {
+          headers: staffHeaders,
+        }),
+      ),
+    )
+    expect(me.ranking).toBeUndefined()
   })
 })

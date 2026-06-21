@@ -14,9 +14,9 @@ export interface CourseAccess {
  * Centraliza a trinca repetida nos endpoints de conteúdo: resolve o curso →
  * exige publicado (senão 404) → exige matrícula ATIVA do aluno (senão 403).
  * A checagem de acesso é leitura LOCAL (status + validade), sem chamar ninguém.
- * Acesso = matrícula específica (`entitlement.courseRef === course.slug`) OU
- * chave-mestra (`accessType='all_courses'`, cobre todos os cursos ADULTOS —
- * atuais e futuros; curso `kids` fica FORA da chave-mestra, via `masterCovers`).
+ * Acesso = matrícula específica (`entitlement.courseRef === course.slug`) OU a
+ * chave-mestra da AUDIÊNCIA do curso (`all_courses` p/ adult, `all_kids_courses`
+ * p/ kids — cada uma cobre só a sua vitrine, via `masterType`).
  * `privileged=true` (equipe interna — `isPrivilegedActor` na rota) dispensa a
  * matrícula com uma chave-mestra VIRTUAL que cobre as DUAS audiências (suporte);
  * o 404 de curso draft fica ANTES do bypass — equipe vê só conteúdo acessível,
@@ -54,13 +54,13 @@ export class CheckAccessService {
     if (privileged) {
       return { course, entitlement: EntitlementAggregate.virtualAllCourses(userId, this.clock()) }
     }
-    // Chave-mestra `all_courses` cobre só cursos `adult` — para curso `kids`,
-    // o OR da chave-mestra sai da query e resta a matrícula específica.
+    // Chave-mestra da AUDIÊNCIA do curso: `all_courses` cobre só `adult`,
+    // `all_kids_courses` só `kids`. A do outro tipo não entra no OR.
     const entitlement = await this.entitlements.findActiveForCourse(
       userId,
       course.slug,
       this.clock(),
-      { masterCovers: course.audience === 'adult' },
+      { masterType: course.audience === 'adult' ? 'all_courses' : 'all_kids_courses' },
     )
     if (!entitlement) throw new AccessDeniedError()
     return { course, entitlement }

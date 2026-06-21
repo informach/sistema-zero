@@ -16,13 +16,13 @@ export class CatalogHttpClient implements CatalogClient {
     if (!res.ok) throw new Error(`catalog respondeu ${res.status}`)
 
     const body = (await res.json()) as Record<string, unknown>
-    const id = typeof body['id'] === 'string' ? body['id'] : offerId
-    const name = typeof body['name'] === 'string' ? body['name'] : ''
-    const guaranteeRaw = body['guaranteeDays']
+    const id = typeof body.id === 'string' ? body.id : offerId
+    const name = typeof body.name === 'string' ? body.name : ''
+    const guaranteeRaw = body.guaranteeDays
     const guaranteeDays = typeof guaranteeRaw === 'number' ? guaranteeRaw : null
     // O nome do PRODUTO principal (discriminação da nota) vem em product.name;
     // fallback no nome da oferta (parse defensivo contra drift).
-    const product = body['product'] as { name?: unknown } | undefined
+    const product = body.product as { name?: unknown } | undefined
     const productName = typeof product?.name === 'string' ? product.name : null
 
     return { id, name, productName, guaranteeDays }

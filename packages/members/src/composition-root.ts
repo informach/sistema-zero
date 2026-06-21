@@ -2,6 +2,10 @@ import { randomUUID } from 'node:crypto'
 import { createLogger, type Logger } from '@sistemazero/core/logging'
 import { CheckAccessService } from './application/access/check-access.service'
 import { AccessCheckService } from './application/access-check/access-check.service'
+import { BuyAvatarPartService } from './application/avatar/buy-avatar-part.service'
+import { EquipAvatarService } from './application/avatar/equip-avatar.service'
+import { GetAvatarService } from './application/avatar/get-avatar.service'
+import { GetChildrenStatsService } from './application/children-stats/get-children-stats.service'
 import {
   AttachmentAdminService,
   BlockAdminService,
@@ -10,7 +14,12 @@ import {
   ModuleAdminService,
 } from './application/content-admin/content-admin.service'
 import { AwardGamificationService } from './application/gamification/award-gamification.service'
+import { BuyStreakFreezeService } from './application/gamification/buy-streak-freeze.service'
+import { ClaimMissionService } from './application/gamification/claim-mission.service'
 import { GetGamificationService } from './application/gamification/get-gamification.service'
+import { GetLeagueService } from './application/gamification/get-league.service'
+import { GetMissionsService } from './application/gamification/get-missions.service'
+import { SetVacationService } from './application/gamification/set-vacation.service'
 import { GetAttachmentDownloadService } from './application/get-attachment-download/get-attachment-download.service'
 import { GetCourseProgressService } from './application/get-course-progress/get-course-progress.service'
 import { GetCourseRatingService } from './application/get-course-rating/get-course-rating.service'
@@ -18,6 +27,8 @@ import { GetEbookDownloadService } from './application/get-ebook-download/get-eb
 import { GetLessonService } from './application/get-lesson/get-lesson.service'
 import { GetMemberDetailService } from './application/get-member-detail/get-member-detail.service'
 import { GetMyCourseService } from './application/get-my-course/get-my-course.service'
+import { GetShowcasePayloadService } from './application/get-showcase-payload/get-showcase-payload.service'
+import { GetStudioCarryoverService } from './application/get-studio-carryover/get-studio-carryover.service'
 import { GrantEntitlementService } from './application/grant-entitlement/grant-entitlement.service'
 import { GrantManualEntitlementService } from './application/grant-manual-entitlement/grant-manual-entitlement.service'
 import { ListCatalogService } from './application/list-catalog/list-catalog.service'
@@ -26,7 +37,11 @@ import { ListMyCoursesService } from './application/list-my-courses/list-my-cour
 import { ManageEntitlementService } from './application/manage-entitlement/manage-entitlement.service'
 import { MarkLessonCompleteService } from './application/mark-lesson-complete/mark-lesson-complete.service'
 import { GetProfileAllowanceService } from './application/profile-allowance/get-profile-allowance.service'
+import { GetPublicProfileService } from './application/profiles/get-public-profile.service'
 import { RevokeEntitlementService } from './application/revoke-entitlement/revoke-entitlement.service'
+import { BuyRoomItemService } from './application/room/buy-room-item.service'
+import { GetRoomService } from './application/room/get-room.service'
+import { SaveRoomService } from './application/room/save-room.service'
 import { SaveCourseRatingService } from './application/save-course-rating/save-course-rating.service'
 import { SaveVideoPositionService } from './application/save-video-position/save-video-position.service'
 import { StudioSubmissionsAdminService } from './application/studio-submissions-admin/studio-submissions-admin.service'
@@ -34,7 +49,9 @@ import { SubmitQuizAttemptService } from './application/submit-quiz-attempt/subm
 import { SubmitStudioProjectService } from './application/submit-studio-project/submit-studio-project.service'
 import type { Env } from './infrastructure/config/env'
 import { createCatalogHttpGateway } from './infrastructure/gateways/catalog-http.gateway'
+import { createHubHttpGateway, noopHubGateway } from './infrastructure/gateways/hub-http.gateway'
 import { withSentryMirror } from './infrastructure/observability/sentry'
+import { DrizzleAvatarRepository } from './infrastructure/persistence/drizzle/avatar.repository'
 import { DrizzleContentAdminRepository } from './infrastructure/persistence/drizzle/content-admin.repository'
 import { DrizzleCourseRepository } from './infrastructure/persistence/drizzle/course.repository'
 import { DrizzleCourseRatingRepository } from './infrastructure/persistence/drizzle/course-rating.repository'
@@ -44,6 +61,7 @@ import { DrizzleGamificationRepository } from './infrastructure/persistence/driz
 import { DrizzleProcessedWebhookRepository } from './infrastructure/persistence/drizzle/processed-webhook.repository'
 import { DrizzleProgressRepository } from './infrastructure/persistence/drizzle/progress.repository'
 import { DrizzleQuizAttemptRepository } from './infrastructure/persistence/drizzle/quiz-attempt.repository'
+import { DrizzleRoomRepository } from './infrastructure/persistence/drizzle/room.repository'
 import { DrizzleStudioSubmissionRepository } from './infrastructure/persistence/drizzle/studio-submission.repository'
 import { DrizzleVideoPositionRepository } from './infrastructure/persistence/drizzle/video-position.repository'
 import { createServer } from './interfaces/http/server'
@@ -100,6 +118,16 @@ export async function createApplication(env: Env): Promise<Application> {
     internalToken: env.CATALOG_INTERNAL_TOKEN,
     logger,
   })
+  // Notificador do hub (comunidade) no grant — best-effort. Sem HUB_BASE_URL (dev/local
+  // ou hub não configurado) cai no no-op; o TTL do micro-cache do hub cobre.
+  const hub = env.HUB_BASE_URL
+    ? createHubHttpGateway({
+        baseUrl: env.HUB_BASE_URL,
+        hmacSecret: env.GATEWAY_HMAC_SECRET,
+        timeoutMs: env.HUB_REQUEST_TIMEOUT_MS,
+        logger,
+      })
+    : noopHubGateway
 
   // Casos de uso do aluno
   const checkAccess = new CheckAccessService(courses, entitlements, clock)
@@ -109,6 +137,14 @@ export async function createApplication(env: Env): Promise<Application> {
   const profileAllowance = new GetProfileAllowanceService(entitlements, clock, {
     defaultMaxProfiles: env.DEFAULT_KIDS_MAX_PROFILES,
   })
+  // S2S: resumo de progresso dos filhos (consumido pelo BFF da área dos pais, kids).
+  const childrenStats = new GetChildrenStatsService(
+    gamificationRepo,
+    courses,
+    progress,
+    studioSubmissions,
+    clock,
+  )
   const listMyCourses = new ListMyCoursesService(entitlements, courses, progress, positions, clock)
   const listCatalog = new ListCatalogService(courses, entitlements, clock)
   const getMyCourse = new GetMyCourseService(checkAccess, courses, progress, positions, ratings)
@@ -125,6 +161,25 @@ export async function createApplication(env: Env): Promise<Application> {
   const resolveEbook = new GetEbookDownloadService(checkAccess, courses)
   const awardGamification = new AwardGamificationService(gamificationRepo, clock, logger)
   const getGamification = new GetGamificationService(gamificationRepo, clock)
+  const avatarRepo = new DrizzleAvatarRepository(db)
+  const getAvatar = new GetAvatarService(avatarRepo, gamificationRepo)
+  const buyAvatarPart = new BuyAvatarPartService(avatarRepo, gamificationRepo, clock)
+  const equipAvatar = new EquipAvatarService(avatarRepo, clock)
+  const roomRepo = new DrizzleRoomRepository(db)
+  const getRoom = new GetRoomService(roomRepo, gamificationRepo)
+  const saveRoom = new SaveRoomService(roomRepo, clock)
+  const buyRoomItem = new BuyRoomItemService(roomRepo, gamificationRepo, clock)
+  const getPublicProfile = new GetPublicProfileService(
+    gamificationRepo,
+    avatarRepo,
+    roomRepo,
+    clock,
+  )
+  const getMissions = new GetMissionsService(gamificationRepo, clock)
+  const claimMission = new ClaimMissionService(gamificationRepo, clock)
+  const buyStreakFreeze = new BuyStreakFreezeService(gamificationRepo, clock)
+  const setVacation = new SetVacationService(gamificationRepo, clock)
+  const getLeague = new GetLeagueService(gamificationRepo, clock)
   const markComplete = new MarkLessonCompleteService(
     checkAccess,
     courses,
@@ -150,9 +205,12 @@ export async function createApplication(env: Env): Promise<Application> {
     checkAccess,
     courses,
     studioSubmissions,
+    awardGamification,
     () => randomUUID(),
     clock,
   )
+  const getStudioCarryover = new GetStudioCarryoverService(checkAccess, courses, studioSubmissions)
+  const getShowcasePayload = new GetShowcasePayloadService(checkAccess, courses, studioSubmissions)
   const studioSubmissionsAdmin = new StudioSubmissionsAdminService(studioSubmissions)
 
   // Motor de acesso (webhooks)
@@ -205,6 +263,7 @@ export async function createApplication(env: Env): Promise<Application> {
     members: {
       listMyCourses,
       listCatalog,
+      accessCheck,
       getMyCourse,
       getLesson,
       resolveAttachment,
@@ -214,15 +273,31 @@ export async function createApplication(env: Env): Promise<Application> {
       savePosition,
       submitQuiz,
       submitStudio,
+      getStudioCarryover,
+      getShowcasePayload,
       getCourseRating,
       saveCourseRating,
       getGamification,
+      getMissions,
+      claimMission,
+      buyStreakFreeze,
+      setVacation,
+      getLeague,
+      childrenStats,
+      getAvatar,
+      buyAvatarPart,
+      equipAvatar,
+      getPublicProfile,
+      getRoom,
+      saveRoom,
+      buyRoomItem,
       internalToken: env.INTERNAL_API_TOKEN,
     },
     webhooks: {
       grant,
       revoke,
       processed,
+      hub,
       webhookSecret: env.GATEWAY_HMAC_SECRET,
       toleranceSeconds: env.HMAC_TOLERANCE_SECONDS,
       now: clock,
@@ -235,6 +310,7 @@ export async function createApplication(env: Env): Promise<Application> {
       getMemberDetail,
       grantManual,
       manageEntitlement,
+      hub,
     },
     content: {
       requireAdminEnabled: env.REQUIRE_ADMIN,
@@ -249,6 +325,7 @@ export async function createApplication(env: Env): Promise<Application> {
     internal: {
       accessCheck,
       profileAllowance,
+      showcasePayload: getShowcasePayload,
       internalToken: env.INTERNAL_API_TOKEN,
     },
   })

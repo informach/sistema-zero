@@ -218,8 +218,9 @@ export class DrizzleInvoiceRepository implements InvoiceRepository {
    * em SCHEDULED P/ SEMPRE, contada como "agendada" no /metrics (invisível). Aqui
    * forçamos FAILED (visível/alertável). Roda no início de cada tick do worker.
    */
-  async failExhausted(maxAttempts: number): Promise<number> {
+  async failExhausted(opts: { maxAttempts: number; staleMs: number }): Promise<number> {
     const now = new Date()
+    const staleBefore = new Date(now.getTime() - opts.staleMs)
     const rows = await this.db
       .update(invoices)
       .set({
@@ -233,7 +234,8 @@ export class DrizzleInvoiceRepository implements InvoiceRepository {
         and(
           eq(invoices.status, 'SCHEDULED'),
           lte(invoices.scheduledFor, now),
-          sql`${invoices.attempts} > ${maxAttempts}`,
+          sql`${invoices.attempts} > ${opts.maxAttempts}`,
+          or(isNull(invoices.claimedAt), lte(invoices.claimedAt, staleBefore)),
         ),
       )
       .returning({ id: invoices.id })
@@ -346,7 +348,12 @@ export class DrizzleInvoiceRepository implements InvoiceRepository {
     await this.db
       .update(invoices)
       .set({ claimedAt: new Date() })
-      .where(and(eq(invoices.id, id), inArray(invoices.status, ['SCHEDULED', 'CANCEL_PENDING'])))
+      .where(
+        and(
+          eq(invoices.id, id),
+          inArray(invoices.status, ['SCHEDULED', 'CANCEL_PENDING', 'EMITTED']),
+        ),
+      )
   }
 
   async releaseForRetry(id: string, nextAttemptAt: Date, lastError: string): Promise<void> {
@@ -530,6 +537,63 @@ export class DrizzleInvoiceRepository implements InvoiceRepository {
       .update(invoices)
       .set({ emailSentAt: new Date(), updatedAt: new Date() })
       .where(eq(invoices.id, id))
+  }
+
+  async claimEmittedNeedingDelivery(opts: {
+    batchSize: number
+    staleMs: number
+  }): Promise<Invoice[]> {
+    const now = new Date()
+    const staleBefore = new Date(now.getTime() - opts.staleMs)
+    const needsDelivery = or(
+      isNull(invoices.pdfStoredAt),
+      and(isNull(invoices.emailSentAt), sql`coalesce(${invoices.customer}->>'email', '') <> ''`),
+    )
+
+    const rows = await this.db.transaction(async (tx) => {
+      const due = await tx
+        .select({ id: invoices.id })
+        .from(invoices)
+        .where(
+          and(
+            eq(invoices.status, 'EMITTED'),
+            needsDelivery,
+            sql`${invoices.accessKey} IS NOT NULL`,
+            sql`${invoices.pdfToken} IS NOT NULL`,
+            or(isNull(invoices.nextAttemptAt), lte(invoices.nextAttemptAt, now)),
+            or(isNull(invoices.claimedAt), lte(invoices.claimedAt, staleBefore)),
+          ),
+        )
+        .orderBy(invoices.emittedAt)
+        .limit(opts.batchSize)
+        .for('update', { skipLocked: true })
+      if (due.length === 0) return []
+      return tx
+        .update(invoices)
+        .set({ claimedAt: now, updatedAt: now })
+        .where(
+          inArray(
+            invoices.id,
+            due.map((d) => d.id),
+          ),
+        )
+        .returning()
+    })
+    return rows.map(toInvoice)
+  }
+
+  async releaseDeliveryRetry(id: string, nextAttemptAt: Date, lastError: string): Promise<void> {
+    await this.db
+      .update(invoices)
+      .set({ claimedAt: null, nextAttemptAt, lastError, updatedAt: new Date() })
+      .where(and(eq(invoices.id, id), eq(invoices.status, 'EMITTED')))
+  }
+
+  async markDeliveryComplete(id: string): Promise<void> {
+    await this.db
+      .update(invoices)
+      .set({ claimedAt: null, nextAttemptAt: null, lastError: null, updatedAt: new Date() })
+      .where(and(eq(invoices.id, id), eq(invoices.status, 'EMITTED')))
   }
 
   /**

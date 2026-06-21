@@ -1,11 +1,12 @@
 'use client'
 
 import { ProgressBar } from '@sistemazero/member-shell/components/progress-bar'
-import { Flame, Gift, Sparkles } from 'lucide-react'
+import { Coins, Flame, Gift, Sparkles, Trophy } from 'lucide-react'
 import Link from 'next/link'
 import { type CSSProperties, useEffect, useMemo, useState } from 'react'
+import { toast } from 'sonner'
 import { cn } from '@/lib/cn'
-import type { CourseProgressView, GamificationDelta } from '@/lib/types'
+import type { CourseProgressView, GamificationDelta, LessonCompleteShowcaseHint } from '@/lib/types'
 import { badgeInfo } from './badges'
 import { KidsMascot } from './mascot'
 
@@ -14,6 +15,10 @@ interface LessonCelebrationProps {
   progressBefore: CourseProgressView
   /** Delta de XP/streak/badges vindo NA resposta do complete; `null` = sem gamificação. */
   gamification: GamificationDelta | null
+  /** Aula é ponto de vitrine (Mural): mostra o botão "Publicar no Mural". */
+  showcase: LessonCompleteShowcaseHint | null
+  /** Aula concluída (necessário p/ a publicação no Mural). */
+  lessonId: string
   nextHref: string | null
   courseHref: string
   onClose: () => void
@@ -44,6 +49,8 @@ interface ConfettiPiece {
 export function LessonCelebration({
   progressBefore,
   gamification,
+  showcase,
+  lessonId,
   nextHref,
   courseHref,
   onClose,
@@ -117,6 +124,8 @@ export function LessonCelebration({
           <GamificationDeltaPanel gamification={gamification} />
         ) : null}
 
+        {showcase ? <PublishToMural lessonId={lessonId} showcase={showcase} /> : null}
+
         <div className="mt-6 flex items-center gap-3">
           <ProgressBar value={percent} className="flex-1" />
           <span className="sz-display text-sm">{percent}%</span>
@@ -147,9 +156,81 @@ export function LessonCelebration({
   )
 }
 
-/** Seção de recompensas REAIS do backend: +XP, fogo do streak, baú e badges. */
+/**
+ * Botão comemorativo "Publicar no Mural": captura um print do projeto (jogos canvas;
+ * projetos web caem na capa padrão) e publica via `/api/hub/showcase`. A captura roda
+ * no CLIENTE — lê o projeto do rascunho local do bloco e o renderiza num iframe oculto
+ * (`captureCoverFromProject`). Best-effort: falha de captura ainda publica (capa padrão).
+ */
+function PublishToMural({
+  lessonId,
+  showcase,
+}: {
+  lessonId: string
+  showcase: LessonCompleteShowcaseHint
+}) {
+  const [state, setState] = useState<'idle' | 'publishing' | 'done'>('idle')
+
+  async function publish() {
+    setState('publishing')
+    const form = new FormData()
+    form.set('lessonId', lessonId)
+    form.set('blockId', showcase.blockId)
+    try {
+      // Captura o print do projeto (jogos canvas). Best-effort — qualquer falha cai
+      // na capa padrão do admin (sem `file`).
+      try {
+        const studio = await import('@sistemazero/studio')
+        const project = await studio
+          .createLocalPersistenceAdapter()
+          .load(`sz-lesson-studio:${showcase.blockId}`)
+          .catch(() => null)
+        if (project) {
+          const dataUrl = await studio.captureCoverFromProject(project)
+          if (dataUrl) {
+            const blob = await (await fetch(dataUrl)).blob()
+            form.set('file', blob, 'capa.png')
+          }
+        }
+      } catch {
+        // captura indisponível → publica com a capa padrão.
+      }
+
+      const res = await fetch('/api/hub/showcase', { method: 'POST', body: form })
+      if (!res.ok) throw new Error('publish failed')
+      setState('done')
+      toast.success('Seu projeto foi pro Mural dos Criadores! 🎉')
+    } catch {
+      setState('idle')
+      toast.error('Não consegui publicar agora. Tente de novo!')
+    }
+  }
+
+  if (state === 'done') {
+    return (
+      <p className="mt-5 inline-flex items-center gap-1.5 rounded-xl bg-(--kids-lime-tint) px-3 py-1.5 font-semibold text-sm">
+        <Trophy className="size-4" /> No Mural dos Criadores!
+      </p>
+    )
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={publish}
+      disabled={state === 'publishing'}
+      className="kid-pop mt-5 inline-flex items-center gap-2 rounded-full px-5 py-2.5 [background-image:var(--sz-gradient)] [font-family:var(--font-display)] font-bold text-(--sz-primary-fg) text-base disabled:opacity-60"
+    >
+      <Trophy className="size-5" />
+      {state === 'publishing' ? 'Publicando…' : 'Publicar no Mural'}
+    </button>
+  )
+}
+
+/** Seção de recompensas REAIS do backend: +XP, +moedas, fogo do streak, baú e badges. */
 function GamificationDeltaPanel({ gamification }: { gamification: GamificationDelta }) {
   const { xpAwarded, streak, unitCompleted, badgesUnlocked } = gamification
+  const coinsAwarded = gamification.coinsAwarded ?? 0
   const badges = badgesUnlocked
     .map((b) => ({ slug: b.slug, info: badgeInfo(b.slug) }))
     .filter((b): b is { slug: string; info: NonNullable<ReturnType<typeof badgeInfo>> } =>
@@ -162,6 +243,11 @@ function GamificationDeltaPanel({ gamification }: { gamification: GamificationDe
         <span className="kid-pop inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 [background-image:var(--sz-gradient)] [font-family:var(--font-display)] font-bold text-(--sz-primary-fg) text-base">
           <Sparkles className="size-4" />+{xpAwarded} XP
         </span>
+        {coinsAwarded > 0 ? (
+          <span className="kid-pop inline-flex items-center gap-1.5 rounded-full bg-(--kids-lime-tint) px-4 py-1.5 [font-family:var(--font-display)] font-bold text-base text-foreground">
+            <Coins className="size-4" />+{coinsAwarded}
+          </span>
+        ) : null}
         <span
           className={cn(
             'inline-flex items-center gap-1.5 rounded-full border-2 px-4 py-1.5 [font-family:var(--font-display)] font-bold text-sm',
@@ -174,6 +260,12 @@ function GamificationDeltaPanel({ gamification }: { gamification: GamificationDe
           {streak.current} {streak.current === 1 ? 'dia' : 'dias'}
         </span>
       </div>
+
+      {gamification.coinsCapped ? (
+        <p className="text-muted-foreground text-xs">
+          Você já pegou o máximo de moedas de hoje — amanhã tem mais! 😄
+        </p>
+      ) : null}
 
       {unitCompleted ? (
         <p className="inline-flex items-center gap-1.5 font-semibold text-sm">

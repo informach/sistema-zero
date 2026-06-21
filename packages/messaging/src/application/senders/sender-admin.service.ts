@@ -5,8 +5,7 @@ import {
   type EmailSenderStatus,
   type UpdateEmailSenderInput,
 } from '../../domain/sender/email-sender.aggregate'
-import { SenderNotFoundError } from '../../domain/sender/sender.errors'
-import { ValidationError } from '../../domain/shared/errors'
+import { SenderAlreadyExistsError, SenderNotFoundError } from '../../domain/sender/sender.errors'
 import { type SenderView, toSenderView } from '../mappers/sender-view'
 
 export interface CreateSenderInput {
@@ -27,7 +26,7 @@ export class CreateSenderService {
 
   async execute(input: CreateSenderInput): Promise<SenderView> {
     const existing = await this.senders.findByEmail(input.fromEmail)
-    if (existing) throw new ValidationError(`Remetente ${input.fromEmail} já existe`)
+    if (existing) throw new SenderAlreadyExistsError(`Remetente ${input.fromEmail} já existe`)
     const sender = EmailSender.create({ id: this.idGen(), ...input, now: this.clock.now() })
     // Promoção de default atômica (limpa os demais NA MESMA transação da gravação).
     await this.senders.create(sender, { clearOtherDefaults: input.isDefault === true })

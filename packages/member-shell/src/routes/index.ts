@@ -7,6 +7,8 @@ import {
   resolveDownloadMedia,
   WATERMARK_MAX_BYTES,
 } from '../lib/download-mime'
+import { redactProfilesForProfileSession } from '../lib/profile-redaction'
+import type { ChildDashboardView } from '../lib/types'
 import type { AuthClient, MembersClient, PaymentsClient, ProfilesClient } from '../server/clients'
 import type { GatewayModule, GatewayResponse } from '../server/gateway'
 import {
@@ -30,6 +32,35 @@ import { watermarkImage, watermarkPdf } from '../server/watermark'
 import { watermarkGate } from '../server/watermark-queue'
 
 const R2_PRIVATE_PREFIX = 'r2priv:'
+
+/** Config equipada do avatar (camada→peça). O members valida posse/camada — aqui só forma. */
+const AVATAR_SLUG = z.string().regex(/^[a-z0-9-]{1,64}$/)
+const AvatarConfigSchema = z.object({
+  style: z.string().max(40).optional(),
+  parts: z.record(z.string().max(40), AVATAR_SLUG),
+})
+
+/** Estado do quarto (o members canonicaliza contra o inventário — aqui só forma). */
+const RoomStateSchema = z.object({
+  theme: AVATAR_SLUG,
+  placedItems: z
+    .array(
+      z.object({
+        itemId: AVATAR_SLUG,
+        x: z.number().int().min(0).max(64),
+        y: z.number().int().min(0).max(64),
+      }),
+    )
+    .max(60),
+  pet: AVATAR_SLUG.nullable(),
+})
+
+/** Janela de férias (ou null/null p/ limpar) — o members revalida ordem/teto. */
+const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/
+const VacationSchema = z.object({
+  from: z.string().regex(ISO_DATE_RE).nullable(),
+  to: z.string().regex(ISO_DATE_RE).nullable(),
+})
 
 export interface ShellRoutesDeps {
   session: SessionModule
@@ -113,16 +144,28 @@ const ResetOtpBody = z.object({
 // ── Perfis (estilo Netflix) — espelham os DTOs do auth ──────────────────────
 const ProfileName = z.string().trim().min(1).max(60)
 const ProfileWhatsapp = z.string().trim().max(20).nullable().optional()
+// Data de nascimento (AAAA-MM-DD; sanidade/faixa de idade são do auth). A
+// autorização "só os pais" é da rota do auth — aqui é só pass-through validado.
+const ProfileBirthDate = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/)
+  .nullable()
+  .optional()
 const CreateProfileBody = z.object({
   name: ProfileName,
   whatsapp: ProfileWhatsapp,
+  birthDate: ProfileBirthDate,
 })
 const UpdateProfileBody = z
   .object({
     name: ProfileName.optional(),
     whatsapp: ProfileWhatsapp,
+    birthDate: ProfileBirthDate,
   })
-  .refine((b) => b.name !== undefined || b.whatsapp !== undefined, 'Nada para atualizar')
+  .refine(
+    (b) => b.name !== undefined || b.whatsapp !== undefined || b.birthDate !== undefined,
+    'Nada para atualizar',
+  )
 const ExitProfileBody = z.object({ password: z.string().min(1).max(200) })
 
 const FeedbackAnswer = z.enum(['yes', 'no', 'unsure'])
@@ -186,6 +229,10 @@ function extractStudioProject(raw: unknown): Record<string, unknown> | null {
 
 const invalidInput = () => NextResponse.json({ error: { code: 'INVALID_INPUT' } }, { status: 400 })
 
+/** Valida ids de path (perfil etc.) ANTES de tocar gateway/R2 — fail-fast e não
+ * deixa um id forjado virar prefixo de chave no R2 (ver profileAvatar). */
+const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
+
 /**
  * Handlers dos Route Handlers `/api/*` dos apps de área do aluno — a LÓGICA
  * inteira vive aqui (community e community-kids consomem os MESMOS handlers; um
@@ -194,6 +241,22 @@ const invalidInput = () => NextResponse.json({ error: { code: 'INVALID_INPUT' } 
  */
 export function createShellRoutes(deps: ShellRoutesDeps) {
   const { session, gateway, auth, members, payments, profiles, media } = deps
+
+  const impersonationReadonly = () =>
+    NextResponse.json(
+      {
+        error: {
+          code: 'IMPERSONATION_READONLY',
+          message: 'Sessão de suporte é somente-leitura.',
+        },
+      },
+      { status: 403 },
+    )
+
+  async function requireWritableSession(): Promise<NextResponse | null> {
+    const user = await session.getSession()
+    return user?.act ? impersonationReadonly() : null
+  }
 
   // ── Auth ──────────────────────────────────────────────────────────────────
 
@@ -242,10 +305,8 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     PATCH: async (req: Request) => {
       // Sessão de IMPERSONAÇÃO (claim `act`) é SOMENTE-LEITURA p/ dados do aluno:
       // suporte não altera perfil/credenciais de quem está sendo atendido.
-      const user = await session.getSession()
-      if (user?.act) {
-        return NextResponse.json({ error: { code: 'IMPERSONATION_READONLY' } }, { status: 403 })
-      }
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const parsed = UpdateMeBody.safeParse(await req.json().catch(() => null))
       if (!parsed.success) return invalidInput()
       const { status, body } = await auth.updateMe(parsed.data)
@@ -261,10 +322,8 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     POST: async (req: Request) => {
       // Sessão de IMPERSONAÇÃO é SOMENTE-LEITURA: suporte não troca a senha do
       // aluno (trocar credenciais alheias seria takeover).
-      const user = await session.getSession()
-      if (user?.act) {
-        return NextResponse.json({ error: { code: 'IMPERSONATION_READONLY' } }, { status: 403 })
-      }
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const parsed = ChangePasswordBody.safeParse(await req.json().catch(() => null))
       if (!parsed.success) return invalidInput()
       const { status, body } = await auth.changeMyPassword(parsed.data)
@@ -386,6 +445,23 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     POST: async (req: Request) => {
       const user = await media.requireUploadSession(req)
       if (user instanceof NextResponse) return user
+
+      // A foto do `/me` é da CONTA (account-only): RECUSA sessão de perfil ANTES de
+      // qualquer escrita no R2. Sem isto a criança (sessão de perfil) gastava um
+      // encode WebP e deixava objeto R2 órfão a cada POST — o auth recusava só o
+      // PATCH de metadado DEPOIS, então `removeStaleAvatars` nunca limpava. Espelha o
+      // authorize-before-write do `profileAvatar`. (A foto do PERFIL vai por outra rota.)
+      if (user.activeProfile) {
+        return NextResponse.json(
+          {
+            error: {
+              code: 'ACCOUNT_SESSION_REQUIRED',
+              message: 'A foto da conta é do responsável.',
+            },
+          },
+          { status: 403 },
+        )
+      }
 
       // ANTES do formData(): o parse materializa o corpo inteiro em memória.
       const oversized = rejectOversizedRequest(req, MAX_IMAGE_BYTES)
@@ -672,6 +748,8 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
    */
   const courseRating = {
     PUT: async (req: Request, ctx: { params: Promise<{ slug: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const { slug } = await ctx.params
       const parsed = CourseRatingBody.safeParse(await req.json().catch(() => null))
       if (!parsed.success) {
@@ -688,6 +766,8 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
   /** Única mutação do player: marca a aula como concluída (idempotente no members). */
   const lessonComplete = {
     POST: async (_req: Request, ctx: { params: Promise<{ lessonId: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const { lessonId } = await ctx.params
       const { status, body } = await members.markLessonComplete(lessonId)
       return NextResponse.json(body ?? { ok: status === 200 }, { status })
@@ -702,6 +782,169 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     },
   }
 
+  // ── Avatar (guarda-roupa por camadas) ────────────────────────────────────
+  /** Estado do avatar (equipado + catálogo + saldo) — editor/lojinha client-side. */
+  const avatarGet = {
+    GET: async () => {
+      const { status, body } = await members.getAvatar()
+      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+    },
+  }
+
+  /** Compra uma peça paga do avatar com moedas (idempotente; sem saldo → 402). */
+  const avatarBuy = {
+    POST: async (_req: Request, ctx: { params: Promise<{ partId: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const { partId } = await ctx.params
+      const { status, body } = await members.buyAvatarPart(partId)
+      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+    },
+  }
+
+  /** Salva a config equipada do avatar (o members valida posse/camada — estrito). */
+  const avatarEquip = {
+    PUT: async (req: Request) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const parsed = AvatarConfigSchema.safeParse(await req.json().catch(() => null))
+      if (!parsed.success) {
+        return NextResponse.json(
+          { error: { code: 'VALIDATION_ERROR', message: 'Avatar inválido' } },
+          { status: 400 },
+        )
+      }
+      const { status, body } = await members.equipAvatar(parsed.data)
+      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+    },
+  }
+
+  // ── Quarto virtual ────────────────────────────────────────────────────────
+  /** Estado do quarto (montado + catálogo + saldo) — editor/lojinha client-side. */
+  const roomGet = {
+    GET: async () => {
+      const { status, body } = await members.getRoom()
+      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+    },
+  }
+
+  /** Salva o quarto montado (o members canonicaliza contra o inventário). */
+  const roomSave = {
+    PUT: async (req: Request) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const parsed = RoomStateSchema.safeParse(await req.json().catch(() => null))
+      if (!parsed.success) {
+        return NextResponse.json(
+          { error: { code: 'VALIDATION_ERROR', message: 'Quarto inválido' } },
+          { status: 400 },
+        )
+      }
+      const { status, body } = await members.saveRoom(parsed.data)
+      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+    },
+  }
+
+  /** Compra um item/tema pago do quarto com moedas (idempotente; sem saldo → 402). */
+  const roomBuy = {
+    POST: async (_req: Request, ctx: { params: Promise<{ itemId: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const { itemId } = await ctx.params
+      const { status, body } = await members.buyRoomItem(itemId)
+      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+    },
+  }
+
+  // ── Missões + proteção de sequência ─────────────────────────────────────────
+  /** Missões do aluno (diárias/semanais) — passthrough leve. */
+  const missionsGet = {
+    GET: async () => {
+      const { status, body } = await members.getMissions()
+      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+    },
+  }
+
+  /** Resgata o prêmio de uma missão concluída (idempotente; escrita → exige sessão). */
+  const missionClaim = {
+    POST: async (_req: Request, ctx: { params: Promise<{ slug: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const { slug } = await ctx.params
+      const { status, body } = await members.claimMission(slug)
+      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+    },
+  }
+
+  /** Compra 1 protetor de sequência com moedas (sem saldo → 402; no máximo → 409). */
+  const streakFreezeBuy = {
+    POST: async () => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const { status, body } = await members.buyStreakFreeze()
+      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+    },
+  }
+
+  /** Agenda/limpa as férias (pausa a sequência sem culpa). */
+  const vacationSet = {
+    PUT: async (req: Request) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const parsed = VacationSchema.safeParse(await req.json().catch(() => null))
+      if (!parsed.success) {
+        return NextResponse.json(
+          { error: { code: 'VALIDATION_ERROR', message: 'Período inválido' } },
+          { status: 400 },
+        )
+      }
+      const { status, body } = await members.setVacation(parsed.data.from, parsed.data.to)
+      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+    },
+  }
+
+  /**
+   * Resumo de progresso dos FILHOS p/ a área dos pais (kids). Junta a IDENTIDADE dos
+   * perfis (auth — nome/foto) com os STATS por perfil (members).
+   *
+   * ⚠️ `profiles.list()` usa o `accountContext` do auth, que ACEITA tanto sessão de
+   * conta quanto de perfil (resolve pela conta) — NÃO recusa 403 numa sessão de perfil.
+   * Os STATS, porém, ficam zerados p/ a criança: o members keya por `x-auth-user-id`
+   * (= profileId numa sessão de perfil), que não casa nenhum `account_id` → tudo 0
+   * (intencional). Mesmo assim, p/ o portão ser coerente o shim do KIDS gateia esta
+   * rota com `requireParentGateAccountOnly` (recusa sessão de perfil), então a criança
+   * não chega aqui — é uma tela exclusiva dos pais.
+   */
+  const childrenStats = {
+    GET: async () => {
+      const list = await profiles.list()
+      if (list.status !== 200) {
+        return NextResponse.json(list.body ?? { children: [] }, { status: list.status })
+      }
+      const accountProfiles = list.body?.profiles ?? []
+      if (accountProfiles.length === 0) return NextResponse.json({ children: [] })
+
+      const { body } = await members.getChildrenStats(accountProfiles.map((p) => p.id))
+      const byId = new Map((body?.children ?? []).map((c) => [c.profileId, c]))
+      const children: ChildDashboardView[] = accountProfiles.map((p) => {
+        const s = byId.get(p.id)
+        return {
+          profileId: p.id,
+          name: p.name,
+          avatarUrl: p.avatarUrl,
+          xp: s?.xp ?? 0,
+          streak: s?.streak ?? { current: 0, best: 0 },
+          badgesCount: s?.badgesCount ?? 0,
+          coursesInProgress: s?.coursesInProgress ?? 0,
+          coursesCompleted: s?.coursesCompleted ?? 0,
+          projectsCount: s?.projectsCount ?? 0,
+          rankingPosition: s?.rankingPosition ?? null,
+        }
+      })
+      return NextResponse.json({ children })
+    },
+  }
+
   /**
    * Persiste a posição do vídeo (throttled no client). Aceita também o corpo do
    * `navigator.sendBeacon` (que pode chegar como text/plain) — por isso o parse é
@@ -709,6 +952,8 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
    */
   const lessonPosition = {
     POST: async (req: Request, ctx: { params: Promise<{ lessonId: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const { lessonId } = await ctx.params
       let parsed: z.infer<typeof VideoPositionBody>
       try {
@@ -731,6 +976,8 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
   /** Submete o quiz ao members (score no servidor; gabarito SÓ na resposta). */
   const quizAttempts = {
     POST: async (req: Request, ctx: { params: Promise<{ lessonId: string; blockId: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const { lessonId, blockId } = await ctx.params
       const parsed = QuizAttemptBody.safeParse(await req.json().catch(() => null))
       if (!parsed.success) {
@@ -751,11 +998,33 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
   /** Entrega do projeto do Estúdio ao members (destrava a conclusão da aula). */
   const studioSubmit = {
     POST: async (req: Request, ctx: { params: Promise<{ lessonId: string; blockId: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const { lessonId, blockId } = await ctx.params
-      const project = extractStudioProject(await req.json().catch(() => null))
+      const raw = await req.json().catch(() => null)
+      const project = extractStudioProject(raw)
       if (!project) return invalidInput()
-      const { status, body } = await members.submitStudioProject(lessonId, blockId, project)
+      // Resultados das checagens rodadas no cliente (correção híbrida). Repassa como
+      // veio; o members revalida o shape (DTO) e RECALCULA a estrutura no servidor.
+      const results = Array.isArray((raw as { results?: unknown })?.results)
+        ? (raw as { results?: unknown[] }).results
+        : undefined
+      const { status, body } = await members.submitStudioProject(
+        lessonId,
+        blockId,
+        project,
+        results,
+      )
       return NextResponse.json(body ?? { ok: status === 200 }, { status })
+    },
+  }
+
+  /** Carrega o projeto da aula contínua anterior (cadeia) p/ semear o editor (lazy). */
+  const studioCarryover = {
+    GET: async (_req: Request, ctx: { params: Promise<{ lessonId: string; blockId: string }> }) => {
+      const { lessonId, blockId } = await ctx.params
+      const { status, body } = await members.getStudioCarryover(lessonId, blockId)
+      return NextResponse.json(body ?? { project: null }, { status })
     },
   }
 
@@ -774,17 +1043,30 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
 
   // ── Perfis (estilo Netflix) ──────────────────────────────────────────────
 
-  /** Grade de perfis da conta (a gestão exige sessão da conta — o auth recusa perfil). */
+  /**
+   * Grade de perfis da conta. A gestão (criar/editar/arquivar) exige sessão da conta
+   * — o auth recusa perfil. A LISTA, porém, vale também em sessão de perfil (a criança
+   * vê os rostinhos p/ TROCAR de perfil); nesse caso REDIGIMOS telefone/nascimento
+   * dos irmãos, preservando os campos do perfil ativo para o "Meu perfil".
+   */
   const profilesList = {
     GET: async () => {
       const { status, body } = await profiles.list()
-      return NextResponse.json(body ?? { profiles: [] }, { status })
+      if (!body?.profiles) return NextResponse.json(body ?? { profiles: [] }, { status })
+      const current = await session.getSession()
+      const profilesOut = redactProfilesForProfileSession(
+        body.profiles,
+        current?.activeProfile ? current.id : null,
+      )
+      return NextResponse.json({ profiles: profilesOut }, { status })
     },
   }
 
   /** Cria um perfil de criança. O auth resolve o teto pela matrícula (409 se estourar). */
   const profileCreate = {
     POST: async (req: Request) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const parsed = CreateProfileBody.safeParse(await req.json().catch(() => null))
       if (!parsed.success) return invalidInput()
       const { status, body } = await profiles.create(parsed.data)
@@ -794,7 +1076,10 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
 
   const profileUpdate = {
     PATCH: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const { id } = await ctx.params
+      if (!UUID_RE.test(id)) return invalidInput()
       const parsed = UpdateProfileBody.safeParse(await req.json().catch(() => null))
       if (!parsed.success) return invalidInput()
       const { status, body } = await profiles.update(id, parsed.data)
@@ -804,7 +1089,10 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
 
   const profileArchive = {
     DELETE: async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
       const { id } = await ctx.params
+      if (!UUID_RE.test(id)) return invalidInput()
       const { status, body } = await profiles.archive(id)
       return NextResponse.json(body ?? { ok: status === 200 }, { status })
     },
@@ -818,6 +1106,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
   const profileSelect = {
     POST: async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
       const { id } = await ctx.params
+      if (!UUID_RE.test(id)) return invalidInput()
       const { status, body } = await profiles.select(id)
       if (status === 200 && body?.tokens) {
         await session.setSessionCookies(body.tokens)
@@ -864,6 +1153,18 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
       const user = await media.requireUploadSession(req)
       if (user instanceof NextResponse) return user
       const { id } = await ctx.params
+      if (!UUID_RE.test(id)) return invalidInput()
+      // AUTORIZA ANTES de escrever no R2: a criança (sessão de perfil) só troca a
+      // PRÓPRIA foto. Sem isso, um `id` forjado viraria prefixo de chave no bucket
+      // compartilhado (objeto órfão sob outro perfil) — o auth bloqueava só o PATCH
+      // de metadado DEPOIS do upload. A conta (sem activeProfile) segue gerindo
+      // qualquer filho próprio (o auth re-checa belongsTo no profiles.update).
+      if (user.activeProfile && user.id !== id) {
+        return NextResponse.json(
+          { error: { code: 'FORBIDDEN', message: 'Você só pode trocar a sua própria foto.' } },
+          { status: 403 },
+        )
+      }
       const oversized = rejectOversizedRequest(req, MAX_IMAGE_BYTES)
       if (oversized) return oversized
       try {
@@ -950,9 +1251,21 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     courseRating,
     lessonComplete,
     gamificationMe,
+    avatarGet,
+    avatarBuy,
+    avatarEquip,
+    roomGet,
+    roomSave,
+    roomBuy,
+    missionsGet,
+    missionClaim,
+    streakFreezeBuy,
+    vacationSet,
+    childrenStats,
     lessonPosition,
     quizAttempts,
     studioSubmit,
+    studioCarryover,
     paymentsMy,
     profilesList,
     profileCreate,

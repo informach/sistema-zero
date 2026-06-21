@@ -34,6 +34,8 @@ const SOURCE_LABELS: Record<string, string> = {
 const ACCESS_LABELS: Record<string, string> = {
   course: 'Curso',
   all_courses: 'Todos os cursos (chave-mestra)',
+  all_kids_courses: 'Todos os cursos kids (chave-mestra)',
+  community: 'Comunidade',
 }
 
 export function MemberDetailClient({

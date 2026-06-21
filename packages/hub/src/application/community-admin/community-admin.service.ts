@@ -33,14 +33,18 @@ function assertSameSet(current: string[], provided: string[]): void {
 }
 
 /**
- * Coerência do accessConfig: `course_gated` exige ≥1 curso; `role_gated` exige ≥1
- * cargo (senão seria um acesso impossível — ninguém entraria). `public` ignora ambos.
- * `null` (canal que herda) é coerente por definição.
+ * Coerência do accessConfig: `course_gated` exige ≥1 curso; `community_gated` exige
+ * ≥1 comunidade; `role_gated` exige ≥1 cargo (senão seria um acesso impossível —
+ * ninguém entraria). `public` ignora todos. `null` (canal que herda) é coerente por
+ * definição.
  */
 function assertAccessCoherent(access: AccessConfig | null): void {
   if (!access) return
   if (access.visibility === 'course_gated' && access.courses.length === 0) {
     throw new ValidationError('Selecione ao menos um curso para o acesso "por curso"')
+  }
+  if (access.visibility === 'community_gated' && (access.communities ?? []).length === 0) {
+    throw new ValidationError('Selecione ao menos uma comunidade para o acesso "por comunidade"')
   }
   if (access.visibility === 'role_gated' && access.roles.length === 0) {
     throw new ValidationError('Selecione ao menos um cargo para o acesso "por cargo"')

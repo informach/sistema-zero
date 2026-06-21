@@ -24,6 +24,7 @@ import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { GrantAccessDialog } from '@/components/admin/grant-access-dialog'
 import { StatusBadge } from '@/components/admin/status-badge'
+import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { formatDate } from '@/lib/format'
 import { canImpersonate, impersonationUrl } from '@/lib/impersonation'
@@ -324,11 +325,7 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow>
-                <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
-                  <Spinner className="mx-auto" />
-                </TableCell>
-              </TableRow>
+              <TableSkeletonRows columns={5} />
             ) : items.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">

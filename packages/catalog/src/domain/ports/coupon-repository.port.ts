@@ -19,5 +19,5 @@ export interface CouponRepository {
    * `status='active'`. Lança `CouponExhaustedError` se esgotado/inativo e
    * `CouponNotFoundError` se o código não existir.
    */
-  incrementRedemption(code: string): Promise<void>
+  incrementRedemption(code: string, idempotencyKey?: string): Promise<void>
 }

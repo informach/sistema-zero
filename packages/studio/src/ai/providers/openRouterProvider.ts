@@ -15,6 +15,7 @@ import {
   buildFreeFormProjectPrompt,
   buildSuggestNextStepPrompt,
   buildSystemPrompt,
+  CHILD_SAFETY_CLAUSE,
 } from '../prompts'
 import { consumeSSEStream } from '../streaming'
 
@@ -92,6 +93,23 @@ const STREAM_IDLE_TIMEOUT_MS = 60_000
  */
 const CONNECT_TIMEOUT_MS = 30_000
 
+/**
+ * Garante que a cláusula de segurança infantil esteja SEMPRE no início da
+ * mensagem de sistema, em QUALQUER caminho. O `ask()` deixa o `systemHint`
+ * SUBSTITUIR o system prompt inteiro — então não dá para confiar só no
+ * {@link buildSystemPrompt}. Aplicado aqui, no `chat()`, blinda todos os
+ * caminhos de uma vez (explain/suggest/challenge/refactor/ask). Idempotente:
+ * se a cláusula já está presente (caso comum, via buildSystemPrompt), não
+ * duplica. Mensagens não-sistema passam intactas.
+ */
+function ensureSafetyClause(messages: OpenRouterMessage[]): OpenRouterMessage[] {
+  return messages.map((m) => {
+    if (m.role !== 'system') return m
+    if (m.content.includes(CHILD_SAFETY_CLAUSE)) return m
+    return { ...m, content: `${CHILD_SAFETY_CLAUSE}\n\n${m.content}` }
+  })
+}
+
 function makeTimeoutError(ms: number): Error {
   const err = new Error(`OpenRouter sem resposta após ${ms}ms (handshake/headers)`)
   err.name = 'TimeoutError'
@@ -123,7 +141,10 @@ export class OpenRouterProvider implements AIProvider {
 
   async chat(options: OpenRouterChatOptions): Promise<string> {
     const shouldApplyPromptCache = supportsAnthropicPromptCache(options.model)
-    const wireMessages: OpenRouterMessageWire[] = options.messages.map((m, i) => {
+    // Blindagem central: TODA mensagem de sistema leva a cláusula de segurança
+    // infantil, mesmo o `systemHint` cru do `ask()`. Impossível stripar.
+    const safeMessages = ensureSafetyClause(options.messages)
+    const wireMessages: OpenRouterMessageWire[] = safeMessages.map((m, i) => {
       if (
         shouldApplyPromptCache &&
         m.role === 'system' &&

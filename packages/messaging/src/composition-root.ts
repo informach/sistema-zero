@@ -183,6 +183,7 @@ export function createApplication(env: Env): Application {
     suppressions,
     clock,
     idGen,
+    env.MAX_SEND_ATTEMPTS,
   )
   const getMessage = new GetMessageService(messages)
   const listMessages = new ListMessagesService(messages)

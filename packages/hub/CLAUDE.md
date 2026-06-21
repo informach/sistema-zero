@@ -69,6 +69,73 @@ Linguagem: **TS (ESM)**. Framework HTTP: **Elysia**. Porta **3010**.
    `expiresAt = null` = permanente. O `ThreadService`/`ReactionService` vetam na escrita
    (`UserMuted`/`UserBanned` → 403).
 
+9. **Vitrine "Mural dos Criadores" (06/2026):** posts de PROJETO auto-publicados pela criança ao
+   concluir a última aula de uma cadeia do Estúdio. São THREADS com `is_showcase=true`,
+   `author_display_name` (snapshot do PRIMEIRO NOME — a vitrine EXIBE o autor, ao contrário do
+   fórum que redige terceiros), `cover_image_url` (capa pública) e `showcase_idempotency_key`
+   (UNIQUE = hash perfil:curso:cadeia; NULLs distintos → posts normais não colidem). Rota INTERNA
+   `POST /hub/internal/showcase-thread` (`ShowcaseService` + `showcase.routes`): chamada pelo BFF em
+   nome da criança (exige `x-internal-token`; `authorId` vem dos `X-Auth-User-*`), é criação de
+   SISTEMA → **ignora `postingPolicy: 'staff_only'`** do canal do Mural. O CORPO só diz QUAL projeto
+   (`lessonId`/`blockId`) e a capa; ver/comentar/reagir no Mural exige o produto. Nasce `visible`
+   (decisão: aparece na hora; admin oculta/edita-corpo/exclui pela moderação). Idempotente:
+   re-publicar devolve o existente (`deduped`). O Mural = 1 space kids `course_gated` + 1 canal
+   `staff_only` (criança não posta livre, só comenta moderado + reage). ⚠️ **Defesa em profundidade
+   — a rota é alcançável por QUALQUER conta ativa na borda (o BFF publica sem role → o
+   `x-internal-token` NÃO é fronteira de confiança aqui; full review 18/06), então o CORPO não é
+   confiável:** o `ShowcaseService` (1) **re-valida a ELEGIBILIDADE no members** via
+   `getShowcaseEligibility` (S2S `GET /members/internal/showcase-eligibility`, fail-closed) — só
+   publica quem REALMENTE concluiu o projeto; (2) usa título/resumo/audiência/curso/cadeia
+   AUTORITATIVOS de lá (o corpo não dita conteúdo); (3) tira o `authorDisplayName` do header confiável
+   **`x-auth-profile-name`** (claim `pfl.name` do gateway), nunca do corpo; (4) DERIVA a idempotência
+   (`autor:curso:cadeia`); e EXIGE `space.audience === 'kids'` E canal `postingPolicy === 'staff_only'`
+   (senão `PostingNotAllowedError`→403 — barra injeção cross-vitrine e em canal de postagem livre).
+   `coverImageUrl` é **https-only** no DTO (parede infantil). NÃO afrouxar esses guards.
+   **Variação KID-DRIVEN — "Compartilhar" do Estúdio (06/2026):** rota irmã
+   `POST /hub/internal/showcase-thread-studio` (`ShowcaseThreadStudioBody` + `ShowcaseService.createFromStudio`)
+   onde a CRIANÇA escreve a **descrição** (rascunho da IA, editado → vira o `body`) e o projeto ganha um
+   **link público de jogar** (coluna `threads.play_id`, UUID do artefato → o card mostra "Jogar" →
+   `/jogar/<play_id>`). REUSA TODAS as guardas do `create` (elegibilidade S2S fail-closed, destino kids +
+   parede `staff_only` + allowlist, autor do header `x-auth-profile-name`) — NÃO afrouxar. Duas divergências
+   DELIBERADAS: o `body` é a descrição da criança (não o `summary` do admin), mas o **TÍTULO continua
+   AUTORITATIVO do members** (defesa em profundidade — a parede é curada); e a idempotência inclui o
+   `clientIdempotencyKey` (duplo-clique/retry dedup-a; **republicar depois = post NOVO**, pois o snapshot
+   publicado é IMUTÁVEL e INDEPENDENTE do projeto que a criança continua editando no editor). Rota NOVA em
+   `showcase.routes.ts` (mesma guarda de `x-internal-token`, mesmo `showcaseService`); gateway
+   `hub-showcase-create-studio`.
+   **Variação STANDALONE — Estúdio Completo (produto vendável, SEM aula, 06/2026):** rota
+   `POST /hub/internal/showcase-thread-studio-standalone` (`ShowcaseThreadStudioStandaloneBody` +
+   `ShowcaseService.createStandaloneShowcase`) para o "Compartilhar" do estúdio-produto da comunidade
+   kids, onde NÃO há `lessonId`/`blockId` nem payload autoritativo do members. Logo `title` E
+   `description` vêm da CRIANÇA (sanitizados/limitados — sem admin para ditar o título). A
+   ELEGIBILIDADE deixa de ser "concluiu a aula" e vira **"a CONTA possui o produto do Estúdio"**:
+   `members.checkAccess(accountId, ['estudio-completo'], ['estudio-completo'])` (fail-closed) exige
+   `granted` OU `communities` OU `hasMasterKids` — o ref fixo `STUDIO_STANDALONE_ACCESS_REF` casa com o
+   slug do produto no catálogo. Demais guardas IDÊNTICAS (destino kids + parede `staff_only` + allowlist,
+   autor do header de perfil, capa https-only). Idempotência = `autor:studio-standalone:clientKey`
+   (sem curso/cadeia; republicar = post novo). Gateway `hub-showcase-create-studio-standalone` (segmento
+   literal distinto de `showcase-thread-studio` — sem colisão de prefixo).
+11. **Snapshot de autor + nomes clicáveis (06/2026):** todo tópico/comentário guarda no CREATE um
+   snapshot do **primeiro nome** (`author_display_name`) e da **flag pública** (`author_public`) do
+   autor — alimenta os **nomes clicáveis** do Mural e do fórum kids (clube). A fonte é SEMPRE
+   confiável (headers do gateway), nunca o corpo: `resolveDisplayName` tira o nome de
+   `x-auth-profile-name` (claim `pfl.name` — nome da CRIANÇA em sessão de perfil) com fallback em
+   `x-auth-user-name`, e fica só o 1º token (default `'Criador'`); `resolveProfilePublic` lê
+   `x-auth-profile-public === 'true'` (claim `pfl.pub` — opt-in dos pais), default `false`
+   (segurança infantil). Ambos viram `Actor.displayName`/`Actor.profilePublic` (em `auth.ts`),
+   gravados pelo `ThreadService` em `authorDisplayName`/`authorPublic` na criação de thread E de
+   comment. As views (`thread-views.ts`) e os tipos de domínio (`thread.ts`) expõem
+   `authorDisplayName`/`authorPublic`; **o hub só transporta o snapshot — quem decide se o nome
+   vira LINK p/ o perfil público é o BFF** (expõe o link só quando `authorPublic === true`). É
+   SNAPSHOT no create: renomear/trocar a privacidade depois NÃO reescreve posts antigos (histórico
+   imutável, como `authorId`).
+
+10. **Teaser "visível mas bloqueado" (06/2026):** `spaces.teaser_when_locked`. Quando ligado, um
+   servidor que o aluno NÃO acessa aparece na listagem/detalhe com `locked:true` (só nome/ícone/
+   descrição) em vez de sumir — `AccessResolutionService.resolveSpaceVisibility` ANOTA em vez de
+   filtrar; `listSpaces`/`getSpace` mostram o teaser. O CONTEÚDO segue gated: `canAccessSpace`/
+   `canAccessChannel`/`listChannels` NÃO mudam (403 em `/channels` quando locked — backstop à prova
+   de vazamento). Default `false` = comportamento clássico (some sem acesso) → zero regressão adulta.
 8. **Estados de conteúdo** (`content_status`): `pending` → `visible` (aprovar) / `rejected` (recusar);
    qualquer estado → `hidden` (oculta, reversível) / `deleted` (apaga, auditado). `pin`/`unpin` e
    `lock`/`unlock` são flags ortogonais (`is_pinned`/`is_locked`). Toda ação de moderação grava
@@ -184,9 +251,13 @@ download direto browser↔R2 são mintados pelo BFF (member-shell).
 - **`channels`** — canal (FK→space cascade, `slug` único no space, `accessConfig` **nullable=herda**,
   `postingPolicy members|staff_only`, `requiresApproval` **nullable=herda**, `version`).
 - **`threads`** — tópico (FK→channel, `authorId`, `title`, `slug` único no canal, `body` Markdown,
-  `isPinned`, `isLocked`, `status`, `commentCount`, `lastActivityAt`, `version`). Índices:
+  `isPinned`, `isLocked`, `status`, `commentCount`, `lastActivityAt`, `version`). Autor (snapshot p/
+  nomes clicáveis): `author_display_name` (1º nome) e **`author_public`** (bool, default `false`).
+  Vitrine: `is_showcase`, `cover_image_url`, `showcase_idempotency_key` (UNIQUE) e
+  **`play_id`** (UUID do artefato jogável — só na vitrine do Estúdio; alimenta o "Jogar" público). Índices:
   `(channel,status,lastActivity)` p/ listagem, `(author,status)` p/ "meus pendentes".
-- **`comments`** — comentário (FK→thread, `authorId`, `body`, `status`, `replyToId`, `version`).
+- **`comments`** — comentário (FK→thread, `authorId`, `body`, `status`, `replyToId`, `version`) +
+  snapshot de autor `author_display_name` + `author_public` (bool, default `false`) p/ nome clicável.
 - **`attachments`** — metadado UGC (`ownerId`, `threadId`/`commentId` nullable, `kind`,
   `storageRef = r2ugc:<key>` — nunca exposto ao browser, `mime`/`sizeBytes`/dims/`durationSeconds`,
   `status pending_upload|ready`).
@@ -242,10 +313,25 @@ Segredos que precisam **bater entre serviços** (ver `.env.example` quando criad
 `Dockerfile` (oven/bun, context = raiz do repo) + `railway.json` (`healthcheckPath: /readyz`,
 `preDeployCommand: db:migrate`, watchPatterns hub+core). `drizzle.config.ts` usa
 `schemaFilter: ['hub']` + journal próprio `hub_migrations` (NÃO compartilhe `__drizzle_migrations`).
+⚠️ **Migrations (06/2026):** `0002` (`community_gated`) existia mas NÃO estava no `meta/_journal.json` —
+um fresh DB pulava o enum. Consertado: `0002` virou `ADD VALUE IF NOT EXISTS` (re-rodar é no-op) +
+`0002`/`0003` journaled. `0003_add_play_id` (`ADD COLUMN IF NOT EXISTS play_id`).
+`0004_add_author_display_public` (`ADD COLUMN IF NOT EXISTS` de `comments.author_display_name` +
+`comments.author_public` + `threads.author_public` — snapshot de autor p/ nomes clicáveis; o
+`threads.author_display_name` já vinha da `0001`). ⚠️ O `db:generate` re-emite as linhas de `play_id`
+(0003) e `community_gated` (0002) por DRIFT do snapshot — REMOVA-as do SQL gerado (já aplicadas).
+`db:migrate` aplica tudo de forma idempotente (gateado pelo `when` do journal). Ao adicionar migration
+nova, CONFIRA o journal antes de gerar.
 Boot: `loadEnv` (fail-fast) → `createApplication` → `start` (listen `::`), com retenção do
 `processed_webhooks` num ciclo de 6h sob **advisory xact-lock `51020304050607081`** (único no banco
 compartilhado — members=`30792297…`, payments=`8103081227979411315`; nunca reusar a chave). `/readyz`
 só promove a réplica quando o `select 1` responde.
+
+**Seed dos servidores kids (`scripts/seed-community-spaces.ts`, `bun run db:seed-community`, 06/2026):**
+cria IDEMPOTENTEmente o **Clube dos Criadores** (canal `geral` members) e o **Mural dos Criadores**
+(canal `parede` staff_only) com os SLUGS FIXOS que o community-kids consome — sem eles, clicar no menu
+dá 404 `SPACE_NOT_FOUND`. Nascem `course_gated` (slug = courseRef) + `teaserWhenLocked`; `SEED_PUBLIC=true`
+deixa públicos p/ smoke test. Postgres é privado → rodar via `railway ssh` no serviço hub. Re-rodar é seguro.
 
 ## Testes (31, `bun test`)
 
@@ -270,3 +356,8 @@ in-memory das portas em `tests/fakes/in-memory.ts`; montagem via `tests/helpers.
    (`/hub/attachments*`) e `webhooksRoutes` (`/hub/webhooks/grant`); suítes `attachments`/`webhooks`.
    O `storageRef` (`r2ugc:<key>`) NUNCA vai ao browser — só o BFF (member-shell) o resolve para
    mintar o presign. Falta a UI admin de moderação e o deploy no Railway.
+8. **Snapshot de autor (`authorDisplayName`/`authorPublic`) é no CREATE, de header confiável.** O nome
+   sai de `resolveDisplayName` (`x-auth-profile-name` → `x-auth-user-name`, só 1º token) e a flag de
+   `resolveProfilePublic` (`x-auth-profile-public === 'true'`) — NUNCA do corpo. Gravado uma vez em
+   thread/comment; não reescreve posts antigos. O hub só TRANSPORTA `authorPublic`; o link p/ o perfil
+   público é decisão do BFF (só quando `true`) — não vire o snapshot em "fonte do link" no hub.

@@ -13,6 +13,16 @@ export interface Thread {
   isLocked: boolean
   status: ContentStatus
   commentCount: number
+  /** Post de PROJETO da vitrine (Mural dos Criadores) — auto-publicado pela criança. */
+  isShowcase: boolean
+  /** Primeiro nome do autor (snapshot no create) — exibido na vitrine e no fórum (clicável). */
+  authorDisplayName: string | null
+  /** Perfil do autor é PÚBLICO (opt-in dos pais, snapshot) — o nome vira link p/ o perfil público. */
+  authorPublic: boolean
+  /** Capa do projeto (URL pública) — só na vitrine. */
+  coverImageUrl: string | null
+  /** Id público do artefato jogável (UUID) — só na vitrine do Estúdio; `null` = sem link de jogar. */
+  playId: string | null
   lastActivityAt: Date
   createdAt: Date
   editedAt: Date | null
@@ -27,6 +37,10 @@ export interface Comment {
   body: string
   status: ContentStatus
   replyToId: string | null
+  /** Primeiro nome do autor (snapshot no create) — exibido/clicável no fórum. */
+  authorDisplayName: string | null
+  /** Perfil do autor é PÚBLICO (opt-in dos pais, snapshot) — o nome vira link. */
+  authorPublic: boolean
   createdAt: Date
   editedAt: Date | null
 }

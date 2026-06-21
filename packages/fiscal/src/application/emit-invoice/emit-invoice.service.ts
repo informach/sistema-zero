@@ -16,6 +16,11 @@ export interface EmitInvoiceConfig {
   selfUrl: string
 }
 
+export interface InvoiceDeliveryResult {
+  complete: boolean
+  error?: string
+}
+
 /**
  * Emite UMA nota já reivindicada pelo worker. Sequência de segurança:
  *  1. RE-VERIFICA o pagamento no payments NO MOMENTO da emissão (fail-closed:
@@ -47,7 +52,7 @@ export class EmitInvoiceService {
       await this.backoffOrFail(invoice, `re-verificação no payments falhou: ${msg(error)}`)
       return
     }
-    if (!snapshot || snapshot.status !== 'PAID' || snapshot.refundedAt) {
+    if (snapshot?.status !== 'PAID' || snapshot.refundedAt) {
       await this.invoices.skip(
         invoice.id,
         SkipReason.PAYMENT_NOT_PAID_AT_EMISSION,
@@ -153,6 +158,19 @@ export class EmitInvoiceService {
     })
   }
 
+  async retryDelivery(invoiceId: string): Promise<InvoiceDeliveryResult> {
+    const invoice = await this.invoices.findById(invoiceId)
+    if (!invoice) return { complete: true }
+    if (invoice.status !== 'EMITTED') return { complete: true }
+    if (!invoice.accessKey || !invoice.pdfToken) {
+      return { complete: false, error: 'nota emitida sem chave de acesso ou pdfToken' }
+    }
+
+    const result = await this.deliverInvoiceArtifacts(invoice, invoice.accessKey, invoice.pdfToken)
+    if (result.complete) await this.invoices.markDeliveryComplete(invoice.id)
+    return result
+  }
+
   private async finishEmission(
     invoice: Invoice,
     data: {
@@ -222,21 +240,44 @@ export class EmitInvoiceService {
       }
     }
 
-    // DANFSe: best-effort — persistir o PDF na emissão blinda contra a troca do
-    // padrão em jul/2026; falha aqui NUNCA reverte a emissão.
-    let pdfStored = false
+    const delivery = await this.deliverInvoiceArtifacts(invoice, data.accessKey, pdfToken)
+    if (!delivery.complete && delivery.error) {
+      await this.invoices.releaseDeliveryRetry(
+        invoice.id,
+        new Date(Date.now() + 15 * 60_000),
+        delivery.error,
+      )
+    }
+  }
+
+  /**
+   * Pós-emissão recuperável: DANFSe e e-mail são best-effort no caminho síncrono,
+   * mas precisam ser reexecutáveis sem reemitir a DPS. O worker chama este método
+   * para notas EMITTED com pdf/email pendentes.
+   */
+  private async deliverInvoiceArtifacts(
+    invoice: Invoice,
+    accessKey: string,
+    pdfToken: string,
+  ): Promise<InvoiceDeliveryResult> {
+    // DANFSe: persistir o PDF blinda contra a troca do padrão em jul/2026; falha
+    // aqui NUNCA reverte a emissão.
+    let pdfStored = invoice.pdfStoredAt !== null
     try {
-      const pdf = await this.danfse.fetchPdf(data.accessKey)
-      await this.invoices.storePdf(invoice.id, pdf)
-      await this.invoices.appendEvent(invoice.id, 'PDF_STORED', 'system', { bytes: pdf.length })
-      pdfStored = true
+      if (!pdfStored) {
+        const pdf = await this.danfse.fetchPdf(accessKey)
+        await this.invoices.storePdf(invoice.id, pdf)
+        await this.invoices.appendEvent(invoice.id, 'PDF_STORED', 'system', { bytes: pdf.length })
+        pdfStored = true
+      }
     } catch (error) {
       this.logger.error('fiscal.danfse_fetch_failed', { invoiceId: invoice.id, error: msg(error) })
+      return { complete: false, error: `DANFSe indisponível: ${msg(error)}` }
     }
 
     // E-mail ao comprador (best-effort, dedupado no messaging por nfse-<id>):
     // só com o PDF armazenado — o anexo é a capability-URL deste serviço.
-    if (pdfStored && invoice.customer.email) {
+    if (pdfStored && invoice.customer.email && !invoice.emailSentAt) {
       try {
         const dispatched = await this.messaging.sendInvoiceEmail({
           idempotencyKey: `nfse-${invoice.id}`,
@@ -245,7 +286,7 @@ export class EmitInvoiceService {
             nome: invoice.customer.name,
             produto: invoice.serviceDescription,
             valor: formatBrl(invoice.amountInCents),
-            chave: data.accessKey,
+            chave: accessKey,
           },
           attachments: [
             {
@@ -266,8 +307,11 @@ export class EmitInvoiceService {
           invoiceId: invoice.id,
           error: msg(error),
         })
+        return { complete: false, error: `e-mail da nota falhou: ${msg(error)}` }
       }
     }
+
+    return { complete: true }
   }
 
   /**

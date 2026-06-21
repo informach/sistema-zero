@@ -8,7 +8,7 @@ import type { A1Certificate } from './cert'
 export function baseUrls() {
   // basePath REAL = /SefinNacional (o /API/... da doc é só a página do redoc);
   // DANFSe e Parametrização Municipal foram MOVIDOS p/ módulos do ADN (spec oficial).
-  const ambiente = process.env['NFSE_AMBIENTE'] ?? 'producao-restrita'
+  const ambiente = process.env.NFSE_AMBIENTE ?? 'producao-restrita'
   if (ambiente === 'producao') {
     return {
       ambiente,
@@ -38,7 +38,7 @@ export async function mtlsFetch(
   url: string,
   cert: A1Certificate,
   init: RequestInit = {},
-  timeoutMs = Number(process.env['NFSE_REQUEST_TIMEOUT_MS'] ?? 30_000),
+  timeoutMs = Number(process.env.NFSE_REQUEST_TIMEOUT_MS ?? 30_000),
 ): Promise<Response> {
   const merged: BunTlsFetchInit = {
     ...init,

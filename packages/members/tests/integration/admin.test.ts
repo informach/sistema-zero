@@ -213,6 +213,96 @@ describe('Members HTTP — admin: concessão manual', () => {
     expect(body.granted[0]).toMatchObject({ courseRef: course.slug, sourceKind: 'manual' })
   })
 
+  test('por curso: matrícula active vencida não é tratada como idempotente', async () => {
+    const { app, courses } = buildApp()
+    const course = seedSampleCourse(courses, 'curso-vencido')
+    const body = {
+      mode: 'course',
+      userId: A,
+      courseRef: course.slug,
+      expiresAt: '2026-01-01T00:00:00.000Z',
+    }
+
+    const first = await send(app, '/members/admin/entitlements', 'POST', body)
+    expect(first.status).toBe(201)
+
+    const replay = await send(app, '/members/admin/entitlements', 'POST', body)
+    expect(replay.status).toBe(409)
+    expect((await readJson(replay)).error.code).toBe('ENTITLEMENT_CONFLICT')
+  })
+
+  test('por oferta multi-item: conflito em um item não concede os anteriores', async () => {
+    const { app, courses, catalog, entitlements } = buildApp()
+    const courseA = seedSampleCourse(courses, 'curso-a')
+    const courseB = seedSampleCourse(courses, 'curso-b')
+    const offerId = randomUUID()
+    const productA = randomUUID()
+    const productB = randomUUID()
+    catalog.set('combo-x', {
+      offerId,
+      offerSlug: 'combo-x',
+      items: [
+        {
+          productId: productA,
+          sku: 'curso-a',
+          name: 'Curso A',
+          kind: 'course',
+          isPrimary: true,
+          fulfillment: { accessType: 'course', courseRef: courseA.slug },
+        },
+        {
+          productId: productB,
+          sku: 'curso-b',
+          name: 'Curso B',
+          kind: 'course',
+          isPrimary: false,
+          fulfillment: { accessType: 'course', courseRef: courseB.slug },
+        },
+      ],
+    })
+    const existing = EntitlementAggregate.grant({
+      id: randomUUID(),
+      userId: A,
+      productId: productB,
+      productKind: 'course',
+      accessType: 'course',
+      courseRef: courseB.slug,
+      offerId,
+      snapshot: {
+        offerId,
+        offerSlug: 'combo-x',
+        productId: productB,
+        sku: 'curso-b',
+        name: 'Curso B',
+        kind: 'course',
+        accessType: 'course',
+        courseRef: courseB.slug,
+        fulfillment: { accessType: 'course', courseRef: courseB.slug },
+        resolvedAt: '2026-01-01T00:00:00.000Z',
+      },
+      sourceKind: 'manual',
+      sourceId: 'manual',
+      subscriptionId: null,
+      grantedAt: new Date('2026-01-01T00:00:00.000Z'),
+      expiresAt: null,
+      idempotencyKey: `manual:${A}:${productB}`,
+    })
+    existing.revoke(new Date('2026-01-02T00:00:00.000Z'))
+    entitlements.seed(existing)
+
+    const res = await send(app, '/members/admin/entitlements', 'POST', {
+      mode: 'offer',
+      userId: A,
+      offerRef: 'combo-x',
+    })
+    expect(res.status).toBe(409)
+
+    const persisted = await entitlements.listByUserId(A)
+    expect(persisted).toHaveLength(1)
+    expect(persisted[0]?.courseRef).toBe(courseB.slug)
+    expect(persisted[0]?.status).toBe('revoked')
+  })
+
   test('por oferta inexistente → 404 OFFER_NOT_FOUND', async () => {
     const { app } = buildApp()
     const res = await send(app, '/members/admin/entitlements', 'POST', {
@@ -237,7 +327,7 @@ describe('Members HTTP — admin: gestão de matrícula', () => {
   }
 
   test('revogar/expirar mudam o status', async () => {
-    const { app, courses } = buildApp()
+    const { app, courses, hubCalls } = buildApp()
     const course = seedSampleCourse(courses, 'curso-x')
     const ent = await grantOne(app, course.slug)
 
@@ -246,6 +336,7 @@ describe('Members HTTP — admin: gestão de matrícula', () => {
     })
     expect(revoked.status).toBe(200)
     expect((await readJson(revoked)).status).toBe('revoked')
+    expect(hubCalls).toContainEqual({ userId: A, event: 'revoke' })
   })
 
   test('estender exige expiresAt → 400 sem ele; com ele move a validade', async () => {
@@ -264,6 +355,18 @@ describe('Members HTTP — admin: gestão de matrícula', () => {
     })
     expect(ok.status).toBe(200)
     expect((await readJson(ok)).expiresAt).toBe('2027-01-01T00:00:00.000Z')
+  })
+
+  test('estender com validade no PASSADO → 400 (não no-op silencioso que ainda responde 200)', async () => {
+    const { app, courses } = buildApp() // clock 2026-06-02
+    const course = seedSampleCourse(courses, 'curso-x')
+    const ent = await grantOne(app, course.slug, '2026-07-01T00:00:00.000Z')
+
+    const res = await send(app, `/members/admin/entitlements/${ent.id}`, 'PATCH', {
+      action: 'extend',
+      expiresAt: '2026-01-01T00:00:00.000Z', // passado (clock = 2026-06)
+    })
+    expect(res.status).toBe(400)
   })
 
   test('id inexistente → 404 ENTITLEMENT_NOT_FOUND', async () => {

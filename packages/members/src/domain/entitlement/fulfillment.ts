@@ -4,11 +4,12 @@
  * `GET /catalog/offers/:slug/entitlements` por item e é congelado no snapshot da
  * matrícula.
  *
- * ⚠️ Union TOLERANTE de leitura: o catálogo só ESCREVE `course` e `all_courses`
- * (decisão 06/2026 — entrega exclusivamente via área de membros); os demais valores
- * permanecem aqui para snapshots/linhas legadas carregarem sem erro.
- * `all_courses` = chave-mestra: 1 matrícula cobre TODOS os cursos publicados,
- * atuais e futuros (a checagem de acesso vira "chave do curso OU chave-mestra").
+ * ⚠️ Union TOLERANTE de leitura: o catálogo só ESCREVE `course`, `all_courses` e
+ * `all_kids_courses` (decisão 06/2026 — entrega exclusivamente via área de membros);
+ * os demais valores permanecem aqui para snapshots/linhas legadas carregarem sem erro.
+ * `all_courses` = chave-mestra ADULTA (todos os cursos `adult` publicados, atuais e
+ * futuros); `all_kids_courses` = chave-mestra KIDS (todos os cursos `kids`) — cada uma
+ * cobre SÓ a sua audiência (a checagem vira "chave do curso OU chave-mestra da audiência").
  */
 export const ACCESS_TYPES = [
   'download',
@@ -17,6 +18,7 @@ export const ACCESS_TYPES = [
   'external',
   'none',
   'all_courses',
+  'all_kids_courses',
 ] as const
 export type AccessType = (typeof ACCESS_TYPES)[number]
 

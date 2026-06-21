@@ -3,6 +3,7 @@ import type { Logger } from '@sistemazero/core/logging'
 import { Elysia } from 'elysia'
 import type { GrantEntitlementService } from '../../../application/grant-entitlement/grant-entitlement.service'
 import type { RevokeEntitlementService } from '../../../application/revoke-entitlement/revoke-entitlement.service'
+import type { HubGateway } from '../../../domain/ports/hub-gateway.port'
 import type { ProcessedWebhookRepository } from '../../../domain/ports/processed-webhook-repository.port'
 import { ValidationError } from '../../../domain/shared/errors'
 import { GrantWebhookBody, SubscriptionWebhookBody } from '../dtos'
@@ -23,10 +24,20 @@ function resolveDeliveryId(headers: Record<string, string | undefined>): string 
   return id
 }
 
+function parsePaidAt(value: string | undefined): Date | null {
+  if (!value) return null
+  const d = new Date(value)
+  if (Number.isNaN(d.getTime()))
+    throw new ValidationError('paidAt inválido (deve ser uma data ISO-8601 válida)')
+  return d
+}
+
 export interface WebhooksRoutesDeps {
   grant: GrantEntitlementService
   revoke: RevokeEntitlementService
   processed: ProcessedWebhookRepository
+  /** Notifica o hub (comunidade) no grant → invalida o cache de acesso na hora. */
+  hub: HubGateway
   webhookSecret: string
   toleranceSeconds: number
   now: () => Date
@@ -70,9 +81,7 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
           return { ok: true, deduped: true }
         }
 
-        const parsedPaidAt = body.paidAt ? new Date(body.paidAt) : null
-        const grantedAt =
-          parsedPaidAt && !Number.isNaN(parsedPaidAt.getTime()) ? parsedPaidAt : deps.now()
+        const grantedAt = parsePaidAt(body.paidAt) ?? deps.now()
 
         const result = await deps.grant.execute({
           userId: body.userId,
@@ -102,6 +111,9 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
         }
 
         if (deliveryId) await deps.processed.markProcessed(deliveryId, 'grant')
+        // Comunidade: avisa o hub p/ liberar espaços community_gated/course_gated NA
+        // HORA (best-effort — nunca lança; o TTL do cache de acesso do hub cobre se falhar).
+        await deps.hub.notifyAccessChanged(body.userId, 'grant')
         return { ok: true, granted: result.granted }
       },
       { body: GrantWebhookBody },
@@ -120,6 +132,9 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
             : await deps.revoke.expire(body.subscriptionId)
 
         if (deliveryId) await deps.processed.markProcessed(deliveryId, `subscription.${body.event}`)
+        for (const userId of result.userIds) {
+          await deps.hub.notifyAccessChanged(userId, body.event)
+        }
         return { ok: true, affected: result.affected }
       },
       { body: SubscriptionWebhookBody },

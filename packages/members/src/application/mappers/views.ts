@@ -1,9 +1,11 @@
+import type { AvatarLayer } from '../../domain/avatar/parts-catalog'
 import type { Course, LessonWithContent, ModuleWithLessons } from '../../domain/course/course'
 import { toMemberFacingQuizContent } from '../../domain/course/quiz'
 import type { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
 import type { AwardResult } from '../../domain/ports/gamification-repository.port'
 import type { CourseProgress } from '../../domain/progress/progress'
 import type { CourseFeedbackAnswers, CourseRating } from '../../domain/rating/course-rating'
+import type { RoomItemCategory, RoomState } from '../../domain/room/room-catalog'
 
 /** Acesso do aluno àquele curso (snapshot da matrícula ativa). */
 export interface AccessView {
@@ -41,35 +43,71 @@ export interface GamificationDeltaView {
   badgesUnlocked: { slug: string; unlockedAt: string }[]
   /** `true` quando ESTA ação fechou a unidade (baú de +25 XP incluído no total). */
   unitCompleted: boolean
+  /** Moedas Zappy ganhas nesta ação (já com teto diário aplicado). */
+  coinsAwarded: number
+  /** Saldo da carteira Zappy após a ação. */
+  coinBalance: number
+  /** `true` quando o teto diário cortou parte do ganho de moeda (feedback gentil). */
+  coinsCapped: boolean
 }
 
 export function toGamificationDeltaView(result: AwardResult): GamificationDeltaView {
   return {
     xpAwarded: result.xpAwarded,
     totalXp: result.totalXp,
-    streak: result.streak,
+    // Só os 3 campos públicos — `freezesConsumed` é detalhe interno do repo.
+    streak: {
+      current: result.streak.current,
+      best: result.streak.best,
+      extended: result.streak.extended,
+    },
     badgesUnlocked: result.badgesUnlocked.map((b) => ({
       slug: b.slug,
       unlockedAt: b.unlockedAt.toISOString(),
     })),
     unitCompleted: result.newEvents.some((e) => e.sourceType === 'unit_complete'),
+    coinsAwarded: result.coinsAwarded,
+    coinBalance: result.coinBalance,
+    coinsCapped: result.coinsCapped,
   }
+}
+
+/** Dica de vitrine (Mural): a aula concluída é ponto de auto-publicação. */
+export interface LessonCompleteShowcaseHint {
+  /** Bloco de estúdio a publicar (o BFF re-busca o conteúdo autoritativo). */
+  blockId: string
+  /** Título do projeto (preview do botão "Publicar no Mural"). */
+  title: string
 }
 
 /** Resposta do complete da aula: progresso + delta de gamificação (aditivo). */
 export interface LessonCompleteView extends CourseProgressView {
   gamification: GamificationDeltaView | null
+  /**
+   * Aula é ponto de VITRINE (bloco de estúdio com `showcase.enabled`): o front
+   * mostra o botão "Publicar no Mural". `null` quando a aula não publica nada
+   * (aditivo — o community adulto ignora).
+   */
+  showcase: LessonCompleteShowcaseHint | null
 }
 
 /** Perfil de gamificação do aluno (widgets/perfil — `GET /members/gamification/me`). */
 export interface GamificationMeView {
   xp: number
+  /** Carteira Zappy Coins (saldo gastável). Segregada por vitrine, como o XP. */
+  coins: { balance: number }
   streak: {
-    /** Streak de EXIBIÇÃO: 0 quando quebrado (última atividade antes de ontem). */
+    /** Streak de EXIBIÇÃO: 0 quando quebrado (e nem freeze nem férias cobrem). */
     current: number
     best: number
     /** `true` = já houve atividade com XP hoje (data civil de São Paulo). */
     activeToday: boolean
+    /** Protetores de sequência disponíveis (1 grátis/mês + comprados). */
+    freezesAvailable: number
+    /** `true` = hoje está dentro da janela de férias (sequência pausada, sem culpa). */
+    onVacation: boolean
+    /** Data civil SP do fim das férias quando `onVacation` (senão null). */
+    vacationUntil: string | null
   }
   /** Catálogo COMPLETO na ordem do domain — badge bloqueada tem `unlockedAt: null`. */
   badges: { slug: string; unlockedAt: string | null }[]
@@ -79,6 +117,123 @@ export interface GamificationMeView {
    * adult/kids são separados. Ausente quando o caller não pediu.
    */
   ranking?: { position: number; totalStudents: number }
+}
+
+/** Uma peça do catálogo de avatar na visão do aluno (lojinha/editor). */
+export interface AvatarPartView {
+  id: string
+  layer: AvatarLayer
+  tier: 'free' | 'coins'
+  price: number
+  /** Possui (grátis OU comprada). */
+  owned: boolean
+  /** Paga e ainda não comprada → mostra cadeado + preço na lojinha. */
+  locked: boolean
+}
+
+/**
+ * Perfil PÚBLICO de uma criança (`GET /members/profiles/:profileId/public`) — visível
+ * a qualquer aluno da comunidade. SÓ dado de jogo: XP, colocação, conquistas QUE TEM
+ * (não o catálogo), avatar e quarto. NENHUM dado sensível (nome vem do auth no BFF;
+ * e-mail/telefone/nascimento/conta NUNCA). `ranking` null = fora da coorte.
+ */
+export interface PublicProfileView {
+  profileId: string
+  xp: number
+  ranking: { position: number; totalStudents: number } | null
+  /** SÓ as conquistas conquistadas (não o catálogo completo). */
+  badges: { slug: string; unlockedAt: string }[]
+  avatar: { style: string; parts: Partial<Record<AvatarLayer, string>> }
+  /** Quarto virtual (modo visualização) — `null` se a criança nunca montou. */
+  room: RoomState | null
+}
+
+/** Uma missão do aluno (`GET /members/gamification/missions/me`). */
+export interface MissionView {
+  slug: string
+  cadence: 'daily' | 'weekly'
+  goalType: string
+  target: number
+  /** Progresso DERIVADO do ledger no período (limitado ao alvo). */
+  progress: number
+  completed: boolean
+  /** Já resgatou o prêmio? (claim idempotente). */
+  claimed: boolean
+  rewardXp: number
+  rewardCoins: number
+  /** Chave do período (dia civil SP ou `w:<segunda>`) — o front passa no claim. */
+  periodKey: string
+}
+
+/** Missões do aluno por cadência (`GET …/missions/me`). */
+export interface MissionsMeView {
+  daily: MissionView[]
+  weekly: MissionView[]
+}
+
+/** Uma linha do board da liga — SEM PII (nem userId de terceiro; só `isMe` aponta você). */
+export interface LeagueEntryView {
+  position: number
+  weeklyXp: number
+  isMe: boolean
+}
+
+/** Liga semanal do aluno (`GET …/league/me`). */
+export interface LeagueMeView {
+  tier: string
+  weekKey: string
+  /** Quantos sobem no topo / caem na base ESTA semana (0 = semana amistosa, pouca massa). */
+  promotionCount: number
+  relegationCount: number
+  /** Board da coorte (audiência+semana+tier), por XP da semana — você incluído. */
+  entries: LeagueEntryView[]
+  /** Sua colocação atual na coorte (1 = 1º). */
+  myPosition: number
+}
+
+/** Resultado do resgate de uma missão (`POST …/missions/:slug/claim`). */
+export interface MissionClaimView {
+  /** `false` = já tinha sido resgatada antes (idempotente — o front trata como ok). */
+  claimed: boolean
+  xpAwarded: number
+  coinsAwarded: number
+  coinBalance: number
+}
+
+/** Um item/tema do catálogo do quarto na visão do aluno (lojinha/editor). */
+export interface RoomItemView {
+  id: string
+  category: RoomItemCategory
+  tier: 'free' | 'coins'
+  price: number
+  owned: boolean
+  locked: boolean
+}
+
+export interface RoomThemeView {
+  id: string
+  tier: 'free' | 'coins'
+  price: number
+  owned: boolean
+  locked: boolean
+}
+
+/** Estado do quarto do aluno (`GET /members/room`): montado + catálogo + saldo. */
+export interface RoomEditorView {
+  state: RoomState
+  items: RoomItemView[]
+  themes: RoomThemeView[]
+  balance: number
+}
+
+/** Estado do avatar do aluno (`GET /members/avatar`): equipado + catálogo + saldo. */
+export interface AvatarStateView {
+  style: string
+  /** Peça equipada por camada (camada faltante já vem preenchida com o default). */
+  equipped: Partial<Record<AvatarLayer, string>>
+  parts: AvatarPartView[]
+  /** Saldo de moedas Zappy (p/ a lojinha do avatar). */
+  balance: number
 }
 
 export interface MyCourseView {
@@ -248,11 +403,15 @@ export interface QuizStateView {
   retryAvailableAt: string | null
 }
 
-/** Estado da entrega do aluno num bloco de estúdio (já enviou? quando?). */
+/** Estado da entrega do aluno num bloco de estúdio (já enviou? quando? nota?). */
 export interface StudioStateView {
   submitted: boolean
   /** ISO da última entrega; `null` se ainda não enviou. */
   submittedAt: string | null
+  /** Nota da última correção (atividade); `null` sem atividade ou sem entrega. */
+  lastScore?: number | null
+  /** Atingiu a nota de corte (sticky). `false` sem atividade/entrega. */
+  passed?: boolean
 }
 
 export interface LessonBlockView {

@@ -34,6 +34,17 @@ export interface CourseRepository {
   countPublishedLessons(courseId: string): Promise<number>
   /** Ids das aulas PUBLICADAS do módulo (detecção do baú de fim de unidade). */
   listPublishedLessonIds(moduleId: string): Promise<string[]>
+  /**
+   * Bloco de estúdio da aula PUBLICADA imediatamente anterior (ordem do curso:
+   * `module.sortOrder`, depois `lesson.sortOrder`) que esteja na MESMA cadeia
+   * `chain`. Pula aulas avulsas/de outra cadeia/teoria. `null` se é a 1ª da cadeia.
+   * Usado pelo carryover do Estúdio (continuar o projeto de onde parou).
+   */
+  findPrecedingStudioBlockInChain(
+    courseId: string,
+    lessonId: string,
+    chain: string,
+  ): Promise<{ blockId: string; lessonId: string } | null>
   /** Total de aulas por curso, em lote (admin). courseId → total. */
   countLessonsByCourseIds(courseIds: string[]): Promise<Map<string, number>>
   /** Total de aulas PUBLICADAS por curso, em lote (evita N+1 em "meus cursos"). */

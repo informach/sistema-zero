@@ -477,7 +477,10 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   **Bloco `studio` (06/2026):** o form de bloco embute o **`@sistemazero/studio`**
   (`components/studio/studio-embed.tsx`, dynamic ssr:false, `persistence:'none'`) — o admin monta o
   PROJETO INICIAL (tipo/código/nome) e o `saveBlock` captura via `handleRef.getProject()`; campos à
-  parte: nível, modos liberados, categorias sempre visíveis, "revelar avançado". **Acompanhamento do
+  parte: nível, modos liberados, categorias sempre visíveis, "revelar avançado" e **"Projeto contínuo
+  (nome)"** (`BlockForm.studioChain` → `content.chain`): dar o MESMO nome a aulas que constroem um
+  único projeto faz o aluno abrir cada aula com o código que enviou na anterior da cadeia (carryover
+  no members/member-shell); vazio = aula independente. **Acompanhamento do
   professor:** botão "Entregas" no bloco → `studio-submissions-dialog.tsx` lista quem entregou
   (`GET /api/members/blocks/:id/studio-submissions`, nomes hidratados do auth via batch) + abre o
   projeto do aluno num Estúdio embutido (`…/:userId`) ou baixa o `.szproject.json`. Requer

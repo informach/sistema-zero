@@ -22,6 +22,7 @@ import { ResetPasswordService } from '../../src/application/password-reset/reset
 import { ArchiveProfileService } from '../../src/application/profiles/archive-profile.service'
 import { CreateProfileService } from '../../src/application/profiles/create-profile.service'
 import { ExitProfileSessionService } from '../../src/application/profiles/exit-profile-session.service'
+import { GetPublicProfileService } from '../../src/application/profiles/get-public-profile.service'
 import { ListProfilesService } from '../../src/application/profiles/list-profiles.service'
 import { SelectProfileService } from '../../src/application/profiles/select-profile.service'
 import { UpdateProfileDetailsService } from '../../src/application/profiles/update-profile.service'
@@ -161,6 +162,7 @@ function buildApp(
   const archiveProfile = new ArchiveProfileService(profilesRepo, () => new Date())
   const selectProfile = new SelectProfileService(profilesRepo, users, authTokens)
   const exitProfileSession = new ExitProfileSessionService(users, fakeHasher, authTokens)
+  const getPublicProfile = new GetPublicProfileService(profilesRepo)
 
   const env = {
     MAX_REQUEST_BODY_BYTES: 16 * 1024,
@@ -208,6 +210,7 @@ function buildApp(
       archiveProfile,
       selectProfile,
       exitProfileSession,
+      getPublicProfile,
       trustProxy: false,
       trustedProxyHops: 1,
       internalToken: INTERNAL_TOKEN,
@@ -557,6 +560,29 @@ describe('Password reset + perfil self-service', () => {
     expect(reuse.status).toBe(401)
   })
 
+  test('reset-password concorrente com o mesmo token → só uma troca é aceita', async () => {
+    const { app, messaging } = buildApp()
+    await app.handle(post('/auth/register', REGISTER_BODY))
+    await app.handle(post('/auth/forgot-password', { email: 'maria@example.com' }))
+    const token = tokenFromEmail(messaging)
+
+    const responses = await Promise.all([
+      app.handle(post('/auth/reset-password', { token, newPassword: 'nova-senha-race-a-123' })),
+      app.handle(post('/auth/reset-password', { token, newPassword: 'nova-senha-race-b-123' })),
+    ])
+
+    expect(responses.map((res) => res.status).sort((a, b) => a - b)).toEqual([200, 401])
+
+    const loginStatuses = await Promise.all(
+      ['nova-senha-race-a-123', 'nova-senha-race-b-123'].map(async (password) => {
+        const res = await app.handle(post('/auth/login', { email: 'maria@example.com', password }))
+        return res.status
+      }),
+    )
+    expect(loginStatuses.filter((status) => status === 200)).toHaveLength(1)
+    expect(loginStatuses.filter((status) => status === 401)).toHaveLength(1)
+  })
+
   test('reset-password com token desconhecido → 401; senha curta → 400', async () => {
     const { app, messaging } = buildApp()
     await app.handle(post('/auth/register', REGISTER_BODY))
@@ -896,6 +922,19 @@ describe('Auth OTP (login passwordless + recuperação por código)', () => {
     ).toBe(401)
   })
 
+  test('verificação OTP concorrente com o mesmo código → só uma sessão é emitida', async () => {
+    const { app, messaging } = buildApp()
+    await app.handle(post('/auth/register', REGISTER_BODY))
+    const code = await requestCode(app, messaging, 'maria@example.com', 'sign_in')
+
+    const responses = await Promise.all([
+      app.handle(post('/auth/otp/verify', { email: 'maria@example.com', code })),
+      app.handle(post('/auth/otp/verify', { email: 'maria@example.com', code })),
+    ])
+
+    expect(responses.map((res) => res.status).sort((a, b) => a - b)).toEqual([200, 401])
+  })
+
   test('código errado → 401; trava após o teto de tentativas (código certo deixa de valer)', async () => {
     const { app, messaging } = buildApp()
     await app.handle(post('/auth/register', REGISTER_BODY))
@@ -946,6 +985,40 @@ describe('Auth OTP (login passwordless + recuperação por código)', () => {
     ).toBe(200)
     // A senha antiga não vale mais.
     expect((await app.handle(post('/auth/login', REGISTER_BODY))).status).toBe(401)
+  })
+
+  test('reset por OTP concorrente com o mesmo código → só uma senha vence', async () => {
+    const { app, messaging } = buildApp()
+    await app.handle(post('/auth/register', REGISTER_BODY))
+    const code = await requestCode(app, messaging, 'maria@example.com', 'password_reset')
+
+    const responses = await Promise.all([
+      app.handle(
+        post('/auth/password/reset-otp', {
+          email: 'maria@example.com',
+          code,
+          newPassword: 'nova-senha-otp-race-a-123',
+        }),
+      ),
+      app.handle(
+        post('/auth/password/reset-otp', {
+          email: 'maria@example.com',
+          code,
+          newPassword: 'nova-senha-otp-race-b-123',
+        }),
+      ),
+    ])
+
+    expect(responses.map((res) => res.status).sort((a, b) => a - b)).toEqual([200, 401])
+
+    const loginStatuses = await Promise.all(
+      ['nova-senha-otp-race-a-123', 'nova-senha-otp-race-b-123'].map(async (password) => {
+        const res = await app.handle(post('/auth/login', { email: 'maria@example.com', password }))
+        return res.status
+      }),
+    )
+    expect(loginStatuses.filter((status) => status === 200)).toHaveLength(1)
+    expect(loginStatuses.filter((status) => status === 401)).toHaveLength(1)
   })
 
   test('OTP de sign_in não serve p/ reset (finalidades isoladas)', async () => {
@@ -1207,6 +1280,19 @@ describe('Correções do full review (readyz / cooldown / 413)', () => {
     expect(messaging.sent.filter((s) => s.templateKey === 'otp')).toHaveLength(2)
   })
 
+  test('cooldown do OTP sob corrida: dois pedidos simultâneos emitem um único código', async () => {
+    const { app, messaging } = buildApp({ otpCooldownSeconds: 60 })
+    await app.handle(post('/auth/register', REGISTER_BODY))
+
+    const responses = await Promise.all([
+      app.handle(post('/auth/otp/request', { email: 'maria@example.com', purpose: 'sign_in' })),
+      app.handle(post('/auth/otp/request', { email: 'maria@example.com', purpose: 'sign_in' })),
+    ])
+
+    expect(responses.map((res) => res.status)).toEqual([200, 200])
+    expect(messaging.sent.filter((s) => s.templateKey === 'otp')).toHaveLength(1)
+  })
+
   test('cooldown do forgot-password: re-pedido na janela não re-envia nem invalida o token', async () => {
     const { app, messaging } = buildApp({ resetCooldownSeconds: 60 })
     await app.handle(post('/auth/register', REGISTER_BODY))
@@ -1229,6 +1315,19 @@ describe('Correções do full review (readyz / cooldown / 413)', () => {
     expect(reset.status).toBe(200)
   })
 
+  test('cooldown do forgot-password sob corrida: dois pedidos simultâneos enviam um único link', async () => {
+    const { app, messaging } = buildApp({ resetCooldownSeconds: 60 })
+    await app.handle(post('/auth/register', REGISTER_BODY))
+
+    const responses = await Promise.all([
+      app.handle(post('/auth/forgot-password', { email: 'maria@example.com' })),
+      app.handle(post('/auth/forgot-password', { email: 'maria@example.com' })),
+    ])
+
+    expect(responses.map((res) => res.status)).toEqual([200, 200])
+    expect(messaging.sent.filter((s) => s.templateKey === 'password-reset')).toHaveLength(1)
+  })
+
   test('corpo acima do limite em /refresh e /logout → 413', async () => {
     const { app } = buildApp()
     const oversize = (path: string) => {
@@ -1245,6 +1344,24 @@ describe('Correções do full review (readyz / cooldown / 413)', () => {
     }
     expect((await app.handle(oversize('/auth/refresh'))).status).toBe(413)
     expect((await app.handle(oversize('/auth/logout'))).status).toBe(413)
+  })
+
+  test('corpo acima do limite sem content-length → 413 (fallback no onParse/onTransform)', async () => {
+    const { app } = buildApp()
+    const body = JSON.stringify({
+      refreshToken: 'x',
+      junk: 'A'.repeat(20_000),
+    })
+
+    const res = await app.handle(
+      new Request('http://localhost/auth/refresh', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body,
+      }),
+    )
+
+    expect(res.status).toBe(413)
   })
 })
 
@@ -1420,6 +1537,8 @@ describe('Auth — perfis (estilo Netflix)', () => {
     name: string
     avatarUrl: string | null
     whatsapp: string | null
+    birthDate: string | null
+    publicProfileEnabled: boolean
     sortOrder: number
   }
 
@@ -1432,6 +1551,27 @@ describe('Auth — perfis (estilo Netflix)', () => {
       'PROFILE_LIMIT_REACHED',
     )
   })
+
+  // Equipe interna (superadmin/admin/staff): perfis ILIMITADOS p/ testar/verificar o
+  // Kids sem matrícula — bypassa o teto do members (e nem consulta o S2S).
+  for (const role of ['superadmin', 'admin', 'staff'] as const) {
+    test(`equipe (${role}): perfis ilimitados mesmo com allowance=0 (sem S2S)`, async () => {
+      const { app, allowance } = buildApp()
+      allowance.maxProfiles = 0 // a conta da equipe não tem matrícula kids
+      const headers = gw(ACCOUNT, { 'x-auth-user-role': role })
+      for (const name of ['Sofia', 'Théo', 'Bia']) {
+        expect((await app.handle(req('POST', '/auth/profiles', headers, { name }))).status).toBe(
+          201,
+        )
+      }
+      const list = (await (await app.handle(req('GET', '/auth/profiles', headers))).json()) as {
+        profiles: Profile[]
+      }
+      expect(list.profiles.map((p) => p.name)).toEqual(['Sofia', 'Théo', 'Bia'])
+      // Não chama o members p/ a equipe (teto resolvido na borda pelo papel).
+      expect(allowance.calls).toBe(0)
+    })
+  }
 
   test('cria até o teto e barra o excedente; a lista volta ordenada', async () => {
     const { app, allowance } = buildApp()
@@ -1508,6 +1648,96 @@ describe('Auth — perfis (estilo Netflix)', () => {
     expect(res.status).toBe(400)
   })
 
+  test('data de nascimento: a CONTA grava/edita; a sessão de PERFIL é barrada (403)', async () => {
+    const { app, allowance } = buildApp()
+    allowance.maxProfiles = 1
+    // A conta (responsável) cria o perfil JÁ com a data de nascimento.
+    const created = (await (
+      await app.handle(
+        req('POST', '/auth/profiles', gw(), { name: 'Sofia', birthDate: '2015-04-10' }),
+      )
+    ).json()) as { profile: Profile }
+    expect(created.profile.birthDate).toBe('2015-04-10')
+    const id = created.profile.id
+
+    // A conta edita a data de nascimento → ok.
+    const patched = (await (
+      await app.handle(req('PATCH', `/auth/profiles/${id}`, gw(), { birthDate: '2015-05-20' }))
+    ).json()) as { profile: Profile }
+    expect(patched.profile.birthDate).toBe('2015-05-20')
+
+    // Sessão de PERFIL (a própria criança): o gateway injeta x-auth-account-id.
+    const profileSession = { 'x-auth-user-id': id, 'x-auth-account-id': ACCOUNT }
+    // Editar o próprio nome segue permitido (auto-serviço).
+    expect(
+      (
+        await app.handle(
+          req('PATCH', `/auth/profiles/${id}`, gw(id, profileSession), { name: 'Sofia S' }),
+        )
+      ).status,
+    ).toBe(200)
+    // Mas tentar mexer na data de nascimento → 403 (só os pais).
+    expect(
+      (
+        await app.handle(
+          req('PATCH', `/auth/profiles/${id}`, gw(id, profileSession), { birthDate: '2010-01-01' }),
+        )
+      ).status,
+    ).toBe(403)
+
+    // Data futura → 400 (sanidade do agregado).
+    expect(
+      (await app.handle(req('PATCH', `/auth/profiles/${id}`, gw(), { birthDate: '3000-01-01' })))
+        .status,
+    ).toBe(400)
+  })
+
+  test('perfil público: a CONTA liga/desliga; a sessão de PERFIL é barrada (403); rota interna devolve nome+flag', async () => {
+    const { app, allowance } = buildApp()
+    allowance.maxProfiles = 1
+    const created = (await (
+      await app.handle(req('POST', '/auth/profiles', gw(), { name: 'Sofia' }))
+    ).json()) as { profile: Profile }
+    const id = created.profile.id
+    expect(created.profile.publicProfileEnabled).toBe(false) // nasce privado (opt-in)
+
+    // Privado por padrão: a rota S2S também não devolve o nome.
+    const privateProfile = await app.handle(
+      req('GET', `/auth/internal/profiles/${id}/public`, { 'x-internal-token': INTERNAL_TOKEN }),
+    )
+    expect(privateProfile.status).toBe(404)
+
+    // A conta (responsável) liga o perfil público → ok.
+    const patched = (await (
+      await app.handle(req('PATCH', `/auth/profiles/${id}`, gw(), { publicProfileEnabled: true }))
+    ).json()) as { profile: Profile }
+    expect(patched.profile.publicProfileEnabled).toBe(true)
+
+    // Sessão de PERFIL (a criança): tentar mexer na visibilidade → 403 (só os pais).
+    const profileSession = { 'x-auth-user-id': id, 'x-auth-account-id': ACCOUNT }
+    expect(
+      (
+        await app.handle(
+          req('PATCH', `/auth/profiles/${id}`, gw(id, profileSession), {
+            publicProfileEnabled: false,
+          }),
+        )
+      ).status,
+    ).toBe(403)
+
+    // Rota interna S2S: nome + flag somente com opt-in (sem PII); token errado → 401.
+    const bad = await app.handle(
+      req('GET', `/auth/internal/profiles/${id}/public`, { 'x-internal-token': 'errado' }),
+    )
+    expect(bad.status).toBe(401)
+    const ok = (await (
+      await app.handle(
+        req('GET', `/auth/internal/profiles/${id}/public`, { 'x-internal-token': INTERNAL_TOKEN }),
+      )
+    ).json()) as { name: string; publicProfileEnabled: boolean }
+    expect(ok).toEqual({ name: 'Sofia', publicProfileEnabled: true })
+  })
+
   test('guardas de origem: sem token interno → 401; sem identidade → 401', async () => {
     const { app, allowance } = buildApp()
     allowance.maxProfiles = 2
@@ -1577,7 +1807,7 @@ describe('Auth — sessão de perfil (PR2)', () => {
     const body = (await res.json()) as { tokens: { accessToken: string } }
     const payload = decodeJwt(body.tokens.accessToken)
     expect(payload.sub).toBe(PROFILE_ID)
-    expect(payload.pfl).toEqual({ accountId, name: 'Sofia' })
+    expect(payload.pfl).toEqual({ accountId, name: 'Sofia', pub: false })
   })
 
   test('sessão de perfil: edita o PRÓPRIO perfil; NÃO cria/arquiva nem edita irmãos', async () => {

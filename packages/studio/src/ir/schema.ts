@@ -18,7 +18,7 @@ const idField = { __id: z.string().optional() }
 
 // ---------- Expressions ----------
 
-const jsExprBase = z.union([
+const jsExprBase = z.discriminatedUnion('type', [
   z.object({ type: z.literal('num'), value: z.number(), ...idField }),
   z.object({ type: z.literal('str'), value: irText(), ...idField }),
   z.object({ type: z.literal('color'), value: irText(), ...idField }),
@@ -55,6 +55,8 @@ export type JSExpr =
       left: JSExpr
       right: JSExpr
     })
+  // Negação booleana (`!x`).
+  | (JSExprCommon & { type: 'logicalNot'; value: JSExpr })
   // Operador ternário (`condição ? seVerdadeiro : seFalso`).
   | (JSExprCommon & {
       type: 'ternary'
@@ -63,6 +65,71 @@ export type JSExpr =
       whenFalse: JSExpr
     })
   | (JSExprCommon & { type: 'call'; name: string; args: JSExpr[] })
+  // Game 2D — perguntas (booleanos): tecla apertada e sprites se encostando.
+  | (JSExprCommon & { type: 'g2d:keyDown'; key: string })
+  | (JSExprCommon & { type: 'g2d:touches'; aVar: string; bVar: string })
+  // Game 2D — quantidade de sprites num grupo (valor numérico).
+  | (JSExprCommon & { type: 'g2d:countGroup'; groupVar: string })
+  // Game 2D — a direção (em graus) que o sprite está apontando (valor numérico).
+  | (JSExprCommon & { type: 'g2d:spriteAngle'; spriteVar: string })
+  // Tier 1 — contas/mira e perguntas (valores).
+  | (JSExprCommon & { type: 'g2d:distance'; aVar: string; bVar: string })
+  | (JSExprCommon & { type: 'g2d:angleTo'; aVar: string; bVar: string })
+  | (JSExprCommon & { type: 'g2d:getHealth'; spriteVar: string })
+  | (JSExprCommon & { type: 'g2d:randomBetween'; min: number; max: number })
+  | (JSExprCommon & { type: 'g2d:randomChance'; percent: number })
+  | (JSExprCommon & { type: 'g2d:hasHealth'; spriteVar: string })
+  | (JSExprCommon & { type: 'g2d:cooldownReady'; spriteVar: string; frames: number })
+  | (JSExprCommon & { type: 'g2d:isPaused' })
+  // Tier 2 — posição da câmera e leitura de tile (valores).
+  | (JSExprCommon & { type: 'g2d:cameraX' })
+  | (JSExprCommon & { type: 'g2d:cameraY' })
+  | (JSExprCommon & { type: 'g2d:tileAtSprite'; mapVar: string; spriteVar: string })
+  // Game 2D — a cena/tela atual é "name"? (valor booleano).
+  | (JSExprCommon & { type: 'g2d:sceneIs'; name: string })
+  // Game 2D — Kit equilibrista / balão: leituras do estado do jogo (valores).
+  | (JSExprCommon & { type: 'g2d:stickHeroScore'; gameVar: string })
+  | (JSExprCommon & { type: 'g2d:stickHeroOver'; gameVar: string })
+  | (JSExprCommon & { type: 'g2d:balloonScore'; gameVar: string })
+  | (JSExprCommon & { type: 'g2d:balloonFuel'; gameVar: string })
+  | (JSExprCommon & { type: 'g2d:balloonOver'; gameVar: string })
+  // Game 2D — Kit gorilas: perguntas (booleanos) da batalha de bananas.
+  | (JSExprCommon & { type: 'g2d:aimReleased'; throwerVar: string })
+  | (JSExprCommon & { type: 'g2d:bananaHitThrower'; cityVar: string; throwerVar: string })
+  | (JSExprCommon & { type: 'g2d:bananaHitCity'; cityVar: string })
+  // Game 3D — perguntas (booleanos): tecla apertada, dois objetos se encostando
+  // (AABB) e colisão contra um grupo inteiro de inimigos.
+  | (JSExprCommon & { type: 'g3d:keyDown'; key: string })
+  | (JSExprCommon & { type: 'g3d:collides'; aVar: string; bVar: string })
+  | (JSExprCommon & { type: 'g3d:hitAny'; objVar: string; groupVar: string })
+  // Game 3D — Kit Travessia: bateu num veículo? e a linha (pontuação) atual.
+  | (JSExprCommon & { type: 'g3d:crosserHit'; objVar: string; worldVar: string })
+  | (JSExprCommon & { type: 'g3d:crosserRow'; objVar: string })
+  // Game 3D — genérico: objeto encosta em algum de um grupo (caixa real Box3).
+  | (JSExprCommon & { type: 'g3d:touchesBox'; objVar: string; groupVar: string })
+  // Game 3D — Corrida/genérico: distância, proximidade, bateu num rival?, voltas.
+  | (JSExprCommon & { type: 'g3d:distanceTo'; aVar: string; bVar: string })
+  | (JSExprCommon & { type: 'g3d:isNear'; aVar: string; bVar: string; dist: number })
+  | (JSExprCommon & { type: 'g3d:raceHit'; objVar: string; worldVar: string })
+  | (JSExprCommon & { type: 'g3d:raceLaps'; objVar: string })
+  // Game 3D — Kit Empilhar: pontuação (andares) e a torre caiu (fim de jogo)?
+  | (JSExprCommon & { type: 'g3d:stackScore'; worldVar: string })
+  | (JSExprCommon & { type: 'g3d:stackGameOver'; worldVar: string })
+  // Game 3D — genéricos: ler posição/rotação (por eixo), escala e o tempo do quadro.
+  | (JSExprCommon & { type: 'g3d:getPos'; objVar: string; axis: string })
+  | (JSExprCommon & { type: 'g3d:getRot'; objVar: string; axis: string })
+  | (JSExprCommon & { type: 'g3d:getScale'; objVar: string })
+  | (JSExprCommon & { type: 'g3d:dt'; worldVar: string })
+  | (JSExprCommon & { type: 'g3d:angleTo'; aVar: string; bVar: string })
+  // Game 3D — mira & clique (raycast): seleção, mira à frente, sensor de chão.
+  | (JSExprCommon & { type: 'g3d:pickAtMouse'; worldVar: string })
+  | (JSExprCommon & { type: 'g3d:pointerOver'; worldVar: string; objVar: string })
+  | (JSExprCommon & { type: 'g3d:aimAhead'; worldVar: string; objVar: string; dist: number })
+  | (JSExprCommon & { type: 'g3d:onGround'; worldVar: string; objVar: string })
+  | (JSExprCommon & { type: 'g3d:groundHeight'; worldVar: string; objVar: string })
+  // Entrada (caminho "na mão"): tecla apertada (bool) e posição do ponteiro (núm).
+  | (JSExprCommon & { type: 'inputKeyPressed'; key: string })
+  | (JSExprCommon & { type: 'inputPointer'; axis: 'x' | 'y' })
   // Função matemática de um valor (Math.round/floor/ceil/abs/sqrt) e
   // trigonometria de um valor em radianos (Math.sin/cos/tan/asin/acos/atan).
   | (JSExprCommon & {
@@ -79,8 +146,11 @@ export type JSExpr =
         | 'asin'
         | 'acos'
         | 'atan'
+        | 'sign'
       arg: JSExpr
     })
+  // Transforma uma lista item a item: `lista.map((item) => <expr>)`.
+  | (JSExprCommon & { type: 'arrayMap'; arrayVar: string; itemName: string; transform: JSExpr })
   // Função de dois valores (Math.min/Math.max/Math.atan2/Math.hypot).
   | (JSExprCommon & {
       type: 'mathBinary'
@@ -94,8 +164,8 @@ export type JSExpr =
   | (JSExprCommon & { type: 'mathConst'; name: 'PI' | 'E' })
   // Conversão de ângulo entre graus e radianos.
   | (JSExprCommon & { type: 'angleConvert'; dir: 'degToRad' | 'radToDeg'; arg: JSExpr })
-  // Propriedade do evento dentro de um listener (event.clientX / event.clientY).
-  | (JSExprCommon & { type: 'eventProp'; prop: 'clientX' | 'clientY' })
+  // Propriedade do evento dentro de um listener (event.clientX/clientY/key/code).
+  | (JSExprCommon & { type: 'eventProp'; prop: 'clientX' | 'clientY' | 'key' | 'code' })
   // Lê do armazenamento do navegador (`localStorage.getItem(chave)` / `sessionStorage`).
   | (JSExprCommon & { type: 'storageGet'; store: 'local' | 'session'; key: JSExpr })
   // Vetor 2D/3D literal ({ x, y } / { x, y, z }).
@@ -107,10 +177,27 @@ export type JSExpr =
   | (JSExprCommon & { type: 'arrayLength'; arrayVar: string })
   // Valor calculado a partir da data/hora atual (ex.: ano no rodapé).
   | (JSExprCommon & { type: 'now'; kind: 'year' | 'date' | 'time' })
-  // Largura/altura da viewport (window.innerWidth / window.innerHeight).
-  | (JSExprCommon & { type: 'global'; kind: 'innerWidth' | 'innerHeight' })
+  // Parte NUMÉRICA da data/hora atual (new Date().getHours() etc.) — para
+  // relógios e animações; o `now` acima só dá strings localizadas.
+  | (JSExprCommon & {
+      type: 'dateGet'
+      part: 'year' | 'month' | 'dayOfMonth' | 'weekday' | 'hours' | 'minutes' | 'seconds' | 'ms'
+    })
+  // Largura/altura da viewport e densidade de pixels (window.innerWidth /
+  // window.innerHeight / window.devicePixelRatio).
+  | (JSExprCommon & { type: 'global'; kind: 'innerWidth' | 'innerHeight' | 'devicePixelRatio' })
+  // O sistema está no modo escuro? (window.matchMedia('(prefers-color-scheme: dark)').matches)
+  | (JSExprCommon & { type: 'systemDark' })
+  // Milissegundos desde o carregamento da página (performance.now()) — para delta de quadro.
+  | (JSExprCommon & { type: 'perfNow' })
+  // Está em tela cheia? (Fullscreen API) → document.fullscreenElement != null.
+  | (JSExprCommon & { type: 'isFullscreen' })
   // Largura/altura do elemento canvas associado a um contexto (canvas.width).
   | (JSExprCommon & { type: 'canvasDim'; ctxVar: string; dim: 'width' | 'height' })
+  | (JSExprCommon & { type: 'canvasMeasureText'; ctxVar: string; text: JSExpr })
+  // Canvas — "o ponto (x,y) está dentro do traçado / na linha do traçado?" (booleanos).
+  | (JSExprCommon & { type: 'canvasIsPointInPath'; ctxVar: string; x: JSExpr; y: JSExpr })
+  | (JSExprCommon & { type: 'canvasIsPointInStroke'; ctxVar: string; x: JSExpr; y: JSExpr })
   // Inteiro aleatório no intervalo [min, max].
   | (JSExprCommon & { type: 'random'; min: JSExpr; max: JSExpr })
   // Cor HSL. Gera o template `hsl(${h}, ${s}%, ${l}%)`; h/s/l podem ser número,
@@ -139,6 +226,10 @@ export type JSExpr =
   | (JSExprCommon & { type: 'concat'; parts: JSExpr[] })
   // Item de uma lista por índice (`arr[i]`).
   | (JSExprCommon & { type: 'index'; arrayVar: string; index: JSExpr })
+  // Último item da lista (`lista[lista.length - 1]`).
+  | (JSExprCommon & { type: 'arrayLast'; arrayVar: string })
+  // Achar o 1º item da lista que passa no teste (`lista.find((item) => cond)`).
+  | (JSExprCommon & { type: 'arrayFind'; arrayVar: string; itemName: string; cond: JSExpr })
   // Junta listas (`[...a, ...b]`).
   | (JSExprCommon & { type: 'concatArrays'; parts: JSExpr[] })
   // Embaralha uma lista (`arr.sort(() => Math.random() - 0.5)`).
@@ -151,7 +242,7 @@ export type JSExpr =
   | (JSExprCommon & { type: 'memberCallExpr'; object: JSExpr; method: string; args: JSExpr[] })
 
 export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
-  z.union([
+  z.discriminatedUnion('type', [
     jsExprBase,
     z.object({
       type: z.literal('binop'),
@@ -167,6 +258,7 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
       right: JSExprSchema,
       ...idField,
     }),
+    z.object({ type: z.literal('logicalNot'), value: JSExprSchema, ...idField }),
     z.object({
       type: z.literal('ternary'),
       condition: JSExprSchema,
@@ -180,6 +272,114 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
       args: z.array(JSExprSchema),
       ...idField,
     }),
+    z.object({ type: z.literal('g2d:keyDown'), key: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:touches'),
+      aVar: irText(),
+      bVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:countGroup'), groupVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:spriteAngle'), spriteVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:distance'), aVar: irText(), bVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:angleTo'), aVar: irText(), bVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:getHealth'), spriteVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:randomBetween'),
+      min: z.number(),
+      max: z.number(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:randomChance'), percent: z.number(), ...idField }),
+    z.object({ type: z.literal('g2d:hasHealth'), spriteVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:cooldownReady'),
+      spriteVar: irText(),
+      frames: z.number(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:isPaused'), ...idField }),
+    z.object({ type: z.literal('g2d:cameraX'), ...idField }),
+    z.object({ type: z.literal('g2d:cameraY'), ...idField }),
+    z.object({
+      type: z.literal('g2d:tileAtSprite'),
+      mapVar: irText(),
+      spriteVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:sceneIs'), name: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:stickHeroScore'), gameVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:stickHeroOver'), gameVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:balloonScore'), gameVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:balloonFuel'), gameVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:balloonOver'), gameVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:aimReleased'), throwerVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:bananaHitThrower'),
+      cityVar: irText(),
+      throwerVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:bananaHitCity'), cityVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:keyDown'), key: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:collides'), aVar: irText(), bVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:hitAny'), objVar: irText(), groupVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3d:crosserHit'),
+      objVar: irText(),
+      worldVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3d:crosserRow'), objVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3d:touchesBox'),
+      objVar: irText(),
+      groupVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3d:distanceTo'), aVar: irText(), bVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3d:isNear'),
+      aVar: irText(),
+      bVar: irText(),
+      dist: z.number(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3d:raceHit'), objVar: irText(), worldVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:raceLaps'), objVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:stackScore'), worldVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:stackGameOver'), worldVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:getPos'), objVar: irText(), axis: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:getRot'), objVar: irText(), axis: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:getScale'), objVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:dt'), worldVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:angleTo'), aVar: irText(), bVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:pickAtMouse'), worldVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3d:pointerOver'),
+      worldVar: irText(),
+      objVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:aimAhead'),
+      worldVar: irText(),
+      objVar: irText(),
+      dist: z.number(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3d:onGround'), worldVar: irText(), objVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3d:groundHeight'),
+      worldVar: irText(),
+      objVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('inputKeyPressed'), key: irText(), ...idField }),
+    z.object({ type: z.literal('inputPointer'), axis: z.enum(['x', 'y']), ...idField }),
+    z.object({ type: z.literal('isFullscreen'), ...idField }),
+    z.object({ type: z.literal('systemDark'), ...idField }),
+    z.object({ type: z.literal('perfNow'), ...idField }),
     z.object({
       type: z.literal('mathUnary'),
       fn: z.enum([
@@ -194,8 +394,16 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
         'asin',
         'acos',
         'atan',
+        'sign',
       ]),
       arg: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('arrayMap'),
+      arrayVar: irText(),
+      itemName: irText(),
+      transform: JSExprSchema,
       ...idField,
     }),
     z.object({
@@ -213,7 +421,11 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
       arg: JSExprSchema,
       ...idField,
     }),
-    z.object({ type: z.literal('eventProp'), prop: z.enum(['clientX', 'clientY']), ...idField }),
+    z.object({
+      type: z.literal('eventProp'),
+      prop: z.enum(['clientX', 'clientY', 'key', 'code']),
+      ...idField,
+    }),
     z.object({
       type: z.literal('storageGet'),
       store: z.enum(['local', 'session']),
@@ -232,14 +444,39 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('arrayLength'), arrayVar: irText(), ...idField }),
     z.object({ type: z.literal('now'), kind: z.enum(['year', 'date', 'time']), ...idField }),
     z.object({
+      type: z.literal('dateGet'),
+      part: z.enum(['year', 'month', 'dayOfMonth', 'weekday', 'hours', 'minutes', 'seconds', 'ms']),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('global'),
-      kind: z.enum(['innerWidth', 'innerHeight']),
+      kind: z.enum(['innerWidth', 'innerHeight', 'devicePixelRatio']),
       ...idField,
     }),
     z.object({
       type: z.literal('canvasDim'),
       ctxVar: irText(),
       dim: z.enum(['width', 'height']),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasMeasureText'),
+      ctxVar: irText(),
+      text: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasIsPointInPath'),
+      ctxVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasIsPointInStroke'),
+      ctxVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
       ...idField,
     }),
     z.object({ type: z.literal('random'), min: JSExprSchema, max: JSExprSchema, ...idField }),
@@ -281,6 +518,14 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     }),
     z.object({ type: z.literal('concat'), parts: z.array(JSExprSchema), ...idField }),
     z.object({ type: z.literal('index'), arrayVar: irText(), index: JSExprSchema, ...idField }),
+    z.object({ type: z.literal('arrayLast'), arrayVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('arrayFind'),
+      arrayVar: irText(),
+      itemName: irText(),
+      cond: JSExprSchema,
+      ...idField,
+    }),
     z.object({ type: z.literal('concatArrays'), parts: z.array(JSExprSchema), ...idField }),
     z.object({ type: z.literal('shuffle'), arrayVar: irText(), ...idField }),
     z.object({
@@ -324,6 +569,20 @@ export const HTMLTagSchema = z.enum([
   'input',
   'textarea',
   'label',
+  // SVG (gráficos vetoriais): o gerador HTML é genérico, então estas tags
+  // viram <tag attrs> normalmente; os atributos (d/transform/cx/cy/r/href/…) são
+  // preservados por collectAllAttrs no parse e por FIELD_ATTRS/data no round-trip.
+  'svg',
+  'g',
+  'path',
+  'circle',
+  'ellipse',
+  'line',
+  'rect',
+  'polyline',
+  'polygon',
+  'text',
+  'use',
 ])
 export type HTMLTag = z.infer<typeof HTMLTagSchema>
 
@@ -340,7 +599,13 @@ export type HTMLNode =
       attrs?: Record<string, string>
       children?: HTMLNode[]
     })
-  | (HTMLNodeCommon & { type: 'canvas'; id: string; width?: number; height?: number })
+  | (HTMLNodeCommon & {
+      type: 'canvas'
+      id: string
+      class?: string
+      width?: number
+      height?: number
+    })
   // Pedaço de texto solto que vive dentro das `children` de uma tag inline/
   // container — permite que `<p>© <span></span> texto</p>` (conteúdo misto)
   // vire blocos aninhados em vez de "código avançado".
@@ -348,7 +613,7 @@ export type HTMLNode =
   | (HTMLNodeCommon & { type: 'rawHTML'; html: string; advanced: true })
 
 export const HTMLNodeSchema: z.ZodType<HTMLNode> = z.lazy(() =>
-  z.union([
+  z.discriminatedUnion('type', [
     z.object({
       type: z.literal('element'),
       tag: HTMLTagSchema,
@@ -361,6 +626,7 @@ export const HTMLNodeSchema: z.ZodType<HTMLNode> = z.lazy(() =>
     z.object({
       type: z.literal('canvas'),
       id: irText(),
+      class: irText().optional(),
       width: z.number().int().positive().optional(),
       height: z.number().int().positive().optional(),
       ...idField,
@@ -483,7 +749,7 @@ export const RawCSSSchema: z.ZodType<RawCSS> = z.object({
  */
 export interface MediaQueryCSS {
   type: 'mediaQuery'
-  feature: 'max-width' | 'min-width'
+  feature: 'max-width' | 'min-width' | 'max-height' | 'min-height'
   px: number
   rules: CSSEntry[]
   __id?: string
@@ -491,7 +757,7 @@ export interface MediaQueryCSS {
 
 export const MediaQueryCSSSchema: z.ZodType<MediaQueryCSS> = z.object({
   type: z.literal('mediaQuery'),
-  feature: z.enum(['max-width', 'min-width']),
+  feature: z.enum(['max-width', 'min-width', 'max-height', 'min-height']),
   px: z.number(),
   // Conteúdo da media query. Lazy por ciclo (CSSEntry inclui MediaQueryCSS).
   rules: z.array(z.lazy(() => CSSEntrySchema)),
@@ -522,13 +788,31 @@ export const KeyframesCSSSchema: z.ZodType<KeyframesCSS> = z.object({
   ...idField,
 })
 
-export type CSSEntry = CSSRule | RawCSS | MediaQueryCSS | KeyframesCSS
+/**
+ * `@import url("https://fonts.googleapis.com/css?family=Nome")` — importa uma
+ * fonte do Google Fonts. `family` é o nome (ex.: "Press Start 2P"); o gerador
+ * codifica os espaços. Sai SEMPRE no topo do CSS (regra do `@import`).
+ */
+export interface GoogleFontCSS {
+  type: 'googleFont'
+  family: string
+  __id?: string
+}
+
+export const GoogleFontCSSSchema: z.ZodType<GoogleFontCSS> = z.object({
+  type: z.literal('googleFont'),
+  family: irText(),
+  ...idField,
+})
+
+export type CSSEntry = CSSRule | RawCSS | MediaQueryCSS | KeyframesCSS | GoogleFontCSS
 
 export const CSSEntrySchema: z.ZodType<CSSEntry> = z.union([
   CSSRuleSchema,
   RawCSSSchema,
   MediaQueryCSSSchema,
   KeyframesCSSSchema,
+  GoogleFontCSSSchema,
 ])
 
 // ---------- JS Statements ----------
@@ -539,9 +823,16 @@ const eventKindSchema = z.enum([
   'keyup',
   'mouseover',
   'mouseout',
+  'mousemove',
+  'mousedown',
+  'mouseup',
   'submit',
   'input',
   'change',
+  'load',
+  'resize',
+  // Entrou/saiu da tela cheia (Fullscreen API). Evento global no documento.
+  'fullscreenchange',
 ])
 export type EventKind = z.infer<typeof eventKindSchema>
 
@@ -609,7 +900,7 @@ export type JSStatement =
        * 'var': `target` é o nome de uma variável que guarda o elemento.
        * 'document': escuta global no documento (clique em qualquer lugar). Senão é um id.
        */
-      targetKind?: 'id' | 'var' | 'document'
+      targetKind?: 'id' | 'var' | 'document' | 'window'
       event: EventKind
       body: JSStatement[]
     })
@@ -632,10 +923,52 @@ export type JSStatement =
       property: 'textContent' | 'value' | 'innerHTML'
       varName: string
     })
+  // Estilo inline por código (`el.style.left = valor` / `el.style['z-index'] = valor`).
+  | (JSStatementCommon & {
+      type: 'setStyle'
+      targetId: string
+      targetKind?: 'id' | 'var' | 'this'
+      property: string
+      value: JSExpr
+    })
+  // Atributo por código (`el.setAttribute('stroke', valor)`).
+  | (JSStatementCommon & {
+      type: 'setAttribute'
+      targetId: string
+      targetKind?: 'id' | 'var' | 'this'
+      name: string
+      value: JSExpr
+    })
   // Cria um elemento e guarda numa variável (`const x = document.createElement('div')`).
   | (JSStatementCommon & { type: 'createElement'; tag: string; varName: string })
+  // Cria uma FORMA SVG por código (`const x = document.createElementNS(SVG_NS, 'circle')`).
+  | (JSStatementCommon & { type: 'createElementNS'; tag: string; varName: string })
+  // Lê um atributo de um elemento e guarda numa variável (`const v = el.getAttribute('cx')`).
+  | (JSStatementCommon & {
+      type: 'getAttribute'
+      targetId: string
+      targetKind?: 'id' | 'var'
+      name: string
+      varName: string
+    })
   // Adiciona um elemento dentro de outro (`pai.appendChild(filho)`).
   | (JSStatementCommon & { type: 'appendChild'; parentVar: string; childVar: string })
+  // Dispara um erro (`throw new Error(<mensagem>)`) — fim de jogo via try/catch.
+  | (JSStatementCommon & { type: 'throwError'; message: JSExpr })
+  // Copia as propriedades de um objeto para outro (`Object.assign(alvo, origem)`).
+  | (JSStatementCommon & { type: 'objectAssign'; targetVar: string; sourceVar: string })
+  // Escolha (`switch (subject) { case <match>: <body> break; … default: <default> }`).
+  | (JSStatementCommon & {
+      type: 'switch'
+      subject: JSExpr
+      cases: Array<{ match: JSExpr; body: JSStatement[] }>
+      default?: JSStatement[]
+    })
+  // Tela cheia (Fullscreen API) na PÁGINA inteira (document.documentElement).
+  // Entrar/sair/alternar — sem campos (o alvo é fixo = a página).
+  | (JSStatementCommon & { type: 'requestFullscreen' })
+  | (JSStatementCommon & { type: 'exitFullscreen' })
+  | (JSStatementCommon & { type: 'toggleFullscreen' })
   // Escreve um data-attribute (`el.dataset.chave = valor`).
   | (JSStatementCommon & {
       type: 'setDataset'
@@ -688,7 +1021,95 @@ export type JSStatement =
       x: JSExpr
       y: JSExpr
     })
-  | (JSStatementCommon & { type: 'animationLoop'; body: JSStatement[]; handle?: string })
+  | (JSStatementCommon & {
+      type: 'canvasStrokeRect'
+      ctxVar: string
+      x: JSExpr
+      y: JSExpr
+      w: JSExpr
+      h: JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'canvasClearRect'
+      ctxVar: string
+      x: JSExpr
+      y: JSExpr
+      w: JSExpr
+      h: JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'canvasRoundRect'
+      ctxVar: string
+      x: JSExpr
+      y: JSExpr
+      w: JSExpr
+      h: JSExpr
+      r: JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'canvasEllipse'
+      ctxVar: string
+      x: JSExpr
+      y: JSExpr
+      rx: JSExpr
+      ry: JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'canvasArcSlice'
+      ctxVar: string
+      x: JSExpr
+      y: JSExpr
+      r: JSExpr
+      start: JSExpr
+      end: JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'canvasQuadraticCurve'
+      ctxVar: string
+      cpx: JSExpr
+      cpy: JSExpr
+      x: JSExpr
+      y: JSExpr
+    })
+  // ctx.arcTo(x1, y1, x2, y2, r) — liga o ponto atual a (x2,y2) com canto arredondado.
+  | (JSStatementCommon & {
+      type: 'canvasArcTo'
+      ctxVar: string
+      x1: JSExpr
+      y1: JSExpr
+      x2: JSExpr
+      y2: JSExpr
+      r: JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'canvasBezierCurve'
+      ctxVar: string
+      cp1x: JSExpr
+      cp1y: JSExpr
+      cp2x: JSExpr
+      cp2y: JSExpr
+      x: JSExpr
+      y: JSExpr
+    })
+  | (JSStatementCommon & { type: 'canvasShadow'; ctxVar: string; color: JSExpr; blur: JSExpr })
+  | (JSStatementCommon & {
+      type: 'canvasStrokeText'
+      ctxVar: string
+      text: JSExpr
+      x: JSExpr
+      y: JSExpr
+    })
+  | (JSStatementCommon & { type: 'canvasLineDash'; ctxVar: string; segment: JSExpr })
+  | (JSStatementCommon & {
+      type: 'animationLoop'
+      body: JSStatement[]
+      handle?: string
+      // Variáveis opcionais expostas pelo mutator: o tempo do quadro (ms desde o
+      // carregamento, vindo do requestAnimationFrame) e o tempo desde o quadro
+      // anterior (delta, ms) — para movimento independente de FPS.
+      timeVar?: string
+      deltaVar?: string
+    })
   // Para o loop de animação: cancelAnimationFrame(handle).
   | (JSStatementCommon & { type: 'cancelAnimationFrame'; handle: JSExpr })
   | (JSStatementCommon & { type: 'keyboardSimple'; varName: string })
@@ -738,6 +1159,43 @@ export type JSStatement =
       y1: JSExpr
       stops: Array<{ offset: number; color: string }>
     })
+  // Canvas — traçado/contorno, fonte e transparência (caminho "na mão", v0.6.0).
+  | (JSStatementCommon & { type: 'canvasBeginPath'; ctxVar: string })
+  | (JSStatementCommon & { type: 'canvasClosePath'; ctxVar: string })
+  | (JSStatementCommon & { type: 'canvasStroke'; ctxVar: string })
+  | (JSStatementCommon & { type: 'canvasFill'; ctxVar: string })
+  | (JSStatementCommon & { type: 'canvasMoveTo'; ctxVar: string; x: JSExpr; y: JSExpr })
+  | (JSStatementCommon & { type: 'canvasLineTo'; ctxVar: string; x: JSExpr; y: JSExpr })
+  // Canvas — adicionar retângulo ao traçado e recortar o desenho pelo traçado.
+  | (JSStatementCommon & {
+      type: 'canvasRect'
+      ctxVar: string
+      x: JSExpr
+      y: JSExpr
+      w: JSExpr
+      h: JSExpr
+    })
+  | (JSStatementCommon & { type: 'canvasClip'; ctxVar: string })
+  | (JSStatementCommon & { type: 'canvasStrokeStyle'; ctxVar: string; color: JSExpr })
+  | (JSStatementCommon & { type: 'canvasLineWidth'; ctxVar: string; width: JSExpr })
+  | (JSStatementCommon & { type: 'canvasGlobalAlpha'; ctxVar: string; alpha: JSExpr })
+  | (JSStatementCommon & {
+      type: 'canvasFont'
+      ctxVar: string
+      weight?: 'bold' | 'italic' | 'italic bold'
+      size: number
+      family: string
+    })
+  | (JSStatementCommon & {
+      type: 'canvasTextAlign'
+      ctxVar: string
+      align: 'left' | 'center' | 'right'
+    })
+  | (JSStatementCommon & {
+      type: 'canvasTextBaseline'
+      ctxVar: string
+      baseline: 'top' | 'middle' | 'bottom' | 'alphabetic'
+    })
   // Game 2D extension
   | (JSStatementCommon & {
       type: 'g2d:createSprite'
@@ -749,12 +1207,21 @@ export type JSStatement =
       color: string
     })
   | (JSStatementCommon & { type: 'g2d:drawSprite'; spriteVar: string; ctxVar: string })
-  | (JSStatementCommon & { type: 'g2d:moveByKeys'; spriteVar: string; speed: number })
   | (JSStatementCommon & { type: 'g2d:setPosition'; spriteVar: string; x: JSExpr; y: JSExpr })
   | (JSStatementCommon & { type: 'g2d:setVelocity'; spriteVar: string; vx: JSExpr; vy: JSExpr })
   | (JSStatementCommon & { type: 'g2d:collides'; aVar: string; bVar: string; varName: string })
   | (JSStatementCommon & { type: 'g2d:score'; varName: string; initial: number })
   | (JSStatementCommon & { type: 'g2d:gameOver'; ctxVar: string; text: string })
+  // Palco implícito: limpa a tela do runtime (sem o aluno carregar o "pincel").
+  | (JSStatementCommon & { type: 'g2d:clear' })
+  // Eventos "Quando…" (hats): tecla apertada e sobreposição de sprites.
+  | (JSStatementCommon & { type: 'g2d:onKey'; key: string; body: JSStatement[] })
+  | (JSStatementCommon & {
+      type: 'g2d:onOverlap'
+      aVar: string
+      bVar: string
+      body: JSStatement[]
+    })
   | (JSStatementCommon & { type: 'g2d:updateEachFrame'; body: JSStatement[] })
   // Física: gravidade do mundo, integração de velocidade, ricochete nas bordas,
   // colisão por círculo.
@@ -769,6 +1236,46 @@ export type JSStatement =
     })
   // Áudio: toca um tom (Web Audio, sem assets).
   | (JSStatementCommon & { type: 'g2d:playSound'; freq: number; durationMs: number })
+  // Áudio: efeito sonoro pronto (sintetizado), escolhido por nome.
+  | (JSStatementCommon & { type: 'g2d:playFx'; fx: string })
+  // Áudio: música de fundo em loop (sintetizada), escolhida por nome.
+  | (JSStatementCommon & { type: 'g2d:playMusic'; tune: string })
+  // Áudio: para a música de fundo.
+  | (JSStatementCommon & { type: 'g2d:stopMusic' })
+  // Áudio: toca uma nota musical (dó ré mi…) por uma duração em ms.
+  | (JSStatementCommon & { type: 'g2d:playNote'; note: string; ms: number })
+  // Tier 1 — mira/movimento, vida, aparência, mundo e pausa (comandos).
+  | (JSStatementCommon & { type: 'g2d:aimAt'; spriteVar: string; targetVar: string })
+  | (JSStatementCommon & {
+      type: 'g2d:moveToward'
+      spriteVar: string
+      targetVar: string
+      speed: number
+    })
+  | (JSStatementCommon & { type: 'g2d:setHealth'; spriteVar: string; amount: number })
+  | (JSStatementCommon & { type: 'g2d:changeHealth'; spriteVar: string; delta: number })
+  | (JSStatementCommon & { type: 'g2d:flipSprite'; spriteVar: string; dir: string })
+  | (JSStatementCommon & { type: 'g2d:setOpacity'; spriteVar: string; percent: number })
+  | (JSStatementCommon & { type: 'g2d:setSize'; spriteVar: string; w: number; h: number })
+  | (JSStatementCommon & { type: 'g2d:scaleSprite'; spriteVar: string; factor: number })
+  | (JSStatementCommon & { type: 'g2d:wrapEdges'; spriteVar: string })
+  | (JSStatementCommon & { type: 'g2d:pruneOld'; groupVar: string; seconds: number })
+  | (JSStatementCommon & { type: 'g2d:pauseGame' })
+  | (JSStatementCommon & { type: 'g2d:resumeGame' })
+  // Tier 2 — câmera, mapa destrutível, ordem de desenho e depuração (comandos).
+  | (JSStatementCommon & {
+      type: 'g2d:cameraFollow'
+      spriteVar: string
+      worldW: number
+      worldH: number
+    })
+  | (JSStatementCommon & { type: 'g2d:setCamera'; x: number; y: number })
+  | (JSStatementCommon & { type: 'g2d:breakTile'; mapVar: string; spriteVar: string })
+  | (JSStatementCommon & { type: 'g2d:setTile'; mapVar: string; index: number; spriteVar: string })
+  | (JSStatementCommon & { type: 'g2d:bringToFront'; spriteVar: string; groupVar: string })
+  | (JSStatementCommon & { type: 'g2d:sendToBack'; spriteVar: string; groupVar: string })
+  | (JSStatementCommon & { type: 'g2d:drawHitbox'; spriteVar: string })
+  | (JSStatementCommon & { type: 'g2d:showFps'; x: number; y: number })
   // Entrada de mouse/toque: corpo recebe a posição do ponteiro em xName/yName.
   | (JSStatementCommon & {
       type: 'g2d:onPointer'
@@ -776,6 +1283,336 @@ export type JSStatement =
       yName: string
       body: JSStatement[]
     })
+  // Imagens / spritesheet / animação (v0.3.0). `image`/`sheetVar` são nomes de
+  // asset/variável (strings); coords e quadros são números (mantém os blocos e o
+  // round-trip simples). O runtime resolve o nome do asset no manifesto.
+  | (JSStatementCommon & {
+      type: 'g2d:createImageSprite'
+      varName: string
+      x: number
+      y: number
+      w: number
+      h: number
+      image: string
+    })
+  | (JSStatementCommon & { type: 'g2d:setImage'; spriteVar: string; image: string })
+  | (JSStatementCommon & {
+      type: 'g2d:loadSpritesheet'
+      varName: string
+      image: string
+      frameW: number
+      frameH: number
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:animateSprite'
+      spriteVar: string
+      sheetVar: string
+      from: number
+      to: number
+      fps: number
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:drawFrame'
+      sheetVar: string
+      ctxVar: string
+      index: number
+      x: number
+      y: number
+      w: number
+      h: number
+    })
+  // Movimento + efeitos (v0.4.0).
+  | (JSStatementCommon & {
+      type: 'g2d:platformer'
+      spriteVar: string
+      ctxVar: string
+      speed: number
+      jump: number
+    })
+  | (JSStatementCommon & { type: 'g2d:topDown'; spriteVar: string; speed: number })
+  | (JSStatementCommon & { type: 'g2d:followPointer'; spriteVar: string; speed: number })
+  | (JSStatementCommon & { type: 'g2d:clampToScreen'; spriteVar: string; ctxVar: string })
+  | (JSStatementCommon & { type: 'g2d:flash'; color: string; ctxVar: string })
+  | (JSStatementCommon & { type: 'g2d:shake'; ctxVar: string; intensity: number })
+  | (JSStatementCommon & {
+      type: 'g2d:emitParticles'
+      count: number
+      color: string
+      x: number
+      y: number
+    })
+  | (JSStatementCommon & { type: 'g2d:drawParticles'; ctxVar: string })
+  // Tiles / tilemaps (v0.5.0). image = nome do asset do tileset (string); grid e
+  // solid são texto editável (linhas/índices); tile/x/y são números.
+  | (JSStatementCommon & {
+      type: 'g2d:createTileMap'
+      varName: string
+      image: string
+      tile: number
+      solid: string
+      grid: string
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:drawTileMap'
+      mapVar: string
+      ctxVar: string
+      x: number
+      y: number
+    })
+  | (JSStatementCommon & { type: 'g2d:tileMapCollide'; spriteVar: string; mapVar: string })
+  // Grupos de sprites (v0.6.0): MUITOS sprites (tiros, inimigos, estrelas). Um
+  // grupo é uma lista gerenciada de sprites. x/y/vx/vy são expressões (aceitam
+  // aleatório/contas); w/h números; color/image strings (nomes de asset).
+  | (JSStatementCommon & { type: 'g2d:createGroup'; varName: string })
+  | (JSStatementCommon & {
+      type: 'g2d:spawnInGroup'
+      groupVar: string
+      x: JSExpr
+      y: JSExpr
+      w: number
+      h: number
+      color: string
+      vx: JSExpr
+      vy: JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:spawnImageInGroup'
+      groupVar: string
+      x: JSExpr
+      y: JSExpr
+      w: number
+      h: number
+      image: string
+      vx: JSExpr
+      vy: JSExpr
+    })
+  | (JSStatementCommon & { type: 'g2d:updateGroup'; groupVar: string })
+  | (JSStatementCommon & { type: 'g2d:drawGroup'; groupVar: string; ctxVar: string })
+  | (JSStatementCommon & {
+      type: 'g2d:forEachInGroup'
+      groupVar: string
+      itemName: string
+      body: JSStatement[]
+    })
+  | (JSStatementCommon & { type: 'g2d:clearGroup'; groupVar: string })
+  | (JSStatementCommon & {
+      type: 'g2d:pruneOffscreen'
+      groupVar: string
+      ctxVar: string
+      itemName: string
+      body: JSStatement[]
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:onGroupOverlap'
+      aGroup: string
+      aName: string
+      bGroup: string
+      bName: string
+      body: JSStatement[]
+    })
+  | (JSStatementCommon & { type: 'g2d:removeFromGroup'; spriteVar: string; groupVar: string })
+  // Temporizadores: "a cada N quadros/segundos" — vira if (SZGame2D.everyX(...)).
+  | (JSStatementCommon & { type: 'g2d:everyFrames'; n: JSExpr; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'g2d:everySeconds'; seconds: number; body: JSStatement[] })
+  // HUD no canvas (v0.6.0): placar, texto, vidas (corações) e barra.
+  | (JSStatementCommon & {
+      type: 'g2d:drawScore'
+      ctxVar: string
+      label: string
+      value: JSExpr
+      x: number
+      y: number
+      color: string
+      size: number
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:drawLabel'
+      ctxVar: string
+      text: string
+      x: number
+      y: number
+      color: string
+      size: number
+      align: 'left' | 'center' | 'right'
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:drawHearts'
+      ctxVar: string
+      count: JSExpr
+      x: number
+      y: number
+      size: number
+      color: string
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:drawBar'
+      ctxVar: string
+      value: JSExpr
+      max: JSExpr
+      x: number
+      y: number
+      w: number
+      h: number
+      color: string
+    })
+  // Estado/telas (cenas): trocar de tela, overlay de tela cheia e reiniciar.
+  | (JSStatementCommon & { type: 'g2d:setScene'; name: string })
+  | (JSStatementCommon & {
+      type: 'g2d:showScreen'
+      ctxVar: string
+      title: string
+      subtitle: string
+      hint: string
+      bg: string
+    })
+  | (JSStatementCommon & { type: 'g2d:restart' })
+  // Tela: faz o canvas preencher ~percent% da janela (mantendo a proporção).
+  | (JSStatementCommon & { type: 'g2d:fitScreen'; percent: number })
+  // Tiro redondo com brilho num grupo; mover com setas; piscar (invencibilidade).
+  | (JSStatementCommon & {
+      type: 'g2d:spawnBullet'
+      groupVar: string
+      x: JSExpr
+      y: JSExpr
+      radius: number
+      color: string
+      vx: JSExpr
+      vy: JSExpr
+    })
+  | (JSStatementCommon & { type: 'g2d:arrowsX'; spriteVar: string; speed: number })
+  | (JSStatementCommon & { type: 'g2d:blinkSprite'; spriteVar: string; frames: number })
+  // Cenário: fundo de estrelas rolando; arrastar a nave com o dedo (eixo X).
+  | (JSStatementCommon & { type: 'g2d:starfield'; ctxVar: string; speed: number })
+  | (JSStatementCommon & { type: 'g2d:dragX'; spriteVar: string })
+  // Kit "Nave & Asteroides" (v0.7.0): desenhos prontos + efeitos + colisão sprite×grupo.
+  | (JSStatementCommon & {
+      type: 'g2d:createShip'
+      varName: string
+      x: number
+      y: number
+      w: number
+      h: number
+      bodyColor: string
+      wingColor: string
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:spawnAsteroid'
+      groupVar: string
+      x: JSExpr
+      y: JSExpr
+      size: number
+      color: string
+      vx: JSExpr
+      vy: JSExpr
+    })
+  | (JSStatementCommon & { type: 'g2d:explode'; spriteVar: string; color: string })
+  | (JSStatementCommon & { type: 'g2d:playShoot' })
+  | (JSStatementCommon & { type: 'g2d:playExplosion' })
+  | (JSStatementCommon & {
+      type: 'g2d:onSpriteGroupOverlap'
+      spriteVar: string
+      groupVar: string
+      itemName: string
+      body: JSStatement[]
+    })
+  // ---- Nave clássica: girar + impulsionar na direção apontada (v0.10.0) ----
+  | (JSStatementCommon & {
+      type: 'g2d:steerThrust'
+      spriteVar: string
+      speed: number
+      turn: number
+    })
+  | (JSStatementCommon & { type: 'g2d:rotateSprite'; spriteVar: string; deg: number })
+  | (JSStatementCommon & { type: 'g2d:pointSprite'; spriteVar: string; deg: number })
+  | (JSStatementCommon & { type: 'g2d:thrust'; spriteVar: string; force: number })
+  | (JSStatementCommon & { type: 'g2d:applyFriction'; spriteVar: string; factor: number })
+  | (JSStatementCommon & {
+      type: 'g2d:shootFrom'
+      spriteVar: string
+      groupVar: string
+      speed: number
+      color: string
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:spawnAsteroidEdge'
+      groupVar: string
+      size: number
+      color: string
+      speed: number
+    })
+  // ---- Pulo genérico + Kit dino (v0.9.0) ----
+  | (JSStatementCommon & {
+      type: 'g2d:jumpOnGround'
+      spriteVar: string
+      ctxVar: string
+      jump: number
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:createDino'
+      varName: string
+      x: number
+      y: number
+      size: number
+      color: string
+    })
+  // Game 2D — Kit equilibrista (Stick Hero) / Kit balão (v0.13.0).
+  | (JSStatementCommon & { type: 'g2d:createStickHero'; varName: string; ctxVar: string })
+  | (JSStatementCommon & { type: 'g2d:updateStickHero'; gameVar: string })
+  | (JSStatementCommon & { type: 'g2d:restartStickHero'; gameVar: string })
+  | (JSStatementCommon & { type: 'g2d:createBalloon'; varName: string; ctxVar: string })
+  | (JSStatementCommon & { type: 'g2d:updateBalloon'; gameVar: string })
+  | (JSStatementCommon & { type: 'g2d:restartBalloon'; gameVar: string })
+  | (JSStatementCommon & {
+      type: 'g2d:controlDino'
+      spriteVar: string
+      ctxVar: string
+      jump: number
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:spawnObstacle'
+      groupVar: string
+      ctxVar: string
+      shape: string
+      x: JSExpr
+      size: number
+      vx: JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:spawnEgg'
+      groupVar: string
+      x: JSExpr
+      y: JSExpr
+      vx: JSExpr
+    })
+  | (JSStatementCommon & { type: 'g2d:forest'; ctxVar: string; speed: number })
+  | (JSStatementCommon & { type: 'g2d:playJump' })
+  | (JSStatementCommon & { type: 'g2d:playDinoHurt' })
+  | (JSStatementCommon & { type: 'g2d:playCollect' })
+  // ---- Kit gorilas: batalha de bananas (artilharia) ----
+  | (JSStatementCommon & { type: 'g2d:createCity'; varName: string })
+  | (JSStatementCommon & { type: 'g2d:drawCity'; cityVar: string; ctxVar: string })
+  | (JSStatementCommon & {
+      type: 'g2d:placeThrower'
+      varName: string
+      cityVar: string
+      side: 'left' | 'right'
+      color: string
+    })
+  | (JSStatementCommon & { type: 'g2d:newWind'; cityVar: string })
+  | (JSStatementCommon & { type: 'g2d:drawWind'; cityVar: string; ctxVar: string })
+  | (JSStatementCommon & { type: 'g2d:aimDrag'; throwerVar: string; ctxVar: string })
+  | (JSStatementCommon & { type: 'g2d:throwBanana'; throwerVar: string; cityVar: string })
+  | (JSStatementCommon & { type: 'g2d:updateBanana'; cityVar: string })
+  | (JSStatementCommon & { type: 'g2d:drawBanana'; cityVar: string; ctxVar: string })
+  | (JSStatementCommon & { type: 'g2d:playWhistle' })
+  | (JSStatementCommon & { type: 'g2d:playBoom' })
+  | (JSStatementCommon & {
+      type: 'g2d:computerTurn'
+      throwerVar: string
+      cityVar: string
+      enemyVar: string
+    })
+  | (JSStatementCommon & { type: 'g2d:drawAimReadout'; ctxVar: string })
   // ---- Game 3D (extensão game-3d, Three.js via window.SZGame3D) ----
   | (JSStatementCommon & { type: 'g3d:createScene'; canvasId: string; varName: string })
   | (JSStatementCommon & { type: 'g3d:setBackground'; worldVar: string; color: string })
@@ -815,6 +1652,260 @@ export type JSStatement =
       z: JSExpr
     })
   | (JSStatementCommon & { type: 'g3d:animate'; worldVar: string; body: JSStatement[] })
+  // Game 3D — caixa retangular (largura/altura/profundidade), p/ o chão e objetos não-cúbicos.
+  | (JSStatementCommon & {
+      type: 'g3d:createBlock'
+      varName: string
+      worldVar: string
+      width: number
+      height: number
+      depth: number
+      color: string
+    })
+  // Game 3D — física: velocidade, pulo, gravidade+chão, controle por teclado, escala.
+  | (JSStatementCommon & {
+      type: 'g3d:setVelocity'
+      objVar: string
+      x: JSExpr
+      y: JSExpr
+      z: JSExpr
+    })
+  | (JSStatementCommon & { type: 'g3d:jump'; objVar: string; force: JSExpr })
+  | (JSStatementCommon & { type: 'g3d:applyGravity'; objVar: string; groundVar: string })
+  | (JSStatementCommon & { type: 'g3d:controlWithKeys'; objVar: string; speed: number })
+  | (JSStatementCommon & { type: 'g3d:setScale'; objVar: string; factor: JSExpr })
+  // Game 3D — câmera segue um objeto (mantém o enquadramento atual).
+  | (JSStatementCommon & { type: 'g3d:cameraFollow'; worldVar: string; objVar: string })
+  // Game 3D — Kit "Desvie": grupo de inimigos, spawner que avança, fim de jogo.
+  | (JSStatementCommon & { type: 'g3d:createGroup'; varName: string })
+  | (JSStatementCommon & {
+      type: 'g3d:runEnemies'
+      worldVar: string
+      groupVar: string
+      groundVar: string
+      every: number
+      speed: number
+    })
+  | (JSStatementCommon & { type: 'g3d:stop'; worldVar: string })
+  // ---- Game 3D — Kit Travessia (atravessar a rua, mundo em grade z-up) ----
+  | (JSStatementCommon & { type: 'g3d:createCrossingScene'; canvasId: string; varName: string })
+  | (JSStatementCommon & {
+      type: 'g3d:createCrosser'
+      varName: string
+      worldVar: string
+      color: string
+    })
+  | (JSStatementCommon & { type: 'g3d:crosserMove'; objVar: string; direction: string })
+  | (JSStatementCommon & { type: 'g3d:crosserStep'; objVar: string; worldVar: string })
+  | (JSStatementCommon & { type: 'g3d:crosserReset'; objVar: string; worldVar: string })
+  | (JSStatementCommon & { type: 'g3d:gridPosition'; objVar: string; row: JSExpr; col: JSExpr })
+  | (JSStatementCommon & {
+      type: 'g3d:addRow'
+      worldVar: string
+      rowIndex: JSExpr
+      kind: string
+      direction: string
+      speed: number
+    })
+  | (JSStatementCommon & { type: 'g3d:generateRows'; worldVar: string; count: number })
+  | (JSStatementCommon & { type: 'g3d:moveTraffic'; worldVar: string })
+  // ---- Game 3D — primitivas GENÉRICAS de grade/isométrico (fora do kit, p/ outros jogos) ----
+  | (JSStatementCommon & { type: 'g3d:isometricCamera'; worldVar: string; followVar: string })
+  | (JSStatementCommon & { type: 'g3d:gridStep'; objVar: string })
+  | (JSStatementCommon & { type: 'g3d:gridMove'; objVar: string; direction: string })
+  | (JSStatementCommon & {
+      type: 'g3d:moveAcross'
+      groupVar: string
+      speed: number
+      min: number
+      max: number
+    })
+  // ---- Game 3D — câmera aérea + movimento circular (genéricos) e Kit Corrida ----
+  | (JSStatementCommon & { type: 'g3d:topCamera'; worldVar: string; followVar: string })
+  | (JSStatementCommon & {
+      type: 'g3d:moveInCircle'
+      objVar: string
+      radius: number
+      speed: number
+    })
+  | (JSStatementCommon & { type: 'g3d:createRaceScene'; canvasId: string; varName: string })
+  | (JSStatementCommon & { type: 'g3d:createRaceTrack'; worldVar: string })
+  | (JSStatementCommon & {
+      type: 'g3d:createRaceCar'
+      varName: string
+      worldVar: string
+      color: string
+    })
+  | (JSStatementCommon & { type: 'g3d:raceStep'; objVar: string; worldVar: string })
+  | (JSStatementCommon & { type: 'g3d:raceControl'; objVar: string; mode: string })
+  | (JSStatementCommon & { type: 'g3d:runRivals'; worldVar: string })
+  | (JSStatementCommon & { type: 'g3d:raceReset'; objVar: string; worldVar: string })
+  // ---- Game 3D — genéricos de movimento/física (sem lib) e Kit Empilhar (Stack) ----
+  | (JSStatementCommon & { type: 'g3d:fall'; objVar: string })
+  | (JSStatementCommon & {
+      type: 'g3d:slideBetween'
+      objVar: string
+      axis: string
+      min: number
+      max: number
+      speed: number
+    })
+  | (JSStatementCommon & { type: 'g3d:spin'; objVar: string; axis: string; speed: number })
+  | (JSStatementCommon & { type: 'g3d:createStackScene'; canvasId: string; varName: string })
+  | (JSStatementCommon & { type: 'g3d:createStackTower'; worldVar: string })
+  | (JSStatementCommon & { type: 'g3d:stackDrop'; worldVar: string })
+  | (JSStatementCommon & { type: 'g3d:stackStep'; worldVar: string })
+  | (JSStatementCommon & { type: 'g3d:stackReset'; worldVar: string })
+  // ---- Game 3D — genéricos: mover/girar relativo + suavizar (lerp) ----
+  | (JSStatementCommon & { type: 'g3d:moveBy'; objVar: string; x: JSExpr; y: JSExpr; z: JSExpr })
+  | (JSStatementCommon & { type: 'g3d:rotateBy'; objVar: string; axis: string; amount: JSExpr })
+  | (JSStatementCommon & {
+      type: 'g3d:moveTowards'
+      objVar: string
+      x: JSExpr
+      y: JSExpr
+      z: JSExpr
+      factor: number
+    })
+  // ---- Game 3D — genéricos: olhar/apontar/andar para frente ----
+  | (JSStatementCommon & { type: 'g3d:lookAtObject'; aVar: string; bVar: string })
+  | (JSStatementCommon & {
+      type: 'g3d:lookAtPoint'
+      objVar: string
+      x: JSExpr
+      y: JSExpr
+      z: JSExpr
+    })
+  | (JSStatementCommon & { type: 'g3d:moveForward'; objVar: string; dist: JSExpr })
+  | (JSStatementCommon & { type: 'g3d:faceVelocity'; objVar: string })
+  // ---- Game 3D — física genérica: corpo, sólidos, presets plataforma/FPS ----
+  | (JSStatementCommon & { type: 'g3d:body'; objVar: string; gravity: number })
+  | (JSStatementCommon & { type: 'g3d:stepBody'; objVar: string; worldVar: string })
+  | (JSStatementCommon & { type: 'g3d:setSolid'; objVar: string })
+  | (JSStatementCommon & {
+      type: 'g3d:platformerControls'
+      objVar: string
+      worldVar: string
+      speed: number
+      jump: number
+    })
+  | (JSStatementCommon & {
+      type: 'g3d:fpsControls'
+      objVar: string
+      worldVar: string
+      speed: number
+    })
+  | (JSStatementCommon & { type: 'g3d:resolveCollision'; aVar: string; bVar: string })
+  // ---- Game 3D — câmeras vivas (1ª pessoa, orbital, 3ª pessoa, olhar, FOV) ----
+  | (JSStatementCommon & { type: 'g3d:fpsCamera'; worldVar: string; objVar: string })
+  | (JSStatementCommon & { type: 'g3d:orbitCamera'; worldVar: string; objVar: string })
+  | (JSStatementCommon & {
+      type: 'g3d:thirdPersonCamera'
+      worldVar: string
+      objVar: string
+      dist: number
+      height: number
+    })
+  | (JSStatementCommon & { type: 'g3d:cameraLookAt'; worldVar: string; objVar: string })
+  | (JSStatementCommon & { type: 'g3d:setFOV'; worldVar: string; deg: number })
+  // ---- Game 3D — formas, materiais, texturas, modelo (Fase 6) ----
+  | (JSStatementCommon & {
+      type: 'g3d:createCylinder'
+      varName: string
+      worldVar: string
+      radius: number
+      height: number
+      color: string
+    })
+  | (JSStatementCommon & {
+      type: 'g3d:createCone'
+      varName: string
+      worldVar: string
+      radius: number
+      height: number
+      color: string
+    })
+  | (JSStatementCommon & {
+      type: 'g3d:createPlane'
+      varName: string
+      worldVar: string
+      width: number
+      depth: number
+      color: string
+    })
+  | (JSStatementCommon & {
+      type: 'g3d:createTorus'
+      varName: string
+      worldVar: string
+      radius: number
+      tube: number
+      color: string
+    })
+  | (JSStatementCommon & { type: 'g3d:createModel'; varName: string; worldVar: string })
+  | (JSStatementCommon & { type: 'g3d:setColor'; objVar: string; color: string })
+  | (JSStatementCommon & { type: 'g3d:setOpacity'; objVar: string; opacity: number })
+  | (JSStatementCommon & { type: 'g3d:setMaterial'; objVar: string; kind: string })
+  | (JSStatementCommon & { type: 'g3d:setTexture'; objVar: string; asset: string })
+  | (JSStatementCommon & { type: 'g3d:setVisible'; objVar: string; mode: string })
+  | (JSStatementCommon & { type: 'g3d:removeObject'; worldVar: string; objVar: string })
+  | (JSStatementCommon & { type: 'g3d:addToModel'; modelVar: string; partVar: string })
+  // ---- Game 3D — luz & céu (Fase 7) ----
+  | (JSStatementCommon & {
+      type: 'g3d:addAmbientLight'
+      worldVar: string
+      color: string
+      intensity: number
+    })
+  | (JSStatementCommon & {
+      type: 'g3d:addSunLight'
+      worldVar: string
+      color: string
+      intensity: number
+    })
+  | (JSStatementCommon & {
+      type: 'g3d:addPointLight'
+      worldVar: string
+      color: string
+      intensity: number
+      x: number
+      y: number
+      z: number
+    })
+  | (JSStatementCommon & {
+      type: 'g3d:setFog'
+      worldVar: string
+      color: string
+      near: number
+      far: number
+    })
+  | (JSStatementCommon & { type: 'g3d:setSky'; worldVar: string; top: string; bottom: string })
+  | (JSStatementCommon & { type: 'g3d:setShadows'; worldVar: string; mode: string })
+  // ---- Game 3D — enxames & som (Fase 8) ----
+  | (JSStatementCommon & { type: 'g3d:createSwarm'; varName: string; worldVar: string })
+  | (JSStatementCommon & {
+      type: 'g3d:spawnInSwarm'
+      swarmVar: string
+      originalVar: string
+      x: number
+      y: number
+      z: number
+    })
+  | (JSStatementCommon & {
+      type: 'g3d:forEachInSwarm'
+      swarmVar: string
+      itemName: string
+      body: JSStatement[]
+    })
+  | (JSStatementCommon & { type: 'g3d:removeFromSwarm'; swarmVar: string; itemVar: string })
+  | (JSStatementCommon & {
+      type: 'g3d:pruneSwarm'
+      swarmVar: string
+      axis: string
+      min: number
+      max: number
+    })
+  | (JSStatementCommon & { type: 'g3d:playNote'; freq: number; ms: number })
+  | (JSStatementCommon & { type: 'g3d:playEffect'; kind: string })
   // Orientação a objetos
   | (JSStatementCommon & {
       type: 'classDecl'
@@ -857,7 +1948,7 @@ export type JSStatement =
   | (JSStatementCommon & {
       type: 'eventHandler'
       target: string
-      targetKind?: 'id' | 'var' | 'document'
+      targetKind?: 'id' | 'var' | 'document' | 'window'
       event: EventKind
       handlerName: string
     })
@@ -887,11 +1978,15 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'setTimeout'; delay: JSExpr; body: JSStatement[] })
   // Repetir a cada intervalo de tempo (`setInterval(() => {…}, ms)`).
   | (JSStatementCommon & { type: 'setInterval'; delay: JSExpr; body: JSStatement[] })
+  // Versões em SEGUNDOS: geram `setTimeout/Interval(() => {…}, <delay> * 1000)`.
+  // `delay` = segundos; o `* 1000` no código é o que distingue do ms no round-trip.
+  | (JSStatementCommon & { type: 'setTimeoutSeconds'; delay: JSExpr; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'setIntervalSeconds'; delay: JSExpr; body: JSStatement[] })
   // Escape hatch
   | (JSStatementCommon & { type: 'rawJS'; code: string; advanced: true })
 
 export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
-  z.union([
+  z.discriminatedUnion('type', [
     z.object({
       type: z.literal('var'),
       name: irText(),
@@ -964,7 +2059,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('event'),
       target: irText(),
-      targetKind: z.enum(['id', 'var', 'document']).optional(),
+      targetKind: z.enum(['id', 'var', 'document', 'window']).optional(),
       event: eventKindSchema,
       body: z.array(JSStatementSchema),
       ...idField,
@@ -994,8 +2089,38 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('setStyle'),
+      targetId: irText(),
+      targetKind: z.enum(['id', 'var', 'this']).optional(),
+      property: irText(),
+      value: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('setAttribute'),
+      targetId: irText(),
+      targetKind: z.enum(['id', 'var', 'this']).optional(),
+      name: irText(),
+      value: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
       type: z.literal('createElement'),
       tag: irText(),
+      varName: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('createElementNS'),
+      tag: irText(),
+      varName: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('getAttribute'),
+      targetId: irText(),
+      targetKind: z.enum(['id', 'var']).optional(),
+      name: irText(),
       varName: irText(),
       ...idField,
     }),
@@ -1005,6 +2130,23 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       childVar: irText(),
       ...idField,
     }),
+    z.object({ type: z.literal('throwError'), message: JSExprSchema, ...idField }),
+    z.object({
+      type: z.literal('objectAssign'),
+      targetVar: irText(),
+      sourceVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('switch'),
+      subject: JSExprSchema,
+      cases: z.array(z.object({ match: JSExprSchema, body: z.array(JSStatementSchema) })),
+      default: z.array(JSStatementSchema).optional(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('requestFullscreen'), ...idField }),
+    z.object({ type: z.literal('exitFullscreen'), ...idField }),
+    z.object({ type: z.literal('toggleFullscreen'), ...idField }),
     z.object({
       type: z.literal('setDataset'),
       targetId: irText(),
@@ -1102,9 +2244,110 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('canvasStrokeRect'),
+      ctxVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      w: JSExprSchema,
+      h: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasClearRect'),
+      ctxVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      w: JSExprSchema,
+      h: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasRoundRect'),
+      ctxVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      w: JSExprSchema,
+      h: JSExprSchema,
+      r: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasEllipse'),
+      ctxVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      rx: JSExprSchema,
+      ry: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasArcSlice'),
+      ctxVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      r: JSExprSchema,
+      start: JSExprSchema,
+      end: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasQuadraticCurve'),
+      ctxVar: irText(),
+      cpx: JSExprSchema,
+      cpy: JSExprSchema,
+      x: JSExprSchema,
+      y: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasBezierCurve'),
+      ctxVar: irText(),
+      cp1x: JSExprSchema,
+      cp1y: JSExprSchema,
+      cp2x: JSExprSchema,
+      cp2y: JSExprSchema,
+      x: JSExprSchema,
+      y: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasArcTo'),
+      ctxVar: irText(),
+      x1: JSExprSchema,
+      y1: JSExprSchema,
+      x2: JSExprSchema,
+      y2: JSExprSchema,
+      r: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasShadow'),
+      ctxVar: irText(),
+      color: JSExprSchema,
+      blur: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasStrokeText'),
+      ctxVar: irText(),
+      text: JSExprSchema,
+      x: JSExprSchema,
+      y: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasLineDash'),
+      ctxVar: irText(),
+      segment: JSExprSchema,
+      ...idField,
+    }),
+
+    z.object({
       type: z.literal('animationLoop'),
       body: z.array(JSStatementSchema),
       handle: irText().optional(),
+      timeVar: irText().optional(),
+      deltaVar: irText().optional(),
       ...idField,
     }),
     z.object({ type: z.literal('cancelAnimationFrame'), handle: JSExprSchema, ...idField }),
@@ -1171,6 +2414,72 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       stops: z.array(z.object({ offset: z.number(), color: irText() })),
       ...idField,
     }),
+    z.object({ type: z.literal('canvasBeginPath'), ctxVar: irText(), ...idField }),
+    z.object({ type: z.literal('canvasClosePath'), ctxVar: irText(), ...idField }),
+    z.object({ type: z.literal('canvasStroke'), ctxVar: irText(), ...idField }),
+    z.object({ type: z.literal('canvasFill'), ctxVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('canvasMoveTo'),
+      ctxVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasLineTo'),
+      ctxVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasRect'),
+      ctxVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      w: JSExprSchema,
+      h: JSExprSchema,
+      ...idField,
+    }),
+    z.object({ type: z.literal('canvasClip'), ctxVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('canvasStrokeStyle'),
+      ctxVar: irText(),
+      color: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasLineWidth'),
+      ctxVar: irText(),
+      width: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasGlobalAlpha'),
+      ctxVar: irText(),
+      alpha: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasFont'),
+      ctxVar: irText(),
+      weight: z.enum(['bold', 'italic', 'italic bold']).optional(),
+      size: z.number(),
+      family: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasTextAlign'),
+      ctxVar: irText(),
+      align: z.enum(['left', 'center', 'right']),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('canvasTextBaseline'),
+      ctxVar: irText(),
+      baseline: z.enum(['top', 'middle', 'bottom', 'alphabetic']),
+      ...idField,
+    }),
     z.object({
       type: z.literal('g2d:createSprite'),
       varName: irText(),
@@ -1185,12 +2494,6 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('g2d:drawSprite'),
       spriteVar: irText(),
       ctxVar: irText(),
-      ...idField,
-    }),
-    z.object({
-      type: z.literal('g2d:moveByKeys'),
-      spriteVar: irText(),
-      speed: z.number(),
       ...idField,
     }),
     z.object({
@@ -1226,6 +2529,20 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       text: irText(),
       ...idField,
     }),
+    z.object({ type: z.literal('g2d:clear'), ...idField }),
+    z.object({
+      type: z.literal('g2d:onKey'),
+      key: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:onOverlap'),
+      aVar: irText(),
+      bVar: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
     z.object({ type: z.literal('g2d:setGravity'), value: z.number(), ...idField }),
     z.object({ type: z.literal('g2d:applyVelocity'), spriteVar: irText(), ...idField }),
     z.object({
@@ -1248,12 +2565,582 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('g2d:playFx'),
+      fx: z.string(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:playMusic'),
+      tune: z.string(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:stopMusic'),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:playNote'),
+      note: z.string(),
+      ms: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:aimAt'),
+      spriteVar: irText(),
+      targetVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:moveToward'),
+      spriteVar: irText(),
+      targetVar: irText(),
+      speed: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:setHealth'),
+      spriteVar: irText(),
+      amount: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:changeHealth'),
+      spriteVar: irText(),
+      delta: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:flipSprite'),
+      spriteVar: irText(),
+      dir: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:setOpacity'),
+      spriteVar: irText(),
+      percent: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:setSize'),
+      spriteVar: irText(),
+      w: z.number(),
+      h: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:scaleSprite'),
+      spriteVar: irText(),
+      factor: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:wrapEdges'),
+      spriteVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:pruneOld'),
+      groupVar: irText(),
+      seconds: z.number(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:pauseGame'), ...idField }),
+    z.object({ type: z.literal('g2d:resumeGame'), ...idField }),
+    z.object({
+      type: z.literal('g2d:cameraFollow'),
+      spriteVar: irText(),
+      worldW: z.number(),
+      worldH: z.number(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:setCamera'), x: z.number(), y: z.number(), ...idField }),
+    z.object({
+      type: z.literal('g2d:breakTile'),
+      mapVar: irText(),
+      spriteVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:setTile'),
+      mapVar: irText(),
+      index: z.number(),
+      spriteVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:bringToFront'),
+      spriteVar: irText(),
+      groupVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:sendToBack'),
+      spriteVar: irText(),
+      groupVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:drawHitbox'), spriteVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:showFps'), x: z.number(), y: z.number(), ...idField }),
+    z.object({
       type: z.literal('g2d:onPointer'),
       xName: irText(),
       yName: irText(),
       body: z.array(JSStatementSchema),
       ...idField,
     }),
+    z.object({
+      type: z.literal('g2d:createImageSprite'),
+      varName: irText(),
+      x: z.number(),
+      y: z.number(),
+      w: z.number(),
+      h: z.number(),
+      image: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:setImage'),
+      spriteVar: irText(),
+      image: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:loadSpritesheet'),
+      varName: irText(),
+      image: irText(),
+      frameW: z.number(),
+      frameH: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:animateSprite'),
+      spriteVar: irText(),
+      sheetVar: irText(),
+      from: z.number(),
+      to: z.number(),
+      fps: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:drawFrame'),
+      sheetVar: irText(),
+      ctxVar: irText(),
+      index: z.number(),
+      x: z.number(),
+      y: z.number(),
+      w: z.number(),
+      h: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:platformer'),
+      spriteVar: irText(),
+      ctxVar: irText(),
+      speed: z.number(),
+      jump: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:topDown'),
+      spriteVar: irText(),
+      speed: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:followPointer'),
+      spriteVar: irText(),
+      speed: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:clampToScreen'),
+      spriteVar: irText(),
+      ctxVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:flash'), color: irText(), ctxVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:shake'),
+      ctxVar: irText(),
+      intensity: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:emitParticles'),
+      count: z.number(),
+      color: irText(),
+      x: z.number(),
+      y: z.number(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:drawParticles'), ctxVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:createTileMap'),
+      varName: irText(),
+      image: irText(),
+      tile: z.number(),
+      solid: irText(),
+      grid: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:drawTileMap'),
+      mapVar: irText(),
+      ctxVar: irText(),
+      x: z.number(),
+      y: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:tileMapCollide'),
+      spriteVar: irText(),
+      mapVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:createGroup'), varName: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:spawnInGroup'),
+      groupVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      w: z.number(),
+      h: z.number(),
+      color: irText(),
+      vx: JSExprSchema,
+      vy: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:spawnImageInGroup'),
+      groupVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      w: z.number(),
+      h: z.number(),
+      image: irText(),
+      vx: JSExprSchema,
+      vy: JSExprSchema,
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:updateGroup'), groupVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:drawGroup'),
+      groupVar: irText(),
+      ctxVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:forEachInGroup'),
+      groupVar: irText(),
+      itemName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:clearGroup'), groupVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:pruneOffscreen'),
+      groupVar: irText(),
+      ctxVar: irText(),
+      itemName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:onGroupOverlap'),
+      aGroup: irText(),
+      aName: irText(),
+      bGroup: irText(),
+      bName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:removeFromGroup'),
+      spriteVar: irText(),
+      groupVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:everyFrames'),
+      n: JSExprSchema,
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:everySeconds'),
+      seconds: z.number(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:drawScore'),
+      ctxVar: irText(),
+      label: irText(),
+      value: JSExprSchema,
+      x: z.number(),
+      y: z.number(),
+      color: irText(),
+      size: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:drawLabel'),
+      ctxVar: irText(),
+      text: irText(),
+      x: z.number(),
+      y: z.number(),
+      color: irText(),
+      size: z.number(),
+      align: z.enum(['left', 'center', 'right']),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:drawHearts'),
+      ctxVar: irText(),
+      count: JSExprSchema,
+      x: z.number(),
+      y: z.number(),
+      size: z.number(),
+      color: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:drawBar'),
+      ctxVar: irText(),
+      value: JSExprSchema,
+      max: JSExprSchema,
+      x: z.number(),
+      y: z.number(),
+      w: z.number(),
+      h: z.number(),
+      color: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:setScene'), name: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:showScreen'),
+      ctxVar: irText(),
+      title: irText(),
+      subtitle: irText(),
+      hint: irText(),
+      bg: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:restart'), ...idField }),
+    z.object({
+      type: z.literal('g2d:starfield'),
+      ctxVar: irText(),
+      speed: z.number(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:dragX'), spriteVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:fitScreen'), percent: z.number(), ...idField }),
+    z.object({
+      type: z.literal('g2d:spawnBullet'),
+      groupVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      radius: z.number(),
+      color: irText(),
+      vx: JSExprSchema,
+      vy: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:arrowsX'),
+      spriteVar: irText(),
+      speed: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:blinkSprite'),
+      spriteVar: irText(),
+      frames: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:createShip'),
+      varName: irText(),
+      x: z.number(),
+      y: z.number(),
+      w: z.number(),
+      h: z.number(),
+      bodyColor: irText(),
+      wingColor: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:spawnAsteroid'),
+      groupVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      size: z.number(),
+      color: irText(),
+      vx: JSExprSchema,
+      vy: JSExprSchema,
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:explode'), spriteVar: irText(), color: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:playShoot'), ...idField }),
+    z.object({ type: z.literal('g2d:playExplosion'), ...idField }),
+    z.object({
+      type: z.literal('g2d:onSpriteGroupOverlap'),
+      spriteVar: irText(),
+      groupVar: irText(),
+      itemName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:steerThrust'),
+      spriteVar: irText(),
+      speed: z.number(),
+      turn: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:rotateSprite'),
+      spriteVar: irText(),
+      deg: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:pointSprite'),
+      spriteVar: irText(),
+      deg: z.number(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:thrust'), spriteVar: irText(), force: z.number(), ...idField }),
+    z.object({
+      type: z.literal('g2d:applyFriction'),
+      spriteVar: irText(),
+      factor: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:shootFrom'),
+      spriteVar: irText(),
+      groupVar: irText(),
+      speed: z.number(),
+      color: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:spawnAsteroidEdge'),
+      groupVar: irText(),
+      size: z.number(),
+      color: irText(),
+      speed: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:jumpOnGround'),
+      spriteVar: irText(),
+      ctxVar: irText(),
+      jump: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:createDino'),
+      varName: irText(),
+      x: z.number(),
+      y: z.number(),
+      size: z.number(),
+      color: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:createStickHero'),
+      varName: irText(),
+      ctxVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:updateStickHero'), gameVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:restartStickHero'), gameVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:createBalloon'),
+      varName: irText(),
+      ctxVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:updateBalloon'), gameVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:restartBalloon'), gameVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:controlDino'),
+      spriteVar: irText(),
+      ctxVar: irText(),
+      jump: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:spawnObstacle'),
+      groupVar: irText(),
+      ctxVar: irText(),
+      shape: irText(),
+      x: JSExprSchema,
+      size: z.number(),
+      vx: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:spawnEgg'),
+      groupVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      vx: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:forest'),
+      ctxVar: irText(),
+      speed: z.number(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:playJump'), ...idField }),
+    z.object({ type: z.literal('g2d:playDinoHurt'), ...idField }),
+    z.object({ type: z.literal('g2d:playCollect'), ...idField }),
+    z.object({ type: z.literal('g2d:createCity'), varName: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:drawCity'), cityVar: irText(), ctxVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:placeThrower'),
+      varName: irText(),
+      cityVar: irText(),
+      side: z.enum(['left', 'right']),
+      color: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:newWind'), cityVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:drawWind'), cityVar: irText(), ctxVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:aimDrag'),
+      throwerVar: irText(),
+      ctxVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:throwBanana'),
+      throwerVar: irText(),
+      cityVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:updateBanana'), cityVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:drawBanana'),
+      cityVar: irText(),
+      ctxVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:playWhistle'), ...idField }),
+    z.object({ type: z.literal('g2d:playBoom'), ...idField }),
+    z.object({
+      type: z.literal('g2d:computerTurn'),
+      throwerVar: irText(),
+      cityVar: irText(),
+      enemyVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:drawAimReadout'), ctxVar: irText(), ...idField }),
     z.object({
       type: z.literal('g3d:createScene'),
       canvasId: irText(),
@@ -1313,6 +3200,431 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('g3d:createBlock'),
+      varName: irText(),
+      worldVar: irText(),
+      width: z.number(),
+      height: z.number(),
+      depth: z.number(),
+      color: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:setVelocity'),
+      objVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      z: JSExprSchema,
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3d:jump'), objVar: irText(), force: JSExprSchema, ...idField }),
+    z.object({
+      type: z.literal('g3d:applyGravity'),
+      objVar: irText(),
+      groundVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:controlWithKeys'),
+      objVar: irText(),
+      speed: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:setScale'),
+      objVar: irText(),
+      factor: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:cameraFollow'),
+      worldVar: irText(),
+      objVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3d:createGroup'), varName: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3d:runEnemies'),
+      worldVar: irText(),
+      groupVar: irText(),
+      groundVar: irText(),
+      every: z.number(),
+      speed: z.number(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3d:stop'), worldVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3d:createCrossingScene'),
+      canvasId: irText(),
+      varName: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:createCrosser'),
+      varName: irText(),
+      worldVar: irText(),
+      color: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:crosserMove'),
+      objVar: irText(),
+      direction: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:crosserStep'),
+      objVar: irText(),
+      worldVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:crosserReset'),
+      objVar: irText(),
+      worldVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:gridPosition'),
+      objVar: irText(),
+      row: JSExprSchema,
+      col: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:addRow'),
+      worldVar: irText(),
+      rowIndex: JSExprSchema,
+      kind: irText(),
+      direction: irText(),
+      speed: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:generateRows'),
+      worldVar: irText(),
+      count: z.number(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3d:moveTraffic'), worldVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3d:isometricCamera'),
+      worldVar: irText(),
+      followVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3d:gridStep'), objVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3d:gridMove'),
+      objVar: irText(),
+      direction: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:moveAcross'),
+      groupVar: irText(),
+      speed: z.number(),
+      min: z.number(),
+      max: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:topCamera'),
+      worldVar: irText(),
+      followVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:moveInCircle'),
+      objVar: irText(),
+      radius: z.number(),
+      speed: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:createRaceScene'),
+      canvasId: irText(),
+      varName: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3d:createRaceTrack'), worldVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3d:createRaceCar'),
+      varName: irText(),
+      worldVar: irText(),
+      color: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3d:raceStep'), objVar: irText(), worldVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:raceControl'), objVar: irText(), mode: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:runRivals'), worldVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3d:raceReset'),
+      objVar: irText(),
+      worldVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3d:fall'), objVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3d:slideBetween'),
+      objVar: irText(),
+      axis: irText(),
+      min: z.number(),
+      max: z.number(),
+      speed: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:spin'),
+      objVar: irText(),
+      axis: irText(),
+      speed: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:createStackScene'),
+      canvasId: irText(),
+      varName: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3d:createStackTower'), worldVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:stackDrop'), worldVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:stackStep'), worldVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:stackReset'), worldVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3d:moveBy'),
+      objVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      z: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:rotateBy'),
+      objVar: irText(),
+      axis: irText(),
+      amount: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:moveTowards'),
+      objVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      z: JSExprSchema,
+      factor: z.number(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3d:lookAtObject'), aVar: irText(), bVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3d:lookAtPoint'),
+      objVar: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      z: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:moveForward'),
+      objVar: irText(),
+      dist: JSExprSchema,
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3d:faceVelocity'), objVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:body'), objVar: irText(), gravity: z.number(), ...idField }),
+    z.object({ type: z.literal('g3d:stepBody'), objVar: irText(), worldVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:setSolid'), objVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3d:platformerControls'),
+      objVar: irText(),
+      worldVar: irText(),
+      speed: z.number(),
+      jump: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:fpsControls'),
+      objVar: irText(),
+      worldVar: irText(),
+      speed: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:resolveCollision'),
+      aVar: irText(),
+      bVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:fpsCamera'),
+      worldVar: irText(),
+      objVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:orbitCamera'),
+      worldVar: irText(),
+      objVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:thirdPersonCamera'),
+      worldVar: irText(),
+      objVar: irText(),
+      dist: z.number(),
+      height: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:cameraLookAt'),
+      worldVar: irText(),
+      objVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3d:setFOV'), worldVar: irText(), deg: z.number(), ...idField }),
+    z.object({
+      type: z.literal('g3d:createCylinder'),
+      varName: irText(),
+      worldVar: irText(),
+      radius: z.number(),
+      height: z.number(),
+      color: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:createCone'),
+      varName: irText(),
+      worldVar: irText(),
+      radius: z.number(),
+      height: z.number(),
+      color: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:createPlane'),
+      varName: irText(),
+      worldVar: irText(),
+      width: z.number(),
+      depth: z.number(),
+      color: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:createTorus'),
+      varName: irText(),
+      worldVar: irText(),
+      radius: z.number(),
+      tube: z.number(),
+      color: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:createModel'),
+      varName: irText(),
+      worldVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3d:setColor'), objVar: irText(), color: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3d:setOpacity'),
+      objVar: irText(),
+      opacity: z.number(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3d:setMaterial'), objVar: irText(), kind: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:setTexture'), objVar: irText(), asset: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:setVisible'), objVar: irText(), mode: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3d:removeObject'),
+      worldVar: irText(),
+      objVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:addToModel'),
+      modelVar: irText(),
+      partVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:addAmbientLight'),
+      worldVar: irText(),
+      color: irText(),
+      intensity: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:addSunLight'),
+      worldVar: irText(),
+      color: irText(),
+      intensity: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:addPointLight'),
+      worldVar: irText(),
+      color: irText(),
+      intensity: z.number(),
+      x: z.number(),
+      y: z.number(),
+      z: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:setFog'),
+      worldVar: irText(),
+      color: irText(),
+      near: z.number(),
+      far: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:setSky'),
+      worldVar: irText(),
+      top: irText(),
+      bottom: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3d:setShadows'), worldVar: irText(), mode: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3d:createSwarm'),
+      varName: irText(),
+      worldVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:spawnInSwarm'),
+      swarmVar: irText(),
+      originalVar: irText(),
+      x: z.number(),
+      y: z.number(),
+      z: z.number(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:forEachInSwarm'),
+      swarmVar: irText(),
+      itemName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:removeFromSwarm'),
+      swarmVar: irText(),
+      itemVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:pruneSwarm'),
+      swarmVar: irText(),
+      axis: irText(),
+      min: z.number(),
+      max: z.number(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3d:playNote'), freq: z.number(), ms: z.number(), ...idField }),
+    z.object({ type: z.literal('g3d:playEffect'), kind: irText(), ...idField }),
+    z.object({
       type: z.literal('g2d:updateEachFrame'),
       body: z.array(JSStatementSchema),
       ...idField,
@@ -1351,7 +3663,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('eventHandler'),
       target: irText(),
-      targetKind: z.enum(['id', 'var', 'document']).optional(),
+      targetKind: z.enum(['id', 'var', 'document', 'window']).optional(),
       event: eventKindSchema,
       handlerName: irText(),
       ...idField,
@@ -1417,6 +3729,18 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     }),
     z.object({
       type: z.literal('setInterval'),
+      delay: JSExprSchema,
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('setTimeoutSeconds'),
+      delay: JSExprSchema,
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('setIntervalSeconds'),
       delay: JSExprSchema,
       body: z.array(JSStatementSchema),
       ...idField,
@@ -1520,7 +3844,6 @@ export function isAdvancedJS(stmt: JSStatement): stmt is Extract<JSStatement, { 
 export const G2D_STATEMENT_TYPES = new Set([
   'g2d:createSprite',
   'g2d:drawSprite',
-  'g2d:moveByKeys',
   'g2d:setPosition',
   'g2d:setVelocity',
   'g2d:collides',
@@ -1532,7 +3855,113 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:bounceOnEdges',
   'g2d:circleCollides',
   'g2d:playSound',
+  'g2d:playFx',
+  'g2d:playMusic',
+  'g2d:stopMusic',
+  'g2d:playNote',
+  'g2d:aimAt',
+  'g2d:moveToward',
+  'g2d:setHealth',
+  'g2d:changeHealth',
+  'g2d:flipSprite',
+  'g2d:setOpacity',
+  'g2d:setSize',
+  'g2d:scaleSprite',
+  'g2d:wrapEdges',
+  'g2d:pruneOld',
+  'g2d:pauseGame',
+  'g2d:resumeGame',
+  'g2d:cameraFollow',
+  'g2d:setCamera',
+  'g2d:breakTile',
+  'g2d:setTile',
+  'g2d:bringToFront',
+  'g2d:sendToBack',
+  'g2d:drawHitbox',
+  'g2d:showFps',
   'g2d:onPointer',
+  'g2d:createImageSprite',
+  'g2d:setImage',
+  'g2d:loadSpritesheet',
+  'g2d:animateSprite',
+  'g2d:drawFrame',
+  'g2d:platformer',
+  'g2d:topDown',
+  'g2d:followPointer',
+  'g2d:clampToScreen',
+  'g2d:flash',
+  'g2d:shake',
+  'g2d:emitParticles',
+  'g2d:drawParticles',
+  'g2d:createTileMap',
+  'g2d:drawTileMap',
+  'g2d:tileMapCollide',
+  'g2d:createGroup',
+  'g2d:spawnInGroup',
+  'g2d:spawnImageInGroup',
+  'g2d:updateGroup',
+  'g2d:drawGroup',
+  'g2d:forEachInGroup',
+  'g2d:clearGroup',
+  'g2d:pruneOffscreen',
+  'g2d:onGroupOverlap',
+  'g2d:removeFromGroup',
+  'g2d:everyFrames',
+  'g2d:everySeconds',
+  'g2d:drawScore',
+  'g2d:drawLabel',
+  'g2d:drawHearts',
+  'g2d:drawBar',
+  'g2d:setScene',
+  'g2d:showScreen',
+  'g2d:restart',
+  'g2d:starfield',
+  'g2d:dragX',
+  'g2d:fitScreen',
+  'g2d:spawnBullet',
+  'g2d:arrowsX',
+  'g2d:blinkSprite',
+  'g2d:createShip',
+  'g2d:spawnAsteroid',
+  'g2d:explode',
+  'g2d:playShoot',
+  'g2d:playExplosion',
+  'g2d:onSpriteGroupOverlap',
+  'g2d:steerThrust',
+  'g2d:rotateSprite',
+  'g2d:pointSprite',
+  'g2d:thrust',
+  'g2d:applyFriction',
+  'g2d:shootFrom',
+  'g2d:spawnAsteroidEdge',
+  'g2d:jumpOnGround',
+  'g2d:createDino',
+  'g2d:controlDino',
+  'g2d:spawnObstacle',
+  'g2d:spawnEgg',
+  'g2d:forest',
+  'g2d:playJump',
+  'g2d:playDinoHurt',
+  'g2d:playCollect',
+  'g2d:createCity',
+  'g2d:drawCity',
+  'g2d:placeThrower',
+  'g2d:newWind',
+  'g2d:drawWind',
+  'g2d:aimDrag',
+  'g2d:throwBanana',
+  'g2d:updateBanana',
+  'g2d:drawBanana',
+  'g2d:playWhistle',
+  'g2d:playBoom',
+  'g2d:computerTurn',
+  'g2d:drawAimReadout',
+  'g2d:createStickHero',
+  'g2d:updateStickHero',
+  'g2d:restartStickHero',
+  'g2d:createBalloon',
+  'g2d:updateBalloon',
+  'g2d:restartBalloon',
 ])
 
 export const G3D_STATEMENT_TYPES = new Set([
@@ -1544,6 +3973,89 @@ export const G3D_STATEMENT_TYPES = new Set([
   'g3d:setPosition',
   'g3d:setRotation',
   'g3d:animate',
+  'g3d:createBlock',
+  'g3d:setVelocity',
+  'g3d:jump',
+  'g3d:applyGravity',
+  'g3d:controlWithKeys',
+  'g3d:setScale',
+  'g3d:cameraFollow',
+  'g3d:createGroup',
+  'g3d:runEnemies',
+  'g3d:stop',
+  'g3d:createCrossingScene',
+  'g3d:createCrosser',
+  'g3d:crosserMove',
+  'g3d:crosserStep',
+  'g3d:crosserReset',
+  'g3d:gridPosition',
+  'g3d:addRow',
+  'g3d:generateRows',
+  'g3d:moveTraffic',
+  'g3d:isometricCamera',
+  'g3d:gridStep',
+  'g3d:gridMove',
+  'g3d:moveAcross',
+  'g3d:topCamera',
+  'g3d:moveInCircle',
+  'g3d:createRaceScene',
+  'g3d:createRaceTrack',
+  'g3d:createRaceCar',
+  'g3d:raceStep',
+  'g3d:raceControl',
+  'g3d:runRivals',
+  'g3d:raceReset',
+  'g3d:fall',
+  'g3d:slideBetween',
+  'g3d:spin',
+  'g3d:createStackScene',
+  'g3d:createStackTower',
+  'g3d:stackDrop',
+  'g3d:stackStep',
+  'g3d:stackReset',
+  'g3d:moveBy',
+  'g3d:rotateBy',
+  'g3d:moveTowards',
+  'g3d:lookAtObject',
+  'g3d:lookAtPoint',
+  'g3d:moveForward',
+  'g3d:faceVelocity',
+  'g3d:body',
+  'g3d:stepBody',
+  'g3d:setSolid',
+  'g3d:platformerControls',
+  'g3d:fpsControls',
+  'g3d:resolveCollision',
+  'g3d:fpsCamera',
+  'g3d:orbitCamera',
+  'g3d:thirdPersonCamera',
+  'g3d:cameraLookAt',
+  'g3d:setFOV',
+  'g3d:createCylinder',
+  'g3d:createCone',
+  'g3d:createPlane',
+  'g3d:createTorus',
+  'g3d:createModel',
+  'g3d:setColor',
+  'g3d:setOpacity',
+  'g3d:setMaterial',
+  'g3d:setTexture',
+  'g3d:setVisible',
+  'g3d:removeObject',
+  'g3d:addToModel',
+  'g3d:addAmbientLight',
+  'g3d:addSunLight',
+  'g3d:addPointLight',
+  'g3d:setFog',
+  'g3d:setSky',
+  'g3d:setShadows',
+  'g3d:createSwarm',
+  'g3d:spawnInSwarm',
+  'g3d:forEachInSwarm',
+  'g3d:removeFromSwarm',
+  'g3d:pruneSwarm',
+  'g3d:playNote',
+  'g3d:playEffect',
 ])
 
 export function statementIsExtension(stmt: JSStatement, extensionId: string): boolean {

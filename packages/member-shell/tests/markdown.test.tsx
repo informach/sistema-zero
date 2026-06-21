@@ -1,6 +1,11 @@
 import { describe, expect, test } from 'bun:test'
 import { isValidElement, type ReactElement, type ReactNode } from 'react'
-import { renderInline, renderMarkdown } from '../src/lib/markdown'
+import {
+  renderInline,
+  renderMarkdown,
+  renderUgcMarkdown,
+  stripImageMarkdown,
+} from '../src/lib/markdown'
 
 /** Narrowing de elemento React com props tipadas p/ os asserts. */
 function el(node: ReactNode): ReactElement<{
@@ -134,5 +139,43 @@ describe('renderInline (tokens)', () => {
   test('imagem data: também fica texto plano', () => {
     const out = renderInline('![x](data:image/svg+xml,<svg onload=alert(1)/>)')
     expect(out.every((n) => !isValidElement(n) || el(n).type !== 'img')).toBe(true)
+  })
+
+  test('dropImages: imagem externa vira só o texto alternativo (sem <img>)', () => {
+    const out = renderInline('antes ![um gato](https://cdn.x/g.png) depois', { dropImages: true })
+    expect(out.every((n) => !isValidElement(n) || el(n).type !== 'img')).toBe(true)
+    expect(textOf(out)).toBe('antes um gato depois')
+  })
+
+  test('dropImages: imagem com alt vazio some por completo', () => {
+    const out = renderInline('x![](https://cdn.x/p.gif)y', { dropImages: true })
+    expect(out.every((n) => !isValidElement(n) || el(n).type !== 'img')).toBe(true)
+    expect(textOf(out)).toBe('xy')
+  })
+})
+
+/** Coleta os tipos de TODOS os elementos da árvore (recursivo). */
+function typesIn(node: ReactNode): unknown[] {
+  if (Array.isArray(node)) return node.flatMap(typesIn)
+  if (isValidElement(node)) return [el(node).type, ...typesIn(el(node).props.children)]
+  return []
+}
+
+describe('UGC do aluno (anti pixel-rastreador / link off-platform)', () => {
+  test('renderUgcMarkdown: sem <img> externo e link só como TEXTO', () => {
+    const tree = renderUgcMarkdown(
+      'oi ![p](https://evil.test/p.gif?id=1) [clica](https://evil.test)',
+    )
+    const types = typesIn(tree)
+    expect(types).not.toContain('img')
+    expect(types).not.toContain('a')
+    expect(textOf(tree)).toContain('clica')
+  })
+
+  test('stripImageMarkdown remove a imagem (preserva o alt) e mantém o resto', () => {
+    expect(stripImageMarkdown('veja ![gato](https://x.test/g.png) aqui')).toBe('veja gato aqui')
+    expect(stripImageMarkdown('só texto **negrito**')).toBe('só texto **negrito**')
+    // esquema não-http não é tocado (já não viraria <img> no render mesmo)
+    expect(stripImageMarkdown('![x](javascript:alert(1))')).toBe('![x](javascript:alert(1))')
   })
 })

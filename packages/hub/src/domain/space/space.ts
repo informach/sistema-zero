@@ -15,6 +15,13 @@ export interface Space {
   audience: Audience
   accessConfig: AccessConfig
   requiresApproval: boolean
+  /**
+   * Aparece BLOQUEADO no menu quando o aluno não tem acesso (em vez de sumir): a
+   * listagem mostra nome/ícone/descrição com `locked:true`, mas o CONTEÚDO
+   * (canais/tópicos) segue gated (`canAccessSpace`/`canAccessChannel` não mudam).
+   * Default `false` = comportamento clássico (some quando sem acesso).
+   */
+  teaserWhenLocked: boolean
   sortOrder: number
   status: SpaceStatus
   createdAt: Date

@@ -4,7 +4,8 @@ import {
   type Project,
   ProjectList,
   prefetchStudioModes,
-  Studio,
+  StudioEditor,
+  type StudioShareAdapter,
 } from '@sistemazero/studio'
 import type { JSX } from 'react'
 import { useEffect, useMemo, useState } from 'react'
@@ -40,13 +41,45 @@ function EditorScreen({
   const adapter = useMemo(() => createLocalPersistenceAdapter(), [])
   const [state, setState] = useState<EditorState>({ status: 'loading' })
 
+  // Adapter de COMPARTILHAR de DEMONSTRAÇÃO: liga o botão "Compartilhar" na Topbar
+  // e simula o servidor (a IA e o publish são mockados; o PRINT é capturado de
+  // verdade no browser via captureCoverFromProject). No app real (community-kids),
+  // o adapter chama /api/studio/describe e /api/studio/publish.
+  const shareDemo = useMemo<StudioShareAdapter>(
+    () => ({
+      async generateDescription({ title }) {
+        await new Promise((r) => setTimeout(r, 600))
+        return `Um joguinho chamado "${title}", feito no Sistema Zero Studio. (Descrição de demonstração do playground.)`
+      },
+      async publish({ title, description, coverDataUrl }) {
+        await new Promise((r) => setTimeout(r, 800))
+        console.debug('[host] publish (demo)', {
+          title,
+          description,
+          hasCover: Boolean(coverDataUrl),
+        })
+        return { muralUrl: '#mural-demo', playUrl: '#jogar-demo' }
+      },
+    }),
+    [],
+  )
+
   useEffect(() => {
     let cancelled = false
     setState({ status: 'loading' })
-    void adapter.load(projectId).then((project) => {
-      if (cancelled) return
-      setState(project ? { status: 'ready', project } : { status: 'not-found' })
-    })
+    adapter
+      .load(projectId)
+      .then((project) => {
+        if (cancelled) return
+        setState(project ? { status: 'ready', project } : { status: 'not-found' })
+      })
+      .catch((err) => {
+        // Sem o catch, uma falha no load deixava a tela "Carregando projeto…" presa
+        // para sempre (a Promise rejeitada nunca chamava setState).
+        if (cancelled) return
+        console.error('[host] falha ao carregar projeto', err)
+        setState({ status: 'not-found' })
+      })
     return () => {
       cancelled = true
     }
@@ -74,9 +107,11 @@ function EditorScreen({
   }
   const isPro = state.project.kind === 'pro'
   return (
-    <Studio
+    <StudioEditor
       initialProject={state.project}
       onExit={onExit}
+      // Liga o botão "Compartilhar" (publicar no Mural) com um adapter de demo.
+      share={shareDemo}
       // Experiência completa no playground (defaults embarcados: terminal/IA OFF).
       // Projeto profissional força terminal + allowedModes:['code'] via a flag.
       features={isPro ? { professional: true, ai: true } : { terminal: true, ai: true }}
@@ -100,10 +135,10 @@ function DualView(): JSX.Element {
   return (
     <div className="grid h-full grid-cols-2 gap-2 p-2" style={{ background: '#333' }}>
       <div className="h-full min-h-0 overflow-hidden rounded">
-        <Studio initialProject={a} theme="dark" />
+        <StudioEditor initialProject={a} theme="dark" />
       </div>
       <div className="h-full min-h-0 overflow-hidden rounded">
-        <Studio initialProject={b} theme="light" />
+        <StudioEditor initialProject={b} theme="light" />
       </div>
     </div>
   )

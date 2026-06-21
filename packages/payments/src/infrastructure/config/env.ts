@@ -122,12 +122,12 @@ const EnvSchema = z
     // ilimitado. Roda no mesmo job periódico da limpeza de idempotência.
     RETENTION_DAYS: z.coerce.number().int().positive().default(30),
     RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(600),
-    // Rate limit GLOBAL das rotas de webhook da Efí (req/min, por instância).
-    // É um teto de backpressure (cada item de webhook custa 1 INSERT + 1 chamada
-    // à Efí), não a autenticação — esta é o EFI_WEBHOOK_SECRET. Chave única (não
-    // por IP): o X-Forwarded-For do webhook não é confiável o bastante p/ punir
-    // por IP, e o tráfego legítimo da Efí é baixo. Excedeu → 429 (a Efí re-tenta;
-    // a reconciliação é a rede de segurança).
+    // Rate limit GLOBAL das rotas de webhook da Efí (req/min). É um teto de
+    // backpressure (cada item de webhook custa 1 INSERT + 1 chamada à Efí), não a
+    // autenticação — esta é o EFI_WEBHOOK_SECRET. Chave única (não por IP): o
+    // X-Forwarded-For do webhook não é confiável o bastante p/ punir por IP, e o
+    // tráfego legítimo da Efí é baixo. Excedeu → 429 (a Efí re-tenta; a
+    // reconciliação é a rede de segurança).
     WEBHOOK_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(600),
 
     // Criação de cobrança assíncrona (opt-in para picos de lançamento)

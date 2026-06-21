@@ -61,4 +61,66 @@ describe('redactAuthors', () => {
     const input = { authorId: ME }
     expect(redactAuthors(input, ME)).toBe(input)
   })
+
+  test('vitrine: autor terceiro privado perde authorId e authorDisplayName', () => {
+    const out = redactAuthors(
+      {
+        id: 'p1',
+        authorId: OTHER,
+        isShowcase: true,
+        authorPublic: false,
+        authorDisplayName: 'Sofia',
+        title: 'Meu Jogo',
+      },
+      ME,
+    ) as {
+      authorId: string | null
+      authorProfileId?: string | null
+      authorDisplayName?: string | null
+      title: string
+    }
+    expect(out.authorId).toBeNull()
+    expect(out.authorProfileId).toBeNull()
+    expect(out.authorDisplayName).toBeNull()
+    expect(out.title).toBe('Meu Jogo')
+  })
+
+  test('vitrine do Estúdio: o playId sobrevive à redação (alimenta o "Acessar")', () => {
+    const out = redactAuthors(
+      { id: 'p1', authorId: OTHER, isShowcase: true, playId: 'play-uuid' },
+      ME,
+    )
+    expect(out.authorId).toBeNull()
+    expect(out.playId).toBe('play-uuid')
+  })
+
+  test('autor PÚBLICO (opt-in dos pais): expõe authorProfileId (alvo do link) + nome', () => {
+    const out = redactAuthors(
+      { id: 't1', authorId: OTHER as string | null, authorPublic: true, authorDisplayName: 'Lia' },
+      ME,
+    ) as { authorId: string | null; authorProfileId?: string | null; authorDisplayName?: string }
+    // authorId cru some, mas o id do perfil sai como alvo do link p/ /crianca/[id].
+    expect(out.authorId).toBeNull()
+    expect(out.authorProfileId).toBe(OTHER)
+    expect(out.authorDisplayName).toBe('Lia')
+  })
+
+  test('autor NÃO público: sem authorProfileId e sem authorDisplayName', () => {
+    const out = redactAuthors(
+      { id: 't1', authorId: OTHER as string | null, authorPublic: false, authorDisplayName: 'Lia' },
+      ME,
+    ) as {
+      authorId: string | null
+      authorProfileId?: string | null
+      authorDisplayName?: string | null
+    }
+    expect(out.authorId).toBeNull()
+    expect(out.authorProfileId).toBeNull()
+    expect(out.authorDisplayName).toBeNull()
+  })
+
+  test('autor público SENDO o próprio viewer → volta intacto (a UI mostra "Você", sem link)', () => {
+    const input = { authorId: ME, authorPublic: true, authorDisplayName: 'Eu' }
+    expect(redactAuthors(input, ME)).toBe(input)
+  })
 })

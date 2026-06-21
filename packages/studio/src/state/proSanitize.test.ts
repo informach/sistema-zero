@@ -58,3 +58,33 @@ describe('sanitizeStoredProject — projetos profissionais', () => {
     expect(out?.files['index.html']).toBe('<h1>oi</h1>')
   })
 })
+
+describe('sanitizeProjectForHost — limite do id do initialProject', () => {
+  const files = { 'index.html': '<h1>oi</h1>', 'style.css': '', 'script.js': '' }
+
+  it('mantém um id seguro (ulid/alfanumérico) vindo do host', () => {
+    const out = sanitizeProjectForHost({ id: '01HZ8XK3M9P0QABCDEFGHJKMNP', name: 'Ok', files })
+    expect(out?.id).toBe('01HZ8XK3M9P0QABCDEFGHJKMNP')
+  })
+
+  it('substitui por um id fresco quando o id excede o teto de tamanho', () => {
+    const huge = 'a'.repeat(5000)
+    const out = sanitizeProjectForHost({ id: huge, name: 'Gigante', files })
+    expect(out?.id).not.toBe(huge)
+    expect(out?.id.length).toBeLessThanOrEqual(128)
+    expect(out?.id).toMatch(/^[A-Za-z0-9_-]+$/)
+  })
+
+  it('substitui por um id fresco quando o id tem caracteres fora do charset seguro', () => {
+    const out = sanitizeProjectForHost({ id: 'sz:project:../../etc', name: 'Hostil', files })
+    expect(out?.id).not.toBe('sz:project:../../etc')
+    expect(out?.id).toMatch(/^[A-Za-z0-9_-]+$/)
+  })
+
+  it('substitui por um id fresco quando o id não é string', () => {
+    const out = sanitizeProjectForHost({ id: 12345, name: 'Número', files })
+    expect(out).not.toBeNull()
+    expect(typeof out?.id).toBe('string')
+    expect(out?.id).toMatch(/^[A-Za-z0-9_-]+$/)
+  })
+})

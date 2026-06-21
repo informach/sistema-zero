@@ -128,10 +128,14 @@ describe('importProjectFromJSON (teto combinado no import, #5)', () => {
     // combinada (9 MB) estoura MAX_TOTAL_CHARS (8 MB): o load apara extras do fim
     // até caber — e o import precisa fazer O MESMO, senão o registro no disco
     // diverge do que é aberto e o primeiro reopen derruba extras em silêncio.
-    const big = 'a'.repeat(PROJECT_FILE_LIMITS.maxFileChars) // 2 MB
-    const extra = 'b'.repeat(1_500_000) // 1,5 MB
+    // Dinâmico sobre os tetos exportados (não fixa números, sobrevive a aumentos
+    // de cota): 3 canônicos no limite por arquivo + 2 extras dimensionados para
+    // que UM caiba e o segundo estoure o teto combinado.
+    const big = 'a'.repeat(PROJECT_FILE_LIMITS.maxFileChars)
+    const room = PROJECT_FILE_LIMITS.maxTotalChars - 3 * PROJECT_FILE_LIMITS.maxFileChars
+    const extra = 'b'.repeat(Math.min(room, PROJECT_FILE_LIMITS.maxFileChars))
 
-    const imported = await useProjectStore.getState().importProjectFromJSON({
+    const { project: imported } = await useProjectStore.getState().importProjectFromJSON({
       name: 'Import gordo',
       files: {
         'index.html': big,
@@ -144,7 +148,7 @@ describe('importProjectFromJSON (teto combinado no import, #5)', () => {
       ],
     })
 
-    // 6 MB canônicos + 1,5 MB de um extra = 7,5 MB ≤ 8 MB → cabe exatamente 1.
+    // Canônicos + 1 extra ≤ teto; canônicos + 2 extras estouram → cabe exatamente 1.
     expect(imported.extraFiles?.map((f) => f.name)).toEqual(['um.js'])
 
     // E o que foi PERSISTIDO casa com o que foi devolvido (registro no disco já

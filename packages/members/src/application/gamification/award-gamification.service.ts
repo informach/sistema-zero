@@ -1,5 +1,6 @@
 import type { Logger } from '@sistemazero/core/logging'
 import type { CourseAudience } from '../../domain/course/course'
+import { COIN_VALUES, quizPassedCoins } from '../../domain/gamification/coins'
 import { localDateSaoPaulo, quizPassedXp, XP_VALUES } from '../../domain/gamification/gamification'
 import type {
   GamificationRepository,
@@ -41,6 +42,7 @@ export class AwardGamificationService {
         sourceType: 'lesson_complete',
         sourceId: input.lessonId,
         amount: XP_VALUES.LESSON_COMPLETE,
+        coins: COIN_VALUES.LESSON_COMPLETE,
       },
     ]
     if (input.unitCompleted) {
@@ -48,6 +50,7 @@ export class AwardGamificationService {
         sourceType: 'unit_complete',
         sourceId: input.moduleId,
         amount: XP_VALUES.UNIT_COMPLETE,
+        coins: COIN_VALUES.UNIT_COMPLETE,
       })
     }
     // Curso 100% → MARCO no ledger (amount 0): conta cursos concluídos p/ as
@@ -69,13 +72,41 @@ export class AwardGamificationService {
     privileged: boolean
   }): Promise<GamificationDeltaView | null> {
     const events: XpEventInput[] = [
-      { sourceType: 'quiz_passed', sourceId: input.blockId, amount: quizPassedXp(input.score) },
+      {
+        sourceType: 'quiz_passed',
+        sourceId: input.blockId,
+        amount: quizPassedXp(input.score),
+        coins: quizPassedCoins(input.score),
+      },
     ]
     // Nota 100 → MARCO no ledger (amount 0, dedupe por bloco): conta as notas
     // mil p/ quiz-perfect/-10/-30 — destrava também num re-pass com 100.
     if (input.score === 100) {
       events.push({ sourceType: 'quiz_perfect', sourceId: input.blockId, amount: 0 })
     }
+    return this.award(input.userId, input.accountId, input.audience, events, input.privileged)
+  }
+
+  async awardStudioPassed(input: {
+    userId: string
+    /** CONTA do responsável (sessão de perfil). Default → userId no caller. */
+    accountId: string
+    blockId: string
+    score: number
+    /** Vitrine do CURSO — TODA a gamificação é segregada por audiência. */
+    audience: CourseAudience
+    privileged: boolean
+  }): Promise<GamificationDeltaView | null> {
+    // Mesma régua do quiz aprovado (base + bônus por nota); fonte distinta no
+    // ledger (`studio_passed`) → idempotente por bloco, independente do quiz.
+    const events: XpEventInput[] = [
+      {
+        sourceType: 'studio_passed',
+        sourceId: input.blockId,
+        amount: quizPassedXp(input.score),
+        coins: quizPassedCoins(input.score),
+      },
+    ]
     return this.award(input.userId, input.accountId, input.audience, events, input.privileged)
   }
 

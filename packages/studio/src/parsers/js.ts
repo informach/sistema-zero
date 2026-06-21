@@ -133,9 +133,15 @@ const KNOWN_EVENT_KINDS: ReadonlySet<EventKind> = new Set([
   'keyup',
   'mouseover',
   'mouseout',
+  'mousemove',
+  'mousedown',
+  'mouseup',
   'submit',
   'input',
   'change',
+  'load',
+  'resize',
+  'fullscreenchange',
 ])
 
 function snippet(source: string, node: Node): string {
@@ -166,6 +172,50 @@ function asRaw(source: string, node: Node): JSStatement {
   return { type: 'rawJS', code: snippet(source, node), advanced: true }
 }
 
+/** `throw new Error(<msg>)` / `throw Error(<msg>)` → throwError; senão código avançado. */
+function mapThrow(node: Node, source: string, ctx: ParseCtx): JSStatement {
+  const arg = node.argument
+  if (
+    arg &&
+    (arg.type === 'NewExpression' || arg.type === 'CallExpression') &&
+    arg.callee?.type === 'Identifier' &&
+    arg.callee.name === 'Error'
+  ) {
+    const msgArg = arg.arguments?.[0]
+    const message: JSExpr | null = msgArg ? toExpr(msgArg, ctx) : { type: 'str', value: '' }
+    if (message && isSimpleValue(message)) return { type: 'throwError', message }
+  }
+  return asRaw(source, node)
+}
+
+/**
+ * `switch (subject) { case <match>: … break; … default: … }` → bloco "escolha".
+ * Desembrulha o `{ … }` de cada caso e remove o `break` final (que o gerador
+ * recria). Casos com valor/assunto não representável caem em código avançado.
+ */
+function mapSwitch(node: Node, source: string, ctx: ParseCtx): JSStatement {
+  const subject = toExpr(node.discriminant, ctx)
+  if (!isSimpleValue(subject)) return asRaw(source, node)
+  const cases: Array<{ match: JSExpr; body: JSStatement[] }> = []
+  let def: JSStatement[] | undefined
+  for (const sc of node.cases ?? []) {
+    let stmts: Node[] = sc.consequent ?? []
+    if (stmts.length === 1 && stmts[0]?.type === 'BlockStatement') stmts = stmts[0].body ?? []
+    if (stmts.length > 0 && stmts[stmts.length - 1]?.type === 'BreakStatement') {
+      stmts = stmts.slice(0, -1)
+    }
+    const body = mapStatementList(stmts, source, ctx)
+    if (sc.test === null || sc.test === undefined) {
+      def = body
+    } else {
+      const match = toExpr(sc.test, ctx)
+      if (!isSimpleValue(match)) return asRaw(source, node)
+      cases.push({ match, body })
+    }
+  }
+  return { type: 'switch', subject, cases, ...(def !== undefined ? { default: def } : {}) }
+}
+
 function mapStatement(
   node: Node,
   source: string,
@@ -178,6 +228,10 @@ function mapStatement(
       return mapExpressionStatement(node, source, ctx)
     case 'IfStatement':
       return mapIf(node, source, ctx)
+    case 'ThrowStatement':
+      return mapThrow(node, source, ctx)
+    case 'SwitchStatement':
+      return mapSwitch(node, source, ctx)
     case 'ForStatement':
       return mapFor(node, source, ctx)
     case 'ForOfStatement':
@@ -493,6 +547,10 @@ function mapStatementList(nodes: Node[], source: string, ctx: ParseCtx): JSState
     const fused =
       tryFuseCanvasSetSize(nodes, i, ctx) ??
       tryFuseCanvasArc(nodes, i, ctx) ??
+      tryFuseCanvasRoundRect(nodes, i, ctx) ??
+      tryFuseCanvasEllipse(nodes, i, ctx) ??
+      tryFuseCanvasArcSlice(nodes, i, ctx) ??
+      tryFuseCanvasShadow(nodes, i, ctx) ??
       tryFuseCanvasGradient(nodes, i, ctx) ??
       tryFuseAnimationLoop(nodes, i, source, ctx) ??
       tryFuseGame2DSpriteAssign(nodes, i, ctx) ??
@@ -586,6 +644,12 @@ function mapDeclarator(decl: Node, node: Node, ctx: ParseCtx): JSStatement[] | n
     ctx.elementVars.set(name, name)
     return [{ type: 'createElement', tag: createdTag, varName: name }]
   }
+  // createElementNS (forma SVG): const x = document.createElementNS(<ns>, 'circle')
+  const createdNSTag = matchCreateElementNS(init)
+  if (createdNSTag !== null) {
+    ctx.elementVars.set(name, name)
+    return [{ type: 'createElementNS', tag: createdNSTag, varName: name }]
+  }
   // canvasSetup: const ctx = <canvasVar>.getContext('2d'), onde <canvasVar>
   // veio de um getElementById anterior. Funde o par numa única IR canvasSetup.
   const canvasVar = matchGetContext(init)
@@ -603,6 +667,11 @@ function mapDeclarator(decl: Node, node: Node, ctx: ParseCtx): JSStatement[] | n
   const prop = matchGetProperty(init, ctx)
   if (prop) {
     return [{ type: 'getProperty', ...prop, varName: name }]
+  }
+  // getAttribute: const v = el.getAttribute('cx')
+  const attr = matchGetAttribute(init, ctx)
+  if (attr) {
+    return [{ type: 'getAttribute', ...attr, varName: name }]
   }
   // newInstance: const x = new Classe(args). Date/Image têm tratamento próprio.
   if (
@@ -726,9 +795,60 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
       if (color) return { type: 'canvasFillStyle', ctxVar: expr.left.object.name, color }
       return asRaw(source, node)
     }
+    // ctx.strokeStyle / lineWidth / globalAlpha / textAlign / font = … (caminho "na mão")
+    if (
+      (expr.left?.type === 'MemberExpression' || expr.left?.type === 'OptionalMemberExpression') &&
+      !expr.left.computed &&
+      expr.left.object?.type === 'Identifier' &&
+      ctx.ctxVars.has(expr.left.object.name) &&
+      typeof expr.left.property?.name === 'string'
+    ) {
+      const ctxVar: string = expr.left.object.name
+      const prop: string = expr.left.property.name
+      if (prop === 'strokeStyle') {
+        const color = toExpr(expr.right, ctx)
+        if (isSimpleValue(color)) return { type: 'canvasStrokeStyle', ctxVar, color }
+        return asRaw(source, node)
+      }
+      if (prop === 'lineWidth') {
+        const width = toExpr(expr.right, ctx)
+        if (isSimpleValue(width)) return { type: 'canvasLineWidth', ctxVar, width }
+        return asRaw(source, node)
+      }
+      if (prop === 'globalAlpha') {
+        const alpha = toExpr(expr.right, ctx)
+        if (isSimpleValue(alpha)) return { type: 'canvasGlobalAlpha', ctxVar, alpha }
+        return asRaw(source, node)
+      }
+      if (prop === 'textAlign' && expr.right?.type === 'StringLiteral') {
+        const a = expr.right.value as string
+        if (a === 'left' || a === 'center' || a === 'right') {
+          return { type: 'canvasTextAlign', ctxVar, align: a }
+        }
+        return asRaw(source, node)
+      }
+      if (prop === 'textBaseline' && expr.right?.type === 'StringLiteral') {
+        const b = expr.right.value as string
+        if (b === 'top' || b === 'middle' || b === 'bottom' || b === 'alphabetic') {
+          return { type: 'canvasTextBaseline', ctxVar, baseline: b }
+        }
+        return asRaw(source, node)
+      }
+      if (prop === 'font' && expr.right?.type === 'StringLiteral') {
+        const m = /^(?:(bold|italic|italic bold) )?(\d+)px (.+)$/.exec(expr.right.value as string)
+        if (m?.[2] && m[3]) {
+          const base = { type: 'canvasFont' as const, ctxVar, size: Number(m[2]), family: m[3] }
+          return m[1] ? { ...base, weight: m[1] as 'bold' | 'italic' | 'italic bold' } : base
+        }
+        return asRaw(source, node)
+      }
+    }
     // el.dataset.chave = <simples>
     const dataset = tryMatchSetDataset(expr, ctx)
     if (dataset) return dataset
+    // el.style.prop = <simples>  |  el.style['prop'] = <simples>
+    const style = tryMatchSetStyle(expr, ctx)
+    if (style) return style
     // x.textContent = <simples> | x.value = <simples> | x.innerHTML = <simples>
     // (ou document.getElementById('id').textContent = …)
     if (
@@ -865,9 +985,17 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
     }
   }
 
+  // el.setAttribute('nome', <simples>)
+  const setAttr = tryMatchSetAttribute(expr, ctx)
+  if (setAttr) return setAttr
+
   // cancelAnimationFrame(id) — para o loop de animação.
   const cancelAnim = tryMatchCancelAnimationFrame(expr, ctx)
   if (cancelAnim) return cancelAnim
+
+  // document.documentElement.requestFullscreen() / document.exitFullscreen()
+  const fullscreen = tryMatchFullscreen(expr)
+  if (fullscreen) return fullscreen
 
   // Métodos de canvas de uma linha: ctx.fillRect(...), ctx.save(), etc.
   const canvasCall = tryMatchCanvasCall(expr, ctx)
@@ -880,6 +1008,24 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
   // pai.appendChild(filho)
   const append = tryMatchAppendChild(expr, ctx)
   if (append) return append
+
+  // Object.assign(destino, origem)
+  if (
+    expr?.type === 'CallExpression' &&
+    expr.callee?.type === 'MemberExpression' &&
+    !expr.callee.computed &&
+    expr.callee.object?.name === 'Object' &&
+    expr.callee.property?.name === 'assign' &&
+    expr.arguments?.length === 2 &&
+    expr.arguments[0].type === 'Identifier' &&
+    expr.arguments[1].type === 'Identifier'
+  ) {
+    return {
+      type: 'objectAssign',
+      targetVar: expr.arguments[0].name,
+      sourceVar: expr.arguments[1].name,
+    }
+  }
 
   // lista.forEach((item, i) => { … })
   const forEach = tryMatchForEach(expr, source, ctx)
@@ -894,8 +1040,8 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
   if (interval) return interval
 
   // game-2d: SZGame2D.gameLoop(function update(){…}) / onPointer((px,py)=>{…}) e
-  // helpers de uma linha (drawSprite, moveByKeys, applyVelocity, bounceOnEdges,
-  // setGravity, playSound). ANTES do método genérico — senão viram memberCall.
+  // helpers de uma linha (drawSprite, applyVelocity, bounceOnEdges, setGravity,
+  // playSound). ANTES do método genérico — senão viram memberCall.
   const g2dCall = tryMatchGame2DCall(expr, source, ctx)
   if (g2dCall) return g2dCall
 
@@ -926,6 +1072,16 @@ function matchCreateElement(node: Node): string | null {
   return node.arguments[0].value as string
 }
 
+/** `document.createElementNS(<ns>, 'tag')` → nome da tag (forma SVG); senão `null`. */
+function matchCreateElementNS(node: Node): string | null {
+  if (node?.type !== 'CallExpression') return null
+  const callee = node.callee
+  if (callee?.type !== 'MemberExpression' || callee.computed) return null
+  if (callee.object?.name !== 'document' || callee.property?.name !== 'createElementNS') return null
+  if (node.arguments?.length !== 2 || node.arguments[1].type !== 'StringLiteral') return null
+  return node.arguments[1].value as string
+}
+
 /** `pai.appendChild(filho)` (ambos identificadores) → `appendChild`. */
 function tryMatchAppendChild(expr: Node, ctx: ParseCtx): JSStatement | null {
   if (expr?.type !== 'CallExpression') return null
@@ -939,6 +1095,109 @@ function tryMatchAppendChild(expr: Node, ctx: ParseCtx): JSStatement | null {
     parentVar: callee.object.name,
     childVar: expr.arguments[0].name,
   }
+}
+
+// ---------- Tela cheia (Fullscreen API) ----------
+
+/** `document.exitFullscreen()` (sem argumentos). */
+function isExitFullscreenCall(expr: Node): boolean {
+  if (expr?.type !== 'CallExpression' && expr?.type !== 'OptionalCallExpression') return false
+  if (expr.arguments?.length) return false
+  const callee = expr.callee
+  if (
+    (callee?.type !== 'MemberExpression' && callee?.type !== 'OptionalMemberExpression') ||
+    callee.computed
+  ) {
+    return false
+  }
+  return (
+    callee.object?.type === 'Identifier' &&
+    callee.object.name === 'document' &&
+    callee.property?.name === 'exitFullscreen'
+  )
+}
+
+/** `document.documentElement.requestFullscreen()` (sem argumentos). */
+function isRequestFullscreenCall(expr: Node): boolean {
+  if (expr?.type !== 'CallExpression' && expr?.type !== 'OptionalCallExpression') return false
+  if (expr.arguments?.length) return false
+  const callee = expr.callee
+  if (
+    (callee?.type !== 'MemberExpression' && callee?.type !== 'OptionalMemberExpression') ||
+    callee.computed ||
+    callee.property?.name !== 'requestFullscreen'
+  ) {
+    return false
+  }
+  const obj = callee.object
+  return (
+    (obj?.type === 'MemberExpression' || obj?.type === 'OptionalMemberExpression') &&
+    !obj.computed &&
+    obj.object?.type === 'Identifier' &&
+    obj.object.name === 'document' &&
+    obj.property?.name === 'documentElement'
+  )
+}
+
+/**
+ * `document.documentElement.requestFullscreen()` → entrar em tela cheia;
+ * `document.exitFullscreen()` → sair. (O "alternar" é um if/else casado em `mapIf`.)
+ */
+function tryMatchFullscreen(expr: Node): JSStatement | null {
+  if (isExitFullscreenCall(expr)) return { type: 'exitFullscreen' }
+  if (isRequestFullscreenCall(expr)) return { type: 'requestFullscreen' }
+  return null
+}
+
+/** Desembrulha um bloco de UM statement (ou um statement solto) e testa a chamada. */
+function isSingleCallStatement(node: Node, pred: (expr: Node) => boolean): boolean {
+  let stmt: Node | null = node
+  if (node?.type === 'BlockStatement') {
+    if (node.body?.length !== 1) return false
+    stmt = node.body[0]
+  }
+  return stmt?.type === 'ExpressionStatement' && pred(stmt.expression)
+}
+
+/**
+ * `if (document.fullscreenElement) { document.exitFullscreen() } else {
+ * document.documentElement.requestFullscreen() }` → "alternar tela cheia". Roda
+ * ANTES do if genérico (que tornaria a condição em código avançado, pois
+ * `document` é objeto global).
+ */
+function tryMatchToggleFullscreen(node: Node): JSStatement | null {
+  if (node?.type !== 'IfStatement' || !node.alternate) return null
+  const test = node.test
+  if (
+    (test?.type !== 'MemberExpression' && test?.type !== 'OptionalMemberExpression') ||
+    test.computed ||
+    test.object?.type !== 'Identifier' ||
+    test.object.name !== 'document' ||
+    test.property?.name !== 'fullscreenElement'
+  ) {
+    return null
+  }
+  if (!isSingleCallStatement(node.consequent, isExitFullscreenCall)) return null
+  if (!isSingleCallStatement(node.alternate, isRequestFullscreenCall)) return null
+  return { type: 'toggleFullscreen' }
+}
+
+/** `document.fullscreenElement != null` (ou `!== null`) → "está em tela cheia?". */
+function tryMatchIsFullscreen(node: Node): JSExpr | null {
+  if (node?.type !== 'BinaryExpression') return null
+  if (node.operator !== '!=' && node.operator !== '!==') return null
+  if (node.right?.type !== 'NullLiteral') return null
+  const left = node.left
+  if (
+    (left?.type !== 'MemberExpression' && left?.type !== 'OptionalMemberExpression') ||
+    left.computed ||
+    left.object?.type !== 'Identifier' ||
+    left.object.name !== 'document' ||
+    left.property?.name !== 'fullscreenElement'
+  ) {
+    return null
+  }
+  return { type: 'isFullscreen' }
 }
 
 /** `<alvo>.dataset.chave = <simples>` → `setDataset`; senão `null`. */
@@ -970,6 +1229,63 @@ function tryMatchSetDataset(expr: Node, ctx: ParseCtx): JSStatement | null {
   }
 }
 
+/** `<alvo>.style.prop = <simples>` / `<alvo>.style['prop'] = <simples>` → `setStyle`. */
+function tryMatchSetStyle(expr: Node, ctx: ParseCtx): JSStatement | null {
+  const left = expr.left
+  if (!left || (left.type !== 'MemberExpression' && left.type !== 'OptionalMemberExpression')) {
+    return null
+  }
+  const obj = left.object
+  if (!obj || (obj.type !== 'MemberExpression' && obj.type !== 'OptionalMemberExpression')) {
+    return null
+  }
+  if (obj.property?.name !== 'style') return null
+  let property: string | null = null
+  if (!left.computed && left.property?.type === 'Identifier')
+    property = left.property.name as string
+  else if (left.computed && left.property?.type === 'StringLiteral')
+    property = left.property.value as string
+  if (!property) return null
+  const target = extractTarget(obj.object, ctx)
+  if (!target) return null
+  const value = toExpr(expr.right, ctx)
+  if (!isSimpleValue(value)) return null
+  return {
+    type: 'setStyle',
+    targetId: target.id,
+    ...classTargetKindField(target),
+    property,
+    value,
+  }
+}
+
+/** `<alvo>.setAttribute('nome', <simples>)` → `setAttribute`. */
+function tryMatchSetAttribute(expr: Node, ctx: ParseCtx): JSStatement | null {
+  if (!expr || (expr.type !== 'CallExpression' && expr.type !== 'OptionalCallExpression')) {
+    return null
+  }
+  const callee = expr.callee
+  if (
+    !callee ||
+    (callee.type !== 'MemberExpression' && callee.type !== 'OptionalMemberExpression')
+  ) {
+    return null
+  }
+  if (callee.property?.name !== 'setAttribute') return null
+  const target = extractTarget(callee.object, ctx)
+  if (!target) return null
+  if (expr.arguments?.length !== 2 || expr.arguments[0].type !== 'StringLiteral') return null
+  const value = toExpr(expr.arguments[1], ctx)
+  if (!isSimpleValue(value)) return null
+  return {
+    type: 'setAttribute',
+    targetId: target.id,
+    ...classTargetKindField(target),
+    name: expr.arguments[0].value as string,
+    value,
+  }
+}
+
 /** `<lista>.forEach((item[, i]) => { … })` → `forEach`. */
 function tryMatchForEach(expr: Node, source: string, ctx: ParseCtx): JSStatement | null {
   if (expr?.type !== 'CallExpression') return null
@@ -995,30 +1311,53 @@ function tryMatchForEach(expr: Node, source: string, ctx: ParseCtx): JSStatement
   }
 }
 
-/** `setTimeout(() => { … }, ms)` → `setTimeout`. Callback sem parâmetros. */
+/**
+ * Lê o argumento de atraso de um timer, distinguindo SEGUNDOS de milissegundos.
+ * O bloco "em segundos" gera `<E> * 1000`; quando o AST do atraso é exatamente
+ * essa multiplicação por 1000, devolvemos `unit: 'seconds'` com a expressão `<E>`.
+ * Caso contrário é ms cru. Inspecionamos o nó do AST (não o `toExpr` do todo)
+ * para que `3 * 1000` NÃO seja dobrado em `3000` antes de detectarmos os segundos.
+ */
+function readTimerDelay(
+  arg: Node,
+  ctx: ParseCtx,
+): { unit: 'ms' | 'seconds'; delay: JSExpr } | null {
+  if (
+    arg?.type === 'BinaryExpression' &&
+    arg.operator === '*' &&
+    isNumericLiteral(arg.right, 1000)
+  ) {
+    const delay = toExpr(arg.left, ctx)
+    return isSimpleValue(delay) ? { unit: 'seconds', delay } : null
+  }
+  const delay = toExpr(arg, ctx)
+  return isSimpleValue(delay) ? { unit: 'ms', delay } : null
+}
+
+/** `setTimeout(() => { … }, ms|s*1000)` → `setTimeout`/`setTimeoutSeconds`. */
 function tryMatchSetTimeout(expr: Node, source: string, ctx: ParseCtx): JSStatement | null {
   if (expr?.type !== 'CallExpression' || expr.callee?.type !== 'Identifier') return null
   if (expr.callee.name !== 'setTimeout' || expr.arguments?.length !== 2) return null
   const cb = expr.arguments[0]
   if (cb.type !== 'ArrowFunctionExpression' && cb.type !== 'FunctionExpression') return null
   if ((cb.params?.length ?? 0) !== 0) return null
-  const delay = toExpr(expr.arguments[1], ctx)
-  if (!isSimpleValue(delay)) return null
+  const d = readTimerDelay(expr.arguments[1], ctx)
+  if (!d) return null
   const body = bodyOfFn(cb, source, ctx)
-  return { type: 'setTimeout', delay, body }
+  return { type: d.unit === 'seconds' ? 'setTimeoutSeconds' : 'setTimeout', delay: d.delay, body }
 }
 
-/** `setInterval(() => { … }, ms)` → `setInterval`. Callback sem parâmetros. */
+/** `setInterval(() => { … }, ms|s*1000)` → `setInterval`/`setIntervalSeconds`. */
 function tryMatchSetInterval(expr: Node, source: string, ctx: ParseCtx): JSStatement | null {
   if (expr?.type !== 'CallExpression' || expr.callee?.type !== 'Identifier') return null
   if (expr.callee.name !== 'setInterval' || expr.arguments?.length !== 2) return null
   const cb = expr.arguments[0]
   if (cb.type !== 'ArrowFunctionExpression' && cb.type !== 'FunctionExpression') return null
   if ((cb.params?.length ?? 0) !== 0) return null
-  const delay = toExpr(expr.arguments[1], ctx)
-  if (!isSimpleValue(delay)) return null
+  const d = readTimerDelay(expr.arguments[1], ctx)
+  if (!d) return null
   const body = bodyOfFn(cb, source, ctx)
-  return { type: 'setInterval', delay, body }
+  return { type: d.unit === 'seconds' ? 'setIntervalSeconds' : 'setInterval', delay: d.delay, body }
 }
 
 /**
@@ -1085,6 +1424,12 @@ function identifierName(node: Node): string | null {
   return node?.type === 'Identifier' ? (node.name as string) : null
 }
 
+/** `() => x` (arrow com corpo de identificador) → 'x'; senão null. */
+function arrowReturnIdentifier(node: Node): string | null {
+  if (node?.type !== 'ArrowFunctionExpression') return null
+  return node.body?.type === 'Identifier' ? (node.body.name as string) : null
+}
+
 /** Literal numérico (aceita `-N`); senão null. */
 function numericLiteralValue(node: Node): number | null {
   if (node?.type === 'NumericLiteral') return node.value as number
@@ -1108,11 +1453,115 @@ function asSZGame2DCall(expr: Node): { method: string; args: Node[] } | null {
   return { method: callee.property.name as string, args: expr.arguments ?? [] }
 }
 
-/** Lê `{ x, y, w, h, color }` de um literal de objeto. null se alguma chave for não-literal/desconhecida. */
+/** SZGame2D.keyDown("…") / SZGame2D.touches(a, b) em posição de VALOR (booleano). */
+function matchGame2DExpr(node: Node): JSExpr | null {
+  const call = asSZGame2DCall(node)
+  if (!call) return null
+  const { method, args } = call
+  if (method === 'keyDown' && args[0]?.type === 'StringLiteral') {
+    return { type: 'g2d:keyDown', key: args[0].value as string }
+  }
+  if (method === 'touches') {
+    const aVar = identifierName(args[0])
+    const bVar = identifierName(args[1])
+    if (aVar && bVar) return { type: 'g2d:touches', aVar, bVar }
+  }
+  if (method === 'countGroup') {
+    const groupVar = identifierName(args[0])
+    if (groupVar) return { type: 'g2d:countGroup', groupVar }
+  }
+  if (method === 'spriteAngleDeg') {
+    const spriteVar = identifierName(args[0])
+    if (spriteVar) return { type: 'g2d:spriteAngle', spriteVar }
+  }
+  if (method === 'distance') {
+    const aVar = identifierName(args[0])
+    const bVar = identifierName(args[1])
+    if (aVar && bVar) return { type: 'g2d:distance', aVar, bVar }
+  }
+  if (method === 'angleTo') {
+    const aVar = identifierName(args[0])
+    const bVar = identifierName(args[1])
+    if (aVar && bVar) return { type: 'g2d:angleTo', aVar, bVar }
+  }
+  if (method === 'getHealth') {
+    const spriteVar = identifierName(args[0])
+    if (spriteVar) return { type: 'g2d:getHealth', spriteVar }
+  }
+  if (method === 'randomBetween') {
+    const min = numericLiteralValue(args[0])
+    const max = numericLiteralValue(args[1])
+    if (min !== null && max !== null) return { type: 'g2d:randomBetween', min, max }
+  }
+  if (method === 'randomChance') {
+    const percent = numericLiteralValue(args[0])
+    if (percent !== null) return { type: 'g2d:randomChance', percent }
+  }
+  if (method === 'hasHealth') {
+    const spriteVar = identifierName(args[0])
+    if (spriteVar) return { type: 'g2d:hasHealth', spriteVar }
+  }
+  if (method === 'cooldownReady') {
+    const spriteVar = identifierName(args[0])
+    const frames = numericLiteralValue(args[1])
+    if (spriteVar && frames !== null) return { type: 'g2d:cooldownReady', spriteVar, frames }
+  }
+  if (method === 'isPaused') return { type: 'g2d:isPaused' }
+  if (method === 'cameraX') return { type: 'g2d:cameraX' }
+  if (method === 'cameraY') return { type: 'g2d:cameraY' }
+  if (method === 'tileAtSprite') {
+    const mapVar = identifierName(args[0])
+    const spriteVar = identifierName(args[1])
+    if (mapVar && spriteVar) return { type: 'g2d:tileAtSprite', mapVar, spriteVar }
+  }
+  if (method === 'sceneIs' && args[0]?.type === 'StringLiteral') {
+    return { type: 'g2d:sceneIs', name: args[0].value as string }
+  }
+  if (method === 'stickHeroScore') {
+    const gameVar = identifierName(args[0])
+    if (gameVar) return { type: 'g2d:stickHeroScore', gameVar }
+  }
+  if (method === 'stickHeroOver') {
+    const gameVar = identifierName(args[0])
+    if (gameVar) return { type: 'g2d:stickHeroOver', gameVar }
+  }
+  if (method === 'balloonScore') {
+    const gameVar = identifierName(args[0])
+    if (gameVar) return { type: 'g2d:balloonScore', gameVar }
+  }
+  if (method === 'balloonFuel') {
+    const gameVar = identifierName(args[0])
+    if (gameVar) return { type: 'g2d:balloonFuel', gameVar }
+  }
+  if (method === 'balloonOver') {
+    const gameVar = identifierName(args[0])
+    if (gameVar) return { type: 'g2d:balloonOver', gameVar }
+  }
+  if (method === 'aimReleased') {
+    const throwerVar = identifierName(args[0])
+    if (throwerVar) return { type: 'g2d:aimReleased', throwerVar }
+  }
+  if (method === 'bananaHitThrower') {
+    const cityVar = identifierName(args[0])
+    const throwerVar = identifierName(args[1])
+    if (cityVar && throwerVar) return { type: 'g2d:bananaHitThrower', cityVar, throwerVar }
+  }
+  if (method === 'bananaHitCity') {
+    const cityVar = identifierName(args[0])
+    if (cityVar) return { type: 'g2d:bananaHitCity', cityVar }
+  }
+  return null
+}
+
+/**
+ * Lê `{ x, y, w, h, color, image }` de um literal de objeto. `image` é opcional
+ * (nome do asset) — quando presente, o var-init vira `g2d:createImageSprite` em
+ * vez de `g2d:createSprite`. null se alguma chave for não-literal/desconhecida.
+ */
 function readSpriteOptions(
   obj: Node,
-): { x: number; y: number; w: number; h: number; color: string } | null {
-  const result = { x: 0, y: 0, w: 32, h: 32, color: '#22d3ee' }
+): { x: number; y: number; w: number; h: number; color: string; image: string | null } | null {
+  const result = { x: 0, y: 0, w: 32, h: 32, color: '#22d3ee', image: null as string | null }
   for (const prop of obj.properties ?? []) {
     if (prop?.type !== 'ObjectProperty' || prop.computed) return null
     const key =
@@ -1128,6 +1577,9 @@ function readSpriteOptions(
     } else if (key === 'color') {
       if (prop.value?.type !== 'StringLiteral') return null
       result.color = prop.value.value as string
+    } else if (key === 'image') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      result.image = prop.value.value as string
     } else if (key === 'vx' || key === 'vy') {
       // createSprite aceita vx/vy no runtime, mas o bloco não os guarda. Tolera
       // se forem literais (ignora); não-literal não é representável → bail.
@@ -1139,7 +1591,372 @@ function readSpriteOptions(
   return result
 }
 
-/** SZGame2D.gameLoop/onPointer/drawSprite/moveByKeys/applyVelocity/bounceOnEdges/setGravity/playSound. */
+/**
+ * Lê `{ image, tile, solid, grid }` de um literal de objeto (createTileMap).
+ * image/solid/grid são strings; tile é número. null se alguma chave faltar/for
+ * não-literal/desconhecida — o caminho cai no helper genérico.
+ */
+function readTileMapOptions(
+  obj: Node,
+): { image: string; tile: number; solid: string; grid: string } | null {
+  const result = { image: null as string | null, tile: null as number | null, solid: '', grid: '' }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'tile') {
+      const v = numericLiteralValue(prop.value)
+      if (v === null) return null
+      result.tile = v
+    } else if (key === 'image' || key === 'solid' || key === 'grid') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      result[key] = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  if (result.image === null || result.tile === null) return null
+  return { image: result.image, tile: result.tile, solid: result.solid, grid: result.grid }
+}
+
+/**
+ * Lê o objeto de `SZGame2D.spawn(grupo, { x, y, w, h, color|image, vx, vy })`.
+ * x/y/vx/vy são EXPRESSÕES (aceitam aleatório/contas); w/h números; color/image
+ * strings. `image` presente → spawn de imagem. null se alguma chave não-casar.
+ */
+function readSpawnOptions(
+  obj: Node,
+  ctx: ParseCtx,
+): {
+  x: JSExpr
+  y: JSExpr
+  vx: JSExpr
+  vy: JSExpr
+  w: number
+  h: number
+  color: string
+  image: string | null
+} | null {
+  const num0: JSExpr = { type: 'num', value: 0 }
+  const out = {
+    x: num0 as JSExpr,
+    y: num0 as JSExpr,
+    vx: num0 as JSExpr,
+    vy: num0 as JSExpr,
+    w: 20,
+    h: 20,
+    color: '#22d3ee',
+    image: null as string | null,
+  }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'x' || key === 'y' || key === 'vx' || key === 'vy') {
+      const v = toExpr(prop.value, ctx)
+      if (!isSimpleValue(v)) return null
+      out[key] = v
+    } else if (key === 'w' || key === 'h') {
+      const v = numericLiteralValue(prop.value)
+      if (v === null) return null
+      out[key] = v
+    } else if (key === 'color') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      out.color = prop.value.value as string
+    } else if (key === 'image') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      out.image = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return out
+}
+
+/**
+ * Lê `{ x, y, w, h, body, wings }` de `SZGame2D.createShip({...})`. x/y/w/h números;
+ * body/wings cores (strings). null se alguma chave não casar.
+ */
+function readShipOptions(
+  obj: Node,
+): { x: number; y: number; w: number; h: number; body: string; wings: string } | null {
+  const out = { x: 0, y: 0, w: 54, h: 62, body: '#35e8ff', wings: '#2568ff' }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'x' || key === 'y' || key === 'w' || key === 'h') {
+      const v = numericLiteralValue(prop.value)
+      if (v === null) return null
+      out[key] = v
+    } else if (key === 'body' || key === 'wings') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      out[key] = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return out
+}
+
+/**
+ * Lê `{ x, y, size, color, vx, vy }` de `SZGame2D.spawnAsteroid(g, {...})`. x/y/vx/vy
+ * são expressões; size número; color string. null se alguma chave não casar.
+ */
+function readAsteroidOptions(
+  obj: Node,
+  ctx: ParseCtx,
+): { x: JSExpr; y: JSExpr; vx: JSExpr; vy: JSExpr; size: number; color: string } | null {
+  const num0: JSExpr = { type: 'num', value: 0 }
+  const out = {
+    x: num0 as JSExpr,
+    y: num0 as JSExpr,
+    vx: num0 as JSExpr,
+    vy: num0 as JSExpr,
+    size: 36,
+    color: '#8d8f9b',
+  }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'x' || key === 'y' || key === 'vx' || key === 'vy') {
+      const v = toExpr(prop.value, ctx)
+      if (!isSimpleValue(v)) return null
+      out[key] = v
+    } else if (key === 'size') {
+      const v = numericLiteralValue(prop.value)
+      if (v === null) return null
+      out.size = v
+    } else if (key === 'color') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      out.color = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return out
+}
+
+/** Lê `{ speed, color }` de `SZGame2D.shootFrom(s, g, {...})` (números/string). */
+function readShootFromOptions(obj: Node): { speed: number; color: string } | null {
+  const out = { speed: 6, color: '#9cff57' }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'speed') {
+      const v = numericLiteralValue(prop.value)
+      if (v === null) return null
+      out.speed = v
+    } else if (key === 'color') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      out.color = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return out
+}
+
+/** Lê `{ size, color, speed }` de `SZGame2D.spawnAsteroidFromEdge(g, {...})`. */
+function readAsteroidEdgeOptions(obj: Node): { size: number; color: string; speed: number } | null {
+  const out = { size: 40, color: '#8d8f9b', speed: 1.5 }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'size' || key === 'speed') {
+      const v = numericLiteralValue(prop.value)
+      if (v === null) return null
+      out[key] = v
+    } else if (key === 'color') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      out.color = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return out
+}
+
+/** Lê `{ side, color }` de `SZGame2D.placeThrower(city, {...})`. side 'left'/'right'. */
+function readThrowerOptions(obj: Node): { side: 'left' | 'right'; color: string } | null {
+  let side: 'left' | 'right' = 'left'
+  let color = '#6b4a2b'
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'side') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      side = prop.value.value === 'right' ? 'right' : 'left'
+    } else if (key === 'color') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      color = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return { side, color }
+}
+
+/**
+ * Lê `{ x, y, size, color }` de `SZGame2D.createDino({...})`. x/y/size números;
+ * color string. null se alguma chave não casar.
+ */
+function readDinoOptions(obj: Node): { x: number; y: number; size: number; color: string } | null {
+  const out = { x: 0, y: 0, size: 64, color: '#5fb45f' }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'x' || key === 'y' || key === 'size') {
+      const v = numericLiteralValue(prop.value)
+      if (v === null) return null
+      out[key] = v
+    } else if (key === 'color') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      out.color = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return out
+}
+
+/**
+ * Lê `{ type, x, size, vx }` de `SZGame2D.spawnObstacle(g, ctx, {...})`. x/vx são
+ * expressões; size número; type string. null se alguma chave não casar.
+ */
+function readObstacleOptions(
+  obj: Node,
+  ctx: ParseCtx,
+): { shape: string; x: JSExpr; vx: JSExpr; size: number } | null {
+  const num0: JSExpr = { type: 'num', value: 0 }
+  const out = { shape: 'cactus', x: num0 as JSExpr, vx: num0 as JSExpr, size: 44 }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'x' || key === 'vx') {
+      const v = toExpr(prop.value, ctx)
+      if (!isSimpleValue(v)) return null
+      out[key] = v
+    } else if (key === 'size') {
+      const v = numericLiteralValue(prop.value)
+      if (v === null) return null
+      out.size = v
+    } else if (key === 'type') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      out.shape = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return out
+}
+
+/** Lê `{ x, y, vx }` de `SZGame2D.spawnEgg(g, {...})`. Todas expressões simples. */
+function readEggOptions(obj: Node, ctx: ParseCtx): { x: JSExpr; y: JSExpr; vx: JSExpr } | null {
+  const num0: JSExpr = { type: 'num', value: 0 }
+  const out = { x: num0 as JSExpr, y: num0 as JSExpr, vx: num0 as JSExpr }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'x' || key === 'y' || key === 'vx') {
+      const v = toExpr(prop.value, ctx)
+      if (!isSimpleValue(v)) return null
+      out[key] = v
+    } else {
+      return null
+    }
+  }
+  return out
+}
+
+/** Lê { x, y, radius, color, vx, vy } do SZGame2D.spawnBullet(g, {...}). */
+function readBulletOptions(
+  obj: Node,
+  ctx: ParseCtx,
+): { x: JSExpr; y: JSExpr; vx: JSExpr; vy: JSExpr; radius: number; color: string } | null {
+  const num0: JSExpr = { type: 'num', value: 0 }
+  const out = {
+    x: num0 as JSExpr,
+    y: num0 as JSExpr,
+    vx: num0 as JSExpr,
+    vy: num0 as JSExpr,
+    radius: 5,
+    color: '#9cff57',
+  }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'x' || key === 'y' || key === 'vx' || key === 'vy') {
+      const v = toExpr(prop.value, ctx)
+      if (!isSimpleValue(v)) return null
+      out[key] = v
+    } else if (key === 'radius') {
+      const v = numericLiteralValue(prop.value)
+      if (v === null) return null
+      out.radius = v
+    } else if (key === 'color') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      out.color = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return out
+}
+
+/** SZGame2D.gameLoop/onPointer/drawSprite/applyVelocity/bounceOnEdges/setGravity/playSound. */
 function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatement | null {
   const call = asSZGame2DCall(expr)
   if (!call) return null
@@ -1162,17 +1979,31 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
         body: bodyOfFn(args[0], source, ctx),
       }
     }
+    case 'onKey': {
+      // generator: SZGame2D.onKey("ArrowRight", function(){…})
+      if (args[0]?.type !== 'StringLiteral' || !isFn(args[1])) return null
+      return {
+        type: 'g2d:onKey',
+        key: args[0].value as string,
+        body: bodyOfFn(args[1], source, ctx),
+      }
+    }
+    case 'onOverlap': {
+      // generator: SZGame2D.onOverlap(() => a, () => b, function(){…})
+      const aVar = arrowReturnIdentifier(args[0])
+      const bVar = arrowReturnIdentifier(args[1])
+      if (!aVar || !bVar || !isFn(args[2])) return null
+      return { type: 'g2d:onOverlap', aVar, bVar, body: bodyOfFn(args[2], source, ctx) }
+    }
     case 'drawSprite': {
       // generator: SZGame2D.drawSprite(ctx, sprite)
       const ctxVar = identifierName(args[0])
       const spriteVar = identifierName(args[1])
       return ctxVar && spriteVar ? { type: 'g2d:drawSprite', spriteVar, ctxVar } : null
     }
-    case 'moveByKeys': {
-      const spriteVar = identifierName(args[0])
-      const speed = numericLiteralValue(args[1])
-      return spriteVar && speed !== null ? { type: 'g2d:moveByKeys', spriteVar, speed } : null
-    }
+    case 'clear':
+      // generator: SZGame2D.clear()  (palco implícito — sem ctx)
+      return { type: 'g2d:clear' }
     case 'applyVelocity': {
       const spriteVar = identifierName(args[0])
       return spriteVar ? { type: 'g2d:applyVelocity', spriteVar } : null
@@ -1194,9 +2025,693 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
         ? { type: 'g2d:playSound', freq, durationMs }
         : null
     }
+    case 'playFx': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'g2d:playFx', fx: args[0].value as string }
+    }
+    case 'playMusic': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'g2d:playMusic', tune: args[0].value as string }
+    }
+    case 'stopMusic':
+      return { type: 'g2d:stopMusic' }
+    case 'playNote': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const ms = numericLiteralValue(args[1])
+      return ms !== null ? { type: 'g2d:playNote', note: args[0].value as string, ms } : null
+    }
+    case 'aimAt': {
+      const spriteVar = identifierName(args[0])
+      const targetVar = identifierName(args[1])
+      return spriteVar && targetVar ? { type: 'g2d:aimAt', spriteVar, targetVar } : null
+    }
+    case 'moveToward': {
+      const spriteVar = identifierName(args[0])
+      const targetVar = identifierName(args[1])
+      const speed = numericLiteralValue(args[2])
+      return spriteVar && targetVar && speed !== null
+        ? { type: 'g2d:moveToward', spriteVar, targetVar, speed }
+        : null
+    }
+    case 'setHealth': {
+      const spriteVar = identifierName(args[0])
+      const amount = numericLiteralValue(args[1])
+      return spriteVar && amount !== null ? { type: 'g2d:setHealth', spriteVar, amount } : null
+    }
+    case 'changeHealth': {
+      const spriteVar = identifierName(args[0])
+      const delta = numericLiteralValue(args[1])
+      return spriteVar && delta !== null ? { type: 'g2d:changeHealth', spriteVar, delta } : null
+    }
+    case 'flipSprite': {
+      const spriteVar = identifierName(args[0])
+      if (!spriteVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'g2d:flipSprite', spriteVar, dir: args[1].value as string }
+    }
+    case 'setOpacity': {
+      const spriteVar = identifierName(args[0])
+      const percent = numericLiteralValue(args[1])
+      return spriteVar && percent !== null ? { type: 'g2d:setOpacity', spriteVar, percent } : null
+    }
+    case 'setSize': {
+      const spriteVar = identifierName(args[0])
+      const w = numericLiteralValue(args[1])
+      const h = numericLiteralValue(args[2])
+      return spriteVar && w !== null && h !== null ? { type: 'g2d:setSize', spriteVar, w, h } : null
+    }
+    case 'scaleSprite': {
+      const spriteVar = identifierName(args[0])
+      const factor = numericLiteralValue(args[1])
+      return spriteVar && factor !== null ? { type: 'g2d:scaleSprite', spriteVar, factor } : null
+    }
+    case 'wrapEdges': {
+      const spriteVar = identifierName(args[0])
+      return spriteVar ? { type: 'g2d:wrapEdges', spriteVar } : null
+    }
+    case 'pruneOld': {
+      const groupVar = identifierName(args[0])
+      const seconds = numericLiteralValue(args[1])
+      return groupVar && seconds !== null ? { type: 'g2d:pruneOld', groupVar, seconds } : null
+    }
+    case 'pauseGame':
+      return { type: 'g2d:pauseGame' }
+    case 'resumeGame':
+      return { type: 'g2d:resumeGame' }
+    case 'cameraFollow': {
+      const spriteVar = identifierName(args[0])
+      const worldW = numericLiteralValue(args[1])
+      const worldH = numericLiteralValue(args[2])
+      return spriteVar && worldW !== null && worldH !== null
+        ? { type: 'g2d:cameraFollow', spriteVar, worldW, worldH }
+        : null
+    }
+    case 'setCamera': {
+      const x = numericLiteralValue(args[0])
+      const y = numericLiteralValue(args[1])
+      return x !== null && y !== null ? { type: 'g2d:setCamera', x, y } : null
+    }
+    case 'breakTileAtSprite': {
+      const mapVar = identifierName(args[0])
+      const spriteVar = identifierName(args[1])
+      return mapVar && spriteVar ? { type: 'g2d:breakTile', mapVar, spriteVar } : null
+    }
+    case 'setTileAtSprite': {
+      const mapVar = identifierName(args[0])
+      const index = numericLiteralValue(args[1])
+      const spriteVar = identifierName(args[2])
+      return mapVar && index !== null && spriteVar
+        ? { type: 'g2d:setTile', mapVar, index, spriteVar }
+        : null
+    }
+    case 'bringToFront': {
+      const groupVar = identifierName(args[0])
+      const spriteVar = identifierName(args[1])
+      return groupVar && spriteVar ? { type: 'g2d:bringToFront', spriteVar, groupVar } : null
+    }
+    case 'sendToBack': {
+      const groupVar = identifierName(args[0])
+      const spriteVar = identifierName(args[1])
+      return groupVar && spriteVar ? { type: 'g2d:sendToBack', spriteVar, groupVar } : null
+    }
+    case 'drawHitbox': {
+      const spriteVar = identifierName(args[0])
+      return spriteVar ? { type: 'g2d:drawHitbox', spriteVar } : null
+    }
+    case 'showFps': {
+      const x = numericLiteralValue(args[0])
+      const y = numericLiteralValue(args[1])
+      return x !== null && y !== null ? { type: 'g2d:showFps', x, y } : null
+    }
+    case 'setImage': {
+      // generator: SZGame2D.setImage(sprite, 'nome')
+      const spriteVar = identifierName(args[0])
+      if (!spriteVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'g2d:setImage', spriteVar, image: args[1].value as string }
+    }
+    case 'setAnimation': {
+      // generator: SZGame2D.setAnimation(sprite, sheet, from, to, fps)
+      const spriteVar = identifierName(args[0])
+      const sheetVar = identifierName(args[1])
+      const from = numericLiteralValue(args[2])
+      const to = numericLiteralValue(args[3])
+      const fps = numericLiteralValue(args[4])
+      return spriteVar && sheetVar && from !== null && to !== null && fps !== null
+        ? { type: 'g2d:animateSprite', spriteVar, sheetVar, from, to, fps }
+        : null
+    }
+    case 'drawFrame': {
+      // generator: SZGame2D.drawFrame(ctx, sheet, index, x, y, w, h)
+      const ctxVar = identifierName(args[0])
+      const sheetVar = identifierName(args[1])
+      const index = numericLiteralValue(args[2])
+      const x = numericLiteralValue(args[3])
+      const y = numericLiteralValue(args[4])
+      const w = numericLiteralValue(args[5])
+      const h = numericLiteralValue(args[6])
+      return ctxVar &&
+        sheetVar &&
+        index !== null &&
+        x !== null &&
+        y !== null &&
+        w !== null &&
+        h !== null
+        ? { type: 'g2d:drawFrame', ctxVar, sheetVar, index, x, y, w, h }
+        : null
+    }
+    case 'platformer': {
+      // generator: SZGame2D.platformer(sprite, ctx, speed, jump)
+      const spriteVar = identifierName(args[0])
+      const ctxVar = identifierName(args[1])
+      const speed = numericLiteralValue(args[2])
+      const jump = numericLiteralValue(args[3])
+      return spriteVar && ctxVar && speed !== null && jump !== null
+        ? { type: 'g2d:platformer', spriteVar, ctxVar, speed, jump }
+        : null
+    }
+    case 'topDown': {
+      const spriteVar = identifierName(args[0])
+      const speed = numericLiteralValue(args[1])
+      return spriteVar && speed !== null ? { type: 'g2d:topDown', spriteVar, speed } : null
+    }
+    case 'followPointer': {
+      const spriteVar = identifierName(args[0])
+      const speed = numericLiteralValue(args[1])
+      return spriteVar && speed !== null ? { type: 'g2d:followPointer', spriteVar, speed } : null
+    }
+    case 'clampToScreen': {
+      const spriteVar = identifierName(args[0])
+      const ctxVar = identifierName(args[1])
+      return spriteVar && ctxVar ? { type: 'g2d:clampToScreen', spriteVar, ctxVar } : null
+    }
+    case 'steerThrust': {
+      // generator: SZGame2D.steerThrust(sprite, speed, turn)
+      const spriteVar = identifierName(args[0])
+      const speed = numericLiteralValue(args[1])
+      const turn = numericLiteralValue(args[2])
+      return spriteVar && speed !== null && turn !== null
+        ? { type: 'g2d:steerThrust', spriteVar, speed, turn }
+        : null
+    }
+    case 'rotateSprite': {
+      const spriteVar = identifierName(args[0])
+      const deg = numericLiteralValue(args[1])
+      return spriteVar && deg !== null ? { type: 'g2d:rotateSprite', spriteVar, deg } : null
+    }
+    case 'pointSprite': {
+      const spriteVar = identifierName(args[0])
+      const deg = numericLiteralValue(args[1])
+      return spriteVar && deg !== null ? { type: 'g2d:pointSprite', spriteVar, deg } : null
+    }
+    case 'thrust': {
+      const spriteVar = identifierName(args[0])
+      const force = numericLiteralValue(args[1])
+      return spriteVar && force !== null ? { type: 'g2d:thrust', spriteVar, force } : null
+    }
+    case 'applyFriction': {
+      const spriteVar = identifierName(args[0])
+      const factor = numericLiteralValue(args[1])
+      return spriteVar && factor !== null ? { type: 'g2d:applyFriction', spriteVar, factor } : null
+    }
+    case 'shootFrom': {
+      // generator: SZGame2D.shootFrom(sprite, group, { speed, color })
+      const spriteVar = identifierName(args[0])
+      const groupVar = identifierName(args[1])
+      if (!spriteVar || !groupVar || args[2]?.type !== 'ObjectExpression') return null
+      const o = readShootFromOptions(args[2])
+      return o
+        ? { type: 'g2d:shootFrom', spriteVar, groupVar, speed: o.speed, color: o.color }
+        : null
+    }
+    case 'spawnAsteroidFromEdge': {
+      // generator: SZGame2D.spawnAsteroidFromEdge(group, { size, color, speed })
+      const groupVar = identifierName(args[0])
+      if (!groupVar || args[1]?.type !== 'ObjectExpression') return null
+      const o = readAsteroidEdgeOptions(args[1])
+      return o
+        ? { type: 'g2d:spawnAsteroidEdge', groupVar, size: o.size, color: o.color, speed: o.speed }
+        : null
+    }
+    case 'flash': {
+      // generator: SZGame2D.flash(ctx, "color")
+      const ctxVar = identifierName(args[0])
+      if (!ctxVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'g2d:flash', ctxVar, color: args[1].value as string }
+    }
+    case 'shake': {
+      const ctxVar = identifierName(args[0])
+      const intensity = numericLiteralValue(args[1])
+      return ctxVar && intensity !== null ? { type: 'g2d:shake', ctxVar, intensity } : null
+    }
+    case 'emitParticles': {
+      // generator: SZGame2D.emitParticles(x, y, count, "color")
+      const x = numericLiteralValue(args[0])
+      const y = numericLiteralValue(args[1])
+      const count = numericLiteralValue(args[2])
+      if (x === null || y === null || count === null || args[3]?.type !== 'StringLiteral')
+        return null
+      return { type: 'g2d:emitParticles', x, y, count, color: args[3].value as string }
+    }
+    case 'drawParticles': {
+      const ctxVar = identifierName(args[0])
+      return ctxVar ? { type: 'g2d:drawParticles', ctxVar } : null
+    }
+    case 'drawTileMap': {
+      // generator: SZGame2D.drawTileMap(ctx, map, x, y)
+      const ctxVar = identifierName(args[0])
+      const mapVar = identifierName(args[1])
+      const x = numericLiteralValue(args[2])
+      const y = numericLiteralValue(args[3])
+      return ctxVar && mapVar && x !== null && y !== null
+        ? { type: 'g2d:drawTileMap', ctxVar, mapVar, x, y }
+        : null
+    }
+    case 'collideTileMap': {
+      // generator: SZGame2D.collideTileMap(sprite, map)
+      const spriteVar = identifierName(args[0])
+      const mapVar = identifierName(args[1])
+      return spriteVar && mapVar ? { type: 'g2d:tileMapCollide', spriteVar, mapVar } : null
+    }
+    case 'spawn': {
+      // generator: SZGame2D.spawn(g, { x, y, w, h, color|image, vx, vy })
+      const groupVar = identifierName(args[0])
+      if (!groupVar || args[1]?.type !== 'ObjectExpression') return null
+      const opts = readSpawnOptions(args[1], ctx)
+      if (!opts) return null
+      if (opts.image != null) {
+        const { x, y, w, h, image, vx, vy } = opts
+        return { type: 'g2d:spawnImageInGroup', groupVar, x, y, w, h, image, vx, vy }
+      }
+      const { x, y, w, h, color, vx, vy } = opts
+      return { type: 'g2d:spawnInGroup', groupVar, x, y, w, h, color, vx, vy }
+    }
+    case 'updateGroup': {
+      const groupVar = identifierName(args[0])
+      return groupVar ? { type: 'g2d:updateGroup', groupVar } : null
+    }
+    case 'drawGroup': {
+      // generator: SZGame2D.drawGroup(ctx, g)
+      const ctxVar = identifierName(args[0])
+      const groupVar = identifierName(args[1])
+      return ctxVar && groupVar ? { type: 'g2d:drawGroup', groupVar, ctxVar } : null
+    }
+    case 'forEachInGroup': {
+      // generator: SZGame2D.forEachInGroup(g, function (item) {…})
+      const groupVar = identifierName(args[0])
+      if (!groupVar || !isFn(args[1])) return null
+      const itemName = identifierName(args[1].params?.[0]) ?? 'sprite'
+      ctx.spriteVars.add(itemName)
+      return {
+        type: 'g2d:forEachInGroup',
+        groupVar,
+        itemName,
+        body: bodyOfFn(args[1], source, ctx),
+      }
+    }
+    case 'clearGroup': {
+      const groupVar = identifierName(args[0])
+      return groupVar ? { type: 'g2d:clearGroup', groupVar } : null
+    }
+    case 'pruneOffscreen': {
+      // generator: SZGame2D.pruneOffscreen(ctx, g, 40, function (item) {…})
+      const ctxVar = identifierName(args[0])
+      const groupVar = identifierName(args[1])
+      if (!ctxVar || !groupVar || !isFn(args[3])) return null
+      const itemName = identifierName(args[3].params?.[0]) ?? 'sprite'
+      ctx.spriteVars.add(itemName)
+      return {
+        type: 'g2d:pruneOffscreen',
+        groupVar,
+        ctxVar,
+        itemName,
+        body: bodyOfFn(args[3], source, ctx),
+      }
+    }
+    case 'overlapGroups': {
+      // generator: SZGame2D.overlapGroups(a, b, function (x, y) {…})
+      const aGroup = identifierName(args[0])
+      const bGroup = identifierName(args[1])
+      if (!aGroup || !bGroup || !isFn(args[2])) return null
+      const params = args[2].params ?? []
+      const aName = identifierName(params[0]) ?? 'a'
+      const bName = identifierName(params[1]) ?? 'b'
+      ctx.spriteVars.add(aName)
+      ctx.spriteVars.add(bName)
+      return {
+        type: 'g2d:onGroupOverlap',
+        aGroup,
+        aName,
+        bGroup,
+        bName,
+        body: bodyOfFn(args[2], source, ctx),
+      }
+    }
+    case 'removeFromGroup': {
+      // generator: SZGame2D.removeFromGroup(g, sprite)
+      const groupVar = identifierName(args[0])
+      const spriteVar = identifierName(args[1])
+      return groupVar && spriteVar ? { type: 'g2d:removeFromGroup', spriteVar, groupVar } : null
+    }
+    case 'drawScore': {
+      // generator: SZGame2D.drawScore(ctx, "label", value, x, y, "color", size)
+      const ctxVar = identifierName(args[0])
+      const value = toExpr(args[2], ctx)
+      const x = numericLiteralValue(args[3])
+      const y = numericLiteralValue(args[4])
+      const size = numericLiteralValue(args[6])
+      if (
+        !ctxVar ||
+        args[1]?.type !== 'StringLiteral' ||
+        !isSimpleValue(value) ||
+        x === null ||
+        y === null ||
+        args[5]?.type !== 'StringLiteral' ||
+        size === null
+      ) {
+        return null
+      }
+      return {
+        type: 'g2d:drawScore',
+        ctxVar,
+        label: args[1].value as string,
+        value,
+        x,
+        y,
+        color: args[5].value as string,
+        size,
+      }
+    }
+    case 'drawLabel': {
+      // generator: SZGame2D.drawLabel(ctx, "text", x, y, "color", size, "align")
+      const ctxVar = identifierName(args[0])
+      const x = numericLiteralValue(args[2])
+      const y = numericLiteralValue(args[3])
+      const size = numericLiteralValue(args[5])
+      if (
+        !ctxVar ||
+        args[1]?.type !== 'StringLiteral' ||
+        x === null ||
+        y === null ||
+        args[4]?.type !== 'StringLiteral' ||
+        size === null ||
+        args[6]?.type !== 'StringLiteral'
+      ) {
+        return null
+      }
+      const align = args[6].value as string
+      return {
+        type: 'g2d:drawLabel',
+        ctxVar,
+        text: args[1].value as string,
+        x,
+        y,
+        color: args[4].value as string,
+        size,
+        align: align === 'center' || align === 'right' ? align : 'left',
+      }
+    }
+    case 'drawHearts': {
+      // generator: SZGame2D.drawHearts(ctx, count, x, y, size, "color")
+      const ctxVar = identifierName(args[0])
+      const count = toExpr(args[1], ctx)
+      const x = numericLiteralValue(args[2])
+      const y = numericLiteralValue(args[3])
+      const size = numericLiteralValue(args[4])
+      if (
+        !ctxVar ||
+        !isSimpleValue(count) ||
+        x === null ||
+        y === null ||
+        size === null ||
+        args[5]?.type !== 'StringLiteral'
+      ) {
+        return null
+      }
+      return { type: 'g2d:drawHearts', ctxVar, count, x, y, size, color: args[5].value as string }
+    }
+    case 'drawBar': {
+      // generator: SZGame2D.drawBar(ctx, value, max, x, y, w, h, "color")
+      const ctxVar = identifierName(args[0])
+      const value = toExpr(args[1], ctx)
+      const max = toExpr(args[2], ctx)
+      const x = numericLiteralValue(args[3])
+      const y = numericLiteralValue(args[4])
+      const w = numericLiteralValue(args[5])
+      const h = numericLiteralValue(args[6])
+      if (
+        !ctxVar ||
+        !isSimpleValue(value) ||
+        !isSimpleValue(max) ||
+        x === null ||
+        y === null ||
+        w === null ||
+        h === null ||
+        args[7]?.type !== 'StringLiteral'
+      ) {
+        return null
+      }
+      return { type: 'g2d:drawBar', ctxVar, value, max, x, y, w, h, color: args[7].value as string }
+    }
+    case 'setScene': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'g2d:setScene', name: args[0].value as string }
+    }
+    case 'showScreen': {
+      // generator: SZGame2D.showScreen(ctx, "title", "subtitle", "hint", "bg")
+      const ctxVar = identifierName(args[0])
+      if (
+        !ctxVar ||
+        args[1]?.type !== 'StringLiteral' ||
+        args[2]?.type !== 'StringLiteral' ||
+        args[3]?.type !== 'StringLiteral' ||
+        args[4]?.type !== 'StringLiteral'
+      ) {
+        return null
+      }
+      return {
+        type: 'g2d:showScreen',
+        ctxVar,
+        title: args[1].value as string,
+        subtitle: args[2].value as string,
+        hint: args[3].value as string,
+        bg: args[4].value as string,
+      }
+    }
+    case 'restart':
+      return { type: 'g2d:restart' }
+    case 'drawStarfield': {
+      // generator: SZGame2D.drawStarfield(ctx, speed)
+      const ctxVar = identifierName(args[0])
+      const speed = numericLiteralValue(args[1])
+      return ctxVar && speed !== null ? { type: 'g2d:starfield', ctxVar, speed } : null
+    }
+    case 'dragX': {
+      const spriteVar = identifierName(args[0])
+      return spriteVar ? { type: 'g2d:dragX', spriteVar } : null
+    }
+    case 'fitScreen': {
+      const percent = numericLiteralValue(args[0])
+      return percent !== null ? { type: 'g2d:fitScreen', percent } : null
+    }
+    case 'spawnAsteroid': {
+      // generator: SZGame2D.spawnAsteroid(g, { x, y, size, color, vx, vy })
+      const groupVar = identifierName(args[0])
+      if (!groupVar || args[1]?.type !== 'ObjectExpression') return null
+      const o = readAsteroidOptions(args[1], ctx)
+      if (!o) return null
+      return {
+        type: 'g2d:spawnAsteroid',
+        groupVar,
+        x: o.x,
+        y: o.y,
+        size: o.size,
+        color: o.color,
+        vx: o.vx,
+        vy: o.vy,
+      }
+    }
+    case 'spawnBullet': {
+      // generator: SZGame2D.spawnBullet(g, { x, y, radius, color, vx, vy })
+      const groupVar = identifierName(args[0])
+      if (!groupVar || args[1]?.type !== 'ObjectExpression') return null
+      const o = readBulletOptions(args[1], ctx)
+      if (!o) return null
+      return {
+        type: 'g2d:spawnBullet',
+        groupVar,
+        x: o.x,
+        y: o.y,
+        radius: o.radius,
+        color: o.color,
+        vx: o.vx,
+        vy: o.vy,
+      }
+    }
+    case 'arrowsX': {
+      // generator: SZGame2D.arrowsX(sprite, speed)
+      const spriteVar = identifierName(args[0])
+      const speed = numericLiteralValue(args[1])
+      return spriteVar && speed !== null ? { type: 'g2d:arrowsX', spriteVar, speed } : null
+    }
+    case 'blink': {
+      // generator: SZGame2D.blink(sprite, frames)
+      const spriteVar = identifierName(args[0])
+      const frames = numericLiteralValue(args[1])
+      return spriteVar && frames !== null ? { type: 'g2d:blinkSprite', spriteVar, frames } : null
+    }
+    case 'explodeSprite': {
+      // generator: SZGame2D.explodeSprite(sprite, "color")
+      const spriteVar = identifierName(args[0])
+      if (!spriteVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'g2d:explode', spriteVar, color: args[1].value as string }
+    }
+    case 'playShoot':
+      return { type: 'g2d:playShoot' }
+    case 'playExplosion':
+      return { type: 'g2d:playExplosion' }
+    case 'jumpOnGround': {
+      // generator: SZGame2D.jumpOnGround(sprite, ctx, jump)
+      const spriteVar = identifierName(args[0])
+      const ctxVar = identifierName(args[1])
+      const jump = numericLiteralValue(args[2])
+      return spriteVar && ctxVar && jump !== null
+        ? { type: 'g2d:jumpOnGround', spriteVar, ctxVar, jump }
+        : null
+    }
+    case 'controlDino': {
+      // generator: SZGame2D.controlDino(sprite, ctx, jump)
+      const spriteVar = identifierName(args[0])
+      const ctxVar = identifierName(args[1])
+      const jump = numericLiteralValue(args[2])
+      return spriteVar && ctxVar && jump !== null
+        ? { type: 'g2d:controlDino', spriteVar, ctxVar, jump }
+        : null
+    }
+    case 'spawnObstacle': {
+      // generator: SZGame2D.spawnObstacle(group, ctx, { type, x, size, vx })
+      const groupVar = identifierName(args[0])
+      const ctxVar = identifierName(args[1])
+      if (!groupVar || !ctxVar || args[2]?.type !== 'ObjectExpression') return null
+      const o = readObstacleOptions(args[2], ctx)
+      if (!o) return null
+      return {
+        type: 'g2d:spawnObstacle',
+        groupVar,
+        ctxVar,
+        shape: o.shape,
+        x: o.x,
+        size: o.size,
+        vx: o.vx,
+      }
+    }
+    case 'spawnEgg': {
+      // generator: SZGame2D.spawnEgg(group, { x, y, vx })
+      const groupVar = identifierName(args[0])
+      if (!groupVar || args[1]?.type !== 'ObjectExpression') return null
+      const o = readEggOptions(args[1], ctx)
+      if (!o) return null
+      return { type: 'g2d:spawnEgg', groupVar, x: o.x, y: o.y, vx: o.vx }
+    }
+    case 'drawForest': {
+      // generator: SZGame2D.drawForest(ctx, speed)
+      const ctxVar = identifierName(args[0])
+      const speed = numericLiteralValue(args[1])
+      return ctxVar && speed !== null ? { type: 'g2d:forest', ctxVar, speed } : null
+    }
+    case 'playJump':
+      return { type: 'g2d:playJump' }
+    case 'playDinoHurt':
+      return { type: 'g2d:playDinoHurt' }
+    case 'playCollect':
+      return { type: 'g2d:playCollect' }
+    case 'drawCity': {
+      // generator: SZGame2D.drawCity(ctx, city)
+      const ctxVar = identifierName(args[0])
+      const cityVar = identifierName(args[1])
+      return ctxVar && cityVar ? { type: 'g2d:drawCity', cityVar, ctxVar } : null
+    }
+    case 'newWind': {
+      const cityVar = identifierName(args[0])
+      return cityVar ? { type: 'g2d:newWind', cityVar } : null
+    }
+    case 'drawWind': {
+      // generator: SZGame2D.drawWind(ctx, city)
+      const ctxVar = identifierName(args[0])
+      const cityVar = identifierName(args[1])
+      return ctxVar && cityVar ? { type: 'g2d:drawWind', cityVar, ctxVar } : null
+    }
+    case 'aimDrag': {
+      // generator: SZGame2D.aimDrag(ctx, thrower)
+      const ctxVar = identifierName(args[0])
+      const throwerVar = identifierName(args[1])
+      return ctxVar && throwerVar ? { type: 'g2d:aimDrag', throwerVar, ctxVar } : null
+    }
+    case 'throwBanana': {
+      // generator: SZGame2D.throwBanana(thrower, city)
+      const throwerVar = identifierName(args[0])
+      const cityVar = identifierName(args[1])
+      return throwerVar && cityVar ? { type: 'g2d:throwBanana', throwerVar, cityVar } : null
+    }
+    case 'updateBanana': {
+      const cityVar = identifierName(args[0])
+      return cityVar ? { type: 'g2d:updateBanana', cityVar } : null
+    }
+    case 'drawBanana': {
+      // generator: SZGame2D.drawBanana(ctx, city)
+      const ctxVar = identifierName(args[0])
+      const cityVar = identifierName(args[1])
+      return ctxVar && cityVar ? { type: 'g2d:drawBanana', cityVar, ctxVar } : null
+    }
+    case 'playWhistle':
+      return { type: 'g2d:playWhistle' }
+    case 'playBoom':
+      return { type: 'g2d:playBoom' }
+    case 'computerTurn': {
+      // generator: SZGame2D.computerTurn(thrower, city, enemy)
+      const throwerVar = identifierName(args[0])
+      const cityVar = identifierName(args[1])
+      const enemyVar = identifierName(args[2])
+      return throwerVar && cityVar && enemyVar
+        ? { type: 'g2d:computerTurn', throwerVar, cityVar, enemyVar }
+        : null
+    }
+    case 'drawAimReadout': {
+      const ctxVar = identifierName(args[0])
+      return ctxVar ? { type: 'g2d:drawAimReadout', ctxVar } : null
+    }
+    case 'updateStickHero': {
+      const gameVar = identifierName(args[0])
+      return gameVar ? { type: 'g2d:updateStickHero', gameVar } : null
+    }
+    case 'restartStickHero': {
+      const gameVar = identifierName(args[0])
+      return gameVar ? { type: 'g2d:restartStickHero', gameVar } : null
+    }
+    case 'updateBalloon': {
+      const gameVar = identifierName(args[0])
+      return gameVar ? { type: 'g2d:updateBalloon', gameVar } : null
+    }
+    case 'restartBalloon': {
+      const gameVar = identifierName(args[0])
+      return gameVar ? { type: 'g2d:restartBalloon', gameVar } : null
+    }
+    case 'overlapSpriteGroup': {
+      // generator: SZGame2D.overlapSpriteGroup(() => sprite, grupo, function (item) {…})
+      const spriteVar = arrowReturnIdentifier(args[0])
+      const groupVar = identifierName(args[1])
+      if (!spriteVar || !groupVar || !isFn(args[2])) return null
+      const itemName = identifierName(args[2].params?.[0]) ?? 'inimigo'
+      ctx.spriteVars.add(itemName)
+      return {
+        type: 'g2d:onSpriteGroupOverlap',
+        spriteVar,
+        groupVar,
+        itemName,
+        body: bodyOfFn(args[2], source, ctx),
+      }
+    }
     default:
-      // createSprite/isColliding/circleCollides são var-init (tryMatchGame2DVarInit);
-      // como chamada solta caem no método genérico.
+      // createSprite/isColliding/circleCollides/loadSpriteSheet são var-init
+      // (tryMatchGame2DVarInit); como chamada solta caem no método genérico.
       return null
   }
 }
@@ -1218,7 +2733,87 @@ function tryMatchGame2DVarInit(name: string, init: Node, ctx: ParseCtx): JSState
     const sprite = readSpriteOptions(args[0])
     if (!sprite) return null
     ctx.spriteVars.add(name)
-    return { type: 'g2d:createSprite', varName: name, ...sprite }
+    // Com `image` → sprite de imagem (o bloco colorido não tem essa chave); o
+    // color do default é descartado nesse caminho.
+    if (sprite.image != null) {
+      const { x, y, w, h, image } = sprite
+      return { type: 'g2d:createImageSprite', varName: name, x, y, w, h, image }
+    }
+    const { x, y, w, h, color } = sprite
+    return { type: 'g2d:createSprite', varName: name, x, y, w, h, color }
+  }
+  if (method === 'createGroup') {
+    // generator: const g = SZGame2D.createGroup()
+    return { type: 'g2d:createGroup', varName: name }
+  }
+  if (method === 'createShip') {
+    // generator: const nave = SZGame2D.createShip({ x, y, w, h, body, wings })
+    if (args[0]?.type !== 'ObjectExpression') return null
+    const o = readShipOptions(args[0])
+    if (!o) return null
+    ctx.spriteVars.add(name)
+    return {
+      type: 'g2d:createShip',
+      varName: name,
+      x: o.x,
+      y: o.y,
+      w: o.w,
+      h: o.h,
+      bodyColor: o.body,
+      wingColor: o.wings,
+    }
+  }
+  if (method === 'createDino') {
+    // generator: const dino = SZGame2D.createDino({ x, y, size, color })
+    if (args[0]?.type !== 'ObjectExpression') return null
+    const o = readDinoOptions(args[0])
+    if (!o) return null
+    ctx.spriteVars.add(name)
+    return { type: 'g2d:createDino', varName: name, x: o.x, y: o.y, size: o.size, color: o.color }
+  }
+  if (method === 'createStickHero') {
+    // generator: const jogo = SZGame2D.createStickHero(ctx)
+    const ctxVar = identifierName(args[0]) ?? 'ctx'
+    return { type: 'g2d:createStickHero', varName: name, ctxVar }
+  }
+  if (method === 'createBalloon') {
+    // generator: const jogo = SZGame2D.createBalloon(ctx)
+    const ctxVar = identifierName(args[0]) ?? 'ctx'
+    return { type: 'g2d:createBalloon', varName: name, ctxVar }
+  }
+  if (method === 'createCity') {
+    // generator: const cidade = SZGame2D.createCity()
+    return { type: 'g2d:createCity', varName: name }
+  }
+  if (method === 'placeThrower') {
+    // generator: const g = SZGame2D.placeThrower(city, { side, color })
+    const cityVar = identifierName(args[0])
+    if (!cityVar || args[1]?.type !== 'ObjectExpression') return null
+    const o = readThrowerOptions(args[1])
+    if (!o) return null
+    ctx.spriteVars.add(name)
+    return { type: 'g2d:placeThrower', varName: name, cityVar, side: o.side, color: o.color }
+  }
+  if (method === 'loadSpriteSheet') {
+    // generator: const v = SZGame2D.loadSpriteSheet('nome', fw, fh)
+    if (args[0]?.type !== 'StringLiteral') return null
+    const frameW = numericLiteralValue(args[1])
+    const frameH = numericLiteralValue(args[2])
+    if (frameW === null || frameH === null) return null
+    return {
+      type: 'g2d:loadSpritesheet',
+      varName: name,
+      image: args[0].value as string,
+      frameW,
+      frameH,
+    }
+  }
+  if (method === 'createTileMap') {
+    // generator: const map = SZGame2D.createTileMap({ image, tile, solid, grid })
+    if (args[0]?.type !== 'ObjectExpression') return null
+    const opts = readTileMapOptions(args[0])
+    if (!opts) return null
+    return { type: 'g2d:createTileMap', varName: name, ...opts }
   }
   return null
 }
@@ -1310,6 +2905,32 @@ function readBoxOptions(obj: Node): { size: number; color: string } | null {
   return result
 }
 
+/** Lê `{ <numKeys>, color }` (genérico) de um literal de objeto, p/ as formas da Fase 6. */
+function readShapeOpts(obj: Node, numKeys: string[]): Record<string, number | string> | null {
+  const result: Record<string, number | string> = { color: '#22d3ee' }
+  for (const k of numKeys) result[k] = 1
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key && numKeys.includes(key)) {
+      const v = numericLiteralValue(prop.value)
+      if (v === null) return null
+      result[key] = v
+    } else if (key === 'color') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      result.color = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return result
+}
+
 /** Lê `{ radius, color }` de um literal de objeto. null se alguma chave for não-literal/desconhecida. */
 function readSphereOptions(obj: Node): { radius: number; color: string } | null {
   const result = { radius: 0.5, color: '#f59e0b' }
@@ -1335,10 +2956,38 @@ function readSphereOptions(obj: Node): { radius: number; color: string } | null 
   return result
 }
 
+/** Lê `{ width, height, depth, color }` de um literal de objeto. null se chave não-literal/desconhecida. */
+function readBlockOptions(
+  obj: Node,
+): { width: number; height: number; depth: number; color: string } | null {
+  const result = { width: 1, height: 1, depth: 1, color: '#22d3ee' }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'width' || key === 'height' || key === 'depth') {
+      const v = numericLiteralValue(prop.value)
+      if (v === null) return null
+      result[key] = v
+    } else if (key === 'color') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      result.color = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return result
+}
+
 /**
- * SZGame3D.setBackground/setCameraPosition/setPosition/setRotation/animate como
- * statement. ANTES do método genérico — senão viram memberCall. As coordenadas
- * (x/y/z) precisam ser valores representáveis; senão a linha cai em código avançado.
+ * SZGame3D.* como statement: setBackground/setCameraPosition/setPosition/setRotation/animate
+ * e a física/kit (setVelocity/jump/applyGravity/controlWithKeys/setScale/cameraFollow/runEnemies/stop).
+ * ANTES do método genérico — senão viram memberCall. As coordenadas (x/y/z/força/escala)
+ * precisam ser valores representáveis; senão a linha cai em código avançado.
  */
 function tryMatchGame3DCall(expr: Node, source: string, ctx: ParseCtx): JSStatement | null {
   const call = asSZGame3DCall(expr)
@@ -1387,9 +3036,508 @@ function tryMatchGame3DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       if (!worldVar || !isFn(args[1])) return null
       return { type: 'g3d:animate', worldVar, body: bodyOfFn(args[1], source, ctx) }
     }
+    case 'setVelocity': {
+      // generator: SZGame3D.setVelocity(obj, x, y, z)
+      const objVar = identifierName(args[0])
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      const z = toExpr(args[3], ctx)
+      if (!objVar || !isSimpleValue(x) || !isSimpleValue(y) || !isSimpleValue(z)) return null
+      return { type: 'g3d:setVelocity', objVar, x, y, z }
+    }
+    case 'jump': {
+      // generator: SZGame3D.jump(obj, force)
+      const objVar = identifierName(args[0])
+      const force = toExpr(args[1], ctx)
+      if (!objVar || !isSimpleValue(force)) return null
+      return { type: 'g3d:jump', objVar, force }
+    }
+    case 'setScale': {
+      // generator: SZGame3D.setScale(obj, factor)
+      const objVar = identifierName(args[0])
+      const factor = toExpr(args[1], ctx)
+      if (!objVar || !isSimpleValue(factor)) return null
+      return { type: 'g3d:setScale', objVar, factor }
+    }
+    case 'applyGravity': {
+      // generator: SZGame3D.applyGravity(obj, ground)
+      const objVar = identifierName(args[0])
+      const groundVar = identifierName(args[1])
+      if (!objVar || !groundVar) return null
+      return { type: 'g3d:applyGravity', objVar, groundVar }
+    }
+    case 'controlWithKeys': {
+      // generator: SZGame3D.controlWithKeys(obj, speed)
+      const objVar = identifierName(args[0])
+      const speed = numericLiteralValue(args[1])
+      if (!objVar || speed === null) return null
+      return { type: 'g3d:controlWithKeys', objVar, speed }
+    }
+    case 'cameraFollow': {
+      // generator: SZGame3D.cameraFollow(world, obj)
+      const worldVar = identifierName(args[0])
+      const objVar = identifierName(args[1])
+      if (!worldVar || !objVar) return null
+      return { type: 'g3d:cameraFollow', worldVar, objVar }
+    }
+    case 'runEnemies': {
+      // generator: SZGame3D.runEnemies(world, group, ground, every, speed)
+      const worldVar = identifierName(args[0])
+      const groupVar = identifierName(args[1])
+      const groundVar = identifierName(args[2])
+      const every = numericLiteralValue(args[3])
+      const speed = numericLiteralValue(args[4])
+      if (!worldVar || !groupVar || !groundVar || every === null || speed === null) return null
+      return { type: 'g3d:runEnemies', worldVar, groupVar, groundVar, every, speed }
+    }
+    case 'stop': {
+      // generator: SZGame3D.stop(world)
+      const worldVar = identifierName(args[0])
+      if (!worldVar) return null
+      return { type: 'g3d:stop', worldVar }
+    }
+    case 'crosserMove': {
+      const objVar = identifierName(args[0])
+      if (!objVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'g3d:crosserMove', objVar, direction: args[1].value as string }
+    }
+    case 'gridMove': {
+      const objVar = identifierName(args[0])
+      if (!objVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'g3d:gridMove', objVar, direction: args[1].value as string }
+    }
+    case 'crosserStep': {
+      const objVar = identifierName(args[0])
+      const worldVar = identifierName(args[1])
+      if (!objVar || !worldVar) return null
+      return { type: 'g3d:crosserStep', objVar, worldVar }
+    }
+    case 'crosserReset': {
+      const objVar = identifierName(args[0])
+      const worldVar = identifierName(args[1])
+      if (!objVar || !worldVar) return null
+      return { type: 'g3d:crosserReset', objVar, worldVar }
+    }
+    case 'gridStep': {
+      const objVar = identifierName(args[0])
+      if (!objVar) return null
+      return { type: 'g3d:gridStep', objVar }
+    }
+    case 'moveTraffic': {
+      const worldVar = identifierName(args[0])
+      if (!worldVar) return null
+      return { type: 'g3d:moveTraffic', worldVar }
+    }
+    case 'generateRows': {
+      const worldVar = identifierName(args[0])
+      const count = numericLiteralValue(args[1])
+      if (!worldVar || count === null) return null
+      return { type: 'g3d:generateRows', worldVar, count }
+    }
+    case 'addRow': {
+      // generator: SZGame3D.addRow(world, rowIndex, "kind", "dir", speed)
+      const worldVar = identifierName(args[0])
+      const rowIndex = toExpr(args[1], ctx)
+      const speed = numericLiteralValue(args[4])
+      if (
+        !worldVar ||
+        !isSimpleValue(rowIndex) ||
+        args[2]?.type !== 'StringLiteral' ||
+        args[3]?.type !== 'StringLiteral' ||
+        speed === null
+      )
+        return null
+      return {
+        type: 'g3d:addRow',
+        worldVar,
+        rowIndex,
+        kind: args[2].value as string,
+        direction: args[3].value as string,
+        speed,
+      }
+    }
+    case 'isometricCamera': {
+      // generator: SZGame3D.isometricCamera(world, followObj | null)
+      const worldVar = identifierName(args[0])
+      if (!worldVar) return null
+      return { type: 'g3d:isometricCamera', worldVar, followVar: identifierName(args[1]) || '' }
+    }
+    case 'moveAcross': {
+      // generator: SZGame3D.moveAcross(group, speed, min, max)
+      const groupVar = identifierName(args[0])
+      const speed = numericLiteralValue(args[1])
+      const min = numericLiteralValue(args[2])
+      const max = numericLiteralValue(args[3])
+      if (!groupVar || speed === null || min === null || max === null) return null
+      return { type: 'g3d:moveAcross', groupVar, speed, min, max }
+    }
+    case 'gridPosition': {
+      // generator: SZGame3D.gridPosition(obj, row, col)
+      const objVar = identifierName(args[0])
+      const row = toExpr(args[1], ctx)
+      const col = toExpr(args[2], ctx)
+      if (!objVar || !isSimpleValue(row) || !isSimpleValue(col)) return null
+      return { type: 'g3d:gridPosition', objVar, row, col }
+    }
+    case 'topCamera': {
+      // generator: SZGame3D.topCamera(world, followObj | null)
+      const worldVar = identifierName(args[0])
+      if (!worldVar) return null
+      return { type: 'g3d:topCamera', worldVar, followVar: identifierName(args[1]) || '' }
+    }
+    case 'moveInCircle': {
+      const objVar = identifierName(args[0])
+      const radius = numericLiteralValue(args[1])
+      const speed = numericLiteralValue(args[2])
+      if (!objVar || radius === null || speed === null) return null
+      return { type: 'g3d:moveInCircle', objVar, radius, speed }
+    }
+    case 'createRaceTrack': {
+      const worldVar = identifierName(args[0])
+      if (!worldVar) return null
+      return { type: 'g3d:createRaceTrack', worldVar }
+    }
+    case 'raceStep': {
+      const objVar = identifierName(args[0])
+      const worldVar = identifierName(args[1])
+      if (!objVar || !worldVar) return null
+      return { type: 'g3d:raceStep', objVar, worldVar }
+    }
+    case 'raceControl': {
+      const objVar = identifierName(args[0])
+      if (!objVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'g3d:raceControl', objVar, mode: args[1].value as string }
+    }
+    case 'runRivals': {
+      const worldVar = identifierName(args[0])
+      if (!worldVar) return null
+      return { type: 'g3d:runRivals', worldVar }
+    }
+    case 'raceReset': {
+      const objVar = identifierName(args[0])
+      const worldVar = identifierName(args[1])
+      if (!objVar || !worldVar) return null
+      return { type: 'g3d:raceReset', objVar, worldVar }
+    }
+    case 'fall': {
+      const objVar = identifierName(args[0])
+      if (!objVar) return null
+      return { type: 'g3d:fall', objVar }
+    }
+    case 'slideBetween': {
+      // generator: SZGame3D.slideBetween(obj, "x", min, max, speed)
+      const objVar = identifierName(args[0])
+      const min = numericLiteralValue(args[2])
+      const max = numericLiteralValue(args[3])
+      const speed = numericLiteralValue(args[4])
+      if (
+        !objVar ||
+        args[1]?.type !== 'StringLiteral' ||
+        min === null ||
+        max === null ||
+        speed === null
+      )
+        return null
+      return { type: 'g3d:slideBetween', objVar, axis: args[1].value as string, min, max, speed }
+    }
+    case 'spin': {
+      // generator: SZGame3D.spin(obj, "y", speed)
+      const objVar = identifierName(args[0])
+      const speed = numericLiteralValue(args[2])
+      if (!objVar || args[1]?.type !== 'StringLiteral' || speed === null) return null
+      return { type: 'g3d:spin', objVar, axis: args[1].value as string, speed }
+    }
+    case 'createStackTower': {
+      const worldVar = identifierName(args[0])
+      if (!worldVar) return null
+      return { type: 'g3d:createStackTower', worldVar }
+    }
+    case 'stackDrop': {
+      const worldVar = identifierName(args[0])
+      if (!worldVar) return null
+      return { type: 'g3d:stackDrop', worldVar }
+    }
+    case 'stackStep': {
+      const worldVar = identifierName(args[0])
+      if (!worldVar) return null
+      return { type: 'g3d:stackStep', worldVar }
+    }
+    case 'stackReset': {
+      const worldVar = identifierName(args[0])
+      if (!worldVar) return null
+      return { type: 'g3d:stackReset', worldVar }
+    }
+    case 'moveBy': {
+      // generator: SZGame3D.moveBy(obj, x, y, z)
+      const objVar = identifierName(args[0])
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      const z = toExpr(args[3], ctx)
+      if (!objVar || !isSimpleValue(x) || !isSimpleValue(y) || !isSimpleValue(z)) return null
+      return { type: 'g3d:moveBy', objVar, x, y, z }
+    }
+    case 'rotateBy': {
+      // generator: SZGame3D.rotateBy(obj, "y", amount)
+      const objVar = identifierName(args[0])
+      const amount = toExpr(args[2], ctx)
+      if (!objVar || args[1]?.type !== 'StringLiteral' || !isSimpleValue(amount)) return null
+      return { type: 'g3d:rotateBy', objVar, axis: args[1].value as string, amount }
+    }
+    case 'moveTowards': {
+      // generator: SZGame3D.moveTowards(obj, x, y, z, factor)
+      const objVar = identifierName(args[0])
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      const z = toExpr(args[3], ctx)
+      const factor = numericLiteralValue(args[4])
+      if (!objVar || !isSimpleValue(x) || !isSimpleValue(y) || !isSimpleValue(z) || factor === null)
+        return null
+      return { type: 'g3d:moveTowards', objVar, x, y, z, factor }
+    }
+    case 'lookAtObject': {
+      const aVar = identifierName(args[0])
+      const bVar = identifierName(args[1])
+      if (!aVar || !bVar) return null
+      return { type: 'g3d:lookAtObject', aVar, bVar }
+    }
+    case 'lookAtPoint': {
+      // generator: SZGame3D.lookAtPoint(obj, x, y, z)
+      const objVar = identifierName(args[0])
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      const z = toExpr(args[3], ctx)
+      if (!objVar || !isSimpleValue(x) || !isSimpleValue(y) || !isSimpleValue(z)) return null
+      return { type: 'g3d:lookAtPoint', objVar, x, y, z }
+    }
+    case 'moveForward': {
+      const objVar = identifierName(args[0])
+      const dist = toExpr(args[1], ctx)
+      if (!objVar || !isSimpleValue(dist)) return null
+      return { type: 'g3d:moveForward', objVar, dist }
+    }
+    case 'faceVelocity': {
+      const objVar = identifierName(args[0])
+      if (!objVar) return null
+      return { type: 'g3d:faceVelocity', objVar }
+    }
+    case 'body': {
+      const objVar = identifierName(args[0])
+      const gravity = numericLiteralValue(args[1])
+      if (!objVar || gravity === null) return null
+      return { type: 'g3d:body', objVar, gravity }
+    }
+    case 'stepBody': {
+      const objVar = identifierName(args[0])
+      const worldVar = identifierName(args[1])
+      if (!objVar || !worldVar) return null
+      return { type: 'g3d:stepBody', objVar, worldVar }
+    }
+    case 'setSolid': {
+      const objVar = identifierName(args[0])
+      if (!objVar) return null
+      return { type: 'g3d:setSolid', objVar }
+    }
+    case 'platformerControls': {
+      const objVar = identifierName(args[0])
+      const worldVar = identifierName(args[1])
+      const speed = numericLiteralValue(args[2])
+      const jump = numericLiteralValue(args[3])
+      if (!objVar || !worldVar || speed === null || jump === null) return null
+      return { type: 'g3d:platformerControls', objVar, worldVar, speed, jump }
+    }
+    case 'fpsControls': {
+      const objVar = identifierName(args[0])
+      const worldVar = identifierName(args[1])
+      const speed = numericLiteralValue(args[2])
+      if (!objVar || !worldVar || speed === null) return null
+      return { type: 'g3d:fpsControls', objVar, worldVar, speed }
+    }
+    case 'resolveCollision': {
+      const aVar = identifierName(args[0])
+      const bVar = identifierName(args[1])
+      if (!aVar || !bVar) return null
+      return { type: 'g3d:resolveCollision', aVar, bVar }
+    }
+    case 'fpsCamera': {
+      const worldVar = identifierName(args[0])
+      const objVar = identifierName(args[1])
+      if (!worldVar || !objVar) return null
+      return { type: 'g3d:fpsCamera', worldVar, objVar }
+    }
+    case 'orbitCamera': {
+      const worldVar = identifierName(args[0])
+      const objVar = identifierName(args[1])
+      if (!worldVar || !objVar) return null
+      return { type: 'g3d:orbitCamera', worldVar, objVar }
+    }
+    case 'thirdPersonCamera': {
+      const worldVar = identifierName(args[0])
+      const objVar = identifierName(args[1])
+      const dist = numericLiteralValue(args[2])
+      const height = numericLiteralValue(args[3])
+      if (!worldVar || !objVar || dist === null || height === null) return null
+      return { type: 'g3d:thirdPersonCamera', worldVar, objVar, dist, height }
+    }
+    case 'cameraLookAt': {
+      const worldVar = identifierName(args[0])
+      const objVar = identifierName(args[1])
+      if (!worldVar || !objVar) return null
+      return { type: 'g3d:cameraLookAt', worldVar, objVar }
+    }
+    case 'setFOV': {
+      const worldVar = identifierName(args[0])
+      const deg = numericLiteralValue(args[1])
+      if (!worldVar || deg === null) return null
+      return { type: 'g3d:setFOV', worldVar, deg }
+    }
+    case 'setColor': {
+      const objVar = identifierName(args[0])
+      if (!objVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'g3d:setColor', objVar, color: args[1].value as string }
+    }
+    case 'setOpacity': {
+      const objVar = identifierName(args[0])
+      const opacity = numericLiteralValue(args[1])
+      if (!objVar || opacity === null) return null
+      return { type: 'g3d:setOpacity', objVar, opacity }
+    }
+    case 'setMaterial': {
+      const objVar = identifierName(args[0])
+      if (!objVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'g3d:setMaterial', objVar, kind: args[1].value as string }
+    }
+    case 'setTexture': {
+      const objVar = identifierName(args[0])
+      if (!objVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'g3d:setTexture', objVar, asset: args[1].value as string }
+    }
+    case 'setVisible': {
+      const objVar = identifierName(args[0])
+      if (!objVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'g3d:setVisible', objVar, mode: args[1].value as string }
+    }
+    case 'remove': {
+      const worldVar = identifierName(args[0])
+      const objVar = identifierName(args[1])
+      if (!worldVar || !objVar) return null
+      return { type: 'g3d:removeObject', worldVar, objVar }
+    }
+    case 'addToModel': {
+      const modelVar = identifierName(args[0])
+      const partVar = identifierName(args[1])
+      if (!modelVar || !partVar) return null
+      return { type: 'g3d:addToModel', modelVar, partVar }
+    }
+    case 'addAmbientLight':
+    case 'addSunLight': {
+      const worldVar = identifierName(args[0])
+      const intensity = numericLiteralValue(args[2])
+      if (!worldVar || args[1]?.type !== 'StringLiteral' || intensity === null) return null
+      return {
+        type: method === 'addAmbientLight' ? 'g3d:addAmbientLight' : 'g3d:addSunLight',
+        worldVar,
+        color: args[1].value as string,
+        intensity,
+      }
+    }
+    case 'addPointLight': {
+      const worldVar = identifierName(args[0])
+      const intensity = numericLiteralValue(args[2])
+      const x = numericLiteralValue(args[3])
+      const y = numericLiteralValue(args[4])
+      const z = numericLiteralValue(args[5])
+      if (
+        !worldVar ||
+        args[1]?.type !== 'StringLiteral' ||
+        intensity === null ||
+        x === null ||
+        y === null ||
+        z === null
+      )
+        return null
+      return {
+        type: 'g3d:addPointLight',
+        worldVar,
+        color: args[1].value as string,
+        intensity,
+        x,
+        y,
+        z,
+      }
+    }
+    case 'setFog': {
+      const worldVar = identifierName(args[0])
+      const near = numericLiteralValue(args[2])
+      const far = numericLiteralValue(args[3])
+      if (!worldVar || args[1]?.type !== 'StringLiteral' || near === null || far === null)
+        return null
+      return { type: 'g3d:setFog', worldVar, color: args[1].value as string, near, far }
+    }
+    case 'setSky': {
+      const worldVar = identifierName(args[0])
+      if (!worldVar || args[1]?.type !== 'StringLiteral' || args[2]?.type !== 'StringLiteral')
+        return null
+      return {
+        type: 'g3d:setSky',
+        worldVar,
+        top: args[1].value as string,
+        bottom: args[2].value as string,
+      }
+    }
+    case 'setShadows': {
+      const worldVar = identifierName(args[0])
+      if (!worldVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'g3d:setShadows', worldVar, mode: args[1].value as string }
+    }
+    case 'spawnInSwarm': {
+      const swarmVar = identifierName(args[0])
+      const originalVar = identifierName(args[1])
+      const x = numericLiteralValue(args[2])
+      const y = numericLiteralValue(args[3])
+      const z = numericLiteralValue(args[4])
+      if (!swarmVar || !originalVar || x === null || y === null || z === null) return null
+      return { type: 'g3d:spawnInSwarm', swarmVar, originalVar, x, y, z }
+    }
+    case 'forEachInSwarm': {
+      const swarmVar = identifierName(args[0])
+      const cb = args[1]
+      if (!swarmVar || !isFn(cb)) return null
+      const params = cb.params ?? []
+      if (params.length !== 1 || params[0]?.type !== 'Identifier') return null
+      return {
+        type: 'g3d:forEachInSwarm',
+        swarmVar,
+        itemName: params[0].name as string,
+        body: bodyOfFn(cb, source, ctx),
+      }
+    }
+    case 'removeFromSwarm': {
+      const swarmVar = identifierName(args[0])
+      const itemVar = identifierName(args[1])
+      if (!swarmVar || !itemVar) return null
+      return { type: 'g3d:removeFromSwarm', swarmVar, itemVar }
+    }
+    case 'pruneSwarm': {
+      const swarmVar = identifierName(args[0])
+      const min = numericLiteralValue(args[2])
+      const max = numericLiteralValue(args[3])
+      if (!swarmVar || args[1]?.type !== 'StringLiteral' || min === null || max === null)
+        return null
+      return { type: 'g3d:pruneSwarm', swarmVar, axis: args[1].value as string, min, max }
+    }
+    case 'playNote': {
+      const freq = numericLiteralValue(args[0])
+      const ms = numericLiteralValue(args[1])
+      if (freq === null || ms === null) return null
+      return { type: 'g3d:playNote', freq, ms }
+    }
+    case 'playEffect': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'g3d:playEffect', kind: args[0].value as string }
+    }
     default:
-      // createScene/createBox/createSphere são var-init (tryMatchGame3DVarInit);
-      // como chamada solta caem no método genérico.
+      // createScene/createBox/createSphere/createBlock/createGroup são var-init
+      // (tryMatchGame3DVarInit); como chamada solta caem no método genérico.
       return null
   }
 }
@@ -1416,6 +3564,238 @@ function tryMatchGame3DVarInit(name: string, init: Node, _ctx: ParseCtx): JSStat
     const sphere = readSphereOptions(args[1])
     if (!sphere) return null
     return { type: 'g3d:createSphere', varName: name, worldVar, ...sphere }
+  }
+  if (method === 'createBlock') {
+    const worldVar = identifierName(args[0])
+    if (!worldVar || args[1]?.type !== 'ObjectExpression') return null
+    const b = readBlockOptions(args[1])
+    if (!b) return null
+    return { type: 'g3d:createBlock', varName: name, worldVar, ...b }
+  }
+  if (method === 'createGroup') {
+    // generator: const inimigos = SZGame3D.createGroup()
+    return { type: 'g3d:createGroup', varName: name }
+  }
+  if (method === 'createCrossingScene') {
+    if (args[0]?.type !== 'StringLiteral') return null
+    return { type: 'g3d:createCrossingScene', canvasId: args[0].value as string, varName: name }
+  }
+  if (method === 'createCrosser') {
+    // generator: const P = SZGame3D.createCrosser(world, { color: "#fff" })
+    const worldVar = identifierName(args[0])
+    if (!worldVar || args[1]?.type !== 'ObjectExpression') return null
+    let color = '#ffffff'
+    for (const prop of args[1].properties ?? []) {
+      if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+      const key =
+        prop.key?.type === 'Identifier'
+          ? (prop.key.name as string)
+          : prop.key?.type === 'StringLiteral'
+            ? (prop.key.value as string)
+            : null
+      if (key === 'color') {
+        if (prop.value?.type !== 'StringLiteral') return null
+        color = prop.value.value as string
+      } else {
+        return null
+      }
+    }
+    return { type: 'g3d:createCrosser', varName: name, worldVar, color }
+  }
+  if (method === 'createRaceScene') {
+    if (args[0]?.type !== 'StringLiteral') return null
+    return { type: 'g3d:createRaceScene', canvasId: args[0].value as string, varName: name }
+  }
+  if (method === 'createRaceCar') {
+    // generator: const C = SZGame3D.createRaceCar(world, { color: "#fff" })
+    const worldVar = identifierName(args[0])
+    if (!worldVar || args[1]?.type !== 'ObjectExpression') return null
+    let color = '#ffffff'
+    for (const prop of args[1].properties ?? []) {
+      if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+      const key =
+        prop.key?.type === 'Identifier'
+          ? (prop.key.name as string)
+          : prop.key?.type === 'StringLiteral'
+            ? (prop.key.value as string)
+            : null
+      if (key === 'color') {
+        if (prop.value?.type !== 'StringLiteral') return null
+        color = prop.value.value as string
+      } else {
+        return null
+      }
+    }
+    return { type: 'g3d:createRaceCar', varName: name, worldVar, color }
+  }
+  if (method === 'createStackScene') {
+    if (args[0]?.type !== 'StringLiteral') return null
+    return { type: 'g3d:createStackScene', canvasId: args[0].value as string, varName: name }
+  }
+  if (method === 'createCylinder' || method === 'createCone') {
+    const worldVar = identifierName(args[0])
+    if (!worldVar || args[1]?.type !== 'ObjectExpression') return null
+    const o = readShapeOpts(args[1], ['radius', 'height'])
+    if (!o) return null
+    return {
+      type: method === 'createCylinder' ? 'g3d:createCylinder' : 'g3d:createCone',
+      varName: name,
+      worldVar,
+      radius: o.radius as number,
+      height: o.height as number,
+      color: o.color as string,
+    }
+  }
+  if (method === 'createPlane') {
+    const worldVar = identifierName(args[0])
+    if (!worldVar || args[1]?.type !== 'ObjectExpression') return null
+    const o = readShapeOpts(args[1], ['width', 'depth'])
+    if (!o) return null
+    return {
+      type: 'g3d:createPlane',
+      varName: name,
+      worldVar,
+      width: o.width as number,
+      depth: o.depth as number,
+      color: o.color as string,
+    }
+  }
+  if (method === 'createTorus') {
+    const worldVar = identifierName(args[0])
+    if (!worldVar || args[1]?.type !== 'ObjectExpression') return null
+    const o = readShapeOpts(args[1], ['radius', 'tube'])
+    if (!o) return null
+    return {
+      type: 'g3d:createTorus',
+      varName: name,
+      worldVar,
+      radius: o.radius as number,
+      tube: o.tube as number,
+      color: o.color as string,
+    }
+  }
+  if (method === 'createModel') {
+    const worldVar = identifierName(args[0])
+    if (!worldVar) return null
+    return { type: 'g3d:createModel', varName: name, worldVar }
+  }
+  if (method === 'createSwarm') {
+    const worldVar = identifierName(args[0])
+    if (!worldVar) return null
+    return { type: 'g3d:createSwarm', varName: name, worldVar }
+  }
+  return null
+}
+
+/** SZGame3D.keyDown("…") / collides(a, b) / hitAny(obj, group) em posição de VALOR (booleano). */
+function matchGame3DExpr(node: Node): JSExpr | null {
+  const call = asSZGame3DCall(node)
+  if (!call) return null
+  const { method, args } = call
+  if (method === 'keyDown' && args[0]?.type === 'StringLiteral') {
+    return { type: 'g3d:keyDown', key: args[0].value as string }
+  }
+  if (method === 'collides') {
+    const aVar = identifierName(args[0])
+    const bVar = identifierName(args[1])
+    if (aVar && bVar) return { type: 'g3d:collides', aVar, bVar }
+  }
+  if (method === 'hitAny') {
+    const objVar = identifierName(args[0])
+    const groupVar = identifierName(args[1])
+    if (objVar && groupVar) return { type: 'g3d:hitAny', objVar, groupVar }
+  }
+  if (method === 'touchesBox') {
+    const objVar = identifierName(args[0])
+    const groupVar = identifierName(args[1])
+    if (objVar && groupVar) return { type: 'g3d:touchesBox', objVar, groupVar }
+  }
+  if (method === 'crosserHit') {
+    const objVar = identifierName(args[0])
+    const worldVar = identifierName(args[1])
+    if (objVar && worldVar) return { type: 'g3d:crosserHit', objVar, worldVar }
+  }
+  if (method === 'crosserRow') {
+    const objVar = identifierName(args[0])
+    if (objVar) return { type: 'g3d:crosserRow', objVar }
+  }
+  if (method === 'distanceTo') {
+    const aVar = identifierName(args[0])
+    const bVar = identifierName(args[1])
+    if (aVar && bVar) return { type: 'g3d:distanceTo', aVar, bVar }
+  }
+  if (method === 'isNear') {
+    const aVar = identifierName(args[0])
+    const bVar = identifierName(args[1])
+    const dist = numericLiteralValue(args[2])
+    if (aVar && bVar && dist !== null) return { type: 'g3d:isNear', aVar, bVar, dist }
+  }
+  if (method === 'raceHit') {
+    const objVar = identifierName(args[0])
+    const worldVar = identifierName(args[1])
+    if (objVar && worldVar) return { type: 'g3d:raceHit', objVar, worldVar }
+  }
+  if (method === 'raceLaps') {
+    const objVar = identifierName(args[0])
+    if (objVar) return { type: 'g3d:raceLaps', objVar }
+  }
+  if (method === 'stackScore') {
+    const worldVar = identifierName(args[0])
+    if (worldVar) return { type: 'g3d:stackScore', worldVar }
+  }
+  if (method === 'stackGameOver') {
+    const worldVar = identifierName(args[0])
+    if (worldVar) return { type: 'g3d:stackGameOver', worldVar }
+  }
+  if (method === 'getPos') {
+    const objVar = identifierName(args[0])
+    if (objVar && args[1]?.type === 'StringLiteral') {
+      return { type: 'g3d:getPos', objVar, axis: args[1].value as string }
+    }
+  }
+  if (method === 'getRot') {
+    const objVar = identifierName(args[0])
+    if (objVar && args[1]?.type === 'StringLiteral') {
+      return { type: 'g3d:getRot', objVar, axis: args[1].value as string }
+    }
+  }
+  if (method === 'getScale') {
+    const objVar = identifierName(args[0])
+    if (objVar) return { type: 'g3d:getScale', objVar }
+  }
+  if (method === 'dt') {
+    const worldVar = identifierName(args[0])
+    if (worldVar) return { type: 'g3d:dt', worldVar }
+  }
+  if (method === 'angleTo') {
+    const aVar = identifierName(args[0])
+    const bVar = identifierName(args[1])
+    if (aVar && bVar) return { type: 'g3d:angleTo', aVar, bVar }
+  }
+  if (method === 'pickAtMouse') {
+    const worldVar = identifierName(args[0])
+    if (worldVar) return { type: 'g3d:pickAtMouse', worldVar }
+  }
+  if (method === 'pointerOver') {
+    const worldVar = identifierName(args[0])
+    const objVar = identifierName(args[1])
+    if (worldVar && objVar) return { type: 'g3d:pointerOver', worldVar, objVar }
+  }
+  if (method === 'aimAhead') {
+    const worldVar = identifierName(args[0])
+    const objVar = identifierName(args[1])
+    const dist = numericLiteralValue(args[2])
+    if (worldVar && objVar && dist !== null) return { type: 'g3d:aimAhead', worldVar, objVar, dist }
+  }
+  if (method === 'onGround') {
+    const worldVar = identifierName(args[0])
+    const objVar = identifierName(args[1])
+    if (worldVar && objVar) return { type: 'g3d:onGround', worldVar, objVar }
+  }
+  if (method === 'groundHeight') {
+    const worldVar = identifierName(args[0])
+    const objVar = identifierName(args[1])
+    if (worldVar && objVar) return { type: 'g3d:groundHeight', worldVar, objVar }
   }
   return null
 }
@@ -1483,14 +3863,25 @@ function tryMatchCanvasCall(expr: Node, ctx: ParseCtx): JSStatement | null {
       return text && x && y ? { type: 'canvasFillText', ctxVar, text, x, y } : null
     }
     case 'clearRect': {
-      // ctx.clearRect(0, 0, <canvas>.width, <canvas>.height)
+      // ctx.clearRect(0, 0, <canvas>.width, <canvas>.height) → limpar a tela inteira
       const canvasVar = matchClearRectArgs(args)
-      return canvasVar ? { type: 'canvasClear', ctxVar, canvasVar } : null
+      if (canvasVar) return { type: 'canvasClear', ctxVar, canvasVar }
+      // clearRect com coordenadas quaisquer → limpar uma área
+      const [crx, cry, crw, crh] = mapArgs(args, 4, ctx)
+      return crx && cry && crw && crh
+        ? { type: 'canvasClearRect', ctxVar, x: crx, y: cry, w: crw, h: crh }
+        : null
     }
     case 'save':
       return args.length === 0 ? { type: 'canvasSave', ctxVar } : null
     case 'restore':
       return args.length === 0 ? { type: 'canvasRestore', ctxVar } : null
+    case 'rect': {
+      const [x, y, w, h] = mapArgs(args, 4, ctx)
+      return x && y && w && h ? { type: 'canvasRect', ctxVar, x, y, w, h } : null
+    }
+    case 'clip':
+      return args.length === 0 ? { type: 'canvasClip', ctxVar } : null
     case 'translate': {
       const [x, y] = mapArgs(args, 2, ctx)
       return x && y ? { type: 'canvasTranslate', ctxVar, x, y } : null
@@ -1502,6 +3893,58 @@ function tryMatchCanvasCall(expr: Node, ctx: ParseCtx): JSStatement | null {
     case 'scale': {
       const [sx, sy] = mapArgs(args, 2, ctx)
       return sx && sy ? { type: 'canvasScale', ctxVar, sx, sy } : null
+    }
+    case 'beginPath':
+      return args.length === 0 ? { type: 'canvasBeginPath', ctxVar } : null
+    case 'closePath':
+      return args.length === 0 ? { type: 'canvasClosePath', ctxVar } : null
+    case 'stroke':
+      return args.length === 0 ? { type: 'canvasStroke', ctxVar } : null
+    case 'fill':
+      return args.length === 0 ? { type: 'canvasFill', ctxVar } : null
+    case 'moveTo': {
+      const [x, y] = mapArgs(args, 2, ctx)
+      return x && y ? { type: 'canvasMoveTo', ctxVar, x, y } : null
+    }
+    case 'lineTo': {
+      const [x, y] = mapArgs(args, 2, ctx)
+      return x && y ? { type: 'canvasLineTo', ctxVar, x, y } : null
+    }
+    case 'strokeRect': {
+      const [x, y, w, h] = mapArgs(args, 4, ctx)
+      return x && y && w && h ? { type: 'canvasStrokeRect', ctxVar, x, y, w, h } : null
+    }
+    case 'quadraticCurveTo': {
+      const [cpx, cpy, x, y] = mapArgs(args, 4, ctx)
+      return cpx && cpy && x && y ? { type: 'canvasQuadraticCurve', ctxVar, cpx, cpy, x, y } : null
+    }
+    case 'bezierCurveTo': {
+      const [cp1x, cp1y, cp2x, cp2y, x, y] = mapArgs(args, 6, ctx)
+      return cp1x && cp1y && cp2x && cp2y && x && y
+        ? { type: 'canvasBezierCurve', ctxVar, cp1x, cp1y, cp2x, cp2y, x, y }
+        : null
+    }
+    case 'arcTo': {
+      const [x1, y1, x2, y2, r] = mapArgs(args, 5, ctx)
+      return x1 && y1 && x2 && y2 && r ? { type: 'canvasArcTo', ctxVar, x1, y1, x2, y2, r } : null
+    }
+    case 'strokeText': {
+      const [text, x, y] = mapArgs(args, 3, ctx)
+      return text && x && y ? { type: 'canvasStrokeText', ctxVar, text, x, y } : null
+    }
+    case 'setLineDash': {
+      // Só funde um traço UNIFORME (`[seg]` — exatamente o que o gerador re-emite).
+      // Um padrão não-uniforme (`[5, 10]`, traço≠espaço) não tem bloco e perderia
+      // tudo menos o 1º valor; então fica como rawJS.
+      if (
+        args.length !== 1 ||
+        args[0]?.type !== 'ArrayExpression' ||
+        args[0].elements?.length !== 1
+      ) {
+        return null
+      }
+      const seg = toExpr(args[0].elements?.[0], ctx)
+      return seg ? { type: 'canvasLineDash', ctxVar, segment: seg } : null
     }
     default:
       return null
@@ -1552,8 +3995,13 @@ function tryMatchDrawImage(block: Node, ctx: ParseCtx): JSStatement | null {
   const srcAssign = srcStmt.expression
   if (srcAssign?.type !== 'AssignmentExpression' || srcAssign.operator !== '=') return null
   if (memberObjName(srcAssign.left, 'src') !== img) return null
-  if (srcAssign.right?.type !== 'StringLiteral') return null
-  const src = srcAssign.right.value as string
+  // src direto (URL/dataUrl) OU resolução de asset `__SZGAME_ASSETS?.["nome"] ?? "nome"`.
+  const srcRight = srcAssign.right
+  let src: string | null = null
+  if (srcRight?.type === 'StringLiteral') src = srcRight.value as string
+  else if (srcRight?.type === 'LogicalExpression' && srcRight.right?.type === 'StringLiteral')
+    src = srcRight.right.value as string
+  if (src === null) return null
 
   // 3) img.onload = () => ctx.drawImage(img, x, y, w, h);
   const onloadStmt = body[2]
@@ -1611,6 +4059,32 @@ function tryFuseCanvasSetSize(nodes: Node[], i: number, ctx: ParseCtx): FusedSta
   return { stmt: { type: 'canvasSetSize', ctxVar, w: w.value, h: h.value }, consumed: 2 }
 }
 
+/** `Math.PI` (membro estático, não-computado). */
+function isMathPi(node: Node): boolean {
+  return (
+    node?.type === 'MemberExpression' &&
+    !node.computed &&
+    node.object?.type === 'Identifier' &&
+    node.object.name === 'Math' &&
+    node.property?.type === 'Identifier' &&
+    node.property.name === 'PI'
+  )
+}
+
+/**
+ * Ângulo de volta COMPLETA (`Math.PI * 2` ou `2 * Math.PI`) — a forma que o gerador
+ * re-emite p/ arco/elipse CHEIOS. Só essa forma é fundida em bloco; um ângulo
+ * PARCIAL (pizza/semicírculo) ou uma elipse GIRADA não têm bloco e seriam recriados
+ * como círculo/elipse cheios (perda silenciosa do desenho), então a fusão é recusada.
+ */
+function isFullCircleAngle(node: Node): boolean {
+  if (node?.type !== 'BinaryExpression' || node.operator !== '*') return false
+  return (
+    (isMathPi(node.left) && numericLiteralValue(node.right) === 2) ||
+    (numericLiteralValue(node.left) === 2 && isMathPi(node.right))
+  )
+}
+
 /** `ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();` → `canvasArc`. */
 function tryFuseCanvasArc(nodes: Node[], i: number, ctx: ParseCtx): FusedStatement | null {
   const begin = matchCtxCallNode(nodes[i], ctx, 'beginPath')
@@ -1620,11 +4094,116 @@ function tryFuseCanvasArc(nodes: Node[], i: number, ctx: ParseCtx): FusedStateme
   const fill = matchCtxCallNode(nodes[i + 2], ctx, 'fill')
   if (!fill || fill.ctxVar !== begin.ctxVar) return null
   if (arc.args.length < 3) return null
+  // Só o círculo CHEIO que o gerador re-emite (`…, 0, Math.PI * 2`). Um arco PARCIAL
+  // (ângulos próprios) viraria círculo cheio na volta — perda silenciosa; recusa a
+  // fusão e o trecho fica como rawJS, preservando os ângulos do aluno.
+  if (
+    arc.args.length >= 4 &&
+    (numericLiteralValue(arc.args[3]) !== 0 || !isFullCircleAngle(arc.args[4]))
+  ) {
+    return null
+  }
   const x = toExpr(arc.args[0], ctx)
   const y = toExpr(arc.args[1], ctx)
   const r = toExpr(arc.args[2], ctx)
   if (!x || !y || !r) return null
   return { stmt: { type: 'canvasArc', ctxVar: begin.ctxVar, x, y, r }, consumed: 3 }
+}
+
+/** `ctx.beginPath(); ctx.roundRect(x,y,w,h,r); ctx.fill();` → `canvasRoundRect`. */
+function tryFuseCanvasRoundRect(nodes: Node[], i: number, ctx: ParseCtx): FusedStatement | null {
+  const begin = matchCtxCallNode(nodes[i], ctx, 'beginPath')
+  if (!begin) return null
+  const rr = matchCtxCallNode(nodes[i + 1], ctx, 'roundRect')
+  if (!rr || rr.ctxVar !== begin.ctxVar || rr.args.length < 5) return null
+  const fill = matchCtxCallNode(nodes[i + 2], ctx, 'fill')
+  if (!fill || fill.ctxVar !== begin.ctxVar) return null
+  const x = toExpr(rr.args[0], ctx)
+  const y = toExpr(rr.args[1], ctx)
+  const w = toExpr(rr.args[2], ctx)
+  const h = toExpr(rr.args[3], ctx)
+  const r = toExpr(rr.args[4], ctx)
+  if (!x || !y || !w || !h || !r) return null
+  return { stmt: { type: 'canvasRoundRect', ctxVar: begin.ctxVar, x, y, w, h, r }, consumed: 3 }
+}
+
+/** `ctx.beginPath(); ctx.ellipse(x,y,rx,ry,0,0,2π); ctx.fill();` → `canvasEllipse`. */
+function tryFuseCanvasEllipse(nodes: Node[], i: number, ctx: ParseCtx): FusedStatement | null {
+  const begin = matchCtxCallNode(nodes[i], ctx, 'beginPath')
+  if (!begin) return null
+  const el = matchCtxCallNode(nodes[i + 1], ctx, 'ellipse')
+  if (!el || el.ctxVar !== begin.ctxVar || el.args.length < 4) return null
+  const fill = matchCtxCallNode(nodes[i + 2], ctx, 'fill')
+  if (!fill || fill.ctxVar !== begin.ctxVar) return null
+  // Só a elipse CHEIA e SEM rotação que o gerador re-emite (`…, 0, 0, Math.PI * 2`).
+  // Rotação ou arco parcial não têm bloco e seriam recriados como elipse cheia —
+  // perda silenciosa; recusa a fusão (vira rawJS, preservando rotação/ângulos).
+  if (
+    el.args.length >= 5 &&
+    (numericLiteralValue(el.args[4]) !== 0 ||
+      numericLiteralValue(el.args[5]) !== 0 ||
+      !isFullCircleAngle(el.args[6]))
+  ) {
+    return null
+  }
+  const x = toExpr(el.args[0], ctx)
+  const y = toExpr(el.args[1], ctx)
+  const rx = toExpr(el.args[2], ctx)
+  const ry = toExpr(el.args[3], ctx)
+  if (!x || !y || !rx || !ry) return null
+  return { stmt: { type: 'canvasEllipse', ctxVar: begin.ctxVar, x, y, rx, ry }, consumed: 3 }
+}
+
+/** `beginPath(); moveTo(x,y); arc(x,y,r,start,end); closePath(); fill();` → `canvasArcSlice`. */
+function tryFuseCanvasArcSlice(nodes: Node[], i: number, ctx: ParseCtx): FusedStatement | null {
+  const begin = matchCtxCallNode(nodes[i], ctx, 'beginPath')
+  if (!begin) return null
+  const move = matchCtxCallNode(nodes[i + 1], ctx, 'moveTo')
+  if (!move || move.ctxVar !== begin.ctxVar) return null
+  const arc = matchCtxCallNode(nodes[i + 2], ctx, 'arc')
+  if (!arc || arc.ctxVar !== begin.ctxVar || arc.args.length < 5) return null
+  const close = matchCtxCallNode(nodes[i + 3], ctx, 'closePath')
+  if (!close || close.ctxVar !== begin.ctxVar) return null
+  const fill = matchCtxCallNode(nodes[i + 4], ctx, 'fill')
+  if (!fill || fill.ctxVar !== begin.ctxVar) return null
+  const x = toExpr(arc.args[0], ctx)
+  const y = toExpr(arc.args[1], ctx)
+  const r = toExpr(arc.args[2], ctx)
+  const start = toExpr(arc.args[3], ctx)
+  const end = toExpr(arc.args[4], ctx)
+  if (!x || !y || !r || !start || !end) return null
+  return {
+    stmt: { type: 'canvasArcSlice', ctxVar: begin.ctxVar, x, y, r, start, end },
+    consumed: 5,
+  }
+}
+
+/** `<ctx>.<prop> = <value>` quando `<ctx>` é um contexto de canvas conhecido. */
+function matchCtxPropAssign(
+  node: Node,
+  ctx: ParseCtx,
+  prop: string,
+): { ctxVar: string; value: Node } | null {
+  if (node?.type !== 'ExpressionStatement') return null
+  const e = node.expression
+  if (e?.type !== 'AssignmentExpression' || e.operator !== '=') return null
+  const left = e.left
+  if (left?.type !== 'MemberExpression' || left.computed) return null
+  if (left.object?.type !== 'Identifier' || !ctx.ctxVars.has(left.object.name)) return null
+  if (left.property?.type !== 'Identifier' || left.property.name !== prop) return null
+  return { ctxVar: left.object.name, value: e.right }
+}
+
+/** `ctx.shadowColor = "cor"; ctx.shadowBlur = N;` → `canvasShadow`. */
+function tryFuseCanvasShadow(nodes: Node[], i: number, ctx: ParseCtx): FusedStatement | null {
+  const c = matchCtxPropAssign(nodes[i], ctx, 'shadowColor')
+  if (!c) return null
+  const b = matchCtxPropAssign(nodes[i + 1], ctx, 'shadowBlur')
+  if (!b || b.ctxVar !== c.ctxVar) return null
+  const color = toExpr(c.value, ctx)
+  const blur = toExpr(b.value, ctx)
+  if (!color || !blur) return null
+  return { stmt: { type: 'canvasShadow', ctxVar: c.ctxVar, color, blur }, consumed: 2 }
 }
 
 /** `g.addColorStop(offset, "#cor");` referenciando a variável do gradiente. */
@@ -1880,7 +4459,63 @@ function matchGetProperty(
   return { targetId: target.id, ...targetKindField(target), property: propName }
 }
 
+/** `el.getAttribute('nome')` → `{ targetId, targetKind?, name }`. Espelha o `getAttribute`. */
+function matchGetAttribute(
+  node: Node,
+  ctx: ParseCtx,
+): { targetId: string; targetKind?: 'var'; name: string } | null {
+  if (!node || (node.type !== 'CallExpression' && node.type !== 'OptionalCallExpression')) {
+    return null
+  }
+  const callee = node.callee
+  if (
+    (callee?.type !== 'MemberExpression' && callee?.type !== 'OptionalMemberExpression') ||
+    callee.computed
+  ) {
+    return null
+  }
+  if (callee.property?.name !== 'getAttribute') return null
+  if (node.arguments?.length !== 1 || node.arguments[0].type !== 'StringLiteral') return null
+  const target = extractTarget(callee.object, ctx)
+  if (!target) return null
+  return {
+    targetId: target.id,
+    ...targetKindField(target),
+    name: node.arguments[0].value as string,
+  }
+}
+
+/**
+ * `if (SZGame2D.everyFrames("chave", N)) { … }` / `everySeconds` → bloco
+ * "a cada N quadros/segundos". A chave (literal estável que o gerador cria) é
+ * descartada no parse e recriada no gerar — round-trip continua estável. Só casa
+ * SEM `else` (o bloco não tem ramo senão).
+ */
+function tryMatchEvery(node: Node, source: string, ctx: ParseCtx): JSStatement | null {
+  if (node.alternate) return null
+  const call = asSZGame2DCall(node.test)
+  if (!call) return null
+  if (call.method === 'everyFrames') {
+    const n = toExpr(call.args[1], ctx)
+    if (!isSimpleValue(n)) return null
+    return { type: 'g2d:everyFrames', n, body: bodyOfBlock(node.consequent, source, ctx) }
+  }
+  if (call.method === 'everySeconds') {
+    const seconds = numericLiteralValue(call.args[1])
+    if (seconds === null) return null
+    return { type: 'g2d:everySeconds', seconds, body: bodyOfBlock(node.consequent, source, ctx) }
+  }
+  return null
+}
+
 function mapIf(node: Node, source: string, ctx: ParseCtx): JSStatement {
+  // "alternar tela cheia" → if (document.fullscreenElement) sair; senão entrar.
+  // ANTES do if genérico (a condição usa o objeto global `document`).
+  const toggleFs = tryMatchToggleFullscreen(node)
+  if (toggleFs) return toggleFs
+  // "a cada N quadros/segundos" tem prioridade — é um if (SZGame2D.everyX(...)).
+  const every = tryMatchEvery(node, source, ctx)
+  if (every) return every
   // if (<condição>) { ... } else { ... } — a condição é qualquer valor
   // representável por bloco (comparação, lógico &&/||, classList.contains,
   // .length, variável…); senão a linha inteira vira código avançado.
@@ -2049,6 +4684,22 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
       if (!Number.isFinite(node.value)) return null
       return { type: 'num', value: node.value }
     }
+    // Número negativo: o Babel parseia `-7` como `UnaryExpression(-, 7)`, não como
+    // literal. Mapeamos para um `num` negativo (ex.: velocidade do tiro vy = -7, y
+    // de spawn fora da tela = -26). Sem isto, qualquer valor negativo cairia em
+    // código avançado. Só literais numéricos finitos; outras unárias seguem nulas.
+    case 'UnaryExpression': {
+      if (node.operator === '-' && node.argument?.type === 'NumericLiteral') {
+        const v = node.argument.value as number
+        if (Number.isFinite(v)) return { type: 'num', value: -v }
+      }
+      // Negação booleana `!x` → bloco "não".
+      if (node.operator === '!') {
+        const inner = toExpr(node.argument, ctx)
+        if (inner) return { type: 'logicalNot', value: inner }
+      }
+      return null
+    }
     case 'StringLiteral': {
       // `rgba(r, g, b, a)` → cor com transparência (bloco sz_val_color_alpha).
       const rgba = /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*([\d.]+)\s*\)$/.exec(
@@ -2084,6 +4735,16 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     case 'ThisExpression':
       return { type: 'thisRef' }
     case 'MemberExpression': {
+      // __szInput.x / __szInput.y — posição do mouse/dedo (caminho "na mão").
+      if (
+        !node.computed &&
+        node.object?.type === 'Identifier' &&
+        node.object.name === '__szInput' &&
+        node.property?.type === 'Identifier' &&
+        (node.property.name === 'x' || node.property.name === 'y')
+      ) {
+        return { type: 'inputPointer', axis: node.property.name }
+      }
       // this.<prop> — usado dentro de métodos/construtor.
       if (
         !node.computed &&
@@ -2101,14 +4762,35 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
       ) {
         if (node.property.name === 'innerWidth') return { type: 'global', kind: 'innerWidth' }
         if (node.property.name === 'innerHeight') return { type: 'global', kind: 'innerHeight' }
+        if (node.property.name === 'devicePixelRatio')
+          return { type: 'global', kind: 'devicePixelRatio' }
       }
-      // event.clientX / event.clientY → posição do clique (sz_val_event_pos).
+      // window.matchMedia('(prefers-color-scheme: dark)').matches → modo escuro do sistema.
+      if (
+        !node.computed &&
+        node.property?.type === 'Identifier' &&
+        node.property.name === 'matches' &&
+        node.object?.type === 'CallExpression' &&
+        node.object.callee?.type === 'MemberExpression' &&
+        !node.object.callee.computed &&
+        node.object.callee.property?.type === 'Identifier' &&
+        node.object.callee.property.name === 'matchMedia' &&
+        node.object.arguments?.[0]?.type === 'StringLiteral' &&
+        /prefers-color-scheme:\s*dark/.test(node.object.arguments[0].value as string)
+      ) {
+        return { type: 'systemDark' }
+      }
+      // event.clientX/clientY → posição do clique (sz_val_event_pos);
+      // event.key/code → tecla do evento (sz_val_event_key).
       if (
         !node.computed &&
         node.object?.type === 'Identifier' &&
         node.object.name === 'event' &&
         node.property?.type === 'Identifier' &&
-        (node.property.name === 'clientX' || node.property.name === 'clientY')
+        (node.property.name === 'clientX' ||
+          node.property.name === 'clientY' ||
+          node.property.name === 'key' ||
+          node.property.name === 'code')
       ) {
         return { type: 'eventProp', prop: node.property.name }
       }
@@ -2149,6 +4831,44 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
           dim: node.property.name,
         }
       }
+      // ctx.measureText("texto").width → largura do texto (sz_canvas_measure_text)
+      if (
+        ctx &&
+        !node.computed &&
+        node.property?.type === 'Identifier' &&
+        node.property.name === 'width' &&
+        node.object?.type === 'CallExpression' &&
+        node.object.callee?.type === 'MemberExpression' &&
+        !node.object.callee.computed &&
+        node.object.callee.property?.type === 'Identifier' &&
+        node.object.callee.property.name === 'measureText' &&
+        node.object.callee.object?.type === 'Identifier' &&
+        ctx.ctxVars.has(node.object.callee.object.name)
+      ) {
+        const mtText = toExpr(node.object.arguments?.[0], ctx)
+        if (mtText) {
+          return { type: 'canvasMeasureText', ctxVar: node.object.callee.object.name, text: mtText }
+        }
+      }
+      // `arr[arr.length - 1]` → último item da lista (sz_val_array_last). Roda
+      // ANTES do índice genérico, que senão casaria com índice calculado.
+      if (
+        node.computed &&
+        node.object?.type === 'Identifier' &&
+        node.property?.type === 'BinaryExpression' &&
+        node.property.operator === '-' &&
+        node.property.right?.type === 'NumericLiteral' &&
+        node.property.right.value === 1 &&
+        (node.property.left?.type === 'MemberExpression' ||
+          node.property.left?.type === 'OptionalMemberExpression') &&
+        !node.property.left.computed &&
+        node.property.left.object?.type === 'Identifier' &&
+        node.property.left.object.name === node.object.name &&
+        node.property.left.property?.type === 'Identifier' &&
+        node.property.left.property.name === 'length'
+      ) {
+        return { type: 'arrayLast', arrayVar: node.object.name }
+      }
       // `arr[i]` → item da lista por índice (sz_val_array_index).
       if (node.computed && node.object?.type === 'Identifier' && node.property) {
         const idx = toExpr(node.property, ctx)
@@ -2177,6 +4897,9 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
       return null
     }
     case 'BinaryExpression': {
+      // document.fullscreenElement != null → "está em tela cheia?".
+      const fs = tryMatchIsFullscreen(node)
+      if (fs) return fs
       // (arg * Math.PI / 180) / (arg * 180 / Math.PI) → conversão de ângulo.
       const angle = matchAngleConvert(node, ctx)
       if (angle) return angle
@@ -2258,6 +4981,103 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
               key,
             }
           }
+        }
+      }
+      // SZGame2D.keyDown("…") / SZGame2D.touches(a, b) → perguntas (booleanos).
+      const g2dExpr = matchGame2DExpr(node)
+      if (g2dExpr) return g2dExpr
+      // SZGame3D.keyDown / collides / hitAny → perguntas 3D (booleanos).
+      const g3dExpr = matchGame3DExpr(node)
+      if (g3dExpr) return g3dExpr
+      // ctx.isPointInPath(x, y) / ctx.isPointInStroke(x, y) → perguntas de traçado.
+      if (
+        ctx &&
+        node.type === 'CallExpression' &&
+        node.callee?.type === 'MemberExpression' &&
+        !node.callee.computed &&
+        node.callee.object?.type === 'Identifier' &&
+        ctx.ctxVars.has(node.callee.object.name) &&
+        node.callee.property?.type === 'Identifier' &&
+        (node.callee.property.name === 'isPointInPath' ||
+          node.callee.property.name === 'isPointInStroke') &&
+        node.arguments?.length === 2
+      ) {
+        const px = toExpr(node.arguments[0], ctx)
+        const py = toExpr(node.arguments[1], ctx)
+        if (isSimpleValue(px) && isSimpleValue(py)) {
+          return {
+            type:
+              node.callee.property.name === 'isPointInStroke'
+                ? 'canvasIsPointInStroke'
+                : 'canvasIsPointInPath',
+            ctxVar: node.callee.object.name,
+            x: px,
+            y: py,
+          }
+        }
+      }
+      // __szInput.key("ArrowRight") → "a tecla … está apertada?" (caminho "na mão").
+      if (
+        node.type === 'CallExpression' &&
+        node.callee?.type === 'MemberExpression' &&
+        !node.callee.computed &&
+        node.callee.object?.type === 'Identifier' &&
+        node.callee.object.name === '__szInput' &&
+        node.callee.property?.name === 'key' &&
+        node.arguments?.[0]?.type === 'StringLiteral'
+      ) {
+        return { type: 'inputKeyPressed', key: node.arguments[0].value as string }
+      }
+      // performance.now() → milissegundos desde o carregamento (sz_val_perf_now).
+      if (
+        node.callee?.type === 'MemberExpression' &&
+        !node.callee.computed &&
+        node.callee.object?.type === 'Identifier' &&
+        node.callee.object.name === 'performance' &&
+        node.callee.property?.type === 'Identifier' &&
+        node.callee.property.name === 'now' &&
+        (node.arguments?.length ?? 0) === 0
+      ) {
+        return { type: 'perfNow' }
+      }
+      // <lista>.find((item) => <cond>) → achar na lista (sz_val_array_find).
+      if (
+        node.callee?.type === 'MemberExpression' &&
+        !node.callee.computed &&
+        node.callee.object?.type === 'Identifier' &&
+        node.callee.property?.type === 'Identifier' &&
+        node.callee.property.name === 'find' &&
+        node.arguments?.length === 1 &&
+        node.arguments[0]?.type === 'ArrowFunctionExpression' &&
+        node.arguments[0].params?.length === 1 &&
+        node.arguments[0].params[0]?.type === 'Identifier' &&
+        node.arguments[0].body?.type !== 'BlockStatement'
+      ) {
+        const arrow = node.arguments[0]
+        const itemName = arrow.params[0].name as string
+        const cond = toExpr(arrow.body, ctx)
+        if (isSimpleValue(cond)) {
+          return { type: 'arrayFind', arrayVar: node.callee.object.name, itemName, cond }
+        }
+      }
+      // <lista>.map((item) => <expr>) → transformar lista (sz_val_array_map).
+      if (
+        node.callee?.type === 'MemberExpression' &&
+        !node.callee.computed &&
+        node.callee.object?.type === 'Identifier' &&
+        node.callee.property?.type === 'Identifier' &&
+        node.callee.property.name === 'map' &&
+        node.arguments?.length === 1 &&
+        node.arguments[0]?.type === 'ArrowFunctionExpression' &&
+        node.arguments[0].params?.length === 1 &&
+        node.arguments[0].params[0]?.type === 'Identifier' &&
+        node.arguments[0].body?.type !== 'BlockStatement'
+      ) {
+        const arrow = node.arguments[0]
+        const itemName = arrow.params[0].name as string
+        const transform = toExpr(arrow.body, ctx)
+        if (isSimpleValue(transform)) {
+          return { type: 'arrayMap', arrayVar: node.callee.object.name, itemName, transform }
         }
       }
       const now = matchNow(node)
@@ -2368,10 +5188,17 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'mathConst':
     case 'eventProp':
       return true
+    case 'canvasMeasureText':
+      return isSimpleValue(expr.text)
+    case 'canvasIsPointInPath':
+    case 'canvasIsPointInStroke':
+      return isSimpleValue(expr.x) && isSimpleValue(expr.y)
     case 'storageGet':
       return isSimpleValue(expr.key)
     case 'random':
       return isSimpleValue(expr.min) && isSimpleValue(expr.max)
+    case 'logicalNot':
+      return isSimpleValue(expr.value)
     case 'hslColor':
       return isSimpleValue(expr.h) && isSimpleValue(expr.s) && isSimpleValue(expr.l)
     case 'randomFloat':
@@ -2380,6 +5207,59 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
       return expr.args.every(isSimpleValue)
     case 'call':
       return expr.args.every(isSimpleValue)
+    case 'g2d:keyDown':
+    case 'g2d:touches':
+    case 'g2d:countGroup':
+    case 'g2d:spriteAngle':
+    case 'g2d:distance':
+    case 'g2d:angleTo':
+    case 'g2d:getHealth':
+    case 'g2d:randomBetween':
+    case 'g2d:randomChance':
+    case 'g2d:hasHealth':
+    case 'g2d:cooldownReady':
+    case 'g2d:isPaused':
+    case 'g2d:cameraX':
+    case 'g2d:cameraY':
+    case 'g2d:tileAtSprite':
+    case 'g2d:sceneIs':
+    case 'g2d:stickHeroScore':
+    case 'g2d:stickHeroOver':
+    case 'g2d:balloonScore':
+    case 'g2d:balloonFuel':
+    case 'g2d:balloonOver':
+    case 'g2d:aimReleased':
+    case 'g2d:bananaHitThrower':
+    case 'g2d:bananaHitCity':
+    case 'g3d:keyDown':
+    case 'g3d:collides':
+    case 'g3d:hitAny':
+    case 'g3d:touchesBox':
+    case 'g3d:crosserHit':
+    case 'g3d:crosserRow':
+    case 'g3d:distanceTo':
+    case 'g3d:isNear':
+    case 'g3d:raceHit':
+    case 'g3d:raceLaps':
+    case 'g3d:stackScore':
+    case 'g3d:stackGameOver':
+    case 'g3d:getPos':
+    case 'g3d:getRot':
+    case 'g3d:getScale':
+    case 'g3d:dt':
+    case 'g3d:angleTo':
+    case 'g3d:pickAtMouse':
+    case 'g3d:pointerOver':
+    case 'g3d:aimAhead':
+    case 'g3d:onGround':
+    case 'g3d:groundHeight':
+    case 'inputKeyPressed':
+    case 'inputPointer':
+    case 'isFullscreen':
+    case 'systemDark':
+    case 'perfNow':
+    case 'dateGet':
+      return true
     case 'datasetGet':
     case 'classContains':
     case 'shuffle':
@@ -2390,6 +5270,12 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
       return expr.parts.every(isSimpleValue)
     case 'index':
       return isSimpleValue(expr.index)
+    case 'arrayLast':
+      return true
+    case 'arrayFind':
+      return isSimpleValue(expr.cond)
+    case 'arrayMap':
+      return isSimpleValue(expr.transform)
     case 'binop':
       // Contas (sz_math_arithmetic) e comparações (sz_val_compare) têm bloco.
       return isSimpleValue(expr.left) && isSimpleValue(expr.right)
@@ -2446,6 +5332,21 @@ function matchNow(node: Node): JSExpr | null {
       return { type: 'now', kind: 'date' }
     case 'toLocaleTimeString':
       return { type: 'now', kind: 'time' }
+    // Partes NUMÉRICAS (sz_val_date_part) — relógio/animações.
+    case 'getMonth':
+      return { type: 'dateGet', part: 'month' }
+    case 'getDate':
+      return { type: 'dateGet', part: 'dayOfMonth' }
+    case 'getDay':
+      return { type: 'dateGet', part: 'weekday' }
+    case 'getHours':
+      return { type: 'dateGet', part: 'hours' }
+    case 'getMinutes':
+      return { type: 'dateGet', part: 'minutes' }
+    case 'getSeconds':
+      return { type: 'dateGet', part: 'seconds' }
+    case 'getMilliseconds':
+      return { type: 'dateGet', part: 'ms' }
     default:
       return null
   }
@@ -2463,6 +5364,7 @@ const MATH_UNARY_FNS = new Set([
   'asin',
   'acos',
   'atan',
+  'sign',
 ])
 const MATH_BINARY_FNS = new Set(['min', 'max', 'atan2', 'hypot'])
 // Operadores binários reconhecidos. `Set` em vez de um array-literal recriado e
@@ -2709,7 +5611,7 @@ function matchObjectLiteral(node: Node, ctx?: ParseCtx): JSExpr | null {
 
 interface MatchedListener {
   target: string
-  targetKind?: 'var' | 'document'
+  targetKind?: 'var' | 'document' | 'window'
   event: EventKind
   /** Callback inline (arrow/função anônima) — vira corpo de `event`. */
   callback?: Node
@@ -2741,6 +5643,17 @@ function tryMatchEventListener(expr: Node, ctx: ParseCtx): MatchedListener | nul
   if (!isFn && !isNamed) return null
   const handler = isNamed ? { handlerName: cbArg.name as string } : { callback: cbArg }
 
+  // Escuta global na janela: `window.addEventListener(...)`. Para teclado e mouse,
+  // window e document são equivalentes (eventos borbulham); aceitamos os dois e
+  // normalizamos para o targetKind correspondente (load/resize são da janela).
+  if (callee.object?.type === 'Identifier' && callee.object.name === 'window') {
+    return {
+      target: 'window',
+      targetKind: 'window',
+      event: eventArg.value as EventKind,
+      ...handler,
+    }
+  }
   // Escuta global no documento: `document.addEventListener(...)`.
   if (callee.object?.type === 'Identifier' && callee.object.name === 'document') {
     return {
@@ -2886,12 +5799,23 @@ function bodyOfBlock(node: Node, source: string, ctx: ParseCtx): JSStatement[] {
 function bodyOfFn(fn: Node, source: string, ctx: ParseCtx): JSStatement[] {
   if (!fn?.body) return []
   if (fn.body.type === 'BlockStatement') return bodyOfBlock(fn.body, source, ctx)
-  // Arrow function com expressão direta (sem chaves): trata como statement
-  return bodyOfBlock(
-    { type: 'BlockStatement', body: [{ type: 'ExpressionStatement', expression: fn.body }] },
-    source,
-    ctx,
-  )
+  // Arrow function com expressão direta (sem chaves): trata o corpo como UM
+  // statement. O ExpressionStatement sintético PRECISA herdar as posições de
+  // origem (start/end/loc/range) do corpo: sem elas, qualquer statement que caia
+  // em `asRaw` — ex.: `b => b.y -= b.speed`, cujo alvo é um MEMBRO (não um
+  // Identifier, então não casa o atalho de "+=/-=") — seria fatiado de `source`
+  // com `start` indefinido → `snippet` devolve '' → o statement SUMIA do
+  // round-trip (era o bug do "tiro que não anda": `bullets.forEach(b => b.y -=
+  // b.speed)` virava um forEach de corpo vazio).
+  const exprStatement: Node = {
+    type: 'ExpressionStatement',
+    expression: fn.body,
+    start: fn.body.start,
+    end: fn.body.end,
+    loc: fn.body.loc,
+    range: fn.body.range,
+  }
+  return bodyOfBlock({ type: 'BlockStatement', body: [exprStatement] }, source, ctx)
 }
 
 function errorMessage(error: unknown): string {

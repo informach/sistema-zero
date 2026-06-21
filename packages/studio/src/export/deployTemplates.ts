@@ -62,7 +62,27 @@ function railwayJson(): string {
   )}\n`
 }
 
-function classicReadme(name: string): string {
+/**
+ * Higiene do Markdown do nome do projeto antes de interpolar no título `# ...`.
+ * O nome chega de um JSON importado NÃO-confiável (sanitizeProjectName só faz
+ * trim/slice), então além de `` ` ``/`<`/`>` precisamos:
+ *  - COLAPSAR quebras de linha → impede o nome de abrir novos headings/blocos no
+ *    README (o vetor real: `Game\n\n## ...\n[link](http://mau)`);
+ *  - remover os metacaracteres de estrutura — link/imagem `[ ] ( ) !`, heading `#`,
+ *    ênfase `* _ ~` e tabela `|` — que injetariam link de phishing / pixel de
+ *    rastreio no README renderizado.
+ * Mantém acentos e espaços (nome em pt-BR continua legível).
+ */
+function safeMarkdownName(name: string): string {
+  return name
+    .replace(/[`<>[\]()!#|*_~]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 80)
+}
+
+function classicReadme(rawName: string): string {
+  const name = safeMarkdownName(rawName)
   return `# ${name}
 
 Seu projeto esta pronto para publicar. Os arquivos do site ficam em \`public/\` e ja vem minificados.
@@ -83,10 +103,12 @@ npx serve -s public
 
 - Se o projeto usa um jogo 2D ou 3D, as bibliotecas sao carregadas pela internet (esm.sh) quando a pagina abre. Quem acessa precisa estar online.
 - Para usar o Caddy no lugar do "serve": \`caddy file-server --root public --listen :$PORT\`.
+- Para uma protecao extra, configure cabecalhos de seguranca no seu servidor (por exemplo um Content-Security-Policy mais forte, X-Content-Type-Options e Referrer-Policy).
 `
 }
 
-function proReadme(name: string): string {
+function proReadme(rawName: string): string {
+  const name = safeMarkdownName(rawName)
   return `# ${name}
 
 Projeto Vite pronto para publicar. O build, com a minificacao incluida, roda no Railway durante o deploy.
@@ -108,6 +130,7 @@ npx serve -s dist
 ## Observacoes
 
 - Este pacote nao traz \`package-lock.json\`. As versoes ja estao fixadas no \`package.json\`. Para um build 100% reproduzivel, rode \`npm install\` uma vez e versione o lockfile gerado.
+- Para uma protecao extra, configure cabecalhos de seguranca no seu servidor (por exemplo um Content-Security-Policy mais forte, X-Content-Type-Options e Referrer-Policy).
 `
 }
 

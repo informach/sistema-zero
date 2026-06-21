@@ -45,8 +45,18 @@ export class ManageEntitlementService {
         if (!cmd.expiresAt) {
           throw new InvalidEntitlementCommandError('A ação "extend" exige expiresAt')
         }
-        if (entitlement.status === 'revoked') entitlement.reactivate(cmd.expiresAt, now)
-        else entitlement.extendTo(cmd.expiresAt, now)
+        // A nova validade precisa estar no FUTURO: estender com uma data passada não
+        // reativa (o acesso continua negado) e antes virava um no-op silencioso que
+        // ainda respondia 200 e movia o `expiresAt` p/ uma data morta. 400 claro.
+        if (cmd.expiresAt.getTime() <= now.getTime()) {
+          throw new InvalidEntitlementCommandError(
+            'A nova validade de "extend" precisa estar no futuro',
+          )
+        }
+        // `extend` numa matrícula NÃO-ativa (revogada OU expirada) reativa explicitamente
+        // — é o caminho documentado de recuperação. Numa ativa, só estende p/ frente.
+        if (entitlement.status === 'active') entitlement.extendTo(cmd.expiresAt, now)
+        else entitlement.reactivate(cmd.expiresAt, now)
         break
     }
 

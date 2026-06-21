@@ -1,0 +1,163 @@
+'use client'
+
+import { Coins, Gift, Sparkles } from 'lucide-react'
+import { useState } from 'react'
+import { toast } from 'sonner'
+import { cn } from '@/lib/cn'
+import type { MissionsMeView, MissionView } from '@/lib/types'
+
+/** Texto da meta da missão (PT, tom kids) — derivado do goalType + alvo. */
+function missionLabel(m: MissionView): string {
+  const n = m.target
+  switch (m.goalType) {
+    case 'lesson_complete':
+      return n === 1 ? 'Conclua 1 aula' : `Conclua ${n} aulas`
+    case 'quiz_passed':
+      return n === 1 ? 'Acerte 1 quiz' : `Acerte ${n} quizzes`
+    case 'studio_passed':
+      return n === 1 ? 'Crie 1 projeto no Estúdio' : `Crie ${n} projetos no Estúdio`
+    case 'unit_complete':
+      return n === 1 ? 'Abra 1 baú de unidade' : `Abra ${n} baús`
+    default:
+      return 'Complete a missão'
+  }
+}
+
+/**
+ * Painel de missões diárias/semanais (estilo Duolingo): barra de progresso + botão
+ * "Resgatar" quando concluída. As missões chegam JÁ RESOLVIDAS do servidor (prop
+ * `initial`, no Promise.all da home — sem fetch/waterfall pós-hidratação); o cliente
+ * só cuida do resgate (POST idempotente). `initial` nulo (gamificação indisponível)
+ * → o painel some (degrada em silêncio).
+ */
+export function MissionsPanel({ initial }: { initial: MissionsMeView | null }) {
+  const [data, setData] = useState<MissionsMeView | null>(initial)
+  const [claiming, setClaiming] = useState<string | null>(null)
+
+  async function claim(m: MissionView) {
+    if (claiming) return
+    setClaiming(m.slug)
+    try {
+      const res = await fetch(
+        `/api/members/gamification/missions/${encodeURIComponent(m.slug)}/claim`,
+        { method: 'POST' },
+      )
+      if (!res.ok) {
+        toast.error('Não consegui resgatar agora. Tente de novo!')
+        return
+      }
+      const body = await res.json().catch(() => null)
+      if (body?.xpAwarded > 0 || body?.coinsAwarded > 0) {
+        toast.success(`Recompensa! +${body.xpAwarded} XP e +${body.coinsAwarded} moedas 🎉`)
+      }
+      // Marca como resgatada localmente (sem refetch).
+      setData((d) =>
+        d
+          ? {
+              daily: d.daily.map((x) => (x.slug === m.slug ? { ...x, claimed: true } : x)),
+              weekly: d.weekly.map((x) => (x.slug === m.slug ? { ...x, claimed: true } : x)),
+            }
+          : d,
+      )
+    } catch {
+      toast.error('Não consegui resgatar agora.')
+    } finally {
+      setClaiming(null)
+    }
+  }
+
+  if (!data) return null
+  const all = [...data.daily, ...data.weekly]
+  if (all.length === 0) return null
+
+  return (
+    <section className="space-y-3">
+      <h2 className="sz-display flex items-center gap-2 text-lg">
+        <Sparkles className="size-5 text-primary" /> Missões
+      </h2>
+      <div className="space-y-4">
+        <MissionGroup
+          title="Hoje"
+          missions={data.daily}
+          claiming={claiming}
+          onClaim={claim}
+          label={missionLabel}
+        />
+        <MissionGroup
+          title="Esta semana"
+          missions={data.weekly}
+          claiming={claiming}
+          onClaim={claim}
+          label={missionLabel}
+        />
+      </div>
+    </section>
+  )
+}
+
+function MissionGroup({
+  title,
+  missions,
+  claiming,
+  onClaim,
+  label,
+}: {
+  title: string
+  missions: MissionView[]
+  claiming: string | null
+  onClaim: (m: MissionView) => void
+  label: (m: MissionView) => string
+}) {
+  if (missions.length === 0) return null
+  return (
+    <div className="space-y-2">
+      <p className="font-bold text-muted-foreground text-xs uppercase tracking-wide">{title}</p>
+      <div className="grid gap-2">
+        {missions.map((m) => {
+          const pct = Math.round((m.progress / m.target) * 100)
+          return (
+            <div
+              key={m.slug}
+              className={cn(
+                'rounded-2xl border-2 p-3',
+                m.completed && !m.claimed ? 'border-(--sz-hot)' : 'border-border',
+                m.claimed && 'opacity-60',
+              )}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <p className="font-bold text-sm">{label(m)}</p>
+                <span className="inline-flex shrink-0 items-center gap-1 text-muted-foreground text-xs">
+                  <Coins className="size-3.5" /> {m.rewardCoins} · {m.rewardXp} XP
+                </span>
+              </div>
+              <div className="mt-2 flex items-center gap-2">
+                <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full rounded-full bg-primary transition-[width]"
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+                {m.claimed ? (
+                  <span className="font-bold text-muted-foreground text-xs">Resgatado ✅</span>
+                ) : m.completed ? (
+                  <button
+                    type="button"
+                    onClick={() => onClaim(m)}
+                    disabled={claiming === m.slug}
+                    className="inline-flex items-center gap-1 rounded-full bg-(--sz-hot) px-3 py-1 font-bold text-white text-xs disabled:opacity-60"
+                  >
+                    <Gift className="size-3.5" /> Resgatar
+                  </button>
+                ) : (
+                  <span className="font-semibold text-muted-foreground text-xs tabular-nums">
+                    {m.progress}/{m.target}
+                  </span>
+                )}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}

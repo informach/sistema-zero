@@ -10,6 +10,7 @@ import { ReportService } from '../src/application/moderation/report.service'
 import { ReactionService } from '../src/application/reactions/reaction.service'
 import { ReadCommunityService } from '../src/application/read-community/read-community.service'
 import { ReadStateService } from '../src/application/read-state/read-state.service'
+import { ShowcaseService } from '../src/application/showcase/showcase.service'
 import { ThreadService } from '../src/application/threads/thread.service'
 import type { AttachmentLimits } from '../src/domain/attachment/attachment'
 import { MicroCache } from '../src/infrastructure/cache/micro-cache'
@@ -29,6 +30,7 @@ import {
 
 /** Segredo HMAC dos webhooks nos testes (o gateway re-assina como consumer `gateway`). */
 export const TEST_WEBHOOK_SECRET = 'test-gateway-hmac-secret-0001'
+export const TEST_INTERNAL_API_TOKEN = 'test-hub-internal-token-0001'
 
 /** Limites de anexo dos testes (pequenos p/ exercitar os erros de tamanho). */
 const TEST_ATTACHMENT_LIMITS: AttachmentLimits = {
@@ -50,6 +52,10 @@ export function buildApp(
     /** Relógio injetável (testes de ordenação/cursor incrementam manualmente). */
     clock?: () => Date
     readiness?: () => Promise<{ ready: boolean; checks: Record<string, string> }>
+    /** Allowlist de paredes de vitrine; vazio = sem restrição (default dos testes). */
+    showcaseWallSlugs?: string[]
+    /** Slug do canal da parede dentro do servidor de vitrine. */
+    showcaseWallChannelSlug?: string
   } = {},
 ) {
   const repo = new InMemoryCommunityAdminRepository()
@@ -62,9 +68,13 @@ export function buildApp(
   threadRepo.attachments = attachmentRepo
   const processedWebhookRepo = new InMemoryProcessedWebhookRepository()
   const members = new FakeMembersGateway()
-  const cache = new MicroCache<{ granted: Set<string>; hasMaster: boolean }>(
-    opts.accessCacheTtlMs ?? 0,
-  )
+  const internalToken = opts.internalToken ?? TEST_INTERNAL_API_TOKEN
+  const cache = new MicroCache<{
+    granted: Set<string>
+    hasMaster: boolean
+    hasMasterKids: boolean
+    communities: Set<string>
+  }>(opts.accessCacheTtlMs ?? 0)
   const access = new AccessResolutionService(members, cache)
   const clock = opts.clock ?? (() => new Date())
   const limits = TEST_ATTACHMENT_LIMITS
@@ -76,7 +86,7 @@ export function buildApp(
     readiness: opts.readiness ?? (async () => ({ ready: true, checks: { db: 'ok' } })),
     spaces: {
       read: new ReadCommunityService(repo, access, readStateRepo, threadRepo),
-      internalToken: opts.internalToken,
+      internalToken,
     },
     threads: {
       threads: new ThreadService(
@@ -90,7 +100,7 @@ export function buildApp(
         clock,
         () => randomUUID(),
       ),
-      internalToken: opts.internalToken,
+      internalToken,
     },
     attachments: {
       attachments: new AttachmentService(
@@ -102,26 +112,38 @@ export function buildApp(
         clock,
         () => randomUUID(),
       ),
-      internalToken: opts.internalToken,
+      internalToken,
     },
     reactions: {
       reactions: new ReactionService(repo, access, threadRepo, reactionRepo, moderationRepo, clock),
       readState: new ReadStateService(repo, access, readStateRepo, clock),
-      internalToken: opts.internalToken,
+      internalToken,
     },
     report: {
       report: new ReportService(repo, access, threadRepo, moderationRepo, clock),
-      internalToken: opts.internalToken,
+      internalToken,
+    },
+    showcase: {
+      showcase: new ShowcaseService(
+        repo,
+        threadRepo,
+        members,
+        clock,
+        () => randomUUID(),
+        new Set(opts.showcaseWallSlugs ?? []),
+        opts.showcaseWallChannelSlug ?? 'parede',
+      ),
+      internalToken,
     },
     admin: {
       requireAdminEnabled: opts.requireAdmin ?? false,
-      internalToken: opts.internalToken,
+      internalToken,
       spaces: new SpaceAdminService(repo),
       channels: new ChannelAdminService(repo),
     },
     moderation: {
       requireAdminEnabled: opts.requireAdmin ?? false,
-      internalToken: opts.internalToken,
+      internalToken,
       moderation: new ModerationService(threadRepo, moderationRepo, clock),
     },
     webhooks: {
@@ -153,6 +175,7 @@ export function adminHeaders(extra: Record<string, string> = {}): Record<string,
     'x-auth-user-id': '11111111-1111-1111-1111-111111111111',
     'x-auth-user-role': 'admin',
     'x-auth-user-status': 'active',
+    'x-internal-token': TEST_INTERNAL_API_TOKEN,
     ...extra,
   }
 }
@@ -167,6 +190,7 @@ export function studentHeaders(
     'x-auth-user-id': userId,
     'x-auth-user-role': 'customer',
     'x-auth-user-status': 'active',
+    'x-internal-token': TEST_INTERNAL_API_TOKEN,
     ...extra,
   }
 }

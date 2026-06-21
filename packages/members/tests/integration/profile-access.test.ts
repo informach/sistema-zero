@@ -6,7 +6,6 @@ const PROFILE_A = 'b0000000-0000-4000-8000-000000000002'
 const PROFILE_B = 'c0000000-0000-4000-8000-000000000003'
 
 type App = ReturnType<typeof buildApp>['app']
-// biome-ignore lint/suspicious/noExplicitAny: resposta de teste
 const readJson = (res: Response): Promise<any> => res.json()
 // Sessão de perfil: x-auth-user-id = PERFIL (dados/progresso); x-auth-account-id = CONTA (acesso).
 const prof = (profileId: string) => ({ 'x-auth-user-id': profileId, 'x-auth-account-id': ACCOUNT })

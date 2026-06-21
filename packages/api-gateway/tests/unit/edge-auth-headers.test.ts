@@ -95,6 +95,77 @@ describe('headerSafeValue / injectIdentityHeaders', () => {
     expect(h.get('x-auth-account-id')).toBe(null)
   })
 
+  test('sessão de PERFIL: x-auth-profile-name injetado (URI-encode em acento); valor forjado descartado', () => {
+    const h = new Headers({ 'x-auth-profile-name': 'forjado' })
+    injectIdentityHeaders(h, {
+      id: 'profile-1',
+      email: 'pai@example.com',
+      firstName: 'Pai',
+      lastName: 'Silva',
+      role: 'customer',
+      status: 'active',
+      accountId: 'conta-do-pai',
+      profileName: 'Antônia',
+    })
+    // Acento → URI-encoded (headers.set lança com não-ASCII cru); o consumidor decodifica.
+    expect(h.get('x-auth-profile-name')).toBe(encodeURIComponent('Antônia'))
+  })
+
+  test('sessão da CONTA (sem profileName): x-auth-profile-name fica AUSENTE (entrada do cliente removida)', () => {
+    const h = new Headers({ 'x-auth-profile-name': 'forjado' })
+    injectIdentityHeaders(h, {
+      id: 'conta-1',
+      email: 'pai@example.com',
+      firstName: 'Pai',
+      lastName: 'Silva',
+      role: 'customer',
+      status: 'active',
+    })
+    expect(h.get('x-auth-profile-name')).toBe(null)
+  })
+
+  test('sessão de PERFIL: x-auth-profile-public injetado (true/false); forjado do cliente descartado', () => {
+    const pub = new Headers({ 'x-auth-profile-public': 'true' })
+    injectIdentityHeaders(pub, {
+      id: 'p1',
+      email: 'pai@example.com',
+      firstName: 'Pai',
+      lastName: 'Silva',
+      role: 'customer',
+      status: 'active',
+      accountId: 'conta-do-pai',
+      profilePublic: true,
+    })
+    expect(pub.get('x-auth-profile-public')).toBe('true')
+
+    const priv = new Headers({ 'x-auth-profile-public': 'true' }) // forjado p/ "true"
+    injectIdentityHeaders(priv, {
+      id: 'p2',
+      email: 'pai@example.com',
+      firstName: 'Pai',
+      lastName: 'Silva',
+      role: 'customer',
+      status: 'active',
+      accountId: 'conta-do-pai',
+      profilePublic: false,
+    })
+    // O valor forjado do cliente é descartado e substituído pelo real (false).
+    expect(priv.get('x-auth-profile-public')).toBe('false')
+  })
+
+  test('sessão da CONTA (sem profilePublic): x-auth-profile-public fica AUSENTE', () => {
+    const h = new Headers({ 'x-auth-profile-public': 'true' })
+    injectIdentityHeaders(h, {
+      id: 'conta-1',
+      email: 'pai@example.com',
+      firstName: 'Pai',
+      lastName: 'Silva',
+      role: 'customer',
+      status: 'active',
+    })
+    expect(h.get('x-auth-profile-public')).toBe(null)
+  })
+
   test('sessão de IMPERSONAÇÃO: x-auth-impersonator-id é injetado; o valor forjado do cliente é descartado', () => {
     const h = new Headers({ 'x-auth-impersonator-id': 'admin-forjado' })
     injectIdentityHeaders(h, {

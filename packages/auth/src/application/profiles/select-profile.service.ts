@@ -64,7 +64,11 @@ export class SelectProfileService {
       userAgent: cmd.userAgent,
       ip: cmd.ip,
       activeProfileId: profile.id,
-      profileClaim: { accountId: account.id, name: profile.name },
+      profileClaim: {
+        accountId: account.id,
+        name: profile.name,
+        pub: profile.publicProfileEnabled,
+      },
       impersonatorUserId,
       impersonatorAct,
     })

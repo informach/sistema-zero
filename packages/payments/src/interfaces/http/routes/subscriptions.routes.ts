@@ -5,7 +5,7 @@ import type { CreateSubscriptionService } from '../../../application/create-subs
 import type { GetSubscriptionService } from '../../../application/get-subscription/get-subscription.service'
 import { ValidationError } from '../../../domain/shared/errors'
 import { sha256Hex } from '../../../infrastructure/security/hash'
-import type { InMemoryRateLimiter } from '../../../infrastructure/security/rate-limiter'
+import type { RateLimiter } from '../../../infrastructure/security/rate-limiter'
 import { type AuthDeps, authenticateConsumer } from '../auth'
 import { CreateSubscriptionBody } from '../dtos'
 import { PayloadTooLargeError, TooManyRequestsError } from '../errors'
@@ -13,7 +13,7 @@ import { getRawBody, isOversizeBody } from '../raw-body'
 
 export interface SubscriptionsRoutesDeps {
   auth: AuthDeps
-  rateLimiter: InMemoryRateLimiter
+  rateLimiter: RateLimiter
   createSubscription: CreateSubscriptionService
   getSubscription: GetSubscriptionService
   cancelSubscription: CancelSubscriptionService
@@ -30,7 +30,7 @@ export function subscriptionsRoutes(deps: SubscriptionsRoutesDeps) {
     .derive(async ({ request, server, headers }) => {
       if (isOversizeBody(request)) throw new PayloadTooLargeError()
       const consumer = await authenticateConsumer(deps.auth, { request, server, headers })
-      const limit = deps.rateLimiter.check(consumer.id)
+      const limit = await deps.rateLimiter.check(consumer.id)
       if (!limit.allowed) throw new TooManyRequestsError(limit.retryAfterSeconds)
       return { consumer }
     })

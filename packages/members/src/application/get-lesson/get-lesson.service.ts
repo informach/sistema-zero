@@ -45,11 +45,11 @@ export class GetLessonService {
 
     const quizBlockIds = lesson.blocks.filter((b) => b.content.kind === 'quiz').map((b) => b.id)
     const studioBlockIds = lesson.blocks.filter((b) => b.content.kind === 'studio').map((b) => b.id)
-    const [completedIds, positionSeconds, summaries, submittedStudioIds] = await Promise.all([
+    const [completedIds, positionSeconds, summaries, studioSummaries] = await Promise.all([
       this.progress.listCompletedLessonIds(userId, course.id),
       this.positions.findPosition(userId, lessonId),
       this.quizAttempts.summarizeByBlockIds(userId, quizBlockIds),
-      this.studioSubmissions.listSubmittedBlockIds(userId, studioBlockIds),
+      this.studioSubmissions.summarizeByBlockIds(userId, studioBlockIds),
     ])
 
     const now = this.clock()
@@ -63,14 +63,17 @@ export class GetLessonService {
       })
     }
 
-    // Estado da entrega por bloco de estúdio (submitted? — sem o projeto, que é
-    // pesado; o continuar/inspecionar usa o rascunho local ou a rota admin).
+    // Estado da entrega por bloco de estúdio (submitted? + nota/aprovado quando há
+    // atividade) — sem o projeto, que é pesado; o continuar usa o rascunho local.
     const studioStates = new Map<string, StudioStateView>()
     for (const blockId of studioBlockIds) {
+      const state = studioSummaries.get(blockId)
       studioStates.set(blockId, {
-        submitted: submittedStudioIds.has(blockId),
+        submitted: state != null,
         // Data exata não é necessária ao gate/UI do aluno; o painel do professor a traz.
         submittedAt: null,
+        lastScore: state?.score ?? null,
+        passed: state?.passed ?? false,
       })
     }
 

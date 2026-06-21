@@ -33,7 +33,7 @@ describe('advanceStreak', () => {
   test('1ª atividade → streak 1, extended', () => {
     expect(
       advanceStreak({ streakCurrent: 0, streakBest: 0, lastActivityDate: null }, '2026-06-11'),
-    ).toEqual({ current: 1, best: 1, extended: true })
+    ).toEqual({ current: 1, best: 1, extended: true, freezesConsumed: 0 })
   })
 
   test('mesmo dia → mantém, NÃO extended', () => {
@@ -42,7 +42,7 @@ describe('advanceStreak', () => {
         { streakCurrent: 3, streakBest: 5, lastActivityDate: '2026-06-11' },
         '2026-06-11',
       ),
-    ).toEqual({ current: 3, best: 5, extended: false })
+    ).toEqual({ current: 3, best: 5, extended: false, freezesConsumed: 0 })
   })
 
   test('ontem → +1, extended; best acompanha o máximo', () => {
@@ -51,16 +51,43 @@ describe('advanceStreak', () => {
         { streakCurrent: 5, streakBest: 5, lastActivityDate: '2026-06-10' },
         '2026-06-11',
       ),
-    ).toEqual({ current: 6, best: 6, extended: true })
+    ).toEqual({ current: 6, best: 6, extended: true, freezesConsumed: 0 })
   })
 
-  test('gap → recomeça em 1 com best PRESERVADO', () => {
+  test('gap SEM freeze → recomeça em 1 com best PRESERVADO', () => {
     expect(
       advanceStreak(
         { streakCurrent: 9, streakBest: 12, lastActivityDate: '2026-06-08' },
         '2026-06-11',
       ),
-    ).toEqual({ current: 1, best: 12, extended: true })
+    ).toEqual({ current: 1, best: 12, extended: true, freezesConsumed: 0 })
+  })
+
+  test('gap COBERTO por freeze → +1 e consome 1 por dia perdido', () => {
+    // 08→11: faltaram 09 e 10 (2 dias). Com 2 freezes, mantém e consome 2.
+    expect(
+      advanceStreak(
+        { streakCurrent: 9, streakBest: 12, lastActivityDate: '2026-06-08', freezes: 2 },
+        '2026-06-11',
+      ),
+    ).toEqual({ current: 10, best: 12, extended: true, freezesConsumed: 2 })
+  })
+
+  test('gap com dias dentro das FÉRIAS não consome freeze', () => {
+    // 09 e 10 dentro das férias → 0 freezes necessários, mantém a sequência.
+    expect(
+      advanceStreak(
+        {
+          streakCurrent: 9,
+          streakBest: 12,
+          lastActivityDate: '2026-06-08',
+          freezes: 0,
+          vacationFrom: '2026-06-09',
+          vacationTo: '2026-06-10',
+        },
+        '2026-06-11',
+      ),
+    ).toEqual({ current: 10, best: 12, extended: true, freezesConsumed: 0 })
   })
 })
 

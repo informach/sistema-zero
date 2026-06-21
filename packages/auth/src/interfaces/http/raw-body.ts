@@ -1,8 +1,8 @@
 /**
  * Marca de "corpo acima do limite", detectada no `onParse` (que tem acesso ao
- * env). É consumida pelas rotas para devolver 413 — o `onParse` do Elysia não
- * preserva erros tipados ao lançar (vira PARSE/400). Indexada pelo `Request`
- * (WeakSet → coletado pelo GC).
+ * env). O marcador é consumido no `onTransform` global para devolver 413 antes
+ * dos handlers; isso mantém a defesa centralizada em um ponto só.
+ * Indexada pelo `Request` (WeakSet → coletado pelo GC).
  */
 const oversizeBodies = new WeakSet<Request>()
 

@@ -48,6 +48,7 @@ export const MATH_BLOCKS: BlockDefinition[] = [
           ['teto (arredondar p/ cima)', 'ceil'],
           ['valor absoluto', 'abs'],
           ['raiz quadrada', 'sqrt'],
+          ['sinal (-1, 0, 1)', 'sign'],
         ],
       },
       { type: 'input_value', name: 'VALUE', check: 'JSValue' },
@@ -55,7 +56,7 @@ export const MATH_BLOCKS: BlockDefinition[] = [
     inputsInline: true,
     output: 'JSValue',
     colour: C,
-    tooltip: 'Aplica uma função matemática a um valor (Math.round/floor/ceil/abs/sqrt).',
+    tooltip: 'Aplica uma função matemática a um valor (arredondar, raiz, valor absoluto, etc.).',
   },
   {
     type: 'sz_math_minmax',
@@ -75,7 +76,7 @@ export const MATH_BLOCKS: BlockDefinition[] = [
     inputsInline: true,
     output: 'JSValue',
     colour: C,
-    tooltip: 'O menor ou o maior valor entre dois (Math.min/Math.max).',
+    tooltip: 'O menor ou o maior valor entre dois.',
   },
   {
     type: 'sz_math_trig',
@@ -99,11 +100,11 @@ export const MATH_BLOCKS: BlockDefinition[] = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Funções de trigonometria (Math.sin/cos/tan/asin/acos/atan). O ângulo é em radianos — use "converter graus → radianos" se precisar.',
+      'Funções de trigonometria (seno, cosseno, tangente, etc.). O ângulo é em radianos — use "converter graus → radianos" se precisar.',
   },
   {
     type: 'sz_math_atan2',
-    message0: 'ângulo (atan2) de y %1 x %2',
+    message0: 'ângulo de y %1 x %2',
     args0: [
       { type: 'input_value', name: 'A', check: 'JSValue' },
       { type: 'input_value', name: 'B', check: 'JSValue' },
@@ -112,7 +113,7 @@ export const MATH_BLOCKS: BlockDefinition[] = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'O ângulo (em radianos) da direção até o ponto (x, y), via Math.atan2(y, x). Muito usado para mira/direção em jogos.',
+      'O ângulo (em radianos) da direção até o ponto (x, y). Muito usado para mira/direção em jogos.',
   },
   {
     type: 'sz_val_distance',
@@ -124,8 +125,7 @@ export const MATH_BLOCKS: BlockDefinition[] = [
     inputsInline: true,
     output: 'JSValue',
     colour: C,
-    tooltip:
-      'A distância entre dois objetos que têm posição (.x e .y), como player e enemy. Gera Math.hypot(a.x - b.x, a.y - b.y).',
+    tooltip: 'A distância entre dois objetos que têm posição (x e y), como o jogador e um inimigo.',
   },
   {
     type: 'sz_math_hypot',
@@ -138,7 +138,7 @@ export const MATH_BLOCKS: BlockDefinition[] = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'A hipotenusa √(a² + b²), via Math.hypot(a, b). Para a distância entre dois pontos, use as diferenças: Math.hypot(x1 - x2, y1 - y2).',
+      'A hipotenusa √(a² + b²). Para a distância entre dois pontos, use as diferenças dos x e dos y.',
   },
   {
     type: 'sz_math_angle_convert',

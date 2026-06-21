@@ -16,6 +16,8 @@
     "@aws-sdk/client-s3": "^3.1032.0",
     "@aws-sdk/s3-request-presigner": "^3.1032.0",
     "@cantoo/pdf-lib": "^2.7.1",
+    "@dicebear/collection": "^9",
+    "@dicebear/core": "^9",
     "@react-three/drei": "^10",
     "@react-three/fiber": "^9",
     "@sistemazero/member-shell": "workspace:*",

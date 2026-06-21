@@ -90,6 +90,7 @@ export class DrizzleProductRepository implements ProductRepository {
       sku: row.sku,
       name: row.name,
       kind: row.kind,
+      status: row.status,
       fulfillment: row.fulfillment ?? null,
       components: (byProduct.get(row.id) ?? []).map((c) => ({
         productId: c.componentProductId,

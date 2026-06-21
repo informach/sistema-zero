@@ -5,7 +5,6 @@ import { Card } from '@sistemazero/ui/card'
 import { Input } from '@sistemazero/ui/input'
 import { Pagination } from '@sistemazero/ui/pagination'
 import { Select } from '@sistemazero/ui/select'
-import { Spinner } from '@sistemazero/ui/spinner'
 import {
   Table,
   TableBody,
@@ -19,6 +18,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { OverviewCard } from '@/components/admin/overview-card'
+import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { type ApiError, apiGet } from '@/lib/api'
 import { formatCentsStr, formatDate } from '@/lib/format'
 import {
@@ -37,7 +37,8 @@ import { ManualInvoiceDialog } from './manual-invoice-dialog'
 
 const LIMIT = 20
 
-export function InvoicesClient() {
+export function InvoicesClient({ currentRole }: { currentRole: string }) {
+  const canWrite = currentRole === 'superadmin' || currentRole === 'admin'
   const [items, setItems] = useState<InvoiceView[]>([])
   const [total, setTotal] = useState(0)
   const [offset, setOffset] = useState(0)
@@ -92,11 +93,17 @@ export function InvoicesClient() {
     <div className="space-y-6">
       <AdminHeader
         title="Notas fiscais"
-        description="NFS-e emitidas automaticamente após a garantia — acompanhar, baixar, cancelar e substituir."
+        description={
+          canWrite
+            ? 'NFS-e emitidas automaticamente após a garantia — acompanhar, baixar, cancelar e substituir.'
+            : 'NFS-e emitidas automaticamente após a garantia — acompanhar e baixar.'
+        }
         action={
-          <Button onClick={() => setManualOpen(true)}>
-            <FilePlus2 className="size-4" /> Emitir manualmente
-          </Button>
+          canWrite ? (
+            <Button onClick={() => setManualOpen(true)}>
+              <FilePlus2 className="size-4" /> Emitir manualmente
+            </Button>
+          ) : null
         }
       />
 
@@ -175,11 +182,7 @@ export function InvoicesClient() {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow>
-                <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
-                  <Spinner className="mx-auto" />
-                </TableCell>
-              </TableRow>
+              <TableSkeletonRows columns={6} />
             ) : items.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
@@ -247,20 +250,23 @@ export function InvoicesClient() {
 
       <InvoiceDetailDialog
         invoiceId={selectedId}
+        canWrite={canWrite}
         onClose={() => setSelectedId(null)}
         onNavigate={setSelectedId}
         onChanged={refresh}
       />
 
-      <ManualInvoiceDialog
-        open={manualOpen}
-        onClose={() => setManualOpen(false)}
-        onCreated={async (id) => {
-          setSelectedId(id)
-          await refresh()
-        }}
-        onOpenInvoice={setSelectedId}
-      />
+      {canWrite ? (
+        <ManualInvoiceDialog
+          open={manualOpen}
+          onClose={() => setManualOpen(false)}
+          onCreated={async (id) => {
+            setSelectedId(id)
+            await refresh()
+          }}
+          onOpenInvoice={setSelectedId}
+        />
+      ) : null}
     </div>
   )
 }

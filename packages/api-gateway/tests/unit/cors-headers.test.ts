@@ -25,9 +25,10 @@ describe('CORS', () => {
 describe('header-rules', () => {
   test('remove hop-by-hop, host, content-length e adiciona X-Forwarded-*', () => {
     const incoming = new Headers({
-      connection: 'keep-alive',
+      connection: 'keep-alive, x-hop',
       host: 'gw.local',
       'content-length': '10',
+      'x-hop': 'nao-vaza',
       'x-keep': '1',
       'x-forwarded-for': '1.1.1.1',
     })
@@ -42,6 +43,7 @@ describe('header-rules', () => {
     expect(out.get('connection')).toBeNull()
     expect(out.get('host')).toBeNull()
     expect(out.get('content-length')).toBeNull()
+    expect(out.get('x-hop')).toBeNull()
     expect(out.get('x-keep')).toBe('1')
     expect(out.get('x-forwarded-for')).toBe('1.1.1.1, 2.2.2.2')
     expect(out.get('x-forwarded-proto')).toBe('http')
@@ -51,8 +53,15 @@ describe('header-rules', () => {
 
   test('sanitizeResponseHeaders remove hop-by-hop', () => {
     const out = sanitizeResponseHeaders(
-      new Headers({ 'transfer-encoding': 'chunked', 'content-type': 'application/json' }),
+      new Headers({
+        connection: 'x-upstream-hop',
+        'x-upstream-hop': 'nao-vaza',
+        'transfer-encoding': 'chunked',
+        'content-type': 'application/json',
+      }),
     )
+    expect(out.get('connection')).toBeNull()
+    expect(out.get('x-upstream-hop')).toBeNull()
     expect(out.get('transfer-encoding')).toBeNull()
     expect(out.get('content-type')).toBe('application/json')
   })

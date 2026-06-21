@@ -167,6 +167,26 @@ describe('CreateSubscriptionService', () => {
       ),
     ).rejects.toBeInstanceOf(IdempotencyInFlightError)
   })
+
+  test('falha após plano externo deixa IN_FLIGHT; retry imediato não cria 2ª assinatura', async () => {
+    const idempotency = new InMemoryIdempotencyStore()
+    const service = buildService({ subscriptions, payments, planRegistry, gateway, idempotency })
+
+    gateway.failSubscriptionCreate = true
+    await expect(service.execute(baseCommand)).rejects.toThrow(
+      'falha simulada na criação da assinatura',
+    )
+    expect(gateway.planCreatedCount).toBe(1)
+
+    gateway.failSubscriptionCreate = false
+    await expect(service.execute(baseCommand)).rejects.toBeInstanceOf(IdempotencyInFlightError)
+    expect(gateway.subscriptionCreatedCount).toBe(0)
+
+    idempotency.clockSkewMs = 121_000
+    const view = await service.execute(baseCommand)
+    expect(view.status).toBe('ACTIVE')
+    expect(gateway.subscriptionCreatedCount).toBe(1)
+  })
 })
 
 describe('CancelSubscriptionService', () => {

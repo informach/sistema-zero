@@ -64,6 +64,16 @@ describe('admin de spaces/channels', () => {
     expect(((await res.json()) as { error: { code: string } }).error.code).toBe('VALIDATION_ERROR')
   })
 
+  test('community_gated sem comunidades → 400 VALIDATION_ERROR', async () => {
+    const { app } = buildApp()
+    const res = await createSpace(
+      app,
+      validSpace({ accessConfig: { visibility: 'community_gated', communities: [] } }),
+    )
+    expect(res.status).toBe(400)
+    expect(((await res.json()) as { error: { code: string } }).error.code).toBe('VALIDATION_ERROR')
+  })
+
   test('cria canal e reordena dentro do servidor', async () => {
     const { app } = buildApp()
     const space = (await (await createSpace(app, validSpace())).json()) as { id: string }
@@ -118,7 +128,10 @@ describe('admin de spaces/channels', () => {
   test('guard de admin: token interno exigido quando configurado', async () => {
     const { app } = buildApp({ internalToken: 'tok-interno-16-chars!!' })
     const res = await app.handle(
-      jsonRequest('POST', '/hub/admin/spaces', { headers: adminHeaders(), body: validSpace() }),
+      jsonRequest('POST', '/hub/admin/spaces', {
+        headers: adminHeaders({ 'x-internal-token': '' }),
+        body: validSpace(),
+      }),
     )
     expect(res.status).toBe(401) // sem x-internal-token
   })

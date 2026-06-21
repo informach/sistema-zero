@@ -2,6 +2,7 @@ import 'server-only'
 import { sessionCookieNames } from './lib/cookies'
 import { createShellRoutes } from './routes'
 import { createHubRoutes } from './routes/hub'
+import { createStudioRoutes } from './routes/studio'
 import {
   createAuthClient,
   createHubClient,
@@ -54,7 +55,8 @@ export function createShell(cfg: ShellConfig) {
   const media = createMediaModule({ session, gateway })
   const routes = {
     ...createShellRoutes({ session, gateway, auth, members, payments, profiles, media }),
-    ...createHubRoutes({ hub, media, session }),
+    ...createHubRoutes({ hub, members, media, session }),
+    ...createStudioRoutes({ hub, members, media }),
   }
 
   return {

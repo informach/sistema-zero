@@ -11,13 +11,19 @@ import {
   type InstalledExtension,
   inferExtraLanguage,
   isReservedProjectFileName,
+  isValidAssetDataUrl,
   modesForKind,
+  normalizeAssetName,
   normalizeClassicMode,
   normalizeExtraFileName,
+  PROJECT_ASSET_LIMITS,
   type Project,
+  type ProjectAsset,
   type ProjectFiles,
   type ProjectTree,
   type ProProjectMeta,
+  sanitizeProjectAssets,
+  t,
 } from '#core'
 import {
   type CSSEntry,
@@ -27,10 +33,14 @@ import {
   type SZIR,
   SZIRSchema,
 } from '#ir'
+import { findExtension } from '#official-extensions'
 import { createProProject as createProProjectFromTemplate } from '../components/code/pro-templates'
+import { STUDENT_BASELINE_PERMISSIONS } from '../preview/permissionGuard'
 import {
   deleteProject as deleteProjectFromDB,
+  loadProjectBlocksById,
   loadProjectById,
+  loadProjectShellById,
   persistProject,
   renameProjectMeta,
 } from './persistence'
@@ -52,6 +62,8 @@ interface ProjectStore {
   loadProject: (id: string) => Promise<Project | null>
   /** Hidrata um projeto já sanitizado (host/<Studio>) SEM marcar como sujo. */
   hydrateProject: (p: Project) => void
+  /** Mescla estado derivado do load/rehydrate SEM marcar como edição do aluno. */
+  hydrateProjectState: (patch: ProjectStatePatch) => void
   unloadProject: () => void
   createProject: (name: string) => Promise<Project>
   /** Cria e persiste um projeto PROFISSIONAL a partir de um template. */
@@ -59,7 +71,7 @@ interface ProjectStore {
   duplicateProject: (id: string) => Promise<Project | null>
   deleteProject: (id: string) => Promise<void>
   renameProject: (id: string, name: string) => Promise<void>
-  importProjectFromJSON: (raw: unknown) => Promise<Project>
+  importProjectFromJSON: (raw: unknown) => Promise<{ project: Project; warnings: string[] }>
   setProject: (p: Project) => void
   setMode: (mode: IDEMode) => void
   /** Gradua um projeto básico para profissional (Vite). One-way. */
@@ -79,6 +91,12 @@ interface ProjectStore {
   setExtraFile: (name: string, content: string) => void
   renameExtraFile: (oldName: string, newName: string) => string | null
   removeExtraFile: (name: string) => void
+  // --- Assets embutidos (imagens/sprites) ---
+  /** Adiciona um asset (já reduzido/comprimido pela UI). Devolve erro ou null. */
+  addAsset: (input: NewAssetInput) => string | null
+  removeAsset: (id: string) => void
+  /** Renomeia um asset. Devolve erro ou null. */
+  renameAsset: (id: string, newName: string) => string | null
   // --- Modo profissional (project.kind === 'pro') ---
   /** Cria arquivo na árvore pro. Devolve mensagem de erro ou null se ok. */
   addProFile: (path: string) => string | null
@@ -97,19 +115,37 @@ interface ProjectStatePatch {
   installedExtensions?: InstalledExtension[]
 }
 
+/**
+ * Entrada de `addAsset`: a UI já fez downscale/compressão no canvas e produziu o
+ * `data:` URL. O store gera o `id`, normaliza o nome e valida o orçamento.
+ */
+export interface NewAssetInput {
+  name: string
+  dataUrl: string
+  width?: number
+  height?: number
+  source?: 'upload' | 'library'
+  libId?: string
+}
+
 function bump<T extends Project>(p: T): T {
   return { ...p, updatedAt: Date.now() }
 }
 
 // Limites de import para evitar DoS (arquivos gigantes) e corrupção de state.
-export const MAX_PROJECT_IMPORT_CHARS = 12_000_000
+// Cotas subidas ~2x (2026-06) para permitir projetos maiores. IMPORTANTE: estes
+// tetos são COMPARTILHADOS entre importar / abrir (load) / salvar / preview — subir
+// aqui sobe em todos os caminhos de forma consistente (sem re-recorte ao reabrir).
+// `MAX_PROJECT_IMPORT_CHARS` precisa ser ≥ a soma dos sub-limites (arquivos +
+// blocksState + IR + assets) para um projeto cheio conseguir reimportar.
+export const MAX_PROJECT_IMPORT_CHARS = 48_000_000
 const MAX_PROJECT_NAME_CHARS = 200
-const MAX_FILE_CHARS = 2_000_000 // ~2 MB por arquivo de texto
-const MAX_TOTAL_CHARS = 8_000_000 // soma de todos os arquivos
+const MAX_FILE_CHARS = 4_000_000 // ~4 MB por arquivo de texto
+const MAX_TOTAL_CHARS = 16_000_000 // soma de todos os arquivos
 const MAX_EXTRA_FILES = 200
-const MAX_BLOCKSTATE_CHARS = 4_000_000
-const MAX_BLOCKSTATE_BLOCKS = 5_000
-const MAX_BLOCKSTATE_CONTAINER_NODES = 25_000
+const MAX_BLOCKSTATE_CHARS = 8_000_000
+export const MAX_BLOCKSTATE_BLOCKS = 10_000
+const MAX_BLOCKSTATE_CONTAINER_NODES = 50_000
 const MAX_BLOCKSTATE_FIELD_CHARS = MAX_FILE_CHARS
 const MAX_MUTATOR_ITEMS = 32
 const MAX_MUTATOR_PARAMS = 32
@@ -118,11 +154,38 @@ const MAX_MUTATOR_NAME_CHARS = 80
 // razão é uma string curta; o limite generoso aqui é só pra defesa anti-DoS.
 const MAX_DISABLED_REASONS = 16
 const MAX_INSTALLED_EXTENSIONS = 100
-const MAX_IR_CHARS = 4_000_000
-const MAX_IR_NODES = 20_000
+const MAX_IR_CHARS = 8_000_000
+const MAX_IR_NODES = 40_000
 const MAX_JSON_IMPORT_DEPTH = 80
-const MAX_JSON_ARRAY_ITEMS = 25_000
+const MAX_JSON_ARRAY_ITEMS = 50_000
 const MAX_JSON_OBJECT_KEYS = 250
+
+interface BlocksStateSanitizeLimits {
+  maxChars: number
+  maxContainerNodes: number
+  maxDepth: number
+  maxBlocks: number
+  checkJsonShape: boolean
+}
+
+const IMPORT_BLOCKSTATE_LIMITS: BlocksStateSanitizeLimits = {
+  maxChars: MAX_BLOCKSTATE_CHARS,
+  maxContainerNodes: MAX_BLOCKSTATE_CONTAINER_NODES,
+  maxDepth: MAX_BLOCKSTATE_BLOCKS * 4 + 16,
+  maxBlocks: MAX_BLOCKSTATE_BLOCKS,
+  checkJsonShape: true,
+}
+
+// Projetos já persistidos/localmente rehidratados podem ter sido produzidos pelo
+// próprio Studio antes dos tetos atuais. Mantemos limite anti-DoS, mas mais alto
+// que o caminho de import de JSON externo para não inutilizar projetos grandes.
+const STORED_BLOCKSTATE_LIMITS: BlocksStateSanitizeLimits = {
+  maxChars: MAX_BLOCKSTATE_CHARS,
+  maxContainerNodes: MAX_BLOCKSTATE_CONTAINER_NODES,
+  maxDepth: MAX_BLOCKSTATE_BLOCKS * 4 + 16,
+  maxBlocks: MAX_BLOCKSTATE_BLOCKS,
+  checkJsonShape: true,
+}
 
 export const PROJECT_FILE_LIMITS = {
   maxFileChars: MAX_FILE_CHARS,
@@ -140,6 +203,18 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_adv_raw_js',
   'sz_canvas_anim_loop',
   'sz_canvas_arc',
+  'sz_canvas_stroke_rect',
+  'sz_canvas_clear_rect',
+  'sz_canvas_round_rect',
+  'sz_canvas_ellipse',
+  'sz_canvas_arc_slice',
+  'sz_canvas_quadratic_curve',
+  'sz_canvas_bezier_curve',
+  'sz_canvas_arc_to',
+  'sz_canvas_shadow',
+  'sz_canvas_stroke_text',
+  'sz_canvas_line_dash',
+  'sz_canvas_measure_text',
   'sz_canvas_cancel_anim',
   'sz_canvas_clear',
   'sz_canvas_draw_image',
@@ -155,6 +230,25 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_canvas_set_size',
   'sz_canvas_setup',
   'sz_canvas_translate',
+  'sz_canvas_begin_path',
+  'sz_canvas_close_path',
+  'sz_canvas_stroke',
+  'sz_canvas_fill',
+  'sz_canvas_rect',
+  'sz_canvas_clip',
+  'sz_canvas_point_in_path',
+  'sz_canvas_point_in_stroke',
+  'sz_canvas_move_to',
+  'sz_canvas_line_to',
+  'sz_canvas_stroke_style',
+  'sz_canvas_line_width',
+  'sz_canvas_global_alpha',
+  'sz_canvas_font',
+  'sz_canvas_text_align',
+  'sz_canvas_text_baseline',
+  'sz_input_key_pressed',
+  'sz_input_pointer_x',
+  'sz_input_pointer_y',
   'sz_css_align',
   'sz_css_background_color',
   'sz_css_body_background',
@@ -167,11 +261,24 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_css_font_size',
   'sz_css_font_weight',
   'sz_css_gap',
+  'sz_css_google_font',
   'sz_css_grid',
   'sz_css_keyframes',
+  'sz_css_keyframes_steps',
+  'sz_css_keyframe_step',
+  'sz_css_var',
+  'sz_css_transform',
+  'sz_css_perspective',
+  'sz_css_grid_template',
   'sz_css_transition',
   'sz_css_gradient',
   'sz_css_height',
+  'sz_css_fill',
+  'sz_css_stroke',
+  'sz_css_stroke_width',
+  'sz_css_stroke_dasharray',
+  'sz_css_stroke_linecap',
+  'sz_css_text_anchor',
   'sz_css_justify',
   'sz_css_letter_spacing',
   'sz_css_margin',
@@ -210,6 +317,17 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_html_text',
   'sz_html_textarea',
   'sz_html_ul',
+  'sz_html_svg',
+  'sz_svg_group',
+  'sz_svg_path',
+  'sz_svg_circle',
+  'sz_svg_rect',
+  'sz_svg_line',
+  'sz_svg_use',
+  'sz_svg_ellipse',
+  'sz_svg_polyline',
+  'sz_svg_polygon',
+  'sz_svg_text',
   'sz_js_alert_text',
   'sz_js_alert_var',
   'sz_js_class_op',
@@ -228,6 +346,16 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_js_on_mouseover',
   'sz_js_on_submit',
   'sz_js_on_event_named',
+  'sz_js_on_key',
+  'sz_js_on_mousemove',
+  'sz_js_on_pointer_down',
+  'sz_js_on_pointer_up',
+  'sz_js_on_load',
+  'sz_js_on_resize',
+  'sz_js_on_fullscreen_change',
+  'sz_js_request_fullscreen',
+  'sz_js_exit_fullscreen',
+  'sz_js_toggle_fullscreen',
   'sz_js_query_selector',
   'sz_js_query_selector_all',
   'sz_js_storage_set',
@@ -244,9 +372,20 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_js_for_each',
   'sz_js_set_timeout',
   'sz_js_set_interval',
+  'sz_js_set_timeout_seconds',
+  'sz_js_set_interval_seconds',
   'sz_js_create_element',
+  'sz_js_create_element_ns',
+  'sz_js_get_attribute',
   'sz_js_append_child',
+  'sz_js_set_style_text',
+  'sz_js_throw',
+  'sz_js_object_assign',
+  'sz_js_switch',
+  'sz_js_case',
   'sz_js_set_dataset',
+  'sz_js_set_style',
+  'sz_js_set_attribute',
   'sz_js_set_property',
   'sz_js_set_property_calc',
   'sz_js_set_property_text',
@@ -278,7 +417,10 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_math_angle_convert',
   'sz_val_array',
   'sz_val_array_index',
+  'sz_val_array_last',
+  'sz_val_array_find',
   'sz_val_array_length',
+  'sz_val_array_map',
   'sz_val_canvas_height',
   'sz_val_canvas_width',
   'sz_val_class_contains',
@@ -289,12 +431,15 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_val_dataset',
   'sz_val_join',
   'sz_val_logic',
+  'sz_val_not',
   'sz_val_shuffle',
   'sz_val_this',
   'sz_val_color',
   'sz_val_color_alpha',
   'sz_val_color_hsl',
   'sz_val_event_pos',
+  'sz_val_event_key',
+  'sz_val_is_fullscreen',
   'sz_val_math_pi',
   'sz_val_number',
   'sz_val_random',
@@ -315,6 +460,10 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_val_vector3d',
   'sz_val_window_height',
   'sz_val_window_width',
+  'sz_val_device_pixel_ratio',
+  'sz_val_system_dark',
+  'sz_val_perf_now',
+  'sz_val_date_part',
 ])
 
 // Exportado para o teste de drift (extensionBlocklySync.test.ts): a allowlist por
@@ -325,7 +474,7 @@ export const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> 
     'sz_g2d_create_sprite',
     'sz_g2d_draw_sprite',
     'sz_g2d_game_over',
-    'sz_g2d_move_by_keys',
+    'sz_g2d_clear',
     'sz_g2d_score',
     'sz_g2d_set_position',
     'sz_g2d_set_velocity',
@@ -335,7 +484,139 @@ export const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> 
     'sz_g2d_bounce_edges',
     'sz_g2d_circle_collides',
     'sz_g2d_play_sound',
+    'sz_g2d_play_fx',
+    'sz_g2d_play_note',
+    'sz_g2d_play_music',
+    'sz_g2d_stop_music',
+    'sz_g2d_aim_at',
+    'sz_g2d_move_toward',
+    'sz_g2d_distance',
+    'sz_g2d_angle_to',
+    'sz_g2d_random_between',
+    'sz_g2d_random_chance',
+    'sz_g2d_set_health',
+    'sz_g2d_change_health',
+    'sz_g2d_get_health',
+    'sz_g2d_has_health',
+    'sz_g2d_cooldown_ready',
+    'sz_g2d_prune_old',
+    'sz_g2d_flip_sprite',
+    'sz_g2d_set_opacity',
+    'sz_g2d_set_size',
+    'sz_g2d_scale_sprite',
+    'sz_g2d_wrap_edges',
+    'sz_g2d_pause',
+    'sz_g2d_resume',
+    'sz_g2d_is_paused',
+    'sz_g2d_camera_follow',
+    'sz_g2d_set_camera',
+    'sz_g2d_camera_x',
+    'sz_g2d_camera_y',
+    'sz_g2d_break_tile_at',
+    'sz_g2d_set_tile',
+    'sz_g2d_tile_at',
+    'sz_g2d_bring_to_front',
+    'sz_g2d_send_to_back',
+    'sz_g2d_draw_hitbox',
+    'sz_g2d_show_fps',
     'sz_g2d_on_pointer',
+    'sz_g2d_on_key',
+    'sz_g2d_on_overlap',
+    'sz_g2d_key_down',
+    'sz_g2d_touches',
+    'sz_g2d_create_image_sprite',
+    'sz_g2d_set_image',
+    'sz_g2d_load_spritesheet',
+    'sz_g2d_animate_sprite',
+    'sz_g2d_draw_frame',
+    'sz_g2d_platformer',
+    'sz_g2d_top_down',
+    'sz_g2d_follow_pointer',
+    'sz_g2d_clamp_to_screen',
+    'sz_g2d_flash',
+    'sz_g2d_shake',
+    'sz_g2d_emit_particles',
+    'sz_g2d_draw_particles',
+    'sz_g2d_create_tilemap',
+    'sz_g2d_draw_tilemap',
+    'sz_g2d_tilemap_collide',
+    'sz_g2d_create_group',
+    'sz_g2d_spawn_in_group',
+    'sz_g2d_spawn_image_in_group',
+    'sz_g2d_update_group',
+    'sz_g2d_draw_group',
+    'sz_g2d_for_each_in_group',
+    'sz_g2d_count_group',
+    'sz_g2d_clear_group',
+    'sz_g2d_prune_offscreen',
+    'sz_g2d_on_group_overlap',
+    'sz_g2d_remove_from_group',
+    'sz_g2d_every_frames',
+    'sz_g2d_every_seconds',
+    'sz_g2d_draw_score',
+    'sz_g2d_draw_label',
+    'sz_g2d_draw_hearts',
+    'sz_g2d_draw_bar',
+    'sz_g2d_set_scene',
+    'sz_g2d_scene_is',
+    'sz_g2d_show_screen',
+    'sz_g2d_restart',
+    'sz_g2d_starfield',
+    'sz_g2d_drag_x',
+    'sz_g2d_fit_screen',
+    'sz_g2d_spawn_bullet',
+    'sz_g2d_arrows_x',
+    'sz_g2d_blink',
+    'sz_g2d_create_ship',
+    'sz_g2d_spawn_asteroid',
+    'sz_g2d_explode',
+    'sz_g2d_play_shoot',
+    'sz_g2d_play_explosion',
+    'sz_g2d_on_sprite_group_overlap',
+    'sz_g2d_jump_on_ground',
+    'sz_g2d_create_dino',
+    'sz_g2d_control_dino',
+    'sz_g2d_spawn_obstacle',
+    'sz_g2d_spawn_egg',
+    'sz_g2d_forest',
+    'sz_g2d_play_jump',
+    'sz_g2d_play_dino_hurt',
+    'sz_g2d_play_collect',
+    'sz_g2d_steer_thrust',
+    'sz_g2d_rotate_sprite',
+    'sz_g2d_point_sprite',
+    'sz_g2d_thrust',
+    'sz_g2d_apply_friction',
+    'sz_g2d_sprite_angle',
+    'sz_g2d_shoot_from',
+    'sz_g2d_spawn_asteroid_edge',
+    'sz_g2d_create_city',
+    'sz_g2d_draw_city',
+    'sz_g2d_place_thrower',
+    'sz_g2d_new_wind',
+    'sz_g2d_draw_wind',
+    'sz_g2d_aim_drag',
+    'sz_g2d_aim_released',
+    'sz_g2d_throw_banana',
+    'sz_g2d_update_banana',
+    'sz_g2d_draw_banana',
+    'sz_g2d_banana_hit_thrower',
+    'sz_g2d_banana_hit_city',
+    'sz_g2d_play_whistle',
+    'sz_g2d_play_boom',
+    'sz_g2d_computer_turn',
+    'sz_g2d_draw_aim_readout',
+    'sz_g2d_create_stickhero',
+    'sz_g2d_update_stickhero',
+    'sz_g2d_stickhero_score',
+    'sz_g2d_stickhero_over',
+    'sz_g2d_restart_stickhero',
+    'sz_g2d_create_balloon',
+    'sz_g2d_update_balloon',
+    'sz_g2d_balloon_score',
+    'sz_g2d_balloon_fuel',
+    'sz_g2d_balloon_over',
+    'sz_g2d_restart_balloon',
   ]),
   'game-3d': new Set([
     'sz_g3d_create_scene',
@@ -343,9 +624,114 @@ export const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> 
     'sz_g3d_set_camera',
     'sz_g3d_create_box',
     'sz_g3d_create_sphere',
+    'sz_g3d_create_block',
     'sz_g3d_set_position',
     'sz_g3d_set_rotation',
+    'sz_g3d_set_scale',
     'sz_g3d_animate',
+    'sz_g3d_control_keys',
+    'sz_g3d_set_velocity',
+    'sz_g3d_jump',
+    'sz_g3d_apply_gravity',
+    'sz_g3d_camera_follow',
+    'sz_g3d_key_down',
+    'sz_g3d_collides',
+    'sz_g3d_hit_any',
+    'sz_g3d_create_group',
+    'sz_g3d_run_enemies',
+    'sz_g3d_stop',
+    'sz_g3d_isometric_camera',
+    'sz_g3d_grid_position',
+    'sz_g3d_grid_step',
+    'sz_g3d_grid_move',
+    'sz_g3d_move_across',
+    'sz_g3d_touches_box',
+    'sz_g3d_create_crossing_scene',
+    'sz_g3d_create_crosser',
+    'sz_g3d_crosser_move',
+    'sz_g3d_crosser_step',
+    'sz_g3d_crosser_reset',
+    'sz_g3d_add_row',
+    'sz_g3d_generate_rows',
+    'sz_g3d_move_traffic',
+    'sz_g3d_crosser_hit',
+    'sz_g3d_crosser_row',
+    'sz_g3d_top_camera',
+    'sz_g3d_move_in_circle',
+    'sz_g3d_distance_to',
+    'sz_g3d_is_near',
+    'sz_g3d_create_race_scene',
+    'sz_g3d_create_race_track',
+    'sz_g3d_create_race_car',
+    'sz_g3d_race_step',
+    'sz_g3d_race_control',
+    'sz_g3d_run_rivals',
+    'sz_g3d_race_reset',
+    'sz_g3d_race_hit',
+    'sz_g3d_race_laps',
+    'sz_g3d_fall',
+    'sz_g3d_slide_between',
+    'sz_g3d_spin',
+    'sz_g3d_create_stack_scene',
+    'sz_g3d_create_stack_tower',
+    'sz_g3d_stack_drop',
+    'sz_g3d_stack_step',
+    'sz_g3d_stack_reset',
+    'sz_g3d_stack_score',
+    'sz_g3d_stack_game_over',
+    'sz_g3d_get_pos',
+    'sz_g3d_get_rot',
+    'sz_g3d_get_scale',
+    'sz_g3d_dt',
+    'sz_g3d_move_by',
+    'sz_g3d_rotate_by',
+    'sz_g3d_move_towards',
+    'sz_g3d_look_at_object',
+    'sz_g3d_look_at_point',
+    'sz_g3d_move_forward',
+    'sz_g3d_face_velocity',
+    'sz_g3d_angle_to',
+    'sz_g3d_pick_at_mouse',
+    'sz_g3d_pointer_over',
+    'sz_g3d_aim_ahead',
+    'sz_g3d_on_ground',
+    'sz_g3d_ground_height',
+    'sz_g3d_body',
+    'sz_g3d_step_body',
+    'sz_g3d_set_solid',
+    'sz_g3d_platformer_controls',
+    'sz_g3d_fps_controls',
+    'sz_g3d_resolve_collision',
+    'sz_g3d_fps_camera',
+    'sz_g3d_orbit_camera',
+    'sz_g3d_third_person_camera',
+    'sz_g3d_camera_look_at',
+    'sz_g3d_set_fov',
+    'sz_g3d_create_cylinder',
+    'sz_g3d_create_cone',
+    'sz_g3d_create_plane',
+    'sz_g3d_create_torus',
+    'sz_g3d_create_model',
+    'sz_g3d_add_to_model',
+    'sz_g3d_set_visible',
+    'sz_g3d_remove_object',
+    'sz_g3d_set_color',
+    'sz_g3d_set_opacity',
+    'sz_g3d_set_material',
+    'sz_g3d_set_texture',
+    'sz_g3d_add_ambient_light',
+    'sz_g3d_add_sun_light',
+    'sz_g3d_add_point_light',
+    'sz_g3d_set_fog',
+    'sz_g3d_set_sky',
+    'sz_g3d_set_shadows',
+    'sz_g3d_create_swarm',
+    'sz_g3d_spawn_in_swarm',
+    'sz_g3d_for_each_swarm',
+    'sz_g3d_remove_from_swarm',
+    'sz_g3d_prune_swarm',
+    'sz_g3d_play_note',
+    'sz_g3d_play_effect',
   ]),
 }
 
@@ -482,6 +868,24 @@ function limitCombinedExtraFiles(files: ProjectFiles, extraFiles: ExtraFile[]): 
   return trimmed
 }
 
+// Baseline de permissões que o aluno SEMPRE tem (canvas/teclado/mouse/áudio/
+// storage — não são vetor de exfil). Espelha o guard de runtime do preview.
+const BASELINE_PERMISSIONS = new Set<string>(STUDENT_BASELINE_PERMISSIONS)
+
+/**
+ * Uma extensão (resolvida pelo id no catálogo oficial) declara SÓ permissões da
+ * baseline? Uma extensão desconhecida (sem manifesto) não declara nada — o
+ * preview a ignora —, então passa. Uma extensão cujo manifesto declare `network`
+ * (ou qualquer permissão fora da baseline) NÃO passa: ao importar um projeto de
+ * um estranho, o aluno não pode habilitar silenciosamente uma capacidade
+ * sensível sem consentimento (hoje game-2d/3d só declaram baseline → no-op).
+ */
+function declaresOnlyBaselinePermissions(id: string): boolean {
+  const ext = findExtension(id)
+  if (!ext) return true
+  return ext.manifest.permissions.every((p) => BASELINE_PERMISSIONS.has(p))
+}
+
 /** Valida `installedExtensions` vindos de um JSON não confiável. */
 function sanitizeImportedExtensions(raw: unknown): InstalledExtension[] {
   if (!Array.isArray(raw)) return []
@@ -491,6 +895,10 @@ function sanitizeImportedExtensions(raw: unknown): InstalledExtension[] {
     if (!item || typeof item !== 'object') continue
     const e = item as Record<string, unknown>
     if (typeof e.id !== 'string' || typeof e.version !== 'string') continue
+    // Fail-closed do consentimento: descarta extensões que declarem permissão
+    // fora da baseline (ex.: uma futura extensão `network`). Abrir o .json de um
+    // estranho não pode conceder capacidades sensíveis sem o aluno consentir.
+    if (!declaresOnlyBaselinePermissions(e.id)) continue
     out.push({
       id: e.id,
       version: e.version,
@@ -518,67 +926,85 @@ function isPlainRecord(value: object): value is Record<string, unknown> {
 }
 
 function isJsonShapeWithinLimits(value: unknown, limits: JsonShapeLimits): boolean {
+  return describeJsonShapeLimitFailure(value, limits) == null
+}
+
+function describeJsonShapeLimitFailure(value: unknown, limits: JsonShapeLimits): string | null {
   const stack: Array<{ value: unknown; depth: number }> = [{ value, depth: 0 }]
   const seen = new WeakSet<object>()
   let chars = 0
   let containerNodes = 0
 
-  const addChars = (amount: number): boolean => {
+  const addChars = (amount: number): string | null => {
     chars += amount
     return chars <= limits.maxChars
+      ? null
+      : `tamanho estimado ${chars.toLocaleString('pt-BR')} > ${limits.maxChars.toLocaleString('pt-BR')} chars`
   }
 
   while (stack.length > 0) {
     const current = stack.pop()
     if (!current) continue
     const { value: item, depth } = current
-    if (depth > limits.maxDepth) return false
+    if (depth > limits.maxDepth) return `profundidade ${depth} > ${limits.maxDepth}`
 
     if (item == null) continue
 
     if (typeof item === 'string') {
-      if (limits.maxStringChars != null && item.length > limits.maxStringChars) return false
-      if (!addChars(item.length)) return false
+      if (limits.maxStringChars != null && item.length > limits.maxStringChars) {
+        return `string com ${item.length.toLocaleString('pt-BR')} chars > ${limits.maxStringChars.toLocaleString('pt-BR')}`
+      }
+      const charsFailure = addChars(item.length)
+      if (charsFailure) return charsFailure
       continue
     }
 
     if (typeof item === 'number') {
-      if (!Number.isFinite(item)) return false
-      if (!addChars(String(item).length)) return false
+      if (!Number.isFinite(item)) return 'número não-finito'
+      const charsFailure = addChars(String(item).length)
+      if (charsFailure) return charsFailure
       continue
     }
 
     if (typeof item === 'boolean') {
-      if (!addChars(item ? 4 : 5)) return false
+      const charsFailure = addChars(item ? 4 : 5)
+      if (charsFailure) return charsFailure
       continue
     }
 
-    if (typeof item !== 'object') return false
-    if (seen.has(item)) return false
+    if (typeof item !== 'object') return `tipo não-JSON: ${typeof item}`
+    if (seen.has(item)) return 'referência circular'
     seen.add(item)
 
     containerNodes += 1
-    if (containerNodes > limits.maxContainerNodes) return false
+    if (containerNodes > limits.maxContainerNodes) {
+      return `containers ${containerNodes.toLocaleString('pt-BR')} > ${limits.maxContainerNodes.toLocaleString('pt-BR')}`
+    }
 
     if (Array.isArray(item)) {
-      if (item.length > limits.maxArrayItems) return false
+      if (item.length > limits.maxArrayItems) {
+        return `array com ${item.length.toLocaleString('pt-BR')} itens > ${limits.maxArrayItems.toLocaleString('pt-BR')}`
+      }
       for (let index = item.length - 1; index >= 0; index -= 1) {
         stack.push({ value: item[index], depth: depth + 1 })
       }
       continue
     }
 
-    if (!isPlainRecord(item)) return false
+    if (!isPlainRecord(item)) return 'objeto não-plano'
 
     const entries = Object.entries(item)
-    if (entries.length > limits.maxObjectKeys) return false
+    if (entries.length > limits.maxObjectKeys) {
+      return `objeto com ${entries.length.toLocaleString('pt-BR')} chaves > ${limits.maxObjectKeys.toLocaleString('pt-BR')}`
+    }
     for (const [key, child] of entries) {
-      if (!addChars(key.length)) return false
+      const charsFailure = addChars(key.length)
+      if (charsFailure) return charsFailure
       stack.push({ value: child, depth: depth + 1 })
     }
   }
 
-  return true
+  return null
 }
 
 function sanitizeImportedIR(raw: unknown): SZIR | null {
@@ -606,23 +1032,33 @@ export function sanitizeImportedBlocksState(
   raw: unknown,
   installedExtensions: InstalledExtension[],
 ): Project['blocksState'] {
+  return sanitizeBlocksState(raw, installedExtensions, IMPORT_BLOCKSTATE_LIMITS)
+}
+
+function sanitizeBlocksState(
+  raw: unknown,
+  installedExtensions: InstalledExtension[],
+  limits: BlocksStateSanitizeLimits,
+): Project['blocksState'] {
   if (raw == null) return null
-  const isSmallEnough = isJsonShapeWithinLimits(raw, {
-    maxChars: MAX_BLOCKSTATE_CHARS,
-    maxContainerNodes: MAX_BLOCKSTATE_CONTAINER_NODES,
-    maxDepth: MAX_JSON_IMPORT_DEPTH,
-    maxArrayItems: MAX_BLOCKSTATE_BLOCKS,
-    maxObjectKeys: MAX_JSON_OBJECT_KEYS,
-    maxStringChars: MAX_BLOCKSTATE_FIELD_CHARS,
-  })
-  if (!isSmallEnough) {
-    throw new Error(
-      'Arquivo inválido: blocksState excede o tamanho ou a complexidade máxima permitida.',
-    )
+  if (limits.checkJsonShape) {
+    const limitFailure = describeJsonShapeLimitFailure(raw, {
+      maxChars: limits.maxChars,
+      maxContainerNodes: limits.maxContainerNodes,
+      maxDepth: limits.maxDepth,
+      maxArrayItems: limits.maxBlocks,
+      maxObjectKeys: MAX_JSON_OBJECT_KEYS,
+      maxStringChars: MAX_BLOCKSTATE_FIELD_CHARS,
+    })
+    if (limitFailure) {
+      throw new Error(
+        `Arquivo inválido: blocksState excede o tamanho ou a complexidade máxima permitida (${limitFailure}).`,
+      )
+    }
   }
 
   const allowedTypes = getAllowedBlocklyBlockTypes(installedExtensions)
-  return isSupportedBlocklyWorkspaceState(raw, allowedTypes) ? raw : null
+  return isSupportedBlocklyWorkspaceState(raw, allowedTypes, limits) ? raw : null
 }
 
 function sanitizeStoredIR(raw: unknown): SZIR | null {
@@ -668,7 +1104,12 @@ function describeBlocklyValidationFailure(
     (k) => k !== 'languageVersion' && k !== 'blocks',
   )
   if (extraSection) return `chave inesperada em "blocks": "${extraSection}"`
-  if (!isSupportedBlocklyVariables((raw as { variables?: unknown }).variables)) {
+  if (
+    !isSupportedBlocklyVariables(
+      (raw as { variables?: unknown }).variables,
+      STORED_BLOCKSTATE_LIMITS,
+    )
+  ) {
     return 'seção "variables" inválida'
   }
 
@@ -764,12 +1205,22 @@ function describeBlockFailure(
   return null
 }
 
+function formatCaughtError(err: unknown): string {
+  if (err instanceof Error) return err.message || err.name
+  if (typeof err === 'string') return err
+  try {
+    return JSON.stringify(err)
+  } catch {
+    return String(err)
+  }
+}
+
 function sanitizeStoredBlocksState(
   raw: unknown,
   installedExtensions: InstalledExtension[],
 ): Project['blocksState'] {
   try {
-    const out = sanitizeImportedBlocksState(raw, installedExtensions)
+    const out = sanitizeBlocksState(raw, installedExtensions, STORED_BLOCKSTATE_LIMITS)
     if (raw != null && out == null) {
       // Antes era um drop silencioso: o blocksState está no disco mas alguma chave
       // ou limite não passou na allowlist, então o load cai para `null` e o modo
@@ -783,9 +1234,40 @@ function sanitizeStoredBlocksState(
     }
     return out
   } catch (err) {
-    console.warn('[sz] blocksState rejeitado pelo sanitizer (exception):', err)
+    console.warn(
+      `[sz] blocksState rejeitado pelo sanitizer (exception): ${formatCaughtError(err)}`,
+      err,
+    )
     return null
   }
+}
+
+// Teto do id de projeto vindo do corpo do JSON. Os ids que mintamos são ulids
+// (26 chars Crockford base32); o teto generoso tolera ids legados/de host sem
+// abrir espaço para um id patológico (megabytes ou bytes esquisitos) virar chave
+// de IndexedDB / parte de chave de game-storage.
+const MAX_PROJECT_ID_CHARS = 128
+// Charset seguro p/ id: alfanumérico + hífen/sublinhado (cobre ulid e uuid). Um
+// id fora disso é REJEITADO e substituído por um ulid fresco — igual ao caminho
+// de import, que sempre minta um ulid novo.
+const SAFE_PROJECT_ID_RE = /^[A-Za-z0-9_-]+$/
+
+/**
+ * Limita o id vindo do corpo do JSON (host `initialProject`): string não-vazia,
+ * dentro do teto de tamanho e no charset seguro. Caso contrário minta um ulid
+ * fresco (espelha o caminho de import). NÃO aplicado ao `requestedId` interno —
+ * esse já é uma chave de IndexedDB que nós produzimos.
+ */
+function boundProjectIdFromBody(raw: unknown): string {
+  if (
+    typeof raw === 'string' &&
+    raw.length > 0 &&
+    raw.length <= MAX_PROJECT_ID_CHARS &&
+    SAFE_PROJECT_ID_RE.test(raw)
+  ) {
+    return raw
+  }
+  return ulid()
 }
 
 function sanitizeStoredProject(raw: unknown, requestedId?: string): Project | null {
@@ -793,7 +1275,10 @@ function sanitizeStoredProject(raw: unknown, requestedId?: string): Project | nu
     return null
   }
   const r = raw as Record<string, unknown>
-  const id = requestedId ?? (typeof r.id === 'string' && r.id.trim() ? r.id : null)
+  // `requestedId` (load por chave interna do IndexedDB) é confiável — usado como
+  // está. Sem ele (caminho do host `initialProject`/`sanitizeProjectForHost`), o
+  // id vem do corpo NÃO confiável e precisa ser limitado/saneado.
+  const id = requestedId ?? boundProjectIdFromBody(r.id)
   if (!id) return null
 
   const files = sanitizeCanonicalProjectFiles(r.files)
@@ -839,6 +1324,7 @@ function sanitizeStoredProject(raw: unknown, requestedId?: string): Project | nu
     ir: sanitizeStoredIR(r.ir),
     blocksState: sanitizeStoredBlocksState(r.blocksState, installedExtensions),
     installedExtensions,
+    assets: sanitizeProjectAssets(r.assets),
     createdAt,
     updatedAt,
     ...(isPro ? { kind: 'pro' as const, tree, proMeta } : {}),
@@ -847,6 +1333,21 @@ function sanitizeStoredProject(raw: unknown, requestedId?: string): Project | nu
 
 export async function loadSanitizedProjectById(id: string): Promise<Project | null> {
   return sanitizeStoredProject(await loadProjectById(id), id)
+}
+
+export async function loadSanitizedProjectShellById(id: string): Promise<Project | null> {
+  return sanitizeStoredProject(await loadProjectShellById(id), id)
+}
+
+export async function loadSanitizedProjectBlocksStateById(
+  id: string,
+  installedExtensions: InstalledExtension[] = [],
+): Promise<Project['blocksState']> {
+  const raw = await loadProjectBlocksById(id)
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw) || !isPlainRecord(raw)) return null
+  const record = raw as Record<string, unknown>
+  if (record.id != null && record.id !== id) return null
+  return sanitizeStoredBlocksState(record.blocksState, installedExtensions)
 }
 
 /**
@@ -873,6 +1374,7 @@ function getAllowedBlocklyBlockTypes(
 function isSupportedBlocklyWorkspaceState(
   raw: unknown,
   allowedTypes: ReadonlySet<string>,
+  limits: BlocksStateSanitizeLimits,
 ): raw is Record<string, unknown> {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw) || !isPlainRecord(raw)) return false
   const rootKeys = Object.keys(raw)
@@ -890,18 +1392,18 @@ function isSupportedBlocklyWorkspaceState(
 
   if (blocksSection.languageVersion !== 0) return false
   if (!Array.isArray(blocksSection.blocks)) return false
-  if (blocksSection.blocks.length > MAX_BLOCKSTATE_BLOCKS) return false
+  if (blocksSection.blocks.length > limits.maxBlocks) return false
   if (Object.keys(blocksSection).some((key) => key !== 'languageVersion' && key !== 'blocks')) {
     return false
   }
-  if (!isSupportedBlocklyVariables(raw.variables)) return false
+  if (!isSupportedBlocklyVariables(raw.variables, limits)) return false
 
-  return areSupportedBlocklyBlocks(blocksSection.blocks, allowedTypes)
+  return areSupportedBlocklyBlocks(blocksSection.blocks, allowedTypes, limits)
 }
 
-function isSupportedBlocklyVariables(raw: unknown): boolean {
+function isSupportedBlocklyVariables(raw: unknown, limits: BlocksStateSanitizeLimits): boolean {
   if (raw == null) return true
-  if (!Array.isArray(raw) || raw.length > MAX_BLOCKSTATE_BLOCKS) return false
+  if (!Array.isArray(raw) || raw.length > limits.maxBlocks) return false
   for (const variable of raw) {
     if (!variable || typeof variable !== 'object' || Array.isArray(variable)) return false
     if (!isPlainRecord(variable)) return false
@@ -914,24 +1416,36 @@ function isSupportedBlocklyVariables(raw: unknown): boolean {
   return true
 }
 
-function areSupportedBlocklyBlocks(blocks: unknown[], allowedTypes: ReadonlySet<string>): boolean {
+function areSupportedBlocklyBlocks(
+  blocks: unknown[],
+  allowedTypes: ReadonlySet<string>,
+  limits: BlocksStateSanitizeLimits,
+): boolean {
   const stack: Array<{ block: unknown; depth: number }> = blocks.map((block) => ({
     block,
     depth: 0,
   }))
+  const seen = new WeakSet<object>()
   let blockCount = 0
 
   while (stack.length > 0) {
     const current = stack.pop()
     if (!current) continue
     const { block, depth } = current
-    if (depth > MAX_JSON_IMPORT_DEPTH) return false
+    // Profundidade de ANINHAMENTO (não a contagem total): comparar com `maxDepth`,
+    // não com `maxBlocks`. Como `depth <= blockCount` e `blockCount` já é limitado
+    // por `maxBlocks`, comparar com `maxBlocks` deixava este guard MORTO — uma
+    // pilha de blocos fundo passava na sanitização e só estourava (GeneratorDepthError)
+    // na geração. `maxDepth` (MAX_BLOCKSTATE_BLOCKS*4+16) é o bound de profundidade.
+    if (depth > limits.maxDepth) return false
     if (!block || typeof block !== 'object' || Array.isArray(block) || !isPlainRecord(block)) {
       return false
     }
+    if (seen.has(block)) return false
+    seen.add(block)
 
     blockCount += 1
-    if (blockCount > MAX_BLOCKSTATE_BLOCKS) return false
+    if (blockCount > limits.maxBlocks) return false
 
     if (!isSupportedBlocklyBlockShape(block, allowedTypes)) return false
 
@@ -1275,8 +1789,31 @@ function countJSStatement(statement: JSStatement): number {
     case 'animationLoop':
     case 'g2d:updateEachFrame':
     case 'g2d:onPointer':
+    case 'g2d:onKey':
+    case 'g2d:onOverlap':
+    case 'g2d:forEachInGroup':
+    case 'g2d:pruneOffscreen':
+    case 'g2d:onGroupOverlap':
+    case 'g2d:onSpriteGroupOverlap':
+    case 'g2d:everyFrames':
+    case 'g2d:everySeconds':
     case 'g3d:animate':
       return 1 + statement.body.reduce((total, child) => total + countJSStatement(child), 0)
+    case 'g2d:spawnInGroup':
+    case 'g2d:spawnImageInGroup':
+    case 'g2d:spawnAsteroid':
+      return (
+        1 +
+        countJSExpr(statement.x) +
+        countJSExpr(statement.y) +
+        countJSExpr(statement.vx) +
+        countJSExpr(statement.vy)
+      )
+    case 'g2d:drawScore':
+    case 'g2d:drawHearts':
+      return 1 + countJSExpr(statement.type === 'g2d:drawScore' ? statement.value : statement.count)
+    case 'g2d:drawBar':
+      return 1 + countJSExpr(statement.value) + countJSExpr(statement.max)
     case 'var':
     case 'assign':
       return 1 + countJSExpr(statement.value)
@@ -1380,6 +1917,26 @@ export function createProjectStore(
       return existing
     },
     hydrateProject: (p) => set({ project: p, isDirty: false, saveError: null }),
+    hydrateProjectState: (patch) => {
+      const p = get().project
+      if (!p) return
+      const nextFiles = patch.files ? { ...p.files, ...patch.files } : p.files
+      const limitError = projectFilesLimitError(nextFiles, p.extraFiles ?? [], limits)
+      if (limitError) {
+        set({ saveError: limitError })
+        return
+      }
+      set({
+        project: {
+          ...p,
+          files: nextFiles,
+          ir: 'ir' in patch ? (patch.ir ?? null) : p.ir,
+          blocksState: 'blocksState' in patch ? (patch.blocksState ?? null) : p.blocksState,
+          installedExtensions: patch.installedExtensions ?? p.installedExtensions,
+        },
+        saveError: null,
+      })
+    },
     unloadProject: () => set({ project: null, isDirty: false, saveError: null }),
     createProject: async (name) => {
       const p = createEmptyProject(ulid(), sanitizeProjectName(name))
@@ -1463,13 +2020,16 @@ export function createProjectStore(
       const now = Date.now()
       const base = createEmptyProject(ulid(), sanitizeProjectName(r.name))
       const mode: IDEMode = isPro ? 'code' : normalizeClassicMode(r.mode)
+      const extraFiles = limitCombinedExtraFiles(files, sanitizeImportedExtraFiles(r.extraFiles))
+      const assets = sanitizeProjectAssets(r.assets)
       const imported: Project = {
         ...base,
         files,
         // Espelha o teto COMBINADO do load (canônicos + extras ≤ MAX_TOTAL_CHARS):
         // sem isso a soma podia passar de 8 MB e o primeiro reopen derrubaria
         // extras em silêncio, divergindo o registro no disco do que foi aberto.
-        extraFiles: limitCombinedExtraFiles(files, sanitizeImportedExtraFiles(r.extraFiles)),
+        extraFiles,
+        assets,
         mode,
         ir: ir ?? base.ir,
         blocksState,
@@ -1480,7 +2040,31 @@ export function createProjectStore(
         ...(isPro ? { kind: 'pro' as const, tree, proMeta } : {}),
       }
       await persistProject(imported)
-      return imported
+
+      // Avisos não-fatais: o projeto FOI importado, mas alguns sanitizers cortaram
+      // partes em silêncio (cota/permissão/bloco desconhecido). Comparamos a entrada
+      // crua com o resultado e devolvemos a lista p/ a UI mostrar (em vez de sumir
+      // calado). Os estouros que LANÇAM acima (arquivos/IR/shape de blocos) já viram
+      // erro fatal e nem chegam aqui.
+      const warnings: string[] = []
+      const inLen = (v: unknown) => (Array.isArray(v) ? v.length : 0)
+      const droppedAssets = inLen(r.assets) - assets.length
+      if (droppedAssets > 0)
+        warnings.push(t('projects.importWarn.assets', { count: droppedAssets }))
+      const droppedExtras = inLen(r.extraFiles) - extraFiles.length
+      if (droppedExtras > 0)
+        warnings.push(t('projects.importWarn.extraFiles', { count: droppedExtras }))
+      const droppedExt = inLen(r.installedExtensions) - installedExtensions.length
+      if (droppedExt > 0) warnings.push(t('projects.importWarn.extensions', { count: droppedExt }))
+      if (r.blocksState != null && blocksState == null) {
+        const reason = describeBlocklyValidationFailure(r.blocksState, installedExtensions)
+        warnings.push(t('projects.importWarn.blocks', { reason: reason ?? '—' }))
+      } else if (r.ir != null && ir == null && blocksState == null) {
+        warnings.push(t('projects.importWarn.program'))
+      }
+      if (r.kind === 'pro' && !isPro) warnings.push(t('projects.importWarn.proDowngrade'))
+
+      return { project: imported, warnings }
     },
     setProject: (p) => set({ project: p, isDirty: true, saveError: null }),
     setMode: (mode) => {
@@ -1703,6 +2287,57 @@ export function createProjectStore(
         isDirty: true,
         saveError: null,
       })
+    },
+    addAsset: (input) => {
+      const p = get().project
+      if (!p) return 'Nenhum projeto carregado.'
+      const name = normalizeAssetName(input.name)
+      if (!name) return 'Use um nome simples (letras, números e hífen).'
+      // A UI já reduziu/comprimiu; aqui revalidamos o teto e o esquema data:image/.
+      if (!isValidAssetDataUrl(input.dataUrl)) return 'Imagem inválida ou grande demais.'
+      const assets = p.assets ?? []
+      if (assets.length >= PROJECT_ASSET_LIMITS.maxAssetsCount) {
+        return `Limite de ${PROJECT_ASSET_LIMITS.maxAssetsCount} imagens por projeto.`
+      }
+      if (assets.some((a) => a.name === name)) return 'Já existe uma imagem com esse nome.'
+      const totalChars = assets.reduce((sum, a) => sum + a.dataUrl.length, 0) + input.dataUrl.length
+      if (totalChars > PROJECT_ASSET_LIMITS.maxAssetsTotalChars) {
+        return 'As imagens do projeto excedem o tamanho total permitido.'
+      }
+      const asset: ProjectAsset = {
+        id: ulid(),
+        name,
+        kind: 'image',
+        dataUrl: input.dataUrl,
+        source: input.source === 'library' ? 'library' : 'upload',
+        ...(typeof input.width === 'number' && input.width > 0 ? { width: input.width } : {}),
+        ...(typeof input.height === 'number' && input.height > 0 ? { height: input.height } : {}),
+        ...(input.source === 'library' && input.libId ? { libId: input.libId } : {}),
+      }
+      set({ project: bump({ ...p, assets: [...assets, asset] }), isDirty: true, saveError: null })
+      return null
+    },
+    removeAsset: (id) => {
+      const p = get().project
+      if (!p?.assets) return
+      const next = p.assets.filter((a) => a.id !== id)
+      if (next.length === p.assets.length) return
+      set({ project: bump({ ...p, assets: next }), isDirty: true, saveError: null })
+    },
+    renameAsset: (id, newName) => {
+      const p = get().project
+      if (!p?.assets) return 'Sem imagens no projeto.'
+      const name = normalizeAssetName(newName)
+      if (!name) return 'Use um nome simples (letras, números e hífen).'
+      const target = p.assets.find((a) => a.id === id)
+      if (!target) return 'Imagem não encontrada.'
+      if (p.assets.some((a) => a.id !== id && a.name === name)) {
+        return 'Já existe uma imagem com esse nome.'
+      }
+      if (target.name === name) return null
+      const next = p.assets.map((a) => (a.id === id ? { ...a, name } : a))
+      set({ project: bump({ ...p, assets: next }), isDirty: true, saveError: null })
+      return null
     },
     addProFile: (path) => {
       const p = get().project
