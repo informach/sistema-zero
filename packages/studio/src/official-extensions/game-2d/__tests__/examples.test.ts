@@ -3,6 +3,7 @@ import { compileStatements } from '#generators'
 import { SZIRSchema } from '#ir'
 import {
   asteroidsExample,
+  cameraAdventureExample,
   dinoRunExample,
   gorilasExample,
   gorilasVsRobotExample,
@@ -130,5 +131,24 @@ describe('gorilasVsRobotExample (game-2d) — Kit gorilas vs Robô', () => {
     const code = compileStatements(gorilasVsRobotExample.ir.js, 0)
     expect(code).toContain('SZGame2D.computerTurn(gorila2, cidade, gorila1)')
     expect(code).toContain('SZGame2D.drawAimReadout(ctx)')
+  })
+})
+
+describe('cameraAdventureExample (game-2d) — câmera + som (v0.16.0)', () => {
+  it('tem IR válido contra o SZIRSchema', () => {
+    expect(SZIRSchema.safeParse(cameraAdventureExample.ir).success).toBe(true)
+  })
+
+  it('NÃO usa bloco de código avançado (rawJS) — tudo vira bloco', () => {
+    expect(collectTypes(cameraAdventureExample.ir).has('rawJS')).toBe(false)
+  })
+
+  it('gera as chamadas dos blocos novos (câmera, música, efeito, FPS, placar)', () => {
+    const code = compileStatements(cameraAdventureExample.ir.js, 0)
+    expect(code).toContain('SZGame2D.playMusic("adventure")')
+    expect(code).toContain('SZGame2D.cameraFollow(heroi, 1600, 320)')
+    expect(code).toContain('SZGame2D.playFx("coin")')
+    expect(code).toContain('SZGame2D.showFps(12, 56)')
+    expect(code).toContain('SZGame2D.drawScore(ctx, "Moedas:", pontos,')
   })
 })

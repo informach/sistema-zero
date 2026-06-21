@@ -1682,3 +1682,126 @@ export const balloonExample: ExtensionExample = {
     extensions: [{ extensionId: 'game-2d' }],
   },
 }
+
+/**
+ * Exemplo "Aventura com câmera" (v0.16.0): vitrine dos blocos novos — a câmera
+ * segue o herói por um mundo MAIOR que a tela (1600 de largura), ele pega moedas
+ * (grupo) com efeito sonoro, toca música de fundo e mostra o placar + FPS fixos
+ * na tela (o HUD não rola com a câmera). Montado SÓ com blocos (0 código avançado).
+ */
+export const cameraAdventureExample: ExtensionExample = {
+  name: 'Aventura com câmera',
+  description: 'Mundo maior que a tela: a câmera segue o herói, que pega moedas com som e música.',
+  ir: {
+    html: [{ type: 'canvas', id: 'tela', width: 480, height: 320 }],
+    css: [
+      {
+        selector: 'body',
+        declarations: {
+          background: '#0b1020',
+          display: 'flex',
+          'align-items': 'center',
+          'justify-content': 'center',
+          'min-height': '100vh',
+          margin: '0',
+        },
+      },
+      {
+        selector: 'canvas',
+        declarations: { border: '2px solid #4ade80', background: '#11172a' },
+      },
+    ],
+    js: [
+      { type: 'g2d:createSprite', varName: 'heroi', x: 40, y: 284, w: 36, h: 36, color: '#4ade80' },
+      { type: 'g2d:createGroup', varName: 'moedas' },
+      {
+        type: 'g2d:spawnInGroup',
+        groupVar: 'moedas',
+        x: { type: 'num', value: 320 },
+        y: { type: 'num', value: 270 },
+        w: 18,
+        h: 18,
+        color: '#fbbf24',
+        vx: { type: 'num', value: 0 },
+        vy: { type: 'num', value: 0 },
+      },
+      {
+        type: 'g2d:spawnInGroup',
+        groupVar: 'moedas',
+        x: { type: 'num', value: 640 },
+        y: { type: 'num', value: 210 },
+        w: 18,
+        h: 18,
+        color: '#fbbf24',
+        vx: { type: 'num', value: 0 },
+        vy: { type: 'num', value: 0 },
+      },
+      {
+        type: 'g2d:spawnInGroup',
+        groupVar: 'moedas',
+        x: { type: 'num', value: 980 },
+        y: { type: 'num', value: 270 },
+        w: 18,
+        h: 18,
+        color: '#fbbf24',
+        vx: { type: 'num', value: 0 },
+        vy: { type: 'num', value: 0 },
+      },
+      {
+        type: 'g2d:spawnInGroup',
+        groupVar: 'moedas',
+        x: { type: 'num', value: 1320 },
+        y: { type: 'num', value: 200 },
+        w: 18,
+        h: 18,
+        color: '#fbbf24',
+        vx: { type: 'num', value: 0 },
+        vy: { type: 'num', value: 0 },
+      },
+      { type: 'var', name: 'pontos', value: { type: 'num', value: 0 } },
+      { type: 'g2d:playMusic', tune: 'adventure' },
+      {
+        type: 'g2d:updateEachFrame',
+        body: [
+          { type: 'g2d:clear' },
+          { type: 'g2d:platformer', spriteVar: 'heroi', ctxVar: 'ctx', speed: 5, jump: 12 },
+          { type: 'g2d:cameraFollow', spriteVar: 'heroi', worldW: 1600, worldH: 320 },
+          {
+            type: 'g2d:onSpriteGroupOverlap',
+            spriteVar: 'heroi',
+            groupVar: 'moedas',
+            itemName: 'moeda',
+            body: [
+              { type: 'g2d:removeFromGroup', spriteVar: 'moeda', groupVar: 'moedas' },
+              { type: 'g2d:playFx', fx: 'coin' },
+              {
+                type: 'assign',
+                name: 'pontos',
+                value: {
+                  type: 'binop',
+                  op: '+',
+                  left: { type: 'var', name: 'pontos' },
+                  right: { type: 'num', value: 1 },
+                },
+              },
+            ],
+          },
+          { type: 'g2d:drawGroup', groupVar: 'moedas', ctxVar: 'ctx' },
+          { type: 'g2d:drawSprite', spriteVar: 'heroi', ctxVar: 'ctx' },
+          {
+            type: 'g2d:drawScore',
+            ctxVar: 'ctx',
+            label: 'Moedas:',
+            value: { type: 'var', name: 'pontos' },
+            x: 12,
+            y: 28,
+            color: '#ffffff',
+            size: 22,
+          },
+          { type: 'g2d:showFps', x: 12, y: 56 },
+        ],
+      },
+    ],
+    extensions: [{ extensionId: 'game-2d' }],
+  },
+}

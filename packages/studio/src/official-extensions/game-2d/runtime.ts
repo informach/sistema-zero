@@ -3011,8 +3011,10 @@ export const gameTwoDRuntime = `(function () {
     var vw = c ? stageW(c) : 0, vh = c ? stageH(c) : 0;
     var x = (s.x + (s.w || 0) / 2) - vw / 2;
     var y = (s.y + (s.h || 0) / 2) - vh / 2;
-    if (typeof worldW === 'number' && worldW > vw) x = Math.max(0, Math.min(x, worldW - vw));
-    if (typeof worldH === 'number' && worldH > vh) y = Math.max(0, Math.min(y, worldH - vh));
+    // Presa às bordas do mundo. Se o mundo não for maior que a tela num eixo, a
+    // câmera fica em 0 nesse eixo (ex.: plataforma horizontal mantém o chão embaixo).
+    if (typeof worldW === 'number' && worldW > 0) x = Math.max(0, Math.min(x, Math.max(0, worldW - vw)));
+    if (typeof worldH === 'number' && worldH > 0) y = Math.max(0, Math.min(y, Math.max(0, worldH - vh)));
     camera.x = x; camera.y = y;
   }
   function setCamera(x, y) {

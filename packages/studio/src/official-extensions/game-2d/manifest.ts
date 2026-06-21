@@ -4,6 +4,7 @@ import {
   asteroidsClassicExample,
   asteroidsExample,
   balloonExample,
+  cameraAdventureExample,
   dinoRunExample,
   gorilasExample,
   gorilasVsRobotExample,
@@ -257,5 +258,6 @@ Para mundos maiores que a tela e jogos mais ricos:
     gorilasVsRobotExample,
     stickHeroExample,
     balloonExample,
+    cameraAdventureExample,
   ],
 }
