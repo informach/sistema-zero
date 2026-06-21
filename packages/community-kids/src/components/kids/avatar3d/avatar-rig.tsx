@@ -1,7 +1,16 @@
 'use client'
 
-import { useAnimations, useGLTF } from '@react-three/drei'
-import { useEffect, useMemo, useRef } from 'react'
+import { useAnimations, useGLTF, useProgress } from '@react-three/drei'
+import { useFrame } from '@react-three/fiber'
+import {
+  Component,
+  type ReactNode,
+  type RefObject,
+  Suspense,
+  useEffect,
+  useMemo,
+  useRef,
+} from 'react'
 import * as THREE from 'three'
 import {
   AVATAR_CATEGORIES,
@@ -11,9 +20,36 @@ import {
   type AvatarSlot,
   baseGlbUrl,
 } from '@/lib/avatar3d-catalog'
+import { useReducedMotion } from '../room/use-reduced-motion'
 import { AssetPart } from './asset-part'
 
 type Slots = Partial<Record<string, AvatarSlot>>
+
+/**
+ * Isola UMA peça: se o GLB dela falhar ao carregar, o `useGLTF` lança o erro PRA FORA do
+ * `<Suspense>` (que só captura o carregamento). Sem isto, uma peça com falha derrubaria o
+ * configurador inteiro pro `global-error` — a rota `/meu-avatar` fica fora do grupo `(app)`,
+ * sem `error.tsx` próprio. Aqui a peça com falha simplesmente some. `resetKey` (= asset id)
+ * zera o erro ao trocar de peça (uma nova tentativa pode dar certo).
+ */
+class PieceErrorBoundary extends Component<
+  { resetKey: string; children: ReactNode },
+  { failed: boolean; key: string }
+> {
+  state = { failed: false, key: this.props.resetKey }
+  static getDerivedStateFromError() {
+    return { failed: true }
+  }
+  static getDerivedStateFromProps(
+    props: { resetKey: string },
+    state: { failed: boolean; key: string },
+  ) {
+    return props.resetKey !== state.key ? { failed: false, key: props.resetKey } : null
+  }
+  render() {
+    return this.state.failed ? null : this.props.children
+  }
+}
 
 /** Acha o esqueleto compartilhado a partir do 1º skinned mesh do Armature (robusto a nomes). */
 function findSkeleton(scene: THREE.Object3D): THREE.Skeleton | null {
@@ -32,15 +68,44 @@ function rootBoneOf(skeleton: THREE.Skeleton): THREE.Bone | null {
 
 /**
  * Monta o personagem: 1 esqueleto compartilhado (`Armature.glb`) + 1 `<AssetPart>` por
- * categoria equipada (pula "nenhum" e categorias ocultas por chapéu). Material de pele
- * compartilhado (cor do slot `head`). Poses do `Poses.glb` (best-effort). Espelha o
- * `Avatar.jsx` do WawaSensei, sem PocketBase (os dados vêm do nosso catálogo).
+ * categoria equipada, CADA UM no seu `<Suspense>` (trocar 1 peça NÃO apaga o resto — fim do
+ * flicker). Quando alguma peça carrega (`useProgress().active`), o personagem faz a animação de
+ * "cabine" (encolhe + gira + flutua) — espelha o `Experience.jsx` do WawaSensei. Auto-fica em
+ * pé (pés no pódio) medindo o bounding box. `charRef` é exposto p/ a câmera enquadrar (fitToBox).
  */
-export function AvatarRig({ slots, pose = 'Idle' }: { slots: Slots; pose?: string }) {
-  const group = useRef<THREE.Group>(null)
+export function AvatarRig({
+  slots,
+  pose = 'Idle',
+  charRef,
+  standKey,
+  onStood,
+}: {
+  slots: Slots
+  pose?: string
+  /** Grupo externo do personagem — a câmera usa pra `fitToBox`. */
+  charRef: RefObject<THREE.Group | null>
+  /** Muda quando a combinação visual precisa recalcular pés/centro. */
+  standKey: string
+  /** Disparado UMA vez quando o personagem fica em pé (pés no pódio) — a câmera enquadra então. */
+  onStood?: () => void
+}) {
+  const animRoot = useRef<THREE.Group>(null)
+  const springRef = useRef<THREE.Group>(null)
+  const rigRef = useRef<THREE.Group>(null)
+  const stood = useRef(false)
+  const lastStandKey = useRef<string | null>(null)
+  const { active } = useProgress()
+  const reduced = useReducedMotion()
+
   const armature = useGLTF(baseGlbUrl('Armature'))
   const poses = useGLTF(baseGlbUrl('Poses'))
-  const { actions } = useAnimations(poses.animations, group)
+  const { actions } = useAnimations(poses.animations, animRoot)
+
+  useEffect(() => {
+    if (lastStandKey.current === standKey) return
+    lastStandKey.current = standKey
+    stood.current = false
+  }, [standKey])
 
   const skeleton = useMemo(() => findSkeleton(armature.scene), [armature.scene])
   const rootBone = useMemo(() => (skeleton ? rootBoneOf(skeleton) : null), [skeleton])
@@ -72,26 +137,87 @@ export function AvatarRig({ slots, pose = 'Idle' }: { slots: Slots; pose?: strin
     return set
   }, [slots])
 
-  // Mixamo: cm + Y-up rotacionado (mesmos valores do Avatar.jsx do WawaSensei).
+  // Animação de "cabine" (encolhe/gira/flutua ao carregar) + auto-stand (pés no pódio).
+  const tmpBox = useMemo(() => new THREE.Box3(), [])
+  const tmpVec = useMemo(() => new THREE.Vector3(), [])
+  useFrame((_, dt) => {
+    const k = Math.min(1, dt * 6)
+    const spring = springRef.current
+    if (spring) {
+      if (reduced) {
+        // Movimento reduzido (fotossensibilidade): nada de encolher/girar/flutuar — assenta
+        // direto em escala cheia, voltado pra frente. O auto-stand abaixo segue funcionando.
+        spring.scale.setScalar(1)
+        spring.position.y = 0
+        spring.rotation.y = 0
+      } else {
+        const targetScale = active ? 0.62 : 1
+        const s = THREE.MathUtils.lerp(spring.scale.x, targetScale, k)
+        spring.scale.setScalar(s)
+        spring.position.y = THREE.MathUtils.lerp(spring.position.y, active ? 0.35 : 0, k)
+        if (active) {
+          spring.rotation.y += dt * 11 // gira rápido enquanto troca de peça
+        } else {
+          // ao terminar, assenta voltado pra frente (múltiplo de 2π mais próximo).
+          const twoPi = Math.PI * 2
+          const target = Math.round(spring.rotation.y / twoPi) * twoPi
+          spring.rotation.y = THREE.MathUtils.lerp(spring.rotation.y, target, k * 0.5)
+        }
+      }
+    }
+    // Auto-stand UMA vez, com o personagem carregado e a spring assentada (escala ~1).
+    if (
+      !active &&
+      !stood.current &&
+      charRef.current &&
+      rigRef.current &&
+      (spring?.scale.x ?? 1) > 0.98
+    ) {
+      charRef.current.position.set(0, 0, 0)
+      charRef.current.updateWorldMatrix(true, true)
+      tmpBox.setFromObject(rigRef.current)
+      if (!tmpBox.isEmpty()) {
+        const center = tmpBox.getCenter(tmpVec)
+        charRef.current.position.x -= center.x
+        charRef.current.position.z -= center.z
+        charRef.current.position.y -= tmpBox.min.y
+        stood.current = true
+        onStood?.()
+      }
+    }
+  })
+
   return (
-    <group ref={group} rotation={[Math.PI / 2, 0, 0]} scale={0.01} dispose={null}>
-      {rootBone ? <primitive object={rootBone} /> : null}
-      {skeleton
-        ? AVATAR_CATEGORIES.map((cat) => {
-            const slot = slots[cat]
-            const noneId = AVATAR_REMOVABLE_NONE[cat]
-            if (!slot?.asset || slot.asset === noneId || hidden.has(cat)) return null
-            return (
-              <AssetPart
-                key={cat}
-                asset={slot.asset}
-                color={slot.color}
-                skin={skin}
-                skeleton={skeleton}
-              />
-            )
-          })
-        : null}
+    <group ref={charRef} dispose={null}>
+      <group ref={springRef}>
+        {/* Mixamo: cm + Y-up rotacionado (mesmos valores do Avatar.jsx do WawaSensei). */}
+        <group ref={animRoot} rotation={[Math.PI / 2, 0, 0]} scale={0.01}>
+          <group ref={rigRef}>
+            {rootBone ? <primitive object={rootBone} /> : null}
+            {skeleton
+              ? AVATAR_CATEGORIES.map((cat) => {
+                  const slot = slots[cat]
+                  const noneId = AVATAR_REMOVABLE_NONE[cat]
+                  if (!slot?.asset || slot.asset === noneId || hidden.has(cat)) return null
+                  // 1 Suspense POR peça (não apaga as outras = fim do flicker) + 1 error boundary
+                  // POR peça (um GLB com falha some sozinho, não derruba o configurador).
+                  return (
+                    <PieceErrorBoundary key={cat} resetKey={slot.asset}>
+                      <Suspense fallback={null}>
+                        <AssetPart
+                          asset={slot.asset}
+                          color={slot.color}
+                          skin={skin}
+                          skeleton={skeleton}
+                        />
+                      </Suspense>
+                    </PieceErrorBoundary>
+                  )
+                })
+              : null}
+          </group>
+        </group>
+      </group>
     </group>
   )
 }

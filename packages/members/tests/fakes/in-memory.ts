@@ -101,6 +101,29 @@ function cloneState(s: EntitlementState): EntitlementState {
   return { ...s, snapshot: { ...s.snapshot } }
 }
 
+function stableJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`
+  if (value && typeof value === 'object') {
+    const entries = Object.entries(value as Record<string, unknown>).sort(([a], [b]) =>
+      a.localeCompare(b),
+    )
+    return `{${entries.map(([k, v]) => `${JSON.stringify(k)}:${stableJson(v)}`).join(',')}}`
+  }
+  return JSON.stringify(value) ?? 'undefined'
+}
+
+function shouldInvalidateBlockProgress(
+  previous: LessonBlockContent,
+  next: LessonBlockContent,
+): boolean {
+  const touchesGate =
+    previous.kind === 'quiz' ||
+    previous.kind === 'studio' ||
+    next.kind === 'quiz' ||
+    next.kind === 'studio'
+  return touchesGate && stableJson(previous) !== stableJson(next)
+}
+
 function isActive(s: EntitlementState, now: Date): boolean {
   return s.status === 'active' && (s.expiresAt === null || s.expiresAt.getTime() > now.getTime())
 }
@@ -302,6 +325,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
   lessons: Lesson[] = []
   blocks: LessonBlock[] = []
   attachments: LessonAttachment[] = []
+  onEvaluativeBlockContentChanged?: (blockId: string) => void
 
   async findCourseBySlug(slug: string): Promise<Course | null> {
     return this.courses.find((c) => c.slug === slug) ?? null
@@ -599,8 +623,10 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
   ): Promise<LessonBlock | null> {
     const b = this.blocks.find((x) => x.id === id)
     if (!b) return null
+    const invalidateProgress = shouldInvalidateBlockProgress(b.content, content)
     b.kind = kind
     b.content = content
+    if (invalidateProgress) this.onEvaluativeBlockContentChanged?.(id)
     return b
   }
 
@@ -829,6 +855,12 @@ export class InMemoryCourseRatingRepository implements CourseRatingRepository {
 export class InMemoryQuizAttemptRepository implements QuizAttemptRepository {
   readonly attempts: QuizAttemptRecord[] = []
 
+  deleteByBlockId(blockId: string): void {
+    for (let i = this.attempts.length - 1; i >= 0; i--) {
+      if (this.attempts[i]?.blockId === blockId) this.attempts.splice(i, 1)
+    }
+  }
+
   /** Mirror do SQL: com `guard`, re-checa o cooldown antes de gravar (atômico aqui — single-thread). */
   async save(attempt: QuizAttemptRecord, guard?: { cooldownMs: number }): Promise<boolean> {
     if (guard) {
@@ -884,6 +916,12 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
 
   /** Courses p/ resolver a audiência da entrega (countByUserAndAudience). */
   constructor(private readonly courses?: InMemoryCourseRepository) {}
+
+  deleteByBlockId(blockId: string): void {
+    for (let i = this.submissions.length - 1; i >= 0; i--) {
+      if (this.submissions[i]?.blockId === blockId) this.submissions.splice(i, 1)
+    }
+  }
 
   /** Upsert por (user, block) — reenvio sobrescreve projeto/data/correção. */
   async upsert(
@@ -1035,6 +1073,10 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     private readonly sources?: {
       entitlements: InMemoryEntitlementRepository
       courses: InMemoryCourseRepository
+      // Inventários p/ a compra ATÔMICA (`spendCoins` + posse na mesma "transação" — mirror
+      // do prod, onde os repos partilham o `db`). Opcionais: testes de erro não os exigem.
+      avatar?: InMemoryAvatarRepository
+      room?: InMemoryRoomRepository
     },
   ) {}
 
@@ -1259,7 +1301,17 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     )
     const profile = this.profiles.get(key)
     const balance = profile?.coinBalance ?? 0
-    if (existing) return { ok: false, code: 'ALREADY_SPENT', balance }
+    // Posse concedida junto com o gasto (atômico no prod); idempotente + também no ALREADY_SPENT.
+    const grantInventory = async () => {
+      const g = input.grantInventory
+      if (!g) return
+      const repo = g.scope === 'avatar' ? this.sources?.avatar : this.sources?.room
+      await repo?.addToInventory(input.userId, input.audience, g.itemId, input.now)
+    }
+    if (existing) {
+      await grantInventory()
+      return { ok: false, code: 'ALREADY_SPENT', balance }
+    }
     if (balance < input.amount) return { ok: false, code: 'INSUFFICIENT_BALANCE', balance }
     const balanceAfter = balance - input.amount
     this.coinEvents.push({
@@ -1273,6 +1325,7 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     })
     // profile existe (balance ≥ amount > 0).
     this.profiles.set(key, { ...(profile as GamificationProfileRecord), coinBalance: balanceAfter })
+    await grantInventory()
     return { ok: true, balanceAfter }
   }
 
@@ -1300,8 +1353,12 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     for (const userId of userIds) {
       const key = this.profileKey(userId, audience)
       const rec = this.profiles.get(key)
-      // Mirror do filtro SQL `account_id = ?` — perfil de outra conta não volta.
-      if (rec && this.accountIds.get(key) === accountId) out.push(rec)
+      // Mirror do filtro SQL `account_id = ?` — perfil de outra conta não volta. O
+      // `freezeGrantedMonth` mora num mapa à parte (igual ao `getProfile`) — anexa p/ o
+      // streak de EXIBIÇÃO da área dos pais projetar o freeze grátis do mês.
+      if (rec && this.accountIds.get(key) === accountId) {
+        out.push({ ...rec, freezeGrantedMonth: this.freezeMonths.get(key) ?? null })
+      }
     }
     return out
   }

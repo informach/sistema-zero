@@ -11,20 +11,24 @@ export interface BuyStreakFreezeView {
 
 /**
  * Compra 1 protetor de sequência (streak-freeze) com moedas Zappy. Idempotente por
- * `streak-freeze:<user>:<saldo-de-protetores>` (duplo-clique não cobra 2×); sem saldo →
- * 402; já no máximo → 409. Cosmético de RETENÇÃO (ético: protege a sequência, não compra status).
+ * chave de operação (`Idempotency-Key` do cliente ou UUID gerado no servidor); sem
+ * saldo → 402; já no máximo → 409. Cosmético de RETENÇÃO (ético: protege a sequência,
+ * não compra status).
  */
 export class BuyStreakFreezeService {
   constructor(
     private readonly repo: GamificationRepository,
+    private readonly newId: () => string,
     private readonly clock: () => Date,
   ) {}
 
-  async execute(userId: string, audience: CourseAudience): Promise<BuyStreakFreezeView> {
-    // O nº atual de protetores é a chave de idempotência: dois cliques na MESMA compra
-    // (mesmo estado) batem na mesma key → só 1 debita; uma 2ª compra legítima muda a key.
-    const current = await this.repo.getProfile(userId, audience)
-    const idempotencyKey = `streak-freeze:${userId}:${current?.streakFreezes ?? 0}`
+  async execute(
+    userId: string,
+    audience: CourseAudience,
+    operationKey?: string,
+  ): Promise<BuyStreakFreezeView> {
+    const key = operationKey?.trim() || this.newId()
+    const idempotencyKey = `streak-freeze:${audience}:${userId}:${key}`
     const result = await this.repo.buyStreakFreeze({
       userId,
       audience,

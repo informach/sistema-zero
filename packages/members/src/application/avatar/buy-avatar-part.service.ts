@@ -41,6 +41,8 @@ export class BuyAvatarPartService {
     }
 
     const now = this.clock()
+    // Débito + posse na MESMA transação (atômico): `grantInventory` grava o item junto com o
+    // gasto — nunca cobra sem entregar. Recupera a posse no caminho ALREADY_SPENT (retry).
     const spend = await this.coins.spendCoins({
       userId,
       audience,
@@ -48,11 +50,9 @@ export class BuyAvatarPartService {
       reason: 'spend_cosmetic',
       idempotencyKey: `avatar-buy:${userId}:${partId}`,
       now,
+      grantInventory: { scope: 'avatar', itemId: partId },
     })
     if (!spend.ok && spend.code === 'INSUFFICIENT_BALANCE') throw new InsufficientCoinsError()
-
-    // Cobrou (ou já havia cobrado em tentativa anterior) → garante a posse.
-    await this.avatar.addToInventory(userId, audience, partId, now)
     return { alreadyOwned: false, balance: spend.ok ? spend.balanceAfter : spend.balance }
   }
 }

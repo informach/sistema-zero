@@ -83,6 +83,8 @@ export interface ThreadRepository {
   createShowcaseThread(
     input: CreateShowcaseThreadInput,
   ): Promise<{ thread: Thread; deduped: boolean }>
+  /** `true` quando o playId pertence a um post de vitrine ainda visível. */
+  hasVisibleShowcasePlayId(playId: string): Promise<boolean>
   findThreadById(id: string): Promise<Thread | null>
   /** Página de tópicos (pinned primeiro, depois lastActivityAt desc). `hasMore` se veio `limit+1`. */
   listThreads(

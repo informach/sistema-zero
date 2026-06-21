@@ -1773,6 +1773,17 @@ const config: GatewayConfigInput = {
       maxBodyBytes: SMALL_JSON_BODY_BYTES,
       rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
     },
+    // Player público do Estúdio (BFF sem Bearer) valida que o playId ainda pertence
+    // a um post visível no Mural antes de servir o JSON privado do R2.
+    {
+      id: 'hub-studio-play-visible',
+      methods: ['GET'],
+      pathPattern: '/hub/internal/studio-play/:playId',
+      service: 'hub',
+      auth: 'public',
+      transforms: hubInternalTransforms,
+      rateLimit: { max: 600, windowMs: 60_000, by: 'ip' },
+    },
     {
       id: 'hub-comment-edit',
       methods: ['PATCH'],

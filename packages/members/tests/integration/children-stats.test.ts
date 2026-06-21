@@ -158,6 +158,35 @@ describe('GET /members/internal/children-stats', () => {
     expect(body[0]?.rankingPosition).toBe(1) // único na coorte → não-nulo
   })
 
+  test('streak é o de EXIBIÇÃO: sequência quebrada mostra 0 ao pai (não o valor cru)', async () => {
+    const ctx = buildApp({ internalToken: TOKEN, now })
+    const account = randomUUID()
+    const profile = randomUUID()
+    seedSampleCourse(ctx.courses, 'curso-kids', 'published', 'kids')
+    grantLifetime(ctx.entitlements, { userId: account, courseRef: 'curso-kids' })
+    // Perfil com streak CRU "vivo" (5) mas última atividade 8 dias atrás, SEM freeze/férias:
+    // a sequência já quebrou. Antes o dashboard mostrava 5 (cru); agora mostra 0 (effectiveStreak).
+    const key = `${profile}:kids`
+    ctx.gamification.profiles.set(key, {
+      userId: profile,
+      accountId: account,
+      xp: 50,
+      streakCurrent: 5,
+      streakBest: 9,
+      lastActivityDate: '2026-06-10', // 8 dias antes do clock (2026-06-18)
+      coinBalance: 0,
+      streakFreezes: 0,
+      vacationFrom: null,
+      vacationTo: null,
+    })
+    ctx.gamification.accountIds.set(key, account)
+
+    const res = await ctx.app.handle(statsRequest(account, [profile]))
+    const body = ((await res.json()) as { children: ChildStats[] }).children
+    expect(body[0]?.streak.current).toBe(0) // quebrado → 0 (o +1 grátis do mês não cobre 7 dias)
+    expect(body[0]?.streak.best).toBe(9) // best NUNCA regride
+  })
+
   test('projectsCount é só da audiência (entrega em curso adulto não conta no kids)', async () => {
     const ctx = buildApp({ internalToken: TOKEN })
     const account = randomUUID()

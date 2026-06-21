@@ -7,9 +7,23 @@ const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
 /** Teto da janela (anti-abuso): férias longas demais virariam "streak eterno". */
 const MAX_VACATION_DAYS = 30
 
+/**
+ * `YYYY-MM-DD` é um dia de CALENDÁRIO real (não só o formato)? O regex aceita `2026-13-45`/
+ * `2026-02-30`; o round-trip por `Date` os rejeita (mês/dia fora da faixa → `Invalid Date` ou
+ * normalização que muda a string). Sem isto, uma data inválida passa o regex, faz o
+ * `inclusiveDaysBetween` virar `NaN` (`NaN > 30` é `false` → teto bypassado) e persiste uma
+ * janela bizarra que o `inVacation` (comparação de STRING) trata como férias quase eternas.
+ */
+function isRealDate(s: string): boolean {
+  const d = new Date(`${s}T00:00:00Z`)
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s
+}
+
 /** Quantidade de dias civis cobertos por uma janela inclusiva `[a,b]`. */
 function inclusiveDaysBetween(a: string, b: string): number {
   const ms = new Date(`${b}T00:00:00Z`).getTime() - new Date(`${a}T00:00:00Z`).getTime()
+  // Defesa em profundidade: data inválida → trata como excedendo o teto (jamais o bypassa).
+  if (Number.isNaN(ms)) return Number.POSITIVE_INFINITY
   return Math.round(ms / 86_400_000) + 1
 }
 
@@ -35,7 +49,14 @@ export class SetVacationService {
       await this.repo.setVacation(userId, accountId, audience, null, null, now)
       return { vacationFrom: null, vacationTo: null }
     }
-    if (!from || !to || !ISO_DATE.test(from) || !ISO_DATE.test(to)) {
+    if (
+      !from ||
+      !to ||
+      !ISO_DATE.test(from) ||
+      !ISO_DATE.test(to) ||
+      !isRealDate(from) ||
+      !isRealDate(to)
+    ) {
       throw new VacationInvalidError()
     }
     const today = localDateSaoPaulo(now)

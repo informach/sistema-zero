@@ -98,9 +98,13 @@ export const AvatarConfigBody = t.Object({
   // Record categoria→{asset, color?}; o serviço valida semanticamente (categoria/peça
   // desconhecida → 400; peça paga não possuída → 403; cor fora da paleta → 400). HEX_COLOR
   // valida só o FORMATO na borda; a PALETA curada é checada no domínio.
+  // `maxProperties` limita o nº de categorias (o catálogo 3D tem 12) — paridade com o teto
+  // de `QuizAttemptBody.answers`; o serviço já rejeita categoria desconhecida, mas a borda
+  // não deve aceitar um Record gigante (defesa anti-DoS, mesmo bem abaixo do teto de corpo).
   slots: t.Record(
     t.String({ maxLength: 40 }),
     t.Object({ asset: AVATAR_SLUG, color: t.Optional(HEX_COLOR) }),
+    { maxProperties: 32 },
   ),
 })
 

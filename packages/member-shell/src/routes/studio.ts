@@ -478,23 +478,28 @@ export function createStudioRoutes(deps: {
   }
 
   const studioPlay = {
-    // PÚBLICO (sem login): stream do projeto do R2 privado, MESMA ORIGEM (sem CORS).
+    // PÚBLICO (sem login): só serve enquanto o playId segue associado a post visível
+    // no Mural. O projeto fica no R2 privado, MESMA ORIGEM (sem CORS).
     GET: async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
       const { id } = await ctx.params
       if (!UUID_RE.test(id))
         return NextResponse.json({ error: { code: 'NOT_FOUND' } }, { status: 404 })
+      const playable = await hub.resolveStudioPlay(id)
+      if (playable.status !== 200 || playable.body?.visible !== true) {
+        return NextResponse.json({ error: { code: 'NOT_FOUND' } }, { status: 404 })
+      }
       try {
         const obj = await r2GetObjectPrivate(PLAY_KEY(id))
         return new NextResponse(obj.body, {
           status: 200,
           headers: {
             'Content-Type': 'application/json; charset=utf-8',
-            'Cache-Control': 'public, max-age=31536000, immutable',
+            'Cache-Control': 'private, no-store',
             'X-Content-Type-Options': 'nosniff',
           },
         })
       } catch {
-        // Artefato imutável por UUID: erro = inexistente (404), não vaza detalhe.
+        // Erro = inexistente/inacessível (404), não vaza detalhe.
         return NextResponse.json({ error: { code: 'NOT_FOUND' } }, { status: 404 })
       }
     },

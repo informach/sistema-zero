@@ -81,6 +81,38 @@ describe('Avatar 3D — compra (sink de moedas)', () => {
     expect(again).toEqual({ alreadyOwned: true, balance: 40 }) // não cobra de novo
   })
 
+  test('débito sem posse é recuperado no retry da MESMA compra (sem cobrar 2×)', async () => {
+    const { app, gamification, avatar } = buildApp()
+    await seedCoins(gamification, 100)
+    // Estado em que a moeda já foi debitada (coin_event existe + saldo caiu) mas o item NUNCA
+    // entrou no inventário — o que um crash entre transações deixaria. A compra atômica
+    // (`spendCoins` concede a posse na MESMA transação) torna esse estado impossível em prod;
+    // este teste fixa o CONTRATO de recuperação: o retry da mesma compra repõe a posse via
+    // ALREADY_SPENT sem novo débito (a atomicidade em si só se prova contra o Postgres real).
+    const key = `${USER}:kids`
+    const seeded = gamification.profiles.get(key)
+    gamification.profiles.set(key, {
+      ...(seeded as NonNullable<typeof seeded>),
+      coinBalance: 40, // já debitado (100 - 60)
+    })
+    gamification.coinEvents.push({
+      userId: USER,
+      audience: 'kids',
+      sourceType: 'spend_cosmetic',
+      sourceId: `avatar-buy:${USER}:hair-04`,
+      amount: -60,
+      balanceAfter: 40,
+      createdAt: new Date('2026-06-02T12:00:00.000Z'),
+    })
+    expect(await avatar.listInventory(USER, 'kids')).not.toContain('hair-04') // ainda sem posse
+
+    // Retry da MESMA compra → ALREADY_SPENT recupera a posse SEM cobrar de novo.
+    const retry = await readJson(await buyPart(app, 'hair-04'))
+    expect(retry).toEqual({ alreadyOwned: false, balance: 40 }) // saldo intocado
+    expect(await avatar.listInventory(USER, 'kids')).toContain('hair-04') // posse recuperada
+    expect((await readJson(await getAvatar(app))).balance).toBe(40) // sem débito duplo
+  })
+
   test('sem saldo → 402 INSUFFICIENT_COINS', async () => {
     const { app, gamification } = buildApp()
     await seedCoins(gamification, 40)

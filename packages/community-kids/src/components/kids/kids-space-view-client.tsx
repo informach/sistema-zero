@@ -327,15 +327,22 @@ export function KidsSpaceViewClient({
 
   const react = useCallback(
     async (target: 'threads' | 'comments', id: string, emoji: string, mine: boolean) => {
-      // Otimismo local: alterna a reação na hora e SÓ desfaz se o servidor recusar.
-      // Snapshot p/ rollback vem dos refs (estado atual) — mantém identidade estável.
-      const prevThread = threadRef.current
-      const prevComments = commentsRef.current
+      // Otimismo local: alterna a reação na hora e SÓ desfaz se o servidor recusar. O rollback é
+      // POR ITEM (id) — restaurar o array inteiro descartaria reações simultâneas de OUTROS itens
+      // (toques sobrepostos num segundo comentário enquanto o primeiro ainda está no ar).
+      let revert: () => void = () => {}
       if (target === 'threads') {
+        const prevReactions = threadRef.current?.id === id ? threadRef.current.reactions : null
+        if (!prevReactions) return
+        revert = () => setThread((t) => (t && t.id === id ? { ...t, reactions: prevReactions } : t))
         setThread((t) =>
           t && t.id === id ? { ...t, reactions: toggleReaction(t.reactions, emoji, mine) } : t,
         )
       } else {
+        const prevReactions = commentsRef.current.find((c) => c.id === id)?.reactions ?? null
+        if (!prevReactions) return
+        revert = () =>
+          setComments((cs) => cs.map((c) => (c.id === id ? { ...c, reactions: prevReactions } : c)))
         setComments((cs) =>
           cs.map((c) =>
             c.id === id ? { ...c, reactions: toggleReaction(c.reactions, emoji, mine) } : c,
@@ -349,8 +356,7 @@ export function KidsSpaceViewClient({
           await apiSend(`/api/hub/${target}/${enc(id)}/reactions`, 'POST', { emoji })
         }
       } catch (err) {
-        setThread(prevThread)
-        setComments(prevComments)
+        revert()
         toast.error((err as ApiError).message ?? 'Não consegui reagir.')
       }
     },

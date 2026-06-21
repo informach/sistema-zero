@@ -91,10 +91,15 @@ export function buildApp(
   const positions = new InMemoryVideoPositionRepository()
   const quizAttempts = new InMemoryQuizAttemptRepository()
   const studioSubmissions = new InMemoryStudioSubmissionRepository(courses)
+  courses.onEvaluativeBlockContentChanged = (blockId) => {
+    quizAttempts.deleteByBlockId(blockId)
+    studioSubmissions.deleteByBlockId(blockId)
+  }
   const ratings = new InMemoryCourseRatingRepository()
-  const gamification = new InMemoryGamificationRepository({ entitlements, courses })
   const avatar = new InMemoryAvatarRepository()
   const room = new InMemoryRoomRepository()
+  // gamification recebe avatar/room p/ a compra ATÔMICA (spendCoins concede a posse junto).
+  const gamification = new InMemoryGamificationRepository({ entitlements, courses, avatar, room })
   const processed = new InMemoryProcessedWebhookRepository()
   const catalog = new FakeCatalogGateway()
 
@@ -177,7 +182,7 @@ export function buildApp(
       getGamification: new GetGamificationService(gamification, clock),
       getMissions: new GetMissionsService(gamification, clock),
       claimMission: new ClaimMissionService(gamification, clock),
-      buyStreakFreeze: new BuyStreakFreezeService(gamification, clock),
+      buyStreakFreeze: new BuyStreakFreezeService(gamification, () => randomUUID(), clock),
       setVacation: new SetVacationService(gamification, clock),
       getLeague: new GetLeagueService(gamification, clock),
       childrenStats: new GetChildrenStatsService(

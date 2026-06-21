@@ -241,8 +241,16 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
 - **Avatar 3D — `components/kids/avatar3d/*` (rota `/meu-avatar`, tela cheia IMERSIVA fora do
   grupo `(app)`):** configurador de personagem 3D (substituiu o DiceBear). `configurator-client.tsx`
   (`dynamic ssr:false` — three/fiber/drei só no cliente, espelha o `studio-full-client`) → `configurator.tsx`
-  (estado + loja por categoria + paleta de cor + "Salvar") + `avatar-scene.tsx` (`<Canvas>` R3F) +
-  `avatar-rig.tsx` + `asset-part.tsx`. ⚠️ **Personagem GLB REAL (Quaternius CC0, via pack do WawaSensei):**
+  (estado + loja por categoria + 2 modos: **Personalizar** ⇄ **Cabine de fotos**) + `avatar-scene.tsx`
+  (`<Canvas>` R3F) + `avatar-rig.tsx` + `asset-part.tsx` + `camera-manager.tsx` + `avatar-thumbs.tsx`.
+  **Experiência fiel ao WawaSensei (06/2026):** a câmera é drei **`CameraControls`** (`camera-manager.tsx`)
+  que **`fitToBox`** o personagem (conserta o corte cabeça/pés) e aproxima na cabeça por categoria de rosto;
+  a **Cabine de fotos** dá poses (`Poses.glb`: Idle/Chill/Cool/Punch/Ninja/King/Busy) + órbita LIVRE pra
+  posicionar antes de tirar a foto (retrato). A grade de itens mostra **MINIATURAS** renderizadas
+  (`avatar-thumbs.tsx`: 1 renderer offscreen reutilizado → `toDataURL` cacheado por id; LAZY por categoria;
+  "nenhum" = ✕). Trocar peça NÃO pisca a tela: **`<Suspense>` POR peça** no `avatar-rig` (não apaga o resto)
+  + animação de "cabine" (encolhe/gira/flutua via `useProgress`+`useFrame` + feixe de teleporte) no lugar do
+  flicker. `randomize` ("Surpreenda-me") sorteia peça grátis/possuída + cor. ⚠️ **Personagem GLB REAL (Quaternius CC0, via pack do WawaSensei):**
   1 esqueleto compartilhado (`base/Armature.glb`, ossos `mixamorig:*`) + 1 GLB skinned por peça equipada
   (`useGLTF` → `<skinnedMesh skeleton={compartilhado}>`); material `Color_*` recebe a cor da peça, `Skin_*`
   usa o material de pele compartilhado (cor do slot `head`); oclusão `hat→hair`; poses opcionais do
@@ -257,7 +265,8 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   — avatares aparecem em listas/rankings) + personagem padrão SVG inline quando sem foto. O `photoUrl` flui
   de `getAvatarReadonly().photoUrl` (chrome/perfil/quarto) e `PublicProfileDTO.avatarPhotoUrl` (perfil
   público). Catálogo espelhado por id (`lib/avatar3d-catalog.ts`, PURO): members = existência/preço/posse/
-  paleta, kids = apresentação (travado pela conformância do members). Item "Avatar" no `nav.ts`; `/meu-avatar`
+  paleta, kids = apresentação (travado pela conformância do members). **Sem item no `nav.ts`** — acessado
+  pelo CLIQUE no avatar em `/perfil` (`profile-client` → `router.push('/meu-avatar')`); `/meu-avatar`
   em `protectedPrefixes` + `api/members/avatar/snapshot` no negative-lookahead do matcher.
 - **Quarto virtual 3D (06/2026) — `room/room-canvas.tsx` (wrapper `dynamic ssr:false`) +
   `room/room-canvas-3d.tsx` (`<Canvas>` react-three-fiber) + `room/room-builder.tsx`** (rota

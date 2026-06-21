@@ -63,6 +63,10 @@ import {
   VideoPositionBody,
 } from '../dtos'
 
+function idempotencyKey(headers: Record<string, string | undefined>): string | undefined {
+  return (headers['idempotency-key'] ?? headers['x-idempotency-key'])?.trim() || undefined
+}
+
 export interface MembersRoutesDeps {
   listMyCourses: ListMyCoursesService
   listCatalog: ListCatalogService
@@ -216,7 +220,11 @@ export function membersRoutes(deps: MembersRoutesDeps) {
       .post(
         '/gamification/streak-freeze/buy',
         async ({ headers, query }) =>
-          deps.buyStreakFreeze.execute(resolveUserId(headers), query.audience ?? 'kids'),
+          deps.buyStreakFreeze.execute(
+            resolveUserId(headers),
+            query.audience ?? 'kids',
+            idempotencyKey(headers),
+          ),
         { query: AudienceQuery },
       )
       // Agenda/limpa as férias (pausa a sequência sem culpa). `from=to=null` limpa.

@@ -479,7 +479,10 @@ estender o streak). Atividade ANTERIOR às migrations não tem marco retroativo
 - **Streak-freeze + férias** (migration `0021`, colunas `streak_freezes`/
   `freeze_granted_month`/`vacation_from`/`vacation_to` em `gamification_profiles`): a sequência
   só QUEBRA quando NEM férias NEM protetores cobrem o gap. Janela de férias é INCLUSIVA
-  `[from, to]` (`setVacation`); **+1 freeze GRÁTIS por mês civil** (lazy/idempotente na 1ª
+  `[from, to]` (`setVacation` — valida DIA DE CALENDÁRIO real, não só o formato `\d{4}-\d{2}-\d{2}`:
+  full review 06/2026, `2026-02-30`/`2026-13-45` faziam `inclusiveDaysBetween` virar `NaN` →
+  `NaN > 30` falso → o teto de 30 dias era bypassado e a janela bizarra persistia como "férias
+  quase eternas"); **+1 freeze GRÁTIS por mês civil** (lazy/idempotente na 1ª
   atividade do mês via `freeze_granted_month`) — concedido **só quando há espaço no teto**
   e o mês **só é marcado quando o grátis ENTRA** (06/2026): aluno no teto (5) na 1ª
   atividade não tem o mês queimado — o grátis continua disponível numa atividade futura em
@@ -487,7 +490,11 @@ estender o streak). Atividade ANTERIOR às migrations não tem marco retroativo
   benefício do mês). Compra de freeze via `buyStreakFreeze`
   (`STREAK_FREEZE_PRICE`, teto `MAX_STREAK_FREEZES` = 5). `advanceStreak`/`effectiveStreak`/
   `freezesNeeded`/`inVacation` no domain puro consomem/projetam os protetores; `effectiveStreak`
-  é o streak de EXIBIÇÃO (projeta 0 quando a cobertura acabou, sem zerar o persistido).
+  é o streak de EXIBIÇÃO (projeta 0 quando a cobertura acabou, sem zerar o persistido) — usado
+  no `GET /gamification/me` E na área dos pais (`GetChildrenStatsService`, full review 06/2026:
+  antes mostrava o `streakCurrent` CRU, exibindo ao pai um streak "vivo" que já quebrou).
+  `freezesNeeded` conta os dias-perdidos não-cobertos APÓS o filtro de férias (gap > cap de
+  varredura = quebra), sem deixar uma janela de férias enorme "engolir" o cap.
 - **Avatar 3D** (migrations `0019` `avatar_configs`/`avatar_inventory` + `0023`
   `avatar_configs.photo_url`): personagem por CATEGORIAS (`domain/avatar/avatar3d-catalog.ts`:
   12 categorias — head/hair/eyes/eyebrows/nose/facialHair/glasses/hat/top/bottom/shoes/accessory
@@ -496,7 +503,10 @@ estender o streak). Atividade ANTERIOR às migrations não tem marco retroativo
   `canonicalize` TOLERANTE (config DiceBear legada/null → default 3D, sem migração) +
   `assertEquippableConfig` ESTRITO (peça existe/categoria certa/grátis OU possuída + cor ∈
   paleta). Cor é GRÁTIS (possuir a peça libera a paleta); compra de peça charge-first
-  idempotente (`BuyAvatarPartService`, `reason:'spend_cosmetic'`). A FOTO (snapshot do canvas
+  idempotente (`BuyAvatarPartService`, `reason:'spend_cosmetic'`) — **ATÔMICA** (full review
+  06/2026): a posse é gravada na MESMA transação do débito via `spendCoins({grantInventory})`,
+  nunca cobra sem entregar; o grant roda também no caminho `ALREADY_SPENT` (recupera retry).
+  Idem o quarto (`BuyRoomItemService`). A FOTO (snapshot do canvas
   3D) é a imagem do avatar em todo o app: o BFF sobe o PNG p/ o R2 e grava a URL via
   **`PUT /members/avatar/photo`** (`SetAvatarPhotoService`, valida http(s)); `AvatarStateView`
   traz `equipped`/`parts`/`palettes`/`hideGroups`/`removable`/`photoUrl`/`balance` e
@@ -527,7 +537,11 @@ estender o streak). Atividade ANTERIOR às migrations não tem marco retroativo
   `claimMission` IDEMPOTENTE (UNIQUE user+audience+slug+período) que **REVALIDA a conclusão no
   servidor** (`count >= target`), credita XP direto no perfil + moedas COM o teto diário, reavalia
   badges de **poupador** se `lifetime_coins_earned` cruzar 300/1000, e **NÃO move o streak**.
-  `GET /members/gamification/missions/me` + `POST …/missions/:slug/claim`.
+  `GET /members/gamification/missions/me` + `POST …/missions/:slug/claim`. ⚠️ **O claim EXIGE
+  que a missão esteja ATRIBUÍDA ao perfil no período** (`assignDaily/WeeklyMissions`, full review
+  06/2026): o catálogo tem 8 missões mas o aluno só recebe 3+2; sem o guard, várias missões
+  compartilham `goalType` com alvos diferentes (`daily-aula` 1 × `daily-aulas-3` 3) e a não-oferecida
+  cujo alvo o aluno batesse era resgatável por POST direto (farm de XP sem teto) → `MISSION_NOT_FOUND`.
 - **Ligas semanais** (migration `0022`, `league_membership`): coorte competitiva semanal por
   audiência. (Detalhes de tiers/promoção/rebaixamento em `docs/gamificacao.md`.)
 - Sem backfill: histórico anterior ao deploy não gera XP retroativo (script manual se um

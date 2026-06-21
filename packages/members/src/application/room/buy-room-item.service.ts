@@ -52,6 +52,8 @@ export class BuyRoomItemService {
     }
 
     const now = this.clock()
+    // Débito + posse na MESMA transação (atômico): `grantInventory` grava o item junto com o
+    // gasto — nunca cobra sem entregar. Recupera a posse no caminho ALREADY_SPENT (retry).
     const spend = await this.coins.spendCoins({
       userId,
       audience,
@@ -59,10 +61,9 @@ export class BuyRoomItemService {
       reason: 'spend_room',
       idempotencyKey: `room-buy:${userId}:${itemId}`,
       now,
+      grantInventory: { scope: 'room', itemId },
     })
     if (!spend.ok && spend.code === 'INSUFFICIENT_BALANCE') throw new InsufficientCoinsError()
-
-    await this.room.addToInventory(userId, audience, itemId, now)
     return { alreadyOwned: false, balance: spend.ok ? spend.balanceAfter : spend.balance }
   }
 }

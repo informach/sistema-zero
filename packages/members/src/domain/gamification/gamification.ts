@@ -59,26 +59,26 @@ function inVacation(d: string, from?: string | null, to?: string | null): boolea
 }
 
 /**
- * Dias civis ESTRITAMENTE entre `a` e `b` (a < b) — os "perdidos" entre a última
- * atividade e hoje. Limitado a `cap` (gap maior já não é cobrível por freezes →
- * o chamador trata como quebra), evitando laços longos.
+ * Quantos dias perdidos precisam de FREEZE (não cobertos pelas férias). Varre os dias civis
+ * estritamente entre a última atividade e hoje (do mais recente p/ trás) contando os que NÃO
+ * caem em férias. O `cap` limita o laço; se o gap EXCEDER o cap (gap gigante), há dias perdidos
+ * não varridos → não cobrível por freezes, devolve o cap (≫ teto de freezes) p/ o chamador
+ * tratar como quebra. Crucial: o cap é detectado pelo ESTOURO da varredura, não consumido pelas
+ * férias — antes a janela de férias era filtrada DEPOIS de truncar em `cap`, então férias longas
+ * podiam "engolir" os 400 dias varridos e zerar a contagem mesmo com dias perdidos reais além.
  */
-function missedDaysBetween(a: string, b: string, cap = 400): string[] {
-  const out: string[] = []
-  let cur = previousDay(b)
-  while (cur > a && out.length < cap) {
-    out.push(cur)
-    cur = previousDay(cur)
-  }
-  return out
-}
-
-/** Quantos dias perdidos precisam de FREEZE (não cobertos pelas férias). */
-function freezesNeeded(state: StreakState, today: string): number {
+function freezesNeeded(state: StreakState, today: string, cap = 400): number {
   if (!state.lastActivityDate) return 0
-  return missedDaysBetween(state.lastActivityDate, today).filter(
-    (d) => !inVacation(d, state.vacationFrom, state.vacationTo),
-  ).length
+  let cur = previousDay(today)
+  let needed = 0
+  let scanned = 0
+  while (cur > state.lastActivityDate && scanned < cap) {
+    if (!inVacation(cur, state.vacationFrom, state.vacationTo)) needed++
+    cur = previousDay(cur)
+    scanned++
+  }
+  if (cur > state.lastActivityDate) return cap
+  return needed
 }
 
 /**

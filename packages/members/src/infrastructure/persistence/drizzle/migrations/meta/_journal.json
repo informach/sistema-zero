@@ -169,6 +169,13 @@
       "when": 1782047617208,
       "tag": "0023_adorable_warhawk",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1782062392671,
+      "tag": "0024_yellow_next_avengers",
+      "breakpoints": true
     }
   ]
 }

@@ -676,6 +676,10 @@ export function createHubClient(gw: GatewayModule, opts: { audience: MembersAudi
         body,
       })
     },
+    /** Valida se o playId público ainda pertence a um post visível no Mural. */
+    resolveStudioPlay(playId: string): Promise<GatewayResponse<{ visible: boolean }>> {
+      return gw.gatewayFetch(`/hub/internal/studio-play/${enc(playId)}`)
+    },
     report(
       target: 'thread' | 'comment',
       id: string,

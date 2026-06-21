@@ -179,7 +179,7 @@ export async function createApplication(env: Env): Promise<Application> {
   )
   const getMissions = new GetMissionsService(gamificationRepo, clock)
   const claimMission = new ClaimMissionService(gamificationRepo, clock)
-  const buyStreakFreeze = new BuyStreakFreezeService(gamificationRepo, clock)
+  const buyStreakFreeze = new BuyStreakFreezeService(gamificationRepo, () => randomUUID(), clock)
   const setVacation = new SetVacationService(gamificationRepo, clock)
   const getLeague = new GetLeagueService(gamificationRepo, clock)
   const markComplete = new MarkLessonCompleteService(

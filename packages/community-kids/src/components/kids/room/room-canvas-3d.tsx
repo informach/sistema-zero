@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { Color, Plane, Raycaster, Vector2, Vector3 } from 'three'
 import { lightingPreset, ROOM_ITEM_INFO, resolveRoomAppearance } from '@/lib/room-catalog'
 import type { RoomStateView } from '@/lib/types'
+import { recoverWebGLContext } from '@/lib/webgl-recovery'
 import { effectiveFootprint, type Rot, worldToCell } from './coords'
 import { Floor } from './floor'
 import { FurniturePiece } from './furniture-piece'
@@ -216,7 +217,10 @@ export function RoomCanvas3D(props: Room3DProps) {
       frameloop={animated ? 'always' : 'demand'}
       gl={{ antialias: true, powerPreference: 'low-power' }}
       camera={{ position: [13, 11, 13], zoom: 40, near: 0.1, far: 120 }}
-      onCreated={({ camera }) => camera.lookAt(...TARGET)}
+      onCreated={(state) => {
+        state.camera.lookAt(...TARGET)
+        recoverWebGLContext(state)
+      }}
       className={props.className}
     >
       <Scene {...props} reducedMotion={reducedMotion} />

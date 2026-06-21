@@ -66,6 +66,14 @@ export interface SpendCoinsInput {
   /** Chave estável da compra → `coin_event.source_id` (idempotência: duplo-clique não cobra 2×). */
   idempotencyKey: string
   now: Date
+  /**
+   * Item cosmético a CONCEDER na MESMA transação do débito (compra atômica). Sem isto, débito
+   * e posse eram 2 transações separadas: um crash entre elas cobrava sem entregar (a criança
+   * pagava e não recebia, só recuperável re-comprando o MESMO item). O grant é idempotente
+   * (`onConflictDoNothing`) e roda TAMBÉM no caminho `ALREADY_SPENT` (recupera uma tentativa
+   * anterior que debitou mas não chegou a conceder). Ausente = gasto puro (sem item).
+   */
+  grantInventory?: { scope: 'avatar' | 'room'; itemId: string }
 }
 
 export type SpendCoinsResult =
@@ -132,7 +140,8 @@ export interface GamificationRepository {
    * Debita moeda da carteira numa transação serializada POR ALUNO (mesmo advisory
    * lock do award). Fail-CLOSED em saldo insuficiente. Idempotente por
    * `(reason, idempotencyKey)`: a MESMA compra nunca debita 2× (duplo-clique/retry).
-   * É o primitivo que as lojinhas de avatar/quarto consomem.
+   * É o primitivo que as lojinhas de avatar/quarto consomem. Com `grantInventory`, a
+   * posse do item é gravada na MESMA transação (compra atômica — ver `SpendCoinsInput`).
    */
   spendCoins(input: SpendCoinsInput): Promise<SpendCoinsResult>
   /** Saldo da carteira Zappy da vitrine (0 sem perfil). Leitura para a lojinha. */
