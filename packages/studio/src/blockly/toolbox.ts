@@ -18,6 +18,8 @@ import {
   JS_GROUPS,
   MATH_BLOCKS,
   OBJECT_BLOCKS,
+  SVG_BLOCKS,
+  SVG_GROUPS,
   VALUE_BLOCKS,
 } from './blocks'
 import type { BlockDefinition } from './blocks/types'
@@ -40,8 +42,11 @@ const EVENT_LISTENER_TYPES: ReadonlySet<string> = new Set([
   'sz_js_event_method',
   'sz_js_on_key',
   'sz_js_on_mousemove',
+  'sz_js_on_pointer_down',
+  'sz_js_on_pointer_up',
   'sz_js_on_load',
   'sz_js_on_resize',
+  'sz_js_on_fullscreen_change',
 ])
 
 // Ordem dos blocos DENTRO da subcategoria ⚡ Eventos (teclado → mouse/clique →
@@ -57,6 +62,8 @@ const EVENTOS_TYPE_ORDER: readonly string[] = [
   'sz_js_on_click_anywhere',
   'sz_js_on_mouseover',
   'sz_js_on_mousemove',
+  'sz_js_on_pointer_down',
+  'sz_js_on_pointer_up',
   'sz_val_event_pos',
   // 📝 Formulário
   'sz_js_on_input',
@@ -64,6 +71,7 @@ const EVENTOS_TYPE_ORDER: readonly string[] = [
   // 🪟 Página / janela
   'sz_js_on_load',
   'sz_js_on_resize',
+  'sz_js_on_fullscreen_change',
   // ⏱️ Tempo
   'sz_js_set_timeout',
   'sz_js_set_interval',
@@ -128,6 +136,7 @@ function toEntries(
 /** Nível default de cada categoria core (sobreposto pelo `level` de cada bloco). */
 const CORE_CATEGORY_LEVELS: Record<string, BlockLevel> = {
   HTML: 'iniciante',
+  SVG: 'iniciante',
   CSS: 'iniciante',
   DOM: 'iniciante',
   JavaScript: 'iniciante',
@@ -205,6 +214,7 @@ export function buildCoreToolbox(
   }
 
   pushGrouped('HTML', CATEGORY_COLORS.html, HTML_BLOCKS, HTML_GROUPS)
+  pushGrouped('SVG', CATEGORY_COLORS.svg, SVG_BLOCKS, SVG_GROUPS)
   pushGrouped('CSS', CATEGORY_COLORS.css, CSS_BLOCKS, CSS_GROUPS)
 
   // ---- "Programação": guarda-chuva que junta a LÓGICA (JavaScript dividido em

@@ -22,6 +22,9 @@ API global injetada como window.SZGame2D:
 - bounceOnEdges(sprite, ctx): quica nas bordas do canvas.
 - circleCollides(a, b): colisão por círculo.
 - playSound(freq, ms): bip sintetizado (Web Audio).
+- playFx("coin"|"jump"|"laser"|"explosion"|"hit"|"hurt"|"powerup"|"levelup"|"win"|"gameover"|"click"|"confirm"|"error"|"coin"|...): efeito sonoro PRONTO por nome (sintetizado, sem arquivo). Veja a lista completa no bloco "Tocar efeito".
+- playNote("C"|"D"|"E"|"F"|"G"|"A"|"B"|"C5", ms): toca uma nota musical (dó ré mi…); junte várias para uma melodia.
+- playMusic("adventure"|"happy"|"tense"|"calm"|"victory") / stopMusic(): música de fundo em loop (só uma por vez). Som só toca DEPOIS de um clique/tecla (exigência do navegador).
 - onPointer((x, y) => {…}): callback a cada clique/toque; pointer = { x, y, down }.
 
 Eventos "Quando…" e perguntas (booleanos) — o modelo Scratch/MakeCode:
@@ -30,6 +33,27 @@ Eventos "Quando…" e perguntas (booleanos) — o modelo Scratch/MakeCode:
   (edge-triggered, num loop interno). Os sprites entram como thunks (() => sprite).
 - keyDown('ArrowRight'): true enquanto a tecla está segurada — use dentro de if/gameLoop.
 - touches(a, b): true enquanto os dois sprites se tocam — use dentro de if.
+
+Tier 1 — mira/contas, vida/tempo, aparência, mundo e pausa (v0.15.0):
+- distance(a, b) / angleTo(a, b): distância (px) e ângulo (graus, 0=cima, horário) entre dois sprites.
+- aimAt(a, b): gira o sprite a para apontar para b. moveToward(a, b, speed): move a em direção a b (px/quadro).
+- randomBetween(min, max): inteiro sorteado (inclusive). randomChance(percent): true em ~percent% das vezes (use em if).
+- setHealth(s, n)/changeHealth(s, delta)/getHealth(s)/hasHealth(s): vida do sprite (delta negativo = dano; não passa de 0 nem do máximo).
+- cooldownReady(s, frames): true no máximo a cada N quadros, POR sprite (cadência de tiro) — use em if.
+- pruneOld(grupo, segundos): tira do grupo quem viveu mais que o tempo (tiros somem sozinhos).
+- flipSprite(s, 'left'|'right') / setOpacity(s, percent) / setSize(s, w, h) / scaleSprite(s, fator): espelhar/transparência/tamanho.
+- wrapEdges(s): dá a volta na tela (sai de um lado, reaparece no outro).
+- pauseGame()/resumeGame()/isPaused(): estado de pausa (embrulhe o movimento em "se não estiver pausado").
+
+Tier 2 — câmera, mapa destrutível, ordem de desenho e depuração (v0.16.0):
+- cameraFollow(s, worldW, worldH): centraliza a câmera no sprite (mundo maior que a tela), preso às bordas.
+  setCamera(x, y) posiciona na mão; cameraX()/cameraY() leem a posição (útil p/ parallax). A câmera rola
+  só o MUNDO (drawSprite/drawGroup/drawTileMap/drawParticles) — desenhe o HUD DEPOIS, que ele fica fixo.
+  ⚠️ onPointer/pointer continuam em coordenadas de TELA; com câmera, mundo = tela + câmera.
+- breakTileAtSprite(map, s)/setTileAtSprite(map, index, s)/tileAtSprite(map, s): muda/quebra/lê o tile na
+  célula onde está o sprite (mineração, terreno destrutível, construir).
+- bringToFront(grupo, s)/sendToBack(grupo, s): muda a ordem de desenho do sprite dentro do grupo.
+- drawHitbox(s): contorno da área de colisão (depurar). showFps(x, y): contador de quadros por segundo.
 
 Imagens e animação (v0.3.0) — as imagens vivem como ASSETS do projeto (aba Assets);
 nos blocos/código você usa o NOME do asset (string):
@@ -135,6 +159,16 @@ KIT GORILAS (v0.11.0) — categoria "🦍 Kit gorilas" com atalhos PRONTOS para 
 - playWhistle()/playBoom(): assobio de banana caindo e explosão (sintetizados). Existe o exemplo pronto "Guerra de Gorilas" mostrando tudo junto.
 - computerTurn(thrower, city, enemy): vez do ROBÔ (IA). Use no gameLoop, na vez dele. Simula vários arremessos (mesma física da banana, sem ctx), escolhe o melhor mira no inimigo, "pensa" ~0,8s e joga sozinho. Respeita _banana (um tiro por vez). Para 1-jogador-vs-computador troque o ramo de um gorila por este bloco; para autoplay, os dois. Veja "Guerra de Gorilas vs Robô".
 - drawAimReadout(ctx): desenha "angulo X / forca Y" no canto (lê _aim) — útil para ver a escolha do robô.
+
+KIT EQUILIBRISTA (v0.13.0) — categoria "🤸 Kit equilibrista" com atalhos PRONTOS para um jogo estilo "Stick Hero" (estica o bastão e atravessa). O estado pesado (herói, plataformas, bastões, fase) mora no runtime; a criança só guarda o jogo numa variável. Controle pelo PONTEIRO global (segurar = esticar, soltar = derrubar) — NÃO precisa registrar listeners. Canvas em pé (ex.: 360×480).
+- createStickHero(ctx): monta o jogo (herói, plataformas, colinas, árvores) lendo o tamanho do canvas. Guarde numa variável (ex.: jogo). Faça UMA vez, fora do "a cada quadro".
+- updateStickHero(jogo): um passo do jogo + desenha tudo (placar e dicas inclusos). Use DENTRO do "a cada quadro". Acerto no meio (faixa vermelha) vale 2 pontos. Recomeça sozinho ao tocar depois de cair.
+- stickHeroScore(jogo): valor — pontos. stickHeroOver(jogo): valor (booleano) — caiu? restartStickHero(jogo): zera o jogo (bom para um botão). Exemplo pronto "Equilibrista".
+
+KIT BALÃO (v0.13.0) — categoria "🎈 Kit balão" com atalhos PRONTOS para um jogo estilo "Hot-Air-Balloon" (sobe segurando, economiza combustível, desvia das árvores). Estado no runtime; a criança guarda o jogo numa variável. Segurar o ponteiro = aquecer/subir (gasta combustível); voar baixo economiza. Canvas deitado (ex.: 560×360).
+- createBalloon(ctx): monta o jogo (céu, colinas, árvores, combustível) lendo o tamanho do canvas. Guarde numa variável. Faça UMA vez.
+- updateBalloon(jogo): um passo do jogo + desenha tudo (medidor de combustível, metros e dicas). Use DENTRO do "a cada quadro". Recomeça ao tocar depois do fim.
+- balloonScore(jogo): valor — metros voados. balloonFuel(jogo): valor — combustível 0..100. balloonOver(jogo): valor (booleano) — bateu numa árvore ou acabou o combustível? restartBalloon(jogo): zera o jogo. Exemplo pronto "Balão".
 
 CANVAS NA MÃO (genérico) — novos blocos de ✏️ Traçado úteis para crateras/máscaras: ctx.rect(x,y,w,h) adiciona um retângulo ao traçado; ctx.clip() recorta o desenho pelo traçado atual; ctx.isPointInPath(x,y)/ctx.isPointInStroke(x,y) são perguntas (o ponto está dentro/na linha do traçado?). Para "furar" um buraco: traçado com o retângulo da tela inteira + um arco no sentido anti-horário, depois clip. Há também os eventos "apertar o mouse"/"soltar o mouse" (mousedown/mouseup) na programação normal, para mira por arrastar.
 `

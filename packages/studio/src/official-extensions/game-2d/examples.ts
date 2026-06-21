@@ -1604,3 +1604,81 @@ export const asteroidsClassicExample: ExtensionExample = {
     extensions: [{ extensionId: 'game-2d' }],
   },
 }
+
+/**
+ * Exemplo bundlado: "Equilibrista" (estilo Stick Hero). Crie o jogo uma vez e
+ * atualize-o a cada quadro — segure o mouse/dedo para esticar o bastão e solte
+ * para atravessar a próxima plataforma.
+ */
+export const stickHeroExample: ExtensionExample = {
+  name: 'Equilibrista',
+  description:
+    'Estica o bastão segurando o mouse/dedo e atravessa as plataformas (estilo Stick Hero).',
+  ir: {
+    html: [{ type: 'canvas', id: 'tela', width: 360, height: 480 }],
+    css: [
+      {
+        selector: 'body',
+        declarations: {
+          background: '#dff0d0',
+          display: 'flex',
+          'align-items': 'center',
+          'justify-content': 'center',
+          'min-height': '100vh',
+          margin: '0',
+          cursor: 'pointer',
+        },
+      },
+      {
+        selector: 'canvas',
+        declarations: { border: '2px solid #1b2330', 'border-radius': '12px' },
+      },
+    ],
+    js: [
+      { type: 'g2d:createStickHero', varName: 'jogo', ctxVar: 'ctx' },
+      {
+        type: 'g2d:updateEachFrame',
+        body: [{ type: 'g2d:updateStickHero', gameVar: 'jogo' }],
+      },
+    ],
+    extensions: [{ extensionId: 'game-2d' }],
+  },
+}
+
+/**
+ * Exemplo bundlado: "Balão" (estilo Hot-Air-Balloon). Segure o mouse/dedo para
+ * subir (gasta combustível); voe baixo para economizar e desvie das árvores.
+ */
+export const balloonExample: ExtensionExample = {
+  name: 'Balão',
+  description: 'Suba segurando o mouse/dedo, economize combustível e desvie das árvores.',
+  ir: {
+    html: [{ type: 'canvas', id: 'tela', width: 560, height: 360 }],
+    css: [
+      {
+        selector: 'body',
+        declarations: {
+          background: '#cfe8f0',
+          display: 'flex',
+          'align-items': 'center',
+          'justify-content': 'center',
+          'min-height': '100vh',
+          margin: '0',
+          cursor: 'pointer',
+        },
+      },
+      {
+        selector: 'canvas',
+        declarations: { border: '2px solid #1b2330', 'border-radius': '12px' },
+      },
+    ],
+    js: [
+      { type: 'g2d:createBalloon', varName: 'jogo', ctxVar: 'ctx' },
+      {
+        type: 'g2d:updateEachFrame',
+        body: [{ type: 'g2d:updateBalloon', gameVar: 'jogo' }],
+      },
+    ],
+    extensions: [{ extensionId: 'game-2d' }],
+  },
+}

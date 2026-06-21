@@ -227,8 +227,40 @@ export function compileExpr(
       return `SZGame2D.countGroup(${identifiers.get(expr.groupVar)})`
     case 'g2d:spriteAngle':
       return `SZGame2D.spriteAngleDeg(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:distance':
+      return `SZGame2D.distance(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
+    case 'g2d:angleTo':
+      return `SZGame2D.angleTo(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
+    case 'g2d:getHealth':
+      return `SZGame2D.getHealth(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:randomBetween':
+      return `SZGame2D.randomBetween(${expr.min}, ${expr.max})`
+    case 'g2d:randomChance':
+      return `SZGame2D.randomChance(${expr.percent})`
+    case 'g2d:hasHealth':
+      return `SZGame2D.hasHealth(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:cooldownReady':
+      return `SZGame2D.cooldownReady(${identifiers.get(expr.spriteVar)}, ${expr.frames})`
+    case 'g2d:isPaused':
+      return 'SZGame2D.isPaused()'
+    case 'g2d:cameraX':
+      return 'SZGame2D.cameraX()'
+    case 'g2d:cameraY':
+      return 'SZGame2D.cameraY()'
+    case 'g2d:tileAtSprite':
+      return `SZGame2D.tileAtSprite(${identifiers.get(expr.mapVar)}, ${identifiers.get(expr.spriteVar)})`
     case 'g2d:sceneIs':
       return `SZGame2D.sceneIs(${JSON.stringify(expr.name)})`
+    case 'g2d:stickHeroScore':
+      return `SZGame2D.stickHeroScore(${identifiers.get(expr.gameVar)})`
+    case 'g2d:stickHeroOver':
+      return `SZGame2D.stickHeroOver(${identifiers.get(expr.gameVar)})`
+    case 'g2d:balloonScore':
+      return `SZGame2D.balloonScore(${identifiers.get(expr.gameVar)})`
+    case 'g2d:balloonFuel':
+      return `SZGame2D.balloonFuel(${identifiers.get(expr.gameVar)})`
+    case 'g2d:balloonOver':
+      return `SZGame2D.balloonOver(${identifiers.get(expr.gameVar)})`
     case 'g2d:aimReleased':
       return `SZGame2D.aimReleased(${identifiers.get(expr.throwerVar)})`
     case 'g2d:bananaHitThrower':
@@ -295,6 +327,19 @@ export function compileExpr(
           return 'new Date().toLocaleTimeString()'
       }
       return ''
+    case 'dateGet': {
+      const method = {
+        year: 'getFullYear',
+        month: 'getMonth',
+        dayOfMonth: 'getDate',
+        weekday: 'getDay',
+        hours: 'getHours',
+        minutes: 'getMinutes',
+        seconds: 'getSeconds',
+        ms: 'getMilliseconds',
+      }[expr.part]
+      return `new Date().${method}()`
+    }
     case 'global':
       switch (expr.kind) {
         case 'innerWidth':
@@ -307,6 +352,8 @@ export function compileExpr(
       return ''
     case 'systemDark':
       return "window.matchMedia('(prefers-color-scheme: dark)').matches"
+    case 'perfNow':
+      return 'performance.now()'
     case 'canvasDim':
       return `${identifiers.getCanvasElement(expr.ctxVar)}.${expr.dim}`
     case 'canvasMeasureText':
@@ -354,6 +401,8 @@ export function compileExpr(
       return `Math.${expr.fn}(${compileExpr(expr.arg, 0, identifiers, rec)})`
     case 'mathBinary':
       return `Math.${expr.fn}(${compileExpr(expr.a, 0, identifiers, rec)}, ${compileExpr(expr.b, 0, identifiers, rec)})`
+    case 'arrayMap':
+      return `${identifiers.get(expr.arrayVar)}.map((${identifiers.get(expr.itemName)}) => ${compileExpr(expr.transform, 0, identifiers, rec)})`
     case 'distance': {
       if (isPureExpr(expr.a) && isPureExpr(expr.b)) {
         // Operandos sem efeito colateral: forma inline legível (cada operando
@@ -417,6 +466,12 @@ export function compileExpr(
     }
     case 'index':
       return `${identifiers.get(expr.arrayVar)}[${compileExpr(expr.index, 0, identifiers, rec)}]`
+    case 'arrayLast': {
+      const a = identifiers.get(expr.arrayVar)
+      return `${a}[${a}.length - 1]`
+    }
+    case 'arrayFind':
+      return `${identifiers.get(expr.arrayVar)}.find((${identifiers.get(expr.itemName)}) => ${compileExpr(expr.cond, 0, identifiers, rec)})`
     case 'concatArrays':
       return `[${expr.parts.map((p) => `...${compileExpr(p, 0, identifiers, rec)}`).join(', ')}]`
     case 'shuffle':
@@ -491,6 +546,8 @@ function isPureExpr(expr: JSExpr): boolean {
       return isPureExpr(expr.arg)
     case 'mathBinary':
       return isPureExpr(expr.a) && isPureExpr(expr.b)
+    case 'arrayMap':
+      return false
     case 'distance':
       return isPureExpr(expr.a) && isPureExpr(expr.b)
     case 'angleConvert':

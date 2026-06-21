@@ -243,6 +243,21 @@ export function validateStudioActivityAuthoring(activity: LessonActivity): strin
     if (!activity.checks.some((c) => c.kind === 'structure')) {
       return 'Uma atividade com nota de corte precisa de ao menos uma checagem de estrutura (a única à prova de fraude)'
     }
+    // …e o `structure` (recalculado no servidor) precisa de PESO SUFICIENTE: se as
+    // checagens client-trusted (behavior/testcase/code, REPORTADAS pelo cliente e
+    // burláveis) somarem peso bastante p/ bater a nota de corte sozinhas, o aluno
+    // forja `passed` nelas e passa o gate sem o servidor verificar nada. Exige que a
+    // nota MÁXIMA forjável sem estrutura fique ABAIXO da nota de corte (i.e. é
+    // impossível passar sem o `structure` server-side contribuir).
+    const totalWeight = activity.checks.reduce((sum, c) => sum + weightOf(c), 0)
+    const structureWeight = activity.checks
+      .filter((c) => c.kind === 'structure')
+      .reduce((sum, c) => sum + weightOf(c), 0)
+    const maxForgeableScore =
+      totalWeight > 0 ? Math.round(((totalWeight - structureWeight) / totalWeight) * 100) : 0
+    if (maxForgeableScore >= activity.passingScore) {
+      return 'As checagens de estrutura (à prova de fraude) precisam de peso suficiente: hoje a nota é alcançável só com as checagens reportadas pelo cliente (burláveis). Aumente o peso das checagens de estrutura ou reduza a nota de corte.'
+    }
   }
   const ids = new Set<string>()
   for (const check of activity.checks) {

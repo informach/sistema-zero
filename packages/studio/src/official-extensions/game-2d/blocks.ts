@@ -163,6 +163,462 @@ export const gameTwoDBlocks = [
     tooltip:
       'Toca um bip sintetizado (sem precisar de arquivo). Ex.: 440 Hz = lá; agudo = número maior.',
   },
+  {
+    type: 'sz_g2d_play_fx',
+    message0: 'Tocar efeito %1',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'FX',
+        options: [
+          ['moeda', 'coin'],
+          ['joia', 'gem'],
+          ['vida', 'heal'],
+          ['power-up', 'powerup'],
+          ['subir de nível', 'levelup'],
+          ['coletar', 'collect'],
+          ['tiro', 'laser'],
+          ['tiro grande', 'shoot'],
+          ['explosão', 'explosion'],
+          ['batida', 'hit'],
+          ['dano', 'hurt'],
+          ['socar', 'punch'],
+          ['pulo', 'jump'],
+          ['aterrissar', 'land'],
+          ['zunido', 'whoosh'],
+          ['passo', 'step'],
+          ['quicar', 'bounce'],
+          ['assobio', 'whistle'],
+          ['vitória', 'win'],
+          ['derrota', 'gameover'],
+          ['começar', 'start'],
+          ['alarme', 'alarm'],
+          ['clique', 'click'],
+          ['confirmar', 'confirm'],
+          ['erro', 'error'],
+          ['selecionar', 'select'],
+          ['aviso', 'blip'],
+        ],
+      },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Toca um efeito sonoro pronto (sintetizado, sem arquivo). Escolha um no menu.',
+  },
+  {
+    type: 'sz_g2d_play_note',
+    message0: 'Tocar a nota %1 por %2 ms',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'NOTE',
+        options: [
+          ['dó', 'C'],
+          ['ré', 'D'],
+          ['mi', 'E'],
+          ['fá', 'F'],
+          ['sol', 'G'],
+          ['lá', 'A'],
+          ['si', 'B'],
+          ['dó agudo', 'C5'],
+        ],
+      },
+      { type: 'field_number', name: 'MS', value: 300, min: 1 },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Toca uma nota musical (dó, ré, mi…). Junte várias para fazer uma melodia.',
+  },
+  {
+    type: 'sz_g2d_play_music',
+    message0: 'Tocar música de fundo %1',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'MUSIC',
+        options: [
+          ['aventura', 'adventure'],
+          ['alegre', 'happy'],
+          ['tensão', 'tense'],
+          ['calma', 'calm'],
+          ['vitória', 'victory'],
+        ],
+      },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Toca uma musiquinha de fundo em loop (sintetizada). Só uma música toca por vez.',
+  },
+  {
+    type: 'sz_g2d_stop_music',
+    message0: 'Parar a música de fundo',
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Para a música de fundo que estiver tocando.',
+  },
+
+  // ---- Tier 1: Mira e contas ----
+  {
+    type: 'sz_g2d_aim_at',
+    message0: 'Apontar o sprite %1 para o sprite %2',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' },
+      { type: 'field_sprite_picker', name: 'TARGET', text: 'inimigo' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Gira o sprite para ficar de frente para o alvo.',
+  },
+  {
+    type: 'sz_g2d_move_toward',
+    message0: 'Mover o sprite %1 na direção do sprite %2 com velocidade %3',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'inimigo' },
+      { type: 'field_sprite_picker', name: 'TARGET', text: 'jogador' },
+      { type: 'field_number', name: 'SPEED', value: 2, min: 0 },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Faz o sprite perseguir o alvo, andando um pouquinho na direção dele a cada quadro.',
+  },
+  {
+    type: 'sz_g2d_distance',
+    message0: 'a distância entre o sprite %1 e o sprite %2',
+    args0: [
+      { type: 'field_sprite_picker', name: 'A', text: 'jogador' },
+      { type: 'field_sprite_picker', name: 'B', text: 'inimigo' },
+    ],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Quantos pixels separam os dois sprites (pelos centros). Use numa conta ou num "se".',
+  },
+  {
+    type: 'sz_g2d_angle_to',
+    message0: 'o ângulo (em graus) do sprite %1 até o sprite %2',
+    args0: [
+      { type: 'field_sprite_picker', name: 'A', text: 'nave' },
+      { type: 'field_sprite_picker', name: 'B', text: 'inimigo' },
+    ],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'A direção (0 = pra cima, horário) do primeiro sprite até o segundo.',
+  },
+  {
+    type: 'sz_g2d_random_between',
+    message0: 'um número de %1 a %2',
+    args0: [
+      { type: 'field_number', name: 'MIN', value: 1 },
+      { type: 'field_number', name: 'MAX', value: 6 },
+    ],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Sorteia um número inteiro entre os dois valores (incluindo as pontas).',
+  },
+  {
+    type: 'sz_g2d_random_chance',
+    message0: 'tem chance de %1 %?',
+    args0: [{ type: 'field_number', name: 'PERCENT', value: 30, min: 0, max: 100 }],
+    output: 'JSValue',
+    colour: EVENT_C,
+    tooltip:
+      'Verdadeiro com a chance escolhida. Ex.: 30 = acontece em ~30% das vezes. Use num "se".',
+  },
+
+  // ---- Tier 1: Vida e tempo ----
+  {
+    type: 'sz_g2d_set_health',
+    message0: 'Dar %1 de vida ao sprite %2',
+    args0: [
+      { type: 'field_number', name: 'AMOUNT', value: 3, min: 0 },
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Define a vida (e a vida máxima) do sprite.',
+  },
+  {
+    type: 'sz_g2d_change_health',
+    message0: 'Mudar a vida do sprite %1 em %2',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
+      { type: 'field_number', name: 'DELTA', value: -1 },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Soma à vida do sprite (número negativo tira vida). Não passa do máximo nem fica abaixo de 0.',
+  },
+  {
+    type: 'sz_g2d_get_health',
+    message0: 'a vida do sprite %1',
+    args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Quanto de vida o sprite tem agora.',
+  },
+  {
+    type: 'sz_g2d_has_health',
+    message0: 'o sprite %1 ainda tem vida?',
+    args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' }],
+    output: 'JSValue',
+    colour: EVENT_C,
+    tooltip: 'Verdadeiro enquanto a vida do sprite é maior que zero. Use num "se".',
+  },
+  {
+    type: 'sz_g2d_cooldown_ready',
+    message0: 'o sprite %1 pode agir? (recarga de %2 quadros)',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' },
+      { type: 'field_number', name: 'FRAMES', value: 20, min: 1 },
+    ],
+    output: 'JSValue',
+    colour: EVENT_C,
+    tooltip: 'Verdadeiro no máximo a cada N quadros (ótimo para a cadência de tiro). Use num "se".',
+  },
+  {
+    type: 'sz_g2d_prune_old',
+    message0: 'Tirar do grupo %1 quem viveu mais de %2 segundos',
+    args0: [
+      { type: 'field_input', name: 'GROUP', text: 'tiros' },
+      { type: 'field_number', name: 'SECONDS', value: 2, min: 0 },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Remove do grupo os sprites mais velhos que o tempo dado (tiros somem sozinhos).',
+  },
+
+  // ---- Tier 1: Aparência (espelhar, transparência, tamanho) ----
+  {
+    type: 'sz_g2d_flip_sprite',
+    message0: 'Virar o sprite %1 para %2',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
+      {
+        type: 'field_dropdown',
+        name: 'DIR',
+        options: [
+          ['esquerda', 'left'],
+          ['direita', 'right'],
+        ],
+      },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Espelha o desenho do sprite na horizontal (para ele "olhar" para o outro lado).',
+  },
+  {
+    type: 'sz_g2d_set_opacity',
+    message0: 'Mudar a transparência do sprite %1 para %2 %',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
+      { type: 'field_number', name: 'PERCENT', value: 50, min: 0, max: 100 },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: '100% = totalmente visível; 0% = invisível. Bom para fantasmas, fades e piscadas.',
+  },
+  {
+    type: 'sz_g2d_set_size',
+    message0: 'Mudar o tamanho do sprite %1 para largura %2 altura %3',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
+      { type: 'field_number', name: 'W', value: 40, min: 1 },
+      { type: 'field_number', name: 'H', value: 40, min: 1 },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Define a largura e a altura do sprite (a colisão acompanha o novo tamanho).',
+  },
+  {
+    type: 'sz_g2d_scale_sprite',
+    message0: 'Multiplicar o tamanho do sprite %1 por %2',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
+      { type: 'field_number', name: 'FACTOR', value: 1.5, min: 0 },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Cresce (maior que 1) ou encolhe (menor que 1) o sprite a partir do centro.',
+  },
+
+  // ---- Tier 1: Mundo ----
+  {
+    type: 'sz_g2d_wrap_edges',
+    message0: 'Dar a volta na tela com o sprite %1',
+    args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Saiu por um lado da tela, reaparece no lado oposto (estilo Pac-Man/Asteroids).',
+  },
+
+  // ---- Tier 1: Pausa (estado do jogo) ----
+  {
+    type: 'sz_g2d_pause',
+    message0: 'Pausar o jogo',
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Marca o jogo como pausado. Embrulhe o movimento num "se o jogo não está pausado".',
+  },
+  {
+    type: 'sz_g2d_resume',
+    message0: 'Continuar o jogo',
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Tira o jogo da pausa.',
+  },
+  {
+    type: 'sz_g2d_is_paused',
+    message0: 'o jogo está pausado?',
+    output: 'JSValue',
+    colour: EVENT_C,
+    tooltip: 'Verdadeiro quando o jogo está pausado. Use num "se".',
+  },
+
+  // ---- Tier 2: Câmera (rola o mundo; o HUD fica fixo) ----
+  {
+    type: 'sz_g2d_camera_follow',
+    message0: 'Fazer a câmera seguir o sprite %1 (mundo %2 x %3)',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
+      { type: 'field_number', name: 'WORLDW', value: 800, min: 0 },
+      { type: 'field_number', name: 'WORLDH', value: 600, min: 0 },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'A câmera centraliza no sprite (mundo maior que a tela), presa às bordas do mundo. Desenhe o HUD DEPOIS do mundo — ele não se move.',
+  },
+  {
+    type: 'sz_g2d_set_camera',
+    message0: 'Mover a câmera para x %1 y %2',
+    args0: [
+      { type: 'field_number', name: 'X', value: 0 },
+      { type: 'field_number', name: 'Y', value: 0 },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Posiciona a câmera na mão (canto superior esquerdo do que aparece na tela).',
+  },
+  {
+    type: 'sz_g2d_camera_x',
+    message0: 'a posição x da câmera',
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Onde a câmera está no eixo x — útil para fundos em parallax.',
+  },
+  {
+    type: 'sz_g2d_camera_y',
+    message0: 'a posição y da câmera',
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Onde a câmera está no eixo y — útil para fundos em parallax.',
+  },
+
+  // ---- Tier 2: Mapa destrutível (pela posição de um sprite) ----
+  {
+    type: 'sz_g2d_break_tile_at',
+    message0: 'Quebrar o tile do mapa %1 onde está o sprite %2',
+    args0: [
+      { type: 'field_input', name: 'MAP', text: 'mapa' },
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Apaga o tile que está sob o sprite (mineração/destruição). Vira espaço vazio.',
+  },
+  {
+    type: 'sz_g2d_set_tile',
+    message0: 'No mapa %1, pôr o tile número %2 onde está o sprite %3',
+    args0: [
+      { type: 'field_input', name: 'MAP', text: 'mapa' },
+      { type: 'field_number', name: 'INDEX', value: 1, min: 0 },
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Coloca um tile (pelo número do tileset) na célula sob o sprite. Bom para construir.',
+  },
+  {
+    type: 'sz_g2d_tile_at',
+    message0: 'o número do tile do mapa %1 onde está o sprite %2',
+    args0: [
+      { type: 'field_input', name: 'MAP', text: 'mapa' },
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
+    ],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'O número do tile na célula sob o sprite (-1 se estiver vazio). Use num "se" ou numa conta.',
+  },
+
+  // ---- Tier 2: Ordem de desenho dentro de um grupo ----
+  {
+    type: 'sz_g2d_bring_to_front',
+    message0: 'Trazer o sprite %1 para a frente no grupo %2',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
+      { type: 'field_input', name: 'GROUP', text: 'inimigos' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Faz o sprite ser desenhado por ÚLTIMO no grupo (aparece na frente dos outros).',
+  },
+  {
+    type: 'sz_g2d_send_to_back',
+    message0: 'Mandar o sprite %1 para trás no grupo %2',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
+      { type: 'field_input', name: 'GROUP', text: 'inimigos' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Faz o sprite ser desenhado PRIMEIRO no grupo (fica atrás dos outros).',
+  },
+
+  // ---- Tier 2: Depuração ----
+  {
+    type: 'sz_g2d_draw_hitbox',
+    message0: 'Mostrar a caixa de colisão do sprite %1',
+    args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Desenha um contorno rosa na área de colisão do sprite (para depurar colisões).',
+  },
+  {
+    type: 'sz_g2d_show_fps',
+    message0: 'Mostrar os quadros por segundo (FPS) em x %1 y %2',
+    args0: [
+      { type: 'field_number', name: 'X', value: 8 },
+      { type: 'field_number', name: 'Y', value: 20 },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Escreve quantos quadros por segundo o jogo está rodando (para ver a performance).',
+  },
 
   // ---- Mouse / toque ----
   {
@@ -1360,6 +1816,117 @@ export const gameTwoDBlocks = [
     tooltip:
       'Mostra no canto o ângulo (graus) e a força do último arremesso/mira — bom para acompanhar o que o robô escolheu.',
   },
+
+  // ---- Kit equilibrista (Stick Hero) (v0.13.0) ----
+  {
+    type: 'sz_g2d_create_stickhero',
+    message0: 'Criar equilibrista %1 no pincel %2',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'jogo' },
+      { type: 'field_input', name: 'CTX', text: 'ctx' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Monta o jogo do equilibrista (herói, plataformas, colinas e árvores) e guarda numa variável. Faça uma vez, no começo. Depois use "atualizar o equilibrista" dentro do "a cada quadro".',
+  },
+  {
+    type: 'sz_g2d_update_stickhero',
+    message0: 'Atualizar o equilibrista %1',
+    args0: [{ type: 'field_input', name: 'GAME', text: 'jogo' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Faz um passo do jogo e desenha tudo. Segure o mouse/dedo para esticar o bastão, solte para derrubar e atravessar. Use dentro do "a cada quadro".',
+  },
+  {
+    type: 'sz_g2d_stickhero_score',
+    message0: 'pontos do equilibrista %1',
+    args0: [{ type: 'field_input', name: 'GAME', text: 'jogo' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Quantas plataformas o herói já atravessou (acerto perfeito vale 2).',
+  },
+  {
+    type: 'sz_g2d_stickhero_over',
+    message0: 'o equilibrista %1 caiu?',
+    args0: [{ type: 'field_input', name: 'GAME', text: 'jogo' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Verdadeiro quando o herói caiu no buraco (fim de jogo). Use num "se".',
+  },
+  {
+    type: 'sz_g2d_restart_stickhero',
+    message0: 'Recomeçar o equilibrista %1',
+    args0: [{ type: 'field_input', name: 'GAME', text: 'jogo' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Zera o jogo do equilibrista (pontos, plataformas e herói). Bom para um botão "recomeçar".',
+  },
+
+  // ---- Kit balão (Hot-Air-Balloon) (v0.13.0) ----
+  {
+    type: 'sz_g2d_create_balloon',
+    message0: 'Criar balão %1 no pincel %2',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'jogo' },
+      { type: 'field_input', name: 'CTX', text: 'ctx' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Monta o jogo do balão (céu, colinas, árvores e combustível) e guarda numa variável. Faça uma vez. Depois use "atualizar o balão" dentro do "a cada quadro".',
+  },
+  {
+    type: 'sz_g2d_update_balloon',
+    message0: 'Atualizar o balão %1',
+    args0: [{ type: 'field_input', name: 'GAME', text: 'jogo' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Faz um passo do jogo e desenha tudo. Segure o mouse/dedo para subir (gasta combustível); voe baixo para economizar e desvie das árvores. Use dentro do "a cada quadro".',
+  },
+  {
+    type: 'sz_g2d_balloon_score',
+    message0: 'metros do balão %1',
+    args0: [{ type: 'field_input', name: 'GAME', text: 'jogo' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'A distância (em metros) que o balão já voou.',
+  },
+  {
+    type: 'sz_g2d_balloon_fuel',
+    message0: 'combustível do balão %1',
+    args0: [{ type: 'field_input', name: 'GAME', text: 'jogo' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Quanto combustível resta (0 a 100). Use num "se" para avisar quando estiver baixo.',
+  },
+  {
+    type: 'sz_g2d_balloon_over',
+    message0: 'o balão %1 bateu/acabou?',
+    args0: [{ type: 'field_input', name: 'GAME', text: 'jogo' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Verdadeiro quando o balão bateu numa árvore ou ficou sem combustível e pousou (fim de jogo). Use num "se".',
+  },
+  {
+    type: 'sz_g2d_restart_balloon',
+    message0: 'Recomeçar o balão %1',
+    args0: [{ type: 'field_input', name: 'GAME', text: 'jogo' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Zera o jogo do balão (combustível, distância e árvores). Bom para um botão "recomeçar".',
+  },
 ]
 
 /**
@@ -1396,6 +1963,8 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g2d_clear_group',
       'sz_g2d_prune_offscreen',
       'sz_g2d_remove_from_group',
+      'sz_g2d_bring_to_front',
+      'sz_g2d_send_to_back',
     ],
   },
   {
@@ -1418,6 +1987,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g2d_thrust',
       'sz_g2d_apply_friction',
       'sz_g2d_sprite_angle',
+      'sz_g2d_wrap_edges',
     ],
   },
   {
@@ -1440,6 +2010,30 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     types: ['sz_g2d_key_down', 'sz_g2d_touches', 'sz_g2d_collides', 'sz_g2d_circle_collides'],
   },
   {
+    name: '🎯 Mira e contas',
+    colour: '#48b8d0',
+    types: [
+      'sz_g2d_aim_at',
+      'sz_g2d_move_toward',
+      'sz_g2d_angle_to',
+      'sz_g2d_distance',
+      'sz_g2d_random_between',
+      'sz_g2d_random_chance',
+    ],
+  },
+  {
+    name: '❤️ Vida e tempo',
+    colour: '#ff5c8d',
+    types: [
+      'sz_g2d_set_health',
+      'sz_g2d_change_health',
+      'sz_g2d_get_health',
+      'sz_g2d_has_health',
+      'sz_g2d_cooldown_ready',
+      'sz_g2d_prune_old',
+    ],
+  },
+  {
     name: '✨ Aparência',
     colour: '#9966ff',
     types: [
@@ -1450,6 +2044,12 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g2d_shake',
       'sz_g2d_emit_particles',
       'sz_g2d_draw_particles',
+      'sz_g2d_flip_sprite',
+      'sz_g2d_set_opacity',
+      'sz_g2d_set_size',
+      'sz_g2d_scale_sprite',
+      'sz_g2d_draw_hitbox',
+      'sz_g2d_show_fps',
       'sz_g2d_game_over',
     ],
   },
@@ -1458,7 +2058,17 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     colour: '#cf63cf',
     types: ['sz_g2d_load_spritesheet', 'sz_g2d_animate_sprite', 'sz_g2d_draw_frame'],
   },
-  { name: '🔊 Som', colour: '#d65cd6', types: ['sz_g2d_play_sound'] },
+  {
+    name: '🔊 Som',
+    colour: '#d65cd6',
+    types: [
+      'sz_g2d_play_fx',
+      'sz_g2d_play_sound',
+      'sz_g2d_play_note',
+      'sz_g2d_play_music',
+      'sz_g2d_stop_music',
+    ],
+  },
   {
     name: '🏆 Placar e HUD',
     colour: '#ff6680',
@@ -1473,12 +2083,32 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '🎬 Telas e cenas',
     colour: '#1098ad',
-    types: ['sz_g2d_set_scene', 'sz_g2d_scene_is', 'sz_g2d_show_screen', 'sz_g2d_restart'],
+    types: [
+      'sz_g2d_set_scene',
+      'sz_g2d_scene_is',
+      'sz_g2d_show_screen',
+      'sz_g2d_pause',
+      'sz_g2d_resume',
+      'sz_g2d_is_paused',
+      'sz_g2d_restart',
+    ],
   },
   {
     name: '🗺️ Mapa',
     colour: '#59c059',
-    types: ['sz_g2d_create_tilemap', 'sz_g2d_draw_tilemap', 'sz_g2d_tilemap_collide'],
+    types: [
+      'sz_g2d_create_tilemap',
+      'sz_g2d_draw_tilemap',
+      'sz_g2d_tilemap_collide',
+      'sz_g2d_break_tile_at',
+      'sz_g2d_set_tile',
+      'sz_g2d_tile_at',
+    ],
+  },
+  {
+    name: '🎥 Câmera',
+    colour: '#0ea5b7',
+    types: ['sz_g2d_camera_follow', 'sz_g2d_set_camera', 'sz_g2d_camera_x', 'sz_g2d_camera_y'],
   },
   // KITS POR TEMA: blocos prontos e NÃO genéricos, feitos para um tipo de jogo
   // específico (desenhos/efeitos/sons daquele tema). Os blocos genéricos seguem
@@ -1532,6 +2162,29 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g2d_play_boom',
       'sz_g2d_computer_turn',
       'sz_g2d_draw_aim_readout',
+    ],
+  },
+  {
+    name: '🤸 Kit equilibrista',
+    colour: '#0ea5a0',
+    types: [
+      'sz_g2d_create_stickhero',
+      'sz_g2d_update_stickhero',
+      'sz_g2d_stickhero_score',
+      'sz_g2d_stickhero_over',
+      'sz_g2d_restart_stickhero',
+    ],
+  },
+  {
+    name: '🎈 Kit balão',
+    colour: '#d6455d',
+    types: [
+      'sz_g2d_create_balloon',
+      'sz_g2d_update_balloon',
+      'sz_g2d_balloon_score',
+      'sz_g2d_balloon_fuel',
+      'sz_g2d_balloon_over',
+      'sz_g2d_restart_balloon',
     ],
   },
 ]

@@ -162,12 +162,18 @@ describe('Members HTTP — consumo do aluno', () => {
     const res = await get(
       app,
       `/members/courses/${course.slug}/lessons/${course.lessonIds[0]}`,
-      authHeaders('outro-user'),
+      authHeaders('99999999-9999-9999-9999-999999999999'),
     )
     expect(res.status).toBe(403)
     const body = await readJson(res)
     expect(body.error.code).toBe('ACCESS_DENIED')
     expect(body.blocks).toBeUndefined()
+  })
+
+  test('x-auth-user-id malformado (não-uuid) → 400 na borda (não 500 por 22P02)', async () => {
+    const { app } = buildApp()
+    const res = await get(app, '/members/courses', authHeaders('lixo-nao-uuid'))
+    expect(res.status).toBe(400)
   })
 
   test('aula rascunho é invisível ao aluno: some do outline, 404 por URL, progresso conta só publicadas', async () => {

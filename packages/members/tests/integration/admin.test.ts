@@ -357,6 +357,18 @@ describe('Members HTTP — admin: gestão de matrícula', () => {
     expect((await readJson(ok)).expiresAt).toBe('2027-01-01T00:00:00.000Z')
   })
 
+  test('estender com validade no PASSADO → 400 (não no-op silencioso que ainda responde 200)', async () => {
+    const { app, courses } = buildApp() // clock 2026-06-02
+    const course = seedSampleCourse(courses, 'curso-x')
+    const ent = await grantOne(app, course.slug, '2026-07-01T00:00:00.000Z')
+
+    const res = await send(app, `/members/admin/entitlements/${ent.id}`, 'PATCH', {
+      action: 'extend',
+      expiresAt: '2026-01-01T00:00:00.000Z', // passado (clock = 2026-06)
+    })
+    expect(res.status).toBe(400)
+  })
+
   test('id inexistente → 404 ENTITLEMENT_NOT_FOUND', async () => {
     const { app } = buildApp()
     const res = await send(app, `/members/admin/entitlements/${randomUUID()}`, 'PATCH', {

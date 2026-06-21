@@ -44,7 +44,9 @@ export function LeagueBoard({ league }: { league: LeagueMeView }) {
                 {e.position}
               </span>
               {promo ? (
-                <ChevronUp className="size-4 text-(--success)" />
+                // `--success-foreground` (ciano no dark / verde no light): no dark o
+                // `--success` é a cor de FUNDO do badge (quase preta) → seta invisível.
+                <ChevronUp className="size-4 text-(--success-foreground)" />
               ) : releg ? (
                 <ChevronDown className="size-4 text-(--sz-hot)" />
               ) : (

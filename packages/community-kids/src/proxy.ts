@@ -19,6 +19,7 @@ export const proxy = createMemberProxy({
     '/crianca',
     '/clube-dos-criadores',
     '/mural-dos-criadores',
+    '/estudio',
     '/perfis',
   ],
   isRootProtected: true,
@@ -33,8 +34,10 @@ export const config = {
   // proxy copiaria o corpo à toa; todas têm guard próprio (sessão estrita + a MESMA
   // checagem anti-CSRF dentro do `requireUploadSession`). Idem `api/studio/publish`
   // (multipart: print + projeto inteiro) e `api/studio/play/:id` (PÚBLICA: stream do
-  // JSON do projeto — fora do buffer do proxy e sem gate de sessão). `api/studio/describe`
-  // FICA no matcher (JSON pequeno: ganha o anti-CSRF same-origin do proxy).
+  // JSON do projeto — fora do buffer do proxy e sem gate de sessão). O prefixo
+  // `api/studio/publish` no negative-lookahead também isenta `api/studio/publish-standalone`
+  // (o "Compartilhar" do Estúdio Completo, multipart, com `requireUploadSession` próprio).
+  // `api/studio/describe` FICA no matcher (JSON pequeno: ganha o anti-CSRF same-origin do proxy).
   matcher: [
     '/((?!_next/static|_next/image|favicon.ico|api/me/avatar|api/hub/uploads/image|api/hub/showcase|api/studio/publish|api/studio/play|api/profiles/[^/]+/avatar).*)',
   ],

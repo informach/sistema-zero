@@ -113,6 +113,13 @@ export async function watermarkImage(buffer: Buffer, mime: string, email: string
   const frameWidth = meta.width ?? 0
   const frameHeight = meta.pageHeight ?? meta.height ?? 0
   if (!frameWidth || !frameHeight) throw new Error('Imagem sem dimensões')
+  // `limitInputPixels` limita UM frame (width × pageHeight), não o TOTAL de um
+  // animado (× pages): muitos frames sub-50MP somariam um decode enorme na réplica
+  // única. Teto explícito no total → throw, e o attachmentDownload serve o original.
+  const pages = meta.pages ?? 1
+  if (frameWidth * frameHeight * pages > 50_000_000) {
+    throw new Error('Imagem animada grande demais')
+  }
 
   // Fonte proporcional à largura (legível sem dominar a imagem); em imagens
   // estreitas o texto completo não cabe → cai para só o e-mail.

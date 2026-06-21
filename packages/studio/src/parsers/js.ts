@@ -172,6 +172,50 @@ function asRaw(source: string, node: Node): JSStatement {
   return { type: 'rawJS', code: snippet(source, node), advanced: true }
 }
 
+/** `throw new Error(<msg>)` / `throw Error(<msg>)` → throwError; senão código avançado. */
+function mapThrow(node: Node, source: string, ctx: ParseCtx): JSStatement {
+  const arg = node.argument
+  if (
+    arg &&
+    (arg.type === 'NewExpression' || arg.type === 'CallExpression') &&
+    arg.callee?.type === 'Identifier' &&
+    arg.callee.name === 'Error'
+  ) {
+    const msgArg = arg.arguments?.[0]
+    const message: JSExpr | null = msgArg ? toExpr(msgArg, ctx) : { type: 'str', value: '' }
+    if (message && isSimpleValue(message)) return { type: 'throwError', message }
+  }
+  return asRaw(source, node)
+}
+
+/**
+ * `switch (subject) { case <match>: … break; … default: … }` → bloco "escolha".
+ * Desembrulha o `{ … }` de cada caso e remove o `break` final (que o gerador
+ * recria). Casos com valor/assunto não representável caem em código avançado.
+ */
+function mapSwitch(node: Node, source: string, ctx: ParseCtx): JSStatement {
+  const subject = toExpr(node.discriminant, ctx)
+  if (!isSimpleValue(subject)) return asRaw(source, node)
+  const cases: Array<{ match: JSExpr; body: JSStatement[] }> = []
+  let def: JSStatement[] | undefined
+  for (const sc of node.cases ?? []) {
+    let stmts: Node[] = sc.consequent ?? []
+    if (stmts.length === 1 && stmts[0]?.type === 'BlockStatement') stmts = stmts[0].body ?? []
+    if (stmts.length > 0 && stmts[stmts.length - 1]?.type === 'BreakStatement') {
+      stmts = stmts.slice(0, -1)
+    }
+    const body = mapStatementList(stmts, source, ctx)
+    if (sc.test === null || sc.test === undefined) {
+      def = body
+    } else {
+      const match = toExpr(sc.test, ctx)
+      if (!isSimpleValue(match)) return asRaw(source, node)
+      cases.push({ match, body })
+    }
+  }
+  return { type: 'switch', subject, cases, ...(def !== undefined ? { default: def } : {}) }
+}
+
 function mapStatement(
   node: Node,
   source: string,
@@ -184,6 +228,10 @@ function mapStatement(
       return mapExpressionStatement(node, source, ctx)
     case 'IfStatement':
       return mapIf(node, source, ctx)
+    case 'ThrowStatement':
+      return mapThrow(node, source, ctx)
+    case 'SwitchStatement':
+      return mapSwitch(node, source, ctx)
     case 'ForStatement':
       return mapFor(node, source, ctx)
     case 'ForOfStatement':
@@ -596,6 +644,12 @@ function mapDeclarator(decl: Node, node: Node, ctx: ParseCtx): JSStatement[] | n
     ctx.elementVars.set(name, name)
     return [{ type: 'createElement', tag: createdTag, varName: name }]
   }
+  // createElementNS (forma SVG): const x = document.createElementNS(<ns>, 'circle')
+  const createdNSTag = matchCreateElementNS(init)
+  if (createdNSTag !== null) {
+    ctx.elementVars.set(name, name)
+    return [{ type: 'createElementNS', tag: createdNSTag, varName: name }]
+  }
   // canvasSetup: const ctx = <canvasVar>.getContext('2d'), onde <canvasVar>
   // veio de um getElementById anterior. Funde o par numa única IR canvasSetup.
   const canvasVar = matchGetContext(init)
@@ -613,6 +667,11 @@ function mapDeclarator(decl: Node, node: Node, ctx: ParseCtx): JSStatement[] | n
   const prop = matchGetProperty(init, ctx)
   if (prop) {
     return [{ type: 'getProperty', ...prop, varName: name }]
+  }
+  // getAttribute: const v = el.getAttribute('cx')
+  const attr = matchGetAttribute(init, ctx)
+  if (attr) {
+    return [{ type: 'getAttribute', ...attr, varName: name }]
   }
   // newInstance: const x = new Classe(args). Date/Image têm tratamento próprio.
   if (
@@ -765,6 +824,13 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
         const a = expr.right.value as string
         if (a === 'left' || a === 'center' || a === 'right') {
           return { type: 'canvasTextAlign', ctxVar, align: a }
+        }
+        return asRaw(source, node)
+      }
+      if (prop === 'textBaseline' && expr.right?.type === 'StringLiteral') {
+        const b = expr.right.value as string
+        if (b === 'top' || b === 'middle' || b === 'bottom' || b === 'alphabetic') {
+          return { type: 'canvasTextBaseline', ctxVar, baseline: b }
         }
         return asRaw(source, node)
       }
@@ -943,6 +1009,24 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
   const append = tryMatchAppendChild(expr, ctx)
   if (append) return append
 
+  // Object.assign(destino, origem)
+  if (
+    expr?.type === 'CallExpression' &&
+    expr.callee?.type === 'MemberExpression' &&
+    !expr.callee.computed &&
+    expr.callee.object?.name === 'Object' &&
+    expr.callee.property?.name === 'assign' &&
+    expr.arguments?.length === 2 &&
+    expr.arguments[0].type === 'Identifier' &&
+    expr.arguments[1].type === 'Identifier'
+  ) {
+    return {
+      type: 'objectAssign',
+      targetVar: expr.arguments[0].name,
+      sourceVar: expr.arguments[1].name,
+    }
+  }
+
   // lista.forEach((item, i) => { … })
   const forEach = tryMatchForEach(expr, source, ctx)
   if (forEach) return forEach
@@ -986,6 +1070,16 @@ function matchCreateElement(node: Node): string | null {
   if (callee.object?.name !== 'document' || callee.property?.name !== 'createElement') return null
   if (node.arguments?.length !== 1 || node.arguments[0].type !== 'StringLiteral') return null
   return node.arguments[0].value as string
+}
+
+/** `document.createElementNS(<ns>, 'tag')` → nome da tag (forma SVG); senão `null`. */
+function matchCreateElementNS(node: Node): string | null {
+  if (node?.type !== 'CallExpression') return null
+  const callee = node.callee
+  if (callee?.type !== 'MemberExpression' || callee.computed) return null
+  if (callee.object?.name !== 'document' || callee.property?.name !== 'createElementNS') return null
+  if (node.arguments?.length !== 2 || node.arguments[1].type !== 'StringLiteral') return null
+  return node.arguments[1].value as string
 }
 
 /** `pai.appendChild(filho)` (ambos identificadores) → `appendChild`. */
@@ -1380,8 +1474,68 @@ function matchGame2DExpr(node: Node): JSExpr | null {
     const spriteVar = identifierName(args[0])
     if (spriteVar) return { type: 'g2d:spriteAngle', spriteVar }
   }
+  if (method === 'distance') {
+    const aVar = identifierName(args[0])
+    const bVar = identifierName(args[1])
+    if (aVar && bVar) return { type: 'g2d:distance', aVar, bVar }
+  }
+  if (method === 'angleTo') {
+    const aVar = identifierName(args[0])
+    const bVar = identifierName(args[1])
+    if (aVar && bVar) return { type: 'g2d:angleTo', aVar, bVar }
+  }
+  if (method === 'getHealth') {
+    const spriteVar = identifierName(args[0])
+    if (spriteVar) return { type: 'g2d:getHealth', spriteVar }
+  }
+  if (method === 'randomBetween') {
+    const min = numericLiteralValue(args[0])
+    const max = numericLiteralValue(args[1])
+    if (min !== null && max !== null) return { type: 'g2d:randomBetween', min, max }
+  }
+  if (method === 'randomChance') {
+    const percent = numericLiteralValue(args[0])
+    if (percent !== null) return { type: 'g2d:randomChance', percent }
+  }
+  if (method === 'hasHealth') {
+    const spriteVar = identifierName(args[0])
+    if (spriteVar) return { type: 'g2d:hasHealth', spriteVar }
+  }
+  if (method === 'cooldownReady') {
+    const spriteVar = identifierName(args[0])
+    const frames = numericLiteralValue(args[1])
+    if (spriteVar && frames !== null) return { type: 'g2d:cooldownReady', spriteVar, frames }
+  }
+  if (method === 'isPaused') return { type: 'g2d:isPaused' }
+  if (method === 'cameraX') return { type: 'g2d:cameraX' }
+  if (method === 'cameraY') return { type: 'g2d:cameraY' }
+  if (method === 'tileAtSprite') {
+    const mapVar = identifierName(args[0])
+    const spriteVar = identifierName(args[1])
+    if (mapVar && spriteVar) return { type: 'g2d:tileAtSprite', mapVar, spriteVar }
+  }
   if (method === 'sceneIs' && args[0]?.type === 'StringLiteral') {
     return { type: 'g2d:sceneIs', name: args[0].value as string }
+  }
+  if (method === 'stickHeroScore') {
+    const gameVar = identifierName(args[0])
+    if (gameVar) return { type: 'g2d:stickHeroScore', gameVar }
+  }
+  if (method === 'stickHeroOver') {
+    const gameVar = identifierName(args[0])
+    if (gameVar) return { type: 'g2d:stickHeroOver', gameVar }
+  }
+  if (method === 'balloonScore') {
+    const gameVar = identifierName(args[0])
+    if (gameVar) return { type: 'g2d:balloonScore', gameVar }
+  }
+  if (method === 'balloonFuel') {
+    const gameVar = identifierName(args[0])
+    if (gameVar) return { type: 'g2d:balloonFuel', gameVar }
+  }
+  if (method === 'balloonOver') {
+    const gameVar = identifierName(args[0])
+    if (gameVar) return { type: 'g2d:balloonOver', gameVar }
   }
   if (method === 'aimReleased') {
     const throwerVar = identifierName(args[0])
@@ -1870,6 +2024,123 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       return freq !== null && durationMs !== null
         ? { type: 'g2d:playSound', freq, durationMs }
         : null
+    }
+    case 'playFx': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'g2d:playFx', fx: args[0].value as string }
+    }
+    case 'playMusic': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'g2d:playMusic', tune: args[0].value as string }
+    }
+    case 'stopMusic':
+      return { type: 'g2d:stopMusic' }
+    case 'playNote': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const ms = numericLiteralValue(args[1])
+      return ms !== null ? { type: 'g2d:playNote', note: args[0].value as string, ms } : null
+    }
+    case 'aimAt': {
+      const spriteVar = identifierName(args[0])
+      const targetVar = identifierName(args[1])
+      return spriteVar && targetVar ? { type: 'g2d:aimAt', spriteVar, targetVar } : null
+    }
+    case 'moveToward': {
+      const spriteVar = identifierName(args[0])
+      const targetVar = identifierName(args[1])
+      const speed = numericLiteralValue(args[2])
+      return spriteVar && targetVar && speed !== null
+        ? { type: 'g2d:moveToward', spriteVar, targetVar, speed }
+        : null
+    }
+    case 'setHealth': {
+      const spriteVar = identifierName(args[0])
+      const amount = numericLiteralValue(args[1])
+      return spriteVar && amount !== null ? { type: 'g2d:setHealth', spriteVar, amount } : null
+    }
+    case 'changeHealth': {
+      const spriteVar = identifierName(args[0])
+      const delta = numericLiteralValue(args[1])
+      return spriteVar && delta !== null ? { type: 'g2d:changeHealth', spriteVar, delta } : null
+    }
+    case 'flipSprite': {
+      const spriteVar = identifierName(args[0])
+      if (!spriteVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'g2d:flipSprite', spriteVar, dir: args[1].value as string }
+    }
+    case 'setOpacity': {
+      const spriteVar = identifierName(args[0])
+      const percent = numericLiteralValue(args[1])
+      return spriteVar && percent !== null ? { type: 'g2d:setOpacity', spriteVar, percent } : null
+    }
+    case 'setSize': {
+      const spriteVar = identifierName(args[0])
+      const w = numericLiteralValue(args[1])
+      const h = numericLiteralValue(args[2])
+      return spriteVar && w !== null && h !== null ? { type: 'g2d:setSize', spriteVar, w, h } : null
+    }
+    case 'scaleSprite': {
+      const spriteVar = identifierName(args[0])
+      const factor = numericLiteralValue(args[1])
+      return spriteVar && factor !== null ? { type: 'g2d:scaleSprite', spriteVar, factor } : null
+    }
+    case 'wrapEdges': {
+      const spriteVar = identifierName(args[0])
+      return spriteVar ? { type: 'g2d:wrapEdges', spriteVar } : null
+    }
+    case 'pruneOld': {
+      const groupVar = identifierName(args[0])
+      const seconds = numericLiteralValue(args[1])
+      return groupVar && seconds !== null ? { type: 'g2d:pruneOld', groupVar, seconds } : null
+    }
+    case 'pauseGame':
+      return { type: 'g2d:pauseGame' }
+    case 'resumeGame':
+      return { type: 'g2d:resumeGame' }
+    case 'cameraFollow': {
+      const spriteVar = identifierName(args[0])
+      const worldW = numericLiteralValue(args[1])
+      const worldH = numericLiteralValue(args[2])
+      return spriteVar && worldW !== null && worldH !== null
+        ? { type: 'g2d:cameraFollow', spriteVar, worldW, worldH }
+        : null
+    }
+    case 'setCamera': {
+      const x = numericLiteralValue(args[0])
+      const y = numericLiteralValue(args[1])
+      return x !== null && y !== null ? { type: 'g2d:setCamera', x, y } : null
+    }
+    case 'breakTileAtSprite': {
+      const mapVar = identifierName(args[0])
+      const spriteVar = identifierName(args[1])
+      return mapVar && spriteVar ? { type: 'g2d:breakTile', mapVar, spriteVar } : null
+    }
+    case 'setTileAtSprite': {
+      const mapVar = identifierName(args[0])
+      const index = numericLiteralValue(args[1])
+      const spriteVar = identifierName(args[2])
+      return mapVar && index !== null && spriteVar
+        ? { type: 'g2d:setTile', mapVar, index, spriteVar }
+        : null
+    }
+    case 'bringToFront': {
+      const groupVar = identifierName(args[0])
+      const spriteVar = identifierName(args[1])
+      return groupVar && spriteVar ? { type: 'g2d:bringToFront', spriteVar, groupVar } : null
+    }
+    case 'sendToBack': {
+      const groupVar = identifierName(args[0])
+      const spriteVar = identifierName(args[1])
+      return groupVar && spriteVar ? { type: 'g2d:sendToBack', spriteVar, groupVar } : null
+    }
+    case 'drawHitbox': {
+      const spriteVar = identifierName(args[0])
+      return spriteVar ? { type: 'g2d:drawHitbox', spriteVar } : null
+    }
+    case 'showFps': {
+      const x = numericLiteralValue(args[0])
+      const y = numericLiteralValue(args[1])
+      return x !== null && y !== null ? { type: 'g2d:showFps', x, y } : null
     }
     case 'setImage': {
       // generator: SZGame2D.setImage(sprite, 'nome')
@@ -2407,6 +2678,22 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       const ctxVar = identifierName(args[0])
       return ctxVar ? { type: 'g2d:drawAimReadout', ctxVar } : null
     }
+    case 'updateStickHero': {
+      const gameVar = identifierName(args[0])
+      return gameVar ? { type: 'g2d:updateStickHero', gameVar } : null
+    }
+    case 'restartStickHero': {
+      const gameVar = identifierName(args[0])
+      return gameVar ? { type: 'g2d:restartStickHero', gameVar } : null
+    }
+    case 'updateBalloon': {
+      const gameVar = identifierName(args[0])
+      return gameVar ? { type: 'g2d:updateBalloon', gameVar } : null
+    }
+    case 'restartBalloon': {
+      const gameVar = identifierName(args[0])
+      return gameVar ? { type: 'g2d:restartBalloon', gameVar } : null
+    }
     case 'overlapSpriteGroup': {
       // generator: SZGame2D.overlapSpriteGroup(() => sprite, grupo, function (item) {…})
       const spriteVar = arrowReturnIdentifier(args[0])
@@ -2483,6 +2770,16 @@ function tryMatchGame2DVarInit(name: string, init: Node, ctx: ParseCtx): JSState
     if (!o) return null
     ctx.spriteVars.add(name)
     return { type: 'g2d:createDino', varName: name, x: o.x, y: o.y, size: o.size, color: o.color }
+  }
+  if (method === 'createStickHero') {
+    // generator: const jogo = SZGame2D.createStickHero(ctx)
+    const ctxVar = identifierName(args[0]) ?? 'ctx'
+    return { type: 'g2d:createStickHero', varName: name, ctxVar }
+  }
+  if (method === 'createBalloon') {
+    // generator: const jogo = SZGame2D.createBalloon(ctx)
+    const ctxVar = identifierName(args[0]) ?? 'ctx'
+    return { type: 'g2d:createBalloon', varName: name, ctxVar }
   }
   if (method === 'createCity') {
     // generator: const cidade = SZGame2D.createCity()
@@ -2598,6 +2895,32 @@ function readBoxOptions(obj: Node): { size: number; color: string } | null {
       const v = numericLiteralValue(prop.value)
       if (v === null) return null
       result.size = v
+    } else if (key === 'color') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      result.color = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return result
+}
+
+/** Lê `{ <numKeys>, color }` (genérico) de um literal de objeto, p/ as formas da Fase 6. */
+function readShapeOpts(obj: Node, numKeys: string[]): Record<string, number | string> | null {
+  const result: Record<string, number | string> = { color: '#22d3ee' }
+  for (const k of numKeys) result[k] = 1
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key && numKeys.includes(key)) {
+      const v = numericLiteralValue(prop.value)
+      if (v === null) return null
+      result[key] = v
     } else if (key === 'color') {
       if (prop.value?.type !== 'StringLiteral') return null
       result.color = prop.value.value as string
@@ -2997,6 +3320,221 @@ function tryMatchGame3DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       if (!objVar) return null
       return { type: 'g3d:faceVelocity', objVar }
     }
+    case 'body': {
+      const objVar = identifierName(args[0])
+      const gravity = numericLiteralValue(args[1])
+      if (!objVar || gravity === null) return null
+      return { type: 'g3d:body', objVar, gravity }
+    }
+    case 'stepBody': {
+      const objVar = identifierName(args[0])
+      const worldVar = identifierName(args[1])
+      if (!objVar || !worldVar) return null
+      return { type: 'g3d:stepBody', objVar, worldVar }
+    }
+    case 'setSolid': {
+      const objVar = identifierName(args[0])
+      if (!objVar) return null
+      return { type: 'g3d:setSolid', objVar }
+    }
+    case 'platformerControls': {
+      const objVar = identifierName(args[0])
+      const worldVar = identifierName(args[1])
+      const speed = numericLiteralValue(args[2])
+      const jump = numericLiteralValue(args[3])
+      if (!objVar || !worldVar || speed === null || jump === null) return null
+      return { type: 'g3d:platformerControls', objVar, worldVar, speed, jump }
+    }
+    case 'fpsControls': {
+      const objVar = identifierName(args[0])
+      const worldVar = identifierName(args[1])
+      const speed = numericLiteralValue(args[2])
+      if (!objVar || !worldVar || speed === null) return null
+      return { type: 'g3d:fpsControls', objVar, worldVar, speed }
+    }
+    case 'resolveCollision': {
+      const aVar = identifierName(args[0])
+      const bVar = identifierName(args[1])
+      if (!aVar || !bVar) return null
+      return { type: 'g3d:resolveCollision', aVar, bVar }
+    }
+    case 'fpsCamera': {
+      const worldVar = identifierName(args[0])
+      const objVar = identifierName(args[1])
+      if (!worldVar || !objVar) return null
+      return { type: 'g3d:fpsCamera', worldVar, objVar }
+    }
+    case 'orbitCamera': {
+      const worldVar = identifierName(args[0])
+      const objVar = identifierName(args[1])
+      if (!worldVar || !objVar) return null
+      return { type: 'g3d:orbitCamera', worldVar, objVar }
+    }
+    case 'thirdPersonCamera': {
+      const worldVar = identifierName(args[0])
+      const objVar = identifierName(args[1])
+      const dist = numericLiteralValue(args[2])
+      const height = numericLiteralValue(args[3])
+      if (!worldVar || !objVar || dist === null || height === null) return null
+      return { type: 'g3d:thirdPersonCamera', worldVar, objVar, dist, height }
+    }
+    case 'cameraLookAt': {
+      const worldVar = identifierName(args[0])
+      const objVar = identifierName(args[1])
+      if (!worldVar || !objVar) return null
+      return { type: 'g3d:cameraLookAt', worldVar, objVar }
+    }
+    case 'setFOV': {
+      const worldVar = identifierName(args[0])
+      const deg = numericLiteralValue(args[1])
+      if (!worldVar || deg === null) return null
+      return { type: 'g3d:setFOV', worldVar, deg }
+    }
+    case 'setColor': {
+      const objVar = identifierName(args[0])
+      if (!objVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'g3d:setColor', objVar, color: args[1].value as string }
+    }
+    case 'setOpacity': {
+      const objVar = identifierName(args[0])
+      const opacity = numericLiteralValue(args[1])
+      if (!objVar || opacity === null) return null
+      return { type: 'g3d:setOpacity', objVar, opacity }
+    }
+    case 'setMaterial': {
+      const objVar = identifierName(args[0])
+      if (!objVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'g3d:setMaterial', objVar, kind: args[1].value as string }
+    }
+    case 'setTexture': {
+      const objVar = identifierName(args[0])
+      if (!objVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'g3d:setTexture', objVar, asset: args[1].value as string }
+    }
+    case 'setVisible': {
+      const objVar = identifierName(args[0])
+      if (!objVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'g3d:setVisible', objVar, mode: args[1].value as string }
+    }
+    case 'remove': {
+      const worldVar = identifierName(args[0])
+      const objVar = identifierName(args[1])
+      if (!worldVar || !objVar) return null
+      return { type: 'g3d:removeObject', worldVar, objVar }
+    }
+    case 'addToModel': {
+      const modelVar = identifierName(args[0])
+      const partVar = identifierName(args[1])
+      if (!modelVar || !partVar) return null
+      return { type: 'g3d:addToModel', modelVar, partVar }
+    }
+    case 'addAmbientLight':
+    case 'addSunLight': {
+      const worldVar = identifierName(args[0])
+      const intensity = numericLiteralValue(args[2])
+      if (!worldVar || args[1]?.type !== 'StringLiteral' || intensity === null) return null
+      return {
+        type: method === 'addAmbientLight' ? 'g3d:addAmbientLight' : 'g3d:addSunLight',
+        worldVar,
+        color: args[1].value as string,
+        intensity,
+      }
+    }
+    case 'addPointLight': {
+      const worldVar = identifierName(args[0])
+      const intensity = numericLiteralValue(args[2])
+      const x = numericLiteralValue(args[3])
+      const y = numericLiteralValue(args[4])
+      const z = numericLiteralValue(args[5])
+      if (
+        !worldVar ||
+        args[1]?.type !== 'StringLiteral' ||
+        intensity === null ||
+        x === null ||
+        y === null ||
+        z === null
+      )
+        return null
+      return {
+        type: 'g3d:addPointLight',
+        worldVar,
+        color: args[1].value as string,
+        intensity,
+        x,
+        y,
+        z,
+      }
+    }
+    case 'setFog': {
+      const worldVar = identifierName(args[0])
+      const near = numericLiteralValue(args[2])
+      const far = numericLiteralValue(args[3])
+      if (!worldVar || args[1]?.type !== 'StringLiteral' || near === null || far === null)
+        return null
+      return { type: 'g3d:setFog', worldVar, color: args[1].value as string, near, far }
+    }
+    case 'setSky': {
+      const worldVar = identifierName(args[0])
+      if (!worldVar || args[1]?.type !== 'StringLiteral' || args[2]?.type !== 'StringLiteral')
+        return null
+      return {
+        type: 'g3d:setSky',
+        worldVar,
+        top: args[1].value as string,
+        bottom: args[2].value as string,
+      }
+    }
+    case 'setShadows': {
+      const worldVar = identifierName(args[0])
+      if (!worldVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'g3d:setShadows', worldVar, mode: args[1].value as string }
+    }
+    case 'spawnInSwarm': {
+      const swarmVar = identifierName(args[0])
+      const originalVar = identifierName(args[1])
+      const x = numericLiteralValue(args[2])
+      const y = numericLiteralValue(args[3])
+      const z = numericLiteralValue(args[4])
+      if (!swarmVar || !originalVar || x === null || y === null || z === null) return null
+      return { type: 'g3d:spawnInSwarm', swarmVar, originalVar, x, y, z }
+    }
+    case 'forEachInSwarm': {
+      const swarmVar = identifierName(args[0])
+      const cb = args[1]
+      if (!swarmVar || !isFn(cb)) return null
+      const params = cb.params ?? []
+      if (params.length !== 1 || params[0]?.type !== 'Identifier') return null
+      return {
+        type: 'g3d:forEachInSwarm',
+        swarmVar,
+        itemName: params[0].name as string,
+        body: bodyOfFn(cb, source, ctx),
+      }
+    }
+    case 'removeFromSwarm': {
+      const swarmVar = identifierName(args[0])
+      const itemVar = identifierName(args[1])
+      if (!swarmVar || !itemVar) return null
+      return { type: 'g3d:removeFromSwarm', swarmVar, itemVar }
+    }
+    case 'pruneSwarm': {
+      const swarmVar = identifierName(args[0])
+      const min = numericLiteralValue(args[2])
+      const max = numericLiteralValue(args[3])
+      if (!swarmVar || args[1]?.type !== 'StringLiteral' || min === null || max === null)
+        return null
+      return { type: 'g3d:pruneSwarm', swarmVar, axis: args[1].value as string, min, max }
+    }
+    case 'playNote': {
+      const freq = numericLiteralValue(args[0])
+      const ms = numericLiteralValue(args[1])
+      if (freq === null || ms === null) return null
+      return { type: 'g3d:playNote', freq, ms }
+    }
+    case 'playEffect': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'g3d:playEffect', kind: args[0].value as string }
+    }
     default:
       // createScene/createBox/createSphere/createBlock/createGroup são var-init
       // (tryMatchGame3DVarInit); como chamada solta caem no método genérico.
@@ -3093,6 +3631,58 @@ function tryMatchGame3DVarInit(name: string, init: Node, _ctx: ParseCtx): JSStat
   if (method === 'createStackScene') {
     if (args[0]?.type !== 'StringLiteral') return null
     return { type: 'g3d:createStackScene', canvasId: args[0].value as string, varName: name }
+  }
+  if (method === 'createCylinder' || method === 'createCone') {
+    const worldVar = identifierName(args[0])
+    if (!worldVar || args[1]?.type !== 'ObjectExpression') return null
+    const o = readShapeOpts(args[1], ['radius', 'height'])
+    if (!o) return null
+    return {
+      type: method === 'createCylinder' ? 'g3d:createCylinder' : 'g3d:createCone',
+      varName: name,
+      worldVar,
+      radius: o.radius as number,
+      height: o.height as number,
+      color: o.color as string,
+    }
+  }
+  if (method === 'createPlane') {
+    const worldVar = identifierName(args[0])
+    if (!worldVar || args[1]?.type !== 'ObjectExpression') return null
+    const o = readShapeOpts(args[1], ['width', 'depth'])
+    if (!o) return null
+    return {
+      type: 'g3d:createPlane',
+      varName: name,
+      worldVar,
+      width: o.width as number,
+      depth: o.depth as number,
+      color: o.color as string,
+    }
+  }
+  if (method === 'createTorus') {
+    const worldVar = identifierName(args[0])
+    if (!worldVar || args[1]?.type !== 'ObjectExpression') return null
+    const o = readShapeOpts(args[1], ['radius', 'tube'])
+    if (!o) return null
+    return {
+      type: 'g3d:createTorus',
+      varName: name,
+      worldVar,
+      radius: o.radius as number,
+      tube: o.tube as number,
+      color: o.color as string,
+    }
+  }
+  if (method === 'createModel') {
+    const worldVar = identifierName(args[0])
+    if (!worldVar) return null
+    return { type: 'g3d:createModel', varName: name, worldVar }
+  }
+  if (method === 'createSwarm') {
+    const worldVar = identifierName(args[0])
+    if (!worldVar) return null
+    return { type: 'g3d:createSwarm', varName: name, worldVar }
   }
   return null
 }
@@ -3333,6 +3923,10 @@ function tryMatchCanvasCall(expr: Node, ctx: ParseCtx): JSStatement | null {
       return cp1x && cp1y && cp2x && cp2y && x && y
         ? { type: 'canvasBezierCurve', ctxVar, cp1x, cp1y, cp2x, cp2y, x, y }
         : null
+    }
+    case 'arcTo': {
+      const [x1, y1, x2, y2, r] = mapArgs(args, 5, ctx)
+      return x1 && y1 && x2 && y2 && r ? { type: 'canvasArcTo', ctxVar, x1, y1, x2, y2, r } : null
     }
     case 'strokeText': {
       const [text, x, y] = mapArgs(args, 3, ctx)
@@ -3865,6 +4459,32 @@ function matchGetProperty(
   return { targetId: target.id, ...targetKindField(target), property: propName }
 }
 
+/** `el.getAttribute('nome')` → `{ targetId, targetKind?, name }`. Espelha o `getAttribute`. */
+function matchGetAttribute(
+  node: Node,
+  ctx: ParseCtx,
+): { targetId: string; targetKind?: 'var'; name: string } | null {
+  if (!node || (node.type !== 'CallExpression' && node.type !== 'OptionalCallExpression')) {
+    return null
+  }
+  const callee = node.callee
+  if (
+    (callee?.type !== 'MemberExpression' && callee?.type !== 'OptionalMemberExpression') ||
+    callee.computed
+  ) {
+    return null
+  }
+  if (callee.property?.name !== 'getAttribute') return null
+  if (node.arguments?.length !== 1 || node.arguments[0].type !== 'StringLiteral') return null
+  const target = extractTarget(callee.object, ctx)
+  if (!target) return null
+  return {
+    targetId: target.id,
+    ...targetKindField(target),
+    name: node.arguments[0].value as string,
+  }
+}
+
 /**
  * `if (SZGame2D.everyFrames("chave", N)) { … }` / `everySeconds` → bloco
  * "a cada N quadros/segundos". A chave (literal estável que o gerador cria) é
@@ -4230,6 +4850,25 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
           return { type: 'canvasMeasureText', ctxVar: node.object.callee.object.name, text: mtText }
         }
       }
+      // `arr[arr.length - 1]` → último item da lista (sz_val_array_last). Roda
+      // ANTES do índice genérico, que senão casaria com índice calculado.
+      if (
+        node.computed &&
+        node.object?.type === 'Identifier' &&
+        node.property?.type === 'BinaryExpression' &&
+        node.property.operator === '-' &&
+        node.property.right?.type === 'NumericLiteral' &&
+        node.property.right.value === 1 &&
+        (node.property.left?.type === 'MemberExpression' ||
+          node.property.left?.type === 'OptionalMemberExpression') &&
+        !node.property.left.computed &&
+        node.property.left.object?.type === 'Identifier' &&
+        node.property.left.object.name === node.object.name &&
+        node.property.left.property?.type === 'Identifier' &&
+        node.property.left.property.name === 'length'
+      ) {
+        return { type: 'arrayLast', arrayVar: node.object.name }
+      }
       // `arr[i]` → item da lista por índice (sz_val_array_index).
       if (node.computed && node.object?.type === 'Identifier' && node.property) {
         const idx = toExpr(node.property, ctx)
@@ -4389,6 +5028,58 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
       ) {
         return { type: 'inputKeyPressed', key: node.arguments[0].value as string }
       }
+      // performance.now() → milissegundos desde o carregamento (sz_val_perf_now).
+      if (
+        node.callee?.type === 'MemberExpression' &&
+        !node.callee.computed &&
+        node.callee.object?.type === 'Identifier' &&
+        node.callee.object.name === 'performance' &&
+        node.callee.property?.type === 'Identifier' &&
+        node.callee.property.name === 'now' &&
+        (node.arguments?.length ?? 0) === 0
+      ) {
+        return { type: 'perfNow' }
+      }
+      // <lista>.find((item) => <cond>) → achar na lista (sz_val_array_find).
+      if (
+        node.callee?.type === 'MemberExpression' &&
+        !node.callee.computed &&
+        node.callee.object?.type === 'Identifier' &&
+        node.callee.property?.type === 'Identifier' &&
+        node.callee.property.name === 'find' &&
+        node.arguments?.length === 1 &&
+        node.arguments[0]?.type === 'ArrowFunctionExpression' &&
+        node.arguments[0].params?.length === 1 &&
+        node.arguments[0].params[0]?.type === 'Identifier' &&
+        node.arguments[0].body?.type !== 'BlockStatement'
+      ) {
+        const arrow = node.arguments[0]
+        const itemName = arrow.params[0].name as string
+        const cond = toExpr(arrow.body, ctx)
+        if (isSimpleValue(cond)) {
+          return { type: 'arrayFind', arrayVar: node.callee.object.name, itemName, cond }
+        }
+      }
+      // <lista>.map((item) => <expr>) → transformar lista (sz_val_array_map).
+      if (
+        node.callee?.type === 'MemberExpression' &&
+        !node.callee.computed &&
+        node.callee.object?.type === 'Identifier' &&
+        node.callee.property?.type === 'Identifier' &&
+        node.callee.property.name === 'map' &&
+        node.arguments?.length === 1 &&
+        node.arguments[0]?.type === 'ArrowFunctionExpression' &&
+        node.arguments[0].params?.length === 1 &&
+        node.arguments[0].params[0]?.type === 'Identifier' &&
+        node.arguments[0].body?.type !== 'BlockStatement'
+      ) {
+        const arrow = node.arguments[0]
+        const itemName = arrow.params[0].name as string
+        const transform = toExpr(arrow.body, ctx)
+        if (isSimpleValue(transform)) {
+          return { type: 'arrayMap', arrayVar: node.callee.object.name, itemName, transform }
+        }
+      }
       const now = matchNow(node)
       if (now) return now
       // Math.random() cru → decimal aleatório de 0 a 1 (sz_val_random_float).
@@ -4520,7 +5211,23 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'g2d:touches':
     case 'g2d:countGroup':
     case 'g2d:spriteAngle':
+    case 'g2d:distance':
+    case 'g2d:angleTo':
+    case 'g2d:getHealth':
+    case 'g2d:randomBetween':
+    case 'g2d:randomChance':
+    case 'g2d:hasHealth':
+    case 'g2d:cooldownReady':
+    case 'g2d:isPaused':
+    case 'g2d:cameraX':
+    case 'g2d:cameraY':
+    case 'g2d:tileAtSprite':
     case 'g2d:sceneIs':
+    case 'g2d:stickHeroScore':
+    case 'g2d:stickHeroOver':
+    case 'g2d:balloonScore':
+    case 'g2d:balloonFuel':
+    case 'g2d:balloonOver':
     case 'g2d:aimReleased':
     case 'g2d:bananaHitThrower':
     case 'g2d:bananaHitCity':
@@ -4550,6 +5257,8 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'inputPointer':
     case 'isFullscreen':
     case 'systemDark':
+    case 'perfNow':
+    case 'dateGet':
       return true
     case 'datasetGet':
     case 'classContains':
@@ -4561,6 +5270,12 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
       return expr.parts.every(isSimpleValue)
     case 'index':
       return isSimpleValue(expr.index)
+    case 'arrayLast':
+      return true
+    case 'arrayFind':
+      return isSimpleValue(expr.cond)
+    case 'arrayMap':
+      return isSimpleValue(expr.transform)
     case 'binop':
       // Contas (sz_math_arithmetic) e comparações (sz_val_compare) têm bloco.
       return isSimpleValue(expr.left) && isSimpleValue(expr.right)
@@ -4617,6 +5332,21 @@ function matchNow(node: Node): JSExpr | null {
       return { type: 'now', kind: 'date' }
     case 'toLocaleTimeString':
       return { type: 'now', kind: 'time' }
+    // Partes NUMÉRICAS (sz_val_date_part) — relógio/animações.
+    case 'getMonth':
+      return { type: 'dateGet', part: 'month' }
+    case 'getDate':
+      return { type: 'dateGet', part: 'dayOfMonth' }
+    case 'getDay':
+      return { type: 'dateGet', part: 'weekday' }
+    case 'getHours':
+      return { type: 'dateGet', part: 'hours' }
+    case 'getMinutes':
+      return { type: 'dateGet', part: 'minutes' }
+    case 'getSeconds':
+      return { type: 'dateGet', part: 'seconds' }
+    case 'getMilliseconds':
+      return { type: 'dateGet', part: 'ms' }
     default:
       return null
   }
@@ -4634,6 +5364,7 @@ const MATH_UNARY_FNS = new Set([
   'asin',
   'acos',
   'atan',
+  'sign',
 ])
 const MATH_BINARY_FNS = new Set(['min', 'max', 'atan2', 'hypot'])
 // Operadores binários reconhecidos. `Set` em vez de um array-literal recriado e

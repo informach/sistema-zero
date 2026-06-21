@@ -1,4 +1,5 @@
 import 'server-only'
+import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { expireCookieOptions, prefixedCookieName } from '@/lib/cookies'
@@ -9,10 +10,15 @@ import { getSession } from '@/server/session'
  * (gerir perfis, trocar a senha da conta, ver compras). O risco real: a CRIANÇA
  * entra numa sessão da CONTA (ex.: login por OTP no e-mail dos pais) e, sem este
  * portão, gerenciaria tudo. A prova vive num cookie HttpOnly CURTO (`sz_kids_parent`,
- * valor = id da conta) emitido SÓ após verificar a senha (`/api/parents/verify` na
- * sessão da conta, ou o `/api/profile-session/exit` que já valida a senha ao sair
- * do perfil). As mutações sensíveis exigem este cookie ALÉM da sessão da conta —
- * um clique no DOM não basta, a criança precisaria saber a senha.
+ * um TOKEN ASSINADO `accountId.HMAC`) emitido SÓ após verificar a senha
+ * (`/api/parents/verify` na sessão da conta, ou o `/api/profile-session/exit` que já
+ * valida a senha ao sair do perfil). As mutações sensíveis exigem este cookie ALÉM da
+ * sessão da conta — um clique no DOM não basta, a criança precisaria saber a senha.
+ *
+ * ⚠️ O cookie é ASSINADO (HMAC), não o accountId pelado: o accountId não é segredo
+ * (vai na claim `pfl`, em S2S, em logs), então um valor em texto puro degradaria o
+ * portão para "quem sabe o accountId, abre". Com HMAC sobre um segredo de servidor,
+ * só quem PROVOU a senha emite um token válido, mesmo que o accountId vaze.
  *
  * ⚠️ NÃO confundir com o auto-serviço da criança: numa sessão de PERFIL o
  * `requireParentGate` deixa passar (o auth restringe a edição ao PRÓPRIO perfil;
@@ -24,10 +30,38 @@ const PARENT_COOKIE = prefixedCookieName('sz_kids_parent', PROD)
 /** Janela curta: re-pedir a senha após 15 min de inatividade na gestão. */
 const PARENT_TTL_SECONDS = 15 * 60
 
-/** Emite o cookie do portão (após verificar a senha) — atado ao id da conta. */
+/**
+ * Segredo de assinatura do portão — aleatório POR PROCESSO, em `globalThis` via
+ * `Symbol.for` (réplica única; o Turbopack dá cópias próprias do módulo a
+ * proxy/RSC/handlers, então um `const` de escopo de módulo divergiria entre eles —
+ * mesmo gotcha do estado compartilhado do member-shell). Reiniciar invalida portões
+ * abertos → re-pede a senha (aceitável: TTL é 15 min). Sem env nova.
+ */
+const SECRET_KEY = Symbol.for('sz.kids.parentGate.secret')
+function gateSecret(): Buffer {
+  const g = globalThis as { [SECRET_KEY]?: Buffer }
+  if (!g[SECRET_KEY]) g[SECRET_KEY] = randomBytes(32)
+  return g[SECRET_KEY]
+}
+
+/** Assinatura HMAC-SHA256 do accountId (hex). */
+function sign(accountId: string): string {
+  return createHmac('sha256', gateSecret()).update(accountId).digest('hex')
+}
+
+/** Verifica o token `accountId.HMAC` contra o accountId esperado (timing-safe). */
+function verifyToken(value: string, accountId: string): boolean {
+  const dot = value.lastIndexOf('.')
+  if (dot <= 0 || value.slice(0, dot) !== accountId) return false
+  const sig = Buffer.from(value.slice(dot + 1), 'hex')
+  const expected = Buffer.from(sign(accountId), 'hex')
+  return sig.length === expected.length && timingSafeEqual(sig, expected)
+}
+
+/** Emite o cookie do portão (após verificar a senha) — token assinado p/ a conta. */
 export async function setParentVerified(accountId: string): Promise<void> {
   const store = await cookies()
-  store.set(PARENT_COOKIE, accountId, {
+  store.set(PARENT_COOKIE, `${accountId}.${sign(accountId)}`, {
     httpOnly: true,
     sameSite: 'lax',
     secure: PROD,
@@ -42,16 +76,16 @@ export async function clearParentVerified(): Promise<void> {
   store.set(PARENT_COOKIE, '', expireCookieOptions(PROD))
 }
 
-/** Id da conta verificado no cookie (ou `null`). Leitura pura — vale em RSC. */
-export async function readParentVerified(): Promise<string | null> {
+/** Token bruto do cookie do portão (ou `null`). Leitura pura — vale em RSC. */
+async function readParentToken(): Promise<string | null> {
   const store = await cookies()
   return store.get(PARENT_COOKIE)?.value ?? null
 }
 
-/** `true` quando a sessão da CONTA tem o portão aberto (cookie casa com o id). */
+/** `true` quando a sessão da CONTA tem o portão aberto (token assinado válido p/ o id). */
 export async function isParentVerifiedFor(accountId: string): Promise<boolean> {
-  const verified = await readParentVerified()
-  return verified !== null && verified === accountId
+  const token = await readParentToken()
+  return token !== null && verifyToken(token, accountId)
 }
 
 type RouteHandler<Ctx> = (req: Request, ctx: Ctx) => Promise<Response> | Response

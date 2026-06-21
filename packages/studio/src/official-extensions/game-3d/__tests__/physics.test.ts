@@ -39,6 +39,13 @@ interface World {
   camera: { position: Vec3; lookAt: () => void }
   scene: { children: unknown[] }
   _objects: unknown[]
+  _stack?: {
+    layers: unknown[]
+    overhangs: unknown[]
+    score: number
+    gameOver: boolean
+    moving: { mesh: Obj3D; direction: string } | null
+  }
 }
 type Group = Obj3D[]
 interface API {
@@ -65,6 +72,35 @@ interface API {
   gridStep(o: Obj3D): void
   moveAcross(g: Group, speed: number, min: number, max: number): void
   touchesBox(o: Obj3D, g: Group): boolean
+  moveInCircle(o: Obj3D, radius: number, speed: number): void
+  distanceTo(a: Obj3D, b: Obj3D): number
+  isNear(a: Obj3D, b: Obj3D, dist: number): boolean
+  fall(o: Obj3D): void
+  slideBetween(o: Obj3D, axis: string, min: number, max: number, speed: number): void
+  spin(o: Obj3D, axis: string, speed: number): void
+  createStackScene(id: string): World
+  createStackTower(w: World): void
+  stackDrop(w: World): void
+  stackStep(w: World): void
+  stackReset(w: World): void
+  stackScore(w: World): number
+  stackGameOver(w: World): boolean
+  getPos(o: Obj3D, axis: string): number
+  getRot(o: Obj3D, axis: string): number
+  getScale(o: Obj3D): number
+  setScale(o: Obj3D, factor: number): void
+  dt(w: World): number
+  moveBy(o: Obj3D, dx: number, dy: number, dz: number): void
+  rotateBy(o: Obj3D, axis: string, amount: number): void
+  moveTowards(o: Obj3D, x: number, y: number, z: number, t: number): void
+  animate(w: World, fn: (d: number) => void): void
+  angleTo(a: Obj3D, b: Obj3D): number
+  body(o: Obj3D, gravity: number): void
+  setSolid(o: Obj3D): void
+  stepBody(o: Obj3D, w: World): void
+  platformerControls(o: Obj3D, w: World, speed: number, jump: number): void
+  fpsControls(o: Obj3D, w: World, speed: number): void
+  resolveCollision(a: Obj3D, b: Obj3D): void
 }
 
 function loadRuntime(): { api: API; fire: (name: string, ev: unknown) => void } {
@@ -176,6 +212,35 @@ function loadRuntime(): { api: API; fire: (name: string, ev: unknown) => void } 
           this.max.z >= b.min.z
         )
       }
+    },
+    OrthographicCamera: class {
+      position = new V3(4, 4, 4)
+      up = new V3(0, 1, 0)
+      lookAt() {}
+    },
+    Group: class {
+      position = new V3(0, 0, 0)
+      rotation = new V3(0, 0, 0)
+      scale = new V3(1, 1, 1)
+      children: unknown[] = []
+      add(o: unknown) {
+        this.children.push(o)
+      }
+      remove(o: unknown) {
+        const i = this.children.indexOf(o)
+        if (i !== -1) this.children.splice(i, 1)
+      }
+      traverse(fn: (o: unknown) => void) {
+        fn(this)
+        for (const c of this.children) {
+          const cc = c as { traverse?: (f: (o: unknown) => void) => void }
+          if (cc.traverse) cc.traverse(fn)
+          else fn(c)
+        }
+      }
+    },
+    MeshLambertMaterial: class {
+      dispose() {}
     },
   }
 
@@ -390,3 +455,241 @@ describe('gameThreeDRuntime — grade genérica (gridMove/gridStep/moveAcross/to
     expect(api.touchesBox(p, grupo)).toBe(false)
   })
 })
+
+describe('gameThreeDRuntime — movimento circular e distância (genéricos do Kit Corrida)', () => {
+  it('moveInCircle move o objeto numa circunferência (raio ~constante)', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const p = api.createBox(world, { size: 1 })
+    api.setPosition(p, 0, 0, 0)
+    api.moveInCircle(p, 5, 0.3)
+    const x1 = p.position.x
+    const y1 = p.position.y
+    const r1 = Math.hypot(x1, y1)
+    api.moveInCircle(p, 5, 0.3)
+    const r2 = Math.hypot(p.position.x, p.position.y)
+    expect(r1).toBeGreaterThan(4.5) // ~5
+    expect(Math.abs(r2 - r1)).toBeLessThan(0.01) // raio constante ao girar
+    expect(p.position.x !== x1 || p.position.y !== y1).toBe(true) // andou
+  })
+
+  it('distanceTo e isNear medem a distância no plano', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const a = api.createBox(world, { size: 1 })
+    const b = api.createBox(world, { size: 1 })
+    api.setPosition(a, 0, 0, 0)
+    api.setPosition(b, 3, 4, 0)
+    expect(api.distanceTo(a, b)).toBeCloseTo(5)
+    expect(api.isNear(a, b, 6)).toBe(true)
+    expect(api.isNear(a, b, 4)).toBe(false)
+  })
+})
+
+describe('gameThreeDRuntime — genéricos de movimento (cair, deslizar, girar)', () => {
+  it('fall puxa o objeto para baixo girando (gravidade na mão)', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const p = api.createBox(world, { size: 1 })
+    api.setPosition(p, 0, 10, 0)
+    for (let i = 0; i < 20; i++) api.fall(p)
+    expect(p.position.y).toBeLessThan(10)
+    expect(p.rotation.x !== 0 || p.rotation.z !== 0).toBe(true)
+  })
+
+  it('slideBetween vai e volta sem escapar dos limites', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const p = api.createBox(world, { size: 1 })
+    api.setPosition(p, 0, 0, 0)
+    for (let i = 0; i < 200; i++) api.slideBetween(p, 'x', -3, 3, 0.5)
+    expect(p.position.x).toBeGreaterThanOrEqual(-3)
+    expect(p.position.x).toBeLessThanOrEqual(3)
+    api.setPosition(p, 3, 0, 0)
+    api.slideBetween(p, 'x', -3, 3, 0.5) // no teto, inverte e desce
+    expect(p.position.x).toBeLessThan(3)
+  })
+
+  it('spin gira o objeto continuamente num eixo', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const p = api.createBox(world, { size: 1 })
+    const r0 = p.rotation.y
+    api.spin(p, 'y', 0.1)
+    api.spin(p, 'y', 0.1)
+    expect(p.rotation.y).toBeCloseTo(r0 + 0.2)
+  })
+})
+
+describe('gameThreeDRuntime — Kit Empilhar (corte/encaixe/pontuação)', () => {
+  it('createStackScene + createStackTower montam a base e o bloco que desliza', () => {
+    const { api } = loadRuntime()
+    const world = api.createStackScene('jogo')
+    api.createStackTower(world)
+    expect(world._stack).toBeTruthy()
+    expect(world._stack?.layers.length).toBe(2) // base + 1º bloco
+    expect(world._stack?.moving).toBeTruthy()
+    expect(world._stack?.gameOver).toBe(false)
+  })
+
+  it('stackStep desliza o bloco do topo', () => {
+    const { api } = loadRuntime()
+    const world = api.createStackScene('jogo')
+    api.createStackTower(world)
+    const moving = world._stack?.moving as { mesh: Obj3D; direction: string }
+    const before = moving.mesh.position.x
+    api.stackStep(world)
+    api.stackStep(world)
+    expect(moving.mesh.position.x).toBeGreaterThan(before)
+  })
+
+  it('stackDrop com encaixe corta o bloco e adiciona um andar (pontuação sobe)', () => {
+    const { api } = loadRuntime()
+    const world = api.createStackScene('jogo')
+    api.createStackTower(world)
+    const moving = world._stack?.moving as { mesh: Obj3D; direction: string }
+    moving.mesh.position[moving.direction as 'x'] = 0.5 // quase em cima da base
+    api.stackDrop(world)
+    expect(world._stack?.layers.length).toBe(3) // base + cortado + próximo
+    expect(world._stack?.score).toBe(1)
+    expect(world._stack?.gameOver).toBe(false)
+  })
+
+  it('stackDrop sem encaixe (erro) acaba o jogo', () => {
+    const { api } = loadRuntime()
+    const world = api.createStackScene('jogo')
+    api.createStackTower(world)
+    const moving = world._stack?.moving as { mesh: Obj3D; direction: string }
+    moving.mesh.position[moving.direction as 'x'] = 9 // longe da base
+    api.stackDrop(world)
+    expect(world._stack?.gameOver).toBe(true)
+    expect(api.stackGameOver(world)).toBe(true)
+  })
+
+  it('stackReset limpa e recomeça a torre', () => {
+    const { api } = loadRuntime()
+    const world = api.createStackScene('jogo')
+    api.createStackTower(world)
+    const moving = world._stack?.moving as { mesh: Obj3D; direction: string }
+    moving.mesh.position[moving.direction as 'x'] = 9
+    api.stackDrop(world) // gameOver
+    api.stackReset(world)
+    expect(world._stack?.gameOver).toBe(false)
+    expect(world._stack?.score).toBe(0)
+    expect(world._stack?.layers.length).toBe(2)
+  })
+})
+
+describe('gameThreeDRuntime — ler vetores, mover/girar relativo, suavizar e dt', () => {
+  it('getPos/getRot/getScale leem a transformação do objeto', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const p = api.createBox(world, { size: 1 })
+    api.setPosition(p, 1, 2, 3)
+    expect(api.getPos(p, 'x')).toBe(1)
+    expect(api.getPos(p, 'y')).toBe(2)
+    expect(api.getPos(p, 'z')).toBe(3)
+    p.rotation.set(0.1, 0.2, 0.3)
+    expect(api.getRot(p, 'y')).toBeCloseTo(0.2)
+    api.setScale(p, 2)
+    expect(api.getScale(p)).toBe(2)
+  })
+
+  it('moveBy soma à posição; rotateBy soma ao giro', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const p = api.createBox(world, { size: 1 })
+    api.setPosition(p, 1, 1, 1)
+    api.moveBy(p, 1, 0, -1)
+    expect(p.position.x).toBe(2)
+    expect(p.position.y).toBe(1)
+    expect(p.position.z).toBe(0)
+    api.rotateBy(p, 'y', 0.5)
+    api.rotateBy(p, 'y', 0.5)
+    expect(p.rotation.y).toBeCloseTo(1)
+  })
+
+  it('moveTowards aproxima o objeto do alvo aos poucos (lerp)', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const p = api.createBox(world, { size: 1 })
+    api.setPosition(p, 0, 0, 0)
+    api.moveTowards(p, 10, 0, 0, 0.5)
+    expect(p.position.x).toBeCloseTo(5)
+    api.moveTowards(p, 10, 0, 0, 0.5)
+    expect(p.position.x).toBeCloseTo(7.5)
+  })
+
+  it('dt mede o tempo entre quadros via animate (e é passado ao corpo)', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    let seen = -1
+    api.animate(world, (d) => {
+      seen = d
+    })
+    const loop = (world.renderer as { _loop: (t: number) => void })._loop
+    loop(1000) // 1º quadro: dt 0
+    loop(1016) // ~16 ms depois
+    expect(api.dt(world)).toBeGreaterThan(0)
+    expect(api.dt(world)).toBeLessThan(0.05)
+    expect(seen).toBeCloseTo(0.016, 2)
+  })
+
+  it('angleTo mede o ângulo no plano do chão (X-Z)', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const a = api.createBox(world, { size: 1 })
+    const b = api.createBox(world, { size: 1 })
+    api.setPosition(a, 0, 0, 0)
+    api.setPosition(b, 5, 0, 0) // direto no +x
+    expect(api.angleTo(a, b)).toBeCloseTo(Math.PI / 2) // atan2(5, 0) = PI/2
+    api.setPosition(b, 0, 0, 5) // direto no +z
+    expect(api.angleTo(a, b)).toBeCloseTo(0) // atan2(0, 5) = 0
+  })
+})
+
+describe('gameThreeDRuntime — física avançada (corpo, sólidos, presets)', () => {
+  it('stepBody aplica gravidade e o objeto pousa no sólido', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const chao = api.createBlock(world, { width: 10, height: 1, depth: 10 })
+    api.setPosition(chao, 0, 0, 0) // topo em y = 0.5
+    api.setSolid(chao)
+    const p = api.createBox(world, { size: 1 }) // meia-altura 0.5
+    api.setPosition(p, 0, 5, 0)
+    api.body(p, -0.05)
+    let grounded = false
+    for (let i = 0; i < 600; i++) {
+      api.stepBody(p, world)
+      if (p.userData.sz.grounded) {
+        grounded = true
+        break
+      }
+    }
+    expect(grounded).toBe(true)
+    expect(p.position.y).toBeCloseTo(1, 1) // pousa em topo(0.5) + meia-altura(0.5)
+  })
+
+  it('platformerControls move com o teclado', () => {
+    const { api, fire } = loadRuntime()
+    const world = api.createScene('tela')
+    const p = api.createBox(world, { size: 1 })
+    api.setPosition(p, 0, 0, 0)
+    fire('keydown', { code: 'ArrowRight' })
+    api.platformerControls(p, world, 0.1, 0.2)
+    expect(p.position.x).toBeGreaterThan(0)
+  })
+
+  it('resolveCollision empurra A para fora de B', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const a = api.createBox(world, { size: 1 })
+    const b = api.createBox(world, { size: 1 })
+    api.setPosition(a, 0.3, 0, 0)
+    api.setPosition(b, 0, 0, 0)
+    api.resolveCollision(a, b)
+    expect(Math.abs(a.position.x)).toBeCloseTo(1, 1) // empurrado no eixo de menor penetração
+  })
+})
+// lookAtObject/lookAtPoint/moveForward/faceVelocity usam THREE.lookAt/getWorldDirection
+// (matemática de matriz) — verificados no browser real (o fake de THREE não os reproduz).

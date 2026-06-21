@@ -5,6 +5,18 @@ const C = CATEGORY_COLORS.canvas
 
 export const CANVAS_BLOCKS: BlockDefinition[] = [
   {
+    type: 'sz_html_canvas',
+    message0: 'Criar tela de desenho id %1',
+    args0: [{ type: 'field_input', name: 'ID', text: 'tela' }],
+    message1: 'classe (opcional) %1',
+    args1: [{ type: 'field_input', name: 'CLASS', text: '' }],
+    previousStatement: 'HTMLNode',
+    nextStatement: 'HTMLNode',
+    colour: C,
+    tooltip:
+      'Cria a tela de desenho (canvas) na página. Encaixa na coluna de HTML; depois use "Pegar canvas" para desenhar nela.',
+  },
+  {
     type: 'sz_canvas_setup',
     message0: 'Pegar canvas id %1 e guardar contexto em %2',
     args0: [
@@ -387,6 +399,47 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     colour: C,
     tooltip: 'De que lado o texto fica em relação ao ponto x (esquerda, centro ou direita).',
   },
+  {
+    type: 'sz_canvas_text_baseline',
+    message0: 'Alinhar texto na vertical do pincel %1 %2',
+    args0: [
+      { type: 'field_input', name: 'CTX', text: 'ctx' },
+      {
+        type: 'field_dropdown',
+        name: 'BASELINE',
+        options: [
+          ['no topo', 'top'],
+          ['no meio', 'middle'],
+          ['embaixo', 'bottom'],
+          ['na linha de base (padrão)', 'alphabetic'],
+        ],
+      },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Onde o texto fica em relação ao ponto y (topo, meio, base ou linha de base). Use "no topo" para o texto começar exatamente na altura y.',
+  },
+  {
+    type: 'sz_canvas_arc_to',
+    message0: 'Curva no traçado dobrando em x %1 y %2 até x %3 y %4 raio %5',
+    args0: [
+      { type: 'input_value', name: 'X1', check: 'JSValue' },
+      { type: 'input_value', name: 'Y1', check: 'JSValue' },
+      { type: 'input_value', name: 'X2', check: 'JSValue' },
+      { type: 'input_value', name: 'Y2', check: 'JSValue' },
+      { type: 'input_value', name: 'R', check: 'JSValue' },
+    ],
+    message1: 'no pincel %1',
+    args1: [{ type: 'field_input', name: 'CTX', text: 'ctx' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Liga o ponto atual do traçado a (x até, y até) com um cantinho arredondado de raio dado, dobrando em (x dobra, y dobra). Ótimo para cantos suaves. Vira ctx.arcTo(...).',
+  },
 
   // ---- Formas e traçado extras (subcategorias) ----
   {
@@ -635,7 +688,13 @@ export const CANVAS_GROUPS: { name: string; colour: string; types: string[] }[] 
   {
     name: '🖼️ Tela',
     colour: '#34d399',
-    types: ['sz_canvas_setup', 'sz_canvas_set_size', 'sz_canvas_clear', 'sz_canvas_clear_rect'],
+    types: [
+      'sz_html_canvas',
+      'sz_canvas_setup',
+      'sz_canvas_set_size',
+      'sz_canvas_clear',
+      'sz_canvas_clear_rect',
+    ],
   },
   {
     name: '🎨 Pincel',
@@ -671,6 +730,7 @@ export const CANVAS_GROUPS: { name: string; colour: string; types: string[] }[] 
       'sz_canvas_line_to',
       'sz_canvas_quadratic_curve',
       'sz_canvas_bezier_curve',
+      'sz_canvas_arc_to',
       'sz_canvas_rect',
       'sz_canvas_close_path',
       'sz_canvas_stroke',
@@ -686,6 +746,7 @@ export const CANVAS_GROUPS: { name: string; colour: string; types: string[] }[] 
     types: [
       'sz_canvas_font',
       'sz_canvas_text_align',
+      'sz_canvas_text_baseline',
       'sz_canvas_fill_text',
       'sz_canvas_stroke_text',
       'sz_canvas_measure_text',

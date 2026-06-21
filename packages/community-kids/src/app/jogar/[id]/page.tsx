@@ -7,6 +7,10 @@ export const dynamic = 'force-dynamic'
 export const metadata: Metadata = {
   title: 'Jogar — Sistema Zero',
   description: 'Um projeto criado por uma criança no Sistema Zero. Jogue direto no navegador!',
+  // É a ÚNICA rota anonimamente alcançável (link compartilhado). NÃO indexar: o
+  // jogo de uma criança não deve aparecer em buscadores (descoberta/privacidade —
+  // plataforma infantil). `force-dynamic` garante o header em toda resposta.
+  robots: { index: false, follow: false },
 }
 
 const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/

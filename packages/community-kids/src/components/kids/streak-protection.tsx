@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/cn'
+import { STREAK_FREEZE_PRICE } from '@/lib/gamification-prices'
 
 /**
  * Proteção da sequência (ético/guilt-free): protetores de streak (1 grátis/mês +
@@ -32,7 +33,7 @@ export function StreakProtection({
     try {
       const res = await fetch('/api/members/gamification/streak-freeze/buy', { method: 'POST' })
       if (res.status === 402) {
-        toast.error('Você ainda não tem 80 moedas para o protetor.')
+        toast.error(`Você ainda não tem ${STREAK_FREEZE_PRICE} moedas para o protetor.`)
         return
       }
       if (res.status === 409) {
@@ -45,6 +46,10 @@ export function StreakProtection({
       }
       toast.success('Protetor de sequência comprado! 🛡️')
       router.refresh()
+    } catch {
+      // Falha de rede (offline/DNS/abort) — sem catch viraria unhandled rejection
+      // SEM feedback p/ a criança (todos os outros mutadores já avisam por toast).
+      toast.error('Não consegui agora. Tente de novo!')
     } finally {
       setBusy(false)
     }
@@ -66,6 +71,8 @@ export function StreakProtection({
       toast.success(clear ? 'Férias canceladas.' : 'Modo férias ativado! Bom descanso 🌴')
       setPlanning(false)
       router.refresh()
+    } catch {
+      toast.error('Não consegui agora. Tente de novo!')
     } finally {
       setBusy(false)
     }
@@ -92,7 +99,7 @@ export function StreakProtection({
           disabled={busy}
           className="rounded-full border-2 border-border px-3 py-1.5 font-bold text-sm transition-colors hover:border-primary disabled:opacity-60"
         >
-          Comprar (80 moedas)
+          Comprar ({STREAK_FREEZE_PRICE} moedas)
         </button>
       </div>
 

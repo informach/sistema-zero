@@ -446,6 +446,23 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
       const user = await media.requireUploadSession(req)
       if (user instanceof NextResponse) return user
 
+      // A foto do `/me` é da CONTA (account-only): RECUSA sessão de perfil ANTES de
+      // qualquer escrita no R2. Sem isto a criança (sessão de perfil) gastava um
+      // encode WebP e deixava objeto R2 órfão a cada POST — o auth recusava só o
+      // PATCH de metadado DEPOIS, então `removeStaleAvatars` nunca limpava. Espelha o
+      // authorize-before-write do `profileAvatar`. (A foto do PERFIL vai por outra rota.)
+      if (user.activeProfile) {
+        return NextResponse.json(
+          {
+            error: {
+              code: 'ACCOUNT_SESSION_REQUIRED',
+              message: 'A foto da conta é do responsável.',
+            },
+          },
+          { status: 403 },
+        )
+      }
+
       // ANTES do formData(): o parse materializa o corpo inteiro em memória.
       const oversized = rejectOversizedRequest(req, MAX_IMAGE_BYTES)
       if (oversized) return oversized

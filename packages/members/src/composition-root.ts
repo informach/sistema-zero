@@ -263,6 +263,7 @@ export async function createApplication(env: Env): Promise<Application> {
     members: {
       listMyCourses,
       listCatalog,
+      accessCheck,
       getMyCourse,
       getLesson,
       resolveAttachment,

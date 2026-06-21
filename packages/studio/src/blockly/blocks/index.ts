@@ -10,6 +10,7 @@ import { JS_BLOCKS, JS_GROUPS } from './js'
 import { MATH_BLOCKS } from './math'
 import { OBJECT_BLOCKS } from './objects'
 import { OOP_BLOCKS } from './oop'
+import { SVG_BLOCKS, SVG_GROUPS } from './svg'
 import type { BlockDefinition } from './types'
 import { VALUE_BLOCKS } from './values'
 
@@ -29,11 +30,14 @@ export {
   MATH_BLOCKS,
   OBJECT_BLOCKS,
   OOP_BLOCKS,
+  SVG_BLOCKS,
+  SVG_GROUPS,
   VALUE_BLOCKS,
 }
 
 export const CORE_BLOCKS: BlockDefinition[] = [
   ...HTML_BLOCKS,
+  ...SVG_BLOCKS,
   ...CSS_BLOCKS,
   ...DOM_BLOCKS,
   ...JS_BLOCKS,

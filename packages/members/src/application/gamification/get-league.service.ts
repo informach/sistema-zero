@@ -82,12 +82,20 @@ export class GetLeagueService {
       const dx = (xpByUser.get(b) ?? 0) - (xpByUser.get(a) ?? 0)
       return dx !== 0 ? dx : a.localeCompare(b)
     })
-    const entries = ranked.map((id, i) => ({
-      position: i + 1,
-      weeklyXp: xpByUser.get(id) ?? 0,
-      isMe: id === userId,
-    }))
-    const myPosition = entries.find((e) => e.isMe)?.position ?? entries.length + 1
+    // Posição = COMPETITION ranking ("1224"): empates dividem a mesma posição. PRECISA
+    // casar com o `rankOf` que decide promoção/rebaixamento (ensureTier) — antes o board
+    // mostrava posição DENSA (i+1) e, em semanas com empate, contradizia quem subia/caía.
+    let currentRank = 0
+    let prevXp: number | null = null
+    const entries = ranked.map((id, i) => {
+      const weeklyXp = xpByUser.get(id) ?? 0
+      if (prevXp === null || weeklyXp !== prevXp) {
+        currentRank = i + 1
+        prevXp = weeklyXp
+      }
+      return { position: currentRank, weeklyXp, isMe: id === userId }
+    })
+    const myPosition = entries.find((e) => e.isMe)?.position ?? this.rankOf(userId, xpByUser)
 
     return {
       tier,

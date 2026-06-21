@@ -129,6 +129,7 @@ export function buildApp(
     members: {
       listMyCourses: new ListMyCoursesService(entitlements, courses, progress, positions, clock),
       listCatalog: new ListCatalogService(courses, entitlements, clock),
+      accessCheck: new AccessCheckService(entitlements, clock),
       getMyCourse: new GetMyCourseService(checkAccess, courses, progress, positions, ratings),
       getLesson: new GetLessonService(
         checkAccess,

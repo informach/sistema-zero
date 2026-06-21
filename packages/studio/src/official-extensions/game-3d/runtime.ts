@@ -27,6 +27,11 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   // (nunca lança — setPosition/setRotation já ignoram null) e avisa UMA vez.
   var MAX_OBJECTS = 300;
 
+  // Texturas de imagem (Fase 6): o editor injeta os assets embutidos (data: URL)
+  // em window.__SZGAME_ASSETS (nome -> dataURL). setTexture resolve o nome por aqui.
+  var ASSETS = (typeof window !== 'undefined' && window.__SZGAME_ASSETS) || {};
+  var _texCache = null;
+
   // Estado do teclado (por event.code). Lido por keyDown(...) e controlWithKeys(...).
   var keys = {};
   function onKeyDown(e) {
@@ -157,6 +162,97 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     return addMesh(world, new THREE.BoxGeometry(w, h, d), opts.color, { hw: w / 2, hh: h / 2, hd: d / 2 });
   }
 
+  // ====================================================================
+  // GENÉRICOS Fase 6: formas, materiais, texturas e montar modelo.
+  // ====================================================================
+  function createCylinder(world, opts) {
+    opts = opts || {};
+    var r = typeof opts.radius === 'number' ? opts.radius : 0.5;
+    var h = typeof opts.height === 'number' ? opts.height : 1;
+    return addMesh(world, new THREE.CylinderGeometry(r, r, h, 24), opts.color, { hw: r, hh: h / 2, hd: r });
+  }
+  function createCone(world, opts) {
+    opts = opts || {};
+    var r = typeof opts.radius === 'number' ? opts.radius : 0.5;
+    var h = typeof opts.height === 'number' ? opts.height : 1;
+    return addMesh(world, new THREE.ConeGeometry(r, h, 24), opts.color, { hw: r, hh: h / 2, hd: r });
+  }
+  function createPlane(world, opts) {
+    opts = opts || {};
+    var w = typeof opts.width === 'number' ? opts.width : 10;
+    var d = typeof opts.depth === 'number' ? opts.depth : 10;
+    var mesh = addMesh(world, new THREE.PlaneGeometry(w, d), opts.color, { hw: w / 2, hh: 0.05, hd: d / 2 });
+    // PlaneGeometry nasce em pé (no XY); deita no chão para virar piso.
+    if (mesh && mesh.rotation) mesh.rotation.x = -Math.PI / 2;
+    if (mesh && mesh.material && THREE.DoubleSide) mesh.material.side = THREE.DoubleSide;
+    return mesh;
+  }
+  function createTorus(world, opts) {
+    opts = opts || {};
+    var r = typeof opts.radius === 'number' ? opts.radius : 0.5;
+    var t = typeof opts.tube === 'number' ? opts.tube : 0.2;
+    return addMesh(world, new THREE.TorusGeometry(r, t, 16, 32), opts.color, { hw: r + t, hh: r + t, hd: t });
+  }
+  function createModel(world) {
+    if (!world || !world.scene) return null;
+    var g = new THREE.Group();
+    world.scene.add(g);
+    if (!world._models) world._models = [];
+    world._models.push(g);
+    return g;
+  }
+  function addToModel(model, part) {
+    if (model && model.add && part) model.add(part);
+  }
+  function setColor(obj, color) {
+    if (obj && obj.material && obj.material.color && obj.material.color.set) obj.material.color.set(color);
+  }
+  function setOpacity(obj, a) {
+    if (!obj || !obj.material) return;
+    var v = typeof a === 'number' ? a : 1;
+    obj.material.transparent = v < 1;
+    obj.material.opacity = v;
+  }
+  function setMaterial(obj, kind) {
+    if (!obj || !obj.material) return;
+    var m = obj.material;
+    m.wireframe = false;
+    if ('metalness' in m) m.metalness = 0;
+    if ('roughness' in m) m.roughness = 1;
+    m.transparent = false;
+    m.opacity = 1;
+    if (m.emissive && m.emissive.set) m.emissive.set('#000000');
+    if (kind === 'metal') {
+      if ('metalness' in m) m.metalness = 1;
+      if ('roughness' in m) m.roughness = 0.25;
+    } else if (kind === 'glass') {
+      m.transparent = true;
+      m.opacity = 0.35;
+      if ('roughness' in m) m.roughness = 0;
+    } else if (kind === 'glow') {
+      if (m.emissive && m.color && m.emissive.copy) m.emissive.copy(m.color);
+    } else if (kind === 'wireframe') {
+      m.wireframe = true;
+    }
+    m.needsUpdate = true;
+  }
+  function setTexture(obj, asset) {
+    if (!obj || !obj.material || !THREE.TextureLoader) return;
+    var url = ASSETS[asset] || asset;
+    if (!url) return;
+    if (!_texCache) _texCache = {};
+    var tex = _texCache[url];
+    if (!tex) {
+      tex = new THREE.TextureLoader().load(url);
+      _texCache[url] = tex;
+    }
+    obj.material.map = tex;
+    obj.material.needsUpdate = true;
+  }
+  function setVisible(obj, mode) {
+    if (obj) obj.visible = mode !== 'hide';
+  }
+
   function setPosition(obj, x, y, z) { if (obj && obj.position) obj.position.set(x, y, z); }
   function setRotation(obj, x, y, z) { if (obj && obj.rotation) obj.rotation.set(x, y, z); }
   function setScale(obj, factor) {
@@ -239,11 +335,185 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   /** Remove um objeto da cena, do registro de GPU e descarta geometria/material. */
   function removeObject(world, mesh) {
     if (!world || !mesh) return;
-    if (world.scene) world.scene.remove(mesh);
+    // Tira do pai (a cena, ou o modelo onde foi montado).
+    if (mesh.parent && mesh.parent.remove) mesh.parent.remove(mesh);
+    else if (world.scene) world.scene.remove(mesh);
     if (mesh.geometry && mesh.geometry.dispose) try { mesh.geometry.dispose(); } catch (e) {}
     if (mesh.material && mesh.material.dispose) try { mesh.material.dispose(); } catch (e) {}
     var i = world._objects.indexOf(mesh);
     if (i !== -1) world._objects.splice(i, 1);
+  }
+
+  // ====================================================================
+  // GENÉRICOS Fase 7: luz & céu (atmosfera). Criar UMA vez, fora do animate.
+  // ====================================================================
+  function _trackLight(world, light) {
+    if (!world._lights) world._lights = [];
+    world._lights.push(light);
+    world.scene.add(light);
+    return light;
+  }
+  function addAmbientLight(world, color, intensity) {
+    if (!world || !world.scene || !THREE.AmbientLight) return null;
+    var i = typeof intensity === 'number' ? intensity : 0.6;
+    return _trackLight(world, new THREE.AmbientLight(color || '#ffffff', i));
+  }
+  function addSunLight(world, color, intensity) {
+    if (!world || !world.scene || !THREE.DirectionalLight) return null;
+    var d = new THREE.DirectionalLight(color || '#ffffff', typeof intensity === 'number' ? intensity : 0.9);
+    d.position.set(5, 10, 7);
+    d.castShadow = true;
+    if (d.shadow && d.shadow.camera) {
+      d.shadow.camera.near = 0.5; d.shadow.camera.far = 60;
+      d.shadow.camera.left = -20; d.shadow.camera.right = 20;
+      d.shadow.camera.top = 20; d.shadow.camera.bottom = -20;
+    }
+    return _trackLight(world, d);
+  }
+  function addPointLight(world, color, intensity, x, y, z) {
+    if (!world || !world.scene || !THREE.PointLight) return null;
+    var p = new THREE.PointLight(color || '#ffffff', typeof intensity === 'number' ? intensity : 1, 0);
+    p.position.set(x || 0, y || 0, z || 0);
+    p.castShadow = true;
+    return _trackLight(world, p);
+  }
+  function setFog(world, color, near, far) {
+    if (!world || !world.scene || !THREE.Fog) return;
+    var n = typeof near === 'number' ? near : 1;
+    var f = typeof far === 'number' ? far : 30;
+    world.scene.fog = new THREE.Fog(color || '#9ca3af', n, f);
+  }
+  function setSky(world, top, bottom) {
+    if (!world || !world.scene) return;
+    // Degradê topo->horizonte via canvas 2D (CSP-safe: sem shader/eval).
+    if (typeof document === 'undefined' || !THREE.CanvasTexture) {
+      if (THREE.Color) world.scene.background = new THREE.Color(top || '#1e3a8a');
+      return;
+    }
+    var cv = document.createElement('canvas');
+    cv.width = 2;
+    cv.height = 256;
+    var g = cv.getContext && cv.getContext('2d');
+    if (!g) {
+      if (THREE.Color) world.scene.background = new THREE.Color(top || '#1e3a8a');
+      return;
+    }
+    var grad = g.createLinearGradient(0, 0, 0, 256);
+    grad.addColorStop(0, top || '#1e3a8a');
+    grad.addColorStop(1, bottom || '#93c5fd');
+    g.fillStyle = grad;
+    g.fillRect(0, 0, 2, 256);
+    var old = world.scene.background;
+    if (old && old.isTexture && old.dispose) try { old.dispose(); } catch (e) {}
+    world.scene.background = new THREE.CanvasTexture(cv);
+  }
+  function setShadows(world, on) {
+    if (!world || !world.renderer || !world.renderer.shadowMap) return;
+    world.renderer.shadowMap.enabled = on !== 'off' && on !== false;
+  }
+
+  // ====================================================================
+  // GENÉRICOS Fase 8: enxames (grupos genéricos de cópias) + som.
+  // ====================================================================
+  function createSwarm(world) {
+    var s = { items: [], world: world };
+    if (world) {
+      if (!world._swarms) world._swarms = [];
+      world._swarms.push(s);
+    }
+    return s;
+  }
+  function spawnInSwarm(swarm, original, x, y, z) {
+    if (!swarm || !swarm.items || !original || !original.clone) return null;
+    if (swarm.items.length >= MAX_OBJECTS) return null;
+    var copy = original.clone();
+    // Material PRÓPRIO por cópia: deixa recolorir/sumir uma sem mexer nas outras,
+    // e o dispose de uma cópia não mata o material do original. Geometria é
+    // compartilhada (eficiente) — só o original a descarta.
+    if (original.material && original.material.clone) copy.material = original.material.clone();
+    if (copy.position) copy.position.set(x || 0, y || 0, z || 0);
+    copy.visible = true;
+    // Herda as medidas/física do original p/ a colisão funcionar nas cópias.
+    if (original.userData && original.userData.sz) {
+      var d = original.userData.sz;
+      copy.userData = copy.userData || {};
+      copy.userData.sz = { hw: d.hw, hh: d.hh, hd: d.hd, vx: 0, vy: 0, vz: 0,
+        grounded: false, zAccel: false, gravity: d.gravity };
+    }
+    if (swarm.world && swarm.world.scene) swarm.world.scene.add(copy);
+    swarm.items.push(copy);
+    return copy;
+  }
+  function countSwarm(swarm) {
+    return swarm && swarm.items ? swarm.items.length : 0;
+  }
+  function forEachInSwarm(swarm, fn) {
+    if (!swarm || !swarm.items || typeof fn !== 'function') return;
+    // Iteração REVERSA: chamar removeFromSwarm de dentro não pula ninguém.
+    for (var i = swarm.items.length - 1; i >= 0; i--) fn(swarm.items[i]);
+  }
+  function removeFromSwarm(swarm, item) {
+    if (!swarm || !swarm.items || !item) return;
+    var i = swarm.items.indexOf(item);
+    if (i === -1) return;
+    swarm.items.splice(i, 1);
+    if (item.parent && item.parent.remove) item.parent.remove(item);
+    if (item.material && item.material.dispose) try { item.material.dispose(); } catch (e) {}
+  }
+  function pruneSwarm(swarm, axis, min, max) {
+    if (!swarm || !swarm.items) return;
+    var a = axis === 'x' ? 'x' : axis === 'z' ? 'z' : 'y';
+    for (var i = swarm.items.length - 1; i >= 0; i--) {
+      var it = swarm.items[i];
+      var v = it && it.position ? it.position[a] : 0;
+      if (v < min || v > max) removeFromSwarm(swarm, it);
+    }
+  }
+
+  // Som: síntese por Web Audio (sem arquivos). O contexto só "acorda" depois de
+  // um gesto do usuário (clique/tecla) — por isso resume() a cada toque.
+  var _audio = null;
+  function _ensureAudio() {
+    if (_audio) return _audio;
+    if (typeof window === 'undefined') return null;
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    try { _audio = new AC(); } catch (e) { return null; }
+    return _audio;
+  }
+  function _beep(type, fromHz, toHz, dur, slide) {
+    var ac = _ensureAudio();
+    if (!ac) return;
+    if (ac.state === 'suspended' && ac.resume) try { ac.resume(); } catch (e) {}
+    var osc = ac.createOscillator();
+    var gain = ac.createGain();
+    var t0 = ac.currentTime;
+    osc.type = type;
+    osc.frequency.setValueAtTime(fromHz, t0);
+    if (toHz !== fromHz) {
+      if (slide === 'exp' && osc.frequency.exponentialRampToValueAtTime) {
+        osc.frequency.exponentialRampToValueAtTime(Math.max(1, toHz), t0 + dur);
+      } else if (osc.frequency.linearRampToValueAtTime) {
+        osc.frequency.linearRampToValueAtTime(toHz, t0 + dur);
+      }
+    }
+    gain.gain.setValueAtTime(0.12, t0);
+    if (gain.gain.exponentialRampToValueAtTime) gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    osc.connect(gain);
+    gain.connect(ac.destination);
+    osc.start(t0);
+    osc.stop(t0 + dur);
+  }
+  function playNote(freq, ms) {
+    var f = typeof freq === 'number' && freq > 0 ? freq : 440;
+    var dur = (typeof ms === 'number' && ms > 0 ? ms : 200) / 1000;
+    _beep('square', f, f, dur, 'none');
+  }
+  function playEffect(kind) {
+    if (kind === 'jump') _beep('square', 300, 700, 0.16, 'linear');
+    else if (kind === 'explosion') _beep('sawtooth', 180, 40, 0.4, 'exp');
+    else if (kind === 'hit') _beep('square', 440, 110, 0.12, 'exp');
+    else _beep('square', 880, 1320, 0.18, 'exp'); // coin (padrão)
   }
 
   /**
@@ -296,11 +566,379 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     if (world && world.renderer) world.renderer.setAnimationLoop(null);
   }
 
+  // ---- GENÉRICOS: ler vetores, mover/girar relativo, suavizar, tempo do quadro ----
+  function getPos(obj, axis) {
+    if (!obj || !obj.position) return 0;
+    var a = axis === 'y' ? 'y' : axis === 'z' ? 'z' : 'x';
+    return obj.position[a];
+  }
+  function getRot(obj, axis) {
+    if (!obj || !obj.rotation) return 0;
+    var a = axis === 'y' ? 'y' : axis === 'z' ? 'z' : 'x';
+    return obj.rotation[a];
+  }
+  function getScale(obj) {
+    return obj && obj.scale ? obj.scale.x : 1;
+  }
+  function dt(world) {
+    return world && typeof world._dt === 'number' ? world._dt : 0;
+  }
+  function moveBy(obj, dx, dy, dz) {
+    if (!obj || !obj.position) return;
+    obj.position.x += typeof dx === 'number' ? dx : 0;
+    obj.position.y += typeof dy === 'number' ? dy : 0;
+    obj.position.z += typeof dz === 'number' ? dz : 0;
+  }
+  function rotateBy(obj, axis, amount) {
+    if (!obj || !obj.rotation) return;
+    var a = axis === 'x' ? 'x' : axis === 'z' ? 'z' : 'y';
+    obj.rotation[a] += typeof amount === 'number' ? amount : 0;
+  }
+  function moveTowards(obj, x, y, z, t) {
+    if (!obj || !obj.position) return;
+    var f = typeof t === 'number' ? t : 0.1;
+    if (f < 0) f = 0;
+    if (f > 1) f = 1;
+    if (typeof x === 'number') obj.position.x += (x - obj.position.x) * f;
+    if (typeof y === 'number') obj.position.y += (y - obj.position.y) * f;
+    if (typeof z === 'number') obj.position.z += (z - obj.position.z) * f;
+  }
+  function lookAtObject(a, b) {
+    if (!a || !a.lookAt || !b || !b.position) return;
+    a.lookAt(b.position.x, b.position.y, b.position.z);
+  }
+  function lookAtPoint(obj, x, y, z) {
+    if (!obj || !obj.lookAt) return;
+    obj.lookAt(
+      typeof x === 'number' ? x : 0,
+      typeof y === 'number' ? y : 0,
+      typeof z === 'number' ? z : 0
+    );
+  }
+  function moveForward(obj, dist) {
+    if (!obj || !obj.position || !obj.getWorldDirection) return;
+    var d = typeof dist === 'number' ? dist : 0;
+    var v = new THREE.Vector3();
+    obj.getWorldDirection(v);
+    obj.position.x += v.x * d;
+    obj.position.y += v.y * d;
+    obj.position.z += v.z * d;
+  }
+  function faceVelocity(obj) {
+    if (!obj || !obj.position || !obj.lookAt) return;
+    var s = obj.userData && obj.userData.sz;
+    if (!s) return;
+    if (Math.abs(s.vx) + Math.abs(s.vy) + Math.abs(s.vz) < 1e-6) return;
+    obj.lookAt(obj.position.x + s.vx, obj.position.y + s.vy, obj.position.z + s.vz);
+  }
+  function angleTo(a, b) {
+    if (!a || !b || !a.position || !b.position) return 0;
+    return Math.atan2(b.position.x - a.position.x, b.position.z - a.position.z);
+  }
+
+  // ---- GENÉRICOS: mira & clique (raycast) ----
+  // Lazy: o Raycaster/Vector3 só nascem ao usar (não quebra ambientes sem eles).
+  var _ray, _down, _fwd;
+  function _ensureRay() {
+    if (_ray) return true;
+    if (!THREE.Raycaster || !THREE.Vector3) return false;
+    _ray = new THREE.Raycaster();
+    _down = new THREE.Vector3(0, -1, 0);
+    _fwd = new THREE.Vector3();
+    return true;
+  }
+  function ensurePick(world) {
+    if (!world || world._pickWired) return;
+    world._pickWired = true;
+    world._mouse = { x: 0, y: 0 };
+    var canvas = world._canvas;
+    function upd(e) {
+      var rect = canvas && canvas.getBoundingClientRect
+        ? canvas.getBoundingClientRect()
+        : { left: 0, top: 0, width: window.innerWidth || 1, height: window.innerHeight || 1 };
+      var cx = typeof e.clientX === 'number' ? e.clientX : 0;
+      var cy = typeof e.clientY === 'number' ? e.clientY : 0;
+      world._mouse.x = ((cx - rect.left) / (rect.width || 1)) * 2 - 1;
+      world._mouse.y = -((cy - rect.top) / (rect.height || 1)) * 2 + 1;
+    }
+    window.addEventListener('pointermove', upd);
+    window.addEventListener('pointerdown', upd);
+  }
+  function pickList(world) {
+    return world && world._objects ? world._objects : [];
+  }
+  function _syncMatrices(world) {
+    // Sem o loop de render rodando, matrixWorld fica defasado → o raycast não
+    // acha nada (ou acha na posição antiga). Atualiza antes de mirar.
+    if (world.camera && world.camera.updateMatrixWorld) world.camera.updateMatrixWorld();
+    if (world.scene && world.scene.updateMatrixWorld) world.scene.updateMatrixWorld(true);
+  }
+  function topPick(world, obj) {
+    var o = obj;
+    var set = pickList(world);
+    while (o) {
+      if (set.indexOf(o) !== -1) return o;
+      o = o.parent;
+    }
+    return obj;
+  }
+  function pickAtMouse(world) {
+    if (!world || !world.camera || !_ensureRay()) return null;
+    ensurePick(world);
+    _syncMatrices(world);
+    _ray.setFromCamera(world._mouse, world.camera);
+    var hits = _ray.intersectObjects(pickList(world), true);
+    return hits.length ? topPick(world, hits[0].object) : null;
+  }
+  function pointerOver(world, obj) {
+    var hit = pickAtMouse(world);
+    var o = hit;
+    while (o) { if (o === obj) return true; o = o.parent; }
+    return false;
+  }
+  function aimAhead(world, obj, dist) {
+    if (!world || !obj || !obj.getWorldDirection || !obj.position || !_ensureRay()) return null;
+    var d = typeof dist === 'number' ? dist : 100;
+    _syncMatrices(world);
+    obj.getWorldDirection(_fwd);
+    _ray.set(obj.position, _fwd);
+    _ray.far = d;
+    var hits = _ray.intersectObjects(pickList(world), true);
+    _ray.far = Infinity;
+    for (var i = 0; i < hits.length; i++) {
+      var t = topPick(world, hits[i].object);
+      if (t !== obj) return t;
+    }
+    return null;
+  }
+  function groundHit(world, obj) {
+    if (!world || !obj || !obj.position || !_ensureRay()) return null;
+    _syncMatrices(world);
+    _ray.set(obj.position, _down);
+    var hits = _ray.intersectObjects(pickList(world), true);
+    for (var i = 0; i < hits.length; i++) {
+      if (topPick(world, hits[i].object) !== obj) return hits[i];
+    }
+    return null;
+  }
+  function onGround(world, obj) {
+    var h = groundHit(world, obj);
+    if (!h) return false;
+    var sy = obj.scale ? obj.scale.y : 1;
+    var half = obj.userData && obj.userData.sz ? obj.userData.sz.hh * sy : 0.5;
+    return h.distance <= half + 0.15;
+  }
+  function groundHeight(world, obj) {
+    var h = groundHit(world, obj);
+    return h && h.point ? h.point.y : 0;
+  }
+
+  // ---- GENÉRICOS: física (corpo, sólidos, presets plataforma/FPS) ----
+  function body(obj, gravity) {
+    var s = szData(obj);
+    if (s) s.gravity = typeof gravity === 'number' ? gravity : -0.01;
+  }
+  function setSolid(obj) {
+    if (!obj) return;
+    if (!obj.userData) obj.userData = {};
+    obj.userData._solid = true;
+  }
+  function resolveAABB(obj, solid) {
+    if (!obj || !solid || !obj.position || !solid.position) return;
+    var sa = szData(obj), sb = szData(solid);
+    var ax = halfX(obj, sa), ay = halfY(obj, sa), az = halfZ(obj, sa);
+    var bx = halfX(solid, sb), by = halfY(solid, sb), bz = halfZ(solid, sb);
+    var dx = obj.position.x - solid.position.x;
+    var dy = obj.position.y - solid.position.y;
+    var dz = obj.position.z - solid.position.z;
+    var ox = ax + bx - Math.abs(dx);
+    var oy = ay + by - Math.abs(dy);
+    var oz = az + bz - Math.abs(dz);
+    if (ox <= 0 || oy <= 0 || oz <= 0) return;
+    if (ox <= oy && ox <= oz) {
+      obj.position.x += dx < 0 ? -ox : ox; sa.vx = 0;
+    } else if (oy <= ox && oy <= oz) {
+      obj.position.y += dy < 0 ? -oy : oy;
+      if (dy > 0) sa.grounded = true;
+      sa.vy = 0;
+    } else {
+      obj.position.z += dz < 0 ? -oz : oz; sa.vz = 0;
+    }
+  }
+  function resolveCollision(a, b) {
+    resolveAABB(a, b);
+  }
+  function stepBody(obj, world) {
+    if (!obj || !obj.position || !world) return;
+    var s = szData(obj);
+    s.vy += s.gravity;
+    s.grounded = false;
+    obj.position.x += s.vx;
+    obj.position.y += s.vy;
+    obj.position.z += s.vz;
+    var list = world._objects || [];
+    for (var i = 0; i < list.length; i++) {
+      var o = list[i];
+      if (o !== obj && o.userData && o.userData._solid) resolveAABB(obj, o);
+    }
+  }
+  function platformerControls(obj, world, speed, jump) {
+    if (!obj) return;
+    var s = szData(obj);
+    var sp = typeof speed === 'number' ? speed : 0.08;
+    var jp = typeof jump === 'number' ? jump : 0.18;
+    var mx = 0, mz = 0;
+    if (keys.ArrowLeft || keys.KeyA) mx -= 1;
+    if (keys.ArrowRight || keys.KeyD) mx += 1;
+    if (keys.ArrowUp || keys.KeyW) mz -= 1;
+    if (keys.ArrowDown || keys.KeyS) mz += 1;
+    s.vx = mx * sp;
+    s.vz = mz * sp;
+    if (keys.Space && s.grounded) s.vy = jp;
+    stepBody(obj, world);
+  }
+  function fpsControls(obj, world, speed) {
+    if (!obj || !world) return;
+    var s = szData(obj);
+    var sp = typeof speed === 'number' ? speed : 0.08;
+    var yaw = obj.rotation ? obj.rotation.y : 0;
+    var fx = -Math.sin(yaw), fz = -Math.cos(yaw);
+    var rx = Math.cos(yaw), rz = -Math.sin(yaw);
+    var mf = 0, mr = 0;
+    if (keys.KeyW || keys.ArrowUp) mf += 1;
+    if (keys.KeyS || keys.ArrowDown) mf -= 1;
+    if (keys.KeyD || keys.ArrowRight) mr += 1;
+    if (keys.KeyA || keys.ArrowLeft) mr -= 1;
+    s.vx = (fx * mf + rx * mr) * sp;
+    s.vz = (fz * mf + rz * mr) * sp;
+    if (keys.Space && s.grounded) s.vy = 0.18;
+    stepBody(obj, world);
+  }
+
+  // ---- GENÉRICOS: câmeras vivas (1ª pessoa, orbital, 3ª pessoa, olhar, FOV) ----
+  function fpsCamera(world, obj) {
+    if (!world || !world.camera || !obj) return;
+    var cam = world.camera;
+    if (obj.add) obj.add(cam);
+    if (cam.position) cam.position.set(0, 0.6, 0);
+    if (cam.rotation) cam.rotation.set(0, 0, 0);
+    world._fpsObj = obj;
+    if (world._fpsWired) return;
+    world._fpsWired = true;
+    world._pitch = 0;
+    var canvas = world._canvas;
+    if (canvas && canvas.addEventListener) {
+      canvas.addEventListener('click', function () {
+        if (canvas.requestPointerLock) canvas.requestPointerLock();
+      });
+    }
+    window.addEventListener('mousemove', function (e) {
+      if (!document.pointerLockElement) return;
+      var mx = e.movementX || 0, my = e.movementY || 0;
+      if (world._fpsObj && world._fpsObj.rotation) world._fpsObj.rotation.y -= mx * 0.0025;
+      world._pitch -= my * 0.0025;
+      if (world._pitch > 1.4) world._pitch = 1.4;
+      if (world._pitch < -1.4) world._pitch = -1.4;
+      if (world.camera && world.camera.rotation) world.camera.rotation.x = world._pitch;
+    });
+  }
+  function orbitCamera(world, target) {
+    if (!world || !world.camera) return;
+    world._orbitTarget = target || null;
+    if (!world._orbit) {
+      var st = { az: 0.6, el: 0.5, dist: 12, dragging: false, px: 0, py: 0 };
+      world._orbit = st;
+      var canvas = world._canvas;
+      if (canvas && canvas.addEventListener) {
+        canvas.addEventListener('pointerdown', function (e) {
+          st.dragging = true; st.px = e.clientX || 0; st.py = e.clientY || 0;
+        });
+        canvas.addEventListener('wheel', function (e) {
+          st.dist += e.deltaY > 0 ? 1 : -1;
+          if (st.dist < 2) st.dist = 2;
+          if (st.dist > 80) st.dist = 80;
+        });
+      }
+      window.addEventListener('pointermove', function (e) {
+        if (!st.dragging) return;
+        var cx = e.clientX || 0, cy = e.clientY || 0;
+        st.az -= (cx - st.px) * 0.01;
+        st.el -= (cy - st.py) * 0.01;
+        if (st.el > 1.4) st.el = 1.4;
+        if (st.el < -1.4) st.el = -1.4;
+        st.px = cx; st.py = cy;
+      });
+      window.addEventListener('pointerup', function () { st.dragging = false; });
+    }
+    updateOrbit(world);
+  }
+  function updateOrbit(world) {
+    var st = world._orbit;
+    if (!st || !world.camera || !world.camera.position) return;
+    var t = world._orbitTarget;
+    var tx = t && t.position ? t.position.x : 0;
+    var ty = t && t.position ? t.position.y : 0;
+    var tz = t && t.position ? t.position.z : 0;
+    var ce = Math.cos(st.el), se = Math.sin(st.el);
+    world.camera.position.set(
+      tx + st.dist * ce * Math.sin(st.az),
+      ty + st.dist * se,
+      tz + st.dist * ce * Math.cos(st.az)
+    );
+    if (world.camera.lookAt) world.camera.lookAt(tx, ty, tz);
+  }
+  function thirdPersonCamera(world, obj, dist, height) {
+    if (!world || !world.camera || !obj) return;
+    if (world.scene && world.camera.parent && world.camera.parent !== world.scene) {
+      world.scene.add(world.camera);
+    }
+    world._tpObj = obj;
+    world._tpDist = typeof dist === 'number' ? dist : 6;
+    world._tpHeight = typeof height === 'number' ? height : 3;
+    updateThirdPerson(world);
+  }
+  function updateThirdPerson(world) {
+    var obj = world._tpObj;
+    if (!obj || !obj.position || !world.camera || !world.camera.position) return;
+    var yaw = obj.rotation ? obj.rotation.y : 0;
+    var fx = -Math.sin(yaw), fz = -Math.cos(yaw);
+    world.camera.position.set(
+      obj.position.x - fx * world._tpDist,
+      obj.position.y + world._tpHeight,
+      obj.position.z - fz * world._tpDist
+    );
+    if (world.camera.lookAt) world.camera.lookAt(obj.position.x, obj.position.y + 1, obj.position.z);
+  }
+  function cameraLookAt(world, obj) {
+    if (!world || !world.camera || !obj || !obj.position) return;
+    if (world.camera.lookAt) world.camera.lookAt(obj.position.x, obj.position.y, obj.position.z);
+  }
+  function setFOV(world, deg) {
+    if (!world || !world.camera) return;
+    if (typeof world.camera.fov === 'number') {
+      world.camera.fov = typeof deg === 'number' ? deg : 60;
+      if (world.camera.updateProjectionMatrix) world.camera.updateProjectionMatrix();
+    }
+  }
+  function _updateCameras(world) {
+    if (world._orbit) updateOrbit(world);
+    if (world._tpObj) updateThirdPerson(world);
+  }
+
   function animate(world, fn) {
     if (!world || !world.renderer) return;
-    world.renderer.setAnimationLoop(function () {
+    // Delta-time: passa os segundos do último quadro p/ fn (callbacks de 0 args ignoram).
+    world._lastT = 0;
+    world.renderer.setAnimationLoop(function (t) {
       try {
-        fn();
+        var now = typeof t === 'number' ? t : 0;
+        var d = world._lastT ? (now - world._lastT) / 1000 : 0;
+        if (d < 0) d = 0;
+        if (d > 0.1) d = 0.1;
+        world._dt = d;
+        world._lastT = now;
+        fn(d);
+        _updateCameras(world);
         world.renderer.render(world.scene, world.camera);
       } catch (e) {
         console.error(e && e.message ? e.message : e);
@@ -328,9 +966,49 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
       if (o && o.geometry && o.geometry.dispose) o.geometry.dispose();
       if (o && o.material && o.material.dispose) o.material.dispose();
     }
-    // Travessia: o mapa é feito de Groups (fora de _objects) — descarta também.
+    // Travessia/Corrida: mapas/pistas são Groups (fora de _objects) — descarta também.
     if (world._crossing && world._crossing.map) {
       try { disposeGroup(world._crossing.map); } catch (e) {}
+    }
+    if (world._race && world._race.group) {
+      try { disposeGroup(world._race.group); } catch (e) {}
+    }
+    if (world._stack && world._stack.group) {
+      try { disposeGroup(world._stack.group); } catch (e) {}
+    }
+    // Fase 6: modelos montados (Groups fora de _objects).
+    if (world._models) {
+      for (var mi = 0; mi < world._models.length; mi++) {
+        try { disposeGroup(world._models[mi]); } catch (e) {}
+      }
+    }
+    // Fase 7: luzes adicionadas + céu (textura de fundo).
+    if (world._lights) {
+      for (var lgi = 0; lgi < world._lights.length; lgi++) {
+        var lg = world._lights[lgi];
+        if (lg && lg.dispose) try { lg.dispose(); } catch (e) {}
+      }
+    }
+    if (
+      world.scene &&
+      world.scene.background &&
+      world.scene.background.isTexture &&
+      world.scene.background.dispose
+    ) {
+      try { world.scene.background.dispose(); } catch (e) {}
+    }
+    // Fase 8: cópias dos enxames (material PRÓPRIO por cópia; geometria é do original).
+    if (world._swarms) {
+      for (var swi = 0; swi < world._swarms.length; swi++) {
+        var sw = world._swarms[swi];
+        if (sw && sw.items) {
+          for (var ii = 0; ii < sw.items.length; ii++) {
+            var it = sw.items[ii];
+            if (it && it.material && it.material.dispose) try { it.material.dispose(); } catch (e) {}
+          }
+          sw.items.length = 0;
+        }
+      }
     }
   }
 
@@ -340,6 +1018,13 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     var pending = worlds.slice();
     for (var i = 0; i < pending.length; i++) {
       try { dispose(pending[i]); } catch (e) {}
+    }
+    // Texturas são compartilhadas entre mundos (cache global) — libera aqui.
+    if (_texCache) {
+      for (var tk in _texCache) {
+        if (_texCache[tk] && _texCache[tk].dispose) try { _texCache[tk].dispose(); } catch (e) {}
+      }
+      _texCache = null;
     }
   }
 
@@ -815,6 +1500,438 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     return g ? g.row : 0;
   }
 
+  // ======================================================================
+  // GENÉRICOS: câmera aérea + movimento circular + distância. E Kit Corrida.
+  // ======================================================================
+  function makeAerialCamera(canvas) {
+    var w = canvas && canvas.width ? canvas.width : 480;
+    var h = canvas && canvas.height ? canvas.height : 360;
+    var vs = 30; // unidades visíveis na vertical (vê a pista inteira)
+    var ratio = w / h;
+    var cam = new THREE.OrthographicCamera(
+      (-vs * ratio) / 2, (vs * ratio) / 2, vs / 2, -vs / 2, 0.1, 2000
+    );
+    cam.up.set(0, 0, 1);
+    cam.position.set(0, -16, 26);
+    cam.lookAt(0, 0, 0);
+    return cam;
+  }
+  function topCamera(world, followObj) {
+    if (!world || !world.scene) return;
+    var cam = makeAerialCamera(world._canvas);
+    world.camera = cam;
+    if (followObj && followObj.add) followObj.add(cam);
+    else world.scene.add(cam);
+  }
+  function circleData(obj) {
+    if (!obj.userData) obj.userData = {};
+    if (!obj.userData.circle) obj.userData.circle = { angle: 0 };
+    return obj.userData.circle;
+  }
+  function moveInCircle(obj, radius, speed) {
+    if (!obj || !obj.position) return;
+    var c = circleData(obj);
+    var r = typeof radius === 'number' ? radius : 7;
+    var sp = typeof speed === 'number' ? speed : 0.02;
+    c.angle += sp;
+    obj.position.x = Math.cos(c.angle) * r;
+    obj.position.y = Math.sin(c.angle) * r;
+    if (obj.rotation) obj.rotation.z = c.angle + Math.PI / 2;
+  }
+  function distanceTo(a, b) {
+    if (!a || !b || !a.position || !b.position) return 0;
+    return Math.sqrt(
+      (b.position.x - a.position.x) * (b.position.x - a.position.x) +
+        (b.position.y - a.position.y) * (b.position.y - a.position.y)
+    );
+  }
+  function isNear(a, b, dist) {
+    return distanceTo(a, b) < (typeof dist === 'number' ? dist : 1);
+  }
+
+  // ---- Kit Corrida (pista oval; carro nos trilhos; rivais; voltas) ----
+  var RACE_INNER = 5, RACE_OUTER = 9, RACE_MID = 7, RACE_XS = 1.5;
+
+  function raceState(world) {
+    if (!world._race) {
+      world._race = {
+        group: new THREE.Group(), player: null, rivals: [],
+        laps: 0, gameOver: false, totalAngle: 0, frames: 0,
+        midRx: RACE_MID * RACE_XS, midRy: RACE_MID
+      };
+      world.scene.add(world._race.group);
+    }
+    return world._race;
+  }
+  function placeOnTrack(rs, mesh, angle, clockwise) {
+    mesh.position.x = Math.cos(angle) * rs.midRx;
+    mesh.position.y = Math.sin(angle) * rs.midRy;
+    if (mesh.rotation) mesh.rotation.z = angle + (clockwise ? -Math.PI / 2 : Math.PI / 2);
+  }
+  function flatRing(inner, outer, color, z) {
+    var m = new THREE.Mesh(new THREE.RingGeometry(inner, outer, 64), lambert(color, false));
+    m.scale.x = RACE_XS;
+    m.position.z = z;
+    m.receiveShadow = true;
+    return m;
+  }
+
+  function createRaceScene(canvasId) {
+    var canvas = document.getElementById(canvasId);
+    if (canvas) {
+      for (var k = worlds.length - 1; k >= 0; k--) {
+        if (worlds[k] && worlds[k]._canvas === canvas) { try { dispose(worlds[k]); } catch (e) {} }
+      }
+    }
+    var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, canvas: canvas || undefined });
+    var w = canvas && canvas.width ? canvas.width : 480;
+    var h = canvas && canvas.height ? canvas.height : 360;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setSize(w, h, false);
+    if (renderer.shadowMap) {
+      renderer.shadowMap.enabled = true;
+      if (THREE.PCFSoftShadowMap) renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    }
+    var scene = new THREE.Scene();
+    scene.background = new THREE.Color('#bfe3ff');
+    var camera = makeAerialCamera(canvas);
+    var world = { scene: scene, camera: camera, renderer: renderer, _objects: [], _canvas: canvas || null };
+    setupCrossingLights(world);
+    worlds.push(world);
+    return world;
+  }
+
+  function createRaceTrack(world) {
+    if (!world) return;
+    var rs = raceState(world);
+    var field = new THREE.Mesh(new THREE.PlaneGeometry(48, 34), lambert('#67C240', false));
+    field.receiveShadow = true;
+    rs.group.add(field);
+    rs.group.add(flatRing(RACE_INNER, RACE_OUTER, '#546E90', 0.02));
+    rs.group.add(flatRing(RACE_INNER, RACE_INNER + 0.15, '#E0FFFF', 0.03));
+    rs.group.add(flatRing(RACE_OUTER - 0.15, RACE_OUTER, '#E0FFFF', 0.03));
+    var spots = [[14, 8], [16, -7], [-15, 9], [-16, -8], [0, 12], [10, -11], [-9, -11]];
+    var heights = [0.5, 1, 1.4];
+    for (var i = 0; i < spots.length; i++) {
+      var t = makeTree(0, heights[i % heights.length]);
+      t.position.x = spots[i][0];
+      t.position.y = spots[i][1];
+      rs.group.add(t);
+    }
+  }
+
+  function createRaceCar(world, opts) {
+    if (!world || !world.scene) return null;
+    opts = opts || {};
+    var rs = raceState(world);
+    var car = makeCar('right', opts.color || '#ef2d56');
+    rs.group.add(car);
+    rs.player = car;
+    rs.totalAngle = 0; rs.laps = 0;
+    if (!car.userData) car.userData = {};
+    car.userData.laps = 0; car.userData.throttle = 'normal';
+    placeOnTrack(rs, car, Math.PI, false);
+    return car;
+  }
+
+  function raceStep(car, world) {
+    if (!car || !world) return;
+    var rs = raceState(world);
+    rs.player = car;
+    if (!car.userData) car.userData = {};
+    var base = 0.012;
+    var accel = keys.ArrowUp || car.userData.throttle === 'accelerate';
+    var brake = keys.ArrowDown || car.userData.throttle === 'decelerate';
+    var sp = accel ? base * 2 : brake ? base * 0.4 : base;
+    rs.totalAngle += sp;
+    placeOnTrack(rs, car, Math.PI + rs.totalAngle, false);
+    var laps = Math.floor(rs.totalAngle / (Math.PI * 2));
+    rs.laps = laps;
+    car.userData.laps = laps;
+  }
+
+  function raceControl(car, mode) {
+    if (!car) return;
+    if (!car.userData) car.userData = {};
+    car.userData.throttle = mode || 'normal';
+  }
+
+  function runRivals(world) {
+    if (!world) return;
+    var rs = raceState(world);
+    rs.frames = (rs.frames || 0) + 1;
+    var MAX_RIVALS = 6;
+    if (rs.rivals.length < MAX_RIVALS && rs.frames % 150 === 0) {
+      var isTruck = Math.random() < 0.4;
+      var colors = ['#a52523', '#ef2d56', '#0ad3ff', '#ff9f1c'];
+      var col = colors[Math.floor(Math.random() * colors.length)];
+      var mesh = isTruck ? makeTruck('right', col) : makeCar('right', col);
+      rs.group.add(mesh);
+      rs.rivals.push({
+        mesh: mesh,
+        angle: Math.random() * Math.PI * 2,
+        speed: 0.006 + Math.random() * 0.012,
+        cw: Math.random() < 0.5
+      });
+    }
+    for (var i = 0; i < rs.rivals.length; i++) {
+      var rv = rs.rivals[i];
+      rv.angle += rv.cw ? -rv.speed : rv.speed;
+      placeOnTrack(rs, rv.mesh, rv.angle, rv.cw);
+    }
+  }
+
+  function raceHit(car, world) {
+    if (!car || !world) return false;
+    var rs = raceState(world);
+    for (var i = 0; i < rs.rivals.length; i++) {
+      if (rs.rivals[i] && isNear(car, rs.rivals[i].mesh, 1.4)) {
+        rs.gameOver = true;
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function raceLaps(car) {
+    return car && car.userData && typeof car.userData.laps === 'number' ? car.userData.laps : 0;
+  }
+
+  function raceReset(car, world) {
+    if (!world) return;
+    var rs = raceState(world);
+    for (var i = 0; i < rs.rivals.length; i++) {
+      var m = rs.rivals[i] && rs.rivals[i].mesh;
+      if (m) { rs.group.remove(m); disposeGroup(m); }
+    }
+    rs.rivals = []; rs.gameOver = false; rs.totalAngle = 0; rs.laps = 0; rs.frames = 0;
+    if (car) {
+      placeOnTrack(rs, car, Math.PI, false);
+      if (!car.userData) car.userData = {};
+      car.userData.laps = 0; car.userData.throttle = 'normal';
+    }
+  }
+
+  // ======================================================================
+  // GENÉRICOS de movimento/física SEM lib (cair com tombo, deslizar, girar)
+  // + Kit Empilhar (Stack). Mundo y-up: empilha em +Y, gravidade -Y.
+  // ======================================================================
+  var FALL_G = -0.012; // aceleração da gravidade por quadro (queda livre)
+
+  /** Estado de queda por objeto (lazy): velocidade + giro (tombo). */
+  function fallData(obj) {
+    if (!obj.userData) obj.userData = {};
+    if (!obj.userData.szFall) {
+      obj.userData.szFall = {
+        vx: (Math.random() - 0.5) * 0.06, vy: 0, vz: (Math.random() - 0.5) * 0.06,
+        rx: (Math.random() - 0.5) * 0.08, rz: (Math.random() - 0.5) * 0.08
+      };
+    }
+    return obj.userData.szFall;
+  }
+  /** Integra 1 quadro de queda livre + giro. Devolve true quando some da tela. */
+  function integrateFall(obj) {
+    if (!obj || !obj.position) return true;
+    var f = fallData(obj);
+    f.vy += FALL_G;
+    obj.position.x += f.vx; obj.position.y += f.vy; obj.position.z += f.vz;
+    if (obj.rotation) { obj.rotation.x += f.rx; obj.rotation.z += f.rz; }
+    return obj.position.y < -24;
+  }
+  /** GENÉRICO: solta o objeto em queda livre, girando, até sumir (gravidade). */
+  function fall(obj) {
+    if (!obj || !obj.position) return;
+    if (integrateFall(obj)) {
+      if (obj.parent && obj.parent.remove) obj.parent.remove(obj);
+      disposeGroup(obj);
+    }
+  }
+  /** GENÉRICO: vaivém num eixo entre min e max (plataformas, patrulha). */
+  function slideData(obj) {
+    if (!obj.userData) obj.userData = {};
+    if (!obj.userData.szSlide) obj.userData.szSlide = { dir: 1 };
+    return obj.userData.szSlide;
+  }
+  function slideBetween(obj, axis, min, max, speed) {
+    if (!obj || !obj.position) return;
+    var ax = axis === 'y' ? 'y' : axis === 'z' ? 'z' : 'x';
+    var lo = typeof min === 'number' ? min : -5;
+    var hi = typeof max === 'number' ? max : 5;
+    if (lo > hi) { var t = lo; lo = hi; hi = t; }
+    var sp = typeof speed === 'number' ? speed : 0.05;
+    var s = slideData(obj);
+    obj.position[ax] += sp * s.dir;
+    if (obj.position[ax] >= hi) { obj.position[ax] = hi; s.dir = -1; }
+    else if (obj.position[ax] <= lo) { obj.position[ax] = lo; s.dir = 1; }
+  }
+  /** GENÉRICO: rotação contínua num eixo (moedas, hélices, planetas). */
+  function spin(obj, axis, speed) {
+    if (!obj || !obj.rotation) return;
+    var ax = axis === 'x' ? 'x' : axis === 'z' ? 'z' : 'y';
+    obj.rotation[ax] += typeof speed === 'number' ? speed : 0.03;
+  }
+
+  // ---- Kit Empilhar (torre de blocos; câmera iso que sobe) ----
+  var STACK_H = 1;        // altura de cada andar
+  var STACK_W0 = 3;       // largura/profundidade inicial
+  var STACK_SPEED = 0.07; // velocidade que o bloco do topo desliza
+  var STACK_START = 10;   // de onde o bloco entra (no eixo que desliza)
+  var STACK_LIMIT = 10;   // passou disso sem soltar = errou
+
+  /** Câmera ortográfica isométrica y-up (igual à referência: olha p/ 0,0,0). */
+  function makeStackCamera(canvas) {
+    var w = canvas && canvas.width ? canvas.width : 480;
+    var h = canvas && canvas.height ? canvas.height : 360;
+    var width = 10;
+    var height = width / (w / h);
+    var cam = new THREE.OrthographicCamera(
+      width / -2, width / 2, height / 2, height / -2, 0, 100
+    );
+    cam.position.set(4, 4, 4);
+    cam.lookAt(0, 0, 0);
+    return cam;
+  }
+  function stackState(world) {
+    if (!world._stack) {
+      world._stack = {
+        group: new THREE.Group(), layers: [], overhangs: [],
+        moving: null, score: 0, gameOver: false
+      };
+      world.scene.add(world._stack.group);
+    }
+    return world._stack;
+  }
+  function layerColor(n) {
+    return new THREE.Color('hsl(' + ((30 + n * 4) % 360) + ', 100%, 50%)');
+  }
+  function stackBox(st, x, y, z, width, depth, color) {
+    var mesh = new THREE.Mesh(new THREE.BoxGeometry(width, STACK_H, depth), lambert(color, false));
+    mesh.position.set(x, y, z);
+    st.group.add(mesh);
+    return mesh;
+  }
+  /** Adiciona um andar; direction 'x'/'z' = bloco que desliza, null = base/fixo. */
+  function addStackLayer(st, x, z, width, depth, direction) {
+    var y = STACK_H * st.layers.length;
+    var mesh = stackBox(st, x, y, z, width, depth, layerColor(st.layers.length));
+    var layer = { mesh: mesh, width: width, depth: depth, direction: direction || null };
+    st.layers.push(layer);
+    st.moving = direction ? layer : st.moving;
+    return layer;
+  }
+  function createStackScene(canvasId) {
+    var canvas = document.getElementById(canvasId);
+    if (canvas) {
+      for (var k = worlds.length - 1; k >= 0; k--) {
+        if (worlds[k] && worlds[k]._canvas === canvas) { try { dispose(worlds[k]); } catch (e) {} }
+      }
+    }
+    var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, canvas: canvas || undefined });
+    var w = canvas && canvas.width ? canvas.width : 480;
+    var h = canvas && canvas.height ? canvas.height : 360;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setSize(w, h, false);
+    var scene = new THREE.Scene();
+    scene.background = new THREE.Color('#fbe7c6');
+    var camera = makeStackCamera(canvas);
+    var world = { scene: scene, camera: camera, renderer: renderer, _objects: [], _canvas: canvas || null };
+    // Luzes y-up (a setupCrossingLights é z-up): ambiente + direcional como a referência.
+    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+    var dir = new THREE.DirectionalLight(0xffffff, 0.6);
+    dir.position.set(10, 20, 0);
+    scene.add(dir);
+    worlds.push(world);
+    return world;
+  }
+  function createStackTower(world) {
+    if (!world) return;
+    var st = stackState(world);
+    addStackLayer(st, 0, 0, STACK_W0, STACK_W0, null);          // fundação (fixa)
+    addStackLayer(st, -STACK_START, 0, STACK_W0, STACK_W0, 'x'); // 1º bloco deslizante
+    st.score = 0; st.gameOver = false;
+  }
+  /** O bloco do topo inteiro vira sobra e cai (errou o encaixe). */
+  function stackMiss(st) {
+    var lay = st.layers[st.layers.length - 1];
+    if (lay && st.moving === lay) { st.overhangs.push(lay.mesh); st.moving = null; }
+    st.gameOver = true;
+  }
+  function stackStep(world) {
+    if (!world) return;
+    var st = stackState(world);
+    if (!st.gameOver && st.moving) {
+      var ax = st.moving.direction;
+      st.moving.mesh.position[ax] += STACK_SPEED;
+      if (st.moving.mesh.position[ax] > STACK_LIMIT) stackMiss(st);
+    }
+    // Câmera sobe junto com a torre (sem re-olhar: a referência só translada em Y).
+    var targetY = 4 + STACK_H * Math.max(0, st.layers.length - 2);
+    if (world.camera && world.camera.position.y < targetY) {
+      world.camera.position.y = Math.min(targetY, world.camera.position.y + STACK_SPEED);
+    }
+    // Sobras caindo (física manual).
+    for (var i = st.overhangs.length - 1; i >= 0; i--) {
+      if (integrateFall(st.overhangs[i])) {
+        st.group.remove(st.overhangs[i]); disposeGroup(st.overhangs[i]);
+        st.overhangs.splice(i, 1);
+      }
+    }
+  }
+  function stackDrop(world) {
+    if (!world) return;
+    var st = stackState(world);
+    if (st.gameOver || !st.moving) return;
+    var top = st.layers[st.layers.length - 1];
+    var prev = st.layers[st.layers.length - 2];
+    if (!prev) return;
+    var dir = top.direction; // 'x' ou 'z'
+    var size = dir === 'x' ? top.width : top.depth;
+    var delta = top.mesh.position[dir] - prev.mesh.position[dir];
+    var overhangSize = Math.abs(delta);
+    var overlap = size - overhangSize;
+    if (overlap <= 0) { stackMiss(st); return; }
+    // Corta o bloco do topo para o tamanho do encaixe.
+    if (dir === 'x') top.width = overlap; else top.depth = overlap;
+    top.mesh.scale[dir] = overlap / size;
+    top.mesh.position[dir] -= delta / 2;
+    top.direction = null;
+    st.moving = null;
+    // Sobra (parte cortada) cai.
+    var shift = (overlap / 2 + overhangSize / 2) * (delta < 0 ? -1 : 1);
+    var ox = dir === 'x' ? top.mesh.position.x + shift : top.mesh.position.x;
+    var oz = dir === 'z' ? top.mesh.position.z + shift : top.mesh.position.z;
+    var ow = dir === 'x' ? overhangSize : top.width;
+    var od = dir === 'z' ? overhangSize : top.depth;
+    st.overhangs.push(stackBox(st, ox, top.mesh.position.y, oz, ow, od, layerColor(st.layers.length - 1)));
+    // Próximo bloco: eixo oposto, tamanho do corte, entrando do início.
+    var nextDir = dir === 'x' ? 'z' : 'x';
+    var nx = nextDir === 'x' ? -STACK_START : top.mesh.position.x;
+    var nz = nextDir === 'z' ? -STACK_START : top.mesh.position.z;
+    addStackLayer(st, nx, nz, top.width, top.depth, nextDir);
+    st.score = st.layers.length - 2;
+  }
+  function stackScore(world) {
+    var st = world && world._stack;
+    return st ? st.score : 0;
+  }
+  function stackGameOver(world) {
+    var st = world && world._stack;
+    return st ? !!st.gameOver : false;
+  }
+  function stackReset(world) {
+    if (!world) return;
+    var st = stackState(world);
+    for (var i = st.layers.length - 1; i >= 0; i--) {
+      st.group.remove(st.layers[i].mesh); disposeGroup(st.layers[i].mesh);
+    }
+    for (var j = st.overhangs.length - 1; j >= 0; j--) {
+      st.group.remove(st.overhangs[j]); disposeGroup(st.overhangs[j]);
+    }
+    st.layers = []; st.overhangs = []; st.moving = null; st.score = 0; st.gameOver = false;
+    if (world.camera) { world.camera.position.set(4, 4, 4); world.camera.lookAt(0, 0, 0); }
+    createStackTower(world);
+  }
+
   // Auto-registro: não dependemos de GC preguiçoso nem de o host chamar dispose.
   // pagehide cobre o caso moderno (inclui bfcache); beforeunload é o fallback.
   if (typeof window !== 'undefined' && window.addEventListener) {
@@ -861,6 +1978,83 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     moveTraffic: moveTraffic,
     crosserHit: crosserHit,
     crosserRow: crosserRow,
+    topCamera: topCamera,
+    moveInCircle: moveInCircle,
+    distanceTo: distanceTo,
+    isNear: isNear,
+    createRaceScene: createRaceScene,
+    createRaceTrack: createRaceTrack,
+    createRaceCar: createRaceCar,
+    raceStep: raceStep,
+    raceControl: raceControl,
+    runRivals: runRivals,
+    raceHit: raceHit,
+    raceLaps: raceLaps,
+    raceReset: raceReset,
+    fall: fall,
+    slideBetween: slideBetween,
+    spin: spin,
+    createStackScene: createStackScene,
+    createStackTower: createStackTower,
+    stackDrop: stackDrop,
+    stackStep: stackStep,
+    stackReset: stackReset,
+    stackScore: stackScore,
+    stackGameOver: stackGameOver,
+    getPos: getPos,
+    getRot: getRot,
+    getScale: getScale,
+    dt: dt,
+    moveBy: moveBy,
+    rotateBy: rotateBy,
+    moveTowards: moveTowards,
+    lookAtObject: lookAtObject,
+    lookAtPoint: lookAtPoint,
+    moveForward: moveForward,
+    faceVelocity: faceVelocity,
+    angleTo: angleTo,
+    pickAtMouse: pickAtMouse,
+    pointerOver: pointerOver,
+    aimAhead: aimAhead,
+    onGround: onGround,
+    groundHeight: groundHeight,
+    body: body,
+    stepBody: stepBody,
+    setSolid: setSolid,
+    platformerControls: platformerControls,
+    fpsControls: fpsControls,
+    resolveCollision: resolveCollision,
+    fpsCamera: fpsCamera,
+    orbitCamera: orbitCamera,
+    thirdPersonCamera: thirdPersonCamera,
+    cameraLookAt: cameraLookAt,
+    setFOV: setFOV,
+    createCylinder: createCylinder,
+    createCone: createCone,
+    createPlane: createPlane,
+    createTorus: createTorus,
+    createModel: createModel,
+    addToModel: addToModel,
+    setColor: setColor,
+    setOpacity: setOpacity,
+    setMaterial: setMaterial,
+    setTexture: setTexture,
+    setVisible: setVisible,
+    remove: removeObject,
+    addAmbientLight: addAmbientLight,
+    addSunLight: addSunLight,
+    addPointLight: addPointLight,
+    setFog: setFog,
+    setSky: setSky,
+    setShadows: setShadows,
+    createSwarm: createSwarm,
+    spawnInSwarm: spawnInSwarm,
+    countSwarm: countSwarm,
+    forEachInSwarm: forEachInSwarm,
+    removeFromSwarm: removeFromSwarm,
+    pruneSwarm: pruneSwarm,
+    playNote: playNote,
+    playEffect: playEffect,
     animate: animate,
     dispose: dispose,
     disposeAll: disposeAll,

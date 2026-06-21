@@ -205,10 +205,20 @@ export class DrizzleGamificationRepository implements GamificationRepository {
       // (regra: "só atividade que rende XP conta"); badges concedem mesmo assim.
       // A carteira Zappy também só ganha AQUI (faucets têm amount > 0; marcos não dão moeda).
       if (newEvents.some((e) => e.amount > 0)) {
-        // Freeze GRÁTIS do mês (lazy/idempotente): +1 na 1ª atividade de cada mês civil.
+        // Freeze GRÁTIS do mês (lazy/idempotente): +1 na 1ª atividade do mês civil EM QUE
+        // houver espaço no teto. Só MARCA o mês como concedido quando o freeze realmente
+        // entra — senão um aluno NO TETO (5) no 1º dia do mês perderia o grátis do mês
+        // inteiro (o marcador avançava mesmo com o +1 descartado pelo teto) ao gastar depois.
         const monthKey = input.today.slice(0, 7)
-        const freezesBefore =
-          (profile?.streakFreezes ?? 0) + (profile?.freezeGrantedMonth !== monthKey ? 1 : 0)
+        const currentFreezes = profile?.streakFreezes ?? 0
+        const grantsFreeFreeze =
+          profile?.freezeGrantedMonth !== monthKey && currentFreezes < MAX_STREAK_FREEZES
+        const freezesBefore = currentFreezes + (grantsFreeFreeze ? 1 : 0)
+        // Avança o marcador só quando o grátis entrou; senão PRESERVA o anterior p/ o
+        // benefício continuar disponível numa atividade futura em que haja espaço no teto.
+        const freezeGrantedMonthNext = grantsFreeFreeze
+          ? monthKey
+          : (profile?.freezeGrantedMonth ?? null)
         streak = advanceStreak(
           {
             streakCurrent: profile?.streakCurrent ?? 0,
@@ -258,7 +268,33 @@ export class DrizzleGamificationRepository implements GamificationRepository {
           const give = cap.granted[i] ?? 0
           if (give > 0) grants.push({ ...c, amount: give })
         })
-        grants.push(...milestones)
+        // `streakMilestoneCoins` re-emite TODOS os marcos `<= current` (não só o recém-
+        // cruzado); os já creditados em dias anteriores conflitam e são descartados pelo
+        // `onConflictDoNothing`. Filtrar os já existentes ANTES de acumular o `balance_after`
+        // — senão o running soma marcos que não entram e infla o `balance_after` das linhas
+        // que entram (audit-only, mas reconciliação por balance_after ficaria errada).
+        const freshMilestones =
+          milestones.length > 0
+            ? await (async () => {
+                const existing = await tx
+                  .select({ sourceId: coinEvents.sourceId })
+                  .from(coinEvents)
+                  .where(
+                    and(
+                      eq(coinEvents.userId, input.userId),
+                      eq(coinEvents.audience, input.audience),
+                      eq(coinEvents.sourceType, 'streak_milestone'),
+                      inArray(
+                        coinEvents.sourceId,
+                        milestones.map((m) => m.sourceId),
+                      ),
+                    ),
+                  )
+                const seen = new Set(existing.map((r) => r.sourceId))
+                return milestones.filter((m) => !seen.has(m.sourceId))
+              })()
+            : milestones
+        grants.push(...freshMilestones)
 
         // `balance_after` é AUDITORIA (a verdade é `coin_balance` no perfil): soma
         // corrente dos grants. O ledger dedupa por (user, audience, source_type,
@@ -316,7 +352,7 @@ export class DrizzleGamificationRepository implements GamificationRepository {
             coinsEarnedDate: input.today,
             lifetimeCoinsEarned: newLifetime,
             streakFreezes: freezesAfter,
-            freezeGrantedMonth: monthKey,
+            freezeGrantedMonth: freezeGrantedMonthNext,
             createdAt: input.now,
             updatedAt: input.now,
           })
@@ -337,7 +373,7 @@ export class DrizzleGamificationRepository implements GamificationRepository {
               coinsEarnedDate: input.today,
               lifetimeCoinsEarned: newLifetime,
               streakFreezes: freezesAfter,
-              freezeGrantedMonth: monthKey,
+              freezeGrantedMonth: freezeGrantedMonthNext,
               updatedAt: input.now,
             },
           })
@@ -468,6 +504,8 @@ export class DrizzleGamificationRepository implements GamificationRepository {
       lastActivityDate: row.lastActivityDate,
       coinBalance: row.coinBalance,
       streakFreezes: row.streakFreezes,
+      // Display do streak projeta o freeze grátis prestes a ser concedido (casa com o award).
+      freezeGrantedMonth: row.freezeGrantedMonth,
       vacationFrom: row.vacationFrom,
       vacationTo: row.vacationTo,
     }
@@ -523,62 +561,127 @@ export class DrizzleGamificationRepository implements GamificationRepository {
     const joinCourseInAudience = entitlementInAudience(audience)
     const grantsActiveAudienceAccess = activeAudienceAccessPredicate(audience, now)
 
-    // As leituras num único snapshot (transação) — sob award concorrente, posição
-    // e total não divergem entre si.
-    return this.db.transaction(async (tx) => {
-      // A CONTA tem acesso à audiência? (matrícula de curso OU chave-mestra → pertence
-      // à coorte). Sem isso o perfil não está na vitrine → `null` (o service omite).
-      const [member] = await tx
-        .select({ u: entitlements.userId })
-        .from(entitlements)
-        .leftJoin(courses, joinCourseInAudience)
-        .where(and(eq(entitlements.userId, accountId), grantsActiveAudienceAccess))
-        .limit(1)
-      if (!member) return null
+    // As 5 leituras num ÚNICO snapshot — sob award concorrente, posição e total não
+    // divergem entre si (ex.: position > totalStudents). O default READ COMMITTED tira
+    // um snapshot por statement (não dava a garantia do comentário); REPEATABLE READ
+    // sim. É barato aqui (read-only, curto).
+    return this.db.transaction(
+      async (tx) => {
+        // A CONTA tem acesso à audiência? (matrícula de curso OU chave-mestra → pertence
+        // à coorte). Sem isso o perfil não está na vitrine → `null` (o service omite).
+        const [member] = await tx
+          .select({ u: entitlements.userId })
+          .from(entitlements)
+          .leftJoin(courses, joinCourseInAudience)
+          .where(and(eq(entitlements.userId, accountId), grantsActiveAudienceAccess))
+          .limit(1)
+        if (!member) return null
 
-      // Coorte (estilo Netflix) = PERFIS (linhas de gamification_profiles, não-equipe)
-      // da audiência cuja CONTA (account_id) tem acesso à audiência.
-      const accountsWithEntitlement = tx
-        .select({ accountId: entitlements.userId })
-        .from(entitlements)
-        .leftJoin(courses, joinCourseInAudience)
-        .where(grantsActiveAudienceAccess)
-      const cohort = and(
-        eq(gamificationProfiles.audience, audience),
-        eq(gamificationProfiles.privileged, false),
-        inArray(gamificationProfiles.accountId, accountsWithEntitlement),
-      )
-
-      // XP do PERFIL requester (0 se ainda não pontuou).
-      const [profile] = await tx
-        .select({ xp: gamificationProfiles.xp })
-        .from(gamificationProfiles)
-        .where(
-          and(eq(gamificationProfiles.userId, userId), eq(gamificationProfiles.audience, audience)),
+        // Coorte (estilo Netflix) = PERFIS (linhas de gamification_profiles, não-equipe)
+        // da audiência cuja CONTA (account_id) tem acesso à audiência.
+        const accountsWithEntitlement = tx
+          .select({ accountId: entitlements.userId })
+          .from(entitlements)
+          .leftJoin(courses, joinCourseInAudience)
+          .where(grantsActiveAudienceAccess)
+        const cohort = and(
+          eq(gamificationProfiles.audience, audience),
+          eq(gamificationProfiles.privileged, false),
+          inArray(gamificationProfiles.accountId, accountsWithEntitlement),
         )
-        .limit(1)
-      const myXp = profile?.xp ?? 0
 
-      const [totalRow] = await tx
-        .select({ c: countDistinct(gamificationProfiles.userId) })
-        .from(gamificationProfiles)
-        .where(cohort)
-      // O requester já está contado na coorte (tem perfil que pontuou)?
-      const [inCohortRow] = await tx
-        .select({ u: gamificationProfiles.userId })
-        .from(gamificationProfiles)
-        .where(and(cohort, eq(gamificationProfiles.userId, userId)))
-        .limit(1)
-      // Competition ranking ("1224"): só XP ESTRITAMENTE maior conta (empate divide).
-      const [aheadRow] = await tx
-        .select({ c: countDistinct(gamificationProfiles.userId) })
-        .from(gamificationProfiles)
-        .where(and(cohort, gt(gamificationProfiles.xp, myXp)))
+        // XP do PERFIL requester (0 se ainda não pontuou).
+        const [profile] = await tx
+          .select({ xp: gamificationProfiles.xp })
+          .from(gamificationProfiles)
+          .where(
+            and(
+              eq(gamificationProfiles.userId, userId),
+              eq(gamificationProfiles.audience, audience),
+            ),
+          )
+          .limit(1)
+        const myXp = profile?.xp ?? 0
 
-      // Requester sem perfil (XP 0) ainda é contado como aluno (+1).
-      const totalStudents = (totalRow?.c ?? 0) + (inCohortRow ? 0 : 1)
-      return { position: (aheadRow?.c ?? 0) + 1, totalStudents }
-    })
+        const [totalRow] = await tx
+          .select({ c: countDistinct(gamificationProfiles.userId) })
+          .from(gamificationProfiles)
+          .where(cohort)
+        // O requester já está contado na coorte (tem perfil que pontuou)?
+        const [inCohortRow] = await tx
+          .select({ u: gamificationProfiles.userId })
+          .from(gamificationProfiles)
+          .where(and(cohort, eq(gamificationProfiles.userId, userId)))
+          .limit(1)
+        // Competition ranking ("1224"): só XP ESTRITAMENTE maior conta (empate divide).
+        const [aheadRow] = await tx
+          .select({ c: countDistinct(gamificationProfiles.userId) })
+          .from(gamificationProfiles)
+          .where(and(cohort, gt(gamificationProfiles.xp, myXp)))
+
+        // Requester sem perfil (XP 0) ainda é contado como aluno (+1).
+        const totalStudents = (totalRow?.c ?? 0) + (inCohortRow ? 0 : 1)
+        return { position: (aheadRow?.c ?? 0) + 1, totalStudents }
+      },
+      { isolationLevel: 'repeatable read' },
+    )
+  }
+
+  /**
+   * Posições no ranking p/ VÁRIOS perfis da MESMA conta numa só passada (área dos pais):
+   * resolve a coorte da audiência UMA vez e ranqueia cada perfil em memória — evita o
+   * fan-out de N transações `getRanking` (cada uma re-derivando a mesma coorte). Map
+   * vazio = conta sem matrícula na audiência.
+   */
+  async rankProfiles(
+    accountId: string,
+    profileIds: string[],
+    audience: CourseAudience,
+    now: Date,
+  ): Promise<Map<string, number>> {
+    if (profileIds.length === 0) return new Map()
+    const joinCourseInAudience = entitlementInAudience(audience)
+    const grantsActiveAudienceAccess = activeAudienceAccessPredicate(audience, now)
+
+    return this.db.transaction(
+      async (tx) => {
+        const [member] = await tx
+          .select({ u: entitlements.userId })
+          .from(entitlements)
+          .leftJoin(courses, joinCourseInAudience)
+          .where(and(eq(entitlements.userId, accountId), grantsActiveAudienceAccess))
+          .limit(1)
+        if (!member) return new Map<string, number>()
+
+        const accountsWithEntitlement = tx
+          .select({ accountId: entitlements.userId })
+          .from(entitlements)
+          .leftJoin(courses, joinCourseInAudience)
+          .where(grantsActiveAudienceAccess)
+        // XP de TODA a coorte (não-equipe) numa query; ranqueia cada filho em memória.
+        const rows = await tx
+          .select({ userId: gamificationProfiles.userId, xp: gamificationProfiles.xp })
+          .from(gamificationProfiles)
+          .where(
+            and(
+              eq(gamificationProfiles.audience, audience),
+              eq(gamificationProfiles.privileged, false),
+              inArray(gamificationProfiles.accountId, accountsWithEntitlement),
+            ),
+          )
+        const cohortXp = rows.map((r) => r.xp)
+        const xpByUser = new Map(rows.map((r) => [r.userId, r.xp]))
+        const out = new Map<string, number>()
+        for (const profileId of profileIds) {
+          const myXp = xpByUser.get(profileId) ?? 0
+          // Competition ranking ("1224") — mesma regra do `getRanking`.
+          const ahead = cohortXp.filter((xp) => xp > myXp).length
+          out.set(profileId, ahead + 1)
+        }
+        return out
+      },
+      { isolationLevel: 'repeatable read' },
+    )
   }
 
   async hasActiveAudienceAccess(
@@ -689,6 +792,7 @@ export class DrizzleGamificationRepository implements GamificationRepository {
       const cap = applyDailyCap([input.rewardCoins], earnedTodayBase, DAILY_COIN_CAP)
       const coinsAwarded = cap.totalGranted
       const coinBalance = balance + coinsAwarded
+      const newLifetime = (profile?.lifetimeCoinsEarned ?? 0) + coinsAwarded
       if (coinsAwarded > 0) {
         await tx.insert(coinEvents).values({
           id: randomUUID(),
@@ -709,7 +813,7 @@ export class DrizzleGamificationRepository implements GamificationRepository {
           coinBalance,
           coinsEarnedToday: earnedTodayBase + coinsAwarded,
           coinsEarnedDate: input.today,
-          lifetimeCoinsEarned: (profile?.lifetimeCoinsEarned ?? 0) + coinsAwarded,
+          lifetimeCoinsEarned: newLifetime,
           updatedAt: input.now,
         })
         .where(
@@ -718,6 +822,23 @@ export class DrizzleGamificationRepository implements GamificationRepository {
             eq(gamificationProfiles.audience, input.audience),
           ),
         )
+      const saverBadges = coinsSaverBadgeSlugs(newLifetime)
+      if (saverBadges.length > 0) {
+        await tx
+          .insert(userBadges)
+          .values(
+            saverBadges.map((slug) => ({
+              id: randomUUID(),
+              userId: input.userId,
+              audience: input.audience,
+              badgeSlug: slug,
+              unlockedAt: input.now,
+            })),
+          )
+          .onConflictDoNothing({
+            target: [userBadges.userId, userBadges.audience, userBadges.badgeSlug],
+          })
+      }
       return { claimed: true, xpAwarded: input.rewardXp, coinsAwarded, coinBalance }
     })
   }

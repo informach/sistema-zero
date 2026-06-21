@@ -456,6 +456,88 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     tooltip:
       'Cria uma animação, do estado inicial ao final. Para usar, ligue essa animação a um elemento numa Regra CSS.',
   },
+  {
+    type: 'sz_css_keyframes_steps',
+    message0: 'animação (vários passos) chamada %1',
+    args0: [{ type: 'field_input', name: 'NAME', text: 'girar' }],
+    message1: 'passos %1',
+    args1: [{ type: 'input_statement', name: 'STEPS', check: 'KeyframeStep' }],
+    previousStatement: 'CSSEntry',
+    nextStatement: 'CSSEntry',
+    colour: C,
+    level: 'avancado',
+    tooltip:
+      'Animação com VÁRIOS passos (0%, 25%, 50%, 100%…). Arraste blocos "passo" dentro. Ligue a animação a um elemento numa Regra CSS.',
+  },
+  {
+    type: 'sz_css_keyframe_step',
+    message0: 'passo %1',
+    args0: [{ type: 'field_input', name: 'AT', text: '50%' }],
+    message1: 'estilo %1',
+    args1: [{ type: 'input_statement', name: 'DECLS', check: 'CSSDecl' }],
+    previousStatement: 'KeyframeStep',
+    nextStatement: 'KeyframeStep',
+    colour: C,
+    level: 'avancado',
+    tooltip:
+      'Um momento da animação (ex.: "0%", "50%", "100%"). Coloque "propriedade: valor" dentro.',
+  },
+
+  // ---- Atalhos: variável CSS, transform, perspectiva e grade ----
+  {
+    type: 'sz_css_var',
+    message0: 'Variável CSS --%1 = %2 (no seletor %3)',
+    args0: [
+      { type: 'field_input', name: 'VARNAME', text: 'cor-principal' },
+      { type: 'field_input', name: 'VALUE', text: '#e94560' },
+      { type: 'field_input', name: 'SELECTOR', text: ':root' },
+    ],
+    previousStatement: 'CSSEntry',
+    nextStatement: 'CSSEntry',
+    colour: C,
+    tooltip:
+      'Cria uma variável CSS reutilizável (ex.: --cor-principal). Use depois escrevendo var(--cor-principal) em qualquer valor.',
+  },
+  {
+    type: 'sz_css_transform',
+    message0: 'Transformar seletor %1 com %2',
+    args0: [
+      { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
+      { type: 'field_input', name: 'VALUE', text: 'rotate(10deg)' },
+    ],
+    previousStatement: 'CSSEntry',
+    nextStatement: 'CSSEntry',
+    colour: C,
+    tooltip:
+      'Aplica uma transformação: rotate(45deg), scale(1.2), rotateX(60deg), translateZ(20px)… Combine várias separando por espaço.',
+  },
+  {
+    type: 'sz_css_perspective',
+    message0: 'Perspectiva 3D do seletor %1 como %2 px',
+    args0: [
+      { type: 'field_input', name: 'SELECTOR', text: '#cena' },
+      { type: 'field_number', name: 'VALUE', value: 600, min: 0 },
+    ],
+    previousStatement: 'CSSEntry',
+    nextStatement: 'CSSEntry',
+    colour: C,
+    tooltip:
+      'Dá profundidade 3D aos elementos filhos (perspective). Quanto menor, mais exagerado o 3D.',
+  },
+  {
+    type: 'sz_css_grid_template',
+    message0: 'Grade no seletor %1 colunas %2 linhas %3',
+    args0: [
+      { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
+      { type: 'field_input', name: 'COLS', text: 'repeat(3, 1fr)' },
+      { type: 'field_input', name: 'ROWS', text: '' },
+    ],
+    previousStatement: 'CSSEntry',
+    nextStatement: 'CSSEntry',
+    colour: C,
+    tooltip:
+      'Monta uma grade (display: grid) com colunas e (opcional) linhas, ex.: "repeat(3, 1fr)" ou "100px auto".',
+  },
 ]
 
 /**
@@ -464,7 +546,7 @@ export const CSS_BLOCKS: BlockDefinition[] = [
  * "CSS é roxo" e ainda dando navegação por cor. Cada bloco herda a cor do grupo.
  */
 export const CSS_GROUPS: { name: string; colour: string; types: string[] }[] = [
-  { name: '🧰 Regra', colour: '#a78bfa', types: ['sz_css_rule', 'sz_css_decl'] },
+  { name: '🧰 Regra', colour: '#a78bfa', types: ['sz_css_rule', 'sz_css_decl', 'sz_css_var'] },
   {
     name: '🎨 Cores & Fundo',
     colour: '#c084fc',
@@ -513,12 +595,21 @@ export const CSS_GROUPS: { name: string; colour: string; types: string[] }[] = [
       'sz_css_justify',
       'sz_css_align',
       'sz_css_grid',
+      'sz_css_grid_template',
     ],
   },
   {
     name: '✨ Efeitos',
     colour: '#e879f9',
-    types: ['sz_css_transition', 'sz_css_keyframes', 'sz_css_google_font'],
+    types: [
+      'sz_css_transition',
+      'sz_css_transform',
+      'sz_css_perspective',
+      'sz_css_keyframes',
+      'sz_css_keyframes_steps',
+      'sz_css_keyframe_step',
+      'sz_css_google_font',
+    ],
   },
   { name: '📱 Responsivo', colour: '#f472b6', types: ['sz_css_media_query'] },
 ]

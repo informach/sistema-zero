@@ -389,9 +389,11 @@ campo.value = nome;`
     ])
   })
 
-  it('mantém textContent com expressão não modelada (getMonth) como rawJS', () => {
+  it('mantém textContent com expressão não modelada (getTime) como rawJS', () => {
+    // getTime() NÃO é uma das partes do sz_val_date_part (horas/minutos/… e getMonth
+    // agora SÃO modeladas como dateGet); serve para checar o fallback rawJS.
     const code = `const ano = document.getElementById("ano");
-ano.textContent = new Date().getMonth();`
+ano.textContent = new Date().getTime();`
     const ir = parseJS(code)
     expect(ir[0]).toMatchObject({ type: 'getElementById', id: 'ano' })
     expect(ir[1]?.type).toBe('rawJS')

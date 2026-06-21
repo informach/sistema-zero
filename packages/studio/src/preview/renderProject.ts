@@ -27,7 +27,13 @@ export function renderProjectToPreviewDoc(
   project: Project,
   opts: RenderProjectOptions = {},
 ): string {
-  const ids = project.installedExtensions.map((e) => e.id)
+  const files = project.files ?? { 'index.html': '', 'style.css': '', 'script.js': '' }
+  const installedExtensions = Array.isArray(project.installedExtensions)
+    ? project.installedExtensions
+    : []
+  const extraFiles = Array.isArray(project.extraFiles) ? project.extraFiles : undefined
+  const assets = Array.isArray(project.assets) ? project.assets : undefined
+  const ids = installedExtensions.flatMap((e) => (e && typeof e.id === 'string' ? [e.id] : []))
   const extensionScripts: string[] = []
   const extensionImports: Record<string, string> = {}
   const permissions = new Set<ExtensionPermission>()
@@ -40,12 +46,12 @@ export function renderProjectToPreviewDoc(
   }
 
   return buildPreviewDoc({
-    html: project.files['index.html'] ?? '',
-    css: project.files['style.css'] ?? '',
-    js: project.files['script.js'] ?? '',
+    html: files['index.html'] ?? '',
+    css: files['style.css'] ?? '',
+    js: files['script.js'] ?? '',
     extensionScripts,
-    extraFiles: project.extraFiles,
-    assets: assetManifest(project.assets),
+    extraFiles,
+    assets: assetManifest(assets),
     parentOrigin: opts.parentOrigin,
     installedPermissions: Array.from(permissions),
     fetchAllowedOrigins: opts.fetchAllowedOrigins,

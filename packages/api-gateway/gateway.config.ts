@@ -963,6 +963,19 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
+    // "Esta conta tem acesso a estes produtos?" (`?refs=`) — gate de produto que NÃO é
+    // curso de trilha (ex.: o Estúdio Completo vendável). O app kids busca num Server
+    // Component ao abrir /estudio; resposta pequena, recurso do próprio usuário.
+    {
+      id: 'members-access',
+      methods: ['GET'],
+      pathPattern: '/members/access',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
     // Perfil de gamificação do aluno (XP/streak/badges) — widgets do kids buscam
     // a cada render de página (layout + home), por isso o teto generoso.
     {
@@ -1725,6 +1738,21 @@ const config: GatewayConfigInput = {
       id: 'hub-showcase-create-studio',
       methods: ['POST'],
       pathPattern: '/hub/internal/showcase-thread-studio',
+      service: 'hub',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+    },
+    // "Compartilhar" do ESTÚDIO COMPLETO (produto vendável, SEM aula): título +
+    // descrição da criança + playId. O hub re-valida a POSSE do produto (S2S members).
+    // `showcase-thread-studio-standalone` é segmento literal distinto de
+    // `showcase-thread-studio` (sem colisão de prefixo no matcher).
+    {
+      id: 'hub-showcase-create-studio-standalone',
+      methods: ['POST'],
+      pathPattern: '/hub/internal/showcase-thread-studio-standalone',
       service: 'hub',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { statuses: ['active'] },

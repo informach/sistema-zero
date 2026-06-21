@@ -183,6 +183,9 @@ por aluno do award.
 
 `coinsSaverBadgeSlugs(lifetimeCoins)` (`gamification.ts:168`): `>=300 → coins-saver-300`,
 `>=1000 → coins-saver-1000`. Contadas por `lifetime_coins_earned` (ganhas na vida, não o saldo).
+São avaliadas em toda escrita que aumenta o lifetime: awards normais e `claimMission` quando as
+moedas concedidas pela missão, depois do teto diário, cruzam um limiar. A inserção em `user_badges`
+continua idempotente por `(user_id, audience, badge_slug)`.
 **Como alterar:** editar os limiares em `coinsSaverBadgeSlugs`.
 
 ---
@@ -369,7 +372,10 @@ Tamanho do set atribuído por criança: `DAILY_SET_SIZE = 3` (vê 3 das 5) e `WE
 
 `assignDailyMissions(userId, dayKey)` = `pick(DAILY_MISSIONS, DAILY_SET_SIZE, fnv1a('userId:dayKey'))`;
 semanal análogo com `fnv1a('userId:weekKey')`. `fnv1a` é FNV-1a 32-bit puro (offset `0x811c9dc5`,
-prime `0x01000193`) — **sem `Date.now`/random**. `pick` é rotação circular contígua (não shuffle).
+prime `0x01000193`) — **sem `Date.now`/random**. `pick` é um **embaralho parcial de Fisher–Yates
+semeado** (`xorshift32` a partir da seed): determinístico e distinto, mas alcança QUALQUER
+subconjunto de tamanho `count` (06/2026). Antes era rotação circular contígua, que só atingia
+`pool.length` subconjuntos (p.ex. 5 dos 10 trios diários possíveis) — distribuição enviesada.
 Mudar `fnv1a`/`pick`/a composição da seed **re-embaralha os sets de TODOS os alunos**.
 
 Janelas de tempo (ancoradas em 03:00Z, SP fixo): `dayBoundsUtc(dayKey)` = `[dayKey T03:00Z, +1 dia)`;
@@ -385,8 +391,9 @@ segunda**, `sinceMonday=(dow+6)%7`); `weekBoundsUtc` = `[segunda T03:00Z, +7 dia
   o cliente nunca decide). Idempotente por `(userId, audience, missionSlug, periodKey)` em
   `mission_claims`. Credita **XP direto no perfil** (`xp += rewardXp`; a idempotência é o claim único,
   não há ledger de XP para o prêmio) + **moedas com teto diário** (`applyDailyCap` →
-  `coin_events.source_type='mission_reward'`). **NÃO move o streak** (resgatar missão não estende
-  sequência — deliberado).
+  `coin_events.source_type='mission_reward'`). Se as moedas efetivamente concedidas cruzarem
+  `lifetime_coins_earned >= 300/1000`, também destrava as badges de poupador. **NÃO move o streak**
+  (resgatar missão não estende sequência — deliberado).
 
 ### Como adicionar/ajustar uma missão
 
@@ -395,7 +402,8 @@ segunda**, `sinceMonday=(dow+6)%7`); `weekBoundsUtc` = `[segunda T03:00Z, +7 dia
 2. Ajustar `DAILY_SET_SIZE`/`WEEKLY_SET_SIZE` se quiser que o novo item apareça.
 3. Adicionar o label PT em `missionLabel` (kids), senão cai no fallback "Complete a missão".
 4. Nenhuma migration para a missão em si (só se mexer no schema/enums). O campo `rewardBadge`
-   existe em `MissionDef` mas **nenhuma missão v1 o usa** e o claim NÃO concede badge.
+   existe em `MissionDef` mas **nenhuma missão v1 o usa**; o claim não concede badge arbitrária de
+   missão, só badges derivadas já existentes (ex.: poupador por `lifetime_coins_earned`).
 
 ---
 
@@ -405,9 +413,13 @@ Contrato **guilt-free**: a criança nunca é envergonhada por faltar. Duas redes
 
 ### Protetores (freezes)
 
-- **Grátis mensal** (lazy/idempotente): +1 protetor na 1ª atividade de cada mês civil SP.
-  `monthKey = today.slice(0,7)`; persistido em `gamification_profiles.freeze_granted_month`. (Não
-  checa o teto máximo explicitamente.)
+- **Grátis mensal** (lazy/idempotente): +1 protetor na 1ª atividade de cada mês civil SP
+  **em que houver espaço no teto**. `monthKey = today.slice(0,7)`; persistido em
+  `gamification_profiles.freeze_granted_month`. O marcador do mês **só avança quando o grátis
+  ENTRA** (06/2026): aluno já no teto (`MAX_STREAK_FREEZES`) na 1ª atividade NÃO tem o mês
+  queimado — `freeze_granted_month` preserva o anterior e o grátis fica disponível numa
+  atividade futura em que haja espaço (antes o marcador avançava com o +1 descartado pelo
+  teto → o benefício do mês se perdia ao gastar freezes depois).
 - **Comprável** (`buyStreakFreeze`): `STREAK_FREEZE_PRICE = 80` moedas (`coins.ts:27`),
   `reason:'spend_streak_freeze'`. Idempotente; barra no teto `MAX_STREAK_FREEZES = 5`
   (`gamification-repository.port.ts:257`) → `MAX_FREEZES`; sem saldo → `INSUFFICIENT_BALANCE`(402).
@@ -416,7 +428,8 @@ Contrato **guilt-free**: a criança nunca é envergonhada por faltar. Duas redes
   `need <= freezes`, a sequência ESTENDE e o repositório debita `freezesConsumed`.
 
 **Como alterar:** `STREAK_FREEZE_PRICE` (preço), `MAX_STREAK_FREEZES` (teto). O freeze grátis
-mensal mora na lógica de `freezesBefore`/`monthKey` no `award` do repositório.
+mensal mora na lógica de `grantsFreeFreeze`/`freezesBefore`/`freezeGrantedMonthNext` no `award`
+do repositório (espelhada no fake `in-memory.ts`).
 
 ### Modo férias (`setVacation`)
 
@@ -639,7 +652,7 @@ Os testes do members são a especificação executável. O **fake in-memory das 
 |---|---|
 | XP/streak/coins/badges (domínio puro) | `tests/unit/gamification.test.ts`, `tests/unit/coins.test.ts` |
 | Award/streak/ranking (integração) | `tests/integration/gamification.test.ts` |
-| Missões | `tests/unit/missions.test.ts` |
+| Missões | `tests/unit/missions.test.ts`, `tests/integration/gamification.test.ts` (claim + poupador) |
 | Ligas | `tests/unit/league.test.ts`, `tests/integration/league.test.ts` |
 | Avatar | `tests/unit/avatar.test.ts`, `tests/integration/avatar.test.ts` |
 | Quarto | `tests/unit/room.test.ts`, `tests/integration/room.test.ts` |

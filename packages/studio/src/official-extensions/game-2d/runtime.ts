@@ -150,28 +150,30 @@ export const gameTwoDRuntime = `(function () {
   // Wrapper público: aplica o "piscar" (invencibilidade) e delega o desenho real.
   function drawSprite(ctx, sprite) {
     if (!ctx || !sprite) return;
+    var op = (typeof sprite.opacity === 'number') ? sprite.opacity : 1;
     if (sprite.blinkFrames > 0) {
       sprite.blinkFrames--;
-      if (Math.floor(sprite.blinkFrames / 6) % 2 === 0) {
-        var pa = ctx.globalAlpha;
-        ctx.globalAlpha = 0.35;
-        _drawSpriteRaw(ctx, sprite);
-        ctx.globalAlpha = pa;
-        return;
-      }
+      // Fase "apagada" do piscar: meia transparência por cima da opacidade atual.
+      if (Math.floor(sprite.blinkFrames / 6) % 2 === 0) op = op * 0.35;
     }
+    if (op >= 1) { _drawSpriteRaw(ctx, sprite); return; }
+    var pa = ctx.globalAlpha;
+    ctx.globalAlpha = Math.max(0, op);
     _drawSpriteRaw(ctx, sprite);
+    ctx.globalAlpha = pa;
   }
   function _drawSpriteRaw(ctx, sprite) {
     if (!ctx || !sprite) return;
     var ang = (typeof sprite.angle === 'number') ? sprite.angle : 0;
-    if (!ang) { _drawSpriteBody(ctx, sprite); return; }
-    // Gira o desenho em torno do CENTRO do sprite (o corpo segue em coordenadas
-    // absolutas — mesmo truque translate/rotate/translate da referência).
+    var flip = sprite.facing === -1;
+    if (!ang && !flip) { _drawSpriteBody(ctx, sprite); return; }
+    // Gira/espelha o desenho em torno do CENTRO do sprite (o corpo segue em
+    // coordenadas absolutas — mesmo truque translate/rotate/translate da referência).
     var cx = sprite.x + (sprite.w || 0) / 2, cy = sprite.y + (sprite.h || 0) / 2;
     ctx.save();
     ctx.translate(cx, cy);
-    ctx.rotate(ang);
+    if (ang) ctx.rotate(ang);
+    if (flip) ctx.scale(-1, 1);
     ctx.translate(-cx, -cy);
     _drawSpriteBody(ctx, sprite);
     ctx.restore();
@@ -320,6 +322,123 @@ export const gameTwoDRuntime = `(function () {
       osc.start(t);
       osc.stop(t + dur);
     } catch (e) {}
+  }
+
+  // Um tom com varredura de frequência opcional (slide 'exp'|'linear'|'none').
+  function _fxBeep(type, fromHz, toHz, durSec, slide, peak) {
+    var ctx = ensureAudio();
+    if (!ctx) return;
+    try {
+      if (ctx.state === 'suspended' && ctx.resume) ctx.resume();
+      var osc = ctx.createOscillator(), gain = ctx.createGain();
+      var t = ctx.currentTime;
+      osc.type = type || 'square';
+      osc.frequency.setValueAtTime(fromHz, t);
+      if (toHz !== fromHz && slide && slide !== 'none') {
+        if (slide === 'exp') osc.frequency.exponentialRampToValueAtTime(Math.max(1, toHz), t + durSec);
+        else osc.frequency.linearRampToValueAtTime(toHz, t + durSec);
+      }
+      var pk = (typeof peak === 'number') ? peak : 0.1;
+      gain.gain.setValueAtTime(pk, t);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + durSec);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(t); osc.stop(t + durSec);
+    } catch (e) {}
+  }
+  // Uma sequência de notas: cada nota é [freqHz, inícioSeg, duraçãoSeg].
+  function _fxSeq(type, notes, peak) {
+    var ctx = ensureAudio();
+    if (!ctx) return;
+    try {
+      if (ctx.state === 'suspended' && ctx.resume) ctx.resume();
+      var t0 = ctx.currentTime;
+      var pk = (typeof peak === 'number') ? peak : 0.1;
+      for (var i = 0; i < notes.length; i++) {
+        var n = notes[i];
+        var osc = ctx.createOscillator(), gain = ctx.createGain();
+        osc.type = type || 'square';
+        osc.frequency.value = n[0];
+        gain.gain.setValueAtTime(0.0001, t0 + n[1]);
+        gain.gain.exponentialRampToValueAtTime(pk, t0 + n[1] + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + n[1] + n[2]);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(t0 + n[1]); osc.stop(t0 + n[1] + n[2]);
+      }
+    } catch (e) {}
+  }
+  /**
+   * Toca um efeito sonoro PRONTO pelo nome (sintetizado, sem arquivo). Reusa os
+   * sons dos Kits quando combinam e tem receitas próprias para os demais.
+   */
+  function playFx(name) {
+    switch (name) {
+      case 'coin': _fxSeq('square', [[988, 0, 0.08], [1319, 0.07, 0.14]], 0.08); return;
+      case 'gem': _fxSeq('triangle', [[1047, 0, 0.09], [1568, 0.08, 0.16]], 0.09); return;
+      case 'heal': _fxSeq('sine', [[660, 0, 0.12], [880, 0.1, 0.2]], 0.1); return;
+      case 'powerup': _fxBeep('square', 300, 1200, 0.35, 'exp', 0.09); return;
+      case 'levelup': _fxSeq('square', [[523, 0, 0.1], [659, 0.1, 0.1], [784, 0.2, 0.1], [1047, 0.3, 0.22]], 0.08); return;
+      case 'collect': playCollect(); return;
+      case 'laser': _fxBeep('square', 1200, 300, 0.12, 'exp', 0.07); return;
+      case 'shoot': playShoot(); return;
+      case 'explosion': playExplosion(); return;
+      case 'hit': _fxBeep('square', 300, 90, 0.1, 'exp', 0.12); return;
+      case 'hurt': playDinoHurt(); return;
+      case 'punch': _fxBeep('sawtooth', 200, 60, 0.12, 'exp', 0.14); return;
+      case 'jump': playJump(); return;
+      case 'land': _fxBeep('sine', 220, 80, 0.12, 'exp', 0.12); return;
+      case 'whoosh': _fxBeep('sine', 200, 900, 0.18, 'linear', 0.05); return;
+      case 'step': _fxBeep('square', 150, 110, 0.05, 'exp', 0.06); return;
+      case 'bounce': _fxBeep('sine', 400, 720, 0.08, 'linear', 0.1); return;
+      case 'whistle': playWhistle(); return;
+      case 'win': _fxSeq('square', [[523, 0, 0.12], [659, 0.12, 0.12], [784, 0.24, 0.12], [1047, 0.36, 0.3]], 0.08); return;
+      case 'gameover': _fxSeq('sawtooth', [[440, 0, 0.18], [349, 0.18, 0.18], [262, 0.36, 0.42]], 0.12); return;
+      case 'start': _fxSeq('square', [[523, 0, 0.1], [784, 0.1, 0.2]], 0.08); return;
+      case 'alarm': _fxSeq('square', [[880, 0, 0.12], [660, 0.14, 0.12], [880, 0.28, 0.12], [660, 0.42, 0.12]], 0.08); return;
+      case 'click': _fxBeep('square', 800, 800, 0.04, 'none', 0.05); return;
+      case 'confirm': _fxSeq('sine', [[660, 0, 0.08], [990, 0.07, 0.12]], 0.08); return;
+      case 'error': _fxSeq('square', [[200, 0, 0.12], [160, 0.13, 0.2]], 0.1); return;
+      case 'select': _fxBeep('triangle', 520, 720, 0.06, 'linear', 0.06); return;
+      case 'blip': _fxBeep('square', 1000, 1000, 0.05, 'none', 0.05); return;
+      default: _fxBeep('square', 880, 1320, 0.18, 'exp', 0.08); return;
+    }
+  }
+
+  // ---- Música de fundo: uma melodia curta sintetizada que toca em loop ----
+  // Só UMA música por vez: chamar de novo para a anterior antes de começar.
+  var _musicTimer = null;
+  var _musicStop = false;
+  var MUSIC_TUNES = {
+    adventure: { wave: 'square', step: 200, notes: [262, 330, 392, 330, 440, 392, 330, 262] },
+    happy: { wave: 'triangle', step: 180, notes: [523, 587, 659, 784, 659, 587, 523, 587] },
+    tense: { wave: 'sawtooth', step: 160, notes: [220, 233, 220, 207, 220, 247, 220, 196] },
+    calm: { wave: 'sine', step: 320, notes: [392, 440, 523, 440, 392, 349, 392, 0] },
+    victory: { wave: 'square', step: 200, notes: [523, 523, 523, 659, 784, 0, 784, 1047] }
+  };
+  function playMusic(name) {
+    stopMusic();
+    var tune = MUSIC_TUNES[name] || MUSIC_TUNES.adventure;
+    var step = (typeof tune.step === 'number' && tune.step > 0) ? tune.step : 200;
+    var i = 0;
+    _musicStop = false;
+    function next() {
+      if (_musicStop) return;
+      var f = tune.notes[i % tune.notes.length];
+      if (f > 0) _fxBeep(tune.wave, f, f, step / 1000 * 0.9, 'none', 0.05);
+      i++;
+      _musicTimer = setTimeout(next, step);
+    }
+    next();
+  }
+  function stopMusic() {
+    _musicStop = true;
+    if (_musicTimer) { clearTimeout(_musicTimer); _musicTimer = null; }
+  }
+
+  // ---- Notas musicais por nome (dó ré mi…) → frequência ----
+  var NOTE_FREQS = { C: 262, D: 294, E: 330, F: 349, G: 392, A: 440, B: 494, C5: 523 };
+  function playNote(note, ms) {
+    var f = NOTE_FREQS[note];
+    playSound(typeof f === 'number' ? f : 440, ms);
   }
 
   // ---- Ponteiro (mouse/toque, Pointer Events) ----
@@ -2318,9 +2437,659 @@ export const gameTwoDRuntime = `(function () {
   defineLazyGlobal('ctx', function () { return ensureStage(); });
   defineLazyGlobal('tela', function () { ensureStage(); return _stageCanvas; });
 
+  // ============================================================
+  // Kit equilibrista (Stick Hero) — v0.13.0
+  // Estica o bastão segurando o mouse/dedo, solta para derrubar e atravessar.
+  // Lê o estado do ponteiro global (pointer.down) — sem listeners próprios.
+  // ============================================================
+  function shRoundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+  function shGeneratePlatform(game) {
+    var w = game.w;
+    var minGap = Math.round(w * 0.10), maxGap = Math.round(w * 0.42);
+    var minW = Math.round(w * 0.06), maxW = Math.round(w * 0.24);
+    var last = game.platforms[game.platforms.length - 1];
+    var furthest = last.x + last.w;
+    var x = furthest + minGap + Math.floor(Math.random() * (maxGap - minGap));
+    var pw = minW + Math.floor(Math.random() * (maxW - minW));
+    game.platforms.push({ x: x, w: pw });
+  }
+  function shGenerateTree(game) {
+    var last = game.trees[game.trees.length - 1];
+    var furthest = last ? last.x : 0;
+    var x = furthest + Math.round(game.w * 0.08) + Math.floor(Math.random() * Math.round(game.w * 0.30));
+    var colors = ['#6D8821', '#8FAC34', '#98B333'];
+    game.trees.push({ x: x, color: colors[Math.floor(Math.random() * 3)] });
+  }
+  function shReset(game) {
+    game.phase = 'waiting';
+    game.last = 0;
+    game.sceneOffset = 0;
+    game.score = 0;
+    game.perfectFlash = 0;
+    game.wasDown = false;
+    var startW = Math.round(game.w * 0.13);
+    game.platforms = [{ x: Math.round(game.w * 0.12), w: startW }];
+    shGeneratePlatform(game); shGeneratePlatform(game);
+    shGeneratePlatform(game); shGeneratePlatform(game);
+    game.sticks = [{ x: game.platforms[0].x + game.platforms[0].w, length: 0, rotation: 0 }];
+    game.trees = [];
+    for (var i = 0; i < 12; i++) shGenerateTree(game);
+    game.heroX = game.platforms[0].x + game.platforms[0].w - game.cfg.heroEdge;
+    game.heroY = 0;
+  }
+  function shConfig(w, h) {
+    return {
+      heroW: Math.max(10, Math.round(w * 0.045)),
+      heroH: Math.max(16, Math.round(h * 0.085)),
+      platformH: Math.round(h * 0.30),
+      heroEdge: Math.max(3, Math.round(w * 0.015)),
+      perfect: Math.max(6, Math.round(w * 0.022)),
+      stretch: w * 0.85,
+      turn: 320,
+      walk: w * 0.85,
+      trans: w * 1.7,
+      fall: h * 1.4
+    };
+  }
+  function createStickHero(ctx) {
+    if (!ctx || !ctx.canvas) return null;
+    var w = ctx.canvas.width, h = ctx.canvas.height;
+    var game = { ctx: ctx, w: w, h: h, cfg: shConfig(w, h), paddingX: Math.round(w * 0.27) };
+    shReset(game);
+    return game;
+  }
+  function shHitPlatform(game) {
+    var st = game.sticks[game.sticks.length - 1];
+    var far = st.x + st.length;
+    var p = game.cfg.perfect;
+    for (var i = 0; i < game.platforms.length; i++) {
+      var pl = game.platforms[i];
+      if (pl.x < far && far < pl.x + pl.w) {
+        var mid = pl.x + pl.w / 2;
+        var perfect = (mid - p / 2 < far) && (far < mid + p / 2);
+        return { platform: pl, perfect: perfect };
+      }
+    }
+    return { platform: null, perfect: false };
+  }
+  function updateStickHero(game) {
+    if (!game) return;
+    var cfg = game.cfg;
+    var down = pointer.down;
+    var pressed = down && !game.wasDown;
+    var released = !down && game.wasDown;
+    game.wasDown = down;
+    if (pressed) {
+      if (game.phase === 'waiting') { game.phase = 'stretching'; game.last = now(); }
+      else if (game.phase === 'over') { shReset(game); }
+    }
+    if (released && game.phase === 'stretching') game.phase = 'turning';
+
+    var t = now();
+    var dt = game.last ? (t - game.last) / 1000 : 0;
+    game.last = t;
+    if (dt > 0.05) dt = 0.05;
+    if (dt < 0) dt = 0;
+
+    var st = game.sticks[game.sticks.length - 1];
+    if (game.phase === 'stretching') {
+      st.length += cfg.stretch * dt;
+    } else if (game.phase === 'turning') {
+      st.rotation += cfg.turn * dt;
+      if (st.rotation >= 90) {
+        st.rotation = 90;
+        var hit = shHitPlatform(game);
+        if (hit.platform) {
+          game.score += hit.perfect ? 2 : 1;
+          if (hit.perfect) game.perfectFlash = 1;
+          shGeneratePlatform(game); shGenerateTree(game); shGenerateTree(game);
+        }
+        game.phase = 'walking';
+      }
+    } else if (game.phase === 'walking') {
+      game.heroX += cfg.walk * dt;
+      var hw = shHitPlatform(game);
+      if (hw.platform) {
+        var maxX = hw.platform.x + hw.platform.w - cfg.heroEdge;
+        if (game.heroX > maxX) { game.heroX = maxX; game.phase = 'transitioning'; }
+      } else {
+        var maxX2 = st.x + st.length + cfg.heroW;
+        if (game.heroX > maxX2) { game.heroX = maxX2; game.phase = 'falling'; }
+      }
+    } else if (game.phase === 'transitioning') {
+      game.sceneOffset += cfg.trans * dt;
+      var ht = shHitPlatform(game);
+      if (ht.platform) {
+        var goal = ht.platform.x + ht.platform.w - game.paddingX;
+        if (game.sceneOffset > goal) {
+          game.sceneOffset = goal;
+          game.sticks.push({ x: ht.platform.x + ht.platform.w, length: 0, rotation: 0 });
+          game.phase = 'waiting';
+        }
+      } else { game.phase = 'waiting'; }
+    } else if (game.phase === 'falling') {
+      if (st.rotation < 180) st.rotation += cfg.turn * dt;
+      game.heroY += cfg.fall * dt;
+      if (game.heroY > game.h) game.phase = 'over';
+    }
+    if (game.perfectFlash > 0) { game.perfectFlash -= dt * 0.6; if (game.perfectFlash < 0) game.perfectFlash = 0; }
+    shDraw(game);
+  }
+  function shDrawHill(game, fromBottom, amp, color) {
+    var ctx = game.ctx, w = game.w, h = game.h;
+    var baseY = h - fromBottom;
+    var off = game.sceneOffset * 0.2;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(0, h);
+    ctx.lineTo(0, baseY);
+    for (var x = 0; x <= w; x += 14) ctx.lineTo(x, baseY - Math.sin((x + off) * 0.02) * amp);
+    ctx.lineTo(w, h);
+    ctx.closePath();
+    ctx.fill();
+  }
+  function shDrawBackground(game) {
+    var ctx = game.ctx, w = game.w, h = game.h;
+    var sky = ctx.createLinearGradient(0, 0, 0, h);
+    sky.addColorStop(0, '#BBD691');
+    sky.addColorStop(1, '#FEF1E1');
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, w, h);
+    shDrawHill(game, h * 0.30, h * 0.05, '#95C629');
+    shDrawHill(game, h * 0.22, h * 0.08, '#659F1C');
+    var baseY = h - game.cfg.platformH - 2;
+    for (var i = 0; i < game.trees.length; i++) {
+      var tr = game.trees[i];
+      var x = tr.x - game.sceneOffset * 0.2;
+      if (x < -20 || x > w + 20) continue;
+      ctx.fillStyle = '#7D833C';
+      ctx.fillRect(x - 1, baseY - h * 0.04, 2, h * 0.04);
+      ctx.fillStyle = tr.color;
+      ctx.beginPath();
+      ctx.moveTo(x - h * 0.035, baseY - h * 0.04);
+      ctx.lineTo(x, baseY - h * 0.14);
+      ctx.lineTo(x + h * 0.035, baseY - h * 0.04);
+      ctx.closePath();
+      ctx.fill();
+    }
+  }
+  function shDraw(game) {
+    var ctx = game.ctx, cfg = game.cfg, w = game.w, h = game.h;
+    var top = h - cfg.platformH;
+    ctx.save();
+    ctx.clearRect(0, 0, w, h);
+    shDrawBackground(game);
+    ctx.save();
+    ctx.translate(-game.sceneOffset, 0);
+    // platforms
+    for (var i = 0; i < game.platforms.length; i++) {
+      var pl = game.platforms[i];
+      ctx.fillStyle = '#1b2330';
+      ctx.fillRect(pl.x, top, pl.w, cfg.platformH);
+      if (game.sticks[game.sticks.length - 1].x < pl.x) {
+        ctx.fillStyle = '#e23b3b';
+        ctx.fillRect(pl.x + pl.w / 2 - cfg.perfect / 2, top, cfg.perfect, cfg.perfect);
+      }
+    }
+    // hero
+    var hx = game.heroX - cfg.heroW / 2;
+    var hy = top - cfg.heroH + game.heroY;
+    ctx.fillStyle = '#1b2330';
+    shRoundRect(ctx, hx, hy, cfg.heroW, cfg.heroH, Math.max(2, cfg.heroW * 0.25));
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(hx + cfg.heroW * 0.72, hy + cfg.heroH * 0.28, Math.max(1.5, cfg.heroW * 0.13), 0, Math.PI * 2);
+    ctx.fill();
+    // sticks
+    for (var k = 0; k < game.sticks.length; k++) {
+      var s = game.sticks[k];
+      ctx.save();
+      ctx.translate(s.x, top);
+      ctx.rotate((Math.PI / 180) * s.rotation);
+      ctx.strokeStyle = '#1b2330';
+      ctx.lineWidth = Math.max(2, w * 0.008);
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(0, -s.length);
+      ctx.stroke();
+      ctx.restore();
+    }
+    ctx.restore();
+    // HUD
+    ctx.fillStyle = '#1b2330';
+    ctx.font = 'bold ' + Math.round(h * 0.10) + 'px Segoe UI, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'top';
+    ctx.fillText(String(game.score), w - w * 0.04, h * 0.04);
+    if (game.perfectFlash > 0) {
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, game.perfectFlash);
+      ctx.fillStyle = '#e23b3b';
+      ctx.textAlign = 'center';
+      ctx.font = 'bold ' + Math.round(h * 0.06) + 'px Segoe UI, sans-serif';
+      ctx.fillText('PERFEITO! +2', w / 2, h * 0.16);
+      ctx.restore();
+    }
+    if (game.phase === 'waiting') {
+      ctx.fillStyle = 'rgba(20,20,30,0.6)';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = Math.round(h * 0.045) + 'px Segoe UI, sans-serif';
+      ctx.fillText('Segure para esticar o bastão', w / 2, h * 0.45);
+    } else if (game.phase === 'over') {
+      ctx.fillStyle = 'rgba(20,20,30,0.7)';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = 'bold ' + Math.round(h * 0.06) + 'px Segoe UI, sans-serif';
+      ctx.fillText('Caiu! Toque para recomeçar', w / 2, h * 0.45);
+    }
+    ctx.restore();
+  }
+  function stickHeroScore(game) { return game ? game.score : 0; }
+  function stickHeroOver(game) { return game ? game.phase === 'over' : false; }
+  function restartStickHero(game) { if (game) shReset(game); }
+
+  // ============================================================
+  // Kit balão (Hot-Air-Balloon) — v0.13.0
+  // Suba segurando o mouse/dedo, economize combustível e desvie das árvores.
+  // ============================================================
+  function blMakeTree(game, fromX) {
+    var w = game.w;
+    var gap = w * 0.45 + Math.random() * w * 1.1;
+    var th = game.h * (0.16 + Math.random() * 0.22);
+    var colors = ['#6D8821', '#8FAC34', '#98B333'];
+    return { x: fromX + gap, th: th, color: colors[Math.floor(Math.random() * 3)] };
+  }
+  function blReset(game) {
+    var w = game.w, h = game.h;
+    game.over = false;
+    game.vVel = 0;
+    game.hVel = Math.max(2, w * 0.006);
+    game.groundY = h * 0.82;
+    game.by = game.groundY;
+    game.dist = 0;
+    game.meters = 0;
+    game.fuel = 100;
+    game.wasDown = false;
+    game.last = 0;
+    game.trees = [];
+    var fromX = w;
+    for (var i = 0; i < 6; i++) { var t = blMakeTree(game, fromX); game.trees.push(t); fromX = t.x; }
+  }
+  function createBalloon(ctx) {
+    if (!ctx || !ctx.canvas) return null;
+    var w = ctx.canvas.width, h = ctx.canvas.height;
+    var game = { ctx: ctx, w: w, h: h };
+    blReset(game);
+    return game;
+  }
+  function blCircle(ctx, x, y, r) { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); }
+  function updateBalloon(game) {
+    if (!game) return;
+    var w = game.w, h = game.h;
+    var down = pointer.down;
+    var pressed = down && !game.wasDown;
+    game.wasDown = down;
+    if (game.over) { if (pressed) blReset(game); blDraw(game); return; }
+    var t = now();
+    var dt = game.last ? (t - game.last) / 1000 : 0;
+    game.last = t;
+    if (dt > 0.05) dt = 0.05;
+    if (dt < 0) dt = 0;
+    var step = dt * 60;
+    var heating = down && game.fuel > 0;
+    var maxRise = h * 0.013, maxFall = h * 0.009;
+    if (heating) {
+      if (game.vVel > -maxRise) game.vVel -= h * 0.0011 * step;
+      var altitude = (game.groundY - game.by) / game.groundY;
+      game.fuel -= (0.06 + altitude * 0.10) * step;
+      if (game.fuel < 0) game.fuel = 0;
+    } else if (game.vVel < maxFall) {
+      game.vVel += h * 0.0006 * step;
+    }
+    game.by += game.vVel * step;
+    if (game.by > game.groundY) { game.by = game.groundY; game.vVel = 0; }
+    var airborne = game.by < game.groundY - 1;
+    if (airborne) game.dist += game.hVel * step;
+    game.meters = Math.floor(game.dist / (w * 0.03));
+    // recicla árvores que saíram pela esquerda
+    if (game.trees.length && (game.trees[0].x - game.dist) < -80) {
+      game.trees.shift();
+      var lastT = game.trees[game.trees.length - 1];
+      game.trees.push(blMakeTree(game, lastT ? lastT.x : game.dist + w));
+    }
+    // colisão: passando por uma árvore e baixo demais
+    var screenX = w * 0.3;
+    for (var i = 0; i < game.trees.length; i++) {
+      var tx = game.trees[i].x - game.dist;
+      if (Math.abs(tx - screenX) < w * 0.06 && game.by > game.groundY - game.trees[i].th) {
+        game.over = true;
+      }
+    }
+    if (game.fuel <= 0 && game.by >= game.groundY - 1) game.over = true;
+    blDraw(game);
+  }
+  function blHill(game, fromBottom, amp, color, par) {
+    var ctx = game.ctx, w = game.w, h = game.h;
+    var baseY = h - fromBottom;
+    var off = game.dist * par;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(0, h);
+    ctx.lineTo(0, baseY);
+    for (var x = 0; x <= w; x += 14) ctx.lineTo(x, baseY - Math.sin((x + off) * 0.015) * amp);
+    ctx.lineTo(w, h);
+    ctx.closePath();
+    ctx.fill();
+  }
+  function blDrawBalloon(game, x, by) {
+    var ctx = game.ctx, h = game.h;
+    var R = h * 0.11;
+    var cy = by - R * 2.0;
+    ctx.save();
+    ctx.fillStyle = '#D62828';
+    ctx.beginPath();
+    ctx.moveTo(x - R * 0.4, by - R * 0.95);
+    ctx.quadraticCurveTo(x - R, cy + R * 0.7, x - R, cy);
+    ctx.arc(x, cy, R, Math.PI, 0, false);
+    ctx.quadraticCurveTo(x + R, cy + R * 0.7, x + R * 0.4, by - R * 0.95);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#a51f1f';
+    ctx.lineWidth = Math.max(1, h * 0.004);
+    ctx.beginPath();
+    ctx.moveTo(x - R * 0.3, by - R * 0.95); ctx.lineTo(x - R * 0.22, by - R * 0.3);
+    ctx.moveTo(x + R * 0.3, by - R * 0.95); ctx.lineTo(x + R * 0.22, by - R * 0.3);
+    ctx.stroke();
+    ctx.fillStyle = '#8a5a2b';
+    ctx.fillRect(x - R * 0.28, by - R * 0.3, R * 0.56, R * 0.3);
+    ctx.restore();
+  }
+  function blDraw(game) {
+    var ctx = game.ctx, w = game.w, h = game.h;
+    ctx.save();
+    ctx.clearRect(0, 0, w, h);
+    var sky = ctx.createLinearGradient(0, 0, 0, h);
+    sky.addColorStop(0, '#AADBEA');
+    sky.addColorStop(1, '#FEF1E1');
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, w, h);
+    blHill(game, h * 0.30, h * 0.05, '#AAD155', 0.2);
+    blHill(game, h * 0.20, h * 0.07, '#84B249', 0.4);
+    ctx.fillStyle = '#5fa24a';
+    ctx.fillRect(0, game.groundY + h * 0.02, w, h);
+    var baseY = game.groundY + h * 0.02;
+    for (var i = 0; i < game.trees.length; i++) {
+      var tr = game.trees[i];
+      var x = tr.x - game.dist;
+      if (x < -60 || x > w + 60) continue;
+      var topY = baseY - tr.th;
+      ctx.fillStyle = '#885F37';
+      ctx.fillRect(x - h * 0.012, topY + tr.th * 0.4, h * 0.024, tr.th * 0.6);
+      ctx.fillStyle = tr.color;
+      var r = tr.th * 0.28;
+      blCircle(ctx, x, topY + r, r);
+      blCircle(ctx, x - r * 0.75, topY + r * 1.7, r * 0.9);
+      blCircle(ctx, x + r * 0.75, topY + r * 1.7, r * 0.9);
+    }
+    blDrawBalloon(game, w * 0.3, game.by);
+    // HUD: combustível + metros
+    var fw = w * 0.4, fh = h * 0.05, fx = w * 0.06, fy = h * 0.06;
+    ctx.strokeStyle = game.fuel <= 30 ? '#e23b3b' : '#ffffff';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(fx, fy, fw, fh);
+    ctx.fillStyle = game.fuel <= 30 ? 'rgba(230,40,40,0.55)' : 'rgba(150,150,200,0.55)';
+    ctx.fillRect(fx, fy, fw * game.fuel / 100, fh);
+    ctx.fillStyle = '#1b2330';
+    ctx.font = 'bold ' + Math.round(h * 0.07) + 'px Segoe UI, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'top';
+    ctx.fillText(game.meters + ' m', w - w * 0.06, fy);
+    if (game.over) {
+      ctx.fillStyle = 'rgba(20,20,30,0.7)';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = 'bold ' + Math.round(h * 0.06) + 'px Segoe UI, sans-serif';
+      ctx.fillText('Fim! Toque para recomeçar', w / 2, h * 0.45);
+    } else if (game.by >= game.groundY - 1 && game.dist === 0) {
+      ctx.fillStyle = 'rgba(20,20,30,0.55)';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = Math.round(h * 0.045) + 'px Segoe UI, sans-serif';
+      ctx.fillText('Segure para subir · voe baixo p/ poupar combustível', w / 2, h * 0.45);
+    }
+    ctx.restore();
+  }
+  function balloonScore(game) { return game ? game.meters : 0; }
+  function balloonFuel(game) { return game ? Math.round(game.fuel) : 0; }
+  function balloonOver(game) { return game ? !!game.over : false; }
+  function restartBalloon(game) { if (game) blReset(game); }
+
+  // ===== Genéricos Tier 1: mira/contas, vida/tempo, aparência, mundo, pausa =====
+  // Distância entre os CENTROS de dois sprites (em pixels).
+  function distance(a, b) {
+    if (!a || !b) return 0;
+    var dx = (a.x + (a.w || 0) / 2) - (b.x + (b.w || 0) / 2);
+    var dy = (a.y + (a.h || 0) / 2) - (b.y + (b.h || 0) / 2);
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+  // Ângulo (GRAUS, 0 = pra cima, horário) do sprite A até o sprite B.
+  function angleTo(a, b) {
+    if (!a || !b) return 0;
+    var dx = (b.x + (b.w || 0) / 2) - (a.x + (a.w || 0) / 2);
+    var dy = (b.y + (b.h || 0) / 2) - (a.y + (a.h || 0) / 2);
+    return Math.atan2(dx, -dy) / DEG;
+  }
+  // Faz o sprite A apontar para o sprite B (ajusta o ângulo).
+  function aimAt(a, b) {
+    if (!a || !b) return;
+    var dx = (b.x + (b.w || 0) / 2) - (a.x + (a.w || 0) / 2);
+    var dy = (b.y + (b.h || 0) / 2) - (a.y + (a.h || 0) / 2);
+    a.angle = Math.atan2(dx, -dy);
+  }
+  // Move o sprite A na direção do sprite B (px por quadro). Move a posição direto.
+  function moveToward(a, b, speed) {
+    if (!a || !b) return;
+    var sp = (typeof speed === 'number') ? speed : 3;
+    var dx = (b.x + (b.w || 0) / 2) - (a.x + (a.w || 0) / 2);
+    var dy = (b.y + (b.h || 0) / 2) - (a.y + (a.h || 0) / 2);
+    var len = Math.sqrt(dx * dx + dy * dy) || 1;
+    a.x += dx / len * sp;
+    a.y += dy / len * sp;
+  }
+  // Sorteia um número inteiro de min a max (inclusive).
+  function randomBetween(min, max) {
+    var lo = (typeof min === 'number') ? min : 0;
+    var hi = (typeof max === 'number') ? max : 1;
+    if (hi < lo) { var t = lo; lo = hi; hi = t; }
+    return Math.floor(Math.random() * (hi - lo + 1)) + lo;
+  }
+  // Verdadeiro com a chance dada (em %). Ex.: randomChance(30) ~ 30% das vezes.
+  function randomChance(percent) {
+    var p = (typeof percent === 'number') ? percent : 50;
+    return Math.random() * 100 < p;
+  }
+  // ---- Vida e tempo do sprite ----
+  function setHealth(s, n) {
+    if (!s) return;
+    var v = (typeof n === 'number') ? n : 0;
+    s.hp = v; s.hpMax = v;
+  }
+  function changeHealth(s, delta) {
+    if (!s) return;
+    var d = (typeof delta === 'number') ? delta : 0;
+    s.hp = (typeof s.hp === 'number' ? s.hp : 0) + d;
+    if (s.hp < 0) s.hp = 0;
+    if (typeof s.hpMax === 'number' && s.hp > s.hpMax) s.hp = s.hpMax;
+  }
+  function getHealth(s) { return s && typeof s.hp === 'number' ? s.hp : 0; }
+  function hasHealth(s) { return !!s && typeof s.hp === 'number' && s.hp > 0; }
+  // Verdadeiro no máximo a cada "frames" quadros (recarga POR sprite). Use num "se".
+  function cooldownReady(s, frames) {
+    if (!s) return false;
+    var n = (typeof frames === 'number' && frames > 0) ? Math.round(frames) : 1;
+    if (typeof s._cd !== 'number') s._cd = 0;
+    if (s._cd > 0) { s._cd -= 1; return false; }
+    s._cd = n;
+    return true;
+  }
+  // Tira do grupo quem "nasceu" há mais de N segundos (tempo de vida).
+  function pruneOld(group, seconds) {
+    if (!group || !group.items) return;
+    var max = (typeof seconds === 'number' ? seconds : 3) * 1000;
+    var t = now();
+    for (var i = group.items.length - 1; i >= 0; i--) {
+      var s = group.items[i];
+      if (!s) { group.items.splice(i, 1); continue; }
+      if (typeof s._born !== 'number') s._born = t;
+      if (t - s._born > max) group.items.splice(i, 1);
+    }
+  }
+  // ---- Aparência do sprite (espelhar, transparência, tamanho) ----
+  function flipSprite(s, dir) { if (s) s.facing = (dir === 'left') ? -1 : 1; }
+  function setOpacity(s, percent) {
+    if (!s) return;
+    var p = (typeof percent === 'number') ? percent : 100;
+    s.opacity = Math.max(0, Math.min(1, p / 100));
+  }
+  function setSize(s, w, h) {
+    if (!s) return;
+    if (typeof w === 'number') s.w = w;
+    if (typeof h === 'number') s.h = h;
+  }
+  function scaleSprite(s, factor) {
+    if (!s) return;
+    var f = (typeof factor === 'number' && factor > 0) ? factor : 1;
+    var cx = s.x + (s.w || 0) / 2, cy = s.y + (s.h || 0) / 2;
+    s.w = (s.w || 0) * f; s.h = (s.h || 0) * f;
+    s.x = cx - s.w / 2; s.y = cy - s.h / 2;
+  }
+  // ---- Mundo: dar a volta na tela (Pac-Man/Asteroids) ----
+  function wrapEdges(s) {
+    if (!s) return;
+    var c = ensureStage();
+    if (!c) return;
+    var w = stageW(c), h = stageH(c);
+    if (s.x + (s.w || 0) < 0) s.x = w;
+    else if (s.x > w) s.x = -(s.w || 0);
+    if (s.y + (s.h || 0) < 0) s.y = h;
+    else if (s.y > h) s.y = -(s.h || 0);
+  }
+  // ---- Estado do jogo: pausa (o aluno embrulha o movimento em "se não pausado") ----
+  var _paused = false;
+  function pauseGame() { _paused = true; }
+  function resumeGame() { _paused = false; }
+  function isPaused() { return _paused; }
+
+  // ===== Genéricos Tier 2: câmera, mapa destrutível, ordem de desenho, depuração =====
+  // ---- Câmera: rola o MUNDO; o HUD continua fixo na tela ----
+  var camera = { x: 0, y: 0 };
+  // Envolve uma função de desenho do MUNDO para aplicar o deslocamento da câmera.
+  // Com a câmera em (0,0) NÃO faz nada — jogos sem câmera ficam idênticos.
+  function _camWrap(fn) {
+    return function () {
+      var ctx = arguments[0];
+      var camOn = ctx && (camera.x !== 0 || camera.y !== 0);
+      if (camOn) { ctx.save(); ctx.translate(-camera.x, -camera.y); }
+      try { return fn.apply(null, arguments); }
+      finally { if (camOn) ctx.restore(); }
+    };
+  }
+  // Centraliza a câmera no sprite, presa aos limites do mundo (0..worldW/H).
+  function cameraFollow(s, worldW, worldH) {
+    if (!s) return;
+    var c = ensureStage();
+    var vw = c ? stageW(c) : 0, vh = c ? stageH(c) : 0;
+    var x = (s.x + (s.w || 0) / 2) - vw / 2;
+    var y = (s.y + (s.h || 0) / 2) - vh / 2;
+    if (typeof worldW === 'number' && worldW > vw) x = Math.max(0, Math.min(x, worldW - vw));
+    if (typeof worldH === 'number' && worldH > vh) y = Math.max(0, Math.min(y, worldH - vh));
+    camera.x = x; camera.y = y;
+  }
+  function setCamera(x, y) {
+    camera.x = (typeof x === 'number') ? x : 0;
+    camera.y = (typeof y === 'number') ? y : 0;
+  }
+  function cameraX() { return camera.x; }
+  function cameraY() { return camera.y; }
+  // ---- Mapa destrutível: muda/quebra/lê o tile na posição de um sprite ----
+  function setTileAt(map, px, py, index) {
+    if (!map || !map.rows || !map.tile) return;
+    var col = Math.floor((px - (map.ox || 0)) / map.tile);
+    var row = Math.floor((py - (map.oy || 0)) / map.tile);
+    if (row < 0 || row >= map.rows.length) return;
+    var r = map.rows[row];
+    if (!r || col < 0 || col >= r.length) return;
+    r[col] = (typeof index === 'number') ? index : -1;
+  }
+  function _spriteCenter(s) { return { x: s.x + (s.w || 0) / 2, y: s.y + (s.h || 0) / 2 }; }
+  function breakTileAtSprite(map, s) {
+    if (s) { var p = _spriteCenter(s); setTileAt(map, p.x, p.y, -1); }
+  }
+  function setTileAtSprite(map, index, s) {
+    if (s) { var p = _spriteCenter(s); setTileAt(map, p.x, p.y, index); }
+  }
+  function tileAtSprite(map, s) {
+    if (!s) return -1;
+    var p = _spriteCenter(s);
+    return tileAt(map, p.x, p.y);
+  }
+  // ---- Ordem de desenho dentro de um grupo (frente = desenhado por último) ----
+  function bringToFront(group, s) {
+    if (!group || !group.items) return;
+    var i = group.items.indexOf(s);
+    if (i >= 0) { group.items.splice(i, 1); group.items.push(s); }
+  }
+  function sendToBack(group, s) {
+    if (!group || !group.items) return;
+    var i = group.items.indexOf(s);
+    if (i >= 0) { group.items.splice(i, 1); group.items.unshift(s); }
+  }
+  // ---- Depuração: caixa de colisão e contador de FPS ----
+  function drawHitbox(s) {
+    if (!s) return;
+    var c = ensureStage();
+    if (!c) return;
+    var camOn = camera.x !== 0 || camera.y !== 0;
+    if (camOn) { c.save(); c.translate(-camera.x, -camera.y); }
+    c.save();
+    c.strokeStyle = '#ff2d95';
+    c.lineWidth = 2;
+    c.strokeRect(s.x, s.y, s.w || 0, s.h || 0);
+    c.restore();
+    if (camOn) c.restore();
+  }
+  var _fpsLast = 0, _fpsFrames = 0, _fpsValue = 0;
+  function showFps(x, y) {
+    var c = ensureStage();
+    if (!c) return;
+    var t = now();
+    _fpsFrames += 1;
+    if (!_fpsLast) _fpsLast = t;
+    if (t - _fpsLast >= 500) {
+      _fpsValue = Math.round((_fpsFrames * 1000) / (t - _fpsLast));
+      _fpsFrames = 0;
+      _fpsLast = t;
+    }
+    c.save();
+    c.fillStyle = '#00ff88';
+    c.font = 'bold 16px monospace';
+    c.fillText('FPS: ' + _fpsValue, typeof x === 'number' ? x : 8, typeof y === 'number' ? y : 20);
+    c.restore();
+  }
+
   window.SZGame2D = {
     createSprite: createSprite,
-    drawSprite: drawSprite,
+    drawSprite: _camWrap(drawSprite),
     clear: clear,
     fitScreen: fitScreen,
     spawnBullet: spawnBullet,
@@ -2334,6 +3103,43 @@ export const gameTwoDRuntime = `(function () {
     bounceOnEdges: bounceOnEdges,
     circleCollides: circleCollides,
     playSound: playSound,
+    playFx: playFx,
+    playMusic: playMusic,
+    stopMusic: stopMusic,
+    playNote: playNote,
+    // Genéricos Tier 1 (v0.15.0): mira/contas, vida/tempo, aparência, mundo, pausa.
+    distance: distance,
+    angleTo: angleTo,
+    aimAt: aimAt,
+    moveToward: moveToward,
+    randomBetween: randomBetween,
+    randomChance: randomChance,
+    setHealth: setHealth,
+    changeHealth: changeHealth,
+    getHealth: getHealth,
+    hasHealth: hasHealth,
+    cooldownReady: cooldownReady,
+    pruneOld: pruneOld,
+    flipSprite: flipSprite,
+    setOpacity: setOpacity,
+    setSize: setSize,
+    scaleSprite: scaleSprite,
+    wrapEdges: wrapEdges,
+    pauseGame: pauseGame,
+    resumeGame: resumeGame,
+    isPaused: isPaused,
+    // Genéricos Tier 2 (v0.16.0): câmera, mapa destrutível, ordem de desenho, depuração.
+    cameraFollow: cameraFollow,
+    setCamera: setCamera,
+    cameraX: cameraX,
+    cameraY: cameraY,
+    setTileAtSprite: setTileAtSprite,
+    breakTileAtSprite: breakTileAtSprite,
+    tileAtSprite: tileAtSprite,
+    bringToFront: bringToFront,
+    sendToBack: sendToBack,
+    drawHitbox: drawHitbox,
+    showFps: showFps,
     onPointer: onPointer,
     onKey: onKey,
     onOverlap: onOverlap,
@@ -2354,17 +3160,17 @@ export const gameTwoDRuntime = `(function () {
     flash: flash,
     shake: shake,
     emitParticles: emitParticles,
-    drawParticles: drawParticles,
+    drawParticles: _camWrap(drawParticles),
     // Tiles / tilemaps (v0.5.0).
     createTileMap: createTileMap,
-    drawTileMap: drawTileMap,
+    drawTileMap: _camWrap(drawTileMap),
     collideTileMap: collideTileMap,
     tileAt: tileAt,
     // Grupos de sprites + temporizadores (v0.6.0).
     createGroup: createGroup,
     spawn: spawn,
     updateGroup: updateGroup,
-    drawGroup: drawGroup,
+    drawGroup: _camWrap(drawGroup),
     forEachInGroup: forEachInGroup,
     countGroup: countGroup,
     clearGroup: clearGroup,
@@ -2427,6 +3233,19 @@ export const gameTwoDRuntime = `(function () {
     playWhistle: playWhistle,
     playBoom: playBoom,
     computerTurn: computerTurn,
-    drawAimReadout: drawAimReadout
+    drawAimReadout: drawAimReadout,
+    // Kit equilibrista (Stick Hero) (v0.13.0).
+    createStickHero: createStickHero,
+    updateStickHero: updateStickHero,
+    stickHeroScore: stickHeroScore,
+    stickHeroOver: stickHeroOver,
+    restartStickHero: restartStickHero,
+    // Kit balão (Hot-Air-Balloon) (v0.13.0).
+    createBalloon: createBalloon,
+    updateBalloon: updateBalloon,
+    balloonScore: balloonScore,
+    balloonFuel: balloonFuel,
+    balloonOver: balloonOver,
+    restartBalloon: restartBalloon
   };
 })();`

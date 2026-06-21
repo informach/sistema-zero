@@ -1,4 +1,5 @@
 import { Elysia } from 'elysia'
+import type { AccessCheckService } from '../../../application/access-check/access-check.service'
 import type { BuyAvatarPartService } from '../../../application/avatar/buy-avatar-part.service'
 import type { EquipAvatarService } from '../../../application/avatar/equip-avatar.service'
 import type { GetAvatarService } from '../../../application/avatar/get-avatar.service'
@@ -31,6 +32,7 @@ import type { SubmitStudioProjectService } from '../../../application/submit-stu
 import { AVATAR_STYLE } from '../../../domain/avatar/parts-catalog'
 import { assertInternalCaller, isPrivilegedActor, resolveAccountId, resolveUserId } from '../auth'
 import {
+  AccessQuery,
   AttachmentResolveParams,
   AudienceQuery,
   AvatarConfigBody,
@@ -42,6 +44,7 @@ import {
   LessonIdParams,
   MissionSlugParams,
   PublicProfileParams,
+  parseAccessRefs,
   parseProfileIds,
   QuizAttemptBody,
   QuizAttemptParams,
@@ -52,6 +55,7 @@ import {
   StudioCarryoverParams,
   StudioSubmissionBody,
   StudioSubmissionParams,
+  splitRequestedRefs,
   VacationBody,
   VideoPositionBody,
 } from '../dtos'
@@ -59,6 +63,7 @@ import {
 export interface MembersRoutesDeps {
   listMyCourses: ListMyCoursesService
   listCatalog: ListCatalogService
+  accessCheck: AccessCheckService
   getMyCourse: GetMyCourseService
   getLesson: GetLessonService
   resolveAttachment: GetAttachmentDownloadService
@@ -140,6 +145,36 @@ export function membersRoutes(deps: MembersRoutesDeps) {
         },
         { query: AudienceQuery },
       )
+      // "Esta CONTA tem acesso a estes produtos?" — gate de produtos que NÃO são
+      // curso de trilha (ex.: o Estúdio Completo como produto vendável). Resolve pela
+      // CONTA (responsável compra; em sessão de perfil o acesso é da conta) e reporta
+      // POR REF: matrícula específica (curso/comunidade) OU chave-mestra da vitrine.
+      // Mesmo motor do `/internal/access-check` (que o hub usa S2S), mas fronteado por
+      // JWT p/ o app do aluno consumir num Server Component.
+      .get(
+        '/access',
+        async ({ headers, query }) => {
+          // TODA ref pedida volta no mapa: as de formato inválido (que não vão à query)
+          // recebem `false` EXPLÍCITO — em vez de sumir e o chamador não distinguir
+          // "sem acesso" de "ref descartada".
+          const requested = splitRequestedRefs(query.refs)
+          const valid = parseAccessRefs(query.refs)
+          const result = await deps.accessCheck.execute(resolveAccountId(headers), valid)
+          const hasMasterForAudience =
+            (query.audience ?? 'kids') === 'kids' ? result.hasMasterKids : result.hasMaster
+          const validSet = new Set(valid)
+          const access: Record<string, boolean> = {}
+          for (const ref of requested) {
+            access[ref] =
+              validSet.has(ref) &&
+              (result.grants.includes(ref) ||
+                result.communities.includes(ref) ||
+                hasMasterForAudience)
+          }
+          return { access }
+        },
+        { query: AccessQuery },
+      )
       // Perfil de gamificação do aluno NA VITRINE (`?audience=`, default adult —
       // XP/streak/badges são segregados por audiência) — recurso do PRÓPRIO
       // usuário (sem CheckAccess: qualquer conta ativa; sem perfil → zeros).
@@ -153,6 +188,8 @@ export function membersRoutes(deps: MembersRoutesDeps) {
           return deps.getGamification.execute(userId, resolveAccountId(headers), {
             audience: query.audience ?? 'adult',
             withRanking: query.ranking === 'true',
+            // Equipe não ranqueia (só cliente conta) — o service omite o ranking.
+            privileged: isPrivilegedActor(headers),
           })
         },
         { query: GamificationQuery },

@@ -809,6 +809,45 @@ describe('Missões — progresso derivado + claim', () => {
     expect(final.daily.find((m: { slug: string }) => m.slug === 'daily-quiz').claimed).toBe(true)
   })
 
+  test('claim de missão que cruza lifetime coins destrava badge de poupador', async () => {
+    const { app, courses, entitlements, gamification } = buildApp()
+    const course = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
+
+    for (const [today, coins] of [
+      ['2026-05-30', 100],
+      ['2026-05-31', 100],
+      ['2026-06-01', 70],
+    ] as const) {
+      await gamification.award({
+        userId: USER,
+        accountId: USER,
+        audience: 'adult',
+        events: [{ sourceType: 'lesson_complete', sourceId: randomUUID(), amount: 1, coins }],
+        today,
+        now: new Date(`${today}T12:00:00.000Z`),
+        privileged: false,
+      })
+    }
+
+    const blockId = seedQuizBlock(courses, course.lessonIds[0])
+    await submitQuiz(app, course.lessonIds[0], blockId, { q1: ['b'] })
+
+    const before = await readJson(await getMe(app))
+    expect(before.coins.balance).toBe(285)
+    expect(
+      before.badges.find((b: { slug: string }) => b.slug === 'coins-saver-300').unlockedAt,
+    ).toBeNull()
+
+    const claim = await readJson(await claimMission(app, 'daily-quiz'))
+    expect(claim).toMatchObject({ claimed: true, coinsAwarded: 15, coinBalance: 300 })
+
+    const after = await readJson(await getMe(app))
+    expect(
+      after.badges.find((b: { slug: string }) => b.slug === 'coins-saver-300').unlockedAt,
+    ).not.toBeNull()
+  })
+
   test('claim de missão NÃO concluída → 409; inexistente → 404', async () => {
     const { app } = buildApp()
     expect((await claimMission(app, 'daily-quiz')).status).toBe(409)
@@ -848,5 +887,91 @@ describe('Streak-freeze + férias', () => {
 
     // fim antes do início → 400
     expect((await setVacation(app, { from: '2026-06-10', to: '2026-06-01' })).status).toBe(400)
+  })
+})
+
+describe('Gamificação — correções do full review (freeze/streak display/ranking de equipe)', () => {
+  test('freeze grátis do mês é CLAMPADO no teto (não passa de MAX_STREAK_FREEZES)', async () => {
+    const ctx = buildApp({ now: new Date('2026-06-01T12:00:00.000Z') })
+    const { app, courses, entitlements, gamification } = ctx
+    const kids = seedSampleCourse(courses, 'curso-kids', 'published', 'kids')
+    grantLifetime(entitlements, { userId: USER, courseRef: kids.slug })
+    // Perfil já no TETO (5 freezes), freeze grátis de MAIO concedido, ativo ONTEM.
+    const key = `${USER}:kids`
+    gamification.profiles.set(key, {
+      userId: USER,
+      accountId: USER,
+      xp: 100,
+      streakCurrent: 3,
+      streakBest: 3,
+      lastActivityDate: '2026-05-31',
+      coinBalance: 0,
+      streakFreezes: 5,
+      vacationFrom: null,
+      vacationTo: null,
+    })
+    gamification.accountIds.set(key, USER)
+    gamification.freezeMonths.set(key, '2026-05')
+
+    // Atividade no 1º dia de JUNHO → tenta o +1 grátis, mas já está no teto.
+    await complete(app, kids.lessonIds[0])
+    const profile = await gamification.getProfile(USER, 'kids')
+    expect(profile?.streakFreezes).toBe(5) // clampado — sem o fix seria 6
+    // E o mês NÃO é marcado como concedido (estava no teto): o grátis de junho continua
+    // disponível p/ quando houver espaço — antes o marcador avançava e queimava o benefício.
+    expect(profile?.freezeGrantedMonth).toBe('2026-05')
+  })
+
+  test('streak de exibição projeta o freeze grátis do mês (não mostra 0 na 1ª lacuna do mês)', async () => {
+    const ctx = buildApp({ now: new Date('2026-06-02T12:00:00.000Z') })
+    const { app, courses, entitlements, gamification } = ctx
+    const kids = seedSampleCourse(courses, 'curso-kids', 'published', 'kids')
+    grantLifetime(entitlements, { userId: USER, courseRef: kids.slug })
+    // streak 10, SEM freezes persistidos, freeze grátis de MAIO já usado; pulou 01/06.
+    const key = `${USER}:kids`
+    gamification.profiles.set(key, {
+      userId: USER,
+      accountId: USER,
+      xp: 100,
+      streakCurrent: 10,
+      streakBest: 10,
+      lastActivityDate: '2026-05-31',
+      coinBalance: 0,
+      streakFreezes: 0,
+      vacationFrom: null,
+      vacationTo: null,
+    })
+    gamification.accountIds.set(key, USER)
+    gamification.freezeMonths.set(key, '2026-05')
+
+    // GET em 02/06 ANTES de qualquer atividade: a lacuna de 01/06 é coberta pelo freeze
+    // grátis prestes a ser concedido → exibe 10, não 0 (contrato guilt-free).
+    const me = await readJson(
+      await app.handle(
+        new Request('http://localhost/members/gamification/me?audience=kids', {
+          headers: authHeaders,
+        }),
+      ),
+    )
+    expect(me.streak.current).toBe(10)
+  })
+
+  test('equipe COM matrícula real: pede o próprio ranking → omitido (equipe não ranqueia)', async () => {
+    const ctx = buildApp()
+    const { app, courses, entitlements } = ctx
+    const kids = seedSampleCourse(courses, 'curso-kids', 'published', 'kids')
+    const STAFF = '66666666-6666-6666-6666-666666666666'
+    grantLifetime(entitlements, { userId: STAFF, courseRef: kids.slug })
+    const staffHeaders = { 'x-auth-user-id': STAFF, 'x-auth-user-role': 'staff' }
+    await complete(app, kids.lessonIds[0], staffHeaders) // pontua como equipe (privileged)
+
+    const me = await readJson(
+      await app.handle(
+        new Request('http://localhost/members/gamification/me?audience=kids&ranking=true', {
+          headers: staffHeaders,
+        }),
+      ),
+    )
+    expect(me.ranking).toBeUndefined()
   })
 })

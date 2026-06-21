@@ -400,7 +400,8 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
       const block = this.blocks
         .filter((b) => b.lessonId === l.id && b.kind === 'studio')
         .sort((a, b) => b.sortOrder - a.sortOrder)
-        .find((b) => (b.content as { chain?: string }).chain === chain)
+        // `trim` no valor armazenado (o serviço já passa `chain` trimado) — mirror do SQL.
+        .find((b) => (b.content as { chain?: string }).chain?.trim() === chain)
       if (block) return { blockId: block.id, lessonId: l.id }
     }
     return null
@@ -1120,10 +1121,13 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     // Streak só com XP REAL novo (amount > 0) — MARCO não move (mirror do SQL).
     // A carteira Zappy também só ganha aqui (faucets têm amount > 0).
     if (newEvents.some((e) => e.amount > 0)) {
-      // Freeze grátis do mês (lazy/idempotente) — mirror do Drizzle.
+      // Freeze grátis do mês (lazy/idempotente; só entra se houver espaço no teto, e o
+      // mês só é MARCADO quando entra) — mirror do Drizzle.
       const monthKey = input.today.slice(0, 7)
-      const freezesBefore =
-        (profile?.streakFreezes ?? 0) + (this.freezeMonths.get(key) !== monthKey ? 1 : 0)
+      const currentFreezes = profile?.streakFreezes ?? 0
+      const grantsFreeFreeze =
+        this.freezeMonths.get(key) !== monthKey && currentFreezes < MAX_STREAK_FREEZES
+      const freezesBefore = currentFreezes + (grantsFreeFreeze ? 1 : 0)
       streak = advanceStreak(
         {
           streakCurrent: profile?.streakCurrent ?? 0,
@@ -1136,7 +1140,7 @@ export class InMemoryGamificationRepository implements GamificationRepository {
         input.today,
       )
       const freezesAfter = freezesBefore - streak.freezesConsumed
-      this.freezeMonths.set(key, monthKey)
+      if (grantsFreeFreeze) this.freezeMonths.set(key, monthKey)
       totalXp += xpAwarded
 
       // Carteira Zappy (mirror do Drizzle): rotina (conta no teto) + marco de streak (exempto).
@@ -1280,7 +1284,11 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     userId: string,
     audience: CourseAudience,
   ): Promise<GamificationProfileRecord | null> {
-    return this.profiles.get(this.profileKey(userId, audience)) ?? null
+    const key = this.profileKey(userId, audience)
+    const rec = this.profiles.get(key)
+    if (!rec) return null
+    // `freezeGrantedMonth` mora num mapa à parte no fake — mirror do que o Drizzle lê da coluna.
+    return { ...rec, freezeGrantedMonth: this.freezeMonths.get(key) ?? null }
   }
 
   async listByAccount(
@@ -1344,6 +1352,40 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     return { position: ahead + 1, totalStudents }
   }
 
+  /** Mirror do `rankProfiles` do Drizzle: coorte resolvida 1×, ranqueia cada perfil em memória. */
+  async rankProfiles(
+    accountId: string,
+    profileIds: string[],
+    audience: CourseAudience,
+    now: Date,
+  ): Promise<Map<string, number>> {
+    if (profileIds.length === 0) return new Map()
+    const accountsWithEntitlement = new Set<string>()
+    for (const e of this.sources?.entitlements.byId.values() ?? []) {
+      if (this.accountHasActiveAudienceAccess(e.userId, audience, now)) {
+        accountsWithEntitlement.add(e.userId)
+      }
+    }
+    if (!accountsWithEntitlement.has(accountId)) return new Map()
+
+    const cohortXp: number[] = []
+    const xpByUser = new Map<string, number>()
+    for (const [key, rec] of this.profiles) {
+      if (key !== this.profileKey(rec.userId, audience)) continue
+      if (this.privilegedUsers.has(rec.userId)) continue
+      const acc = this.accountIds.get(key)
+      if (!acc || !accountsWithEntitlement.has(acc)) continue
+      cohortXp.push(rec.xp)
+      xpByUser.set(rec.userId, rec.xp)
+    }
+    const out = new Map<string, number>()
+    for (const profileId of profileIds) {
+      const myXp = xpByUser.get(profileId) ?? 0
+      out.set(profileId, cohortXp.filter((xp) => xp > myXp).length + 1)
+    }
+    return out
+  }
+
   async hasActiveAudienceAccess(
     accountId: string,
     audience: CourseAudience,
@@ -1402,6 +1444,7 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     const cap = applyDailyCap([input.rewardCoins], earnedTodayBase, DAILY_COIN_CAP)
     const coinsAwarded = cap.totalGranted
     const coinBalance = balance + coinsAwarded
+    const newLifetime = wallet.lifetime + coinsAwarded
     if (coinsAwarded > 0) {
       this.coinEvents.push({
         userId: input.userId,
@@ -1416,10 +1459,27 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     this.wallets.set(key, {
       earnedToday: earnedTodayBase + coinsAwarded,
       earnedDate: input.today,
-      lifetime: wallet.lifetime + coinsAwarded,
+      lifetime: newLifetime,
     })
     if (profile) {
-      this.profiles.set(key, { ...profile, xp: profile.xp + input.rewardXp, coinBalance })
+      this.profiles.set(key, {
+        ...profile,
+        xp: profile.xp + input.rewardXp,
+        coinBalance,
+      })
+    }
+    for (const slug of coinsSaverBadgeSlugs(newLifetime)) {
+      const dup = this.badges.some(
+        (b) => b.userId === input.userId && b.audience === input.audience && b.badgeSlug === slug,
+      )
+      if (!dup) {
+        this.badges.push({
+          userId: input.userId,
+          audience: input.audience,
+          badgeSlug: slug,
+          unlockedAt: input.now,
+        })
+      }
     }
     return { claimed: true, xpAwarded: input.rewardXp, coinsAwarded, coinBalance }
   }

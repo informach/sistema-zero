@@ -888,6 +888,13 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
   ::before,
   ::after {
     animation-duration: 0.01ms !important;
+    /* Sem isto, animações INFINITAS (pulse/twinkle/flicker/float/bob do quarto e
+       da UI) seguem repetindo num período ~0 = cintilação/estrobo justamente p/
+       quem pediu MENOS movimento (risco de fotossensibilidade numa plataforma
+       infantil). Rodar UMA vez snapa no estado de repouso (0%/100%) sem deixar
+       animações de ENTRADA presas no estado inicial. Reset canônico (Andy Bell). */
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

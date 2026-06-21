@@ -3,20 +3,22 @@ import {
   animatedHeroExample,
   asteroidsClassicExample,
   asteroidsExample,
+  balloonExample,
   dinoRunExample,
   gorilasExample,
   gorilasVsRobotExample,
   platformerExample,
   pongExample,
+  stickHeroExample,
   tilemapExample,
 } from './examples'
 
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.12.0',
+  version: '0.16.0',
   description:
-    'Blocos para criar jogos 2D no Canvas: sprites (cor/imagem/animação), grupos de muitos sprites, movimento, física, efeitos, tiles/tilemaps, HUD, telas/cenas, som, e KITS por tema — Kit espaço (nave e asteroides), Kit dino (corrida com obstáculos) e Kit gorilas (batalha de bananas por turnos: cidade destrutível, vento e mira por arrastar e soltar).',
+    'Blocos para criar jogos 2D no Canvas: sprites (cor/imagem/animação), grupos de muitos sprites, movimento, física, efeitos, tiles/tilemaps, HUD, telas/cenas, som, e KITS por tema — Kit espaço (nave e asteroides), Kit dino (corrida com obstáculos), Kit gorilas (batalha de bananas por turnos), Kit equilibrista (estica o bastão e atravessa, estilo Stick Hero) e Kit balão (sobe segurando o mouse e economiza combustível).',
   category: 'games',
   official: true,
   enabledByDefault: false,
@@ -196,6 +198,52 @@ Dá pra montar jogos deste estilo **só com blocos genéricos** (HTML + CSS + Pr
 - A **tela cheia** já existia (entrar/sair/alternar e "está em tela cheia?").
 
 Veja o exemplo clássico **"Cidade & Moinho (na mão)"** (no painel de Extensões → "Exemplos clássicos") — um mini-Gorillas montado SÓ com esses blocos: arrastar a bomba, vento, moinho SVG girando, painel de HTML e botão de tela cheia.
+
+### Som rico: efeitos, notas e música (v0.14.0)
+
+A categoria **🔊 Som** ganhou uma biblioteca de sons PRONTOS — tudo sintetizado (Web Audio), sem
+precisar de arquivos:
+
+- **Tocar efeito** — um menu com dezenas de efeitos típicos de jogo: moeda, joia, vida, power-up,
+  subir de nível, coletar, tiro, tiro grande, explosão, batida, dano, socar, pulo, aterrissar,
+  zunido, passo, quicar, assobio, vitória, derrota, começar, alarme, clique, confirmar, erro,
+  selecionar e aviso. É só escolher no menu — um bloco só dá acesso a todos.
+- **Tocar a nota … por … ms** — toca uma nota musical (dó, ré, mi, fá, sol, lá, si e dó agudo);
+  junte várias para montar uma melodia.
+- **Tocar música de fundo** — uma musiquinha em loop (aventura, alegre, tensão, calma ou vitória);
+  só uma música toca por vez. **Parar a música de fundo** silencia.
+
+Lembrete: o navegador só deixa o som tocar **depois** de um clique ou tecla do jogador.
+
+### Blocos genéricos Tier 1 (v0.15.0)
+
+Tijolinhos que faltavam para montar mais tipos de jogo, em categorias novas e existentes:
+
+- **🎯 Mira e contas**: **Apontar para** e **Mover na direção de** (perseguição/IA), **a distância entre** e
+  **o ângulo até** dois sprites, **um número de … a …** (sorteio) e **tem chance de … %?** (evento aleatório).
+- **❤️ Vida e tempo**: **Dar vida**, **Mudar a vida** (negativo = dano), **a vida do sprite**, **ainda tem
+  vida?**, **pode agir? (recarga de N quadros)** (cadência de tiro por sprite) e **Tirar do grupo quem viveu
+  mais de N segundos** (tiros somem sozinhos).
+- **✨ Aparência**: **Virar** (espelhar esquerda/direita), **Mudar a transparência**, **Mudar o tamanho** e
+  **Multiplicar o tamanho** do sprite.
+- **🕹️ Movimento**: **Dar a volta na tela** (sai de um lado, reaparece no outro — estilo Pac-Man/Asteroids).
+- **🎬 Telas e cenas**: **Pausar**, **Continuar** e **o jogo está pausado?** — embrulhe o movimento num
+  "se o jogo não está pausado" e desenhe a tela de PAUSA por cima.
+
+### Blocos genéricos Tier 2 (v0.16.0)
+
+Para mundos maiores que a tela e jogos mais ricos:
+
+- **🎥 Câmera**: **Fazer a câmera seguir o sprite** (mundo maior que a tela, presa às bordas), **Mover a
+  câmera** na mão e **a posição x/y da câmera** (para fundos em parallax). A câmera rola só o MUNDO —
+  desenhe o HUD (placar, vidas, textos) DEPOIS do mundo que ele fica fixo na tela. ⚠️ Cliques/toques
+  continuam em coordenadas de tela; com câmera, a posição no mundo é tela + câmera.
+- **🗺️ Mapa** (destrutível): **Quebrar o tile** onde está um sprite (mineração/destruição), **pôr um tile**
+  e **o número do tile** onde está o sprite (ler/construir em tempo real).
+- **🪐 Muitos (grupos)**: **Trazer para a frente** / **Mandar para trás** — controla quem é desenhado por
+  cima de quem dentro de um grupo.
+- **✨ Aparência** (depuração): **Mostrar a caixa de colisão** de um sprite e **Mostrar os FPS** — para
+  enxergar colisões e a performance enquanto cria.
 `,
   examples: [
     pongExample,
@@ -207,5 +255,7 @@ Veja o exemplo clássico **"Cidade & Moinho (na mão)"** (no painel de Extensõe
     dinoRunExample,
     gorilasExample,
     gorilasVsRobotExample,
+    stickHeroExample,
+    balloonExample,
   ],
 }

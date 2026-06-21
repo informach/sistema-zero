@@ -2,6 +2,7 @@
 
 import { adventurer } from '@dicebear/collection'
 import { createAvatar } from '@dicebear/core'
+import { useMemo } from 'react'
 import { type AvatarConfig, buildAvatarOptions } from '@/lib/avatar-catalog'
 import { cn } from '@/lib/cn'
 
@@ -31,8 +32,15 @@ export function KidsAvatar({
   /** Texto acessível (ex.: "Avatar de Lia"). Default genérico. */
   label?: string
 }) {
-  // createAvatar é barato (gera SVG em ~ms); sem useMemo p/ não complicar as deps.
-  const svg = createAvatar(adventurer, buildAvatarOptions(config)).toString()
+  // Memoiza pela config SERIALIZADA: o pai costuma passar um literal novo a cada
+  // render (ex.: `{ parts: draft }` no editor) → por referência o SVG seria
+  // reconstruído à toa. O callback fecha só sobre `configKey` (deps exatas) e
+  // re-hidrata por parse; a serialização é barata perto do createAvatar.
+  const configKey = JSON.stringify(config ?? null)
+  const svg = useMemo(() => {
+    const parsed = JSON.parse(configKey) as AvatarConfig | null
+    return createAvatar(adventurer, buildAvatarOptions(parsed)).toString()
+  }, [configKey])
   return (
     <span
       role="img"

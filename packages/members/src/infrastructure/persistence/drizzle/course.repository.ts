@@ -215,7 +215,10 @@ export class DrizzleCourseRepository implements CourseRepository {
           eq(lessons.courseId, courseId),
           eq(lessons.isPublished, true),
           eq(lessonBlocks.kind, 'studio'),
-          sql`${lessonBlocks.content}->>'chain' = ${chain}`,
+          // `trim` nos DOIS lados: o `chain` do serviço já vem trimado; sem o `trim` no
+          // valor armazenado, um `chain` autorado com espaço sobrando nunca casaria e o
+          // carryover cairia silenciosamente no `initialProject` (perdendo o WIP do aluno).
+          sql`trim(${lessonBlocks.content}->>'chain') = ${chain}`,
           sql`(${modules.sortOrder}, ${lessons.sortOrder}) < (${cur.modSort}, ${cur.lessonSort})`,
         ),
       )

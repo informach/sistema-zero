@@ -667,6 +667,11 @@ function ShowcaseCard({ thread, onOpen }: { thread: HubThreadView; onOpen: () =>
           {thread.authorDisplayName ? (
             <p className="text-muted-foreground text-xs">por {thread.authorDisplayName}</p>
           ) : null}
+          {/* `thread.body` aqui é UGC da criança (descrição do projeto), renderizado
+              como TEXTO ESCAPADO (React escapa; sem markdown = sem <img> externo nem
+              link) — seguro por construção. NÃO é "members-authoritative": se um dia
+              fluir markdown aqui, use `renderUgcMarkdown` (restrito), como em
+              ThreadDetail/CommentRow — nunca `renderMarkdown` cru. */}
           <p className="line-clamp-2 text-muted-foreground text-sm">{thread.body}</p>
           <p className="flex items-center gap-1 pt-1 text-muted-foreground text-xs">
             <MessageCircle className="size-3" /> {thread.commentCount}

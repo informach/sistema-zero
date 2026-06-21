@@ -37,8 +37,12 @@ const SUPPORTED_TAGS: ReadonlySet<HTMLTag> = new Set([
   'g',
   'path',
   'circle',
+  'ellipse',
   'line',
   'rect',
+  'polyline',
+  'polygon',
+  'text',
   'use',
 ])
 

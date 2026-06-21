@@ -33,9 +33,15 @@ export function CatalogCourseCard({ course, salesUrl, theme = 'cyan' }: CatalogC
         {course.coverImageUrl ? (
           // Capa pode ser URL externa arbitrária (autoria) → <img> simples,
           // sem `next/image` (evita configurar remotePatterns por domínio).
+          // `loading=lazy`: o catálogo "Todos os cursos" é uma lista longa — sem
+          // isto, um mobile de criança baixa todas as capas de uma vez. O wrapper
+          // `aspect-video` já reserva o espaço (sem CLS).
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={course.coverImageUrl}
             alt=""
+            loading="lazy"
+            decoding="async"
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
           />
         ) : (

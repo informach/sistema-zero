@@ -220,6 +220,60 @@ export const JS_BLOCKS: BlockDefinition[] = [
     tooltip: 'Pula o resto desta volta e vai direto para a próxima repetição do laço.',
   },
   {
+    type: 'sz_js_throw',
+    message0: 'disparar erro com mensagem %1',
+    args0: [{ type: 'input_value', name: 'MESSAGE', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    level: 'avancado',
+    tooltip:
+      'Dispara um erro com uma mensagem (throw new Error). Use com "tentar … se der erro" para encerrar/desviar (ex.: fim de jogo).',
+  },
+  {
+    type: 'sz_js_object_assign',
+    message0: 'copiar propriedades de %1 para %2',
+    args0: [
+      { type: 'field_input', name: 'SOURCE', text: 'origem' },
+      { type: 'field_input', name: 'TARGET', text: 'destino' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    level: 'avancado',
+    tooltip:
+      'Copia todas as propriedades de um objeto para outro (Object.assign), atualizando o destino de uma vez.',
+  },
+  {
+    type: 'sz_js_switch',
+    message0: 'escolha %1',
+    args0: [{ type: 'input_value', name: 'SUBJECT', check: 'JSValue' }],
+    message1: 'casos %1',
+    args1: [{ type: 'input_statement', name: 'CASES', check: 'SwitchCase' }],
+    message2: 'senão (padrão) %1',
+    args2: [{ type: 'input_statement', name: 'DEFAULT' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    level: 'avancado',
+    tooltip:
+      'Escolhe um caminho conforme o valor (switch). Arraste blocos "caso" dentro. O "senão" roda quando nenhum caso bate.',
+  },
+  {
+    type: 'sz_js_case',
+    message0: 'caso o valor for %1',
+    args0: [{ type: 'input_value', name: 'MATCH', check: 'JSValue' }],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'DO' }],
+    previousStatement: 'SwitchCase',
+    nextStatement: 'SwitchCase',
+    colour: C,
+    level: 'avancado',
+    tooltip: 'Um caso do "escolha": se o valor bater, roda o "fazer" (e para — break automático).',
+  },
+  {
     type: 'sz_js_for_of',
     message0: 'para cada %1 de %2',
     args0: [
@@ -401,7 +455,11 @@ export const JS_GROUPS: { name: string; colour: string; types: string[] }[] = [
       'sz_js_var_increment',
     ],
   },
-  { name: '❓ Lógica & Se', colour: '#fde047', types: ['sz_js_if_else', 'sz_js_try_catch'] },
+  {
+    name: '❓ Lógica & Se',
+    colour: '#fde047',
+    types: ['sz_js_if_else', 'sz_js_switch', 'sz_js_case', 'sz_js_try_catch', 'sz_js_throw'],
+  },
   {
     name: '🔁 Repetições',
     colour: '#facc15',
@@ -423,7 +481,7 @@ export const JS_GROUPS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '📋 Listas',
     colour: '#eab308',
-    types: ['sz_js_array_push', 'sz_js_array_remove', 'sz_js_array_splice'],
+    types: ['sz_js_array_push', 'sz_js_array_remove', 'sz_js_array_splice', 'sz_js_object_assign'],
   },
   {
     name: '🖥️ Console & Avisos',

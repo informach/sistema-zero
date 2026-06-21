@@ -57,6 +57,14 @@ describe('renderProjectToPreviewDoc', () => {
     expect(doc).toContain('data:image/png;base64,AAAA')
   })
 
+  it('renderiza projetos legados incompletos sem quebrar o player público', () => {
+    const doc = renderProjectToPreviewDoc({
+      name: 'Projeto legado',
+      files: { 'index.html': '', 'style.css': '', 'script.js': '' },
+    } as Project)
+    expect(doc).toContain('Content-Security-Policy')
+  })
+
   it('dois projetos diferentes produzem docs diferentes', () => {
     const a = renderProjectToPreviewDoc(
       projectWith({ files: { 'index.html': '', 'style.css': '', 'script.js': 'var A=1' } }),

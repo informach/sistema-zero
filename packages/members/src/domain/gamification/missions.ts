@@ -108,13 +108,41 @@ function fnv1a(str: string): number {
   return h >>> 0
 }
 
-/** Escolhe `count` missões distintas do pool, rotacionando a partir da semente. */
+/** PRNG determinístico (xorshift32) semeado — sem `Math.random`, estável por plataforma. */
+function xorshift32(seed: number): () => number {
+  let x = seed >>> 0 || 0x9e3779b9 // estado 0 trava o xorshift → usa um não-zero fixo
+  return () => {
+    x ^= x << 13
+    x >>>= 0
+    x ^= x >>> 17
+    x ^= x << 5
+    x >>>= 0
+    return x
+  }
+}
+
+/**
+ * Escolhe `count` missões DISTINTAS do pool por um embaralho parcial de Fisher–Yates
+ * SEMEADO (determinístico por `seed`). Diferente da janela contígua antiga (que só
+ * alcançava `pool.length` subconjuntos — p.ex. 5 dos 10 trios diários possíveis), este
+ * alcança QUALQUER subconjunto de tamanho `count`, distribuindo as missões com justiça.
+ */
 function pick(pool: readonly MissionDef[], count: number, seed: number): MissionDef[] {
   const n = Math.min(count, pool.length)
-  const start = pool.length > 0 ? seed % pool.length : 0
+  const idx = pool.map((_, i) => i)
+  const rand = xorshift32(seed)
+  for (let i = 0; i < n; i++) {
+    const j = i + (rand() % (pool.length - i))
+    const vi = idx[i]
+    const vj = idx[j]
+    if (vi === undefined || vj === undefined) continue
+    idx[i] = vj
+    idx[j] = vi
+  }
   const out: MissionDef[] = []
   for (let i = 0; i < n; i++) {
-    const m = pool[(start + i) % pool.length]
+    const k = idx[i]
+    const m = k === undefined ? undefined : pool[k]
     if (m) out.push(m)
   }
   return out

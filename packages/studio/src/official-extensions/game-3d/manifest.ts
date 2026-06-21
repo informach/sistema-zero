@@ -1,12 +1,21 @@
 import type { ExtensionManifest } from '#extensions'
-import { crossingExample, dodgeExample, rotatingCubeExample } from './examples'
+import {
+  crossingExample,
+  dodgeExample,
+  nightExample,
+  raceExample,
+  rotatingCubeExample,
+  shapesExample,
+  stackExample,
+  swarmExample,
+} from './examples'
 
 export const gameThreeDManifest: ExtensionManifest = {
   id: 'game-3d',
   name: 'Jogo 3D',
-  version: '0.3.0',
+  version: '0.9.0',
   description:
-    'Blocos e comandos para criar jogos 3D com Three.js: cena/câmera/luz, cubos/esferas/caixas, posição/rotação/escala, física (velocidade, gravidade, pulo, colisão), teclado, câmera que segue, blocos genéricos de grade isométrica (colocar na grade, andar em grade, esteira, colisão por caixa) e dois Kits prontos: "Desvie" (inimigos que avançam) e "Travessia" (atravessar a rua). Three.js carrega de um CDN fixado.',
+    'Blocos e comandos para criar jogos 3D com Three.js: cena/câmera/luz, cubos/esferas/caixas, posição/rotação/escala, física (velocidade, gravidade, pulo, colisão), teclado, câmera que segue, genéricos de grade isométrica e de movimento (círculo, distância, cair girando, deslizar, girar) e Kits prontos: "Desvie", "Travessia", "Corrida" e "Empilhar". Three.js carrega de um CDN fixado.',
   category: 'games',
   official: true,
   enabledByDefault: false,
@@ -60,13 +69,37 @@ cenas e **jogos** 3D sobre WebGL. O Three.js é carregado de um CDN **fixado**
 - **Atualizar o personagem** (setas + grade) / **Mover os veículos**.
 - **bateu num veículo?** / **pontuação (linha)** / **Recomeçar**.
 
+### Kit "Corrida" (correr numa pista) + genéricos top-down
+
+- **Câmera aérea** (de cima) e **Mover em círculo** (movimento circular genérico).
+- **a distância entre … / está perto de … ?** — proximidade (p/ colisão de qualquer jogo).
+- **Criar mundo de corrida** + **Criar a pista** (oval) + **Criar carro do jogador**.
+- **Dirigir o carro** (↑ acelera / ↓ freia, dá voltas) / **Soltar e mover rivais** / **marcha** (botões).
+- **bateu num rival?** / **voltas (pontuação)** / **Recomeçar**.
+
+### Kit "Empilhar" (torre de blocos) + genéricos de movimento
+
+- **fazer … cair girando** / **Mover … de um lado a outro** / **Girar …** — genéricos de queda, plataforma e rotação (física na mão, SEM lib).
+- **Criar mundo de empilhar** + **montar a base da torre** — câmera isométrica que sobe com a torre.
+- **Soltar o bloco** (ligue ao clique/à tecla) / **Atualizar a torre** (a cada frame).
+- **pontuação (andares)** / **a torre caiu (fim de jogo)?** / **Recomeçar**.
+
 ### Observações
 
 - Crie o \`<canvas>\` no HTML primeiro (mesmo padrão do Jogo 2D).
 - Crie os objetos UMA vez (fora do "A cada frame 3D"); dentro do loop só mova/anime.
 - Eixos: x = direita, y = cima, z = em direção à câmera. Rotação em radianos.
 - É um nível **avançado**: aparece na paleta a partir do nível avançado.
-- Comece pelos exemplos **"Atravesse a rua"** ou **"Desvie dos blocos"**.
+- Comece pelos exemplos **"Torre maluca"**, **"Corrida maluca"**, **"Atravesse a rua"** ou **"Desvie dos blocos"**.
 `,
-  examples: [crossingExample, dodgeExample, rotatingCubeExample],
+  examples: [
+    shapesExample,
+    nightExample,
+    swarmExample,
+    stackExample,
+    raceExample,
+    crossingExample,
+    dodgeExample,
+    rotatingCubeExample,
+  ],
 }

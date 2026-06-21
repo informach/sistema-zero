@@ -10,6 +10,9 @@ interface Sprite {
   h: number
   vx: number
   vy: number
+  facing?: number
+  hp?: number
+  opacity?: number
 }
 interface Engine {
   createSprite: (opts: Partial<Sprite>) => Sprite
@@ -19,6 +22,26 @@ interface Engine {
   circleCollides: (a: Sprite, b: Sprite) => boolean
   onPointer: (fn: (x: number, y: number) => void) => void
   pointer: { x: number; y: number; down: boolean }
+  playFx: (name: string) => void
+  playNote: (note: string, ms: number) => void
+  playMusic: (name: string) => void
+  stopMusic: () => void
+  distance: (a: Sprite, b: Sprite) => number
+  angleTo: (a: Sprite, b: Sprite) => number
+  setHealth: (s: Sprite, n: number) => void
+  changeHealth: (s: Sprite, d: number) => void
+  getHealth: (s: Sprite) => number
+  hasHealth: (s: Sprite) => boolean
+  cooldownReady: (s: Sprite, frames: number) => boolean
+  randomBetween: (min: number, max: number) => number
+  isPaused: () => boolean
+  pauseGame: () => void
+  resumeGame: () => void
+  flipSprite: (s: Sprite, dir: string) => void
+  scaleSprite: (s: Sprite, f: number) => void
+  setCamera: (x: number, y: number) => void
+  cameraX: () => number
+  cameraY: () => number
 }
 function loadRuntime(): Engine {
   const win = { addEventListener() {}, SZGame2D: undefined } as unknown as Record<string, unknown>
@@ -56,6 +79,122 @@ describe('game-2d — gerador dos novos statements', () => {
     expect(pointer).toContain('console.log(px);')
   })
 
+  it('áudio: efeitos, notas e música', () => {
+    expect(gen({ type: 'g2d:playFx', fx: 'coin' })).toBe('SZGame2D.playFx("coin");')
+    expect(gen({ type: 'g2d:playMusic', tune: 'adventure' })).toBe(
+      'SZGame2D.playMusic("adventure");',
+    )
+    expect(gen({ type: 'g2d:stopMusic' })).toBe('SZGame2D.stopMusic();')
+    expect(gen({ type: 'g2d:playNote', note: 'C', ms: 300 })).toBe('SZGame2D.playNote("C", 300);')
+  })
+
+  it('áudio sintetizado: funções exportadas e seguras sem AudioContext', () => {
+    const api = loadRuntime()
+    expect(typeof api.playFx).toBe('function')
+    expect(typeof api.playNote).toBe('function')
+    expect(typeof api.playMusic).toBe('function')
+    expect(typeof api.stopMusic).toBe('function')
+    // Sem AudioContext no ambiente de teste, são no-op silencioso (não lançam).
+    expect(() => {
+      api.playFx('coin')
+      api.playNote('C', 100)
+      api.playMusic('happy')
+      api.stopMusic()
+    }).not.toThrow()
+  })
+
+  it('Tier 1: gerador de comandos (mira, vida, aparência, mundo, pausa)', () => {
+    expect(gen({ type: 'g2d:aimAt', spriteVar: 'nave', targetVar: 'inimigo' })).toBe(
+      'SZGame2D.aimAt(nave, inimigo);',
+    )
+    expect(
+      gen({ type: 'g2d:moveToward', spriteVar: 'inimigo', targetVar: 'jogador', speed: 2 }),
+    ).toBe('SZGame2D.moveToward(inimigo, jogador, 2);')
+    expect(gen({ type: 'g2d:setHealth', spriteVar: 'jogador', amount: 3 })).toBe(
+      'SZGame2D.setHealth(jogador, 3);',
+    )
+    expect(gen({ type: 'g2d:changeHealth', spriteVar: 'jogador', delta: -1 })).toBe(
+      'SZGame2D.changeHealth(jogador, -1);',
+    )
+    expect(gen({ type: 'g2d:flipSprite', spriteVar: 'jogador', dir: 'left' })).toBe(
+      'SZGame2D.flipSprite(jogador, "left");',
+    )
+    expect(gen({ type: 'g2d:setOpacity', spriteVar: 'jogador', percent: 50 })).toBe(
+      'SZGame2D.setOpacity(jogador, 50);',
+    )
+    expect(gen({ type: 'g2d:setSize', spriteVar: 'jogador', w: 40, h: 40 })).toBe(
+      'SZGame2D.setSize(jogador, 40, 40);',
+    )
+    expect(gen({ type: 'g2d:scaleSprite', spriteVar: 'jogador', factor: 1.5 })).toBe(
+      'SZGame2D.scaleSprite(jogador, 1.5);',
+    )
+    expect(gen({ type: 'g2d:wrapEdges', spriteVar: 'nave' })).toBe('SZGame2D.wrapEdges(nave);')
+    expect(gen({ type: 'g2d:pruneOld', groupVar: 'tiros', seconds: 2 })).toBe(
+      'SZGame2D.pruneOld(tiros, 2);',
+    )
+    expect(gen({ type: 'g2d:pauseGame' })).toBe('SZGame2D.pauseGame();')
+    expect(gen({ type: 'g2d:resumeGame' })).toBe('SZGame2D.resumeGame();')
+  })
+
+  it('Tier 1: runtime de contas/vida/recarga/pausa (lógica pura)', () => {
+    const api = loadRuntime()
+    const a = api.createSprite({ x: 0, y: 0, w: 10, h: 10 })
+    const b = api.createSprite({ x: 30, y: 0, w: 10, h: 10 })
+    expect(api.distance(a, b)).toBe(30)
+    expect(api.angleTo(a, b)).toBeCloseTo(90) // b está à direita de a → 90°
+    api.setHealth(a, 3)
+    expect(api.getHealth(a)).toBe(3)
+    api.changeHealth(a, -1)
+    expect(api.getHealth(a)).toBe(2)
+    expect(api.hasHealth(a)).toBe(true)
+    api.changeHealth(a, -5)
+    expect(api.getHealth(a)).toBe(0) // não passa de 0
+    expect(api.hasHealth(a)).toBe(false)
+    expect(api.randomBetween(3, 3)).toBe(3)
+    expect(api.isPaused()).toBe(false)
+    api.pauseGame()
+    expect(api.isPaused()).toBe(true)
+    api.resumeGame()
+    expect(api.isPaused()).toBe(false)
+    expect(api.cooldownReady(a, 3)).toBe(true) // 1ª vez: pronto
+    expect(api.cooldownReady(a, 3)).toBe(false) // recarregando
+    api.flipSprite(a, 'left')
+    expect(a.facing).toBe(-1)
+    api.scaleSprite(b, 2)
+    expect(b.w).toBe(20)
+  })
+
+  it('Tier 2: gerador de comandos (câmera, mapa, ordem, depuração)', () => {
+    expect(gen({ type: 'g2d:cameraFollow', spriteVar: 'jogador', worldW: 800, worldH: 600 })).toBe(
+      'SZGame2D.cameraFollow(jogador, 800, 600);',
+    )
+    expect(gen({ type: 'g2d:setCamera', x: 10, y: 20 })).toBe('SZGame2D.setCamera(10, 20);')
+    expect(gen({ type: 'g2d:breakTile', mapVar: 'mapa', spriteVar: 'jogador' })).toBe(
+      'SZGame2D.breakTileAtSprite(mapa, jogador);',
+    )
+    expect(gen({ type: 'g2d:setTile', mapVar: 'mapa', index: 1, spriteVar: 'jogador' })).toBe(
+      'SZGame2D.setTileAtSprite(mapa, 1, jogador);',
+    )
+    expect(gen({ type: 'g2d:bringToFront', spriteVar: 'jogador', groupVar: 'inimigos' })).toBe(
+      'SZGame2D.bringToFront(inimigos, jogador);',
+    )
+    expect(gen({ type: 'g2d:sendToBack', spriteVar: 'jogador', groupVar: 'inimigos' })).toBe(
+      'SZGame2D.sendToBack(inimigos, jogador);',
+    )
+    expect(gen({ type: 'g2d:drawHitbox', spriteVar: 'jogador' })).toBe(
+      'SZGame2D.drawHitbox(jogador);',
+    )
+    expect(gen({ type: 'g2d:showFps', x: 8, y: 20 })).toBe('SZGame2D.showFps(8, 20);')
+  })
+
+  it('Tier 2: runtime de câmera (set/leitura)', () => {
+    const api = loadRuntime()
+    expect(api.cameraX()).toBe(0)
+    api.setCamera(120, 40)
+    expect(api.cameraX()).toBe(120)
+    expect(api.cameraY()).toBe(40)
+  })
+
   it('os novos tipos estão em G2D_STATEMENT_TYPES e validam no schema', () => {
     for (const t of [
       'g2d:setGravity',
@@ -63,6 +202,30 @@ describe('game-2d — gerador dos novos statements', () => {
       'g2d:bounceOnEdges',
       'g2d:circleCollides',
       'g2d:playSound',
+      'g2d:playFx',
+      'g2d:playMusic',
+      'g2d:stopMusic',
+      'g2d:playNote',
+      'g2d:aimAt',
+      'g2d:moveToward',
+      'g2d:setHealth',
+      'g2d:changeHealth',
+      'g2d:flipSprite',
+      'g2d:setOpacity',
+      'g2d:setSize',
+      'g2d:scaleSprite',
+      'g2d:wrapEdges',
+      'g2d:pruneOld',
+      'g2d:pauseGame',
+      'g2d:resumeGame',
+      'g2d:cameraFollow',
+      'g2d:setCamera',
+      'g2d:breakTile',
+      'g2d:setTile',
+      'g2d:bringToFront',
+      'g2d:sendToBack',
+      'g2d:drawHitbox',
+      'g2d:showFps',
       'g2d:onPointer',
     ]) {
       expect(G2D_STATEMENT_TYPES.has(t)).toBe(true)

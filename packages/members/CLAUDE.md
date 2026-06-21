@@ -298,7 +298,10 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   via `X-Auth-User-*`) (`INTERNAL_API_TOKEN`, ver §env). Vazio em dev (sem gateway);
   **OBRIGATÓRIO em produção** (boot falha sem ele). É o que torna o
   `x-auth-user-id`/`X-Auth-User-*` confiáveis (só valem se passaram pelo gateway).
-  Webhooks NÃO usam (já têm HMAC).
+  Webhooks NÃO usam (já têm HMAC). O guard `assertInternalCaller` é **fail-CLOSED em
+  produção** (06/2026): token `expected` vazio → no-op SÓ se `NODE_ENV !== 'production'`;
+  em produção rejeita (401) — defesa em profundidade que não depende SÓ do refine do env
+  (um deploy que perdesse o token jamais aceita `X-Auth-*` forjado da rede interna).
 - **Catálogo** é chamado DIRETO (S2S, `CATALOG_BASE_URL`), fora do caminho quente. A rota
   de entitlements devolve o **manifesto de entrega** e (06/2026) **exige `x-internal-token`** —
   o members envia `CATALOG_INTERNAL_TOKEN` (= `INTERNAL_API_TOKEN` do catalog; opcional em
@@ -313,6 +316,16 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   `salesPageUrl` (nullable) → vira a chave `metadata.salesPageUrl` — o service atualiza
   SÓ essa chave preservando as demais do jsonb (`withSalesPageUrl`: vazio remove a
   chave; objeto vazio volta a `null`); `CourseView` da autoria devolve `salesPageUrl`.
+- **`GET /members/access?refs=<csv>`** (rota do aluno, JWT + `x-internal-token`): "esta
+  CONTA tem acesso a estes produtos?" — gate de produtos que NÃO são curso de trilha
+  (ex.: o **Estúdio Completo** vendável da vitrine kids). Resolve pela CONTA
+  (`resolveAccountId`), reusa o `AccessCheckService` (mesmo motor do `/internal/access-check`
+  S2S do hub) e devolve `{ access: { ref: boolean } }` aplicando a regra POR REF:
+  `grants.includes(ref) || communities.includes(ref) || hasMaster<Audiência>`. `?audience`
+  (default `kids`) escolhe a chave-mestra. **TODA ref pedida volta no mapa** (06/2026):
+  `splitRequestedRefs` mantém as pedidas (trim/não-vazias, teto 50) e as de formato
+  inválido recebem `false` EXPLÍCITO (em vez de sumir — chamador não distinguia "negado"
+  de "descartado"); só as válidas (`parseAccessRefs`, regex de slug) vão ao motor/DB.
 - **`PUT /members/courses/:slug/lessons/:lessonId/position`** (aluno): salva a posição
   do vídeo — body `{positionSeconds: int 0..100000}` (TypeBox), valida matrícula + aula
   pertencer ao curso; upsert em `lesson_progress`. Devolve `{lessonId, positionSeconds,
@@ -466,7 +479,11 @@ estender o streak). Atividade ANTERIOR às migrations não tem marco retroativo
   `freeze_granted_month`/`vacation_from`/`vacation_to` em `gamification_profiles`): a sequência
   só QUEBRA quando NEM férias NEM protetores cobrem o gap. Janela de férias é INCLUSIVA
   `[from, to]` (`setVacation`); **+1 freeze GRÁTIS por mês civil** (lazy/idempotente na 1ª
-  atividade do mês via `freeze_granted_month`); compra de freeze via `buyStreakFreeze`
+  atividade do mês via `freeze_granted_month`) — concedido **só quando há espaço no teto**
+  e o mês **só é marcado quando o grátis ENTRA** (06/2026): aluno no teto (5) na 1ª
+  atividade não tem o mês queimado — o grátis continua disponível numa atividade futura em
+  que haja espaço (antes o marcador avançava com o +1 descartado pelo teto, perdendo o
+  benefício do mês). Compra de freeze via `buyStreakFreeze`
   (`STREAK_FREEZE_PRICE`, teto `MAX_STREAK_FREEZES` = 5). `advanceStreak`/`effectiveStreak`/
   `freezesNeeded`/`inVacation` no domain puro consomem/projetam os protetores; `effectiveStreak`
   é o streak de EXIBIÇÃO (projeta 0 quando a cobertura acabou, sem zerar o persistido).
@@ -483,12 +500,15 @@ estender o streak). Atividade ANTERIOR às migrations não tem marco retroativo
 - **Missões diárias/semanais** (migration `0021`, `mission_claims`): estilo Duolingo,
   content-driven — catálogo EM CÓDIGO (`DAILY_MISSIONS` 5 / `WEEKLY_MISSIONS` 3 em
   `domain/gamification/missions.ts`; sem seed, igual badges). Atribuição DETERMINÍSTICA por
-  (userId, período) via FNV-1a (`DAILY_SET_SIZE` 3, `WEEKLY_SET_SIZE` 2; semana começa na
+  (userId, período) via FNV-1a → embaralho parcial de **Fisher–Yates semeado** (`pick`,
+  06/2026: alcança QUALQUER subconjunto — antes a janela contígua só atingia `pool.length`
+  trios, p.ex. 5 dos 10 diários; `DAILY_SET_SIZE` 3, `WEEKLY_SET_SIZE` 2; semana começa na
   SEGUNDA). Progresso é DERIVADO na leitura contando eventos do ledger `xp_events`
   (`countEventsInPeriod`, SEM hook no award); o prêmio (XP + moedas) é resgatado por
   `claimMission` IDEMPOTENTE (UNIQUE user+audience+slug+período) que **REVALIDA a conclusão no
-  servidor** (`count >= target`), credita XP direto no perfil + moedas COM o teto diário, e
-  **NÃO move o streak**. `GET /members/gamification/missions/me` + `POST …/missions/:slug/claim`.
+  servidor** (`count >= target`), credita XP direto no perfil + moedas COM o teto diário, reavalia
+  badges de **poupador** se `lifetime_coins_earned` cruzar 300/1000, e **NÃO move o streak**.
+  `GET /members/gamification/missions/me` + `POST …/missions/:slug/claim`.
 - **Ligas semanais** (migration `0022`, `league_membership`): coorte competitiva semanal por
   audiência. (Detalhes de tiers/promoção/rebaixamento em `docs/gamificacao.md`.)
 - Sem backfill: histórico anterior ao deploy não gera XP retroativo (script manual se um

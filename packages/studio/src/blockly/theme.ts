@@ -62,6 +62,7 @@ export const szTheme = szDarkTheme
 export const CATEGORY_COLORS = {
   html: '#22d3ee',
   css: '#a78bfa',
+  svg: '#0ea5e9',
   dom: '#38bdf8',
   events: '#f0abfc',
   js: '#fbbf24',

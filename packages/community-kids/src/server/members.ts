@@ -4,6 +4,7 @@ import { shell } from './shell'
 export const {
   listMyCourses,
   listCatalog,
+  checkStudioAccessReadonly,
   getMyCourse,
   getLesson,
   resolveAttachment,

@@ -103,6 +103,18 @@ Linguagem: **TS (ESM)**. Framework HTTP: **Elysia**. Porta **3010**.
    publicado é IMUTÁVEL e INDEPENDENTE do projeto que a criança continua editando no editor). Rota NOVA em
    `showcase.routes.ts` (mesma guarda de `x-internal-token`, mesmo `showcaseService`); gateway
    `hub-showcase-create-studio`.
+   **Variação STANDALONE — Estúdio Completo (produto vendável, SEM aula, 06/2026):** rota
+   `POST /hub/internal/showcase-thread-studio-standalone` (`ShowcaseThreadStudioStandaloneBody` +
+   `ShowcaseService.createStandaloneShowcase`) para o "Compartilhar" do estúdio-produto da comunidade
+   kids, onde NÃO há `lessonId`/`blockId` nem payload autoritativo do members. Logo `title` E
+   `description` vêm da CRIANÇA (sanitizados/limitados — sem admin para ditar o título). A
+   ELEGIBILIDADE deixa de ser "concluiu a aula" e vira **"a CONTA possui o produto do Estúdio"**:
+   `members.checkAccess(accountId, ['estudio-completo'], ['estudio-completo'])` (fail-closed) exige
+   `granted` OU `communities` OU `hasMasterKids` — o ref fixo `STUDIO_STANDALONE_ACCESS_REF` casa com o
+   slug do produto no catálogo. Demais guardas IDÊNTICAS (destino kids + parede `staff_only` + allowlist,
+   autor do header de perfil, capa https-only). Idempotência = `autor:studio-standalone:clientKey`
+   (sem curso/cadeia; republicar = post novo). Gateway `hub-showcase-create-studio-standalone` (segmento
+   literal distinto de `showcase-thread-studio` — sem colisão de prefixo).
 11. **Snapshot de autor + nomes clicáveis (06/2026):** todo tópico/comentário guarda no CREATE um
    snapshot do **primeiro nome** (`author_display_name`) e da **flag pública** (`author_public`) do
    autor — alimenta os **nomes clicáveis** do Mural e do fórum kids (clube). A fonte é SEMPRE

@@ -173,6 +173,29 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
       'Verdadeiro se o aparelho/navegador está no tema escuro (prefers-color-scheme: dark). Use num "se" para escolher as cores.',
   },
   {
+    type: 'sz_val_date_part',
+    message0: 'agora: %1',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'PART',
+        options: [
+          ['horas (0-23)', 'hours'],
+          ['minutos (0-59)', 'minutes'],
+          ['segundos (0-59)', 'seconds'],
+          ['milissegundos (0-999)', 'ms'],
+          ['dia do mês (1-31)', 'dayOfMonth'],
+          ['mês (0-11)', 'month'],
+          ['dia da semana (0-6)', 'weekday'],
+        ],
+      },
+    ],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Um número da data/hora ATUAL (ex.: as horas agora). Ótimo para relógios. Vira new Date().getHours() (e similares).',
+  },
+  {
     type: 'sz_val_canvas_width',
     message0: 'largura do canvas %1',
     args0: [{ type: 'field_input', name: 'CTX', text: 'ctx' }],
@@ -227,6 +250,14 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     output: 'JSValue',
     colour: C,
     tooltip: 'A constante pi (≈ 3,14159), útil em círculos e ângulos.',
+  },
+  {
+    type: 'sz_val_perf_now',
+    message0: 'tempo agora (ms)',
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Quantos milissegundos se passaram desde que a página abriu (performance.now()). Guarde numa variável e, no quadro seguinte, subtraia para saber quanto tempo passou entre os quadros (delta) — assim o jogo anda igual em telas rápidas e lentas.',
   },
   {
     type: 'sz_val_event_pos',
@@ -310,6 +341,20 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     tooltip: 'Quantos itens a lista tem.',
   },
   {
+    type: 'sz_val_array_map',
+    message0: 'transformar lista %1 com cada %2 virando %3',
+    args0: [
+      { type: 'field_input', name: 'ARR', text: 'lista' },
+      { type: 'field_input', name: 'ITEM', text: 'item' },
+      { type: 'input_value', name: 'TRANSFORM', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Cria uma NOVA lista transformando cada item. Use "valor da variável" com o nome do item na transformação. Vira lista.map((item) => …).',
+  },
+  {
     // Os espaços (ITEM0, ITEM1, …) e os botões +/− vêm do `sz_array_mutator`.
     type: 'sz_val_join',
     message0: 'juntar texto',
@@ -331,6 +376,28 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     output: 'JSValue',
     colour: C,
     tooltip: 'Pega um item da lista pela posição. A primeira posição é 0.',
+  },
+  {
+    type: 'sz_val_array_last',
+    message0: 'último item da lista %1',
+    args0: [{ type: 'field_input', name: 'NAME', text: 'lista' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'O último item da lista (o mesmo que o item na posição tamanho − 1).',
+  },
+  {
+    type: 'sz_val_array_find',
+    message0: 'na lista %1 achar o 1º %2 em que %3',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'lista' },
+      { type: 'field_input', name: 'ITEM', text: 'item' },
+      { type: 'input_value', name: 'COND', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Percorre a lista e devolve o primeiro item que passa no teste (ou nada, se nenhum passar). Dentro de "em que", use "valor da variável item" ou "campo do item" para testar cada um. Vira lista.find((item) => ...).',
   },
   {
     // Espaços ITEM0.. via `sz_array_mutator`: cada um é uma lista a juntar.

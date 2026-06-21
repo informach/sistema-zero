@@ -46,6 +46,9 @@ export function StudioProjectPlayer({
       srcDoc={doc}
       // Mesmo sandbox do preview vivo do editor. NUNCA `allow-same-origin`.
       sandbox="allow-scripts allow-modals"
+      // Libera a Fullscreen API do jogo (blocos de "tela cheia") no player público.
+      allow="fullscreen"
+      allowFullScreen
       className={className}
       style={{ width: '100%', height: '100%', border: 0, background: '#fff', ...style }}
     />

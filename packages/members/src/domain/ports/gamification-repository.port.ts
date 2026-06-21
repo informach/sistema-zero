@@ -43,6 +43,12 @@ export interface GamificationProfileRecord {
   coinBalance: number
   /** Protetores de sequência disponíveis (streak-freeze). */
   streakFreezes: number
+  /**
+   * Mês civil (`YYYY-MM`) em que o freeze GRÁTIS já foi concedido — `null`/ausente =
+   * ainda não neste mês. Só o caminho de LEITURA (`getProfile`) preenche; o display do
+   * streak projeta o freeze grátis prestes a ser concedido p/ casar com o `award`.
+   */
+  freezeGrantedMonth?: string | null
   /** Janela de FÉRIAS (data civil SP) — `null` = sem férias agendadas. */
   vacationFrom: string | null
   vacationTo: string | null
@@ -150,6 +156,19 @@ export interface GamificationRepository {
     audience: CourseAudience,
     now: Date,
   ): Promise<GamificationRanking | null>
+  /**
+   * Colocação no ranking da vitrine para VÁRIOS perfis da MESMA conta numa só passada
+   * (área dos pais). A coorte/total da audiência é idêntica p/ todos os irmãos — só a
+   * posição varia por XP do perfil; resolver a coorte UMA vez evita o fan-out de N
+   * transações `getRanking`. Map vazio = conta sem matrícula na audiência (sem acesso).
+   * Competition ranking (mesma regra do `getRanking`).
+   */
+  rankProfiles(
+    accountId: string,
+    profileIds: string[],
+    audience: CourseAudience,
+    now: Date,
+  ): Promise<Map<string, number>>
   /** A conta tem matrícula ativa que libera a vitrine informada? */
   hasActiveAudienceAccess(accountId: string, audience: CourseAudience, now: Date): Promise<boolean>
   /**

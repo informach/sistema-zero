@@ -415,4 +415,105 @@ describe('vitrine (Mural dos Criadores)', () => {
     )
     expect(ok.status).toBe(200)
   })
+
+  // ── Estúdio COMPLETO (produto vendável, SEM aula) ──
+  const standaloneBody = (over: Record<string, unknown> = {}) => ({
+    spaceSlug: 'mural-dos-criadores',
+    title: 'Meu jogo livre',
+    description: 'Fiz no Estúdio Completo!',
+    coverImageUrl: 'https://cdn.example.com/capa.png',
+    playId: randomUUID(),
+    clientIdempotencyKey: randomUUID(),
+    ...over,
+  })
+  /** Concede o produto do Estúdio à conta (a elegibilidade do standalone é a posse). */
+  const ownsStudio = (accountId: string) =>
+    ctx.members.communitiesByUser.set(accountId, new Set(['estudio-completo']))
+
+  test('standalone: com produto → publica título E descrição da criança + playId', async () => {
+    const accountId = randomUUID()
+    ownsStudio(accountId)
+    const res = await ctx.app.handle(
+      jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
+        headers: child(accountId),
+        body: standaloneBody({ playId: '66666666-6666-6666-6666-666666666666' }),
+      }),
+    )
+    expect(res.status).toBe(200)
+    const { thread } = (await res.json()) as {
+      thread: { isShowcase: boolean; title: string; body: string; playId: string | null }
+    }
+    expect(thread.isShowcase).toBe(true)
+    // SEM aula → título E corpo vêm da criança (não há payload do members).
+    expect(thread.title).toBe('Meu jogo livre')
+    expect(thread.body).toBe('Fiz no Estúdio Completo!')
+    expect(thread.playId).toBe('66666666-6666-6666-6666-666666666666')
+  })
+
+  test('standalone: SEM o produto → 403 (elegibilidade = posse, re-validada no hub)', async () => {
+    const res = await ctx.app.handle(
+      jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
+        headers: child(randomUUID()),
+        body: standaloneBody(),
+      }),
+    )
+    expect(res.status).toBe(403)
+  })
+
+  test('standalone: chave-mestra KIDS cobre a publicação', async () => {
+    const accountId = randomUUID()
+    ctx.members.mastersKids.add(accountId)
+    const res = await ctx.app.handle(
+      jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
+        headers: child(accountId),
+        body: standaloneBody(),
+      }),
+    )
+    expect(res.status).toBe(200)
+  })
+
+  test('standalone: mesmo clientKey dedup-a; key novo = post NOVO', async () => {
+    const accountId = randomUUID()
+    ownsStudio(accountId)
+    const headers = child(accountId)
+    const sameKey = randomUUID()
+    const first = (await (
+      await ctx.app.handle(
+        jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
+          headers,
+          body: standaloneBody({ clientIdempotencyKey: sameKey }),
+        }),
+      )
+    ).json()) as { thread: { id: string }; deduped: boolean }
+    const retry = (await (
+      await ctx.app.handle(
+        jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
+          headers,
+          body: standaloneBody({ clientIdempotencyKey: sameKey }),
+        }),
+      )
+    ).json()) as { thread: { id: string }; deduped: boolean }
+    const republish = (await (
+      await ctx.app.handle(
+        jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
+          headers,
+          body: standaloneBody({ clientIdempotencyKey: randomUUID() }),
+        }),
+      )
+    ).json()) as { thread: { id: string }; deduped: boolean }
+    expect(retry.deduped).toBe(true)
+    expect(retry.thread.id).toBe(first.thread.id)
+    expect(republish.deduped).toBe(false)
+    expect(republish.thread.id).not.toBe(first.thread.id)
+  })
+
+  test('standalone: sem x-internal-token → 401', async () => {
+    const res = await ctx.app.handle(
+      jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
+        headers: studentHeaders(randomUUID(), { 'x-internal-token': '' }),
+        body: standaloneBody(),
+      }),
+    )
+    expect(res.status).toBe(401)
+  })
 })

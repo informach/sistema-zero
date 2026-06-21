@@ -54,18 +54,26 @@ export class GetChildrenStatsService {
       ? await this.courses.countPublishedLessonsByCourseIds(courseIds)
       : new Map<string, number>()
 
-    // 3) Por filho (em paralelo): badges + progresso + projetos + ranking.
+    // 3) Ranking de TODOS os filhos numa só passada (coorte da audiência resolvida UMA
+    //    vez) — evita o fan-out de N `getRanking`, cada um re-derivando a mesma coorte.
     const now = this.clock()
+    const positions = await this.gamification.rankProfiles(
+      accountId,
+      authorized.map((rec) => rec.userId),
+      audience,
+      now,
+    )
+
+    // 4) Por filho (em paralelo): badges + progresso + projetos.
     return Promise.all(
       authorized.map(async (rec) => {
         const profileId = rec.userId
-        const [badges, completedByCourse, projectsCount, ranking] = await Promise.all([
+        const [badges, completedByCourse, projectsCount] = await Promise.all([
           this.gamification.listBadges(profileId, audience),
           courseIds.length
             ? this.progress.countCompletedPublishedByCourseIds(profileId, courseIds)
             : Promise.resolve(new Map<string, number>()),
           this.studio.countByUserAndAudience(profileId, audience),
-          this.gamification.getRanking(profileId, accountId, audience, now),
         ])
 
         let coursesInProgress = 0
@@ -86,7 +94,7 @@ export class GetChildrenStatsService {
           coursesInProgress,
           coursesCompleted,
           projectsCount,
-          rankingPosition: ranking?.position ?? null,
+          rankingPosition: positions.get(profileId) ?? null,
         }
       }),
     )

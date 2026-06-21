@@ -119,6 +119,39 @@ export const AccessCheckBody = t.Object({
 export const ProfileAllowanceQuery = t.Object({ accountId: UUID })
 
 /**
+ * Query de `GET /members/access` (aluno, via gateway): "esta CONTA tem acesso a
+ * estes produtos/refs?". `refs` = CSV de refs de curso/comunidade (slugs do
+ * catálogo, ex.: `estudio-completo`); `audience` decide qual chave-mestra cobre
+ * (ausente → `kids` — o único consumidor hoje é a vitrine kids).
+ */
+export const AccessQuery = t.Object({
+  refs: t.String({ minLength: 1, maxLength: 2000 }),
+  audience: t.Optional(AUDIENCE),
+})
+
+const ACCESS_REF_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+/** Uma ref tem formato de slug de catálogo válido? (só estas vão ao motor de acesso/DB). */
+function isValidAccessRef(ref: string): boolean {
+  return ref.length <= 200 && ACCESS_REF_RE.test(ref)
+}
+/**
+ * Refs PEDIDAS no CSV (split/trim/não-vazias, teto de 50). Mantém TODAS as pedidas —
+ * inclusive as de formato inválido — para a rota poder devolver `false` EXPLÍCITO a cada
+ * uma, em vez de a ref sumir do mapa (deixando o chamador sem distinguir negado de descartado).
+ */
+export function splitRequestedRefs(csv: string): string[] {
+  return csv
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0)
+    .slice(0, 50)
+}
+/** Slugs VÁLIDOS do CSV (subconjunto de `splitRequestedRefs` — só estes vão à query). */
+export function parseAccessRefs(csv: string): string[] {
+  return splitRequestedRefs(csv).filter(isValidAccessRef)
+}
+
+/**
  * Query de `GET /members/parents/children-stats` (aluno, via gateway): resumo de
  * progresso dos filhos da CONTA. A conta vem do header confiável (`x-auth-user-id`),
  * NÃO do cliente. `profileIds` = CSV de uuids dos perfis (vindos do auth; o members

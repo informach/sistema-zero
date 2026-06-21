@@ -38,6 +38,20 @@ describe('atribuição determinística', () => {
     expect(w.length).toBe(WEEKLY_SET_SIZE)
     expect(w.every((m) => m.cadence === 'weekly')).toBe(true)
   })
+
+  test('alcança subconjuntos NÃO-contíguos (não só a janela rotativa da semente)', () => {
+    // A janela contígua antiga atingia no MÁX. DAILY_MISSIONS.length (5) trios; o
+    // embaralho de Fisher–Yates semeado alcança qualquer trio (C(5,3) = 10).
+    const sets = new Set<string>()
+    for (let i = 0; i < 300; i++) {
+      const slugs = assignDailyMissions(`user-${i}`, '2026-06-20')
+        .map((m) => m.slug)
+        .sort()
+        .join(',')
+      sets.add(slugs)
+    }
+    expect(sets.size).toBeGreaterThan(DAILY_MISSIONS.length)
+  })
 })
 
 describe('janelas de período (SP = UTC-3 → dia começa 03:00Z)', () => {

@@ -15,7 +15,23 @@ const fail = (code: string, status: number) => NextResponse.json({ error: { code
 // refresh/gate da marca d'água). Sucesso limpa; trava expira sozinha.
 const MAX_FAILS = 5
 const LOCK_MS = 60_000
-const attempts = new Map<string, { fails: number; lockedUntil: number }>()
+/** Após esta inatividade uma entrada NÃO-travada é despejada (limita a memória sem
+ *  enfraquecer o cooldown — é bem maior que a trava de 60s). */
+const ATTEMPT_TTL_MS = 60 * 60_000
+const attempts = new Map<string, { fails: number; lockedUntil: number; lastSeen: number }>()
+
+/**
+ * Despeja entradas ociosas (sub-limite com `lockedUntil:0`, ou trava já expirada): sem
+ * isto o Map crescia 1 entrada por conta que erra a senha e NUNCA encolhia (só sucesso/
+ * trava-expirada limpavam). Varre na escala do nº de contas — barato e raro (a rota só é
+ * chamada ao entrar na Área dos pais). Travas ativas são preservadas.
+ */
+function sweepStaleAttempts(now: number): void {
+  for (const [key, rec] of attempts) {
+    if (rec.lockedUntil > now) continue
+    if (now - rec.lastSeen > ATTEMPT_TTL_MS) attempts.delete(key)
+  }
+}
 
 /**
  * Abre o "portão dos pais" numa sessão da CONTA verificando a SENHA do
@@ -32,6 +48,7 @@ export async function POST(req: Request) {
   if (!session.email) return fail('NO_ACCOUNT_EMAIL', 400)
 
   const now = Date.now()
+  sweepStaleAttempts(now)
   let rec = attempts.get(session.id)
   if (rec && rec.lockedUntil > now) return fail('TOO_MANY_ATTEMPTS', 429)
   // Trava expirada → recomeça do zero.
@@ -57,6 +74,10 @@ export async function POST(req: Request) {
   if (status >= 500) return fail('SERVICE_UNAVAILABLE', 503)
   // Senha errada: conta a falha e, no limite, tranca a conta por um minuto.
   const fails = (rec?.fails ?? 0) + 1
-  attempts.set(session.id, { fails, lockedUntil: fails >= MAX_FAILS ? now + LOCK_MS : 0 })
+  attempts.set(session.id, {
+    fails,
+    lockedUntil: fails >= MAX_FAILS ? now + LOCK_MS : 0,
+    lastSeen: now,
+  })
   return fail('INVALID_CREDENTIALS', 401)
 }

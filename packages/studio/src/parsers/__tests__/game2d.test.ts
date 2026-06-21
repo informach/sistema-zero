@@ -40,6 +40,14 @@ describe('parseJS — helpers SZGame2D.* (game-2d)', () => {
     expect(parseJS('SZGame2D.playSound(440, 200);')).toEqual([
       { type: 'g2d:playSound', freq: 440, durationMs: 200 },
     ])
+    expect(parseJS('SZGame2D.playFx("coin");')).toEqual([{ type: 'g2d:playFx', fx: 'coin' }])
+    expect(parseJS('SZGame2D.playMusic("adventure");')).toEqual([
+      { type: 'g2d:playMusic', tune: 'adventure' },
+    ])
+    expect(parseJS('SZGame2D.stopMusic();')).toEqual([{ type: 'g2d:stopMusic' }])
+    expect(parseJS('SZGame2D.playNote("C", 300);')).toEqual([
+      { type: 'g2d:playNote', note: 'C', ms: 300 },
+    ])
   })
 
   it('reconhece SZGame2D.gameLoop(function update(){…}) como "a cada frame"', () => {

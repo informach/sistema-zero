@@ -160,6 +160,8 @@ const share: StudioShareAdapter = {
 ```
 
 O que foi publicado é um **SNAPSHOT imutável e INDEPENDENTE**: a criança continua editando o projeto no editor e a versão publicada NÃO muda (republicar gera um post novo). O dialog avisa isso no passo de confirmação.
+Hosts que servem link público devem persistir um `Project` normalizado; o player é defensivo para
+snapshots legados (ex.: arrays opcionais ausentes), mas o publish deve preferir o contrato completo.
 
 **Player público** (página de jogar SEM login, fora do editor): use o subpath LEVE `@sistemazero/studio/player` (só a cadeia de preview — sem Monaco/Blockly):
 
@@ -169,4 +171,4 @@ import { StudioProjectPlayer } from '@sistemazero/studio/player' // dynamic ssr:
 <StudioProjectPlayer project={projetoBuscadoDoServidor} />       // roda SÓ o jogo, autostart
 ```
 
-Também exportado no index principal (`StudioProjectPlayer` + a função pura `renderProjectToPreviewDoc(project): string`, caso o host queira montar o srcdoc por conta própria). O iframe usa `sandbox="allow-scripts allow-modals"` e a CSP/guards viajam dentro do doc — o host só precisa de `frame-src 'self' blob:` na própria CSP.
+Também exportado no index principal (`StudioProjectPlayer` + a função pura `renderProjectToPreviewDoc(project): string`, caso o host queira montar o srcdoc por conta própria). `renderProjectToPreviewDoc` tolera `files` ausente e `installedExtensions`/`extraFiles`/`assets` não-array, usando defaults vazios para não quebrar páginas públicas antigas. O iframe usa `sandbox="allow-scripts allow-modals"` e a CSP/guards viajam dentro do doc — o host só precisa de `frame-src 'self' blob:` na própria CSP.

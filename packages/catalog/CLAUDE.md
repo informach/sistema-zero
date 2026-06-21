@@ -16,7 +16,8 @@ produtos entregáveis). É consumido pelo **funil** (preço + "o que está inclu
 
 > Estado: **slice completo e testado** (produtos/combos/ofertas + cupons + leitura pública +
 > escrita admin + resolução de entitlements). Migrations `0000`/`0001` aplicadas no Postgres
-> compartilhado (cria o **schema `catalog`**). Seed do produto atual (No Comando da IA, R$37) disponível.
+> compartilhado (cria o **schema `catalog`**). Seed dos produtos atuais (No Comando da IA, R$37; e o
+> **Estúdio Completo** kids, R$97, `accessType:'community'` courseRef `estudio-completo`) disponível.
 > **2º full review 06/2026 com TODOS os achados implementados**: view pública de produto sanitizada +
 > `draft` 404 público, `x-internal-token` (entitlements S2S + admin/escrita + redeem, obrigatório em
 > prod), 23505 via `cause` (drizzle ≥0.44), escape do ILIKE, uuid nas bordas, `/readyz` + `HOST ::`,

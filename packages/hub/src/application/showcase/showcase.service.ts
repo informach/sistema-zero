@@ -16,6 +16,12 @@ const MAX_BODY = 50_000
 const MAX_DISPLAY_NAME = 120
 /** Descrição kid-driven no card da parede (plain text, ≤1 parágrafo). */
 const MAX_STUDIO_DESCRIPTION = 280
+/**
+ * Ref do produto vendável "Estúdio Completo" (= slug do produto/curso no catálogo;
+ * `entitlement.courseRef`). Quem possui acessa o editor E pode publicar do estúdio
+ * standalone. Fixo como `MURAL_SPACE_SLUG`/`showcaseChannelSlug` — muda junto com o catálogo.
+ */
+const STUDIO_STANDALONE_ACCESS_REF = 'estudio-completo'
 
 export interface CreateShowcaseCommand {
   /** Slug do servidor do Mural (ex.: `mural-dos-criadores`). */
@@ -34,6 +40,19 @@ export interface CreateShowcaseFromStudioCommand {
   coverImageUrl: string | null
   /** Descrição escrita/editada pela criança (≤280 chars). Vira o `body` do post. */
   description: string
+  /** Id público do artefato jogável (UUID) — vira o link /jogar/<playId>. */
+  playId: string
+  /** Chave de idempotência gerada no cliente (UUID) — dedup-a duplo-clique/retry. */
+  clientIdempotencyKey: string
+}
+
+export interface CreateStandaloneShowcaseCommand {
+  spaceSlug: string
+  /** Título escrito pela criança (= nome do projeto). NÃO há título autoritativo (sem aula). */
+  title: string
+  /** Descrição escrita/editada pela criança (≤280 chars). Vira o `body` do post. */
+  description: string
+  coverImageUrl: string | null
   /** Id público do artefato jogável (UUID) — vira o link /jogar/<playId>. */
   playId: string
   /** Chave de idempotência gerada no cliente (UUID) — dedup-a duplo-clique/retry. */
@@ -208,6 +227,93 @@ export class ShowcaseService {
       .update(
         `${actor.userId}:${elig.courseId}:${elig.chain ?? cmd.blockId}:${cmd.clientIdempotencyKey}`,
       )
+      .digest('hex')
+
+    const id = this.newId()
+    const { thread, deduped } = await this.threads.createShowcaseThread({
+      id,
+      channelId: channel.id,
+      authorId: actor.userId,
+      authorDisplayName: displayName,
+      authorPublic: actor.profilePublic,
+      title,
+      slug: threadSlug(title, id),
+      body,
+      coverImageUrl,
+      playId: cmd.playId,
+      idempotencyKey,
+      now: this.clock(),
+    })
+    return { thread: toThreadView(thread), deduped }
+  }
+
+  /**
+   * Publicação do ESTÚDIO COMPLETO (produto vendável, SEM aula): a criança cria um
+   * projeto livre e o compartilha no Mural. NÃO há `lessonId`/`blockId` nem payload
+   * autoritativo do members, então:
+   *  - A ELEGIBILIDADE vira "a CONTA possui o produto do Estúdio"
+   *    (`members.checkAccess([estudio-completo])`, fail-closed) — espelha o gate do
+   *    próprio editor; barra quem alcança a rota na borda sem ter o produto.
+   *  - `title` e `description` vêm da criança (sanitizados/limitados) — não há admin.
+   *  - Autor do header confiável; destino kids + parede curada (mesmas guardas).
+   *  - Idempotência = `autor:standalone:clientKey` (duplo-clique dedup-a; republicar = post novo).
+   */
+  async createStandaloneShowcase(
+    actor: Actor,
+    cmd: CreateStandaloneShowcaseCommand,
+  ): Promise<{ thread: ThreadView; deduped: boolean }> {
+    // Elegibilidade = posse do produto do Estúdio (acesso pela CONTA). Fail-closed:
+    // um erro transitório no members NÃO libera a publicação (o gateway re-entrega).
+    let owns = false
+    try {
+      const access = await this.members.checkAccess(
+        actor.accountId,
+        [STUDIO_STANDALONE_ACCESS_REF],
+        [STUDIO_STANDALONE_ACCESS_REF],
+      )
+      owns =
+        access.granted.includes(STUDIO_STANDALONE_ACCESS_REF) ||
+        access.communities.includes(STUDIO_STANDALONE_ACCESS_REF) ||
+        access.hasMasterKids
+    } catch {
+      owns = false
+    }
+    if (!owns) throw new PostingNotAllowedError('Sem acesso ao Estúdio para publicar')
+
+    // Destino: o Mural kids + parede curada (mesmas guardas das outras publicações).
+    const space = await this.read.findActiveSpaceBySlug(cmd.spaceSlug)
+    if (!space) throw new SpaceNotFoundError()
+    if (this.showcaseWallSlugs.size > 0 && !this.showcaseWallSlugs.has(space.slug)) {
+      throw new PostingNotAllowedError('Destino não é uma parede de vitrine')
+    }
+    if (space.audience !== 'kids') {
+      throw new PostingNotAllowedError('A vitrine só publica em servidores kids')
+    }
+    const channels = await this.read.listActiveChannels(space.id)
+    const channel = channels.find((c) => c.slug === this.showcaseChannelSlug)
+    if (!channel) throw new ChannelNotFoundError()
+    if (channel.postingPolicy !== 'staff_only') {
+      throw new PostingNotAllowedError('A vitrine só publica na parede curada (staff_only)')
+    }
+
+    // Sem aula → título E corpo são da criança (limitados). O nome do autor vem do header.
+    const title = cmd.title.trim()
+    const body = cmd.description.trim()
+    const displayName = actor.displayName.trim()
+    if (!title || title.length > MAX_TITLE) throw new PostingNotAllowedError('Título inválido')
+    if (!body || body.length > MAX_STUDIO_DESCRIPTION) {
+      throw new PostingNotAllowedError('Descrição inválida')
+    }
+    if (!displayName || displayName.length > MAX_DISPLAY_NAME) {
+      throw new PostingNotAllowedError('Nome do autor inválido')
+    }
+
+    const coverImageUrl = cmd.coverImageUrl?.startsWith('https://') ? cmd.coverImageUrl : null
+
+    // Sem curso/cadeia: a idempotência é só `autor:standalone:clientKey` (duplo-clique
+    // dedup-a; republicar com clientKey novo = post NOVO, snapshot imutável).
+    const idempotencyKey = createHash('sha256')
+      .update(`${actor.userId}:studio-standalone:${cmd.clientIdempotencyKey}`)
       .digest('hex')
 
     const id = this.newId()

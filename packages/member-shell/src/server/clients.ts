@@ -29,6 +29,7 @@ import type {
   MyCourseView,
   Paginated,
   PaymentView,
+  ProductAccessView,
   ProfileView,
   PublicProfileGameView,
   PublicProfileIdentity,
@@ -53,6 +54,13 @@ const AUTH_TIMEOUT_MS = 15_000
 
 /** Audiência da vitrine no members: `adult` (community) | `kids` (community-kids). */
 export type MembersAudience = 'adult' | 'kids'
+
+/**
+ * Ref do produto vendável "Estúdio Completo" (= slug do produto/curso no catálogo).
+ * Quem possui acessa o editor standalone e pode publicar do estúdio. ⚠️ Tem que casar
+ * com o `STUDIO_STANDALONE_ACCESS_REF` do hub e com o slug do produto no catálogo.
+ */
+export const STUDIO_ACCESS_REF = 'estudio-completo'
 
 export type AuthClient = ReturnType<typeof createAuthClient>
 export type MembersClient = ReturnType<typeof createMembersClient>
@@ -241,6 +249,16 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     /** Catálogo "Todos os cursos" (published da vitrine + flag hasAccess do aluno). */
     listCatalog(): Promise<GatewayResponse<{ courses: CatalogCourseView[] }>> {
       return gw.gatewayFetch('/members/catalog', { query: { audience } })
+    },
+
+    /**
+     * "Esta conta tem acesso ao Estúdio Completo?" — Server Component (sem refresh de
+     * cookie), p/ gatear a página /estudio antes de carregar o editor pesado.
+     */
+    checkStudioAccessReadonly(): Promise<GatewayResponse<ProductAccessView>> {
+      return gw.gatewayFetchReadonly('/members/access', {
+        query: { refs: STUDIO_ACCESS_REF, audience },
+      })
     },
 
     /** Detalhe do curso (módulos + aulas + progresso). */
@@ -629,6 +647,25 @@ export function createHubClient(gw: GatewayModule, opts: { audience: MembersAudi
       clientIdempotencyKey: string
     }): Promise<GatewayResponse<{ thread: HubThreadView; deduped: boolean }>> {
       return gw.gatewayFetch('/hub/internal/showcase-thread-studio', { method: 'POST', body })
+    },
+    /**
+     * Variação do ESTÚDIO COMPLETO (produto vendável, SEM aula): `title` e `description`
+     * vêm da criança (não há payload autoritativo do members). O hub re-valida a POSSE
+     * do produto (S2S members) e tira o autor do header de perfil; `clientIdempotencyKey`
+     * dedup-a duplo-clique (republicar = post novo).
+     */
+    createShowcaseThreadStudioStandalone(body: {
+      spaceSlug: string
+      title: string
+      description: string
+      coverImageUrl: string | null
+      playId: string
+      clientIdempotencyKey: string
+    }): Promise<GatewayResponse<{ thread: HubThreadView; deduped: boolean }>> {
+      return gw.gatewayFetch('/hub/internal/showcase-thread-studio-standalone', {
+        method: 'POST',
+        body,
+      })
     },
     report(
       target: 'thread' | 'comment',

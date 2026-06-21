@@ -28,6 +28,7 @@ import type {
   LessonCompleteShowcaseHint,
   LessonDetailView,
   QuizBlock,
+  StudioBlock,
 } from '@/lib/types'
 
 interface Props {
@@ -90,12 +91,22 @@ export function LessonPlayer({
     [lesson.blocks],
   )
 
-  // Há bloco de estúdio cujo projeto ainda não foi enviado? (mesmo gate do quiz — 409)
-  const blockedByStudio = useMemo(
+  // Há bloco de estúdio cujo projeto ainda não foi enviado? (mesmo gate do backend — 409)
+  const blockedByStudioNotSubmitted = useMemo(
     () => lesson.blocks.some((b) => b.kind === 'studio' && !b.studioState?.submitted),
     [lesson.blocks],
   )
-  const completeBlocked = blockedByQuiz || blockedByStudio
+  // Atividades do Estúdio com nota mínima exigem aprovação, não só envio.
+  const blockedByStudioNotPassed = useMemo(
+    () =>
+      lesson.blocks.some((b) => {
+        if (b.kind !== 'studio' || !b.studioState?.submitted) return false
+        const content = b.content as StudioBlock | null
+        return content?.activity?.passingScore !== undefined && !b.studioState?.passed
+      }),
+    [lesson.blocks],
+  )
+  const completeBlocked = blockedByQuiz || blockedByStudioNotSubmitted || blockedByStudioNotPassed
 
   // ── Posição do vídeo: refs (sem re-render) + throttle + flush por beacon ────
   const positionUrl = `/api/members/lessons/${encodeURIComponent(lesson.id)}/position`
@@ -198,6 +209,11 @@ export function LessonPlayer({
           if (!opts.silent) {
             toast.error('Envie o projeto do Estúdio para poder concluir a aula.')
           }
+        } else if (apiErr?.code === 'STUDIO_GATE_NOT_PASSED') {
+          // A aula só conclui depois de atingir a nota mínima do Estúdio.
+          if (!opts.silent) {
+            toast.error('Atinja a nota mínima do Estúdio para poder concluir a aula.')
+          }
         } else if (!opts.silent) {
           toast.error('Não foi possível marcar a aula. Tente de novo.')
         }
@@ -297,9 +313,13 @@ export function LessonPlayer({
                   <p className="text-muted-foreground text-xs">
                     Passe no quiz da aula para poder concluí-la.
                   </p>
-                ) : blockedByStudio ? (
+                ) : blockedByStudioNotSubmitted ? (
                   <p className="text-muted-foreground text-xs">
                     Envie o projeto do Estúdio para poder concluir a aula.
+                  </p>
+                ) : blockedByStudioNotPassed ? (
+                  <p className="text-muted-foreground text-xs">
+                    Atinja a nota mínima do Estúdio para poder concluir a aula.
                   </p>
                 ) : null}
               </div>

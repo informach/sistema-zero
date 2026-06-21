@@ -104,6 +104,15 @@ export interface CatalogCourseView {
   salesPageUrl: string | null
 }
 
+/**
+ * `GET /members/access?refs=` → mapa ref→tem-acesso. Gate de produtos que NÃO são
+ * curso de trilha (ex.: o Estúdio Completo vendável). Distinto do `AccessView` acima
+ * (matrícula de curso) — este é a resposta da checagem de acesso por ref.
+ */
+export interface ProductAccessView {
+  access: Record<string, boolean>
+}
+
 /** Item de `GET /members/courses` → `{ courses: MyCourseView[] }`. */
 export interface MyCourseView {
   courseSlug: string

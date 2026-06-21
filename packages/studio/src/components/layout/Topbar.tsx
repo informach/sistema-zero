@@ -192,7 +192,29 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
   // Menu "⋯" agrupado: Arquivo / Exibição / Conta. Cada item dispara a MESMA
   // ação de store dos botões antigos. (Preview NÃO entra: no wide é ícone
   // primário; no narrow vira aba no NarrowLayout.)
-  const fileItems: MenuItem[] = []
+  // Salvar e Baixar VIVEM aqui (no menu) — só o "Compartilhar" fica solto na Topbar
+  // (decisão de UX: a Topbar do estúdio-produto exibe só a ação principal). O badge
+  // de status ("Salvo"/"Não salvo") continua na Topbar comunicando o estado.
+  const fileItems: MenuItem[] = [
+    {
+      id: 'save',
+      label: saving ? t('topbar.saving') : t('topbar.save'),
+      icon: <IconSave />,
+      onSelect: () => {
+        if (!saving) void handleSave()
+      },
+    },
+  ]
+  if (config.download) {
+    fileItems.push({
+      id: 'download',
+      label: downloading ? t('topbar.downloading') : t('topbar.download'),
+      icon: <IconDownload />,
+      onSelect: () => {
+        if (!downloading) void handleDownload()
+      },
+    })
+  }
   if (config.export) {
     fileItems.push({
       id: 'export',
@@ -423,38 +445,6 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
             >
               <IconShare />
               {!isCompact && <span className="text-sm font-medium">{t('share.action')}</span>}
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={saving}
-            title={t('topbar.save')}
-            aria-label={t('topbar.save')}
-            style={{ touchAction: 'manipulation' }}
-            className="inline-flex h-9 items-center gap-1.5 rounded-md px-2.5 text-sz-fg-soft transition-colors hover:bg-sz-bg hover:text-sz-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60 disabled:opacity-50"
-          >
-            <IconSave />
-            {!isCompact && (
-              <span className="text-sm">{saving ? t('topbar.saving') : t('topbar.save')}</span>
-            )}
-          </button>
-          {config.download && (
-            <button
-              type="button"
-              onClick={handleDownload}
-              disabled={downloading}
-              title={t('topbar.downloadHint')}
-              aria-label={t('topbar.downloadHint')}
-              style={{ touchAction: 'manipulation' }}
-              className="inline-flex h-9 items-center gap-1.5 rounded-md px-2.5 text-sz-fg-soft transition-colors hover:bg-sz-bg hover:text-sz-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60 disabled:opacity-50"
-            >
-              <IconDownload />
-              {!isCompact && (
-                <span className="text-sm">
-                  {downloading ? t('topbar.downloading') : t('topbar.download')}
-                </span>
-              )}
             </button>
           )}
           {config.preview && (

@@ -139,4 +139,31 @@ describe('Liga — board e resolução de tier', () => {
     const body = await readJson(await getLeague(app))
     expect(body.tier).toBe('prata') // ouro → cai 1 nível
   })
+
+  test('empate na XP da semana → mesma posição (competition ranking, casa com promoção)', async () => {
+    const ctx = buildApp() // semana corrente w:2026-06-01
+    const { app, gamification } = ctx
+    const O1 = '22222222-2222-2222-2222-222222222222'
+    const O2 = '33333333-3333-3333-3333-333333333333'
+    seedKidsAccess(ctx, [USER, O1, O2])
+    // Memberships da semana CORRENTE (bronze) p/ os três — o board lê da coorte da semana.
+    for (const u of [USER, O1, O2]) {
+      gamification.leagueMemberships.push({
+        userId: u,
+        accountId: u,
+        audience: 'kids',
+        weekKey: 'w:2026-06-01',
+        tier: 'bronze',
+      })
+    }
+    // USER e O1 empatam em 50; O2 tem 10.
+    seedXp(gamification, USER, 50, '2026-06-02T12:00:00.000Z')
+    seedXp(gamification, O1, 50, '2026-06-02T12:00:00.000Z')
+    seedXp(gamification, O2, 10, '2026-06-02T12:00:00.000Z')
+
+    const body = await readJson(await getLeague(app))
+    // Competition ranking ("1224"): os dois empatados em 50 → posição 1; o de 10 → posição 3.
+    expect(body.entries.map((e: { position: number }) => e.position)).toEqual([1, 1, 3])
+    expect(body.myPosition).toBe(1)
+  })
 })

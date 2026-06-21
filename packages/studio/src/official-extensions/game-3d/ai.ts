@@ -44,6 +44,81 @@ Kit "Travessia" (atravessar a rua / Crossy Road):
 - crosserHit(player, world): bateu num veículo? crosserRow(player): pontuação (linha).
 - crosserReset(player, world): recomeça.
 
+Genéricos top-down/circular (mundo z-up — p/ jogos de pista/relógio/órbita):
+- topCamera(world, followObj | null): câmera ortográfica aérea (de cima); segue o objeto se dado.
+- moveInCircle(obj, raio, velocidade): gira o objeto numa circunferência (centro na origem), virado p/ frente.
+- distanceTo(a, b): distância entre dois objetos. isNear(a, b, dist): estão a menos de "dist"?
+
+Kit "Corrida" (correr numa pista top-down):
+- createRaceScene(canvasId) -> world: cena + câmera aérea + luz.
+- createRaceTrack(world): pista oval (grama + asfalto + árvores).
+- createRaceCar(world, { color }) -> car: carro do jogador na largada.
+- raceStep(car, world): a cada quadro — dá voltas (↑ acelera, ↓ freia) e conta voltas.
+- runRivals(world): solta/move carros rivais pela pista. raceControl(car, "accelerate"|"decelerate"|"normal"): p/ botões.
+- raceHit(car, world): bateu num rival? raceLaps(car): voltas (pontuação). raceReset(car, world): recomeça.
+
+Genéricos de movimento/física (SEM lib de física — feita na mão; p/ queda/plataforma/giro):
+- fall(obj): a cada quadro, solta o objeto em queda livre girando (gravidade) e o remove ao sumir.
+- slideBetween(obj, "x"|"y"|"z", min, max, speed): vaivém num eixo (plataformas que andam).
+- spin(obj, "x"|"y"|"z", speed): rotação contínua (moedas, hélices, planetas).
+- getPos(obj, "x"|"y"|"z") / getRot(obj, "x"|"y"|"z") / getScale(obj): LER posição/giro/tamanho (valores) — base p/ lógica própria (mira, IA, movimento custom).
+- moveBy(obj, dx, dy, dz): mover relativo (soma à posição). rotateBy(obj, "y", radianos): girar relativo.
+- moveTowards(obj, x, y, z, força): aproxima aos poucos (lerp; força 0 a 1). dt(world): segundos do quadro —
+  multiplique a velocidade por dt p/ o jogo correr igual em qualquer máquina (o "A cada frame 3D" já passa dt).
+- lookAtObject(a, b) / lookAtPoint(obj, x, y, z): virar A para olhar B / um ponto (mira robusta).
+- moveForward(obj, dist): andar p/ frente (na direção que olha). faceVelocity(obj): virar p/ a direção do movimento.
+- angleTo(a, b): ângulo (radianos) de A para B no plano do chão (X-Z) — p/ mirar/girar.
+
+Mira & clique (raycast — valores p/ "se"/variável; combine com o evento CORE "clicar em qualquer lugar"):
+- pickAtMouse(world): o objeto 3D sob o ponteiro (ou null) — guarde numa variável p/ usar pelo nome.
+- pointerOver(world, obj): o mouse está sobre aquele objeto? (bool). aimAhead(world, obj, dist): o objeto à
+  frente, na direção que "obj" olha (tiro/mira; null se nada).
+- onGround(world, obj): tem chão logo abaixo? (bool — sensor de plataforma). groundHeight(world, obj): a
+  altura (y) do topo do que está abaixo. Os objetos de mira/chão são os criados (createBox/createBlock/...).
+
+Física genérica (SEM lib; gravidade + colisão AABB de empurrar-para-fora):
+- body(obj, gravity): liga a física (gravidade, número negativo). setSolid(obj): marca como parede/chão.
+- stepBody(obj, world): a cada quadro, aplica gravidade + empurra para fora dos sólidos (chamar no animate).
+- platformerControls(obj, world, speed, jump): preset plataforma (WASD/setas + espaço, gravidade+colisão).
+- fpsControls(obj, world, speed): preset 1ª pessoa (WASD na direção que o corpo olha — combine c/ fpsCamera).
+- resolveCollision(a, b): empurra A para fora de B (colisão manual de 2 objetos).
+
+Câmeras vivas (manuais, sem addon):
+- fpsCamera(world, obj): câmera nos olhos do objeto + olhar com o mouse (pointer-lock; clique trava). Combine c/ fpsControls.
+- orbitCamera(world, target): gira ao redor do alvo arrastando o mouse (roda = zoom).
+- thirdPersonCamera(world, obj, dist, height): câmera atrás/acima do objeto (atualizada a cada frame pelo animate).
+- cameraLookAt(world, obj): aponta a câmera p/ um objeto. setFOV(world, graus): "zoom" (menos graus = mais zoom).
+
+Formas, materiais e texturas (Fase 6 — montar qualquer visual; criar UMA vez, fora do animate):
+- createCylinder(world, { radius, height, color }) / createCone(...) / createTorus(world, { radius, tube, color }):
+  novas formas (entram no limite de 300 e na colisão por caixa, como createBox).
+- createPlane(world, { width, depth, color }): um plano fino deitado no chão (ótimo p/ o piso).
+- setColor(obj, "#cor") / setOpacity(obj, 0..1) / setMaterial(obj, "normal"|"metal"|"glass"|"glow"|"wireframe"):
+  mudam a aparência da superfície.
+- setTexture(obj, "nomeDoAsset"): veste o objeto com uma imagem embutida (asset adicionado ao projeto).
+- setVisible(obj, "show"|"hide"): mostra/esconde (continua existindo). remove(world, obj): tira da cena de vez.
+- createModel(world) -> grupo vazio; addToModel(model, peca): junta peças num modelo (mover o modelo move tudo junto).
+
+Luz & céu (Fase 7 — atmosfera; criar UMA vez, fora do animate):
+- addAmbientLight(world, "#cor", forca): luz suave geral (sem sombra). addSunLight(world, "#cor", forca): sol (direcional, faz sombra).
+- addPointLight(world, "#cor", forca, x, y, z): uma lâmpada/tocha que brilha de um ponto. (A cena já nasce com luz; estes ADICIONAM clima.)
+- setFog(world, "#cor", perto, longe): neblina (o que está longe some). setSky(world, "#topo", "#horizonte"): fundo em degradê (céu).
+- setShadows(world, "on"|"off"): liga/desliga as sombras da cena (desligar = mais leve).
+
+Enxames & som (Fase 8 — grupos genéricos de cópias + áudio):
+- createSwarm(world) -> enxame: um grupo p/ muitas cópias. spawnInSwarm(enxame, original, x, y, z): cria uma cópia do original no enxame (na posição).
+- forEachInSwarm(enxame, (item) => {...}): repete os blocos p/ cada cópia (a da vez é "item"); itera ao contrário, então pode remover dentro. countSwarm(enxame): quantas cópias tem.
+- removeFromSwarm(enxame, item): tira uma cópia. pruneSwarm(enxame, "x"|"y"|"z", min, max): limpa as cópias que saíram dos limites (higiene de GPU).
+- playNote(freqHz, ms): um bip (mais Hz = mais agudo). playEffect("coin"|"jump"|"explosion"|"hit"): efeito pronto. Som só toca DEPOIS de um clique/tecla (exigência do navegador).
+- Eventos: use os blocos ⚡ Eventos do NÚCLEO (quando apertar tecla / a cada N segundos); p/ colisão, "se collides(a, b)" dentro do "A cada frame" — a extensão 3D não tem blocos de evento próprios.
+
+Kit "Empilhar" (torre de blocos / Stack — mundo y-up):
+- createStackScene(canvasId) -> world: cena + câmera isométrica que sobe com a torre + luz.
+- createStackTower(world): base + 1º bloco que desliza (cores em arco-íris).
+- stackStep(world): a cada quadro — desliza o bloco do topo, sobe a câmera e faz as sobras caírem.
+- stackDrop(world): encaixa o bloco do topo (a sobra cai); errar o encaixe acaba o jogo. Ligue ao clique/tecla.
+- stackScore(world): pontuação (andares). stackGameOver(world): a torre caiu? stackReset(world): recomeça.
+
 Quando ajudar o aluno com 3D:
 - Lembre de criar o <canvas> no HTML primeiro.
 - Crie os objetos UMA vez (fora do animate); dentro do loop só mova/anime/teste colisão.
@@ -53,5 +128,7 @@ Quando ajudar o aluno com 3D:
 - Para um jogo de atravessar a rua (Travessia): createCrossingScene + createCrosser +
   generateRows(20); no animate: crosserStep + moveTraffic + se crosserHit -> mostrar o "Game Over".
   O HUD (pontuação, fim de jogo, setas) é feito com blocos de HTML/CSS e lido por crosserRow/crosserHit.
+- Para um jogo de empilhar (Empilhar): createStackScene + createStackTower; no animate: stackStep +
+  mostrar stackScore + se stackGameOver -> "Game Over". Ligue um botão/tecla a stackDrop e Recomeçar a stackReset.
 - Prefira pequenas iterações — não despeje a cena pronta.
 `

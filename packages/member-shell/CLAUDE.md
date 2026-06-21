@@ -78,13 +78,29 @@ montado no `createShell` como `routes.studio*`) expõe três rotas consumidas pe
   infantil; saída sanitizada + truncada (280). **FAIL-SOFT**: sem chave/timeout/não-2xx → `{description:'',
   fallback:true}` (a criança escreve). Rate-limit in-process por sessão (`globalThis`, réplica única).
 - **`POST /api/studio/publish`** (multipart, FORA do matcher do proxy — guard próprio `requireUploadSession`):
-  print → R2 **PÚBLICO** (`r2PutObject`, WebP); projeto inteiro (JSON auto-suficiente, assets data URLs) →
+  print → R2 **PÚBLICO** (`r2PutObject`, WebP); projeto inteiro (JSON auto-suficiente, assets data URLs)
+  passa por parse + `sanitizePlayableProject` ANTES de persistir (contrato mínimo: `files` canônicos
+  obrigatórios; `extraFiles`/`assets`/`installedExtensions` sempre arrays seguros; limites de tamanho
+  rechecados após normalização; JSON inválido → 400, excedente → 413) →
   R2 **PRIVADO** `studio/play/<uuid>.json` (`r2PutObjectPrivate`); chama
   `hub.createShowcaseThreadStudio` (gateway → hub); devolve `{ muralUrl, playUrl }`.
 - **`GET /api/studio/play/:id`** — **PÚBLICA (sem login)**: stream do projeto do R2 privado
   (`r2GetObjectPrivate`), MESMA ORIGEM (sem CORS), `Cache-Control immutable`, 404 no miss. É o que a página
   `/jogar/:id` do community-kids consome (renderiza o `StudioProjectPlayer` — só o jogo, sem o nome da
   criança).
+- **`POST /api/studio/publish-standalone`** (multipart, FORA do matcher — coberto pelo prefixo
+  `api/studio/publish` no negative-lookahead) — o "Compartilhar" do **Estúdio Completo** (produto vendável
+  da vitrine kids, SEM aula). Mesma mecânica do `publish` (sessão estrita, `sanitizePlayableProject`,
+  capa→R2 público, jogável→R2 privado) MENOS o acoplamento de aula: SEM `lessonId/blockId` e SEM
+  `getShowcasePayload`; `title` + `description` vêm da criança. Chama `hub.createShowcaseThreadStudioStandalone`
+  — o HUB re-valida a POSSE do produto (S2S `members.checkAccess`). Exposto como `routes.studioPublishStandalone`.
+
+**Estúdio Completo como produto (06/2026):** além do publish acima, o BFF ganhou o gate de acesso —
+`members.checkStudioAccessReadonly()` (`GET /members/access?refs=estudio-completo`, RSC sem refresh →
+`ProductAccessView { access }`) que o community-kids consome em `/estudio` para decidir entre o editor e o
+recado de bloqueado; e o client `hub.createShowcaseThreadStudioStandalone`. A ref do produto é a const
+exportada `STUDIO_ACCESS_REF` (`server/clients.ts`, = `estudio-completo`) — TEM que casar com o
+`STUDIO_STANDALONE_ACCESS_REF` do hub e o slug do produto no catálogo.
 
 `HubThreadView` ganhou **`playId`** (sobrevive ao `redactAuthors` — só estrutural; teste em
 `tests/hub-redact.test.ts`). O **`StudioBlockView`** ganhou a prop `enableShare?` (só o KIDS passa `true`):
@@ -192,7 +208,12 @@ do `/me` (sharp→WebP→R2 por `profileId`) — fica FORA do matcher do proxy (
    imagem no write (pixel-rastreador entre crianças); scrub de PII no Sentry (UUID do perfil/e-mail);
    `profileAvatar` AUTORIZA o dono ANTES de gravar no R2 (criança só troca a própria foto; UUID
    validado); `watermarkImage` com `limitInputPixels` (anti OOM); `getMeReadonly`/`getGamificationReadonly`
-   memoizados por request via `React.cache()` (dedup layout×página). **Fix aqui = fix nos dois apps;
+   memoizados por request via `React.cache()` (dedup layout×página). **+ full review 20/06:**
+   `meAvatar.POST` recusa sessão de PERFIL (403 `ACCOUNT_SESSION_REQUIRED`) ANTES da escrita no R2
+   — a foto do `/me` é da CONTA; sem isto a criança deixava objeto R2 órfão (espelha o
+   authorize-before-write do `profileAvatar`); `watermarkCacheKey` virou `sha256(srcKey)` (INJETIVO
+   — a substituição lossy podia colidir e servir o PDF errado ao MESMO aluno) e `watermarkImage`
+   ganhou teto de pixels TOTAIS p/ animados (não só por frame). **Fix aqui = fix nos dois apps;
    mudança aqui RODA NOS DOIS — rode as suítes dos dois.**
 5. Réplica ÚNICA por app (single-flight/gate em `globalThis` são por processo).
 6. **`vimeo-player`: o SDK é o DONO do iframe** (`new Player(divHost, { id })`). NUNCA voltar ao

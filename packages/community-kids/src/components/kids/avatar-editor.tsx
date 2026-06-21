@@ -162,7 +162,7 @@ export function AvatarEditor({ onClose }: { onClose: () => void }) {
                   type="button"
                   onClick={() => cycle(layer, -1)}
                   aria-label={`${AVATAR_LAYER_LABELS[layer]}: anterior`}
-                  className="grid size-9 place-items-center rounded-full bg-muted text-foreground transition-transform active:scale-90"
+                  className="grid size-11 place-items-center rounded-full bg-muted text-foreground transition-transform active:scale-90"
                 >
                   <ChevronLeft className="size-5" />
                 </button>
@@ -173,7 +173,7 @@ export function AvatarEditor({ onClose }: { onClose: () => void }) {
                   type="button"
                   onClick={() => cycle(layer, 1)}
                   aria-label={`${AVATAR_LAYER_LABELS[layer]}: próximo`}
-                  className="grid size-9 place-items-center rounded-full bg-muted text-foreground transition-transform active:scale-90"
+                  className="grid size-11 place-items-center rounded-full bg-muted text-foreground transition-transform active:scale-90"
                 >
                   <ChevronRight className="size-5" />
                 </button>
@@ -181,7 +181,10 @@ export function AvatarEditor({ onClose }: { onClose: () => void }) {
                   <button
                     type="button"
                     onClick={() => buy(selected)}
-                    disabled={busy === selected.id}
+                    // Desabilita durante QUALQUER compra (não só a desta peça): com
+                    // `busy === id` os outros botões ficavam clicáveis mas o onClick
+                    // era engolido por `if (busy) return` — dead-click sem feedback.
+                    disabled={!!busy}
                     className="inline-flex shrink-0 items-center gap-1 rounded-full bg-(--kids-lime-tint) px-2.5 py-1 [font-family:var(--font-display)] font-bold text-xs disabled:opacity-60"
                   >
                     <Lock className="size-3.5" />

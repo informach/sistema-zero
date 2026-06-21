@@ -189,7 +189,7 @@ export function RoomBuilder({ avatarConfig }: { avatarConfig?: AvatarConfig | nu
               <button
                 key={t.id}
                 type="button"
-                disabled={busy === t.id}
+                disabled={!!busy && t.locked}
                 onClick={() => (t.owned ? setDraft((d) => ({ ...d, theme: t.id })) : buy(t.id))}
                 className={cn(
                   'flex flex-col items-center gap-1 rounded-2xl border-2 p-2 text-xs transition-colors',
@@ -235,7 +235,7 @@ export function RoomBuilder({ avatarConfig }: { avatarConfig?: AvatarConfig | nu
               <button
                 key={p.id}
                 type="button"
-                disabled={busy === p.id}
+                disabled={!!busy && p.locked}
                 onClick={() => (p.owned ? setDraft((d) => ({ ...d, pet: p.id })) : buy(p.id))}
                 className={cn(
                   'flex flex-col items-center gap-1 rounded-2xl border-2 p-2 text-xs',
@@ -292,7 +292,9 @@ function ShopGrid({
           <button
             key={it.id}
             type="button"
-            disabled={busy === it.id}
+            // Durante uma compra, desabilita os OUTROS itens travados (evita
+            // dead-click sem feedback); item já possuído segue selecionável.
+            disabled={!!busy && locked}
             onClick={() => (locked ? onBuy(it.id) : onPick(it))}
             className="flex flex-col items-center gap-1 rounded-2xl border-2 border-border p-2 text-xs transition-colors hover:border-primary disabled:opacity-60"
           >

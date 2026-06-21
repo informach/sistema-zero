@@ -1,7 +1,7 @@
 'use client'
 
 import { Coins, Gift, Sparkles } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/cn'
 import type { MissionsMeView, MissionView } from '@/lib/types'
@@ -25,25 +25,14 @@ function missionLabel(m: MissionView): string {
 
 /**
  * Painel de missões diárias/semanais (estilo Duolingo): barra de progresso + botão
- * "Resgatar" quando concluída. Busca client-side e resgata via POST (idempotente).
- * Degrada em silêncio se a gamificação estiver indisponível (some).
+ * "Resgatar" quando concluída. As missões chegam JÁ RESOLVIDAS do servidor (prop
+ * `initial`, no Promise.all da home — sem fetch/waterfall pós-hidratação); o cliente
+ * só cuida do resgate (POST idempotente). `initial` nulo (gamificação indisponível)
+ * → o painel some (degrada em silêncio).
  */
-export function MissionsPanel() {
-  const [data, setData] = useState<MissionsMeView | null>(null)
+export function MissionsPanel({ initial }: { initial: MissionsMeView | null }) {
+  const [data, setData] = useState<MissionsMeView | null>(initial)
   const [claiming, setClaiming] = useState<string | null>(null)
-
-  useEffect(() => {
-    let alive = true
-    fetch('/api/members/gamification/missions/me')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d: MissionsMeView | null) => {
-        if (alive && d?.daily) setData(d)
-      })
-      .catch(() => {})
-    return () => {
-      alive = false
-    }
-  }, [])
 
   async function claim(m: MissionView) {
     if (claiming) return

@@ -73,52 +73,74 @@ export function RoomCanvas({
           containerType: 'size',
         }
         const selected = mode === 'edit' && selectedIndex === idx
+        const emoji = (
+          <span
+            aria-hidden="true"
+            className={info.anim ? `kid-room-anim ${info.anim}` : undefined}
+            style={{ fontSize: 'min(82cqw, 82cqh)', lineHeight: 1 }}
+          >
+            {info.emoji}
+          </span>
+        )
+        // VIEW: item decorativo, fora da ordem de tabulação (emoji é aria-hidden).
+        if (mode !== 'edit') {
+          return (
+            // biome-ignore lint/suspicious/noArrayIndexKey: a ordem dos itens é a identidade aqui.
+            <div key={idx} style={style} className="absolute grid place-items-center">
+              {emoji}
+            </div>
+          )
+        }
+        // EDIT: controle FOCÁVEL — arrasta por pointer E move por teclado (setas);
+        // Enter/Espaço seleciona (revela o botão "Tirar", que é focável). Sem isto o
+        // item era um <div> só-pointer = beco sem saída p/ teclado/AT. aria-label =
+        // rótulo PT, já que o emoji é aria-hidden.
         return (
-          <div
+          <button
             // biome-ignore lint/suspicious/noArrayIndexKey: a ordem dos itens é a identidade aqui.
             key={idx}
+            type="button"
+            aria-label={`${info.labelPt}${selected ? ' (selecionado)' : ''}`}
+            aria-pressed={selected}
             style={style}
             className={cn(
-              'absolute grid place-items-center',
-              mode === 'edit' && 'cursor-grab touch-none active:cursor-grabbing',
+              'absolute grid cursor-grab touch-none place-items-center bg-transparent p-0 active:cursor-grabbing',
+              'focus-visible:rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
               selected && 'rounded-lg ring-2 ring-(--sz-hot)',
             )}
-            onPointerDown={
-              mode === 'edit'
-                ? (e) => {
-                    e.stopPropagation()
-                    draggingRef.current = idx
-                    e.currentTarget.setPointerCapture(e.pointerId)
-                    onSelect?.(idx)
-                  }
-                : undefined
-            }
-            onPointerMove={
-              mode === 'edit'
-                ? (e) => {
-                    if (draggingRef.current !== idx) return
-                    const cell = cellFromPointer(e)
-                    if (cell) onMove?.(idx, cell.x, cell.y)
-                  }
-                : undefined
-            }
-            onPointerUp={
-              mode === 'edit'
-                ? (e) => {
-                    draggingRef.current = null
-                    e.currentTarget.releasePointerCapture(e.pointerId)
-                  }
-                : undefined
-            }
+            onClick={() => onSelect?.(idx)}
+            onKeyDown={(e) => {
+              const nudges: Record<string, [number, number]> = {
+                ArrowLeft: [-1, 0],
+                ArrowRight: [1, 0],
+                ArrowUp: [0, -1],
+                ArrowDown: [0, 1],
+              }
+              const d = nudges[e.key]
+              if (d) {
+                e.preventDefault()
+                onSelect?.(idx)
+                onMove?.(idx, p.x + d[0], p.y + d[1])
+              }
+            }}
+            onPointerDown={(e) => {
+              e.stopPropagation()
+              draggingRef.current = idx
+              e.currentTarget.setPointerCapture(e.pointerId)
+              onSelect?.(idx)
+            }}
+            onPointerMove={(e) => {
+              if (draggingRef.current !== idx) return
+              const cell = cellFromPointer(e)
+              if (cell) onMove?.(idx, cell.x, cell.y)
+            }}
+            onPointerUp={(e) => {
+              draggingRef.current = null
+              e.currentTarget.releasePointerCapture(e.pointerId)
+            }}
           >
-            <span
-              aria-hidden="true"
-              className={info.anim ? `kid-room-anim ${info.anim}` : undefined}
-              style={{ fontSize: 'min(82cqw, 82cqh)', lineHeight: 1 }}
-            >
-              {info.emoji}
-            </span>
-          </div>
+            {emoji}
+          </button>
         )
       })}
 

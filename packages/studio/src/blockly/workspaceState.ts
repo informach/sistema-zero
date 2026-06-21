@@ -61,6 +61,7 @@ const ID_FIELD_TAGS = new Set([
   'svg',
   'g',
   'path',
+  'text',
 ])
 
 /** Atributos representados por um campo do bloco (logo, não vão para `data`). */
@@ -73,8 +74,12 @@ const FIELD_ATTRS: Record<string, readonly string[]> = {
   g: ['transform'],
   path: ['d', 'fill', 'stroke', 'transform'],
   circle: ['cx', 'cy', 'r', 'fill'],
+  ellipse: ['cx', 'cy', 'rx', 'ry', 'fill'],
   rect: ['x', 'y', 'width', 'height', 'fill'],
   line: ['x1', 'y1', 'x2', 'y2', 'stroke'],
+  polyline: ['points', 'fill', 'stroke'],
+  polygon: ['points', 'fill', 'stroke'],
+  text: ['x', 'y', 'fill'],
   use: ['href', 'transform'],
 }
 
@@ -429,6 +434,58 @@ function htmlNodeToBlockInner(node: SZIR['html'][number]): SerializedBlocklyBloc
       node.__id,
     )
   }
+  if (node.tag === 'ellipse') {
+    return block(
+      'sz_svg_ellipse',
+      {
+        CX: node.attrs?.cx ?? '0',
+        CY: node.attrs?.cy ?? '0',
+        RX: node.attrs?.rx ?? '20',
+        RY: node.attrs?.ry ?? '10',
+        FILL: node.attrs?.fill ?? '',
+      },
+      {},
+      node.__id,
+    )
+  }
+  if (node.tag === 'polyline') {
+    return block(
+      'sz_svg_polyline',
+      {
+        POINTS: node.attrs?.points ?? '',
+        FILL: node.attrs?.fill ?? 'none',
+        STROKE: node.attrs?.stroke ?? 'black',
+      },
+      {},
+      node.__id,
+    )
+  }
+  if (node.tag === 'polygon') {
+    return block(
+      'sz_svg_polygon',
+      {
+        POINTS: node.attrs?.points ?? '',
+        FILL: node.attrs?.fill ?? '',
+        STROKE: node.attrs?.stroke ?? '',
+      },
+      {},
+      node.__id,
+    )
+  }
+  if (node.tag === 'text') {
+    return block(
+      'sz_svg_text',
+      {
+        ID: node.id ?? '',
+        X: node.attrs?.x ?? '0',
+        Y: node.attrs?.y ?? '0',
+        TEXT: node.text ?? '',
+        FILL: node.attrs?.fill ?? '',
+      },
+      {},
+      node.__id,
+    )
+  }
   return block('sz_adv_raw_html', { CODE: renderElementFallback(node) }, {}, node.__id)
 }
 
@@ -455,8 +512,8 @@ function keyframesToText(entry: KeyframesCSS): string {
 
 /**
  * Reverte `@keyframes` para o bloco from/to quando os passos são só `from`/`0%`
- * e `to`/`100%`; caso contrário (multi-passo, vindo de código) cai num bloco
- * rawCSS preservando o texto.
+ * e `to`/`100%`; multi-passo vira o bloco "animação (vários passos)" com blocos
+ * "passo" filhos (editável); só sem passos cai num rawCSS preservando o texto.
  */
 function keyframesToBlock(entry: KeyframesCSS): SerializedBlocklyBlock {
   const from = entry.steps.find((s) => s.at === 'from' || s.at === '0%')
@@ -472,6 +529,22 @@ function keyframesToBlock(entry: KeyframesCSS): SerializedBlocklyBlock {
       {
         FROM: declarationsToBlocks(from?.declarations),
         TO: declarationsToBlocks(to?.declarations),
+      },
+      entry.__id,
+    )
+  }
+  if (entry.steps.length > 0) {
+    return block(
+      'sz_css_keyframes_steps',
+      { NAME: entry.name },
+      {
+        STEPS: entry.steps.map((s) =>
+          block(
+            'sz_css_keyframe_step',
+            { AT: s.at },
+            { DECLS: declarationsToBlocks(s.declarations) },
+          ),
+        ),
       },
       entry.__id,
     )
@@ -782,6 +855,8 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       // Eventos globais sem alvo de elemento (mouse na tela / janela / tela cheia).
       const globalMap: Partial<Record<string, string>> = {
         mousemove: 'sz_js_on_mousemove',
+        mousedown: 'sz_js_on_pointer_down',
+        mouseup: 'sz_js_on_pointer_up',
         load: 'sz_js_on_load',
         resize: 'sz_js_on_resize',
         fullscreenchange: 'sz_js_on_fullscreen_change',
@@ -830,6 +905,18 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         'sz_js_get_property',
         {
           PROP: stmt.property,
+          TARGET_KIND: stmt.targetKind ?? 'id',
+          TARGET: stmt.targetId,
+          NAME: stmt.varName,
+        },
+        {},
+        stmt.__id,
+      )
+    case 'getAttribute':
+      return block(
+        'sz_js_get_attribute',
+        {
+          ATTR: stmt.name,
           TARGET_KIND: stmt.targetKind ?? 'id',
           TARGET: stmt.targetId,
           NAME: stmt.varName,
@@ -1122,6 +1209,12 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         ? rawJSBlock(stmt)
         : block('sz_canvas_bezier_curve', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
     }
+    case 'canvasArcTo': {
+      const vs = valueBlocks({ X1: stmt.x1, Y1: stmt.y1, X2: stmt.x2, Y2: stmt.y2, R: stmt.r })
+      return vs === null
+        ? rawJSBlock(stmt)
+        : block('sz_canvas_arc_to', { CTX: stmt.ctxVar }, {}, stmt.__id, vs)
+    }
     case 'canvasShadow': {
       const vs = valueBlocks({ COLOR: stmt.color, BLUR: stmt.blur })
       return vs === null
@@ -1150,8 +1243,12 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
     }
     case 'animationLoop': {
       const b = block('sz_canvas_anim_loop', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
-      // Reativa o "guardar id em [var]" (mutator) quando o IR tem handle.
-      if (stmt.handle) b.extraState = { handle: stmt.handle }
+      // Reativa os slots do mutator (guardar id / tempo / delta) quando o IR os tem.
+      const extra: { handle?: string; timeVar?: string; deltaVar?: string } = {}
+      if (stmt.handle) extra.handle = stmt.handle
+      if (stmt.timeVar) extra.timeVar = stmt.timeVar
+      if (stmt.deltaVar) extra.deltaVar = stmt.deltaVar
+      if (Object.keys(extra).length > 0) b.extraState = extra
       return b
     }
     case 'cancelAnimationFrame': {
@@ -1214,6 +1311,8 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       )
     case 'createElement':
       return block('sz_js_create_element', { TAG: stmt.tag, NAME: stmt.varName }, {}, stmt.__id)
+    case 'createElementNS':
+      return block('sz_js_create_element_ns', { TAG: stmt.tag, NAME: stmt.varName }, {}, stmt.__id)
     case 'appendChild':
       return block(
         'sz_js_append_child',
@@ -1221,6 +1320,37 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         {},
         stmt.__id,
       )
+    case 'throwError': {
+      const msg = exprToValueBlock(stmt.message)
+      if (!msg) return rawJSBlock(stmt)
+      return block('sz_js_throw', {}, {}, stmt.__id, { MESSAGE: msg })
+    }
+    case 'objectAssign':
+      return block(
+        'sz_js_object_assign',
+        { SOURCE: stmt.sourceVar, TARGET: stmt.targetVar },
+        {},
+        stmt.__id,
+      )
+    case 'switch': {
+      const subject = exprToValueBlock(stmt.subject)
+      if (!subject) return rawJSBlock(stmt)
+      const caseBlocks: SerializedBlocklyBlock[] = []
+      for (const c of stmt.cases) {
+        const match = exprToValueBlock(c.match)
+        if (!match) return rawJSBlock(stmt)
+        caseBlocks.push(
+          block('sz_js_case', {}, { DO: statementsToBlocks(c.body) }, undefined, { MATCH: match }),
+        )
+      }
+      return block(
+        'sz_js_switch',
+        {},
+        { CASES: caseBlocks, DEFAULT: statementsToBlocks(stmt.default ?? []) },
+        stmt.__id,
+        { SUBJECT: subject },
+      )
+    }
     case 'setDataset': {
       const value = exprToValueBlock(stmt.value)
       if (!value) return rawJSBlock(stmt)
@@ -1357,6 +1487,13 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       )
     case 'canvasTextAlign':
       return block('sz_canvas_text_align', { CTX: stmt.ctxVar, ALIGN: stmt.align }, {}, stmt.__id)
+    case 'canvasTextBaseline':
+      return block(
+        'sz_canvas_text_baseline',
+        { CTX: stmt.ctxVar, BASELINE: stmt.baseline },
+        {},
+        stmt.__id,
+      )
     case 'g2d:createSprite':
       return block(
         'sz_g2d_create_sprite',
@@ -1422,6 +1559,119 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       )
     case 'g2d:playSound':
       return block('sz_g2d_play_sound', { FREQ: stmt.freq, MS: stmt.durationMs }, {}, stmt.__id)
+    case 'g2d:playFx':
+      return block('sz_g2d_play_fx', { FX: stmt.fx }, {}, stmt.__id)
+    case 'g2d:playMusic':
+      return block('sz_g2d_play_music', { MUSIC: stmt.tune }, {}, stmt.__id)
+    case 'g2d:stopMusic':
+      return block('sz_g2d_stop_music', {}, {}, stmt.__id)
+    case 'g2d:playNote':
+      return block('sz_g2d_play_note', { NOTE: stmt.note, MS: stmt.ms }, {}, stmt.__id)
+    case 'g2d:aimAt':
+      return block(
+        'sz_g2d_aim_at',
+        { SPRITE: stmt.spriteVar, TARGET: stmt.targetVar },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:moveToward':
+      return block(
+        'sz_g2d_move_toward',
+        { SPRITE: stmt.spriteVar, TARGET: stmt.targetVar, SPEED: stmt.speed },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:setHealth':
+      return block(
+        'sz_g2d_set_health',
+        { AMOUNT: stmt.amount, SPRITE: stmt.spriteVar },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:changeHealth':
+      return block(
+        'sz_g2d_change_health',
+        { SPRITE: stmt.spriteVar, DELTA: stmt.delta },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:flipSprite':
+      return block('sz_g2d_flip_sprite', { SPRITE: stmt.spriteVar, DIR: stmt.dir }, {}, stmt.__id)
+    case 'g2d:setOpacity':
+      return block(
+        'sz_g2d_set_opacity',
+        { SPRITE: stmt.spriteVar, PERCENT: stmt.percent },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:setSize':
+      return block(
+        'sz_g2d_set_size',
+        { SPRITE: stmt.spriteVar, W: stmt.w, H: stmt.h },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:scaleSprite':
+      return block(
+        'sz_g2d_scale_sprite',
+        { SPRITE: stmt.spriteVar, FACTOR: stmt.factor },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:wrapEdges':
+      return block('sz_g2d_wrap_edges', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
+    case 'g2d:pruneOld':
+      return block(
+        'sz_g2d_prune_old',
+        { GROUP: stmt.groupVar, SECONDS: stmt.seconds },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:pauseGame':
+      return block('sz_g2d_pause', {}, {}, stmt.__id)
+    case 'g2d:resumeGame':
+      return block('sz_g2d_resume', {}, {}, stmt.__id)
+    case 'g2d:cameraFollow':
+      return block(
+        'sz_g2d_camera_follow',
+        { SPRITE: stmt.spriteVar, WORLDW: stmt.worldW, WORLDH: stmt.worldH },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:setCamera':
+      return block('sz_g2d_set_camera', { X: stmt.x, Y: stmt.y }, {}, stmt.__id)
+    case 'g2d:breakTile':
+      return block(
+        'sz_g2d_break_tile_at',
+        { MAP: stmt.mapVar, SPRITE: stmt.spriteVar },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:setTile':
+      return block(
+        'sz_g2d_set_tile',
+        { MAP: stmt.mapVar, INDEX: stmt.index, SPRITE: stmt.spriteVar },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:bringToFront':
+      return block(
+        'sz_g2d_bring_to_front',
+        { SPRITE: stmt.spriteVar, GROUP: stmt.groupVar },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:sendToBack':
+      return block(
+        'sz_g2d_send_to_back',
+        { SPRITE: stmt.spriteVar, GROUP: stmt.groupVar },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:drawHitbox':
+      return block('sz_g2d_draw_hitbox', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
+    case 'g2d:showFps':
+      return block('sz_g2d_show_fps', { X: stmt.x, Y: stmt.y }, {}, stmt.__id)
     case 'g2d:onPointer':
       return block(
         'sz_g2d_on_pointer',
@@ -1790,6 +2040,23 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         {},
         stmt.__id,
       )
+    case 'g2d:createStickHero':
+      return block(
+        'sz_g2d_create_stickhero',
+        { NAME: stmt.varName, CTX: stmt.ctxVar },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:updateStickHero':
+      return block('sz_g2d_update_stickhero', { GAME: stmt.gameVar }, {}, stmt.__id)
+    case 'g2d:restartStickHero':
+      return block('sz_g2d_restart_stickhero', { GAME: stmt.gameVar }, {}, stmt.__id)
+    case 'g2d:createBalloon':
+      return block('sz_g2d_create_balloon', { NAME: stmt.varName, CTX: stmt.ctxVar }, {}, stmt.__id)
+    case 'g2d:updateBalloon':
+      return block('sz_g2d_update_balloon', { GAME: stmt.gameVar }, {}, stmt.__id)
+    case 'g2d:restartBalloon':
+      return block('sz_g2d_restart_balloon', { GAME: stmt.gameVar }, {}, stmt.__id)
     case 'g2d:controlDino':
       return block(
         'sz_g2d_control_dino',
@@ -2181,6 +2448,214 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
     }
     case 'g3d:faceVelocity':
       return block('sz_g3d_face_velocity', { OBJ: stmt.objVar }, {}, stmt.__id)
+    case 'g3d:body':
+      return block('sz_g3d_body', { OBJ: stmt.objVar, GRAVITY: stmt.gravity }, {}, stmt.__id)
+    case 'g3d:stepBody':
+      return block('sz_g3d_step_body', { OBJ: stmt.objVar, WORLD: stmt.worldVar }, {}, stmt.__id)
+    case 'g3d:setSolid':
+      return block('sz_g3d_set_solid', { OBJ: stmt.objVar }, {}, stmt.__id)
+    case 'g3d:platformerControls':
+      return block(
+        'sz_g3d_platformer_controls',
+        { OBJ: stmt.objVar, WORLD: stmt.worldVar, SPEED: stmt.speed, JUMP: stmt.jump },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:fpsControls':
+      return block(
+        'sz_g3d_fps_controls',
+        { OBJ: stmt.objVar, WORLD: stmt.worldVar, SPEED: stmt.speed },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:resolveCollision':
+      return block('sz_g3d_resolve_collision', { A: stmt.aVar, B: stmt.bVar }, {}, stmt.__id)
+    case 'g3d:fpsCamera':
+      return block('sz_g3d_fps_camera', { WORLD: stmt.worldVar, OBJ: stmt.objVar }, {}, stmt.__id)
+    case 'g3d:orbitCamera':
+      return block('sz_g3d_orbit_camera', { WORLD: stmt.worldVar, OBJ: stmt.objVar }, {}, stmt.__id)
+    case 'g3d:thirdPersonCamera':
+      return block(
+        'sz_g3d_third_person_camera',
+        { WORLD: stmt.worldVar, OBJ: stmt.objVar, DIST: stmt.dist, HEIGHT: stmt.height },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:cameraLookAt':
+      return block(
+        'sz_g3d_camera_look_at',
+        { WORLD: stmt.worldVar, OBJ: stmt.objVar },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:setFOV':
+      return block('sz_g3d_set_fov', { WORLD: stmt.worldVar, DEG: stmt.deg }, {}, stmt.__id)
+    case 'g3d:createCylinder':
+      return block(
+        'sz_g3d_create_cylinder',
+        {
+          NAME: stmt.varName,
+          WORLD: stmt.worldVar,
+          RADIUS: stmt.radius,
+          HEIGHT: stmt.height,
+          COLOR: stmt.color,
+        },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:createCone':
+      return block(
+        'sz_g3d_create_cone',
+        {
+          NAME: stmt.varName,
+          WORLD: stmt.worldVar,
+          RADIUS: stmt.radius,
+          HEIGHT: stmt.height,
+          COLOR: stmt.color,
+        },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:createPlane':
+      return block(
+        'sz_g3d_create_plane',
+        {
+          NAME: stmt.varName,
+          WORLD: stmt.worldVar,
+          W: stmt.width,
+          D: stmt.depth,
+          COLOR: stmt.color,
+        },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:createTorus':
+      return block(
+        'sz_g3d_create_torus',
+        {
+          NAME: stmt.varName,
+          WORLD: stmt.worldVar,
+          RADIUS: stmt.radius,
+          TUBE: stmt.tube,
+          COLOR: stmt.color,
+        },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:createModel':
+      return block(
+        'sz_g3d_create_model',
+        { NAME: stmt.varName, WORLD: stmt.worldVar },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:setColor':
+      return block('sz_g3d_set_color', { OBJ: stmt.objVar, COLOR: stmt.color }, {}, stmt.__id)
+    case 'g3d:setOpacity':
+      return block('sz_g3d_set_opacity', { OBJ: stmt.objVar, OPACITY: stmt.opacity }, {}, stmt.__id)
+    case 'g3d:setMaterial':
+      return block('sz_g3d_set_material', { OBJ: stmt.objVar, KIND: stmt.kind }, {}, stmt.__id)
+    case 'g3d:setTexture':
+      return block('sz_g3d_set_texture', { OBJ: stmt.objVar, ASSET: stmt.asset }, {}, stmt.__id)
+    case 'g3d:setVisible':
+      return block('sz_g3d_set_visible', { OBJ: stmt.objVar, MODE: stmt.mode }, {}, stmt.__id)
+    case 'g3d:removeObject':
+      return block(
+        'sz_g3d_remove_object',
+        { WORLD: stmt.worldVar, OBJ: stmt.objVar },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:addToModel':
+      return block(
+        'sz_g3d_add_to_model',
+        { MODEL: stmt.modelVar, PART: stmt.partVar },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:addAmbientLight':
+      return block(
+        'sz_g3d_add_ambient_light',
+        { WORLD: stmt.worldVar, COLOR: stmt.color, INTENSITY: stmt.intensity },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:addSunLight':
+      return block(
+        'sz_g3d_add_sun_light',
+        { WORLD: stmt.worldVar, COLOR: stmt.color, INTENSITY: stmt.intensity },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:addPointLight':
+      return block(
+        'sz_g3d_add_point_light',
+        {
+          WORLD: stmt.worldVar,
+          COLOR: stmt.color,
+          INTENSITY: stmt.intensity,
+          X: stmt.x,
+          Y: stmt.y,
+          Z: stmt.z,
+        },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:setFog':
+      return block(
+        'sz_g3d_set_fog',
+        { WORLD: stmt.worldVar, COLOR: stmt.color, NEAR: stmt.near, FAR: stmt.far },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:setSky':
+      return block(
+        'sz_g3d_set_sky',
+        { WORLD: stmt.worldVar, TOP: stmt.top, BOTTOM: stmt.bottom },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:setShadows':
+      return block('sz_g3d_set_shadows', { WORLD: stmt.worldVar, MODE: stmt.mode }, {}, stmt.__id)
+    case 'g3d:createSwarm':
+      return block(
+        'sz_g3d_create_swarm',
+        { NAME: stmt.varName, WORLD: stmt.worldVar },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:spawnInSwarm':
+      return block(
+        'sz_g3d_spawn_in_swarm',
+        { SWARM: stmt.swarmVar, ORIGINAL: stmt.originalVar, X: stmt.x, Y: stmt.y, Z: stmt.z },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:forEachInSwarm':
+      return block(
+        'sz_g3d_for_each_swarm',
+        { SWARM: stmt.swarmVar, ITEM: stmt.itemName },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'g3d:removeFromSwarm':
+      return block(
+        'sz_g3d_remove_from_swarm',
+        { SWARM: stmt.swarmVar, ITEM: stmt.itemVar },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:pruneSwarm':
+      return block(
+        'sz_g3d_prune_swarm',
+        { SWARM: stmt.swarmVar, AXIS: stmt.axis, MIN: stmt.min, MAX: stmt.max },
+        {},
+        stmt.__id,
+      )
+    case 'g3d:playNote':
+      return block('sz_g3d_play_note', { FREQ: stmt.freq, MS: stmt.ms }, {}, stmt.__id)
+    case 'g3d:playEffect':
+      return block('sz_g3d_play_effect', { KIND: stmt.kind }, {}, stmt.__id)
     case 'classDecl': {
       const members: SerializedBlocklyBlock[] = []
       // Construtor só vira bloco se há parâmetros ou corpo (espelha o gerador).
@@ -2425,8 +2900,40 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_g2d_count_group', { GROUP: expr.groupVar })
     case 'g2d:spriteAngle':
       return block('sz_g2d_sprite_angle', { SPRITE: expr.spriteVar })
+    case 'g2d:distance':
+      return block('sz_g2d_distance', { A: expr.aVar, B: expr.bVar })
+    case 'g2d:angleTo':
+      return block('sz_g2d_angle_to', { A: expr.aVar, B: expr.bVar })
+    case 'g2d:getHealth':
+      return block('sz_g2d_get_health', { SPRITE: expr.spriteVar })
+    case 'g2d:randomBetween':
+      return block('sz_g2d_random_between', { MIN: expr.min, MAX: expr.max })
+    case 'g2d:randomChance':
+      return block('sz_g2d_random_chance', { PERCENT: expr.percent })
+    case 'g2d:hasHealth':
+      return block('sz_g2d_has_health', { SPRITE: expr.spriteVar })
+    case 'g2d:cooldownReady':
+      return block('sz_g2d_cooldown_ready', { SPRITE: expr.spriteVar, FRAMES: expr.frames })
+    case 'g2d:isPaused':
+      return block('sz_g2d_is_paused', {})
+    case 'g2d:cameraX':
+      return block('sz_g2d_camera_x', {})
+    case 'g2d:cameraY':
+      return block('sz_g2d_camera_y', {})
+    case 'g2d:tileAtSprite':
+      return block('sz_g2d_tile_at', { MAP: expr.mapVar, SPRITE: expr.spriteVar })
     case 'g2d:sceneIs':
       return block('sz_g2d_scene_is', { SCENE: expr.name })
+    case 'g2d:stickHeroScore':
+      return block('sz_g2d_stickhero_score', { GAME: expr.gameVar })
+    case 'g2d:stickHeroOver':
+      return block('sz_g2d_stickhero_over', { GAME: expr.gameVar })
+    case 'g2d:balloonScore':
+      return block('sz_g2d_balloon_score', { GAME: expr.gameVar })
+    case 'g2d:balloonFuel':
+      return block('sz_g2d_balloon_fuel', { GAME: expr.gameVar })
+    case 'g2d:balloonOver':
+      return block('sz_g2d_balloon_over', { GAME: expr.gameVar })
     case 'g2d:aimReleased':
       return block('sz_g2d_aim_released', { THROWER: expr.throwerVar })
     case 'g2d:bananaHitThrower':
@@ -2485,6 +2992,10 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_val_is_fullscreen')
     case 'systemDark':
       return block('sz_val_system_dark')
+    case 'perfNow':
+      return block('sz_val_perf_now')
+    case 'dateGet':
+      return block('sz_val_date_part', { PART: expr.part })
     case 'global':
       switch (expr.kind) {
         case 'innerWidth':
@@ -2521,6 +3032,13 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       const min = exprToValueBlock(expr.min)
       const max = exprToValueBlock(expr.max)
       return min && max ? block('sz_val_random', {}, {}, undefined, { MIN: min, MAX: max }) : null
+    }
+    case 'arrayMap': {
+      const transform = exprToValueBlock(expr.transform)
+      if (!transform) return null
+      return block('sz_val_array_map', { ARR: expr.arrayVar, ITEM: expr.itemName }, {}, expr.__id, {
+        TRANSFORM: transform,
+      })
     }
     case 'hslColor': {
       const vs = valueBlocks({ H: expr.h, S: expr.s, L: expr.l })
@@ -2654,6 +3172,16 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       const idx = exprToValueBlock(expr.index)
       return idx
         ? block('sz_val_array_index', { NAME: expr.arrayVar }, {}, undefined, { INDEX: idx })
+        : null
+    }
+    case 'arrayLast':
+      return block('sz_val_array_last', { NAME: expr.arrayVar })
+    case 'arrayFind': {
+      const cond = exprToValueBlock(expr.cond)
+      return cond
+        ? block('sz_val_array_find', { NAME: expr.arrayVar, ITEM: expr.itemName }, {}, expr.__id, {
+            COND: cond,
+          })
         : null
     }
     case 'shuffle':

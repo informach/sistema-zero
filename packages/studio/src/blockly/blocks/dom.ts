@@ -200,6 +200,28 @@ export const DOM_BLOCKS: BlockDefinition[] = [
       'Roda o "fazer" toda vez que o mouse/dedo se move. Use "x do mouse/dedo" e "y do mouse/dedo" para a posição atual.',
   },
   {
+    type: 'sz_js_on_pointer_down',
+    message0: 'Quando apertar o mouse/dedo',
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'DO' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda o "fazer" no momento em que apertam o mouse (ou tocam a tela), em qualquer lugar. Ótimo para "segurar para carregar". Vira window.addEventListener("mousedown", (event) => { ... }).',
+  },
+  {
+    type: 'sz_js_on_pointer_up',
+    message0: 'Quando soltar o mouse/dedo',
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'DO' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda o "fazer" no momento em que soltam o mouse (ou tiram o dedo da tela), em qualquer lugar. Vira window.addEventListener("mouseup", (event) => { ... }).',
+  },
+  {
     type: 'sz_js_on_load',
     message0: 'Quando a página terminar de carregar',
     message1: 'fazer %1',
@@ -411,6 +433,28 @@ export const DOM_BLOCKS: BlockDefinition[] = [
       'Muda UMA propriedade de estilo do elemento por código (ex.: position/left/top para posicionar, opacity/visibility para mostrar/esconder). Vira el.style.left = valor. Escreva no campo livre para um estilo fora da lista (ex.: animationDuration). Lembre da unidade ("120px").',
   },
   {
+    type: 'sz_js_set_style_text',
+    message0: 'Definir o estilo completo %1 %2 como %3',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'TARGET_KIND',
+        options: [
+          ['do elemento id', 'id'],
+          ['da variável', 'var'],
+        ],
+      },
+      { type: 'field_input', name: 'TARGET', text: 'caixa' },
+      { type: 'input_value', name: 'VALUE', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Define VÁRIOS estilos de uma vez por uma string (ex.: "left: 10px; top: 20px; background: red;"). Vira el.style.cssText = valor.',
+  },
+  {
     type: 'sz_js_set_attribute',
     message0: 'Definir o atributo %1 %2 %3 como %4',
     args0: [
@@ -531,6 +575,28 @@ export const DOM_BLOCKS: BlockDefinition[] = [
       'Lê uma propriedade (o texto ou o valor digitado) de um elemento por id ou variável e guarda numa variável.',
   },
   {
+    type: 'sz_js_get_attribute',
+    message0: 'Pegar o atributo %1 %2 %3 e guardar em %4',
+    args0: [
+      { type: 'field_input', name: 'ATTR', text: 'cx' },
+      {
+        type: 'field_dropdown',
+        name: 'TARGET_KIND',
+        options: [
+          ['do elemento id', 'id'],
+          ['da variável', 'var'],
+        ],
+      },
+      { type: 'field_input', name: 'TARGET', text: 'forma' },
+      { type: 'field_input', name: 'NAME', text: 'valor' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Lê um atributo (ex.: cx, transform, fill) de um elemento por id ou variável e guarda numa variável. Vira el.getAttribute("nome").',
+  },
+  {
     // Legado: substituído por sz_js_set_property_text. Mantido (oculto da
     // paleta) para que projetos antigos salvos com este bloco ainda carreguem.
     type: 'sz_js_set_text',
@@ -609,6 +675,20 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip: 'Cria um novo elemento HTML em memória e guarda numa variável.',
+  },
+  {
+    type: 'sz_js_create_element_ns',
+    message0: 'criar forma SVG %1 e guardar em %2',
+    args0: [
+      { type: 'field_input', name: 'TAG', text: 'circle' },
+      { type: 'field_input', name: 'NAME', text: 'forma' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Cria uma forma SVG (circle, rect, line, path…) por código e guarda numa variável. Depois use "definir atributo" para configurar e "dentro de … adicionar" para colocar num <svg>. Vira document.createElementNS("http://www.w3.org/2000/svg", "tag").',
   },
   {
     type: 'sz_js_append_child',

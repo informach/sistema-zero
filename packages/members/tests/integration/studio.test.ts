@@ -70,6 +70,46 @@ describe('Bloco Estúdio — gate de conclusão + entrega', () => {
     expect((await readJson(res)).error.code).toBe('STUDIO_GATE_NOT_SUBMITTED')
   })
 
+  test('atividade com nota de corte NÃO atingida → /complete 409 STUDIO_GATE_NOT_PASSED (não 400)', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const { slug, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    const blockId = randomUUID()
+    courses.blocks.push({
+      id: blockId,
+      lessonId: lessonIds[0],
+      kind: 'studio',
+      sortOrder: 20,
+      content: {
+        kind: 'studio',
+        level: 'iniciante',
+        allowCategories: ['JavaScript'],
+        initialProject: {
+          name: 'x',
+          files: { 'index.html': '', 'style.css': '', 'script.js': '' },
+        },
+        activity: {
+          instructions: 'use um laço',
+          passingScore: 100,
+          checks: [{ id: 's', label: 'usa laço', kind: 'structure', rule: { type: 'usesLoop' } }],
+        },
+      },
+    })
+    // Projeto SEM laço → o servidor recalcula a estrutura, reprova → não passa.
+    const submitRes = await submit(app, lessonIds[0], blockId, {
+      name: 'sem laço',
+      files: { 'index.html': '', 'style.css': '', 'script.js': 'console.log(1)' },
+      ir: { js: [{ type: 'consoleLog' }] },
+      blocksState: null,
+    })
+    expect(submitRes.status).toBe(200)
+    expect((await readJson(submitRes)).passed).toBe(false)
+
+    const res = await complete(app, lessonIds[0])
+    expect(res.status).toBe(409)
+    expect((await readJson(res)).error.code).toBe('STUDIO_GATE_NOT_PASSED')
+  })
+
   test('enviar o projeto destrava a conclusão da aula', async () => {
     const { app, courses, entitlements } = buildApp()
     const { slug, lessonIds } = seedSampleCourse(courses)
@@ -281,6 +321,19 @@ describe('Bloco Estúdio — carryover de projeto contínuo', () => {
     const body = await readJson(res)
     expect(body.project.name).toBe('Minha entrega')
     expect(body.project.files['script.js']).toBe('console.log(1)')
+  })
+
+  test('cadeia com espaço sobrando no nome ainda casa (trim dos dois lados)', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const { slug, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    // Admin autorou o bloco anterior com espaço sobrando no `chain`.
+    const blockA = seedChainBlock(courses, lessonIds[0], 'jogo ')
+    const blockB = seedChainBlock(courses, lessonIds[1], 'jogo')
+
+    await submit(app, lessonIds[0], blockA, STUDENT_PROJECT)
+    const body = await readJson(await carryover(app, lessonIds[1], blockB))
+    expect(body.project?.name).toBe('Minha entrega')
   })
 
   test('a 1ª aula da cadeia não tem o que carregar (project null)', async () => {

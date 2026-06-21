@@ -94,15 +94,21 @@ describe('resolveDownloadMedia', () => {
 })
 
 describe('watermarkCacheKey', () => {
-  test('determinística, sob watermarked/, livre de colisão por construção', async () => {
+  test('determinística, sob watermarked/, INJETIVA por construção (sha256 da origem)', async () => {
     const { watermarkCacheKey } = await import('../src/lib/download-mime')
     const a = watermarkCacheKey('admin/attachments/abc-123.pdf', 'user-1')
-    expect(a).toBe('watermarked/admin_attachments_abc-123.pdf/user-1.pdf')
-    expect(watermarkCacheKey('admin/attachments/abc-123.pdf', 'user-1')).toBe(a)
+    // Formato: watermarked/<sha256 hex 64>/<user>.pdf
+    expect(a).toMatch(/^watermarked\/[0-9a-f]{64}\/user-1\.pdf$/)
+    expect(watermarkCacheKey('admin/attachments/abc-123.pdf', 'user-1')).toBe(a) // determinística
     // Usuário diferente e arquivo diferente → keys diferentes.
     expect(watermarkCacheKey('admin/attachments/abc-123.pdf', 'user-2')).not.toBe(a)
     expect(watermarkCacheKey('admin/attachments/outro.pdf', 'user-1')).not.toBe(a)
-    // Caracteres fora do safelist não vazam p/ a key.
-    expect(watermarkCacheKey('/a b/ç.pdf', 'u u')).toBe('watermarked/a_b_.pdf/u_u.pdf')
+    // SEM colisão: keys que a substituição lossy antiga colapsava agora diferem.
+    expect(watermarkCacheKey('report v1.pdf', 'u')).not.toBe(
+      watermarkCacheKey('report-v1.pdf', 'u'),
+    )
+    expect(watermarkCacheKey('a b/c.pdf', 'u')).not.toBe(watermarkCacheKey('a-b/c.pdf', 'u'))
+    // O userId segue saneado (não-hex) — só [a-z0-9-] na parte do usuário.
+    expect(watermarkCacheKey('x.pdf', 'u u')).toMatch(/\/u_u\.pdf$/)
   })
 })

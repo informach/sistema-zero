@@ -48,6 +48,7 @@ export const MATH_BLOCKS: BlockDefinition[] = [
           ['teto (arredondar p/ cima)', 'ceil'],
           ['valor absoluto', 'abs'],
           ['raiz quadrada', 'sqrt'],
+          ['sinal (-1, 0, 1)', 'sign'],
         ],
       },
       { type: 'input_value', name: 'VALUE', check: 'JSValue' },

@@ -152,6 +152,25 @@ export const ShowcaseThreadStudioBody = t.Object({
   clientIdempotencyKey: UUID,
 })
 
+/**
+ * Corpo de `POST /hub/internal/showcase-thread-studio-standalone` (BFF → hub) — o
+ * "Compartilhar" do ESTÚDIO COMPLETO (produto vendável, SEM aula): não há
+ * `lessonId`/`blockId` nem payload autoritativo do members, então `title` e
+ * `description` vêm da criança (sanitizados). A elegibilidade é "a CONTA possui o
+ * produto do Estúdio" (re-validada no hub via `members.checkAccess`); nome do autor
+ * do header confiável; `clientIdempotencyKey` dedup-a duplo-clique (republicar = post novo).
+ */
+export const ShowcaseThreadStudioStandaloneBody = t.Object({
+  spaceSlug: SLUG,
+  title: t.String({ minLength: 1, maxLength: 200 }),
+  description: t.String({ minLength: 1, maxLength: 280 }),
+  coverImageUrl: t.Optional(
+    t.Union([t.String({ maxLength: 2000, pattern: HTTPS_URL_PATTERN }), t.Null()]),
+  ),
+  playId: UUID,
+  clientIdempotencyKey: UUID,
+})
+
 /** Paginação por cursor opaco (listagem de tópicos). */
 export const ThreadListQuery = t.Object({
   cursor: t.Optional(t.String({ maxLength: 500 })),

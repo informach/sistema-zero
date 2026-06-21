@@ -1,7 +1,11 @@
 import { Elysia } from 'elysia'
 import type { ShowcaseService } from '../../../application/showcase/showcase.service'
 import { assertInternalCaller, resolveActor } from '../auth'
-import { ShowcaseThreadBody, ShowcaseThreadStudioBody } from '../dtos'
+import {
+  ShowcaseThreadBody,
+  ShowcaseThreadStudioBody,
+  ShowcaseThreadStudioStandaloneBody,
+} from '../dtos'
 
 export interface ShowcaseRoutesDeps {
   showcase: ShowcaseService
@@ -52,5 +56,25 @@ export function showcaseRoutes(deps: ShowcaseRoutesDeps) {
         return { thread, deduped }
       },
       { body: ShowcaseThreadStudioBody },
+    )
+    .post(
+      '/hub/internal/showcase-thread-studio-standalone',
+      async ({ headers, body }) => {
+        // Estúdio COMPLETO (produto, sem aula): título + descrição da criança; a
+        // elegibilidade é a posse do produto (members.checkAccess no service).
+        const { thread, deduped } = await deps.showcase.createStandaloneShowcase(
+          resolveActor(headers),
+          {
+            spaceSlug: body.spaceSlug,
+            title: body.title,
+            description: body.description,
+            coverImageUrl: body.coverImageUrl ?? null,
+            playId: body.playId,
+            clientIdempotencyKey: body.clientIdempotencyKey,
+          },
+        )
+        return { thread, deduped }
+      },
+      { body: ShowcaseThreadStudioStandaloneBody },
     )
 }

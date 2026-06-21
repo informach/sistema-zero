@@ -25,8 +25,9 @@ happy/celebrating/thinking/sleeping; `useId` p/ o gradiente). **Página de aula 
 mini-trilha numerada por unidade, e FORKS DE APRESENTAÇÃO dos renderers do member-shell —
 `kids-lesson-blocks.tsx` (chips de atividade Assista/Escute/Brinque/Leia o livro/**Crie** + molduras;
 o bloco **`studio`** (chip "Crie") REUSA o `StudioBlockView` do member-shell — editor embarcado,
-rascunho local, "Enviar para o professor" + gate de conclusão `STUDIO_GATE_NOT_SUBMITTED` (mesmo do
-quiz, tratado no `lesson-player-client`); exige `@sistemazero/studio` em transpilePackages + `@source`
+rascunho local, "Enviar para o professor" + gate de conclusão `STUDIO_GATE_NOT_SUBMITTED` (sem envio)
+ou `STUDIO_GATE_NOT_PASSED` (atividade enviada, mas abaixo da nota mínima); o `lesson-player-client`
+distingue os dois no toast/botão. Exige `@sistemazero/studio` em transpilePackages + `@source`
 + `frame-src blob:`;
 ⚠️ invariantes de segurança COPIADOS do shell: URL canônica de vídeo, sandbox SEM
 allow-same-origin, markdown controlado — mexeu na segurança de bloco, replique nos DOIS
@@ -104,17 +105,41 @@ guard próprio via `requireUploadSession`); `lesson-player-client` propaga o `sh
 complete. **Compartilhar do Estúdio + link público jogável (06/2026):** o `StudioBlockView` da aula é
 renderizado com `enableShare` (kids-only) → o editor ganha o botão **"Compartilhar"** na Topbar (publica no
 Mural com **descrição gerada por IA** que a criança edita + um **link público de jogar**; o post é um
-SNAPSHOT imutável e independente do rascunho que ela continua editando). O card do Mural
+SNAPSHOT imutável e independente do rascunho que ela continua editando, e o member-shell normaliza o
+JSON jogável antes de persistir no R2 privado). O card do Mural
 (`kids-space-view-client.tsx` `ShowcaseCard`/`ThreadDetail`) ganhou, quando há `thread.playId`, os botões
 **"Jogar"** (abre `/jogar/<playId>` em nova aba) + **"Copiar link"** (`navigator.share` com fallback
 clipboard) — a raiz do card deixou de ser `<button>` (âncora não aninha em button). A **página PÚBLICA**
 `app/jogar/[id]/page.tsx` (FORA do grupo `(app)`, sem login, igual a `/perfis`) renderiza o
 `StudioProjectPlayer` (subpath `@sistemazero/studio/player`, `ssr:false`) buscando o projeto em
-`/api/studio/play/:id` — mostra SÓ o jogo + título, NUNCA o nome da criança. As rotas `/api/studio/{describe,
+`/api/studio/play/:id` — mostra SÓ o jogo + título, NUNCA o nome da criança, e tolera snapshots
+legados/incompletos sem derrubar a página pública. As rotas `/api/studio/{describe,
 publish,play/[id]}` são shims sobre `shell.routes.studio*`; o `proxy.ts` exclui `api/studio/publish`
 (multipart) e `api/studio/play` (stream público) do matcher (`api/studio/describe` FICA no matcher — ganha
 o anti-CSRF same-origin). **Data de nascimento (controle de idade):** os pais informam no `ProfileForm` da Área dos
 pais (`app/perfis`) — `<input type=date>`; só a CONTA edita (o auth recusa em sessão de perfil).
+
+## Estúdio Completo (produto vendável — 06/2026)
+
+O **estúdio completo** (`@sistemazero/studio`) virou um PRODUTO vendável, ao lado do Mural/Clube:
+item **"Estúdio"** no `nav.ts` (perto de Mural/Quarto) → rota `/estudio` (`protectedPrefixes`). O
+gate é resolvido no SERVIDOR: `app/(app)/estudio/page.tsx` chama
+`checkStudioAccessReadonly()` (`GET /members/access?refs=estudio-completo`, acesso pela CONTA) com
+**3 estados** (full review 3ª passada): members RESPONDEU 200 e não tem o produto → `KidsLockedStudio`
+(recado gentil, mascote `thinking`, "peça a um responsável"; sem link de venda — kids não tem funil);
+COM acesso → `StudioFullClient` (o editor pesado nem carrega p/ quem não comprou); **status ≠ 200
+(gateway/token soluçou) → `KidsStudioUnavailable` ("tente de novo" + `router.refresh()`)** — não mostrar
+"ainda não liberado" a quem JÁ comprou num erro transitório (mentiria que não tem acesso). `studio-full-client.tsx` (`'use client'`, import dinâmico do package no
+effect — Monaco/Blockly/IndexedDB não rodam no SSR) hospeda a navegação **lista ⇄ editor** (estado
+local; o package não tem router) com `<ProjectList>` + `<StudioEditor persistence="local">` — recursos
+CLÁSSICOS (NÃO passa `features`: o `StudioEditor` já vem com terminal/IA/profissional OFF → sem
+COOP/COEP, sem conflito com os vídeos das aulas). O botão **"Compartilhar"** usa um `share` adapter
+próprio → `/api/studio/describe` + **`/api/studio/publish-standalone`** (shim sobre
+`shell.routes.studioPublishStandalone`; o hub re-valida a posse do produto). ⚠️ **Persistência LOCAL
+por NAVEGADOR (v1):** projetos no IndexedDB do aparelho — perfis irmãos no MESMO navegador compartilham
+a lista (acesso é por CONTA; isolamento por perfil = follow-up). Largura limitada ao `max-w-5xl` do
+layout; altura `calc(100dvh-8rem)` p/ ocupar o máximo. `api/studio/publish-standalone` fica FORA do
+matcher do proxy (multipart) — coberto pelo prefixo `api/studio/publish` no negative-lookahead.
 
 ### Hub/fórum (compartilhado)
 
@@ -278,6 +303,59 @@ verde no typecheck/test/check dos três pacotes). Mudanças de COMPORTAMENTO/con
   professor" com alvo de toque ≥44px + ícone.
 - **Produto (não-bug, decisão pendente):** perfis irmãos NÃO têm PIN (1 clique troca de perfil);
   PIN numérico segue como futuro.
+
+## Full review (correções) — 20/06/2026
+
+2ª auditoria multi-agente (segurança/correção/perf/a11y, lente infantil) — todos os achados
+acionáveis corrigidos; verde no typecheck/test/check dos 4 pacotes + `build:kids`.
+
+- **Error boundaries (antes não existia nenhum):** `app/global-error.tsx` (raiz, `<html>`/`<body>`
+  próprios + estilos inline — não recebe globals.css), `app/(app)/error.tsx` e
+  `app/jogar/[id]/error.tsx` — todos `'use client'`, tom kids (mascote + Baloo + `reset()`). O
+  caminho crítico era a PÚBLICA `/jogar/[id]`: o `<Player>` renderiza fora do try/catch da carga.
+  Member-shell não exporta arquivos de rota → cada app precisa dos seus (o community também).
+  **Telemetria (3ª passada):** as boundaries só faziam `console.error` — o `onRequestError` da
+  instrumentation só vê erros de SERVIDOR, então um crash de render no CLIENTE escapava do Sentry.
+  Agora chamam `reportClientError` (`lib/report-error.ts`) → beacon `POST /api/client-error`
+  (`fetch` `keepalive`, sobrevive ao `reset()`) que espelha p/ o Sentry via `captureServerException`
+  (MESMA redação de PII). A rota fica DENTRO do matcher (anti-CSRF same-origin), sem gate de sessão
+  (vale p/ a anônima `/jogar` e p/ o `global-error`), com teto GLOBAL in-process (60/min, réplica
+  única) e responde 204 sempre. No-op sem `SENTRY_DSN` — armado p/ quando o projeto Sentry do kids ligar.
+- **`prefers-reduced-motion` (fotossensibilidade):** o bloco do `globals.css` ganhou
+  `animation-iteration-count: 1 !important` (+ `scroll-behavior:auto`) — animações INFINITAS
+  (pulse/twinkle/flicker/float/bob) paravam de fato em vez de cintilar a ~0ms.
+- **Portão dos pais = cookie ASSINADO:** `server/parent-gate.ts` grava `accountId.HMAC` (segredo
+  aleatório por processo em `globalThis`/`Symbol.for`, mesmo padrão de estado compartilhado do
+  member-shell) e verifica a assinatura (timing-safe) — o accountId não é segredo, então o valor
+  pelado seria forjável. TTL 15 min preservado.
+- **`/api/me/avatar` recusa sessão de perfil** (foto da conta é account-only): fix no
+  **member-shell** (`meAvatar.POST` → 403 `ACCOUNT_SESSION_REQUIRED` ANTES da escrita no R2;
+  antes a criança deixava objeto R2 órfão) — **roda nos dois apps**.
+- **Missões via SSR:** a home busca `getMissionsReadonly()` no `Promise.all` e passa
+  `initial` ao `MissionsPanel` (era `useEffect` pós-hidratação = waterfall). A home também pede
+  `getGamificationReadonly({ withRanking: true })` p/ casar a chave do `React.cache` com o
+  layout (1 ida ao gateway, não 2).
+- **a11y/UX:** seta de promoção da liga usa `--success-foreground` (era invisível no dark);
+  botões do editor de avatar `size-11` (≥44px); itens do quarto em modo edição viraram `<button>`
+  focável (setas movem, Enter seleciona → "Tirar" alcançável por teclado); `not-found.tsx` em tom
+  kids; capas do catálogo `loading="lazy"`; compras (quarto/avatar) desabilitam os outros botões
+  travados durante uma compra (sem dead-click); `streak-protection` ganhou `catch` + toast.
+- **`/jogar/[id]` não-indexável:** `robots:{index:false}` no metadata + `app/robots.ts`. ⚠️ **3ª
+  passada:** o `robots.ts` era `Disallow: /` puro, que ESCONDE o `noindex` per-page do `/jogar` (o
+  Google não lê um `noindex` de uma URL que não pode buscar → a URL linkada de fora podia ser
+  indexada "às cegas"). Virou `Allow: /jogar/` + `Disallow: /`: o bot busca `/jogar` e honra o
+  `noindex`; o resto (login-gated) segue barrado.
+- **Anti-drift dos catálogos:** preço do protetor centralizado em `lib/gamification-prices.ts`
+  (`STREAK_FREEZE_PRICE`); a conformidade kids×members de quarto/avatar/preço é TRAVADA por
+  `packages/members/tests/unit/catalog-conformance.test.ts` (kids não depende de members → o teste
+  vive no members, que alcança o kids por caminho relativo). Drift → CI vermelho.
+- **member-shell (roda nos dois apps):** `watermarkCacheKey` agora usa `sha256(srcKey)` (injetivo —
+  a substituição lossy podia colidir e servir o arquivo errado ao MESMO aluno) e `watermarkImage`
+  ganhou teto de pixels TOTAIS p/ animados (não só por frame).
+- **Não alterados (decisão consciente):** o portão lê `getSession()` (tolera token expirado, mas a
+  assinatura é válida e a mutação é re-autorizada upstream — trocar p/ estrito quebraria o
+  refresh-on-401); capa do Mural é best-effort (lê rascunho local — só cosmético); nome no perfil
+  PÚBLICO é opt-in dos pais (nota de produto: incentivar apelido, não é bug).
 
 ## Comandos
 

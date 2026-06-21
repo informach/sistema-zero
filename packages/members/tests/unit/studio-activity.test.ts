@@ -181,4 +181,47 @@ describe('validateStudioActivityAuthoring', () => {
       ),
     ).toContain('nome')
   })
+
+  it('nota de corte alcançável só com checagens client-trusted (estrutura sem peso) → erro', () => {
+    // structure(peso 1) + behavior(peso 4), corte 80: forjar o behavior dá 80 SOZINHO
+    // (sem o servidor verificar a estrutura) — o gate seria burlável.
+    expect(
+      validateStudioActivityAuthoring(
+        base(
+          [
+            { id: 's', label: 'x', kind: 'structure', rule: { type: 'usesLoop' }, weight: 1 },
+            {
+              id: 'b',
+              label: 'y',
+              kind: 'behavior',
+              rule: { type: 'consoleContains', text: 'oi' },
+              weight: 4,
+            },
+          ],
+          80,
+        ),
+      ),
+    ).toContain('peso')
+  })
+
+  it('estrutura com peso SUFICIENTE p/ a nota de corte → aceita', () => {
+    // structure(peso 4) + behavior(peso 1), corte 80: sem estrutura a nota máx forjável é 20.
+    expect(
+      validateStudioActivityAuthoring(
+        base(
+          [
+            { id: 's', label: 'x', kind: 'structure', rule: { type: 'usesLoop' }, weight: 4 },
+            {
+              id: 'b',
+              label: 'y',
+              kind: 'behavior',
+              rule: { type: 'consoleContains', text: 'oi' },
+              weight: 1,
+            },
+          ],
+          80,
+        ),
+      ),
+    ).toBeNull()
+  })
 })

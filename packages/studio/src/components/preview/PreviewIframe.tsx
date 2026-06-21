@@ -505,6 +505,10 @@ export function PreviewIframe(): JSX.Element {
           }
         }}
         sandbox="allow-scripts allow-modals"
+        // Libera a Fullscreen API DENTRO do iframe (blocos de "tela cheia"). Sem
+        // isso requestFullscreen() é rejeitado silenciosamente. Não afeta o sandbox.
+        allow="fullscreen"
+        allowFullScreen
         className="h-full w-full flex-1 bg-white"
       />
       {previewPaused && (
