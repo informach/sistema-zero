@@ -79,6 +79,12 @@ export type JSExpr =
   | (JSExprCommon & { type: 'g2d:distance'; aVar: string; bVar: string })
   | (JSExprCommon & { type: 'g2d:angleTo'; aVar: string; bVar: string })
   | (JSExprCommon & { type: 'g2d:getHealth'; spriteVar: string })
+  | (JSExprCommon & { type: 'g2d:spriteX'; spriteVar: string })
+  | (JSExprCommon & { type: 'g2d:spriteY'; spriteVar: string })
+  | (JSExprCommon & { type: 'g2d:spriteW'; spriteVar: string })
+  | (JSExprCommon & { type: 'g2d:spriteH'; spriteVar: string })
+  | (JSExprCommon & { type: 'g2d:centerX'; spriteVar: string })
+  | (JSExprCommon & { type: 'g2d:centerY'; spriteVar: string })
   | (JSExprCommon & { type: 'g2d:randomBetween'; min: number; max: number })
   | (JSExprCommon & { type: 'g2d:randomChance'; percent: number })
   | (JSExprCommon & { type: 'g2d:hasHealth'; spriteVar: string })
@@ -87,6 +93,8 @@ export type JSExpr =
   // Tier 2 — posição da câmera e leitura de tile (valores).
   | (JSExprCommon & { type: 'g2d:cameraX' })
   | (JSExprCommon & { type: 'g2d:cameraY' })
+  | (JSExprCommon & { type: 'g2d:randomX' })
+  | (JSExprCommon & { type: 'g2d:randomY' })
   | (JSExprCommon & { type: 'g2d:tileAtSprite'; mapVar: string; spriteVar: string })
   // Game 2D — a cena/tela atual é "name"? (valor booleano).
   | (JSExprCommon & { type: 'g2d:sceneIs'; name: string })
@@ -244,6 +252,25 @@ export type JSExpr =
   // Chamada de método em forma de valor sobre qualquer objeto (object.metodo(args)).
   | (JSExprCommon & { type: 'memberCallExpr'; object: JSExpr; method: string; args: JSExpr[] })
 
+/** Campo de TELA do showScreen (título/subtítulo/dica): texto legado de projetos
+ * antigos OU uma expressão (variável, "juntar texto", resultado de função…). */
+export type ScreenText = string | JSExpr
+/** Normaliza um ScreenText para JSExpr (string crua vira um literal de texto). */
+export function screenTextToExpr(v: ScreenText): JSExpr {
+  return typeof v === 'string' ? { type: 'str', value: v } : v
+}
+
+/** Valor de um campo que virou soquete oval: número/texto CRU de projetos antigos OU
+ * uma expressão (variável, conta, "juntar texto", resultado de função). */
+export type FieldValue = number | string | JSExpr
+/** Normaliza um FieldValue para JSExpr (número/texto cru vira literal). Mantém o IR
+ * antigo (valor cru salvo no projeto) compatível com o novo (expressão). */
+export function valueToExpr(v: FieldValue): JSExpr {
+  if (typeof v === 'number') return { type: 'num', value: v }
+  if (typeof v === 'string') return { type: 'str', value: v }
+  return v
+}
+
 export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
   z.discriminatedUnion('type', [
     jsExprBase,
@@ -287,6 +314,12 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('g2d:distance'), aVar: irText(), bVar: irText(), ...idField }),
     z.object({ type: z.literal('g2d:angleTo'), aVar: irText(), bVar: irText(), ...idField }),
     z.object({ type: z.literal('g2d:getHealth'), spriteVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:spriteX'), spriteVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:spriteY'), spriteVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:spriteW'), spriteVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:spriteH'), spriteVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:centerX'), spriteVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:centerY'), spriteVar: irText(), ...idField }),
     z.object({
       type: z.literal('g2d:randomBetween'),
       min: z.number(),
@@ -304,6 +337,8 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('g2d:isPaused'), ...idField }),
     z.object({ type: z.literal('g2d:cameraX'), ...idField }),
     z.object({ type: z.literal('g2d:cameraY'), ...idField }),
+    z.object({ type: z.literal('g2d:randomX'), ...idField }),
+    z.object({ type: z.literal('g2d:randomY'), ...idField }),
     z.object({
       type: z.literal('g2d:tileAtSprite'),
       mapVar: irText(),
@@ -1203,18 +1238,18 @@ export type JSStatement =
   | (JSStatementCommon & {
       type: 'g2d:createSprite'
       varName: string
-      x: number
-      y: number
-      w: number
-      h: number
+      x: number | JSExpr
+      y: number | JSExpr
+      w: number | JSExpr
+      h: number | JSExpr
       color: string
     })
   | (JSStatementCommon & { type: 'g2d:drawSprite'; spriteVar: string; ctxVar: string })
   | (JSStatementCommon & { type: 'g2d:setPosition'; spriteVar: string; x: JSExpr; y: JSExpr })
   | (JSStatementCommon & { type: 'g2d:setVelocity'; spriteVar: string; vx: JSExpr; vy: JSExpr })
   | (JSStatementCommon & { type: 'g2d:collides'; aVar: string; bVar: string; varName: string })
-  | (JSStatementCommon & { type: 'g2d:score'; varName: string; initial: number })
-  | (JSStatementCommon & { type: 'g2d:gameOver'; ctxVar: string; text: string })
+  | (JSStatementCommon & { type: 'g2d:score'; varName: string; initial: number | JSExpr })
+  | (JSStatementCommon & { type: 'g2d:gameOver'; ctxVar: string; text: ScreenText })
   // Palco implícito: limpa a tela do runtime (sem o aluno carregar o "pincel").
   | (JSStatementCommon & { type: 'g2d:clear' })
   // Eventos "Quando…" (hats): tecla apertada e sobreposição de sprites.
@@ -1228,7 +1263,7 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'g2d:updateEachFrame'; body: JSStatement[] })
   // Física: gravidade do mundo, integração de velocidade, ricochete nas bordas,
   // colisão por círculo.
-  | (JSStatementCommon & { type: 'g2d:setGravity'; value: number })
+  | (JSStatementCommon & { type: 'g2d:setGravity'; value: number | JSExpr })
   | (JSStatementCommon & { type: 'g2d:applyVelocity'; spriteVar: string })
   | (JSStatementCommon & { type: 'g2d:bounceOnEdges'; spriteVar: string; ctxVar: string })
   | (JSStatementCommon & {
@@ -1253,14 +1288,19 @@ export type JSStatement =
       type: 'g2d:moveToward'
       spriteVar: string
       targetVar: string
-      speed: number
+      speed: number | JSExpr
     })
-  | (JSStatementCommon & { type: 'g2d:setHealth'; spriteVar: string; amount: number })
-  | (JSStatementCommon & { type: 'g2d:changeHealth'; spriteVar: string; delta: number })
+  | (JSStatementCommon & { type: 'g2d:setHealth'; spriteVar: string; amount: number | JSExpr })
+  | (JSStatementCommon & { type: 'g2d:changeHealth'; spriteVar: string; delta: number | JSExpr })
   | (JSStatementCommon & { type: 'g2d:flipSprite'; spriteVar: string; dir: string })
-  | (JSStatementCommon & { type: 'g2d:setOpacity'; spriteVar: string; percent: number })
-  | (JSStatementCommon & { type: 'g2d:setSize'; spriteVar: string; w: number; h: number })
-  | (JSStatementCommon & { type: 'g2d:scaleSprite'; spriteVar: string; factor: number })
+  | (JSStatementCommon & { type: 'g2d:setOpacity'; spriteVar: string; percent: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'g2d:setSize'
+      spriteVar: string
+      w: number | JSExpr
+      h: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'g2d:scaleSprite'; spriteVar: string; factor: number | JSExpr })
   | (JSStatementCommon & { type: 'g2d:wrapEdges'; spriteVar: string })
   | (JSStatementCommon & { type: 'g2d:pruneOld'; groupVar: string; seconds: number })
   | (JSStatementCommon & { type: 'g2d:pauseGame' })
@@ -1269,16 +1309,16 @@ export type JSStatement =
   | (JSStatementCommon & {
       type: 'g2d:cameraFollow'
       spriteVar: string
-      worldW: number
-      worldH: number
+      worldW: number | JSExpr
+      worldH: number | JSExpr
     })
-  | (JSStatementCommon & { type: 'g2d:setCamera'; x: number; y: number })
+  | (JSStatementCommon & { type: 'g2d:setCamera'; x: number | JSExpr; y: number | JSExpr })
   | (JSStatementCommon & { type: 'g2d:breakTile'; mapVar: string; spriteVar: string })
   | (JSStatementCommon & { type: 'g2d:setTile'; mapVar: string; index: number; spriteVar: string })
   | (JSStatementCommon & { type: 'g2d:bringToFront'; spriteVar: string; groupVar: string })
   | (JSStatementCommon & { type: 'g2d:sendToBack'; spriteVar: string; groupVar: string })
   | (JSStatementCommon & { type: 'g2d:drawHitbox'; spriteVar: string })
-  | (JSStatementCommon & { type: 'g2d:showFps'; x: number; y: number })
+  | (JSStatementCommon & { type: 'g2d:showFps'; x: number | JSExpr; y: number | JSExpr })
   // Entrada de mouse/toque: corpo recebe a posição do ponteiro em xName/yName.
   | (JSStatementCommon & {
       type: 'g2d:onPointer'
@@ -1292,10 +1332,10 @@ export type JSStatement =
   | (JSStatementCommon & {
       type: 'g2d:createImageSprite'
       varName: string
-      x: number
-      y: number
-      w: number
-      h: number
+      x: number | JSExpr
+      y: number | JSExpr
+      w: number | JSExpr
+      h: number | JSExpr
       image: string
     })
   | (JSStatementCommon & { type: 'g2d:setImage'; spriteVar: string; image: string })
@@ -1329,20 +1369,20 @@ export type JSStatement =
       type: 'g2d:platformer'
       spriteVar: string
       ctxVar: string
-      speed: number
-      jump: number
+      speed: number | JSExpr
+      jump: number | JSExpr
     })
-  | (JSStatementCommon & { type: 'g2d:topDown'; spriteVar: string; speed: number })
-  | (JSStatementCommon & { type: 'g2d:followPointer'; spriteVar: string; speed: number })
+  | (JSStatementCommon & { type: 'g2d:topDown'; spriteVar: string; speed: number | JSExpr })
+  | (JSStatementCommon & { type: 'g2d:followPointer'; spriteVar: string; speed: number | JSExpr })
   | (JSStatementCommon & { type: 'g2d:clampToScreen'; spriteVar: string; ctxVar: string })
   | (JSStatementCommon & { type: 'g2d:flash'; color: string; ctxVar: string })
-  | (JSStatementCommon & { type: 'g2d:shake'; ctxVar: string; intensity: number })
+  | (JSStatementCommon & { type: 'g2d:shake'; ctxVar: string; intensity: number | JSExpr })
   | (JSStatementCommon & {
       type: 'g2d:emitParticles'
-      count: number
+      count: number | JSExpr
       color: string
-      x: number
-      y: number
+      x: number | JSExpr
+      y: number | JSExpr
     })
   | (JSStatementCommon & { type: 'g2d:drawParticles'; ctxVar: string })
   // Tiles / tilemaps (v0.5.0). image = nome do asset do tileset (string); grid e
@@ -1423,28 +1463,28 @@ export type JSStatement =
       ctxVar: string
       label: string
       value: JSExpr
-      x: number
-      y: number
+      x: number | JSExpr
+      y: number | JSExpr
       color: string
-      size: number
+      size: number | JSExpr
     })
   | (JSStatementCommon & {
       type: 'g2d:drawLabel'
       ctxVar: string
       text: string
-      x: number
-      y: number
+      x: number | JSExpr
+      y: number | JSExpr
       color: string
-      size: number
+      size: number | JSExpr
       align: 'left' | 'center' | 'right'
     })
   | (JSStatementCommon & {
       type: 'g2d:drawHearts'
       ctxVar: string
       count: JSExpr
-      x: number
-      y: number
-      size: number
+      x: number | JSExpr
+      y: number | JSExpr
+      size: number | JSExpr
       color: string
     })
   | (JSStatementCommon & {
@@ -1452,10 +1492,10 @@ export type JSStatement =
       ctxVar: string
       value: JSExpr
       max: JSExpr
-      x: number
-      y: number
-      w: number
-      h: number
+      x: number | JSExpr
+      y: number | JSExpr
+      w: number | JSExpr
+      h: number | JSExpr
       color: string
     })
   // Estado/telas (cenas): trocar de tela, overlay de tela cheia e reiniciar.
@@ -1463,9 +1503,9 @@ export type JSStatement =
   | (JSStatementCommon & {
       type: 'g2d:showScreen'
       ctxVar: string
-      title: string
-      subtitle: string
-      hint: string
+      title: ScreenText
+      subtitle: ScreenText
+      hint: ScreenText
       bg: string
     })
   | (JSStatementCommon & { type: 'g2d:restart' })
@@ -1484,19 +1524,19 @@ export type JSStatement =
       vx: JSExpr
       vy: JSExpr
     })
-  | (JSStatementCommon & { type: 'g2d:arrowsX'; spriteVar: string; speed: number })
-  | (JSStatementCommon & { type: 'g2d:blinkSprite'; spriteVar: string; frames: number })
+  | (JSStatementCommon & { type: 'g2d:arrowsX'; spriteVar: string; speed: number | JSExpr })
+  | (JSStatementCommon & { type: 'g2d:blinkSprite'; spriteVar: string; frames: number | JSExpr })
   // Cenário: fundo de estrelas rolando; arrastar a nave com o dedo (eixo X).
-  | (JSStatementCommon & { type: 'g2d:starfield'; ctxVar: string; speed: number })
+  | (JSStatementCommon & { type: 'g2d:starfield'; ctxVar: string; speed: number | JSExpr })
   | (JSStatementCommon & { type: 'g2d:dragX'; spriteVar: string })
   // Kit "Nave & Asteroides" (v0.7.0): desenhos prontos + efeitos + colisão sprite×grupo.
   | (JSStatementCommon & {
       type: 'g2d:createShip'
       varName: string
-      x: number
-      y: number
-      w: number
-      h: number
+      x: number | JSExpr
+      y: number | JSExpr
+      w: number | JSExpr
+      h: number | JSExpr
       bodyColor: string
       wingColor: string
     })
@@ -1524,18 +1564,18 @@ export type JSStatement =
   | (JSStatementCommon & {
       type: 'g2d:steerThrust'
       spriteVar: string
-      speed: number
-      turn: number
+      speed: number | JSExpr
+      turn: number | JSExpr
     })
-  | (JSStatementCommon & { type: 'g2d:rotateSprite'; spriteVar: string; deg: number })
-  | (JSStatementCommon & { type: 'g2d:pointSprite'; spriteVar: string; deg: number })
-  | (JSStatementCommon & { type: 'g2d:thrust'; spriteVar: string; force: number })
-  | (JSStatementCommon & { type: 'g2d:applyFriction'; spriteVar: string; factor: number })
+  | (JSStatementCommon & { type: 'g2d:rotateSprite'; spriteVar: string; deg: number | JSExpr })
+  | (JSStatementCommon & { type: 'g2d:pointSprite'; spriteVar: string; deg: number | JSExpr })
+  | (JSStatementCommon & { type: 'g2d:thrust'; spriteVar: string; force: number | JSExpr })
+  | (JSStatementCommon & { type: 'g2d:applyFriction'; spriteVar: string; factor: number | JSExpr })
   | (JSStatementCommon & {
       type: 'g2d:shootFrom'
       spriteVar: string
       groupVar: string
-      speed: number
+      speed: number | JSExpr
       color: string
     })
   | (JSStatementCommon & {
@@ -1550,14 +1590,14 @@ export type JSStatement =
       type: 'g2d:jumpOnGround'
       spriteVar: string
       ctxVar: string
-      jump: number
+      jump: number | JSExpr
     })
   | (JSStatementCommon & {
       type: 'g2d:createDino'
       varName: string
-      x: number
-      y: number
-      size: number
+      x: number | JSExpr
+      y: number | JSExpr
+      size: number | JSExpr
       color: string
     })
   // Game 2D — Kit equilibrista (Stick Hero) / Kit balão (v0.13.0).
@@ -1571,7 +1611,7 @@ export type JSStatement =
       type: 'g2d:controlDino'
       spriteVar: string
       ctxVar: string
-      jump: number
+      jump: number | JSExpr
     })
   | (JSStatementCommon & {
       type: 'g2d:spawnObstacle'
@@ -1589,7 +1629,7 @@ export type JSStatement =
       y: JSExpr
       vx: JSExpr
     })
-  | (JSStatementCommon & { type: 'g2d:forest'; ctxVar: string; speed: number })
+  | (JSStatementCommon & { type: 'g2d:forest'; ctxVar: string; speed: number | JSExpr })
   | (JSStatementCommon & { type: 'g2d:playJump' })
   | (JSStatementCommon & { type: 'g2d:playDinoHurt' })
   | (JSStatementCommon & { type: 'g2d:playCollect' })
@@ -2489,10 +2529,10 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('g2d:createSprite'),
       varName: irText(),
-      x: z.number(),
-      y: z.number(),
-      w: z.number(),
-      h: z.number(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      w: z.union([JSExprSchema, z.number()]),
+      h: z.union([JSExprSchema, z.number()]),
       color: irText(),
       ...idField,
     }),
@@ -2526,13 +2566,13 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('g2d:score'),
       varName: irText(),
-      initial: z.number(),
+      initial: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
       type: z.literal('g2d:gameOver'),
       ctxVar: irText(),
-      text: irText(),
+      text: z.union([JSExprSchema, irText()]),
       ...idField,
     }),
     z.object({ type: z.literal('g2d:clear'), ...idField }),
@@ -2549,7 +2589,11 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       body: z.array(JSStatementSchema),
       ...idField,
     }),
-    z.object({ type: z.literal('g2d:setGravity'), value: z.number(), ...idField }),
+    z.object({
+      type: z.literal('g2d:setGravity'),
+      value: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
     z.object({ type: z.literal('g2d:applyVelocity'), spriteVar: irText(), ...idField }),
     z.object({
       type: z.literal('g2d:bounceOnEdges'),
@@ -2600,19 +2644,19 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('g2d:moveToward'),
       spriteVar: irText(),
       targetVar: irText(),
-      speed: z.number(),
+      speed: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
       type: z.literal('g2d:setHealth'),
       spriteVar: irText(),
-      amount: z.number(),
+      amount: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
       type: z.literal('g2d:changeHealth'),
       spriteVar: irText(),
-      delta: z.number(),
+      delta: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
@@ -2624,20 +2668,20 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('g2d:setOpacity'),
       spriteVar: irText(),
-      percent: z.number(),
+      percent: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
       type: z.literal('g2d:setSize'),
       spriteVar: irText(),
-      w: z.number(),
-      h: z.number(),
+      w: z.union([JSExprSchema, z.number()]),
+      h: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
       type: z.literal('g2d:scaleSprite'),
       spriteVar: irText(),
-      factor: z.number(),
+      factor: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
@@ -2656,11 +2700,16 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('g2d:cameraFollow'),
       spriteVar: irText(),
-      worldW: z.number(),
-      worldH: z.number(),
+      worldW: z.union([JSExprSchema, z.number()]),
+      worldH: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
-    z.object({ type: z.literal('g2d:setCamera'), x: z.number(), y: z.number(), ...idField }),
+    z.object({
+      type: z.literal('g2d:setCamera'),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
     z.object({
       type: z.literal('g2d:breakTile'),
       mapVar: irText(),
@@ -2687,7 +2736,12 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({ type: z.literal('g2d:drawHitbox'), spriteVar: irText(), ...idField }),
-    z.object({ type: z.literal('g2d:showFps'), x: z.number(), y: z.number(), ...idField }),
+    z.object({
+      type: z.literal('g2d:showFps'),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
     z.object({
       type: z.literal('g2d:onPointer'),
       xName: irText(),
@@ -2698,10 +2752,10 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('g2d:createImageSprite'),
       varName: irText(),
-      x: z.number(),
-      y: z.number(),
-      w: z.number(),
-      h: z.number(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      w: z.union([JSExprSchema, z.number()]),
+      h: z.union([JSExprSchema, z.number()]),
       image: irText(),
       ...idField,
     }),
@@ -2743,20 +2797,20 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('g2d:platformer'),
       spriteVar: irText(),
       ctxVar: irText(),
-      speed: z.number(),
-      jump: z.number(),
+      speed: z.union([JSExprSchema, z.number()]),
+      jump: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
       type: z.literal('g2d:topDown'),
       spriteVar: irText(),
-      speed: z.number(),
+      speed: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
       type: z.literal('g2d:followPointer'),
       spriteVar: irText(),
-      speed: z.number(),
+      speed: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
@@ -2769,15 +2823,15 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('g2d:shake'),
       ctxVar: irText(),
-      intensity: z.number(),
+      intensity: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
       type: z.literal('g2d:emitParticles'),
-      count: z.number(),
+      count: z.union([JSExprSchema, z.number()]),
       color: irText(),
-      x: z.number(),
-      y: z.number(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({ type: z.literal('g2d:drawParticles'), ctxVar: irText(), ...idField }),
@@ -2884,20 +2938,20 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ctxVar: irText(),
       label: irText(),
       value: JSExprSchema,
-      x: z.number(),
-      y: z.number(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
       color: irText(),
-      size: z.number(),
+      size: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
       type: z.literal('g2d:drawLabel'),
       ctxVar: irText(),
       text: irText(),
-      x: z.number(),
-      y: z.number(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
       color: irText(),
-      size: z.number(),
+      size: z.union([JSExprSchema, z.number()]),
       align: z.enum(['left', 'center', 'right']),
       ...idField,
     }),
@@ -2905,9 +2959,9 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('g2d:drawHearts'),
       ctxVar: irText(),
       count: JSExprSchema,
-      x: z.number(),
-      y: z.number(),
-      size: z.number(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      size: z.union([JSExprSchema, z.number()]),
       color: irText(),
       ...idField,
     }),
@@ -2916,10 +2970,10 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ctxVar: irText(),
       value: JSExprSchema,
       max: JSExprSchema,
-      x: z.number(),
-      y: z.number(),
-      w: z.number(),
-      h: z.number(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      w: z.union([JSExprSchema, z.number()]),
+      h: z.union([JSExprSchema, z.number()]),
       color: irText(),
       ...idField,
     }),
@@ -2927,9 +2981,9 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('g2d:showScreen'),
       ctxVar: irText(),
-      title: irText(),
-      subtitle: irText(),
-      hint: irText(),
+      title: z.union([JSExprSchema, irText()]),
+      subtitle: z.union([JSExprSchema, irText()]),
+      hint: z.union([JSExprSchema, irText()]),
       bg: irText(),
       ...idField,
     }),
@@ -2937,7 +2991,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('g2d:starfield'),
       ctxVar: irText(),
-      speed: z.number(),
+      speed: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({ type: z.literal('g2d:dragX'), spriteVar: irText(), ...idField }),
@@ -2963,22 +3017,22 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('g2d:arrowsX'),
       spriteVar: irText(),
-      speed: z.number(),
+      speed: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
       type: z.literal('g2d:blinkSprite'),
       spriteVar: irText(),
-      frames: z.number(),
+      frames: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
       type: z.literal('g2d:createShip'),
       varName: irText(),
-      x: z.number(),
-      y: z.number(),
-      w: z.number(),
-      h: z.number(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      w: z.union([JSExprSchema, z.number()]),
+      h: z.union([JSExprSchema, z.number()]),
       bodyColor: irText(),
       wingColor: irText(),
       ...idField,
@@ -3008,34 +3062,39 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('g2d:steerThrust'),
       spriteVar: irText(),
-      speed: z.number(),
-      turn: z.number(),
+      speed: z.union([JSExprSchema, z.number()]),
+      turn: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
       type: z.literal('g2d:rotateSprite'),
       spriteVar: irText(),
-      deg: z.number(),
+      deg: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
       type: z.literal('g2d:pointSprite'),
       spriteVar: irText(),
-      deg: z.number(),
+      deg: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
-    z.object({ type: z.literal('g2d:thrust'), spriteVar: irText(), force: z.number(), ...idField }),
+    z.object({
+      type: z.literal('g2d:thrust'),
+      spriteVar: irText(),
+      force: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
     z.object({
       type: z.literal('g2d:applyFriction'),
       spriteVar: irText(),
-      factor: z.number(),
+      factor: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
       type: z.literal('g2d:shootFrom'),
       spriteVar: irText(),
       groupVar: irText(),
-      speed: z.number(),
+      speed: z.union([JSExprSchema, z.number()]),
       color: irText(),
       ...idField,
     }),
@@ -3051,15 +3110,15 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('g2d:jumpOnGround'),
       spriteVar: irText(),
       ctxVar: irText(),
-      jump: z.number(),
+      jump: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
       type: z.literal('g2d:createDino'),
       varName: irText(),
-      x: z.number(),
-      y: z.number(),
-      size: z.number(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      size: z.union([JSExprSchema, z.number()]),
       color: irText(),
       ...idField,
     }),
@@ -3083,7 +3142,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('g2d:controlDino'),
       spriteVar: irText(),
       ctxVar: irText(),
-      jump: z.number(),
+      jump: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
@@ -3107,7 +3166,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('g2d:forest'),
       ctxVar: irText(),
-      speed: z.number(),
+      speed: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({ type: z.literal('g2d:playJump'), ...idField }),

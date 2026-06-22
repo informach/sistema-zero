@@ -13,6 +13,8 @@ import {
 export interface BuyRoomItemResult {
   alreadyOwned: boolean
   balance: number
+  /** `true` = equipe (passe livre): moedas virtuais ilimitadas — a UI mostra ∞. */
+  unlimited?: boolean
 }
 
 /** Item, tema, piso OU luz do quarto (catálogos distintos, ids sem colisão). */
@@ -41,6 +43,7 @@ export class BuyRoomItemService {
     userId: string,
     audience: CourseAudience,
     itemId: string,
+    privileged = false,
   ): Promise<BuyRoomItemResult> {
     const thing = roomThing(itemId)
     if (!thing) throw new RoomItemNotFoundError()
@@ -48,22 +51,31 @@ export class BuyRoomItemService {
 
     const owned = await this.room.listInventory(userId, audience)
     if (owned.includes(itemId)) {
-      return { alreadyOwned: true, balance: await this.coins.getBalance(userId, audience) }
+      return {
+        alreadyOwned: true,
+        balance: await this.coins.getBalance(userId, audience),
+        ...(privileged ? { unlimited: true } : {}),
+      }
     }
 
     const now = this.clock()
     // Débito + posse na MESMA transação (atômico): `grantInventory` grava o item junto com o
     // gasto — nunca cobra sem entregar. Recupera a posse no caminho ALREADY_SPENT (retry).
+    // Equipe (passe livre): `amount: 0` entrega o item sem debitar — moedas virtuais ilimitadas.
     const spend = await this.coins.spendCoins({
       userId,
       audience,
-      amount: thing.price,
+      amount: privileged ? 0 : thing.price,
       reason: 'spend_room',
       idempotencyKey: `room-buy:${userId}:${itemId}`,
       now,
       grantInventory: { scope: 'room', itemId },
     })
     if (!spend.ok && spend.code === 'INSUFFICIENT_BALANCE') throw new InsufficientCoinsError()
-    return { alreadyOwned: false, balance: spend.ok ? spend.balanceAfter : spend.balance }
+    return {
+      alreadyOwned: false,
+      balance: spend.ok ? spend.balanceAfter : spend.balance,
+      ...(privileged ? { unlimited: true } : {}),
+    }
   }
 }

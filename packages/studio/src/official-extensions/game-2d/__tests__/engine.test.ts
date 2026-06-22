@@ -42,6 +42,14 @@ interface Engine {
   setCamera: (x: number, y: number) => void
   cameraX: () => number
   cameraY: () => number
+  spriteX: (s: Sprite) => number
+  spriteY: (s: Sprite) => number
+  spriteW: (s: Sprite) => number
+  spriteH: (s: Sprite) => number
+  centerX: (s: Sprite) => number
+  centerY: (s: Sprite) => number
+  randomX: () => number
+  randomY: () => number
 }
 function loadRuntime(): Engine {
   const win = { addEventListener() {}, SZGame2D: undefined } as unknown as Record<string, unknown>
@@ -281,5 +289,107 @@ describe('game-2d — runtime de física', () => {
     expect(typeof api.onPointer).toBe('function')
     expect(() => api.onPointer(() => {})).not.toThrow()
     expect(api.pointer).toMatchObject({ x: 0, y: 0, down: false })
+  })
+
+  it('geometria do sprite: posição/tamanho/centro (com a metade embutida)', () => {
+    const api = loadRuntime()
+    const s = api.createSprite({ x: 10, y: 20, w: 40, h: 60 })
+    expect(api.spriteX(s)).toBe(10)
+    expect(api.spriteY(s)).toBe(20)
+    expect(api.spriteW(s)).toBe(40)
+    expect(api.spriteH(s)).toBe(60)
+    expect(api.centerX(s)).toBe(30) // 10 + 40/2
+    expect(api.centerY(s)).toBe(50) // 20 + 60/2
+  })
+
+  it('randomX/randomY estão expostos e devolvem um número de posição (>= 0)', () => {
+    const api = loadRuntime()
+    expect(typeof api.randomX).toBe('function')
+    expect(typeof api.randomY).toBe('function')
+    for (let i = 0; i < 10; i++) {
+      const x = api.randomX()
+      const y = api.randomY()
+      expect(Number.isFinite(x)).toBe(true)
+      expect(x).toBeGreaterThanOrEqual(0)
+      expect(Number.isFinite(y)).toBe(true)
+      expect(y).toBeGreaterThanOrEqual(0)
+    }
+  })
+
+  it('randomX/randomY usam o tamanho REAL do canvas (dinâmico, não um valor fixo)', () => {
+    // Um canvas BEM grande: se a largura fosse fixa (ex.: 350), os sorteios nunca
+    // passariam dela. Como usa o tamanho real, eles chegam perto de 800/600.
+    for (const c of Array.from(document.querySelectorAll('canvas'))) c.remove()
+    const big = document.createElement('canvas')
+    big.width = 800
+    big.height = 600
+    document.body.appendChild(big)
+    try {
+      const api = loadRuntime()
+      let maxX = 0
+      let maxY = 0
+      for (let i = 0; i < 300; i++) {
+        maxX = Math.max(maxX, api.randomX())
+        maxY = Math.max(maxY, api.randomY())
+      }
+      // Nunca sai do canvas…
+      expect(maxX).toBeLessThanOrEqual(800)
+      expect(maxY).toBeLessThanOrEqual(600)
+      // …e CLARAMENTE acompanha a largura/altura real (passa de 350) — é dinâmico.
+      expect(maxX).toBeGreaterThan(350)
+      expect(maxY).toBeGreaterThan(350)
+    } finally {
+      big.remove()
+    }
+  })
+
+  it('a explosão se desenha SOZINHA no gameLoop (sem precisar do bloco de partículas)', () => {
+    // ctx falso que conta os desenhos de partícula (fillRect).
+    let fillRects = 0
+    const fakeCtx = {
+      canvas: { width: 400, height: 300 },
+      save() {},
+      restore() {},
+      translate() {},
+      fillRect() {
+        fillRects++
+      },
+    }
+    Object.defineProperty(fakeCtx, 'globalAlpha', { set() {} })
+    Object.defineProperty(fakeCtx, 'fillStyle', { set() {} })
+
+    for (const c of Array.from(document.querySelectorAll('canvas'))) c.remove()
+    const canvas = document.createElement('canvas')
+    ;(canvas as unknown as { getContext: () => unknown }).getContext = () => fakeCtx
+    document.body.appendChild(canvas)
+
+    // RAF controlado: guarda o tick para rodarmos UM quadro na mão.
+    const captured: { fn: (() => void) | null } = { fn: null }
+    const raf = (cb: () => void): number => {
+      captured.fn = cb
+      return 1
+    }
+    const win = { addEventListener() {}, SZGame2D: undefined } as unknown as Record<string, unknown>
+    new Function('window', 'requestAnimationFrame', gameTwoDRuntime)(win, raf)
+    const api = (
+      win as {
+        SZGame2D: {
+          gameLoop: (fn: () => void) => void
+          explodeSprite: (s: unknown, c: string) => void
+          createSprite: (o: object) => unknown
+        }
+      }
+    ).SZGame2D
+
+    // O aluno SÓ solta a explosão no quadro — NÃO usa "atualizar e desenhar as partículas".
+    api.gameLoop(() => {
+      api.explodeSprite(api.createSprite({ x: 100, y: 100, w: 20, h: 20 }), '#ffffff')
+    })
+    expect(captured.fn).not.toBeNull()
+    captured.fn?.() // roda um quadro
+
+    // As partículas da explosão foram desenhadas AUTOMATICAMENTE.
+    expect(fillRects).toBeGreaterThan(0)
+    canvas.remove()
   })
 })

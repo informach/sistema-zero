@@ -166,6 +166,14 @@ export function membersRoutes(deps: MembersRoutesDeps) {
           // recebem `false` EXPLÍCITO — em vez de sumir e o chamador não distinguir
           // "sem acesso" de "ref descartada".
           const requested = splitRequestedRefs(query.refs)
+          // Passe livre da equipe (mesma régua dos cursos): superadmin/admin/staff acessam
+          // TODO produto vendável (ex.: o Estúdio Completo) sem matrícula — testar/verificar
+          // o Kids como um aluno comprador. O `x-auth-user-role` é confiável (gateway).
+          if (isPrivilegedActor(headers)) {
+            const access: Record<string, boolean> = {}
+            for (const ref of requested) access[ref] = true
+            return { access }
+          }
           const valid = parseAccessRefs(query.refs)
           const result = await deps.accessCheck.execute(resolveAccountId(headers), valid)
           const hasMasterForAudience =
@@ -224,6 +232,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             resolveUserId(headers),
             query.audience ?? 'kids',
             idempotencyKey(headers),
+            isPrivilegedActor(headers),
           ),
         { query: AudienceQuery },
       )
@@ -258,7 +267,11 @@ export function membersRoutes(deps: MembersRoutesDeps) {
         '/avatar',
         async ({ headers, query }) => {
           const userId = resolveUserId(headers)
-          return deps.getAvatar.execute(userId, query.audience ?? 'kids')
+          return deps.getAvatar.execute(
+            userId,
+            query.audience ?? 'kids',
+            isPrivilegedActor(headers),
+          )
         },
         { query: AudienceQuery },
       )
@@ -267,7 +280,12 @@ export function membersRoutes(deps: MembersRoutesDeps) {
         '/avatar/parts/:partId/buy',
         async ({ headers, params, query }) => {
           const userId = resolveUserId(headers)
-          return deps.buyAvatarPart.execute(userId, query.audience ?? 'kids', params.partId)
+          return deps.buyAvatarPart.execute(
+            userId,
+            query.audience ?? 'kids',
+            params.partId,
+            isPrivilegedActor(headers),
+          )
         },
         { params: AvatarPartParams, query: AudienceQuery },
       )
@@ -312,7 +330,11 @@ export function membersRoutes(deps: MembersRoutesDeps) {
       .get(
         '/room',
         async ({ headers, query }) =>
-          deps.getRoom.execute(resolveUserId(headers), query.audience ?? 'kids'),
+          deps.getRoom.execute(
+            resolveUserId(headers),
+            query.audience ?? 'kids',
+            isPrivilegedActor(headers),
+          ),
         { query: AudienceQuery },
       )
       // Salva o quarto montado (canonicalizado contra o inventário; só itens possuídos).
@@ -333,7 +355,12 @@ export function membersRoutes(deps: MembersRoutesDeps) {
       .post(
         '/room/items/:itemId/buy',
         async ({ headers, params, query }) =>
-          deps.buyRoomItem.execute(resolveUserId(headers), query.audience ?? 'kids', params.itemId),
+          deps.buyRoomItem.execute(
+            resolveUserId(headers),
+            query.audience ?? 'kids',
+            params.itemId,
+            isPrivilegedActor(headers),
+          ),
         { params: RoomItemParams, query: AudienceQuery },
       )
       // Resumo de progresso dos FILHOS (área dos pais, kids). A conta vem do header

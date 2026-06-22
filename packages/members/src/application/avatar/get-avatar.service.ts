@@ -25,7 +25,11 @@ export class GetAvatarService {
     private readonly coins: GamificationRepository,
   ) {}
 
-  async execute(userId: string, audience: CourseAudience): Promise<AvatarStateView> {
+  async execute(
+    userId: string,
+    audience: CourseAudience,
+    privileged = false,
+  ): Promise<AvatarStateView> {
     const [config, owned, balance, photoUrl] = await Promise.all([
       this.avatar.getConfig(userId, audience),
       this.avatar.listInventory(userId, audience),
@@ -56,6 +60,9 @@ export class GetAvatarService {
       removable: AVATAR_REMOVABLE_NONE,
       photoUrl,
       balance,
+      // Equipe = moedas VIRTUAIS ilimitadas (nunca persiste): a UI mostra ∞ e a lojinha
+      // nunca trava por saldo. O `balance` real (acima) segue intocado.
+      ...(privileged ? { balanceUnlimited: true } : {}),
     }
   }
 }

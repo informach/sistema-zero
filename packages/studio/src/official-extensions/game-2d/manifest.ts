@@ -17,7 +17,7 @@ import {
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.17.0',
+  version: '0.19.0',
   description:
     'Blocos para criar jogos 2D no Canvas: tela cheia responsiva (com cor de fundo), sprites (cor/imagem/animação), grupos de muitos sprites, movimento, física, efeitos, tiles/tilemaps, HUD, telas/cenas, som, e KITS por tema — Kit espaço (nave e asteroides), Kit dino (corrida com obstáculos), Kit gorilas (batalha de bananas por turnos), Kit equilibrista (estica o bastão e atravessa, estilo Stick Hero) e Kit balão (sobe segurando o mouse e economiza combustível).',
   category: 'games',
@@ -248,6 +248,25 @@ Para mundos maiores que a tela e jogos mais ricos:
   cima de quem dentro de um grupo.
 - **✨ Aparência** (depuração): **Mostrar a caixa de colisão** de um sprite e **Mostrar os FPS** — para
   enxergar colisões e a performance enquanto cria.
+
+### Posição & tamanho do sprite (valores, v0.18.0)
+
+Bloquinhos de VALOR (na categoria **📐 Posição & tamanho**) que poupam a criança de fazer as contas na
+mão — em vez de \`x + largura / 2\`, ela encaixa um bloco pronto:
+
+- **a posição x / y do sprite** — onde o sprite está (borda esquerda / borda de cima).
+- **a largura / a altura do sprite** — o tamanho do sprite, em pixels.
+- **o centro x / y do sprite** — o MEIO do sprite (já soma metade da largura/altura). Ótimo para atirar,
+  mirar ou posicionar uma coisa a partir do centro de outra (ex.: o tiro sai do centro da nave).
+
+### Posição aleatória na tela (valores, v0.19.0)
+
+Na categoria **🎯 Mira e contas**, dois valores para um sprite nascer num lugar SORTEADO sem a criança
+montar a continha \`Math.random() * largura\` na mão:
+
+- **um x aleatório na tela** / **um y aleatório na tela** — sorteia uma posição dentro da largura/altura
+  da tela. Encaixe no x (ou y) ao **criar** ou **spawnar** um sprite — ex.: asteroides/estrelas nascendo
+  em pontos aleatórios. (Para um intervalo específico de números, continua valendo **um número de … a …**.)
 `,
   examples: [
     pongExample,

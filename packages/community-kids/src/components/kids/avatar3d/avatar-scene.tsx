@@ -175,7 +175,7 @@ export function AvatarScene({
       shadows
       dpr={[1, 2]}
       gl={{ preserveDrawingBuffer: true, antialias: true }}
-      camera={{ position: [0, 1.4, 5], fov: 42 }}
+      camera={{ position: [0, 1.1, 5.5], fov: 45 }}
       onCreated={recoverWebGLContext}
     >
       <color attach="background" args={[dark ? '#0d1117' : '#eaf4f7']} />

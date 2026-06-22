@@ -119,7 +119,11 @@ passthrough `shell.routes.gamificationMe` (`GET /api/members/gamification/me`). 
 `submitQuizAttempt` agora são TIPADOS (a resposta carrega o delta `gamification` — aditivo; o
 community adulto ignora, a vitrine v1 é o kids). `GamificationMeView.streak` ganhou
 `freezesAvailable?`/`onVacation?`/`vacationUntil?` e `coins?:{balance}` (todos OPCIONAIS p/ tolerar
-members antigo).
+members antigo). **Passe livre da EQUIPE (06/2026):** o contrato ganhou a flag `unlimited`/
+`balanceUnlimited` (em `coins`, `AvatarStateView`/`RoomEditorView`, `AvatarPurchaseResult`/
+`RoomBuyResult`/`StreakFreezeResult`) — quando o ator é equipe (superadmin/admin/staff), o members
+reporta moedas VIRTUAIS ilimitadas (saldo real 0) e a UI kids mostra ∞; as compras voltam grátis
+(`unlimited:true`). Só estrutural — o gate é do members (`docs/gamificacao.md` §4).
 
 **Expansão Zappy + avatar/quarto/missões/ligas (06/2026 — 6 fases):** o shell virou o BFF de TODA a
 gamificação kids. Tipos novos em `lib/types.ts` (mirror das views do members): `MissionView`/

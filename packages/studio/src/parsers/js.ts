@@ -1491,6 +1491,30 @@ function matchGame2DExpr(node: Node): JSExpr | null {
     const spriteVar = identifierName(args[0])
     if (spriteVar) return { type: 'g2d:getHealth', spriteVar }
   }
+  if (method === 'spriteX') {
+    const spriteVar = identifierName(args[0])
+    if (spriteVar) return { type: 'g2d:spriteX', spriteVar }
+  }
+  if (method === 'spriteY') {
+    const spriteVar = identifierName(args[0])
+    if (spriteVar) return { type: 'g2d:spriteY', spriteVar }
+  }
+  if (method === 'spriteW') {
+    const spriteVar = identifierName(args[0])
+    if (spriteVar) return { type: 'g2d:spriteW', spriteVar }
+  }
+  if (method === 'spriteH') {
+    const spriteVar = identifierName(args[0])
+    if (spriteVar) return { type: 'g2d:spriteH', spriteVar }
+  }
+  if (method === 'centerX') {
+    const spriteVar = identifierName(args[0])
+    if (spriteVar) return { type: 'g2d:centerX', spriteVar }
+  }
+  if (method === 'centerY') {
+    const spriteVar = identifierName(args[0])
+    if (spriteVar) return { type: 'g2d:centerY', spriteVar }
+  }
   if (method === 'randomBetween') {
     const min = numericLiteralValue(args[0])
     const max = numericLiteralValue(args[1])
@@ -1512,6 +1536,8 @@ function matchGame2DExpr(node: Node): JSExpr | null {
   if (method === 'isPaused') return { type: 'g2d:isPaused' }
   if (method === 'cameraX') return { type: 'g2d:cameraX' }
   if (method === 'cameraY') return { type: 'g2d:cameraY' }
+  if (method === 'randomX') return { type: 'g2d:randomX' }
+  if (method === 'randomY') return { type: 'g2d:randomY' }
   if (method === 'tileAtSprite') {
     const mapVar = identifierName(args[0])
     const spriteVar = identifierName(args[1])
@@ -1563,8 +1589,23 @@ function matchGame2DExpr(node: Node): JSExpr | null {
  */
 function readSpriteOptions(
   obj: Node,
-): { x: number; y: number; w: number; h: number; color: string; image: string | null } | null {
-  const result = { x: 0, y: 0, w: 32, h: 32, color: '#22d3ee', image: null as string | null }
+  ctx: ParseCtx,
+): { x: JSExpr; y: JSExpr; w: JSExpr; h: JSExpr; color: string; image: string | null } | null {
+  const result: {
+    x: JSExpr
+    y: JSExpr
+    w: JSExpr
+    h: JSExpr
+    color: string
+    image: string | null
+  } = {
+    x: { type: 'num', value: 0 },
+    y: { type: 'num', value: 0 },
+    w: { type: 'num', value: 32 },
+    h: { type: 'num', value: 32 },
+    color: '#22d3ee',
+    image: null,
+  }
   for (const prop of obj.properties ?? []) {
     if (prop?.type !== 'ObjectProperty' || prop.computed) return null
     const key =
@@ -1574,8 +1615,8 @@ function readSpriteOptions(
           ? (prop.key.value as string)
           : null
     if (key === 'x' || key === 'y' || key === 'w' || key === 'h') {
-      const v = numericLiteralValue(prop.value)
-      if (v === null) return null
+      const v = toExpr(prop.value, ctx)
+      if (!isSimpleValue(v)) return null
       result[key] = v
     } else if (key === 'color') {
       if (prop.value?.type !== 'StringLiteral') return null
@@ -1690,8 +1731,16 @@ function readSpawnOptions(
  */
 function readShipOptions(
   obj: Node,
-): { x: number; y: number; w: number; h: number; body: string; wings: string } | null {
-  const out = { x: 0, y: 0, w: 54, h: 62, body: '#35e8ff', wings: '#2568ff' }
+  ctx: ParseCtx,
+): { x: JSExpr; y: JSExpr; w: JSExpr; h: JSExpr; body: string; wings: string } | null {
+  const out: { x: JSExpr; y: JSExpr; w: JSExpr; h: JSExpr; body: string; wings: string } = {
+    x: { type: 'num', value: 0 },
+    y: { type: 'num', value: 0 },
+    w: { type: 'num', value: 54 },
+    h: { type: 'num', value: 62 },
+    body: '#35e8ff',
+    wings: '#2568ff',
+  }
   for (const prop of obj.properties ?? []) {
     if (prop?.type !== 'ObjectProperty' || prop.computed) return null
     const key =
@@ -1701,8 +1750,8 @@ function readShipOptions(
           ? (prop.key.value as string)
           : null
     if (key === 'x' || key === 'y' || key === 'w' || key === 'h') {
-      const v = numericLiteralValue(prop.value)
-      if (v === null) return null
+      const v = toExpr(prop.value, ctx)
+      if (!isSimpleValue(v)) return null
       out[key] = v
     } else if (key === 'body' || key === 'wings') {
       if (prop.value?.type !== 'StringLiteral') return null
@@ -1757,9 +1806,12 @@ function readAsteroidOptions(
   return out
 }
 
-/** Lê `{ speed, color }` de `SZGame2D.shootFrom(s, g, {...})` (números/string). */
-function readShootFromOptions(obj: Node): { speed: number; color: string } | null {
-  const out = { speed: 6, color: '#9cff57' }
+/** Lê `{ speed, color }` de `SZGame2D.shootFrom(s, g, {...})` (speed número/expressão; color string). */
+function readShootFromOptions(obj: Node, ctx: ParseCtx): { speed: JSExpr; color: string } | null {
+  const out: { speed: JSExpr; color: string } = {
+    speed: { type: 'num', value: 6 },
+    color: '#9cff57',
+  }
   for (const prop of obj.properties ?? []) {
     if (prop?.type !== 'ObjectProperty' || prop.computed) return null
     const key =
@@ -1769,8 +1821,8 @@ function readShootFromOptions(obj: Node): { speed: number; color: string } | nul
           ? (prop.key.value as string)
           : null
     if (key === 'speed') {
-      const v = numericLiteralValue(prop.value)
-      if (v === null) return null
+      const v = toExpr(prop.value, ctx)
+      if (!isSimpleValue(v)) return null
       out.speed = v
     } else if (key === 'color') {
       if (prop.value?.type !== 'StringLiteral') return null
@@ -1836,8 +1888,16 @@ function readThrowerOptions(obj: Node): { side: 'left' | 'right'; color: string 
  * Lê `{ x, y, size, color }` de `SZGame2D.createDino({...})`. x/y/size números;
  * color string. null se alguma chave não casar.
  */
-function readDinoOptions(obj: Node): { x: number; y: number; size: number; color: string } | null {
-  const out = { x: 0, y: 0, size: 64, color: '#5fb45f' }
+function readDinoOptions(
+  obj: Node,
+  ctx: ParseCtx,
+): { x: JSExpr; y: JSExpr; size: JSExpr; color: string } | null {
+  const out: { x: JSExpr; y: JSExpr; size: JSExpr; color: string } = {
+    x: { type: 'num', value: 0 },
+    y: { type: 'num', value: 0 },
+    size: { type: 'num', value: 64 },
+    color: '#5fb45f',
+  }
   for (const prop of obj.properties ?? []) {
     if (prop?.type !== 'ObjectProperty' || prop.computed) return null
     const key =
@@ -1847,8 +1907,8 @@ function readDinoOptions(obj: Node): { x: number; y: number; size: number; color
           ? (prop.key.value as string)
           : null
     if (key === 'x' || key === 'y' || key === 'size') {
-      const v = numericLiteralValue(prop.value)
-      if (v === null) return null
+      const v = toExpr(prop.value, ctx)
+      if (!isSimpleValue(v)) return null
       out[key] = v
     } else if (key === 'color') {
       if (prop.value?.type !== 'StringLiteral') return null
@@ -2018,8 +2078,8 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       return spriteVar && ctxVar ? { type: 'g2d:bounceOnEdges', spriteVar, ctxVar } : null
     }
     case 'setGravity': {
-      const value = numericLiteralValue(args[0])
-      return value !== null ? { type: 'g2d:setGravity', value } : null
+      const value = toExpr(args[0], ctx)
+      return isSimpleValue(value) ? { type: 'g2d:setGravity', value } : null
     }
     case 'playSound': {
       const freq = numericLiteralValue(args[0])
@@ -2051,20 +2111,24 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
     case 'moveToward': {
       const spriteVar = identifierName(args[0])
       const targetVar = identifierName(args[1])
-      const speed = numericLiteralValue(args[2])
-      return spriteVar && targetVar && speed !== null
+      const speed = toExpr(args[2], ctx)
+      return spriteVar && targetVar && isSimpleValue(speed)
         ? { type: 'g2d:moveToward', spriteVar, targetVar, speed }
         : null
     }
     case 'setHealth': {
       const spriteVar = identifierName(args[0])
-      const amount = numericLiteralValue(args[1])
-      return spriteVar && amount !== null ? { type: 'g2d:setHealth', spriteVar, amount } : null
+      const amount = toExpr(args[1], ctx)
+      return spriteVar && isSimpleValue(amount)
+        ? { type: 'g2d:setHealth', spriteVar, amount }
+        : null
     }
     case 'changeHealth': {
       const spriteVar = identifierName(args[0])
-      const delta = numericLiteralValue(args[1])
-      return spriteVar && delta !== null ? { type: 'g2d:changeHealth', spriteVar, delta } : null
+      const delta = toExpr(args[1], ctx)
+      return spriteVar && isSimpleValue(delta)
+        ? { type: 'g2d:changeHealth', spriteVar, delta }
+        : null
     }
     case 'flipSprite': {
       const spriteVar = identifierName(args[0])
@@ -2073,19 +2137,25 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
     }
     case 'setOpacity': {
       const spriteVar = identifierName(args[0])
-      const percent = numericLiteralValue(args[1])
-      return spriteVar && percent !== null ? { type: 'g2d:setOpacity', spriteVar, percent } : null
+      const percent = toExpr(args[1], ctx)
+      return spriteVar && isSimpleValue(percent)
+        ? { type: 'g2d:setOpacity', spriteVar, percent }
+        : null
     }
     case 'setSize': {
       const spriteVar = identifierName(args[0])
-      const w = numericLiteralValue(args[1])
-      const h = numericLiteralValue(args[2])
-      return spriteVar && w !== null && h !== null ? { type: 'g2d:setSize', spriteVar, w, h } : null
+      const w = toExpr(args[1], ctx)
+      const h = toExpr(args[2], ctx)
+      return spriteVar && isSimpleValue(w) && isSimpleValue(h)
+        ? { type: 'g2d:setSize', spriteVar, w, h }
+        : null
     }
     case 'scaleSprite': {
       const spriteVar = identifierName(args[0])
-      const factor = numericLiteralValue(args[1])
-      return spriteVar && factor !== null ? { type: 'g2d:scaleSprite', spriteVar, factor } : null
+      const factor = toExpr(args[1], ctx)
+      return spriteVar && isSimpleValue(factor)
+        ? { type: 'g2d:scaleSprite', spriteVar, factor }
+        : null
     }
     case 'wrapEdges': {
       const spriteVar = identifierName(args[0])
@@ -2102,16 +2172,16 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       return { type: 'g2d:resumeGame' }
     case 'cameraFollow': {
       const spriteVar = identifierName(args[0])
-      const worldW = numericLiteralValue(args[1])
-      const worldH = numericLiteralValue(args[2])
-      return spriteVar && worldW !== null && worldH !== null
+      const worldW = toExpr(args[1], ctx)
+      const worldH = toExpr(args[2], ctx)
+      return spriteVar && isSimpleValue(worldW) && isSimpleValue(worldH)
         ? { type: 'g2d:cameraFollow', spriteVar, worldW, worldH }
         : null
     }
     case 'setCamera': {
-      const x = numericLiteralValue(args[0])
-      const y = numericLiteralValue(args[1])
-      return x !== null && y !== null ? { type: 'g2d:setCamera', x, y } : null
+      const x = toExpr(args[0], ctx)
+      const y = toExpr(args[1], ctx)
+      return isSimpleValue(x) && isSimpleValue(y) ? { type: 'g2d:setCamera', x, y } : null
     }
     case 'breakTileAtSprite': {
       const mapVar = identifierName(args[0])
@@ -2141,9 +2211,9 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       return spriteVar ? { type: 'g2d:drawHitbox', spriteVar } : null
     }
     case 'showFps': {
-      const x = numericLiteralValue(args[0])
-      const y = numericLiteralValue(args[1])
-      return x !== null && y !== null ? { type: 'g2d:showFps', x, y } : null
+      const x = toExpr(args[0], ctx)
+      const y = toExpr(args[1], ctx)
+      return isSimpleValue(x) && isSimpleValue(y) ? { type: 'g2d:showFps', x, y } : null
     }
     case 'setImage': {
       // generator: SZGame2D.setImage(sprite, 'nome')
@@ -2185,21 +2255,23 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       // generator: SZGame2D.platformer(sprite, ctx, speed, jump)
       const spriteVar = identifierName(args[0])
       const ctxVar = identifierName(args[1])
-      const speed = numericLiteralValue(args[2])
-      const jump = numericLiteralValue(args[3])
-      return spriteVar && ctxVar && speed !== null && jump !== null
+      const speed = toExpr(args[2], ctx)
+      const jump = toExpr(args[3], ctx)
+      return spriteVar && ctxVar && isSimpleValue(speed) && isSimpleValue(jump)
         ? { type: 'g2d:platformer', spriteVar, ctxVar, speed, jump }
         : null
     }
     case 'topDown': {
       const spriteVar = identifierName(args[0])
-      const speed = numericLiteralValue(args[1])
-      return spriteVar && speed !== null ? { type: 'g2d:topDown', spriteVar, speed } : null
+      const speed = toExpr(args[1], ctx)
+      return spriteVar && isSimpleValue(speed) ? { type: 'g2d:topDown', spriteVar, speed } : null
     }
     case 'followPointer': {
       const spriteVar = identifierName(args[0])
-      const speed = numericLiteralValue(args[1])
-      return spriteVar && speed !== null ? { type: 'g2d:followPointer', spriteVar, speed } : null
+      const speed = toExpr(args[1], ctx)
+      return spriteVar && isSimpleValue(speed)
+        ? { type: 'g2d:followPointer', spriteVar, speed }
+        : null
     }
     case 'clampToScreen': {
       const spriteVar = identifierName(args[0])
@@ -2209,38 +2281,40 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
     case 'steerThrust': {
       // generator: SZGame2D.steerThrust(sprite, speed, turn)
       const spriteVar = identifierName(args[0])
-      const speed = numericLiteralValue(args[1])
-      const turn = numericLiteralValue(args[2])
-      return spriteVar && speed !== null && turn !== null
+      const speed = toExpr(args[1], ctx)
+      const turn = toExpr(args[2], ctx)
+      return spriteVar && isSimpleValue(speed) && isSimpleValue(turn)
         ? { type: 'g2d:steerThrust', spriteVar, speed, turn }
         : null
     }
     case 'rotateSprite': {
       const spriteVar = identifierName(args[0])
-      const deg = numericLiteralValue(args[1])
-      return spriteVar && deg !== null ? { type: 'g2d:rotateSprite', spriteVar, deg } : null
+      const deg = toExpr(args[1], ctx)
+      return spriteVar && isSimpleValue(deg) ? { type: 'g2d:rotateSprite', spriteVar, deg } : null
     }
     case 'pointSprite': {
       const spriteVar = identifierName(args[0])
-      const deg = numericLiteralValue(args[1])
-      return spriteVar && deg !== null ? { type: 'g2d:pointSprite', spriteVar, deg } : null
+      const deg = toExpr(args[1], ctx)
+      return spriteVar && isSimpleValue(deg) ? { type: 'g2d:pointSprite', spriteVar, deg } : null
     }
     case 'thrust': {
       const spriteVar = identifierName(args[0])
-      const force = numericLiteralValue(args[1])
-      return spriteVar && force !== null ? { type: 'g2d:thrust', spriteVar, force } : null
+      const force = toExpr(args[1], ctx)
+      return spriteVar && isSimpleValue(force) ? { type: 'g2d:thrust', spriteVar, force } : null
     }
     case 'applyFriction': {
       const spriteVar = identifierName(args[0])
-      const factor = numericLiteralValue(args[1])
-      return spriteVar && factor !== null ? { type: 'g2d:applyFriction', spriteVar, factor } : null
+      const factor = toExpr(args[1], ctx)
+      return spriteVar && isSimpleValue(factor)
+        ? { type: 'g2d:applyFriction', spriteVar, factor }
+        : null
     }
     case 'shootFrom': {
       // generator: SZGame2D.shootFrom(sprite, group, { speed, color })
       const spriteVar = identifierName(args[0])
       const groupVar = identifierName(args[1])
       if (!spriteVar || !groupVar || args[2]?.type !== 'ObjectExpression') return null
-      const o = readShootFromOptions(args[2])
+      const o = readShootFromOptions(args[2], ctx)
       return o
         ? { type: 'g2d:shootFrom', spriteVar, groupVar, speed: o.speed, color: o.color }
         : null
@@ -2262,15 +2336,20 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
     }
     case 'shake': {
       const ctxVar = identifierName(args[0])
-      const intensity = numericLiteralValue(args[1])
-      return ctxVar && intensity !== null ? { type: 'g2d:shake', ctxVar, intensity } : null
+      const intensity = toExpr(args[1], ctx)
+      return ctxVar && isSimpleValue(intensity) ? { type: 'g2d:shake', ctxVar, intensity } : null
     }
     case 'emitParticles': {
       // generator: SZGame2D.emitParticles(x, y, count, "color")
-      const x = numericLiteralValue(args[0])
-      const y = numericLiteralValue(args[1])
-      const count = numericLiteralValue(args[2])
-      if (x === null || y === null || count === null || args[3]?.type !== 'StringLiteral')
+      const x = toExpr(args[0], ctx)
+      const y = toExpr(args[1], ctx)
+      const count = toExpr(args[2], ctx)
+      if (
+        !isSimpleValue(x) ||
+        !isSimpleValue(y) ||
+        !isSimpleValue(count) ||
+        args[3]?.type !== 'StringLiteral'
+      )
         return null
       return { type: 'g2d:emitParticles', x, y, count, color: args[3].value as string }
     }
@@ -2378,17 +2457,17 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       // generator: SZGame2D.drawScore(ctx, "label", value, x, y, "color", size)
       const ctxVar = identifierName(args[0])
       const value = toExpr(args[2], ctx)
-      const x = numericLiteralValue(args[3])
-      const y = numericLiteralValue(args[4])
-      const size = numericLiteralValue(args[6])
+      const x = toExpr(args[3], ctx)
+      const y = toExpr(args[4], ctx)
+      const size = toExpr(args[6], ctx)
       if (
         !ctxVar ||
         args[1]?.type !== 'StringLiteral' ||
         !isSimpleValue(value) ||
-        x === null ||
-        y === null ||
+        !isSimpleValue(x) ||
+        !isSimpleValue(y) ||
         args[5]?.type !== 'StringLiteral' ||
-        size === null
+        !isSimpleValue(size)
       ) {
         return null
       }
@@ -2406,16 +2485,16 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
     case 'drawLabel': {
       // generator: SZGame2D.drawLabel(ctx, "text", x, y, "color", size, "align")
       const ctxVar = identifierName(args[0])
-      const x = numericLiteralValue(args[2])
-      const y = numericLiteralValue(args[3])
-      const size = numericLiteralValue(args[5])
+      const x = toExpr(args[2], ctx)
+      const y = toExpr(args[3], ctx)
+      const size = toExpr(args[5], ctx)
       if (
         !ctxVar ||
         args[1]?.type !== 'StringLiteral' ||
-        x === null ||
-        y === null ||
+        !isSimpleValue(x) ||
+        !isSimpleValue(y) ||
         args[4]?.type !== 'StringLiteral' ||
-        size === null ||
+        !isSimpleValue(size) ||
         args[6]?.type !== 'StringLiteral'
       ) {
         return null
@@ -2436,15 +2515,15 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       // generator: SZGame2D.drawHearts(ctx, count, x, y, size, "color")
       const ctxVar = identifierName(args[0])
       const count = toExpr(args[1], ctx)
-      const x = numericLiteralValue(args[2])
-      const y = numericLiteralValue(args[3])
-      const size = numericLiteralValue(args[4])
+      const x = toExpr(args[2], ctx)
+      const y = toExpr(args[3], ctx)
+      const size = toExpr(args[4], ctx)
       if (
         !ctxVar ||
         !isSimpleValue(count) ||
-        x === null ||
-        y === null ||
-        size === null ||
+        !isSimpleValue(x) ||
+        !isSimpleValue(y) ||
+        !isSimpleValue(size) ||
         args[5]?.type !== 'StringLiteral'
       ) {
         return null
@@ -2456,18 +2535,18 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       const ctxVar = identifierName(args[0])
       const value = toExpr(args[1], ctx)
       const max = toExpr(args[2], ctx)
-      const x = numericLiteralValue(args[3])
-      const y = numericLiteralValue(args[4])
-      const w = numericLiteralValue(args[5])
-      const h = numericLiteralValue(args[6])
+      const x = toExpr(args[3], ctx)
+      const y = toExpr(args[4], ctx)
+      const w = toExpr(args[5], ctx)
+      const h = toExpr(args[6], ctx)
       if (
         !ctxVar ||
         !isSimpleValue(value) ||
         !isSimpleValue(max) ||
-        x === null ||
-        y === null ||
-        w === null ||
-        h === null ||
+        !isSimpleValue(x) ||
+        !isSimpleValue(y) ||
+        !isSimpleValue(w) ||
+        !isSimpleValue(h) ||
         args[7]?.type !== 'StringLiteral'
       ) {
         return null
@@ -2479,23 +2558,22 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       return { type: 'g2d:setScene', name: args[0].value as string }
     }
     case 'showScreen': {
-      // generator: SZGame2D.showScreen(ctx, "title", "subtitle", "hint", "bg")
+      // generator: SZGame2D.showScreen(ctx, title, subtitle, hint, "bg")
+      // título/subtítulo/dica aceitam texto, variável, "juntar texto", função…
       const ctxVar = identifierName(args[0])
-      if (
-        !ctxVar ||
-        args[1]?.type !== 'StringLiteral' ||
-        args[2]?.type !== 'StringLiteral' ||
-        args[3]?.type !== 'StringLiteral' ||
-        args[4]?.type !== 'StringLiteral'
-      ) {
+      if (!ctxVar || !args[1] || !args[2] || !args[3] || args[4]?.type !== 'StringLiteral') {
         return null
       }
+      const title = toExpr(args[1], ctx)
+      const subtitle = toExpr(args[2], ctx)
+      const hint = toExpr(args[3], ctx)
+      if (!title || !subtitle || !hint) return null
       return {
         type: 'g2d:showScreen',
         ctxVar,
-        title: args[1].value as string,
-        subtitle: args[2].value as string,
-        hint: args[3].value as string,
+        title,
+        subtitle,
+        hint,
         bg: args[4].value as string,
       }
     }
@@ -2504,8 +2582,8 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
     case 'drawStarfield': {
       // generator: SZGame2D.drawStarfield(ctx, speed)
       const ctxVar = identifierName(args[0])
-      const speed = numericLiteralValue(args[1])
-      return ctxVar && speed !== null ? { type: 'g2d:starfield', ctxVar, speed } : null
+      const speed = toExpr(args[1], ctx)
+      return ctxVar && isSimpleValue(speed) ? { type: 'g2d:starfield', ctxVar, speed } : null
     }
     case 'dragX': {
       const spriteVar = identifierName(args[0])
@@ -2561,14 +2639,16 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
     case 'arrowsX': {
       // generator: SZGame2D.arrowsX(sprite, speed)
       const spriteVar = identifierName(args[0])
-      const speed = numericLiteralValue(args[1])
-      return spriteVar && speed !== null ? { type: 'g2d:arrowsX', spriteVar, speed } : null
+      const speed = toExpr(args[1], ctx)
+      return spriteVar && isSimpleValue(speed) ? { type: 'g2d:arrowsX', spriteVar, speed } : null
     }
     case 'blink': {
       // generator: SZGame2D.blink(sprite, frames)
       const spriteVar = identifierName(args[0])
-      const frames = numericLiteralValue(args[1])
-      return spriteVar && frames !== null ? { type: 'g2d:blinkSprite', spriteVar, frames } : null
+      const frames = toExpr(args[1], ctx)
+      return spriteVar && isSimpleValue(frames)
+        ? { type: 'g2d:blinkSprite', spriteVar, frames }
+        : null
     }
     case 'explodeSprite': {
       // generator: SZGame2D.explodeSprite(sprite, "color")
@@ -2584,8 +2664,8 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       // generator: SZGame2D.jumpOnGround(sprite, ctx, jump)
       const spriteVar = identifierName(args[0])
       const ctxVar = identifierName(args[1])
-      const jump = numericLiteralValue(args[2])
-      return spriteVar && ctxVar && jump !== null
+      const jump = toExpr(args[2], ctx)
+      return spriteVar && ctxVar && isSimpleValue(jump)
         ? { type: 'g2d:jumpOnGround', spriteVar, ctxVar, jump }
         : null
     }
@@ -2593,8 +2673,8 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       // generator: SZGame2D.controlDino(sprite, ctx, jump)
       const spriteVar = identifierName(args[0])
       const ctxVar = identifierName(args[1])
-      const jump = numericLiteralValue(args[2])
-      return spriteVar && ctxVar && jump !== null
+      const jump = toExpr(args[2], ctx)
+      return spriteVar && ctxVar && isSimpleValue(jump)
         ? { type: 'g2d:controlDino', spriteVar, ctxVar, jump }
         : null
     }
@@ -2626,8 +2706,8 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
     case 'drawForest': {
       // generator: SZGame2D.drawForest(ctx, speed)
       const ctxVar = identifierName(args[0])
-      const speed = numericLiteralValue(args[1])
-      return ctxVar && speed !== null ? { type: 'g2d:forest', ctxVar, speed } : null
+      const speed = toExpr(args[1], ctx)
+      return ctxVar && isSimpleValue(speed) ? { type: 'g2d:forest', ctxVar, speed } : null
     }
     case 'playJump':
       return { type: 'g2d:playJump' }
@@ -2742,7 +2822,7 @@ function tryMatchGame2DVarInit(name: string, init: Node, ctx: ParseCtx): JSState
   }
   if (method === 'createSprite') {
     if (args[0]?.type !== 'ObjectExpression') return null
-    const sprite = readSpriteOptions(args[0])
+    const sprite = readSpriteOptions(args[0], ctx)
     if (!sprite) return null
     ctx.spriteVars.add(name)
     // Com `image` → sprite de imagem (o bloco colorido não tem essa chave); o
@@ -2761,7 +2841,7 @@ function tryMatchGame2DVarInit(name: string, init: Node, ctx: ParseCtx): JSState
   if (method === 'createShip') {
     // generator: const nave = SZGame2D.createShip({ x, y, w, h, body, wings })
     if (args[0]?.type !== 'ObjectExpression') return null
-    const o = readShipOptions(args[0])
+    const o = readShipOptions(args[0], ctx)
     if (!o) return null
     ctx.spriteVars.add(name)
     return {
@@ -2778,7 +2858,7 @@ function tryMatchGame2DVarInit(name: string, init: Node, ctx: ParseCtx): JSState
   if (method === 'createDino') {
     // generator: const dino = SZGame2D.createDino({ x, y, size, color })
     if (args[0]?.type !== 'ObjectExpression') return null
-    const o = readDinoOptions(args[0])
+    const o = readDinoOptions(args[0], ctx)
     if (!o) return null
     ctx.spriteVars.add(name)
     return { type: 'g2d:createDino', varName: name, x: o.x, y: o.y, size: o.size, color: o.color }
@@ -5234,6 +5314,12 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'g2d:distance':
     case 'g2d:angleTo':
     case 'g2d:getHealth':
+    case 'g2d:spriteX':
+    case 'g2d:spriteY':
+    case 'g2d:spriteW':
+    case 'g2d:spriteH':
+    case 'g2d:centerX':
+    case 'g2d:centerY':
     case 'g2d:randomBetween':
     case 'g2d:randomChance':
     case 'g2d:hasHealth':
@@ -5241,6 +5327,8 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'g2d:isPaused':
     case 'g2d:cameraX':
     case 'g2d:cameraY':
+    case 'g2d:randomX':
+    case 'g2d:randomY':
     case 'g2d:tileAtSprite':
     case 'g2d:sceneIs':
     case 'g2d:stickHeroScore':

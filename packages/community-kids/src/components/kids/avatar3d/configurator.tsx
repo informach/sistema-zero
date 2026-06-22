@@ -92,6 +92,8 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
   const [state, setState] = useState<AvatarStateView | null>(null)
   const [slots, setSlots] = useState<Slots>({})
   const [balance, setBalance] = useState(0)
+  // Equipe (passe livre) = moedas ilimitadas: a lojinha mostra ∞ e nunca trava por saldo.
+  const [coinsUnlimited, setCoinsUnlimited] = useState(false)
   const [mode, setMode] = useState<Mode>('customize')
   const [pose, setPose] = useState<string>('Idle')
   const [category, setCategory] = useState<AvatarCategory>('head')
@@ -113,6 +115,7 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
         setState(data)
         setSlots({ ...data.equipped } as Slots)
         setBalance(data.balance)
+        setCoinsUnlimited(data.balanceUnlimited === true)
       })
       .catch(() => {})
     return () => {
@@ -195,6 +198,7 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
           : s,
       )
       if (typeof body?.balance === 'number') setBalance(body.balance)
+      if (body?.unlimited === true) setCoinsUnlimited(true)
       // Compra já equipa (a criança quer ver na hora).
       setSlots((sl) => ({ ...sl, [part.category]: { ...sl[part.category], asset: part.id } }))
       toast.success('Desbloqueado! 🎉')
@@ -294,7 +298,7 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
             <ArrowLeft className="size-5" />
           </button>
           <span className="inline-flex items-center gap-1.5 rounded-full bg-(--kids-lime-tint) px-3 py-1.5 [font-family:var(--font-display)] font-bold text-sm shadow-md">
-            <Coins className="size-4" /> {balance}
+            <Coins className="size-4" /> {coinsUnlimited ? '∞' : balance}
           </span>
         </div>
         <div className="flex items-center gap-2">

@@ -366,8 +366,11 @@ export interface GamificationDelta {
 /** `GET /members/gamification/me` — widgets (sidebar/home) e vitrine do perfil. */
 export interface GamificationMeView {
   xp: number
-  /** Carteira Zappy Coins (saldo gastável). Opcional p/ tolerar members antigo. */
-  coins?: { balance: number }
+  /**
+   * Carteira Zappy Coins (saldo gastável). Opcional p/ tolerar members antigo.
+   * `unlimited` = equipe (passe livre): moedas virtuais ilimitadas — a UI mostra ∞.
+   */
+  coins?: { balance: number; unlimited?: boolean }
   streak: {
     /** Streak de exibição: 0 quando quebrado. */
     current: number
@@ -416,6 +419,8 @@ export interface MissionClaimResult {
 export interface StreakFreezeResult {
   freezes: number
   balance: number
+  /** `true` = equipe (passe livre): moedas virtuais ilimitadas — a UI mostra ∞. */
+  unlimited?: boolean
 }
 export interface VacationResult {
   vacationFrom: string | null
@@ -474,12 +479,16 @@ export interface AvatarStateView {
   /** Foto (snapshot) atual do avatar 3D — `null` se ainda não salvou. */
   photoUrl?: string | null
   balance: number
+  /** `true` = equipe (passe livre): moedas virtuais ilimitadas — a UI mostra ∞. */
+  balanceUnlimited?: boolean
 }
 
 /** Resposta da compra de peça (`POST /members/avatar/parts/:id/buy`). */
 export interface AvatarPurchaseResult {
   alreadyOwned: boolean
   balance: number
+  /** `true` = equipe (passe livre): moedas virtuais ilimitadas — a UI mostra ∞. */
+  unlimited?: boolean
 }
 
 /** Resposta de salvar a config (`PUT /members/avatar`). */
@@ -540,10 +549,14 @@ export interface RoomEditorView {
   floors: RoomThemeView[]
   lightings: RoomThemeView[]
   balance: number
+  /** `true` = equipe (passe livre): moedas virtuais ilimitadas — a UI mostra ∞. */
+  balanceUnlimited?: boolean
 }
 export interface RoomBuyResult {
   alreadyOwned: boolean
   balance: number
+  /** `true` = equipe (passe livre): moedas virtuais ilimitadas — a UI mostra ∞. */
+  unlimited?: boolean
 }
 
 /** Identidade pública de um perfil (auth S2S) — só nome + flag (nunca PII). */

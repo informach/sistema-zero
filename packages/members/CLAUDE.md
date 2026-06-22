@@ -327,6 +327,11 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   `splitRequestedRefs` mantém as pedidas (trim/não-vazias, teto 50) e as de formato
   inválido recebem `false` EXPLÍCITO (em vez de sumir — chamador não distinguia "negado"
   de "descartado"); só as válidas (`parseAccessRefs`, regex de slug) vão ao motor/DB.
+  **Equipe interna = passe livre de PRODUTO** (06/2026): se `isPrivilegedActor(headers)`
+  (`superadmin`/`admin`/`staff`), a rota curto-circuita e devolve TODAS as refs pedidas como
+  `true` (sem tocar matrícula) — é o que destrava o **Estúdio Completo** (`estudio-completo`)
+  p/ a equipe testar o Kids sem comprar, espelhando a chave-mestra virtual dos cursos. Travado
+  por `tests/integration/privileged-coins.test.ts`.
 - **`PUT /members/courses/:slug/lessons/:lessonId/position`** (aluno): salva a posição
   do vídeo — body `{positionSeconds: int 0..100000}` (TypeBox), valida matrícula + aula
   pertencer ao curso; upsert em `lesson_progress`. Devolve `{lessonId, positionSeconds,
@@ -476,6 +481,12 @@ estender o streak). Atividade ANTERIOR às migrations não tem marco retroativo
   Gastos via `spendCoins` (`spend_cosmetic`/`spend_room`/`spend_streak_freeze`) com
   `idempotencyKey` — saldo insuficiente → `InsufficientCoinsError` (402). A verdade do saldo é
   `gamification_profiles.coin_balance` (`coin_events.balanceAfter` é auditoria).
+  **Equipe interna = moedas VIRTUAIS ilimitadas** (06/2026): `isPrivilegedActor` propagado como
+  `privileged` às lojinhas (`Buy{AvatarPart,RoomItem,StreakFreeze}Service`) → `amount/price: 0`
+  no `spendCoins`/`buyStreakFreeze` (concede o item SEM debitar; saldo real fica 0, nada no
+  ranking) e as leituras (`get-avatar`/`get-room`/`get-gamification`) marcam `balanceUnlimited`/
+  `coins.unlimited` → a UI kids mostra ∞. Espelho da chave-mestra virtual; ver `docs/gamificacao.md`
+  §4 e `tests/integration/privileged-coins.test.ts`.
 - **Streak-freeze + férias** (migration `0021`, colunas `streak_freezes`/
   `freeze_granted_month`/`vacation_from`/`vacation_to` em `gamification_profiles`): a sequência
   só QUEBRA quando NEM férias NEM protetores cobrem o gap. Janela de férias é INCLUSIVA

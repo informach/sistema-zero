@@ -20,12 +20,12 @@ const FACE_CATEGORIES = new Set([
 
 /**
  * Câmera do configurador — espelha o `CameraManager.jsx` do WawaSensei com drei `CameraControls`.
- * - **Personalizar (corpo)**: `fitToBox` no bounding box do personagem → cabeça E pés sempre
- *   visíveis (conserta o "começa perto demais / corta a cabeça").
- * - **Personalizar (rosto)**: aproxima na altura da cabeça (`setLookAt`, transição suave).
- * - **Cabine de fotos**: enquadramento RETRATO (rosto centralizado + headroom) e órbita LIVRE
- *   (a criança posiciona antes de tirar a foto).
- * Reenquadra quando muda modo/categoria, e na 1ª vez que o personagem fica em pé (`ready`).
+ * Mede o bounding box do personagem, mas enquadra GENTIL (e só com o corpo inteiro medido):
+ * - **Personalizar (default + roupas)**: CORPO INTEIRO, câmera mais longe e mais baixa (cabeça E pés).
+ * - **Personalizar (rosto)**: upper-body GENTIL (cabeça bem visível, corpo ainda à vista).
+ * - **Cabine de fotos**: RETRATO (cabeça+ombros) + órbita LIVRE (a criança posiciona a foto).
+ * Reenquadra ao mudar modo/categoria e na 1ª vez que o personagem fica em pé (`ready`); a guarda
+ * `h > 0.8` evita enquadrar um box parcial — era a causa do "só metade da cabeça".
  */
 export function CameraManager({
   charRef,
@@ -69,23 +69,33 @@ export function CameraManager({
     const b = box.current
     const c = b.getCenter(center.current)
     const h = Math.max(0.001, b.max.y - b.min.y)
+    // GUARDA anti-"meia cabeça": só enquadra com o CORPO INTEIRO medido. Box parcial (só a
+    // cabeça carregou, ou a spring da "cabine" ainda encolhida) → h pequeno → espera o
+    // próximo frame. O personagem tem ~1.7 de altura, então 0.8 separa "parcial" de "inteiro".
+    if (h < 0.8) return
+    const { min, max } = b
 
     let frameResult: unknown
     if (mode === 'photo') {
-      // Retrato: rosto centralizado + folga em cima (o avatar é mostrado REDONDO → foca a cara).
-      const ty = b.max.y - h * 0.16
-      frameResult = cc.setLookAt(c.x, ty + h * 0.06, c.z + h * 1.05, c.x, ty, c.z, true)
+      // Retrato (cabeça + ombros) — o avatar é mostrado REDONDO, então a foto foca a cara.
+      const ty = max.y - h * 0.18
+      frameResult = cc.setLookAt(c.x, max.y - h * 0.1, c.z + h * 1.15, c.x, ty, c.z, true)
     } else if (FACE_CATEGORIES.has(category)) {
-      const ty = b.max.y - h * 0.12
-      frameResult = cc.setLookAt(c.x, ty + h * 0.05, c.z + h * 0.85, c.x, ty, c.z, true)
+      // Upper-body GENTIL: cabeça bem visível, mas o corpo ainda aparece (sem crop justo).
+      const ty = max.y - h * 0.28
+      frameResult = cc.setLookAt(
+        c.x - h * 0.18,
+        max.y - h * 0.16,
+        c.z + h * 1.6,
+        c.x,
+        ty,
+        c.z,
+        true,
+      )
     } else {
-      // Corpo inteiro — fitToBox enquadra cabeça+pés com folga.
-      frameResult = cc.fitToBox(obj, true, {
-        paddingLeft: 0.35,
-        paddingRight: 0.35,
-        paddingTop: 0.12,
-        paddingBottom: 0.12,
-      })
+      // CORPO INTEIRO (default): câmera mais LONGE e mais BAIXA (quase no nível) — cabeça E pés.
+      const ty = min.y + h * 0.5
+      frameResult = cc.setLookAt(c.x - h * 0.28, min.y + h * 0.6, c.z + h * 2.3, c.x, ty, c.z, true)
     }
     markFramed(frameResult)
 

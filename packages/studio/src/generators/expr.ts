@@ -235,6 +235,18 @@ export function compileExpr(
       return `SZGame2D.angleTo(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
     case 'g2d:getHealth':
       return `SZGame2D.getHealth(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:spriteX':
+      return `SZGame2D.spriteX(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:spriteY':
+      return `SZGame2D.spriteY(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:spriteW':
+      return `SZGame2D.spriteW(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:spriteH':
+      return `SZGame2D.spriteH(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:centerX':
+      return `SZGame2D.centerX(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:centerY':
+      return `SZGame2D.centerY(${identifiers.get(expr.spriteVar)})`
     case 'g2d:randomBetween':
       return `SZGame2D.randomBetween(${expr.min}, ${expr.max})`
     case 'g2d:randomChance':
@@ -249,6 +261,10 @@ export function compileExpr(
       return 'SZGame2D.cameraX()'
     case 'g2d:cameraY':
       return 'SZGame2D.cameraY()'
+    case 'g2d:randomX':
+      return 'SZGame2D.randomX()'
+    case 'g2d:randomY':
+      return 'SZGame2D.randomY()'
     case 'g2d:tileAtSprite':
       return `SZGame2D.tileAtSprite(${identifiers.get(expr.mapVar)}, ${identifiers.get(expr.spriteVar)})`
     case 'g2d:sceneIs':

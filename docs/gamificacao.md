@@ -188,6 +188,25 @@ moedas concedidas pela missão, depois do teto diário, cruzam um limiar. A inse
 continua idempotente por `(user_id, audience, badge_slug)`.
 **Como alterar:** editar os limiares em `coinsSaverBadgeSlugs`.
 
+### Equipe interna = moedas VIRTUAIS ilimitadas (passe livre, 06/2026)
+
+Espelho, para a moeda, da **chave-mestra virtual** dos cursos: `superadmin`/`admin`/`staff`
+(`isPrivilegedActor` resolvido na ROTA a partir do `x-auth-user-role`, propagado como param
+`privileged` aos services) têm Zappy Coins **ilimitadas e VIRTUAIS — nunca persistidas**. As
+lojinhas (`BuyAvatarPartService`/`BuyRoomItemService`/`BuyStreakFreezeService`) passam
+`amount/price: 0` ao `spendCoins`/`buyStreakFreeze`: a peça/item/protetor é concedido na mesma
+transação atômica, **sem debitar** o saldo real (que fica 0) e **sem poluir o ledger/ranking**
+(equipe já é excluída do ranking). As leituras de saldo (`GET /members/{avatar,room}` e
+`/gamification/me`) marcam `balanceUnlimited`/`coins.unlimited` quando `privileged` → a UI kids
+mostra **∞**. Numa sessão de perfil do Kids o token é da CONTA, então o `role` da equipe sobrevive
+e o passe livre vale lá dentro. O `customer` segue limitado pelo saldo (402 sem moeda — sem
+regressão). **Como mudar:** o gate é só `privileged`; para desligar, pare de propagar
+`isPrivilegedActor` nessas rotas. Travado por `tests/integration/privileged-coins.test.ts`.
+
+> **Estúdio Completo (produto vendável):** a mesma equipe também acessa o `/estudio` sem comprar —
+> a rota `GET /members/access` curto-circuita todas as refs pedidas para `true` quando
+> `isPrivilegedActor`. Ver o CLAUDE.md do members (§`/access`).
+
 ---
 
 ## 5. Conquistas (badges)

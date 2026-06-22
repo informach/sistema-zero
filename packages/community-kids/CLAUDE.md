@@ -129,7 +129,11 @@ gate é resolvido no SERVIDOR: `app/(app)/estudio/page.tsx` chama
 (recado gentil, mascote `thinking`, "peça a um responsável"; sem link de venda — kids não tem funil);
 COM acesso → `StudioFullClient` (o editor pesado nem carrega p/ quem não comprou); **status ≠ 200
 (gateway/token soluçou) → `KidsStudioUnavailable` ("tente de novo" + `router.refresh()`)** — não mostrar
-"ainda não liberado" a quem JÁ comprou num erro transitório (mentiria que não tem acesso). `studio-full-client.tsx` (`'use client'`, import dinâmico do package no
+"ainda não liberado" a quem JÁ comprou num erro transitório (mentiria que não tem acesso).
+**Passe livre da EQUIPE (06/2026):** superadmin/admin/staff acessam o Estúdio Completo SEM comprar —
+a rota `GET /members/access` curto-circuita `estudio-completo` p/ `true` quando `isPrivilegedActor`
+(o `role` da CONTA sobrevive na sessão de perfil). É o que conserta "o admin tá sem acesso ao
+estúdio". `studio-full-client.tsx` (`'use client'`, import dinâmico do package no
 effect — Monaco/Blockly/IndexedDB não rodam no SSR) hospeda a navegação **lista ⇄ editor** (estado
 local; o package não tem router) com `<ProjectList>` + `<StudioEditor persistence="local">` — recursos
 CLÁSSICOS (NÃO passa `features`: o `StudioEditor` já vem com terminal/IA/profissional OFF → sem
@@ -233,6 +237,10 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   globals). Não-clicável. ⚠️ o label "+25 XP" do baú aberto espelha o XP_VALUES do members.
 - `streak-widget.tsx` — sidebar (cheio) + `MobileTopbar` (compact): fogo aceso (vermelho
   `--sz-hot`) quando `activeToday` + XP total. O layout busca via `Promise.all` com o avatar.
+  **Equipe (passe livre):** quando `coins.unlimited` (members marca p/ superadmin/admin/staff), o
+  HUD de moedas mostra **∞** no lugar do número — aqui, no `configurator.tsx` (avatar) e no
+  `room-builder.tsx` (quarto), que também leem `balanceUnlimited`. Compras da equipe voltam grátis
+  (`unlimited:true`). Ver `docs/gamificacao.md` §4.
 - `streak-card.tsx` — card da home (só com cursos liberados E gamificação disponível).
 - `badge-showcase.tsx` — vitrine do perfil: catálogo completo, bloqueada = tracejada+cadeado,
   desbloqueada = cor da marca + data. Inclui as **badges de MAESTRIA** da expansão
@@ -392,6 +400,39 @@ acionáveis corrigidos; verde no typecheck/test/check dos 4 pacotes + `build:kid
   assinatura é válida e a mutação é re-autorizada upstream — trocar p/ estrito quebraria o
   refresh-on-401); capa do Mural é best-effort (lê rascunho local — só cosmético); nome no perfil
   PÚBLICO é opt-in dos pais (nota de produto: incentivar apelido, não é bug).
+
+## Full review (avatar 3D — correções) — 21/06/2026
+
+3ª auditoria, focada no avatar-3D recém-feito (`components/kids/avatar3d/*`) + varredura fresca de
+segurança e React/perf/a11y no resto do pacote. A **varredura de segurança não achou nada
+acionável** (as invariantes das revisões 19/06 e 20/06 seguem de pé). Todos os achados de robustez
+corrigidos; verde no `typecheck:kids` + `test:kids` (20) + `check` + `build:kids`. Mudanças:
+
+- **1 peça com falha não derruba mais o configurador (robustez):** o `<Suspense fallback={null}>`
+  POR peça isola o *carregamento*, mas o `useGLTF` joga um *erro* de carga PRA FORA do Suspense — e
+  `/meu-avatar` fica fora do grupo `(app)` (sem `error.tsx` próprio), então um único GLB de
+  acessório falhando subia pro `global-error` e matava a tela inteira (perdendo a edição em
+  andamento). Agora cada peça também vai num **`PieceErrorBoundary`** (`avatar-rig.tsx`) que some
+  com a peça quebrada; `resetKey={asset}` zera o erro ao trocar de peça (nova tentativa).
+- **`prefers-reduced-motion` no 3D do avatar (fotossensibilidade):** o configurador ignorava o gate
+  de movimento que o **quarto** já respeita (o CSS não alcança o `useFrame`). Agora o `avatar-rig`
+  e o `TeleporterBeam` (`avatar-scene`) consomem o **`useReducedMotion()`** (de `room/`) e
+  **assentam direto** (sem o giro da "cabine" ~630°/s, sem encolher/flutuar, sem feixe) quando o
+  sistema pede menos movimento. O pipeline ficar-em-pé → enquadrar → capturar segue intacto.
+- **Recuperação de contexto WebGL (tablets/celular):** novo helper **`lib/webgl-recovery.ts`**
+  (`recoverWebGLContext` em `onCreated`: `preventDefault` no `webglcontextlost` + `invalidate` no
+  `restored`) ligado nas DUAS `<Canvas>` (avatar e **quarto**) — sem ele a cena ficava PRETA pra
+  sempre ao voltar de segundo plano/pressão de memória. O renderer offscreen das miniaturas
+  (`avatar-thumbs`) também zera seu singleton ao perder o contexto (recria sob demanda).
+- **Miniatura que falha mostra o NOME (não spinner eterno):** o `useAvatarThumbnail` passou a
+  devolver `{ url, loading }`; o `ItemTile` mostra o spinner SÓ enquanto gera e cai no **rótulo de
+  texto** (`labelPt`) na falha — antes, se o contexto WebGL offscreen não subisse, TODA peça girava
+  um spinner pra sempre (rótulo só no `title`/`aria-label`).
+- **Rollback de reação POR ITEM (hub):** `kids-space-view-client.tsx` desfazia o array inteiro de
+  comentários ao falhar uma reação — toques sobrepostos num 2º comentário sumiam junto. Agora o
+  rollback restaura SÓ o item pelo `id`.
+- **a11y do menu do usuário:** `user-menu.tsx` ganhou **Escape p/ fechar** + `aria-haspopup="menu"`
+  (e os listeners só ligam com o menu aberto).
 
 ## Comandos
 

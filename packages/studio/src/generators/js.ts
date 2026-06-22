@@ -1,4 +1,5 @@
 import type { JSExpr, JSStatement } from '#ir'
+import { screenTextToExpr, valueToExpr } from '#ir'
 import {
   compileExpr,
   createIdentifierScope,
@@ -813,7 +814,7 @@ function compileStatementCode(
     // ----- game-2d -----
     case 'g2d:createSprite': {
       const v = identifiers.get(stmt.varName)
-      return `${pad}const ${v} = SZGame2D.createSprite({ x: ${stmt.x}, y: ${stmt.y}, w: ${stmt.w}, h: ${stmt.h}, color: ${JSON.stringify(stmt.color)} });`
+      return `${pad}const ${v} = SZGame2D.createSprite({ x: ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, y: ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, w: ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, h: ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, color: ${JSON.stringify(stmt.color)} });`
     }
     case 'g2d:drawSprite':
       return `${pad}SZGame2D.drawSprite(${identifiers.get(stmt.ctxVar)}, ${identifiers.get(stmt.spriteVar)});`
@@ -824,17 +825,17 @@ function compileStatementCode(
     case 'g2d:collides':
       return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.isColliding(${identifiers.get(stmt.aVar)}, ${identifiers.get(stmt.bVar)});`
     case 'g2d:score':
-      return `${pad}let ${identifiers.get(stmt.varName)} = ${stmt.initial};`
+      return `${pad}let ${identifiers.get(stmt.varName)} = ${compileExpr(valueToExpr(stmt.initial), 0, identifiers, recAt(base))};`
     case 'g2d:gameOver':
       return [
         `${pad}${identifiers.get(stmt.ctxVar)}.fillStyle = '#f87171';`,
         `${pad}${identifiers.get(stmt.ctxVar)}.font = '32px sans-serif';`,
-        `${pad}${identifiers.get(stmt.ctxVar)}.fillText(${JSON.stringify(stmt.text)}, 40, 80);`,
+        `${pad}${identifiers.get(stmt.ctxVar)}.fillText(${compileExpr(valueToExpr(stmt.text), 0, identifiers, recAt(base))}, 40, 80);`,
       ].join('\n')
     case 'g2d:clear':
       return `${pad}SZGame2D.clear();`
     case 'g2d:setGravity':
-      return `${pad}SZGame2D.setGravity(${stmt.value});`
+      return `${pad}SZGame2D.setGravity(${compileExpr(valueToExpr(stmt.value), 0, identifiers, recAt(base))});`
     case 'g2d:applyVelocity':
       return `${pad}SZGame2D.applyVelocity(${identifiers.get(stmt.spriteVar)});`
     case 'g2d:bounceOnEdges':
@@ -854,19 +855,19 @@ function compileStatementCode(
     case 'g2d:aimAt':
       return `${pad}SZGame2D.aimAt(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.targetVar)});`
     case 'g2d:moveToward':
-      return `${pad}SZGame2D.moveToward(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.targetVar)}, ${stmt.speed});`
+      return `${pad}SZGame2D.moveToward(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.targetVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
     case 'g2d:setHealth':
-      return `${pad}SZGame2D.setHealth(${identifiers.get(stmt.spriteVar)}, ${stmt.amount});`
+      return `${pad}SZGame2D.setHealth(${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.amount), 0, identifiers, recAt(base))});`
     case 'g2d:changeHealth':
-      return `${pad}SZGame2D.changeHealth(${identifiers.get(stmt.spriteVar)}, ${stmt.delta});`
+      return `${pad}SZGame2D.changeHealth(${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.delta), 0, identifiers, recAt(base))});`
     case 'g2d:flipSprite':
       return `${pad}SZGame2D.flipSprite(${identifiers.get(stmt.spriteVar)}, ${JSON.stringify(stmt.dir)});`
     case 'g2d:setOpacity':
-      return `${pad}SZGame2D.setOpacity(${identifiers.get(stmt.spriteVar)}, ${stmt.percent});`
+      return `${pad}SZGame2D.setOpacity(${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.percent), 0, identifiers, recAt(base))});`
     case 'g2d:setSize':
-      return `${pad}SZGame2D.setSize(${identifiers.get(stmt.spriteVar)}, ${stmt.w}, ${stmt.h});`
+      return `${pad}SZGame2D.setSize(${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))});`
     case 'g2d:scaleSprite':
-      return `${pad}SZGame2D.scaleSprite(${identifiers.get(stmt.spriteVar)}, ${stmt.factor});`
+      return `${pad}SZGame2D.scaleSprite(${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.factor), 0, identifiers, recAt(base))});`
     case 'g2d:wrapEdges':
       return `${pad}SZGame2D.wrapEdges(${identifiers.get(stmt.spriteVar)});`
     case 'g2d:pruneOld':
@@ -876,9 +877,9 @@ function compileStatementCode(
     case 'g2d:resumeGame':
       return `${pad}SZGame2D.resumeGame();`
     case 'g2d:cameraFollow':
-      return `${pad}SZGame2D.cameraFollow(${identifiers.get(stmt.spriteVar)}, ${stmt.worldW}, ${stmt.worldH});`
+      return `${pad}SZGame2D.cameraFollow(${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.worldW), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.worldH), 0, identifiers, recAt(base))});`
     case 'g2d:setCamera':
-      return `${pad}SZGame2D.setCamera(${stmt.x}, ${stmt.y});`
+      return `${pad}SZGame2D.setCamera(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))});`
     case 'g2d:breakTile':
       return `${pad}SZGame2D.breakTileAtSprite(${identifiers.get(stmt.mapVar)}, ${identifiers.get(stmt.spriteVar)});`
     case 'g2d:setTile':
@@ -890,7 +891,7 @@ function compileStatementCode(
     case 'g2d:drawHitbox':
       return `${pad}SZGame2D.drawHitbox(${identifiers.get(stmt.spriteVar)});`
     case 'g2d:showFps':
-      return `${pad}SZGame2D.showFps(${stmt.x}, ${stmt.y});`
+      return `${pad}SZGame2D.showFps(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))});`
     case 'g2d:onPointer': {
       const body = compileStatements(
         stmt.body,
@@ -922,7 +923,7 @@ function compileStatementCode(
     }
     case 'g2d:createImageSprite': {
       const v = identifiers.get(stmt.varName)
-      return `${pad}const ${v} = SZGame2D.createSprite({ x: ${stmt.x}, y: ${stmt.y}, w: ${stmt.w}, h: ${stmt.h}, image: ${JSON.stringify(stmt.image)} });`
+      return `${pad}const ${v} = SZGame2D.createSprite({ x: ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, y: ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, w: ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, h: ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, image: ${JSON.stringify(stmt.image)} });`
     }
     case 'g2d:setImage':
       return `${pad}SZGame2D.setImage(${identifiers.get(stmt.spriteVar)}, ${JSON.stringify(stmt.image)});`
@@ -935,19 +936,19 @@ function compileStatementCode(
     case 'g2d:drawFrame':
       return `${pad}SZGame2D.drawFrame(${identifiers.get(stmt.ctxVar)}, ${identifiers.get(stmt.sheetVar)}, ${stmt.index}, ${stmt.x}, ${stmt.y}, ${stmt.w}, ${stmt.h});`
     case 'g2d:platformer':
-      return `${pad}SZGame2D.platformer(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.ctxVar)}, ${stmt.speed}, ${stmt.jump});`
+      return `${pad}SZGame2D.platformer(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.ctxVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.jump), 0, identifiers, recAt(base))});`
     case 'g2d:topDown':
-      return `${pad}SZGame2D.topDown(${identifiers.get(stmt.spriteVar)}, ${stmt.speed});`
+      return `${pad}SZGame2D.topDown(${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
     case 'g2d:followPointer':
-      return `${pad}SZGame2D.followPointer(${identifiers.get(stmt.spriteVar)}, ${stmt.speed});`
+      return `${pad}SZGame2D.followPointer(${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
     case 'g2d:clampToScreen':
       return `${pad}SZGame2D.clampToScreen(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.ctxVar)});`
     case 'g2d:flash':
       return `${pad}SZGame2D.flash(${identifiers.get(stmt.ctxVar)}, ${JSON.stringify(stmt.color)});`
     case 'g2d:shake':
-      return `${pad}SZGame2D.shake(${identifiers.get(stmt.ctxVar)}, ${stmt.intensity});`
+      return `${pad}SZGame2D.shake(${identifiers.get(stmt.ctxVar)}, ${compileExpr(valueToExpr(stmt.intensity), 0, identifiers, recAt(base))});`
     case 'g2d:emitParticles':
-      return `${pad}SZGame2D.emitParticles(${stmt.x}, ${stmt.y}, ${stmt.count}, ${JSON.stringify(stmt.color)});`
+      return `${pad}SZGame2D.emitParticles(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.count), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)});`
     case 'g2d:drawParticles':
       return `${pad}SZGame2D.drawParticles(${identifiers.get(stmt.ctxVar)});`
     case 'g2d:createTileMap': {
@@ -967,9 +968,9 @@ function compileStatementCode(
     case 'g2d:spawnBullet':
       return `${pad}SZGame2D.spawnBullet(${identifiers.get(stmt.groupVar)}, { x: ${compileExpr(stmt.x, 0, identifiers, recAt(base))}, y: ${compileExpr(stmt.y, 0, identifiers, recAt(base))}, radius: ${stmt.radius}, color: ${JSON.stringify(stmt.color)}, vx: ${compileExpr(stmt.vx, 0, identifiers, recAt(base))}, vy: ${compileExpr(stmt.vy, 0, identifiers, recAt(base))} });`
     case 'g2d:arrowsX':
-      return `${pad}SZGame2D.arrowsX(${identifiers.get(stmt.spriteVar)}, ${stmt.speed});`
+      return `${pad}SZGame2D.arrowsX(${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
     case 'g2d:blinkSprite':
-      return `${pad}SZGame2D.blink(${identifiers.get(stmt.spriteVar)}, ${stmt.frames});`
+      return `${pad}SZGame2D.blink(${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.frames), 0, identifiers, recAt(base))});`
     case 'g2d:updateGroup':
       return `${pad}SZGame2D.updateGroup(${identifiers.get(stmt.groupVar)});`
     case 'g2d:drawGroup':
@@ -1034,21 +1035,21 @@ function compileStatementCode(
       ].join('\n')
     }
     case 'g2d:drawScore':
-      return `${pad}SZGame2D.drawScore(${identifiers.get(stmt.ctxVar)}, ${JSON.stringify(stmt.label)}, ${compileExpr(stmt.value, 0, identifiers, recAt(base))}, ${stmt.x}, ${stmt.y}, ${JSON.stringify(stmt.color)}, ${stmt.size});`
+      return `${pad}SZGame2D.drawScore(${identifiers.get(stmt.ctxVar)}, ${JSON.stringify(stmt.label)}, ${compileExpr(stmt.value, 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)}, ${compileExpr(valueToExpr(stmt.size), 0, identifiers, recAt(base))});`
     case 'g2d:drawLabel':
-      return `${pad}SZGame2D.drawLabel(${identifiers.get(stmt.ctxVar)}, ${JSON.stringify(stmt.text)}, ${stmt.x}, ${stmt.y}, ${JSON.stringify(stmt.color)}, ${stmt.size}, ${JSON.stringify(stmt.align)});`
+      return `${pad}SZGame2D.drawLabel(${identifiers.get(stmt.ctxVar)}, ${JSON.stringify(stmt.text)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)}, ${compileExpr(valueToExpr(stmt.size), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.align)});`
     case 'g2d:drawHearts':
-      return `${pad}SZGame2D.drawHearts(${identifiers.get(stmt.ctxVar)}, ${compileExpr(stmt.count, 0, identifiers, recAt(base))}, ${stmt.x}, ${stmt.y}, ${stmt.size}, ${JSON.stringify(stmt.color)});`
+      return `${pad}SZGame2D.drawHearts(${identifiers.get(stmt.ctxVar)}, ${compileExpr(stmt.count, 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.size), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)});`
     case 'g2d:drawBar':
-      return `${pad}SZGame2D.drawBar(${identifiers.get(stmt.ctxVar)}, ${compileExpr(stmt.value, 0, identifiers, recAt(base))}, ${compileExpr(stmt.max, 0, identifiers, recAt(base))}, ${stmt.x}, ${stmt.y}, ${stmt.w}, ${stmt.h}, ${JSON.stringify(stmt.color)});`
+      return `${pad}SZGame2D.drawBar(${identifiers.get(stmt.ctxVar)}, ${compileExpr(stmt.value, 0, identifiers, recAt(base))}, ${compileExpr(stmt.max, 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)});`
     case 'g2d:setScene':
       return `${pad}SZGame2D.setScene(${JSON.stringify(stmt.name)});`
     case 'g2d:showScreen':
-      return `${pad}SZGame2D.showScreen(${identifiers.get(stmt.ctxVar)}, ${JSON.stringify(stmt.title)}, ${JSON.stringify(stmt.subtitle)}, ${JSON.stringify(stmt.hint)}, ${JSON.stringify(stmt.bg)});`
+      return `${pad}SZGame2D.showScreen(${identifiers.get(stmt.ctxVar)}, ${compileExpr(screenTextToExpr(stmt.title), 0, identifiers, recAt(base))}, ${compileExpr(screenTextToExpr(stmt.subtitle), 0, identifiers, recAt(base))}, ${compileExpr(screenTextToExpr(stmt.hint), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.bg)});`
     case 'g2d:restart':
       return `${pad}SZGame2D.restart();`
     case 'g2d:starfield':
-      return `${pad}SZGame2D.drawStarfield(${identifiers.get(stmt.ctxVar)}, ${stmt.speed});`
+      return `${pad}SZGame2D.drawStarfield(${identifiers.get(stmt.ctxVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
     case 'g2d:dragX':
       return `${pad}SZGame2D.dragX(${identifiers.get(stmt.spriteVar)});`
     case 'g2d:fitScreen':
@@ -1056,7 +1057,7 @@ function compileStatementCode(
     case 'g2d:setupStage':
       return `${pad}SZGame2D.setupStage(${stmt.width}, ${stmt.height}, ${JSON.stringify(stmt.bg)});`
     case 'g2d:createShip':
-      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createShip({ x: ${stmt.x}, y: ${stmt.y}, w: ${stmt.w}, h: ${stmt.h}, body: ${JSON.stringify(stmt.bodyColor)}, wings: ${JSON.stringify(stmt.wingColor)} });`
+      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createShip({ x: ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, y: ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, w: ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, h: ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, body: ${JSON.stringify(stmt.bodyColor)}, wings: ${JSON.stringify(stmt.wingColor)} });`
     case 'g2d:spawnAsteroid':
       return `${pad}SZGame2D.spawnAsteroid(${identifiers.get(stmt.groupVar)}, { x: ${compileExpr(stmt.x, 0, identifiers, recAt(base))}, y: ${compileExpr(stmt.y, 0, identifiers, recAt(base))}, size: ${stmt.size}, color: ${JSON.stringify(stmt.color)}, vx: ${compileExpr(stmt.vx, 0, identifiers, recAt(base))}, vy: ${compileExpr(stmt.vy, 0, identifiers, recAt(base))} });`
     case 'g2d:explode':
@@ -1075,23 +1076,23 @@ function compileStatementCode(
       return `${pad}SZGame2D.overlapSpriteGroup(() => ${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.groupVar)}, function (${identifiers.get(stmt.itemName)}) {\n${body}\n${pad}});`
     }
     case 'g2d:steerThrust':
-      return `${pad}SZGame2D.steerThrust(${identifiers.get(stmt.spriteVar)}, ${stmt.speed}, ${stmt.turn});`
+      return `${pad}SZGame2D.steerThrust(${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.turn), 0, identifiers, recAt(base))});`
     case 'g2d:rotateSprite':
-      return `${pad}SZGame2D.rotateSprite(${identifiers.get(stmt.spriteVar)}, ${stmt.deg});`
+      return `${pad}SZGame2D.rotateSprite(${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.deg), 0, identifiers, recAt(base))});`
     case 'g2d:pointSprite':
-      return `${pad}SZGame2D.pointSprite(${identifiers.get(stmt.spriteVar)}, ${stmt.deg});`
+      return `${pad}SZGame2D.pointSprite(${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.deg), 0, identifiers, recAt(base))});`
     case 'g2d:thrust':
-      return `${pad}SZGame2D.thrust(${identifiers.get(stmt.spriteVar)}, ${stmt.force});`
+      return `${pad}SZGame2D.thrust(${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.force), 0, identifiers, recAt(base))});`
     case 'g2d:applyFriction':
-      return `${pad}SZGame2D.applyFriction(${identifiers.get(stmt.spriteVar)}, ${stmt.factor});`
+      return `${pad}SZGame2D.applyFriction(${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.factor), 0, identifiers, recAt(base))});`
     case 'g2d:shootFrom':
-      return `${pad}SZGame2D.shootFrom(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.groupVar)}, { speed: ${stmt.speed}, color: ${JSON.stringify(stmt.color)} });`
+      return `${pad}SZGame2D.shootFrom(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.groupVar)}, { speed: ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))}, color: ${JSON.stringify(stmt.color)} });`
     case 'g2d:spawnAsteroidEdge':
       return `${pad}SZGame2D.spawnAsteroidFromEdge(${identifiers.get(stmt.groupVar)}, { size: ${stmt.size}, color: ${JSON.stringify(stmt.color)}, speed: ${stmt.speed} });`
     case 'g2d:jumpOnGround':
-      return `${pad}SZGame2D.jumpOnGround(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.ctxVar)}, ${stmt.jump});`
+      return `${pad}SZGame2D.jumpOnGround(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.ctxVar)}, ${compileExpr(valueToExpr(stmt.jump), 0, identifiers, recAt(base))});`
     case 'g2d:createDino':
-      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createDino({ x: ${stmt.x}, y: ${stmt.y}, size: ${stmt.size}, color: ${JSON.stringify(stmt.color)} });`
+      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createDino({ x: ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, y: ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, size: ${compileExpr(valueToExpr(stmt.size), 0, identifiers, recAt(base))}, color: ${JSON.stringify(stmt.color)} });`
     case 'g2d:createStickHero':
       return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createStickHero(${identifiers.get(stmt.ctxVar)});`
     case 'g2d:updateStickHero':
@@ -1105,13 +1106,13 @@ function compileStatementCode(
     case 'g2d:restartBalloon':
       return `${pad}SZGame2D.restartBalloon(${identifiers.get(stmt.gameVar)});`
     case 'g2d:controlDino':
-      return `${pad}SZGame2D.controlDino(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.ctxVar)}, ${stmt.jump});`
+      return `${pad}SZGame2D.controlDino(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.ctxVar)}, ${compileExpr(valueToExpr(stmt.jump), 0, identifiers, recAt(base))});`
     case 'g2d:spawnObstacle':
       return `${pad}SZGame2D.spawnObstacle(${identifiers.get(stmt.groupVar)}, ${identifiers.get(stmt.ctxVar)}, { type: ${JSON.stringify(stmt.shape)}, x: ${compileExpr(stmt.x, 0, identifiers, recAt(base))}, size: ${stmt.size}, vx: ${compileExpr(stmt.vx, 0, identifiers, recAt(base))} });`
     case 'g2d:spawnEgg':
       return `${pad}SZGame2D.spawnEgg(${identifiers.get(stmt.groupVar)}, { x: ${compileExpr(stmt.x, 0, identifiers, recAt(base))}, y: ${compileExpr(stmt.y, 0, identifiers, recAt(base))}, vx: ${compileExpr(stmt.vx, 0, identifiers, recAt(base))} });`
     case 'g2d:forest':
-      return `${pad}SZGame2D.drawForest(${identifiers.get(stmt.ctxVar)}, ${stmt.speed});`
+      return `${pad}SZGame2D.drawForest(${identifiers.get(stmt.ctxVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
     case 'g2d:playJump':
       return `${pad}SZGame2D.playJump();`
     case 'g2d:playDinoHurt':
@@ -1996,8 +1997,15 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(stmt.alpha, names)
       return
     case 'g2d:createSprite':
+      names.add(stmt.varName)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      collectExprIdentifiers(valueToExpr(stmt.w), names)
+      collectExprIdentifiers(valueToExpr(stmt.h), names)
+      return
     case 'g2d:score':
       names.add(stmt.varName)
+      collectExprIdentifiers(valueToExpr(stmt.initial), names)
       return
     case 'g2d:drawSprite':
       names.add(stmt.ctxVar)
@@ -2020,6 +2028,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'g2d:gameOver':
       names.add(stmt.ctxVar)
+      collectExprIdentifiers(valueToExpr(stmt.text), names)
       return
     case 'g2d:applyVelocity':
       names.add(stmt.spriteVar)
@@ -2034,6 +2043,8 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       names.add(stmt.varName)
       return
     case 'g2d:setGravity':
+      collectExprIdentifiers(valueToExpr(stmt.value), names)
+      return
     case 'g2d:playSound':
     case 'g2d:playFx':
     case 'g2d:playMusic':
@@ -2041,12 +2052,19 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'g2d:playNote':
     case 'g2d:pauseGame':
     case 'g2d:resumeGame':
+      return
     case 'g2d:setCamera':
     case 'g2d:showFps':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
       return
-    case 'g2d:cameraFollow':
     case 'g2d:drawHitbox':
       names.add(stmt.spriteVar)
+      return
+    case 'g2d:cameraFollow':
+      names.add(stmt.spriteVar)
+      collectExprIdentifiers(valueToExpr(stmt.worldW), names)
+      collectExprIdentifiers(valueToExpr(stmt.worldH), names)
       return
     case 'g2d:breakTile':
     case 'g2d:setTile':
@@ -2059,18 +2077,38 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       names.add(stmt.groupVar)
       return
     case 'g2d:aimAt':
-    case 'g2d:moveToward':
       names.add(stmt.spriteVar)
       names.add(stmt.targetVar)
       return
-    case 'g2d:setHealth':
-    case 'g2d:changeHealth':
+    case 'g2d:moveToward':
+      names.add(stmt.spriteVar)
+      names.add(stmt.targetVar)
+      collectExprIdentifiers(valueToExpr(stmt.speed), names)
+      return
     case 'g2d:flipSprite':
-    case 'g2d:setOpacity':
-    case 'g2d:setSize':
-    case 'g2d:scaleSprite':
     case 'g2d:wrapEdges':
       names.add(stmt.spriteVar)
+      return
+    case 'g2d:setOpacity':
+      names.add(stmt.spriteVar)
+      collectExprIdentifiers(valueToExpr(stmt.percent), names)
+      return
+    case 'g2d:setHealth':
+      names.add(stmt.spriteVar)
+      collectExprIdentifiers(valueToExpr(stmt.amount), names)
+      return
+    case 'g2d:changeHealth':
+      names.add(stmt.spriteVar)
+      collectExprIdentifiers(valueToExpr(stmt.delta), names)
+      return
+    case 'g2d:setSize':
+      names.add(stmt.spriteVar)
+      collectExprIdentifiers(valueToExpr(stmt.w), names)
+      collectExprIdentifiers(valueToExpr(stmt.h), names)
+      return
+    case 'g2d:scaleSprite':
+      names.add(stmt.spriteVar)
+      collectExprIdentifiers(valueToExpr(stmt.factor), names)
       return
     case 'g2d:pruneOld':
       names.add(stmt.groupVar)
@@ -2143,29 +2181,52 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(stmt.vx, names)
       collectExprIdentifiers(stmt.vy, names)
       return
-    case 'g2d:arrowsX':
     case 'g2d:blinkSprite':
       names.add(stmt.spriteVar)
+      collectExprIdentifiers(valueToExpr(stmt.frames), names)
+      return
+    case 'g2d:arrowsX':
+      names.add(stmt.spriteVar)
+      collectExprIdentifiers(valueToExpr(stmt.speed), names)
       return
     case 'g2d:drawScore':
       names.add(stmt.ctxVar)
       collectExprIdentifiers(stmt.value, names)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      collectExprIdentifiers(valueToExpr(stmt.size), names)
       return
     case 'g2d:drawLabel':
       names.add(stmt.ctxVar)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      collectExprIdentifiers(valueToExpr(stmt.size), names)
       return
     case 'g2d:drawHearts':
       names.add(stmt.ctxVar)
       collectExprIdentifiers(stmt.count, names)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      collectExprIdentifiers(valueToExpr(stmt.size), names)
       return
     case 'g2d:drawBar':
       names.add(stmt.ctxVar)
       collectExprIdentifiers(stmt.value, names)
       collectExprIdentifiers(stmt.max, names)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      collectExprIdentifiers(valueToExpr(stmt.w), names)
+      collectExprIdentifiers(valueToExpr(stmt.h), names)
       return
     case 'g2d:showScreen':
+      names.add(stmt.ctxVar)
+      collectExprIdentifiers(screenTextToExpr(stmt.title), names)
+      collectExprIdentifiers(screenTextToExpr(stmt.subtitle), names)
+      collectExprIdentifiers(screenTextToExpr(stmt.hint), names)
+      return
     case 'g2d:starfield':
       names.add(stmt.ctxVar)
+      collectExprIdentifiers(valueToExpr(stmt.speed), names)
       return
     case 'g2d:dragX':
     case 'g2d:explode':
@@ -2173,6 +2234,10 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'g2d:createShip':
       names.add(stmt.varName)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      collectExprIdentifiers(valueToExpr(stmt.w), names)
+      collectExprIdentifiers(valueToExpr(stmt.h), names)
       return
     case 'g2d:spawnAsteroid':
       names.add(stmt.groupVar)
@@ -2188,15 +2253,27 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
     case 'g2d:steerThrust':
+      names.add(stmt.spriteVar)
+      collectExprIdentifiers(valueToExpr(stmt.speed), names)
+      collectExprIdentifiers(valueToExpr(stmt.turn), names)
+      return
     case 'g2d:rotateSprite':
     case 'g2d:pointSprite':
+      names.add(stmt.spriteVar)
+      collectExprIdentifiers(valueToExpr(stmt.deg), names)
+      return
     case 'g2d:thrust':
+      names.add(stmt.spriteVar)
+      collectExprIdentifiers(valueToExpr(stmt.force), names)
+      return
     case 'g2d:applyFriction':
       names.add(stmt.spriteVar)
+      collectExprIdentifiers(valueToExpr(stmt.factor), names)
       return
     case 'g2d:shootFrom':
       names.add(stmt.spriteVar)
       names.add(stmt.groupVar)
+      collectExprIdentifiers(valueToExpr(stmt.speed), names)
       return
     case 'g2d:spawnAsteroidEdge':
       names.add(stmt.groupVar)
@@ -2205,9 +2282,13 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'g2d:controlDino':
       names.add(stmt.spriteVar)
       names.add(stmt.ctxVar)
+      collectExprIdentifiers(valueToExpr(stmt.jump), names)
       return
     case 'g2d:createDino':
       names.add(stmt.varName)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      collectExprIdentifiers(valueToExpr(stmt.size), names)
       return
     case 'g2d:createStickHero':
     case 'g2d:createBalloon':
@@ -2234,6 +2315,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'g2d:forest':
       names.add(stmt.ctxVar)
+      collectExprIdentifiers(valueToExpr(stmt.speed), names)
       return
     case 'g2d:createCity':
       names.add(stmt.varName)
@@ -2282,6 +2364,10 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'g2d:createImageSprite':
       names.add(stmt.varName)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      collectExprIdentifiers(valueToExpr(stmt.w), names)
+      collectExprIdentifiers(valueToExpr(stmt.h), names)
       return
     case 'g2d:setImage':
       names.add(stmt.spriteVar)
@@ -2297,21 +2383,33 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       names.add(stmt.ctxVar)
       names.add(stmt.sheetVar)
       return
-    case 'g2d:platformer':
     case 'g2d:clampToScreen':
       names.add(stmt.spriteVar)
       names.add(stmt.ctxVar)
       return
+    case 'g2d:platformer':
+      names.add(stmt.spriteVar)
+      names.add(stmt.ctxVar)
+      collectExprIdentifiers(valueToExpr(stmt.speed), names)
+      collectExprIdentifiers(valueToExpr(stmt.jump), names)
+      return
     case 'g2d:topDown':
     case 'g2d:followPointer':
       names.add(stmt.spriteVar)
+      collectExprIdentifiers(valueToExpr(stmt.speed), names)
       return
     case 'g2d:flash':
-    case 'g2d:shake':
     case 'g2d:drawParticles':
       names.add(stmt.ctxVar)
       return
+    case 'g2d:shake':
+      names.add(stmt.ctxVar)
+      collectExprIdentifiers(valueToExpr(stmt.intensity), names)
+      return
     case 'g2d:emitParticles':
+      collectExprIdentifiers(valueToExpr(stmt.count), names)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
       return
     case 'g2d:createTileMap':
       names.add(stmt.varName)
@@ -2763,6 +2861,12 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
       names.add(expr.bVar)
       return
     case 'g2d:getHealth':
+    case 'g2d:spriteX':
+    case 'g2d:spriteY':
+    case 'g2d:spriteW':
+    case 'g2d:spriteH':
+    case 'g2d:centerX':
+    case 'g2d:centerY':
     case 'g2d:hasHealth':
     case 'g2d:cooldownReady':
       names.add(expr.spriteVar)

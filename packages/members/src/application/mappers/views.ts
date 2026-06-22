@@ -94,8 +94,11 @@ export interface LessonCompleteView extends CourseProgressView {
 /** Perfil de gamificação do aluno (widgets/perfil — `GET /members/gamification/me`). */
 export interface GamificationMeView {
   xp: number
-  /** Carteira Zappy Coins (saldo gastável). Segregada por vitrine, como o XP. */
-  coins: { balance: number }
+  /**
+   * Carteira Zappy Coins (saldo gastável). Segregada por vitrine, como o XP.
+   * `unlimited` = equipe (passe livre): moedas virtuais ilimitadas — a UI mostra ∞.
+   */
+  coins: { balance: number; unlimited?: boolean }
   streak: {
     /** Streak de EXIBIÇÃO: 0 quando quebrado (e nem freeze nem férias cobrem). */
     current: number
@@ -230,6 +233,8 @@ export interface RoomEditorView {
   floors: RoomThemeView[]
   lightings: RoomThemeView[]
   balance: number
+  /** `true` = equipe (passe livre): moedas virtuais ilimitadas — a UI mostra ∞. */
+  balanceUnlimited?: boolean
 }
 
 /** Estado do avatar 3D do aluno (`GET /members/avatar`): equipado + catálogo + saldo. */
@@ -248,6 +253,8 @@ export interface AvatarStateView {
   photoUrl: string | null
   /** Saldo de moedas Zappy (p/ a lojinha do avatar). */
   balance: number
+  /** `true` = equipe (passe livre): moedas virtuais ilimitadas — a UI mostra ∞. */
+  balanceUnlimited?: boolean
 }
 
 export interface MyCourseView {

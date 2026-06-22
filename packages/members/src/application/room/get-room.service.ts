@@ -22,7 +22,11 @@ export class GetRoomService {
     private readonly coins: GamificationRepository,
   ) {}
 
-  async execute(userId: string, audience: CourseAudience): Promise<RoomEditorView> {
+  async execute(
+    userId: string,
+    audience: CourseAudience,
+    privileged = false,
+  ): Promise<RoomEditorView> {
     const [raw, owned, balance] = await Promise.all([
       this.room.getState(userId, audience),
       this.room.listInventory(userId, audience),
@@ -54,6 +58,8 @@ export class GetRoomService {
       floors: choices(ROOM_FLOORS),
       lightings: choices(ROOM_LIGHTINGS),
       balance,
+      // Equipe = moedas VIRTUAIS ilimitadas (a UI mostra ∞; o `balance` real fica intocado).
+      ...(privileged ? { balanceUnlimited: true } : {}),
     }
   }
 }

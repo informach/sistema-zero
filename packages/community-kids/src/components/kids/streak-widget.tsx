@@ -17,8 +17,14 @@ export function StreakWidget({
 }) {
   const { streak, xp } = gamification
   const coins = gamification.coins?.balance
+  // Equipe (passe livre) = moedas ilimitadas: mostra ∞ no lugar do número.
+  const coinsUnlimited = gamification.coins?.unlimited === true
+  const coinsDisplay = coinsUnlimited ? '∞' : coins
   const streakLabel = `Sequência de ${streak.current} ${streak.current === 1 ? 'dia' : 'dias'}${streak.activeToday ? ' — atividade de hoje feita' : ''}`
-  const coinsLabel = coins === undefined ? '' : ` ${coins} moedas Zappy.`
+  const coinsLabel =
+    coins === undefined
+      ? ''
+      : ` ${coinsUnlimited ? 'moedas Zappy ilimitadas' : `${coins} moedas Zappy`}.`
   const ariaLabel = `${streakLabel}. ${xp} pontos de experiência.${coinsLabel}`
 
   if (compact) {
@@ -40,7 +46,7 @@ export function StreakWidget({
         {coins !== undefined ? (
           <span className="inline-flex items-center gap-1 [font-family:var(--font-display)] font-bold">
             <Coins className="size-4" />
-            {coins}
+            {coinsDisplay}
           </span>
         ) : null}
       </span>
@@ -74,7 +80,9 @@ export function StreakWidget({
           <span aria-hidden="true" className="h-5 w-px bg-border" />
           <span className="flex items-center gap-1.5">
             <Coins className="size-5" />
-            <span className="[font-family:var(--font-display)] font-bold text-sm">{coins}</span>
+            <span className="[font-family:var(--font-display)] font-bold text-sm">
+              {coinsDisplay}
+            </span>
           </span>
         </>
       ) : null}

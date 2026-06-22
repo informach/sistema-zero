@@ -352,6 +352,18 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'g2d:angleTo', aVar: f(block, 'A'), bVar: f(block, 'B') }
     case 'sz_g2d_get_health':
       return { type: 'g2d:getHealth', spriteVar: f(block, 'SPRITE') }
+    case 'sz_g2d_sprite_x':
+      return { type: 'g2d:spriteX', spriteVar: f(block, 'SPRITE') }
+    case 'sz_g2d_sprite_y':
+      return { type: 'g2d:spriteY', spriteVar: f(block, 'SPRITE') }
+    case 'sz_g2d_sprite_w':
+      return { type: 'g2d:spriteW', spriteVar: f(block, 'SPRITE') }
+    case 'sz_g2d_sprite_h':
+      return { type: 'g2d:spriteH', spriteVar: f(block, 'SPRITE') }
+    case 'sz_g2d_center_x':
+      return { type: 'g2d:centerX', spriteVar: f(block, 'SPRITE') }
+    case 'sz_g2d_center_y':
+      return { type: 'g2d:centerY', spriteVar: f(block, 'SPRITE') }
     case 'sz_g2d_random_between':
       return { type: 'g2d:randomBetween', min: fn(block, 'MIN', 1), max: fn(block, 'MAX', 6) }
     case 'sz_g2d_random_chance':
@@ -370,6 +382,10 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'g2d:cameraX' }
     case 'sz_g2d_camera_y':
       return { type: 'g2d:cameraY' }
+    case 'sz_g2d_random_x':
+      return { type: 'g2d:randomX' }
+    case 'sz_g2d_random_y':
+      return { type: 'g2d:randomY' }
     case 'sz_g2d_tile_at':
       return { type: 'g2d:tileAtSprite', mapVar: f(block, 'MAP'), spriteVar: f(block, 'SPRITE') }
     case 'sz_g2d_scene_is':
@@ -2652,10 +2668,10 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:createSprite',
           varName: f(block, 'NAME'),
-          x: fn(block, 'X'),
-          y: fn(block, 'Y'),
-          w: fn(block, 'W'),
-          h: fn(block, 'H'),
+          x: exprInput(block, 'X', { type: 'num', value: 100 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 100 }),
+          w: exprInput(block, 'W', { type: 'num', value: 40 }),
+          h: exprInput(block, 'H', { type: 'num', value: 40 }),
           color: f(block, 'COLOR'),
         },
       }
@@ -2672,8 +2688,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:setPosition',
           spriteVar: f(block, 'SPRITE'),
-          x: { type: 'num', value: fn(block, 'X') },
-          y: { type: 'num', value: fn(block, 'Y') },
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
         },
       }
     case 'sz_g2d_set_velocity':
@@ -2683,8 +2699,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:setVelocity',
           spriteVar: f(block, 'SPRITE'),
-          vx: { type: 'num', value: fn(block, 'VX') },
-          vy: { type: 'num', value: fn(block, 'VY') },
+          vx: exprInput(block, 'VX', { type: 'num', value: 0 }),
+          vy: exprInput(block, 'VY', { type: 'num', value: 0 }),
         },
       }
     case 'sz_g2d_collides':
@@ -2702,13 +2718,21 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       seen.add('game-2d')
       return {
         kind: 'js',
-        value: { type: 'g2d:score', varName: f(block, 'NAME'), initial: fn(block, 'INITIAL') },
+        value: {
+          type: 'g2d:score',
+          varName: f(block, 'NAME'),
+          initial: exprInput(block, 'INITIAL', { type: 'num', value: 0 }),
+        },
       }
     case 'sz_g2d_game_over':
       seen.add('game-2d')
       return {
         kind: 'js',
-        value: { type: 'g2d:gameOver', ctxVar: 'ctx', text: f(block, 'TEXT') },
+        value: {
+          type: 'g2d:gameOver',
+          ctxVar: 'ctx',
+          text: exprInput(block, 'TEXT', { type: 'str', value: 'Fim de jogo' }),
+        },
       }
     case 'sz_g2d_clear':
       seen.add('game-2d')
@@ -2724,7 +2748,13 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       }
     case 'sz_g2d_set_gravity':
       seen.add('game-2d')
-      return { kind: 'js', value: { type: 'g2d:setGravity', value: fn(block, 'VALUE', 0.5) } }
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:setGravity',
+          value: exprInput(block, 'VALUE', { type: 'num', value: 0.5 }),
+        },
+      }
     case 'sz_g2d_apply_velocity':
       seen.add('game-2d')
       return { kind: 'js', value: { type: 'g2d:applyVelocity', spriteVar: f(block, 'SPRITE') } }
@@ -2788,7 +2818,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g2d:moveToward',
           spriteVar: f(block, 'SPRITE'),
           targetVar: f(block, 'TARGET'),
-          speed: fn(block, 'SPEED', 2),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 2 }),
         },
       }
     case 'sz_g2d_set_health':
@@ -2798,7 +2828,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:setHealth',
           spriteVar: f(block, 'SPRITE'),
-          amount: fn(block, 'AMOUNT', 3),
+          amount: exprInput(block, 'AMOUNT', { type: 'num', value: 3 }),
         },
       }
     case 'sz_g2d_change_health':
@@ -2808,7 +2838,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:changeHealth',
           spriteVar: f(block, 'SPRITE'),
-          delta: fn(block, 'DELTA', -1),
+          delta: exprInput(block, 'DELTA', { type: 'num', value: -1 }),
         },
       }
     case 'sz_g2d_flip_sprite':
@@ -2824,7 +2854,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:setOpacity',
           spriteVar: f(block, 'SPRITE'),
-          percent: fn(block, 'PERCENT', 50),
+          percent: exprInput(block, 'PERCENT', { type: 'num', value: 50 }),
         },
       }
     case 'sz_g2d_set_size':
@@ -2834,8 +2864,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:setSize',
           spriteVar: f(block, 'SPRITE'),
-          w: fn(block, 'W', 40),
-          h: fn(block, 'H', 40),
+          w: exprInput(block, 'W', { type: 'num', value: 40 }),
+          h: exprInput(block, 'H', { type: 'num', value: 40 }),
         },
       }
     case 'sz_g2d_scale_sprite':
@@ -2845,7 +2875,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:scaleSprite',
           spriteVar: f(block, 'SPRITE'),
-          factor: fn(block, 'FACTOR', 1.5),
+          factor: exprInput(block, 'FACTOR', { type: 'num', value: 1.5 }),
         },
       }
     case 'sz_g2d_wrap_edges':
@@ -2874,15 +2904,19 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:cameraFollow',
           spriteVar: f(block, 'SPRITE'),
-          worldW: fn(block, 'WORLDW', 800),
-          worldH: fn(block, 'WORLDH', 600),
+          worldW: exprInput(block, 'WORLDW', { type: 'num', value: 800 }),
+          worldH: exprInput(block, 'WORLDH', { type: 'num', value: 600 }),
         },
       }
     case 'sz_g2d_set_camera':
       seen.add('game-2d')
       return {
         kind: 'js',
-        value: { type: 'g2d:setCamera', x: fn(block, 'X', 0), y: fn(block, 'Y', 0) },
+        value: {
+          type: 'g2d:setCamera',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+        },
       }
     case 'sz_g2d_break_tile_at':
       seen.add('game-2d')
@@ -2928,7 +2962,11 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       seen.add('game-2d')
       return {
         kind: 'js',
-        value: { type: 'g2d:showFps', x: fn(block, 'X', 8), y: fn(block, 'Y', 20) },
+        value: {
+          type: 'g2d:showFps',
+          x: exprInput(block, 'X', { type: 'num', value: 8 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 20 }),
+        },
       }
     case 'sz_g2d_on_pointer':
       seen.add('game-2d')
@@ -2969,10 +3007,10 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:createImageSprite',
           varName: f(block, 'NAME'),
-          x: fn(block, 'X'),
-          y: fn(block, 'Y'),
-          w: fn(block, 'W'),
-          h: fn(block, 'H'),
+          x: exprInput(block, 'X', { type: 'num', value: 100 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 100 }),
+          w: exprInput(block, 'W', { type: 'num', value: 40 }),
+          h: exprInput(block, 'H', { type: 'num', value: 40 }),
           image: f(block, 'IMAGE'),
         },
       }
@@ -3030,15 +3068,19 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g2d:platformer',
           spriteVar: f(block, 'SPRITE'),
           ctxVar: 'ctx',
-          speed: fn(block, 'SPEED', 4),
-          jump: fn(block, 'JUMP', 11),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 4 }),
+          jump: exprInput(block, 'JUMP', { type: 'num', value: 11 }),
         },
       }
     case 'sz_g2d_top_down':
       seen.add('game-2d')
       return {
         kind: 'js',
-        value: { type: 'g2d:topDown', spriteVar: f(block, 'SPRITE'), speed: fn(block, 'SPEED', 3) },
+        value: {
+          type: 'g2d:topDown',
+          spriteVar: f(block, 'SPRITE'),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 3 }),
+        },
       }
     case 'sz_g2d_follow_pointer':
       seen.add('game-2d')
@@ -3047,7 +3089,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:followPointer',
           spriteVar: f(block, 'SPRITE'),
-          speed: fn(block, 'SPEED', 3),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 3 }),
         },
       }
     case 'sz_g2d_clamp_to_screen':
@@ -3070,7 +3112,11 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       seen.add('game-2d')
       return {
         kind: 'js',
-        value: { type: 'g2d:shake', ctxVar: 'ctx', intensity: fn(block, 'INTENSITY', 8) },
+        value: {
+          type: 'g2d:shake',
+          ctxVar: 'ctx',
+          intensity: exprInput(block, 'INTENSITY', { type: 'num', value: 8 }),
+        },
       }
     case 'sz_g2d_emit_particles':
       seen.add('game-2d')
@@ -3078,10 +3124,10 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         kind: 'js',
         value: {
           type: 'g2d:emitParticles',
-          count: fn(block, 'COUNT', 14),
+          count: exprInput(block, 'COUNT', { type: 'num', value: 14 }),
           color: f(block, 'COLOR'),
-          x: fn(block, 'X'),
-          y: fn(block, 'Y'),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
         },
       }
     case 'sz_g2d_draw_particles':
@@ -3249,10 +3295,10 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           ctxVar: 'ctx',
           label: f(block, 'LABEL'),
           value: exprInput(block, 'VALUE', { type: 'num', value: 0 }),
-          x: fn(block, 'X', 10),
-          y: fn(block, 'Y', 30),
+          x: exprInput(block, 'X', { type: 'num', value: 10 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 30 }),
           color: f(block, 'COLOR'),
-          size: fn(block, 'SIZE', 24),
+          size: exprInput(block, 'SIZE', { type: 'num', value: 24 }),
         },
       }
     case 'sz_g2d_draw_label':
@@ -3263,10 +3309,10 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g2d:drawLabel',
           ctxVar: 'ctx',
           text: f(block, 'TEXT'),
-          x: fn(block, 'X', 10),
-          y: fn(block, 'Y', 30),
+          x: exprInput(block, 'X', { type: 'num', value: 10 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 30 }),
           color: f(block, 'COLOR'),
-          size: fn(block, 'SIZE', 20),
+          size: exprInput(block, 'SIZE', { type: 'num', value: 20 }),
           align: (f(block, 'ALIGN') || 'left') as 'left' | 'center' | 'right',
         },
       }
@@ -3278,9 +3324,9 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g2d:drawHearts',
           ctxVar: 'ctx',
           count: exprInput(block, 'COUNT', { type: 'num', value: 3 }),
-          x: fn(block, 'X', 10),
-          y: fn(block, 'Y', 10),
-          size: fn(block, 'SIZE', 22),
+          x: exprInput(block, 'X', { type: 'num', value: 10 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 10 }),
+          size: exprInput(block, 'SIZE', { type: 'num', value: 22 }),
           color: f(block, 'COLOR'),
         },
       }
@@ -3293,10 +3339,10 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           ctxVar: 'ctx',
           value: exprInput(block, 'VALUE', { type: 'num', value: 0 }),
           max: exprInput(block, 'MAX', { type: 'num', value: 100 }),
-          x: fn(block, 'X', 10),
-          y: fn(block, 'Y', 10),
-          w: fn(block, 'W', 120),
-          h: fn(block, 'H', 14),
+          x: exprInput(block, 'X', { type: 'num', value: 10 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 10 }),
+          w: exprInput(block, 'W', { type: 'num', value: 120 }),
+          h: exprInput(block, 'H', { type: 'num', value: 14 }),
           color: f(block, 'COLOR'),
         },
       }
@@ -3310,9 +3356,9 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:showScreen',
           ctxVar: 'ctx',
-          title: f(block, 'TITLE'),
-          subtitle: f(block, 'SUBTITLE'),
-          hint: f(block, 'HINT'),
+          title: exprInput(block, 'TITLE', { type: 'str', value: 'Tela' }),
+          subtitle: exprInput(block, 'SUBTITLE', { type: 'str', value: '' }),
+          hint: exprInput(block, 'HINT', { type: 'str', value: '' }),
           bg: f(block, 'BG'),
         },
       }
@@ -3323,7 +3369,11 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       seen.add('game-2d')
       return {
         kind: 'js',
-        value: { type: 'g2d:starfield', ctxVar: 'ctx', speed: fn(block, 'SPEED', 1) },
+        value: {
+          type: 'g2d:starfield',
+          ctxVar: 'ctx',
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 1 }),
+        },
       }
     case 'sz_g2d_drag_x':
       seen.add('game-2d')
@@ -3363,7 +3413,11 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       seen.add('game-2d')
       return {
         kind: 'js',
-        value: { type: 'g2d:arrowsX', spriteVar: f(block, 'SPRITE'), speed: fn(block, 'SPEED', 6) },
+        value: {
+          type: 'g2d:arrowsX',
+          spriteVar: f(block, 'SPRITE'),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 6 }),
+        },
       }
     case 'sz_g2d_blink':
       seen.add('game-2d')
@@ -3372,7 +3426,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:blinkSprite',
           spriteVar: f(block, 'SPRITE'),
-          frames: fn(block, 'FRAMES', 60),
+          frames: exprInput(block, 'FRAMES', { type: 'num', value: 60 }),
         },
       }
     case 'sz_g2d_create_ship':
@@ -3382,10 +3436,10 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:createShip',
           varName: f(block, 'NAME'),
-          x: fn(block, 'X', 100),
-          y: fn(block, 'Y', 250),
-          w: fn(block, 'W', 54),
-          h: fn(block, 'H', 62),
+          x: exprInput(block, 'X', { type: 'num', value: 100 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 250 }),
+          w: exprInput(block, 'W', { type: 'num', value: 54 }),
+          h: exprInput(block, 'H', { type: 'num', value: 62 }),
           bodyColor: f(block, 'BODY'),
           wingColor: f(block, 'WINGS'),
         },
@@ -3438,8 +3492,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:steerThrust',
           spriteVar: f(block, 'SPRITE'),
-          speed: fn(block, 'SPEED', 3),
-          turn: fn(block, 'TURN', 3),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 3 }),
+          turn: exprInput(block, 'TURN', { type: 'num', value: 3 }),
         },
       }
     case 'sz_g2d_rotate_sprite':
@@ -3449,14 +3503,18 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:rotateSprite',
           spriteVar: f(block, 'SPRITE'),
-          deg: fn(block, 'DEG', 15),
+          deg: exprInput(block, 'DEG', { type: 'num', value: 15 }),
         },
       }
     case 'sz_g2d_point_sprite':
       seen.add('game-2d')
       return {
         kind: 'js',
-        value: { type: 'g2d:pointSprite', spriteVar: f(block, 'SPRITE'), deg: fn(block, 'DEG', 0) },
+        value: {
+          type: 'g2d:pointSprite',
+          spriteVar: f(block, 'SPRITE'),
+          deg: exprInput(block, 'DEG', { type: 'num', value: 0 }),
+        },
       }
     case 'sz_g2d_thrust':
       seen.add('game-2d')
@@ -3465,7 +3523,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:thrust',
           spriteVar: f(block, 'SPRITE'),
-          force: fn(block, 'FORCE', 0.1),
+          force: exprInput(block, 'FORCE', { type: 'num', value: 0.1 }),
         },
       }
     case 'sz_g2d_apply_friction':
@@ -3475,7 +3533,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:applyFriction',
           spriteVar: f(block, 'SPRITE'),
-          factor: fn(block, 'FACTOR', 0.97),
+          factor: exprInput(block, 'FACTOR', { type: 'num', value: 0.97 }),
         },
       }
     case 'sz_g2d_shoot_from':
@@ -3486,7 +3544,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g2d:shootFrom',
           spriteVar: f(block, 'SPRITE'),
           groupVar: f(block, 'GROUP'),
-          speed: fn(block, 'SPEED', 6),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 6 }),
           color: f(block, 'COLOR'),
         },
       }
@@ -3512,7 +3570,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g2d:jumpOnGround',
           spriteVar: f(block, 'SPRITE'),
           ctxVar: 'ctx',
-          jump: fn(block, 'JUMP', 14),
+          jump: exprInput(block, 'JUMP', { type: 'num', value: 14 }),
         },
       }
     case 'sz_g2d_create_stickhero':
@@ -3546,9 +3604,9 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:createDino',
           varName: f(block, 'NAME'),
-          x: fn(block, 'X', 120),
-          y: fn(block, 'Y', 150),
-          size: fn(block, 'SIZE', 64),
+          x: exprInput(block, 'X', { type: 'num', value: 120 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 150 }),
+          size: exprInput(block, 'SIZE', { type: 'num', value: 64 }),
           color: f(block, 'COLOR'),
         },
       }
@@ -3560,7 +3618,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g2d:controlDino',
           spriteVar: f(block, 'SPRITE'),
           ctxVar: 'ctx',
-          jump: fn(block, 'JUMP', 15),
+          jump: exprInput(block, 'JUMP', { type: 'num', value: 15 }),
         },
       }
     case 'sz_g2d_spawn_obstacle':
@@ -3593,7 +3651,11 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       seen.add('game-2d')
       return {
         kind: 'js',
-        value: { type: 'g2d:forest', ctxVar: 'ctx', speed: fn(block, 'SPEED', 4) },
+        value: {
+          type: 'g2d:forest',
+          ctxVar: 'ctx',
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 4 }),
+        },
       }
     case 'sz_g2d_play_jump':
       seen.add('game-2d')

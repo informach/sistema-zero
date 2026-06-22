@@ -7,6 +7,8 @@ import type { GamificationRepository } from '../../domain/ports/gamification-rep
 export interface BuyStreakFreezeView {
   freezes: number
   balance: number
+  /** `true` = equipe (passe livre): moedas virtuais ilimitadas — a UI mostra ∞. */
+  unlimited?: boolean
 }
 
 /**
@@ -26,13 +28,16 @@ export class BuyStreakFreezeService {
     userId: string,
     audience: CourseAudience,
     operationKey?: string,
+    privileged = false,
   ): Promise<BuyStreakFreezeView> {
     const key = operationKey?.trim() || this.newId()
     const idempotencyKey = `streak-freeze:${audience}:${userId}:${key}`
+    // Equipe (passe livre): `price: 0` concede o protetor sem debitar — moedas virtuais
+    // ilimitadas. O teto MAX_FREEZES segue valendo (é limite de quantidade, não de moeda).
     const result = await this.repo.buyStreakFreeze({
       userId,
       audience,
-      price: STREAK_FREEZE_PRICE,
+      price: privileged ? 0 : STREAK_FREEZE_PRICE,
       idempotencyKey,
       now: this.clock(),
     })
@@ -40,6 +45,10 @@ export class BuyStreakFreezeService {
       if (result.code === 'MAX_FREEZES') throw new MaxFreezesError()
       throw new InsufficientCoinsError()
     }
-    return { freezes: result.freezes, balance: result.balance }
+    return {
+      freezes: result.freezes,
+      balance: result.balance,
+      ...(privileged ? { unlimited: true } : {}),
+    }
   }
 }

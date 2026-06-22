@@ -5,6 +5,7 @@ import {
   FRAME_BEHAVIOR,
   FRAME_STRUCTURE,
 } from './buildIR'
+import { migrateLegacyValueFields } from './migrateValueFields'
 import { ensureBlocklyInitialized } from './setup'
 import { buildWorkspaceStateFromIR } from './workspaceState'
 
@@ -36,17 +37,22 @@ export function blocksStateHasFrame(state: unknown): boolean {
  * o tipo e a migração cairia no `catch`.
  */
 export function normalizeBlocksStateToFrames(state: unknown): unknown {
-  if (!state || blocksStateHasFrame(state)) return state
-  const blocks = (state as { blocks?: { blocks?: unknown[] } }).blocks?.blocks
-  if (!Array.isArray(blocks) || blocks.length === 0) return state
+  // Antes de tudo: migra campos que viraram soquetes de valor (`field_*` → `input_value`),
+  // preservando o valor salvo pela criança. Roda SEMPRE — inclusive em projetos já
+  // framados (o campo legado pode estar dentro de um frame). Devolve a MESMA referência
+  // quando não há nada a migrar (preserva a idempotência abaixo).
+  const migrated = migrateLegacyValueFields(state)
+  if (!migrated || blocksStateHasFrame(migrated)) return migrated
+  const blocks = (migrated as { blocks?: { blocks?: unknown[] } }).blocks?.blocks
+  if (!Array.isArray(blocks) || blocks.length === 0) return migrated
   ensureBlocklyInitialized()
   const scratch = new Blockly.Workspace()
   try {
-    Blockly.serialization.workspaces.load(state as Record<string, unknown>, scratch)
+    Blockly.serialization.workspaces.load(migrated as Record<string, unknown>, scratch)
     return buildWorkspaceStateFromIR(collectFlatFromWorkspace(scratch))
   } catch (e) {
     console.warn('Migração de blocos para frames falhou; mantendo o estado original:', e)
-    return state
+    return migrated
   } finally {
     scratch.dispose()
   }

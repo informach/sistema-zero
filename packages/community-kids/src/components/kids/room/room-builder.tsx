@@ -79,6 +79,8 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
     pet: null,
   })
   const [balance, setBalance] = useState(0)
+  // Equipe (passe livre) = moedas ilimitadas: a lojinha mostra ∞ e nunca trava por saldo.
+  const [coinsUnlimited, setCoinsUnlimited] = useState(false)
   const [selected, setSelected] = useState<number | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
@@ -94,6 +96,7 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
         setData(d)
         setDraft(d.state)
         setBalance(d.balance)
+        setCoinsUnlimited(d.balanceUnlimited === true)
       })
       .catch(() => {})
     return () => {
@@ -195,6 +198,7 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
           : s,
       )
       if (typeof body?.balance === 'number') setBalance(body.balance)
+      if (body?.unlimited === true) setCoinsUnlimited(true)
       toast.success('Desbloqueado! 🎉')
     } catch {
       toast.error('Não consegui comprar agora.')
@@ -262,7 +266,7 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
 
       <div className="flex items-center justify-between">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-(--kids-lime-tint) px-3 py-1 [font-family:var(--font-display)] font-bold text-sm">
-          <Coins className="size-4" /> {balance}
+          <Coins className="size-4" /> {coinsUnlimited ? '∞' : balance}
         </span>
         <button
           type="button"

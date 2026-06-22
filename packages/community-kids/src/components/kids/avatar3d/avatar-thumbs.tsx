@@ -2,15 +2,15 @@
 
 import { useEffect, useState } from 'react'
 import * as THREE from 'three'
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { type GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { AVATAR_PART_INFO, DEFAULT_AVATAR_SLOTS, partGlbUrl } from '@/lib/avatar3d-catalog'
 
 /**
- * MINIATURAS dos itens (como no WawaSensei). Renderiza cada peça (o GLB SOZINHO, em bind pose)
- * num ÚNICO renderer offscreen reutilizado (não N `<Canvas>` — respeita o limite de contextos
- * WebGL), captura `toDataURL` 1×, e CACHEIA por id. Geração serializada (1 por vez) e LAZY (só
- * quando a aba/categoria pede). Aplica uma cor representativa da categoria pra a peça não sair
- * cinza. Robusto: qualquer falha → `null` (a grade cai no rótulo de texto).
+ * MINIATURAS dos itens (como no WawaSensei). Renderiza cada peça como MESH COMUM na pose de bind
+ * (sem esqueleto — peça solta é SkinnedMesh e colapsaria EM BRANCO) num ÚNICO renderer offscreen
+ * reutilizado (não N `<Canvas>` — respeita o limite de contextos WebGL); traços de rosto vão sobre
+ * uma cabeça base (em contexto). Captura `toDataURL` 1× e CACHEIA por id. Geração serializada (1 por
+ * vez) e LAZY (só quando a aba pede). Cor representativa da categoria. Falha → `null` (cai no rótulo).
  */
 
 const SIZE = 128
@@ -80,8 +80,69 @@ function representativeColor(partId: string): string | undefined {
   return cat ? DEFAULT_AVATAR_SLOTS[cat]?.color : undefined
 }
 
-function disposeObject(root: THREE.Object3D) {
-  root.traverse((o) => {
+/** Categorias que ficam NA CABEÇA → a thumbnail mostra a peça sobre uma cabeça base (em contexto). */
+const HEAD_SITTING = new Set<string>([
+  'hair',
+  'eyes',
+  'eyebrows',
+  'nose',
+  'facialHair',
+  'glasses',
+  'hat',
+  'accessory',
+])
+
+// Cabeça base (head-01) reusada como CONTEXTO dos traços de rosto — carregada 1× e cacheada.
+let baseHead: GLTF | null = null
+let baseHeadPromise: Promise<GLTF | null> | null = null
+function loadBaseHead(): Promise<GLTF | null> {
+  if (baseHead) return Promise.resolve(baseHead)
+  if (!baseHeadPromise) {
+    baseHeadPromise = loader
+      .loadAsync(partGlbUrl(DEFAULT_AVATAR_SLOTS.head.asset))
+      .then((g) => {
+        baseHead = g
+        return g
+      })
+      .catch(() => null)
+  }
+  return baseHeadPromise
+}
+
+/**
+ * Converte os (skinned)meshes de um GLB em MESHES COMUNS na pose de REST (bind), assando a matriz
+ * de mundo. A `geometry.attributes.position` JÁ é a pose de bind → renderiza a forma certa SEM o
+ * esqueleto compartilhado (que a peça sozinha não tem → senão o SkinnedMesh colapsa na origem e a
+ * thumbnail sai EM BRANCO). Clona o material (recolore sem sujar o GLB cacheado da cabeça).
+ */
+function buildPlainMeshes(
+  srcScene: THREE.Object3D,
+  color: string | undefined,
+  clonedMats: THREE.Material[],
+): THREE.Mesh[] {
+  const out: THREE.Mesh[] = []
+  srcScene.updateWorldMatrix(true, true)
+  srcScene.traverse((child) => {
+    const mesh = child as THREE.Mesh
+    if (!mesh.isMesh) return
+    const src = (Array.isArray(mesh.material) ? mesh.material[0] : mesh.material) as
+      | THREE.MeshStandardMaterial
+      | undefined
+    const mat =
+      (src?.clone() as THREE.MeshStandardMaterial | undefined) ?? new THREE.MeshStandardMaterial()
+    clonedMats.push(mat)
+    if (mat.name?.includes('Skin_')) mat.color.set(SKIN)
+    else if (color && mat.name?.includes('Color_')) mat.color.set(color)
+    const plain = new THREE.Mesh(mesh.geometry, mat)
+    plain.applyMatrix4(mesh.matrixWorld) // assa a posição de mundo (a peça no lugar dela)
+    out.push(plain)
+  })
+  return out
+}
+
+/** Descarta geometria+material de um GLB carregado FRESCO (NÃO usar na cabeça base cacheada). */
+function disposeGltf(scene: THREE.Object3D) {
+  scene.traverse((o) => {
     const m = o as THREE.Mesh
     if (!m.isMesh) return
     m.geometry?.dispose()
@@ -95,23 +156,25 @@ async function renderThumbnail(partId: string): Promise<string | null> {
   const c = getCtx()
   if (!c) return null
   let view: THREE.Group | null = null
+  let partGltf: GLTF | null = null
+  const clonedMats: THREE.Material[] = []
   try {
-    const gltf = await loader.loadAsync(partGlbUrl(partId))
-    const obj = gltf.scene
+    partGltf = await loader.loadAsync(partGlbUrl(partId))
+    const cat = AVATAR_PART_INFO[partId]?.category
     const color = representativeColor(partId)
-    obj.traverse((child) => {
-      const mesh = child as THREE.Mesh
-      if (!mesh.isMesh) return
-      const mat = mesh.material as THREE.MeshStandardMaterial
-      if (!mat?.name) return
-      if (mat.name.includes('Skin_')) mat.color?.set(SKIN)
-      else if (color && mat.name.includes('Color_')) mat.color?.set(color)
-    })
+
+    const parts = new THREE.Group()
+    // Traços de rosto → sobre uma cabeça base (contexto), pra não flutuarem soltos.
+    if (cat && HEAD_SITTING.has(cat)) {
+      const head = await loadBaseHead()
+      if (head) for (const m of buildPlainMeshes(head.scene, undefined, clonedMats)) parts.add(m)
+    }
+    for (const m of buildPlainMeshes(partGltf.scene, color, clonedMats)) parts.add(m)
 
     // Em pé (igual o rig: Z-up → Y-up) + leve 3/4 pra dar volume.
     const stand = new THREE.Group()
     stand.rotation.x = Math.PI / 2
-    stand.add(obj)
+    stand.add(parts)
     view = new THREE.Group()
     view.rotation.y = -0.35
     view.add(stand)
@@ -121,6 +184,7 @@ async function renderThumbnail(partId: string): Promise<string | null> {
     const box = new THREE.Box3().setFromObject(view)
     if (box.isEmpty()) return null
     const sphere = box.getBoundingSphere(new THREE.Sphere())
+    if (sphere.radius < 1e-4) return null // box degenerado → não renderiza em branco
     const fov = (c.camera.fov * Math.PI) / 180
     const dist = (sphere.radius / Math.sin(fov / 2)) * 1.08
     c.camera.position.set(sphere.center.x, sphere.center.y, sphere.center.z + dist)
@@ -134,10 +198,10 @@ async function renderThumbnail(partId: string): Promise<string | null> {
   } catch {
     return null
   } finally {
-    if (view) {
-      c.scene.remove(view)
-      disposeObject(view)
-    }
+    if (view) c.scene.remove(view)
+    for (const m of clonedMats) m.dispose()
+    // descarta SÓ a peça (carregada fresca); a cabeça base fica cacheada p/ reuso.
+    if (partGltf) disposeGltf(partGltf.scene)
   }
 }
 
