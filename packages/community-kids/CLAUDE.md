@@ -250,16 +250,22 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   grupo `(app)`):** configurador de personagem 3D (substituiu o DiceBear). `configurator-client.tsx`
   (`dynamic ssr:false` — three/fiber/drei só no cliente, espelha o `studio-full-client`) → `configurator.tsx`
   (estado + loja por categoria + 2 modos: **Personalizar** ⇄ **Cabine de fotos**) + `avatar-scene.tsx`
-  (`<Canvas>` R3F) + `avatar-rig.tsx` + `asset-part.tsx` + `camera-manager.tsx` + `avatar-thumbs.tsx`.
+  (`<Canvas>` R3F) + `avatar-rig.tsx` + `asset-part.tsx` + `camera-manager.tsx` + `thumb-canvas.tsx`.
   **Experiência fiel ao WawaSensei (simplificada p/ a arquitetura DELE — 06/2026):** a câmera é drei
   **`CameraControls`** (`camera-manager.tsx`) que enquadra o **CORPO INTEIRO em Personalizar** (longe + baixa,
   cabeça+pés) e **RETRATO na Cabine de fotos** — reenquadra SÓ em `[mode, ready]` (trocar peça/cor NÃO mexe a
   câmera; guarda `h>0.8` evita box parcial). O personagem fica em pé UMA vez (mede o box; NÃO re-fica-em-pé a
   cada troca — era o "recarrega a cena"). A **Cabine de fotos** dá poses (`Poses.glb`: Idle/Chill/Cool/Punch/
-  Ninja/King/Busy) + órbita LIVRE pra posicionar antes da foto. A grade mostra **MINIATURAS** renderizadas
-  (`avatar-thumbs.tsx`: 1 renderer offscreen reutilizado, peça como MESH COMUM em rest pose **ESCALADA 0.01**
-  — sem o 0.01 a peça em cm fica além do `far` e sai EM BRANCO — + cabeça base em contexto; `toDataURL`
-  cacheado; "nenhum" = ✕). Trocar peça NÃO pisca: **`<Suspense>` POR peça** no `avatar-rig` + animação de
+  Ninja/King/Busy) + órbita LIVRE pra posicionar antes da foto. A grade mostra **MINIATURAS = PNG estático**
+  (`thumb-canvas.tsx` `<AvatarThumb>`): **(1)** primeiro o **PNG PRÉ-GERADO e commitado** em
+  `public/avatar3d/thumbs/<id>.png` → `<img>`, **ZERO WebGL** (igual ao WawaSensei). Gera com
+  **`bun run gen:avatar-thumbs`** (`scripts/gen-avatar-thumbs.ts`: sobe `Bun.serve` com uma página geradora
+  + os GLBs, ABRE no SEU navegador real — WebGL confiável, sem headless frágil —, renderiza cada peça com o
+  MESMO `skinnedMesh`+esqueleto e faz POST do PNG, que o script grava no disco; commite os PNGs). **(2)**
+  faltando o PNG, FALLBACK: renderiza ao vivo 1× num `<Canvas>` (esqueleto **CLONADO** + material
+  **CLONADO/recolorido**, senão a cor vazaria pro avatar; drei **`<Bounds>`** enquadra), **captura** e troca
+  pra `<img>` (cache de sessão `thumbCache`). "nenhum" = ✕. ⚠️ um renderer OFFSCREEN próprio saía EM BRANCO
+  em 3 tentativas → por isso PNG estático + fallback que reusa o render que FUNCIONA. Trocar peça NÃO pisca: **`<Suspense>` POR peça** no `avatar-rig` + animação de
   "cabine" (encolhe/gira/flutua + feixe) dirigida por um `loading` com **duração mínima** (50ms/~800ms sobre
   `useProgress`, como o `Experience.jsx`) — só troca de ASSET gira (cor muta material in-place, instantâneo).
   `randomize` ("Surpreenda-me") sorteia peça grátis/possuída + cor. ⚠️ **Personagem GLB REAL (Quaternius CC0, via pack do WawaSensei):**
@@ -426,12 +432,11 @@ corrigidos; verde no `typecheck:kids` + `test:kids` (20) + `check` + `build:kids
 - **Recuperação de contexto WebGL (tablets/celular):** novo helper **`lib/webgl-recovery.ts`**
   (`recoverWebGLContext` em `onCreated`: `preventDefault` no `webglcontextlost` + `invalidate` no
   `restored`) ligado nas DUAS `<Canvas>` (avatar e **quarto**) — sem ele a cena ficava PRETA pra
-  sempre ao voltar de segundo plano/pressão de memória. O renderer offscreen das miniaturas
-  (`avatar-thumbs`) também zera seu singleton ao perder o contexto (recria sob demanda).
-- **Miniatura que falha mostra o NOME (não spinner eterno):** o `useAvatarThumbnail` passou a
-  devolver `{ url, loading }`; o `ItemTile` mostra o spinner SÓ enquanto gera e cai no **rótulo de
-  texto** (`labelPt`) na falha — antes, se o contexto WebGL offscreen não subisse, TODA peça girava
-  um spinner pra sempre (rótulo só no `title`/`aria-label`).
+  sempre ao voltar de segundo plano/pressão de memória. (As miniaturas viraram um `<Canvas>` por item
+  em `thumb-canvas.tsx` — o renderer offscreen `avatar-thumbs` foi REMOVIDO por sair em branco.)
+- **Miniaturas = `<Canvas>` por item (`thumb-canvas.tsx`):** substituíram o renderer offscreen
+  (`avatar-thumbs`, REMOVIDO — saía em branco). `ItemTile` rende `<AvatarThumb>` (id com
+  apresentação) e cai no **rótulo de texto** (`labelPt`) só p/ id desconhecido.
 - **Rollback de reação POR ITEM (hub):** `kids-space-view-client.tsx` desfazia o array inteiro de
   comentários ao falhar uma reação — toques sobrepostos num 2º comentário sumiam junto. Agora o
   rollback restaura SÓ o item pelo `id`.
@@ -440,9 +445,10 @@ corrigidos; verde no `typecheck:kids` + `test:kids` (20) + `check` + `build:kids
 
 ## Comandos
 
-`bun run dev` (:3008) · `build`/`start` · `typecheck` · `bun test` · `check[:fix]`.
-Da raiz: `dev:kids`, **`build:kids` (package-local — gotcha do `--filter` quebrar o React)**,
-`typecheck:kids`, `test:kids`. Mexeu no member-shell? Rode as suítes/builds DOS DOIS apps.
+`bun run dev` (:3008) · `build`/`start` · `typecheck` · `bun test` · `check[:fix]` ·
+**`gen:avatar-thumbs`** (pré-gera os PNGs das miniaturas do avatar → `public/avatar3d/thumbs/`, abre no
+navegador; rode 1× e commite). Da raiz: `dev:kids`, **`build:kids` (package-local — gotcha do `--filter`
+quebrar o React)**, `typecheck:kids`, `test:kids`. Mexeu no member-shell? Rode as suítes/builds DOS DOIS apps.
 
 ## Env / Deploy (Railway) — EM PRODUÇÃO desde 12/06/2026
 

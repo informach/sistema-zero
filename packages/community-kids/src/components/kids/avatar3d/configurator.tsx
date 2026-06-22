@@ -16,7 +16,7 @@ import { cn } from '@/lib/cn'
 import type { AvatarPartView, AvatarStateView } from '@/lib/types'
 import { KidsMascot } from '../mascot'
 import { AvatarScene, type CaptureFn } from './avatar-scene'
-import { useAvatarThumbnail } from './avatar-thumbs'
+import { AvatarThumb } from './thumb-canvas'
 
 type Slots = Record<string, AvatarSlot>
 type Mode = 'customize' | 'photo'
@@ -45,8 +45,8 @@ function ItemTile({
   onSelect: () => void
 }) {
   const isNone = part.id.endsWith('-none')
-  const { url: thumb, loading } = useAvatarThumbnail(isNone ? null : part.id)
-  const label = AVATAR_PART_INFO[part.id]?.labelPt ?? part.id
+  const info = AVATAR_PART_INFO[part.id]
+  const label = info?.labelPt ?? part.id
   return (
     <button
       type="button"
@@ -62,12 +62,10 @@ function ItemTile({
     >
       {isNone ? (
         <X className="size-7 text-muted-foreground" />
-      ) : thumb ? (
-        <img src={thumb} alt="" className="size-full object-contain" draggable={false} />
-      ) : loading ? (
-        <Loader2 className="size-5 animate-spin text-muted-foreground" />
+      ) : info ? (
+        <AvatarThumb partId={part.id} category={info.category} />
       ) : (
-        // Miniatura falhou (sem GLB / WebGL indisponível): cai no rótulo de texto.
+        // Id sem apresentação (desconhecido): cai no rótulo de texto.
         <span className="line-clamp-2 px-1 text-center [font-family:var(--font-display)] font-bold text-[0.7rem] text-muted-foreground">
           {label}
         </span>

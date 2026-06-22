@@ -49,9 +49,10 @@ export function CameraManager({
       const ty = max.y - h * 0.18
       void cc.setLookAt(c.x, max.y - h * 0.12, c.z + h * 1.3, c.x, ty, c.z, true)
     } else {
-      // CORPO INTEIRO — MUITO mais longe e mais baixa (quase no nível), cabeça E pés com folga.
+      // CORPO INTEIRO — longe, câmera um tico mais ALTA (olhando de leve pra baixo) → personagem
+      // assenta um pouco mais embaixo no quadro, com folga acima da cabeça (sem cortar os pés).
       const ty = min.y + h * 0.5
-      void cc.setLookAt(c.x - h * 0.2, min.y + h * 0.4, c.z + h * 3.2, c.x, ty, c.z, true)
+      void cc.setLookAt(c.x - h * 0.2, min.y + h * 0.6, c.z + h * 3.2, c.x, ty, c.z, true)
     }
   }, [charRef, mode, ready])
 
