@@ -1637,13 +1637,14 @@ function readSpriteOptions(
 
 /**
  * Lê `{ image, tile, solid, grid }` de um literal de objeto (createTileMap).
- * image/solid/grid são strings; tile é número. null se alguma chave faltar/for
- * não-literal/desconhecida — o caminho cai no helper genérico.
+ * image/solid/grid são strings; tile é expressão (número/variável/conta). null se
+ * alguma chave faltar/for não-literal/desconhecida — o caminho cai no helper genérico.
  */
 function readTileMapOptions(
   obj: Node,
-): { image: string; tile: number; solid: string; grid: string } | null {
-  const result = { image: null as string | null, tile: null as number | null, solid: '', grid: '' }
+  ctx: ParseCtx,
+): { image: string; tile: JSExpr; solid: string; grid: string } | null {
+  const result = { image: null as string | null, tile: null as JSExpr | null, solid: '', grid: '' }
   for (const prop of obj.properties ?? []) {
     if (prop?.type !== 'ObjectProperty' || prop.computed) return null
     const key =
@@ -1653,8 +1654,8 @@ function readTileMapOptions(
           ? (prop.key.value as string)
           : null
     if (key === 'tile') {
-      const v = numericLiteralValue(prop.value)
-      if (v === null) return null
+      const v = toExpr(prop.value, ctx)
+      if (!isSimpleValue(v)) return null
       result.tile = v
     } else if (key === 'image' || key === 'solid' || key === 'grid') {
       if (prop.value?.type !== 'StringLiteral') return null
@@ -2082,9 +2083,9 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       return isSimpleValue(value) ? { type: 'g2d:setGravity', value } : null
     }
     case 'playSound': {
-      const freq = numericLiteralValue(args[0])
-      const durationMs = numericLiteralValue(args[1])
-      return freq !== null && durationMs !== null
+      const freq = toExpr(args[0], ctx)
+      const durationMs = toExpr(args[1], ctx)
+      return isSimpleValue(freq) && isSimpleValue(durationMs)
         ? { type: 'g2d:playSound', freq, durationMs }
         : null
     }
@@ -2100,8 +2101,8 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       return { type: 'g2d:stopMusic' }
     case 'playNote': {
       if (args[0]?.type !== 'StringLiteral') return null
-      const ms = numericLiteralValue(args[1])
-      return ms !== null ? { type: 'g2d:playNote', note: args[0].value as string, ms } : null
+      const ms = toExpr(args[1], ctx)
+      return isSimpleValue(ms) ? { type: 'g2d:playNote', note: args[0].value as string, ms } : null
     }
     case 'aimAt': {
       const spriteVar = identifierName(args[0])
@@ -2190,9 +2191,9 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
     }
     case 'setTileAtSprite': {
       const mapVar = identifierName(args[0])
-      const index = numericLiteralValue(args[1])
+      const index = toExpr(args[1], ctx)
       const spriteVar = identifierName(args[2])
-      return mapVar && index !== null && spriteVar
+      return mapVar && isSimpleValue(index) && spriteVar
         ? { type: 'g2d:setTile', mapVar, index, spriteVar }
         : null
     }
@@ -2225,10 +2226,10 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       // generator: SZGame2D.setAnimation(sprite, sheet, from, to, fps)
       const spriteVar = identifierName(args[0])
       const sheetVar = identifierName(args[1])
-      const from = numericLiteralValue(args[2])
-      const to = numericLiteralValue(args[3])
-      const fps = numericLiteralValue(args[4])
-      return spriteVar && sheetVar && from !== null && to !== null && fps !== null
+      const from = toExpr(args[2], ctx)
+      const to = toExpr(args[3], ctx)
+      const fps = toExpr(args[4], ctx)
+      return spriteVar && sheetVar && isSimpleValue(from) && isSimpleValue(to) && isSimpleValue(fps)
         ? { type: 'g2d:animateSprite', spriteVar, sheetVar, from, to, fps }
         : null
     }
@@ -2236,18 +2237,18 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       // generator: SZGame2D.drawFrame(ctx, sheet, index, x, y, w, h)
       const ctxVar = identifierName(args[0])
       const sheetVar = identifierName(args[1])
-      const index = numericLiteralValue(args[2])
-      const x = numericLiteralValue(args[3])
-      const y = numericLiteralValue(args[4])
-      const w = numericLiteralValue(args[5])
-      const h = numericLiteralValue(args[6])
+      const index = toExpr(args[2], ctx)
+      const x = toExpr(args[3], ctx)
+      const y = toExpr(args[4], ctx)
+      const w = toExpr(args[5], ctx)
+      const h = toExpr(args[6], ctx)
       return ctxVar &&
         sheetVar &&
-        index !== null &&
-        x !== null &&
-        y !== null &&
-        w !== null &&
-        h !== null
+        isSimpleValue(index) &&
+        isSimpleValue(x) &&
+        isSimpleValue(y) &&
+        isSimpleValue(w) &&
+        isSimpleValue(h)
         ? { type: 'g2d:drawFrame', ctxVar, sheetVar, index, x, y, w, h }
         : null
     }
@@ -2361,9 +2362,9 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       // generator: SZGame2D.drawTileMap(ctx, map, x, y)
       const ctxVar = identifierName(args[0])
       const mapVar = identifierName(args[1])
-      const x = numericLiteralValue(args[2])
-      const y = numericLiteralValue(args[3])
-      return ctxVar && mapVar && x !== null && y !== null
+      const x = toExpr(args[2], ctx)
+      const y = toExpr(args[3], ctx)
+      return ctxVar && mapVar && isSimpleValue(x) && isSimpleValue(y)
         ? { type: 'g2d:drawTileMap', ctxVar, mapVar, x, y }
         : null
     }
@@ -2590,15 +2591,15 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       return spriteVar ? { type: 'g2d:dragX', spriteVar } : null
     }
     case 'fitScreen': {
-      const percent = numericLiteralValue(args[0])
-      return percent !== null ? { type: 'g2d:fitScreen', percent } : null
+      const percent = toExpr(args[0], ctx)
+      return isSimpleValue(percent) ? { type: 'g2d:fitScreen', percent } : null
     }
     case 'setupStage': {
-      const width = numericLiteralValue(args[0])
-      const height = numericLiteralValue(args[1])
+      const width = toExpr(args[0], ctx)
+      const height = toExpr(args[1], ctx)
       // 3º argumento (cor de fundo) é opcional: código antigo de 2 args cai no padrão.
       const bg = args[2]?.type === 'StringLiteral' ? (args[2].value as string) : '#0b1020'
-      return width !== null && height !== null
+      return isSimpleValue(width) && isSimpleValue(height)
         ? { type: 'g2d:setupStage', width, height, bg }
         : null
     }
@@ -2889,9 +2890,9 @@ function tryMatchGame2DVarInit(name: string, init: Node, ctx: ParseCtx): JSState
   if (method === 'loadSpriteSheet') {
     // generator: const v = SZGame2D.loadSpriteSheet('nome', fw, fh)
     if (args[0]?.type !== 'StringLiteral') return null
-    const frameW = numericLiteralValue(args[1])
-    const frameH = numericLiteralValue(args[2])
-    if (frameW === null || frameH === null) return null
+    const frameW = toExpr(args[1], ctx)
+    const frameH = toExpr(args[2], ctx)
+    if (!isSimpleValue(frameW) || !isSimpleValue(frameH)) return null
     return {
       type: 'g2d:loadSpritesheet',
       varName: name,
@@ -2903,7 +2904,7 @@ function tryMatchGame2DVarInit(name: string, init: Node, ctx: ParseCtx): JSState
   if (method === 'createTileMap') {
     // generator: const map = SZGame2D.createTileMap({ image, tile, solid, grid })
     if (args[0]?.type !== 'ObjectExpression') return null
-    const opts = readTileMapOptions(args[0])
+    const opts = readTileMapOptions(args[0], ctx)
     if (!opts) return null
     return { type: 'g2d:createTileMap', varName: name, ...opts }
   }

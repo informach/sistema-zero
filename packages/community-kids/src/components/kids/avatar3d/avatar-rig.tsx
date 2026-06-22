@@ -1,6 +1,6 @@
 'use client'
 
-import { useAnimations, useGLTF, useProgress } from '@react-three/drei'
+import { useAnimations, useGLTF } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import {
   Component,
@@ -69,23 +69,24 @@ function rootBoneOf(skeleton: THREE.Skeleton): THREE.Bone | null {
 /**
  * Monta o personagem: 1 esqueleto compartilhado (`Armature.glb`) + 1 `<AssetPart>` por
  * categoria equipada, CADA UM no seu `<Suspense>` (trocar 1 peça NÃO apaga o resto — fim do
- * flicker). Quando alguma peça carrega (`useProgress().active`), o personagem faz a animação de
- * "cabine" (encolhe + gira + flutua) — espelha o `Experience.jsx` do WawaSensei. Auto-fica em
- * pé (pés no pódio) medindo o bounding box. `charRef` é exposto p/ a câmera enquadrar (fitToBox).
+ * flicker). Enquanto uma peça carrega (`loading`, vindo do scene), o personagem faz a "cabine"
+ * (encolhe + gira + flutua) — espelha o `Experience.jsx` do WawaSensei. Fica em pé UMA vez (pés
+ * no pódio) medindo o bounding box; NÃO re-fica-em-pé ao trocar peça/cor (fim do "recarrega").
+ * `charRef` é exposto p/ a câmera enquadrar.
  */
 export function AvatarRig({
   slots,
   pose = 'Idle',
+  loading = false,
   charRef,
-  standKey,
   onStood,
 }: {
   slots: Slots
   pose?: string
-  /** Grupo externo do personagem — a câmera usa pra `fitToBox`. */
+  /** Estado de carregando (do scene, com duração mínima) — dirige a animação de cabine. */
+  loading?: boolean
+  /** Grupo externo do personagem — a câmera usa pra enquadrar. */
   charRef: RefObject<THREE.Group | null>
-  /** Muda quando a combinação visual precisa recalcular pés/centro. */
-  standKey: string
   /** Disparado UMA vez quando o personagem fica em pé (pés no pódio) — a câmera enquadra então. */
   onStood?: () => void
 }) {
@@ -93,19 +94,11 @@ export function AvatarRig({
   const springRef = useRef<THREE.Group>(null)
   const rigRef = useRef<THREE.Group>(null)
   const stood = useRef(false)
-  const lastStandKey = useRef<string | null>(null)
-  const { active } = useProgress()
   const reduced = useReducedMotion()
 
   const armature = useGLTF(baseGlbUrl('Armature'))
   const poses = useGLTF(baseGlbUrl('Poses'))
   const { actions } = useAnimations(poses.animations, animRoot)
-
-  useEffect(() => {
-    if (lastStandKey.current === standKey) return
-    lastStandKey.current = standKey
-    stood.current = false
-  }, [standKey])
 
   const skeleton = useMemo(() => findSkeleton(armature.scene), [armature.scene])
   const rootBone = useMemo(() => (skeleton ? rootBoneOf(skeleton) : null), [skeleton])
@@ -151,12 +144,12 @@ export function AvatarRig({
         spring.position.y = 0
         spring.rotation.y = 0
       } else {
-        const targetScale = active ? 0.62 : 1
+        const targetScale = loading ? 0.62 : 1
         const s = THREE.MathUtils.lerp(spring.scale.x, targetScale, k)
         spring.scale.setScalar(s)
-        spring.position.y = THREE.MathUtils.lerp(spring.position.y, active ? 0.35 : 0, k)
-        if (active) {
-          spring.rotation.y += dt * 11 // gira rápido enquanto troca de peça
+        spring.position.y = THREE.MathUtils.lerp(spring.position.y, loading ? 0.35 : 0, k)
+        if (loading) {
+          spring.rotation.y += dt * 11 // gira rápido enquanto troca de peça (cabine)
         } else {
           // ao terminar, assenta voltado pra frente (múltiplo de 2π mais próximo).
           const twoPi = Math.PI * 2
@@ -165,9 +158,10 @@ export function AvatarRig({
         }
       }
     }
-    // Auto-stand UMA vez, com o personagem carregado e a spring assentada (escala ~1).
+    // Auto-stand UMA só vez (e nunca mais — pés não se movem ao trocar peça/cor): exige a cena
+    // assentada (não `loading`) e a spring em escala cheia, pra medir o corpo INTEIRO.
     if (
-      !active &&
+      !loading &&
       !stood.current &&
       charRef.current &&
       rigRef.current &&

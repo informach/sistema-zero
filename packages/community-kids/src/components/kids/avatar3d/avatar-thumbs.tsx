@@ -171,9 +171,11 @@ async function renderThumbnail(partId: string): Promise<string | null> {
     }
     for (const m of buildPlainMeshes(partGltf.scene, color, clonedMats)) parts.add(m)
 
-    // Em pé (igual o rig: Z-up → Y-up) + leve 3/4 pra dar volume.
+    // Em pé (igual o rig: Z-up → Y-up + ESCALA 0.01) + leve 3/4 pra dar volume. SEM o 0.01 a
+    // peça fica em cm (~120u) e o sphere-fit joga a câmera a ~300u → além do far → EM BRANCO.
     const stand = new THREE.Group()
     stand.rotation.x = Math.PI / 2
+    stand.scale.setScalar(0.01)
     stand.add(parts)
     view = new THREE.Group()
     view.rotation.y = -0.35
@@ -184,11 +186,14 @@ async function renderThumbnail(partId: string): Promise<string | null> {
     const box = new THREE.Box3().setFromObject(view)
     if (box.isEmpty()) return null
     const sphere = box.getBoundingSphere(new THREE.Sphere())
-    if (sphere.radius < 1e-4) return null // box degenerado → não renderiza em branco
+    if (sphere.radius < 1e-6) return null // box degenerado → não renderiza em branco
     const fov = (c.camera.fov * Math.PI) / 180
     const dist = (sphere.radius / Math.sin(fov / 2)) * 1.08
     c.camera.position.set(sphere.center.x, sphere.center.y, sphere.center.z + dist)
     c.camera.lookAt(sphere.center)
+    // near/far DINÂMICOS do sphere → nunca recorta, seja qual for o tamanho da peça.
+    c.camera.near = Math.max(0.01, dist - sphere.radius * 2)
+    c.camera.far = dist + sphere.radius * 2 + 1
     c.camera.updateProjectionMatrix()
 
     c.renderer.render(c.scene, c.camera)

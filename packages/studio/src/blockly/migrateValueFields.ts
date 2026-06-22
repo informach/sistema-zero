@@ -56,6 +56,16 @@ export const LEGACY_VALUE_FIELDS: Record<string, Record<string, 'number' | 'text
   sz_g2d_draw_label: { X: 'number', Y: 'number', SIZE: 'number' },
   sz_g2d_draw_hearts: { X: 'number', Y: 'number', SIZE: 'number' },
   sz_g2d_draw_bar: { X: 'number', Y: 'number', W: 'number', H: 'number' },
+  sz_g2d_play_sound: { FREQ: 'number', MS: 'number' },
+  sz_g2d_play_note: { MS: 'number' },
+  sz_g2d_setup_stage: { W: 'number', H: 'number' },
+  sz_g2d_fit_screen: { PERCENT: 'number' },
+  sz_g2d_load_spritesheet: { FW: 'number', FH: 'number' },
+  sz_g2d_animate_sprite: { FROM: 'number', TO: 'number', FPS: 'number' },
+  sz_g2d_draw_frame: { INDEX: 'number', X: 'number', Y: 'number', W: 'number', H: 'number' },
+  sz_g2d_set_tile: { INDEX: 'number' },
+  sz_g2d_create_tilemap: { TILE: 'number' },
+  sz_g2d_draw_tilemap: { X: 'number', Y: 'number' },
 }
 
 interface BlockNode {

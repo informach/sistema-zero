@@ -1273,7 +1273,11 @@ export type JSStatement =
       varName: string
     })
   // Áudio: toca um tom (Web Audio, sem assets).
-  | (JSStatementCommon & { type: 'g2d:playSound'; freq: number; durationMs: number })
+  | (JSStatementCommon & {
+      type: 'g2d:playSound'
+      freq: number | JSExpr
+      durationMs: number | JSExpr
+    })
   // Áudio: efeito sonoro pronto (sintetizado), escolhido por nome.
   | (JSStatementCommon & { type: 'g2d:playFx'; fx: string })
   // Áudio: música de fundo em loop (sintetizada), escolhida por nome.
@@ -1281,7 +1285,7 @@ export type JSStatement =
   // Áudio: para a música de fundo.
   | (JSStatementCommon & { type: 'g2d:stopMusic' })
   // Áudio: toca uma nota musical (dó ré mi…) por uma duração em ms.
-  | (JSStatementCommon & { type: 'g2d:playNote'; note: string; ms: number })
+  | (JSStatementCommon & { type: 'g2d:playNote'; note: string; ms: number | JSExpr })
   // Tier 1 — mira/movimento, vida, aparência, mundo e pausa (comandos).
   | (JSStatementCommon & { type: 'g2d:aimAt'; spriteVar: string; targetVar: string })
   | (JSStatementCommon & {
@@ -1314,7 +1318,12 @@ export type JSStatement =
     })
   | (JSStatementCommon & { type: 'g2d:setCamera'; x: number | JSExpr; y: number | JSExpr })
   | (JSStatementCommon & { type: 'g2d:breakTile'; mapVar: string; spriteVar: string })
-  | (JSStatementCommon & { type: 'g2d:setTile'; mapVar: string; index: number; spriteVar: string })
+  | (JSStatementCommon & {
+      type: 'g2d:setTile'
+      mapVar: string
+      index: number | JSExpr
+      spriteVar: string
+    })
   | (JSStatementCommon & { type: 'g2d:bringToFront'; spriteVar: string; groupVar: string })
   | (JSStatementCommon & { type: 'g2d:sendToBack'; spriteVar: string; groupVar: string })
   | (JSStatementCommon & { type: 'g2d:drawHitbox'; spriteVar: string })
@@ -1343,26 +1352,26 @@ export type JSStatement =
       type: 'g2d:loadSpritesheet'
       varName: string
       image: string
-      frameW: number
-      frameH: number
+      frameW: number | JSExpr
+      frameH: number | JSExpr
     })
   | (JSStatementCommon & {
       type: 'g2d:animateSprite'
       spriteVar: string
       sheetVar: string
-      from: number
-      to: number
-      fps: number
+      from: number | JSExpr
+      to: number | JSExpr
+      fps: number | JSExpr
     })
   | (JSStatementCommon & {
       type: 'g2d:drawFrame'
       sheetVar: string
       ctxVar: string
-      index: number
-      x: number
-      y: number
-      w: number
-      h: number
+      index: number | JSExpr
+      x: number | JSExpr
+      y: number | JSExpr
+      w: number | JSExpr
+      h: number | JSExpr
     })
   // Movimento + efeitos (v0.4.0).
   | (JSStatementCommon & {
@@ -1391,7 +1400,7 @@ export type JSStatement =
       type: 'g2d:createTileMap'
       varName: string
       image: string
-      tile: number
+      tile: number | JSExpr
       solid: string
       grid: string
     })
@@ -1399,8 +1408,8 @@ export type JSStatement =
       type: 'g2d:drawTileMap'
       mapVar: string
       ctxVar: string
-      x: number
-      y: number
+      x: number | JSExpr
+      y: number | JSExpr
     })
   | (JSStatementCommon & { type: 'g2d:tileMapCollide'; spriteVar: string; mapVar: string })
   // Grupos de sprites (v0.6.0): MUITOS sprites (tiros, inimigos, estrelas). Um
@@ -1510,9 +1519,14 @@ export type JSStatement =
     })
   | (JSStatementCommon & { type: 'g2d:restart' })
   // Tela: faz o canvas preencher ~percent% da janela (mantendo a proporção).
-  | (JSStatementCommon & { type: 'g2d:fitScreen'; percent: number })
+  | (JSStatementCommon & { type: 'g2d:fitScreen'; percent: number | JSExpr })
   // Atalho de início: prepara o palco (tamanho do mundo) em tela cheia responsiva.
-  | (JSStatementCommon & { type: 'g2d:setupStage'; width: number; height: number; bg: string })
+  | (JSStatementCommon & {
+      type: 'g2d:setupStage'
+      width: number | JSExpr
+      height: number | JSExpr
+      bg: string
+    })
   // Tiro redondo com brilho num grupo; mover com setas; piscar (invencibilidade).
   | (JSStatementCommon & {
       type: 'g2d:spawnBullet'
@@ -2610,8 +2624,8 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     }),
     z.object({
       type: z.literal('g2d:playSound'),
-      freq: z.number(),
-      durationMs: z.number(),
+      freq: z.union([JSExprSchema, z.number()]),
+      durationMs: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
@@ -2631,7 +2645,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('g2d:playNote'),
       note: z.string(),
-      ms: z.number(),
+      ms: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
@@ -2719,7 +2733,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('g2d:setTile'),
       mapVar: irText(),
-      index: z.number(),
+      index: z.union([JSExprSchema, z.number()]),
       spriteVar: irText(),
       ...idField,
     }),
@@ -2769,28 +2783,28 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('g2d:loadSpritesheet'),
       varName: irText(),
       image: irText(),
-      frameW: z.number(),
-      frameH: z.number(),
+      frameW: z.union([JSExprSchema, z.number()]),
+      frameH: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
       type: z.literal('g2d:animateSprite'),
       spriteVar: irText(),
       sheetVar: irText(),
-      from: z.number(),
-      to: z.number(),
-      fps: z.number(),
+      from: z.union([JSExprSchema, z.number()]),
+      to: z.union([JSExprSchema, z.number()]),
+      fps: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
       type: z.literal('g2d:drawFrame'),
       sheetVar: irText(),
       ctxVar: irText(),
-      index: z.number(),
-      x: z.number(),
-      y: z.number(),
-      w: z.number(),
-      h: z.number(),
+      index: z.union([JSExprSchema, z.number()]),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      w: z.union([JSExprSchema, z.number()]),
+      h: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
@@ -2839,7 +2853,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('g2d:createTileMap'),
       varName: irText(),
       image: irText(),
-      tile: z.number(),
+      tile: z.union([JSExprSchema, z.number()]),
       solid: irText(),
       grid: irText(),
       ...idField,
@@ -2848,8 +2862,8 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('g2d:drawTileMap'),
       mapVar: irText(),
       ctxVar: irText(),
-      x: z.number(),
-      y: z.number(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
@@ -2995,11 +3009,15 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({ type: z.literal('g2d:dragX'), spriteVar: irText(), ...idField }),
-    z.object({ type: z.literal('g2d:fitScreen'), percent: z.number(), ...idField }),
+    z.object({
+      type: z.literal('g2d:fitScreen'),
+      percent: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
     z.object({
       type: z.literal('g2d:setupStage'),
-      width: z.number(),
-      height: z.number(),
+      width: z.union([JSExprSchema, z.number()]),
+      height: z.union([JSExprSchema, z.number()]),
       bg: irText(),
       ...idField,
     }),

@@ -14,27 +14,49 @@ type Slots = Partial<Record<string, AvatarSlot>>
 export type CaptureFn = () => Promise<Blob | null>
 
 /**
+ * Estado de "carregando" ESTÁVEL p/ a cabine — espelha o `Experience.jsx` do WawaSensei: só
+ * liga 50ms depois (não pisca em load instantâneo) e fica ligado por no MÍNIMO ~800ms (a
+ * transformação SEMPRE dá pra ver). Sobre o `useProgress` (que some quando todo GLB carregou).
+ * Tunável: subir o mínimo até 2000ms (como o WawaSensei) deixa o giro mais dramático.
+ */
+function useCabineLoading(): boolean {
+  const { active } = useProgress()
+  const [loading, setLoading] = useState(false)
+  const startedAt = useRef(0)
+  useEffect(() => {
+    let t: ReturnType<typeof setTimeout>
+    if (active) {
+      t = setTimeout(() => {
+        setLoading(true)
+        startedAt.current = performance.now()
+      }, 50)
+    } else {
+      t = setTimeout(
+        () => setLoading(false),
+        Math.max(0, 800 - (performance.now() - startedAt.current)),
+      )
+    }
+    return () => clearTimeout(t)
+  }, [active])
+  return loading
+}
+
+/**
  * Ponte de CAPTURA: registra no pai (via `onReady`) uma função que tira a "foto" do
  * personagem. `preserveDrawingBuffer:true` + um `gl.render` forçado garantem o frame
  * (sem isso o `toBlob` sai preto). Recorta um quadrado central 512×512 (avatar redondo).
+ * Só captura quando `canCapture` (cena pronta e nada carregando) — senão sai preto/meio-troca.
  */
 function SnapshotBridge({
   onReady,
-  ready,
-  fitKey,
-  framedKey,
+  canCapture,
 }: {
   onReady: (capture: CaptureFn) => void
-  ready: boolean
-  fitKey: string
-  framedKey: string | null
+  canCapture: boolean
 }) {
   const gl = useThree((s) => s.gl)
   const scene = useThree((s) => s.scene)
   const camera = useThree((s) => s.camera)
-  const { active } = useProgress()
-  const canCapture = ready && framedKey === fitKey && !active
-
   useEffect(() => {
     const capture: CaptureFn = async () => {
       if (!canCapture) return null
@@ -56,56 +78,25 @@ function SnapshotBridge({
   return null
 }
 
-function CaptureReadyBridge({
-  ready,
-  fitKey,
-  framedKey,
-  onCaptureReady,
-}: {
-  ready: boolean
-  fitKey: string
-  framedKey: string | null
-  onCaptureReady: (ready: boolean) => void
-}) {
-  const { active } = useProgress()
-
-  useEffect(() => {
-    const ok = ready && framedKey === fitKey && !active
-    if (!ok) {
-      onCaptureReady(false)
-      return
-    }
-    const raf = requestAnimationFrame(() => onCaptureReady(true))
-    return () => {
-      cancelAnimationFrame(raf)
-      onCaptureReady(false)
-    }
-  }, [active, ready, fitKey, framedKey, onCaptureReady])
-
-  return null
-}
-
 /**
- * Feixe de "teleporte" (estilo cabine do WawaSensei): cilindro brilhante que SOBE do pódio
- * quando alguma peça está carregando (`useProgress().active`) e some quando termina —
- * acompanhando o personagem que encolhe/gira no `avatar-rig`. Cosmético; cor da marca.
+ * Feixe de "teleporte" (cabine do WawaSensei): cilindro brilhante que SOBE do pódio enquanto
+ * `loading` (peça nova carregando) e some quando termina — acompanha o personagem que
+ * encolhe/gira no `avatar-rig`. Cosmético; cor da marca. Movimento reduzido → nunca aparece.
  */
-function TeleporterBeam() {
+function TeleporterBeam({ loading }: { loading: boolean }) {
   const group = useRef<THREE.Group>(null)
   const beam = useRef<THREE.Mesh>(null)
   const ring = useRef<THREE.Mesh>(null)
-  const { active } = useProgress()
   const reduced = useReducedMotion()
   const t = useRef(0)
   useFrame((_, dt) => {
-    const wantOn = active && !reduced
+    const wantOn = loading && !reduced
     const k = Math.min(1, dt * 4)
-    // Movimento reduzido: o feixe nunca aparece nem gira (some na hora).
     t.current = reduced ? 0 : THREE.MathUtils.lerp(t.current, wantOn ? 1 : 0, k)
     const g = group.current
     if (g) {
       g.scale.y = Math.max(0.0001, t.current)
-      if (!reduced) g.rotation.y += dt * (active ? 2.2 : 0.3)
+      if (!reduced) g.rotation.y += dt * (loading ? 2.2 : 0.3)
       g.visible = t.current > 0.01
     }
     const bm = beam.current?.material as THREE.MeshBasicMaterial | undefined
@@ -134,50 +125,36 @@ function TeleporterBeam() {
 }
 
 /**
- * Cena 3D do configurador (a ÚNICA tela do app que monta WebGL — em todo o resto o
- * `kids-avatar` mostra a FOTO). Personagem no pódio + luzes da marca + câmera `CameraControls`
- * (enquadra por modo/categoria, conserta o corte). `mode='photo'` libera órbita + retrato.
+ * Conteúdo da cena (dentro do `<Canvas>` p/ usar `useProgress`/`useThree`). O personagem fica em
+ * pé UMA vez (`onStood` → `ready`); a câmera enquadra só em [mode, ready] (não a cada peça/cor —
+ * fim do "recarrega a cena"); a cabine gira por `loading` (com duração mínima visível). Captura
+ * liberada quando `ready && !loading`.
  */
-export function AvatarScene({
+function SceneContents({
   slots,
+  pose,
+  mode,
+  dark,
   onReady,
   onCaptureReady,
-  fitKey,
-  dark,
-  mode = 'customize',
-  pose = 'Idle',
-  category = 'head',
 }: {
   slots: Slots
+  pose: string
+  mode: CamMode
+  dark: boolean
   onReady: (c: CaptureFn) => void
   onCaptureReady: (ready: boolean) => void
-  fitKey: string
-  dark: boolean
-  mode?: CamMode
-  pose?: string
-  category?: string
 }) {
   const charRef = useRef<THREE.Group>(null)
-  const lastFitKey = useRef<string | null>(null)
   const [ready, setReady] = useState(false)
-  const [framedKey, setFramedKey] = useState<string | null>(null)
-
+  const loading = useCabineLoading()
+  const canCapture = ready && !loading
   useEffect(() => {
-    if (lastFitKey.current === fitKey) return
-    lastFitKey.current = fitKey
-    setReady(false)
-    setFramedKey(null)
-    onCaptureReady(false)
-  }, [fitKey, onCaptureReady])
+    onCaptureReady(canCapture)
+  }, [canCapture, onCaptureReady])
 
   return (
-    <Canvas
-      shadows
-      dpr={[1, 2]}
-      gl={{ preserveDrawingBuffer: true, antialias: true }}
-      camera={{ position: [0, 1.1, 5.5], fov: 45 }}
-      onCreated={recoverWebGLContext}
-    >
+    <>
       <color attach="background" args={[dark ? '#0d1117' : '#eaf4f7']} />
       <ambientLight intensity={0.75} />
       <directionalLight
@@ -193,13 +170,13 @@ export function AvatarScene({
         color={dark ? '#c4f042' : '#7fd4e8'}
       />
 
-      {/* Personagem GLB (suspende ao carregar as peças, peça-a-peça) — feet em y≈0 após o stand. */}
+      {/* Personagem GLB — Suspense POR peça (no rig); fica em pé UMA vez. */}
       <Suspense fallback={null}>
         <AvatarRig
           slots={slots}
           pose={pose}
+          loading={loading}
           charRef={charRef}
-          standKey={fitKey}
           onStood={() => setReady(true)}
         />
       </Suspense>
@@ -210,23 +187,50 @@ export function AvatarScene({
         <meshStandardMaterial color={dark ? '#1b2230' : '#cfe7ee'} roughness={0.9} />
       </mesh>
       <ContactShadows position={[0, 0.01, 0]} opacity={0.45} scale={2.4} blur={2.6} far={2} />
-      <TeleporterBeam />
+      <TeleporterBeam loading={loading} />
 
-      <CameraManager
-        charRef={charRef}
+      <CameraManager charRef={charRef} mode={mode} ready={ready} />
+      <SnapshotBridge onReady={onReady} canCapture={canCapture} />
+    </>
+  )
+}
+
+/**
+ * Cena 3D do configurador (a ÚNICA tela do app que monta WebGL — em todo o resto o
+ * `kids-avatar` mostra a FOTO). Câmera `CameraControls`: CORPO INTEIRO em Personalizar, RETRATO
+ * na Cabine de fotos. Trocar peça NÃO mexe a câmera (só a cabine gira).
+ */
+export function AvatarScene({
+  slots,
+  onReady,
+  onCaptureReady,
+  dark,
+  mode = 'customize',
+  pose = 'Idle',
+}: {
+  slots: Slots
+  onReady: (c: CaptureFn) => void
+  onCaptureReady: (ready: boolean) => void
+  dark: boolean
+  mode?: CamMode
+  pose?: string
+}) {
+  return (
+    <Canvas
+      shadows
+      dpr={[1, 2]}
+      gl={{ preserveDrawingBuffer: true, antialias: true }}
+      camera={{ position: [0, 1.0, 6.5], fov: 45 }}
+      onCreated={recoverWebGLContext}
+    >
+      <SceneContents
+        slots={slots}
+        pose={pose}
         mode={mode}
-        category={category}
-        ready={ready}
-        fitKey={fitKey}
-        onFramed={setFramedKey}
-      />
-      <CaptureReadyBridge
-        ready={ready}
-        fitKey={fitKey}
-        framedKey={framedKey}
+        dark={dark}
+        onReady={onReady}
         onCaptureReady={onCaptureReady}
       />
-      <SnapshotBridge onReady={onReady} ready={ready} fitKey={fitKey} framedKey={framedKey} />
     </Canvas>
   )
 }

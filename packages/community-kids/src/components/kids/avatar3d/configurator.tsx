@@ -101,7 +101,6 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
   const [saving, setSaving] = useState(false)
   const [sceneReady, setSceneReady] = useState(false)
   const captureRef = useRef<CaptureFn | null>(null)
-  const lastFitKey = useRef<string | null>(null)
   const onReady = useCallback((c: CaptureFn) => {
     captureRef.current = c
   }, [])
@@ -247,22 +246,6 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
   const currentColor = slots[category]?.color
   const items = partsByCategory.get(category) ?? []
   const activePose = mode === 'photo' ? pose : 'Idle'
-  const sceneKey = useMemo(
-    () =>
-      AVATAR_CATEGORIES.map((c) => {
-        const slot = slots[c]
-        return `${c}:${slot?.asset ?? ''}:${slot?.color ?? ''}`
-      }).join('|'),
-    [slots],
-  )
-  const fitKey = `${mode}:${category}:${activePose}:${sceneKey}`
-  const preparingScene = !!state && !sceneReady
-
-  useEffect(() => {
-    if (lastFitKey.current === fitKey) return
-    lastFitKey.current = fitKey
-    setSceneReady(false)
-  }, [fitKey])
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-background">
@@ -273,11 +256,9 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
             slots={slots}
             onReady={onReady}
             onCaptureReady={setSceneReady}
-            fitKey={fitKey}
             dark={dark}
             mode={mode}
             pose={activePose}
-            category={category}
           />
         ) : (
           <div className="flex h-full items-center justify-center">
@@ -311,35 +292,6 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
             className="grid size-11 place-items-center rounded-full bg-card/90 text-foreground shadow-md backdrop-blur transition-transform active:scale-90 disabled:opacity-50"
           >
             <Shuffle className="size-5" />
-          </button>
-          <button
-            type="button"
-            onClick={save}
-            disabled={saving || hasLocked || !state || !sceneReady}
-            className={cn(
-              'inline-flex h-11 items-center gap-2 rounded-full px-4 font-bold text-sm shadow-md transition-transform active:scale-95',
-              hasLocked
-                ? 'bg-card/90 text-muted-foreground'
-                : 'sz-btn-gradient text-primary-foreground',
-              (saving || !state || !sceneReady) && 'opacity-60',
-            )}
-          >
-            {saving || preparingScene ? (
-              <Loader2 className="size-5 animate-spin" />
-            ) : (
-              <Camera className="size-5" />
-            )}
-            <span className="hidden sm:inline">
-              {saving
-                ? 'Salvando…'
-                : hasLocked
-                  ? 'Peça travada 🔒'
-                  : preparingScene
-                    ? 'Preparando foto…'
-                    : mode === 'photo'
-                      ? 'Tirar foto'
-                      : 'Salvar'}
-            </span>
           </button>
         </div>
       </div>
@@ -423,6 +375,20 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
                 </button>
               ))}
             </div>
+
+            {/* A FOTO é tirada AQUI, de propósito, no fim (não a cada mudança) — vira o avatar. */}
+            <button
+              type="button"
+              onClick={save}
+              disabled={saving || hasLocked || !state || !sceneReady}
+              className={cn(
+                'sz-btn-gradient mt-1 inline-flex h-12 items-center justify-center gap-2 rounded-2xl px-4 font-bold text-base text-primary-foreground shadow-md transition-transform active:scale-95',
+                (saving || hasLocked || !sceneReady) && 'opacity-60',
+              )}
+            >
+              {saving ? <Loader2 className="size-5 animate-spin" /> : <Camera className="size-5" />}
+              {saving ? 'Salvando…' : hasLocked ? 'Compre a peça travada 🔒' : 'Tirar foto'}
+            </button>
           </div>
         )}
 

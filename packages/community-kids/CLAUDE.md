@@ -251,14 +251,18 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   (`dynamic ssr:false` — three/fiber/drei só no cliente, espelha o `studio-full-client`) → `configurator.tsx`
   (estado + loja por categoria + 2 modos: **Personalizar** ⇄ **Cabine de fotos**) + `avatar-scene.tsx`
   (`<Canvas>` R3F) + `avatar-rig.tsx` + `asset-part.tsx` + `camera-manager.tsx` + `avatar-thumbs.tsx`.
-  **Experiência fiel ao WawaSensei (06/2026):** a câmera é drei **`CameraControls`** (`camera-manager.tsx`)
-  que **`fitToBox`** o personagem (conserta o corte cabeça/pés) e aproxima na cabeça por categoria de rosto;
-  a **Cabine de fotos** dá poses (`Poses.glb`: Idle/Chill/Cool/Punch/Ninja/King/Busy) + órbita LIVRE pra
-  posicionar antes de tirar a foto (retrato). A grade de itens mostra **MINIATURAS** renderizadas
-  (`avatar-thumbs.tsx`: 1 renderer offscreen reutilizado → `toDataURL` cacheado por id; LAZY por categoria;
-  "nenhum" = ✕). Trocar peça NÃO pisca a tela: **`<Suspense>` POR peça** no `avatar-rig` (não apaga o resto)
-  + animação de "cabine" (encolhe/gira/flutua via `useProgress`+`useFrame` + feixe de teleporte) no lugar do
-  flicker. `randomize` ("Surpreenda-me") sorteia peça grátis/possuída + cor. ⚠️ **Personagem GLB REAL (Quaternius CC0, via pack do WawaSensei):**
+  **Experiência fiel ao WawaSensei (simplificada p/ a arquitetura DELE — 06/2026):** a câmera é drei
+  **`CameraControls`** (`camera-manager.tsx`) que enquadra o **CORPO INTEIRO em Personalizar** (longe + baixa,
+  cabeça+pés) e **RETRATO na Cabine de fotos** — reenquadra SÓ em `[mode, ready]` (trocar peça/cor NÃO mexe a
+  câmera; guarda `h>0.8` evita box parcial). O personagem fica em pé UMA vez (mede o box; NÃO re-fica-em-pé a
+  cada troca — era o "recarrega a cena"). A **Cabine de fotos** dá poses (`Poses.glb`: Idle/Chill/Cool/Punch/
+  Ninja/King/Busy) + órbita LIVRE pra posicionar antes da foto. A grade mostra **MINIATURAS** renderizadas
+  (`avatar-thumbs.tsx`: 1 renderer offscreen reutilizado, peça como MESH COMUM em rest pose **ESCALADA 0.01**
+  — sem o 0.01 a peça em cm fica além do `far` e sai EM BRANCO — + cabeça base em contexto; `toDataURL`
+  cacheado; "nenhum" = ✕). Trocar peça NÃO pisca: **`<Suspense>` POR peça** no `avatar-rig` + animação de
+  "cabine" (encolhe/gira/flutua + feixe) dirigida por um `loading` com **duração mínima** (50ms/~800ms sobre
+  `useProgress`, como o `Experience.jsx`) — só troca de ASSET gira (cor muta material in-place, instantâneo).
+  `randomize` ("Surpreenda-me") sorteia peça grátis/possuída + cor. ⚠️ **Personagem GLB REAL (Quaternius CC0, via pack do WawaSensei):**
   1 esqueleto compartilhado (`base/Armature.glb`, ossos `mixamorig:*`) + 1 GLB skinned por peça equipada
   (`useGLTF` → `<skinnedMesh skeleton={compartilhado}>`); material `Color_*` recebe a cor da peça, `Skin_*`
   usa o material de pele compartilhado (cor do slot `head`); oclusão `hat→hair`; poses opcionais do

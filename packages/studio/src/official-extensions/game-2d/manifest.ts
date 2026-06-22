@@ -231,8 +231,11 @@ Tijolinhos que faltavam para montar mais tipos de jogo, em categorias novas e ex
 - **✨ Aparência**: **Virar** (espelhar esquerda/direita), **Mudar a transparência**, **Mudar o tamanho** e
   **Multiplicar o tamanho** do sprite.
 - **🕹️ Movimento**: **Dar a volta na tela** (sai de um lado, reaparece no outro — estilo Pac-Man/Asteroids).
-- **🎬 Telas e cenas**: **Pausar**, **Continuar** e **o jogo está pausado?** — embrulhe o movimento num
-  "se o jogo não está pausado" e desenhe a tela de PAUSA por cima.
+- **🎬 Telas e cenas**: **Pausar o jogo** CONGELA tudo (o "a cada quadro" para de rodar), **Continuar o
+  jogo** descongela e **o jogo está pausado?** lê o estado (útil num evento de tecla). Para mostrar "Você
+  ganhou/perdeu", **desenhe a tela ANTES de Pausar** (ela fica congelada por cima). Para um fim de jogo com
+  recomeço, prefira as **cenas** (**Ir para a tela 'perdeu'/'ganhou'** + **a tela atual é …?**): o "a cada
+  quadro" decide o que mostrar e o jogo segue rodando a tela de fim.
 
 ### Blocos genéricos Tier 2 (v0.16.0)
 

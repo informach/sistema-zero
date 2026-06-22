@@ -248,13 +248,19 @@ export const gameTwoDRuntime = `(function () {
     var rafId = 0;
     function tick() {
       if (canceled) return;
-      _particlesDrawnThisFrame = false;
-      try { fn(); } catch (e) { console.error(e && e.message ? e.message : e); }
-      // As partículas (explosões) se desenham sozinhas no FIM do quadro do aluno,
-      // com a câmera — a menos que ele já tenha usado "atualizar e desenhar as
-      // partículas". Sem isto, "soltar explosão" emite mas nada aparece na tela.
-      if (!_particlesDrawnThisFrame && particles.length) {
-        try { _camWrap(drawParticles)(ensureStage()); } catch (e) {}
+      // "Pausar o jogo" CONGELA o jogo: não roda o quadro do aluno (movimento,
+      // spawn, física, desenho). A última tela fica parada. Para mostrar "Você
+      // ganhou/perdeu", desenhe a tela ANTES de "Pausar o jogo" — ela fica
+      // congelada por cima. "Continuar o jogo" descongela.
+      if (!_paused) {
+        _particlesDrawnThisFrame = false;
+        try { fn(); } catch (e) { console.error(e && e.message ? e.message : e); }
+        // As partículas (explosões) se desenham sozinhas no FIM do quadro do aluno,
+        // com a câmera — a menos que ele já tenha usado "atualizar e desenhar as
+        // partículas". Sem isto, "soltar explosão" emite mas nada aparece na tela.
+        if (!_particlesDrawnThisFrame && particles.length) {
+          try { _camWrap(drawParticles)(ensureStage()); } catch (e) {}
+        }
       }
       rafId = requestAnimationFrame(tick);
     }
@@ -3043,7 +3049,9 @@ export const gameTwoDRuntime = `(function () {
     if (s.y + (s.h || 0) < 0) s.y = h;
     else if (s.y > h) s.y = -(s.h || 0);
   }
-  // ---- Estado do jogo: pausa (o aluno embrulha o movimento em "se não pausado") ----
+  // ---- Estado do jogo: pausa. "Pausar o jogo" CONGELA o gameLoop (o tick para de
+  // rodar o quadro do aluno); "Continuar o jogo" descongela. "está pausado?" lê o
+  // estado (útil em eventos de tecla). ----
   var _paused = false;
   function pauseGame() { _paused = true; }
   function resumeGame() { _paused = false; }

@@ -40,7 +40,11 @@ describe('parseJS — helpers SZGame2D.* (game-2d)', () => {
       { type: 'g2d:setGravity', value: { type: 'num', value: 0.5 } },
     ])
     expect(parseJS('SZGame2D.playSound(440, 200);')).toEqual([
-      { type: 'g2d:playSound', freq: 440, durationMs: 200 },
+      {
+        type: 'g2d:playSound',
+        freq: { type: 'num', value: 440 },
+        durationMs: { type: 'num', value: 200 },
+      },
     ])
     expect(parseJS('SZGame2D.playFx("coin");')).toEqual([{ type: 'g2d:playFx', fx: 'coin' }])
     expect(parseJS('SZGame2D.playMusic("adventure");')).toEqual([
@@ -48,7 +52,7 @@ describe('parseJS — helpers SZGame2D.* (game-2d)', () => {
     ])
     expect(parseJS('SZGame2D.stopMusic();')).toEqual([{ type: 'g2d:stopMusic' }])
     expect(parseJS('SZGame2D.playNote("C", 300);')).toEqual([
-      { type: 'g2d:playNote', note: 'C', ms: 300 },
+      { type: 'g2d:playNote', note: 'C', ms: { type: 'num', value: 300 } },
     ])
   })
 
@@ -69,7 +73,13 @@ describe('parseJS — helpers SZGame2D.* (game-2d)', () => {
         type: 'g2d:onPointer',
         xName: 'px',
         yName: 'py',
-        body: [{ type: 'g2d:playSound', freq: 440, durationMs: 100 }],
+        body: [
+          {
+            type: 'g2d:playSound',
+            freq: { type: 'num', value: 440 },
+            durationMs: { type: 'num', value: 100 },
+          },
+        ],
       },
     ])
   })
@@ -139,21 +149,34 @@ describe('parseJS — helpers SZGame2D.* (game-2d)', () => {
       { type: 'g2d:setImage', spriteVar: 'heroi', image: 'vilao' },
     ])
     expect(parseJS('const andar = SZGame2D.loadSpriteSheet("folha", 32, 48);')).toEqual([
-      { type: 'g2d:loadSpritesheet', varName: 'andar', image: 'folha', frameW: 32, frameH: 48 },
+      {
+        type: 'g2d:loadSpritesheet',
+        varName: 'andar',
+        image: 'folha',
+        frameW: { type: 'num', value: 32 },
+        frameH: { type: 'num', value: 48 },
+      },
     ])
     expect(parseJS('SZGame2D.setAnimation(heroi, andar, 0, 3, 8);')).toEqual([
-      { type: 'g2d:animateSprite', spriteVar: 'heroi', sheetVar: 'andar', from: 0, to: 3, fps: 8 },
+      {
+        type: 'g2d:animateSprite',
+        spriteVar: 'heroi',
+        sheetVar: 'andar',
+        from: { type: 'num', value: 0 },
+        to: { type: 'num', value: 3 },
+        fps: { type: 'num', value: 8 },
+      },
     ])
     expect(parseJS('SZGame2D.drawFrame(ctx, andar, 2, 10, 20, 32, 32);')).toEqual([
       {
         type: 'g2d:drawFrame',
         ctxVar: 'ctx',
         sheetVar: 'andar',
-        index: 2,
-        x: 10,
-        y: 20,
-        w: 32,
-        h: 32,
+        index: { type: 'num', value: 2 },
+        x: { type: 'num', value: 10 },
+        y: { type: 'num', value: 20 },
+        w: { type: 'num', value: 32 },
+        h: { type: 'num', value: 32 },
       },
     ])
   })
@@ -207,13 +230,19 @@ describe('parseJS — helpers SZGame2D.* (game-2d)', () => {
         type: 'g2d:createTileMap',
         varName: 'mapa',
         image: 'tileset',
-        tile: 32,
+        tile: { type: 'num', value: 32 },
         solid: '1',
         grid: '1 0;0 1',
       },
     ])
     expect(parseJS('SZGame2D.drawTileMap(ctx, mapa, 0, 0);')).toEqual([
-      { type: 'g2d:drawTileMap', ctxVar: 'ctx', mapVar: 'mapa', x: 0, y: 0 },
+      {
+        type: 'g2d:drawTileMap',
+        ctxVar: 'ctx',
+        mapVar: 'mapa',
+        x: { type: 'num', value: 0 },
+        y: { type: 'num', value: 0 },
+      },
     ])
     expect(parseJS('SZGame2D.collideTileMap(heroi, mapa);')).toEqual([
       { type: 'g2d:tileMapCollide', spriteVar: 'heroi', mapVar: 'mapa' },
@@ -327,14 +356,26 @@ describe('parseJS — helpers SZGame2D.* (game-2d)', () => {
       {
         type: 'g2d:everyFrames',
         n: { type: 'num', value: 30 },
-        body: [{ type: 'g2d:playSound', freq: 440, durationMs: 50 }],
+        body: [
+          {
+            type: 'g2d:playSound',
+            freq: { type: 'num', value: 440 },
+            durationMs: { type: 'num', value: 50 },
+          },
+        ],
       },
     ])
     expect(parseJS('if (SZGame2D.everySeconds("k", 2)) { SZGame2D.playSound(440, 50); }')).toEqual([
       {
         type: 'g2d:everySeconds',
         seconds: 2,
-        body: [{ type: 'g2d:playSound', freq: 440, durationMs: 50 }],
+        body: [
+          {
+            type: 'g2d:playSound',
+            freq: { type: 'num', value: 440 },
+            durationMs: { type: 'num', value: 50 },
+          },
+        ],
       },
     ])
     // countGroup como valor numa comparação dentro de um "se".
@@ -760,17 +801,31 @@ describe('parseJS — Kit espaço (v0.7.0): nave, asteroide, explosão, sons, co
 
 describe('parseJS — tela responsiva (fitScreen)', () => {
   it('reconhece SZGame2D.fitScreen(percent)', () => {
-    expect(parseJS('SZGame2D.fitScreen(100);')).toEqual([{ type: 'g2d:fitScreen', percent: 100 }])
-    expect(parseJS('SZGame2D.fitScreen(90);')).toEqual([{ type: 'g2d:fitScreen', percent: 90 }])
+    expect(parseJS('SZGame2D.fitScreen(100);')).toEqual([
+      { type: 'g2d:fitScreen', percent: { type: 'num', value: 100 } },
+    ])
+    expect(parseJS('SZGame2D.fitScreen(90);')).toEqual([
+      { type: 'g2d:fitScreen', percent: { type: 'num', value: 90 } },
+    ])
   })
 
   it('reconhece SZGame2D.setupStage(largura, altura, fundo)', () => {
     expect(parseJS('SZGame2D.setupStage(800, 480, "#0b1020");')).toEqual([
-      { type: 'g2d:setupStage', width: 800, height: 480, bg: '#0b1020' },
+      {
+        type: 'g2d:setupStage',
+        width: { type: 'num', value: 800 },
+        height: { type: 'num', value: 480 },
+        bg: '#0b1020',
+      },
     ])
     // Código antigo de 2 argumentos: a cor de fundo cai no padrão.
     expect(parseJS('SZGame2D.setupStage(800, 480);')).toEqual([
-      { type: 'g2d:setupStage', width: 800, height: 480, bg: '#0b1020' },
+      {
+        type: 'g2d:setupStage',
+        width: { type: 'num', value: 800 },
+        height: { type: 'num', value: 480 },
+        bg: '#0b1020',
+      },
     ])
   })
 })

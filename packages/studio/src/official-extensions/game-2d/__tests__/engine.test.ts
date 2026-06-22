@@ -392,4 +392,39 @@ describe('game-2d — runtime de física', () => {
     expect(fillRects).toBeGreaterThan(0)
     canvas.remove()
   })
+
+  it('"Pausar o jogo" CONGELA o gameLoop; "Continuar o jogo" descongela', () => {
+    const captured: { fn: (() => void) | null } = { fn: null }
+    const raf = (cb: () => void): number => {
+      captured.fn = cb
+      return 1
+    }
+    const win = { addEventListener() {}, SZGame2D: undefined } as unknown as Record<string, unknown>
+    new Function('window', 'requestAnimationFrame', gameTwoDRuntime)(win, raf)
+    const api = (
+      win as {
+        SZGame2D: {
+          gameLoop: (fn: () => void) => void
+          pauseGame: () => void
+          resumeGame: () => void
+        }
+      }
+    ).SZGame2D
+
+    let frames = 0
+    api.gameLoop(() => {
+      frames++
+    })
+    captured.fn?.() // quadro 1 roda
+    expect(frames).toBe(1)
+
+    api.pauseGame()
+    captured.fn?.() // pausado → o quadro do aluno NÃO roda
+    captured.fn?.()
+    expect(frames).toBe(1)
+
+    api.resumeGame()
+    captured.fn?.() // descongelou → roda de novo
+    expect(frames).toBe(2)
+  })
 })
