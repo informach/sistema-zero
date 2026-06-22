@@ -85,10 +85,10 @@ export type JSExpr =
   | (JSExprCommon & { type: 'g2d:spriteH'; spriteVar: string })
   | (JSExprCommon & { type: 'g2d:centerX'; spriteVar: string })
   | (JSExprCommon & { type: 'g2d:centerY'; spriteVar: string })
-  | (JSExprCommon & { type: 'g2d:randomBetween'; min: number; max: number })
-  | (JSExprCommon & { type: 'g2d:randomChance'; percent: number })
+  | (JSExprCommon & { type: 'g2d:randomBetween'; min: number | JSExpr; max: number | JSExpr })
+  | (JSExprCommon & { type: 'g2d:randomChance'; percent: number | JSExpr })
   | (JSExprCommon & { type: 'g2d:hasHealth'; spriteVar: string })
-  | (JSExprCommon & { type: 'g2d:cooldownReady'; spriteVar: string; frames: number })
+  | (JSExprCommon & { type: 'g2d:cooldownReady'; spriteVar: string; frames: number | JSExpr })
   | (JSExprCommon & { type: 'g2d:isPaused' })
   // Tier 2 — posição da câmera e leitura de tile (valores).
   | (JSExprCommon & { type: 'g2d:cameraX' })
@@ -120,7 +120,7 @@ export type JSExpr =
   | (JSExprCommon & { type: 'g3d:touchesBox'; objVar: string; groupVar: string })
   // Game 3D — Corrida/genérico: distância, proximidade, bateu num rival?, voltas.
   | (JSExprCommon & { type: 'g3d:distanceTo'; aVar: string; bVar: string })
-  | (JSExprCommon & { type: 'g3d:isNear'; aVar: string; bVar: string; dist: number })
+  | (JSExprCommon & { type: 'g3d:isNear'; aVar: string; bVar: string; dist: number | JSExpr })
   | (JSExprCommon & { type: 'g3d:raceHit'; objVar: string; worldVar: string })
   | (JSExprCommon & { type: 'g3d:raceLaps'; objVar: string })
   // Game 3D — Kit Empilhar: pontuação (andares) e a torre caiu (fim de jogo)?
@@ -135,7 +135,12 @@ export type JSExpr =
   // Game 3D — mira & clique (raycast): seleção, mira à frente, sensor de chão.
   | (JSExprCommon & { type: 'g3d:pickAtMouse'; worldVar: string })
   | (JSExprCommon & { type: 'g3d:pointerOver'; worldVar: string; objVar: string })
-  | (JSExprCommon & { type: 'g3d:aimAhead'; worldVar: string; objVar: string; dist: number })
+  | (JSExprCommon & {
+      type: 'g3d:aimAhead'
+      worldVar: string
+      objVar: string
+      dist: number | JSExpr
+    })
   | (JSExprCommon & { type: 'g3d:onGround'; worldVar: string; objVar: string })
   | (JSExprCommon & { type: 'g3d:groundHeight'; worldVar: string; objVar: string })
   // Entrada (caminho "na mão"): tecla apertada (bool) e posição do ponteiro (núm).
@@ -322,16 +327,20 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('g2d:centerY'), spriteVar: irText(), ...idField }),
     z.object({
       type: z.literal('g2d:randomBetween'),
-      min: z.number(),
-      max: z.number(),
+      min: z.union([JSExprSchema, z.number()]),
+      max: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
-    z.object({ type: z.literal('g2d:randomChance'), percent: z.number(), ...idField }),
+    z.object({
+      type: z.literal('g2d:randomChance'),
+      percent: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
     z.object({ type: z.literal('g2d:hasHealth'), spriteVar: irText(), ...idField }),
     z.object({
       type: z.literal('g2d:cooldownReady'),
       spriteVar: irText(),
-      frames: z.number(),
+      frames: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({ type: z.literal('g2d:isPaused'), ...idField }),
@@ -380,7 +389,7 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
       type: z.literal('g3d:isNear'),
       aVar: irText(),
       bVar: irText(),
-      dist: z.number(),
+      dist: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({ type: z.literal('g3d:raceHit'), objVar: irText(), worldVar: irText(), ...idField }),
@@ -403,7 +412,7 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
       type: z.literal('g3d:aimAhead'),
       worldVar: irText(),
       objVar: irText(),
-      dist: z.number(),
+      dist: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({ type: z.literal('g3d:onGround'), worldVar: irText(), objVar: irText(), ...idField }),
@@ -1306,7 +1315,7 @@ export type JSStatement =
     })
   | (JSStatementCommon & { type: 'g2d:scaleSprite'; spriteVar: string; factor: number | JSExpr })
   | (JSStatementCommon & { type: 'g2d:wrapEdges'; spriteVar: string })
-  | (JSStatementCommon & { type: 'g2d:pruneOld'; groupVar: string; seconds: number })
+  | (JSStatementCommon & { type: 'g2d:pruneOld'; groupVar: string; seconds: number | JSExpr })
   | (JSStatementCommon & { type: 'g2d:pauseGame' })
   | (JSStatementCommon & { type: 'g2d:resumeGame' })
   // Tier 2 — câmera, mapa destrutível, ordem de desenho e depuração (comandos).
@@ -1421,8 +1430,8 @@ export type JSStatement =
       groupVar: string
       x: JSExpr
       y: JSExpr
-      w: number
-      h: number
+      w: number | JSExpr
+      h: number | JSExpr
       color: string
       vx: JSExpr
       vy: JSExpr
@@ -1432,8 +1441,8 @@ export type JSStatement =
       groupVar: string
       x: JSExpr
       y: JSExpr
-      w: number
-      h: number
+      w: number | JSExpr
+      h: number | JSExpr
       image: string
       vx: JSExpr
       vy: JSExpr
@@ -1465,7 +1474,11 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'g2d:removeFromGroup'; spriteVar: string; groupVar: string })
   // Temporizadores: "a cada N quadros/segundos" — vira if (SZGame2D.everyX(...)).
   | (JSStatementCommon & { type: 'g2d:everyFrames'; n: JSExpr; body: JSStatement[] })
-  | (JSStatementCommon & { type: 'g2d:everySeconds'; seconds: number; body: JSStatement[] })
+  | (JSStatementCommon & {
+      type: 'g2d:everySeconds'
+      seconds: number | JSExpr
+      body: JSStatement[]
+    })
   // HUD no canvas (v0.6.0): placar, texto, vidas (corações) e barra.
   | (JSStatementCommon & {
       type: 'g2d:drawScore'
@@ -1533,7 +1546,7 @@ export type JSStatement =
       groupVar: string
       x: JSExpr
       y: JSExpr
-      radius: number
+      radius: number | JSExpr
       color: string
       vx: JSExpr
       vy: JSExpr
@@ -1559,7 +1572,7 @@ export type JSStatement =
       groupVar: string
       x: JSExpr
       y: JSExpr
-      size: number
+      size: number | JSExpr
       color: string
       vx: JSExpr
       vy: JSExpr
@@ -1595,9 +1608,9 @@ export type JSStatement =
   | (JSStatementCommon & {
       type: 'g2d:spawnAsteroidEdge'
       groupVar: string
-      size: number
+      size: number | JSExpr
       color: string
-      speed: number
+      speed: number | JSExpr
     })
   // ---- Pulo genérico + Kit dino (v0.9.0) ----
   | (JSStatementCommon & {
@@ -1633,7 +1646,7 @@ export type JSStatement =
       ctxVar: string
       shape: string
       x: JSExpr
-      size: number
+      size: number | JSExpr
       vx: JSExpr
     })
   | (JSStatementCommon & {
@@ -1687,14 +1700,14 @@ export type JSStatement =
       type: 'g3d:createBox'
       varName: string
       worldVar: string
-      size: number
+      size: number | JSExpr
       color: string
     })
   | (JSStatementCommon & {
       type: 'g3d:createSphere'
       varName: string
       worldVar: string
-      radius: number
+      radius: number | JSExpr
       color: string
     })
   | (JSStatementCommon & {
@@ -1717,9 +1730,9 @@ export type JSStatement =
       type: 'g3d:createBlock'
       varName: string
       worldVar: string
-      width: number
-      height: number
-      depth: number
+      width: number | JSExpr
+      height: number | JSExpr
+      depth: number | JSExpr
       color: string
     })
   // Game 3D — física: velocidade, pulo, gravidade+chão, controle por teclado, escala.
@@ -1732,7 +1745,7 @@ export type JSStatement =
     })
   | (JSStatementCommon & { type: 'g3d:jump'; objVar: string; force: JSExpr })
   | (JSStatementCommon & { type: 'g3d:applyGravity'; objVar: string; groundVar: string })
-  | (JSStatementCommon & { type: 'g3d:controlWithKeys'; objVar: string; speed: number })
+  | (JSStatementCommon & { type: 'g3d:controlWithKeys'; objVar: string; speed: number | JSExpr })
   | (JSStatementCommon & { type: 'g3d:setScale'; objVar: string; factor: JSExpr })
   // Game 3D — câmera segue um objeto (mantém o enquadramento atual).
   | (JSStatementCommon & { type: 'g3d:cameraFollow'; worldVar: string; objVar: string })
@@ -1743,8 +1756,8 @@ export type JSStatement =
       worldVar: string
       groupVar: string
       groundVar: string
-      every: number
-      speed: number
+      every: number | JSExpr
+      speed: number | JSExpr
     })
   | (JSStatementCommon & { type: 'g3d:stop'; worldVar: string })
   // ---- Game 3D — Kit Travessia (atravessar a rua, mundo em grade z-up) ----
@@ -1765,9 +1778,9 @@ export type JSStatement =
       rowIndex: JSExpr
       kind: string
       direction: string
-      speed: number
+      speed: number | JSExpr
     })
-  | (JSStatementCommon & { type: 'g3d:generateRows'; worldVar: string; count: number })
+  | (JSStatementCommon & { type: 'g3d:generateRows'; worldVar: string; count: number | JSExpr })
   | (JSStatementCommon & { type: 'g3d:moveTraffic'; worldVar: string })
   // ---- Game 3D — primitivas GENÉRICAS de grade/isométrico (fora do kit, p/ outros jogos) ----
   | (JSStatementCommon & { type: 'g3d:isometricCamera'; worldVar: string; followVar: string })
@@ -1776,17 +1789,17 @@ export type JSStatement =
   | (JSStatementCommon & {
       type: 'g3d:moveAcross'
       groupVar: string
-      speed: number
-      min: number
-      max: number
+      speed: number | JSExpr
+      min: number | JSExpr
+      max: number | JSExpr
     })
   // ---- Game 3D — câmera aérea + movimento circular (genéricos) e Kit Corrida ----
   | (JSStatementCommon & { type: 'g3d:topCamera'; worldVar: string; followVar: string })
   | (JSStatementCommon & {
       type: 'g3d:moveInCircle'
       objVar: string
-      radius: number
-      speed: number
+      radius: number | JSExpr
+      speed: number | JSExpr
     })
   | (JSStatementCommon & { type: 'g3d:createRaceScene'; canvasId: string; varName: string })
   | (JSStatementCommon & { type: 'g3d:createRaceTrack'; worldVar: string })
@@ -1806,11 +1819,11 @@ export type JSStatement =
       type: 'g3d:slideBetween'
       objVar: string
       axis: string
-      min: number
-      max: number
-      speed: number
+      min: number | JSExpr
+      max: number | JSExpr
+      speed: number | JSExpr
     })
-  | (JSStatementCommon & { type: 'g3d:spin'; objVar: string; axis: string; speed: number })
+  | (JSStatementCommon & { type: 'g3d:spin'; objVar: string; axis: string; speed: number | JSExpr })
   | (JSStatementCommon & { type: 'g3d:createStackScene'; canvasId: string; varName: string })
   | (JSStatementCommon & { type: 'g3d:createStackTower'; worldVar: string })
   | (JSStatementCommon & { type: 'g3d:stackDrop'; worldVar: string })
@@ -1825,7 +1838,7 @@ export type JSStatement =
       x: JSExpr
       y: JSExpr
       z: JSExpr
-      factor: number
+      factor: number | JSExpr
     })
   // ---- Game 3D — genéricos: olhar/apontar/andar para frente ----
   | (JSStatementCommon & { type: 'g3d:lookAtObject'; aVar: string; bVar: string })
@@ -1839,21 +1852,21 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'g3d:moveForward'; objVar: string; dist: JSExpr })
   | (JSStatementCommon & { type: 'g3d:faceVelocity'; objVar: string })
   // ---- Game 3D — física genérica: corpo, sólidos, presets plataforma/FPS ----
-  | (JSStatementCommon & { type: 'g3d:body'; objVar: string; gravity: number })
+  | (JSStatementCommon & { type: 'g3d:body'; objVar: string; gravity: number | JSExpr })
   | (JSStatementCommon & { type: 'g3d:stepBody'; objVar: string; worldVar: string })
   | (JSStatementCommon & { type: 'g3d:setSolid'; objVar: string })
   | (JSStatementCommon & {
       type: 'g3d:platformerControls'
       objVar: string
       worldVar: string
-      speed: number
-      jump: number
+      speed: number | JSExpr
+      jump: number | JSExpr
     })
   | (JSStatementCommon & {
       type: 'g3d:fpsControls'
       objVar: string
       worldVar: string
-      speed: number
+      speed: number | JSExpr
     })
   | (JSStatementCommon & { type: 'g3d:resolveCollision'; aVar: string; bVar: string })
   // ---- Game 3D — câmeras vivas (1ª pessoa, orbital, 3ª pessoa, olhar, FOV) ----
@@ -1863,47 +1876,47 @@ export type JSStatement =
       type: 'g3d:thirdPersonCamera'
       worldVar: string
       objVar: string
-      dist: number
-      height: number
+      dist: number | JSExpr
+      height: number | JSExpr
     })
   | (JSStatementCommon & { type: 'g3d:cameraLookAt'; worldVar: string; objVar: string })
-  | (JSStatementCommon & { type: 'g3d:setFOV'; worldVar: string; deg: number })
+  | (JSStatementCommon & { type: 'g3d:setFOV'; worldVar: string; deg: number | JSExpr })
   // ---- Game 3D — formas, materiais, texturas, modelo (Fase 6) ----
   | (JSStatementCommon & {
       type: 'g3d:createCylinder'
       varName: string
       worldVar: string
-      radius: number
-      height: number
+      radius: number | JSExpr
+      height: number | JSExpr
       color: string
     })
   | (JSStatementCommon & {
       type: 'g3d:createCone'
       varName: string
       worldVar: string
-      radius: number
-      height: number
+      radius: number | JSExpr
+      height: number | JSExpr
       color: string
     })
   | (JSStatementCommon & {
       type: 'g3d:createPlane'
       varName: string
       worldVar: string
-      width: number
-      depth: number
+      width: number | JSExpr
+      depth: number | JSExpr
       color: string
     })
   | (JSStatementCommon & {
       type: 'g3d:createTorus'
       varName: string
       worldVar: string
-      radius: number
-      tube: number
+      radius: number | JSExpr
+      tube: number | JSExpr
       color: string
     })
   | (JSStatementCommon & { type: 'g3d:createModel'; varName: string; worldVar: string })
   | (JSStatementCommon & { type: 'g3d:setColor'; objVar: string; color: string })
-  | (JSStatementCommon & { type: 'g3d:setOpacity'; objVar: string; opacity: number })
+  | (JSStatementCommon & { type: 'g3d:setOpacity'; objVar: string; opacity: number | JSExpr })
   | (JSStatementCommon & { type: 'g3d:setMaterial'; objVar: string; kind: string })
   | (JSStatementCommon & { type: 'g3d:setTexture'; objVar: string; asset: string })
   | (JSStatementCommon & { type: 'g3d:setVisible'; objVar: string; mode: string })
@@ -1914,29 +1927,29 @@ export type JSStatement =
       type: 'g3d:addAmbientLight'
       worldVar: string
       color: string
-      intensity: number
+      intensity: number | JSExpr
     })
   | (JSStatementCommon & {
       type: 'g3d:addSunLight'
       worldVar: string
       color: string
-      intensity: number
+      intensity: number | JSExpr
     })
   | (JSStatementCommon & {
       type: 'g3d:addPointLight'
       worldVar: string
       color: string
-      intensity: number
-      x: number
-      y: number
-      z: number
+      intensity: number | JSExpr
+      x: number | JSExpr
+      y: number | JSExpr
+      z: number | JSExpr
     })
   | (JSStatementCommon & {
       type: 'g3d:setFog'
       worldVar: string
       color: string
-      near: number
-      far: number
+      near: number | JSExpr
+      far: number | JSExpr
     })
   | (JSStatementCommon & { type: 'g3d:setSky'; worldVar: string; top: string; bottom: string })
   | (JSStatementCommon & { type: 'g3d:setShadows'; worldVar: string; mode: string })
@@ -1946,9 +1959,9 @@ export type JSStatement =
       type: 'g3d:spawnInSwarm'
       swarmVar: string
       originalVar: string
-      x: number
-      y: number
-      z: number
+      x: number | JSExpr
+      y: number | JSExpr
+      z: number | JSExpr
     })
   | (JSStatementCommon & {
       type: 'g3d:forEachInSwarm'
@@ -1961,10 +1974,10 @@ export type JSStatement =
       type: 'g3d:pruneSwarm'
       swarmVar: string
       axis: string
-      min: number
-      max: number
+      min: number | JSExpr
+      max: number | JSExpr
     })
-  | (JSStatementCommon & { type: 'g3d:playNote'; freq: number; ms: number })
+  | (JSStatementCommon & { type: 'g3d:playNote'; freq: number | JSExpr; ms: number | JSExpr })
   | (JSStatementCommon & { type: 'g3d:playEffect'; kind: string })
   // Orientação a objetos
   | (JSStatementCommon & {
@@ -2706,7 +2719,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('g2d:pruneOld'),
       groupVar: irText(),
-      seconds: z.number(),
+      seconds: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({ type: z.literal('g2d:pauseGame'), ...idField }),
@@ -2878,8 +2891,8 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       groupVar: irText(),
       x: JSExprSchema,
       y: JSExprSchema,
-      w: z.number(),
-      h: z.number(),
+      w: z.union([JSExprSchema, z.number()]),
+      h: z.union([JSExprSchema, z.number()]),
       color: irText(),
       vx: JSExprSchema,
       vy: JSExprSchema,
@@ -2890,8 +2903,8 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       groupVar: irText(),
       x: JSExprSchema,
       y: JSExprSchema,
-      w: z.number(),
-      h: z.number(),
+      w: z.union([JSExprSchema, z.number()]),
+      h: z.union([JSExprSchema, z.number()]),
       image: irText(),
       vx: JSExprSchema,
       vy: JSExprSchema,
@@ -2943,7 +2956,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     }),
     z.object({
       type: z.literal('g2d:everySeconds'),
-      seconds: z.number(),
+      seconds: z.union([JSExprSchema, z.number()]),
       body: z.array(JSStatementSchema),
       ...idField,
     }),
@@ -3026,7 +3039,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       groupVar: irText(),
       x: JSExprSchema,
       y: JSExprSchema,
-      radius: z.number(),
+      radius: z.union([JSExprSchema, z.number()]),
       color: irText(),
       vx: JSExprSchema,
       vy: JSExprSchema,
@@ -3060,7 +3073,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       groupVar: irText(),
       x: JSExprSchema,
       y: JSExprSchema,
-      size: z.number(),
+      size: z.union([JSExprSchema, z.number()]),
       color: irText(),
       vx: JSExprSchema,
       vy: JSExprSchema,
@@ -3119,9 +3132,9 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('g2d:spawnAsteroidEdge'),
       groupVar: irText(),
-      size: z.number(),
+      size: z.union([JSExprSchema, z.number()]),
       color: irText(),
-      speed: z.number(),
+      speed: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
@@ -3169,7 +3182,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ctxVar: irText(),
       shape: irText(),
       x: JSExprSchema,
-      size: z.number(),
+      size: z.union([JSExprSchema, z.number()]),
       vx: JSExprSchema,
       ...idField,
     }),
@@ -3261,7 +3274,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('g3d:createBox'),
       varName: irText(),
       worldVar: irText(),
-      size: z.number(),
+      size: z.union([JSExprSchema, z.number()]),
       color: irText(),
       ...idField,
     }),
@@ -3269,7 +3282,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('g3d:createSphere'),
       varName: irText(),
       worldVar: irText(),
-      radius: z.number(),
+      radius: z.union([JSExprSchema, z.number()]),
       color: irText(),
       ...idField,
     }),
@@ -3299,9 +3312,9 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('g3d:createBlock'),
       varName: irText(),
       worldVar: irText(),
-      width: z.number(),
-      height: z.number(),
-      depth: z.number(),
+      width: z.union([JSExprSchema, z.number()]),
+      height: z.union([JSExprSchema, z.number()]),
+      depth: z.union([JSExprSchema, z.number()]),
       color: irText(),
       ...idField,
     }),
@@ -3323,7 +3336,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('g3d:controlWithKeys'),
       objVar: irText(),
-      speed: z.number(),
+      speed: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
@@ -3344,8 +3357,8 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       worldVar: irText(),
       groupVar: irText(),
       groundVar: irText(),
-      every: z.number(),
-      speed: z.number(),
+      every: z.union([JSExprSchema, z.number()]),
+      speed: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({ type: z.literal('g3d:stop'), worldVar: irText(), ...idField }),
@@ -3393,13 +3406,13 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       rowIndex: JSExprSchema,
       kind: irText(),
       direction: irText(),
-      speed: z.number(),
+      speed: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
       type: z.literal('g3d:generateRows'),
       worldVar: irText(),
-      count: z.number(),
+      count: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({ type: z.literal('g3d:moveTraffic'), worldVar: irText(), ...idField }),
@@ -3419,9 +3432,9 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('g3d:moveAcross'),
       groupVar: irText(),
-      speed: z.number(),
-      min: z.number(),
-      max: z.number(),
+      speed: z.union([JSExprSchema, z.number()]),
+      min: z.union([JSExprSchema, z.number()]),
+      max: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
@@ -3433,8 +3446,8 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('g3d:moveInCircle'),
       objVar: irText(),
-      radius: z.number(),
-      speed: z.number(),
+      radius: z.union([JSExprSchema, z.number()]),
+      speed: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
@@ -3465,16 +3478,16 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('g3d:slideBetween'),
       objVar: irText(),
       axis: irText(),
-      min: z.number(),
-      max: z.number(),
-      speed: z.number(),
+      min: z.union([JSExprSchema, z.number()]),
+      max: z.union([JSExprSchema, z.number()]),
+      speed: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
       type: z.literal('g3d:spin'),
       objVar: irText(),
       axis: irText(),
-      speed: z.number(),
+      speed: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
@@ -3508,7 +3521,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       x: JSExprSchema,
       y: JSExprSchema,
       z: JSExprSchema,
-      factor: z.number(),
+      factor: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({ type: z.literal('g3d:lookAtObject'), aVar: irText(), bVar: irText(), ...idField }),
@@ -3527,22 +3540,27 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({ type: z.literal('g3d:faceVelocity'), objVar: irText(), ...idField }),
-    z.object({ type: z.literal('g3d:body'), objVar: irText(), gravity: z.number(), ...idField }),
+    z.object({
+      type: z.literal('g3d:body'),
+      objVar: irText(),
+      gravity: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
     z.object({ type: z.literal('g3d:stepBody'), objVar: irText(), worldVar: irText(), ...idField }),
     z.object({ type: z.literal('g3d:setSolid'), objVar: irText(), ...idField }),
     z.object({
       type: z.literal('g3d:platformerControls'),
       objVar: irText(),
       worldVar: irText(),
-      speed: z.number(),
-      jump: z.number(),
+      speed: z.union([JSExprSchema, z.number()]),
+      jump: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
       type: z.literal('g3d:fpsControls'),
       objVar: irText(),
       worldVar: irText(),
-      speed: z.number(),
+      speed: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
@@ -3567,8 +3585,8 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('g3d:thirdPersonCamera'),
       worldVar: irText(),
       objVar: irText(),
-      dist: z.number(),
-      height: z.number(),
+      dist: z.union([JSExprSchema, z.number()]),
+      height: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
@@ -3577,13 +3595,18 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       objVar: irText(),
       ...idField,
     }),
-    z.object({ type: z.literal('g3d:setFOV'), worldVar: irText(), deg: z.number(), ...idField }),
+    z.object({
+      type: z.literal('g3d:setFOV'),
+      worldVar: irText(),
+      deg: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
     z.object({
       type: z.literal('g3d:createCylinder'),
       varName: irText(),
       worldVar: irText(),
-      radius: z.number(),
-      height: z.number(),
+      radius: z.union([JSExprSchema, z.number()]),
+      height: z.union([JSExprSchema, z.number()]),
       color: irText(),
       ...idField,
     }),
@@ -3591,8 +3614,8 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('g3d:createCone'),
       varName: irText(),
       worldVar: irText(),
-      radius: z.number(),
-      height: z.number(),
+      radius: z.union([JSExprSchema, z.number()]),
+      height: z.union([JSExprSchema, z.number()]),
       color: irText(),
       ...idField,
     }),
@@ -3600,8 +3623,8 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('g3d:createPlane'),
       varName: irText(),
       worldVar: irText(),
-      width: z.number(),
-      depth: z.number(),
+      width: z.union([JSExprSchema, z.number()]),
+      depth: z.union([JSExprSchema, z.number()]),
       color: irText(),
       ...idField,
     }),
@@ -3609,8 +3632,8 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('g3d:createTorus'),
       varName: irText(),
       worldVar: irText(),
-      radius: z.number(),
-      tube: z.number(),
+      radius: z.union([JSExprSchema, z.number()]),
+      tube: z.union([JSExprSchema, z.number()]),
       color: irText(),
       ...idField,
     }),
@@ -3624,7 +3647,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('g3d:setOpacity'),
       objVar: irText(),
-      opacity: z.number(),
+      opacity: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({ type: z.literal('g3d:setMaterial'), objVar: irText(), kind: irText(), ...idField }),
@@ -3646,32 +3669,32 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('g3d:addAmbientLight'),
       worldVar: irText(),
       color: irText(),
-      intensity: z.number(),
+      intensity: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
       type: z.literal('g3d:addSunLight'),
       worldVar: irText(),
       color: irText(),
-      intensity: z.number(),
+      intensity: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
       type: z.literal('g3d:addPointLight'),
       worldVar: irText(),
       color: irText(),
-      intensity: z.number(),
-      x: z.number(),
-      y: z.number(),
-      z: z.number(),
+      intensity: z.union([JSExprSchema, z.number()]),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
       type: z.literal('g3d:setFog'),
       worldVar: irText(),
       color: irText(),
-      near: z.number(),
-      far: z.number(),
+      near: z.union([JSExprSchema, z.number()]),
+      far: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
@@ -3692,9 +3715,9 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('g3d:spawnInSwarm'),
       swarmVar: irText(),
       originalVar: irText(),
-      x: z.number(),
-      y: z.number(),
-      z: z.number(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
@@ -3714,11 +3737,16 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('g3d:pruneSwarm'),
       swarmVar: irText(),
       axis: irText(),
-      min: z.number(),
-      max: z.number(),
+      min: z.union([JSExprSchema, z.number()]),
+      max: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
-    z.object({ type: z.literal('g3d:playNote'), freq: z.number(), ms: z.number(), ...idField }),
+    z.object({
+      type: z.literal('g3d:playNote'),
+      freq: z.union([JSExprSchema, z.number()]),
+      ms: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
     z.object({ type: z.literal('g3d:playEffect'), kind: irText(), ...idField }),
     z.object({
       type: z.literal('g2d:updateEachFrame'),

@@ -1,4 +1,4 @@
-import type { JSExpr } from '#ir'
+import { type JSExpr, valueToExpr } from '#ir'
 import { normalizeIdentifier, safeIdent } from './identifier'
 import type { SourceMapBuilder } from './sourceMap'
 
@@ -248,13 +248,13 @@ export function compileExpr(
     case 'g2d:centerY':
       return `SZGame2D.centerY(${identifiers.get(expr.spriteVar)})`
     case 'g2d:randomBetween':
-      return `SZGame2D.randomBetween(${expr.min}, ${expr.max})`
+      return `SZGame2D.randomBetween(${compileExpr(valueToExpr(expr.min), 0, identifiers, rec)}, ${compileExpr(valueToExpr(expr.max), 0, identifiers, rec)})`
     case 'g2d:randomChance':
-      return `SZGame2D.randomChance(${expr.percent})`
+      return `SZGame2D.randomChance(${compileExpr(valueToExpr(expr.percent), 0, identifiers, rec)})`
     case 'g2d:hasHealth':
       return `SZGame2D.hasHealth(${identifiers.get(expr.spriteVar)})`
     case 'g2d:cooldownReady':
-      return `SZGame2D.cooldownReady(${identifiers.get(expr.spriteVar)}, ${expr.frames})`
+      return `SZGame2D.cooldownReady(${identifiers.get(expr.spriteVar)}, ${compileExpr(valueToExpr(expr.frames), 0, identifiers, rec)})`
     case 'g2d:isPaused':
       return 'SZGame2D.isPaused()'
     case 'g2d:cameraX':
@@ -300,7 +300,7 @@ export function compileExpr(
     case 'g3d:distanceTo':
       return `SZGame3D.distanceTo(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
     case 'g3d:isNear':
-      return `SZGame3D.isNear(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)}, ${expr.dist})`
+      return `SZGame3D.isNear(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)}, ${compileExpr(valueToExpr(expr.dist), 0, identifiers, rec)})`
     case 'g3d:raceHit':
       return `SZGame3D.raceHit(${identifiers.get(expr.objVar)}, ${identifiers.get(expr.worldVar)})`
     case 'g3d:raceLaps':
@@ -324,7 +324,7 @@ export function compileExpr(
     case 'g3d:pointerOver':
       return `SZGame3D.pointerOver(${identifiers.get(expr.worldVar)}, ${identifiers.get(expr.objVar)})`
     case 'g3d:aimAhead':
-      return `SZGame3D.aimAhead(${identifiers.get(expr.worldVar)}, ${identifiers.get(expr.objVar)}, ${expr.dist})`
+      return `SZGame3D.aimAhead(${identifiers.get(expr.worldVar)}, ${identifiers.get(expr.objVar)}, ${compileExpr(valueToExpr(expr.dist), 0, identifiers, rec)})`
     case 'g3d:onGround':
       return `SZGame3D.onGround(${identifiers.get(expr.worldVar)}, ${identifiers.get(expr.objVar)})`
     case 'g3d:groundHeight':

@@ -278,8 +278,8 @@ describe('parseJS — helpers SZGame2D.* (game-2d)', () => {
         groupVar: 'asteroides',
         x: { type: 'num', value: 10 },
         y: { type: 'num', value: 20 },
-        w: 24,
-        h: 24,
+        w: { type: 'num', value: 24 },
+        h: { type: 'num', value: 24 },
         color: '#9ca3af',
         vx: { type: 'num', value: 0 },
         vy: { type: 'num', value: 3 },
@@ -302,8 +302,8 @@ describe('parseJS — helpers SZGame2D.* (game-2d)', () => {
         groupVar: 'inimigos',
         x: { type: 'num', value: 0 },
         y: { type: 'num', value: 0 },
-        w: 32,
-        h: 32,
+        w: { type: 'num', value: 32 },
+        h: { type: 'num', value: 32 },
         image: 'inimigo',
         vx: { type: 'num', value: 0 },
         vy: { type: 'num', value: 2 },
@@ -368,7 +368,7 @@ describe('parseJS — helpers SZGame2D.* (game-2d)', () => {
     expect(parseJS('if (SZGame2D.everySeconds("k", 2)) { SZGame2D.playSound(440, 50); }')).toEqual([
       {
         type: 'g2d:everySeconds',
-        seconds: 2,
+        seconds: { type: 'num', value: 2 },
         body: [
           {
             type: 'g2d:playSound',
@@ -769,7 +769,7 @@ describe('parseJS — Kit espaço (v0.7.0): nave, asteroide, explosão, sons, co
         groupVar: 'asteroides',
         x: { type: 'num', value: 100 },
         y: { type: 'num', value: -30 },
-        size: 40,
+        size: { type: 'num', value: 40 },
         color: '#8d8f9b',
         vx: { type: 'num', value: 0 },
         vy: { type: 'num', value: 3 },
@@ -877,7 +877,7 @@ describe('parseJS — Kit dino + pulo no chão (v0.9.0)', () => {
         ctxVar: 'ctx',
         shape: 'bird',
         x: { type: 'num', value: 500 },
-        size: 44,
+        size: { type: 'num', value: 44 },
         vx: { type: 'num', value: -6 },
       },
     ])
@@ -1060,7 +1060,7 @@ describe('parseJS — lacunas fechadas (tiro redondo, setas, piscar, intervalo v
         groupVar: 'tiros',
         x: { type: 'num', value: 10 },
         y: { type: 'num', value: 20 },
-        radius: 5,
+        radius: { type: 'num', value: 5 },
         color: '#9cff57',
         vx: { type: 'num', value: 0 },
         vy: { type: 'num', value: -11 },
@@ -1126,9 +1126,9 @@ describe('parseJS — nave clássica (v0.10.0): girar + impulsionar + atirar pra
       {
         type: 'g2d:spawnAsteroidEdge',
         groupVar: 'asteroides',
-        size: 40,
+        size: { type: 'num', value: 40 },
         color: '#8d8f9b',
-        speed: 1.5,
+        speed: { type: 'num', value: 1.5 },
       },
     ])
   })
@@ -1189,9 +1189,9 @@ describe('roundtrip da nave clássica (gerar → parsear, sem rawJS)', () => {
           {
             type: 'g2d:spawnAsteroidEdge',
             groupVar: 'asteroides',
-            size: 40,
+            size: { type: 'num', value: 40 },
             color: '#8d8f9b',
-            speed: 1.5,
+            speed: { type: 'num', value: 1.5 },
           },
           {
             type: 'if',

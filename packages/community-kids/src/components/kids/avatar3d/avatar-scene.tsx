@@ -2,7 +2,7 @@
 
 import { ContactShadows, useProgress } from '@react-three/drei'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { Suspense, useEffect, useRef, useState } from 'react'
+import { type RefObject, Suspense, useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import type { AvatarSlot } from '@/lib/avatar3d-catalog'
 import { recoverWebGLContext } from '@/lib/webgl-recovery'
@@ -11,7 +11,8 @@ import { AvatarRig } from './avatar-rig'
 import { CameraManager, type CamMode } from './camera-manager'
 
 type Slots = Partial<Record<string, AvatarSlot>>
-export type CaptureFn = () => Promise<Blob | null>
+/** `portrait`: força um retrato de rosto (de frente), independente do enquadramento na tela. */
+export type CaptureFn = (opts?: { portrait?: boolean }) => Promise<Blob | null>
 
 /**
  * Estado de "carregando" ESTÁVEL p/ a cabine — espelha o `Experience.jsx` do WawaSensei: só
@@ -50,17 +51,51 @@ function useCabineLoading(): boolean {
 function SnapshotBridge({
   onReady,
   canCapture,
+  charRef,
 }: {
   onReady: (capture: CaptureFn) => void
   canCapture: boolean
+  charRef: RefObject<THREE.Group | null>
 }) {
   const gl = useThree((s) => s.gl)
   const scene = useThree((s) => s.scene)
   const camera = useThree((s) => s.camera)
+  // ref com o estado MAIS RECENTE — a captura espera a cena assentar sem travar a UI nem nagar.
+  const canCaptureRef = useRef(canCapture)
+  canCaptureRef.current = canCapture
+  // Câmera de RETRATO (rosto, DE FRENTE) reusada — "Salvar" sai sempre com a cara boa,
+  // independente do enquadramento de corpo inteiro / da órbita que estiver na tela.
+  const portraitCam = useRef(new THREE.PerspectiveCamera(45, 1, 0.01, 100))
+  const tmpBox = useRef(new THREE.Box3())
+  const tmpVec = useRef(new THREE.Vector3())
   useEffect(() => {
-    const capture: CaptureFn = async () => {
-      if (!canCapture) return null
-      gl.render(scene, camera)
+    const capture: CaptureFn = async (opts) => {
+      // Espera a cena assentar (cabine/enquadramento) até ~2.5s — capturar no meio sai borrado.
+      const start = performance.now()
+      while (!canCaptureRef.current) {
+        if (performance.now() - start > 2500) return null
+        await new Promise((r) => setTimeout(r, 60))
+      }
+      let cam: THREE.Camera = camera
+      // RETRATO forçado (rosto de frente) — usado pelo "Salvar", pra a imagem do avatar (redonda)
+      // ficar sempre boa, mesmo que a tela esteja no corpo inteiro ou girada.
+      if (opts?.portrait && charRef.current) {
+        charRef.current.updateWorldMatrix(true, true)
+        tmpBox.current.setFromObject(charRef.current)
+        if (!tmpBox.current.isEmpty()) {
+          const b = tmpBox.current
+          const c = b.getCenter(tmpVec.current)
+          const h = Math.max(0.001, b.max.y - b.min.y)
+          const pc = portraitCam.current
+          pc.aspect = gl.domElement.width / Math.max(1, gl.domElement.height)
+          pc.position.set(c.x, b.max.y - h * 0.12, c.z + h * 0.9)
+          pc.lookAt(c.x, b.max.y - h * 0.15, c.z)
+          pc.updateMatrixWorld()
+          pc.updateProjectionMatrix()
+          cam = pc
+        }
+      }
+      gl.render(scene, cam)
       const src = gl.domElement
       const size = Math.min(src.width, src.height)
       const sx = (src.width - size) / 2
@@ -68,13 +103,13 @@ function SnapshotBridge({
       const out = document.createElement('canvas')
       out.width = 512
       out.height = 512
-      const c = out.getContext('2d')
-      if (!c) return null
-      c.drawImage(src, sx, sy, size, size, 0, 0, 512, 512)
+      const ctx = out.getContext('2d')
+      if (!ctx) return null
+      ctx.drawImage(src, sx, sy, size, size, 0, 0, 512, 512)
       return new Promise((resolve) => out.toBlob((b) => resolve(b), 'image/png'))
     }
     onReady(capture)
-  }, [gl, scene, camera, onReady, canCapture])
+  }, [gl, scene, camera, onReady, charRef])
   return null
 }
 
@@ -136,22 +171,17 @@ function SceneContents({
   mode,
   dark,
   onReady,
-  onCaptureReady,
 }: {
   slots: Slots
   pose: string
   mode: CamMode
   dark: boolean
   onReady: (c: CaptureFn) => void
-  onCaptureReady: (ready: boolean) => void
 }) {
   const charRef = useRef<THREE.Group>(null)
   const [ready, setReady] = useState(false)
   const loading = useCabineLoading()
   const canCapture = ready && !loading
-  useEffect(() => {
-    onCaptureReady(canCapture)
-  }, [canCapture, onCaptureReady])
 
   return (
     <>
@@ -190,7 +220,7 @@ function SceneContents({
       <TeleporterBeam loading={loading} />
 
       <CameraManager charRef={charRef} mode={mode} ready={ready} />
-      <SnapshotBridge onReady={onReady} canCapture={canCapture} />
+      <SnapshotBridge onReady={onReady} canCapture={canCapture} charRef={charRef} />
     </>
   )
 }
@@ -203,14 +233,12 @@ function SceneContents({
 export function AvatarScene({
   slots,
   onReady,
-  onCaptureReady,
   dark,
   mode = 'customize',
   pose = 'Idle',
 }: {
   slots: Slots
   onReady: (c: CaptureFn) => void
-  onCaptureReady: (ready: boolean) => void
   dark: boolean
   mode?: CamMode
   pose?: string
@@ -223,14 +251,7 @@ export function AvatarScene({
       camera={{ position: [0, 1.0, 6.5], fov: 45 }}
       onCreated={recoverWebGLContext}
     >
-      <SceneContents
-        slots={slots}
-        pose={pose}
-        mode={mode}
-        dark={dark}
-        onReady={onReady}
-        onCaptureReady={onCaptureReady}
-      />
+      <SceneContents slots={slots} pose={pose} mode={mode} dark={dark} onReady={onReady} />
     </Canvas>
   )
 }

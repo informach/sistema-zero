@@ -167,9 +167,10 @@ export const JS_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_js_repeat',
     message0: 'Repetir %1 vezes',
-    args0: [{ type: 'field_number', name: 'TIMES', value: 5, min: 0 }],
+    args0: [{ type: 'input_value', name: 'TIMES', check: 'JSValue' }],
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,

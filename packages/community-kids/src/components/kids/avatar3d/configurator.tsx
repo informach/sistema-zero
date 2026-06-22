@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowLeft, Camera, Coins, Loader2, Lock, Shuffle, X } from 'lucide-react'
+import { ArrowLeft, Camera, Check, Coins, Loader2, Lock, Shuffle, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -99,7 +99,6 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
   const [category, setCategory] = useState<AvatarCategory>('head')
   const [busy, setBusy] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
-  const [sceneReady, setSceneReady] = useState(false)
   const captureRef = useRef<CaptureFn | null>(null)
   const onReady = useCallback((c: CaptureFn) => {
     captureRef.current = c
@@ -208,8 +207,14 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
     }
   }
 
-  async function save() {
-    if (saving || hasLocked || !state || !sceneReady) return
+  /**
+   * Salva o avatar: PUT da config (a roupa/peças) + captura a "foto" (snapshot do enquadramento
+   * atual → vira a imagem do avatar). A captura ESPERA a cena assentar (no `SnapshotBridge`), então
+   * não precisa de gate/nag. `redirect`: "Salvar" (Personalizar) fica na tela; "Tirar foto" (Cabine)
+   * finaliza e volta pro perfil.
+   */
+  async function save({ redirect }: { redirect: boolean }) {
+    if (saving || hasLocked || !state) return
     setSaving(true)
     try {
       const eq = await fetch('/api/members/avatar', {
@@ -222,7 +227,9 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
       const capture = captureRef.current
       if (capture) {
         try {
-          const blob = await capture()
+          // "Salvar" (Personalizar) → RETRATO forçado (rosto), pra a imagem ficar sempre boa;
+          // "Tirar foto" (Cabine) → o enquadramento ATUAL que a criança posicionou.
+          const blob = await capture({ portrait: mode === 'customize' })
           if (blob) {
             const fd = new FormData()
             fd.append('file', new File([blob], 'avatar.png', { type: 'image/png' }))
@@ -232,9 +239,11 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
           // ignora — foto é cosmética; a próxima vez tenta de novo
         }
       }
-      toast.success('Avatar salvo! 😄')
-      router.push('/perfil')
-      router.refresh()
+      toast.success(redirect ? 'Avatar salvo! 😄' : 'Mudanças salvas! 😄')
+      if (redirect) {
+        router.push('/perfil')
+        router.refresh()
+      }
     } catch {
       toast.error('Não consegui salvar agora. Tente de novo!')
     } finally {
@@ -252,14 +261,7 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
       {/* Cena 3D ao fundo */}
       <div className="absolute inset-0">
         {state ? (
-          <AvatarScene
-            slots={slots}
-            onReady={onReady}
-            onCaptureReady={setSceneReady}
-            dark={dark}
-            mode={mode}
-            pose={activePose}
-          />
+          <AvatarScene slots={slots} onReady={onReady} dark={dark} mode={mode} pose={activePose} />
         ) : (
           <div className="flex h-full items-center justify-center">
             <KidsMascot expression="thinking" className="size-24 animate-pulse" />
@@ -292,6 +294,36 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
             className="grid size-11 place-items-center rounded-full bg-card/90 text-foreground shadow-md backdrop-blur transition-transform active:scale-90 disabled:opacity-50"
           >
             <Shuffle className="size-5" />
+          </button>
+          {/* Botão de cima: SALVAR em Personalizar, TIRAR FOTO na Cabine de fotos. */}
+          <button
+            type="button"
+            onClick={() => save({ redirect: mode === 'photo' })}
+            disabled={saving || hasLocked || !state}
+            className={cn(
+              'inline-flex h-11 items-center gap-2 rounded-full px-4 font-bold text-sm shadow-md transition-transform active:scale-95',
+              hasLocked
+                ? 'bg-card/90 text-muted-foreground'
+                : 'sz-btn-gradient text-primary-foreground',
+              (saving || !state) && 'opacity-60',
+            )}
+          >
+            {saving ? (
+              <Loader2 className="size-5 animate-spin" />
+            ) : mode === 'photo' ? (
+              <Camera className="size-5" />
+            ) : (
+              <Check className="size-5" />
+            )}
+            <span className="hidden sm:inline">
+              {saving
+                ? 'Salvando…'
+                : hasLocked
+                  ? 'Peça travada 🔒'
+                  : mode === 'photo'
+                    ? 'Tirar foto'
+                    : 'Salvar'}
+            </span>
           </button>
         </div>
       </div>
@@ -356,7 +388,7 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
           <div className="flex flex-col gap-2">
             <p className="text-center font-semibold text-muted-foreground text-xs">
               Escolha a pose, gire o personagem pra enquadrar e toque em <strong>Tirar foto</strong>{' '}
-              📸
+              lá em cima 📸
             </p>
             <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-subtle">
               {POSES.map((p) => (
@@ -375,20 +407,6 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
                 </button>
               ))}
             </div>
-
-            {/* A FOTO é tirada AQUI, de propósito, no fim (não a cada mudança) — vira o avatar. */}
-            <button
-              type="button"
-              onClick={save}
-              disabled={saving || hasLocked || !state || !sceneReady}
-              className={cn(
-                'sz-btn-gradient mt-1 inline-flex h-12 items-center justify-center gap-2 rounded-2xl px-4 font-bold text-base text-primary-foreground shadow-md transition-transform active:scale-95',
-                (saving || hasLocked || !sceneReady) && 'opacity-60',
-              )}
-            >
-              {saving ? <Loader2 className="size-5 animate-spin" /> : <Camera className="size-5" />}
-              {saving ? 'Salvando…' : hasLocked ? 'Compre a peça travada 🔒' : 'Tirar foto'}
-            </button>
           </div>
         )}
 
