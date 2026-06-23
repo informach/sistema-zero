@@ -30,6 +30,7 @@ const HEAD_SITTING = new Set([
   'eyes',
   'eyebrows',
   'nose',
+  'faceDecor',
   'facialHair',
   'glasses',
   'hat',

@@ -188,3 +188,69 @@ describe('BuyRoomItemService reconhece piso/luz', () => {
     await expect(make().execute('u1', 'kids', 'nada')).rejects.toBeInstanceOf(RoomItemNotFoundError)
   })
 })
+
+describe('canonicalizeRoomState — itens de PAREDE + colisão (sem sobreposição)', () => {
+  test('item de parede dentro dos limites entra com `wall`; fora (largura/altura) cai', () => {
+    const s = canonicalizeRoomState(
+      {
+        theme: DEFAULT_ROOM_THEME,
+        placedItems: [
+          { itemId: 'janela', x: 3, y: 1, wall: 'right' }, // 2×2 cabe (3+2≤12, 1+2≤4) → fica
+          { itemId: 'janela', x: 11, y: 1, wall: 'right' }, // 11+2>12 → cai
+          { itemId: 'janela', x: 0, y: 3, wall: 'right' }, // 3+2>4 (altura) → cai
+        ],
+        pet: null,
+      },
+      new Set(['janela']), // janela é paga → precisa possuir
+    )
+    expect(s.placedItems).toEqual([{ itemId: 'janela', x: 3, y: 1, wall: 'right' }])
+  })
+
+  test('item de parede sem `wall` → assume "right"', () => {
+    const s = canonicalizeRoomState(
+      { theme: DEFAULT_ROOM_THEME, placedItems: [{ itemId: 'quadro', x: 0, y: 0 }], pet: null },
+      new Set(),
+    )
+    expect(s.placedItems).toEqual([{ itemId: 'quadro', x: 0, y: 0, wall: 'right' }])
+  })
+
+  test('colisão: dois itens de CHÃO sobrepostos → o segundo cai', () => {
+    const s = canonicalizeRoomState(
+      {
+        theme: DEFAULT_ROOM_THEME,
+        placedItems: [
+          { itemId: 'cama', x: 0, y: 0 }, // 2×3 ocupa (0,0)-(1,2)
+          { itemId: 'mesa', x: 1, y: 1 }, // sobrepõe (1,1) → CAI
+          { itemId: 'mesa', x: 4, y: 0 }, // livre → fica
+        ],
+        pet: null,
+      },
+      new Set(),
+    )
+    expect(s.placedItems).toEqual([
+      { itemId: 'cama', x: 0, y: 0 },
+      { itemId: 'mesa', x: 4, y: 0 },
+    ])
+  })
+
+  test('colisão: mesma parede sobrepõe (cai); outra parede OK; chão e parede não colidem', () => {
+    const s = canonicalizeRoomState(
+      {
+        theme: DEFAULT_ROOM_THEME,
+        placedItems: [
+          { itemId: 'quadro', x: 0, y: 0, wall: 'right' }, // right (0,0)-(1,1)
+          { itemId: 'estrela', x: 1, y: 1, wall: 'right' }, // sobrepõe right → CAI
+          { itemId: 'estrela', x: 1, y: 1, wall: 'left' }, // outra parede → fica
+          { itemId: 'mesa', x: 0, y: 0 }, // chão (namespace à parte) → fica
+        ],
+        pet: null,
+      },
+      new Set(),
+    )
+    expect(s.placedItems).toEqual([
+      { itemId: 'quadro', x: 0, y: 0, wall: 'right' },
+      { itemId: 'estrela', x: 1, y: 1, wall: 'left' },
+      { itemId: 'mesa', x: 0, y: 0 },
+    ])
+  })
+})

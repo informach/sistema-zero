@@ -322,14 +322,32 @@ efeito de jogo.
 
 | Categoria | Itens (preço / w×h) |
 |---|---|
-| **Móveis** (`furniture`) | cama 0/**2×3** (solteiro), cadeira 0/1×2, sofa 80/3×2, estante 70/2×3, bau 90/2×2 |
-| **Decoração** (`decor`) | quadro 0/2×2, estrela 0/1×1, janela 60/2×2, bandeira 50/1×2, ursinho 70/1×1, balao 50/1×2, relogio 60/1×1 |
+| **Móveis** (`furniture`, chão) | cama 0/2×3 (solteiro), cadeira 0/1×2, mesa 0/2×2, sofa 80/3×2, estante 70/2×3, bau 90/2×2, mesa-estudo 70/2×1, tv 90/2×1, beliche 120/2×3, pufe 50/1×1 |
+| **Decoração de chão** (`decor`) | ursinho 70/1×1, balao 50/1×2, bandeira 50/1×2, globo 50/1×1, guitarra 80/1×2, bola 0/1×1 |
+| **Decoração de PAREDE** (`decor`, `mount:'wall'`) | quadro 0/2×2, estrela 0/1×1, janela 60/2×2, relogio 60/1×1, prateleira 60/2×1, poster 50/1×2, espelho 60/1×2 |
 | **Plantas** (`plant`, animadas) | planta 80/1×2, arvore 130/2×3 |
 | **Luzes** (`light`, animadas) | luminaria 70/1×2, vela 60/1×1 |
 | **Pets** (`pet`, 1 por quarto) | pet-gato 300, pet-cachorro 300, pet-passaro 250 (todos 1×1) |
 
 Pets NÃO vão na grade — são o campo `pet` (string|null) do estado; UM por quarto. Itens
 posicionáveis na lojinha = `furniture/decor/plant/light` (`PLACEABLE` no kids).
+
+### Itens de PAREDE (sobem) + colisão (sem sobreposição) — 06/2026
+
+Itens com `mount:'wall'` (janela, quadro, relógio, estrela, prateleira, pôster, espelho) **não vão no
+chão** — penduram numa PAREDE e SOBEM. Reusam o `PlacedItem` com `wall:'left'|'right'` + `x` = posição
+horizontal ao longo da parede + `y` = ALTURA (nível 0..`WALL_H_CELLS`=4). O renderer (`furniture-piece.tsx`)
+os posiciona via `wallToWorld` (gira 90° na parede esquerda); modelos viraram PAINÉIS FLAT
+(`furniture-models.tsx`). O drag faz raycast nos planos das 2 paredes (`room-canvas-3d.tsx`) e escolhe a
+mais próxima. `canonicalizeRoomState` valida largura/altura da parede + posse; item de parede sem `wall`
+→ assume `'right'`. Não giram (a rotação fica só p/ chão).
+
+**Colisão "nada por cima de nada":** `canonicalizeRoomState` mantém sets de células ocupadas (chão e
+por-parede via `occupies`) e DESCARTA o item que sobrepor um já posicionado. Namespaces SEPARADOS — chão,
+parede esquerda e direita não colidem entre si. No editor, o drag só "solta" em célula livre (`isFree` em
+`room-canvas-3d`) e o `addItem` acha o 1º vão livre (`freeFloorSpot`/`freeWallSpot` — parede prefere o
+alto). `rectsOverlap`/`wallToWorld`/`worldToWallCell` (em `coords.ts`, PURO/testado) são a base. O pet
+ignora itens de parede.
 
 ### Catálogo de temas (`ROOM_THEMES`)
 

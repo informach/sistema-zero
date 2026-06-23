@@ -5,7 +5,12 @@ import {
   clampCell,
   effectiveFootprint,
   ROWS,
+  rectsOverlap,
+  WALL_H_CELLS,
+  wallLength,
+  wallToWorld,
   worldToCell,
+  worldToWallCell,
 } from '../src/components/kids/room/coords'
 
 describe('effectiveFootprint', () => {
@@ -38,5 +43,31 @@ describe('cellToWorld ↔ worldToCell', () => {
   })
   test('worldToCell prende ao chão (cursor fora da grade → borda)', () => {
     expect(worldToCell(999, 999, 2, 2)).toEqual({ x: COLS - 2, y: ROWS - 2 })
+  })
+})
+
+describe('paredes (itens que sobem)', () => {
+  test('wallLength: right = colunas, left = linhas', () => {
+    expect(wallLength('right')).toBe(COLS)
+    expect(wallLength('left')).toBe(ROWS)
+  })
+
+  test('rectsOverlap: sobrepor vs apenas encostar', () => {
+    expect(rectsOverlap(0, 0, 2, 2, 1, 1, 2, 2)).toBe(true)
+    expect(rectsOverlap(0, 0, 2, 2, 2, 0, 2, 2)).toBe(false) // encostam, não sobrepõem
+    expect(rectsOverlap(0, 0, 1, 1, 0, 0, 1, 1)).toBe(true)
+  })
+
+  test('wallToWorld ↔ worldToWallCell: round-trip estável (parede direita)', () => {
+    const w = 2
+    const h = 2
+    const u = 3
+    const v = 1
+    const p = wallToWorld('right', u, v, w, h)
+    expect(worldToWallCell('right', p.x, p.y, w, h)).toEqual({ u, v })
+  })
+
+  test('worldToWallCell prende aos limites da parede (altura inclusa)', () => {
+    expect(worldToWallCell('right', 999, 999, 2, 2)).toEqual({ u: COLS - 2, v: WALL_H_CELLS - 2 })
   })
 })

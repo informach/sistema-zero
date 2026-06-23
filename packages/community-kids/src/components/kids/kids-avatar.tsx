@@ -37,7 +37,6 @@ export function KidsAvatar({
       )}
     >
       {photoUrl ? (
-        // biome-ignore lint/performance/noImgElement: avatar é imagem do R2 (não otimizada pelo next/image no BFF).
         <img
           src={photoUrl}
           alt=""

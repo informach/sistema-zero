@@ -52,6 +52,14 @@ describe('conformância de catálogo (kids apresentação × members autoridade)
       expect(kids, `item "${m.id}" ausente em ROOM_ITEM_INFO (kids)`).toBeDefined()
       expect(kids?.w, `w divergente em "${m.id}"`).toBe(m.w)
       expect(kids?.h, `h divergente em "${m.id}"`).toBe(m.h)
+      expect(kids?.mount, `mount (chão/parede) divergente em "${m.id}"`).toBe(m.mount)
+    }
+  })
+
+  test('quarto: todo item do kids existe no members (sem item órfão/dead no kids)', () => {
+    const memberIds = new Set(ROOM_ITEMS.map((m) => m.id))
+    for (const id of Object.keys(ROOM_ITEM_INFO)) {
+      expect(memberIds.has(id), `item "${id}" existe no kids mas NÃO no members`).toBe(true)
     }
   })
 
@@ -93,6 +101,13 @@ describe('conformância de catálogo (kids apresentação × members autoridade)
       const kids = KIDS_AVATAR_INFO[part.id]
       expect(kids, `peça "${part.id}" ausente em AVATAR_PART_INFO (kids)`).toBeDefined()
       expect(kids?.category, `categoria divergente em "${part.id}"`).toBe(part.category)
+    }
+  })
+
+  test('avatar3d: toda peça do kids existe no members (sem peça órfã/dead no kids)', () => {
+    const memberIds = new Set(AVATAR3D_PARTS.map((p) => p.id))
+    for (const id of Object.keys(KIDS_AVATAR_INFO)) {
+      expect(memberIds.has(id), `peça "${id}" existe no kids mas NÃO no members`).toBe(true)
     }
   })
 

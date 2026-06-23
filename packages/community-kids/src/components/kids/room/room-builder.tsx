@@ -29,7 +29,7 @@ import {
 } from '@/lib/room-catalog'
 import type { RoomEditorView, RoomItemView, RoomStateView, RoomThemeView } from '@/lib/types'
 import { KidsMascot } from '../mascot'
-import { effectiveFootprint, type Rot } from './coords'
+import { effectiveFootprint, type Rot, rectsOverlap, WALL_H_CELLS, wallLength } from './coords'
 import { RoomCanvas } from './room-canvas'
 
 const PLACEABLE: ReadonlySet<string> = new Set(['furniture', 'decor', 'plant', 'light'])
@@ -64,10 +64,78 @@ const CAT_BY_TAB: Partial<Record<TabId, string>> = {
   luzes: 'light',
 }
 
-/** Posição inicial (escalonada) de um item novo, clampada à grade. */
-function nextSlot(count: number, w: number): { x: number; y: number } {
-  const maxX = Math.max(0, ROOM_GRID.cols - w)
-  return { x: Math.min(maxX, (count * 2) % (maxX + 1)), y: 1 }
+type Placed = RoomStateView['placedItems']
+
+/** Células do CHÃO ocupadas (itens de parede não contam). */
+function floorOccupied(items: Placed): Set<string> {
+  const set = new Set<string>()
+  for (const it of items) {
+    const inf = ROOM_ITEM_INFO[it.itemId]
+    if (!inf || inf.mount === 'wall') continue
+    const fp = effectiveFootprint(inf.w, inf.h, (it.rot ?? 0) as Rot)
+    for (let dx = 0; dx < fp.w; dx++) {
+      for (let dy = 0; dy < fp.h; dy++) set.add(`${it.x + dx},${it.y + dy}`)
+    }
+  }
+  return set
+}
+/** Primeira célula LIVRE para um footprint w×h no chão (varre linha a linha). */
+function freeFloorSpot(items: Placed, w: number, h: number): { x: number; y: number } {
+  const occ = floorOccupied(items)
+  for (let y = 0; y <= ROOM_GRID.rows - h; y++) {
+    for (let x = 0; x <= ROOM_GRID.cols - w; x++) {
+      let free = true
+      for (let dx = 0; dx < w && free; dx++) {
+        for (let dy = 0; dy < h; dy++) {
+          if (occ.has(`${x + dx},${y + dy}`)) {
+            free = false
+            break
+          }
+        }
+      }
+      if (free) return { x, y }
+    }
+  }
+  return { x: 0, y: 0 } // sala cheia — o canonicalize descarta sobreposição
+}
+/** Células ocupadas numa parede específica. */
+function wallOccupied(items: Placed, wall: 'left' | 'right'): Set<string> {
+  const set = new Set<string>()
+  for (const it of items) {
+    const inf = ROOM_ITEM_INFO[it.itemId]
+    if (!inf) continue
+    if (inf.mount !== 'wall' || (it.wall ?? 'right') !== wall) continue
+    for (let du = 0; du < inf.w; du++) {
+      for (let dv = 0; dv < inf.h; dv++) set.add(`${it.x + du},${it.y + dv}`)
+    }
+  }
+  return set
+}
+/** Primeiro vão LIVRE numa parede (prefere a direita + mais ALTO — janela/quadro sobem). */
+function freeWallSpot(
+  items: Placed,
+  w: number,
+  h: number,
+): { wall: 'left' | 'right'; u: number; v: number } {
+  for (const wall of ['right', 'left'] as const) {
+    const occ = wallOccupied(items, wall)
+    const len = wallLength(wall)
+    for (let v = WALL_H_CELLS - h; v >= 0; v--) {
+      for (let u = 0; u <= len - w; u++) {
+        let free = true
+        for (let du = 0; du < w && free; du++) {
+          for (let dv = 0; dv < h; dv++) {
+            if (occ.has(`${u + du},${v + dv}`)) {
+              free = false
+              break
+            }
+          }
+        }
+        if (free) return { wall, u, v }
+      }
+    }
+  }
+  return { wall: 'right', u: 0, v: WALL_H_CELLS - h }
 }
 
 /** Editor do quarto 3D: cena ao vivo + barra de categorias (móveis/piso/parede/clima/…). */
@@ -109,12 +177,21 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
   const appearance = resolveRoomAppearance(draft)
   const paintColor = tab === 'parede' ? brush : null
 
-  function moveItem(index: number, x: number, y: number) {
+  function moveItem(index: number, x: number, y: number, wall?: 'left' | 'right') {
     setDraft((d) => {
       const it = d.placedItems[index]
       if (!it) return d
       const info = ROOM_ITEM_INFO[it.itemId]
       if (!info) return d
+      if (info.mount === 'wall') {
+        const side = wall ?? it.wall ?? 'right'
+        const nx = Math.max(0, Math.min(wallLength(side) - info.w, x))
+        const ny = Math.max(0, Math.min(WALL_H_CELLS - info.h, y))
+        const placedItems = d.placedItems.map((p, i) =>
+          i === index ? { ...p, x: nx, y: ny, wall: side } : p,
+        )
+        return { ...d, placedItems }
+      }
       const fp = effectiveFootprint(info.w, info.h, (it.rot ?? 0) as Rot)
       const nx = Math.max(0, Math.min(ROOM_GRID.cols - fp.w, x))
       const ny = Math.max(0, Math.min(ROOM_GRID.rows - fp.h, y))
@@ -129,8 +206,15 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
     if (!info) return
     setDraft((d) => {
       if (d.placedItems.length >= 40) return d
-      const slot = nextSlot(d.placedItems.length, info.w)
-      return { ...d, placedItems: [...d.placedItems, { itemId: item.id, x: slot.x, y: slot.y }] }
+      if (info.mount === 'wall') {
+        const s = freeWallSpot(d.placedItems, info.w, info.h)
+        return {
+          ...d,
+          placedItems: [...d.placedItems, { itemId: item.id, x: s.u, y: s.v, wall: s.wall }],
+        }
+      }
+      const s = freeFloorSpot(d.placedItems, info.w, info.h)
+      return { ...d, placedItems: [...d.placedItems, { itemId: item.id, x: s.x, y: s.y }] }
     })
     toast.success(`${info.labelPt} no quarto! ✨`)
   }
@@ -143,18 +227,31 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
 
   function rotateSelected() {
     if (selected === null) return
-    setDraft((d) => {
-      const it = d.placedItems[selected]
-      if (!it) return d
-      const info = ROOM_ITEM_INFO[it.itemId]
-      if (!info) return d
-      const rot = (((it.rot ?? 0) + 1) % 4) as Rot
-      const fp = effectiveFootprint(info.w, info.h, rot)
-      const x = Math.max(0, Math.min(ROOM_GRID.cols - fp.w, it.x))
-      const y = Math.max(0, Math.min(ROOM_GRID.rows - fp.h, it.y))
-      const placedItems = d.placedItems.map((p, i) => (i === selected ? { ...p, rot, x, y } : p))
-      return { ...d, placedItems }
+    const it = draft.placedItems[selected]
+    if (!it) return
+    const info = ROOM_ITEM_INFO[it.itemId]
+    if (!info || info.mount === 'wall') return // item de parede não gira
+    const rot = (((it.rot ?? 0) + 1) % 4) as Rot
+    const fp = effectiveFootprint(info.w, info.h, rot)
+    const x = Math.max(0, Math.min(ROOM_GRID.cols - fp.w, it.x))
+    const y = Math.max(0, Math.min(ROOM_GRID.rows - fp.h, it.y))
+    // Não gira para uma orientação que sobreponha outro móvel de chão: sem este guard
+    // o `canonicalizeRoomState` do members descartaria a peça em SILÊNCIO ao salvar.
+    const collides = draft.placedItems.some((p, i) => {
+      if (i === selected) return false
+      const inf = ROOM_ITEM_INFO[p.itemId]
+      if (!inf || inf.mount === 'wall') return false
+      const ofp = effectiveFootprint(inf.w, inf.h, (p.rot ?? 0) as Rot)
+      return rectsOverlap(x, y, fp.w, fp.h, p.x, p.y, ofp.w, ofp.h)
     })
+    if (collides) {
+      toast('Sem espaço para girar aqui! 🔄')
+      return
+    }
+    setDraft((d) => ({
+      ...d,
+      placedItems: d.placedItems.map((p, i) => (i === selected ? { ...p, rot, x, y } : p)),
+    }))
   }
 
   function paintWall(wall: 'left' | 'right', color: string) {
@@ -246,13 +343,15 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
         )}
         {selected !== null ? (
           <div className="absolute top-2 right-2 flex gap-2">
-            <button
-              type="button"
-              onClick={rotateSelected}
-              className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 font-bold text-primary-foreground text-xs shadow"
-            >
-              <RotateCw className="size-3.5" /> Girar
-            </button>
+            {ROOM_ITEM_INFO[draft.placedItems[selected]?.itemId ?? '']?.mount !== 'wall' ? (
+              <button
+                type="button"
+                onClick={rotateSelected}
+                className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 font-bold text-primary-foreground text-xs shadow"
+              >
+                <RotateCw className="size-3.5" /> Girar
+              </button>
+            ) : null}
             <button
               type="button"
               onClick={removeSelected}

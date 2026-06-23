@@ -82,6 +82,8 @@ export const RoomStateBody = t.Object({
       y: t.Integer({ minimum: 0, maximum: 64 }),
       // Rotação em quartos de volta (0–3). Ausente = 0; o domínio re-normaliza.
       rot: t.Optional(t.Integer({ minimum: 0, maximum: 3 })),
+      // Item de PAREDE: em qual parede (x=horizontal, y=altura). Ausente = item de chão.
+      wall: t.Optional(t.Union([t.Literal('left'), t.Literal('right')])),
     }),
     { maxItems: 60 },
   ),

@@ -13,32 +13,46 @@ interface RoomItemInfo {
   emoji: string
   w: number
   h: number
-  /** Classe de animação CSS (kids globals) — gateada por prefers-reduced-motion. */
+  /** `'wall'` = item de PAREDE (espelha o members; o renderer o pendura na parede, na altura). */
+  mount?: 'wall'
+  /** Classe de animação CSS legada (sem uso no renderer 3D — tolerada). */
   anim?: 'kid-room-grow' | 'kid-room-float' | 'kid-room-twinkle' | 'kid-room-flicker'
 }
 
 export const ROOM_ITEM_INFO: Record<string, RoomItemInfo> = {
-  // Móveis
+  // Móveis (chão)
   cama: { labelPt: 'Cama', emoji: '🛏️', w: 2, h: 3 },
   cadeira: { labelPt: 'Cadeira', emoji: '🪑', w: 1, h: 2 },
+  mesa: { labelPt: 'Mesa', emoji: '🍽️', w: 2, h: 2 },
   sofa: { labelPt: 'Sofá', emoji: '🛋️', w: 3, h: 2 },
   estante: { labelPt: 'Estante', emoji: '📚', w: 2, h: 3 },
   bau: { labelPt: 'Baú', emoji: '🧰', w: 2, h: 2 },
-  // Decoração
-  quadro: { labelPt: 'Quadro', emoji: '🖼️', w: 2, h: 2 },
-  estrela: { labelPt: 'Estrela', emoji: '⭐', w: 1, h: 1, anim: 'kid-room-twinkle' },
-  janela: { labelPt: 'Janela', emoji: '🪟', w: 2, h: 2 },
-  bandeira: { labelPt: 'Bandeira', emoji: '🚩', w: 1, h: 2 },
+  'mesa-estudo': { labelPt: 'Escrivaninha', emoji: '📝', w: 2, h: 1 },
+  tv: { labelPt: 'TV', emoji: '📺', w: 2, h: 1 },
+  beliche: { labelPt: 'Beliche', emoji: '🛌', w: 2, h: 3 },
+  pufe: { labelPt: 'Pufe', emoji: '💺', w: 1, h: 1 },
+  // Decoração de chão
   ursinho: { labelPt: 'Ursinho', emoji: '🧸', w: 1, h: 1 },
-  balao: { labelPt: 'Balão', emoji: '🎈', w: 1, h: 2, anim: 'kid-room-float' },
-  relogio: { labelPt: 'Relógio', emoji: '🕐', w: 1, h: 1 },
-  // Plantas (crescem)
-  planta: { labelPt: 'Planta', emoji: '🪴', w: 1, h: 2, anim: 'kid-room-grow' },
-  arvore: { labelPt: 'Árvore', emoji: '🌳', w: 2, h: 3, anim: 'kid-room-grow' },
-  // Luzes (piscam)
+  balao: { labelPt: 'Balão', emoji: '🎈', w: 1, h: 2 },
+  bandeira: { labelPt: 'Bandeira', emoji: '🚩', w: 1, h: 2 },
+  globo: { labelPt: 'Globo', emoji: '🌍', w: 1, h: 1 },
+  guitarra: { labelPt: 'Guitarra', emoji: '🎸', w: 1, h: 2 },
+  bola: { labelPt: 'Bola', emoji: '⚽', w: 1, h: 1 },
+  // Decoração de PAREDE (mount: 'wall' — sobe na parede)
+  quadro: { labelPt: 'Quadro', emoji: '🖼️', w: 2, h: 2, mount: 'wall' },
+  estrela: { labelPt: 'Estrela', emoji: '⭐', w: 1, h: 1, mount: 'wall' },
+  janela: { labelPt: 'Janela', emoji: '🪟', w: 2, h: 2, mount: 'wall' },
+  relogio: { labelPt: 'Relógio', emoji: '🕐', w: 1, h: 1, mount: 'wall' },
+  prateleira: { labelPt: 'Prateleira', emoji: '🗄️', w: 2, h: 1, mount: 'wall' },
+  poster: { labelPt: 'Pôster', emoji: '🏞️', w: 1, h: 2, mount: 'wall' },
+  espelho: { labelPt: 'Espelho', emoji: '🪞', w: 1, h: 2, mount: 'wall' },
+  // Plantas
+  planta: { labelPt: 'Planta', emoji: '🪴', w: 1, h: 2 },
+  arvore: { labelPt: 'Árvore', emoji: '🌳', w: 2, h: 3 },
+  // Luzes
   luminaria: { labelPt: 'Luminária', emoji: '💡', w: 1, h: 2 },
-  vela: { labelPt: 'Vela', emoji: '🕯️', w: 1, h: 1, anim: 'kid-room-flicker' },
-  // Pets (animados — campo `pet`)
+  vela: { labelPt: 'Vela', emoji: '🕯️', w: 1, h: 1 },
+  // Pets (campo `pet`)
   'pet-gato': { labelPt: 'Gato', emoji: '🐱', w: 1, h: 1 },
   'pet-cachorro': { labelPt: 'Cachorro', emoji: '🐶', w: 1, h: 1 },
   'pet-passaro': { labelPt: 'Passarinho', emoji: '🐦', w: 1, h: 1 },

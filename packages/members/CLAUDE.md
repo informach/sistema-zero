@@ -508,8 +508,18 @@ estender o streak). Atividade ANTERIOR às migrations não tem marco retroativo
   varredura = quebra), sem deixar uma janela de férias enorme "engolir" o cap.
 - **Avatar 3D** (migrations `0019` `avatar_configs`/`avatar_inventory` + `0023`
   `avatar_configs.photo_url`): personagem por CATEGORIAS (`domain/avatar/avatar3d-catalog.ts`:
-  12 categorias — head/hair/eyes/eyebrows/nose/facialHair/glasses/hat/top/bottom/shoes/accessory
-  —, ~62 peças, paletas de COR por categoria, defaults grátis, mapa de oclusão `hat→hair`).
+  **14 categorias** — head/hair/eyes/eyebrows/nose/**faceDecor**/facialHair/glasses/hat/top/bottom/
+  **outfit**/shoes/accessory —, **~96 peças (89 com GLB + 7 "nenhum")**, paletas de COR por categoria,
+  defaults grátis, oclusão `hat→hair` + **`outfit→[top,bottom]`** (vestido/roupa única cobre as duas).
+  A categoria **`outfit` (Vestido)** veio da mineração do pack (mesma arte Quaternius CC0): vestido grátis
+  tintável (`outfit-01`) + 4 looks pagos, + cabelos longos `hair-08..11` — opções unissex/de menina (22/06).
+  **Aproveitamento TOTAL do pack (22/06):** auditoria por md5 achou que `eyes-09..12`/`eyebrow-07..10`/
+  `hair-09` eram BYTE-IDÊNTICOS a peças já existentes (re-apontados p/ a arte distinta Eyes/EyeBrow.001-004
+  + Hair.004); + peças novas (`head-04`, `beard-06/07`, `hat-07`, `shoes-03`, `acc-07/08`) e a categoria
+  nova **`faceDecor` (Pintura de Rosto)** — removível, SEM paleta (cor embutida, igual a hat/accessory):
+  `face-none`/`face-01..07` (pintura) + `face-08` (máscara). Só ficou de fora o sazonal PumpkinHead + o
+  corpo-base nu. `canonicalize`/`assert` são genéricos (iteram `AVATAR_CATEGORIES`) → categoria nova sem
+  código novo.
   `AvatarConfig` v2 (`{version:2, style, slots: cat→{asset,color?}}` em `equipped` jsonb):
   `canonicalize` TOLERANTE (config DiceBear legada/null → default 3D, sem migração) +
   `assertEquippableConfig` ESTRITO (peça existe/categoria certa/grátis OU possuída + cor ∈

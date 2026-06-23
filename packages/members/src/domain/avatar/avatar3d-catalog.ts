@@ -23,11 +23,13 @@ export const AVATAR_CATEGORIES = [
   'eyes', // olhos (cor embutida)
   'eyebrows', // sobrancelhas (tintável)
   'nose', // nariz (segue a pele)
+  'faceDecor', // pintura de rosto / máscara (removível; decalque no rosto, cor embutida)
   'facialHair', // barba/bigode (removível, tintável)
   'glasses', // óculos (removível, armação tintável)
   'hat', // chapéu (removível; esconde o cabelo)
   'top', // roupa de cima
   'bottom', // roupa de baixo
+  'outfit', // vestido/roupa única (removível; esconde top+bottom)
   'shoes', // calçado
   'accessory', // acessório (brinco/laço — removível)
 ] as const
@@ -78,6 +80,7 @@ export const AVATAR3D_PARTS: readonly Avatar3dPart[] = [
   free('head-01', 'head'),
   free('head-02', 'head'),
   free('head-03', 'head'),
+  free('head-04', 'head'),
 
   // Cabelo — nenhum (careca) + alguns grátis + pagos.
   free('hair-none', 'hair'),
@@ -88,6 +91,10 @@ export const AVATAR3D_PARTS: readonly Avatar3dPart[] = [
   paid('hair-05', 'hair', 70),
   paid('hair-06', 'hair', 80),
   paid('hair-07', 'hair', 90),
+  paid('hair-08', 'hair', 90), // estilos longos (rabo/trança/cabelo comprido)
+  paid('hair-09', 'hair', 100),
+  paid('hair-10', 'hair', 110),
+  paid('hair-11', 'hair', 120),
 
   // Olhos — todos grátis (expressão; cor embutida).
   free('eyes-01', 'eyes'),
@@ -98,6 +105,10 @@ export const AVATAR3D_PARTS: readonly Avatar3dPart[] = [
   free('eyes-06', 'eyes'),
   free('eyes-07', 'eyes'),
   free('eyes-08', 'eyes'),
+  free('eyes-09', 'eyes'),
+  free('eyes-10', 'eyes'),
+  free('eyes-11', 'eyes'),
+  free('eyes-12', 'eyes'),
 
   // Sobrancelhas — grátis (tintável).
   free('eyebrow-01', 'eyebrows'),
@@ -106,12 +117,27 @@ export const AVATAR3D_PARTS: readonly Avatar3dPart[] = [
   free('eyebrow-04', 'eyebrows'),
   free('eyebrow-05', 'eyebrows'),
   free('eyebrow-06', 'eyebrows'),
+  free('eyebrow-07', 'eyebrows'),
+  free('eyebrow-08', 'eyebrows'),
+  free('eyebrow-09', 'eyebrows'),
+  free('eyebrow-10', 'eyebrows'),
 
   // Nariz — grátis (segue a pele).
   free('nose-01', 'nose'),
   free('nose-02', 'nose'),
   free('nose-03', 'nose'),
   free('nose-04', 'nose'),
+
+  // Pintura de rosto / máscara — nenhuma + 1 grátis + pagas (decalque no rosto; cor embutida).
+  free('face-none', 'faceDecor'),
+  free('face-01', 'faceDecor'),
+  paid('face-02', 'faceDecor', 40),
+  paid('face-03', 'faceDecor', 45),
+  paid('face-04', 'faceDecor', 50),
+  paid('face-05', 'faceDecor', 55),
+  paid('face-06', 'faceDecor', 60),
+  paid('face-07', 'faceDecor', 70),
+  paid('face-08', 'faceDecor', 60), // máscara
 
   // Barba — nenhuma + 1 grátis + pagas (tintável).
   free('beard-none', 'facialHair'),
@@ -120,6 +146,8 @@ export const AVATAR3D_PARTS: readonly Avatar3dPart[] = [
   paid('beard-03', 'facialHair', 70),
   paid('beard-04', 'facialHair', 80),
   paid('beard-05', 'facialHair', 90),
+  paid('beard-06', 'facialHair', 100),
+  paid('beard-07', 'facialHair', 110),
 
   // Óculos — nenhum + 1 grátis + pagos (armação tintável).
   free('glasses-none', 'glasses'),
@@ -136,6 +164,7 @@ export const AVATAR3D_PARTS: readonly Avatar3dPart[] = [
   paid('hat-04', 'hat', 100),
   paid('hat-05', 'hat', 120),
   paid('hat-06', 'hat', 150),
+  paid('hat-07', 'hat', 150),
 
   // Roupa de cima — 1 grátis + 2 pagas (tintável).
   free('top-01', 'top'),
@@ -147,9 +176,18 @@ export const AVATAR3D_PARTS: readonly Avatar3dPart[] = [
   paid('bottom-02', 'bottom', 60),
   paid('bottom-03', 'bottom', 80),
 
-  // Calçado — 1 grátis + 1 pago (tintável).
+  // Vestido / roupa única — nenhum + vestido GRÁTIS (tintável) + looks pagos. Esconde top+bottom.
+  free('outfit-none', 'outfit'),
+  free('outfit-01', 'outfit'),
+  paid('outfit-02', 'outfit', 90),
+  paid('outfit-03', 'outfit', 100),
+  paid('outfit-04', 'outfit', 110),
+  paid('outfit-05', 'outfit', 120),
+
+  // Calçado — 1 grátis + pagos (tintável).
   free('shoes-01', 'shoes'),
   paid('shoes-02', 'shoes', 70),
+  paid('shoes-03', 'shoes', 90),
 
   // Acessório — nenhum grátis + pagos (cor embutida).
   free('acc-none', 'accessory'),
@@ -159,6 +197,8 @@ export const AVATAR3D_PARTS: readonly Avatar3dPart[] = [
   paid('acc-04', 'accessory', 80),
   paid('acc-05', 'accessory', 90),
   paid('acc-06', 'accessory', 100),
+  paid('acc-07', 'accessory', 60),
+  paid('acc-08', 'accessory', 70),
 ]
 
 export const AVATAR3D_PARTS_BY_ID: ReadonlyMap<string, Avatar3dPart> = new Map(
@@ -211,6 +251,7 @@ export const AVATAR_CATEGORY_PALETTES: Partial<Record<AvatarCategory, readonly s
   glasses: GARMENT_PALETTE,
   top: GARMENT_PALETTE,
   bottom: GARMENT_PALETTE,
+  outfit: GARMENT_PALETTE, // o vestido (outfit-01) é tintável; os looks (02–05) têm cor embutida
   shoes: GARMENT_PALETTE,
 }
 
@@ -226,9 +267,11 @@ export const AVATAR_PALETTE_SETS: Partial<Record<AvatarCategory, ReadonlySet<str
  */
 export const AVATAR_REMOVABLE_NONE: Partial<Record<AvatarCategory, string>> = {
   hair: 'hair-none',
+  faceDecor: 'face-none',
   facialHair: 'beard-none',
   glasses: 'glasses-none',
   hat: 'hat-none',
+  outfit: 'outfit-none',
   accessory: 'acc-none',
 }
 
@@ -240,6 +283,7 @@ export const AVATAR_REMOVABLE_NONE: Partial<Record<AvatarCategory, string>> = {
  */
 export const AVATAR_HIDE_GROUPS: Partial<Record<AvatarCategory, AvatarCategory[]>> = {
   hat: ['hair'],
+  outfit: ['top', 'bottom'], // vestido/roupa única cobre as duas peças
 }
 
 /**
@@ -253,11 +297,13 @@ export const DEFAULT_AVATAR_SLOTS: Readonly<Record<AvatarCategory, AvatarSlot>> 
   eyes: { asset: 'eyes-01' },
   eyebrows: { asset: 'eyebrow-01', color: '#6a4e35' },
   nose: { asset: 'nose-01' },
+  faceDecor: { asset: 'face-none' }, // sem pintura por padrão (cor embutida; sem paleta)
   facialHair: { asset: 'beard-none', color: '#6a4e35' },
   glasses: { asset: 'glasses-none', color: '#3498db' },
   hat: { asset: 'hat-none' },
   top: { asset: 'top-01', color: '#3498db' },
   bottom: { asset: 'bottom-01', color: '#34495e' },
+  outfit: { asset: 'outfit-none', color: '#e84393' }, // sem vestido por padrão (usa top+bottom)
   shoes: { asset: 'shoes-01', color: '#2c3e50' },
   accessory: { asset: 'acc-none' },
 }

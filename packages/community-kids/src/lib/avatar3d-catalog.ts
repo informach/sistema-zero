@@ -19,11 +19,13 @@ export const AVATAR_CATEGORIES = [
   'eyes',
   'eyebrows',
   'nose',
+  'faceDecor',
   'facialHair',
   'glasses',
   'hat',
   'top',
   'bottom',
+  'outfit',
   'shoes',
   'accessory',
 ] as const
@@ -37,11 +39,13 @@ export const AVATAR_CATEGORY_LABELS: Record<AvatarCategory, string> = {
   eyes: 'Olhos',
   eyebrows: 'Sobrancelhas',
   nose: 'Nariz',
+  faceDecor: 'Pintura de Rosto',
   facialHair: 'Barba',
   glasses: 'Óculos',
   hat: 'Chapéu',
   top: 'Blusa',
   bottom: 'Calça',
+  outfit: 'Vestido',
   shoes: 'Calçado',
   accessory: 'Acessório',
 }
@@ -58,6 +62,7 @@ export const AVATAR_PART_INFO: Record<string, AvatarPartInfo> = {
   'head-01': { category: 'head', labelPt: 'Rosto 1' },
   'head-02': { category: 'head', labelPt: 'Rosto 2' },
   'head-03': { category: 'head', labelPt: 'Rosto 3' },
+  'head-04': { category: 'head', labelPt: 'Rosto 4' },
   // Cabelo
   'hair-none': { category: 'hair', labelPt: 'Careca' },
   'hair-01': { category: 'hair', labelPt: 'Cabelo 1' },
@@ -67,6 +72,10 @@ export const AVATAR_PART_INFO: Record<string, AvatarPartInfo> = {
   'hair-05': { category: 'hair', labelPt: 'Cabelo 5' },
   'hair-06': { category: 'hair', labelPt: 'Cabelo 6' },
   'hair-07': { category: 'hair', labelPt: 'Cabelo 7' },
+  'hair-08': { category: 'hair', labelPt: 'Cabelo 8' },
+  'hair-09': { category: 'hair', labelPt: 'Cabelo 9' },
+  'hair-10': { category: 'hair', labelPt: 'Cabelo 10' },
+  'hair-11': { category: 'hair', labelPt: 'Cabelo 11' },
   // Olhos
   'eyes-01': { category: 'eyes', labelPt: 'Olhos 1' },
   'eyes-02': { category: 'eyes', labelPt: 'Olhos 2' },
@@ -76,6 +85,10 @@ export const AVATAR_PART_INFO: Record<string, AvatarPartInfo> = {
   'eyes-06': { category: 'eyes', labelPt: 'Olhos 6' },
   'eyes-07': { category: 'eyes', labelPt: 'Olhos 7' },
   'eyes-08': { category: 'eyes', labelPt: 'Olhos 8' },
+  'eyes-09': { category: 'eyes', labelPt: 'Olhos 9' },
+  'eyes-10': { category: 'eyes', labelPt: 'Olhos 10' },
+  'eyes-11': { category: 'eyes', labelPt: 'Olhos 11' },
+  'eyes-12': { category: 'eyes', labelPt: 'Olhos 12' },
   // Sobrancelhas
   'eyebrow-01': { category: 'eyebrows', labelPt: 'Sobrancelha 1' },
   'eyebrow-02': { category: 'eyebrows', labelPt: 'Sobrancelha 2' },
@@ -83,11 +96,25 @@ export const AVATAR_PART_INFO: Record<string, AvatarPartInfo> = {
   'eyebrow-04': { category: 'eyebrows', labelPt: 'Sobrancelha 4' },
   'eyebrow-05': { category: 'eyebrows', labelPt: 'Sobrancelha 5' },
   'eyebrow-06': { category: 'eyebrows', labelPt: 'Sobrancelha 6' },
+  'eyebrow-07': { category: 'eyebrows', labelPt: 'Sobrancelha 7' },
+  'eyebrow-08': { category: 'eyebrows', labelPt: 'Sobrancelha 8' },
+  'eyebrow-09': { category: 'eyebrows', labelPt: 'Sobrancelha 9' },
+  'eyebrow-10': { category: 'eyebrows', labelPt: 'Sobrancelha 10' },
   // Nariz
   'nose-01': { category: 'nose', labelPt: 'Nariz 1' },
   'nose-02': { category: 'nose', labelPt: 'Nariz 2' },
   'nose-03': { category: 'nose', labelPt: 'Nariz 3' },
   'nose-04': { category: 'nose', labelPt: 'Nariz 4' },
+  // Pintura de rosto / máscara (decalque no rosto)
+  'face-none': { category: 'faceDecor', labelPt: 'Nenhuma' },
+  'face-01': { category: 'faceDecor', labelPt: 'Pintura 1' },
+  'face-02': { category: 'faceDecor', labelPt: 'Pintura 2' },
+  'face-03': { category: 'faceDecor', labelPt: 'Pintura 3' },
+  'face-04': { category: 'faceDecor', labelPt: 'Pintura 4' },
+  'face-05': { category: 'faceDecor', labelPt: 'Pintura 5' },
+  'face-06': { category: 'faceDecor', labelPt: 'Pintura 6' },
+  'face-07': { category: 'faceDecor', labelPt: 'Pintura 7' },
+  'face-08': { category: 'faceDecor', labelPt: 'Máscara' },
   // Barba
   'beard-none': { category: 'facialHair', labelPt: 'Nenhuma' },
   'beard-01': { category: 'facialHair', labelPt: 'Barba 1' },
@@ -95,6 +122,8 @@ export const AVATAR_PART_INFO: Record<string, AvatarPartInfo> = {
   'beard-03': { category: 'facialHair', labelPt: 'Barba 3' },
   'beard-04': { category: 'facialHair', labelPt: 'Barba 4' },
   'beard-05': { category: 'facialHair', labelPt: 'Barba 5' },
+  'beard-06': { category: 'facialHair', labelPt: 'Barba 6' },
+  'beard-07': { category: 'facialHair', labelPt: 'Barba 7' },
   // Óculos
   'glasses-none': { category: 'glasses', labelPt: 'Nenhum' },
   'glasses-01': { category: 'glasses', labelPt: 'Óculos 1' },
@@ -109,6 +138,7 @@ export const AVATAR_PART_INFO: Record<string, AvatarPartInfo> = {
   'hat-04': { category: 'hat', labelPt: 'Chapéu 4' },
   'hat-05': { category: 'hat', labelPt: 'Chapéu 5' },
   'hat-06': { category: 'hat', labelPt: 'Chapéu 6' },
+  'hat-07': { category: 'hat', labelPt: 'Chapéu 7' },
   // Blusa
   'top-01': { category: 'top', labelPt: 'Blusa 1' },
   'top-02': { category: 'top', labelPt: 'Blusa 2' },
@@ -117,9 +147,17 @@ export const AVATAR_PART_INFO: Record<string, AvatarPartInfo> = {
   'bottom-01': { category: 'bottom', labelPt: 'Calça 1' },
   'bottom-02': { category: 'bottom', labelPt: 'Calça 2' },
   'bottom-03': { category: 'bottom', labelPt: 'Calça 3' },
+  // Vestido / roupa única (esconde top+bottom)
+  'outfit-none': { category: 'outfit', labelPt: 'Nenhum' },
+  'outfit-01': { category: 'outfit', labelPt: 'Vestido' },
+  'outfit-02': { category: 'outfit', labelPt: 'Look 1' },
+  'outfit-03': { category: 'outfit', labelPt: 'Look 2' },
+  'outfit-04': { category: 'outfit', labelPt: 'Look 3' },
+  'outfit-05': { category: 'outfit', labelPt: 'Look 4' },
   // Calçado
   'shoes-01': { category: 'shoes', labelPt: 'Calçado 1' },
   'shoes-02': { category: 'shoes', labelPt: 'Calçado 2' },
+  'shoes-03': { category: 'shoes', labelPt: 'Calçado 3' },
   // Acessório
   'acc-none': { category: 'accessory', labelPt: 'Nenhum' },
   'acc-01': { category: 'accessory', labelPt: 'Brinco 1' },
@@ -128,6 +166,8 @@ export const AVATAR_PART_INFO: Record<string, AvatarPartInfo> = {
   'acc-04': { category: 'accessory', labelPt: 'Brinco 4' },
   'acc-05': { category: 'accessory', labelPt: 'Laço 1' },
   'acc-06': { category: 'accessory', labelPt: 'Laço 2' },
+  'acc-07': { category: 'accessory', labelPt: 'Brinco 5' },
+  'acc-08': { category: 'accessory', labelPt: 'Brinco 6' },
 }
 
 /** Paletas por categoria (mesmas cores do members — travado pela conformância). */
@@ -171,6 +211,7 @@ export const AVATAR_CATEGORY_PALETTES: Partial<Record<AvatarCategory, string[]>>
   glasses: GARMENT_PALETTE,
   top: GARMENT_PALETTE,
   bottom: GARMENT_PALETTE,
+  outfit: GARMENT_PALETTE,
   shoes: GARMENT_PALETTE,
 }
 
@@ -186,11 +227,13 @@ export const DEFAULT_AVATAR_SLOTS: Record<AvatarCategory, AvatarSlot> = {
   eyes: { asset: 'eyes-01' },
   eyebrows: { asset: 'eyebrow-01', color: '#6a4e35' },
   nose: { asset: 'nose-01' },
+  faceDecor: { asset: 'face-none' },
   facialHair: { asset: 'beard-none', color: '#6a4e35' },
   glasses: { asset: 'glasses-none', color: '#3498db' },
   hat: { asset: 'hat-none' },
   top: { asset: 'top-01', color: '#3498db' },
   bottom: { asset: 'bottom-01', color: '#34495e' },
+  outfit: { asset: 'outfit-none', color: '#e84393' },
   shoes: { asset: 'shoes-01', color: '#2c3e50' },
   accessory: { asset: 'acc-none' },
 }
@@ -198,14 +241,17 @@ export const DEFAULT_AVATAR_SLOTS: Record<AvatarCategory, AvatarSlot> = {
 /** Oclusão de render: chapéu real esconde o cabelo (espelha o members). */
 export const AVATAR_HIDE_GROUPS: Partial<Record<AvatarCategory, AvatarCategory[]>> = {
   hat: ['hair'],
+  outfit: ['top', 'bottom'],
 }
 
 /** Categoria removível → id da peça "nenhum" (espelha o members; sem GLB). */
 export const AVATAR_REMOVABLE_NONE: Partial<Record<AvatarCategory, string>> = {
   hair: 'hair-none',
+  faceDecor: 'face-none',
   facialHair: 'beard-none',
   glasses: 'glasses-none',
   hat: 'hat-none',
+  outfit: 'outfit-none',
   accessory: 'acc-none',
 }
 

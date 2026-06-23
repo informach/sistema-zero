@@ -283,7 +283,12 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   — avatares aparecem em listas/rankings) + personagem padrão SVG inline quando sem foto. O `photoUrl` flui
   de `getAvatarReadonly().photoUrl` (chrome/perfil/quarto) e `PublicProfileDTO.avatarPhotoUrl` (perfil
   público). Catálogo espelhado por id (`lib/avatar3d-catalog.ts`, PURO): members = existência/preço/posse/
-  paleta, kids = apresentação (travado pela conformância do members). **Sem item no `nav.ts`** — acessado
+  paleta, kids = apresentação (travado pela conformância do members). **Pack minerado por COMPLETO (22/06):**
+  14 categorias — inclui **`faceDecor` (Pintura de Rosto)**: removível, SEM paleta (cor embutida, igual a
+  hat/accessory), `face-01..07` (pintura) + `face-08` (máscara). Auditoria por md5 pegou 9 GLBs duplicados
+  (`eyes-09..12`/`eyebrow-07..10`/`hair-09`) e re-apontou p/ a arte distinta; só PumpkinHead (sazonal) e o
+  corpo-base nu ficaram de fora. **Toda peça/categoria nova → re-rode `bun run gen:avatar-thumbs`.**
+  **Sem item no `nav.ts`** — acessado
   pelo CLIQUE no avatar em `/perfil` (`profile-client` → `router.push('/meu-avatar')`); `/meu-avatar`
   em `protectedPrefixes` + `api/members/avatar/snapshot` no negative-lookahead do matcher.
 - **Quarto virtual 3D (06/2026) — `room/room-canvas.tsx` (wrapper `dynamic ssr:false`) +
@@ -303,7 +308,14 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   `placedItems[].rot`, `wallColors`, `floor`, `lighting`. Câmera com **órbita REDUZIDA** (drei
   OrbitControls travado num cone, sem pan/zoom, **desligada enquanto arrasta uma peça**) + **pet com
   COLISÃO** (grade `occupied` derivada dos `placedItems` → o bichinho desvia de móveis/paredes, não
-  atravessa). Cama é de SOLTEIRO (2×3). ⚠️ arcades no quarto foram DESCARTADOS.
+  atravessa). Cama é de SOLTEIRO (2×3). **Itens de PAREDE (`mount:'wall'` no catálogo — janela/quadro/
+  relógio/estrela/prateleira/pôster/espelho) SOBEM na parede** (não no chão): `PlacedItem` ganhou `wall`
+  + reinterpreta `x`=horizontal/`y`=altura; renderizados como painéis FLAT via `wallToWorld`, arrastados
+  por raycast nos planos das paredes; não giram. **Colisão "nada por cima de nada"**: o drag só solta em
+  célula livre (`isFree`), `addItem` acha o 1º vão (`freeFloorSpot`/`freeWallSpot`) e o `canonicalizeRoomState`
+  descarta sobreposição (sets de células chão/por-parede); helpers puros `rectsOverlap`/`wallToWorld`/
+  `worldToWallCell` em `coords.ts` (testados). Catálogo expandido (mesa/escrivaninha/tv/beliche/pufe/globo/
+  guitarra/bola + os de parede). ⚠️ arcades no quarto foram DESCARTADOS.
 - **Missões diárias/semanais — `missions-panel.tsx`** (na home): painel estilo Duolingo com as
   missões do dia ("Hoje") e da semana ("Esta semana"); busca `GET
   /api/members/gamification/missions/me` e resgata `POST /api/members/gamification/missions/:slug/claim`

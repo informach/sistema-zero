@@ -43,8 +43,8 @@ export function RoomCanvas({
   avatarPhotoUrl?: string | null
   selectedIndex?: number | null
   onSelect?: (index: number | null) => void
-  /** Arrasta um item para a célula (x,y) — o pai valida/clampa contra a grade. */
-  onMove?: (index: number, x: number, y: number) => void
+  /** Arrasta um item: chão → célula (x,y); parede → (x=horizontal, y=altura, wall). */
+  onMove?: (index: number, x: number, y: number, wall?: 'left' | 'right') => void
   /** Pinta a parede (`left`/`right`) com a cor ativa do pincel (só editor). */
   onPaintWall?: (wall: 'left' | 'right', color: string) => void
   /** Cor ativa do pincel (`null` = não está pintando). */

@@ -56,6 +56,7 @@ const RoomStateSchema = z.object({
         y: z.number().int().min(0).max(64),
         // União de literais (não z.number) → o tipo inferido é 0|1|2|3, casando RoomPlacedItem.
         rot: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]).optional(),
+        wall: z.union([z.literal('left'), z.literal('right')]).optional(),
       }),
     )
     .max(60),

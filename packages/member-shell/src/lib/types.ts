@@ -507,8 +507,10 @@ export interface RoomPlacedItem {
   itemId: string
   x: number
   y: number
-  /** Rotação em quartos de volta (0=0°, 1=90°, 2=180°, 3=270°). Ausente = 0. */
+  /** Rotação em quartos de volta (0=0°, 1=90°, 2=180°, 3=270°). Ausente = 0. Só item de chão. */
   rot?: 0 | 1 | 2 | 3
+  /** Item de PAREDE: em qual parede (x=horizontal, y=altura). Ausente = item de chão. */
+  wall?: 'left' | 'right'
 }
 /** Cor de cada parede do recorte em "L" (hex da paleta). Lado ausente = default do tema. */
 export interface RoomWallColors {

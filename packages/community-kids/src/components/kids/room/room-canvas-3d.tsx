@@ -7,7 +7,16 @@ import { Color, Plane, Raycaster, Vector2, Vector3 } from 'three'
 import { lightingPreset, ROOM_ITEM_INFO, resolveRoomAppearance } from '@/lib/room-catalog'
 import type { RoomStateView } from '@/lib/types'
 import { recoverWebGLContext } from '@/lib/webgl-recovery'
-import { effectiveFootprint, type Rot, worldToCell } from './coords'
+import {
+  effectiveFootprint,
+  FLOOR_HALF_X,
+  FLOOR_HALF_Z,
+  type Rot,
+  rectsOverlap,
+  WALL_H_CELLS,
+  worldToCell,
+  worldToWallCell,
+} from './coords'
 import { Floor } from './floor'
 import { FurniturePiece } from './furniture-piece'
 import { Pet3D } from './pet-3d'
@@ -28,7 +37,8 @@ export interface Room3DProps {
   mode: 'edit' | 'view'
   selectedIndex?: number | null
   onSelect?: (index: number | null) => void
-  onMove?: (index: number, x: number, y: number) => void
+  /** Move a peça: chão → (x,y); parede → (x=horizontal, y=altura, wall). */
+  onMove?: (index: number, x: number, y: number, wall?: 'left' | 'right') => void
   onPaintWall?: (wall: 'left' | 'right', color: string) => void
   paintColor?: string | null
   className?: string
@@ -55,12 +65,12 @@ function Scene({
   // Câmera de órbita (drei `makeDefault` injeta em `state.controls`) — desligada no arraste.
   const controls = useThree((s) => s.controls) as unknown as { enabled: boolean } | null
 
-  // Células OCUPADAS por móveis (com a rotação) — o pet desvia delas (colisão).
+  // Células do CHÃO ocupadas por móveis (itens de parede NÃO contam) — o pet desvia delas.
   const occupied = useMemo(() => {
     const set = new Set<string>()
     for (const p of state.placedItems) {
       const info = ROOM_ITEM_INFO[p.itemId]
-      if (!info) continue
+      if (!info || info.mount === 'wall') continue
       const fp = effectiveFootprint(info.w, info.h, (p.rot ?? 0) as Rot)
       for (let dx = 0; dx < fp.w; dx++) {
         for (let dz = 0; dz < fp.h; dz++) set.add(`${p.x + dx},${p.y + dz}`)
@@ -79,12 +89,47 @@ function Scene({
     }
   }, [scene, preset.background, invalidate])
 
-  // ── Arraste no chão por raycast contra o plano y=0 (robusto a oclusão de móveis) ──
+  // ── Arraste: chão por raycast no plano y=0; parede por raycast nos planos das paredes ──
   const dragRef = useRef<number | null>(null)
   const plane = useMemo(() => new Plane(new Vector3(0, 1, 0), 0), [])
+  const wallPlaneRight = useMemo(() => new Plane(new Vector3(0, 0, 1), FLOOR_HALF_Z), [])
+  const wallPlaneLeft = useMemo(() => new Plane(new Vector3(1, 0, 0), FLOOR_HALF_X), [])
   const ray = useMemo(() => new Raycaster(), [])
   const ndc = useMemo(() => new Vector2(), [])
   const hit = useMemo(() => new Vector3(), [])
+  const hitR = useMemo(() => new Vector3(), [])
+  const hitL = useMemo(() => new Vector3(), [])
+
+  // O footprint (x,y,w,h) está LIVRE (sem sobrepor outra peça)? Chão↔chão e parede↔mesma-parede.
+  const isFree = useCallback(
+    (
+      idx: number,
+      isWall: boolean,
+      wall: 'left' | 'right' | undefined,
+      x: number,
+      y: number,
+      w: number,
+      h: number,
+    ) => {
+      for (let i = 0; i < state.placedItems.length; i++) {
+        if (i === idx) continue
+        const it = state.placedItems[i]
+        const inf = it && ROOM_ITEM_INFO[it.itemId]
+        if (!it || !inf) continue
+        const otherWall = inf.mount === 'wall'
+        if (isWall) {
+          if (!otherWall || (it.wall ?? 'right') !== wall) continue
+          if (rectsOverlap(x, y, w, h, it.x, it.y, inf.w, inf.h)) return false
+        } else {
+          if (otherWall) continue
+          const ofp = effectiveFootprint(inf.w, inf.h, (it.rot ?? 0) as Rot)
+          if (rectsOverlap(x, y, w, h, it.x, it.y, ofp.w, ofp.h)) return false
+        }
+      }
+      return true
+    },
+    [state.placedItems],
+  )
 
   const moveTo = useCallback(
     (clientX: number, clientY: number) => {
@@ -99,12 +144,60 @@ function Scene({
         -((clientY - rect.top) / rect.height) * 2 + 1,
       )
       ray.setFromCamera(ndc, camera)
+
+      if (info.mount === 'wall') {
+        // Raycast nas DUAS paredes; escolhe a mais próxima dentro dos limites.
+        let best: { wall: 'left' | 'right'; u: number; v: number; dist: number } | null = null
+        if (
+          ray.ray.intersectPlane(wallPlaneRight, hitR) &&
+          Math.abs(hitR.x) <= FLOOR_HALF_X + 0.6 &&
+          hitR.y >= -0.3 &&
+          hitR.y <= WALL_H_CELLS + 0.6
+        ) {
+          const r = worldToWallCell('right', hitR.x, hitR.y, info.w, info.h)
+          best = { wall: 'right', u: r.u, v: r.v, dist: ray.ray.origin.distanceToSquared(hitR) }
+        }
+        if (
+          ray.ray.intersectPlane(wallPlaneLeft, hitL) &&
+          Math.abs(hitL.z) <= FLOOR_HALF_Z + 0.6 &&
+          hitL.y >= -0.3 &&
+          hitL.y <= WALL_H_CELLS + 0.6
+        ) {
+          const d = ray.ray.origin.distanceToSquared(hitL)
+          if (!best || d < best.dist) {
+            const l = worldToWallCell('left', hitL.z, hitL.y, info.w, info.h)
+            best = { wall: 'left', u: l.u, v: l.v, dist: d }
+          }
+        }
+        if (!best) return
+        if (!isFree(idx, true, best.wall, best.u, best.v, info.w, info.h)) return
+        if (best.u !== item.x || best.v !== item.y || best.wall !== item.wall) {
+          onMove?.(idx, best.u, best.v, best.wall)
+        }
+        return
+      }
+
       if (!ray.ray.intersectPlane(plane, hit)) return
       const fp = effectiveFootprint(info.w, info.h, (item.rot ?? 0) as Rot)
       const cell = worldToCell(hit.x, hit.z, fp.w, fp.h)
+      if (!isFree(idx, false, undefined, cell.x, cell.y, fp.w, fp.h)) return
       if (cell.x !== item.x || cell.y !== item.y) onMove?.(idx, cell.x, cell.y)
     },
-    [state.placedItems, gl, camera, plane, ray, ndc, hit, onMove],
+    [
+      state.placedItems,
+      gl,
+      camera,
+      plane,
+      wallPlaneRight,
+      wallPlaneLeft,
+      ray,
+      ndc,
+      hit,
+      hitR,
+      hitL,
+      isFree,
+      onMove,
+    ],
   )
 
   useEffect(() => {
@@ -190,6 +283,7 @@ function Scene({
           x={p.x}
           y={p.y}
           rot={(p.rot ?? 0) as Rot}
+          wall={p.wall}
           selected={editable && selectedIndex === i}
           editable={editable}
           onStart={startDrag}
