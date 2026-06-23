@@ -1,4 +1,9 @@
 @import "tailwindcss";
+/* Tokens + @theme do Estúdio DENTRO do pipeline Tailwind (registra as cores sz para o
+   @source GERAR as utilitárias bg-sz, text-sz, border-sz). Sem isto as classes do Studio
+   ficam NO-OP e os modais e menus do editor de aula saem sem fundo nem cor (washed-out).
+   O JS-import via member-shell sozinho NÃO basta (só traz os tokens). */
+@import "../../../studio/src/styles/studio.css";
 /* Componentes compartilhados (@sistemazero/ui) — o scanner precisa ver as classes deles. */
 @source "../../../ui/src";
 @source "../../../member-shell/src";

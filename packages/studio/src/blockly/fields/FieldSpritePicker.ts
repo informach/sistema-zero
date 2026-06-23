@@ -3,8 +3,8 @@ import type { ProjectAsset } from '#core'
 
 /**
  * Campo Blockly de SPRITE: mostra o NOME do sprite (string) e, ao clicar, abre um
- * DropDownDiv com a lista dos sprites JÁ CRIADOS no programa (blocos
- * `sz_g2d_create_sprite` / `sz_g2d_create_image_sprite`) — cada um com uma
+ * DropDownDiv com a lista dos sprites JÁ CRIADOS no programa (por QUALQUER bloco que
+ * cria sprite — "Criar sprite", "Criar nave", "Criar dinossauro", "Pôr o gorila"…) — cada um com uma
  * miniatura (swatch da cor, ou a imagem do asset). Acaba com o erro de digitação
  * silencioso de digitar o nome do sprite igualzinho em cada bloco (à la Scratch/
  * MakeCode, onde o sprite é escolhido num menu, nunca digitado).
@@ -19,8 +19,20 @@ interface AssetAccessor {
   __szAssets?: () => ProjectAsset[]
 }
 
-/** Blocos que DECLARAM um sprite (a fonte da lista do dropdown). */
-const SPRITE_DECL_TYPES = new Set(['sz_g2d_create_sprite', 'sz_g2d_create_image_sprite'])
+/**
+ * Blocos que CRIAM um sprite nomeado (a fonte da lista do dropdown), e em qual
+ * campo está a cor/imagem para a miniatura. Inclui os criadores genéricos E os dos
+ * KITS (nave, dino, gorila) — senão a criança cria um sprite com "Criar nave" e o
+ * seletor diz, ERRADO, que não há sprite nenhum. Todos guardam o nome no campo
+ * `NAME`. ⚠️ Bloco novo que cria sprite nomeado? Adicione aqui.
+ */
+const SPRITE_DECL_BLOCKS: Record<string, { color?: string; image?: string }> = {
+  sz_g2d_create_sprite: { color: 'COLOR' },
+  sz_g2d_create_image_sprite: { image: 'IMAGE' },
+  sz_g2d_create_ship: { color: 'BODY' }, // criar nave (Kit espaço)
+  sz_g2d_create_dino: { color: 'COLOR' }, // criar dinossauro (Kit dino)
+  sz_g2d_place_thrower: { color: 'COLOR' }, // pôr o gorila (Kit gorilas)
+}
 
 interface SpriteOption {
   name: string
@@ -29,15 +41,18 @@ interface SpriteOption {
 }
 
 /** Coleta os sprites criados no workspace, na ordem dos blocos, sem repetir nome. */
-function collectSprites(workspace: Blockly.Workspace | null | undefined): SpriteOption[] {
+export function collectSprites(workspace: Blockly.Workspace | null | undefined): SpriteOption[] {
   if (!workspace) return []
   const byName = new Map<string, SpriteOption>()
   for (const block of workspace.getAllBlocks(false)) {
-    if (!SPRITE_DECL_TYPES.has(block.type)) continue
+    const decl = SPRITE_DECL_BLOCKS[block.type]
+    if (!decl) continue
     const name = block.getFieldValue('NAME')
     if (!name || byName.has(name)) continue
-    const color = block.getField('COLOR') ? block.getFieldValue('COLOR') : undefined
-    const image = block.getField('IMAGE') ? block.getFieldValue('IMAGE') : undefined
+    const color =
+      decl.color && block.getField(decl.color) ? block.getFieldValue(decl.color) : undefined
+    const image =
+      decl.image && block.getField(decl.image) ? block.getFieldValue(decl.image) : undefined
     byName.set(name, { name, color: color ?? undefined, image: image ?? undefined })
   }
   return [...byName.values()]
@@ -81,7 +96,7 @@ export class FieldSpritePicker extends Blockly.FieldTextInput {
     if (sprites.length === 0) {
       const empty = document.createElement('div')
       empty.textContent =
-        'Nenhum sprite criado ainda. Use o bloco "Criar sprite" primeiro, ou digite um nome abaixo.'
+        'Nenhum sprite no programa ainda — crie um (ex.: "Criar sprite", "Criar nave"…) ou digite o nome abaixo.'
       empty.style.cssText =
         'font-size:12px;color:var(--color-sz-fg-soft);padding:2px 2px 8px;line-height:1.4;'
       wrap.appendChild(empty)

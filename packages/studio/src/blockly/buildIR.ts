@@ -3,25 +3,54 @@ import type { CSSEntry, HTMLNode, HTMLTag, JSExpr, JSStatement, SZIR } from '#ir
 import { getSuperName } from './blocks/extendsMutator'
 import { getParamNames } from './blocks/paramsMutator'
 
+/** Tipos dos 3 blocos-frame (containers estilo MakeCode). */
+export const FRAME_STRUCTURE = 'sz_frame_structure'
+export const FRAME_APPEARANCE = 'sz_frame_appearance'
+export const FRAME_BEHAVIOR = 'sz_frame_behavior'
+
 /**
- * Percorre o workspace e devolve a SZ-IR. Mantém os blocos top-level em ordem
- * de empilhamento vertical, e dentro de cada pilha caminha pela cadeia
- * `getNextBlock`.
+ * Percorre o workspace e devolve a SZ-IR — modelo CONTAINER (estilo MakeCode `on
+ * start`): SÓ o que está DENTRO de um frame gera. Pega os filhos da 🧱 Estrutura
+ * (→ ir.html), da 🎨 Aparência (→ ir.css) e do ⚙️ Comportamento (→ ir.js, na ORDEM
+ * da pilha). **Bloco solto fora dos frames é RASCUNHO** (ignorado pela geração).
+ * A inclusão é por CONTÊINER, não por posição/ordem no canvas.
  *
- * Blocos não-reconhecidos viram entradas de "modo avançado" para que nada se
- * perca durante a edição.
+ * Defensivo: se houver frames duplicados (a trava de "1 por projeto" é da Fase 3),
+ * usa o PRIMEIRO de cada tipo, de forma determinística.
+ *
+ * Blocos não-reconhecidos DENTRO de um frame viram "modo avançado" (nada se perde).
  */
 export function buildIRFromWorkspace(workspace: Blockly.Workspace): SZIR {
   const ir: SZIR = { html: [], css: [], js: [], extensions: [] }
-  const tops = sortTopBlocksReadingOrder(workspace.getTopBlocks(true))
-  const seenExtensions = new Set<string>()
+  const seen = new Set<string>()
+  const tops = workspace.getTopBlocks(true).filter((b) => !b.isInsertionMarker())
+  const firstOf = (type: string): Blockly.Block | null => tops.find((b) => b.type === type) ?? null
 
-  for (const top of tops) {
+  const structure = firstOf(FRAME_STRUCTURE)
+  if (structure) ir.html.push(...getHtmlChildren(structure, 'CHILDREN', seen))
+  const appearance = firstOf(FRAME_APPEARANCE)
+  if (appearance) ir.css.push(...getCssEntryChildren(appearance, 'CHILDREN', seen))
+  const behavior = firstOf(FRAME_BEHAVIOR)
+  if (behavior) ir.js.push(...getStatementChildren(behavior, 'CHILDREN', seen))
+
+  ir.extensions = Array.from(seen).map((id) => ({ extensionId: id }))
+  return ir
+}
+
+/**
+ * Coleta PLANA (modelo ANTIGO, pré-frames): anda TODOS os blocos top-level em
+ * ordem de leitura e roteia por tipo (HTML/CSS/JS). Usada SÓ pela MIGRAÇÃO
+ * (`normalizeBlocksStateToFrames`) para reproduzir a saída de projetos legados
+ * (sem frames) antes de re-emiti-los já framados — preserva o programa da criança.
+ */
+export function collectFlatFromWorkspace(workspace: Blockly.Workspace): SZIR {
+  const ir: SZIR = { html: [], css: [], js: [], extensions: [] }
+  const seen = new Set<string>()
+  for (const top of sortTopBlocksReadingOrder(workspace.getTopBlocks(true))) {
     if (top.isInsertionMarker()) continue
-    visitStack(top, ir, seenExtensions)
+    visitStack(top, ir, seen)
   }
-
-  ir.extensions = Array.from(seenExtensions).map((id) => ({ extensionId: id }))
+  ir.extensions = Array.from(seen).map((id) => ({ extensionId: id }))
   return ir
 }
 
@@ -307,6 +336,8 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'var', name: f(block, 'NAME') }
     case 'sz_val_bool':
       return { type: 'bool', value: f(block, 'VALUE') === 'true' }
+    case 'sz_val_null':
+      return { type: 'null' }
     case 'sz_g2d_key_down':
       return { type: 'g2d:keyDown', key: f(block, 'KEY') || 'ArrowRight' }
     case 'sz_g2d_touches':
@@ -321,17 +352,36 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'g2d:angleTo', aVar: f(block, 'A'), bVar: f(block, 'B') }
     case 'sz_g2d_get_health':
       return { type: 'g2d:getHealth', spriteVar: f(block, 'SPRITE') }
+    case 'sz_g2d_sprite_x':
+      return { type: 'g2d:spriteX', spriteVar: f(block, 'SPRITE') }
+    case 'sz_g2d_sprite_y':
+      return { type: 'g2d:spriteY', spriteVar: f(block, 'SPRITE') }
+    case 'sz_g2d_sprite_w':
+      return { type: 'g2d:spriteW', spriteVar: f(block, 'SPRITE') }
+    case 'sz_g2d_sprite_h':
+      return { type: 'g2d:spriteH', spriteVar: f(block, 'SPRITE') }
+    case 'sz_g2d_center_x':
+      return { type: 'g2d:centerX', spriteVar: f(block, 'SPRITE') }
+    case 'sz_g2d_center_y':
+      return { type: 'g2d:centerY', spriteVar: f(block, 'SPRITE') }
     case 'sz_g2d_random_between':
-      return { type: 'g2d:randomBetween', min: fn(block, 'MIN', 1), max: fn(block, 'MAX', 6) }
+      return {
+        type: 'g2d:randomBetween',
+        min: exprInput(block, 'MIN', { type: 'num', value: 1 }),
+        max: exprInput(block, 'MAX', { type: 'num', value: 6 }),
+      }
     case 'sz_g2d_random_chance':
-      return { type: 'g2d:randomChance', percent: fn(block, 'PERCENT', 30) }
+      return {
+        type: 'g2d:randomChance',
+        percent: exprInput(block, 'PERCENT', { type: 'num', value: 30 }),
+      }
     case 'sz_g2d_has_health':
       return { type: 'g2d:hasHealth', spriteVar: f(block, 'SPRITE') }
     case 'sz_g2d_cooldown_ready':
       return {
         type: 'g2d:cooldownReady',
         spriteVar: f(block, 'SPRITE'),
-        frames: fn(block, 'FRAMES', 20),
+        frames: exprInput(block, 'FRAMES', { type: 'num', value: 20 }),
       }
     case 'sz_g2d_is_paused':
       return { type: 'g2d:isPaused' }
@@ -339,6 +389,10 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'g2d:cameraX' }
     case 'sz_g2d_camera_y':
       return { type: 'g2d:cameraY' }
+    case 'sz_g2d_random_x':
+      return { type: 'g2d:randomX' }
+    case 'sz_g2d_random_y':
+      return { type: 'g2d:randomY' }
     case 'sz_g2d_tile_at':
       return { type: 'g2d:tileAtSprite', mapVar: f(block, 'MAP'), spriteVar: f(block, 'SPRITE') }
     case 'sz_g2d_scene_is':
@@ -382,7 +436,7 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
         type: 'g3d:isNear',
         aVar: f(block, 'A'),
         bVar: f(block, 'B'),
-        dist: fn(block, 'DIST', 2),
+        dist: exprInput(block, 'DIST', { type: 'num', value: 2 }),
       }
     case 'sz_g3d_race_hit':
       return { type: 'g3d:raceHit', objVar: f(block, 'OBJ'), worldVar: f(block, 'WORLD') }
@@ -411,7 +465,7 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
         type: 'g3d:aimAhead',
         worldVar: f(block, 'WORLD'),
         objVar: f(block, 'OBJ'),
-        dist: fn(block, 'DIST', 100),
+        dist: exprInput(block, 'DIST', { type: 'num', value: 100 }),
       }
     case 'sz_g3d_on_ground':
       return { type: 'g3d:onGround', worldVar: f(block, 'WORLD'), objVar: f(block, 'OBJ') }
@@ -1809,7 +1863,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         kind: 'js',
         value: {
           type: 'repeat',
-          times: { type: 'num', value: fn(block, 'TIMES', 1) },
+          times: exprInput(block, 'TIMES', { type: 'num', value: 5 }),
           body: getStatementChildren(block, 'DO', seen),
         },
       }
@@ -2306,7 +2360,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'canvasFillText',
           ctxVar: f(block, 'CTX'),
-          text: { type: 'str', value: f(block, 'TEXT') },
+          text: exprInput(block, 'TEXT', { type: 'str', value: 'Olá' }),
           x: exprInput(block, 'X', { type: 'num', value: 10 }),
           y: exprInput(block, 'Y', { type: 'num', value: 30 }),
         },
@@ -2371,7 +2425,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'canvasRotate',
           ctxVar: f(block, 'CTX'),
-          angle: { type: 'num', value: fn(block, 'ANGLE') },
+          angle: exprInput(block, 'ANGLE', { type: 'num', value: 0 }),
         },
       }
     case 'sz_canvas_scale':
@@ -2380,8 +2434,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'canvasScale',
           ctxVar: f(block, 'CTX'),
-          sx: { type: 'num', value: fn(block, 'SX', 1) },
-          sy: { type: 'num', value: fn(block, 'SY', 1) },
+          sx: exprInput(block, 'SX', { type: 'num', value: 1 }),
+          sy: exprInput(block, 'SY', { type: 'num', value: 1 }),
         },
       }
     case 'sz_canvas_gradient':
@@ -2391,10 +2445,10 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'canvasGradient',
           ctxVar: f(block, 'CTX'),
           varName: f(block, 'NAME'),
-          x0: { type: 'num', value: fn(block, 'X0') },
-          y0: { type: 'num', value: fn(block, 'Y0') },
-          x1: { type: 'num', value: fn(block, 'X1') },
-          y1: { type: 'num', value: fn(block, 'Y1') },
+          x0: exprInput(block, 'X0', { type: 'num', value: 0 }),
+          y0: exprInput(block, 'Y0', { type: 'num', value: 0 }),
+          x1: exprInput(block, 'X1', { type: 'num', value: 200 }),
+          y1: exprInput(block, 'Y1', { type: 'num', value: 0 }),
           stops: [
             { offset: 0, color: f(block, 'C0') },
             { offset: 1, color: f(block, 'C1') },
@@ -2621,10 +2675,10 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:createSprite',
           varName: f(block, 'NAME'),
-          x: fn(block, 'X'),
-          y: fn(block, 'Y'),
-          w: fn(block, 'W'),
-          h: fn(block, 'H'),
+          x: exprInput(block, 'X', { type: 'num', value: 100 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 100 }),
+          w: exprInput(block, 'W', { type: 'num', value: 40 }),
+          h: exprInput(block, 'H', { type: 'num', value: 40 }),
           color: f(block, 'COLOR'),
         },
       }
@@ -2641,8 +2695,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:setPosition',
           spriteVar: f(block, 'SPRITE'),
-          x: { type: 'num', value: fn(block, 'X') },
-          y: { type: 'num', value: fn(block, 'Y') },
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
         },
       }
     case 'sz_g2d_set_velocity':
@@ -2652,8 +2706,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:setVelocity',
           spriteVar: f(block, 'SPRITE'),
-          vx: { type: 'num', value: fn(block, 'VX') },
-          vy: { type: 'num', value: fn(block, 'VY') },
+          vx: exprInput(block, 'VX', { type: 'num', value: 0 }),
+          vy: exprInput(block, 'VY', { type: 'num', value: 0 }),
         },
       }
     case 'sz_g2d_collides':
@@ -2671,13 +2725,21 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       seen.add('game-2d')
       return {
         kind: 'js',
-        value: { type: 'g2d:score', varName: f(block, 'NAME'), initial: fn(block, 'INITIAL') },
+        value: {
+          type: 'g2d:score',
+          varName: f(block, 'NAME'),
+          initial: exprInput(block, 'INITIAL', { type: 'num', value: 0 }),
+        },
       }
     case 'sz_g2d_game_over':
       seen.add('game-2d')
       return {
         kind: 'js',
-        value: { type: 'g2d:gameOver', ctxVar: 'ctx', text: f(block, 'TEXT') },
+        value: {
+          type: 'g2d:gameOver',
+          ctxVar: 'ctx',
+          text: exprInput(block, 'TEXT', { type: 'str', value: 'Fim de jogo' }),
+        },
       }
     case 'sz_g2d_clear':
       seen.add('game-2d')
@@ -2693,7 +2755,13 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       }
     case 'sz_g2d_set_gravity':
       seen.add('game-2d')
-      return { kind: 'js', value: { type: 'g2d:setGravity', value: fn(block, 'VALUE', 0.5) } }
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:setGravity',
+          value: exprInput(block, 'VALUE', { type: 'num', value: 0.5 }),
+        },
+      }
     case 'sz_g2d_apply_velocity':
       seen.add('game-2d')
       return { kind: 'js', value: { type: 'g2d:applyVelocity', spriteVar: f(block, 'SPRITE') } }
@@ -2724,8 +2792,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         kind: 'js',
         value: {
           type: 'g2d:playSound',
-          freq: fn(block, 'FREQ', 440),
-          durationMs: fn(block, 'MS', 200),
+          freq: exprInput(block, 'FREQ', { type: 'num', value: 440 }),
+          durationMs: exprInput(block, 'MS', { type: 'num', value: 200 }),
         },
       }
     case 'sz_g2d_play_fx':
@@ -2741,7 +2809,11 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       seen.add('game-2d')
       return {
         kind: 'js',
-        value: { type: 'g2d:playNote', note: f(block, 'NOTE'), ms: fn(block, 'MS', 300) },
+        value: {
+          type: 'g2d:playNote',
+          note: f(block, 'NOTE'),
+          ms: exprInput(block, 'MS', { type: 'num', value: 300 }),
+        },
       }
     case 'sz_g2d_aim_at':
       seen.add('game-2d')
@@ -2757,7 +2829,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g2d:moveToward',
           spriteVar: f(block, 'SPRITE'),
           targetVar: f(block, 'TARGET'),
-          speed: fn(block, 'SPEED', 2),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 2 }),
         },
       }
     case 'sz_g2d_set_health':
@@ -2767,7 +2839,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:setHealth',
           spriteVar: f(block, 'SPRITE'),
-          amount: fn(block, 'AMOUNT', 3),
+          amount: exprInput(block, 'AMOUNT', { type: 'num', value: 3 }),
         },
       }
     case 'sz_g2d_change_health':
@@ -2777,7 +2849,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:changeHealth',
           spriteVar: f(block, 'SPRITE'),
-          delta: fn(block, 'DELTA', -1),
+          delta: exprInput(block, 'DELTA', { type: 'num', value: -1 }),
         },
       }
     case 'sz_g2d_flip_sprite':
@@ -2793,7 +2865,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:setOpacity',
           spriteVar: f(block, 'SPRITE'),
-          percent: fn(block, 'PERCENT', 50),
+          percent: exprInput(block, 'PERCENT', { type: 'num', value: 50 }),
         },
       }
     case 'sz_g2d_set_size':
@@ -2803,8 +2875,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:setSize',
           spriteVar: f(block, 'SPRITE'),
-          w: fn(block, 'W', 40),
-          h: fn(block, 'H', 40),
+          w: exprInput(block, 'W', { type: 'num', value: 40 }),
+          h: exprInput(block, 'H', { type: 'num', value: 40 }),
         },
       }
     case 'sz_g2d_scale_sprite':
@@ -2814,7 +2886,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:scaleSprite',
           spriteVar: f(block, 'SPRITE'),
-          factor: fn(block, 'FACTOR', 1.5),
+          factor: exprInput(block, 'FACTOR', { type: 'num', value: 1.5 }),
         },
       }
     case 'sz_g2d_wrap_edges':
@@ -2827,7 +2899,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:pruneOld',
           groupVar: f(block, 'GROUP'),
-          seconds: fn(block, 'SECONDS', 2),
+          seconds: exprInput(block, 'SECONDS', { type: 'num', value: 2 }),
         },
       }
     case 'sz_g2d_pause':
@@ -2843,15 +2915,19 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:cameraFollow',
           spriteVar: f(block, 'SPRITE'),
-          worldW: fn(block, 'WORLDW', 800),
-          worldH: fn(block, 'WORLDH', 600),
+          worldW: exprInput(block, 'WORLDW', { type: 'num', value: 800 }),
+          worldH: exprInput(block, 'WORLDH', { type: 'num', value: 600 }),
         },
       }
     case 'sz_g2d_set_camera':
       seen.add('game-2d')
       return {
         kind: 'js',
-        value: { type: 'g2d:setCamera', x: fn(block, 'X', 0), y: fn(block, 'Y', 0) },
+        value: {
+          type: 'g2d:setCamera',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+        },
       }
     case 'sz_g2d_break_tile_at':
       seen.add('game-2d')
@@ -2866,7 +2942,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:setTile',
           mapVar: f(block, 'MAP'),
-          index: fn(block, 'INDEX', 1),
+          index: exprInput(block, 'INDEX', { type: 'num', value: 1 }),
           spriteVar: f(block, 'SPRITE'),
         },
       }
@@ -2897,7 +2973,11 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       seen.add('game-2d')
       return {
         kind: 'js',
-        value: { type: 'g2d:showFps', x: fn(block, 'X', 8), y: fn(block, 'Y', 20) },
+        value: {
+          type: 'g2d:showFps',
+          x: exprInput(block, 'X', { type: 'num', value: 8 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 20 }),
+        },
       }
     case 'sz_g2d_on_pointer':
       seen.add('game-2d')
@@ -2938,10 +3018,10 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:createImageSprite',
           varName: f(block, 'NAME'),
-          x: fn(block, 'X'),
-          y: fn(block, 'Y'),
-          w: fn(block, 'W'),
-          h: fn(block, 'H'),
+          x: exprInput(block, 'X', { type: 'num', value: 100 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 100 }),
+          w: exprInput(block, 'W', { type: 'num', value: 40 }),
+          h: exprInput(block, 'H', { type: 'num', value: 40 }),
           image: f(block, 'IMAGE'),
         },
       }
@@ -2959,8 +3039,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g2d:loadSpritesheet',
           varName: f(block, 'NAME'),
           image: f(block, 'IMAGE'),
-          frameW: fn(block, 'FW', 32),
-          frameH: fn(block, 'FH', 32),
+          frameW: exprInput(block, 'FW', { type: 'num', value: 32 }),
+          frameH: exprInput(block, 'FH', { type: 'num', value: 32 }),
         },
       }
     case 'sz_g2d_animate_sprite':
@@ -2971,9 +3051,9 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g2d:animateSprite',
           spriteVar: f(block, 'SPRITE'),
           sheetVar: f(block, 'SHEET'),
-          from: fn(block, 'FROM', 0),
-          to: fn(block, 'TO', 0),
-          fps: fn(block, 'FPS', 8),
+          from: exprInput(block, 'FROM', { type: 'num', value: 0 }),
+          to: exprInput(block, 'TO', { type: 'num', value: 0 }),
+          fps: exprInput(block, 'FPS', { type: 'num', value: 8 }),
         },
       }
     case 'sz_g2d_draw_frame':
@@ -2984,11 +3064,11 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g2d:drawFrame',
           sheetVar: f(block, 'SHEET'),
           ctxVar: 'ctx',
-          index: fn(block, 'INDEX', 0),
-          x: fn(block, 'X'),
-          y: fn(block, 'Y'),
-          w: fn(block, 'W'),
-          h: fn(block, 'H'),
+          index: exprInput(block, 'INDEX', { type: 'num', value: 0 }),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+          w: exprInput(block, 'W', { type: 'num', value: 0 }),
+          h: exprInput(block, 'H', { type: 'num', value: 0 }),
         },
       }
     case 'sz_g2d_platformer':
@@ -2999,15 +3079,19 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g2d:platformer',
           spriteVar: f(block, 'SPRITE'),
           ctxVar: 'ctx',
-          speed: fn(block, 'SPEED', 4),
-          jump: fn(block, 'JUMP', 11),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 4 }),
+          jump: exprInput(block, 'JUMP', { type: 'num', value: 11 }),
         },
       }
     case 'sz_g2d_top_down':
       seen.add('game-2d')
       return {
         kind: 'js',
-        value: { type: 'g2d:topDown', spriteVar: f(block, 'SPRITE'), speed: fn(block, 'SPEED', 3) },
+        value: {
+          type: 'g2d:topDown',
+          spriteVar: f(block, 'SPRITE'),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 3 }),
+        },
       }
     case 'sz_g2d_follow_pointer':
       seen.add('game-2d')
@@ -3016,7 +3100,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:followPointer',
           spriteVar: f(block, 'SPRITE'),
-          speed: fn(block, 'SPEED', 3),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 3 }),
         },
       }
     case 'sz_g2d_clamp_to_screen':
@@ -3039,7 +3123,11 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       seen.add('game-2d')
       return {
         kind: 'js',
-        value: { type: 'g2d:shake', ctxVar: 'ctx', intensity: fn(block, 'INTENSITY', 8) },
+        value: {
+          type: 'g2d:shake',
+          ctxVar: 'ctx',
+          intensity: exprInput(block, 'INTENSITY', { type: 'num', value: 8 }),
+        },
       }
     case 'sz_g2d_emit_particles':
       seen.add('game-2d')
@@ -3047,10 +3135,10 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         kind: 'js',
         value: {
           type: 'g2d:emitParticles',
-          count: fn(block, 'COUNT', 14),
+          count: exprInput(block, 'COUNT', { type: 'num', value: 14 }),
           color: f(block, 'COLOR'),
-          x: fn(block, 'X'),
-          y: fn(block, 'Y'),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
         },
       }
     case 'sz_g2d_draw_particles':
@@ -3065,7 +3153,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g2d:createTileMap',
           varName: f(block, 'NAME'),
           image: f(block, 'IMAGE'),
-          tile: fn(block, 'TILE', 32),
+          tile: exprInput(block, 'TILE', { type: 'num', value: 32 }),
           solid: f(block, 'SOLID'),
           grid: f(block, 'GRID'),
         },
@@ -3078,8 +3166,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g2d:drawTileMap',
           mapVar: f(block, 'MAP'),
           ctxVar: 'ctx',
-          x: fn(block, 'X'),
-          y: fn(block, 'Y'),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
         },
       }
     case 'sz_g2d_tilemap_collide':
@@ -3106,8 +3194,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           groupVar: f(block, 'GROUP'),
           x: exprInput(block, 'X', { type: 'num', value: 0 }),
           y: exprInput(block, 'Y', { type: 'num', value: 0 }),
-          w: fn(block, 'W', 20),
-          h: fn(block, 'H', 20),
+          w: exprInput(block, 'W', { type: 'num', value: 20 }),
+          h: exprInput(block, 'H', { type: 'num', value: 20 }),
           color: f(block, 'COLOR'),
           vx: exprInput(block, 'VX', { type: 'num', value: 0 }),
           vy: exprInput(block, 'VY', { type: 'num', value: 0 }),
@@ -3122,8 +3210,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           groupVar: f(block, 'GROUP'),
           x: exprInput(block, 'X', { type: 'num', value: 0 }),
           y: exprInput(block, 'Y', { type: 'num', value: 0 }),
-          w: fn(block, 'W', 20),
-          h: fn(block, 'H', 20),
+          w: exprInput(block, 'W', { type: 'num', value: 20 }),
+          h: exprInput(block, 'H', { type: 'num', value: 20 }),
           image: f(block, 'IMAGE'),
           vx: exprInput(block, 'VX', { type: 'num', value: 0 }),
           vy: exprInput(block, 'VY', { type: 'num', value: 0 }),
@@ -3203,7 +3291,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         kind: 'js',
         value: {
           type: 'g2d:everySeconds',
-          seconds: fn(block, 'SECS', 2),
+          seconds: exprInput(block, 'SECS', { type: 'num', value: 2 }),
           body: getStatementChildren(block, 'BODY', seen),
         },
       }
@@ -3218,10 +3306,10 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           ctxVar: 'ctx',
           label: f(block, 'LABEL'),
           value: exprInput(block, 'VALUE', { type: 'num', value: 0 }),
-          x: fn(block, 'X', 10),
-          y: fn(block, 'Y', 30),
+          x: exprInput(block, 'X', { type: 'num', value: 10 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 30 }),
           color: f(block, 'COLOR'),
-          size: fn(block, 'SIZE', 24),
+          size: exprInput(block, 'SIZE', { type: 'num', value: 24 }),
         },
       }
     case 'sz_g2d_draw_label':
@@ -3232,10 +3320,10 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g2d:drawLabel',
           ctxVar: 'ctx',
           text: f(block, 'TEXT'),
-          x: fn(block, 'X', 10),
-          y: fn(block, 'Y', 30),
+          x: exprInput(block, 'X', { type: 'num', value: 10 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 30 }),
           color: f(block, 'COLOR'),
-          size: fn(block, 'SIZE', 20),
+          size: exprInput(block, 'SIZE', { type: 'num', value: 20 }),
           align: (f(block, 'ALIGN') || 'left') as 'left' | 'center' | 'right',
         },
       }
@@ -3247,9 +3335,9 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g2d:drawHearts',
           ctxVar: 'ctx',
           count: exprInput(block, 'COUNT', { type: 'num', value: 3 }),
-          x: fn(block, 'X', 10),
-          y: fn(block, 'Y', 10),
-          size: fn(block, 'SIZE', 22),
+          x: exprInput(block, 'X', { type: 'num', value: 10 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 10 }),
+          size: exprInput(block, 'SIZE', { type: 'num', value: 22 }),
           color: f(block, 'COLOR'),
         },
       }
@@ -3262,10 +3350,10 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           ctxVar: 'ctx',
           value: exprInput(block, 'VALUE', { type: 'num', value: 0 }),
           max: exprInput(block, 'MAX', { type: 'num', value: 100 }),
-          x: fn(block, 'X', 10),
-          y: fn(block, 'Y', 10),
-          w: fn(block, 'W', 120),
-          h: fn(block, 'H', 14),
+          x: exprInput(block, 'X', { type: 'num', value: 10 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 10 }),
+          w: exprInput(block, 'W', { type: 'num', value: 120 }),
+          h: exprInput(block, 'H', { type: 'num', value: 14 }),
           color: f(block, 'COLOR'),
         },
       }
@@ -3279,9 +3367,9 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:showScreen',
           ctxVar: 'ctx',
-          title: f(block, 'TITLE'),
-          subtitle: f(block, 'SUBTITLE'),
-          hint: f(block, 'HINT'),
+          title: exprInput(block, 'TITLE', { type: 'str', value: 'Tela' }),
+          subtitle: exprInput(block, 'SUBTITLE', { type: 'str', value: '' }),
+          hint: exprInput(block, 'HINT', { type: 'str', value: '' }),
           bg: f(block, 'BG'),
         },
       }
@@ -3292,14 +3380,35 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       seen.add('game-2d')
       return {
         kind: 'js',
-        value: { type: 'g2d:starfield', ctxVar: 'ctx', speed: fn(block, 'SPEED', 1) },
+        value: {
+          type: 'g2d:starfield',
+          ctxVar: 'ctx',
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 1 }),
+        },
       }
     case 'sz_g2d_drag_x':
       seen.add('game-2d')
       return { kind: 'js', value: { type: 'g2d:dragX', spriteVar: f(block, 'SPRITE') } }
     case 'sz_g2d_fit_screen':
       seen.add('game-2d')
-      return { kind: 'js', value: { type: 'g2d:fitScreen', percent: fn(block, 'PERCENT', 100) } }
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:fitScreen',
+          percent: exprInput(block, 'PERCENT', { type: 'num', value: 100 }),
+        },
+      }
+    case 'sz_g2d_setup_stage':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:setupStage',
+          width: exprInput(block, 'W', { type: 'num', value: 800 }),
+          height: exprInput(block, 'H', { type: 'num', value: 480 }),
+          bg: f(block, 'BG'),
+        },
+      }
 
     // ---- Kit Nave & Asteroides (v0.7.0) ----
     case 'sz_g2d_spawn_bullet':
@@ -3311,7 +3420,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           groupVar: f(block, 'GROUP'),
           x: exprInput(block, 'X', { type: 'num', value: 0 }),
           y: exprInput(block, 'Y', { type: 'num', value: 0 }),
-          radius: fn(block, 'R', 5),
+          radius: exprInput(block, 'R', { type: 'num', value: 5 }),
           color: f(block, 'COLOR'),
           vx: exprInput(block, 'VX', { type: 'num', value: 0 }),
           vy: exprInput(block, 'VY', { type: 'num', value: -7 }),
@@ -3321,7 +3430,11 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       seen.add('game-2d')
       return {
         kind: 'js',
-        value: { type: 'g2d:arrowsX', spriteVar: f(block, 'SPRITE'), speed: fn(block, 'SPEED', 6) },
+        value: {
+          type: 'g2d:arrowsX',
+          spriteVar: f(block, 'SPRITE'),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 6 }),
+        },
       }
     case 'sz_g2d_blink':
       seen.add('game-2d')
@@ -3330,7 +3443,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:blinkSprite',
           spriteVar: f(block, 'SPRITE'),
-          frames: fn(block, 'FRAMES', 60),
+          frames: exprInput(block, 'FRAMES', { type: 'num', value: 60 }),
         },
       }
     case 'sz_g2d_create_ship':
@@ -3340,10 +3453,10 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:createShip',
           varName: f(block, 'NAME'),
-          x: fn(block, 'X', 100),
-          y: fn(block, 'Y', 250),
-          w: fn(block, 'W', 54),
-          h: fn(block, 'H', 62),
+          x: exprInput(block, 'X', { type: 'num', value: 100 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 250 }),
+          w: exprInput(block, 'W', { type: 'num', value: 54 }),
+          h: exprInput(block, 'H', { type: 'num', value: 62 }),
           bodyColor: f(block, 'BODY'),
           wingColor: f(block, 'WINGS'),
         },
@@ -3357,7 +3470,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           groupVar: f(block, 'GROUP'),
           x: exprInput(block, 'X', { type: 'num', value: 0 }),
           y: exprInput(block, 'Y', { type: 'num', value: 0 }),
-          size: fn(block, 'SIZE', 36),
+          size: exprInput(block, 'SIZE', { type: 'num', value: 36 }),
           color: f(block, 'COLOR'),
           vx: exprInput(block, 'VX', { type: 'num', value: 0 }),
           vy: exprInput(block, 'VY', { type: 'num', value: 3 }),
@@ -3396,8 +3509,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:steerThrust',
           spriteVar: f(block, 'SPRITE'),
-          speed: fn(block, 'SPEED', 3),
-          turn: fn(block, 'TURN', 3),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 3 }),
+          turn: exprInput(block, 'TURN', { type: 'num', value: 3 }),
         },
       }
     case 'sz_g2d_rotate_sprite':
@@ -3407,14 +3520,18 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:rotateSprite',
           spriteVar: f(block, 'SPRITE'),
-          deg: fn(block, 'DEG', 15),
+          deg: exprInput(block, 'DEG', { type: 'num', value: 15 }),
         },
       }
     case 'sz_g2d_point_sprite':
       seen.add('game-2d')
       return {
         kind: 'js',
-        value: { type: 'g2d:pointSprite', spriteVar: f(block, 'SPRITE'), deg: fn(block, 'DEG', 0) },
+        value: {
+          type: 'g2d:pointSprite',
+          spriteVar: f(block, 'SPRITE'),
+          deg: exprInput(block, 'DEG', { type: 'num', value: 0 }),
+        },
       }
     case 'sz_g2d_thrust':
       seen.add('game-2d')
@@ -3423,7 +3540,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:thrust',
           spriteVar: f(block, 'SPRITE'),
-          force: fn(block, 'FORCE', 0.1),
+          force: exprInput(block, 'FORCE', { type: 'num', value: 0.1 }),
         },
       }
     case 'sz_g2d_apply_friction':
@@ -3433,7 +3550,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:applyFriction',
           spriteVar: f(block, 'SPRITE'),
-          factor: fn(block, 'FACTOR', 0.97),
+          factor: exprInput(block, 'FACTOR', { type: 'num', value: 0.97 }),
         },
       }
     case 'sz_g2d_shoot_from':
@@ -3444,7 +3561,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g2d:shootFrom',
           spriteVar: f(block, 'SPRITE'),
           groupVar: f(block, 'GROUP'),
-          speed: fn(block, 'SPEED', 6),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 6 }),
           color: f(block, 'COLOR'),
         },
       }
@@ -3455,9 +3572,9 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:spawnAsteroidEdge',
           groupVar: f(block, 'GROUP'),
-          size: fn(block, 'SIZE', 40),
+          size: exprInput(block, 'SIZE', { type: 'num', value: 40 }),
           color: f(block, 'COLOR'),
-          speed: fn(block, 'SPEED', 1.5),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 1.5 }),
         },
       }
 
@@ -3470,7 +3587,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g2d:jumpOnGround',
           spriteVar: f(block, 'SPRITE'),
           ctxVar: 'ctx',
-          jump: fn(block, 'JUMP', 14),
+          jump: exprInput(block, 'JUMP', { type: 'num', value: 14 }),
         },
       }
     case 'sz_g2d_create_stickhero':
@@ -3504,9 +3621,9 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:createDino',
           varName: f(block, 'NAME'),
-          x: fn(block, 'X', 120),
-          y: fn(block, 'Y', 150),
-          size: fn(block, 'SIZE', 64),
+          x: exprInput(block, 'X', { type: 'num', value: 120 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 150 }),
+          size: exprInput(block, 'SIZE', { type: 'num', value: 64 }),
           color: f(block, 'COLOR'),
         },
       }
@@ -3518,7 +3635,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g2d:controlDino',
           spriteVar: f(block, 'SPRITE'),
           ctxVar: 'ctx',
-          jump: fn(block, 'JUMP', 15),
+          jump: exprInput(block, 'JUMP', { type: 'num', value: 15 }),
         },
       }
     case 'sz_g2d_spawn_obstacle':
@@ -3531,7 +3648,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           ctxVar: 'ctx',
           shape: f(block, 'SHAPE') || 'cactus',
           x: exprInput(block, 'X', { type: 'num', value: 0 }),
-          size: fn(block, 'SIZE', 44),
+          size: exprInput(block, 'SIZE', { type: 'num', value: 44 }),
           vx: exprInput(block, 'VX', { type: 'num', value: -6 }),
         },
       }
@@ -3551,7 +3668,11 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       seen.add('game-2d')
       return {
         kind: 'js',
-        value: { type: 'g2d:forest', ctxVar: 'ctx', speed: fn(block, 'SPEED', 4) },
+        value: {
+          type: 'g2d:forest',
+          ctxVar: 'ctx',
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 4 }),
+        },
       }
     case 'sz_g2d_play_jump':
       seen.add('game-2d')
@@ -3647,6 +3768,12 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         kind: 'js',
         value: { type: 'g3d:createScene', canvasId: f(block, 'CANVAS'), varName: f(block, 'NAME') },
       }
+    case 'sz_g3d_create_fullscreen_scene':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: { type: 'g3d:createFullscreenScene', varName: f(block, 'NAME'), bg: f(block, 'BG') },
+      }
     case 'sz_g3d_set_background':
       seen.add('game-3d')
       return {
@@ -3673,7 +3800,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g3d:createBox',
           varName: f(block, 'NAME'),
           worldVar: f(block, 'WORLD'),
-          size: fn(block, 'SIZE', 1),
+          size: exprInput(block, 'SIZE', { type: 'num', value: 1 }),
           color: f(block, 'COLOR'),
         },
       }
@@ -3685,7 +3812,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g3d:createSphere',
           varName: f(block, 'NAME'),
           worldVar: f(block, 'WORLD'),
-          radius: fn(block, 'RADIUS', 0.5),
+          radius: exprInput(block, 'RADIUS', { type: 'num', value: 0.5 }),
           color: f(block, 'COLOR'),
         },
       }
@@ -3731,9 +3858,9 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g3d:createBlock',
           varName: f(block, 'NAME'),
           worldVar: f(block, 'WORLD'),
-          width: fn(block, 'W', 1),
-          height: fn(block, 'H', 1),
-          depth: fn(block, 'D', 1),
+          width: exprInput(block, 'W', { type: 'num', value: 10 }),
+          height: exprInput(block, 'H', { type: 'num', value: 0.5 }),
+          depth: exprInput(block, 'D', { type: 'num', value: 50 }),
           color: f(block, 'COLOR'),
         },
       }
@@ -3772,7 +3899,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g3d:controlWithKeys',
           objVar: f(block, 'OBJ'),
-          speed: fn(block, 'SPEED', 0.05),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 0.05 }),
         },
       }
     case 'sz_g3d_set_scale':
@@ -3803,8 +3930,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           worldVar: f(block, 'WORLD'),
           groupVar: f(block, 'GROUP'),
           groundVar: f(block, 'GROUND'),
-          every: fn(block, 'EVERY', 200),
-          speed: fn(block, 'SPEED', 0.02),
+          every: exprInput(block, 'EVERY', { type: 'num', value: 200 }),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 0.02 }),
         },
       }
     case 'sz_g3d_stop':
@@ -3864,7 +3991,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           rowIndex: exprInput(block, 'ROW', { type: 'num', value: 1 }),
           kind: f(block, 'KIND') || 'car',
           direction: f(block, 'DIR') || 'right',
-          speed: fn(block, 'SPEED', 150),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 150 }),
         },
       }
     case 'sz_g3d_generate_rows':
@@ -3874,7 +4001,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g3d:generateRows',
           worldVar: f(block, 'WORLD'),
-          count: fn(block, 'COUNT', 20),
+          count: exprInput(block, 'COUNT', { type: 'num', value: 20 }),
         },
       }
     case 'sz_g3d_move_traffic':
@@ -3910,9 +4037,9 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g3d:moveAcross',
           groupVar: f(block, 'GROUP'),
-          speed: fn(block, 'SPEED', 0.1),
-          min: fn(block, 'MIN', -10),
-          max: fn(block, 'MAX', 10),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 0.1 }),
+          min: exprInput(block, 'MIN', { type: 'num', value: -10 }),
+          max: exprInput(block, 'MAX', { type: 'num', value: 10 }),
         },
       }
     case 'sz_g3d_grid_position':
@@ -3943,8 +4070,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g3d:moveInCircle',
           objVar: f(block, 'OBJ'),
-          radius: fn(block, 'RADIUS', 7),
-          speed: fn(block, 'SPEED', 0.02),
+          radius: exprInput(block, 'RADIUS', { type: 'num', value: 7 }),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 0.02 }),
         },
       }
     case 'sz_g3d_create_race_scene':
@@ -4007,9 +4134,9 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g3d:slideBetween',
           objVar: f(block, 'OBJ'),
           axis: f(block, 'AXIS') || 'x',
-          min: fn(block, 'MIN', -5),
-          max: fn(block, 'MAX', 5),
-          speed: fn(block, 'SPEED', 0.05),
+          min: exprInput(block, 'MIN', { type: 'num', value: -5 }),
+          max: exprInput(block, 'MAX', { type: 'num', value: 5 }),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 0.05 }),
         },
       }
     case 'sz_g3d_spin':
@@ -4020,7 +4147,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g3d:spin',
           objVar: f(block, 'OBJ'),
           axis: f(block, 'AXIS') || 'y',
-          speed: fn(block, 'SPEED', 0.03),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 0.03 }),
         },
       }
     case 'sz_g3d_create_stack_scene':
@@ -4078,7 +4205,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           x: exprInput(block, 'X', { type: 'num', value: 0 }),
           y: exprInput(block, 'Y', { type: 'num', value: 0 }),
           z: exprInput(block, 'Z', { type: 'num', value: 0 }),
-          factor: fn(block, 'FACTOR', 0.1),
+          factor: exprInput(block, 'FACTOR', { type: 'num', value: 0.1 }),
         },
       }
     case 'sz_g3d_look_at_object':
@@ -4116,7 +4243,11 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       seen.add('game-3d')
       return {
         kind: 'js',
-        value: { type: 'g3d:body', objVar: f(block, 'OBJ'), gravity: fn(block, 'GRAVITY', -0.01) },
+        value: {
+          type: 'g3d:body',
+          objVar: f(block, 'OBJ'),
+          gravity: exprInput(block, 'GRAVITY', { type: 'num', value: -0.01 }),
+        },
       }
     case 'sz_g3d_step_body':
       seen.add('game-3d')
@@ -4135,8 +4266,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g3d:platformerControls',
           objVar: f(block, 'OBJ'),
           worldVar: f(block, 'WORLD'),
-          speed: fn(block, 'SPEED', 0.08),
-          jump: fn(block, 'JUMP', 0.18),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 0.08 }),
+          jump: exprInput(block, 'JUMP', { type: 'num', value: 0.18 }),
         },
       }
     case 'sz_g3d_fps_controls':
@@ -4147,7 +4278,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g3d:fpsControls',
           objVar: f(block, 'OBJ'),
           worldVar: f(block, 'WORLD'),
-          speed: fn(block, 'SPEED', 0.08),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 0.08 }),
         },
       }
     case 'sz_g3d_resolve_collision':
@@ -4176,8 +4307,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g3d:thirdPersonCamera',
           worldVar: f(block, 'WORLD'),
           objVar: f(block, 'OBJ'),
-          dist: fn(block, 'DIST', 6),
-          height: fn(block, 'HEIGHT', 3),
+          dist: exprInput(block, 'DIST', { type: 'num', value: 6 }),
+          height: exprInput(block, 'HEIGHT', { type: 'num', value: 3 }),
         },
       }
     case 'sz_g3d_camera_look_at':
@@ -4190,7 +4321,11 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       seen.add('game-3d')
       return {
         kind: 'js',
-        value: { type: 'g3d:setFOV', worldVar: f(block, 'WORLD'), deg: fn(block, 'DEG', 60) },
+        value: {
+          type: 'g3d:setFOV',
+          worldVar: f(block, 'WORLD'),
+          deg: exprInput(block, 'DEG', { type: 'num', value: 60 }),
+        },
       }
     case 'sz_g3d_create_cylinder':
       seen.add('game-3d')
@@ -4200,8 +4335,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g3d:createCylinder',
           varName: f(block, 'NAME'),
           worldVar: f(block, 'WORLD'),
-          radius: fn(block, 'RADIUS', 0.5),
-          height: fn(block, 'HEIGHT', 1),
+          radius: exprInput(block, 'RADIUS', { type: 'num', value: 0.5 }),
+          height: exprInput(block, 'HEIGHT', { type: 'num', value: 1 }),
           color: f(block, 'COLOR'),
         },
       }
@@ -4213,8 +4348,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g3d:createCone',
           varName: f(block, 'NAME'),
           worldVar: f(block, 'WORLD'),
-          radius: fn(block, 'RADIUS', 0.5),
-          height: fn(block, 'HEIGHT', 1),
+          radius: exprInput(block, 'RADIUS', { type: 'num', value: 0.5 }),
+          height: exprInput(block, 'HEIGHT', { type: 'num', value: 1 }),
           color: f(block, 'COLOR'),
         },
       }
@@ -4226,8 +4361,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g3d:createPlane',
           varName: f(block, 'NAME'),
           worldVar: f(block, 'WORLD'),
-          width: fn(block, 'W', 10),
-          depth: fn(block, 'D', 10),
+          width: exprInput(block, 'W', { type: 'num', value: 10 }),
+          depth: exprInput(block, 'D', { type: 'num', value: 10 }),
           color: f(block, 'COLOR'),
         },
       }
@@ -4239,8 +4374,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g3d:createTorus',
           varName: f(block, 'NAME'),
           worldVar: f(block, 'WORLD'),
-          radius: fn(block, 'RADIUS', 0.5),
-          tube: fn(block, 'TUBE', 0.2),
+          radius: exprInput(block, 'RADIUS', { type: 'num', value: 0.5 }),
+          tube: exprInput(block, 'TUBE', { type: 'num', value: 0.2 }),
           color: f(block, 'COLOR'),
         },
       }
@@ -4263,7 +4398,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g3d:setOpacity',
           objVar: f(block, 'OBJ'),
-          opacity: fn(block, 'OPACITY', 1),
+          opacity: exprInput(block, 'OPACITY', { type: 'num', value: 1 }),
         },
       }
     case 'sz_g3d_set_material':
@@ -4312,7 +4447,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g3d:addAmbientLight',
           worldVar: f(block, 'WORLD'),
           color: f(block, 'COLOR'),
-          intensity: fn(block, 'INTENSITY', 0.6),
+          intensity: exprInput(block, 'INTENSITY', { type: 'num', value: 0.6 }),
         },
       }
     case 'sz_g3d_add_sun_light':
@@ -4323,7 +4458,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g3d:addSunLight',
           worldVar: f(block, 'WORLD'),
           color: f(block, 'COLOR'),
-          intensity: fn(block, 'INTENSITY', 0.9),
+          intensity: exprInput(block, 'INTENSITY', { type: 'num', value: 0.9 }),
         },
       }
     case 'sz_g3d_add_point_light':
@@ -4334,10 +4469,10 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g3d:addPointLight',
           worldVar: f(block, 'WORLD'),
           color: f(block, 'COLOR'),
-          intensity: fn(block, 'INTENSITY', 1),
-          x: fn(block, 'X', 0),
-          y: fn(block, 'Y', 2),
-          z: fn(block, 'Z', 0),
+          intensity: exprInput(block, 'INTENSITY', { type: 'num', value: 1 }),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 2 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 0 }),
         },
       }
     case 'sz_g3d_set_fog':
@@ -4348,8 +4483,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g3d:setFog',
           worldVar: f(block, 'WORLD'),
           color: f(block, 'COLOR'),
-          near: fn(block, 'NEAR', 1),
-          far: fn(block, 'FAR', 30),
+          near: exprInput(block, 'NEAR', { type: 'num', value: 1 }),
+          far: exprInput(block, 'FAR', { type: 'num', value: 30 }),
         },
       }
     case 'sz_g3d_set_sky':
@@ -4387,9 +4522,9 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g3d:spawnInSwarm',
           swarmVar: f(block, 'SWARM'),
           originalVar: f(block, 'ORIGINAL'),
-          x: fn(block, 'X', 0),
-          y: fn(block, 'Y', 0),
-          z: fn(block, 'Z', 0),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 0 }),
         },
       }
     case 'sz_g3d_for_each_swarm':
@@ -4421,15 +4556,19 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g3d:pruneSwarm',
           swarmVar: f(block, 'SWARM'),
           axis: f(block, 'AXIS') || 'y',
-          min: fn(block, 'MIN', -20),
-          max: fn(block, 'MAX', 20),
+          min: exprInput(block, 'MIN', { type: 'num', value: -20 }),
+          max: exprInput(block, 'MAX', { type: 'num', value: 20 }),
         },
       }
     case 'sz_g3d_play_note':
       seen.add('game-3d')
       return {
         kind: 'js',
-        value: { type: 'g3d:playNote', freq: fn(block, 'FREQ', 440), ms: fn(block, 'MS', 200) },
+        value: {
+          type: 'g3d:playNote',
+          freq: exprInput(block, 'FREQ', { type: 'num', value: 440 }),
+          ms: exprInput(block, 'MS', { type: 'num', value: 200 }),
+        },
       }
     case 'sz_g3d_play_effect':
       seen.add('game-3d')

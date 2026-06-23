@@ -8,7 +8,7 @@ import { Skeleton } from '@sistemazero/ui/skeleton'
  */
 export default function ProfileLoading() {
   return (
-    <div aria-busy="true" className="mx-auto flex w-full max-w-2xl flex-col gap-6">
+    <div aria-busy="true" className="flex w-full flex-col gap-6">
       <span className="sr-only">Carregando…</span>
       <div>
         <Skeleton className="h-7 w-40" />

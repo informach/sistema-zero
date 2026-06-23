@@ -1,9 +1,12 @@
 import type { ExtensionToolboxCategory } from '#extensions'
+import { categoryShades } from '../../blockly/colorShades'
 
-const C = '#f472b6'
-// Eventos "Quando…" (hats) ganham uma cor própria (dourado), à la Scratch, para
-// se destacarem como gatilhos. Sem previousStatement/nextStatement: são chapéus.
-const EVENT_C = '#fbbf24'
+// Jogo 2D = UMA cor da categoria: ROSA. As sub-categorias são TONS de rosa
+// (derivados por categoryShades mais abaixo).
+const C = '#ec4899'
+// Eventos "Quando…" (hats): também em rosa (o loop de cor abaixo dá a eles o tom
+// da sub-categoria "Quando…"; este valor só vale p/ um hat fora de qualquer grupo).
+const EVENT_C = '#f06bb0'
 
 export const gameTwoDBlocks = [
   {
@@ -11,12 +14,13 @@ export const gameTwoDBlocks = [
     message0: 'Criar sprite %1 em x %2 y %3 largura %4 altura %5 cor %6',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'jogador' },
-      { type: 'field_number', name: 'X', value: 100 },
-      { type: 'field_number', name: 'Y', value: 100 },
-      { type: 'field_number', name: 'W', value: 40, min: 1 },
-      { type: 'field_number', name: 'H', value: 40, min: 1 },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'input_value', name: 'W', check: 'JSValue' },
+      { type: 'input_value', name: 'H', check: 'JSValue' },
       { type: 'field_colour_sz', name: 'COLOR', colour: '#22d3ee' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -35,9 +39,10 @@ export const gameTwoDBlocks = [
     message0: 'Mudar a posição do sprite %1 para x %2 y %3',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
-      { type: 'field_number', name: 'X', value: 0 },
-      { type: 'field_number', name: 'Y', value: 0 },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -47,9 +52,10 @@ export const gameTwoDBlocks = [
     message0: 'Mudar a velocidade do sprite %1 para vx %2 vy %3',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
-      { type: 'field_number', name: 'VX', value: 0 },
-      { type: 'field_number', name: 'VY', value: 0 },
+      { type: 'input_value', name: 'VX', check: 'JSValue' },
+      { type: 'input_value', name: 'VY', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -71,8 +77,9 @@ export const gameTwoDBlocks = [
     message0: 'Criar pontuação %1 começando em %2',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'pontos' },
-      { type: 'field_number', name: 'INITIAL', value: 0 },
+      { type: 'input_value', name: 'INITIAL', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -80,7 +87,8 @@ export const gameTwoDBlocks = [
   {
     type: 'sz_g2d_game_over',
     message0: 'Mostrar fim de jogo com o texto %1',
-    args0: [{ type: 'field_input', name: 'TEXT', text: 'Fim de jogo' }],
+    args0: [{ type: 'input_value', name: 'TEXT', check: 'JSValue' }],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -111,7 +119,8 @@ export const gameTwoDBlocks = [
   {
     type: 'sz_g2d_set_gravity',
     message0: 'Botar a gravidade do mundo em %1',
-    args0: [{ type: 'field_number', name: 'VALUE', value: 0.5 }],
+    args0: [{ type: 'input_value', name: 'VALUE', check: 'JSValue' }],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -154,9 +163,10 @@ export const gameTwoDBlocks = [
     type: 'sz_g2d_play_sound',
     message0: 'Tocar som de %1 Hz por %2 ms',
     args0: [
-      { type: 'field_number', name: 'FREQ', value: 440, min: 20 },
-      { type: 'field_number', name: 'MS', value: 200, min: 1 },
+      { type: 'input_value', name: 'FREQ', check: 'JSValue' },
+      { type: 'input_value', name: 'MS', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -224,8 +234,9 @@ export const gameTwoDBlocks = [
           ['dó agudo', 'C5'],
         ],
       },
-      { type: 'field_number', name: 'MS', value: 300, min: 1 },
+      { type: 'input_value', name: 'MS', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -280,8 +291,9 @@ export const gameTwoDBlocks = [
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'inimigo' },
       { type: 'field_sprite_picker', name: 'TARGET', text: 'jogador' },
-      { type: 'field_number', name: 'SPEED', value: 2, min: 0 },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -313,9 +325,10 @@ export const gameTwoDBlocks = [
     type: 'sz_g2d_random_between',
     message0: 'um número de %1 a %2',
     args0: [
-      { type: 'field_number', name: 'MIN', value: 1 },
-      { type: 'field_number', name: 'MAX', value: 6 },
+      { type: 'input_value', name: 'MIN', check: 'JSValue' },
+      { type: 'input_value', name: 'MAX', check: 'JSValue' },
     ],
+    inputsInline: true,
     output: 'JSValue',
     colour: C,
     tooltip: 'Sorteia um número inteiro entre os dois valores (incluindo as pontas).',
@@ -323,11 +336,28 @@ export const gameTwoDBlocks = [
   {
     type: 'sz_g2d_random_chance',
     message0: 'tem chance de %1 %?',
-    args0: [{ type: 'field_number', name: 'PERCENT', value: 30, min: 0, max: 100 }],
+    args0: [{ type: 'input_value', name: 'PERCENT', check: 'JSValue' }],
+    inputsInline: true,
     output: 'JSValue',
     colour: EVENT_C,
     tooltip:
       'Verdadeiro com a chance escolhida. Ex.: 30 = acontece em ~30% das vezes. Use num "se".',
+  },
+  {
+    type: 'sz_g2d_random_x',
+    message0: 'um x aleatório na tela',
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Sorteia uma posição x em qualquer lugar da largura da tela. Ótimo para um sprite nascer num x aleatório (asteroides, estrelas…).',
+  },
+  {
+    type: 'sz_g2d_random_y',
+    message0: 'um y aleatório na tela',
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Sorteia uma posição y em qualquer lugar da altura da tela. Ótimo para um sprite nascer num y aleatório.',
   },
 
   // ---- Tier 1: Vida e tempo ----
@@ -335,9 +365,10 @@ export const gameTwoDBlocks = [
     type: 'sz_g2d_set_health',
     message0: 'Dar %1 de vida ao sprite %2',
     args0: [
-      { type: 'field_number', name: 'AMOUNT', value: 3, min: 0 },
+      { type: 'input_value', name: 'AMOUNT', check: 'JSValue' },
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -348,8 +379,9 @@ export const gameTwoDBlocks = [
     message0: 'Mudar a vida do sprite %1 em %2',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
-      { type: 'field_number', name: 'DELTA', value: -1 },
+      { type: 'input_value', name: 'DELTA', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -377,8 +409,9 @@ export const gameTwoDBlocks = [
     message0: 'o sprite %1 pode agir? (recarga de %2 quadros)',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' },
-      { type: 'field_number', name: 'FRAMES', value: 20, min: 1 },
+      { type: 'input_value', name: 'FRAMES', check: 'JSValue' },
     ],
+    inputsInline: true,
     output: 'JSValue',
     colour: EVENT_C,
     tooltip: 'Verdadeiro no máximo a cada N quadros (ótimo para a cadência de tiro). Use num "se".',
@@ -388,12 +421,66 @@ export const gameTwoDBlocks = [
     message0: 'Tirar do grupo %1 quem viveu mais de %2 segundos',
     args0: [
       { type: 'field_input', name: 'GROUP', text: 'tiros' },
-      { type: 'field_number', name: 'SECONDS', value: 2, min: 0 },
+      { type: 'input_value', name: 'SECONDS', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip: 'Remove do grupo os sprites mais velhos que o tempo dado (tiros somem sozinhos).',
+  },
+
+  // ---- Posição & tamanho do sprite (valores prontos p/ facilitar contas) ----
+  {
+    type: 'sz_g2d_sprite_x',
+    message0: 'a posição x do sprite %1',
+    args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'A posição x (borda esquerda) do sprite. Use numa conta ou pra posicionar outra coisa.',
+  },
+  {
+    type: 'sz_g2d_sprite_y',
+    message0: 'a posição y do sprite %1',
+    args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'A posição y (borda de cima) do sprite. Use numa conta ou pra posicionar outra coisa.',
+  },
+  {
+    type: 'sz_g2d_sprite_w',
+    message0: 'a largura do sprite %1',
+    args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'A largura do sprite, em pixels.',
+  },
+  {
+    type: 'sz_g2d_sprite_h',
+    message0: 'a altura do sprite %1',
+    args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'A altura do sprite, em pixels.',
+  },
+  {
+    type: 'sz_g2d_center_x',
+    message0: 'o centro x do sprite %1',
+    args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'O x do MEIO do sprite (já soma metade da largura). Ótimo pra atirar/mirar do centro da nave.',
+  },
+  {
+    type: 'sz_g2d_center_y',
+    message0: 'o centro y do sprite %1',
+    args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'O y do MEIO do sprite (já soma metade da altura). Ótimo pra atirar/mirar do centro da nave.',
   },
 
   // ---- Tier 1: Aparência (espelhar, transparência, tamanho) ----
@@ -421,8 +508,9 @@ export const gameTwoDBlocks = [
     message0: 'Mudar a transparência do sprite %1 para %2 %',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
-      { type: 'field_number', name: 'PERCENT', value: 50, min: 0, max: 100 },
+      { type: 'input_value', name: 'PERCENT', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -433,9 +521,10 @@ export const gameTwoDBlocks = [
     message0: 'Mudar o tamanho do sprite %1 para largura %2 altura %3',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
-      { type: 'field_number', name: 'W', value: 40, min: 1 },
-      { type: 'field_number', name: 'H', value: 40, min: 1 },
+      { type: 'input_value', name: 'W', check: 'JSValue' },
+      { type: 'input_value', name: 'H', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -446,8 +535,9 @@ export const gameTwoDBlocks = [
     message0: 'Multiplicar o tamanho do sprite %1 por %2',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
-      { type: 'field_number', name: 'FACTOR', value: 1.5, min: 0 },
+      { type: 'input_value', name: 'FACTOR', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -496,9 +586,10 @@ export const gameTwoDBlocks = [
     message0: 'Fazer a câmera seguir o sprite %1 (mundo %2 x %3)',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
-      { type: 'field_number', name: 'WORLDW', value: 800, min: 0 },
-      { type: 'field_number', name: 'WORLDH', value: 600, min: 0 },
+      { type: 'input_value', name: 'WORLDW', check: 'JSValue' },
+      { type: 'input_value', name: 'WORLDH', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -509,9 +600,10 @@ export const gameTwoDBlocks = [
     type: 'sz_g2d_set_camera',
     message0: 'Mover a câmera para x %1 y %2',
     args0: [
-      { type: 'field_number', name: 'X', value: 0 },
-      { type: 'field_number', name: 'Y', value: 0 },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -550,9 +642,10 @@ export const gameTwoDBlocks = [
     message0: 'No mapa %1, pôr o tile número %2 onde está o sprite %3',
     args0: [
       { type: 'field_input', name: 'MAP', text: 'mapa' },
-      { type: 'field_number', name: 'INDEX', value: 1, min: 0 },
+      { type: 'input_value', name: 'INDEX', check: 'JSValue' },
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -611,9 +704,10 @@ export const gameTwoDBlocks = [
     type: 'sz_g2d_show_fps',
     message0: 'Mostrar os quadros por segundo (FPS) em x %1 y %2',
     args0: [
-      { type: 'field_number', name: 'X', value: 8 },
-      { type: 'field_number', name: 'Y', value: 20 },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -715,12 +809,13 @@ export const gameTwoDBlocks = [
     message0: 'Criar sprite %1 em x %2 y %3 largura %4 altura %5 com imagem %6',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'heroi' },
-      { type: 'field_number', name: 'X', value: 100 },
-      { type: 'field_number', name: 'Y', value: 100 },
-      { type: 'field_number', name: 'W', value: 40, min: 1 },
-      { type: 'field_number', name: 'H', value: 40, min: 1 },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'input_value', name: 'W', check: 'JSValue' },
+      { type: 'input_value', name: 'H', check: 'JSValue' },
       { type: 'field_asset_picker', name: 'IMAGE', text: 'heroi' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -745,9 +840,10 @@ export const gameTwoDBlocks = [
     args0: [
       { type: 'field_input', name: 'NAME', text: 'andar' },
       { type: 'field_asset_picker', name: 'IMAGE', text: 'heroi-andando' },
-      { type: 'field_number', name: 'FW', value: 32, min: 1 },
-      { type: 'field_number', name: 'FH', value: 32, min: 1 },
+      { type: 'input_value', name: 'FW', check: 'JSValue' },
+      { type: 'input_value', name: 'FH', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -760,10 +856,11 @@ export const gameTwoDBlocks = [
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'heroi' },
       { type: 'field_input', name: 'SHEET', text: 'andar' },
-      { type: 'field_number', name: 'FROM', value: 0, min: 0 },
-      { type: 'field_number', name: 'TO', value: 3, min: 0 },
-      { type: 'field_number', name: 'FPS', value: 8, min: 1 },
+      { type: 'input_value', name: 'FROM', check: 'JSValue' },
+      { type: 'input_value', name: 'TO', check: 'JSValue' },
+      { type: 'input_value', name: 'FPS', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -774,13 +871,14 @@ export const gameTwoDBlocks = [
     type: 'sz_g2d_draw_frame',
     message0: 'Desenhar quadro %1 da folha de quadros %2 em x %3 y %4 largura %5 altura %6',
     args0: [
-      { type: 'field_number', name: 'INDEX', value: 0, min: 0 },
+      { type: 'input_value', name: 'INDEX', check: 'JSValue' },
       { type: 'field_input', name: 'SHEET', text: 'andar' },
-      { type: 'field_number', name: 'X', value: 100 },
-      { type: 'field_number', name: 'Y', value: 100 },
-      { type: 'field_number', name: 'W', value: 40, min: 1 },
-      { type: 'field_number', name: 'H', value: 40, min: 1 },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'input_value', name: 'W', check: 'JSValue' },
+      { type: 'input_value', name: 'H', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -794,9 +892,10 @@ export const gameTwoDBlocks = [
     message0: 'Mover o sprite %1 estilo plataforma — velocidade %2 pulo %3',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'heroi' },
-      { type: 'field_number', name: 'SPEED', value: 4, min: 0 },
-      { type: 'field_number', name: 'JUMP', value: 11, min: 0 },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
+      { type: 'input_value', name: 'JUMP', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -808,8 +907,9 @@ export const gameTwoDBlocks = [
     message0: 'Mover sprite %1 em 4 direções com setas, velocidade %2',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'heroi' },
-      { type: 'field_number', name: 'SPEED', value: 3, min: 0 },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -821,8 +921,9 @@ export const gameTwoDBlocks = [
     message0: 'Fazer sprite %1 seguir o ponteiro, velocidade %2',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'heroi' },
-      { type: 'field_number', name: 'SPEED', value: 3, min: 0 },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -852,7 +953,8 @@ export const gameTwoDBlocks = [
   {
     type: 'sz_g2d_shake',
     message0: 'Tremer a tela com intensidade %1',
-    args0: [{ type: 'field_number', name: 'INTENSITY', value: 8, min: 0 }],
+    args0: [{ type: 'input_value', name: 'INTENSITY', check: 'JSValue' }],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -863,11 +965,12 @@ export const gameTwoDBlocks = [
     type: 'sz_g2d_emit_particles',
     message0: 'Soltar %1 partículas de cor %2 em x %3 y %4',
     args0: [
-      { type: 'field_number', name: 'COUNT', value: 14, min: 1 },
+      { type: 'input_value', name: 'COUNT', check: 'JSValue' },
       { type: 'field_colour_sz', name: 'COLOR', colour: '#fbbf24' },
-      { type: 'field_number', name: 'X', value: 150 },
-      { type: 'field_number', name: 'Y', value: 100 },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -892,10 +995,11 @@ export const gameTwoDBlocks = [
     args0: [
       { type: 'field_input', name: 'NAME', text: 'mapa' },
       { type: 'field_asset_picker', name: 'IMAGE', text: 'tileset' },
-      { type: 'field_number', name: 'TILE', value: 32, min: 1 },
+      { type: 'input_value', name: 'TILE', check: 'JSValue' },
       { type: 'field_input', name: 'SOLID', text: '1' },
       { type: 'field_input', name: 'GRID', text: '0 0 0 0;0 0 0 0;1 1 1 1' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -907,9 +1011,10 @@ export const gameTwoDBlocks = [
     message0: 'Desenhar o mapa %1 em x %2 y %3',
     args0: [
       { type: 'field_input', name: 'MAP', text: 'mapa' },
-      { type: 'field_number', name: 'X', value: 0 },
-      { type: 'field_number', name: 'Y', value: 0 },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -948,8 +1053,8 @@ export const gameTwoDBlocks = [
       { type: 'field_input', name: 'GROUP', text: 'asteroides' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
-      { type: 'field_number', name: 'W', value: 24, min: 1 },
-      { type: 'field_number', name: 'H', value: 24, min: 1 },
+      { type: 'input_value', name: 'W', check: 'JSValue' },
+      { type: 'input_value', name: 'H', check: 'JSValue' },
       { type: 'field_colour_sz', name: 'COLOR', colour: '#9ca3af' },
       { type: 'input_value', name: 'VX', check: 'JSValue' },
       { type: 'input_value', name: 'VY', check: 'JSValue' },
@@ -969,8 +1074,8 @@ export const gameTwoDBlocks = [
       { type: 'field_input', name: 'GROUP', text: 'inimigos' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
-      { type: 'field_number', name: 'W', value: 32, min: 1 },
-      { type: 'field_number', name: 'H', value: 32, min: 1 },
+      { type: 'input_value', name: 'W', check: 'JSValue' },
+      { type: 'input_value', name: 'H', check: 'JSValue' },
       { type: 'field_asset_picker', name: 'IMAGE', text: 'inimigo' },
       { type: 'input_value', name: 'VX', check: 'JSValue' },
       { type: 'input_value', name: 'VY', check: 'JSValue' },
@@ -1094,7 +1199,7 @@ export const gameTwoDBlocks = [
     type: 'sz_g2d_every_seconds',
     message0: 'A cada %1 segundos fazer %2',
     args0: [
-      { type: 'field_number', name: 'SECS', value: 2, min: 0, precision: 0.1 },
+      { type: 'input_value', name: 'SECS', check: 'JSValue' },
       { type: 'input_statement', name: 'BODY' },
     ],
     previousStatement: 'JSStmt',
@@ -1110,10 +1215,10 @@ export const gameTwoDBlocks = [
     args0: [
       { type: 'field_input', name: 'LABEL', text: 'Pontos:' },
       { type: 'input_value', name: 'VALUE', check: 'JSValue' },
-      { type: 'field_number', name: 'X', value: 12 },
-      { type: 'field_number', name: 'Y', value: 30 },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
       { type: 'field_colour_sz', name: 'COLOR', colour: '#ffffff' },
-      { type: 'field_number', name: 'SIZE', value: 24, min: 6 },
+      { type: 'input_value', name: 'SIZE', check: 'JSValue' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
@@ -1126,10 +1231,10 @@ export const gameTwoDBlocks = [
     message0: 'Escrever %1 em x %2 y %3 cor %4 tamanho %5 alinhado %6',
     args0: [
       { type: 'field_input', name: 'TEXT', text: 'Nave contra Asteroides' },
-      { type: 'field_number', name: 'X', value: 12 },
-      { type: 'field_number', name: 'Y', value: 30 },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
       { type: 'field_colour_sz', name: 'COLOR', colour: '#ffffff' },
-      { type: 'field_number', name: 'SIZE', value: 20, min: 6 },
+      { type: 'input_value', name: 'SIZE', check: 'JSValue' },
       {
         type: 'field_dropdown',
         name: 'ALIGN',
@@ -1151,9 +1256,9 @@ export const gameTwoDBlocks = [
     message0: 'Desenhar %1 vidas (corações) em x %2 y %3 tamanho %4 cor %5',
     args0: [
       { type: 'input_value', name: 'COUNT', check: 'JSValue' },
-      { type: 'field_number', name: 'X', value: 12 },
-      { type: 'field_number', name: 'Y', value: 48 },
-      { type: 'field_number', name: 'SIZE', value: 22, min: 4 },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'input_value', name: 'SIZE', check: 'JSValue' },
       { type: 'field_colour_sz', name: 'COLOR', colour: '#ff5d5d' },
     ],
     inputsInline: true,
@@ -1168,10 +1273,10 @@ export const gameTwoDBlocks = [
     args0: [
       { type: 'input_value', name: 'VALUE', check: 'JSValue' },
       { type: 'input_value', name: 'MAX', check: 'JSValue' },
-      { type: 'field_number', name: 'X', value: 12 },
-      { type: 'field_number', name: 'Y', value: 48 },
-      { type: 'field_number', name: 'W', value: 160, min: 1 },
-      { type: 'field_number', name: 'H', value: 14, min: 1 },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'input_value', name: 'W', check: 'JSValue' },
+      { type: 'input_value', name: 'H', check: 'JSValue' },
       { type: 'field_colour_sz', name: 'COLOR', colour: '#35e8ff' },
     ],
     inputsInline: true,
@@ -1225,9 +1330,9 @@ export const gameTwoDBlocks = [
     type: 'sz_g2d_show_screen',
     message0: 'Mostrar tela com título %1 subtítulo %2 dica %3 fundo %4',
     args0: [
-      { type: 'field_input', name: 'TITLE', text: 'Nave contra Asteroides' },
-      { type: 'field_input', name: 'SUBTITLE', text: 'Destrua os asteroides!' },
-      { type: 'field_input', name: 'HINT', text: 'Aperte Enter para começar' },
+      { type: 'input_value', name: 'TITLE', check: 'JSValue' },
+      { type: 'input_value', name: 'SUBTITLE', check: 'JSValue' },
+      { type: 'input_value', name: 'HINT', check: 'JSValue' },
       { type: 'field_colour_sz', name: 'BG', colour: '#02111f' },
     ],
     previousStatement: 'JSStmt',
@@ -1250,7 +1355,8 @@ export const gameTwoDBlocks = [
   {
     type: 'sz_g2d_starfield',
     message0: 'Desenhar fundo de estrelas (velocidade %1)',
-    args0: [{ type: 'field_number', name: 'SPEED', value: 1, min: 0, precision: 0.1 }],
+    args0: [{ type: 'input_value', name: 'SPEED', check: 'JSValue' }],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1267,11 +1373,28 @@ export const gameTwoDBlocks = [
     tooltip: 'A nave acompanha o dedo/mouse no eixo X — ótimo para jogar no celular.',
   },
 
+  {
+    type: 'sz_g2d_setup_stage',
+    message0: 'Preparar o jogo em tela cheia, tela %1 × %2, fundo %3',
+    args0: [
+      { type: 'input_value', name: 'W', check: 'JSValue' },
+      { type: 'input_value', name: 'H', check: 'JSValue' },
+      { type: 'field_colour_sz', name: 'BG', colour: '#0b1020' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Atalho para começar: prepara a tela do jogo (largura × altura) para ocupar a janela inteira, mantendo a proporção e se reajustando sozinha, e centralizada. A cor do fundo combina com o jogo — fica no canvas e na sobra ao redor. Use uma vez no começo. Não precisa criar a tela de desenho no HTML.',
+  },
+
   // ---- Kit "Nave & Asteroides": desenhos prontos + efeitos (v0.7.0) ----
   {
     type: 'sz_g2d_fit_screen',
     message0: 'Fazer a tela preencher %1% da janela (mantendo a proporção)',
-    args0: [{ type: 'field_number', name: 'PERCENT', value: 100, min: 10, max: 100 }],
+    args0: [{ type: 'input_value', name: 'PERCENT', check: 'JSValue' }],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1286,7 +1409,7 @@ export const gameTwoDBlocks = [
       { type: 'field_input', name: 'GROUP', text: 'tiros' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
-      { type: 'field_number', name: 'R', value: 5, min: 1 },
+      { type: 'input_value', name: 'R', check: 'JSValue' },
       { type: 'field_colour_sz', name: 'COLOR', colour: '#9cff57' },
       { type: 'input_value', name: 'VX', check: 'JSValue' },
       { type: 'input_value', name: 'VY', check: 'JSValue' },
@@ -1303,8 +1426,9 @@ export const gameTwoDBlocks = [
     message0: 'Mover o sprite %1 com as setas <- -> (velocidade %2)',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' },
-      { type: 'field_number', name: 'SPEED', value: 6, min: 1 },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1316,8 +1440,9 @@ export const gameTwoDBlocks = [
     message0: 'Fazer o sprite %1 piscar por %2 quadros',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' },
-      { type: 'field_number', name: 'FRAMES', value: 60, min: 1 },
+      { type: 'input_value', name: 'FRAMES', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1330,13 +1455,14 @@ export const gameTwoDBlocks = [
     message0: 'Criar nave %1 em x %2 y %3 largura %4 altura %5 — cor do corpo %6 cor das asas %7',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'nave' },
-      { type: 'field_number', name: 'X', value: 180 },
-      { type: 'field_number', name: 'Y', value: 250 },
-      { type: 'field_number', name: 'W', value: 54, min: 1 },
-      { type: 'field_number', name: 'H', value: 62, min: 1 },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'input_value', name: 'W', check: 'JSValue' },
+      { type: 'input_value', name: 'H', check: 'JSValue' },
       { type: 'field_colour_sz', name: 'BODY', colour: '#35e8ff' },
       { type: 'field_colour_sz', name: 'WINGS', colour: '#2568ff' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1350,7 +1476,7 @@ export const gameTwoDBlocks = [
       { type: 'field_input', name: 'GROUP', text: 'asteroides' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
-      { type: 'field_number', name: 'SIZE', value: 40, min: 4 },
+      { type: 'input_value', name: 'SIZE', check: 'JSValue' },
       { type: 'field_colour_sz', name: 'COLOR', colour: '#8d8f9b' },
       { type: 'input_value', name: 'VX', check: 'JSValue' },
       { type: 'input_value', name: 'VY', check: 'JSValue' },
@@ -1415,8 +1541,9 @@ export const gameTwoDBlocks = [
     message0: 'Fazer o sprite %1 pular no chão — força do pulo %2',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'dino' },
-      { type: 'field_number', name: 'JUMP', value: 14, min: 1 },
+      { type: 'input_value', name: 'JUMP', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1430,11 +1557,12 @@ export const gameTwoDBlocks = [
     message0: 'Criar dinossauro %1 em x %2 y %3 tamanho %4 cor %5',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'dino' },
-      { type: 'field_number', name: 'X', value: 120 },
-      { type: 'field_number', name: 'Y', value: 150 },
-      { type: 'field_number', name: 'SIZE', value: 64, min: 8 },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'input_value', name: 'SIZE', check: 'JSValue' },
       { type: 'field_colour_sz', name: 'COLOR', colour: '#5fb45f' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1446,8 +1574,9 @@ export const gameTwoDBlocks = [
     message0: 'Controlar o dinossauro %1 — força do pulo %2',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'dino' },
-      { type: 'field_number', name: 'JUMP', value: 15, min: 1 },
+      { type: 'input_value', name: 'JUMP', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1470,7 +1599,7 @@ export const gameTwoDBlocks = [
         ],
       },
       { type: 'input_value', name: 'X', check: 'JSValue' },
-      { type: 'field_number', name: 'SIZE', value: 44, min: 8 },
+      { type: 'input_value', name: 'SIZE', check: 'JSValue' },
       { type: 'input_value', name: 'VX', check: 'JSValue' },
     ],
     inputsInline: true,
@@ -1499,7 +1628,8 @@ export const gameTwoDBlocks = [
   {
     type: 'sz_g2d_forest',
     message0: 'Desenhar fundo de floresta (velocidade %1)',
-    args0: [{ type: 'field_number', name: 'SPEED', value: 4, min: 0, precision: 0.1 }],
+    args0: [{ type: 'input_value', name: 'SPEED', check: 'JSValue' }],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1540,9 +1670,10 @@ export const gameTwoDBlocks = [
     message0: 'Controlar o sprite %1 como nave — velocidade %2 giro %3',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' },
-      { type: 'field_number', name: 'SPEED', value: 3, min: 0, precision: 0.1 },
-      { type: 'field_number', name: 'TURN', value: 3, min: 0, precision: 0.1 },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
+      { type: 'input_value', name: 'TURN', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1554,8 +1685,9 @@ export const gameTwoDBlocks = [
     message0: 'Girar o sprite %1 em %2 graus',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' },
-      { type: 'field_number', name: 'DEG', value: 15 },
+      { type: 'input_value', name: 'DEG', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1567,8 +1699,9 @@ export const gameTwoDBlocks = [
     message0: 'Apontar o sprite %1 para %2 graus',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' },
-      { type: 'field_number', name: 'DEG', value: 0 },
+      { type: 'input_value', name: 'DEG', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1580,8 +1713,9 @@ export const gameTwoDBlocks = [
     message0: 'Impulsionar o sprite %1 para a frente, força %2',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' },
-      { type: 'field_number', name: 'FORCE', value: 0.1, min: 0, precision: 0.01 },
+      { type: 'input_value', name: 'FORCE', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1593,8 +1727,9 @@ export const gameTwoDBlocks = [
     message0: 'Frear o sprite %1 aos poucos (atrito %2)',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' },
-      { type: 'field_number', name: 'FACTOR', value: 0.97, min: 0, max: 1, precision: 0.01 },
+      { type: 'input_value', name: 'FACTOR', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1616,9 +1751,10 @@ export const gameTwoDBlocks = [
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' },
       { type: 'field_input', name: 'GROUP', text: 'tiros' },
-      { type: 'field_number', name: 'SPEED', value: 6, min: 1, precision: 0.1 },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
       { type: 'field_colour_sz', name: 'COLOR', colour: '#9cff57' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1630,10 +1766,11 @@ export const gameTwoDBlocks = [
     message0: 'No grupo %1 soltar um asteroide de uma borda — tamanho %2 cor %3 velocidade %4',
     args0: [
       { type: 'field_input', name: 'GROUP', text: 'asteroides' },
-      { type: 'field_number', name: 'SIZE', value: 40, min: 4 },
+      { type: 'input_value', name: 'SIZE', check: 'JSValue' },
       { type: 'field_colour_sz', name: 'COLOR', colour: '#8d8f9b' },
-      { type: 'field_number', name: 'SPEED', value: 1.5, min: 0, precision: 0.1 },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1949,6 +2086,18 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     ],
   },
   {
+    name: '📐 Posição & tamanho',
+    colour: '#4c97ff',
+    types: [
+      'sz_g2d_sprite_x',
+      'sz_g2d_sprite_y',
+      'sz_g2d_sprite_w',
+      'sz_g2d_sprite_h',
+      'sz_g2d_center_x',
+      'sz_g2d_center_y',
+    ],
+  },
+  {
     name: '🪐 Muitos (grupos)',
     colour: '#3373cc',
     types: [
@@ -2019,6 +2168,8 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g2d_distance',
       'sz_g2d_random_between',
       'sz_g2d_random_chance',
+      'sz_g2d_random_x',
+      'sz_g2d_random_y',
     ],
   },
   {
@@ -2038,6 +2189,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     colour: '#9966ff',
     types: [
       'sz_g2d_clear',
+      'sz_g2d_setup_stage',
       'sz_g2d_fit_screen',
       'sz_g2d_blink',
       'sz_g2d_flash',
@@ -2189,6 +2341,12 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   },
 ]
 
+// Cada sub-categoria recebe um TOM do ciano da categoria (claro→escuro),
+// derivado da cor base por categoryShades — sobrepõe os literais de SUBCATS.
+const SUBCAT_SHADES = categoryShades(C, SUBCATS.length)
+SUBCATS.forEach((sc, i) => {
+  sc.colour = SUBCAT_SHADES[i] ?? C
+})
 // Cor = navegação: pinta cada bloco com a cor do seu grupo (sobrepõe o C/EVENT_C
 // usado na definição). Mantém os dois em sincronia automaticamente.
 const COLOUR_BY_TYPE = new Map<string, string>(
@@ -2204,6 +2362,99 @@ for (const b of gameTwoDBlocks) {
 const CATEGORIZED = new Set(SUBCATS.flatMap((sc) => sc.types))
 const leftover = gameTwoDBlocks.map((b) => b.type).filter((t) => !CATEGORIZED.has(t))
 
+// Sombras pré-preenchidas dos slots de VALOR que aparecem na paleta: o aluno pode
+// digitar o texto direto (UX igual à de antes) E ainda trocar por uma variável,
+// "juntar texto" ou o resultado de uma função.
+const txtShadow = (text: string) => ({ shadow: { type: 'sz_val_text', fields: { TEXT: text } } })
+const numShadow = (value: number) => ({ shadow: { type: 'sz_val_number', fields: { NUM: value } } })
+const G2D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
+  sz_g2d_show_screen: {
+    TITLE: txtShadow('Nave contra Asteroides'),
+    SUBTITLE: txtShadow('Destrua os asteroides!'),
+    HINT: txtShadow('Aperte Enter para começar'),
+  },
+  sz_g2d_create_sprite: {
+    X: numShadow(100),
+    Y: numShadow(100),
+    W: numShadow(40),
+    H: numShadow(40),
+  },
+  sz_g2d_create_image_sprite: {
+    X: numShadow(100),
+    Y: numShadow(100),
+    W: numShadow(40),
+    H: numShadow(40),
+  },
+  sz_g2d_create_ship: { X: numShadow(180), Y: numShadow(250), W: numShadow(54), H: numShadow(62) },
+  sz_g2d_create_dino: { X: numShadow(120), Y: numShadow(150), SIZE: numShadow(64) },
+  sz_g2d_set_position: { X: numShadow(0), Y: numShadow(0) },
+  sz_g2d_set_velocity: { VX: numShadow(0), VY: numShadow(0) },
+  sz_g2d_set_size: { W: numShadow(40), H: numShadow(40) },
+  sz_g2d_scale_sprite: { FACTOR: numShadow(1.5) },
+  sz_g2d_score: { INITIAL: numShadow(0) },
+  sz_g2d_game_over: { TEXT: txtShadow('Fim de jogo') },
+  sz_g2d_set_health: { AMOUNT: numShadow(3) },
+  sz_g2d_change_health: { DELTA: numShadow(-1) },
+  sz_g2d_top_down: { SPEED: numShadow(3) },
+  sz_g2d_follow_pointer: { SPEED: numShadow(3) },
+  sz_g2d_arrows_x: { SPEED: numShadow(6) },
+  sz_g2d_rotate_sprite: { DEG: numShadow(15) },
+  sz_g2d_point_sprite: { DEG: numShadow(0) },
+  sz_g2d_thrust: { FORCE: numShadow(0.1) },
+  sz_g2d_apply_friction: { FACTOR: numShadow(0.97) },
+  sz_g2d_move_toward: { SPEED: numShadow(2) },
+  sz_g2d_platformer: { SPEED: numShadow(4), JUMP: numShadow(11) },
+  sz_g2d_jump_on_ground: { JUMP: numShadow(14) },
+  sz_g2d_control_dino: { JUMP: numShadow(15) },
+  sz_g2d_steer_thrust: { SPEED: numShadow(3), TURN: numShadow(3) },
+  sz_g2d_shoot_from: { SPEED: numShadow(6) },
+  sz_g2d_set_gravity: { VALUE: numShadow(0.5) },
+  sz_g2d_set_opacity: { PERCENT: numShadow(50) },
+  sz_g2d_starfield: { SPEED: numShadow(1) },
+  sz_g2d_blink: { FRAMES: numShadow(60) },
+  sz_g2d_forest: { SPEED: numShadow(4) },
+  sz_g2d_camera_follow: { WORLDW: numShadow(800), WORLDH: numShadow(600) },
+  sz_g2d_set_camera: { X: numShadow(0), Y: numShadow(0) },
+  sz_g2d_show_fps: { X: numShadow(8), Y: numShadow(20) },
+  sz_g2d_shake: { INTENSITY: numShadow(8) },
+  sz_g2d_emit_particles: { COUNT: numShadow(14), X: numShadow(150), Y: numShadow(100) },
+  sz_g2d_draw_score: { X: numShadow(12), Y: numShadow(30), SIZE: numShadow(24) },
+  sz_g2d_draw_label: { X: numShadow(12), Y: numShadow(30), SIZE: numShadow(20) },
+  sz_g2d_draw_hearts: { X: numShadow(12), Y: numShadow(48), SIZE: numShadow(22) },
+  sz_g2d_draw_bar: { X: numShadow(12), Y: numShadow(48), W: numShadow(160), H: numShadow(14) },
+  sz_g2d_play_sound: { FREQ: numShadow(440), MS: numShadow(200) },
+  sz_g2d_play_note: { MS: numShadow(300) },
+  sz_g2d_setup_stage: { W: numShadow(800), H: numShadow(480) },
+  sz_g2d_fit_screen: { PERCENT: numShadow(100) },
+  sz_g2d_load_spritesheet: { FW: numShadow(32), FH: numShadow(32) },
+  sz_g2d_animate_sprite: { FROM: numShadow(0), TO: numShadow(3), FPS: numShadow(8) },
+  sz_g2d_draw_frame: {
+    INDEX: numShadow(0),
+    X: numShadow(100),
+    Y: numShadow(100),
+    W: numShadow(40),
+    H: numShadow(40),
+  },
+  sz_g2d_set_tile: { INDEX: numShadow(1) },
+  sz_g2d_create_tilemap: { TILE: numShadow(32) },
+  sz_g2d_draw_tilemap: { X: numShadow(0), Y: numShadow(0) },
+  sz_g2d_spawn_in_group: { W: numShadow(24), H: numShadow(24) },
+  sz_g2d_spawn_image_in_group: { W: numShadow(32), H: numShadow(32) },
+  sz_g2d_spawn_bullet: { R: numShadow(5) },
+  sz_g2d_spawn_asteroid: { SIZE: numShadow(40) },
+  sz_g2d_spawn_asteroid_edge: { SIZE: numShadow(40), SPEED: numShadow(1.5) },
+  sz_g2d_spawn_obstacle: { SIZE: numShadow(44) },
+  sz_g2d_prune_old: { SECONDS: numShadow(2) },
+  sz_g2d_every_seconds: { SECS: numShadow(2) },
+  sz_g2d_random_between: { MIN: numShadow(1), MAX: numShadow(6) },
+  sz_g2d_random_chance: { PERCENT: numShadow(30) },
+  sz_g2d_cooldown_ready: { FRAMES: numShadow(20) },
+}
+const toolboxBlock = (type: string) => {
+  const inputs = G2D_SOCKET_SHADOWS[type]
+  return inputs ? { kind: 'block' as const, type, inputs } : { kind: 'block' as const, type }
+}
+
 export const gameTwoDToolboxCategory: ExtensionToolboxCategory = {
   kind: 'category',
   name: 'Jogo 2D',
@@ -2213,7 +2464,7 @@ export const gameTwoDToolboxCategory: ExtensionToolboxCategory = {
       kind: 'category' as const,
       name: sc.name,
       colour: sc.colour,
-      contents: sc.types.map((type) => ({ kind: 'block' as const, type })),
+      contents: sc.types.map(toolboxBlock),
     })),
     ...(leftover.length > 0
       ? [
@@ -2221,7 +2472,7 @@ export const gameTwoDToolboxCategory: ExtensionToolboxCategory = {
             kind: 'category' as const,
             name: 'Mais',
             colour: C,
-            contents: leftover.map((type) => ({ kind: 'block' as const, type })),
+            contents: leftover.map(toolboxBlock),
           },
         ]
       : []),

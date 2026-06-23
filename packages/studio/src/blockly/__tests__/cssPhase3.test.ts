@@ -6,6 +6,7 @@ import { parseCSS } from '../../parsers/css'
 import { buildIRFromWorkspace } from '../buildIR'
 import { ensureBlocklyInitialized } from '../setup'
 import { buildWorkspaceStateFromIR } from '../workspaceState'
+import { irInFrame } from './frameTestUtils'
 
 /** IR(css) → blocos → Blockly (live) → IR(css). */
 function cssBlockCycle(css: unknown[]): any[] {
@@ -21,7 +22,7 @@ function cssFromBlock(type: string, fields: Record<string, string | number>): an
   const ws = new Blockly.Workspace()
   const b = ws.newBlock(type)
   for (const [k, v] of Object.entries(fields)) b.setFieldValue(v as never, k)
-  return buildIRFromWorkspace(ws).css as any[]
+  return irInFrame(ws, 'css').css as any[]
 }
 
 describe('Fase 3 — keyframes multi-passo + atalhos CSS', () => {

@@ -74,6 +74,15 @@ const getLesson = (app: App, slug: string, lessonId: string) =>
     }),
   )
 
+const updateBlock = (app: App, blockId: string, content: unknown) =>
+  app.handle(
+    new Request(`http://localhost/members/admin/blocks/${blockId}`, {
+      method: 'PATCH',
+      headers: authHeaders,
+      body: JSON.stringify({ content }),
+    }),
+  )
+
 describe('Quiz server-side', () => {
   test('GET da aula NÃO vaza gabarito e traz quizState zerado', async () => {
     const { app, courses, entitlements } = buildApp()
@@ -209,6 +218,57 @@ describe('Quiz server-side', () => {
     expect((await readJson(ok)).completedLessons).toBe(1)
 
     // Idempotente: completar de novo continua 200.
+    expect((await complete(app, lessonId)).status).toBe(200)
+  })
+
+  test('editar quiz avaliativo invalida aprovação anterior do mesmo bloco', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const course = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
+    const lessonId = course.lessonIds[0]
+    const blockId = seedQuizBlock(courses, lessonId, { passingScore: 100 })
+
+    const oldPass = await submit(app, lessonId, blockId, { q1: ['b'], q2: ['a'] })
+    expect(oldPass.status).toBe(200)
+    expect((await readJson(oldPass)).passed).toBe(true)
+
+    const patched = await updateBlock(app, blockId, {
+      kind: 'quiz',
+      passingScore: 100,
+      questions: [
+        {
+          id: 'q1',
+          prompt: '2 + 2?',
+          choices: [
+            { id: 'a', label: '3' },
+            { id: 'b', label: '4' },
+          ],
+          correctChoiceIds: ['a'],
+        },
+        {
+          id: 'q2',
+          prompt: 'Capital do Brasil?',
+          choices: [
+            { id: 'a', label: 'Brasília' },
+            { id: 'b', label: 'Rio' },
+          ],
+          correctChoiceIds: ['b'],
+        },
+      ],
+    })
+    expect(patched.status).toBe(200)
+
+    const blocked = await complete(app, lessonId)
+    expect(blocked.status).toBe(409)
+    expect((await readJson(blocked)).error.code).toBe('QUIZ_GATE_NOT_PASSED')
+
+    const state = await readJson(await getLesson(app, course.slug, lessonId))
+    const quiz = state.blocks.find((b: { id: string }) => b.id === blockId)
+    expect(quiz.quizState).toMatchObject({ attemptsCount: 0, passed: false })
+
+    const newPass = await submit(app, lessonId, blockId, { q1: ['a'], q2: ['b'] })
+    expect(newPass.status).toBe(200)
+    expect((await readJson(newPass)).passed).toBe(true)
     expect((await complete(app, lessonId)).status).toBe(200)
   })
 

@@ -24,7 +24,7 @@ externa. Os princípios (travados com a usuária em 06/2026) e onde cada um se m
 | Princípio | Como o código garante |
 |---|---|
 | **Gasto é SÓ cosmético — zero pay-to-win** | A moeda Zappy só compra peça de avatar, item de quarto e protetor de sequência. Não há item que afete aprendizado/nota/acesso. O `CoinSpendReason` (`gamification-repository.port.ts`) só tem `spend_cosmetic`/`spend_room`/`spend_streak_freeze`. |
-| **Identidade nunca custa** | Pele, olhos e boca do avatar são **100% grátis** (`AVATAR_PARTS` em `parts-catalog.ts`) — "ninguém paga para ser alguém". O hook de moeda está em cabelo/cores/acessórios. |
+| **Identidade nunca custa** | Rosto, olhos, sobrancelha e nariz do avatar são **100% grátis** (`AVATAR3D_PARTS` em `avatar3d-catalog.ts`) — "ninguém paga para ser alguém". O hook de moeda está em cabelo/barba/óculos/chapéu/roupas/acessórios. |
 | **Teto diário de ganho** (anti-grind/anti-compulsão) | `DAILY_COIN_CAP = 100` (`coins.ts`) limita o GANHO de rotina por dia civil SP — **nunca o saldo**. Marcos raros (streak) são EXEMPTOS. |
 | **Sem loot box / sem aleatoriedade no ganho** | Tudo é determinístico: preço fixo no catálogo, missão sorteada por hash estável (sem `Math.random`), nenhuma "caixa surpresa". |
 | **Nunca envergonhar a quebra de sequência** | Freeze grátis mensal + freeze comprável + **modo férias** (guilt-free). A sequência só QUEBRA quando NEM férias NEM protetores cobrem (`advanceStreak`). |
@@ -44,7 +44,7 @@ A gamificação atravessa 6 pacotes, cada um com um papel ÚNICO:
 | Pacote | Papel | O que NÃO faz |
 |---|---|---|
 | **`@sistemazero/members`** (porta 3004) | **Dono das REGRAS e do ESTADO.** Calcula XP/streak/moeda/badge, guarda carteira/inventário/quarto, valida compra/equipar. Fonte da verdade do "existe + custa + possui". | Não renderiza nada; não conhece roles (vêm do auth via header). |
-| **`@sistemazero/community-kids`** | **APRESENTAÇÃO.** Rótulo PT, emoji, animação CSS, mapeamento DiceBear, widgets de XP/streak/missões/liga/quarto/avatar. Casa pelo MESMO `id` do members. | Nunca decide preço/posse; o servidor é o portão. |
+| **`@sistemazero/community-kids`** | **APRESENTAÇÃO.** Rótulo PT, emoji, animação CSS, render 3D do avatar (R3F), widgets de XP/streak/missões/liga/quarto/avatar. Casa pelo MESMO `id` do members. | Nunca decide preço/posse; o servidor é o portão. |
 | **`@sistemazero/member-shell`** | **BFF** (Backend-for-Frontend). Shims `/api/members/*` e `/api/crianca/*` que o app kids chama; injeta sessão e repassa ao gateway. | Não tem regra de negócio. |
 | **`@sistemazero/api-gateway`** (porta 3000) | **Borda.** Autentica JWT, aplica RBAC + rate limit, injeta `X-Auth-User-*` + `x-internal-token` confiáveis e remove os de entrada (anti-spoof). | Não calcula gamificação. |
 | **`@sistemazero/auth`** (porta 3002) | **Identidade + perfis** (estilo Netflix). Dona da flag `public_profile_enabled` (opt-in dos pais) e do nome do perfil; emite o claim `pfl {accountId, name, pub}`. | Não guarda XP/moeda. |
@@ -53,7 +53,7 @@ A gamificação atravessa 6 pacotes, cada um com um papel ÚNICO:
 Decisões arquiteturais transversais (valem para TODOS os subsistemas):
 
 - **Catálogos EM CÓDIGO, sem seed em prod.** Badges, peças de avatar, itens de quarto e
-  missões são arrays em código (`BADGE_SLUGS`, `AVATAR_PARTS`, `ROOM_ITEMS`/`ROOM_THEMES`,
+  missões são arrays em código (`BADGE_SLUGS`, `AVATAR3D_PARTS`, `ROOM_ITEMS`/`ROOM_THEMES`,
   `DAILY_MISSIONS`/`WEEKLY_MISSIONS`). O `preDeployCommand` de produção roda **só
   `db:migrate`** (sem seed) — o catálogo muda JUNTO com o código que o detecta. Deploy
   atômico, zero drift. As tabelas só guardam **quem destravou/possui/comprou** (`user_badges`,
@@ -188,6 +188,25 @@ moedas concedidas pela missão, depois do teto diário, cruzam um limiar. A inse
 continua idempotente por `(user_id, audience, badge_slug)`.
 **Como alterar:** editar os limiares em `coinsSaverBadgeSlugs`.
 
+### Equipe interna = moedas VIRTUAIS ilimitadas (passe livre, 06/2026)
+
+Espelho, para a moeda, da **chave-mestra virtual** dos cursos: `superadmin`/`admin`/`staff`
+(`isPrivilegedActor` resolvido na ROTA a partir do `x-auth-user-role`, propagado como param
+`privileged` aos services) têm Zappy Coins **ilimitadas e VIRTUAIS — nunca persistidas**. As
+lojinhas (`BuyAvatarPartService`/`BuyRoomItemService`/`BuyStreakFreezeService`) passam
+`amount/price: 0` ao `spendCoins`/`buyStreakFreeze`: a peça/item/protetor é concedido na mesma
+transação atômica, **sem debitar** o saldo real (que fica 0) e **sem poluir o ledger/ranking**
+(equipe já é excluída do ranking). As leituras de saldo (`GET /members/{avatar,room}` e
+`/gamification/me`) marcam `balanceUnlimited`/`coins.unlimited` quando `privileged` → a UI kids
+mostra **∞**. Numa sessão de perfil do Kids o token é da CONTA, então o `role` da equipe sobrevive
+e o passe livre vale lá dentro. O `customer` segue limitado pelo saldo (402 sem moeda — sem
+regressão). **Como mudar:** o gate é só `privileged`; para desligar, pare de propagar
+`isPrivilegedActor` nessas rotas. Travado por `tests/integration/privileged-coins.test.ts`.
+
+> **Estúdio Completo (produto vendável):** a mesma equipe também acessa o `/estudio` sem comprar —
+> a rota `GET /members/access` curto-circuita todas as refs pedidas para `true` quando
+> `isPrivilegedActor`. Ver o CLAUDE.md do members (§`/access`).
+
 ---
 
 ## 5. Conquistas (badges)
@@ -220,61 +239,71 @@ destravam badge, não dão XP/streak/moeda.
 
 ---
 
-## 6. Avatar por camadas (DiceBear local)
+## 6. Avatar 3D (configurador de personagem)
 
-Catálogo no members: `packages/members/src/domain/avatar/parts-catalog.ts`. Apresentação
-(rótulo PT + mapeamento DiceBear `adventurer`) no kids: `community-kids/src/lib/avatar-catalog.ts`,
-chaveada pelo MESMO `id`.
+Catálogo no members: `packages/members/src/domain/avatar/avatar3d-catalog.ts`. Apresentação
+(rótulo PT + URL do GLB) no kids: `community-kids/src/lib/avatar3d-catalog.ts`, PURA, chaveada
+pelo MESMO `id` (travada por `members/tests/unit/catalog-conformance.test.ts`). O render 3D vive
+no kids (`components/kids/avatar3d/*`, rota `/meu-avatar`) — **personagem GLB real (Quaternius CC0,
+via pack do WawaSensei):** 1 esqueleto compartilhado (`Armature.glb`) + 1 GLB skinned por peça
+(`avatar-rig.tsx`/`asset-part.tsx`; material `Color_*` tintável, `Skin_*` pele compartilhada). GLB
+SIMPLES (sem Draco/KTX2/WASM, CSP-safe), assets em `community-kids/public/avatar3d/`.
 
-### Camadas (`AVATAR_LAYERS`)
+### Categorias (`AVATAR_CATEGORIES`) + config
 
-`skin`, `hair`, `hairColor`, `eyes`, `mouth`, `glasses`, `earrings` — uma peça escolhida por
-camada. `AVATAR_STYLE = 'adventurer'` (DiceBear v9). Avatar inicial grátis em
-`DEFAULT_AVATAR_PART_IDS` (pele-media, cabelo-curtinho, cor-castanho, olhos-alegres, boca-sorriso,
-óculos/brincos "nenhum").
+12 categorias: `head, hair, eyes, eyebrows, nose, facialHair, glasses, hat, top, bottom, shoes,
+accessory` — uma peça **+ cor** por categoria (`head` = formato + tom de pele). Config v2: `{version:2, style:'char-v1',
+slots: cat→{asset, color?}}` (`avatar_configs.equipped` jsonb). Removíveis (`facialHair/glasses/
+hat/accessory`) têm peça `*-none` grátis = "tirar". `AVATAR_HIDE_GROUPS = {hat:['hair']}` (chapéu
+real esconde o cabelo — só render, o servidor NÃO gateia). Default grátis em `DEFAULT_AVATAR_SLOTS`.
 
-### Catálogo de peças (`AVATAR_PARTS`) — livre vs pago
+### Peças (`AVATAR3D_PARTS`) + cores — livre vs pago
 
-| Camada | Grátis (`free`) | Pago (`coins`) |
-|---|---|---|
-| Pele | clara, media, morena, escura | — (identidade nunca custa) |
-| Olhos | alegres, curiosos, tranquilos, determinados, sonhadores | — |
-| Boca | sorriso, risada, serena, surpresa | — |
-| Cor do cabelo | preto, castanho, loiro | ruivo **50**, fantasia **90** |
-| Estilo do cabelo | curtinho, ondulado, longo, rabo | cacheado **60**, espetado **70**, trancas **90**, moicano **100** |
-| Óculos | nenhum, redondo | quadrado **80**, estiloso **120** |
-| Brincos | nenhum, bolinha | estrela **70**, argola **100** |
+~64 peças; identidade (body/eyes/eyebrows/nose) **100% grátis**. Pagas 50–150 Zappy: cabelo
+(4), barba (2), óculos (3), chapéu (5), top (5), bottom (4), shoes (4), acessório (4). `tier`
+derivado (`free()`/`paid()`); peça grátis é **implicitamente possuída** (não vai ao inventário).
+**COR é GRÁTIS** e irrestrita dentro da paleta da categoria (`AVATAR_CATEGORY_PALETTES`; pintar
+não custa — a economia está nas PEÇAS). `nose`/`glasses` sem paleta (nariz segue a pele; óculos
+têm cor embutida por variante).
 
-O `tier` é derivado: `price === 0 ? 'free' : 'coins'` (helpers `free()`/`paid()`). Peça grátis é
-**implicitamente possuída** — nunca vai ao inventário.
+### Equipar / comprar / foto
 
-### Equipar / comprar
-
-- **Equipar** (`EquipAvatarService` + `assertEquippableConfig`): ESTRITO — toda peça precisa
-  existir, estar na camada certa e ser grátis OU possuída (`avatar_inventory`). O servidor é o
-  portão: peça paga só entra na config se o inventário a tiver, senão `AVATAR_PART_NOT_OWNED`(403).
-  Persiste a config **canonicalizada**. Leitura é TOLERANTE (`canonicalizeAvatarConfig`: camada
-  faltando/id desconhecido → cai no default — o avatar nunca quebra).
-- **Comprar** (`BuyAvatarPartService`): charge-first idempotente. Já possuída → no-op sem cobrar.
-  Senão `spendCoins(reason:'spend_cosmetic', idempotencyKey:'avatar-buy:<user>:<part>')` ANTES,
-  `addToInventory` DEPOIS. `AVATAR_PART_FREE`(400) ao tentar comprar grátis; sem saldo → 402.
+- **Equipar** (`EquipAvatarService` + `assertEquippableConfig`): ESTRITO — peça existe, na
+  categoria certa, grátis OU possuída (`avatar_inventory` → senão `AVATAR_PART_NOT_OWNED`/403), e
+  cor ∈ paleta (senão `AVATAR_INVALID`/400). Leitura TOLERANTE (`canonicalizeAvatarConfig`:
+  categoria/peça/cor desconhecida → default; config DiceBear LEGADA sem `version:2` → default 3D
+  inteiro, sem migração de dados).
+- **Comprar** (`BuyAvatarPartService`): charge-first idempotente (`spend_cosmetic`,
+  `avatar-buy:<user>:<part>`); já possuída → no-op; grátis → 400; sem saldo → 402.
+- **Foto/snapshot** (`SetAvatarPhotoService`, `PUT /members/avatar/photo`, migration `0023`
+  `avatar_configs.photo_url`): a "foto" do canvas 3D é a IMAGEM do avatar em todo o app. O BFF
+  (member-shell `avatarSnapshot`) sobe o PNG p/ o R2 (namespace `avatar3d`) e grava a URL;
+  `AvatarStateView.photoUrl` + `PublicProfileView.avatarPhotoUrl`. Config 3D (peças+cores) também
+  persiste — base p/ uma futura "aventura" com o personagem.
 
 ### Como adicionar uma peça
 
-1. Adicionar `free(id, layer)` ou `paid(id, layer, price)` ao array `AVATAR_PARTS` (members).
-2. Adicionar a entrada de apresentação em `AVATAR_PARTS` info / mapa DiceBear no
-   `community-kids/src/lib/avatar-catalog.ts` (mesmo `id`).
-3. Nova camada? Estender `AVATAR_LAYERS` (members) + `AVATAR_LAYERS`/labels no kids + um default
-   em `DEFAULT_AVATAR_PART_IDS`.
-4. Nenhuma migration.
+1. `free(id, category)` ou `paid(id, category, price)` em `AVATAR3D_PARTS` (members).
+2. Entrada `AVATAR_PART_INFO[id] = {category, labelPt}` no kids (mesmo `id`).
+3. Render: dropar o GLB em `community-kids/public/avatar3d/parts/<id>.glb` (skinned no MESMO
+   esqueleto do `Armature.glb`; material `Color_*` p/ tintável, `Skin_*` p/ pele; SEM Draco/KTX2).
+4. Nenhuma migration (catálogo em código).
 
 ---
 
 ## 7. Quarto virtual
 
-Catálogo no members: `packages/members/src/domain/room/room-catalog.ts`. Apresentação (rótulo
-PT + emoji + animação + fundo do tema) no kids: `community-kids/src/lib/room-catalog.ts`, chaveada
-pelo MESMO `id`. É **sink cosmético puro** — sem efeito de jogo.
+Catálogo no members: `packages/members/src/domain/room/room-catalog.ts`. Apresentação no kids:
+`community-kids/src/lib/room-catalog.ts`, chaveada pelo MESMO `id`. É **sink cosmético puro** — sem
+efeito de jogo.
+
+> **🧊 Visual 3D isométrico (06/2026):** o quarto deixou de ser grid de emoji 2D e virou uma cena
+> **react-three-fiber** isométrica (low-poly construído EM CÓDIGO, sem GLTF) — paredes pintáveis,
+> pisos, móveis que GIRAM, iluminação/clima (dia/noite/neon/festa) e pet 3D andando. O renderer vive
+> em `community-kids/src/components/kids/room/` (`room-canvas.tsx` = wrapper `dynamic ssr:false` →
+> `room-canvas-3d.tsx` = `<Canvas>` ortográfico fixo; `furniture-models.tsx`, `walls/floor/room-lights`,
+> `coords.ts` PURO/testado). `three`/`@react-three/fiber`/`drei` já vinham no kids (livro 3D do e-book).
+> O emoji segue só como miniatura na lojinha.
 
 > ⚠️ **Arcades de jogos no quarto foram DESCARTADOS deliberadamente** — não existem no código.
 > Os jogos que a criança CRIA vivem no **Mural dos Criadores** (vitrine do Estúdio no hub),
@@ -293,8 +322,9 @@ pelo MESMO `id`. É **sink cosmético puro** — sem efeito de jogo.
 
 | Categoria | Itens (preço / w×h) |
 |---|---|
-| **Móveis** (`furniture`) | cama 0/3×2, cadeira 0/1×2, sofa 80/3×2, estante 70/2×3, bau 90/2×2 |
-| **Decoração** (`decor`) | quadro 0/2×2, estrela 0/1×1, janela 60/2×2, bandeira 50/1×2, ursinho 70/1×1, balao 50/1×2, relogio 60/1×1 |
+| **Móveis** (`furniture`, chão) | cama 0/2×3 (solteiro), cadeira 0/1×2, mesa 0/2×2, sofa 80/3×2, estante 70/2×3, bau 90/2×2, mesa-estudo 70/2×1, tv 90/2×1, beliche 120/2×3, pufe 50/1×1 |
+| **Decoração de chão** (`decor`) | ursinho 70/1×1, balao 50/1×2, bandeira 50/1×2, globo 50/1×1, guitarra 80/1×2, bola 0/1×1 |
+| **Decoração de PAREDE** (`decor`, `mount:'wall'`) | quadro 0/2×2, estrela 0/1×1, janela 60/2×2, relogio 60/1×1, prateleira 60/2×1, poster 50/1×2, espelho 60/1×2 |
 | **Plantas** (`plant`, animadas) | planta 80/1×2, arvore 130/2×3 |
 | **Luzes** (`light`, animadas) | luminaria 70/1×2, vela 60/1×1 |
 | **Pets** (`pet`, 1 por quarto) | pet-gato 300, pet-cachorro 300, pet-passaro 250 (todos 1×1) |
@@ -302,11 +332,48 @@ pelo MESMO `id`. É **sink cosmético puro** — sem efeito de jogo.
 Pets NÃO vão na grade — são o campo `pet` (string|null) do estado; UM por quarto. Itens
 posicionáveis na lojinha = `furniture/decor/plant/light` (`PLACEABLE` no kids).
 
+### Itens de PAREDE (sobem) + colisão (sem sobreposição) — 06/2026
+
+Itens com `mount:'wall'` (janela, quadro, relógio, estrela, prateleira, pôster, espelho) **não vão no
+chão** — penduram numa PAREDE e SOBEM. Reusam o `PlacedItem` com `wall:'left'|'right'` + `x` = posição
+horizontal ao longo da parede + `y` = ALTURA (nível 0..`WALL_H_CELLS`=4). O renderer (`furniture-piece.tsx`)
+os posiciona via `wallToWorld` (gira 90° na parede esquerda); modelos viraram PAINÉIS FLAT
+(`furniture-models.tsx`). O drag faz raycast nos planos das 2 paredes (`room-canvas-3d.tsx`) e escolhe a
+mais próxima. `canonicalizeRoomState` valida largura/altura da parede + posse; item de parede sem `wall`
+→ assume `'right'`. Não giram (a rotação fica só p/ chão).
+
+**Colisão "nada por cima de nada":** `canonicalizeRoomState` mantém sets de células ocupadas (chão e
+por-parede via `occupies`) e DESCARTA o item que sobrepor um já posicionado. Namespaces SEPARADOS — chão,
+parede esquerda e direita não colidem entre si. No editor, o drag só "solta" em célula livre (`isFree` em
+`room-canvas-3d`) e o `addItem` acha o 1º vão livre (`freeFloorSpot`/`freeWallSpot` — parede prefere o
+alto). `rectsOverlap`/`wallToWorld`/`worldToWallCell` (em `coords.ts`, PURO/testado) são a base. O pet
+ignora itens de parede.
+
 ### Catálogo de temas (`ROOM_THEMES`)
 
 `aconchego` (grátis, padrão — `DEFAULT_ROOM_THEME`), `floresta` 200, `oceano` 250, `espaco` 300,
-`doce` 200. Apresentação (gradiente CSS + label) em `ROOM_THEME_INFO`; `espaco` é o tema escuro
-(`isDarkTheme`).
+`doce` 200. O tema agora é um **preset de aparência** (`THEME_PRESETS` no kids): paredes + piso + luz
+default. `resolveRoomAppearance(state)` mistura o preset com os overrides explícitos do estado →
+`{left,right,floorId,lightingId}` que o renderer consome. Selecionar um tema no editor RESETA os
+overrides (mostra a aparência bundle; a criança ajusta depois). Miniatura = gradiente `ROOM_THEME_INFO`.
+
+### Campos novos do estado (06/2026 — JSONB, SEM migração, retro-compatível)
+
+`RoomState` ganhou campos OPCIONAIS (quarto legado só-`theme` segue válido; ausentes → default do tema):
+- `placedItems[].rot?: 0|1|2|3` — quartos de volta. `effectiveFootprint` troca w↔h em 90°/270° e o
+  `withinBounds` valida com o footprint GIRADO.
+- `wallColors?: {left?,right?}` — **pintar é GRÁTIS**, cores da paleta curada `ROOM_WALL_PALETTE`
+  (~18 cores, hex minúsculo; o kids espelha em `WallSwatch[]` com label). Cor fora da paleta é descartada.
+- `floor?` (id de `ROOM_FLOORS`) e `lighting?` (id de `ROOM_LIGHTINGS`) — catálogos À PARTE (como os
+  temas: fora da grade, posse pelo inventário).
+
+### Pisos (`ROOM_FLOORS`) e Clima/luz (`ROOM_LIGHTINGS`)
+
+| Pisos | `piso-madeira-clara` (grátis, default), `-escura` 60, `-tapete` 80, `-xadrez` 70, `-ladrilho` 70 |
+| Clima | `dia` (grátis, default), `tarde` 60, `noite` 80, `neon-rosa` 90, `neon-ciano` 90, `festa` 150 |
+
+Apresentação no kids: `ROOM_FLOOR_INFO` (cor/padrão p/ a CanvasTexture do chão) e `LIGHTING_PRESETS`
+(ambiente/sol/fundo + flags `dark`/`neon`/`party`). Travados no teste de conformância (drift → CI vermelho).
 
 ### Comprar / montar / canonicalizar
 
@@ -318,20 +385,35 @@ posicionáveis na lojinha = `furniture/decor/plant/light` (`PLACEABLE` no kids).
   e faz `upsertState`. `accountId` é imutável.
 - **`canonicalizeRoomState`** é o ÚNICO portão (roda na leitura E na escrita): tema desconhecido/
   não-possuído → `DEFAULT_ROOM_THEME`; item desconhecido/`pet` na grade/não-possuído/fora-da-grade
-  → descartado; corta no `ROOM_MAX_PLACED`. O cliente nunca "salva" o que não tem.
+  (footprint GIRADO) → descartado; `rot` fora de 0–3 → 0; cor de parede fora da paleta + piso/luz
+  desconhecido ou não-possuído → omitido (cai no default do tema); corta no `ROOM_MAX_PLACED`. ⚠️ Os
+  campos novos atravessam 4 camadas que precisam estar TODAS alargadas (Zod `RoomStateSchema` no
+  member-shell, TypeBox `RoomStateBody` no members, o rebuild do handler em `members.routes.ts` e o
+  próprio canonicalize) — senão o save dropa em silêncio. O cliente nunca "salva" o que não tem.
 
-### Animações
+### Animações (3D)
 
-Classes `@keyframes` nos globals do kids, gateadas por `prefers-reduced-motion`: `kid-room-grow`
-(plantas), `kid-room-float` (balão), `kid-room-twinkle` (estrela), `kid-room-flicker` (vela),
-`kid-room-walk` (pet, fixa). O union `RoomItemInfo.anim` aceita só esses 4 nomes (sem `walk`).
+No 3D as animações são `useFrame` gateadas pelo hook `useReducedMotion` (espelha
+`prefers-reduced-motion`): pet andando (`pet-3d.tsx`) e ciclo de matiz do modo **festa**
+(`room-lights.tsx`). `frameloop` é `demand` por padrão e vira `always` só quando há pet/festa E o
+movimento é permitido (eficiência no tablet). Itens de luz (luminária/vela) BRILHAM por material
+`emissive` (sem point light por peça); sem shadow map. As classes `@keyframes kid-room-*` 2D viraram
+legado (o campo `RoomItemInfo.anim` segue tolerado, sem uso no renderer 3D).
+
+**Câmera:** órbita REDUZIDA (drei `OrbitControls` travado num cone estreito — sem pan/zoom, sem dar a
+volta nas paredes; **desligada enquanto arrasta uma peça** p/ não conflitar com o drag). **Pet com
+COLISÃO:** anda em 4 direções e ao encontrar móvel ou parede LOGO À FRENTE vira p/ uma direção livre
+(não atravessa) — usa uma grade de células OCUPADAS (`occupied` em `room-canvas-3d.tsx`, derivada dos
+`placedItems` com o footprint girado) consumida no `useFrame` de `pet-3d.tsx`.
 
 ### Como adicionar um item / tema
 
-1. Adicionar `item(id, category, price, w, h)` a `ROOM_ITEMS` (ou `{id,tier,price}` a `ROOM_THEMES`)
-   no members.
-2. Adicionar a entrada espelhada em `ROOM_ITEM_INFO` (label/emoji/anim — w/h DEVEM casar) ou
-   `ROOM_THEME_INFO` (label/bg) no kids, **mesmo id**.
+1. Adicionar `item(id, category, price, w, h)` a `ROOM_ITEMS` (ou `{id,tier,price}` a `ROOM_THEMES`/
+   `ROOM_FLOORS`/`ROOM_LIGHTINGS`) no members.
+2. Adicionar a entrada espelhada no kids, **mesmo id**: `ROOM_ITEM_INFO` (label/emoji — w/h DEVEM
+   casar) / `ROOM_THEME_INFO` / `ROOM_FLOOR_INFO` / `LIGHTING_PRESETS`. Um item POSICIONÁVEL novo
+   precisa também de um `case` em `furniture-models.tsx` (senão cai na caixa neutra). O teste de
+   conformância quebra o CI se faltar o espelho.
 3. Animação nova de item → definir o `@keyframes`/classe `kid-room-*` no `globals.css` do kids e
    estender o union `RoomItemInfo.anim`.
 4. Nenhuma migration.
@@ -546,6 +628,7 @@ Endpoints do aluno (members, todos JWT + `x-internal-token`, `?audience=` defaul
 | PUT | `/gamification/vacation` | `SetVacationService` |
 | GET | `/gamification/league/me` | `GetLeagueService` |
 | GET / PUT | `/avatar` | `GetAvatarService` / `EquipAvatarService` |
+| PUT | `/avatar/photo` | `SetAvatarPhotoService` (URL do snapshot 3D) |
 | POST | `/avatar/parts/:partId/buy` | `BuyAvatarPartService` |
 | GET / PUT | `/room` | `GetRoomService` / `SaveRoomService` |
 | POST | `/room/items/:itemId/buy` | `BuyRoomItemService` |
@@ -591,10 +674,10 @@ no código (06/2026).
 | `STREAK_FREEZE_PRICE` | 80 | `gamification/coins.ts` | Preço do protetor comprável |
 | `MAX_STREAK_FREEZES` | 5 | `ports/gamification-repository.port.ts` | Teto de protetores acumuláveis |
 | `BADGE_SLUGS` | 17 slugs | `gamification/badges.ts` | Catálogo de conquistas |
-| `AVATAR_PARTS` (preços) | ver §6 | `avatar/parts-catalog.ts` | Catálogo + preços das peças |
-| `AVATAR_LAYERS` | 7 camadas | `avatar/parts-catalog.ts` | Camadas do avatar |
-| `DEFAULT_AVATAR_PART_IDS` | conjunto grátis | `avatar/parts-catalog.ts` | Avatar inicial |
-| `AVATAR_STYLE` | adventurer | `avatar/parts-catalog.ts` | Estilo DiceBear |
+| `AVATAR3D_PARTS` (preços) | ver §6 | `avatar/avatar3d-catalog.ts` | Catálogo + preços das peças |
+| `AVATAR_CATEGORIES` | 12 categorias | `avatar/avatar3d-catalog.ts` | Categorias do avatar 3D |
+| `DEFAULT_AVATAR_SLOTS` | conjunto grátis | `avatar/avatar3d-catalog.ts` | Avatar inicial (peça+cor) |
+| `AVATAR_CATEGORY_PALETTES` | paletas de cor | `avatar/avatar3d-catalog.ts` | Cores grátis por categoria |
 | `ROOM_GRID` | {cols:12,rows:8} | `room/room-catalog.ts` (+ espelho no kids) | Tamanho da grade |
 | `ROOM_MAX_PLACED` | 40 | `room/room-catalog.ts` (+ hardcoded no kids) | Teto de itens na grade |
 | `DEFAULT_ROOM_THEME` | aconchego | `room/room-catalog.ts` (+ literal no kids) | Tema padrão |
@@ -623,6 +706,7 @@ compartilhado (`sistemazero`, :5433); o `preDeployCommand` de prod roda só `db:
 |---|---|
 | `0018_add_zappy_coins` | enum `coin_source_type` (`lesson_complete`, `quiz_passed`, `unit_complete`, `studio_passed`, `streak_milestone`, `mission_reward`, `league_reward`, `spend_cosmetic`, `spend_room`, `spend_streak_freeze`, `admin_adjust`) + tabela `coin_events` (UNIQUE `user_id,audience,source_type,source_id`) + colunas `coin_balance`/`coins_earned_today`/`coins_earned_date`/`lifetime_coins_earned` em `gamification_profiles` |
 | `0019_add_avatar_wardrobe` | tabelas `avatar_configs` (UNIQUE `user_id,audience`; `equipped` jsonb) e `avatar_inventory` (UNIQUE `user_id,audience,part_id`) |
+| `0023_add_avatar_photo` | coluna `avatar_configs.photo_url` (URL pública do snapshot do avatar 3D) |
 | `0020_add_room` | tabelas `room_state` (UNIQUE `user_id,audience`; `state` jsonb) e `room_inventory` (UNIQUE `user_id,audience,item_id`) |
 | `0021_add_missions_and_freeze` | tabela `mission_claims` (UNIQUE `user_id,audience,mission_slug,period_key` + índice por período) + colunas `streak_freezes`/`freeze_granted_month`/`vacation_from`/`vacation_to` em `gamification_profiles` |
 | `0022_add_league` | tabela `league_membership` (UNIQUE `user_id,audience,week_key` + índice de coorte `audience,week_key,tier`) |

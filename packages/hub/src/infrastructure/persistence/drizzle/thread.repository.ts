@@ -154,6 +154,21 @@ export class DrizzleThreadRepository implements ThreadRepository {
     return { thread: toThread(existing as ThreadRow), deduped: true }
   }
 
+  async hasVisibleShowcasePlayId(playId: string): Promise<boolean> {
+    const [row] = await this.db
+      .select({ id: threads.id })
+      .from(threads)
+      .where(
+        and(
+          eq(threads.playId, playId),
+          eq(threads.isShowcase, true),
+          eq(threads.status, 'visible'),
+        ),
+      )
+      .limit(1)
+    return Boolean(row)
+  }
+
   async findThreadById(id: string): Promise<Thread | null> {
     const [row] = await this.db.select().from(threads).where(eq(threads.id, id)).limit(1)
     return row ? toThread(row) : null

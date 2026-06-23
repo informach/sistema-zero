@@ -1,0 +1,1 @@
+ALTER TABLE "members"."avatar_configs" ADD COLUMN "photo_url" text;

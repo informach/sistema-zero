@@ -163,6 +163,19 @@ export function buildCoreToolbox(
     // Busca é sempre visível; ela só encontra os blocos que estão na toolbox
     // (já filtrada), então respeita o nível automaticamente.
     { kind: 'search', name: '🔎 Pesquisar', colour: CATEGORY_COLORS.search, contents: [] },
+    // 🗂️ Áreas do projeto: os 3 blocos-CONTAINER (frames). SEMPRE visíveis — a
+    // criança precisa deles em qualquer aula —, então não passam pelo filtro de
+    // nível/categoria. Cada frame carrega sua própria cor (HTML/CSS/JS).
+    {
+      kind: 'category',
+      name: '🗂️ Áreas do projeto',
+      colour: '#475569',
+      contents: [
+        { kind: 'block', type: 'sz_frame_structure' },
+        { kind: 'block', type: 'sz_frame_appearance' },
+        { kind: 'block', type: 'sz_frame_behavior' },
+      ],
+    },
   ]
 
   const pushContent = (name: string, colour: string, blocks: BlockDefinition[]): void => {

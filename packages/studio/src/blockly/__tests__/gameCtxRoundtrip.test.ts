@@ -71,7 +71,13 @@ describe('Ponte — palco implícito (ctx escondido) + "Limpar a tela"', () => {
       {
         type: 'g2d:onKey',
         key: 'ArrowRight',
-        body: [{ type: 'g2d:playSound', freq: 440, durationMs: 100 }],
+        body: [
+          {
+            type: 'g2d:playSound',
+            freq: { type: 'num', value: 440 },
+            durationMs: { type: 'num', value: 100 },
+          },
+        ],
       },
     ])
     expect(
@@ -83,7 +89,13 @@ describe('Ponte — palco implícito (ctx escondido) + "Limpar a tela"', () => {
         type: 'g2d:onOverlap',
         aVar: 'jogador',
         bVar: 'inimigo',
-        body: [{ type: 'g2d:playSound', freq: 440, durationMs: 100 }],
+        body: [
+          {
+            type: 'g2d:playSound',
+            freq: { type: 'num', value: 440 },
+            durationMs: { type: 'num', value: 100 },
+          },
+        ],
       },
     ])
   })

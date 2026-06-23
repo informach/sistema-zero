@@ -49,12 +49,14 @@ import {
 } from '../../../domain/ports/gamification-repository.port'
 import type { Database } from './db'
 import {
+  avatarInventory,
   coinEvents,
   courses,
   entitlements,
   gamificationProfiles,
   leagueMembership,
   missionClaims,
+  roomInventory,
   userBadges,
   xpEvents,
 } from './schema'
@@ -444,7 +446,45 @@ export class DrizzleGamificationRepository implements GamificationRepository {
         )
         .limit(1)
       const balance = profile?.balance ?? 0
-      if (existing) return { ok: false, code: 'ALREADY_SPENT', balance }
+      // Concede a posse NA MESMA transação (compra atômica): nunca cobra sem entregar.
+      // Idempotente; roda também no caminho ALREADY_SPENT p/ recuperar uma tentativa anterior
+      // que debitou mas não chegou a conceder (crash entre as 2 transações antigas).
+      const grantInventory = async () => {
+        const g = input.grantInventory
+        if (!g) return
+        if (g.scope === 'avatar') {
+          await tx
+            .insert(avatarInventory)
+            .values({
+              id: randomUUID(),
+              userId: input.userId,
+              audience: input.audience,
+              partId: g.itemId,
+              acquiredAt: input.now,
+            })
+            .onConflictDoNothing({
+              target: [avatarInventory.userId, avatarInventory.audience, avatarInventory.partId],
+            })
+        } else {
+          await tx
+            .insert(roomInventory)
+            .values({
+              id: randomUUID(),
+              userId: input.userId,
+              audience: input.audience,
+              itemId: g.itemId,
+              acquiredAt: input.now,
+            })
+            .onConflictDoNothing({
+              target: [roomInventory.userId, roomInventory.audience, roomInventory.itemId],
+            })
+        }
+      }
+
+      if (existing) {
+        await grantInventory()
+        return { ok: false, code: 'ALREADY_SPENT', balance }
+      }
       if (balance < input.amount) return { ok: false, code: 'INSUFFICIENT_BALANCE', balance }
 
       const balanceAfter = balance - input.amount
@@ -468,6 +508,7 @@ export class DrizzleGamificationRepository implements GamificationRepository {
             eq(gamificationProfiles.audience, input.audience),
           ),
         )
+      await grantInventory()
       return { ok: true, balanceAfter }
     })
   }
@@ -536,6 +577,8 @@ export class DrizzleGamificationRepository implements GamificationRepository {
       lastActivityDate: row.lastActivityDate,
       coinBalance: row.coinBalance,
       streakFreezes: row.streakFreezes,
+      // Necessário p/ o streak de EXIBIÇÃO da área dos pais projetar o freeze grátis do mês.
+      freezeGrantedMonth: row.freezeGrantedMonth,
       vacationFrom: row.vacationFrom,
       vacationTo: row.vacationTo,
     }))

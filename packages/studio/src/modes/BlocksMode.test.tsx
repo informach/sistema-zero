@@ -61,10 +61,19 @@ describe('BlocksMode', () => {
 
     await waitFor(() => {
       const state = useProjectStore.getState()
+      // Modelo CONTAINER: a IR é embrulhada nos 3 frames; o console.log vai DENTRO
+      // do ⚙️ Comportamento.
       expect(state.project?.blocksState).toMatchObject({
         blocks: {
           languageVersion: 0,
-          blocks: [expect.objectContaining({ type: 'sz_js_console_log_text' })],
+          blocks: [
+            { type: 'sz_frame_structure' },
+            { type: 'sz_frame_appearance' },
+            {
+              type: 'sz_frame_behavior',
+              inputs: { CHILDREN: { block: { type: 'sz_js_console_log_text' } } },
+            },
+          ],
         },
       })
     })
@@ -80,7 +89,17 @@ describe('BlocksMode', () => {
     render(<BlocksMode />)
 
     const state = useProjectStore.getState()
-    expect(state.project?.blocksState).toBeNull()
+    // Projeto novo já nasce com os 3 frames-semente; BlocksMode não deriva nada
+    // por cima nem marca o projeto como sujo.
+    expect(state.project?.blocksState).toMatchObject({
+      blocks: {
+        blocks: [
+          { type: 'sz_frame_structure' },
+          { type: 'sz_frame_appearance' },
+          { type: 'sz_frame_behavior' },
+        ],
+      },
+    })
     expect(state.isDirty).toBe(false)
   })
 

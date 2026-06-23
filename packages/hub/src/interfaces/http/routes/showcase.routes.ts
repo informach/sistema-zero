@@ -2,6 +2,7 @@ import { Elysia } from 'elysia'
 import type { ShowcaseService } from '../../../application/showcase/showcase.service'
 import { assertInternalCaller, resolveActor } from '../auth'
 import {
+  PlayIdParams,
   ShowcaseThreadBody,
   ShowcaseThreadStudioBody,
   ShowcaseThreadStudioStandaloneBody,
@@ -76,5 +77,13 @@ export function showcaseRoutes(deps: ShowcaseRoutesDeps) {
         return { thread, deduped }
       },
       { body: ShowcaseThreadStudioStandaloneBody },
+    )
+    .get(
+      '/hub/internal/studio-play/:playId',
+      async ({ params }) => {
+        const visible = await deps.showcase.isPlayable(params.playId)
+        return { visible }
+      },
+      { params: PlayIdParams },
     )
 }

@@ -15,6 +15,7 @@ import { registerFieldAssetPicker } from './fields/FieldAssetPicker'
 import { registerFieldColourSZ } from './fields/FieldColourSZ'
 import { registerFieldSpritePicker } from './fields/FieldSpritePicker'
 import { organizeBlocks } from './organize'
+import { exportWorkspaceImage } from './screenshot'
 import { registerPtSearchCategory } from './searchCategory'
 import { szTheme } from './theme'
 
@@ -36,6 +37,36 @@ function registerOrganizeContextMenu(): void {
     preconditionFn: (scope) =>
       (scope.workspace?.getTopBlocks(false).length ?? 0) > 0 ? 'enabled' : 'disabled',
     callback: (scope) => organizeBlocks(scope.workspace),
+  })
+}
+
+/**
+ * Registra "Baixar imagem dos blocos" no menu de contexto do workspace — gera um
+ * PNG de TODOS os blocos (inclusive os rolados para fora da tela), dispara o
+ * download e copia para a área de transferência (ver `exportWorkspaceImage`).
+ * Idempotente. Vale para `<StudioEditor>` E `<StudioLesson>` (registro global).
+ */
+function registerScreenshotContextMenu(): void {
+  const registry = Blockly.ContextMenuRegistry.registry
+  if (registry.getItem('sz_screenshot')) return
+  registry.register({
+    id: 'sz_screenshot',
+    weight: 7,
+    scopeType: Blockly.ContextMenuRegistry.ScopeType.WORKSPACE,
+    displayText: () => 'Baixar imagem dos blocos',
+    preconditionFn: (scope) =>
+      (scope.workspace?.getTopBlocks(false).length ?? 0) > 0 ? 'enabled' : 'disabled',
+    callback: (scope) => {
+      const workspace = scope.workspace
+      if (!workspace) return
+      void exportWorkspaceImage(workspace).then((result) => {
+        if (!result.downloaded) {
+          window.alert(
+            'Não consegui gerar a imagem dos blocos. Se algum bloco usa uma imagem da internet, isso pode bloquear a captura.',
+          )
+        }
+      })
+    },
   })
 }
 
@@ -69,6 +100,7 @@ export function ensureBlocklyInitialized(): void {
   // Sobrescreve os textos em inglês da categoria de busca por PT-BR.
   registerPtSearchCategory()
   registerOrganizeContextMenu()
+  registerScreenshotContextMenu()
   initialized = true
 }
 

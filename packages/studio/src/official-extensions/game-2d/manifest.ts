@@ -17,9 +17,9 @@ import {
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.16.0',
+  version: '0.19.0',
   description:
-    'Blocos para criar jogos 2D no Canvas: sprites (cor/imagem/animação), grupos de muitos sprites, movimento, física, efeitos, tiles/tilemaps, HUD, telas/cenas, som, e KITS por tema — Kit espaço (nave e asteroides), Kit dino (corrida com obstáculos), Kit gorilas (batalha de bananas por turnos), Kit equilibrista (estica o bastão e atravessa, estilo Stick Hero) e Kit balão (sobe segurando o mouse e economiza combustível).',
+    'Blocos para criar jogos 2D no Canvas: tela cheia responsiva (com cor de fundo), sprites (cor/imagem/animação), grupos de muitos sprites, movimento, física, efeitos, tiles/tilemaps, HUD, telas/cenas, som, e KITS por tema — Kit espaço (nave e asteroides), Kit dino (corrida com obstáculos), Kit gorilas (batalha de bananas por turnos), Kit equilibrista (estica o bastão e atravessa, estilo Stick Hero) e Kit balão (sobe segurando o mouse e economiza combustível).',
   category: 'games',
   official: true,
   enabledByDefault: false,
@@ -34,6 +34,7 @@ chamadas explícitas para \`SZGame2D.createSprite(...)\` e \`SZGame2D.gameLoop(.
 
 ### Blocos disponíveis
 
+- **Preparar o jogo em tela cheia** — atalho para começar: prepara a tela (largura × altura) ocupando a janela, responsiva (mantém a proporção e redimensiona sozinha), **centralizada**, com uma **cor de fundo** que combina com o jogo (vai no canvas e na sobra ao redor). Não precisa criar o canvas no HTML. Os blocos individuais continuam disponíveis para montar na mão.
 - **Criar sprite** — define um objeto com \`x\`, \`y\`, \`largura\`, \`altura\`, \`cor\`.
 - **Desenhar sprite** — desenha o sprite no contexto do canvas.
 - **Mover em 4 direções** — move o sprite com as setas do teclado (ver "Movimento" abaixo).
@@ -150,6 +151,8 @@ girada na direção apontada.
 
 O bloco **Fazer a tela preencher N% da janela** (genérico) deixa o canvas grande, nítido e responsivo: ocupa quase toda a janela e se reajusta sozinho quando ela muda de tamanho, mantendo a proporção. As coordenadas do jogo continuam as mesmas, mas o desenho passa a ser feito na resolução REAL da tela — fica grande E nítido (sem borrar), em qualquer tamanho.
 
+Para começar rápido, o bloco **Preparar o jogo em tela cheia** (no grupo ✨ Aparência) já faz tudo isso de uma vez — cria a tela com o tamanho escolhido, centraliza na janela e pinta o fundo (canvas e a sobra ao redor) com a cor do jogo — sem precisar criar o canvas no HTML. Os blocos individuais (criar a tela, preencher %) continuam disponíveis para quem quer montar na mão.
+
 ### Pulo no chão e Kit dino (v0.9.0)
 
 Para jogos de **corrida** (estilo "Dino Run"), em que o personagem não anda para os lados, só pula e abaixa:
@@ -228,8 +231,11 @@ Tijolinhos que faltavam para montar mais tipos de jogo, em categorias novas e ex
 - **✨ Aparência**: **Virar** (espelhar esquerda/direita), **Mudar a transparência**, **Mudar o tamanho** e
   **Multiplicar o tamanho** do sprite.
 - **🕹️ Movimento**: **Dar a volta na tela** (sai de um lado, reaparece no outro — estilo Pac-Man/Asteroids).
-- **🎬 Telas e cenas**: **Pausar**, **Continuar** e **o jogo está pausado?** — embrulhe o movimento num
-  "se o jogo não está pausado" e desenhe a tela de PAUSA por cima.
+- **🎬 Telas e cenas**: **Pausar o jogo** CONGELA tudo (o "a cada quadro" para de rodar), **Continuar o
+  jogo** descongela e **o jogo está pausado?** lê o estado (útil num evento de tecla). Para mostrar "Você
+  ganhou/perdeu", **desenhe a tela ANTES de Pausar** (ela fica congelada por cima). Para um fim de jogo com
+  recomeço, prefira as **cenas** (**Ir para a tela 'perdeu'/'ganhou'** + **a tela atual é …?**): o "a cada
+  quadro" decide o que mostrar e o jogo segue rodando a tela de fim.
 
 ### Blocos genéricos Tier 2 (v0.16.0)
 
@@ -245,6 +251,25 @@ Para mundos maiores que a tela e jogos mais ricos:
   cima de quem dentro de um grupo.
 - **✨ Aparência** (depuração): **Mostrar a caixa de colisão** de um sprite e **Mostrar os FPS** — para
   enxergar colisões e a performance enquanto cria.
+
+### Posição & tamanho do sprite (valores, v0.18.0)
+
+Bloquinhos de VALOR (na categoria **📐 Posição & tamanho**) que poupam a criança de fazer as contas na
+mão — em vez de \`x + largura / 2\`, ela encaixa um bloco pronto:
+
+- **a posição x / y do sprite** — onde o sprite está (borda esquerda / borda de cima).
+- **a largura / a altura do sprite** — o tamanho do sprite, em pixels.
+- **o centro x / y do sprite** — o MEIO do sprite (já soma metade da largura/altura). Ótimo para atirar,
+  mirar ou posicionar uma coisa a partir do centro de outra (ex.: o tiro sai do centro da nave).
+
+### Posição aleatória na tela (valores, v0.19.0)
+
+Na categoria **🎯 Mira e contas**, dois valores para um sprite nascer num lugar SORTEADO sem a criança
+montar a continha \`Math.random() * largura\` na mão:
+
+- **um x aleatório na tela** / **um y aleatório na tela** — sorteia uma posição dentro da largura/altura
+  da tela. Encaixe no x (ou y) ao **criar** ou **spawnar** um sprite — ex.: asteroides/estrelas nascendo
+  em pontos aleatórios. (Para um intervalo específico de números, continua valendo **um número de … a …**.)
 `,
   examples: [
     pongExample,

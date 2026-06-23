@@ -930,6 +930,27 @@ document.addEventListener('keyup', (e) => {
     ])
   })
 
+  it('reconhece let com null (bloco sz_val_null)', () => {
+    expect(parseJS('let alvo = null;')).toEqual([
+      { type: 'var', name: 'alvo', value: { type: 'null' } },
+    ])
+  })
+
+  it('reconhece comparação com null (alvo !== null)', () => {
+    expect(parseJS('temAlvo = alvo !== null;')).toEqual([
+      {
+        type: 'assign',
+        name: 'temAlvo',
+        value: {
+          type: 'binop',
+          op: '!==',
+          left: { type: 'var', name: 'alvo' },
+          right: { type: 'null' },
+        },
+      },
+    ])
+  })
+
   it('reconhece x++ como incremento (assign x = x + 1)', () => {
     expect(parseJS('moves++;')).toEqual([
       {

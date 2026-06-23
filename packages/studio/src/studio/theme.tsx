@@ -7,7 +7,7 @@ export type StudioTheme = 'dark' | 'light'
 // escopados por [data-sz-theme] no ROOT do componente — mas conteúdo PORTALADO
 // para document.body (Modal, menus) sai desse escopo. Quem portala envolve o
 // conteúdo em <StudioThemeScope> para reaplicar o atributo.
-const StudioThemeContext = createContext<StudioTheme>('dark')
+const StudioThemeContext = createContext<StudioTheme>('light')
 
 export const StudioThemeProvider = StudioThemeContext.Provider
 

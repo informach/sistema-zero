@@ -1,4 +1,4 @@
-import { CATEGORY_COLORS } from '../theme'
+import { CATEGORY_COLORS, categoryShades } from '../theme'
 import type { BlockDefinition } from './types'
 
 const C = CATEGORY_COLORS.js
@@ -167,9 +167,10 @@ export const JS_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_js_repeat',
     message0: 'Repetir %1 vezes',
-    args0: [{ type: 'field_number', name: 'TIMES', value: 5, min: 0 }],
+    args0: [{ type: 'input_value', name: 'TIMES', check: 'JSValue' }],
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -446,7 +447,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
 export const JS_GROUPS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '🏷️ Variáveis',
-    colour: '#fbbf24',
+    colour: '#f5a623',
     types: [
       'sz_js_var_declare',
       'sz_js_var_create',
@@ -457,12 +458,12 @@ export const JS_GROUPS: { name: string; colour: string; types: string[] }[] = [
   },
   {
     name: '❓ Lógica & Se',
-    colour: '#fde047',
+    colour: '#f7c948',
     types: ['sz_js_if_else', 'sz_js_switch', 'sz_js_case', 'sz_js_try_catch', 'sz_js_throw'],
   },
   {
     name: '🔁 Repetições',
-    colour: '#facc15',
+    colour: '#f0b016',
     types: [
       'sz_js_repeat',
       'sz_js_while',
@@ -480,12 +481,12 @@ export const JS_GROUPS: { name: string; colour: string; types: string[] }[] = [
   },
   {
     name: '📋 Listas',
-    colour: '#eab308',
+    colour: '#dd9a0a',
     types: ['sz_js_array_push', 'sz_js_array_remove', 'sz_js_array_splice', 'sz_js_object_assign'],
   },
   {
     name: '🖥️ Console & Avisos',
-    colour: '#fcd34d',
+    colour: '#f5c33a',
     types: [
       'sz_js_console_log_text',
       'sz_js_console_log_var',
@@ -493,10 +494,15 @@ export const JS_GROUPS: { name: string; colour: string; types: string[] }[] = [
       'sz_js_alert_var',
     ],
   },
-  { name: '💾 Dados & Web', colour: '#ca8a04', types: ['sz_js_storage_set', 'sz_js_fetch_json'] },
+  { name: '💾 Dados & Web', colour: '#b9820a', types: ['sz_js_storage_set', 'sz_js_fetch_json'] },
 ]
 
-// Cor = navegação: pinta cada bloco com a cor do seu grupo.
+// IDENTIDADE: cada sub-grupo recebe um TOM do ÂMBAR da Programação, derivado
+// claro→escuro (categoryShades) — os literais em JS_GROUPS são placeholders.
+const JS_SHADES = categoryShades(CATEGORY_COLORS.js, JS_GROUPS.length)
+JS_GROUPS.forEach((g, i) => {
+  g.colour = JS_SHADES[i] ?? CATEGORY_COLORS.js
+})
 const JS_COLOUR_BY_TYPE = new Map<string, string>(
   JS_GROUPS.flatMap((g) => g.types.map((t) => [t, g.colour] as const)),
 )

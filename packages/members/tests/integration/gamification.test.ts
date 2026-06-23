@@ -754,11 +754,11 @@ const claimMission = (app: App, slug: string) =>
       headers: authHeaders,
     }),
   )
-const buyFreeze = (app: App) =>
+const buyFreeze = (app: App, idempotencyKey?: string) =>
   app.handle(
     new Request(`http://localhost/members/gamification/streak-freeze/buy${AUD}`, {
       method: 'POST',
-      headers: authHeaders,
+      headers: idempotencyKey ? { ...authHeaders, 'idempotency-key': idempotencyKey } : authHeaders,
     }),
   )
 const setVacation = (app: App, body: { from: string | null; to: string | null }) =>
@@ -869,6 +869,41 @@ describe('Streak-freeze + férias', () => {
     expect((await buyFreeze(app)).status).toBe(402)
   })
 
+  test('compra continua possível quando um protetor comprado é consumido', async () => {
+    const { app, gamification } = buildApp()
+    await seedCoins(gamification, 200)
+    const key = `${USER}:adult`
+    const seeded = gamification.profiles.get(key)
+    gamification.profiles.set(key, { ...(seeded as NonNullable<typeof seeded>), coinBalance: 200 })
+
+    const first = await readJson(await buyFreeze(app))
+    expect(first).toEqual({ freezes: 2, balance: 120 })
+
+    const profile = gamification.profiles.get(key)
+    expect(profile?.streakFreezes).toBe(2)
+    gamification.profiles.set(key, {
+      ...(profile as NonNullable<typeof profile>),
+      streakFreezes: 1,
+    })
+
+    const second = await readJson(await buyFreeze(app))
+    expect(second).toEqual({ freezes: 2, balance: 40 })
+  })
+
+  test('idempotency-key explícita evita cobrança duplicada no retry da compra de freeze', async () => {
+    const { app, gamification } = buildApp()
+    await seedCoins(gamification, 200)
+    const key = `${USER}:adult`
+    const seeded = gamification.profiles.get(key)
+    gamification.profiles.set(key, { ...(seeded as NonNullable<typeof seeded>), coinBalance: 200 })
+
+    const first = await readJson(await buyFreeze(app, 'buy-freeze-click-1'))
+    expect(first).toEqual({ freezes: 2, balance: 120 })
+
+    const retry = await readJson(await buyFreeze(app, 'buy-freeze-click-1'))
+    expect(retry).toEqual({ freezes: 2, balance: 120 })
+  })
+
   test('agendar férias reflete em onVacation/vacationUntil; null limpa; inválida → 400', async () => {
     const { app } = buildApp() // clock 2026-06-02
     const set = await readJson(await setVacation(app, { from: '2026-06-01', to: '2026-06-10' }))
@@ -887,6 +922,19 @@ describe('Streak-freeze + férias', () => {
 
     // fim antes do início → 400
     expect((await setVacation(app, { from: '2026-06-10', to: '2026-06-01' })).status).toBe(400)
+  })
+
+  test('data com FORMATO ok mas dia de calendário inexistente → 400 (não fura o teto via NaN)', async () => {
+    const { app } = buildApp() // clock 2026-06-02
+    // O regex `\d{4}-\d{2}-\d{2}` aceita estas; o dia não existe. Sem a validação de calendário,
+    // `inclusiveDaysBetween` virava NaN, `NaN > 30` era `false` (teto bypassado) e a janela
+    // bizarra persistia — o `inVacation` (comparação de STRING) a tratava como férias quase eternas.
+    expect((await setVacation(app, { from: '2026-02-30', to: '2026-02-30' })).status).toBe(400)
+    expect((await setVacation(app, { from: '2026-06-02', to: '2026-13-45' })).status).toBe(400)
+    expect((await setVacation(app, { from: '2026-00-10', to: '2026-06-10' })).status).toBe(400)
+    expect((await setVacation(app, { from: '2026-06-02', to: '9999-99-99' })).status).toBe(400)
+    // Sanidade: uma janela de datas REAIS dentro do teto continua passando.
+    expect((await setVacation(app, { from: '2026-06-05', to: '2026-06-15' })).status).toBe(200)
   })
 })
 

@@ -1,6 +1,10 @@
 import type { CourseAudience } from '../../domain/course/course'
+import { effectiveStreak, localDateSaoPaulo } from '../../domain/gamification/gamification'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
-import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
+import {
+  type GamificationRepository,
+  MAX_STREAK_FREEZES,
+} from '../../domain/ports/gamification-repository.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { StudioSubmissionRepository } from '../../domain/ports/studio-submission-repository.port'
 
@@ -57,6 +61,7 @@ export class GetChildrenStatsService {
     // 3) Ranking de TODOS os filhos numa só passada (coorte da audiência resolvida UMA
     //    vez) — evita o fan-out de N `getRanking`, cada um re-derivando a mesma coorte.
     const now = this.clock()
+    const today = localDateSaoPaulo(now)
     const positions = await this.gamification.rankProfiles(
       accountId,
       authorized.map((rec) => rec.userId),
@@ -89,7 +94,26 @@ export class GetChildrenStatsService {
         return {
           profileId,
           xp: rec.xp,
-          streak: { current: rec.streakCurrent, best: rec.streakBest },
+          // Streak de EXIBIÇÃO (igual ao `GetGamificationService`): projeta o freeze grátis do
+          // mês e as férias/freezes p/ não mostrar ao pai um streak "vivo" que já quebrou (nem
+          // culpar à toa um que a próxima atividade ainda cobriria). Cru (`streakCurrent`) mentia.
+          streak: {
+            current: effectiveStreak(
+              {
+                streakCurrent: rec.streakCurrent,
+                streakBest: rec.streakBest,
+                lastActivityDate: rec.lastActivityDate,
+                freezes: Math.min(
+                  MAX_STREAK_FREEZES,
+                  rec.streakFreezes + (rec.freezeGrantedMonth !== today.slice(0, 7) ? 1 : 0),
+                ),
+                vacationFrom: rec.vacationFrom,
+                vacationTo: rec.vacationTo,
+              },
+              today,
+            ),
+            best: rec.streakBest,
+          },
           badgesCount: badges.length,
           coursesInProgress,
           coursesCompleted,

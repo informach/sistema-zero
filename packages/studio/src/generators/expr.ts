@@ -1,4 +1,4 @@
-import type { JSExpr } from '#ir'
+import { type JSExpr, valueToExpr } from '#ir'
 import { normalizeIdentifier, safeIdent } from './identifier'
 import type { SourceMapBuilder } from './sourceMap'
 
@@ -186,6 +186,8 @@ export function compileExpr(
     }
     case 'bool':
       return expr.value ? 'true' : 'false'
+    case 'null':
+      return 'null'
     case 'var':
       return identifiers.get(expr.name)
     case 'binop': {
@@ -233,20 +235,36 @@ export function compileExpr(
       return `SZGame2D.angleTo(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
     case 'g2d:getHealth':
       return `SZGame2D.getHealth(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:spriteX':
+      return `SZGame2D.spriteX(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:spriteY':
+      return `SZGame2D.spriteY(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:spriteW':
+      return `SZGame2D.spriteW(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:spriteH':
+      return `SZGame2D.spriteH(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:centerX':
+      return `SZGame2D.centerX(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:centerY':
+      return `SZGame2D.centerY(${identifiers.get(expr.spriteVar)})`
     case 'g2d:randomBetween':
-      return `SZGame2D.randomBetween(${expr.min}, ${expr.max})`
+      return `SZGame2D.randomBetween(${compileExpr(valueToExpr(expr.min), 0, identifiers, rec)}, ${compileExpr(valueToExpr(expr.max), 0, identifiers, rec)})`
     case 'g2d:randomChance':
-      return `SZGame2D.randomChance(${expr.percent})`
+      return `SZGame2D.randomChance(${compileExpr(valueToExpr(expr.percent), 0, identifiers, rec)})`
     case 'g2d:hasHealth':
       return `SZGame2D.hasHealth(${identifiers.get(expr.spriteVar)})`
     case 'g2d:cooldownReady':
-      return `SZGame2D.cooldownReady(${identifiers.get(expr.spriteVar)}, ${expr.frames})`
+      return `SZGame2D.cooldownReady(${identifiers.get(expr.spriteVar)}, ${compileExpr(valueToExpr(expr.frames), 0, identifiers, rec)})`
     case 'g2d:isPaused':
       return 'SZGame2D.isPaused()'
     case 'g2d:cameraX':
       return 'SZGame2D.cameraX()'
     case 'g2d:cameraY':
       return 'SZGame2D.cameraY()'
+    case 'g2d:randomX':
+      return 'SZGame2D.randomX()'
+    case 'g2d:randomY':
+      return 'SZGame2D.randomY()'
     case 'g2d:tileAtSprite':
       return `SZGame2D.tileAtSprite(${identifiers.get(expr.mapVar)}, ${identifiers.get(expr.spriteVar)})`
     case 'g2d:sceneIs':
@@ -282,7 +300,7 @@ export function compileExpr(
     case 'g3d:distanceTo':
       return `SZGame3D.distanceTo(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
     case 'g3d:isNear':
-      return `SZGame3D.isNear(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)}, ${expr.dist})`
+      return `SZGame3D.isNear(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)}, ${compileExpr(valueToExpr(expr.dist), 0, identifiers, rec)})`
     case 'g3d:raceHit':
       return `SZGame3D.raceHit(${identifiers.get(expr.objVar)}, ${identifiers.get(expr.worldVar)})`
     case 'g3d:raceLaps':
@@ -306,7 +324,7 @@ export function compileExpr(
     case 'g3d:pointerOver':
       return `SZGame3D.pointerOver(${identifiers.get(expr.worldVar)}, ${identifiers.get(expr.objVar)})`
     case 'g3d:aimAhead':
-      return `SZGame3D.aimAhead(${identifiers.get(expr.worldVar)}, ${identifiers.get(expr.objVar)}, ${expr.dist})`
+      return `SZGame3D.aimAhead(${identifiers.get(expr.worldVar)}, ${identifiers.get(expr.objVar)}, ${compileExpr(valueToExpr(expr.dist), 0, identifiers, rec)})`
     case 'g3d:onGround':
       return `SZGame3D.onGround(${identifiers.get(expr.worldVar)}, ${identifiers.get(expr.objVar)})`
     case 'g3d:groundHeight':
@@ -521,6 +539,7 @@ function isPureExpr(expr: JSExpr): boolean {
     case 'color':
     case 'colorAlpha':
     case 'bool':
+    case 'null':
     case 'var':
     case 'thisRef':
     case 'thisProp':

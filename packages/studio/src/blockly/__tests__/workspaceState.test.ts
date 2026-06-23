@@ -471,6 +471,8 @@ describe('buildWorkspaceStateFromIR', () => {
     const blocks = collectBlocks(state.blocks.blocks)
 
     for (const block of blocks) {
+      // Os 3 frames são estruturais (não vêm do código), então não têm id/origem.
+      if (block.type.startsWith('sz_frame_')) continue
       expect(block.id ? sourceMap[block.id] : null).toBeTruthy()
     }
   })
@@ -746,6 +748,33 @@ describe('buildWorkspaceStateFromIR', () => {
     const types = collectTypes(buildWorkspaceStateFromIR(parsed).blocks.blocks)
     expect(types).toContain('sz_val_bool')
     expect(types).toContain('sz_js_var_increment')
+    expect(types).not.toContain('sz_adv_raw_js')
+  })
+
+  it('null faz roundtrip como sz_val_null (não cai em avançado)', () => {
+    const source: SZIR = {
+      html: [],
+      css: [],
+      js: [
+        { type: 'var', name: 'alvo', value: { type: 'null' } },
+        {
+          type: 'assign',
+          name: 'temAlvo',
+          value: {
+            type: 'binop',
+            op: '!==',
+            left: { type: 'var', name: 'alvo' },
+            right: { type: 'null' },
+          },
+        },
+      ],
+      extensions: [],
+    }
+    const files = generateProjectFiles({ ir: source, projectName: 'Null' })
+    const parsed = parseProjectFiles(files)
+    const types = collectTypes(buildWorkspaceStateFromIR(parsed).blocks.blocks)
+    expect(types).toContain('sz_val_null')
+    expect(types).toContain('sz_val_compare')
     expect(types).not.toContain('sz_adv_raw_js')
   })
 })

@@ -46,7 +46,11 @@ export class GetGamificationService {
       today <= profile.vacationTo
     return {
       xp: profile?.xp ?? 0,
-      coins: { balance: profile?.coinBalance ?? 0 },
+      // Equipe (passe livre) = moedas virtuais ilimitadas: a UI mostra ∞ (o saldo real fica 0).
+      coins: {
+        balance: profile?.coinBalance ?? 0,
+        ...(opts.privileged ? { unlimited: true } : {}),
+      },
       streak: {
         current: profile
           ? effectiveStreak(

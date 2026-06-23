@@ -5,6 +5,7 @@ import { AccessCheckService } from '../src/application/access-check/access-check
 import { BuyAvatarPartService } from '../src/application/avatar/buy-avatar-part.service'
 import { EquipAvatarService } from '../src/application/avatar/equip-avatar.service'
 import { GetAvatarService } from '../src/application/avatar/get-avatar.service'
+import { SetAvatarPhotoService } from '../src/application/avatar/set-avatar-photo.service'
 import { GetChildrenStatsService } from '../src/application/children-stats/get-children-stats.service'
 import {
   AttachmentAdminService,
@@ -90,10 +91,15 @@ export function buildApp(
   const positions = new InMemoryVideoPositionRepository()
   const quizAttempts = new InMemoryQuizAttemptRepository()
   const studioSubmissions = new InMemoryStudioSubmissionRepository(courses)
+  courses.onEvaluativeBlockContentChanged = (blockId) => {
+    quizAttempts.deleteByBlockId(blockId)
+    studioSubmissions.deleteByBlockId(blockId)
+  }
   const ratings = new InMemoryCourseRatingRepository()
-  const gamification = new InMemoryGamificationRepository({ entitlements, courses })
   const avatar = new InMemoryAvatarRepository()
   const room = new InMemoryRoomRepository()
+  // gamification recebe avatar/room p/ a compra ATÔMICA (spendCoins concede a posse junto).
+  const gamification = new InMemoryGamificationRepository({ entitlements, courses, avatar, room })
   const processed = new InMemoryProcessedWebhookRepository()
   const catalog = new FakeCatalogGateway()
 
@@ -176,7 +182,7 @@ export function buildApp(
       getGamification: new GetGamificationService(gamification, clock),
       getMissions: new GetMissionsService(gamification, clock),
       claimMission: new ClaimMissionService(gamification, clock),
-      buyStreakFreeze: new BuyStreakFreezeService(gamification, clock),
+      buyStreakFreeze: new BuyStreakFreezeService(gamification, () => randomUUID(), clock),
       setVacation: new SetVacationService(gamification, clock),
       getLeague: new GetLeagueService(gamification, clock),
       childrenStats: new GetChildrenStatsService(
@@ -189,6 +195,7 @@ export function buildApp(
       getAvatar: new GetAvatarService(avatar, gamification),
       buyAvatarPart: new BuyAvatarPartService(avatar, gamification, clock),
       equipAvatar: new EquipAvatarService(avatar, clock),
+      setAvatarPhoto: new SetAvatarPhotoService(avatar, clock),
       getPublicProfile: new GetPublicProfileService(gamification, avatar, room, clock),
       getRoom: new GetRoomService(room, gamification),
       saveRoom: new SaveRoomService(room, clock),

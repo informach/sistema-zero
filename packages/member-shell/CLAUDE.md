@@ -119,7 +119,11 @@ passthrough `shell.routes.gamificationMe` (`GET /api/members/gamification/me`). 
 `submitQuizAttempt` agora são TIPADOS (a resposta carrega o delta `gamification` — aditivo; o
 community adulto ignora, a vitrine v1 é o kids). `GamificationMeView.streak` ganhou
 `freezesAvailable?`/`onVacation?`/`vacationUntil?` e `coins?:{balance}` (todos OPCIONAIS p/ tolerar
-members antigo).
+members antigo). **Passe livre da EQUIPE (06/2026):** o contrato ganhou a flag `unlimited`/
+`balanceUnlimited` (em `coins`, `AvatarStateView`/`RoomEditorView`, `AvatarPurchaseResult`/
+`RoomBuyResult`/`StreakFreezeResult`) — quando o ator é equipe (superadmin/admin/staff), o members
+reporta moedas VIRTUAIS ilimitadas (saldo real 0) e a UI kids mostra ∞; as compras voltam grátis
+(`unlimited:true`). Só estrutural — o gate é do members (`docs/gamificacao.md` §4).
 
 **Expansão Zappy + avatar/quarto/missões/ligas (06/2026 — 6 fases):** o shell virou o BFF de TODA a
 gamificação kids. Tipos novos em `lib/types.ts` (mirror das views do members): `MissionView`/
@@ -138,12 +142,24 @@ memoizadas por request via `React.cache()` — dedup layout×página, sem refres
   sem saldo → 402) + `setVacation(from,to)` (`POST …/vacation` — janela de férias; `null/null` limpa).
 - **Liga semanal:** `getLeagueReadonly()` (`GET …/league/me` — board SEM PII, só `position`/`weeklyXp`/
   `isMe`).
-- **Avatar (guarda-roupa por camadas):** `getAvatar()`/`getAvatarReadonly()` (`GET /members/avatar`) +
-  `buyAvatarPart(id)` (`POST /members/avatar/parts/:id/buy`, idempotente, 402 sem saldo) +
-  `equipAvatar(config)` (`PUT /members/avatar` — o members é ESTRITO: só peça grátis OU possuída).
-- **Quarto virtual:** `getRoom()`/`getRoomReadonly()` (`GET /members/room`) + `saveRoom(state)`
-  (`PUT /members/room` — last-write-wins, o members canonicaliza contra o inventário) +
-  `buyRoomItem(id)` (`POST /members/room/items/:id/buy` — item OU tema pago, idempotente, 402/404/400).
+- **Avatar 3D (configurador por categorias):** `getAvatar()`/`getAvatarReadonly()` (`GET /members/avatar`
+  — `AvatarStateView` ganhou `equipped` como `slots` cat→`{asset,color?}` + `palettes`/`hideGroups`/
+  `removable`/`photoUrl`) + `buyAvatarPart(id)` (`POST …/parts/:id/buy`, idempotente, 402 sem saldo) +
+  `equipAvatar(config)` (`PUT /members/avatar` — `AvatarConfigInput.slots`; o members é ESTRITO: peça
+  grátis OU possuída + cor ∈ paleta) + **`setAvatarPhoto(url)`** (`PUT /members/avatar/photo`). O handler
+  **`avatarSnapshot`** (`POST /api/members/avatar/snapshot`, multipart, FORA do matcher — `requireUploadSession`
+  PERMITE sessão de perfil, ≠ do `/me/avatar`) sobe o PNG do canvas 3D → `optimizeAndStoreAvatar(file, profileId,
+  'avatar3d')` (namespace próprio p/ não colidir com a foto de perfil) → `members.setAvatarPhoto(url)` →
+  `removeStaleAvatars(.., 'avatar3d')`. `optimizeAndStoreAvatar`/`removeStaleAvatars` ganharam o param
+  `namespace` (default `avatars`). Zod `AvatarConfigSchema` = `slots` `{asset,color?}` (só forma; posse/
+  categoria/paleta é portão do members). `PublicProfileGameView.avatar` virou `slots` + ganhou `avatarPhotoUrl`.
+- **Quarto virtual:** `getRoom()`/`getRoomReadonly()` (`GET /members/room` — `RoomEditorView` agora
+  com `floors`/`lightings` além de `items`/`themes`) + `saveRoom(state)` (`PUT /members/room` —
+  last-write-wins, o members canonicaliza contra o inventário/paleta) + `buyRoomItem(id)`
+  (`POST /members/room/items/:id/buy` — item/tema/piso/luz pago, idempotente, 402/404/400). ⚠️ O
+  `RoomStateSchema` (Zod) e os tipos (`RoomPlacedItem.rot`, `RoomStateView.wallColors/floor/lighting`)
+  foram alargados p/ os campos novos do quarto 3D — `rot` é UNIÃO de literais 0|1|2|3 (não `z.number`)
+  p/ casar o tipo. O renderer 3D vive no community-kids (visual); aqui é só o BFF.
 - **Perfil público de OUTRA criança:** `getPublicProfileIdentity(profileId)` (auth S2S → nome + flag
   `publicProfileEnabled`, nunca PII) + `getPublicProfile(profileId)` (members → xp/ranking/conquistas/
   avatar/quarto SEM identidade). O BFF junta os dois no `PublicProfileDTO` p/ a página `/crianca/[id]`;
@@ -151,7 +167,8 @@ memoizadas por request via `React.cache()` — dedup layout×página, sem refres
 
 Handlers (`createShellRoutes`, espalhados no `index.ts` como `routes.*`): `gamificationMe`,
 `missionsGet`/`missionClaim`, `streakFreezeBuy`/`vacationSet` (Zod `VacationSchema`), `avatarGet`/
-`avatarBuy`/`avatarEquip` (Zod `AvatarConfigSchema` — só forma; posse/camada é portão do members),
+`avatarBuy`/`avatarEquip` (Zod `AvatarConfigSchema` — só forma; posse/categoria/paleta é portão do
+members) + **`avatarSnapshot`** (multipart, FORA do matcher — sobe o PNG p/ o R2 e chama `setAvatarPhoto`),
 `roomGet`/`roomSave`/`roomBuy` (Zod `RoomStateSchema`), e `childrenStats` (área dos pais: junta
 identidade dos perfis do auth com os stats por perfil do members; gateado por
 `requireParentGateAccountOnly` no shim do KIDS). Toda escrita passa por `requireWritableSession`

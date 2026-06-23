@@ -321,6 +321,38 @@ describe('vitrine (Mural dos Criadores)', () => {
     expect(thread.status).toBe('visible')
   })
 
+  test('studio-play: só valida playId enquanto o post está visível', async () => {
+    const playId = '55555555-5555-5555-5555-555555555555'
+    const create = await ctx.app.handle(
+      jsonRequest('POST', '/hub/internal/showcase-thread-studio', {
+        headers: child(randomUUID()),
+        body: studioBody({ playId }),
+      }),
+    )
+    expect(create.status).toBe(200)
+
+    const visible = await ctx.app.handle(
+      jsonRequest('GET', `/hub/internal/studio-play/${playId}`, {
+        headers: { 'x-internal-token': INTERNAL },
+      }),
+    )
+    expect(visible.status).toBe(200)
+    expect(await visible.json()).toEqual({ visible: true })
+
+    const { thread } = (await create.json()) as { thread: { id: string } }
+    ctx.threadRepo.threads = ctx.threadRepo.threads.map((t) =>
+      t.id === thread.id ? { ...t, status: 'hidden' } : t,
+    )
+
+    const hidden = await ctx.app.handle(
+      jsonRequest('GET', `/hub/internal/studio-play/${playId}`, {
+        headers: { 'x-internal-token': INTERNAL },
+      }),
+    )
+    expect(hidden.status).toBe(200)
+    expect(await hidden.json()).toEqual({ visible: false })
+  })
+
   test('studio: mesmo clientIdempotencyKey dedup-a; novo key = post NOVO (republicar)', async () => {
     const headers = child(randomUUID())
     const sameKey = randomUUID()

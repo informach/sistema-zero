@@ -3,20 +3,28 @@ import { InsufficientCoinsError } from '../../domain/gamification/coins.errors'
 import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
 import type { RoomRepository } from '../../domain/ports/room-repository.port'
 import { RoomItemFreeError, RoomItemNotFoundError } from '../../domain/room/room.errors'
-import { ROOM_ITEMS_BY_ID, ROOM_THEMES_BY_ID } from '../../domain/room/room-catalog'
+import {
+  ROOM_FLOORS_BY_ID,
+  ROOM_ITEMS_BY_ID,
+  ROOM_LIGHTINGS_BY_ID,
+  ROOM_THEMES_BY_ID,
+} from '../../domain/room/room-catalog'
 
 export interface BuyRoomItemResult {
   alreadyOwned: boolean
   balance: number
+  /** `true` = equipe (passe livre): moedas virtuais ilimitadas — a UI mostra ∞. */
+  unlimited?: boolean
 }
 
-/** Item OU tema do quarto (catálogos distintos, ids sem colisão). */
+/** Item, tema, piso OU luz do quarto (catálogos distintos, ids sem colisão). */
 function roomThing(id: string): { tier: 'free' | 'coins'; price: number } | null {
-  const item = ROOM_ITEMS_BY_ID.get(id)
-  if (item) return { tier: item.tier, price: item.price }
-  const theme = ROOM_THEMES_BY_ID.get(id)
-  if (theme) return { tier: theme.tier, price: theme.price }
-  return null
+  const found =
+    ROOM_ITEMS_BY_ID.get(id) ??
+    ROOM_THEMES_BY_ID.get(id) ??
+    ROOM_FLOORS_BY_ID.get(id) ??
+    ROOM_LIGHTINGS_BY_ID.get(id)
+  return found ? { tier: found.tier, price: found.price } : null
 }
 
 /**
@@ -35,6 +43,7 @@ export class BuyRoomItemService {
     userId: string,
     audience: CourseAudience,
     itemId: string,
+    privileged = false,
   ): Promise<BuyRoomItemResult> {
     const thing = roomThing(itemId)
     if (!thing) throw new RoomItemNotFoundError()
@@ -42,21 +51,31 @@ export class BuyRoomItemService {
 
     const owned = await this.room.listInventory(userId, audience)
     if (owned.includes(itemId)) {
-      return { alreadyOwned: true, balance: await this.coins.getBalance(userId, audience) }
+      return {
+        alreadyOwned: true,
+        balance: await this.coins.getBalance(userId, audience),
+        ...(privileged ? { unlimited: true } : {}),
+      }
     }
 
     const now = this.clock()
+    // Débito + posse na MESMA transação (atômico): `grantInventory` grava o item junto com o
+    // gasto — nunca cobra sem entregar. Recupera a posse no caminho ALREADY_SPENT (retry).
+    // Equipe (passe livre): `amount: 0` entrega o item sem debitar — moedas virtuais ilimitadas.
     const spend = await this.coins.spendCoins({
       userId,
       audience,
-      amount: thing.price,
+      amount: privileged ? 0 : thing.price,
       reason: 'spend_room',
       idempotencyKey: `room-buy:${userId}:${itemId}`,
       now,
+      grantInventory: { scope: 'room', itemId },
     })
     if (!spend.ok && spend.code === 'INSUFFICIENT_BALANCE') throw new InsufficientCoinsError()
-
-    await this.room.addToInventory(userId, audience, itemId, now)
-    return { alreadyOwned: false, balance: spend.ok ? spend.balanceAfter : spend.balance }
+    return {
+      alreadyOwned: false,
+      balance: spend.ok ? spend.balanceAfter : spend.balance,
+      ...(privileged ? { unlimited: true } : {}),
+    }
   }
 }

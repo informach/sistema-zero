@@ -15,6 +15,9 @@ export const VALUE_SOCKETS: Record<string, Record<string, number>> = {
   sz_canvas_translate: { X: 0, Y: 0 },
   sz_canvas_draw_image: { X: 0, Y: 0, W: 100, H: 100 },
   sz_canvas_set_size: { W: 400, H: 300 },
+  sz_canvas_rotate: { ANGLE: 0 },
+  sz_canvas_scale: { SX: 1, SY: 1 },
+  sz_canvas_gradient: { X0: 0, Y0: 0, X1: 200, Y1: 0 },
   sz_val_random: { MIN: 0, MAX: 100 },
   // Cor HSL: matiz (0–360) + saturação/luminosidade em % (0–100).
   sz_val_color_hsl: { H: 0, S: 50, L: 50 },
@@ -57,6 +60,7 @@ export const VALUE_SOCKETS: Record<string, Record<string, number>> = {
   sz_val_array_index: { INDEX: 0 },
   // For clássico (contar de/até/passo).
   sz_js_for_range: { FROM: 0, TO: 10, STEP: 1 },
+  sz_js_repeat: { TIMES: 5 },
   // Armazenamento do navegador: o valor a guardar é uma tomada.
   sz_js_storage_set: { VALUE: 0 },
 }
@@ -75,9 +79,19 @@ export const COLOR_SOCKETS: Record<string, Record<string, string>> = {
   sz_canvas_shadow: { COLOR: '#000000' },
 }
 
-/** Sombra de um slot de valor: número editável, seletor de cor, ou comparação. */
+/**
+ * Slots de valor que aceitam TEXTO exibido ao usuário: tipo do bloco →
+ * { nome do input → texto padrão }. A sombra é `sz_val_text` (campo editável
+ * inline), substituível por variável/"juntar texto"/função.
+ */
+export const TEXT_SOCKETS: Record<string, Record<string, string>> = {
+  sz_canvas_fill_text: { TEXT: 'Olá' },
+}
+
+/** Sombra de um slot de valor: número/texto editável, seletor de cor, ou comparação. */
 export type SocketShadow =
   | { shadow: { type: 'sz_val_number'; fields: { NUM: number } } }
+  | { shadow: { type: 'sz_val_text'; fields: { TEXT: string } } }
   | { shadow: { type: 'sz_val_color'; fields: { COLOR: string } } }
   | {
       shadow: {
@@ -176,14 +190,18 @@ const CUSTOM_SOCKETS: Record<string, Record<string, SocketShadow>> = {
 export function socketInputsFor(type: string): Record<string, SocketShadow> | undefined {
   const numeric = VALUE_SOCKETS[type]
   const colors = COLOR_SOCKETS[type]
+  const texts = TEXT_SOCKETS[type]
   const custom = CUSTOM_SOCKETS[type]
-  if (!numeric && !colors && !custom) return undefined
+  if (!numeric && !colors && !texts && !custom) return undefined
   const inputs: Record<string, SocketShadow> = {}
   for (const [name, value] of Object.entries(numeric ?? {})) {
     inputs[name] = { shadow: { type: 'sz_val_number', fields: { NUM: value } } }
   }
   for (const [name, colour] of Object.entries(colors ?? {})) {
     inputs[name] = { shadow: { type: 'sz_val_color', fields: { COLOR: colour } } }
+  }
+  for (const [name, text] of Object.entries(texts ?? {})) {
+    inputs[name] = { shadow: { type: 'sz_val_text', fields: { TEXT: text } } }
   }
   for (const [name, shadow] of Object.entries(custom ?? {})) {
     inputs[name] = shadow

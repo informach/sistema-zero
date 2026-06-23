@@ -396,6 +396,15 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       })
     },
 
+    /** Salva a URL do snapshot (foto) do avatar 3D (`PUT /members/avatar/photo`). */
+    setAvatarPhoto(photoUrl: string): Promise<GatewayResponse<{ photoUrl: string }>> {
+      return gw.gatewayFetch('/members/avatar/photo', {
+        method: 'PUT',
+        query: { audience },
+        body: { photoUrl },
+      })
+    },
+
     /**
      * Dado de jogo do perfil PÚBLICO de OUTRA criança (xp/ranking/conquistas/avatar/
      * quarto). Peer-viewable; o BFF junta com a identidade do auth. SEM refresh (SC).
@@ -666,6 +675,10 @@ export function createHubClient(gw: GatewayModule, opts: { audience: MembersAudi
         method: 'POST',
         body,
       })
+    },
+    /** Valida se o playId público ainda pertence a um post visível no Mural. */
+    resolveStudioPlay(playId: string): Promise<GatewayResponse<{ visible: boolean }>> {
+      return gw.gatewayFetch(`/hub/internal/studio-play/${enc(playId)}`)
     },
     report(
       target: 'thread' | 'comment',

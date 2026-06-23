@@ -400,11 +400,7 @@ export const asteroidsExample: ExtensionExample = {
                   {
                     type: 'g2d:spawnAsteroid',
                     groupVar: 'asteroides',
-                    x: {
-                      type: 'random',
-                      min: { type: 'num', value: 10 },
-                      max: { type: 'num', value: 360 },
-                    },
+                    x: { type: 'g2d:randomX' },
                     y: { type: 'num', value: -30 },
                     size: 40,
                     color: '#8d8f9b',

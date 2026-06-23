@@ -1,4 +1,4 @@
-import { CATEGORY_COLORS } from '../theme'
+import { CATEGORY_COLORS, categoryShades } from '../theme'
 import type { BlockDefinition } from './types'
 
 const C = CATEGORY_COLORS.canvas
@@ -95,7 +95,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     type: 'sz_canvas_fill_text',
     message0: 'Desenhar texto %1 com pincel %2 em x %3 y %4',
     args0: [
-      { type: 'field_input', name: 'TEXT', text: 'Olá' },
+      { type: 'input_value', name: 'TEXT', check: 'JSValue' },
       { type: 'field_input', name: 'CTX', text: 'ctx' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
@@ -187,8 +187,9 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     message0: 'Girar pincel %1 em %2 radianos',
     args0: [
       { type: 'field_input', name: 'CTX', text: 'ctx' },
-      { type: 'field_number', name: 'ANGLE', value: 0, precision: 0.01 },
+      { type: 'input_value', name: 'ANGLE', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -198,9 +199,10 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     message0: 'Escalar pincel %1 em x %2 y %3',
     args0: [
       { type: 'field_input', name: 'CTX', text: 'ctx' },
-      { type: 'field_number', name: 'SX', value: 1, precision: 0.1 },
-      { type: 'field_number', name: 'SY', value: 1, precision: 0.1 },
+      { type: 'input_value', name: 'SX', check: 'JSValue' },
+      { type: 'input_value', name: 'SY', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -211,13 +213,14 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     args0: [
       { type: 'field_input', name: 'CTX', text: 'ctx' },
       { type: 'field_input', name: 'NAME', text: 'g' },
-      { type: 'field_number', name: 'X0', value: 0 },
-      { type: 'field_number', name: 'Y0', value: 0 },
-      { type: 'field_number', name: 'X1', value: 200 },
-      { type: 'field_number', name: 'Y1', value: 0 },
+      { type: 'input_value', name: 'X0', check: 'JSValue' },
+      { type: 'input_value', name: 'Y0', check: 'JSValue' },
+      { type: 'input_value', name: 'X1', check: 'JSValue' },
+      { type: 'input_value', name: 'Y1', check: 'JSValue' },
       { type: 'field_colour_sz', name: 'C0', colour: '#22d3ee' },
       { type: 'field_colour_sz', name: 'C1', colour: '#a78bfa' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -687,7 +690,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
 export const CANVAS_GROUPS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '🖼️ Tela',
-    colour: '#34d399',
+    colour: '#16b87a',
     types: [
       'sz_html_canvas',
       'sz_canvas_setup',
@@ -698,7 +701,7 @@ export const CANVAS_GROUPS: { name: string; colour: string; types: string[] }[] 
   },
   {
     name: '🎨 Pincel',
-    colour: '#22d3ee',
+    colour: '#22c98a',
     types: [
       'sz_canvas_fill_style',
       'sz_canvas_stroke_style',
@@ -711,7 +714,7 @@ export const CANVAS_GROUPS: { name: string; colour: string; types: string[] }[] 
   },
   {
     name: '⬛ Formas',
-    colour: '#4ade80',
+    colour: '#0f9d66',
     types: [
       'sz_canvas_fill_rect',
       'sz_canvas_stroke_rect',
@@ -723,7 +726,7 @@ export const CANVAS_GROUPS: { name: string; colour: string; types: string[] }[] 
   },
   {
     name: '✏️ Traçado',
-    colour: '#38bdf8',
+    colour: '#2ed69a',
     types: [
       'sz_canvas_begin_path',
       'sz_canvas_move_to',
@@ -742,7 +745,7 @@ export const CANVAS_GROUPS: { name: string; colour: string; types: string[] }[] 
   },
   {
     name: '🔤 Texto',
-    colour: '#818cf8',
+    colour: '#138f5e',
     types: [
       'sz_canvas_font',
       'sz_canvas_text_align',
@@ -754,7 +757,7 @@ export const CANVAS_GROUPS: { name: string; colour: string; types: string[] }[] 
   },
   {
     name: '🔄 Transformar',
-    colour: '#a78bfa',
+    colour: '#3ad9a3',
     types: [
       'sz_canvas_save',
       'sz_canvas_restore',
@@ -763,10 +766,10 @@ export const CANVAS_GROUPS: { name: string; colour: string; types: string[] }[] 
       'sz_canvas_scale',
     ],
   },
-  { name: '🖼️ Imagem', colour: '#f472b6', types: ['sz_canvas_draw_image'] },
+  { name: '🖼️ Imagem', colour: '#1aa870', types: ['sz_canvas_draw_image'] },
   {
     name: '🎞️ Animação & entrada',
-    colour: '#fbbf24',
+    colour: '#0d7d50',
     types: [
       'sz_canvas_anim_loop',
       'sz_canvas_cancel_anim',
@@ -778,7 +781,12 @@ export const CANVAS_GROUPS: { name: string; colour: string; types: string[] }[] 
   },
 ]
 
-// Cor = navegação: pinta cada bloco com a cor do seu grupo.
+// IDENTIDADE: cada sub-grupo recebe um TOM da cor base da categoria (Canvas),
+// derivado claro→escuro (categoryShades) — os literais em CANVAS_GROUPS são placeholders.
+const CANVAS_SHADES = categoryShades(CATEGORY_COLORS.canvas, CANVAS_GROUPS.length)
+CANVAS_GROUPS.forEach((g, i) => {
+  g.colour = CANVAS_SHADES[i] ?? CATEGORY_COLORS.canvas
+})
 const CANVAS_COLOUR_BY_TYPE = new Map<string, string>(
   CANVAS_GROUPS.flatMap((g) => g.types.map((t) => [t, g.colour] as const)),
 )

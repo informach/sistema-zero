@@ -1082,6 +1082,19 @@ const config: GatewayConfigInput = {
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
       maxBodyBytes: 4096,
     },
+    {
+      // Salva a URL do snapshot (foto) do avatar 3D — corpo pequeno (só a URL). 3 segmentos:
+      // não colide com `/members/avatar` (2 seg, get/equip) nem com o buy (4 seg).
+      id: 'members-avatar-photo',
+      methods: ['PUT'],
+      pathPattern: '/members/avatar/photo',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 4096,
+    },
     // Perfil PÚBLICO de outra criança (gamificação: xp/ranking/conquistas/avatar/quarto)
     // — qualquer conta ATIVA da comunidade lê (peer-viewable). O BFF junta com a
     // identidade do auth e GATEIA pela flag dos pais. `/members/profiles/*` (3 segmentos)
@@ -1759,6 +1772,17 @@ const config: GatewayConfigInput = {
       transforms: hubInternalTransforms,
       maxBodyBytes: SMALL_JSON_BODY_BYTES,
       rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+    },
+    // Player público do Estúdio (BFF sem Bearer) valida que o playId ainda pertence
+    // a um post visível no Mural antes de servir o JSON privado do R2.
+    {
+      id: 'hub-studio-play-visible',
+      methods: ['GET'],
+      pathPattern: '/hub/internal/studio-play/:playId',
+      service: 'hub',
+      auth: 'public',
+      transforms: hubInternalTransforms,
+      rateLimit: { max: 600, windowMs: 60_000, by: 'ip' },
     },
     {
       id: 'hub-comment-edit',

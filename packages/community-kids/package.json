@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "bun test",
     "check": "biome check .",
-    "check:fix": "biome check --write ."
+    "check:fix": "biome check --write .",
+    "gen:avatar-thumbs": "bun scripts/gen-avatar-thumbs.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1032.0",

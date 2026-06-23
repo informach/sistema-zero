@@ -1,17 +1,15 @@
 import type { ExtensionToolboxCategory } from '#extensions'
+import { categoryShades } from '../../blockly/colorShades'
 
-// Cor base da extensão (cena/objetos/física). Perguntas usam dourado (como o
-// Jogo 2D) e o Kit "Desvie" usa um tom de inimigo (rosa/vermelho).
-const C = '#a78bfa'
-const EVENT_C = '#fbbf24'
-const KIT_C = '#fb7185'
-// Genéricos de grade/isométrico (azul) e Kit Travessia (verde grama).
-const GRID_C = '#38bdf8'
-const KIT2_C = '#84cc16'
-// Kit Corrida (laranja).
-const RACE_C = '#fb923c'
-// Kit Empilhar (verde-azulado).
-const STACK_C = '#2dd4bf'
+// Jogo 3D = UMA cor da categoria: AMARELO/dourado. A categoria inteira fica em
+// TONS de amarelo, variando por área/kit.
+const C = '#f0b80a' // base (cena/objetos/física)
+const EVENT_C = '#f8d23f' // perguntas/eventos
+const KIT_C = '#d49e00' // Kit Desvie
+const GRID_C = '#fae07a' // grade/isométrico
+const KIT2_C = '#e6ad00' // Kit Travessia
+const RACE_C = '#b88700' // Kit Corrida
+const STACK_C = '#ffe89a' // Kit Empilhar
 
 export const gameThreeDBlocks = [
   {
@@ -26,6 +24,19 @@ export const gameThreeDBlocks = [
     colour: C,
     tooltip:
       'Cria cena + câmera + renderizador + luz, prontos para desenhar. Crie um <canvas> no HTML antes.',
+  },
+  {
+    type: 'sz_g3d_create_fullscreen_scene',
+    message0: 'Criar cena 3D em tela cheia e guardar em %1, fundo %2',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'cena' },
+      { type: 'field_colour', name: 'BG', colour: '#0b1020' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Atalho: cria a tela (canvas) ocupando a janela inteira, já responsiva, mais a cena + câmera + luz. A cor do fundo fica atrás dos objetos da cena. Não precisa criar a tela de desenho no HTML.',
   },
   {
     type: 'sz_g3d_set_background',
@@ -59,9 +70,10 @@ export const gameThreeDBlocks = [
     args0: [
       { type: 'field_input', name: 'NAME', text: 'caixa' },
       { type: 'field_input', name: 'WORLD', text: 'cena' },
-      { type: 'field_number', name: 'SIZE', value: 1, min: 0.1 },
+      { type: 'input_value', name: 'SIZE', check: 'JSValue' },
       { type: 'field_colour', name: 'COLOR', colour: '#22d3ee' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -72,9 +84,10 @@ export const gameThreeDBlocks = [
     args0: [
       { type: 'field_input', name: 'NAME', text: 'bola' },
       { type: 'field_input', name: 'WORLD', text: 'cena' },
-      { type: 'field_number', name: 'RADIUS', value: 0.5, min: 0.1 },
+      { type: 'input_value', name: 'RADIUS', check: 'JSValue' },
       { type: 'field_colour', name: 'COLOR', colour: '#f59e0b' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -85,11 +98,12 @@ export const gameThreeDBlocks = [
     args0: [
       { type: 'field_input', name: 'NAME', text: 'chao' },
       { type: 'field_input', name: 'WORLD', text: 'cena' },
-      { type: 'field_number', name: 'W', value: 10, min: 0.1 },
-      { type: 'field_number', name: 'H', value: 0.5, min: 0.1 },
-      { type: 'field_number', name: 'D', value: 50, min: 0.1 },
+      { type: 'input_value', name: 'W', check: 'JSValue' },
+      { type: 'input_value', name: 'H', check: 'JSValue' },
+      { type: 'input_value', name: 'D', check: 'JSValue' },
       { type: 'field_colour', name: 'COLOR', colour: '#0369a1' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -158,8 +172,9 @@ export const gameThreeDBlocks = [
     message0: 'Mover %1 com o teclado (WASD/setas), velocidade %2',
     args0: [
       { type: 'field_input', name: 'OBJ', text: 'jogador' },
-      { type: 'field_number', name: 'SPEED', value: 0.05, min: 0 },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -288,9 +303,10 @@ export const gameThreeDBlocks = [
       { type: 'field_input', name: 'WORLD', text: 'cena' },
       { type: 'field_input', name: 'GROUP', text: 'inimigos' },
       { type: 'field_input', name: 'GROUND', text: 'chao' },
-      { type: 'field_number', name: 'EVERY', value: 200, min: 20 },
-      { type: 'field_number', name: 'SPEED', value: 0.02, min: 0 },
+      { type: 'input_value', name: 'EVERY', check: 'JSValue' },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: KIT_C,
@@ -371,10 +387,11 @@ export const gameThreeDBlocks = [
     message0: 'Mover os objetos do grupo %1 (velocidade %2, dando a volta de x %3 até %4)',
     args0: [
       { type: 'field_input', name: 'GROUP', text: 'carros' },
-      { type: 'field_number', name: 'SPEED', value: 0.1 },
-      { type: 'field_number', name: 'MIN', value: -10 },
-      { type: 'field_number', name: 'MAX', value: 10 },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
+      { type: 'input_value', name: 'MIN', check: 'JSValue' },
+      { type: 'input_value', name: 'MAX', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: GRID_C,
@@ -492,7 +509,7 @@ export const gameThreeDBlocks = [
           ['← esquerda', 'left'],
         ],
       },
-      { type: 'field_number', name: 'SPEED', value: 150, min: 0 },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
@@ -506,8 +523,9 @@ export const gameThreeDBlocks = [
     message0: 'No mundo %1, gerar %2 linhas aleatórias',
     args0: [
       { type: 'field_input', name: 'WORLD', text: 'mundo' },
-      { type: 'field_number', name: 'COUNT', value: 20, min: 1 },
+      { type: 'input_value', name: 'COUNT', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: KIT2_C,
@@ -564,9 +582,10 @@ export const gameThreeDBlocks = [
     message0: 'Mover %1 em círculo: raio %2 velocidade %3',
     args0: [
       { type: 'field_input', name: 'OBJ', text: 'carro' },
-      { type: 'field_number', name: 'RADIUS', value: 7, min: 0.1 },
-      { type: 'field_number', name: 'SPEED', value: 0.02 },
+      { type: 'input_value', name: 'RADIUS', check: 'JSValue' },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -590,8 +609,9 @@ export const gameThreeDBlocks = [
     args0: [
       { type: 'field_input', name: 'A', text: 'carro' },
       { type: 'field_input', name: 'B', text: 'rival' },
-      { type: 'field_number', name: 'DIST', value: 2, min: 0 },
+      { type: 'input_value', name: 'DIST', check: 'JSValue' },
     ],
+    inputsInline: true,
     output: 'JSValue',
     colour: EVENT_C,
     tooltip: 'Verdadeiro quando os dois objetos estão a menos da distância dada. Use num "se".',
@@ -734,10 +754,11 @@ export const gameThreeDBlocks = [
           ['↗ Z', 'z'],
         ],
       },
-      { type: 'field_number', name: 'MIN', value: -5 },
-      { type: 'field_number', name: 'MAX', value: 5 },
-      { type: 'field_number', name: 'SPEED', value: 0.05, min: 0 },
+      { type: 'input_value', name: 'MIN', check: 'JSValue' },
+      { type: 'input_value', name: 'MAX', check: 'JSValue' },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -758,8 +779,9 @@ export const gameThreeDBlocks = [
           ['↗ Z', 'z'],
         ],
       },
-      { type: 'field_number', name: 'SPEED', value: 0.03 },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -940,7 +962,7 @@ export const gameThreeDBlocks = [
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
       { type: 'input_value', name: 'Z', check: 'JSValue' },
-      { type: 'field_number', name: 'FACTOR', value: 0.1, min: 0, max: 1 },
+      { type: 'input_value', name: 'FACTOR', check: 'JSValue' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
@@ -1040,8 +1062,9 @@ export const gameThreeDBlocks = [
     args0: [
       { type: 'field_input', name: 'OBJ', text: 'jogador' },
       { type: 'field_input', name: 'WORLD', text: 'cena' },
-      { type: 'field_number', name: 'DIST', value: 100, min: 0 },
+      { type: 'input_value', name: 'DIST', check: 'JSValue' },
     ],
+    inputsInline: true,
     output: 'JSValue',
     colour: EVENT_C,
     tooltip:
@@ -1077,8 +1100,9 @@ export const gameThreeDBlocks = [
     message0: 'dar corpo físico a %1 (gravidade %2)',
     args0: [
       { type: 'field_input', name: 'OBJ', text: 'jogador' },
-      { type: 'field_number', name: 'GRAVITY', value: -0.01 },
+      { type: 'input_value', name: 'GRAVITY', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1112,9 +1136,10 @@ export const gameThreeDBlocks = [
     args0: [
       { type: 'field_input', name: 'OBJ', text: 'jogador' },
       { type: 'field_input', name: 'WORLD', text: 'cena' },
-      { type: 'field_number', name: 'SPEED', value: 0.08, min: 0 },
-      { type: 'field_number', name: 'JUMP', value: 0.18, min: 0 },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
+      { type: 'input_value', name: 'JUMP', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1127,8 +1152,9 @@ export const gameThreeDBlocks = [
     args0: [
       { type: 'field_input', name: 'OBJ', text: 'jogador' },
       { type: 'field_input', name: 'WORLD', text: 'cena' },
-      { type: 'field_number', name: 'SPEED', value: 0.08, min: 0 },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1180,9 +1206,10 @@ export const gameThreeDBlocks = [
     args0: [
       { type: 'field_input', name: 'WORLD', text: 'cena' },
       { type: 'field_input', name: 'OBJ', text: 'jogador' },
-      { type: 'field_number', name: 'DIST', value: 6, min: 0 },
-      { type: 'field_number', name: 'HEIGHT', value: 3 },
+      { type: 'input_value', name: 'DIST', check: 'JSValue' },
+      { type: 'input_value', name: 'HEIGHT', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: GRID_C,
@@ -1206,8 +1233,9 @@ export const gameThreeDBlocks = [
     message0: 'campo de visão da câmera da cena %1 = %2 graus',
     args0: [
       { type: 'field_input', name: 'WORLD', text: 'cena' },
-      { type: 'field_number', name: 'DEG', value: 60, min: 1, max: 179 },
+      { type: 'input_value', name: 'DEG', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: GRID_C,
@@ -1221,10 +1249,11 @@ export const gameThreeDBlocks = [
     args0: [
       { type: 'field_input', name: 'NAME', text: 'cilindro' },
       { type: 'field_input', name: 'WORLD', text: 'cena' },
-      { type: 'field_number', name: 'RADIUS', value: 0.5, min: 0.1 },
-      { type: 'field_number', name: 'HEIGHT', value: 1, min: 0.1 },
+      { type: 'input_value', name: 'RADIUS', check: 'JSValue' },
+      { type: 'input_value', name: 'HEIGHT', check: 'JSValue' },
       { type: 'field_colour', name: 'COLOR', colour: '#22d3ee' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1235,10 +1264,11 @@ export const gameThreeDBlocks = [
     args0: [
       { type: 'field_input', name: 'NAME', text: 'cone' },
       { type: 'field_input', name: 'WORLD', text: 'cena' },
-      { type: 'field_number', name: 'RADIUS', value: 0.5, min: 0.1 },
-      { type: 'field_number', name: 'HEIGHT', value: 1, min: 0.1 },
+      { type: 'input_value', name: 'RADIUS', check: 'JSValue' },
+      { type: 'input_value', name: 'HEIGHT', check: 'JSValue' },
       { type: 'field_colour', name: 'COLOR', colour: '#f59e0b' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1249,10 +1279,11 @@ export const gameThreeDBlocks = [
     args0: [
       { type: 'field_input', name: 'NAME', text: 'chao' },
       { type: 'field_input', name: 'WORLD', text: 'cena' },
-      { type: 'field_number', name: 'W', value: 10, min: 0.1 },
-      { type: 'field_number', name: 'D', value: 10, min: 0.1 },
+      { type: 'input_value', name: 'W', check: 'JSValue' },
+      { type: 'input_value', name: 'D', check: 'JSValue' },
       { type: 'field_colour', name: 'COLOR', colour: '#67c240' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1264,10 +1295,11 @@ export const gameThreeDBlocks = [
     args0: [
       { type: 'field_input', name: 'NAME', text: 'anel' },
       { type: 'field_input', name: 'WORLD', text: 'cena' },
-      { type: 'field_number', name: 'RADIUS', value: 0.5, min: 0.1 },
-      { type: 'field_number', name: 'TUBE', value: 0.2, min: 0.01 },
+      { type: 'input_value', name: 'RADIUS', check: 'JSValue' },
+      { type: 'input_value', name: 'TUBE', check: 'JSValue' },
       { type: 'field_colour', name: 'COLOR', colour: '#a78bfa' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1344,8 +1376,9 @@ export const gameThreeDBlocks = [
     message0: 'Transparência de %1 = %2 (0 a 1)',
     args0: [
       { type: 'field_input', name: 'OBJ', text: 'objeto' },
-      { type: 'field_number', name: 'OPACITY', value: 1, min: 0, max: 1 },
+      { type: 'input_value', name: 'OPACITY', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1393,8 +1426,9 @@ export const gameThreeDBlocks = [
     args0: [
       { type: 'field_input', name: 'WORLD', text: 'cena' },
       { type: 'field_colour', name: 'COLOR', colour: '#ffffff' },
-      { type: 'field_number', name: 'INTENSITY', value: 0.6, min: 0, max: 4 },
+      { type: 'input_value', name: 'INTENSITY', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: EVENT_C,
@@ -1407,8 +1441,9 @@ export const gameThreeDBlocks = [
     args0: [
       { type: 'field_input', name: 'WORLD', text: 'cena' },
       { type: 'field_colour', name: 'COLOR', colour: '#fff8e1' },
-      { type: 'field_number', name: 'INTENSITY', value: 0.9, min: 0, max: 4 },
+      { type: 'input_value', name: 'INTENSITY', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: EVENT_C,
@@ -1420,11 +1455,12 @@ export const gameThreeDBlocks = [
     args0: [
       { type: 'field_input', name: 'WORLD', text: 'cena' },
       { type: 'field_colour', name: 'COLOR', colour: '#ffd27f' },
-      { type: 'field_number', name: 'INTENSITY', value: 1, min: 0, max: 8 },
-      { type: 'field_number', name: 'X', value: 0 },
-      { type: 'field_number', name: 'Y', value: 2 },
-      { type: 'field_number', name: 'Z', value: 0 },
+      { type: 'input_value', name: 'INTENSITY', check: 'JSValue' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: EVENT_C,
@@ -1436,9 +1472,10 @@ export const gameThreeDBlocks = [
     args0: [
       { type: 'field_input', name: 'WORLD', text: 'cena' },
       { type: 'field_colour', name: 'COLOR', colour: '#9ca3af' },
-      { type: 'field_number', name: 'NEAR', value: 1, min: 0 },
-      { type: 'field_number', name: 'FAR', value: 30, min: 0 },
+      { type: 'input_value', name: 'NEAR', check: 'JSValue' },
+      { type: 'input_value', name: 'FAR', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: EVENT_C,
@@ -1496,10 +1533,11 @@ export const gameThreeDBlocks = [
     args0: [
       { type: 'field_input', name: 'ORIGINAL', text: 'modelo' },
       { type: 'field_input', name: 'SWARM', text: 'enxame' },
-      { type: 'field_number', name: 'X', value: 0 },
-      { type: 'field_number', name: 'Y', value: 0 },
-      { type: 'field_number', name: 'Z', value: 0 },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: '#f472b6',
@@ -1535,8 +1573,8 @@ export const gameThreeDBlocks = [
     message0: 'No enxame %1, tirar o que saiu de %2 a %3 no eixo %4',
     args0: [
       { type: 'field_input', name: 'SWARM', text: 'enxame' },
-      { type: 'field_number', name: 'MIN', value: -20 },
-      { type: 'field_number', name: 'MAX', value: 20 },
+      { type: 'input_value', name: 'MIN', check: 'JSValue' },
+      { type: 'input_value', name: 'MAX', check: 'JSValue' },
       {
         type: 'field_dropdown',
         name: 'AXIS',
@@ -1547,6 +1585,7 @@ export const gameThreeDBlocks = [
         ],
       },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: '#f472b6',
@@ -1556,9 +1595,10 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_play_note',
     message0: 'Tocar nota %1 Hz por %2 ms',
     args0: [
-      { type: 'field_number', name: 'FREQ', value: 440, min: 20, max: 8000 },
-      { type: 'field_number', name: 'MS', value: 200, min: 10 },
+      { type: 'input_value', name: 'FREQ', check: 'JSValue' },
+      { type: 'input_value', name: 'MS', check: 'JSValue' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: '#f472b6',
@@ -1597,6 +1637,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     colour: C,
     types: [
       'sz_g3d_create_scene',
+      'sz_g3d_create_fullscreen_scene',
       'sz_g3d_set_background',
       'sz_g3d_set_camera',
       'sz_g3d_create_box',
@@ -1800,8 +1841,82 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   },
 ]
 
+// Cada sub-categoria recebe um TOM do amarelo da categoria (derivado da base C por
+// categoryShades) — sobrepõe os consts/hex dos SUBCATS, inclusive o "Enxames & som"
+// que estava com ROSA hardcoded (#f472b6) e fugia da família amarela.
+const SUBCAT_SHADES = categoryShades(C, SUBCATS.length)
+SUBCATS.forEach((sc, i) => {
+  sc.colour = SUBCAT_SHADES[i] ?? C
+})
+// Cor = navegação: pinta cada bloco com o TOM da sua sub-categoria, sobrepondo o
+// const usado na definição — sem isto o bloco não seguia a cor do seu grupo
+// (game-2d já fazia; o game-3d não tinha este loop).
+const COLOUR_BY_TYPE = new Map<string, string>(
+  SUBCATS.flatMap((sc) => sc.types.map((t) => [t, sc.colour] as const)),
+)
+for (const b of gameThreeDBlocks) {
+  const colour = COLOUR_BY_TYPE.get(b.type)
+  if (colour) b.colour = colour
+}
+
 const CATEGORIZED = new Set(SUBCATS.flatMap((sc) => sc.types))
 const leftover = gameThreeDBlocks.map((b) => b.type).filter((t) => !CATEGORIZED.has(t))
+
+const numShadow = (value: number) => ({ shadow: { type: 'sz_val_number', fields: { NUM: value } } })
+
+/**
+ * Sombras dos soquetes de valor do Jogo 3D na paleta (espelho do `G2D_SOCKET_SHADOWS`):
+ * tipo do bloco → { input → sombra de número editável }. Faz o oval já vir com o
+ * valor padrão preenchido ao arrastar da paleta. Cresce a cada campo convertido.
+ */
+const G3D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
+  sz_g3d_create_box: { SIZE: numShadow(1) },
+  sz_g3d_create_sphere: { RADIUS: numShadow(0.5) },
+  sz_g3d_create_block: { W: numShadow(10), H: numShadow(0.5), D: numShadow(50) },
+  sz_g3d_create_cylinder: { RADIUS: numShadow(0.5), HEIGHT: numShadow(1) },
+  sz_g3d_create_cone: { RADIUS: numShadow(0.5), HEIGHT: numShadow(1) },
+  sz_g3d_create_plane: { W: numShadow(10), D: numShadow(10) },
+  sz_g3d_create_torus: { RADIUS: numShadow(0.5), TUBE: numShadow(0.2) },
+  sz_g3d_control_keys: { SPEED: numShadow(0.05) },
+  sz_g3d_move_in_circle: { RADIUS: numShadow(7), SPEED: numShadow(0.02) },
+  sz_g3d_slide_between: { MIN: numShadow(-5), MAX: numShadow(5), SPEED: numShadow(0.05) },
+  sz_g3d_spin: { SPEED: numShadow(0.03) },
+  sz_g3d_move_towards: {
+    X: numShadow(0),
+    Y: numShadow(0),
+    Z: numShadow(0),
+    FACTOR: numShadow(0.1),
+  },
+  sz_g3d_body: { GRAVITY: numShadow(-0.01) },
+  sz_g3d_platformer_controls: { SPEED: numShadow(0.08), JUMP: numShadow(0.18) },
+  sz_g3d_fps_controls: { SPEED: numShadow(0.08) },
+  sz_g3d_third_person_camera: { DIST: numShadow(6), HEIGHT: numShadow(3) },
+  sz_g3d_set_fov: { DEG: numShadow(60) },
+  sz_g3d_set_opacity: { OPACITY: numShadow(1) },
+  sz_g3d_add_ambient_light: { INTENSITY: numShadow(0.6) },
+  sz_g3d_add_sun_light: { INTENSITY: numShadow(0.9) },
+  sz_g3d_add_point_light: {
+    INTENSITY: numShadow(1),
+    X: numShadow(0),
+    Y: numShadow(2),
+    Z: numShadow(0),
+  },
+  sz_g3d_set_fog: { NEAR: numShadow(1), FAR: numShadow(30) },
+  sz_g3d_run_enemies: { EVERY: numShadow(200), SPEED: numShadow(0.02) },
+  sz_g3d_add_row: { ROW: numShadow(1), SPEED: numShadow(150) },
+  sz_g3d_generate_rows: { COUNT: numShadow(20) },
+  sz_g3d_move_across: { SPEED: numShadow(0.1), MIN: numShadow(-10), MAX: numShadow(10) },
+  sz_g3d_spawn_in_swarm: { X: numShadow(0), Y: numShadow(0), Z: numShadow(0) },
+  sz_g3d_prune_swarm: { MIN: numShadow(-20), MAX: numShadow(20) },
+  sz_g3d_play_note: { FREQ: numShadow(440), MS: numShadow(200) },
+  sz_g3d_is_near: { DIST: numShadow(2) },
+  sz_g3d_aim_ahead: { DIST: numShadow(100) },
+}
+
+const toolboxBlock = (type: string) => {
+  const inputs = G3D_SOCKET_SHADOWS[type]
+  return inputs ? { kind: 'block' as const, type, inputs } : { kind: 'block' as const, type }
+}
 
 export const gameThreeDToolboxCategory: ExtensionToolboxCategory = {
   kind: 'category',
@@ -1812,7 +1927,7 @@ export const gameThreeDToolboxCategory: ExtensionToolboxCategory = {
       kind: 'category' as const,
       name: sc.name,
       colour: sc.colour,
-      contents: sc.types.map((type) => ({ kind: 'block' as const, type })),
+      contents: sc.types.map(toolboxBlock),
     })),
     ...(leftover.length
       ? [
@@ -1820,7 +1935,7 @@ export const gameThreeDToolboxCategory: ExtensionToolboxCategory = {
             kind: 'category' as const,
             name: 'Mais',
             colour: C,
-            contents: leftover.map((type) => ({ kind: 'block' as const, type })),
+            contents: leftover.map(toolboxBlock),
           },
         ]
       : []),

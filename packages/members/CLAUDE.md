@@ -55,8 +55,9 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > `coin_events` + carteira em `gamification_profiles`), `0019` (avatar:
 > `avatar_configs`/`avatar_inventory`), `0020` (quarto: `room_state`/`room_inventory`),
 > `0021` (missões + freeze/férias: `mission_claims` + `streak_freezes`/
-> `freeze_granted_month`/`vacation_from`/`vacation_to`) e `0022` (ligas semanais:
-> `league_membership`) — **aplicadas** no Postgres compartilhado (`sistemazero`, :5433).
+> `freeze_granted_month`/`vacation_from`/`vacation_to`), `0022` (ligas semanais:
+> `league_membership`) e `0023` (avatar 3D: `avatar_configs.photo_url` — a foto/snapshot)
+> — **aplicadas** no Postgres compartilhado (`sistemazero`, :5433).
 
 ## Conceito central (decisões travadas com o usuário)
 
@@ -326,6 +327,11 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   `splitRequestedRefs` mantém as pedidas (trim/não-vazias, teto 50) e as de formato
   inválido recebem `false` EXPLÍCITO (em vez de sumir — chamador não distinguia "negado"
   de "descartado"); só as válidas (`parseAccessRefs`, regex de slug) vão ao motor/DB.
+  **Equipe interna = passe livre de PRODUTO** (06/2026): se `isPrivilegedActor(headers)`
+  (`superadmin`/`admin`/`staff`), a rota curto-circuita e devolve TODAS as refs pedidas como
+  `true` (sem tocar matrícula) — é o que destrava o **Estúdio Completo** (`estudio-completo`)
+  p/ a equipe testar o Kids sem comprar, espelhando a chave-mestra virtual dos cursos. Travado
+  por `tests/integration/privileged-coins.test.ts`.
 - **`PUT /members/courses/:slug/lessons/:lessonId/position`** (aluno): salva a posição
   do vídeo — body `{positionSeconds: int 0..100000}` (TypeBox), valida matrícula + aula
   pertencer ao curso; upsert em `lesson_progress`. Devolve `{lessonId, positionSeconds,
@@ -389,7 +395,7 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
 > mudou regra de XP/moeda/missão/streak/loja? Atualize o manual também.
 >
 > A expansão 06/2026 (6 fases) somou ao núcleo XP/streak/badges os subsistemas:
-> **Zappy Coins** (moeda, migration `0018`), **avatar** DiceBear (`0019`), **quarto**
+> **Zappy Coins** (moeda, migration `0018`), **avatar** 3D (`0019`+`0023`), **quarto**
 > virtual (`0020`), **missões** diárias/semanais + **streak-freeze/férias** (`0021`) e
 > **ligas semanais** (`0022`), além de **badges de maestria do Estúdio** + **perfil
 > público com `getRanking`**.
@@ -475,10 +481,19 @@ estender o streak). Atividade ANTERIOR às migrations não tem marco retroativo
   Gastos via `spendCoins` (`spend_cosmetic`/`spend_room`/`spend_streak_freeze`) com
   `idempotencyKey` — saldo insuficiente → `InsufficientCoinsError` (402). A verdade do saldo é
   `gamification_profiles.coin_balance` (`coin_events.balanceAfter` é auditoria).
+  **Equipe interna = moedas VIRTUAIS ilimitadas** (06/2026): `isPrivilegedActor` propagado como
+  `privileged` às lojinhas (`Buy{AvatarPart,RoomItem,StreakFreeze}Service`) → `amount/price: 0`
+  no `spendCoins`/`buyStreakFreeze` (concede o item SEM debitar; saldo real fica 0, nada no
+  ranking) e as leituras (`get-avatar`/`get-room`/`get-gamification`) marcam `balanceUnlimited`/
+  `coins.unlimited` → a UI kids mostra ∞. Espelho da chave-mestra virtual; ver `docs/gamificacao.md`
+  §4 e `tests/integration/privileged-coins.test.ts`.
 - **Streak-freeze + férias** (migration `0021`, colunas `streak_freezes`/
   `freeze_granted_month`/`vacation_from`/`vacation_to` em `gamification_profiles`): a sequência
   só QUEBRA quando NEM férias NEM protetores cobrem o gap. Janela de férias é INCLUSIVA
-  `[from, to]` (`setVacation`); **+1 freeze GRÁTIS por mês civil** (lazy/idempotente na 1ª
+  `[from, to]` (`setVacation` — valida DIA DE CALENDÁRIO real, não só o formato `\d{4}-\d{2}-\d{2}`:
+  full review 06/2026, `2026-02-30`/`2026-13-45` faziam `inclusiveDaysBetween` virar `NaN` →
+  `NaN > 30` falso → o teto de 30 dias era bypassado e a janela bizarra persistia como "férias
+  quase eternas"); **+1 freeze GRÁTIS por mês civil** (lazy/idempotente na 1ª
   atividade do mês via `freeze_granted_month`) — concedido **só quando há espaço no teto**
   e o mês **só é marcado quando o grátis ENTRA** (06/2026): aluno no teto (5) na 1ª
   atividade não tem o mês queimado — o grátis continua disponível numa atividade futura em
@@ -486,17 +501,52 @@ estender o streak). Atividade ANTERIOR às migrations não tem marco retroativo
   benefício do mês). Compra de freeze via `buyStreakFreeze`
   (`STREAK_FREEZE_PRICE`, teto `MAX_STREAK_FREEZES` = 5). `advanceStreak`/`effectiveStreak`/
   `freezesNeeded`/`inVacation` no domain puro consomem/projetam os protetores; `effectiveStreak`
-  é o streak de EXIBIÇÃO (projeta 0 quando a cobertura acabou, sem zerar o persistido).
-- **Avatar** DiceBear (migration `0019`, `avatar_configs`/`avatar_inventory`): peças grátis ou
-  compradas com moedas; compra charge-first idempotente (`BuyAvatarPartService`, espelha o
-  quarto). Members é a fonte da verdade de existência/preço/posse; a apresentação vive no
-  community-kids. Cosmético puro.
+  é o streak de EXIBIÇÃO (projeta 0 quando a cobertura acabou, sem zerar o persistido) — usado
+  no `GET /gamification/me` E na área dos pais (`GetChildrenStatsService`, full review 06/2026:
+  antes mostrava o `streakCurrent` CRU, exibindo ao pai um streak "vivo" que já quebrou).
+  `freezesNeeded` conta os dias-perdidos não-cobertos APÓS o filtro de férias (gap > cap de
+  varredura = quebra), sem deixar uma janela de férias enorme "engolir" o cap.
+- **Avatar 3D** (migrations `0019` `avatar_configs`/`avatar_inventory` + `0023`
+  `avatar_configs.photo_url`): personagem por CATEGORIAS (`domain/avatar/avatar3d-catalog.ts`:
+  **14 categorias** — head/hair/eyes/eyebrows/nose/**faceDecor**/facialHair/glasses/hat/top/bottom/
+  **outfit**/shoes/accessory —, **~96 peças (89 com GLB + 7 "nenhum")**, paletas de COR por categoria,
+  defaults grátis, oclusão `hat→hair` + **`outfit→[top,bottom]`** (vestido/roupa única cobre as duas).
+  A categoria **`outfit` (Vestido)** veio da mineração do pack (mesma arte Quaternius CC0): vestido grátis
+  tintável (`outfit-01`) + 4 looks pagos, + cabelos longos `hair-08..11` — opções unissex/de menina (22/06).
+  **Aproveitamento TOTAL do pack (22/06):** auditoria por md5 achou que `eyes-09..12`/`eyebrow-07..10`/
+  `hair-09` eram BYTE-IDÊNTICOS a peças já existentes (re-apontados p/ a arte distinta Eyes/EyeBrow.001-004
+  + Hair.004); + peças novas (`head-04`, `beard-06/07`, `hat-07`, `shoes-03`, `acc-07/08`) e a categoria
+  nova **`faceDecor` (Pintura de Rosto)** — removível, SEM paleta (cor embutida, igual a hat/accessory):
+  `face-none`/`face-01..07` (pintura) + `face-08` (máscara). Só ficou de fora o sazonal PumpkinHead + o
+  corpo-base nu. `canonicalize`/`assert` são genéricos (iteram `AVATAR_CATEGORIES`) → categoria nova sem
+  código novo.
+  `AvatarConfig` v2 (`{version:2, style, slots: cat→{asset,color?}}` em `equipped` jsonb):
+  `canonicalize` TOLERANTE (config DiceBear legada/null → default 3D, sem migração) +
+  `assertEquippableConfig` ESTRITO (peça existe/categoria certa/grátis OU possuída + cor ∈
+  paleta). Cor é GRÁTIS (possuir a peça libera a paleta); compra de peça charge-first
+  idempotente (`BuyAvatarPartService`, `reason:'spend_cosmetic'`) — **ATÔMICA** (full review
+  06/2026): a posse é gravada na MESMA transação do débito via `spendCoins({grantInventory})`,
+  nunca cobra sem entregar; o grant roda também no caminho `ALREADY_SPENT` (recupera retry).
+  Idem o quarto (`BuyRoomItemService`). A FOTO (snapshot do canvas
+  3D) é a imagem do avatar em todo o app: o BFF sobe o PNG p/ o R2 e grava a URL via
+  **`PUT /members/avatar/photo`** (`SetAvatarPhotoService`, valida http(s)); `AvatarStateView`
+  traz `equipped`/`parts`/`palettes`/`hideGroups`/`removable`/`photoUrl`/`balance` e
+  `PublicProfileView` traz `avatarPhotoUrl`. Members é a fonte da verdade de existência/preço/
+  posse/paleta; a APRESENTAÇÃO (rótulo PT) vive no community-kids (`lib/avatar3d-catalog.ts`),
+  travada por `tests/unit/catalog-conformance.test.ts`. Cosmético puro; kids-only (v1). O
+  render 3D (GLB real — Quaternius CC0 via pack do WawaSensei — R3F) vive no community-kids; os
+  ids casam 1:1 com `public/avatar3d/parts/<id>.glb` — aqui é só o portão.
 - **Quarto virtual** (migration `0020`, `room_state` jsonb last-write-wins + `room_inventory`):
-  grade 12×8, tema de fundo + móveis/decoração/plantas/luzes posicionáveis + 1 pet. Sink
-  cosmético de moedas. `canonicalizeRoomState` (domain) é o ÚNICO portão — roda na leitura
-  (`GetRoomService`) E na escrita (`SaveRoomService`) e descarta o que não é possuído/não cabe;
-  compra via `BuyRoomItemService` (charge-first idempotente, `reason:'spend_room'`).
-  Endpoints BFF kids: `GET|PUT /api/members/room` + `POST /api/members/room/items/:id/buy`.
+  grade 12×8, tema + móveis/decoração/plantas/luzes posicionáveis + 1 pet. **Visual 3D no kids
+  (06/2026)** — o members ganhou catálogos À PARTE `ROOM_FLOORS` (pisos) e `ROOM_LIGHTINGS`
+  (iluminação/clima) + paleta `ROOM_WALL_PALETTE` (pintar paredes, grátis), e o estado JSONB ganhou
+  campos OPCIONAIS `placedItems[].rot` (0–3), `wallColors`, `floor`, `lighting` (SEM migração).
+  Sink cosmético de moedas. `canonicalizeRoomState` (domain) é o ÚNICO portão — leitura
+  (`GetRoomService`, que projeta `items/themes/floors/lightings`) E escrita (`SaveRoomService`):
+  descarta não-possuído/fora-da-grade (footprint GIRADO), `rot`→0..3, cor fora da paleta e piso/luz
+  não-possuído omitidos. Compra via `BuyRoomItemService` (`roomThing` resolve item/tema/piso/luz;
+  charge-first idempotente, `reason:'spend_room'`). DTO `RoomStateBody` + rota alargados p/ os campos
+  novos. Endpoints BFF kids: `GET|PUT /api/members/room` + `POST /api/members/room/items/:id/buy`.
 - **Missões diárias/semanais** (migration `0021`, `mission_claims`): estilo Duolingo,
   content-driven — catálogo EM CÓDIGO (`DAILY_MISSIONS` 5 / `WEEKLY_MISSIONS` 3 em
   `domain/gamification/missions.ts`; sem seed, igual badges). Atribuição DETERMINÍSTICA por
@@ -508,7 +558,11 @@ estender o streak). Atividade ANTERIOR às migrations não tem marco retroativo
   `claimMission` IDEMPOTENTE (UNIQUE user+audience+slug+período) que **REVALIDA a conclusão no
   servidor** (`count >= target`), credita XP direto no perfil + moedas COM o teto diário, reavalia
   badges de **poupador** se `lifetime_coins_earned` cruzar 300/1000, e **NÃO move o streak**.
-  `GET /members/gamification/missions/me` + `POST …/missions/:slug/claim`.
+  `GET /members/gamification/missions/me` + `POST …/missions/:slug/claim`. ⚠️ **O claim EXIGE
+  que a missão esteja ATRIBUÍDA ao perfil no período** (`assignDaily/WeeklyMissions`, full review
+  06/2026): o catálogo tem 8 missões mas o aluno só recebe 3+2; sem o guard, várias missões
+  compartilham `goalType` com alvos diferentes (`daily-aula` 1 × `daily-aulas-3` 3) e a não-oferecida
+  cujo alvo o aluno batesse era resgatável por POST direto (farm de XP sem teto) → `MISSION_NOT_FOUND`.
 - **Ligas semanais** (migration `0022`, `league_membership`): coorte competitiva semanal por
   audiência. (Detalhes de tiers/promoção/rebaixamento em `docs/gamificacao.md`.)
 - Sem backfill: histórico anterior ao deploy não gera XP retroativo (script manual se um
@@ -651,9 +705,9 @@ de vídeo/last-accessed — migration `0001`), `quiz_attempts` (histórico de qu
 migration `0002`), `course_ratings` (classificação do curso, UNIQUE user+course —
 migration `0004`), `processed_webhooks`, `studio_submissions` (entrega do Estúdio,
 migrations `0013`/`0016`) e a **gamificação**: `gamification_profiles`/`xp_events`/
-`user_badges` (`0009`–`0015`), `coin_events` (Zappy Coins, `0018`), `avatar_configs`/
-`avatar_inventory` (`0019`), `room_state`/`room_inventory` (`0020`), `mission_claims`
-(`0021`) e `league_membership` (ligas, `0022`).
+`user_badges` (`0009`–`0015`), `coin_events` (Zappy Coins, `0018`), `avatar_configs`
+(`0019` + `photo_url` no `0023`)/`avatar_inventory` (`0019`), `room_state`/`room_inventory`
+(`0020`), `mission_claims` (`0021`) e `league_membership` (ligas, `0022`).
 
 ## Sentry (monitoramento de erros)
 

@@ -2,7 +2,7 @@ import type { JSX } from 'react'
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { useShallow } from 'zustand/react/shallow'
-import { buildWorkspaceStateFromIR, isBlocksStateEmpty, layoutFromBlocksState } from '#blockly'
+import { buildWorkspaceStateFromIR, isBlocksStateEmpty } from '#blockly'
 import { type InstalledExtension, t } from '#core'
 import type { GeneratedFiles, SourceMap } from '#generators'
 import { buildCssSourceMapFromText } from '#generators'
@@ -304,19 +304,12 @@ export function BridgeMode(): JSX.Element {
         applyProjectStateRef.current({ ir: { ...currentIR, htmlShell: result.ir.htmlShell } })
         return
       }
-      // Preserva o layout das colunas (várias pilhas do mesmo tipo) derivando-o
-      // do blocksState atual (lido fresco do store, evitando closure obsoleta) e
-      // re-aplicando ao workspace reconstruído.
-      const layout = layoutFromBlocksState(currentProject?.blocksState ?? null)
-      if (!layout) {
-        // Sem layout, `buildWorkspaceStateFromIR` aplica defaults (x = 32, 452, 872).
-        // Avisar aqui torna visível quando o reverse-parse é a causa do "layout
-        // volta às colunas" — útil pra distinguir do drop pelo sanitizer.
-        console.warn('[sz] reverse-parse rebuild sem layout — posições serão resetadas.')
-      }
+      // Modelo CONTAINER: o reverse-parse reconstrói os 3 frames (🧱 Estrutura /
+      // 🎨 Aparência / ⚙️ Comportamento) a partir da IR. Blocos soltos (rascunho)
+      // não estão na IR, então não voltam — esperado ao sincronizar pelo código.
       applyProjectStateRef.current({
         ir: result.ir,
-        blocksState: buildWorkspaceStateFromIR(result.ir, { layout }),
+        blocksState: buildWorkspaceStateFromIR(result.ir),
       })
     }
     worker.onerror = (event) => {

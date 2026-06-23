@@ -1,4 +1,4 @@
-import { CATEGORY_COLORS } from '../theme'
+import { CATEGORY_COLORS, categoryShades } from '../theme'
 import type { BlockDefinition } from './types'
 
 const C = CATEGORY_COLORS.html
@@ -322,7 +322,7 @@ export const HTML_BLOCKS: BlockDefinition[] = [
 export const HTML_GROUPS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '📝 Texto',
-    colour: '#22d3ee',
+    colour: '#1fb4d2',
     types: [
       'sz_html_h1',
       'sz_html_h2',
@@ -336,7 +336,7 @@ export const HTML_GROUPS: { name: string; colour: string; types: string[] }[] = 
   },
   {
     name: '📦 Estrutura',
-    colour: '#38bdf8',
+    colour: '#1593b0',
     types: [
       'sz_html_div',
       'sz_html_header',
@@ -346,20 +346,27 @@ export const HTML_GROUPS: { name: string; colour: string; types: string[] }[] = 
       'sz_html_footer',
     ],
   },
-  { name: '📋 Listas', colour: '#2dd4bf', types: ['sz_html_ul', 'sz_html_li'] },
+  { name: '📋 Listas', colour: '#2cc3dd', types: ['sz_html_ul', 'sz_html_li'] },
   {
     name: '🖼️ Mídia & Links',
-    colour: '#60a5fa',
+    colour: '#128bab',
     types: ['sz_html_image', 'sz_html_link'],
   },
   {
     name: '✏️ Formulário',
-    colour: '#818cf8',
+    colour: '#21a9c6',
     types: ['sz_html_form', 'sz_html_input', 'sz_html_textarea', 'sz_html_button', 'sz_html_label'],
   },
 ]
 
-// Cor = navegação: pinta cada bloco com a cor do seu grupo.
+// IDENTIDADE: cada sub-grupo recebe um TOM da cor base da categoria (HTML),
+// derivado claro→escuro por `categoryShades` — as cores nos literais de
+// HTML_GROUPS acima são só placeholders; o valor real é atribuído aqui.
+const HTML_SHADES = categoryShades(CATEGORY_COLORS.html, HTML_GROUPS.length)
+HTML_GROUPS.forEach((g, i) => {
+  g.colour = HTML_SHADES[i] ?? CATEGORY_COLORS.html
+})
+// Pinta cada bloco com o tom do seu grupo (cor = navegação + categoria).
 const HTML_COLOUR_BY_TYPE = new Map<string, string>(
   HTML_GROUPS.flatMap((g) => g.types.map((t) => [t, g.colour] as const)),
 )

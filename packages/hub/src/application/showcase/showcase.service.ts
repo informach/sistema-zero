@@ -167,6 +167,11 @@ export class ShowcaseService {
     return { thread: toThreadView(thread), deduped }
   }
 
+  /** Link público `/jogar/:playId` só vale enquanto o post do Mural segue visível. */
+  async isPlayable(playId: string): Promise<boolean> {
+    return this.threads.hasVisibleShowcasePlayId(playId)
+  }
+
   /**
    * Publicação KID-DRIVEN a partir do botão "Compartilhar" do Estúdio: a criança
    * escreve a DESCRIÇÃO (rascunho da IA, editado) e o projeto ganha um LINK PÚBLICO

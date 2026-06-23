@@ -129,7 +129,11 @@ gate é resolvido no SERVIDOR: `app/(app)/estudio/page.tsx` chama
 (recado gentil, mascote `thinking`, "peça a um responsável"; sem link de venda — kids não tem funil);
 COM acesso → `StudioFullClient` (o editor pesado nem carrega p/ quem não comprou); **status ≠ 200
 (gateway/token soluçou) → `KidsStudioUnavailable` ("tente de novo" + `router.refresh()`)** — não mostrar
-"ainda não liberado" a quem JÁ comprou num erro transitório (mentiria que não tem acesso). `studio-full-client.tsx` (`'use client'`, import dinâmico do package no
+"ainda não liberado" a quem JÁ comprou num erro transitório (mentiria que não tem acesso).
+**Passe livre da EQUIPE (06/2026):** superadmin/admin/staff acessam o Estúdio Completo SEM comprar —
+a rota `GET /members/access` curto-circuita `estudio-completo` p/ `true` quando `isPrivilegedActor`
+(o `role` da CONTA sobrevive na sessão de perfil). É o que conserta "o admin tá sem acesso ao
+estúdio". `studio-full-client.tsx` (`'use client'`, import dinâmico do package no
 effect — Monaco/Blockly/IndexedDB não rodam no SSR) hospeda a navegação **lista ⇄ editor** (estado
 local; o package não tem router) com `<ProjectList>` + `<StudioEditor persistence="local">` — recursos
 CLÁSSICOS (NÃO passa `features`: o `StudioEditor` já vem com terminal/IA/profissional OFF → sem
@@ -137,8 +141,14 @@ COOP/COEP, sem conflito com os vídeos das aulas). O botão **"Compartilhar"** u
 próprio → `/api/studio/describe` + **`/api/studio/publish-standalone`** (shim sobre
 `shell.routes.studioPublishStandalone`; o hub re-valida a posse do produto). ⚠️ **Persistência LOCAL
 por NAVEGADOR (v1):** projetos no IndexedDB do aparelho — perfis irmãos no MESMO navegador compartilham
-a lista (acesso é por CONTA; isolamento por perfil = follow-up). Largura limitada ao `max-w-5xl` do
-layout; altura `calc(100dvh-8rem)` p/ ocupar o máximo. `api/studio/publish-standalone` fica FORA do
+a lista (acesso é por CONTA; isolamento por perfil = follow-up). **LARGURA TOTAL:** o `MainContainer`
+(`components/kids/main-container.tsx`, usado no `(app)/layout`) tira o `max-w-5xl` na rota `/estudio` (IDE
+quer todo o espaço); demais páginas seguem com `max-w-5xl`. **SEGUE o tema da comunidade:** o
+`studio-full-client` lê `useTheme().resolvedTheme` (next-themes) e passa `theme` ao `<StudioEditor>` E ao
+`<ProjectList>` — assim o Estúdio não tem toggle próprio nem destoa do app (sem `theme`, o Studio mostraria
+o toggle e poderia ficar em tema diferente da comunidade). ⚠️ a **CSP** (`next.config.ts`) inclui
+**`script-src … data:`**: o preview injeta o script.js do aluno como `<script src="data:…">` num iframe
+`srcdoc`, que HERDA a CSP do pai (só RESTRINGE) — sem `data:` o preview do estúdio/bloco não executa. `api/studio/publish-standalone` fica FORA do
 matcher do proxy (multipart) — coberto pelo prefixo `api/studio/publish` no negative-lookahead.
 
 ### Hub/fórum (compartilhado)
@@ -233,23 +243,96 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   globals). Não-clicável. ⚠️ o label "+25 XP" do baú aberto espelha o XP_VALUES do members.
 - `streak-widget.tsx` — sidebar (cheio) + `MobileTopbar` (compact): fogo aceso (vermelho
   `--sz-hot`) quando `activeToday` + XP total. O layout busca via `Promise.all` com o avatar.
+  **Equipe (passe livre):** quando `coins.unlimited` (members marca p/ superadmin/admin/staff), o
+  HUD de moedas mostra **∞** no lugar do número — aqui, no `configurator.tsx` (avatar) e no
+  `room-builder.tsx` (quarto), que também leem `balanceUnlimited`. Compras da equipe voltam grátis
+  (`unlimited:true`). Ver `docs/gamificacao.md` §4.
 - `streak-card.tsx` — card da home (só com cursos liberados E gamificação disponível).
 - `badge-showcase.tsx` — vitrine do perfil: catálogo completo, bloqueada = tracejada+cadeado,
   desbloqueada = cor da marca + data. Inclui as **badges de MAESTRIA** da expansão
   (`studio-first`/`-master-3`/`-master-10` do Estúdio; `coins-saver-300`/`-1000` de poupador de
   Zappy) — copy/ícone em `badges.ts`, detecção no members.
-- **Avatar (DiceBear) — `kids-avatar.tsx` + `avatar-editor.tsx`:** retrato customizável; o editor
-  monta/compra peças cosméticas com moedas **Zappy** (`POST /api/members/avatar/parts/:id/buy`,
-  cobrança charge-first idempotente no members). O `kids-avatar.tsx` é o renderer reusado em todo
-  lugar (menu, quarto, perfil público, cards). Catálogo espelhado: members = existência/preço/posse,
-  kids = apresentação.
-- **Quarto virtual — `room/room-builder.tsx` + `room/room-canvas.tsx`** (rota `/quarto`): sink
-  cosmético das Zappy; grade 12×8, tema de fundo + móveis/decoração/plantas/luzes arrastáveis + 1
-  pet animado. `GET/PUT /api/members/room` (estado last-write-wins) + `POST
-  /api/members/room/items/:id/buy`. O **members é o único portão** (`canonicalizeRoomState` descarta
-  o não-possuído/fora-da-grade na leitura E na escrita); o `room-catalog.ts` do kids é só
-  apresentação (labelPt/emoji/anim/bg) e **DEVE casar por id + w/h** com o do members. ⚠️ arcades no
-  quarto foram DESCARTADOS — cosmético puro, sem efeito de jogo.
+- **Avatar 3D — `components/kids/avatar3d/*` (rota `/meu-avatar`, tela cheia IMERSIVA fora do
+  grupo `(app)`):** configurador de personagem 3D (substituiu o DiceBear). `configurator-client.tsx`
+  (`dynamic ssr:false` — three/fiber/drei só no cliente, espelha o `studio-full-client`) → `configurator.tsx`
+  (estado + loja por categoria + 2 modos: **Personalizar** ⇄ **Cabine de fotos**) + `avatar-scene.tsx`
+  (`<Canvas>` R3F) + `avatar-rig.tsx` + `asset-part.tsx` + `camera-manager.tsx` + `thumb-canvas.tsx`.
+  **Experiência fiel ao WawaSensei (simplificada p/ a arquitetura DELE — 06/2026):** a câmera é drei
+  **`CameraControls`** (`camera-manager.tsx`) com **posição FIXA determinística** (constantes `CAM_POS`/
+  `CAM_TARGET`) — **NÃO mede mais o bounding box** (medir dependia do timing de carga → enquadrava diferente
+  em refresh frio vs. navegação quente, "às vezes colando no painel"; agora os pés ficam em y=0 pelo
+  auto-stand e a moldura fixa enquadra IGUAL sempre). **CORPO INTEIRO nos DOIS modos** — a Cabine de fotos
+  **NÃO aproxima** (o WawaSensei também não: o zoom por-categoria dele só roda em CUSTOMIZE), só fica um tico
+  mais LONGE (`CAM_POS_PHOTO`) pra a criança VER a pose. Reenquadra em `[mode, ready]` (recentraliza de
+  frente ao trocar de modo; trocar peça/cor NÃO mexe a câmera). **Layout: a `<Canvas>` ocupa só a faixa
+  `flex-1` ENTRE a barra de cima e o painel de baixo** (não mais `absolute inset-0`) → "centrado na cena" =
+  "centrado na área visível, descontando a configuração" — robusto a qualquer tela/modo, em refresh OU
+  navegação. O personagem fica em pé UMA vez (pés no pódio; NÃO re-fica-em-pé a cada troca). A **Cabine de
+  fotos** dá poses (`Poses.glb`: Idle/Chill/Cool/Punch/Ninja/King/Busy) + órbita LIVRE pra posicionar antes
+  da foto (girar é só pra ADMIRAR — a foto sai de frente). **Captura (`SnapshotBridge`) = câmera própria**
+  (`position.set`+`lookAt` explícitos, igual nos dois p/ ser confiável) p/ caber no quadrado central:
+  "Salvar" força RETRATO de rosto (imagem do avatar sempre boa); "Tirar foto" usa o CORPO INTEIRO de FRENTE,
+  afastado o bastante p/ cabeça+pés caberem no quadrado (distância por altura×proporção da tela). ⚠️ tentar
+  "respeitar a órbita" via `getWorldDirection`/`quaternion.copy` saiu **vazio/sem cabeça** — NÃO refazer. A grade mostra **MINIATURAS = PNG estático**
+  (`thumb-canvas.tsx` `<AvatarThumb>`): **(1)** primeiro o **PNG PRÉ-GERADO e commitado** em
+  `public/avatar3d/thumbs/<id>.png` → `<img>`, **ZERO WebGL** (igual ao WawaSensei). Gera com
+  **`bun run gen:avatar-thumbs`** (`scripts/gen-avatar-thumbs.ts`: sobe `Bun.serve` com uma página geradora
+  + os GLBs, ABRE no SEU navegador real — WebGL confiável, sem headless frágil —, renderiza cada peça com o
+  MESMO `skinnedMesh`+esqueleto e faz POST do PNG, que o script grava no disco; commite os PNGs). **(2)**
+  faltando o PNG, FALLBACK: renderiza ao vivo 1× num `<Canvas>` (esqueleto **CLONADO** + material
+  **CLONADO/recolorido**, senão a cor vazaria pro avatar; drei **`<Bounds>`** enquadra), **captura** e troca
+  pra `<img>` (cache de sessão `thumbCache`). "nenhum" = ✕. ⚠️ um renderer OFFSCREEN próprio saía EM BRANCO
+  em 3 tentativas → por isso PNG estático + fallback que reusa o render que FUNCIONA. Trocar peça NÃO pisca: **`<Suspense>` POR peça** no `avatar-rig` + animação de
+  "cabine" (encolhe/gira/flutua + feixe) dirigida por um `loading` com **duração mínima** (50ms/~800ms sobre
+  `useProgress`, como o `Experience.jsx`) — só troca de ASSET gira (cor muta material in-place, instantâneo).
+  `randomize` ("Surpreenda-me") sorteia peça grátis/possuída + cor. ⚠️ **Personagem GLB REAL (Quaternius CC0, via pack do WawaSensei):**
+  1 esqueleto compartilhado (`base/Armature.glb`, ossos `mixamorig:*`) + 1 GLB skinned por peça equipada
+  (`useGLTF` → `<skinnedMesh skeleton={compartilhado}>`); material `Color_*` recebe a cor da peça, `Skin_*`
+  usa o material de pele compartilhado (cor do slot `head`); oclusão `hat→hair`; poses opcionais do
+  `base/Poses.glb`. **GLB SIMPLES (sem Draco/KTX2/meshopt → sem WASM, CSP-safe)** — a `<Canvas>` precisa de
+  `preserveDrawingBuffer` (snapshot) e os assets vivem em **`public/avatar3d/{parts,base}/`** (~13MB,
+  same-origin, `connect-src 'self'`; ids 1:1 com o catálogo). ⚠️ É a 1ª carga de GLB sob a CSP — QA no
+  navegador deve confirmar **zero `.wasm`** + montagem/skinning. Ao
+  **Salvar**: `PUT /api/members/avatar` (config 3D) + captura o canvas (`preserveDrawingBuffer` + `gl.render`
+  forçado → `toBlob` 512²) e sobe via **`POST /api/members/avatar/snapshot`** (multipart, FORA do matcher
+  do proxy — shim sobre `shell.routes.avatarSnapshot`, R2 namespace `avatar3d`). A **FOTO** (snapshot) é o
+  avatar em TODO lugar: `kids-avatar.tsx` virou só um `<img src={photoUrl}>` (zero WebGL fora do configurador
+  — avatares aparecem em listas/rankings) + personagem padrão SVG inline quando sem foto. O `photoUrl` flui
+  de `getAvatarReadonly().photoUrl` (chrome/perfil/quarto) e `PublicProfileDTO.avatarPhotoUrl` (perfil
+  público). Catálogo espelhado por id (`lib/avatar3d-catalog.ts`, PURO): members = existência/preço/posse/
+  paleta, kids = apresentação (travado pela conformância do members). **Pack minerado por COMPLETO (22/06):**
+  14 categorias — inclui **`faceDecor` (Pintura de Rosto)**: removível, SEM paleta (cor embutida, igual a
+  hat/accessory), `face-01..07` (pintura) + `face-08` (máscara). Auditoria por md5 pegou 9 GLBs duplicados
+  (`eyes-09..12`/`eyebrow-07..10`/`hair-09`) e re-apontou p/ a arte distinta; só PumpkinHead (sazonal) e o
+  corpo-base nu ficaram de fora. **Toda peça/categoria nova → re-rode `bun run gen:avatar-thumbs`.**
+  **Sem item no `nav.ts`** — acessado
+  pelo CLIQUE no avatar em `/perfil` (`profile-client` → `router.push('/meu-avatar')`); `/meu-avatar`
+  em `protectedPrefixes` + `api/members/avatar/snapshot` no negative-lookahead do matcher.
+- **Quarto virtual 3D (06/2026) — `room/room-canvas.tsx` (wrapper `dynamic ssr:false`) +
+  `room/room-canvas-3d.tsx` (`<Canvas>` react-three-fiber) + `room/room-builder.tsx`** (rota
+  `/quarto`): sink cosmético das Zappy. Cena ISOMÉTRICA low-poly construída EM CÓDIGO
+  (`furniture-models.tsx`/`prims.tsx`, sem GLTF) — paredes PINTÁVEIS (`walls.tsx`), pisos
+  (`floor.tsx`, CanvasTexture), iluminação/clima dia/noite/neon/festa (`room-lights.tsx`), móveis
+  que GIRAM e pet 3D (`pet-3d.tsx`). Câmera ortográfica FIXA; `frameloop` demand → always só com
+  pet/festa, gateado por `useReducedMotion`; drag por raycast no plano y=0 (robusto a oclusão);
+  `coords.ts` é PURO/testado (`tests/room-coords.test.ts`). `three`/RTF/drei já vinham (livro 3D).
+  `GET/PUT /api/members/room` + `POST /api/members/room/items/:id/buy`. O **members é o único portão**
+  (`canonicalizeRoomState` na leitura E na escrita); o `room-catalog.ts` do kids é só apresentação
+  (item: labelPt/emoji + w/h; pisos `ROOM_FLOOR_INFO`; clima `LIGHTING_PRESETS`; paleta de paredes
+  GRÁTIS `ROOM_WALL_PALETTE`; presets de tema `THEME_PRESETS`; `resolveRoomAppearance` mistura
+  tema+overrides) e **DEVE casar por id** com o members (conformância). Item posicionável NOVO precisa
+  de um `case` em `furniture-models.tsx` (senão cai na caixa neutra). Estado novo (JSONB, sem migração):
+  `placedItems[].rot`, `wallColors`, `floor`, `lighting`. Câmera com **órbita REDUZIDA** (drei
+  OrbitControls travado num cone, sem pan/zoom, **desligada enquanto arrasta uma peça**) + **pet com
+  COLISÃO** (grade `occupied` derivada dos `placedItems` → o bichinho desvia de móveis/paredes, não
+  atravessa). Cama é de SOLTEIRO (2×3). **Itens de PAREDE (`mount:'wall'` no catálogo — janela/quadro/
+  relógio/estrela/prateleira/pôster/espelho) SOBEM na parede** (não no chão): `PlacedItem` ganhou `wall`
+  + reinterpreta `x`=horizontal/`y`=altura; renderizados como painéis FLAT via `wallToWorld`, arrastados
+  por raycast nos planos das paredes; não giram. **Colisão "nada por cima de nada"**: o drag só solta em
+  célula livre (`isFree`), `addItem` acha o 1º vão (`freeFloorSpot`/`freeWallSpot`) e o `canonicalizeRoomState`
+  descarta sobreposição (sets de células chão/por-parede); helpers puros `rectsOverlap`/`wallToWorld`/
+  `worldToWallCell` em `coords.ts` (testados). Catálogo expandido (mesa/escrivaninha/tv/beliche/pufe/globo/
+  guitarra/bola + os de parede). ⚠️ arcades no quarto foram DESCARTADOS.
 - **Missões diárias/semanais — `missions-panel.tsx`** (na home): painel estilo Duolingo com as
   missões do dia ("Hoje") e da semana ("Esta semana"); busca `GET
   /api/members/gamification/missions/me` e resgata `POST /api/members/gamification/missions/:slug/claim`
@@ -357,11 +440,44 @@ acionáveis corrigidos; verde no typecheck/test/check dos 4 pacotes + `build:kid
   refresh-on-401); capa do Mural é best-effort (lê rascunho local — só cosmético); nome no perfil
   PÚBLICO é opt-in dos pais (nota de produto: incentivar apelido, não é bug).
 
+## Full review (avatar 3D — correções) — 21/06/2026
+
+3ª auditoria, focada no avatar-3D recém-feito (`components/kids/avatar3d/*`) + varredura fresca de
+segurança e React/perf/a11y no resto do pacote. A **varredura de segurança não achou nada
+acionável** (as invariantes das revisões 19/06 e 20/06 seguem de pé). Todos os achados de robustez
+corrigidos; verde no `typecheck:kids` + `test:kids` (20) + `check` + `build:kids`. Mudanças:
+
+- **1 peça com falha não derruba mais o configurador (robustez):** o `<Suspense fallback={null}>`
+  POR peça isola o *carregamento*, mas o `useGLTF` joga um *erro* de carga PRA FORA do Suspense — e
+  `/meu-avatar` fica fora do grupo `(app)` (sem `error.tsx` próprio), então um único GLB de
+  acessório falhando subia pro `global-error` e matava a tela inteira (perdendo a edição em
+  andamento). Agora cada peça também vai num **`PieceErrorBoundary`** (`avatar-rig.tsx`) que some
+  com a peça quebrada; `resetKey={asset}` zera o erro ao trocar de peça (nova tentativa).
+- **`prefers-reduced-motion` no 3D do avatar (fotossensibilidade):** o configurador ignorava o gate
+  de movimento que o **quarto** já respeita (o CSS não alcança o `useFrame`). Agora o `avatar-rig`
+  e o `TeleporterBeam` (`avatar-scene`) consomem o **`useReducedMotion()`** (de `room/`) e
+  **assentam direto** (sem o giro da "cabine" ~630°/s, sem encolher/flutuar, sem feixe) quando o
+  sistema pede menos movimento. O pipeline ficar-em-pé → enquadrar → capturar segue intacto.
+- **Recuperação de contexto WebGL (tablets/celular):** novo helper **`lib/webgl-recovery.ts`**
+  (`recoverWebGLContext` em `onCreated`: `preventDefault` no `webglcontextlost` + `invalidate` no
+  `restored`) ligado nas DUAS `<Canvas>` (avatar e **quarto**) — sem ele a cena ficava PRETA pra
+  sempre ao voltar de segundo plano/pressão de memória. (As miniaturas viraram um `<Canvas>` por item
+  em `thumb-canvas.tsx` — o renderer offscreen `avatar-thumbs` foi REMOVIDO por sair em branco.)
+- **Miniaturas = `<Canvas>` por item (`thumb-canvas.tsx`):** substituíram o renderer offscreen
+  (`avatar-thumbs`, REMOVIDO — saía em branco). `ItemTile` rende `<AvatarThumb>` (id com
+  apresentação) e cai no **rótulo de texto** (`labelPt`) só p/ id desconhecido.
+- **Rollback de reação POR ITEM (hub):** `kids-space-view-client.tsx` desfazia o array inteiro de
+  comentários ao falhar uma reação — toques sobrepostos num 2º comentário sumiam junto. Agora o
+  rollback restaura SÓ o item pelo `id`.
+- **a11y do menu do usuário:** `user-menu.tsx` ganhou **Escape p/ fechar** + `aria-haspopup="menu"`
+  (e os listeners só ligam com o menu aberto).
+
 ## Comandos
 
-`bun run dev` (:3008) · `build`/`start` · `typecheck` · `bun test` · `check[:fix]`.
-Da raiz: `dev:kids`, **`build:kids` (package-local — gotcha do `--filter` quebrar o React)**,
-`typecheck:kids`, `test:kids`. Mexeu no member-shell? Rode as suítes/builds DOS DOIS apps.
+`bun run dev` (:3008) · `build`/`start` · `typecheck` · `bun test` · `check[:fix]` ·
+**`gen:avatar-thumbs`** (pré-gera os PNGs das miniaturas do avatar → `public/avatar3d/thumbs/`, abre no
+navegador; rode 1× e commite). Da raiz: `dev:kids`, **`build:kids` (package-local — gotcha do `--filter`
+quebrar o React)**, `typecheck:kids`, `test:kids`. Mexeu no member-shell? Rode as suítes/builds DOS DOIS apps.
 
 ## Env / Deploy (Railway) — EM PRODUÇÃO desde 12/06/2026
 

@@ -248,7 +248,20 @@ export const gameTwoDRuntime = `(function () {
     var rafId = 0;
     function tick() {
       if (canceled) return;
-      try { fn(); } catch (e) { console.error(e && e.message ? e.message : e); }
+      // "Pausar o jogo" CONGELA o jogo: não roda o quadro do aluno (movimento,
+      // spawn, física, desenho). A última tela fica parada. Para mostrar "Você
+      // ganhou/perdeu", desenhe a tela ANTES de "Pausar o jogo" — ela fica
+      // congelada por cima. "Continuar o jogo" descongela.
+      if (!_paused) {
+        _particlesDrawnThisFrame = false;
+        try { fn(); } catch (e) { console.error(e && e.message ? e.message : e); }
+        // As partículas (explosões) se desenham sozinhas no FIM do quadro do aluno,
+        // com a câmera — a menos que ele já tenha usado "atualizar e desenhar as
+        // partículas". Sem isto, "soltar explosão" emite mas nada aparece na tela.
+        if (!_particlesDrawnThisFrame && particles.length) {
+          try { _camWrap(drawParticles)(ensureStage()); } catch (e) {}
+        }
+      }
       rafId = requestAnimationFrame(tick);
     }
     rafId = requestAnimationFrame(tick);
@@ -699,6 +712,10 @@ export const gameTwoDRuntime = `(function () {
   // Partículas: estado + emitir + (atualizar e desenhar). Teto rígido p/ não vazar.
   var particles = [];
   var MAX_PARTICLES = 400;
+  // Marca se o aluno já desenhou as partículas NESTE quadro (bloco "atualizar e
+  // desenhar as partículas"). Se NÃO, o gameLoop as desenha sozinho no fim do
+  // quadro — assim "soltar explosão" funciona sem precisar de bloco extra. Ver tick().
+  var _particlesDrawnThisFrame = false;
   /** Explosão de N partículas no ponto x/y, espalhando em todas as direções. */
   function emitParticles(x, y, count, color) {
     var n = Math.min(typeof count === 'number' ? count : 12, 80);
@@ -716,6 +733,7 @@ export const gameTwoDRuntime = `(function () {
   /** Move E desenha as partículas (uma chamada por frame); elas somem sozinhas. */
   function drawParticles(ctx) {
     if (!ctx) return;
+    _particlesDrawnThisFrame = true;
     for (var i = particles.length - 1; i >= 0; i--) {
       var p = particles[i];
       p.x += p.vx; p.y += p.vy; p.vy += 0.06;
@@ -2353,6 +2371,10 @@ export const gameTwoDRuntime = `(function () {
       c.style.display = 'block';
       if (document.body) document.body.appendChild(c);
     }
+    // Convenção do studio: a tela tem id "tela". Garante que o canvas criado pelo
+    // facilitador (setupStage) seja achável por getElementById("tela") — senão o
+    // bloco "pegar tela de desenho" devolve null.
+    if (c && !c.id) c.id = 'tela';
     _stageCanvas = c;
     try { _stageCtx = c.getContext('2d'); } catch (e) {}
     return _stageCtx;
@@ -2419,6 +2441,37 @@ export const gameTwoDRuntime = `(function () {
       _resizeHooked = true;
       try { window.addEventListener('resize', function () { try { requestAnimationFrame(_resizeBacking); } catch (e) { _resizeBacking(); } }); } catch (e) {}
     }
+  }
+  // Facilitador: prepara o palco em tela cheia (responsivo) num passo só. Define o
+  // tamanho do "mundo" do jogo (w x h) e chama fitScreen para o canvas ocupar a
+  // janela mantendo a proporção. É o bloco "preparar o jogo em tela cheia".
+  function setupStage(w, h, bg) {
+    ensureStage();
+    var c = _stageCanvas;
+    if (!c) { try { c = document.querySelector('canvas'); } catch (e) {} }
+    if (c && typeof w === 'number' && w > 0 && typeof h === 'number' && h > 0) {
+      c.width = Math.round(w);
+      c.height = Math.round(h);
+      // Recongela o tamanho lógico no novo tamanho quando o fitScreen rodar.
+      _logicalW = 0; _logicalH = 0;
+    }
+    // Cor de fundo escolhida no bloco: vai no canvas E no fundo da janela (a sobra
+    // ao redor do canvas centralizado), para a tela inteira combinar com o jogo.
+    var color = (typeof bg === 'string' && bg) ? bg : '#0b1020';
+    if (c) c.style.background = color;
+    if (document.body) {
+      document.body.style.margin = '0';
+      document.body.style.background = color;
+      // Centraliza o canvas na janela: quando a proporção da TELA não bate com a
+      // do jogo (ex.: jogo 800x480 numa janela 800x600), o espaço que sobra fica
+      // igual dos dois lados, em vez de tudo num canto. O clique continua certo
+      // porque o mapeamento do ponteiro usa getBoundingClientRect (posição real).
+      document.body.style.minHeight = '100vh';
+      document.body.style.display = 'flex';
+      document.body.style.alignItems = 'center';
+      document.body.style.justifyContent = 'center';
+    }
+    fitScreen(100);
   }
   // Expõe 'ctx' e 'tela' como globais preguiçosos. O setter REDEFINE a propriedade
   // como um valor normal — assim um eventual 'const ctx = ...' antigo (canvasSetup)
@@ -2933,6 +2986,18 @@ export const gameTwoDRuntime = `(function () {
   }
   function getHealth(s) { return s && typeof s.hp === 'number' ? s.hp : 0; }
   function hasHealth(s) { return !!s && typeof s.hp === 'number' && s.hp > 0; }
+  // Geometria do sprite (valores prontos p/ a criança não precisar fazer x+w/2 na mão).
+  function spriteX(s) { return s ? (s.x || 0) : 0; }
+  function spriteY(s) { return s ? (s.y || 0) : 0; }
+  function spriteW(s) { return s ? (s.w || 0) : 0; }
+  function spriteH(s) { return s ? (s.h || 0) : 0; }
+  function centerX(s) { return s ? (s.x || 0) + (s.w || 0) / 2 : 0; }
+  function centerY(s) { return s ? (s.y || 0) + (s.h || 0) / 2 : 0; }
+  // Posição aleatória NA TELA — DINÂMICO: lê o tamanho REAL do palco a cada chamada
+  // (largura lógica do jogo, ou o canvas), nunca um valor fixo. Evita a continha
+  // Math.random()*largura na mão. Use no x/y ao criar/spawnar um sprite.
+  function randomX() { ensureStage(); return Math.random() * (_logicalW || (_stageCanvas ? _stageCanvas.width : 0)); }
+  function randomY() { ensureStage(); return Math.random() * (_logicalH || (_stageCanvas ? _stageCanvas.height : 0)); }
   // Verdadeiro no máximo a cada "frames" quadros (recarga POR sprite). Use num "se".
   function cooldownReady(s, frames) {
     if (!s) return false;
@@ -2984,7 +3049,9 @@ export const gameTwoDRuntime = `(function () {
     if (s.y + (s.h || 0) < 0) s.y = h;
     else if (s.y > h) s.y = -(s.h || 0);
   }
-  // ---- Estado do jogo: pausa (o aluno embrulha o movimento em "se não pausado") ----
+  // ---- Estado do jogo: pausa. "Pausar o jogo" CONGELA o gameLoop (o tick para de
+  // rodar o quadro do aluno); "Continuar o jogo" descongela. "está pausado?" lê o
+  // estado (útil em eventos de tecla). ----
   var _paused = false;
   function pauseGame() { _paused = true; }
   function resumeGame() { _paused = false; }
@@ -3094,6 +3161,7 @@ export const gameTwoDRuntime = `(function () {
     drawSprite: _camWrap(drawSprite),
     clear: clear,
     fitScreen: fitScreen,
+    setupStage: setupStage,
     spawnBullet: spawnBullet,
     arrowsX: arrowsX,
     blink: blink,
@@ -3119,6 +3187,14 @@ export const gameTwoDRuntime = `(function () {
     setHealth: setHealth,
     changeHealth: changeHealth,
     getHealth: getHealth,
+    spriteX: spriteX,
+    spriteY: spriteY,
+    spriteW: spriteW,
+    spriteH: spriteH,
+    centerX: centerX,
+    centerY: centerY,
+    randomX: randomX,
+    randomY: randomY,
     hasHealth: hasHealth,
     cooldownReady: cooldownReady,
     pruneOld: pruneOld,

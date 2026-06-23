@@ -1,11 +1,16 @@
 import { describe, expect, test } from 'bun:test'
+import { BuyRoomItemService } from '../../src/application/room/buy-room-item.service'
+import { InsufficientCoinsError } from '../../src/domain/gamification/coins.errors'
+import { RoomItemFreeError, RoomItemNotFoundError } from '../../src/domain/room/room.errors'
 import {
   canonicalizeRoomState,
   DEFAULT_ROOM_THEME,
   ROOM_GRID,
   ROOM_ITEMS,
   ROOM_THEMES,
+  type RoomState,
 } from '../../src/domain/room/room-catalog'
+import { InMemoryGamificationRepository, InMemoryRoomRepository } from '../fakes/in-memory'
 
 describe('room-catalog', () => {
   test('ids únicos; itens/temas grátis têm preço 0', () => {
@@ -68,5 +73,184 @@ describe('canonicalizeRoomState', () => {
         owned,
       ).placedItems,
     ).toEqual([])
+  })
+})
+
+describe('canonicalizeRoomState — campos novos (rot/paredes/piso/luz)', () => {
+  test('rotação válida é preservada; rot 0/ausente é omitido', () => {
+    const s = canonicalizeRoomState(
+      {
+        theme: DEFAULT_ROOM_THEME,
+        placedItems: [
+          { itemId: 'cama', x: 0, y: 0 }, // sem rot → fica sem rot
+          { itemId: 'cadeira', x: 5, y: 0, rot: 2 }, // rot válido → preservado
+        ],
+        pet: null,
+      },
+      new Set(),
+    )
+    expect(s.placedItems).toEqual([
+      { itemId: 'cama', x: 0, y: 0 },
+      { itemId: 'cadeira', x: 5, y: 0, rot: 2 },
+    ])
+  })
+
+  test('footprint girado (90°) respeita os limites da grade; rot inválido → 0', () => {
+    // cama 2×3 girada 90° vira 3×2 → em x=10 estoura a largura (10+3>12) e DESCARTA.
+    // a outra cama com rot inválido (5) normaliza p/ 0 (cabe → fica, sem o campo rot).
+    const raw = {
+      theme: DEFAULT_ROOM_THEME,
+      placedItems: [
+        { itemId: 'cama', x: 0, y: 0, rot: 5 },
+        { itemId: 'cama', x: 10, y: 0, rot: 1 },
+      ],
+      pet: null,
+    } as unknown as RoomState
+    expect(canonicalizeRoomState(raw, new Set()).placedItems).toEqual([
+      { itemId: 'cama', x: 0, y: 0 },
+    ])
+  })
+
+  test('paredes: cor da paleta entra (case-insensitive); fora da paleta cai', () => {
+    const s = canonicalizeRoomState(
+      {
+        theme: DEFAULT_ROOM_THEME,
+        placedItems: [],
+        pet: null,
+        wallColors: { left: '#A9D6E8', right: '#123456' },
+      },
+      new Set(),
+    )
+    expect(s.wallColors).toEqual({ left: '#a9d6e8' })
+  })
+
+  test('paredes: nenhuma cor válida → wallColors omitido', () => {
+    const s = canonicalizeRoomState(
+      { theme: DEFAULT_ROOM_THEME, placedItems: [], pet: null, wallColors: { left: '#000000' } },
+      new Set(),
+    )
+    expect(s.wallColors).toBeUndefined()
+  })
+
+  test('piso/luz: grátis entra; pago não possuído cai; pago possuído entra', () => {
+    const base = { theme: DEFAULT_ROOM_THEME, placedItems: [], pet: null }
+    const free = canonicalizeRoomState(
+      { ...base, floor: 'piso-madeira-clara', lighting: 'dia' },
+      new Set(),
+    )
+    expect([free.floor, free.lighting]).toEqual(['piso-madeira-clara', 'dia'])
+
+    const unowned = canonicalizeRoomState(
+      { ...base, floor: 'piso-tapete', lighting: 'noite' },
+      new Set(),
+    )
+    expect([unowned.floor, unowned.lighting]).toEqual([undefined, undefined])
+
+    const owned = canonicalizeRoomState(
+      { ...base, floor: 'piso-tapete', lighting: 'noite' },
+      new Set(['piso-tapete', 'noite']),
+    )
+    expect([owned.floor, owned.lighting]).toEqual(['piso-tapete', 'noite'])
+  })
+
+  test('quarto legado (só tema) não ganha campos novos', () => {
+    const s = canonicalizeRoomState(
+      { theme: 'aconchego', placedItems: [{ itemId: 'cama', x: 0, y: 0 }], pet: null },
+      new Set(),
+    )
+    expect(s).toEqual({
+      theme: 'aconchego',
+      placedItems: [{ itemId: 'cama', x: 0, y: 0 }],
+      pet: null,
+    })
+  })
+})
+
+describe('BuyRoomItemService reconhece piso/luz', () => {
+  const make = () =>
+    new BuyRoomItemService(
+      new InMemoryRoomRepository(),
+      new InMemoryGamificationRepository(),
+      () => new Date('2026-06-21T12:00:00Z'),
+    )
+
+  test('piso grátis → RoomItemFreeError (roomThing acha o piso)', async () => {
+    await expect(make().execute('u1', 'kids', 'piso-madeira-clara')).rejects.toBeInstanceOf(
+      RoomItemFreeError,
+    )
+  })
+  test('luz paga sem saldo → InsufficientCoinsError (roomThing acha a luz)', async () => {
+    await expect(make().execute('u1', 'kids', 'neon-rosa')).rejects.toBeInstanceOf(
+      InsufficientCoinsError,
+    )
+  })
+  test('id inexistente → RoomItemNotFoundError', async () => {
+    await expect(make().execute('u1', 'kids', 'nada')).rejects.toBeInstanceOf(RoomItemNotFoundError)
+  })
+})
+
+describe('canonicalizeRoomState — itens de PAREDE + colisão (sem sobreposição)', () => {
+  test('item de parede dentro dos limites entra com `wall`; fora (largura/altura) cai', () => {
+    const s = canonicalizeRoomState(
+      {
+        theme: DEFAULT_ROOM_THEME,
+        placedItems: [
+          { itemId: 'janela', x: 3, y: 1, wall: 'right' }, // 2×2 cabe (3+2≤12, 1+2≤4) → fica
+          { itemId: 'janela', x: 11, y: 1, wall: 'right' }, // 11+2>12 → cai
+          { itemId: 'janela', x: 0, y: 3, wall: 'right' }, // 3+2>4 (altura) → cai
+        ],
+        pet: null,
+      },
+      new Set(['janela']), // janela é paga → precisa possuir
+    )
+    expect(s.placedItems).toEqual([{ itemId: 'janela', x: 3, y: 1, wall: 'right' }])
+  })
+
+  test('item de parede sem `wall` → assume "right"', () => {
+    const s = canonicalizeRoomState(
+      { theme: DEFAULT_ROOM_THEME, placedItems: [{ itemId: 'quadro', x: 0, y: 0 }], pet: null },
+      new Set(),
+    )
+    expect(s.placedItems).toEqual([{ itemId: 'quadro', x: 0, y: 0, wall: 'right' }])
+  })
+
+  test('colisão: dois itens de CHÃO sobrepostos → o segundo cai', () => {
+    const s = canonicalizeRoomState(
+      {
+        theme: DEFAULT_ROOM_THEME,
+        placedItems: [
+          { itemId: 'cama', x: 0, y: 0 }, // 2×3 ocupa (0,0)-(1,2)
+          { itemId: 'mesa', x: 1, y: 1 }, // sobrepõe (1,1) → CAI
+          { itemId: 'mesa', x: 4, y: 0 }, // livre → fica
+        ],
+        pet: null,
+      },
+      new Set(),
+    )
+    expect(s.placedItems).toEqual([
+      { itemId: 'cama', x: 0, y: 0 },
+      { itemId: 'mesa', x: 4, y: 0 },
+    ])
+  })
+
+  test('colisão: mesma parede sobrepõe (cai); outra parede OK; chão e parede não colidem', () => {
+    const s = canonicalizeRoomState(
+      {
+        theme: DEFAULT_ROOM_THEME,
+        placedItems: [
+          { itemId: 'quadro', x: 0, y: 0, wall: 'right' }, // right (0,0)-(1,1)
+          { itemId: 'estrela', x: 1, y: 1, wall: 'right' }, // sobrepõe right → CAI
+          { itemId: 'estrela', x: 1, y: 1, wall: 'left' }, // outra parede → fica
+          { itemId: 'mesa', x: 0, y: 0 }, // chão (namespace à parte) → fica
+        ],
+        pet: null,
+      },
+      new Set(),
+    )
+    expect(s.placedItems).toEqual([
+      { itemId: 'quadro', x: 0, y: 0, wall: 'right' },
+      { itemId: 'estrela', x: 1, y: 1, wall: 'left' },
+      { itemId: 'mesa', x: 0, y: 0 },
+    ])
   })
 })

@@ -107,7 +107,8 @@ describe('useSettingsStore persistence', () => {
     expect(state.aiApiKey).toBe('')
     expect(state.aiApiKeyStorage).toBe('session')
     expect(state.aiModel).toBe(DEFAULT_AI_MODEL)
-    expect(state.theme).toBe('dark')
+    // tema inválido ('sepia') → cai no default do estúdio (claro/creme).
+    expect(state.theme).toBe('light')
     expect(state.codeFontSize).toBe(CODE_FONT_SIZE_MIN)
     expect(state.loaded).toBe(true)
   })

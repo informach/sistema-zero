@@ -95,7 +95,7 @@ export const modules = members.table(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },
-  (t) => [index('modules_course_idx').on(t.courseId, t.sortOrder)],
+  (t) => [uniqueIndex('modules_course_sort_order_uq').on(t.courseId, t.sortOrder)],
 )
 
 export const lessons = members.table(
@@ -121,7 +121,7 @@ export const lessons = members.table(
   },
   (t) => [
     uniqueIndex('lessons_course_slug_uq').on(t.courseId, t.slug),
-    index('lessons_module_idx').on(t.moduleId, t.sortOrder),
+    uniqueIndex('lessons_module_sort_order_uq').on(t.moduleId, t.sortOrder),
   ],
 )
 
@@ -137,7 +137,7 @@ export const lessonBlocks = members.table(
     // União discriminada por `kind` (ver domain/course/lesson-block.ts).
     content: jsonb('content').$type<LessonBlockContent>().notNull(),
   },
-  (t) => [index('lesson_blocks_lesson_idx').on(t.lessonId, t.sortOrder)],
+  (t) => [uniqueIndex('lesson_blocks_lesson_sort_order_uq').on(t.lessonId, t.sortOrder)],
 )
 
 export const lessonAttachments = members.table(
@@ -153,7 +153,7 @@ export const lessonAttachments = members.table(
     sizeBytes: integer('size_bytes'),
     sortOrder: integer('sort_order').notNull().default(0),
   },
-  (t) => [index('lesson_attachments_lesson_idx').on(t.lessonId, t.sortOrder)],
+  (t) => [uniqueIndex('lesson_attachments_lesson_sort_order_uq').on(t.lessonId, t.sortOrder)],
 )
 
 // ── Matrícula / Entitlement (visão materializada de acesso) ─────────────────
@@ -482,6 +482,9 @@ export const avatarConfigs = members.table(
     accountId: uuid('account_id').notNull(),
     audience: courseAudienceEnum('audience').notNull().default('kids'),
     equipped: jsonb('equipped').$type<AvatarConfig>().notNull(),
+    // URL pública do snapshot 3D (a "foto" do avatar, mostrada em todo o app). NULL até
+    // a criança salvar a 1ª foto. O BFF (member-shell) sobe o PNG p/ o R2 e grava a URL.
+    photoUrl: text('photo_url'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },

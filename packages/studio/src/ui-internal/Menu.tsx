@@ -1,5 +1,7 @@
 import type { JSX, KeyboardEvent, ReactNode } from 'react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { StudioThemeScope } from '../studio/theme'
 import { cn } from './cn'
 
 export interface MenuItem {
@@ -30,11 +32,19 @@ export interface MenuProps {
   triggerClassName?: string
 }
 
+interface PanelPos {
+  top: number
+  left?: number
+  right?: number
+}
+
 /**
- * Dropdown leve e INLINE (não-portaled): fica dentro do root `[data-sz-theme]`
- * do Studio, então herda o escopo de tema sem precisar de <StudioThemeScope>.
- * Fecha no clique fora e no Escape; navegação por teclado (setas/Home/End) no
- * padrão WAI-ARIA de menu.
+ * Dropdown PORTALADO para `document.body` (via <StudioThemeScope>, que reaplica o
+ * tema fora do root). Portal — não `absolute` no fluxo — porque o painel precisa
+ * ficar ACIMA do `<iframe>` do preview: um iframe cria stacking context próprio e
+ * vencia um menu posicionado dentro da Topbar, por mais alto que fosse o z-index.
+ * Fecha no clique fora (backdrop) e no Escape; navegação por teclado (setas/Home/
+ * End) no padrão WAI-ARIA de menu.
  */
 export function Menu({
   trigger,
@@ -45,25 +55,41 @@ export function Menu({
   triggerClassName,
 }: MenuProps): JSX.Element {
   const [open, setOpen] = useState(false)
-  const wrapRef = useRef<HTMLDivElement>(null)
+  const [pos, setPos] = useState<PanelPos | null>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
   const itemRefs = useRef<Array<HTMLButtonElement | null>>([])
 
-  // Fecha ao clicar fora.
-  useEffect(() => {
-    if (!open) return
-    const onDown = (e: MouseEvent) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false)
+  // Ancora o painel (fixed) no trigger; recalcula em resize/scroll. Alinha pela
+  // borda escolhida via `right`/`left` (sem depender da largura medida do painel).
+  useLayoutEffect(() => {
+    if (!open) {
+      setPos(null)
+      return
     }
-    document.addEventListener('mousedown', onDown)
-    return () => document.removeEventListener('mousedown', onDown)
-  }, [open])
+    const update = () => {
+      const r = triggerRef.current?.getBoundingClientRect()
+      if (!r) return
+      const top = r.bottom + 4
+      setPos(
+        align === 'right'
+          ? { top, right: Math.max(8, window.innerWidth - r.right) }
+          : { top, left: Math.max(8, r.left) },
+      )
+    }
+    update()
+    window.addEventListener('resize', update)
+    window.addEventListener('scroll', update, true)
+    return () => {
+      window.removeEventListener('resize', update)
+      window.removeEventListener('scroll', update, true)
+    }
+  }, [open, align])
 
-  // Foca o 1º item habilitado ao abrir (refs já estão setadas no commit).
+  // Foca o 1º item habilitado ao abrir (após posicionar = painel já no DOM).
   useEffect(() => {
-    if (!open) return
+    if (!open || !pos) return
     itemRefs.current.find((el) => el && !el.disabled)?.focus()
-  }, [open])
+  }, [open, pos])
 
   const close = (returnFocus = true) => {
     setOpen(false)
@@ -103,7 +129,7 @@ export function Menu({
   let flatIndex = -1
 
   return (
-    <div ref={wrapRef} className={cn('relative', className)}>
+    <div className={cn('relative', className)}>
       <button
         ref={triggerRef}
         type="button"
@@ -126,66 +152,79 @@ export function Menu({
       >
         {trigger}
       </button>
-      {open && (
-        <div
-          role="menu"
-          aria-label={label}
-          className={cn(
-            'absolute z-50 mt-1 min-w-56 overflow-hidden rounded-lg border border-sz-border bg-sz-panel py-1 shadow-lg',
-            align === 'right' ? 'right-0' : 'left-0',
-          )}
-        >
-          {sections.map((section, si) => (
-            <div key={section.id} role="group" aria-label={section.label}>
-              {si > 0 && <div aria-hidden="true" className="my-1 h-px bg-sz-border" />}
-              {section.label && (
-                <div className="px-3 pb-1 pt-1.5 text-[0.65rem] font-semibold uppercase tracking-wide text-sz-fg-mute">
-                  {section.label}
+      {open &&
+        pos &&
+        createPortal(
+          <StudioThemeScope>
+            <button
+              type="button"
+              aria-hidden="true"
+              tabIndex={-1}
+              className="fixed inset-0 z-40 cursor-default bg-transparent"
+              onMouseDown={(e) => {
+                e.preventDefault()
+                close()
+              }}
+            />
+            <div
+              role="menu"
+              aria-label={label}
+              style={{ top: pos.top, left: pos.left, right: pos.right }}
+              className="fixed z-50 max-h-[min(70vh,32rem)] min-w-56 overflow-auto rounded-lg border border-sz-border bg-sz-panel py-1 shadow-lg"
+            >
+              {sections.map((section, si) => (
+                <div key={section.id} role="group" aria-label={section.label}>
+                  {si > 0 && <div aria-hidden="true" className="my-1 h-px bg-sz-border" />}
+                  {section.label && (
+                    <div className="px-3 pb-1 pt-1.5 text-[0.65rem] font-semibold uppercase tracking-wide text-sz-fg-mute">
+                      {section.label}
+                    </div>
+                  )}
+                  {section.items.map((item) => {
+                    flatIndex += 1
+                    const idx = flatIndex
+                    return (
+                      <button
+                        key={item.id}
+                        ref={(el) => {
+                          itemRefs.current[idx] = el
+                        }}
+                        type="button"
+                        role="menuitem"
+                        tabIndex={-1}
+                        disabled={item.disabled}
+                        aria-current={item.active || undefined}
+                        onClick={() => {
+                          item.onSelect()
+                          close()
+                        }}
+                        onKeyDown={(e) => onItemKeyDown(e, idx)}
+                        className={cn(
+                          'flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors',
+                          'text-sz-fg hover:bg-sz-bg disabled:cursor-not-allowed disabled:opacity-50',
+                          item.active && 'text-sz-accent',
+                        )}
+                      >
+                        {item.icon && (
+                          <span className="flex h-4 w-4 shrink-0 items-center justify-center">
+                            {item.icon}
+                          </span>
+                        )}
+                        <span className="flex-1 truncate">{item.label}</span>
+                        {item.active && (
+                          <span className="text-sz-accent" aria-hidden="true">
+                            ●
+                          </span>
+                        )}
+                      </button>
+                    )
+                  })}
                 </div>
-              )}
-              {section.items.map((item) => {
-                flatIndex += 1
-                const idx = flatIndex
-                return (
-                  <button
-                    key={item.id}
-                    ref={(el) => {
-                      itemRefs.current[idx] = el
-                    }}
-                    type="button"
-                    role="menuitem"
-                    tabIndex={-1}
-                    disabled={item.disabled}
-                    aria-current={item.active || undefined}
-                    onClick={() => {
-                      item.onSelect()
-                      close()
-                    }}
-                    onKeyDown={(e) => onItemKeyDown(e, idx)}
-                    className={cn(
-                      'flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors',
-                      'text-sz-fg hover:bg-sz-bg disabled:cursor-not-allowed disabled:opacity-50',
-                      item.active && 'text-sz-accent',
-                    )}
-                  >
-                    {item.icon && (
-                      <span className="flex h-4 w-4 shrink-0 items-center justify-center">
-                        {item.icon}
-                      </span>
-                    )}
-                    <span className="flex-1 truncate">{item.label}</span>
-                    {item.active && (
-                      <span className="text-sz-accent" aria-hidden="true">
-                        ●
-                      </span>
-                    )}
-                  </button>
-                )
-              })}
+              ))}
             </div>
-          ))}
-        </div>
-      )}
+          </StudioThemeScope>,
+          document.body,
+        )}
     </div>
   )
 }

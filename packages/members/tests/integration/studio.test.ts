@@ -53,9 +53,32 @@ const getLesson = (app: App, slug: string, lessonId: string) =>
     }),
   )
 
+const updateBlock = (app: App, blockId: string, content: unknown) =>
+  app.handle(
+    new Request(`http://localhost/members/admin/blocks/${blockId}`, {
+      method: 'PATCH',
+      headers: authHeaders,
+      body: JSON.stringify({ content }),
+    }),
+  )
+
 const STUDENT_PROJECT = {
   name: 'Minha entrega',
   files: { 'index.html': '<h1>Feito</h1>', 'style.css': '', 'script.js': 'console.log(1)' },
+}
+
+const STUDIO_LOOP_PROJECT = {
+  name: 'Projeto com loop',
+  files: { 'index.html': '', 'style.css': '', 'script.js': 'for (let i = 0; i < 3; i++) {}' },
+  ir: { js: [{ type: 'repeat' }] },
+  blocksState: null,
+}
+
+const STUDIO_FUNCTION_PROJECT = {
+  name: 'Projeto com função',
+  files: { 'index.html': '', 'style.css': '', 'script.js': 'function go() { return 1 }' },
+  ir: { js: [{ type: 'funcDecl', name: 'go', body: [] }] },
+  blocksState: null,
 }
 
 describe('Bloco Estúdio — gate de conclusão + entrega', () => {
@@ -108,6 +131,68 @@ describe('Bloco Estúdio — gate de conclusão + entrega', () => {
     const res = await complete(app, lessonIds[0])
     expect(res.status).toBe(409)
     expect((await readJson(res)).error.code).toBe('STUDIO_GATE_NOT_PASSED')
+  })
+
+  test('editar atividade Studio avaliativa invalida aprovação anterior do mesmo bloco', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const { slug, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    const blockId = randomUUID()
+    const baseStudio = {
+      kind: 'studio' as const,
+      level: 'iniciante' as const,
+      allowCategories: ['JavaScript'],
+      initialProject: {
+        name: 'x',
+        files: { 'index.html': '', 'style.css': '', 'script.js': '' },
+      },
+    }
+    courses.blocks.push({
+      id: blockId,
+      lessonId: lessonIds[0],
+      kind: 'studio',
+      sortOrder: 20,
+      content: {
+        ...baseStudio,
+        activity: {
+          instructions: 'use um laço',
+          passingScore: 100,
+          checks: [
+            { id: 'loop', label: 'usa laço', kind: 'structure', rule: { type: 'usesLoop' } },
+          ],
+        },
+      },
+    })
+
+    const oldPass = await submit(app, lessonIds[0], blockId, STUDIO_LOOP_PROJECT)
+    expect(oldPass.status).toBe(200)
+    expect((await readJson(oldPass)).passed).toBe(true)
+
+    const patched = await updateBlock(app, blockId, {
+      ...baseStudio,
+      activity: {
+        instructions: 'crie a função go',
+        passingScore: 100,
+        checks: [
+          {
+            id: 'fn',
+            label: 'define função',
+            kind: 'structure',
+            rule: { type: 'definesFunction', name: 'go' },
+          },
+        ],
+      },
+    })
+    expect(patched.status).toBe(200)
+
+    const blocked = await complete(app, lessonIds[0])
+    expect(blocked.status).toBe(409)
+    expect((await readJson(blocked)).error.code).toBe('STUDIO_GATE_NOT_SUBMITTED')
+
+    const newPass = await submit(app, lessonIds[0], blockId, STUDIO_FUNCTION_PROJECT)
+    expect(newPass.status).toBe(200)
+    expect((await readJson(newPass)).passed).toBe(true)
+    expect((await complete(app, lessonIds[0])).status).toBe(200)
   })
 
   test('enviar o projeto destrava a conclusão da aula', async () => {

@@ -37,7 +37,10 @@ const csp = [
   // Blocos de áudio (bucket R2 público) e vídeo "file" legado tocam URL externa.
   "media-src 'self' blob: https:",
   "style-src 'self' 'unsafe-inline' https:",
-  `script-src 'self' 'unsafe-inline' https:${isDev ? " 'unsafe-eval'" : ''}`,
+  // `data:` p/ o preview do Estúdio (bloco `studio`): o script.js do aluno é injetado
+  // como `<script src="data:text/javascript;base64,…">` no iframe `srcdoc`, que HERDA
+  // esta CSP (só RESTRINGE, nunca relaxa) — sem `data:`, o preview não executa o código.
+  `script-src 'self' 'unsafe-inline' data: https:${isDev ? " 'unsafe-eval'" : ''}`,
   "connect-src 'self' https:",
   "worker-src 'self' blob:",
   ...(isDev ? [] : ['upgrade-insecure-requests']),

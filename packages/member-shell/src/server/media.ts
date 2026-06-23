@@ -148,10 +148,19 @@ export interface StoredAvatar {
   sizeBytes: number
 }
 
-/** Otimiza (WebP 512×512) e armazena no R2 sob `community/avatars/<userId>/<uuid>.webp`. */
-export async function optimizeAndStoreAvatar(file: File, userId: string): Promise<StoredAvatar> {
+/**
+ * Otimiza (WebP 512×512) e armazena no R2 sob `community/<namespace>/<userId>/<uuid>.webp`.
+ * `namespace` separa a FOTO de perfil (`avatars`, default) do SNAPSHOT do avatar 3D
+ * (`avatar3d`) — prefixos distintos p/ a limpeza de um não apagar o outro (ambos são
+ * chaveados por perfil).
+ */
+export async function optimizeAndStoreAvatar(
+  file: File,
+  userId: string,
+  namespace = 'avatars',
+): Promise<StoredAvatar> {
   const optimized = await optimizeImage(await file.arrayBuffer(), 'avatar')
-  const key = `community/avatars/${userId}/${randomUUID()}.${optimized.extension}`
+  const key = `community/${namespace}/${userId}/${randomUUID()}.${optimized.extension}`
   const { url } = await r2PutObject({
     key,
     body: optimized.buffer,
@@ -161,15 +170,21 @@ export async function optimizeAndStoreAvatar(file: File, userId: string): Promis
 }
 
 /**
- * Remove os avatares ANTERIORES do aluno (prefixo próprio por usuário) após uma
- * troca bem-sucedida — sem isso cada troca acumula um objeto órfão no R2 para
- * sempre. Best-effort: falha só loga (o avatar novo já está no ar).
+ * Remove os arquivos ANTERIORES do aluno (prefixo próprio por usuário+namespace) após
+ * uma troca bem-sucedida — sem isso cada troca acumula um objeto órfão no R2 para
+ * sempre. Best-effort: falha só loga (o arquivo novo já está no ar).
  */
-export async function removeStaleAvatars(userId: string, keepKey: string): Promise<void> {
+export async function removeStaleAvatars(
+  userId: string,
+  keepKey: string,
+  namespace = 'avatars',
+): Promise<void> {
   try {
-    const keys = (await r2ListKeys(`community/avatars/${userId}/`)).filter((k) => k !== keepKey)
+    const keys = (await r2ListKeys(`community/${namespace}/${userId}/`)).filter(
+      (k) => k !== keepKey,
+    )
     if (keys.length > 0) await r2DeleteObjects(keys)
   } catch (error) {
-    console.warn('[media] limpeza de avatares antigos falhou', { userId, error })
+    console.warn('[media] limpeza de arquivos antigos falhou', { userId, namespace, error })
   }
 }

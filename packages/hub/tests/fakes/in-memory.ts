@@ -300,6 +300,10 @@ export class InMemoryThreadRepository implements ThreadRepository {
     return { thread, deduped: false }
   }
 
+  async hasVisibleShowcasePlayId(playId: string): Promise<boolean> {
+    return this.threads.some((t) => t.playId === playId && t.isShowcase && t.status === 'visible')
+  }
+
   async findThreadById(id: string): Promise<Thread | null> {
     return this.threads.find((t) => t.id === id) ?? null
   }

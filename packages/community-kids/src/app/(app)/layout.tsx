@@ -2,9 +2,9 @@ import { ImpersonationBanner } from '@sistemazero/member-shell/components/impers
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
 import { AppSidebar } from '@/components/kids/app-sidebar'
+import { MainContainer } from '@/components/kids/main-container'
 import { MobileTabbar, MobileTopbar } from '@/components/kids/mobile-nav'
 import { actorLabel } from '@/lib/act'
-import type { AvatarConfig } from '@/lib/avatar-catalog'
 import { getMeReadonly } from '@/server/auth'
 import { getAvatarReadonly, getGamificationReadonly } from '@/server/members'
 import { getSession } from '@/server/session'
@@ -24,8 +24,8 @@ type Session = NonNullable<Awaited<ReturnType<typeof getSession>>>
 async function loadChrome(session: Session) {
   const profileName = session.activeProfile?.name
   const isProfile = Boolean(profileName)
-  // O avatar montado por camadas só vale em sessão de PERFIL (a criança); na sessão
-  // da CONTA (pais) cai na foto/iniciais. Best-effort (401/erro → null → fallback).
+  // A FOTO do avatar 3D só vale em sessão de PERFIL (a criança); na sessão da CONTA
+  // (pais) cai na foto/iniciais. Best-effort (401/erro → null → personagem padrão).
   const [me, gam, avatar] = await Promise.all([
     getMeReadonly(),
     getGamificationReadonly({ withRanking: true }),
@@ -33,27 +33,25 @@ async function loadChrome(session: Session) {
   ])
   const avatarUrl = me.status === 200 ? (me.body?.user?.avatarUrl ?? null) : null
   const gamification = gam.status === 200 ? (gam.body ?? null) : null
-  const avatarConfig: AvatarConfig | null =
-    avatar && avatar.status === 200 && avatar.body
-      ? { style: avatar.body.style, parts: avatar.body.equipped }
-      : null
+  const avatarPhotoUrl =
+    avatar && avatar.status === 200 && avatar.body ? (avatar.body.photoUrl ?? null) : null
   const user = {
     ...session,
     firstName: profileName ?? session.firstName,
     lastName: profileName ? '' : session.lastName,
     avatarUrl: profileName ? null : avatarUrl,
   }
-  return { user, gamification, avatarConfig }
+  return { user, gamification, avatarPhotoUrl }
 }
 
 async function SidebarChrome({ session }: { session: Session }) {
-  const { user, gamification, avatarConfig } = await loadChrome(session)
-  return <AppSidebar user={user} gamification={gamification} avatarConfig={avatarConfig} />
+  const { user, gamification, avatarPhotoUrl } = await loadChrome(session)
+  return <AppSidebar user={user} gamification={gamification} avatarPhotoUrl={avatarPhotoUrl} />
 }
 
 async function TopbarChrome({ session }: { session: Session }) {
-  const { user, gamification, avatarConfig } = await loadChrome(session)
-  return <MobileTopbar user={user} gamification={gamification} avatarConfig={avatarConfig} />
+  const { user, gamification, avatarPhotoUrl } = await loadChrome(session)
+  return <MobileTopbar user={user} gamification={gamification} avatarPhotoUrl={avatarPhotoUrl} />
 }
 
 /**
@@ -95,9 +93,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           >
             <TopbarChrome session={session} />
           </Suspense>
-          <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 pb-24 md:px-8 md:py-8 md:pb-8">
-            {children}
-          </main>
+          <MainContainer>{children}</MainContainer>
           <MobileTabbar />
         </div>
       </div>

@@ -1,4 +1,4 @@
-import type { AvatarLayer } from '../../domain/avatar/parts-catalog'
+import type { AvatarCategory, AvatarSlot } from '../../domain/avatar/avatar3d-catalog'
 import type { Course, LessonWithContent, ModuleWithLessons } from '../../domain/course/course'
 import { toMemberFacingQuizContent } from '../../domain/course/quiz'
 import type { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
@@ -94,8 +94,11 @@ export interface LessonCompleteView extends CourseProgressView {
 /** Perfil de gamificação do aluno (widgets/perfil — `GET /members/gamification/me`). */
 export interface GamificationMeView {
   xp: number
-  /** Carteira Zappy Coins (saldo gastável). Segregada por vitrine, como o XP. */
-  coins: { balance: number }
+  /**
+   * Carteira Zappy Coins (saldo gastável). Segregada por vitrine, como o XP.
+   * `unlimited` = equipe (passe livre): moedas virtuais ilimitadas — a UI mostra ∞.
+   */
+  coins: { balance: number; unlimited?: boolean }
   streak: {
     /** Streak de EXIBIÇÃO: 0 quando quebrado (e nem freeze nem férias cobrem). */
     current: number
@@ -119,10 +122,10 @@ export interface GamificationMeView {
   ranking?: { position: number; totalStudents: number }
 }
 
-/** Uma peça do catálogo de avatar na visão do aluno (lojinha/editor). */
+/** Uma peça do catálogo de avatar 3D na visão do aluno (lojinha/configurador). */
 export interface AvatarPartView {
   id: string
-  layer: AvatarLayer
+  category: AvatarCategory
   tier: 'free' | 'coins'
   price: number
   /** Possui (grátis OU comprada). */
@@ -143,7 +146,10 @@ export interface PublicProfileView {
   ranking: { position: number; totalStudents: number } | null
   /** SÓ as conquistas conquistadas (não o catálogo completo). */
   badges: { slug: string; unlockedAt: string }[]
-  avatar: { style: string; parts: Partial<Record<AvatarLayer, string>> }
+  /** Config 3D equipada (peça+cor por categoria) — p/ uma futura visualização do personagem. */
+  avatar: { style: string; slots: Partial<Record<AvatarCategory, AvatarSlot>> }
+  /** Foto (snapshot) do avatar 3D — mostrada no card público; `null` se nunca tirou. */
+  avatarPhotoUrl: string | null
   /** Quarto virtual (modo visualização) — `null` se a criança nunca montou. */
   room: RoomState | null
 }
@@ -223,17 +229,32 @@ export interface RoomEditorView {
   state: RoomState
   items: RoomItemView[]
   themes: RoomThemeView[]
+  /** Pisos e presets de iluminação/clima (mesmo shape de tema: id/tier/price/owned/locked). */
+  floors: RoomThemeView[]
+  lightings: RoomThemeView[]
   balance: number
+  /** `true` = equipe (passe livre): moedas virtuais ilimitadas — a UI mostra ∞. */
+  balanceUnlimited?: boolean
 }
 
-/** Estado do avatar do aluno (`GET /members/avatar`): equipado + catálogo + saldo. */
+/** Estado do avatar 3D do aluno (`GET /members/avatar`): equipado + catálogo + saldo. */
 export interface AvatarStateView {
   style: string
-  /** Peça equipada por camada (camada faltante já vem preenchida com o default). */
-  equipped: Partial<Record<AvatarLayer, string>>
+  /** Peça+cor equipada por categoria (categoria faltante já vem com o default). */
+  equipped: Partial<Record<AvatarCategory, AvatarSlot>>
   parts: AvatarPartView[]
+  /** Paleta de cores por categoria (categoria sem cor é omitida). */
+  palettes: Partial<Record<AvatarCategory, string[]>>
+  /** Oclusão de render (chapéu real esconde o cabelo). Single source com o domínio. */
+  hideGroups: Partial<Record<AvatarCategory, AvatarCategory[]>>
+  /** Categoria removível → id da peça "nenhum" (o configurador mostra "Tirar"). */
+  removable: Partial<Record<AvatarCategory, string>>
+  /** Foto (snapshot) atual do avatar 3D — `null` se a criança ainda não salvou. */
+  photoUrl: string | null
   /** Saldo de moedas Zappy (p/ a lojinha do avatar). */
   balance: number
+  /** `true` = equipe (passe livre): moedas virtuais ilimitadas — a UI mostra ∞. */
+  balanceUnlimited?: boolean
 }
 
 export interface MyCourseView {

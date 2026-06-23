@@ -7,21 +7,13 @@ import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { Pencil, Sparkles, Trophy } from 'lucide-react'
-import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { KidsAvatar } from '@/components/kids/kids-avatar'
 import { apiSend } from '@/lib/api'
-import type { AvatarConfig } from '@/lib/avatar-catalog'
 import type { ProfileView } from '@/lib/types'
-
-// O editor puxa o DiceBear (`@dicebear/collection`) — carrega só sob demanda (sem SSR).
-const AvatarEditor = dynamic(
-  () => import('@/components/kids/avatar-editor').then((m) => m.AvatarEditor),
-  { ssr: false },
-)
 
 /** Colocação no ranking kids (XP) — `null` = gamificação indisponível (esconde a linha). */
 export interface RankingInfo {
@@ -45,36 +37,28 @@ const ProfileSchema = z.object({
 export function ProfileClient({
   profile,
   ranking,
-  avatarConfig,
+  avatarPhotoUrl,
 }: {
   profile: ProfileView
   ranking: RankingInfo | null
-  avatarConfig: AvatarConfig | null
+  avatarPhotoUrl: string | null
 }) {
   const router = useRouter()
   const [editing, setEditing] = useState(false)
-  const [customizing, setCustomizing] = useState(false)
 
   return (
     <>
       <IdentityCard
         profile={profile}
         ranking={ranking}
-        avatarConfig={avatarConfig}
+        avatarPhotoUrl={avatarPhotoUrl}
         onEdit={() => setEditing(true)}
-        onCustomize={() => setCustomizing(true)}
+        // Personalizar = abrir o configurador 3D em tela cheia (não há mais modal).
+        onCustomize={() => router.push('/meu-avatar')}
       />
       <Dialog open={editing} onClose={() => setEditing(false)} title="Editar perfil">
         <ProfileForm profile={profile} onDone={() => setEditing(false)} />
       </Dialog>
-      {customizing ? (
-        <AvatarEditor
-          onClose={() => {
-            setCustomizing(false)
-            router.refresh() // re-busca o avatar equipado p/ o card/chrome
-          }}
-        />
-      ) : null}
     </>
   )
 }
@@ -82,13 +66,13 @@ export function ProfileClient({
 function IdentityCard({
   profile,
   ranking,
-  avatarConfig,
+  avatarPhotoUrl,
   onEdit,
   onCustomize,
 }: {
   profile: ProfileView
   ranking: RankingInfo | null
-  avatarConfig: AvatarConfig | null
+  avatarPhotoUrl: string | null
   onEdit: () => void
   onCustomize: () => void
 }) {
@@ -105,7 +89,7 @@ function IdentityCard({
             onClick={onCustomize}
             className="group relative shrink-0 cursor-pointer rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
-            <KidsAvatar config={avatarConfig} size="xl" label={`Avatar de ${profile.name}`} />
+            <KidsAvatar photoUrl={avatarPhotoUrl} size="xl" label={`Avatar de ${profile.name}`} />
             <span
               aria-hidden="true"
               className="absolute inset-0 flex items-center justify-center rounded-full bg-black/45 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"

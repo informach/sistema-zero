@@ -34,6 +34,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   { href: '/mural-dos-criadores', label: 'Mural', icon: Images, match: '/mural-dos-criadores' },
   { href: '/estudio', label: 'Estúdio', icon: Blocks, match: '/estudio' },
+  // O avatar é acessado pelo clique no avatar em /perfil (sem item próprio no menu).
   { href: '/quarto', label: 'Quarto', icon: House },
   { href: '/perfil', label: 'Perfil', icon: CircleUserRound },
 ]

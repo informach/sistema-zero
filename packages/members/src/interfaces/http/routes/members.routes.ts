@@ -3,6 +3,7 @@ import type { AccessCheckService } from '../../../application/access-check/acces
 import type { BuyAvatarPartService } from '../../../application/avatar/buy-avatar-part.service'
 import type { EquipAvatarService } from '../../../application/avatar/equip-avatar.service'
 import type { GetAvatarService } from '../../../application/avatar/get-avatar.service'
+import type { SetAvatarPhotoService } from '../../../application/avatar/set-avatar-photo.service'
 import type { GetChildrenStatsService } from '../../../application/children-stats/get-children-stats.service'
 import type { BuyStreakFreezeService } from '../../../application/gamification/buy-streak-freeze.service'
 import type { ClaimMissionService } from '../../../application/gamification/claim-mission.service'
@@ -29,7 +30,8 @@ import type { SaveCourseRatingService } from '../../../application/save-course-r
 import type { SaveVideoPositionService } from '../../../application/save-video-position/save-video-position.service'
 import type { SubmitQuizAttemptService } from '../../../application/submit-quiz-attempt/submit-quiz-attempt.service'
 import type { SubmitStudioProjectService } from '../../../application/submit-studio-project/submit-studio-project.service'
-import { AVATAR_STYLE } from '../../../domain/avatar/parts-catalog'
+import { AVATAR_CHAR_STYLE } from '../../../domain/avatar/avatar3d-catalog'
+import type { RoomState } from '../../../domain/room/room-catalog'
 import { assertInternalCaller, isPrivilegedActor, resolveAccountId, resolveUserId } from '../auth'
 import {
   AccessQuery,
@@ -37,6 +39,7 @@ import {
   AudienceQuery,
   AvatarConfigBody,
   AvatarPartParams,
+  AvatarPhotoBody,
   ChildrenStatsQuery,
   CourseRatingBody,
   EbookResolveParams,
@@ -59,6 +62,10 @@ import {
   VacationBody,
   VideoPositionBody,
 } from '../dtos'
+
+function idempotencyKey(headers: Record<string, string | undefined>): string | undefined {
+  return (headers['idempotency-key'] ?? headers['x-idempotency-key'])?.trim() || undefined
+}
 
 export interface MembersRoutesDeps {
   listMyCourses: ListMyCoursesService
@@ -87,6 +94,7 @@ export interface MembersRoutesDeps {
   getAvatar: GetAvatarService
   buyAvatarPart: BuyAvatarPartService
   equipAvatar: EquipAvatarService
+  setAvatarPhoto: SetAvatarPhotoService
   getPublicProfile: GetPublicProfileService
   getRoom: GetRoomService
   saveRoom: SaveRoomService
@@ -158,6 +166,14 @@ export function membersRoutes(deps: MembersRoutesDeps) {
           // recebem `false` EXPLÍCITO — em vez de sumir e o chamador não distinguir
           // "sem acesso" de "ref descartada".
           const requested = splitRequestedRefs(query.refs)
+          // Passe livre da equipe (mesma régua dos cursos): superadmin/admin/staff acessam
+          // TODO produto vendável (ex.: o Estúdio Completo) sem matrícula — testar/verificar
+          // o Kids como um aluno comprador. O `x-auth-user-role` é confiável (gateway).
+          if (isPrivilegedActor(headers)) {
+            const access: Record<string, boolean> = {}
+            for (const ref of requested) access[ref] = true
+            return { access }
+          }
           const valid = parseAccessRefs(query.refs)
           const result = await deps.accessCheck.execute(resolveAccountId(headers), valid)
           const hasMasterForAudience =
@@ -212,7 +228,12 @@ export function membersRoutes(deps: MembersRoutesDeps) {
       .post(
         '/gamification/streak-freeze/buy',
         async ({ headers, query }) =>
-          deps.buyStreakFreeze.execute(resolveUserId(headers), query.audience ?? 'kids'),
+          deps.buyStreakFreeze.execute(
+            resolveUserId(headers),
+            query.audience ?? 'kids',
+            idempotencyKey(headers),
+            isPrivilegedActor(headers),
+          ),
         { query: AudienceQuery },
       )
       // Agenda/limpa as férias (pausa a sequência sem culpa). `from=to=null` limpa.
@@ -246,7 +267,11 @@ export function membersRoutes(deps: MembersRoutesDeps) {
         '/avatar',
         async ({ headers, query }) => {
           const userId = resolveUserId(headers)
-          return deps.getAvatar.execute(userId, query.audience ?? 'kids')
+          return deps.getAvatar.execute(
+            userId,
+            query.audience ?? 'kids',
+            isPrivilegedActor(headers),
+          )
         },
         { query: AudienceQuery },
       )
@@ -255,7 +280,12 @@ export function membersRoutes(deps: MembersRoutesDeps) {
         '/avatar/parts/:partId/buy',
         async ({ headers, params, query }) => {
           const userId = resolveUserId(headers)
-          return deps.buyAvatarPart.execute(userId, query.audience ?? 'kids', params.partId)
+          return deps.buyAvatarPart.execute(
+            userId,
+            query.audience ?? 'kids',
+            params.partId,
+            isPrivilegedActor(headers),
+          )
         },
         { params: AvatarPartParams, query: AudienceQuery },
       )
@@ -268,11 +298,23 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             userId,
             resolveAccountId(headers),
             query.audience ?? 'kids',
-            { style: body.style ?? AVATAR_STYLE, parts: body.parts },
+            { version: 2, style: body.style ?? AVATAR_CHAR_STYLE, slots: body.slots },
           )
-          return { equipped: equipped.parts, style: equipped.style }
+          return { equipped: equipped.slots, style: equipped.style }
         },
         { body: AvatarConfigBody, query: AudienceQuery },
+      )
+      // Salva a URL do snapshot (a "foto" do avatar) — o BFF sobe o PNG p/ o R2 e manda a URL.
+      .put(
+        '/avatar/photo',
+        async ({ headers, body, query }) =>
+          deps.setAvatarPhoto.execute(
+            resolveUserId(headers),
+            resolveAccountId(headers),
+            query.audience ?? 'kids',
+            body.photoUrl,
+          ),
+        { body: AvatarPhotoBody, query: AudienceQuery },
       )
       // Perfil PÚBLICO de OUTRA criança (peer-viewable: qualquer aluno ativo lê). NÃO usa
       // CheckAccess — é recurso público da comunidade; o alvo é o `:profileId` (não o
@@ -288,7 +330,11 @@ export function membersRoutes(deps: MembersRoutesDeps) {
       .get(
         '/room',
         async ({ headers, query }) =>
-          deps.getRoom.execute(resolveUserId(headers), query.audience ?? 'kids'),
+          deps.getRoom.execute(
+            resolveUserId(headers),
+            query.audience ?? 'kids',
+            isPrivilegedActor(headers),
+          ),
         { query: AudienceQuery },
       )
       // Salva o quarto montado (canonicalizado contra o inventário; só itens possuídos).
@@ -299,11 +345,9 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             resolveUserId(headers),
             resolveAccountId(headers),
             query.audience ?? 'kids',
-            {
-              theme: body.theme,
-              placedItems: body.placedItems,
-              pet: body.pet,
-            },
+            // `rot`/cores/piso/luz chegam frouxos (number/string) — `canonicalizeRoomState`
+            // é o portão (normaliza rot, valida a paleta e a posse). Repassa o corpo inteiro.
+            body as RoomState,
           ),
         { body: RoomStateBody, query: AudienceQuery },
       )
@@ -311,7 +355,12 @@ export function membersRoutes(deps: MembersRoutesDeps) {
       .post(
         '/room/items/:itemId/buy',
         async ({ headers, params, query }) =>
-          deps.buyRoomItem.execute(resolveUserId(headers), query.audience ?? 'kids', params.itemId),
+          deps.buyRoomItem.execute(
+            resolveUserId(headers),
+            query.audience ?? 'kids',
+            params.itemId,
+            isPrivilegedActor(headers),
+          ),
         { params: RoomItemParams, query: AudienceQuery },
       )
       // Resumo de progresso dos FILHOS (área dos pais, kids). A conta vem do header

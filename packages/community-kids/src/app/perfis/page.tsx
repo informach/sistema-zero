@@ -12,7 +12,11 @@ export const dynamic = 'force-dynamic'
  * hoje?". O proxy garante a sessão (conta OU perfil) e isenta esta rota do gate de
  * perfil. Selecionar um perfil emite a sessão de perfil e leva à home.
  */
-export default async function PerfisPage() {
+export default async function PerfisPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ manage?: string }>
+}) {
   const session = await getSession()
   if (!session) redirect('/login')
   const res = await listReadonly()
@@ -21,11 +25,16 @@ export default async function PerfisPage() {
   // Sessão da conta com o portão já aberto (senha verificada há pouco) → a Área
   // dos pais abre sem re-pedir a senha (ex.: logo após sair de um perfil).
   const parentVerified = !isProfileSession && (await isParentVerifiedFor(session.id))
+  // Logo após sair de um perfil pela "Área dos pais", o reload volta com `?manage=1`
+  // e o portão aberto → já entra direto na GESTÃO (sem exigir um 2º clique no botão).
+  const { manage } = await searchParams
+  const startManaging = parentVerified && manage === '1'
   return (
     <PerfisClient
       initialProfiles={profiles}
       isProfileSession={isProfileSession}
       parentVerified={parentVerified}
+      startManaging={startManaging}
     />
   )
 }

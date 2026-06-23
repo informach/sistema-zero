@@ -4,7 +4,9 @@ import * as Blockly from 'blockly/core'
 // hex equivalentes aos tokens oklch de src/styles/studio.css (paleta do
 // sistema-zero, referência comunidade-sistema-zero). Manter os dois em sincronia.
 const FONT_STYLE = {
-  family: 'ui-sans-serif, system-ui, sans-serif',
+  // Fontes redondas/amigáveis (o host kids carrega Baloo 2 + Nunito); cai para
+  // o sistema onde não estiverem disponíveis (admin/member-shell).
+  family: "'Baloo 2', 'Nunito', ui-sans-serif, system-ui, sans-serif",
   weight: '500',
   size: 13,
 }
@@ -32,13 +34,13 @@ export const szLightTheme = Blockly.Theme.defineTheme('sz-light', {
   name: 'sz-light',
   base: Blockly.Themes.Classic,
   componentStyles: {
-    workspaceBackgroundColour: '#fbfaf7' /* --color-sz-bg = oklch(0.985 0.004 100) */,
-    toolboxBackgroundColour: '#ffffff' /* --color-sz-panel = oklch(1 0 0) */,
-    toolboxForegroundColour: '#030406' /* --color-sz-fg = oklch(0.105 0.01 265) */,
-    flyoutBackgroundColour: '#eef0f3' /* --color-sz-panel-soft = oklch(0.955 0.004 255) */,
-    flyoutForegroundColour: '#030406',
+    workspaceBackgroundColour: '#fef9ef' /* --color-sz-bg = oklch(0.975 0.012 85) creme MakeCode */,
+    toolboxBackgroundColour: '#fffdf8' /* --color-sz-panel = oklch(0.995 0.006 85) */,
+    toolboxForegroundColour: '#1a1410' /* near-black quente p/ o creme */,
+    flyoutBackgroundColour: '#f4ecdc' /* --color-sz-panel-soft = oklch(0.945 0.012 85) */,
+    flyoutForegroundColour: '#1a1410',
     flyoutOpacity: 1,
-    scrollbarColour: '#dcdee1' /* --color-sz-border = oklch(0.9 0.005 255) */,
+    scrollbarColour: '#e6d8c2' /* --color-sz-border = oklch(0.89 0.018 80) */,
     insertionMarkerColour: '#007f88' /* --color-sz-accent (cyan) = oklch(0.52 0.14 200) */,
     insertionMarkerOpacity: 0.5,
     markerColour: '#007f88',
@@ -53,26 +55,39 @@ export function szThemeFor(theme: 'dark' | 'light'): Blockly.Theme {
 
 /** Cor da grade do workspace por tema (opção de injeção, não do Theme). */
 export function szGridColourFor(theme: 'dark' | 'light'): string {
-  return theme === 'light' ? '#e9eaee' : '#1b212a'
+  return theme === 'light' ? '#efe3cf' : '#1b212a'
 }
 
-/** Compat: o tema histórico era só o escuro. */
-export const szTheme = szDarkTheme
+/** Compat: alias do tema PADRÃO (hoje o claro/creme; era o escuro). */
+export const szTheme = szLightTheme
 
+// COR = IDENTIDADE DA CATEGORIA (igual ao MakeCode): cada CATEGORIA de topo tem
+// UMA cor bem distinta, e suas SUB-categorias são VARIAÇÕES (tons) dessa cor —
+// a cor diz à criança a que categoria o bloco pertence. Cada blocks/<cat>.ts faz
+// `const C = CATEGORY_COLORS.<cat>`; os tons de sub-grupo vivem em *_GROUPS.
+// ⚠️ "Programação" é UMA categoria (guarda-chuva): TUDO dentro dela — js/math/
+// values/dom/events/objects/functions/classes — fica em tons de ÂMBAR/laranja.
 export const CATEGORY_COLORS = {
-  html: '#22d3ee',
-  css: '#a78bfa',
-  svg: '#0ea5e9',
-  dom: '#38bdf8',
-  events: '#f0abfc',
-  js: '#fbbf24',
-  canvas: '#34d399',
-  values: '#2dd4bf',
-  math: '#60a5fa',
-  classes: '#f59e0b',
-  objects: '#e879f9',
-  functions: '#fb923c',
-  search: '#94a3b8',
-  advanced: '#f87171',
-  extension: '#f472b6',
+  // Categorias de topo — 9 cores BEM distintas (escolha da usuária). Jogo 2D (rosa)
+  // e Jogo 3D (amarelo) são EXTENSÕES — cor própria no blocks.ts de cada uma.
+  search: '#8a94a6', // cinza (busca)
+  html: '#2348cf', // azul escuro
+  css: '#e63946', // vermelho
+  svg: '#1aaf54', // verde
+  canvas: '#9333ea', // roxo
+  advanced: '#38bdf8', // azul do céu (claro)
+  extension: '#ec4899', // rosa (extensão genérica = Jogo 2D)
+  // Programação (guarda-chuva) — TUDO em tons de LARANJA, variando por área.
+  js: '#f97316', // laranja (base — Variáveis/Lógica/Repetições…)
+  math: '#ff9a3d', // laranja (Matemática)
+  values: '#f0a52a', // dourado (Valores)
+  dom: '#e08a14', // âmbar-laranja (Página)
+  events: '#ffc266', // dourado-claro (Eventos)
+  objects: '#ff8757', // laranja-pêssego (Objetos)
+  functions: '#fb6e2e', // laranja-forte (Funções)
+  classes: '#e8820c', // âmbar-laranja (Classes)
 } as const
+
+// As funções de tonalidade vivem num módulo PURO (sem Blockly) p/ as extensões
+// reusarem sem puxar o motor; re-exportadas aqui p/ os blocks/* internos.
+export { categoryShades } from './colorShades'

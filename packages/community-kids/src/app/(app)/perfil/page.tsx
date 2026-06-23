@@ -2,7 +2,6 @@ import { redirect } from 'next/navigation'
 import { BadgeShowcase } from '@/components/kids/badge-showcase'
 import { LeagueBoard } from '@/components/kids/league-board'
 import { StreakProtection } from '@/components/kids/streak-protection'
-import type { AvatarConfig } from '@/lib/avatar-catalog'
 import { getAvatarReadonly, getGamificationReadonly, getLeagueReadonly } from '@/server/members'
 import { listReadonly } from '@/server/profiles'
 import { getSession } from '@/server/session'
@@ -33,13 +32,11 @@ export default async function ProfilePage() {
   if (!profile) redirect('/perfis')
   const gamification = gam.status === 200 ? (gam.body ?? null) : null
   const league = leagueRes.status === 200 ? (leagueRes.body ?? null) : null
-  const avatarConfig: AvatarConfig | null =
-    avatarRes.status === 200 && avatarRes.body
-      ? { style: avatarRes.body.style, parts: avatarRes.body.equipped }
-      : null
+  const avatarPhotoUrl =
+    avatarRes.status === 200 && avatarRes.body ? (avatarRes.body.photoUrl ?? null) : null
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
+    <div className="flex w-full flex-col gap-6">
       <div>
         <h1 className="sz-display text-2xl">Meu perfil</h1>
         <p className="mt-1 text-sm text-muted-foreground">Seu avatar, seu nome e seu telefone.</p>
@@ -47,7 +44,7 @@ export default async function ProfilePage() {
       <ProfileClient
         profile={profile}
         ranking={gamification?.ranking ?? null}
-        avatarConfig={avatarConfig}
+        avatarPhotoUrl={avatarPhotoUrl}
       />
       {league ? <LeagueBoard league={league} /> : null}
       {gamification ? (

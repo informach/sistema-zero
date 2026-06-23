@@ -40,6 +40,9 @@ Tier 1 — mira/contas, vida/tempo, aparência, mundo e pausa (v0.15.0):
 - randomBetween(min, max): inteiro sorteado (inclusive). randomChance(percent): true em ~percent% das vezes (use em if).
 - setHealth(s, n)/changeHealth(s, delta)/getHealth(s)/hasHealth(s): vida do sprite (delta negativo = dano; não passa de 0 nem do máximo).
 - cooldownReady(s, frames): true no máximo a cada N quadros, POR sprite (cadência de tiro) — use em if.
+- spriteX(s)/spriteY(s)/spriteW(s)/spriteH(s): posição (x/y) e tamanho (largura/altura) do sprite, em px.
+- centerX(s)/centerY(s): o MEIO do sprite (x+largura/2, y+altura/2) — atirar/mirar/posicionar pelo centro.
+- randomX()/randomY(): posição x/y aleatória NA TELA (0..largura/altura) — fazer um sprite nascer num lugar sorteado (asteroides, estrelas). Evita Math.random()*largura na mão.
 - pruneOld(grupo, segundos): tira do grupo quem viveu mais que o tempo (tiros somem sozinhos).
 - flipSprite(s, 'left'|'right') / setOpacity(s, percent) / setSize(s, w, h) / scaleSprite(s, fator): espelhar/transparência/tamanho.
 - wrapEdges(s): dá a volta na tela (sai de um lado, reaparece no outro).
@@ -101,7 +104,7 @@ HUD no canvas (v0.6.0) — desenhe DENTRO do gameLoop, depois de limpar a tela:
 - drawBar(ctx, valor, max, x, y, w, h, "cor"): barra de progresso/vida (fração valor/max).
 
 Estado/telas (cenas) — início → jogando → ganhou → perdeu, com UM só gameLoop:
-- setScene("jogando") / sceneIs("jogando") (booleano, use no if) / showScreen(ctx, titulo, subtitulo, dica, fundo) / restart().
+- setScene("jogando") / sceneIs("jogando") (booleano, use no if) / showScreen(ctx, titulo, subtitulo, dica, fundo) / restart(). O titulo/subtitulo/dica aceitam texto fixo OU expressão (variável, "juntar texto", resultado de função) — ex.: "Destrua " + alvo + " asteroides" mostra a meta vinda de uma variável.
 - IMPORTANTE: as variáveis e grupos (createGroup, createSprite, pontos, vidas) ficam no TOPO do programa (fora do gameLoop), para o loop conseguir enxergá-las. NÃO existe um bloco "quando o jogo começar" que embrulhe isso — o setup é só os blocos do topo.
 - Padrão: setup no topo + setScene("inicio"); um único "a cada quadro" que limpa a tela e usa "se a tela atual é X" para decidir o que desenhar; um "quando apertar Enter" que troca início→jogando e, no perdeu/ganhou, chama reiniciar.
 
