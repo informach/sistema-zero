@@ -2,6 +2,7 @@
 
 import { UserAvatar } from '@sistemazero/member-shell/components/user-avatar'
 import { Button } from '@sistemazero/ui/button'
+import { Dialog } from '@sistemazero/ui/dialog'
 import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
 import { PasswordInput } from '@sistemazero/ui/password-input'
@@ -61,11 +62,16 @@ export function PerfisClient({
 }) {
   const [profiles, setProfiles] = useState(initialProfiles)
   const [managing, setManaging] = useState(startManaging)
+  // Portão verificado nesta sessão (cookie de 15 min). `parentVerified` é prop CONGELADA do
+  // servidor; sem rastrear localmente, verificar a senha e reabrir a Área dos pais (sem reload)
+  // pedia a senha DE NOVO mesmo com o portão aberto.
+  const [verified, setVerified] = useState(parentVerified)
   const [busy, setBusy] = useState(false)
   const [gate, setGate] = useState(false) // modal de senha (abrir a área dos pais)
   const [changingPassword, setChangingPassword] = useState(false) // modal: trocar senha da conta
   const [editing, setEditing] = useState<Editing>(null)
   const [showPurchases, setShowPurchases] = useState(false) // sub-tela "Minhas compras"
+  const [removing, setRemoving] = useState<ProfileView | null>(null) // confirmação de remover perfil
 
   // Entrou na gestão pelo `?manage=1` (logo após "Área dos pais" sair de um perfil):
   // limpa o parâmetro da URL p/ um refresh depois de "Concluir" não reabrir sozinho.
@@ -87,7 +93,7 @@ export function PerfisClient({
 
   function openParentArea() {
     // Portão já aberto (senha verificada há pouco) → gerencia direto.
-    if (parentVerified) {
+    if (verified) {
       setManaging(true)
       return
     }
@@ -121,6 +127,7 @@ export function PerfisClient({
     setBusy(false)
     if (res.ok) {
       setGate(false)
+      setVerified(true) // portão aberto no servidor (cookie) — não pedir a senha de novo nesta sessão
       setManaging(true) // portão aberto no servidor (cookie) → libera a gestão
       return
     }
@@ -158,11 +165,15 @@ export function PerfisClient({
     else toast.error('Não foi possível salvar o perfil.')
   }
 
-  async function archiveProfile(p: ProfileView) {
-    if (!window.confirm(`Remover o perfil de ${p.name}? O progresso fica guardado.`)) return
+  // Remoção em DOIS passos: o botão abre um modal de confirmação (Dialog acessível — sem
+  // `window.confirm`, que é off-brand, não anunciado e suprimível pelo navegador).
+  async function confirmArchive() {
+    const p = removing
+    if (!p) return
     setBusy(true)
     const res = await fetch(`/api/profiles/${p.id}`, { method: 'DELETE' })
     setBusy(false)
+    setRemoving(null)
     if (res.ok) {
       setProfiles((prev) => prev.filter((x) => x.id !== p.id))
       setEditing(null)
@@ -193,14 +204,38 @@ export function PerfisClient({
 
   if (editing) {
     return (
-      <ProfileForm
-        editing={editing}
-        busy={busy}
-        onCancel={() => setEditing(null)}
-        onSave={saveProfile}
-        onArchive={archiveProfile}
-        onAvatar={uploadAvatar}
-      />
+      <>
+        <ProfileForm
+          editing={editing}
+          busy={busy}
+          onCancel={() => setEditing(null)}
+          onSave={saveProfile}
+          onArchive={(p) => setRemoving(p)}
+          onAvatar={uploadAvatar}
+        />
+        <Dialog
+          open={removing !== null}
+          onClose={() => {
+            if (!busy) setRemoving(null)
+          }}
+          title="Remover perfil"
+          footer={
+            <>
+              <Button variant="secondary" onClick={() => setRemoving(null)} disabled={busy}>
+                Cancelar
+              </Button>
+              <Button variant="destructive" onClick={() => void confirmArchive()} disabled={busy}>
+                {busy ? 'Removendo…' : 'Remover'}
+              </Button>
+            </>
+          }
+        >
+          <p className="text-muted-foreground text-sm">
+            Remover o perfil de <strong className="text-foreground">{removing?.name}</strong>? O
+            progresso fica guardado.
+          </p>
+        </Dialog>
+      </>
     )
   }
 

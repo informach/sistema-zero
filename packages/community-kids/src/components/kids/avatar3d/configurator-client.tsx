@@ -1,7 +1,7 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { useEffect, useState } from 'react'
+import { useTheme } from 'next-themes'
 import { KidsMascot } from '../mascot'
 
 /**
@@ -25,15 +25,9 @@ function ConfiguratorLoading() {
 }
 
 export function AvatarConfiguratorClient() {
-  // Fundo da cena casa com o tema (claro/escuro da marca). Detecção simples por mídia;
-  // o ajuste fino é só cosmético (não bloqueia nada).
-  const [dark, setDark] = useState(false)
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-color-scheme: dark)')
-    setDark(mq.matches)
-    const onChange = (e: MediaQueryListEvent) => setDark(e.matches)
-    mq.addEventListener('change', onChange)
-    return () => mq.removeEventListener('change', onChange)
-  }, [])
-  return <AvatarConfigurator dark={dark} />
+  // Fundo da cena casa com o tema DA COMUNIDADE (toggle do app via next-themes), não com a
+  // preferência do SO — igual ao Estúdio (`studio-full-client`). Cosmético; `resolvedTheme` pode
+  // vir `undefined` na 1ª render (pré-hidratação) → claro por padrão, ajusta ao montar.
+  const { resolvedTheme } = useTheme()
+  return <AvatarConfigurator dark={resolvedTheme === 'dark'} />
 }

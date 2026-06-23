@@ -15,7 +15,7 @@ import {
   Sun,
   Trash2,
 } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/cn'
 import {
@@ -79,8 +79,8 @@ function floorOccupied(items: Placed): Set<string> {
   }
   return set
 }
-/** Primeira célula LIVRE para um footprint w×h no chão (varre linha a linha). */
-function freeFloorSpot(items: Placed, w: number, h: number): { x: number; y: number } {
+/** Primeira célula LIVRE para um footprint w×h no chão (varre linha a linha); `null` = sem vão. */
+function freeFloorSpot(items: Placed, w: number, h: number): { x: number; y: number } | null {
   const occ = floorOccupied(items)
   for (let y = 0; y <= ROOM_GRID.rows - h; y++) {
     for (let x = 0; x <= ROOM_GRID.cols - w; x++) {
@@ -96,7 +96,36 @@ function freeFloorSpot(items: Placed, w: number, h: number): { x: number; y: num
       if (free) return { x, y }
     }
   }
-  return { x: 0, y: 0 } // sala cheia — o canonicalize descarta sobreposição
+  return null // sala cheia — não inventa um spot sobreposto (o toast avisa em vez de mentir)
+}
+
+/** O footprint cabe SEM sobrepor outra peça? (chão↔chão, parede↔mesma parede). Usado no teclado. */
+function isFreeAt(
+  items: Placed,
+  index: number,
+  isWall: boolean,
+  wall: 'left' | 'right' | undefined,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+): boolean {
+  for (let i = 0; i < items.length; i++) {
+    if (i === index) continue
+    const it = items[i]
+    const inf = it && ROOM_ITEM_INFO[it.itemId]
+    if (!it || !inf) continue
+    const otherWall = inf.mount === 'wall'
+    if (isWall) {
+      if (!otherWall || (it.wall ?? 'right') !== wall) continue
+      if (rectsOverlap(x, y, w, h, it.x, it.y, inf.w, inf.h)) return false
+    } else {
+      if (otherWall) continue
+      const ofp = effectiveFootprint(inf.w, inf.h, (it.rot ?? 0) as Rot)
+      if (rectsOverlap(x, y, w, h, it.x, it.y, ofp.w, ofp.h)) return false
+    }
+  }
+  return true
 }
 /** Células ocupadas numa parede específica. */
 function wallOccupied(items: Placed, wall: 'left' | 'right'): Set<string> {
@@ -116,7 +145,7 @@ function freeWallSpot(
   items: Placed,
   w: number,
   h: number,
-): { wall: 'left' | 'right'; u: number; v: number } {
+): { wall: 'left' | 'right'; u: number; v: number } | null {
   for (const wall of ['right', 'left'] as const) {
     const occ = wallOccupied(items, wall)
     const len = wallLength(wall)
@@ -135,7 +164,7 @@ function freeWallSpot(
       }
     }
   }
-  return { wall: 'right', u: 0, v: WALL_H_CELLS - h }
+  return null // paredes cheias
 }
 
 /** Editor do quarto 3D: cena ao vivo + barra de categorias (móveis/piso/parede/clima/…). */
@@ -154,6 +183,13 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
   const [saving, setSaving] = useState(false)
   const [tab, setTab] = useState<TabId>('moveis')
   const [brush, setBrush] = useState<string>(ROOM_WALL_PALETTE[0]?.hex ?? '#f3ede1')
+  const draftRef = useRef(draft)
+
+  function updateDraft(updater: (current: RoomStateView) => RoomStateView) {
+    const next = updater(draftRef.current)
+    draftRef.current = next
+    setDraft(next)
+  }
 
   useEffect(() => {
     let alive = true
@@ -162,6 +198,7 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
       .then((d: RoomEditorView | null) => {
         if (!alive || !d) return
         setData(d)
+        draftRef.current = d.state
         setDraft(d.state)
         setBalance(d.balance)
         setCoinsUnlimited(d.balanceUnlimited === true)
@@ -172,13 +209,68 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
     }
   }, [])
 
+  // Teclado: setas movem a peça selecionada, R gira, Delete tira, Esc deseleciona. O handler
+  // vive num ref atualizado a cada render (sempre lê o estado fresco) → 1 listener estável, sem
+  // re-assinar a cada movimento (mesmo motivo do ref no canvas 3D).
+  const keyHandlerRef = useRef<(e: KeyboardEvent) => void>(() => {})
+  keyHandlerRef.current = (e: KeyboardEvent) => {
+    if (selected === null) return
+    const el = document.activeElement as HTMLElement | null
+    if (
+      el &&
+      (el.tagName === 'INPUT' ||
+        el.tagName === 'TEXTAREA' ||
+        el.tagName === 'SELECT' ||
+        el.isContentEditable)
+    )
+      return
+    const it = draftRef.current.placedItems[selected]
+    const isWall = it ? ROOM_ITEM_INFO[it.itemId]?.mount === 'wall' : false
+    switch (e.key) {
+      case 'ArrowUp':
+        e.preventDefault()
+        nudgeSelected(0, isWall ? 1 : -1)
+        break
+      case 'ArrowDown':
+        e.preventDefault()
+        nudgeSelected(0, isWall ? -1 : 1)
+        break
+      case 'ArrowLeft':
+        e.preventDefault()
+        nudgeSelected(-1, 0)
+        break
+      case 'ArrowRight':
+        e.preventDefault()
+        nudgeSelected(1, 0)
+        break
+      case 'r':
+      case 'R':
+        e.preventDefault()
+        rotateSelected()
+        break
+      case 'Delete':
+      case 'Backspace':
+        e.preventDefault()
+        removeSelected()
+        break
+      case 'Escape':
+        setSelected(null)
+        break
+    }
+  }
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => keyHandlerRef.current(e)
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
   const ownedById = useMemo(() => new Map((data?.items ?? []).map((i) => [i.id, i.owned])), [data])
   const isOwned = (id: string) => ownedById.get(id) ?? false
   const appearance = resolveRoomAppearance(draft)
   const paintColor = tab === 'parede' ? brush : null
 
   function moveItem(index: number, x: number, y: number, wall?: 'left' | 'right') {
-    setDraft((d) => {
+    updateDraft((d) => {
       const it = d.placedItems[index]
       if (!it) return d
       const info = ROOM_ITEM_INFO[it.itemId]
@@ -204,30 +296,77 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
     if (!item.owned) return
     const info = ROOM_ITEM_INFO[item.id]
     if (!info) return
-    setDraft((d) => {
-      if (d.placedItems.length >= 40) return d
-      if (info.mount === 'wall') {
-        const s = freeWallSpot(d.placedItems, info.w, info.h)
-        return {
-          ...d,
-          placedItems: [...d.placedItems, { itemId: item.id, x: s.u, y: s.v, wall: s.wall }],
-        }
+    // Decide a colocação ANTES de mexer no estado: assim o toast só fala "adicionado" quando
+    // a peça REALMENTE entrou (antes mentia mesmo com o quarto cheio / sem vão livre).
+    const current = draftRef.current
+    if (current.placedItems.length >= 40) {
+      toast('Seu quarto está cheio! Tire algo antes de adicionar mais. 🧹')
+      return
+    }
+    if (info.mount === 'wall') {
+      const s = freeWallSpot(current.placedItems, info.w, info.h)
+      if (!s) {
+        toast('Não cabe mais nada nessa parede! 🧱')
+        return
       }
-      const s = freeFloorSpot(d.placedItems, info.w, info.h)
-      return { ...d, placedItems: [...d.placedItems, { itemId: item.id, x: s.x, y: s.y }] }
-    })
+      updateDraft((d) => ({
+        ...d,
+        placedItems: [...d.placedItems, { itemId: item.id, x: s.u, y: s.v, wall: s.wall }],
+      }))
+    } else {
+      const s = freeFloorSpot(current.placedItems, info.w, info.h)
+      if (!s) {
+        toast('Não cabe mais nada no chão! 🧹')
+        return
+      }
+      updateDraft((d) => ({
+        ...d,
+        placedItems: [...d.placedItems, { itemId: item.id, x: s.x, y: s.y }],
+      }))
+    }
     toast.success(`${info.labelPt} no quarto! ✨`)
   }
 
   function removeSelected() {
     if (selected === null) return
-    setDraft((d) => ({ ...d, placedItems: d.placedItems.filter((_, i) => i !== selected) }))
+    updateDraft((d) => ({ ...d, placedItems: d.placedItems.filter((_, i) => i !== selected) }))
     setSelected(null)
+  }
+
+  // Movimento por TECLADO da peça selecionada (a11y: arrastar no plano 3D não é alcançável por
+  // teclado). Respeita os mesmos limites e colisão do arraste; parede → x=horizontal, y=altura.
+  function nudgeSelected(dx: number, dy: number) {
+    if (selected === null) return
+    const current = draftRef.current
+    const it = current.placedItems[selected]
+    if (!it) return
+    const info = ROOM_ITEM_INFO[it.itemId]
+    if (!info) return
+    if (info.mount === 'wall') {
+      const side = it.wall ?? 'right'
+      const nx = Math.max(0, Math.min(wallLength(side) - info.w, it.x + dx))
+      const ny = Math.max(0, Math.min(WALL_H_CELLS - info.h, it.y + dy))
+      if (
+        (nx !== it.x || ny !== it.y) &&
+        isFreeAt(current.placedItems, selected, true, side, nx, ny, info.w, info.h)
+      )
+        moveItem(selected, nx, ny, side)
+      return
+    }
+    const fp = effectiveFootprint(info.w, info.h, (it.rot ?? 0) as Rot)
+    const nx = Math.max(0, Math.min(ROOM_GRID.cols - fp.w, it.x + dx))
+    const ny = Math.max(0, Math.min(ROOM_GRID.rows - fp.h, it.y + dy))
+    if (
+      (nx !== it.x || ny !== it.y) &&
+      isFreeAt(current.placedItems, selected, false, undefined, nx, ny, fp.w, fp.h)
+    )
+      moveItem(selected, nx, ny)
   }
 
   function rotateSelected() {
     if (selected === null) return
-    const it = draft.placedItems[selected]
+    const current = draftRef.current
+    const it = current.placedItems[selected]
     if (!it) return
     const info = ROOM_ITEM_INFO[it.itemId]
     if (!info || info.mount === 'wall') return // item de parede não gira
@@ -237,7 +376,7 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
     const y = Math.max(0, Math.min(ROOM_GRID.rows - fp.h, it.y))
     // Não gira para uma orientação que sobreponha outro móvel de chão: sem este guard
     // o `canonicalizeRoomState` do members descartaria a peça em SILÊNCIO ao salvar.
-    const collides = draft.placedItems.some((p, i) => {
+    const collides = current.placedItems.some((p, i) => {
       if (i === selected) return false
       const inf = ROOM_ITEM_INFO[p.itemId]
       if (!inf || inf.mount === 'wall') return false
@@ -248,19 +387,19 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
       toast('Sem espaço para girar aqui! 🔄')
       return
     }
-    setDraft((d) => ({
+    updateDraft((d) => ({
       ...d,
       placedItems: d.placedItems.map((p, i) => (i === selected ? { ...p, rot, x, y } : p)),
     }))
   }
 
   function paintWall(wall: 'left' | 'right', color: string) {
-    setDraft((d) => ({ ...d, wallColors: { ...d.wallColors, [wall]: color } }))
+    updateDraft((d) => ({ ...d, wallColors: { ...d.wallColors, [wall]: color } }))
   }
 
   function applyTheme(id: string) {
     // Tema reseta os overrides → mostra a aparência bundle do preset (a criança ajusta depois).
-    setDraft((d) => ({
+    updateDraft((d) => ({
       theme: id,
       placedItems: d.placedItems,
       pet: d.pet,
@@ -311,7 +450,7 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
       const res = await fetch('/api/members/room', {
         method: 'PUT',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(draft),
+        body: JSON.stringify(draftRef.current),
       })
       if (!res.ok) throw new Error('save failed')
       toast.success('Quarto salvo! 🏠')
@@ -347,7 +486,7 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
               <button
                 type="button"
                 onClick={rotateSelected}
-                className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 font-bold text-primary-foreground text-xs shadow"
+                className="inline-flex min-h-11 items-center gap-1 rounded-full bg-primary px-3 py-2.5 font-bold text-primary-foreground text-xs shadow"
               >
                 <RotateCw className="size-3.5" /> Girar
               </button>
@@ -355,13 +494,43 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
             <button
               type="button"
               onClick={removeSelected}
-              className="inline-flex items-center gap-1 rounded-full bg-(--sz-hot) px-3 py-1.5 font-bold text-white text-xs shadow"
+              className="inline-flex min-h-11 items-center gap-1 rounded-full bg-(--sz-hot) px-3 py-2.5 font-bold text-(--sz-hot-fg) text-xs shadow"
             >
               <Trash2 className="size-3.5" /> Tirar
             </button>
           </div>
         ) : null}
       </div>
+
+      {/* Lista das peças no quarto — caminho de TECLADO p/ posicionar (arrastar no 3D não é
+          alcançável por teclado): escolha uma e mova com as setas (R gira, Delete tira). */}
+      {draft.placedItems.length > 0 ? (
+        <div
+          role="group"
+          aria-label="Peças no quarto — escolha uma e mova com as setas do teclado (R gira, Delete tira)"
+          className="flex flex-wrap gap-1.5"
+        >
+          {draft.placedItems.map((p, i) => {
+            const inf = ROOM_ITEM_INFO[p.itemId]
+            return (
+              <button
+                // biome-ignore lint/suspicious/noArrayIndexKey: a ordem dos itens É a identidade.
+                key={i}
+                type="button"
+                onClick={() => setSelected(selected === i ? null : i)}
+                aria-pressed={selected === i}
+                className={cn(
+                  'inline-flex min-h-11 items-center gap-1 rounded-full border-2 px-3 py-1.5 font-semibold text-xs',
+                  selected === i ? 'border-primary bg-primary/10' : 'border-border',
+                )}
+              >
+                <span aria-hidden="true">{inf?.emoji ?? '📦'}</span>
+                {inf?.labelPt ?? p.itemId}
+              </button>
+            )
+          })}
+        </div>
+      ) : null}
 
       <div className="flex items-center justify-between">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-(--kids-lime-tint) px-3 py-1 [font-family:var(--font-display)] font-bold text-sm">
@@ -418,7 +587,7 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
           choices={data.floors}
           activeId={appearance.floorId}
           busy={busy}
-          onApply={(id) => setDraft((d) => ({ ...d, floor: id }))}
+          onApply={(id) => updateDraft((d) => ({ ...d, floor: id }))}
           onBuy={buy}
           label={(id) => floorInfo(id).labelPt}
           preview={(id) => {
@@ -440,7 +609,7 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
           choices={data.lightings}
           activeId={appearance.lightingId}
           busy={busy}
-          onApply={(id) => setDraft((d) => ({ ...d, lighting: id }))}
+          onApply={(id) => updateDraft((d) => ({ ...d, lighting: id }))}
           onBuy={buy}
           label={(id) => lightingPreset(id).labelPt}
           preview={(id) => (
@@ -482,7 +651,7 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
         pets={pets}
         current={draft.pet}
         busy={busy}
-        onPick={(id) => setDraft((d) => ({ ...d, pet: id }))}
+        onPick={(id) => updateDraft((d) => ({ ...d, pet: id }))}
         onBuy={buy}
       />
     )

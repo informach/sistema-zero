@@ -139,6 +139,9 @@
   --sz-accent: oklch(0.62 0.18 135);
   --sz-hot: oklch(0.55 0.22 27);
   --sz-hot-tint: oklch(0.55 0.22 27 / 0.1);
+  /* Texto sobre o sólido --sz-hot (botões "Resgatar"/"Tirar"): branco passa AA no
+     vermelho escuro do tema claro. No dark o hot é mais claro → texto navy (ver .dark). */
+  --sz-hot-fg: oklch(1 0 0);
   --sz-gradient: linear-gradient(90deg, oklch(0.5 0.14 200), oklch(0.52 0.18 135));
 }
 
@@ -203,6 +206,8 @@
   --sz-accent: oklch(0.84 0.13 192);
   --sz-hot: oklch(0.704 0.191 22);
   --sz-hot-tint: oklch(0.704 0.191 22 / 0.15);
+  /* Hot mais CLARO no dark → texto branco falharia; usa navy escuro (contraste ~5:1). */
+  --sz-hot-fg: oklch(0.16 0.01 265);
   --sz-gradient: linear-gradient(90deg, oklch(0.875 0.215 122), oklch(0.84 0.13 192));
 }
 

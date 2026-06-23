@@ -317,7 +317,11 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
 
       {/* Cena 3D — ocupa a faixa ENTRE a barra e o painel: centraliza o avatar na área visível
           (descontando a configuração de baixo), igual em refresh OU navegação, nos dois modos. */}
-      <div className="relative min-h-0 flex-1">
+      <div
+        className="relative min-h-0 flex-1"
+        role="img"
+        aria-label="Pré-visualização 3D do seu avatar"
+      >
         {state ? (
           <AvatarScene slots={slots} onReady={onReady} dark={dark} mode={mode} pose={activePose} />
         ) : (
@@ -334,19 +338,33 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
             {/* Cores (acima dos itens, como no WawaSensei) */}
             {palette && palette.length > 0 ? (
               <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-subtle">
-                {palette.map((color) => (
-                  <button
-                    key={color}
-                    type="button"
-                    onClick={() => selectColor(color)}
-                    aria-label={`Cor ${color}`}
-                    className={cn(
-                      'size-9 shrink-0 rounded-full border-2 transition-transform active:scale-90',
-                      currentColor === color ? 'border-foreground' : 'border-transparent',
-                    )}
-                    style={{ backgroundColor: color }}
-                  />
-                ))}
+                {palette.map((color, i) => {
+                  const isCurrent = currentColor === color
+                  return (
+                    <button
+                      key={color}
+                      type="button"
+                      onClick={() => selectColor(color)}
+                      aria-label={`Cor ${i + 1}`}
+                      aria-pressed={isCurrent}
+                      className={cn(
+                        'grid size-9 shrink-0 place-items-center rounded-full border-2 transition-transform active:scale-90',
+                        isCurrent
+                          ? 'border-foreground ring-2 ring-foreground/30'
+                          : 'border-transparent',
+                      )}
+                      style={{ backgroundColor: color }}
+                    >
+                      {/* Cue NÃO-cor do selecionado (daltônicos): check branco com sombra p/ contraste. */}
+                      {isCurrent ? (
+                        <Check
+                          className="size-4 text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.6)]"
+                          strokeWidth={3}
+                        />
+                      ) : null}
+                    </button>
+                  )
+                })}
               </div>
             ) : null}
 
@@ -357,6 +375,7 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
                   key={c}
                   type="button"
                   onClick={() => setCategory(c)}
+                  aria-pressed={c === category}
                   className={cn(
                     'shrink-0 rounded-full px-3 py-2 font-semibold text-sm transition-colors',
                     c === category
@@ -394,6 +413,7 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
                   key={p.id}
                   type="button"
                   onClick={() => setPose(p.id)}
+                  aria-pressed={pose === p.id}
                   className={cn(
                     'shrink-0 rounded-full px-4 py-2 font-semibold text-sm transition-colors',
                     pose === p.id

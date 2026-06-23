@@ -36,6 +36,7 @@ export function RoomCanvas({
   onMove,
   onPaintWall,
   paintColor = null,
+  staticView = false,
 }: {
   state: RoomStateView
   mode: 'edit' | 'view'
@@ -49,10 +50,21 @@ export function RoomCanvas({
   onPaintWall?: (wall: 'left' | 'right', color: string) => void
   /** Cor ativa do pincel (`null` = não está pintando). */
   paintColor?: string | null
+  /** Cena estática (perfil público de um colega) → sem loop de animação contínuo. */
+  staticView?: boolean
 }) {
   const dark = Boolean(lightingPreset(resolveRoomAppearance(state).lightingId).dark)
+  // Alternativa textual da cena 3D p/ leitores de tela (no modo `view`, ex.: perfil público de um
+  // colega). No `edit` a cena é interativa e a lista de peças já dá o rótulo do grupo.
+  const itemCount = state.placedItems.length
+  const roomLabel =
+    `Quarto 3D com ${itemCount} ${itemCount === 1 ? 'item' : 'itens'} de decoração` +
+    (state.pet ? ' e um bichinho de estimação' : '')
   return (
-    <div className="relative aspect-[3/2] w-full select-none overflow-hidden rounded-2xl border-2 border-border bg-muted">
+    <div
+      className="relative aspect-[3/2] w-full select-none overflow-hidden rounded-2xl border-2 border-border bg-muted"
+      {...(mode === 'view' ? { role: 'img', 'aria-label': roomLabel } : {})}
+    >
       <Room3D
         state={state}
         mode={mode}
@@ -61,6 +73,7 @@ export function RoomCanvas({
         onMove={onMove}
         onPaintWall={onPaintWall}
         paintColor={paintColor}
+        staticView={staticView}
         className="absolute inset-0 size-full"
       />
       {avatarPhotoUrl !== undefined ? (

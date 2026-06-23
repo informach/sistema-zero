@@ -144,7 +144,7 @@ function MissionGroup({
                     type="button"
                     onClick={() => onClaim(m)}
                     disabled={claiming === m.slug}
-                    className="inline-flex items-center gap-1 rounded-full bg-(--sz-hot) px-3 py-1 font-bold text-white text-xs disabled:opacity-60"
+                    className="inline-flex items-center gap-1 rounded-full bg-(--sz-hot) px-3 py-1 font-bold text-(--sz-hot-fg) text-xs disabled:opacity-60"
                   >
                     <Gift className="size-3.5" /> Resgatar
                   </button>

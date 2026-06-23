@@ -92,7 +92,7 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
   // ── Aprovado (nesta visita ou em tentativa anterior) ────────────────────────
   if (passed) {
     return (
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4" role="status" aria-live="polite">
         <Card className="flex flex-col items-center gap-3 p-6 text-center [background-image:var(--sz-gradient)] text-(--sz-primary-fg)">
           <span className="grid place-items-center rounded-full bg-card p-3">
             <KidsMascot
@@ -138,7 +138,7 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
   // ── Reprovado NESTA visita: nota + correção + retry/cooldown ───────────────
   if (result) {
     return (
-      <Card className="flex flex-col gap-5 p-5 md:p-6">
+      <Card className="flex flex-col gap-5 p-5 md:p-6" role="status" aria-live="polite">
         <div className="flex items-center gap-4">
           <KidsMascot expression="thinking" className="size-16" />
           <div>
@@ -167,7 +167,7 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
   // ── Cooldown hidratado do GET (reprovou em visita anterior) ────────────────
   if (cooldownLeft !== null) {
     return (
-      <Card className="flex items-center gap-4 p-5 md:p-6">
+      <Card className="flex items-center gap-4 p-5 md:p-6" role="status" aria-live="polite">
         <KidsMascot expression="sleeping" className="size-16 shrink-0" />
         <div className="flex flex-col gap-1">
           <p className="sz-display text-lg">Pausa rápida!</p>
@@ -290,7 +290,11 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
         })}
       </div>
 
-      {error ? <p className="text-destructive text-sm">{error}</p> : null}
+      {error ? (
+        <p role="alert" className="text-destructive text-sm">
+          {error}
+        </p>
+      ) : null}
 
       <div className="flex items-center justify-between gap-3">
         {step > 0 ? (

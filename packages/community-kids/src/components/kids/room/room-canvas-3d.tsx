@@ -41,6 +41,8 @@ export interface Room3DProps {
   onMove?: (index: number, x: number, y: number, wall?: 'left' | 'right') => void
   onPaintWall?: (wall: 'left' | 'right', color: string) => void
   paintColor?: string | null
+  /** Cena estática (ex.: quarto de um colega no perfil público) → nunca roda loop contínuo. */
+  staticView?: boolean
   className?: string
 }
 
@@ -200,12 +202,18 @@ function Scene({
     ],
   )
 
+  // `moveTo` muda a cada movimento (depende de `placedItems`); guardá-lo num ref deixa o efeito
+  // de listeners ESTÁVEL — sem ele, cada `onMove` re-assinava pointermove/up a cada frame do
+  // arraste (thrash de add/removeEventListener no tablet + janela rara onde um `pointerup` cai
+  // entre o cleanup e o re-add → órbita ficava travada).
+  const moveToRef = useRef(moveTo)
+  moveToRef.current = moveTo
   useEffect(() => {
     if (mode !== 'edit') return
     const el = gl.domElement
     const onPointerMove = (e: PointerEvent) => {
       if (dragRef.current !== null) {
-        moveTo(e.clientX, e.clientY)
+        moveToRef.current(e.clientX, e.clientY)
         invalidate()
       }
     }
@@ -226,7 +234,7 @@ function Scene({
       el.removeEventListener('pointerup', onUp)
       el.removeEventListener('pointercancel', onUp)
     }
-  }, [mode, gl, moveTo, invalidate, controls])
+  }, [mode, gl, invalidate, controls])
 
   const startDrag = useCallback(
     (index: number, e: ThreeEvent<PointerEvent>) => {
@@ -303,7 +311,10 @@ function Scene({
 export function RoomCanvas3D(props: Room3DProps) {
   const reducedMotion = useReducedMotion()
   const preset = lightingPreset(resolveRoomAppearance(props.state).lightingId)
-  const animated = !reducedMotion && (Boolean(props.state.pet) || Boolean(preset.party))
+  // `staticView`: o quarto de OUTRA criança (perfil público) não precisa animar o pet/festa dela
+  // no aparelho de quem visita — renderiza 1 quadro sob demanda.
+  const animated =
+    !props.staticView && !reducedMotion && (Boolean(props.state.pet) || Boolean(preset.party))
   return (
     <Canvas
       orthographic
