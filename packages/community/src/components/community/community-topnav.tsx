@@ -22,7 +22,10 @@ export function CommunityTopnav({ user }: { user: SessionUserWithAvatar }) {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur">
       <div className="relative flex h-14 items-center justify-between gap-4 px-4 md:px-6">
-        <Link href="/" className="flex shrink-0 items-center" aria-label="Início">
+        {/* `prefetch={false}` PROPOSITAL (mesmo motivo do kids): rotas `force-dynamic` + ida ao
+            gateway numa réplica ÚNICA — o prefetch automático do Next de todos os links do header
+            a cada página vira tempestade de RSC/gateway. Navegação passa a buscar sob demanda. */}
+        <Link href="/" className="flex shrink-0 items-center" aria-label="Início" prefetch={false}>
           <Image
             src="/logo_dark.svg"
             width={515}
@@ -50,6 +53,7 @@ export function CommunityTopnav({ user }: { user: SessionUserWithAvatar }) {
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch={false}
                 className={cn(
                   'flex items-center gap-2 rounded-lg px-4 py-2 text-sm transition-colors',
                   active
@@ -77,6 +81,7 @@ export function CommunityTopnav({ user }: { user: SessionUserWithAvatar }) {
             <Link
               key={item.href}
               href={item.href}
+              prefetch={false}
               className={cn(
                 'whitespace-nowrap rounded-lg px-3 py-1 text-sm transition-colors',
                 active ? 'bg-muted font-semibold text-foreground' : 'text-muted-foreground',
