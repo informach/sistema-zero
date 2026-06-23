@@ -13,28 +13,37 @@ import { ProjectCard } from '../components/projects/ProjectCard'
 import { listAllProjects, type ProjectSummary } from '../state/persistence'
 import { useProjectStore } from '../state/projectStore'
 import { useSettingsStore } from '../state/settingsStore'
-import { StudioThemeProvider } from '../studio/theme'
+import { type StudioTheme, StudioThemeProvider } from '../studio/theme'
 
 export interface ProjectListProps {
   /** Chamado quando um projeto deve abrir no editor (criado, importado ou clicado). */
   onOpenProject: (projectId: string) => void
   /** Habilita a criação de projetos profissionais (host com COOP/COEP). */
   professional?: boolean
+  /**
+   * Tema FIXADO pelo host (ex.: a comunidade controla claro/escuro). Quando
+   * definido, a lista segue ESTE tema e ESCONDE o botão de alternar — assim o
+   * Estúdio embarcado não destoa do app ao redor. Ausente = preferência do
+   * usuário (settingsStore), com o toggle visível (uso standalone/playground).
+   */
+  theme?: StudioTheme
 }
 
 export function ProjectList({
   onOpenProject,
   professional = false,
+  theme: themeProp,
 }: ProjectListProps): JSX.Element {
   const createProject = useProjectStore((s) => s.createProject)
   const createProProject = useProjectStore((s) => s.createProProject)
   const [projects, setProjects] = useState<ProjectSummary[] | null>(null)
   const [search, setSearch] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
-  // A lista vive FORA do <Studio>, então aplica o tema por conta própria: lê a
-  // preferência do settingsStore (singleton compartilhado com o editor) e
-  // carrega a persistida no mount, para a escolha valer já na primeira tela.
-  const theme = useSettingsStore((s) => s.theme)
+  // A lista vive FORA do <Studio>, então aplica o tema por conta própria: o host
+  // pode FIXAR o tema (`themeProp`); senão cai na preferência do settingsStore
+  // (singleton compartilhado com o editor), carregada no mount.
+  const settingsTheme = useSettingsStore((s) => s.theme)
+  const theme = themeProp ?? settingsTheme
   const loadSettings = useSettingsStore((s) => s.load)
 
   const reload = useCallback(async () => {
@@ -92,7 +101,7 @@ export function ProjectList({
             <p className="text-xs text-sz-fg-soft">{t('projects.subtitle')}</p>
           </div>
           <div className="ml-auto flex items-center gap-2">
-            <ThemeToggle />
+            {themeProp === undefined && <ThemeToggle />}
             <ImportButton onImported={handleImported} />
             <Button variant="primary" size="sm" onClick={() => setModalOpen(true)}>
               + {t('projects.new')}

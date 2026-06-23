@@ -141,8 +141,14 @@ COOP/COEP, sem conflito com os vídeos das aulas). O botão **"Compartilhar"** u
 próprio → `/api/studio/describe` + **`/api/studio/publish-standalone`** (shim sobre
 `shell.routes.studioPublishStandalone`; o hub re-valida a posse do produto). ⚠️ **Persistência LOCAL
 por NAVEGADOR (v1):** projetos no IndexedDB do aparelho — perfis irmãos no MESMO navegador compartilham
-a lista (acesso é por CONTA; isolamento por perfil = follow-up). Largura limitada ao `max-w-5xl` do
-layout; altura `calc(100dvh-8rem)` p/ ocupar o máximo. `api/studio/publish-standalone` fica FORA do
+a lista (acesso é por CONTA; isolamento por perfil = follow-up). **LARGURA TOTAL:** o `MainContainer`
+(`components/kids/main-container.tsx`, usado no `(app)/layout`) tira o `max-w-5xl` na rota `/estudio` (IDE
+quer todo o espaço); demais páginas seguem com `max-w-5xl`. **SEGUE o tema da comunidade:** o
+`studio-full-client` lê `useTheme().resolvedTheme` (next-themes) e passa `theme` ao `<StudioEditor>` E ao
+`<ProjectList>` — assim o Estúdio não tem toggle próprio nem destoa do app (sem `theme`, o Studio mostraria
+o toggle e poderia ficar em tema diferente da comunidade). ⚠️ a **CSP** (`next.config.ts`) inclui
+**`script-src … data:`**: o preview injeta o script.js do aluno como `<script src="data:…">` num iframe
+`srcdoc`, que HERDA a CSP do pai (só RESTRINGE) — sem `data:` o preview do estúdio/bloco não executa. `api/studio/publish-standalone` fica FORA do
 matcher do proxy (multipart) — coberto pelo prefixo `api/studio/publish` no negative-lookahead.
 
 ### Hub/fórum (compartilhado)

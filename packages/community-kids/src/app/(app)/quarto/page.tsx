@@ -13,7 +13,7 @@ export default async function QuartoPage() {
     avatarRes.status === 200 && avatarRes.body ? (avatarRes.body.photoUrl ?? null) : null
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
+    <div className="flex w-full flex-col gap-4">
       <div>
         <h1 className="sz-display text-2xl">Meu quarto</h1>
         <p className="mt-1 text-muted-foreground text-sm">

@@ -1,67 +1,59 @@
 'use client'
 
 import { CameraControls } from '@react-three/drei'
-import { type ComponentRef, type RefObject, useEffect, useRef } from 'react'
-import * as THREE from 'three'
+import { type ComponentRef, useEffect, useRef } from 'react'
 
 export type CamMode = 'customize' | 'photo'
 
 /**
- * Câmera do configurador (drei `CameraControls`). Espelha a IDEIA do WawaSensei (posição fixa,
- * sem zoom por categoria — os placements dele vinham do PocketBase). Aqui mede o bounding box
- * do personagem (estável, pois ele fica em pé UMA vez) e enquadra GENTIL:
- * - **Personalizar**: SEMPRE o CORPO INTEIRO, câmera bem mais LONGE e mais BAIXA (cabeça E pés
- *   com folga) — a criança escolhe traços pelas MINIATURAS, sem precisar de zoom no rosto ao vivo.
- * - **Cabine de fotos**: RETRATO (cabeça+ombros), pro avatar redondo.
- * Reenquadra SÓ em [mode, ready] — trocar peça/cor NÃO mexe a câmera (fim do "recarrega a cena").
- * Guarda `h > 0.8`: não enquadra um box parcial (era a causa do "só metade da cabeça").
+ * Câmera do configurador (drei `CameraControls`) — FIEL ao WawaSensei: posição **FIXA**, SEM
+ * medir o bounding box. Medir dependia do timing de carga (refresh frio mede uma caixa
+ * diferente da navegação quente → enquadramento diferente, "às vezes mais pra cima, às vezes
+ * quase colando no painel"). Como o personagem fica em pé com os **pés em y=0** (auto-stand no
+ * rig), uma moldura fixa SEMPRE enquadra igual — determinístico.
+ *
+ * **Mesmo enquadramento de CORPO INTEIRO nos dois modos** — a Cabine de fotos NÃO aproxima (o
+ * WawaSensei também não: o zoom por-categoria dele só roda em CUSTOMIZE; no modo foto cai no
+ * enquadramento padrão). Assim a criança VÊ a pose. O "retrato" da imagem do avatar fica por
+ * conta do `SnapshotBridge` ("Salvar" força um retrato de rosto, independente do que está na
+ * tela). Reenquadra em [ready, mode] (centraliza de frente ao entrar em cada modo); trocar
+ * peça/cor NÃO mexe a câmera.
+ *
+ * A cena 3D ocupa só a faixa ACIMA do painel (layout flex no configurador), então "centrado na
+ * cena" = "centrado na área visível, descontando a configuração de baixo".
  */
+// Personagem: pés em y=0, ~1,8 de altura (centro ~0,95). O quadro cobre ~2,6u → ~12% de folga
+// em cima (chapéu alto) e embaixo. Câmera um tico à esquerda e acima (vista 3/4 gentil).
+const CAM_POS = [-0.4, 1.1, 3.1] as const
+// Cabine de fotos: um tico MAIS LONGE (nunca aproxima — a criança VÊ a pose inteira com folga).
+const CAM_POS_PHOTO = [-0.4, 1.1, 3.6] as const
+const CAM_TARGET = [0, 0.95, 0] as const
+
 export function CameraManager({
-  charRef,
   mode,
   ready,
 }: {
-  charRef: RefObject<THREE.Group | null>
   mode: CamMode
-  /** Vira `true` quando o rig fica em pé — só então a moldura faz sentido. */
+  /** Vira `true` quando o rig fica em pé (pés no pódio) — só então a moldura faz sentido. */
   ready: boolean
 }) {
   const controls = useRef<ComponentRef<typeof CameraControls>>(null)
-  const box = useRef(new THREE.Box3())
-  const center = useRef(new THREE.Vector3())
 
   useEffect(() => {
     const cc = controls.current
-    const obj = charRef.current
-    if (!cc || !obj || !ready) return
-    obj.updateWorldMatrix(true, true)
-    box.current.setFromObject(obj)
-    if (box.current.isEmpty()) return
-    const b = box.current
-    const c = b.getCenter(center.current)
-    const h = Math.max(0.001, b.max.y - b.min.y)
-    // GUARDA anti-"meia cabeça": só enquadra com o CORPO INTEIRO medido (peça parcial → h pequeno).
-    if (h < 0.8) return
-    const { min, max } = b
-
-    if (mode === 'photo') {
-      // RETRATO (cabeça + ombros) — o avatar é mostrado REDONDO, então a foto foca a cara.
-      const ty = max.y - h * 0.18
-      void cc.setLookAt(c.x, max.y - h * 0.12, c.z + h * 1.3, c.x, ty, c.z, true)
-    } else {
-      // CORPO INTEIRO — longe, câmera um tico mais ALTA (olhando de leve pra baixo) → personagem
-      // assenta um pouco mais embaixo no quadro, com folga acima da cabeça (sem cortar os pés).
-      const ty = min.y + h * 0.5
-      void cc.setLookAt(c.x - h * 0.2, min.y + h * 0.6, c.z + h * 3.2, c.x, ty, c.z, true)
-    }
-  }, [charRef, mode, ready])
+    if (!cc || !ready) return
+    // Mesmo alvo nos dois modos; só a distância muda (foto = mais longe). Reenquadra ao entrar
+    // em cada modo (recentraliza de frente) — `mode` é lido de propósito.
+    const [px, py, pz] = mode === 'photo' ? CAM_POS_PHOTO : CAM_POS
+    void cc.setLookAt(px, py, pz, ...CAM_TARGET, true)
+  }, [mode, ready])
 
   return (
     <CameraControls
       ref={controls}
       makeDefault
-      minDistance={0.6}
-      maxDistance={14}
+      minDistance={1.5}
+      maxDistance={9}
       minPolarAngle={Math.PI / 6}
       maxPolarAngle={Math.PI / 1.9}
     />

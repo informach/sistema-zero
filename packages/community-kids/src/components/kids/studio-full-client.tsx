@@ -2,6 +2,7 @@
 
 import '@sistemazero/studio/styles.css'
 import type { Project, StudioShareAdapter } from '@sistemazero/studio'
+import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 // O package do Estúdio é pesado (Monaco/Blockly/IndexedDB) e NÃO roda no SSR — por
@@ -25,6 +26,10 @@ type EditorState =
 export function StudioFullClient() {
   const [mod, setMod] = useState<StudioModule | null>(null)
   const [view, setView] = useState<View>({ name: 'list' })
+  // O Estúdio SEGUE o tema da comunidade (next-themes) — sem toggle próprio e sem
+  // destoar do app ao redor. `resolvedTheme` é undefined no 1º render → cai em claro.
+  const { resolvedTheme } = useTheme()
+  const studioTheme: 'light' | 'dark' = resolvedTheme === 'dark' ? 'dark' : 'light'
 
   useEffect(() => {
     let active = true
@@ -106,9 +111,15 @@ export function StudioFullClient() {
           Carregando o Estúdio…
         </div>
       ) : view.name === 'list' ? (
-        <mod.ProjectList onOpenProject={openProject} />
+        <mod.ProjectList onOpenProject={openProject} theme={studioTheme} />
       ) : (
-        <EditorScreen mod={mod} projectId={view.projectId} onExit={backToList} share={share} />
+        <EditorScreen
+          mod={mod}
+          projectId={view.projectId}
+          onExit={backToList}
+          share={share}
+          theme={studioTheme}
+        />
       )}
     </div>
   )
@@ -120,11 +131,13 @@ function EditorScreen({
   projectId,
   onExit,
   share,
+  theme,
 }: {
   mod: StudioModule
   projectId: string
   onExit: () => void
   share: StudioShareAdapter
+  theme: 'light' | 'dark'
 }) {
   const adapter = useMemo(() => mod.createLocalPersistenceAdapter(), [mod])
   const [state, setState] = useState<EditorState>({ status: 'loading' })
@@ -173,6 +186,7 @@ function EditorScreen({
       persistence="local"
       onExit={onExit}
       share={share}
+      theme={theme}
     />
   )
 }

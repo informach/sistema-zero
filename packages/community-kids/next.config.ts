@@ -37,7 +37,13 @@ const csp = [
   // Blocos de áudio (bucket R2 público) e vídeo "file" legado tocam URL externa.
   "media-src 'self' blob: https:",
   "style-src 'self' 'unsafe-inline' https:",
-  `script-src 'self' 'unsafe-inline' https:${isDev ? " 'unsafe-eval'" : ''}`,
+  // `data:` p/ o preview do Estúdio (@sistemazero/studio): o script.js do aluno é
+  // injetado como `<script src="data:text/javascript;base64,…">` dentro do iframe
+  // `srcdoc`, que HERDA esta CSP (só pode RESTRINGIR, nunca relaxar) — sem `data:`
+  // aqui, o preview do bloco/estúdio não executa o código da criança. Risco baixo: já
+  // há `'unsafe-inline'` e não existe sink de HTML cru; o sandbox SEM allow-same-origin
+  // segue sendo a fronteira real.
+  `script-src 'self' 'unsafe-inline' data: https:${isDev ? " 'unsafe-eval'" : ''}`,
   "connect-src 'self' https:",
   "worker-src 'self' blob:",
   ...(isDev ? [] : ['upgrade-insecure-requests']),

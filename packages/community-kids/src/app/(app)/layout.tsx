@@ -2,6 +2,7 @@ import { ImpersonationBanner } from '@sistemazero/member-shell/components/impers
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
 import { AppSidebar } from '@/components/kids/app-sidebar'
+import { MainContainer } from '@/components/kids/main-container'
 import { MobileTabbar, MobileTopbar } from '@/components/kids/mobile-nav'
 import { actorLabel } from '@/lib/act'
 import { getMeReadonly } from '@/server/auth'
@@ -92,9 +93,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           >
             <TopbarChrome session={session} />
           </Suspense>
-          <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 pb-24 md:px-8 md:py-8 md:pb-8">
-            {children}
-          </main>
+          <MainContainer>{children}</MainContainer>
           <MobileTabbar />
         </div>
       </div>

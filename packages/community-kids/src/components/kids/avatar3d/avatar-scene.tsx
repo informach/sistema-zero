@@ -68,6 +68,7 @@ function SnapshotBridge({
   const portraitCam = useRef(new THREE.PerspectiveCamera(45, 1, 0.01, 100))
   const tmpBox = useRef(new THREE.Box3())
   const tmpVec = useRef(new THREE.Vector3())
+  const tmpDir = useRef(new THREE.Vector3())
   useEffect(() => {
     const capture: CaptureFn = async (opts) => {
       // Espera a cena assentar (cabine/enquadramento) até ~2.5s — capturar no meio sai borrado.
@@ -77,19 +78,38 @@ function SnapshotBridge({
         await new Promise((r) => setTimeout(r, 60))
       }
       let cam: THREE.Camera = camera
-      // RETRATO forçado (rosto de frente) — usado pelo "Salvar", pra a imagem do avatar (redonda)
-      // ficar sempre boa, mesmo que a tela esteja no corpo inteiro ou girada.
-      if (opts?.portrait && charRef.current) {
+      // A imagem do avatar é um QUADRADO central (recorte abaixo). Para garantir que o conteúdo
+      // certo caiba nesse quadrado (sem cortar cabeça/pés), a captura usa uma câmera própria:
+      //  - "Salvar" (Personalizar) → RETRATO de rosto, de frente (imagem redonda sempre boa);
+      //  - "Tirar foto" (Cabine)  → CORPO INTEIRO respeitando a ÓRBITA da criança, afastado o
+      //    bastante p/ o corpo caber no quadrado (o enquadramento da tela é mais largo que o quadrado).
+      if (charRef.current) {
         charRef.current.updateWorldMatrix(true, true)
         tmpBox.current.setFromObject(charRef.current)
         if (!tmpBox.current.isEmpty()) {
           const b = tmpBox.current
           const c = b.getCenter(tmpVec.current)
           const h = Math.max(0.001, b.max.y - b.min.y)
+          const cw = gl.domElement.width
+          const ch = Math.max(1, gl.domElement.height)
           const pc = portraitCam.current
-          pc.aspect = gl.domElement.width / Math.max(1, gl.domElement.height)
-          pc.position.set(c.x, b.max.y - h * 0.12, c.z + h * 0.9)
-          pc.lookAt(c.x, b.max.y - h * 0.15, c.z)
+          pc.aspect = cw / ch
+          if (opts?.portrait) {
+            pc.fov = 45
+            pc.position.set(c.x, b.max.y - h * 0.12, c.z + h * 0.9)
+            pc.lookAt(c.x, b.max.y - h * 0.15, c.z)
+          } else {
+            // Mesma DIREÇÃO da câmera viva (a criança girou pra enquadrar), mas a distância é
+            // calculada p/ o corpo (altura h) ocupar ~82% do QUADRADO central do recorte —
+            // assim cabeça E pés entram, em qualquer proporção de tela.
+            const fov = (camera as THREE.PerspectiveCamera).fov || 45
+            pc.fov = fov
+            const square = Math.min(cw, ch)
+            const need = (h * ch) / (2 * Math.tan((fov * Math.PI) / 180 / 2) * 0.82 * square)
+            const dir = camera.getWorldDirection(tmpDir.current)
+            pc.position.copy(c).addScaledVector(dir, -need)
+            pc.quaternion.copy(camera.quaternion)
+          }
           pc.updateMatrixWorld()
           pc.updateProjectionMatrix()
           cam = pc
@@ -219,7 +239,7 @@ function SceneContents({
       <ContactShadows position={[0, 0.01, 0]} opacity={0.45} scale={2.4} blur={2.6} far={2} />
       <TeleporterBeam loading={loading} />
 
-      <CameraManager charRef={charRef} mode={mode} ready={ready} />
+      <CameraManager mode={mode} ready={ready} />
       <SnapshotBridge onReady={onReady} canCapture={canCapture} charRef={charRef} />
     </>
   )

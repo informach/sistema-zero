@@ -256,17 +256,6 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-background">
-      {/* Cena 3D ao fundo */}
-      <div className="absolute inset-0">
-        {state ? (
-          <AvatarScene slots={slots} onReady={onReady} dark={dark} mode={mode} pose={activePose} />
-        ) : (
-          <div className="flex h-full items-center justify-center">
-            <KidsMascot expression="thinking" className="size-24 animate-pulse" />
-          </div>
-        )}
-      </div>
-
       {/* Barra superior */}
       <div className="relative z-10 flex items-center justify-between gap-2 p-4">
         <div className="flex items-center gap-2">
@@ -326,8 +315,20 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
         </div>
       </div>
 
+      {/* Cena 3D — ocupa a faixa ENTRE a barra e o painel: centraliza o avatar na área visível
+          (descontando a configuração de baixo), igual em refresh OU navegação, nos dois modos. */}
+      <div className="relative min-h-0 flex-1">
+        {state ? (
+          <AvatarScene slots={slots} onReady={onReady} dark={dark} mode={mode} pose={activePose} />
+        ) : (
+          <div className="flex h-full items-center justify-center">
+            <KidsMascot expression="thinking" className="size-24 animate-pulse" />
+          </div>
+        )}
+      </div>
+
       {/* Painel inferior */}
-      <div className="relative z-10 mt-auto flex flex-col gap-3 rounded-t-3xl bg-card/95 p-4 shadow-2xl backdrop-blur">
+      <div className="relative z-10 flex flex-col gap-3 rounded-t-3xl bg-card/95 p-4 shadow-2xl backdrop-blur">
         {mode === 'customize' ? (
           <>
             {/* Cores (acima dos itens, como no WawaSensei) */}

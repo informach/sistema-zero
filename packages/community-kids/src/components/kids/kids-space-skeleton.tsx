@@ -15,7 +15,7 @@ const THREAD_KEYS = ['t1', 't2', 't3', 't4', 't5']
  */
 export function KidsSpaceSkeleton({ isWall }: { isWall: boolean }) {
   return (
-    <div aria-busy="true" className="mx-auto w-full max-w-4xl px-4 py-6">
+    <div aria-busy="true" className="w-full">
       <span className="sr-only">Carregando…</span>
       <Skeleton className="mb-2 h-7 w-48" />
       <Skeleton className="mb-4 h-4 w-64 max-w-full" />

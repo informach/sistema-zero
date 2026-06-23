@@ -396,7 +396,7 @@ export function KidsSpaceViewClient({
 
   return (
     <>
-      <div className="mx-auto w-full max-w-4xl px-4 py-6">
+      <div className="w-full">
         <h1 className="mb-1 [font-family:var(--font-display)] font-bold text-2xl">{space.name}</h1>
         {space.description ? (
           <p className="mb-4 text-muted-foreground text-sm">{space.description}</p>

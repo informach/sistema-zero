@@ -82,16 +82,17 @@ export const AVATAR3D_PARTS: readonly Avatar3dPart[] = [
   free('head-03', 'head'),
   free('head-04', 'head'),
 
-  // Cabelo — nenhum (careca) + alguns grátis + pagos.
+  // Cabelo — careca + 1 de MENINO (hair-01) e 1 de MENINA (hair-08, estilo longo, trazido pra
+  // 2ª posição) GRÁTIS — justiça de gênero: menina nova não fica sem cabelo grátis. Resto pago.
   free('hair-none', 'hair'),
   free('hair-01', 'hair'),
-  free('hair-02', 'hair'),
-  free('hair-03', 'hair'),
+  free('hair-08', 'hair'), // menina (longo) — liberado e trazido pra frente
+  paid('hair-02', 'hair', 50),
+  paid('hair-03', 'hair', 60),
   paid('hair-04', 'hair', 60),
   paid('hair-05', 'hair', 70),
   paid('hair-06', 'hair', 80),
   paid('hair-07', 'hair', 90),
-  paid('hair-08', 'hair', 90), // estilos longos (rabo/trança/cabelo comprido)
   paid('hair-09', 'hair', 100),
   paid('hair-10', 'hair', 110),
   paid('hair-11', 'hair', 120),

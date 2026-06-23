@@ -419,9 +419,11 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
                   onClick={() => setMode(m)}
                   style={{ touchAction: 'manipulation' }}
                   className={cn(
-                    'rounded-lg text-sm font-medium leading-none transition-colors',
+                    'rounded-lg text-sm leading-none transition-colors',
                     isCompact ? 'px-2.5 py-1.5' : 'px-4 py-1.5',
-                    active ? 'bg-sz-accent text-sz-bg' : 'text-sz-fg-soft hover:text-sz-fg',
+                    active
+                      ? 'bg-sz-accent font-bold text-sz-bg shadow-sm'
+                      : 'font-medium text-sz-fg-soft hover:bg-sz-bg/60 hover:text-sz-fg',
                   )}
                 >
                   {MODE_LABELS[m]}
