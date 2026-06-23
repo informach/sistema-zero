@@ -26,7 +26,7 @@ export function MobileTopbar({
 }) {
   return (
     <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-border border-b bg-background/80 px-4 backdrop-blur md:hidden">
-      <Link href="/" aria-label="Início" className="flex items-center">
+      <Link href="/" aria-label="Início" className="flex items-center" prefetch={false}>
         <KidsLogo priority />
       </Link>
       <div className="flex items-center gap-3">
@@ -46,6 +46,8 @@ export function MobileTabbar() {
       aria-label="Navegação principal"
       className="fixed inset-x-0 bottom-0 z-40 flex items-stretch justify-around border-border border-t bg-card pb-[env(safe-area-inset-bottom)] md:hidden"
     >
+      {/* `prefetch={false}`: mesmo motivo da sidebar — rotas `force-dynamic` + gateway numa réplica
+          única não aguentam o prefetch de todos os itens a cada página (tempestade de 502/ERR_HTTP2). */}
       {NAV_ITEMS.map((item) => {
         const active = isNavActive(pathname, item.href, item.match)
         const Icon = item.icon
@@ -53,6 +55,7 @@ export function MobileTabbar() {
           <Link
             key={item.href}
             href={item.href}
+            prefetch={false}
             aria-current={active ? 'page' : undefined}
             className={cn(
               'flex flex-1 flex-col items-center gap-0.5 py-2 transition-colors',
