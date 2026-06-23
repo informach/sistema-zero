@@ -42,7 +42,8 @@ type Editing = { mode: 'create' } | { mode: 'edit'; profile: ProfileView } | nul
  * Grade de perfis estilo Netflix. **Selecionar** entra no perfil (1 clique, sem
  * PIN) → emite a sessão de perfil e recarrega a home. **Área dos pais** SEMPRE pede
  * a SENHA do responsável (decisão 06/2026 — a criança pode estar numa sessão da
- * conta): numa sessão de perfil o submit SAI do perfil (`/api/profile-session/exit`);
+ * conta): numa sessão de perfil o submit SAI do perfil (`/api/profile-session/exit`)
+ * e recarrega JÁ na gestão (`?manage=1` → `startManaging`, sem exigir um 2º clique);
  * numa sessão da conta VERIFICA a senha (`/api/parents/verify`) e abre o portão. Se
  * o portão já está aberto (`parentVerified`), gerencia direto. O limite de perfis é
  * do plano — criar acima dele devolve 409 (toast).
@@ -51,18 +52,26 @@ export function PerfisClient({
   initialProfiles,
   isProfileSession,
   parentVerified,
+  startManaging = false,
 }: {
   initialProfiles: ProfileView[]
   isProfileSession: boolean
   parentVerified: boolean
+  startManaging?: boolean
 }) {
   const [profiles, setProfiles] = useState(initialProfiles)
-  const [managing, setManaging] = useState(false)
+  const [managing, setManaging] = useState(startManaging)
   const [busy, setBusy] = useState(false)
   const [gate, setGate] = useState(false) // modal de senha (abrir a área dos pais)
   const [changingPassword, setChangingPassword] = useState(false) // modal: trocar senha da conta
   const [editing, setEditing] = useState<Editing>(null)
   const [showPurchases, setShowPurchases] = useState(false) // sub-tela "Minhas compras"
+
+  // Entrou na gestão pelo `?manage=1` (logo após "Área dos pais" sair de um perfil):
+  // limpa o parâmetro da URL p/ um refresh depois de "Concluir" não reabrir sozinho.
+  useEffect(() => {
+    if (startManaging) window.history.replaceState(null, '', '/perfis')
+  }, [startManaging])
 
   async function selectProfile(id: string) {
     if (busy) return
@@ -95,7 +104,8 @@ export function PerfisClient({
     })
     setBusy(false)
     if (res.ok) {
-      window.location.replace('/perfis') // recarrega como sessão da conta (portão aberto)
+      // recarrega como sessão da conta (portão aberto); `?manage=1` já abre a gestão.
+      window.location.replace('/perfis?manage=1')
       return
     }
     toast.error(res.status === 401 ? 'Senha incorreta.' : 'Não foi possível abrir a área dos pais.')
@@ -199,7 +209,7 @@ export function PerfisClient({
   }
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-3xl flex-col items-center justify-center gap-8 px-4 py-12">
+    <main className="mx-auto flex min-h-dvh max-w-5xl flex-col items-center justify-center gap-8 px-4 py-12">
       <div className="flex flex-col items-center gap-3 text-center">
         <KidsMascot expression="happy" className="size-20" />
         <h1 className="sz-display text-3xl text-foreground sm:text-4xl">
