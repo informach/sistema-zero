@@ -1,4 +1,11 @@
 @import "tailwindcss";
+/* Tokens + @theme do Estúdio DENTRO do pipeline Tailwind do kids: registra as cores
+   sz (--color-sz-…) para o @source conseguir GERAR as utilitárias (bg-sz, text-sz,
+   border-sz, etc.). Sem este @import (só o @source) as classes do Studio ficam NO-OP
+   e os modais e menus do editor saem SEM fundo nem cor (washed-out, com o conteúdo
+   vazando por trás). O JS-import do studio-full-client sozinho NÃO basta: traz só os
+   tokens, não registra as cores para a geração das utilitárias. */
+@import "../../../studio/src/styles/studio.css";
 /* Componentes compartilhados (@sistemazero/ui + @sistemazero/member-shell) —
    o scanner do Tailwind v4 precisa VER as classes deles (sem isto renderizam pelados). */
 @source "../../../ui/src";

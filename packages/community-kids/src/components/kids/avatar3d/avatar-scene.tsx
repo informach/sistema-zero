@@ -68,7 +68,6 @@ function SnapshotBridge({
   const portraitCam = useRef(new THREE.PerspectiveCamera(45, 1, 0.01, 100))
   const tmpBox = useRef(new THREE.Box3())
   const tmpVec = useRef(new THREE.Vector3())
-  const tmpDir = useRef(new THREE.Vector3())
   useEffect(() => {
     const capture: CaptureFn = async (opts) => {
       // Espera a cena assentar (cabine/enquadramento) até ~2.5s — capturar no meio sai borrado.
@@ -81,8 +80,9 @@ function SnapshotBridge({
       // A imagem do avatar é um QUADRADO central (recorte abaixo). Para garantir que o conteúdo
       // certo caiba nesse quadrado (sem cortar cabeça/pés), a captura usa uma câmera própria:
       //  - "Salvar" (Personalizar) → RETRATO de rosto, de frente (imagem redonda sempre boa);
-      //  - "Tirar foto" (Cabine)  → CORPO INTEIRO respeitando a ÓRBITA da criança, afastado o
-      //    bastante p/ o corpo caber no quadrado (o enquadramento da tela é mais largo que o quadrado).
+      //  - "Tirar foto" (Cabine)  → CORPO INTEIRO de FRENTE (a criança gira a tela só pra ADMIRAR
+      //    a pose; a foto sai sempre de frente, com cabeça+pés). AMBOS via position.set + lookAt
+      //    explícitos — confiável (a tentativa de "respeitar a órbita" via quaternion saía vazia).
       if (charRef.current) {
         charRef.current.updateWorldMatrix(true, true)
         tmpBox.current.setFromObject(charRef.current)
@@ -93,22 +93,19 @@ function SnapshotBridge({
           const cw = gl.domElement.width
           const ch = Math.max(1, gl.domElement.height)
           const pc = portraitCam.current
+          pc.fov = 45
           pc.aspect = cw / ch
           if (opts?.portrait) {
-            pc.fov = 45
+            // Rosto, de frente (close no topo da cabeça).
             pc.position.set(c.x, b.max.y - h * 0.12, c.z + h * 0.9)
             pc.lookAt(c.x, b.max.y - h * 0.15, c.z)
           } else {
-            // Mesma DIREÇÃO da câmera viva (a criança girou pra enquadrar), mas a distância é
-            // calculada p/ o corpo (altura h) ocupar ~82% do QUADRADO central do recorte —
-            // assim cabeça E pés entram, em qualquer proporção de tela.
-            const fov = (camera as THREE.PerspectiveCamera).fov || 45
-            pc.fov = fov
+            // Corpo inteiro, de FRENTE. Distância p/ a altura `h` ocupar ~80% do QUADRADO central
+            // do recorte → cabeça E pés entram em qualquer proporção de tela.
             const square = Math.min(cw, ch)
-            const need = (h * ch) / (2 * Math.tan((fov * Math.PI) / 180 / 2) * 0.82 * square)
-            const dir = camera.getWorldDirection(tmpDir.current)
-            pc.position.copy(c).addScaledVector(dir, -need)
-            pc.quaternion.copy(camera.quaternion)
+            const dist = (h * ch) / (2 * Math.tan((45 * Math.PI) / 360) * 0.8 * square)
+            pc.position.set(c.x, c.y, c.z + dist)
+            pc.lookAt(c.x, c.y, c.z)
           }
           pc.updateMatrixWorld()
           pc.updateProjectionMatrix()

@@ -269,9 +269,11 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   "centrado na área visível, descontando a configuração" — robusto a qualquer tela/modo, em refresh OU
   navegação. O personagem fica em pé UMA vez (pés no pódio; NÃO re-fica-em-pé a cada troca). A **Cabine de
   fotos** dá poses (`Poses.glb`: Idle/Chill/Cool/Punch/Ninja/King/Busy) + órbita LIVRE pra posicionar antes
-  da foto. **Captura (`SnapshotBridge`) = câmera própria** p/ caber no quadrado central: "Salvar" força
-  RETRATO de rosto (imagem do avatar sempre boa); "Tirar foto" usa o CORPO INTEIRO respeitando a ÓRBITA da
-  criança, afastado o bastante p/ cabeça+pés caberem no quadrado (cálculo por altura×proporção da tela). A grade mostra **MINIATURAS = PNG estático**
+  da foto (girar é só pra ADMIRAR — a foto sai de frente). **Captura (`SnapshotBridge`) = câmera própria**
+  (`position.set`+`lookAt` explícitos, igual nos dois p/ ser confiável) p/ caber no quadrado central:
+  "Salvar" força RETRATO de rosto (imagem do avatar sempre boa); "Tirar foto" usa o CORPO INTEIRO de FRENTE,
+  afastado o bastante p/ cabeça+pés caberem no quadrado (distância por altura×proporção da tela). ⚠️ tentar
+  "respeitar a órbita" via `getWorldDirection`/`quaternion.copy` saiu **vazio/sem cabeça** — NÃO refazer. A grade mostra **MINIATURAS = PNG estático**
   (`thumb-canvas.tsx` `<AvatarThumb>`): **(1)** primeiro o **PNG PRÉ-GERADO e commitado** em
   `public/avatar3d/thumbs/<id>.png` → `<img>`, **ZERO WebGL** (igual ao WawaSensei). Gera com
   **`bun run gen:avatar-thumbs`** (`scripts/gen-avatar-thumbs.ts`: sobe `Bun.serve` com uma página geradora

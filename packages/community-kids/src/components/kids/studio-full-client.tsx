@@ -1,6 +1,9 @@
 'use client'
 
-import '@sistemazero/studio/styles.css'
+// O CSS do Estúdio (tokens + @theme que GERA as utilitárias sz-*) é carregado pelo
+// `@import` em `app/globals.css`, DENTRO do pipeline Tailwind — um JS-import aqui só
+// traz os tokens, NÃO registra as cores p/ gerar as utilitárias (sem isso os modais e
+// menus do editor saem sem fundo/cor). Ver o comentário no globals.css.
 import type { Project, StudioShareAdapter } from '@sistemazero/studio'
 import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -102,10 +105,11 @@ export function StudioFullClient() {
   const openProject = useCallback((projectId: string) => setView({ name: 'editor', projectId }), [])
   const backToList = useCallback(() => setView({ name: 'list' }), [])
 
-  // Container ALTO p/ o editor ocupar o máximo do espaço da comunidade kids (a largura
-  // é o `max-w-5xl` do layout). `min-h` garante usabilidade em telas baixas.
+  // O editor PREENCHE o espaço disponível: `flex-1` dentro do <main> do MainContainer
+  // (no /estudio o main é `flex flex-col` de largura+altura totais). `min-h-[34rem]`
+  // mantém a usabilidade em telas baixas (a página rola se não couber).
   return (
-    <div className="h-[calc(100dvh-8rem)] min-h-[34rem] w-full overflow-hidden rounded-2xl border-2 border-border bg-card">
+    <div className="min-h-[34rem] w-full flex-1 overflow-hidden rounded-2xl border-2 border-border bg-card">
       {mod === null ? (
         <div className="grid h-full place-items-center text-muted-foreground text-sm">
           Carregando o Estúdio…
