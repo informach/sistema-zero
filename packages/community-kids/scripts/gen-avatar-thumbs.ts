@@ -39,13 +39,26 @@ const HEAD_SITTING = new Set([
 
 // Peças COM GLB (pula os "*-none", que não têm arquivo).
 const noneIds = new Set(Object.values(AVATAR_REMOVABLE_NONE))
-const parts = Object.entries(AVATAR_PART_INFO)
+const allParts = Object.entries(AVATAR_PART_INFO)
   .filter(([id]) => !noneIds.has(id) && !id.endsWith('-none'))
   .map(([id, info]) => ({
     id,
     onHead: HEAD_SITTING.has(info.category),
     color: DEFAULT_AVATAR_SLOTS[info.category]?.color ?? null,
   }))
+
+// Filtro opcional por id (args da CLI): `gen:avatar-thumbs outfit-01 hair-08` gera SÓ
+// essas peças — sem re-renderizar (e churnar no git) os PNGs já commitados. Sem args = tudo.
+const onlyIds = new Set(
+  process.argv
+    .slice(2)
+    .map((s) => s.trim())
+    .filter(Boolean),
+)
+for (const id of onlyIds) {
+  if (!allParts.some((p) => p.id === id)) console.warn(`⚠️  id desconhecido (ignorado): ${id}`)
+}
+const parts = onlyIds.size ? allParts.filter((p) => onlyIds.has(p.id)) : allParts
 const validIds = new Set(parts.map((p) => p.id))
 
 const page = `<!doctype html><html lang="pt"><head><meta charset="utf-8">
@@ -204,9 +217,15 @@ const server = Bun.serve({
 
 const url = `http://localhost:${PORT}/`
 console.log(`\n🖼️  Gerador de miniaturas do avatar (${parts.length} peças).`)
-console.log(`   Abrindo no navegador: ${url}`)
-console.log('   (se não abrir, abra essa URL no Chrome/Firefox e aguarde terminar)\n')
-openBrowser(url)
+// SZ_THUMBS_NO_OPEN=1 → não abre o navegador sozinho (p/ dirigir por um navegador
+// automatizado/CI sem corrida com a aba aberta na mão).
+if (process.env.SZ_THUMBS_NO_OPEN) {
+  console.log(`   Abra você mesmo no Chrome/Firefox e aguarde terminar: ${url}\n`)
+} else {
+  console.log(`   Abrindo no navegador: ${url}`)
+  console.log('   (se não abrir, abra essa URL no Chrome/Firefox e aguarde terminar)\n')
+  openBrowser(url)
+}
 
 await done
 await new Promise((r) => setTimeout(r, 600)) // garante a última gravação
