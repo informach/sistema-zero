@@ -4,6 +4,7 @@ import { registerFieldColour } from '@blockly/field-colour'
 import '@blockly/toolbox-search'
 import * as Blockly from 'blockly/core'
 import * as PtBr from 'blockly/msg/pt-br'
+import { hasClipboard, runCopyBlocks, runPasteBlocks } from './blockClipboard'
 import { registerCoreBlocks } from './blocks'
 import { registerAnimLoopMutator } from './blocks/animLoopMutator'
 import { registerArgsMutator } from './blocks/argsMutator'
@@ -11,6 +12,7 @@ import { registerArrayMutator } from './blocks/arrayMutator'
 import { registerExtendsMutator } from './blocks/extendsMutator'
 import { registerObjectMutator } from './blocks/objectMutator'
 import { registerParamsMutator } from './blocks/paramsMutator'
+import { FRAME_APPEARANCE, FRAME_BEHAVIOR, FRAME_STRUCTURE } from './buildIR'
 import { registerFieldAssetPicker } from './fields/FieldAssetPicker'
 import { registerFieldColourSZ } from './fields/FieldColourSZ'
 import { registerFieldSpritePicker } from './fields/FieldSpritePicker'
@@ -70,6 +72,54 @@ function registerScreenshotContextMenu(): void {
   })
 }
 
+/** Os 3 frames-container (Estrutura/Aparência/Comportamento) não são copiáveis. */
+const FRAME_TYPES = new Set<string>([FRAME_STRUCTURE, FRAME_APPEARANCE, FRAME_BEHAVIOR])
+
+/**
+ * "Copiar blocos" no menu de contexto de um BLOCO: guarda o bloco + tudo dentro
+ * dele + a sequência abaixo numa área de transferência durável (ver
+ * `blockClipboard`), para colar em OUTRO projeto. Escondido nos 3 frames (copiar
+ * uma área inteira não faz sentido). Idempotente.
+ */
+function registerCopyBlocksContextMenu(): void {
+  const registry = Blockly.ContextMenuRegistry.registry
+  if (registry.getItem('sz_copy_blocks')) return
+  registry.register({
+    id: 'sz_copy_blocks',
+    weight: 2,
+    scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK,
+    displayText: () => 'Copiar blocos',
+    preconditionFn: (scope) => {
+      const block = scope.block
+      if (!block || FRAME_TYPES.has(block.type)) return 'hidden'
+      return 'enabled'
+    },
+    callback: (scope) => {
+      if (scope.block) runCopyBlocks(scope.block as Blockly.BlockSvg)
+    },
+  })
+}
+
+/**
+ * "Colar blocos" no menu de contexto do WORKSPACE: cola a subárvore copiada (de
+ * qualquer projeto) como rascunho solto. Só aparece quando há algo copiado.
+ * Idempotente.
+ */
+function registerPasteBlocksContextMenu(): void {
+  const registry = Blockly.ContextMenuRegistry.registry
+  if (registry.getItem('sz_paste_blocks')) return
+  registry.register({
+    id: 'sz_paste_blocks',
+    weight: 5,
+    scopeType: Blockly.ContextMenuRegistry.ScopeType.WORKSPACE,
+    displayText: () => 'Colar blocos',
+    preconditionFn: () => (hasClipboard() ? 'enabled' : 'hidden'),
+    callback: (scope) => {
+      if (scope.workspace) runPasteBlocks(scope.workspace)
+    },
+  })
+}
+
 /** Garante que os blocos core e o tema do Sistema Zero estão registrados. */
 export function ensureBlocklyInitialized(): void {
   if (initialized) return
@@ -101,6 +151,8 @@ export function ensureBlocklyInitialized(): void {
   registerPtSearchCategory()
   registerOrganizeContextMenu()
   registerScreenshotContextMenu()
+  registerCopyBlocksContextMenu()
+  registerPasteBlocksContextMenu()
   initialized = true
 }
 

@@ -8,11 +8,14 @@ import {
   buildIRFromWorkspace,
   ensureBlocklyInitialized,
   normalizeBlocksStateToFrames,
+  type PasteTargetHandlers,
   registerClassesFlyout,
   registerFunctionsFlyout,
+  registerPasteTarget,
   setSearchProfileForWorkspace,
   szGridColourFor,
   szThemeFor,
+  unregisterPasteTarget,
   withWorkspaceLoad,
 } from '#blockly'
 import { type InstalledExtension, isCategoryAllowed, type LearningProfile } from '#core'
@@ -21,9 +24,9 @@ import { deepEqualIR } from '#ir'
 import { findExtension } from '#official-extensions'
 import { useCrossHighlight } from '../../hooks/useCrossHighlight'
 import { primeCanonicalSourceMap } from '../../state/canonicalSourceMap'
-import { reregisterInstalledExtensions } from '../../state/extensionsAdapter'
+import { installExtension, reregisterInstalledExtensions } from '../../state/extensionsAdapter'
 import { useHighlightStore } from '../../state/highlightStore'
-import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
+import { isBlockTypeKnown, useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useSettingsStore } from '../../state/settingsStore'
 import { useSourcemapStore } from '../../state/sourcemapStore'
 import { useStudioConfig } from '../../studio/config'
@@ -175,6 +178,20 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
   const regenerationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pendingRegenerationWorkspaceRef = useRef<Blockly.Workspace | null>(null)
   const appliedToolboxRef = useRef<ReturnType<typeof buildCoreToolbox> | null>(null)
+
+  // Aviso gentil do copiar/colar de blocos entre projetos (toast efêmero).
+  const [pasteNotice, setPasteNotice] = useState<string | null>(null)
+  const pasteNoticeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const notifyPaste = useCallback((message: string) => {
+    setPasteNotice(message)
+    if (pasteNoticeTimerRef.current) clearTimeout(pasteNoticeTimerRef.current)
+    pasteNoticeTimerRef.current = setTimeout(() => setPasteNotice(null), 4500)
+  }, [])
+  useEffect(() => {
+    return () => {
+      if (pasteNoticeTimerRef.current) clearTimeout(pasteNoticeTimerRef.current)
+    }
+  }, [])
   const initialToolboxRef = useRef<ReturnType<typeof buildCoreToolbox> | null>(null)
   // Posições das pilhas a restaurar após um recarregamento programático, para
   // preservar onde o aluno deixou os blocos quando a Ponte reconstrói o estado.
@@ -613,14 +630,35 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
       projectStoreApi.getState().project?.assets ?? []
     setWorkspace(injected)
 
+    // Handlers POR INSTÂNCIA do colar de blocos (os itens de menu são GLOBAIS):
+    // mapeia o workspace de volta ao projectStore desta instância + ao aviso.
+    const pasteHandlers: PasteTargetHandlers = {
+      getInstalledExtensions: () =>
+        projectStoreApi.getState().project?.installedExtensions ?? EMPTY_INSTALLED_EXTENSIONS,
+      installExtensionById: (id) => {
+        const ext = findExtension(id)
+        if (!ext) return false
+        installExtension(ext, projectStoreApi)
+        return true
+      },
+      isBlockTypeKnown: (type) =>
+        isBlockTypeKnown(
+          type,
+          projectStoreApi.getState().project?.installedExtensions ?? EMPTY_INSTALLED_EXTENSIONS,
+        ),
+      notify: notifyPaste,
+    }
+    registerPasteTarget(injected, pasteHandlers)
+
     return () => {
       if (pendingRegenerationWorkspaceRef.current === injected) {
         pendingRegenerationWorkspaceRef.current = null
       }
+      unregisterPasteTarget(injected)
       injected.dispose()
       appliedToolboxRef.current = null
     }
-  }, [projectStoreApi])
+  }, [projectStoreApi, notifyPaste])
 
   // Troca de tema ao vivo (toggle do Topbar/host): o Theme cobre workspace,
   // toolbox e flyout; só a cor da grade fica da injeção inicial (detalhe sutil).
@@ -635,6 +673,13 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
       {isLoadingWorkspace && (
         <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-sz-bg/60">
           <Spinner />
+        </div>
+      )}
+      {pasteNotice && (
+        <div className="pointer-events-none absolute inset-x-0 bottom-3 z-20 flex justify-center px-3">
+          <output className="pointer-events-auto max-w-md rounded-2xl border-2 border-sz-border bg-sz-panel px-4 py-2.5 text-center font-medium text-sm text-sz-fg shadow-lg">
+            {pasteNotice}
+          </output>
         </div>
       )}
     </div>
