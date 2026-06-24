@@ -15,6 +15,7 @@ export const LESSON_BLOCK_KINDS = [
   'embed',
   'ebook',
   'studio',
+  'certificate',
 ] as const
 
 export type LessonBlockKind = (typeof LESSON_BLOCK_KINDS)[number]
@@ -180,6 +181,31 @@ export interface StudioBlock {
   }
 }
 
+/**
+ * Bloco CERTIFICADO: colocado na ÚLTIMA aula do curso (o "diploma"). Ao concluir todas
+ * as OUTRAS aulas publicadas (o que, pelos gates de quiz/estúdio, já implica passar nos
+ * quizzes e enviar os projetos), o aluno libera o botão de EMITIR — a 1ª emissão congela
+ * um registro imutável (nº de série + nome + título do curso) e gera o PDF; reemissões só
+ * rebaixam o MESMO PDF. A config aqui é só metadado de AUTORIA (não-secreta, vai ao front
+ * pro renderizador montar o PDF da marca) — espelha o `StudioBlock.showcase`. O members NÃO
+ * gera o PDF (é backend); o community/BFF monta com pdf-lib a partir do registro + desta config.
+ */
+export interface CertificateBlock {
+  kind: 'certificate'
+  /** Título exibido no PDF (default: "Certificado de Conclusão"). */
+  title?: string
+  /** Nome do emissor/assinante (ex.: "Equipe Sistema Zero" ou o professor). */
+  issuerName?: string
+  /** Imagem da assinatura (URL http(s)). */
+  signatureImageUrl?: string
+  /** Override do logo no PDF (URL http(s); default = logo da marca). */
+  logoUrl?: string
+  /** Cor de destaque (hex, ex.: `#C4F042`). */
+  accentColor?: string
+  /** Texto/menção adicional no corpo do certificado (plano, sem imagem). */
+  message?: string
+}
+
 /** União discriminada por `kind` — o conteúdo guardado na coluna `lesson_blocks.content`. */
 export type LessonBlockContent =
   | RichTextBlock
@@ -190,3 +216,4 @@ export type LessonBlockContent =
   | EmbedBlock
   | EbookBlock
   | StudioBlock
+  | CertificateBlock

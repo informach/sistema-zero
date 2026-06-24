@@ -1,15 +1,19 @@
 ---
-import Footer from '../components/Footer.astro'
-import Header from '../components/Header.astro'
-import { PRODUTO } from '../content/copy'
-import { EMPRESA } from '../content/legal'
-import BaseLayout from '../layouts/BaseLayout.astro'
-import { clearLeadCookie } from '../lib/lead-session'
-import { getDeps } from '../server/deps'
+import Footer from '../../../components/Footer.astro'
+import Header from '../../../components/Header.astro'
+import { EMPRESA } from '../../../content/legal'
+import { getFunnel } from '../../../funnels/registry'
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import { clearLeadCookie } from '../../../lib/lead-session'
+import { getDeps } from '../../../server/deps'
 
 // SSR (não estática) só para EXPIRAR o cookie do lead após a compra: assim um novo
 // checkout começa limpo (sem CPF/dados antigos; nome/e-mail/telefone voltam da URL).
 export const prerender = false
+
+// Funil resolvido pela URL. Inexistente → 404.
+const f = getFunnel(Astro.params.audience, Astro.params.produto)
+if (!f) return new Response(null, { status: 404 })
 
 const { env } = getDeps()
 Astro.response.headers.set('cache-control', 'no-store')
@@ -18,33 +22,16 @@ Astro.response.headers.append('set-cookie', clearLeadCookie(env.NODE_ENV === 'pr
 // CTA p/ a área de membros (mesma base do link do e-mail de boas-vindas).
 const communityUrl = env.COMMUNITY_URL
 
-// O que a compra entrega (espelha "O que você recebe" da página de vendas).
-const entrega = [
-  'E-book completo com o método Z.E.R.O.',
-  'Kit prático: checklists, template e roteiro de prompt',
-  'Bônus: mini-glossário + raio-x "refém da IA"',
-]
-
-// Próximos passos: o acesso chega por e-mail (welcome com link de 1º acesso).
-const passos = [
-  {
-    titulo: 'Abra seu e-mail',
-    texto:
-      'Enviamos o seu acesso para o e-mail usado na compra. Se não encontrar em alguns minutos, confira a caixa de spam ou promoções.',
-  },
-  {
-    titulo: 'Crie sua senha',
-    texto:
-      'Primeiro acesso? O link do e-mail te leva direto para definir a sua senha. Já tem conta? É só entrar normalmente.',
-  },
-  {
-    titulo: 'Assuma o comando',
-    texto: 'O e-book, o kit prático e os bônus já estão te esperando na área de membros.',
-  },
-]
+// O que a compra entrega + próximos passos vêm do conteúdo do funil.
+const { entrega, passos } = f.content.obrigado
+const productName = f.productName
 ---
 
-<BaseLayout title="Compra confirmada · No Comando da IA" noindex={true}>
+<BaseLayout
+  title={`Compra confirmada · ${productName}`}
+  noindex={true}
+  htmlClass={f.theme ? `theme-${f.theme}` : undefined}
+>
   <Header />
   <main class="mx-auto max-w-2xl px-4 py-14 sm:py-20">
     <!-- ── Confirmação ──────────────────────────────────────────────────── -->
@@ -62,7 +49,7 @@ const passos = [
       <h1 class="mt-6 text-3xl font-extrabold sm:text-4xl">Pagamento confirmado!</h1>
       <p class="mx-auto mt-4 max-w-md text-lg leading-relaxed text-muted">
         Obrigado por assumir o comando. O seu acesso ao
-        <strong class="text-ink">{PRODUTO.nome}</strong> está a caminho do seu e-mail.
+        <strong class="text-ink">{productName}</strong> está a caminho do seu e-mail.
       </p>
     </section>
 
@@ -76,8 +63,8 @@ const passos = [
           >
           </div>
           <img
-            src="/img/produto-capa.webp"
-            alt={`Capa do ebook ${PRODUTO.nome}`}
+            src={`${f.imagesBase}/produto-capa.webp`}
+            alt={`Capa do ebook ${productName}`}
             width="480"
             height="679"
             class="relative w-24 -rotate-2 rounded-lg border border-line/60 shadow-xl sm:w-28"
@@ -86,7 +73,7 @@ const passos = [
         </div>
         <div class="min-w-0">
           <p class="text-xs font-semibold uppercase tracking-widest text-muted">Sua compra</p>
-          <h2 class="mt-1 text-xl font-bold">{PRODUTO.nome}</h2>
+          <h2 class="mt-1 text-xl font-bold">{productName}</h2>
           <ul class="mt-3 flex flex-col gap-1.5 text-sm text-muted">
             {
               entrega.map((item) => (

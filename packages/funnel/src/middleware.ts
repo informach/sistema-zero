@@ -2,6 +2,7 @@ import { defineMiddleware } from 'astro:middleware'
 import { clientIp } from './lib/client-ip'
 import { getEnv } from './lib/env'
 import { rateLimit } from './lib/rate-limit'
+import { isRateLimitedGetPath } from './lib/rate-limit-paths'
 import { captureError } from './lib/sentry'
 
 // NOTA: TODAS as páginas são SSR (full review 06/2026: quiz/políticas deixaram o
@@ -15,14 +16,13 @@ const WRITE_LIMIT = 240 // requisições…
 const RATE_WINDOW_MS = 60_000 // …por minuto, por IP (generoso: o quiz faz ~12 PATCH)
 
 // GETs que tocam banco/gateway (full review 06/2026 — antes NENHUM GET tinha teto):
-//  - /checkout (contato válido na URL INSERE lead) e /resultado (insere evento);
+//  - checkout (contato válido na URL INSERE lead) e resultado (insere evento),
+//    incluindo rotas multi-funil `/<audience>/<produto>/...`;
 //  - /api/checkout/:id (cada hit = 1 chamada assinada ao gateway; o teto de
 //    3000/min lá é AGREGADO do consumer `funnel` — sem teto por IP, um só
 //    cliente esgotava o budget de polling de TODOS os compradores pendentes);
 //  - /api/leads (leitura de banco) e /admin + /api/admin/* (cookie lixo dispara
 //    2 chamadas S2S — me+refresh — por request).
-const RATE_LIMITED_GET =
-  /^\/(checkout|resultado)$|^\/admin(\/|$)|^\/api\/(leads|checkout|admin)(\/|$)/
 const GET_LIMIT = 360 // por minuto por IP — folga p/ CGNAT (polling ≈ 17/min por comprador)
 
 // Login do admin tem bucket PRÓPRIO, bem mais apertado (anti brute-force por IP;
@@ -75,7 +75,7 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
   const isWrite = method === 'POST' || method === 'PATCH'
   const isAdminLogin = isWrite && ctx.url.pathname === ADMIN_LOGIN_PATH
   const writeLimited = isWrite && (isAdminLogin || RATE_LIMITED_WRITE.test(ctx.url.pathname))
-  const getLimited = method === 'GET' && RATE_LIMITED_GET.test(ctx.url.pathname)
+  const getLimited = method === 'GET' && isRateLimitedGetPath(ctx.url.pathname)
   if (writeLimited || getLimited) {
     // getEnv()/clientAddress SÓ aqui dentro: se alguma página voltar ao
     // prerender, a middleware roda no build (só GET, paths de marketing — não

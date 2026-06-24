@@ -48,9 +48,12 @@ function pixChargeKey(contact: CheckoutContactInput | null, couponCode?: string)
 export default function PixCheckout({
   contact,
   couponCode,
+  successPath,
 }: {
   contact: CheckoutContactInput | null
   couponCode?: string
+  /** Para onde ir quando o pagamento confirmar (próximo passo do funil; obrigatório). */
+  successPath: string
 }) {
   const [started, setStarted] = useState(false)
   const [pix, setPix] = useState<Pix | null>(null)
@@ -163,14 +166,14 @@ export default function PixCheckout({
         if (r.pix) setPix((cur) => cur ?? r.pix)
         if (r.status === 'PAID') {
           clearInterval(timer)
-          window.location.href = '/obrigado'
+          window.location.href = successPath
         }
       } catch {
         /* tenta de novo no próximo ciclo */
       }
     }, 3500)
     return () => clearInterval(timer)
-  }, [paymentId, pix?.expiresAt])
+  }, [paymentId, pix?.expiresAt, successPath])
 
   async function copiar() {
     if (!pix) return

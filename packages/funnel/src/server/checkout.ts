@@ -13,13 +13,22 @@ import { json, jsonError, safeJson } from '../lib/http'
 import { getLeadId } from '../lib/lead-session'
 import { quotePreview, readCouponCode, redeemCouponBestEffort, resolveCharge } from './catalog'
 
-export interface CheckoutDeps {
-  repo: FunnelRepo
-  gateway: GatewayClient
-  /** Slug da oferta ativa no catálogo (fonte do preço autoritativo). */
+/** Oferta resolvida (slug/nome/sku) que o checkout cobra para um dado funil. */
+export interface ResolvedOffer {
   offerSlug: string
   productName: string
   productSku: string
+}
+
+export interface CheckoutDeps {
+  repo: FunnelRepo
+  gateway: GatewayClient
+  /**
+   * Resolve a oferta a cobrar a partir do funil do lead (`leads.funnel`). `null`
+   * (lead legado/sem funil) cai no funil default/env. Permite vender mais de um
+   * produto sem trocar o handler — o slug do preço autoritativo sai daqui.
+   */
+  resolveOffer(funnel: string | null): ResolvedOffer
   /**
    * Registra o comprador no IdP após o pagamento confirmado. Best-effort nos
    * caminhos de polling/cartão (o webhook é o backstop durável). Opcional para
@@ -144,9 +153,10 @@ function paymentCreateError(
 async function persistCheckoutContext(
   deps: CheckoutDeps,
   leadId: string,
+  offerSlug: string,
   couponCode: string | null,
 ): Promise<void> {
-  const set: LeadUpdate = { offerRef: deps.offerSlug, couponCode }
+  const set: LeadUpdate = { offerRef: offerSlug, couponCode }
   await deps.repo.updateLead(leadId, set)
 }
 
@@ -220,10 +230,13 @@ export async function startPix(request: Request, deps: CheckoutDeps): Promise<Re
   const c = parsed.data
   lead = await applyContact(deps, lead, c.contact)
 
+  // Oferta do FUNIL do lead (slug/nome/sku) — não mais uma oferta global.
+  const { offerSlug, productName, productSku } = deps.resolveOffer(lead.funnel)
+
   // Preço AUTORITATIVO (catálogo) + cupom opcional do corpo.
-  const charge = await resolveCharge(deps.gateway, deps.offerSlug, c.couponCode)
+  const charge = await resolveCharge(deps.gateway, offerSlug, c.couponCode)
   if (!charge.ok) return jsonError(charge.message, charge.status, charge.code)
-  await persistCheckoutContext(deps, lead.id, charge.couponCode)
+  await persistCheckoutContext(deps, lead.id, offerSlug, charge.couponCode)
 
   // Idempotência determinística por lead+CONTEÚDO → retry com os mesmos dados
   // aponta p/ a MESMA cobrança Pix (não duplica transação); dados diferentes
@@ -237,8 +250,8 @@ export async function startPix(request: Request, deps: CheckoutDeps): Promise<Re
   const input = {
     amountInCents: charge.amountInCents,
     method: 'PIX',
-    description: `${deps.productName} (ebook)`,
-    payerMessage: 'Pagamento do ebook No Comando da IA',
+    description: `${productName} (ebook)`,
+    payerMessage: `Pagamento do ebook ${productName}`,
     customer: {
       name: c.contact.nome,
       email: c.contact.email,
@@ -246,7 +259,7 @@ export async function startPix(request: Request, deps: CheckoutDeps): Promise<Re
       // Telefone vem do pré-checkout (não é coletado de novo aqui); opcional no Pix.
       ...(lead.telefone ? { phone: lead.telefone.replace(/\D/g, '') } : {}),
     },
-    metadata: leadMetadata(lead, deps.productSku, charge),
+    metadata: leadMetadata(lead, productSku, charge),
   }
 
   const { status, body } = await deps.gateway.createPayment(input, idempotencyKey)
@@ -296,15 +309,16 @@ export async function startBoleto(request: Request, deps: CheckoutDeps): Promise
   }
   const form = parsed.data
 
-  const charge = await resolveCharge(deps.gateway, deps.offerSlug, form.couponCode)
+  const { offerSlug, productName, productSku } = deps.resolveOffer(lead.funnel)
+  const charge = await resolveCharge(deps.gateway, offerSlug, form.couponCode)
   if (!charge.ok) return jsonError(charge.message, charge.status, charge.code)
-  await persistCheckoutContext(deps, lead.id, charge.couponCode)
+  await persistCheckoutContext(deps, lead.id, offerSlug, charge.couponCode)
 
   const idempotencyKey = `funil-${lead.id}-boleto`
   const input = {
     amountInCents: charge.amountInCents,
     method: 'BOLETO',
-    description: `${deps.productName} (ebook)`,
+    description: `${productName} (ebook)`,
     customer: {
       name: lead.nome ?? 'Cliente',
       email: lead.email,
@@ -312,8 +326,8 @@ export async function startBoleto(request: Request, deps: CheckoutDeps): Promise
       phone: lead.telefone.replace(/\D/g, ''),
       address: cleanAddress(form.address),
     },
-    boleto: { expiresInDays: 3, message: `Pagamento do ebook ${deps.productName}` },
-    metadata: leadMetadata(lead, deps.productSku, charge),
+    boleto: { expiresInDays: 3, message: `Pagamento do ebook ${productName}` },
+    metadata: leadMetadata(lead, productSku, charge),
   }
 
   const { status, body } = await deps.gateway.createPayment(input, idempotencyKey)
@@ -357,16 +371,17 @@ export async function startCard(request: Request, deps: CheckoutDeps): Promise<R
   const c = parsed.data
   lead = await applyContact(deps, lead, c.contact)
 
-  const charge = await resolveCharge(deps.gateway, deps.offerSlug, c.couponCode)
+  const { offerSlug, productName, productSku } = deps.resolveOffer(lead.funnel)
+  const charge = await resolveCharge(deps.gateway, offerSlug, c.couponCode)
   if (!charge.ok) return jsonError(charge.message, charge.status, charge.code)
-  await persistCheckoutContext(deps, lead.id, charge.couponCode)
+  await persistCheckoutContext(deps, lead.id, offerSlug, charge.couponCode)
 
   // Nonce por tentativa → cartão recusado pode re-tentar sem replay da resposta.
   const idempotencyKey = `funil-${lead.id}-card-${c.attemptId}`
   const input = {
     amountInCents: charge.amountInCents,
     method: 'CREDIT_CARD',
-    description: `${deps.productName} (ebook)`,
+    description: `${productName} (ebook)`,
     customer: {
       name: c.contact.nome,
       email: c.contact.email,
@@ -376,7 +391,7 @@ export async function startCard(request: Request, deps: CheckoutDeps): Promise<R
       ...(c.address ? { address: cleanAddress(c.address) } : {}),
     },
     card: { token: c.token, brand: c.brand, last4: c.last4, installments: c.installments },
-    metadata: leadMetadata(lead, deps.productSku, charge),
+    metadata: leadMetadata(lead, productSku, charge),
   }
 
   const { status, body } = await deps.gateway.createPayment(input, idempotencyKey)
@@ -497,10 +512,14 @@ export async function pixStatus(
  */
 export async function quoteCheckout(
   request: Request,
-  deps: Pick<CheckoutDeps, 'gateway' | 'offerSlug'>,
+  deps: Pick<CheckoutDeps, 'gateway' | 'repo' | 'resolveOffer'>,
 ): Promise<Response> {
   const couponCode = readCouponCode(await safeJson(request))
-  const result = await quotePreview(deps.gateway, deps.offerSlug, couponCode)
+  // A oferta a cotar vem do FUNIL do lead (cookie); sem lead → funil default.
+  const leadId = getLeadId(request)
+  const lead = leadId ? await deps.repo.getLead(leadId) : null
+  const { offerSlug } = deps.resolveOffer(lead?.funnel ?? null)
+  const result = await quotePreview(deps.gateway, offerSlug, couponCode)
   if ('error' in result) {
     const code = result.status === 409 ? 'OFFER_UNAVAILABLE' : 'CATALOG_ERROR'
     return jsonError(result.error, result.status, code)

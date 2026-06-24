@@ -39,8 +39,12 @@ tema). O design espelha o projeto de referência `C:\Users\tocha\projects\comuni
 
 badge (variant `success` usa tokens `--success/*`) · button (+`buttonVariants` p/ Links) · card ·
 dialog (props opcionais `titleAlign: 'left'|'center'` e `onBack` — fluxos multi-passo estilo
-Udemy; X/Voltar são absolutos no header) · info-tooltip · input · label (`Field` com `tooltip?`) ·
-pagination · password-input · progress · select · **skeleton** (`@sistemazero/ui/skeleton` —
+Udemy; X/Voltar são absolutos no header; **gestão de foco a11y**: foca o card ao abrir, PRENDE o
+Tab, devolve o foco ao gatilho ao fechar — pilha de diálogos + lock de scroll refcontado, só o do
+TOPO trata Esc/Tab) · info-tooltip · input · label (`Field` com `tooltip?`; **o erro vira
+`role="alert"` ligado por `aria-describedby` + `aria-invalid` no controle** — clona o filho) ·
+pagination · password-input (**olho alcançável por teclado**, `aria-pressed`) · progress · select ·
+**skeleton** (`@sistemazero/ui/skeleton` —
 placeholder animado `animate-pulse`/`bg-muted` no lugar de "Carregando…"; molde por `className`,
 componha p/ cards/linhas; use em `loading.tsx` de rota e em estados de fetch client) · spinner ·
 star-rating (display + input com MEIA

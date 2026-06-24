@@ -3,7 +3,7 @@ import { Sparkles, Trophy } from 'lucide-react'
 import type { PublicProfileDTO } from '@/lib/types'
 import { badgeInfo } from './badges'
 import { KidsAvatar } from './kids-avatar'
-import { RoomCanvas } from './room/room-canvas'
+import { LazyRoomCanvas } from './room/lazy-room-canvas'
 
 /**
  * Perfil PÚBLICO de uma criança (visível a colegas da comunidade): avatar + nome +
@@ -53,11 +53,7 @@ export function PublicProfileView({ profile }: { profile: PublicProfileDTO }) {
       {profile.room ? (
         <section>
           <h2 className="sz-display mb-3 text-lg">O quarto</h2>
-          <RoomCanvas
-            state={profile.room}
-            mode="view"
-            avatarPhotoUrl={profile.avatarPhotoUrl ?? null}
-          />
+          <LazyRoomCanvas state={profile.room} avatarPhotoUrl={profile.avatarPhotoUrl ?? null} />
         </section>
       ) : null}
 

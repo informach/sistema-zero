@@ -14,8 +14,8 @@ export function PasswordInput(props: Props) {
       <Input {...props} type={visible ? 'text' : 'password'} className="pr-10" />
       <button
         type="button"
-        tabIndex={-1}
         aria-label={visible ? 'Ocultar senha' : 'Mostrar senha'}
+        aria-pressed={visible}
         onClick={() => setVisible((v) => !v)}
         className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-muted-foreground hover:text-foreground"
       >

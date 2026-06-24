@@ -19,7 +19,7 @@ import 'monaco-editor/esm/vs/editor/contrib/parameterHints/browser/parameterHint
 import 'monaco-editor/esm/vs/editor/contrib/hover/browser/hoverContribution.js'
 import 'monaco-editor/esm/vs/editor/contrib/bracketMatching/browser/bracketMatching.js'
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
-import type { MonacoModelRegistry } from './modelPaths'
+import { buildMonacoModelPath, type MonacoModelRegistry } from './modelPaths'
 
 let configured = false
 
@@ -111,6 +111,29 @@ export function configureMonacoWorkers(): void {
 
 export function getMonacoModelRegistry(): MonacoModelRegistry {
   return monaco.editor
+}
+
+/**
+ * Pré-cria os models de TODAS as abas informadas (não só a ativa) no registro
+ * GLOBAL do Monaco que o `@monaco-editor/react` reusa por `path`. Sem isto, a
+ * PRIMEIRA visita a cada aba criava o model on-demand e instanciava o worker da
+ * linguagem (HTML/CSS/TS) naquele instante — re-tokenização/relayout visível
+ * ("pisca") uma vez por aba até estabilizar. Pré-criando ao montar o editor, esse
+ * custo de inicialização vai para o carregamento (atrás do skeleton) e a troca de
+ * abas fica instantânea. Idempotente: pula models já existentes. O `uri` casa
+ * EXATAMENTE com o que o `@monaco-editor/react` monta (mesmo `buildMonacoModelPath`
+ * + `monaco.Uri.parse`), então o editor REUSA estes models em vez de recriar.
+ */
+export function prewarmEditorModels(
+  prefix: string,
+  files: ReadonlyArray<{ name: string; language: string; value: string }>,
+): void {
+  for (const file of files) {
+    const uri = monaco.Uri.parse(buildMonacoModelPath(prefix, file.name))
+    if (!monaco.editor.getModel(uri)) {
+      monaco.editor.createModel(file.value, file.language, uri)
+    }
+  }
 }
 
 let languageServicesPromise: Promise<void> | null = null

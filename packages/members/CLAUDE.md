@@ -56,7 +56,9 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > `avatar_configs`/`avatar_inventory`), `0020` (quarto: `room_state`/`room_inventory`),
 > `0021` (missões + freeze/férias: `mission_claims` + `streak_freezes`/
 > `freeze_granted_month`/`vacation_from`/`vacation_to`), `0022` (ligas semanais:
-> `league_membership`) e `0023` (avatar 3D: `avatar_configs.photo_url` — a foto/snapshot)
+> `league_membership`), `0023` (avatar 3D: `avatar_configs.photo_url` — a foto/snapshot),
+> `0024` (índices únicos de `sort_order` em módulos/aulas/blocos/anexos) e `0025`
+> (**certificados**: enum `lesson_block_kind` + `'certificate'` + tabela `certificates_issued`)
 > — **aplicadas** no Postgres compartilhado (`sistemazero`, :5433).
 
 ## Conceito central (decisões travadas com o usuário)
@@ -371,6 +373,31 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   (matrícula ativa + aula publicada + bloco da aula com `kind:'ebook'`;
   `EBOOK_BLOCK_NOT_FOUND`→404). A view member-facing do bloco `ebook` sai **SEM `url`**
   (só `{kind, title?}`). `GetEbookDownloadService`.
+- **Certificado de conclusão** (bloco `kind:'certificate'` na ÚLTIMA aula; migration `0025`):
+  `GET /members/lessons/:lessonId/blocks/:blockId/certificate` → estado `{eligible, issued,
+  revoked, serial?, issuedAt?, revokedAt?}` (`GetCertificateService`); `POST` na mesma rota EMITE
+  (idempotente por aluno+curso — `IssueCertificateService`): GATE de elegibilidade = TODAS as
+  outras aulas publicadas concluídas **E ≥1 outra aula publicada existir** (`eligibleForCertificate`
+  exige piso de 1 — um curso publicado SÓ com a aula do certificado NÃO emite diploma por zero
+  trabalho; `CERTIFICATE_NOT_ELIGIBLE`→409; cobre transitivamente quiz/estúdio das OUTRAS aulas),
+  congela `certificates_issued` (id público + `serial` `SZ-<ano>-XXXXXXXX` + snapshot
+  nome/título) e **conclui a aula do certificado** (→ curso 100% + badge `course-complete`,
+  award fail-open). ⚠️ A aula do certificado é **EXCLUSIVA** (só o bloco de certificado): a autoria
+  recusa criar/virar um certificado numa aula com outros blocos, e recusa adicionar bloco numa aula
+  de certificado (`VALIDATION_ERROR`→400) — senão um quiz/estúdio na MESMA aula seria pulado (a
+  emissão conclui a aula direto, sem os gates de `mark-lesson-complete`). O **nome** vem dos headers
+  CONFIÁVEIS do gateway (`x-auth-profile-name` kids ?? `x-auth-user-name`; URI-decodado — 1º
+  consumidor a ler o nome), NUNCA do corpo. `certificates_issued.course_id` é **SNAPSHOT (SEM FK p/
+  `courses`)** — o diploma é credencial PERMANENTE (QR público); apagar o curso NÃO o destrói (a
+  validação roda só sobre `course_ref`/`course_title`/`student_name`/`serial`). A config do
+  bloco (emissor/assinatura/cor/logo) volta na resposta p/ o BFF montar o PDF (o members NÃO gera
+  PDF). Validação PÚBLICA: `GET /members/internal/certificates/:id/validate` (rota S2S, exposta
+  no gateway como `public` — o BFF da página `/validar/:id` chama; só dados não-sensíveis
+  `{valid, studentName, courseTitle, issuedAt, serial}`). Admin: `POST /members/admin/
+  certificates/:id/revoke` (→ `valid:false` na validação; revogação é TERMINAL — reemissão devolve
+  410 `CERTIFICATE_REVOKED`; a aula/curso PERMANECEM concluídos, revoke só invalida a credencial).
+  `ValidateCertificateService`/`RevokeCertificateService`; helpers PUROS `eligibleForCertificate`/
+  `generateSerial` (domain).
 - Cancelar/expirar assinatura é um **UPDATE atômico set-based** por `subscription_id`
   (sem load-mutate-save por linha → sem lost-update sob corrida com renovação).
 - **Retenção de `processed_webhooks` roda SOZINHA** (06/2026): `setInterval` no
@@ -704,7 +731,8 @@ entre pacotes (a dedupe por `created_at` pularia migrations). A migration faz
 de vídeo/last-accessed — migration `0001`), `quiz_attempts` (histórico de quiz —
 migration `0002`), `course_ratings` (classificação do curso, UNIQUE user+course —
 migration `0004`), `processed_webhooks`, `studio_submissions` (entrega do Estúdio,
-migrations `0013`/`0016`) e a **gamificação**: `gamification_profiles`/`xp_events`/
+migrations `0013`/`0016`), `certificates_issued` (certificado de conclusão, UNIQUE
+user+course + serial — migration `0025`) e a **gamificação**: `gamification_profiles`/`xp_events`/
 `user_badges` (`0009`–`0015`), `coin_events` (Zappy Coins, `0018`), `avatar_configs`
 (`0019` + `photo_url` no `0023`)/`avatar_inventory` (`0019`), `room_state`/`room_inventory`
 (`0020`), `mission_claims` (`0021`) e `league_membership` (ligas, `0022`).

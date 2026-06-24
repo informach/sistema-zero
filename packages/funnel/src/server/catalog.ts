@@ -139,8 +139,10 @@ export async function quotePreview(
   return { status: 502, error: 'Não foi possível cotar a oferta.' }
 }
 
-// Cache simples da oferta ativa (exibição). TTL curto — dados de catálogo mudam raramente.
-let offerCache: { view: CatalogOfferView; at: number } | null = null
+// Cache simples da oferta ativa (exibição), isolado por slug. TTL curto — dados
+// de catálogo mudam raramente. O isolamento por oferta evita servir preço/copy de
+// outro funil quando o catálogo falha para um slug específico.
+const offerCache = new Map<string, { view: CatalogOfferView; at: number }>()
 
 /**
  * Busca a oferta ativa (com cache TTL). Em falha do catálogo, serve a última
@@ -153,14 +155,15 @@ export async function getActiveOffer(
 ): Promise<CatalogOfferView | null> {
   const ttlMs = opts?.ttlMs ?? 60_000
   const now = opts?.now ?? Date.now()
-  if (offerCache && offerCache.view.slug === offerSlug && now - offerCache.at < ttlMs) {
-    return offerCache.view
+  const cached = offerCache.get(offerSlug)
+  if (cached && now - cached.at < ttlMs) {
+    return cached.view
   }
   const { status, body } = await gateway.getOffer(offerSlug)
-  if (status !== 200) return offerCache?.view ?? null
+  if (status !== 200) return cached?.view ?? null
   const view = mapOffer(body)
-  if (view) offerCache = { view, at: now }
-  return view ?? offerCache?.view ?? null
+  if (view) offerCache.set(offerSlug, { view, at: now })
+  return view ?? cached?.view ?? null
 }
 
 function mapOffer(body: unknown): CatalogOfferView | null {

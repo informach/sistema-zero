@@ -38,10 +38,15 @@ export function AppSidebar({
 
   return (
     <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-border border-r bg-card px-3 py-5 md:flex">
-      <Link href="/" aria-label="Início" className="px-2">
+      <Link href="/" aria-label="Início" className="px-2" prefetch={false}>
         <KidsLogo priority />
       </Link>
 
+      {/* ⚠️ `prefetch={false}` é PROPOSITAL: todos os itens da sidebar ficam SEMPRE na viewport e
+          TODA rota é `force-dynamic` + faz ida ao gateway (members/hub). O prefetch automático do
+          Next disparava ~7 requisições RSC pesadas (incl. /estudio e /quarto) a CADA página numa
+          réplica ÚNICA → tempestade de 502/ERR_HTTP2 e navegação lenta. Navegar passa a buscar sob
+          demanda; o `loading.tsx` do grupo dá o esqueleto instantâneo no clique. */}
       <nav className="mt-8 flex flex-col gap-1.5">
         {NAV_ITEMS.map((item) => {
           const active = isNavActive(pathname, item.href, item.match)
@@ -50,6 +55,7 @@ export function AppSidebar({
             <Link
               key={item.href}
               href={item.href}
+              prefetch={false}
               aria-current={active ? 'page' : undefined}
               className={cn(
                 'flex items-center gap-3 rounded-2xl border-2 px-4 py-3 transition-colors',

@@ -11,13 +11,14 @@ interface Step {
 
 const pct = (n: number) => `${(n * 100).toFixed(1)}%`
 
-export default function PerformancePanel() {
+export default function PerformancePanel({ funnel }: { funnel: string }) {
   const [steps, setSteps] = useState<Step[] | null>(null)
   const [total, setTotal] = useState(0)
   const [erro, setErro] = useState(false)
 
   useEffect(() => {
-    apiGet<{ total: number; steps: Step[] }>('/api/admin/funnel')
+    const qs = funnel ? `?funnel=${encodeURIComponent(funnel)}` : ''
+    apiGet<{ total: number; steps: Step[] }>(`/api/admin/funnel${qs}`)
       .then((d) => {
         setTotal(d.total)
         setSteps(d.steps)
@@ -29,7 +30,7 @@ export default function PerformancePanel() {
         }
         setErro(true)
       })
-  }, [])
+  }, [funnel])
 
   if (erro) return <p className="text-red-400">Falha ao carregar o funil.</p>
   if (!steps) return <p className="text-muted">Carregando…</p>

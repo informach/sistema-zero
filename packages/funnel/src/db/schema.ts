@@ -1,13 +1,4 @@
-import {
-  boolean,
-  index,
-  integer,
-  jsonb,
-  pgSchema,
-  text,
-  timestamp,
-  uuid,
-} from 'drizzle-orm/pg-core'
+import { boolean, index, jsonb, pgSchema, text, timestamp, uuid } from 'drizzle-orm/pg-core'
 
 // Este package compartilha o MESMO Postgres do payments, mas é dono do schema
 // `funil` (isolamento por `pgSchema`). O DDL gerado fica todo em `funil.*`.
@@ -29,22 +20,18 @@ export const leads = funil.table(
     telefone: text('telefone'),
     document: text('document'), // CPF sem máscara (devedor do Pix / titular do cartão)
 
-    // 12 chaves do quiz (parciais até o lead concluir) + perfil derivado, na ordem
-    // das perguntas P1..P10 (a P7 é a calculadora → horas/valor/custo_mensal).
-    segmento: text('segmento'), // A | B | C | D (P1)
-    tipoCriar: text('tipo_criar'), // A | B | C | D | E (P2, não pontua)
-    relacaoIa: text('relacao_ia'), // A | B | C | D (P3)
-    jaQuebrou: text('ja_quebrou'), // A | B | C | D (P4)
-    travaPrincipal: text('trava_principal'), // A | B | C | D (P5)
-    custoPrincipal: text('custo_principal'), // A | B | C | D | E (P6)
-    horasRetrabalho: integer('horas_retrabalho'), // horas/semana (P7)
-    valorHora: integer('valor_hora'), // centavos (P7)
-    custoMensal: integer('custo_mensal'), // centavos (derivado: horas*valor*4)
-    mudancaDesejada: text('mudanca_desejada'), // A | B | C | D (P8)
-    proximoPasso: text('proximo_passo'), // A | B | C | D (P9)
-    sintese: text('sintese'), // A | B | C | D (P10, não pontua)
-    // Perfil vencedor do motor de pontuação (rodado ao concluir o quiz, no /resultado).
-    perfilResultado: text('perfil_resultado'), // ideia_parada | criando_no_escuro | refem_ajustes | sem_criterio
+    // Respostas do quiz em JSON (chave snake_case → valor): GENÉRICO p/ cada funil ter
+    // o seu próprio quiz (perguntas diferentes). A validação por chave e o cálculo de
+    // derivados (ex.: custo_mensal) + o perfil vivem no módulo do funil (src/funnels).
+    quizAnswers: jsonb('quiz_answers').$type<Record<string, string | number>>(),
+    // Perfil/diagnóstico vencedor (string por funil), calculado ao concluir o quiz.
+    // Mantido como coluna: a aba Perfis do /admin agrega por ele.
+    perfilResultado: text('perfil_resultado'),
+
+    // Funil de origem do lead (`${audience}/${produto}`, ex.: `pro/no-comando-da-ia`),
+    // gravado na CRIAÇÃO. Resolve a oferta/conteúdo certos quando há mais de um produto;
+    // nullable → leads legados (pré-multifunil) caem no funil default (ver src/funnels).
+    funnel: text('funnel'),
 
     // Progresso / pagamento.
     lastStep: text('last_step').notNull().default('entrou_landing'),
@@ -81,7 +68,8 @@ export const leads = funil.table(
   },
   (t) => [
     index('leads_email_idx').on(t.email),
-    index('leads_segmento_idx').on(t.segmento),
+    // Segmentação por funil (filtro do /admin por produto/público).
+    index('leads_funnel_idx').on(t.funnel),
     // Aba PERFIS do /admin agrega `count(*) group by perfil_resultado`.
     index('leads_perfil_idx').on(t.perfilResultado),
     index('leads_created_idx').on(t.createdAt),

@@ -129,6 +129,33 @@
   --sz-gradient: linear-gradient(90deg, oklch(0.875 0.215 122), oklch(0.84 0.13 192));
 }
 
+/* ── Tema KIDS (Desafio do Primeiro Jogo) ────────────────────────────────────
+   Re-skin do funil para o público kids: REDEFINE os tokens de marca (ciano +
+   laranja, fundo azul-marinho escuro, fontes Fredoka/Nunito) sob `.theme-kids`
+   no <html>. Como as utilitárias (`text-lime`, `bg-card`…) são `var(--color-*)`,
+   todas as páginas/ilhas compartilhadas (quiz/checkout/obrigado/resultado) re-skinam
+   sem mudar markup. O funil carrega `theme:'kids'` e as páginas passam o htmlClass.
+   No funil, `--color-lime` é o token de CTA/destaque → vira LARANJA; `--color-cyan`
+   (acento) → CIANO. (O CSS sob medida da página de vendas vive no DesafioOfertaBody.) */
+.theme-kids {
+  --color-bg: #07111c;
+  --color-card: #112236;
+  --color-card-2: #16314c;
+  --color-lime: #f59e0b; /* laranja = CTA/destaque primário */
+  --color-lime-strong: #d98708;
+  --color-cyan: #0ea5e9; /* ciano = acento secundário */
+  --color-ink: #f4f8fc;
+  --color-muted: #aebfd0;
+  --color-line: #21344b;
+  --font-sans: "Nunito", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.theme-kids h1,
+.theme-kids h2,
+.theme-kids h3 {
+  font-family: "Fredoka", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  letter-spacing: -0.01em;
+}
+
 html {
   scroll-behavior: smooth;
   background-color: var(--color-bg);

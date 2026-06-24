@@ -1,7 +1,12 @@
 ---
-// A entrada do funil é o quiz. A landing antiga (com a P1 solta) foi unificada:
-// todas as 10 perguntas rodam em /quiz (ilha React, sem header/footer, transições
-// suaves). Aqui só redirecionamos para lá.
+// Entrada do site → funil default (multi-funil: ver src/funnels). A entrada de um
+// funil é o quiz quando ele tem; senão, a própria oferta. Hoje cai em
+// /pro/no-comando-da-ia/quiz.
+import { DEFAULT_FUNNEL } from '../funnels/registry'
+
 export const prerender = false
-return Astro.redirect('/quiz', 302)
+const entry = DEFAULT_FUNNEL.steps.quiz
+  ? `${DEFAULT_FUNNEL.basePath}/quiz`
+  : `${DEFAULT_FUNNEL.basePath}/oferta`
+return Astro.redirect(entry, 302)
 ---

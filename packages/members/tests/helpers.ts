@@ -22,6 +22,7 @@ import { GetLeagueService } from '../src/application/gamification/get-league.ser
 import { GetMissionsService } from '../src/application/gamification/get-missions.service'
 import { SetVacationService } from '../src/application/gamification/set-vacation.service'
 import { GetAttachmentDownloadService } from '../src/application/get-attachment-download/get-attachment-download.service'
+import { GetCertificateService } from '../src/application/get-certificate/get-certificate.service'
 import { GetCourseProgressService } from '../src/application/get-course-progress/get-course-progress.service'
 import { GetCourseRatingService } from '../src/application/get-course-rating/get-course-rating.service'
 import { GetEbookDownloadService } from '../src/application/get-ebook-download/get-ebook-download.service'
@@ -32,6 +33,7 @@ import { GetShowcasePayloadService } from '../src/application/get-showcase-paylo
 import { GetStudioCarryoverService } from '../src/application/get-studio-carryover/get-studio-carryover.service'
 import { GrantEntitlementService } from '../src/application/grant-entitlement/grant-entitlement.service'
 import { GrantManualEntitlementService } from '../src/application/grant-manual-entitlement/grant-manual-entitlement.service'
+import { IssueCertificateService } from '../src/application/issue-certificate/issue-certificate.service'
 import { ListCatalogService } from '../src/application/list-catalog/list-catalog.service'
 import { ListMembersService } from '../src/application/list-members/list-members.service'
 import { ListMyCoursesService } from '../src/application/list-my-courses/list-my-courses.service'
@@ -48,6 +50,10 @@ import { SaveVideoPositionService } from '../src/application/save-video-position
 import { StudioSubmissionsAdminService } from '../src/application/studio-submissions-admin/studio-submissions-admin.service'
 import { SubmitQuizAttemptService } from '../src/application/submit-quiz-attempt/submit-quiz-attempt.service'
 import { SubmitStudioProjectService } from '../src/application/submit-studio-project/submit-studio-project.service'
+import {
+  RevokeCertificateService,
+  ValidateCertificateService,
+} from '../src/application/validate-certificate/validate-certificate.service'
 import type { CourseAudience, CourseStatus } from '../src/domain/course/course'
 import { EntitlementAggregate } from '../src/domain/entitlement/entitlement.aggregate'
 import type { ResolvedOffer } from '../src/domain/ports/catalog-gateway.port'
@@ -57,6 +63,7 @@ import { createServer } from '../src/interfaces/http/server'
 import {
   FakeCatalogGateway,
   InMemoryAvatarRepository,
+  InMemoryCertificateRepository,
   InMemoryCourseRatingRepository,
   InMemoryCourseRepository,
   InMemoryEntitlementRepository,
@@ -96,6 +103,7 @@ export function buildApp(
     studioSubmissions.deleteByBlockId(blockId)
   }
   const ratings = new InMemoryCourseRatingRepository()
+  const certificates = new InMemoryCertificateRepository()
   const avatar = new InMemoryAvatarRepository()
   const room = new InMemoryRoomRepository()
   // gamification recebe avatar/room p/ a compra ATÔMICA (spendCoins concede a posse junto).
@@ -179,6 +187,15 @@ export function buildApp(
       ),
       getStudioCarryover: new GetStudioCarryoverService(checkAccess, courses, studioSubmissions),
       getShowcasePayload: new GetShowcasePayloadService(checkAccess, courses, studioSubmissions),
+      getCertificate: new GetCertificateService(checkAccess, courses, progress, certificates),
+      issueCertificate: new IssueCertificateService(
+        checkAccess,
+        courses,
+        progress,
+        certificates,
+        awardGamification,
+        clock,
+      ),
       getGamification: new GetGamificationService(gamification, clock),
       getMissions: new GetMissionsService(gamification, clock),
       claimMission: new ClaimMissionService(gamification, clock),
@@ -226,6 +243,7 @@ export function buildApp(
         logger: silentLogger,
       }),
       manageEntitlement: new ManageEntitlementService(entitlements, clock),
+      revokeCertificate: new RevokeCertificateService(certificates, clock),
       hub,
     },
     content: {
@@ -245,6 +263,7 @@ export function buildApp(
         defaultMaxProfiles: 1,
       }),
       showcasePayload: new GetShowcasePayloadService(checkAccess, courses, studioSubmissions),
+      validateCertificate: new ValidateCertificateService(certificates),
       internalToken: opts.internalToken,
     },
   })
@@ -258,6 +277,7 @@ export function buildApp(
     quizAttempts,
     studioSubmissions,
     ratings,
+    certificates,
     gamification,
     avatar,
     room,

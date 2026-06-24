@@ -6,6 +6,7 @@ import type {
 } from '../../../application/grant-manual-entitlement/grant-manual-entitlement.service'
 import type { ListMembersService } from '../../../application/list-members/list-members.service'
 import type { ManageEntitlementService } from '../../../application/manage-entitlement/manage-entitlement.service'
+import type { RevokeCertificateService } from '../../../application/validate-certificate/validate-certificate.service'
 import { InvalidEntitlementCommandError } from '../../../domain/entitlement/entitlement.errors'
 import type { HubGateway } from '../../../domain/ports/hub-gateway.port'
 import { assertInternalCaller, requireAdmin } from '../auth'
@@ -30,6 +31,7 @@ export interface AdminRoutesDeps {
   getMemberDetail: GetMemberDetailService
   grantManual: GrantManualEntitlementService
   manageEntitlement: ManageEntitlementService
+  revokeCertificate: RevokeCertificateService
   /** Notifica o hub (comunidade) na concessão manual → invalida o cache de acesso na hora. */
   hub: HubGateway
 }
@@ -46,69 +48,82 @@ export interface AdminRoutesDeps {
  * por rota roda depois (precisa só dos headers de role, sempre presentes).
  */
 export function adminRoutes(deps: AdminRoutesDeps) {
-  return new Elysia({ prefix: '/members/admin' })
-    .onTransform(({ headers }) =>
-      assertInternalCaller(headers['x-internal-token'], deps.internalToken),
-    )
-    .get(
-      '/members',
-      async ({ query, headers }) => {
-        requireAdmin(headers, deps.requireAdminEnabled)
-        return deps.listMembers.execute({
-          status: query.status,
-          courseRef: query.courseRef,
-          limit: clampLimit(query.limit),
-          offset: query.offset ?? 0,
-        })
-      },
-      { query: ListMembersQuery },
-    )
-    .get(
-      '/members/:userId',
-      async ({ params, query, headers }) => {
-        requireAdmin(headers, deps.requireAdminEnabled)
-        // `?profileIds=<csv>` → progresso POR PERFIL (estilo Netflix); ausente → só a conta.
-        return deps.getMemberDetail.execute(params.userId, parseProfileIds(query.profileIds))
-      },
-      { params: UserIdParams, query: MemberDetailQuery },
-    )
-    .post(
-      '/entitlements',
-      async ({ body, headers, set }) => {
-        requireAdmin(headers, deps.requireAdminEnabled)
-        const expiresAt = parseDate(body.expiresAt)
-        const cmd: GrantManualCommand =
-          body.mode === 'offer'
-            ? { mode: 'offer', userId: body.userId, offerRef: body.offerRef, expiresAt }
-            : body.mode === 'course'
-              ? { mode: 'course', userId: body.userId, courseRef: body.courseRef, expiresAt }
-              : body.mode === 'all_kids_courses'
-                ? { mode: 'all_kids_courses', userId: body.userId, expiresAt }
-                : { mode: 'all_courses', userId: body.userId, expiresAt }
-        const result = await deps.grantManual.execute(cmd)
-        // Comunidade: avisa o hub p/ liberar espaços gated na hora (best-effort).
-        await deps.hub.notifyAccessChanged(body.userId, 'grant')
-        set.status = 201
-        return result
-      },
-      { body: GrantEntitlementBody },
-    )
-    .patch(
-      '/entitlements/:id',
-      async ({ body, params, headers }) => {
-        requireAdmin(headers, deps.requireAdminEnabled)
-        const result = await deps.manageEntitlement.execute({
-          id: params.id,
-          action: body.action,
-          expiresAt: parseDate(body.expiresAt) ?? undefined,
-        })
-        // Mudança manual de acesso também invalida o micro-cache do hub
-        // (revogar/expirar corta acesso; estender/reativar libera).
-        await deps.hub.notifyAccessChanged(result.userId, body.action)
-        return result
-      },
-      { body: ManageEntitlementBody, params: IdParams },
-    )
+  return (
+    new Elysia({ prefix: '/members/admin' })
+      .onTransform(({ headers }) =>
+        assertInternalCaller(headers['x-internal-token'], deps.internalToken),
+      )
+      .get(
+        '/members',
+        async ({ query, headers }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          return deps.listMembers.execute({
+            status: query.status,
+            courseRef: query.courseRef,
+            limit: clampLimit(query.limit),
+            offset: query.offset ?? 0,
+          })
+        },
+        { query: ListMembersQuery },
+      )
+      .get(
+        '/members/:userId',
+        async ({ params, query, headers }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          // `?profileIds=<csv>` → progresso POR PERFIL (estilo Netflix); ausente → só a conta.
+          return deps.getMemberDetail.execute(params.userId, parseProfileIds(query.profileIds))
+        },
+        { params: UserIdParams, query: MemberDetailQuery },
+      )
+      .post(
+        '/entitlements',
+        async ({ body, headers, set }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          const expiresAt = parseDate(body.expiresAt)
+          const cmd: GrantManualCommand =
+            body.mode === 'offer'
+              ? { mode: 'offer', userId: body.userId, offerRef: body.offerRef, expiresAt }
+              : body.mode === 'course'
+                ? { mode: 'course', userId: body.userId, courseRef: body.courseRef, expiresAt }
+                : body.mode === 'all_kids_courses'
+                  ? { mode: 'all_kids_courses', userId: body.userId, expiresAt }
+                  : { mode: 'all_courses', userId: body.userId, expiresAt }
+          const result = await deps.grantManual.execute(cmd)
+          // Comunidade: avisa o hub p/ liberar espaços gated na hora (best-effort).
+          await deps.hub.notifyAccessChanged(body.userId, 'grant')
+          set.status = 201
+          return result
+        },
+        { body: GrantEntitlementBody },
+      )
+      .patch(
+        '/entitlements/:id',
+        async ({ body, params, headers }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          const result = await deps.manageEntitlement.execute({
+            id: params.id,
+            action: body.action,
+            expiresAt: parseDate(body.expiresAt) ?? undefined,
+          })
+          // Mudança manual de acesso também invalida o micro-cache do hub
+          // (revogar/expirar corta acesso; estender/reativar libera).
+          await deps.hub.notifyAccessChanged(result.userId, body.action)
+          return result
+        },
+        { body: ManageEntitlementBody, params: IdParams },
+      )
+      // Revoga um certificado emitido (a validação pública passa a mostrar inválido).
+      // `/members/admin/certificates/:id/revoke` (4 segmentos) não colide com as demais.
+      .post(
+        '/certificates/:id/revoke',
+        async ({ params, headers }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          await deps.revokeCertificate.execute(params.id)
+          return { revoked: true }
+        },
+        { params: IdParams },
+      )
+  )
 }
 
 function clampLimit(limit: number | undefined): number {

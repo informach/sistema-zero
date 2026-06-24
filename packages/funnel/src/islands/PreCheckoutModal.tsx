@@ -3,11 +3,18 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { type Ref, useEffect, useId, useRef, useState } from 'react'
 import { apiPost } from '../lib/api-fetch'
 import { ContactSchema, fieldErrors } from '../lib/contact-schema'
-import { isPerfil } from '../lib/perfil'
 
 type Errors = Partial<Record<'nome' | 'email' | 'telefone', string>>
 
-export default function PreCheckoutModal() {
+/** Navegação + origem do funil, injetadas pela página (a ilha não lê a rota). */
+export interface PreCheckoutModalProps {
+  /** Prefixo do funil (`/pro/no-comando-da-ia`) p/ montar o destino do checkout. */
+  basePath: string
+  /** Chave do funil (`pro/no-comando-da-ia`) — gravada na criação do lead. */
+  funnel: string
+}
+
+export default function PreCheckoutModal({ basePath, funnel }: PreCheckoutModalProps) {
   const [open, setOpen] = useState(false)
   const [nome, setNome] = useState('')
   const [email, setEmail] = useState('')
@@ -25,9 +32,12 @@ export default function PreCheckoutModal() {
   useEffect(() => {
     ;(async () => {
       try {
-        await apiPost('/api/leads')
-        const perfilParam = new URLSearchParams(window.location.search).get('perfil')
-        const metadata = isPerfil(perfilParam) ? { perfil_resultado: perfilParam } : undefined
+        await apiPost('/api/leads', { funnel })
+        // Perfil é POR FUNIL (string livre) — repassa o que veio na URL; o servidor
+        // valida `perfil_resultado` (max 32). Antes usava o enum do NCI e descartava
+        // os perfis dos outros funis (ex.: kids).
+        const perfilParam = new URLSearchParams(window.location.search).get('perfil')?.trim()
+        const metadata = perfilParam ? { perfil_resultado: perfilParam.slice(0, 32) } : undefined
         await apiPost('/api/events', {
           eventName: 'viu_pagina_vendas',
           ...(metadata ? { metadata } : {}),
@@ -48,7 +58,7 @@ export default function PreCheckoutModal() {
     }
     document.addEventListener('click', onDocClick)
     return () => document.removeEventListener('click', onDocClick)
-  }, [])
+  }, [funnel])
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -92,7 +102,7 @@ export default function PreCheckoutModal() {
       })
       // Marca o redirecionamento antes de sair da página (best-effort, aguardado).
       await apiPost('/api/events', { eventName: 'redirecionou_checkout' }).catch(() => {})
-      window.location.href = `/checkout?${q.toString()}`
+      window.location.href = `${basePath}/checkout?${q.toString()}`
     } catch {
       setErroGeral('Não foi possível continuar. Confira os dados e tente novamente.')
       setSubmitting(false)

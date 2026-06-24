@@ -94,7 +94,19 @@ const nextConfig: NextConfig = {
   // Security headers em TODAS as respostas (inclui `/api/me/avatar` e estáticos,
   // fora do matcher do `proxy.ts`). Fonte única — não duplicar no proxy.
   async headers() {
-    return [{ source: '/:path*', headers: securityHeaders }]
+    return [
+      {
+        source: '/:path*',
+        headers: securityHeaders,
+      },
+      {
+        // Assets do avatar 3D (~28MB de GLB/PNG) têm nomes estáveis de catálogo, mas NÃO são
+        // hashados. Um TTL curto reduz revalidações repetidas sem prender uma correção de arte por
+        // um ano no browser da criança.
+        source: '/avatar3d/:path*',
+        headers: [...securityHeaders, { key: 'Cache-Control', value: 'public, max-age=86400' }],
+      },
+    ]
   },
 }
 

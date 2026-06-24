@@ -102,6 +102,23 @@ recado de bloqueado; e o client `hub.createShowcaseThreadStudioStandalone`. A re
 exportada `STUDIO_ACCESS_REF` (`server/clients.ts`, = `estudio-completo`) — TEM que casar com o
 `STUDIO_STANDALONE_ACCESS_REF` do hub e o slug do produto no catálogo.
 
+**Certificado de conclusão (06/2026):** `createCertificateRoutes` (`routes/certificate.ts`, montado no
+`createShell` como `routes.certificate*`) + o renderizador de PDF `server/certificate-pdf.ts`. O bloco de
+aula `kind:'certificate'` (última aula do curso) é renderizado pelo `CertificateBlockView`
+(`components/certificate-block.tsx`, wired no `lesson-blocks.tsx`): lê o estado via
+`GET /api/members/lessons/:lessonId/blocks/:blockId/certificate` (passthrough → `members.getCertificateState`,
+`{eligible, issued, serial?, issuedAt?}`); emitir/baixar é um **POST** na MESMA rota
+(`certificateIssue` → `members.issueCertificate`, idempotente) que devolve o **PDF em STREAM** (mesma origem,
+sem CORS — o navegador baixa o blob; impersonação = 403 read-only). O PDF é montado com **`@cantoo/pdf-lib`**
+(fontes built-in, sem browser headless) + **QR** (`qrcode`, dep nova) apontando p/ `${APP_PUBLIC_URL}/validar/:id`
+e **cacheado no R2 PRIVADO** `certificates/<id>.pdf` (re-download não regenera). A página **PÚBLICA**
+`/validar/:id` (sem login) busca a validação por `members.validateCertificate(id)` — um **`publicGet`** (sem
+Bearer; o gateway injeta o `x-internal-token` na rota `public`) — e o shim `routes.certificateValidate`
+(`GET /api/certificates/:id/validate`, FORA do matcher do proxy) também expõe o JSON. **Env nova:
+`APP_PUBLIC_URL`** (origem pública absoluta p/ o QR; ausente → QR só com o caminho, degradado — setar em prod).
+Tipos em `lib/types.ts` (`CertificateBlock`/`CertificateConfig`/`CertificateIssueView`/`CertificateStateView`/
+`CertificateValidationView`). O members é o portão (elegibilidade + registro imutável); o BFF só monta/serve o PDF.
+
 `HubThreadView` ganhou **`playId`** (sobrevive ao `redactAuthors` — só estrutural; teste em
 `tests/hub-redact.test.ts`). O **`StudioBlockView`** ganhou a prop `enableShare?` (só o KIDS passa `true`):
 quando ligada, constrói o `StudioShareAdapter` (descreve via `/api/studio/describe`, publica multipart via

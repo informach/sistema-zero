@@ -30,7 +30,7 @@ export default function MultiplaEscolha({ step, submitting, onSubmit }: Props) {
               className="absolute inset-0 bg-gradient-to-t from-bg via-bg/75 to-transparent"
             />
             <span className="relative z-10 mb-3 flex h-8 w-8 items-center justify-center rounded-full bg-lime text-sm font-bold text-[#0b0f14] shadow-lg shadow-black/30">
-              {opt.value}
+              {opt.badge ?? opt.value}
             </span>
             <span className="relative z-10 text-base font-semibold leading-snug text-ink">
               {opt.label}
@@ -52,7 +52,7 @@ export default function MultiplaEscolha({ step, submitting, onSubmit }: Props) {
           className="card group flex items-center gap-3 px-5 py-4 text-left text-base transition hover:border-cyan disabled:opacity-50"
         >
           <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-line text-sm font-bold text-cyan group-hover:border-cyan">
-            {opt.value}
+            {opt.badge ?? opt.value}
           </span>
           <span className="font-medium text-ink">{opt.label}</span>
         </button>

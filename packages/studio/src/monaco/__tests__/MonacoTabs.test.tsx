@@ -145,11 +145,14 @@ mock.module('@monaco-editor/react', () => ({
 
 // `getMonacoModelRegistry` devolve o registro FALSO (é o que o reconcile do
 // MonacoTabs varre); os demais viram no-ops para não puxar o `monaco-editor/esm`
-// pesado. O MonacoTabs usa só estes quatro exports de `../workers`.
+// pesado. O MonacoTabs usa só estes exports de `../workers` (o `prewarmEditorModels`
+// e o `warmupMonacoLanguageServices` pré-carregam linguagem/models no app real; no
+// teste são no-op — o <Editor> mockado já cria o model pelo `path`).
 mock.module('../workers', () => ({
   configureMonacoWorkers: () => {},
   getMonacoModelRegistry: () => fakeRegistry,
-  loadLanguageServices: async () => {},
+  warmupMonacoLanguageServices: async () => {},
+  prewarmEditorModels: () => {},
   monacoThemeName: (theme: string) => (theme === 'light' ? 'sz-monaco-light' : 'sz-monaco-dark'),
 }))
 

@@ -1,10 +1,11 @@
 'use client'
 
-import { Coins, Gift, Sparkles } from 'lucide-react'
+import { Gift, Sparkles } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/cn'
 import type { MissionsMeView, MissionView } from '@/lib/types'
+import { ZappyCoin } from './zappy-coin'
 
 /** Texto da meta da missão (PT, tom kids) — derivado do goalType + alvo. */
 function missionLabel(m: MissionView): string {
@@ -127,7 +128,7 @@ function MissionGroup({
               <div className="flex items-center justify-between gap-2">
                 <p className="font-bold text-sm">{label(m)}</p>
                 <span className="inline-flex shrink-0 items-center gap-1 text-muted-foreground text-xs">
-                  <Coins className="size-3.5" /> {m.rewardCoins} · {m.rewardXp} XP
+                  <ZappyCoin className="size-3.5" /> {m.rewardCoins} · {m.rewardXp} XP
                 </span>
               </div>
               <div className="mt-2 flex items-center gap-2">
@@ -144,7 +145,7 @@ function MissionGroup({
                     type="button"
                     onClick={() => onClaim(m)}
                     disabled={claiming === m.slug}
-                    className="inline-flex items-center gap-1 rounded-full bg-(--sz-hot) px-3 py-1 font-bold text-white text-xs disabled:opacity-60"
+                    className="inline-flex items-center gap-1 rounded-full bg-(--sz-hot) px-3 py-1 font-bold text-(--sz-hot-fg) text-xs disabled:opacity-60"
                   >
                     <Gift className="size-3.5" /> Resgatar
                   </button>

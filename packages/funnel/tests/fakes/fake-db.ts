@@ -10,19 +10,9 @@ function baseLead(id: string): Lead {
     email: null,
     telefone: null,
     document: null,
-    segmento: null,
-    tipoCriar: null,
-    relacaoIa: null,
-    jaQuebrou: null,
-    travaPrincipal: null,
-    custoPrincipal: null,
-    horasRetrabalho: null,
-    valorHora: null,
-    custoMensal: null,
-    mudancaDesejada: null,
-    proximoPasso: null,
-    sintese: null,
+    quizAnswers: null,
     perfilResultado: null,
+    funnel: null,
     lastStep: 'entrou_landing',
     paymentId: null,
     couponCode: null,
@@ -61,9 +51,9 @@ export function createFakeRepo(): FakeRepoState {
   let seq = 0
 
   const repo: FunnelRepo = {
-    async createLead() {
+    async createLead(funnel = null) {
       const id = `lead-${++seq}`
-      leads.set(id, baseLead(id))
+      leads.set(id, { ...baseLead(id), funnel: funnel ?? null })
       return { id }
     },
     async getLead(id) {
@@ -72,6 +62,10 @@ export function createFakeRepo(): FakeRepoState {
     async updateLead(id, set: LeadUpdate) {
       const lead = leads.get(id)
       if (lead) leads.set(id, { ...lead, ...set, updatedAt: new Date() })
+    },
+    async mergeQuizAnswers(id, patch) {
+      const lead = leads.get(id)
+      if (lead) lead.quizAnswers = { ...(lead.quizAnswers ?? {}), ...patch }
     },
     async setPayment(id, paymentId, couponCode) {
       const lead = leads.get(id)
@@ -129,6 +123,7 @@ export function createFakeRepo(): FakeRepoState {
     },
     async listLeads(limit, offset, filter) {
       let rows = [...leads.values()]
+      if (filter?.funnel) rows = rows.filter((l) => l.funnel === filter.funnel)
       const q = filter?.q?.trim().toLowerCase()
       if (q) rows = rows.filter((l) => matchesQuery(l, q))
       rows.sort((a, b) =>
@@ -138,24 +133,28 @@ export function createFakeRepo(): FakeRepoState {
       )
       return rows.slice(offset, offset + limit)
     },
-    async countLeads(q) {
-      const term = q?.trim().toLowerCase()
-      if (!term) return leads.size
-      return [...leads.values()].filter((l) => matchesQuery(l, term)).length
+    async countLeads(filter) {
+      let rows = [...leads.values()]
+      if (filter?.funnel) rows = rows.filter((l) => l.funnel === filter.funnel)
+      const term = filter?.q?.trim().toLowerCase()
+      if (term) rows = rows.filter((l) => matchesQuery(l, term))
+      return rows.length
     },
-    async eventCounts(): Promise<EventCount[]> {
+    async eventCounts(funnel): Promise<EventCount[]> {
       const byName = new Map<string, Set<string>>()
       for (const e of events) {
+        if (funnel && leads.get(e.leadId)?.funnel !== funnel) continue
         const set = byName.get(e.eventName) ?? new Set<string>()
         set.add(e.leadId)
         byName.set(e.eventName, set)
       }
       return [...byName].map(([eventName, set]) => ({ eventName, leads: set.size }))
     },
-    async perfilCounts(): Promise<PerfilCount[]> {
+    async perfilCounts(funnel): Promise<PerfilCount[]> {
       const byPerfil = new Map<string, number>()
       for (const l of leads.values()) {
         if (l.perfilResultado == null) continue
+        if (funnel && l.funnel !== funnel) continue
         byPerfil.set(l.perfilResultado, (byPerfil.get(l.perfilResultado) ?? 0) + 1)
       }
       return [...byPerfil].map(([perfil, count]) => ({ perfil, count }))

@@ -19,11 +19,22 @@ cyan→lime→gradiente via `unit-theme.ts`, aula = nó circular; trilha LIVRE �
 todos os nós clicáveis; sem ícone por tipo: a outline não expõe blocos) e **celebração** ao
 concluir aula (`lesson-celebration.tsx`: mascote + confete CSS puro + barra antes→depois; o
 `complete()` não-silent abre o overlay em vez de navegar; auto-complete a ~90% segue só com
-toast). **Mascote-faísca** = estrela da logo com rosto (`mascot.tsx`, expressions
-happy/celebrating/thinking/sleeping; `useId` p/ o gradiente). **Página de aula kids (2ª rodada
+toast). **Mascote Zappy** = o robô oficial da marca (`mascot.tsx`, um sprite WebP transparente
+1:1 por expressão em `public/zappy/`, expressions happy/celebrating/thinking/sleeping; `<img>`
+server-safe — a className controla o tamanho e herda `kid-float`/`kid-wiggle`/`animate-pulse`). A
+**moeda Zappy** (`zappy-coin.tsx` → `<ZappyCoin>`, WebP em `public/zappy/coin.webp`) substituiu o
+ícone genérico `Coins` do lucide nos 6 pontos de saldo/recompensa (streak-widget, missions-panel,
+lesson-celebration, room-builder, configurator). **Página de aula kids (2ª rodada
 06/2026)**: header de "lição" (voltar em círculo + progresso + chip AULA N DE M), sidebar =
 mini-trilha numerada por unidade, e FORKS DE APRESENTAÇÃO dos renderers do member-shell —
-`kids-lesson-blocks.tsx` (chips de atividade Assista/Escute/Brinque/Leia o livro/**Crie** + molduras;
+`kids-lesson-blocks.tsx` (chips de atividade Assista/Escute/Brinque/Leia o livro/**Crie**/**Conquiste** +
+molduras; o bloco **`certificate`** (chip "Conquiste", última aula do curso) REUSA o `CertificateBlockView`
+do member-shell — bloqueado até concluir TODAS as outras aulas, depois "Emitir" → baixa o PDF; a validação
+por QR abre a página PÚBLICA **`/validar/[id]`** (FORA do grupo `(app)`, sem login, `noindex`, igual a
+`/jogar` — busca a validação no servidor pelo client público do members). Shims `/api/members/lessons/[lessonId]/
+blocks/[blockId]/certificate` (GET estado + POST emitir/baixar) e `/api/certificates/[id]/validate` (público,
+no negative-lookahead do matcher do proxy); env `APP_PUBLIC_URL` p/ o QR. O members é o portão (ver
+`../members/CLAUDE.md`); PDF/QR/R2 vivem no member-shell.
 o bloco **`studio`** (chip "Crie") REUSA o `StudioBlockView` do member-shell — editor embarcado,
 rascunho local, "Enviar para o professor" + gate de conclusão `STUDIO_GATE_NOT_SUBMITTED` (sem envio)
 ou `STUDIO_GATE_NOT_PASSED` (atividade enviada, mas abaixo da nota mínima); o `lesson-player-client`
@@ -471,6 +482,56 @@ corrigidos; verde no `typecheck:kids` + `test:kids` (20) + `check` + `build:kids
   rollback restaura SÓ o item pelo `id`.
 - **a11y do menu do usuário:** `user-menu.tsx` ganhou **Escape p/ fechar** + `aria-haspopup="menu"`
   (e os listeners só ligam com o menu aberto).
+
+## Full review (correções) — 23/06/2026
+
+4ª auditoria multi-agente (segurança/correção/perf/a11y, lente infantil), focada no que mudou
+desde 21/06 (avatar 3D +32 peças, **Estúdio em largura total**, Área dos pais `?manage=1`, tokens
+do Estúdio no Tailwind). **Segurança: NADA acionável** — proxy/matcher, portão dos pais (incl.
+`?manage=1`, que NÃO burla a senha: `startManaging` depende do `parentVerified` calculado no
+SERVIDOR pelo cookie assinado), redação de PII, R2 e CSP/CSRF seguem de pé. Achados de
+a11y/correção/perf corrigidos; verde no typecheck (kids/community/admin/ui) + test:kids (24) +
+test:community (5) + biome + **build dos 3 apps**.
+
+**Compartilhados `@sistemazero/ui` (rodam TAMBÉM no community e admin — rebuildados verdes):**
+- **`Dialog` ganhou gestão de foco** (a11y): foca o card ao abrir (anuncia o `aria-label`),
+  PRENDE o Tab dentro e DEVOLVE o foco ao gatilho ao fechar; pilha de diálogos + lock de scroll
+  refcontado (só o diálogo do TOPO trata Esc/Tab). Antes teclado/leitor ficava preso atrás do modal.
+- **`Field` (label.tsx) associa a mensagem ao controle**: erro vira `role="alert"` + `id` ligado por
+  `aria-describedby` no input (e `aria-invalid`). Antes o leitor dizia "inválido" sem o motivo. Vale
+  p/ login/esqueci/redefinir/perfil/senha dos 3 apps.
+- **`PasswordInput`: olho de revelar alcançável por teclado** (tirado `tabIndex={-1}`, +`aria-pressed`).
+
+**Kids:**
+- **Quarto 3D — MOVER PEÇA POR TECLADO (regressão do 20/06 reposta):** o redesenho 3D tinha perdido o
+  caminho de teclado (só arrasto por raycast). Agora há uma LISTA de peças (`role="group"`, chips
+  `aria-pressed`) p/ selecionar, e setas movem / R gira / Delete tira / Esc desseleciona (mesmos
+  limites+colisão do arraste; `isFreeAt` puro; handler num ref → 1 listener estável).
+- **Quarto: toast "adicionado" não mente mais** — `addItem` decide a colocação ANTES do setState
+  (via `draftRef`/`updateDraft`); cheio/sem vão → toast de aviso em vez de "✨ no quarto" + peça
+  fantasma (`freeFloorSpot`/`freeWallSpot` agora devolvem `null`).
+- **Quarto: drag sem churn** — `moveTo` num ref; o efeito de pointer listeners (`room-canvas-3d.tsx`)
+  ficou estável (era re-assinado a cada frame do arraste; fechava a janela rara de órbita travada).
+- **Avatar: configurador SEGUE o tema da comunidade** (`useTheme` do next-themes, igual ao Estúdio)
+  — era `prefers-color-scheme` do SO.
+- **Avatar: giro da "cabine" mais suave** (~230°/s; era ~630°/s) — gatilho vestibular no PADRÃO (quase
+  nenhuma criança tem `prefers-reduced-motion` no SO); o caminho reduzido segue assentando sem girar.
+  `useReducedMotion` inicia já lendo o `matchMedia` (sem 1º quadro animado; consumidores são `ssr:false`).
+- **Avatar: estados de seleção a11y** — abas/poses/cores com `aria-pressed`; swatch com cue NÃO-cor
+  (check) + rótulo "Cor N" (era o hex cru lido pelo leitor).
+- **Perfis: remover perfil usa `Dialog`** (não `window.confirm`); `parentVerified` rastreado em estado
+  local (não re-pede a senha ao reabrir a Área dos pais sem reload).
+- **Quiz: anúncios** — resultado aprovado/reprovado/cooldown em `role="status" aria-live` e erro em
+  `role="alert"` (leitor de tela ouvia silêncio ao terminar).
+- **Contraste/toque:** botões "Resgatar"/"Tirar" usam o token novo **`--sz-hot-fg`** (branco no claro,
+  navy no dark — o hot é claro demais no dark p/ texto branco); Girar/Tirar ≥44px.
+- **Canvas 3D com alternativa textual** (`role="img"`+`aria-label`): quarto no modo `view` (perfil
+  público) e cena do avatar.
+- **Perf:** `Cache-Control` p/ `/avatar3d/*` (~28MB; TTL de 1 dia — ids NÃO são hashados, então sem
+  `immutable` p/ não prender uma correção de arte por um ano); perfil PÚBLICO monta o quarto 3D só ao
+  entrar na viewport (**`LazyRoomCanvas`** + **`staticView`** → sem loop contínuo do pet de um colega).
+- **Não alterados (decisão consciente):** comprar peça travada (avatar/quarto) segue em 1 toque sem
+  confirmação (padrão deliberado da usuária — não é bug; só faltava aviso de preço no SR, fora deste lote).
 
 ## Comandos
 

@@ -5,20 +5,26 @@ import { t } from 'elysia'
 const UUID_PATTERN = '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
 const UUID = t.String({ pattern: UUID_PATTERN })
 
+// Slug de curso/aula nos PARAMS de rota (MESMO formato da autoria): valida tamanho e
+// caracteres na borda — um `:slug` cru era `t.String()` sem teto indo direto ao DB.
+const SLUG = t.String({ minLength: 1, maxLength: 200, pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$' })
+
 // ── Params de rota com ids uuid (Elysia valida ANTES do handler → 400) ──────
 export const IdParams = t.Object({ id: UUID })
 export const UserIdParams = t.Object({ userId: UUID })
 export const CourseIdParams = t.Object({ courseId: UUID })
 export const ModuleIdParams = t.Object({ moduleId: UUID })
 export const LessonIdParams = t.Object({ lessonId: UUID })
-export const SlugLessonParams = t.Object({ slug: t.String(), lessonId: UUID })
+export const SlugParams = t.Object({ slug: SLUG })
+export const SlugLessonParams = t.Object({ slug: SLUG, lessonId: UUID })
 export const AttachmentResolveParams = t.Object({
-  slug: t.String(),
+  slug: SLUG,
   lessonId: UUID,
   attachmentId: UUID,
 })
-export const EbookResolveParams = t.Object({ slug: t.String(), lessonId: UUID, blockId: UUID })
+export const EbookResolveParams = t.Object({ slug: SLUG, lessonId: UUID, blockId: UUID })
 export const QuizAttemptParams = t.Object({ lessonId: UUID, blockId: UUID })
+export const CertificateParams = t.Object({ lessonId: UUID, blockId: UUID })
 
 // Audiência da vitrine (plataforma): `adult` (community) | `kids` (community-kids).
 const AUDIENCE = t.Union([t.Literal('adult'), t.Literal('kids')])
@@ -345,7 +351,6 @@ export const ManageEntitlementBody = t.Object({
 // ── Autoria de conteúdo (cursos/módulos/aulas/blocos/anexos) ─────────────────
 
 const COURSE_STATUS = t.Union([t.Literal('draft'), t.Literal('published'), t.Literal('archived')])
-const SLUG = t.String({ minLength: 1, maxLength: 200, pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$' })
 const TITLE = t.String({ minLength: 1, maxLength: 300 })
 const NULLABLE_TEXT = t.Optional(t.Union([t.String({ maxLength: 20_000 }), t.Null()]))
 // URLs escritas pelo admin exigem esquema http(s) — sem isto um `javascript:`
@@ -597,6 +602,20 @@ const StudioBlockSchema = t.Object({
   ),
 })
 
+/**
+ * Bloco certificado (ver domain/course/lesson-block.ts): só metadado de autoria do PDF
+ * (não-secreto). Imagens (assinatura/logo) SÓ http(s); cor de destaque hex.
+ */
+const CertificateBlockSchema = t.Object({
+  kind: t.Literal('certificate'),
+  title: t.Optional(t.String({ maxLength: 200 })),
+  issuerName: t.Optional(t.String({ maxLength: 200 })),
+  signatureImageUrl: t.Optional(t.String({ maxLength: 2000, pattern: HTTP_URL_PATTERN })),
+  logoUrl: t.Optional(t.String({ maxLength: 2000, pattern: HTTP_URL_PATTERN })),
+  accentColor: t.Optional(HEX_COLOR),
+  message: t.Optional(t.String({ maxLength: 2000 })),
+})
+
 export const LessonBlockContentSchema = t.Union([
   RichTextBlockSchema,
   VideoBlockSchema,
@@ -606,6 +625,7 @@ export const LessonBlockContentSchema = t.Union([
   EmbedBlockSchema,
   EbookBlockSchema,
   StudioBlockSchema,
+  CertificateBlockSchema,
 ])
 
 /** Params da rota de entrega do Estúdio (aluno) — espelha o quiz-attempts. */

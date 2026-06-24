@@ -519,6 +519,48 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
     })
   }
 
+  async findBlockCourseId(id: string): Promise<string | null> {
+    const [row] = await this.db
+      .select({ courseId: lessons.courseId })
+      .from(lessonBlocks)
+      .innerJoin(lessons, eq(lessonBlocks.lessonId, lessons.id))
+      .where(eq(lessonBlocks.id, id))
+      .limit(1)
+    return row?.courseId ?? null
+  }
+
+  async findBlockLessonId(id: string): Promise<string | null> {
+    const [row] = await this.db
+      .select({ lessonId: lessonBlocks.lessonId })
+      .from(lessonBlocks)
+      .where(eq(lessonBlocks.id, id))
+      .limit(1)
+    return row?.lessonId ?? null
+  }
+
+  async lessonHasCertificateBlock(lessonId: string): Promise<boolean> {
+    const [row] = await this.db
+      .select({ id: lessonBlocks.id })
+      .from(lessonBlocks)
+      .where(and(eq(lessonBlocks.lessonId, lessonId), eq(lessonBlocks.kind, 'certificate')))
+      .limit(1)
+    return row !== undefined
+  }
+
+  async countCertificateBlocks(
+    courseId: string,
+    opts: { excludeBlockId?: string } = {},
+  ): Promise<number> {
+    const clauses: SQL[] = [eq(lessons.courseId, courseId), eq(lessonBlocks.kind, 'certificate')]
+    if (opts.excludeBlockId) clauses.push(ne(lessonBlocks.id, opts.excludeBlockId))
+    const [row] = await this.db
+      .select({ c: count() })
+      .from(lessonBlocks)
+      .innerJoin(lessons, eq(lessonBlocks.lessonId, lessons.id))
+      .where(and(...clauses))
+    return row?.c ?? 0
+  }
+
   // ── Anexos ──────────────────────────────────────────────────────────────
   async createAttachment(lessonId: string, fields: AttachmentFields): Promise<LessonAttachment> {
     return retrySortOrderCollision(async () => {

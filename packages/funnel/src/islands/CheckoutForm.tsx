@@ -38,10 +38,15 @@ export default function CheckoutForm({
   initialContact,
   priceCents,
   allowCoupon = false,
+  successPath,
 }: {
   initialContact: InitialContact
   priceCents: number
   allowCoupon?: boolean
+  /** Próximo passo após o pagamento confirmar (oferta principal → /upsell ou /obrigado).
+   *  Obrigatório: a página injeta o caminho POR FUNIL (sem default — evita mandar o
+   *  comprador de outro funil para o /obrigado do funil padrão). */
+  successPath: string
 }) {
   const [nome, setNome] = useState(initialContact.nome)
   const [email, setEmail] = useState(initialContact.email)
@@ -242,7 +247,7 @@ export default function CheckoutForm({
               </svg>
             }
           >
-            <PixCheckout contact={contact} couponCode={couponCode} />
+            <PixCheckout contact={contact} couponCode={couponCode} successPath={successPath} />
           </MethodCard>
 
           <MethodCard
@@ -271,7 +276,12 @@ export default function CheckoutForm({
               </svg>
             }
           >
-            <CardCheckout contact={contact} priceCents={finalCents} couponCode={couponCode} />
+            <CardCheckout
+              contact={contact}
+              priceCents={finalCents}
+              couponCode={couponCode}
+              successPath={successPath}
+            />
           </MethodCard>
         </div>
       </fieldset>

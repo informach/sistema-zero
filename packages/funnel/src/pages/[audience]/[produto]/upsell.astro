@@ -1,0 +1,39 @@
+---
+import Footer from '../../../components/Footer.astro'
+import { getFunnel } from '../../../funnels/registry'
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+
+export const prerender = false
+
+// Passo OPCIONAL (scaffolding): só existe nos funis que habilitam o upsell com uma
+// oferta definida. Nenhum funil usa ainda → 404. Quando houver uma oferta de upsell
+// real, preencha `upsell` no FunnelDef e finalize a 2ª cobrança do lead já pago
+// (o guard ALREADY_PAID do checkout — ver plano/CLAUDE.md).
+const f = getFunnel(Astro.params.audience, Astro.params.produto)
+if (!f) return new Response(null, { status: 404 })
+if (!f.steps.upsell || !f.upsell) return new Response(null, { status: 404 })
+
+Astro.response.headers.set('cache-control', 'no-store')
+
+const upsell = f.upsell
+// "Não" segue p/ o downsell (se houver) ou direto ao obrigado; "Sim" vai ao checkout.
+const declinePath = f.steps.downsell ? `${f.basePath}/downsell` : `${f.basePath}/obrigado`
+const acceptPath = `${f.basePath}/checkout`
+---
+
+<BaseLayout title={`Oferta especial · ${f.productName}`} noindex={true}>
+  <main class="mx-auto max-w-xl px-4 py-12 text-center sm:py-16">
+    <p class="text-xs font-bold uppercase tracking-[0.18em] text-cyan">Oferta única</p>
+    <h1 class="mt-4 text-2xl font-extrabold text-ink sm:text-3xl">{upsell.productName}</h1>
+    <p class="mx-auto mt-4 max-w-md leading-relaxed text-muted">
+      Aproveite para complementar a sua compra agora — só aparece uma vez.
+    </p>
+    <div class="mt-8 flex flex-col items-center gap-3">
+      <a href={acceptPath} class="btn btn-primary w-full sm:w-auto">Sim, quero adicionar</a>
+      <a href={declinePath} class="text-sm text-muted underline underline-offset-4">
+        Não, obrigado
+      </a>
+    </div>
+  </main>
+  <Footer />
+</BaseLayout>

@@ -1,7 +1,7 @@
 'use client'
 
 import { ProgressBar } from '@sistemazero/member-shell/components/progress-bar'
-import { Coins, Flame, Gift, Sparkles, Trophy } from 'lucide-react'
+import { Flame, Gift, Sparkles, Trophy } from 'lucide-react'
 import Link from 'next/link'
 import { type CSSProperties, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
@@ -9,6 +9,7 @@ import { cn } from '@/lib/cn'
 import type { CourseProgressView, GamificationDelta, LessonCompleteShowcaseHint } from '@/lib/types'
 import { badgeInfo } from './badges'
 import { KidsMascot } from './mascot'
+import { ZappyCoin } from './zappy-coin'
 
 interface LessonCelebrationProps {
   /** Snapshot do progresso ANTES do router.refresh() (as props mudam depois). */
@@ -245,7 +246,7 @@ function GamificationDeltaPanel({ gamification }: { gamification: GamificationDe
         </span>
         {coinsAwarded > 0 ? (
           <span className="kid-pop inline-flex items-center gap-1.5 rounded-full bg-(--kids-lime-tint) px-4 py-1.5 [font-family:var(--font-display)] font-bold text-base text-foreground">
-            <Coins className="size-4" />+{coinsAwarded}
+            <ZappyCoin className="size-4" />+{coinsAwarded}
           </span>
         ) : null}
         <span

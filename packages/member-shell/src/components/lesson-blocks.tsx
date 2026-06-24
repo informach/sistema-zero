@@ -3,6 +3,7 @@
 import { renderMarkdown } from '../lib/markdown'
 import type {
   AudioBlock,
+  CertificateBlock,
   EbookBlock,
   EmbedBlock,
   ImageBlock,
@@ -14,6 +15,7 @@ import type {
   StudioStateView,
   VideoBlock,
 } from '../lib/types'
+import { CertificateBlockView } from './certificate-block'
 import { EbookBlockView } from './ebook/ebook-block'
 import { useLessonPlayer } from './lesson-player-context'
 import { QuizBlockView } from './quiz-block'
@@ -63,6 +65,10 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
       return <Embed content={content as unknown as EmbedBlock} />
     case 'ebook':
       return <EbookBlockView blockId={block.id} content={content as unknown as EbookBlock} />
+    case 'certificate':
+      return (
+        <CertificateBlockView blockId={block.id} content={content as unknown as CertificateBlock} />
+      )
     case 'studio':
       return (
         <StudioBlockView

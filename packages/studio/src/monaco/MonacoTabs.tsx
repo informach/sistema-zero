@@ -14,8 +14,9 @@ import {
 import {
   configureMonacoWorkers,
   getMonacoModelRegistry,
-  loadLanguageServices,
   monacoThemeName,
+  prewarmEditorModels,
+  warmupMonacoLanguageServices,
 } from './workers'
 
 configureMonacoWorkers()
@@ -154,7 +155,9 @@ function scheduleLanguageServicesLoad(): () => void {
 
   const run = () => {
     if (cancelled) return
-    void loadLanguageServices().catch(() => {})
+    // Aquece os serviços de linguagem E força o worker do TS (compilador ~6 MB) a
+    // inicializar AGORA, no idle — não na 1ª vez que o aluno abre o script.js.
+    void warmupMonacoLanguageServices().catch(() => {})
   }
 
   const startIdleWork = () => {
@@ -241,6 +244,22 @@ export function MonacoTabs({
   )
 
   useEffect(() => scheduleLanguageServicesLoad(), [])
+
+  // Pré-cria os models das DEMAIS abas assim que o editor monta (a ativa já foi
+  // criada pelo @monaco-editor/react). Sem isto, a 1ª visita a cada aba criava o
+  // model + instanciava o worker da linguagem ON-DEMAND e o editor "piscava" uma
+  // vez por aba até estabilizar; pré-criar move esse custo para o carregamento do
+  // editor e deixa a troca de abas instantânea. Roda uma vez por instância.
+  const prewarmedRef = useRef(false)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `files` é lido só para o conteúdo inicial dos models; o `prewarmedRef` garante 1 execução
+  useEffect(() => {
+    if (!mountedEditor || prewarmedRef.current) return
+    prewarmedRef.current = true
+    prewarmEditorModels(
+      saltedPrefix,
+      files.map((f) => ({ name: f.name, language: inferLanguage(f.name), value: f.value })),
+    )
+  }, [mountedEditor, saltedPrefix])
 
   useEffect(() => {
     const prefix = saltedPrefix

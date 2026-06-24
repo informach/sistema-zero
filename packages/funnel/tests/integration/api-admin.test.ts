@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { DEFAULT_FUNNEL } from '../../src/funnels/registry'
 import { ADMIN_ACCESS_COOKIE, ADMIN_REFRESH_COOKIE } from '../../src/lib/admin-auth'
 import {
   adminFunnel,
@@ -197,23 +198,28 @@ describe('adminPerfis', () => {
     expect(res.status).toBe(401)
   })
 
-  test('conta leads por perfil (sempre os 4, na ordem canônica) e o total', async () => {
+  test('com funil selecionado: os 4 perfis do funil, na ordem, com rótulo e total', async () => {
     const { repo, fg, deps } = setup()
-    const a = await repo.createLead()
-    const b = await repo.createLead()
-    const c = await repo.createLead()
-    await repo.createLead() // sem perfil → não conta
+    const a = await repo.createLead(DEFAULT_FUNNEL.key)
+    const b = await repo.createLead(DEFAULT_FUNNEL.key)
+    const c = await repo.createLead(DEFAULT_FUNNEL.key)
+    await repo.createLead(DEFAULT_FUNNEL.key) // sem perfil → não conta
     await repo.updateLead(a.id, { perfilResultado: 'ideia_parada' })
     await repo.updateLead(b.id, { perfilResultado: 'ideia_parada' })
     await repo.updateLead(c.id, { perfilResultado: 'sem_criterio' })
 
-    const res = await adminPerfis(getReq(accessCookie(fg)), deps)
+    const req = new Request(
+      `http://localhost/api/admin?funnel=${encodeURIComponent(DEFAULT_FUNNEL.key)}`,
+      { headers: { cookie: accessCookie(fg) } },
+    )
+    const res = await adminPerfis(req, deps)
     expect(res.status).toBe(200)
     const body = (await res.json()) as {
       total: number
       counts: Array<{ perfil: string; label: string; count: number }>
     }
     expect(body.total).toBe(3)
+    // Perfis do funil (mesmo zerados), na ordem do funil.
     expect(body.counts.map((c) => c.perfil)).toEqual([
       'ideia_parada',
       'criando_no_escuro',
@@ -224,5 +230,22 @@ describe('adminPerfis', () => {
     expect(byPerfil.get('ideia_parada')).toBe(2)
     expect(byPerfil.get('sem_criterio')).toBe(1)
     expect(byPerfil.get('criando_no_escuro')).toBe(0)
+    // Rótulo legível (não a chave crua) quando o funil é selecionado.
+    expect(body.counts.find((c) => c.perfil === 'ideia_parada')?.label).toBe('Ideia Parada')
+  })
+
+  test('sem funil: só os perfis presentes nos dados (rótulo = a chave)', async () => {
+    const { repo, fg, deps } = setup()
+    const a = await repo.createLead(DEFAULT_FUNNEL.key)
+    await repo.updateLead(a.id, { perfilResultado: 'sem_criterio' })
+
+    const res = await adminPerfis(getReq(accessCookie(fg)), deps)
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as {
+      total: number
+      counts: Array<{ perfil: string; label: string; count: number }>
+    }
+    expect(body.total).toBe(1)
+    expect(body.counts).toEqual([{ perfil: 'sem_criterio', label: 'sem_criterio', count: 1 }])
   })
 })

@@ -265,17 +265,52 @@ function assertBlockCoherent(content: LessonBlockContent): void {
   }
 }
 
+async function assertSingleCertificateBlock(
+  content: ContentAdminRepository,
+  courseId: string,
+  excludeBlockId?: string,
+): Promise<void> {
+  if ((await content.countCertificateBlocks(courseId, { excludeBlockId })) > 0) {
+    throw new InvalidContentCommandError('O curso já possui um bloco de certificado')
+  }
+}
+
+const CERTIFICATE_LESSON_EXCLUSIVE = 'A aula do certificado só pode conter o bloco de certificado'
+
 export class BlockAdminService {
   constructor(private readonly content: ContentAdminRepository) {}
 
   async create(lessonId: string, content: LessonBlockContent): Promise<BlockView> {
     assertBlockCoherent(content)
-    if (!(await this.content.findLessonById(lessonId))) throw new LessonNotFoundError()
+    const lesson = await this.content.findLessonById(lessonId)
+    if (!lesson) throw new LessonNotFoundError()
+    if (content.kind === 'certificate') {
+      await assertSingleCertificateBlock(this.content, lesson.courseId)
+      // A aula do certificado é o "diploma": só o bloco de certificado vive nela. Sem isso,
+      // um quiz/estúdio na MESMA aula seria PULADO (a emissão conclui a aula direto, sem
+      // passar pelos gates de mark-lesson-complete).
+      if ((await this.content.listBlockIds(lessonId)).length > 0) {
+        throw new InvalidContentCommandError(CERTIFICATE_LESSON_EXCLUSIVE)
+      }
+    } else if (await this.content.lessonHasCertificateBlock(lessonId)) {
+      throw new InvalidContentCommandError(CERTIFICATE_LESSON_EXCLUSIVE)
+    }
     return toBlockView(await this.content.createBlock(lessonId, content.kind, content))
   }
 
   async update(id: string, content: LessonBlockContent): Promise<BlockView> {
     assertBlockCoherent(content)
+    if (content.kind === 'certificate') {
+      const courseId = await this.content.findBlockCourseId(id)
+      if (!courseId) throw new ContentNotFoundError('Bloco não encontrado')
+      await assertSingleCertificateBlock(this.content, courseId, id)
+      // Virar certificado só é permitido se a aula não tiver OUTROS blocos (exclusividade).
+      const lessonId = await this.content.findBlockLessonId(id)
+      const siblings = lessonId
+        ? (await this.content.listBlockIds(lessonId)).filter((blockId) => blockId !== id)
+        : []
+      if (siblings.length > 0) throw new InvalidContentCommandError(CERTIFICATE_LESSON_EXCLUSIVE)
+    }
     const updated = await this.content.updateBlock(id, content.kind, content)
     if (!updated) throw new ContentNotFoundError('Bloco não encontrado')
     return toBlockView(updated)

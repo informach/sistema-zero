@@ -1,0 +1,2482 @@
+---
+// Página de vendas do "Desafio do Primeiro Jogo" (funil kids). Layout PRÓPRIO,
+// fiel ao mockup da usuária (tema azul-marinho, ciano + laranja, Fredoka/Nunito,
+// gradientes/brilhos/reveal). O CSS sob medida vive no `<style>` escopado abaixo,
+// sob `.dpj` (não vaza para as páginas compartilhadas). Os CTAs de compra levam
+// `data-checkout-cta` → o PreCheckoutModal (mesma ilha do NCI) abre o checkout.
+import '@fontsource/material-symbols-outlined/400.css'
+import type { FunnelDef } from '../../../funnels/registry'
+import PreCheckoutModal from '../../../islands/PreCheckoutModal'
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import ProductJsonLd from '../../seo/ProductJsonLd.astro'
+
+interface Props {
+  f: FunnelDef
+  productName: string
+  /** "R$ 37,00" (boxes de preço). */
+  priceLabel: string
+  /** "R$ 37" (botões e copy). */
+  priceLabelShort: string
+  /** "37.00" (JSON-LD). */
+  priceReais: string
+  imagesBase: string
+  perfil: string | null
+  ofertaUrl: string
+}
+const { f, productName, priceLabel, priceLabelShort, priceReais, imagesBase, perfil, ofertaUrl } =
+  Astro.props
+
+// Linha de intro por perfil (vem do quiz, ?perfil=). Usa a `abertura` do hero do
+// funil; sem perfil/sem quiz cai na variação padrão (ou some).
+const heroData = f.content.hero
+const introPerfil =
+  (perfil ? heroData?.porPerfil[perfil]?.abertura : undefined) ?? heroData?.padrao?.abertura
+
+const description = f.seoDescription
+const img = (file: string) => `${imagesBase}/${file}`
+---
+
+<BaseLayout
+  title={f.seoTitle}
+  description={description}
+  htmlClass={f.theme ? `theme-${f.theme}` : undefined}
+>
+  <ProductJsonLd
+    slot="head"
+    name={productName}
+    description={description}
+    price={priceReais}
+    url={ofertaUrl}
+    image={img('hero-familia-zappy.png')}
+  />
+  <link
+    slot="head"
+    rel="preload"
+    as="image"
+    href={img('hero-familia-zappy.png')}
+    fetchpriority="high"
+  />
+
+  <div class="dpj">
+    <!-- ===== HEADER ===== -->
+    <header class="site-header">
+      <div class="container">
+        <span class="brand">Desafio do Primeiro Jogo</span>
+        <a href="#oferta" class="header-cta">
+          <span class="material-symbols-outlined">sports_esports</span>
+          <span class="lbl">Começar o desafio</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- ===== 1. HERO ===== -->
+    <section class="hero bg-dark">
+      <div class="container">
+        <div class="mascote">🎮</div>
+        <img
+          class="hero-art reveal"
+          src={img('hero-familia-zappy.png')}
+          alt="Família com o personagem Zappy diante do jogo criado na tela"
+          width="560"
+          height="560"
+          fetchpriority="high"
+        />
+        {introPerfil && <p class="perfil-intro reveal">{introPerfil}</p>}
+        <h1 class="hero-h1 reveal">
+          Use o <span class="word-orange">interesse intenso</span> do seu filho a favor dele: em 3
+          dias, ele monta o <span class="word-cyan">primeiro jogo</span>
+        </h1>
+        <p class="hero-sub reveal">
+          Uma trilha guiada, com uma vitória por dia, para transformar uma parte do foco que hoje vai
+          para jogos, vídeos, tutoriais ou temas favoritos em uma criação feita por ele. No fim, ele
+          monta um jogo de nave que atira em asteroides e gera um link para a família e os amigos
+          jogarem.
+        </p>
+        <div class="pitadas reveal">
+          <span class="pitada"
+            ><span class="material-symbols-outlined">bolt</span>Resultado já no primeiro dia</span
+          >
+          <span class="pitada"
+            ><span class="material-symbols-outlined">child_care</span>A partir dos 9 anos</span
+          >
+          <span class="pitada"
+            ><span class="material-symbols-outlined">school</span>Você não precisa saber nada</span
+          >
+          <span class="pitada"
+            ><span class="material-symbols-outlined">timer</span>Uma hora por dia</span
+          >
+        </div>
+        <a href="#oferta" class="cta-btn reveal">
+          <span class="material-symbols-outlined">rocket_launch</span>
+          Quero o primeiro jogo do meu filho em 3 dias
+        </a>
+        <div class="trust-row reveal">
+          <span class="trust-pill"
+            ><span class="material-symbols-outlined">lock_open</span>Acesso na hora</span
+          >
+          <span class="trust-pill"
+            ><span class="material-symbols-outlined">verified</span>Garantia de 7 dias</span
+          >
+          <span class="trust-pill"
+            ><span class="material-symbols-outlined">payments</span>Pagamento único</span
+          >
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 2. COMPARAÇÃO PRIMÁRIA ===== -->
+    <section class="bg-light">
+      <div class="container">
+        <p class="eyebrow reveal">Dois jeitos de passar o fim de semana</p>
+        <h2 class="sec-title reveal">
+          Tem o filho que <span class="hl-cyan">consome</span> a tela, e o filho que
+          <span class="hl-orange">cria</span> com ela
+        </h2>
+        <p class="sec-sub reveal">
+          A mesma criança, o mesmo computador, duas tardes muito diferentes.
+        </p>
+        <div class="comp2">
+          <div class="comp-side comp-bad reveal">
+            <div class="comp-head">
+              <span class="comp-icon x"><span class="material-symbols-outlined">close</span></span
+              >Tela que só passa o tempo
+            </div>
+            <p class="comp-scene">
+              A criança rola vídeo atrás de vídeo, joga o jogo que outra pessoa fez e levanta do
+              computador sem nada nas mãos. Domingo à noite, a sensação é de tempo que escorreu.
+            </p>
+            <div class="comp-metric">
+              <span>3 horas de tela, zero coisa criada</span>
+              <span>Nada pra mostrar pra ninguém</span>
+            </div>
+          </div>
+          <div class="comp-side comp-good reveal">
+            <div class="comp-head">
+              <span class="comp-icon v"><span class="material-symbols-outlined">check</span></span
+              >Tela que vira criação
+            </div>
+            <p class="comp-scene">
+              A criança senta uma hora por dia, segue o passo a passo e vê o personagem ganhar vida na
+              tela. No terceiro dia chama a família pra mostrar o jogo que ela mesma montou.
+            </p>
+            <div class="comp-metric">
+              <span>3 dias, 1 jogo jogável no fim</span>
+              <span>Algo concreto pra mostrar e contar</span>
+            </div>
+          </div>
+        </div>
+        <p class="hyp-note reveal">
+          Os números acima são ilustrativos do contraste, não medida exata.
+        </p>
+        <img
+          class="paraquem-art reveal"
+          src={img('paraquem-debinha-dede.png')}
+          alt="Crianças criando o próprio jogo com os personagens Debinha e Dedé"
+          loading="lazy"
+        />
+      </div>
+    </section>
+
+    <!-- ===== 3. TABELA COMPARAÇÃO ===== -->
+    <section class="bg-deep">
+      <div class="container">
+        <span class="shimmer-line reveal"></span>
+        <p class="eyebrow reveal">O que muda na prática</p>
+        <h2 class="sec-title reveal">
+          A diferença não está no seu filho, está no <span class="hl-cyan">caminho</span>
+        </h2>
+        <p class="sec-sub reveal">
+          Como era tentar sem rumo com tutorial solto, e como fica seguindo uma trilha feita pra
+          terminar.
+        </p>
+        <div class="ctable">
+          <div class="ctable-row head">
+            <div class="ctable-cell left">Tutorial solto no YouTube</div>
+            <div class="ctable-cell right">Trilha do Primeiro Jogo</div>
+          </div>
+          <div class="ctable-row">
+            <div class="ctable-cell left">
+              <span class="material-symbols-outlined">close</span>Precisa instalar e configurar antes
+              de criar qualquer coisa
+            </div>
+            <div class="ctable-cell right">
+              <span class="material-symbols-outlined">check</span>Estúdio aberto na própria aula, sem
+              instalar nada, e blocos feitos pra criança montar o jogo
+            </div>
+          </div>
+          <div class="ctable-row">
+            <div class="ctable-cell left">
+              <span class="material-symbols-outlined">close</span>A criança se perde na quinta
+              instrução e fecha o vídeo
+            </div>
+            <div class="ctable-cell right">
+              <span class="material-symbols-outlined">check</span>Um passo isolado por vez, com
+              retorno visual na tela
+            </div>
+          </div>
+          <div class="ctable-row">
+            <div class="ctable-cell left">
+              <span class="material-symbols-outlined">close</span>O resultado nunca fica pronto,
+              sempre falta uma parte
+            </div>
+            <div class="ctable-cell right">
+              <span class="material-symbols-outlined">check</span>Uma vitória por dia, jogo completo
+              no terceiro
+            </div>
+          </div>
+          <div class="ctable-row">
+            <div class="ctable-cell left">
+              <span class="material-symbols-outlined">close</span>Você precisa sentar do lado
+              interpretando cada passo
+            </div>
+            <div class="ctable-cell right">
+              <span class="material-symbols-outlined">check</span>A criança avança com autonomia, você
+              só garante o tempo
+            </div>
+          </div>
+          <div class="ctable-row">
+            <div class="ctable-cell left">
+              <span class="material-symbols-outlined">close</span>Termina a tarde frustrado, sem nada
+              pra mostrar
+            </div>
+            <div class="ctable-cell right">
+              <span class="material-symbols-outlined">check</span>Termina chamando a família pra ver o
+              jogo funcionando
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 4. DIÁLOGO MENTAL NEGATIVO ===== -->
+    <section class="bg-grid">
+      <div class="container">
+        <p class="eyebrow reveal">A gente sabe o que passa na sua cabeça</p>
+        <h2 class="sec-title reveal">
+          Você já gastou com curso, e <span class="hl-orange">viu ele largar na segunda semana</span>
+        </h2>
+        <p class="sec-sub reveal">E aí ficam aqueles pensamentos que você não fala pra ninguém.</p>
+        <div class="thoughts">
+          <div class="thought reveal">
+            Ele larga tudo na metade. <strong>Vai ser dinheiro jogado fora de novo.</strong>
+          </div>
+          <div class="thought reveal">
+            Será que meu filho tem perfil pra isso,
+            <strong>ou isso é só pra criança que já é boa de tecnologia?</strong>
+          </div>
+          <div class="thought reveal">
+            Eu não entendo nada de programação.
+            <strong>Se ele travar, não vou saber ajudar.</strong>
+          </div>
+          <div class="thought reveal">
+            Tem coisa de graça por aí. <strong>Já tentei o YouTube com ele e não foi.</strong>
+          </div>
+          <div class="thought reveal">
+            Ele passa horas no Roblox e <strong>não cria nada, só joga o que os outros fizeram.</strong>
+          </div>
+          <div class="thought reveal">
+            As férias estão chegando e <strong>ele vai ficar o dia inteiro no celular outra vez.</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 5. A CULPA NÃO É SUA ===== -->
+    <section class="bg-light">
+      <div class="container culpa-block">
+        <p class="eyebrow reveal">Antes de duvidar do seu filho, leia isto</p>
+        <h2 class="sec-title reveal" style="text-align:left">
+          Você fez o certo, e mesmo assim ele desistiu. O problema não foi ele.
+        </h2>
+        <p class="sec-sub reveal" style="text-align:left;margin-bottom:36px">
+          O que fez seu filho largar foi um detalhe no formato do que você comprou, e quase nenhum pai
+          sabe disso.
+        </p>
+
+        <p class="culpa-sub reveal">Você tentou de verdade:</p>
+        <ul class="culpa-list reveal">
+          <li>
+            <span class="material-symbols-outlined">check_circle</span>Você pagou um curso, organizou
+            a rotina e torceu, e ele parou de ir antes de criar qualquer coisa.
+          </li>
+          <li>
+            <span class="material-symbols-outlined">check_circle</span>Você sentou do lado com
+            tutorial do YouTube, e a criança perdeu o interesse antes de a primeira parte ficar
+            pronta.
+          </li>
+          <li>
+            <span class="material-symbols-outlined">check_circle</span>Você comprou livro e
+            plataforma, e o material ficou parado porque ele nunca chegou a ver algo funcionar.
+          </li>
+        </ul>
+
+        <div class="culpa-alivio reveal">
+          A culpa não é sua nem dele. A maior causa de desistência em curso de programação infantil é
+          o tempo entre a primeira aula e o primeiro resultado na tela. Quase tudo no mercado coloca
+          semanas de teoria antes da criança criar qualquer coisa. Nesse vão, o interesse morre. Você
+          seguiu o caminho que existia, e ele simplesmente não foi feito pra prender uma criança.
+        </div>
+
+        <p class="culpa-sub reveal">O que faz a criança ir até o fim:</p>
+        <div class="culpa-shift reveal">
+          <div class="shift-card">
+            <div class="shift-flow">
+              <span class="shift-old"
+                ><span class="material-symbols-outlined">close</span>Estudar primeiro, criar depois</span
+              ><span class="material-symbols-outlined">arrow_forward</span><span class="shift-new"
+                ><span class="material-symbols-outlined">check</span>Criar desde o primeiro minuto</span
+              >
+            </div>
+            <p>
+              O cérebro da criança foi calibrado pra resultado rápido. Por isso o personagem se mexe
+              já no Dia 1, antes de qualquer explicação longa. A vitória vem antes do cansaço.
+            </p>
+          </div>
+          <div class="shift-card">
+            <div class="shift-flow">
+              <span class="shift-old"
+                ><span class="material-symbols-outlined">close</span>Curso longo de muitas aulas</span
+              ><span class="material-symbols-outlined">arrow_forward</span><span class="shift-new"
+                ><span class="material-symbols-outlined">check</span>Uma vitória por dia, três dias</span
+              >
+            </div>
+            <p>
+              O que cabe na atenção de uma criança não é uma maratona, é uma sessão curta que fecha
+              com algo pronto. Três dias, três conquistas que ela vê na tela.
+            </p>
+          </div>
+          <div class="shift-card">
+            <div class="shift-flow">
+              <span class="shift-old"
+                ><span class="material-symbols-outlined">close</span>Pai ensinando do lado</span
+              ><span class="material-symbols-outlined">arrow_forward</span><span class="shift-new"
+                ><span class="material-symbols-outlined">check</span>Trilha que guia a criança com
+                autonomia</span
+              >
+            </div>
+            <p>
+              Quando o caminho está claro o suficiente, a criança não precisa de ninguém interpretando
+              instrução. Você garante o computador e o horário, ela faz o resto no ritmo dela.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 6. FAÇA AS CONTAS ===== -->
+    <section class="bg-deep">
+      <div class="container">
+        <span class="shimmer-line orange reveal"></span>
+        <p class="eyebrow reveal">Coloca na ponta do lápis</p>
+        <h2 class="sec-title reveal">
+          Pega a mensalidade da escola de programação e <span class="hl-orange">faz a conta comigo</span>
+        </h2>
+        <p class="sec-sub reveal">
+          Antes de assinar mensalidade, vale comparar o que você arrisca de cada lado.
+        </p>
+        <div class="contas-grid">
+          <div class="conta-card conta-a reveal">
+            <h3><span class="material-symbols-outlined">trending_down</span>Escola de programação infantil</h3>
+            <div class="conta-line"><span>Mensalidade</span><span>R$ 200 a R$ 350</span></div>
+            <div class="conta-line"><span>Matrícula inicial</span><span>cobrada à parte</span></div>
+            <div class="conta-line">
+              <span>Quando vê o primeiro jogo pronto</span><span>semanas depois</span>
+            </div>
+            <div class="conta-line">
+              <span>Se ele desistir na 2ª semana</span><span>já pagou o mês</span>
+            </div>
+            <div class="conta-line total">
+              <span>Risco até a 1ª prova real</span><span class="val">R$ 200+</span>
+            </div>
+          </div>
+          <div class="conta-card conta-b reveal">
+            <h3><span class="material-symbols-outlined">trending_up</span>Desafio do Primeiro Jogo</h3>
+            <div class="conta-line">
+              <span>Pagamento</span><span>{priceLabelShort}, uma vez</span>
+            </div>
+            <div class="conta-line"><span>Matrícula ou mensalidade</span><span>nenhuma</span></div>
+            <div class="conta-line"><span>Quando vê algo na tela</span><span>no 1º dia</span></div>
+            <div class="conta-line"><span>Quando o jogo fica pronto</span><span>no 3º dia</span></div>
+            <div class="conta-line total">
+              <span>Risco total</span><span class="val">{priceLabelShort}</span>
+            </div>
+          </div>
+        </div>
+        <p class="conta-impacto reveal">
+          Pelo preço de um lanche, você descobre se vale a pena investir no caminho completo, com o
+          jogo na mão. A primeira mensalidade de escola custa
+          <span class="num">mais de 5 vezes isso</span>, antes de qualquer prova de que funciona pro
+          seu filho.
+        </p>
+        <p class="conta-impacto reveal">
+          E tem o outro custo, o das muitas horas por ano em que esse foco já vai para a tela sem
+          virar nada feito por ele.
+        </p>
+        <p class="hyp-note reveal" style="color:var(--text-tertiary)">
+          Valores de mensalidade são exemplos baseados na média do mercado. Confira os preços
+          praticados na sua cidade.
+        </p>
+      </div>
+    </section>
+
+    <!-- ===== 7. CENTRO DA ATENÇÃO ===== -->
+    <section class="bg-dark">
+      <div class="container">
+        <p class="eyebrow reveal">O que muda quando o personagem ganha vida</p>
+        <h2 class="sec-title reveal">Tudo gira em torno do <span class="hl-cyan">jogo na tela</span></h2>
+        <p class="sec-sub reveal">
+          No primeiro dia, a criança faz o personagem se mexer. A partir daí, tudo o que importa
+          começa a acontecer.
+        </p>
+        <div class="centro-wrap">
+          <div class="centro-core reveal">
+            <img
+              class="centro-art"
+              src={img('metodo-zappy.png')}
+              alt="Personagem Zappy guiando o jogo que ganha vida na tela"
+              loading="lazy"
+            />
+            <h3 style="margin-top:18px">O jogo na tela</h3>
+            <p>
+              O personagem que responde ao comando da criança e prova, na hora, que ela consegue
+              criar.
+            </p>
+          </div>
+          <ul class="centro-list reveal">
+            <li><span class="material-symbols-outlined">arrow_back</span>Resultado no primeiro dia</li>
+            <li><span class="material-symbols-outlined">arrow_back</span>Ela começou e terminou algo</li>
+            <li><span class="material-symbols-outlined">arrow_back</span>Vira criadora, não só jogadora</li>
+            <li><span class="material-symbols-outlined">arrow_back</span>Algo concreto pra mostrar</li>
+            <li><span class="material-symbols-outlined">arrow_back</span>Link pra mandar pros amigos jogarem</li>
+            <li><span class="material-symbols-outlined">arrow_back</span>Tela de criação, não passiva</li>
+            <li><span class="material-symbols-outlined">arrow_back</span>Vitória por dia que prende</li>
+            <li><span class="material-symbols-outlined">arrow_back</span>Confiança de "eu consigo"</li>
+            <li><span class="material-symbols-outlined">arrow_back</span>Primeira peça do portfólio</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 8. DINÂMICA DE ACESSO ===== -->
+    <section class="bg-light">
+      <div class="container">
+        <p class="eyebrow reveal">Do acesso ao jogo pronto</p>
+        <h2 class="sec-title reveal">É mais simples do que parece. Olha o caminho:</h2>
+        <p class="sec-sub reveal">
+          Três dias, uma vitória por dia, tudo dentro do mesmo ambiente, sem instalar nada.
+        </p>
+        <div class="steps">
+          <div class="step-card reveal">
+            <div class="step-badge">1</div>
+            <h3>A nave ganha vida</h3>
+            <p>
+              Seguindo o passo a passo, a criança monta os primeiros blocos e vê a nave dela aparecer
+              no espaço e voar com as setas.
+            </p>
+          </div>
+          <div class="step-card reveal">
+            <div class="step-badge">2</div>
+            <h3>O jogo ganha ação</h3>
+            <p>
+              Ela faz a nave atirar, os asteroides caírem e marca um ponto a cada asteroide
+              destruído.
+            </p>
+          </div>
+          <div class="step-card reveal">
+            <div class="step-badge">3</div>
+            <h3>Pronto pra mostrar</h3>
+            <p>
+              Ela cria a tela de vitória, testa o jogo inteiro e gera um link pra mandar pros amigos e
+              a família jogarem.
+            </p>
+          </div>
+        </div>
+        <p class="metodo-label reveal">O método: Trilha do Primeiro Jogo</p>
+        <img
+          class="metodo-art reveal"
+          src={img('furadeira.png')}
+          alt="Trilha do Primeiro Jogo: o método em 3 dias, do personagem ganhar vida ao jogo pronto"
+          loading="lazy"
+        />
+        <div style="text-align:center;margin-top:40px" class="reveal">
+          <a href="#oferta" class="cta-btn cyan">
+            <span class="material-symbols-outlined">sports_esports</span>
+            Quero começar o desafio hoje
+          </a>
+          <p class="access-note">
+            Acesso imediato após a confirmação. Pagamento único. Acesso vitalício.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 9. DEMONSTRAÇÃO ===== -->
+    <section class="bg-scene-1">
+      <span class="scene-label">🎮 espaço para vídeo da tela do Studio</span>
+      <div class="container">
+        <p class="eyebrow reveal">Veja com seus próprios olhos</p>
+        <h2 class="sec-title reveal">
+          Olha a nave dela voando no espaço, no <span class="hl-cyan">primeiro dia</span>
+        </h2>
+        <p class="sec-sub reveal">
+          A tela de um Dia 1 de verdade, com a nave respondendo ao comando da criança, sem simulação
+          e sem promessa vazia.
+        </p>
+        <div class="demo-frame reveal">
+          <div class="demo-chrome">
+            <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+            <span class="url">sistema-zero-studio · Dia 1</span>
+          </div>
+          <div class="demo-screen">
+            <div class="mini-char">👾</div>
+            <div class="play"><span class="material-symbols-outlined">play_arrow</span></div>
+            <div class="instr">
+              [Espaço para o vídeo. Grave a tela do Sistema Zero Studio mostrando a nave aparecendo e
+              voando no espaço no Dia 1.]
+            </div>
+          </div>
+        </div>
+        <p class="demo-caption reveal">
+          Em poucos minutos de Dia 1, a nave deixa de ser uma tela parada e passa a responder ao que a
+          criança montou.
+        </p>
+      </div>
+    </section>
+
+    <!-- ===== 10. QUEM É O ESPECIALISTA ===== -->
+    <section class="bg-deep">
+      <div class="container">
+        <p class="eyebrow reveal">Quem conduz o desafio</p>
+        <h2 class="sec-title reveal">Quem está por trás do <span class="hl-orange">Desafio</span></h2>
+        <p class="sec-sub reveal">
+          Helena e Júlio, do @criecomhelenaejulio, criando junto com crianças reais.
+        </p>
+        <div class="esp-wrap">
+          <img
+            class="esp-photo-img reveal"
+            src={img('autoridade-helena-julio.png')}
+            alt="Helena e Júlio, criadores do desafio, ensinando crianças a criar jogos"
+            loading="lazy"
+          />
+          <div class="esp-text reveal">
+            <h3>Helena e Júlio</h3>
+            <p class="esp-tag">Criação de jogos para crianças a partir dos 9 anos</p>
+            <p>
+              Somos Helena e Júlio, <span class="hl-orange">desenvolvedores de sistemas</span>
+              formados em Sistemas de Informação. Há mais de dez anos a gente cria software de verdade,
+              com passagem por empresas como o Banco do Brasil, e hoje no setor agrícola. Programar é o
+              nosso dia a dia.
+            </p>
+            <p>
+              Mas quem nos trouxe até aqui foi o nosso filho, o <span class="hl-orange">André</span>,
+              <span class="hl-orange">autista nível 1</span>, com hiperfoco em jogos. Quando ele tinha
+              7 anos, a gente estava muito preocupada: o foco dele vivia só no jogar, e isso
+              atrapalhava o resto. A virada veio quando a gente parou de competir com os jogos e passou
+              a ensinar o André a <span class="hl-orange">criar os próprios</span>, em vez de só jogar
+              o que os outros fazem. Ele entrou de cabeça, cheio de ideias.
+            </p>
+            <p>
+              Hoje, aos 11, ele continua jogando, mas também cria. Ficou mais atento, gosta de
+              aprender, tira notas excelentes, e os professores que antes pediam mais foco agora
+              elogiam. O mesmo hiperfoco, agora a favor dele. Foi por viver isso dentro de casa que a
+              gente montou este desafio: para que outros pais possam pegar o foco intenso do filho, em
+              jogos ou em qualquer paixão, e transformar uma parte dele no primeiro joguinho jogável
+              criado pela própria criança em 3 dias.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 11. DEPOIMENTOS ===== -->
+    <section class="bg-grid">
+      <div class="container">
+        <p class="eyebrow reveal">O que outras famílias vão contar</p>
+        <h2 class="sec-title reveal">As primeiras histórias de famílias que fizeram o desafio</h2>
+        <p class="sec-sub reveal">
+          Este desafio está em pré-lançamento. Em vez de inventar depoimento, deixamos os espaços
+          prontos para colar os relatos reais que chegarem após a abertura.
+        </p>
+        <div class="depo-grid">
+          <div class="depo-card reveal">
+            <div class="stars">
+              <span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span>
+            </div>
+            <p class="depo-ph">
+              [Depoimento real via WhatsApp, a coletar após o lançamento. Categoria: criança que
+              terminou no terceiro dia e chamou a família pra mostrar.]
+            </p>
+            <div class="depo-collect">
+              <span class="material-symbols-outlined">photo_camera</span>Pedir print do jogo pronto na
+              tela
+            </div>
+          </div>
+          <div class="depo-card reveal">
+            <div class="stars">
+              <span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span>
+            </div>
+            <p class="depo-ph">
+              [Depoimento real via WhatsApp, a coletar após o lançamento. Categoria: pai ou mãe que já
+              tinha visto o filho largar outro curso.]
+            </p>
+            <div class="depo-collect">
+              <span class="material-symbols-outlined">chat</span>Pedir print da conversa contando o
+              resultado
+            </div>
+          </div>
+          <div class="depo-card reveal">
+            <div class="stars">
+              <span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span>
+            </div>
+            <p class="depo-ph">
+              [Depoimento real a coletar: print de uma família que achava que o filho não conseguiria
+              manter o foco e se surpreendeu ao ver ele terminar.]
+            </p>
+            <div class="depo-collect">
+              <span class="material-symbols-outlined">videocam</span>Pedir vídeo curto da criança
+              jogando o que criou
+            </div>
+          </div>
+          <div class="depo-data reveal">
+            <div class="big">79,5 mi</div>
+            <p>
+              de crianças entre 8 e 12 anos usavam o Roblox em 2024. A maioria joga o jogo dos outros.
+              Este desafio leva a criança pro outro lado: criar o próprio.
+            </p>
+            <span class="src">Dado de mercado. Fonte: Brasil de Fato, 2024.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 12. ENTREGÁVEIS ===== -->
+    <section class="bg-light">
+      <div class="container">
+        <p class="eyebrow reveal">Tudo que vem junto</p>
+        <h2 class="sec-title reveal">Olha o que seu filho leva nesses 3 dias</h2>
+        <p class="sec-sub reveal">
+          O desafio guiado mais o que ajuda a criança a terminar e você a acompanhar em linguagem para
+          quem não é de tecnologia.
+        </p>
+        <div class="entrega-grid">
+          <div class="entrega-card reveal">
+            <div class="entrega-ico"><span class="material-symbols-outlined">videogame_asset</span></div>
+            <div class="entrega-body">
+              <h4>Trilha guiada de 3 dias</h4>
+              <p><strong>Uma atividade por dia, com começo, meio e fim.</strong></p>
+            </div>
+          </div>
+          <div class="entrega-card reveal">
+            <div class="entrega-ico"><span class="material-symbols-outlined">folder_open</span></div>
+            <div class="entrega-body">
+              <h4>Estúdio e blocos feitos pra criança</h4>
+              <p>
+                <strong>O estúdio abre dentro da própria aula, sem instalar nada, e os blocos já
+                  trazem a parte difícil encaixada. A criança monta o próprio jogo, com a lógica de
+                  verdade e sem escrever código.</strong>
+              </p>
+            </div>
+          </div>
+          <div class="entrega-card reveal">
+            <div class="entrega-ico"><span class="material-symbols-outlined">ios_share</span></div>
+            <div class="entrega-body">
+              <h4>Link do jogo pra compartilhar</h4>
+              <p>
+                <strong>Ao terminar, a criança publica o jogo e gera um link pra mandar pros amigos e a
+                  família jogarem, no computador ou no celular.</strong>
+              </p>
+            </div>
+          </div>
+          <div class="entrega-card reveal">
+            <div class="entrega-ico"><span class="material-symbols-outlined">play_circle</span></div>
+            <div class="entrega-body">
+              <h4>Passo a passo em vídeo (aula guiada)</h4>
+              <p><strong>Curto, direto e feito para ela conseguir acompanhar.</strong></p>
+            </div>
+          </div>
+          <div class="entrega-card reveal">
+            <div class="entrega-ico"><span class="material-symbols-outlined">family_restroom</span></div>
+            <div class="entrega-body">
+              <h4>Mapa dos pais</h4>
+              <p>
+                <strong>Uma página simples que explica como acompanhar o seu filho, em linguagem para
+                  quem não é de tecnologia.</strong>
+              </p>
+            </div>
+          </div>
+          <div class="entrega-card reveal">
+            <div class="entrega-ico"><span class="material-symbols-outlined">workspace_premium</span></div>
+            <div class="entrega-body">
+              <h4>Certificado simples de conclusão</h4>
+              <p><strong>Em PDF ou imagem, gerado ao final.</strong></p>
+            </div>
+          </div>
+        </div>
+        <p class="hyp-note reveal">
+          Este produto não inclui acompanhamento individual. Se seu filho tiver dificuldade, você pode
+          consultar as orientações da própria trilha e repetir os passos quantas vezes quiser.
+        </p>
+      </div>
+    </section>
+
+    <!-- ===== 13. OFERTA FINAL ===== -->
+    <section class="bg-dark" id="oferta">
+      <div class="container">
+        <p class="eyebrow reveal">O resumo de tudo</p>
+        <h2 class="sec-title reveal">
+          Veja tudo que entra no <span class="hl-orange">Desafio do Primeiro Jogo</span>
+        </h2>
+        <p class="sec-sub reveal">
+          Um pagamento, acesso vitalício, e o jogo do seu filho funcionando em 3 dias.
+        </p>
+        <div class="oferta-box reveal">
+          <img
+            class="oferta-art"
+            src={img('oferta-debinha.png')}
+            alt="Personagem Debinha comemorando o primeiro jogo pronto"
+            loading="lazy"
+          />
+          <ul class="oferta-list">
+            <li><span class="name"><span class="material-symbols-outlined">check_circle</span>Trilha guiada de 3 dias</span></li>
+            <li><span class="name"><span class="material-symbols-outlined">check_circle</span>Estúdio e blocos feitos pra criança</span></li>
+            <li><span class="name"><span class="material-symbols-outlined">check_circle</span>Link do jogo pra compartilhar</span></li>
+            <li><span class="name"><span class="material-symbols-outlined">check_circle</span>Passo a passo em vídeo (aula guiada)</span></li>
+            <li><span class="name"><span class="material-symbols-outlined">check_circle</span>Mapa dos pais</span></li>
+            <li><span class="name"><span class="material-symbols-outlined">check_circle</span>Certificado simples de conclusão</span></li>
+          </ul>
+          <div class="oferta-total">
+            <span class="de">De <s>R$ 97</s> por apenas</span>
+            <div class="oferta-price">{priceLabelShort}<small>Pagamento único. Acesso vitalício.</small></div>
+          </div>
+          <p class="access-note">
+            Menos que uma única mensalidade de escola de programação, que começa em R$ 200 por mês.
+          </p>
+          <p class="oferta-retorno">
+            Menos do que aquele lanche de shopping que some em uma tarde. Só que este aqui
+            <strong>deixa um jogo feito pelo seu filho</strong> que ele vai abrir e mostrar por
+            semanas.
+          </p>
+          <button type="button" class="cta-btn" data-checkout-cta>
+            <span class="material-symbols-outlined">rocket_launch</span>
+            Quero o primeiro jogo do meu filho em 3 dias
+          </button>
+          <p class="access-note">
+            Acesso imediato. Garantia de 7 dias. Pagamento único, acesso vitalício.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== GARANTIA + SUPORTE ===== -->
+    <section class="bg-light">
+      <div class="container">
+        <span class="shimmer-line reveal"></span>
+        <div class="gar-grid">
+          <div class="gar-card reveal">
+            <div class="gar-selo"><span class="d">7</span><span class="l">dias</span></div>
+            <div class="gar-txt">
+              <h3>Garantia de 7 dias</h3>
+              <p>
+                Se em 7 dias você sentir que não foi pra vocês, escreve pra gente e devolvemos os
+                {priceLabelShort}, sem pergunta. O risco fica do nosso lado, não do seu.
+              </p>
+            </div>
+          </div>
+          <div class="gar-card suporte reveal">
+            <div class="gar-selo"><span class="material-symbols-outlined">stairs</span></div>
+            <div class="gar-txt">
+              <h3>Feito pra não travar no meio</h3>
+              <p>
+                Uma trilha simples, visual e dividida em pequenas vitórias, para reduzir a chance de
+                ele travar no meio.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 14. FAQ ===== -->
+    <section class="bg-deep">
+      <div class="container faq-wrap">
+        <p class="eyebrow reveal">O que os pais mais perguntam antes de começar</p>
+        <h2 class="sec-title reveal">Veja se a sua dúvida está aqui</h2>
+        <div style="margin-top:36px">
+          <p class="faq-cat"><span class="material-symbols-outlined">key</span>Dúvidas sobre acesso</p>
+
+          <div class="faq-item reveal">
+            <button class="faq-q">Como eu acesso o desafio depois de comprar? <span class="material-symbols-outlined">expand_more</span></button>
+            <div class="faq-a"><p>Assim que o pagamento é confirmado, você recebe o acesso na hora, direto no seu e-mail. É só entrar com o computador, abrir o ambiente e a criança já começa o Dia 1.</p></div>
+          </div>
+          <div class="faq-item reveal">
+            <button class="faq-q">Recebo tudo de uma vez ou é liberado aos poucos? <span class="material-symbols-outlined">expand_more</span></button>
+            <div class="faq-a"><p>Você recebe tudo de uma vez. Os 3 dias e os materiais ficam disponíveis no mesmo acesso, então a criança pode seguir no ritmo dela, um dia por vez ou tudo num fim de semana.</p></div>
+          </div>
+          <div class="faq-item reveal">
+            <button class="faq-q">Por quanto tempo eu tenho acesso? <span class="material-symbols-outlined">expand_more</span></button>
+            <div class="faq-a"><p>O acesso é vitalício. Você paga uma vez e pode voltar quando quiser, sem mensalidade e sem renovação. A criança pode refazer o desafio e abrir o jogo dela sempre que tiver vontade.</p></div>
+          </div>
+          <div class="faq-item reveal">
+            <button class="faq-q">Tem garantia? Como funciona? <span class="material-symbols-outlined">expand_more</span></button>
+            <div class="faq-a"><p>Tem garantia de 7 dias. Se nesse prazo você achar que não foi pra vocês, é só escrever pra gente e devolvemos o valor, sem nenhuma justificativa.</p></div>
+          </div>
+          <div class="faq-item reveal">
+            <button class="faq-q">E se a criança travar em algum passo? <span class="material-symbols-outlined">expand_more</span></button>
+            <div class="faq-a"><p>A trilha é dividida em pequenas vitórias justamente para reduzir a chance de ele travar no meio. Se ela parar em algum passo, é só consultar as orientações da própria trilha e repetir os passos quantas vezes quiser, no ritmo dela, até a parte ficar pronta.</p></div>
+          </div>
+
+          <p class="faq-cat" style="margin-top:34px"><span class="material-symbols-outlined">help</span>Dúvidas sobre o desafio</p>
+
+          <div class="faq-item reveal">
+            <button class="faq-q">Meu filho já desistiu de outras coisas. Vai largar este também? <span class="material-symbols-outlined">expand_more</span></button>
+            <div class="faq-a"><p>O que faz uma criança largar é o resultado que demora. Aqui o personagem se mexe já no primeiro dia, e cada sessão fecha com algo pronto. O desafio foi cortado pra caber na atenção dela, com uma vitória por dia, justamente pra não dar tempo do interesse esfriar.</p></div>
+          </div>
+          <div class="faq-item reveal">
+            <button class="faq-q">Será que meu filho tem perfil pra isso? <span class="material-symbols-outlined">expand_more</span></button>
+            <div class="faq-a"><p>A pergunta certa não é se ele tem perfil, é se o caminho foi feito pra ele conseguir. Os blocos foram feitos pra criança, com a parte difícil já encaixada dentro deles, e cada passo é isolado. Se a criança sabe ler e mexer no computador, ela monta o jogo até o fim, tendo experiência prévia ou não.</p></div>
+          </div>
+          <div class="faq-item reveal">
+            <button class="faq-q">Eu não entendo nada de programação. Vou conseguir ajudar? <span class="material-symbols-outlined">expand_more</span></button>
+            <div class="faq-a"><p>Você não precisa entender de programação. A criança avança com autonomia, uma sessão por dia, num ambiente já preparado. Seu papel é garantir o computador e o tempo. A trilha é dividida em pequenas vitórias, para reduzir a chance de ele travar no meio.</p></div>
+          </div>
+          <div class="faq-item reveal">
+            <button class="faq-q">Tem Scratch e tutorial de graça. Por que pagar por isso? <span class="material-symbols-outlined">expand_more</span></button>
+            <div class="faq-a"><p>O que é grátis é a ferramenta, não o caminho. Scratch e vídeo de YouTube existem de graça, e mesmo assim a maioria das crianças larga no meio porque se perde. Aqui você paga por uma trilha curta, testada, que leva do zero a um jogo pronto sem a criança travar no caminho.</p></div>
+          </div>
+          <div class="faq-item reveal">
+            <button class="faq-q">Meu filho tem dificuldade de manter o foco. Esse formato funciona pra ele? <span class="material-symbols-outlined">expand_more</span></button>
+            <div class="faq-a"><p>O formato ajuda quem tem dificuldade de manter o foco justamente porque entrega resultado no primeiro dia e divide o caminho em três vitórias curtas, sem etapa longa sem recompensa. E vale igual pra qualquer criança a partir de 9 anos: vitória rápida prende a atenção de todas.</p></div>
+          </div>
+          <div class="faq-item reveal">
+            <button class="faq-q">O jogo fica pronto de verdade ou é só uma demonstração? <span class="material-symbols-outlined">expand_more</span></button>
+            <div class="faq-a"><p>Fica pronto de verdade. No fim dos 3 dias o jogo abre, responde aos comandos da criança e pode ser jogado e mostrado pra família. É o primeiro joguinho jogável dela, rodando no computador de casa, sem simulação e sem "quase pronto".</p></div>
+          </div>
+          <div class="faq-item reveal">
+            <button class="faq-q">Que idade é a certa pra fazer o desafio? <span class="material-symbols-outlined">expand_more</span></button>
+            <div class="faq-a"><p>O desafio foi pensado pra crianças a partir de 9 anos, que já leem e mexem no computador com tranquilidade. Crianças mais velhas também aproveitam, e costumam terminar mais rápido e querer expandir o jogo depois.</p></div>
+          </div>
+          <div class="faq-item reveal">
+            <button class="faq-q">Não sei se ele vai gostar. E se for dinheiro jogado fora? <span class="material-symbols-outlined">expand_more</span></button>
+            <div class="faq-a"><p>O risco joga a favor: é um pagamento único, com garantia de 7 dias. Em 3 dias você descobre, com o jogo na mão, se o seu filho se engaja, em vez de assinar uma mensalidade de R$ 200 na dúvida. Se não for pra vocês, devolvemos o valor.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== CTA FINAL ===== -->
+    <section class="bg-orange cta-final-section">
+      <div class="container">
+        <div class="mascote">🚀</div>
+        <h2 class="cta-final-h reveal">
+          Transforme o interesse do seu filho em criação, começando neste fim de semana
+        </h2>
+        <p class="cta-final-sub reveal">
+          Em 3 dias, seguindo a trilha, esse foco vira o primeiro jogo jogável dele, com algo de
+          verdade para mostrar.
+        </p>
+        <button type="button" class="cta-btn cyan reveal" data-checkout-cta>
+          <span class="material-symbols-outlined">rocket_launch</span>
+          Quero o primeiro jogo do meu filho em 3 dias
+        </button>
+        <p class="access-note" style="color:#5a3d10">
+          De <s>R$ 97</s> por {priceLabelShort}. Pagamento único. Acesso vitalício. Garantia de 7 dias.
+        </p>
+      </div>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="dpj-footer">
+      <div class="container">
+        <p class="brand">Desafio do Primeiro Jogo</p>
+        <p>
+          Criado por Helena e Júlio. Um desafio guiado de 3 dias para crianças a partir de 9 anos
+          criarem o primeiro joguinho jogável, dentro do Sistema Zero Studio.
+        </p>
+        <p class="legal">
+          Este conteúdo é dirigido aos pais e responsáveis, em conformidade com o Estatuto da Criança
+          e do Adolescente (ECA) e com a Resolução 163 do CONANDA, que veda publicidade dirigida
+          diretamente a crianças. A compra e o uso são feitos por um adulto responsável. Não há
+          promessa de renda, emprego ou carreira para a criança. Resultados dependem do
+          acompanhamento e do tempo dedicado em cada família.
+        </p>
+        <p class="legal links">
+          <a href="/termos-de-uso">Termos de uso</a> · <a href="/politica-de-privacidade"
+            >Política de privacidade</a
+          >
+        </p>
+      </div>
+    </footer>
+
+    <!-- ===== FLOATING CTA MOBILE ===== -->
+    <div class="floating-cta">
+      <button type="button" data-checkout-cta>
+        <span class="material-symbols-outlined">sports_esports</span>
+        Quero o primeiro jogo em 3 dias
+      </button>
+    </div>
+  </div>
+
+  <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} />
+</BaseLayout>
+
+<script>
+  // Scroll reveal (mesma lógica do mockup).
+  const obs = new IntersectionObserver(
+    (entries) => {
+      for (const e of entries) {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible')
+          obs.unobserve(e.target)
+        }
+      }
+    },
+    { threshold: 0.14 },
+  )
+  for (const el of Array.from(document.querySelectorAll('.dpj .reveal'))) obs.observe(el)
+
+  // FAQ accordion.
+  for (const btn of Array.from(document.querySelectorAll<HTMLButtonElement>('.dpj .faq-q'))) {
+    btn.addEventListener('click', () => {
+      const ans = btn.nextElementSibling
+      const isOpen = ans?.classList.contains('open')
+      for (const a of Array.from(document.querySelectorAll('.dpj .faq-a'))) a.classList.remove('open')
+      for (const q of Array.from(document.querySelectorAll('.dpj .faq-q'))) q.classList.remove('active')
+      if (!isOpen && ans) {
+        ans.classList.add('open')
+        btn.classList.add('active')
+      }
+    })
+  }
+
+  // Floating CTA mobile: aparece após a 1ª dobra, some perto da oferta.
+  const floating = document.querySelector('.dpj .floating-cta')
+  const oferta = document.getElementById('oferta')
+  if (floating) {
+    window.addEventListener('scroll', () => {
+      const y = window.scrollY
+      const showAfter = window.innerHeight * 0.9
+      const hideNear = oferta ? oferta.offsetTop - window.innerHeight : Number.POSITIVE_INFINITY
+      floating.classList.toggle('visible', y > showAfter && y < hideNear)
+    })
+  }
+</script>
+
+<style>
+  /* ===== Desafio do Primeiro Jogo — CSS sob medida (porte fiel do mockup). ======
+     Tudo escopado pelo Astro a este componente + prefixado por `.dpj` (os tokens
+     ficam no wrapper, não no :root global) → não vaza para as páginas/ilhas
+     compartilhadas. Fontes Fredoka/Nunito vêm do @fontsource (BaseLayout). */
+  .material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ===== Variables (paleta Zappy: ciano + laranja) + base ===== */
+  .dpj {
+    --bg: #07111c;
+    --surface-1: #0c1826;
+    --surface-2: #112236;
+    --surface-3: #16314c;
+    --border: rgba(255, 255, 255, 0.09);
+    --border-hover: rgba(14, 165, 233, 0.35);
+    --text-primary: #f4f8fc;
+    --text-secondary: #aebfd0;
+    --text-tertiary: #6f8298;
+
+    --accent: #0ea5e9; /* ciano dominante */
+    --accent-2: #f59e0b; /* laranja acento */
+    --accent-glow: rgba(14, 165, 233, 0.18);
+    --orange-glow: rgba(245, 158, 11, 0.18);
+    --glass-bg: rgba(17, 34, 54, 0.6);
+
+    --fail-red: #ef6a6a;
+    --fail-red-dim: rgba(239, 106, 106, 0.12);
+    --ok-green: #22c08a;
+    --ok-green-dim: rgba(34, 192, 138, 0.12);
+    --cta-color: #f59e0b;
+
+    --ink-light: #122033;
+    --light-bg: #f3f7fb;
+    --light-surface: #ffffff;
+    --light-border: #dbe6f1;
+
+    --font-head: 'Fredoka', sans-serif;
+    --font-body: 'Nunito', sans-serif;
+
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Reset leve, restrito ao componente. */
+  .dpj *,
+  .dpj *::before,
+  .dpj *::after {
+    box-sizing: border-box;
+  }
+  .dpj img,
+  .dpj picture,
+  .dpj svg {
+    display: block;
+    max-width: 100%;
+  }
+  .dpj button {
+    font: inherit;
+    cursor: pointer;
+  }
+  .dpj p,
+  .dpj h1,
+  .dpj h2,
+  .dpj h3,
+  .dpj h4 {
+    overflow-wrap: break-word;
+  }
+
+  .dpj .container {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+  .dpj section {
+    position: relative;
+    padding: 88px 0;
+    overflow: hidden;
+  }
+  .dpj h1,
+  .dpj h2,
+  .dpj h3,
+  .dpj h4 {
+    font-family: var(--font-head);
+    letter-spacing: -0.01em;
+    line-height: 1.12;
+    margin: 0;
+  }
+
+  /* ===== Fundos por tipo ===== */
+  .dpj .bg-dark {
+    background-color: var(--bg);
+    background-image:
+      radial-gradient(at 18% 12%, rgba(14, 165, 233, 0.16) 0px, transparent 45%),
+      radial-gradient(at 85% 8%, rgba(245, 158, 11, 0.1) 0px, transparent 42%);
+  }
+  .dpj .bg-deep {
+    background: linear-gradient(180deg, #06101a 0%, #0a1726 100%);
+  }
+  .dpj .bg-grid {
+    background-color: #081320;
+    background-image:
+      linear-gradient(rgba(14, 165, 233, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(14, 165, 233, 0.05) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+  .dpj .bg-light {
+    background: var(--light-bg);
+    color: var(--ink-light);
+  }
+  .dpj .bg-light h2,
+  .dpj .bg-light h3,
+  .dpj .bg-light h4 {
+    color: var(--ink-light);
+  }
+  .dpj .bg-orange {
+    background: linear-gradient(135deg, #f9a825 0%, #f57c00 100%);
+    color: #1a1207;
+  }
+  .dpj .bg-orange h2,
+  .dpj .bg-orange h3 {
+    color: #1a1207;
+  }
+  .dpj .bg-scene-1 {
+    background-color: #060e18;
+    background-image:
+      radial-gradient(at 30% 30%, rgba(14, 165, 233, 0.22) 0px, transparent 50%),
+      radial-gradient(at 75% 70%, rgba(245, 158, 11, 0.14) 0px, transparent 50%),
+      linear-gradient(180deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.65));
+  }
+  .dpj .scene-label {
+    position: absolute;
+    bottom: 16px;
+    right: 20px;
+    z-index: 1;
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.4);
+    font-family: var(--font-body);
+    letter-spacing: 0.04em;
+  }
+
+  /* ===== Animação scroll ===== */
+  .dpj .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition:
+      opacity 0.7s ease,
+      transform 0.7s ease;
+  }
+  .dpj .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  @keyframes dpj-floaty {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+  @keyframes dpj-shimmer {
+    0%,
+    100% {
+      opacity: 0.4;
+      width: 60px;
+    }
+    50% {
+      opacity: 1;
+      width: 96px;
+    }
+  }
+  .dpj .shimmer-line {
+    width: 64px;
+    height: 3px;
+    border-radius: 3px;
+    margin: 0 auto 26px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    animation: dpj-shimmer 3s ease-in-out infinite;
+  }
+  .dpj .shimmer-line.orange {
+    background: linear-gradient(90deg, transparent, var(--accent-2), transparent);
+  }
+
+  /* ===== Section headers ===== */
+  .dpj .eyebrow {
+    text-align: center;
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 14px;
+    font-family: var(--font-body);
+  }
+  .dpj .bg-light .eyebrow {
+    color: #0277bd;
+  }
+  .dpj .bg-orange .eyebrow {
+    color: #7a3e00;
+  }
+  .dpj .sec-title {
+    text-align: center;
+    font-size: clamp(1.7rem, 4.2vw, 2.7rem);
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+  .dpj .sec-sub {
+    text-align: center;
+    font-size: 1.08rem;
+    color: var(--text-secondary);
+    max-width: 680px;
+    margin: 0 auto 52px;
+    line-height: 1.65;
+  }
+  .dpj .bg-light .sec-sub {
+    color: #4c5d70;
+  }
+  .dpj .bg-orange .sec-sub {
+    color: #4a2e08;
+  }
+  .dpj .hl-cyan {
+    color: var(--accent);
+  }
+  .dpj .hl-orange {
+    color: var(--accent-2);
+  }
+  .dpj .bg-light .hl-cyan {
+    color: #0277bd;
+  }
+  .dpj .bg-light .hl-orange {
+    color: #e07b00;
+  }
+  .dpj .perfil-intro {
+    text-align: center;
+    font-family: var(--font-head);
+    font-weight: 600;
+    color: var(--accent);
+    font-size: 1.02rem;
+    margin: 0 auto 14px;
+    max-width: 30ch;
+  }
+
+  /* ===== Header ===== */
+  .dpj .site-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: rgba(7, 17, 28, 0.82);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+  }
+  .dpj .site-header .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 14px;
+    padding-bottom: 14px;
+  }
+  .dpj .brand {
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 1.18rem;
+    color: var(--text-primary);
+  }
+  .dpj .header-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 18px;
+    background: var(--cta-color);
+    color: #1a1207;
+    font-weight: 800;
+    font-size: 0.84rem;
+    border: none;
+    border-radius: 10px;
+    text-decoration: none;
+    transition:
+      transform 0.25s ease,
+      box-shadow 0.25s ease;
+  }
+  .dpj .header-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+  }
+  .dpj .header-cta .material-symbols-outlined {
+    font-size: 18px;
+  }
+  @media (max-width: 600px) {
+    .dpj .header-cta span.lbl {
+      display: none;
+    }
+    .dpj .header-cta {
+      padding: 10px 14px;
+    }
+  }
+
+  /* ===== CTA buttons ===== */
+  .dpj .cta-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 18px 38px;
+    font-family: var(--font-head);
+    font-size: 1.08rem;
+    font-weight: 700;
+    color: #1a1207;
+    background: var(--cta-color);
+    border: none;
+    border-radius: 14px;
+    text-decoration: none;
+    text-align: center;
+    box-shadow: 0 6px 26px rgba(245, 158, 11, 0.38);
+    transition:
+      transform 0.25s ease,
+      box-shadow 0.25s ease;
+  }
+  .dpj .cta-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 34px rgba(245, 158, 11, 0.5);
+  }
+  .dpj .cta-btn .material-symbols-outlined {
+    font-size: 22px;
+  }
+  .dpj .cta-btn.cyan {
+    background: var(--accent);
+    color: #04222f;
+    box-shadow: 0 6px 26px rgba(14, 165, 233, 0.4);
+  }
+  .dpj .cta-btn.cyan:hover {
+    box-shadow: 0 12px 34px rgba(14, 165, 233, 0.52);
+  }
+
+  .dpj .access-note {
+    text-align: center;
+    font-size: 0.86rem;
+    color: var(--text-tertiary);
+    margin-top: 14px;
+  }
+  .dpj .bg-light .access-note {
+    color: #6b7c8e;
+  }
+
+  .dpj .trust-row {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+  }
+  .dpj .trust-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+  }
+  .dpj .trust-pill .material-symbols-outlined {
+    font-size: 17px;
+    color: var(--accent);
+  }
+
+  /* ===== HERO ===== */
+  .dpj .hero {
+    padding-top: 130px;
+    padding-bottom: 80px;
+    text-align: center;
+  }
+  .dpj .hero-h1 {
+    font-size: clamp(2rem, 6vw, 3.4rem);
+    font-weight: 700;
+    max-width: 16ch;
+    margin: 0 auto 22px;
+  }
+  .dpj .hero-h1 .word-cyan {
+    color: var(--accent);
+  }
+  .dpj .hero-h1 .word-orange {
+    color: var(--accent-2);
+  }
+  .dpj .hero-sub {
+    font-size: 1.16rem;
+    color: var(--text-secondary);
+    max-width: 620px;
+    margin: 0 auto 28px;
+  }
+  .dpj .pitadas {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    max-width: 720px;
+    margin: 0 auto 34px;
+  }
+  .dpj .pitada {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 15px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: 0.86rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+  .dpj .pitada .material-symbols-outlined {
+    font-size: 16px;
+    color: var(--accent-2);
+  }
+  .dpj .mascote {
+    font-size: 3.2rem;
+    margin: 0 auto 8px;
+    animation: dpj-floaty 3.5s ease-in-out infinite;
+    width: max-content;
+  }
+  .dpj .hero-art {
+    display: block;
+    width: 100%;
+    max-width: 560px;
+    height: auto;
+    margin: 0 auto 32px;
+    border-radius: 22px;
+    box-shadow: 0 22px 60px rgba(0, 0, 0, 0.45);
+  }
+
+  /* ===== Comparação primária ===== */
+  .dpj .comp2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+    max-width: 920px;
+    margin: 0 auto;
+  }
+  .dpj .comp-side {
+    border-radius: 18px;
+    padding: 30px 26px;
+  }
+  .dpj .comp-bad {
+    background: #eef2f6;
+    border: 1.5px solid #d7dee6;
+  }
+  .dpj .comp-good {
+    background: #e8f7ff;
+    border: 1.5px solid #b6e3fb;
+  }
+  .dpj .comp-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 1.18rem;
+    margin-bottom: 12px;
+    color: var(--ink-light);
+  }
+  .dpj .comp-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .dpj .comp-icon.x {
+    background: var(--fail-red-dim);
+    color: var(--fail-red);
+  }
+  .dpj .comp-icon.v {
+    background: var(--ok-green-dim);
+    color: var(--ok-green);
+  }
+  .dpj .comp-icon .material-symbols-outlined {
+    font-size: 22px;
+  }
+  .dpj .comp-scene {
+    font-size: 0.98rem;
+    color: #4c5d70;
+    line-height: 1.6;
+    margin-bottom: 18px;
+  }
+  .dpj .comp-metric {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .dpj .comp-metric span {
+    font-size: 0.9rem;
+    color: #36475a;
+    padding: 9px 12px;
+    background: rgba(255, 255, 255, 0.65);
+    border-radius: 9px;
+  }
+  .dpj .comp-bad .comp-metric span {
+    color: #7a5050;
+  }
+  .dpj .comp-good .comp-metric span {
+    color: #0b5e7e;
+    background: rgba(255, 255, 255, 0.8);
+  }
+  .dpj .hyp-note {
+    text-align: center;
+    font-size: 0.82rem;
+    color: #6b7c8e;
+    margin-top: 22px;
+  }
+  .dpj .paraquem-art {
+    display: block;
+    width: 100%;
+    max-width: 720px;
+    height: auto;
+    margin: 44px auto 0;
+    border-radius: 18px;
+    box-shadow: 0 16px 44px rgba(0, 0, 0, 0.4);
+  }
+
+  /* ===== Tabela comparação ===== */
+  .dpj .ctable {
+    max-width: 880px;
+    margin: 0 auto;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .dpj .ctable-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .dpj .ctable-row.head .ctable-cell {
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 1.02rem;
+  }
+  .dpj .ctable-cell {
+    padding: 16px 18px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+  }
+  .dpj .ctable-cell.left {
+    background: var(--surface-1);
+    color: var(--text-secondary);
+    border-right: 1px solid var(--border);
+  }
+  .dpj .ctable-cell.right {
+    background: rgba(14, 165, 233, 0.07);
+    color: var(--text-primary);
+  }
+  .dpj .ctable-row:nth-child(even) .ctable-cell.left {
+    background: var(--surface-2);
+  }
+  .dpj .ctable-row:nth-child(even) .ctable-cell.right {
+    background: rgba(14, 165, 233, 0.11);
+  }
+  .dpj .ctable-cell .material-symbols-outlined {
+    font-size: 19px;
+    margin-top: 1px;
+    flex-shrink: 0;
+  }
+  .dpj .ctable-cell.left .material-symbols-outlined {
+    color: var(--fail-red);
+  }
+  .dpj .ctable-cell.right .material-symbols-outlined {
+    color: var(--ok-green);
+  }
+  .dpj .ctable-row.head .ctable-cell.left {
+    background: #1a2433;
+    color: var(--text-secondary);
+  }
+  .dpj .ctable-row.head .ctable-cell.right {
+    background: var(--accent);
+    color: #04222f;
+  }
+
+  /* ===== Diálogo mental (balões) ===== */
+  .dpj .thoughts {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+    max-width: 880px;
+    margin: 0 auto;
+  }
+  .dpj .thought {
+    background: var(--glass-bg);
+    backdrop-filter: blur(14px);
+    border: 1px solid var(--border);
+    border-radius: 18px 18px 18px 6px;
+    padding: 22px 24px;
+    position: relative;
+    font-size: 1rem;
+    color: var(--text-secondary);
+    font-style: italic;
+    line-height: 1.55;
+  }
+  .dpj .thought strong {
+    color: var(--accent-2);
+    font-style: normal;
+  }
+  .dpj .thought::before {
+    content: '“';
+    position: absolute;
+    top: 6px;
+    left: 14px;
+    font-size: 2.4rem;
+    color: var(--accent);
+    opacity: 0.25;
+    font-family: Georgia, serif;
+  }
+
+  /* ===== Culpa não é sua ===== */
+  .dpj .culpa-block {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .dpj .culpa-sub {
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 1.15rem;
+    color: var(--accent);
+    margin: 0 0 16px;
+  }
+  .dpj .bg-light .culpa-sub {
+    color: #0277bd;
+  }
+  .dpj .culpa-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 40px;
+    padding: 0;
+  }
+  .dpj .culpa-list li {
+    display: flex;
+    gap: 12px;
+    font-size: 1.02rem;
+    color: #3c4d60;
+    line-height: 1.55;
+  }
+  .dpj .culpa-list .material-symbols-outlined {
+    color: var(--accent-2);
+    font-size: 22px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .dpj .culpa-alivio {
+    background: var(--light-surface);
+    border-left: 4px solid var(--accent);
+    border-radius: 12px;
+    padding: 24px 26px;
+    margin-bottom: 40px;
+    font-size: 1.05rem;
+    color: #36475a;
+    line-height: 1.6;
+  }
+  .dpj .culpa-shift {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .dpj .shift-card {
+    background: var(--light-surface);
+    border: 1px solid var(--light-border);
+    border-radius: 14px;
+    padding: 22px 24px;
+  }
+  .dpj .shift-card .shift-flow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-head);
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+  .dpj .shift-old {
+    color: var(--fail-red);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .dpj .shift-new {
+    color: var(--ok-green);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .dpj .shift-flow .material-symbols-outlined {
+    font-size: 18px;
+    color: var(--text-tertiary);
+  }
+  .dpj .shift-card p {
+    font-size: 1rem;
+    color: #44566a;
+    line-height: 1.6;
+  }
+
+  /* ===== Faça as contas ===== */
+  .dpj .contas-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+    max-width: 920px;
+    margin: 0 auto;
+  }
+  .dpj .conta-card {
+    border-radius: 18px;
+    padding: 30px 28px;
+  }
+  .dpj .conta-a {
+    background: rgba(239, 106, 106, 0.08);
+    border: 1px solid rgba(239, 106, 106, 0.25);
+  }
+  .dpj .conta-b {
+    background: rgba(34, 192, 138, 0.08);
+    border: 1px solid rgba(34, 192, 138, 0.28);
+  }
+  .dpj .conta-card h3 {
+    font-size: 1.12rem;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .dpj .conta-a h3 {
+    color: #ff8f8f;
+  }
+  .dpj .conta-b h3 {
+    color: #4fd6a6;
+  }
+  .dpj .conta-line {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--border);
+    font-size: 0.96rem;
+    color: var(--text-secondary);
+  }
+  .dpj .conta-line.total {
+    border-bottom: none;
+    margin-top: 10px;
+    padding-top: 16px;
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 1.18rem;
+    color: var(--text-primary);
+  }
+  .dpj .conta-line.total .val {
+    color: var(--accent-2);
+  }
+  .dpj .conta-b .conta-line.total .val {
+    color: var(--ok-green);
+  }
+  .dpj .conta-impacto {
+    text-align: center;
+    max-width: 760px;
+    margin: 32px auto 0;
+    font-family: var(--font-head);
+    font-weight: 600;
+    font-size: clamp(1.2rem, 3vw, 1.6rem);
+    color: var(--text-primary);
+    line-height: 1.35;
+  }
+  .dpj .conta-impacto .num {
+    color: var(--accent-2);
+  }
+
+  /* ===== Centro da atenção ===== */
+  .dpj .centro-wrap {
+    max-width: 940px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+    align-items: center;
+  }
+  .dpj .centro-core {
+    background: linear-gradient(150deg, var(--accent), #0b7bb0);
+    border-radius: 22px;
+    padding: 46px 30px;
+    text-align: center;
+    box-shadow: 0 18px 50px rgba(14, 165, 233, 0.3);
+    position: relative;
+  }
+  .dpj .centro-core h3 {
+    color: #04222f;
+    font-size: 1.4rem;
+    margin-bottom: 8px;
+  }
+  .dpj .centro-core p {
+    color: rgba(4, 34, 47, 0.78);
+    font-size: 0.95rem;
+  }
+  .dpj .centro-art {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 18px;
+    box-shadow: 0 16px 44px rgba(0, 0, 0, 0.4);
+  }
+  .dpj .centro-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 0;
+  }
+  .dpj .centro-list li {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 13px 14px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .dpj .centro-list .material-symbols-outlined {
+    color: var(--accent-2);
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  /* ===== Dinâmica de acesso ===== */
+  .dpj .steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    max-width: 940px;
+    margin: 0 auto;
+  }
+  .dpj .step-card {
+    background: var(--light-surface);
+    border: 1px solid var(--light-border);
+    border-radius: 16px;
+    padding: 28px 24px;
+    text-align: center;
+    position: relative;
+  }
+  .dpj .step-badge {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    margin: 0 auto 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: #fff;
+    background: linear-gradient(135deg, var(--accent), #0b7bb0);
+  }
+  .dpj .step-card:nth-child(2) .step-badge {
+    background: linear-gradient(135deg, var(--accent-2), #e07b00);
+    color: #1a1207;
+  }
+  .dpj .step-card:nth-child(3) .step-badge {
+    background: linear-gradient(135deg, var(--ok-green), #15976a);
+  }
+  .dpj .step-card h3 {
+    color: var(--ink-light);
+    font-size: 1.08rem;
+    margin-bottom: 8px;
+  }
+  .dpj .step-card p {
+    color: #5a6b7d;
+    font-size: 0.94rem;
+    line-height: 1.5;
+  }
+  .dpj .metodo-label {
+    text-align: center;
+    font-family: var(--font-head);
+    font-weight: 700;
+    color: var(--ink-light);
+    font-size: 1.15rem;
+    margin: 48px auto 16px;
+  }
+  .dpj .metodo-art {
+    display: block;
+    width: 100%;
+    max-width: 720px;
+    height: auto;
+    margin: 0 auto;
+    border-radius: 18px;
+    box-shadow: 0 16px 44px rgba(0, 0, 0, 0.25);
+  }
+
+  /* ===== Demonstração ===== */
+  .dpj .demo-frame {
+    max-width: 760px;
+    margin: 0 auto;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--surface-1);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  }
+  .dpj .demo-chrome {
+    height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-2);
+  }
+  .dpj .demo-chrome .dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+  }
+  .dpj .dot-r {
+    background: #ef6a6a;
+  }
+  .dpj .dot-y {
+    background: #f5c542;
+  }
+  .dpj .dot-g {
+    background: #4fd6a6;
+  }
+  .dpj .demo-chrome .url {
+    margin-left: 10px;
+    font-size: 0.78rem;
+    color: var(--text-tertiary);
+  }
+  .dpj .demo-screen {
+    aspect-ratio: 16/9;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    text-align: center;
+    padding: 24px;
+    background:
+      radial-gradient(at 50% 40%, rgba(14, 165, 233, 0.18) 0px, transparent 60%),
+      repeating-linear-gradient(45deg, #0a1726, #0a1726 22px, #0c1b2e 22px, #0c1b2e 44px);
+  }
+  .dpj .demo-screen .play {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: var(--accent-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 30px rgba(245, 158, 11, 0.4);
+  }
+  .dpj .demo-screen .play .material-symbols-outlined {
+    font-size: 38px;
+    color: #1a1207;
+  }
+  .dpj .demo-screen .mini-char {
+    font-size: 2.6rem;
+    animation: dpj-floaty 2.8s ease-in-out infinite;
+  }
+  .dpj .demo-screen .instr {
+    font-size: 0.86rem;
+    color: var(--text-tertiary);
+    max-width: 420px;
+  }
+  .dpj .demo-caption {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.96rem;
+    margin-top: 22px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+  }
+
+  /* ===== Especialista ===== */
+  .dpj .esp-wrap {
+    display: grid;
+    grid-template-columns: 0.8fr 1.2fr;
+    gap: 38px;
+    align-items: center;
+    max-width: 980px;
+    margin: 0 auto;
+  }
+  .dpj .esp-photo-img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4/5;
+    object-fit: cover;
+    border-radius: 20px;
+    border: 2px solid var(--accent);
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.4);
+  }
+  .dpj .esp-text h3 {
+    font-size: 1.5rem;
+    margin-bottom: 6px;
+  }
+  .dpj .esp-text .esp-tag {
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 18px;
+    font-family: var(--font-body);
+  }
+  .dpj .esp-text p {
+    color: var(--text-secondary);
+    font-size: 1.02rem;
+    line-height: 1.65;
+    margin-bottom: 14px;
+  }
+  .dpj .esp-text p strong {
+    color: var(--text-primary);
+  }
+
+  /* ===== Depoimentos ===== */
+  .dpj .depo-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    max-width: 920px;
+    margin: 0 auto;
+  }
+  .dpj .depo-card {
+    background: var(--surface-1);
+    border: 1px dashed var(--border-hover);
+    border-radius: 16px;
+    padding: 26px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .dpj .depo-card .stars {
+    display: flex;
+    gap: 2px;
+    color: var(--accent-2);
+  }
+  .dpj .depo-card .stars .material-symbols-outlined {
+    font-size: 18px;
+  }
+  .dpj .depo-ph {
+    font-size: 0.98rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    font-style: italic;
+  }
+  .dpj .depo-collect {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 0.84rem;
+    color: var(--text-tertiary);
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+    margin-top: auto;
+  }
+  .dpj .depo-collect .material-symbols-outlined {
+    font-size: 17px;
+    color: var(--accent);
+  }
+  .dpj .depo-data {
+    background: rgba(14, 165, 233, 0.06);
+    border: 1px solid rgba(14, 165, 233, 0.22);
+    border-radius: 16px;
+    padding: 26px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .dpj .depo-data .big {
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 2rem;
+    color: var(--accent);
+  }
+  .dpj .depo-data p {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.55;
+  }
+  .dpj .depo-data .src {
+    font-size: 0.78rem;
+    color: var(--text-tertiary);
+  }
+
+  /* ===== Entregáveis ===== */
+  .dpj .entrega-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    max-width: 920px;
+    margin: 0 auto 8px;
+  }
+  .dpj .entrega-card {
+    background: var(--light-surface);
+    border: 1px solid var(--light-border);
+    border-radius: 16px;
+    padding: 24px 24px;
+    display: flex;
+    gap: 16px;
+  }
+  .dpj .entrega-ico {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(14, 165, 233, 0.12);
+  }
+  .dpj .entrega-ico .material-symbols-outlined {
+    color: #0277bd;
+    font-size: 26px;
+  }
+  .dpj .entrega-card:nth-child(even) .entrega-ico {
+    background: rgba(245, 158, 11, 0.14);
+  }
+  .dpj .entrega-card:nth-child(even) .entrega-ico .material-symbols-outlined {
+    color: #e07b00;
+  }
+  .dpj .entrega-body h4 {
+    color: var(--ink-light);
+    font-size: 1.05rem;
+    margin-bottom: 6px;
+  }
+  .dpj .entrega-body p {
+    color: #5a6b7d;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    margin-bottom: 0;
+  }
+
+  /* ===== Oferta final ===== */
+  .dpj .oferta-box {
+    max-width: 600px;
+    margin: 0 auto;
+    background: var(--surface-1);
+    border: 1px solid var(--border-hover);
+    border-radius: 22px;
+    padding: 38px 34px;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.5);
+  }
+  .dpj .oferta-art {
+    display: block;
+    width: 100%;
+    max-width: 420px;
+    height: auto;
+    margin: 0 auto 26px;
+    border-radius: 16px;
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+  }
+  .dpj .oferta-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 22px;
+    padding: 0;
+  }
+  .dpj .oferta-list li {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.97rem;
+  }
+  .dpj .oferta-list li .name {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: var(--text-secondary);
+  }
+  .dpj .oferta-list li .name .material-symbols-outlined {
+    color: var(--ok-green);
+    font-size: 19px;
+  }
+  .dpj .oferta-total {
+    text-align: center;
+    margin: 8px 0 4px;
+  }
+  .dpj .oferta-total .de {
+    color: var(--text-tertiary);
+    font-size: 1rem;
+  }
+  .dpj .oferta-total .de s {
+    color: var(--fail-red);
+  }
+  .dpj .oferta-price {
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: clamp(3rem, 9vw, 4.2rem);
+    color: var(--accent-2);
+    line-height: 1;
+    margin: 6px 0;
+  }
+  .dpj .oferta-price small {
+    display: block;
+    font-size: 1rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    margin-top: 8px;
+    font-family: var(--font-body);
+  }
+  .dpj .oferta-retorno {
+    text-align: center;
+    font-size: 1rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 22px 0;
+  }
+  .dpj .oferta-retorno strong {
+    color: var(--accent);
+  }
+  .dpj .oferta-box .cta-btn {
+    width: 100%;
+    margin-top: 6px;
+  }
+
+  /* ===== Garantia + Suporte ===== */
+  .dpj .gar-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+    max-width: 920px;
+    margin: 0 auto;
+  }
+  .dpj .gar-card {
+    background: var(--light-surface);
+    border: 1px solid var(--light-border);
+    border-radius: 18px;
+    padding: 32px 30px;
+    display: flex;
+    gap: 24px;
+    align-items: center;
+  }
+  .dpj .gar-selo {
+    flex-shrink: 0;
+    width: 104px;
+    height: 104px;
+    border-radius: 50%;
+    border: 3px solid var(--accent);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .dpj .gar-selo .d {
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 2.2rem;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .dpj .gar-selo .l {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #6b7c8e;
+  }
+  .dpj .gar-card.suporte .gar-selo {
+    border-color: var(--accent-2);
+  }
+  .dpj .gar-card.suporte .gar-selo .material-symbols-outlined {
+    font-size: 44px;
+    color: var(--accent-2);
+  }
+  .dpj .gar-txt h3 {
+    color: var(--ink-light);
+    font-size: 1.22rem;
+    margin-bottom: 8px;
+  }
+  .dpj .gar-txt p {
+    color: #5a6b7d;
+    font-size: 0.96rem;
+    line-height: 1.6;
+  }
+
+  /* ===== FAQ ===== */
+  .dpj .faq-wrap {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+  .dpj .faq-cat {
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--accent);
+    margin: 28px 0 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .dpj .faq-cat .material-symbols-outlined {
+    font-size: 20px;
+    color: var(--accent-2);
+  }
+  .dpj .faq-item {
+    border-bottom: 1px solid var(--border);
+  }
+  .dpj .faq-q {
+    width: 100%;
+    background: none;
+    border: none;
+    text-align: left;
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 18px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+  .dpj .faq-q .material-symbols-outlined {
+    transition: transform 0.3s ease;
+    color: var(--text-tertiary);
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .dpj .faq-q.active .material-symbols-outlined {
+    transform: rotate(180deg);
+    color: var(--accent);
+  }
+  .dpj .faq-a {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+  }
+  .dpj .faq-a.open {
+    max-height: 360px;
+  }
+  .dpj .faq-a p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.65;
+    padding-bottom: 18px;
+  }
+
+  /* ===== CTA final ===== */
+  .dpj .cta-final-section {
+    text-align: center;
+  }
+  .dpj .cta-final-section .mascote {
+    font-size: 3.6rem;
+  }
+  .dpj .cta-final-h {
+    font-size: clamp(1.7rem, 4.5vw, 2.6rem);
+    font-weight: 700;
+    max-width: 18ch;
+    margin: 0 auto 16px;
+  }
+  .dpj .cta-final-sub {
+    color: var(--text-secondary);
+    max-width: 560px;
+    margin: 0 auto 30px;
+    font-size: 1.06rem;
+  }
+  .dpj .bg-orange .cta-final-sub {
+    color: #4a2e08;
+  }
+
+  /* ===== Footer ===== */
+  .dpj .dpj-footer {
+    background: #050b13;
+    border-top: 1px solid var(--border);
+    padding: 40px 0;
+    text-align: center;
+  }
+  .dpj .dpj-footer .brand {
+    font-size: 1.05rem;
+    margin-bottom: 10px;
+    display: block;
+  }
+  .dpj .dpj-footer p {
+    color: var(--text-tertiary);
+    font-size: 0.84rem;
+    line-height: 1.7;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  .dpj .dpj-footer .legal {
+    margin-top: 16px;
+    font-size: 0.76rem;
+    color: #54667a;
+  }
+  .dpj .dpj-footer .links a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .dpj .dpj-footer .links a:hover {
+    text-decoration: underline;
+  }
+
+  /* ===== Floating CTA mobile ===== */
+  .dpj .floating-cta {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 95;
+    padding: 12px 16px;
+    background: rgba(7, 17, 28, 0.96);
+    backdrop-filter: blur(16px);
+    border-top: 1px solid var(--border);
+    transform: translateY(110%);
+    transition: transform 0.3s ease;
+    display: none;
+  }
+  .dpj .floating-cta button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 15px;
+    background: var(--cta-color);
+    color: #1a1207;
+    font-family: var(--font-head);
+    font-weight: 700;
+    border: none;
+    border-radius: 12px;
+    text-decoration: none;
+    font-size: 1rem;
+  }
+  .dpj .floating-cta button .material-symbols-outlined {
+    font-size: 20px;
+  }
+  .dpj .floating-cta.visible {
+    transform: translateY(0);
+  }
+  @media (min-width: 769px) {
+    .dpj .floating-cta {
+      display: none !important;
+    }
+  }
+
+  /* ===== Responsivo ===== */
+  @media (max-width: 860px) {
+    .dpj .esp-wrap {
+      grid-template-columns: 1fr;
+    }
+    .dpj .esp-photo-img {
+      max-width: 300px;
+      margin: 0 auto;
+    }
+  }
+  @media (max-width: 768px) {
+    .dpj section {
+      padding: 60px 0;
+    }
+    .dpj .comp2,
+    .dpj .contas-grid,
+    .dpj .centro-wrap,
+    .dpj .steps,
+    .dpj .thoughts,
+    .dpj .depo-grid,
+    .dpj .entrega-grid,
+    .dpj .gar-grid {
+      grid-template-columns: 1fr;
+    }
+    .dpj .centro-list {
+      grid-template-columns: 1fr 1fr;
+    }
+    .dpj .ctable-row {
+      grid-template-columns: 1fr;
+    }
+    .dpj .ctable-cell.left {
+      border-right: none;
+      border-bottom: 1px solid var(--border);
+    }
+    .dpj .floating-cta {
+      display: block;
+    }
+    .dpj {
+      padding-bottom: 76px;
+    }
+  }
+  @media (max-width: 480px) {
+    .dpj .container {
+      padding: 0 18px;
+    }
+    .dpj .centro-list {
+      grid-template-columns: 1fr;
+    }
+    .dpj .gar-card {
+      flex-direction: column;
+      text-align: center;
+    }
+    .dpj .cta-btn {
+      width: 100%;
+    }
+  }
+</style>

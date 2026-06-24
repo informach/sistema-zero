@@ -149,7 +149,10 @@ export function AvatarRig({
         spring.scale.setScalar(s)
         spring.position.y = THREE.MathUtils.lerp(spring.position.y, loading ? 0.35 : 0, k)
         if (loading) {
-          spring.rotation.y += dt * 11 // gira rápido enquanto troca de peça (cabine)
+          // Giro SUAVE da cabine (~230°/s). Era dt*11 (~630°/s) — rápido demais p/ o padrão
+          // (quase nenhuma criança tem prefers-reduced-motion no SO), gatilho vestibular a cada
+          // troca de peça. O caminho `reduced` acima assenta sem girar.
+          spring.rotation.y += dt * 4
         } else {
           // ao terminar, assenta voltado pra frente (múltiplo de 2π mais próximo).
           const twoPi = Math.PI * 2

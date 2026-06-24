@@ -1,0 +1,35 @@
+---
+import { FUNNELS } from '../../funnels/registry'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+
+export const prerender = false
+
+// Landing de área (/pro, /kids). Audiência inválida → 404 (não vira catch-all).
+const audience = Astro.params.audience
+if (audience !== 'pro' && audience !== 'kids') return new Response(null, { status: 404 })
+
+// Funis dessa área. Com 1+ produto, manda pro primeiro (entrada = quiz, se tiver,
+// senão a oferta) — até existir uma vitrine própria da área.
+const funis = Object.values(FUNNELS).filter((x) => x.audience === audience)
+const first = funis[0]
+if (first) {
+  const entry = first.steps.quiz ? `${first.basePath}/quiz` : `${first.basePath}/oferta`
+  return Astro.redirect(entry, 302)
+}
+
+// Área ainda sem produto → placeholder "em breve" (defensivo: hoje pro e kids têm funil).
+const titulo = audience === 'kids' ? 'Sistema Zero Kids' : 'Sistema Zero Pro'
+Astro.response.headers.set('cache-control', 'public, max-age=300')
+---
+
+<BaseLayout title={`${titulo} · em breve`} noindex={true}>
+  <main
+    class="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-4 text-center"
+  >
+    <p class="text-xs font-bold uppercase tracking-[0.2em] text-cyan">{titulo}</p>
+    <h1 class="mt-4 text-3xl font-extrabold text-ink sm:text-4xl">Em breve</h1>
+    <p class="mt-4 leading-relaxed text-muted">
+      Estamos preparando novidades por aqui. Volte logo!
+    </p>
+  </main>
+</BaseLayout>

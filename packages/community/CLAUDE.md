@@ -312,6 +312,10 @@ valida e só então importa o `server.js` standalone).
   em `/cursos` (sem ela e sem metadata, o card bloqueado fica não-clicável) e na modal
   Compartilhar da classificação do curso (sem URL, o botão Compartilhar é ocultado).
   Dev = `http://localhost:4321` (funil local); prod = domínio real do funil.
+- `APP_PUBLIC_URL` opcional — origem pública absoluta deste app (ex.:
+  `https://comunidade.sistemazero.com.br`), usada no QR do **certificado** (aponta p/
+  `/validar/:id`). Ausente → o QR codifica só o caminho (degradado; **setar em prod** p/ o QR
+  resolver ao ser escaneado). Implementação no member-shell (`server/certificate-pdf.ts`).
 - `R2_ACCOUNT_ID`/`R2_ACCESS_KEY_ID`/`R2_SECRET_ACCESS_KEY`/`R2_BUCKET`/`R2_PUBLIC_URL`
   opcionais — upload de avatar (ausentes → 503 amigável; mesmo bucket do admin: dev = `testes`
   com `R2_PUBLIC_URL` r2.dev · prod = `comunidade-sistema-zero` com `cdn.sistemazero.com.br`).
@@ -413,6 +417,13 @@ valida e só então importa o `server.js` standalone).
   `PUT /api/members/courses/:slug/rating` com o estado ACUMULADO (fechar no meio não perde
   nada; gateway → `PUT /members/courses/:slug/rating`). "Salvar e sair"/fechar →
   `router.refresh()`. A page passa `viewer` (nome da session + avatar de `getMeReadonly`).
+- **Certificado de conclusão** (bloco `kind:'certificate'` na última aula — renderer do
+  member-shell `CertificateBlockView`): estado via `GET /api/members/lessons/:id/blocks/:id/certificate`
+  (elegível só com TODAS as outras aulas concluídas), **POST** na mesma rota emite (idempotente) e
+  baixa o **PDF** (stream, mesma origem). A página PÚBLICA **`/validar/:id`** (sem login, FORA dos
+  protectedPrefixes, `noindex`) + o shim **`/api/certificates/:id/validate`** (FORA do matcher do
+  proxy) mostram a validação por QR. O members é o portão (ver §members CLAUDE.md); o PDF/QR/R2 e a
+  página vivem no member-shell. Env `APP_PUBLIC_URL` (QR).
 - **E-book / livro 3D** (`components/community/ebook/*`): bloco `ebook` renderiza o PDF como
   livro 3D interativo — folhas com dobra real (SkinnedMesh + cadeia de bones por folha, damp por
   frame; frente da folha i = página 2i+1, verso = 2i+2), virar por clique na página ou botões

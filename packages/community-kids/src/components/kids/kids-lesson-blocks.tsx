@@ -1,10 +1,12 @@
 'use client'
 
+import { CertificateBlockView } from '@sistemazero/member-shell/components/certificate-block'
 import { EbookBlockView } from '@sistemazero/member-shell/components/ebook/ebook-block'
 import { useLessonPlayer } from '@sistemazero/member-shell/components/lesson-player-context'
 import { StudioBlockView } from '@sistemazero/member-shell/components/studio/studio-block'
 import { VimeoPlayer } from '@sistemazero/member-shell/components/vimeo-player'
 import {
+  Award,
   BookOpenText,
   Clapperboard,
   Code2,
@@ -16,6 +18,7 @@ import { cn } from '@/lib/cn'
 import { renderMarkdown } from '@/lib/markdown'
 import type {
   AudioBlock,
+  CertificateBlock,
   EbookBlock,
   EmbedBlock,
   ImageBlock,
@@ -102,6 +105,16 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
         <div className="flex flex-col gap-3">
           <BlockChip icon={BookOpenText} label="Leia o livro" themeClass="kids-unit-cyan" />
           <EbookBlockView blockId={block.id} content={content as unknown as EbookBlock} />
+        </div>
+      )
+    case 'certificate':
+      return (
+        <div className="kids-unit-lime flex flex-col gap-3">
+          <BlockChip icon={Award} label="Conquiste" themeClass="kids-unit-lime" />
+          <CertificateBlockView
+            blockId={block.id}
+            content={content as unknown as CertificateBlock}
+          />
         </div>
       )
     case 'studio':
