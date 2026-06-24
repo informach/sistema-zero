@@ -1,0 +1,48 @@
+---
+import DesafioOfertaBody from '../../../components/funnel/oferta/DesafioOfertaBody.astro'
+import NoComandoOfertaBody from '../../../components/funnel/oferta/NoComandoOfertaBody.astro'
+import { getFunnel } from '../../../funnels/registry'
+import { formatBRLFromCents, formatBRLFromCents2 } from '../../../lib/money'
+import { getActiveOffer } from '../../../server/catalog'
+import { getDeps } from '../../../server/deps'
+
+// SSR (não prerender): nome/preço vêm do catálogo em runtime. Marketing sem dado
+// por-usuário → cacheável na borda; reflete mudança de preço da oferta em ~1min.
+// O `?perfil=` é segmento grosso (não-PII), então o cache por-URL é seguro.
+export const prerender = false
+
+// Funil resolvido pela URL (/[audience]/[produto]/oferta). Inexistente → 404.
+const f = getFunnel(Astro.params.audience, Astro.params.produto)
+if (!f) return new Response(null, { status: 404 })
+
+const { env, gateway } = getDeps()
+const offer = await getActiveOffer(gateway, f.catalogOfferSlug)
+const productName = offer?.productName || f.productName
+const priceCents = offer?.priceCents ?? env.PRODUCT_PRICE_CENTS
+const priceLabel = formatBRLFromCents2(priceCents) // "R$ 37,00" (boxes de preço)
+const priceLabelShort = formatBRLFromCents(priceCents) // "R$ 37" (botões e copy)
+const priceReais = (priceCents / 100).toFixed(2)
+const imagesBase = f.imagesBase
+const perfil = Astro.url.searchParams.get('perfil')
+const ofertaUrl = new URL(`${f.basePath}/oferta`, Astro.site ?? Astro.url).toString()
+
+Astro.response.headers.set('cache-control', 'public, max-age=60, stale-while-revalidate=300')
+
+// O corpo da oferta é POR FUNIL: o Desafio tem layout próprio (DesafioOfertaBody);
+// os demais usam o template padrão a partir de `content.sales` (NoComandoOfertaBody).
+// Cada body monta o seu próprio <BaseLayout> (título/tema/JSON-LD), por isso a rota
+// não envolve um layout aqui — só resolve os dados e despacha.
+const useDesafioBody = !f.content.sales
+const bodyProps = {
+  f,
+  productName,
+  priceLabel,
+  priceLabelShort,
+  priceReais,
+  imagesBase,
+  perfil,
+  ofertaUrl,
+}
+---
+
+{useDesafioBody ? <DesafioOfertaBody {...bodyProps} /> : <NoComandoOfertaBody {...bodyProps} />}

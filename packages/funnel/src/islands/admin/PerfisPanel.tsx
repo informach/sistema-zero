@@ -9,13 +9,14 @@ interface PerfilCount {
 
 const pct = (n: number, total: number) => (total > 0 ? `${((n / total) * 100).toFixed(1)}%` : '0%')
 
-export default function PerfisPanel() {
+export default function PerfisPanel({ funnel }: { funnel: string }) {
   const [counts, setCounts] = useState<PerfilCount[] | null>(null)
   const [total, setTotal] = useState(0)
   const [erro, setErro] = useState(false)
 
   useEffect(() => {
-    apiGet<{ total: number; counts: PerfilCount[] }>('/api/admin/perfis')
+    const qs = funnel ? `?funnel=${encodeURIComponent(funnel)}` : ''
+    apiGet<{ total: number; counts: PerfilCount[] }>(`/api/admin/perfis${qs}`)
       .then((d) => {
         setTotal(d.total)
         setCounts(d.counts)
@@ -27,7 +28,7 @@ export default function PerfisPanel() {
         }
         setErro(true)
       })
-  }, [])
+  }, [funnel])
 
   if (erro) return <p className="text-red-400">Falha ao carregar os perfis.</p>
   if (!counts) return <p className="text-muted">Carregando…</p>

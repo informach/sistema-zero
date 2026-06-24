@@ -1,7 +1,5 @@
-import type { LeadKey } from '../../content/quiz-config'
-
 export interface AnswerPair {
-  key: LeadKey
+  key: string
   value: string | number
 }
 

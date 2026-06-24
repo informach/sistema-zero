@@ -22,6 +22,7 @@ import { GetLeagueService } from './application/gamification/get-league.service'
 import { GetMissionsService } from './application/gamification/get-missions.service'
 import { SetVacationService } from './application/gamification/set-vacation.service'
 import { GetAttachmentDownloadService } from './application/get-attachment-download/get-attachment-download.service'
+import { GetCertificateService } from './application/get-certificate/get-certificate.service'
 import { GetCourseProgressService } from './application/get-course-progress/get-course-progress.service'
 import { GetCourseRatingService } from './application/get-course-rating/get-course-rating.service'
 import { GetEbookDownloadService } from './application/get-ebook-download/get-ebook-download.service'
@@ -32,6 +33,7 @@ import { GetShowcasePayloadService } from './application/get-showcase-payload/ge
 import { GetStudioCarryoverService } from './application/get-studio-carryover/get-studio-carryover.service'
 import { GrantEntitlementService } from './application/grant-entitlement/grant-entitlement.service'
 import { GrantManualEntitlementService } from './application/grant-manual-entitlement/grant-manual-entitlement.service'
+import { IssueCertificateService } from './application/issue-certificate/issue-certificate.service'
 import { ListCatalogService } from './application/list-catalog/list-catalog.service'
 import { ListMembersService } from './application/list-members/list-members.service'
 import { ListMyCoursesService } from './application/list-my-courses/list-my-courses.service'
@@ -48,11 +50,16 @@ import { SaveVideoPositionService } from './application/save-video-position/save
 import { StudioSubmissionsAdminService } from './application/studio-submissions-admin/studio-submissions-admin.service'
 import { SubmitQuizAttemptService } from './application/submit-quiz-attempt/submit-quiz-attempt.service'
 import { SubmitStudioProjectService } from './application/submit-studio-project/submit-studio-project.service'
+import {
+  RevokeCertificateService,
+  ValidateCertificateService,
+} from './application/validate-certificate/validate-certificate.service'
 import type { Env } from './infrastructure/config/env'
 import { createCatalogHttpGateway } from './infrastructure/gateways/catalog-http.gateway'
 import { createHubHttpGateway, noopHubGateway } from './infrastructure/gateways/hub-http.gateway'
 import { withSentryMirror } from './infrastructure/observability/sentry'
 import { DrizzleAvatarRepository } from './infrastructure/persistence/drizzle/avatar.repository'
+import { DrizzleCertificateRepository } from './infrastructure/persistence/drizzle/certificate.repository'
 import { DrizzleContentAdminRepository } from './infrastructure/persistence/drizzle/content-admin.repository'
 import { DrizzleCourseRepository } from './infrastructure/persistence/drizzle/course.repository'
 import { DrizzleCourseRatingRepository } from './infrastructure/persistence/drizzle/course-rating.repository'
@@ -112,6 +119,7 @@ export async function createApplication(env: Env): Promise<Application> {
   const studioSubmissions = new DrizzleStudioSubmissionRepository(db)
   const ratings = new DrizzleCourseRatingRepository(db)
   const gamificationRepo = new DrizzleGamificationRepository(db)
+  const certificates = new DrizzleCertificateRepository(db)
   const processed = new DrizzleProcessedWebhookRepository(db)
   const catalog = createCatalogHttpGateway({
     baseUrl: env.CATALOG_BASE_URL,
@@ -214,6 +222,17 @@ export async function createApplication(env: Env): Promise<Application> {
   const getStudioCarryover = new GetStudioCarryoverService(checkAccess, courses, studioSubmissions)
   const getShowcasePayload = new GetShowcasePayloadService(checkAccess, courses, studioSubmissions)
   const studioSubmissionsAdmin = new StudioSubmissionsAdminService(studioSubmissions)
+  const getCertificate = new GetCertificateService(checkAccess, courses, progress, certificates)
+  const issueCertificate = new IssueCertificateService(
+    checkAccess,
+    courses,
+    progress,
+    certificates,
+    awardGamification,
+    clock,
+  )
+  const validateCertificate = new ValidateCertificateService(certificates)
+  const revokeCertificate = new RevokeCertificateService(certificates, clock)
 
   // Motor de acesso (webhooks)
   const grant = new GrantEntitlementService({
@@ -277,6 +296,8 @@ export async function createApplication(env: Env): Promise<Application> {
       submitStudio,
       getStudioCarryover,
       getShowcasePayload,
+      getCertificate,
+      issueCertificate,
       getCourseRating,
       saveCourseRating,
       getGamification,
@@ -313,6 +334,7 @@ export async function createApplication(env: Env): Promise<Application> {
       getMemberDetail,
       grantManual,
       manageEntitlement,
+      revokeCertificate,
       hub,
     },
     content: {
@@ -329,6 +351,7 @@ export async function createApplication(env: Env): Promise<Application> {
       accessCheck,
       profileAllowance,
       showcasePayload: getShowcasePayload,
+      validateCertificate,
       internalToken: env.INTERNAL_API_TOKEN,
     },
   })

@@ -17,12 +17,31 @@ export default defineConfig({
   // (checkout de cartão ≈ 2KB); excedente falha no parse → 400 BAD_REQUEST.
   adapter: node({ mode: 'standalone', bodySizeLimit: 64 * 1024 }),
   site,
+  // Redireciona as URLs planas antigas (pré-multifunil) para o funil default em
+  // /pro/no-comando-da-ia/* (301). Cortesia — não havia tráfego nelas; mantém
+  // qualquer link/anúncio antigo funcionando. Novos funis vivem em /<audience>/<produto>/*.
+  redirects: {
+    '/quiz': '/pro/no-comando-da-ia/quiz',
+    '/oferta': '/pro/no-comando-da-ia/oferta',
+    '/resultado': '/pro/no-comando-da-ia/resultado',
+    '/checkout': '/pro/no-comando-da-ia/checkout',
+    '/obrigado': '/pro/no-comando-da-ia/obrigado',
+  },
   integrations: [
     react(),
     sitemap({
+      // As ofertas vivem em rotas dinâmicas SSR (`/[audience]/[produto]/oferta`),
+      // que o sitemap não enumera sozinho → listamos explicitamente. Ao adicionar
+      // um funil indexável, inclua a URL da sua oferta aqui.
+      customPages: [
+        `${site}/pro/no-comando-da-ia/oferta`,
+        `${site}/kids/desafio-primeiro-jogo/oferta`,
+      ],
       // Mantém no sitemap só as páginas indexáveis (exclui as noindex/privadas).
       filter: (page) =>
-        !/\/(admin|checkout|resultado|quiz|obrigado|api)(\/|$)/.test(new URL(page).pathname),
+        !/\/(admin|checkout|resultado|quiz|obrigado|upsell|downsell|api)(\/|$)/.test(
+          new URL(page).pathname,
+        ),
     }),
   ],
   vite: {

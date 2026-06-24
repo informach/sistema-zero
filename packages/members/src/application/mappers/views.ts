@@ -1,4 +1,5 @@
 import type { AvatarCategory, AvatarSlot } from '../../domain/avatar/avatar3d-catalog'
+import type { CertificateRecord } from '../../domain/certificate/certificate'
 import type { Course, LessonWithContent, ModuleWithLessons } from '../../domain/course/course'
 import { toMemberFacingQuizContent } from '../../domain/course/quiz'
 import type { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
@@ -69,6 +70,69 @@ export function toGamificationDeltaView(result: AwardResult): GamificationDeltaV
     coinsAwarded: result.coinsAwarded,
     coinBalance: result.coinBalance,
     coinsCapped: result.coinsCapped,
+  }
+}
+
+/** Certificado emitido (Date→ISO) — devolvido ao BFF na emissão/consulta. */
+export interface CertificateView {
+  id: string
+  serial: string
+  studentName: string
+  courseTitle: string
+  courseRef: string
+  completedAt: string
+  issuedAt: string
+  revokedAt: string | null
+}
+
+export function toCertificateView(record: CertificateRecord): CertificateView {
+  return {
+    id: record.id,
+    serial: record.serial,
+    studentName: record.studentName,
+    courseTitle: record.courseTitle,
+    courseRef: record.courseRef,
+    completedAt: record.completedAt.toISOString(),
+    issuedAt: record.issuedAt.toISOString(),
+    revokedAt: record.revokedAt ? record.revokedAt.toISOString() : null,
+  }
+}
+
+/** Estado do bloco certificado p/ a UI do aluno (emitir vs baixar). */
+export interface CertificateStateView {
+  /** Todas as OUTRAS aulas publicadas do curso concluídas? */
+  eligible: boolean
+  /** Já há certificado emitido para este aluno+curso? */
+  issued: boolean
+  /** Emitido, mas revogado pelo admin. */
+  revoked: boolean
+  serial: string | null
+  issuedAt: string | null
+  revokedAt: string | null
+}
+
+/** Resultado da validação PÚBLICA (só dados não-sensíveis — propósito do validador). */
+export interface CertificateValidationView {
+  valid: boolean
+  studentName: string | null
+  courseTitle: string | null
+  issuedAt: string | null
+  serial: string | null
+}
+
+export function toCertificateValidationView(
+  record: CertificateRecord | null,
+): CertificateValidationView {
+  if (!record) {
+    return { valid: false, studentName: null, courseTitle: null, issuedAt: null, serial: null }
+  }
+  return {
+    // Revogado → inválido, mas ainda mostra de quem/qual curso era (a página dirá "revogado").
+    valid: record.revokedAt === null,
+    studentName: record.studentName,
+    courseTitle: record.courseTitle,
+    issuedAt: record.issuedAt.toISOString(),
+    serial: record.serial,
   }
 }
 

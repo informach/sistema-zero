@@ -1,54 +1,57 @@
 ---
-import { FECHO_COMPARTILHADO, RESULT_PROFILES } from '../content/result-profiles'
-import BaseLayout from '../layouts/BaseLayout.astro'
-import { getLeadId } from '../lib/lead-session'
-import { isPerfil } from '../lib/perfil'
-import { projetoLabel, renderTemplate } from '../lib/result-template'
-import { computePerfil } from '../lib/scoring'
-import { getDeps } from '../server/deps'
+import { leadBelongsToFunnel } from '../../../funnels/lead-scope'
+import { getFunnel, isQuizComplete } from '../../../funnels/registry'
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import { getLeadId } from '../../../lib/lead-session'
+import { getDeps } from '../../../server/deps'
 
 export const prerender = false
 
 Astro.response.headers.set('cache-control', 'no-store')
 
+// Funil resolvido pela URL; sem o passo de resultado / sem quiz com perfil → 404.
+const f = getFunnel(Astro.params.audience, Astro.params.produto)
+if (!f) return new Response(null, { status: 404 })
+const result = f.content.result
+const quiz = f.content.quiz
+if (!f.steps.resultado || !result || !quiz?.computePerfil) {
+  return new Response(null, { status: 404 })
+}
+
+const quizPath = `${f.basePath}/quiz`
 const leadId = getLeadId(Astro.request)
-if (!leadId) return Astro.redirect('/')
+if (!leadId) return Astro.redirect(quizPath)
 
 const { repo } = getDeps()
 const lead = await repo.getLead(leadId)
-if (!lead) return Astro.redirect('/')
+if (!lead) return Astro.redirect(quizPath)
+if (!leadBelongsToFunnel(lead.funnel, f.key)) return Astro.redirect(quizPath)
 
-// Resultado aberto direto, sem o quiz respondido (nem a P1): volta pra landing,
-// em vez de mostrar um diagnóstico vazio.
-if (!lead.segmento) return Astro.redirect('/')
+// Resultado aberto sem o quiz respondido: volta pro quiz (sem diagnóstico vazio).
+const answers = lead.quizAnswers ?? {}
+if (!isQuizComplete(quiz, answers)) return Astro.redirect(quizPath)
 
 await repo.insertEvent(lead.id, 'viu_resultado', 'resultado')
 
-// Perfil: usa o já calculado (persistido) ou roda o motor de pontuação agora e
-// persiste (one-shot — só grava se ainda não havia). Viaja na URL p/ o hero da oferta.
-const stored = isPerfil(lead.perfilResultado) ? lead.perfilResultado : null
-const perfil =
-  stored ??
-  computePerfil({
-    segmento: lead.segmento,
-    relacao_ia: lead.relacaoIa,
-    ja_quebrou: lead.jaQuebrou,
-    trava_principal: lead.travaPrincipal,
-    custo_principal: lead.custoPrincipal,
-    mudanca_desejada: lead.mudancaDesejada,
-    proximo_passo: lead.proximoPasso,
-  })
+// Perfil: usa o persistido (se válido p/ este funil) ou roda o motor do funil agora
+// e persiste (one-shot). Viaja na URL p/ o hero da oferta.
+const stored =
+  lead.perfilResultado && lead.perfilResultado in result.profiles ? lead.perfilResultado : null
+const perfil = stored ?? quiz.computePerfil(answers)
 if (!stored) await repo.updateLead(lead.id, { perfilResultado: perfil })
 
-const bloco = RESULT_PROFILES[perfil]
-const corpo = renderTemplate(bloco.corpo, {
-  projeto: projetoLabel(lead.tipoCriar),
-  custoMensalCents: lead.custoMensal,
-})
-const ofertaHref = `/oferta?perfil=${perfil}`
+const bloco = result.profiles[perfil]
+if (!bloco) return Astro.redirect(quizPath)
+const corpo = result.renderCorpo ? result.renderCorpo(bloco.corpo, answers) : bloco.corpo
+const ofertaHref = `${f.basePath}/oferta?perfil=${perfil}`
+const fecho = result.fecho
 ---
 
-<BaseLayout title="Seu diagnóstico · No Comando da IA" noindex={true}>
+<BaseLayout
+  title={`Seu diagnóstico · ${f.productName}`}
+  noindex={true}
+  htmlClass={f.theme ? `theme-${f.theme}` : undefined}
+>
   <!-- Sem header/footer: a tela é a continuação direta do quiz. -->
   <div class="relative min-h-screen">
     <div
@@ -82,7 +85,7 @@ const ofertaHref = `/oferta?perfil=${perfil}`
       </div>
 
       <p class="reveal-up mt-6 leading-relaxed text-muted" style="animation-delay: 180ms">
-        {FECHO_COMPARTILHADO}
+        {fecho}
       </p>
 
       <a

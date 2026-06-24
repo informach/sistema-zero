@@ -1,7 +1,7 @@
 import { Button } from '@sistemazero/ui/button'
 import type { ReactNode } from 'react'
 import { useState } from 'react'
-import { PRODUTO } from '../../content/copy'
+import type { AdminFunnelInfo } from '../../funnels/registry'
 import { apiPost } from '../../lib/api-fetch'
 import PerfisPanel from './PerfisPanel'
 import PerformancePanel from './PerformancePanel'
@@ -9,8 +9,10 @@ import RespostasTable from './RespostasTable'
 
 type Aba = 'respostas' | 'performance' | 'perfis'
 
-export default function AdminDashboard() {
+export default function AdminDashboard({ funnels }: { funnels: AdminFunnelInfo[] }) {
   const [aba, setAba] = useState<Aba>('respostas')
+  // Funil selecionado ('' = todos). Filtra as 3 abas.
+  const [funnel, setFunnel] = useState('')
   const [saindo, setSaindo] = useState(false)
 
   async function sair() {
@@ -37,30 +39,45 @@ export default function AdminDashboard() {
             className="h-auto w-[116px] shrink-0 sm:w-[132px]"
           />
           <span aria-hidden="true" className="hidden h-5 w-px bg-line sm:block" />
-          <span className="hidden truncate text-sm font-medium text-muted sm:inline">
-            Painel · {PRODUTO.nome}
-          </span>
+          <span className="hidden truncate text-sm font-medium text-muted sm:inline">Painel</span>
         </div>
         <Button variant="outline" size="sm" onClick={sair} disabled={saindo}>
           {saindo ? 'Saindo…' : 'Sair'}
         </Button>
       </header>
 
-      <div className="mb-6 inline-flex gap-1 rounded-xl border border-line bg-card/50 p-1">
-        <TabBtn active={aba === 'respostas'} onClick={() => setAba('respostas')}>
-          Respostas
-        </TabBtn>
-        <TabBtn active={aba === 'performance'} onClick={() => setAba('performance')}>
-          Performance
-        </TabBtn>
-        <TabBtn active={aba === 'perfis'} onClick={() => setAba('perfis')}>
-          Perfis
-        </TabBtn>
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="inline-flex gap-1 rounded-xl border border-line bg-card/50 p-1">
+          <TabBtn active={aba === 'respostas'} onClick={() => setAba('respostas')}>
+            Respostas
+          </TabBtn>
+          <TabBtn active={aba === 'performance'} onClick={() => setAba('performance')}>
+            Performance
+          </TabBtn>
+          <TabBtn active={aba === 'perfis'} onClick={() => setAba('perfis')}>
+            Perfis
+          </TabBtn>
+        </div>
+        {funnels.length > 1 && (
+          <select
+            value={funnel}
+            onChange={(e) => setFunnel(e.target.value)}
+            aria-label="Filtrar por funil"
+            className="rounded-lg border border-line bg-card/50 px-3 py-2 text-sm font-medium text-ink"
+          >
+            <option value="">Todos os funis</option>
+            {funnels.map((f) => (
+              <option key={f.key} value={f.key}>
+                {f.label}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
 
-      {aba === 'respostas' && <RespostasTable />}
-      {aba === 'performance' && <PerformancePanel />}
-      {aba === 'perfis' && <PerfisPanel />}
+      {aba === 'respostas' && <RespostasTable funnel={funnel} funnels={funnels} />}
+      {aba === 'performance' && <PerformancePanel funnel={funnel} />}
+      {aba === 'perfis' && <PerfisPanel funnel={funnel} />}
     </div>
   )
 }

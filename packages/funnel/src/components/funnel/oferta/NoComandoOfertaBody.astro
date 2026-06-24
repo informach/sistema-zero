@@ -1,61 +1,59 @@
 ---
-import CtaButton from '../components/CtaButton.astro'
-import Footer from '../components/Footer.astro'
-import ImageSlot from '../components/ImageSlot.astro'
-import SectionHeading from '../components/SectionHeading.astro'
-import ProductJsonLd from '../components/seo/ProductJsonLd.astro'
-import { HERO_PADRAO, HERO_PARAGRAFO_COMUM, HERO_POR_PERFIL } from '../content/hero-perfil'
-import { SALES } from '../content/sales-sections'
-import PreCheckoutModal from '../islands/PreCheckoutModal'
-import BaseLayout from '../layouts/BaseLayout.astro'
-import { formatBRLFromCents, formatBRLFromCents2 } from '../lib/money'
-import { isPerfil } from '../lib/perfil'
-import { getActiveOffer } from '../server/catalog'
-import { getDeps } from '../server/deps'
+import type { FunnelDef } from '../../../funnels/registry'
+import PreCheckoutModal from '../../../islands/PreCheckoutModal'
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import CtaButton from '../../CtaButton.astro'
+import Footer from '../../Footer.astro'
+import ImageSlot from '../../ImageSlot.astro'
+import SectionHeading from '../../SectionHeading.astro'
+import ProductJsonLd from '../../seo/ProductJsonLd.astro'
 
-// SSR (não prerender): nome/preço vêm do catálogo em runtime. Marketing sem dado
-// por-usuário → cacheável na borda; reflete mudança de preço da oferta em ~1min.
-// O `?perfil=` é segmento grosso (não-PII), então o cache por-URL é seguro.
-export const prerender = false
+// Corpo da página de vendas do "No Comando da IA" (template padrão). A rota
+// `/oferta` resolve o funil + preço e escolhe ESTE body (ou o do Desafio). Mantém
+// `SALES`/`hero`/`cta`/etc. com os mesmos nomes → o markup das 16 seções segue intacto.
+interface Props {
+  f: FunnelDef
+  productName: string
+  priceLabel: string
+  priceLabelShort: string
+  priceReais: string
+  imagesBase: string
+  perfil: string | null
+  ofertaUrl: string
+}
+const { f, productName, priceLabel, priceLabelShort, priceReais, imagesBase, perfil, ofertaUrl } =
+  Astro.props
 
-const { env, gateway } = getDeps()
-const offer = await getActiveOffer(gateway, env.CATALOG_OFFER_SLUG)
-const productName = offer?.productName || env.PRODUCT_NAME
-const priceCents = offer?.priceCents ?? env.PRODUCT_PRICE_CENTS
-const priceLabel = formatBRLFromCents2(priceCents) // "R$ 37,00" (boxes de preço)
-const priceLabelShort = formatBRLFromCents(priceCents) // "R$ 37" (botões e copy)
-const priceReais = (priceCents / 100).toFixed(2)
-
-Astro.response.headers.set('cache-control', 'public, max-age=60, stale-while-revalidate=300')
-
-// Hero dinâmico por perfil (Seção 1). `?perfil=` ausente/inválido → variação Padrão.
-const perfilParam = Astro.url.searchParams.get('perfil')
-const hero = isPerfil(perfilParam) ? HERO_POR_PERFIL[perfilParam] : HERO_PADRAO
-
-// Label do botão = base (sem preço) + preço do catálogo, p/ nunca divergir do box.
+// Este body só renderiza para funis com `content.sales` (NCI). Asserção segura.
+const SALES = f.content.sales as NonNullable<typeof f.content.sales>
+const heroData = f.content.hero
+const hero = (perfil ? heroData?.porPerfil[perfil] : undefined) ??
+  heroData?.padrao ?? { titulo: productName, abertura: '', botao: SALES.ofertaFinal.botao }
+const HERO_PARAGRAFO_COMUM = heroData?.paragrafoComum ?? ''
 const cta = (base: string) => `${base} (${priceLabelShort})`
 const stackTexto = SALES.stackValor.texto.replace('{preco}', priceLabelShort)
-
-const description =
-  'Um guia direto para tirar sua ideia do papel com IA sem virar refém dela. Aprenda a comandar a IA com o método Z.E.R.O.'
-const ofertaUrl = new URL('/oferta', Astro.site ?? Astro.url).toString()
+const description = f.seoDescription
 const trust = ['Garantia de 7 dias', 'Pagamento via Pix ou cartão de crédito', 'Acesso imediato']
 ---
 
-<BaseLayout title={`${productName} · Pare de pedir código no escuro`} description={description}>
+<BaseLayout
+  title={f.seoTitle}
+  description={description}
+  htmlClass={f.theme ? `theme-${f.theme}` : undefined}
+>
   <ProductJsonLd
     slot="head"
     name={productName}
     description={description}
     price={priceReais}
     url={ofertaUrl}
-    image="/img/sales-hero.webp"
+    image={`${imagesBase}/sales-hero.webp`}
   />
   <link
     slot="head"
     rel="preload"
     as="image"
-    href="/img/sales-hero.webp"
+    href={`${imagesBase}/sales-hero.webp`}
     type="image/webp"
     fetchpriority="high"
   />
@@ -86,8 +84,8 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix ou cartão de crédito',
 
       <div class="mt-9">
         <ImageSlot
-          src="/img/sales-hero.webp"
-          alt="No Comando da IA"
+          src={`${imagesBase}/sales-hero.webp`}
+          alt={productName}
           ratio="16 / 9"
           class="rounded-2xl"
           priority
@@ -291,8 +289,8 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix ou cartão de crédito',
 
       <div class="mt-6">
         <ImageSlot
-          src="/img/recebe-ebook-kit.webp"
-          alt="Ebook No Comando da IA com o kit prático de aplicação"
+          src={`${imagesBase}/recebe-ebook-kit.webp`}
+          alt={`${productName} com o kit prático de aplicação`}
           ratio="16 / 9"
           class="rounded-2xl"
         />
@@ -301,7 +299,7 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix ou cartão de crédito',
       <p class="mt-8 text-sm font-bold text-ink">{SALES.oQueRecebe.kitTitulo}</p>
       <div class="mt-3">
         <ImageSlot
-          src="/img/recebe-anexos.webp"
+          src={`${imagesBase}/recebe-anexos.webp`}
           alt="Anexos do kit prático de aplicação impressos"
           ratio="16 / 9"
           class="rounded-2xl"
@@ -611,5 +609,5 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix ou cartão de crédito',
   </main>
 
   <Footer />
-  <PreCheckoutModal client:idle />
+  <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} />
 </BaseLayout>

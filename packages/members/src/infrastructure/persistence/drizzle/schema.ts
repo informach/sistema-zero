@@ -38,6 +38,7 @@ export const lessonBlockKindEnum = members.enum('lesson_block_kind', [
   'embed',
   'ebook',
   'studio',
+  'certificate',
 ])
 export const accessTypeEnum = members.enum('access_type', [
   'download',
@@ -583,6 +584,37 @@ export const roomInventory = members.table(
   (t) => [uniqueIndex('room_inventory_user_item_uq').on(t.userId, t.audience, t.itemId)],
 )
 
+// ── Certificado de conclusão emitido (1 linha por aluno+curso, imutável) ────
+// Emitido quando o aluno conclui TODAS as outras aulas do curso (a aula do bloco
+// `certificate` é a última). `student_name`/`course_title` são SNAPSHOTS congelados na
+// 1ª emissão (renome posterior não altera o cert — espelha o authorDisplayName do hub).
+// `id` é o identificador PÚBLICO de validação (vai no QR). `serial` é o nº legível UNIQUE.
+// `course_id` é SNAPSHOT (SEM FK p/ `courses`, ao contrário das demais tabelas): um
+// certificado é uma credencial PERMANENTE referenciada externamente (QR em `/validar/:id`)
+// — apagar o curso NÃO pode destruir o diploma já emitido (a validação roda só sobre os
+// snapshots `course_ref`/`course_title`/`student_name`/`serial`; nenhuma query faz join em
+// `courses`). Espelha a convenção "user_id/product_id são snapshots, sem FK" do package.
+export const certificatesIssued = members.table(
+  'certificates_issued',
+  {
+    id: uuid('id').primaryKey(),
+    userId: uuid('user_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    courseId: uuid('course_id').notNull(),
+    courseRef: text('course_ref').notNull(),
+    serial: text('serial').notNull(),
+    studentName: text('student_name').notNull(),
+    courseTitle: text('course_title').notNull(),
+    completedAt: timestamp('completed_at', { withTimezone: true }).notNull(),
+    issuedAt: timestamp('issued_at', { withTimezone: true }).notNull(),
+    revokedAt: timestamp('revoked_at', { withTimezone: true }),
+  },
+  (t) => [
+    uniqueIndex('certificates_issued_user_course_uq').on(t.userId, t.courseId),
+    uniqueIndex('certificates_issued_serial_uq').on(t.serial),
+  ],
+)
+
 // ── Deduplicação de webhooks de entrada ─────────────────────────────────────
 export const processedWebhooks = members.table(
   'processed_webhooks',
@@ -618,6 +650,7 @@ export const schema = {
   leagueMembership,
   roomState,
   roomInventory,
+  certificatesIssued,
   processedWebhooks,
 }
 

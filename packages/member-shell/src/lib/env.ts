@@ -18,6 +18,11 @@ const EnvSchema = z
     JWT_AUDIENCE: z.string().optional(),
     // Fallback da página de vendas em "Todos os cursos" (curso sem metadata.salesPageUrl).
     FUNNEL_URL: z.string().url().optional(),
+    // Origem PÚBLICA absoluta deste app (ex.: https://comunidade.sistemazero.com.br) —
+    // usada p/ montar a URL de validação no QR do certificado. OPCIONAL: ausente → o QR
+    // codifica só o caminho `/validar/:id` (degradado; em PRODUÇÃO deve ser setada para o
+    // QR resolver ao ser escaneado).
+    APP_PUBLIC_URL: z.string().url().optional(),
     // Sentry (opcional): ausente = no-op. Espelho de erros LOCAIS da área do aluno.
     SENTRY_DSN: z.string().url().optional(),
     // Cloudflare R2 (upload de avatar). OPCIONAIS: ausentes → upload responde 503

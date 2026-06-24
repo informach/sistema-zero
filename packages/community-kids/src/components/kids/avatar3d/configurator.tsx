@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowLeft, Camera, Check, Coins, Loader2, Lock, Shuffle, X } from 'lucide-react'
+import { ArrowLeft, Camera, Check, Loader2, Lock, Shuffle, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -15,6 +15,7 @@ import {
 import { cn } from '@/lib/cn'
 import type { AvatarPartView, AvatarStateView } from '@/lib/types'
 import { KidsMascot } from '../mascot'
+import { ZappyCoin } from '../zappy-coin'
 import { AvatarScene, type CaptureFn } from './avatar-scene'
 import { AvatarThumb } from './thumb-canvas'
 
@@ -268,7 +269,7 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
             <ArrowLeft className="size-5" />
           </button>
           <span className="inline-flex items-center gap-1.5 rounded-full bg-(--kids-lime-tint) px-3 py-1.5 [font-family:var(--font-display)] font-bold text-sm shadow-md">
-            <Coins className="size-4" /> {coinsUnlimited ? '∞' : balance}
+            <ZappyCoin className="size-4" /> {coinsUnlimited ? '∞' : balance}
           </span>
         </div>
         <div className="flex items-center gap-2">

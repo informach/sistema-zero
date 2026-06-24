@@ -1,4 +1,5 @@
 import type { FunnelRepo } from '../db/repo'
+import { DEFAULT_FUNNEL, type FunnelDef, getFunnelByKey, isFunnelKey } from '../funnels/registry'
 import {
   ADMIN_REFRESH_COOKIE,
   adminSessionCookies,
@@ -10,7 +11,6 @@ import {
 import { AdminLoginSchema } from '../lib/admin-schema'
 import type { AuthTokens, AuthUser, GatewayClient } from '../lib/gateway-client'
 import { json, jsonError, safeJson } from '../lib/http'
-import { PERFIL_LABELS, PERFIS } from '../lib/perfil'
 
 export interface AdminDeps {
   repo: FunnelRepo
@@ -27,28 +27,36 @@ function withSession(base: Record<string, string>, setCookies?: string[]): [stri
   return headers
 }
 
-/** Etapas do funil (landing + 10 perguntas + resultado + vendas + pré-checkout +
- *  checkout) e os 2 marcos de pagamento. */
-export const FUNNEL_STEPS: { name: string; label: string }[] = [
-  { name: 'entrou_landing', label: 'Entrou na landing' },
-  { name: 'respondeu_pergunta_1', label: 'Pergunta 1 (segmento)' },
-  { name: 'respondeu_pergunta_2', label: 'Pergunta 2 (o que criar)' },
-  { name: 'respondeu_pergunta_3', label: 'Pergunta 3 (relação com IA)' },
-  { name: 'respondeu_pergunta_4', label: 'Pergunta 4 (já quebrou)' },
-  { name: 'respondeu_pergunta_5', label: 'Pergunta 5 (o que trava)' },
-  { name: 'respondeu_pergunta_6', label: 'Pergunta 6 (o que custou)' },
-  { name: 'respondeu_pergunta_7', label: 'Pergunta 7 (calculadora)' },
-  { name: 'respondeu_pergunta_8', label: 'Pergunta 8 (o que muda)' },
-  { name: 'respondeu_pergunta_9', label: 'Pergunta 9 (o que precisa)' },
-  { name: 'respondeu_pergunta_10', label: 'Pergunta 10 (síntese)' },
-  { name: 'viu_resultado', label: 'Viu o resultado' },
-  { name: 'viu_pagina_vendas', label: 'Página de vendas' },
-  { name: 'abriu_checkout', label: 'Abriu o checkout' },
-  { name: 'enviou_precheckout', label: 'Enviou o pré-checkout' },
-  { name: 'redirecionou_checkout', label: 'Foi para o checkout' },
-  { name: 'pagamento_iniciado', label: 'Pagamento iniciado' },
-  { name: 'pagamento_confirmado', label: 'Pagamento confirmado' },
-]
+/**
+ * Etapas do funil de conversão (Performance), montadas POR FUNIL: landing → cada
+ * pergunta do quiz daquele funil → resultado (se tiver) → vendas/pré-checkout/
+ * checkout → 2 marcos de pagamento. Sem funil selecionado, usa o quiz do funil
+ * default só para rotular as "perguntas N" (os eventos `respondeu_pergunta_N` são
+ * compartilhados entre funis). Os labels das perguntas são genéricos ("Pergunta N").
+ */
+function buildFunnelSteps(f: FunnelDef | null): { name: string; label: string }[] {
+  const quizSteps = (f ?? DEFAULT_FUNNEL).content.quiz?.steps ?? []
+  const steps: { name: string; label: string }[] = [
+    { name: 'entrou_landing', label: 'Entrou na landing' },
+    ...quizSteps.map((s, i) => ({ name: s.eventName, label: `Pergunta ${i + 1}` })),
+  ]
+  if (!f || f.steps.resultado) steps.push({ name: 'viu_resultado', label: 'Viu o resultado' })
+  steps.push(
+    { name: 'viu_pagina_vendas', label: 'Página de vendas' },
+    { name: 'abriu_checkout', label: 'Abriu o checkout' },
+    { name: 'enviou_precheckout', label: 'Enviou o pré-checkout' },
+    { name: 'redirecionou_checkout', label: 'Foi para o checkout' },
+    { name: 'pagamento_iniciado', label: 'Pagamento iniciado' },
+    { name: 'pagamento_confirmado', label: 'Pagamento confirmado' },
+  )
+  return steps
+}
+
+/** Lê e valida o `?funnel=` da query (chave conhecida → filtra; senão → todos). */
+function funnelParam(params: URLSearchParams): string | undefined {
+  const raw = params.get('funnel')?.trim()
+  return raw && isFunnelKey(raw) ? raw : undefined
+}
 
 /**
  * POST /api/admin/login — autentica no auth (IdP) via gateway e abre a sessão. Só
@@ -121,10 +129,11 @@ export async function adminLeads(request: Request, deps: AdminDeps): Promise<Res
   const offset = Math.min(intParam(params.get('offset'), 0), 100_000)
   const q = params.get('q')?.trim().slice(0, 100) || undefined
   const sort = params.get('sort') === 'asc' ? 'asc' : 'desc'
+  const funnel = funnelParam(params)
 
   const [leads, total] = await Promise.all([
-    deps.repo.listLeads(limit, offset, { q, sort }),
-    deps.repo.countLeads(q),
+    deps.repo.listLeads(limit, offset, { q, sort, funnel }),
+    deps.repo.countLeads({ q, funnel }),
   ])
   return json(
     { leads, total, limit, offset },
@@ -133,16 +142,17 @@ export async function adminLeads(request: Request, deps: AdminDeps): Promise<Res
   )
 }
 
-/** GET /api/admin/funnel — contagem e conversão por etapa. */
+/** GET /api/admin/funnel — contagem e conversão por etapa (opcional `?funnel=`). */
 export async function adminFunnel(request: Request, deps: AdminDeps): Promise<Response> {
   const auth = await resolveAdmin(request, deps.gateway, deps.secureCookie)
   if (!auth) return jsonError('Não autorizado.', 401, 'UNAUTHORIZED')
-  const counts = await deps.repo.eventCounts()
+  const funnel = funnelParam(new URL(request.url).searchParams)
+  const counts = await deps.repo.eventCounts(funnel)
   const byName = new Map(counts.map((c) => [c.eventName, c.leads]))
   const top = byName.get('entrou_landing') ?? 0
 
   let prev = 0
-  const steps = FUNNEL_STEPS.map((step, i) => {
+  const steps = buildFunnelSteps(funnel ? getFunnelByKey(funnel) : null).map((step, i) => {
     const count = byName.get(step.name) ?? 0
     const fromTop = top > 0 ? count / top : 0
     const fromPrev = i === 0 ? 1 : prev > 0 ? count / prev : 0
@@ -157,16 +167,21 @@ export async function adminFunnel(request: Request, deps: AdminDeps): Promise<Re
   )
 }
 
-/** GET /api/admin/perfis — contagem de leads por perfil do diagnóstico. */
+/** GET /api/admin/perfis — contagem de leads por perfil do diagnóstico (opcional `?funnel=`). */
 export async function adminPerfis(request: Request, deps: AdminDeps): Promise<Response> {
   const auth = await resolveAdmin(request, deps.gateway, deps.secureCookie)
   if (!auth) return jsonError('Não autorizado.', 401, 'UNAUTHORIZED')
-  const rows = await deps.repo.perfilCounts()
+  const funnel = funnelParam(new URL(request.url).searchParams)
+  const rows = await deps.repo.perfilCounts(funnel)
   const byPerfil = new Map(rows.map((r) => [r.perfil, r.count]))
-  // Sempre os 4 perfis (mesmo zerados), na ordem canônica, com rótulo p/ a UI.
-  const counts = PERFIS.map((perfil) => ({
+  const result = funnel ? getFunnelByKey(funnel)?.content.result : null
+  const labels = result?.perfilLabels ?? {}
+  // Com funil selecionado: os perfis DELE (mesmo zerados), na ordem do funil.
+  // Sem funil: os perfis presentes nos dados (rótulo = a própria chave).
+  const perfis = result ? Object.keys(result.profiles) : [...byPerfil.keys()]
+  const counts = perfis.map((perfil) => ({
     perfil,
-    label: PERFIL_LABELS[perfil],
+    label: labels[perfil] ?? perfil,
     count: byPerfil.get(perfil) ?? 0,
   }))
   const total = counts.reduce((sum, c) => sum + c.count, 0)

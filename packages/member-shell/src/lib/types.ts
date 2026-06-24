@@ -113,6 +113,58 @@ export interface ProductAccessView {
   access: Record<string, boolean>
 }
 
+/** Config de autoria do bloco certificado (espelha CertificateBlock do members). */
+export interface CertificateConfig {
+  title?: string
+  issuerName?: string
+  signatureImageUrl?: string
+  logoUrl?: string
+  accentColor?: string
+  message?: string
+}
+
+/** Conteúdo member-facing do bloco certificado (`kind` + config). */
+export interface CertificateBlock extends CertificateConfig {
+  kind: 'certificate'
+}
+
+/** Certificado emitido (devolvido na emissão; o BFF usa p/ montar o PDF). */
+export interface CertificateView {
+  id: string
+  serial: string
+  studentName: string
+  courseTitle: string
+  courseRef: string
+  completedAt: string
+  issuedAt: string
+  revokedAt: string | null
+}
+
+/** Resposta da emissão: registro + config do bloco. */
+export interface CertificateIssueView {
+  certificate: CertificateView
+  config: CertificateConfig
+}
+
+/** Estado do bloco certificado p/ a UI (emitir vs baixar). */
+export interface CertificateStateView {
+  eligible: boolean
+  issued: boolean
+  revoked: boolean
+  serial: string | null
+  issuedAt: string | null
+  revokedAt: string | null
+}
+
+/** Validação pública do certificado (`/validar/:id`) — só dados não-sensíveis. */
+export interface CertificateValidationView {
+  valid: boolean
+  studentName: string | null
+  courseTitle: string | null
+  issuedAt: string | null
+  serial: string | null
+}
+
 /** Item de `GET /members/courses` → `{ courses: MyCourseView[] }`. */
 export interface MyCourseView {
   courseSlug: string

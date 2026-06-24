@@ -54,10 +54,13 @@ export default function CardCheckout({
   contact,
   priceCents,
   couponCode,
+  successPath,
 }: {
   contact: CheckoutContactInput | null
   priceCents: number
   couponCode?: string
+  /** Para onde ir quando o pagamento confirmar (próximo passo do funil; obrigatório). */
+  successPath: string
 }) {
   const [number, setNumber] = useState('')
   const [holderName, setHolderName] = useState('')
@@ -190,7 +193,7 @@ export default function CardCheckout({
         const r = await apiGet<StatusResp>(`/api/checkout/${paymentId}`)
         if (r.status === 'PAID') {
           clearInterval(timer)
-          window.location.href = '/obrigado'
+          window.location.href = successPath
         } else if (r.status === 'FAILED') {
           clearInterval(timer)
           setErro('Pagamento recusado. Verifique os dados ou use outro cartão.')
@@ -200,7 +203,7 @@ export default function CardCheckout({
       }
     }, 3500)
     return () => clearInterval(timer)
-  }, [paymentId])
+  }, [paymentId, successPath])
 
   async function submit() {
     setErro(null)
@@ -293,7 +296,7 @@ export default function CardCheckout({
       }
       const r = await apiPost<ChargeResp>('/api/checkout/card', body)
       if (r.status === 'PAID') {
-        window.location.href = '/obrigado'
+        window.location.href = successPath
         return
       }
       if (r.status === 'FAILED') {

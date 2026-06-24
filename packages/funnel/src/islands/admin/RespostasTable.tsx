@@ -12,33 +12,23 @@ import {
   TableHeader,
   TableRow,
 } from '@sistemazero/ui/table'
-import { type ReactNode, useEffect, useState } from 'react'
+import { type ReactNode, useEffect, useMemo, useState } from 'react'
+import type { AdminFunnelInfo } from '../../funnels/registry'
 import { apiGet } from '../../lib/api-fetch'
 import { formatBRLFromCents } from '../../lib/money'
-import { isPerfil, PERFIL_LABELS } from '../../lib/perfil'
 
 interface LeadRow {
   id: string
   nome: string | null
   email: string | null
   telefone: string | null
-  // 12 chaves do quiz + perfil do diagnóstico (P1..P10; P7 é a calculadora).
-  segmento: string | null
-  tipoCriar: string | null
-  relacaoIa: string | null
-  jaQuebrou: string | null
-  travaPrincipal: string | null
-  custoPrincipal: string | null
-  horasRetrabalho: number | null
-  valorHora: number | null
-  custoMensal: number | null
-  mudancaDesejada: string | null
-  proximoPasso: string | null
-  sintese: string | null
+  // Respostas do quiz em JSON (chave → valor) — genérico por funil; + perfil do diagnóstico.
+  quizAnswers: Record<string, string | number> | null
   perfilResultado: string | null
+  funnel: string | null
   lastStep: string
   createdAt: string
-  // Contato + compra (já vêm no /api/admin/leads; antes não eram exibidos).
+  // Contato + compra.
   document: string | null
   paymentId: string | null
   paidAt: string | null
@@ -56,17 +46,21 @@ interface LeadsResponse {
   offset: number
 }
 
-// Paginação no SERVIDOR: a UI nunca carrega todos os leads de uma vez (escala p/
-// muitos leads). Busca e ordenação também vão ao servidor (valem sobre o total).
+// Paginação no SERVIDOR: a UI nunca carrega todos os leads de uma vez. Busca,
+// ordenação e filtro de funil também vão ao servidor (valem sobre o total).
 const PAGE_SIZE = 25
 
-const MONEY_COLS = new Set<keyof LeadRow>(['valorHora', 'custoMensal'])
-const DATETIME_COLS = new Set<keyof LeadRow>(['createdAt', 'paidAt', 'buyerRegisteredAt'])
-
-const money = (c: number | null) => (c == null ? '—' : formatBRLFromCents(c))
 const txt = (v: string | number | null) => (v == null || v === '' ? '—' : String(v))
 const formatCpf = (cpf: string) =>
   cpf.replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') || '—'
+
+/** Valor de resposta para exibição: número em chave de dinheiro (valor/custo/preço) → R$. */
+function answerDisplay(key: string, value: string | number): string {
+  if (typeof value === 'number') {
+    return /valor|custo|pre[cç]o/i.test(key) ? formatBRLFromCents(value) : String(value)
+  }
+  return value
+}
 
 // Status do lead derivado dos dados reais (o `last_step` NÃO avança p/ checkout/
 // pagamento — fica na última pergunta do quiz). Por isso usamos paidAt/paymentId/email.
@@ -94,6 +88,15 @@ function StatusBadge({ lead }: { lead: LeadRow }) {
   )
 }
 
+function PerfilBadge({ label }: { label: string | null }) {
+  if (!label) return <span className="text-muted-foreground">—</span>
+  return (
+    <Badge variant="outline" className="text-lime">
+      {label}
+    </Badge>
+  )
+}
+
 const fmtDate = (iso: string) => {
   const d = new Date(iso)
   return Number.isNaN(d.getTime())
@@ -107,90 +110,43 @@ const fmtDateTime = (iso: string) => {
     : d.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
 }
 
-// Agrupamento dos campos do lead p/ o Dialog de detalhe.
-const DETAIL_GROUPS: Array<{
-  title: string
-  fields: Array<{ key: keyof LeadRow; label: string; wide?: boolean }>
-}> = [
-  {
-    title: 'Contato',
-    fields: [
-      { key: 'nome', label: 'Nome' },
-      { key: 'email', label: 'E-mail' },
-      { key: 'telefone', label: 'Telefone' },
-      { key: 'document', label: 'CPF' },
-    ],
-  },
-  {
-    title: 'Compra',
-    fields: [
-      { key: 'paidAt', label: 'Pagou em' },
-      { key: 'buyerIsNew', label: 'Comprador' },
-      { key: 'couponCode', label: 'Cupom' },
-      { key: 'offerRef', label: 'Oferta' },
-    ],
-  },
-  {
-    title: 'Diagnóstico',
-    fields: [
-      { key: 'perfilResultado', label: 'Perfil', wide: true },
-      { key: 'segmento', label: 'Segmento (P1)' },
-      { key: 'tipoCriar', label: 'O que quer criar (P2)' },
-      { key: 'relacaoIa', label: 'Relação com IA (P3)' },
-      { key: 'jaQuebrou', label: 'Já quebrou (P4)' },
-      { key: 'travaPrincipal', label: 'O que mais trava (P5)' },
-      { key: 'custoPrincipal', label: 'O que custou (P6)' },
-      { key: 'horasRetrabalho', label: 'Horas/semana (P7)' },
-      { key: 'valorHora', label: 'Valor hora (P7)' },
-      { key: 'custoMensal', label: 'Custo mensal' },
-      { key: 'mudancaDesejada', label: 'O que muda (P8)' },
-      { key: 'proximoPasso', label: 'O que precisa (P9)' },
-      { key: 'sintese', label: 'Síntese (P10)' },
-    ],
-  },
-  {
-    title: 'Sessão',
-    fields: [
-      { key: 'lastStep', label: 'Última etapa' },
-      { key: 'createdAt', label: 'Criado em' },
-    ],
-  },
+interface DetailField {
+  key: keyof LeadRow
+  label: string
+}
+const CONTATO_FIELDS: DetailField[] = [
+  { key: 'nome', label: 'Nome' },
+  { key: 'email', label: 'E-mail' },
+  { key: 'telefone', label: 'Telefone' },
+  { key: 'document', label: 'CPF' },
 ]
-
-function SegmentoBadge({ value }: { value: string | null }) {
-  if (!value) return <span className="text-muted-foreground">—</span>
-  return (
-    <Badge variant="outline" className="text-cyan">
-      {value}
-    </Badge>
-  )
-}
-
-function PerfilBadge({ value }: { value: string | null }) {
-  if (!value) return <span className="text-muted-foreground">—</span>
-  return (
-    <Badge variant="outline" className="text-lime">
-      {isPerfil(value) ? PERFIL_LABELS[value] : value}
-    </Badge>
-  )
-}
+const COMPRA_FIELDS: DetailField[] = [
+  { key: 'paidAt', label: 'Pagou em' },
+  { key: 'buyerIsNew', label: 'Comprador' },
+  { key: 'couponCode', label: 'Cupom' },
+  { key: 'offerRef', label: 'Oferta' },
+]
 
 function fieldValue(lead: LeadRow, key: keyof LeadRow): ReactNode {
   const raw = lead[key]
-  if (key === 'perfilResultado') return <PerfilBadge value={raw as string | null} />
-  if (key === 'segmento') return <SegmentoBadge value={raw as string | null} />
   if (key === 'document') return raw ? formatCpf(String(raw)) : '—'
   if (key === 'buyerIsNew') {
     if (!lead.buyerUserId) return '—'
     return raw ? 'Novo (1º acesso)' : 'Recorrente'
   }
-  if (DATETIME_COLS.has(key)) return raw ? fmtDateTime(String(raw)) : '—'
-  if (MONEY_COLS.has(key))
-    return <span className="font-mono tabular-nums">{money(raw as number | null)}</span>
+  if (key === 'paidAt' || key === 'createdAt' || key === 'buyerRegisteredAt') {
+    return raw ? fmtDateTime(String(raw)) : '—'
+  }
   return txt(raw as string | number | null)
 }
 
-export default function RespostasTable() {
+export default function RespostasTable({
+  funnel,
+  funnels,
+}: {
+  funnel: string
+  funnels: AdminFunnelInfo[]
+}) {
   const [data, setData] = useState<LeadsResponse | null>(null)
   const [erro, setErro] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -199,6 +155,16 @@ export default function RespostasTable() {
   const [sortDesc, setSortDesc] = useState(true)
   const [offset, setOffset] = useState(0)
   const [selected, setSelected] = useState<LeadRow | null>(null)
+
+  const funnelMap = useMemo(() => new Map(funnels.map((f) => [f.key, f])), [funnels])
+  const showFunnel = funnels.length > 1
+  const funnelLabel = (key: string | null) => (key ? (funnelMap.get(key)?.label ?? key) : '—')
+  const perfilLabel = (lead: LeadRow): string | null => {
+    if (!lead.perfilResultado) return null
+    return (
+      funnelMap.get(lead.funnel ?? '')?.perfilLabels[lead.perfilResultado] ?? lead.perfilResultado
+    )
+  }
 
   // Debounce da busca: ao digitar, espera 300ms e volta p/ a 1ª página.
   useEffect(() => {
@@ -209,6 +175,12 @@ export default function RespostasTable() {
     return () => clearTimeout(t)
   }, [query])
 
+  // Troca de funil (filtro externo) reseta para a 1ª página.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reset de página ao mudar o funil
+  useEffect(() => {
+    setOffset(0)
+  }, [funnel])
+
   useEffect(() => {
     const params = new URLSearchParams({
       limit: String(PAGE_SIZE),
@@ -216,6 +188,7 @@ export default function RespostasTable() {
       sort: sortDesc ? 'desc' : 'asc',
     })
     if (debouncedQuery) params.set('q', debouncedQuery)
+    if (funnel) params.set('funnel', funnel)
     setLoading(true)
     apiGet<LeadsResponse>(`/api/admin/leads?${params}`)
       .then((d) => {
@@ -223,7 +196,6 @@ export default function RespostasTable() {
         setErro(false)
       })
       .catch((e) => {
-        // Sessão expirada/ausente → volta ao login.
         if (String((e as Error)?.message).includes('401')) {
           window.location.href = '/admin/login'
           return
@@ -231,13 +203,17 @@ export default function RespostasTable() {
         setErro(true)
       })
       .finally(() => setLoading(false))
-  }, [offset, debouncedQuery, sortDesc])
+  }, [offset, debouncedQuery, sortDesc, funnel])
 
   if (erro) return <p className="text-destructive">Falha ao carregar os leads.</p>
   if (!data) return <p className="text-muted-foreground">Carregando…</p>
 
   const { leads, total } = data
   const searching = debouncedQuery.length > 0
+  const selectedAnswers = selected?.quizAnswers ?? {}
+  const selectedAnswerLabels = selected
+    ? (funnelMap.get(selected.funnel ?? '')?.answerLabels ?? {})
+    : {}
 
   return (
     <div>
@@ -287,7 +263,7 @@ export default function RespostasTable() {
                   <TableHead>E-mail</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Perfil</TableHead>
-                  <TableHead className="text-right">Custo mensal</TableHead>
+                  {showFunnel && <TableHead>Funil</TableHead>}
                   <TableHead className="text-right">Data</TableHead>
                 </TableRow>
               </TableHeader>
@@ -316,11 +292,13 @@ export default function RespostasTable() {
                       <StatusBadge lead={lead} />
                     </TableCell>
                     <TableCell>
-                      <PerfilBadge value={lead.perfilResultado} />
+                      <PerfilBadge label={perfilLabel(lead)} />
                     </TableCell>
-                    <TableCell className="text-right font-mono tabular-nums text-foreground">
-                      {money(lead.custoMensal)}
-                    </TableCell>
+                    {showFunnel && (
+                      <TableCell className="max-w-[160px] truncate text-muted-foreground">
+                        {funnelLabel(lead.funnel)}
+                      </TableCell>
+                    )}
                     <TableCell className="whitespace-nowrap text-right text-muted-foreground">
                       {fmtDate(lead.createdAt)}
                     </TableCell>
@@ -343,13 +321,15 @@ export default function RespostasTable() {
                     <p className="truncate font-medium text-foreground">{txt(lead.nome)}</p>
                     <p className="truncate text-sm text-muted-foreground">{txt(lead.email)}</p>
                   </div>
-                  <PerfilBadge value={lead.perfilResultado} />
+                  <PerfilBadge label={perfilLabel(lead)} />
                 </div>
                 <div className="mt-3 flex items-center justify-between text-sm">
                   <StatusBadge lead={lead} />
-                  <span className="font-mono tabular-nums text-foreground">
-                    {money(lead.custoMensal)}
-                  </span>
+                  {showFunnel && (
+                    <span className="truncate text-xs text-muted-foreground">
+                      {funnelLabel(lead.funnel)}
+                    </span>
+                  )}
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">{fmtDateTime(lead.createdAt)}</p>
               </Card>
@@ -374,27 +354,70 @@ export default function RespostasTable() {
         {selected ? (
           <div className="space-y-5">
             <StatusBadge lead={selected} />
-            {DETAIL_GROUPS.map((g) => (
-              <section key={g.title}>
-                <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  {g.title}
-                </h3>
-                <dl className="grid grid-cols-1 gap-x-6 gap-y-2.5 sm:grid-cols-2">
-                  {g.fields.map((f) => (
-                    <div
-                      key={String(f.key)}
-                      className={`flex flex-col gap-0.5 ${f.wide ? 'sm:col-span-2' : ''}`}
-                    >
-                      <dt className="text-xs text-muted-foreground">{f.label}</dt>
-                      <dd className="text-sm text-foreground">{fieldValue(selected, f.key)}</dd>
-                    </div>
-                  ))}
-                </dl>
-              </section>
-            ))}
+
+            <DetailSection title="Contato">
+              {CONTATO_FIELDS.map((f) => (
+                <DetailItem key={String(f.key)} label={f.label}>
+                  {fieldValue(selected, f.key)}
+                </DetailItem>
+              ))}
+            </DetailSection>
+
+            <DetailSection title="Compra">
+              {COMPRA_FIELDS.map((f) => (
+                <DetailItem key={String(f.key)} label={f.label}>
+                  {fieldValue(selected, f.key)}
+                </DetailItem>
+              ))}
+            </DetailSection>
+
+            <DetailSection title="Diagnóstico">
+              <DetailItem label="Perfil" wide>
+                <PerfilBadge label={perfilLabel(selected)} />
+              </DetailItem>
+              {Object.entries(selectedAnswers).map(([key, value]) => (
+                <DetailItem key={key} label={selectedAnswerLabels[key] ?? key} wide>
+                  {answerDisplay(key, value)}
+                </DetailItem>
+              ))}
+            </DetailSection>
+
+            <DetailSection title="Sessão">
+              <DetailItem label="Funil">{funnelLabel(selected.funnel)}</DetailItem>
+              <DetailItem label="Última etapa">{txt(selected.lastStep)}</DetailItem>
+              <DetailItem label="Criado em">{fmtDateTime(selected.createdAt)}</DetailItem>
+            </DetailSection>
           </div>
         ) : null}
       </Dialog>
+    </div>
+  )
+}
+
+function DetailSection({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section>
+      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        {title}
+      </h3>
+      <dl className="grid grid-cols-1 gap-x-6 gap-y-2.5 sm:grid-cols-2">{children}</dl>
+    </section>
+  )
+}
+
+function DetailItem({
+  label,
+  wide,
+  children,
+}: {
+  label: string
+  wide?: boolean
+  children: ReactNode
+}) {
+  return (
+    <div className={`flex flex-col gap-0.5 ${wide ? 'sm:col-span-2' : ''}`}>
+      <dt className="text-xs text-muted-foreground">{label}</dt>
+      <dd className="text-sm text-foreground">{children}</dd>
     </div>
   )
 }

@@ -114,3 +114,35 @@ export class StudioGateNotPassedError extends DomainError {
     super(message)
   }
 }
+
+/** Bloco de certificado inexistente na aula (ou o bloco não é um certificado). → 404. */
+export class CertificateBlockNotFoundError extends DomainError {
+  readonly code = 'CERTIFICATE_BLOCK_NOT_FOUND'
+  constructor(message = 'Certificado não encontrado') {
+    super(message)
+  }
+}
+
+/** Emissão de certificado pedida antes de concluir todas as outras aulas do curso. → 409. */
+export class CertificateNotEligibleError extends DomainError {
+  readonly code = 'CERTIFICATE_NOT_ELIGIBLE'
+  constructor(message = 'Conclua todas as aulas do curso para emitir o certificado') {
+    super(message)
+  }
+}
+
+/** Aula de certificado só pode ser concluída pela emissão do certificado. → 409. */
+export class CertificateGateNotIssuedError extends DomainError {
+  readonly code = 'CERTIFICATE_GATE_NOT_ISSUED'
+  constructor(message = 'Emita o certificado para concluir esta aula') {
+    super(message)
+  }
+}
+
+/** Certificado emitido foi revogado pelo admin e não pode mais ser baixado. → 410. */
+export class CertificateRevokedError extends DomainError {
+  readonly code = 'CERTIFICATE_REVOKED'
+  constructor(message = 'Certificado revogado') {
+    super(message)
+  }
+}

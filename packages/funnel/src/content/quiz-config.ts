@@ -28,13 +28,15 @@ export const MONEY_KEYS = new Set<LeadKey>(['valor_hora', 'custo_mensal'])
 export interface Opcao {
   value: string
   label: string
+  /** Selo curto no badge (ex.: emoji 🎮 ou letra). Default: o próprio `value`. */
+  badge?: string
   /** URL pública da imagem (public/img/...). Renderiza placeholder se ausente. */
   image?: string
 }
 
 interface StepBase {
   id: number
-  key: LeadKey
+  key: string
   lastStep: string
   eventName: string
   titulo: string
@@ -49,12 +51,56 @@ export interface MultiplaEscolhaStep extends StepBase {
 }
 export interface CalculadoraStep extends StepBase {
   tipo: 'calculadora'
-  campo1: { key: LeadKey; label: string; unidade: string }
-  campo2: { key: LeadKey; label: string; unidade: string }
-  resultadoKey: LeadKey
+  campo1: { key: string; label: string; unidade: string }
+  campo2: { key: string; label: string; unidade: string }
+  resultadoKey: string
 }
 
-export type QuizStep = MultiplaEscolhaStep | CalculadoraStep
+/** Calculadora com o 1º campo PRÉ-PREENCHIDO por uma resposta anterior (`sourceKey`). */
+export interface CalculadoraPrefilledStep extends StepBase {
+  tipo: 'calculadora_prefilled'
+  campo1: { key: string; label: string; unidade: string; sourceKey: string }
+  campo2: { key: string; label: string; unidade: string }
+  resultadoKey: string
+  /** Fórmula do preview: campo1 × campo2 × multiplicador (ex.: 52 semanas/ano). */
+  multiplicador: number
+  /** Texto do resultado (template com `{resultado}`). */
+  textoResultado: string
+}
+
+/** Entrada de um número (ex.: horas/dia). O botão "Continuar" envia o valor. */
+export interface InputNumeroStep extends StepBase {
+  tipo: 'input_numero'
+  label: string
+  unidade?: string
+  min: number
+  max: number
+}
+
+/** Slider de `min`..`max` (ex.: 1–10) com rótulos nas pontas. "Continuar" envia o valor. */
+export interface SliderStep extends StepBase {
+  tipo: 'slider'
+  min: number
+  max: number
+  label?: string
+  minLabel: string
+  maxLabel: string
+}
+
+/** Sim/Não: 2 opções fixas com rótulos próprios; valores `'sim'`/`'nao'`. */
+export interface SimNaoStep extends StepBase {
+  tipo: 'sim_nao'
+  opcaoSim: string
+  opcaoNao: string
+}
+
+export type QuizStep =
+  | MultiplaEscolhaStep
+  | CalculadoraStep
+  | CalculadoraPrefilledStep
+  | InputNumeroStep
+  | SliderStep
+  | SimNaoStep
 
 export const QUIZ_STEPS: QuizStep[] = [
   {
@@ -70,22 +116,22 @@ export const QUIZ_STEPS: QuizStep[] = [
         value: 'A',
         label:
           'Tenho uma ideia ou um problema que daria pra resolver com um sistema, mas acho que isso é coisa de programador',
-        image: '/img/q1-card-a.webp',
+        image: '/img/no-comando-da-ia/q1-card-a.webp',
       },
       {
         value: 'B',
         label: 'Já criei algo com IA, funcionou, e depois quebrou sem eu saber por quê',
-        image: '/img/q1-card-b.webp',
+        image: '/img/no-comando-da-ia/q1-card-b.webp',
       },
       {
         value: 'C',
         label: 'Tenho algo no ar, mas dependo de freelancer ou da IA pra cada mudança',
-        image: '/img/q1-card-c.webp',
+        image: '/img/no-comando-da-ia/q1-card-c.webp',
       },
       {
         value: 'D',
         label: 'Crio com IA, mas fico com a sensação de estar fazendo errado sem perceber',
-        image: '/img/q1-card-d.webp',
+        image: '/img/no-comando-da-ia/q1-card-d.webp',
       },
     ],
   },

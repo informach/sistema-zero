@@ -1,29 +1,50 @@
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { useEffect, useState } from 'react'
-import { LANDING } from '../content/copy'
-import {
-  type CalculadoraStep,
-  type MultiplaEscolhaStep,
-  QUIZ_STEPS,
-  type QuizStep,
-  TOTAL_PERGUNTAS,
+import type {
+  CalculadoraPrefilledStep,
+  CalculadoraStep,
+  InputNumeroStep,
+  MultiplaEscolhaStep,
+  QuizStep,
+  SimNaoStep,
+  SliderStep,
 } from '../content/quiz-config'
 import { apiPatch, apiPost } from '../lib/api-fetch'
 import Calculadora from './questions/Calculadora'
+import CalculadoraPrefilled from './questions/CalculadoraPrefilled'
+import InputNumero from './questions/InputNumero'
 import MultiplaEscolha from './questions/MultiplaEscolha'
+import SimNao from './questions/SimNao'
+import Slider from './questions/Slider'
 import type { AnswerPair, Answers, BaseQuestionProps } from './questions/types'
 
-function firstUnanswered(answers: Answers): number {
-  for (let i = 0; i < QUIZ_STEPS.length; i++) {
-    const step = QUIZ_STEPS[i]
-    if (!step) continue
-    const key = step.tipo === 'calculadora' ? step.resultadoKey : step.key
-    if (answers[key] == null) return i
-  }
-  return QUIZ_STEPS.length
+/** Conteúdo + navegação do funil, injetados pela página (a ilha não lê a rota). */
+export interface QuizProps {
+  /** Perguntas do funil (antes era a constante única QUIZ_STEPS). */
+  steps: QuizStep[]
+  /** Total de perguntas (para a barra de progresso). */
+  total: number
+  landing: { h1: string; subtitulo: string; tempo: string }
+  /** Chave do funil (`pro/no-comando-da-ia`) — gravada na criação do lead. */
+  funnel: string
+  /** Para onde ir ao concluir o quiz (resultado do funil, ou direto à oferta). */
+  donePath: string
 }
 
-export default function Quiz() {
+function firstUnanswered(answers: Answers, steps: QuizStep[]): number {
+  for (let i = 0; i < steps.length; i++) {
+    const step = steps[i]
+    if (!step) continue
+    const key =
+      step.tipo === 'calculadora' || step.tipo === 'calculadora_prefilled'
+        ? step.resultadoKey
+        : step.key
+    if (answers[key] == null) return i
+  }
+  return steps.length
+}
+
+export default function Quiz({ steps, total, landing, funnel, donePath }: QuizProps) {
   const [answers, setAnswers] = useState<Answers>({})
   const [index, setIndex] = useState<number | null>(null)
   const [submitting, setSubmitting] = useState(false)
@@ -38,16 +59,16 @@ export default function Quiz() {
     ;(async () => {
       let data: { answers?: Answers } | null = null
       try {
-        data = await apiPost<{ answers?: Answers }>('/api/leads')
+        data = await apiPost<{ answers?: Answers }>('/api/leads', { funnel })
       } catch {
         /* sem lead: o PATCH falharia, mas seguimos exibindo a P1 */
         data = { answers: {} }
       }
       if (!active) return
       const answers = data?.answers ?? {}
-      const start = firstUnanswered(answers)
-      if (start >= QUIZ_STEPS.length) {
-        window.location.href = '/resultado'
+      const start = firstUnanswered(answers, steps)
+      if (start >= steps.length) {
+        window.location.href = donePath
         return
       }
       setAnswers(answers)
@@ -56,12 +77,12 @@ export default function Quiz() {
     return () => {
       active = false
     }
-  }, [])
+  }, [funnel, donePath, steps])
 
   if (index == null) return <QuizSkeleton />
 
-  const step = QUIZ_STEPS[index] as QuizStep
-  const progress = Math.round((step.id / TOTAL_PERGUNTAS) * 100)
+  const step = steps[index] as QuizStep
+  const progress = Math.round((step.id / total) * 100)
   const isFirst = index === 0
 
   async function handleSubmit(pairs: AnswerPair[]) {
@@ -81,8 +102,8 @@ export default function Quiz() {
       const merged: Answers = { ...answers }
       for (const p of pairs) merged[p.key] = p.value
       const next = index + 1
-      if (next >= QUIZ_STEPS.length) {
-        window.location.href = '/resultado'
+      if (next >= steps.length) {
+        window.location.href = donePath
         return
       }
       setAnswers(merged)
@@ -139,13 +160,13 @@ export default function Quiz() {
                   Diagnóstico gratuito
                 </p>
                 <h1 className="mx-auto mt-5 max-w-2xl text-3xl font-extrabold leading-[1.08] text-ink sm:text-[2.6rem]">
-                  {LANDING.h1}
+                  {landing.h1}
                 </h1>
                 <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-muted sm:text-lg">
-                  {LANDING.subtitulo}
+                  {landing.subtitulo}
                 </p>
                 <p className="mt-6 inline-flex items-center gap-2 rounded-full border border-line/70 bg-card/40 px-4 py-1.5 text-sm text-cyan">
-                  <span aria-hidden="true">⏱</span> {LANDING.tempo}
+                  <span aria-hidden="true">⏱</span> {landing.tempo}
                 </p>
                 <h2 className="mt-12 text-xl font-bold text-ink sm:text-2xl">{step.titulo}</h2>
                 {step.subtitulo && (
@@ -165,7 +186,7 @@ export default function Quiz() {
             ) : (
               <>
                 <p className="mb-2 text-sm font-semibold text-cyan">
-                  Pergunta {step.id} de {TOTAL_PERGUNTAS}
+                  Pergunta {step.id} de {total}
                 </p>
                 <h1 className="text-2xl font-bold leading-snug text-ink sm:text-3xl">
                   {step.titulo}
@@ -196,6 +217,14 @@ function QuestionRenderer({ step, ...rest }: { step: QuizStep } & BaseQuestionPr
       return <MultiplaEscolha step={step as MultiplaEscolhaStep} {...rest} />
     case 'calculadora':
       return <Calculadora step={step as CalculadoraStep} {...rest} />
+    case 'calculadora_prefilled':
+      return <CalculadoraPrefilled step={step as CalculadoraPrefilledStep} {...rest} />
+    case 'input_numero':
+      return <InputNumero step={step as InputNumeroStep} {...rest} />
+    case 'slider':
+      return <Slider step={step as SliderStep} {...rest} />
+    case 'sim_nao':
+      return <SimNao step={step as SimNaoStep} {...rest} />
     default:
       return null
   }

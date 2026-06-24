@@ -1,6 +1,7 @@
 import 'server-only'
 import { sessionCookieNames } from './lib/cookies'
 import { createShellRoutes } from './routes'
+import { createCertificateRoutes } from './routes/certificate'
 import { createHubRoutes } from './routes/hub'
 import { createStudioRoutes } from './routes/studio'
 import {
@@ -57,6 +58,7 @@ export function createShell(cfg: ShellConfig) {
     ...createShellRoutes({ session, gateway, auth, members, payments, profiles, media }),
     ...createHubRoutes({ hub, members, media, session }),
     ...createStudioRoutes({ hub, members, media }),
+    ...createCertificateRoutes({ members, session }),
   }
 
   return {

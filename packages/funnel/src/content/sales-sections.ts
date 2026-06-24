@@ -169,14 +169,14 @@ export const SALES = {
         titulo: 'Bônus 1. Mini-glossário "O básico que a IA espera que você saiba"',
         texto:
           'tela, fluxo, dado, regra, deploy, prompt, sistema, interface. Palavras simples que fazem diferença pra você parar de concordar com termo que não entende.',
-        img: '/img/bonus-1.webp',
+        img: '/img/no-comando-da-ia/bonus-1.webp',
         imgAlt: 'Mini-glossário "O básico que a IA espera que você saiba" em vários dispositivos',
       },
       {
         titulo: 'Bônus 2. 10 sinais de que você está virando refém da IA',
         texto:
           'um raio-x rápido pra saber se você usa a IA como ferramenta ou já depende dela pra pensar por você. Alguns sinais incomodam, e é justamente por isso que funcionam.',
-        img: '/img/bonus-2.webp',
+        img: '/img/no-comando-da-ia/bonus-2.webp',
         imgAlt: 'Guia "10 sinais de que você está virando refém da IA" em vários dispositivos',
       },
     ] as BonusItem[],
@@ -255,16 +255,19 @@ export const SALES = {
       'Somos Helena e Júlio, criadores do Sistema Zero. Lá em casa, a gente também é o Casal Sistema Zero: cria sistema há mais de dez anos, em empresa grande e nos nossos próprios produtos, como o Cozya e o Agenda da Turma, além de jogos com os nossos filhos. Quando a IA virou febre, vimos muita gente boa, de todas as áreas, travando na hora de criar. Não por falta de capacidade, mas por tentar conversar com a IA sem entender o mínimo de como um sistema funciona. A gente passou por essa onda de outro jeito porque tinha o fundamento: sabia pensar fluxo, dado, regra, tela, usuário, segurança, teste e manutenção. Foi esse jeito de pensar que a gente organizou no método Z.E.R.O., pra devolver o comando pra quem está criando.',
       '(Helena e Júlio são desenvolvedores formados em Sistemas de Informação, com mais de dez anos criando sistemas em empresas como Banco do Brasil, Tractebel e InCeres.)',
     ],
-    foto: { src: '/img/quem-criou.webp', alt: 'Helena e Júlio, o Casal Sistema Zero' },
+    foto: {
+      src: '/img/no-comando-da-ia/quem-criou.webp',
+      alt: 'Helena e Júlio, o Casal Sistema Zero',
+    },
     criacoesTitulo: 'Coisas que a gente já criou com esse mesmo jeito de pensar:',
     prints: [
       {
-        src: '/img/print-cozya.webp',
+        src: '/img/no-comando-da-ia/print-cozya.webp',
         alt: 'Print do Cozya',
         legenda: 'Cozya: um organizador de receitas.',
       },
       {
-        src: '/img/print-agenda-da-turma.webp',
+        src: '/img/no-comando-da-ia/print-agenda-da-turma.webp',
         alt: 'Print do Agenda da Turma',
         legenda: 'Agenda da Turma: um organizador de tarefas escolares.',
       },
@@ -315,3 +318,9 @@ export const SALES = {
     botao: 'Quero pegar o volante',
   },
 }
+
+/**
+ * Shape das seções da página de vendas. Todo funil que usa o template da `/oferta`
+ * fornece um objeto deste formato em `FunnelContent.sales` (ver `src/funnels`).
+ */
+export type SalesSections = typeof SALES

@@ -12,6 +12,7 @@ import type { GetLeagueService } from '../../../application/gamification/get-lea
 import type { GetMissionsService } from '../../../application/gamification/get-missions.service'
 import type { SetVacationService } from '../../../application/gamification/set-vacation.service'
 import type { GetAttachmentDownloadService } from '../../../application/get-attachment-download/get-attachment-download.service'
+import type { GetCertificateService } from '../../../application/get-certificate/get-certificate.service'
 import type { GetCourseProgressService } from '../../../application/get-course-progress/get-course-progress.service'
 import type { GetCourseRatingService } from '../../../application/get-course-rating/get-course-rating.service'
 import type { GetEbookDownloadService } from '../../../application/get-ebook-download/get-ebook-download.service'
@@ -19,6 +20,7 @@ import type { GetLessonService } from '../../../application/get-lesson/get-lesso
 import type { GetMyCourseService } from '../../../application/get-my-course/get-my-course.service'
 import type { GetShowcasePayloadService } from '../../../application/get-showcase-payload/get-showcase-payload.service'
 import type { GetStudioCarryoverService } from '../../../application/get-studio-carryover/get-studio-carryover.service'
+import type { IssueCertificateService } from '../../../application/issue-certificate/issue-certificate.service'
 import type { ListCatalogService } from '../../../application/list-catalog/list-catalog.service'
 import type { ListMyCoursesService } from '../../../application/list-my-courses/list-my-courses.service'
 import type { MarkLessonCompleteService } from '../../../application/mark-lesson-complete/mark-lesson-complete.service'
@@ -32,7 +34,13 @@ import type { SubmitQuizAttemptService } from '../../../application/submit-quiz-
 import type { SubmitStudioProjectService } from '../../../application/submit-studio-project/submit-studio-project.service'
 import { AVATAR_CHAR_STYLE } from '../../../domain/avatar/avatar3d-catalog'
 import type { RoomState } from '../../../domain/room/room-catalog'
-import { assertInternalCaller, isPrivilegedActor, resolveAccountId, resolveUserId } from '../auth'
+import {
+  assertInternalCaller,
+  isPrivilegedActor,
+  resolveAccountId,
+  resolveStudentName,
+  resolveUserId,
+} from '../auth'
 import {
   AccessQuery,
   AttachmentResolveParams,
@@ -40,6 +48,7 @@ import {
   AvatarConfigBody,
   AvatarPartParams,
   AvatarPhotoBody,
+  CertificateParams,
   ChildrenStatsQuery,
   CourseRatingBody,
   EbookResolveParams,
@@ -55,6 +64,7 @@ import {
   RoomStateBody,
   ShowcasePayloadParams,
   SlugLessonParams,
+  SlugParams,
   StudioCarryoverParams,
   StudioSubmissionBody,
   StudioSubmissionParams,
@@ -82,6 +92,8 @@ export interface MembersRoutesDeps {
   submitStudio: SubmitStudioProjectService
   getStudioCarryover: GetStudioCarryoverService
   getShowcasePayload: GetShowcasePayloadService
+  getCertificate: GetCertificateService
+  issueCertificate: IssueCertificateService
   getCourseRating: GetCourseRatingService
   saveCourseRating: SaveCourseRatingService
   getGamification: GetGamificationService
@@ -384,36 +396,48 @@ export function membersRoutes(deps: MembersRoutesDeps) {
         },
         { query: ChildrenStatsQuery },
       )
-      .get('/courses/:slug', async ({ headers, params }) => {
-        const userId = resolveUserId(headers)
-        return deps.getMyCourse.execute(
-          userId,
-          params.slug,
-          isPrivilegedActor(headers),
-          resolveAccountId(headers),
-        )
-      })
-      .get('/courses/:slug/progress', async ({ headers, params }) => {
-        const userId = resolveUserId(headers)
-        return deps.getProgress.execute(
-          userId,
-          params.slug,
-          isPrivilegedActor(headers),
-          resolveAccountId(headers),
-        )
-      })
-      // Classificação do curso (1 por aluno+curso; ver SaveCourseRatingService).
-      .get('/courses/:slug/rating', async ({ headers, params }) => {
-        const userId = resolveUserId(headers)
-        return {
-          rating: await deps.getCourseRating.execute(
+      .get(
+        '/courses/:slug',
+        async ({ headers, params }) => {
+          const userId = resolveUserId(headers)
+          return deps.getMyCourse.execute(
             userId,
             params.slug,
             isPrivilegedActor(headers),
             resolveAccountId(headers),
-          ),
-        }
-      })
+          )
+        },
+        { params: SlugParams },
+      )
+      .get(
+        '/courses/:slug/progress',
+        async ({ headers, params }) => {
+          const userId = resolveUserId(headers)
+          return deps.getProgress.execute(
+            userId,
+            params.slug,
+            isPrivilegedActor(headers),
+            resolveAccountId(headers),
+          )
+        },
+        { params: SlugParams },
+      )
+      // Classificação do curso (1 por aluno+curso; ver SaveCourseRatingService).
+      .get(
+        '/courses/:slug/rating',
+        async ({ headers, params }) => {
+          const userId = resolveUserId(headers)
+          return {
+            rating: await deps.getCourseRating.execute(
+              userId,
+              params.slug,
+              isPrivilegedActor(headers),
+              resolveAccountId(headers),
+            ),
+          }
+        },
+        { params: SlugParams },
+      )
       .put(
         '/courses/:slug/rating',
         async ({ headers, params, body }) => {
@@ -431,7 +455,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             resolveAccountId(headers),
           )
         },
-        { body: CourseRatingBody },
+        { body: CourseRatingBody, params: SlugParams },
       )
       .get(
         '/courses/:slug/lessons/:lessonId',
@@ -576,6 +600,40 @@ export function membersRoutes(deps: MembersRoutesDeps) {
           )
         },
         { params: ShowcasePayloadParams },
+      )
+      // Estado do bloco certificado p/ a UI (emitir vs baixar): `eligible` (todas as
+      // outras aulas concluídas) + `issued`/serial/data se já emitido.
+      .get(
+        '/lessons/:lessonId/blocks/:blockId/certificate',
+        async ({ headers, params }) => {
+          const userId = resolveUserId(headers)
+          return deps.getCertificate.execute({
+            userId,
+            accountId: resolveAccountId(headers),
+            lessonId: params.lessonId,
+            blockId: params.blockId,
+            privileged: isPrivilegedActor(headers),
+          })
+        },
+        { params: CertificateParams },
+      )
+      // Emite o certificado (idempotente por aluno+curso). O nome do aluno vem dos
+      // headers CONFIÁVEIS do gateway (perfil kids / conta), NÃO do corpo. Devolve o
+      // registro + a config do bloco (o BFF monta o PDF). 409 se não elegível.
+      .post(
+        '/lessons/:lessonId/blocks/:blockId/certificate',
+        async ({ headers, params }) => {
+          const userId = resolveUserId(headers)
+          return deps.issueCertificate.execute({
+            userId,
+            accountId: resolveAccountId(headers),
+            lessonId: params.lessonId,
+            blockId: params.blockId,
+            studentName: resolveStudentName(headers),
+            privileged: isPrivilegedActor(headers),
+          })
+        },
+        { params: CertificateParams },
       )
   )
 }

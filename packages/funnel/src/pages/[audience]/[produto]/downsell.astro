@@ -1,0 +1,37 @@
+---
+import Footer from '../../../components/Footer.astro'
+import { getFunnel } from '../../../funnels/registry'
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+
+export const prerender = false
+
+// Passo OPCIONAL (scaffolding): oferta de downsell quando o visitante recusa o
+// upsell. Gated igual ao upsell — nenhum funil usa ainda → 404. Mesma pendência
+// da 2ª cobrança do lead já pago (ver plano/CLAUDE.md).
+const f = getFunnel(Astro.params.audience, Astro.params.produto)
+if (!f) return new Response(null, { status: 404 })
+if (!f.steps.downsell || !f.downsell) return new Response(null, { status: 404 })
+
+Astro.response.headers.set('cache-control', 'no-store')
+
+const downsell = f.downsell
+const acceptPath = `${f.basePath}/checkout`
+const declinePath = `${f.basePath}/obrigado`
+---
+
+<BaseLayout title={`Última chance · ${f.productName}`} noindex={true}>
+  <main class="mx-auto max-w-xl px-4 py-12 text-center sm:py-16">
+    <p class="text-xs font-bold uppercase tracking-[0.18em] text-cyan">Última chance</p>
+    <h1 class="mt-4 text-2xl font-extrabold text-ink sm:text-3xl">{downsell.productName}</h1>
+    <p class="mx-auto mt-4 max-w-md leading-relaxed text-muted">
+      Uma versão mais enxuta, por um valor menor — só por aqui.
+    </p>
+    <div class="mt-8 flex flex-col items-center gap-3">
+      <a href={acceptPath} class="btn btn-primary w-full sm:w-auto">Quero esta versão</a>
+      <a href={declinePath} class="text-sm text-muted underline underline-offset-4">
+        Não, seguir para o acesso
+      </a>
+    </div>
+  </main>
+  <Footer />
+</BaseLayout>

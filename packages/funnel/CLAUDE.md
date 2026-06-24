@@ -15,11 +15,16 @@ Orientações para agentes trabalhando **dentro deste package**. Para setup loca
 
 ## O que é
 
-Funil de vendas do ebook **No Comando da IA** (R$ 37):
-`quiz (10 perguntas em /quiz)` → `resultado personalizado` → `página de vendas` →
-`modal pré-checkout` → `checkout estilo Hotmart (Pix / cartão na UI; boleto só pela API)` →
-`/obrigado` · + páginas legais (`/politica-de-privacidade`, `/termos-de-uso`) · + painel `/admin`.
-`/` redireciona (302) para `/quiz` — a P1 (com imagens) é o primeiro passo da própria ilha do quiz.
+Plataforma **multi-funil** de vendas (vários produtos, por público). Cada funil vive sob
+`/<audience>/<produto>/<passo>` — `audience ∈ {pro (adultos), kids (crianças)}`. Passos:
+`quiz → resultado → oferta (página de vendas) → checkout (Hotmart-style; Pix/cartão na UI, boleto só API) → obrigado`,
+com **upsell/downsell** opcionais. Só `oferta+checkout+obrigado` são obrigatórios; `quiz`,
+`resultado`, `upsell`, `downsell` são opcionais por funil. + legais (`/politica-de-privacidade`,
+`/termos-de-uso`) e painel `/admin` (globais, fora dos funis).
+
+O 1º funil é **No Comando da IA** (R$ 37) em `/pro/no-comando-da-ia/*`. `/` → funil default;
+`/pro` e `/kids` são landings de área (redirecionam ao produto, ou "em breve" se vazia); URLs
+planas antigas (`/quiz`, `/oferta`, …) redirecionam (301) ao funil default. **Ver `## Multi-funil`.**
 
 **Stack:** Astro 6 (`output: 'server'` + `@astrojs/node` standalone, roda no Bun) · ilhas **React 19**
 só onde há interação · **Drizzle + postgres.js** (schema `funil` no Postgres compartilhado com o
@@ -39,6 +44,98 @@ bun run db:generate / db:migrate   # migrations Drizzle (schema funil)
 
 Após qualquer mudança, antes de concluir: **`bun test` + `bun run typecheck` + `bun run check`**
 devem passar (e idealmente `bun run build`, pois é o que valida a middleware/SSR).
+
+## Multi-funil (`src/funnels`)
+
+**Fonte da verdade:** `src/funnels/registry.ts` — `FUNNELS` (map por `${audience}/${produto}`),
+`getFunnel(audience, produto)`, `getFunnelByKey(key)`, `isFunnelKey`, `DEFAULT_FUNNEL`, `FUNNEL_KEYS`.
+Cada produto é um módulo (ex.: `src/funnels/no-comando-da-ia/index.ts`) que monta um `FunnelDef`:
+`catalogOfferSlug`, `productName/Sku`, `basePath`, `imagesBase`, `byline`, `seoTitle/seoDescription`,
+`steps {quiz,resultado,upsell,downsell}` e `content {copy, landing, sales, obrigado, quiz?, hero?,
+result?}`. Os módulos `src/content/*` são o conteúdo DESTE funil (referenciados pelo registry); um
+novo produto traz o seu próprio conteúdo + imagens. O registry é **client-safe** (sem env/segredo/IO)
+— importado por páginas e `/api`, **nunca** por uma ilha (passe dados por prop).
+
+**Adicionar um funil = só registrar:** crie o módulo, adicione em `FUNNELS`, ponha as imagens em
+`public/img/<produto>/`. As rotas `[audience]/[produto]/*`, a resolução de oferta no checkout e a
+navegação passam a funcionar — sem tocar em página, componente ou handler. Para indexar, inclua a
+URL da oferta no `customPages` do sitemap (`astro.config.mjs`).
+
+**Rotas (`src/pages/[audience]/[produto]/`):** uma página por passo (o segmento `[audience]`
+colapsa pro+kids num arquivo só). Cada página resolve `getFunnel(...)`, **404 se o funil ou o passo
+não existir**, lê o conteúdo de `f.content.*` e navega por `f.basePath`. As ilhas NÃO leem a rota —
+recebem tudo por prop: `Quiz` (steps/total/landing/funnel/donePath), `PreCheckoutModal`
+(basePath/funnel), `CheckoutForm`→`Pix/Card/BoletoCheckout` (successPath). `[audience]/index.astro`
+= landing de área (redireciona ao produto, ou "em breve" se vazia). `/` → `DEFAULT_FUNNEL`; URLs
+planas antigas → 301 (config `redirects`).
+
+**Funil no lead + respostas (`leads.funnel` migration 0010; `leads.quiz_answers` jsonb migrations
+0011 [drop das 12 colunas fixas] + 0012 [add `quiz_answers`]):** o funil é gravado na CRIAÇÃO (a
+página passa `f.key` ao `POST /api/leads` e ao `createLead` do checkout; validado com `isFunnelKey`).
+As respostas do quiz vão para o JSON `quiz_answers` (chave snake_case → valor) via
+`repo.mergeQuizAnswers` (merge atômico) — **genérico: cada funil tem o seu quiz, com perguntas
+diferentes** (não há mais colunas por pergunta). A oferta a cobrar sai do funil do lead —
+`CheckoutDeps.resolveOffer(funnel)` (`server/offer.ts` `makeResolveOffer(env)`) → registry, com
+**fallback no env** (`CATALOG_OFFER_SLUG`/`PRODUCT_*`) p/ lead legado/sem funil. `leads.offerRef`
+segue gravado no checkout (a concessão usa ela). ⚠️ O env `CATALOG_OFFER_SLUG`/`PRODUCT_*` virou
+fallback — a oferta de cada funil é declarada no registry.
+
+**Quiz por funil (`FunnelQuiz`):** cada funil declara `steps`, `valueSchema` (zod por chave),
+`derive?(answers)` (calculadas, ex.: custo_mensal) e `computePerfil?(answers)` (diagnóstico → string,
+perfil é POR FUNIL, não mais o enum global). `FunnelResult` traz `profiles` + `perfilLabels` +
+`renderCorpo?`. `patchLead` é GENÉRICO: valida a chave/valor pelo `valueSchema` do funil do lead,
+grava em `quiz_answers`, roda `derive`, e só aceita `eventName` que seja um passo do funil
+(anti-forja de marco server-side). `resultado.astro` usa `computePerfil`+`renderCorpo` do funil;
+`oferta.astro` escolhe o hero por `perfil ∈ porPerfil`. O NCI liga scoring/derive/render em
+`src/funnels/no-comando-da-ia/quiz.ts`. **Adicionar o quiz de um produto = só preencher o
+`FunnelQuiz` do módulo dele** (perguntas, validação, e — opcional — diagnóstico/resultado).
+
+**Tipos de pergunta (`src/content/quiz-config.ts` → união `QuizStep`):** `multipla_escolha`
+(clicar avança; `comImagem` faz cards com imagem — exige `image` em TODAS as opções, senão cai no
+layout compacto com `badge`), `calculadora` (2 campos → `derive` calcula o `resultadoKey` no
+servidor), `calculadora_prefilled` (igual, mas `campo1.sourceKey` pré-preenche de uma resposta
+anterior; preview = `campo1 × campo2 × multiplicador`), `input_numero`, `slider` (min..max + rótulos
+das pontas), `sim_nao`. Cada tipo tem um renderer em `src/islands/questions/` (chamam
+`onSubmit([{key,value}])`); pontos a estender ao add um tipo: o `switch` + `firstUnanswered` em
+`islands/Quiz.tsx`, `isQuizComplete` + `quizAnswerLabels` no registry, e o `find` de passo em
+`server/leads.ts patchLead`. As calculadoras NÃO enviam o `resultadoKey` (o `derive` o calcula
+server-side — invariante 3); `isQuizComplete` exige campo1/campo2/resultadoKey.
+
+**Tema por funil (`FunnelDef.theme`):** `theme:'kids'` → as páginas passam
+`htmlClass={f.theme ? 'theme-'+f.theme : undefined}` ao `BaseLayout` (compatível com o `dark` do
+admin). O escopo `.theme-kids` em `global.css` **redefine os tokens** `--color-*` (navy + ciano +
+laranja) e a `--font-sans` → Nunito (h1–h3 Fredoka, via `@fontsource`). Como as utilitárias
+(`text-lime`/`bg-card`/`border-line`…) são `var(--color-*)`, **todas as páginas/ilhas compartilhadas
+re-skinam sem mudar markup** (quiz, resultado, checkout, obrigado, PreCheckoutModal). No tema kids,
+`--color-lime` = LARANJA (CTA) e `--color-cyan` = ciano.
+
+**Oferta POR FUNIL (`src/pages/[audience]/[produto]/oferta.astro` despacha o body):** a rota resolve
+preço/perfil e renderiza `f.content.sales ? NoComandoOfertaBody : DesafioOfertaBody`. `content.sales`
+(shape `SalesSections`) é **opcional** — funis com layout de vendas próprio (o Desafio) trazem a cópia
+no próprio body e ficam sem `sales`. Cada body monta o seu PRÓPRIO `<BaseLayout>` (título/tema/JSON-LD/
+preload). `src/components/funnel/oferta/NoComandoOfertaBody.astro` = template padrão (16 seções a
+partir de `SALES`); `DesafioOfertaBody.astro` = layout sob medida, fiel ao mockup, com o CSS bespoke
+num `<style>` Astro escopado por `.dpj` (tokens próprios no wrapper, não no `:root`) e ícones
+**Material Symbols self-hosted** (`@fontsource/material-symbols-outlined`). Os CTAs de compra levam
+`data-checkout-cta` → o `PreCheckoutModal` (mesma ilha do NCI) abre o checkout.
+
+**Funil kids "Desafio do Primeiro Jogo" (`kids/desafio-primeiro-jogo`, R$ 37):** criança 9+ monta um
+jogo de nave em 3 dias; **comunicação SEMPRE aos pais** (CONANDA/ECA — rodapé com o aviso legal).
+Módulo em `src/funnels/desafio-primeiro-jogo/` (index/quiz/content): perfil = a resposta da P1
+(`perfil_p1`, sem motor de scoring), `derive` = `horas_ano_calculadas = horas/dia × dias/semana × 52`,
+`renderCorpo` resolve `{resposta_p3}`/`{resposta_p5}`/`{resultado}`. A oferta no catálogo
+(slug `desafio-primeiro-jogo`, âncora R$ 97) é passo da usuária no admin (igual ao NCI).
+
+**Admin por funil (`/admin`):** seletor de funil no topo filtra as 3 abas. `adminLeads/adminFunnel/
+adminPerfis` aceitam `?funnel=` (repo filtra por `leads.funnel`; `eventCounts` junta ao lead).
+A página passa `adminFunnelList()` (rótulos do dropdown + rótulos de respostas/perfis por funil) ao
+`AdminDashboard`. `RespostasTable` mostra as respostas do `quiz_answers` rotuladas pelas perguntas do
+funil + coluna Funil; Perfis/Performance rotulam por funil (perguntas viram "Pergunta N").
+
+**Pendência (decidida):**
+- **Upsell/downsell:** rotas + flags + cadeia de `successPath` prontas (scaffolding; **404 até** um
+  funil definir `upsell`/`downsell` no `FunnelDef`). A 2ª cobrança de um lead JÁ PAGO (guard
+  `409 ALREADY_PAID` no checkout) será finalizada quando existir uma oferta de upsell real.
 
 ## Arquitetura (o padrão central — preserve-o)
 

@@ -38,9 +38,11 @@ function deps(
   return {
     repo,
     gateway: gw.gateway,
-    offerSlug: 'no-comando-da-ia',
-    productName: 'No Comando da IA',
-    productSku: 'no-comando-da-ia',
+    resolveOffer: () => ({
+      offerSlug: 'no-comando-da-ia',
+      productName: 'No Comando da IA',
+      productSku: 'no-comando-da-ia',
+    }),
     fulfill: makeFulfill({ repo, gateway: gw.gateway }),
     grantMembers: makeGrantMembers({ gateway: gw.gateway, offerRef: 'no-comando-da-ia', repo }),
     log,

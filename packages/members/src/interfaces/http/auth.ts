@@ -84,6 +84,31 @@ export function resolveAccountId(headers: Record<string, string | undefined>): s
   return resolveUserId(headers)
 }
 
+/**
+ * O gateway URI-encoda valores de header com não-ASCII (`headerSafeValue` —
+ * "André" chega como `Andr%C3%A9`). Decodifica de volta; se não for encoding válido,
+ * devolve o valor cru (defensivo). Somos o 1º consumidor a LER o nome do aluno.
+ */
+function decodeHeaderValue(value: string): string {
+  if (!value.includes('%')) return value
+  try {
+    return decodeURIComponent(value)
+  } catch {
+    return value
+  }
+}
+
+/**
+ * Nome de EXIBIÇÃO confiável do aluno para o certificado (snapshot imutável). Em sessão
+ * de PERFIL (kids) o gateway injeta `x-auth-profile-name` (nome da criança); senão usa o
+ * `x-auth-user-name` da conta (`firstName lastName`). Ambos URI-encodados pelo gateway.
+ * Vazio se nenhum existir (o serviço barra a emissão sem nome).
+ */
+export function resolveStudentName(headers: Record<string, string | undefined>): string {
+  const raw = headers['x-auth-profile-name'] ?? headers['x-auth-user-name'] ?? ''
+  return decodeHeaderValue(raw).trim()
+}
+
 /** Comparação em tempo constante (evita timing attack no token interno). */
 function safeEqual(a: string, b: string): boolean {
   const ab = Buffer.from(a)

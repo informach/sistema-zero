@@ -19,11 +19,22 @@ cyan→lime→gradiente via `unit-theme.ts`, aula = nó circular; trilha LIVRE �
 todos os nós clicáveis; sem ícone por tipo: a outline não expõe blocos) e **celebração** ao
 concluir aula (`lesson-celebration.tsx`: mascote + confete CSS puro + barra antes→depois; o
 `complete()` não-silent abre o overlay em vez de navegar; auto-complete a ~90% segue só com
-toast). **Mascote-faísca** = estrela da logo com rosto (`mascot.tsx`, expressions
-happy/celebrating/thinking/sleeping; `useId` p/ o gradiente). **Página de aula kids (2ª rodada
+toast). **Mascote Zappy** = o robô oficial da marca (`mascot.tsx`, um sprite WebP transparente
+1:1 por expressão em `public/zappy/`, expressions happy/celebrating/thinking/sleeping; `<img>`
+server-safe — a className controla o tamanho e herda `kid-float`/`kid-wiggle`/`animate-pulse`). A
+**moeda Zappy** (`zappy-coin.tsx` → `<ZappyCoin>`, WebP em `public/zappy/coin.webp`) substituiu o
+ícone genérico `Coins` do lucide nos 6 pontos de saldo/recompensa (streak-widget, missions-panel,
+lesson-celebration, room-builder, configurator). **Página de aula kids (2ª rodada
 06/2026)**: header de "lição" (voltar em círculo + progresso + chip AULA N DE M), sidebar =
 mini-trilha numerada por unidade, e FORKS DE APRESENTAÇÃO dos renderers do member-shell —
-`kids-lesson-blocks.tsx` (chips de atividade Assista/Escute/Brinque/Leia o livro/**Crie** + molduras;
+`kids-lesson-blocks.tsx` (chips de atividade Assista/Escute/Brinque/Leia o livro/**Crie**/**Conquiste** +
+molduras; o bloco **`certificate`** (chip "Conquiste", última aula do curso) REUSA o `CertificateBlockView`
+do member-shell — bloqueado até concluir TODAS as outras aulas, depois "Emitir" → baixa o PDF; a validação
+por QR abre a página PÚBLICA **`/validar/[id]`** (FORA do grupo `(app)`, sem login, `noindex`, igual a
+`/jogar` — busca a validação no servidor pelo client público do members). Shims `/api/members/lessons/[lessonId]/
+blocks/[blockId]/certificate` (GET estado + POST emitir/baixar) e `/api/certificates/[id]/validate` (público,
+no negative-lookahead do matcher do proxy); env `APP_PUBLIC_URL` p/ o QR. O members é o portão (ver
+`../members/CLAUDE.md`); PDF/QR/R2 vivem no member-shell.
 o bloco **`studio`** (chip "Crie") REUSA o `StudioBlockView` do member-shell — editor embarcado,
 rascunho local, "Enviar para o professor" + gate de conclusão `STUDIO_GATE_NOT_SUBMITTED` (sem envio)
 ou `STUDIO_GATE_NOT_PASSED` (atividade enviada, mas abaixo da nota mínima); o `lesson-player-client`

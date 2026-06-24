@@ -1,6 +1,7 @@
-import { Coins, Flame, Sparkles } from 'lucide-react'
+import { Flame, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/cn'
 import type { GamificationMeView } from '@/lib/types'
+import { ZappyCoin } from './zappy-coin'
 
 /**
  * Widget de streak + XP + moedas Zappy (sidebar do desktop e top bar do mobile).
@@ -45,7 +46,7 @@ export function StreakWidget({
         </span>
         {coins !== undefined ? (
           <span className="inline-flex items-center gap-1 [font-family:var(--font-display)] font-bold">
-            <Coins className="size-4" />
+            <ZappyCoin className="size-4" />
             {coinsDisplay}
           </span>
         ) : null}
@@ -79,7 +80,7 @@ export function StreakWidget({
         <>
           <span aria-hidden="true" className="h-5 w-px bg-border" />
           <span className="flex items-center gap-1.5">
-            <Coins className="size-5" />
+            <ZappyCoin className="size-5" />
             <span className="[font-family:var(--font-display)] font-bold text-sm">
               {coinsDisplay}
             </span>

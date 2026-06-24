@@ -1,4 +1,5 @@
 import {
+  CertificateGateNotIssuedError,
   LessonNotFoundError,
   QuizGateNotPassedError,
   StudioGateNotPassedError,
@@ -84,6 +85,10 @@ export class MarkLessonCompleteService {
             b.content.kind === 'studio' && b.content.activity?.passingScore !== undefined
           if (gated && !state.passed) throw new StudioGateNotPassedError()
         }
+      }
+
+      if (lesson.blocks.some((b) => b.content.kind === 'certificate')) {
+        throw new CertificateGateNotIssuedError()
       }
     }
 

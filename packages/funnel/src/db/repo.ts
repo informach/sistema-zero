@@ -1,9 +1,9 @@
-import { asc, desc, eq, ilike, or, type SQL, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, ilike, or, type SQL, sql } from 'drizzle-orm'
 import type { Database } from './client'
 import { funnelEvents, leadPayments, leads, processedWebhooks } from './schema'
 
 export type Lead = typeof leads.$inferSelect
-/** Colunas do lead que podem ser atualizadas via PATCH (contato + chaves do quiz). */
+/** Campos do lead atualizáveis via updateLead (contato/funil/perfil; respostas em quiz_answers). */
 export type LeadUpdate = Partial<typeof leads.$inferInsert>
 
 export interface EventCount {
@@ -17,12 +17,14 @@ export interface PerfilCount {
   count: number
 }
 
-/** Filtro/ordenação da listagem de leads (busca por nome/e-mail + data). */
+/** Filtro/ordenação da listagem de leads (busca por nome/e-mail + funil + data). */
 export interface LeadFilter {
   /** Busca case-insensitive em nome OU e-mail. */
   q?: string
   /** Ordem por `created_at` (default `desc` = mais recentes primeiro). */
   sort?: 'asc' | 'desc'
+  /** Filtra por funil de origem (`${audience}/${produto}`). */
+  funnel?: string
 }
 
 /**
@@ -34,12 +36,17 @@ function escapeLike(term: string): string {
   return term.replace(/[\\%_]/g, (ch) => `\\${ch}`)
 }
 
-/** WHERE compartilhado por `listLeads`/`countLeads` (mesma busca → mesmo total). */
-function leadSearchWhere(q?: string): SQL | undefined {
-  const term = q?.trim()
-  if (!term) return undefined
-  const like = `%${escapeLike(term)}%`
-  return or(ilike(leads.nome, like), ilike(leads.email, like))
+/** WHERE compartilhado por `listLeads`/`countLeads` (busca nome/e-mail + funil). */
+function leadWhere(filter?: Pick<LeadFilter, 'q' | 'funnel'>): SQL | undefined {
+  const conds: SQL[] = []
+  const term = filter?.q?.trim()
+  if (term) {
+    const like = `%${escapeLike(term)}%`
+    const search = or(ilike(leads.nome, like), ilike(leads.email, like))
+    if (search) conds.push(search)
+  }
+  if (filter?.funnel) conds.push(eq(leads.funnel, filter.funnel))
+  return conds.length ? and(...conds) : undefined
 }
 
 /**
@@ -47,9 +54,12 @@ function leadSearchWhere(q?: string): SQL | undefined {
  * injetam um fake em memória (DI leve, no espírito do composition-root do payments).
  */
 export interface FunnelRepo {
-  createLead(): Promise<{ id: string }>
+  /** Cria um lead. `funnel` (`${audience}/${produto}`) registra a origem na criação. */
+  createLead(funnel?: string | null): Promise<{ id: string }>
   getLead(id: string): Promise<Lead | null>
   updateLead(id: string, set: LeadUpdate): Promise<void>
+  /** Mescla respostas no JSON `quiz_answers` (genérico — chaves do quiz de qualquer funil). */
+  mergeQuizAnswers(id: string, patch: Record<string, string | number>): Promise<void>
   /**
    * Aponta o lead p/ a cobrança + grava o par no histórico (`lead_payments`),
    * com o cupom aplicado NESTA cobrança (o redeem da confirmação lê de lá).
@@ -90,10 +100,11 @@ export interface FunnelRepo {
     metadata?: Record<string, unknown> | null,
   ): Promise<void>
   listLeads(limit: number, offset: number, filter?: LeadFilter): Promise<Lead[]>
-  countLeads(q?: string): Promise<number>
-  eventCounts(): Promise<EventCount[]>
-  /** Contagem de leads por `perfil_resultado` (ignora nulos). */
-  perfilCounts(): Promise<PerfilCount[]>
+  countLeads(filter?: Pick<LeadFilter, 'q' | 'funnel'>): Promise<number>
+  /** Conversão por evento; `funnel` opcional restringe aos leads daquele funil. */
+  eventCounts(funnel?: string): Promise<EventCount[]>
+  /** Contagem de leads por `perfil_resultado` (ignora nulos); `funnel` opcional filtra. */
+  perfilCounts(funnel?: string): Promise<PerfilCount[]>
   /** True se o delivery id já foi processado (dedupe de webhook). */
   isWebhookProcessed(deliveryId: string): Promise<boolean>
   /** Insere o delivery id; retorna false se já existia (webhook duplicado). */
@@ -102,8 +113,11 @@ export interface FunnelRepo {
 
 export function createFunnelRepo(db: Database): FunnelRepo {
   return {
-    async createLead() {
-      const [row] = await db.insert(leads).values({}).returning({ id: leads.id })
+    async createLead(funnel = null) {
+      const [row] = await db
+        .insert(leads)
+        .values({ funnel: funnel ?? null })
+        .returning({ id: leads.id })
       return { id: row!.id }
     },
 
@@ -116,6 +130,18 @@ export function createFunnelRepo(db: Database): FunnelRepo {
       await db
         .update(leads)
         .set({ ...set, updatedAt: new Date() })
+        .where(eq(leads.id, id))
+    },
+
+    async mergeQuizAnswers(id, patch) {
+      // Mescla (atômico) o patch no JSON de respostas: `coalesce(quiz_answers,{}) || patch`.
+      // Genérico — aceita as chaves de QUALQUER funil (o quiz do produto define quais).
+      await db
+        .update(leads)
+        .set({
+          quizAnswers: sql`coalesce(${leads.quizAnswers}, '{}'::jsonb) || ${JSON.stringify(patch)}::jsonb`,
+          updatedAt: new Date(),
+        })
         .where(eq(leads.id, id))
     },
 
@@ -202,41 +228,51 @@ export function createFunnelRepo(db: Database): FunnelRepo {
 
     async listLeads(limit, offset, filter) {
       const order = filter?.sort === 'asc' ? asc(leads.createdAt) : desc(leads.createdAt)
-      return db
+      const rows = await db
         .select()
         .from(leads)
-        .where(leadSearchWhere(filter?.q))
+        .where(leadWhere(filter))
         .orderBy(order)
         .limit(limit)
         .offset(offset)
+      return rows
     },
 
-    async countLeads(q) {
+    async countLeads(filter) {
       const [row] = await db
         .select({ n: sql<number>`count(*)::int` })
         .from(leads)
-        .where(leadSearchWhere(q))
+        .where(leadWhere(filter))
       return row?.n ?? 0
     },
 
-    async eventCounts() {
-      return db
-        .select({
-          eventName: funnelEvents.eventName,
-          leads: sql<number>`count(distinct ${funnelEvents.leadId})::int`,
-        })
-        .from(funnelEvents)
-        .groupBy(funnelEvents.eventName)
+    async eventCounts(funnel) {
+      const cols = {
+        eventName: funnelEvents.eventName,
+        leads: sql<number>`count(distinct ${funnelEvents.leadId})::int`,
+      }
+      // Filtra por funil juntando ao lead de origem (funnel_events não guarda funil).
+      if (funnel) {
+        return db
+          .select(cols)
+          .from(funnelEvents)
+          .innerJoin(leads, eq(funnelEvents.leadId, leads.id))
+          .where(eq(leads.funnel, funnel))
+          .groupBy(funnelEvents.eventName)
+      }
+      return db.select(cols).from(funnelEvents).groupBy(funnelEvents.eventName)
     },
 
-    async perfilCounts() {
+    async perfilCounts(funnel) {
+      const notNull = sql`${leads.perfilResultado} is not null`
+      const where = funnel ? and(notNull, eq(leads.funnel, funnel)) : notNull
       const rows = await db
         .select({
           perfil: leads.perfilResultado,
           count: sql<number>`count(*)::int`,
         })
         .from(leads)
-        .where(sql`${leads.perfilResultado} is not null`)
+        .where(where)
         .groupBy(leads.perfilResultado)
       // O WHERE garante perfil não-nulo em runtime; estreita o tipo p/ a interface.
       return rows.map((r) => ({ perfil: r.perfil as string, count: r.count }))

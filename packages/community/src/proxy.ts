@@ -19,6 +19,9 @@ export const config = {
   // `api/me/avatar` e o upload de imagem do hub (`api/hub/uploads/image`) ficam
   // FORA do matcher: são multipart e o proxy copiaria o corpo à toa; ambas as
   // rotas têm guard próprio (sessão estrita + a MESMA checagem anti-CSRF dentro
-  // do `requireUploadSession`).
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|api/me/avatar|api/hub/uploads/image).*)'],
+  // do `requireUploadSession`). `api/certificates` (validação PÚBLICA por QR, sem
+  // login) também fica de fora — sem gate de sessão.
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|api/me/avatar|api/hub/uploads/image|api/certificates).*)',
+  ],
 }

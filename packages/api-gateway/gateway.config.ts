@@ -1304,6 +1304,43 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
+    // Certificado de conclusão (bloco da última aula). GET = estado (elegível/emitido);
+    // POST = emite (idempotente no members). Mesma régua das demais rotas do aluno
+    // (JWT + conta ativa + `x-internal-token`); distinção GET/POST pelo método (leaf
+    // `certificate` ≠ quiz-attempts/studio-submission). O PDF é montado no BFF.
+    {
+      id: 'members-certificate-state',
+      methods: ['GET'],
+      pathPattern: '/members/lessons/:lessonId/blocks/:blockId/certificate',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'members-certificate-issue',
+      methods: ['POST'],
+      pathPattern: '/members/lessons/:lessonId/blocks/:blockId/certificate',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+    },
+    // Validação PÚBLICA do certificado pelo id (lido do QR — `/validar/:id`): SEM login
+    // (o BFF chama server-side, sem Bearer), mas o gateway injeta o `x-internal-token`
+    // (a rota do members é interna). Só dados não-sensíveis; rate limit por IP.
+    {
+      id: 'members-certificate-validate',
+      methods: ['GET'],
+      pathPattern: '/members/internal/certificates/:id/validate',
+      service: 'members',
+      auth: 'public',
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'ip' },
+    },
     // Concessão/assinatura (funil → gateway → members): HMAC de borda do funil +
     // o gateway re-assina como consumer `gateway` (members verifica com GATEWAY_HMAC_SECRET).
     {
@@ -1461,6 +1498,18 @@ const config: GatewayConfigInput = {
       authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    // Revogar um certificado emitido (a validação pública passa a mostrar inválido).
+    // 4 segmentos — não colide com as demais rotas admin.
+    {
+      id: 'members-admin-certificate-revoke',
+      methods: ['POST'],
+      pathPattern: '/members/admin/certificates/:id/revoke',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
     },
 
     // ── Mensageria (@sistemazero/messaging) ─────────────────────────────────

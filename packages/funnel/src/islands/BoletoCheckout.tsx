@@ -27,9 +27,12 @@ interface StatusResp {
 export default function BoletoCheckout({
   email,
   couponCode,
+  successPath,
 }: {
   email: string
   couponCode?: string
+  /** Para onde ir quando o pagamento confirmar (próximo passo do funil; obrigatório). */
+  successPath: string
 }) {
   const [cpf, setCpf] = useState('')
   const [address, setAddress] = useState<AddressValue>(emptyAddress)
@@ -88,14 +91,14 @@ export default function BoletoCheckout({
         const r = await apiGet<StatusResp>(`/api/checkout/${paymentId}`)
         if (r.status === 'PAID') {
           clearInterval(timer)
-          window.location.href = '/obrigado'
+          window.location.href = successPath
         }
       } catch {
         /* tenta no próximo ciclo */
       }
     }, 3500)
     return () => clearInterval(timer)
-  }, [paymentId])
+  }, [paymentId, successPath])
 
   async function copiar() {
     if (!boleto) return

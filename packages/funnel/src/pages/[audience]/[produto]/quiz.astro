@@ -1,0 +1,47 @@
+---
+import { getFunnel } from '../../../funnels/registry'
+import Quiz from '../../../islands/Quiz'
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+
+// SSR de propósito: página pré-renderizada é servida estática SEM passar pela
+// middleware → ficaria SEM security headers em produção. O shell é trivial; o
+// cache público curto compensa.
+export const prerender = false
+
+// Funil resolvido pela URL; sem o passo de quiz habilitado → 404.
+const f = getFunnel(Astro.params.audience, Astro.params.produto)
+if (!f) return new Response(null, { status: 404 })
+if (!f.steps.quiz || !f.content.quiz) return new Response(null, { status: 404 })
+
+Astro.response.headers.set('cache-control', 'public, max-age=60, stale-while-revalidate=300')
+
+const quiz = f.content.quiz
+// Ao concluir: vai ao diagnóstico (se o funil tiver) ou direto à oferta.
+const donePath = f.steps.resultado ? `${f.basePath}/resultado` : `${f.basePath}/oferta`
+
+// Pré-carrega as imagens da P1 (se houver) — o preload scanner as acha no <head>
+// e baixa em paralelo (sem isso só baixariam após hidratar + chamar a API).
+const firstStep = quiz.steps[0]
+const q1Images =
+  firstStep && firstStep.tipo === 'multipla_escolha'
+    ? firstStep.opcoes.map((o) => o.image).filter((s): s is string => Boolean(s))
+    : []
+---
+
+<BaseLayout
+  title={`Quiz · ${f.productName}`}
+  noindex={true}
+  htmlClass={f.theme ? `theme-${f.theme}` : undefined}
+>
+  <Fragment slot="head">
+    {q1Images.map((src) => <link rel="preload" as="image" href={src} type="image/webp" />)}
+  </Fragment>
+  <Quiz
+    client:load
+    steps={quiz.steps}
+    total={quiz.total}
+    landing={f.content.landing}
+    funnel={f.key}
+    donePath={donePath}
+  />
+</BaseLayout>

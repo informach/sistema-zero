@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import type { Logger } from '@sistemazero/core/logging'
 import { type AvatarConfig, defaultAvatarConfig } from '../../src/domain/avatar/avatar-config'
+import type { CertificateRecord } from '../../src/domain/certificate/certificate'
 import {
   type Course,
   type CourseAudience,
@@ -37,6 +38,7 @@ import {
 import type { MissionGoalType } from '../../src/domain/gamification/missions'
 import type { AvatarRepository } from '../../src/domain/ports/avatar-repository.port'
 import type { CatalogGateway, ResolvedOffer } from '../../src/domain/ports/catalog-gateway.port'
+import type { CertificateRepository } from '../../src/domain/ports/certificate-repository.port'
 import type {
   AttachmentFields,
   ContentAdminRepository,
@@ -648,6 +650,33 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
       const b = this.blocks.find((x) => x.id === id)
       if (b) b.sortOrder = i
     })
+  }
+
+  async findBlockCourseId(id: string): Promise<string | null> {
+    const block = this.blocks.find((b) => b.id === id)
+    if (!block) return null
+    return this.lessons.find((l) => l.id === block.lessonId)?.courseId ?? null
+  }
+
+  async findBlockLessonId(id: string): Promise<string | null> {
+    return this.blocks.find((b) => b.id === id)?.lessonId ?? null
+  }
+
+  async lessonHasCertificateBlock(lessonId: string): Promise<boolean> {
+    return this.blocks.some((b) => b.lessonId === lessonId && b.content.kind === 'certificate')
+  }
+
+  async countCertificateBlocks(
+    courseId: string,
+    opts: { excludeBlockId?: string } = {},
+  ): Promise<number> {
+    const lessonIds = new Set(this.lessons.filter((l) => l.courseId === courseId).map((l) => l.id))
+    return this.blocks.filter(
+      (b) =>
+        b.content.kind === 'certificate' &&
+        lessonIds.has(b.lessonId) &&
+        b.id !== opts.excludeBlockId,
+    ).length
   }
 
   async createAttachment(lessonId: string, fields: AttachmentFields): Promise<LessonAttachment> {
@@ -1798,6 +1827,34 @@ export class InMemoryProcessedWebhookRepository implements ProcessedWebhookRepos
   }
   async markProcessed(deliveryId: string): Promise<void> {
     this.seen.add(deliveryId)
+  }
+}
+
+export class InMemoryCertificateRepository implements CertificateRepository {
+  readonly rows: CertificateRecord[] = []
+
+  async findByUserAndCourse(userId: string, courseId: string): Promise<CertificateRecord | null> {
+    return this.rows.find((r) => r.userId === userId && r.courseId === courseId) ?? null
+  }
+
+  async insertIfAbsent(record: CertificateRecord): Promise<CertificateRecord> {
+    // Mirror do UNIQUE (user_id, course_id): se já há cert do aluno+curso, no-op e
+    // devolve o vigente; senão insere.
+    const existing = this.rows.find(
+      (r) => r.userId === record.userId && r.courseId === record.courseId,
+    )
+    if (existing) return existing
+    this.rows.push({ ...record })
+    return record
+  }
+
+  async findById(id: string): Promise<CertificateRecord | null> {
+    return this.rows.find((r) => r.id === id) ?? null
+  }
+
+  async revoke(id: string, revokedAt: Date): Promise<void> {
+    const row = this.rows.find((r) => r.id === id)
+    if (row) row.revokedAt = revokedAt
   }
 }
 

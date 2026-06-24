@@ -8,6 +8,9 @@ import type {
   AvatarPurchaseResult,
   AvatarStateView,
   CatalogCourseView,
+  CertificateIssueView,
+  CertificateStateView,
+  CertificateValidationView,
   ChildStatsView,
   CourseDetailView,
   CourseFeedbackAnswers,
@@ -132,6 +135,28 @@ async function publicPost(path: string, body: unknown): Promise<GatewayResponse>
     return {
       status: 503,
       body: { error: { code: 'SERVICE_UNAVAILABLE', message: 'Serviço indisponível.' } },
+    }
+  }
+}
+
+/**
+ * GET a uma rota PÚBLICA do gateway (sem Bearer) — a validação do certificado
+ * (`/validar/:id`) não tem sessão. O gateway injeta o `x-internal-token`; propaga a
+ * prova de origem (rate limit por IP da rota).
+ */
+async function publicGet<T>(path: string): Promise<GatewayResponse<T>> {
+  const env = getEnv()
+  try {
+    const res = await fetch(new URL(path, env.GATEWAY_URL), {
+      headers: { ...(await clientForwardHeaders()) },
+      cache: 'no-store',
+      signal: AbortSignal.timeout(AUTH_TIMEOUT_MS),
+    })
+    return { status: res.status, body: await res.json().catch(() => null) }
+  } catch {
+    return {
+      status: 503,
+      body: { error: { code: 'SERVICE_UNAVAILABLE', message: 'Serviço indisponível.' } } as T,
     }
   }
 }
@@ -528,6 +553,42 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       return gw.gatewayFetch(
         `/members/lessons/${enc(lessonId)}/blocks/${enc(blockId)}/showcase-payload`,
         { method: 'GET' },
+      )
+    },
+
+    // ── Certificado de conclusão ─────────────────────────────────────────────
+    /** Estado do bloco certificado (elegível p/ emitir? já emitido?). */
+    getCertificateState(
+      lessonId: string,
+      blockId: string,
+    ): Promise<GatewayResponse<CertificateStateView>> {
+      return gw.gatewayFetch(
+        `/members/lessons/${enc(lessonId)}/blocks/${enc(blockId)}/certificate`,
+        { method: 'GET' },
+      )
+    },
+
+    /**
+     * Emite o certificado (idempotente por aluno+curso). Devolve o registro imutável +
+     * a config do bloco (o BFF monta o PDF). 409 se ainda não concluiu todas as aulas.
+     */
+    issueCertificate(
+      lessonId: string,
+      blockId: string,
+    ): Promise<GatewayResponse<CertificateIssueView>> {
+      return gw.gatewayFetch(
+        `/members/lessons/${enc(lessonId)}/blocks/${enc(blockId)}/certificate`,
+        { method: 'POST' },
+      )
+    },
+
+    /**
+     * Validação PÚBLICA do certificado pelo id (lido do QR). Sem sessão (a página
+     * `/validar/:id` é anônima) — chama a rota `public` do gateway, que injeta o token interno.
+     */
+    validateCertificate(id: string): Promise<GatewayResponse<CertificateValidationView>> {
+      return publicGet<CertificateValidationView>(
+        `/members/internal/certificates/${enc(id)}/validate`,
       )
     },
   }

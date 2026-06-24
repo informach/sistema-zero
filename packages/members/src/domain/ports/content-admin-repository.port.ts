@@ -108,6 +108,14 @@ export interface ContentAdminRepository {
   deleteBlock(id: string): Promise<boolean>
   listBlockIds(lessonId: string): Promise<string[]>
   reorderBlocks(lessonId: string, orderedIds: string[]): Promise<void>
+  /** Curso dono do bloco (join bloco→aula). */
+  findBlockCourseId(id: string): Promise<string | null>
+  /** Aula dona do bloco (join bloco→aula). */
+  findBlockLessonId(id: string): Promise<string | null>
+  /** Quantos blocos de certificado existem no curso (com exclusão p/ update). */
+  countCertificateBlocks(courseId: string, opts?: { excludeBlockId?: string }): Promise<number>
+  /** A aula contém algum bloco de certificado? (mantém a aula do certificado exclusiva.) */
+  lessonHasCertificateBlock(lessonId: string): Promise<boolean>
 
   // ── Anexos ──
   createAttachment(lessonId: string, fields: AttachmentFields): Promise<LessonAttachment>

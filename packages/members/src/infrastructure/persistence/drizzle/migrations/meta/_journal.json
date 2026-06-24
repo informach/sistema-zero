@@ -176,6 +176,13 @@
       "when": 1782062392671,
       "tag": "0024_yellow_next_avengers",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1782245292078,
+      "tag": "0025_add_certificates",
+      "breakpoints": true
     }
   ]
 }

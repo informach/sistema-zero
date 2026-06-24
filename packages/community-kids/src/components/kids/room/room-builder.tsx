@@ -1,7 +1,6 @@
 'use client'
 
 import {
-  Coins,
   Frame,
   LayoutGrid,
   Lightbulb,
@@ -29,6 +28,7 @@ import {
 } from '@/lib/room-catalog'
 import type { RoomEditorView, RoomItemView, RoomStateView, RoomThemeView } from '@/lib/types'
 import { KidsMascot } from '../mascot'
+import { ZappyCoin } from '../zappy-coin'
 import { effectiveFootprint, type Rot, rectsOverlap, WALL_H_CELLS, wallLength } from './coords'
 import { RoomCanvas } from './room-canvas'
 
@@ -534,7 +534,7 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
 
       <div className="flex items-center justify-between">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-(--kids-lime-tint) px-3 py-1 [font-family:var(--font-display)] font-bold text-sm">
-          <Coins className="size-4" /> {coinsUnlimited ? '∞' : balance}
+          <ZappyCoin className="size-4" /> {coinsUnlimited ? '∞' : balance}
         </span>
         <button
           type="button"
