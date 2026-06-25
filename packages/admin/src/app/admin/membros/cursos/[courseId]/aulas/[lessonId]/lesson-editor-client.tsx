@@ -63,6 +63,13 @@ const KIND_LABELS: Record<string, string> = {
   studio: 'Estúdio',
 }
 
+// Largura do modal de bloco por tipo: só os que embutem editor PESADO fogem do `max-w-lg` padrão
+// (o Estúdio = IDE blocos/código/preview; o quiz = editores de texto rico por pergunta/opção).
+const BLOCK_DIALOG_WIDTH: Record<string, string> = {
+  studio: 'max-w-7xl',
+  quiz: 'max-w-4xl',
+}
+
 const STUDIO_LEVELS: { value: BlockLevel; label: string }[] = [
   { value: 'iniciante', label: 'Iniciante' },
   { value: 'intermediario', label: 'Intermediário' },
@@ -632,6 +639,9 @@ export function LessonEditorClient({
         open={blockOpen}
         onClose={() => setBlockOpen(false)}
         title={editingBlock ? 'Editar bloco' : 'Adicionar bloco'}
+        // Estúdio (IDE) e quiz (editores de texto rico) precisam de mais largura que os blocos
+        // simples (texto/imagem/etc.), que seguem no `max-w-lg` padrão do Dialog.
+        className={BLOCK_DIALOG_WIDTH[blockForm.kind]}
         footer={
           <>
             <Button variant="outline" onClick={() => setBlockOpen(false)} disabled={busy}>

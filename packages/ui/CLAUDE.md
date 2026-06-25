@@ -41,7 +41,11 @@ badge (variant `success` usa tokens `--success/*`) · button (+`buttonVariants` 
 dialog (props opcionais `titleAlign: 'left'|'center'` e `onBack` — fluxos multi-passo estilo
 Udemy; X/Voltar são absolutos no header; **gestão de foco a11y**: foca o card ao abrir, PRENDE o
 Tab, devolve o foco ao gatilho ao fechar — pilha de diálogos + lock de scroll refcontado, só o do
-TOPO trata Esc/Tab) · info-tooltip · input · label (`Field` com `tooltip?`; **o erro vira
+TOPO trata Esc/Tab; **o card é capado à viewport (`max-h-[calc(100dvh-6rem)]` + flex-col): cabeçalho
+e rodapé FIXOS, só o corpo rola** — conteúdo alto (ex.: o Estúdio embutido na autoria de bloco) não
+transborda nem corta o topo, e o footer Salvar/Cancelar fica sempre visível; **largura via
+`className`** — default `max-w-lg`, sobrescreva p/ conteúdo largo, ex. `max-w-7xl` no bloco Estúdio)
+· info-tooltip · input · label (`Field` com `tooltip?`; **o erro vira
 `role="alert"` ligado por `aria-describedby` + `aria-invalid` no controle** — clona o filho) ·
 pagination · password-input (**olho alcançável por teclado**, `aria-pressed`) · progress · select ·
 **skeleton** (`@sistemazero/ui/skeleton` —
