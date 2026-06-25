@@ -59,7 +59,9 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > `league_membership`), `0023` (avatar 3D: `avatar_configs.photo_url` — a foto/snapshot),
 > `0024` (índices únicos de `sort_order` em módulos/aulas/blocos/anexos) e `0025`
 > (**certificados**: enum `lesson_block_kind` + `'certificate'` + tabela `certificates_issued`)
-> — **aplicadas** no Postgres compartilhado (`sistemazero`, :5433).
+> — **aplicadas** no Postgres compartilhado (`sistemazero`, :5433); **`0026`**
+> (`studio_submissions.account_id` — conta RESPONSÁVEL da entrega, p/ o admin mostrar
+> criança+responsável; nullable, legado `null`) **gerada, FALTA aplicar** (`db:migrate`).
 
 ## Conceito central (decisões travadas com o usuário)
 
@@ -127,7 +129,9 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    gate do quiz — ver mark-lesson-complete). A projeção member-facing anexa
    `studioState {submitted, submittedAt, lastScore?, passed?}` (como o `quizState`). Admin
    acompanha em `GET /members/admin/blocks/:id/studio-submissions[/:userId]` (lista + projeto
-   inteiro + nota/resultado p/ abrir no Estúdio do professor).
+   inteiro + nota/resultado p/ abrir no Estúdio do professor). A entrega grava **`account_id`**
+   (conta responsável; no kids = o pai, ≠ do `user_id` que é o PERFIL da criança — no adulto são
+   iguais; migration `0026`) → o BFF do admin hidrata a CRIANÇA (nome do perfil) + o RESPONSÁVEL.
    **AUTO-CORREÇÃO (fase 2, migration `0016`):** o `StudioBlock` ganha `activity?`
    (enunciado + `checks[]` união `structure`/`behavior`/`testcase`/`code` + `passingScore?`)
    — `domain/course/studio-activity.ts` (PURO: `gradeStudioActivity`/`evaluateStructureRule`/
@@ -731,7 +735,8 @@ entre pacotes (a dedupe por `created_at` pularia migrations). A migration faz
 de vídeo/last-accessed — migration `0001`), `quiz_attempts` (histórico de quiz —
 migration `0002`), `course_ratings` (classificação do curso, UNIQUE user+course —
 migration `0004`), `processed_webhooks`, `studio_submissions` (entrega do Estúdio,
-migrations `0013`/`0016`), `certificates_issued` (certificado de conclusão, UNIQUE
+migrations `0013`/`0016`/`0026` — `0026` add `account_id` = conta responsável da entrega),
+`certificates_issued` (certificado de conclusão, UNIQUE
 user+course + serial — migration `0025`) e a **gamificação**: `gamification_profiles`/`xp_events`/
 `user_badges` (`0009`–`0015`), `coin_events` (Zappy Coins, `0018`), `avatar_configs`
 (`0019` + `photo_url` no `0023`)/`avatar_inventory` (`0019`), `room_state`/`room_inventory`

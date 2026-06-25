@@ -4,7 +4,10 @@ import type { StudioCheckResult } from '../course/studio-activity'
 /** Entrega do projeto do Estúdio (1 linha por aluno+bloco, upsert — último vence). */
 export interface StudioSubmissionRecord {
   id: string
+  /** Quem entregou (perfil da criança no kids; a conta no adulto). */
   userId: string
+  /** Conta responsável (kids: o pai; adulto: = userId). `null` = linha legada. */
+  accountId?: string | null
   blockId: string
   lessonId: string
   courseId: string
@@ -25,6 +28,8 @@ export interface StudioSubmissionRecord {
 /** Resumo de uma entrega para o painel do professor (sem o projeto inteiro). */
 export interface StudioSubmissionSummary {
   userId: string
+  /** Conta responsável (p/ o BFF hidratar o responsável + o nome do perfil). `null` = legado. */
+  accountId: string | null
   submittedAt: Date
   score: number | null
   checkedAt: Date | null

@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server'
 import { listStudioSubmissions } from '@/server/members'
-import { batchGetUsers } from '@/server/users'
+import { batchGetUsers, getUserProfiles } from '@/server/users'
 
 type Ctx = { params: Promise<{ id: string }> }
 
 /**
  * Entregas do bloco de estúdio (acompanhamento do professor). O members devolve
- * `{userId, submittedAt}`; o BFF hidrata nome/e-mail do auth em LOTE (como o
- * member-detail). Sem o projeto inteiro — a abertura usa a rota `/[userId]`.
+ * `{userId (perfil/conta), accountId, …}`; o BFF hidrata do auth: o RESPONSÁVEL
+ * (conta) em LOTE + o nome da CRIANÇA (perfil) quando a entrega veio de um perfil
+ * (kids — `userId != accountId`). Sem o projeto inteiro — a abertura usa `/[userId]`.
  */
 export async function GET(_req: Request, { params }: Ctx) {
   const { id } = await params
@@ -22,28 +23,50 @@ export async function GET(_req: Request, { params }: Ctx) {
   }
 
   const submissions = body.submissions
-  const userMap = new Map<string, { firstName: string; lastName: string; email: string }>()
-  // `POST /auth/admin/users/batch` aceita no máx. 100 ids, mas a lista de entregas
-  // é ILIMITADA → fatiar em lotes de 100 (senão, passando de 100 alunos, o batch
-  // dá 422 e TODOS os nomes somem, caindo no userId cru). Dedupe por garantia.
-  const ids = [...new Set(submissions.map((s) => s.userId))]
-  for (let i = 0; i < ids.length; i += 100) {
-    const usersRes = await batchGetUsers(ids.slice(i, i + 100))
+  // Conta responsável: `accountId` (kids/novo) ou o próprio `userId` (adulto/legado null).
+  const accountIdOf = (s: (typeof submissions)[number]) => s.accountId ?? s.userId
+
+  // 1) Identidade das CONTAS responsáveis (nome/e-mail). `POST /auth/admin/users/batch`
+  //    aceita no máx. 100 ids → fatiar (senão >100 contas dá 422 e os nomes somem).
+  const accountMap = new Map<string, { name: string; email: string }>()
+  const accountIds = [...new Set(submissions.map(accountIdOf))]
+  for (let i = 0; i < accountIds.length; i += 100) {
+    const usersRes = await batchGetUsers(accountIds.slice(i, i + 100))
     if (usersRes.status === 200 && usersRes.body) {
       for (const u of usersRes.body.users) {
-        userMap.set(u.id, { firstName: u.firstName, lastName: u.lastName, email: u.email })
+        accountMap.set(u.id, { name: `${u.firstName} ${u.lastName}`.trim(), email: u.email })
       }
     }
   }
 
+  // 2) Nome da CRIANÇA (perfil) — só nas entregas de perfil (userId != accountId).
+  //    Busca os perfis de cada conta envolvida (em paralelo) → perfilId → nome.
+  const profileNameMap = new Map<string, string>()
+  const profileAccountIds = [
+    ...new Set(
+      submissions
+        .filter((s) => s.accountId && s.accountId !== s.userId)
+        .map((s) => s.accountId as string),
+    ),
+  ]
+  await Promise.all(
+    profileAccountIds.map(async (accId) => {
+      const res = await getUserProfiles(accId)
+      if (res.status === 200 && res.body) {
+        for (const p of res.body.profiles) profileNameMap.set(p.id, p.name)
+      }
+    }),
+  )
+
   const rows = submissions.map((s) => {
-    const u = userMap.get(s.userId)
-    const name = u ? `${u.firstName} ${u.lastName}`.trim() : ''
+    const account = accountMap.get(accountIdOf(s))
+    const isProfile = Boolean(s.accountId && s.accountId !== s.userId)
     return {
       userId: s.userId,
       submittedAt: s.submittedAt,
-      name: name || null,
-      email: u?.email ?? null,
+      accountName: account?.name || null,
+      accountEmail: account?.email ?? null,
+      childName: isProfile ? (profileNameMap.get(s.userId) ?? null) : null,
       score: s.score,
       checkedAt: s.checkedAt,
       passed: s.passed,

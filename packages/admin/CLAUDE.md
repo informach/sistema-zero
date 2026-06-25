@@ -492,9 +492,12 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   (nome)"** (`BlockForm.studioChain` → `content.chain`): dar o MESMO nome a aulas que constroem um
   único projeto faz o aluno abrir cada aula com o código que enviou na anterior da cadeia (carryover
   no members/member-shell); vazio = aula independente. **Acompanhamento do
-  professor:** botão "Entregas" no bloco → `studio-submissions-dialog.tsx` lista quem entregou
-  (`GET /api/members/blocks/:id/studio-submissions`, nomes hidratados do auth via batch) + abre o
-  projeto do aluno num Estúdio embutido (`…/:userId`) ou baixa o `.szproject.json`. Requer
+  professor:** botão "Entregas" no bloco → `studio-submissions-dialog.tsx` lista quem entregou +
+  abre o projeto do aluno num Estúdio embutido (`…/:userId`, **modal LARGO `max-w-7xl`** p/ caber a
+  IDE; lista em `max-w-2xl`) ou baixa o `.szproject.json`. **Identidade (kids):** a entrega vem com
+  `accountId`, então a rota BFF (`GET /api/members/blocks/:id/studio-submissions`) mostra a CRIANÇA
+  (nome do PERFIL via `getUserProfiles` da conta) + o RESPONSÁVEL (conta via `batchGetUsers`) —
+  perfil≠conta no kids, iguais no adulto. Requer
   `transpilePackages:['@sistemazero/studio']` + `@source "../../../studio/src"` + `frame-src blob:` na CSP.
 
 - **Comunidade (hub) — fatia 06/2026.** Item de nav "Comunidade" (`MessagesSquare`) + abas

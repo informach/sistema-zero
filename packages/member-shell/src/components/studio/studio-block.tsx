@@ -3,6 +3,7 @@
 import '@sistemazero/studio/styles.css'
 import type { Project, StudioHandle, StudioShareAdapter } from '@sistemazero/studio'
 import { Button } from '@sistemazero/ui/button'
+import { Dialog } from '@sistemazero/ui/dialog'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { CheckCircle2, Maximize2, Minimize2, Send } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -52,6 +53,9 @@ export function StudioBlockView({ blockId, content, studioState, enableShare }: 
   const [xp, setXp] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [fullscreen, setFullscreen] = useState(false)
+  // Confirmação antes de enviar: o envio destrava/regrava a entrega no professor —
+  // um clique sem querer mandava um projeto vazio (relatado pela usuária).
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
   const activity = content.activity
   const passingScore = activity?.passingScore
@@ -212,7 +216,7 @@ export function StudioBlockView({ blockId, content, studioState, enableShare }: 
             {fullscreen ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
             {fullscreen ? 'Reduzir' : 'Expandir'}
           </Button>
-          <Button size="sm" onClick={submit} disabled={submitting || !ready}>
+          <Button size="sm" onClick={() => setConfirmOpen(true)} disabled={submitting || !ready}>
             {submitting ? <Spinner /> : <Send className="size-4" />}
             {submitted ? 'Reenviar ao professor' : 'Enviar para o professor'}
           </Button>
@@ -222,8 +226,10 @@ export function StudioBlockView({ blockId, content, studioState, enableShare }: 
       <div
         ref={containerRef}
         className={cn(
+          // Área generosa p/ programar (a página de aula já é largura total; aqui
+          // damos mais ALTURA). "Expandir" leva à tela cheia para o trabalho pesado.
           'overflow-hidden rounded-lg border border-border bg-muted',
-          fullscreen ? 'h-screen' : 'h-[36rem]',
+          fullscreen ? 'h-screen' : 'h-[44rem]',
         )}
       >
         {ready ? (
@@ -281,6 +287,45 @@ export function StudioBlockView({ blockId, content, studioState, enableShare }: 
             : 'Envie seu projeto ao professor para poder concluir a aula.'}
         </p>
       )}
+
+      <Dialog
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        title={submitted ? 'Reenviar ao professor?' : 'Enviar ao professor?'}
+        footer={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setConfirmOpen(false)}
+              disabled={submitting}
+            >
+              Cancelar
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => {
+                setConfirmOpen(false)
+                void submit()
+              }}
+              disabled={submitting}
+            >
+              <Send className="size-4" />
+              {submitted ? 'Reenviar' : 'Enviar'}
+            </Button>
+          </>
+        }
+      >
+        <p className="text-sm text-muted-foreground">
+          {submitted
+            ? 'O professor vai receber a versão atual do seu projeto, no lugar da anterior.'
+            : 'O professor vai receber o seu projeto do jeitinho que está agora.'}{' '}
+          Você pode continuar editando e enviar de novo quando quiser.
+          {passingScore !== undefined
+            ? ' Dica: clique em "Verificar" no editor antes, para ver se já atingiu a nota.'
+            : ''}
+        </p>
+      </Dialog>
     </div>
   )
 }

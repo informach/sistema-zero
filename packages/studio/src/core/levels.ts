@@ -68,3 +68,53 @@ export function isCategoryAllowed(
   if (profile.allowCategories?.includes(categoryName)) return true
   return isLevelWithin(categoryLevel, profile)
 }
+
+/**
+ * Nível default de cada categoria CORE do toolbox (sobreposto pelo `level` de cada bloco).
+ * Vive aqui — e não no `blockly/toolbox`, que puxa o Blockly — p/ o admin importar a lista
+ * de categorias SEM arrastar o editor inteiro pro bundle. A CHAVE é o NOME DE GATING (o que
+ * `allowCategories`/`isCategoryAllowed` compara).
+ */
+export const CORE_CATEGORY_LEVELS: Record<string, BlockLevel> = {
+  HTML: 'iniciante',
+  SVG: 'iniciante',
+  CSS: 'iniciante',
+  DOM: 'iniciante',
+  JavaScript: 'iniciante',
+  Matemática: 'iniciante',
+  Canvas: 'intermediario',
+  Valores: 'iniciante',
+  Funções: 'intermediario',
+  Classes: 'avancado',
+  Objetos: 'intermediario',
+  Avançado: 'avancado',
+}
+
+/**
+ * Rótulo amigável de cada categoria CORE p/ a autoria (admin): o que o ALUNO vê na toolbox.
+ * Ex.: `DOM` controla "🌐 Página" + "⚡ Eventos"; `JavaScript` controla a lógica dentro de
+ * "Programação". Sem rótulo → cai no próprio nome de gating.
+ */
+const CORE_CATEGORY_LABELS: Record<string, string> = {
+  HTML: 'HTML',
+  SVG: 'SVG',
+  CSS: 'CSS',
+  DOM: 'Página e Eventos',
+  JavaScript: 'Programação (lógica/JS)',
+  Matemática: 'Matemática',
+  Canvas: 'Canvas',
+  Valores: 'Valores',
+  Funções: 'Funções',
+  Classes: 'Classes',
+  Objetos: 'Objetos',
+  Avançado: 'Avançado',
+}
+
+/**
+ * Categorias que o `allowCategories` das aulas ("sempre visível") aceita, DERIVADAS de
+ * `CORE_CATEGORY_LEVELS` — fonte ÚNICA do picker de autoria do admin. Categoria nova no
+ * toolbox aparece aqui sozinha (antes a lista hardcoded do admin ficava desatualizada).
+ */
+export const CORE_CATEGORY_OPTIONS: readonly { value: string; label: string }[] = Object.keys(
+  CORE_CATEGORY_LEVELS,
+).map((value) => ({ value, label: CORE_CATEGORY_LABELS[value] ?? value }))

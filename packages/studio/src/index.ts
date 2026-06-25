@@ -17,7 +17,13 @@ export type {
   ProNode,
   ProProjectMeta,
 } from '#core'
-export { createEmptyProject, IDE_MODES, MODE_LABELS, normalizeProPath } from '#core'
+export {
+  CORE_CATEGORY_OPTIONS,
+  createEmptyProject,
+  IDE_MODES,
+  MODE_LABELS,
+  normalizeProPath,
+} from '#core'
 export {
   createProProject,
   listProTemplates,

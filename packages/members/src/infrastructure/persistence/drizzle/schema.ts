@@ -269,7 +269,10 @@ export const studioSubmissions = members.table(
   'studio_submissions',
   {
     id: uuid('id').primaryKey(),
+    /** Quem ENTREGOU: o perfil da criança no kids; a própria conta no adulto. */
     userId: uuid('user_id').notNull(),
+    /** Conta RESPONSÁVEL (kids: o pai/responsável; adulto: = user_id). Null em linhas legadas. */
+    accountId: uuid('account_id'),
     blockId: uuid('block_id')
       .notNull()
       .references(() => lessonBlocks.id, { onDelete: 'cascade' }),

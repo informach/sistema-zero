@@ -9,12 +9,13 @@ import {
   useSensors,
 } from '@dnd-kit/core'
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
-import type {
-  BlockLevel,
-  IDEMode,
-  LessonActivity,
-  Project,
-  StudioHandle,
+import {
+  type BlockLevel,
+  CORE_CATEGORY_OPTIONS,
+  type IDEMode,
+  type LessonActivity,
+  type Project,
+  type StudioHandle,
 } from '@sistemazero/studio'
 import { Badge } from '@sistemazero/ui/badge'
 import { Button } from '@sistemazero/ui/button'
@@ -75,20 +76,8 @@ const STUDIO_LEVELS: { value: BlockLevel; label: string }[] = [
   { value: 'intermediario', label: 'Intermediário' },
   { value: 'avancado', label: 'Avançado' },
 ]
-// Categorias da paleta do Estúdio (espelha CORE_CATEGORY_LEVELS da lib).
-const STUDIO_CATEGORIES = [
-  'HTML',
-  'CSS',
-  'DOM',
-  'JavaScript',
-  'Matemática',
-  'Canvas',
-  'Valores',
-  'Objetos',
-  'Funções',
-  'Classes',
-  'Avançado',
-]
+// Categorias "sempre visíveis" do Estúdio: vêm do PACOTE (`CORE_CATEGORY_OPTIONS`),
+// derivadas das categorias reais do toolbox — não há mais lista hardcoded p/ desatualizar.
 const STUDIO_MODES: { value: IDEMode; label: string }[] = [
   { value: 'blocks', label: 'Blocos' },
   { value: 'bridge', label: 'Ponte' },
@@ -885,22 +874,22 @@ export function LessonEditorClient({
                 hint="Categorias liberadas independente do nível (opcional)."
               >
                 <div className="flex flex-wrap gap-3 pt-1.5">
-                  {STUDIO_CATEGORIES.map((cat) => (
-                    <label key={cat} className="flex items-center gap-1.5 text-sm">
+                  {CORE_CATEGORY_OPTIONS.map((cat) => (
+                    <label key={cat.value} className="flex items-center gap-1.5 text-sm">
                       <input
                         type="checkbox"
                         className="size-4 accent-primary"
-                        checked={blockForm.studioCategories.includes(cat)}
+                        checked={blockForm.studioCategories.includes(cat.value)}
                         onChange={(e) =>
                           setBlockForm((f) => ({
                             ...f,
                             studioCategories: e.target.checked
-                              ? [...f.studioCategories, cat]
-                              : f.studioCategories.filter((x) => x !== cat),
+                              ? [...f.studioCategories, cat.value]
+                              : f.studioCategories.filter((x) => x !== cat.value),
                           }))
                         }
                       />
-                      {cat}
+                      {cat.label}
                     </label>
                   ))}
                 </div>

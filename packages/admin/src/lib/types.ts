@@ -288,10 +288,15 @@ export type LessonBlockContent =
 
 /** Resumo de UMA entrega do Estúdio (admin), com identidade hidratada do auth. */
 export interface StudioSubmissionRow {
+  /** Quem entregou (perfil da criança no kids; a conta no adulto). */
   userId: string
   submittedAt: string
-  name: string | null
-  email: string | null
+  /** Nome do RESPONSÁVEL (conta). */
+  accountName: string | null
+  /** E-mail do responsável (conta) — ajuda a identificar. */
+  accountEmail: string | null
+  /** Nome da CRIANÇA (perfil) quando a entrega veio de um perfil; `null` no adulto. */
+  childName: string | null
   /** Correção automática (atividade): nota/aprovado; `null` sem atividade. */
   score: number | null
   checkedAt: string | null

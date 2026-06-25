@@ -1,5 +1,6 @@
 import {
   type BlockLevel,
+  CORE_CATEGORY_LEVELS,
   FULL_LEARNING_PROFILE,
   isBlockTypeAllowed,
   isCategoryAllowed,
@@ -131,22 +132,6 @@ function toEntries(
       if (!inputs) return { kind: 'block', type: b.type } as const
       return { kind: 'block', type: b.type, inputs }
     })
-}
-
-/** Nível default de cada categoria core (sobreposto pelo `level` de cada bloco). */
-const CORE_CATEGORY_LEVELS: Record<string, BlockLevel> = {
-  HTML: 'iniciante',
-  SVG: 'iniciante',
-  CSS: 'iniciante',
-  DOM: 'iniciante',
-  JavaScript: 'iniciante',
-  Matemática: 'iniciante',
-  Canvas: 'intermediario',
-  Valores: 'iniciante',
-  Funções: 'intermediario',
-  Classes: 'avancado',
-  Objetos: 'intermediario',
-  Avançado: 'avancado',
 }
 
 /**

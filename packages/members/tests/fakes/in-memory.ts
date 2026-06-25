@@ -1004,6 +1004,7 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
       .sort((a, b) => a.submittedAt.getTime() - b.submittedAt.getTime())
       .map((s) => ({
         userId: s.userId,
+        accountId: s.accountId ?? null,
         submittedAt: s.submittedAt,
         score: s.score ?? null,
         checkedAt: s.checkedAt ?? null,

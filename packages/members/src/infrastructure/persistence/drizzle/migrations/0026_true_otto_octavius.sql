@@ -1,0 +1,1 @@
+ALTER TABLE "members"."studio_submissions" ADD COLUMN "account_id" uuid;
