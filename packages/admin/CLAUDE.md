@@ -212,9 +212,20 @@ SEM acesso público — mesmas credenciais; criados via wrangler em 04/06/2026, 
 acessa os quatro). `scripts/verify-private-bucket.ts` (`bun scripts/verify-private-bucket.ts`)
 valida put/get/delete no bucket privado com as envs do `.env` — útil ao configurar um host novo.
 `R2_PRIVATE_BUCKET=comunidade-sistema-zero-privado` JÁ está setado no host de PROD do admin
-(verificado 08/06/2026). ⚠️ O upload de anexo/e-book agora é DIRETO do browser pro R2 (ver a rota
-`/api/media/files/presign` acima) → os buckets privados precisam da regra **CORS** `admin-direct-upload`
-(setada nos dois em 08/06/2026); host novo de admin com origem diferente precisa entrar nessa allowlist.
+(verificado 08/06/2026). ⚠️ Os buckets privados têm DUAS regras de **CORS**:
+**`admin-direct-upload`** (PUT/GET/HEAD do admin — o upload de anexo/e-book é DIRETO do browser pro R2,
+ver `/api/media/files/presign` acima; `connect-src https://*.r2.cloudflarestorage.com` na CSP) e
+**`community-direct-download`** (GET/HEAD dos apps de ALUNO — community + community-kids — que LEEM o
+bucket via `fetch` e SEGUEM o 302 pré-assinado: o **livro 3D do e-book** (pdf.js) e o download de anexo
+por fetch; expõe `Content-Disposition` p/ o filename). ⚠️ **Origem (app/host) nova precisa entrar na
+allowlist da regra certa, senão o navegador bloqueia por CORS** — sintoma clássico: o livro 3D não
+renderiza e o console acusa "No 'Access-Control-Allow-Origin' header" no host `*.r2.cloudflarestorage.com`
+(o community-kids quebrou assim em 25/06/2026 — a origem do kids faltava na `community-direct-download`,
+que nasceu só com o community adulto). Gerencie com **`scripts/r2-cors-private.ts`**
+(`bun scripts/r2-cors-private.ts` = dry-run que mostra atual+proposto; `--apply` grava; `--bucket=<nome>`
+mira o privado de prod com as MESMAS credenciais): ele faz GET→MESCLA→PUT (PutBucketCors substitui tudo),
+PRESERVA as outras regras e é idempotente. Origem nova de aluno → adicione em `STUDENT_APP_ORIGINS` e
+re-rode nos dois buckets (`testes-privado` e `comunidade-sistema-zero-privado`).
 
 ## Invariantes (NÃO quebrar)
 
