@@ -263,25 +263,68 @@ describe('Certificado — elegibilidade, emissão idempotente e validação', ()
     expect((await readJson(update)).error.code).toBe('VALIDATION_ERROR')
   })
 
-  test('autoria mantém a aula do certificado exclusiva (só o bloco de certificado)', async () => {
+  test('aula do certificado: conteúdo livre convive, mas blocos travantes são recusados', async () => {
     const { app, courses } = buildApp()
     const { lessonIds } = seedSampleCourse(courses)
 
-    // Não pode criar certificado numa aula que já tem outros blocos (lessonIds[0] tem 4).
-    const onBusy = await createBlock(app, lessonIds[0], { kind: 'certificate' })
-    expect(onBusy.status).toBe(400)
-    expect((await readJson(onBusy)).error.code).toBe('VALIDATION_ERROR')
-
-    // Cria o certificado na aula VAZIA (lessonIds[1]) → ok.
-    const cert = await createBlock(app, lessonIds[1], { kind: 'certificate' })
+    // lessonIds[0] tem 4 blocos NÃO-travantes (texto/vídeo/embed/ebook) → certificado OK
+    // (regra relaxada: "encerramento com vídeo + certificado" é caso válido).
+    const cert = await createBlock(app, lessonIds[0], { kind: 'certificate' })
     expect(cert.status).toBe(201)
 
-    // Agora não pode adicionar OUTRO bloco à aula do certificado.
-    const extra = await createBlock(app, lessonIds[1], {
+    // Adicionar mais conteúdo livre (texto de parabéns) à aula do certificado → OK.
+    const free = await createBlock(app, lessonIds[0], {
       kind: 'rich_text',
-      markdown: 'parabéns',
+      markdown: 'Parabéns pela conquista!',
     } as never)
-    expect(extra.status).toBe(400)
-    expect((await readJson(extra)).error.code).toBe('VALIDATION_ERROR')
+    expect(free.status).toBe(201)
+
+    // Mas um bloco que TRAVA a conclusão (estúdio) na aula do certificado → 400.
+    const studio = await createBlock(app, lessonIds[0], {
+      kind: 'studio',
+      initialProject: { name: 'Atividade', files: { 'index.html': '<h1>Oi</h1>' } },
+    } as never)
+    expect(studio.status).toBe(400)
+    expect((await readJson(studio)).error.code).toBe('VALIDATION_ERROR')
+  })
+
+  test('não dá para criar certificado numa aula que já trava a conclusão (estúdio)', async () => {
+    const { app, courses } = buildApp()
+    const { lessonIds } = seedSampleCourse(courses)
+
+    // Semeia um estúdio (travante) na aula vazia → criar certificado ali deve falhar.
+    courses.blocks.push({
+      id: randomUUID(),
+      lessonId: lessonIds[1],
+      kind: 'studio',
+      sortOrder: 0,
+      content: {
+        kind: 'studio',
+        initialProject: { name: 'Jogo', files: { 'index.html': '' } },
+      },
+    })
+    const cert = await createBlock(app, lessonIds[1], { kind: 'certificate' })
+    expect(cert.status).toBe(400)
+    expect((await readJson(cert)).error.code).toBe('VALIDATION_ERROR')
+
+    // Um quiz de FIXAÇÃO (sem nota de corte) NÃO trava → pode conviver com o certificado.
+    const { lessonIds: l2 } = seedSampleCourse(courses, 'curso-2')
+    const cert2 = await createBlock(app, l2[1], { kind: 'certificate' })
+    expect(cert2.status).toBe(201)
+    const formativeQuiz = await createBlock(app, l2[1], {
+      kind: 'quiz',
+      questions: [
+        {
+          id: 'q1',
+          prompt: 'Gostou?',
+          choices: [
+            { id: 'a', label: 'Sim' },
+            { id: 'b', label: 'Muito' },
+          ],
+          correctChoiceIds: ['a'],
+        },
+      ],
+    } as never)
+    expect(formativeQuiz.status).toBe(201)
   })
 })

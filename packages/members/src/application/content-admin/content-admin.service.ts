@@ -6,7 +6,11 @@ import {
   LessonNotFoundError,
   NoPublishedLessonError,
 } from '../../domain/course/course.errors'
-import { type LessonBlockContent, MAX_STUDIO_PROJECT_CHARS } from '../../domain/course/lesson-block'
+import {
+  isCompletionGatingBlock,
+  type LessonBlockContent,
+  MAX_STUDIO_PROJECT_CHARS,
+} from '../../domain/course/lesson-block'
 import { validateQuizAuthoring } from '../../domain/course/quiz'
 import { validateStudioActivityAuthoring } from '../../domain/course/studio-activity'
 import type {
@@ -275,7 +279,12 @@ async function assertSingleCertificateBlock(
   }
 }
 
-const CERTIFICATE_LESSON_EXCLUSIVE = 'A aula do certificado só pode conter o bloco de certificado'
+// A aula do certificado pode ter conteúdo livre (vídeo/texto/imagem de encerramento),
+// mas NÃO blocos que travam a conclusão (quiz com nota de corte / estúdio): a emissão
+// conclui essa aula DIRETO, sem passar pelos gates de mark-lesson-complete — um gate ali
+// seria pulado (o aluno emitiria o diploma sem fazer a atividade). Ver isCompletionGatingBlock.
+const CERTIFICATE_LESSON_NO_GATES =
+  'A aula do certificado não pode ter blocos que travam a conclusão (quiz com nota de corte ou estúdio).'
 
 export class BlockAdminService {
   constructor(private readonly content: ContentAdminRepository) {}
@@ -286,14 +295,15 @@ export class BlockAdminService {
     if (!lesson) throw new LessonNotFoundError()
     if (content.kind === 'certificate') {
       await assertSingleCertificateBlock(this.content, lesson.courseId)
-      // A aula do certificado é o "diploma": só o bloco de certificado vive nela. Sem isso,
-      // um quiz/estúdio na MESMA aula seria PULADO (a emissão conclui a aula direto, sem
-      // passar pelos gates de mark-lesson-complete).
-      if ((await this.content.listBlockIds(lessonId)).length > 0) {
-        throw new InvalidContentCommandError(CERTIFICATE_LESSON_EXCLUSIVE)
+      // Conteúdo livre convive com o certificado; bloco travante (quiz-com-nota/estúdio) não.
+      if (await this.content.lessonHasGatingBlock(lessonId)) {
+        throw new InvalidContentCommandError(CERTIFICATE_LESSON_NO_GATES)
       }
-    } else if (await this.content.lessonHasCertificateBlock(lessonId)) {
-      throw new InvalidContentCommandError(CERTIFICATE_LESSON_EXCLUSIVE)
+    } else if (
+      isCompletionGatingBlock(content) &&
+      (await this.content.lessonHasCertificateBlock(lessonId))
+    ) {
+      throw new InvalidContentCommandError(CERTIFICATE_LESSON_NO_GATES)
     }
     return toBlockView(await this.content.createBlock(lessonId, content.kind, content))
   }
@@ -304,12 +314,17 @@ export class BlockAdminService {
       const courseId = await this.content.findBlockCourseId(id)
       if (!courseId) throw new ContentNotFoundError('Bloco não encontrado')
       await assertSingleCertificateBlock(this.content, courseId, id)
-      // Virar certificado só é permitido se a aula não tiver OUTROS blocos (exclusividade).
+      // Virar certificado só é permitido se a aula não tiver blocos TRAVANTES (os outros ok).
       const lessonId = await this.content.findBlockLessonId(id)
-      const siblings = lessonId
-        ? (await this.content.listBlockIds(lessonId)).filter((blockId) => blockId !== id)
-        : []
-      if (siblings.length > 0) throw new InvalidContentCommandError(CERTIFICATE_LESSON_EXCLUSIVE)
+      if (lessonId && (await this.content.lessonHasGatingBlock(lessonId, { excludeBlockId: id }))) {
+        throw new InvalidContentCommandError(CERTIFICATE_LESSON_NO_GATES)
+      }
+    } else if (isCompletionGatingBlock(content)) {
+      // Virar um bloco em gate (quiz-com-nota/estúdio) numa aula que TEM certificado → barra.
+      const lessonId = await this.content.findBlockLessonId(id)
+      if (lessonId && (await this.content.lessonHasCertificateBlock(lessonId))) {
+        throw new InvalidContentCommandError(CERTIFICATE_LESSON_NO_GATES)
+      }
     }
     const updated = await this.content.updateBlock(id, content.kind, content)
     if (!updated) throw new ContentNotFoundError('Bloco não encontrado')

@@ -395,10 +395,14 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   trabalho; `CERTIFICATE_NOT_ELIGIBLE`→409; cobre transitivamente quiz/estúdio das OUTRAS aulas),
   congela `certificates_issued` (id público + `serial` `SZ-<ano>-XXXXXXXX` + snapshot
   nome/título) e **conclui a aula do certificado** (→ curso 100% + badge `course-complete`,
-  award fail-open). ⚠️ A aula do certificado é **EXCLUSIVA** (só o bloco de certificado): a autoria
-  recusa criar/virar um certificado numa aula com outros blocos, e recusa adicionar bloco numa aula
-  de certificado (`VALIDATION_ERROR`→400) — senão um quiz/estúdio na MESMA aula seria pulado (a
-  emissão conclui a aula direto, sem os gates de `mark-lesson-complete`). O **nome** vem dos headers
+  award fail-open). ⚠️ A aula do certificado aceita **conteúdo livre** (vídeo/texto/imagem de
+  encerramento, quiz de FIXAÇÃO) mas **NÃO blocos que TRAVAM a conclusão** — quiz com nota de corte
+  ou estúdio (`isCompletionGatingBlock`, domain): a autoria recusa criar/virar um certificado numa
+  aula com bloco travante, e recusa adicionar/virar um bloco travante numa aula de certificado
+  (`VALIDATION_ERROR`→400). Razão: a emissão conclui a aula DIRETO, sem passar pelos gates de
+  `mark-lesson-complete` — um gate ali seria pulado (o aluno emitiria o diploma sem fazer a
+  atividade). Antes a aula era EXCLUSIVA (só o bloco); relaxada em 06/2026 p/ o caso "encerramento
+  com vídeo + certificado" (repo: `lessonHasGatingBlock`). O **nome** vem dos headers
   CONFIÁVEIS do gateway (`x-auth-profile-name` kids ?? `x-auth-user-name`; URI-decodado — 1º
   consumidor a ler o nome), NUNCA do corpo. `certificates_issued.course_id` é **SNAPSHOT (SEM FK p/
   `courses`)** — o diploma é credencial PERMANENTE (QR público); apagar o curso NÃO o destrói (a

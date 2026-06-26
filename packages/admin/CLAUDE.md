@@ -38,7 +38,7 @@ e **favicon** completo: `src/app/favicon.ico` + PNGs 16/32/192/512 + apple-touch
 > endpoints `/reorder`, erro→toast+reload) + módulos **colapsáveis** com contador "X de Y aulas
 > publicadas · N min" + **publicação por aula** (switch no dialog — aula nova nasce RASCUNHO —,
 > badge Publicada/Rascunho; publicar curso sem aula publicada → 409 `NO_PUBLISHED_LESSON` no
-> toast) + editor de blocos polimórficos (texto/vídeo/imagem/áudio/quiz/embed/**ebook**/**studio**) e anexos,
+> toast) + editor de blocos polimórficos (texto/vídeo/imagem/áudio/quiz/embed/**ebook**/**studio**/**certificate**) e anexos,
 > ambos com DnD; **autoria v3 (06/2026): upload é o ÚNICO caminho** — imagem upload-only
 > (`ImageUploader allowManualUrl={false}`; capa de curso mantém URL manual), vídeo **só Vimeo**
 > (sem select de provider/URL/duração manual — o uploader TUS preenche src/duração/transcrição;
@@ -507,6 +507,18 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   (nome do PERFIL via `getUserProfiles` da conta) + o RESPONSÁVEL (conta via `batchGetUsers`) —
   perfil≠conta no kids, iguais no adulto. Requer
   `transpilePackages:['@sistemazero/studio']` + `@source "../../../studio/src"` + `frame-src blob:` na CSP.
+
+- **Bloco `certificate` (06/2026):** o "diploma" da ÚLTIMA aula. O form (em `lesson-editor-client.tsx`,
+  `KIND_LABELS.certificate` + `case 'certificate'` em `buildContent`/`validateBlock`/`blockSummary` +
+  campos `cert*` no `BlockForm`) é só **metadado de autoria do PDF**: título, emissor/assinante,
+  assinatura + logo (via `ImageUploader`, URL http(s)), cor de destaque (`<input type=color>` + hex
+  texto, vazio = cor da marca) e mensagem — TODOS opcionais (certificado sem config é válido; o members
+  congela o registro e o community/BFF monta o PDF). Sem editor pesado → segue no `max-w-lg` padrão.
+  Validação client espelha o members (hex `^#[0-9a-fA-F]{6}$`, URLs `^https?://`). ⚠️ **A aula do
+  certificado NÃO pode ter blocos que TRAVAM a conclusão** (quiz com nota de corte / Estúdio) — o
+  members recusa (`VALIDATION_ERROR`→400, `lessonHasGatingBlock`); conteúdo livre (vídeo/texto de
+  parabéns) convive. A nota no topo do form avisa o autor. Flui pelos endpoints de bloco já existentes
+  (`POST …/lessons/:id/blocks` · `PATCH …/blocks/:id`) — o DTO do members já tinha `CertificateBlockSchema`.
 
 - **Comunidade (hub) — fatia 06/2026.** Item de nav "Comunidade" (`MessagesSquare`) + abas
   `COMMUNITY_TABS` (Servidores · Moderação). Páginas em `app/admin/comunidade/`: **`servidores`**

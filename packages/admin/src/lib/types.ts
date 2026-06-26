@@ -192,6 +192,7 @@ export const LESSON_BLOCK_KINDS = [
   'embed',
   'ebook',
   'studio',
+  'certificate',
 ] as const
 export type LessonBlockKind = (typeof LESSON_BLOCK_KINDS)[number]
 
@@ -276,6 +277,28 @@ export interface StudioBlock {
     defaultCoverUrl?: string
   }
 }
+/**
+ * Bloco Certificado: o "diploma" na ÚLTIMA aula. Ao concluir as demais aulas, o aluno
+ * libera o botão de EMITIR (PDF + nº de série + QR público). A config aqui é só metadado
+ * de AUTORIA do PDF (emissor/assinatura/cor/logo/mensagem) — o members congela o registro
+ * e o community/BFF monta o PDF. ⚠️ A aula do certificado NÃO pode ter blocos que travam a
+ * conclusão (quiz com nota de corte / estúdio) — o members recusa (VALIDATION_ERROR).
+ */
+export interface CertificateBlock {
+  kind: 'certificate'
+  /** Título no PDF (default: "Certificado de Conclusão"). */
+  title?: string
+  /** Nome do emissor/assinante (ex.: "Equipe Sistema Zero" ou o professor). */
+  issuerName?: string
+  /** Imagem da assinatura (URL http(s)). */
+  signatureImageUrl?: string
+  /** Override do logo no PDF (URL http(s); default = logo da marca). */
+  logoUrl?: string
+  /** Cor de destaque (hex, ex.: `#C4F042`). */
+  accentColor?: string
+  /** Mensagem/menção adicional no corpo (texto plano). */
+  message?: string
+}
 export type LessonBlockContent =
   | RichTextBlock
   | VideoBlock
@@ -285,6 +308,7 @@ export type LessonBlockContent =
   | EmbedBlock
   | EbookBlock
   | StudioBlock
+  | CertificateBlock
 
 /** Resumo de UMA entrega do Estúdio (admin), com identidade hidratada do auth. */
 export interface StudioSubmissionRow {

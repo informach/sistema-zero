@@ -64,6 +64,7 @@ const KIND_LABELS: Record<string, string> = {
   embed: 'Interativo',
   ebook: 'E-book (livro 3D)',
   studio: 'Estúdio',
+  certificate: 'Certificado',
 }
 
 // Largura do modal de bloco por tipo: só os que embutem editor PESADO fogem do `max-w-lg` padrão
@@ -131,6 +132,13 @@ interface BlockForm {
   studioShowcaseTitle: string
   studioShowcaseSummary: string
   studioShowcaseCover: string
+  /** Certificado: metadados de autoria do PDF (emissor/assinatura/cor/logo/mensagem). */
+  certTitle: string
+  certIssuerName: string
+  certSignatureUrl: string
+  certLogoUrl: string
+  certAccentColor: string
+  certMessage: string
 }
 
 const EMPTY_BLOCK: BlockForm = {
@@ -158,6 +166,12 @@ const EMPTY_BLOCK: BlockForm = {
   studioShowcaseTitle: '',
   studioShowcaseSummary: '',
   studioShowcaseCover: '',
+  certTitle: '',
+  certIssuerName: '',
+  certSignatureUrl: '',
+  certLogoUrl: '',
+  certAccentColor: '',
+  certMessage: '',
 }
 
 const num = (s: string): number | undefined => (s.trim() ? Number(s) : undefined)
@@ -232,6 +246,16 @@ function buildContent(f: BlockForm, studioProject?: Project): LessonBlockContent
         url: f.pdfUrl.trim(),
         ...(opt(f.title) ? { title: f.title.trim() } : {}),
       }
+    case 'certificate':
+      return {
+        kind: 'certificate',
+        ...(opt(f.certTitle) ? { title: f.certTitle.trim() } : {}),
+        ...(opt(f.certIssuerName) ? { issuerName: f.certIssuerName.trim() } : {}),
+        ...(opt(f.certSignatureUrl) ? { signatureImageUrl: f.certSignatureUrl.trim() } : {}),
+        ...(opt(f.certLogoUrl) ? { logoUrl: f.certLogoUrl.trim() } : {}),
+        ...(opt(f.certAccentColor) ? { accentColor: f.certAccentColor.trim() } : {}),
+        ...(opt(f.certMessage) ? { message: f.certMessage.trim() } : {}),
+      }
     default:
       return {
         kind: 'quiz',
@@ -262,6 +286,16 @@ function validateBlock(f: BlockForm): string | null {
       // Atividade (auto-correção): coerência espelhando o members.
       return validateStudioActivity(f.studioActivity)
     }
+    case 'certificate': {
+      // Espelha o members: cor hex e URLs http(s) (vazios = padrão da marca).
+      if (f.certAccentColor.trim() && !/^#[0-9a-fA-F]{6}$/.test(f.certAccentColor.trim()))
+        return 'A cor de destaque deve ser um hex como #C4F042.'
+      for (const url of [f.certSignatureUrl, f.certLogoUrl]) {
+        if (url.trim() && !/^https?:\/\//i.test(url.trim()))
+          return 'A assinatura e o logo precisam ser URLs http(s).'
+      }
+      return null
+    }
     default:
       return null
   }
@@ -287,6 +321,8 @@ function blockSummary(b: BlockView): string {
       return `${c.questions.length} pergunta(s)`
     case 'studio':
       return (c.initialProject as { name?: string })?.name ?? 'Atividade do Estúdio'
+    case 'certificate':
+      return c.title ?? 'Certificado de conclusão'
     default:
       return '—'
   }
@@ -395,6 +431,12 @@ export function LessonEditorClient({
       studioShowcaseTitle: c.kind === 'studio' ? (c.showcase?.title ?? '') : '',
       studioShowcaseSummary: c.kind === 'studio' ? (c.showcase?.summary ?? '') : '',
       studioShowcaseCover: c.kind === 'studio' ? (c.showcase?.defaultCoverUrl ?? '') : '',
+      certTitle: c.kind === 'certificate' ? (c.title ?? '') : '',
+      certIssuerName: c.kind === 'certificate' ? (c.issuerName ?? '') : '',
+      certSignatureUrl: c.kind === 'certificate' ? (c.signatureImageUrl ?? '') : '',
+      certLogoUrl: c.kind === 'certificate' ? (c.logoUrl ?? '') : '',
+      certAccentColor: c.kind === 'certificate' ? (c.accentColor ?? '') : '',
+      certMessage: c.kind === 'certificate' ? (c.message ?? '') : '',
     })
     setBlockOpen(true)
   }
@@ -1034,6 +1076,101 @@ export function LessonEditorClient({
                 <ActivityBuilder
                   value={blockForm.studioActivity}
                   onChange={(studioActivity) => setBlockForm((f) => ({ ...f, studioActivity }))}
+                />
+              </Field>
+            </div>
+          ) : null}
+
+          {blockForm.kind === 'certificate' ? (
+            <div className="flex flex-col gap-4">
+              <p className="rounded-lg border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+                Coloque na <strong>última aula</strong> do curso. Ao concluir as outras aulas, o
+                aluno libera o botão de emitir o certificado — um PDF com número de série e QR de
+                validação pública. ⚠️ A aula do certificado pode ter conteúdo livre (um vídeo ou
+                texto de parabéns), mas <strong>não</strong> pode ter quiz com nota de corte nem
+                Estúdio: esses travam a conclusão e seriam pulados na emissão.
+              </p>
+              <Field
+                label="Título do certificado"
+                htmlFor="cert-title"
+                hint='Opcional — padrão: "Certificado de Conclusão".'
+              >
+                <Input
+                  id="cert-title"
+                  value={blockForm.certTitle}
+                  maxLength={200}
+                  placeholder="Certificado de Conclusão"
+                  onChange={(e) => setBlockForm((f) => ({ ...f, certTitle: e.target.value }))}
+                />
+              </Field>
+              <Field
+                label="Emissor / assinante"
+                htmlFor="cert-issuer"
+                hint="Nome que assina (ex.: a escola ou o professor)."
+              >
+                <Input
+                  id="cert-issuer"
+                  value={blockForm.certIssuerName}
+                  maxLength={200}
+                  placeholder="Equipe Sistema Zero"
+                  onChange={(e) => setBlockForm((f) => ({ ...f, certIssuerName: e.target.value }))}
+                />
+              </Field>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Assinatura (imagem)" hint="Opcional — PNG/JPG da assinatura.">
+                  <ImageUploader
+                    scope="block"
+                    value={blockForm.certSignatureUrl}
+                    onChange={(certSignatureUrl) =>
+                      setBlockForm((f) => ({ ...f, certSignatureUrl }))
+                    }
+                  />
+                </Field>
+                <Field label="Logo (override)" hint="Opcional — vazio usa o logo da marca.">
+                  <ImageUploader
+                    scope="block"
+                    value={blockForm.certLogoUrl}
+                    onChange={(certLogoUrl) => setBlockForm((f) => ({ ...f, certLogoUrl }))}
+                  />
+                </Field>
+              </div>
+              <Field label="Cor de destaque" hint="Opcional — vazio usa a cor da marca.">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    aria-label="Escolher cor de destaque"
+                    className="h-9 w-12 shrink-0 cursor-pointer rounded border border-border bg-transparent"
+                    value={blockForm.certAccentColor || '#C4F042'}
+                    onChange={(e) =>
+                      setBlockForm((f) => ({ ...f, certAccentColor: e.target.value }))
+                    }
+                  />
+                  <Input
+                    value={blockForm.certAccentColor}
+                    placeholder="#C4F042"
+                    maxLength={7}
+                    className="max-w-[10rem]"
+                    onChange={(e) =>
+                      setBlockForm((f) => ({ ...f, certAccentColor: e.target.value }))
+                    }
+                  />
+                  {blockForm.certAccentColor ? (
+                    <button
+                      type="button"
+                      className="text-xs text-muted-foreground underline"
+                      onClick={() => setBlockForm((f) => ({ ...f, certAccentColor: '' }))}
+                    >
+                      Limpar
+                    </button>
+                  ) : null}
+                </div>
+              </Field>
+              <Field label="Mensagem (opcional)" hint="Texto adicional no corpo do certificado.">
+                <Textarea
+                  value={blockForm.certMessage}
+                  maxLength={2000}
+                  placeholder="Ex.: Parabéns por concluir o curso com dedicação!"
+                  onChange={(e) => setBlockForm((f) => ({ ...f, certMessage: e.target.value }))}
                 />
               </Field>
             </div>

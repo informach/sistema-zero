@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { and, asc, count, eq, inArray, ne, type SQL, sql } from 'drizzle-orm'
+import { and, asc, count, eq, inArray, ne, or, type SQL, sql } from 'drizzle-orm'
 import type {
   Course,
   Lesson,
@@ -543,6 +543,29 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
       .select({ id: lessonBlocks.id })
       .from(lessonBlocks)
       .where(and(eq(lessonBlocks.lessonId, lessonId), eq(lessonBlocks.kind, 'certificate')))
+      .limit(1)
+    return row !== undefined
+  }
+
+  async lessonHasGatingBlock(
+    lessonId: string,
+    opts: { excludeBlockId?: string } = {},
+  ): Promise<boolean> {
+    // Espelha `isCompletionGatingBlock` (domain) em SQL: estúdio SEMPRE trava; quiz só
+    // com `passingScore` (extração JSONB `->>` devolve NULL quando a chave falta/é null).
+    const gating = or(
+      eq(lessonBlocks.kind, 'studio'),
+      and(
+        eq(lessonBlocks.kind, 'quiz'),
+        sql`${lessonBlocks.content} ->> 'passingScore' is not null`,
+      ),
+    ) as SQL
+    const clauses: SQL[] = [eq(lessonBlocks.lessonId, lessonId), gating]
+    if (opts.excludeBlockId) clauses.push(ne(lessonBlocks.id, opts.excludeBlockId))
+    const [row] = await this.db
+      .select({ id: lessonBlocks.id })
+      .from(lessonBlocks)
+      .where(and(...clauses))
       .limit(1)
     return row !== undefined
   }

@@ -15,6 +15,7 @@ import {
 } from '../../src/domain/course/course'
 import { DuplicateSlugError } from '../../src/domain/course/course.errors'
 import type { LessonBlockContent, LessonBlockKind } from '../../src/domain/course/lesson-block'
+import { isCompletionGatingBlock } from '../../src/domain/course/lesson-block'
 import type { QuizAttemptSummary } from '../../src/domain/course/quiz'
 import {
   EntitlementAggregate,
@@ -664,6 +665,18 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
 
   async lessonHasCertificateBlock(lessonId: string): Promise<boolean> {
     return this.blocks.some((b) => b.lessonId === lessonId && b.content.kind === 'certificate')
+  }
+
+  async lessonHasGatingBlock(
+    lessonId: string,
+    opts: { excludeBlockId?: string } = {},
+  ): Promise<boolean> {
+    return this.blocks.some(
+      (b) =>
+        b.lessonId === lessonId &&
+        b.id !== opts.excludeBlockId &&
+        isCompletionGatingBlock(b.content),
+    )
   }
 
   async countCertificateBlocks(
