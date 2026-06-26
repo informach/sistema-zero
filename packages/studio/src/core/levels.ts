@@ -31,7 +31,11 @@ export interface LearningProfile {
   level: BlockLevel
   /** Aluno revelou o avançado → sobe o teto efetivo para 'avancado'. */
   revealed?: boolean
-  /** Tipos de bloco SEMPRE visíveis, independente do nível (allowlist da aula). */
+  /**
+   * Lista de blocos da aula. Quando NÃO vazia, vira RESTRITIVA: a paleta mostra SÓ
+   * estes blocos (+ as 🗂️ Áreas do projeto, sempre visíveis), ignorando nível/categoria.
+   * Vazia/ausente = curadoria normal por nível.
+   */
   allowBlocks?: readonly string[]
   /** Nomes de categoria SEMPRE visíveis, independente do nível. */
   allowCategories?: readonly string[]
@@ -49,22 +53,31 @@ export function isLevelWithin(level: BlockLevel, profile: LearningProfile): bool
   return levelRank(level) <= levelRank(effectiveLevel(profile))
 }
 
-/** Um bloco aparece se está na allowlist OU se seu nível cabe no teto efetivo. */
+/**
+ * Um bloco aparece se: (lista da aula presente) ele está NELA — RESTRITIVO, só os
+ * listados, ignora o nível; (sem lista) seu nível cabe no teto efetivo.
+ */
 export function isBlockTypeAllowed(
   blockType: string,
   blockLevel: BlockLevel,
   profile: LearningProfile,
 ): boolean {
-  if (profile.allowBlocks?.includes(blockType)) return true
+  const only = profile.allowBlocks
+  if (only && only.length > 0) return only.includes(blockType)
   return isLevelWithin(blockLevel, profile)
 }
 
-/** Uma categoria aparece se está na allowlist OU se seu nível cabe no teto. */
+/**
+ * Uma categoria aparece se: (lista da aula presente) SEMPRE — o filtro de bloco + o
+ * descarte de categoria vazia decidem (categoria sem bloco listado some); (sem lista)
+ * está em `allowCategories` OU seu nível cabe no teto.
+ */
 export function isCategoryAllowed(
   categoryName: string,
   categoryLevel: BlockLevel,
   profile: LearningProfile,
 ): boolean {
+  if (profile.allowBlocks && profile.allowBlocks.length > 0) return true
   if (profile.allowCategories?.includes(categoryName)) return true
   return isLevelWithin(categoryLevel, profile)
 }

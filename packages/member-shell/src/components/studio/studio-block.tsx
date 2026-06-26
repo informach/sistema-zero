@@ -228,7 +228,10 @@ export function StudioBlockView({ blockId, content, studioState, enableShare }: 
         className={cn(
           // Área generosa p/ programar (a página de aula já é largura total; aqui
           // damos mais ALTURA). "Expandir" leva à tela cheia para o trabalho pesado.
-          'overflow-hidden rounded-lg border border-border bg-muted',
+          // `isolate`: PRENDE os z-index internos do Blockly (a toolbox/flyout têm
+          // z-index alto e VAZAVAM por cima do overlay de modais — ex.: o "Enviar ao
+          // professor?"); isolando o container, o overlay (z-50) cobre tudo atrás.
+          'isolate overflow-hidden rounded-lg border border-border bg-muted',
           fullscreen ? 'h-screen' : 'h-[44rem]',
         )}
       >

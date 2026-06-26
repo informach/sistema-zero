@@ -115,7 +115,10 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    **`studio` (06/2026, migration `0013`):** editor `@sistemazero/studio` embarcado e
    pré-configurado pelo admin — `{initialProject (snapshot Project, JSON opaco — o front
    sanitiza, teto `MAX_STUDIO_PROJECT_CHARS` 1.5M), level?, allowBlocks?, allowCategories?,
-   allowedModes?, allowLevelReveal?}`. A config NÃO é segredo (vai inteira ao aluno). O aluno
+   allowedModes?, allowLevelReveal?}`. ⚠️ **`allowBlocks` é RESTRITIVO** (06/2026): lista
+   NÃO-vazia = a paleta do aluno mostra SÓ esses blocos (+ as 🗂️ Áreas do projeto, sempre
+   visíveis), ignorando nível/categoria; vazia = curadoria por nível. (Era aditivo "sempre
+   visível"; sem UI, ninguém usava o sentido antigo.) A config NÃO é segredo (vai inteira ao aluno). O aluno
    ENVIA o projeto (`POST …/blocks/:blockId/studio-submission` `{project}`) → tabela
    `studio_submissions` (1 linha/aluno+bloco, upsert — reenvio último-vence) e isso
    ⚠️ **As rotas que carregam o projeto** (entrega do aluno + autoria do bloco:

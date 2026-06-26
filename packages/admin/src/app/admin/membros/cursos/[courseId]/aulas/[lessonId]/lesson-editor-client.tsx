@@ -39,6 +39,7 @@ import { FileUploader, type UploadedFile } from '@/components/media/file-uploade
 import { ImageUploader } from '@/components/media/image-uploader'
 import { VideoThumbnailUploader } from '@/components/media/video-thumbnail-uploader'
 import { VideoUploader } from '@/components/media/video-uploader'
+import { StudioBlocksPicker } from '@/components/studio/studio-blocks-picker'
 import { StudioEmbed } from '@/components/studio/studio-embed'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import {
@@ -893,6 +894,17 @@ export function LessonEditorClient({
                     </label>
                   ))}
                 </div>
+              </Field>
+              <Field
+                label="Lista de blocos (opcional — só estes aparecem)"
+                hint="Vazio = a paleta segue o nível acima. Preenchido = o aluno vê SÓ estes blocos (+ as Áreas do projeto); o nível e as categorias acima passam a ser ignorados. Bom para aulas bem guiadas."
+              >
+                <StudioBlocksPicker
+                  value={blockForm.studioAllowBlocks}
+                  onChange={(studioAllowBlocks) =>
+                    setBlockForm((f) => ({ ...f, studioAllowBlocks }))
+                  }
+                />
               </Field>
               <label className="flex items-center gap-2 text-sm">
                 <input

@@ -24,6 +24,7 @@ export {
   MODE_LABELS,
   normalizeProPath,
 } from '#core'
+export { BLOCK_CATALOG, type BlockCatalogEntry } from './blockly/blockCatalog'
 export {
   createProProject,
   listProTemplates,
