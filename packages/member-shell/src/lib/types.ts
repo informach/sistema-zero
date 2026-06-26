@@ -322,6 +322,18 @@ export interface StudioBlock {
    * entrega do aluno no bloco contínuo da aula anterior da mesma cadeia (carryover).
    */
   chain?: string
+  /**
+   * Vitrine (Mural): o admin liga `enabled` no bloco da ÚLTIMA aula do projeto. É o que
+   * habilita o botão "Compartilhar" (publicar no Mural) no editor — SÓ na última aula. O
+   * members manda o `content` inteiro ao aluno, então o flag já chega aqui (title/summary/
+   * cover são autorais; no Compartilhar a criança escreve a própria descrição).
+   */
+  showcase?: {
+    enabled: boolean
+    title?: string
+    summary?: string
+    defaultCoverUrl?: string
+  }
 }
 export type LessonBlockContent =
   | RichTextBlock

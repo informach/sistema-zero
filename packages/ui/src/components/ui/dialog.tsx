@@ -3,30 +3,13 @@
 import { X } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import { cn } from '../../lib/cn'
+import { lockBodyScroll, unlockBodyScroll } from './scroll-lock'
 
 const FOCUSABLE =
   'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
 
-let bodyScrollLocks = 0
-let previousBodyOverflow: string | null = null
 let dialogIdSequence = 0
 const openDialogStack: number[] = []
-
-function lockBodyScroll() {
-  if (bodyScrollLocks === 0) {
-    previousBodyOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-  }
-  bodyScrollLocks++
-}
-
-function unlockBodyScroll() {
-  bodyScrollLocks = Math.max(0, bodyScrollLocks - 1)
-  if (bodyScrollLocks === 0) {
-    document.body.style.overflow = previousBodyOverflow ?? ''
-    previousBodyOverflow = null
-  }
-}
 
 function removeDialogFromStack(id: number) {
   const index = openDialogStack.lastIndexOf(id)

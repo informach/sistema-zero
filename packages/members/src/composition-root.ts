@@ -29,6 +29,7 @@ import { GetEbookDownloadService } from './application/get-ebook-download/get-eb
 import { GetLessonService } from './application/get-lesson/get-lesson.service'
 import { GetMemberDetailService } from './application/get-member-detail/get-member-detail.service'
 import { GetMyCourseService } from './application/get-my-course/get-my-course.service'
+import { GetOwnStudioSubmissionService } from './application/get-own-studio-submission/get-own-studio-submission.service'
 import { GetShowcasePayloadService } from './application/get-showcase-payload/get-showcase-payload.service'
 import { GetStudioCarryoverService } from './application/get-studio-carryover/get-studio-carryover.service'
 import { GrantEntitlementService } from './application/grant-entitlement/grant-entitlement.service'
@@ -220,6 +221,11 @@ export async function createApplication(env: Env): Promise<Application> {
     clock,
   )
   const getStudioCarryover = new GetStudioCarryoverService(checkAccess, courses, studioSubmissions)
+  const getOwnStudioSubmission = new GetOwnStudioSubmissionService(
+    checkAccess,
+    courses,
+    studioSubmissions,
+  )
   const getShowcasePayload = new GetShowcasePayloadService(checkAccess, courses, studioSubmissions)
   const studioSubmissionsAdmin = new StudioSubmissionsAdminService(studioSubmissions)
   const getCertificate = new GetCertificateService(checkAccess, courses, progress, certificates)
@@ -295,6 +301,7 @@ export async function createApplication(env: Env): Promise<Application> {
       submitQuiz,
       submitStudio,
       getStudioCarryover,
+      getOwnStudioSubmission,
       getShowcasePayload,
       getCertificate,
       issueCertificate,

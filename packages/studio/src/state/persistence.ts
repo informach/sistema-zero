@@ -21,10 +21,33 @@ const projectStateKey = (id: string) => `${PROJECT_STATE_KEY_PREFIX}${id}`
 const projectBlocksKey = (id: string) => `${PROJECT_BLOCKS_KEY_PREFIX}${id}`
 const projectAssetsKey = (id: string) => `${PROJECT_ASSETS_KEY_PREFIX}${id}`
 
+// Namespace do armazenamento LOCAL (IndexedDB) — isola por PERFIL. Vazio = store HISTÓRICO
+// compartilhado `sistema-zero-studio` (lições, que já se isolam pelo id do projeto; e o adulto,
+// que tem 1 usuário só). O Estúdio Completo (lista de vários projetos) seta o id do perfil → um
+// store por criança, p/ irmãos no MESMO navegador não compartilharem a lista.
+let storageNamespace = ''
 let store: ReturnType<typeof createStore> | null = null
 
+/**
+ * Define o namespace do armazenamento local. O HOST chama ANTES de qualquer operação
+ * (ProjectList/editor): no Estúdio Completo com o id do perfil kids; vazio = store padrão (a
+ * lição reseta p/ vazio — usa o store padrão + id de projeto por perfil). Invalida o store em
+ * cache p/ recriar com o DB do namespace. Idempotente; um save em voo já capturou o store antigo.
+ */
+export function setStorageNamespace(namespace: string): void {
+  const next = namespace.trim()
+  if (next === storageNamespace) return
+  storageNamespace = next
+  store = null
+}
+
 function getStore() {
-  if (!store) store = createStore('sistema-zero-studio', 'kv')
+  if (!store) {
+    store = createStore(
+      storageNamespace ? `sistema-zero-studio-${storageNamespace}` : 'sistema-zero-studio',
+      'kv',
+    )
+  }
   return store
 }
 

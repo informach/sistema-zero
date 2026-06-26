@@ -25,7 +25,6 @@ import type {
   CourseProgressView,
   GamificationDelta,
   LessonCompleteResult,
-  LessonCompleteShowcaseHint,
   LessonDetailView,
   QuizBlock,
   StudioBlock,
@@ -38,6 +37,8 @@ interface Props {
   nextHref: string | null
   /** E-mail do aluno (sessão) — watermark do player de vídeo. */
   viewerEmail: string | null
+  /** Id da sessão (perfil ativo no kids) — isola o rascunho LOCAL do Estúdio por perfil. */
+  viewerId: string | null
   /** Aluno exibido no agradecimento da classificação (avatar + nome). */
   ratingViewer: RatingViewer
   /** Página de vendas do curso (Compartilhar) — `null` oculta o botão. */
@@ -53,6 +54,7 @@ export function LessonPlayer({
   prevHref,
   nextHref,
   viewerEmail,
+  viewerId,
   ratingViewer,
   shareUrl,
 }: Props) {
@@ -63,7 +65,6 @@ export function LessonPlayer({
   const [celebration, setCelebration] = useState<{
     progress: CourseProgressView
     gamification: GamificationDelta | null
-    showcase: LessonCompleteShowcaseHint | null
   } | null>(null)
   const courseHref = `/cursos/${encodeURIComponent(course.slug)}`
 
@@ -185,7 +186,6 @@ export function LessonPlayer({
         )
         completedRef.current = true
         const gamification = res?.gamification ?? null
-        const showcase = res?.showcase ?? null
         if (opts.silent) {
           // Auto-conclusão a ~90% do vídeo: só o toast (com o XP ganho) —
           // interromper o vídeo com um overlay no meio da reprodução seria hostil.
@@ -194,7 +194,7 @@ export function LessonPlayer({
         } else {
           // Celebração assume a navegação (snapshot ANTES do refresh — as
           // props de progresso mudam quando o server re-renderiza).
-          setCelebration({ progress: course.progress, gamification, showcase })
+          setCelebration({ progress: course.progress, gamification })
         }
         router.refresh()
       } catch (err) {
@@ -234,6 +234,7 @@ export function LessonPlayer({
       lessonId: lesson.id,
       courseSlug: course.slug,
       viewerEmail,
+      viewerId,
       initialPositionSeconds: lesson.completed ? null : lesson.positionSeconds,
       onVideoProgress,
       onVideoFlush,
@@ -247,6 +248,7 @@ export function LessonPlayer({
       lesson.positionSeconds,
       course.slug,
       viewerEmail,
+      viewerId,
       onVideoProgress,
       onVideoFlush,
       onVideoReachedThreshold,
@@ -417,8 +419,6 @@ export function LessonPlayer({
         <LessonCelebration
           progressBefore={celebration.progress}
           gamification={celebration.gamification}
-          showcase={celebration.showcase}
-          lessonId={lesson.id}
           nextHref={nextHref}
           courseHref={courseHref}
           onClose={() => setCelebration(null)}

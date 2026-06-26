@@ -961,12 +961,14 @@ export function LessonEditorClient({
                       setBlockForm((f) => ({ ...f, studioShowcaseEnabled: e.target.checked }))
                     }
                   />
-                  Publicar no Mural ao concluir esta aula
+                  Última aula do projeto — liberar o "Compartilhar" no Mural
                 </label>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Ligue no bloco da ÚLTIMA aula do projeto: a criança ganha o botão "Publicar no
-                  Mural" e o post é montado com o título/resumo abaixo + um print do projeto (jogos)
-                  ou a capa padrão.
+                  Ligue no bloco da ÚLTIMA aula do projeto: aí (e só aí) a criança ganha o botão
+                  "Compartilhar" na barra do editor pra publicar o jogo no Mural (+ um link público
+                  de jogar). O título e o resumo abaixo viram o texto INICIAL do post (a criança
+                  pode ajustar na hora) — deixe em branco e a IA escreve a descrição. A capa padrão
+                  é a reserva quando o print do jogo falha.
                 </p>
                 {blockForm.studioShowcaseEnabled ? (
                   <div className="mt-3 flex flex-col gap-3">
@@ -983,7 +985,7 @@ export function LessonEditorClient({
                     </Field>
                     <Field
                       label="Resumo do projeto"
-                      hint="Aparece no card do Mural. A criança não escreve — você define aqui."
+                      hint="Texto inicial do post (a criança pode ajustar ao publicar). Em branco → a IA gera a descrição."
                     >
                       <Textarea
                         value={blockForm.studioShowcaseSummary}

@@ -40,6 +40,7 @@ export default async function LessonPage({
       prevHref={href(index > 0 ? flat[index - 1] : undefined)}
       nextHref={href(index >= 0 ? flat[index + 1] : undefined)}
       viewerEmail={session?.email ?? null}
+      viewerId={session?.id ?? null}
       ratingViewer={{
         firstName: session?.firstName ?? null,
         lastName: session?.lastName ?? null,

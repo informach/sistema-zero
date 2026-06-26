@@ -5,6 +5,7 @@ import { EbookBlockView } from '@sistemazero/member-shell/components/ebook/ebook
 import { useLessonPlayer } from '@sistemazero/member-shell/components/lesson-player-context'
 import { StudioBlockView } from '@sistemazero/member-shell/components/studio/studio-block'
 import { VimeoPlayer } from '@sistemazero/member-shell/components/vimeo-player'
+import type { StudioShareResult } from '@sistemazero/studio'
 import {
   Award,
   BookOpenText,
@@ -15,6 +16,7 @@ import {
   ListChecks,
   type LucideIcon,
 } from 'lucide-react'
+import { useState } from 'react'
 import { cn } from '@/lib/cn'
 import { renderMarkdown } from '@/lib/markdown'
 import type {
@@ -32,6 +34,7 @@ import type {
   VideoBlock,
 } from '@/lib/types'
 import { KidsQuiz } from './kids-quiz'
+import { MuralCelebration } from './mural-celebration'
 
 /**
  * Renderer KIDS dos blocos de aula — fork de APRESENTAÇÃO do
@@ -122,22 +125,33 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
         </div>
       )
     case 'studio':
-      return (
-        <div className="kids-unit-grad flex flex-col gap-3">
-          <BlockChip icon={Code2} label="Crie" themeClass="kids-unit-grad" />
-          <StudioBlockView
-            blockId={block.id}
-            content={content as unknown as StudioBlock}
-            studioState={(block.studioState as StudioStateView | null | undefined) ?? null}
-            // Kids: liga o botão "Compartilhar no Mural" na Topbar do editor (a
-            // elegibilidade real é do backend — publish 409 se não for de vitrine).
-            enableShare
-          />
-        </div>
-      )
+      return <StudioBlockKids block={block} content={content as unknown as StudioBlock} />
     default:
       return null
   }
+}
+
+/**
+ * Bloco Estúdio na aula kids: o editor embarcado + a CELEBRAÇÃO ao publicar no Mural. O botão
+ * "Compartilhar" aparece SÓ na ÚLTIMA aula do projeto (`showcase.enabled` — vitrine marcada pelo
+ * admin); nas intermediárias a criança desenvolve sem publicar. Ao publicar, `onShared` traz os
+ * links e abre o overlay do Zappy (no lugar da tela de sucesso sóbria do editor).
+ */
+function StudioBlockKids({ block, content }: { block: LessonBlockView; content: StudioBlock }) {
+  const [shared, setShared] = useState<StudioShareResult | null>(null)
+  return (
+    <div className="kids-unit-grad flex flex-col gap-3">
+      <BlockChip icon={Code2} label="Crie" themeClass="kids-unit-grad" />
+      <StudioBlockView
+        blockId={block.id}
+        content={content}
+        studioState={(block.studioState as StudioStateView | null | undefined) ?? null}
+        enableShare={Boolean(content.showcase?.enabled)}
+        onShared={setShared}
+      />
+      {shared ? <MuralCelebration result={shared} onClose={() => setShared(null)} /> : null}
+    </div>
+  )
 }
 
 // ── rich_text: markdown SIMPLES renderizado de forma controlada (sem HTML cru) ─

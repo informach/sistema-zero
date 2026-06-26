@@ -29,6 +29,7 @@ import { GetEbookDownloadService } from '../src/application/get-ebook-download/g
 import { GetLessonService } from '../src/application/get-lesson/get-lesson.service'
 import { GetMemberDetailService } from '../src/application/get-member-detail/get-member-detail.service'
 import { GetMyCourseService } from '../src/application/get-my-course/get-my-course.service'
+import { GetOwnStudioSubmissionService } from '../src/application/get-own-studio-submission/get-own-studio-submission.service'
 import { GetShowcasePayloadService } from '../src/application/get-showcase-payload/get-showcase-payload.service'
 import { GetStudioCarryoverService } from '../src/application/get-studio-carryover/get-studio-carryover.service'
 import { GrantEntitlementService } from '../src/application/grant-entitlement/grant-entitlement.service'
@@ -186,6 +187,11 @@ export function buildApp(
         clock,
       ),
       getStudioCarryover: new GetStudioCarryoverService(checkAccess, courses, studioSubmissions),
+      getOwnStudioSubmission: new GetOwnStudioSubmissionService(
+        checkAccess,
+        courses,
+        studioSubmissions,
+      ),
       getShowcasePayload: new GetShowcasePayloadService(checkAccess, courses, studioSubmissions),
       getCertificate: new GetCertificateService(checkAccess, courses, progress, certificates),
       issueCertificate: new IssueCertificateService(

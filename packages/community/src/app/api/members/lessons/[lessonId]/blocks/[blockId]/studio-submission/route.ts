@@ -3,3 +3,4 @@
 import { shell } from '@/server/shell'
 
 export const { POST } = shell.routes.studioSubmit
+export const { GET } = shell.routes.studioSubmissionGet

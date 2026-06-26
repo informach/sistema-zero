@@ -40,7 +40,8 @@ tema). O design espelha o projeto de referência `C:\Users\tocha\projects\comuni
 badge (variant `success` usa tokens `--success/*`) · button (+`buttonVariants` p/ Links) · card ·
 dialog (props opcionais `titleAlign: 'left'|'center'` e `onBack` — fluxos multi-passo estilo
 Udemy; X/Voltar são absolutos no header; **gestão de foco a11y**: foca o card ao abrir, PRENDE o
-Tab, devolve o foco ao gatilho ao fechar — pilha de diálogos + lock de scroll refcontado, só o do
+Tab, devolve o foco ao gatilho ao fechar — pilha de diálogos + lock de scroll refcontado (via
+`scroll-lock`, ver abaixo), só o do
 TOPO trata Esc/Tab; **o card é capado à viewport (`max-h-[calc(100dvh-6rem)]` + flex-col): cabeçalho
 e rodapé FIXOS, só o corpo rola** — conteúdo alto (ex.: o Estúdio embutido na autoria de bloco) não
 transborda nem corta o topo, e o footer Salvar/Cancelar fica sempre visível; **largura via
@@ -53,7 +54,10 @@ placeholder animado `animate-pulse`/`bg-muted` no lugar de "Carregando…"; mold
 componha p/ cards/linhas; use em `loading.tsx` de rota e em estados de fetch client) · spinner ·
 star-rating (display + input com MEIA
 estrela 1–5: radios nativos sr-only sobre as metades — 1ª estrela é alvo inteiro —, hover preview,
-âmbar `fill-amber-400`; sem `onChange` = read-only) · switch · table · textarea · `cn`
+âmbar `fill-amber-400`; sem `onChange` = read-only) · **`scroll-lock`** (`@sistemazero/ui/scroll-lock`
+— `useBodyScrollLock(active)` + `lockBodyScroll`/`unlockBodyScroll` REFCONTADOS; o `Dialog` usa, e
+overlays de tela cheia também — fechar um modal por cima de um overlay não destrava o body cedo) ·
+switch · table · textarea · `cn`
 (clsx + tailwind-merge) · **`phone`** (`@sistemazero/ui/phone`, módulo PURO sem React:
 `phoneDigits`/`brLocalDigits`/`formatTelefone` — máscara BR "(11) 99999-9999"; usado pelo
 perfil do community e pelo pré-checkout do funil; convenção: o auth guarda SÓ DÍGITOS locais).

@@ -1089,6 +1089,15 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     },
   }
 
+  /** GET do projeto que o aluno ENVIOU neste bloco (save na nuvem) — 2ª prioridade ao abrir a aula. */
+  const studioSubmissionGet = {
+    GET: async (_req: Request, ctx: { params: Promise<{ lessonId: string; blockId: string }> }) => {
+      const { lessonId, blockId } = await ctx.params
+      const { status, body } = await members.getOwnStudioSubmission(lessonId, blockId)
+      return NextResponse.json(body ?? { project: null }, { status })
+    },
+  }
+
   // ── Payments ──────────────────────────────────────────────────────────────
 
   /** Lista paginada das compras do aluno logado (filtro por e-mail é do backend). */
@@ -1328,6 +1337,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     quizAttempts,
     studioSubmit,
     studioCarryover,
+    studioSubmissionGet,
     paymentsMy,
     profilesList,
     profileCreate,

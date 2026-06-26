@@ -44,6 +44,7 @@ export type { StudioPersistence, StudioPersistenceAdapter } from './persistence/
 export { type RenderProjectOptions, renderProjectToPreviewDoc } from './preview/renderProject'
 export { ProjectList, type ProjectListProps } from './projects/ProjectList'
 export type { ProjectSummary } from './state/persistence'
+export { setStorageNamespace as setStudioStorageNamespace } from './state/persistence'
 export type { StudioLimits } from './state/projectStore'
 export type {
   ActivityCheck,

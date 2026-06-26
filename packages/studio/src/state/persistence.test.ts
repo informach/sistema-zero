@@ -42,6 +42,7 @@ const { createProjectStore, MAX_BLOCKSTATE_BLOCKS, PROJECT_FILE_LIMITS, useProje
 const { cancelPendingAutosavesFor, createPersistenceService, setAutosaveDelayForTests } =
   await import('../persistence/service')
 const { createLocalPersistenceAdapter } = await import('../persistence/local')
+const { setStorageNamespace } = await import('./persistence')
 
 // Sem fake timers no bun:test: encurta o debounce do autosave e espera com
 // timers reais (folga de 5x para máquinas lentas/CI).
@@ -51,6 +52,25 @@ const waitForAutosave = () => Bun.sleep(AUTOSAVE_TEST_DELAY_MS * 5)
 // Serviço sobre a store DEFAULT (mesmo arranjo do fallback fora de um
 // <Studio>); cada teste dá attach/detach.
 const service = createPersistenceService(useProjectStore, createLocalPersistenceAdapter())
+
+describe('setStorageNamespace — isolamento por perfil', () => {
+  // Volta ao store padrão p/ não vazar o namespace p/ os outros testes do arquivo.
+  afterEach(() => setStorageNamespace(''))
+
+  it('namespace → DB próprio por perfil; vazio → DB histórico compartilhado', async () => {
+    const list = createLocalPersistenceAdapter().list
+    if (!list) throw new Error('adapter local sem list()') // narrow p/ o typecheck (list é opcional na interface)
+    idb.createStore.mockClear()
+    setStorageNamespace('perfil-A')
+    await list()
+    expect(idb.createStore).toHaveBeenCalledWith('sistema-zero-studio-perfil-A', 'kv')
+
+    idb.createStore.mockClear()
+    setStorageNamespace('') // sem perfil → store padrão (lição/adulto)
+    await list()
+    expect(idb.createStore).toHaveBeenCalledWith('sistema-zero-studio', 'kv')
+  })
+})
 
 describe('PersistenceService', () => {
   beforeEach(() => {

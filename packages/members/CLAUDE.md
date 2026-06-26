@@ -163,6 +163,12 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    entrega → `{project:null}` (cai no `initialProject`). Carrega a última entrega MESMO sem
    ter batido a nota de corte (continuar o WIP). Várias cadeias por curso NÃO se misturam
    (filtro por nome). O "salvar" é a própria ENTREGA — nada novo no save/colunas.
+   **CARREGAR O PRÓPRIO ENVIO (save na nuvem, 06/2026):** `GET /members/lessons/:lessonId/blocks/
+   :blockId/studio-submission` (MESMO path do POST, distinção pelo método) → `{project|null}` via
+   `GetOwnStudioSubmissionService` (`getOne(userId, blockId)` — o ENVIO deste bloco/perfil; espelha
+   o carryover: acesso pela CONTA, projeto pelo PERFIL). É a **2ª prioridade** de seed no front
+   (depois do rascunho LOCAL por perfil, antes do carryover): num navegador NOVO, sem rascunho
+   local, a criança retoma o que enviou em vez do template. Lazy (projeto pesado, fora do GET da aula).
    **VITRINE (Mural dos Criadores, 06/2026):** o `StudioBlock` ganha `showcase?` (`{enabled,
    title?, summary?, defaultCoverUrl?}`, no jsonb `content` — SEM migration). O admin liga
    `enabled` no bloco da ÚLTIMA aula do projeto; ao concluí-la, o `LessonCompleteView` traz

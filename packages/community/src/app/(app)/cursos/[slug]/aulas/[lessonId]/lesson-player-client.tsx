@@ -27,6 +27,8 @@ interface Props {
   nextHref: string | null
   /** E-mail do aluno (sessão) — watermark do player de vídeo. */
   viewerEmail: string | null
+  /** Id da sessão (conta) — isola o rascunho LOCAL do Estúdio por usuário. */
+  viewerId: string | null
   /** Identidade exibida no agradecimento do rating (avatar + nome). */
   viewer: RatingViewer
   /** Página de vendas do curso (salesPageUrl ?? FUNNEL_URL) — modal Compartilhar. */
@@ -42,6 +44,7 @@ export function LessonPlayer({
   prevHref,
   nextHref,
   viewerEmail,
+  viewerId,
   viewer,
   shareUrl,
 }: Props) {
@@ -175,6 +178,7 @@ export function LessonPlayer({
       lessonId: lesson.id,
       courseSlug: course.slug,
       viewerEmail,
+      viewerId,
       initialPositionSeconds: lesson.completed ? null : lesson.positionSeconds,
       onVideoProgress,
       onVideoFlush,
@@ -188,6 +192,7 @@ export function LessonPlayer({
       lesson.positionSeconds,
       course.slug,
       viewerEmail,
+      viewerId,
       onVideoProgress,
       onVideoFlush,
       onVideoReachedThreshold,

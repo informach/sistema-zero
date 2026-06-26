@@ -12,6 +12,11 @@ export interface LessonPlayerContextValue {
   courseSlug: string
   /** E-mail do aluno — watermark anti-pirataria no player de vídeo. */
   viewerEmail: string | null
+  /**
+   * Id da sessão (no kids = PERFIL ativo; no adulto = conta). Isola o rascunho LOCAL do Estúdio
+   * por perfil — irmãos no mesmo navegador não misturam o trabalho. `null` fora do player.
+   */
+  viewerId: string | null
   /** Posição salva do vídeo (segundos) para retomar de onde parou. */
   initialPositionSeconds: number | null
   /** A cada `timeupdate` do vídeo (o consumidor faz o throttle de persistência). */

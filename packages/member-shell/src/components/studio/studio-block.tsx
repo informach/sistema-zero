@@ -1,14 +1,21 @@
 'use client'
 
 import '@sistemazero/studio/styles.css'
-import type { Project, StudioHandle, StudioShareAdapter } from '@sistemazero/studio'
+import type {
+  Project,
+  StudioHandle,
+  StudioShareAdapter,
+  StudioShareResult,
+} from '@sistemazero/studio'
 import { Button } from '@sistemazero/ui/button'
 import { Dialog } from '@sistemazero/ui/dialog'
+import { useBodyScrollLock } from '@sistemazero/ui/scroll-lock'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { CheckCircle2, Maximize2, Minimize2, Send } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { type ApiError, apiGet, apiSend } from '../../lib/api'
 import { cn } from '../../lib/cn'
+import { lessonStudioProjectId } from '../../lib/studio-project-id'
 import type { StudioBlock, StudioStateView, StudioSubmissionResultView } from '../../lib/types'
 import { useLessonPlayer } from '../lesson-player-context'
 
@@ -18,11 +25,20 @@ interface Props {
   /** Estado da entrega vindo do GET da aula (já enviou? quando?). */
   studioState: StudioStateView | null
   /**
-   * Liga o botão "Compartilhar" (publicar no Mural) na Topbar do editor. Só o app
-   * KIDS passa `true` (o Mural é da vitrine kids); a elegibilidade real é do backend
-   * (o publish 409 quando o bloco não é de vitrine). Default OFF.
+   * Liga o botão "Compartilhar" (publicar no Mural) na Topbar do editor. O kids passa
+   * `enableShare={Boolean(content.showcase?.enabled)}` → o botão aparece SÓ no bloco da ÚLTIMA
+   * aula do projeto (a vitrine), substituindo o antigo "Publicar no Mural" da `LessonCelebration`
+   * (mesma ação, e o Compartilhar ainda dá descrição editável + link público de jogar). Nas aulas
+   * intermediárias fica OFF (a criança não publica antes de terminar). A elegibilidade real é do
+   * backend (o publish 409 se o bloco não é vitrine). Default OFF.
    */
   enableShare?: boolean
+  /**
+   * Chamado quando o projeto é publicado no Mural pelo "Compartilhar" (com os links). O kids usa
+   * pra abrir a CELEBRAÇÃO (overlay do Zappy + "Jogar"); o `ShareDialog` fecha sem mostrar a
+   * própria tela de sucesso (ver `StudioShareAdapter.onPublished`).
+   */
+  onShared?: (result: StudioShareResult) => void
 }
 
 type StudioComponent = typeof import('@sistemazero/studio')['StudioLesson']
@@ -37,11 +53,12 @@ type StudioComponent = typeof import('@sistemazero/studio')['StudioLesson']
  * Carregado SÓ no client (Monaco/Blockly/IndexedDB não existem no SSR): o import
  * dinâmico do editor roda dentro de um effect — o server renderiza só o placeholder.
  */
-export function StudioBlockView({ blockId, content, studioState, enableShare }: Props) {
+export function StudioBlockView({ blockId, content, studioState, enableShare, onShared }: Props) {
   const player = useLessonPlayer()
   const lessonId = player?.lessonId ?? ''
-  // Id estável por bloco — o autosave local retoma o WIP no mesmo navegador.
-  const projectId = `sz-lesson-studio:${blockId}`
+  // Id estável por bloco E por PERFIL (`viewerId`): irmãos no mesmo navegador não misturam o
+  // rascunho. ⚠️ Charset seguro (sem `:`): id inválido vira ULID aleatório → perde tudo no refresh.
+  const projectId = lessonStudioProjectId(blockId, player?.viewerId)
 
   const [StudioLesson, setStudioLesson] = useState<StudioComponent | null>(null)
   const [seed, setSeed] = useState<Project | null>(null)
@@ -70,6 +87,9 @@ export function StudioBlockView({ blockId, content, studioState, enableShare }: 
     void (async () => {
       const mod = await import('@sistemazero/studio')
       if (!active) return
+      // A LIÇÃO usa o store LOCAL padrão (isolada por perfil pelo id do projeto). Reseta o
+      // namespace caso o Estúdio Completo o tenha trocado numa visita anterior nesta sessão.
+      mod.setStudioStorageNamespace('')
       setStudioLesson(() => mod.StudioLesson)
       // 1) Rascunho LOCAL sempre vence — nunca re-hidratar por cima do WIP.
       const existing = await mod
@@ -81,9 +101,21 @@ export function StudioBlockView({ blockId, content, studioState, enableShare }: 
         setSeed(existing)
         return
       }
-      // 2) Projeto contínuo (cadeia) e sem rascunho local: semeia do que o aluno
-      //    enviou na aula contínua anterior. Lazy + best-effort: falha de rede NÃO
-      //    trava o editor (cai no initialProject).
+      // 2) Sem rascunho local: tenta o ENVIO no banco (save na nuvem) DESTE bloco — só se já
+      //    enviou (`studioState.submitted`). É o que retoma o trabalho num navegador NOVO (o
+      //    rascunho local é por aparelho; o envio é a sincronização entre eles). Lazy + best-effort.
+      if (lessonId && studioState?.submitted) {
+        const mine = await apiGet<{ project: unknown | null }>(
+          `/api/members/lessons/${encodeURIComponent(lessonId)}/blocks/${encodeURIComponent(blockId)}/studio-submission`,
+        ).catch(() => null)
+        if (!active) return
+        if (mine?.project) {
+          setSeed({ ...(mine.project as Project), id: projectId })
+          return
+        }
+      }
+      // 3) Projeto contínuo (cadeia), sem rascunho/envio: semeia do que o aluno enviou na aula
+      //    contínua anterior. Lazy + best-effort: falha de rede NÃO trava o editor.
       if (content.chain && lessonId) {
         const carry = await apiGet<{ project: unknown | null }>(
           `/api/members/lessons/${encodeURIComponent(lessonId)}/blocks/${encodeURIComponent(blockId)}/studio-carryover`,
@@ -95,13 +127,13 @@ export function StudioBlockView({ blockId, content, studioState, enableShare }: 
           return
         }
       }
-      // 3) 1ª da cadeia / não enviou ainda / aula independente → template do bloco.
+      // 4) 1ª da cadeia / nunca enviou / aula independente → template do bloco.
       setSeed({ ...(content.initialProject as Project), id: projectId })
     })()
     return () => {
       active = false
     }
-  }, [projectId, content.initialProject, content.chain, lessonId, blockId])
+  }, [projectId, content.initialProject, content.chain, lessonId, blockId, studioState?.submitted])
 
   // "Expandir" é uma SOBREPOSIÇÃO em tela cheia por CSS (não a Fullscreen API nativa): a
   // API restringe a pintura à subárvore do elemento, então menus/diálogos PORTALADOS no
@@ -123,6 +155,11 @@ export function StudioBlockView({ blockId, content, studioState, enableShare }: 
   // (O editor relayouta sozinho ao mudar de tamanho — BlocklyPanel/MonacoTabs têm
   // ResizeObserver no container; não precisa disparar resize manual.)
   const toggleExpanded = useCallback(() => setExpanded((v) => !v), [])
+
+  // Expandido = overlay `fixed`: a barra de rolagem da PÁGINA atrás dele só confunde (rola
+  // mas nada se move). Trava o scroll do body enquanto expandido (refcontada com o <Dialog>,
+  // p/ fechar o "Enviar?" por cima não destravar cedo e a barra fantasma não voltar).
+  useBodyScrollLock(expanded)
 
   const submit = useCallback(async () => {
     const project = handleRef.current?.getProject()
@@ -160,6 +197,19 @@ export function StudioBlockView({ blockId, content, studioState, enableShare }: 
     }
   }, [lessonId, blockId, player, activity])
 
+  // O Studio LATCHA o adapter uma vez (memoizado por lessonId/blockId), mas `onShared` pode
+  // mudar por render — lê via ref pra manter o adapter estável e ainda chamar o handler ATUAL.
+  const onSharedRef = useRef(onShared)
+  useEffect(() => {
+    onSharedRef.current = onShared
+  }, [onShared])
+
+  // Título/resumo do post pré-definidos pelo admin (vitrine): preenchem o Compartilhar e
+  // ECONOMIZAM IA — com resumo, o dialog NÃO chama a IA (abre com este texto, editável). Vazio
+  // (ou no Estúdio Completo, que nem passa isso) → a IA gera o rascunho.
+  const presetTitle = content.showcase?.title
+  const presetDescription = content.showcase?.summary
+
   // Adapter de COMPARTILHAR (Mural) — só no kids (`enableShare`). O Studio o LATCHA
   // uma vez, então memoizamos por (lessonId, blockId): I/O do servidor vive aqui, a
   // UX no editor. `generateDescription` manda só os 3 arquivos (sem assets); `publish`
@@ -167,6 +217,8 @@ export function StudioBlockView({ blockId, content, studioState, enableShare }: 
   const share = useMemo<StudioShareAdapter | undefined>(() => {
     if (!enableShare || !lessonId) return undefined
     return {
+      presetTitle,
+      presetDescription,
       async generateDescription({ project, title }) {
         try {
           const res = await apiSend<{ description?: string }>('/api/studio/describe', 'POST', {
@@ -208,8 +260,10 @@ export function StudioBlockView({ blockId, content, studioState, enableShare }: 
         }
         return { muralUrl: body?.muralUrl, playUrl: body?.playUrl }
       },
+      // Publicou: entrega os links ao host (kids abre a celebração); o ShareDialog fecha sozinho.
+      onPublished: (result) => onSharedRef.current?.(result),
     }
-  }, [enableShare, lessonId, blockId])
+  }, [enableShare, lessonId, blockId, presetTitle, presetDescription])
 
   const ready = StudioLesson !== null && seed !== null
 
