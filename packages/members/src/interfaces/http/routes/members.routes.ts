@@ -619,8 +619,8 @@ export function membersRoutes(deps: MembersRoutesDeps) {
         },
         { params: ShowcasePayloadParams },
       )
-      // Estado do bloco certificado p/ a UI (emitir vs baixar): `eligible` (todas as
-      // outras aulas concluídas) + `issued`/serial/data se já emitido.
+      // Estado do bloco certificado p/ a UI (emitir vs baixar): `eligible` (aulas
+      // anteriores concluídas) + `issued`/serial/data se já emitido.
       .get(
         '/lessons/:lessonId/blocks/:blockId/certificate',
         async ({ headers, params }) => {

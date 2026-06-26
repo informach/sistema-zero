@@ -5,9 +5,16 @@ import { useCallback, useEffect, useState } from 'react'
 import type { CertificateBlock, CertificateStateView } from '../lib/types'
 import { useLessonPlayer } from './lesson-player-context'
 
+/** Nome do arquivo do `content-disposition` do servidor (por curso: `certificado-<slug>.pdf`). */
+function filenameFromDisposition(header: string | null): string | null {
+  if (!header) return null
+  const m = /filename="?([^";]+)"?/i.exec(header)
+  return m?.[1]?.trim() || null
+}
+
 /**
- * Bloco CERTIFICADO (última aula do curso). Lê o estado no members
- * (`GET …/certificate`): bloqueado até concluir as outras aulas; elegível → "Emitir";
+ * Bloco CERTIFICADO (pode ficar em qualquer aula do curso). Lê o estado no members
+ * (`GET …/certificate`): bloqueado até concluir as aulas anteriores; elegível → "Emitir";
  * já emitido → "Baixar (PDF)" + nº de série + link de validação. Emitir/baixar é um POST
  * que devolve o PDF em STREAM (mesma origem) — o navegador baixa o blob; a 1ª vez emite,
  * as próximas rebaixam o MESMO certificado (idempotente no members).
@@ -56,9 +63,17 @@ export function CertificateBlockView({
       const res = await fetch(path, { method: 'POST' })
       if (!res.ok) {
         const data = (await res.json().catch(() => null)) as { error?: { code?: string } } | null
+        const code = data?.error?.code
+        if (code === 'CERTIFICATE_REVOKED') {
+          // Revogado pelo admin entre a leitura do estado e o clique — reflete na UI
+          // (o ramo "revogado" esconde o botão); revogação é terminal, sem "tente de novo".
+          setState((s) => (s ? { ...s, revoked: true } : s))
+          setError('Este certificado foi revogado e não está mais disponível.')
+          return
+        }
         setError(
-          data?.error?.code === 'CERTIFICATE_NOT_ELIGIBLE'
-            ? 'Conclua todas as aulas do curso para emitir o certificado.'
+          code === 'CERTIFICATE_NOT_ELIGIBLE'
+            ? 'Conclua as aulas anteriores ao certificado para emitir.'
             : 'Não foi possível gerar o certificado agora. Tente novamente.',
         )
         return
@@ -67,7 +82,10 @@ export function CertificateBlockView({
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = 'certificado.pdf'
+      // O servidor nomeia por curso (`certificado-<slug>.pdf`); blob ignora o header, então o
+      // `download` lê o `content-disposition` explicitamente (fallback genérico se faltar).
+      a.download =
+        filenameFromDisposition(res.headers.get('content-disposition')) ?? 'certificado.pdf'
       document.body.appendChild(a)
       a.click()
       a.remove()
@@ -147,7 +165,7 @@ export function CertificateBlockView({
       ) : eligible ? (
         <>
           <p className="mt-1 text-sm text-muted-foreground">
-            Você concluiu o curso! Emita seu certificado de conclusão.
+            Você concluiu as aulas necessárias. Emita seu certificado de conclusão.
           </p>
           <button
             type="button"
@@ -165,7 +183,7 @@ export function CertificateBlockView({
         </>
       ) : (
         <p className="mt-1 text-sm text-muted-foreground">
-          Conclua todas as aulas do curso para liberar a emissão do seu certificado.
+          Conclua as aulas anteriores ao certificado para liberar a emissão.
         </p>
       )}
 

@@ -181,28 +181,48 @@ export interface StudioBlock {
   }
 }
 
+/** Uma assinatura no certificado: imagem (URL http(s)) + nome de quem assina. */
+export interface CertificateSignature {
+  imageUrl?: string
+  name?: string
+}
+
 /**
- * Bloco CERTIFICADO: colocado na ÚLTIMA aula do curso (o "diploma"). Ao concluir todas
- * as OUTRAS aulas publicadas (o que, pelos gates de quiz/estúdio, já implica passar nos
- * quizzes e enviar os projetos), o aluno libera o botão de EMITIR — a 1ª emissão congela
- * um registro imutável (nº de série + nome + título do curso) e gera o PDF; reemissões só
- * rebaixam o MESMO PDF. A config aqui é só metadado de AUTORIA (não-secreta, vai ao front
- * pro renderizador montar o PDF da marca) — espelha o `StudioBlock.showcase`. O members NÃO
- * gera o PDF (é backend); o community/BFF monta com pdf-lib a partir do registro + desta config.
+ * Bloco CERTIFICADO: o "diploma" do curso. Pode ficar em QUALQUER aula — o botão de EMITIR
+ * libera quando TODAS as aulas publicadas ANTES dela estão concluídas (aulas depois não
+ * contam; ver `eligibleForCertificate`). A 1ª emissão congela um registro imutável (nº de
+ * série + nome + título do curso) e gera o PDF; reemissões só rebaixam o MESMO PDF.
+ *
+ * **Layout por IMAGEM BASE (26/06):** cada curso sobe a sua `baseImageUrl` (fundo A4
+ * paisagem com o logo/título/decoração já desenhados) e o renderizador do BFF desenha
+ * POR CIMA o conteúdo dinâmico (linha de abertura, NOME do aluno, frase do curso,
+ * parágrafo, data, assinaturas, QR). A config aqui é só metadado de AUTORIA (não-secreta,
+ * vai ao front) — o members NÃO gera o PDF; o community/BFF monta com pdf-lib a partir do
+ * registro imutável + desta config.
  */
 export interface CertificateBlock {
   kind: 'certificate'
-  /** Título exibido no PDF (default: "Certificado de Conclusão"). */
-  title?: string
-  /** Nome do emissor/assinante (ex.: "Equipe Sistema Zero" ou o professor). */
-  issuerName?: string
-  /** Imagem da assinatura (URL http(s)). */
-  signatureImageUrl?: string
-  /** Override do logo no PDF (URL http(s); default = logo da marca). */
-  logoUrl?: string
-  /** Cor de destaque (hex, ex.: `#C4F042`). */
+  /** Imagem base do certificado (fundo A4 paisagem, por curso) — URL http(s). */
+  baseImageUrl?: string
+  /** Linha fixa antes do nome (default "Certificamos que o aluno"). */
+  introLine?: string
+  /** Frase curta específica do curso (o que o aluno concluiu), abaixo do nome. */
+  coursePhrase?: string
+  /** Parágrafo explicando o que o aluno fez (abaixo da frase do curso). */
+  bodyText?: string
+  /** Assinaturas (até 2): imagem + nome. Ex.: Helena, Julio. */
+  signatures?: CertificateSignature[]
+  /** Cor do texto desenhado sobre a imagem (hex; default escuro). */
   accentColor?: string
-  /** Texto/menção adicional no corpo do certificado (plano, sem imagem). */
+  /** @deprecated layout antigo (sem imagem base) — tolerado p/ blocos legados. */
+  title?: string
+  /** @deprecated ver `signatures`. */
+  issuerName?: string
+  /** @deprecated ver `signatures`. */
+  signatureImageUrl?: string
+  /** @deprecated a imagem base já traz o logo. */
+  logoUrl?: string
+  /** @deprecated ver `bodyText`/`coursePhrase`. */
   message?: string
 }
 

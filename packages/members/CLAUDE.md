@@ -386,16 +386,24 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   (matrícula ativa + aula publicada + bloco da aula com `kind:'ebook'`;
   `EBOOK_BLOCK_NOT_FOUND`→404). A view member-facing do bloco `ebook` sai **SEM `url`**
   (só `{kind, title?}`). `GetEbookDownloadService`.
-- **Certificado de conclusão** (bloco `kind:'certificate'` na ÚLTIMA aula; migration `0025`):
+- **Certificado de conclusão** (bloco `kind:'certificate'`; migration `0025`):
   `GET /members/lessons/:lessonId/blocks/:blockId/certificate` → estado `{eligible, issued,
   revoked, serial?, issuedAt?, revokedAt?}` (`GetCertificateService`); `POST` na mesma rota EMITE
-  (idempotente por aluno+curso — `IssueCertificateService`): GATE de elegibilidade = TODAS as
-  outras aulas publicadas concluídas **E ≥1 outra aula publicada existir** (`eligibleForCertificate`
-  exige piso de 1 — um curso publicado SÓ com a aula do certificado NÃO emite diploma por zero
-  trabalho; `CERTIFICATE_NOT_ELIGIBLE`→409; cobre transitivamente quiz/estúdio das OUTRAS aulas),
-  congela `certificates_issued` (id público + `serial` `SZ-<ano>-XXXXXXXX` + snapshot
-  nome/título) e **conclui a aula do certificado** (→ curso 100% + badge `course-complete`,
-  award fail-open). ⚠️ A aula do certificado aceita **conteúdo livre** (vídeo/texto/imagem de
+  (idempotente por aluno+curso — `IssueCertificateService`): GATE de elegibilidade = **todas as
+  aulas publicadas ANTES da aula do certificado** (ordem do curso: módulo.sortOrder → aula.sortOrder)
+  concluídas **E ≥1 aula anterior existir** (`eligibleForCertificate` + `precedingPublishedLessonIds`,
+  domain; piso de 1 — um certificado na 1ª aula NÃO emite diploma por zero trabalho;
+  `CERTIFICATE_NOT_ELIGIBLE`→409; cobre transitivamente quiz/estúdio das aulas anteriores). ⚠️ **O
+  certificado NÃO precisa ser a última aula** (decisão da usuária 26/06): pode haver aulas DEPOIS dele
+  (não entram no gate); só as ANTERIORES travam. Emitir congela `certificates_issued` (id público +
+  `serial` `SZ-<ano>-XXXXXXXX` + snapshot nome/título) e **conclui a aula do certificado** (→ se for a
+  última pendente, fecha o curso 100% + badge `course-complete`; com aulas DEPOIS dele o curso segue
+  incompleto; award fail-open). **Config de autoria (26/06):** imagem base por
+  CURSO (`baseImageUrl`, fundo A4 paisagem) + `introLine` (default "Certificamos que o aluno") +
+  `coursePhrase` (frase curta) + `bodyText` (parágrafo) + `signatures[]` (até 2: imagem + nome) +
+  `accentColor` (cor do texto). O members só guarda/devolve a config; o BFF desenha por cima da imagem
+  base (campos antigos `title`/`logoUrl`/`issuerName`/`signatureImageUrl`/`message` = deprecados,
+  tolerados). ⚠️ A aula do certificado aceita **conteúdo livre** (vídeo/texto/imagem de
   encerramento, quiz de FIXAÇÃO) mas **NÃO blocos que TRAVAM a conclusão** — quiz com nota de corte
   ou estúdio (`isCompletionGatingBlock`, domain): a autoria recusa criar/virar um certificado numa
   aula com bloco travante, e recusa adicionar/virar um bloco travante numa aula de certificado

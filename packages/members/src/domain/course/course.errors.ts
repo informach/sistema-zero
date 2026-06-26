@@ -123,10 +123,10 @@ export class CertificateBlockNotFoundError extends DomainError {
   }
 }
 
-/** Emissão de certificado pedida antes de concluir todas as outras aulas do curso. → 409. */
+/** Emissão de certificado pedida antes de concluir as aulas anteriores ao bloco. → 409. */
 export class CertificateNotEligibleError extends DomainError {
   readonly code = 'CERTIFICATE_NOT_ELIGIBLE'
-  constructor(message = 'Conclua todas as aulas do curso para emitir o certificado') {
+  constructor(message = 'Conclua as aulas anteriores ao certificado para emitir') {
     super(message)
   }
 }

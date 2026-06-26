@@ -588,8 +588,8 @@ export const roomInventory = members.table(
 )
 
 // ── Certificado de conclusão emitido (1 linha por aluno+curso, imutável) ────
-// Emitido quando o aluno conclui TODAS as outras aulas do curso (a aula do bloco
-// `certificate` é a última). `student_name`/`course_title` são SNAPSHOTS congelados na
+// Emitido quando o aluno conclui as aulas publicadas ANTERIORES ao bloco `certificate`.
+// `student_name`/`course_title` são SNAPSHOTS congelados na
 // 1ª emissão (renome posterior não altera o cert — espelha o authorDisplayName do hub).
 // `id` é o identificador PÚBLICO de validação (vai no QR). `serial` é o nº legível UNIQUE.
 // `course_id` é SNAPSHOT (SEM FK p/ `courses`, ao contrário das demais tabelas): um

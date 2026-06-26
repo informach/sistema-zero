@@ -100,7 +100,7 @@ export function toCertificateView(record: CertificateRecord): CertificateView {
 
 /** Estado do bloco certificado p/ a UI do aluno (emitir vs baixar). */
 export interface CertificateStateView {
-  /** Todas as OUTRAS aulas publicadas do curso concluídas? */
+  /** Todas as aulas publicadas anteriores ao certificado concluídas? */
   eligible: boolean
   /** Já há certificado emitido para este aluno+curso? */
   issued: boolean
@@ -114,9 +114,11 @@ export interface CertificateStateView {
 /** Resultado da validação PÚBLICA (só dados não-sensíveis — propósito do validador). */
 export interface CertificateValidationView {
   valid: boolean
+  revoked: boolean
   studentName: string | null
   courseTitle: string | null
   issuedAt: string | null
+  revokedAt: string | null
   serial: string | null
 }
 
@@ -124,14 +126,24 @@ export function toCertificateValidationView(
   record: CertificateRecord | null,
 ): CertificateValidationView {
   if (!record) {
-    return { valid: false, studentName: null, courseTitle: null, issuedAt: null, serial: null }
+    return {
+      valid: false,
+      revoked: false,
+      studentName: null,
+      courseTitle: null,
+      issuedAt: null,
+      revokedAt: null,
+      serial: null,
+    }
   }
   return {
     // Revogado → inválido, mas ainda mostra de quem/qual curso era (a página dirá "revogado").
     valid: record.revokedAt === null,
+    revoked: record.revokedAt !== null,
     studentName: record.studentName,
     courseTitle: record.courseTitle,
     issuedAt: record.issuedAt.toISOString(),
+    revokedAt: record.revokedAt ? record.revokedAt.toISOString() : null,
     serial: record.serial,
   }
 }

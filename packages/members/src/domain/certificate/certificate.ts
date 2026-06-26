@@ -30,21 +30,38 @@ export interface CertificateRecord {
 }
 
 /**
- * Elegível a emitir? TODAS as aulas publicadas do curso MENOS a do certificado precisam
- * estar concluídas, E precisa existir ≥1 OUTRA aula publicada — um certificado certifica a
- * conclusão de ALGO. Sem o piso, um curso publicado SÓ com a aula do certificado (conteúdo
- * ainda em rascunho) emitiria um diploma por zero trabalho. Como concluir cada aula já
- * exige passar nos quizzes com nota de corte e enviar os projetos do Estúdio (gates de
- * `mark-lesson-complete`), isso cobre transitivamente quizzes + atividades + envio. Puro/testável.
+ * As aulas publicadas que vêm ANTES da aula do certificado, na ordem do curso
+ * (`orderedPublishedLessonIds` já vem achatado de `findOutline`: módulo.sortOrder →
+ * aula.sortOrder). O certificado NÃO precisa ser a última aula — pode haver aulas DEPOIS
+ * dele (que não entram no gate). Aula do certificado não encontrada na lista (não devia
+ * ocorrer — ela é publicada) → fallback conservador "todas as outras" (nunca emite a mais).
+ */
+export function precedingPublishedLessonIds(
+  orderedPublishedLessonIds: string[],
+  certLessonId: string,
+): string[] {
+  const idx = orderedPublishedLessonIds.indexOf(certLessonId)
+  return idx >= 0
+    ? orderedPublishedLessonIds.slice(0, idx)
+    : orderedPublishedLessonIds.filter((id) => id !== certLessonId)
+}
+
+/**
+ * Elegível a emitir? TODAS as aulas publicadas ANTES da aula do certificado (ordem do
+ * curso) precisam estar concluídas, E precisa existir ≥1 aula anterior — um certificado
+ * certifica a conclusão de ALGO. Sem o piso, um certificado na 1ª aula (nada antes)
+ * emitiria um diploma por zero trabalho. Como concluir cada aula já exige passar nos
+ * quizzes com nota de corte e enviar os projetos do Estúdio (gates de
+ * `mark-lesson-complete`), isso cobre transitivamente quizzes + atividades + envio.
+ * Aulas DEPOIS do certificado não entram no gate (decisão da usuária 26/06). Puro/testável.
  */
 export function eligibleForCertificate(
-  publishedLessonIds: string[],
-  certLessonId: string,
+  precedingPublishedLessonIds: string[],
   completedLessonIds: string[],
 ): boolean {
+  if (precedingPublishedLessonIds.length === 0) return false
   const completed = new Set(completedLessonIds)
-  const others = publishedLessonIds.filter((id) => id !== certLessonId)
-  return others.length > 0 && others.every((id) => completed.has(id))
+  return precedingPublishedLessonIds.every((id) => completed.has(id))
 }
 
 // Alfabeto Crockford base32 (sem I/L/O/U — evita ambiguidade ao ler/digitar o serial).

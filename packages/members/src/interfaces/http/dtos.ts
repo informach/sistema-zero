@@ -606,13 +606,23 @@ const StudioBlockSchema = t.Object({
  * Bloco certificado (ver domain/course/lesson-block.ts): só metadado de autoria do PDF
  * (não-secreto). Imagens (assinatura/logo) SÓ http(s); cor de destaque hex.
  */
+const CertificateSignatureSchema = t.Object({
+  imageUrl: t.Optional(t.String({ maxLength: 2000, pattern: HTTP_URL_PATTERN })),
+  name: t.Optional(t.String({ maxLength: 120 })),
+})
 const CertificateBlockSchema = t.Object({
   kind: t.Literal('certificate'),
+  baseImageUrl: t.Optional(t.String({ maxLength: 2000, pattern: HTTP_URL_PATTERN })),
+  introLine: t.Optional(t.String({ maxLength: 200 })),
+  coursePhrase: t.Optional(t.String({ maxLength: 300 })),
+  bodyText: t.Optional(t.String({ maxLength: 2000 })),
+  signatures: t.Optional(t.Array(CertificateSignatureSchema, { maxItems: 2 })),
+  accentColor: t.Optional(HEX_COLOR),
+  // Deprecados (layout antigo sem imagem base) — tolerados p/ blocos legados.
   title: t.Optional(t.String({ maxLength: 200 })),
   issuerName: t.Optional(t.String({ maxLength: 200 })),
   signatureImageUrl: t.Optional(t.String({ maxLength: 2000, pattern: HTTP_URL_PATTERN })),
   logoUrl: t.Optional(t.String({ maxLength: 2000, pattern: HTTP_URL_PATTERN })),
-  accentColor: t.Optional(HEX_COLOR),
   message: t.Optional(t.String({ maxLength: 2000 })),
 })
 

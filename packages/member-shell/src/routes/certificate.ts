@@ -16,9 +16,11 @@ const CERT_KEY = (id: string) => `certificates/${id}.pdf`
 /** Validação inexistente/indisponível → resposta pública neutra (não vaza). */
 const NOT_VALID = {
   valid: false as const,
+  revoked: false,
   studentName: null,
   courseTitle: null,
   issuedAt: null,
+  revokedAt: null,
   serial: null,
 }
 

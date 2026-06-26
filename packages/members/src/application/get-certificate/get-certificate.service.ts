@@ -1,4 +1,7 @@
-import { eligibleForCertificate } from '../../domain/certificate/certificate'
+import {
+  eligibleForCertificate,
+  precedingPublishedLessonIds,
+} from '../../domain/certificate/certificate'
 import {
   CertificateBlockNotFoundError,
   LessonNotFoundError,
@@ -18,7 +21,7 @@ export interface GetCertificateInput {
 }
 
 /**
- * Estado do bloco certificado p/ a UI do aluno: `eligible` (todas as outras aulas
+ * Estado do bloco certificado p/ a UI do aluno: `eligible` (todas as aulas ANTERIORES
  * concluídas) e `issued` (+ serial/data se já emitido). Espelha o `studio-carryover`/
  * `showcase-payload` (rota dedicada de estado de bloco). Aula rascunho / bloco inexistente → 404.
  */
@@ -60,9 +63,10 @@ export class GetCertificateService {
       this.progress.listCompletedLessonIds(input.userId, course.id),
       this.courses.findOutline(course.id, { publishedOnly: true }),
     ])
-    const publishedLessonIds = outline.flatMap((m) => m.lessons.map((l) => l.id))
+    const orderedLessonIds = outline.flatMap((m) => m.lessons.map((l) => l.id))
+    const preceding = precedingPublishedLessonIds(orderedLessonIds, input.lessonId)
     return {
-      eligible: eligibleForCertificate(publishedLessonIds, input.lessonId, completedIds),
+      eligible: eligibleForCertificate(preceding, completedIds),
       issued: false,
       revoked: false,
       serial: null,

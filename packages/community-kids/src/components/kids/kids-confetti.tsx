@@ -1,11 +1,14 @@
 'use client'
 
 import { type CSSProperties, useEffect, useMemo, useState } from 'react'
+import { useReducedMotion } from './room/use-reduced-motion'
 
 const CONFETTI_COLORS = ['var(--kids-cyan)', 'var(--kids-lime)', 'var(--sz-hot)'] as const
 const CONFETTI_COUNT = 24
 /** Cleanup por TEMPO: reduced-motion zera a animação (animationend não dispara). */
 const CONFETTI_LIFETIME_MS = 3600
+/** Som de comemoração (em public/sounds) tocado junto do confete. */
+const CELEBRATION_SOUND_SRC = '/sounds/celebracao.mp3'
 
 interface ConfettiPiece {
   id: number
@@ -19,15 +22,32 @@ interface ConfettiPiece {
  * Burst de confete em CSS puro (zero dep — um único burst não justifica lib). Posiciona-se
  * `absolute inset-0` (o pai deve ser `relative`/`fixed`) e some sozinho após ~3.6s. As peças usam
  * a classe `kids-confetti-piece` (animação no globals.css, que respeita `prefers-reduced-motion`).
- * Compartilhado pela celebração de aula e pela de publicação no Mural.
+ * Compartilhado pela celebração de aula e pela de publicação no Mural. Toca um som de
+ * comemoração ao surgir (`sound={false}` desliga; `prefers-reduced-motion` também silencia —
+ * mesmo gate sensorial do confete visual) — o confete sozinho ficava sem graça.
  */
-export function KidsConfetti() {
+export function KidsConfetti({ sound = true }: { sound?: boolean }) {
   const [show, setShow] = useState(true)
+  const reducedMotion = useReducedMotion()
 
   useEffect(() => {
     const t = setTimeout(() => setShow(false), CONFETTI_LIFETIME_MS)
     return () => clearTimeout(t)
   }, [])
+
+  // Som de comemoração: 1 vez ao montar (o confete surge logo após o clique que abriu a
+  // celebração, então dentro da janela de autoplay do navegador). Bloqueado/sem arquivo →
+  // silencioso, nunca quebra a celebração (best-effort). `prefers-reduced-motion` silencia
+  // o som junto da animação (a criança sensível não leva nem o estímulo sonoro).
+  useEffect(() => {
+    if (!sound || reducedMotion) return
+    const audio = new Audio(CELEBRATION_SOUND_SRC)
+    audio.volume = 0.6
+    audio.play().catch(() => {})
+    return () => {
+      audio.pause()
+    }
+  }, [sound, reducedMotion])
 
   const pieces = useMemo<ConfettiPiece[]>(
     () =>

@@ -119,12 +119,23 @@ exportada `STUDIO_ACCESS_REF` (`server/clients.ts`, = `estudio-completo`) — TE
 
 **Certificado de conclusão (06/2026):** `createCertificateRoutes` (`routes/certificate.ts`, montado no
 `createShell` como `routes.certificate*`) + o renderizador de PDF `server/certificate-pdf.ts`. O bloco de
-aula `kind:'certificate'` (última aula do curso) é renderizado pelo `CertificateBlockView`
+aula `kind:'certificate'` (em QUALQUER aula — libera quando as ANTERIORES estão concluídas; ver o members)
+é renderizado pelo `CertificateBlockView`
 (`components/certificate-block.tsx`, wired no `lesson-blocks.tsx`): lê o estado via
 `GET /api/members/lessons/:lessonId/blocks/:blockId/certificate` (passthrough → `members.getCertificateState`,
 `{eligible, issued, serial?, issuedAt?}`); emitir/baixar é um **POST** na MESMA rota
 (`certificateIssue` → `members.issueCertificate`, idempotente) que devolve o **PDF em STREAM** (mesma origem,
-sem CORS — o navegador baixa o blob; impersonação = 403 read-only). O PDF é montado com **`@cantoo/pdf-lib`**
+sem CORS — o navegador baixa o blob; impersonação = 403 read-only). **Layout por IMAGEM BASE (26/06):** com
+`config.baseImageUrl` (fundo A4 paisagem por curso — logo/título/decoração já desenhados) o renderizador
+(`drawOverlayLayout`) desenha o fundo + o conteúdo DINÂMICO por cima no miolo central (abertura `introLine` →
+NOME do aluno → `coursePhrase` → `bodyText` parágrafo → data automática → `signatures[]` → QR no canto sup. dir.).
+**Assinatura:** a IMAGEM (rabisco) fica ACIMA da linha e o `name` SEMPRE abaixo (rótulo); 1 assinatura
+centraliza, 2 ladeiam o robô (frações `sigCentersX` no `OVERLAY`). A página tem a PROPORÇÃO da imagem (sem
+distorcer); as posições são FRAÇÕES nomeadas na const `OVERLAY` (ajuste fino se a arte de um curso bater no
+texto). ⚠️ **`fetchImage` tem guarda SSRF `isSafeRemoteUrl`** (a config de autoria é buscada SERVER-SIDE) —
+rejeita localhost/`.internal`/IP privado/link-local (169.254 metadados de nuvem); a base/assinaturas TÊM que
+ser URLs PÚBLICAS (o `ImageUploader` do admin sobe WebP no R2 público — passa; WebP→PNG via sharp). Sem
+`baseImageUrl` (ou imagem irbuscável) → `drawBrandedLayout` (moldura/título/nome/curso, compat/fallback). O PDF é montado com **`@cantoo/pdf-lib`**
 (fontes built-in, sem browser headless) + **QR** (`qrcode`, dep nova) apontando p/ `${APP_PUBLIC_URL}/validar/:id`
 e **cacheado no R2 PRIVADO** `certificates/<id>.pdf` (re-download não regenera). A página **PÚBLICA**
 `/validar/:id` (sem login) busca a validação por `members.validateCertificate(id)` — um **`publicGet`** (sem
