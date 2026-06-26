@@ -490,8 +490,13 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   PROJETO INICIAL (tipo/código/nome) e o `saveBlock` captura via `handleRef.getProject()`; campos à
   parte: nível, modos liberados, categorias sempre visíveis, **lista de blocos** (RESTRITIVA —
   `components/studio/studio-blocks-picker.tsx`, busca + grupos por categoria, carrega o `BLOCK_CATALOG`
-  do pacote por import DINÂMICO; preenchida = o aluno vê SÓ esses blocos na paleta), "revelar
-  avançado" e **"Projeto contínuo
+  do pacote — **CORE + extensões Jogo 2D/3D** — por import DINÂMICO; preenchida = o aluno vê SÓ esses
+  blocos na paleta; rótulo repetido na MESMA categoria mostra o **id** ao lado p/ desambiguar, ex.:
+  "Tocar som de explosão" nos 2 kits do Jogo 2D). **Reaproveitar config entre aulas:**
+  `components/studio/studio-config-clipboard.tsx` — botões "Copiar/Colar configuração" (curadoria:
+  nível+modos+categorias+lista de blocos+revelar) via `localStorage` (`sz:admin:studio-block-config`);
+  copia numa aula, cola nas outras do curso (e entre cursos), sem backend; NÃO leva projeto
+  inicial/atividade/cadeia/vitrine (são da aula). Mais: "revelar avançado" e **"Projeto contínuo
   (nome)"** (`BlockForm.studioChain` → `content.chain`): dar o MESMO nome a aulas que constroem um
   único projeto faz o aluno abrir cada aula com o código que enviou na anterior da cadeia (carryover
   no members/member-shell); vazio = aula independente. **Acompanhamento do

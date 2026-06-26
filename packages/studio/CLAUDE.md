@@ -288,7 +288,9 @@ NÃO-vazia = mostra SÓ esses blocos (+ as 🗂️ Áreas do projeto, que nunca 
 nível/categoria; vazia = curadoria por nível. (`isBlockTypeAllowed`/`isCategoryAllowed` ganham o ramo
 "tem lista? restringe".) O admin escolhe a lista por um picker alimentado pelo **`BLOCK_CATALOG`**
 (export do índice — `blockly/blockCatalog.ts`: id+rótulo+categoria derivados dos `*_BLOCKS`, sem
-frames/`hidden`; rótulo = `message0` sem os `%N`; **inclui Jogo 2D/3D** — a restrição também alcança as
+frames/`hidden`; rótulo = `message0` sem os `%N`, com **`LABEL_OVERRIDES`** p/ os blocos cujo texto vive
+nos SOQUETES (senão sobra "de"/"Alterar para" e os pares valor/comando colidem — math função/trig, set-property
+texto/cálculo, método em Objetos/Classes); **inclui Jogo 2D/3D** — a restrição também alcança as
 EXTENSÕES: `filterToolboxCategory` poda a categoria da extensão p/ só os listados, e `pushSubCustom`
 (Funções/Classes — flyout dinâmico) só entra se a aula listou algum bloco dele; ⚠️ bloco de extensão só
 APARECE se a extensão estiver INSTALADA no projeto inicial). Catálogo + restrição travados por

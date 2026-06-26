@@ -34,4 +34,29 @@ describe('BLOCK_CATALOG (picker da lista de blocos da aula)', () => {
     expect(sprite?.category).toBe('Jogo 2D')
     expect(BLOCK_CATALOG.some((e) => e.category === 'Jogo 3D')).toBe(true)
   })
+
+  it('rótulos repetidos numa mesma categoria são poucos e com ids distintos (picker mostra o id)', () => {
+    const byKey = new Map<string, string[]>()
+    for (const e of BLOCK_CATALOG) {
+      const k = `${e.category}\n${e.label}`
+      byKey.set(k, [...(byKey.get(k) ?? []), e.type])
+    }
+    const dups = [...byKey.values()].filter((ids) => ids.length > 1)
+    // Hoje só 1: "Tocar som de explosão" (2 kits do Jogo 2D). Os 4 pares do core que colidiam
+    // ("de"/"Alterar para"…) ganharam rótulo amigável (LABEL_OVERRIDES) e saíram da colisão.
+    // Trava p/ não floodar de ids — se crescer, melhor revisar o rótulo do que mostrar id.
+    expect(dups.length).toBeLessThanOrEqual(3)
+    for (const ids of dups) expect(new Set(ids).size).toBe(ids.length) // ids distintos
+    const boom = byKey.get('Jogo 2D\nTocar som de explosão')
+    expect(boom?.length).toBeGreaterThanOrEqual(2)
+  })
+
+  it('blocos com texto nos soquetes ganham rótulo amigável (não "de"/"Alterar para")', () => {
+    const labelOf = (t: string) => BLOCK_CATALOG.find((e) => e.type === t)?.label
+    expect(labelOf('sz_math_function')).toBe('Função matemática (arredondar, raiz, absoluto…)')
+    expect(labelOf('sz_js_set_property_text')).toBe('Alterar uma propriedade (escrever um texto)')
+    // Os pares valor/comando ficam DISTINTOS (não colidem mais → sem id ao lado).
+    expect(labelOf('sz_val_method_on')).not.toBe(labelOf('sz_js_method_on'))
+    expect(labelOf('sz_js_call_method')).not.toBe(labelOf('sz_val_call_method'))
+  })
 })

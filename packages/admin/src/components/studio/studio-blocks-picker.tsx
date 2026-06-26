@@ -32,6 +32,17 @@ export function StudioBlocksPicker({
 
   const selected = useMemo(() => new Set(value), [value])
 
+  // Rótulos que se REPETEM dentro da mesma categoria (ex.: "Tocar som de explosão" existe em 2
+  // kits do Jogo 2D) — pra esses mostramos o id ao lado, senão ficam idênticos na lista.
+  const dupKeys = useMemo(() => {
+    const count = new Map<string, number>()
+    for (const e of catalog ?? []) {
+      const k = `${e.category}\n${e.label}`
+      count.set(k, (count.get(k) ?? 0) + 1)
+    }
+    return new Set([...count.entries()].filter(([, n]) => n > 1).map(([k]) => k))
+  }, [catalog])
+
   // Agrupa por categoria, filtrando pela busca (rótulo OU id).
   const groups = useMemo(() => {
     if (!catalog) return [] as [string, BlockCatalogEntry[]][]
@@ -104,6 +115,11 @@ export function StudioBlocksPicker({
                     <span className="truncate" title={e.type}>
                       {e.label}
                     </span>
+                    {dupKeys.has(`${cat}\n${e.label}`) ? (
+                      <span className="shrink-0 font-mono text-[11px] text-muted-foreground">
+                        {e.type}
+                      </span>
+                    ) : null}
                   </label>
                 ))}
               </div>

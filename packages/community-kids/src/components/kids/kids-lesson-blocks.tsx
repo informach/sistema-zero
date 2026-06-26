@@ -12,6 +12,7 @@ import {
   Code2,
   Gamepad2,
   Headphones,
+  ListChecks,
   type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/cn'
@@ -92,11 +93,14 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
       return <Audio content={content as unknown as AudioBlock} />
     case 'quiz':
       return (
-        <KidsQuiz
-          blockId={block.id}
-          content={content as unknown as QuizBlock}
-          quizState={(block.quizState as QuizStateView | null | undefined) ?? null}
-        />
+        <div className="kids-unit-lime flex flex-col gap-3">
+          <BlockChip icon={ListChecks} label="Responda" themeClass="kids-unit-lime" />
+          <KidsQuiz
+            blockId={block.id}
+            content={content as unknown as QuizBlock}
+            quizState={(block.quizState as QuizStateView | null | undefined) ?? null}
+          />
+        </div>
       )
     case 'embed':
       return <Embed content={content as unknown as EmbedBlock} />

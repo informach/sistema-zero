@@ -40,6 +40,7 @@ import { ImageUploader } from '@/components/media/image-uploader'
 import { VideoThumbnailUploader } from '@/components/media/video-thumbnail-uploader'
 import { VideoUploader } from '@/components/media/video-uploader'
 import { StudioBlocksPicker } from '@/components/studio/studio-blocks-picker'
+import { StudioConfigClipboard } from '@/components/studio/studio-config-clipboard'
 import { StudioEmbed } from '@/components/studio/studio-embed'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import {
@@ -117,8 +118,8 @@ interface BlockForm {
   /** Estúdio: aluno pode revelar blocos avançados. */
   studioAllowReveal: boolean
   /**
-   * Estúdio: allowlist de blocos por id. Sem UI hoje, mas carregada/reemitida p/
-   * não ser APAGADA ao editar+salvar um bloco que a tenha (seed/import; achado do review).
+   * Estúdio: allowlist de blocos por id — preenchida = o aluno vê SÓ estes (+ as Áreas do
+   * projeto). UI no StudioBlocksPicker; reaproveitável pela área de transferência da config.
    */
   studioAllowBlocks: string[]
   /** Estúdio: atividade com auto-correção (fase 2). Vazia = bloco só de entrega. */
@@ -824,6 +825,25 @@ export function LessonEditorClient({
 
           {blockForm.kind === 'studio' ? (
             <div className="flex flex-col gap-4">
+              <StudioConfigClipboard
+                current={{
+                  level: blockForm.studioLevel,
+                  modes: blockForm.studioModes,
+                  categories: blockForm.studioCategories,
+                  allowReveal: blockForm.studioAllowReveal,
+                  allowBlocks: blockForm.studioAllowBlocks,
+                }}
+                onPaste={(snap) =>
+                  setBlockForm((f) => ({
+                    ...f,
+                    studioLevel: snap.level,
+                    studioModes: snap.modes,
+                    studioCategories: snap.categories,
+                    studioAllowReveal: snap.allowReveal,
+                    studioAllowBlocks: snap.allowBlocks,
+                  }))
+                }
+              />
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field
                   label="Nível"

@@ -52,7 +52,7 @@ export function StudioBlockView({ blockId, content, studioState, enableShare }: 
   const [passed, setPassed] = useState<boolean>(studioState?.passed ?? false)
   const [xp, setXp] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [fullscreen, setFullscreen] = useState(false)
+  const [expanded, setExpanded] = useState(false)
   // Confirmação antes de enviar: o envio destrava/regrava a entrega no professor —
   // um clique sem querer mandava um projeto vazio (relatado pela usuária).
   const [confirmOpen, setConfirmOpen] = useState(false)
@@ -61,7 +61,6 @@ export function StudioBlockView({ blockId, content, studioState, enableShare }: 
   const passingScore = activity?.passingScore
 
   const handleRef = useRef<StudioHandle | null>(null)
-  const containerRef = useRef<HTMLDivElement | null>(null)
 
   // Client-only: carrega o editor e semeia na ordem rascunho LOCAL → carryover da
   // aula contínua anterior → projeto inicial do admin. Semear DEPOIS do read evita
@@ -104,19 +103,26 @@ export function StudioBlockView({ blockId, content, studioState, enableShare }: 
     }
   }, [projectId, content.initialProject, content.chain, lessonId, blockId])
 
-  // Sincroniza o estado quando o fullscreen sai pelo Esc/gesto do SO.
+  // "Expandir" é uma SOBREPOSIÇÃO em tela cheia por CSS (não a Fullscreen API nativa): a
+  // API restringe a pintura à subárvore do elemento, então menus/diálogos PORTALADOS no
+  // body (três-pontinhos do editor, "Enviar?", toasts) saíam FORA da camada de tela cheia
+  // → invisíveis e o clique "não fazia nada". Como overlay fixo (z-50, acima da navbegação
+  // z-40), tudo isso fica por cima e o botão "Reduzir" mora no cabeçalho DENTRO do overlay.
+  // Esc também fecha, mas só quando NÃO há menu/diálogo aberto (aí o Esc é deles).
   useEffect(() => {
-    const onChange = () => setFullscreen(Boolean(document.fullscreenElement))
-    document.addEventListener('fullscreenchange', onChange)
-    return () => document.removeEventListener('fullscreenchange', onChange)
-  }, [])
+    if (!expanded) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      if (document.querySelector('[role="menu"],[role="dialog"]')) return
+      setExpanded(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [expanded])
 
-  const toggleFullscreen = useCallback(() => {
-    const el = containerRef.current
-    if (!el) return
-    if (document.fullscreenElement) void document.exitFullscreen()
-    else void el.requestFullscreen?.()
-  }, [])
+  // (O editor relayouta sozinho ao mudar de tamanho — BlocklyPanel/MonacoTabs têm
+  // ResizeObserver no container; não precisa disparar resize manual.)
+  const toggleExpanded = useCallback(() => setExpanded((v) => !v), [])
 
   const submit = useCallback(async () => {
     const project = handleRef.current?.getProject()
@@ -208,13 +214,21 @@ export function StudioBlockView({ blockId, content, studioState, enableShare }: 
   const ready = StudioLesson !== null && seed !== null
 
   return (
-    <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4">
+    <div
+      className={cn(
+        'flex flex-col gap-3 rounded-lg border border-border bg-card p-4',
+        // Expandido: vira overlay em tela cheia por CSS (cobre a página; navbar = z-40).
+        // O cabeçalho com "Reduzir" fica DENTRO do overlay → sempre clicável; menus/
+        // diálogos portalados (z-50, depois no DOM) seguem por cima.
+        expanded && 'fixed inset-0 z-50 rounded-none',
+      )}
+    >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h3 className="sz-display text-base">Atividade no Estúdio</h3>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={toggleFullscreen} disabled={!ready}>
-            {fullscreen ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
-            {fullscreen ? 'Reduzir' : 'Expandir'}
+          <Button variant="outline" size="sm" onClick={toggleExpanded} disabled={!ready}>
+            {expanded ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
+            {expanded ? 'Reduzir' : 'Expandir'}
           </Button>
           <Button size="sm" onClick={() => setConfirmOpen(true)} disabled={submitting || !ready}>
             {submitting ? <Spinner /> : <Send className="size-4" />}
@@ -224,15 +238,14 @@ export function StudioBlockView({ blockId, content, studioState, enableShare }: 
       </div>
 
       <div
-        ref={containerRef}
         className={cn(
-          // Área generosa p/ programar (a página de aula já é largura total; aqui
-          // damos mais ALTURA). "Expandir" leva à tela cheia para o trabalho pesado.
-          // `isolate`: PRENDE os z-index internos do Blockly (a toolbox/flyout têm
-          // z-index alto e VAZAVAM por cima do overlay de modais — ex.: o "Enviar ao
-          // professor?"); isolando o container, o overlay (z-50) cobre tudo atrás.
+          // Área generosa p/ programar (a página de aula já é largura total; aqui damos
+          // mais ALTURA). `isolate`: PRENDE os z-index internos do Blockly (toolbox/flyout
+          // têm z-index alto e VAZAVAM por cima do overlay de modais — ex.: o "Enviar ao
+          // professor?"); isolando o container, o overlay de modal (z-50) cobre tudo atrás.
           'isolate overflow-hidden rounded-lg border border-border bg-muted',
-          fullscreen ? 'h-screen' : 'h-[44rem]',
+          // Expandido: o editor cresce e ocupa todo o overlay; normal: altura fixa.
+          expanded ? 'min-h-0 flex-1' : 'h-[44rem]',
         )}
       >
         {ready ? (

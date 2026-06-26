@@ -30,8 +30,31 @@ interface BlockLike {
   hidden?: boolean
 }
 
+/**
+ * Rótulos AMIGÁVEIS p/ o picker em blocos cujo texto vive nos SOQUETES de valor: sem isto,
+ * tirar os `%N` do `message0` deixa só um fragmento ("de", "Alterar para") e os pares
+ * valor/comando ainda colidem. Aqui cada um ganha um rótulo claro e DISTINTO (o id do bloco
+ * não muda — é só o que o admin LÊ na lista). Cobre os 4 pares achados na auditoria de rótulos.
+ */
+const LABEL_OVERRIDES: Record<string, string> = {
+  // Matemática — o `%1` é um dropdown de função; o `message0` é só "%1 de %2".
+  sz_math_function: 'Função matemática (arredondar, raiz, absoluto…)',
+  sz_math_trig: 'Trigonometria (seno, cosseno, tangente…)',
+  // Página e Eventos — "Alterar … para …"; o que muda é o TIPO do valor escrito.
+  sz_js_set_property_text: 'Alterar uma propriedade (escrever um texto)',
+  sz_js_set_property_calc: 'Alterar uma propriedade (com um cálculo)',
+  // Objetos — "de <obj> chamar método <nome>"; forma de valor vs. de comando.
+  sz_val_method_on: 'Chamar método de um objeto (valor)',
+  sz_js_method_on: 'Chamar método de um objeto (comando)',
+  // Classes — "no objeto <nome> chamar método <nome>"; valor vs. comando.
+  sz_val_call_method: 'No objeto, chamar um método (valor)',
+  sz_js_call_method: 'No objeto, chamar um método (comando)',
+}
+
 /** Texto do bloco sem os placeholders `%N` — vira o rótulo do picker. */
 function labelOf(b: BlockLike): string {
+  const override = LABEL_OVERRIDES[b.type]
+  if (override) return override
   const raw = b.message0 ?? b.type
   const clean = raw
     .replace(/%\{[^}]*\}/g, '') // referências i18n (raras)
