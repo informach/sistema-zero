@@ -193,6 +193,7 @@ export function listStudioSubmissions(blockId: string): Promise<
   GatewayResponse<{
     submissions: {
       userId: string
+      accountId: string | null
       submittedAt: string
       score: number | null
       checkedAt: string | null

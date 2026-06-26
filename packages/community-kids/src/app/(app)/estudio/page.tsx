@@ -2,6 +2,7 @@ import { KidsLockedStudio } from '@/components/kids/kids-locked-studio'
 import { KidsStudioUnavailable } from '@/components/kids/kids-studio-unavailable'
 import { StudioFullClient } from '@/components/kids/studio-full-client'
 import { checkStudioAccessReadonly } from '@/server/members'
+import { getSession } from '@/server/session'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,8 +18,10 @@ export const dynamic = 'force-dynamic'
  * liberado" a quem JÁ comprou, num erro transitório, mentiria que ela não tem acesso.
  */
 export default async function EstudioPage() {
-  const res = await checkStudioAccessReadonly()
+  // `session.id` = o PERFIL ativo (kids) → isola os projetos do Estúdio por criança no
+  // IndexedDB (irmãos no mesmo navegador não compartilham a lista). Resolve junto do gate.
+  const [res, session] = await Promise.all([checkStudioAccessReadonly(), getSession()])
   if (res.status !== 200) return <KidsStudioUnavailable />
   const hasAccess = res.body?.access?.['estudio-completo'] === true
-  return hasAccess ? <StudioFullClient /> : <KidsLockedStudio />
+  return hasAccess ? <StudioFullClient viewerId={session?.id ?? null} /> : <KidsLockedStudio />
 }

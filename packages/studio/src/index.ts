@@ -17,7 +17,14 @@ export type {
   ProNode,
   ProProjectMeta,
 } from '#core'
-export { createEmptyProject, IDE_MODES, MODE_LABELS, normalizeProPath } from '#core'
+export {
+  CORE_CATEGORY_OPTIONS,
+  createEmptyProject,
+  IDE_MODES,
+  MODE_LABELS,
+  normalizeProPath,
+} from '#core'
+export { BLOCK_CATALOG, type BlockCatalogEntry } from './blockly/blockCatalog'
 export {
   createProProject,
   listProTemplates,
@@ -37,6 +44,7 @@ export type { StudioPersistence, StudioPersistenceAdapter } from './persistence/
 export { type RenderProjectOptions, renderProjectToPreviewDoc } from './preview/renderProject'
 export { ProjectList, type ProjectListProps } from './projects/ProjectList'
 export type { ProjectSummary } from './state/persistence'
+export { setStorageNamespace as setStudioStorageNamespace } from './state/persistence'
 export type { StudioLimits } from './state/projectStore'
 export type {
   ActivityCheck,

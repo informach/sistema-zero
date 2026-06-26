@@ -1,13 +1,13 @@
 'use client'
 
 import { ProgressBar } from '@sistemazero/member-shell/components/progress-bar'
-import { Flame, Gift, Sparkles, Trophy } from 'lucide-react'
+import { Flame, Gift, Sparkles } from 'lucide-react'
 import Link from 'next/link'
-import { type CSSProperties, useEffect, useMemo, useState } from 'react'
-import { toast } from 'sonner'
+import { useEffect, useState } from 'react'
 import { cn } from '@/lib/cn'
-import type { CourseProgressView, GamificationDelta, LessonCompleteShowcaseHint } from '@/lib/types'
+import type { CourseProgressView, GamificationDelta } from '@/lib/types'
 import { badgeInfo } from './badges'
+import { KidsConfetti } from './kids-confetti'
 import { KidsMascot } from './mascot'
 import { ZappyCoin } from './zappy-coin'
 
@@ -16,26 +16,9 @@ interface LessonCelebrationProps {
   progressBefore: CourseProgressView
   /** Delta de XP/streak/badges vindo NA resposta do complete; `null` = sem gamificação. */
   gamification: GamificationDelta | null
-  /** Aula é ponto de vitrine (Mural): mostra o botão "Publicar no Mural". */
-  showcase: LessonCompleteShowcaseHint | null
-  /** Aula concluída (necessário p/ a publicação no Mural). */
-  lessonId: string
   nextHref: string | null
   courseHref: string
   onClose: () => void
-}
-
-const CONFETTI_COLORS = ['var(--kids-cyan)', 'var(--kids-lime)', 'var(--sz-hot)'] as const
-const CONFETTI_COUNT = 24
-/** Cleanup por TEMPO: reduced-motion zera a animação (animationend não dispara). */
-const CONFETTI_LIFETIME_MS = 3600
-
-interface ConfettiPiece {
-  id: number
-  left: number
-  duration: number
-  delay: number
-  color: (typeof CONFETTI_COLORS)[number]
 }
 
 /**
@@ -50,8 +33,6 @@ interface ConfettiPiece {
 export function LessonCelebration({
   progressBefore,
   gamification,
-  showcase,
-  lessonId,
   nextHref,
   courseHref,
   onClose,
@@ -65,30 +46,12 @@ export function LessonCelebration({
       : progressBefore.percent
 
   const [percent, setPercent] = useState(progressBefore.percent)
-  const [confetti, setConfetti] = useState(true)
 
   // Anima a barra antes→depois após a entrada do modal (transition no CSS).
   useEffect(() => {
     const t = setTimeout(() => setPercent(percentAfter), 350)
     return () => clearTimeout(t)
   }, [percentAfter])
-
-  useEffect(() => {
-    const t = setTimeout(() => setConfetti(false), CONFETTI_LIFETIME_MS)
-    return () => clearTimeout(t)
-  }, [])
-
-  const pieces = useMemo<ConfettiPiece[]>(
-    () =>
-      Array.from({ length: CONFETTI_COUNT }, (_, i) => ({
-        id: i,
-        left: Math.random() * 100,
-        duration: 2 + Math.random() * 1.2,
-        delay: Math.random() * 0.6,
-        color: CONFETTI_COLORS[i % CONFETTI_COLORS.length] as ConfettiPiece['color'],
-      })),
-    [],
-  )
 
   return (
     <div
@@ -97,24 +60,7 @@ export function LessonCelebration({
       aria-modal="true"
       aria-label="Aula concluída"
     >
-      {confetti ? (
-        <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-          {pieces.map((piece) => (
-            <span
-              key={piece.id}
-              className="kids-confetti-piece"
-              style={
-                {
-                  left: `${piece.left}%`,
-                  backgroundColor: piece.color,
-                  '--confetti-duration': `${piece.duration}s`,
-                  '--confetti-delay': `${piece.delay}s`,
-                } as CSSProperties
-              }
-            />
-          ))}
-        </div>
-      ) : null}
+      <KidsConfetti />
 
       <div className="sz-modal w-full max-w-md rounded-3xl bg-card p-6 text-center shadow-xl md:p-8">
         <KidsMascot expression="celebrating" className="kid-wiggle mx-auto size-24" />
@@ -124,8 +70,6 @@ export function LessonCelebration({
         {gamification && gamification.xpAwarded > 0 ? (
           <GamificationDeltaPanel gamification={gamification} />
         ) : null}
-
-        {showcase ? <PublishToMural lessonId={lessonId} showcase={showcase} /> : null}
 
         <div className="mt-6 flex items-center gap-3">
           <ProgressBar value={percent} className="flex-1" />
@@ -154,77 +98,6 @@ export function LessonCelebration({
         </div>
       </div>
     </div>
-  )
-}
-
-/**
- * Botão comemorativo "Publicar no Mural": captura um print do projeto (jogos canvas;
- * projetos web caem na capa padrão) e publica via `/api/hub/showcase`. A captura roda
- * no CLIENTE — lê o projeto do rascunho local do bloco e o renderiza num iframe oculto
- * (`captureCoverFromProject`). Best-effort: falha de captura ainda publica (capa padrão).
- */
-function PublishToMural({
-  lessonId,
-  showcase,
-}: {
-  lessonId: string
-  showcase: LessonCompleteShowcaseHint
-}) {
-  const [state, setState] = useState<'idle' | 'publishing' | 'done'>('idle')
-
-  async function publish() {
-    setState('publishing')
-    const form = new FormData()
-    form.set('lessonId', lessonId)
-    form.set('blockId', showcase.blockId)
-    try {
-      // Captura o print do projeto (jogos canvas). Best-effort — qualquer falha cai
-      // na capa padrão do admin (sem `file`).
-      try {
-        const studio = await import('@sistemazero/studio')
-        const project = await studio
-          .createLocalPersistenceAdapter()
-          .load(`sz-lesson-studio:${showcase.blockId}`)
-          .catch(() => null)
-        if (project) {
-          const dataUrl = await studio.captureCoverFromProject(project)
-          if (dataUrl) {
-            const blob = await (await fetch(dataUrl)).blob()
-            form.set('file', blob, 'capa.png')
-          }
-        }
-      } catch {
-        // captura indisponível → publica com a capa padrão.
-      }
-
-      const res = await fetch('/api/hub/showcase', { method: 'POST', body: form })
-      if (!res.ok) throw new Error('publish failed')
-      setState('done')
-      toast.success('Seu projeto foi pro Mural dos Criadores! 🎉')
-    } catch {
-      setState('idle')
-      toast.error('Não consegui publicar agora. Tente de novo!')
-    }
-  }
-
-  if (state === 'done') {
-    return (
-      <p className="mt-5 inline-flex items-center gap-1.5 rounded-xl bg-(--kids-lime-tint) px-3 py-1.5 font-semibold text-sm">
-        <Trophy className="size-4" /> No Mural dos Criadores!
-      </p>
-    )
-  }
-
-  return (
-    <button
-      type="button"
-      onClick={publish}
-      disabled={state === 'publishing'}
-      className="kid-pop mt-5 inline-flex items-center gap-2 rounded-full px-5 py-2.5 [background-image:var(--sz-gradient)] [font-family:var(--font-display)] font-bold text-(--sz-primary-fg) text-base disabled:opacity-60"
-    >
-      <Trophy className="size-5" />
-      {state === 'publishing' ? 'Publicando…' : 'Publicar no Mural'}
-    </button>
   )
 }
 

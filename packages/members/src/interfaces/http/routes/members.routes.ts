@@ -18,6 +18,7 @@ import type { GetCourseRatingService } from '../../../application/get-course-rat
 import type { GetEbookDownloadService } from '../../../application/get-ebook-download/get-ebook-download.service'
 import type { GetLessonService } from '../../../application/get-lesson/get-lesson.service'
 import type { GetMyCourseService } from '../../../application/get-my-course/get-my-course.service'
+import type { GetOwnStudioSubmissionService } from '../../../application/get-own-studio-submission/get-own-studio-submission.service'
 import type { GetShowcasePayloadService } from '../../../application/get-showcase-payload/get-showcase-payload.service'
 import type { GetStudioCarryoverService } from '../../../application/get-studio-carryover/get-studio-carryover.service'
 import type { IssueCertificateService } from '../../../application/issue-certificate/issue-certificate.service'
@@ -91,6 +92,7 @@ export interface MembersRoutesDeps {
   submitQuiz: SubmitQuizAttemptService
   submitStudio: SubmitStudioProjectService
   getStudioCarryover: GetStudioCarryoverService
+  getOwnStudioSubmission: GetOwnStudioSubmissionService
   getShowcasePayload: GetShowcasePayloadService
   getCertificate: GetCertificateService
   issueCertificate: IssueCertificateService
@@ -566,6 +568,22 @@ export function membersRoutes(deps: MembersRoutesDeps) {
           )
         },
         { body: StudioSubmissionBody, params: StudioSubmissionParams },
+      )
+      // GET do MESMO bloco: o projeto que o aluno ENVIOU (save na nuvem). 2ª prioridade ao abrir
+      // a aula (depois do rascunho local): num navegador novo, retoma o trabalho enviado. Lazy.
+      .get(
+        '/lessons/:lessonId/blocks/:blockId/studio-submission',
+        async ({ headers, params }) => {
+          const userId = resolveUserId(headers)
+          return deps.getOwnStudioSubmission.execute(
+            userId,
+            params.lessonId,
+            params.blockId,
+            isPrivilegedActor(headers),
+            resolveAccountId(headers),
+          )
+        },
+        { params: StudioSubmissionParams },
       )
       // Carrega o projeto da aula contínua anterior (mesma cadeia) p/ semear o editor
       // na 1ª abertura. Lazy: o front só chama quando o bloco tem `chain` e não há

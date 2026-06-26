@@ -51,6 +51,17 @@ export interface StudioSharePublishInput {
  */
 export interface StudioShareAdapter {
   /**
+   * Título inicial do post (admin da AULA). Preenche o campo; a criança pode ajustar. Ausente
+   * (ex.: Estúdio Completo) → cai no nome do projeto.
+   */
+  presetTitle?: string
+  /**
+   * Descrição inicial do post (admin da AULA). Presente → o dialog **PULA a geração por IA**
+   * (economia): abre já com este texto, que a criança pode editar (ou pedir uma da IA no botão
+   * "Gerar"). Ausente/vazio → a IA gera o rascunho (comportamento do Estúdio Completo).
+   */
+  presetDescription?: string
+  /**
    * Gera um rascunho CURTO (≤1 parágrafo, PT) via SERVIDOR (chave no servidor).
    * NUNCA usa a BYOK do painel de IA do aluno. Pode rejeitar/voltar vazio — o
    * dialog cai no modo "escreva você mesmo" sem travar a publicação.
@@ -58,6 +69,12 @@ export interface StudioShareAdapter {
   generateDescription(input: StudioShareGenerateInput): Promise<string>
   /** Publica no Mural. Resolve com os links; rejeita em falha (mensagem ao aluno). */
   publish(input: StudioSharePublishInput): Promise<StudioShareResult>
+  /**
+   * Opcional: chamado UMA vez quando a publicação dá certo (com os links). Presente → o
+   * `ShareDialog` NÃO mostra a própria tela de sucesso: fecha e deixa o HOST comemorar (ex.: o
+   * overlay do Zappy no kids, com o "Jogar"). Ausente (ex.: Estúdio Completo) → tela padrão.
+   */
+  onPublished?(result: StudioShareResult): void
 }
 
 // Contexto INTERNO (como o StudioActivityContext): `null` = sem adapter → o botão

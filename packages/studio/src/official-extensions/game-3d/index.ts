@@ -13,8 +13,9 @@ const THREE_CDN = 'https://esm.sh/three@0.180.0'
 
 export const gameThreeDExtension: ExtensionDefinition = {
   manifest: gameThreeDManifest,
-  // 3D só aparece na paleta a partir do nível avançado (divulgação progressiva).
-  minLevel: 'avancado',
+  // Kit facilitador de jogo 3D → INTERMEDIÁRIO (o 2D é iniciante; o "na unha"/manual
+  // é que fica avançado). Divulgação progressiva.
+  minLevel: 'intermediario',
   blockly: {
     blocks: gameThreeDBlocks,
     toolboxCategory: gameThreeDToolboxCategory,

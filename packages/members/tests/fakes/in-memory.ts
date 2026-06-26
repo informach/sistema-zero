@@ -15,6 +15,7 @@ import {
 } from '../../src/domain/course/course'
 import { DuplicateSlugError } from '../../src/domain/course/course.errors'
 import type { LessonBlockContent, LessonBlockKind } from '../../src/domain/course/lesson-block'
+import { isCompletionGatingBlock } from '../../src/domain/course/lesson-block'
 import type { QuizAttemptSummary } from '../../src/domain/course/quiz'
 import {
   EntitlementAggregate,
@@ -666,6 +667,18 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     return this.blocks.some((b) => b.lessonId === lessonId && b.content.kind === 'certificate')
   }
 
+  async lessonHasGatingBlock(
+    lessonId: string,
+    opts: { excludeBlockId?: string } = {},
+  ): Promise<boolean> {
+    return this.blocks.some(
+      (b) =>
+        b.lessonId === lessonId &&
+        b.id !== opts.excludeBlockId &&
+        isCompletionGatingBlock(b.content),
+    )
+  }
+
   async countCertificateBlocks(
     courseId: string,
     opts: { excludeBlockId?: string } = {},
@@ -1004,6 +1017,7 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
       .sort((a, b) => a.submittedAt.getTime() - b.submittedAt.getTime())
       .map((s) => ({
         userId: s.userId,
+        accountId: s.accountId ?? null,
         submittedAt: s.submittedAt,
         score: s.score ?? null,
         checkedAt: s.checkedAt ?? null,

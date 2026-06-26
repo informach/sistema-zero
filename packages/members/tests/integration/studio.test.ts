@@ -392,6 +392,45 @@ const submitAs = (
     ),
   )
 
+const ownSubmission = (
+  app: App,
+  lessonId: string,
+  blockId: string,
+  headers: Record<string, string> = authHeaders,
+) =>
+  app.handle(
+    new Request(
+      `http://localhost/members/lessons/${lessonId}/blocks/${blockId}/studio-submission`,
+      { headers },
+    ),
+  )
+
+describe('Bloco Estúdio — carregar o próprio envio (save na nuvem)', () => {
+  test('GET devolve o projeto que o aluno ENVIOU neste bloco', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const { slug, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    const block = seedChainBlock(courses, lessonIds[0]) // bloco de estúdio (sem cadeia)
+
+    await submit(app, lessonIds[0], block, STUDENT_PROJECT)
+    const res = await ownSubmission(app, lessonIds[0], block)
+    expect(res.status).toBe(200)
+    const body = await readJson(res)
+    expect(body.project.name).toBe('Minha entrega')
+    expect(body.project.files['script.js']).toBe('console.log(1)')
+  })
+
+  test('nunca enviou → { project: null } (o front cai no rascunho local/template)', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const { slug, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    const block = seedChainBlock(courses, lessonIds[0])
+
+    const body = await readJson(await ownSubmission(app, lessonIds[0], block))
+    expect(body.project).toBeNull()
+  })
+})
+
 describe('Bloco Estúdio — carryover de projeto contínuo', () => {
   test('carrega o projeto enviado na aula contínua anterior (mesma cadeia)', async () => {
     const { app, courses, entitlements } = buildApp()

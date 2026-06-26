@@ -108,16 +108,20 @@ ainda — decisão do usuário). O componente único `components/kids/kids-space
 de `app/(app)/comunidade`)
 recebe `slug` + `mode`: no `wall` esconde o composer/sidebar e renderiza CARDS de projeto (capa +
 título + resumo + "por {authorDisplayName}"); a criança só comenta (moderado) e reage. **Vitrine
-(Mural):** os posts são auto-publicados ao concluir a última aula de um projeto — a
-`LessonCelebration` ganha o botão "Publicar no Mural" (`PublishToMural`) que captura o print do jogo
-no cliente (`@sistemazero/studio` `captureCoverFromProject` lendo o rascunho local
-`sz-lesson-studio:<blockId>`) e faz `POST /api/hub/showcase` (multipart, FORA do matcher do proxy —
-guard próprio via `requireUploadSession`); `lesson-player-client` propaga o `showcase` da resposta do
-complete. **Compartilhar do Estúdio + link público jogável (06/2026):** o `StudioBlockView` da aula é
-renderizado com `enableShare` (kids-only) → o editor ganha o botão **"Compartilhar"** na Topbar (publica no
-Mural com **descrição gerada por IA** que a criança edita + um **link público de jogar**; o post é um
-SNAPSHOT imutável e independente do rascunho que ela continua editando, e o member-shell normaliza o
-JSON jogável antes de persistir no R2 privado). O card do Mural
+(Mural) — publicação por "Compartilhar" (06/2026):** UM único caminho — o botão **"Compartilhar"** na
+Topbar do `StudioBlockView`, ligado SÓ no bloco da ÚLTIMA aula do projeto
+(`enableShare={Boolean(content.showcase?.enabled)}` em `kids-lesson-blocks` — a vitrine marcada pelo admin;
+o members manda o `content.showcase` inteiro ao aluno, então o flag já chega). Nas aulas intermediárias o
+botão NÃO aparece (a criança não publica antes de terminar). Publica via `/api/studio/{describe,publish}`
+com **descrição gerada por IA** que a criança edita + um **link público de jogar**; o post é um SNAPSHOT
+imutável e independente do rascunho, e o member-shell normaliza o JSON jogável antes de persistir no R2
+privado. ⚠️ O antigo **"Publicar no Mural" da `LessonCelebration` (`PublishToMural`) foi REMOVIDO** (fazia
+a MESMA coisa, sem descrição editável nem play link); `lesson-player-client`/`lesson-celebration` não
+consomem mais o `showcase` da resposta do complete (o members ainda devolve, inócuo). **Ao publicar com
+sucesso, o `onShared` do `StudioBlockView` abre a `MuralCelebration`** (`mural-celebration.tsx` — overlay
+do Zappy + confete + o **link público de "Jogar"** como herói, no lugar da tela de sucesso sóbria do
+editor); o `StudioBlockKids` (em `kids-lesson-blocks`) guarda o estado e a dispara. O confete virou
+`kids-confetti.tsx` (`<KidsConfetti>`, compartilhado com a celebração de aula). O card do Mural
 (`kids-space-view-client.tsx` `ShowcaseCard`/`ThreadDetail`) ganhou, quando há `thread.playId`, os botões
 **"Jogar"** (abre `/jogar/<playId>` em nova aba) + **"Copiar link"** (`navigator.share` com fallback
 clipboard) — a raiz do card deixou de ser `<button>` (âncora não aninha em button). A **página PÚBLICA**
@@ -150,9 +154,16 @@ local; o package não tem router) com `<ProjectList>` + `<StudioEditor persisten
 CLÁSSICOS (NÃO passa `features`: o `StudioEditor` já vem com terminal/IA/profissional OFF → sem
 COOP/COEP, sem conflito com os vídeos das aulas). O botão **"Compartilhar"** usa um `share` adapter
 próprio → `/api/studio/describe` + **`/api/studio/publish-standalone`** (shim sobre
-`shell.routes.studioPublishStandalone`; o hub re-valida a posse do produto). ⚠️ **Persistência LOCAL
-por NAVEGADOR (v1):** projetos no IndexedDB do aparelho — perfis irmãos no MESMO navegador compartilham
-a lista (acesso é por CONTA; isolamento por perfil = follow-up). **LARGURA TOTAL:** o `MainContainer`
+`shell.routes.studioPublishStandalone`; o hub re-valida a posse do produto). **Persistência LOCAL por
+NAVEGADOR + PERFIL (06/2026):** projetos no IndexedDB do aparelho, **isolados por PERFIL** — a `EstudioPage`
+passa `session.id` (perfil ativo) como `viewerId` ao `StudioFullClient`, que chama
+`setStudioStorageNamespace(viewerId)` ANTES da `ProjectList` → cada criança tem seu DB
+`sistema-zero-studio-<perfil>` (irmãos no mesmo navegador NÃO compartilham mais a lista; acesso segue pela
+CONTA). A LIÇÃO usa o store padrão (`StudioBlockView` reseta o namespace p/ `''`; lá o isolamento é pelo id
+do projeto por perfil). ⚠️ **O Estúdio Completo vai virar produto do ADULTO também** (não só kids): o
+mecanismo já é app-agnóstico (`setStudioStorageNamespace(session.id)` — perfil no kids, CONTA no adulto);
+quando o adulto ganhar a rota, o `StudioFullClient` deve ir p/ o member-shell (reuso, não cópia) e a página
+do adulto passa `session.id` igual. **LARGURA TOTAL:** o `MainContainer`
 (`components/kids/main-container.tsx`, usado no `(app)/layout`) tira o `max-w-5xl` na rota `/estudio` (IDE
 quer todo o espaço); demais páginas seguem com `max-w-5xl`. **SEGUE o tema da comunidade:** o
 `studio-full-client` lê `useTheme().resolvedTheme` (next-themes) e passa `theme` ao `<StudioEditor>` E ao

@@ -1386,6 +1386,15 @@ function getAllowedBlocklyBlockTypes(
   return allowed
 }
 
+/**
+ * Um tipo de bloco é aceito NESTE projeto? (core + extensões instaladas.) Usado
+ * pelo colar de blocos entre projetos (`blockClipboard`) para recusar tipos que o
+ * destino não tem — SEM o all-or-nothing do `sanitizeImportedBlocksState`.
+ */
+export function isBlockTypeKnown(type: string, installedExtensions: InstalledExtension[]): boolean {
+  return getAllowedBlocklyBlockTypes(installedExtensions).has(type)
+}
+
 function isSupportedBlocklyWorkspaceState(
   raw: unknown,
   allowedTypes: ReadonlySet<string>,

@@ -26,7 +26,7 @@ type EditorState =
  * por isso NÃO passamos `features` (sem WebContainer = sem necessidade de COOP/COEP). O
  * botão "Compartilhar" publica no Mural via o caminho standalone (sem aula).
  */
-export function StudioFullClient() {
+export function StudioFullClient({ viewerId }: { viewerId: string | null }) {
   const [mod, setMod] = useState<StudioModule | null>(null)
   const [view, setView] = useState<View>({ name: 'list' })
   // O Estúdio SEGUE o tema da comunidade (next-themes) — sem toggle próprio e sem
@@ -39,6 +39,9 @@ export function StudioFullClient() {
     void (async () => {
       const m = await import('@sistemazero/studio')
       if (!active) return
+      // Isola o armazenamento LOCAL por PERFIL (kids): irmãos no mesmo navegador NÃO compartilham
+      // a lista de projetos. ANTES de renderizar a ProjectList. Vazio (sem sessão) = store padrão.
+      m.setStudioStorageNamespace(viewerId ?? '')
       setMod(m)
       // Aquece os chunks pesados (Blockly/Monaco) enquanto a criança olha a lista.
       m.prefetchStudioModes()
@@ -46,7 +49,7 @@ export function StudioFullClient() {
     return () => {
       active = false
     }
-  }, [])
+  }, [viewerId])
 
   // Adapter de COMPARTILHAR (Mural) — standalone (SEM aula): `describe` rascunha a
   // descrição via IA no servidor (fail-soft) e `publish` sobe projeto + capa por

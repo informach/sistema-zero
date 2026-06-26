@@ -3,7 +3,10 @@ import type { StudioCheckResult } from '../../domain/course/studio-activity'
 import type { StudioSubmissionRepository } from '../../domain/ports/studio-submission-repository.port'
 
 export interface StudioSubmissionSummaryView {
+  /** Quem entregou (perfil da criança no kids; a conta no adulto). */
   userId: string
+  /** Conta responsável (kids: o pai; adulto: = userId). `null` em entregas legadas. */
+  accountId: string | null
   submittedAt: string
   /** Nota da correção automática (atividade); `null` sem atividade. */
   score: number | null
@@ -36,6 +39,7 @@ export class StudioSubmissionsAdminService {
     const rows = await this.submissions.listByBlock(blockId)
     return rows.map((r) => ({
       userId: r.userId,
+      accountId: r.accountId,
       submittedAt: r.submittedAt.toISOString(),
       score: r.score,
       checkedAt: r.checkedAt?.toISOString() ?? null,

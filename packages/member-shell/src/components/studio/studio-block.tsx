@@ -1,13 +1,21 @@
 'use client'
 
 import '@sistemazero/studio/styles.css'
-import type { Project, StudioHandle, StudioShareAdapter } from '@sistemazero/studio'
+import type {
+  Project,
+  StudioHandle,
+  StudioShareAdapter,
+  StudioShareResult,
+} from '@sistemazero/studio'
 import { Button } from '@sistemazero/ui/button'
+import { Dialog } from '@sistemazero/ui/dialog'
+import { useBodyScrollLock } from '@sistemazero/ui/scroll-lock'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { CheckCircle2, Maximize2, Minimize2, Send } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { type ApiError, apiGet, apiSend } from '../../lib/api'
 import { cn } from '../../lib/cn'
+import { lessonStudioProjectId } from '../../lib/studio-project-id'
 import type { StudioBlock, StudioStateView, StudioSubmissionResultView } from '../../lib/types'
 import { useLessonPlayer } from '../lesson-player-context'
 
@@ -17,11 +25,20 @@ interface Props {
   /** Estado da entrega vindo do GET da aula (já enviou? quando?). */
   studioState: StudioStateView | null
   /**
-   * Liga o botão "Compartilhar" (publicar no Mural) na Topbar do editor. Só o app
-   * KIDS passa `true` (o Mural é da vitrine kids); a elegibilidade real é do backend
-   * (o publish 409 quando o bloco não é de vitrine). Default OFF.
+   * Liga o botão "Compartilhar" (publicar no Mural) na Topbar do editor. O kids passa
+   * `enableShare={Boolean(content.showcase?.enabled)}` → o botão aparece SÓ no bloco da ÚLTIMA
+   * aula do projeto (a vitrine), substituindo o antigo "Publicar no Mural" da `LessonCelebration`
+   * (mesma ação, e o Compartilhar ainda dá descrição editável + link público de jogar). Nas aulas
+   * intermediárias fica OFF (a criança não publica antes de terminar). A elegibilidade real é do
+   * backend (o publish 409 se o bloco não é vitrine). Default OFF.
    */
   enableShare?: boolean
+  /**
+   * Chamado quando o projeto é publicado no Mural pelo "Compartilhar" (com os links). O kids usa
+   * pra abrir a CELEBRAÇÃO (overlay do Zappy + "Jogar"); o `ShareDialog` fecha sem mostrar a
+   * própria tela de sucesso (ver `StudioShareAdapter.onPublished`).
+   */
+  onShared?: (result: StudioShareResult) => void
 }
 
 type StudioComponent = typeof import('@sistemazero/studio')['StudioLesson']
@@ -36,11 +53,12 @@ type StudioComponent = typeof import('@sistemazero/studio')['StudioLesson']
  * Carregado SÓ no client (Monaco/Blockly/IndexedDB não existem no SSR): o import
  * dinâmico do editor roda dentro de um effect — o server renderiza só o placeholder.
  */
-export function StudioBlockView({ blockId, content, studioState, enableShare }: Props) {
+export function StudioBlockView({ blockId, content, studioState, enableShare, onShared }: Props) {
   const player = useLessonPlayer()
   const lessonId = player?.lessonId ?? ''
-  // Id estável por bloco — o autosave local retoma o WIP no mesmo navegador.
-  const projectId = `sz-lesson-studio:${blockId}`
+  // Id estável por bloco E por PERFIL (`viewerId`): irmãos no mesmo navegador não misturam o
+  // rascunho. ⚠️ Charset seguro (sem `:`): id inválido vira ULID aleatório → perde tudo no refresh.
+  const projectId = lessonStudioProjectId(blockId, player?.viewerId)
 
   const [StudioLesson, setStudioLesson] = useState<StudioComponent | null>(null)
   const [seed, setSeed] = useState<Project | null>(null)
@@ -51,13 +69,15 @@ export function StudioBlockView({ blockId, content, studioState, enableShare }: 
   const [passed, setPassed] = useState<boolean>(studioState?.passed ?? false)
   const [xp, setXp] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [fullscreen, setFullscreen] = useState(false)
+  const [expanded, setExpanded] = useState(false)
+  // Confirmação antes de enviar: o envio destrava/regrava a entrega no professor —
+  // um clique sem querer mandava um projeto vazio (relatado pela usuária).
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
   const activity = content.activity
   const passingScore = activity?.passingScore
 
   const handleRef = useRef<StudioHandle | null>(null)
-  const containerRef = useRef<HTMLDivElement | null>(null)
 
   // Client-only: carrega o editor e semeia na ordem rascunho LOCAL → carryover da
   // aula contínua anterior → projeto inicial do admin. Semear DEPOIS do read evita
@@ -67,6 +87,9 @@ export function StudioBlockView({ blockId, content, studioState, enableShare }: 
     void (async () => {
       const mod = await import('@sistemazero/studio')
       if (!active) return
+      // A LIÇÃO usa o store LOCAL padrão (isolada por perfil pelo id do projeto). Reseta o
+      // namespace caso o Estúdio Completo o tenha trocado numa visita anterior nesta sessão.
+      mod.setStudioStorageNamespace('')
       setStudioLesson(() => mod.StudioLesson)
       // 1) Rascunho LOCAL sempre vence — nunca re-hidratar por cima do WIP.
       const existing = await mod
@@ -78,9 +101,21 @@ export function StudioBlockView({ blockId, content, studioState, enableShare }: 
         setSeed(existing)
         return
       }
-      // 2) Projeto contínuo (cadeia) e sem rascunho local: semeia do que o aluno
-      //    enviou na aula contínua anterior. Lazy + best-effort: falha de rede NÃO
-      //    trava o editor (cai no initialProject).
+      // 2) Sem rascunho local: tenta o ENVIO no banco (save na nuvem) DESTE bloco — só se já
+      //    enviou (`studioState.submitted`). É o que retoma o trabalho num navegador NOVO (o
+      //    rascunho local é por aparelho; o envio é a sincronização entre eles). Lazy + best-effort.
+      if (lessonId && studioState?.submitted) {
+        const mine = await apiGet<{ project: unknown | null }>(
+          `/api/members/lessons/${encodeURIComponent(lessonId)}/blocks/${encodeURIComponent(blockId)}/studio-submission`,
+        ).catch(() => null)
+        if (!active) return
+        if (mine?.project) {
+          setSeed({ ...(mine.project as Project), id: projectId })
+          return
+        }
+      }
+      // 3) Projeto contínuo (cadeia), sem rascunho/envio: semeia do que o aluno enviou na aula
+      //    contínua anterior. Lazy + best-effort: falha de rede NÃO trava o editor.
       if (content.chain && lessonId) {
         const carry = await apiGet<{ project: unknown | null }>(
           `/api/members/lessons/${encodeURIComponent(lessonId)}/blocks/${encodeURIComponent(blockId)}/studio-carryover`,
@@ -92,27 +127,39 @@ export function StudioBlockView({ blockId, content, studioState, enableShare }: 
           return
         }
       }
-      // 3) 1ª da cadeia / não enviou ainda / aula independente → template do bloco.
+      // 4) 1ª da cadeia / nunca enviou / aula independente → template do bloco.
       setSeed({ ...(content.initialProject as Project), id: projectId })
     })()
     return () => {
       active = false
     }
-  }, [projectId, content.initialProject, content.chain, lessonId, blockId])
+  }, [projectId, content.initialProject, content.chain, lessonId, blockId, studioState?.submitted])
 
-  // Sincroniza o estado quando o fullscreen sai pelo Esc/gesto do SO.
+  // "Expandir" é uma SOBREPOSIÇÃO em tela cheia por CSS (não a Fullscreen API nativa): a
+  // API restringe a pintura à subárvore do elemento, então menus/diálogos PORTALADOS no
+  // body (três-pontinhos do editor, "Enviar?", toasts) saíam FORA da camada de tela cheia
+  // → invisíveis e o clique "não fazia nada". Como overlay fixo (z-50, acima da navbegação
+  // z-40), tudo isso fica por cima e o botão "Reduzir" mora no cabeçalho DENTRO do overlay.
+  // Esc também fecha, mas só quando NÃO há menu/diálogo aberto (aí o Esc é deles).
   useEffect(() => {
-    const onChange = () => setFullscreen(Boolean(document.fullscreenElement))
-    document.addEventListener('fullscreenchange', onChange)
-    return () => document.removeEventListener('fullscreenchange', onChange)
-  }, [])
+    if (!expanded) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      if (document.querySelector('[role="menu"],[role="dialog"]')) return
+      setExpanded(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [expanded])
 
-  const toggleFullscreen = useCallback(() => {
-    const el = containerRef.current
-    if (!el) return
-    if (document.fullscreenElement) void document.exitFullscreen()
-    else void el.requestFullscreen?.()
-  }, [])
+  // (O editor relayouta sozinho ao mudar de tamanho — BlocklyPanel/MonacoTabs têm
+  // ResizeObserver no container; não precisa disparar resize manual.)
+  const toggleExpanded = useCallback(() => setExpanded((v) => !v), [])
+
+  // Expandido = overlay `fixed`: a barra de rolagem da PÁGINA atrás dele só confunde (rola
+  // mas nada se move). Trava o scroll do body enquanto expandido (refcontada com o <Dialog>,
+  // p/ fechar o "Enviar?" por cima não destravar cedo e a barra fantasma não voltar).
+  useBodyScrollLock(expanded)
 
   const submit = useCallback(async () => {
     const project = handleRef.current?.getProject()
@@ -150,6 +197,19 @@ export function StudioBlockView({ blockId, content, studioState, enableShare }: 
     }
   }, [lessonId, blockId, player, activity])
 
+  // O Studio LATCHA o adapter uma vez (memoizado por lessonId/blockId), mas `onShared` pode
+  // mudar por render — lê via ref pra manter o adapter estável e ainda chamar o handler ATUAL.
+  const onSharedRef = useRef(onShared)
+  useEffect(() => {
+    onSharedRef.current = onShared
+  }, [onShared])
+
+  // Título/resumo do post pré-definidos pelo admin (vitrine): preenchem o Compartilhar e
+  // ECONOMIZAM IA — com resumo, o dialog NÃO chama a IA (abre com este texto, editável). Vazio
+  // (ou no Estúdio Completo, que nem passa isso) → a IA gera o rascunho.
+  const presetTitle = content.showcase?.title
+  const presetDescription = content.showcase?.summary
+
   // Adapter de COMPARTILHAR (Mural) — só no kids (`enableShare`). O Studio o LATCHA
   // uma vez, então memoizamos por (lessonId, blockId): I/O do servidor vive aqui, a
   // UX no editor. `generateDescription` manda só os 3 arquivos (sem assets); `publish`
@@ -157,6 +217,8 @@ export function StudioBlockView({ blockId, content, studioState, enableShare }: 
   const share = useMemo<StudioShareAdapter | undefined>(() => {
     if (!enableShare || !lessonId) return undefined
     return {
+      presetTitle,
+      presetDescription,
       async generateDescription({ project, title }) {
         try {
           const res = await apiSend<{ description?: string }>('/api/studio/describe', 'POST', {
@@ -198,21 +260,31 @@ export function StudioBlockView({ blockId, content, studioState, enableShare }: 
         }
         return { muralUrl: body?.muralUrl, playUrl: body?.playUrl }
       },
+      // Publicou: entrega os links ao host (kids abre a celebração); o ShareDialog fecha sozinho.
+      onPublished: (result) => onSharedRef.current?.(result),
     }
-  }, [enableShare, lessonId, blockId])
+  }, [enableShare, lessonId, blockId, presetTitle, presetDescription])
 
   const ready = StudioLesson !== null && seed !== null
 
   return (
-    <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4">
+    <div
+      className={cn(
+        'flex flex-col gap-3 rounded-lg border border-border bg-card p-4',
+        // Expandido: vira overlay em tela cheia por CSS (cobre a página; navbar = z-40).
+        // O cabeçalho com "Reduzir" fica DENTRO do overlay → sempre clicável; menus/
+        // diálogos portalados (z-50, depois no DOM) seguem por cima.
+        expanded && 'fixed inset-0 z-50 rounded-none',
+      )}
+    >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h3 className="sz-display text-base">Atividade no Estúdio</h3>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={toggleFullscreen} disabled={!ready}>
-            {fullscreen ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
-            {fullscreen ? 'Reduzir' : 'Expandir'}
+          <Button variant="outline" size="sm" onClick={toggleExpanded} disabled={!ready}>
+            {expanded ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
+            {expanded ? 'Reduzir' : 'Expandir'}
           </Button>
-          <Button size="sm" onClick={submit} disabled={submitting || !ready}>
+          <Button size="sm" onClick={() => setConfirmOpen(true)} disabled={submitting || !ready}>
             {submitting ? <Spinner /> : <Send className="size-4" />}
             {submitted ? 'Reenviar ao professor' : 'Enviar para o professor'}
           </Button>
@@ -220,10 +292,14 @@ export function StudioBlockView({ blockId, content, studioState, enableShare }: 
       </div>
 
       <div
-        ref={containerRef}
         className={cn(
-          'overflow-hidden rounded-lg border border-border bg-muted',
-          fullscreen ? 'h-screen' : 'h-[36rem]',
+          // Área generosa p/ programar (a página de aula já é largura total; aqui damos
+          // mais ALTURA). `isolate`: PRENDE os z-index internos do Blockly (toolbox/flyout
+          // têm z-index alto e VAZAVAM por cima do overlay de modais — ex.: o "Enviar ao
+          // professor?"); isolando o container, o overlay de modal (z-50) cobre tudo atrás.
+          'isolate overflow-hidden rounded-lg border border-border bg-muted',
+          // Expandido: o editor cresce e ocupa todo o overlay; normal: altura fixa.
+          expanded ? 'min-h-0 flex-1' : 'h-[44rem]',
         )}
       >
         {ready ? (
@@ -281,6 +357,45 @@ export function StudioBlockView({ blockId, content, studioState, enableShare }: 
             : 'Envie seu projeto ao professor para poder concluir a aula.'}
         </p>
       )}
+
+      <Dialog
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        title={submitted ? 'Reenviar ao professor?' : 'Enviar ao professor?'}
+        footer={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setConfirmOpen(false)}
+              disabled={submitting}
+            >
+              Cancelar
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => {
+                setConfirmOpen(false)
+                void submit()
+              }}
+              disabled={submitting}
+            >
+              <Send className="size-4" />
+              {submitted ? 'Reenviar' : 'Enviar'}
+            </Button>
+          </>
+        }
+      >
+        <p className="text-sm text-muted-foreground">
+          {submitted
+            ? 'O professor vai receber a versão atual do seu projeto, no lugar da anterior.'
+            : 'O professor vai receber o seu projeto do jeitinho que está agora.'}{' '}
+          Você pode continuar editando e enviar de novo quando quiser.
+          {passingScore !== undefined
+            ? ' Dica: clique em "Verificar" no editor antes, para ver se já atingiu a nota.'
+            : ''}
+        </p>
+      </Dialog>
     </div>
   )
 }

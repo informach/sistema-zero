@@ -9,12 +9,13 @@ import {
   useSensors,
 } from '@dnd-kit/core'
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
-import type {
-  BlockLevel,
-  IDEMode,
-  LessonActivity,
-  Project,
-  StudioHandle,
+import {
+  type BlockLevel,
+  CORE_CATEGORY_OPTIONS,
+  type IDEMode,
+  type LessonActivity,
+  type Project,
+  type StudioHandle,
 } from '@sistemazero/studio'
 import { Badge } from '@sistemazero/ui/badge'
 import { Button } from '@sistemazero/ui/button'
@@ -38,6 +39,8 @@ import { FileUploader, type UploadedFile } from '@/components/media/file-uploade
 import { ImageUploader } from '@/components/media/image-uploader'
 import { VideoThumbnailUploader } from '@/components/media/video-thumbnail-uploader'
 import { VideoUploader } from '@/components/media/video-uploader'
+import { StudioBlocksPicker } from '@/components/studio/studio-blocks-picker'
+import { StudioConfigClipboard } from '@/components/studio/studio-config-clipboard'
 import { StudioEmbed } from '@/components/studio/studio-embed'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import {
@@ -61,6 +64,14 @@ const KIND_LABELS: Record<string, string> = {
   embed: 'Interativo',
   ebook: 'E-book (livro 3D)',
   studio: 'Estúdio',
+  certificate: 'Certificado',
+}
+
+// Largura do modal de bloco por tipo: só os que embutem editor PESADO fogem do `max-w-lg` padrão
+// (o Estúdio = IDE blocos/código/preview; o quiz = editores de texto rico por pergunta/opção).
+const BLOCK_DIALOG_WIDTH: Record<string, string> = {
+  studio: 'max-w-7xl',
+  quiz: 'max-w-4xl',
 }
 
 const STUDIO_LEVELS: { value: BlockLevel; label: string }[] = [
@@ -68,20 +79,8 @@ const STUDIO_LEVELS: { value: BlockLevel; label: string }[] = [
   { value: 'intermediario', label: 'Intermediário' },
   { value: 'avancado', label: 'Avançado' },
 ]
-// Categorias da paleta do Estúdio (espelha CORE_CATEGORY_LEVELS da lib).
-const STUDIO_CATEGORIES = [
-  'HTML',
-  'CSS',
-  'DOM',
-  'JavaScript',
-  'Matemática',
-  'Canvas',
-  'Valores',
-  'Objetos',
-  'Funções',
-  'Classes',
-  'Avançado',
-]
+// Categorias "sempre visíveis" do Estúdio: vêm do PACOTE (`CORE_CATEGORY_OPTIONS`),
+// derivadas das categorias reais do toolbox — não há mais lista hardcoded p/ desatualizar.
 const STUDIO_MODES: { value: IDEMode; label: string }[] = [
   { value: 'blocks', label: 'Blocos' },
   { value: 'bridge', label: 'Ponte' },
@@ -120,8 +119,8 @@ interface BlockForm {
   /** Estúdio: aluno pode revelar blocos avançados. */
   studioAllowReveal: boolean
   /**
-   * Estúdio: allowlist de blocos por id. Sem UI hoje, mas carregada/reemitida p/
-   * não ser APAGADA ao editar+salvar um bloco que a tenha (seed/import; achado do review).
+   * Estúdio: allowlist de blocos por id — preenchida = o aluno vê SÓ estes (+ as Áreas do
+   * projeto). UI no StudioBlocksPicker; reaproveitável pela área de transferência da config.
    */
   studioAllowBlocks: string[]
   /** Estúdio: atividade com auto-correção (fase 2). Vazia = bloco só de entrega. */
@@ -133,6 +132,13 @@ interface BlockForm {
   studioShowcaseTitle: string
   studioShowcaseSummary: string
   studioShowcaseCover: string
+  /** Certificado: metadados de autoria do PDF (emissor/assinatura/cor/logo/mensagem). */
+  certTitle: string
+  certIssuerName: string
+  certSignatureUrl: string
+  certLogoUrl: string
+  certAccentColor: string
+  certMessage: string
 }
 
 const EMPTY_BLOCK: BlockForm = {
@@ -160,6 +166,12 @@ const EMPTY_BLOCK: BlockForm = {
   studioShowcaseTitle: '',
   studioShowcaseSummary: '',
   studioShowcaseCover: '',
+  certTitle: '',
+  certIssuerName: '',
+  certSignatureUrl: '',
+  certLogoUrl: '',
+  certAccentColor: '',
+  certMessage: '',
 }
 
 const num = (s: string): number | undefined => (s.trim() ? Number(s) : undefined)
@@ -234,6 +246,16 @@ function buildContent(f: BlockForm, studioProject?: Project): LessonBlockContent
         url: f.pdfUrl.trim(),
         ...(opt(f.title) ? { title: f.title.trim() } : {}),
       }
+    case 'certificate':
+      return {
+        kind: 'certificate',
+        ...(opt(f.certTitle) ? { title: f.certTitle.trim() } : {}),
+        ...(opt(f.certIssuerName) ? { issuerName: f.certIssuerName.trim() } : {}),
+        ...(opt(f.certSignatureUrl) ? { signatureImageUrl: f.certSignatureUrl.trim() } : {}),
+        ...(opt(f.certLogoUrl) ? { logoUrl: f.certLogoUrl.trim() } : {}),
+        ...(opt(f.certAccentColor) ? { accentColor: f.certAccentColor.trim() } : {}),
+        ...(opt(f.certMessage) ? { message: f.certMessage.trim() } : {}),
+      }
     default:
       return {
         kind: 'quiz',
@@ -264,6 +286,16 @@ function validateBlock(f: BlockForm): string | null {
       // Atividade (auto-correção): coerência espelhando o members.
       return validateStudioActivity(f.studioActivity)
     }
+    case 'certificate': {
+      // Espelha o members: cor hex e URLs http(s) (vazios = padrão da marca).
+      if (f.certAccentColor.trim() && !/^#[0-9a-fA-F]{6}$/.test(f.certAccentColor.trim()))
+        return 'A cor de destaque deve ser um hex como #C4F042.'
+      for (const url of [f.certSignatureUrl, f.certLogoUrl]) {
+        if (url.trim() && !/^https?:\/\//i.test(url.trim()))
+          return 'A assinatura e o logo precisam ser URLs http(s).'
+      }
+      return null
+    }
     default:
       return null
   }
@@ -289,6 +321,8 @@ function blockSummary(b: BlockView): string {
       return `${c.questions.length} pergunta(s)`
     case 'studio':
       return (c.initialProject as { name?: string })?.name ?? 'Atividade do Estúdio'
+    case 'certificate':
+      return c.title ?? 'Certificado de conclusão'
     default:
       return '—'
   }
@@ -397,6 +431,12 @@ export function LessonEditorClient({
       studioShowcaseTitle: c.kind === 'studio' ? (c.showcase?.title ?? '') : '',
       studioShowcaseSummary: c.kind === 'studio' ? (c.showcase?.summary ?? '') : '',
       studioShowcaseCover: c.kind === 'studio' ? (c.showcase?.defaultCoverUrl ?? '') : '',
+      certTitle: c.kind === 'certificate' ? (c.title ?? '') : '',
+      certIssuerName: c.kind === 'certificate' ? (c.issuerName ?? '') : '',
+      certSignatureUrl: c.kind === 'certificate' ? (c.signatureImageUrl ?? '') : '',
+      certLogoUrl: c.kind === 'certificate' ? (c.logoUrl ?? '') : '',
+      certAccentColor: c.kind === 'certificate' ? (c.accentColor ?? '') : '',
+      certMessage: c.kind === 'certificate' ? (c.message ?? '') : '',
     })
     setBlockOpen(true)
   }
@@ -632,6 +672,9 @@ export function LessonEditorClient({
         open={blockOpen}
         onClose={() => setBlockOpen(false)}
         title={editingBlock ? 'Editar bloco' : 'Adicionar bloco'}
+        // Estúdio (IDE) e quiz (editores de texto rico) precisam de mais largura que os blocos
+        // simples (texto/imagem/etc.), que seguem no `max-w-lg` padrão do Dialog.
+        className={BLOCK_DIALOG_WIDTH[blockForm.kind]}
         footer={
           <>
             <Button variant="outline" onClick={() => setBlockOpen(false)} disabled={busy}>
@@ -824,6 +867,25 @@ export function LessonEditorClient({
 
           {blockForm.kind === 'studio' ? (
             <div className="flex flex-col gap-4">
+              <StudioConfigClipboard
+                current={{
+                  level: blockForm.studioLevel,
+                  modes: blockForm.studioModes,
+                  categories: blockForm.studioCategories,
+                  allowReveal: blockForm.studioAllowReveal,
+                  allowBlocks: blockForm.studioAllowBlocks,
+                }}
+                onPaste={(snap) =>
+                  setBlockForm((f) => ({
+                    ...f,
+                    studioLevel: snap.level,
+                    studioModes: snap.modes,
+                    studioCategories: snap.categories,
+                    studioAllowReveal: snap.allowReveal,
+                    studioAllowBlocks: snap.allowBlocks,
+                  }))
+                }
+              />
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field
                   label="Nível"
@@ -875,25 +937,36 @@ export function LessonEditorClient({
                 hint="Categorias liberadas independente do nível (opcional)."
               >
                 <div className="flex flex-wrap gap-3 pt-1.5">
-                  {STUDIO_CATEGORIES.map((cat) => (
-                    <label key={cat} className="flex items-center gap-1.5 text-sm">
+                  {CORE_CATEGORY_OPTIONS.map((cat) => (
+                    <label key={cat.value} className="flex items-center gap-1.5 text-sm">
                       <input
                         type="checkbox"
                         className="size-4 accent-primary"
-                        checked={blockForm.studioCategories.includes(cat)}
+                        checked={blockForm.studioCategories.includes(cat.value)}
                         onChange={(e) =>
                           setBlockForm((f) => ({
                             ...f,
                             studioCategories: e.target.checked
-                              ? [...f.studioCategories, cat]
-                              : f.studioCategories.filter((x) => x !== cat),
+                              ? [...f.studioCategories, cat.value]
+                              : f.studioCategories.filter((x) => x !== cat.value),
                           }))
                         }
                       />
-                      {cat}
+                      {cat.label}
                     </label>
                   ))}
                 </div>
+              </Field>
+              <Field
+                label="Lista de blocos (opcional — só estes aparecem)"
+                hint="Vazio = a paleta segue o nível acima. Preenchido = o aluno vê SÓ estes blocos (+ as Áreas do projeto); o nível e as categorias acima passam a ser ignorados. Bom para aulas bem guiadas."
+              >
+                <StudioBlocksPicker
+                  value={blockForm.studioAllowBlocks}
+                  onChange={(studioAllowBlocks) =>
+                    setBlockForm((f) => ({ ...f, studioAllowBlocks }))
+                  }
+                />
               </Field>
               <label className="flex items-center gap-2 text-sm">
                 <input
@@ -930,12 +1003,14 @@ export function LessonEditorClient({
                       setBlockForm((f) => ({ ...f, studioShowcaseEnabled: e.target.checked }))
                     }
                   />
-                  Publicar no Mural ao concluir esta aula
+                  Última aula do projeto — liberar o "Compartilhar" no Mural
                 </label>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Ligue no bloco da ÚLTIMA aula do projeto: a criança ganha o botão "Publicar no
-                  Mural" e o post é montado com o título/resumo abaixo + um print do projeto (jogos)
-                  ou a capa padrão.
+                  Ligue no bloco da ÚLTIMA aula do projeto: aí (e só aí) a criança ganha o botão
+                  "Compartilhar" na barra do editor pra publicar o jogo no Mural (+ um link público
+                  de jogar). O título e o resumo abaixo viram o texto INICIAL do post (a criança
+                  pode ajustar na hora) — deixe em branco e a IA escreve a descrição. A capa padrão
+                  é a reserva quando o print do jogo falha.
                 </p>
                 {blockForm.studioShowcaseEnabled ? (
                   <div className="mt-3 flex flex-col gap-3">
@@ -952,7 +1027,7 @@ export function LessonEditorClient({
                     </Field>
                     <Field
                       label="Resumo do projeto"
-                      hint="Aparece no card do Mural. A criança não escreve — você define aqui."
+                      hint="Texto inicial do post (a criança pode ajustar ao publicar). Em branco → a IA gera a descrição."
                     >
                       <Textarea
                         value={blockForm.studioShowcaseSummary}
@@ -1001,6 +1076,101 @@ export function LessonEditorClient({
                 <ActivityBuilder
                   value={blockForm.studioActivity}
                   onChange={(studioActivity) => setBlockForm((f) => ({ ...f, studioActivity }))}
+                />
+              </Field>
+            </div>
+          ) : null}
+
+          {blockForm.kind === 'certificate' ? (
+            <div className="flex flex-col gap-4">
+              <p className="rounded-lg border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+                Coloque na <strong>última aula</strong> do curso. Ao concluir as outras aulas, o
+                aluno libera o botão de emitir o certificado — um PDF com número de série e QR de
+                validação pública. ⚠️ A aula do certificado pode ter conteúdo livre (um vídeo ou
+                texto de parabéns), mas <strong>não</strong> pode ter quiz com nota de corte nem
+                Estúdio: esses travam a conclusão e seriam pulados na emissão.
+              </p>
+              <Field
+                label="Título do certificado"
+                htmlFor="cert-title"
+                hint='Opcional — padrão: "Certificado de Conclusão".'
+              >
+                <Input
+                  id="cert-title"
+                  value={blockForm.certTitle}
+                  maxLength={200}
+                  placeholder="Certificado de Conclusão"
+                  onChange={(e) => setBlockForm((f) => ({ ...f, certTitle: e.target.value }))}
+                />
+              </Field>
+              <Field
+                label="Emissor / assinante"
+                htmlFor="cert-issuer"
+                hint="Nome que assina (ex.: a escola ou o professor)."
+              >
+                <Input
+                  id="cert-issuer"
+                  value={blockForm.certIssuerName}
+                  maxLength={200}
+                  placeholder="Equipe Sistema Zero"
+                  onChange={(e) => setBlockForm((f) => ({ ...f, certIssuerName: e.target.value }))}
+                />
+              </Field>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Assinatura (imagem)" hint="Opcional — PNG/JPG da assinatura.">
+                  <ImageUploader
+                    scope="block"
+                    value={blockForm.certSignatureUrl}
+                    onChange={(certSignatureUrl) =>
+                      setBlockForm((f) => ({ ...f, certSignatureUrl }))
+                    }
+                  />
+                </Field>
+                <Field label="Logo (override)" hint="Opcional — vazio usa o logo da marca.">
+                  <ImageUploader
+                    scope="block"
+                    value={blockForm.certLogoUrl}
+                    onChange={(certLogoUrl) => setBlockForm((f) => ({ ...f, certLogoUrl }))}
+                  />
+                </Field>
+              </div>
+              <Field label="Cor de destaque" hint="Opcional — vazio usa a cor da marca.">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    aria-label="Escolher cor de destaque"
+                    className="h-9 w-12 shrink-0 cursor-pointer rounded border border-border bg-transparent"
+                    value={blockForm.certAccentColor || '#C4F042'}
+                    onChange={(e) =>
+                      setBlockForm((f) => ({ ...f, certAccentColor: e.target.value }))
+                    }
+                  />
+                  <Input
+                    value={blockForm.certAccentColor}
+                    placeholder="#C4F042"
+                    maxLength={7}
+                    className="max-w-[10rem]"
+                    onChange={(e) =>
+                      setBlockForm((f) => ({ ...f, certAccentColor: e.target.value }))
+                    }
+                  />
+                  {blockForm.certAccentColor ? (
+                    <button
+                      type="button"
+                      className="text-xs text-muted-foreground underline"
+                      onClick={() => setBlockForm((f) => ({ ...f, certAccentColor: '' }))}
+                    >
+                      Limpar
+                    </button>
+                  ) : null}
+                </div>
+              </Field>
+              <Field label="Mensagem (opcional)" hint="Texto adicional no corpo do certificado.">
+                <Textarea
+                  value={blockForm.certMessage}
+                  maxLength={2000}
+                  placeholder="Ex.: Parabéns por concluir o curso com dedicação!"
+                  onChange={(e) => setBlockForm((f) => ({ ...f, certMessage: e.target.value }))}
                 />
               </Field>
             </div>

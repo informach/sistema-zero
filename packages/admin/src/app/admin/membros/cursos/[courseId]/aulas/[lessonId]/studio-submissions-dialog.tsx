@@ -86,7 +86,12 @@ export function StudioSubmissionsDialog({ blockId, open, onClose }: Props) {
     [blockId],
   )
 
-  const studentName = (r: StudioSubmissionRow) => r.name ?? r.email ?? r.userId
+  // Mostra a CRIANÇA (perfil) quando a entrega veio de um perfil; senão a conta.
+  const studentName = (r: StudioSubmissionRow) =>
+    r.childName ?? r.accountName ?? r.accountEmail ?? r.userId
+  // "Responsável: Nome · email" (só quando há criança/perfil por trás da entrega).
+  const responsibleLabel = (r: StudioSubmissionRow) =>
+    [r.accountName, r.accountEmail].filter(Boolean).join(' · ') || '—'
 
   return (
     <Dialog
@@ -94,13 +99,17 @@ export function StudioSubmissionsDialog({ blockId, open, onClose }: Props) {
       onClose={onClose}
       title={selected ? `Entrega de ${studentName(selected.row)}` : 'Entregas do Estúdio'}
       onBack={selected ? () => setSelected(null) : undefined}
+      // Ao inspecionar a entrega, o Estúdio embutido precisa de largura (igual ao modal
+      // de config do bloco); a lista de entregas fica num tamanho confortável de leitura.
+      className={selected ? 'max-w-7xl' : 'max-w-2xl'}
     >
       {selected ? (
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-xs text-muted-foreground">
-              Enviado em {new Date(selected.row.submittedAt).toLocaleString('pt-BR')}
-            </p>
+            <div className="text-xs text-muted-foreground">
+              <p>Enviado em {new Date(selected.row.submittedAt).toLocaleString('pt-BR')}</p>
+              {selected.row.childName ? <p>Responsável: {responsibleLabel(selected.row)}</p> : null}
+            </div>
             <Button
               variant="outline"
               size="sm"
@@ -181,6 +190,11 @@ export function StudioSubmissionsDialog({ blockId, open, onClose }: Props) {
                     </span>
                   ) : null}
                 </div>
+                {r.childName ? (
+                  <div className="truncate text-xs text-muted-foreground">
+                    Responsável: {responsibleLabel(r)}
+                  </div>
+                ) : null}
                 <div className="truncate text-xs text-muted-foreground">
                   Enviado em {new Date(r.submittedAt).toLocaleString('pt-BR')}
                 </div>

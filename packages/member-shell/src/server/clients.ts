@@ -541,6 +541,17 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       )
     },
 
+    /** Projeto que o aluno ENVIOU NESTE bloco (save na nuvem). `null` se nunca enviou. */
+    getOwnStudioSubmission(
+      lessonId: string,
+      blockId: string,
+    ): Promise<GatewayResponse<{ project: unknown | null }>> {
+      return gw.gatewayFetch(
+        `/members/lessons/${enc(lessonId)}/blocks/${enc(blockId)}/studio-submission`,
+        { method: 'GET' },
+      )
+    },
+
     /**
      * Payload AUTORITATIVO da vitrine (Mural): título/resumo do admin + capa padrão +
      * elegibilidade (a criança enviou a entrega). O BFF usa no clique "Publicar no

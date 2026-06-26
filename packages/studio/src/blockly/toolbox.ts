@@ -1,5 +1,6 @@
 import {
   type BlockLevel,
+  CORE_CATEGORY_LEVELS,
   FULL_LEARNING_PROFILE,
   isBlockTypeAllowed,
   isCategoryAllowed,
@@ -12,12 +13,14 @@ import {
   CSS_BLOCKS,
   CSS_GROUPS,
   DOM_BLOCKS,
+  FUNCTION_BLOCKS,
   HTML_BLOCKS,
   HTML_GROUPS,
   JS_BLOCKS,
   JS_GROUPS,
   MATH_BLOCKS,
   OBJECT_BLOCKS,
+  OOP_BLOCKS,
   SVG_BLOCKS,
   SVG_GROUPS,
   VALUE_BLOCKS,
@@ -133,20 +136,51 @@ function toEntries(
     })
 }
 
-/** Nível default de cada categoria core (sobreposto pelo `level` de cada bloco). */
-const CORE_CATEGORY_LEVELS: Record<string, BlockLevel> = {
-  HTML: 'iniciante',
-  SVG: 'iniciante',
-  CSS: 'iniciante',
-  DOM: 'iniciante',
-  JavaScript: 'iniciante',
-  Matemática: 'iniciante',
-  Canvas: 'intermediario',
-  Valores: 'iniciante',
-  Funções: 'intermediario',
-  Classes: 'avancado',
-  Objetos: 'intermediario',
-  Avançado: 'avancado',
+/**
+ * Filtra uma categoria de toolbox (extensão) deixando SÓ os blocos cujo `type` está em
+ * `only` (modo restritivo da aula); sub-categorias que ficam vazias somem; flyout dinâmico
+ * (`custom`) sai (não dá p/ filtrar conteúdo gerado). `null` se nada sobrou.
+ */
+function filterToolboxCategory(
+  cat: ToolboxCategory,
+  only: ReadonlySet<string>,
+): ToolboxCategory | null {
+  const contents: ToolboxCategory['contents'] = []
+  for (const c of cat.contents) {
+    if (c.kind === 'category') {
+      if ('custom' in c) continue
+      const sub = filterToolboxCategory(c, only)
+      if (sub) contents.push(sub)
+    } else if (only.has(c.type)) {
+      contents.push(c)
+    }
+  }
+  return contents.length > 0 ? { ...cat, contents } : null
+}
+
+/**
+ * Rede de segurança FINAL: remove categorias/sub-categorias que ficaram SEM nenhum bloco
+ * (a curadoria por nível, a lista de blocos da aula e a poda de extensão já tentam — isto
+ * GARANTE que nenhuma categoria/sub-categoria vazia apareça na paleta). Preserva 🔎 Pesquisar
+ * (contents vazio DE PROPÓSITO) e os flyouts dinâmicos (`custom`, conteúdo gerado em runtime).
+ */
+function pruneEmptyCategories(contents: readonly unknown[]): unknown[] {
+  const out: unknown[] = []
+  for (const c of contents) {
+    const node = c as { kind?: string; custom?: string; contents?: readonly unknown[] }
+    // Busca e flyout dinâmico (custom) NUNCA são "categoria vazia" — seguem sempre.
+    if (node.kind === 'search' || (node.kind === 'category' && node.custom !== undefined)) {
+      out.push(c)
+      continue
+    }
+    if (node.kind === 'category' && Array.isArray(node.contents)) {
+      const pruned = pruneEmptyCategories(node.contents)
+      if (pruned.length > 0) out.push({ ...node, contents: pruned })
+      continue
+    }
+    out.push(c) // bloco (ou outro nó folha)
+  }
+  return out
 }
 
 /**
@@ -177,6 +211,12 @@ export function buildCoreToolbox(
       ],
     },
   ]
+
+  // Lista de blocos da aula (`allowBlocks` não-vazia) = modo RESTRITIVO: só os listados
+  // entram na paleta (os frames seguem sempre). Decidido aqui p/ alcançar TAMBÉM os flyouts
+  // dinâmicos (Funções/Classes) e as categorias de EXTENSÃO; o resto restringe via toEntries.
+  const restrict = (profile.allowBlocks?.length ?? 0) > 0
+  const only = new Set(profile.allowBlocks ?? [])
 
   const pushContent = (name: string, colour: string, blocks: BlockDefinition[]): void => {
     const level = CORE_CATEGORY_LEVELS[name] ?? 'iniciante'
@@ -283,8 +323,12 @@ export function buildCoreToolbox(
     colour: string,
     level: BlockLevel,
     custom: string,
+    blocks: BlockDefinition[],
   ): void => {
     if (!isCategoryAllowed(orig, level, profile)) return
+    // Restrição: o flyout dinâmico (Funções/Classes) só entra se a aula listou ALGUM
+    // bloco dele — senão vazaria (não dá p/ filtrar o conteúdo gerado pelo callback).
+    if (restrict && !blocks.some((b) => only.has(b.type))) return
     progSubs.push({ kind: 'category', name, colour, custom })
   }
   pushSub('Matemática', '🔢 Matemática', CATEGORY_COLORS.math, 'iniciante', MATH_BLOCKS)
@@ -302,8 +346,22 @@ export function buildCoreToolbox(
     (b): b is BlockDefinition => Boolean(b),
   )
   pushSub('DOM', '⚡ Eventos', CATEGORY_COLORS.events, 'iniciante', eventosBlocks)
-  pushSubCustom('Funções', '🧩 Funções', CATEGORY_COLORS.functions, 'intermediario', 'SZ_FUNCTIONS')
-  pushSubCustom('Classes', '🏛️ Classes', CATEGORY_COLORS.classes, 'avancado', 'SZ_CLASSES')
+  pushSubCustom(
+    'Funções',
+    '🧩 Funções',
+    CATEGORY_COLORS.functions,
+    'intermediario',
+    'SZ_FUNCTIONS',
+    FUNCTION_BLOCKS,
+  )
+  pushSubCustom(
+    'Classes',
+    '🏛️ Classes',
+    CATEGORY_COLORS.classes,
+    'avancado',
+    'SZ_CLASSES',
+    OOP_BLOCKS,
+  )
   pushSub('Objetos', '📦 Objetos', CATEGORY_COLORS.objects, 'intermediario', OBJECT_BLOCKS)
   if (progSubs.length > 0) {
     contents.push({
@@ -316,9 +374,18 @@ export function buildCoreToolbox(
 
   // Canvas: categoria PRÓPRIA (fora da Programação) — desenho, será incrementada.
   pushGrouped('Canvas', CATEGORY_COLORS.canvas, CANVAS_BLOCKS, CANVAS_GROUPS)
-  // Extensões: o caller já filtra por nível (minLevel) antes de passar.
-  contents.push(...extraCategories)
+  // Extensões: em modo restritivo (lista de blocos), filtra cada categoria p/ só os blocos
+  // LISTADOS (+ drop de vazia); senão entram como vieram (o caller já gateou por minLevel).
+  for (const cat of extraCategories) {
+    const filtered = restrict ? filterToolboxCategory(cat, only) : cat
+    if (filtered) contents.push(filtered)
+  }
   pushContent('Avançado', CATEGORY_COLORS.advanced, ADVANCED_BLOCKS)
 
-  return { kind: 'categoryToolbox', contents }
+  // Poda final: categoria/sub-categoria sem nenhum bloco some (garante o pedido — sem
+  // categorias/sub-categorias vazias na paleta da aula).
+  return {
+    kind: 'categoryToolbox',
+    contents: pruneEmptyCategories(contents) as ToolboxConfiguration['contents'],
+  }
 }

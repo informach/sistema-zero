@@ -114,8 +114,10 @@ export interface ContentAdminRepository {
   findBlockLessonId(id: string): Promise<string | null>
   /** Quantos blocos de certificado existem no curso (com exclusão p/ update). */
   countCertificateBlocks(courseId: string, opts?: { excludeBlockId?: string }): Promise<number>
-  /** A aula contém algum bloco de certificado? (mantém a aula do certificado exclusiva.) */
+  /** A aula contém algum bloco de certificado? (uma aula tem no máximo um certificado.) */
   lessonHasCertificateBlock(lessonId: string): Promise<boolean>
+  /** A aula contém algum bloco que TRAVA a conclusão (estúdio, ou quiz com nota de corte)? */
+  lessonHasGatingBlock(lessonId: string, opts?: { excludeBlockId?: string }): Promise<boolean>
 
   // ── Anexos ──
   createAttachment(lessonId: string, fields: AttachmentFields): Promise<LessonAttachment>

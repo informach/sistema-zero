@@ -1,3 +1,4 @@
+export * from './blockClipboard'
 export * from './blocks'
 export * from './buildIR'
 export * from './colorPalette'

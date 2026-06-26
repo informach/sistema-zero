@@ -114,6 +114,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
     const rows = await this.db
       .select({
         userId: studioSubmissions.userId,
+        accountId: studioSubmissions.accountId,
         submittedAt: studioSubmissions.submittedAt,
         score: studioSubmissions.score,
         checkedAt: studioSubmissions.checkedAt,
@@ -124,6 +125,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
       .orderBy(asc(studioSubmissions.submittedAt))
     return rows.map((r) => ({
       userId: r.userId,
+      accountId: r.accountId ?? null,
       submittedAt: r.submittedAt,
       score: r.score ?? null,
       checkedAt: r.checkedAt ?? null,

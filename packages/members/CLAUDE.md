@@ -59,7 +59,9 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > `league_membership`), `0023` (avatar 3D: `avatar_configs.photo_url` — a foto/snapshot),
 > `0024` (índices únicos de `sort_order` em módulos/aulas/blocos/anexos) e `0025`
 > (**certificados**: enum `lesson_block_kind` + `'certificate'` + tabela `certificates_issued`)
-> — **aplicadas** no Postgres compartilhado (`sistemazero`, :5433).
+> — **aplicadas** no Postgres compartilhado (`sistemazero`, :5433); **`0026`**
+> (`studio_submissions.account_id` — conta RESPONSÁVEL da entrega, p/ o admin mostrar
+> criança+responsável; nullable, legado `null`) **gerada, FALTA aplicar** (`db:migrate`).
 
 ## Conceito central (decisões travadas com o usuário)
 
@@ -113,7 +115,10 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    **`studio` (06/2026, migration `0013`):** editor `@sistemazero/studio` embarcado e
    pré-configurado pelo admin — `{initialProject (snapshot Project, JSON opaco — o front
    sanitiza, teto `MAX_STUDIO_PROJECT_CHARS` 1.5M), level?, allowBlocks?, allowCategories?,
-   allowedModes?, allowLevelReveal?}`. A config NÃO é segredo (vai inteira ao aluno). O aluno
+   allowedModes?, allowLevelReveal?}`. ⚠️ **`allowBlocks` é RESTRITIVO** (06/2026): lista
+   NÃO-vazia = a paleta do aluno mostra SÓ esses blocos (+ as 🗂️ Áreas do projeto, sempre
+   visíveis), ignorando nível/categoria; vazia = curadoria por nível. (Era aditivo "sempre
+   visível"; sem UI, ninguém usava o sentido antigo.) A config NÃO é segredo (vai inteira ao aluno). O aluno
    ENVIA o projeto (`POST …/blocks/:blockId/studio-submission` `{project}`) → tabela
    `studio_submissions` (1 linha/aluno+bloco, upsert — reenvio último-vence) e isso
    ⚠️ **As rotas que carregam o projeto** (entrega do aluno + autoria do bloco:
@@ -127,7 +132,9 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    gate do quiz — ver mark-lesson-complete). A projeção member-facing anexa
    `studioState {submitted, submittedAt, lastScore?, passed?}` (como o `quizState`). Admin
    acompanha em `GET /members/admin/blocks/:id/studio-submissions[/:userId]` (lista + projeto
-   inteiro + nota/resultado p/ abrir no Estúdio do professor).
+   inteiro + nota/resultado p/ abrir no Estúdio do professor). A entrega grava **`account_id`**
+   (conta responsável; no kids = o pai, ≠ do `user_id` que é o PERFIL da criança — no adulto são
+   iguais; migration `0026`) → o BFF do admin hidrata a CRIANÇA (nome do perfil) + o RESPONSÁVEL.
    **AUTO-CORREÇÃO (fase 2, migration `0016`):** o `StudioBlock` ganha `activity?`
    (enunciado + `checks[]` união `structure`/`behavior`/`testcase`/`code` + `passingScore?`)
    — `domain/course/studio-activity.ts` (PURO: `gradeStudioActivity`/`evaluateStructureRule`/
@@ -156,6 +163,12 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    entrega → `{project:null}` (cai no `initialProject`). Carrega a última entrega MESMO sem
    ter batido a nota de corte (continuar o WIP). Várias cadeias por curso NÃO se misturam
    (filtro por nome). O "salvar" é a própria ENTREGA — nada novo no save/colunas.
+   **CARREGAR O PRÓPRIO ENVIO (save na nuvem, 06/2026):** `GET /members/lessons/:lessonId/blocks/
+   :blockId/studio-submission` (MESMO path do POST, distinção pelo método) → `{project|null}` via
+   `GetOwnStudioSubmissionService` (`getOne(userId, blockId)` — o ENVIO deste bloco/perfil; espelha
+   o carryover: acesso pela CONTA, projeto pelo PERFIL). É a **2ª prioridade** de seed no front
+   (depois do rascunho LOCAL por perfil, antes do carryover): num navegador NOVO, sem rascunho
+   local, a criança retoma o que enviou em vez do template. Lazy (projeto pesado, fora do GET da aula).
    **VITRINE (Mural dos Criadores, 06/2026):** o `StudioBlock` ganha `showcase?` (`{enabled,
    title?, summary?, defaultCoverUrl?}`, no jsonb `content` — SEM migration). O admin liga
    `enabled` no bloco da ÚLTIMA aula do projeto; ao concluí-la, o `LessonCompleteView` traz
@@ -382,10 +395,14 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   trabalho; `CERTIFICATE_NOT_ELIGIBLE`→409; cobre transitivamente quiz/estúdio das OUTRAS aulas),
   congela `certificates_issued` (id público + `serial` `SZ-<ano>-XXXXXXXX` + snapshot
   nome/título) e **conclui a aula do certificado** (→ curso 100% + badge `course-complete`,
-  award fail-open). ⚠️ A aula do certificado é **EXCLUSIVA** (só o bloco de certificado): a autoria
-  recusa criar/virar um certificado numa aula com outros blocos, e recusa adicionar bloco numa aula
-  de certificado (`VALIDATION_ERROR`→400) — senão um quiz/estúdio na MESMA aula seria pulado (a
-  emissão conclui a aula direto, sem os gates de `mark-lesson-complete`). O **nome** vem dos headers
+  award fail-open). ⚠️ A aula do certificado aceita **conteúdo livre** (vídeo/texto/imagem de
+  encerramento, quiz de FIXAÇÃO) mas **NÃO blocos que TRAVAM a conclusão** — quiz com nota de corte
+  ou estúdio (`isCompletionGatingBlock`, domain): a autoria recusa criar/virar um certificado numa
+  aula com bloco travante, e recusa adicionar/virar um bloco travante numa aula de certificado
+  (`VALIDATION_ERROR`→400). Razão: a emissão conclui a aula DIRETO, sem passar pelos gates de
+  `mark-lesson-complete` — um gate ali seria pulado (o aluno emitiria o diploma sem fazer a
+  atividade). Antes a aula era EXCLUSIVA (só o bloco); relaxada em 06/2026 p/ o caso "encerramento
+  com vídeo + certificado" (repo: `lessonHasGatingBlock`). O **nome** vem dos headers
   CONFIÁVEIS do gateway (`x-auth-profile-name` kids ?? `x-auth-user-name`; URI-decodado — 1º
   consumidor a ler o nome), NUNCA do corpo. `certificates_issued.course_id` é **SNAPSHOT (SEM FK p/
   `courses`)** — o diploma é credencial PERMANENTE (QR público); apagar o curso NÃO o destrói (a
@@ -731,7 +748,8 @@ entre pacotes (a dedupe por `created_at` pularia migrations). A migration faz
 de vídeo/last-accessed — migration `0001`), `quiz_attempts` (histórico de quiz —
 migration `0002`), `course_ratings` (classificação do curso, UNIQUE user+course —
 migration `0004`), `processed_webhooks`, `studio_submissions` (entrega do Estúdio,
-migrations `0013`/`0016`), `certificates_issued` (certificado de conclusão, UNIQUE
+migrations `0013`/`0016`/`0026` — `0026` add `account_id` = conta responsável da entrega),
+`certificates_issued` (certificado de conclusão, UNIQUE
 user+course + serial — migration `0025`) e a **gamificação**: `gamification_profiles`/`xp_events`/
 `user_badges` (`0009`–`0015`), `coin_events` (Zappy Coins, `0018`), `avatar_configs`
 (`0019` + `photo_url` no `0023`)/`avatar_inventory` (`0019`), `room_state`/`room_inventory`

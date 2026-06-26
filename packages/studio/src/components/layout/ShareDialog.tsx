@@ -53,24 +53,29 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
     setStep('confirm')
     setOkConcluded(false)
     setOkLanguage(false)
-    setDescription('')
+    // Preset do admin (aula): título/descrição já vêm prontos. Sem preset (Estúdio Completo) →
+    // título = nome do projeto e descrição vazia (a IA preenche no passo "describe").
+    setDescription(adapter?.presetDescription?.trim() ?? '')
     setGenerating(false)
     setGenerateFailed(false)
     setCoverDataUrl(null)
     setCapturing(false)
-    setTitle(project?.name ?? '')
+    setTitle(adapter?.presetTitle?.trim() || project?.name || '')
     setResult(null)
     setErrorMsg('')
     setCopied(false)
     describeStartedRef.current = false
     coverStartedRef.current = false
-  }, [open, project?.name])
+  }, [open, project?.name, adapter?.presetTitle, adapter?.presetDescription])
 
   // Gera o rascunho da descrição ao entrar no passo "describe" (1x).
   useEffect(() => {
     if (step !== 'describe' || describeStartedRef.current) return
     if (!adapter || !project) return
     describeStartedRef.current = true
+    // Descrição pré-definida pelo admin (aula) → NÃO gasta IA: já abriu preenchida. A criança
+    // ainda edita o texto à vontade (ou clica "Gerar" pra pedir uma da IA mesmo assim).
+    if (adapter.presetDescription?.trim()) return
     setGenerating(true)
     setGenerateFailed(false)
     adapter
@@ -134,8 +139,15 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
         description: description.trim().slice(0, MAX_DESCRIPTION),
       })
       .then((res) => {
-        setResult(res ?? {})
-        setStep('success')
+        // Host com celebração própria (kids): entrega os links e SAI — sem tela de sucesso
+        // dobrada. Sem `onPublished` (Estúdio Completo) → mostra a tela de sucesso padrão.
+        if (adapter.onPublished) {
+          adapter.onPublished(res ?? {})
+          onClose()
+        } else {
+          setResult(res ?? {})
+          setStep('success')
+        }
       })
       .catch((e: unknown) => {
         setErrorMsg(e instanceof Error ? e.message : String(e))

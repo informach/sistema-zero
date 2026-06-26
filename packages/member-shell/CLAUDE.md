@@ -14,12 +14,25 @@ reutilizável NUNCA é cópia por app). Consumido como **TS source** via `export
 precisam de `transpilePackages: ['@sistemazero/studio']` + `@source "../../../studio/src"` +
 `frame-src 'self' blob:` na CSP (Monaco/Blockly/preview; terminal OFF dispensa COOP/COEP). O handler
 de entrega é `shell.routes.studioSubmit` (`POST /api/members/lessons/:lessonId/blocks/:blockId/studio-submission`).
-**Projeto contínuo (carryover):** quando o bloco tem `chain` (nome da cadeia), o `studio-block`
-semeia o editor na ordem **rascunho LOCAL → carryover → initialProject** — o rascunho local SEMPRE
-vence (não re-hidrata o WIP); o carryover (`shell.routes.studioCarryover`, `GET …/studio-carryover`)
-traz a última entrega do aluno na aula contínua anterior, é best-effort (falha de rede → cai no
-initialProject) e roda SÓ na 1ª abertura sem rascunho local. Ao semear do carryover o `id` do
-projeto é trocado p/ a chave do bloco atual (`sz-lesson-studio:<blockId>`).
+**Ordem de seed do editor (06/2026):** o `studio-block` semeia em **(1) rascunho LOCAL → (2) ENVIO no
+banco → (3) carryover → (4) initialProject**. O rascunho local (por PERFIL, IndexedDB) SEMPRE vence (é o
+WIP mais fresco neste navegador — não re-hidrata por cima dele). Sem rascunho local: (2) o ENVIO do aluno
+NESTE bloco — "save na nuvem" — retoma o trabalho num navegador NOVO (`shell.routes.studioSubmissionGet`,
+`GET …/studio-submission`, client `members.getOwnStudioSubmission`; só busca se `studioState.submitted`);
+(3) o carryover (`studioCarryover`, `GET …/studio-carryover`) traz a entrega da aula contínua anterior
+(quando o bloco tem `chain`); (4) o template do admin. Os GET (2)/(3) são best-effort/lazy (falha de rede
+não trava — cai no próximo) e só rodam sem rascunho local. ⚠️ DB-first foi rejeitado de propósito: re-abrir
+após enviar perderia os blocos feitos PÓS-envio (re-introduziria o "perder trabalho" recém-corrigido). Ao semear do carryover o `id` do
+projeto é trocado p/ a chave do bloco — **`lessonStudioProjectId(blockId, viewerId)`** (`lib/studio-project-id`).
+**Por PERFIL (`viewerId` = id da sessão):** irmãos no MESMO navegador NÃO misturam o rascunho — cada perfil
+kids tem o seu (no adulto = id da conta). O `viewerId` chega pelo `LessonPlayerContext` (`viewerId`, setado
+pela página da aula dos dois apps a partir de `session.id`); ausente → formato legado sem o segmento.
+⚠️ **NÃO use `:` nem char fora de `/^[A-Za-z0-9_-]+$/` no id**: o Studio REJEITA o id do `initialProject`
+(`sanitizeProjectForHost` → `boundProjectIdFromBody`) e o troca por um ULID ALEATÓRIO → o autosave grava
+sob o ULID e o `load(<este id>)` nunca acha o rascunho (a criança PERDIA tudo no refresh — bug do
+`sz-lesson-studio:` colado, corrigido). `blockId`+`viewerId` são UUIDs (charset seguro). Travado por
+`tests/studio-project-id.test.ts`. ⚠️ Mudar o formato da chave ORFANA os rascunhos antigos (sem usuário
+real em prod, ok).
 
 ## O que vive aqui vs no app
 
@@ -29,7 +42,9 @@ projeto é trocado p/ a chave do bloco atual (`sz-lesson-studio:<blockId>`).
 | Route handlers (`createShellRoutes`) — a LÓGICA inteira de `/api/*` | `route.ts` de 1-3 linhas (`export const { POST } = shell.routes.x`) |
 | `createMemberProxy` (anti-CSRF + gate + rotação pré-render) | `proxy.ts` com config do app + `matcher` LITERAL |
 | Libs puras (csrf, download-mime, act, format, markdown, types, api, cn…) | — |
-| Componentes de DOMÍNIO (vimeo-player, lesson-blocks, quiz-block, ebook 3D, **studio/studio-block** — editor @sistemazero/studio embarcado, dynamic ssr:false, rascunho LOCAL IndexedDB chaveado por bloco, "Enviar para o professor" + "Expandir" fullscreen —, anexos, progress-bar, impersonation-banner, user-avatar) — 100% em tokens CSS, vestem o tema do app | Componentes de IDENTIDADE (topnav, user-menu, cards, auth-shell) + globals.css/tokens |
+| Componentes de DOMÍNIO (vimeo-player, lesson-blocks, quiz-block, ebook 3D, **studio/studio-block** — editor @sistemazero/studio embarcado, dynamic ssr:false, rascunho LOCAL IndexedDB chaveado por bloco, "Enviar para o professor" (com confirmação) + "Expandir" (tela cheia por **overlay CSS** `fixed inset-0 z-50` no card, **NÃO** a Fullscreen API nativa — ela restringe a pintura à subárvore do elemento e some com os menus/diálogos PORTALADOS no body, ex.: o três-pontinhos do editor "não fazia nada"; o overlay cobre a navegação z-40 e o botão "Reduzir"/Esc mora no cabeçalho DENTRO dele; trava o scroll
+do body enquanto expandido via `useBodyScrollLock` do ui — REFCONTADO com o `Dialog`, senão a barra de
+rolagem fantasma da página atrás voltava ao fechar o "Enviar?") —, anexos, progress-bar, impersonation-banner, user-avatar) — 100% em tokens CSS, vestem o tema do app | Componentes de IDENTIDADE (topnav, user-menu, cards, auth-shell) + globals.css/tokens |
 | Helpers de cookie (`sessionCookieNames`/`prefixedCookieName`/`expireCookieOptions`) | CONSTANTES `sz_member_*`/`sz_kids_*` (compile-time POR APP — cookies não escopam por porta em dev) |
 | `scripts/boot-check.mjs` (fail-fast REAL de prod — os Dockerfiles dos apps copiam DAQUI) | `instrumentation.ts` (fail-fast de dev, autocontido) |
 
@@ -120,11 +135,22 @@ Tipos em `lib/types.ts` (`CertificateBlock`/`CertificateConfig`/`CertificateIssu
 `CertificateValidationView`). O members é o portão (elegibilidade + registro imutável); o BFF só monta/serve o PDF.
 
 `HubThreadView` ganhou **`playId`** (sobrevive ao `redactAuthors` — só estrutural; teste em
-`tests/hub-redact.test.ts`). O **`StudioBlockView`** ganhou a prop `enableShare?` (só o KIDS passa `true`):
-quando ligada, constrói o `StudioShareAdapter` (descreve via `/api/studio/describe`, publica multipart via
-`/api/studio/publish`) e o passa ao `<StudioLesson share>` — o botão aparece na Topbar do editor. ⚠️ A
+`tests/hub-redact.test.ts`). O **`StudioBlockView`** tem a prop `enableShare?`: ligada, constrói o
+`StudioShareAdapter` (descreve via `/api/studio/describe`, publica multipart via `/api/studio/publish`) e o
+passa ao `<StudioLesson share>` — o botão "Compartilhar" aparece na Topbar do editor. ⚠️ **O kids liga SÓ
+no bloco da ÚLTIMA aula do projeto** (`enableShare={Boolean(content.showcase?.enabled)}` no
+`kids-lesson-blocks`): publicar é fim-de-projeto, então nas aulas intermediárias o botão fica OFF (a criança
+não solta o jogo antes de terminar). Isso **substituiu o antigo "Publicar no Mural" da `LessonCelebration`**
+(`PublishToMural` REMOVIDO — mesma ação, e o Compartilhar ainda dá descrição editável + link público de
+jogar; `LessonCompleteResult.showcase` segue vindo do members mas o kids não o consome mais). A
 elegibilidade real é do backend (publish 409 `SHOWCASE_NOT_ELIGIBLE` quando o bloco não é de vitrine). O
 post publicado é um **snapshot IMUTÁVEL e INDEPENDENTE** do rascunho que a criança continua editando.
+Quando o publish dá certo, o adapter chama `onPublished` → a prop **`onShared`** do `StudioBlockView`
+entrega os links ao kids, que abre a celebração do Zappy (`MuralCelebration`); o `ShareDialog` fecha sem
+mostrar a própria tela de sucesso (no Estúdio Completo, sem `onShared`, a telinha padrão do dialog vale).
+**Economia de IA:** o adapter ainda passa `presetTitle`/`presetDescription` do `content.showcase.title/
+summary` (admin) — com resumo, o `ShareDialog` abre preenchido e NÃO chama a IA (a criança edita se
+quiser); em branco (ou no Estúdio Completo, que não passa) → a IA gera o rascunho.
 
 **Gamificação (06/2026):** tipos em `lib/types.ts` (`GamificationDelta`/`GamificationMeView`/
 `LessonCompleteResult`/`BadgeSlug` — mirror das views do members; `QuizAttemptResultView.gamification?`),
@@ -238,7 +264,12 @@ do `/me` (sharp→WebP→R2 por `profileId`) — fica FORA do matcher do proxy (
    desloga), single-flight do refresh (reuse-detection do auth revoga a família), anti-CSRF
    same-origin via Sec-Fetch-Site, guard de mídia ESTRITO (exp NÃO autoriza), gate de concorrência
    da marca d'água (OOM), arquivos >20MB = 302 pré-assinado (downloads-zumbi), storageRef NUNCA ao
-   browser. **+ full review 19/06 (lente infantil):** UGC do hub renderizado restrito + strip de
+   browser. ⚠️ **CORS do 302:** o **livro 3D do e-book** (`ebookDownload`) e o download de anexo por
+   `fetch` SEGUEM o 302 até o R2 — leitura CROSS-ORIGIN que exige a regra CORS `community-direct-download`
+   no bucket PRIVADO com a ORIGEM do app na allowlist (ebook >20MB cai no 302; ≤20MB faz stream inline,
+   sem CORS — por isso PDF pequeno "baixa", mas o livro 3D não renderiza). Origem nova (app/host) →
+   `packages/admin/scripts/r2-cors-private.ts` (`--apply`, `--bucket=` p/ prod). Foi o que quebrou o
+   community-kids em 25/06 (origem do kids faltava na regra, que só tinha o community adulto). **+ full review 19/06 (lente infantil):** UGC do hub renderizado restrito + strip de
    imagem no write (pixel-rastreador entre crianças); scrub de PII no Sentry (UUID do perfil/e-mail);
    `profileAvatar` AUTORIZA o dono ANTES de gravar no R2 (criança só troca a própria foto; UUID
    validado); `watermarkImage` com `limitInputPixels` (anti OOM); `getMeReadonly`/`getGamificationReadonly`

@@ -38,7 +38,7 @@ e **favicon** completo: `src/app/favicon.ico` + PNGs 16/32/192/512 + apple-touch
 > endpoints `/reorder`, erro→toast+reload) + módulos **colapsáveis** com contador "X de Y aulas
 > publicadas · N min" + **publicação por aula** (switch no dialog — aula nova nasce RASCUNHO —,
 > badge Publicada/Rascunho; publicar curso sem aula publicada → 409 `NO_PUBLISHED_LESSON` no
-> toast) + editor de blocos polimórficos (texto/vídeo/imagem/áudio/quiz/embed/**ebook**/**studio**) e anexos,
+> toast) + editor de blocos polimórficos (texto/vídeo/imagem/áudio/quiz/embed/**ebook**/**studio**/**certificate**) e anexos,
 > ambos com DnD; **autoria v3 (06/2026): upload é o ÚNICO caminho** — imagem upload-only
 > (`ImageUploader allowManualUrl={false}`; capa de curso mantém URL manual), vídeo **só Vimeo**
 > (sem select de provider/URL/duração manual — o uploader TUS preenche src/duração/transcrição;
@@ -212,9 +212,20 @@ SEM acesso público — mesmas credenciais; criados via wrangler em 04/06/2026, 
 acessa os quatro). `scripts/verify-private-bucket.ts` (`bun scripts/verify-private-bucket.ts`)
 valida put/get/delete no bucket privado com as envs do `.env` — útil ao configurar um host novo.
 `R2_PRIVATE_BUCKET=comunidade-sistema-zero-privado` JÁ está setado no host de PROD do admin
-(verificado 08/06/2026). ⚠️ O upload de anexo/e-book agora é DIRETO do browser pro R2 (ver a rota
-`/api/media/files/presign` acima) → os buckets privados precisam da regra **CORS** `admin-direct-upload`
-(setada nos dois em 08/06/2026); host novo de admin com origem diferente precisa entrar nessa allowlist.
+(verificado 08/06/2026). ⚠️ Os buckets privados têm DUAS regras de **CORS**:
+**`admin-direct-upload`** (PUT/GET/HEAD do admin — o upload de anexo/e-book é DIRETO do browser pro R2,
+ver `/api/media/files/presign` acima; `connect-src https://*.r2.cloudflarestorage.com` na CSP) e
+**`community-direct-download`** (GET/HEAD dos apps de ALUNO — community + community-kids — que LEEM o
+bucket via `fetch` e SEGUEM o 302 pré-assinado: o **livro 3D do e-book** (pdf.js) e o download de anexo
+por fetch; expõe `Content-Disposition` p/ o filename). ⚠️ **Origem (app/host) nova precisa entrar na
+allowlist da regra certa, senão o navegador bloqueia por CORS** — sintoma clássico: o livro 3D não
+renderiza e o console acusa "No 'Access-Control-Allow-Origin' header" no host `*.r2.cloudflarestorage.com`
+(o community-kids quebrou assim em 25/06/2026 — a origem do kids faltava na `community-direct-download`,
+que nasceu só com o community adulto). Gerencie com **`scripts/r2-cors-private.ts`**
+(`bun scripts/r2-cors-private.ts` = dry-run que mostra atual+proposto; `--apply` grava; `--bucket=<nome>`
+mira o privado de prod com as MESMAS credenciais): ele faz GET→MESCLA→PUT (PutBucketCors substitui tudo),
+PRESERVA as outras regras e é idempotente. Origem nova de aluno → adicione em `STUDENT_APP_ORIGINS` e
+re-rode nos dois buckets (`testes-privado` e `comunidade-sistema-zero-privado`).
 
 ## Invariantes (NÃO quebrar)
 
@@ -477,14 +488,37 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   **Bloco `studio` (06/2026):** o form de bloco embute o **`@sistemazero/studio`**
   (`components/studio/studio-embed.tsx`, dynamic ssr:false, `persistence:'none'`) — o admin monta o
   PROJETO INICIAL (tipo/código/nome) e o `saveBlock` captura via `handleRef.getProject()`; campos à
-  parte: nível, modos liberados, categorias sempre visíveis, "revelar avançado" e **"Projeto contínuo
+  parte: nível, modos liberados, categorias sempre visíveis, **lista de blocos** (RESTRITIVA —
+  `components/studio/studio-blocks-picker.tsx`, busca + grupos por categoria, carrega o `BLOCK_CATALOG`
+  do pacote — **CORE + extensões Jogo 2D/3D** — por import DINÂMICO; preenchida = o aluno vê SÓ esses
+  blocos na paleta; rótulo repetido na MESMA categoria mostra o **id** ao lado p/ desambiguar, ex.:
+  "Tocar som de explosão" nos 2 kits do Jogo 2D). **Reaproveitar config entre aulas:**
+  `components/studio/studio-config-clipboard.tsx` — botões "Copiar/Colar configuração" (curadoria:
+  nível+modos+categorias+lista de blocos+revelar) via `localStorage` (`sz:admin:studio-block-config`);
+  copia numa aula, cola nas outras do curso (e entre cursos), sem backend; NÃO leva projeto
+  inicial/atividade/cadeia/vitrine (são da aula). Mais: "revelar avançado" e **"Projeto contínuo
   (nome)"** (`BlockForm.studioChain` → `content.chain`): dar o MESMO nome a aulas que constroem um
   único projeto faz o aluno abrir cada aula com o código que enviou na anterior da cadeia (carryover
   no members/member-shell); vazio = aula independente. **Acompanhamento do
-  professor:** botão "Entregas" no bloco → `studio-submissions-dialog.tsx` lista quem entregou
-  (`GET /api/members/blocks/:id/studio-submissions`, nomes hidratados do auth via batch) + abre o
-  projeto do aluno num Estúdio embutido (`…/:userId`) ou baixa o `.szproject.json`. Requer
+  professor:** botão "Entregas" no bloco → `studio-submissions-dialog.tsx` lista quem entregou +
+  abre o projeto do aluno num Estúdio embutido (`…/:userId`, **modal LARGO `max-w-7xl`** p/ caber a
+  IDE; lista em `max-w-2xl`) ou baixa o `.szproject.json`. **Identidade (kids):** a entrega vem com
+  `accountId`, então a rota BFF (`GET /api/members/blocks/:id/studio-submissions`) mostra a CRIANÇA
+  (nome do PERFIL via `getUserProfiles` da conta) + o RESPONSÁVEL (conta via `batchGetUsers`) —
+  perfil≠conta no kids, iguais no adulto. Requer
   `transpilePackages:['@sistemazero/studio']` + `@source "../../../studio/src"` + `frame-src blob:` na CSP.
+
+- **Bloco `certificate` (06/2026):** o "diploma" da ÚLTIMA aula. O form (em `lesson-editor-client.tsx`,
+  `KIND_LABELS.certificate` + `case 'certificate'` em `buildContent`/`validateBlock`/`blockSummary` +
+  campos `cert*` no `BlockForm`) é só **metadado de autoria do PDF**: título, emissor/assinante,
+  assinatura + logo (via `ImageUploader`, URL http(s)), cor de destaque (`<input type=color>` + hex
+  texto, vazio = cor da marca) e mensagem — TODOS opcionais (certificado sem config é válido; o members
+  congela o registro e o community/BFF monta o PDF). Sem editor pesado → segue no `max-w-lg` padrão.
+  Validação client espelha o members (hex `^#[0-9a-fA-F]{6}$`, URLs `^https?://`). ⚠️ **A aula do
+  certificado NÃO pode ter blocos que TRAVAM a conclusão** (quiz com nota de corte / Estúdio) — o
+  members recusa (`VALIDATION_ERROR`→400, `lessonHasGatingBlock`); conteúdo livre (vídeo/texto de
+  parabéns) convive. A nota no topo do form avisa o autor. Flui pelos endpoints de bloco já existentes
+  (`POST …/lessons/:id/blocks` · `PATCH …/blocks/:id`) — o DTO do members já tinha `CertificateBlockSchema`.
 
 - **Comunidade (hub) — fatia 06/2026.** Item de nav "Comunidade" (`MessagesSquare`) + abas
   `COMMUNITY_TABS` (Servidores · Moderação). Páginas em `app/admin/comunidade/`: **`servidores`**

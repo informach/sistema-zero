@@ -3,30 +3,13 @@
 import { X } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import { cn } from '../../lib/cn'
+import { lockBodyScroll, unlockBodyScroll } from './scroll-lock'
 
 const FOCUSABLE =
   'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
 
-let bodyScrollLocks = 0
-let previousBodyOverflow: string | null = null
 let dialogIdSequence = 0
 const openDialogStack: number[] = []
-
-function lockBodyScroll() {
-  if (bodyScrollLocks === 0) {
-    previousBodyOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-  }
-  bodyScrollLocks++
-}
-
-function unlockBodyScroll() {
-  bodyScrollLocks = Math.max(0, bodyScrollLocks - 1)
-  if (bodyScrollLocks === 0) {
-    document.body.style.overflow = previousBodyOverflow ?? ''
-    previousBodyOverflow = null
-  }
-}
 
 function removeDialogFromStack(id: number) {
   const index = openDialogStack.lastIndexOf(id)
@@ -128,7 +111,10 @@ export function Dialog({
         ref={cardRef}
         tabIndex={-1}
         className={cn(
-          'sz-modal relative my-8 w-full max-w-lg rounded-xl border border-border bg-card text-card-foreground shadow-xl outline-none',
+          // max-h + flex-col: o card nunca passa da viewport (mesmo com conteúdo alto, ex.: o
+          // Estúdio embutido) → cabeçalho e rodapé ficam FIXOS e só o corpo rola. Sem isto o
+          // card transbordava e o `items-center` do overlay cortava o TOPO (header inalcançável).
+          'sz-modal relative my-8 flex max-h-[calc(100dvh-6rem)] w-full max-w-lg flex-col overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-xl outline-none',
           className,
         )}
         onClick={(e) => e.stopPropagation()}
@@ -136,7 +122,7 @@ export function Dialog({
         aria-modal="true"
         aria-label={title}
       >
-        <div className="relative border-b border-border p-5">
+        <div className="relative shrink-0 border-b border-border p-5">
           {onBack ? (
             <button
               onClick={onBack}
@@ -163,9 +149,9 @@ export function Dialog({
             <X className="size-4" />
           </button>
         </div>
-        <div className="p-5">{children}</div>
+        <div className="min-h-0 flex-1 overflow-y-auto p-5">{children}</div>
         {footer ? (
-          <div className="flex items-center justify-end gap-2 border-t border-border p-5">
+          <div className="flex shrink-0 items-center justify-end gap-2 border-t border-border p-5">
             {footer}
           </div>
         ) : null}

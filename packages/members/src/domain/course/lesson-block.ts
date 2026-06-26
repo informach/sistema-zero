@@ -217,3 +217,17 @@ export type LessonBlockContent =
   | EbookBlock
   | StudioBlock
   | CertificateBlock
+
+/**
+ * O bloco TRAVA a conclusão da aula? Estúdio SEMPRE trava (exige envio —
+ * `STUDIO_GATE_NOT_SUBMITTED`, ver mark-lesson-complete); quiz só trava COM nota de
+ * corte (`passingScore`). Os demais (texto/vídeo/imagem/áudio/embed/ebook/quiz de
+ * fixação) são conteúdo livre. Usado pela autoria para manter a aula do certificado
+ * SEM gates: a emissão conclui essa aula DIRETO (sem passar pelos gates), então um
+ * bloco travante ali seria PULADO — o aluno emitiria o diploma sem fazê-lo.
+ */
+export function isCompletionGatingBlock(content: LessonBlockContent): boolean {
+  if (content.kind === 'studio') return true
+  if (content.kind === 'quiz') return content.passingScore !== undefined
+  return false
+}

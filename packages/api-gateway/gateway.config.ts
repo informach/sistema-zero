@@ -1279,6 +1279,19 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
     },
+    // GET do MESMO path: o projeto que o aluno ENVIOU (save na nuvem) — 2ª prioridade ao abrir a
+    // aula. Distinção GET/POST pelo método (como o certificate). Lazy, resposta pode trazer o
+    // projeto inteiro (streaming, sem teto de corpo). Rate limit do carryover (leitura lazy).
+    {
+      id: 'members-studio-submission-get',
+      methods: ['GET'],
+      pathPattern: '/members/lessons/:lessonId/blocks/:blockId/studio-submission',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
     // Carrega o projeto da aula contínua anterior (mesma cadeia) p/ semear o editor —
     // GET lazy chamado SÓ na 1ª abertura sem rascunho local; a resposta pode trazer o
     // projeto inteiro (cabe na resposta em streaming, sem teto de corpo de requisição).

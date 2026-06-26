@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from 'react'
 interface VimeoPlayerProps {
   /** ID numérico já extraído da URL (nunca o `src` cru). */
   vimeoId: string
-  /** Watermark discreto (e-mail do aluno) sobre o vídeo. */
+  /** Watermark discreto (e-mail do aluno) sobre o vídeo, no canto superior esquerdo. */
   watermark?: string | null
   /** Retomar de onde parou (segundos). */
   initialPositionSeconds?: number | null
@@ -128,7 +128,7 @@ export function VimeoPlayer({
       {watermark ? (
         <span
           aria-hidden
-          className="pointer-events-none absolute bottom-3 left-3 max-w-[60%] truncate rounded bg-black/30 px-2 py-0.5 text-[10px] text-white/60"
+          className="pointer-events-none absolute top-3 left-3 max-w-[60%] truncate rounded bg-black/30 px-2 py-0.5 text-[10px] text-white/60"
         >
           {watermark}
         </span>

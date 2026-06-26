@@ -78,6 +78,7 @@ export class SubmitStudioProjectService {
       await this.submissions.upsert({
         id: this.newId(),
         userId,
+        accountId: accountId ?? userId,
         blockId,
         lessonId,
         courseId: lesson.courseId,
@@ -98,6 +99,7 @@ export class SubmitStudioProjectService {
         // id só vale no INSERT novo; no conflito o onConflictDoUpdate preserva a linha.
         id: this.newId(),
         userId,
+        accountId: accountId ?? userId,
         blockId,
         lessonId,
         courseId: lesson.courseId,
