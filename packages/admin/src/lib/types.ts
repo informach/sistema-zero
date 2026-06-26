@@ -277,26 +277,38 @@ export interface StudioBlock {
     defaultCoverUrl?: string
   }
 }
+/** Uma assinatura no certificado: imagem (URL http(s)) + nome. */
+export interface CertificateSignature {
+  imageUrl?: string
+  name?: string
+}
 /**
- * Bloco Certificado: o "diploma" na ÚLTIMA aula. Ao concluir as demais aulas, o aluno
- * libera o botão de EMITIR (PDF + nº de série + QR público). A config aqui é só metadado
- * de AUTORIA do PDF (emissor/assinatura/cor/logo/mensagem) — o members congela o registro
- * e o community/BFF monta o PDF. ⚠️ A aula do certificado NÃO pode ter blocos que travam a
- * conclusão (quiz com nota de corte / estúdio) — o members recusa (VALIDATION_ERROR).
+ * Bloco Certificado: o "diploma" do curso. Pode ficar em qualquer aula — libera quando
+ * TODAS as aulas ANTES dela estão concluídas (aulas depois não contam). A config é metadado
+ * de AUTORIA do PDF: cada curso sobe a `baseImageUrl` (fundo A4 paisagem com logo/título/
+ * decoração) e o conteúdo dinâmico (abertura/nome/frase/parágrafo/data/assinaturas/QR) é
+ * desenhado por cima. O members congela o registro e o community/BFF monta o PDF. ⚠️ A aula
+ * do certificado NÃO pode ter blocos que travam a conclusão (quiz com nota / estúdio).
  */
 export interface CertificateBlock {
   kind: 'certificate'
-  /** Título no PDF (default: "Certificado de Conclusão"). */
-  title?: string
-  /** Nome do emissor/assinante (ex.: "Equipe Sistema Zero" ou o professor). */
-  issuerName?: string
-  /** Imagem da assinatura (URL http(s)). */
-  signatureImageUrl?: string
-  /** Override do logo no PDF (URL http(s); default = logo da marca). */
-  logoUrl?: string
-  /** Cor de destaque (hex, ex.: `#C4F042`). */
+  /** Imagem base do certificado (fundo A4 paisagem, por curso) — URL http(s). */
+  baseImageUrl?: string
+  /** Linha fixa antes do nome (default "Certificamos que o aluno"). */
+  introLine?: string
+  /** Frase curta específica do curso (o que concluiu), abaixo do nome. */
+  coursePhrase?: string
+  /** Parágrafo explicando o que o aluno fez. */
+  bodyText?: string
+  /** Assinaturas (até 2): imagem + nome. */
+  signatures?: CertificateSignature[]
+  /** Cor do texto desenhado sobre a imagem (hex, ex.: `#0D1117`). */
   accentColor?: string
-  /** Mensagem/menção adicional no corpo (texto plano). */
+  /** @deprecated layout antigo (sem imagem base). */
+  title?: string
+  issuerName?: string
+  signatureImageUrl?: string
+  logoUrl?: string
   message?: string
 }
 export type LessonBlockContent =

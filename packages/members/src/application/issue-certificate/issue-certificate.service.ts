@@ -1,6 +1,10 @@
 import { randomUUID } from 'node:crypto'
 import { ValidationError } from '@sistemazero/core/errors'
-import { eligibleForCertificate, generateSerial } from '../../domain/certificate/certificate'
+import {
+  eligibleForCertificate,
+  generateSerial,
+  precedingPublishedLessonIds,
+} from '../../domain/certificate/certificate'
 import type { Course, LessonWithContent } from '../../domain/course/course'
 import {
   CertificateBlockNotFoundError,
@@ -48,9 +52,10 @@ function isUniqueViolation(error: unknown): boolean {
 /**
  * Emite o certificado de conclusão (idempotente por aluno+curso). A 1ª emissão congela
  * um registro imutável (nº de série + nome + título do curso) e conclui a aula do
- * certificado (→ curso 100% + badge `course-complete`). Reemissão devolve o MESMO
- * registro (o BFF rebaixa o mesmo PDF). GATE: todas as OUTRAS aulas publicadas concluídas
- * (`CERTIFICATE_NOT_ELIGIBLE` → 409). Aula rascunho / bloco inexistente → 404.
+ * certificado — se ela for a última pendente, isso fecha o curso (100% + badge
+ * `course-complete`); havendo aulas DEPOIS do certificado, o curso segue incompleto.
+ * Reemissão devolve o MESMO registro (o BFF rebaixa o mesmo PDF). GATE: aulas publicadas
+ * ANTERIORES concluídas (`CERTIFICATE_NOT_ELIGIBLE` → 409). Aula rascunho / bloco inexistente → 404.
  */
 export class IssueCertificateService {
   constructor(
@@ -91,13 +96,15 @@ export class IssueCertificateService {
       throw new ValidationError('Nome do aluno ausente para o certificado')
     }
 
-    // Elegibilidade: todas as OUTRAS aulas publicadas concluídas.
+    // Elegibilidade: todas as aulas publicadas ANTES da do certificado concluídas
+    // (aulas depois não entram no gate — o certificado não precisa ser a última aula).
     const [completedIds, outline] = await Promise.all([
       this.progress.listCompletedLessonIds(input.userId, course.id),
       this.courses.findOutline(course.id, { publishedOnly: true }),
     ])
-    const publishedLessonIds = outline.flatMap((m) => m.lessons.map((l) => l.id))
-    if (!eligibleForCertificate(publishedLessonIds, input.lessonId, completedIds)) {
+    const orderedLessonIds = outline.flatMap((m) => m.lessons.map((l) => l.id))
+    const preceding = precedingPublishedLessonIds(orderedLessonIds, input.lessonId)
+    if (!eligibleForCertificate(preceding, completedIds)) {
       throw new CertificateNotEligibleError()
     }
 
@@ -148,8 +155,10 @@ export class IssueCertificateService {
     const completedIds =
       completedIdsBefore ?? (await this.progress.listCompletedLessonIds(input.userId, course.id))
 
-    // Conclui a aula do certificado → fecha o curso (100%) + badge course-complete.
-    // `markComplete` é idempotente; o award é FAIL-OPEN (nunca derruba a emissão).
+    // Conclui a aula do certificado. Se ela for a última pendente, o curso fecha (100% +
+    // badge course-complete); havendo aulas DEPOIS do certificado, o curso segue incompleto
+    // (courseCompleted é calculado abaixo pela contagem real). `markComplete` é idempotente;
+    // o award é FAIL-OPEN (nunca derruba a emissão).
     await this.progress.markComplete(input.userId, input.lessonId, course.id, now)
     const [total, completed, moduleLessonIds] = await Promise.all([
       this.courses.countPublishedLessons(course.id),

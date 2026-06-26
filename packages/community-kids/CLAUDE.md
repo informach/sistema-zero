@@ -28,8 +28,9 @@ lesson-celebration, room-builder, configurator). **Página de aula kids (2ª rod
 06/2026)**: header de "lição" (voltar em círculo + progresso + chip AULA N DE M), sidebar =
 mini-trilha numerada por unidade, e FORKS DE APRESENTAÇÃO dos renderers do member-shell —
 `kids-lesson-blocks.tsx` (chips de atividade Assista/Escute/Brinque/Leia o livro/**Crie**/**Conquiste** +
-molduras; o bloco **`certificate`** (chip "Conquiste", última aula do curso) REUSA o `CertificateBlockView`
-do member-shell — bloqueado até concluir TODAS as outras aulas, depois "Emitir" → baixa o PDF; a validação
+molduras; o bloco **`certificate`** (chip "Conquiste", em qualquer aula) REUSA o `CertificateBlockView`
+do member-shell — bloqueado até concluir todas as aulas ANTERIORES (aulas depois não contam), depois
+"Emitir" → baixa o PDF (montado sobre a imagem base do curso, ver member-shell); a validação
 por QR abre a página PÚBLICA **`/validar/[id]`** (FORA do grupo `(app)`, sem login, `noindex`, igual a
 `/jogar` — busca a validação no servidor pelo client público do members). Shims `/api/members/lessons/[lessonId]/
 blocks/[blockId]/certificate` (GET estado + POST emitir/baixar) e `/api/certificates/[id]/validate` (público,
@@ -121,7 +122,9 @@ consomem mais o `showcase` da resposta do complete (o members ainda devolve, in�
 sucesso, o `onShared` do `StudioBlockView` abre a `MuralCelebration`** (`mural-celebration.tsx` — overlay
 do Zappy + confete + o **link público de "Jogar"** como herói, no lugar da tela de sucesso sóbria do
 editor); o `StudioBlockKids` (em `kids-lesson-blocks`) guarda o estado e a dispara. O confete virou
-`kids-confetti.tsx` (`<KidsConfetti>`, compartilhado com a celebração de aula). O card do Mural
+`kids-confetti.tsx` (`<KidsConfetti>`, compartilhado com a celebração de aula) e **toca um som de
+comemoração ao surgir** (`public/sounds/celebracao.mp3`, vol 0.6, 1× no mount — dentro da janela de
+autoplay pós-clique; bloqueado/sem arquivo → silencioso; `sound={false}` desliga). O card do Mural
 (`kids-space-view-client.tsx` `ShowcaseCard`/`ThreadDetail`) ganhou, quando há `thread.playId`, os botões
 **"Jogar"** (abre `/jogar/<playId>` em nova aba) + **"Copiar link"** (`navigator.share` com fallback
 clipboard) — a raiz do card deixou de ser `<button>` (âncora não aninha em button). A **página PÚBLICA**

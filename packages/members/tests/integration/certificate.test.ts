@@ -21,6 +21,7 @@ function seedCertificateLesson(
   courseId: string,
   moduleId: string,
   config: Partial<CertificateBlock> = {},
+  sortOrder = 9,
 ): { lessonId: string; blockId: string } {
   const lessonId = randomUUID()
   const blockId = randomUUID()
@@ -30,7 +31,7 @@ function seedCertificateLesson(
     courseId,
     slug: 'certificado',
     title: 'Seu certificado',
-    sortOrder: 9,
+    sortOrder,
     estimatedMinutes: null,
     isPublished: true,
   })
@@ -140,6 +141,28 @@ describe('Certificado — elegibilidade, emissão idempotente e validação', ()
     expect(state).toMatchObject({ eligible: true, issued: true, serial: body.certificate.serial })
   })
 
+  test('certificado no MEIO: elegível com as aulas ANTERIORES feitas, ignorando a de depois', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const { slug, courseId, moduleId, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    // lessonIds = [sortOrder 0, sortOrder 1]. Põe o certificado ENTRE elas (0.5): a aula
+    // ANTERIOR é lessonIds[0]; lessonIds[1] (sortOrder 1) fica DEPOIS do certificado.
+    const { lessonId, blockId } = seedCertificateLesson(courses, courseId, moduleId, {}, 0.5)
+
+    // Nada concluído → não elegível (falta a anterior).
+    expect(await getState(app, lessonId, blockId).then(readJson)).toMatchObject({ eligible: false })
+
+    // Conclui SÓ a aula anterior; a de DEPOIS (lessonIds[1]) segue pendente.
+    await complete(app, lessonIds[0])
+
+    const state = await getState(app, lessonId, blockId).then(readJson)
+    expect(state).toMatchObject({ eligible: true, issued: false })
+
+    // Emite mesmo com a aula posterior pendente.
+    const res = await issue(app, lessonId, blockId)
+    expect(res.status).toBe(200)
+  })
+
   test('a rota genérica de complete não conclui aula de certificado', async () => {
     const { app, courses, entitlements, progress, certificates } = buildApp()
     const { slug, courseId, moduleId, lessonIds } = seedSampleCourse(courses)
@@ -211,14 +234,19 @@ describe('Certificado — elegibilidade, emissão idempotente e validação', ()
     expect(download.status).toBe(410)
     expect((await readJson(download)).error.code).toBe('CERTIFICATE_REVOKED')
     const revoked = await validate(app, certificate.id).then(readJson)
-    expect(revoked).toMatchObject({ valid: false, studentName: 'Maria Silva' })
+    expect(revoked).toMatchObject({ valid: false, revoked: true, studentName: 'Maria Silva' })
   })
 
   test('id inexistente → valid:false (sem vazar)', async () => {
     const { app } = buildApp()
     const res = await validate(app, randomUUID())
     expect(res.status).toBe(200)
-    expect(await readJson(res)).toMatchObject({ valid: false, studentName: null, serial: null })
+    expect(await readJson(res)).toMatchObject({
+      valid: false,
+      revoked: false,
+      studentName: null,
+      serial: null,
+    })
   })
 
   test('nome com acento chega URI-encodado do gateway e é decodificado', async () => {

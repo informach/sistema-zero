@@ -113,13 +113,31 @@ export interface ProductAccessView {
   access: Record<string, boolean>
 }
 
+/** Uma assinatura no certificado: imagem (URL http(s)) + nome. */
+export interface CertificateSignature {
+  imageUrl?: string
+  name?: string
+}
+
 /** Config de autoria do bloco certificado (espelha CertificateBlock do members). */
 export interface CertificateConfig {
+  /** Imagem base (fundo A4 paisagem, por curso) — o conteúdo é desenhado por cima. */
+  baseImageUrl?: string
+  /** Linha fixa antes do nome (default "Certificamos que o aluno"). */
+  introLine?: string
+  /** Frase curta específica do curso (o que concluiu), abaixo do nome. */
+  coursePhrase?: string
+  /** Parágrafo explicando o que o aluno fez. */
+  bodyText?: string
+  /** Assinaturas (até 2): imagem + nome. */
+  signatures?: CertificateSignature[]
+  /** Cor do texto desenhado sobre a imagem (hex; default escuro). */
+  accentColor?: string
+  /** @deprecated layout antigo (sem imagem base). */
   title?: string
   issuerName?: string
   signatureImageUrl?: string
   logoUrl?: string
-  accentColor?: string
   message?: string
 }
 
@@ -159,9 +177,11 @@ export interface CertificateStateView {
 /** Validação pública do certificado (`/validar/:id`) — só dados não-sensíveis. */
 export interface CertificateValidationView {
   valid: boolean
+  revoked: boolean
   studentName: string | null
   courseTitle: string | null
   issuedAt: string | null
+  revokedAt: string | null
   serial: string | null
 }
 

@@ -2,22 +2,35 @@ import { describe, expect, test } from 'bun:test'
 import {
   eligibleForCertificate,
   generateSerial,
+  precedingPublishedLessonIds,
   SERIAL_RE,
 } from '../../src/domain/certificate/certificate'
 
+describe('precedingPublishedLessonIds', () => {
+  test('só as aulas ANTES do certificado (ordem do curso); as de depois ficam de fora', () => {
+    expect(precedingPublishedLessonIds(['a', 'b', 'cert', 'c', 'd'], 'cert')).toEqual(['a', 'b'])
+  })
+  test('certificado na 1ª aula → nenhuma anterior', () => {
+    expect(precedingPublishedLessonIds(['cert', 'a'], 'cert')).toEqual([])
+  })
+  test('aula do certificado não encontrada → fallback conservador "todas as outras"', () => {
+    expect(precedingPublishedLessonIds(['a', 'b'], 'cert')).toEqual(['a', 'b'])
+  })
+})
+
 describe('eligibleForCertificate', () => {
-  const cert = 'cert'
-  test('elegível quando todas as outras aulas publicadas estão concluídas', () => {
-    expect(eligibleForCertificate([cert, 'a', 'b'], cert, ['a', 'b'])).toBe(true)
+  test('elegível quando todas as aulas ANTERIORES estão concluídas', () => {
+    expect(eligibleForCertificate(['a', 'b'], ['a', 'b'])).toBe(true)
   })
-  test('não elegível com aula pendente', () => {
-    expect(eligibleForCertificate([cert, 'a', 'b'], cert, ['a'])).toBe(false)
+  test('não elegível com aula anterior pendente', () => {
+    expect(eligibleForCertificate(['a', 'b'], ['a'])).toBe(false)
   })
-  test('a própria aula do certificado não é exigida', () => {
-    expect(eligibleForCertificate([cert, 'a'], cert, ['a'])).toBe(true)
+  test('aulas DEPOIS do certificado não entram (o caller já as removeu)', () => {
+    // O caller passa SÓ as anteriores; concluir as posteriores é irrelevante.
+    expect(eligibleForCertificate(['a'], ['a', 'qualquer-posterior'])).toBe(true)
   })
-  test('curso só com a aula do certificado NÃO é elegível (certifica zero trabalho)', () => {
-    expect(eligibleForCertificate([cert], cert, [])).toBe(false)
+  test('sem aula anterior (certificado na 1ª aula) NÃO é elegível (certifica zero trabalho)', () => {
+    expect(eligibleForCertificate([], [])).toBe(false)
   })
 })
 

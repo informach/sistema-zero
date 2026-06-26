@@ -508,13 +508,22 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   perfil≠conta no kids, iguais no adulto. Requer
   `transpilePackages:['@sistemazero/studio']` + `@source "../../../studio/src"` + `frame-src blob:` na CSP.
 
-- **Bloco `certificate` (06/2026):** o "diploma" da ÚLTIMA aula. O form (em `lesson-editor-client.tsx`,
-  `KIND_LABELS.certificate` + `case 'certificate'` em `buildContent`/`validateBlock`/`blockSummary` +
-  campos `cert*` no `BlockForm`) é só **metadado de autoria do PDF**: título, emissor/assinante,
-  assinatura + logo (via `ImageUploader`, URL http(s)), cor de destaque (`<input type=color>` + hex
-  texto, vazio = cor da marca) e mensagem — TODOS opcionais (certificado sem config é válido; o members
-  congela o registro e o community/BFF monta o PDF). Sem editor pesado → segue no `max-w-lg` padrão.
-  Validação client espelha o members (hex `^#[0-9a-fA-F]{6}$`, URLs `^https?://`). ⚠️ **A aula do
+- **Bloco `certificate` (06/2026; layout por imagem base 26/06):** o "diploma" do curso — pode ficar em
+  QUALQUER aula (libera quando as ANTERIORES estão concluídas; ver o members). O form (em
+  `lesson-editor-client.tsx`, `KIND_LABELS.certificate` + `case 'certificate'` em
+  `buildContent`/`validateBlock`/`blockSummary` + campos `cert*` no `BlockForm`) é metadado de autoria do
+  PDF: **imagem base por CURSO** (`baseImageUrl` via `ImageUploader` — fundo A4 paisagem com logo/título/
+  decoração; o conteúdo é escrito POR CIMA), `introLine` (default "Certificamos que o aluno"), `coursePhrase`
+  (frase curta), `bodyText` (parágrafo) e **2 assinaturas** (slots `cert{Sig1,Sig2}{Url,Name}` →
+  `signatures[]`). ⚠️ Na assinatura a **IMAGEM é a assinatura** (rabisco, via `ImageUploader`); o `name` é
+  só RESERVA — o PDF usa o nome NO LUGAR da imagem quando ela não foi enviada (decisão da usuária 26/06; não
+  desenha os dois). **SEM campo de cor** (removido — `accentColor` deprecado; o nome sai escuro). O NOME do
+  aluno e a DATA entram sozinhos na emissão (não há campo). A **mensagem** (frase E/OU parágrafo, abaixo do
+  nome) é **OBRIGATÓRIA** (`validateBlock` exige ≥1 das duas); o resto é opcional. `buildContent` PRESERVA os
+  campos legados (`title`/`issuerName`/`logoUrl`/`signatureImageUrl`/`message`) via `previousContent` ao
+  editar um bloco antigo. Sem `baseImageUrl` o BFF cai no layout "marca" antigo. Sem editor pesado →
+  `max-w-lg` padrão. Validação client de URLs `^https?://` (imagem base/assinaturas; o `ImageUploader`
+  do admin sobe WebP no R2 — o renderizador do BFF converte WebP→PNG via sharp). ⚠️ **A aula do
   certificado NÃO pode ter blocos que TRAVAM a conclusão** (quiz com nota de corte / Estúdio) — o
   members recusa (`VALIDATION_ERROR`→400, `lessonHasGatingBlock`); conteúdo livre (vídeo/texto de
   parabéns) convive. A nota no topo do form avisa o autor. Flui pelos endpoints de bloco já existentes
