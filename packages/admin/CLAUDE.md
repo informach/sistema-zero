@@ -506,7 +506,15 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   `accountId`, então a rota BFF (`GET /api/members/blocks/:id/studio-submissions`) mostra a CRIANÇA
   (nome do PERFIL via `getUserProfiles` da conta) + o RESPONSÁVEL (conta via `batchGetUsers`) —
   perfil≠conta no kids, iguais no adulto. Requer
-  `transpilePackages:['@sistemazero/studio']` + `@source "../../../studio/src"` + `frame-src blob:` na CSP.
+  `transpilePackages:['@sistemazero/studio']` + `@source "../../../studio/src"` + na CSP do `next.config.ts`:
+  `frame-src blob:` E **`script-src data: https:`** (+ `media/font/style/img https:`). ⚠️ **Sem `script-src
+  data:` o PREVIEW do Estúdio fica EM BRANCO** nas Entregas (e na autoria): o `script.js` do aluno é
+  injetado como `<script src="data:text/javascript;base64,…">` num iframe `srcdoc` que HERDA a CSP do
+  painel — sem `data:` o navegador bloqueia e o professor abre os blocos mas não vê o resultado rodar
+  (corrigido 27/06, espelha o community-kids; a fronteira de segurança é o sandbox sem `allow-same-origin`
+  + a meta-CSP do próprio srcdoc, NÃO a CSP do pai). Mudança de CSP = HEADER → exige **restart do server**
+  (não basta HMR). `features.extensions:false` no viewer só esconde o PAINEL de extensões; o runtime/blocos
+  do projeto seguem carregando.
 
 - **Bloco `certificate` (06/2026; layout por imagem base 26/06):** o "diploma" do curso — pode ficar em
   QUALQUER aula (libera quando as ANTERIORES estão concluídas; ver o members). O form (em
