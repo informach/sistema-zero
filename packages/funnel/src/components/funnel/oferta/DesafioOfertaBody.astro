@@ -5,6 +5,8 @@
 // sob `.dpj` (não vaza para as páginas compartilhadas). Os CTAs de compra levam
 // `data-checkout-cta` → o PreCheckoutModal (mesma ilha do NCI) abre o checkout.
 import '@fontsource/material-symbols-outlined/400.css'
+import { EMPRESA } from '../../../content/legal'
+import { AVISO_LEGAL_KIDS } from '../../../content/legal-kids'
 import type { FunnelDef } from '../../../funnels/registry'
 import PreCheckoutModal from '../../../islands/PreCheckoutModal'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
@@ -34,6 +36,7 @@ const introPerfil =
 
 const description = f.seoDescription
 const img = (file: string) => `${imagesBase}/${file}`
+const ano = new Date().getFullYear()
 ---
 
 <BaseLayout
@@ -892,17 +895,14 @@ const img = (file: string) => `${imagesBase}/${file}`
           Criado por Helena e Júlio. Um desafio guiado de 3 dias para crianças a partir de 9 anos
           criarem o primeiro joguinho jogável, dentro do Sistema Zero Studio.
         </p>
-        <p class="legal">
-          Este conteúdo é dirigido aos pais e responsáveis, em conformidade com o Estatuto da Criança
-          e do Adolescente (ECA) e com a Resolução 163 do CONANDA, que veda publicidade dirigida
-          diretamente a crianças. A compra e o uso são feitos por um adulto responsável. Não há
-          promessa de renda, emprego ou carreira para a criança. Resultados dependem do
-          acompanhamento e do tempo dedicado em cada família.
-        </p>
+        <p class="legal">{AVISO_LEGAL_KIDS}</p>
         <p class="legal links">
-          <a href="/termos-de-uso">Termos de uso</a> · <a href="/politica-de-privacidade"
+          <a href="/kids/termos">Termos de uso</a> · <a href="/kids/privacidade"
             >Política de privacidade</a
           >
+        </p>
+        <p class="legal company">
+          © {ano} {EMPRESA.razaoSocial} · CNPJ {EMPRESA.cnpj} · Todos os direitos reservados.
         </p>
       </div>
     </footer>
@@ -2371,6 +2371,10 @@ const img = (file: string) => `${imagesBase}/${file}`
     margin-top: 16px;
     font-size: 0.76rem;
     color: #54667a;
+  }
+  .dpj .dpj-footer .company {
+    margin-top: 12px;
+    color: var(--text-tertiary);
   }
   .dpj .dpj-footer .links a {
     color: var(--accent);

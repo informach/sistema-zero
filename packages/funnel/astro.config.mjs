@@ -26,6 +26,9 @@ export default defineConfig({
     '/resultado': '/pro/no-comando-da-ia/resultado',
     '/checkout': '/pro/no-comando-da-ia/checkout',
     '/obrigado': '/pro/no-comando-da-ia/obrigado',
+    // Páginas legais antigas (públicas únicas) → versão PRO sob /pro/* (301).
+    '/termos-de-uso': '/pro/termos',
+    '/politica-de-privacidade': '/pro/privacidade',
   },
   integrations: [
     react(),
@@ -36,6 +39,11 @@ export default defineConfig({
       customPages: [
         `${site}/pro/no-comando-da-ia/oferta`,
         `${site}/kids/desafio-primeiro-jogo/oferta`,
+        // Páginas legais por público (rotas dinâmicas não são enumeradas sozinhas).
+        `${site}/pro/termos`,
+        `${site}/pro/privacidade`,
+        `${site}/kids/termos`,
+        `${site}/kids/privacidade`,
       ],
       // Mantém no sitemap só as páginas indexáveis (exclui as noindex/privadas).
       filter: (page) =>

@@ -23,8 +23,9 @@ export const DESAFIO_LANDING: FunnelLanding = {
 
 // As 10 perguntas, na ordem SPIN (Situação → Problema → Implicação → Necessidade →
 // Diagnóstico). O perfil (P1) é o `value` direto — o NOME do tipo só aparece no
-// resultado, nunca nas opções. Emojis no `badge`; a P1 ganha imagens ilustrativas
-// quando os arquivos forem adicionados (até lá renderiza os cards compactos).
+// resultado, nunca nas opções. Emojis no `badge`; a P1 usa fotos ilustrativas (uma
+// por perfil, para o pai se identificar) com `imagemLayout: 'topo'` (foto no topo
+// do card + texto embaixo). As demais perguntas seguem com cards/emoji.
 export const DESAFIO_QUIZ_STEPS: QuizStep[] = [
   {
     id: 1,
@@ -33,29 +34,34 @@ export const DESAFIO_QUIZ_STEPS: QuizStep[] = [
     eventName: 'respondeu_pergunta_1',
     tipo: 'multipla_escolha',
     comImagem: true,
+    imagemLayout: 'topo',
     titulo: 'Quando seu filho se interessa muito por alguma coisa, o que mais parece acontecer aí?',
     opcoes: [
       {
         value: 'explorador',
         badge: '🧭',
+        image: '/img/desafio-primeiro-jogo/p1-explorador.webp',
         label:
           'Ele quer explorar tudo na hora: testa, pergunta, clica, mexe e já quer descobrir a próxima novidade',
       },
       {
         value: 'especialista',
         badge: '📚',
+        image: '/img/desafio-primeiro-jogo/p1-especialista.webp',
         label:
           'Ele entra fundo em um tema e sabe detalhes que muita gente nem imagina, seja sobre jogos, dinossauros, espaço, personagens, tecnologia ou outro assunto',
       },
       {
         value: 'foguete',
         badge: '🔥',
+        image: '/img/desafio-primeiro-jogo/p1-foguete.webp',
         label:
           'Ele começa com uma energia enorme, mas se demora para ver resultado, o foco esfria antes de terminar',
       },
       {
         value: 'investigador',
         badge: '🧩',
+        image: '/img/desafio-primeiro-jogo/p1-investigador.webp',
         label:
           'Ele quer entender como as coisas funcionam por dentro: regras, peças, comandos, fases, mecanismos e por que isso acontece',
       },

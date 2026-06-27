@@ -1,6 +1,14 @@
 ---
 // Rodapé institucional: logo à esquerda, "Recursos" (links legais) à direita,
-// botão voltar-ao-topo e linha de copyright com os dados da empresa.
+// botão voltar-ao-topo e linha de copyright com os dados da empresa. Os links
+// legais e o aviso variam por público (`audience`): no kids apontam para
+// /kids/termos|privacidade e exibem o aviso legal infantil (ECA/CONANDA/LGPD).
+import { AVISO_LEGAL_KIDS } from '../content/legal-kids'
+
+interface Props {
+  audience?: 'pro' | 'kids'
+}
+const { audience = 'pro' } = Astro.props
 const ano = new Date().getFullYear()
 ---
 
@@ -22,12 +30,12 @@ const ano = new Date().getFullYear()
           <p class="text-sm font-bold text-ink">Recursos</p>
           <ul class="mt-3 flex flex-col gap-2 text-sm">
             <li>
-              <a href="/politica-de-privacidade" class="text-muted transition hover:text-lime">
+              <a href={`/${audience}/privacidade`} class="text-muted transition hover:text-lime">
                 Política de Privacidade
               </a>
             </li>
             <li>
-              <a href="/termos-de-uso" class="text-muted transition hover:text-lime">
+              <a href={`/${audience}/termos`} class="text-muted transition hover:text-lime">
                 Termos de Uso
               </a>
             </li>
@@ -51,7 +59,13 @@ const ano = new Date().getFullYear()
       </div>
     </div>
 
-    <p class="mt-10 text-xs leading-relaxed text-muted">
+    {
+      audience === 'kids' && (
+        <p class="mt-10 max-w-3xl text-xs leading-relaxed text-muted">{AVISO_LEGAL_KIDS}</p>
+      )
+    }
+
+    <p class={`${audience === 'kids' ? 'mt-4' : 'mt-10'} text-xs leading-relaxed text-muted`}>
       © {ano} Informach — Núcleo de Aprendizagem Ltda. · CNPJ 43.588.758/0001-03 · Todos os
       direitos reservados.
     </p>

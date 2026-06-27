@@ -8,7 +8,44 @@ interface Props extends BaseQuestionProps {
 export default function MultiplaEscolha({ step, submitting, onSubmit }: Props) {
   const comImagem = step.comImagem && step.opcoes.every((o) => Boolean(o.image))
 
-  // Variante com imagem (P1): cards grandes com a foto ao fundo, gradiente e badge.
+  // Variante "topo" (P1 kids): foto no topo do card + texto legível embaixo, em
+  // fundo sólido. Melhor que o overlay para fotos com cenário e textos longos.
+  if (comImagem && step.imagemLayout === 'topo') {
+    return (
+      <div className="grid gap-4 sm:grid-cols-2">
+        {step.opcoes.map((opt) => (
+          <button
+            key={opt.value}
+            type="button"
+            disabled={submitting}
+            onClick={() => onSubmit([{ key: step.key, value: opt.value }])}
+            className="group flex flex-col overflow-hidden rounded-2xl border border-line bg-card text-left transition hover:border-lime focus-visible:border-lime disabled:opacity-60"
+          >
+            <span className="relative block aspect-[4/3] overflow-hidden">
+              <img
+                src={opt.image}
+                alt=""
+                aria-hidden="true"
+                loading="lazy"
+                decoding="async"
+                className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.05]"
+              />
+              {opt.badge ? (
+                <span className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-lime text-base shadow-lg shadow-black/30">
+                  {opt.badge}
+                </span>
+              ) : null}
+            </span>
+            <span className="flex flex-1 items-center px-5 py-4 text-base font-semibold leading-snug text-ink">
+              {opt.label}
+            </span>
+          </button>
+        ))}
+      </div>
+    )
+  }
+
+  // Variante com imagem ao FUNDO (P1 NCI): cards grandes com a foto ao fundo, gradiente e badge.
   if (comImagem) {
     return (
       <div className="grid gap-4 sm:grid-cols-2">
