@@ -395,9 +395,19 @@ function QuizReview({
                     )
                   })}
                 </div>
-                {!correction.correct && correction.explanation ? (
-                  <div className="lesson-prose mt-2 rounded-xl bg-card px-3 py-2 text-muted-foreground">
-                    {renderMarkdown(correction.explanation)}
+                {correction.explanation ? (
+                  <div className="mt-2 rounded-xl bg-card px-3 py-2">
+                    <p
+                      className={cn(
+                        'mb-1 text-xs font-bold',
+                        correction.correct ? 'text-success-foreground' : 'text-destructive',
+                      )}
+                    >
+                      {correction.correct ? 'Isso! Por quê:' : 'Por quê:'}
+                    </p>
+                    <div className="lesson-prose text-muted-foreground">
+                      {renderMarkdown(correction.explanation)}
+                    </div>
                   </div>
                 ) : null}
               </div>

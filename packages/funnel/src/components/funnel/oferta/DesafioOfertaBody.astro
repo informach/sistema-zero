@@ -1071,23 +1071,6 @@ const ano = new Date().getFullYear()
   .dpj .bg-orange h3 {
     color: #1a1207;
   }
-  .dpj .bg-scene-1 {
-    background-color: #060e18;
-    background-image:
-      radial-gradient(at 30% 30%, rgba(14, 165, 233, 0.22) 0px, transparent 50%),
-      radial-gradient(at 75% 70%, rgba(245, 158, 11, 0.14) 0px, transparent 50%),
-      linear-gradient(180deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.65));
-  }
-  .dpj .scene-label {
-    position: absolute;
-    bottom: 16px;
-    right: 20px;
-    z-index: 1;
-    font-size: 0.72rem;
-    color: rgba(255, 255, 255, 0.4);
-    font-family: var(--font-body);
-    letter-spacing: 0.04em;
-  }
 
   /* ===== Animação scroll ===== */
   .dpj .reveal {
@@ -1796,90 +1779,6 @@ const ano = new Date().getFullYear()
     box-shadow: 0 16px 44px rgba(0, 0, 0, 0.25);
   }
 
-  /* ===== Demonstração ===== */
-  .dpj .demo-frame {
-    max-width: 760px;
-    margin: 0 auto;
-    border-radius: 18px;
-    overflow: hidden;
-    border: 1px solid var(--border);
-    background: var(--surface-1);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-  }
-  .dpj .demo-chrome {
-    height: 44px;
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    padding: 0 16px;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface-2);
-  }
-  .dpj .demo-chrome .dot {
-    width: 11px;
-    height: 11px;
-    border-radius: 50%;
-  }
-  .dpj .dot-r {
-    background: #ef6a6a;
-  }
-  .dpj .dot-y {
-    background: #f5c542;
-  }
-  .dpj .dot-g {
-    background: #4fd6a6;
-  }
-  .dpj .demo-chrome .url {
-    margin-left: 10px;
-    font-size: 0.78rem;
-    color: var(--text-tertiary);
-  }
-  .dpj .demo-screen {
-    aspect-ratio: 16/9;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 14px;
-    text-align: center;
-    padding: 24px;
-    background:
-      radial-gradient(at 50% 40%, rgba(14, 165, 233, 0.18) 0px, transparent 60%),
-      repeating-linear-gradient(45deg, #0a1726, #0a1726 22px, #0c1b2e 22px, #0c1b2e 44px);
-  }
-  .dpj .demo-screen .play {
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    background: var(--accent-2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 10px 30px rgba(245, 158, 11, 0.4);
-  }
-  .dpj .demo-screen .play .material-symbols-outlined {
-    font-size: 38px;
-    color: #1a1207;
-  }
-  .dpj .demo-screen .mini-char {
-    font-size: 2.6rem;
-    animation: dpj-floaty 2.8s ease-in-out infinite;
-  }
-  .dpj .demo-screen .instr {
-    font-size: 0.86rem;
-    color: var(--text-tertiary);
-    max-width: 420px;
-  }
-  .dpj .demo-caption {
-    text-align: center;
-    color: var(--text-secondary);
-    font-size: 0.96rem;
-    margin-top: 22px;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-    line-height: 1.6;
-  }
 
   /* ===== Especialista ===== */
   .dpj .esp-wrap {
