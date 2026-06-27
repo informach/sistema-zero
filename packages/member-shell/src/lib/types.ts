@@ -193,7 +193,7 @@ export interface MyCourseView {
   coverImageUrl: string | null
   access: AccessView
   progress: CourseProgress
-  /** Última aula acessada (posição de vídeo) — atalho do card; `null` se nunca acessou. */
+  /** Atalho seguro do card: última aula acessada, ou a próxima liberada se a última travou. */
   continueLessonId: string | null
 }
 
@@ -204,6 +204,12 @@ export interface LessonOutlineView {
   sortOrder: number
   estimatedMinutes: number | null
   completed: boolean
+  /**
+   * Trava sequencial (estilo Duolingo): `true` = aula ainda bloqueada porque uma
+   * aula publicada anterior não foi concluída. `false` quando o curso tem a trava
+   * desligada, para equipe interna, ou se a aula já foi concluída.
+   */
+  locked: boolean
 }
 
 export interface ModuleOutlineView {

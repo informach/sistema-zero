@@ -342,7 +342,7 @@ export interface MyCourseView {
   audience: string
   access: AccessView
   progress: CourseProgress
-  /** Última aula acessada (posição de vídeo) — atalho do card; `null` se nunca acessou. */
+  /** Atalho seguro do card: última aula acessada, ou a próxima liberada se a última travou. */
   continueLessonId: string | null
 }
 
@@ -424,6 +424,12 @@ export interface LessonOutlineView {
   sortOrder: number
   estimatedMinutes: number | null
   completed: boolean
+  /**
+   * Trava sequencial (estilo Duolingo): `true` = a aula ainda está bloqueada
+   * porque uma aula publicada anterior não foi concluída. Sempre `false` quando o
+   * curso tem a trava desligada, para equipe interna, ou se a aula já foi concluída.
+   */
+  locked: boolean
 }
 
 export interface ModuleOutlineView {
@@ -461,6 +467,9 @@ export function toCourseDetailView(
   progress: CourseProgressView,
   continueLessonId: string | null,
   myRating: CourseRating | null,
+  // Aulas TRAVADAS pela trava sequencial (já resolvido pelo service: vazio quando a
+  // trava está desligada ou para equipe interna). Default vazio = nada travado.
+  lockedLessonIds: Set<string> = new Set(),
 ): CourseDetailView {
   return {
     slug: course.slug,
@@ -486,6 +495,7 @@ export function toCourseDetailView(
         sortOrder: l.sortOrder,
         estimatedMinutes: l.estimatedMinutes,
         completed: completedLessonIds.has(l.id),
+        locked: lockedLessonIds.has(l.id),
       })),
     })),
   }

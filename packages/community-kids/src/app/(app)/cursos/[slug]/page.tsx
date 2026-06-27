@@ -11,14 +11,16 @@ export const dynamic = 'force-dynamic'
 /**
  * Aula-alvo do "continuar de onde parei": o backend manda `continueLessonId`
  * (última acessada > 1ª não concluída > 1ª); fallback local se vier nulo.
+ * Pula aulas TRAVADAS (trava sequencial) — defensivo: o herói nunca aponta para um
+ * cadeado (que cairia no 423). Se só sobrarem travadas, usa a 1ª (recado amigável).
  */
 function nextLesson(course: CourseDetailView): LessonOutlineView | null {
   const all = course.modules.flatMap((m) => m.lessons)
   if (course.continueLessonId) {
     const target = all.find((l) => l.id === course.continueLessonId)
-    if (target) return target
+    if (target && !target.locked) return target
   }
-  return all.find((l) => !l.completed) ?? all[0] ?? null
+  return all.find((l) => !l.completed && !l.locked) ?? all.find((l) => !l.locked) ?? all[0] ?? null
 }
 
 export default async function CoursePage({ params }: { params: Promise<{ slug: string }> }) {

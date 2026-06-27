@@ -230,12 +230,13 @@ export function SpaceDetailClient({
                     channel={c}
                     canWrite={canWrite}
                     onEdit={() => openEditChannel(c)}
-                    onDelete={() =>
-                      run(
+                    onDelete={() => {
+                      if (!confirm(`Excluir o canal "${c.name}"?`)) return
+                      void run(
                         () => apiSend(`/api/hub/admin/channels/${c.id}`, 'DELETE'),
                         'Canal excluído.',
                       )
-                    }
+                    }}
                   />
                 ))}
               </div>

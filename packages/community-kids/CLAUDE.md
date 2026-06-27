@@ -15,8 +15,12 @@ dura + afunda no clique), microinterações `kid-pop`/`kid-wiggle`/`kid-float` c
 bar/tab bar no mobile (`app-sidebar.tsx`/`mobile-nav.tsx`), home com mascote + card-herói
 "Continuar" (`continue-hero.tsx`), **trilha serpenteante** no detalhe do curso
 (`course-trail.tsx` + `trail-layout.ts` puro/testado: módulo = unidade temática
-cyan→lime→gradiente via `unit-theme.ts`, aula = nó circular; trilha LIVRE — estado é só visual,
-todos os nós clicáveis; sem ícone por tipo: a outline não expõe blocos) e **celebração** ao
+cyan→lime→gradiente via `unit-theme.ts`, aula = nó circular; com a **trava sequencial** do curso
+(`sequential_lock`, estilo Duolingo) as aulas posteriores vêm `locked` do members → nó com
+CADEADO, NÃO clicável (estado `'locked'` em `trail-layout`); a mini-trilha lateral e a página da
+aula seguem a mesma regra, e abrir uma aula travada por URL cai no **423** → `KidsLockedLesson`
+(recado com mascote); equipe interna ignora a trava. Sem ícone por tipo: a outline não expõe
+blocos) e **celebração** ao
 concluir aula (`lesson-celebration.tsx`: mascote + confete CSS puro + barra antes→depois; o
 `complete()` não-silent abre o overlay em vez de navegar; auto-complete a ~90% segue só com
 toast). **Mascote Zappy** = o robô oficial da marca (`mascot.tsx`, um sprite WebP transparente
@@ -546,6 +550,49 @@ test:community (5) + biome + **build dos 3 apps**.
   entrar na viewport (**`LazyRoomCanvas`** + **`staticView`** → sem loop contínuo do pet de um colega).
 - **Não alterados (decisão consciente):** comprar peça travada (avatar/quarto) segue em 1 toque sem
   confirmação (padrão deliberado da usuária — não é bug; só faltava aviso de preço no SR, fora deste lote).
+
+## Full review (correções) — 27/06/2026
+
+5ª auditoria multi-agente (segurança/correção/perf/a11y, lente infantil), focada no delta desde
+23/06: **bloco certificado**, **Compartilhar do Estúdio + celebração no Mural**, **markdown no
+quiz**, **trava sequencial** e os shims compartilhados do **member-shell** (certificate-pdf/gateway/
+media/r2/private-delivery). **Segurança: NADA acionável** (as 6 invariantes seguem de pé; SSRF do
+certificado com guarda DNS-rebinding + `embeddedIpv4`, `bufferFromStream` com teto, trava 423
+server-enforced). **Correção/perf: sem CRITICAL/HIGH.** Achados corrigidos; verde no typecheck
+(ui/member-shell/kids/community/admin) + test (member-shell 124 / kids 26 / community 5) + biome +
+**build:kids E build:community**.
+
+**Compartilhados `@sistemazero/ui` (rodam TAMBÉM no community e admin):**
+- **Novo hook `useModalA11y` (`@sistemazero/ui/use-modal-a11y`)**: extrai a gestão de foco do
+  `Dialog` (foca o card ao abrir, PRENDE o Tab, Esc fecha, devolve o foco ao gatilho, pilha
+  refcontada + lock de scroll). O `Dialog` agora consome o hook (comportamento idêntico) e overlays
+  "bespoke" (celebrações do kids) reusam a MESMA mecânica sem o chrome do Dialog. ⚠️ subpath é
+  `.tsx` (wildcard `./*` → `*.tsx`, igual ao `scroll-lock`).
+
+**Kids:**
+- **Celebrações viraram modais DE VERDADE (HIGH a11y):** `mural-celebration.tsx` e
+  `lesson-celebration.tsx` eram `role="dialog"` feitos à mão SEM foco-preso/Esc/restore/scroll-lock
+  (regressão do fix do `Dialog` de 23/06 reintroduzida na camada de celebração — foco ficava atrás
+  do backdrop, leitor não anunciava). Agora ambas usam `useModalA11y` (card = `role="dialog"
+  aria-modal aria-label tabIndex=-1` + `ref`; overlay = backdrop que fecha no clique). A
+  `MuralCelebration` também ganhou feedback no "Copiar link" (antes catch vazio = dead-click): aviso
+  visível na falha + `aria-live` no sucesso.
+- **Quiz `radiogroup` com teclado (MEDIUM a11y):** `kids-quiz.tsx` ganhou foco-roving (a opção
+  marcada é o único tab-stop) + setas/Home/End que movem foco E seleção (padrão ARIA radiogroup;
+  antes cada opção era um tab-stop e as setas não faziam nada). + **markdown do enunciado/opções
+  memoizado por pergunta** (`useMemo` por `activeQuestion` — selecionar resposta não re-parseia mais).
+- **Certificado em tom kids (MEDIUM copy/a11y):** `CertificateBlockView` (member-shell) ganhou a
+  prop **`tone: 'default' | 'kids'`** — o kids passa `tone="kids"` em `kids-lesson-blocks` (copy sem
+  "emissão"/jargão/travessão: "Pegar meu certificado" etc.). O estado de carga virou `role="status"`
+  e a virada bloqueado→elegível→emitido vai numa região `aria-live="polite"` (leitor anuncia; antes
+  só o erro tinha `role="alert"`). É código do SHELL — roda nos dois apps (rodei as duas suítes).
+- **"Continuar" lock-aware (LOW):** `cursos/[slug]/page.tsx` `nextLesson()` pula aulas TRAVADAS
+  (1ª não concluída E desbloqueada → 1ª desbloqueada → 1ª), defensivo p/ o herói nunca apontar p/ um
+  cadeado.
+- **`%` de missão sem estouro (LOW):** `missions-panel.tsx` clampa `Math.min(100, …)` + guarda
+  `target > 0` (evita >100% / NaN).
+- **Não alterados (decisão consciente):** verificações de segurança da revisão acharam tudo de pé;
+  copy do certificado revogado fica neutra; som da celebração já respeita reduced-motion/autoplay.
 
 ## Comandos
 

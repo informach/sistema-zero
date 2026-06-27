@@ -25,15 +25,21 @@ export function resolveContinueLesson(
   outline: ModuleWithLessons[],
   completedLessonIds: Set<string>,
   lastAccessedLessonId: string | null,
+  lockedLessonIds: Set<string> = new Set(),
 ): string | null {
   const ordered = outline.flatMap((m) => m.lessons.map((l) => l.id))
   if (ordered.length === 0) return null
   if (
     lastAccessedLessonId &&
     ordered.includes(lastAccessedLessonId) &&
-    !completedLessonIds.has(lastAccessedLessonId)
+    !completedLessonIds.has(lastAccessedLessonId) &&
+    !lockedLessonIds.has(lastAccessedLessonId)
   ) {
     return lastAccessedLessonId
   }
-  return ordered.find((id) => !completedLessonIds.has(id)) ?? ordered[0] ?? null
+  return (
+    ordered.find((id) => !completedLessonIds.has(id) && !lockedLessonIds.has(id)) ??
+    ordered[0] ??
+    null
+  )
 }

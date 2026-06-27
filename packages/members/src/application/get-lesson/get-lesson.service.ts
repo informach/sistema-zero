@@ -6,6 +6,7 @@ import type { QuizAttemptRepository } from '../../domain/ports/quiz-attempt-repo
 import type { StudioSubmissionRepository } from '../../domain/ports/studio-submission-repository.port'
 import type { VideoPositionRepository } from '../../domain/ports/video-position-repository.port'
 import type { CheckAccessService } from '../access/check-access.service'
+import { assertLessonUnlockedFromState } from '../lesson-locking/lesson-locking'
 import {
   type LessonDetailView,
   type QuizStateView,
@@ -45,12 +46,27 @@ export class GetLessonService {
 
     const quizBlockIds = lesson.blocks.filter((b) => b.content.kind === 'quiz').map((b) => b.id)
     const studioBlockIds = lesson.blocks.filter((b) => b.content.kind === 'studio').map((b) => b.id)
-    const [completedIds, positionSeconds, summaries, studioSummaries] = await Promise.all([
+    const [completedIds, positionSeconds, summaries, studioSummaries, outline] = await Promise.all([
       this.progress.listCompletedLessonIds(userId, course.id),
       this.positions.findPosition(userId, lessonId),
       this.quizAttempts.summarizeByBlockIds(userId, quizBlockIds),
       this.studioSubmissions.summarizeByBlockIds(userId, studioBlockIds),
+      this.courses.findOutline(course.id, { publishedOnly: true }),
     ])
+
+    // Trava sequencial (estilo Duolingo): a aula só abre quando todas as aulas
+    // publicadas anteriores estão concluídas. Equipe interna (privileged) ignora a
+    // trava; curso com a trava desligada também. Gate em profundidade — a UI já
+    // esconde os links, mas isto barra URL direta / mini-trilha lateral.
+    assertLessonUnlockedFromState(
+      course,
+      lessonId,
+      {
+        completedLessonIds: completedIds,
+        orderedPublishedLessonIds: outline.flatMap((m) => m.lessons.map((l) => l.id)),
+      },
+      privileged,
+    )
 
     const now = this.clock()
     const quizStates = new Map<string, QuizStateView>()

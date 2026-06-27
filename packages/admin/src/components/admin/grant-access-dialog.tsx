@@ -9,6 +9,7 @@ import { Spinner } from '@sistemazero/ui/spinner'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
+import { dateInputToSaoPauloEndOfDayIso } from '@/lib/dates'
 import type { CourseView, OfferListItem, Paginated } from '@/lib/types'
 
 const DAY_MS = 24 * 60 * 60 * 1000
@@ -43,8 +44,7 @@ function resolveExpiresAt(form: GrantForm): string | null | undefined {
   if (form.preset === '') return null
   if (form.preset === 'custom') {
     if (!form.customDate) return undefined
-    const d = new Date(form.customDate)
-    return Number.isNaN(d.getTime()) ? undefined : d.toISOString()
+    return dateInputToSaoPauloEndOfDayIso(form.customDate) ?? undefined
   }
   return new Date(Date.now() + Number(form.preset) * DAY_MS).toISOString()
 }

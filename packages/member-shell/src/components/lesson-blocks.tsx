@@ -98,9 +98,18 @@ function youtubeId(src: string): string | null {
   return m?.[1] ?? null
 }
 
-function vimeoId(src: string): string | null {
-  const m = src.match(/vimeo\.com\/(?:video\/)?(\d{6,12})/)
-  return m?.[1] ?? null
+/**
+ * Extrai o ID numérico do Vimeo e, quando presente, o HASH de privacidade (`h`)
+ * dos vídeos NÃO LISTADOS — forma de caminho (`vimeo.com/<id>/<hash>`) ou de query
+ * (`?h=<hash>`). Sem o hash, o SDK não consegue tocar um vídeo unlisted. Tanto o id
+ * (dígitos) quanto o hash (alfanumérico) são validados pela regex — nunca o src cru.
+ */
+function parseVimeo(src: string): { id: string; hash: string | null } | null {
+  const m = src.match(/vimeo\.com\/(?:video\/)?(\d{6,12})(?:\/([A-Za-z0-9]{4,40}))?/)
+  const id = m?.[1]
+  if (!id) return null
+  const queryHash = src.match(/[?&]h=([A-Za-z0-9]{4,40})/)?.[1] ?? null
+  return { id, hash: m[2] ?? queryHash }
 }
 
 function Video({ content }: { content: VideoBlock }) {
@@ -121,9 +130,9 @@ function Video({ content }: { content: VideoBlock }) {
     )
   }
   if (content.provider === 'vimeo') {
-    const id = vimeoId(content.src)
-    if (!id) return <UnsupportedBlock label="Vídeo indisponível" />
-    return <VimeoLessonVideo vimeoId={id} />
+    const parsed = parseVimeo(content.src)
+    if (!parsed) return <UnsupportedBlock label="Vídeo indisponível" />
+    return <VimeoLessonVideo vimeoId={parsed.id} vimeoHash={parsed.hash} />
   }
   // `file`/`mux` (URL direta de vídeo) → player nativo.
   return (
@@ -144,11 +153,12 @@ function Video({ content }: { content: VideoBlock }) {
  * posição e auto-conclusão por % assistido — tudo vindo do LessonPlayerContext
  * (fora do player degrada para o embed sem callbacks).
  */
-function VimeoLessonVideo({ vimeoId }: { vimeoId: string }) {
+function VimeoLessonVideo({ vimeoId, vimeoHash }: { vimeoId: string; vimeoHash: string | null }) {
   const player = useLessonPlayer()
   return (
     <VimeoPlayer
       vimeoId={vimeoId}
+      vimeoHash={vimeoHash}
       watermark={player?.viewerEmail ?? null}
       initialPositionSeconds={player?.initialPositionSeconds ?? null}
       onProgress={player?.onVideoProgress}

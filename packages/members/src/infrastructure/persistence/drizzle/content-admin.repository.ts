@@ -44,6 +44,7 @@ const toCourse = (r: CourseRow): Course => ({
   coverImageUrl: r.coverImageUrl,
   status: r.status,
   audience: r.audience,
+  sequentialLock: r.sequentialLock,
   metadata: r.metadata ?? null,
   createdAt: r.createdAt,
   updatedAt: r.updatedAt,
@@ -96,6 +97,12 @@ const SORT_ORDER_UNIQUE_CONSTRAINTS = new Set([
 ])
 
 const SLUG_UNIQUE_CONSTRAINTS = new Set(['courses_slug_uq', 'lessons_course_slug_uq'])
+
+// Deslocamento p/ "estacionar" linhas num intervalo negativo disjunto durante a
+// reordenação (ver os métodos `reorder*`). Maior que qualquer nº realista de
+// irmãos (módulos/aulas/blocos/anexos) → o intervalo [-OFFSET, -OFFSET+n) nunca
+// colide com a faixa final 0..n-1.
+const REORDER_PARK_OFFSET = 1_000_000
 
 function uniqueViolationConstraint(error: unknown): string | null {
   let current: unknown = error
@@ -198,6 +205,8 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
       status: fields.status,
       // O service normaliza `audience` no create; o `?? 'adult'` cobre chamadas diretas.
       audience: fields.audience ?? ('adult' as const),
+      // Idem: o service normaliza; `?? true` cobre chamada direta (padrão LIGADO).
+      sequentialLock: fields.sequentialLock ?? true,
       // `salesPageUrl` mora no metadata (jsonb) — única chave gerida pelo form.
       metadata: fields.salesPageUrl ? { salesPageUrl: fields.salesPageUrl } : null,
       createdAt: now,
@@ -228,6 +237,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
           coverImageUrl: course.coverImageUrl,
           status: course.status,
           audience: course.audience,
+          sequentialLock: course.sequentialLock,
           metadata: course.metadata,
           updatedAt: new Date(),
           version: expectedVersion + 1,
@@ -342,10 +352,22 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
 
   async reorderModules(courseId: string, orderedIds: string[]): Promise<void> {
     await this.db.transaction(async (tx) => {
+      // O índice único (course_id, sort_order) é NÃO-deferível: o Postgres o checa
+      // por LINHA, não no fim do statement. Reatribuir 0..n-1 com um UPDATE por
+      // linha colidiria com o irmão ainda não movido (ex.: [a:0,b:1]→[b,a] tentaria
+      // b:0 com `a` ainda em 0 → 23505 → 500). Fase 1: desloca TODAS as linhas (o
+      // serviço garante orderedIds = conjunto completo via assertSameSet) p/ um
+      // intervalo negativo disjunto num único statement (shift uniforme = sem
+      // colisão); fase 2: atribui a ordem final (nada mais ocupa 0..n-1).
+      await tx
+        .update(modules)
+        .set({ sortOrder: sql`${modules.sortOrder} - ${REORDER_PARK_OFFSET}` })
+        .where(eq(modules.courseId, courseId))
+      const now = new Date()
       for (let i = 0; i < orderedIds.length; i++) {
         await tx
           .update(modules)
-          .set({ sortOrder: i, updatedAt: new Date() })
+          .set({ sortOrder: i, updatedAt: now })
           .where(and(eq(modules.id, orderedIds[i] as string), eq(modules.courseId, courseId)))
       }
     })
@@ -432,10 +454,17 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
 
   async reorderLessons(moduleId: string, orderedIds: string[]): Promise<void> {
     await this.db.transaction(async (tx) => {
+      // Fase 1 estaciona em faixa negativa, fase 2 atribui a ordem final — sem
+      // colidir com o índice único (module_id, sort_order). Ver reorderModules.
+      await tx
+        .update(lessons)
+        .set({ sortOrder: sql`${lessons.sortOrder} - ${REORDER_PARK_OFFSET}` })
+        .where(eq(lessons.moduleId, moduleId))
+      const now = new Date()
       for (let i = 0; i < orderedIds.length; i++) {
         await tx
           .update(lessons)
-          .set({ sortOrder: i, updatedAt: new Date() })
+          .set({ sortOrder: i, updatedAt: now })
           .where(and(eq(lessons.id, orderedIds[i] as string), eq(lessons.moduleId, moduleId)))
       }
     })
@@ -508,6 +537,12 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
 
   async reorderBlocks(lessonId: string, orderedIds: string[]): Promise<void> {
     await this.db.transaction(async (tx) => {
+      // Fase 1 estaciona em faixa negativa, fase 2 atribui a ordem final — sem
+      // colidir com o índice único (lesson_id, sort_order). Ver reorderModules.
+      await tx
+        .update(lessonBlocks)
+        .set({ sortOrder: sql`${lessonBlocks.sortOrder} - ${REORDER_PARK_OFFSET}` })
+        .where(eq(lessonBlocks.lessonId, lessonId))
       for (let i = 0; i < orderedIds.length; i++) {
         await tx
           .update(lessonBlocks)
@@ -638,6 +673,12 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
 
   async reorderAttachments(lessonId: string, orderedIds: string[]): Promise<void> {
     await this.db.transaction(async (tx) => {
+      // Fase 1 estaciona em faixa negativa, fase 2 atribui a ordem final — sem
+      // colidir com o índice único (lesson_id, sort_order). Ver reorderModules.
+      await tx
+        .update(lessonAttachments)
+        .set({ sortOrder: sql`${lessonAttachments.sortOrder} - ${REORDER_PARK_OFFSET}` })
+        .where(eq(lessonAttachments.lessonId, lessonId))
       for (let i = 0; i < orderedIds.length; i++) {
         await tx
           .update(lessonAttachments)

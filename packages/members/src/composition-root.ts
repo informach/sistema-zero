@@ -167,8 +167,8 @@ export async function createApplication(env: Env): Promise<Application> {
     studioSubmissions,
     clock,
   )
-  const resolveAttachment = new GetAttachmentDownloadService(checkAccess, courses)
-  const resolveEbook = new GetEbookDownloadService(checkAccess, courses)
+  const resolveAttachment = new GetAttachmentDownloadService(checkAccess, courses, progress)
+  const resolveEbook = new GetEbookDownloadService(checkAccess, courses, progress)
   const awardGamification = new AwardGamificationService(gamificationRepo, clock, logger)
   const getGamification = new GetGamificationService(gamificationRepo, clock)
   const avatarRepo = new DrizzleAvatarRepository(db)
@@ -201,12 +201,19 @@ export async function createApplication(env: Env): Promise<Application> {
     clock,
   )
   const getProgress = new GetCourseProgressService(checkAccess, courses, progress)
-  const savePosition = new SaveVideoPositionService(checkAccess, courses, positions, clock)
+  const savePosition = new SaveVideoPositionService(
+    checkAccess,
+    courses,
+    progress,
+    positions,
+    clock,
+  )
   const getCourseRating = new GetCourseRatingService(checkAccess, ratings)
   const saveCourseRating = new SaveCourseRatingService(checkAccess, ratings, clock)
   const submitQuiz = new SubmitQuizAttemptService(
     checkAccess,
     courses,
+    progress,
     quizAttempts,
     awardGamification,
     () => randomUUID(),
@@ -215,18 +222,30 @@ export async function createApplication(env: Env): Promise<Application> {
   const submitStudio = new SubmitStudioProjectService(
     checkAccess,
     courses,
+    progress,
     studioSubmissions,
     awardGamification,
     () => randomUUID(),
     clock,
   )
-  const getStudioCarryover = new GetStudioCarryoverService(checkAccess, courses, studioSubmissions)
+  const getStudioCarryover = new GetStudioCarryoverService(
+    checkAccess,
+    courses,
+    progress,
+    studioSubmissions,
+  )
   const getOwnStudioSubmission = new GetOwnStudioSubmissionService(
     checkAccess,
     courses,
+    progress,
     studioSubmissions,
   )
-  const getShowcasePayload = new GetShowcasePayloadService(checkAccess, courses, studioSubmissions)
+  const getShowcasePayload = new GetShowcasePayloadService(
+    checkAccess,
+    courses,
+    progress,
+    studioSubmissions,
+  )
   const studioSubmissionsAdmin = new StudioSubmissionsAdminService(studioSubmissions)
   const getCertificate = new GetCertificateService(checkAccess, courses, progress, certificates)
   const issueCertificate = new IssueCertificateService(

@@ -22,6 +22,7 @@ import { AdminHeader } from '@/components/admin/admin-header'
 import { GrantAccessDialog } from '@/components/admin/grant-access-dialog'
 import { StatusBadge } from '@/components/admin/status-badge'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
+import { dateInputToSaoPauloEndOfDayIso } from '@/lib/dates'
 import { formatDate } from '@/lib/format'
 import type { AdminEntitlementView, MemberCourseProgressView, MemberDetail } from '@/lib/types'
 
@@ -73,12 +74,6 @@ export function MemberDetailClient({
     load()
   }, [load])
 
-  function isoOrNull(date: string): string | null {
-    if (!date) return null
-    const d = new Date(date)
-    return Number.isNaN(d.getTime()) ? null : d.toISOString()
-  }
-
   async function manage(id: string, action: 'revoke' | 'expire' | 'extend', expiresAt?: string) {
     setBusyId(id)
     try {
@@ -122,7 +117,7 @@ export function MemberDetailClient({
   }
   async function submitExtend() {
     if (!extendTarget) return
-    const iso = isoOrNull(extendDate)
+    const iso = dateInputToSaoPauloEndOfDayIso(extendDate)
     if (!iso) {
       toast.error('Informe uma data de validade válida.')
       return

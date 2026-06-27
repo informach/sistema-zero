@@ -64,6 +64,10 @@ describe('resolveContinueLesson', () => {
     expect(resolveContinueLesson(outline, new Set(), 'aula-removida')).toBe('a1')
   })
 
+  test('última acessada travada é ignorada e cai na primeira pendente liberada', () => {
+    expect(resolveContinueLesson(outline, new Set(), 'a3', new Set(['a2', 'a3']))).toBe('a1')
+  })
+
   test('curso sem aulas → null', () => {
     expect(resolveContinueLesson([], new Set(), null)).toBeNull()
   })

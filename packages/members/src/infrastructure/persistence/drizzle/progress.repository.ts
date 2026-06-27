@@ -89,6 +89,26 @@ export class DrizzleProgressRepository implements ProgressRepository {
     return rows.map((r) => r.lessonId)
   }
 
+  async listCompletedLessonIdsByCourseIds(
+    userId: string,
+    courseIds: string[],
+  ): Promise<Map<string, string[]>> {
+    if (courseIds.length === 0) return new Map()
+    const rows = await this.db
+      .select({ courseId: lessonCompletions.courseId, lessonId: lessonCompletions.lessonId })
+      .from(lessonCompletions)
+      .where(
+        and(eq(lessonCompletions.userId, userId), inArray(lessonCompletions.courseId, courseIds)),
+      )
+    const out = new Map<string, string[]>()
+    for (const r of rows) {
+      const arr = out.get(r.courseId) ?? []
+      arr.push(r.lessonId)
+      out.set(r.courseId, arr)
+    }
+    return out
+  }
+
   async lastCompletedAt(userId: string, courseId: string): Promise<Date | null> {
     const [row] = await this.db
       .select({ at: lessonCompletions.completedAt })

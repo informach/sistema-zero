@@ -115,6 +115,27 @@ describe('renderCertificatePdf', () => {
     }
   })
 
+  test('barra IPv4-mapeado em IPv6 hex (::ffff:169.254.169.254 dos metadados)', async () => {
+    // O `new URL` normaliza `::ffff:169.254.169.254` p/ `::ffff:a9fe:a9fe` (hex,
+    // sem ponto): o guard precisa reconstruir o IPv4 dos hextets, senão escapava.
+    const fetchMock = mock(async () => new Response(new Uint8Array([0x89, 0x50]), { status: 200 }))
+    const originalFetch = globalThis.fetch
+    globalThis.fetch = fetchMock as unknown as typeof fetch
+    try {
+      const bytes = await renderCertificatePdf({
+        certificate: CERT,
+        config: { baseImageUrl: 'http://[::ffff:169.254.169.254]/latest/meta-data/' },
+        verifyUrl: '',
+      })
+      // Barrada sincronamente (antes do fetch) → cai no layout "marca" A4 retrato 595pt.
+      const pdf = await PDFDocument.load(bytes)
+      expect(Math.round(pdf.getPage(0).getSize().height)).toBe(595)
+      expect(fetchMock).not.toHaveBeenCalled()
+    } finally {
+      globalThis.fetch = originalFetch
+    }
+  })
+
   test('não segue redirect de imagem para host privado', async () => {
     const fetchMock = mock(async () => {
       return new Response(null, {

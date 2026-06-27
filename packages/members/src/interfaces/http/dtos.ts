@@ -377,6 +377,9 @@ export const CourseBody = t.Object({
   // Plataforma do curso. AUSENTE: create → `adult`; update → PRESERVA a atual
   // (build antigo do admin sem o campo não rebaixa curso kids em silêncio).
   audience: t.Optional(t.Union([AUDIENCE, t.Null()])),
+  // Trava sequencial (estilo Duolingo). AUSENTE: create → `true` (padrão LIGADO);
+  // update → PRESERVA a atual (mesma régua do audience).
+  sequentialLock: t.Optional(t.Union([t.Boolean(), t.Null()])),
 })
 
 /** Query de `GET /members/admin/courses`. */

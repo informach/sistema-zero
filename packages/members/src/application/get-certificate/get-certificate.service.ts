@@ -10,6 +10,7 @@ import type { CertificateRepository } from '../../domain/ports/certificate-repos
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { CheckAccessService } from '../access/check-access.service'
+import { assertLessonUnlockedFromState } from '../lesson-locking/lesson-locking'
 import type { CertificateStateView } from '../mappers/views'
 
 export interface GetCertificateInput {
@@ -64,6 +65,12 @@ export class GetCertificateService {
       this.courses.findOutline(course.id, { publishedOnly: true }),
     ])
     const orderedLessonIds = outline.flatMap((m) => m.lessons.map((l) => l.id))
+    assertLessonUnlockedFromState(
+      course,
+      input.lessonId,
+      { completedLessonIds: completedIds, orderedPublishedLessonIds: orderedLessonIds },
+      input.privileged,
+    )
     const preceding = precedingPublishedLessonIds(orderedLessonIds, input.lessonId)
     return {
       eligible: eligibleForCertificate(preceding, completedIds),

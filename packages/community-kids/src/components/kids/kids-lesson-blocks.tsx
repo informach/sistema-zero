@@ -121,6 +121,7 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
           <CertificateBlockView
             blockId={block.id}
             content={content as unknown as CertificateBlock}
+            tone="kids"
           />
         </div>
       )

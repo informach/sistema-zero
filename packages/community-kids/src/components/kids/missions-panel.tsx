@@ -115,7 +115,7 @@ function MissionGroup({
       <p className="font-bold text-muted-foreground text-xs uppercase tracking-wide">{title}</p>
       <div className="grid gap-2">
         {missions.map((m) => {
-          const pct = Math.round((m.progress / m.target) * 100)
+          const pct = m.target > 0 ? Math.min(100, Math.round((m.progress / m.target) * 100)) : 0
           return (
             <div
               key={m.slug}

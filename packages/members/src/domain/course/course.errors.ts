@@ -14,6 +14,18 @@ export class LessonNotFoundError extends DomainError {
   }
 }
 
+/**
+ * Aula travada pela trava sequencial: o aluno tentou abrir uma aula cujas aulas
+ * publicadas anteriores ainda não foram todas concluídas (e o curso tem a trava
+ * ligada). → 423 Locked. Equipe interna (privileged) não cai aqui.
+ */
+export class LessonLockedError extends DomainError {
+  readonly code = 'LESSON_LOCKED'
+  constructor(message = 'Conclua a aula anterior para liberar esta aula') {
+    super(message)
+  }
+}
+
 /** Anexo inexistente na aula (rota de download do aluno). → 404. */
 export class AttachmentNotFoundError extends DomainError {
   readonly code = 'ATTACHMENT_NOT_FOUND'

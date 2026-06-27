@@ -99,16 +99,41 @@ function wrapText(font: PDFFont, text: string, size: number, maxWidth: number): 
   return lines
 }
 
+/**
+ * IPv4 EMBUTIDO num IPv6 mapeado/compat (`::ffff:a.b.c.d`, `::ffff:a9fe:a9fe`,
+ * `::7f00:1`), em forma pontilhada OU HEX comprimida. ⚠️ O parser WHATWG (`new
+ * URL`) NORMALIZA `::ffff:169.254.169.254` para `::ffff:a9fe:a9fe` (sem ponto):
+ * sem reconstruir o IPv4 dos hextets, `::ffff:<metadados>` escapava do guard
+ * (full review community/member-shell). Só p/ IPv6 começando com `::` — o
+ * espaço `::`-prefixado é reservado (unspecified/loopback/mapeado/compat), nenhum
+ * unicast global começa assim, então isto NÃO reclassifica IPv6 público.
+ */
+function embeddedIpv4(h: string): string | null {
+  if (h.includes('.')) {
+    const tail = h.slice(h.lastIndexOf(':') + 1)
+    return /^\d{1,3}(?:\.\d{1,3}){3}$/.test(tail) ? tail : null
+  }
+  if (!h.startsWith('::')) return null
+  const groups = h.split(':').filter(Boolean)
+  const [hi, lo] = groups.slice(-2)
+  if (hi === undefined || lo === undefined) return null
+  if (!/^[0-9a-f]{1,4}$/.test(hi) || !/^[0-9a-f]{1,4}$/.test(lo)) return null
+  const a = Number.parseInt(hi, 16)
+  const b = Number.parseInt(lo, 16)
+  return `${(a >> 8) & 0xff}.${a & 0xff}.${(b >> 8) & 0xff}.${b & 0xff}`
+}
+
 /** IP LITERAL (v4/v6) em faixa loopback/privada/link-local/ULA/CGNAT? */
 function isPrivateAddress(host: string): boolean {
   const h = host.toLowerCase().replace(/^\[|\]$/g, '')
   if (h.includes(':')) {
-    // IPv6: loopback (::1), link-local (fe80::/10), ULA (fc00::/7).
-    if (h === '::1') return true
+    // IPv6: loopback (::1), unspecified (::), link-local (fe80::/10), ULA (fc00::/7).
+    if (h === '::1' || h === '::') return true
     if (['fe8', 'fe9', 'fea', 'feb'].some((p) => h.startsWith(p))) return true
     if (h.startsWith('fc') || h.startsWith('fd')) return true
-    // IPv4-mapeado (`::ffff:a.b.c.d`) → revalida a parte v4.
-    if (h.includes('.')) return isPrivateAddress(h.slice(h.lastIndexOf(':') + 1))
+    // IPv4-mapeado/compat (pontilhado OU hex normalizado) → revalida a parte v4.
+    const embedded = embeddedIpv4(h)
+    if (embedded) return isPrivateAddress(embedded)
     return false
   }
   const m = /^(\d{1,3})\.(\d{1,3})\.\d{1,3}\.\d{1,3}$/.exec(h)

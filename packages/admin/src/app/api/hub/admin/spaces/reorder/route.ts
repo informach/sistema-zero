@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { forwardUpstream } from '@/server/forward'
 import { reorderSpaces } from '@/server/hub'
 
 export async function POST(req: Request) {
@@ -15,5 +16,5 @@ export async function POST(req: Request) {
     )
   }
   const { status, body } = await reorderSpaces({ audience, orderedIds: ids })
-  return NextResponse.json(body, { status })
+  return forwardUpstream({ status, body })
 }

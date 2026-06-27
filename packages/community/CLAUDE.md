@@ -404,6 +404,12 @@ valida e só então importa o `server.js` standalone).
   SÓ aqui; 429 `QUIZ_COOLDOWN` por 5min após reprovar — a UI mostra countdown MM:SS).
   Navegação prev/next é DERIVADA do outline (a API não fornece). Views em `src/lib/types.ts`
   (espelham `members/src/application/mappers/views.ts` — NÃO os tipos admin).
+- **Trava sequencial das aulas (estilo Duolingo, 06/2026):** `LessonOutlineView.locked` (do
+  members) marca aulas ainda bloqueadas (curso com `sequential_lock` ON e aulas anteriores não
+  concluídas). A lista do curso (`cursos/[slug]/page.tsx`) renderiza a aula travada com cadeado
+  NÃO clicável; a página da aula (`aulas/[lessonId]/page.tsx`) anula o `nextHref` quando a próxima
+  está travada e, no **423 `LESSON_LOCKED`** do `getLesson`, mostra um recado gentil (`LessonLockedNotice`)
+  em vez de erro. Equipe interna ignora a trava (vem tudo `locked:false`). O gate confiável é o members.
 - **Classificação do curso (estilo Udemy)**: o detalhe do curso traz `myRating`
   (`CourseRatingView {rating 1..5 passo 0.5, comment, feedbackAnswers, …} | null`) e
   `salesPageUrl`. Na página da aula, link **"Deixe uma classificação"** na sidebar (abaixo do

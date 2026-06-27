@@ -19,6 +19,7 @@ import {
   optimizeAndStoreAvatar,
   rejectOversizedRequest,
   removeStaleAvatars,
+  removeStoredAvatar,
 } from '../server/media'
 import { presignWatermarkedPdf } from '../server/private-delivery'
 import {
@@ -508,6 +509,9 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
         const stored = await optimizeAndStoreAvatar(file, user.id)
         const { status, body } = await auth.updateMe({ avatarUrl: stored.url })
         if (status !== 200) {
+          // PATCH falhou → o WebP recém-subido não está referenciado por ninguém:
+          // reverte (best-effort) p/ não deixar órfão acumulando no bucket público.
+          await removeStoredAvatar(stored.key)
           return NextResponse.json(body ?? { error: { code: 'UPDATE_FAILED' } }, { status })
         }
         // Avatar trocado com sucesso → apaga os anteriores (best-effort; sem isso
@@ -627,7 +631,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
         // Bufferizar+marcar dentro do GATE de concorrência: materializa ≤20MB +
         // cópias do pdf-lib/sharp — sem teto, N downloads simultâneos = OOM.
         return await watermarkGate().run(async () => {
-          const original = await bufferFromStream(obj.body)
+          const original = await bufferFromStream(obj.body, WATERMARK_MAX_BYTES)
           let out: Uint8Array = original
           try {
             out =
@@ -735,7 +739,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
         // Bufferizar+marcar dentro do GATE de concorrência: materializa ≤20MB +
         // cópias do pdf-lib — sem teto, N livros abertos ao mesmo tempo = OOM.
         return await watermarkGate().run(async () => {
-          const original = await bufferFromStream(obj.body)
+          const original = await bufferFromStream(obj.body, WATERMARK_MAX_BYTES)
           let out: Uint8Array = original
           try {
             out = await watermarkPdf(original, user.email)

@@ -37,6 +37,12 @@ export interface Course {
   coverImageUrl: string | null
   status: CourseStatus
   audience: CourseAudience
+  /**
+   * Trava sequencial (estilo Duolingo): quando `true`, uma aula só fica acessível
+   * depois que TODAS as aulas publicadas anteriores (ordem do curso) estão
+   * concluídas. Default LIGADO; desligável por curso no admin.
+   */
+  sequentialLock: boolean
   /** Extras livres (ex.: `salesPageUrl` — URL da página de vendas no funil). */
   metadata: Record<string, unknown> | null
   createdAt: Date

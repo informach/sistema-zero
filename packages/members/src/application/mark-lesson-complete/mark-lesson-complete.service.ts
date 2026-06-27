@@ -12,6 +12,7 @@ import type { StudioSubmissionRepository } from '../../domain/ports/studio-submi
 import { computeProgress } from '../../domain/progress/progress'
 import type { CheckAccessService } from '../access/check-access.service'
 import type { AwardGamificationService } from '../gamification/award-gamification.service'
+import { assertLessonUnlockedFromState } from '../lesson-locking/lesson-locking'
 import { type LessonCompleteView, toCourseProgressView } from '../mappers/views'
 
 /**
@@ -51,6 +52,17 @@ export class MarkLessonCompleteService {
 
     const completedIds = await this.progress.listCompletedLessonIds(userId, course.id)
     if (!completedIds.includes(lessonId)) {
+      const outline = await this.courses.findOutline(course.id, { publishedOnly: true })
+      assertLessonUnlockedFromState(
+        course,
+        lessonId,
+        {
+          completedLessonIds: completedIds,
+          orderedPublishedLessonIds: outline.flatMap((m) => m.lessons.map((l) => l.id)),
+        },
+        privileged,
+      )
+
       // Só gateiam quizzes COM nota de corte E com questões: um quiz gated vazio
       // não é respondível (a UI não o renderiza), então gatear nele travaria a
       // aula para sempre. A autoria já barra esse estado (validateQuizAuthoring),

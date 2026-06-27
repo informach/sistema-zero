@@ -61,6 +61,8 @@ const courseFields = (b: CourseInput): CourseFields => ({
   status: b.status as CourseStatus,
   // `null` = não informado (create → adult; update → preserva — ver CourseFields).
   audience: b.audience ?? null,
+  // `null` = não informado (create → true; update → preserva). `false` é mantido.
+  sequentialLock: b.sequentialLock ?? null,
 })
 const moduleFields = (b: ModuleInput): ModuleFields => ({
   title: b.title,
