@@ -47,6 +47,12 @@ interface StepBase {
 export interface MultiplaEscolhaStep extends StepBase {
   tipo: 'multipla_escolha'
   comImagem?: boolean
+  /**
+   * Layout dos cards quando `comImagem` (todas as opções com `image`):
+   * - `'fundo'` (default): foto cobre o card com gradiente e o texto por cima.
+   * - `'topo'`: foto no topo + texto legível embaixo (melhor p/ textos longos).
+   */
+  imagemLayout?: 'fundo' | 'topo'
   opcoes: Opcao[]
 }
 export interface CalculadoraStep extends StepBase {

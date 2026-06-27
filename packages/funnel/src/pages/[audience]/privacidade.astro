@@ -1,0 +1,30 @@
+---
+import Footer from '../../components/Footer.astro'
+import LegalDocument from '../../components/LegalDocument.astro'
+import { PRIVACIDADE } from '../../content/legal'
+import { PRIVACIDADE_KIDS } from '../../content/legal-kids'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+
+// SSR de propósito: pré-renderizada não passa pela middleware → sem security
+// headers em produção (sem CDN p/ repô-los). Conteúdo estático → cache curto.
+export const prerender = false
+
+// Público resolvido pela URL. Inválido → 404 (não vira catch-all). Espelha
+// [audience]/index.astro.
+const audience = Astro.params.audience
+if (audience !== 'pro' && audience !== 'kids') return new Response(null, { status: 404 })
+
+const doc = audience === 'kids' ? PRIVACIDADE_KIDS : PRIVACIDADE
+const areaLabel = audience === 'kids' ? 'Sistema Zero Kids' : 'Sistema Zero'
+
+Astro.response.headers.set('cache-control', 'public, max-age=300, stale-while-revalidate=3600')
+---
+
+<BaseLayout
+  title={`${doc.titulo} · ${areaLabel}`}
+  description={doc.descricao}
+  htmlClass={audience === 'kids' ? 'theme-kids' : undefined}
+>
+  <LegalDocument doc={doc} voltarHref={`/${audience}`} />
+  <Footer audience={audience} />
+</BaseLayout>

@@ -5,6 +5,8 @@
 // sob `.dpj` (não vaza para as páginas compartilhadas). Os CTAs de compra levam
 // `data-checkout-cta` → o PreCheckoutModal (mesma ilha do NCI) abre o checkout.
 import '@fontsource/material-symbols-outlined/400.css'
+import { EMPRESA } from '../../../content/legal'
+import { AVISO_LEGAL_KIDS } from '../../../content/legal-kids'
 import type { FunnelDef } from '../../../funnels/registry'
 import PreCheckoutModal from '../../../islands/PreCheckoutModal'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
@@ -34,6 +36,7 @@ const introPerfil =
 
 const description = f.seoDescription
 const img = (file: string) => `${imagesBase}/${file}`
+const ano = new Date().getFullYear()
 ---
 
 <BaseLayout
@@ -47,38 +50,26 @@ const img = (file: string) => `${imagesBase}/${file}`
     description={description}
     price={priceReais}
     url={ofertaUrl}
-    image={img('hero-familia-zappy.png')}
+    image={img('hero-desafio.webp')}
   />
   <link
     slot="head"
     rel="preload"
     as="image"
-    href={img('hero-familia-zappy.png')}
+    href={img('hero-desafio.webp')}
     fetchpriority="high"
   />
 
   <div class="dpj">
-    <!-- ===== HEADER ===== -->
-    <header class="site-header">
-      <div class="container">
-        <span class="brand">Desafio do Primeiro Jogo</span>
-        <a href="#oferta" class="header-cta">
-          <span class="material-symbols-outlined">sports_esports</span>
-          <span class="lbl">Começar o desafio</span>
-        </a>
-      </div>
-    </header>
-
     <!-- ===== 1. HERO ===== -->
-    <section class="hero bg-dark">
+    <section class="hero">
       <div class="container">
-        <div class="mascote">🎮</div>
         <img
           class="hero-art reveal"
-          src={img('hero-familia-zappy.png')}
-          alt="Família com o personagem Zappy diante do jogo criado na tela"
-          width="560"
-          height="560"
+          src={img('hero-desafio.webp')}
+          alt="Desafio do Primeiro Jogo em 3 dias: duas crianças animadas ao lado do robô Zappy"
+          width="1000"
+          height="1000"
           fetchpriority="high"
         />
         {introPerfil && <p class="perfil-intro reveal">{introPerfil}</p>}
@@ -125,7 +116,7 @@ const img = (file: string) => `${imagesBase}/${file}`
     </section>
 
     <!-- ===== 2. COMPARAÇÃO PRIMÁRIA ===== -->
-    <section class="bg-light">
+    <section class="bg-light section-compare">
       <div class="container">
         <p class="eyebrow reveal">Dois jeitos de passar o fim de semana</p>
         <h2 class="sec-title reveal">
@@ -170,8 +161,10 @@ const img = (file: string) => `${imagesBase}/${file}`
         </p>
         <img
           class="paraquem-art reveal"
-          src={img('paraquem-debinha-dede.png')}
-          alt="Crianças criando o próprio jogo com os personagens Debinha e Dedé"
+          src={img('comparacao-criancas.webp')}
+          alt="Duas crianças animadas, prontas para criar o próprio jogo"
+          width="700"
+          height="933"
           loading="lazy"
         />
       </div>
@@ -432,8 +425,10 @@ const img = (file: string) => `${imagesBase}/${file}`
           <div class="centro-core reveal">
             <img
               class="centro-art"
-              src={img('metodo-zappy.png')}
-              alt="Personagem Zappy guiando o jogo que ganha vida na tela"
+              src={img('estudio-jogo.webp')}
+              alt="Tela do Sistema Zero Studio: os blocos à esquerda e o jogo de nave rodando"
+              width="820"
+              height="463"
               loading="lazy"
             />
             <h3 style="margin-top:18px">O jogo na tela</h3>
@@ -443,15 +438,15 @@ const img = (file: string) => `${imagesBase}/${file}`
             </p>
           </div>
           <ul class="centro-list reveal">
-            <li><span class="material-symbols-outlined">arrow_back</span>Resultado no primeiro dia</li>
-            <li><span class="material-symbols-outlined">arrow_back</span>Ela começou e terminou algo</li>
-            <li><span class="material-symbols-outlined">arrow_back</span>Vira criadora, não só jogadora</li>
-            <li><span class="material-symbols-outlined">arrow_back</span>Algo concreto pra mostrar</li>
-            <li><span class="material-symbols-outlined">arrow_back</span>Link pra mandar pros amigos jogarem</li>
-            <li><span class="material-symbols-outlined">arrow_back</span>Tela de criação, não passiva</li>
-            <li><span class="material-symbols-outlined">arrow_back</span>Vitória por dia que prende</li>
-            <li><span class="material-symbols-outlined">arrow_back</span>Confiança de "eu consigo"</li>
-            <li><span class="material-symbols-outlined">arrow_back</span>Primeira peça do portfólio</li>
+            <li><span class="material-symbols-outlined">chevron_right</span>Resultado no primeiro dia</li>
+            <li><span class="material-symbols-outlined">chevron_right</span>Ela começou e terminou algo</li>
+            <li><span class="material-symbols-outlined">chevron_right</span>Vira criadora, não só jogadora</li>
+            <li><span class="material-symbols-outlined">chevron_right</span>Algo concreto pra mostrar</li>
+            <li><span class="material-symbols-outlined">chevron_right</span>Link pra mandar pros amigos jogarem</li>
+            <li><span class="material-symbols-outlined">chevron_right</span>Tela de criação, não passiva</li>
+            <li><span class="material-symbols-outlined">chevron_right</span>Vitória por dia que prende</li>
+            <li><span class="material-symbols-outlined">chevron_right</span>Confiança de "eu consigo"</li>
+            <li><span class="material-symbols-outlined">chevron_right</span>Primeira peça do portfólio</li>
           </ul>
         </div>
       </div>
@@ -494,8 +489,10 @@ const img = (file: string) => `${imagesBase}/${file}`
         <p class="metodo-label reveal">O método: Trilha do Primeiro Jogo</p>
         <img
           class="metodo-art reveal"
-          src={img('furadeira.png')}
+          src={img('trilha-3-dias.webp')}
           alt="Trilha do Primeiro Jogo: o método em 3 dias, do personagem ganhar vida ao jogo pronto"
+          width="1200"
+          height="675"
           loading="lazy"
         />
         <div style="text-align:center;margin-top:40px" class="reveal">
@@ -510,41 +507,8 @@ const img = (file: string) => `${imagesBase}/${file}`
       </div>
     </section>
 
-    <!-- ===== 9. DEMONSTRAÇÃO ===== -->
-    <section class="bg-scene-1">
-      <span class="scene-label">🎮 espaço para vídeo da tela do Studio</span>
-      <div class="container">
-        <p class="eyebrow reveal">Veja com seus próprios olhos</p>
-        <h2 class="sec-title reveal">
-          Olha a nave dela voando no espaço, no <span class="hl-cyan">primeiro dia</span>
-        </h2>
-        <p class="sec-sub reveal">
-          A tela de um Dia 1 de verdade, com a nave respondendo ao comando da criança, sem simulação
-          e sem promessa vazia.
-        </p>
-        <div class="demo-frame reveal">
-          <div class="demo-chrome">
-            <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
-            <span class="url">sistema-zero-studio · Dia 1</span>
-          </div>
-          <div class="demo-screen">
-            <div class="mini-char">👾</div>
-            <div class="play"><span class="material-symbols-outlined">play_arrow</span></div>
-            <div class="instr">
-              [Espaço para o vídeo. Grave a tela do Sistema Zero Studio mostrando a nave aparecendo e
-              voando no espaço no Dia 1.]
-            </div>
-          </div>
-        </div>
-        <p class="demo-caption reveal">
-          Em poucos minutos de Dia 1, a nave deixa de ser uma tela parada e passa a responder ao que a
-          criança montou.
-        </p>
-      </div>
-    </section>
-
-    <!-- ===== 10. QUEM É O ESPECIALISTA ===== -->
-    <section class="bg-deep">
+    <!-- ===== 9. QUEM É O ESPECIALISTA ===== -->
+    <section class="bg-deep esp-section">
       <div class="container">
         <p class="eyebrow reveal">Quem conduz o desafio</p>
         <h2 class="sec-title reveal">Quem está por trás do <span class="hl-orange">Desafio</span></h2>
@@ -554,8 +518,10 @@ const img = (file: string) => `${imagesBase}/${file}`
         <div class="esp-wrap">
           <img
             class="esp-photo-img reveal"
-            src={img('autoridade-helena-julio.png')}
-            alt="Helena e Júlio, criadores do desafio, ensinando crianças a criar jogos"
+            src={img('helena-julio-familia.webp')}
+            alt="Helena e Júlio, criadores do desafio"
+            width="760"
+            height="797"
             loading="lazy"
           />
           <div class="esp-text reveal">
@@ -732,8 +698,10 @@ const img = (file: string) => `${imagesBase}/${file}`
         <div class="oferta-box reveal">
           <img
             class="oferta-art"
-            src={img('oferta-debinha.png')}
-            alt="Personagem Debinha comemorando o primeiro jogo pronto"
+            src={img('oferta-debora.webp')}
+            alt="Criança comemorando, pulando de alegria com o primeiro jogo pronto"
+            width="620"
+            height="930"
             loading="lazy"
           />
           <ul class="oferta-list">
@@ -892,17 +860,14 @@ const img = (file: string) => `${imagesBase}/${file}`
           Criado por Helena e Júlio. Um desafio guiado de 3 dias para crianças a partir de 9 anos
           criarem o primeiro joguinho jogável, dentro do Sistema Zero Studio.
         </p>
-        <p class="legal">
-          Este conteúdo é dirigido aos pais e responsáveis, em conformidade com o Estatuto da Criança
-          e do Adolescente (ECA) e com a Resolução 163 do CONANDA, que veda publicidade dirigida
-          diretamente a crianças. A compra e o uso são feitos por um adulto responsável. Não há
-          promessa de renda, emprego ou carreira para a criança. Resultados dependem do
-          acompanhamento e do tempo dedicado em cada família.
-        </p>
+        <p class="legal">{AVISO_LEGAL_KIDS}</p>
         <p class="legal links">
-          <a href="/termos-de-uso">Termos de uso</a> · <a href="/politica-de-privacidade"
+          <a href="/kids/termos">Termos de uso</a> · <a href="/kids/privacidade"
             >Política de privacidade</a
           >
+        </p>
+        <p class="legal company">
+          © {ano} {EMPRESA.razaoSocial} · CNPJ {EMPRESA.cnpj} · Todos os direitos reservados.
         </p>
       </div>
     </footer>
@@ -1074,6 +1039,10 @@ const img = (file: string) => `${imagesBase}/${file}`
   .dpj .bg-deep {
     background: linear-gradient(180deg, #06101a 0%, #0a1726 100%);
   }
+  /* Seção "quem conduz": fundo IGUAL ao da arte (#000811) p/ a foto fundir sem emenda. */
+  .dpj .esp-section {
+    background: #000811;
+  }
   .dpj .bg-grid {
     background-color: #081320;
     background-image:
@@ -1084,6 +1053,10 @@ const img = (file: string) => `${imagesBase}/${file}`
   .dpj .bg-light {
     background: var(--light-bg);
     color: var(--ink-light);
+  }
+  /* Seção 2 (comparação): fundo IGUAL ao da arte (#e9f0f8) p/ a imagem fundir sem emenda. */
+  .dpj .section-compare {
+    background: #e9f0f8;
   }
   .dpj .bg-light h2,
   .dpj .bg-light h3,
@@ -1220,62 +1193,12 @@ const img = (file: string) => `${imagesBase}/${file}`
   }
 
   /* ===== Header ===== */
-  .dpj .site-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 100;
-    background: rgba(7, 17, 28, 0.82);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-bottom: 1px solid var(--border);
-  }
-  .dpj .site-header .container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-top: 14px;
-    padding-bottom: 14px;
-  }
   .dpj .brand {
     font-family: var(--font-head);
     font-weight: 700;
     font-size: 1.18rem;
     color: var(--text-primary);
   }
-  .dpj .header-cta {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 10px 18px;
-    background: var(--cta-color);
-    color: #1a1207;
-    font-weight: 800;
-    font-size: 0.84rem;
-    border: none;
-    border-radius: 10px;
-    text-decoration: none;
-    transition:
-      transform 0.25s ease,
-      box-shadow 0.25s ease;
-  }
-  .dpj .header-cta:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
-  }
-  .dpj .header-cta .material-symbols-outlined {
-    font-size: 18px;
-  }
-  @media (max-width: 600px) {
-    .dpj .header-cta span.lbl {
-      display: none;
-    }
-    .dpj .header-cta {
-      padding: 10px 14px;
-    }
-  }
-
   /* ===== CTA buttons ===== */
   .dpj .cta-btn {
     display: inline-flex;
@@ -1344,7 +1267,9 @@ const img = (file: string) => `${imagesBase}/${file}`
 
   /* ===== HERO ===== */
   .dpj .hero {
-    padding-top: 130px;
+    /* Fundo IGUAL ao da arte do hero (#00030e) p/ a imagem fundir sem emenda. */
+    background: #00030e;
+    padding-top: 48px;
     padding-bottom: 80px;
     text-align: center;
   }
@@ -1399,11 +1324,9 @@ const img = (file: string) => `${imagesBase}/${file}`
   .dpj .hero-art {
     display: block;
     width: 100%;
-    max-width: 560px;
+    max-width: 460px;
     height: auto;
-    margin: 0 auto 32px;
-    border-radius: 22px;
-    box-shadow: 0 22px 60px rgba(0, 0, 0, 0.45);
+    margin: 0 auto 18px;
   }
 
   /* ===== Comparação primária ===== */
@@ -1490,11 +1413,9 @@ const img = (file: string) => `${imagesBase}/${file}`
   .dpj .paraquem-art {
     display: block;
     width: 100%;
-    max-width: 720px;
+    max-width: 240px;
     height: auto;
-    margin: 44px auto 0;
-    border-radius: 18px;
-    box-shadow: 0 16px 44px rgba(0, 0, 0, 0.4);
+    margin: 36px auto 0;
   }
 
   /* ===== Tabela comparação ===== */
@@ -1770,12 +1691,12 @@ const img = (file: string) => `${imagesBase}/${file}`
     position: relative;
   }
   .dpj .centro-core h3 {
-    color: #04222f;
+    color: #fff;
     font-size: 1.4rem;
     margin-bottom: 8px;
   }
   .dpj .centro-core p {
-    color: rgba(4, 34, 47, 0.78);
+    color: rgba(255, 255, 255, 0.92);
     font-size: 0.95rem;
   }
   .dpj .centro-art {
@@ -1965,18 +1886,14 @@ const img = (file: string) => `${imagesBase}/${file}`
     display: grid;
     grid-template-columns: 0.8fr 1.2fr;
     gap: 38px;
-    align-items: center;
+    align-items: start;
     max-width: 980px;
     margin: 0 auto;
   }
   .dpj .esp-photo-img {
+    display: block;
     width: 100%;
     height: auto;
-    aspect-ratio: 4/5;
-    object-fit: cover;
-    border-radius: 20px;
-    border: 2px solid var(--accent);
-    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.4);
   }
   .dpj .esp-text h3 {
     font-size: 1.5rem;
@@ -2121,7 +2038,8 @@ const img = (file: string) => `${imagesBase}/${file}`
   .dpj .oferta-box {
     max-width: 600px;
     margin: 0 auto;
-    background: var(--surface-1);
+    /* Fundo IGUAL ao da arte (#07101e) p/ a criança fundir no card sem emenda. */
+    background: #07101e;
     border: 1px solid var(--border-hover);
     border-radius: 22px;
     padding: 38px 34px;
@@ -2130,11 +2048,9 @@ const img = (file: string) => `${imagesBase}/${file}`
   .dpj .oferta-art {
     display: block;
     width: 100%;
-    max-width: 420px;
+    max-width: 300px;
     height: auto;
-    margin: 0 auto 26px;
-    border-radius: 16px;
-    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+    margin: 0 auto 18px;
   }
   .dpj .oferta-list {
     list-style: none;
@@ -2371,6 +2287,10 @@ const img = (file: string) => `${imagesBase}/${file}`
     margin-top: 16px;
     font-size: 0.76rem;
     color: #54667a;
+  }
+  .dpj .dpj-footer .company {
+    margin-top: 12px;
+    color: var(--text-tertiary);
   }
   .dpj .dpj-footer .links a {
     color: var(--accent);
