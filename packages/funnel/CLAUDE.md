@@ -74,11 +74,24 @@ planas antigas → 301 (config `redirects`).
 página passa `f.key` ao `POST /api/leads` e ao `createLead` do checkout; validado com `isFunnelKey`).
 As respostas do quiz vão para o JSON `quiz_answers` (chave snake_case → valor) via
 `repo.mergeQuizAnswers` (merge atômico) — **genérico: cada funil tem o seu quiz, com perguntas
-diferentes** (não há mais colunas por pergunta). A oferta a cobrar sai do funil do lead —
-`CheckoutDeps.resolveOffer(funnel)` (`server/offer.ts` `makeResolveOffer(env)`) → registry, com
-**fallback no env** (`CATALOG_OFFER_SLUG`/`PRODUCT_*`) p/ lead legado/sem funil. `leads.offerRef`
-segue gravado no checkout (a concessão usa ela). ⚠️ O env `CATALOG_OFFER_SLUG`/`PRODUCT_*` virou
-fallback — a oferta de cada funil é declarada no registry.
+diferentes** (não há mais colunas por pergunta).
+
+**Oferta de cada funil = 100% por ENV, uma por funil (sem slug no código, sem fallback — 28/06):**
+o `catalogOfferSlug` SAIU do `FunnelDef`. Cada funil lê a sua oferta da env **`FUNNEL_OFFER_<KEY>`**
+(`offerEnvKey(key)` em `lib/env.ts`: key em MAIÚSCULAS, não-alfanumérico→`_`; ex.:
+`pro/no-comando-da-ia`→`FUNNEL_OFFER_PRO_NO_COMANDO_DA_IA`,
+`kids/desafio-primeiro-jogo`→`FUNNEL_OFFER_KIDS_DESAFIO_PRIMEIRO_JOGO`). **OBRIGATÓRIA + FAIL-FAST:**
+`readFunnelOffers` monta `env.offerByFunnel` lendo SÓ as envs e LANÇA se faltar a de QUALQUER funil do
+registry → o `getEnv()` quebra → o `/readyz` 503 → o deploy não fica saudável (não há fallback no
+código). O helper **`resolveOfferSlug(env, f.key)`** (`server/offer.ts`) é a FONTE ÚNICA do slug em
+`oferta.astro`+`checkout.astro` (preço exibido) E `makeResolveOffer` (cobrança/grant) — nunca mostra
+uma oferta e cobra outra. **Trocar oferta/campanha = só mudar a env no Railway** (sem deploy de código;
+o preço é cotado ao vivo no catálogo). `leads.offerRef` segue gravado no checkout (a concessão usa ela;
+o `resolveOffer` é só o fallback quando `offerRef` é nulo, e também resolve pela env do funil). ⚠️ o
+slug da env TEM que existir no catálogo (senão **502 CATALOG_ERROR** na cotação). Criar funil novo →
+**criar a env `FUNNEL_OFFER_<KEY>` no Railway (staging+prod)**, senão o funil nem sobe. (`CATALOG_OFFER_SLUG`/
+`CATALOG_OFFER_OVERRIDES` REMOVIDOS.) Promoção só de PREÇO/cupom não precisa de nada disso: edite a oferta no
+admin do catálogo. Teste: `tests/unit/offer.test.ts`.
 
 **Quiz por funil (`FunnelQuiz`):** cada funil declara `steps`, `valueSchema` (zod por chave),
 `derive?(answers)` (calculadas, ex.: custo_mensal) e `computePerfil?(answers)` (diagnóstico → string,
@@ -270,7 +283,9 @@ CANAL** (`welcome-<leadId>` / `welcome-wa-<leadId>` — o messaging deduplica po
 chave única deduplicaria o 2º canal contra o 1º). O WhatsApp só sai se o telefone do lead virar
 formato internacional (`toWhatsAppPhone`: BR 10–11 dígitos → prefixa DDI `55`; já com 55 → mantém;
 outro formato → pula — e-mail é o canal primário). **BEST-EFFORT deliberado:** falha só loga e
-NUNCA muda o status do webhook (fallback do aluno = "esqueci minha senha"). Env: `COMMUNITY_URL`.
+NUNCA muda o status do webhook (fallback do aluno = "esqueci minha senha"). Env: `COMMUNITY_URL`
+(+ **`KIDS_COMMUNITY_URL`**: lead de funil `kids/*` recebe o link no app KIDS — `makeSendWelcome`
+resolve o base pela audiência do `lead.funnel`; ausente cai no COMMUNITY_URL).
 - ⚠️ **ONE-SHOT ATÔMICO obrigatório (`claimWelcome` → `leads.welcome_sent_at`, 2º full review
   06/2026):** o auth CONSOME os tokens pendentes ao emitir um novo (1 vivo/usuário) e o messaging
   deduplica o reenvio — sem o claim, a 2ª execução (webhook×polling, em TODA compra Pix/cartão)
@@ -442,7 +457,11 @@ fria ~15s). Drena por até 25s e então derruba o restante (retry é seguro: Ide
 determinística + auto-retry da ilha). Envs de runtime: `DATABASE_URL=${{Postgres.DATABASE_URL}}`,
 `GATEWAY_URL` (**prefira o private networking**: `http://api-gateway.railway.internal:3000` — sem
 egress/ida à internet; a borda pública também funciona), `FUNNEL_HMAC_SECRET`/
-`FUNNEL_INTERNAL_TOKEN` (os MESMOS do gateway, ≥16 — fail-fast), `COMMUNITY_URL`, `SENTRY_DSN`
+`FUNNEL_INTERNAL_TOKEN` (os MESMOS do gateway, ≥16 — fail-fast), `COMMUNITY_URL` (app adulto) +
+**`KIDS_COMMUNITY_URL`** (app kids — destino do funil `kids/*`: botão da /obrigado E link de senha
+do welcome; ausente cai no COMMUNITY_URL, então **setar em prod/staging**), **`FUNNEL_OFFER_<KEY>`
+de CADA funil** (oferta por funil — OBRIGATÓRIA, sem ela o boot/healthcheck falha; ex.:
+`FUNNEL_OFFER_PRO_NO_COMANDO_DA_IA`, `FUNNEL_OFFER_KIDS_DESAFIO_PRIMEIRO_JOGO`), `SENTRY_DSN`
 (projeto sistema-zero-funnel; ausente = desligado), **`NODE_ENV=production`** (controla o `Secure`
 dos cookies!), **`TRUST_PROXY=true`** (obrigatório explicitar em prod) e **`HOST=::`** (standalone
 lê HOST/PORT do ambiente; `::` p/ dual-stack). ⚠️ **Envs de BUILD** (inlined pelo Vite no `astro

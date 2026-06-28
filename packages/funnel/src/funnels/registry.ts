@@ -108,8 +108,9 @@ export interface FunnelDef {
   key: string
   /** Prefixo de URL do funil: `/${audience}/${produto}`. */
   basePath: string
-  /** Oferta principal no catálogo (preço autoritativo vem da cotação dela). */
-  catalogOfferSlug: string
+  // ⚠️ A oferta principal do funil NÃO vive mais no código: vem da env
+  // `FUNNEL_OFFER_<KEY>` (obrigatória, fail-fast — ver `lib/env.ts`/`server/offer.ts`),
+  // resolvida por `resolveOfferSlug(env, key)`. Trocar de oferta/campanha = só mudar a env.
   productName: string
   productSku: string
   /** Prefixo das imagens do funil em /public (ex.: `/img/no-comando-da-ia`). */

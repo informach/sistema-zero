@@ -4,11 +4,12 @@ import type { GatewayClient } from '../lib/gateway-client'
 export interface GrantMembersDeps {
   gateway: GatewayClient
   /**
-   * Slug/id da oferta — usado como FALLBACK quando o lead não tem `offer_ref`
-   * gravado (leads antigos / caminhos sem checkout). A oferta efetivamente comprada
-   * vem do `lead.offerRef` (gravado no checkout) → suporta vender mais de uma oferta.
+   * Resolve a oferta pelo funil do lead — usado SÓ como fallback quando o lead não
+   * tem `offer_ref` gravado (leads antigos). A oferta efetivamente comprada vem do
+   * `lead.offerRef` (gravado no checkout). SEM fallback global no código: lead sem
+   * `offerRef` E sem funil conhecido → lança (não inventa oferta).
    */
-  offerRef: string
+  resolveOffer: (funnel: string | null) => { offerSlug: string }
   /** Marca a concessão concluída (one-shot) — poll repetido após pago não re-chama o members. */
   repo: Pick<FunnelRepo, 'setMembersGranted'>
   log?: (msg: string, meta?: Record<string, unknown>) => void
@@ -40,8 +41,8 @@ export function makeGrantMembers(deps: GrantMembersDeps): (lead: Lead) => Promis
     if (lead.membersGrantedAt) return
     const { status } = await deps.gateway.grantMembersAccess({
       userId: lead.buyerUserId,
-      // Oferta efetivamente comprada (gravada no checkout); env é só fallback.
-      offerRef: lead.offerRef ?? deps.offerRef,
+      // Oferta efetivamente comprada (gravada no checkout); fallback resolve pelo funil.
+      offerRef: lead.offerRef ?? deps.resolveOffer(lead.funnel).offerSlug,
       paymentId: lead.paymentId,
       paidAt: lead.paidAt ? lead.paidAt.toISOString() : undefined,
     })

@@ -15,8 +15,14 @@ export const POST: APIRoute = ({ request }) => {
     gateway,
     resolveOffer: makeResolveOffer(env),
     fulfill: makeFulfill({ repo, gateway, log }),
-    grantMembers: makeGrantMembers({ gateway, offerRef: env.CATALOG_OFFER_SLUG, repo, log }),
-    sendWelcome: makeSendWelcome({ gateway, communityUrl: env.COMMUNITY_URL, repo, log }),
+    grantMembers: makeGrantMembers({ gateway, resolveOffer: makeResolveOffer(env), repo, log }),
+    sendWelcome: makeSendWelcome({
+      gateway,
+      communityUrl: env.COMMUNITY_URL,
+      kidsCommunityUrl: env.KIDS_COMMUNITY_URL,
+      repo,
+      log,
+    }),
     log,
   })
 }

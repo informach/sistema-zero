@@ -28,7 +28,6 @@ export const DESAFIO_PRIMEIRO_JOGO: FunnelDef = {
   produto: 'desafio-primeiro-jogo',
   key: 'kids/desafio-primeiro-jogo',
   basePath: '/kids/desafio-primeiro-jogo',
-  catalogOfferSlug: 'desafio-primeiro-jogo',
   productName: 'Desafio do Primeiro Jogo',
   productSku: 'desafio-primeiro-jogo',
   imagesBase: '/img/desafio-primeiro-jogo',

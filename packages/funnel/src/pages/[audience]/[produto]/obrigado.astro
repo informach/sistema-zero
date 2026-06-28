@@ -19,8 +19,9 @@ const { env } = getDeps()
 Astro.response.headers.set('cache-control', 'no-store')
 Astro.response.headers.append('set-cookie', clearLeadCookie(env.NODE_ENV === 'production'))
 
-// CTA p/ a área de membros (mesma base do link do e-mail de boas-vindas).
-const communityUrl = env.COMMUNITY_URL
+// CTA p/ a área de membros (mesma base do link do e-mail de boas-vindas). Por
+// audiência: o funil kids leva ao app KIDS, não ao community adulto.
+const communityUrl = f.audience === 'kids' ? env.KIDS_COMMUNITY_URL : env.COMMUNITY_URL
 
 // O que a compra entrega + próximos passos vêm do conteúdo do funil.
 const { entrega, passos } = f.content.obrigado

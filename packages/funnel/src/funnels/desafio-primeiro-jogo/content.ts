@@ -372,7 +372,7 @@ export const DESAFIO_OBRIGADO: FunnelObrigado = {
     'Link do jogo pra compartilhar com a família e os amigos',
     'Passo a passo em vídeo (aula guiada)',
     'Mapa dos pais, em linguagem para quem não é de tecnologia',
-    'Certificado simples de conclusão',
+    'Certificado de conclusão',
   ],
   passos: [
     {

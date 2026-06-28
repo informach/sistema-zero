@@ -5,6 +5,7 @@ import { getFunnel } from '../../../funnels/registry'
 import { formatBRLFromCents, formatBRLFromCents2 } from '../../../lib/money'
 import { getActiveOffer } from '../../../server/catalog'
 import { getDeps } from '../../../server/deps'
+import { resolveOfferSlug } from '../../../server/offer'
 
 // SSR (não prerender): nome/preço vêm do catálogo em runtime. Marketing sem dado
 // por-usuário → cacheável na borda; reflete mudança de preço da oferta em ~1min.
@@ -16,7 +17,8 @@ const f = getFunnel(Astro.params.audience, Astro.params.produto)
 if (!f) return new Response(null, { status: 404 })
 
 const { env, gateway } = getDeps()
-const offer = await getActiveOffer(gateway, f.catalogOfferSlug)
+// Oferta vem da env do funil (FUNNEL_OFFER_<KEY>). MESMA fonte do checkout.
+const offer = await getActiveOffer(gateway, resolveOfferSlug(env, f.key))
 const productName = offer?.productName || f.productName
 const priceCents = offer?.priceCents ?? env.PRODUCT_PRICE_CENTS
 const priceLabel = formatBRLFromCents2(priceCents) // "R$ 37,00" (boxes de preço)

@@ -55,6 +55,25 @@ describe('makeSendWelcome (boas-vindas de 1º acesso: e-mail + WhatsApp)', () =>
     expect(wa?.idempotencyKey).toBe(`welcome-wa-${lead.id}`)
   })
 
+  test('funil kids → link de senha aponta para o app KIDS (kidsCommunityUrl)', async () => {
+    const { repo } = createFakeRepo()
+    const gw = createFakeGateway()
+    const base = await registeredLead(repo)
+    // Lead de funil kids (a chave é `audience/produto`).
+    const lead = { ...base, funnel: 'kids/desafio-primeiro-jogo' }
+
+    await makeSendWelcome({
+      gateway: gw.gateway,
+      communityUrl: COMMUNITY_URL,
+      kidsCommunityUrl: 'http://localhost:3008',
+      repo,
+    })(lead)
+
+    const link = 'http://localhost:3008/redefinir-senha?token=fake-pw-token'
+    expect(gw.calls.messages[0]?.input.variables?.link).toBe(link)
+    expect(gw.calls.messages[1]?.input.variables?.link).toBe(link)
+  })
+
   test('lead sem telefone → só o e-mail sai (WhatsApp é pulado)', async () => {
     const { repo } = createFakeRepo()
     const gw = createFakeGateway()
