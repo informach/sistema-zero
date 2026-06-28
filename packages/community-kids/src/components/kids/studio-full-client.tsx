@@ -4,6 +4,7 @@
 // `@import` em `app/globals.css`, DENTRO do pipeline Tailwind — um JS-import aqui só
 // traz os tokens, NÃO registra as cores p/ gerar as utilitárias (sem isso os modais e
 // menus do editor saem sem fundo/cor). Ver o comentário no globals.css.
+import { dataUrlBase64ToBlob } from '@sistemazero/member-shell/lib/data-url'
 import type { Project, StudioShareAdapter } from '@sistemazero/studio'
 import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -87,7 +88,8 @@ export function StudioFullClient({ viewerId }: { viewerId: string | null }) {
           new File([JSON.stringify(project)], 'project.json', { type: 'application/json' }),
         )
         if (coverDataUrl) {
-          const blob = await (await fetch(coverDataUrl)).blob()
+          // ⚠️ NÃO usar fetch(data:) — a CSP (connect-src) bloqueia → "Failed to fetch".
+          const blob = dataUrlBase64ToBlob(coverDataUrl)
           form.set('cover', new File([blob], 'cover', { type: blob.type || 'image/png' }))
         }
         const res = await fetch('/api/studio/publish-standalone', { method: 'POST', body: form })

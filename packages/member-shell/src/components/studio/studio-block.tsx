@@ -16,6 +16,7 @@ import { CheckCircle2, Maximize2, Minimize2, Send } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { type ApiError, apiGet, apiSend } from '../../lib/api'
 import { cn } from '../../lib/cn'
+import { dataUrlBase64ToBlob } from '../../lib/data-url'
 import { lessonStudioProjectId } from '../../lib/studio-project-id'
 import type { StudioBlock, StudioStateView, StudioSubmissionResultView } from '../../lib/types'
 import { useLessonPlayer } from '../lesson-player-context'
@@ -262,8 +263,10 @@ export function StudioBlockView({ blockId, content, studioState, enableShare, on
 
   // Adapter de COMPARTILHAR (Mural) — só no kids (`enableShare`). O Studio o LATCHA
   // uma vez, então memoizamos por (lessonId, blockId): I/O do servidor vive aqui, a
-  // UX no editor. `generateDescription` manda só os 3 arquivos (sem assets); `publish`
-  // sobe o projeto inteiro + print por multipart e devolve os links.
+  // UX no editor. ⚠️ SEM `generateDescription`: na AULA o projeto já é conhecido e o
+  // admin define o resumo (`presetDescription`) — a criança só ajusta, sem IA. A IA
+  // (gerar resumo) vive SÓ no Estúdio Completo (`studio-full-client`), onde o projeto
+  // é livre. `publish` sobe o projeto inteiro + print por multipart e devolve os links.
   const share = useMemo<StudioShareAdapter | undefined>(() => {
     if (!enableShare || !lessonId) return undefined
     return {
@@ -271,21 +274,6 @@ export function StudioBlockView({ blockId, content, studioState, enableShare, on
       titleEditable: false,
       presetDescription,
       presetCoverUrl,
-      async generateDescription({ project, title }) {
-        try {
-          const res = await apiSend<{ description?: string }>('/api/studio/describe', 'POST', {
-            files: {
-              html: project.files['index.html'],
-              css: project.files['style.css'],
-              js: project.files['script.js'],
-            },
-            title,
-          })
-          return res.description ?? ''
-        } catch {
-          return '' // fail-soft: a criança escreve do zero
-        }
-      },
       async publish({ project, coverDataUrl, useAdminCover, title, description }) {
         const form = new FormData()
         form.set('lessonId', lessonId)
@@ -298,7 +286,8 @@ export function StudioBlockView({ blockId, content, studioState, enableShare, on
           new File([JSON.stringify(project)], 'project.json', { type: 'application/json' }),
         )
         if (coverDataUrl) {
-          const blob = await (await fetch(coverDataUrl)).blob()
+          // ⚠️ NÃO usar fetch(data:) — a CSP (connect-src) bloqueia → "Failed to fetch".
+          const blob = dataUrlBase64ToBlob(coverDataUrl)
           form.set('cover', new File([blob], 'cover', { type: blob.type || 'image/png' }))
         } else if (useAdminCover) {
           // Sem print/upload: o servidor usa a capa padrão do curso (resolve a URL lá).

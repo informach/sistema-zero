@@ -82,16 +82,18 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
     adapter?.titleEditable,
   ])
 
-  // Rascunho da descrição na abertura (1x) SÓ quando o admin não pré-definiu.
+  // Rascunho da descrição na abertura (1x) SÓ quando há IA (Estúdio Completo) e o
+  // admin não pré-definiu. Na AULA (sem `generateDescription`) NÃO gera nada.
   useEffect(() => {
     if (!open || describeStartedRef.current) return
     if (!adapter || !project) return
     describeStartedRef.current = true
     if (adapter.presetDescription?.trim()) return
+    const generate = adapter.generateDescription
+    if (!generate) return
     setGenerating(true)
     setAiUses((n) => n + 1) // a geração automática conta no teto de IA
-    adapter
-      .generateDescription({ project, title: title.trim() || project.name })
+    generate({ project, title: title.trim() || project.name })
       .then((draft) => {
         const clean = (draft ?? '').trim().slice(0, MAX_DESCRIPTION)
         if (clean) setDescription(clean)
@@ -104,11 +106,11 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
   const titleEditable = adapter.titleEditable ?? true
 
   const regenerate = () => {
-    if (generating || aiUses >= MAX_AI_GENERATIONS) return
+    const generate = adapter.generateDescription
+    if (!generate || generating || aiUses >= MAX_AI_GENERATIONS) return
     setGenerating(true)
     setAiUses((n) => n + 1)
-    adapter
-      .generateDescription({ project, title: title.trim() || project.name })
+    generate({ project, title: title.trim() || project.name })
       .then((draft) => {
         const clean = (draft ?? '').trim().slice(0, MAX_DESCRIPTION)
         if (clean) setDescription(clean)
@@ -314,26 +316,30 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
               <span className="text-sz-fg-mute text-xs">
                 {description.length}/{MAX_DESCRIPTION}
               </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={regenerate}
-                disabled={generating || aiUses >= MAX_AI_GENERATIONS}
-                aria-label={t('share.ai.button')}
-              >
-                {generating ? (
-                  <span className="flex items-center gap-1.5">
-                    <Spinner className="h-3.5 w-3.5" />
-                    {t('share.step.describe.generating')}
-                  </span>
-                ) : description ? (
-                  t('share.step.describe.regenerate')
-                ) : (
-                  t('share.step.describe.generate')
-                )}
-              </Button>
+              {/* Botão de IA SÓ quando o host fornece `generateDescription` (Estúdio
+                  Completo). Na AULA não aparece — o resumo do admin é só editado. */}
+              {adapter.generateDescription ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={regenerate}
+                  disabled={generating || aiUses >= MAX_AI_GENERATIONS}
+                  aria-label={t('share.ai.button')}
+                >
+                  {generating ? (
+                    <span className="flex items-center gap-1.5">
+                      <Spinner className="h-3.5 w-3.5" />
+                      {t('share.step.describe.generating')}
+                    </span>
+                  ) : description ? (
+                    t('share.step.describe.regenerate')
+                  ) : (
+                    t('share.step.describe.generate')
+                  )}
+                </Button>
+              ) : null}
             </div>
-            {aiUses >= MAX_AI_GENERATIONS && !generating ? (
+            {adapter.generateDescription && aiUses >= MAX_AI_GENERATIONS && !generating ? (
               <p className="mt-1 text-sz-fg-mute text-xs" role="status">
                 {t('share.ai.capped')}
               </p>
@@ -365,8 +371,9 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
               </p>
             ) : null}
             <div className="flex flex-wrap items-center gap-2">
+              {/* "Gerar capa" é a ação PRINCIPAL (print) — botão primário, destacado. */}
               <Button
-                variant="subtle"
+                variant="primary"
                 size="sm"
                 onClick={() => void generateCover()}
                 disabled={capturing}
@@ -380,8 +387,9 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
                   t('share.cover.generate')
                 )}
               </Button>
+              {/* Upload é ÚLTIMO recurso → o MENOS destacado (subtle). */}
               <Button
-                variant="ghost"
+                variant="subtle"
                 size="sm"
                 onClick={() => fileRef.current?.click()}
                 disabled={capturing}

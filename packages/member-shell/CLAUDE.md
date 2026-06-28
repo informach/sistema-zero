@@ -160,7 +160,10 @@ que cada app trata com uma página "aula bloqueada". O gate confiável é o memb
 `HubThreadView` ganhou **`playId`** (sobrevive ao `redactAuthors` — só estrutural; teste em
 `tests/hub-redact.test.ts`). O **`StudioBlockView`** tem a prop `enableShare?`: ligada, constrói o
 `StudioShareAdapter` (descreve via `/api/studio/describe`, publica multipart via `/api/studio/publish`) e o
-passa ao `<StudioLesson share>` — o botão "Compartilhar" aparece na Topbar do editor. ⚠️ **Só HABILITA
+passa ao `<StudioLesson share>` — o botão "Compartilhar" aparece na Topbar do editor. ⚠️ **A CAPA (data URL
+do print/upload) vira Blob via `dataUrlBase64ToBlob` (`lib/data-url.ts`, `atob`), NUNCA `fetch('data:…')`**:
+a CSP dos apps (`connect-src 'self' https:`) bloqueia `fetch` de `data:` → "Failed to fetch" no publish
+(bug 28/06; vale tb no Estúdio Completo `studio-full-client.tsx`). ⚠️ **Só HABILITA
 após a ENTREGA ao professor**: o `StudioBlockView` passa `shareDisabledReason` ao `<StudioLesson>`
 (`share && !submitted ? '…envie ao professor primeiro' : undefined`) — o botão aparece desabilitado com
 dica até o aluno enviar o projeto, e habilita quando `submitted` vira true. Casa com o backend, que barra
