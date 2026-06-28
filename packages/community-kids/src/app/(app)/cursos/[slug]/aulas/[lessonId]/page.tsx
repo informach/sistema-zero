@@ -1,8 +1,10 @@
 import { notFound } from 'next/navigation'
 import { KidsLockedLesson } from '@/components/kids/kids-locked-lesson'
 import type { LessonOutlineView } from '@/lib/types'
+import { computeAgeFromBirthDate } from '@/lib/user-display'
 import { getMeReadonly } from '@/server/auth'
 import { getLesson, getMyCourse } from '@/server/members'
+import { listReadonly as listProfilesReadonly } from '@/server/profiles'
 import { getSession } from '@/server/session'
 import { LessonPlayer } from './lesson-player-client'
 
@@ -14,12 +16,15 @@ export default async function LessonPage({
   params: Promise<{ slug: string; lessonId: string }>
 }) {
   const { slug, lessonId } = await params
-  const [courseRes, lessonRes, session, me] = await Promise.all([
+  const [courseRes, lessonRes, session, me, profilesRes] = await Promise.all([
     getMyCourse(slug),
     getLesson(slug, lessonId),
     getSession(),
     // Avatar p/ o passo de agradecimento da classificação (não vive nas claims).
     getMeReadonly(),
+    // Perfis da conta → o ATIVO (a criança) dá nome + nascimento + foto p/ a
+    // classificação (nunca o e-mail/nome do responsável). Best-effort.
+    listProfilesReadonly(),
   ])
   if (courseRes.status === 404 || courseRes.status === 403) notFound()
   if (courseRes.status !== 200 || !courseRes.body) throw new Error('Falha ao carregar o curso')
@@ -42,6 +47,13 @@ export default async function LessonPage({
   // a aula atual já destravou a próxima. O botão "Próxima" do rodapé (nextHref) fica travado.
   const nextLessonHref = href(nextOutline)
 
+  // Perfil ATIVO = a criança (id da sessão). Server-side e best-effort: o nascimento
+  // só é usado p/ a idade da PRÓPRIA criança (sem vazar dados de outros perfis).
+  const activeProfile =
+    profilesRes.status === 200
+      ? profilesRes.body?.profiles.find((p) => p.id === session?.id)
+      : undefined
+
   return (
     <LessonPlayer
       course={course}
@@ -52,10 +64,11 @@ export default async function LessonPage({
       viewerEmail={session?.email ?? null}
       viewerId={session?.id ?? null}
       ratingViewer={{
-        firstName: session?.firstName ?? null,
-        lastName: session?.lastName ?? null,
-        email: session?.email ?? null,
-        avatarUrl: me.status === 200 ? (me.body?.user?.avatarUrl ?? null) : null,
+        name: activeProfile?.name ?? session?.activeProfile?.name ?? null,
+        age: computeAgeFromBirthDate(activeProfile?.birthDate),
+        avatarUrl:
+          activeProfile?.avatarUrl ??
+          (me.status === 200 ? (me.body?.user?.avatarUrl ?? null) : null),
       }}
       // Compartilhar usa a página de vendas do curso; kids não tem FUNNEL_URL
       // (decisão da v1) — sem salesPageUrl o botão fica oculto.

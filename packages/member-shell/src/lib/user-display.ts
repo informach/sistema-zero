@@ -22,6 +22,28 @@ export function getUserDisplayName(
   return getEmailHandle(email) ?? 'Membro'
 }
 
+/**
+ * Idade em ANOS COMPLETOS a partir de `YYYY-MM-DD` (controle de idade kids — a data
+ * de nascimento é preenchida pelos pais). `null` se ausente/malformada/futura. Puro e
+ * client-safe; usa a data local atual.
+ */
+export function computeAgeFromBirthDate(birthDate?: string | null): number | null {
+  const s = birthDate?.trim()
+  if (!s) return null
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s)
+  if (!m) return null
+  const year = Number(m[1])
+  const month = Number(m[2])
+  const day = Number(m[3])
+  if (month < 1 || month > 12 || day < 1 || day > 31) return null
+  const now = new Date()
+  let age = now.getFullYear() - year
+  const curMonth = now.getMonth() + 1
+  if (curMonth < month || (curMonth === month && now.getDate() < day)) age -= 1
+  if (age < 0 || age > 120) return null
+  return age
+}
+
 /** Iniciais p/ o avatar: nome+sobrenome ("JS") → 1ª letra do handle → "M". */
 export function getUserInitials(
   firstName?: string | null,

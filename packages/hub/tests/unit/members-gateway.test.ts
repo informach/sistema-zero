@@ -87,7 +87,7 @@ describe('members-http.gateway', () => {
     })
   })
 
-  test('getShowcaseEligibility: resposta não-ok → lança (fail-closed)', async () => {
+  test('getShowcaseEligibility: 5xx → lança (fail-closed)', async () => {
     const fetchImpl = (async () => new Response('nope', { status: 500 })) as unknown as typeof fetch
     const gw = createMembersHttpGateway({ baseUrl: 'http://members:3004', fetchImpl })
     await expect(
@@ -99,4 +99,21 @@ describe('members-http.gateway', () => {
       }),
     ).rejects.toThrow()
   })
+
+  // 403 (equipe sem matrícula real — o internal checa privileged:false) e 404 (aula
+  // rascunho) NÃO são falha de infra: viram eligible:false → o service responde 403
+  // limpo (PostingNotAllowedError), nunca 500 "Erro interno".
+  for (const status of [403, 404]) {
+    test(`getShowcaseEligibility: ${status} → eligible:false (gracioso, sem lançar)`, async () => {
+      const fetchImpl = (async () => new Response('no', { status })) as unknown as typeof fetch
+      const gw = createMembersHttpGateway({ baseUrl: 'http://members:3004', fetchImpl })
+      const res = await gw.getShowcaseEligibility({
+        userId: 'perfil-1',
+        accountId: 'conta-1',
+        lessonId: 'aula-1',
+        blockId: 'bloco-1',
+      })
+      expect(res.eligible).toBe(false)
+    })
+  }
 })

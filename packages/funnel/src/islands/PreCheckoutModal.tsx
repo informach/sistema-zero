@@ -26,6 +26,11 @@ export default function PreCheckoutModal({ basePath, funnel }: PreCheckoutModalP
   const lastFocusedRef = useRef<HTMLElement | null>(null)
   const reduce = useReducedMotion()
   const uid = useId()
+  // Funil kids → os dados do pré-checkout são do RESPONSÁVEL (quem compra/paga); o
+  // perfil da criança é criado DEPOIS, já na plataforma. A chave é `audience/produto`
+  // (audience ∈ {pro, kids}) — ver registry. Deixar isso explícito evita o pai
+  // preencher os dados da criança aqui.
+  const isKids = funnel.startsWith('kids/')
 
   // Garante o lead (mesmo p/ quem cai direto na oferta) e marca viu_pagina_vendas
   // com o perfil que veio na URL (`?perfil=`), quando válido.
@@ -147,7 +152,9 @@ export default function PreCheckoutModal({ basePath, funnel }: PreCheckoutModalP
                   Falta um passo
                 </h2>
                 <p className="mt-1 text-sm text-muted">
-                  Confirme seus dados para ir pro pagamento seguro.
+                  {isKids
+                    ? 'Confirme os dados do responsável para ir ao pagamento seguro.'
+                    : 'Confirme seus dados para ir pro pagamento seguro.'}
                 </p>
               </div>
               <button
@@ -167,6 +174,13 @@ export default function PreCheckoutModal({ basePath, funnel }: PreCheckoutModalP
               </button>
             </div>
 
+            {isKids && (
+              <p className="mt-4 rounded-xl border border-cyan/30 bg-cyan/10 px-4 py-3 text-sm text-ink">
+                <strong>Estes dados são do responsável</strong> (mãe, pai ou tutor). O perfil da
+                criança — nome e idade — você cria depois, já dentro da plataforma.
+              </p>
+            )}
+
             <form
               noValidate
               onSubmit={(e) => {
@@ -177,8 +191,8 @@ export default function PreCheckoutModal({ basePath, funnel }: PreCheckoutModalP
             >
               <Field
                 id={`${uid}-nome`}
-                label="Nome"
-                placeholder="Seu nome completo"
+                label={isKids ? 'Nome do responsável' : 'Nome'}
+                placeholder={isKids ? 'Nome completo do responsável' : 'Seu nome completo'}
                 autoComplete="name"
                 inputRef={firstFieldRef}
                 value={nome}
@@ -190,7 +204,7 @@ export default function PreCheckoutModal({ basePath, funnel }: PreCheckoutModalP
               />
               <Field
                 id={`${uid}-email`}
-                label="E-mail"
+                label={isKids ? 'E-mail do responsável' : 'E-mail'}
                 type="email"
                 inputMode="email"
                 placeholder="voce@email.com"
@@ -204,7 +218,7 @@ export default function PreCheckoutModal({ basePath, funnel }: PreCheckoutModalP
               />
               <Field
                 id={`${uid}-telefone`}
-                label="Telefone"
+                label={isKids ? 'Telefone do responsável' : 'Telefone'}
                 type="tel"
                 inputMode="tel"
                 placeholder="(11) 99999-9999"

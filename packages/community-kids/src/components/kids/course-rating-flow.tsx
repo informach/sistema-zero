@@ -18,14 +18,17 @@ import type {
   CourseFeedbackQuestionKey,
   CourseRatingView,
 } from '@/lib/types'
-import { getUserDisplayName } from '@/lib/user-display'
 import { KidsMascot } from './mascot'
 
-/** Dados do aluno exibidos no passo de agradecimento (avatar + nome). */
+/**
+ * Dados da CRIANÇA exibidos no passo de agradecimento (avatar + nome + idade).
+ * ⚠️ NUNCA o e-mail nem o nome do responsável — só o que é da criança.
+ */
 export interface RatingViewer {
-  firstName: string | null
-  lastName: string | null
-  email: string | null
+  /** Nome do PERFIL (a criança), não da conta. */
+  name: string | null
+  /** Idade em anos (da data de nascimento do perfil); `null` = não mostra idade. */
+  age: number | null
   avatarUrl: string | null
 }
 
@@ -280,14 +283,17 @@ export function CourseRatingFlow({ courseSlug, initialRating, shareUrl, viewer }
             <div className="flex items-start gap-3 border-border border-y py-4">
               <UserAvatar
                 avatarUrl={viewer.avatarUrl}
-                firstName={viewer.firstName}
-                lastName={viewer.lastName}
-                email={viewer.email}
+                firstName={viewer.name}
+                lastName={null}
+                email={null}
                 size="lg"
               />
               <div className="flex min-w-0 flex-col gap-1">
                 <p className="font-medium text-sm">
-                  {getUserDisplayName(viewer.firstName, viewer.lastName, viewer.email)}
+                  {viewer.name ?? 'Criador'}
+                  {viewer.age != null
+                    ? ` • ${viewer.age} ${viewer.age === 1 ? 'ano' : 'anos'}`
+                    : ''}
                 </p>
                 <StarRating value={rating} size="sm" />
                 {comment.trim() ? (

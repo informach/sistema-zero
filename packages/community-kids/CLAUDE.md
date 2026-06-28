@@ -214,7 +214,12 @@ anexo (o servidor recusaria).
 2. **Classificação do curso INCLUÍDA (decisão do usuário, 06/2026)**: porta kids do fluxo de 5
    modais do community (`course-rating-flow.tsx` próprio, copy em tom kids + mascote; rota shim
    `/api/members/courses/[slug]/rating` compartilhada). Compartilhar usa SÓ `salesPageUrl` do
-   curso (kids segue SEM `FUNNEL_URL`).
+   curso (kids segue SEM `FUNNEL_URL`). ⚠️ **Identidade no agradecimento = a CRIANÇA, nunca o
+   responsável (28/06):** `RatingViewer` é `{name, age, avatarUrl}` montado na `page.tsx` do
+   perfil ATIVO (`listProfilesReadonly` → o perfil `id == session.id`): **nome do PERFIL** +
+   **idade** (`computeAgeFromBirthDate(birthDate)` do member-shell; sem nascimento → só o nome) +
+   foto do perfil. NUNCA e-mail nem `session.firstName/lastName` (= conta do responsável). O
+   `viewerEmail` do player segue sendo o do responsável SÓ p/ watermark de vídeo (não exibido).
 3. **Telefone agora é DO PERFIL** (decisão do usuário, 06/2026 — antes o perfil kids não tinha
    telefone): a criança edita nome/foto/**telefone** (`whatsapp` do perfil) na página "Meu
    perfil" via `/api/profiles/:id`. O telefone do RESPONSÁVEL segue na compra (não se mistura).

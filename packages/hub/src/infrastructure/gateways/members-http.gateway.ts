@@ -80,6 +80,22 @@ export function createMembersHttpGateway(opts: MembersHttpGatewayOptions): Membe
         headers,
         signal: AbortSignal.timeout(timeoutMs),
       })
+      // 403 (sem matrícula real — ex.: equipe testando, que o internal checa com
+      // privileged:false) e 404 (aula rascunho/ausente) são "definitivamente NÃO
+      // elegível", não falha de infra: devolve eligible:false → o service responde
+      // PostingNotAllowedError (403 limpo) em vez de 500 "Erro interno". 401/5xx/
+      // timeout seguem FAIL-CLOSED (throw): o publish erra e pode reentregar.
+      if (res.status === 403 || res.status === 404) {
+        return {
+          eligible: false,
+          title: '',
+          summary: '',
+          defaultCoverUrl: null,
+          chain: null,
+          courseId: '',
+          audience: 'adult',
+        }
+      }
       if (!res.ok) throw new Error(`members showcase-eligibility respondeu ${res.status}`)
       const b = (await res.json()) as Partial<ShowcaseEligibilityResult>
       return {
