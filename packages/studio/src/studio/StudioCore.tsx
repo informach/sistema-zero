@@ -11,6 +11,7 @@ import { StudioStoresContext } from '../state/storesContext'
 import { createStudioStores, useStudioPersistence } from '../state/studioStores'
 import { useUIStore } from '../state/uiStore'
 import { StudioActivityProvider } from './activity'
+import { StudioCloudSyncProvider } from './cloud-sync'
 import {
   type ResolvedStudioConfig,
   resolveLearning,
@@ -71,6 +72,7 @@ function StudioCoreBody({
   activity,
   share,
   shareDisabledReason,
+  onCloudSync,
   onChange,
   onSave,
   onError,
@@ -99,6 +101,10 @@ function StudioCoreBody({
   // atividade): `share={{…}}` inline do host muda de referência a cada render,
   // mas o valor entregue ao provider fica estável. Default `null` → sem botão.
   const [shareValue] = useState(() => share ?? null)
+
+  // Callback "Sincronizar com o enviado" — latcha uma vez por instância (igual ao
+  // share); o host fornece uma referência estável (useCallback). `null` → sem item.
+  const [cloudSyncValue] = useState(() => onCloudSync ?? null)
 
   // `features` e `allowedModes` chegam como literais inline do host
   // (`features={{ extensions: false }}`) — nova REFERÊNCIA a cada render, mesmo
@@ -253,35 +259,37 @@ function StudioCoreBody({
 
   return (
     <StudioShareProvider value={shareValue}>
-      <StudioShareDisabledProvider value={shareDisabledReason ?? null}>
-        <StudioActivityProvider value={activityValue}>
-          <StudioConfigProvider value={config}>
-            <StudioThemeProvider value={effectiveTheme}>
-              <div
-                data-sz-theme={effectiveTheme}
-                className={['h-full min-h-0', className].filter(Boolean).join(' ')}
-                style={{ fontFamily: 'var(--font-family-sans)', ...style }}
-              >
-                {sanitized === null ? (
-                  <div className="flex h-full flex-col items-center justify-center gap-2 bg-sz-bg text-sz-fg-soft">
-                    <p className="text-sm">
-                      Projeto inválido — confira o initialProject passado ao Studio.
-                    </p>
-                  </div>
-                ) : hasProject ? (
-                  <ErrorBoundary
-                    fallback={(p) => <RootErrorFallback {...p} onExit={onExit} />}
-                    resetKeys={[sanitizedId]}
-                    label="Studio"
-                  >
-                    <Shell onExit={onExit} canToggleTheme={theme === undefined} />
-                  </ErrorBoundary>
-                ) : null}
-              </div>
-            </StudioThemeProvider>
-          </StudioConfigProvider>
-        </StudioActivityProvider>
-      </StudioShareDisabledProvider>
+      <StudioCloudSyncProvider value={cloudSyncValue}>
+        <StudioShareDisabledProvider value={shareDisabledReason ?? null}>
+          <StudioActivityProvider value={activityValue}>
+            <StudioConfigProvider value={config}>
+              <StudioThemeProvider value={effectiveTheme}>
+                <div
+                  data-sz-theme={effectiveTheme}
+                  className={['h-full min-h-0', className].filter(Boolean).join(' ')}
+                  style={{ fontFamily: 'var(--font-family-sans)', ...style }}
+                >
+                  {sanitized === null ? (
+                    <div className="flex h-full flex-col items-center justify-center gap-2 bg-sz-bg text-sz-fg-soft">
+                      <p className="text-sm">
+                        Projeto inválido — confira o initialProject passado ao Studio.
+                      </p>
+                    </div>
+                  ) : hasProject ? (
+                    <ErrorBoundary
+                      fallback={(p) => <RootErrorFallback {...p} onExit={onExit} />}
+                      resetKeys={[sanitizedId]}
+                      label="Studio"
+                    >
+                      <Shell onExit={onExit} canToggleTheme={theme === undefined} />
+                    </ErrorBoundary>
+                  ) : null}
+                </div>
+              </StudioThemeProvider>
+            </StudioConfigProvider>
+          </StudioActivityProvider>
+        </StudioShareDisabledProvider>
+      </StudioCloudSyncProvider>
     </StudioShareProvider>
   )
 }
