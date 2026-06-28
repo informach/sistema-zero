@@ -1,4 +1,4 @@
-import type { JSX } from 'react'
+import type { ChangeEvent, JSX } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { t } from '#core'
 import { Button, IconCheckCircle, IconLink, Modal } from '#ui'
@@ -14,145 +14,176 @@ export interface ShareDialogProps {
   adapter: StudioShareAdapter | null
 }
 
-type Step = 'confirm' | 'describe' | 'cover' | 'review' | 'publishing' | 'success' | 'error'
-
 const MAX_DESCRIPTION = 280
+const MAX_TITLE = 120
+const MAX_UPLOAD_BYTES = 8 * 1024 * 1024
+/**
+ * Teto de gerações de IA POR abertura do modal (conta a automática + os cliques em
+ * "Regerar"). Evita a criança "brincar" no botão e queimar IA. Reseta ao reabrir; o
+ * servidor (`/api/studio/describe`) ainda tem o backstop de 10/min por sessão.
+ */
+const MAX_AI_GENERATIONS = 3
+
+/** Capa escolhida: imagem (print automático OU upload) ou a padrão do curso. */
+type Cover = { kind: 'image'; dataUrl: string } | { kind: 'preset' }
 
 /**
  * Fluxo de COMPARTILHAR (publicar no Mural) — UX do Studio, I/O do host.
  *
- * confirm → describe (IA gera, criança edita) → cover (print) → review →
- * publishing → success | error. Reusa `captureCoverFromProject` (print) e o
- * `Modal` (que já reaplica o tema no portal via StudioThemeScope). A
- * imutabilidade do post é garantida no SERVIDOR; aqui só avisamos.
+ * UM MODAL só (redesenho 06/2026): texto do que vai acontecer → título quando o
+ * host permite edição → resumo (pré-carregado do admin ou da IA, editável) → capa
+ * (botão "Gerar capa" que tenta o print; se falhar, usa a do curso; senão a criança
+ * envia a sua) → Publicar (só habilita quando os campos necessários estão prontos).
+ * A imutabilidade do post é garantida no SERVIDOR; aqui só avisamos.
  */
 export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.Element | null {
   // Projeto da store POR INSTÂNCIA (hook com seletor) — não a estática.
   const project = useProjectStore((s) => s.project)
 
-  const [step, setStep] = useState<Step>('confirm')
-  const [okConcluded, setOkConcluded] = useState(false)
-  const [okLanguage, setOkLanguage] = useState(false)
+  const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [generating, setGenerating] = useState(false)
-  const [generateFailed, setGenerateFailed] = useState(false)
-  const [coverDataUrl, setCoverDataUrl] = useState<string | null>(null)
+  const [aiUses, setAiUses] = useState(0)
+  const [cover, setCover] = useState<Cover | null>(null)
   const [capturing, setCapturing] = useState(false)
-  const [title, setTitle] = useState('')
+  const [coverNote, setCoverNote] = useState<string | null>(null)
+  const [publishing, setPublishing] = useState(false)
   const [result, setResult] = useState<StudioShareResult | null>(null)
   const [errorMsg, setErrorMsg] = useState('')
   const [copied, setCopied] = useState(false)
 
-  // Dispara a geração da descrição / captura do print UMA vez por passo.
+  const fileRef = useRef<HTMLInputElement | null>(null)
+  // Gera o rascunho da descrição UMA vez por abertura (quando não há preset).
   const describeStartedRef = useRef(false)
-  const coverStartedRef = useRef(false)
 
   // Reseta tudo a cada abertura (o componente fica montado entre aberturas).
   useEffect(() => {
     if (!open) return
-    setStep('confirm')
-    setOkConcluded(false)
-    setOkLanguage(false)
-    // Preset do admin (aula): título/descrição já vêm prontos. Sem preset (Estúdio Completo) →
-    // título = nome do projeto e descrição vazia (a IA preenche no passo "describe").
+    // Preset do admin (aula): título/descrição já vêm prontos. Sem preset (Estúdio
+    // Completo) → título = nome do projeto e descrição vazia (a IA tenta preencher).
+    const editableTitle = adapter?.titleEditable !== false
+    setTitle(adapter?.presetTitle?.trim() || (editableTitle ? (project?.name ?? '') : ''))
     setDescription(adapter?.presetDescription?.trim() ?? '')
     setGenerating(false)
-    setGenerateFailed(false)
-    setCoverDataUrl(null)
+    setAiUses(0)
+    setCover(null)
     setCapturing(false)
-    setTitle(adapter?.presetTitle?.trim() || project?.name || '')
+    setCoverNote(null)
+    setPublishing(false)
     setResult(null)
     setErrorMsg('')
     setCopied(false)
     describeStartedRef.current = false
-    coverStartedRef.current = false
-  }, [open, project?.name, adapter?.presetTitle, adapter?.presetDescription])
+  }, [
+    open,
+    project?.name,
+    adapter?.presetTitle,
+    adapter?.presetDescription,
+    adapter?.titleEditable,
+  ])
 
-  // Gera o rascunho da descrição ao entrar no passo "describe" (1x).
+  // Rascunho da descrição na abertura (1x) SÓ quando o admin não pré-definiu.
   useEffect(() => {
-    if (step !== 'describe' || describeStartedRef.current) return
+    if (!open || describeStartedRef.current) return
     if (!adapter || !project) return
     describeStartedRef.current = true
-    // Descrição pré-definida pelo admin (aula) → NÃO gasta IA: já abriu preenchida. A criança
-    // ainda edita o texto à vontade (ou clica "Gerar" pra pedir uma da IA mesmo assim).
     if (adapter.presetDescription?.trim()) return
     setGenerating(true)
-    setGenerateFailed(false)
+    setAiUses((n) => n + 1) // a geração automática conta no teto de IA
     adapter
       .generateDescription({ project, title: title.trim() || project.name })
       .then((draft) => {
         const clean = (draft ?? '').trim().slice(0, MAX_DESCRIPTION)
         if (clean) setDescription(clean)
-        else setGenerateFailed(true)
       })
-      .catch(() => setGenerateFailed(true))
+      .catch(() => {})
       .finally(() => setGenerating(false))
-  }, [step, adapter, project, title])
-
-  // Captura o print ao entrar no passo "cover" (1x). Nunca lança; null = sem foto.
-  useEffect(() => {
-    if (step !== 'cover' || coverStartedRef.current) return
-    if (!project) return
-    coverStartedRef.current = true
-    setCapturing(true)
-    captureCoverFromProject(project)
-      .then((url) => setCoverDataUrl(url))
-      .catch(() => setCoverDataUrl(null))
-      .finally(() => setCapturing(false))
-  }, [step, project])
+  }, [open, adapter, project, title])
 
   if (!open || !adapter || !project) return null
+  const titleEditable = adapter.titleEditable ?? true
 
   const regenerate = () => {
-    if (!project || generating) return
+    if (generating || aiUses >= MAX_AI_GENERATIONS) return
     setGenerating(true)
-    setGenerateFailed(false)
+    setAiUses((n) => n + 1)
     adapter
       .generateDescription({ project, title: title.trim() || project.name })
       .then((draft) => {
         const clean = (draft ?? '').trim().slice(0, MAX_DESCRIPTION)
         if (clean) setDescription(clean)
-        else setGenerateFailed(true)
       })
-      .catch(() => setGenerateFailed(true))
+      .catch(() => {})
       .finally(() => setGenerating(false))
   }
 
-  const recapture = () => {
-    if (!project || capturing) return
+  // "Gerar capa": tenta o print do projeto rodando; se não der, usa a capa do
+  // curso (admin); se não houver, pede o upload da criança.
+  const generateCover = async () => {
+    if (capturing) return
     setCapturing(true)
-    setCoverDataUrl(null)
-    captureCoverFromProject(project)
-      .then((url) => setCoverDataUrl(url))
-      .catch(() => setCoverDataUrl(null))
-      .finally(() => setCapturing(false))
+    setCoverNote(null)
+    try {
+      const url = await captureCoverFromProject(project)
+      if (url) {
+        setCover({ kind: 'image', dataUrl: url })
+        return
+      }
+      if (adapter.presetCoverUrl) {
+        setCover({ kind: 'preset' })
+        setCoverNote(t('share.cover.failUsedAdmin'))
+        return
+      }
+      setCoverNote(t('share.cover.failUpload'))
+    } finally {
+      setCapturing(false)
+    }
+  }
+
+  const onPickFile = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = '' // permite re-selecionar o mesmo arquivo
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      setCoverNote(t('share.cover.badType'))
+      return
+    }
+    if (file.size > MAX_UPLOAD_BYTES) {
+      setCoverNote(t('share.cover.tooBig'))
+      return
+    }
+    const reader = new FileReader()
+    reader.onload = () => {
+      setCover({ kind: 'image', dataUrl: String(reader.result) })
+      setCoverNote(null)
+    }
+    reader.onerror = () => setCoverNote(t('share.cover.badType'))
+    reader.readAsDataURL(file)
   }
 
   const doPublish = () => {
-    setStep('publishing')
+    setPublishing(true)
     setErrorMsg('')
     adapter
       .publish({
         project,
-        coverDataUrl,
         title: title.trim() || project.name,
         description: description.trim().slice(0, MAX_DESCRIPTION),
+        coverDataUrl: cover?.kind === 'image' ? cover.dataUrl : null,
+        useAdminCover: cover?.kind === 'preset',
       })
       .then((res) => {
-        // Host com celebração própria (kids): entrega os links e SAI — sem tela de sucesso
-        // dobrada. Sem `onPublished` (Estúdio Completo) → mostra a tela de sucesso padrão.
+        // Host com celebração própria (kids): entrega os links e SAI. Sem
+        // `onPublished` (Estúdio Completo) → tela de sucesso interna.
         if (adapter.onPublished) {
           adapter.onPublished(res ?? {})
           onClose()
         } else {
           setResult(res ?? {})
-          setStep('success')
         }
       })
-      .catch((e: unknown) => {
-        setErrorMsg(e instanceof Error ? e.message : String(e))
-        setStep('error')
-      })
+      .catch((e: unknown) => setErrorMsg(e instanceof Error ? e.message : String(e)))
+      .finally(() => setPublishing(false))
   }
 
   const copyLink = async () => {
@@ -168,235 +199,52 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
     }
   }
 
-  const busy = step === 'publishing'
-  const descTrimmed = description.trim()
+  const coverPreviewSrc =
+    cover?.kind === 'image'
+      ? cover.dataUrl
+      : cover?.kind === 'preset'
+        ? (adapter.presetCoverUrl ?? null)
+        : null
+  const titleReady = titleEditable ? title.trim().length > 0 : true
+  const ready = titleReady && description.trim().length > 0 && cover !== null
 
-  // Rodapé por passo.
-  let footer: JSX.Element | null = null
-  if (step === 'confirm') {
-    footer = (
-      <>
-        <Button variant="ghost" size="sm" onClick={onClose}>
-          {t('share.cancel')}
-        </Button>
-        <Button
-          variant="primary"
-          size="sm"
-          disabled={!okConcluded || !okLanguage}
-          onClick={() => setStep('describe')}
-        >
-          {t('share.next')}
-        </Button>
-      </>
-    )
-  } else if (step === 'describe') {
-    footer = (
-      <>
-        <Button variant="ghost" size="sm" onClick={() => setStep('confirm')}>
-          {t('share.back')}
-        </Button>
-        <Button
-          variant="primary"
-          size="sm"
-          disabled={generating || descTrimmed.length === 0}
-          onClick={() => setStep('cover')}
-        >
-          {t('share.next')}
-        </Button>
-      </>
-    )
-  } else if (step === 'cover') {
-    footer = (
-      <>
-        <Button variant="ghost" size="sm" onClick={() => setStep('describe')}>
-          {t('share.back')}
-        </Button>
-        <Button variant="primary" size="sm" disabled={capturing} onClick={() => setStep('review')}>
-          {t('share.next')}
-        </Button>
-      </>
-    )
-  } else if (step === 'review') {
-    footer = (
-      <>
-        <Button variant="ghost" size="sm" onClick={() => setStep('cover')}>
-          {t('share.back')}
-        </Button>
-        <Button
-          variant="primary"
-          size="sm"
-          disabled={(title.trim() || project.name).length === 0 || descTrimmed.length === 0}
-          onClick={doPublish}
-        >
-          {t('share.publish')}
-        </Button>
-      </>
-    )
-  } else if (step === 'error') {
-    footer = (
-      <>
-        <Button variant="ghost" size="sm" onClick={onClose}>
-          {t('share.cancel')}
-        </Button>
-        <Button variant="primary" size="sm" onClick={() => setStep('review')}>
-          {t('share.retry')}
-        </Button>
-      </>
-    )
-  } else if (step === 'success') {
-    footer = (
-      <Button variant="primary" size="sm" onClick={onClose}>
-        {t('share.close')}
+  // Rodapé: sucesso → Fechar; senão → Cancelar + Publicar (gated).
+  const footer = result ? (
+    <Button variant="primary" size="sm" onClick={onClose}>
+      {t('share.close')}
+    </Button>
+  ) : (
+    <>
+      <Button variant="ghost" size="sm" onClick={onClose} disabled={publishing}>
+        {t('share.cancel')}
       </Button>
-    )
-  }
+      <Button
+        variant="primary"
+        size="sm"
+        disabled={!ready || publishing}
+        onClick={doPublish}
+        title={!ready ? t('share.needAll') : undefined}
+      >
+        {publishing ? (
+          <span className="flex items-center gap-1.5">
+            <Spinner className="h-3.5 w-3.5" />
+            {t('share.publishing')}
+          </span>
+        ) : (
+          t('share.publish')
+        )}
+      </Button>
+    </>
+  )
 
   return (
     <Modal
       open={open}
-      onClose={busy ? () => {} : onClose}
+      onClose={publishing ? () => {} : onClose}
       title={t('share.title')}
-      footer={footer ?? undefined}
+      footer={footer}
     >
-      {step === 'confirm' && (
-        <div className="space-y-3">
-          <p className="font-medium text-sz-fg">{t('share.step.confirm.heading')}</p>
-          <p>{t('share.step.confirm.intro')}</p>
-          <label className="flex items-start gap-2 text-sz-fg">
-            <input
-              type="checkbox"
-              className="mt-0.5"
-              checked={okConcluded}
-              onChange={(e) => setOkConcluded(e.target.checked)}
-            />
-            <span>{t('share.step.confirm.concluded')}</span>
-          </label>
-          <label className="flex items-start gap-2 text-sz-fg">
-            <input
-              type="checkbox"
-              className="mt-0.5"
-              checked={okLanguage}
-              onChange={(e) => setOkLanguage(e.target.checked)}
-            />
-            <span>{t('share.step.confirm.kidsLanguage')}</span>
-          </label>
-          <p
-            role="alert"
-            className="rounded-md border border-sz-warn/40 bg-sz-warn/10 px-3 py-2 text-sz-warn"
-          >
-            {t('share.step.confirm.irreversible')}
-          </p>
-        </div>
-      )}
-
-      {step === 'describe' && (
-        <div className="space-y-3">
-          <p className="font-medium text-sz-fg">{t('share.step.describe.heading')}</p>
-          <p>{t('share.step.describe.help')}</p>
-          <label className="block">
-            <span className="sr-only">{t('share.step.describe.label')}</span>
-            <textarea
-              aria-label={t('share.step.describe.label')}
-              value={description}
-              maxLength={MAX_DESCRIPTION}
-              rows={4}
-              placeholder={t('share.step.describe.placeholder')}
-              onChange={(e) => setDescription(e.target.value.slice(0, MAX_DESCRIPTION))}
-              disabled={generating}
-              className="w-full resize-none rounded-md border border-sz-border bg-sz-bg px-3 py-2 text-sm text-sz-fg disabled:opacity-60"
-            />
-          </label>
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-xs text-sz-fg-mute">
-              {description.length}/{MAX_DESCRIPTION}
-            </span>
-            <Button variant="ghost" size="sm" onClick={regenerate} disabled={generating}>
-              {generating ? (
-                <span className="flex items-center gap-1.5">
-                  <Spinner className="h-3.5 w-3.5" />
-                  {t('share.step.describe.generating')}
-                </span>
-              ) : description ? (
-                t('share.step.describe.regenerate')
-              ) : (
-                t('share.step.describe.generate')
-              )}
-            </Button>
-          </div>
-          {generateFailed && !generating && (
-            <p className="text-sz-fg-soft" role="status">
-              {t('share.step.describe.failed')}
-            </p>
-          )}
-        </div>
-      )}
-
-      {step === 'cover' && (
-        <div className="space-y-3">
-          <p className="font-medium text-sz-fg">{t('share.step.cover.heading')}</p>
-          {capturing ? (
-            <p className="flex items-center gap-2 text-sz-fg-soft">
-              <Spinner className="h-4 w-4" />
-              {t('share.step.cover.capturing')}
-            </p>
-          ) : coverDataUrl ? (
-            <img
-              src={coverDataUrl}
-              alt=""
-              className="mx-auto max-h-56 w-auto rounded-md border border-sz-border"
-            />
-          ) : (
-            <p className="rounded-md border border-sz-border bg-sz-bg px-3 py-2 text-sz-fg-soft">
-              {t('share.step.cover.none')}
-            </p>
-          )}
-          {!capturing && (
-            <Button variant="ghost" size="sm" onClick={recapture}>
-              {t('share.step.cover.retry')}
-            </Button>
-          )}
-        </div>
-      )}
-
-      {step === 'review' && (
-        <div className="space-y-3">
-          <p className="font-medium text-sz-fg">{t('share.step.review.heading')}</p>
-          <label className="block">
-            <span className="mb-1 block text-xs font-medium text-sz-fg-soft">
-              {t('share.step.title.label')}
-            </span>
-            <input
-              aria-label={t('share.step.title.label')}
-              value={title}
-              maxLength={120}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full rounded-md border border-sz-border bg-sz-bg px-3 py-2 text-sm text-sz-fg"
-            />
-          </label>
-          {coverDataUrl && (
-            <img
-              src={coverDataUrl}
-              alt=""
-              className="max-h-40 w-auto rounded-md border border-sz-border"
-            />
-          )}
-          <p className="whitespace-pre-wrap rounded-md border border-sz-border bg-sz-bg px-3 py-2 text-sz-fg-soft">
-            {descTrimmed}
-          </p>
-          <p role="alert" className="text-xs text-sz-warn">
-            {t('share.step.confirm.irreversible')}
-          </p>
-        </div>
-      )}
-
-      {step === 'publishing' && (
-        <p className="flex items-center gap-2 py-4 text-sz-fg-soft">
-          <Spinner className="h-4 w-4" />
-          {t('share.publishing')}
-        </p>
-      )}
-
-      {step === 'success' && (
+      {result ? (
         <div className="space-y-3">
           <p className="flex items-center gap-2 font-medium text-sz-fg">
             <IconCheckCircle className="text-sz-success" />
@@ -404,21 +252,21 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
           </p>
           <p>{t('share.success.body')}</p>
           <div className="flex flex-wrap gap-2">
-            {result?.muralUrl && (
+            {result.muralUrl && (
               <a href={result.muralUrl} target="_blank" rel="noopener noreferrer">
                 <Button variant="ghost" size="sm">
                   {t('share.success.openMural')}
                 </Button>
               </a>
             )}
-            {result?.playUrl && (
+            {result.playUrl && (
               <a href={result.playUrl} target="_blank" rel="noopener noreferrer">
                 <Button variant="primary" size="sm">
                   {t('share.success.openPlay')}
                 </Button>
               </a>
             )}
-            {result?.playUrl && (
+            {result.playUrl && (
               <Button variant="subtle" size="sm" onClick={() => void copyLink()}>
                 <span className="flex items-center gap-1.5">
                   <IconLink size={14} />
@@ -428,12 +276,154 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
             )}
           </div>
         </div>
-      )}
+      ) : (
+        <div className="space-y-4">
+          <p className="text-sz-fg-soft text-sm">{t('share.intro')}</p>
 
-      {step === 'error' && (
-        <p className="text-sz-error" role="alert">
-          {t('share.error', { reason: errorMsg })}
-        </p>
+          {titleEditable ? (
+            <label className="block">
+              <span className="mb-1 block font-medium text-sz-fg-soft text-xs">
+                {t('share.step.title.label')}
+              </span>
+              <input
+                aria-label={t('share.step.title.label')}
+                value={title}
+                maxLength={MAX_TITLE}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full rounded-md border border-sz-border bg-sz-bg px-3 py-2 text-sm text-sz-fg"
+              />
+            </label>
+          ) : null}
+
+          {/* Resumo */}
+          <label className="block">
+            <span className="mb-1 block font-medium text-sz-fg-soft text-xs">
+              {t('share.field.summary')}
+            </span>
+            <textarea
+              aria-label={t('share.field.summary')}
+              value={description}
+              maxLength={MAX_DESCRIPTION}
+              rows={3}
+              placeholder={t('share.step.describe.placeholder')}
+              onChange={(e) => setDescription(e.target.value.slice(0, MAX_DESCRIPTION))}
+              disabled={generating}
+              className="w-full resize-none rounded-md border border-sz-border bg-sz-bg px-3 py-2 text-sm text-sz-fg disabled:opacity-60"
+            />
+            <div className="mt-1 flex items-center justify-between gap-2">
+              <span className="text-sz-fg-mute text-xs">
+                {description.length}/{MAX_DESCRIPTION}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={regenerate}
+                disabled={generating || aiUses >= MAX_AI_GENERATIONS}
+                aria-label={t('share.ai.button')}
+              >
+                {generating ? (
+                  <span className="flex items-center gap-1.5">
+                    <Spinner className="h-3.5 w-3.5" />
+                    {t('share.step.describe.generating')}
+                  </span>
+                ) : description ? (
+                  t('share.step.describe.regenerate')
+                ) : (
+                  t('share.step.describe.generate')
+                )}
+              </Button>
+            </div>
+            {aiUses >= MAX_AI_GENERATIONS && !generating ? (
+              <p className="mt-1 text-sz-fg-mute text-xs" role="status">
+                {t('share.ai.capped')}
+              </p>
+            ) : null}
+          </label>
+
+          {/* Capa */}
+          <div className="space-y-2">
+            <span className="block font-medium text-sz-fg-soft text-xs">
+              {t('share.cover.heading')}
+            </span>
+            {coverPreviewSrc ? (
+              <img
+                src={coverPreviewSrc}
+                alt=""
+                className="max-h-48 w-auto rounded-md border border-sz-border"
+              />
+            ) : (
+              <p className="rounded-md border border-sz-border border-dashed bg-sz-bg px-3 py-4 text-center text-sz-fg-mute text-sm">
+                {t('share.cover.empty')}
+              </p>
+            )}
+            {cover?.kind === 'preset' && !coverNote ? (
+              <p className="text-sz-fg-mute text-xs">{t('share.cover.usingAdmin')}</p>
+            ) : null}
+            {coverNote ? (
+              <p className="text-sz-fg-soft text-xs" role="status">
+                {coverNote}
+              </p>
+            ) : null}
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="subtle"
+                size="sm"
+                onClick={() => void generateCover()}
+                disabled={capturing}
+              >
+                {capturing ? (
+                  <span className="flex items-center gap-1.5">
+                    <Spinner className="h-3.5 w-3.5" />
+                    {t('share.step.cover.capturing')}
+                  </span>
+                ) : (
+                  t('share.cover.generate')
+                )}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => fileRef.current?.click()}
+                disabled={capturing}
+              >
+                {t('share.cover.upload')}
+              </Button>
+              {adapter.presetCoverUrl && cover?.kind !== 'preset' ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setCover({ kind: 'preset' })
+                    setCoverNote(null)
+                  }}
+                  disabled={capturing}
+                >
+                  {t('share.cover.useAdmin')}
+                </Button>
+              ) : null}
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                className="hidden"
+                onChange={onPickFile}
+              />
+            </div>
+          </div>
+
+          <p
+            role="alert"
+            className="rounded-md border border-sz-warn/40 bg-sz-warn/10 px-3 py-2 text-sz-warn text-xs"
+          >
+            {t('share.step.confirm.irreversible')}
+          </p>
+
+          {errorMsg ? (
+            <p className="text-sz-error text-sm" role="alert">
+              {t('share.error', { reason: errorMsg })}
+            </p>
+          ) : null}
+        </div>
       )}
     </Modal>
   )

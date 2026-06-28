@@ -61,9 +61,11 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > (**certificados**: enum `lesson_block_kind` + `'certificate'` + tabela `certificates_issued`)
 > — **aplicadas** no Postgres compartilhado (`sistemazero`, :5433); **`0026`**
 > (`studio_submissions.account_id` — conta RESPONSÁVEL da entrega, p/ o admin mostrar
-> criança+responsável; nullable, legado `null`) e **`0027`** (`courses.sequential_lock`
-> boolean NOT NULL DEFAULT `true` — trava sequencial estilo Duolingo, ver Conceito 10)
-> **geradas, FALTA aplicar** (`db:migrate`).
+> criança+responsável; nullable, legado `null`), **`0027`** (`courses.sequential_lock`
+> boolean NOT NULL DEFAULT `true` — trava sequencial estilo Duolingo, ver Conceito 10) e
+> **`0028`** (`studio_submissions.message` varchar(1000) nullable — recado OPCIONAL do aluno
+> ao professor no envio do Estúdio; o cap de 1000 chars no DB espelha o `maxLength` do DTO,
+> como backstop) **geradas, FALTA aplicar** (`db:migrate`).
 
 ## Conceito central (decisões travadas com o usuário)
 
@@ -121,8 +123,11 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    NÃO-vazia = a paleta do aluno mostra SÓ esses blocos (+ as 🗂️ Áreas do projeto, sempre
    visíveis), ignorando nível/categoria; vazia = curadoria por nível. (Era aditivo "sempre
    visível"; sem UI, ninguém usava o sentido antigo.) A config NÃO é segredo (vai inteira ao aluno). O aluno
-   ENVIA o projeto (`POST …/blocks/:blockId/studio-submission` `{project}`) → tabela
-   `studio_submissions` (1 linha/aluno+bloco, upsert — reenvio último-vence) e isso
+   ENVIA o projeto (`POST …/blocks/:blockId/studio-submission` `{project, results?, message?}`) → tabela
+   `studio_submissions` (1 linha/aluno+bloco, upsert — reenvio último-vence)
+   (**`message`** = recado OPCIONAL do aluno ao professor, ≤1000 chars, trim→null, coluna
+   `studio_submissions.message` migration `0028`; volta nas views admin `StudioSubmissionSummaryView`/
+   `DetailView` p/ o professor ler nas Entregas) e isso
    ⚠️ **As rotas que carregam o projeto** (entrega do aluno + autoria do bloco:
    `POST /admin/lessons/:id/blocks` e `PATCH /admin/blocks/:id`) têm teto de CORPO próprio
    `MAX_STUDIO_BODY_BYTES` no server (default **2 MB**, `bodyLimitForPath` em `server.ts`),

@@ -3,7 +3,7 @@
 import type { StudioShareResult } from '@sistemazero/studio'
 import { useModalA11y } from '@sistemazero/ui/use-modal-a11y'
 import { Gamepad2, Link2 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { KidsConfetti } from './kids-confetti'
 import { KidsMascot } from './mascot'
 
@@ -23,6 +23,9 @@ export function MuralCelebration({
   const [copied, setCopied] = useState(false)
   const [copyFailed, setCopyFailed] = useState(false)
   const cardRef = useModalA11y<HTMLDivElement>({ open: true, onClose })
+  // Limpa o timer do "Link copiado!" se a criança fechar a celebração antes dos 2s.
+  const copiedTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
+  useEffect(() => () => clearTimeout(copiedTimer.current), [])
 
   async function copyLink() {
     if (!result.playUrl) return
@@ -32,7 +35,8 @@ export function MuralCelebration({
       await navigator.clipboard.writeText(abs)
       setCopyFailed(false)
       setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      clearTimeout(copiedTimer.current)
+      copiedTimer.current = setTimeout(() => setCopied(false), 2000)
     } catch {
       // clipboard pode falhar (permissão/contexto inseguro) — avisa em vez de morrer no clique.
       setCopyFailed(true)

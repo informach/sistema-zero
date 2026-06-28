@@ -194,15 +194,19 @@ export function KidsSpaceViewClient({
     }
   }, [slug, mode])
 
-  const loadThreads = useCallback(async (channelId: string) => {
+  // `isCurrent` evita a corrida de troca de canal: clicar A→B deixa os dois fetches
+  // em voo; sem a guarda, se A resolve por último, as threads de A renderizam sob B.
+  const loadThreads = useCallback(async (channelId: string, isCurrent?: () => boolean) => {
     try {
       const page = await apiGet<HubPage<HubThreadView>>(
         `/api/hub/channels/${enc(channelId)}/threads`,
       )
+      if (isCurrent && !isCurrent()) return
       setThreads(page.items)
       setThreadsCursor(page.nextCursor)
       setThreadsHasMore(page.hasMore)
     } catch (err) {
+      if (isCurrent && !isCurrent()) return
       toast.error((err as ApiError).message ?? 'Falha ao carregar.')
     }
     // Marca como visto e apaga o ponto de não-lido localmente (sem refetch dos canais).
@@ -231,7 +235,11 @@ export function KidsSpaceViewClient({
     if (!channel) return
     setThread(null)
     setShowNew(false)
-    void loadThreads(channel.id)
+    let alive = true
+    void loadThreads(channel.id, () => alive)
+    return () => {
+      alive = false
+    }
   }, [channel, loadThreads])
 
   const loadComments = useCallback(async (threadId: string) => {

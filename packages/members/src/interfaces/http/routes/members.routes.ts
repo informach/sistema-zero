@@ -563,6 +563,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             params.blockId,
             body.project,
             body.results ?? [],
+            body.message ?? null,
             isPrivilegedActor(headers),
             resolveAccountId(headers),
           )

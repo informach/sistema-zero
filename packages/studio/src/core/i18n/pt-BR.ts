@@ -172,6 +172,27 @@ export const ptBR: Record<string, string> = {
   'share.success.openPlay': 'Abrir o jogo',
   'share.success.copyLink': 'Copiar link',
   'share.success.copied': 'Link copiado!',
+  // Modal único de compartilhar (redesenho 06/2026).
+  'share.intro':
+    'Quando você publica, o seu projeto aparece no Mural para a comunidade ver e ganha um link para mostrar para a família e os amigos jogarem.',
+  'share.field.summary': 'Resumo do projeto',
+  'share.field.summary.help': 'Conte rapidinho o que o seu projeto faz.',
+  'share.cover.heading': 'Capa do projeto',
+  'share.cover.generate': 'Gerar capa',
+  'share.cover.upload': 'Enviar uma imagem',
+  'share.cover.useAdmin': 'Usar a capa do curso',
+  'share.cover.empty':
+    'Ainda não tem capa. Clique em "Gerar capa" para tirar uma foto do seu projeto.',
+  'share.cover.usingAdmin': 'Usando a capa do curso.',
+  'share.cover.failUpload':
+    'Não consegui tirar a foto automática. Tire um print da sua tela e clique em "Enviar uma imagem".',
+  'share.cover.failUsedAdmin':
+    'Não consegui tirar a foto do projeto, então usei a capa do curso. Se quiser, envie a sua imagem.',
+  'share.cover.badType': 'Envie um arquivo de imagem (PNG ou JPG).',
+  'share.cover.tooBig': 'Essa imagem é muito grande. Tente uma menor.',
+  'share.needAll': 'Preencha o título, o resumo e a capa para publicar.',
+  'share.ai.capped': 'Você já pediu algumas ideias — agora é só deixar o texto do seu jeito. 😊',
+  'share.ai.button': 'Gerar resumo com a IA',
   'share.error': 'Não foi possível publicar: {reason}',
   'share.cancel': 'Cancelar',
   'share.back': 'Voltar',

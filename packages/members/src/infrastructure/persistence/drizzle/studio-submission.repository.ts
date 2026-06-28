@@ -27,6 +27,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
       results: submission.results ?? null,
       checkedAt: submission.checkedAt ?? null,
       passedAt: submission.passedAt ?? null,
+      message: submission.message ?? null,
     }
 
     if (!options?.preservePassedAt) {
@@ -42,6 +43,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
             results: values.results,
             checkedAt: values.checkedAt,
             passedAt: values.passedAt,
+            message: values.message,
           },
         })
       return
@@ -78,6 +80,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
             results: values.results,
             checkedAt: values.checkedAt,
             passedAt: nextPassedAt,
+            message: values.message,
           },
         })
     })
@@ -119,6 +122,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
         score: studioSubmissions.score,
         checkedAt: studioSubmissions.checkedAt,
         passedAt: studioSubmissions.passedAt,
+        message: studioSubmissions.message,
       })
       .from(studioSubmissions)
       .where(eq(studioSubmissions.blockId, blockId))
@@ -130,6 +134,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
       score: r.score ?? null,
       checkedAt: r.checkedAt ?? null,
       passed: r.passedAt != null,
+      message: r.message ?? null,
     }))
   }
 
@@ -142,6 +147,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
         results: studioSubmissions.results,
         checkedAt: studioSubmissions.checkedAt,
         passedAt: studioSubmissions.passedAt,
+        message: studioSubmissions.message,
       })
       .from(studioSubmissions)
       .where(and(eq(studioSubmissions.userId, userId), eq(studioSubmissions.blockId, blockId)))
@@ -155,6 +161,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
       results: (row.results as StudioCheckResult[] | null) ?? null,
       checkedAt: row.checkedAt ?? null,
       passedAt: row.passedAt ?? null,
+      message: row.message ?? null,
     }
   }
 

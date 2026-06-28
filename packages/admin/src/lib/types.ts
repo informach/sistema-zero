@@ -339,6 +339,8 @@ export interface StudioSubmissionRow {
   score: number | null
   checkedAt: string | null
   passed: boolean
+  /** Recado OPCIONAL do aluno ao professor. `null` = sem recado. */
+  message: string | null
 }
 
 /** Projeto enviado por um aluno (abrir no Estúdio embutido do admin) + correção. */
@@ -350,6 +352,8 @@ export interface StudioSubmissionDetailView {
   results: CheckResult[] | null
   checkedAt: string | null
   passed: boolean
+  /** Recado OPCIONAL do aluno ao professor. `null` = sem recado. */
+  message: string | null
 }
 
 export interface BlockView {

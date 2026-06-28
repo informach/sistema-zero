@@ -520,10 +520,18 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       blockId: string,
       project: unknown,
       results?: unknown,
+      message?: string,
     ): Promise<GatewayResponse<StudioSubmissionResultView>> {
       return gw.gatewayFetch(
         `/members/lessons/${enc(lessonId)}/blocks/${enc(blockId)}/studio-submission`,
-        { method: 'POST', body: results === undefined ? { project } : { project, results } },
+        {
+          method: 'POST',
+          body: {
+            project,
+            ...(results === undefined ? {} : { results }),
+            ...(message ? { message } : {}),
+          },
+        },
       )
     },
 

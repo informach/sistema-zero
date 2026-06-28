@@ -661,6 +661,8 @@ export const StudioSubmissionBody = t.Object({
   project: StudioProjectSchema,
   /** Resultados das checagens rodadas no cliente (behavior/testcase/code). */
   results: t.Optional(t.Array(ClientCheckResultSchema, { maxItems: 50 })),
+  /** Recado OPCIONAL do aluno ao professor (modal de envio). Vazio → sem recado. */
+  message: t.Optional(t.String({ maxLength: 1000 })),
 })
 
 /** Corpo de `POST/PATCH /members/admin/...blocks`. */

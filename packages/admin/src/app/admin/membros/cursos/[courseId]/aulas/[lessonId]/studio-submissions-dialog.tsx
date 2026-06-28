@@ -5,7 +5,7 @@ import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { Spinner } from '@sistemazero/ui/spinner'
-import { ArrowLeft, Download } from 'lucide-react'
+import { ArrowLeft, Download, MessageSquare } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { StudioEmbed } from '@/components/studio/studio-embed'
@@ -87,8 +87,10 @@ export function StudioSubmissionsDialog({ blockId, open, onClose }: Props) {
   )
 
   // Mostra a CRIANÇA (perfil) quando a entrega veio de um perfil; senão a conta.
+  // Sem nenhuma identidade hidratada (conta apagada / hidratação degradada) cai num
+  // rótulo neutro — NUNCA expõe o uuid cru como "nome do aluno".
   const studentName = (r: StudioSubmissionRow) =>
-    r.childName ?? r.accountName ?? r.accountEmail ?? r.userId
+    r.childName ?? r.accountName ?? r.accountEmail ?? 'Aluno sem identificação'
   // "Responsável: Nome · email" (só quando há criança/perfil por trás da entrega).
   const responsibleLabel = (r: StudioSubmissionRow) =>
     [r.accountName, r.accountEmail].filter(Boolean).join(' · ') || '—'
@@ -118,6 +120,18 @@ export function StudioSubmissionsDialog({ blockId, open, onClose }: Props) {
               <Download className="size-4" /> Baixar .szproject.json
             </Button>
           </div>
+
+          {/* Recado opcional que o aluno escreveu ao enviar o projeto. */}
+          {selected.detail.message ? (
+            <Card className="space-y-1 p-3">
+              <div className="flex items-center gap-1.5 font-medium text-sm">
+                <MessageSquare className="size-4" /> Recado do aluno
+              </div>
+              <p className="whitespace-pre-wrap text-sm text-muted-foreground">
+                {selected.detail.message}
+              </p>
+            </Card>
+          ) : null}
 
           {/* Correção automática (atividade). Sem atividade → score null, omite. */}
           {selected.detail.score !== null ? (
@@ -198,6 +212,11 @@ export function StudioSubmissionsDialog({ blockId, open, onClose }: Props) {
                 <div className="truncate text-xs text-muted-foreground">
                   Enviado em {new Date(r.submittedAt).toLocaleString('pt-BR')}
                 </div>
+                {r.message ? (
+                  <div className="mt-0.5 flex items-center gap-1 text-foreground text-xs">
+                    <MessageSquare className="size-3 shrink-0" /> Deixou um recado
+                  </div>
+                ) : null}
               </div>
               <Button
                 variant="outline"

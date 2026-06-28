@@ -306,6 +306,48 @@ describe('Bloco Estúdio — gate de conclusão + entrega', () => {
     expect(oneRes.status).toBe(200)
     expect((await readJson(oneRes)).project.name).toBe('Minha entrega')
   })
+
+  test('recado opcional ao professor: vem no admin (lista + detalhe); em branco → null', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const { slug, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    const blockId = seedStudioBlock(courses, lessonIds[0])
+
+    const submitWithMessage = (message: string) =>
+      app.handle(
+        new Request(
+          `http://localhost/members/lessons/${lessonIds[0]}/blocks/${blockId}/studio-submission`,
+          {
+            method: 'POST',
+            headers: authHeaders,
+            body: JSON.stringify({ project: STUDENT_PROJECT, message }),
+          },
+        ),
+      )
+
+    await submitWithMessage('  Oi prof, terminei o jogo!  ')
+
+    const list = await app
+      .handle(new Request(`http://localhost/members/admin/blocks/${blockId}/studio-submissions`))
+      .then(readJson)
+    expect(list.submissions[0].message).toBe('Oi prof, terminei o jogo!') // trim aplicado
+
+    const detail = await app
+      .handle(
+        new Request(`http://localhost/members/admin/blocks/${blockId}/studio-submissions/${USER}`),
+      )
+      .then(readJson)
+    expect(detail.message).toBe('Oi prof, terminei o jogo!')
+
+    // Reenvio com recado em branco → limpa (null).
+    await submitWithMessage('   ')
+    const after = await app
+      .handle(
+        new Request(`http://localhost/members/admin/blocks/${blockId}/studio-submissions/${USER}`),
+      )
+      .then(readJson)
+    expect(after.message).toBeNull()
+  })
 })
 
 // ── Carryover: continuar o projeto da aula contínua anterior (mesma cadeia) ──────

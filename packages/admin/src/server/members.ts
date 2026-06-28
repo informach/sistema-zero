@@ -198,6 +198,8 @@ export function listStudioSubmissions(blockId: string): Promise<
       score: number | null
       checkedAt: string | null
       passed: boolean
+      /** Recado opcional do aluno ao professor. `null` = sem recado. */
+      message: string | null
     }[]
   }>
 > {
@@ -215,6 +217,8 @@ export function getStudioSubmission(
     results: unknown
     checkedAt: string | null
     passed: boolean
+    /** Recado opcional do aluno ao professor. `null` = sem recado. */
+    message: string | null
   }>
 > {
   return gatewayFetch(`/members/admin/blocks/${enc(blockId)}/studio-submissions/${enc(userId)}`)

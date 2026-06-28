@@ -46,12 +46,19 @@ export class GetLessonService {
 
     const quizBlockIds = lesson.blocks.filter((b) => b.content.kind === 'quiz').map((b) => b.id)
     const studioBlockIds = lesson.blocks.filter((b) => b.content.kind === 'studio').map((b) => b.id)
+    // O outline só alimenta o gate da trava sequencial; equipe (privileged) e curso
+    // com a trava desligada ignoram o estado (early-return em assertLessonUnlockedFromState).
+    // Carregar a árvore do curso à toa no caminho MAIS quente (toda abertura de aula)
+    // é desperdício — espelha o curto-circuito de assertLessonUnlocked.
+    const needsLock = course.sequentialLock && !privileged
     const [completedIds, positionSeconds, summaries, studioSummaries, outline] = await Promise.all([
       this.progress.listCompletedLessonIds(userId, course.id),
       this.positions.findPosition(userId, lessonId),
       this.quizAttempts.summarizeByBlockIds(userId, quizBlockIds),
       this.studioSubmissions.summarizeByBlockIds(userId, studioBlockIds),
-      this.courses.findOutline(course.id, { publishedOnly: true }),
+      needsLock
+        ? this.courses.findOutline(course.id, { publishedOnly: true })
+        : Promise.resolve<Awaited<ReturnType<CourseRepository['findOutline']>>>([]),
     ])
 
     // Trava sequencial (estilo Duolingo): a aula só abre quando todas as aulas

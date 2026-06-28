@@ -23,6 +23,8 @@ export interface StudioSubmissionRecord {
   checkedAt?: Date | null
   /** STICKY: 1ª vez que passou (gate "aprovou uma vez = destrava"). */
   passedAt?: Date | null
+  /** Recado OPCIONAL do aluno ao professor (modal de envio). `null` = sem recado. */
+  message?: string | null
 }
 
 /** Resumo de uma entrega para o painel do professor (sem o projeto inteiro). */
@@ -34,6 +36,8 @@ export interface StudioSubmissionSummary {
   score: number | null
   checkedAt: Date | null
   passed: boolean
+  /** Recado OPCIONAL do aluno ao professor. `null` = sem recado. */
+  message: string | null
 }
 
 /** Estado por bloco para o ALUNO (gate da conclusão + UI). */
@@ -52,6 +56,8 @@ export interface StudioSubmissionDetail {
   results: StudioCheckResult[] | null
   checkedAt: Date | null
   passedAt: Date | null
+  /** Recado OPCIONAL do aluno ao professor. `null` = sem recado. */
+  message: string | null
 }
 
 export interface StudioSubmissionRepository {

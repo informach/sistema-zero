@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { forwardUpstream } from '@/server/forward'
 import { type SubstituteInvoiceBody, substituteInvoice } from '@/server/nfse'
 
 function str(value: unknown): string | undefined {
@@ -30,5 +31,5 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   }
 
   const { status, body: result } = await substituteInvoice(id, body)
-  return NextResponse.json(result, { status })
+  return forwardUpstream({ status, body: result })
 }

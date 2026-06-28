@@ -686,6 +686,7 @@ function ParentPasswordChange({ onCancel }: { onCancel: () => void }) {
   const [confirm, setConfirm] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const formId = 'parentPasswordChangeForm'
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -724,48 +725,52 @@ function ParentPasswordChange({ onCancel }: { onCancel: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 p-4">
-      <div className="w-full max-w-sm rounded-2xl bg-card p-6 shadow-xl">
-        <h2 className="sz-display text-xl text-foreground">Alterar senha do responsável</h2>
-        <p className="mt-1 text-muted-foreground text-sm">
-          Por segurança, você será desconectado de todos os dispositivos.
-        </p>
-        <form className="mt-4 flex flex-col gap-4" onSubmit={onSubmit}>
-          <Field label="Senha atual" htmlFor="currentPassword">
-            <PasswordInput
-              id="currentPassword"
-              autoComplete="current-password"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-            />
-          </Field>
-          <Field label="Nova senha" htmlFor="newPassword">
-            <PasswordInput
-              id="newPassword"
-              autoComplete="new-password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-            />
-          </Field>
-          <Field label="Confirmar nova senha" htmlFor="confirmPassword" error={error ?? undefined}>
-            <PasswordInput
-              id="confirmPassword"
-              autoComplete="new-password"
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-            />
-          </Field>
-          <div className="flex justify-end gap-3">
-            <Button type="button" variant="secondary" onClick={onCancel} disabled={saving}>
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={saving || !currentPassword || !newPassword}>
-              {saving ? <Spinner className="size-4" /> : 'Alterar'}
-            </Button>
-          </div>
-        </form>
-      </div>
-    </div>
+    <Dialog
+      open
+      onClose={() => {
+        if (!saving) onCancel()
+      }}
+      title="Alterar senha do responsável"
+      description="Por segurança, você será desconectado de todos os dispositivos."
+      className="max-w-sm rounded-2xl"
+      footer={
+        <>
+          <Button type="button" variant="secondary" onClick={onCancel} disabled={saving}>
+            Cancelar
+          </Button>
+          <Button type="submit" form={formId} disabled={saving || !currentPassword || !newPassword}>
+            {saving ? <Spinner className="size-4" /> : 'Alterar'}
+          </Button>
+        </>
+      }
+    >
+      <form id={formId} className="flex flex-col gap-4" onSubmit={onSubmit}>
+        <Field label="Senha atual" htmlFor="currentPassword">
+          <PasswordInput
+            id="currentPassword"
+            autoComplete="current-password"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+          />
+        </Field>
+        <Field label="Nova senha" htmlFor="newPassword">
+          <PasswordInput
+            id="newPassword"
+            autoComplete="new-password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+          />
+        </Field>
+        <Field label="Confirmar nova senha" htmlFor="confirmPassword" error={error ?? undefined}>
+          <PasswordInput
+            id="confirmPassword"
+            autoComplete="new-password"
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+          />
+        </Field>
+      </form>
+    </Dialog>
   )
 }
 
@@ -780,38 +785,44 @@ function ParentGate({
   onConfirm: (password: string) => void
 }) {
   const [password, setPassword] = useState('')
+  const formId = 'parentGateForm'
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 p-4">
-      <div className="w-full max-w-sm rounded-2xl bg-card p-6 shadow-xl">
-        <h2 className="sz-display text-xl text-foreground">Área dos pais</h2>
-        <p className="mt-1 text-muted-foreground text-sm">
-          Digite a senha do responsável para gerenciar os perfis.
-        </p>
-        <form
-          className="mt-4 flex flex-col gap-4"
-          onSubmit={(e) => {
-            e.preventDefault()
-            if (password) onConfirm(password)
-          }}
-        >
-          <Field label="Senha do responsável" htmlFor="parentPassword">
-            <PasswordInput
-              id="parentPassword"
-              value={password}
-              autoComplete="current-password"
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </Field>
-          <div className="flex justify-end gap-3">
-            <Button type="button" variant="secondary" onClick={onCancel} disabled={busy}>
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={busy || password.length === 0}>
-              {busy ? <Spinner className="size-4" /> : 'Entrar'}
-            </Button>
-          </div>
-        </form>
-      </div>
-    </div>
+    <Dialog
+      open
+      onClose={() => {
+        if (!busy) onCancel()
+      }}
+      title="Área dos pais"
+      description="Digite a senha do responsável para gerenciar os perfis."
+      className="max-w-sm rounded-2xl"
+      footer={
+        <>
+          <Button type="button" variant="secondary" onClick={onCancel} disabled={busy}>
+            Cancelar
+          </Button>
+          <Button type="submit" form={formId} disabled={busy || password.length === 0}>
+            {busy ? <Spinner className="size-4" /> : 'Entrar'}
+          </Button>
+        </>
+      }
+    >
+      <form
+        id={formId}
+        className="flex flex-col gap-4"
+        onSubmit={(e) => {
+          e.preventDefault()
+          if (password) onConfirm(password)
+        }}
+      >
+        <Field label="Senha do responsável" htmlFor="parentPassword">
+          <PasswordInput
+            id="parentPassword"
+            value={password}
+            autoComplete="current-password"
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </Field>
+      </form>
+    </Dialog>
   )
 }

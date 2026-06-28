@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { parseLimit, parseOffset } from '@/lib/list-params'
 import type { MemberRow, MemberSummaryView, Paginated, UserView } from '@/lib/types'
+import { normalizeUpstreamError } from '@/lib/upstream'
 import { listMembers } from '@/server/members'
 import { batchGetUsers } from '@/server/users'
 
@@ -22,10 +23,12 @@ export async function GET(req: Request) {
   if (status !== 200 || !page || !Array.isArray(page.items)) {
     // Falha upstream (members/gateway) pode vir com body fora do envelope
     // `{ error: { code, message } }` que o client espera — normaliza p/ a UI
-    // mostrar mensagem amigável em vez do genérico "Algo deu errado.".
+    // mostrar mensagem amigável em vez do genérico "Algo deu errado.". O envelope
+    // presente passa por `normalizeUpstreamError` (só code+message — não vaza
+    // campos extras que o upstream venha a anexar); sem envelope, msg da rota.
     const envelope = body as { error?: { code?: string; message?: string } } | null
     const normalized = envelope?.error?.message
-      ? body
+      ? normalizeUpstreamError(body)
       : { error: { code: 'UPSTREAM_ERROR', message: 'Não foi possível carregar os membros.' } }
     return NextResponse.json(normalized, { status: status === 200 ? 502 : status })
   }

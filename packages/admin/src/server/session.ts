@@ -57,6 +57,11 @@ function verifyOptions(): JWTVerifyOptions {
 }
 
 function claimsToUser(payload: Record<string, unknown>): SessionUser | null {
+  // Pina o TIPO do token: só `typ: 'access'` autoriza (espelha o `toClaims` do
+  // auth). Hoje o access JWT é o único assinado pela chave, mas um JWT futuro de
+  // outro tipo (ex.: verificação de e-mail) assinado pela MESMA chave — com mesmo
+  // iss/aud — não pode ser replayado p/ autorizar a sessão LOCAL de `/api/media/*`.
+  if (payload.typ !== 'access') return null
   const { sub, email, firstName, lastName, role, status } = payload
   if (typeof sub !== 'string' || typeof role !== 'string' || typeof status !== 'string') return null
   return {
