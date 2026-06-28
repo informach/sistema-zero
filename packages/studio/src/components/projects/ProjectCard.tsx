@@ -3,6 +3,7 @@ import { type ReactNode, useEffect, useLayoutEffect, useRef, useState } from 're
 import { createPortal } from 'react-dom'
 import { t } from '#core'
 import { Button, ConfirmDialog } from '#ui'
+import { downloadProjectAsJSON } from '../../export/download'
 import { prefetchMode } from '../../modes/lazyModes'
 import type { ProjectSummary } from '../../state/persistence'
 import { loadSanitizedProjectById, useProjectStore } from '../../state/projectStore'
@@ -24,22 +25,6 @@ function formatDate(ts: number): string {
     hour: '2-digit',
     minute: '2-digit',
   })
-}
-
-function downloadAsJSON(name: string, data: unknown): void {
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-  const safe = name
-    .toLowerCase()
-    .replace(/[^a-z0-9-_]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `${safe || 'projeto'}.szproject.json`
-  document.body.appendChild(a)
-  a.click()
-  a.remove()
-  URL.revokeObjectURL(url)
 }
 
 const MENU_WIDTH = 176
@@ -191,7 +176,7 @@ export function ProjectCard({ summary, onChanged, onOpen }: ProjectCardProps): J
     closeMenu()
     const full = await loadSanitizedProjectById(summary.id)
     if (!full) return
-    downloadAsJSON(full.name, full)
+    downloadProjectAsJSON(full)
   }
 
   // Começa a baixar/avaliar o chunk do modo salvo ANTES do clique (hover e

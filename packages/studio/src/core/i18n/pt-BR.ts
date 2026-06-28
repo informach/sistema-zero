@@ -15,6 +15,8 @@ export const ptBR: Record<string, string> = {
   'topbar.downloadHint': 'Baixar o projeto (.zip) para continuar no VSCode',
   'topbar.extensions': 'Extensões',
   'topbar.export': 'Exportar para publicar',
+  'topbar.exportStudio': 'Exportar para o Estúdio',
+  'topbar.cloudSync': 'Sincronizar com o enviado',
   'topbar.convertPro': 'Virar profissional',
   'topbar.ai': 'IA',
   'topbar.rename': 'Renomear projeto',

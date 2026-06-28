@@ -77,6 +77,12 @@ export function StudioBlockView({ blockId, content, studioState, enableShare, on
   // Recado OPCIONAL do aluno ao professor, digitado no modal de confirmação.
   const [message, setMessage] = useState('')
   const MESSAGE_MAX = 1000
+  // "Sincronizar com o enviado": puxa do servidor o projeto que o aluno enviou e
+  // substitui o editor (o editor semeia do rascunho LOCAL — defasa se terminou em
+  // outro PC). Confirmação porque SUBSTITUI o que está aberto aqui.
+  const [syncOpen, setSyncOpen] = useState(false)
+  const [syncing, setSyncing] = useState(false)
+  const [syncNote, setSyncNote] = useState<string | null>(null)
 
   const activity = content.activity
   const passingScore = activity?.passingScore
@@ -207,6 +213,36 @@ export function StudioBlockView({ blockId, content, studioState, enableShare, on
       setSubmitting(false)
     }
   }, [lessonId, blockId, player, activity, message])
+
+  // Abre a confirmação de "Sincronizar com o enviado" (item do menu ⋯ do Estúdio).
+  // Estável (o Studio latcha este callback no mount).
+  const openSync = useCallback(() => {
+    setSyncNote(null)
+    setSyncOpen(true)
+  }, [])
+
+  // Puxa a entrega do servidor (save na nuvem) e substitui o projeto do editor.
+  const doSync = useCallback(async () => {
+    setSyncing(true)
+    setSyncNote(null)
+    try {
+      const res = await apiGet<{ project: unknown | null }>(
+        `/api/members/lessons/${encodeURIComponent(lessonId)}/blocks/${encodeURIComponent(blockId)}/studio-submission`,
+      )
+      if (res?.project) {
+        // Re-chaveia o id p/ a chave LOCAL deste bloco/perfil → o autosave grava
+        // por cima do rascunho antigo (não volta a defasar no próximo open).
+        handleRef.current?.replaceProject({ ...(res.project as Project), id: projectId })
+        setSyncOpen(false)
+      } else {
+        setSyncNote('Você ainda não enviou nenhum projeto para o professor.')
+      }
+    } catch {
+      setSyncNote('Não consegui sincronizar agora. Tente de novo.')
+    } finally {
+      setSyncing(false)
+    }
+  }, [lessonId, blockId, projectId])
 
   // O Studio LATCHA o adapter uma vez (memoizado por lessonId/blockId), mas `onShared` pode
   // mudar por render — lê via ref pra manter o adapter estável e ainda chamar o handler ATUAL.
@@ -344,6 +380,8 @@ export function StudioBlockView({ blockId, content, studioState, enableShare, on
                 ? 'Envie o projeto para o professor primeiro para poder compartilhar.'
                 : undefined
             }
+            // Item ⋯ → "Sincronizar com o enviado" (só na aula; abre a confirmação).
+            onCloudSync={lessonId ? openSync : undefined}
             blockUnloadWhenDirty={false}
           />
         ) : (
@@ -437,6 +475,34 @@ export function StudioBlockView({ blockId, content, studioState, enableShare, on
             placeholder="Quer contar algo pro professor sobre o seu projeto? (não é obrigatório)"
           />
         </div>
+      </Dialog>
+
+      <Dialog
+        open={syncOpen}
+        onClose={() => setSyncOpen(false)}
+        title="Sincronizar com o enviado?"
+        footer={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSyncOpen(false)}
+              disabled={syncing}
+            >
+              Cancelar
+            </Button>
+            <Button size="sm" onClick={() => void doSync()} disabled={syncing}>
+              {syncing ? <Spinner /> : null}
+              Sincronizar
+            </Button>
+          </>
+        }
+      >
+        <p className="text-sm text-muted-foreground">
+          Isto substitui o que você está editando aqui pelo último projeto que você enviou ao
+          professor. Use se você terminou em outro computador.
+        </p>
+        {syncNote ? <p className="mt-2 text-sm text-destructive">{syncNote}</p> : null}
       </Dialog>
     </div>
   )

@@ -172,6 +172,11 @@ não solta o jogo antes de terminar). Isso **substituiu o antigo "Publicar no Mu
 jogar; `LessonCompleteResult.showcase` segue vindo do members mas o kids não o consome mais). A
 elegibilidade real é do backend (publish 409 `SHOWCASE_NOT_ELIGIBLE` quando o bloco não é de vitrine). O
 post publicado é um **snapshot IMUTÁVEL e INDEPENDENTE** do rascunho que a criança continua editando.
+**Sincronizar com o enviado (28/06):** o `StudioBlockView` passa **`onCloudSync`** ao `<StudioLesson>` (item
+⋯ → "Sincronizar com o enviado", só na aula) → abre um Dialog de confirmação (substitui o editor) → no OK,
+`apiGet` da entrega (`…/studio-submission` GET) e `handleRef.current.replaceProject({...project, id: projectId})`
+(re-chaveia p/ a chave LOCAL → o autosave grava por cima do rascunho defasado); sem entrega → aviso gentil.
+Resolve o caso "terminei em outro PC e aqui puxa o rascunho local antigo".
 Quando o publish dá certo, o adapter chama `onPublished` → a prop **`onShared`** do `StudioBlockView`
 entrega os links ao kids, que abre a celebração do Zappy (`MuralCelebration`); o `ShareDialog` fecha sem
 mostrar a própria tela de sucesso (no Estúdio Completo, sem `onShared`, a telinha padrão do dialog vale).

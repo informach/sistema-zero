@@ -18,6 +18,7 @@ import {
   IconMoon,
   IconMore,
   IconPuzzle,
+  IconRefresh,
   IconSave,
   IconShare,
   IconSparkles,
@@ -28,12 +29,13 @@ import {
   type MenuSection,
 } from '#ui'
 import { exportProjectSource } from '../../export'
-import { triggerDownload } from '../../export/download'
+import { downloadProjectAsJSON, triggerDownload } from '../../export/download'
 import { useProjectStore } from '../../state/projectStore'
 import { useSettingsStore } from '../../state/settingsStore'
 import { StudioStoresContext } from '../../state/storesContext'
 import { useStudioPersistence } from '../../state/studioStores'
 import { useUIStore } from '../../state/uiStore'
+import { useStudioCloudSync } from '../../studio/cloud-sync'
 import { useStudioConfig } from '../../studio/config'
 import { useStudioLayout } from '../../studio/layoutContext'
 import { useStudioShare, useStudioShareDisabledReason } from '../../studio/share'
@@ -115,6 +117,8 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
   const share = useStudioShare()
   // Motivo p/ desabilitar o Compartilhar (ex.: "envie ao professor primeiro"); null = ok.
   const shareDisabledReason = useStudioShareDisabledReason()
+  // "Sincronizar com o enviado" (Estúdio da aula) — null = host não passou o callback.
+  const onCloudSync = useStudioCloudSync()
   // Stores da INSTÂNCIA: usados só para LER o projeto sob demanda (no clique do
   // Baixar), sem assinar re-render a cada edição. Fora de um <Studio> (null), o
   // fallback lê a store default via a estática. Ver storesContext.ts.
@@ -181,6 +185,13 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
     }
   }
 
+  // Exporta o projeto ATUAL como `.szproject.json` (mesmo formato da listagem) p/
+  // levar ao Estúdio Completo. Lê o projeto sob demanda (sem assinar re-render).
+  const handleExportStudio = () => {
+    const project = stores ? stores.project.getState().project : useProjectStore.getState().project
+    if (project) downloadProjectAsJSON(project)
+  }
+
   const handleConvert = async () => {
     setConverting(true)
     try {
@@ -207,6 +218,24 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
       },
     },
   ]
+  // "Sincronizar com o enviado" (só na aula — o host passa o callback). Logo após
+  // Salvar: é uma ação de "recuperar do servidor" do mesmo grupo Arquivo.
+  if (onCloudSync) {
+    fileItems.push({
+      id: 'sync',
+      label: t('topbar.cloudSync'),
+      icon: <IconRefresh />,
+      onSelect: () => onCloudSync(),
+    })
+  }
+  // "Exportar para o Estúdio" (.szproject.json) — SEM gate: vale no editor da aula
+  // E no Estúdio Completo (a criança leva o projeto para importar no Completo).
+  fileItems.push({
+    id: 'exportStudio',
+    label: t('topbar.exportStudio'),
+    icon: <IconDownload />,
+    onSelect: handleExportStudio,
+  })
   if (config.download) {
     fileItems.push({
       id: 'download',

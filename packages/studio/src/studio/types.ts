@@ -116,6 +116,14 @@ export interface StudioCommonProps {
    * entrega liberar o compartilhamento.
    */
   shareDisabledReason?: string
+  /**
+   * Callback OPCIONAL "Sincronizar com o enviado" (Estúdio da AULA): quando
+   * presente, a Topbar mostra o item ⋯ → "Sincronizar com o enviado" que o
+   * dispara. O HOST puxa do servidor o projeto enviado ao professor e substitui o
+   * editor via `StudioHandle.replaceProject`. Ausente (default) → sem item.
+   * Estável por instância (latchado, igual à `share`).
+   */
+  onCloudSync?: () => void
   /** Classes extras no root. O Studio preenche 100% do container do host. */
   className?: string
   style?: CSSProperties

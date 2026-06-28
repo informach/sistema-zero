@@ -161,6 +161,16 @@ de Exportar/Virar profissional) — decisão de UX do estúdio-produto kids (Top
 status ("Salvo"/"Não salvo"/"Erro") continua visível na Topbar comunicando o estado. Mudança no
 componente COMPARTILHADO → vale p/ `<StudioEditor>` E `<StudioLesson>` (na aula o Baixar já era oculto
 por `features.download:false`; o Salvar agora também fica no ⋯).
+**Mais 2 itens no ⋯ → Arquivo (28/06):**
+- **"Exportar para o Estúdio"** (SEM gate, vale nos DOIS componentes): baixa o projeto ATUAL como
+  `.szproject.json` — o MESMO formato que a listagem importa (`downloadProjectAsJSON` em
+  `export/download.ts`, reusada também pelo `ProjectCard`). É como a criança leva o projeto da AULA
+  para o **Estúdio Completo** (importar lá). i18n `topbar.exportStudio`.
+- **"Sincronizar com o enviado"** (OPT-IN, só na aula): aparece quando o host passa
+  **`onCloudSync?: () => void`** (`StudioCommonProps`; contexto `studio/cloud-sync.ts` —
+  `useStudioCloudSync`; latchado no `StudioCore` como o `share`). O Studio só dispara o callback; o
+  HOST (member-shell) puxa a entrega do servidor e troca o projeto via `StudioHandle.replaceProject`.
+  i18n `topbar.cloudSync`; ícone `IconRefresh` (novo em `ui-internal/icons.tsx`).
 
 ## Compartilhar (publicar no Mural dos Criadores)
 
